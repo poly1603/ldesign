@@ -34,7 +34,7 @@ interface UnifiedTemplate {
   config?: {
     description?: string
     tags?: string[]
-    preview?: string | { thumbnail?: string; description?: string }
+    preview?: string | { thumbnail?: string, description?: string }
   }
   isDefault?: boolean
 }

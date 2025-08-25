@@ -1,320 +1,491 @@
 /**
- * 模板加载器 - 重构版本
- *
- * 使用 @ldesign/cache 进行缓存管理
- * 专注于模板组件的动态加载
+ * 动态模板加载器
+ * 实现按需加载、智能缓存和预加载优化
  */
 
-import type { Component } from 'vue'
-import type { TemplateLoadResult, TemplateMetadata } from '../types'
-import { defineAsyncComponent } from 'vue'
-// TODO: 稍后替换为 import { createCache } from '@ldesign/cache'
+import type { CacheItem, EventData, EventListener, LoaderConfig, LoadResult, TemplateInfo, VueComponent } from '../types'
 
 /**
- * 简单的内存缓存（临时实现，稍后使用外部包）
+ * LRU 缓存实现
  */
-class SimpleCache {
-  private cache = new Map<string, Component>()
-  private timestamps = new Map<string, number>()
-  private readonly ttl = 5 * 60 * 1000 // 5分钟
+class LRUCache<T = any> {
+  private cache = new Map<string, CacheItem<T>>()
+  private maxSize: number
+  private ttl: number
 
-  set(key: string, value: Component): void {
-    this.cache.set(key, value)
-    this.timestamps.set(key, Date.now())
+  constructor(maxSize = 50, ttl = 30 * 60 * 1000) {
+    this.maxSize = maxSize
+    this.ttl = ttl
   }
 
-  get(key: string): Component | null {
-    const timestamp = this.timestamps.get(key)
-    if (!timestamp || Date.now() - timestamp > this.ttl) {
+  get(key: string): T | null {
+    const item = this.cache.get(key)
+    if (!item)
+      return null
+
+    // 检查是否过期
+    if (item.expiresAt && Date.now() > item.expiresAt) {
       this.cache.delete(key)
-      this.timestamps.delete(key)
       return null
     }
-    return this.cache.get(key) || null
+
+    // 更新访问信息
+    item.accessedAt = Date.now()
+    item.accessCount++
+
+    // 移到最后（最近使用）
+    this.cache.delete(key)
+    this.cache.set(key, item)
+
+    return item.value
+  }
+
+  set(key: string, value: T, size = 0): void {
+    // 如果已存在，先删除
+    if (this.cache.has(key)) {
+      this.cache.delete(key)
+    }
+
+    // 如果缓存已满，删除最久未使用的项
+    while (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value
+      if (firstKey) {
+        this.cache.delete(firstKey)
+      }
+      else {
+        break
+      }
+    }
+
+    const item: CacheItem<T> = {
+      key,
+      value,
+      createdAt: Date.now(),
+      accessedAt: Date.now(),
+      accessCount: 1,
+      expiresAt: this.ttl > 0 ? Date.now() + this.ttl : undefined,
+      size,
+    }
+
+    this.cache.set(key, item)
   }
 
   has(key: string): boolean {
     return this.get(key) !== null
   }
 
-  clear(): void {
-    this.cache.clear()
-    this.timestamps.clear()
+  delete(key: string): boolean {
+    return this.cache.delete(key)
   }
 
-  get size(): number {
+  clear(): void {
+    this.cache.clear()
+  }
+
+  size(): number {
     return this.cache.size
+  }
+
+  keys(): string[] {
+    return Array.from(this.cache.keys())
   }
 }
 
 /**
- * 模板加载器
+ * 模板加载器类
  */
 export class TemplateLoader {
-  private cache = new SimpleCache()
+  private config: Required<LoaderConfig>
+  private cache: LRUCache<VueComponent>
+  private loadingPromises = new Map<string, Promise<VueComponent>>()
+  private listeners = new Map<string, EventListener[]>()
+  private preloadQueue = new Set<string>()
+
+  constructor(config: LoaderConfig = {}) {
+    this.config = this.normalizeConfig(config)
+    this.cache = new LRUCache<VueComponent>(
+      this.config.maxCacheSize,
+      this.config.cacheTTL,
+    )
+  }
+
+  /**
+   * 标准化配置
+   */
+  private normalizeConfig(config: LoaderConfig): Required<LoaderConfig> {
+    return {
+      enableCache: config.enableCache ?? true,
+      cacheStrategy: config.cacheStrategy ?? 'lru',
+      maxCacheSize: config.maxCacheSize ?? 50,
+      cacheTTL: config.cacheTTL ?? 30 * 60 * 1000, // 30分钟
+      preloadStrategy: config.preloadStrategy ?? 'critical',
+      criticalTemplates: config.criticalTemplates ?? [],
+      loadTimeout: config.loadTimeout ?? 10000, // 10秒
+      retryCount: config.retryCount ?? 3,
+      retryDelay: config.retryDelay ?? 1000, // 1秒
+    }
+  }
 
   /**
    * 加载模板组件
    */
-  async loadTemplate(metadata: TemplateMetadata): Promise<TemplateLoadResult> {
+  async loadTemplate(templateInfo: TemplateInfo): Promise<LoadResult> {
     const startTime = Date.now()
-    const cacheKey = this.generateCacheKey(metadata)
+    const cacheKey = this.generateCacheKey(templateInfo)
+
+    this.emit('template:load:start', { templateInfo, cacheKey })
 
     try {
       // 检查缓存
-      const cached = this.cache.get(cacheKey)
-      if (cached) {
-        console.log(`✅ 从缓存加载模板: ${cacheKey}`)
+      if (this.config.enableCache && this.cache.has(cacheKey)) {
+        const component = this.cache.get(cacheKey)!
+        const duration = Date.now() - startTime
+
+        this.emit('template:cache:hit', { templateInfo, cacheKey, duration })
+
         return {
-          component: cached,
-          metadata,
+          success: true,
+          component,
+          templateInfo,
+          duration,
           fromCache: true,
-          loadTime: Date.now() - startTime,
         }
       }
 
-      // 动态加载组件
-      console.log(`🔄 动态加载模板: ${metadata.componentPath || metadata.path}`)
-      const component = await this.loadComponent(metadata)
+      this.emit('template:cache:miss', { templateInfo, cacheKey })
 
-      // 缓存组件
-      this.cache.set(cacheKey, component)
+      // 检查是否正在加载
+      if (this.loadingPromises.has(cacheKey)) {
+        const component = await this.loadingPromises.get(cacheKey)!
+        const duration = Date.now() - startTime
 
-      console.log(`✅ 模板加载成功: ${cacheKey}`)
-      return {
-        component,
-        metadata,
-        fromCache: false,
-        loadTime: Date.now() - startTime,
+        return {
+          success: true,
+          component,
+          templateInfo,
+          duration,
+          fromCache: false,
+        }
+      }
+
+      // 开始加载
+      const loadPromise = this.performLoad(templateInfo)
+      this.loadingPromises.set(cacheKey, loadPromise)
+
+      try {
+        const component = await loadPromise
+        const duration = Date.now() - startTime
+
+        // 缓存组件
+        if (this.config.enableCache) {
+          this.cache.set(cacheKey, component)
+        }
+
+        this.emit('template:load:complete', {
+          templateInfo,
+          cacheKey,
+          duration,
+          fromCache: false,
+        })
+
+        return {
+          success: true,
+          component,
+          templateInfo,
+          duration,
+          fromCache: false,
+        }
+      }
+      finally {
+        this.loadingPromises.delete(cacheKey)
       }
     }
     catch (error) {
-      throw new Error(`Failed to load template: ${cacheKey}`)
+      const duration = Date.now() - startTime
+
+      this.emit('template:load:error', {
+        templateInfo,
+        cacheKey,
+        error,
+        duration,
+      })
+
+      return {
+        success: false,
+        templateInfo,
+        duration,
+        fromCache: false,
+        error: error as Error,
+      }
     }
+  }
+
+  /**
+   * 执行实际的加载操作
+   */
+  private async performLoad(templateInfo: TemplateInfo): Promise<VueComponent> {
+    const { templateFile } = templateInfo
+    let lastError: Error | null = null
+
+    // 重试机制
+    for (let attempt = 0; attempt <= this.config.retryCount; attempt++) {
+      try {
+        // 设置超时
+        const loadPromise = this.dynamicImport(templateFile.path)
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error(`Template load timeout: ${templateFile.path}`))
+          }, this.config.loadTimeout)
+        })
+
+        const module = await Promise.race([loadPromise, timeoutPromise])
+
+        // 提取组件
+        const component = this.extractComponent(module)
+        if (!component) {
+          throw new Error(`No valid component found in: ${templateFile.path}`)
+        }
+
+        return component
+      }
+      catch (error) {
+        lastError = error as Error
+
+        // 如果不是最后一次尝试，等待后重试
+        if (attempt < this.config.retryCount) {
+          await this.delay(this.config.retryDelay * (attempt + 1))
+        }
+      }
+    }
+
+    throw lastError || new Error(`Failed to load template: ${templateFile.path}`)
+  }
+
+  /**
+   * 动态导入模块
+   */
+  private async dynamicImport(path: string): Promise<any> {
+    try {
+      // 使用动态 import
+      return await import(/* @vite-ignore */ path)
+    }
+    catch (importError) {
+      // 回退方案：检查是否在Vite环境中
+      if (typeof window !== 'undefined' && 'import' in window) {
+        try {
+          // 在浏览器环境中，尝试使用全局模块注册表
+          const globalModules = (window as any).__TEMPLATE_MODULES__
+          if (globalModules && globalModules[path]) {
+            return globalModules[path]
+          }
+        }
+        catch (globError) {
+          // ignore glob errors
+        }
+      }
+
+      throw new Error(`Cannot import module: ${path}`)
+    }
+  }
+
+  /**
+   * 从模块中提取组件
+   */
+  private extractComponent(module: any): VueComponent | null {
+    // 尝试不同的导出方式
+    if (module.default) {
+      return module.default
+    }
+
+    if (typeof module === 'function' || typeof module === 'object') {
+      return module
+    }
+
+    return null
   }
 
   /**
    * 预加载模板
    */
-  async preloadTemplate(metadata: TemplateMetadata): Promise<void> {
-    const cacheKey = this.generateCacheKey(metadata)
+  async preloadTemplate(templateInfo: TemplateInfo): Promise<void> {
+    const cacheKey = this.generateCacheKey(templateInfo)
 
-    if (this.cache.has(cacheKey)) {
-      console.log(`⚡ 模板已缓存，跳过预加载: ${cacheKey}`)
+    // 如果已经缓存或正在加载，跳过
+    if (this.cache.has(cacheKey) || this.loadingPromises.has(cacheKey)) {
       return
     }
 
+    // 添加到预加载队列
+    this.preloadQueue.add(cacheKey)
+
     try {
-      await this.loadTemplate(metadata)
+      await this.loadTemplate(templateInfo)
     }
     catch (error) {
-      // 预加载失败不影响主流程，静默处理
+      // 预加载失败不抛出错误，只记录日志
+      console.warn(`Preload failed for template: ${templateInfo.category}/${templateInfo.deviceType}`, error)
+    }
+    finally {
+      this.preloadQueue.delete(cacheKey)
     }
   }
 
   /**
-   * 批量预加载模板
+   * 批量预加载
    */
-  async preloadTemplates(templates: TemplateMetadata[]): Promise<void> {
-    const promises = templates.map(template =>
-      this.preloadTemplate(template).catch(() => {
-        // 预加载失败不影响主流程，静默处理
-      }),
-    )
+  async preloadTemplates(templates: TemplateInfo[]): Promise<void> {
+    const { preloadStrategy, criticalTemplates } = this.config
 
-    await Promise.all(promises)
-  }
+    let templatesToPreload: TemplateInfo[] = []
 
-  /**
-   * 动态加载组件
-   * 基于约定的路径自动加载模板组件
-   */
-  private async loadComponent(metadata: TemplateMetadata): Promise<Component> {
-    try {
-      // 基于约定生成组件路径
-      const componentPath = this.generateComponentPath(metadata)
+    switch (preloadStrategy) {
+      case 'critical':
+        templatesToPreload = templates.filter(t =>
+          criticalTemplates.includes(t.category),
+        )
+        break
 
-      console.log(`🔄 自动加载模板组件: ${metadata.category}/${metadata.device}/${metadata.template}`)
-      console.log(`   组件路径: ${componentPath}`)
+      case 'all':
+        templatesToPreload = templates
+        break
 
-      // 尝试多种可能的文件扩展名
-      const possiblePaths = [
-        componentPath.replace(/\.(ts|tsx|vue|js)$/, '.tsx'),
-        componentPath.replace(/\.(ts|tsx|vue|js)$/, '.ts'),
-        componentPath.replace(/\.(ts|tsx|vue|js)$/, '.vue'),
-        componentPath.replace(/\.(ts|tsx|vue|js)$/, '.js'),
-      ]
-
-      let lastError: Error | null = null
-
-      for (const path of possiblePaths) {
-        try {
-          const module = await import(/* @vite-ignore */ path)
-          const component = module.default || module
-
-          if (component) {
-            return this.wrapComponent(component, path)
-          }
+      case 'idle':
+        // 在空闲时间预加载
+        if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(() => {
+            this.preloadTemplates(templates)
+          })
+          return
         }
-        catch (error) {
-          lastError = error as Error
-          continue
-        }
-      }
+        templatesToPreload = templates.slice(0, 5) // 限制数量
+        break
 
-      throw lastError || new Error(`无法找到模板组件: ${componentPath}`)
+      case 'none':
+      default:
+        return
     }
-    catch (error) {
-      throw error
+
+    // 并发预加载，但限制并发数
+    const concurrency = 3
+    for (let i = 0; i < templatesToPreload.length; i += concurrency) {
+      const batch = templatesToPreload.slice(i, i + concurrency)
+      await Promise.allSettled(
+        batch.map(template => this.preloadTemplate(template)),
+      )
     }
   }
 
   /**
-   * 基于约定生成组件路径
-   * 约定：../templates/{category}/{device}/{template}/index.tsx
+   * 清除缓存
    */
-  private generateComponentPath(metadata: TemplateMetadata): string {
-    // 如果已经有路径，直接使用
-    if (metadata.path) {
-      return metadata.path
+  clearCache(templateKey?: string): void {
+    if (templateKey) {
+      this.cache.delete(templateKey)
+      this.emit('template:cache:evict', { key: templateKey })
     }
-
-    // 基于约定生成路径
-    return `../templates/${metadata.category}/${metadata.device}/${metadata.template}/index.tsx`
+    else {
+      this.cache.clear()
+      this.emit('template:cache:evict', { key: 'all' })
+    }
   }
 
   /**
-   * 包装组件为异步组件
+   * 获取缓存统计信息
    */
-  private wrapComponent(component: unknown, path: string): Component {
-    // 如果已经是Vue组件，直接返回
-    if (component && (component.render || component.setup || component.template)) {
-      return component
-    }
-
-    // 包装为异步组件
-    return defineAsyncComponent({
-      loader: () => Promise.resolve(component),
-      loadingComponent: this.createLoadingComponent(),
-      errorComponent: this.createErrorComponent(path),
-      delay: 200,
-      timeout: 10000,
-    })
-  }
-
-  /**
-   * 创建加载中组件
-   */
-  private createLoadingComponent(): Component {
+  getCacheStats(): {
+    size: number
+    maxSize: number
+    keys: string[]
+    hitRate?: number
+  } {
     return {
-      template: `
-        <div class="template-loading">
-          <div class="loading-spinner"></div>
-          <p>模板加载中...</p>
-        </div>
-      `,
-      style: `
-        .template-loading {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 2rem;
-          color: #666;
-        }
-        .loading-spinner {
-          width: 32px;
-          height: 32px;
-          border: 3px solid #f3f3f3;
-          border-top: 3px solid #3498db;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `,
-    }
-  }
-
-  /**
-   * 创建错误组件
-   */
-  private createErrorComponent(path: string): Component {
-    return {
-      template: `
-        <div class="template-error">
-          <h3>模板加载失败</h3>
-          <p>路径: ${path}</p>
-          <button @click="retry">重试</button>
-        </div>
-      `,
-      methods: {
-        retry() {
-          window.location.reload()
-        },
-      },
-      style: `
-        .template-error {
-          padding: 2rem;
-          text-align: center;
-          color: #e74c3c;
-          border: 1px solid #e74c3c;
-          border-radius: 4px;
-          background: #fdf2f2;
-        }
-        .template-error button {
-          margin-top: 1rem;
-          padding: 0.5rem 1rem;
-          background: #e74c3c;
-          color: white;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-        }
-      `,
+      size: this.cache.size(),
+      maxSize: this.config.maxCacheSize,
+      keys: this.cache.keys(),
     }
   }
 
   /**
    * 生成缓存键
    */
-  private generateCacheKey(metadata: TemplateMetadata): string {
-    return `${metadata.category}/${metadata.device}/${metadata.template}`
+  private generateCacheKey(templateInfo: TemplateInfo): string {
+    const path = templateInfo.templateFile?.path || templateInfo.category
+    return `${templateInfo.category}:${templateInfo.deviceType}:${path}`
   }
 
   /**
    * 检查模板是否已缓存
    */
-  isCached(metadata: TemplateMetadata): boolean {
-    const cacheKey = this.generateCacheKey(metadata)
-    return this.cache.has(cacheKey)
+  isCached(templateInfo: TemplateInfo): boolean {
+    const key = this.generateCacheKey(templateInfo)
+    return this.cache.has(key)
   }
 
   /**
-   * 清空缓存
+   * 获取缓存的模板列表
    */
-  clearCache(): void {
-    this.cache.clear()
-    console.log('🗑️ 模板加载器缓存已清空')
+  getCachedTemplates(): string[] {
+    return Array.from(this.cache.keys())
   }
 
   /**
-   * 清空特定模板的缓存
+   * 延迟函数
    */
-  clearTemplateCache(metadata: TemplateMetadata): void {
-    const cacheKey = this.generateCacheKey(metadata)
-    this.cache.set(cacheKey, null) // 简单实现，实际应该删除
-    console.log(`🗑️ 已清空模板缓存: ${cacheKey}`)
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
 
   /**
-   * 获取缓存统计信息
+   * 事件发射器
    */
-  getCacheStats(): { size: number } {
-    return {
-      size: this.cache.size, // 使用 size 属性
+  private emit(type: string, data: any): void {
+    const eventData: EventData = {
+      type: type as any,
+      timestamp: Date.now(),
+      data,
     }
+
+    const listeners = this.listeners.get(type) || []
+    listeners.forEach((listener) => {
+      try {
+        listener(eventData)
+      }
+      catch (error) {
+        console.error(`Error in event listener for ${type}:`, error)
+      }
+    })
+  }
+
+  /**
+   * 添加事件监听器
+   */
+  on(type: string, listener: EventListener): void {
+    if (!this.listeners.has(type)) {
+      this.listeners.set(type, [])
+    }
+    this.listeners.get(type)!.push(listener)
+  }
+
+  /**
+   * 移除事件监听器
+   */
+  off(type: string, listener: EventListener): void {
+    const listeners = this.listeners.get(type)
+    if (listeners) {
+      const index = listeners.indexOf(listener)
+      if (index > -1) {
+        listeners.splice(index, 1)
+      }
+    }
+  }
+
+  /**
+   * 清理资源
+   */
+  dispose(): void {
+    this.cache.clear()
+    this.loadingPromises.clear()
+    this.listeners.clear()
+    this.preloadQueue.clear()
   }
 }

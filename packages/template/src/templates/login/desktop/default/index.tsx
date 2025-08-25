@@ -1,12 +1,12 @@
-import type { VNode } from 'vue'
+import type { VNode } from '@vue/runtime-core'
 import { useTNodeJSX } from '@ldesign/shared'
-import { computed, defineComponent, onMounted, reactive, ref } from 'vue'
+import { defineComponent } from '@vue/runtime-core'
 
 import './index.less'
 
 export default defineComponent({
   name: 'DefaultLoginTemplate',
-  setup(props, { emit }: any) {
+  setup(_props, { emit: _emit }: any) {
     const renderTNodeJSX = useTNodeJSX()
 
     return {

@@ -5,7 +5,7 @@
 在多设备模板系统中，不同设备类型拥有的模板并不完全相同：
 
 - **Desktop**: adaptive, classic, default, modern (4个模板)
-- **Mobile**: card, default, simple (3个模板)  
+- **Mobile**: card, default, simple (3个模板)
 - **Tablet**: adaptive, default, split (3个模板)
 
 当用户从一个设备切换到另一个设备时，如果当前模板在新设备上不存在，会导致 "Template not found" 错误。
@@ -40,7 +40,7 @@ if (sameNameTemplate) {
 ```typescript
 // 按优先级查找最佳替代模板：
 // 3.1 查找 'default' 模板
-// 3.2 查找 'adaptive' 模板  
+// 3.2 查找 'adaptive' 模板
 // 3.3 查找标记为默认的模板
 // 3.4 使用第一个可用模板
 ```
@@ -50,7 +50,8 @@ if (sameNameTemplate) {
 // 如果所有策略都失败，尝试使用默认模板作为最后保险
 try {
   await switchTemplate(category, device, targetTemplate)
-} catch (error) {
+}
+catch (error) {
   const defaultTemplate = deviceTemplates.find(t => t.template === 'default') || deviceTemplates[0]
   await switchTemplate(category, device, defaultTemplate.template)
 }
@@ -63,7 +64,7 @@ try {
 ```typescript
 findFallbackTemplate(category: string, device: DeviceType, originalTemplate: string): TemplateMetadata | null {
   const availableTemplates = this.getTemplates(category, device)
-  
+
   if (availableTemplates.length === 0) return null
 
   // 1. 查找 'default' 模板
@@ -91,17 +92,17 @@ async render(options: TemplateRenderOptions): Promise<TemplateLoadResult> {
   let metadata = this.findTemplate(category, targetDevice, template)
   if (!metadata) {
     console.warn(`⚠️ 模板不存在: ${category}/${targetDevice}/${template}，尝试智能回退...`)
-    
+
     // 智能回退：尝试找到最佳替代模板
     metadata = this.findFallbackTemplate(category, targetDevice, template)
-    
+
     if (!metadata) {
       throw new Error(`No template or fallback found for: ${category}/${targetDevice}/${template}`)
     }
-    
+
     console.log(`🔄 使用回退模板: ${category}/${targetDevice}/${metadata.template}`)
   }
-  
+
   // 继续加载模板...
 }
 ```
@@ -109,7 +110,7 @@ async render(options: TemplateRenderOptions): Promise<TemplateLoadResult> {
 ### 3. 增强的 autoSwitchDeviceTemplate()
 
 ```typescript
-const autoSwitchDeviceTemplate = async (newDevice: DeviceType, category?: string) => {
+async function autoSwitchDeviceTemplate(newDevice: DeviceType, category?: string) {
   // 获取新设备类型的可用模板
   const deviceTemplates = templates.value.filter(t => t.category === category && t.device === newDevice)
 
@@ -140,7 +141,8 @@ const autoSwitchDeviceTemplate = async (newDevice: DeviceType, category?: string
 
   try {
     await switchTemplate(category, newDevice, targetTemplate.template)
-  } catch (error) {
+  }
+  catch (error) {
     // 如果切换失败，尝试使用默认模板
     const defaultTemplate = deviceTemplates.find(t => t.template === 'default') || deviceTemplates[0]
     if (defaultTemplate) {
@@ -161,7 +163,7 @@ const autoSwitchDeviceTemplate = async (newDevice: DeviceType, category?: string
 3. 自动切换到 Mobile 'default' 模板
 ```
 
-### 场景 2: Mobile → Tablet  
+### 场景 2: Mobile → Tablet
 ```
 用户在 Mobile 使用 'card' 模板
 切换到 Tablet 设备：
@@ -221,9 +223,9 @@ const autoSwitchDeviceTemplate = async (newDevice: DeviceType, category?: string
 const customFallbackStrategy = {
   priority: ['premium', 'default', 'adaptive'],
   rules: {
-    'mobile': ['simple', 'card', 'default'],
-    'tablet': ['adaptive', 'split', 'default'],
-    'desktop': ['modern', 'classic', 'default']
+    mobile: ['simple', 'card', 'default'],
+    tablet: ['adaptive', 'split', 'default'],
+    desktop: ['modern', 'classic', 'default']
   }
 }
 ```
@@ -231,7 +233,7 @@ const customFallbackStrategy = {
 ### 2. **模板相似度匹配**
 ```typescript
 // 基于模板特性进行智能匹配
-const findSimilarTemplate = (originalTemplate, availableTemplates) => {
+function findSimilarTemplate(originalTemplate, availableTemplates) {
   // 分析模板特性：布局、颜色、交互方式等
   // 返回最相似的模板
 }
@@ -240,7 +242,7 @@ const findSimilarTemplate = (originalTemplate, availableTemplates) => {
 ### 3. **用户偏好学习**
 ```typescript
 // 学习用户的选择偏好，优化回退策略
-const learnUserPreference = (userId, deviceSwitchHistory) => {
+function learnUserPreference(userId, deviceSwitchHistory) {
   // 分析用户的设备切换和模板选择历史
   // 动态调整回退优先级
 }

@@ -130,7 +130,7 @@ export default defineComponent({
     }
 
     // 切换密码显示状态
-    const togglePasswordVisibility = () => {
+    const _togglePasswordVisibility = () => {
       showPassword.value = !showPassword.value
     }
 

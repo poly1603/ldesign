@@ -156,11 +156,11 @@ packages/template/src/
 
 ### 1. 导入工具函数
 ```typescript
-import { 
-  getSmartBackground, 
-  getIcon, 
+import {
   applyTheme,
-  performanceMonitor 
+  getIcon,
+  getSmartBackground,
+  performanceMonitor
 } from '../utils'
 ```
 

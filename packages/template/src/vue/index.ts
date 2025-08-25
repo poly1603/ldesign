@@ -1,32 +1,52 @@
 /**
- * Vue 集成模块 - 重构版本
- *
- * 提供 Vue 3 的组合式函数、组件和插件
+ * Vue 集成模块导出
+ * @ldesign/template Vue 3 集成
  */
 
-// ============ 类型定义 ============
-export type { TemplatePluginOptions, UseTemplateOptions, UseTemplateReturn } from '../types'
+// 组件 - 在开发环境中直接导入，避免构建问题
+// export { default as TemplateRenderer } from './components/TemplateRenderer.vue'
+// export { default as TemplateRendererWithSelector } from './components/TemplateRendererWithSelector.vue'
+// export { default as TemplateSelector } from './components/TemplateSelector.vue'
 
-export { default as LazyTemplate } from './components/LazyTemplate'
-export { default as PerformanceMonitor } from './components/PerformanceMonitor'
-// ============ 组件 ============
-export { TemplateRenderer } from './components/TemplateRenderer'
-export { TemplateSelector } from './components/TemplateSelector'
+// 重新导出类型
+export type * from '../types'
 
-// ============ 组合式函数 ============
-export { createTemplateManager, useTemplate, useTemplate as useTemplateSystem } from './composables/useTemplate'
-export { useTemplateSelector } from './composables/useTemplateSelector'
-export { useDynamicVirtualScroll, useSimpleVirtualScroll, useVirtualScroll } from './composables/useVirtualScroll'
-
-// ============ 插件 ============
+// 组合式函数
 export {
+  useTemplate,
+  useTemplateCache,
+  useTemplateScanner,
+} from './composables/useTemplate'
+
+export {
+  useTemplateRegistry,
+} from './composables/useTemplateRegistry'
+
+export {
+  useTemplateExtension,
+  createExternalTemplate,
+  createExternalTemplateFromPath,
+} from './composables/useTemplateExtension'
+
+// 指令
+export {
+  installTemplateDirectives,
+  templateDirectives,
+  vTemplate,
+  vTemplateCache,
+  vTemplateLazy,
+  vTemplatePreload,
+} from './directives/template'
+
+// 插件
+export {
+  configureTemplateManager,
   createTemplatePlugin,
-  destroyGlobalTemplateManager,
-  getGlobalTemplateManager,
+  install,
+  TemplateManagerSymbol,
   TemplatePlugin,
   useTemplateManager,
 } from './plugin'
 
-// ============ 模板配置 ============
-// 注意：模板配置通过 TemplateScanner 自动扫描获取
-// 使用 useTemplate() 或 TemplateManager.scanTemplates() 来获取配置
+// 默认导出插件
+export { TemplatePlugin as default } from './plugin'

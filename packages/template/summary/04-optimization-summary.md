@@ -38,16 +38,10 @@
 **使用方式**:
 
 ```vue
-<template>
-  <TemplateProvider :config="providerConfig">
-    <router-view />
-  </TemplateProvider>
-</template>
-
 <script setup>
 import {
-  TemplateProvider,
   createTemplateProviderConfig,
+  TemplateProvider,
 } from '@ldesign/template'
 
 const providerConfig = createTemplateProviderConfig({
@@ -59,6 +53,12 @@ const providerConfig = createTemplateProviderConfig({
   },
 })
 </script>
+
+<template>
+  <TemplateProvider :config="providerConfig">
+    <router-view />
+  </TemplateProvider>
+</template>
 ```
 
 ### 2. 增强 TemplateRenderer 组件

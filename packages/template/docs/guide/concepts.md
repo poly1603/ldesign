@@ -1,282 +1,399 @@
-# 基础概念
+# 核心概念
 
-了解 LDesign Template 的核心概念，有助于更好地使用和扩展这个模板管理系统。
+本文档介绍 `@ldesign/template` 的核心概念和设计理念，帮助你更好地理解和使用这个模板管理系统。
 
-## 核心概念
+## 🎯 设计理念
 
-### 模板 (Template)
+### 响应式优先
+`@ldesign/template` 采用响应式优先的设计理念，根据不同设备类型自动选择最适合的模板版本，确保在任何设备上都能提供最佳的用户体验。
 
-模板是 LDesign Template 系统的基本单元，它是一个 Vue 组件，用于渲染特定的 UI 界面。
+### 性能至上
+系统内置多层缓存机制、懒加载和预加载策略，确保模板加载速度和运行性能达到最优。
+
+### 开发友好
+提供完整的 TypeScript 支持、丰富的 API 和详细的错误信息，让开发者能够快速上手并高效开发。
+
+## 🏗️ 核心架构
+
+### 分层架构
+
+```
+┌─────────────────────────────────────┐
+│           Vue 集成层                │  ← 组件、指令、组合式API
+├─────────────────────────────────────┤
+│           核心管理层                │  ← TemplateManager
+├─────────────────────────────────────┤
+│           服务层                    │  ← Scanner、Loader、Cache
+├─────────────────────────────────────┤
+│           适配层                    │  ← DeviceAdapter、Storage
+└─────────────────────────────────────┘
+```
+
+### 模块职责
+
+- **Vue 集成层**：提供 Vue3 组件、指令和组合式 API
+- **核心管理层**：统一管理模板的生命周期和状态
+- **服务层**：提供模板扫描、加载、缓存等核心服务
+- **适配层**：处理设备检测、存储适配等底层功能
+
+## 📁 模板组织
+
+### 目录结构
+
+```
+src/templates/
+├── login/                    # 登录模板分类
+│   ├── desktop/             # 桌面端版本
+│   │   └── LoginForm.vue
+│   ├── tablet/              # 平板端版本
+│   │   └── LoginForm.vue
+│   └── mobile/              # 移动端版本
+│       └── LoginForm.vue
+├── dashboard/               # 仪表板模板分类
+│   ├── desktop/
+│   │   └── Dashboard.vue
+│   ├── tablet/
+│   │   └── Dashboard.vue
+│   └── mobile/
+│       └── Dashboard.vue
+└── common/                  # 通用组件
+    ├── header/
+    ├── footer/
+    └── sidebar/
+```
+
+### 命名规范
+
+1. **分类名称**：使用小写字母和连字符，如 `user-profile`、`order-list`
+2. **设备类型**：固定为 `desktop`、`tablet`、`mobile`
+3. **组件文件**：使用 PascalCase，如 `LoginForm.vue`、`Dashboard.vue`
+
+### 元数据配置
+
+每个模板可以包含元数据配置文件：
 
 ```typescript
-// 模板的基本结构
-interface Template {
-  component: Component // Vue 组件
-  config: TemplateConfig // 配置信息
-  metadata: TemplateMetadata // 元数据
-}
-```
-
-### 分类 (Category)
-
-分类用于组织相关的模板，比如 `auth`（认证）、`dashboard`（仪表板）、`layout`（布局）等。
-
-```
-templates/
-├── auth/          # 认证相关模板
-├── dashboard/     # 仪表板模板
-├── layout/        # 布局模板
-└── form/          # 表单模板
-```
-
-### 设备类型 (Device)
-
-支持三种设备类型，确保在不同设备上都有良好的用户体验：
-
-- **desktop**: 桌面端（>= 1024px）
-- **tablet**: 平板端（768px - 1023px）
-- **mobile**: 移动端（< 768px）
-
-### 模板标识符
-
-每个模板都有唯一的标识符，由三部分组成：
-
-```
-{category}/{device}/{template}
-```
-
-例如：`auth/desktop/login`、`dashboard/mobile/admin`
-
-## 系统架构
-
-### 模板管理器 (TemplateManager)
-
-模板管理器是系统的核心，负责：
-
-- 模板扫描和注册
-- 模板加载和缓存
-- 设备检测和适配
-- 错误处理和重试
-
-```typescript
-const manager = new TemplateManager({
-  defaultDevice: 'desktop',
-  autoScan: true,
-  autoDetectDevice: true,
-  cacheEnabled: true,
-})
-```
-
-### 缓存系统
-
-内置 LRU 缓存机制，提高模板加载性能：
-
-```typescript
-// 缓存配置
+// templates/login/meta.json
 {
-  cacheEnabled: true,
-  cacheSize: 50,           // 最多缓存 50 个模板
-  cacheTTL: 10 * 60 * 1000 // 10 分钟过期
+  "name": "登录表单",
+  "description": "用户登录界面模板",
+  "category": "auth",
+  "tags": ["form", "authentication"],
+  "priority": "high",
+  "preload": true,
+  "fallback": {
+    "mobile": "tablet",
+    "tablet": "desktop"
+  }
 }
 ```
 
-### 设备检测
-
-自动检测用户设备类型，选择最适合的模板：
-
-```typescript
-// 检测方式
-1. 视口宽度检测（优先）
-2. User Agent 检测（备用）
-3. 手动指定（覆盖）
-```
-
-## 模板生命周期
+## 🔄 模板生命周期
 
 ### 1. 扫描阶段
-
-系统启动时自动扫描模板目录：
-
 ```typescript
-// 扫描过程
-1. 遍历模板目录
-2. 读取配置文件
-3. 验证模板结构
-4. 注册到管理器
+// 系统启动时自动扫描模板目录
+const scanner = new TemplateScanner({
+  scanPaths: ['src/templates/**/*.vue'],
+  enableCache: true
+})
+
+const templates = await scanner.scan()
 ```
 
-### 2. 加载阶段
-
-当需要使用模板时：
-
+### 2. 注册阶段
 ```typescript
-// 加载过程
-1. 检查缓存
-2. 动态导入组件
-3. 验证组件有效性
-4. 缓存组件实例
+// 将扫描到的模板注册到管理器
+manager.registerTemplates(templates)
 ```
 
-### 3. 渲染阶段
-
-将模板组件渲染到页面：
-
+### 3. 加载阶段
 ```typescript
-// 渲染过程
-1. 解析模板属性
-2. 创建组件实例
-3. 挂载到目标元素
-4. 处理事件和插槽
+// 根据需要动态加载模板
+const component = await manager.loadTemplate('login', 'desktop')
 ```
 
-### 4. 销毁阶段
-
-组件卸载时清理资源：
-
+### 4. 缓存阶段
 ```typescript
-// 清理过程
-1. 卸载组件实例
-2. 清理事件监听
-3. 释放内存引用
-4. 更新缓存状态
+// 加载后的模板自动缓存
+const cached = manager.getFromCache('login', 'desktop')
 ```
 
-## 配置系统
+### 5. 销毁阶段
+```typescript
+// 不再需要时清理缓存
+manager.clearCache('login', 'desktop')
+```
 
-### 模板配置
+## 📱 设备适配
 
-每个模板都有一个配置文件 `config.ts`：
+### 设备类型检测
+
+系统支持多种设备检测方式：
 
 ```typescript
-export const config: TemplateConfig = {
-  name: 'login',
-  title: '登录页面',
-  description: '用户登录界面',
-  version: '1.0.0',
-  author: 'LDesign Team',
-  category: 'auth',
-  device: 'desktop',
-  tags: ['登录', '认证'],
+// 1. 基于屏幕宽度的简单检测
+function detectDevice() {
+  const width = window.innerWidth
+  if (width <= 768) return 'mobile'
+  if (width <= 1024) return 'tablet'
+  return 'desktop'
+}
 
-  // 属性定义
-  props: {
-    title: {
-      type: 'string',
-      default: '用户登录',
-      description: '页面标题',
-    },
-  },
+// 2. 基于 User Agent 的检测
+function detectDeviceByUA() {
+  const ua = navigator.userAgent
+  if (/Mobile|Android|iPhone|iPad/.test(ua)) {
+    return /iPad/.test(ua) ? 'tablet' : 'mobile'
+  }
+  return 'desktop'
+}
 
-  // 兼容性
-  compatibility: {
-    vue: '>=3.2.0',
-    browsers: ['Chrome >= 88'],
-  },
+// 3. 自定义检测逻辑
+const customDetector = () => {
+  const width = window.innerWidth
+  const height = window.innerHeight
+  const ratio = width / height
+  const touchSupport = 'ontouchstart' in window
+  
+  // 综合判断设备类型
+  if (touchSupport && width <= 480) return 'mobile'
+  if (touchSupport && width <= 1024) return 'tablet'
+  return 'desktop'
 }
 ```
 
-### 全局配置
-
-系统级别的配置选项：
-
-```typescript
-interface TemplateManagerConfig {
-  defaultDevice?: DeviceType
-  autoScan?: boolean
-  autoDetectDevice?: boolean
-  cacheEnabled?: boolean
-  cacheSize?: number
-  cacheTTL?: number
-  preloadEnabled?: boolean
-  scanPaths?: string[]
-  deviceBreakpoints?: DeviceBreakpoints
-}
-```
-
-## 事件系统
-
-### 模板事件
-
-```typescript
-// 监听模板事件
-manager.on('template:load', event => {
-  console.log('模板加载:', event.template)
-})
-
-manager.on('template:error', event => {
-  console.error('模板错误:', event.error)
-})
-
-manager.on('template:switch', event => {
-  console.log('模板切换:', event.from, '->', event.to)
-})
-```
-
-### 设备事件
+### 响应式切换
 
 ```typescript
 // 监听设备变化
-manager.on('device:change', event => {
-  console.log('设备变化:', event.oldDevice, '->', event.newDevice)
+manager.on('device:changed', (oldDevice, newDevice) => {
+  console.log(`设备从 ${oldDevice} 切换到 ${newDevice}`)
+  
+  // 自动重新加载当前模板的新设备版本
+  manager.reloadCurrentTemplate(newDevice)
+})
+
+// 手动触发设备检测
+window.addEventListener('resize', () => {
+  manager.updateDeviceType()
 })
 ```
 
-## 扩展机制
+### 优雅降级
 
-### 自定义加载器
+当目标设备的模板不存在时，系统会按照预设的降级策略选择替代模板：
 
 ```typescript
-// 自定义模板加载逻辑
-manager.setLoader(async (category, device, template) => {
-  // 自定义加载逻辑
-  return await customLoadTemplate(category, device, template)
+// 降级策略配置
+const fallbackStrategy = {
+  mobile: ['tablet', 'desktop'],    // 移动端优先使用平板端，再使用桌面端
+  tablet: ['desktop', 'mobile'],    // 平板端优先使用桌面端，再使用移动端
+  desktop: ['tablet', 'mobile']     // 桌面端优先使用平板端，再使用移动端
+}
+```
+
+## 🚀 性能优化
+
+### 缓存策略
+
+#### 1. 内存缓存
+```typescript
+// LRU 缓存配置
+const cacheConfig = {
+  strategy: 'lru',        // 最近最少使用
+  maxSize: 50,           // 最大缓存50个模板
+  ttl: 30 * 60 * 1000   // 30分钟过期
+}
+```
+
+#### 2. 持久化缓存
+```typescript
+// 浏览器存储缓存
+const storageConfig = {
+  enabled: true,
+  storage: 'localStorage',  // 或 'sessionStorage'
+  prefix: 'template_cache_',
+  compression: true         // 启用压缩
+}
+```
+
+### 预加载策略
+
+#### 1. 关键路径预加载
+```typescript
+// 预加载关键模板
+const criticalTemplates = [
+  { category: 'login', deviceType: 'desktop' },
+  { category: 'dashboard', deviceType: 'desktop' }
+]
+
+await manager.preloadTemplates(criticalTemplates)
+```
+
+#### 2. 智能预加载
+```typescript
+// 基于用户行为的智能预加载
+manager.enableSmartPreload({
+  userBehaviorTracking: true,
+  predictiveLoading: true,
+  maxPredictions: 3
 })
+```
+
+### 懒加载
+
+```typescript
+// 组件级懒加载
+<template>
+  <TemplateRenderer 
+    template="dashboard"
+    :lazy="true"
+    :loading-threshold="200"
+  />
+</template>
+
+// 指令级懒加载
+<div v-template-lazy="{ template: 'profile', deviceType: 'mobile' }"></div>
+```
+
+## 🔧 扩展机制
+
+### 自定义适配器
+
+```typescript
+// 自定义设备检测适配器
+class CustomDeviceAdapter extends DeviceAdapter {
+  detectDevice(): DeviceType {
+    // 自定义检测逻辑
+    const customLogic = this.getCustomDetectionLogic()
+    return customLogic()
+  }
+}
+
+// 注册自定义适配器
+manager.setDeviceAdapter(new CustomDeviceAdapter())
 ```
 
 ### 插件系统
 
 ```typescript
 // 创建插件
-const myPlugin = {
-  name: 'my-plugin',
-  install(manager) {
-    // 扩展管理器功能
-    manager.addFeature('customFeature', () => {
-      // 自定义功能实现
+class AnalyticsPlugin {
+  install(manager: TemplateManager) {
+    manager.on('template:loaded', (data) => {
+      // 发送分析数据
+      analytics.track('template_loaded', data)
     })
-  },
+  }
 }
 
 // 使用插件
-manager.use(myPlugin)
+manager.use(new AnalyticsPlugin())
 ```
 
-## 最佳实践
+### 中间件
 
-### 模板组织
+```typescript
+// 加载中间件
+manager.addLoadMiddleware(async (context, next) => {
+  console.log('开始加载模板:', context.template)
+  const startTime = Date.now()
+  
+  await next()
+  
+  const duration = Date.now() - startTime
+  console.log('模板加载完成，耗时:', duration, 'ms')
+})
+```
 
-1. **按功能分类**：将相关模板放在同一分类下
-2. **设备优先**：优先考虑移动端体验
-3. **版本管理**：使用语义化版本号
-4. **文档完整**：提供详细的使用说明
+## 🛡️ 错误处理
 
-### 性能优化
+### 错误类型
 
-1. **懒加载**：使用动态导入减少初始包大小
-2. **缓存策略**：合理配置缓存参数
-3. **预加载**：预加载关键模板
-4. **代码分割**：按路由分割模板代码
+1. **TemplateNotFoundError** - 模板不存在
+2. **TemplateLoadError** - 模板加载失败
+3. **DeviceDetectionError** - 设备检测失败
+4. **CacheError** - 缓存操作失败
 
-### 错误处理
+### 错误恢复
 
-1. **优雅降级**：提供备用模板
-2. **错误边界**：使用 Vue 错误边界
-3. **重试机制**：自动重试失败的加载
-4. **用户反馈**：提供清晰的错误信息
+```typescript
+// 全局错误处理
+manager.on('error', (error) => {
+  switch (error.type) {
+    case 'TemplateNotFoundError':
+      // 尝试加载默认模板
+      manager.loadTemplate('default', error.deviceType)
+      break
+    case 'TemplateLoadError':
+      // 清除缓存并重试
+      manager.clearCache(error.template, error.deviceType)
+      manager.loadTemplate(error.template, error.deviceType)
+      break
+  }
+})
+```
+
+## 📊 监控和调试
+
+### 性能监控
+
+```typescript
+// 启用性能监控
+const config = {
+  performance: {
+    enabled: true,
+    sampleRate: 0.1,      // 10% 采样率
+    reportInterval: 60000  // 每分钟报告一次
+  }
+}
+
+// 监听性能报告
+manager.on('performance:report', (report) => {
+  console.log('性能报告:', {
+    averageLoadTime: report.averageLoadTime,
+    cacheHitRate: report.cacheHitRate,
+    memoryUsage: report.memoryUsage
+  })
+})
+```
+
+### 调试模式
+
+```typescript
+// 开发环境启用调试
+const manager = new TemplateManager({
+  debug: process.env.NODE_ENV === 'development',
+  verbose: true  // 详细日志
+})
+```
+
+## 🎨 最佳实践
+
+### 1. 模板设计原则
+- **一致性**：保持不同设备版本的功能一致性
+- **适配性**：针对设备特点优化交互和布局
+- **可维护性**：使用组件化和模块化设计
+
+### 2. 性能优化建议
+- 合理配置缓存大小和过期时间
+- 使用预加载提升关键路径性能
+- 启用压缩减少传输大小
+
+### 3. 错误处理策略
+- 设置合适的降级策略
+- 实现全局错误监控
+- 提供用户友好的错误提示
+
+### 4. 监控和维护
+- 定期分析性能报告
+- 监控缓存命中率
+- 跟踪用户设备分布
 
 ## 下一步
 
-- 学习 [模板管理](./template-management.md) 的高级功能
-- 了解 [设备检测](./device-detection.md) 的工作原理
-- 掌握 [缓存机制](./caching.md) 的配置方法
-- 查看 [API 参考](../api/) 了解详细接口
+- 查看 [安装指南](./installation.md)
+- 学习 [快速开始](./getting-started.md)
+- 了解 [自定义模板](./custom-templates.md)
+- 参考 [API 文档](/api/index.md)

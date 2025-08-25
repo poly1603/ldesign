@@ -1,0 +1,24 @@
+{
+  "name": "@ldesign/template-example-vue3-basic",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@ldesign/shared": "workspace:*",
+    "@ldesign/template": "workspace:*",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "@vitejs/plugin-vue-jsx": "^5.1.0",
+    "typescript": "^5.9.2",
+    "vite": "^5.0.0",
+    "vue-tsc": "^2.0.0"
+  }
+}

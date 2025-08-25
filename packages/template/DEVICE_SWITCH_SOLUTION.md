@@ -15,7 +15,7 @@
 
 #### 回退策略优先级
 1. **用户保存的选择** (最高优先级)
-2. **相同名称模板** 
+2. **相同名称模板**
 3. **智能回退策略**:
    - 查找 'default' 模板
    - 查找 'adaptive' 模板
@@ -27,7 +27,7 @@
 
 #### 所有登录模板已验证 ✅
 - **Desktop**: adaptive, classic, default, modern (4个模板)
-- **Mobile**: card, default, simple (3个模板)  
+- **Mobile**: card, default, simple (3个模板)
 - **Tablet**: adaptive, default, split (3个模板)
 
 #### 每个模板都正确实现了：
@@ -40,7 +40,7 @@
 
 #### 创建了专门的测试页面
 - 📍 **路径**: `/device-switch-test`
-- 🎯 **功能**: 
+- 🎯 **功能**:
   - 手动切换设备类型
   - 强制指定不存在的模板
   - 自动测试所有设备切换场景
@@ -61,7 +61,7 @@
 // TemplateManager.findFallbackTemplate()
 findFallbackTemplate(category: string, device: DeviceType, originalTemplate: string): TemplateMetadata | null {
   const availableTemplates = this.getTemplates(category, device)
-  
+
   if (availableTemplates.length === 0) return null
 
   // 1. 查找 'default' 模板
@@ -90,17 +90,17 @@ async render(options: TemplateRenderOptions): Promise<TemplateLoadResult> {
   let metadata = this.findTemplate(category, targetDevice, template)
   if (!metadata) {
     console.warn(`⚠️ 模板不存在: ${category}/${targetDevice}/${template}，尝试智能回退...`)
-    
+
     // 智能回退：尝试找到最佳替代模板
     metadata = this.findFallbackTemplate(category, targetDevice, template)
-    
+
     if (!metadata) {
       throw new Error(`No template or fallback found for: ${category}/${targetDevice}/${template}`)
     }
-    
+
     console.log(`🔄 使用回退模板: ${category}/${targetDevice}/${metadata.template}`)
   }
-  
+
   // 继续加载模板...
 }
 ```
@@ -109,7 +109,7 @@ async render(options: TemplateRenderOptions): Promise<TemplateLoadResult> {
 
 ```typescript
 // useTemplate.autoSwitchDeviceTemplate()
-const autoSwitchDeviceTemplate = async (newDevice: DeviceType, category?: string) => {
+async function autoSwitchDeviceTemplate(newDevice: DeviceType, category?: string) {
   // 获取新设备类型的可用模板
   const deviceTemplates = templates.value.filter(t => t.category === category && t.device === newDevice)
 
@@ -140,7 +140,8 @@ const autoSwitchDeviceTemplate = async (newDevice: DeviceType, category?: string
 
   try {
     await switchTemplate(category, newDevice, targetTemplate.template)
-  } catch (error) {
+  }
+  catch (error) {
     // 如果切换失败，尝试使用默认模板
     const defaultTemplate = deviceTemplates.find(t => t.template === 'default') || deviceTemplates[0]
     if (defaultTemplate) {
@@ -161,7 +162,7 @@ const autoSwitchDeviceTemplate = async (newDevice: DeviceType, category?: string
 3. 自动切换到 Mobile 'default' 模板
 ```
 
-### 场景 2: Mobile → Tablet  
+### 场景 2: Mobile → Tablet
 ```
 用户在 Mobile 使用 'card' 模板
 切换到 Tablet 设备：

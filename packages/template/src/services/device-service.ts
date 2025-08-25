@@ -1,355 +1,555 @@
 /**
- * 设备检测服务
- * 
- * 提供设备检测和监控功能，包括：
- * - 设备类型检测
- * - 屏幕尺寸监控
- * - 设备变化事件
- * - 设备信息收集
+ * 设备服务
+ * 提供高级设备检测、适配和回退功能
  */
 
-import type { DeviceType } from '../types'
+import type {
+  DeviceType,
+  EventData,
+  EventListener,
+  TemplateInfo,
+} from '../types'
 
 /**
  * 设备信息接口
  */
-export interface DeviceInfo {
-  /** 设备类型 */
+interface DeviceInfo {
   type: DeviceType
-  /** 屏幕宽度 */
-  width: number
-  /** 屏幕高度 */
-  height: number
-  /** 设备像素比 */
+  screenSize: {
+    width: number
+    height: number
+  }
+  orientation: 'portrait' | 'landscape'
   pixelRatio: number
-  /** 用户代理字符串 */
+  touchSupport: boolean
   userAgent: string
-  /** 是否为触摸设备 */
-  isTouchDevice: boolean
-  /** 操作系统 */
-  os: string
-  /** 浏览器 */
-  browser: string
-  /** 网络连接类型 */
-  connection?: string
-  /** 是否在线 */
-  isOnline: boolean
+  platform: string
+  browser: {
+    name: string
+    version: string
+  }
+  features: {
+    webgl: boolean
+    canvas: boolean
+    localStorage: boolean
+    sessionStorage: boolean
+    indexedDB: boolean
+    serviceWorker: boolean
+  }
 }
 
 /**
- * 设备检测配置
+ * 设备规则接口
  */
-export interface DeviceServiceConfig {
-  /** 移动设备断点 */
-  mobileBreakpoint?: number
-  /** 平板设备断点 */
-  tabletBreakpoint?: number
-  /** 是否启用调试模式 */
-  debug?: boolean
-  /** 是否监听窗口大小变化 */
-  watchResize?: boolean
-  /** 是否监听网络状态变化 */
-  watchNetwork?: boolean
-  /** 防抖延迟 (毫秒) */
-  debounceDelay?: number
+interface DeviceRule {
+  name: string
+  condition: (info: DeviceInfo) => boolean
+  deviceType: DeviceType
+  priority: number
 }
 
 /**
- * 设备变化事件
+ * 适配策略接口
  */
-export interface DeviceChangeEvent {
-  /** 新设备类型 */
-  newDevice: DeviceType
-  /** 旧设备类型 */
-  oldDevice: DeviceType
-  /** 设备信息 */
-  deviceInfo: DeviceInfo
-  /** 时间戳 */
-  timestamp: number
+interface AdaptationStrategy {
+  name: string
+  rules: DeviceRule[]
+  fallbackChain: Record<DeviceType, DeviceType[]>
+  customLogic?: (info: DeviceInfo, availableTypes: DeviceType[]) => DeviceType | null
 }
 
 /**
- * 设备检测服务类
+ * 设备服务类
  */
 export class DeviceService {
-  private config: Required<DeviceServiceConfig>
-  private currentDevice: DeviceType = 'desktop'
-  private deviceInfo: DeviceInfo
-  private listeners: Array<(event: DeviceChangeEvent) => void> = []
-  private resizeTimeout: number | null = null
+  private currentDeviceInfo: DeviceInfo | null = null
+  private adaptationStrategy: AdaptationStrategy
+  private listeners = new Map<string, EventListener[]>()
+  private resizeObserver: ResizeObserver | null = null
+  private orientationChangeHandler: (() => void) | null = null
 
-  constructor(config: DeviceServiceConfig = {}) {
-    this.config = {
-      mobileBreakpoint: 768,
-      tabletBreakpoint: 1024,
-      debug: false,
-      watchResize: true,
-      watchNetwork: true,
-      debounceDelay: 250,
-      ...config,
+  constructor() {
+    this.adaptationStrategy = this.createDefaultStrategy()
+    this.initializeDeviceDetection()
+  }
+
+  /**
+   * 创建默认适配策略
+   */
+  private createDefaultStrategy(): AdaptationStrategy {
+    return {
+      name: 'default',
+      rules: [
+        {
+          name: 'mobile-phone',
+          condition: info => info.screenSize.width <= 480 && info.touchSupport,
+          deviceType: 'mobile',
+          priority: 10,
+        },
+        {
+          name: 'mobile-landscape',
+          condition: info =>
+            info.screenSize.width <= 768
+            && info.orientation === 'landscape'
+            && info.touchSupport,
+          deviceType: 'mobile',
+          priority: 9,
+        },
+        {
+          name: 'tablet-portrait',
+          condition: info =>
+            info.screenSize.width > 480
+            && info.screenSize.width <= 768
+            && info.orientation === 'portrait'
+            && info.touchSupport,
+          deviceType: 'tablet',
+          priority: 8,
+        },
+        {
+          name: 'tablet-landscape',
+          condition: info =>
+            info.screenSize.width > 768
+            && info.screenSize.width <= 1024
+            && info.touchSupport,
+          deviceType: 'tablet',
+          priority: 7,
+        },
+        {
+          name: 'desktop-small',
+          condition: info =>
+            info.screenSize.width > 1024
+            && info.screenSize.width <= 1366,
+          deviceType: 'desktop',
+          priority: 6,
+        },
+        {
+          name: 'desktop-large',
+          condition: info => info.screenSize.width > 1366,
+          deviceType: 'desktop',
+          priority: 5,
+        },
+        {
+          name: 'fallback-mobile',
+          condition: info => info.touchSupport,
+          deviceType: 'mobile',
+          priority: 1,
+        },
+        {
+          name: 'fallback-desktop',
+          condition: () => true,
+          deviceType: 'desktop',
+          priority: 0,
+        },
+      ],
+      fallbackChain: {
+        mobile: ['mobile', 'tablet', 'desktop'],
+        tablet: ['tablet', 'desktop', 'mobile'],
+        desktop: ['desktop', 'tablet', 'mobile'],
+      },
+    }
+  }
+
+  /**
+   * 初始化设备检测
+   */
+  private initializeDeviceDetection(): void {
+    if (typeof window === 'undefined') {
+      return
     }
 
-    this.deviceInfo = this.collectDeviceInfo()
-    this.currentDevice = this.detectDeviceType()
+    // 初始检测
+    this.updateDeviceInfo()
 
-    if (this.config.watchResize) {
-      this.setupResizeListener()
+    // 监听窗口大小变化
+    this.setupResizeObserver()
+
+    // 监听方向变化
+    this.setupOrientationChangeListener()
+  }
+
+  /**
+   * 设置窗口大小监听器
+   */
+  private setupResizeObserver(): void {
+    if (typeof window === 'undefined' || !window.ResizeObserver) {
+      // 回退到 resize 事件
+      let resizeTimer: NodeJS.Timeout
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer)
+        resizeTimer = setTimeout(() => {
+          this.updateDeviceInfo()
+        }, 250)
+      })
+      return
     }
 
-    if (this.config.watchNetwork) {
-      this.setupNetworkListener()
+    this.resizeObserver = new ResizeObserver(() => {
+      this.updateDeviceInfo()
+    })
+
+    this.resizeObserver.observe(document.documentElement)
+  }
+
+  /**
+   * 设置方向变化监听器
+   */
+  private setupOrientationChangeListener(): void {
+    if (typeof window === 'undefined') {
+      return
     }
 
-    if (this.config.debug) {
-      console.log('📱 设备检测服务已初始化', this.deviceInfo)
+    this.orientationChangeHandler = () => {
+      // 延迟更新，等待方向变化完成
+      setTimeout(() => {
+        this.updateDeviceInfo()
+      }, 100)
     }
+
+    // 监听方向变化事件
+    if ('onorientationchange' in window) {
+      window.addEventListener('orientationchange', this.orientationChangeHandler)
+    }
+
+    // 监听屏幕方向API
+    if (screen.orientation) {
+      screen.orientation.addEventListener('change', this.orientationChangeHandler)
+    }
+  }
+
+  /**
+   * 更新设备信息
+   */
+  private updateDeviceInfo(): void {
+    const newDeviceInfo = this.detectDeviceInfo()
+    const oldDeviceType = this.currentDeviceInfo?.type
+    const newDeviceType = newDeviceInfo.type
+
+    this.currentDeviceInfo = newDeviceInfo
+
+    // 如果设备类型发生变化，触发事件
+    if (oldDeviceType && oldDeviceType !== newDeviceType) {
+      this.emit('device:change', {
+        oldDeviceType,
+        newDeviceType,
+        deviceInfo: newDeviceInfo,
+      })
+    }
+
+    this.emit('device:update', { deviceInfo: newDeviceInfo })
+  }
+
+  /**
+   * 检测设备信息
+   */
+  private detectDeviceInfo(): DeviceInfo {
+    const screenSize = {
+      width: window.innerWidth || 0,
+      height: window.innerHeight || 0,
+    }
+
+    const orientation = screenSize.width > screenSize.height ? 'landscape' : 'portrait'
+    const pixelRatio = window.devicePixelRatio || 1
+    const touchSupport = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+    const userAgent = navigator.userAgent
+    const platform = navigator.platform || ''
+
+    // 检测浏览器信息
+    const browser = this.detectBrowser(userAgent)
+
+    // 检测功能支持
+    const features = this.detectFeatures()
+
+    // 根据规则确定设备类型
+    const deviceType = this.determineDeviceType({
+      type: 'desktop', // 临时值
+      screenSize,
+      orientation,
+      pixelRatio,
+      touchSupport,
+      userAgent,
+      platform,
+      browser,
+      features,
+    })
+
+    return {
+      type: deviceType,
+      screenSize,
+      orientation,
+      pixelRatio,
+      touchSupport,
+      userAgent,
+      platform,
+      browser,
+      features,
+    }
+  }
+
+  /**
+   * 检测浏览器信息
+   */
+  private detectBrowser(userAgent: string): { name: string, version: string } {
+    const browsers = [
+      { name: 'Chrome', pattern: /Chrome\/(\d+)/ },
+      { name: 'Firefox', pattern: /Firefox\/(\d+)/ },
+      { name: 'Safari', pattern: /Safari\/(\d+)/ },
+      { name: 'Edge', pattern: /Edge\/(\d+)/ },
+      { name: 'IE', pattern: /MSIE (\d+)/ },
+    ]
+
+    for (const browser of browsers) {
+      const match = userAgent.match(browser.pattern)
+      if (match) {
+        return {
+          name: browser.name,
+          version: match[1],
+        }
+      }
+    }
+
+    return { name: 'Unknown', version: '0' }
+  }
+
+  /**
+   * 检测功能支持
+   */
+  private detectFeatures(): DeviceInfo['features'] {
+    const canvas = document.createElement('canvas')
+
+    return {
+      webgl: !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl')),
+      canvas: !!canvas.getContext('2d'),
+      localStorage: !!window.localStorage,
+      sessionStorage: !!window.sessionStorage,
+      indexedDB: !!window.indexedDB,
+      serviceWorker: 'serviceWorker' in navigator,
+    }
+  }
+
+  /**
+   * 根据规则确定设备类型
+   */
+  private determineDeviceType(info: Omit<DeviceInfo, 'type'>): DeviceType {
+    // 按优先级排序规则
+    const sortedRules = [...this.adaptationStrategy.rules].sort((a, b) => b.priority - a.priority)
+
+    // 找到第一个匹配的规则
+    for (const rule of sortedRules) {
+      if (rule.condition(info as DeviceInfo)) {
+        return rule.deviceType
+      }
+    }
+
+    // 如果没有规则匹配，返回默认值
+    return 'desktop'
+  }
+
+  /**
+   * 获取当前设备信息
+   */
+  getDeviceInfo(): DeviceInfo {
+    if (!this.currentDeviceInfo) {
+      this.updateDeviceInfo()
+    }
+    return this.currentDeviceInfo!
   }
 
   /**
    * 获取当前设备类型
    */
-  getDeviceType(): DeviceType {
-    return this.currentDevice
+  getCurrentDeviceType(): DeviceType {
+    return this.getDeviceInfo().type
   }
 
   /**
-   * 获取设备信息
+   * 选择最适合的模板
    */
-  getDeviceInfo(): DeviceInfo {
-    return { ...this.deviceInfo }
-  }
+  selectBestTemplate(
+    category: string,
+    availableTemplates: TemplateInfo[],
+  ): TemplateInfo | null {
+    const currentDeviceType = this.getCurrentDeviceType()
+    const categoryTemplates = availableTemplates.filter(t => t.category === category)
 
-  /**
-   * 监听设备变化
-   */
-  on(event: 'deviceChange', listener: (event: DeviceChangeEvent) => void): () => void {
-    this.listeners.push(listener)
-
-    // 返回取消监听函数
-    return () => {
-      const index = this.listeners.indexOf(listener)
-      if (index > -1) {
-        this.listeners.splice(index, 1)
-      }
-    }
-  }
-
-  /**
-   * 手动检测设备类型
-   */
-  detect(): DeviceType {
-    const oldDevice = this.currentDevice
-    this.deviceInfo = this.collectDeviceInfo()
-    this.currentDevice = this.detectDeviceType()
-
-    if (oldDevice !== this.currentDevice) {
-      this.emitDeviceChange(oldDevice, this.currentDevice)
+    if (categoryTemplates.length === 0) {
+      return null
     }
 
-    return this.currentDevice
-  }
+    // 按设备类型分组
+    const templatesByDevice = categoryTemplates.reduce((acc, template) => {
+      acc[template.deviceType] = template
+      return acc
+    }, {} as Record<DeviceType, TemplateInfo>)
 
-  /**
-   * 检测设备类型
-   */
-  private detectDeviceType(): DeviceType {
-    if (typeof window === 'undefined') {
-      return 'desktop'
-    }
+    // 应用回退链
+    const fallbackChain = this.adaptationStrategy.fallbackChain[currentDeviceType] || [currentDeviceType]
 
-    const width = window.innerWidth
-
-    if (width < this.config.mobileBreakpoint) {
-      return 'mobile'
-    }
-    else if (width < this.config.tabletBreakpoint) {
-      return 'tablet'
-    }
-    else {
-      return 'desktop'
-    }
-  }
-
-  /**
-   * 收集设备信息
-   */
-  private collectDeviceInfo(): DeviceInfo {
-    if (typeof window === 'undefined') {
-      return {
-        type: 'desktop',
-        width: 1920,
-        height: 1080,
-        pixelRatio: 1,
-        userAgent: '',
-        isTouchDevice: false,
-        os: 'unknown',
-        browser: 'unknown',
-        isOnline: true,
+    for (const deviceType of fallbackChain) {
+      if (templatesByDevice[deviceType]) {
+        return templatesByDevice[deviceType]
       }
     }
 
-    const userAgent = navigator.userAgent
-    const width = window.innerWidth
-    const height = window.innerHeight
-    const pixelRatio = window.devicePixelRatio || 1
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
-    const isOnline = navigator.onLine
-
-    return {
-      type: this.detectDeviceType(),
-      width,
-      height,
-      pixelRatio,
-      userAgent,
-      isTouchDevice,
-      os: this.detectOS(userAgent),
-      browser: this.detectBrowser(userAgent),
-      connection: this.getConnectionType(),
-      isOnline,
-    }
-  }
-
-  /**
-   * 检测操作系统
-   */
-  private detectOS(userAgent: string): string {
-    if (userAgent.includes('Windows')) return 'Windows'
-    if (userAgent.includes('Mac OS')) return 'macOS'
-    if (userAgent.includes('Linux')) return 'Linux'
-    if (userAgent.includes('Android')) return 'Android'
-    if (userAgent.includes('iOS') || userAgent.includes('iPhone') || userAgent.includes('iPad')) return 'iOS'
-    return 'Unknown'
-  }
-
-  /**
-   * 检测浏览器
-   */
-  private detectBrowser(userAgent: string): string {
-    if (userAgent.includes('Chrome')) return 'Chrome'
-    if (userAgent.includes('Firefox')) return 'Firefox'
-    if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) return 'Safari'
-    if (userAgent.includes('Edge')) return 'Edge'
-    if (userAgent.includes('Opera')) return 'Opera'
-    return 'Unknown'
-  }
-
-  /**
-   * 获取网络连接类型
-   */
-  private getConnectionType(): string | undefined {
-    if ('connection' in navigator) {
-      const connection = (navigator as any).connection
-      return connection?.effectiveType || connection?.type
-    }
-    return undefined
-  }
-
-  /**
-   * 设置窗口大小变化监听器
-   */
-  private setupResizeListener(): void {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    const handleResize = () => {
-      // 防抖处理
-      if (this.resizeTimeout) {
-        clearTimeout(this.resizeTimeout)
-      }
-
-      this.resizeTimeout = window.setTimeout(() => {
-        const oldDevice = this.currentDevice
-        this.deviceInfo = this.collectDeviceInfo()
-        this.currentDevice = this.detectDeviceType()
-
-        if (oldDevice !== this.currentDevice) {
-          this.emitDeviceChange(oldDevice, this.currentDevice)
-        }
-      }, this.config.debounceDelay)
-    }
-
-    window.addEventListener('resize', handleResize)
-    window.addEventListener('orientationchange', handleResize)
-
-    if (this.config.debug) {
-      console.log('📱 窗口大小变化监听器已设置')
-    }
-  }
-
-  /**
-   * 设置网络状态监听器
-   */
-  private setupNetworkListener(): void {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    const handleNetworkChange = () => {
-      this.deviceInfo = this.collectDeviceInfo()
-
-      if (this.config.debug) {
-        console.log('🌐 网络状态变化:', {
-          isOnline: this.deviceInfo.isOnline,
-          connection: this.deviceInfo.connection,
-        })
+    // 如果有自定义逻辑，尝试使用
+    if (this.adaptationStrategy.customLogic) {
+      const availableTypes = Object.keys(templatesByDevice) as DeviceType[]
+      const selectedType = this.adaptationStrategy.customLogic(this.getDeviceInfo(), availableTypes)
+      if (selectedType && templatesByDevice[selectedType]) {
+        return templatesByDevice[selectedType]
       }
     }
 
-    window.addEventListener('online', handleNetworkChange)
-    window.addEventListener('offline', handleNetworkChange)
+    return null
+  }
 
-    // 监听网络连接变化
-    if ('connection' in navigator) {
-      const connection = (navigator as any).connection
-      if (connection) {
-        connection.addEventListener('change', handleNetworkChange)
-      }
+  /**
+   * 检查模板是否存在
+   */
+  hasTemplate(
+    category: string,
+    availableTemplates: TemplateInfo[],
+    deviceType?: DeviceType,
+  ): boolean {
+    const targetDeviceType = deviceType || this.getCurrentDeviceType()
+    return availableTemplates.some(t =>
+      t.category === category && t.deviceType === targetDeviceType,
+    )
+  }
+
+  /**
+   * 设置自定义适配策略
+   */
+  setAdaptationStrategy(strategy: Partial<AdaptationStrategy>): void {
+    this.adaptationStrategy = {
+      ...this.adaptationStrategy,
+      ...strategy,
+      rules: strategy.rules || this.adaptationStrategy.rules,
+      fallbackChain: strategy.fallbackChain || this.adaptationStrategy.fallbackChain,
     }
 
-    if (this.config.debug) {
-      console.log('🌐 网络状态监听器已设置')
+    // 重新检测设备类型
+    this.updateDeviceInfo()
+  }
+
+  /**
+   * 添加自定义规则
+   */
+  addRule(rule: DeviceRule): void {
+    this.adaptationStrategy.rules.push(rule)
+    this.adaptationStrategy.rules.sort((a, b) => b.priority - a.priority)
+    this.updateDeviceInfo()
+  }
+
+  /**
+   * 移除规则
+   */
+  removeRule(ruleName: string): boolean {
+    const index = this.adaptationStrategy.rules.findIndex(r => r.name === ruleName)
+    if (index > -1) {
+      this.adaptationStrategy.rules.splice(index, 1)
+      this.updateDeviceInfo()
+      return true
+    }
+    return false
+  }
+
+  /**
+   * 获取适配策略
+   */
+  getAdaptationStrategy(): AdaptationStrategy {
+    return { ...this.adaptationStrategy }
+  }
+
+  /**
+   * 强制设备类型（用于测试）
+   */
+  forceDeviceType(deviceType: DeviceType): void {
+    if (this.currentDeviceInfo) {
+      const oldDeviceType = this.currentDeviceInfo.type
+      this.currentDeviceInfo.type = deviceType
+
+      this.emit('device:change', {
+        oldDeviceType,
+        newDeviceType: deviceType,
+        forced: true,
+        deviceInfo: this.currentDeviceInfo,
+      })
     }
   }
 
   /**
-   * 发射设备变化事件
+   * 重置设备检测
    */
-  private emitDeviceChange(oldDevice: DeviceType, newDevice: DeviceType): void {
-    const event: DeviceChangeEvent = {
-      oldDevice,
-      newDevice,
-      deviceInfo: { ...this.deviceInfo },
+  resetDetection(): void {
+    this.updateDeviceInfo()
+  }
+
+  /**
+   * 事件发射器
+   */
+  private emit(type: string, data: any): void {
+    const eventData: EventData = {
+      type: type as any,
       timestamp: Date.now(),
+      data,
     }
 
-    this.listeners.forEach((listener) => {
+    const listeners = this.listeners.get(type) || []
+    listeners.forEach((listener) => {
       try {
-        listener(event)
+        listener(eventData)
       }
       catch (error) {
-        console.error('设备变化事件监听器错误:', error)
+        console.error(`Error in device service event listener for ${type}:`, error)
       }
     })
+  }
 
-    if (this.config.debug) {
-      console.log(`📱 设备变化: ${oldDevice} -> ${newDevice}`, event)
+  /**
+   * 添加事件监听器
+   */
+  on(type: string, listener: EventListener): void {
+    if (!this.listeners.has(type)) {
+      this.listeners.set(type, [])
+    }
+    this.listeners.get(type)!.push(listener)
+  }
+
+  /**
+   * 移除事件监听器
+   */
+  off(type: string, listener: EventListener): void {
+    const listeners = this.listeners.get(type)
+    if (listeners) {
+      const index = listeners.indexOf(listener)
+      if (index > -1) {
+        listeners.splice(index, 1)
+      }
     }
   }
 
   /**
-   * 销毁设备服务
+   * 清理资源
    */
-  destroy(): void {
-    this.listeners = []
-
-    if (this.resizeTimeout) {
-      clearTimeout(this.resizeTimeout)
-      this.resizeTimeout = null
+  dispose(): void {
+    // 清理 ResizeObserver
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = null
     }
 
-    if (this.config.debug) {
-      console.log('📱 设备检测服务已销毁')
+    // 清理方向变化监听器
+    if (this.orientationChangeHandler && typeof window !== 'undefined') {
+      if ('onorientationchange' in window) {
+        window.removeEventListener('orientationchange', this.orientationChangeHandler)
+      }
+      if (screen.orientation) {
+        screen.orientation.removeEventListener('change', this.orientationChangeHandler)
+      }
+      this.orientationChangeHandler = null
     }
+
+    this.listeners.clear()
+    this.currentDeviceInfo = null
   }
 }

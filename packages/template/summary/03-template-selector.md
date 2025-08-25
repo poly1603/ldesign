@@ -77,7 +77,7 @@ function filterTemplates(
   templates: TemplateMetadata[],
   options: FilterOptions
 ) {
-  return templates.filter(template => {
+  return templates.filter((template) => {
     // 1. 按分类筛选
     if (options.category && template.category !== options.category) {
       return false
@@ -92,10 +92,10 @@ function filterTemplates(
     if (options.searchQuery) {
       const query = options.searchQuery.toLowerCase()
       return (
-        template.template.toLowerCase().includes(query) ||
-        template.config.name.toLowerCase().includes(query) ||
-        template.config.description?.toLowerCase().includes(query) ||
-        template.config.tags?.some(tag => tag.toLowerCase().includes(query))
+        template.template.toLowerCase().includes(query)
+        || template.config.name.toLowerCase().includes(query)
+        || template.config.description?.toLowerCase().includes(query)
+        || template.config.tags?.some(tag => tag.toLowerCase().includes(query))
       )
     }
 
@@ -208,6 +208,7 @@ const { availableTemplates } = useTemplate({
 
 ```vue
 <TemplateSelector @template-change="selectedTemplate = $event" />
+
 <TemplateRenderer :template="selectedTemplate" />
 ```
 

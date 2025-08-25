@@ -1,351 +1,498 @@
 /**
- * useTemplate 组合式函数 - 重构版本
- *
- * 提供响应式的模板管理功能
+ * useTemplate 组合式函数
+ * 提供模板管理的响应式接口
  */
 
+// Vue 类型兼容性处理
+import type { VueComponent } from '../../types'
 import type {
   DeviceType,
-  TemplateLoadResult,
-  TemplateMetadata,
-  TemplateRenderOptions,
-  TemplateScanResult,
-  UseTemplateOptions,
-  UseTemplateReturn,
+  EventData,
+  TemplateInfo,
+  TemplateManagerConfig,
 } from '../../types'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { TemplateManager } from '../../core/manager'
-import { destroyGlobalTemplateManager } from '../plugin'
+
+let vueRef: any, vueComputed: any, vueOnMounted: any, vueOnUnmounted: any, vueWatch: any
+try {
+  const vue = require('vue')
+  vueRef = vue.ref
+  vueComputed = vue.computed
+  vueOnMounted = vue.onMounted
+  vueOnUnmounted = vue.onUnmounted
+  vueWatch = vue.watch
+}
+catch {
+  // 在非Vue环境中提供mock实现
+  vueRef = (value: any) => ({ value })
+  vueComputed = (fn: any) => ({ value: fn() })
+  vueOnMounted = (fn: any) => fn()
+  vueOnUnmounted = (fn: any) => { }
+  vueWatch = (source: any, callback: any) => { }
+}
+
+const ref = vueRef
+const computed = vueComputed
+const onMounted = vueOnMounted
+const onUnmounted = vueOnUnmounted
+const watch = vueWatch
 
 /**
- * 创建模板管理器实例
+ * useTemplate 选项接口
  */
-export function createTemplateManager(options?: UseTemplateOptions) {
-  return new TemplateManager(options)
+export interface UseTemplateOptions {
+  template: string
+  deviceType?: DeviceType
+  scanPaths?: string | string[]
+  autoLoad?: boolean
+  config?: TemplateManagerConfig
+}
+
+/**
+ * useTemplate 返回值接口
+ */
+export interface UseTemplateReturn {
+  // 状态
+  templateComponent: any
+  loading: any
+  error: any
+  currentDeviceType: any
+  templateInfo: any
+
+  // 方法
+  loadTemplate: (template: string, deviceType?: DeviceType) => Promise<void>
+  clearCache: (template?: string, deviceType?: DeviceType) => void
+  preloadTemplate: (template: string, deviceType?: DeviceType) => Promise<void>
+  getTemplateInfo: (template: string, deviceType?: DeviceType) => TemplateInfo | null
+  hasTemplate: (template: string, deviceType?: DeviceType) => boolean
+
+  // 管理器实例
+  manager: TemplateManager
+}
+
+// 全局管理器实例缓存
+const managerCache = new Map<string, TemplateManager>()
+
+/**
+ * 获取或创建管理器实例
+ */
+function getManager(config?: TemplateManagerConfig): TemplateManager {
+  const configKey = JSON.stringify(config || {})
+
+  if (!managerCache.has(configKey)) {
+    const manager = new TemplateManager(config)
+    managerCache.set(configKey, manager)
+  }
+
+  return managerCache.get(configKey)!
 }
 
 /**
  * useTemplate 组合式函数
  */
-export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn {
-  // 创建管理器实例，启用存储功能
-  const manager = new TemplateManager({
-    ...options,
-    storage: {
-      key: 'ldesign-template-selections',
-      storage: 'localStorage',
-      ...options.storage,
-    },
-  })
+export function useTemplate(
+  config?: TemplateManagerConfig,
+  options?: UseTemplateOptions
+): UseTemplateReturn
+export function useTemplate(
+  optionsOrConfig?: UseTemplateOptions | TemplateManagerConfig
+): UseTemplateReturn
+export function useTemplate(
+  configOrOptions?: TemplateManagerConfig | UseTemplateOptions,
+  options?: UseTemplateOptions,
+): UseTemplateReturn {
+  // 处理参数重载
+  let config: TemplateManagerConfig | undefined
+  let templateOptions: UseTemplateOptions
 
+  if (arguments.length === 1) {
+    // 单参数情况，判断是config还是options
+    const arg = configOrOptions as any
+    if (arg && ('template' in arg || 'deviceType' in arg || 'scanPaths' in arg)) {
+      // 是UseTemplateOptions
+      templateOptions = arg as UseTemplateOptions
+      config = undefined
+    }
+    else {
+      // 是TemplateManagerConfig
+      config = arg as TemplateManagerConfig
+      templateOptions = { template: '', autoLoad: false }
+    }
+  }
+  else {
+    // 双参数情况
+    config = configOrOptions as TemplateManagerConfig
+    templateOptions = options || { template: '', autoLoad: false }
+  }
   // 响应式状态
-  const currentDevice = ref<DeviceType>(manager.getCurrentDevice()) // 立即检测设备类型
-  const currentTemplate = ref<TemplateMetadata | null>(null)
+  const templateComponent = ref<VueComponent | null>(null)
   const loading = ref(false)
   const error = ref<Error | null>(null)
-  const templates = ref<TemplateMetadata[]>([])
+  const currentDeviceType = ref<DeviceType>('desktop')
+  const templateInfo = ref<TemplateInfo | null>(null)
 
-  // 计算属性 - 根据选项过滤模板
-  const availableTemplates = computed(() => {
-    let filtered = templates.value
+  // 获取管理器实例
+  const manager = getManager(config || templateOptions.config)
 
-    if (options.category) {
-      filtered = filtered.filter((t: any) => t.category === options.category)
-    }
+  // 计算属性
+  const isInitialized = computed(() => manager.getStatus().initialized)
 
-    if (options.deviceType) {
-      filtered = filtered.filter((t: any) => t.device === options.deviceType)
-    }
+  // 事件监听器
+  const eventListeners = new Map<string, (data: EventData) => void>()
 
-    return filtered
-  })
-
-  // 计算属性 - 可用分类列表
-  const availableCategories = computed(() => {
-    const categories = new Set(templates.value.map((t: any) => t.category))
-    return Array.from(categories)
-  })
-
-  // 计算属性 - 可用设备类型列表
-  const availableDevices = computed(() => {
-    const devices = new Set(templates.value.map((t: any) => t.device))
-    return Array.from(devices)
-  })
-
-  // 扫描模板
-  const scanTemplates = async (): Promise<TemplateScanResult> => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const result = await manager.scanTemplates()
-      templates.value = result.templates
-      return result
-    }
-    catch (err) {
-      error.value = err as Error
-      throw err
-    }
-    finally {
-      loading.value = false
-    }
-  }
-
-  // 渲染模板
-  const render = async (options: TemplateRenderOptions): Promise<TemplateLoadResult> => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const result = await manager.render(options)
-      currentTemplate.value = result.metadata
-      return result
-    }
-    catch (err) {
-      error.value = err as Error
-      throw err
-    }
-    finally {
-      loading.value = false
-    }
-  }
-
-  // 切换模板
-  const switchTemplate = async (category: string, device: DeviceType, template: string): Promise<void> => {
-    await render({ category, device, template })
-
-    // 保存用户的模板选择到存储
-    if (manager.storageManager) {
-      manager.storageManager.saveSelection(category, device, template)
-
-      if (options.debug) {
-        console.log(`💾 保存模板选择: ${category}:${device} -> ${template}`)
-      }
-    }
-  }
-
-  // 获取模板列表
-  const getTemplates = (category?: string, device?: DeviceType): TemplateMetadata[] => {
-    return manager.getTemplates(category, device)
-  }
-
-  // 检查模板是否存在
-  const hasTemplate = (category: string, device: DeviceType, template: string): boolean => {
-    return manager.hasTemplate(category, device, template)
-  }
-
-  // 清空缓存
-  const clearCache = (): void => {
-    manager.clearCache()
-  }
-
-  // 刷新模板列表
-  const refresh = async (): Promise<void> => {
-    await manager.refresh()
-    templates.value = manager.getTemplates()
-  }
-
-  // 自动切换设备模板
-  const autoSwitchDeviceTemplate = async (newDevice: DeviceType, category?: string) => {
-    if (!category && options.category) {
-      category = options.category
-    }
-
-    if (!category) {
-      console.warn('无法自动切换模板：未指定分类')
-      return
-    }
-
-    // 获取新设备类型的可用模板
-    const deviceTemplates = templates.value.filter((t: any) => t.category === category && t.device === newDevice)
-
-    if (deviceTemplates.length === 0) {
-      console.warn(`没有找到 ${newDevice} 设备的 ${category} 模板`)
-      return
-    }
-
-    let targetTemplate: any = null
-
-    // 1. 优先使用用户之前保存的选择
-    if (manager.storageManager) {
-      const savedSelection = manager.storageManager.getSelection(category, newDevice)
-      if (savedSelection) {
-        targetTemplate = deviceTemplates.find((t: any) => t.template === savedSelection.template)
-
-        if (targetTemplate && options.debug) {
-          console.log(`📋 使用保存的模板选择: ${savedSelection.template}`)
-        }
-      }
-    }
-
-    // 2. 如果没有保存的选择，优先选择当前模板在新设备上的对应版本
-    if (!targetTemplate && currentTemplate.value) {
-      targetTemplate = deviceTemplates.find((t: any) => t.template === currentTemplate.value?.template)
-
-      if (targetTemplate && options.debug) {
-        console.log(`🎯 找到相同名称的模板: ${targetTemplate.template}`)
-      }
-    }
-
-    // 3. 如果当前模板在新设备上不存在，使用智能回退策略
-    if (!targetTemplate) {
-      // 使用 manager 的智能回退逻辑
-      targetTemplate = manager.findFallbackTemplate(category, newDevice, currentTemplate.value?.template || '')
-
-      if (targetTemplate && options.debug) {
-        console.log(`🔄 使用智能回退模板: ${targetTemplate.template}`)
-      }
-    }
-
-    // 4. 最后的保险：使用第一个可用模板
-    if (!targetTemplate) {
-      targetTemplate = deviceTemplates[0]
-
-      if (options.debug) {
-        console.log(`⚠️ 使用第一个可用模板: ${targetTemplate.template}`)
-      }
-    }
-
-    try {
-      await switchTemplate(category, newDevice, targetTemplate.template)
-
-      if (options.debug) {
-        console.log(`✅ 成功切换到 ${newDevice} 设备模板: ${targetTemplate.template}`)
-      }
-    }
-    catch (error) {
-      console.error('❌ 自动切换模板失败:', error)
-
-      // 如果切换失败，尝试使用默认模板
-      try {
-        const defaultTemplate = deviceTemplates.find((t: any) => t.template === 'default') || deviceTemplates[0]
-        if (defaultTemplate) {
-          await switchTemplate(category, newDevice, defaultTemplate.template)
-          console.log(`🔄 回退到默认模板: ${defaultTemplate.template}`)
-        }
-      }
-      catch (fallbackError) {
-        console.error('❌ 回退模板也失败了:', fallbackError)
-      }
-    }
-  }
-
-  // 设置事件监听器
+  /**
+   * 设置事件监听器
+   */
   const setupEventListeners = () => {
-    manager.on('device:change', async (event: any) => {
-      const oldDevice = currentDevice.value
-      const newDevice = event.newDevice
-
-      if (options.debug) {
-        console.log(`🎯 useTemplate 接收到设备变化事件: ${oldDevice} -> ${newDevice}`)
-      }
-
-      currentDevice.value = newDevice
-
-      // 如果启用了自动设备检测，自动切换模板
-      if (options.autoDetectDevice !== false && oldDevice !== newDevice) {
-        if (options.debug) {
-          console.log(`🔄 useTemplate 自动切换设备模板: ${oldDevice} -> ${newDevice}`)
-        }
-        await autoSwitchDeviceTemplate(newDevice)
-      }
-    })
-
-    manager.on('template:change', (event: any) => {
-      currentTemplate.value = event.newTemplate
-    })
-
-    manager.on('scan:complete', (event: any) => {
-      templates.value = event.scanResult.templates
-    })
-  }
-
-  // 初始化模板选择
-  const initializeTemplate = async () => {
-    const device = currentDevice.value
-    const category = options.category
-
-    if (!category)
-      return
-
-    // 1. 优先使用 initialTemplate 配置
-    if (options.initialTemplate) {
-      const { category: initCategory, device: initDevice, template } = options.initialTemplate
-      await switchTemplate(initCategory, initDevice || device, template)
-      return
-    }
-
-    // 2. 尝试恢复用户之前保存的选择
-    if (manager.storageManager) {
-      const savedSelection = manager.storageManager.getSelection(category, device)
-      if (savedSelection) {
-        // 检查保存的模板是否仍然可用
-        const isTemplateAvailable = templates.value.some(
-          (t: any) => t.category === category && t.device === device && t.template === savedSelection.template,
-        )
-
-        if (isTemplateAvailable) {
-          await switchTemplate(category, device, savedSelection.template)
-          return
+    // 设备变化监听
+    const deviceChangeListener = (data: EventData) => {
+      if (data.data?.newDeviceType) {
+        currentDeviceType.value = data.data.newDeviceType
+        // 自动重新加载当前模板
+        if (options.template && options.autoLoad) {
+          loadTemplate(options.template)
         }
       }
     }
 
-    // 3. 如果没有保存的选择，使用第一个可用模板
-    const availableForDevice = templates.value.filter((t: any) => t.category === category && t.device === device)
+    // 模板加载事件监听
+    const loadStartListener = () => {
+      loading.value = true
+      error.value = null
+    }
 
-    if (availableForDevice.length > 0) {
-      await switchTemplate(category, device, availableForDevice[0].template)
+    const loadCompleteListener = (data: EventData) => {
+      loading.value = false
+      if (data.data?.component) {
+        templateComponent.value = data.data.component
+      }
+    }
+
+    const loadErrorListener = (data: EventData) => {
+      loading.value = false
+      error.value = data.data?.error || new Error('Unknown error')
+      templateComponent.value = null
+    }
+
+    // 注册监听器
+    manager.on('device:change', deviceChangeListener)
+    manager.on('template:load:start', loadStartListener)
+    manager.on('template:load:complete', loadCompleteListener)
+    manager.on('template:load:error', loadErrorListener)
+
+    // 保存监听器引用以便清理
+    eventListeners.set('device:change', deviceChangeListener)
+    eventListeners.set('template:load:start', loadStartListener)
+    eventListeners.set('template:load:complete', loadCompleteListener)
+    eventListeners.set('template:load:error', loadErrorListener)
+  }
+
+  /**
+   * 清理事件监听器
+   */
+  const cleanupEventListeners = () => {
+    eventListeners.forEach((listener, event) => {
+      manager.off(event, listener)
+    })
+    eventListeners.clear()
+  }
+
+  /**
+   * 加载模板
+   */
+  const loadTemplate = async (template: string, deviceType?: DeviceType): Promise<void> => {
+    try {
+      loading.value = true
+      error.value = null
+
+      // 确保管理器已初始化
+      if (!isInitialized.value) {
+        await manager.initialize()
+      }
+
+      // 渲染模板
+      const result = await manager.render(template, deviceType)
+
+      if (result.success && result.component) {
+        templateComponent.value = result.component
+        templateInfo.value = result.templateInfo
+        currentDeviceType.value = result.templateInfo.deviceType
+      }
+      else {
+        throw result.error || new Error('Failed to load template')
+      }
+    }
+    catch (err) {
+      error.value = err as Error
+      templateComponent.value = null
+      templateInfo.value = null
+    }
+    finally {
+      loading.value = false
     }
   }
 
-  // 生命周期
-  onMounted(async () => {
-    setupEventListeners()
+  /**
+   * 清除缓存
+   */
+  const clearCache = (template?: string, deviceType?: DeviceType): void => {
+    manager.clearCache(template, deviceType)
+  }
 
-    // 确保设备类型是最新的（可能在初始化后发生了变化）
-    const latestDevice = manager.getCurrentDevice()
-    if (latestDevice !== currentDevice.value) {
-      currentDevice.value = latestDevice
+  /**
+   * 预加载模板
+   */
+  const preloadTemplate = async (template: string, deviceType?: DeviceType): Promise<void> => {
+    try {
+      await manager.preloadTemplate(template, deviceType)
     }
-
-    // 先扫描模板
-    if (options.autoScan !== false) {
-      await scanTemplates()
+    catch (err) {
+      console.warn('Failed to preload template:', template, err)
     }
+  }
 
-    // 然后初始化模板选择
-    await initializeTemplate()
+  /**
+   * 获取模板信息
+   */
+  const getTemplateInfo = (template: string, deviceType?: DeviceType): TemplateInfo | null => {
+    return manager.getTemplateInfo(template, deviceType)
+  }
+
+  /**
+   * 检查模板是否存在
+   */
+  const hasTemplate = (template: string, deviceType?: DeviceType): boolean => {
+    return manager.hasTemplate(template, deviceType)
+  }
+
+  /**
+   * 初始化
+   */
+  const initialize = async () => {
+    try {
+      // 设置事件监听器
+      setupEventListeners()
+
+      // 更新当前设备类型
+      currentDeviceType.value = manager.getDeviceInfo().deviceType
+
+      // 如果启用自动加载，加载初始模板
+      if (templateOptions.autoLoad && templateOptions.template) {
+        await loadTemplate(templateOptions.template, templateOptions.deviceType)
+      }
+    }
+    catch (err) {
+      console.error('Failed to initialize useTemplate:', err)
+      error.value = err as Error
+    }
+  }
+
+  // 监听选项变化
+  watch(() => templateOptions.template, (newTemplate, oldTemplate) => {
+    if (newTemplate !== oldTemplate && templateOptions.autoLoad) {
+      loadTemplate(newTemplate, templateOptions.deviceType)
+    }
+  })
+
+  watch(() => templateOptions.deviceType, (newDeviceType, oldDeviceType) => {
+    if (newDeviceType !== oldDeviceType && templateOptions.template && templateOptions.autoLoad) {
+      loadTemplate(templateOptions.template, newDeviceType)
+    }
+  })
+
+  // 生命周期钩子
+  onMounted(() => {
+    initialize()
   })
 
   onUnmounted(() => {
-    manager.destroy()
+    cleanupEventListeners()
   })
+
+  // 添加缺失的方法
+  const scanTemplates = async () => {
+    return await manager.scanTemplates()
+  }
+
+  const switchTemplate = async (category: string, deviceType?: DeviceType) => {
+    return await loadTemplate(category, deviceType)
+  }
+
+  const render = async (category: string, deviceType?: DeviceType) => {
+    return await manager.render(category, deviceType)
+  }
+
+  const refresh = async () => {
+    return await manager.refresh()
+  }
 
   return {
     // 状态
-    currentDevice,
-    currentTemplate,
+    templateComponent,
     loading,
     error,
-    availableTemplates,
-    availableCategories,
-    availableDevices,
+    currentDeviceType,
+    templateInfo,
 
     // 方法
-    scanTemplates,
-    render,
-    switchTemplate,
-    getTemplates,
-    hasTemplate,
+    loadTemplate,
     clearCache,
+    preloadTemplate,
+    getTemplateInfo,
+    hasTemplate,
+    scanTemplates,
+    switchTemplate,
+    render,
     refresh,
+
+    // 管理器实例
+    manager,
   }
 }
 
 /**
- * 销毁全局模板管理器（测试用）
+ * useTemplateScanner 组合式函数
+ * 提供模板扫描功能
  */
-export function destroyGlobalManager(): void {
-  destroyGlobalTemplateManager()
+export interface UseTemplateScannerReturn {
+  // 状态
+  scanning: Ref<boolean>
+  templateIndex: Ref<any>
+  scanError: Ref<Error | null>
+
+  // 方法
+  rescan: (paths?: string | string[]) => Promise<void>
+  getTemplateInfo: (category: string) => any
+  hasTemplate: (category: string, deviceType?: DeviceType) => boolean
+  getCategories: () => string[]
+  getAvailableDeviceTypes: (category: string) => DeviceType[]
+}
+
+export function useTemplateScanner(config?: TemplateManagerConfig): UseTemplateScannerReturn {
+  const scanning = ref(false)
+  const templateIndex = ref(null)
+  const scanError = ref<Error | null>(null)
+
+  const manager = getManager(config)
+
+  const rescan = async (paths?: string | string[]) => {
+    try {
+      scanning.value = true
+      scanError.value = null
+
+      if (paths) {
+        // 更新扫描路径
+        manager.updateConfig({
+          scanner: { scanPaths: paths },
+        })
+      }
+
+      const result = await manager.rescan()
+      if (result.success) {
+        templateIndex.value = result.index
+      }
+      else {
+        throw new Error('Scan failed')
+      }
+    }
+    catch (err) {
+      scanError.value = err as Error
+    }
+    finally {
+      scanning.value = false
+    }
+  }
+
+  const getTemplateInfo = (category: string) => {
+    return manager.getTemplateInfo(category)
+  }
+
+  const hasTemplate = (category: string, deviceType?: DeviceType): boolean => {
+    return manager.hasTemplate(category, deviceType)
+  }
+
+  const getCategories = (): string[] => {
+    return manager.getCategories()
+  }
+
+  const getAvailableDeviceTypes = (category: string): DeviceType[] => {
+    return manager.getAvailableDeviceTypes(category)
+  }
+
+  // 初始化时获取当前索引
+  onMounted(() => {
+    const status = manager.getStatus()
+    if (status.initialized) {
+      templateIndex.value = manager.getAllTemplates()
+    }
+  })
+
+  return {
+    scanning,
+    templateIndex,
+    scanError,
+    rescan,
+    getTemplateInfo,
+    hasTemplate,
+    getCategories,
+    getAvailableDeviceTypes,
+  }
+}
+
+/**
+ * useTemplateCache 组合式函数
+ * 提供缓存管理功能
+ */
+export interface UseTemplateCacheReturn {
+  // 状态
+  cacheStats: Ref<any>
+
+  // 方法
+  clearCache: (template?: string, deviceType?: DeviceType) => void
+  getCacheStats: () => any
+  preloadTemplates: (templates: Array<{ category: string, deviceType?: DeviceType }>) => Promise<void>
+}
+
+export function useTemplateCache(config?: TemplateManagerConfig): UseTemplateCacheReturn {
+  const cacheStats = ref({})
+
+  const manager = getManager(config)
+
+  const clearCache = (template?: string, deviceType?: DeviceType) => {
+    manager.clearCache(template, deviceType)
+    updateCacheStats()
+  }
+
+  const getCacheStats = () => {
+    return manager.getCacheStats()
+  }
+
+  const preloadTemplates = async (templates: Array<{ category: string, deviceType?: DeviceType }>) => {
+    const promises = templates.map(({ category, deviceType }) =>
+      manager.preloadTemplate(category, deviceType),
+    )
+    await Promise.allSettled(promises)
+    updateCacheStats()
+  }
+
+  const updateCacheStats = () => {
+    cacheStats.value = getCacheStats()
+  }
+
+  // 定期更新缓存统计
+  onMounted(() => {
+    updateCacheStats()
+    const timer = setInterval(updateCacheStats, 5000) // 每5秒更新一次
+
+    onUnmounted(() => {
+      clearInterval(timer)
+    })
+  })
+
+  return {
+    cacheStats,
+    clearCache,
+    getCacheStats,
+    preloadTemplates,
+  }
 }

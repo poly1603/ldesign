@@ -82,7 +82,7 @@ export default defineComponent({
     // 计算布局模式
     const updateLayoutMode = () => {
       const width = screenWidth.value
-      const height = screenHeight.value
+      const _height = screenHeight.value
 
       if (width < 768) {
         layoutMode.value = 'compact'

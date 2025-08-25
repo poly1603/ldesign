@@ -1,6 +1,6 @@
 import type { VNode } from 'vue'
 import { useTNodeJSX } from '@ldesign/shared'
-import { computed, defineComponent, onMounted, reactive, ref } from 'vue'
+import { computed, defineComponent } from 'vue'
 
 import props from '../../props'
 import './index.less'

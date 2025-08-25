@@ -1,101 +1,90 @@
-# TemplateManager API
+# TemplateManager
 
-TemplateManager 是 LDesign Template 系统的核心类，负责模板的管理、加载、缓存和渲染。现在包含了智能预加载、性能监控等高级功能。
+> 🎭 模板管理器 - 整个模板系统的核心大脑！
 
-## 构造函数
+`TemplateManager` 是模板系统的核心类，负责模板的扫描、加载、渲染和管理。
+
+## 🚀 基础用法
+
+```typescript
+import { TemplateManager } from '@ldesign/template'
+
+const manager = new TemplateManager({
+  enableCache: true,
+  defaultDevice: 'desktop'
+})
+```
+
+## 🔧 构造函数
 
 ### `new TemplateManager(config?)`
 
 创建一个新的模板管理器实例。
 
 **参数:**
-
 - `config` (可选): `TemplateManagerConfig` - 配置选项
 
 **示例:**
-
 ```typescript
-import { TemplateManager } from '@ldesign/template'
-
 const manager = new TemplateManager({
-  defaultDevice: 'desktop',
-  autoScan: true,
+  enableCache: true,
   autoDetectDevice: true,
-  cacheEnabled: true,
-  cacheSize: 100,
-  cacheTTL: 10 * 60 * 1000,
+  defaultDevice: 'desktop',
+  debug: false
 })
 ```
 
-## 配置选项
-
-### `TemplateManagerConfig`
+## 📋 配置选项 (TemplateManagerConfig)
 
 ```typescript
 interface TemplateManagerConfig {
-  defaultDevice?: DeviceType // 默认设备类型
-  autoScan?: boolean // 是否自动扫描模板
-  autoDetectDevice?: boolean // 是否自动检测设备
-  cacheEnabled?: boolean // 是否启用缓存
-  cacheSize?: number // 缓存大小
-  cacheTTL?: number // 缓存过期时间(ms)
-  preloadEnabled?: boolean // 是否启用预加载
-  scanPaths?: string[] // 扫描路径
-  deviceBreakpoints?: DeviceBreakpoints // 设备断点
+  /** 是否启用缓存 */
+  enableCache?: boolean
+
+  /** 是否自动检测设备类型 */
+  autoDetectDevice?: boolean
+
+  /** 默认设备类型 */
+  defaultDevice?: DeviceType
+
+  /** 是否启用调试模式 */
+  debug?: boolean
+
+  /** 自定义模板路径 */
+  templatePaths?: string[]
+
+  /** 错误处理回调 */
+  onError?: (error: Error) => void
+
+  /** 模板加载完成回调 */
+  onTemplateLoaded?: (metadata: TemplateMetadata) => void
 }
 ```
 
-## 模板操作方法
+## 🎯 核心方法
 
 ### `scanTemplates()`
 
-扫描并注册模板。
+扫描可用的模板。
 
 **返回值:** `Promise<TemplateScanResult>`
 
 **示例:**
-
 ```typescript
 const result = await manager.scanTemplates()
-console.log('扫描结果:', result)
+console.log(`发现 ${result.count} 个模板`)
+console.log('扫描耗时:', result.duration, 'ms')
+console.log('扫描模式:', result.scanMode)
 ```
 
-### `loadTemplate(category, device, template)`
-
-加载指定的模板组件。
-
-**参数:**
-
-- `category`: `string` - 模板分类
-- `device`: `DeviceType` - 设备类型
-- `template`: `string` - 模板名称
-
-**返回值:** `Promise<TemplateComponent>`
-
-**示例:**
-
+**返回结果:**
 ```typescript
-const component = await manager.loadTemplate('auth', 'desktop', 'login')
-```
-
-### `hasTemplate(category, device, template)`
-
-检查指定模板是否存在。
-
-**参数:**
-
-- `category`: `string` - 模板分类
-- `device`: `DeviceType` - 设备类型
-- `template`: `string` - 模板名称
-
-**返回值:** `Promise<boolean>`
-
-**示例:**
-
-```typescript
-const exists = await manager.hasTemplate('auth', 'desktop', 'login')
-if (exists) {
-  // 模板存在，可以安全加载
+interface TemplateScanResult {
+  count: number // 模板数量
+  templates: TemplateMetadata[] // 模板列表
+  duration: number // 扫描耗时(ms)
+  scannedDirectories: number // 扫描的目录数
+  scanMode: 'import.meta.glob' | 'fallback' // 扫描模式
 }
 ```
 
@@ -104,115 +93,160 @@ if (exists) {
 渲染指定的模板。
 
 **参数:**
-
 - `options`: `TemplateRenderOptions` - 渲染选项
 
-**返回值:** `Promise<TemplateLoadResult>`
+**返回值:** `Promise<TemplateRenderResult>`
 
 **示例:**
-
 ```typescript
+// 基础渲染
 const result = await manager.render({
-  category: 'auth',
+  category: 'login',
   device: 'desktop',
-  template: 'login',
-  props: {
-    title: '用户登录',
-    onLogin: handleLogin,
-  },
-})
-```
-
-### `getTemplates(filter?)`
-
-获取模板列表。
-
-**参数:**
-
-- `filter` (可选): `TemplateFilter` - 过滤条件
-
-**返回值:** `Promise<TemplateMetadata[]>`
-
-**示例:**
-
-```typescript
-// 获取所有模板
-const allTemplates = await manager.getTemplates()
-
-// 获取指定分类的模板
-const authTemplates = await manager.getTemplates({
-  category: 'auth',
+  template: 'classic'
 })
 
-// 获取指定设备的模板
-const mobileTemplates = await manager.getTemplates({
+// 带回退的渲染
+const result = await manager.render({
+  category: 'login',
   device: 'mobile',
+  template: 'modern',
+  fallback: true // 如果模板不存在，使用回退模板
 })
+
+// 使用渲染结果
+const { component, metadata, loadTime, fromCache } = result
 ```
 
-## 缓存管理方法
-
-### `clearCache(category?, device?, template?)`
-
-清空缓存。
-
-**参数:**
-
-- `category` (可选): `string` - 模板分类
-- `device` (可选): `DeviceType` - 设备类型
-- `template` (可选): `string` - 模板名称
-
-**示例:**
-
+**渲染选项:**
 ```typescript
-// 清空所有缓存
-manager.clearCache()
-
-// 清空指定分类的缓存
-manager.clearCache('auth')
-
-// 清空指定模板的缓存
-manager.clearCache('auth', 'desktop', 'login')
+interface TemplateRenderOptions {
+  category: string // 模板分类
+  device?: DeviceType // 设备类型 (可选，会自动检测)
+  template: string // 模板名称
+  fallback?: boolean // 是否启用回退 (默认: true)
+  props?: Record<string, any> // 传递给模板的属性
+}
 ```
 
-### `preload(templates)`
+**渲染结果:**
+```typescript
+interface TemplateRenderResult {
+  component: any // Vue 组件
+  metadata: TemplateMetadata // 模板元数据
+  loadTime: number // 加载耗时(ms)
+  fromCache: boolean // 是否来自缓存
+}
+```
 
-预加载模板。
+### `switchTemplate(category, device, template)`
+
+切换到指定模板。
 
 **参数:**
-
-- `templates`: `TemplateIdentifier[]` - 要预加载的模板列表
+- `category`: `string` - 模板分类
+- `device`: `DeviceType` - 设备类型
+- `template`: `string` - 模板名称
 
 **返回值:** `Promise<void>`
 
 **示例:**
-
 ```typescript
-await manager.preload([
-  { category: 'auth', device: 'desktop', template: 'login' },
-  { category: 'dashboard', device: 'desktop', template: 'admin' },
-])
+// 切换到现代登录模板
+await manager.switchTemplate('login', 'desktop', 'modern')
+
+// 切换到移动端仪表板
+await manager.switchTemplate('dashboard', 'mobile', 'compact')
 ```
 
-### `getCacheStats()`
+## 📊 查询方法
 
-获取缓存统计信息。
+### `getTemplates(category?, device?)`
 
-**返回值:** `CacheStats`
+获取模板列表。
+
+**参数:**
+- `category` (可选): `string` - 按分类过滤
+- `device` (可选): `DeviceType` - 按设备类型过滤
+
+**返回值:** `TemplateMetadata[]`
 
 **示例:**
-
 ```typescript
-const stats = manager.getCacheStats()
-console.log('缓存统计:', {
-  hits: stats.hits,
-  misses: stats.misses,
-  size: stats.size,
-  hitRate: stats.hits / (stats.hits + stats.misses),
-})
+// 获取所有模板
+const allTemplates = manager.getTemplates()
+
+// 获取登录模板
+const loginTemplates = manager.getTemplates('login')
+
+// 获取桌面端模板
+const desktopTemplates = manager.getTemplates(undefined, 'desktop')
+
+// 获取移动端登录模板
+const mobileLoginTemplates = manager.getTemplates('login', 'mobile')
 ```
 
-## 设备管理方法
+### `hasTemplate(category, device, template)`
+
+检查模板是否存在。
+
+**参数:**
+- `category`: `string` - 模板分类
+- `device`: `DeviceType` - 设备类型
+- `template`: `string` - 模板名称
+
+**返回值:** `boolean`
+
+**示例:**
+```typescript
+const exists = manager.hasTemplate('login', 'desktop', 'classic')
+if (exists) {
+  console.log('模板存在！')
+}
+else {
+  console.log('模板不存在')
+}
+```
+
+### `findTemplate(category, device, template)`
+
+查找特定模板。
+
+**参数:**
+- `category`: `string` - 模板分类
+- `device`: `DeviceType` - 设备类型
+- `template`: `string` - 模板名称
+
+**返回值:** `TemplateMetadata | null`
+
+**示例:**
+```typescript
+const template = manager.findTemplate('login', 'desktop', 'classic')
+if (template) {
+  console.log('找到模板:', template.name)
+  console.log('模板描述:', template.description)
+}
+else {
+  console.log('模板未找到')
+}
+```
+
+### `getCurrentTemplate()`
+
+获取当前活动的模板。
+
+**返回值:** `TemplateMetadata | null`
+
+**示例:**
+```typescript
+const current = manager.getCurrentTemplate()
+if (current) {
+  console.log('当前模板:', current.name)
+}
+else {
+  console.log('没有活动模板')
+}
+```
 
 ### `getCurrentDevice()`
 
@@ -221,361 +255,202 @@ console.log('缓存统计:', {
 **返回值:** `DeviceType`
 
 **示例:**
-
 ```typescript
 const device = manager.getCurrentDevice()
-console.log('当前设备:', device)
+console.log('当前设备:', device) // 'desktop' | 'mobile' | 'tablet'
 ```
 
-### `setDevice(device)`
+## 🗂️ 分类和设备
 
-设置当前设备类型。
+### `getAvailableCategories()`
+
+获取可用的模板分类。
+
+**返回值:** `string[]`
+
+**示例:**
+```typescript
+const categories = manager.getAvailableCategories()
+console.log('可用分类:', categories) // ['login', 'dashboard', 'profile']
+```
+
+### `getAvailableDevices(category?)`
+
+获取可用的设备类型。
 
 **参数:**
+- `category` (可选): `string` - 按分类过滤
 
-- `device`: `DeviceType` - 设备类型
-
-**示例:**
-
-```typescript
-manager.setDevice('mobile')
-```
-
-### `detectDevice()`
-
-检测当前设备类型。
-
-**返回值:** `DeviceType`
+**返回值:** `DeviceType[]`
 
 **示例:**
-
 ```typescript
-const detectedDevice = manager.detectDevice()
-console.log('检测到的设备:', detectedDevice)
+// 获取所有设备类型
+const allDevices = manager.getAvailableDevices()
+
+// 获取登录模板支持的设备类型
+const loginDevices = manager.getAvailableDevices('login')
 ```
 
-## 事件方法
+## 💾 缓存管理
+
+### `clearCache()`
+
+清空所有缓存。
+
+**示例:**
+```typescript
+manager.clearCache()
+console.log('缓存已清空')
+```
+
+### `getCacheStats()`
+
+获取缓存统计信息。
+
+**返回值:**
+```typescript
+interface CacheStats {
+  components: number // 组件缓存数量
+  metadata: number // 元数据缓存数量
+  unified: number // 统一缓存数量
+}
+```
+
+**示例:**
+```typescript
+const stats = manager.getCacheStats()
+console.log('缓存统计:', stats)
+```
+
+## ⚙️ 配置管理
+
+### `getConfig()`
+
+获取当前配置。
+
+**返回值:** `TemplateManagerConfig`
+
+**示例:**
+```typescript
+const config = manager.getConfig()
+console.log('当前配置:', config)
+```
+
+### `updateConfig(newConfig)`
+
+更新配置。
+
+**参数:**
+- `newConfig`: `Partial<TemplateManagerConfig>` - 新配置
+
+**示例:**
+```typescript
+// 启用调试模式
+manager.updateConfig({ debug: true })
+
+// 切换默认设备
+manager.updateConfig({ defaultDevice: 'mobile' })
+```
+
+## 🔄 刷新和销毁
+
+### `refresh()`
+
+刷新模板管理器。
+
+**返回值:** `Promise<void>`
+
+**示例:**
+```typescript
+await manager.refresh()
+console.log('模板管理器已刷新')
+```
+
+### `destroy()`
+
+销毁模板管理器，清理资源。
+
+**示例:**
+```typescript
+manager.destroy()
+console.log('模板管理器已销毁')
+```
+
+## 🎭 事件系统
+
+模板管理器支持事件监听：
 
 ### `on(event, listener)`
 
 监听事件。
 
-**参数:**
-
-- `event`: `string` - 事件名称
-- `listener`: `Function` - 事件监听器
-
 **示例:**
-
 ```typescript
-// 监听模板加载事件
-manager.on('template:load', event => {
-  console.log('模板加载成功:', event.template)
+// 监听模板扫描开始
+manager.on('template:scan:start', () => {
+  console.log('🔍 开始扫描模板...')
 })
 
-// 监听模板错误事件
-manager.on('template:error', event => {
-  console.error('模板加载失败:', event.error)
+// 监听模板扫描完成
+manager.on('template:scan:complete', (result) => {
+  console.log(`✅ 扫描完成，发现 ${result.count} 个模板`)
 })
 
-// 监听设备变化事件
-manager.on('device:change', event => {
-  console.log('设备变化:', event.oldDevice, '->', event.newDevice)
+// 监听模板切换
+manager.on('template:switch:complete', (data) => {
+  console.log('🎭 模板切换完成:', data.template.name)
 })
-```
 
-### `off(event, listener?)`
-
-移除事件监听器。
-
-**参数:**
-
-- `event`: `string` - 事件名称
-- `listener` (可选): `Function` - 要移除的监听器
-
-**示例:**
-
-```typescript
-// 移除指定监听器
-manager.off('template:load', myListener)
-
-// 移除所有监听器
-manager.off('template:load')
-```
-
-### `emit(event, data)`
-
-触发事件。
-
-**参数:**
-
-- `event`: `string` - 事件名称
-- `data`: `any` - 事件数据
-
-**示例:**
-
-```typescript
-manager.emit('custom:event', { message: 'Hello' })
-```
-
-## 高级方法
-
-### `registerTemplate(metadata)`
-
-手动注册模板。
-
-**参数:**
-
-- `metadata`: `TemplateMetadata` - 模板元数据
-
-**示例:**
-
-```typescript
-manager.registerTemplate({
-  category: 'custom',
-  device: 'desktop',
-  template: 'special',
-  component: SpecialComponent,
-  config: specialConfig,
+// 监听错误
+manager.on('error', (error) => {
+  console.error('❌ 发生错误:', error.message)
 })
 ```
 
-### `unregisterTemplate(category, device, template)`
+### `once(event, listener)`
 
-注销模板。
-
-**参数:**
-
-- `category`: `string` - 模板分类
-- `device`: `DeviceType` - 设备类型
-- `template`: `string` - 模板名称
+监听事件一次。
 
 **示例:**
-
 ```typescript
-manager.unregisterTemplate('custom', 'desktop', 'special')
-```
-
-### `setLoader(loader)`
-
-设置自定义加载器。
-
-**参数:**
-
-- `loader`: `TemplateLoader` - 模板加载器函数
-
-**示例:**
-
-```typescript
-manager.setLoader(async (category, device, template) => {
-  // 自定义加载逻辑
-  const component = await import(
-    `./templates/${category}/${device}/${template}/index.vue`
-  )
-  return component.default
+manager.once('template:scan:complete', (result) => {
+  console.log('首次扫描完成')
 })
 ```
 
-### `setErrorHandler(handler)`
+### `off(event, listener)`
 
-设置错误处理器。
-
-**参数:**
-
-- `handler`: `ErrorHandler` - 错误处理器
+取消监听。
 
 **示例:**
+```typescript
+const listener = () => console.log('模板已切换')
+manager.on('template:switch:complete', listener)
+
+// 稍后取消监听
+manager.off('template:switch:complete', listener)
+```
+
+## 🎯 最佳实践
+
+1. **启用缓存**: 在生产环境中启用缓存以提升性能
+2. **自动设备检测**: 启用自动设备检测以提供最佳用户体验
+3. **错误处理**: 设置错误处理回调以优雅处理异常
+4. **资源清理**: 在组件销毁时调用 `destroy()` 方法
 
 ```typescript
-manager.setErrorHandler({
-  onLoadError: async (error, category, device, template) => {
-    console.error('加载错误:', error)
-    // 返回备用组件
-    return FallbackComponent
-  },
-  onValidationError: (error, config) => {
-    console.error('验证错误:', error)
-  },
+const manager = new TemplateManager({
+  enableCache: true,
+  autoDetectDevice: true,
+  onError: (error) => {
+    // 发送错误到监控系统
+    console.error('Template error:', error)
+  }
+})
+
+// 在组件销毁时清理
+onUnmounted(() => {
+  manager.destroy()
 })
 ```
-
-## 类型定义
-
-### `TemplateRenderOptions`
-
-```typescript
-interface TemplateRenderOptions {
-  category: string
-  device?: DeviceType
-  template: string
-  props?: Record<string, any>
-  slots?: Record<string, any>
-}
-```
-
-### `TemplateLoadResult`
-
-```typescript
-interface TemplateLoadResult {
-  component: TemplateComponent
-  metadata: TemplateMetadata
-  fromCache: boolean
-  loadTime: number
-}
-```
-
-### `TemplateScanResult`
-
-```typescript
-interface TemplateScanResult {
-  total: number
-  success: number
-  failed: number
-  templates: TemplateMetadata[]
-  errors: Error[]
-}
-```
-
-### `TemplateFilter`
-
-```typescript
-interface TemplateFilter {
-  category?: string
-  device?: DeviceType
-  template?: string
-  tags?: string[]
-  version?: string
-  author?: string
-}
-```
-
-### `CacheStats`
-
-```typescript
-interface CacheStats {
-  hits: number
-  misses: number
-  size: number
-  maxSize: number
-  memoryUsage: number
-}
-```
-
-## 事件类型
-
-### 模板事件
-
-- `template:load` - 模板加载成功
-- `template:error` - 模板加载失败
-- `template:register` - 模板注册
-- `template:unregister` - 模板注销
-
-### 设备事件
-
-- `device:change` - 设备类型变化
-- `device:detect` - 设备检测完成
-
-### 缓存事件
-
-- `cache:hit` - 缓存命中
-- `cache:miss` - 缓存未命中
-- `cache:clear` - 缓存清空
-
-## 错误类型
-
-### `TemplateNotFoundError`
-
-模板未找到错误。
-
-```typescript
-class TemplateNotFoundError extends Error {
-  category: string
-  device: DeviceType
-  template: string
-}
-```
-
-### `TemplateLoadError`
-
-模板加载错误。
-
-```typescript
-class TemplateLoadError extends Error {
-  category: string
-  device: DeviceType
-  template: string
-  cause?: Error
-}
-```
-
-### `ConfigurationError`
-
-配置错误。
-
-```typescript
-class ConfigurationError extends Error {
-  field: string
-  value: any
-}
-```
-
-## 🆕 性能优化方法
-
-### `preloadTemplate(category, device, template)`
-
-预加载指定模板。
-
-**参数:**
-
-- `category`: `string` - 模板分类
-- `device`: `DeviceType` - 设备类型
-- `template`: `string` - 模板名称
-
-**返回值:** `Promise<void>`
-
-**示例:**
-
-```typescript
-// 预加载登录模板
-await manager.preloadTemplate('login', 'desktop', 'default')
-```
-
-### `preloadCommonTemplates()`
-
-批量预加载常用模板。
-
-**返回值:** `Promise<void>`
-
-**示例:**
-
-```typescript
-// 预加载常用模板
-await manager.preloadCommonTemplates()
-```
-
-### `getPerformanceMetrics()`
-
-获取性能指标。
-
-**返回值:** `PerformanceMetrics`
-
-**示例:**
-
-```typescript
-const metrics = manager.getPerformanceMetrics()
-console.log('性能指标:', {
-  cacheHitRate: metrics.cacheHits / (metrics.cacheHits + metrics.cacheMisses),
-  averageLoadTime: metrics.averageLoadTime,
-  preloadQueueSize: metrics.preloadQueueSize,
-})
-```
-
-## 最佳实践
-
-1. **错误处理**: 始终为模板加载设置错误处理器
-2. **缓存管理**: 合理配置缓存大小和过期时间
-3. **性能监控**: 监听加载事件，跟踪性能指标
-4. **内存管理**: 定期清理不需要的缓存
-5. **事件监听**: 及时移除不需要的事件监听器
-6. **🆕 智能预加载**: 根据用户行为预加载可能需要的模板
-7. **🆕 性能监控**: 使用 `getPerformanceMetrics()` 监控系统性能

@@ -1,249 +1,144 @@
 # API 参考
 
-LDesign Template 提供了丰富的 API 来满足各种使用场景。本节将详细介绍所有可用的 API。
+欢迎来到 `@ldesign/template` 的 API 参考文档。这里提供了完整的 API 接口说明和使用示例。
 
 ## 核心 API
 
-### TemplateManager
+### 模板管理器
+- [TemplateManager](./template-manager.md) - 核心模板管理器，负责模板的扫描、加载和缓存
 
-模板管理器是系统的核心，负责模板的加载、缓存和渲染。
+### Vue 集成
+- [Vue 集成](./vue-integration.md) - Vue3 组件、组合式 API 和指令
 
-```typescript
-import { TemplateManager } from '@ldesign/template'
+## 快速导航
 
-const manager = new TemplateManager(options)
-```
+### 🏗️ 核心类
 
-[查看详细文档 →](./template-manager.md)
+| 类名 | 描述 | 文档链接 |
+|------|------|----------|
+| `TemplateManager` | 模板管理器主类 | [查看详情](./template-manager.md#templatemanager) |
+| `TemplateScanner` | 模板扫描器 | [查看详情](./template-manager.md#templatescanner) |
+| `TemplateLoader` | 模板加载器 | [查看详情](./template-manager.md#templateloader) |
+| `DeviceAdapter` | 设备适配器 | [查看详情](./template-manager.md#deviceadapter) |
 
-### useTemplate
+### 🎯 Vue 组件
 
-Vue 3 Composition API，提供响应式的模板管理功能。
+| 组件名 | 描述 | 文档链接 |
+|--------|------|----------|
+| `TemplateRenderer` | 模板渲染组件 | [查看详情](./vue-integration.md#templaterenderer) |
+| `TemplateSelector` | 模板选择器组件 | [查看详情](./vue-integration.md#templateselector) |
 
-```typescript
-import { useTemplate } from '@ldesign/template'
+### 🔧 组合式 API
 
-const { currentTemplate, loading, error, render } = useTemplate(options)
-```
+| API 名称 | 描述 | 文档链接 |
+|----------|------|----------|
+| `useTemplate` | 模板管理 Hook | [查看详情](./vue-integration.md#usetemplate) |
+| `useTemplateScanner` | 模板扫描 Hook | [查看详情](./vue-integration.md#usetemplatescanner) |
+| `useTemplateCache` | 缓存管理 Hook | [查看详情](./vue-integration.md#usetemplatecache) |
 
-[查看详细文档 →](./use-template.md)
+### 📋 指令
 
-## 类型定义
-
-### TemplateMetadata
-
-模板元数据接口，包含模板的基本信息：
-
-```typescript
-interface TemplateMetadata {
-  name: string // 显示名称
-  description: string // 描述
-  category: string // 模板分类
-  device: DeviceType // 设备类型
-  template: string // 模板名称
-  config: TemplateConfig // 模板配置
-  componentPath: string // 组件路径
-  stylePath?: string // 样式路径
-  path?: string // 模板路径（兼容性）
-  component?: any // 组件实例
-}
-```
-
-### DeviceType
-
-设备类型枚举：
-
-```typescript
-type DeviceType = 'mobile' | 'tablet' | 'desktop'
-```
-
-### TemplateConfig
-
-模板配置接口：
-
-```typescript
-interface TemplateConfig {
-  id: string // 模板ID
-  name: string // 模板名称
-  description: string // 模板描述
-  version: string // 版本号
-  author: string // 作者
-  tags: string[] // 标签
-  category: string // 分类
-  device: DeviceType // 设备类型
-  template: string // 模板名称
-}
-```
-
-## 组件 API
-
-### TemplateRenderer
-
-模板渲染器组件，用于在模板中渲染指定的模板。
-
-```vue
-<LTemplateRenderer
-  category="login"
-  device="desktop"
-  template="classic"
-  :template-props="props"
-  @load="onLoad"
-  @error="onError"
-/>
-```
-
-[查看详细文档 →](./template-renderer.md)
-
-## 指令 API
-
-### v-template
-
-模板指令，提供声明式的模板渲染方式。
-
-```vue
-<div v-template="{ category: 'login', template: 'classic' }" />
-```
-
-[查看详细文档 →](./directives.md)
-
-## 工具函数
-
-### 设备检测
-
-```typescript
-import {
-  createDeviceWatcher,
-  detectDevice,
-  detectDeviceByUserAgent,
-  detectDeviceByViewport,
-} from '@ldesign/template'
-```
-
-### 缓存管理
-
-```typescript
-import { LRUCache, TemplateCache } from '@ldesign/template'
-```
-
-[查看详细文档 →](./utilities.md)
+| 指令名 | 描述 | 文档链接 |
+|--------|------|----------|
+| `v-template` | 模板渲染指令 | [查看详情](./vue-integration.md#v-template) |
+| `v-template-lazy` | 懒加载指令 | [查看详情](./vue-integration.md#v-template-lazy) |
+| `v-template-preload` | 预加载指令 | [查看详情](./vue-integration.md#v-template-preload) |
 
 ## 类型定义
 
-### 核心类型
+### 基础类型
 
 ```typescript
 // 设备类型
-type DeviceType = 'desktop' | 'mobile' | 'tablet'
+type DeviceType = 'desktop' | 'tablet' | 'mobile'
 
-// 模板配置
-interface TemplateConfig {
-  name: string
-  title: string
-  description?: string
-  version: string
-  author?: string
+// 模板信息
+interface TemplateInfo {
   category: string
-  device: DeviceType
-  tags?: string[]
-  preview?: string
-  props?: Record<string, PropConfig>
-  dependencies?: string[]
-  compatibility?: CompatibilityConfig
-}
-
-// 模板元数据
-interface TemplateMetadata {
-  category: string
-  device: DeviceType
-  template: string
-  config: TemplateConfig
+  deviceType: DeviceType
   path: string
-  lastModified?: number
+  metadata?: Record<string, any>
 }
 
-// 模板组件
-type TemplateComponent = Component | AsyncComponentLoader
-```
-
-### 配置类型
-
-```typescript
-// 模板管理器配置
-interface TemplateManagerConfig {
-  defaultDevice?: DeviceType
-  autoScan?: boolean
-  autoDetectDevice?: boolean
-  cacheEnabled?: boolean
-  cacheSize?: number
-  cacheTTL?: number
-  preloadEnabled?: boolean
-  scanPaths?: string[]
-  deviceBreakpoints?: DeviceBreakpoints
-}
-
-// 设备断点配置
-interface DeviceBreakpoints {
-  mobile: number
-  tablet: number
-}
-
-// 插件配置
-interface TemplatePluginOptions extends TemplateManagerConfig {
-  globalComponents?: boolean
-  globalDirectives?: boolean
+// 配置选项
+interface TemplateConfig {
+  scanner?: ScannerConfig
+  loader?: LoaderConfig
+  cache?: CacheConfig
+  performance?: PerformanceConfig
 }
 ```
 
-### 事件类型
+### 扫描器配置
 
 ```typescript
-// 模板变化事件
-interface TemplateChangeEvent {
-  type: 'load' | 'error' | 'switch'
-  category: string
-  device: DeviceType
-  template: string
-  component?: TemplateComponent
-  error?: Error
-  timestamp: number
+interface ScannerConfig {
+  scanPaths: string[]
+  enableCache: boolean
+  watchMode: boolean
+  excludePatterns?: string[]
+  includePatterns?: string[]
 }
+```
+
+### 加载器配置
+
+```typescript
+interface LoaderConfig {
+  enableCache: boolean
+  maxCacheSize: number
+  preloadStrategy: 'none' | 'critical' | 'all'
+  timeout: number
+}
+```
+
+### 缓存配置
+
+```typescript
+interface CacheConfig {
+  enabled: boolean
+  strategy: 'lru' | 'fifo' | 'lfu'
+  maxSize: number
+  ttl: number
+}
+```
+
+## 事件系统
+
+### 模板管理器事件
+
+```typescript
+// 模板加载事件
+manager.on('template:loaded', (data: TemplateLoadedEvent) => {
+  console.log('模板加载完成:', data)
+})
+
+// 模板错误事件
+manager.on('template:error', (error: TemplateErrorEvent) => {
+  console.error('模板加载失败:', error)
+})
 
 // 设备变化事件
-interface DeviceChangeEvent {
-  oldDevice: DeviceType
-  newDevice: DeviceType
-  viewport: {
-    width: number
-    height: number
-  }
-  timestamp: number
-}
-```
+manager.on('device:changed', (data: DeviceChangedEvent) => {
+  console.log('设备类型变化:', data)
+})
 
-## 插件 API
-
-### TemplatePlugin
-
-Vue 插件，提供全局注册功能。
-
-```typescript
-import { TemplatePlugin } from '@ldesign/template'
-
-app.use(TemplatePlugin, {
-  defaultDevice: 'desktop',
-  autoScan: true,
-  autoDetectDevice: true,
+// 性能警告事件
+manager.on('performance:warning', (data: PerformanceWarningEvent) => {
+  console.warn('性能警告:', data)
 })
 ```
 
-### 全局方法
-
-插件注册后，可以通过以下方式访问全局模板管理器：
+### Vue 组件事件
 
 ```typescript
-import { getGlobalTemplateManager } from '@ldesign/template'
-
-const manager = getGlobalTemplateManager()
+// TemplateRenderer 组件事件
+interface TemplateRendererEvents {
+  'template-loaded': (component: any) => void
+  'template-error': (error: Error) => void
+  'template-changed': (template: string) => void
+  'device-changed': (deviceType: DeviceType) => void
+}
 ```
 
 ## 错误处理
@@ -251,157 +146,153 @@ const manager = getGlobalTemplateManager()
 ### 错误类型
 
 ```typescript
-// 模板未找到错误
-class TemplateNotFoundError extends Error {
-  category: string
-  device: DeviceType
-  template: string
-}
-
 // 模板加载错误
 class TemplateLoadError extends Error {
-  category: string
-  device: DeviceType
-  template: string
-  cause?: Error
+  constructor(
+    message: string,
+    public template: string,
+    public deviceType: DeviceType,
+    public cause?: Error
+  ) {
+    super(message)
+    this.name = 'TemplateLoadError'
+  }
 }
 
-// 配置错误
-class ConfigurationError extends Error {
-  field: string
-  value: any
+// 扫描错误
+class TemplateScanError extends Error {
+  constructor(
+    message: string,
+    public path: string,
+    public cause?: Error
+  ) {
+    super(message)
+    this.name = 'TemplateScanError'
+  }
+}
+
+// 设备检测错误
+class DeviceDetectionError extends Error {
+  constructor(
+    message: string,
+    public cause?: Error
+  ) {
+    super(message)
+    this.name = 'DeviceDetectionError'
+  }
 }
 ```
 
 ### 错误处理最佳实践
 
 ```typescript
+// 1. 使用 try-catch 处理同步错误
 try {
-  const component = await manager.loadTemplate('login', 'desktop', 'classic')
+  const template = await manager.loadTemplate('login', 'desktop')
 } catch (error) {
-  if (error instanceof TemplateNotFoundError) {
-    // 处理模板未找到
-    console.warn('模板未找到，使用默认模板')
-  } else if (error instanceof TemplateLoadError) {
-    // 处理加载错误
-    console.error('模板加载失败:', error.cause)
-  } else {
-    // 处理其他错误
-    console.error('未知错误:', error)
+  if (error instanceof TemplateLoadError) {
+    // 处理模板加载错误
+    console.error('模板加载失败:', error.template, error.deviceType)
+  }
+}
+
+// 2. 使用事件监听处理异步错误
+manager.on('template:error', (error) => {
+  // 全局错误处理
+  console.error('模板系统错误:', error)
+})
+
+// 3. 设置错误回退
+const config = {
+  loader: {
+    fallbackStrategy: 'graceful', // 优雅降级
+    fallbackTemplate: 'default'   // 默认模板
   }
 }
 ```
 
 ## 性能优化
 
-### 预加载
+### 预加载策略
 
 ```typescript
-// 预加载常用模板
-manager.preload([
-  { category: 'login', device: 'desktop', template: 'classic' },
-  { category: 'login', device: 'mobile', template: 'simple' },
+// 关键模板预加载
+await manager.preloadTemplates([
+  { category: 'login', deviceType: 'desktop' },
+  { category: 'dashboard', deviceType: 'desktop' }
 ])
+
+// 智能预加载
+const config = {
+  loader: {
+    preloadStrategy: 'critical',
+    preloadRules: [
+      { pattern: 'login/*', priority: 'high' },
+      { pattern: 'dashboard/*', priority: 'medium' }
+    ]
+  }
+}
 ```
 
-### 缓存配置
+### 缓存优化
 
 ```typescript
-const manager = new TemplateManager({
-  cacheEnabled: true,
-  cacheSize: 100,
-  cacheTTL: 5 * 60 * 1000, // 5分钟
-})
+// LRU 缓存配置
+const config = {
+  cache: {
+    strategy: 'lru',
+    maxSize: 50,
+    ttl: 30 * 60 * 1000 // 30分钟
+  }
+}
+
+// 缓存统计
+const stats = manager.getCacheStats()
+console.log('缓存命中率:', stats.hitRate)
+console.log('内存使用:', stats.memoryUsage)
 ```
 
-### 懒加载
-
-```typescript
-// 使用动态导入实现懒加载
-const LazyTemplate = defineAsyncComponent(
-  () => import('./templates/login/desktop/classic/index.vue')
-)
-```
-
-## 调试工具
+## 调试和监控
 
 ### 开发模式
 
 ```typescript
+// 启用调试模式
 const manager = new TemplateManager({
-  debug: process.env.NODE_ENV === 'development',
+  debug: true,
+  performance: {
+    enabled: true,
+    sampleRate: 1.0 // 100% 采样
+  }
 })
+
+// 性能报告
+const report = manager.getPerformanceReport()
+console.log('性能报告:', report)
 ```
 
-### 日志记录
+### 生产监控
 
 ```typescript
-// 启用详细日志
-manager.setLogLevel('debug')
+// 生产环境监控
+const config = {
+  performance: {
+    enabled: true,
+    sampleRate: 0.1, // 10% 采样
+    reportInterval: 60000 // 1分钟报告一次
+  }
+}
 
-// 监听事件
-manager.on('template:load', event => {
-  console.log('模板加载:', event)
+// 监控事件
+manager.on('performance:report', (report) => {
+  // 发送到监控系统
+  analytics.track('template_performance', report)
 })
 ```
-
-## 🆕 性能优化 API
-
-### LazyTemplate 组件
-
-懒加载模板组件，支持 Intersection Observer API 进行可视区域检测。
-
-```vue
-<LazyTemplate
-  category="login"
-  device="desktop"
-  template="default"
-  :lazy="true"
-  :placeholder-height="300"
-  @load="handleLoad"
-  @visible="handleVisible"
->
-  <template #loading>
-    <div class="loading">加载中...</div>
-  </template>
-</LazyTemplate>
-```
-
-[查看详细文档 →](./vue-components.md#lazytemplate)
-
-### PerformanceMonitor 组件
-
-性能监控组件，提供实时性能指标显示。
-
-```vue
-<PerformanceMonitor
-  :detailed="true"
-  :update-interval="1000"
-  @update="handlePerformanceUpdate"
-/>
-```
-
-[查看详细文档 →](./vue-components.md#performancemonitor)
-
-### useVirtualScroll Composable
-
-虚拟滚动 Composable，用于优化大量数据的渲染性能。
-
-```typescript
-const { containerRef, visibleItems, totalHeight, handleScroll } =
-  useVirtualScroll(items, {
-    containerHeight: 400,
-    itemHeight: 60,
-  })
-```
-
-[查看详细文档 →](./vue-composables.md#usevirtualscroll)
 
 ## 下一步
 
-- 查看具体的 [TemplateManager API](./template-manager.md)
-- 了解 [useTemplate Composable](./use-template.md)
-- 学习 [组件使用方法](./template-renderer.md)
-- 探索 [工具函数](./utilities.md)
-- 🆕 体验 [Vue 组件 API](./vue-components.md)
-- 🆕 使用 [Vue Composables API](./vue-composables.md)
+- 查看 [模板管理器详细文档](./template-manager.md)
+- 了解 [Vue 集成使用方法](./vue-integration.md)
+- 参考 [使用示例](/examples/basic.md)
+- 阅读 [最佳实践指南](/guide/best-practices.md)

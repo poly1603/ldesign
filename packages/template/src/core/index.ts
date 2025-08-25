@@ -1,10 +1,12 @@
 /**
  * 核心模块导出
- *
- * 重构版本 - 简洁的核心功能模块
+ * @ldesign/template 核心功能模块
  */
 
+// 重新导出类型
+export type * from '../types'
+export { DeviceAdapter } from './device-adapter'
 export { TemplateLoader } from './loader'
 export { TemplateManager } from './manager'
-// ============ 核心类 ============
+
 export { TemplateScanner } from './scanner'

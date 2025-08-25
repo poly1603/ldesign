@@ -1,33 +1,58 @@
 /**
- * 主题和色彩工具
- * 提供统一的设计系统和主题管理
+ * 主题工具函数
+ * 提供主题相关的工具函数
  */
 
-export interface ColorPalette {
-  primary: string
-  primaryLight: string
-  primaryDark: string
-  secondary: string
-  accent: string
-  background: string
-  surface: string
-  text: string
-  textSecondary: string
-  border: string
-  success: string
-  warning: string
-  error: string
-  info: string
-}
-
+/**
+ * 主题配置接口
+ */
 export interface ThemeConfig {
   name: string
-  colors: ColorPalette
-  gradients: {
+  colors: {
     primary: string
     secondary: string
-    accent: string
     background: string
+    surface: string
+    text: string
+    textSecondary: string
+    border: string
+    error: string
+    warning: string
+    success: string
+    info: string
+  }
+  typography: {
+    fontFamily: string
+    fontSize: {
+      'xs': string
+      'sm': string
+      'base': string
+      'lg': string
+      'xl': string
+      '2xl': string
+      '3xl': string
+    }
+    fontWeight: {
+      normal: number
+      medium: number
+      semibold: number
+      bold: number
+    }
+  }
+  spacing: {
+    'xs': string
+    'sm': string
+    'md': string
+    'lg': string
+    'xl': string
+    '2xl': string
+  }
+  borderRadius: {
+    none: string
+    sm: string
+    md: string
+    lg: string
+    full: string
   }
   shadows: {
     sm: string
@@ -35,338 +60,244 @@ export interface ThemeConfig {
     lg: string
     xl: string
   }
-  borderRadius: {
-    sm: string
-    md: string
-    lg: string
-    xl: string
-  }
+}
+
+/**
+ * 默认浅色主题
+ */
+export const lightTheme: ThemeConfig = {
+  name: 'light',
+  colors: {
+    primary: '#3b82f6',
+    secondary: '#64748b',
+    background: '#ffffff',
+    surface: '#f8fafc',
+    text: '#1e293b',
+    textSecondary: '#64748b',
+    border: '#e2e8f0',
+    error: '#ef4444',
+    warning: '#f59e0b',
+    success: '#10b981',
+    info: '#3b82f6',
+  },
+  typography: {
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontSize: {
+      'xs': '0.75rem',
+      'sm': '0.875rem',
+      'base': '1rem',
+      'lg': '1.125rem',
+      'xl': '1.25rem',
+      '2xl': '1.5rem',
+      '3xl': '1.875rem',
+    },
+    fontWeight: {
+      normal: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700,
+    },
+  },
   spacing: {
-    xs: string
-    sm: string
-    md: string
-    lg: string
-    xl: string
+    'xs': '0.25rem',
+    'sm': '0.5rem',
+    'md': '1rem',
+    'lg': '1.5rem',
+    'xl': '2rem',
+    '2xl': '3rem',
+  },
+  borderRadius: {
+    none: '0',
+    sm: '0.125rem',
+    md: '0.375rem',
+    lg: '0.5rem',
+    full: '9999px',
+  },
+  shadows: {
+    sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+    md: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+    lg: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+    xl: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
+  },
+}
+
+/**
+ * 默认深色主题
+ */
+export const darkTheme: ThemeConfig = {
+  ...lightTheme,
+  name: 'dark',
+  colors: {
+    primary: '#60a5fa',
+    secondary: '#94a3b8',
+    background: '#0f172a',
+    surface: '#1e293b',
+    text: '#f1f5f9',
+    textSecondary: '#94a3b8',
+    border: '#334155',
+    error: '#f87171',
+    warning: '#fbbf24',
+    success: '#34d399',
+    info: '#60a5fa',
+  },
+}
+
+/**
+ * 当前主题
+ */
+let currentTheme: ThemeConfig = lightTheme
+
+/**
+ * 获取当前主题
+ */
+export function getTheme(): ThemeConfig {
+  return currentTheme
+}
+
+/**
+ * 应用主题
+ */
+export function applyTheme(theme: ThemeConfig): void {
+  currentTheme = theme
+
+  if (typeof document !== 'undefined') {
+    const root = document.documentElement
+
+    // 应用CSS变量
+    if (theme.colors) {
+      Object.entries(theme.colors).forEach(([key, value]) => {
+        root.style.setProperty(`--color-${key}`, value)
+      })
+    }
+
+    if (theme.spacing) {
+      Object.entries(theme.spacing).forEach(([key, value]) => {
+        root.style.setProperty(`--spacing-${key}`, value)
+      })
+    }
+
+    if (theme.borderRadius) {
+      Object.entries(theme.borderRadius).forEach(([key, value]) => {
+        root.style.setProperty(`--radius-${key}`, value)
+      })
+    }
+
+    if (theme.shadows) {
+      Object.entries(theme.shadows).forEach(([key, value]) => {
+        root.style.setProperty(`--shadow-${key}`, value)
+      })
+    }
+
+    // 设置字体
+    if (theme.typography) {
+      if (theme.typography.fontFamily) {
+        root.style.setProperty('--font-family', theme.typography.fontFamily)
+      }
+
+      if (theme.typography.fontSize) {
+        Object.entries(theme.typography.fontSize).forEach(([key, value]) => {
+          root.style.setProperty(`--text-${key}`, value)
+        })
+      }
+
+      if (theme.typography.fontWeight) {
+        Object.entries(theme.typography.fontWeight).forEach(([key, value]) => {
+          root.style.setProperty(`--font-${key}`, value.toString())
+        })
+      }
+    }
+
+    // 设置主题类名
+    root.className = root.className.replace(/theme-\w+/g, '')
+    root.classList.add(`theme-${theme.name}`)
   }
 }
 
 /**
- * 预定义主题
+ * 切换主题
  */
-export const themes: Record<string, ThemeConfig> = {
-  // 默认主题 - 现代蓝紫色
-  default: {
-    name: 'Default',
-    colors: {
-      primary: '#667eea',
-      primaryLight: '#818cf8',
-      primaryDark: '#5a67d8',
-      secondary: '#764ba2',
-      accent: '#f093fb',
-      background: '#ffffff',
-      surface: '#f8fafc',
-      text: '#1e293b',
-      textSecondary: '#64748b',
-      border: '#e2e8f0',
-      success: '#10b981',
-      warning: '#f59e0b',
-      error: '#ef4444',
-      info: '#3b82f6',
-    },
-    gradients: {
-      primary: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      secondary: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      accent: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-    },
-    shadows: {
-      sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-      md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-      lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-      xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-    },
-    borderRadius: {
-      sm: '0.375rem',
-      md: '0.5rem',
-      lg: '0.75rem',
-      xl: '1rem',
-    },
-    spacing: {
-      xs: '0.5rem',
-      sm: '1rem',
-      md: '1.5rem',
-      lg: '2rem',
-      xl: '3rem',
-    },
-  },
-
-  // 经典主题 - 商务蓝色
-  classic: {
-    name: 'Classic',
-    colors: {
-      primary: '#2563eb',
-      primaryLight: '#3b82f6',
-      primaryDark: '#1d4ed8',
-      secondary: '#64748b',
-      accent: '#06b6d4',
-      background: '#ffffff',
-      surface: '#f1f5f9',
-      text: '#0f172a',
-      textSecondary: '#475569',
-      border: '#cbd5e1',
-      success: '#059669',
-      warning: '#d97706',
-      error: '#dc2626',
-      info: '#0284c7',
-    },
-    gradients: {
-      primary: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
-      secondary: 'linear-gradient(135deg, #64748b 0%, #475569 100%)',
-      accent: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
-      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-    },
-    shadows: {
-      sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-      md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-      lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-      xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-    },
-    borderRadius: {
-      sm: '0.25rem',
-      md: '0.375rem',
-      lg: '0.5rem',
-      xl: '0.75rem',
-    },
-    spacing: {
-      xs: '0.5rem',
-      sm: '1rem',
-      md: '1.5rem',
-      lg: '2rem',
-      xl: '3rem',
-    },
-  },
-
-  // 现代主题 - 渐变色彩
-  modern: {
-    name: 'Modern',
-    colors: {
-      primary: '#8b5cf6',
-      primaryLight: '#a78bfa',
-      primaryDark: '#7c3aed',
-      secondary: '#ec4899',
-      accent: '#06d6a0',
-      background: '#ffffff',
-      surface: '#fafafa',
-      text: '#111827',
-      textSecondary: '#6b7280',
-      border: '#d1d5db',
-      success: '#10b981',
-      warning: '#f59e0b',
-      error: '#ef4444',
-      info: '#3b82f6',
-    },
-    gradients: {
-      primary: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
-      secondary: 'linear-gradient(135deg, #06d6a0 0%, #0891b2 100%)',
-      accent: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    },
-    shadows: {
-      sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-      md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-      lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-      xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-    },
-    borderRadius: {
-      sm: '0.5rem',
-      md: '0.75rem',
-      lg: '1rem',
-      xl: '1.5rem',
-    },
-    spacing: {
-      xs: '0.5rem',
-      sm: '1rem',
-      md: '1.5rem',
-      lg: '2rem',
-      xl: '3rem',
-    },
-  },
+export function toggleTheme(): void {
+  const newTheme = currentTheme.name === 'light' ? darkTheme : lightTheme
+  applyTheme(newTheme)
 }
 
 /**
- * 获取主题
+ * 检测系统主题偏好
  */
-export function getTheme(themeName: string = 'default'): ThemeConfig {
-  return themes[themeName] || themes.default
-}
-
-/**
- * 生成 CSS 变量
- */
-export function generateCSSVariables(theme: ThemeConfig): string {
-  const { colors, gradients, shadows, borderRadius, spacing } = theme
-
-  return `
-    :root {
-      /* Colors */
-      --color-primary: ${colors.primary};
-      --color-primary-light: ${colors.primaryLight};
-      --color-primary-dark: ${colors.primaryDark};
-      --color-secondary: ${colors.secondary};
-      --color-accent: ${colors.accent};
-      --color-background: ${colors.background};
-      --color-surface: ${colors.surface};
-      --color-text: ${colors.text};
-      --color-text-secondary: ${colors.textSecondary};
-      --color-border: ${colors.border};
-      --color-success: ${colors.success};
-      --color-warning: ${colors.warning};
-      --color-error: ${colors.error};
-      --color-info: ${colors.info};
-      
-      /* Gradients */
-      --gradient-primary: ${gradients.primary};
-      --gradient-secondary: ${gradients.secondary};
-      --gradient-accent: ${gradients.accent};
-      --gradient-background: ${gradients.background};
-      
-      /* Shadows */
-      --shadow-sm: ${shadows.sm};
-      --shadow-md: ${shadows.md};
-      --shadow-lg: ${shadows.lg};
-      --shadow-xl: ${shadows.xl};
-      
-      /* Border Radius */
-      --radius-sm: ${borderRadius.sm};
-      --radius-md: ${borderRadius.md};
-      --radius-lg: ${borderRadius.lg};
-      --radius-xl: ${borderRadius.xl};
-      
-      /* Spacing */
-      --spacing-xs: ${spacing.xs};
-      --spacing-sm: ${spacing.sm};
-      --spacing-md: ${spacing.md};
-      --spacing-lg: ${spacing.lg};
-      --spacing-xl: ${spacing.xl};
-    }
-  `.trim()
-}
-
-/**
- * 应用主题到文档
- */
-export function applyTheme(themeName: string = 'default'): void {
-  const theme = getTheme(themeName)
-  const cssVariables = generateCSSVariables(theme)
-
-  // 移除现有的主题样式
-  const existingStyle = document.getElementById('theme-variables')
-  if (existingStyle) {
-    existingStyle.remove()
+export function detectSystemTheme(): 'light' | 'dark' {
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   }
-
-  // 添加新的主题样式
-  const style = document.createElement('style')
-  style.id = 'theme-variables'
-  style.textContent = cssVariables
-  document.head.appendChild(style)
-
-  // 设置主题类名
-  document.documentElement.setAttribute('data-theme', themeName)
+  return 'light'
 }
 
 /**
- * 获取响应式断点
+ * 自动应用系统主题
  */
-export const breakpoints = {
-  'xs': '480px',
-  'sm': '640px',
-  'md': '768px',
-  'lg': '1024px',
-  'xl': '1280px',
-  '2xl': '1536px',
+export function applySystemTheme(): void {
+  const systemTheme = detectSystemTheme()
+  const theme = systemTheme === 'dark' ? darkTheme : lightTheme
+  applyTheme(theme)
 }
 
 /**
- * 生成响应式媒体查询
+ * 创建自定义主题
  */
-export function mediaQuery(breakpoint: keyof typeof breakpoints): string {
-  return `@media (min-width: ${breakpoints[breakpoint]})`
+export function createTheme(overrides: Partial<ThemeConfig>): ThemeConfig {
+  return {
+    ...lightTheme,
+    ...overrides,
+    colors: {
+      ...lightTheme.colors,
+      ...overrides.colors,
+    },
+    typography: {
+      ...lightTheme.typography,
+      ...overrides.typography,
+      fontSize: {
+        ...lightTheme.typography.fontSize,
+        ...overrides.typography?.fontSize,
+      },
+      fontWeight: {
+        ...lightTheme.typography.fontWeight,
+        ...overrides.typography?.fontWeight,
+      },
+    },
+    spacing: {
+      ...lightTheme.spacing,
+      ...overrides.spacing,
+    },
+    borderRadius: {
+      ...lightTheme.borderRadius,
+      ...overrides.borderRadius,
+    },
+    shadows: {
+      ...lightTheme.shadows,
+      ...overrides.shadows,
+    },
+  }
 }
 
 /**
- * 动画配置
+ * 获取主题颜色
  */
-export const animations = {
-  duration: {
-    fast: '150ms',
-    normal: '300ms',
-    slow: '500ms',
-  },
-  easing: {
-    linear: 'linear',
-    ease: 'ease',
-    easeIn: 'ease-in',
-    easeOut: 'ease-out',
-    easeInOut: 'ease-in-out',
-    bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-    smooth: 'cubic-bezier(0.4, 0, 0.2, 1)',
-  },
+export function getThemeColor(colorName: keyof ThemeConfig['colors']): string {
+  return currentTheme.colors[colorName]
 }
 
 /**
- * 生成动画 CSS
+ * 生成主题CSS
  */
-export function generateAnimationCSS(): string {
-  return `
-    /* 通用动画类 */
-    .animate-fade-in {
-      animation: fadeIn ${animations.duration.normal} ${animations.easing.smooth};
-    }
-    
-    .animate-slide-up {
-      animation: slideUp ${animations.duration.normal} ${animations.easing.smooth};
-    }
-    
-    .animate-scale-in {
-      animation: scaleIn ${animations.duration.normal} ${animations.easing.bounce};
-    }
-    
-    .animate-spin {
-      animation: spin 1s linear infinite;
-    }
-    
-    /* 动画关键帧 */
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    @keyframes slideUp {
-      from { 
-        opacity: 0; 
-        transform: translateY(20px); 
-      }
-      to { 
-        opacity: 1; 
-        transform: translateY(0); 
-      }
-    }
-    
-    @keyframes scaleIn {
-      from { 
-        opacity: 0; 
-        transform: scale(0.9); 
-      }
-      to { 
-        opacity: 1; 
-        transform: scale(1); 
-      }
-    }
-    
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-  `.trim()
+export function generateThemeCSS(theme: ThemeConfig): string {
+  const cssVars = [
+    ...Object.entries(theme.colors).map(([key, value]) => `  --color-${key}: ${value};`),
+    ...Object.entries(theme.spacing).map(([key, value]) => `  --spacing-${key}: ${value};`),
+    ...Object.entries(theme.borderRadius).map(([key, value]) => `  --radius-${key}: ${value};`),
+    ...Object.entries(theme.shadows).map(([key, value]) => `  --shadow-${key}: ${value};`),
+    `  --font-family: ${theme.typography.fontFamily};`,
+    ...Object.entries(theme.typography.fontSize).map(([key, value]) => `  --text-${key}: ${value};`),
+    ...Object.entries(theme.typography.fontWeight).map(([key, value]) => `  --font-${key}: ${value};`),
+  ]
+
+  return `.theme-${theme.name} {\n${cssVars.join('\n')}\n}`
 }

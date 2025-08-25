@@ -1,320 +1,366 @@
 # 快速开始
 
-本指南将帮助你在几分钟内上手 LDesign Template，体验其强大的模板管理功能。
+> 🚀 5分钟带你体验模板管理的魅力！
 
-## 第一步：安装插件
+## 🎯 第一个例子
 
-首先，在你的 Vue 3 应用中安装并注册 LDesign Template 插件：
+让我们从最简单的例子开始：
 
 ```typescript
-import TemplatePlugin from '@ldesign/template'
-import { createApp } from 'vue'
-import App from './App.vue'
+import { TemplateManager } from '@ldesign/template'
 
-const app = createApp(App)
-
-// 注册插件
-app.use(TemplatePlugin, {
-  // 可选配置
-  defaultDevice: 'desktop',
-  autoScan: true,
-  autoDetectDevice: true,
+// 1. 创建模板管理器
+const manager = new TemplateManager({
+  enableCache: true,
+  defaultDevice: 'desktop'
 })
 
-app.mount('#app')
+// 2. 扫描可用模板
+const scanResult = await manager.scanTemplates()
+console.log(`发现 ${scanResult.count} 个模板！`)
+
+// 3. 渲染一个登录模板
+const loginTemplate = await manager.render({
+  category: 'login',
+  device: 'desktop',
+  template: 'classic'
+})
+
+// 4. 使用渲染结果
+console.log('模板组件:', loginTemplate.component)
+console.log('模板元数据:', loginTemplate.metadata)
 ```
 
-## 第二步：创建模板
+## 🎨 Vue 项目中使用
 
-在你的项目中创建模板目录结构：
-
-```
-src/
-  templates/
-    login/           # 模板分类
-      desktop/       # 设备类型
-        classic/     # 模板名称
-          index.vue  # 模板组件
-          config.ts  # 模板配置
-        modern/
-          index.vue
-          config.ts
-      mobile/
-        simple/
-          index.vue
-          config.ts
-```
-
-### 创建模板组件
-
-创建 `src/templates/login/desktop/classic/index.vue`：
+在 Vue 3 项目中使用更加简单：
 
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue'
+import { useTemplate } from '@ldesign/template/vue'
+import { computed } from 'vue'
 
-// 接收外部传入的属性
-interface Props {
-  title?: string
-  onLogin?: (data: { username: string; password: string }) => void
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  title: '用户登录',
+// 使用模板管理 Hook
+const {
+  currentTemplate,
+  templates,
+  isLoading,
+  switchTemplate,
+  scanTemplates
+} = useTemplate({
+  enableCache: true,
+  autoDetectDevice: true
+}, {
+  autoScan: true // 自动扫描模板
 })
 
-const username = ref('')
-const password = ref('')
+// 可用模板列表
+const availableTemplates = computed(() =>
+  templates.value.filter(t => t.category === 'login')
+)
 
-function handleLogin() {
-  const loginData = {
-    username: username.value,
-    password: password.value,
+// 切换模板
+async function switchTo(template: any) {
+  await switchTemplate(
+    template.category,
+    template.device,
+    template.template
+  )
+}
+
+// 检查是否为当前模板
+function isCurrentTemplate(template: any) {
+  return currentTemplate.value?.metadata.template === template.template
+}
+
+// 传递给模板的属性
+const templateProps = {
+  title: '欢迎登录',
+  subtitle: '请输入您的账号信息',
+  onLogin: (credentials: any) => {
+    console.log('登录信息:', credentials)
   }
-
-  props.onLogin?.(loginData)
 }
 </script>
 
 <template>
-  <div class="classic-login">
-    <div class="login-card">
-      <h2>{{ title || '用户登录' }}</h2>
-      <form @submit.prevent="handleLogin">
-        <div class="form-group">
-          <input v-model="username" type="text" placeholder="用户名" required />
-        </div>
-        <div class="form-group">
-          <input
-            v-model="password"
-            type="password"
-            placeholder="密码"
-            required
-          />
-        </div>
-        <button type="submit" class="login-btn">登录</button>
-      </form>
+  <div class="app">
+    <!-- 模板选择器 -->
+    <div class="template-selector">
+      <button
+        v-for="template in availableTemplates"
+        :key="template.template"
+        :class="{ active: isCurrentTemplate(template) }"
+        @click="switchTo(template)"
+      >
+        {{ template.name }}
+      </button>
+    </div>
+
+    <!-- 当前模板 -->
+    <div class="template-container">
+      <component
+        :is="currentTemplate.component"
+        v-if="currentTemplate"
+        v-bind="templateProps"
+      />
+      <div v-else class="loading">
+        🎭 模板加载中...
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.classic-login {
+.template-selector {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
-.login-card {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 0.75rem;
+.template-selector button {
+  padding: 8px 16px;
   border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
-.login-btn {
-  width: 100%;
-  padding: 0.75rem;
-  background: #667eea;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
+  background: white;
   cursor: pointer;
-  transition: background 0.3s;
+  border-radius: 4px;
+  transition: all 0.2s;
 }
 
-.login-btn:hover {
-  background: #5a6fd8;
+.template-selector button:hover {
+  background: #f5f5f5;
+}
+
+.template-selector button.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.template-container {
+  min-height: 400px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  font-size: 18px;
+  color: #666;
 }
 </style>
 ```
 
-### 创建模板配置
+## 📱 设备自适应示例
 
-创建 `src/templates/login/desktop/classic/config.ts`：
+模板系统会自动检测设备类型：
 
 ```typescript
-import type { TemplateConfig } from '@ldesign/template'
+import { DeviceDetector } from '@ldesign/device'
+import { TemplateManager } from '@ldesign/template'
 
-export const config: TemplateConfig = {
-  name: 'classic',
-  title: '经典登录页',
-  description: '传统的登录页面设计，简洁大方',
-  version: '1.0.0',
-  author: 'LDesign Team',
-  category: 'login',
-  device: 'desktop',
-  tags: ['经典', '简洁', '商务'],
-  preview: '/previews/login-classic.png',
-
-  // 支持的属性
-  props: {
-    title: {
-      type: 'string',
-      default: '用户登录',
-      description: '登录页标题',
-    },
-    onLogin: {
-      type: 'function',
-      description: '登录回调函数',
-    },
-  },
-
-  // 依赖的其他模板或组件
-  dependencies: [],
-
-  // 兼容性信息
-  compatibility: {
-    vue: '>=3.2.0',
-    browsers: ['Chrome >= 88', 'Firefox >= 85', 'Safari >= 14'],
-  },
-}
-```
-
-## 第三步：使用模板
-
-现在你可以在组件中使用模板了：
-
-### 方式一：使用组件
-
-```vue
-<script setup lang="ts">
-function handleLogin(data: { username: string; password: string }) {
-  console.log('登录数据:', data)
-  // 处理登录逻辑
-}
-
-function onTemplateLoad(component: any) {
-  console.log('模板加载成功:', component)
-}
-
-function onTemplateError(error: Error) {
-  console.error('模板加载失败:', error)
-}
-</script>
-
-<template>
-  <div>
-    <!-- 使用模板渲染器组件 -->
-    <LTemplateRenderer
-      category="login"
-      device="desktop"
-      template="classic"
-      :template-props="{
-        title: '欢迎登录',
-        onLogin: handleLogin,
-      }"
-      @load="onTemplateLoad"
-      @error="onTemplateError"
-    />
-  </div>
-</template>
-```
-
-### 方式二：使用 Composable
-
-```vue
-<script setup lang="ts">
-import { useTemplate } from '@ldesign/template'
-
-const { currentTemplate, loading, error, render } = useTemplate()
-
-// 渲染指定模板
-render({
-  category: 'login',
-  device: 'desktop',
-  template: 'classic',
+const manager = new TemplateManager({
+  autoDetectDevice: true // 启用自动设备检测
 })
 
-function handleLogin(data: { username: string; password: string }) {
-  console.log('登录数据:', data)
-}
-</script>
+// 扫描模板
+await manager.scanTemplates()
 
-<template>
-  <div>
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error">加载失败: {{ error.message }}</div>
-    <component
-      :is="currentTemplate"
-      v-else-if="currentTemplate"
-      title="欢迎登录"
-      :on-login="handleLogin"
-    />
-  </div>
-</template>
+// 系统会自动选择适合当前设备的模板
+const currentDevice = manager.getCurrentDevice()
+console.log('当前设备:', currentDevice) // 'desktop' | 'mobile' | 'tablet'
+
+// 渲染适合当前设备的登录模板
+const template = await manager.render({
+  category: 'login',
+  device: currentDevice, // 或者省略，系统会自动选择
+  template: 'modern'
+})
 ```
 
-### 方式三：使用指令
+## 🎭 模板切换动画
+
+添加平滑的切换动画：
 
 ```vue
 <script setup lang="ts">
-function handleLogin(data: { username: string; password: string }) {
-  console.log('登录数据:', data)
+import { useTemplate } from '@ldesign/template/vue'
+import { computed } from 'vue'
+
+const { currentTemplate } = useTemplate()
+
+// 用于触发过渡的唯一键
+const templateKey = computed(() =>
+  currentTemplate.value
+    ? `${currentTemplate.value.metadata.category}-${currentTemplate.value.metadata.template}`
+    : 'loading'
+)
+
+function onBeforeEnter() {
+  console.log('🎭 模板切换开始')
+}
+
+function onAfterEnter() {
+  console.log('✨ 模板切换完成')
 }
 </script>
 
 <template>
-  <div
-    v-template="{
-      category: 'login',
-      device: 'desktop',
-      template: 'classic',
-      props: {
-        title: '欢迎登录',
-        onLogin: handleLogin,
-      },
-    }"
-  />
+  <div class="template-wrapper">
+    <transition
+      name="template-fade"
+      mode="out-in"
+      @before-enter="onBeforeEnter"
+      @after-enter="onAfterEnter"
+    >
+      <component
+        :is="currentTemplate?.component"
+        :key="templateKey"
+        v-bind="templateProps"
+      />
+    </transition>
+  </div>
 </template>
+
+<style scoped>
+.template-fade-enter-active,
+.template-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.template-fade-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.template-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+</style>
 ```
 
-## 第四步：响应式适配
+## 🔧 配置选项
 
-LDesign Template 支持自动设备检测，你可以为不同设备创建不同的模板：
+```typescript
+const manager = new TemplateManager({
+  // 缓存配置
+  enableCache: true,
+
+  // 设备检测
+  autoDetectDevice: true,
+  defaultDevice: 'desktop',
+
+  // 调试模式
+  debug: process.env.NODE_ENV === 'development',
+
+  // 自定义模板路径
+  templatePaths: [
+    './src/templates',
+    './src/custom-templates'
+  ],
+
+  // 错误处理
+  onError: (error) => {
+    console.error('模板错误:', error)
+  },
+
+  // 模板加载完成回调
+  onTemplateLoaded: (metadata) => {
+    console.log('模板已加载:', metadata.name)
+  }
+})
+```
+
+## 🎪 实时预览
+
+想要实时预览模板效果？试试这个：
 
 ```vue
+<script setup lang="ts">
+import { useTemplate } from '@ldesign/template/vue'
+import { ref, watch } from 'vue'
+
+const { render } = useTemplate()
+
+const devices = ['desktop', 'tablet', 'mobile']
+const deviceNames = {
+  desktop: '🖥️ 桌面',
+  tablet: '📱 平板',
+  mobile: '📱 手机'
+}
+
+const currentDevice = ref('desktop')
+const previewTemplate = ref(null)
+
+// 监听设备变化，重新渲染模板
+watch(currentDevice, async (newDevice) => {
+  previewTemplate.value = await render({
+    category: 'login',
+    device: newDevice,
+    template: 'modern'
+  })
+}, { immediate: true })
+</script>
+
 <template>
-  <!-- 会根据当前设备自动选择合适的模板 -->
-  <LTemplateRenderer
-    category="login"
-    template="classic"
-    :template-props="{ onLogin: handleLogin }"
-  />
+  <div class="preview-container">
+    <!-- 设备选择器 -->
+    <div class="device-selector">
+      <button
+        v-for="device in devices"
+        :key="device"
+        :class="{ active: currentDevice === device }"
+        @click="currentDevice = device"
+      >
+        {{ deviceNames[device] }}
+      </button>
+    </div>
+
+    <!-- 模板预览 -->
+    <div class="preview-frame" :class="`device-${currentDevice}`">
+      <component
+        :is="previewTemplate?.component"
+        v-bind="previewProps"
+      />
+    </div>
+  </div>
 </template>
+
+<style scoped>
+.preview-frame.device-desktop {
+  width: 1200px;
+  height: 800px;
+}
+
+.preview-frame.device-tablet {
+  width: 768px;
+  height: 1024px;
+}
+
+.preview-frame.device-mobile {
+  width: 375px;
+  height: 667px;
+}
+</style>
 ```
 
-当用户在移动设备上访问时，系统会自动尝试加载 `login/mobile/classic` 模板，如果不存在则回退到桌面版本。
+## 🎯 下一步
 
-## 下一步
+恭喜！你已经掌握了基础用法。接下来可以：
 
-恭喜！你已经成功创建并使用了第一个模板。接下来你可以：
+- 📖 深入了解 [核心概念](/guide/concepts)
+- 🎨 学习 [自定义模板](/guide/custom-templates)
+- 🚀 查看 [完整示例](/examples/full-app)
+- 📚 浏览 [API 文档](/api/)
 
-- 了解 [基础概念](./concepts.md) 深入理解系统架构
-- 学习 [模板管理](./template-management.md) 掌握高级功能
-- 查看 [API 参考](../api/) 了解完整的 API
-- 浏览 [示例](../examples/) 获取更多灵感
+## 💡 小贴士
 
-## 小贴士
-
-1. **模板命名**：使用有意义的名称，便于团队协作
-2. **配置完整**：完善的配置信息有助于模板管理和维护
-3. **响应式设计**：考虑不同设备的用户体验
-4. **性能优化**：利用懒加载和缓存机制提升性能
+- 🔄 使用 `enableCache: true` 提升性能
+- 📱 启用 `autoDetectDevice` 获得最佳用户体验
+- 🎭 为模板切换添加过渡动画
+- 🐛 在开发环境启用 `debug: true` 便于调试

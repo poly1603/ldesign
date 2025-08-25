@@ -1,654 +1,890 @@
 # 基础用法示例
 
-本示例展示了 LDesign Template 的基础使用方法，包括模板创建、配置和渲染。
+本页面展示 `@ldesign/template` 的基础使用方法和常见场景。
 
-## 创建第一个模板
+## 简单的登录表单
 
-### 1. 创建模板目录结构
+### 创建模板文件
 
-```
-src/templates/
-└── greeting/
-    └── desktop/
-        └── hello/
-            ├── index.vue
-            └── config.ts
-```
+首先创建不同设备的登录模板：
 
-### 2. 创建模板组件
+::: code-group
 
-创建 `src/templates/greeting/desktop/hello/index.vue`：
-
-```vue
+```vue [desktop/LoginForm.vue]
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref } from 'vue'
 
-// 定义属性接口
 interface Props {
   title?: string
-  message?: string
-  buttonText?: string
-  showButton?: boolean
-  onClick?: () => void
 }
 
-// 定义属性和默认值
-const props = withDefaults(defineProps<Props>(), {
-  title: 'Hello World',
-  message: '欢迎使用 LDesign Template！',
-  buttonText: '点击我',
-  showButton: true,
-})
+defineProps<Props>()
 
-// 定义事件
-const emit = defineEmits<{
-  click: []
-  greet: [message: string]
-}>()
+const username = ref('')
+const password = ref('')
+const remember = ref(false)
+const loading = ref(false)
 
-// 计算属性
-const greeting = computed(() => `${props.title}: ${props.message}`)
-
-// 事件处理
-function handleClick() {
-  emit('click')
-  emit('greet', greeting.value)
-  props.onClick?.()
+async function handleSubmit() {
+  loading.value = true
+  try {
+    // 模拟登录请求
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    console.log('登录成功:', { username: username.value, remember: remember.value })
+    alert('登录成功！')
+  }
+  catch (error) {
+    console.error('登录失败:', error)
+  }
+  finally {
+    loading.value = false
+  }
 }
 </script>
 
 <template>
-  <div class="hello-template">
-    <div class="greeting-card">
-      <h1 class="greeting-title">
-        {{ title }}
-      </h1>
-      <p class="greeting-message">
-        {{ message }}
-      </p>
-      <div class="greeting-actions">
-        <button v-if="showButton" class="greeting-button" @click="handleClick">
-          {{ buttonText }}
+  <div class="login-form-desktop">
+    <div class="login-container">
+      <h2>{{ title || '用户登录' }}</h2>
+      <form @submit.prevent="handleSubmit">
+        <div class="form-group">
+          <label>用户名</label>
+          <input v-model="username" type="text" placeholder="请输入用户名" required>
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input v-model="password" type="password" placeholder="请输入密码" required>
+        </div>
+        <div class="form-options">
+          <label>
+            <input v-model="remember" type="checkbox">
+            记住我
+          </label>
+          <a href="#" class="forgot-link">忘记密码？</a>
+        </div>
+        <button type="submit" :disabled="loading">
+          {{ loading ? '登录中...' : '登录' }}
         </button>
-      </div>
+      </form>
     </div>
   </div>
 </template>
 
 <style scoped>
-.hello-template {
+.login-form-desktop {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 400px;
-  padding: 2rem;
+  min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.greeting-card {
+.login-container {
   background: white;
-  border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  text-align: center;
-  max-width: 400px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
+  max-width: 400px;
 }
 
-.greeting-title {
-  color: #333;
-  font-size: 2rem;
+.form-group {
   margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
   font-weight: 600;
 }
 
-.greeting-message {
-  color: #666;
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
-  line-height: 1.6;
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
 }
 
-.greeting-actions {
-  margin-top: 1.5rem;
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
-.greeting-button {
+.forgot-link {
+  color: #667eea;
+  text-decoration: none;
+}
+
+button {
+  width: 100%;
+  padding: 0.75rem;
   background: #667eea;
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  font-size: 1rem;
 }
 
-.greeting-button:hover {
-  background: #5a6fd8;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.greeting-button:active {
-  transform: translateY(0);
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 </style>
 ```
 
-### 3. 创建模板配置
-
-创建 `src/templates/greeting/desktop/hello/config.ts`：
-
-```typescript
-import type { TemplateConfig } from '@ldesign/template'
-
-export const config: TemplateConfig = {
-  // 基础信息
-  name: 'hello',
-  title: 'Hello World 模板',
-  description: '一个简单的问候模板，展示基础的模板功能',
-  version: '1.0.0',
-  author: 'LDesign Team',
-
-  // 分类信息
-  category: 'greeting',
-  device: 'desktop',
-  tags: ['问候', '示例', '基础'],
-
-  // 预览图片（可选）
-  preview: '/previews/greeting/hello-desktop.png',
-
-  // 属性定义
-  props: {
-    title: {
-      type: 'string',
-      default: 'Hello World',
-      description: '问候标题',
-      required: false,
-    },
-    message: {
-      type: 'string',
-      default: '欢迎使用 LDesign Template！',
-      description: '问候消息',
-      required: false,
-    },
-    buttonText: {
-      type: 'string',
-      default: '点击我',
-      description: '按钮文本',
-      required: false,
-    },
-    showButton: {
-      type: 'boolean',
-      default: true,
-      description: '是否显示按钮',
-      required: false,
-    },
-    onClick: {
-      type: 'function',
-      description: '按钮点击回调函数',
-      required: false,
-    },
-  },
-
-  // 事件定义
-  events: {
-    click: {
-      description: '按钮点击时触发',
-    },
-    greet: {
-      description: '发送问候时触发',
-      payload: 'string',
-    },
-  },
-
-  // 兼容性
-  compatibility: {
-    vue: '>=3.2.0',
-    browsers: ['Chrome >= 88', 'Firefox >= 85', 'Safari >= 14'],
-  },
-}
-```
-
-## 使用模板
-
-### 1. 安装和配置插件
-
-在你的 Vue 应用中安装插件：
-
-```typescript
-import TemplatePlugin from '@ldesign/template'
-// main.ts
-import { createApp } from 'vue'
-import App from './App.vue'
-
-const app = createApp(App)
-
-// 注册插件
-app.use(TemplatePlugin, {
-  autoScan: true,
-  autoDetectDevice: true,
-})
-
-app.mount('#app')
-```
-
-### 2. 使用组件方式
-
-```vue
+```vue [mobile/LoginForm.vue]
 <script setup lang="ts">
-function handleGreeting() {
-  console.log('按钮被点击了！')
+import { ref } from 'vue'
+
+interface Props {
+  title?: string
 }
 
-function onTemplateClick() {
-  console.log('模板触发了点击事件')
-}
+defineProps<Props>()
 
-function onTemplateGreet(message: string) {
-  console.log('收到问候:', message)
-  alert(`问候消息: ${message}`)
+const username = ref('')
+const password = ref('')
+const remember = ref(false)
+const loading = ref(false)
+
+async function handleSubmit() {
+  loading.value = true
+  try {
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    console.log('登录成功:', { username: username.value, remember: remember.value })
+    alert('登录成功！')
+  }
+  finally {
+    loading.value = false
+  }
 }
 </script>
 
 <template>
-  <div class="app">
-    <h1>LDesign Template 基础示例</h1>
+  <div class="login-form-mobile">
+    <div class="login-container">
+      <h2>{{ title || '登录' }}</h2>
+      <form @submit.prevent="handleSubmit">
+        <input v-model="username" type="text" placeholder="用户名" required>
+        <input v-model="password" type="password" placeholder="密码" required>
+        <label class="remember">
+          <input v-model="remember" type="checkbox">
+          记住我
+        </label>
+        <button type="submit" :disabled="loading">
+          {{ loading ? '登录中...' : '登录' }}
+        </button>
+        <a href="#" class="forgot-link">忘记密码？</a>
+      </form>
+    </div>
+  </div>
+</template>
 
-    <!-- 使用模板渲染器组件 -->
-    <LTemplateRenderer
-      category="greeting"
-      device="desktop"
-      template="hello"
-      :template-props="{
-        title: '你好',
-        message: '这是一个基础示例！',
-        buttonText: '打招呼',
-        onClick: handleGreeting,
-      }"
-      @click="onTemplateClick"
-      @greet="onTemplateGreet"
+<style scoped>
+.login-form-mobile {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.login-container {
+  background: white;
+  padding: 2rem 1.5rem;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.login-container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.login-container input[type="text"],
+.login-container input[type="password"] {
+  width: 100%;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+button {
+  width: 100%;
+  padding: 1rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.forgot-link {
+  display: block;
+  text-align: center;
+  color: #667eea;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+</style>
+```
+
+:::
+
+### 使用模板
+
+#### 方式一：组件方式
+
+```vue
+<script setup lang="ts">
+import { TemplateRenderer } from '@ldesign/template/vue'
+
+function onLoaded(component: any) {
+  console.log('模板加载成功:', component)
+}
+
+function onError(error: Error) {
+  console.error('模板加载失败:', error)
+}
+</script>
+
+<template>
+  <div id="app">
+    <TemplateRenderer
+      template="login"
+      :template-props="{ title: '欢迎登录' }"
+      @template-loaded="onLoaded"
+      @template-error="onError"
     />
+  </div>
+</template>
+```
+
+#### 方式二：组合式API
+
+```vue
+<script setup lang="ts">
+import { useTemplate } from '@ldesign/template/vue'
+
+const { templateComponent, loading, error } = useTemplate({
+  template: 'login',
+  autoLoad: true
+})
+</script>
+
+<template>
+  <div>
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error" class="error">
+      {{ error.message }}
+    </div>
+    <component :is="templateComponent" v-else-if="templateComponent" title="动态登录" />
+  </div>
+</template>
+```
+
+#### 方式三：指令方式
+
+```vue
+<template>
+  <div>
+    <!-- 自动检测设备 -->
+    <div v-template="'login'" />
+
+    <!-- 指定设备类型 -->
+    <div v-template="{ template: 'login', deviceType: 'mobile' }" />
+  </div>
+</template>
+```
+
+## 响应式仪表板
+
+### 创建仪表板模板
+
+::: code-group
+
+```vue [desktop/Dashboard.vue]
+<script setup lang="ts">
+import { reactive, ref } from 'vue'
+
+interface Props {
+  title?: string
+}
+
+defineProps<Props>()
+
+const stats = reactive([
+  { label: '总访问量', value: '12,345', change: '+12.5%', trend: 'positive', icon: '👥' },
+  { label: '新用户', value: '1,234', change: '+8.2%', trend: 'positive', icon: '🆕' },
+  { label: '转化率', value: '3.45%', change: '-2.1%', trend: 'negative', icon: '📈' },
+  { label: '收入', value: '¥45,678', change: '+15.3%', trend: 'positive', icon: '💰' }
+])
+
+const chartData = ref([65, 45, 78, 52, 89, 67, 43, 76, 58, 91])
+
+function refresh() {
+  console.log('刷新数据')
+  // 模拟数据更新
+  stats.forEach((stat) => {
+    const change = (Math.random() * 20 - 10).toFixed(1)
+    stat.change = `${change > 0 ? '+' : ''}${change}%`
+    stat.trend = change > 0 ? 'positive' : 'negative'
+  })
+}
+
+function openSettings() {
+  console.log('打开设置')
+}
+</script>
+
+<template>
+  <div class="dashboard-desktop">
+    <header class="dashboard-header">
+      <h1>{{ title || '仪表板' }}</h1>
+      <div class="actions">
+        <button @click="refresh">
+          刷新
+        </button>
+        <button @click="openSettings">
+          设置
+        </button>
+      </div>
+    </header>
+
+    <main class="dashboard-content">
+      <!-- 统计卡片 -->
+      <div class="stats-grid">
+        <div v-for="stat in stats" :key="stat.label" class="stat-card">
+          <div class="stat-icon">
+            {{ stat.icon }}
+          </div>
+          <div class="stat-content">
+            <h3>{{ stat.value }}</h3>
+            <p>{{ stat.label }}</p>
+            <span class="stat-change" :class="stat.trend">{{ stat.change }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 图表区域 -->
+      <div class="charts-section">
+        <div class="chart-card">
+          <h3>访问趋势</h3>
+          <div class="chart-placeholder">
+            <div class="chart-bars">
+              <div
+                v-for="height in chartData" :key="height" class="bar"
+                :style="{ height: `${height}%` }"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h3>用户分布</h3>
+          <div class="chart-placeholder">
+            <div class="pie-chart" />
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
+
+<style scoped>
+.dashboard-desktop {
+  padding: 2rem;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.actions button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stat-icon {
+  font-size: 2rem;
+}
+
+.stat-content h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.stat-content p {
+  margin: 0.25rem 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.stat-change {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+
+.stat-change.positive {
+  background: #d4edda;
+  color: #155724;
+}
+
+.stat-change.negative {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.charts-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+}
+
+.chart-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.chart-bars {
+  display: flex;
+  align-items: end;
+  gap: 4px;
+  height: 200px;
+}
+
+.bar {
+  background: #667eea;
+  width: 20px;
+  border-radius: 2px 2px 0 0;
+}
+
+.pie-chart {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(#667eea 0deg 120deg, #48bb78 120deg 240deg, #ed8936 240deg 360deg);
+  margin: 0 auto;
+}
+</style>
+```
+
+```vue [mobile/Dashboard.vue]
+<script setup lang="ts">
+import { reactive, ref } from 'vue'
+
+interface Props {
+  title?: string
+}
+
+defineProps<Props>()
+
+const stats = reactive([
+  { label: '访问量', value: '12.3K', change: '+12.5%', trend: 'positive', icon: '👥' },
+  { label: '新用户', value: '1.2K', change: '+8.2%', trend: 'positive', icon: '🆕' },
+  { label: '转化率', value: '3.45%', change: '-2.1%', trend: 'negative', icon: '📈' },
+  { label: '收入', value: '¥45.7K', change: '+15.3%', trend: 'positive', icon: '💰' }
+])
+
+const chartData = ref([65, 45, 78, 52, 89, 67, 43])
+
+function refresh() {
+  console.log('刷新移动端数据')
+  stats.forEach((stat) => {
+    const change = (Math.random() * 20 - 10).toFixed(1)
+    stat.change = `${change > 0 ? '+' : ''}${change}%`
+    stat.trend = change > 0 ? 'positive' : 'negative'
+  })
+}
+</script>
+
+<template>
+  <div class="dashboard-mobile">
+    <header class="dashboard-header">
+      <h1>{{ title || '仪表板' }}</h1>
+      <button class="refresh-btn" @click="refresh">
+        🔄
+      </button>
+    </header>
+
+    <main class="dashboard-content">
+      <!-- 统计卡片 - 移动端2列布局 -->
+      <div class="stats-grid">
+        <div v-for="stat in stats" :key="stat.label" class="stat-card">
+          <div class="stat-icon">
+            {{ stat.icon }}
+          </div>
+          <div class="stat-content">
+            <h3>{{ stat.value }}</h3>
+            <p>{{ stat.label }}</p>
+            <span class="stat-change" :class="stat.trend">{{ stat.change }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 简化的图表 -->
+      <div class="chart-card">
+        <h3>访问趋势</h3>
+        <div class="mini-chart">
+          <div
+            v-for="height in chartData.slice(0, 7)" :key="height" class="bar"
+            :style="{ height: `${height}%` }"
+          />
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
+
+<style scoped>
+.dashboard-mobile {
+  padding: 1rem;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-header h1 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.refresh-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-content h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.stat-content p {
+  margin: 0.25rem 0;
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.stat-change {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+
+.stat-change.positive {
+  background: #d4edda;
+  color: #155724;
+}
+
+.stat-change.negative {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.chart-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.mini-chart {
+  display: flex;
+  align-items: end;
+  gap: 4px;
+  height: 100px;
+  margin-top: 1rem;
+}
+
+.bar {
+  background: #667eea;
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+}
+</style>
+```
+
+:::
+
+### 使用响应式仪表板
+
+```vue
+<script setup lang="ts">
+import { TemplateRenderer } from '@ldesign/template/vue'
+import { onMounted, ref } from 'vue'
+
+const currentDevice = ref('desktop')
+
+function updateDevice() {
+  const width = window.innerWidth
+  if (width <= 768) {
+    currentDevice.value = 'mobile'
+  }
+  else if (width <= 1024) {
+    currentDevice.value = 'tablet'
+  }
+  else {
+    currentDevice.value = 'desktop'
+  }
+}
+
+onMounted(() => {
+  updateDevice()
+  window.addEventListener('resize', updateDevice)
+})
+</script>
+
+<template>
+  <div id="app">
+    <!-- 自动根据设备类型选择模板 -->
+    <TemplateRenderer
+      template="dashboard"
+      :template-props="{ title: '数据仪表板' }"
+    />
+
+    <!-- 显示当前设备信息 -->
+    <div class="device-info">
+      当前设备: {{ currentDevice }}
+    </div>
   </div>
 </template>
 
 <style>
-.app {
-  padding: 2rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.app h1 {
-  text-align: center;
-  color: #333;
-  margin-bottom: 2rem;
-}
-</style>
-```
-
-### 3. 使用 Composable 方式
-
-```vue
-<script setup lang="ts">
-import { useTemplate } from '@ldesign/template'
-import { ref } from 'vue'
-
-// 使用模板管理 composable
-const { currentTemplate, loading, error, render, clearCache } = useTemplate()
-
-// 响应式数据
-const templateTitle = ref('Hello')
-const templateMessage = ref('这是通过 Composable 加载的模板！')
-
-// 加载模板
-async function loadTemplate() {
-  await render({
-    category: 'greeting',
-    device: 'desktop',
-    template: 'hello',
-  })
-}
-
-// 切换消息
-function switchMessage() {
-  const messages = [
-    '这是通过 Composable 加载的模板！',
-    '消息已切换！',
-    '又一条新消息！',
-    'LDesign Template 很棒！',
-  ]
-
-  const currentIndex = messages.indexOf(templateMessage.value)
-  const nextIndex = (currentIndex + 1) % messages.length
-  templateMessage.value = messages[nextIndex]
-}
-
-// 清空模板
-function clearTemplate() {
-  currentTemplate.value = null
-}
-
-// 重试加载
-function retry() {
-  loadTemplate()
-}
-
-// 处理模板事件
-function handleTemplateClick() {
-  console.log('模板按钮被点击')
-}
-
-function onGreet(message: string) {
-  console.log('收到问候:', message)
-}
-</script>
-
-<template>
-  <div class="app">
-    <h1>使用 Composable</h1>
-
-    <div class="controls">
-      <button @click="loadTemplate">加载模板</button>
-      <button @click="switchMessage">切换消息</button>
-      <button @click="clearTemplate">清空模板</button>
-    </div>
-
-    <div class="template-container">
-      <div v-if="loading" class="loading">正在加载模板...</div>
-
-      <div v-else-if="error" class="error">
-        加载失败: {{ error.message }}
-        <button @click="retry">重试</button>
-      </div>
-
-      <component
-        :is="currentTemplate"
-        v-else-if="currentTemplate"
-        :title="templateTitle"
-        :message="templateMessage"
-        :on-click="handleTemplateClick"
-        @greet="onGreet"
-      />
-
-      <div v-else class="empty">点击"加载模板"开始</div>
-    </div>
-  </div>
-</template>
-
-<style scoped>
-.app {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-.controls {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  justify-content: center;
-}
-
-.controls button {
-  padding: 0.5rem 1rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.controls button:hover {
-  background: #f0f0f0;
-}
-
-.template-container {
-  min-height: 400px;
-  border: 2px dashed #ddd;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.loading,
-.error,
-.empty {
-  text-align: center;
-  color: #666;
-  font-size: 1.1rem;
-}
-
-.error {
-  color: #e74c3c;
-}
-
-.error button {
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  background: #e74c3c;
+.device-info {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: rgba(0,0,0,0.8);
   color: white;
-  border: none;
+  padding: 0.5rem;
   border-radius: 4px;
-  cursor: pointer;
+  font-size: 0.8rem;
 }
 </style>
 ```
 
-### 4. 使用指令方式
+## 高级用法
+
+### 预加载和缓存
 
 ```vue
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { useTemplate, useTemplateCache } from '@ldesign/template/vue'
 
-const selectedTemplate = ref('')
+// 预加载关键模板
+const { preloadTemplate } = useTemplate()
+const { preloadTemplates, cacheStats } = useTemplateCache()
 
-const templateConfig = computed(() => {
-  if (!selectedTemplate.value) return null
+// 预加载登录模板的所有设备版本
+await preloadTemplates([
+  { category: 'login', deviceType: 'desktop' },
+  { category: 'login', deviceType: 'mobile' },
+  { category: 'login', deviceType: 'tablet' }
+])
 
-  return {
-    category: 'greeting',
-    device: 'desktop',
-    template: selectedTemplate.value,
-    props: {
-      title: '指令模板',
-      message: '这是通过指令加载的模板！',
-      onClick: () => {
-        console.log('指令模板按钮被点击')
-      },
-    },
-  }
-})
-
-function updateTemplate() {
-  console.log('模板已切换:', selectedTemplate.value)
-}
+// 监控缓存状态
+console.log('缓存命中率:', cacheStats.value.hitRate)
 </script>
-
-<template>
-  <div class="app">
-    <h1>使用指令</h1>
-
-    <div class="controls">
-      <label>
-        选择模板:
-        <select v-model="selectedTemplate" @change="updateTemplate">
-          <option value="">请选择</option>
-          <option value="hello">Hello 模板</option>
-        </select>
-      </label>
-    </div>
-
-    <!-- 使用 v-template 指令 -->
-    <div
-      v-if="templateConfig"
-      v-template="templateConfig"
-      class="template-container"
-    />
-
-    <div v-else class="empty">请选择一个模板</div>
-  </div>
-</template>
-
-<style scoped>
-.app {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-.controls {
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-.controls select {
-  margin-left: 0.5rem;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.template-container {
-  min-height: 400px;
-}
-
-.empty {
-  text-align: center;
-  color: #666;
-  font-size: 1.1rem;
-  padding: 2rem;
-  border: 2px dashed #ddd;
-  border-radius: 8px;
-}
-</style>
 ```
 
-## 错误处理
-
-### 处理模板加载错误
+### 错误处理和回退
 
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const templateProps = ref({
-  title: '错误处理示例',
-  message: '这个示例展示了如何处理模板加载错误',
-})
+const showError = ref(false)
+const errorMessage = ref('')
 
 function handleError(error: Error) {
-  console.error('模板加载错误:', error)
-  // 可以在这里上报错误到监控系统
+  console.error('模板错误:', error)
+  showError.value = true
+  errorMessage.value = error.message
 }
 
-function handleLoad(component: any) {
-  console.log('模板加载成功:', component)
+function retry() {
+  showError.value = false
+  // 重新加载模板
+  location.reload()
 }
 </script>
 
 <template>
-  <div class="app">
-    <LTemplateRenderer
-      category="greeting"
-      device="desktop"
-      template="hello"
-      :template-props="templateProps"
-      @error="handleError"
-      @load="handleLoad"
-    >
-      <!-- 自定义加载状态 -->
-      <template #loading>
-        <div class="custom-loading">
-          <div class="spinner" />
-          <p>正在加载问候模板...</p>
-        </div>
-      </template>
+  <div>
+    <TemplateRenderer
+      template="dashboard"
+      @template-error="handleError"
+    />
 
-      <!-- 自定义错误状态 -->
-      <template #error="{ error, retry }">
-        <div class="custom-error">
-          <h3>😞 加载失败</h3>
-          <p>{{ error.message }}</p>
-          <button @click="retry">重新加载</button>
-        </div>
-      </template>
-
-      <!-- 自定义空状态 -->
-      <template #empty>
-        <div class="custom-empty">
-          <h3>🤔 没有找到模板</h3>
-          <p>请检查模板配置是否正确</p>
-        </div>
-      </template>
-    </LTemplateRenderer>
+    <!-- 错误回退UI -->
+    <div v-if="showError" class="error-fallback">
+      <h3>模板加载失败</h3>
+      <p>{{ errorMessage }}</p>
+      <button @click="retry">
+        重试
+      </button>
+    </div>
   </div>
 </template>
-
-<style scoped>
-.custom-loading {
-  text-align: center;
-  padding: 2rem;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.custom-error {
-  text-align: center;
-  padding: 2rem;
-  color: #e74c3c;
-}
-
-.custom-error button {
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  background: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.custom-empty {
-  text-align: center;
-  padding: 2rem;
-  color: #666;
-}
-</style>
 ```
 
-## 总结
+### 性能监控
 
-这个基础示例展示了：
+```vue
+<script setup lang="ts">
+import { useTemplate } from '@ldesign/template/vue'
 
-1. **模板创建**: 如何创建模板组件和配置文件
-2. **组件使用**: 使用 `LTemplateRenderer` 组件渲染模板
-3. **Composable 使用**: 使用 `useTemplate` 进行程序化控制
-4. **指令使用**: 使用 `v-template` 指令声明式渲染
-5. **错误处理**: 如何处理加载错误和提供自定义状态
+const { manager } = useTemplate()
 
-通过这个示例，你应该能够理解 LDesign Template 的基本工作原理，并开始创建自己的模板。
+// 监听性能事件
+manager.on('performance:warning', (data) => {
+  console.warn('性能警告:', data)
 
-## 下一步
+  if (data.type === 'slow_loading') {
+    // 处理加载缓慢的情况
+    console.log('模板加载缓慢:', data.template)
+  }
+})
 
-- 查看 [响应式模板](./responsive.md) 了解多设备适配
-- 学习 [动态切换](./dynamic.md) 实现主题切换
-- 探索 [自定义组件](./custom.md) 创建复杂模板
+// 获取性能报告
+const report = manager.getPerformanceReport()
+console.log('性能报告:', report)
+</script>
+```
+
+## 最佳实践
+
+### 1. 模板组织
+
+```
+src/templates/
+├── auth/                 # 认证相关
+│   ├── login/
+│   ├── register/
+│   └── forgot-password/
+├── dashboard/            # 仪表板
+│   ├── admin/
+│   ├── user/
+│   └── analytics/
+└── common/              # 通用组件
+    ├── header/
+    ├── footer/
+    └── sidebar/
+```
+
+### 2. 性能优化
+
+```typescript
+// 配置预加载策略
+const config = {
+  loader: {
+    preloadStrategy: 'critical', // 预加载关键模板
+    enableCache: true,
+    maxCacheSize: 50
+  },
+  performance: {
+    enabled: true,
+    sampleRate: 0.1 // 10% 采样率
+  }
+}
+```
+
+### 3. 错误边界
+
+```vue
+<script setup lang="ts">
+import { ErrorBoundary } from '@/components/ErrorBoundary.vue'
+</script>
+
+<template>
+  <ErrorBoundary>
+    <TemplateRenderer template="dashboard" />
+  </ErrorBoundary>
+</template>
+```
+
+这些示例展示了 `@ldesign/template` 的基础用法，从简单的登录表单到复杂的响应式仪表板，帮助你快速上手并掌握核心功能。

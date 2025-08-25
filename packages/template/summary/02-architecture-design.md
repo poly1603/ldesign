@@ -355,7 +355,7 @@ class EventEmitter {
 }
 
 // 使用示例
-manager.on('template:load', event => {
+manager.on('template:load', (event) => {
   console.log('模板加载成功:', event.template)
 })
 ```

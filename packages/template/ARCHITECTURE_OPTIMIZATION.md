@@ -72,7 +72,8 @@ const configIndex = pathParts.findIndex(part => part.startsWith('config.'))
 
 // 优化后：使用工具函数
 const pathInfo = extractTemplatePathFromModulePath(configPath)
-if (!pathInfo || !pathInfo.isValid) return null
+if (!pathInfo || !pathInfo.isValid)
+  return null
 ```
 
 ## 📈 性能提升

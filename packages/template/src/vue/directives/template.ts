@@ -1,180 +1,324 @@
 /**
- * 模板指令
- *
- * 提供 v-template 指令用于动态渲染模板
+ * Vue 模板指令
+ * 提供声明式的模板渲染指令
  */
 
-import type { App, Directive, DirectiveBinding } from 'vue'
-import type { DeviceType } from '../../types'
-import { createApp } from 'vue'
+import type { Directive, DirectiveBinding } from 'vue'
+import type { DeviceType, TemplateManagerConfig } from '../../types'
+import { createApp, h } from 'vue'
 import { TemplateManager } from '../../core/manager'
 
-export interface TemplateDirectiveValue {
-  category: string
-  device?: DeviceType
-  template?: string
+/**
+ * 指令绑定值接口
+ */
+interface TemplateDirectiveValue {
+  template: string
+  deviceType?: DeviceType
   props?: Record<string, any>
-  events?: Record<string, (...args: any[]) => void>
-}
-
-// 存储每个元素的 Vue 应用实例
-const elementApps = new WeakMap<HTMLElement, App>()
-
-/**
- * 模板指令实现
- */
-export const templateDirective: Directive = {
-  mounted(el: HTMLElement, binding: any) {
-    updateTemplate(el, binding)
-  },
-
-  updated(el: HTMLElement, binding: any) {
-    if (binding.value !== binding.oldValue) {
-      updateTemplate(el, binding)
-    }
-  },
-
-  unmounted(el: HTMLElement) {
-    // 清理 Vue 应用实例
-    const app = elementApps.get(el)
-    if (app) {
-      app.unmount()
-      elementApps.delete(el)
-    }
-    // 清空元素内容
-    el.innerHTML = ''
-  },
+  config?: TemplateManagerConfig
+  onLoaded?: (component: any) => void
+  onError?: (error: Error) => void
 }
 
 /**
- * 更新模板
+ * 元素数据接口
  */
-async function updateTemplate(el: HTMLElement, binding: DirectiveBinding<TemplateDirectiveValue | null>) {
-  // 检查 binding.value 是否存在
-  if (!binding.value) {
-    console.warn('[v-template] directive value is required')
-    return
-  }
+interface ElementData {
+  manager: TemplateManager
+  app: any
+  cleanup: () => void
+}
 
-  const { category, device, template, props = {}, events = {} } = binding.value
+// 存储每个元素的数据
+const elementDataMap = new WeakMap<Element, ElementData>()
 
-  if (!category) {
-    console.warn('[v-template] category is required')
-    return
-  }
+/**
+ * 创建模板管理器
+ */
+function createManager(config?: TemplateManagerConfig): TemplateManager {
+  return new TemplateManager(config)
+}
 
+/**
+ * 渲染模板到元素
+ */
+async function renderTemplate(
+  el: Element,
+  value: TemplateDirectiveValue,
+): Promise<void> {
   try {
-    // 创建模板管理器实例
-    const manager = new TemplateManager()
+    // 获取或创建管理器
+    let elementData = elementDataMap.get(el)
+    if (!elementData) {
+      const manager = createManager(value.config)
+      const app = createApp({})
+
+      elementData = {
+        manager,
+        app,
+        cleanup: () => {
+          app.unmount()
+          manager.dispose()
+        },
+      }
+
+      elementDataMap.set(el, elementData)
+    }
+
+    const { manager } = elementData
+
+    // 确保管理器已初始化
+    if (!manager.getStatus().initialized) {
+      await manager.initialize()
+    }
 
     // 渲染模板
-    const result = await manager.render({
-      category,
-      device: (device as DeviceType) || 'desktop',
-      template: template || 'default',
-    })
+    const result = await manager.render(value.template, value.deviceType, value.props)
 
-    if (result && result.component) {
-      // 渲染组件到元素
-      renderComponentToElement(el, result.component, props, events)
+    if (result.success && result.component) {
+      // 创建组件实例
+      const componentVNode = h(result.component, value.props || {})
+
+      // 清空元素内容
+      el.innerHTML = ''
+
+      // 挂载组件
+      const app = createApp(componentVNode)
+      app.mount(el)
+
+      // 更新应用实例
+      elementData.app = app
+
+      // 调用成功回调
+      if (value.onLoaded) {
+        value.onLoaded(result.component)
+      }
     }
     else {
-      el.innerHTML = `<div class="template-error">Failed to load template</div>`
+      throw result.error || new Error('Failed to render template')
     }
   }
   catch (error) {
-    console.error('[v-template] Error loading template:', error)
-    el.innerHTML = `<div class="template-error">Template loading error</div>`
+    // 显示错误信息
+    el.innerHTML = `
+      <div class="template-directive-error">
+        <p>模板渲染失败: ${value.template}</p>
+        <p class="error-detail">${(error as Error).message}</p>
+      </div>
+    `
+
+    // 调用错误回调
+    if (value.onError) {
+      value.onError(error as Error)
+    }
   }
 }
 
 /**
- * 将组件渲染到元素
+ * 清理元素
  */
-function renderComponentToElement(
-  el: HTMLElement,
-  component: any,
-  props: Record<string, any>,
-  events: Record<string, (...args: any[]) => void> = {},
-) {
-  // 清理之前的应用实例
-  const existingApp = elementApps.get(el)
-  if (existingApp) {
-    existingApp.unmount()
-    elementApps.delete(el)
-  }
-
-  // 清空元素内容
-  el.innerHTML = ''
-
-  try {
-    // 创建新的 Vue 应用实例
-    const app = createApp(component, {
-      ...props,
-      // 将事件作为 props 传递
-      ...Object.fromEntries(
-        Object.entries(events).map(([key, handler]) => [`on${key.charAt(0).toUpperCase()}${key.slice(1)}`, handler]),
-      ),
-    })
-
-    // 挂载应用到元素
-    app.mount(el)
-
-    // 存储应用实例以便后续清理
-    elementApps.set(el, app)
-  }
-  catch (error) {
-    console.error('[v-template] Error rendering component:', error)
-    el.innerHTML = `<div class="template-error">Component render error</div>`
+function cleanupElement(el: Element): void {
+  const elementData = elementDataMap.get(el)
+  if (elementData) {
+    elementData.cleanup()
+    elementDataMap.delete(el)
   }
 }
 
 /**
- * 注册模板指令
+ * v-template 指令
+ *
+ * 用法:
+ * <div v-template="{ template: 'login', deviceType: 'mobile' }"></div>
+ * <div v-template="'login'"></div>
  */
-export function registerTemplateDirective(app: any) {
-  app.directive('template', templateDirective)
+export const vTemplate: Directive<Element, string | TemplateDirectiveValue> = {
+  async mounted(el: Element, binding: DirectiveBinding<string | TemplateDirectiveValue>) {
+    const value = typeof binding.value === 'string'
+      ? { template: binding.value }
+      : binding.value
+
+    if (!value || !value.template) {
+      console.warn('v-template directive requires a template name')
+      return
+    }
+
+    await renderTemplate(el, value)
+  },
+
+  async updated(el: Element, binding: DirectiveBinding<string | TemplateDirectiveValue>) {
+    const value = typeof binding.value === 'string'
+      ? { template: binding.value }
+      : binding.value
+
+    if (!value || !value.template) {
+      console.warn('v-template directive requires a template name')
+      return
+    }
+
+    // 检查值是否发生变化
+    const oldValue = typeof binding.oldValue === 'string'
+      ? { template: binding.oldValue }
+      : binding.oldValue
+
+    if (JSON.stringify(value) !== JSON.stringify(oldValue)) {
+      await renderTemplate(el, value)
+    }
+  },
+
+  unmounted(el: Element) {
+    cleanupElement(el)
+  },
 }
 
 /**
- * 指令选项
+ * v-template-preload 指令
+ * 预加载指定的模板
+ *
+ * 用法:
+ * <div v-template-preload="'login'"></div>
+ * <div v-template-preload="{ template: 'login', deviceType: 'mobile' }"></div>
  */
-export interface TemplateDirectiveOptions {
-  name?: string
-  defaultDevice?: string
-  errorTemplate?: string
+export const vTemplatePreload: Directive<Element, string | TemplateDirectiveValue> = {
+  async mounted(el: Element, binding: DirectiveBinding<string | TemplateDirectiveValue>) {
+    const value = typeof binding.value === 'string'
+      ? { template: binding.value }
+      : binding.value
+
+    if (!value || !value.template) {
+      console.warn('v-template-preload directive requires a template name')
+      return
+    }
+
+    try {
+      const manager = createManager(value.config)
+      await manager.initialize()
+      await manager.preloadTemplate(value.template, value.deviceType)
+    }
+    catch (error) {
+      console.warn('Failed to preload template:', value.template, error)
+    }
+  },
 }
 
 /**
- * 创建模板指令
+ * v-template-lazy 指令
+ * 懒加载模板，当元素进入视口时才加载
+ *
+ * 用法:
+ * <div v-template-lazy="{ template: 'login', deviceType: 'mobile' }"></div>
  */
-export function createTemplateDirective(options: TemplateDirectiveOptions = {}): Directive {
-  const { name = 'template', defaultDevice = 'desktop', errorTemplate } = options
+export const vTemplateLazy: Directive<Element, string | TemplateDirectiveValue> = {
+  mounted(el: Element, binding: DirectiveBinding<string | TemplateDirectiveValue>) {
+    const value = typeof binding.value === 'string'
+      ? { template: binding.value }
+      : binding.value
 
-  return {
-    mounted(el, binding) {
-      const value = {
-        device: defaultDevice,
-        ...binding.value,
-      }
-      updateTemplate(el, { ...binding, value })
-    },
+    if (!value || !value.template) {
+      console.warn('v-template-lazy directive requires a template name')
+      return
+    }
 
-    updated(el, binding) {
-      if (binding.value !== binding.oldValue) {
-        const value = {
-          device: defaultDevice,
-          ...binding.value,
+    // 创建 Intersection Observer
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        const entry = entries[0]
+        if (entry.isIntersecting) {
+          // 元素进入视口，开始加载模板
+          await renderTemplate(el, value)
+
+          // 停止观察
+          observer.disconnect()
         }
-        updateTemplate(el, { ...binding, value })
-      }
-    },
+      },
+      {
+        threshold: 0.1, // 当10%的元素可见时触发
+        rootMargin: '50px', // 提前50px开始加载
+      },
+    )
 
-    unmounted(el) {
-      el.innerHTML = ''
-    },
-  }
+    observer.observe(el)
+
+    // 存储 observer 以便清理
+    ;(el as any).__templateObserver = observer
+  },
+
+  unmounted(el: Element) {
+    const observer = (el as any).__templateObserver
+    if (observer) {
+      observer.disconnect()
+      delete (el as any).__templateObserver
+    }
+
+    cleanupElement(el)
+  },
+}
+
+/**
+ * v-template-cache 指令
+ * 控制模板缓存行为
+ *
+ * 用法:
+ * <div v-template-cache:clear="'login'"></div>
+ * <div v-template-cache:preload="['login', 'dashboard']"></div>
+ */
+export const vTemplateCache: Directive<Element, any> = {
+  async mounted(el: Element, binding: DirectiveBinding<any>) {
+    const { arg, value } = binding
+
+    if (!arg || !value) {
+      console.warn('v-template-cache directive requires an argument and value')
+      return
+    }
+
+    const manager = createManager()
+    await manager.initialize()
+
+    switch (arg) {
+      case 'clear':
+        if (typeof value === 'string') {
+          manager.clearCache(value)
+        }
+        else if (Array.isArray(value)) {
+          value.forEach(template => manager.clearCache(template))
+        }
+        break
+
+      case 'preload':
+        if (typeof value === 'string') {
+          await manager.preloadTemplate(value)
+        }
+        else if (Array.isArray(value)) {
+          await manager.preloadTemplates(value)
+        }
+        break
+
+      default:
+        console.warn(`Unknown v-template-cache argument: ${arg}`)
+    }
+  },
+}
+
+/**
+ * 指令集合
+ */
+export const templateDirectives = {
+  'template': vTemplate,
+  'template-preload': vTemplatePreload,
+  'template-lazy': vTemplateLazy,
+  'template-cache': vTemplateCache,
+}
+
+/**
+ * 安装所有指令的函数
+ */
+export function installTemplateDirectives(app: any): void {
+  Object.entries(templateDirectives).forEach(([name, directive]) => {
+    app.directive(name, directive)
+  })
 }
 
 // 默认导出
-export default templateDirective
+export default {
+  install: installTemplateDirectives,
+}

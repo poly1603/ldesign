@@ -35,9 +35,9 @@ yarn add @ldesign/template
 ### 1. Provider 方式 (推荐)
 
 ```typescript
+import { TemplateProvider } from '@ldesign/template'
 // main.ts
 import { createApp } from 'vue'
-import { TemplateProvider } from '@ldesign/template'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -46,16 +46,10 @@ app.mount('#app')
 
 ```vue
 <!-- App.vue -->
-<template>
-  <TemplateProvider :config="providerConfig">
-    <router-view />
-  </TemplateProvider>
-</template>
-
 <script setup lang="ts">
 import {
-  TemplateProvider,
   createTemplateProviderConfig,
+  TemplateProvider,
 } from '@ldesign/template'
 
 const providerConfig = createTemplateProviderConfig({
@@ -73,6 +67,12 @@ const providerConfig = createTemplateProviderConfig({
   },
 })
 </script>
+
+<template>
+  <TemplateProvider :config="providerConfig">
+    <router-view />
+  </TemplateProvider>
+</template>
 ```
 
 ### 2. 插件方式
@@ -120,7 +120,9 @@ async function switchToLogin() {
 
 <template>
   <div>
-    <button @click="switchToLogin">切换到登录页</button>
+    <button @click="switchToLogin">
+      切换到登录页
+    </button>
     <TemplateRenderer
       v-if="selectedTemplate"
       :category="selectedTemplate.category"
@@ -134,6 +136,10 @@ async function switchToLogin() {
 ### 3. 内置模板选择器
 
 ```vue
+<script setup>
+import { TemplateRenderer } from '@ldesign/template'
+</script>
+
 <template>
   <!-- 带顶部选择器的模板渲染器 -->
   <TemplateRenderer
@@ -167,10 +173,6 @@ async function switchToLogin() {
   <!-- 简单布尔值启用默认选择器 -->
   <TemplateRenderer category="profile" :selector="true" />
 </template>
-
-<script setup>
-import { TemplateRenderer } from '@ldesign/template'
-</script>
 ```
 
 ### 4. 组件方式
@@ -196,13 +198,17 @@ import { TemplateRenderer } from '@ldesign/template'
     @error="onTemplateError"
   >
     <template #loading>
-      <div class="custom-loading">加载中...</div>
+      <div class="custom-loading">
+        加载中...
+      </div>
     </template>
 
     <template #error="{ error, retry }">
       <div class="custom-error">
         <p>{{ error.message }}</p>
-        <button @click="retry">重试</button>
+        <button @click="retry">
+          重试
+        </button>
       </div>
     </template>
   </LTemplateRenderer>
@@ -212,34 +218,40 @@ import { TemplateRenderer } from '@ldesign/template'
 ### 5. Provider 模式使用
 
 ```vue
-<template>
-  <div>
-    <!-- 在Provider上下文中使用组合式函数 -->
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error">{{ error.message }}</div>
-    <div v-else>
-      <h3>当前设备: {{ currentDevice }}</h3>
-      <button @click="handleSwitchTemplate">切换模板</button>
-
-      <!-- 简化的模板渲染器，自动使用Provider配置 -->
-      <TemplateRenderer category="login" :selector="true" />
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { TemplateRenderer, useTemplateProvider } from '@ldesign/template'
 
-const { currentDevice, loading, error, switchTemplate, getTemplates } =
-  useTemplateProvider()
+const { currentDevice, loading, error, switchTemplate, getTemplates }
+  = useTemplateProvider()
 
-const handleSwitchTemplate = async () => {
+async function handleSwitchTemplate() {
   const templates = getTemplates('login', currentDevice.value)
   if (templates.length > 0) {
     await switchTemplate('login', currentDevice.value, templates[0].template)
   }
 }
 </script>
+
+<template>
+  <div>
+    <!-- 在Provider上下文中使用组合式函数 -->
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error">
+      {{ error.message }}
+    </div>
+    <div v-else>
+      <h3>当前设备: {{ currentDevice }}</h3>
+      <button @click="handleSwitchTemplate">
+        切换模板
+      </button>
+
+      <!-- 简化的模板渲染器，自动使用Provider配置 -->
+      <TemplateRenderer category="login" :selector="true" />
+    </div>
+  </div>
+</template>
 ```
 
 ### 6. 指令方式
@@ -412,7 +424,7 @@ import { useTemplate } from '@ldesign/template'
 const { currentDevice, switchTemplate } = useTemplate()
 
 // 监听设备变化
-watch(currentDevice, newDevice => {
+watch(currentDevice, (newDevice) => {
   console.log('设备类型变化:', newDevice)
   // 自动切换到对应设备的模板
 })

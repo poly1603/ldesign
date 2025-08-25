@@ -1,4 +1,4 @@
-import type { PropType } from 'vue'
+import type { PropType } from '@vue/runtime-core'
 import type { LoginTemplateProps } from './type'
 
 export default {

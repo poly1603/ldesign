@@ -1,483 +1,532 @@
 /**
- * LDesign Template System - 类型定义
- *
- * 重构版本 - 使用现有子包，专注于模板特有功能
+ * @ldesign/template 核心类型定义
+ * 高性能动态模板管理系统的完整类型系统
  */
 
-import type { Component, ComputedRef, Ref } from 'vue'
+// Vue 类型定义（条件导入）
+export type VueComponent = any
+export type VueApp = any
 
-// ============ 基础类型（临时，稍后使用外部包） ============
+// ==================== 基础类型 ====================
 
 /**
- * 设备类型 - 将来使用 @ldesign/device
+ * 设备类型枚举
  */
 export type DeviceType = 'desktop' | 'mobile' | 'tablet'
 
 /**
- * 模板配置
+ * 模板状态枚举
+ */
+export type TemplateStatus = 'pending' | 'loading' | 'loaded' | 'error' | 'cached'
+
+/**
+ * 缓存策略枚举
+ */
+export type CacheStrategy = 'lru' | 'fifo' | 'ttl' | 'memory'
+
+/**
+ * 预加载策略枚举
+ */
+export type PreloadStrategy = 'critical' | 'idle' | 'all' | 'none'
+
+// ==================== 模板相关类型 ====================
+
+/**
+ * 模板配置接口
  */
 export interface TemplateConfig {
   /** 模板唯一标识 */
-  id?: string
+  id: string
   /** 模板名称 */
   name: string
   /** 模板描述 */
   description?: string
   /** 模板版本 */
   version?: string
-  /** 作者 */
+  /** 作者信息 */
   author?: string
-  /** 标签 */
-  tags?: string[]
+  /** 模板分类 */
+  category: string
+  /** 设备类型 */
+  device: DeviceType
+  /** 模板变体 */
+  variant: string
   /** 是否为默认模板 */
   isDefault?: boolean
-  /** 预览图 */
+  /** 功能特性列表 */
+  features?: string[]
+  /** 预览图片URL */
   preview?: string
-  /** 分类（兼容性） */
-  category?: string
-  /** 设备类型（兼容性） */
-  device?: string
-  /** 模板名称（兼容性） */
-  template?: string
-  /** 自定义属性 */
-  [key: string]: unknown
+  /** 标签列表 */
+  tags?: string[]
+  /** 模板属性定义 */
+  props?: Record<string, {
+    type: 'string' | 'number' | 'boolean' | 'object' | 'array'
+    default?: any
+    description?: string
+    required?: boolean
+    options?: any[]
+  }>
+  /** 依赖关系 */
+  dependencies?: string[]
+  /** 兼容性信息 */
+  compatibility?: {
+    vue?: string
+    node?: string
+    browsers?: string[]
+  }
+  /** 自定义配置参数 */
+  config?: Record<string, any>
+  /** 优先级 */
+  priority?: number
+  /** 是否启用 */
+  enabled?: boolean
+  /** 创建时间 */
+  createdAt?: string
+  /** 更新时间 */
+  updatedAt?: string
 }
 
 /**
- * 模板元数据
+ * 模板元数据接口
  */
 export interface TemplateMetadata {
-  /** 显示名称 */
+  /** 模板名称 */
   name: string
-  /** 描述 */
-  description: string
-  /** 分类 */
+  /** 模板描述 */
+  description?: string
+  /** 模板版本 */
+  version?: string
+  /** 作者信息 */
+  author?: string
+  /** 创建时间 */
+  createdAt?: string
+  /** 更新时间 */
+  updatedAt?: string
+  /** 标签列表 */
+  tags?: string[]
+  /** 依赖关系 */
+  dependencies?: string[]
+  /** 兼容性信息 */
+  compatibility?: {
+    vue?: string
+    node?: string
+    browsers?: string[]
+  }
+  /** 自定义配置参数 */
+  config?: Record<string, any>
+}
+
+/**
+ * 模板文件信息接口
+ */
+export interface TemplateFileInfo {
+  /** 文件路径 */
+  path: string
+  /** 文件类型 */
+  type: 'template' | 'config' | 'asset'
+  /** 文件大小（字节） */
+  size?: number
+  /** 最后修改时间 */
+  lastModified?: number
+  /** 文件内容（仅用于配置文件） */
+  content?: any
+}
+
+/**
+ * 模板信息接口
+ */
+export interface TemplateInfo {
+  /** 模板分类（目录名） */
   category: string
   /** 设备类型 */
-  device: DeviceType
-  /** 模板名称 */
-  template: string
-  /** 配置信息 */
-  config: TemplateConfig
-  /** 组件路径 */
-  componentPath: string
-  /** 样式路径 */
-  stylePath?: string
-  /** 模板路径（兼容性） */
-  path?: string
-  /** 组件实例 */
-  component?: Component
-}
-
-/**
- * 模板扫描结果
- */
-export interface TemplateScanResult {
-  /** 扫描到的模板数量 */
-  count: number
-  /** 模板列表 */
-  templates: TemplateMetadata[]
-  /** 扫描耗时（毫秒） */
-  duration: number
-  /** 扫描的目录数量 */
-  scannedDirectories: number
-  /** 成功的扫描模式 */
-  scanMode:
-  | 'parent'
-  | 'current'
-  | 'fallback'
-  | 'Built模式 (相对路径)'
-  | 'Source模式 (相对路径)'
-  | '深层相对路径'
-  | string
-  /** 调试信息 */
-  debug: {
-    scannedPaths: string[]
-    foundConfigs: number
-    foundComponents: number
-  }
-}
-
-/**
- * 模板路径信息
- */
-export interface TemplatePathInfo {
-  category: string
-  device: DeviceType
-  template: string
-  fullPath: string
-  isValid: boolean
-}
-
-// ============ 管理器相关类型 ============
-
-/**
- * 存储配置选项
- */
-export interface TemplateStorageOptions {
-  /** 存储键名 */
-  key?: string
-  /** 存储类型 */
-  storage?: 'localStorage' | 'sessionStorage' | 'memory'
-  /** 自定义序列化函数 */
-  serialize?: (data: unknown) => string
-  /** 自定义反序列化函数 */
-  deserialize?: (data: string) => unknown
-}
-
-/**
- * 模板管理器配置
- */
-export interface TemplateManagerConfig {
-  /** 是否启用缓存 */
-  enableCache?: boolean
-  /** 缓存过期时间（毫秒） */
-  cacheExpiration?: number
-  /** 是否自动检测设备 */
-  autoDetectDevice?: boolean
-  /** 是否启用调试模式 */
-  debug?: boolean
-  /** 持久化存储配置 */
-  storage?: TemplateStorageOptions
-}
-
-/**
- * 模板渲染选项
- */
-export interface TemplateRenderOptions {
-  /** 分类 */
-  category: string
-  /** 设备类型（可选，自动检测） */
-  device?: DeviceType
-  /** 模板名称 */
-  template: string
-  /** 传递给模板的属性 */
-  props?: Record<string, unknown>
-  /** 是否使用缓存 */
-  cache?: boolean
-}
-
-/**
- * 模板加载结果
- */
-export interface TemplateLoadResult {
-  /** 模板组件 */
-  component: Component
+  deviceType: DeviceType
+  /** 模板变体 */
+  variant?: string
+  /** 模板文件信息 */
+  templateFile: TemplateFileInfo
+  /** 配置文件信息 */
+  configFile?: TemplateFileInfo
+  /** 静态资源文件 */
+  assets?: TemplateFileInfo[]
   /** 模板元数据 */
   metadata: TemplateMetadata
+  /** 模板状态 */
+  status: TemplateStatus
+  /** 加载时间戳 */
+  loadedAt?: number
+  /** 错误信息 */
+  error?: Error
+}
+
+/**
+ * 模板注册表项接口
+ */
+export interface TemplateRegistryItem {
+  name: string
+  displayName?: string
+  description?: string
+  version?: string
+  tags?: string[]
+  thumbnail?: string
+  path: string
+  category: string
+  deviceType: DeviceType
+  variant?: string
+  isDefault?: boolean
+  component?: any
+  metadata?: Record<string, any>
+  /** 是否为外部模板 */
+  isExternal?: boolean
+  /** 外部模板引用 */
+  externalTemplate?: ExternalTemplate
+}
+
+/**
+ * 外部模板定义接口
+ */
+export interface ExternalTemplate {
+  /** 模板配置 */
+  config: TemplateConfig
+  /** 模板组件 */
+  component: VueComponent
+  /** 样式文件路径（可选） */
+  styles?: string
+  /** 静态资源（可选） */
+  assets?: Record<string, string>
+}
+
+/**
+ * 模板扩展选项接口
+ */
+export interface TemplateExtensionOptions {
+  /** 外部模板列表 */
+  externalTemplates?: ExternalTemplate[]
+  /** 是否覆盖默认模板 */
+  overrideDefaults?: boolean
+  /** 是否合并同名模板 */
+  mergeConflicts?: boolean
+  /** 模板优先级策略 */
+  priorityStrategy?: 'external' | 'default' | 'version'
+}
+
+/**
+ * 模板索引接口
+ */
+export interface TemplateIndex {
+  /** 索引版本 */
+  version: string
+  /** 创建时间 */
+  createdAt: number
+  /** 更新时间 */
+  updatedAt: number
+  /** 扫描路径 */
+  scanPaths: string[]
+  /** 模板总数 */
+  totalCount: number
+  /** 按分类分组的模板 */
+  categories: Record<string, Record<DeviceType, TemplateInfo>>
+  /** 扁平化的模板列表 */
+  templates: TemplateInfo[]
+  /** 扫描统计信息 */
+  stats: {
+    /** 扫描耗时（毫秒） */
+    scanDuration: number
+    /** 文件总数 */
+    totalFiles: number
+    /** 模板文件数 */
+    templateFiles: number
+    /** 配置文件数 */
+    configFiles: number
+    /** 资源文件数 */
+    assetFiles: number
+    /** 错误数量 */
+    errors: number
+  }
+}
+
+// ==================== 扫描器相关类型 ====================
+
+/**
+ * 扫描器配置接口
+ */
+export interface ScannerConfig {
+  /** 扫描路径列表 */
+  scanPaths: string | string[]
+  /** 是否递归扫描 */
+  recursive?: boolean
+  /** 包含的文件模式 */
+  include?: string[]
+  /** 排除的文件模式 */
+  exclude?: string[]
+  /** 最大扫描深度 */
+  maxDepth?: number
+  /** 是否启用缓存 */
+  enableCache?: boolean
+  /** 缓存TTL（毫秒） */
+  cacheTTL?: number
+  /** 是否监听文件变化 */
+  watchFiles?: boolean
+  /** 并发扫描数量 */
+  concurrency?: number
+}
+
+/**
+ * 扫描结果接口
+ */
+export interface ScanResult {
+  /** 扫描成功 */
+  success: boolean
+  /** 模板索引 */
+  index: TemplateIndex
+  /** 扫描耗时（毫秒） */
+  duration: number
+  /** 错误列表 */
+  errors: Error[]
+  /** 警告列表 */
+  warnings: string[]
+}
+
+// ==================== 加载器相关类型 ====================
+
+/**
+ * 加载器配置接口
+ */
+export interface LoaderConfig {
+  /** 是否启用缓存 */
+  enableCache?: boolean
+  /** 缓存策略 */
+  cacheStrategy?: CacheStrategy
+  /** 缓存大小限制 */
+  maxCacheSize?: number
+  /** 缓存TTL（毫秒） */
+  cacheTTL?: number
+  /** 预加载策略 */
+  preloadStrategy?: PreloadStrategy
+  /** 关键模板列表 */
+  criticalTemplates?: string[]
+  /** 加载超时时间（毫秒） */
+  loadTimeout?: number
+  /** 重试次数 */
+  retryCount?: number
+  /** 重试延迟（毫秒） */
+  retryDelay?: number
+}
+
+/**
+ * 加载结果接口
+ */
+export interface LoadResult<T = VueComponent> {
+  /** 加载成功 */
+  success: boolean
+  /** 加载的组件 */
+  component?: T
+  /** 模板信息 */
+  templateInfo: TemplateInfo
+  /** 加载耗时（毫秒） */
+  duration: number
   /** 是否来自缓存 */
   fromCache: boolean
-  /** 加载耗时 */
-  loadTime: number
+  /** 错误信息 */
+  error?: Error
 }
 
-// ============ Vue 集成类型 ============
+// ==================== 设备适配器相关类型 ====================
 
 /**
- * 插槽配置
+ * 设备适配器配置接口
  */
-export interface SlotConfig {
-  /** 插槽名称 */
-  name: string
-  /** 插槽内容 */
-  content?: unknown
-  /** 插槽属性 */
-  props?: Record<string, unknown>
+export interface DeviceAdapterConfig {
+  /** 默认设备类型 */
+  defaultDeviceType?: DeviceType
+  /** 设备类型回退策略 */
+  fallbackStrategy?: Record<DeviceType, DeviceType[]>
+  /** 是否启用自动检测 */
+  autoDetect?: boolean
+  /** 自定义设备检测函数 */
+  customDetector?: () => DeviceType
+  /** 设备变化监听 */
+  watchDeviceChange?: boolean
+}
+
+// ==================== 缓存相关类型 ====================
+
+/**
+ * 缓存配置接口
+ */
+export interface CacheConfig {
+  /** 是否启用缓存 */
+  enabled?: boolean
+  /** 缓存策略 */
+  strategy?: CacheStrategy
+  /** 最大缓存大小 */
+  maxSize?: number
+  /** 缓存TTL（毫秒） */
+  ttl?: number
+  /** 是否持久化 */
+  persistent?: boolean
+  /** 存储键前缀 */
+  keyPrefix?: string
 }
 
 /**
- * TemplateRenderer 组件属性
+ * 缓存项接口
+ */
+export interface CacheItem<T = any> {
+  /** 缓存键 */
+  key: string
+  /** 缓存值 */
+  value: T
+  /** 创建时间 */
+  createdAt: number
+  /** 访问时间 */
+  accessedAt: number
+  /** 访问次数 */
+  accessCount: number
+  /** 过期时间 */
+  expiresAt?: number
+  /** 数据大小（字节） */
+  size?: number
+}
+
+// ==================== 管理器相关类型 ====================
+
+/**
+ * 模板管理器配置接口
+ */
+export interface TemplateManagerConfig {
+  /** 扫描器配置 */
+  scanner?: ScannerConfig
+  /** 加载器配置 */
+  loader?: LoaderConfig
+  /** 设备适配器配置 */
+  deviceAdapter?: DeviceAdapterConfig
+  /** 缓存配置 */
+  cache?: CacheConfig
+  /** 是否启用调试模式 */
+  debug?: boolean
+  /** 性能监控配置 */
+  performance?: {
+    enabled?: boolean
+    sampleRate?: number
+    reportInterval?: number
+  }
+}
+
+// ==================== 事件相关类型 ====================
+
+/**
+ * 事件类型枚举
+ */
+export type EventType =
+  | 'template:scan:start'
+  | 'template:scan:progress'
+  | 'template:scan:complete'
+  | 'template:scan:error'
+  | 'template:load:start'
+  | 'template:load:progress'
+  | 'template:load:complete'
+  | 'template:load:error'
+  | 'template:cache:hit'
+  | 'template:cache:miss'
+  | 'template:cache:evict'
+  | 'device:change'
+  | 'performance:report'
+
+/**
+ * 事件数据接口
+ */
+export interface EventData {
+  /** 事件类型 */
+  type: EventType
+  /** 事件时间戳 */
+  timestamp: number
+  /** 事件数据 */
+  data?: any
+  /** 错误信息 */
+  error?: Error
+}
+
+/**
+ * 事件监听器类型
+ */
+export type EventListener = (data: EventData) => void
+
+// ==================== Vue 集成相关类型 ====================
+
+/**
+ * Vue 组件属性接口
  */
 export interface TemplateRendererProps {
-  /** 分类 */
-  category: string
-  /** 设备类型 */
-  device?: DeviceType
-  /** 模板名称（可选，支持字符串或对象格式） */
-  template?: string | Record<DeviceType, string>
-  /** 传递给模板的属性 */
-  templateProps?: Record<string, unknown>
-  /** 是否使用缓存 */
-  cache?: boolean
-  /** 是否预加载 */
-  preload?: boolean
-  /** 是否显示加载状态 */
-  loading?: boolean
-  /** 是否显示错误状态 */
-  error?: boolean
-  /** 是否启用切换动画 */
-  transition?: boolean
-  /** 动画持续时间（毫秒） */
-  transitionDuration?: number
-  /** 动画类型 */
-  transitionType?: 'fade' | 'slide' | 'scale' | 'flip'
-
-  // ============ 内置模板选择器配置 ============
-  /** 模板选择器配置 */
-  selector?: TemplateSelectorConfig | boolean
-  /** 自定义插槽配置 */
-  slots?: SlotConfig[]
-  /** 是否允许用户切换模板 */
-  allowTemplateSwitch?: boolean
-  /** 模板切换权限检查 */
-  canSwitchTemplate?: (template: string) => boolean
-}
-
-/**
- * useTemplate 组合式函数选项
- */
-export interface UseTemplateOptions extends TemplateManagerConfig {
-  /** 是否自动扫描模板 */
-  autoScan?: boolean
-  /** 模板分类 */
-  category?: string
-  /** 设备类型 */
+  /** 模板标识符（分类名称） */
+  template: string
+  /** 强制指定设备类型 */
   deviceType?: DeviceType
-  /** 初始模板 */
-  initialTemplate?: {
-    category: string
-    device?: DeviceType
-    template: string
-  }
-}
-
-// ============ 模板选择器类型 ============
-
-/**
- * 模板选择器配置选项
- */
-export interface TemplateSelectorConfig {
-  /** 是否显示选择器 */
-  enabled?: boolean
-  /** 选择器位置 */
-  position?: 'top' | 'bottom' | 'left' | 'right' | 'overlay' | 'inline'
-  /** 是否显示预览 */
-  showPreview?: boolean
-  /** 是否显示搜索 */
-  showSearch?: boolean
-  /** 布局模式 */
-  layout?: 'grid' | 'list'
-  /** 每行显示的模板数量（网格模式） */
-  columns?: number
-  /** 是否显示模板信息 */
-  showInfo?: boolean
-  /** 是否显示标题 */
-  showTitle?: boolean
-  /** 自定义标题 */
-  title?: string
-  /** 是否可折叠 */
-  collapsible?: boolean
-  /** 默认是否展开 */
-  defaultExpanded?: boolean
-  /** 自定义样式类 */
-  className?: string
-  /** 自定义样式 */
-  style?: Record<string, string | number>
-  /** 触发方式 */
-  trigger?: 'click' | 'hover' | 'manual'
-  /** 动画效果 */
-  animation?: boolean
-  /** 动画持续时间 */
-  animationDuration?: number
-}
-
-/**
- * 模板选择器组件属性
- */
-export interface TemplateSelectorProps {
-  /** 模板分类 */
-  category: string
-  /** 设备类型 */
-  device?: DeviceType
-  /** 当前选中的模板 */
-  currentTemplate?: string
-  /** 选择器配置 */
-  config?: TemplateSelectorConfig
-  /** 模板变化回调 */
-  onTemplateChange?: (template: string) => void
-  /** 模板预览回调 */
-  onTemplatePreview?: (template: string) => void
-  /** 选择器状态变化回调 */
-  onVisibilityChange?: (visible: boolean) => void
-}
-
-/**
- * 模板选择器组合式函数返回值
- */
-export interface UseTemplateSelectorReturn {
-  // 状态
-  /** 可用模板列表 */
-  availableTemplates: ComputedRef<TemplateMetadata[]>
-  /** 过滤后的模板列表 */
-  filteredTemplates: ComputedRef<TemplateMetadata[]>
-  /** 搜索查询 */
-  searchQuery: Ref<string>
-  /** 选中的模板 */
-  selectedTemplate: Ref<string | null>
-  /** 加载状态 */
-  loading: Ref<boolean>
-  /** 错误信息 */
-  error: Ref<Error | null>
-
-  // 方法
-  /** 选择模板 */
-  selectTemplate: (template: string) => void
-  /** 预览模板 */
-  previewTemplate: (template: string) => void
-  /** 搜索模板 */
-  searchTemplates: (query: string) => void
-  /** 刷新模板列表 */
-  refreshTemplates: () => Promise<void>
-  /** 重置选择器 */
-  reset: () => void
-}
-
-/**
- * useTemplate 返回值
- */
-export interface UseTemplateReturn {
-  // 状态
-  /** 当前设备类型 */
-  currentDevice: Ref<DeviceType>
-  /** 当前模板 */
-  currentTemplate: Ref<TemplateMetadata | null>
-  /** 加载状态 */
-  loading: Ref<boolean>
-  /** 错误信息 */
-  error: Ref<Error | null>
-  /** 可用模板列表 */
-  availableTemplates: ComputedRef<TemplateMetadata[]>
-  /** 可用分类列表 */
-  availableCategories: ComputedRef<string[]>
-  /** 可用设备类型列表 */
-  availableDevices: ComputedRef<DeviceType[]>
-
-  // 方法
-  /** 扫描模板 */
-  scanTemplates: () => Promise<TemplateScanResult>
-  /** 渲染模板 */
-  render: (options: TemplateRenderOptions) => Promise<TemplateLoadResult>
-  /** 切换模板 */
-  switchTemplate: (category: string, device: DeviceType, template: string) => Promise<void>
-  /** 获取模板列表 */
-  getTemplates: (category?: string, device?: DeviceType) => TemplateMetadata[]
-  /** 检查模板是否存在 */
-  hasTemplate: (category: string, device: DeviceType, template: string) => boolean
-  /** 清空缓存 */
-  clearCache: () => void
-  /** 刷新模板列表 */
-  refresh: () => Promise<void>
-}
-
-// ============ Provider 模式类型 ============
-
-/**
- * 模板提供者配置
- */
-export interface TemplateProviderConfig extends TemplateManagerConfig {
-  /** 默认分类 */
-  defaultCategory?: string
-  /** 默认设备类型 */
-  defaultDevice?: DeviceType
-  /** 默认模板选择器配置 */
-  defaultSelectorConfig?: TemplateSelectorConfig
-  /** 全局模板属性 */
-  globalTemplateProps?: Record<string, unknown>
-  /** 是否启用全局状态管理 */
-  enableGlobalState?: boolean
-  /** 是否自动扫描模板 */
-  autoScan?: boolean
-  /** 主题配置 */
-  theme?: {
-    primaryColor?: string
-    borderRadius?: string
-    spacing?: string
-    [key: string]: string | number | boolean | undefined
+  /** 自定义扫描路径 */
+  scanPaths?: string | string[]
+  /** 传递给模板的属性 */
+  templateProps?: Record<string, any>
+  /** 缓存配置 */
+  cacheConfig?: CacheConfig
+  /** 加载配置 */
+  loadingConfig?: {
+    showLoading?: boolean
+    loadingComponent?: VueComponent
+    errorComponent?: VueComponent
+    loadingText?: string
+    errorText?: string
   }
 }
 
 /**
- * 模板提供者属性
+ * Vue 插件配置接口
  */
-export interface TemplateProviderProps {
-  /** 提供者配置 */
-  config?: TemplateProviderConfig
-  /** 子组件 */
-  children?: unknown
-}
-
-/**
- * Vue 插件选项
- */
-export interface TemplatePluginOptions extends TemplateManagerConfig {
-  /** 组件前缀 */
-  componentPrefix?: string
+export interface PluginConfig extends TemplateManagerConfig {
+  /** 全局组件名称 */
+  componentName?: string
   /** 是否注册全局组件 */
-  registerComponents?: boolean
+  registerGlobalComponent?: boolean
   /** 是否注册指令 */
   registerDirectives?: boolean
-  /** 是否注册全局属性 */
-  registerGlobalProperties?: boolean
-  /** 默认设备类型 */
-  defaultDevice?: DeviceType
-  /** 全局属性名称 */
-  globalPropertyName?: string
-  /** 提供者配置 */
-  providerConfig?: TemplateProviderConfig
+  /** 是否提供全局属性 */
+  provideGlobalProperties?: boolean
 }
 
-// ============ 事件类型 ============
-
 /**
- * 模板变化事件
+ * Vue 插件安装选项
  */
-export interface TemplateChangeEvent {
-  /** 事件类型 */
-  type: 'template:change' | 'device:change' | 'scan:complete'
-  /** 新模板 */
-  newTemplate?: TemplateMetadata
-  /** 旧模板 */
-  oldTemplate?: TemplateMetadata
-  /** 新设备类型 */
-  newDevice?: DeviceType
-  /** 旧设备类型 */
-  oldDevice?: DeviceType
-  /** 扫描结果 */
-  scanResult?: TemplateScanResult
-  /** 时间戳 */
-  timestamp: number
+export interface PluginInstallOptions {
+  /** Vue 应用实例 */
+  app: VueApp
+  /** 插件配置 */
+  options?: PluginConfig
 }
 
-// 设备变化回调将使用 @ldesign/device 包提供
+// ==================== 工具类型 ====================
 
 /**
- * 模板变化回调
+ * 深度只读类型
  */
-export type TemplateChangeCallback = (event: TemplateChangeEvent) => void
-
-/**
- * TemplateRenderer 组件属性（旧版本，保持兼容性）
- */
-export interface LegacyTemplateRendererProps {
-  /** 分类 */
-  category: string
-  /** 设备类型 */
-  device?: DeviceType
-  /** 模板名称 */
-  template: string
-  /** 传递给模板的属性 */
-  templateProps?: Record<string, unknown>
-  /** 是否使用缓存 */
-  cache?: boolean
-  /** 是否预加载 */
-  preload?: boolean
-  /** 是否显示加载状态 */
-  loading?: boolean
-  /** 是否显示错误状态 */
-  error?: boolean
+export type DeepReadonly<T> = {
+  readonly [P in keyof T]: T[P] extends object ? DeepReadonly<T[P]> : T[P]
 }
 
-// ============ 缓存类型（使用外部包） ============
-// 缓存相关类型将使用 @ldesign/cache 包提供
+/**
+ * 可选属性类型
+ */
+export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 
-// ============ 类型已在定义时导出 ============
+/**
+ * 必需属性类型
+ */
+export type Required<T, K extends keyof T> = T & { [P in K]-?: T[P] }
+
+/**
+ * 函数类型提取
+ */
+export type ExtractFunction<T> = T extends (...args: any[]) => any ? T : never
+
+/**
+ * Promise 类型提取
+ */
+export type ExtractPromise<T> = T extends Promise<infer U> ? U : T
