@@ -73,7 +73,7 @@ export class AnimationManager {
   private animations = new Map<string, AnimationConfig>()
   private customAnimations = new Map<string, AnimationConfig>()
   // 默认动画类型，用于后续扩展
-  private defaultAnimation: AnimationType = 'fade'
+  // private defaultAnimation: AnimationType = 'fade'
 
   constructor() {
     // 注册预定义动画
@@ -85,8 +85,9 @@ export class AnimationManager {
   /**
    * 设置默认动画
    */
-  setDefaultAnimation(animation: AnimationType): void {
-    this.defaultAnimation = animation
+  setDefaultAnimation(_animation: AnimationType): void {
+    // this.defaultAnimation = animation
+    // 暂时注释掉，因为defaultAnimation属性已被注释
   }
 
   /**
@@ -138,12 +139,12 @@ export class AnimationManager {
       const slideConfig = this.get('slide') || ANIMATION_PRESETS.slide
       return {
         ...slideConfig,
-        enterClass: slideConfig.leaveClass,
-        enterActiveClass: slideConfig.leaveActiveClass,
-        enterToClass: slideConfig.leaveToClass,
-        leaveClass: slideConfig.enterClass,
-        leaveActiveClass: slideConfig.enterActiveClass,
-        leaveToClass: slideConfig.enterToClass,
+        enterClass: slideConfig.leaveClass || '',
+        enterActiveClass: slideConfig.leaveActiveClass || '',
+        enterToClass: slideConfig.leaveToClass || '',
+        leaveClass: slideConfig.enterClass || '',
+        leaveActiveClass: slideConfig.enterActiveClass || '',
+        leaveToClass: slideConfig.enterToClass || '',
       }
     }
 
@@ -416,7 +417,7 @@ export function getAnimationDuration(element: Element): number {
   if (!match)
     return 0
 
-  const value = Number.parseFloat(match[1])
+  const value = Number.parseFloat(match[1] || '0')
   const unit = match[2]
 
   return unit === 's' ? value * 1000 : value

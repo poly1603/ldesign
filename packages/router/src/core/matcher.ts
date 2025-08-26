@@ -60,8 +60,8 @@ interface MatchResult {
 interface LRUNode {
   key: string
   value: MatchResult | null
-  prev?: LRUNode
-  next?: LRUNode
+  prev: LRUNode | null
+  next: LRUNode | null
   timestamp: number
 }
 
@@ -97,8 +97,8 @@ class LRUCache {
     this.cache = new Map()
 
     // 创建虚拟头尾节点
-    this.head = { key: '', value: null, timestamp: 0 }
-    this.tail = { key: '', value: null, timestamp: 0 }
+    this.head = { key: '', value: null, timestamp: 0, prev: null, next: null }
+    this.tail = { key: '', value: null, timestamp: 0, prev: null, next: null }
     this.head.next = this.tail
     this.tail.prev = this.head
   }
@@ -129,6 +129,8 @@ class LRUCache {
         key,
         value,
         timestamp: Date.now(),
+        prev: null,
+        next: null,
       }
 
       if (this.size >= this.capacity) {
@@ -577,14 +579,14 @@ export class RouteMatcher {
   /**
    * 标准化属性配置
    */
-  private normalizeProps(props: unknown): Record<string, unknown> {
+  private normalizeProps(props: unknown): Record<string, boolean | Record<string, unknown> | ((route: RouteLocationNormalized) => Record<string, unknown>)> {
     if (!props)
       return {}
     if (typeof props === 'boolean')
       return { default: props }
-    if (typeof props === 'object')
-      return props
-    return { default: props }
+    if (typeof props === 'object' && props !== null)
+      return props as Record<string, boolean | Record<string, unknown> | ((route: RouteLocationNormalized) => Record<string, unknown>)>
+    return {}
   }
 
   /**
@@ -657,37 +659,6 @@ export class RouteMatcher {
   }
 
   /**
-   * 查找默认子路由（空路径的子路由）
-   */
-  private findDefaultChildRecord(
-    parentRecord: RouteRecordNormalized,
-  ): RouteRecordNormalized | null {
-    // 查找对应的原始路由记录
-    if (!parentRecord.name || !this.rawRoutes.has(parentRecord.name)) {
-      return null
-    }
-
-    const rawParentRecord = this.rawRoutes.get(parentRecord.name)!
-
-    if (!rawParentRecord.children) {
-      return null
-    }
-
-    // 查找空路径的子路由
-    for (const child of rawParentRecord.children) {
-      if (child.path === '') {
-        // 通过名称查找对应的规范化记录
-        if (child.name && this.routes.has(child.name)) {
-          const foundRecord = this.routes.get(child.name)!
-          return foundRecord
-        }
-      }
-    }
-
-    return null
-  }
-
-  /**
    * 从 Trie 树移除
    */
   private removeFromTrie(record: RouteRecordNormalized): void {
@@ -702,7 +673,7 @@ export class RouteMatcher {
       node = child
     }
 
-    node.record = undefined
+    delete node.record
   }
 
   /**
@@ -929,7 +900,7 @@ export class RouteMatcher {
     catch {
       // 如果 URL 解析失败，手动解析
       const [pathPart, ...rest] = path.split('?')
-      cleanPath = pathPart
+      cleanPath = pathPart || '/'
 
       if (rest.length > 0) {
         const queryAndHash = rest.join('?')
@@ -1018,8 +989,16 @@ export class RouteMatcher {
     let fullPath = path
 
     if (query && Object.keys(query).length > 0) {
-      const queryString = new URLSearchParams(query).toString()
-      fullPath += `?${queryString}`
+      const queryParams = new URLSearchParams()
+      for (const [key, value] of Object.entries(query)) {
+        if (value !== null && value !== undefined) {
+          queryParams.append(key, String(value))
+        }
+      }
+      const queryString = queryParams.toString()
+      if (queryString) {
+        fullPath += `?${queryString}`
+      }
     }
 
     if (hash) {

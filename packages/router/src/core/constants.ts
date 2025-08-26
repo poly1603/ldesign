@@ -99,7 +99,7 @@ export enum NavigationFailureType {
 /** 起始路由位置 */
 export const START_LOCATION: RouteLocationNormalized = {
   path: '/',
-  name: undefined,
+  name: '',
   params: {},
   query: {},
   hash: '',

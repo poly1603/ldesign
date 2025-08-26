@@ -228,7 +228,7 @@ export function createTitleGuard(
     // 从匹配的路由记录中查找标题
     for (let i = to.matched.length - 1; i >= 0; i--) {
       const record = to.matched[i]
-      if (record.meta[titleField]) {
+      if (record && record.meta[titleField]) {
         title = record.meta[titleField] as string
         break
       }
@@ -449,7 +449,12 @@ export function combineGuards(...guards: NavigationGuard[]): NavigationGuard {
       }
 
       const guard = guards[index++]
-      guard(to, from, runNext)
+      if (guard) {
+        guard(to, from, runNext)
+      }
+      else {
+        runNext()
+      }
     }
 
     runNext()

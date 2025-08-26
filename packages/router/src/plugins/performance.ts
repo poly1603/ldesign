@@ -138,11 +138,13 @@ export class PerformanceManager {
     if (!this.config.enabled)
       return
 
-    const event: PerformanceEvent = {
+    const event: any = {
       type,
       timestamp: performance.now(),
-      route: this.currentNavigation?.to,
       data,
+    }
+    if (this.currentNavigation?.to) {
+      event.route = this.currentNavigation.to
     }
 
     // 添加到当前导航
@@ -287,15 +289,13 @@ export class PerformanceManager {
   private checkThresholds(metrics: PerformanceMetrics): void {
     if (metrics.totalTime > this.config.errorThreshold) {
       console.error(
-        `路由导航性能严重超标: ${metrics.totalTime.toFixed(2)}ms (阈值: ${
-          this.config.errorThreshold
+        `路由导航性能严重超标: ${metrics.totalTime.toFixed(2)}ms (阈值: ${this.config.errorThreshold
         }ms)`,
       )
     }
     else if (metrics.totalTime > this.config.warningThreshold) {
       console.warn(
-        `路由导航性能超标: ${metrics.totalTime.toFixed(2)}ms (阈值: ${
-          this.config.warningThreshold
+        `路由导航性能超标: ${metrics.totalTime.toFixed(2)}ms (阈值: ${this.config.warningThreshold
         }ms)`,
       )
     }
@@ -409,7 +409,7 @@ export function createPerformancePlugin(
     warningThreshold,
     errorThreshold,
     sampleRate,
-    onMetrics,
+    onMetrics: onMetrics || (() => { }),
   }
 
   const manager = new PerformanceManager(config)

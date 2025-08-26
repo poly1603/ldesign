@@ -200,7 +200,7 @@ export function createDeviceRouterPlugin(options?: DeviceRouterPluginOptions) {
       plugin.install()
 
       // 将插件实例添加到路由器上，方便访问
-      ;(router as any).devicePlugin = plugin
+      ; (router as any).devicePlugin = plugin
 
       return plugin
     },

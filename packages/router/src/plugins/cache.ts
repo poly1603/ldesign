@@ -403,7 +403,7 @@ export class CacheManager {
       createdAt: Date.now(),
       lastAccessedAt: Date.now(),
       accessCount: 1,
-      ttl: this.config.ttl,
+      ttl: this.config.ttl || 0,
     }
 
     // 存储到内存和持久化存储
@@ -468,8 +468,10 @@ export class CacheManager {
       }
     }
 
-    this.storage.delete(oldestKey)
-    this.componentCache.delete(oldestKey)
+    if (oldestKey) {
+      this.storage.delete(oldestKey)
+      this.componentCache.delete(oldestKey)
+    }
   }
 
   /**
@@ -519,12 +521,16 @@ export function createCachePlugin(options: CachePluginOptions = {}) {
     }
   }
 
-  const config: CacheConfig = {
+  const config: any = {
     strategy,
     maxSize,
-    ttl,
-    include,
-    exclude,
+    ttl: ttl || 0,
+  }
+  if (include !== undefined) {
+    config.include = include
+  }
+  if (exclude !== undefined) {
+    config.exclude = exclude
   }
 
   const manager = new CacheManager(config)

@@ -71,31 +71,31 @@ export class DeviceComponentResolver {
    * 解析设备特定组件
    */
   // 解析设备特定组件，预留扩展接口
-  private resolveDeviceSpecificComponent(
-    record: RouteRecordNormalized,
-    device: DeviceType,
-  ): RouteComponent | null {
-    // 检查路由记录是否有设备特定组件配置
-    const deviceComponents = (record as any).deviceComponents
-    if (!deviceComponents) {
-      return null
-    }
+  // private resolveDeviceSpecificComponent(
+  //   record: RouteRecordNormalized,
+  //   device: DeviceType,
+  // ): RouteComponent | null {
+  //   // 检查路由记录是否有设备特定组件配置
+  //   const deviceComponents = (record as any).deviceComponents
+  //   if (!deviceComponents) {
+  //     return null
+  //   }
 
-    // 优先使用当前设备的组件
-    if (deviceComponents[device]) {
-      return deviceComponents[device]
-    }
+  //   // 优先使用当前设备的组件
+  //   if (deviceComponents[device]) {
+  //     return deviceComponents[device]
+  //   }
 
-    // 回退策略：desktop -> tablet -> mobile
-    const fallbackOrder: DeviceType[] = ['desktop', 'tablet', 'mobile']
-    for (const fallbackDevice of fallbackOrder) {
-      if (fallbackDevice !== device && deviceComponents[fallbackDevice]) {
-        return deviceComponents[fallbackDevice]
-      }
-    }
+  //   // 回退策略：desktop -> tablet -> mobile
+  //   const fallbackOrder: DeviceType[] = ['desktop', 'tablet', 'mobile']
+  //   for (const fallbackDevice of fallbackOrder) {
+  //     if (fallbackDevice !== device && deviceComponents[fallbackDevice]) {
+  //       return deviceComponents[fallbackDevice]
+  //     }
+  //   }
 
-    return null
-  }
+  //   return null
+  // }
 
   /**
    * 解析设备特定组件（包含回退信息）

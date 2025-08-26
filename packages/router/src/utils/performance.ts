@@ -122,8 +122,9 @@ export function extractParams(
   const params: Record<string, string> = {}
   for (let i = 0; i < pattern.paramNames.length; i++) {
     const value = match[i + 1]
-    if (value !== undefined) {
-      params[pattern.paramNames[i]] = decodeURIComponent(value)
+    const paramName = pattern.paramNames[i]
+    if (value !== undefined && paramName !== undefined) {
+      params[paramName] = decodeURIComponent(value)
     }
   }
 
@@ -173,6 +174,8 @@ export function buildOptimizedRouteTree(
     let currentNode = node
     for (let i = 0; i < segments.length; i++) {
       const segment = segments[i]
+      if (!segment)
+        continue
 
       if (segment.startsWith(':')) {
         // 参数段
@@ -252,6 +255,9 @@ export function findInOptimizedTree(
     }
 
     const segment = segments[segmentIndex]
+    if (!segment) {
+      return node.record || null
+    }
 
     // 尝试静态匹配
     const staticChild = node.children.get(segment)

@@ -1,0 +1,20 @@
+{
+  "name": "@ldesign/router-example-basic",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "基础路由示例",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ldesign/router": "workspace:*",
+    "vue": "^3.5.18"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.0.7"
+  }
+}

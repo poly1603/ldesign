@@ -20,6 +20,8 @@ import type {
   RouterOptions,
 } from '../types'
 import { ref } from 'vue'
+import { RouterLink } from '../components/RouterLink'
+import { RouterView } from '../components/RouterView'
 import { MemoryManager } from '../utils/memory-manager'
 import {
   NavigationFailureType,
@@ -53,7 +55,7 @@ export class RouterImpl implements Router {
   private isReadyPromise?: Promise<void>
   private isReadyResolve?: () => void
   // 待处理的路由位置，用于导航状态管理
-  private _pendingLocation?: RouteLocationNormalized
+  // private _pendingLocation?: RouteLocationNormalized
 
   // 内存管理
   private memoryManager: MemoryManager
@@ -238,6 +240,10 @@ export class RouterImpl implements Router {
     app.config.globalProperties.$route = this.currentRoute
 
     // 注册全局组件
+    app.component('RouterLink', RouterLink)
+    app.component('RouterView', RouterView)
+
+    // 注册全局组件
     // 这里会在组件实现后添加
   }
 
@@ -395,7 +401,7 @@ export class RouterImpl implements Router {
       }
       else if (
         result
-        && (typeof result === 'string' || typeof result === 'object')
+        && (typeof result === 'string' || (typeof result === 'object' && result !== null))
       ) {
         // 重定向
         currentTo = this.resolve(result)
@@ -411,7 +417,7 @@ export class RouterImpl implements Router {
         }
         else if (
           result
-          && (typeof result === 'string' || typeof result === 'object')
+          && (typeof result === 'string' || (typeof result === 'object' && result !== null))
         ) {
           // 重定向
           currentTo = this.resolve(result)
@@ -427,7 +433,7 @@ export class RouterImpl implements Router {
       }
       else if (
         result
-        && (typeof result === 'string' || typeof result === 'object')
+        && (typeof result === 'string' || (typeof result === 'object' && result !== null))
       ) {
         // 重定向
         currentTo = this.resolve(result)
@@ -489,7 +495,7 @@ export class RouterImpl implements Router {
     guard: NavigationGuard,
     to: RouteLocationNormalized,
     from: RouteLocationNormalized,
-  ): Promise<RouteLocationNormalized> {
+  ): Promise<NavigationGuardReturn> {
     return new Promise((resolve, reject) => {
       const next = (result?: NavigationGuardReturn) => {
         if (result === false) {
@@ -535,7 +541,7 @@ export class RouterImpl implements Router {
     _from: RouteLocationNormalized,
   ): void {
     this.currentRoute.value = to
-    this._pendingLocation = undefined as any
+    // this._pendingLocation = undefined as any
 
     // 触发准备就绪
     if (this.isReadyResolve) {

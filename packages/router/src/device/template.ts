@@ -39,9 +39,18 @@ export class TemplateRouteResolver {
       const { TemplateManager } = await import('@ldesign/template')
 
       this.templateManager = new TemplateManager({
-        enableCache: this.config.enableCache,
-        templateRoot: this.config.templateRoot,
-      } as any)
+        scanner: {
+          scanPaths: [`${this.config.templateRoot}/**/*.vue`],
+        },
+        loader: {
+          enableCache: this.config.enableCache ?? true,
+        },
+        cache: {
+          enabled: this.config.enableCache ?? true,
+          strategy: 'lru',
+          maxSize: 50,
+        },
+      })
 
       // 扫描模板
       await this.templateManager.scanTemplates()
@@ -65,15 +74,15 @@ export class TemplateRouteResolver {
     const manager = await this.initTemplateManager()
 
     try {
-      // 使用模板管理器渲染组件
-      const component = await manager.render({
-        category,
-        template: templateName,
-        device: deviceType,
-        timeout: this.config.timeout,
-      })
+      // 使用模板管理器加载模板
+      const result = await manager.loadTemplate(templateName, deviceType, category)
 
-      return component
+      if (result.success && result.component) {
+        return result.component
+      }
+      else {
+        throw result.error || new Error('Failed to load template')
+      }
     }
     catch (error) {
       console.error(
@@ -84,15 +93,12 @@ export class TemplateRouteResolver {
       // 尝试回退到默认设备
       if (deviceType !== 'desktop') {
         try {
-          const fallbackComponent = await manager.render({
-            category,
-            template: templateName,
-            device: 'desktop',
-            timeout: this.config.timeout,
-          })
+          const fallbackResult = await manager.loadTemplate(templateName, 'desktop', category)
 
-          console.warn(`Using desktop template as fallback for ${deviceType}`)
-          return fallbackComponent
+          if (fallbackResult.success && fallbackResult.component) {
+            console.warn(`Using desktop template as fallback for ${deviceType}`)
+            return fallbackResult.component
+          }
         }
         catch (fallbackError) {
           console.error('Fallback template also failed:', fallbackError)
@@ -118,7 +124,8 @@ export class TemplateRouteResolver {
   ): Promise<boolean> {
     try {
       const manager = await this.initTemplateManager()
-      return manager.hasTemplate(category, deviceType, templateName)
+      const scanner = manager.getScanner()
+      return scanner.hasTemplate(templateName, deviceType, category)
     }
     catch {
       return false
@@ -134,8 +141,11 @@ export class TemplateRouteResolver {
   ): Promise<string[]> {
     try {
       const manager = await this.initTemplateManager()
-      const templates = await manager.getTemplates(category, deviceType)
-      return templates.map((t: any) => t.name)
+      const scanner = manager.getScanner()
+      const templates = scanner.getTemplatesByCategory(category)
+      return templates
+        .filter((template: any) => template.deviceType === deviceType)
+        .map((template: any) => template.name)
     }
     catch {
       return []

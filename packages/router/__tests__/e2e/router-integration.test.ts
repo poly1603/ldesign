@@ -271,7 +271,7 @@ describe.skip('router Integration E2E Tests', () => {
       router = createSimpleSPARouter(routes)
 
       // 添加全局前置守卫
-      router.beforeEach((to: any, from: any, next: any) => {
+      router.beforeEach((to: any, _from: any, next: any) => {
         if (to.meta.requiresAuth && !isAuthenticated()) {
           next('/login')
         }
@@ -366,7 +366,7 @@ describe.skip('router Integration E2E Tests', () => {
       await nextTick()
 
       // 获取初始内存统计
-      const _initialStats = router.getMemoryStats()
+      // const _initialStats = router.getMemoryStats()
 
       // 执行大量导航
       for (let i = 0; i < 100; i++) {
