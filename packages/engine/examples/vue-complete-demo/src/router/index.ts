@@ -4,14 +4,16 @@
  */
 
 import type { RouteRecordRaw } from 'vue-router'
-import Cache from '../views/Cache.vue'
-import Home from '../views/Home.vue'
-import Middleware from '../views/Middleware.vue'
+import Cache from '../views/Cache'
+import Events from '../views/Events'
+import Home from '../views/Home'
+import Middleware from '../views/Middleware'
 import Notifications from '../views/Notifications.vue'
+import Optimization from '../views/Optimization'
 import Performance from '../views/Performance.vue'
-import Plugins from '../views/Plugins.vue'
+import Plugins from '../views/Plugins'
 import Security from '../views/Security.vue'
-import State from '../views/State.vue'
+import State from '../views/State'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -84,6 +86,24 @@ const routes: RouteRecordRaw[] = [
     meta: {
       title: '通知系统 - Vue3 Engine 演示',
       description: '展示通知系统的丰富功能',
+    },
+  },
+  {
+    path: '/events',
+    name: 'Events',
+    component: Events,
+    meta: {
+      title: '事件系统 - Vue3 Engine 演示',
+      description: '展示事件发布订阅系统的强大功能',
+    },
+  },
+  {
+    path: '/optimization',
+    name: 'Optimization',
+    component: Optimization,
+    meta: {
+      title: '性能优化 - Vue3 Engine 演示',
+      description: '展示批处理器、对象池等性能优化工具',
     },
   },
 ]
