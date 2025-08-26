@@ -1,48 +1,3 @@
-<template>
-  <div class="default-login-template">
-    <div class="login-container">
-      <div class="login-header">
-        <h2>{{ title || '用户登录' }}</h2>
-        <p>{{ subtitle || '请输入您的账号信息' }}</p>
-      </div>
-      
-      <form class="login-form" @submit.prevent="handleSubmit">
-        <div class="form-group">
-          <label for="desktop-username">用户名</label>
-          <input
-            id="desktop-username"
-            v-model="form.username"
-            type="text"
-            placeholder="请输入用户名"
-            required
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="desktop-password">密码</label>
-          <input
-            id="desktop-password"
-            v-model="form.password"
-            type="password"
-            placeholder="请输入密码"
-            required
-          />
-        </div>
-        
-        <div class="form-options" v-if="showRememberMe || showForgotPassword">
-          <label v-if="showRememberMe" class="checkbox-label">
-            <input v-model="form.rememberMe" type="checkbox" />
-            记住我
-          </label>
-          <a v-if="showForgotPassword" href="#" class="forgot-link">忘记密码？</a>
-        </div>
-        
-        <button type="submit" class="login-button">登录</button>
-      </form>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref } from 'vue'
 
@@ -57,20 +12,67 @@ const props = withDefaults(defineProps<Props>(), {
   title: '用户登录',
   subtitle: '请输入您的账号信息',
   showRememberMe: true,
-  showForgotPassword: true
+  showForgotPassword: true,
 })
 
 const form = ref({
   username: '',
   password: '',
-  rememberMe: false
+  rememberMe: false,
 })
 
-const handleSubmit = () => {
+function handleSubmit() {
   console.log('登录提交:', form.value)
   alert('这是一个演示模板，登录功能仅供展示')
 }
 </script>
+
+<template>
+  <div class="default-login-template">
+    <div class="login-container">
+      <div class="login-header">
+        <h2>{{ title || '用户登录' }}</h2>
+        <p>{{ subtitle || '请输入您的账号信息' }}</p>
+      </div>
+
+      <form class="login-form" @submit.prevent="handleSubmit">
+        <div class="form-group">
+          <label for="desktop-username">用户名</label>
+          <input
+            id="desktop-username"
+            v-model="form.username"
+            type="text"
+            placeholder="请输入用户名"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="desktop-password">密码</label>
+          <input
+            id="desktop-password"
+            v-model="form.password"
+            type="password"
+            placeholder="请输入密码"
+            required
+          >
+        </div>
+
+        <div v-if="showRememberMe || showForgotPassword" class="form-options">
+          <label v-if="showRememberMe" class="checkbox-label">
+            <input v-model="form.rememberMe" type="checkbox">
+            记住我
+          </label>
+          <a v-if="showForgotPassword" href="#" class="forgot-link">忘记密码？</a>
+        </div>
+
+        <button type="submit" class="login-button">
+          登录
+        </button>
+      </form>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .default-login-template {

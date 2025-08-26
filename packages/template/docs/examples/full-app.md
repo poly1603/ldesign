@@ -69,10 +69,10 @@ enterprise-app/
 ### main.ts
 
 ```typescript
+import { TemplatePlugin } from '@ldesign/template/vue'
+import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import { createPinia } from 'pinia'
-import { TemplatePlugin } from '@ldesign/template/vue'
 
 import App from './App.vue'
 import routes from './router'
@@ -94,10 +94,11 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  
+
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login')
-  } else {
+  }
+  else {
     next()
   }
 })
@@ -110,7 +111,7 @@ app.use(TemplatePlugin, {
   componentName: 'TemplateRenderer',
   registerGlobalComponent: true,
   registerDirectives: true,
-  
+
   // 扫描器配置
   scanner: {
     scanPaths: [
@@ -119,7 +120,7 @@ app.use(TemplatePlugin, {
     enableCache: true,
     watchMode: import.meta.env.DEV
   },
-  
+
   // 加载器配置
   loader: {
     enableCache: true,
@@ -127,7 +128,7 @@ app.use(TemplatePlugin, {
     preloadStrategy: 'critical',
     timeout: 5000
   },
-  
+
   // 设备适配配置
   deviceAdapter: {
     autoDetect: true,
@@ -135,20 +136,20 @@ app.use(TemplatePlugin, {
     customDetector: () => {
       const width = window.innerWidth
       const userAgent = navigator.userAgent
-      
+
       // 自定义设备检测逻辑
       if (/Mobile|Android|iPhone/.test(userAgent) && width <= 480) {
         return 'mobile'
       }
-      
+
       if (/iPad|Tablet/.test(userAgent) || (width <= 1024 && width > 768)) {
         return 'tablet'
       }
-      
+
       return 'desktop'
     }
   },
-  
+
   // 缓存配置
   cache: {
     enabled: true,
@@ -157,14 +158,14 @@ app.use(TemplatePlugin, {
     ttl: 30 * 60 * 1000, // 30分钟
     compression: true
   },
-  
+
   // 性能监控
   performance: {
     enabled: true,
     sampleRate: import.meta.env.PROD ? 0.1 : 1.0,
     reportInterval: 60000
   },
-  
+
   // 调试模式
   debug: import.meta.env.DEV
 })
@@ -176,47 +177,16 @@ app.mount('#app')
 ### App.vue
 
 ```vue
-<template>
-  <div id="app" :class="themeClass">
-    <!-- 全局加载状态 -->
-    <div v-if="isInitializing" class="app-loading">
-      <div class="loading-spinner"></div>
-      <p>应用初始化中...</p>
-    </div>
-    
-    <!-- 主应用内容 -->
-    <div v-else class="app-container">
-      <!-- 导航栏 -->
-      <AppNavigation v-if="showNavigation" />
-      
-      <!-- 主要内容区域 -->
-      <main class="app-main" :class="{ 'with-navigation': showNavigation }">
-        <router-view v-slot="{ Component, route }">
-          <transition :name="getTransitionName(route)" mode="out-in">
-            <component :is="Component" :key="route.path" />
-          </transition>
-        </router-view>
-      </main>
-      
-      <!-- 全局通知 -->
-      <AppNotifications />
-      
-      <!-- 性能监控面板（开发模式） -->
-      <PerformancePanel v-if="showPerformancePanel" />
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
+import { useTemplate } from '@ldesign/template/vue'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { useAuthStore } from './store/modules/auth'
-import { useSettingsStore } from './store/modules/settings'
-import { useTemplate } from '@ldesign/template/vue'
-
 import AppNavigation from './components/Layout/AppNavigation.vue'
 import AppNotifications from './components/Layout/AppNotifications.vue'
+
 import PerformancePanel from './components/Layout/PerformancePanel.vue'
+import { useAuthStore } from './store/modules/auth'
+import { useSettingsStore } from './store/modules/settings'
 
 // 状态管理
 const authStore = useAuthStore()
@@ -243,47 +213,48 @@ const showPerformancePanel = computed(() => {
 })
 
 // 方法
-const getTransitionName = (route: any) => {
+function getTransitionName(route: any) {
   return route.meta.transition || 'fade'
 }
 
-const initializeApp = async () => {
+async function initializeApp() {
   try {
     // 初始化认证状态
     await authStore.initializeAuth()
-    
+
     // 加载用户设置
     if (authStore.isAuthenticated) {
       await settingsStore.loadUserSettings()
     }
-    
+
     // 预加载关键模板
     await manager.preloadTemplates([
       { category: 'dashboard', deviceType: 'desktop' },
       { category: 'auth', deviceType: 'desktop' }
     ])
-    
-  } catch (error) {
+  }
+  catch (error) {
     console.error('应用初始化失败:', error)
-  } finally {
+  }
+  finally {
     isInitializing.value = false
   }
 }
 
 // 性能监控
-const setupPerformanceMonitoring = () => {
+function setupPerformanceMonitoring() {
   manager.on('performance:warning', (data) => {
     console.warn('性能警告:', data)
-    
+
     // 发送到监控系统
     if (import.meta.env.PROD) {
       // analytics.track('performance_warning', data)
     }
   })
-  
+
   manager.on('template:error', (error) => {
     console.error('模板错误:', error)
-    
+
     // 错误上报
     if (import.meta.env.PROD) {
       // errorReporting.captureException(error)
@@ -297,6 +268,37 @@ onMounted(async () => {
   await initializeApp()
 })
 </script>
+
+<template>
+  <div id="app" :class="themeClass">
+    <!-- 全局加载状态 -->
+    <div v-if="isInitializing" class="app-loading">
+      <div class="loading-spinner" />
+      <p>应用初始化中...</p>
+    </div>
+
+    <!-- 主应用内容 -->
+    <div v-else class="app-container">
+      <!-- 导航栏 -->
+      <AppNavigation v-if="showNavigation" />
+
+      <!-- 主要内容区域 -->
+      <main class="app-main" :class="{ 'with-navigation': showNavigation }">
+        <router-view v-slot="{ Component, route }">
+          <transition :name="getTransitionName(route)" mode="out-in">
+            <component :is="Component" :key="route.path" />
+          </transition>
+        </router-view>
+      </main>
+
+      <!-- 全局通知 -->
+      <AppNotifications />
+
+      <!-- 性能监控面板（开发模式） -->
+      <PerformancePanel v-if="showPerformancePanel" />
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .app-loading {
@@ -393,104 +395,6 @@ onMounted(async () => {
 
 ```vue
 <!-- src/templates/auth/login/desktop/LoginForm.vue -->
-<template>
-  <div class="login-container">
-    <div class="login-card">
-      <div class="login-header">
-        <img src="/logo.png" alt="Logo" class="logo" />
-        <h1>企业管理系统</h1>
-        <p>请登录您的账户</p>
-      </div>
-      
-      <form @submit.prevent="handleLogin" class="login-form">
-        <div class="form-group">
-          <label for="username">用户名</label>
-          <input
-            id="username"
-            v-model="form.username"
-            type="text"
-            placeholder="请输入用户名"
-            :class="{ error: errors.username }"
-            required
-          />
-          <span v-if="errors.username" class="error-message">
-            {{ errors.username }}
-          </span>
-        </div>
-        
-        <div class="form-group">
-          <label for="password">密码</label>
-          <div class="password-input">
-            <input
-              id="password"
-              v-model="form.password"
-              :type="showPassword ? 'text' : 'password'"
-              placeholder="请输入密码"
-              :class="{ error: errors.password }"
-              required
-            />
-            <button
-              type="button"
-              class="password-toggle"
-              @click="showPassword = !showPassword"
-            >
-              {{ showPassword ? '👁️' : '👁️‍🗨️' }}
-            </button>
-          </div>
-          <span v-if="errors.password" class="error-message">
-            {{ errors.password }}
-          </span>
-        </div>
-        
-        <div class="form-options">
-          <label class="checkbox">
-            <input v-model="form.remember" type="checkbox" />
-            <span class="checkmark"></span>
-            记住我
-          </label>
-          
-          <router-link to="/forgot-password" class="forgot-link">
-            忘记密码？
-          </router-link>
-        </div>
-        
-        <button
-          type="submit"
-          class="login-button"
-          :disabled="isLoading"
-        >
-          <span v-if="isLoading" class="loading-spinner"></span>
-          {{ isLoading ? '登录中...' : '登录' }}
-        </button>
-        
-        <div class="register-link">
-          还没有账户？
-          <router-link to="/register">立即注册</router-link>
-        </div>
-      </form>
-      
-      <!-- 第三方登录 -->
-      <div class="social-login">
-        <div class="divider">
-          <span>或使用以下方式登录</span>
-        </div>
-        
-        <div class="social-buttons">
-          <button @click="handleSocialLogin('google')" class="social-btn google">
-            <img src="/icons/google.svg" alt="Google" />
-            Google
-          </button>
-          
-          <button @click="handleSocialLogin('github')" class="social-btn github">
-            <img src="/icons/github.svg" alt="GitHub" />
-            GitHub
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -525,53 +429,156 @@ const form = reactive({
 const errors = ref<Record<string, string>>({})
 
 // 方法
-const handleLogin = async () => {
+async function handleLogin() {
   // 表单验证
   const validationResult = validateLoginForm(form)
   if (!validationResult.isValid) {
     errors.value = validationResult.errors
     return
   }
-  
+
   errors.value = {}
   isLoading.value = true
-  
+
   try {
     const user = await authStore.login({
       username: form.username,
       password: form.password,
       remember: form.remember
     })
-    
+
     emit('loginSuccess', user)
-    
+
     // 登录成功后跳转
     await router.push(props.redirectTo)
-    
-  } catch (error) {
+  }
+  catch (error) {
     console.error('登录失败:', error)
     emit('loginError', error as Error)
-    
+
     // 显示错误信息
     if (error.response?.status === 401) {
       errors.value.general = '用户名或密码错误'
-    } else {
+    }
+    else {
       errors.value.general = '登录失败，请稍后重试'
     }
-  } finally {
+  }
+  finally {
     isLoading.value = false
   }
 }
 
-const handleSocialLogin = async (provider: string) => {
+async function handleSocialLogin(provider: string) {
   try {
     await authStore.socialLogin(provider)
     await router.push(props.redirectTo)
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`${provider} 登录失败:`, error)
   }
 }
 </script>
+
+<template>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <img src="/logo.png" alt="Logo" class="logo">
+        <h1>企业管理系统</h1>
+        <p>请登录您的账户</p>
+      </div>
+
+      <form class="login-form" @submit.prevent="handleLogin">
+        <div class="form-group">
+          <label for="username">用户名</label>
+          <input
+            id="username"
+            v-model="form.username"
+            type="text"
+            placeholder="请输入用户名"
+            :class="{ error: errors.username }"
+            required
+          >
+          <span v-if="errors.username" class="error-message">
+            {{ errors.username }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="password">密码</label>
+          <div class="password-input">
+            <input
+              id="password"
+              v-model="form.password"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="请输入密码"
+              :class="{ error: errors.password }"
+              required
+            >
+            <button
+              type="button"
+              class="password-toggle"
+              @click="showPassword = !showPassword"
+            >
+              {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+            </button>
+          </div>
+          <span v-if="errors.password" class="error-message">
+            {{ errors.password }}
+          </span>
+        </div>
+
+        <div class="form-options">
+          <label class="checkbox">
+            <input v-model="form.remember" type="checkbox">
+            <span class="checkmark" />
+            记住我
+          </label>
+
+          <router-link to="/forgot-password" class="forgot-link">
+            忘记密码？
+          </router-link>
+        </div>
+
+        <button
+          type="submit"
+          class="login-button"
+          :disabled="isLoading"
+        >
+          <span v-if="isLoading" class="loading-spinner" />
+          {{ isLoading ? '登录中...' : '登录' }}
+        </button>
+
+        <div class="register-link">
+          还没有账户？
+          <router-link to="/register">
+            立即注册
+          </router-link>
+        </div>
+      </form>
+
+      <!-- 第三方登录 -->
+      <div class="social-login">
+        <div class="divider">
+          <span>或使用以下方式登录</span>
+        </div>
+
+        <div class="social-buttons">
+          <button class="social-btn google" @click="handleSocialLogin('google')">
+            <img src="/icons/google.svg" alt="Google">
+            Google
+          </button>
+
+          <button class="social-btn github" @click="handleSocialLogin('github')">
+            <img src="/icons/github.svg" alt="GitHub">
+            GitHub
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .login-container {
@@ -811,105 +818,13 @@ const handleSocialLogin = async (provider: string) => {
 
 ```vue
 <!-- src/templates/dashboard/overview/desktop/DashboardOverview.vue -->
-<template>
-  <div class="dashboard-overview">
-    <!-- 页面标题 -->
-    <div class="dashboard-header">
-      <h1>仪表板概览</h1>
-      <div class="header-actions">
-        <button @click="refreshData" :disabled="isRefreshing" class="refresh-btn">
-          <span :class="{ spinning: isRefreshing }">🔄</span>
-          刷新数据
-        </button>
-        
-        <select v-model="selectedPeriod" @change="handlePeriodChange" class="period-select">
-          <option value="today">今天</option>
-          <option value="week">本周</option>
-          <option value="month">本月</option>
-          <option value="quarter">本季度</option>
-        </select>
-      </div>
-    </div>
-    
-    <!-- 统计卡片 -->
-    <div class="stats-grid">
-      <StatCard
-        v-for="stat in stats"
-        :key="stat.id"
-        :title="stat.title"
-        :value="stat.value"
-        :change="stat.change"
-        :trend="stat.trend"
-        :icon="stat.icon"
-        :color="stat.color"
-      />
-    </div>
-    
-    <!-- 图表区域 -->
-    <div class="charts-section">
-      <div class="chart-card">
-        <div class="chart-header">
-          <h3>访问趋势</h3>
-          <div class="chart-controls">
-            <button
-              v-for="type in chartTypes"
-              :key="type.value"
-              @click="selectedChartType = type.value"
-              :class="{ active: selectedChartType === type.value }"
-              class="chart-type-btn"
-            >
-              {{ type.label }}
-            </button>
-          </div>
-        </div>
-        
-        <div class="chart-container">
-          <LineChart
-            :data="chartData"
-            :type="selectedChartType"
-            :loading="isChartLoading"
-          />
-        </div>
-      </div>
-      
-      <div class="chart-card">
-        <div class="chart-header">
-          <h3>用户分布</h3>
-        </div>
-        
-        <div class="chart-container">
-          <PieChart :data="userDistribution" />
-        </div>
-      </div>
-    </div>
-    
-    <!-- 最近活动 -->
-    <div class="recent-activities">
-      <div class="activity-header">
-        <h3>最近活动</h3>
-        <router-link to="/activities" class="view-all-link">
-          查看全部
-        </router-link>
-      </div>
-      
-      <div class="activity-list">
-        <ActivityItem
-          v-for="activity in recentActivities"
-          :key="activity.id"
-          :activity="activity"
-        />
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { useDashboardStore } from '@/store/modules/dashboard'
-import StatCard from '@/components/Dashboard/StatCard.vue'
 import LineChart from '@/components/Charts/LineChart.vue'
 import PieChart from '@/components/Charts/PieChart.vue'
 import ActivityItem from '@/components/Dashboard/ActivityItem.vue'
+import StatCard from '@/components/Dashboard/StatCard.vue'
+import { useDashboardStore } from '@/store/modules/dashboard'
 
 interface Props {
   userId?: string
@@ -947,39 +862,43 @@ const userDistribution = computed(() => dashboardStore.userDistribution)
 const recentActivities = computed(() => dashboardStore.recentActivities)
 
 // 方法
-const refreshData = async () => {
+async function refreshData() {
   isRefreshing.value = true
-  
+
   try {
     await dashboardStore.fetchDashboardData({
       period: selectedPeriod.value,
       userId: props.userId
     })
-    
+
     emit('dataLoaded', dashboardStore.data)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('刷新数据失败:', error)
     emit('error', error as Error)
-  } finally {
+  }
+  finally {
     isRefreshing.value = false
   }
 }
 
-const handlePeriodChange = async () => {
+async function handlePeriodChange() {
   await refreshData()
 }
 
-const loadChartData = async () => {
+async function loadChartData() {
   isChartLoading.value = true
-  
+
   try {
     await dashboardStore.fetchChartData({
       type: selectedChartType.value,
       period: selectedPeriod.value
     })
-  } catch (error) {
+  }
+  catch (error) {
     console.error('加载图表数据失败:', error)
-  } finally {
+  }
+  finally {
     isChartLoading.value = false
   }
 }
@@ -993,6 +912,106 @@ onMounted(async () => {
   await loadChartData()
 })
 </script>
+
+<template>
+  <div class="dashboard-overview">
+    <!-- 页面标题 -->
+    <div class="dashboard-header">
+      <h1>仪表板概览</h1>
+      <div class="header-actions">
+        <button :disabled="isRefreshing" class="refresh-btn" @click="refreshData">
+          <span :class="{ spinning: isRefreshing }">🔄</span>
+          刷新数据
+        </button>
+
+        <select v-model="selectedPeriod" class="period-select" @change="handlePeriodChange">
+          <option value="today">
+            今天
+          </option>
+          <option value="week">
+            本周
+          </option>
+          <option value="month">
+            本月
+          </option>
+          <option value="quarter">
+            本季度
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="stats-grid">
+      <StatCard
+        v-for="stat in stats"
+        :key="stat.id"
+        :title="stat.title"
+        :value="stat.value"
+        :change="stat.change"
+        :trend="stat.trend"
+        :icon="stat.icon"
+        :color="stat.color"
+      />
+    </div>
+
+    <!-- 图表区域 -->
+    <div class="charts-section">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>访问趋势</h3>
+          <div class="chart-controls">
+            <button
+              v-for="type in chartTypes"
+              :key="type.value"
+              :class="{ active: selectedChartType === type.value }"
+              class="chart-type-btn"
+              @click="selectedChartType = type.value"
+            >
+              {{ type.label }}
+            </button>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <LineChart
+            :data="chartData"
+            :type="selectedChartType"
+            :loading="isChartLoading"
+          />
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>用户分布</h3>
+        </div>
+
+        <div class="chart-container">
+          <PieChart :data="userDistribution" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 最近活动 -->
+    <div class="recent-activities">
+      <div class="activity-header">
+        <h3>最近活动</h3>
+        <router-link to="/activities" class="view-all-link">
+          查看全部
+        </router-link>
+      </div>
+
+      <div class="activity-list">
+        <ActivityItem
+          v-for="activity in recentActivities"
+          :key="activity.id"
+          :activity="activity"
+        />
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .dashboard-overview {
@@ -1167,15 +1186,15 @@ onMounted(async () => {
     gap: 1rem;
     align-items: stretch;
   }
-  
+
   .header-actions {
     justify-content: space-between;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .chart-controls {
     flex-wrap: wrap;
   }

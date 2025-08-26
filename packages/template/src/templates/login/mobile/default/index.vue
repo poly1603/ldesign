@@ -1,50 +1,3 @@
-<template>
-  <div class="mobile-default-login-template">
-    <div class="login-container">
-      <div class="login-panel">
-        <div class="login-header">
-          <h2 class="login-title">{{ title }}</h2>
-          <p class="login-subtitle">{{ subtitle }}</p>
-        </div>
-        
-        <form class="login-form" @submit.prevent="handleSubmit">
-          <div class="form-group">
-            <input
-              id="mobile-username"
-              v-model="form.username"
-              type="text"
-              placeholder="用户名"
-              class="form-input"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <input
-              id="mobile-password"
-              v-model="form.password"
-              type="password"
-              placeholder="密码"
-              class="form-input"
-              required
-            />
-          </div>
-          
-          <div v-if="showRememberMe" class="form-options">
-            <label class="checkbox-label">
-              <input v-model="form.rememberMe" type="checkbox" />
-              <span>记住我</span>
-            </label>
-            <a v-if="showForgotPassword" href="#" class="forgot-link">忘记密码？</a>
-          </div>
-          
-          <button type="submit" class="login-button">登录</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref } from 'vue'
 
@@ -59,20 +12,73 @@ const props = withDefaults(defineProps<Props>(), {
   title: '移动端登录',
   subtitle: '请输入您的账号信息',
   showRememberMe: false,
-  showForgotPassword: true
+  showForgotPassword: true,
 })
 
 const form = ref({
   username: '',
   password: '',
-  rememberMe: false
+  rememberMe: false,
 })
 
-const handleSubmit = () => {
+function handleSubmit() {
   console.log('移动端登录提交:', form.value)
   alert('这是一个演示模板，登录功能仅供展示')
 }
 </script>
+
+<template>
+  <div class="mobile-default-login-template">
+    <div class="login-container">
+      <div class="login-panel">
+        <div class="login-header">
+          <h2 class="login-title">
+            {{ title }}
+          </h2>
+          <p class="login-subtitle">
+            {{ subtitle }}
+          </p>
+        </div>
+
+        <form class="login-form" @submit.prevent="handleSubmit">
+          <div class="form-group">
+            <input
+              id="mobile-username"
+              v-model="form.username"
+              type="text"
+              placeholder="用户名"
+              class="form-input"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <input
+              id="mobile-password"
+              v-model="form.password"
+              type="password"
+              placeholder="密码"
+              class="form-input"
+              required
+            >
+          </div>
+
+          <div v-if="showRememberMe" class="form-options">
+            <label class="checkbox-label">
+              <input v-model="form.rememberMe" type="checkbox">
+              <span>记住我</span>
+            </label>
+            <a v-if="showForgotPassword" href="#" class="forgot-link">忘记密码？</a>
+          </div>
+
+          <button type="submit" class="login-button">
+            登录
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .mobile-default-login-template {
@@ -206,30 +212,30 @@ const handleSubmit = () => {
   .mobile-default-login-template {
     padding: 0.5rem;
   }
-  
+
   .login-container {
     max-width: 100%;
     border-radius: 16px;
   }
-  
+
   .login-panel {
     padding: 1.5rem 1.25rem;
   }
-  
+
   .login-title {
     font-size: 1.375rem;
   }
-  
+
   .form-input {
     padding: 1.125rem;
     font-size: 16px; /* 防止 iOS Safari 缩放 */
   }
-  
+
   .login-button {
     padding: 1.125rem;
     font-size: 1rem;
   }
-  
+
   .form-options {
     flex-direction: column;
     gap: 0.75rem;
@@ -242,16 +248,16 @@ const handleSubmit = () => {
   .form-input {
     padding: 1.25rem;
   }
-  
+
   .login-button {
     padding: 1.375rem;
   }
-  
+
   .checkbox-label {
     padding: 0.5rem;
     margin: -0.5rem;
   }
-  
+
   .forgot-link {
     padding: 0.5rem;
     margin: -0.5rem;

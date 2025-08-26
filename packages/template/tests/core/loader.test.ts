@@ -2,7 +2,7 @@
  * TemplateLoader 测试用例
  */
 
-import type { TemplateMetadata } from '../../src/types'
+import type { TemplateInfo, TemplateMetadata } from '../../src/types'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { TemplateLoader } from '../../src/core/loader'
 
@@ -13,51 +13,61 @@ describe('templateLoader', () => {
     loader = new TemplateLoader()
   })
 
-  const mockMetadata: TemplateMetadata = {
-    category: 'login',
-    device: 'desktop',
-    template: 'classic',
+  const mockTemplateInfo: TemplateInfo = {
     name: 'Classic Login',
-    description: 'A classic login template',
-    path: '../templates/login/desktop/classic/index.tsx',
-    componentPath: '../templates/login/desktop/classic/index.tsx',
-    tags: ['login', 'desktop'],
-    recommended: true,
+    category: 'login',
+    deviceType: 'desktop',
+    templateFile: {
+      path: '../templates/login/desktop/classic/index.tsx',
+      type: 'template',
+      size: 1024,
+      lastModified: Date.now(),
+    },
+    metadata: {
+      name: 'Classic Login',
+      description: 'A classic login template',
+      version: '1.0.0',
+      author: 'Test Author',
+      tags: ['login', 'desktop'],
+    },
+    status: 'loaded',
   }
 
   describe('loadTemplate', () => {
     it('应该能够加载模板', async () => {
-      const result = await loader.loadTemplate(mockMetadata)
+      const result = await loader.loadTemplate(mockTemplateInfo)
 
       expect(result).toBeDefined()
       expect(result.component).toBeDefined()
-      expect(result.metadata).toEqual(mockMetadata)
-      expect(typeof result.loadTime).toBe('number')
-      expect(typeof result.fromCache).toBe('boolean')
+      expect(result.success).toBe(true)
     })
 
     it('应该返回回退组件当模板不存在时', async () => {
-      const nonExistentMetadata: TemplateMetadata = {
-        ...mockMetadata,
-        template: 'nonexistent',
-        path: '../templates/login/desktop/nonexistent/index.tsx',
-        componentPath: '../templates/login/desktop/nonexistent/index.tsx',
+      const nonExistentTemplateInfo: TemplateInfo = {
+        ...mockTemplateInfo,
+        name: 'nonexistent',
+        templateFile: {
+          path: '../templates/login/desktop/nonexistent/index.tsx',
+          type: 'template',
+          size: 0,
+          lastModified: Date.now(),
+        },
       }
 
-      const result = await loader.loadTemplate(nonExistentMetadata)
+      const result = await loader.loadTemplate(nonExistentTemplateInfo)
 
       expect(result).toBeDefined()
       expect(result.component).toBeDefined()
-      expect(result.metadata).toEqual(nonExistentMetadata)
+      expect(result.success).toBe(false)
     })
 
     it('应该缓存加载的组件', async () => {
-      const result1 = await loader.loadTemplate(mockMetadata)
-      const result2 = await loader.loadTemplate(mockMetadata)
+      const result1 = await loader.loadTemplate(mockTemplateInfo)
+      const result2 = await loader.loadTemplate(mockTemplateInfo)
 
-      expect(result1.fromCache).toBe(false)
-      expect(result2.fromCache).toBe(true)
-      expect(result2.loadTime).toBeLessThanOrEqual(result1.loadTime)
+      expect(result1.success).toBe(true)
+      expect(result2.success).toBe(true)
+      expect(result1.component).toBe(result2.component)
     })
   })
 

@@ -3,6 +3,8 @@
  * 提供模板管理的响应式接口
  */
 
+// 导入 Vue 类型
+import type { Ref } from 'vue'
 // Vue 类型兼容性处理
 import type { VueComponent } from '../../types'
 import type {
@@ -11,6 +13,7 @@ import type {
   TemplateInfo,
   TemplateManagerConfig,
 } from '../../types'
+
 import { TemplateManager } from '../../core/manager'
 
 let vueRef: any, vueComputed: any, vueOnMounted: any, vueOnUnmounted: any, vueWatch: any
@@ -25,10 +28,10 @@ try {
 catch {
   // 在非Vue环境中提供mock实现
   vueRef = (value: any) => ({ value })
-  vueComputed = (fn: any) => ({ value: fn() })
-  vueOnMounted = (fn: any) => fn()
-  vueOnUnmounted = (fn: any) => { }
-  vueWatch = (source: any, callback: any) => { }
+  vueComputed = (_fn: any) => ({ value: _fn() })
+  vueOnMounted = (_fn: any) => _fn()
+  vueOnUnmounted = (_fn: any) => { }
+  vueWatch = (_source: any, _callback: any) => { }
 }
 
 const ref = vueRef
@@ -58,6 +61,9 @@ export interface UseTemplateReturn {
   error: any
   currentDeviceType: any
   templateInfo: any
+  currentTemplate: any
+  isLoading: any
+  templates: any
 
   // 方法
   loadTemplate: (template: string, deviceType?: DeviceType) => Promise<void>
@@ -65,6 +71,10 @@ export interface UseTemplateReturn {
   preloadTemplate: (template: string, deviceType?: DeviceType) => Promise<void>
   getTemplateInfo: (template: string, deviceType?: DeviceType) => TemplateInfo | null
   hasTemplate: (template: string, deviceType?: DeviceType) => boolean
+  scanTemplates: () => Promise<void>
+  switchTemplate: (template: string) => Promise<void>
+  render: (template: string) => Promise<any>
+  refresh: () => Promise<void>
 
   // 管理器实例
   manager: TemplateManager
@@ -125,11 +135,14 @@ export function useTemplate(
     templateOptions = options || { template: '', autoLoad: false }
   }
   // 响应式状态
-  const templateComponent = ref<VueComponent | null>(null)
+  const templateComponent = ref(null) as Ref<VueComponent | null>
   const loading = ref(false)
-  const error = ref<Error | null>(null)
-  const currentDeviceType = ref<DeviceType>('desktop')
-  const templateInfo = ref<TemplateInfo | null>(null)
+  const error = ref(null) as Ref<Error | null>
+  const currentDeviceType = ref('desktop') as Ref<DeviceType>
+  const templateInfo = ref(null) as Ref<TemplateInfo | null>
+  const currentTemplate = ref(null) as Ref<any>
+  const isLoading = ref(false)
+  const templates = ref([]) as Ref<any[]>
 
   // 获取管理器实例
   const manager = getManager(config || templateOptions.config)
@@ -149,7 +162,7 @@ export function useTemplate(
       if (data.data?.newDeviceType) {
         currentDeviceType.value = data.data.newDeviceType
         // 自动重新加载当前模板
-        if (options.template && options.autoLoad) {
+        if (options?.template && options?.autoLoad) {
           loadTemplate(options.template)
         }
       }
@@ -274,7 +287,7 @@ export function useTemplate(
       setupEventListeners()
 
       // 更新当前设备类型
-      currentDeviceType.value = manager.getDeviceInfo().deviceType
+      currentDeviceType.value = manager.getCurrentDevice()
 
       // 如果启用自动加载，加载初始模板
       if (templateOptions.autoLoad && templateOptions.template) {
@@ -288,13 +301,13 @@ export function useTemplate(
   }
 
   // 监听选项变化
-  watch(() => templateOptions.template, (newTemplate, oldTemplate) => {
+  watch(() => templateOptions.template, (newTemplate: any, oldTemplate: any) => {
     if (newTemplate !== oldTemplate && templateOptions.autoLoad) {
       loadTemplate(newTemplate, templateOptions.deviceType)
     }
   })
 
-  watch(() => templateOptions.deviceType, (newDeviceType, oldDeviceType) => {
+  watch(() => templateOptions.deviceType, (newDeviceType: any, oldDeviceType: any) => {
     if (newDeviceType !== oldDeviceType && templateOptions.template && templateOptions.autoLoad) {
       loadTemplate(templateOptions.template, newDeviceType)
     }
@@ -310,8 +323,8 @@ export function useTemplate(
   })
 
   // 添加缺失的方法
-  const scanTemplates = async () => {
-    return await manager.scanTemplates()
+  const scanTemplates = async (): Promise<void> => {
+    await manager.scanTemplates()
   }
 
   const switchTemplate = async (category: string, deviceType?: DeviceType) => {
@@ -333,6 +346,9 @@ export function useTemplate(
     error,
     currentDeviceType,
     templateInfo,
+    currentTemplate,
+    isLoading,
+    templates,
 
     // 方法
     loadTemplate,
@@ -371,7 +387,7 @@ export interface UseTemplateScannerReturn {
 export function useTemplateScanner(config?: TemplateManagerConfig): UseTemplateScannerReturn {
   const scanning = ref(false)
   const templateIndex = ref(null)
-  const scanError = ref<Error | null>(null)
+  const scanError = ref(null) as Ref<Error | null>
 
   const manager = getManager(config)
 

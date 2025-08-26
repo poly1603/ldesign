@@ -13,6 +13,9 @@ export interface BackgroundImage {
   size?: string
   repeat?: string
   attachment?: string
+  title?: string
+  width?: number
+  height?: number
 }
 
 /**
@@ -25,49 +28,84 @@ export interface BackgroundConfig {
 }
 
 /**
- * 获取智能背景
+ * 背景选项接口
  */
-export function getSmartBackground(deviceType: 'desktop' | 'mobile' | 'tablet'): BackgroundConfig {
-  const backgrounds = {
-    desktop: {
-      type: 'image' as const,
-      value: {
-        url: '/images/backgrounds/desktop-login.jpg',
-        position: 'center center',
-        size: 'cover',
-        repeat: 'no-repeat',
+export interface BackgroundOptions {
+  width?: number
+  height?: number
+  quality?: 'low' | 'medium' | 'high'
+  category?: 'nature' | 'abstract' | 'minimal' | 'tech' | 'business'
+  fallback?: string
+}
+
+/**
+ * 获取智能背景（同步版本）
+ */
+export function getSmartBackground(deviceType: 'desktop' | 'mobile' | 'tablet'): BackgroundConfig
+/**
+ * 获取智能背景（异步版本）
+ */
+export function getSmartBackground(options: BackgroundOptions): Promise<BackgroundImage>
+/**
+ * 获取智能背景（实现）
+ */
+export function getSmartBackground(
+  deviceTypeOrOptions: 'desktop' | 'mobile' | 'tablet' | BackgroundOptions
+): BackgroundConfig | Promise<BackgroundImage> {
+  // 如果是字符串参数，使用同步版本
+  if (typeof deviceTypeOrOptions === 'string') {
+    const deviceType = deviceTypeOrOptions
+    const backgrounds = {
+      desktop: {
+        type: 'image' as const,
+        value: {
+          url: '/images/backgrounds/desktop-login.jpg',
+          position: 'center center',
+          size: 'cover',
+          repeat: 'no-repeat',
+        },
+        fallback: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       },
-      fallback: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    },
-    mobile: {
-      type: 'gradient' as const,
-      value: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      fallback: '#667eea',
-    },
-    tablet: {
-      type: 'image' as const,
-      value: {
-        url: '/images/backgrounds/tablet-login.jpg',
-        position: 'center center',
-        size: 'cover',
-        repeat: 'no-repeat',
+      mobile: {
+        type: 'gradient' as const,
+        value: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        fallback: '#667eea',
       },
-      fallback: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    },
+      tablet: {
+        type: 'image' as const,
+        value: {
+          url: '/images/backgrounds/tablet-login.jpg',
+          position: 'center center',
+          size: 'cover',
+          repeat: 'no-repeat',
+        },
+        fallback: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      },
+    }
+
+    return backgrounds[deviceType] || backgrounds.desktop
   }
 
-  return backgrounds[deviceType] || backgrounds.desktop
+  // 如果是对象参数，使用异步版本
+  const options = deviceTypeOrOptions
+  return Promise.resolve({
+    url: `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`,
+    width: options.width || 1920,
+    height: options.height || 1080,
+  })
 }
 
 /**
  * 预加载背景图片
  */
-export async function preloadBackground(background: BackgroundImage): Promise<void> {
+export async function preloadBackground(url: string): Promise<void>
+export async function preloadBackground(background: BackgroundImage): Promise<void>
+export async function preloadBackground(urlOrBackground: string | BackgroundImage): Promise<void> {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => resolve()
     img.onerror = reject
-    img.src = background.url
+    img.src = typeof urlOrBackground === 'string' ? urlOrBackground : urlOrBackground.url
   })
 }
 

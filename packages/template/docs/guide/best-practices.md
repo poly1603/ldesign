@@ -42,7 +42,7 @@ const config = {
     enabled: true,
     strategy: 'lru',
     maxSize: 50,
-    ttl: 30 * 60 * 1000  // 30分钟
+    ttl: 30 * 60 * 1000 // 30分钟
   }
 }
 ```
@@ -130,7 +130,7 @@ describe('UserProfile Template', () => {
 ```typescript
 test('template switching works correctly', async ({ page }) => {
   await page.goto('/dashboard')
-  
+
   // 测试设备切换
   await page.setViewportSize({ width: 375, height: 667 })
   await expect(page.locator('.mobile-layout')).toBeVisible()
@@ -174,7 +174,7 @@ manager.on('performance:warning', (data) => {
 
 ```typescript
 // 敏感数据处理
-const sanitizeData = (data: any) => {
+function sanitizeData(data: any) {
   // 移除敏感字段
   const { password, token, ...safeData } = data
   return safeData

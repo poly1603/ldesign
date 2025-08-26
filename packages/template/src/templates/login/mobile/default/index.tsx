@@ -179,69 +179,69 @@ export default defineComponent({
           <div class="mobile-default-login__panel">
             {props.loginPanel
               ? (
-                <props.loginPanel
-                  title={props.title}
-                  subtitle={props.subtitle}
-                  showRememberMe={props.showRememberMe}
-                  showForgotPassword={props.showForgotPassword}
-                  showThirdPartyLogin={props.showThirdPartyLogin}
-                  thirdPartyProviders={props.thirdPartyProviders}
-                  isLoading={props.isLoading}
-                  error={props.error}
-                  onLogin={handleLogin}
-                  onRegister={handleRegister}
-                  onForgotPassword={handleForgotPassword}
-                  onThirdPartyLogin={handleThirdPartyLogin}
-                />
-              )
+                  <props.loginPanel
+                    title={props.title}
+                    subtitle={props.subtitle}
+                    showRememberMe={props.showRememberMe}
+                    showForgotPassword={props.showForgotPassword}
+                    showThirdPartyLogin={props.showThirdPartyLogin}
+                    thirdPartyProviders={props.thirdPartyProviders}
+                    isLoading={props.isLoading}
+                    error={props.error}
+                    onLogin={handleLogin}
+                    onRegister={handleRegister}
+                    onForgotPassword={handleForgotPassword}
+                    onThirdPartyLogin={handleThirdPartyLogin}
+                  />
+                )
               : (
-                <div class="mobile-default-login__default-panel">
-                  <div class="mobile-default-login__form">
-                    <div class="mobile-default-login__field">
-                      <input type="text" placeholder="手机号" class="mobile-default-login__input" />
-                    </div>
-                    <div class="mobile-default-login__field">
-                      <input type="password" placeholder="密码" class="mobile-default-login__input" />
-                    </div>
-
-                    {props.showRememberMe && (
-                      <div class="mobile-default-login__options">
-                        <label class="mobile-default-login__checkbox">
-                          <input type="checkbox" />
-                          <span>记住密码</span>
-                        </label>
-                        {props.showForgotPassword && (
-                          <a href="#" class="mobile-default-login__forgot">
-                            忘记密码？
-                          </a>
-                        )}
+                  <div class="mobile-default-login__default-panel">
+                    <div class="mobile-default-login__form">
+                      <div class="mobile-default-login__field">
+                        <input type="text" placeholder="手机号" class="mobile-default-login__input" />
                       </div>
-                    )}
-
-                    <button class="mobile-default-login__submit">登录</button>
-
-                    {props.showThirdPartyLogin && (
-                      <div class="mobile-default-login__third-party">
-                        <div class="mobile-default-login__divider">
-                          <span>其他登录方式</span>
-                        </div>
-                        <div class="mobile-default-login__providers">
-                          {props.thirdPartyProviders.map((provider: string) => (
-                            <button
-                              key={provider}
-                              class={`mobile-default-login__provider mobile-default-login__provider--${provider}`}
-                            >
-                              {provider === 'wechat' && '💬'}
-                              {provider === 'qq' && '🐧'}
-                              {provider === 'weibo' && '📱'}
-                            </button>
-                          ))}
-                        </div>
+                      <div class="mobile-default-login__field">
+                        <input type="password" placeholder="密码" class="mobile-default-login__input" />
                       </div>
-                    )}
+
+                      {props.showRememberMe && (
+                        <div class="mobile-default-login__options">
+                          <label class="mobile-default-login__checkbox">
+                            <input type="checkbox" />
+                            <span>记住密码</span>
+                          </label>
+                          {props.showForgotPassword && (
+                            <a href="#" class="mobile-default-login__forgot">
+                              忘记密码？
+                            </a>
+                          )}
+                        </div>
+                      )}
+
+                      <button class="mobile-default-login__submit">登录</button>
+
+                      {props.showThirdPartyLogin && (
+                        <div class="mobile-default-login__third-party">
+                          <div class="mobile-default-login__divider">
+                            <span>其他登录方式</span>
+                          </div>
+                          <div class="mobile-default-login__providers">
+                            {props.thirdPartyProviders.map((provider: string) => (
+                              <button
+                                key={provider}
+                                class={`mobile-default-login__provider mobile-default-login__provider--${provider}`}
+                              >
+                                {provider === 'wechat' && '💬'}
+                                {provider === 'qq' && '🐧'}
+                                {provider === 'weibo' && '📱'}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
           </div>
         </div>
       </div>

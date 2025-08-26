@@ -28,60 +28,6 @@ src/templates/
 
 ```vue
 <!-- src/templates/user-profile/desktop/UserProfile.vue -->
-<template>
-  <div class="user-profile-desktop">
-    <div class="profile-container">
-      <!-- 头像区域 -->
-      <div class="avatar-section">
-        <img :src="user.avatar" :alt="user.name" class="avatar" />
-        <button class="change-avatar-btn">更换头像</button>
-      </div>
-      
-      <!-- 信息区域 -->
-      <div class="info-section">
-        <h2>{{ user.name }}</h2>
-        <p class="title">{{ user.title }}</p>
-        
-        <!-- 详细信息表单 -->
-        <form @submit.prevent="handleSave" class="profile-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label>姓名</label>
-              <input v-model="form.name" type="text" />
-            </div>
-            <div class="form-group">
-              <label>邮箱</label>
-              <input v-model="form.email" type="email" />
-            </div>
-          </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label>电话</label>
-              <input v-model="form.phone" type="tel" />
-            </div>
-            <div class="form-group">
-              <label>部门</label>
-              <select v-model="form.department">
-                <option value="tech">技术部</option>
-                <option value="design">设计部</option>
-                <option value="product">产品部</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="form-actions">
-            <button type="button" @click="handleReset">重置</button>
-            <button type="submit" :disabled="saving">
-              {{ saving ? '保存中...' : '保存' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 
@@ -119,22 +65,89 @@ const emit = defineEmits<{
 const saving = ref(false)
 const form = reactive({ ...props.user })
 
-const handleSave = async () => {
+async function handleSave() {
   saving.value = true
   try {
     // 模拟保存操作
     await new Promise(resolve => setTimeout(resolve, 1000))
     emit('save', { ...form })
-  } finally {
+  }
+  finally {
     saving.value = false
   }
 }
 
-const handleReset = () => {
+function handleReset() {
   Object.assign(form, props.user)
   emit('reset')
 }
 </script>
+
+<template>
+  <div class="user-profile-desktop">
+    <div class="profile-container">
+      <!-- 头像区域 -->
+      <div class="avatar-section">
+        <img :src="user.avatar" :alt="user.name" class="avatar">
+        <button class="change-avatar-btn">
+          更换头像
+        </button>
+      </div>
+
+      <!-- 信息区域 -->
+      <div class="info-section">
+        <h2>{{ user.name }}</h2>
+        <p class="title">
+          {{ user.title }}
+        </p>
+
+        <!-- 详细信息表单 -->
+        <form class="profile-form" @submit.prevent="handleSave">
+          <div class="form-row">
+            <div class="form-group">
+              <label>姓名</label>
+              <input v-model="form.name" type="text">
+            </div>
+            <div class="form-group">
+              <label>邮箱</label>
+              <input v-model="form.email" type="email">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>电话</label>
+              <input v-model="form.phone" type="tel">
+            </div>
+            <div class="form-group">
+              <label>部门</label>
+              <select v-model="form.department">
+                <option value="tech">
+                  技术部
+                </option>
+                <option value="design">
+                  设计部
+                </option>
+                <option value="product">
+                  产品部
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" @click="handleReset">
+              重置
+            </button>
+            <button type="submit" :disabled="saving">
+              {{ saving ? '保存中...' : '保存' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .user-profile-desktop {
@@ -243,77 +256,6 @@ const handleReset = () => {
 
 ```vue
 <!-- src/templates/user-profile/mobile/UserProfile.vue -->
-<template>
-  <div class="user-profile-mobile">
-    <!-- 头部信息 -->
-    <div class="profile-header">
-      <img :src="user.avatar" :alt="user.name" class="avatar" />
-      <div class="user-info">
-        <h2>{{ user.name }}</h2>
-        <p class="title">{{ user.title }}</p>
-      </div>
-      <button class="edit-btn" @click="toggleEdit">
-        {{ isEditing ? '取消' : '编辑' }}
-      </button>
-    </div>
-    
-    <!-- 表单区域 -->
-    <div class="profile-content">
-      <form v-if="isEditing" @submit.prevent="handleSave" class="profile-form">
-        <div class="form-group">
-          <label>姓名</label>
-          <input v-model="form.name" type="text" />
-        </div>
-        
-        <div class="form-group">
-          <label>邮箱</label>
-          <input v-model="form.email" type="email" />
-        </div>
-        
-        <div class="form-group">
-          <label>电话</label>
-          <input v-model="form.phone" type="tel" />
-        </div>
-        
-        <div class="form-group">
-          <label>部门</label>
-          <select v-model="form.department">
-            <option value="tech">技术部</option>
-            <option value="design">设计部</option>
-            <option value="product">产品部</option>
-          </select>
-        </div>
-        
-        <div class="form-actions">
-          <button type="submit" :disabled="saving" class="save-btn">
-            {{ saving ? '保存中...' : '保存' }}
-          </button>
-        </div>
-      </form>
-      
-      <!-- 只读模式 -->
-      <div v-else class="profile-view">
-        <div class="info-item">
-          <label>姓名</label>
-          <span>{{ user.name }}</span>
-        </div>
-        <div class="info-item">
-          <label>邮箱</label>
-          <span>{{ user.email }}</span>
-        </div>
-        <div class="info-item">
-          <label>电话</label>
-          <span>{{ user.phone }}</span>
-        </div>
-        <div class="info-item">
-          <label>部门</label>
-          <span>{{ getDepartmentName(user.department) }}</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 
@@ -353,7 +295,7 @@ const isEditing = ref(false)
 const saving = ref(false)
 const form = reactive({ ...props.user })
 
-const toggleEdit = () => {
+function toggleEdit() {
   isEditing.value = !isEditing.value
   if (!isEditing.value) {
     // 取消编辑时重置表单
@@ -361,18 +303,19 @@ const toggleEdit = () => {
   }
 }
 
-const handleSave = async () => {
+async function handleSave() {
   saving.value = true
   try {
     await new Promise(resolve => setTimeout(resolve, 1000))
     emit('save', { ...form })
     isEditing.value = false
-  } finally {
+  }
+  finally {
     saving.value = false
   }
 }
 
-const getDepartmentName = (dept: string) => {
+function getDepartmentName(dept: string) {
   const names = {
     tech: '技术部',
     design: '设计部',
@@ -381,6 +324,85 @@ const getDepartmentName = (dept: string) => {
   return names[dept] || dept
 }
 </script>
+
+<template>
+  <div class="user-profile-mobile">
+    <!-- 头部信息 -->
+    <div class="profile-header">
+      <img :src="user.avatar" :alt="user.name" class="avatar">
+      <div class="user-info">
+        <h2>{{ user.name }}</h2>
+        <p class="title">
+          {{ user.title }}
+        </p>
+      </div>
+      <button class="edit-btn" @click="toggleEdit">
+        {{ isEditing ? '取消' : '编辑' }}
+      </button>
+    </div>
+
+    <!-- 表单区域 -->
+    <div class="profile-content">
+      <form v-if="isEditing" class="profile-form" @submit.prevent="handleSave">
+        <div class="form-group">
+          <label>姓名</label>
+          <input v-model="form.name" type="text">
+        </div>
+
+        <div class="form-group">
+          <label>邮箱</label>
+          <input v-model="form.email" type="email">
+        </div>
+
+        <div class="form-group">
+          <label>电话</label>
+          <input v-model="form.phone" type="tel">
+        </div>
+
+        <div class="form-group">
+          <label>部门</label>
+          <select v-model="form.department">
+            <option value="tech">
+              技术部
+            </option>
+            <option value="design">
+              设计部
+            </option>
+            <option value="product">
+              产品部
+            </option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" :disabled="saving" class="save-btn">
+            {{ saving ? '保存中...' : '保存' }}
+          </button>
+        </div>
+      </form>
+
+      <!-- 只读模式 -->
+      <div v-else class="profile-view">
+        <div class="info-item">
+          <label>姓名</label>
+          <span>{{ user.name }}</span>
+        </div>
+        <div class="info-item">
+          <label>邮箱</label>
+          <span>{{ user.email }}</span>
+        </div>
+        <div class="info-item">
+          <label>电话</label>
+          <span>{{ user.phone }}</span>
+        </div>
+        <div class="info-item">
+          <label>部门</label>
+          <span>{{ getDepartmentName(user.department) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .user-profile-mobile {
@@ -542,26 +564,6 @@ const getDepartmentName = (dept: string) => {
 ### 1. 条件渲染
 
 ```vue
-<template>
-  <div class="conditional-template">
-    <!-- 根据用户权限显示不同内容 -->
-    <div v-if="hasPermission('admin')" class="admin-panel">
-      <h3>管理员面板</h3>
-      <!-- 管理员专用功能 -->
-    </div>
-    
-    <div v-else-if="hasPermission('editor')" class="editor-panel">
-      <h3>编辑器面板</h3>
-      <!-- 编辑器功能 -->
-    </div>
-    
-    <div v-else class="user-panel">
-      <h3>用户面板</h3>
-      <!-- 普通用户功能 -->
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 interface Props {
   userRole?: 'admin' | 'editor' | 'user'
@@ -573,31 +575,41 @@ const props = withDefaults(defineProps<Props>(), {
   permissions: () => []
 })
 
-const hasPermission = (permission: string) => {
-  return props.permissions.includes(permission) || 
-         props.userRole === 'admin'
+function hasPermission(permission: string) {
+  return props.permissions.includes(permission)
+    || props.userRole === 'admin'
 }
 </script>
+
+<template>
+  <div class="conditional-template">
+    <!-- 根据用户权限显示不同内容 -->
+    <div v-if="hasPermission('admin')" class="admin-panel">
+      <h3>管理员面板</h3>
+      <!-- 管理员专用功能 -->
+    </div>
+
+    <div v-else-if="hasPermission('editor')" class="editor-panel">
+      <h3>编辑器面板</h3>
+      <!-- 编辑器功能 -->
+    </div>
+
+    <div v-else class="user-panel">
+      <h3>用户面板</h3>
+      <!-- 普通用户功能 -->
+    </div>
+  </div>
+</template>
 ```
 
 ### 2. 动态组件
 
 ```vue
-<template>
-  <div class="dynamic-template">
-    <component 
-      :is="currentComponent" 
-      v-bind="componentProps"
-      @component-change="handleComponentChange"
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
+import ChartView from './components/ChartView.vue'
 import FormView from './components/FormView.vue'
 import ListView from './components/ListView.vue'
-import ChartView from './components/ChartView.vue'
 
 interface Props {
   viewType?: 'form' | 'list' | 'chart'
@@ -625,44 +637,26 @@ const componentProps = computed(() => {
   }
 })
 
-const handleComponentChange = (newType: string) => {
+function handleComponentChange(newType: string) {
   // 处理组件切换
   console.log('切换到组件:', newType)
 }
 </script>
+
+<template>
+  <div class="dynamic-template">
+    <component
+      :is="currentComponent"
+      v-bind="componentProps"
+      @component-change="handleComponentChange"
+    />
+  </div>
+</template>
 ```
 
 ### 3. 插槽支持
 
 ```vue
-<template>
-  <div class="template-with-slots">
-    <header class="template-header">
-      <slot name="header">
-        <h2>默认标题</h2>
-      </slot>
-    </header>
-    
-    <main class="template-content">
-      <slot>
-        <p>默认内容</p>
-      </slot>
-    </main>
-    
-    <aside class="template-sidebar">
-      <slot name="sidebar">
-        <div>默认侧边栏</div>
-      </slot>
-    </aside>
-    
-    <footer class="template-footer">
-      <slot name="footer" :data="footerData">
-        <p>默认页脚</p>
-      </slot>
-    </footer>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 
@@ -680,6 +674,34 @@ const footerData = computed(() => ({
   version: '1.0.0'
 }))
 </script>
+
+<template>
+  <div class="template-with-slots">
+    <header class="template-header">
+      <slot name="header">
+        <h2>默认标题</h2>
+      </slot>
+    </header>
+
+    <main class="template-content">
+      <slot>
+        <p>默认内容</p>
+      </slot>
+    </main>
+
+    <aside class="template-sidebar">
+      <slot name="sidebar">
+        <div>默认侧边栏</div>
+      </slot>
+    </aside>
+
+    <footer class="template-footer">
+      <slot name="footer" :data="footerData">
+        <p>默认页脚</p>
+      </slot>
+    </footer>
+  </div>
+</template>
 ```
 
 ## 📱 响应式设计最佳实践
@@ -688,7 +710,7 @@ const footerData = computed(() => ({
 
 ```vue
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 const breakpoints = {
   mobile: 768,
@@ -698,14 +720,16 @@ const breakpoints = {
 
 const currentBreakpoint = ref('desktop')
 
-const updateBreakpoint = () => {
+function updateBreakpoint() {
   const width = window.innerWidth
-  
+
   if (width <= breakpoints.mobile) {
     currentBreakpoint.value = 'mobile'
-  } else if (width <= breakpoints.tablet) {
+  }
+  else if (width <= breakpoints.tablet) {
     currentBreakpoint.value = 'tablet'
-  } else {
+  }
+  else {
     currentBreakpoint.value = 'desktop'
   }
 }
@@ -744,19 +768,6 @@ onUnmounted(() => {
 ### 2. 灵活的网格系统
 
 ```vue
-<template>
-  <div class="responsive-grid">
-    <div 
-      v-for="item in items" 
-      :key="item.id"
-      class="grid-item"
-      :class="getItemClass(item)"
-    >
-      {{ item.content }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 interface GridItem {
   id: string
@@ -785,16 +796,32 @@ const props = withDefaults(defineProps<Props>(), {
   })
 })
 
-const getItemClass = (item: GridItem) => {
+function getItemClass(item: GridItem) {
   const classes = []
-  
-  if (item.span?.mobile) classes.push(`span-mobile-${item.span.mobile}`)
-  if (item.span?.tablet) classes.push(`span-tablet-${item.span.tablet}`)
-  if (item.span?.desktop) classes.push(`span-desktop-${item.span.desktop}`)
-  
+
+  if (item.span?.mobile)
+    classes.push(`span-mobile-${item.span.mobile}`)
+  if (item.span?.tablet)
+    classes.push(`span-tablet-${item.span.tablet}`)
+  if (item.span?.desktop)
+    classes.push(`span-desktop-${item.span.desktop}`)
+
   return classes
 }
 </script>
+
+<template>
+  <div class="responsive-grid">
+    <div
+      v-for="item in items"
+      :key="item.id"
+      class="grid-item"
+      :class="getItemClass(item)"
+    >
+      {{ item.content }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .responsive-grid {
@@ -808,7 +835,7 @@ const getItemClass = (item: GridItem) => {
   .responsive-grid {
     --columns: 1;
   }
-  
+
   .span-mobile-2 { grid-column: span 2; }
   .span-mobile-3 { grid-column: span 3; }
 }
@@ -818,7 +845,7 @@ const getItemClass = (item: GridItem) => {
   .responsive-grid {
     --columns: 2;
   }
-  
+
   .span-tablet-2 { grid-column: span 2; }
   .span-tablet-3 { grid-column: span 3; }
 }
@@ -828,7 +855,7 @@ const getItemClass = (item: GridItem) => {
   .responsive-grid {
     --columns: 3;
   }
-  
+
   .span-desktop-2 { grid-column: span 2; }
   .span-desktop-3 { grid-column: span 3; }
 }
@@ -844,7 +871,7 @@ const getItemClass = (item: GridItem) => {
 import { defineAsyncComponent } from 'vue'
 
 // 懒加载重型组件
-const HeavyChart = defineAsyncComponent(() => 
+const HeavyChart = defineAsyncComponent(() =>
   import('./components/HeavyChart.vue')
 )
 
@@ -865,7 +892,9 @@ const DataTable = defineAsyncComponent({
         <DataTable v-if="showTable" />
       </template>
       <template #fallback>
-        <div class="loading">组件加载中...</div>
+        <div class="loading">
+          组件加载中...
+        </div>
       </template>
     </Suspense>
   </div>
@@ -875,31 +904,8 @@ const DataTable = defineAsyncComponent({
 ### 2. 虚拟滚动
 
 ```vue
-<template>
-  <div class="virtual-list" ref="containerRef">
-    <div 
-      class="virtual-list-content"
-      :style="{ height: totalHeight + 'px' }"
-    >
-      <div
-        v-for="item in visibleItems"
-        :key="item.id"
-        class="virtual-list-item"
-        :style="{ 
-          transform: `translateY(${item.top}px)`,
-          height: itemHeight + 'px'
-        }"
-      >
-        <slot :item="item.data" :index="item.index">
-          {{ item.data }}
-        </slot>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 interface Props {
   items: any[]
@@ -915,22 +921,22 @@ const props = withDefaults(defineProps<Props>(), {
 const containerRef = ref<HTMLElement>()
 const scrollTop = ref(0)
 
-const totalHeight = computed(() => 
+const totalHeight = computed(() =>
   props.items.length * props.itemHeight
 )
 
-const visibleCount = computed(() => 
+const visibleCount = computed(() =>
   Math.ceil(props.containerHeight / props.itemHeight) + 2
 )
 
-const startIndex = computed(() => 
+const startIndex = computed(() =>
   Math.floor(scrollTop.value / props.itemHeight)
 )
 
 const visibleItems = computed(() => {
   const start = Math.max(0, startIndex.value - 1)
   const end = Math.min(props.items.length, start + visibleCount.value)
-  
+
   return props.items.slice(start, end).map((item, index) => ({
     id: start + index,
     index: start + index,
@@ -948,6 +954,29 @@ onMounted(() => {
   }
 })
 </script>
+
+<template>
+  <div ref="containerRef" class="virtual-list">
+    <div
+      class="virtual-list-content"
+      :style="{ height: `${totalHeight}px` }"
+    >
+      <div
+        v-for="item in visibleItems"
+        :key="item.id"
+        class="virtual-list-item"
+        :style="{
+          transform: `translateY(${item.top}px)`,
+          height: `${itemHeight}px`,
+        }"
+      >
+        <slot :item="item.data" :index="item.index">
+          {{ item.data }}
+        </slot>
+      </div>
+    </div>
+  </div>
+</template>
 ```
 
 ## 🧪 测试模板
@@ -986,7 +1015,7 @@ describe('UserProfile Template', () => {
     })
 
     await wrapper.find('form').trigger('submit')
-    
+
     expect(wrapper.emitted('save')).toBeTruthy()
     expect(wrapper.emitted('save')[0][0]).toEqual(mockUser)
   })
@@ -998,10 +1027,10 @@ describe('UserProfile Template', () => {
 
     // 修改表单数据
     await wrapper.find('input[type="text"]').setValue('新名称')
-    
+
     // 点击重置按钮
     await wrapper.find('button[type="button"]').trigger('click')
-    
+
     expect(wrapper.emitted('reset')).toBeTruthy()
   })
 })

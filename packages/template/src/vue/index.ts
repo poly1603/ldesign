@@ -19,14 +19,14 @@ export {
 } from './composables/useTemplate'
 
 export {
-  useTemplateRegistry,
-} from './composables/useTemplateRegistry'
-
-export {
-  useTemplateExtension,
   createExternalTemplate,
   createExternalTemplateFromPath,
+  useTemplateExtension,
 } from './composables/useTemplateExtension'
+
+export {
+  useTemplateRegistry,
+} from './composables/useTemplateRegistry'
 
 // 指令
 export {

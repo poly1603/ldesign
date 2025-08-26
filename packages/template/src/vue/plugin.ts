@@ -3,8 +3,8 @@
  * 提供完整的 Vue 3 集成
  */
 
+import type { App, Plugin } from 'vue'
 import type { PluginConfig, TemplateManagerConfig } from '../types'
-// import type { App, Plugin } from 'vue'
 import { TemplateManager } from '../core/manager'
 // // import TemplateRenderer from './components/TemplateRenderer.vue'
 // import TemplateRendererWithSelector from './components/TemplateRendererWithSelector.vue'
@@ -114,7 +114,7 @@ export const TemplatePlugin = createTemplatePlugin()
  */
 export function install(app: App, options: Partial<PluginConfig> = {}) {
   const plugin = createTemplatePlugin(options)
-  plugin.install!(app, options)
+  plugin?.install?.(app)
 }
 
 /**

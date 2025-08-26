@@ -1,3 +1,124 @@
+<script setup lang="ts">
+import type { DeviceType } from '@ldesign/template'
+import { onMounted, onUnmounted, ref } from 'vue'
+import TemplateRenderer from '../../../src/vue/components/TemplateRenderer.vue'
+
+// 响应式状态
+const currentTemplate = ref('login-default')
+const currentCategory = ref('login')
+const currentDeviceType = ref<DeviceType>('desktop')
+const isAutoDetecting = ref(true) // 是否启用自动检测
+const windowWidth = ref(window.innerWidth) // 当前窗口宽度
+
+// 设备类型对应的默认模板映射
+const deviceTemplateMap = {
+  desktop: 'login-default',
+  tablet: 'login-tablet-default',
+  mobile: 'login-mobile-default',
+}
+
+// 模板属性
+const templateProps = ref({
+  title: '用户登录',
+  subtitle: '请输入您的账号信息',
+  showRememberMe: true,
+  showForgotPassword: true,
+})
+
+// 根据窗口宽度检测设备类型
+function detectDeviceType(): DeviceType {
+  const width = window.innerWidth
+  if (width >= 1024) {
+    return 'desktop'
+  }
+  else if (width >= 768) {
+    return 'tablet'
+  }
+  else {
+    return 'mobile'
+  }
+}
+
+// 更新设备类型
+function updateDeviceType() {
+  // 更新窗口宽度
+  windowWidth.value = window.innerWidth
+
+  if (!isAutoDetecting.value)
+    return
+
+  const newDeviceType = detectDeviceType()
+  if (newDeviceType !== currentDeviceType.value) {
+    currentDeviceType.value = newDeviceType
+    // 更新对应的模板
+    currentTemplate.value = deviceTemplateMap[newDeviceType]
+  }
+}
+
+// 窗口大小变化监听器
+let resizeTimeout: number | null = null
+function handleResize() {
+  // 立即更新窗口宽度显示
+  windowWidth.value = window.innerWidth
+
+  // 防抖处理设备类型切换，避免频繁触发
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout)
+  }
+  resizeTimeout = window.setTimeout(() => {
+    if (isAutoDetecting.value) {
+      const newDeviceType = detectDeviceType()
+      if (newDeviceType !== currentDeviceType.value) {
+        currentDeviceType.value = newDeviceType
+        // 更新对应的模板
+        currentTemplate.value = deviceTemplateMap[newDeviceType]
+      }
+    }
+  }, 150)
+}
+
+// 手动设备类型切换
+function handleDeviceChange() {
+  // 当用户手动切换设备类型时，暂时禁用自动检测
+  isAutoDetecting.value = false
+  // 更新对应的模板
+  currentTemplate.value = deviceTemplateMap[currentDeviceType.value]
+
+  // 5秒后重新启用自动检测
+  setTimeout(() => {
+    isAutoDetecting.value = true
+    updateDeviceType()
+  }, 5000)
+}
+
+// 事件处理器
+function handleTemplateChanged(_oldTemplate: string, newTemplate: string) {
+  currentTemplate.value = newTemplate
+}
+
+function handleTemplateSelected(templateName: string) {
+  currentTemplate.value = templateName
+}
+
+// 生命周期钩子
+onMounted(() => {
+  // 初始化设备类型检测
+  updateDeviceType()
+
+  // 添加窗口大小变化监听器
+  window.addEventListener('resize', handleResize)
+  console.log('响应式设备检测已启用')
+})
+
+onUnmounted(() => {
+  // 清理监听器
+  window.removeEventListener('resize', handleResize)
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout)
+  }
+})
+</script>
+
 <template>
   <div class="template-demo">
     <!-- 演示头部 -->
@@ -11,9 +132,15 @@
       <div class="device-controls">
         <label>设备类型:</label>
         <select v-model="currentDeviceType" @change="handleDeviceChange">
-          <option value="desktop">桌面端</option>
-          <option value="tablet">平板端</option>
-          <option value="mobile">移动端</option>
+          <option value="desktop">
+            桌面端
+          </option>
+          <option value="tablet">
+            平板端
+          </option>
+          <option value="mobile">
+            移动端
+          </option>
         </select>
       </div>
       <div class="device-status">
@@ -41,130 +168,8 @@
         />
       </div>
     </div>
-
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import type { DeviceType } from '@ldesign/template'
-import TemplateRenderer from '../../../src/vue/components/TemplateRenderer.vue'
-
-
-// 响应式状态
-const currentTemplate = ref('login-default')
-const currentCategory = ref('login')
-const currentDeviceType = ref<DeviceType>('desktop')
-const isAutoDetecting = ref(true) // 是否启用自动检测
-const windowWidth = ref(window.innerWidth) // 当前窗口宽度
-
-// 设备类型对应的默认模板映射
-const deviceTemplateMap = {
-  desktop: 'login-default',
-  tablet: 'login-tablet-default',
-  mobile: 'login-mobile-default'
-}
-
-// 模板属性
-const templateProps = ref({
-  title: '用户登录',
-  subtitle: '请输入您的账号信息',
-  showRememberMe: true,
-  showForgotPassword: true
-})
-
-// 根据窗口宽度检测设备类型
-const detectDeviceType = (): DeviceType => {
-  const width = window.innerWidth
-  if (width >= 1024) {
-    return 'desktop'
-  } else if (width >= 768) {
-    return 'tablet'
-  } else {
-    return 'mobile'
-  }
-}
-
-// 更新设备类型
-const updateDeviceType = () => {
-  // 更新窗口宽度
-  windowWidth.value = window.innerWidth
-
-  if (!isAutoDetecting.value) return
-
-  const newDeviceType = detectDeviceType()
-  if (newDeviceType !== currentDeviceType.value) {
-    currentDeviceType.value = newDeviceType
-    // 更新对应的模板
-    currentTemplate.value = deviceTemplateMap[newDeviceType]
-  }
-}
-
-// 窗口大小变化监听器
-let resizeTimeout: number | null = null
-const handleResize = () => {
-  // 立即更新窗口宽度显示
-  windowWidth.value = window.innerWidth
-
-  // 防抖处理设备类型切换，避免频繁触发
-  if (resizeTimeout) {
-    clearTimeout(resizeTimeout)
-  }
-  resizeTimeout = window.setTimeout(() => {
-    if (isAutoDetecting.value) {
-      const newDeviceType = detectDeviceType()
-      if (newDeviceType !== currentDeviceType.value) {
-        currentDeviceType.value = newDeviceType
-        // 更新对应的模板
-        currentTemplate.value = deviceTemplateMap[newDeviceType]
-      }
-    }
-  }, 150)
-}
-
-// 手动设备类型切换
-const handleDeviceChange = () => {
-  // 当用户手动切换设备类型时，暂时禁用自动检测
-  isAutoDetecting.value = false
-  // 更新对应的模板
-  currentTemplate.value = deviceTemplateMap[currentDeviceType.value]
-
-  // 5秒后重新启用自动检测
-  setTimeout(() => {
-    isAutoDetecting.value = true
-    updateDeviceType()
-  }, 5000)
-}
-
-
-
-// 事件处理器
-const handleTemplateChanged = (_oldTemplate: string, newTemplate: string) => {
-  currentTemplate.value = newTemplate
-}
-
-const handleTemplateSelected = (templateName: string) => {
-  currentTemplate.value = templateName
-}
-
-// 生命周期钩子
-onMounted(() => {
-  // 初始化设备类型检测
-  updateDeviceType()
-
-  // 添加窗口大小变化监听器
-  window.addEventListener('resize', handleResize)
-  console.log('响应式设备检测已启用')
-})
-
-onUnmounted(() => {
-  // 清理监听器
-  window.removeEventListener('resize', handleResize)
-  if (resizeTimeout) {
-    clearTimeout(resizeTimeout)
-  }
-})
-</script>
 
 <style scoped>
 .template-demo {

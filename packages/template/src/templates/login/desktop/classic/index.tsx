@@ -113,7 +113,6 @@ export default defineComponent({
         console.warn('Failed to load background:', error)
         backgroundImage.value = {
           url: `linear-gradient(135deg, ${currentTheme.colors.primary}, ${currentTheme.colors.secondary})`,
-          title: 'Classic Gradient',
         }
       }
       finally {

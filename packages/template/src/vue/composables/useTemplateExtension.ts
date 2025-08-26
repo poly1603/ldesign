@@ -1,11 +1,11 @@
-import { ref, computed } from 'vue'
-import type { 
-  TemplateConfig, 
-  ExternalTemplate, 
+import type {
+  DeviceType,
+  ExternalTemplate,
+  TemplateConfig,
   TemplateExtensionOptions,
   TemplateRegistryItem,
-  DeviceType 
 } from '../../types'
+import { computed, ref } from 'vue'
 
 /**
  * 模板扩展管理器
@@ -17,14 +17,13 @@ const externalTemplates = ref<ExternalTemplate[]>([])
 const extensionOptions = ref<TemplateExtensionOptions>({
   overrideDefaults: false,
   mergeConflicts: true,
-  priorityStrategy: 'external'
+  priorityStrategy: 'external',
 })
 
 /**
  * 模板扩展组合函数
  */
 export function useTemplateExtension() {
-  
   /**
    * 注册外部模板
    */
@@ -36,7 +35,7 @@ export function useTemplateExtension() {
 
     // 检查是否已存在
     const existingIndex = externalTemplates.value.findIndex(
-      t => t.config.id === template.config.id
+      t => t.config.id === template.config.id,
     )
 
     if (existingIndex >= 0) {
@@ -44,7 +43,8 @@ export function useTemplateExtension() {
       if (extensionOptions.value.mergeConflicts) {
         externalTemplates.value[existingIndex] = template
       }
-    } else {
+    }
+    else {
       externalTemplates.value.push(template)
     }
   }
@@ -89,7 +89,7 @@ export function useTemplateExtension() {
       category: config.category,
       deviceType: config.device,
       isExternal: true,
-      externalTemplate: template
+      externalTemplate: template,
     }
   }
 
@@ -105,7 +105,7 @@ export function useTemplateExtension() {
    */
   const getExtendedTemplatesByCategory = (category: string, deviceType?: DeviceType) => {
     return computed(() => {
-      return getExtendedRegistryItems.value.filter(item => {
+      return getExtendedRegistryItems.value.filter((item) => {
         const categoryMatch = item.category === category
         const deviceMatch = !deviceType || item.deviceType === deviceType
         return categoryMatch && deviceMatch
@@ -125,27 +125,29 @@ export function useTemplateExtension() {
    */
   const mergeWithDefaultTemplates = (defaultTemplates: TemplateRegistryItem[]): TemplateRegistryItem[] => {
     const extended = getExtendedRegistryItems.value
-    
+
     if (extensionOptions.value.overrideDefaults) {
       // 外部模板优先，替换同名默认模板
       const merged = [...defaultTemplates]
-      
-      extended.forEach(extTemplate => {
+
+      extended.forEach((extTemplate) => {
         const existingIndex = merged.findIndex(
-          t => t.category === extTemplate.category && 
-              t.deviceType === extTemplate.deviceType &&
-              t.name === extTemplate.name
+          t => t.category === extTemplate.category
+            && t.deviceType === extTemplate.deviceType
+            && t.name === extTemplate.name,
         )
-        
+
         if (existingIndex >= 0) {
           merged[existingIndex] = extTemplate
-        } else {
+        }
+        else {
           merged.push(extTemplate)
         }
       })
-      
+
       return merged
-    } else {
+    }
+    else {
       // 简单合并，外部模板作为额外选项
       return [...defaultTemplates, ...extended]
     }
@@ -158,11 +160,11 @@ export function useTemplateExtension() {
     if (!config.id || !config.name || !config.category || !config.device) {
       return false
     }
-    
+
     if (!['desktop', 'mobile', 'tablet'].includes(config.device)) {
       return false
     }
-    
+
     return true
   }
 
@@ -173,10 +175,10 @@ export function useTemplateExtension() {
     const stats = {
       total: externalTemplates.value.length,
       byCategory: {} as Record<string, number>,
-      byDevice: {} as Record<DeviceType, number>
+      byDevice: {} as Record<DeviceType, number>,
     }
 
-    externalTemplates.value.forEach(template => {
+    externalTemplates.value.forEach((template) => {
       const category = template.config.category
       const device = template.config.device
 
@@ -201,7 +203,7 @@ export function useTemplateExtension() {
     extensionOptions.value = {
       overrideDefaults: false,
       mergeConflicts: true,
-      priorityStrategy: 'external'
+      priorityStrategy: 'external',
     }
   }
 
@@ -229,7 +231,7 @@ export function useTemplateExtension() {
     // 工具方法
     validateTemplateConfig,
     convertToRegistryItem,
-    clearExternalTemplates
+    clearExternalTemplates,
   }
 }
 
@@ -242,13 +244,13 @@ export function createExternalTemplate(
   options?: {
     styles?: string
     assets?: Record<string, string>
-  }
+  },
 ): ExternalTemplate {
   return {
     config,
     component,
     styles: options?.styles,
-    assets: options?.assets
+    assets: options?.assets,
   }
 }
 
@@ -259,25 +261,26 @@ export async function createExternalTemplateFromPath(
   basePath: string,
   category: string,
   device: DeviceType,
-  variant: string
+  variant: string,
 ): Promise<ExternalTemplate> {
   const configPath = `${basePath}/${category}/${device}/${variant}/config.ts`
   const componentPath = `${basePath}/${category}/${device}/${variant}/index.tsx`
-  
+
   try {
     // 动态导入配置和组件
     const configModule = await import(/* @vite-ignore */ configPath)
     const componentModule = await import(/* @vite-ignore */ componentPath)
-    
+
     const config = configModule.default || configModule.config
     const component = componentModule.default
-    
+
     if (!config || !component) {
       throw new Error(`Failed to load template from ${basePath}`)
     }
-    
+
     return createExternalTemplate(config, component)
-  } catch (error) {
+  }
+  catch (error) {
     throw new Error(`Failed to create external template: ${error}`)
   }
 }

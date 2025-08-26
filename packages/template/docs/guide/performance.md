@@ -10,8 +10,8 @@
 const manager = new TemplateManager({
   performance: {
     enabled: true,
-    sampleRate: 0.1,  // 10% 采样率
-    reportInterval: 60000,  // 每分钟报告
+    sampleRate: 0.1, // 10% 采样率
+    reportInterval: 60000, // 每分钟报告
     metrics: ['loadTime', 'memoryUsage', 'cacheHitRate']
   }
 })
@@ -44,7 +44,7 @@ const config = {
       maxSize: 50,
       ttl: 30 * 60 * 1000
     },
-    
+
     // 浏览器存储缓存
     storage: {
       enabled: true,
@@ -52,7 +52,7 @@ const config = {
       prefix: 'template_cache_',
       compression: true
     },
-    
+
     // HTTP 缓存
     http: {
       enabled: true,
@@ -68,13 +68,13 @@ const config = {
 
 ```typescript
 // 应用启动时预热缓存
-const preloadCriticalTemplates = async () => {
+async function preloadCriticalTemplates() {
   const criticalTemplates = [
     { category: 'login', deviceType: 'desktop' },
     { category: 'dashboard', deviceType: 'desktop' },
     { category: 'navigation', deviceType: 'desktop' }
   ]
-  
+
   await manager.preloadTemplates(criticalTemplates)
 }
 ```
@@ -86,18 +86,18 @@ const preloadCriticalTemplates = async () => {
 ```vue
 <template>
   <!-- 视口内懒加载 -->
-  <TemplateRenderer 
+  <TemplateRenderer
     template="heavy-component"
     :lazy="true"
     :loading-threshold="200"
     :unload-threshold="500"
   />
-  
+
   <!-- 交互时懒加载 -->
-  <TemplateRenderer 
+  <TemplateRenderer
     template="modal-content"
     :lazy="true"
-    :trigger="'interaction'"
+    trigger="interaction"
   />
 </template>
 ```
@@ -106,7 +106,7 @@ const preloadCriticalTemplates = async () => {
 
 ```typescript
 // 动态导入优化
-const loadTemplate = async (category: string, deviceType: string) => {
+async function loadTemplate(category: string, deviceType: string) {
   // 使用 Webpack 魔法注释
   const module = await import(
     /* webpackChunkName: "template-[request]" */
@@ -124,10 +124,10 @@ const loadTemplate = async (category: string, deviceType: string) => {
 const smartPreload = {
   // 基于用户行为预测
   userBehavior: true,
-  
+
   // 基于路由预测
   routeBased: true,
-  
+
   // 基于时间预测
   timeBased: {
     enabled: true,
@@ -146,15 +146,15 @@ const smartPreload = {
 ```vue
 <template>
   <VirtualList
+    v-slot="{ item, index }"
     :items="largeDataSet"
     :item-height="50"
     :container-height="400"
-    v-slot="{ item, index }"
   >
-    <TemplateRenderer 
+    <TemplateRenderer
+      :key="`${item.template}-${index}`"
       :template="item.template"
       :template-props="item.props"
-      :key="`${item.template}-${index}`"
     />
   </VirtualList>
 </template>
@@ -166,15 +166,15 @@ const smartPreload = {
 // 组件池管理
 class ComponentPool {
   private pool = new Map<string, any[]>()
-  
+
   acquire(templateName: string) {
     const components = this.pool.get(templateName) || []
     return components.pop() || this.createComponent(templateName)
   }
-  
+
   release(templateName: string, component: any) {
     const components = this.pool.get(templateName) || []
-    if (components.length < 10) {  // 限制池大小
+    if (components.length < 10) { // 限制池大小
       components.push(component)
       this.pool.set(templateName, components)
     }
@@ -206,13 +206,13 @@ class ComponentPool {
 // 移动端内存优化
 const mobileConfig = {
   cache: {
-    maxSize: 20,  // 减少缓存大小
-    ttl: 10 * 60 * 1000,  // 缩短过期时间
+    maxSize: 20, // 减少缓存大小
+    ttl: 10 * 60 * 1000, // 缩短过期时间
     strategy: 'lru'
   },
-  
+
   performance: {
-    memoryThreshold: 50 * 1024 * 1024,  // 50MB
+    memoryThreshold: 50 * 1024 * 1024, // 50MB
     autoCleanup: true
   }
 }
@@ -266,7 +266,7 @@ export default defineConfig({
       }
     }
   },
-  
+
   optimizeDeps: {
     include: ['@ldesign/template', '@ldesign/template/vue']
   }
@@ -279,17 +279,17 @@ export default defineConfig({
 
 ```typescript
 // 性能基准测试
-const benchmark = async () => {
+async function benchmark() {
   const startTime = performance.now()
-  
+
   // 测试模板加载性能
   for (let i = 0; i < 100; i++) {
     await manager.loadTemplate('test-template', 'desktop')
   }
-  
+
   const endTime = performance.now()
   const averageTime = (endTime - startTime) / 100
-  
+
   console.log(`平均加载时间: ${averageTime}ms`)
 }
 ```
@@ -305,12 +305,12 @@ const memoryLeakDetector = {
       this.checkMemoryUsage()
     }, 5000)
   },
-  
+
   checkMemoryUsage() {
     const currentMemory = performance.memory?.usedJSHeapSize || 0
     const growth = currentMemory - this.initialMemory
-    
-    if (growth > 50 * 1024 * 1024) {  // 50MB
+
+    if (growth > 50 * 1024 * 1024) { // 50MB
       console.warn('检测到可能的内存泄漏')
       this.reportMemoryLeak(growth)
     }
@@ -326,22 +326,22 @@ const memoryLeakDetector = {
 // 自适应性能调优
 class PerformanceOptimizer {
   private metrics = new Map()
-  
+
   optimize() {
     const avgLoadTime = this.getAverageLoadTime()
     const memoryUsage = this.getMemoryUsage()
     const cacheHitRate = this.getCacheHitRate()
-    
+
     // 根据指标自动调整配置
     if (avgLoadTime > 500) {
       this.increaseCacheSize()
     }
-    
+
     if (memoryUsage > 0.8) {
       this.enableCompression()
       this.reduceCacheTTL()
     }
-    
+
     if (cacheHitRate < 0.7) {
       this.adjustPreloadStrategy()
     }
@@ -354,10 +354,10 @@ class PerformanceOptimizer {
 ```typescript
 // 设置性能预算
 const performanceBudget = {
-  loadTime: 200,  // 200ms
-  memoryUsage: 100 * 1024 * 1024,  // 100MB
-  cacheHitRate: 0.8,  // 80%
-  bundleSize: 500 * 1024  // 500KB
+  loadTime: 200, // 200ms
+  memoryUsage: 100 * 1024 * 1024, // 100MB
+  cacheHitRate: 0.8, // 80%
+  bundleSize: 500 * 1024 // 500KB
 }
 
 // 监控性能预算
@@ -372,7 +372,7 @@ manager.on('performance:budget-exceeded', (metric, value, budget) => {
 
 ```typescript
 // 性能标记
-const markPerformance = (name: string, fn: Function) => {
+function markPerformance(name: string, fn: Function) {
   performance.mark(`${name}-start`)
   const result = fn()
   performance.mark(`${name}-end`)
@@ -392,27 +392,31 @@ const template = markPerformance('template-load', () => {
 <template>
   <div class="performance-panel">
     <h3>性能监控</h3>
-    
+
     <div class="metrics">
       <div class="metric">
         <label>平均加载时间</label>
         <span>{{ metrics.averageLoadTime }}ms</span>
       </div>
-      
+
       <div class="metric">
         <label>缓存命中率</label>
         <span>{{ (metrics.cacheHitRate * 100).toFixed(1) }}%</span>
       </div>
-      
+
       <div class="metric">
         <label>内存使用</label>
         <span>{{ formatBytes(metrics.memoryUsage) }}</span>
       </div>
     </div>
-    
+
     <div class="actions">
-      <button @click="clearCache">清空缓存</button>
-      <button @click="runBenchmark">性能测试</button>
+      <button @click="clearCache">
+        清空缓存
+      </button>
+      <button @click="runBenchmark">
+        性能测试
+      </button>
     </div>
   </div>
 </template>

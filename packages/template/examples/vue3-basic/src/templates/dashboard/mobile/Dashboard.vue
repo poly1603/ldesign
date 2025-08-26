@@ -84,8 +84,8 @@ function refresh() {
   // 模拟数据刷新
   stats.forEach((stat) => {
     const randomChange = (Math.random() * 20 - 10).toFixed(1)
-    stat.change = `${randomChange > 0 ? '+' : ''}${randomChange}%`
-    stat.trend = randomChange > 0 ? 'positive' : 'negative'
+    stat.change = `${Number(randomChange) > 0 ? '+' : ''}${randomChange}%`
+    stat.trend = Number(randomChange) > 0 ? 'positive' : 'negative'
   })
 }
 

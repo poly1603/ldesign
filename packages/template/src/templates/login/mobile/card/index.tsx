@@ -173,79 +173,79 @@ export default defineComponent({
           <div class="mobile-card-login__panel">
             {props.loginPanel
               ? (
-                <props.loginPanel
-                  title={props.title}
-                  subtitle={props.subtitle}
-                  showRememberMe={props.showRememberMe}
-                  showForgotPassword={props.showForgotPassword}
-                  showThirdPartyLogin={props.showThirdPartyLogin}
-                  thirdPartyProviders={props.thirdPartyProviders}
-                  isLoading={props.isLoading}
-                  error={props.error}
-                  onLogin={handleLogin}
-                  onRegister={handleRegister}
-                  onForgotPassword={handleForgotPassword}
-                  onThirdPartyLogin={handleThirdPartyLogin}
-                />
-              )
+                  <props.loginPanel
+                    title={props.title}
+                    subtitle={props.subtitle}
+                    showRememberMe={props.showRememberMe}
+                    showForgotPassword={props.showForgotPassword}
+                    showThirdPartyLogin={props.showThirdPartyLogin}
+                    thirdPartyProviders={props.thirdPartyProviders}
+                    isLoading={props.isLoading}
+                    error={props.error}
+                    onLogin={handleLogin}
+                    onRegister={handleRegister}
+                    onForgotPassword={handleForgotPassword}
+                    onThirdPartyLogin={handleThirdPartyLogin}
+                  />
+                )
               : (
-                <div class="mobile-card-login__default-panel">
-                  <div class="mobile-card-login__header">
-                    {props.logo && (
-                      <div class="mobile-card-login__logo">
-                        <img src={props.logo} alt="Logo" />
-                      </div>
-                    )}
-                    <h1 class="mobile-card-login__title">{props.title}</h1>
-                    <p class="mobile-card-login__subtitle">{props.subtitle}</p>
-                  </div>
-
-                  <div class="mobile-card-login__form">
-                    <div class="mobile-card-login__field">
-                      <input type="text" placeholder="手机号" class="mobile-card-login__input" />
-                    </div>
-                    <div class="mobile-card-login__field">
-                      <input type="password" placeholder="密码" class="mobile-card-login__input" />
+                  <div class="mobile-card-login__default-panel">
+                    <div class="mobile-card-login__header">
+                      {props.logo && (
+                        <div class="mobile-card-login__logo">
+                          <img src={props.logo} alt="Logo" />
+                        </div>
+                      )}
+                      <h1 class="mobile-card-login__title">{props.title}</h1>
+                      <p class="mobile-card-login__subtitle">{props.subtitle}</p>
                     </div>
 
-                    {props.showRememberMe && (
-                      <div class="mobile-card-login__options">
-                        <label class="mobile-card-login__checkbox">
-                          <input type="checkbox" />
-                          <span>记住密码</span>
-                        </label>
-                        {props.showForgotPassword && (
-                          <a href="#" class="mobile-card-login__forgot">
-                            忘记密码？
-                          </a>
-                        )}
+                    <div class="mobile-card-login__form">
+                      <div class="mobile-card-login__field">
+                        <input type="text" placeholder="手机号" class="mobile-card-login__input" />
                       </div>
-                    )}
-
-                    <button class="mobile-card-login__submit">登录</button>
-
-                    {props.showThirdPartyLogin && (
-                      <div class="mobile-card-login__third-party">
-                        <div class="mobile-card-login__divider">
-                          <span>快捷登录</span>
-                        </div>
-                        <div class="mobile-card-login__providers">
-                          {props.thirdPartyProviders.map((provider: string) => (
-                            <button
-                              key={provider}
-                              class={`mobile-card-login__provider mobile-card-login__provider--${provider}`}
-                            >
-                              {provider === 'wechat' && '💬'}
-                              {provider === 'alipay' && '💰'}
-                              {provider === 'qq' && '🐧'}
-                            </button>
-                          ))}
-                        </div>
+                      <div class="mobile-card-login__field">
+                        <input type="password" placeholder="密码" class="mobile-card-login__input" />
                       </div>
-                    )}
+
+                      {props.showRememberMe && (
+                        <div class="mobile-card-login__options">
+                          <label class="mobile-card-login__checkbox">
+                            <input type="checkbox" />
+                            <span>记住密码</span>
+                          </label>
+                          {props.showForgotPassword && (
+                            <a href="#" class="mobile-card-login__forgot">
+                              忘记密码？
+                            </a>
+                          )}
+                        </div>
+                      )}
+
+                      <button class="mobile-card-login__submit">登录</button>
+
+                      {props.showThirdPartyLogin && (
+                        <div class="mobile-card-login__third-party">
+                          <div class="mobile-card-login__divider">
+                            <span>快捷登录</span>
+                          </div>
+                          <div class="mobile-card-login__providers">
+                            {props.thirdPartyProviders.map((provider: string) => (
+                              <button
+                                key={provider}
+                                class={`mobile-card-login__provider mobile-card-login__provider--${provider}`}
+                              >
+                                {provider === 'wechat' && '💬'}
+                                {provider === 'alipay' && '💰'}
+                                {provider === 'qq' && '🐧'}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
           </div>
         </div>
       </div>

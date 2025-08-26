@@ -28,7 +28,7 @@ const tabs = [
           <button
             v-for="tab in tabs"
             :key="tab.id"
-            :class="['nav-tab', { active: activeTab === tab.id }]"
+            class="nav-tab" :class="[{ active: activeTab === tab.id }]"
             @click="activeTab = tab.id"
           >
             {{ tab.label }}

@@ -189,7 +189,8 @@ class DeviceDetectionError extends Error {
 // 1. 使用 try-catch 处理同步错误
 try {
   const template = await manager.loadTemplate('login', 'desktop')
-} catch (error) {
+}
+catch (error) {
   if (error instanceof TemplateLoadError) {
     // 处理模板加载错误
     console.error('模板加载失败:', error.template, error.deviceType)
@@ -206,7 +207,7 @@ manager.on('template:error', (error) => {
 const config = {
   loader: {
     fallbackStrategy: 'graceful', // 优雅降级
-    fallbackTemplate: 'default'   // 默认模板
+    fallbackTemplate: 'default' // 默认模板
   }
 }
 ```

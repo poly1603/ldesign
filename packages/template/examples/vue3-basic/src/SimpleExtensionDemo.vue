@@ -1,3 +1,170 @@
+<script setup lang="ts">
+import type { TemplateConfig } from '@ldesign/template'
+import { createExternalTemplate, useTemplateExtension, useTemplateRegistry } from '@ldesign/template'
+import { computed, onMounted, ref } from 'vue'
+
+// 状态
+const registrationMessage = ref('')
+
+// 使用模板注册表和扩展
+const { getAllTemplates } = useTemplateRegistry()
+const {
+  externalTemplates,
+  getExtensionStats,
+  registerExternalTemplate,
+  validateTemplateConfig,
+} = useTemplateExtension()
+
+// 计算属性
+const allTemplates = getAllTemplates()
+const extensionStats = getExtensionStats
+
+const defaultTemplatesCount = computed(() => {
+  return allTemplates.value.filter((t: any) => !t.isExternal).length
+})
+
+const externalTemplatesCount = computed(() => {
+  return externalTemplates.value.length
+})
+
+const totalTemplatesCount = computed(() => {
+  return allTemplates.value.length
+})
+
+// 创建自定义模板配置
+function createCustomTemplateConfig(): TemplateConfig {
+  return {
+    id: 'login-desktop-custom',
+    name: '自定义登录模板',
+    description: '一个演示外部模板扩展功能的自定义登录模板',
+    version: '1.0.0',
+    author: 'External Developer',
+    category: 'login',
+    device: 'desktop',
+    variant: 'custom',
+    isDefault: false,
+    features: [
+      '渐变背景设计',
+      '现代化UI风格',
+      '响应式布局',
+      '表单验证',
+      '自定义样式',
+    ],
+    preview: '/previews/custom-login.png',
+    tags: ['自定义', '外部', '现代', '渐变', '演示'],
+    props: {
+      title: {
+        type: 'string',
+        default: '自定义登录',
+        description: '登录页面标题',
+        required: false,
+      },
+      subtitle: {
+        type: 'string',
+        default: '外部模板示例',
+        description: '登录页面副标题',
+        required: false,
+      },
+    },
+    dependencies: ['vue'],
+    compatibility: {
+      vue: '^3.0.0',
+      node: '>=16.0.0',
+      browsers: ['Chrome >= 88', 'Firefox >= 85', 'Safari >= 14'],
+    },
+    config: {
+      theme: 'gradient',
+      animation: true,
+      responsive: true,
+    },
+    priority: 10,
+    enabled: true,
+    createdAt: '2024-01-20',
+    updatedAt: '2024-01-20',
+  }
+}
+
+// 创建模拟组件
+function createMockComponent() {
+  return {
+    name: 'CustomLoginTemplate',
+    render() {
+      return {
+        type: 'div',
+        props: {
+          style: {
+            padding: '2rem',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            borderRadius: '8px',
+            textAlign: 'center',
+          },
+        },
+        children: [
+          {
+            type: 'h2',
+            children: '🎨 自定义登录模板',
+          },
+          {
+            type: 'p',
+            children: '这是一个外部注册的模板，演示模板扩展功能',
+          },
+          {
+            type: 'div',
+            props: {
+              style: {
+                marginTop: '1rem',
+                padding: '1rem',
+                background: 'rgba(255,255,255,0.1)',
+                borderRadius: '4px',
+              },
+            },
+            children: '✨ 支持完整的模板目录结构和配置文件',
+          },
+        ],
+      }
+    },
+  }
+}
+
+// 注册自定义模板
+function registerCustomTemplate() {
+  try {
+    const config = createCustomTemplateConfig()
+    const component = createMockComponent()
+
+    // 验证配置
+    if (!validateTemplateConfig(config)) {
+      registrationMessage.value = '❌ 模板配置验证失败'
+      return
+    }
+
+    // 创建外部模板
+    const externalTemplate = createExternalTemplate(config, component)
+
+    // 注册模板
+    registerExternalTemplate(externalTemplate)
+
+    registrationMessage.value = '✅ 自定义模板注册成功！'
+
+    // 3秒后清除消息
+    setTimeout(() => {
+      registrationMessage.value = ''
+    }, 3000)
+  }
+  catch (error) {
+    registrationMessage.value = `❌ 注册失败: ${error}`
+  }
+}
+
+// 初始化
+onMounted(() => {
+  console.log('模板扩展演示初始化完成')
+  console.log('默认模板数量:', defaultTemplatesCount.value)
+  console.log('外部模板数量:', externalTemplatesCount.value)
+})
+</script>
+
 <template>
   <div class="simple-extension-demo">
     <div class="demo-header">
@@ -26,17 +193,19 @@
 
       <div class="section">
         <h3>2. 注册外部模板</h3>
-        <button @click="registerCustomTemplate" class="btn">
+        <button class="btn" @click="registerCustomTemplate">
           注册自定义登录模板
         </button>
-        <p v-if="registrationMessage" class="message">{{ registrationMessage }}</p>
+        <p v-if="registrationMessage" class="message">
+          {{ registrationMessage }}
+        </p>
       </div>
 
       <div class="section">
         <h3>3. 模板列表</h3>
         <div class="template-list">
-          <div 
-            v-for="template in allTemplates" 
+          <div
+            v-for="template in allTemplates"
             :key="template.name + template.deviceType"
             class="template-item"
             :class="{ external: template.isExternal }"
@@ -75,169 +244,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useTemplateRegistry, useTemplateExtension, createExternalTemplate } from '@ldesign/template'
-import type { TemplateConfig } from '@ldesign/template'
-
-// 状态
-const registrationMessage = ref('')
-
-// 使用模板注册表和扩展
-const { getAllTemplates } = useTemplateRegistry()
-const { 
-  externalTemplates, 
-  getExtensionStats, 
-  registerExternalTemplate,
-  validateTemplateConfig 
-} = useTemplateExtension()
-
-// 计算属性
-const allTemplates = getAllTemplates()
-const extensionStats = getExtensionStats
-
-const defaultTemplatesCount = computed(() => {
-  return allTemplates.value.filter(t => !t.isExternal).length
-})
-
-const externalTemplatesCount = computed(() => {
-  return externalTemplates.value.length
-})
-
-const totalTemplatesCount = computed(() => {
-  return allTemplates.value.length
-})
-
-// 创建自定义模板配置
-const createCustomTemplateConfig = (): TemplateConfig => ({
-  id: 'login-desktop-custom',
-  name: '自定义登录模板',
-  description: '一个演示外部模板扩展功能的自定义登录模板',
-  version: '1.0.0',
-  author: 'External Developer',
-  category: 'login',
-  device: 'desktop',
-  variant: 'custom',
-  isDefault: false,
-  features: [
-    '渐变背景设计',
-    '现代化UI风格', 
-    '响应式布局',
-    '表单验证',
-    '自定义样式'
-  ],
-  preview: '/previews/custom-login.png',
-  tags: ['自定义', '外部', '现代', '渐变', '演示'],
-  props: {
-    title: {
-      type: 'string',
-      default: '自定义登录',
-      description: '登录页面标题',
-      required: false
-    },
-    subtitle: {
-      type: 'string', 
-      default: '外部模板示例',
-      description: '登录页面副标题',
-      required: false
-    }
-  },
-  dependencies: ['vue'],
-  compatibility: {
-    vue: '^3.0.0',
-    node: '>=16.0.0',
-    browsers: ['Chrome >= 88', 'Firefox >= 85', 'Safari >= 14']
-  },
-  config: {
-    theme: 'gradient',
-    animation: true,
-    responsive: true
-  },
-  priority: 10,
-  enabled: true,
-  createdAt: '2024-01-20',
-  updatedAt: '2024-01-20'
-})
-
-// 创建模拟组件
-const createMockComponent = () => ({
-  name: 'CustomLoginTemplate',
-  render() {
-    return {
-      type: 'div',
-      props: {
-        style: {
-          padding: '2rem',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          borderRadius: '8px',
-          textAlign: 'center'
-        }
-      },
-      children: [
-        {
-          type: 'h2',
-          children: '🎨 自定义登录模板'
-        },
-        {
-          type: 'p',
-          children: '这是一个外部注册的模板，演示模板扩展功能'
-        },
-        {
-          type: 'div',
-          props: {
-            style: {
-              marginTop: '1rem',
-              padding: '1rem',
-              background: 'rgba(255,255,255,0.1)',
-              borderRadius: '4px'
-            }
-          },
-          children: '✨ 支持完整的模板目录结构和配置文件'
-        }
-      ]
-    }
-  }
-})
-
-// 注册自定义模板
-const registerCustomTemplate = () => {
-  try {
-    const config = createCustomTemplateConfig()
-    const component = createMockComponent()
-    
-    // 验证配置
-    if (!validateTemplateConfig(config)) {
-      registrationMessage.value = '❌ 模板配置验证失败'
-      return
-    }
-    
-    // 创建外部模板
-    const externalTemplate = createExternalTemplate(config, component)
-    
-    // 注册模板
-    registerExternalTemplate(externalTemplate)
-    
-    registrationMessage.value = '✅ 自定义模板注册成功！'
-    
-    // 3秒后清除消息
-    setTimeout(() => {
-      registrationMessage.value = ''
-    }, 3000)
-    
-  } catch (error) {
-    registrationMessage.value = `❌ 注册失败: ${error}`
-  }
-}
-
-// 初始化
-onMounted(() => {
-  console.log('模板扩展演示初始化完成')
-  console.log('默认模板数量:', defaultTemplatesCount.value)
-  console.log('外部模板数量:', externalTemplatesCount.value)
-})
-</script>
 
 <style scoped>
 .simple-extension-demo {

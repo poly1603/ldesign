@@ -30,9 +30,9 @@ ls src/templates/login/desktop/LoginForm.vue
 const manager = new TemplateManager({
   scanner: {
     scanPaths: [
-      'src/templates/**/*.vue',  // 确保路径正确
+      'src/templates/**/*.vue', // 确保路径正确
     ],
-    debug: true  // 启用调试日志
+    debug: true // 启用调试日志
   }
 })
 ```
@@ -54,19 +54,19 @@ vue-cli-service lint src/templates/
 
 **1. 自定义设备检测器**
 ```typescript
-const customDetector = () => {
+function customDetector() {
   const width = window.innerWidth
   const userAgent = navigator.userAgent
-  
+
   // 详细的检测逻辑
   if (/iPhone|Android/.test(userAgent) && width <= 480) {
     return 'mobile'
   }
-  
+
   if (/iPad|Tablet/.test(userAgent) || (width <= 1024 && width > 768)) {
     return 'tablet'
   }
-  
+
   return 'desktop'
 }
 
@@ -114,9 +114,9 @@ const config = {
   cache: {
     enabled: true,
     strategy: 'lru',
-    maxSize: 30,  // 减少缓存大小
-    ttl: 10 * 60 * 1000,  // 缩短过期时间
-    debug: true  // 启用缓存调试
+    maxSize: 30, // 减少缓存大小
+    ttl: 10 * 60 * 1000, // 缩短过期时间
+    debug: true // 启用缓存调试
   }
 }
 ```
@@ -137,19 +137,19 @@ console.log('缓存统计:', {
 
 ```typescript
 const manager = new TemplateManager({
-  debug: true,  // 启用全局调试
-  verbose: true,  // 启用详细日志
-  
+  debug: true, // 启用全局调试
+  verbose: true, // 启用详细日志
+
   scanner: {
-    debug: true  // 启用扫描器调试
+    debug: true // 启用扫描器调试
   },
-  
+
   loader: {
-    debug: true  // 启用加载器调试
+    debug: true // 启用加载器调试
   },
-  
+
   cache: {
-    debug: true  // 启用缓存调试
+    debug: true // 启用缓存调试
   }
 })
 ```
@@ -183,8 +183,8 @@ manager.on('performance:warning', (warning) => {
 const manager = new TemplateManager({
   performance: {
     enabled: true,
-    sampleRate: 1.0,  // 100% 采样用于调试
-    reportInterval: 10000  // 10秒报告一次
+    sampleRate: 1.0, // 100% 采样用于调试
+    reportInterval: 10000 // 10秒报告一次
   }
 })
 
@@ -200,17 +200,17 @@ console.log('性能报告:', report)
 #### 1. 配置错误
 ```typescript
 // 检查配置有效性
-const validateConfig = (config: any) => {
+function validateConfig(config: any) {
   const errors = []
-  
+
   if (!config.scanner?.scanPaths?.length) {
     errors.push('缺少扫描路径配置')
   }
-  
+
   if (config.cache?.maxSize <= 0) {
     errors.push('缓存大小配置无效')
   }
-  
+
   return errors
 }
 ```
@@ -236,23 +236,23 @@ window.addEventListener('unhandledrejection', (event) => {
 #### 3. 性能问题
 ```typescript
 // 性能问题检测
-const detectPerformanceIssues = () => {
+function detectPerformanceIssues() {
   const stats = manager.getCacheStats()
   const issues = []
-  
+
   if (stats.hitRate < 0.5) {
     issues.push('缓存命中率过低')
   }
-  
+
   if (stats.memoryUsage > 100 * 1024 * 1024) {
     issues.push('内存使用过高')
   }
-  
+
   const avgLoadTime = manager.getAverageLoadTime()
   if (avgLoadTime > 500) {
     issues.push('平均加载时间过长')
   }
-  
+
   return issues
 }
 ```
@@ -270,10 +270,10 @@ class TemplateHealthChecker {
       cache: await this.checkCache(),
       device: await this.checkDeviceAdapter()
     }
-    
+
     return results
   }
-  
+
   async checkScanner() {
     try {
       const templates = await manager.scanTemplates()
@@ -282,27 +282,29 @@ class TemplateHealthChecker {
         templateCount: templates.length,
         categories: [...new Set(templates.map(t => t.category))]
       }
-    } catch (error) {
+    }
+    catch (error) {
       return {
         status: 'error',
         error: error.message
       }
     }
   }
-  
+
   async checkLoader() {
     try {
       // 尝试加载一个测试模板
       await manager.loadTemplate('test', 'desktop')
       return { status: 'ok' }
-    } catch (error) {
+    }
+    catch (error) {
       return {
         status: 'error',
         error: error.message
       }
     }
   }
-  
+
   checkCache() {
     const stats = manager.getCacheStats()
     return {
@@ -312,7 +314,7 @@ class TemplateHealthChecker {
       itemCount: stats.itemCount
     }
   }
-  
+
   checkDeviceAdapter() {
     try {
       const deviceType = manager.getCurrentDevice()
@@ -321,7 +323,8 @@ class TemplateHealthChecker {
         currentDevice: deviceType,
         supportedDevices: ['desktop', 'tablet', 'mobile']
       }
-    } catch (error) {
+    }
+    catch (error) {
       return {
         status: 'error',
         error: error.message
@@ -337,19 +340,19 @@ class TemplateHealthChecker {
 class AutoFixer {
   async fixCommonIssues() {
     const issues = await this.detectIssues()
-    
+
     for (const issue of issues) {
       switch (issue.type) {
         case 'cache_full':
           manager.clearCache()
           console.log('已清空缓存')
           break
-          
+
         case 'memory_high':
           manager.clearExpiredCache()
           console.log('已清理过期缓存')
           break
-          
+
         case 'load_slow':
           await this.optimizePreloading()
           console.log('已优化预加载策略')
@@ -357,14 +360,14 @@ class AutoFixer {
       }
     }
   }
-  
+
   async optimizePreloading() {
     // 分析使用模式，优化预加载
     const usage = manager.getUsageStats()
     const topTemplates = usage
       .sort((a, b) => b.frequency - a.frequency)
       .slice(0, 5)
-    
+
     await manager.preloadTemplates(topTemplates)
   }
 }
@@ -375,7 +378,7 @@ class AutoFixer {
 ### 收集诊断信息
 
 ```typescript
-const collectDiagnosticInfo = () => {
+function collectDiagnosticInfo() {
   return {
     // 环境信息
     environment: {
@@ -384,13 +387,15 @@ const collectDiagnosticInfo = () => {
         width: window.innerWidth,
         height: window.innerHeight
       },
-      memory: performance.memory ? {
-        used: performance.memory.usedJSHeapSize,
-        total: performance.memory.totalJSHeapSize,
-        limit: performance.memory.jsHeapSizeLimit
-      } : null
+      memory: performance.memory
+        ? {
+            used: performance.memory.usedJSHeapSize,
+            total: performance.memory.totalJSHeapSize,
+            limit: performance.memory.jsHeapSizeLimit
+          }
+        : null
     },
-    
+
     // 模板系统状态
     templateSystem: {
       version: manager.getVersion(),
@@ -398,10 +403,10 @@ const collectDiagnosticInfo = () => {
       stats: manager.getCacheStats(),
       performance: manager.getPerformanceReport()
     },
-    
+
     // 错误日志
     errors: manager.getErrorLog(),
-    
+
     // 最近的活动
     recentActivity: manager.getActivityLog()
   }

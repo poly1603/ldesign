@@ -74,6 +74,23 @@ export interface TemplateConfig {
     vue?: string
     node?: string
     browsers?: string[]
+    typescript?: string
+  }
+  /** 显示名称 */
+  displayName?: string
+  /** 自定义配置选项 */
+  customization?: {
+    colors?: boolean
+    layout?: boolean
+    animations?: boolean
+    background?: boolean
+    [key: string]: any
+  }
+  /** 断点配置 */
+  breakpoints?: {
+    minWidth?: number | null
+    maxWidth?: number | null
+    [key: string]: number | null | undefined
   }
   /** 自定义配置参数 */
   config?: Record<string, any>
@@ -137,6 +154,8 @@ export interface TemplateFileInfo {
  * 模板信息接口
  */
 export interface TemplateInfo {
+  /** 模板名称 */
+  name: string
   /** 模板分类（目录名） */
   category: string
   /** 设备类型 */
@@ -343,10 +362,12 @@ export interface DeviceAdapterConfig {
   fallbackStrategy?: Record<DeviceType, DeviceType[]>
   /** 是否启用自动检测 */
   autoDetect?: boolean
-  /** 自定义设备检测函数 */
-  customDetector?: () => DeviceType
   /** 设备变化监听 */
   watchDeviceChange?: boolean
+  /** 设备断点配置 */
+  breakpoints?: Record<string, number>
+  /** 防抖延迟时间 */
+  debounceDelay?: number
 }
 
 // ==================== 缓存相关类型 ====================
@@ -431,6 +452,15 @@ export type EventType =
   | 'template:cache:miss'
   | 'template:cache:evict'
   | 'device:change'
+  | 'device:orientation:change'
+  | 'device:detected'
+  | 'cache:hit'
+  | 'cache:miss'
+  | 'cache:set'
+  | 'cache:delete'
+  | 'cache:clear'
+  | 'cache:error'
+  | 'cache:warmup'
   | 'performance:report'
 
 /**
@@ -445,6 +475,17 @@ export interface EventData {
   data?: any
   /** 错误信息 */
   error?: Error
+  /** 设备变化相关 */
+  oldDeviceType?: DeviceType
+  newDeviceType?: DeviceType
+  deviceInfo?: any
+  /** 缓存相关 */
+  key?: string
+  size?: number
+  operation?: string
+  /** 模板相关 */
+  template?: any
+  orientation?: string
 }
 
 /**

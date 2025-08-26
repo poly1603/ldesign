@@ -1,11 +1,12 @@
 import type { TemplateConfig } from '../../../../types'
 
 export const config: TemplateConfig = {
-  name: 'adaptive',
-  displayName: '自适应登录',
+  id: 'login-desktop-adaptive',
+  name: '自适应登录',
   description: '根据屏幕尺寸自动调整布局的响应式登录模板',
   category: 'login',
   device: 'desktop',
+  variant: 'adaptive',
   version: '1.0.0',
   author: 'LDesign Team',
   tags: ['responsive', 'adaptive', 'modern'],

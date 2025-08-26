@@ -7,5 +7,3 @@
 export type * from '../types'
 export { CacheService } from './cache-service'
 export { DeviceService } from './device-service'
-
-export { PerformanceService } from './performance-service'

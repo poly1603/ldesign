@@ -8,7 +8,7 @@ export default defineConfig({
     jsx: 'transform',
     jsxFactory: 'h',
     jsxFragment: 'Fragment',
-    jsxInject: `import { h, Fragment } from 'vue'`
+    jsxInject: `import { h, Fragment } from 'vue'`,
   },
   resolve: {
     alias: {

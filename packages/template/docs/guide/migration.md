@@ -11,11 +11,11 @@
 #### 1. 分析现有组件结构
 
 ```typescript
-// 原有的组件使用方式
-import { ElForm, ElInput, ElButton } from 'element-plus'
-
 // 迁移后的模板方式
 import { TemplateRenderer } from '@ldesign/template/vue'
+
+// 原有的组件使用方式
+import { ElButton, ElForm, ElInput } from 'element-plus'
 ```
 
 #### 2. 创建对应的模板
@@ -31,14 +31,16 @@ import { TemplateRenderer } from '@ldesign/template/vue'
       <el-input v-model="form.password" type="password" />
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" @click="handleSubmit">登录</el-button>
+      <el-button type="primary" @click="handleSubmit">
+        登录
+      </el-button>
     </el-form-item>
   </el-form>
 </template>
 
 <!-- 迁移后的模板 -->
 <template>
-  <TemplateRenderer 
+  <TemplateRenderer
     template="login-form"
     :template-props="{ formData: form }"
     @submit="handleSubmit"
@@ -51,8 +53,8 @@ import { TemplateRenderer } from '@ldesign/template/vue'
 ```typescript
 // 第一阶段：保持原有组件，添加模板系统
 const app = createApp(App)
-app.use(ElementPlus)  // 保持原有
-app.use(TemplatePlugin)  // 添加新的
+app.use(ElementPlus) // 保持原有
+app.use(TemplatePlugin) // 添加新的
 
 // 第二阶段：逐步替换关键页面
 // 第三阶段：完全迁移到模板系统
@@ -69,12 +71,12 @@ app.component('ProductList', ProductList)
 
 // 迁移到模板系统
 const templateMapping = {
-  'UserCard': 'user-profile',
-  'ProductList': 'product-list'
+  UserCard: 'user-profile',
+  ProductList: 'product-list'
 }
 
 // 创建迁移助手
-const migrateComponent = (oldComponentName: string) => {
+function migrateComponent(oldComponentName: string) {
   const templateName = templateMapping[oldComponentName]
   return templateName ? `template="${templateName}"` : oldComponentName
 }
@@ -110,10 +112,10 @@ interface TemplateProps {
 ```typescript
 // 0.x 版本
 import { TemplateEngine } from '@ldesign/template'
-const engine = new TemplateEngine()
 
 // 1.x 版本
 import { TemplateManager } from '@ldesign/template'
+const engine = new TemplateEngine()
 const manager = new TemplateManager()
 ```
 
@@ -161,9 +163,9 @@ npx @ldesign/template-migrate --from=0.x --to=1.x
 export function migrateConfig(oldConfig: any) {
   return {
     scanner: {
-      scanPaths: Array.isArray(oldConfig.scanPath) 
-        ? oldConfig.scanPath 
-        : [oldConfig.scanPath + '/**/*.vue']
+      scanPaths: Array.isArray(oldConfig.scanPath)
+        ? oldConfig.scanPath
+        : [`${oldConfig.scanPath}/**/*.vue`]
     },
     cache: {
       enabled: oldConfig.cacheEnabled ?? true,
@@ -202,9 +204,9 @@ const manager = new TemplateManager({
 // 2.x 新增的缓存策略
 const config = {
   cache: {
-    strategy: 'lfu',  // 新增 LFU 策略
-    compression: true,  // 新增压缩支持
-    persistence: true   // 新增持久化支持
+    strategy: 'lfu', // 新增 LFU 策略
+    compression: true, // 新增压缩支持
+    persistence: true // 新增持久化支持
   }
 }
 ```
@@ -223,7 +225,7 @@ class CompatibilityAdapter {
       }
       delete config.deviceDetection
     }
-    
+
     return config
   }
 }
@@ -255,30 +257,30 @@ src/templates/
 
 ```typescript
 // migrate-templates.ts
-import fs from 'fs/promises'
-import path from 'path'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 
 async function migrateTemplates() {
   const oldDir = 'src/components'
   const newDir = 'src/templates'
-  
+
   const categories = await fs.readdir(oldDir)
-  
+
   for (const category of categories) {
     const categoryPath = path.join(oldDir, category)
     const stat = await fs.stat(categoryPath)
-    
+
     if (stat.isDirectory()) {
       // 创建新的分类目录
       const newCategoryPath = path.join(newDir, category)
       await fs.mkdir(newCategoryPath, { recursive: true })
-      
+
       // 迁移设备类型目录
       const devices = await fs.readdir(categoryPath)
       for (const device of devices) {
         const oldDevicePath = path.join(categoryPath, device)
         const newDevicePath = path.join(newCategoryPath, device)
-        
+
         await fs.rename(oldDevicePath, newDevicePath)
       }
     }
@@ -293,7 +295,7 @@ async function migrateTemplates() {
 export class ConfigMigrator {
   static migrate(oldConfig: any): any {
     const newConfig: any = {}
-    
+
     // 扫描器配置迁移
     if (oldConfig.scanPaths || oldConfig.scanPath) {
       newConfig.scanner = {
@@ -302,7 +304,7 @@ export class ConfigMigrator {
         watchMode: oldConfig.watchMode ?? false
       }
     }
-    
+
     // 加载器配置迁移
     if (oldConfig.loader) {
       newConfig.loader = {
@@ -311,7 +313,7 @@ export class ConfigMigrator {
         preloadStrategy: oldConfig.loader.preload ?? 'none'
       }
     }
-    
+
     // 设备适配器配置迁移
     if (oldConfig.device) {
       newConfig.deviceAdapter = {
@@ -319,7 +321,7 @@ export class ConfigMigrator {
         watchDeviceChange: oldConfig.device.watchChange ?? true
       }
     }
-    
+
     return newConfig
   }
 }
@@ -361,9 +363,9 @@ export function migrateTestData(oldData: any) {
       path: template.path,
       metadata: template.meta || {}
     })),
-    
+
     devices: oldData.devices || ['desktop', 'tablet', 'mobile'],
-    
+
     config: ConfigMigrator.migrate(oldData.config || {})
   }
 }
@@ -378,7 +380,7 @@ export function migrateTestData(oldData: any) {
 export class MigrationChecker {
   static async checkCompatibility(projectPath: string) {
     const issues: string[] = []
-    
+
     // 检查依赖版本
     const packageJson = await this.readPackageJson(projectPath)
     if (packageJson.dependencies['@ldesign/template']) {
@@ -387,20 +389,20 @@ export class MigrationChecker {
         issues.push('需要升级到 1.x 版本')
       }
     }
-    
+
     // 检查文件结构
     const hasOldStructure = await this.checkOldStructure(projectPath)
     if (hasOldStructure) {
       issues.push('需要迁移目录结构')
     }
-    
+
     // 检查配置文件
     const configIssues = await this.checkConfig(projectPath)
     issues.push(...configIssues)
-    
+
     return issues
   }
-  
+
   private static async checkOldStructure(projectPath: string): Promise<boolean> {
     // 检查是否存在旧的目录结构
     const oldPaths = [
@@ -408,16 +410,17 @@ export class MigrationChecker {
       'src/components/tablet',
       'src/components/desktop'
     ]
-    
+
     for (const oldPath of oldPaths) {
       try {
         await fs.access(path.join(projectPath, oldPath))
         return true
-      } catch {
+      }
+      catch {
         // 路径不存在，继续检查
       }
     }
-    
+
     return false
   }
 }

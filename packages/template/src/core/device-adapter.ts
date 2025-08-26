@@ -1,8 +1,9 @@
 /**
  * 设备适配器
- * 直接使用@ldesign/device包，实现智能模板选择和优雅降级处理
+ * 基于 @ldesign/device 包的轻量级适配层，专注于模板系统的设备适配
  */
 
+import type { DeviceDetectorOptions, DeviceInfo } from '@ldesign/device'
 import type {
   DeviceAdapterConfig,
   DeviceType,
@@ -11,36 +12,32 @@ import type {
   TemplateInfo,
 } from '../types'
 
-// 直接导入@ldesign/device包
 import { DeviceDetector } from '@ldesign/device'
-import type { DeviceDetectorOptions } from '@ldesign/device'
 
 /**
- * 设备适配器类
+ * 设备适配器类 - 简化版本，完全依赖 @ldesign/device
  */
 export class DeviceAdapter {
   private config: Required<DeviceAdapterConfig>
   private deviceDetector: DeviceDetector
-  private currentDeviceType: DeviceType
   private listeners = new Map<string, EventListener[]>()
 
   constructor(config: DeviceAdapterConfig = {}) {
     this.config = this.normalizeConfig(config)
-    this.currentDeviceType = this.config.defaultDeviceType
 
-    // 直接创建 DeviceDetector 实例
+    // 配置设备检测器，使用 @ldesign/device 的标准配置
     const detectorOptions: DeviceDetectorOptions = {
       enableResize: this.config.watchDeviceChange,
       enableOrientation: this.config.watchDeviceChange,
       breakpoints: {
-        mobile: 768,
-        tablet: 1024,
+        mobile: this.config.breakpoints?.mobile || 768,
+        tablet: this.config.breakpoints?.tablet || 1024,
       },
-      debounceDelay: 100,
+      debounceDelay: this.config.debounceDelay,
     }
 
     this.deviceDetector = new DeviceDetector(detectorOptions)
-    this.initializeDeviceDetector()
+    this.setupDeviceListeners()
   }
 
   /**
@@ -55,65 +52,35 @@ export class DeviceAdapter {
         desktop: ['desktop', 'tablet', 'mobile'],
       },
       autoDetect: config.autoDetect ?? true,
-      customDetector: config.customDetector ?? (() => 'desktop' as DeviceType),
       watchDeviceChange: config.watchDeviceChange ?? true,
+      breakpoints: config.breakpoints ?? { mobile: 768, tablet: 1024 },
+      debounceDelay: config.debounceDelay ?? 150,
     }
   }
 
   /**
-   * 初始化设备检测器
+   * 设置设备监听器
    */
-  private initializeDeviceDetector(): void {
-    this.setupDeviceChangeListener()
-    this.updateCurrentDeviceType()
-  }
-
-
-
-
-
-
-
-
-
-  /**
-   * 设置设备变化监听器
-   */
-  private setupDeviceChangeListener(): void {
-    if (!this.config.watchDeviceChange) {
-      return
-    }
-
-    // 监听设备信息变化
-    this.deviceDetector.on('deviceInfoChange', (deviceInfo: any) => {
-      const newDeviceType = deviceInfo.type as DeviceType
-      if (newDeviceType !== this.currentDeviceType) {
-        const oldDeviceType = this.currentDeviceType
-        this.currentDeviceType = newDeviceType
-
+  private setupDeviceListeners(): void {
+    if (this.config.watchDeviceChange) {
+      // 监听设备类型变化
+      this.deviceDetector.on('deviceChange', (deviceInfo: any) => {
         this.emit('device:change', {
-          oldDeviceType,
-          newDeviceType,
+          type: 'device:change',
+          oldDeviceType: this.getCurrentDeviceType(),
+          newDeviceType: deviceInfo.type as DeviceType,
+          deviceInfo,
           timestamp: Date.now(),
         })
-      }
-    })
-  }
+      })
 
-  /**
-   * 更新当前设备类型
-   */
-  private updateCurrentDeviceType(): void {
-    const newDeviceType = this.getCurrentDeviceType()
-
-    if (newDeviceType !== this.currentDeviceType) {
-      const oldDeviceType = this.currentDeviceType
-      this.currentDeviceType = newDeviceType
-
-      this.emit('device:change', {
-        oldDeviceType,
-        newDeviceType,
-        timestamp: Date.now(),
+      // 监听屏幕方向变化
+      this.deviceDetector.on('orientationChange', (orientation: any) => {
+        this.emit('device:orientation:change', {
+          type: 'device:orientation:change',
+          orientation,
+          timestamp: Date.now(),
+        })
       })
     }
   }
@@ -123,13 +90,8 @@ export class DeviceAdapter {
    */
   getCurrentDeviceType(): DeviceType {
     if (this.config.autoDetect) {
-      return this.deviceDetector.getDeviceType()
+      return this.deviceDetector.getDeviceType() as DeviceType
     }
-
-    if (this.config.customDetector) {
-      return this.config.customDetector()
-    }
-
     return this.config.defaultDeviceType
   }
 
@@ -163,84 +125,76 @@ export class DeviceAdapter {
   }
 
   /**
-   * 应用回退策略
+   * 获取设备信息
    */
-  applyFallbackStrategy(
-    targetDevice: DeviceType,
-    availableDevices: DeviceType[],
-  ): DeviceType | null {
-    const fallbackOrder = this.config.fallbackStrategy[targetDevice] || [targetDevice]
-
-    for (const deviceType of fallbackOrder) {
-      if (availableDevices.includes(deviceType)) {
-        return deviceType
-      }
-    }
-
-    return null
+  getDeviceInfo(): DeviceInfo {
+    return this.deviceDetector.getDeviceInfo()
   }
 
   /**
-   * 检查模板是否存在
+   * 添加事件监听器
+   */
+  on(event: string, listener: EventListener): void {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, [])
+    }
+    this.listeners.get(event)!.push(listener)
+  }
+
+  /**
+   * 移除事件监听器
+   */
+  off(event: string, listener: EventListener): void {
+    const eventListeners = this.listeners.get(event)
+    if (eventListeners) {
+      const index = eventListeners.indexOf(listener)
+      if (index > -1) {
+        eventListeners.splice(index, 1)
+      }
+    }
+  }
+
+  /**
+   * 触发事件
+   */
+  private emit(event: string, data: EventData): void {
+    const eventListeners = this.listeners.get(event)
+    if (eventListeners) {
+      eventListeners.forEach((listener) => {
+        try {
+          listener(data)
+        }
+        catch (error) {
+          console.error(`Error in event listener for ${event}:`, error)
+        }
+      })
+    }
+  }
+
+  /**
+   * 检查是否有指定模板
    */
   hasTemplate(
     category: string,
-    availableTemplates: TemplateInfo[],
-    deviceType?: DeviceType,
+    templates: TemplateInfo[],
+    targetDeviceType?: DeviceType,
   ): boolean {
-    const targetDeviceType = deviceType || this.getCurrentDeviceType()
-
-    return availableTemplates.some(template =>
-      template.category === category && template.deviceType === targetDeviceType,
+    const deviceType = targetDeviceType || this.getCurrentDeviceType()
+    return templates.some(template =>
+      template.category === category && template.deviceType === deviceType,
     )
   }
 
   /**
-   * 获取设备信息
-   */
-  getDeviceInfo(): {
-    deviceType: DeviceType
-    screenSize: { width: number, height: number }
-    orientation: 'portrait' | 'landscape'
-    userAgent: string
-  } {
-    const deviceInfo = this.deviceDetector.getDeviceInfo()
-
-    return {
-      deviceType: this.getCurrentDeviceType(),
-      screenSize: { width: deviceInfo.width, height: deviceInfo.height },
-      orientation: deviceInfo.orientation,
-      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-    }
-  }
-
-  /**
-   * 设置自定义设备检测器
-   */
-  setCustomDetector(detector: () => DeviceType): void {
-    this.config.customDetector = detector
-    this.updateCurrentDeviceType()
-  }
-
-  /**
-   * 设置回退策略
-   */
-  setFallbackStrategy(strategy: Record<DeviceType, DeviceType[]>): void {
-    this.config.fallbackStrategy = { ...this.config.fallbackStrategy, ...strategy }
-  }
-
-  /**
-   * 强制设置设备类型
+   * 设置设备类型
    */
   setDeviceType(deviceType: DeviceType): void {
-    const oldDeviceType = this.currentDeviceType
-    this.currentDeviceType = deviceType
-    this.config.autoDetect = false // 禁用自动检测
-
+    // 这里可以强制设置设备类型，覆盖自动检测
+    this.config.defaultDeviceType = deviceType
     this.emit('device:change', {
-      oldDeviceType,
+      type: 'device:change',
+      oldDeviceType: this.getCurrentDeviceType(),
       newDeviceType: deviceType,
-      forced: true,
       timestamp: Date.now(),
     })
   }
@@ -250,62 +204,29 @@ export class DeviceAdapter {
    */
   enableAutoDetect(): void {
     this.config.autoDetect = true
-    this.updateCurrentDeviceType()
+    // 重新启动设备检测
+    this.setupDeviceListeners()
   }
 
   /**
-   * 事件发射器
+   * 禁用自动检测
    */
-  private emit(type: string, data: any): void {
-    const eventData: EventData = {
-      type: type as any,
-      timestamp: Date.now(),
-      data,
-    }
-
-    const listeners = this.listeners.get(type) || []
-    listeners.forEach((listener) => {
-      try {
-        listener(eventData)
-      }
-      catch (error) {
-        console.error(`Error in event listener for ${type}:`, error)
-      }
-    })
+  disableAutoDetect(): void {
+    this.config.autoDetect = false
   }
 
   /**
-   * 添加事件监听器
-   */
-  on(type: string, listener: EventListener): void {
-    if (!this.listeners.has(type)) {
-      this.listeners.set(type, [])
-    }
-    this.listeners.get(type)!.push(listener)
-  }
-
-  /**
-   * 移除事件监听器
-   */
-  off(type: string, listener: EventListener): void {
-    const listeners = this.listeners.get(type)
-    if (listeners) {
-      const index = listeners.indexOf(listener)
-      if (index > -1) {
-        listeners.splice(index, 1)
-      }
-    }
-  }
-
-  /**
-   * 清理资源
+   * 销毁适配器（别名方法）
    */
   dispose(): void {
-    this.listeners.clear()
+    this.destroy()
+  }
 
-    // 清理设备检测器
-    if (this.deviceDetector) {
-      this.deviceDetector.destroy()
-    }
+  /**
+   * 销毁适配器
+   */
+  destroy(): void {
+    this.deviceDetector.destroy()
+    this.listeners.clear()
   }
 }

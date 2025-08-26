@@ -1,8 +1,9 @@
 /**
  * 设备服务
- * 提供高级设备检测、适配和回退功能
+ * 基于 @ldesign/device 包的高级设备检测和适配服务
  */
 
+import type { DeviceInfo } from '@ldesign/device'
 import type {
   DeviceType,
   EventData,
@@ -10,392 +11,173 @@ import type {
   TemplateInfo,
 } from '../types'
 
+import { DeviceDetector } from '@ldesign/device'
+
 /**
- * 设备信息接口
+ * 设备服务配置
  */
-interface DeviceInfo {
-  type: DeviceType
-  screenSize: {
-    width: number
-    height: number
-  }
-  orientation: 'portrait' | 'landscape'
-  pixelRatio: number
-  touchSupport: boolean
-  userAgent: string
-  platform: string
-  browser: {
-    name: string
-    version: string
-  }
-  features: {
-    webgl: boolean
-    canvas: boolean
-    localStorage: boolean
-    sessionStorage: boolean
-    indexedDB: boolean
-    serviceWorker: boolean
-  }
+interface DeviceServiceConfig {
+  /** 是否启用高级检测 */
+  enableAdvancedDetection?: boolean
+  /** 自定义断点 */
+  customBreakpoints?: Record<string, number>
+  /** 检测间隔 */
+  detectionInterval?: number
+  /** 是否启用性能监控 */
+  enablePerformanceMonitoring?: boolean
 }
 
 /**
- * 设备规则接口
- */
-interface DeviceRule {
-  name: string
-  condition: (info: DeviceInfo) => boolean
-  deviceType: DeviceType
-  priority: number
-}
-
-/**
- * 适配策略接口
- */
-interface AdaptationStrategy {
-  name: string
-  rules: DeviceRule[]
-  fallbackChain: Record<DeviceType, DeviceType[]>
-  customLogic?: (info: DeviceInfo, availableTypes: DeviceType[]) => DeviceType | null
-}
-
-/**
- * 设备服务类
+ * 设备服务类 - 简化版本，专注于模板系统的设备适配
  */
 export class DeviceService {
-  private currentDeviceInfo: DeviceInfo | null = null
-  private adaptationStrategy: AdaptationStrategy
+  private config: Required<DeviceServiceConfig>
+  private deviceDetector: DeviceDetector
   private listeners = new Map<string, EventListener[]>()
-  private resizeObserver: ResizeObserver | null = null
-  private orientationChangeHandler: (() => void) | null = null
+  private performanceMetrics = new Map<string, number>()
 
-  constructor() {
-    this.adaptationStrategy = this.createDefaultStrategy()
-    this.initializeDeviceDetection()
+  constructor(config: DeviceServiceConfig = {}) {
+    this.config = this.normalizeConfig(config)
+    this.deviceDetector = this.createDetector()
+    this.setupEventListeners()
   }
 
   /**
-   * 创建默认适配策略
+   * 标准化配置
    */
-  private createDefaultStrategy(): AdaptationStrategy {
+  private normalizeConfig(config: DeviceServiceConfig): Required<DeviceServiceConfig> {
     return {
-      name: 'default',
-      rules: [
-        {
-          name: 'mobile-phone',
-          condition: info => info.screenSize.width <= 480 && info.touchSupport,
-          deviceType: 'mobile',
-          priority: 10,
-        },
-        {
-          name: 'mobile-landscape',
-          condition: info =>
-            info.screenSize.width <= 768
-            && info.orientation === 'landscape'
-            && info.touchSupport,
-          deviceType: 'mobile',
-          priority: 9,
-        },
-        {
-          name: 'tablet-portrait',
-          condition: info =>
-            info.screenSize.width > 480
-            && info.screenSize.width <= 768
-            && info.orientation === 'portrait'
-            && info.touchSupport,
-          deviceType: 'tablet',
-          priority: 8,
-        },
-        {
-          name: 'tablet-landscape',
-          condition: info =>
-            info.screenSize.width > 768
-            && info.screenSize.width <= 1024
-            && info.touchSupport,
-          deviceType: 'tablet',
-          priority: 7,
-        },
-        {
-          name: 'desktop-small',
-          condition: info =>
-            info.screenSize.width > 1024
-            && info.screenSize.width <= 1366,
-          deviceType: 'desktop',
-          priority: 6,
-        },
-        {
-          name: 'desktop-large',
-          condition: info => info.screenSize.width > 1366,
-          deviceType: 'desktop',
-          priority: 5,
-        },
-        {
-          name: 'fallback-mobile',
-          condition: info => info.touchSupport,
-          deviceType: 'mobile',
-          priority: 1,
-        },
-        {
-          name: 'fallback-desktop',
-          condition: () => true,
-          deviceType: 'desktop',
-          priority: 0,
-        },
-      ],
-      fallbackChain: {
-        mobile: ['mobile', 'tablet', 'desktop'],
-        tablet: ['tablet', 'desktop', 'mobile'],
-        desktop: ['desktop', 'tablet', 'mobile'],
+      enableAdvancedDetection: config.enableAdvancedDetection ?? true,
+      customBreakpoints: config.customBreakpoints ?? {
+        mobile: 768,
+        tablet: 1024,
+        desktop: 1200,
       },
+      detectionInterval: config.detectionInterval ?? 100,
+      enablePerformanceMonitoring: config.enablePerformanceMonitoring ?? false,
     }
   }
 
   /**
-   * 初始化设备检测
+   * 创建设备检测器
    */
-  private initializeDeviceDetection(): void {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    // 初始检测
-    this.updateDeviceInfo()
-
-    // 监听窗口大小变化
-    this.setupResizeObserver()
-
-    // 监听方向变化
-    this.setupOrientationChangeListener()
+  private createDetector(): DeviceDetector {
+    return new DeviceDetector({
+      enableResize: true,
+      enableOrientation: true,
+      breakpoints: {
+        mobile: this.config.customBreakpoints.mobile,
+        tablet: this.config.customBreakpoints.tablet,
+      },
+      debounceDelay: this.config.detectionInterval,
+    })
   }
 
   /**
-   * 设置窗口大小监听器
+   * 设置事件监听器
    */
-  private setupResizeObserver(): void {
-    if (typeof window === 'undefined' || !window.ResizeObserver) {
-      // 回退到 resize 事件
-      let resizeTimer: NodeJS.Timeout
-      window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer)
-        resizeTimer = setTimeout(() => {
-          this.updateDeviceInfo()
-        }, 250)
+  private setupEventListeners(): void {
+    this.deviceDetector.on('deviceChange', (deviceInfo: any) => {
+      this.recordPerformanceMetric('device_detection_time', Date.now())
+
+      this.emit('device:detected', {
+        type: 'device:detected',
+        newDeviceType: deviceInfo.type as DeviceType,
+        deviceInfo,
+        timestamp: Date.now(),
       })
-      return
-    }
-
-    this.resizeObserver = new ResizeObserver(() => {
-      this.updateDeviceInfo()
     })
 
-    this.resizeObserver.observe(document.documentElement)
-  }
-
-  /**
-   * 设置方向变化监听器
-   */
-  private setupOrientationChangeListener(): void {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    this.orientationChangeHandler = () => {
-      // 延迟更新，等待方向变化完成
-      setTimeout(() => {
-        this.updateDeviceInfo()
-      }, 100)
-    }
-
-    // 监听方向变化事件
-    if ('onorientationchange' in window) {
-      window.addEventListener('orientationchange', this.orientationChangeHandler)
-    }
-
-    // 监听屏幕方向API
-    if (screen.orientation) {
-      screen.orientation.addEventListener('change', this.orientationChangeHandler)
-    }
-  }
-
-  /**
-   * 更新设备信息
-   */
-  private updateDeviceInfo(): void {
-    const newDeviceInfo = this.detectDeviceInfo()
-    const oldDeviceType = this.currentDeviceInfo?.type
-    const newDeviceType = newDeviceInfo.type
-
-    this.currentDeviceInfo = newDeviceInfo
-
-    // 如果设备类型发生变化，触发事件
-    if (oldDeviceType && oldDeviceType !== newDeviceType) {
-      this.emit('device:change', {
-        oldDeviceType,
-        newDeviceType,
-        deviceInfo: newDeviceInfo,
+    this.deviceDetector.on('orientationChange', (orientation: any) => {
+      this.emit('device:orientation:change', {
+        type: 'device:orientation:change',
+        orientation,
+        timestamp: Date.now(),
       })
-    }
-
-    this.emit('device:update', { deviceInfo: newDeviceInfo })
-  }
-
-  /**
-   * 检测设备信息
-   */
-  private detectDeviceInfo(): DeviceInfo {
-    const screenSize = {
-      width: window.innerWidth || 0,
-      height: window.innerHeight || 0,
-    }
-
-    const orientation = screenSize.width > screenSize.height ? 'landscape' : 'portrait'
-    const pixelRatio = window.devicePixelRatio || 1
-    const touchSupport = 'ontouchstart' in window || navigator.maxTouchPoints > 0
-    const userAgent = navigator.userAgent
-    const platform = navigator.platform || ''
-
-    // 检测浏览器信息
-    const browser = this.detectBrowser(userAgent)
-
-    // 检测功能支持
-    const features = this.detectFeatures()
-
-    // 根据规则确定设备类型
-    const deviceType = this.determineDeviceType({
-      type: 'desktop', // 临时值
-      screenSize,
-      orientation,
-      pixelRatio,
-      touchSupport,
-      userAgent,
-      platform,
-      browser,
-      features,
     })
-
-    return {
-      type: deviceType,
-      screenSize,
-      orientation,
-      pixelRatio,
-      touchSupport,
-      userAgent,
-      platform,
-      browser,
-      features,
-    }
-  }
-
-  /**
-   * 检测浏览器信息
-   */
-  private detectBrowser(userAgent: string): { name: string, version: string } {
-    const browsers = [
-      { name: 'Chrome', pattern: /Chrome\/(\d+)/ },
-      { name: 'Firefox', pattern: /Firefox\/(\d+)/ },
-      { name: 'Safari', pattern: /Safari\/(\d+)/ },
-      { name: 'Edge', pattern: /Edge\/(\d+)/ },
-      { name: 'IE', pattern: /MSIE (\d+)/ },
-    ]
-
-    for (const browser of browsers) {
-      const match = userAgent.match(browser.pattern)
-      if (match) {
-        return {
-          name: browser.name,
-          version: match[1],
-        }
-      }
-    }
-
-    return { name: 'Unknown', version: '0' }
-  }
-
-  /**
-   * 检测功能支持
-   */
-  private detectFeatures(): DeviceInfo['features'] {
-    const canvas = document.createElement('canvas')
-
-    return {
-      webgl: !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl')),
-      canvas: !!canvas.getContext('2d'),
-      localStorage: !!window.localStorage,
-      sessionStorage: !!window.sessionStorage,
-      indexedDB: !!window.indexedDB,
-      serviceWorker: 'serviceWorker' in navigator,
-    }
-  }
-
-  /**
-   * 根据规则确定设备类型
-   */
-  private determineDeviceType(info: Omit<DeviceInfo, 'type'>): DeviceType {
-    // 按优先级排序规则
-    const sortedRules = [...this.adaptationStrategy.rules].sort((a, b) => b.priority - a.priority)
-
-    // 找到第一个匹配的规则
-    for (const rule of sortedRules) {
-      if (rule.condition(info as DeviceInfo)) {
-        return rule.deviceType
-      }
-    }
-
-    // 如果没有规则匹配，返回默认值
-    return 'desktop'
-  }
-
-  /**
-   * 获取当前设备信息
-   */
-  getDeviceInfo(): DeviceInfo {
-    if (!this.currentDeviceInfo) {
-      this.updateDeviceInfo()
-    }
-    return this.currentDeviceInfo!
   }
 
   /**
    * 获取当前设备类型
    */
   getCurrentDeviceType(): DeviceType {
-    return this.getDeviceInfo().type
+    return this.deviceDetector.getDeviceType() as DeviceType
   }
 
   /**
-   * 选择最适合的模板
+   * 获取设备信息
    */
-  selectBestTemplate(
+  getDeviceInfo(): DeviceInfo {
+    return this.deviceDetector.getDeviceInfo()
+  }
+
+  /**
+   * 检测设备能力
+   */
+  getDeviceCapabilities(): Record<string, boolean> {
+    const deviceInfo = this.getDeviceInfo()
+
+    return {
+      touchSupport: deviceInfo.isTouchDevice || false,
+      highDPI: (deviceInfo.pixelRatio || 1) > 1,
+      webGL: this.checkWebGLSupport(),
+      localStorage: this.checkLocalStorageSupport(),
+      serviceWorker: this.checkServiceWorkerSupport(),
+    }
+  }
+
+  /**
+   * 选择最佳模板
+   */
+  selectOptimalTemplate(
     category: string,
     availableTemplates: TemplateInfo[],
+    preferences?: Record<string, any>,
   ): TemplateInfo | null {
-    const currentDeviceType = this.getCurrentDeviceType()
-    const categoryTemplates = availableTemplates.filter(t => t.category === category)
+    const startTime = Date.now()
+    const deviceType = this.getCurrentDeviceType()
+    const capabilities = this.getDeviceCapabilities()
 
-    if (categoryTemplates.length === 0) {
-      return null
+    // 过滤符合设备类型的模板
+    const compatibleTemplates = availableTemplates.filter(template =>
+      template.category === category && template.deviceType === deviceType,
+    )
+
+    if (compatibleTemplates.length === 0) {
+      // 应用回退策略
+      return this.applyFallbackStrategy(category, availableTemplates, deviceType)
     }
 
-    // 按设备类型分组
-    const templatesByDevice = categoryTemplates.reduce((acc, template) => {
-      acc[template.deviceType] = template
-      return acc
-    }, {} as Record<DeviceType, TemplateInfo>)
+    // 根据设备能力和偏好选择最佳模板
+    const bestTemplate = this.rankTemplates(compatibleTemplates, capabilities, preferences)
 
-    // 应用回退链
-    const fallbackChain = this.adaptationStrategy.fallbackChain[currentDeviceType] || [currentDeviceType]
+    this.recordPerformanceMetric('template_selection_time', Date.now() - startTime)
 
-    for (const deviceType of fallbackChain) {
-      if (templatesByDevice[deviceType]) {
-        return templatesByDevice[deviceType]
-      }
+    return bestTemplate
+  }
+
+  /**
+   * 应用回退策略
+   */
+  private applyFallbackStrategy(
+    category: string,
+    availableTemplates: TemplateInfo[],
+    targetDevice: DeviceType,
+  ): TemplateInfo | null {
+    const fallbackOrder: Record<DeviceType, DeviceType[]> = {
+      mobile: ['mobile', 'tablet', 'desktop'],
+      tablet: ['tablet', 'desktop', 'mobile'],
+      desktop: ['desktop', 'tablet', 'mobile'],
     }
 
-    // 如果有自定义逻辑，尝试使用
-    if (this.adaptationStrategy.customLogic) {
-      const availableTypes = Object.keys(templatesByDevice) as DeviceType[]
-      const selectedType = this.adaptationStrategy.customLogic(this.getDeviceInfo(), availableTypes)
-      if (selectedType && templatesByDevice[selectedType]) {
-        return templatesByDevice[selectedType]
+    const order = fallbackOrder[targetDevice] || [targetDevice]
+
+    for (const deviceType of order) {
+      const template = availableTemplates.find(t =>
+        t.category === category && t.deviceType === deviceType,
+      )
+      if (template) {
+        return template
       }
     }
 
@@ -403,153 +185,129 @@ export class DeviceService {
   }
 
   /**
-   * 检查模板是否存在
+   * 模板排序
    */
-  hasTemplate(
-    category: string,
-    availableTemplates: TemplateInfo[],
-    deviceType?: DeviceType,
-  ): boolean {
-    const targetDeviceType = deviceType || this.getCurrentDeviceType()
-    return availableTemplates.some(t =>
-      t.category === category && t.deviceType === targetDeviceType,
-    )
+  private rankTemplates(
+    templates: TemplateInfo[],
+    _capabilities: Record<string, boolean>,
+    _preferences?: Record<string, any>,
+  ): TemplateInfo {
+    // 简单的排序逻辑，可以根据需要扩展
+    return templates[0]
   }
 
   /**
-   * 设置自定义适配策略
+   * 检查 WebGL 支持
    */
-  setAdaptationStrategy(strategy: Partial<AdaptationStrategy>): void {
-    this.adaptationStrategy = {
-      ...this.adaptationStrategy,
-      ...strategy,
-      rules: strategy.rules || this.adaptationStrategy.rules,
-      fallbackChain: strategy.fallbackChain || this.adaptationStrategy.fallbackChain,
+  private checkWebGLSupport(): boolean {
+    try {
+      const canvas = document.createElement('canvas')
+      return !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
     }
-
-    // 重新检测设备类型
-    this.updateDeviceInfo()
+    catch {
+      return false
+    }
   }
 
   /**
-   * 添加自定义规则
+   * 检查 LocalStorage 支持
    */
-  addRule(rule: DeviceRule): void {
-    this.adaptationStrategy.rules.push(rule)
-    this.adaptationStrategy.rules.sort((a, b) => b.priority - a.priority)
-    this.updateDeviceInfo()
-  }
-
-  /**
-   * 移除规则
-   */
-  removeRule(ruleName: string): boolean {
-    const index = this.adaptationStrategy.rules.findIndex(r => r.name === ruleName)
-    if (index > -1) {
-      this.adaptationStrategy.rules.splice(index, 1)
-      this.updateDeviceInfo()
+  private checkLocalStorageSupport(): boolean {
+    try {
+      const test = '__localStorage_test__'
+      localStorage.setItem(test, test)
+      localStorage.removeItem(test)
       return true
     }
-    return false
-  }
-
-  /**
-   * 获取适配策略
-   */
-  getAdaptationStrategy(): AdaptationStrategy {
-    return { ...this.adaptationStrategy }
-  }
-
-  /**
-   * 强制设备类型（用于测试）
-   */
-  forceDeviceType(deviceType: DeviceType): void {
-    if (this.currentDeviceInfo) {
-      const oldDeviceType = this.currentDeviceInfo.type
-      this.currentDeviceInfo.type = deviceType
-
-      this.emit('device:change', {
-        oldDeviceType,
-        newDeviceType: deviceType,
-        forced: true,
-        deviceInfo: this.currentDeviceInfo,
-      })
+    catch {
+      return false
     }
   }
 
   /**
-   * 重置设备检测
+   * 检查 Service Worker 支持
    */
-  resetDetection(): void {
-    this.updateDeviceInfo()
+  private checkServiceWorkerSupport(): boolean {
+    return 'serviceWorker' in navigator
   }
 
   /**
-   * 事件发射器
+   * 记录性能指标
    */
-  private emit(type: string, data: any): void {
-    const eventData: EventData = {
-      type: type as any,
-      timestamp: Date.now(),
-      data,
+  private recordPerformanceMetric(name: string, value: number): void {
+    if (this.config.enablePerformanceMonitoring) {
+      this.performanceMetrics.set(name, value)
     }
+  }
 
-    const listeners = this.listeners.get(type) || []
-    listeners.forEach((listener) => {
-      try {
-        listener(eventData)
-      }
-      catch (error) {
-        console.error(`Error in device service event listener for ${type}:`, error)
-      }
-    })
+  /**
+   * 获取性能指标
+   */
+  getPerformanceMetrics(): Record<string, number> {
+    return Object.fromEntries(this.performanceMetrics)
   }
 
   /**
    * 添加事件监听器
    */
-  on(type: string, listener: EventListener): void {
-    if (!this.listeners.has(type)) {
-      this.listeners.set(type, [])
+  on(event: string, listener: EventListener): void {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, [])
     }
-    this.listeners.get(type)!.push(listener)
+    this.listeners.get(event)!.push(listener)
   }
 
   /**
    * 移除事件监听器
    */
-  off(type: string, listener: EventListener): void {
-    const listeners = this.listeners.get(type)
-    if (listeners) {
-      const index = listeners.indexOf(listener)
+  off(event: string, listener: EventListener): void {
+    const eventListeners = this.listeners.get(event)
+    if (eventListeners) {
+      const index = eventListeners.indexOf(listener)
       if (index > -1) {
-        listeners.splice(index, 1)
+        eventListeners.splice(index, 1)
       }
     }
   }
 
   /**
-   * 清理资源
+   * 触发事件
    */
-  dispose(): void {
-    // 清理 ResizeObserver
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect()
-      this.resizeObserver = null
+  private emit(event: string, data: EventData): void {
+    const eventListeners = this.listeners.get(event)
+    if (eventListeners) {
+      eventListeners.forEach((listener) => {
+        try {
+          listener(data)
+        }
+        catch (error) {
+          console.error(`Error in event listener for ${event}:`, error)
+        }
+      })
     }
+  }
 
-    // 清理方向变化监听器
-    if (this.orientationChangeHandler && typeof window !== 'undefined') {
-      if ('onorientationchange' in window) {
-        window.removeEventListener('orientationchange', this.orientationChangeHandler)
-      }
-      if (screen.orientation) {
-        screen.orientation.removeEventListener('change', this.orientationChangeHandler)
-      }
-      this.orientationChangeHandler = null
-    }
+  /**
+   * 启动服务
+   */
+  start(): void {
+    // DeviceDetector 在构造函数中自动启动
+    // 这里可以添加额外的初始化逻辑
+  }
 
+  /**
+   * 停止服务
+   */
+  stop(): void {
+    this.deviceDetector.destroy()
+  }
+
+  /**
+   * 销毁服务
+   */
+  destroy(): void {
+    this.stop()
     this.listeners.clear()
-    this.currentDeviceInfo = null
+    this.performanceMetrics.clear()
   }
 }

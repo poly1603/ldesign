@@ -18,7 +18,6 @@ export { TemplateManager as default } from './core/manager'
 export {
   CacheService,
   DeviceService,
-  PerformanceService,
 } from './services'
 
 // 类型定义

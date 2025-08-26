@@ -1,5 +1,5 @@
+import type { DeviceType, TemplateRegistryItem } from '../../types'
 import { computed, ref } from 'vue'
-import type { DeviceType, ExternalTemplate, TemplateRegistryItem } from '../../types'
 import { useTemplateExtension } from './useTemplateExtension'
 
 // 全局模板注册表
@@ -19,7 +19,7 @@ const defaultTemplates: TemplateRegistryItem[] = [
     category: 'login',
     deviceType: 'desktop',
     variant: 'default',
-    isDefault: true
+    isDefault: true,
   },
   {
     name: 'login-modern',
@@ -32,7 +32,7 @@ const defaultTemplates: TemplateRegistryItem[] = [
     category: 'login',
     deviceType: 'desktop',
     variant: 'modern',
-    isDefault: false
+    isDefault: false,
   },
   {
     name: 'login-classic',
@@ -45,7 +45,7 @@ const defaultTemplates: TemplateRegistryItem[] = [
     category: 'login',
     deviceType: 'desktop',
     variant: 'classic',
-    isDefault: false
+    isDefault: false,
   },
   {
     name: 'login-adaptive',
@@ -58,7 +58,7 @@ const defaultTemplates: TemplateRegistryItem[] = [
     category: 'login',
     deviceType: 'desktop',
     variant: 'adaptive',
-    isDefault: false
+    isDefault: false,
   },
 
   // 登录模板 - 移动端变体
@@ -73,7 +73,7 @@ const defaultTemplates: TemplateRegistryItem[] = [
     category: 'login',
     deviceType: 'mobile',
     variant: 'default',
-    isDefault: true
+    isDefault: true,
   },
   {
     name: 'login-mobile-card',
@@ -86,7 +86,7 @@ const defaultTemplates: TemplateRegistryItem[] = [
     category: 'login',
     deviceType: 'mobile',
     variant: 'card',
-    isDefault: false
+    isDefault: false,
   },
   {
     name: 'login-mobile-simple',
@@ -99,7 +99,7 @@ const defaultTemplates: TemplateRegistryItem[] = [
     category: 'login',
     deviceType: 'mobile',
     variant: 'simple',
-    isDefault: false
+    isDefault: false,
   },
 
   // 登录模板 - 平板端变体
@@ -114,7 +114,7 @@ const defaultTemplates: TemplateRegistryItem[] = [
     category: 'login',
     deviceType: 'tablet',
     variant: 'default',
-    isDefault: true
+    isDefault: true,
   },
   {
     name: 'login-tablet-adaptive',
@@ -127,7 +127,7 @@ const defaultTemplates: TemplateRegistryItem[] = [
     category: 'login',
     deviceType: 'tablet',
     variant: 'adaptive',
-    isDefault: false
+    isDefault: false,
   },
   {
     name: 'login-tablet-split',
@@ -140,8 +140,8 @@ const defaultTemplates: TemplateRegistryItem[] = [
     category: 'login',
     deviceType: 'tablet',
     variant: 'split',
-    isDefault: false
-  }
+    isDefault: false,
+  },
 ]
 
 export function useTemplateRegistry() {
@@ -151,7 +151,7 @@ export function useTemplateRegistry() {
     getExtendedRegistryItems,
     registerExternalTemplate,
     registerExternalTemplates,
-    findExternalTemplate
+    findExternalTemplate,
   } = useTemplateExtension()
 
   // 初始化默认模板
@@ -162,14 +162,15 @@ export function useTemplateRegistry() {
   // 注册单个模板
   const registerTemplate = (template: TemplateRegistryItem) => {
     const existingIndex = templateRegistry.value.findIndex(
-      t => t.name === template.name &&
-        t.category === template.category &&
-        t.deviceType === template.deviceType
+      t => t.name === template.name
+        && t.category === template.category
+        && t.deviceType === template.deviceType,
     )
 
     if (existingIndex >= 0) {
       templateRegistry.value[existingIndex] = template
-    } else {
+    }
+    else {
       templateRegistry.value.push(template)
     }
   }
@@ -182,7 +183,7 @@ export function useTemplateRegistry() {
   // 注销模板
   const unregisterTemplate = (name: string, category: string, deviceType: DeviceType) => {
     const index = templateRegistry.value.findIndex(
-      t => t.name === name && t.category === category && t.deviceType === deviceType
+      t => t.name === name && t.category === category && t.deviceType === deviceType,
     )
 
     if (index >= 0) {
@@ -199,14 +200,14 @@ export function useTemplateRegistry() {
   const getTemplatesByCategory = (category: string, deviceType: DeviceType) => {
     const allTemplates = mergeWithDefaultTemplates(templateRegistry.value)
     return allTemplates.filter(
-      t => t.category === category && t.deviceType === deviceType
+      t => t.category === category && t.deviceType === deviceType,
     )
   }
 
   // 根据名称查找模板
   const findTemplate = (name: string, category: string, deviceType: DeviceType) => {
     return templateRegistry.value.find(
-      t => t.name === name && t.category === category && t.deviceType === deviceType
+      t => t.name === name && t.category === category && t.deviceType === deviceType,
     )
   }
 
@@ -225,10 +226,10 @@ export function useTemplateRegistry() {
     if (query) {
       const lowerQuery = query.toLowerCase()
       filtered = filtered.filter(t =>
-        t.name.toLowerCase().includes(lowerQuery) ||
-        t.displayName?.toLowerCase().includes(lowerQuery) ||
-        t.description?.toLowerCase().includes(lowerQuery) ||
-        t.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
+        t.name.toLowerCase().includes(lowerQuery)
+        || t.displayName?.toLowerCase().includes(lowerQuery)
+        || t.description?.toLowerCase().includes(lowerQuery)
+        || t.tags?.some(tag => tag.toLowerCase().includes(lowerQuery)),
       )
     }
 
@@ -238,14 +239,14 @@ export function useTemplateRegistry() {
   // 获取所有分类
   const getAllCategories = () => {
     return computed(() =>
-      [...new Set(templateRegistry.value.map(t => t.category))]
+      [...new Set(templateRegistry.value.map(t => t.category))],
     )
   }
 
   // 获取所有设备类型
   const getAllDeviceTypes = () => {
     return computed(() =>
-      [...new Set(templateRegistry.value.map(t => t.deviceType))]
+      [...new Set(templateRegistry.value.map(t => t.deviceType))],
     )
   }
 
@@ -256,10 +257,10 @@ export function useTemplateRegistry() {
         total: templateRegistry.value.length,
         byCategory: {} as Record<string, number>,
         byDeviceType: {} as Record<string, number>,
-        byVersion: {} as Record<string, number>
+        byVersion: {} as Record<string, number>,
       }
 
-      templateRegistry.value.forEach(template => {
+      templateRegistry.value.forEach((template) => {
         // 按分类统计
         stats.byCategory[template.category] = (stats.byCategory[template.category] || 0) + 1
 
@@ -283,8 +284,8 @@ export function useTemplateRegistry() {
       return templateRegistry.value
         .filter(t => t.category === category && t.deviceType === deviceType)
         .sort((a, b) => {
-          const aScore = (a.version ? parseFloat(a.version) : 0) + (a.tags?.length || 0)
-          const bScore = (b.version ? parseFloat(b.version) : 0) + (b.tags?.length || 0)
+          const aScore = (a.version ? Number.parseFloat(a.version) : 0) + (a.tags?.length || 0)
+          const bScore = (b.version ? Number.parseFloat(b.version) : 0) + (b.tags?.length || 0)
           return bScore - aScore
         })
         .slice(0, limit)
@@ -327,6 +328,6 @@ export function useTemplateRegistry() {
 
     // 管理方法
     clearRegistry,
-    resetToDefaults
+    resetToDefaults,
   }
 }

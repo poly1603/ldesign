@@ -1,139 +1,3 @@
-<template>
-  <div class="template-selector">
-    <!-- 触发按钮 -->
-    <button 
-      @click="openSelector" 
-      class="selector-trigger"
-      :class="{ active: isOpen }"
-      :disabled="disabled"
-    >
-      <span class="current-template">{{ currentTemplateName }}</span>
-      <svg class="dropdown-icon" :class="{ rotated: isOpen }" viewBox="0 0 24 24">
-        <path d="M7 10l5 5 5-5z"/>
-      </svg>
-    </button>
-
-    <!-- 模态对话框 -->
-    <teleport to="body">
-      <div v-if="isOpen" class="modal-overlay" @click="closeSelector">
-        <div class="modal-content" @click.stop>
-          <div class="modal-header">
-            <h3>选择模板</h3>
-            <button @click="closeSelector" class="close-btn">
-              <svg viewBox="0 0 24 24">
-                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-              </svg>
-            </button>
-          </div>
-
-          <div class="modal-body">
-            <!-- 设备类型和分类信息 -->
-            <div class="selector-info">
-              <div class="info-item">
-                <span class="label">当前设备:</span>
-                <span class="value">{{ deviceTypeLabel }}</span>
-              </div>
-              <div class="info-item">
-                <span class="label">模板分类:</span>
-                <span class="value">{{ category }}</span>
-              </div>
-            </div>
-
-            <!-- 搜索框 -->
-            <div class="search-box">
-              <svg class="search-icon" viewBox="0 0 24 24">
-                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-              </svg>
-              <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="搜索模板..."
-                class="search-input"
-                @keydown.esc="closeSelector"
-                @keydown.enter="selectFirstTemplate"
-                ref="searchInput"
-              />
-            </div>
-
-            <!-- 模板列表 -->
-            <div class="template-list" v-if="filteredTemplates.length > 0">
-              <div
-                v-for="(template, index) in filteredTemplates"
-                :key="template.name"
-                @click="selectTemplate(template)"
-                @keydown.enter="selectTemplate(template)"
-                @keydown.space.prevent="selectTemplate(template)"
-                class="template-item"
-                :class="{ 
-                  selected: template.name === currentTemplate,
-                  focused: focusedIndex === index
-                }"
-                :tabindex="0"
-                @focus="focusedIndex = index"
-              >
-                <!-- 模板预览图 -->
-                <div class="template-preview">
-                  <img 
-                    v-if="template.thumbnail" 
-                    :src="template.thumbnail" 
-                    :alt="template.name"
-                    class="template-thumbnail"
-                    @error="handleImageError"
-                  />
-                  <div v-else class="template-placeholder">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
-                    </svg>
-                  </div>
-                </div>
-
-                <!-- 模板信息 -->
-                <div class="template-info">
-                  <h4 class="template-name">{{ template.displayName || template.name }}</h4>
-                  <p class="template-description">{{ template.description || '暂无描述' }}</p>
-                  <div class="template-meta">
-                    <span class="template-version" v-if="template.version">v{{ template.version }}</span>
-                    <span class="template-tags" v-if="template.tags">
-                      <span v-for="tag in template.tags.slice(0, 3)" :key="tag" class="tag">{{ tag }}</span>
-                    </span>
-                  </div>
-                </div>
-
-                <!-- 选中标识 -->
-                <div v-if="template.name === currentTemplate" class="selected-indicator">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <!-- 空状态 -->
-            <div v-else class="empty-state">
-              <svg class="empty-icon" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-              </svg>
-              <h4>没有找到匹配的模板</h4>
-              <p>请尝试调整搜索条件或检查模板配置</p>
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button @click="closeSelector" class="cancel-btn">取消</button>
-            <button 
-              @click="selectCurrentFocused" 
-              class="confirm-btn"
-              :disabled="!hasValidSelection"
-            >
-              确认选择
-            </button>
-          </div>
-        </div>
-      </div>
-    </teleport>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
@@ -157,7 +21,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   availableTemplates: () => [],
-  disabled: false
+  disabled: false,
 })
 
 const emit = defineEmits<{
@@ -182,7 +46,7 @@ const deviceTypeLabel = computed(() => {
   const labels = {
     desktop: '桌面端',
     tablet: '平板端',
-    mobile: '移动端'
+    mobile: '移动端',
   }
   return labels[props.deviceType as keyof typeof labels] || props.deviceType
 })
@@ -191,13 +55,13 @@ const filteredTemplates = computed(() => {
   if (!searchQuery.value) {
     return props.availableTemplates
   }
-  
+
   const query = searchQuery.value.toLowerCase()
-  return props.availableTemplates.filter(template => 
-    template.name.toLowerCase().includes(query) ||
-    template.displayName?.toLowerCase().includes(query) ||
-    template.description?.toLowerCase().includes(query) ||
-    template.tags?.some(tag => tag.toLowerCase().includes(query))
+  return props.availableTemplates.filter(template =>
+    template.name.toLowerCase().includes(query)
+    || template.displayName?.toLowerCase().includes(query)
+    || template.description?.toLowerCase().includes(query)
+    || template.tags?.some(tag => tag.toLowerCase().includes(query)),
   )
 })
 
@@ -206,52 +70,54 @@ const hasValidSelection = computed(() => {
 })
 
 // 方法
-const openSelector = () => {
-  if (props.disabled) return
-  
+function openSelector() {
+  if (props.disabled)
+    return
+
   isOpen.value = true
   searchQuery.value = ''
   focusedIndex.value = 0
-  
+
   emit('selectorOpened')
-  
+
   // 聚焦搜索框
   nextTick(() => {
     searchInput.value?.focus()
   })
 }
 
-const closeSelector = () => {
+function closeSelector() {
   isOpen.value = false
   emit('selectorClosed')
 }
 
-const selectTemplate = (template: TemplateOption) => {
+function selectTemplate(template: TemplateOption) {
   emit('templateSelected', template.name)
   closeSelector()
 }
 
-const selectFirstTemplate = () => {
+function selectFirstTemplate() {
   if (filteredTemplates.value.length > 0) {
     selectTemplate(filteredTemplates.value[0])
   }
 }
 
-const selectCurrentFocused = () => {
+function selectCurrentFocused() {
   if (hasValidSelection.value) {
     selectTemplate(filteredTemplates.value[focusedIndex.value])
   }
 }
 
-const handleImageError = (event: Event) => {
+function handleImageError(event: Event) {
   const img = event.target as HTMLImageElement
   img.style.display = 'none'
 }
 
 // 键盘导航
-const handleKeydown = (event: KeyboardEvent) => {
-  if (!isOpen.value) return
-  
+function handleKeydown(event: KeyboardEvent) {
+  if (!isOpen.value)
+    return
+
   switch (event.key) {
     case 'Escape':
       closeSelector()
@@ -292,6 +158,148 @@ onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
 })
 </script>
+
+<template>
+  <div class="template-selector">
+    <!-- 触发按钮 -->
+    <button
+      class="selector-trigger"
+      :class="{ active: isOpen }"
+      :disabled="disabled"
+      @click="openSelector"
+    >
+      <span class="current-template">{{ currentTemplateName }}</span>
+      <svg class="dropdown-icon" :class="{ rotated: isOpen }" viewBox="0 0 24 24">
+        <path d="M7 10l5 5 5-5z" />
+      </svg>
+    </button>
+
+    <!-- 模态对话框 -->
+    <teleport to="body">
+      <div v-if="isOpen" class="modal-overlay" @click="closeSelector">
+        <div class="modal-content" @click.stop>
+          <div class="modal-header">
+            <h3>选择模板</h3>
+            <button class="close-btn" @click="closeSelector">
+              <svg viewBox="0 0 24 24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <!-- 设备类型和分类信息 -->
+            <div class="selector-info">
+              <div class="info-item">
+                <span class="label">当前设备:</span>
+                <span class="value">{{ deviceTypeLabel }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">模板分类:</span>
+                <span class="value">{{ category }}</span>
+              </div>
+            </div>
+
+            <!-- 搜索框 -->
+            <div class="search-box">
+              <svg class="search-icon" viewBox="0 0 24 24">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+              </svg>
+              <input
+                ref="searchInput"
+                v-model="searchQuery"
+                type="text"
+                placeholder="搜索模板..."
+                class="search-input"
+                @keydown.esc="closeSelector"
+                @keydown.enter="selectFirstTemplate"
+              >
+            </div>
+
+            <!-- 模板列表 -->
+            <div v-if="filteredTemplates.length > 0" class="template-list">
+              <div
+                v-for="(template, index) in filteredTemplates"
+                :key="template.name"
+                class="template-item"
+                :class="{
+                  selected: template.name === currentTemplate,
+                  focused: focusedIndex === index,
+                }"
+                :tabindex="0"
+                @click="selectTemplate(template)"
+                @keydown.enter="selectTemplate(template)"
+                @keydown.space.prevent="selectTemplate(template)"
+                @focus="focusedIndex = index"
+              >
+                <!-- 模板预览图 -->
+                <div class="template-preview">
+                  <img
+                    v-if="template.thumbnail"
+                    :src="template.thumbnail"
+                    :alt="template.name"
+                    class="template-thumbnail"
+                    @error="handleImageError"
+                  >
+                  <div v-else class="template-placeholder">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- 模板信息 -->
+                <div class="template-info">
+                  <h4 class="template-name">
+                    {{ template.displayName || template.name }}
+                  </h4>
+                  <p class="template-description">
+                    {{ template.description || '暂无描述' }}
+                  </p>
+                  <div class="template-meta">
+                    <span v-if="template.version" class="template-version">v{{ template.version }}</span>
+                    <span v-if="template.tags" class="template-tags">
+                      <span v-for="tag in template.tags.slice(0, 3)" :key="tag" class="tag">{{ tag }}</span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 选中标识 -->
+                <div v-if="template.name === currentTemplate" class="selected-indicator">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- 空状态 -->
+            <div v-else class="empty-state">
+              <svg class="empty-icon" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+              </svg>
+              <h4>没有找到匹配的模板</h4>
+              <p>请尝试调整搜索条件或检查模板配置</p>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="cancel-btn" @click="closeSelector">
+              取消
+            </button>
+            <button
+              class="confirm-btn"
+              :disabled="!hasValidSelection"
+              @click="selectCurrentFocused"
+            >
+              确认选择
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+  </div>
+</template>
 
 <style scoped>
 .template-selector {
@@ -682,17 +690,17 @@ onUnmounted(() => {
     margin: 0.5rem;
     max-height: 90vh;
   }
-  
+
   .selector-info {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .template-item {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .template-preview {
     width: 80px;
     height: 80px;

@@ -118,7 +118,7 @@ export class TemplateManager {
   async render(
     category: string,
     deviceType?: DeviceType,
-    props?: Record<string, any>,
+    _props?: Record<string, any>,
   ): Promise<LoadResult> {
     // 确保已初始化
     if (!this.initialized) {
@@ -412,7 +412,7 @@ export class TemplateManager {
    * 获取当前设备类型
    */
   getCurrentDevice(): DeviceType {
-    return this.deviceAdapter.getDeviceInfo().deviceType
+    return this.deviceAdapter.getCurrentDeviceType()
   }
 
   /**

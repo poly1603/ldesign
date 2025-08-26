@@ -3,11 +3,11 @@
  * 实现按需加载、智能缓存和预加载优化
  */
 
-import type { CacheItem, EventData, EventListener, LoaderConfig, LoadResult, TemplateInfo, VueComponent } from '../types'
+import type { CacheManager } from '@ldesign/cache'
 
+import type { EventData, EventListener, LoaderConfig, LoadResult, TemplateInfo, VueComponent } from '../types'
 // 使用 @ldesign/cache 包
 import { createCache } from '@ldesign/cache'
-import type { CacheManager } from '@ldesign/cache'
 
 /**
  * 缓存适配器 - 使用 @ldesign/cache
@@ -25,7 +25,7 @@ class CacheAdapter<T = any> {
     this.cacheManager = createCache({
       defaultEngine: 'memory',
       defaultTTL: ttl,
-      maxSize: maxSize,
+      maxItems: maxSize,
     })
   }
 
@@ -33,7 +33,8 @@ class CacheAdapter<T = any> {
     try {
       const value = await this.cacheManager.get<T>(key)
       return value
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Cache get error:', error)
       return null
     }
@@ -44,7 +45,8 @@ class CacheAdapter<T = any> {
       await this.cacheManager.set(key, value, {
         ttl: customTTL || this.ttl,
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Cache set error:', error)
     }
   }
@@ -52,7 +54,8 @@ class CacheAdapter<T = any> {
   async has(key: string): Promise<boolean> {
     try {
       return await this.cacheManager.has(key)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Cache has error:', error)
       return false
     }
@@ -62,7 +65,8 @@ class CacheAdapter<T = any> {
     try {
       await this.cacheManager.remove(key)
       return true
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Cache delete error:', error)
       return false
     }
@@ -71,7 +75,8 @@ class CacheAdapter<T = any> {
   async clear(): Promise<void> {
     try {
       await this.cacheManager.clear()
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Cache clear error:', error)
     }
   }
@@ -80,7 +85,8 @@ class CacheAdapter<T = any> {
     try {
       const keys = await this.cacheManager.keys()
       return keys.length
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Cache size error:', error)
       return 0
     }
@@ -89,7 +95,8 @@ class CacheAdapter<T = any> {
   async keys(): Promise<string[]> {
     try {
       return await this.cacheManager.keys()
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Cache keys error:', error)
       return []
     }
@@ -276,7 +283,7 @@ export class TemplateLoader {
       // 使用动态 import
       return await import(/* @vite-ignore */ path)
     }
-    catch (importError) {
+    catch (_importError) {
       // 回退方案：检查是否在Vite环境中
       if (typeof window !== 'undefined' && 'import' in window) {
         try {
@@ -286,7 +293,7 @@ export class TemplateLoader {
             return globalModules[path]
           }
         }
-        catch (globError) {
+        catch (_globError) {
           // ignore glob errors
         }
       }
@@ -318,7 +325,7 @@ export class TemplateLoader {
     const cacheKey = this.generateCacheKey(templateInfo)
 
     // 如果已经缓存或正在加载，跳过
-    if (this.cache.has(cacheKey) || this.loadingPromises.has(cacheKey)) {
+    if (await this.cache.has(cacheKey) || this.loadingPromises.has(cacheKey)) {
       return
     }
 

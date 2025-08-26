@@ -15,17 +15,21 @@ import type {
   TemplateStatus,
 } from '../types'
 // 浏览器兼容的路径工具函数
-const basename = (path: string) => {
+function basename(path: string, ext?: string) {
   const parts = path.split('/')
-  return parts[parts.length - 1] || ''
+  let name = parts[parts.length - 1] || ''
+  if (ext && name.endsWith(ext)) {
+    name = name.slice(0, -ext.length)
+  }
+  return name
 }
 
-const dirname = (path: string) => {
+function dirname(path: string) {
   const parts = path.split('/')
   return parts.slice(0, -1).join('/') || '.'
 }
 
-const extname = (path: string) => {
+function extname(path: string) {
   const name = basename(path)
   const lastDot = name.lastIndexOf('.')
   return lastDot > 0 ? name.slice(lastDot) : ''
@@ -287,6 +291,7 @@ export class TemplateScanner {
     const metadata = await this.extractMetadata(mainTemplateFile, mainConfigFile)
 
     return {
+      name: metadata.name || `${category}-${deviceType}`,
       category,
       deviceType: deviceType as DeviceType,
       templateFile: {

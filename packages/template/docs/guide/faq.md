@@ -19,10 +19,10 @@ pnpm list @ldesign/template
 ```typescript
 // ✅ 正确的导入方式
 import { TemplateManager } from '@ldesign/template'
-import { TemplateRenderer } from '@ldesign/template/vue'
-
 // ❌ 错误的导入方式
 import { TemplateRenderer } from '@ldesign/template'
+
+import { TemplateRenderer } from '@ldesign/template/vue'
 ```
 
 3. **确认 TypeScript 配置**：
@@ -42,9 +42,9 @@ import { TemplateRenderer } from '@ldesign/template'
 **A:** 请确认插件正确注册：
 
 ```typescript
+import { TemplatePlugin } from '@ldesign/template/vue'
 // main.ts
 import { createApp } from 'vue'
-import { TemplatePlugin } from '@ldesign/template/vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -73,7 +73,7 @@ app.mount('#app')
 const manager = new TemplateManager({
   scanner: {
     scanPaths: [
-      'src/templates/**/*.vue',  // 确保路径正确
+      'src/templates/**/*.vue', // 确保路径正确
       'src/components/templates/**/*.vue'
     ]
   }
@@ -100,7 +100,7 @@ src/templates/
 
 ```typescript
 const manager = new TemplateManager({
-  debug: true,  // 启用调试日志
+  debug: true, // 启用调试日志
   scanner: {
     scanPaths: ['src/templates/**/*.vue']
   }
@@ -143,20 +143,20 @@ manager.on('template:error', (error) => {
 **A:** 可以自定义设备检测逻辑：
 
 ```typescript
-const customDetector = () => {
+function customDetector() {
   const width = window.innerWidth
   const height = window.innerHeight
   const userAgent = navigator.userAgent
-  
+
   // 自定义检测逻辑
   if (/iPhone|Android/.test(userAgent) && width <= 480) {
     return 'mobile'
   }
-  
+
   if (/iPad/.test(userAgent) || (width <= 1024 && width > 768)) {
     return 'tablet'
   }
-  
+
   return 'desktop'
 }
 
@@ -173,7 +173,7 @@ const manager = new TemplateManager({
 
 ```vue
 <script setup lang="ts">
-import { provide, inject } from 'vue'
+import { inject, provide } from 'vue'
 
 // 在父组件中提供状态
 const templateState = reactive({
@@ -218,7 +218,7 @@ const manager = new TemplateManager({
     enabled: true,
     strategy: 'lru',
     maxSize: 50,
-    ttl: 30 * 60 * 1000  // 30分钟
+    ttl: 30 * 60 * 1000 // 30分钟
   }
 })
 ```
@@ -235,7 +235,7 @@ await manager.preloadTemplates([
 3. **使用懒加载**：
 ```vue
 <template>
-  <TemplateRenderer 
+  <TemplateRenderer
     template="heavy-component"
     :lazy="true"
     :loading-threshold="200"
@@ -250,16 +250,16 @@ await manager.preloadTemplates([
 ```typescript
 const manager = new TemplateManager({
   cache: {
-    maxSize: 20,  // 减少缓存大小
-    ttl: 10 * 60 * 1000,  // 缩短过期时间
-    strategy: 'lru'  // 使用 LRU 策略
+    maxSize: 20, // 减少缓存大小
+    ttl: 10 * 60 * 1000, // 缩短过期时间
+    strategy: 'lru' // 使用 LRU 策略
   }
 })
 
 // 定期清理缓存
 setInterval(() => {
   manager.clearExpiredCache()
-}, 5 * 60 * 1000)  // 每5分钟清理一次
+}, 5 * 60 * 1000) // 每5分钟清理一次
 ```
 
 ### Q: 如何监控性能指标？
@@ -270,8 +270,8 @@ setInterval(() => {
 const manager = new TemplateManager({
   performance: {
     enabled: true,
-    sampleRate: 0.1,  // 10% 采样
-    reportInterval: 60000  // 每分钟报告
+    sampleRate: 0.1, // 10% 采样
+    reportInterval: 60000 // 每分钟报告
   }
 })
 
@@ -297,7 +297,7 @@ manager.on('performance:report', (report) => {
 export default defineConfig({
   plugins: [vue()],
   server: {
-    hmr: true  // 确保 HMR 启用
+    hmr: true // 确保 HMR 启用
   }
 })
 ```
@@ -337,8 +337,8 @@ const isBrowser = typeof window !== 'undefined'
 
 const manager = new TemplateManager({
   deviceAdapter: {
-    autoDetect: isBrowser,  // 只在浏览器中自动检测
-    defaultDevice: 'desktop'  // SSR 默认设备类型
+    autoDetect: isBrowser, // 只在浏览器中自动检测
+    defaultDevice: 'desktop' // SSR 默认设备类型
   }
 })
 
@@ -434,28 +434,28 @@ export default {
 
 ```typescript
 // 模拟不同设备
-const simulateDevice = (deviceType: DeviceType) => {
+function simulateDevice(deviceType: DeviceType) {
   const sizes = {
     mobile: { width: 375, height: 667 },
     tablet: { width: 768, height: 1024 },
     desktop: { width: 1200, height: 800 }
   }
-  
+
   const size = sizes[deviceType]
-  
+
   // 模拟窗口大小
   Object.defineProperty(window, 'innerWidth', {
     writable: true,
     configurable: true,
     value: size.width
   })
-  
+
   Object.defineProperty(window, 'innerHeight', {
     writable: true,
     configurable: true,
     value: size.height
   })
-  
+
   // 触发 resize 事件
   window.dispatchEvent(new Event('resize'))
 }

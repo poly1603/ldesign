@@ -1,50 +1,3 @@
-<template>
-  <div class="tablet-default-login-template">
-    <div class="login-container">
-      <div class="login-panel">
-        <div class="login-header">
-          <h2 class="login-title">{{ title }}</h2>
-          <p class="login-subtitle">{{ subtitle }}</p>
-        </div>
-        
-        <form class="login-form" @submit.prevent="handleSubmit">
-          <div class="form-group">
-            <input
-              id="tablet-username"
-              v-model="form.username"
-              type="text"
-              placeholder="用户名"
-              class="form-input"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <input
-              id="tablet-password"
-              v-model="form.password"
-              type="password"
-              placeholder="密码"
-              class="form-input"
-              required
-            />
-          </div>
-          
-          <div v-if="showRememberMe" class="form-options">
-            <label class="checkbox-label">
-              <input v-model="form.rememberMe" type="checkbox" />
-              <span>记住我</span>
-            </label>
-            <a v-if="showForgotPassword" href="#" class="forgot-link">忘记密码？</a>
-          </div>
-          
-          <button type="submit" class="login-button">登录</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref } from 'vue'
 
@@ -59,20 +12,73 @@ const props = withDefaults(defineProps<Props>(), {
   title: '平板端登录',
   subtitle: '请输入您的账号信息',
   showRememberMe: true,
-  showForgotPassword: true
+  showForgotPassword: true,
 })
 
 const form = ref({
   username: '',
   password: '',
-  rememberMe: false
+  rememberMe: false,
 })
 
-const handleSubmit = () => {
+function handleSubmit() {
   console.log('平板端登录提交:', form.value)
   alert('这是一个演示模板，登录功能仅供展示')
 }
 </script>
+
+<template>
+  <div class="tablet-default-login-template">
+    <div class="login-container">
+      <div class="login-panel">
+        <div class="login-header">
+          <h2 class="login-title">
+            {{ title }}
+          </h2>
+          <p class="login-subtitle">
+            {{ subtitle }}
+          </p>
+        </div>
+
+        <form class="login-form" @submit.prevent="handleSubmit">
+          <div class="form-group">
+            <input
+              id="tablet-username"
+              v-model="form.username"
+              type="text"
+              placeholder="用户名"
+              class="form-input"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <input
+              id="tablet-password"
+              v-model="form.password"
+              type="password"
+              placeholder="密码"
+              class="form-input"
+              required
+            >
+          </div>
+
+          <div v-if="showRememberMe" class="form-options">
+            <label class="checkbox-label">
+              <input v-model="form.rememberMe" type="checkbox">
+              <span>记住我</span>
+            </label>
+            <a v-if="showForgotPassword" href="#" class="forgot-link">忘记密码？</a>
+          </div>
+
+          <button type="submit" class="login-button">
+            登录
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .tablet-default-login-template {
@@ -201,24 +207,24 @@ const handleSubmit = () => {
   .tablet-default-login-template {
     padding: 3rem;
   }
-  
+
   .login-container {
     max-width: 520px;
   }
-  
+
   .login-panel {
     padding: 3.5rem 3rem;
   }
-  
+
   .login-title {
     font-size: 2rem;
   }
-  
+
   .form-input {
     padding: 1.25rem;
     font-size: 1.1rem;
   }
-  
+
   .login-button {
     padding: 1.25rem;
     font-size: 1.1rem;

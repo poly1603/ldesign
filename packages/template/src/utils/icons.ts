@@ -4,6 +4,20 @@
  */
 
 /**
+ * 图标名称类型
+ */
+export type IconName = string
+
+/**
+ * 图标选项接口
+ */
+export interface IconOptions {
+  size?: string | number
+  color?: string
+  className?: string
+}
+
+/**
  * 图标配置接口
  */
 export interface IconConfig {

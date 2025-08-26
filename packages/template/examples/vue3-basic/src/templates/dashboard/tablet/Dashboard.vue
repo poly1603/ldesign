@@ -91,8 +91,8 @@ function refresh() {
   console.log('刷新平板端仪表板数据')
   stats.forEach((stat) => {
     const randomChange = (Math.random() * 20 - 10).toFixed(1)
-    stat.change = `${randomChange > 0 ? '+' : ''}${randomChange}%`
-    stat.trend = randomChange > 0 ? 'positive' : 'negative'
+    stat.change = `${Number(randomChange) > 0 ? '+' : ''}${randomChange}%`
+    stat.trend = Number(randomChange) > 0 ? 'positive' : 'negative'
   })
 }
 

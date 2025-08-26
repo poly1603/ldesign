@@ -135,8 +135,10 @@ manager.clearCache('login', 'desktop')
 // 1. 基于屏幕宽度的简单检测
 function detectDevice() {
   const width = window.innerWidth
-  if (width <= 768) return 'mobile'
-  if (width <= 1024) return 'tablet'
+  if (width <= 768)
+    return 'mobile'
+  if (width <= 1024)
+    return 'tablet'
   return 'desktop'
 }
 
@@ -150,15 +152,17 @@ function detectDeviceByUA() {
 }
 
 // 3. 自定义检测逻辑
-const customDetector = () => {
+function customDetector() {
   const width = window.innerWidth
   const height = window.innerHeight
   const ratio = width / height
   const touchSupport = 'ontouchstart' in window
-  
+
   // 综合判断设备类型
-  if (touchSupport && width <= 480) return 'mobile'
-  if (touchSupport && width <= 1024) return 'tablet'
+  if (touchSupport && width <= 480)
+    return 'mobile'
+  if (touchSupport && width <= 1024)
+    return 'tablet'
   return 'desktop'
 }
 ```
@@ -169,7 +173,7 @@ const customDetector = () => {
 // 监听设备变化
 manager.on('device:changed', (oldDevice, newDevice) => {
   console.log(`设备从 ${oldDevice} 切换到 ${newDevice}`)
-  
+
   // 自动重新加载当前模板的新设备版本
   manager.reloadCurrentTemplate(newDevice)
 })
@@ -187,9 +191,9 @@ window.addEventListener('resize', () => {
 ```typescript
 // 降级策略配置
 const fallbackStrategy = {
-  mobile: ['tablet', 'desktop'],    // 移动端优先使用平板端，再使用桌面端
-  tablet: ['desktop', 'mobile'],    // 平板端优先使用桌面端，再使用移动端
-  desktop: ['tablet', 'mobile']     // 桌面端优先使用平板端，再使用移动端
+  mobile: ['tablet', 'desktop'], // 移动端优先使用平板端，再使用桌面端
+  tablet: ['desktop', 'mobile'], // 平板端优先使用桌面端，再使用移动端
+  desktop: ['tablet', 'mobile'] // 桌面端优先使用平板端，再使用移动端
 }
 ```
 
@@ -201,9 +205,9 @@ const fallbackStrategy = {
 ```typescript
 // LRU 缓存配置
 const cacheConfig = {
-  strategy: 'lru',        // 最近最少使用
-  maxSize: 50,           // 最大缓存50个模板
-  ttl: 30 * 60 * 1000   // 30分钟过期
+  strategy: 'lru', // 最近最少使用
+  maxSize: 50, // 最大缓存50个模板
+  ttl: 30 * 60 * 1000 // 30分钟过期
 }
 ```
 
@@ -212,9 +216,9 @@ const cacheConfig = {
 // 浏览器存储缓存
 const storageConfig = {
   enabled: true,
-  storage: 'localStorage',  // 或 'sessionStorage'
+  storage: 'localStorage', // 或 'sessionStorage'
   prefix: 'template_cache_',
-  compression: true         // 启用压缩
+  compression: true // 启用压缩
 }
 ```
 
@@ -246,7 +250,7 @@ manager.enableSmartPreload({
 ```typescript
 // 组件级懒加载
 <template>
-  <TemplateRenderer 
+  <TemplateRenderer
     template="dashboard"
     :lazy="true"
     :loading-threshold="200"
@@ -299,9 +303,9 @@ manager.use(new AnalyticsPlugin())
 manager.addLoadMiddleware(async (context, next) => {
   console.log('开始加载模板:', context.template)
   const startTime = Date.now()
-  
+
   await next()
-  
+
   const duration = Date.now() - startTime
   console.log('模板加载完成，耗时:', duration, 'ms')
 })
@@ -344,8 +348,8 @@ manager.on('error', (error) => {
 const config = {
   performance: {
     enabled: true,
-    sampleRate: 0.1,      // 10% 采样率
-    reportInterval: 60000  // 每分钟报告一次
+    sampleRate: 0.1, // 10% 采样率
+    reportInterval: 60000 // 每分钟报告一次
   }
 }
 
@@ -365,7 +369,7 @@ manager.on('performance:report', (report) => {
 // 开发环境启用调试
 const manager = new TemplateManager({
   debug: process.env.NODE_ENV === 'development',
-  verbose: true  // 详细日志
+  verbose: true // 详细日志
 })
 ```
 

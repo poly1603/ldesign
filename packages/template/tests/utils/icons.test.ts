@@ -158,7 +158,7 @@ describe('图标工具函数', () => {
       expect(component).toBeDefined()
       expect(component.name).toBe('IconHome')
       expect(component.props).toBeDefined()
-      expect(component.setup).toBeDefined()
+      expect(component.computed).toBeDefined()
     })
 
     it('应该设置正确的组件名称', () => {
@@ -202,7 +202,7 @@ describe('图标工具函数', () => {
     it('应该创建正确的渲染函数', () => {
       const component = createIconComponent('home')
 
-      expect(component.setup).toBeDefined()
+      expect(component.computed).toBeDefined()
 
       // 模拟props
       const mockProps = {
@@ -211,7 +211,7 @@ describe('图标工具函数', () => {
         className: '',
       }
 
-      const renderFn = component.setup(mockProps)
+      const renderFn = component.computed?.iconHtml
       expect(typeof renderFn).toBe('function')
 
       const result = renderFn()
@@ -230,7 +230,7 @@ describe('图标工具函数', () => {
         className: 'test-class',
       }
 
-      const renderFn = component.setup(mockProps)
+      const renderFn = component.computed?.iconHtml
       const result = renderFn()
 
       expect(result.props.innerHTML).toContain('class="icon icon-lg test-class"')

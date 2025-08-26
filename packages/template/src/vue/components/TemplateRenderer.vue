@@ -3,13 +3,13 @@ import type { Component } from 'vue'
 import type {
   CacheConfig,
   DeviceType,
-  TemplateRendererProps,
   ExternalTemplate,
+  TemplateRendererProps,
 } from '../../types'
-import { computed, nextTick, onMounted, ref, watch, markRaw, h } from 'vue'
-import TemplateSelector, { type TemplateOption } from './TemplateSelector.vue'
-import { useTemplateRegistry } from '../composables/useTemplateRegistry'
+import { computed, h, markRaw, nextTick, onMounted, ref, watch } from 'vue'
 import { useTemplateExtension } from '../composables/useTemplateExtension'
+import { useTemplateRegistry } from '../composables/useTemplateRegistry'
+import TemplateSelector, { type TemplateOption } from './TemplateSelector.vue'
 
 // 定义组件属性
 interface Props extends TemplateRendererProps {
@@ -65,7 +65,7 @@ const props = withDefaults(defineProps<Props>(), {
     disabled: false,
     searchable: true,
     showThumbnails: true,
-    layout: 'slot'
+    layout: 'slot',
   }),
   loadingConfig: () => ({
     showLoading: true,
@@ -90,15 +90,18 @@ const error = ref<Error | null>(null)
 const currentDeviceType = computed(() => props.deviceType || 'desktop')
 
 // 获取组件名称
-const getComponentName = (template: string) => {
-  if (template === 'login') return 'LoginForm'
-  if (template === 'dashboard') return 'Dashboard'
+function getComponentName(template: string) {
+  if (template === 'login')
+    return 'LoginForm'
+  if (template === 'dashboard')
+    return 'Dashboard'
   return template.charAt(0).toUpperCase() + template.slice(1)
 }
 
 // 模板加载方法
-const loadTemplate = async (templateName: string, deviceType?: DeviceType) => {
-  if (!templateName) return
+async function loadTemplate(templateName: string, deviceType?: DeviceType) {
+  if (!templateName)
+    return
 
   const targetDeviceType = deviceType || currentDeviceType.value
   loading.value = true
@@ -114,22 +117,23 @@ const loadTemplate = async (templateName: string, deviceType?: DeviceType) => {
       // 查找所有匹配分类和设备类型的外部模板
       const allExternalTemplates = props.externalTemplates || []
       externalTemplate = allExternalTemplates.find(t =>
-        t.config.category === templateName &&
-        t.config.device === targetDeviceType
+        t.config.category === templateName
+        && t.config.device === targetDeviceType,
       )
     }
 
     if (externalTemplate) {
       // 使用外部模板
       templateComponent.value = markRaw(externalTemplate.component)
-    } else {
+    }
+    else {
       // 回退到默认的模板加载逻辑
       // 根据模板注册表中的路径加载真实的模板组件
       const templates = getAllTemplates()
 
       // 查找匹配的模板
       const matchedTemplate = templates.value.find((t: any) =>
-        t.name === templateName && t.deviceType === targetDeviceType
+        t.name === templateName && t.deviceType === targetDeviceType,
       )
 
       if (matchedTemplate && matchedTemplate.path) {
@@ -138,11 +142,13 @@ const loadTemplate = async (templateName: string, deviceType?: DeviceType) => {
         const module = await import(/* @vite-ignore */ importPath)
 
         templateComponent.value = markRaw(module.default)
-      } else {
+      }
+      else {
         throw new Error(`未找到模板: ${templateName} (${targetDeviceType})`)
       }
     }
-  } catch (err) {
+  }
+  catch (err) {
     // 如果真实模板加载失败，创建模拟组件
     if (process.env.NODE_ENV === 'development') {
       console.warn('模板加载失败，使用模拟组件:', err)
@@ -157,32 +163,33 @@ const loadTemplate = async (templateName: string, deviceType?: DeviceType) => {
             border: '1px solid #e2e8f0',
             borderRadius: '8px',
             background: '#f7fafc',
-            textAlign: 'center'
-          }
+            textAlign: 'center',
+          },
         }, [
           h('h3', { style: { margin: '0 0 1rem', color: '#2d3748' } }, `模板: ${templateName}`),
           h('p', { style: { margin: '0 0 0.5rem', color: '#4a5568' } }, `设备类型: ${targetDeviceType}`),
           h('p', { style: { margin: '0', color: '#718096' } }, '这是一个模拟的模板组件'),
         ])
-      }
+      },
     })
 
     templateComponent.value = mockComponent
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
-const clearCache = (template?: string, deviceType?: DeviceType) => {
+function clearCache(template?: string, deviceType?: DeviceType) {
   console.log('清除缓存:', template, deviceType)
 }
 
-const preloadTemplate = async (template?: string, deviceType?: DeviceType) => {
+async function preloadTemplate(template?: string, deviceType?: DeviceType) {
   console.log('预加载模板:', template, deviceType)
 }
 
-const getTemplateInfo = (template?: string, deviceType?: DeviceType) => {
+function getTemplateInfo(template?: string, deviceType?: DeviceType) {
   return { name: template, deviceType }
 }
 
@@ -208,7 +215,8 @@ const templateClasses = computed(() => ({
 
 // 选择器相关计算属性
 const availableTemplates = computed((): TemplateOption[] => {
-  if (!props.category || !currentDeviceType.value) return []
+  if (!props.category || !currentDeviceType.value)
+    return []
 
   const templates = getTemplatesByCategory(props.category, currentDeviceType.value)
   return templates.map(template => ({
@@ -218,7 +226,7 @@ const availableTemplates = computed((): TemplateOption[] => {
     version: template.version,
     tags: template.tags,
     thumbnail: template.thumbnail,
-    path: template.path
+    path: template.path,
   }))
 })
 
@@ -229,7 +237,7 @@ const categoryLabel = computed(() => {
     dashboard: '仪表板',
     user: '用户管理',
     settings: '设置',
-    common: '通用组件'
+    common: '通用组件',
   }
   return labels[props.category || ''] || props.category
 })
@@ -238,7 +246,7 @@ const deviceTypeLabel = computed(() => {
   const labels: Record<string, string> = {
     desktop: '桌面端',
     tablet: '平板端',
-    mobile: '移动端'
+    mobile: '移动端',
   }
   return labels[currentDeviceType.value] || currentDeviceType.value
 })
@@ -293,7 +301,7 @@ async function preload(template?: string, deviceType?: DeviceType) {
 }
 
 // 选择器事件处理
-const handleTemplateSelected = async (templateName: string) => {
+async function handleTemplateSelected(templateName: string) {
   const oldTemplate = currentTemplate.value
   currentTemplate.value = templateName
 
@@ -301,18 +309,19 @@ const handleTemplateSelected = async (templateName: string) => {
     await loadTemplate(templateName, currentDeviceType.value)
     emit('template-selected', templateName)
     emit('template-changed', oldTemplate, templateName)
-  } catch (err) {
+  }
+  catch (err) {
     console.error('切换模板失败:', err)
     // 回滚到之前的模板
     currentTemplate.value = oldTemplate
   }
 }
 
-const handleSelectorOpened = () => {
+function handleSelectorOpened() {
   emit('selector-opened')
 }
 
-const handleSelectorClosed = () => {
+function handleSelectorClosed() {
   emit('selector-closed')
 }
 
