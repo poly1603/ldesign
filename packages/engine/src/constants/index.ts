@@ -14,6 +14,76 @@ export const DEFAULT_CONFIG = {
 } as const
 
 /**
+ * 性能优化常量
+ * 🚀 统一管理性能优化相关的配置值
+ */
+export const PERFORMANCE_CONSTANTS = {
+  // 批处理配置
+  BATCH_PROCESSOR: {
+    DEFAULT_BATCH_SIZE: 20,
+    DEFAULT_INTERVAL: 5000, // 5秒
+    MAX_WAIT_TIME: 10000, // 10秒
+  },
+
+  // 缓存优化
+  CACHE_OPTIMIZATION: {
+    CLEANUP_BATCH_SIZE: 20,
+    CLEANUP_INTERVAL: 5000, // 5秒
+    STATS_CLEANUP_INTERVAL: 300000, // 5分钟
+    MAX_SIZE_DEFAULT: 100,
+    DEFAULT_TTL: 300000, // 5分钟
+  },
+
+  // 事件优化
+  EVENT_OPTIMIZATION: {
+    STATS_CLEANUP_INTERVAL: 300000, // 5分钟
+    BATCH_REMOVE_THRESHOLD: 10,
+    MAX_LISTENERS_DEFAULT: 100,
+  },
+
+  // 内存管理
+  MEMORY_MANAGEMENT: {
+    OBJECT_POOL_MAX_SIZE: 100,
+    GC_THRESHOLD: 1000, // 触发垃圾回收的阈值
+  },
+
+  // 性能阈值
+  THRESHOLDS: {
+    // 响应时间阈值（毫秒）
+    RESPONSE_TIME: {
+      EXCELLENT: 50,
+      GOOD: 100,
+      ACCEPTABLE: 500,
+      POOR: 1000,
+    },
+
+    // FPS阈值
+    FPS: {
+      EXCELLENT: 60,
+      GOOD: 45,
+      ACCEPTABLE: 30,
+      POOR: 15,
+    },
+
+    // 内存使用阈值（MB）
+    MEMORY: {
+      LOW: 50,
+      WARNING: 100,
+      CRITICAL: 200,
+      EMERGENCY: 500,
+    },
+
+    // 缓存命中率阈值
+    CACHE_HIT_RATE: {
+      EXCELLENT: 0.9,
+      GOOD: 0.8,
+      ACCEPTABLE: 0.6,
+      POOR: 0.4,
+    },
+  },
+} as const
+
+/**
  * 事件名称常量
  * 📡 定义引擎系统中所有事件的标准名称
  */

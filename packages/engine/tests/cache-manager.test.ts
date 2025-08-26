@@ -57,7 +57,11 @@ describe('cacheManager', () => {
       expect(cacheManager.size()).toBe(1)
 
       await new Promise(resolve => setTimeout(resolve, 100))
-      cacheManager.get('key1') // 触发清理
+      const result = cacheManager.get('key1') // 触发清理
+      expect(result).toBeUndefined() // 过期项应该返回 undefined
+
+        // 手动触发清理队列处理
+        ; (cacheManager as any).forceCleanup()
       expect(cacheManager.size()).toBe(0)
     })
   })
