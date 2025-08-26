@@ -21,6 +21,24 @@ export interface RGB {
 }
 
 /**
+ * HSV 颜色接口
+ */
+export interface HSV {
+  h: number // 色相 (0-360)
+  s: number // 饱和度 (0-100)
+  v: number // 明度 (0-100)
+}
+
+/**
+ * LAB 颜色接口
+ */
+export interface LAB {
+  l: number // 亮度 (0-100)
+  a: number // 绿-红轴 (-128 to 127)
+  b: number // 蓝-黄轴 (-128 to 127)
+}
+
+/**
  * 将 hex 颜色转换为 RGB
  */
 export function hexToRgb(hex: string): RGB | null {
@@ -181,4 +199,151 @@ export function normalizeHex(hex: string): string {
       .join('')
   }
   return `#${hex.toLowerCase()}`
+}
+
+/**
+ * 将 RGB 颜色转换为 HSV
+ */
+export function rgbToHsv(r: number, g: number, b: number): HSV {
+  r /= 255
+  g /= 255
+  b /= 255
+
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  const delta = max - min
+
+  let h: number
+  let s: number
+  const v = max
+
+  if (delta === 0) {
+    h = 0
+    s = 0
+  }
+  else {
+    s = delta / max
+
+    switch (max) {
+      case r:
+        h = ((g - b) / delta + (g < b ? 6 : 0)) / 6
+        break
+      case g:
+        h = ((b - r) / delta + 2) / 6
+        break
+      case b:
+        h = ((r - g) / delta + 4) / 6
+        break
+      default:
+        h = 0
+    }
+  }
+
+  return {
+    h: Math.round(h * 360),
+    s: Math.round(s * 100),
+    v: Math.round(v * 100),
+  }
+}
+
+/**
+ * 将 HSV 颜色转换为 RGB
+ */
+export function hsvToRgb(h: number, s: number, v: number): RGB {
+  h /= 360
+  s /= 100
+  v /= 100
+
+  const c = v * s
+  const x = c * (1 - Math.abs(((h * 6) % 2) - 1))
+  const m = v - c
+
+  let r: number, g: number, b: number
+
+  if (h < 1 / 6) {
+    r = c
+    g = x
+    b = 0
+  }
+  else if (h < 2 / 6) {
+    r = x
+    g = c
+    b = 0
+  }
+  else if (h < 3 / 6) {
+    r = 0
+    g = c
+    b = x
+  }
+  else if (h < 4 / 6) {
+    r = 0
+    g = x
+    b = c
+  }
+  else if (h < 5 / 6) {
+    r = x
+    g = 0
+    b = c
+  }
+  else {
+    r = c
+    g = 0
+    b = x
+  }
+
+  return {
+    r: Math.round((r + m) * 255),
+    g: Math.round((g + m) * 255),
+    b: Math.round((b + m) * 255),
+  }
+}
+
+/**
+ * 将 hex 颜色转换为 HSV
+ */
+export function hexToHsv(hex: string): HSV | null {
+  const rgb = hexToRgb(hex)
+  return rgb ? rgbToHsv(rgb.r, rgb.g, rgb.b) : null
+}
+
+/**
+ * 将 HSV 颜色转换为 hex
+ */
+export function hsvToHex(h: number, s: number, v: number): string {
+  const rgb = hsvToRgb(h, s, v)
+  return rgbToHex(rgb.r, rgb.g, rgb.b)
+}
+
+/**
+ * 将 HSL 颜色转换为 HSV
+ */
+export function hslToHsv(h: number, s: number, l: number): HSV {
+  s /= 100
+  l /= 100
+
+  const v = l + s * Math.min(l, 1 - l)
+  const sNew = v === 0 ? 0 : 2 * (1 - l / v)
+
+  return {
+    h,
+    s: Math.round(sNew * 100),
+    v: Math.round(v * 100),
+  }
+}
+
+/**
+ * 将 HSV 颜色转换为 HSL
+ */
+export function hsvToHsl(h: number, s: number, v: number): HSL {
+  s /= 100
+  v /= 100
+
+  const l = v * (1 - s / 2)
+  const sNew = l === 0 || l === 1 ? 0 : (v - l) / Math.min(l, 1 - l)
+
+  return {
+    h,
+    s: Math.round(sNew * 100),
+    l: Math.round(l * 100),
+  }
 }

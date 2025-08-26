@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: '@ldesign/color'
-  text: '主题色管理系统'
-  tagline: 功能完整、性能优化、框架无关的主题色管理解决方案
+  text: '现代颜色处理库'
+  tagline: 功能强大、性能卓越的颜色管理解决方案 - 支持颜色转换、调色板生成、可访问性检查
   image:
     src: /logo.svg
     alt: ldesign color
@@ -21,29 +21,29 @@ hero:
 
 features:
   - icon: 🎨
-    title: 智能颜色生成
-    details: 基于 a-nice-red 算法从主色调自动生成和谐的配套颜色，支持多种生成策略
+    title: 智能颜色处理
+    details: 支持 HEX、RGB、HSL、HSV 格式互转，12种混合模式，亮度饱和度调节，渐变生成
   - icon: 🌈
-    title: 完整色阶系统
-    details: 集成 @arco-design/color 生成亮色和暗色模式的完整色阶，满足各种设计需求
+    title: 专业调色板
+    details: 单色、类似色、互补色、三元色调色板生成，基于色彩理论的和谐配色
+  - icon: ♿
+    title: 可访问性检查
+    details: WCAG AA/AAA 标准检查，8种颜色盲模拟，智能配色建议，批量方案检测
+  - icon: 🎯
+    title: 主题管理
+    details: 动态主题切换，系统主题同步，自定义主题配置，CSS 变量自动管理
   - icon: ⚡
     title: 性能优化
-    details: 闲时处理机制，LRU 缓存，预生成策略，确保不阻塞主线程的高性能体验
-  - icon: 💾
-    title: 智能缓存
-    details: 支持多种存储方式，智能缓存和持久化，避免重复计算提升用户体验
-  - icon: 🌙
-    title: 系统主题检测
-    details: 自动检测和同步系统主题，支持 prefers-color-scheme 媒体查询
+    details: 闲时处理机制，LRU 缓存策略，预计算优化，智能内存管理
   - icon: 🔧
-    title: 框架无关
-    details: 核心功能可在任何 JavaScript 环境中使用，同时提供 Vue 3 专门集成
-  - icon: 🎯
     title: Vue 3 集成
-    details: 提供完整的组合式 API，包含主题切换、选择器、系统同步等功能
+    details: 完整组合式 API，颜色选择器、调色板生成器、可访问性检查器等组件
   - icon: 📦
-    title: TypeScript 支持
-    details: 完整的类型定义，提供优秀的开发体验和类型安全保障
+    title: 现代构建
+    details: TypeScript 编写，ESM/CJS 双格式，Tree Shaking 支持，完整类型定义
+  - icon: 🚀
+    title: 开发体验
+    details: 简洁 API 设计，丰富示例文档，完善测试覆盖，活跃社区支持
 ---
 
 ## 快速体验

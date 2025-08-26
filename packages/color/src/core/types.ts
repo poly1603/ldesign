@@ -379,7 +379,7 @@ export interface CSSInjector {
   injectVariables: (
     variables: Record<string, ColorValue>,
     id?: string,
-    themeInfo?: { name?: string; mode?: string; primaryColor?: string }
+    themeInfo?: { name?: string, mode?: string, primaryColor?: string },
   ) => void
 
   /** 移除 CSS 变量 */

@@ -28,7 +28,7 @@ export function useNotification() {
   function showNotification(
     message: string,
     type: NotificationItem['type'] = 'info',
-    duration = 3000
+    duration = 3000,
   ) {
     const id = `notification-${++notificationId}`
     const notification: NotificationItem = {
