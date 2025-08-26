@@ -13,8 +13,17 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
   // 性能优化：缓存排序后的监听器
   private sortedListenersCache = new Map<string, EventListener[]>()
 
-  constructor(_logger?: Logger) {
-    // logger参数保留用于未来扩展
+  // 性能优化：事件统计和监控
+  private eventStats = new Map<string, { count: number, lastEmit: number }>()
+
+  // 性能优化：批量处理队列
+  private eventQueue: Array<{ event: string, args: any[] }> = []
+  private processingQueue = false
+  private batchSize = 10
+
+  constructor(private logger?: Logger) {
+    // 定期清理统计数据，防止内存泄漏
+    setInterval(() => this.cleanupStats(), 300000) // 5分钟清理一次
   }
 
   on(event: any, handler: EventHandler, priority = 0): void {
@@ -45,6 +54,9 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
   }
 
   emit(event: any, ...args: any[]): void {
+    // 更新事件统计
+    this.updateEventStats(event)
+
     const listeners = this.events.get(event)
     if (!listeners || listeners.length === 0) {
       return
@@ -59,18 +71,30 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
       this.sortedListenersCache.set(event, listenersToExecute)
     }
 
+    // 性能优化：批量处理一次性监听器的移除
+    const onceListenersToRemove: EventListener[] = []
+
     for (const listener of listenersToExecute) {
       try {
         listener.handler(args[0])
       }
       catch (error) {
-        console.error(`Error in event handler for "${event}":`, error)
+        if (this.logger) {
+          this.logger.error(`Error in event handler for "${event}":`, error)
+        } else {
+          console.error(`Error in event handler for "${event}":`, error)
+        }
       }
 
-      // 如果是一次性监听器，执行后移除
+      // 收集需要移除的一次性监听器
       if (listener.once) {
-        this.off(event, listener.handler)
+        onceListenersToRemove.push(listener)
       }
+    }
+
+    // 批量移除一次性监听器，减少数组操作次数
+    if (onceListenersToRemove.length > 0) {
+      this.batchRemoveListeners(event, onceListenersToRemove)
     }
   }
 
@@ -149,6 +173,73 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
   // 在指定事件前添加监听器
   prependListener(event: string, handler: EventHandler, priority = 1000): void {
     this.addEventListener(event, handler, false, priority)
+  }
+
+  /**
+   * 性能优化：更新事件统计
+   */
+  private updateEventStats(event: string): void {
+    const stats = this.eventStats.get(event)
+    const now = Date.now()
+
+    if (stats) {
+      stats.count++
+      stats.lastEmit = now
+    } else {
+      this.eventStats.set(event, { count: 1, lastEmit: now })
+    }
+  }
+
+  /**
+   * 性能优化：批量移除监听器
+   */
+  private batchRemoveListeners(event: string, listenersToRemove: EventListener[]): void {
+    const listeners = this.events.get(event)
+    if (!listeners) return
+
+    // 使用 Set 提高查找性能
+    const removeSet = new Set(listenersToRemove.map(l => l.handler))
+
+    // 过滤掉需要移除的监听器
+    const filteredListeners = listeners.filter(l => !removeSet.has(l.handler))
+
+    if (filteredListeners.length === 0) {
+      this.events.delete(event)
+      this.sortedListenersCache.delete(event)
+    } else {
+      this.events.set(event, filteredListeners)
+      this.sortedListenersCache.delete(event) // 清除缓存
+    }
+  }
+
+  /**
+   * 性能优化：清理过期的统计数据
+   */
+  private cleanupStats(): void {
+    const now = Date.now()
+    const maxAge = 600000 // 10分钟
+
+    for (const [event, stats] of this.eventStats.entries()) {
+      if (now - stats.lastEmit > maxAge) {
+        this.eventStats.delete(event)
+      }
+    }
+  }
+
+  /**
+   * 获取事件统计信息
+   */
+  getEventStats(): Map<string, { count: number, lastEmit: number }> {
+    return new Map(this.eventStats)
+  }
+
+  /**
+   * 清理所有缓存和统计数据
+   */
+  cleanup(): void {
+    this.sortedListenersCache.clear()
+    this.eventStats.clear()
+    this.eventQueue.length = 0
   }
 
   // 在指定事件前添加一次性监听器

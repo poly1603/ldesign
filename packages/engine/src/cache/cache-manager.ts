@@ -59,6 +59,12 @@ class LRUCache<T = unknown> {
   private stats: CacheStats
   private onEvict?: (key: string, value: T) => void
 
+  // 性能优化：批量清理队列
+  private cleanupQueue: string[] = []
+  private cleanupTimer?: NodeJS.Timeout
+  private readonly CLEANUP_BATCH_SIZE = 20
+  private readonly CLEANUP_INTERVAL = 5000 // 5秒
+
   constructor(maxSize = 100, onEvict?: (key: string, value: T) => void) {
     this.maxSize = maxSize
     this.onEvict = onEvict
@@ -71,6 +77,9 @@ class LRUCache<T = unknown> {
       size: 0,
       hitRate: 0,
     }
+
+    // 启动定期清理
+    this.startCleanupTimer()
   }
 
   get(key: string): T | undefined {
@@ -83,7 +92,8 @@ class LRUCache<T = unknown> {
 
     // 检查TTL
     if (item.ttl && Date.now() - item.timestamp > item.ttl) {
-      this.cache.delete(key)
+      // 性能优化：延迟删除，加入清理队列
+      this.scheduleCleanup(key)
       this.stats.misses++
       this.stats.evictions++
       this.updateHitRate()
@@ -245,6 +255,65 @@ class LRUCache<T = unknown> {
     }
   }
 
+  /**
+   * 性能优化：启动定期清理定时器
+   */
+  private startCleanupTimer(): void {
+    this.cleanupTimer = setInterval(() => {
+      this.processCleanupQueue()
+    }, this.CLEANUP_INTERVAL)
+  }
+
+  /**
+   * 性能优化：调度清理任务
+   */
+  private scheduleCleanup(key: string): void {
+    if (!this.cleanupQueue.includes(key)) {
+      this.cleanupQueue.push(key)
+    }
+
+    // 如果队列满了，立即处理
+    if (this.cleanupQueue.length >= this.CLEANUP_BATCH_SIZE) {
+      this.processCleanupQueue()
+    }
+  }
+
+  /**
+   * 性能优化：批量处理清理队列
+   */
+  private processCleanupQueue(): void {
+    if (this.cleanupQueue.length === 0) return
+
+    const keysToProcess = this.cleanupQueue.splice(0, this.CLEANUP_BATCH_SIZE)
+
+    for (const key of keysToProcess) {
+      this.cache.delete(key)
+    }
+
+    this.stats.size = this.cache.size
+  }
+
+  /**
+   * 手动触发清理队列处理（主要用于测试）
+   */
+  forceCleanup(): void {
+    this.processCleanupQueue()
+  }
+
+  /**
+   * 销毁缓存，清理资源
+   */
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = undefined
+    }
+
+    this.cache.clear()
+    this.cleanupQueue.length = 0
+    this.stats.size = 0
+  }
+
   // 获取缓存健康状态
   getHealthStatus(): {
     status: 'healthy' | 'warning' | 'critical'
@@ -302,7 +371,7 @@ export class CacheManagerImpl implements CacheManager {
       defaultTTL: 0, // 0表示永不过期
       strategy: CacheStrategy.LRU,
       enableStats: true,
-      onEvict: () => {},
+      onEvict: () => { },
       ...config,
     }
 
@@ -372,6 +441,13 @@ export class CacheManagerImpl implements CacheManager {
     this.cache.resetStats()
   }
 
+  /**
+   * 手动触发清理队列处理（主要用于测试）
+   */
+  forceCleanup(): void {
+    this.cache.forceCleanup()
+  }
+
   namespace(name: string): CacheManager {
     if (!this.namespaces.has(name)) {
       this.namespaces.set(
@@ -385,7 +461,7 @@ export class CacheManagerImpl implements CacheManager {
 
 // 命名空间缓存管理器
 class NamespacedCacheManager implements CacheManager {
-  constructor(private parent: CacheManager, private namespaceName: string) {}
+  constructor(private parent: CacheManager, private namespaceName: string) { }
 
   private getKey(key: string): string {
     return `${this.namespaceName}:${key}`
