@@ -6,6 +6,21 @@
 // 基础 Store 类
 export { BaseStore } from './BaseStore'
 
+// 性能优化器
+export { PerformanceOptimizer, CacheManager, PersistenceManager, DebounceManager, ThrottleManager } from './PerformanceOptimizer'
+
+// 函数式 Store
+export { createFunctionalStore, defineStore as defineFunctionalStore, defineStoreWithOptions } from './FunctionalStore'
+export type { FunctionalStoreOptions, FunctionalStoreInstance } from './FunctionalStore'
+
+// Composition Store
+export { createCompositionStore, defineCompositionStore, defineCompositionStoreWithOptions } from './CompositionStore'
+export type { CompositionStoreContext, CompositionStoreSetup, CompositionStoreOptions, CompositionStoreInstance } from './CompositionStore'
+
+// Store 工厂
+export { StoreFactory, factory, createClassStore, createStore, createCompositionStoreFactory, defineStore, StoreType } from './StoreFactory'
+export type { ClassStoreOptions, FunctionalStoreFactoryOptions, CompositionStoreFactoryOptions, UnifiedStoreOptions } from './StoreFactory'
+
 // 性能监控
 export {
   getOptimizationSuggestions,

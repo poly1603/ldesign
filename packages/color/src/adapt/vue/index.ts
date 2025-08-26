@@ -10,7 +10,10 @@
  */
 
 export * from './components'
+export { default as AccessibilityChecker } from './components/AccessibilityChecker'
+export { default as ColorMixer } from './components/ColorMixer'
 export { default as ColorPicker } from './components/ColorPicker'
+export { default as PaletteGenerator } from './components/PaletteGenerator'
 export { default as ThemeProvider } from './components/ThemeProvider'
 export { default as ThemeToggle } from './components/ThemeToggle'
 // 导出所有Vue相关功能

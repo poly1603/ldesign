@@ -2,9 +2,24 @@
   "extends": "../../tools/build/tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "rootDir": "src",
     "paths": {
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*", "examples/**/*", "__tests__/**/*", "tests/**/*", "test/**/*", "e2e/**/*"]
+  "include": ["src/**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "es",
+    "esm",
+    "cjs",
+    "lib",
+    "types",
+    "coverage",
+    "playwright-report",
+    "test-results",
+    "**/*.js",
+    "**/*.js.map"
+  ]
 }

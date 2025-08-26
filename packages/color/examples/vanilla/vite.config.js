@@ -17,6 +17,9 @@ export default defineConfig({
       { find: '@ldesign/color', replacement: resolve(__dirname, '../../src') },
     ],
   },
+  define: {
+    'process.env': {},
+  },
   build: {
     outDir: 'dist',
     sourcemap: true,

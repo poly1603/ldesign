@@ -1,9 +1,17 @@
 import { resolve } from 'node:path'
 import vue from '@vitejs/plugin-vue'
+import vueJsx from '@vitejs/plugin-vue-jsx'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    vueJsx({
+      // 配置 JSX 选项
+      transformOn: true,
+      mergeProps: true,
+    }),
+  ],
   server: {
     port: 3002,
     open: true,
@@ -18,6 +26,9 @@ export default defineConfig({
       },
       { find: '@ldesign/color', replacement: resolve(__dirname, '../../src') },
     ],
+  },
+  define: {
+    'process.env': {},
   },
   build: {
     outDir: 'dist',

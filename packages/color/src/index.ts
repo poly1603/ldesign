@@ -103,6 +103,22 @@ export {
   yellowTheme,
 } from './themes/presets'
 
+// 导出可访问性检查功能
+export {
+  checkAccessibility,
+  checkColorBlindnessAccessibility,
+  getAccessibleColorSuggestions,
+  simulateColorBlindness,
+} from './utils/accessibility'
+
+export type {
+  AccessibilityResult,
+  ColorBlindnessSimulation,
+  ColorBlindnessType,
+  TextSize,
+  WCAGLevel,
+} from './utils/accessibility'
+
 // 导出颜色转换工具
 export {
   clamp,
@@ -117,7 +133,17 @@ export {
   rgbToHsl,
 } from './utils/color-converter'
 
-export type { HSL, RGB } from './utils/color-converter'
+export type { HSL, HSV, LAB, RGB } from './utils/color-converter'
+
+// 导出新增的HSV转换函数
+export {
+  hexToHsv,
+  hslToHsv,
+  hsvToHex,
+  hsvToHsl,
+  hsvToRgb,
+  rgbToHsv,
+} from './utils/color-converter'
 
 // 导出颜色生成器
 export {
@@ -138,6 +164,36 @@ export {
   generateColorScale,
   generateColorScales,
 } from './utils/color-scale'
+
+// 导出颜色工具函数
+export {
+  adjustBrightness,
+  adjustHue,
+  adjustSaturation,
+  blendColors,
+  generateAnalogousPalette,
+  generateColorGradient,
+  generateComplementaryPalette,
+  generateLinearGradient,
+  generateMonochromaticPalette,
+  generateRadialGradient,
+  generateTetradicPalette,
+  generateTriadicPalette,
+  getBestTextColor,
+  getContrastRatio,
+  getPerceivedBrightness,
+  interpolateColors,
+  isAccessible,
+  isDark,
+  isLight,
+} from './utils/color-utils'
+
+export type {
+  BlendMode,
+  GradientConfig,
+  GradientDirection,
+  GradientStop,
+} from './utils/color-utils'
 
 // 导出 CSS 注入器
 export {

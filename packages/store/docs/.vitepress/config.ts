@@ -54,35 +54,75 @@ export default defineConfig({
         {
           text: '使用方式',
           items: [
-            { text: '类式使用', link: '/guide/class-usage' },
+            { text: '类式 Store', link: '/guide/class-usage' },
             { text: '装饰器详解', link: '/guide/decorators' },
-            { text: 'Hook 使用', link: '/guide/hooks' },
-            { text: 'Provider 模式', link: '/guide/provider' },
+            { text: '函数式 Store', link: '/guide/functional' },
+            { text: '组合式 Store', link: '/guide/composition' },
+            { text: 'Store 工厂', link: '/guide/factory' },
           ],
         },
         {
           text: '高级功能',
           items: [
-            { text: '持久化', link: '/guide/persistence' },
+            { text: '状态持久化', link: '/guide/persistence' },
             { text: '性能优化', link: '/guide/performance' },
+            { text: '缓存机制', link: '/guide/caching' },
+            { text: '防抖节流', link: '/guide/debounce-throttle' },
+            { text: '实时同步', link: '/guide/realtime' },
+            { text: '中间件系统', link: '/guide/middleware' },
+          ],
+        },
+        {
+          text: '企业级应用',
+          items: [
+            { text: 'Store 模块化', link: '/guide/modularization' },
+            { text: '权限管理', link: '/guide/permissions' },
+            { text: '错误处理', link: '/guide/error-handling' },
+            { text: '测试策略', link: '/guide/testing' },
             { text: '最佳实践', link: '/guide/best-practices' },
+          ],
+        },
+        {
+          text: '帮助与支持',
+          items: [
             { text: '迁移指南', link: '/guide/migration' },
             { text: '故障排除', link: '/guide/troubleshooting' },
             { text: '常见问题', link: '/guide/faq' },
+            { text: '社区资源', link: '/guide/community' },
           ],
         },
       ],
       '/api/': [
         {
-          text: 'API 参考',
+          text: '核心 API',
           items: [
             { text: '概览', link: '/api/' },
-            { text: '核心 API', link: '/api/core' },
-            { text: '装饰器 API', link: '/api/decorators' },
-            { text: 'Hook API', link: '/api/hooks' },
+            { text: 'BaseStore', link: '/api/base-store' },
+            { text: 'StoreFactory', link: '/api/store-factory' },
+            { text: 'createFunctionalStore', link: '/api/functional-store' },
+            { text: 'createCompositionStore', link: '/api/composition-store' },
+          ],
+        },
+        {
+          text: '装饰器 API',
+          items: [
+            { text: '装饰器概览', link: '/api/decorators' },
+            { text: '@State', link: '/api/decorators/state' },
+            { text: '@Action', link: '/api/decorators/action' },
+            { text: '@Getter', link: '/api/decorators/getter' },
+            { text: '@Cache', link: '/api/decorators/cache' },
+            { text: '@Debounce', link: '/api/decorators/debounce' },
+            { text: '@Throttle', link: '/api/decorators/throttle' },
+          ],
+        },
+        {
+          text: '工具与集成',
+          items: [
             { text: 'Vue 集成', link: '/api/vue' },
             { text: '工具函数', link: '/api/utils' },
             { text: '类型定义', link: '/api/types' },
+            { text: '性能优化器', link: '/api/performance-optimizer' },
+            { text: '持久化插件', link: '/api/persistence-plugin' },
           ],
         },
       ],
@@ -91,9 +131,28 @@ export default defineConfig({
           text: '基础示例',
           items: [
             { text: '概览', link: '/examples/' },
-            { text: '基础示例', link: '/examples/basic' },
-            { text: '中级示例', link: '/examples/intermediate' },
-            { text: '高级示例', link: '/examples/advanced' },
+            { text: '计数器', link: '/examples/counter' },
+            { text: '待办事项', link: '/examples/todo' },
+            { text: '用户管理', link: '/examples/user' },
+            { text: '表单处理', link: '/examples/form' },
+          ],
+        },
+        {
+          text: '使用方式示例',
+          items: [
+            { text: '装饰器示例', link: '/examples/decorators' },
+            { text: '函数式示例', link: '/examples/functional' },
+            { text: '组合式示例', link: '/examples/composition' },
+            { text: 'Store 工厂', link: '/examples/factory' },
+          ],
+        },
+        {
+          text: '高级功能示例',
+          items: [
+            { text: '性能优化', link: '/examples/performance' },
+            { text: '状态持久化', link: '/examples/persistence' },
+            { text: '实时同步', link: '/examples/realtime' },
+            { text: '中间件系统', link: '/examples/middleware' },
           ],
         },
         {
@@ -102,8 +161,8 @@ export default defineConfig({
             { text: '实战概览', link: '/examples/real-world/' },
             { text: '电商系统', link: '/examples/real-world/ecommerce' },
             { text: '权限管理', link: '/examples/real-world/rbac' },
-            { text: '实时同步', link: '/examples/real-world/realtime' },
-            { text: '表单管理', link: '/examples/real-world/forms' },
+            { text: '数据可视化', link: '/examples/real-world/dashboard' },
+            { text: '聊天应用', link: '/examples/real-world/chat' },
           ],
         },
       ],
@@ -184,6 +243,9 @@ export default defineConfig({
   vite: {
     optimizeDeps: {
       include: ['vue'],
+    },
+    ssr: {
+      noExternal: ['vue']
     },
   },
 })

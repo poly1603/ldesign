@@ -7,7 +7,7 @@ import { createEngine, presets } from '@ldesign/engine'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import App from './App.vue'
+import App from './App'
 import routes from './router'
 
 // 创建Vue应用
