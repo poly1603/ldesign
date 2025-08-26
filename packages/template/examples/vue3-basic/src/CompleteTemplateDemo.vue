@@ -26,17 +26,6 @@
 
     <!-- 模板渲染区域 -->
     <div class="template-section">
-      <div class="template-container">
-        <!-- 根据设备类型动态渲染对应的登录模板 -->
-        <component
-          :is="currentLoginComponent"
-          :title="templateProps.title"
-          :subtitle="templateProps.subtitle"
-          :show-remember-me="templateProps.showRememberMe"
-          :show-forgot-password="templateProps.showForgotPassword"
-        />
-      </div>
-
       <!-- 模板选择器 -->
       <div class="template-selector">
         <TemplateRenderer
@@ -57,12 +46,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import type { DeviceType } from '@ldesign/template'
 import TemplateRenderer from '../../../src/vue/components/TemplateRenderer.vue'
-import DefaultLogin from './components/LoginTemplates/DefaultLogin.vue'
-import MobileLogin from './components/LoginTemplates/MobileLogin.vue'
-import TabletLogin from './components/LoginTemplates/TabletLogin.vue'
+
 
 // 响应式状态
 const currentTemplate = ref('login-default')
@@ -149,18 +136,7 @@ const handleDeviceChange = () => {
   }, 5000)
 }
 
-// 根据设备类型选择对应的登录组件
-const currentLoginComponent = computed(() => {
-  switch (currentDeviceType.value) {
-    case 'mobile':
-      return MobileLogin
-    case 'tablet':
-      return TabletLogin
-    case 'desktop':
-    default:
-      return DefaultLogin
-  }
-})
+
 
 // 事件处理器
 const handleTemplateChanged = (_oldTemplate: string, newTemplate: string) => {

@@ -106,7 +106,18 @@ const loadTemplate = async (templateName: string, deviceType?: DeviceType) => {
 
   try {
     // 首先尝试查找外部模板
-    const externalTemplate = findExternalTemplate(`${templateName}-${targetDeviceType}-default`)
+    // 尝试多种 ID 格式匹配
+    let externalTemplate = findExternalTemplate(`${templateName}-${targetDeviceType}-default`)
+
+    // 如果没找到默认的，尝试查找其他变体
+    if (!externalTemplate) {
+      // 查找所有匹配分类和设备类型的外部模板
+      const allExternalTemplates = props.externalTemplates || []
+      externalTemplate = allExternalTemplates.find(t =>
+        t.config.category === templateName &&
+        t.config.device === targetDeviceType
+      )
+    }
 
     if (externalTemplate) {
       // 使用外部模板

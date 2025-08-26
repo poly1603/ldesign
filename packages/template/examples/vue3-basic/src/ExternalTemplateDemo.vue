@@ -65,7 +65,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { TemplateRenderer, createExternalTemplate } from '@ldesign/template'
+import { createExternalTemplate } from '@ldesign/template'
+import TemplateRenderer from '../../../src/vue/components/TemplateRenderer.vue'
 import type { ExternalTemplate, DeviceType } from '@ldesign/template'
 import CustomLogin from './external-templates/CustomLogin.vue'
 import { customLoginConfig } from './external-templates/custom-login-config'
