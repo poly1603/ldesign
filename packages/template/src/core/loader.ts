@@ -5,89 +5,94 @@
 
 import type { CacheItem, EventData, EventListener, LoaderConfig, LoadResult, TemplateInfo, VueComponent } from '../types'
 
+// 使用 @ldesign/cache 包
+import { createCache } from '@ldesign/cache'
+import type { CacheManager } from '@ldesign/cache'
+
 /**
- * LRU 缓存实现
+ * 缓存适配器 - 使用 @ldesign/cache
  */
-class LRUCache<T = any> {
-  private cache = new Map<string, CacheItem<T>>()
+class CacheAdapter<T = any> {
+  private cacheManager: CacheManager
   private maxSize: number
   private ttl: number
 
   constructor(maxSize = 50, ttl = 30 * 60 * 1000) {
     this.maxSize = maxSize
     this.ttl = ttl
+
+    // 创建缓存管理器实例
+    this.cacheManager = createCache({
+      defaultEngine: 'memory',
+      defaultTTL: ttl,
+      maxSize: maxSize,
+    })
   }
 
-  get(key: string): T | null {
-    const item = this.cache.get(key)
-    if (!item)
+  async get(key: string): Promise<T | null> {
+    try {
+      const value = await this.cacheManager.get<T>(key)
+      return value
+    } catch (error) {
+      console.warn('Cache get error:', error)
       return null
-
-    // 检查是否过期
-    if (item.expiresAt && Date.now() > item.expiresAt) {
-      this.cache.delete(key)
-      return null
     }
-
-    // 更新访问信息
-    item.accessedAt = Date.now()
-    item.accessCount++
-
-    // 移到最后（最近使用）
-    this.cache.delete(key)
-    this.cache.set(key, item)
-
-    return item.value
   }
 
-  set(key: string, value: T, size = 0): void {
-    // 如果已存在，先删除
-    if (this.cache.has(key)) {
-      this.cache.delete(key)
+  async set(key: string, value: T, customTTL?: number): Promise<void> {
+    try {
+      await this.cacheManager.set(key, value, {
+        ttl: customTTL || this.ttl,
+      })
+    } catch (error) {
+      console.warn('Cache set error:', error)
     }
+  }
 
-    // 如果缓存已满，删除最久未使用的项
-    while (this.cache.size >= this.maxSize) {
-      const firstKey = this.cache.keys().next().value
-      if (firstKey) {
-        this.cache.delete(firstKey)
-      }
-      else {
-        break
-      }
+  async has(key: string): Promise<boolean> {
+    try {
+      return await this.cacheManager.has(key)
+    } catch (error) {
+      console.warn('Cache has error:', error)
+      return false
     }
+  }
 
-    const item: CacheItem<T> = {
-      key,
-      value,
-      createdAt: Date.now(),
-      accessedAt: Date.now(),
-      accessCount: 1,
-      expiresAt: this.ttl > 0 ? Date.now() + this.ttl : undefined,
-      size,
+  async delete(key: string): Promise<boolean> {
+    try {
+      await this.cacheManager.remove(key)
+      return true
+    } catch (error) {
+      console.warn('Cache delete error:', error)
+      return false
     }
-
-    this.cache.set(key, item)
   }
 
-  has(key: string): boolean {
-    return this.get(key) !== null
+  async clear(): Promise<void> {
+    try {
+      await this.cacheManager.clear()
+    } catch (error) {
+      console.warn('Cache clear error:', error)
+    }
   }
 
-  delete(key: string): boolean {
-    return this.cache.delete(key)
+  async size(): Promise<number> {
+    try {
+      const keys = await this.cacheManager.keys()
+      return keys.length
+    } catch (error) {
+      console.warn('Cache size error:', error)
+      return 0
+    }
   }
 
-  clear(): void {
-    this.cache.clear()
-  }
-
-  size(): number {
-    return this.cache.size
-  }
-
-  keys(): string[] {
-    return Array.from(this.cache.keys())
+  async keys(): Promise<string[]> {
+    try {
+      return await this.cacheManager.keys()
+    } catch (error) {
+      console.warn('Cache keys error:', error)
+      return []
+    }
   }
 }
 
@@ -96,14 +101,14 @@ class LRUCache<T = any> {
  */
 export class TemplateLoader {
   private config: Required<LoaderConfig>
-  private cache: LRUCache<VueComponent>
+  private cache: CacheAdapter<VueComponent>
   private loadingPromises = new Map<string, Promise<VueComponent>>()
   private listeners = new Map<string, EventListener[]>()
   private preloadQueue = new Set<string>()
 
   constructor(config: LoaderConfig = {}) {
     this.config = this.normalizeConfig(config)
-    this.cache = new LRUCache<VueComponent>(
+    this.cache = new CacheAdapter<VueComponent>(
       this.config.maxCacheSize,
       this.config.cacheTTL,
     )
@@ -137,18 +142,20 @@ export class TemplateLoader {
 
     try {
       // 检查缓存
-      if (this.config.enableCache && this.cache.has(cacheKey)) {
-        const component = this.cache.get(cacheKey)!
-        const duration = Date.now() - startTime
+      if (this.config.enableCache && await this.cache.has(cacheKey)) {
+        const component = await this.cache.get(cacheKey)
+        if (component) {
+          const duration = Date.now() - startTime
 
-        this.emit('template:cache:hit', { templateInfo, cacheKey, duration })
+          this.emit('template:cache:hit', { templateInfo, cacheKey, duration })
 
-        return {
-          success: true,
-          component,
-          templateInfo,
-          duration,
-          fromCache: true,
+          return {
+            success: true,
+            component,
+            templateInfo,
+            duration,
+            fromCache: true,
+          }
         }
       }
 
@@ -178,7 +185,7 @@ export class TemplateLoader {
 
         // 缓存组件
         if (this.config.enableCache) {
-          this.cache.set(cacheKey, component)
+          await this.cache.set(cacheKey, component)
         }
 
         this.emit('template:load:complete', {
@@ -378,13 +385,13 @@ export class TemplateLoader {
   /**
    * 清除缓存
    */
-  clearCache(templateKey?: string): void {
+  async clearCache(templateKey?: string): Promise<void> {
     if (templateKey) {
-      this.cache.delete(templateKey)
+      await this.cache.delete(templateKey)
       this.emit('template:cache:evict', { key: templateKey })
     }
     else {
-      this.cache.clear()
+      await this.cache.clear()
       this.emit('template:cache:evict', { key: 'all' })
     }
   }
@@ -392,16 +399,16 @@ export class TemplateLoader {
   /**
    * 获取缓存统计信息
    */
-  getCacheStats(): {
+  async getCacheStats(): Promise<{
     size: number
     maxSize: number
     keys: string[]
     hitRate?: number
-  } {
+  }> {
     return {
-      size: this.cache.size(),
+      size: await this.cache.size(),
       maxSize: this.config.maxCacheSize,
-      keys: this.cache.keys(),
+      keys: await this.cache.keys(),
     }
   }
 
@@ -416,16 +423,16 @@ export class TemplateLoader {
   /**
    * 检查模板是否已缓存
    */
-  isCached(templateInfo: TemplateInfo): boolean {
+  async isCached(templateInfo: TemplateInfo): Promise<boolean> {
     const key = this.generateCacheKey(templateInfo)
-    return this.cache.has(key)
+    return await this.cache.has(key)
   }
 
   /**
    * 获取缓存的模板列表
    */
-  getCachedTemplates(): string[] {
-    return Array.from(this.cache.keys())
+  async getCachedTemplates(): Promise<string[]> {
+    return await this.cache.keys()
   }
 
   /**
@@ -482,8 +489,8 @@ export class TemplateLoader {
   /**
    * 清理资源
    */
-  dispose(): void {
-    this.cache.clear()
+  async dispose(): Promise<void> {
+    await this.cache.clear()
     this.loadingPromises.clear()
     this.listeners.clear()
     this.preloadQueue.clear()

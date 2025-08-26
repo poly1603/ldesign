@@ -39,13 +39,14 @@
 
       <!-- 模板选择器 -->
       <div class="template-selector">
-        <TemplateRendererWithSelector
+        <TemplateRenderer
           :key="`${currentTemplate}-${currentDeviceType}`"
           :template="currentTemplate"
           :category="currentCategory"
           :device-type="currentDeviceType"
           :template-props="templateProps"
           :show-selector="true"
+          :selector-config="{ layout: 'header' }"
           @template-changed="handleTemplateChanged"
           @template-selected="handleTemplateSelected"
         />
@@ -58,7 +59,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import type { DeviceType } from '@ldesign/template'
-import TemplateRendererWithSelector from '../../../src/vue/components/TemplateRendererWithSelector.vue'
+import TemplateRenderer from '../../../src/vue/components/TemplateRenderer.vue'
 import DefaultLogin from './components/LoginTemplates/DefaultLogin.vue'
 import MobileLogin from './components/LoginTemplates/MobileLogin.vue'
 import TabletLogin from './components/LoginTemplates/TabletLogin.vue'

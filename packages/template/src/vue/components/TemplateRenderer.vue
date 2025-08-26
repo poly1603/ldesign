@@ -4,10 +4,12 @@ import type {
   CacheConfig,
   DeviceType,
   TemplateRendererProps,
+  ExternalTemplate,
 } from '../../types'
 import { computed, nextTick, onMounted, ref, watch, markRaw, h } from 'vue'
 import TemplateSelector, { type TemplateOption } from './TemplateSelector.vue'
 import { useTemplateRegistry } from '../composables/useTemplateRegistry'
+import { useTemplateExtension } from '../composables/useTemplateExtension'
 
 // 定义组件属性
 interface Props extends TemplateRendererProps {
@@ -18,10 +20,20 @@ interface Props extends TemplateRendererProps {
   templateProps?: Record<string, any>
   cacheConfig?: CacheConfig
   showSelector?: boolean
+  /** 外部模板列表 */
+  externalTemplates?: ExternalTemplate[]
+  /** 模板扩展选项 */
+  extensionOptions?: {
+    overrideDefaults?: boolean
+    mergeConflicts?: boolean
+    priorityStrategy?: 'external' | 'default' | 'version'
+  }
   selectorConfig?: {
     disabled?: boolean
     searchable?: boolean
     showThumbnails?: boolean
+    /** 选择器布局模式：'slot' 通过插槽传递给模板，'header' 显示在头部 */
+    layout?: 'slot' | 'header'
   }
   loadingConfig?: {
     showLoading?: boolean
@@ -52,7 +64,8 @@ const props = withDefaults(defineProps<Props>(), {
   selectorConfig: () => ({
     disabled: false,
     searchable: true,
-    showThumbnails: true
+    showThumbnails: true,
+    layout: 'slot'
   }),
   loadingConfig: () => ({
     showLoading: true,
@@ -66,8 +79,9 @@ const emit = defineEmits<Emits>()
 // 当前选中的模板
 const currentTemplate = ref(props.template)
 
-// 使用模板注册表
-const { getTemplatesByCategory } = useTemplateRegistry()
+// 使用模板注册表和扩展
+const { getTemplatesByCategory, registerExternalTemplates, getAllTemplates } = useTemplateRegistry()
+const { setExtensionOptions, findExternalTemplate } = useTemplateExtension()
 
 // 简化的模板状态管理
 const templateComponent = ref<Component | null>(null)
@@ -91,18 +105,59 @@ const loadTemplate = async (templateName: string, deviceType?: DeviceType) => {
   error.value = null
 
   try {
-    // 动态导入真实的模板组件
-    const componentName = getComponentName(templateName)
-    const templatePath = `/src/templates/${templateName}/${targetDeviceType}/${componentName}.vue`
+    // 首先尝试查找外部模板
+    const externalTemplate = findExternalTemplate(`${templateName}-${targetDeviceType}-default`)
 
-    console.log('加载模板:', templatePath)
-    const module = await import(/* @vite-ignore */ templatePath)
+    if (externalTemplate) {
+      // 使用外部模板
+      templateComponent.value = markRaw(externalTemplate.component)
+    } else {
+      // 回退到默认的模板加载逻辑
+      // 根据模板注册表中的路径加载真实的模板组件
+      const templates = getAllTemplates()
 
-    templateComponent.value = markRaw(module.default)
-    console.log('模板加载成功:', templateName, targetDeviceType)
+      // 查找匹配的模板
+      const matchedTemplate = templates.value.find((t: any) =>
+        t.name === templateName && t.deviceType === targetDeviceType
+      )
+
+      if (matchedTemplate && matchedTemplate.path) {
+        // 修复路径构建逻辑 - 根据当前文件位置构建正确的相对路径
+        const importPath = matchedTemplate.path.replace('src/templates/', '../../templates/')
+        const module = await import(/* @vite-ignore */ importPath)
+
+        templateComponent.value = markRaw(module.default)
+      } else {
+        throw new Error(`未找到模板: ${templateName} (${targetDeviceType})`)
+      }
+    }
   } catch (err) {
+    // 如果真实模板加载失败，创建模拟组件
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('模板加载失败，使用模拟组件:', err)
+    }
+    const mockComponent = markRaw({
+      name: `${templateName}-${targetDeviceType}`,
+      render() {
+        return h('div', {
+          class: 'mock-template',
+          style: {
+            padding: '2rem',
+            border: '1px solid #e2e8f0',
+            borderRadius: '8px',
+            background: '#f7fafc',
+            textAlign: 'center'
+          }
+        }, [
+          h('h3', { style: { margin: '0 0 1rem', color: '#2d3748' } }, `模板: ${templateName}`),
+          h('p', { style: { margin: '0 0 0.5rem', color: '#4a5568' } }, `设备类型: ${targetDeviceType}`),
+          h('p', { style: { margin: '0', color: '#718096' } }, '这是一个模拟的模板组件'),
+        ])
+      }
+    })
+
+    templateComponent.value = mockComponent
     error.value = err as Error
-    console.error('模板加载失败:', err)
   } finally {
     loading.value = false
   }
@@ -252,6 +307,16 @@ const handleSelectorClosed = () => {
 
 // 生命周期
 onMounted(async () => {
+  // 注册外部模板
+  if (props.externalTemplates && props.externalTemplates.length > 0) {
+    registerExternalTemplates(props.externalTemplates)
+  }
+
+  // 设置扩展选项
+  if (props.extensionOptions) {
+    setExtensionOptions(props.extensionOptions)
+  }
+
   // 确保在下一个tick中加载，避免SSR问题
   await nextTick()
 
@@ -271,81 +336,106 @@ defineExpose({
   loading,
   error,
   currentDeviceType,
+  currentTemplate,
+  availableTemplates,
 })
 </script>
 
 <template>
   <div class="template-renderer" :class="rendererClasses">
-    <!-- 加载状态 -->
-    <div v-if="loading && loadingConfig.showLoading" class="template-loading">
-      <component
-        :is="loadingConfig.loadingComponent"
-        v-if="loadingConfig.loadingComponent"
-      />
-      <div v-else class="template-loading-default">
-        <div class="loading-spinner" />
-        <p class="loading-text">
-          {{ loadingConfig.loadingText || '加载模板中...' }}
-        </p>
+    <!-- 头部选择器（当 layout 为 'header' 时显示） -->
+    <div v-if="showSelector && category && selectorConfig?.layout === 'header'" class="template-renderer-header">
+      <div class="header-info">
+        <span class="category-label">{{ categoryLabel }}</span>
+        <span class="device-label">{{ deviceTypeLabel }}</span>
       </div>
+      <TemplateSelector
+        :current-template="currentTemplate"
+        :category="category"
+        :device-type="currentDeviceType"
+        :available-templates="availableTemplates"
+        :disabled="loading || (selectorConfig?.disabled || false)"
+        :searchable="selectorConfig?.searchable"
+        :show-thumbnails="selectorConfig?.showThumbnails"
+        @template-selected="handleTemplateSelected"
+        @selector-opened="handleSelectorOpened"
+        @selector-closed="handleSelectorClosed"
+      />
     </div>
 
-    <!-- 错误状态 -->
-    <div v-else-if="error && !loading" class="template-error">
-      <component
-        :is="loadingConfig.errorComponent"
-        v-if="loadingConfig.errorComponent"
-        :error="error"
-      />
-      <div v-else class="template-error-default">
-        <div class="error-icon">
-          ⚠️
-        </div>
-        <p class="error-text">
-          {{ loadingConfig.errorText || '模板加载失败' }}
-        </p>
-        <p class="error-detail">
-          {{ error.message }}
-        </p>
-        <button class="retry-button" @click="retry">
-          重试
-        </button>
-      </div>
-    </div>
-
-    <!-- 模板内容 -->
-    <component
-      :is="templateComponent"
-      v-else-if="templateComponent && !loading"
-      v-bind="templateProps"
-      :class="templateClasses"
-      @template-event="handleTemplateEvent"
-    >
-      <!-- 通过插槽传递选择器给模板组件 -->
-      <template v-if="showSelector && category" #selector>
-        <TemplateSelector
-          :current-template="currentTemplate"
-          :category="category"
-          :device-type="currentDeviceType"
-          :available-templates="availableTemplates"
-          :disabled="loading || (selectorConfig?.disabled || false)"
-          :searchable="selectorConfig?.searchable"
-          :show-thumbnails="selectorConfig?.showThumbnails"
-          @template-selected="handleTemplateSelected"
-          @selector-opened="handleSelectorOpened"
-          @selector-closed="handleSelectorClosed"
+    <!-- 模板内容区域 -->
+    <div class="template-content" :class="{ 'with-header-selector': showSelector && category && selectorConfig?.layout === 'header' }">
+      <!-- 加载状态 -->
+      <div v-if="loading && loadingConfig.showLoading" class="template-loading">
+        <component
+          :is="loadingConfig.loadingComponent"
+          v-if="loadingConfig.loadingComponent"
         />
-      </template>
+        <div v-else class="template-loading-default">
+          <div class="loading-spinner" />
+          <p class="loading-text">
+            {{ loadingConfig.loadingText || '加载模板中...' }}
+          </p>
+        </div>
+      </div>
 
-      <!-- 传递其他插槽内容 -->
-      <template v-for="(_, name) in $slots" #[name]="slotData">
-        <slot :name="name" v-bind="slotData" />
-      </template>
-    </component>
+      <!-- 错误状态 -->
+      <div v-else-if="error && !loading" class="template-error">
+        <component
+          :is="loadingConfig.errorComponent"
+          v-if="loadingConfig.errorComponent"
+          :error="error"
+        />
+        <div v-else class="template-error-default">
+          <div class="error-icon">
+            ⚠️
+          </div>
+          <p class="error-text">
+            {{ loadingConfig.errorText || '模板加载失败' }}
+          </p>
+          <p class="error-detail">
+            {{ error.message }}
+          </p>
+          <button class="retry-button" @click="retry">
+            重试
+          </button>
+        </div>
+      </div>
 
-    <!-- 空状态 -->
-    <div v-else-if="!loading" class="template-empty">
-      <p>未找到模板: {{ template }}</p>
+      <!-- 模板内容 -->
+      <component
+        :is="templateComponent"
+        v-else-if="templateComponent && !loading"
+        v-bind="templateProps"
+        :class="templateClasses"
+        @template-event="handleTemplateEvent"
+      >
+        <!-- 通过插槽传递选择器给模板组件（当 layout 为 'slot' 时） -->
+        <template v-if="showSelector && category && selectorConfig?.layout === 'slot'" #selector>
+          <TemplateSelector
+            :current-template="currentTemplate"
+            :category="category"
+            :device-type="currentDeviceType"
+            :available-templates="availableTemplates"
+            :disabled="loading || (selectorConfig?.disabled || false)"
+            :searchable="selectorConfig?.searchable"
+            :show-thumbnails="selectorConfig?.showThumbnails"
+            @template-selected="handleTemplateSelected"
+            @selector-opened="handleSelectorOpened"
+            @selector-closed="handleSelectorClosed"
+          />
+        </template>
+
+        <!-- 传递其他插槽内容 -->
+        <template v-for="(_, name) in $slots" #[name]="slotData">
+          <slot :name="name" v-bind="slotData" />
+        </template>
+      </component>
+
+      <!-- 空状态 -->
+      <div v-else-if="!loading" class="template-empty">
+        <p>未找到模板: {{ template }}</p>
+      </div>
     </div>
   </div>
 </template>
@@ -451,6 +541,42 @@ defineExpose({
   width: 100%;
 }
 
+/* 头部选择器样式 */
+.template-renderer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #f7fafc;
+  border-bottom: 1px solid #e2e8f0;
+  border-radius: 8px 8px 0 0;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.category-label {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 1rem;
+}
+
+.device-label {
+  font-size: 0.875rem;
+  color: #718096;
+  background: #edf2f7;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.template-content.with-header-selector {
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+}
+
 /* 设备类型特定样式 */
 .template-renderer--mobile {
   /* 移动设备特定样式 */
@@ -480,6 +606,16 @@ defineExpose({
 
   .error-icon {
     font-size: 36px;
+  }
+
+  .template-renderer-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .header-info {
+    justify-content: center;
   }
 }
 </style>

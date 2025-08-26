@@ -53,7 +53,7 @@ export default defineComponent({
     const backgroundLoading = ref(true)
 
     // 应用主题
-    const currentTheme = getTheme('default')
+    const currentTheme = getTheme()
 
     // 计算背景样式
     const backgroundStyle = computed(() => {
@@ -70,7 +70,7 @@ export default defineComponent({
           }
         }
       }
-      return { background: currentTheme.gradients.primary }
+      return { background: `linear-gradient(135deg, ${currentTheme.colors.primary}, ${currentTheme.colors.secondary})` }
     })
 
     // 获取背景图片
@@ -93,7 +93,7 @@ export default defineComponent({
       catch (error) {
         console.warn('Failed to load background:', error)
         backgroundImage.value = {
-          url: currentTheme.gradients.primary,
+          url: `linear-gradient(135deg, ${currentTheme.colors.primary}, ${currentTheme.colors.secondary})`,
           title: 'Tablet Gradient',
         }
       }
@@ -104,7 +104,7 @@ export default defineComponent({
 
     // 组件挂载时加载背景
     onMounted(() => {
-      applyTheme('default')
+      applyTheme(currentTheme)
       loadBackground()
     })
 
@@ -167,69 +167,69 @@ export default defineComponent({
             <div class="tablet-default-login__panel">
               {props.loginPanel
                 ? (
-                    <props.loginPanel
-                      title={props.title}
-                      subtitle={props.subtitle}
-                      showRememberMe={props.showRememberMe}
-                      showForgotPassword={props.showForgotPassword}
-                      showThirdPartyLogin={props.showThirdPartyLogin}
-                      thirdPartyProviders={props.thirdPartyProviders}
-                      isLoading={props.isLoading}
-                      error={props.error}
-                      onLogin={handleLogin}
-                      onRegister={handleRegister}
-                      onForgotPassword={handleForgotPassword}
-                      onThirdPartyLogin={handleThirdPartyLogin}
-                    />
-                  )
+                  <props.loginPanel
+                    title={props.title}
+                    subtitle={props.subtitle}
+                    showRememberMe={props.showRememberMe}
+                    showForgotPassword={props.showForgotPassword}
+                    showThirdPartyLogin={props.showThirdPartyLogin}
+                    thirdPartyProviders={props.thirdPartyProviders}
+                    isLoading={props.isLoading}
+                    error={props.error}
+                    onLogin={handleLogin}
+                    onRegister={handleRegister}
+                    onForgotPassword={handleForgotPassword}
+                    onThirdPartyLogin={handleThirdPartyLogin}
+                  />
+                )
                 : (
-                    <div class="tablet-default-login__default-panel">
-                      <div class="tablet-default-login__form">
-                        <div class="tablet-default-login__field">
-                          <input type="text" placeholder="用户名" class="tablet-default-login__input" />
-                        </div>
-                        <div class="tablet-default-login__field">
-                          <input type="password" placeholder="密码" class="tablet-default-login__input" />
-                        </div>
-
-                        {props.showRememberMe && (
-                          <div class="tablet-default-login__options">
-                            <label class="tablet-default-login__checkbox">
-                              <input type="checkbox" />
-                              <span>记住密码</span>
-                            </label>
-                            {props.showForgotPassword && (
-                              <a href="#" class="tablet-default-login__forgot">
-                                忘记密码？
-                              </a>
-                            )}
-                          </div>
-                        )}
-
-                        <button class="tablet-default-login__submit">登录</button>
-
-                        {props.showThirdPartyLogin && (
-                          <div class="tablet-default-login__third-party">
-                            <div class="tablet-default-login__divider">
-                              <span>其他登录方式</span>
-                            </div>
-                            <div class="tablet-default-login__providers">
-                              {props.thirdPartyProviders.map((provider: string) => (
-                                <button
-                                  key={provider}
-                                  class={`tablet-default-login__provider tablet-default-login__provider--${provider}`}
-                                >
-                                  {provider === 'wechat' && '💬'}
-                                  {provider === 'qq' && '🐧'}
-                                  {provider === 'weibo' && '📱'}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                  <div class="tablet-default-login__default-panel">
+                    <div class="tablet-default-login__form">
+                      <div class="tablet-default-login__field">
+                        <input type="text" placeholder="用户名" class="tablet-default-login__input" />
                       </div>
+                      <div class="tablet-default-login__field">
+                        <input type="password" placeholder="密码" class="tablet-default-login__input" />
+                      </div>
+
+                      {props.showRememberMe && (
+                        <div class="tablet-default-login__options">
+                          <label class="tablet-default-login__checkbox">
+                            <input type="checkbox" />
+                            <span>记住密码</span>
+                          </label>
+                          {props.showForgotPassword && (
+                            <a href="#" class="tablet-default-login__forgot">
+                              忘记密码？
+                            </a>
+                          )}
+                        </div>
+                      )}
+
+                      <button class="tablet-default-login__submit">登录</button>
+
+                      {props.showThirdPartyLogin && (
+                        <div class="tablet-default-login__third-party">
+                          <div class="tablet-default-login__divider">
+                            <span>其他登录方式</span>
+                          </div>
+                          <div class="tablet-default-login__providers">
+                            {props.thirdPartyProviders.map((provider: string) => (
+                              <button
+                                key={provider}
+                                class={`tablet-default-login__provider tablet-default-login__provider--${provider}`}
+                              >
+                                {provider === 'wechat' && '💬'}
+                                {provider === 'qq' && '🐧'}
+                                {provider === 'weibo' && '📱'}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
+                )}
             </div>
           </div>
         </div>

@@ -54,7 +54,7 @@ export default defineComponent({
     const showPassword = ref(false)
 
     // 应用主题
-    const currentTheme = getTheme('modern')
+    const currentTheme = getTheme()
 
     // 计算背景样式
     const backgroundStyle = computed(() => {
@@ -109,7 +109,7 @@ export default defineComponent({
 
     // 组件挂载时加载背景
     onMounted(() => {
-      applyTheme('modern')
+      applyTheme(currentTheme)
       loadBackground()
     })
 

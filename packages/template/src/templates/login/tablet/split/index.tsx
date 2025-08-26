@@ -53,7 +53,7 @@ export default defineComponent({
     const backgroundLoading = ref(true)
 
     // 应用主题
-    const currentTheme = getTheme('classic')
+    const currentTheme = getTheme()
 
     // 计算背景样式
     const backgroundStyle = computed(() => {
@@ -70,7 +70,7 @@ export default defineComponent({
           }
         }
       }
-      return { background: currentTheme.gradients.primary }
+      return { background: `linear-gradient(135deg, ${currentTheme.colors.primary}, ${currentTheme.colors.secondary})` }
     })
 
     // 获取背景图片
@@ -93,7 +93,7 @@ export default defineComponent({
       catch (error) {
         console.warn('Failed to load background:', error)
         backgroundImage.value = {
-          url: currentTheme.gradients.primary,
+          url: `linear-gradient(135deg, ${currentTheme.colors.primary}, ${currentTheme.colors.secondary})`,
           title: 'Split Gradient',
         }
       }
@@ -104,7 +104,7 @@ export default defineComponent({
 
     // 组件挂载时加载背景
     onMounted(() => {
-      applyTheme('classic')
+      applyTheme(currentTheme)
       loadBackground()
     })
 
@@ -202,75 +202,75 @@ export default defineComponent({
           <div class="login-panel-wrapper">
             {props.loginPanel
               ? (
-                  <props.loginPanel
-                    title={props.title}
-                    subtitle={props.subtitle}
-                    showRememberMe={props.showRememberMe}
-                    showForgotPassword={props.showForgotPassword}
-                    showThirdPartyLogin={props.showThirdPartyLogin}
-                    thirdPartyProviders={props.thirdPartyProviders}
-                    isLoading={props.isLoading}
-                    error={props.error}
-                    onLogin={handleLogin}
-                    onRegister={handleRegister}
-                    onForgotPassword={handleForgotPassword}
-                    onThirdPartyLogin={handleThirdPartyLogin}
-                  />
-                )
+                <props.loginPanel
+                  title={props.title}
+                  subtitle={props.subtitle}
+                  showRememberMe={props.showRememberMe}
+                  showForgotPassword={props.showForgotPassword}
+                  showThirdPartyLogin={props.showThirdPartyLogin}
+                  thirdPartyProviders={props.thirdPartyProviders}
+                  isLoading={props.isLoading}
+                  error={props.error}
+                  onLogin={handleLogin}
+                  onRegister={handleRegister}
+                  onForgotPassword={handleForgotPassword}
+                  onThirdPartyLogin={handleThirdPartyLogin}
+                />
+              )
               : (
-                  <div class="tablet-split-login__default-panel">
-                    <div class="tablet-split-login__header">
-                      <h1 class="tablet-split-login__title">{props.title}</h1>
-                      <p class="tablet-split-login__subtitle">{props.subtitle}</p>
-                    </div>
-
-                    <div class="tablet-split-login__form">
-                      <div class="tablet-split-login__field">
-                        <input type="text" placeholder="用户名" class="tablet-split-login__input" />
-                      </div>
-                      <div class="tablet-split-login__field">
-                        <input type="password" placeholder="密码" class="tablet-split-login__input" />
-                      </div>
-
-                      {props.showRememberMe && (
-                        <div class="tablet-split-login__options">
-                          <label class="tablet-split-login__checkbox">
-                            <input type="checkbox" />
-                            <span>记住密码</span>
-                          </label>
-                          {props.showForgotPassword && (
-                            <a href="#" class="tablet-split-login__forgot">
-                              忘记密码？
-                            </a>
-                          )}
-                        </div>
-                      )}
-
-                      <button class="tablet-split-login__submit">登录</button>
-
-                      {props.showThirdPartyLogin && (
-                        <div class="tablet-split-login__third-party">
-                          <div class="tablet-split-login__divider">
-                            <span>或</span>
-                          </div>
-                          <div class="tablet-split-login__providers">
-                            {props.thirdPartyProviders.map((provider: string) => (
-                              <button
-                                key={provider}
-                                class={`tablet-split-login__provider tablet-split-login__provider--${provider}`}
-                              >
-                                {provider === 'github' && '🐙'}
-                                {provider === 'google' && '🔍'}
-                                {provider === 'microsoft' && '🪟'}
-                                {provider === 'apple' && '🍎'}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                <div class="tablet-split-login__default-panel">
+                  <div class="tablet-split-login__header">
+                    <h1 class="tablet-split-login__title">{props.title}</h1>
+                    <p class="tablet-split-login__subtitle">{props.subtitle}</p>
                   </div>
-                )}
+
+                  <div class="tablet-split-login__form">
+                    <div class="tablet-split-login__field">
+                      <input type="text" placeholder="用户名" class="tablet-split-login__input" />
+                    </div>
+                    <div class="tablet-split-login__field">
+                      <input type="password" placeholder="密码" class="tablet-split-login__input" />
+                    </div>
+
+                    {props.showRememberMe && (
+                      <div class="tablet-split-login__options">
+                        <label class="tablet-split-login__checkbox">
+                          <input type="checkbox" />
+                          <span>记住密码</span>
+                        </label>
+                        {props.showForgotPassword && (
+                          <a href="#" class="tablet-split-login__forgot">
+                            忘记密码？
+                          </a>
+                        )}
+                      </div>
+                    )}
+
+                    <button class="tablet-split-login__submit">登录</button>
+
+                    {props.showThirdPartyLogin && (
+                      <div class="tablet-split-login__third-party">
+                        <div class="tablet-split-login__divider">
+                          <span>或</span>
+                        </div>
+                        <div class="tablet-split-login__providers">
+                          {props.thirdPartyProviders.map((provider: string) => (
+                            <button
+                              key={provider}
+                              class={`tablet-split-login__provider tablet-split-login__provider--${provider}`}
+                            >
+                              {provider === 'github' && '🐙'}
+                              {provider === 'google' && '🔍'}
+                              {provider === 'microsoft' && '🪟'}
+                              {provider === 'apple' && '🍎'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
           </div>
         </div>
       </div>

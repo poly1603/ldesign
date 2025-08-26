@@ -25,13 +25,14 @@
     </div>
 
     <div class="demo-content">
-      <TemplateRendererWithSelector
+      <TemplateRenderer
         :template="currentTemplate"
         :category="currentCategory"
         :device-type="currentDeviceType"
         :external-templates="externalTemplates"
         :extension-options="extensionOptions"
         :show-selector="true"
+        :selector-config="{ layout: 'header' }"
         @template-loaded="handleTemplateLoaded"
         @template-error="handleTemplateError"
         @template-selected="handleTemplateSelected"
@@ -64,7 +65,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { TemplateRendererWithSelector, createExternalTemplate } from '@ldesign/template'
+import { TemplateRenderer, createExternalTemplate } from '@ldesign/template'
 import type { ExternalTemplate, DeviceType } from '@ldesign/template'
 import CustomLogin from './external-templates/CustomLogin.vue'
 import { customLoginConfig } from './external-templates/custom-login-config'
