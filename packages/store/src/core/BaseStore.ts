@@ -3,16 +3,49 @@ import type {
   ActionDefinition,
   DecoratorMetadata,
   GetterDefinition,
-  BaseStore as IBaseStore,
+  IBaseStore,
   StateDefinition,
   StoreOptions,
+  MutationCallback,
+  ActionContext,
 } from '@/types'
 import { defineStore } from 'pinia'
 import { DECORATOR_METADATA_KEY } from '@/types/decorators'
+import { PerformanceOptimizer } from './PerformanceOptimizer'
 
 /**
  * 基础 Store 类
- * 提供类式的 Store 定义方式，支持装饰器
+ *
+ * 提供类式的 Store 定义方式，支持装饰器和类型安全的状态管理。
+ * 是所有类式 Store 的基类，集成了状态管理、动作执行、计算属性、
+ * 缓存、持久化等功能。
+ *
+ * @template TState - 状态定义类型，必须继承自 StateDefinition
+ * @template TActions - 动作定义类型，必须继承自 ActionDefinition
+ * @template TGetters - 计算属性定义类型，必须继承自 GetterDefinition
+ *
+ * @example
+ * ```typescript
+ * class UserStore extends BaseStore<
+ *   () => { name: string; age: number },
+ *   { setName: (name: string) => void },
+ *   { displayName: (state: any) => string }
+ * > {
+ *   constructor() {
+ *     super('user', {
+ *       state: () => ({ name: '', age: 0 }),
+ *       actions: {
+ *         setName(name: string) {
+ *           this.name = name
+ *         }
+ *       },
+ *       getters: {
+ *         displayName: (state) => `User: ${state.name}`
+ *       }
+ *     })
+ *   }
+ * }
+ * ```
  */
 export abstract class BaseStore<
   TState extends StateDefinition = StateDefinition,
@@ -40,24 +73,88 @@ export abstract class BaseStore<
   /** 清理函数列表 */
   private _cleanupFunctions: (() => void)[] = []
 
+  /** 性能优化器 */
+  private _optimizer: PerformanceOptimizer
+
+  /**
+   * 创建 BaseStore 实例
+   *
+   * @param id - Store 的唯一标识符，用于在 Pinia 中注册
+   * @param options - Store 配置选项，包含状态、动作、计算属性等定义
+   * @param options.state - 状态初始化函数
+   * @param options.actions - 动作方法定义对象
+   * @param options.getters - 计算属性定义对象
+   * @param options.cache - 缓存配置选项
+   * @param options.persist - 持久化配置选项
+   *
+   * @example
+   * ```typescript
+   * constructor() {
+   *   super('user-store', {
+   *     state: () => ({ name: '', age: 0 }),
+   *     actions: {
+   *       setName(name: string) { this.name = name }
+   *     },
+   *     getters: {
+   *       displayName: (state) => `User: ${state.name}`
+   *     }
+   *   })
+   * }
+   * ```
+   */
   constructor(
     id: string,
     options?: Partial<StoreOptions<TState, TActions, TGetters>>,
   ) {
+    // 设置 Store 的唯一标识符
     this.$id = id
+
+    // 创建性能优化器实例，用于缓存和持久化功能
+    this._optimizer = new PerformanceOptimizer({
+      cache: options?.cache, // 缓存配置选项
+      // 处理持久化配置，确保类型正确
+      persistence: typeof options?.persist === 'object' ? options.persist : undefined,
+    })
+
+    // 初始化 Store，创建 Pinia store 实例并设置状态、动作、计算属性
     this._initializeStore(options)
+
+    // 标记构造阶段完成，允许装饰器正常工作
     this._isConstructing = false
   }
 
   /**
-   * 获取状态
+   * 获取当前 Store 的状态对象
+   *
+   * 返回响应式的状态对象，可以直接读取和修改状态值。
+   * 状态的修改会自动触发相关的响应式更新。
+   *
+   * @returns 当前 Store 的状态对象
+   *
+   * @example
+   * ```typescript
+   * const userStore = new UserStore()
+   * console.log(userStore.$state.name) // 读取状态
+   * userStore.$state.name = 'John'      // 修改状态
+   * ```
    */
   get $state(): TState {
     return (this._store?.$state as TState) || ({} as TState)
   }
 
   /**
-   * 获取 Actions
+   * 获取当前 Store 的所有动作方法
+   *
+   * 返回包含所有动作方法的对象，这些方法已经绑定了正确的上下文。
+   * 动作方法用于修改状态，支持同步和异步操作。
+   *
+   * @returns 包含所有动作方法的对象
+   *
+   * @example
+   * ```typescript
+   * const userStore = new UserStore()
+   * userStore.$actions.setName('John')  // 调用动作方法
+   * ```
    */
   get $actions(): TActions {
     const actions = {} as TActions
@@ -76,7 +173,18 @@ export abstract class BaseStore<
   }
 
   /**
-   * 获取 Getters
+   * 获取当前 Store 的所有计算属性
+   *
+   * 返回包含所有计算属性的对象，这些属性会根据状态的变化自动重新计算。
+   * 计算属性是只读的，用于派生状态值。
+   *
+   * @returns 包含所有计算属性的对象
+   *
+   * @example
+   * ```typescript
+   * const userStore = new UserStore()
+   * console.log(userStore.$getters.displayName) // 获取计算属性值
+   * ```
    */
   get $getters(): TGetters {
     const getters = {} as TGetters
@@ -108,12 +216,42 @@ export abstract class BaseStore<
 
   /**
    * 部分更新状态
+   *
+   * 支持两种更新方式：
+   * 1. 传入部分状态对象，会与当前状态合并
+   * 2. 传入修改函数，可以直接修改状态
+   *
+   * @param partialState - 部分状态对象，会与当前状态合并
+   * @param mutator - 状态修改函数，接收当前状态作为参数
+   *
+   * @example
+   * ```typescript
+   * // 方式1：传入部分状态对象
+   * userStore.$patch({ name: 'John' })
+   *
+   * // 方式2：传入修改函数
+   * userStore.$patch((state) => {
+   *   state.name = 'John'
+   *   state.age = 25
+   * })
+   * ```
    */
-  $patch(partialState: Partial<TState>): void {
-    if (this._store) {
-      // 使用函数形式的 $patch 来避免类型错误
-      this._store.$patch((state: any) => {
-        Object.assign(state, partialState)
+  $patch(partialState: Partial<TState>): void
+  $patch(mutator: (state: TState) => void): void
+  $patch(partialStateOrMutator: Partial<TState> | ((state: TState) => void)): void {
+    // 如果 Store 未初始化，直接返回
+    if (!this._store) return
+
+    // 判断传入的参数类型，支持两种更新方式
+    if (typeof partialStateOrMutator === 'function') {
+      // 函数形式的 $patch：直接传递修改函数给 Pinia
+      // 使用 any 类型断言避免 TypeScript 复杂类型推导问题
+      ; (this._store as any).$patch(partialStateOrMutator)
+    } else {
+      // 对象形式的 $patch：将部分状态对象合并到当前状态
+      ; (this._store as any).$patch((state: any) => {
+        // 使用 Object.assign 将新的状态属性合并到现有状态中
+        Object.assign(state, partialStateOrMutator)
       })
     }
   }
@@ -121,15 +259,35 @@ export abstract class BaseStore<
   /**
    * 订阅状态变化
    */
-  $subscribe(callback: (mutation: any, state: TState) => void): () => void {
-    return this._store?.$subscribe(callback as any) || (() => {})
+  $subscribe(
+    callback: MutationCallback<TState>,
+    options?: { detached?: boolean }
+  ): () => void {
+    if (!this._store) {
+      return () => { }
+    }
+
+    const unsubscribe = this._store.$subscribe(callback as any, options)
+
+    // 如果不是分离模式，添加到清理函数列表
+    if (!options?.detached) {
+      this._addCleanup(unsubscribe)
+    }
+
+    return unsubscribe
   }
 
   /**
    * 订阅 Action
    */
-  $onAction(callback: (context: any) => void): () => void {
-    return this._store?.$onAction(callback) || (() => {})
+  $onAction(callback: (context: ActionContext<TState, TActions>) => void): () => void {
+    if (!this._store) {
+      return () => { }
+    }
+
+    const unsubscribe = this._store.$onAction(callback as any)
+    this._addCleanup(unsubscribe)
+    return unsubscribe
   }
 
   /**
@@ -156,6 +314,9 @@ export abstract class BaseStore<
     this._cleanupFunctions.forEach(cleanup => cleanup())
     this._cleanupFunctions.length = 0
 
+    // 清理性能优化器
+    this._optimizer.dispose()
+
     // 清理缓存
     this._cachedMetadata = undefined
     this._initialState = undefined
@@ -163,6 +324,60 @@ export abstract class BaseStore<
     // 清理 Pinia Store
     this._store = undefined
     this._storeDefinition = undefined
+  }
+
+  /**
+   * 持久化状态到存储
+   */
+  $persist(): void {
+    if (this._store) {
+      this._optimizer.persistence.save(this.$id, this._store.$state)
+    }
+  }
+
+  /**
+   * 从存储恢复状态
+   */
+  $hydrate(): void {
+    const persistedState = this._optimizer.persistence.load(this.$id)
+    if (persistedState && this._store) {
+      ; (this._store as any).$patch(persistedState)
+    }
+  }
+
+  /**
+   * 清除持久化状态
+   */
+  $clearPersisted(): void {
+    this._optimizer.persistence.remove(this.$id)
+  }
+
+  /**
+   * 获取缓存值
+   */
+  $getCache(key: string): any {
+    return this._optimizer.cache.get(`${this.$id}:${key}`)
+  }
+
+  /**
+   * 设置缓存值
+   */
+  $setCache(key: string, value: any, ttl?: number): void {
+    this._optimizer.cache.set(`${this.$id}:${key}`, value, ttl)
+  }
+
+  /**
+   * 删除缓存值
+   */
+  $deleteCache(key: string): boolean {
+    return this._optimizer.cache.delete(`${this.$id}:${key}`)
+  }
+
+  /**
+   * 清空所有缓存
+   */
+  $clearCache(): void {
+    this._optimizer.cache.clear()
   }
 
   /**
@@ -219,7 +434,7 @@ export abstract class BaseStore<
         .forEach((meta) => {
           const value = (this as any)[meta.key]
           if (value !== undefined) {
-            ;(state as any)[meta.key] = value
+            ; (state as any)[meta.key] = value
           }
         })
 

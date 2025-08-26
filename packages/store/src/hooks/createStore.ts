@@ -74,13 +74,26 @@ export function createStore<
       $actions: {} as TActions, // 从 store 中提取
       $getters: {} as TGetters, // 从 store 中提取
       $reset: () => store.$reset(),
-      $patch: (partialState: Partial<TState>) => {
-        store.$patch((state: any) => {
-          Object.assign(state, partialState)
-        })
+      $patch: (partialStateOrMutator: Partial<TState> | ((state: TState) => void)) => {
+        if (typeof partialStateOrMutator === 'function') {
+          ; (store as any).$patch(partialStateOrMutator)
+        } else {
+          ; (store as any).$patch((state: any) => {
+            Object.assign(state, partialStateOrMutator)
+          })
+        }
       },
       $subscribe: callback => store.$subscribe(callback as any),
-      $onAction: callback => store.$onAction(callback),
+      $onAction: callback => store.$onAction(callback as any),
+
+      // 生命周期方法
+      $dispose: () => {
+        // 清理订阅等资源
+      },
+
+      // 工具方法
+      getStore: () => store as any,
+      getStoreDefinition: () => undefined,
 
       // Hook 特有的属性
       state,
@@ -150,12 +163,12 @@ export function createComputed<T>(getter: () => T): () => {
 export function createAsyncAction<T extends (...args: any[]) => Promise<any>>(
   action: T,
 ): () => {
-    execute: T
-    loading: Ref<boolean>
-    error: Ref<Error | null>
-    data: Ref<Awaited<ReturnType<T>> | null>
-    reset: () => void
-  } {
+  execute: T
+  loading: Ref<boolean>
+  error: Ref<Error | null>
+  data: Ref<Awaited<ReturnType<T>> | null>
+  reset: () => void
+} {
   return function useAsyncAction() {
     const loading = ref(false)
     const error = ref<Error | null>(null)
@@ -205,13 +218,13 @@ export function createPersistedState<T>(
   initialValue: T,
   storage: Storage = localStorage,
 ): () => {
-    value: Ref<T>
-    setValue: (newValue: T | ((oldValue: T) => T)) => void
-    reset: () => void
-    save: () => void
-    load: () => void
-    clear: () => void
-  } {
+  value: Ref<T>
+  setValue: (newValue: T | ((oldValue: T) => T)) => void
+  reset: () => void
+  save: () => void
+  load: () => void
+  clear: () => void
+} {
   return function usePersistedState() {
     const value = ref(initialValue) as Ref<T>
 

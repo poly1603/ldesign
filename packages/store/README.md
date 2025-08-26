@@ -1,7 +1,6 @@
 # @ldesign/store
 
-> 🚀 一个基于 Pinia 的 Vue3 状态管理库，支持类、Hook、Provider、装饰器等多种使用方式，性能优越，功能
-> 丰富！
+🚀 一个基于 Pinia 的现代化、高性能状态管理库，为 Vue 3 应用提供类型安全、多范式的状态管理解决方案。
 
 [![npm version](https://badge.fury.io/js/@ldesign%2Fstore.svg)](https://badge.fury.io/js/@ldesign%2Fstore)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -9,364 +8,387 @@
 
 ## ✨ 特性亮点
 
-🎯 **四种使用方式，随心所欲**
+- 🎯 **多种编程范式**: 支持类式、函数式、Composition API 等多种使用方式
+- 🔒 **完整类型安全**: 基于 TypeScript，提供严格的类型检查和智能提示
+- ⚡ **极致性能优化**: 内置缓存、防抖、节流、状态持久化等性能优化机制
+- 🎨 **优雅装饰器**: 提供丰富的装饰器，让代码更简洁优雅
+- 🔧 **开发者友好**: 完整的 DevTools 支持、性能监控和调试工具
+- 📦 **轻量高效**: 基于 Pinia 构建，体积小巧，性能卓越
+- 🌈 **灵活扩展**: 支持插件系统，可根据需求自由扩展功能
 
-- 🏛️ **类式**：面向对象，装饰器加持，优雅如诗
-- 🪝 **Hook 式**：函数式编程，简洁明了，React 开发者的最爱
-- 🔌 **Provider 式**：依赖注入，解耦合，架构师的选择
-- 🧩 **组合式**：Vue3 Composition API，原生体验
+## 📦 安装
 
-⚡ **性能爆表，快如闪电**
+```bash
+# npm
+npm install @ldesign/store pinia
 
-- 🏎️ 基于 Pinia 的高性能状态管理
-- 🧠 智能缓存、防抖、节流，性能优化到极致
-- 🦥 懒加载和按需创建，资源利用最大化
+# yarn
+yarn add @ldesign/store pinia
 
-🛠️ **功能丰富，应有尽有**
-
-- 🎨 装饰器支持（@State、@Action、@Getter）
-- 💾 持久化存储，数据永不丢失
-- 📦 批量操作，效率翻倍
-- 🔒 TypeScript 类型安全，bug 无处遁形
-- 🔧 开发工具支持，调试如虎添翼
-
-📦 **打包友好，兼容性强**
-
-- 📚 支持 ESM、CJS、UMD、IIFE 多种格式
-- 🌳 Tree-shaking 友好，包体积最小化
-- 📝 完整的类型定义文件
+# pnpm
+pnpm add @ldesign/store pinia
+```
 
 ## 🚀 快速开始
 
-### 安装
-
-```bash
-# 选择你喜欢的包管理器
-npm install @ldesign/store pinia vue reflect-metadata
-# 或者
-yarn add @ldesign/store pinia vue reflect-metadata
-# 或者
-pnpm add @ldesign/store pinia vue reflect-metadata
-```
-
-### 30 秒上手 - 装饰器方式
+### 基础配置
 
 ```typescript
-import { Action, BaseStore, Getter, State } from '@ldesign/store'
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import App from './App.vue'
 
-// 🎨 用装饰器打造你的专属Store
-class CounterStore extends BaseStore {
-  @State({ default: 0 })
-  count: number = 0
+const app = createApp(App)
+app.use(createPinia())
+app.mount('#app')
+```
 
-  @State({ default: 'My Awesome Counter' })
-  title: string = 'My Awesome Counter'
+### 🎯 多种使用方式
 
-  @Action()
-  increment() {
-    this.count++
-    console.log('🎉 Count increased!')
-  }
+#### 1️⃣ 类式 Store（面向对象）
 
-  @Action()
-  decrement() {
-    this.count--
-    console.log('📉 Count decreased!')
-  }
+```typescript
+import { BaseStore } from '@ldesign/store'
 
-  @Getter()
-  get displayText() {
-    return `${this.title}: ${this.count} 🔥`
+class CounterStore extends BaseStore<
+  { count: number },
+  { increment: () => void; decrement: () => void },
+  { doubleCount: number }
+> {
+  constructor() {
+    super('counter', {
+      state: () => ({ count: 0 }),
+      actions: {
+        increment() { this.count++ },
+        decrement() { this.count-- }
+      },
+      getters: {
+        doubleCount: (state) => state.count * 2
+      }
+    })
   }
 }
 
-// 🚀 创建并使用
-const store = new CounterStore('counter')
-store.increment()
-console.log(store.displayText) // "My Awesome Counter: 1 🔥"
+const useCounterStore = () => new CounterStore()
 ```
 
-### Vue 组件中的魔法时刻
+#### 2️⃣ 函数式 Store（简洁直观）
+
+```typescript
+import { createFunctionalStore } from '@ldesign/store'
+
+const useCounterStore = createFunctionalStore({
+  id: 'counter',
+  state: () => ({ count: 0 }),
+  actions: {
+    increment() { this.count++ },
+    decrement() { this.count-- }
+  },
+  getters: {
+    doubleCount: (state) => state.count * 2
+  },
+  // 性能优化配置
+  cache: { maxSize: 100, defaultTTL: 5000 },
+  persist: { storage: localStorage }
+})
+```
+
+#### 3️⃣ Composition API Store（现代化）
+
+```typescript
+import { createCompositionStore } from '@ldesign/store'
+
+const useCounterStore = createCompositionStore(
+  { id: 'counter' },
+  ({ state, computed }) => {
+    const count = state(0)
+    const doubleCount = computed(() => count.value * 2)
+
+    const increment = () => count.value++
+    const decrement = () => count.value--
+
+    return { count, doubleCount, increment, decrement }
+  }
+)
+```
+
+### 🎨 在组件中使用
 
 ```vue
-<script setup lang="ts">
-import { CounterStore } from './stores/counter'
-
-// ✨ 一行代码，状态管理就绪！
-const store = new CounterStore('counter')
-</script>
-
 <template>
-  <div class="counter-magic">
-    <h1>{{ store.displayText }}</h1>
-    <div class="counter-display">
-      <span class="count">{{ store.count }}</span>
-    </div>
-    <div class="button-group">
-      <button class="btn btn-plus" @click="store.increment">➕ 增加</button>
-      <button class="btn btn-minus" @click="store.decrement">➖ 减少</button>
+  <div class="counter">
+    <h2>计数器: {{ store.count }}</h2>
+    <p>双倍值: {{ store.doubleCount }}</p>
+    <div class="buttons">
+      <button @click="store.increment" class="btn-primary">➕ 增加</button>
+      <button @click="store.decrement" class="btn-secondary">➖ 减少</button>
     </div>
   </div>
 </template>
 
-<style scoped>
-.counter-magic {
-  text-align: center;
-  padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-.counter-display {
-  font-size: 4rem;
-  font-weight: bold;
-  margin: 2rem 0;
-}
-
-.btn {
-  margin: 0 1rem;
-  padding: 1rem 2rem;
-  font-size: 1.2rem;
-  border: none;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-</style>
+<script setup lang="ts">
+const store = useCounterStore()
+</script>
 ```
 
-## 🎭 多种使用方式展示
+## 🎨 装饰器魔法
 
-### 🏛️ 类式 + 装饰器（推荐）
+让你的代码更加优雅和强大：
 
 ```typescript
+import { BaseStore, State, Action, Getter, Cache, Debounce, Throttle } from '@ldesign/store'
+
 class UserStore extends BaseStore {
-  @PersistentState({ default: null })
-  user: User | null = null
+  @State()
+  users: User[] = []
 
-  @State({ default: false })
-  loading: boolean = false
+  @State({ reactive: true })
+  currentUser: User | null = null
 
-  @AsyncAction()
-  async login(credentials: LoginCredentials) {
-    this.loading = true
-    try {
-      this.user = await api.login(credentials)
-      console.log('🎉 登录成功！')
-    } finally {
-      this.loading = false
-    }
+  @State({ readonly: true })
+  readonly config = { apiUrl: '/api/users' }
+
+  // 🚀 缓存 API 调用结果 5 秒
+  @Action()
+  @Cache({ ttl: 5000 })
+  async fetchUsers() {
+    const response = await fetch(this.config.apiUrl)
+    this.users = await response.json()
   }
 
-  @CachedGetter(['user'])
-  get userProfile() {
-    return this.user ? `${this.user.name} (${this.user.email})` : '未登录'
+  // ⏰ 防抖搜索，避免频繁请求
+  @Action()
+  @Debounce(300)
+  async searchUsers(query: string) {
+    const response = await fetch(`${this.config.apiUrl}?q=${query}`)
+    this.users = await response.json()
+  }
+
+  // 🎯 节流更新，控制更新频率
+  @Action()
+  @Throttle(1000)
+  updateUserStatus(userId: string, status: string) {
+    const user = this.users.find(u => u.id === userId)
+    if (user) user.status = status
+  }
+
+  // 💾 缓存计算结果
+  @Getter()
+  @Cache()
+  get activeUsers() {
+    return this.users.filter(user => user.active)
+  }
+
+  @Getter()
+  get usersByRole() {
+    return (role: string) => this.users.filter(user => user.role === role)
   }
 }
 ```
 
-### 🪝 Hook 式（函数式爱好者）
+## ⚡ 性能优化特性
+
+### 智能缓存系统
 
 ```typescript
-import { createStore } from '@ldesign/store'
+const useDataStore = createFunctionalStore({
+  id: 'data',
+  state: () => ({ items: [], loading: false }),
 
-export const useCounter = createStore('counter', () => {
-  const count = ref(0)
-  const title = ref('Hook Counter')
+  // 🎯 配置缓存策略
+  cache: {
+    maxSize: 100,        // 最大缓存条目
+    defaultTTL: 5000,    // 默认过期时间
+    cleanupInterval: 60000 // 清理间隔
+  },
 
-  const increment = () => {
-    count.value++
-    console.log('🚀 Hook方式增加！')
-  }
+  actions: {
+    async fetchData(params: any) {
+      const cacheKey = `fetchData:${JSON.stringify(params)}`
 
-  const displayText = computed(() => `${title.value}: ${count.value}`)
+      // 检查缓存
+      const cached = this.$getCache(cacheKey)
+      if (cached) return cached
 
-  return {
-    state: { count, title },
-    actions: { increment },
-    getters: { displayText },
+      // 获取数据并缓存
+      this.loading = true
+      try {
+        const data = await api.getData(params)
+        this.$setCache(cacheKey, data, 10000) // 缓存 10 秒
+        this.items = data
+        return data
+      } finally {
+        this.loading = false
+      }
+    }
   }
 })
 ```
 
-### 🔌 Provider 式（架构师之选）
-
-```vue
-<script setup lang="ts">
-import { StoreProvider } from '@ldesign/store/vue'
-
-const stores = {
-  user: UserStore,
-  cart: ShoppingCartStore,
-  notifications: NotificationStore,
-}
-</script>
-
-<template>
-  <StoreProvider :stores="stores">
-    <UserDashboard />
-    <ShoppingCart />
-    <NotificationCenter />
-  </StoreProvider>
-</template>
-```
-
-## 🎨 装饰器魔法秀
-
-### 🎯 状态装饰器
+### 状态持久化
 
 ```typescript
-class MagicStore extends BaseStore {
-  @State({ default: 'Hello' })
-  message: string = 'Hello'
+const useSettingsStore = createFunctionalStore({
+  id: 'settings',
+  state: () => ({
+    theme: 'light',
+    language: 'zh-CN',
+    preferences: {}
+  }),
 
-  @ReactiveState({ default: { theme: 'dark', lang: 'zh' } })
-  settings: Settings = { theme: 'dark', lang: 'zh' }
-
-  @PersistentState({ default: [] })
-  favorites: string[] = []
-
-  @ReadonlyState({ value: '2024' })
-  year: string
-}
-```
-
-### ⚡ 动作装饰器
-
-```typescript
-class ActionStore extends BaseStore {
-  @DebouncedAction(300) // 防抖搜索，用户体验满分
-  async search(query: string) {
-    return await api.search(query)
-  }
-
-  @ThrottledAction(100) // 节流滚动，性能无忧
-  updateScrollPosition(position: number) {
-    this.scrollY = position
-  }
-
-  @CachedAction(5000) // 缓存结果，速度飞起
-  async expensiveOperation(data: any) {
-    return await heavyComputation(data)
-  }
-}
-```
-
-### 🧮 计算装饰器
-
-```typescript
-class ComputedStore extends BaseStore {
-  @CachedGetter(['items']) // 智能缓存
-  get expensiveCalculation() {
-    return this.items.reduce((sum, item) => sum + item.value, 0)
-  }
-
-  @MemoizedGetter(['firstName', 'lastName']) // 记忆化计算
-  get fullName() {
-    return `${this.firstName} ${this.lastName}`
-  }
-}
-```
-
-## 🌟 实战案例
-
-### 🛒 购物车系统
-
-```typescript
-class ShoppingCartStore extends BaseStore {
-  @PersistentState({ default: [] })
-  items: CartItem[] = []
-
-  @State({ default: false })
-  loading: boolean = false
-
-  @Action()
-  addItem(product: Product, quantity: number = 1) {
-    const existingItem = this.items.find(item => item.id === product.id)
-    if (existingItem) {
-      existingItem.quantity += quantity
-    } else {
-      this.items.push({ ...product, quantity })
-    }
-    console.log(`🛒 已添加 ${product.name} 到购物车`)
-  }
-
-  @Action()
-  removeItem(productId: string) {
-    const index = this.items.findIndex(item => item.id === productId)
-    if (index > -1) {
-      const item = this.items[index]
-      this.items.splice(index, 1)
-      console.log(`🗑️ 已从购物车移除 ${item.name}`)
+  // 💾 持久化配置
+  persist: {
+    storage: localStorage,
+    paths: ['theme', 'language'], // 只持久化指定字段
+    serializer: {
+      serialize: JSON.stringify,
+      deserialize: JSON.parse
     }
   }
+})
+```
 
-  @CachedGetter(['items'])
-  get totalPrice() {
-    return this.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  }
+## 🏭 Store 工厂模式
 
+统一管理多个 Store 实例：
+
+```typescript
+import { StoreFactory, StoreType } from '@ldesign/store'
+
+// 创建不同类型的 Store
+const userStoreFactory = StoreFactory.create({
+  type: StoreType.CLASS,
+  id: 'user',
+  storeClass: UserStore
+})
+
+const settingsStoreFactory = StoreFactory.create({
+  type: StoreType.FUNCTIONAL,
+  id: 'settings',
+  state: () => ({ theme: 'light' }),
+  actions: { toggleTheme() { this.theme = this.theme === 'light' ? 'dark' : 'light' } }
+})
+
+// 获取 Store 实例
+const userStore = userStoreFactory()
+const settingsStore = settingsStoreFactory()
+
+// 工厂管理
+console.log(StoreFactory.getIds()) // ['user', 'settings']
+console.log(StoreFactory.getStats()) // { totalStores: 2, activeInstances: 2 }
+```
+
+## 🎯 最佳实践
+
+### 1. Store 设计原则
+
+```typescript
+// ✅ 好的设计
+class UserStore extends BaseStore {
+  // 单一职责：只管理用户相关状态
+  @State() users: User[] = []
+  @State() currentUser: User | null = null
+
+  @Action() async fetchUsers() { /* ... */ }
+  @Action() async updateUser(user: User) { /* ... */ }
+}
+
+// ❌ 避免的设计
+class AppStore extends BaseStore {
+  // 职责过多：混合了用户、设置、通知等
+  @State() users: User[] = []
+  @State() settings: Settings = {}
+  @State() notifications: Notification[] = []
+}
+```
+
+### 2. 类型安全实践
+
+```typescript
+// 定义严格的接口
+interface UserState {
+  users: User[]
+  loading: boolean
+  error: string | null
+}
+
+interface UserActions {
+  fetchUsers(): Promise<void>
+  addUser(user: Omit<User, 'id'>): Promise<User>
+  removeUser(id: string): Promise<void>
+}
+
+interface UserGetters {
+  activeUsers: User[]
+  userCount: number
+  getUserById: (id: string) => User | undefined
+}
+
+// 使用严格类型约束
+class UserStore extends BaseStore<UserState, UserActions, UserGetters> {
+  // TypeScript 会确保实现符合接口定义
+}
+```
+
+### 3. 性能优化策略
+
+```typescript
+class OptimizedStore extends BaseStore {
+  // 🎯 合理使用缓存
   @Getter()
-  get itemCount() {
-    return this.items.reduce((sum, item) => sum + item.quantity, 0)
+  @Cache({ ttl: 5000 }) // 缓存 5 秒
+  get expensiveComputation() {
+    return this.data.reduce((acc, item) => acc + item.value, 0)
   }
 
-  @AsyncAction()
-  async checkout() {
-    this.loading = true
-    try {
-      await api.checkout(this.items)
-      this.items = []
-      console.log('🎉 结账成功！')
-    } finally {
-      this.loading = false
-    }
+  // ⏰ 防抖频繁操作
+  @Action()
+  @Debounce(300)
+  async search(query: string) {
+    // 避免频繁搜索请求
+  }
+
+  // 🚀 节流高频更新
+  @Action()
+  @Throttle(100)
+  updatePosition(x: number, y: number) {
+    // 控制位置更新频率
   }
 }
 ```
 
-## 📚 文档导航
+## 📚 完整示例
 
-- 📖 [完整文档](https://ldesign-store.netlify.app) - 详细的使用指南
-- 🚀 [快速开始](https://ldesign-store.netlify.app/guide/getting-started) - 5 分钟上手
-- 🎨 [装饰器指南](https://ldesign-store.netlify.app/guide/decorators) - 装饰器魔法
-- 🪝 [Hook 使用](https://ldesign-store.netlify.app/guide/hooks) - 函数式编程
-- 🔌 [Provider 模式](https://ldesign-store.netlify.app/guide/provider) - 依赖注入
-- 📋 [API 参考](https://ldesign-store.netlify.app/api/) - 完整 API 文档
+查看 `examples` 目录获取更多示例：
 
-## 🤝 贡献指南
+- 🌟 [基础用法示例](./examples/basic) - 快速上手
+- 🚀 [高级功能示例](./examples/advanced) - 装饰器和性能优化
+- ⚡ [性能优化示例](./examples/performance) - 缓存和持久化
+- 🔧 [TypeScript 集成](./examples/typescript) - 类型安全实践
+- 🎨 [Vue 3 完整应用](./examples/vue-app) - 真实项目示例
+
+## 🤝 贡献
 
 我们欢迎所有形式的贡献！
 
-1. 🍴 Fork 这个项目
-2. 🌿 创建你的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 💾 提交你的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 📤 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 🔀 开启一个 Pull Request
+1. 🍴 Fork 项目
+2. 🌟 创建特性分支 (`git checkout -b feature/amazing-feature`)
+3. 💾 提交更改 (`git commit -m 'Add amazing feature'`)
+4. 📤 推送分支 (`git push origin feature/amazing-feature`)
+5. 🎉 创建 Pull Request
+
+查看 [贡献指南](./CONTRIBUTING.md) 了解更多详情。
 
 ## 📄 许可证
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
-
-## 🙏 致谢
-
-- 感谢 [Pinia](https://pinia.vuejs.org/) 提供的优秀状态管理基础
-- 感谢 [Vue.js](https://vuejs.org/) 团队的杰出工作
-- 感谢所有贡献者的辛勤付出
+MIT License © 2024 - 查看 [LICENSE](./LICENSE) 文件了解详细信息。
 
 ---
 
 <div align="center">
 
-**如果这个项目对你有帮助，请给我们一个 ⭐️！**
+**如果这个项目对你有帮助，请给我们一个 ⭐️**
 
-Made with ❤️ by [LDesign Team](https://github.com/ldesign)
+[🏠 首页](https://github.com/ldesign/store) • [📖 文档](./docs) • [🐛 问题反馈](https://github.com/ldesign/store/issues) • [💬 讨论](https://github.com/ldesign/store/discussions)
 
 </div>

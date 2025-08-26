@@ -4,28 +4,37 @@
 
 /**
  * 深度克隆对象
+ *
+ * 递归地克隆对象的所有属性，支持基本类型、数组、对象、日期等类型。
+ * 注意：不支持函数、Symbol、循环引用等复杂情况。
  */
 export function deepClone<T>(obj: T): T {
+  // 处理 null 和基本类型，直接返回
   if (obj === null || typeof obj !== 'object') {
     return obj
   }
 
+  // 处理日期对象，创建新的日期实例
   if (obj instanceof Date) {
     return new Date(obj.getTime()) as unknown as T
   }
 
+  // 处理数组，递归克隆每个元素
   if (Array.isArray(obj)) {
     return obj.map(item => deepClone(item)) as unknown as T
   }
 
+  // 处理普通对象，递归克隆每个属性
   if (typeof obj === 'object') {
     const cloned = {} as T
     Object.keys(obj).forEach((key) => {
-      ;(cloned as any)[key] = deepClone((obj as any)[key])
+      // 递归克隆每个属性值
+      ; (cloned as any)[key] = deepClone((obj as any)[key])
     })
     return cloned
   }
 
+  // 其他情况直接返回
   return obj
 }
 
