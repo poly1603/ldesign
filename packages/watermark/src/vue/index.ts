@@ -3,7 +3,7 @@
  */
 
 // 组件
-export { default as Watermark } from './components/Watermark.vue'
+export { default as Watermark } from './components/Watermark'
 
 export { default as WatermarkProvider } from './components/WatermarkProvider.vue'
 // 组合式API
