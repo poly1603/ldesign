@@ -180,6 +180,9 @@ importers:
       '@ldesign/engine':
         specifier: workspace:*
         version: link:../../packages/engine
+      '@ldesign/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       '@ldesign/router':
         specifier: workspace:*
         version: link:../../packages/router
@@ -1091,11 +1094,17 @@ importers:
         specifier: ^2.0.0
         version: 2.2.12(typescript@5.8.3)
 
+  packages/form/dist:
+    dependencies:
+      vue:
+        specifier: ^3.4.0
+        version: 3.5.18(typescript@5.9.2)
+
   packages/form/docs:
     dependencies:
       '@ldesign/form':
         specifier: workspace:*
-        version: link:..
+        version: link:../dist
       vue:
         specifier: ^3.4.0
         version: 3.5.18(typescript@5.8.3)

@@ -7,7 +7,6 @@ import type { Component } from 'vue'
 import type { CreateEngineOptions, Engine } from '../types'
 import { commonDirectives } from '../directives/directive-manager'
 import { EngineImpl } from './engine'
-import { handleExtensions } from '../extensions'
 
 /**
  * 创建Vue3应用引擎实例
@@ -38,10 +37,6 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
     config = {},
     plugins = [],
     middleware = [],
-    router,
-    store,
-    i18n,
-    theme,
     configSchema,
     enableAutoSave = false,
     autoSaveInterval = 30000,
@@ -62,11 +57,6 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
 
   // 注册常用指令
   engine.directives.registerBatch(commonDirectives)
-
-  // 处理扩展配置（异步，但不阻塞引擎创建）
-  handleExtensions(options, engine).catch((error) => {
-    engine.logger.error('Failed to handle extensions', error)
-  })
 
   // 注册中间件
   middleware.forEach((m) => {
