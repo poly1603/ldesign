@@ -1,5 +1,4 @@
 import type { BuildOptions, DevOptions, ProjectType } from '../../src/types'
-import fs from 'node:fs/promises'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { buildProject, createProject, startDev, startPreview, ViteLauncher } from '../../src/index'
@@ -12,33 +11,42 @@ vi.mock('vite', () => ({
   mergeConfig: vi.fn((config1, config2) => ({ ...config1, ...config2 })),
 }))
 
-vi.mock('fs/promises', () => ({
+vi.mock('node:fs/promises', () => ({
   default: {
     mkdir: vi.fn(),
     readdir: vi.fn(),
     stat: vi.fn(),
     writeFile: vi.fn(),
     rm: vi.fn(),
+    readFile: vi.fn(),
+    access: vi.fn(),
   },
   mkdir: vi.fn(),
   readdir: vi.fn(),
   stat: vi.fn(),
   writeFile: vi.fn(),
   rm: vi.fn(),
+  readFile: vi.fn(),
+  access: vi.fn(),
 }))
 
 describe('viteLauncher Integration', () => {
   let tempDir: string
   let mockFs: any
 
-  beforeEach(() => {
+  beforeEach(async () => {
     tempDir = path.join(process.cwd(), 'temp-integration-test')
+    const fs = await import('node:fs/promises')
     mockFs = vi.mocked(fs)
 
     // Setup default mocks
     mockFs.mkdir.mockResolvedValue(undefined)
     mockFs.readdir.mockResolvedValue([])
     mockFs.writeFile.mockResolvedValue(undefined)
+    mockFs.readFile.mockResolvedValue(JSON.stringify({
+      dependencies: { vue: '^3.0.0' },
+    }))
+    mockFs.access.mockResolvedValue(undefined)
     mockFs.stat.mockResolvedValue({
       isDirectory: () => true,
       isFile: () => true,
