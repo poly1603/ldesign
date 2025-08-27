@@ -64,7 +64,7 @@ export class WeakRefWrapper<T extends object> {
   private weakRef: WeakRefLike<T> | null = null
   private finalizer: FinalizationRegistryLike<string> | null = null
   private key: string
-  private target?: T // fallback 存储
+  private target: T | undefined // fallback 存储
 
   constructor(target: T, key: string, onFinalize?: (key: string) => void) {
     this.key = key
@@ -148,7 +148,7 @@ export class WeakRefManager {
    * 获取弱引用
    */
   getWeakRef<T extends object>(key: string): T | undefined {
-    const wrapper = this.refs.get(key)
+    const wrapper = this.refs.get(key) as WeakRefWrapper<T> | undefined
     if (!wrapper)
       return undefined
 
@@ -238,7 +238,7 @@ export class MemoryMonitor {
   }
 
   private listeners = new Set<EventListener>()
-  private monitoringInterval?: number
+  private monitoringInterval: number | undefined
   private onWarning?: (stats: MemoryStats) => void
   private onCritical?: (stats: MemoryStats) => void
 
@@ -254,8 +254,12 @@ export class MemoryMonitor {
     }
 
     if (callbacks) {
-      this.onWarning = callbacks.onWarning
-      this.onCritical = callbacks.onCritical
+      if (callbacks.onWarning) {
+        this.onWarning = callbacks.onWarning
+      }
+      if (callbacks.onCritical) {
+        this.onCritical = callbacks.onCritical
+      }
     }
   }
 
@@ -298,7 +302,7 @@ export class MemoryMonitor {
 
     // 触发垃圾回收（如果可用）
     if ('gc' in window && typeof (window as any).gc === 'function') {
-      ;(window as any).gc()
+      ; (window as any).gc()
       this.stats.gcCount++
     }
   }

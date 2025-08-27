@@ -81,7 +81,7 @@ describe('集成测试', () => {
     })
 
     it('应该支持守卫重定向', async () => {
-      router.beforeEach((to: any, from: any, next: any) => {
+      router.beforeEach((to: any, _from: any, next: any) => {
         if (to.path === '/about') {
           next('/')
         }

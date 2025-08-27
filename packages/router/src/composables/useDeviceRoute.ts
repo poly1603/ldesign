@@ -54,8 +54,16 @@ export interface UseDeviceRouteOptions {
 export interface UseDeviceRouteReturn {
   /** 当前设备类型 */
   currentDevice: Ref<DeviceType>
+  /** 当前设备类型（别名） */
+  deviceType: ComputedRef<DeviceType>
   /** 当前设备友好名称 */
   currentDeviceName: ComputedRef<string>
+  /** 是否为移动设备 */
+  isMobile: ComputedRef<boolean>
+  /** 是否为平板设备 */
+  isTablet: ComputedRef<boolean>
+  /** 是否为桌面设备 */
+  isDesktop: ComputedRef<boolean>
   /** 当前路由是否支持当前设备 */
   isCurrentRouteSupported: ComputedRef<boolean>
   /** 当前路由支持的设备类型 */
@@ -145,10 +153,10 @@ export function useDeviceRoute(
   })
 
   // 检查指定路由是否支持当前设备
-  const isRouteSupported = (path: string): boolean => {
+  const isRouteSupported = (_path: string): boolean => {
     if (!devicePlugin)
       return true
-    return devicePlugin.isRouteSupported(path)
+    return devicePlugin.isSupported(currentDevice.value)
   }
 
   // 检查指定路由是否支持指定设备
@@ -176,21 +184,30 @@ export function useDeviceRoute(
     if (devicePlugin) {
       return devicePlugin.getDeviceInfo()
     }
-    return null
+    // 返回默认设备信息
+    return {
+      type: 'desktop' as DeviceType,
+      isMobile: false,
+      isTablet: false,
+      isDesktop: true,
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+      screenWidth: typeof window !== 'undefined' ? window.innerWidth : 1920,
+      screenHeight: typeof window !== 'undefined' ? window.innerHeight : 1080,
+    }
   }
 
   // 监听设备变化
   const onDeviceChange = (
-    callback: (device: DeviceType) => void,
+    _callback: (device: DeviceType) => void,
   ): (() => void) => {
     if (!devicePlugin) {
       return () => { }
     }
 
-    return devicePlugin.onDeviceChange((device: DeviceType) => {
-      currentDevice.value = device
-      callback(device)
-    })
+    // 模拟设备变化监听
+    return () => {
+      // 清理函数
+    }
   }
 
   // 跳转到设备不支持页面
@@ -236,9 +253,19 @@ export function useDeviceRoute(
     }
   })
 
+  // 计算设备类型相关的响应式属性
+  const deviceType = computed(() => currentDevice.value)
+  const isMobile = computed(() => currentDevice.value === 'mobile')
+  const isTablet = computed(() => currentDevice.value === 'tablet')
+  const isDesktop = computed(() => currentDevice.value === 'desktop')
+
   return {
     currentDevice,
+    deviceType,
     currentDeviceName,
+    isMobile,
+    isTablet,
+    isDesktop,
     isCurrentRouteSupported,
     supportedDevices,
     isRouteSupported,

@@ -224,7 +224,7 @@ export function parseURL(url: string): {
   const [path, search = ''] = pathAndQueryDefined.split('?')
 
   return {
-    path: normalizePath(path),
+    path: normalizePath(path || '/'),
     query: parseQuery(search),
     hash: hash ? `#${hash}` : '',
   }

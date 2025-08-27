@@ -130,7 +130,16 @@ Object.defineProperty(document, 'createElement', {
       style: {},
       appendChild: vi.fn((child) => {
         if (child && typeof child === 'object') {
-          child.parentNode = element
+          try {
+            Object.defineProperty(child, 'parentNode', {
+              value: element,
+              writable: true,
+              configurable: true,
+            })
+          }
+          catch {
+            // 忽略只读属性错误
+          }
           element.childNodes.push(child)
           element.children.push(child)
         }
@@ -199,7 +208,16 @@ Object.defineProperty(document, 'createElement', {
       previousSibling: null,
       insertBefore: vi.fn((newNode, referenceNode) => {
         if (newNode && typeof newNode === 'object') {
-          newNode.parentNode = element
+          try {
+            Object.defineProperty(newNode, 'parentNode', {
+              value: element,
+              writable: true,
+              configurable: true,
+            })
+          }
+          catch {
+            // 忽略只读属性错误
+          }
           if (referenceNode) {
             const index = element.childNodes.indexOf(referenceNode)
             if (index > -1) {
@@ -225,8 +243,21 @@ Object.defineProperty(document, 'createElement', {
           if (index > -1) {
             element.childNodes[index] = newChild
             element.children[index] = newChild
-            newChild.parentNode = element
-            oldChild.parentNode = null
+            try {
+              Object.defineProperty(newChild, 'parentNode', {
+                value: element,
+                writable: true,
+                configurable: true,
+              })
+              Object.defineProperty(oldChild, 'parentNode', {
+                value: null,
+                writable: true,
+                configurable: true,
+              })
+            }
+            catch {
+              // 忽略只读属性错误
+            }
           }
         }
         return oldChild
@@ -262,7 +293,16 @@ function createDocumentElement(tagName: string) {
 
   element.appendChild = vi.fn((child) => {
     if (child && typeof child === 'object') {
-      child.parentNode = element
+      try {
+        Object.defineProperty(child, 'parentNode', {
+          value: element,
+          writable: true,
+          configurable: true,
+        })
+      }
+      catch {
+        // 忽略只读属性错误
+      }
       element.childNodes.push(child)
       element.children.push(child)
     }
@@ -271,7 +311,16 @@ function createDocumentElement(tagName: string) {
 
   element.removeChild = vi.fn((child) => {
     if (child && typeof child === 'object') {
-      child.parentNode = null
+      try {
+        Object.defineProperty(child, 'parentNode', {
+          value: null,
+          writable: true,
+          configurable: true,
+        })
+      }
+      catch {
+        // 忽略只读属性错误
+      }
       const index = element.childNodes.indexOf(child)
       if (index > -1) {
         element.childNodes.splice(index, 1)
@@ -283,7 +332,16 @@ function createDocumentElement(tagName: string) {
 
   element.insertBefore = vi.fn((newNode, referenceNode) => {
     if (newNode && typeof newNode === 'object') {
-      newNode.parentNode = element
+      try {
+        Object.defineProperty(newNode, 'parentNode', {
+          value: element,
+          writable: true,
+          configurable: true,
+        })
+      }
+      catch {
+        // 忽略只读属性错误
+      }
       if (referenceNode) {
         const index = element.childNodes.indexOf(referenceNode)
         if (index > -1) {
@@ -343,7 +401,7 @@ globalThis.URL = class URL {
   constructor(url: string, _base?: string) {
     // Simple URL parsing for tests
     const [pathAndQuery, hash = ''] = url.split('#')
-    const [pathname, search = ''] = pathAndQuery.split('?')
+    const [pathname, search = ''] = (pathAndQuery || '').split('?')
 
     this.href = url
     this.origin = 'http://localhost:3000'
@@ -351,7 +409,7 @@ globalThis.URL = class URL {
     this.host = 'localhost:3000'
     this.hostname = 'localhost'
     this.port = '3000'
-    this.pathname = pathname
+    this.pathname = pathname || '/'
     this.search = search ? `?${search}` : ''
     this.hash = hash ? `#${hash}` : ''
   }
@@ -408,7 +466,7 @@ globalThis.URLSearchParams = class URLSearchParams {
 
   get(name: string): string | null {
     const values = this.params.get(name)
-    return values && values.length > 0 ? values[0] : null
+    return values && values.length > 0 ? values[0] || null : null
   }
 
   getAll(name: string): string[] {

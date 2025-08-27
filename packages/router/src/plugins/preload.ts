@@ -263,8 +263,7 @@ export class PreloadManager {
             * this.retryConfig.backoffMultiplier ** retryCount
 
         console.warn(
-          `预加载失败，${delay}ms后重试 (${retryCount + 1}/${
-            this.retryConfig.maxRetries
+          `预加载失败，${delay}ms后重试 (${retryCount + 1}/${this.retryConfig.maxRetries
           }):`,
           error,
         )

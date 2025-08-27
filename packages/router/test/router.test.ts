@@ -146,7 +146,7 @@ describe('router Core', () => {
       const resolved = router.resolve('/nested')
 
       // 调试信息
-      const matchedInfo = resolved.matched.map(r => ({
+      const matchedInfo = resolved.matched.map((r: any) => ({
         name: r.name,
         path: r.path,
       }))
@@ -200,7 +200,7 @@ describe('router Core', () => {
 
   describe('navigation Guards', () => {
     it('should execute beforeEach guard', async () => {
-      const guard = vi.fn((to, from, next) => next())
+      const guard = vi.fn((_to, _from, next) => next())
       const removeGuard = router.beforeEach(guard)
 
       await router.push('/about')
@@ -216,7 +216,7 @@ describe('router Core', () => {
     })
 
     it('should execute beforeResolve guard', async () => {
-      const guard = vi.fn((to, from, next) => next())
+      const guard = vi.fn((_to, _from, next) => next())
       const removeGuard = router.beforeResolve(guard)
 
       await router.push('/about')
@@ -241,7 +241,7 @@ describe('router Core', () => {
     })
 
     it('should cancel navigation when guard returns false', async () => {
-      router.beforeEach((to: any, from: any, next: any) => next(false))
+      router.beforeEach((_to: any, _from: any, next: any) => next(false))
 
       await router.push('/about')
 
@@ -250,7 +250,7 @@ describe('router Core', () => {
     })
 
     it('should redirect when guard returns route location', async () => {
-      router.beforeEach((to: any, from: any, next: any) => {
+      router.beforeEach((to: any, _from: any, next: any) => {
         if (to.path === '/about') {
           next('/user/123')
         }

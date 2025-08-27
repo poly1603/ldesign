@@ -113,7 +113,7 @@ export class RouterStateManager {
     })
 
     // 监听导航开始
-    const unsubscribeBeforeEach = this.router.beforeEach((to, from, next) => {
+    const unsubscribeBeforeEach = this.router.beforeEach((_to, _from, next) => {
       this.setNavigating(true)
       next()
     })
@@ -263,7 +263,7 @@ export class RouterStateManager {
   /**
    * 获取当前路由
    */
-  getCurrentRoute(): RouteLocationNormalized {
+  getCurrentRoute(): RouteLocationNormalized | undefined {
     return this.stateManager.get('router.currentRoute')
   }
 
@@ -306,6 +306,11 @@ export class RouterStateManager {
     const previousRoute = history[0]
     const currentRoute = this.getCurrentRoute()
 
+    if (!currentRoute || !previousRoute) {
+      console.warn('No current route or previous route available for navigation')
+      return
+    }
+
     // 更新历史记录
     this.stateManager.set('router.history', history.slice(1))
 
@@ -330,6 +335,11 @@ export class RouterStateManager {
 
     const nextRoute = forwardHistory[0]
     const currentRoute = this.getCurrentRoute()
+
+    if (!currentRoute || !nextRoute) {
+      console.warn('No current route or next route available for navigation')
+      return
+    }
 
     // 更新前进历史
     this.stateManager.set('router.forwardHistory', forwardHistory.slice(1))

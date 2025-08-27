@@ -9,6 +9,8 @@ export default antfu(
       'es',
       'lib',
       'types',
+      'cjs',
+      'esm',
       'node_modules',
       'coverage',
       '*.d.ts',

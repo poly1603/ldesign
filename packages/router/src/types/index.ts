@@ -30,14 +30,14 @@ export type RouteQuery = Record<string, string | string[] | null | undefined>
  */
 export type ExtractRouteParams<T extends string> =
   T extends `${infer _Start}:${infer Param}/${infer Rest}`
-  ? { [K in Param]: string } & ExtractRouteParams<Rest>
-  : T extends `${infer _Start}:${infer Param}?/${infer Rest}`
-  ? { [K in Param]?: string } & ExtractRouteParams<Rest>
-  : T extends `${infer _Start}:${infer Param}`
-  ? { [K in Param]: string }
-  : T extends `${infer _Start}:${infer Param}?`
-  ? { [K in Param]?: string }
-  : Record<string, never>
+    ? { [K in Param]: string } & ExtractRouteParams<Rest>
+    : T extends `${infer _Start}:${infer Param}?/${infer Rest}`
+      ? { [K in Param]?: string } & ExtractRouteParams<Rest>
+      : T extends `${infer _Start}:${infer Param}`
+        ? { [K in Param]: string }
+        : T extends `${infer _Start}:${infer Param}?`
+          ? { [K in Param]?: string }
+          : Record<string, never>
 
 /**
  * 路径参数类型推导
@@ -50,8 +50,8 @@ export type RouteParamsFor<T extends string> = ExtractRouteParams<T>
 export type TypedRouteParams<
   T extends Record<string, any> = Record<string, any>,
 > = {
-    [K in keyof T]: T[K] extends string ? string : string | string[]
-  }
+  [K in keyof T]: T[K] extends string ? string : string | string[]
+}
 
 /**
  * 类型安全的查询参数
@@ -59,14 +59,14 @@ export type TypedRouteParams<
 export type TypedRouteQuery<
   T extends Record<string, any> = Record<string, any>,
 > = {
-    [K in keyof T]?: T[K] extends string
+  [K in keyof T]?: T[K] extends string
     ? string | string[] | null | undefined
     : T[K] extends number
-    ? string | string[] | null | undefined
-    : T[K] extends boolean
-    ? string | string[] | null | undefined
-    : string | string[] | null | undefined
-  }
+      ? string | string[] | null | undefined
+      : T[K] extends boolean
+        ? string | string[] | null | undefined
+        : string | string[] | null | undefined
+}
 
 /**
  * 路由元信息类型
@@ -205,8 +205,8 @@ export interface RouteRecordRaw {
   components?: Record<string, RouteComponent>
   /** 重定向 */
   redirect?:
-  | RouteLocationRaw
-  | ((to: RouteLocationNormalized) => RouteLocationRaw)
+    | RouteLocationRaw
+    | ((to: RouteLocationNormalized) => RouteLocationRaw)
   /** 别名 */
   alias?: string | string[]
   /** 子路由 */
@@ -217,9 +217,9 @@ export interface RouteRecordRaw {
   beforeEnter?: NavigationGuard | NavigationGuard[]
   /** 属性传递 */
   props?:
-  | boolean
-  | Record<string, unknown>
-  | ((route: RouteLocationNormalized) => Record<string, unknown>)
+    | boolean
+    | Record<string, unknown>
+    | ((route: RouteLocationNormalized) => Record<string, unknown>)
   /** 路径匹配是否大小写敏感 */
   sensitive?: boolean
   /** 路径匹配是否严格模式 */
@@ -265,9 +265,9 @@ export interface RouteRecordNormalized {
   aliasOf: RouteRecordNormalized | undefined
   /** 重定向配置 */
   redirect:
-  | RouteLocationRaw
-  | ((to: RouteLocationNormalized) => RouteLocationRaw)
-  | undefined
+    | RouteLocationRaw
+    | ((to: RouteLocationNormalized) => RouteLocationRaw)
+    | undefined
 }
 
 // ==================== 导航守卫类型 ====================
@@ -444,7 +444,7 @@ export interface Router {
 
   /** 添加路由 */
   addRoute: ((route: RouteRecordRaw) => () => void) &
-  ((parentName: string | symbol, route: RouteRecordRaw) => () => void)
+    ((parentName: string | symbol, route: RouteRecordRaw) => () => void)
 
   /** 移除路由 */
   removeRoute: (name: string | symbol) => void

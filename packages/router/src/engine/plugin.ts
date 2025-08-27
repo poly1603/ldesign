@@ -348,13 +348,16 @@ export function createRouterEnginePlugin(
         }
 
         // 创建路由器实例
-        const router = createRouter({
+        const routerOptions: any = {
           history,
           routes,
-          scrollBehavior,
-          linkActiveClass,
-          linkExactActiveClass,
-        })
+          linkActiveClass: linkActiveClass || 'router-link-active',
+          linkExactActiveClass: linkExactActiveClass || 'router-link-exact-active',
+        }
+        if (scrollBehavior) {
+          routerOptions.scrollBehavior = scrollBehavior
+        }
+        const router = createRouter(routerOptions)
 
         // 手动安装路由器到 Vue 应用（避免调用 router.install）
         // 提供路由器注入
@@ -725,13 +728,16 @@ export function createSimpleSPARouter(
   }
 
   // 创建路由器实例
-  const router = createRouter({
+  const routerOptions: any = {
     history,
     routes,
-    scrollBehavior,
     linkActiveClass: 'router-link-active',
     linkExactActiveClass: 'router-link-exact-active',
-  })
+  }
+  if (scrollBehavior) {
+    routerOptions.scrollBehavior = scrollBehavior
+  }
+  const router = createRouter(routerOptions)
 
   return router
 }
@@ -757,7 +763,7 @@ export function createSimpleMobileRouter(
 
   // 添加移动端特有的配置
   if (animation) {
-    ;(router as any).options = {
+    ; (router as any).options = {
       ...(router as any).options,
       mode,
       animation,
@@ -784,7 +790,7 @@ export function createSimpleAdminRouter(
 
   // 添加管理后台特有的配置
   if (security) {
-    ;(router as any).options = {
+    ; (router as any).options = {
       ...(router as any).options,
       mode,
       security,

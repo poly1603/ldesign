@@ -66,7 +66,7 @@ export function useRoute(): UseRouteReturn {
       // 返回一个安全的默认路由对象
       return {
         path: '/',
-        name: undefined,
+        name: '',
         params: {},
         query: {},
         hash: '',
@@ -397,8 +397,8 @@ export default {
 // 设备组件解析功能
 export { useDeviceComponent } from './useDeviceComponent'
 export type {
-  UseDeviceComponentOptions,
-  UseDeviceComponentReturn,
+  // UseDeviceComponentOptions,
+  // UseDeviceComponentReturn,
 } from './useDeviceComponent'
 
 // 设备路由功能

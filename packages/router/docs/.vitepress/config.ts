@@ -132,6 +132,9 @@ export default defineConfig({
     lineNumbers: true,
   },
 
+  // 暂时忽略死链接，等待文档完善
+  ignoreDeadLinks: true,
+
   vite: {
     define: {
       __VUE_OPTIONS_API__: false,

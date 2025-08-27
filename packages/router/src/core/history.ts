@@ -194,7 +194,7 @@ class HTML5History extends BaseHistory {
     // popstate 事件会触发监听器
   }
 
-  destroy(): void {
+  override destroy(): void {
     super.destroy()
     if (this.popstateListener) {
       window.removeEventListener('popstate', this.popstateListener)
@@ -297,7 +297,7 @@ class HashHistory extends BaseHistory {
     history.go(delta)
   }
 
-  destroy(): void {
+  override destroy(): void {
     super.destroy()
     if (this.hashchangeListener) {
       window.removeEventListener('hashchange', this.hashchangeListener)

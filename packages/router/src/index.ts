@@ -52,8 +52,8 @@ export { hasRoute, hasRouter } from './composables'
 // 设备适配 Hooks
 export { useDeviceComponent, useDeviceRoute } from './composables'
 export type {
-  UseDeviceComponentOptions,
-  UseDeviceComponentReturn,
+  // UseDeviceComponentOptions,
+  // UseDeviceComponentReturn,
   UseDeviceRouteOptions,
   UseDeviceRouteReturn,
 } from './composables'
@@ -312,13 +312,16 @@ export async function createFullRouter(options: {
   const { createPerformancePlugin } = await import('./plugins/performance')
   const { createPreloadPlugin } = await import('./plugins/preload')
 
-  const router = createVueRouter({
+  const routerOptions: any = {
     history: options.history,
     routes: options.routes,
-    linkActiveClass: options.linkActiveClass,
-    linkExactActiveClass: options.linkExactActiveClass,
-    scrollBehavior: options.scrollBehavior,
-  })
+    linkActiveClass: options.linkActiveClass || 'router-link-active',
+    linkExactActiveClass: options.linkExactActiveClass || 'router-link-exact-active',
+  }
+  if (options.scrollBehavior) {
+    routerOptions.scrollBehavior = options.scrollBehavior
+  }
+  const router = createVueRouter(routerOptions)
 
   const plugins: any[] = []
 
@@ -326,8 +329,8 @@ export async function createFullRouter(options: {
   if (options.animation?.enabled !== false) {
     plugins.push(
       createAnimationPlugin({
-        defaultAnimation: options.animation?.defaultAnimation,
-        customAnimations: options.animation?.customAnimations,
+        defaultAnimation: options.animation?.defaultAnimation || 'fade',
+        customAnimations: options.animation?.customAnimations || {},
       }),
     )
   }
@@ -336,8 +339,8 @@ export async function createFullRouter(options: {
   if (options.cache?.enabled !== false) {
     plugins.push(
       createCachePlugin({
-        strategy: options.cache?.strategy,
-        maxSize: options.cache?.maxSize,
+        strategy: options.cache?.strategy || 'memory',
+        maxSize: options.cache?.maxSize || 10,
       }),
     )
   }
@@ -346,8 +349,8 @@ export async function createFullRouter(options: {
   if (options.preload?.enabled !== false) {
     plugins.push(
       createPreloadPlugin({
-        strategy: options.preload?.strategy,
-        autoPreloadRelated: options.preload?.autoPreloadRelated,
+        strategy: options.preload?.strategy || 'idle',
+        autoPreloadRelated: options.preload?.autoPreloadRelated || false,
       }),
     )
   }
@@ -356,8 +359,8 @@ export async function createFullRouter(options: {
   if (options.performance?.enabled !== false) {
     plugins.push(
       createPerformancePlugin({
-        warningThreshold: options.performance?.warningThreshold,
-        errorThreshold: options.performance?.errorThreshold,
+        warningThreshold: options.performance?.warningThreshold || 1000,
+        errorThreshold: options.performance?.errorThreshold || 3000,
       }),
     )
   }
