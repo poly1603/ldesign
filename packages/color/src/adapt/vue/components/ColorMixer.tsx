@@ -58,10 +58,10 @@ export const ColorMixer = defineComponent<ColorMixerProps>({
     const resultColor = computed(() => {
       try {
         return blendColors(
-          localBaseColor.value,
-          localOverlayColor.value,
-          localMode.value,
-          localOpacity.value,
+          localBaseColor.value || '#ff0000',
+          localOverlayColor.value || '#0000ff',
+          localMode.value || 'normal',
+          localOpacity.value || 0.5,
         )
       }
       catch {
@@ -123,13 +123,13 @@ export const ColorMixer = defineComponent<ColorMixerProps>({
             <input
               type="color"
               value={localBaseColor.value}
-              onInput={e => updateBaseColor((e.target as HTMLInputElement).value)}
+              onInput={(e: Event) => updateBaseColor((e.target as HTMLInputElement).value)}
               class="color-mixer__color-input"
             />
             <input
               type="text"
               value={localBaseColor.value}
-              onInput={e => updateBaseColor((e.target as HTMLInputElement).value)}
+              onInput={(e: Event) => updateBaseColor((e.target as HTMLInputElement).value)}
               class="color-mixer__text-input"
             />
           </div>
@@ -139,13 +139,13 @@ export const ColorMixer = defineComponent<ColorMixerProps>({
             <input
               type="color"
               value={localOverlayColor.value}
-              onInput={e => updateOverlayColor((e.target as HTMLInputElement).value)}
+              onInput={(e: Event) => updateOverlayColor((e.target as HTMLInputElement).value)}
               class="color-mixer__color-input"
             />
             <input
               type="text"
               value={localOverlayColor.value}
-              onInput={e => updateOverlayColor((e.target as HTMLInputElement).value)}
+              onInput={(e: Event) => updateOverlayColor((e.target as HTMLInputElement).value)}
               class="color-mixer__text-input"
             />
           </div>
@@ -154,7 +154,7 @@ export const ColorMixer = defineComponent<ColorMixerProps>({
             <label class="color-mixer__label">混合模式</label>
             <select
               value={localMode.value}
-              onChange={e => updateMode((e.target as HTMLSelectElement).value as BlendMode)}
+              onChange={(e: Event) => updateMode((e.target as HTMLSelectElement).value as BlendMode)}
               class="color-mixer__select"
             >
               {blendModes.map(mode => (
@@ -168,7 +168,7 @@ export const ColorMixer = defineComponent<ColorMixerProps>({
           <div class="color-mixer__control-group">
             <label class="color-mixer__label">
               不透明度:
-              {Math.round(localOpacity.value * 100)}
+              {Math.round((localOpacity.value || 0.5) * 100)}
               %
             </label>
             <input
@@ -177,7 +177,7 @@ export const ColorMixer = defineComponent<ColorMixerProps>({
               max="1"
               step="0.01"
               value={localOpacity.value}
-              onInput={e => updateOpacity(Number.parseFloat((e.target as HTMLInputElement).value))}
+              onInput={(e: Event) => updateOpacity(Number.parseFloat((e.target as HTMLInputElement).value))}
               class="color-mixer__range"
             />
           </div>

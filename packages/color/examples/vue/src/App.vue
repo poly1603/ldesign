@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import {
   hexToRgb,
   rgbToHsl,
@@ -7,18 +7,107 @@ import {
   checkAccessibility,
   blendColors,
   generateAnalogousPalette,
-  generateComplementaryPalette
+  generateComplementaryPalette,
+  generateColorConfig,
+  generateColorScales
 } from '@ldesign/color'
+import { useTheme, useThemeSelector } from '@ldesign/color/vue'
+import ColorPaletteCard from './components/ColorPaletteCard.vue'
+
+const {
+  currentTheme,
+  currentMode,
+  availableThemes,
+  setTheme,
+  setMode,
+  toggleMode,
+} = useTheme()
+const { themeConfigs } = useThemeSelector()
 
 // 当前选中的演示标签
-const activeTab = ref('converter')
+const activeTab = ref('theme')
 
 const tabs = [
+  { key: 'theme', label: '主题演示', icon: '🌙' },
   { key: 'converter', label: '颜色转换', icon: '🎨' },
   { key: 'mixer', label: '颜色混合', icon: '🌈' },
   { key: 'palette', label: '调色板生成', icon: '🎯' },
   { key: 'accessibility', label: '可访问性检查', icon: '♿' },
 ]
+
+// 获取当前主题配置
+const currentThemeConfig = computed(() => {
+  return themeConfigs.value.find(t => t.name === currentTheme.value)
+})
+
+// 获取当前主题的颜色配置
+const currentColors = computed(() => {
+  const config = currentThemeConfig.value
+  if (!config)
+    return null
+
+  const modeColors = currentMode.value === 'light' ? config.light : config.dark
+  if (!modeColors)
+    return null
+
+  // 如果主题配置中没有定义完整的颜色，使用生成的颜色配置
+  let generatedColors = null
+  try {
+    generatedColors = generateColorConfig(modeColors.primary)
+  }
+  catch (_error) {
+    console.warn('生成颜色配置失败:', _error)
+  }
+
+  return {
+    primary: modeColors.primary,
+    success: modeColors.success || generatedColors?.success || '#52c41a',
+    warning: modeColors.warning || generatedColors?.warning || '#faad14',
+    danger: modeColors.danger || generatedColors?.danger || '#f5222d',
+    gray: modeColors.gray || generatedColors?.gray || '#8c8c8c',
+  }
+})
+
+// 生成当前主题的色阶
+const currentScales = computed(() => {
+  if (!currentColors.value)
+    return null
+
+  try {
+    return generateColorScales(currentColors.value, currentMode.value)
+  }
+  catch (error) {
+    console.warn('生成色阶失败:', error)
+    return null
+  }
+})
+
+// 获取主题的预览颜色（使用生成的完整颜色配置）
+function getThemePreviewColors(themeName: string) {
+  const themeConfig = themeConfigs.value.find(t => t.name === themeName)
+  if (!themeConfig)
+    return null
+
+  // 使用主题管理器生成完整的颜色配置
+  try {
+    const colors = generateColorConfig(themeConfig.light.primary)
+    return {
+      primary: themeConfig.light.primary,
+      success: colors.success || '#52c41a',
+      warning: colors.warning || '#faad14',
+      danger: colors.danger || '#f5222d',
+    }
+  }
+  catch {
+    // 降级到默认颜色
+    return {
+      primary: themeConfig.light.primary,
+      success: '#52c41a',
+      warning: '#faad14',
+      danger: '#f5222d',
+    }
+  }
+}
 
 // 颜色转换演示
 const inputColor = ref('#1890ff')
@@ -94,11 +183,55 @@ const checkColorAccessibility = () => {
   }
 }
 
+// 通知系统
+const notifications = ref<Array<{ id: number, message: string, type: string }>>(
+  [],
+)
+let notificationId = 0
+
+function showNotification(message: string, type: string = 'info') {
+  const id = ++notificationId
+  notifications.value.push({ id, message, type })
+  setTimeout(() => {
+    const index = notifications.value.findIndex(n => n.id === id)
+    if (index > -1) {
+      notifications.value.splice(index, 1)
+    }
+  }, 3000)
+}
+
+// 复制颜色值
+async function copyColor(color: string) {
+  try {
+    await navigator.clipboard.writeText(color)
+    showNotification(`已复制颜色值: ${color}`, 'success')
+  }
+  catch {
+    showNotification('复制失败', 'error')
+  }
+}
+
+// 获取颜色类型名称
+function getColorTypeName(colorType: string) {
+  const nameMap: Record<string, string> = {
+    primary: '主色调',
+    success: '成功色',
+    warning: '警告色',
+    danger: '危险色',
+    gray: '灰色',
+  }
+  return nameMap[colorType] || colorType
+}
+
 // 初始化演示数据
 updateConvertedColors()
 updateMixedColor()
 generatePalette()
 checkColorAccessibility()
+
+onMounted(() => {
+  showNotification('Vue 示例已加载完成！', 'success')
+})
 
 
 
@@ -133,6 +266,159 @@ checkColorAccessibility()
     <!-- 主要内容 -->
     <main class="main">
       <div class="container">
+        <!-- 主题演示 -->
+        <div v-if="activeTab === 'theme'" class="demo-section">
+          <h2>🌙 主题管理演示</h2>
+          <p>体验完整的主题切换和色阶展示功能</p>
+
+          <!-- 主题控制面板 -->
+          <section class="card">
+            <h3 class="card-title">🎛️ 主题控制</h3>
+
+            <div class="control-group">
+              <label>选择主题:</label>
+              <select
+                :value="currentTheme"
+                class="form-control"
+                @change="setTheme(($event.target as HTMLSelectElement).value)"
+              >
+                <option
+                  v-for="themeName in availableThemes"
+                  :key="themeName"
+                  :value="themeName"
+                >
+                  {{
+                    themeConfigs.find(t => t.name === themeName)?.displayName
+                      || themeName
+                  }}
+                </option>
+              </select>
+            </div>
+
+            <div class="control-group">
+              <label>颜色模式:</label>
+              <select
+                :value="currentMode"
+                class="form-control"
+                @change="
+                  setMode(($event.target as HTMLSelectElement).value as any)
+                "
+              >
+                <option value="light">
+                  亮色模式
+                </option>
+                <option value="dark">
+                  暗色模式
+                </option>
+              </select>
+            </div>
+
+            <div class="control-group">
+              <button class="btn btn-primary" @click="toggleMode">
+                切换模式
+              </button>
+            </div>
+
+            <div class="status-info">
+              <div class="status-item">
+                <span class="label">当前主题:</span>
+                <span class="value">{{ currentTheme }}</span>
+              </div>
+              <div class="status-item">
+                <span class="label">当前模式:</span>
+                <span class="value">{{ currentMode }}</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 主题预览 -->
+          <section class="card">
+            <h3 class="card-title">🎨 主题预览</h3>
+            <p class="card-description">
+              选择一个预设主题来快速应用，这些主题都是精心设计的美观配色方案
+            </p>
+
+            <div class="theme-grid">
+              <div
+                v-for="themeName in availableThemes"
+                :key="themeName"
+                class="theme-item"
+                :class="[{ active: currentTheme === themeName }]"
+                @click="setTheme(themeName)"
+              >
+                <div class="theme-preview">
+                  <div
+                    class="theme-color"
+                    :style="{
+                      backgroundColor:
+                        getThemePreviewColors(themeName)?.primary || '#1890ff',
+                    }"
+                  />
+                  <div
+                    class="theme-color"
+                    :style="{
+                      backgroundColor:
+                        getThemePreviewColors(themeName)?.success || '#52c41a',
+                    }"
+                  />
+                  <div
+                    class="theme-color"
+                    :style="{
+                      backgroundColor:
+                        getThemePreviewColors(themeName)?.warning || '#faad14',
+                    }"
+                  />
+                  <div
+                    class="theme-color"
+                    :style="{
+                      backgroundColor:
+                        getThemePreviewColors(themeName)?.danger || '#f5222d',
+                    }"
+                  />
+                </div>
+                <div class="theme-name">
+                  {{
+                    themeConfigs.find(t => t.name === themeName)?.displayName
+                      || themeName
+                  }}
+                </div>
+                <div class="theme-description">
+                  {{
+                    themeConfigs.find(t => t.name === themeName)?.description
+                      || '精美的主题配色方案'
+                  }}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 当前主题色阶展示 -->
+          <section class="card">
+            <h3 class="card-title">🌈 当前主题色阶</h3>
+            <p class="card-description">
+              当前主题 "{{ currentThemeConfig?.displayName || currentTheme }}" 在
+              {{ currentMode === 'light' ? '亮色' : '暗色' }} 模式下的完整色阶体系
+            </p>
+
+            <div v-if="currentScales" class="palette-showcase">
+              <ColorPaletteCard
+                v-for="(scale, colorType) in currentScales"
+                :key="colorType"
+                :title="getColorTypeName(colorType)"
+                :subtitle="colorType"
+                :base-name="`${colorType}-6`"
+                :color-name="colorType"
+                :base-color="scale.colors?.[5] || '#000000'"
+                :colors="scale.colors || []"
+              />
+            </div>
+
+            <div v-else class="no-scales">
+              <p>无法生成当前主题的色阶，请检查主题配置</p>
+            </div>
+          </section>
+        </div>
+
         <!-- 颜色转换演示 -->
         <div v-if="activeTab === 'converter'" class="demo-section">
           <h2>🎨 颜色格式转换</h2>
@@ -318,8 +604,18 @@ checkColorAccessibility()
 
     <!-- 页脚 -->
     <footer class="footer">
-      <p>&copy; 2024 @ldesign/color - 现代颜色处理解决方案</p>
+      <p>&copy; 2024 ldesign. 基于 MIT 许可证开源。</p>
     </footer>
+
+    <!-- 通知 -->
+    <div
+      v-for="notification in notifications"
+      :key="notification.id"
+      class="notification"
+      :class="[notification.type]"
+    >
+      {{ notification.message }}
+    </div>
   </div>
 </template>
 
@@ -590,6 +886,202 @@ select {
   border-radius: 6px;
   background: white;
   font-size: 1rem;
+}
+
+/* 主题演示样式 */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e5e5;
+}
+
+.card-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.card-description {
+  margin: 0 0 1.5rem 0;
+  color: #666;
+  line-height: 1.6;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.control-group label {
+  font-weight: 500;
+  min-width: 100px;
+  color: #333;
+}
+
+.form-control {
+  padding: 8px 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  background: white;
+  font-size: 1rem;
+  min-width: 150px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: #1890ff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #40a9ff;
+  transform: translateY(-1px);
+}
+
+.status-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status-item .label {
+  font-weight: 500;
+  color: #666;
+}
+
+.status-item .value {
+  font-weight: 600;
+  color: #333;
+  font-family: monospace;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.theme-item {
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.theme-item:hover {
+  border-color: #1890ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+}
+
+.theme-item.active {
+  border-color: #1890ff;
+  background: #e6f7ff;
+}
+
+.theme-preview {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 0.5rem;
+  height: 40px;
+}
+
+.theme-color {
+  flex: 1;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.theme-name {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.theme-description {
+  font-size: 0.875rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+.palette-showcase {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.no-scales {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  background: #f5f5f5;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  color: white;
+  font-weight: 500;
+  z-index: 1000;
+  animation: slideIn 0.3s ease;
+}
+
+.notification.success {
+  background: #52c41a;
+}
+
+.notification.error {
+  background: #f5222d;
+}
+
+.notification.info {
+  background: #1890ff;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .footer {

@@ -1,0 +1,25 @@
+{
+  "extends": "../../tools/build/tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@tests/*": ["__tests__/*"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "__tests__/**/*",
+    "tests/**/*",
+    "test/**/*",
+    "e2e/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "esm",
+    "cjs", 
+    "types",
+    "examples"
+  ]
+}
