@@ -16,6 +16,7 @@ declare class SizeManagerImpl implements SizeManager {
     private cssInjector;
     private storageManager;
     private listeners;
+    private eventListeners;
     constructor(options?: SizeManagerOptions);
     /**
      * 获取当前尺寸模式
@@ -24,7 +25,7 @@ declare class SizeManagerImpl implements SizeManager {
     /**
      * 设置尺寸模式
      */
-    setMode(mode: SizeMode): void;
+    setMode(mode: SizeMode): Promise<void>;
     /**
      * 获取尺寸配置
      */
@@ -45,6 +46,22 @@ declare class SizeManagerImpl implements SizeManager {
      * 监听尺寸变化
      */
     onSizeChange(callback: (event: SizeChangeEvent) => void): () => void;
+    /**
+     * 初始化管理器
+     */
+    init(): Promise<void>;
+    /**
+     * 监听事件
+     */
+    on(event: string, callback: Function): void;
+    /**
+     * 移除事件监听
+     */
+    off(event: string, callback: Function): void;
+    /**
+     * 触发事件
+     */
+    emit(event: string, data?: any): void;
     /**
      * 销毁管理器
      */

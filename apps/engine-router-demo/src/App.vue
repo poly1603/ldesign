@@ -10,6 +10,9 @@
           <div class="language-switcher">
             <LanguageSwitcher />
           </div>
+          <div class="size-switcher">
+            <SizeSwitcher :style="'select'" :show-labels="true" />
+          </div>
           <div class="theme-switcher">
             <ThemeColorPicker />
           </div>
@@ -29,7 +32,7 @@
     </main>
 
     <footer class="app-footer">
-      <p>Powered by @ldesign/engine + @ldesign/router + @ldesign/color</p>
+      <p>Powered by @ldesign/engine + @ldesign/router + @ldesign/i18n + @ldesign/color + @ldesign/size</p>
     </footer>
   </div>
 </template>
@@ -37,6 +40,7 @@
 <script setup lang="ts">
 import { LanguageSwitcher } from '@ldesign/i18n'
 import { ThemeColorPicker } from '@ldesign/color'
+import { SizeSwitcher } from '@ldesign/size'
 
 // RouterLink和RouterView组件由Engine Router插件自动注册，无需手动导入
 // LanguageSwitcher组件从@ldesign/i18n导入
@@ -76,6 +80,7 @@ import { ThemeColorPicker } from '@ldesign/color'
 }
 
 .language-switcher,
+.size-switcher,
 .theme-switcher {
   display: flex;
   align-items: center;

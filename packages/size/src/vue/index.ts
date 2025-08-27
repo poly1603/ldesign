@@ -19,7 +19,5 @@ export { createVueSizePlugin, VueSizePlugin, VueSizeSymbol } from './plugin'
 // 默认导出插件
 export { VueSizePlugin as default } from './plugin'
 
-export { default as SizeControlPanel } from './SizeControlPanel'
-export { default as SizeIndicator } from './SizeIndicator'
 // 组件
 export { default as SizeSwitcher } from './SizeSwitcher'

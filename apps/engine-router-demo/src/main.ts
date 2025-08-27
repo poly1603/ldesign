@@ -8,6 +8,7 @@ import { createEngine } from '@ldesign/engine'
 import { createRouterEnginePlugin } from '@ldesign/router'
 import { createI18nEnginePlugin } from '@ldesign/i18n'
 import { createColorEnginePlugin } from '@ldesign/color'
+import { createSizeEnginePlugin } from '@ldesign/size'
 import App from './App.vue'
 import { routes } from './router'
 // 导入翻译文件
@@ -74,10 +75,24 @@ async function main() {
     ],
   })
 
+  // 创建Size插件
+  const sizePlugin = createSizeEnginePlugin({
+    defaultMode: 'medium',
+    autoInject: true,
+    enableStorage: true,
+    storageType: 'localStorage',
+    enableTransition: true,
+    transitionDuration: '0.3s',
+    onSizeChanged: (mode) => {
+      console.log('尺寸模式已切换到:', mode)
+    },
+  })
+
   // 安装插件到Engine（支持延迟安装）
   await engine.use(routerPlugin)
   await engine.use(i18nPlugin)
   await engine.use(colorPlugin)
+  await engine.use(sizePlugin)
 
   // 创建Vue应用（会触发插件的实际安装）
   const app = engine.createApp(App)

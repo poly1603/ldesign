@@ -181,7 +181,7 @@ export interface SizeManager {
   /** 获取当前尺寸模式 */
   getCurrentMode: () => SizeMode
   /** 设置尺寸模式 */
-  setMode: (mode: SizeMode) => void
+  setMode: (mode: SizeMode) => void | Promise<void>
   /** 获取尺寸配置 */
   getConfig: (mode?: SizeMode) => SizeConfig
   /** 生成CSS变量 */
@@ -192,6 +192,14 @@ export interface SizeManager {
   removeCSS: () => void
   /** 监听尺寸变化 */
   onSizeChange: (callback: (event: SizeChangeEvent) => void) => () => void
+  /** 监听事件 */
+  on: (event: string, callback: Function) => void
+  /** 移除事件监听 */
+  off: (event: string, callback: Function) => void
+  /** 触发事件 */
+  emit: (event: string, data?: any) => void
+  /** 初始化管理器 */
+  init: () => void | Promise<void>
   /** 销毁管理器 */
   destroy: () => void
 }

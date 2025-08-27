@@ -3,8 +3,11 @@ export { CSSVariableGenerator, createCSSVariableGenerator, defaultCSSVariableGen
 export { CSSInjectionOptions, CSSInjector, createCSSInjector, getCSSVariableValue, globalCSSInjector, injectGlobalVariables, isVariablesInjected, removeGlobalVariables, setCSSVariableValue } from './core/css-injector.js';
 export { extraLargeSizeConfig, getAvailableModes, getSizeConfig, largeSizeConfig, mediumSizeConfig, sizeConfigs, smallSizeConfig } from './core/presets.js';
 export { SizeManagerImpl, createSizeManager, globalSizeManager as default, getGlobalSizeMode, globalSizeManager, onGlobalSizeChange, setGlobalSizeMode } from './core/size-manager.js';
-export { SizeStorageManager, StorageManager, StorageOptions, createSizeStorageManager, createStorageManager, globalSizeStorageManager, globalStorageManager } from './core/storage-manager.js';
 export { BorderRadiusConfig, CSSVariableConfig, ComponentSizeConfig, FontSizeConfig, ShadowConfig, SizeChangeEvent, SizeConfig, SizeManager, SizeManagerOptions, SizeMode, SpacingConfig, VueSizeComponentProps, VueSizePluginOptions } from './types/index.js';
 export { calculateSizeScale, compareSizeModes, createCSSVariableName, createResponsiveSizeWatcher, debounce, deepMergeConfig, detectPreferredSizeMode, formatCSSValue, getDevicePixelRatio, getNextSizeMode, getPreviousSizeMode, getRecommendedSizeMode, getSizeModeDisplayName, getViewportSize, isMobileDevice, isValidInput, isValidSizeMode, parseCSSValue, parseCSSVariableName, parseSizeMode, throttle, watchMediaQuery, watchViewportSize } from './utils/index.js';
 import * as vue_index from './vue/index.js';
 export { vue_index as Vue };
+export { EnginePluginContext, default as createSizeEnginePlugin, createSizeManagerInstance } from './plugins/engine/plugin.js';
+export { SizeAdapter, SizeEnginePluginOptions } from './plugins/engine/types.js';
+export { default as SizePlugin, SizePluginOptions, SizeSymbol, createSizePlugin } from './plugins/vue/plugin.js';
+export { SizeSwitcher } from './plugins/vue/components.js';

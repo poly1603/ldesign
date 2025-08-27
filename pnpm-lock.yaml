@@ -189,6 +189,9 @@ importers:
       '@ldesign/router':
         specifier: workspace:*
         version: link:../../packages/router
+      '@ldesign/size':
+        specifier: workspace:*
+        version: link:../../packages/size
       vue:
         specifier: ^3.5.18
         version: 3.5.18(typescript@5.9.2)
@@ -1121,7 +1124,7 @@ importers:
     dependencies:
       '@lemonform/form':
         specifier: workspace:*
-        version: link:../dist
+        version: link:..
       vue:
         specifier: ^3.4.0
         version: 3.5.18(typescript@5.8.3)

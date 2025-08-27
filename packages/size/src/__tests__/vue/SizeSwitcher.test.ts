@@ -5,8 +5,6 @@
 import type { SizeMode } from '../../types'
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import SizeControlPanel from '../../vue/SizeControlPanel'
-import SizeIndicator from '../../vue/SizeIndicator'
 import SizeSwitcher from '../../vue/SizeSwitcher'
 
 // Mock CSS import

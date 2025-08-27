@@ -12,7 +12,7 @@ export * from './core/size-manager'
 // 默认导出
 export { globalSizeManager as default } from './core/size-manager'
 
-export * from './core/storage-manager'
+
 
 // 类型导出
 export * from './types'
@@ -22,3 +22,6 @@ export * from './utils'
 
 // Vue 支持（可选导入）
 export * as Vue from './vue'
+
+// 插件系统
+export * from './plugins'

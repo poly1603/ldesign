@@ -116,16 +116,16 @@ declare const SizeSwitcher: vue.DefineComponent<vue.ExtractPropTypes<{
     onChange?: ((...args: any[]) => any) | undefined;
     "onUpdate:mode"?: ((...args: any[]) => any) | undefined;
 }>, {
-    theme: "light" | "dark" | "auto";
-    size: "small" | "medium" | "large";
-    showSwitcher: boolean;
-    mode: SizeMode;
-    modes: SizeMode[];
-    switcherStyle: "button" | "select" | "radio" | "slider" | "segmented";
     showLabels: boolean;
+    modes: SizeMode[];
+    mode: SizeMode;
+    showSwitcher: boolean;
+    switcherStyle: "button" | "select" | "radio" | "segmented" | "slider";
     showIcons: boolean;
     showDescriptions: boolean;
     disabled: boolean;
+    size: "small" | "medium" | "large";
+    theme: "light" | "dark" | "auto";
     responsive: boolean;
     animated: boolean;
     className: string;

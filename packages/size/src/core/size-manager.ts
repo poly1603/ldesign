@@ -39,6 +39,7 @@ export class SizeManagerImpl implements SizeManager {
   private cssInjector: CSSInjector
   private storageManager: SizeStorageManager
   private listeners: Array<(event: SizeChangeEvent) => void> = []
+  private eventListeners: Map<string, Function[]> = new Map()
 
   constructor(options?: SizeManagerOptions) {
     this.options = { ...DEFAULT_OPTIONS, ...options }
@@ -46,7 +47,7 @@ export class SizeManagerImpl implements SizeManager {
     // 初始化存储管理器
     this.storageManager = new SizeStorageManager({
       enabled: this.options.enableStorage,
-      type: this.options.storageType,
+      type: this.options.storageType === 'memory' ? 'localStorage' : this.options.storageType,
     })
 
     // 从存储中恢复尺寸模式，如果没有则使用默认值
@@ -60,11 +61,6 @@ export class SizeManagerImpl implements SizeManager {
       enableTransition: this.options.enableTransition,
       transitionDuration: this.options.transitionDuration,
     })
-
-    // 自动注入初始样式
-    if (this.options.autoInject) {
-      this.injectCSS()
-    }
   }
 
   /**
@@ -77,7 +73,7 @@ export class SizeManagerImpl implements SizeManager {
   /**
    * 设置尺寸模式
    */
-  setMode(mode: SizeMode): void {
+  async setMode(mode: SizeMode): Promise<void> {
     if (mode === this.currentMode) {
       return
     }
@@ -96,11 +92,14 @@ export class SizeManagerImpl implements SizeManager {
     }
 
     // 触发变化事件
-    this.emitSizeChange({
+    const changeEvent = {
       previousMode,
       currentMode: mode,
       timestamp: Date.now(),
-    })
+    }
+
+    this.emitSizeChange(changeEvent)
+    this.emit('size-changed', changeEvent)
   }
 
   /**
@@ -150,11 +149,61 @@ export class SizeManagerImpl implements SizeManager {
   }
 
   /**
+   * 初始化管理器
+   */
+  async init(): Promise<void> {
+    // 自动注入初始样式
+    if (this.options.autoInject) {
+      this.injectCSS()
+    }
+  }
+
+  /**
+   * 监听事件
+   */
+  on(event: string, callback: Function): void {
+    if (!this.eventListeners.has(event)) {
+      this.eventListeners.set(event, [])
+    }
+    this.eventListeners.get(event)!.push(callback)
+  }
+
+  /**
+   * 移除事件监听
+   */
+  off(event: string, callback: Function): void {
+    const listeners = this.eventListeners.get(event)
+    if (listeners) {
+      const index = listeners.indexOf(callback)
+      if (index > -1) {
+        listeners.splice(index, 1)
+      }
+    }
+  }
+
+  /**
+   * 触发事件
+   */
+  emit(event: string, data?: any): void {
+    const listeners = this.eventListeners.get(event)
+    if (listeners) {
+      listeners.forEach(callback => {
+        try {
+          callback(data)
+        } catch (error) {
+          console.error(`[SizeManager] Event callback error for "${event}":`, error)
+        }
+      })
+    }
+  }
+
+  /**
    * 销毁管理器
    */
   destroy(): void {
     this.removeCSS()
     this.listeners.length = 0
+    this.eventListeners.clear()
   }
 
   /**
