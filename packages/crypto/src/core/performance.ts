@@ -413,7 +413,9 @@ export class PerformanceOptimizer {
    * 获取内存使用情况
    */
   private getMemoryUsage(): number {
+    // eslint-disable-next-line node/prefer-global/process
     if (typeof process !== 'undefined' && process.memoryUsage) {
+      // eslint-disable-next-line node/prefer-global/process
       return process.memoryUsage().heapUsed
     }
 

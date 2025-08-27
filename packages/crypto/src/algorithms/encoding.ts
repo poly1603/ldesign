@@ -11,13 +11,7 @@ export class Encoder implements IEncoder {
    */
   encode(data: string, encoding: EncodingType): string {
     try {
-      if (ValidationUtils.isEmpty(data)) {
-        throw ErrorUtils.createEncryptionError(
-          'Data cannot be empty',
-          'Encoding',
-        )
-      }
-
+      // 允许空字符串编码
       switch (encoding.toLowerCase()) {
         case 'base64':
           return this.encodeBase64(data)
@@ -48,13 +42,7 @@ export class Encoder implements IEncoder {
    */
   decode(encodedData: string, encoding: EncodingType): string {
     try {
-      if (ValidationUtils.isEmpty(encodedData)) {
-        throw ErrorUtils.createDecryptionError(
-          'Encoded data cannot be empty',
-          'Decoding',
-        )
-      }
-
+      // 允许空字符串解码，空字符串的编码结果解码后应该还是空字符串
       switch (encoding.toLowerCase()) {
         case 'base64':
           return this.decodeBase64(encodedData)

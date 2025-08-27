@@ -47,6 +47,7 @@ export function createRollupConfig(options = {}) {
     },
     entries: null, // 自动发现
     tsconfig: null, // 默认使用 tsconfig.json
+    globIgnore: [], // 自动发现时忽略的模式
   }
 
   // 合并配置，用户配置优先
@@ -60,6 +61,7 @@ export function createRollupConfig(options = {}) {
     globals,
     entries,
     tsconfig,
+    globIgnore,
   } = {
     ...defaultConfig,
     ...options,
@@ -101,7 +103,7 @@ export function createRollupConfig(options = {}) {
     const subModules = glob.sync('**/index.ts', {
       cwd: srcDir,
       absolute: false,
-      ignore: ['index.ts'], // 排除根目录的 index.ts，因为已经作为主入口点处理
+      ignore: ['index.ts', ...globIgnore], // 排除根目录的 index.ts 和用户指定的模式
     })
 
     subModules.forEach((subModule) => {

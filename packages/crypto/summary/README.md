@@ -87,7 +87,7 @@
 ### 基础使用
 
 ```typescript
-import { CryptoManager, AESCrypto, RSACrypto } from '@ldesign/crypto'
+import { AESCrypto, CryptoManager, RSACrypto } from '@ldesign/crypto'
 
 // AES 对称加密
 const aes = new AESCrypto()
@@ -110,7 +110,7 @@ import { useCrypto, useKeyManager } from '@ldesign/crypto/vue'
 const { encrypt, decrypt, hash } = useCrypto()
 const { generateKey, storeKey } = useKeyManager()
 
-const encryptData = async data => {
+async function encryptData(data) {
   const key = await generateKey()
   return await encrypt(data, key)
 }

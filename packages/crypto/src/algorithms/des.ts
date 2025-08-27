@@ -218,6 +218,6 @@ export const des = {
    * 生成随机密钥
    */
   generateKey: (): string => {
-    return RandomUtils.generateKey(4) // DES 密钥长度为 8 字符（4字节的十六进制）
+    return RandomUtils.generateKey(8) // DES 密钥长度为 8 字节
   },
 }

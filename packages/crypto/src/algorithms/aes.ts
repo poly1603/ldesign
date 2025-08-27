@@ -27,10 +27,7 @@ export class AESEncryptor implements IEncryptor {
    */
   encrypt(data: string, key: string, options: AESOptions = {}): EncryptResult {
     try {
-      if (ValidationUtils.isEmpty(data)) {
-        throw ErrorUtils.createEncryptionError('Data cannot be empty', 'AES')
-      }
-
+      // 允许空字符串数据，但不允许空密钥
       if (ValidationUtils.isEmpty(key)) {
         throw ErrorUtils.createEncryptionError('Key cannot be empty', 'AES')
       }
@@ -60,7 +57,9 @@ export class AESEncryptor implements IEncryptor {
       return {
         success: true,
         data: encrypted.toString(),
-        algorithm: `AES-${opts.keySize}-${opts.mode}`,
+        algorithm: 'AES',
+        mode: opts.mode,
+        keySize: opts.keySize,
         iv,
       }
     }
@@ -88,21 +87,69 @@ export class AESEncryptor implements IEncryptor {
       }
       let ciphertext: string
       let iv: string
+      let actualKeySize = opts.keySize
+      let actualMode = opts.mode
 
       // 处理输入数据
       if (typeof encryptedData === 'string') {
         ciphertext = encryptedData
         iv = opts.iv
+
+        // 如果没有提供IV，尝试使用CryptoJS的默认解密方式
+        // CryptoJS的encrypt返回的字符串包含了所有必要信息
         if (!iv) {
-          throw ErrorUtils.createDecryptionError(
-            'IV is required for decryption',
-            'AES',
-          )
+          // 使用CryptoJS的默认解密，它会自动处理IV
+          try {
+            const keyWordArray = this.prepareKey(key, opts.keySize)
+            const mode = this.getMode(opts.mode)
+
+            const decrypted = CryptoJS.AES.decrypt(encryptedData, keyWordArray, {
+              mode,
+              padding: CryptoJS.pad.Pkcs7,
+            })
+
+            const decryptedString = decrypted.toString(CryptoJS.enc.Utf8)
+
+            if (decrypted.sigBytes < 0) {
+              throw ErrorUtils.createDecryptionError(
+                'Failed to decrypt data - invalid key or corrupted data',
+                'AES',
+              )
+            }
+
+            return {
+              success: true,
+              data: decryptedString,
+              algorithm: 'AES',
+              mode: opts.mode,
+            }
+          }
+          catch (error) {
+            if (error instanceof Error) {
+              return {
+                success: false,
+                data: '',
+                algorithm: 'AES',
+                mode: opts.mode,
+                error: error.message,
+              }
+            }
+            return {
+              success: false,
+              data: '',
+              algorithm: 'AES',
+              mode: opts.mode,
+              error: 'Unknown decryption error',
+            }
+          }
         }
       }
       else {
         ciphertext = encryptedData.data || ''
         iv = encryptedData.iv || opts.iv
+        // 从加密结果中获取实际使用的参数
+        actualKeySize = (encryptedData.keySize as any) || opts.keySize
+        actualMode = (encryptedData.mode as any) || opts.mode
         if (!iv) {
           throw ErrorUtils.createDecryptionError(
             'IV not found in encrypted data',
@@ -112,11 +159,11 @@ export class AESEncryptor implements IEncryptor {
       }
 
       // 准备密钥和 IV
-      const keyWordArray = this.prepareKey(key, opts.keySize)
+      const keyWordArray = this.prepareKey(key, actualKeySize)
       const ivWordArray = CryptoJS.enc.Hex.parse(iv)
 
       // 选择加密模式
-      const mode = this.getMode(opts.mode)
+      const mode = this.getMode(actualMode)
 
       // 解密配置
       const config = {
@@ -129,7 +176,9 @@ export class AESEncryptor implements IEncryptor {
       const decrypted = CryptoJS.AES.decrypt(ciphertext, keyWordArray, config)
       const decryptedString = decrypted.toString(CryptoJS.enc.Utf8)
 
-      if (!decryptedString) {
+      // 检查解密是否成功
+      // 如果解密失败，decrypted.sigBytes 会是负数或者为0（但密文不为空）
+      if (decrypted.sigBytes < 0) {
         throw ErrorUtils.createDecryptionError(
           'Failed to decrypt data - invalid key or corrupted data',
           'AES',
@@ -139,23 +188,25 @@ export class AESEncryptor implements IEncryptor {
       return {
         success: true,
         data: decryptedString,
-        algorithm: `AES-${opts.keySize}-${opts.mode}`,
+        algorithm: 'AES',
+        mode: actualMode,
       }
     }
     catch (error) {
-      const algorithmName = `AES-${opts.keySize}-${opts.mode}`
       if (error instanceof Error) {
         return {
           success: false,
           data: '',
-          algorithm: algorithmName,
+          algorithm: 'AES',
+          mode: opts.mode,
           error: error.message,
         }
       }
       return {
         success: false,
         data: '',
-        algorithm: algorithmName,
+        algorithm: 'AES',
+        mode: opts.mode,
         error: 'Unknown decryption error',
       }
     }
@@ -220,7 +271,10 @@ export class AESEncryptor implements IEncryptor {
   /**
    * 获取加密模式
    */
-  private getMode(mode: string): any {
+  private getMode(mode?: string): any {
+    if (!mode) {
+      return CryptoJS.mode.CBC
+    }
     switch (mode.toUpperCase()) {
       case 'CBC':
         return CryptoJS.mode.CBC

@@ -1,6 +1,6 @@
 import type { HashAlgorithm, HashOptions, HashResult, IHasher } from '../types'
 import CryptoJS from 'crypto-js'
-import { CONSTANTS, ErrorUtils, ValidationUtils } from '../utils'
+import { CONSTANTS, ErrorUtils } from '../utils'
 
 /**
  * 哈希器
@@ -19,10 +19,7 @@ export class Hasher implements IHasher {
     options: HashOptions = {},
   ): HashResult {
     try {
-      if (ValidationUtils.isEmpty(data)) {
-        throw ErrorUtils.createHashError('Data cannot be empty', algorithm)
-      }
-
+      // 允许空字符串哈希
       const opts = { ...this.defaultOptions, ...options }
       let hashFunction: (data: string) => CryptoJS.lib.WordArray
 
@@ -72,6 +69,7 @@ export class Hasher implements IHasher {
       }
 
       return {
+        success: true,
         hash: hashString,
         algorithm,
         encoding: opts.encoding,
@@ -133,19 +131,8 @@ export class HMACHasher {
     options: HashOptions = {},
   ): HashResult {
     try {
-      if (ValidationUtils.isEmpty(data)) {
-        throw ErrorUtils.createHashError(
-          'Data cannot be empty',
-          `HMAC-${algorithm}`,
-        )
-      }
-
-      if (ValidationUtils.isEmpty(key)) {
-        throw ErrorUtils.createHashError(
-          'Key cannot be empty',
-          `HMAC-${algorithm}`,
-        )
-      }
+      // 允许空字符串数据和空密钥（在某些场景下可能有用）
+      // 但如果用户明确不想要空密钥，可以在调用前检查
 
       const opts = { ...this.defaultOptions, ...options }
       let hmacFunction: (data: string, key: string) => CryptoJS.lib.WordArray
@@ -196,6 +183,7 @@ export class HMACHasher {
       }
 
       return {
+        success: true,
         hash: hmacString,
         algorithm: `HMAC-${algorithm}`,
         encoding: opts.encoding,

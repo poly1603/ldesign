@@ -157,7 +157,8 @@ try {
   if (!decrypted.success) {
     console.error('解密失败:', decrypted.error)
   }
-} catch (error) {
+}
+catch (error) {
   console.error('加密操作失败:', error.message)
 }
 ```

@@ -102,10 +102,12 @@ if (encrypted.success) {
 
   if (decrypted.success) {
     console.log('解密成功:', decrypted.data)
-  } else {
+  }
+  else {
     console.error('解密失败:', decrypted.error)
   }
-} else {
+}
+else {
   console.error('加密失败:', encrypted.error)
 }
 ```
@@ -149,7 +151,8 @@ if (encrypted.success) {
     console.error('解密失败:', decrypted.error)
     // 处理解密错误
   }
-} else {
+}
+else {
   console.error('加密失败:', encrypted.error)
   // 处理加密错误
 }
@@ -186,7 +189,8 @@ function handleEncrypt() {
       2
     )
     error.value = ''
-  } else {
+  }
+  else {
     error.value = result.error || '加密失败'
   }
 }
@@ -206,10 +210,12 @@ function handleDecrypt() {
     if (result.success) {
       decrypted.value = result.data || ''
       error.value = ''
-    } else {
+    }
+    else {
       error.value = result.error || '解密失败'
     }
-  } catch (e) {
+  }
+  catch (e) {
     error.value = '解析加密数据失败'
   }
 }
@@ -221,20 +227,26 @@ function handleDecrypt() {
 
     <div class="form-group">
       <label>明文:</label>
-      <input v-model="plaintext" placeholder="输入要加密的文本" />
+      <input v-model="plaintext" placeholder="输入要加密的文本">
     </div>
 
     <div class="form-group">
       <label>密钥 (8字节):</label>
-      <input v-model="key" placeholder="输入8字节密钥" maxlength="8" />
+      <input v-model="key" placeholder="输入8字节密钥" maxlength="8">
     </div>
 
     <div class="buttons">
-      <button @click="handleEncrypt">加密</button>
-      <button :disabled="!encrypted" @click="handleDecrypt">解密</button>
+      <button @click="handleEncrypt">
+        加密
+      </button>
+      <button :disabled="!encrypted" @click="handleDecrypt">
+        解密
+      </button>
     </div>
 
-    <div v-if="error" class="error">错误: {{ error }}</div>
+    <div v-if="error" class="error">
+      错误: {{ error }}
+    </div>
 
     <div v-if="encrypted" class="result">
       <h4>加密结果:</h4>

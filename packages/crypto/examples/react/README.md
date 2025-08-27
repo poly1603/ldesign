@@ -83,7 +83,7 @@ console.log(decrypted.data) // "Hello, World!"
 ### RSA 加密
 
 ```typescript
-import { rsa, keyGenerator } from '@ldesign/crypto'
+import { keyGenerator, rsa } from '@ldesign/crypto'
 
 // 生成 RSA 密钥对
 const keyPair = keyGenerator.generateRSAKeyPair(2048)

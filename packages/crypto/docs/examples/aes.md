@@ -178,8 +178,8 @@ async function handleDecrypt() {
 
 <template>
   <div>
-    <input v-model="data" placeholder="输入数据" />
-    <input v-model="key" placeholder="输入密钥" />
+    <input v-model="data" placeholder="输入数据">
+    <input v-model="key" placeholder="输入密钥">
     <button :disabled="isEncrypting" @click="handleEncrypt">
       {{ isEncrypting ? '加密中...' : '加密' }}
     </button>
@@ -223,16 +223,19 @@ class SecureStorage {
   // 解密读取
   getItem(key: string): any {
     const stored = localStorage.getItem(key)
-    if (!stored) return null
+    if (!stored)
+      return null
 
     try {
       const encrypted = JSON.parse(stored)
       const decrypted = decrypt.aes(encrypted, this.key)
 
-      if (!decrypted.success) return null
+      if (!decrypted.success)
+        return null
 
       return JSON.parse(decrypted.data)
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -267,10 +270,12 @@ class ConfigManager {
       const encrypted = JSON.parse(encryptedConfig)
       const decrypted = decrypt.aes256(encrypted, this.CONFIG_KEY)
 
-      if (!decrypted.success) return null
+      if (!decrypted.success)
+        return null
 
       return JSON.parse(decrypted.data)
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -299,7 +304,8 @@ class FormEncryption {
       const encrypted = JSON.parse(encryptedData)
       const decrypted = decrypt.aes(encrypted, key)
 
-      if (!decrypted.success) return null
+      if (!decrypted.success)
+        return null
 
       const data = JSON.parse(decrypted.data)
       const formData = new FormData()
@@ -309,7 +315,8 @@ class FormEncryption {
       }
 
       return formData
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -352,7 +359,7 @@ function modePerformanceTest() {
   const key = 'test-key'
   const modes = ['CBC', 'ECB', 'CFB', 'OFB', 'CTR']
 
-  modes.forEach(mode => {
+  modes.forEach((mode) => {
     console.time(`AES-256-${mode}`)
 
     const encrypted = encrypt.aes(data, key, { mode })
@@ -403,7 +410,8 @@ function safeDecrypt(encryptedData: any, key: string) {
     }
 
     return result.data
-  } catch (error) {
+  }
+  catch (error) {
     console.error('解密异常:', error.message)
     return null
   }

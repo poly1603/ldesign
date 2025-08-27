@@ -15,19 +15,19 @@ declare global {
    * Web Workers 支持
    */
   interface Worker {
-    postMessage(message: any, transfer?: Transferable[]): void
+    postMessage: (message: any, transfer?: Transferable[]) => void
     onmessage: ((this: Worker, ev: MessageEvent) => any) | null
     onerror: ((this: AbstractWorker, ev: ErrorEvent) => any) | null
-    terminate(): void
+    terminate: () => void
   }
 
   /**
    * 性能 API
    */
   interface Performance {
-    now(): number
-    mark(markName: string): void
-    measure(measureName: string, startMark?: string, endMark?: string): void
+    now: () => number
+    mark: (markName: string) => void
+    measure: (measureName: string, startMark?: string, endMark?: string) => void
   }
 }
 
@@ -38,7 +38,7 @@ declare module 'crypto-js' {
   export interface WordArray {
     words: number[]
     sigBytes: number
-    toString(encoder?: any): string
+    toString: (encoder?: any) => string
   }
 
   export interface CipherParams {
@@ -54,16 +54,16 @@ declare module 'crypto-js' {
   }
 
   export interface Cipher {
-    encrypt(
+    encrypt: (
       message: string | WordArray,
       key: string | WordArray,
       cfg?: object
-    ): CipherParams
-    decrypt(
+    ) => CipherParams
+    decrypt: (
       ciphertext: string | CipherParams,
       key: string | WordArray,
       cfg?: object
-    ): WordArray
+    ) => WordArray
   }
 
   export const AES: Cipher
@@ -72,16 +72,16 @@ declare module 'crypto-js' {
 
   export namespace enc {
     export const Hex: {
-      parse(hexStr: string): WordArray
-      stringify(wordArray: WordArray): string
+      parse: (hexStr: string) => WordArray
+      stringify: (wordArray: WordArray) => string
     }
     export const Base64: {
-      parse(base64Str: string): WordArray
-      stringify(wordArray: WordArray): string
+      parse: (base64Str: string) => WordArray
+      stringify: (wordArray: WordArray) => string
     }
     export const Utf8: {
-      parse(utf8Str: string): WordArray
-      stringify(wordArray: WordArray): string
+      parse: (utf8Str: string) => WordArray
+      stringify: (wordArray: WordArray) => string
     }
   }
 
@@ -169,4 +169,4 @@ declare namespace NodeJS {
   }
 }
 
-export {}
+export { }

@@ -31,19 +31,102 @@ yarn add @ldesign/crypto
 ### 基础用法
 
 ```typescript
-import { decrypt, encrypt, hash } from '@ldesign/crypto'
+import { aes, encoding, hash } from '@ldesign/crypto'
 
 // AES 加密
-const encrypted = encrypt.aes('Hello World', 'secret-key')
-const decrypted = decrypt.aes(encrypted, 'secret-key')
+const encrypted = aes.encrypt('Hello World', 'secret-key')
+console.log(encrypted.success) // true
+console.log(encrypted.data) // 加密后的数据
+console.log(encrypted.algorithm) // 'AES'
+console.log(encrypted.mode) // 'CBC'
+console.log(encrypted.keySize) // 256
+
+// AES 解密
+const decrypted = aes.decrypt(encrypted, 'secret-key')
+console.log(decrypted.success) // true
+console.log(decrypted.data) // 'Hello World'
 
 // 哈希
-const md5Hash = hash.md5('Hello World')
-const sha256Hash = hash.sha256('Hello World')
+const sha256Result = hash.sha256('Hello World')
+console.log(sha256Result.success) // true
+console.log(sha256Result.hash) // SHA256 哈希值
+console.log(sha256Result.algorithm) // 'SHA256'
+
+// HMAC
+const hmacResult = hash.hmac('Hello World', 'secret-key', 'SHA256')
+console.log(hmacResult.success) // true
+console.log(hmacResult.hash) // HMAC 值
 
 // Base64 编码
-const encoded = encrypt.base64('Hello World')
-const decoded = decrypt.base64(encoded)
+const encoded = encoding.encode('Hello World', 'base64')
+console.log(encoded) // 'SGVsbG8gV29ybGQ='
+
+const decoded = encoding.decode(encoded, 'base64')
+console.log(decoded) // 'Hello World'
+```
+
+### 高级用法
+
+#### 不同密钥长度的 AES 加密
+
+```typescript
+import { aes } from '@ldesign/crypto'
+
+// AES-128
+const encrypted128 = aes.encrypt('Hello World', 'secret-key', { keySize: 128 })
+
+// AES-192
+const encrypted192 = aes.encrypt('Hello World', 'secret-key', { keySize: 192 })
+
+// AES-256 (默认)
+const encrypted256 = aes.encrypt('Hello World', 'secret-key', { keySize: 256 })
+```
+
+#### 不同加密模式
+
+```typescript
+import { aes } from '@ldesign/crypto'
+
+// CBC 模式 (默认)
+const cbcEncrypted = aes.encrypt('Hello World', 'secret-key', { mode: 'CBC' })
+
+// ECB 模式
+const ecbEncrypted = aes.encrypt('Hello World', 'secret-key', { mode: 'ECB' })
+
+// CFB 模式
+const cfbEncrypted = aes.encrypt('Hello World', 'secret-key', { mode: 'CFB' })
+```
+
+#### 密钥生成
+
+```typescript
+import { RandomUtils } from '@ldesign/crypto'
+
+// 生成随机密钥
+const key32 = RandomUtils.generateKey(32) // 32字节密钥 (64个十六进制字符)
+const key16 = RandomUtils.generateKey(16) // 16字节密钥 (32个十六进制字符)
+
+// 生成随机盐值
+const salt = RandomUtils.generateSalt(16)
+
+// 生成随机IV
+const iv = RandomUtils.generateIV(16)
+```
+
+#### 数据完整性验证
+
+```typescript
+import { hash } from '@ldesign/crypto'
+
+const data = 'Important data'
+const secretKey = 'verification-key'
+
+// 生成HMAC用于验证数据完整性
+const hmacResult = hash.hmac(data, secretKey, 'SHA256')
+
+// 验证数据完整性
+const isValid = hash.verify(data, hmacResult.hash, 'SHA256')
+console.log(isValid) // true
 ```
 
 ### Vue 3 集成

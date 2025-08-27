@@ -234,7 +234,7 @@ class EmailSigner {
 class BatchSigner {
   constructor(private privateKey: string) {}
 
-  signMultiple(dataList: string[]): Array<{ data: string; signature: string }> {
+  signMultiple(dataList: string[]): Array<{ data: string, signature: string }> {
     return dataList.map(data => ({
       data,
       signature: digitalSignature.sign(data, this.privateKey, 'sha256'),
@@ -242,7 +242,7 @@ class BatchSigner {
   }
 
   static verifyMultiple(
-    signedDataList: Array<{ data: string; signature: string }>,
+    signedDataList: Array<{ data: string, signature: string }>,
     publicKey: string
   ): boolean[] {
     return signedDataList.map(item =>
@@ -284,7 +284,7 @@ class SecureKeyManager {
   static saveKeyPair(
     keyPair: any,
     password: string
-  ): { publicKey: string; encryptedPrivateKey: string } {
+  ): { publicKey: string, encryptedPrivateKey: string } {
     return {
       publicKey: keyPair.publicKey,
       encryptedPrivateKey: this.encryptPrivateKey(keyPair.privateKey, password),
@@ -309,7 +309,7 @@ class TimestampedSigner {
   static signWithTimestamp(
     data: string,
     privateKey: string
-  ): { signature: string; timestamp: number } {
+  ): { signature: string, timestamp: number } {
     const timestamp = Date.now()
     const dataWithTimestamp = `${data}|${timestamp}`
     const signature = digitalSignature.sign(dataWithTimestamp, privateKey, 'sha256')
@@ -322,7 +322,7 @@ class TimestampedSigner {
     signature: string,
     timestamp: number,
     publicKey: string
-  ): { valid: boolean; expired: boolean } {
+  ): { valid: boolean, expired: boolean } {
     const dataWithTimestamp = `${data}|${timestamp}`
     const valid = digitalSignature.verify(dataWithTimestamp, signature, publicKey, 'sha256')
     const expired = Date.now() - timestamp > this.MAX_AGE

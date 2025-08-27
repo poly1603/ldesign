@@ -274,9 +274,11 @@ function validateKeyStrength(key: string): {
   // 检查长度
   if (key.length < 16) {
     issues.push('密钥长度不足（建议至少16字符）')
-  } else if (key.length >= 32) {
+  }
+  else if (key.length >= 32) {
     strength = 'strong'
-  } else if (key.length >= 24) {
+  }
+  else if (key.length >= 24) {
     strength = 'medium'
   }
 
@@ -461,7 +463,8 @@ function checkRandomnessAvailability(): {
           quality: 'high',
         }
       }
-    } catch {
+    }
+    catch {
       // Node.js crypto 不可用
     }
   }
@@ -490,10 +493,10 @@ function testRandomness(
   generator: () => number,
   samples: number = 10000
 ): {
-  mean: number
-  variance: number
-  uniformity: number
-} {
+    mean: number
+    variance: number
+    uniformity: number
+  } {
   const values: number[] = []
 
   for (let i = 0; i < samples; i++) {
@@ -508,7 +511,7 @@ function testRandomness(
 
   // 计算均匀性（简化版卡方检验）
   const buckets = Array.from({ length: 10 }).fill(0)
-  values.forEach(val => {
+  values.forEach((val) => {
     const bucket = Math.floor(val * 10)
     if (bucket >= 0 && bucket < 10) {
       buckets[bucket]++
@@ -605,7 +608,7 @@ class KeyPool {
   }
 
   // 获取池状态
-  getPoolStatus(): { available: number; maxSize: number } {
+  getPoolStatus(): { available: number, maxSize: number } {
     return {
       available: this.pool.length,
       maxSize: this.maxSize,

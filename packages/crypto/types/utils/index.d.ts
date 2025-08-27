@@ -60,6 +60,7 @@ declare class RandomUtils {
     static generateIV(length?: number): string;
     /**
      * 生成随机密钥
+     * @param length 期望的字节长度，返回的十六进制字符串长度为 length * 2
      */
     static generateKey(length?: number): string;
 }

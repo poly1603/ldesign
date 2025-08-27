@@ -292,9 +292,11 @@ export class CryptoManager {
       const logMessage = `[${timestamp}] [${level.toUpperCase()}] ${message}`
 
       if (data) {
+        // eslint-disable-next-line no-console
         console[level](logMessage, data)
       }
       else {
+        // eslint-disable-next-line no-console
         console[level](logMessage)
       }
     }

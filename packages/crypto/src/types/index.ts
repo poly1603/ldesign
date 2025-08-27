@@ -149,9 +149,11 @@ export interface DecryptResult {
  * 哈希结果
  */
 export interface HashResult {
+  success: boolean
   hash: string
   algorithm: string
   encoding: EncodingType
+  error?: string
 }
 
 /**

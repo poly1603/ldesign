@@ -244,7 +244,7 @@ const { encryptAES, lastError, clearError } = useCrypto()
 const errorMessage = ref('')
 
 // 监听错误
-watch(lastError, error => {
+watch(lastError, (error) => {
   if (error) {
     errorMessage.value = error
     // 5秒后自动清除错误
@@ -260,7 +260,8 @@ async function handleEncrypt() {
     clearError()
     const result = await encryptAES(data.value, key.value)
     // 处理成功结果
-  } catch (error) {
+  }
+  catch (error) {
     // 错误会自动设置到 lastError
     console.error('加密失败:', error)
   }
@@ -339,7 +340,8 @@ const unsafeCompare = (a: string, b: string) => a === b
 
 // 安全的常数时间比较
 function safeCompare(a: string, b: string): boolean {
-  if (a.length !== b.length) return false
+  if (a.length !== b.length)
+    return false
 
   let result = 0
   for (let i = 0; i < a.length; i++) {
@@ -410,7 +412,8 @@ async function safeEncrypt(data: string, key: string) {
       data: result,
       error: null,
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('加密错误:', error)
 
     return {
@@ -496,7 +499,8 @@ function migrateEncryptedData(oldEncryptedData: any, key: string) {
       // 用新库重新加密
       return encrypt.aes(decrypted.data, key)
     }
-  } catch {
+  }
+  catch {
     // 如果新库无法解密，使用旧库解密后重新加密
     const oldDecrypted = oldLibrary.decrypt(oldEncryptedData, key)
     return encrypt.aes(oldDecrypted, key)

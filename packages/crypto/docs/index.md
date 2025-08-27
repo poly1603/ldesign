@@ -99,12 +99,14 @@ async function handleEncrypt() {
 
 <template>
   <div>
-    <input v-model="data" placeholder="输入要加密的数据" />
-    <input v-model="key" placeholder="输入密钥" />
+    <input v-model="data" placeholder="输入要加密的数据">
+    <input v-model="key" placeholder="输入密钥">
     <button :disabled="isEncrypting" @click="handleEncrypt">
       {{ isEncrypting ? '加密中...' : '加密' }}
     </button>
-    <div v-if="encryptedData">加密结果: {{ encryptedData }}</div>
+    <div v-if="encryptedData">
+      加密结果: {{ encryptedData }}
+    </div>
   </div>
 </template>
 ```

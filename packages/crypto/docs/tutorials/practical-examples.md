@@ -90,7 +90,7 @@ async function loginUser(username: string, password: string) {
 ### 解决方案
 
 ```typescript
-import { aes, keyGenerator, base64 } from '@ldesign/crypto'
+import { aes, base64, keyGenerator } from '@ldesign/crypto'
 
 class SensitiveDataManager {
   private static readonly MASTER_KEY = process.env.ENCRYPTION_MASTER_KEY!
@@ -111,7 +111,7 @@ class SensitiveDataManager {
     })
 
     if (!encrypted.success) {
-      throw new Error('加密失败: ' + encrypted.error)
+      throw new Error(`加密失败: ${encrypted.error}`)
     }
 
     return {
@@ -129,7 +129,7 @@ class SensitiveDataManager {
     })
 
     if (!decrypted.success) {
-      throw new Error('解密失败: ' + decrypted.error)
+      throw new Error(`解密失败: ${decrypted.error}`)
     }
 
     return decrypted.data!
@@ -198,7 +198,7 @@ class UserProfile {
 ### 解决方案
 
 ```typescript
-import { hmac, hash } from '@ldesign/crypto'
+import { hash, hmac } from '@ldesign/crypto'
 
 class APISignatureManager {
   // 生成请求签名
@@ -281,7 +281,7 @@ class APIClient {
 // 服务端验证中间件
 function signatureVerificationMiddleware(req: Request, res: Response, next: NextFunction) {
   const { method, url, body } = req
-  const timestamp = parseInt(req.headers['x-timestamp'] as string)
+  const timestamp = Number.parseInt(req.headers['x-timestamp'] as string)
   const signature = req.headers['x-signature'] as string
   const secretKey = getSecretKeyForClient(req.headers['x-client-id'] as string)
 
@@ -402,7 +402,7 @@ class FileUploadManager {
 ### 解决方案
 
 ```typescript
-import { rsa, aes, keyGenerator } from '@ldesign/crypto'
+import { aes, keyGenerator, rsa } from '@ldesign/crypto'
 
 class SecureDataTransmission {
   private serverPublicKey: string

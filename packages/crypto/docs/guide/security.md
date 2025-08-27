@@ -62,15 +62,18 @@ class SecureKeyStorage {
   private static getAllKeys(masterKey: string): Record<string, string> {
     try {
       const stored = localStorage.getItem(this.STORAGE_KEY)
-      if (!stored) return {}
+      if (!stored)
+        return {}
 
       const encrypted = JSON.parse(stored)
       const decrypted = decrypt.aes(encrypted, masterKey)
 
-      if (!decrypted.success) return {}
+      if (!decrypted.success)
+        return {}
 
       return JSON.parse(decrypted.data)
-    } catch {
+    }
+    catch {
       return {}
     }
   }
@@ -167,7 +170,7 @@ class KeyRotationManager {
       }
     }
 
-    keysToDelete.forEach(keyId => {
+    keysToDelete.forEach((keyId) => {
       this.keys.delete(keyId)
       console.log(`已清理密钥版本 ${keyId}`)
     })
@@ -240,11 +243,13 @@ class SecureRandom {
       const array = new Uint8Array(length)
       crypto.getRandomValues(array)
       return array
-    } else if (typeof require !== 'undefined') {
+    }
+    else if (typeof require !== 'undefined') {
       // Node.js 环境
       const crypto = require('node:crypto')
       return new Uint8Array(crypto.randomBytes(length))
-    } else {
+    }
+    else {
       throw new TypeError('无法获取安全随机数生成器')
     }
   }
@@ -451,7 +456,8 @@ class CacheTimingProtection {
       dummy += Math.random()
     }
     // 确保操作不被优化掉
-    if (dummy < 0) console.log(dummy)
+    if (dummy < 0)
+      console.log(dummy)
   }
 
   // 安全的密钥验证
@@ -518,11 +524,12 @@ class SecureErrorHandler {
   static async secureOperation<T>(
     operation: () => Promise<T>,
     context: string
-  ): Promise<{ success: boolean; data?: T; error?: string }> {
+  ): Promise<{ success: boolean, data?: T, error?: string }> {
     try {
       const data = await operation()
       return { success: true, data }
-    } catch (error) {
+    }
+    catch (error) {
       const safeError = this.handleCryptoError(error as Error, context)
       return { success: false, error: safeError.message }
     }
@@ -631,7 +638,8 @@ class SecurityAuditLogger {
   exportLogs(format: 'json' | 'csv' = 'json'): string {
     if (format === 'json') {
       return JSON.stringify(this.logs, null, 2)
-    } else {
+    }
+    else {
       // CSV 格式
       const headers = ['id', 'type', 'success', 'algorithm', 'timestamp']
       const csvLines = [headers.join(',')]
@@ -662,7 +670,8 @@ function auditedEncrypt(data: string, key: string) {
     })
 
     return result
-  } catch (error) {
+  }
+  catch (error) {
     securityAudit.logSecurityEvent({
       type: 'encryption',
       success: false,

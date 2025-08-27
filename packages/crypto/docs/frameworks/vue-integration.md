@@ -17,9 +17,9 @@ pnpm add @ldesign/crypto
 ### 1. 全局插件注册
 
 ```typescript
+import { CryptoPlugin } from '@ldesign/crypto/vue'
 // main.ts
 import { createApp } from 'vue'
-import { CryptoPlugin } from '@ldesign/crypto/vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -47,31 +47,8 @@ app.mount('#app')
 ### 2. 在组件中使用全局 API
 
 ```vue
-<template>
-  <div class="crypto-demo">
-    <h2>加密演示</h2>
-
-    <div class="form-section">
-      <input v-model="plaintext" placeholder="输入要加密的文本" />
-      <input v-model="secretKey" placeholder="输入密钥" />
-      <button @click="handleEncrypt">加密</button>
-      <button @click="handleDecrypt" :disabled="!encrypted">解密</button>
-    </div>
-
-    <div class="result-section" v-if="encrypted">
-      <h3>加密结果:</h3>
-      <pre>{{ encrypted }}</pre>
-    </div>
-
-    <div class="result-section" v-if="decrypted">
-      <h3>解密结果:</h3>
-      <p>{{ decrypted }}</p>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, getCurrentInstance } from 'vue'
+import { getCurrentInstance, ref } from 'vue'
 
 // 获取全局加密实例
 const instance = getCurrentInstance()
@@ -84,7 +61,7 @@ const encrypted = ref('')
 const decrypted = ref('')
 
 // 加密处理
-const handleEncrypt = () => {
+function handleEncrypt() {
   try {
     const result = $crypto.aes.encrypt(plaintext.value, secretKey.value, {
       keySize: 256,
@@ -93,16 +70,18 @@ const handleEncrypt = () => {
 
     if (result.success) {
       encrypted.value = result.data
-    } else {
-      alert('加密失败: ' + result.error)
     }
-  } catch (error) {
-    alert('加密错误: ' + error.message)
+    else {
+      alert(`加密失败: ${result.error}`)
+    }
+  }
+  catch (error) {
+    alert(`加密错误: ${error.message}`)
   }
 }
 
 // 解密处理
-const handleDecrypt = () => {
+function handleDecrypt() {
   try {
     const result = $crypto.aes.decrypt(encrypted.value, secretKey.value, {
       keySize: 256,
@@ -111,14 +90,43 @@ const handleDecrypt = () => {
 
     if (result.success) {
       decrypted.value = result.data
-    } else {
-      alert('解密失败: ' + result.error)
     }
-  } catch (error) {
-    alert('解密错误: ' + error.message)
+    else {
+      alert(`解密失败: ${result.error}`)
+    }
+  }
+  catch (error) {
+    alert(`解密错误: ${error.message}`)
   }
 }
 </script>
+
+<template>
+  <div class="crypto-demo">
+    <h2>加密演示</h2>
+
+    <div class="form-section">
+      <input v-model="plaintext" placeholder="输入要加密的文本">
+      <input v-model="secretKey" placeholder="输入密钥">
+      <button @click="handleEncrypt">
+        加密
+      </button>
+      <button :disabled="!encrypted" @click="handleDecrypt">
+        解密
+      </button>
+    </div>
+
+    <div v-if="encrypted" class="result-section">
+      <h3>加密结果:</h3>
+      <pre>{{ encrypted }}</pre>
+    </div>
+
+    <div v-if="decrypted" class="result-section">
+      <h3>解密结果:</h3>
+      <p>{{ decrypted }}</p>
+    </div>
+  </div>
+</template>
 ```
 
 ## Composition API 集成
@@ -126,68 +134,9 @@ const handleDecrypt = () => {
 ### 1. useCrypto Hook
 
 ```vue
-<template>
-  <div class="crypto-composable-demo">
-    <h2>Composition API 加密演示</h2>
-
-    <div class="form-section">
-      <input v-model="inputData" placeholder="输入数据" />
-      <input v-model="inputKey" placeholder="输入密钥" />
-
-      <div class="button-group">
-        <button @click="performEncryption" :disabled="isEncrypting">
-          {{ isEncrypting ? '加密中...' : '🔒 AES 加密' }}
-        </button>
-
-        <button @click="performDecryption" :disabled="isDecrypting || !encryptedResult">
-          {{ isDecrypting ? '解密中...' : '🔓 AES 解密' }}
-        </button>
-
-        <button @click="generateRSAKeys" :disabled="isGeneratingKeys">
-          {{ isGeneratingKeys ? '生成中...' : '🔑 生成 RSA 密钥' }}
-        </button>
-      </div>
-    </div>
-
-    <!-- 错误显示 -->
-    <div v-if="lastError" class="error-message">
-      ❌ {{ lastError }}
-      <button @click="clearError">清除</button>
-    </div>
-
-    <!-- 加密结果 -->
-    <div v-if="encryptedResult" class="result-section">
-      <h3>🔒 加密结果:</h3>
-      <pre>{{ encryptedResult }}</pre>
-      <button @click="copyToClipboard(encryptedResult)">📋 复制</button>
-    </div>
-
-    <!-- 解密结果 -->
-    <div v-if="decryptedResult" class="result-section">
-      <h3>🔓 解密结果:</h3>
-      <p class="decrypted-text">{{ decryptedResult }}</p>
-    </div>
-
-    <!-- RSA 密钥对 -->
-    <div v-if="rsaKeyPair" class="key-section">
-      <h3>🔑 RSA 密钥对:</h3>
-      <div class="key-item">
-        <h4>公钥:</h4>
-        <textarea :value="rsaKeyPair.publicKey" readonly rows="4"></textarea>
-        <button @click="copyToClipboard(rsaKeyPair.publicKey)">📋 复制公钥</button>
-      </div>
-      <div class="key-item">
-        <h4>私钥:</h4>
-        <textarea :value="rsaKeyPair.privateKey" readonly rows="4"></textarea>
-        <button @click="copyToClipboard(rsaKeyPair.privateKey)">📋 复制私钥</button>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useCrypto } from '@ldesign/crypto/vue'
+import { ref } from 'vue'
 
 // 使用加密 Composable
 const {
@@ -222,7 +171,7 @@ const decryptedResult = ref('')
 const rsaKeyPair = ref(null)
 
 // 执行加密
-const performEncryption = async () => {
+async function performEncryption() {
   try {
     const result = await encryptAES(inputData.value, inputKey.value, {
       keySize: 256,
@@ -230,44 +179,117 @@ const performEncryption = async () => {
     })
     encryptedResult.value = result
     decryptedResult.value = '' // 清空解密结果
-  } catch (error) {
+  }
+  catch (error) {
     console.error('加密失败:', error)
   }
 }
 
 // 执行解密
-const performDecryption = async () => {
+async function performDecryption() {
   try {
     const result = await decryptAES(encryptedResult.value, inputKey.value, {
       keySize: 256,
       mode: 'CBC',
     })
     decryptedResult.value = result
-  } catch (error) {
+  }
+  catch (error) {
     console.error('解密失败:', error)
   }
 }
 
 // 生成 RSA 密钥对
-const generateRSAKeys = async () => {
+async function generateRSAKeys() {
   try {
     const keyPair = await generateRSAKeyPair(2048)
     rsaKeyPair.value = keyPair
-  } catch (error) {
+  }
+  catch (error) {
     console.error('密钥生成失败:', error)
   }
 }
 
 // 复制到剪贴板
-const copyToClipboard = async (text: string) => {
+async function copyToClipboard(text: string) {
   try {
     await navigator.clipboard.writeText(text)
     alert('已复制到剪贴板')
-  } catch (error) {
+  }
+  catch (error) {
     alert('复制失败')
   }
 }
 </script>
+
+<template>
+  <div class="crypto-composable-demo">
+    <h2>Composition API 加密演示</h2>
+
+    <div class="form-section">
+      <input v-model="inputData" placeholder="输入数据">
+      <input v-model="inputKey" placeholder="输入密钥">
+
+      <div class="button-group">
+        <button :disabled="isEncrypting" @click="performEncryption">
+          {{ isEncrypting ? '加密中...' : '🔒 AES 加密' }}
+        </button>
+
+        <button :disabled="isDecrypting || !encryptedResult" @click="performDecryption">
+          {{ isDecrypting ? '解密中...' : '🔓 AES 解密' }}
+        </button>
+
+        <button :disabled="isGeneratingKeys" @click="generateRSAKeys">
+          {{ isGeneratingKeys ? '生成中...' : '🔑 生成 RSA 密钥' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- 错误显示 -->
+    <div v-if="lastError" class="error-message">
+      ❌ {{ lastError }}
+      <button @click="clearError">
+        清除
+      </button>
+    </div>
+
+    <!-- 加密结果 -->
+    <div v-if="encryptedResult" class="result-section">
+      <h3>🔒 加密结果:</h3>
+      <pre>{{ encryptedResult }}</pre>
+      <button @click="copyToClipboard(encryptedResult)">
+        📋 复制
+      </button>
+    </div>
+
+    <!-- 解密结果 -->
+    <div v-if="decryptedResult" class="result-section">
+      <h3>🔓 解密结果:</h3>
+      <p class="decrypted-text">
+        {{ decryptedResult }}
+      </p>
+    </div>
+
+    <!-- RSA 密钥对 -->
+    <div v-if="rsaKeyPair" class="key-section">
+      <h3>🔑 RSA 密钥对:</h3>
+      <div class="key-item">
+        <h4>公钥:</h4>
+        <textarea :value="rsaKeyPair.publicKey" readonly rows="4" />
+        <button @click="copyToClipboard(rsaKeyPair.publicKey)">
+          📋 复制公钥
+        </button>
+      </div>
+      <div class="key-item">
+        <h4>私钥:</h4>
+        <textarea :value="rsaKeyPair.privateKey" readonly rows="4" />
+        <button @click="copyToClipboard(rsaKeyPair.privateKey)">
+          📋 复制私钥
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .crypto-composable-demo {
@@ -394,52 +416,9 @@ const copyToClipboard = async (text: string) => {
 ### 2. useHash Hook
 
 ```vue
-<template>
-  <div class="hash-demo">
-    <h2>哈希算法演示</h2>
-
-    <div class="form-section">
-      <textarea v-model="inputData" placeholder="输入要哈希的数据..." rows="4"></textarea>
-
-      <select v-model="selectedAlgorithm">
-        <option value="md5">MD5</option>
-        <option value="sha1">SHA1</option>
-        <option value="sha224">SHA224</option>
-        <option value="sha256">SHA256</option>
-        <option value="sha384">SHA384</option>
-        <option value="sha512">SHA512</option>
-      </select>
-
-      <button @click="calculateHash" :disabled="isHashing">
-        {{ isHashing ? '计算中...' : '🔍 计算哈希' }}
-      </button>
-
-      <button @click="calculateHMAC" :disabled="isHashing">
-        {{ isHashing ? '计算中...' : '🔐 计算 HMAC' }}
-      </button>
-    </div>
-
-    <div class="hmac-section" v-if="showHMACInput">
-      <input v-model="hmacKey" placeholder="输入 HMAC 密钥" type="password" />
-    </div>
-
-    <div v-if="hashResult" class="result-section">
-      <h3>{{ selectedAlgorithm.toUpperCase() }} 哈希结果:</h3>
-      <div class="hash-result">{{ hashResult }}</div>
-      <button @click="copyToClipboard(hashResult)">📋 复制</button>
-    </div>
-
-    <div v-if="hmacResult" class="result-section">
-      <h3>{{ selectedAlgorithm.toUpperCase() }} HMAC 结果:</h3>
-      <div class="hash-result">{{ hmacResult }}</div>
-      <button @click="copyToClipboard(hmacResult)">📋 复制</button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { useHash } from '@ldesign/crypto/vue'
+import { computed, ref } from 'vue'
 
 // 使用哈希 Composable
 const {
@@ -480,7 +459,7 @@ const hmacKey = ref('secret-key')
 const showHMACInput = ref(false)
 
 // 计算哈希
-const calculateHash = async () => {
+async function calculateHash() {
   try {
     let result: string
 
@@ -510,13 +489,14 @@ const calculateHash = async () => {
     hashResult.value = result
     hmacResult.value = '' // 清空 HMAC 结果
     showHMACInput.value = false
-  } catch (error) {
+  }
+  catch (error) {
     console.error('哈希计算失败:', error)
   }
 }
 
 // 计算 HMAC
-const calculateHMAC = async () => {
+async function calculateHMAC() {
   showHMACInput.value = true
 
   if (!hmacKey.value) {
@@ -552,21 +532,86 @@ const calculateHMAC = async () => {
 
     hmacResult.value = result
     hashResult.value = '' // 清空普通哈希结果
-  } catch (error) {
+  }
+  catch (error) {
     console.error('HMAC 计算失败:', error)
   }
 }
 
 // 复制到剪贴板
-const copyToClipboard = async (text: string) => {
+async function copyToClipboard(text: string) {
   try {
     await navigator.clipboard.writeText(text)
     alert('已复制到剪贴板')
-  } catch (error) {
+  }
+  catch (error) {
     alert('复制失败')
   }
 }
 </script>
+
+<template>
+  <div class="hash-demo">
+    <h2>哈希算法演示</h2>
+
+    <div class="form-section">
+      <textarea v-model="inputData" placeholder="输入要哈希的数据..." rows="4" />
+
+      <select v-model="selectedAlgorithm">
+        <option value="md5">
+          MD5
+        </option>
+        <option value="sha1">
+          SHA1
+        </option>
+        <option value="sha224">
+          SHA224
+        </option>
+        <option value="sha256">
+          SHA256
+        </option>
+        <option value="sha384">
+          SHA384
+        </option>
+        <option value="sha512">
+          SHA512
+        </option>
+      </select>
+
+      <button :disabled="isHashing" @click="calculateHash">
+        {{ isHashing ? '计算中...' : '🔍 计算哈希' }}
+      </button>
+
+      <button :disabled="isHashing" @click="calculateHMAC">
+        {{ isHashing ? '计算中...' : '🔐 计算 HMAC' }}
+      </button>
+    </div>
+
+    <div v-if="showHMACInput" class="hmac-section">
+      <input v-model="hmacKey" placeholder="输入 HMAC 密钥" type="password">
+    </div>
+
+    <div v-if="hashResult" class="result-section">
+      <h3>{{ selectedAlgorithm.toUpperCase() }} 哈希结果:</h3>
+      <div class="hash-result">
+        {{ hashResult }}
+      </div>
+      <button @click="copyToClipboard(hashResult)">
+        📋 复制
+      </button>
+    </div>
+
+    <div v-if="hmacResult" class="result-section">
+      <h3>{{ selectedAlgorithm.toUpperCase() }} HMAC 结果:</h3>
+      <div class="hash-result">
+        {{ hmacResult }}
+      </div>
+      <button @click="copyToClipboard(hmacResult)">
+        📋 复制
+      </button>
+    </div>
+  </div>
+</template>
 ```
 
 ## 高级用法
@@ -576,6 +621,12 @@ const copyToClipboard = async (text: string) => {
 ```typescript
 // crypto.config.ts
 import type { CryptoPluginOptions } from '@ldesign/crypto/vue'
+
+import { CryptoPlugin } from '@ldesign/crypto/vue'
+// main.ts
+import { createApp } from 'vue'
+import App from './App.vue'
+import { cryptoConfig } from './crypto.config'
 
 export const cryptoConfig: CryptoPluginOptions = {
   globalPropertyName: '$crypto',
@@ -591,12 +642,6 @@ export const cryptoConfig: CryptoPluginOptions = {
     logLevel: 'warn',
   },
 }
-
-// main.ts
-import { createApp } from 'vue'
-import { CryptoPlugin } from '@ldesign/crypto/vue'
-import { cryptoConfig } from './crypto.config'
-import App from './App.vue'
 
 const app = createApp(App)
 app.use(CryptoPlugin, cryptoConfig)
@@ -626,7 +671,7 @@ import { watch } from 'vue'
 const { lastError, clearError } = useCrypto()
 
 // 监听错误并处理
-watch(lastError, error => {
+watch(lastError, (error) => {
   if (error) {
     console.error('加密操作错误:', error)
 
@@ -653,60 +698,10 @@ function showErrorNotification(error: string) {
 ### 1. 实时数据加密组件
 
 ```vue
-<template>
-  <div class="real-time-crypto">
-    <h3>实时加密演示</h3>
-
-    <div class="input-section">
-      <textarea
-        v-model="inputText"
-        @input="handleRealTimeEncryption"
-        placeholder="输入文本，实时查看加密结果..."
-        rows="4"
-      ></textarea>
-
-      <div class="key-section">
-        <input
-          v-model="encryptionKey"
-          @input="handleRealTimeEncryption"
-          placeholder="加密密钥"
-          type="password"
-        />
-        <button @click="generateRandomKey">🎲 随机密钥</button>
-      </div>
-    </div>
-
-    <div class="output-section">
-      <div class="encrypted-output">
-        <h4>🔒 加密结果</h4>
-        <pre v-if="encryptedResult">{{ encryptedResult }}</pre>
-        <p v-else class="placeholder">输入文本后显示加密结果</p>
-      </div>
-
-      <div class="hash-output">
-        <h4>🔍 SHA-256 哈希</h4>
-        <code v-if="hashResult">{{ hashResult }}</code>
-        <p v-else class="placeholder">输入文本后显示哈希值</p>
-      </div>
-    </div>
-
-    <div class="stats-section">
-      <div class="stat-item">
-        <span class="label">加密次数:</span>
-        <span class="value">{{ encryptionCount }}</span>
-      </div>
-      <div class="stat-item">
-        <span class="label">平均耗时:</span>
-        <span class="value">{{ averageTime.toFixed(2) }}ms</span>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useCrypto, useHash } from '@ldesign/crypto/vue'
 import { keyGenerator } from '@ldesign/crypto'
+import { useCrypto, useHash } from '@ldesign/crypto/vue'
+import { computed, ref, watch } from 'vue'
 
 // 使用 Composables
 const { encryptAES } = useCrypto()
@@ -722,7 +717,8 @@ const encryptionTimes = ref<number[]>([])
 
 // 计算平均时间
 const averageTime = computed(() => {
-  if (encryptionTimes.value.length === 0) return 0
+  if (encryptionTimes.value.length === 0)
+    return 0
   const sum = encryptionTimes.value.reduce((a, b) => a + b, 0)
   return sum / encryptionTimes.value.length
 })
@@ -730,7 +726,7 @@ const averageTime = computed(() => {
 // 防抖处理
 let debounceTimer: NodeJS.Timeout | null = null
 
-const handleRealTimeEncryption = () => {
+function handleRealTimeEncryption() {
   if (debounceTimer) {
     clearTimeout(debounceTimer)
   }
@@ -738,14 +734,15 @@ const handleRealTimeEncryption = () => {
   debounceTimer = setTimeout(async () => {
     if (inputText.value && encryptionKey.value) {
       await performEncryption()
-    } else {
+    }
+    else {
       encryptedResult.value = ''
       hashResult.value = ''
     }
   }, 300) // 300ms 防抖
 }
 
-const performEncryption = async () => {
+async function performEncryption() {
   const startTime = performance.now()
 
   try {
@@ -769,12 +766,13 @@ const performEncryption = async () => {
     }
 
     encryptionCount.value++
-  } catch (error) {
+  }
+  catch (error) {
     console.error('加密失败:', error)
   }
 }
 
-const generateRandomKey = () => {
+function generateRandomKey() {
   encryptionKey.value = keyGenerator.generateKey(32)
   handleRealTimeEncryption()
 }
@@ -782,6 +780,62 @@ const generateRandomKey = () => {
 // 监听输入变化
 watch([inputText, encryptionKey], handleRealTimeEncryption)
 </script>
+
+<template>
+  <div class="real-time-crypto">
+    <h3>实时加密演示</h3>
+
+    <div class="input-section">
+      <textarea
+        v-model="inputText"
+        placeholder="输入文本，实时查看加密结果..."
+        rows="4"
+        @input="handleRealTimeEncryption"
+      />
+
+      <div class="key-section">
+        <input
+          v-model="encryptionKey"
+          placeholder="加密密钥"
+          type="password"
+          @input="handleRealTimeEncryption"
+        >
+        <button @click="generateRandomKey">
+          🎲 随机密钥
+        </button>
+      </div>
+    </div>
+
+    <div class="output-section">
+      <div class="encrypted-output">
+        <h4>🔒 加密结果</h4>
+        <pre v-if="encryptedResult">{{ encryptedResult }}</pre>
+        <p v-else class="placeholder">
+          输入文本后显示加密结果
+        </p>
+      </div>
+
+      <div class="hash-output">
+        <h4>🔍 SHA-256 哈希</h4>
+        <code v-if="hashResult">{{ hashResult }}</code>
+        <p v-else class="placeholder">
+          输入文本后显示哈希值
+        </p>
+      </div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stat-item">
+        <span class="label">加密次数:</span>
+        <span class="value">{{ encryptionCount }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">平均耗时:</span>
+        <span class="value">{{ averageTime.toFixed(2) }}ms</span>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .real-time-crypto {
@@ -906,88 +960,10 @@ watch([inputText, encryptionKey], handleRealTimeEncryption)
 ### 2. 文件加密上传组件
 
 ```vue
-<template>
-  <div class="file-crypto-uploader">
-    <h3>安全文件上传</h3>
-
-    <div class="upload-section">
-      <div
-        class="drop-zone"
-        :class="{ 'drag-over': isDragOver }"
-        @drop="handleDrop"
-        @dragover.prevent="isDragOver = true"
-        @dragleave="isDragOver = false"
-        @click="triggerFileInput"
-      >
-        <input
-          ref="fileInput"
-          type="file"
-          @change="handleFileSelect"
-          style="display: none"
-          multiple
-          accept=".txt,.json,.csv"
-        />
-
-        <div class="drop-content">
-          <div class="icon">📁</div>
-          <p>拖拽文件到此处或点击选择文件</p>
-          <small>支持 .txt, .json, .csv 文件</small>
-        </div>
-      </div>
-
-      <div class="encryption-options">
-        <label>
-          <input v-model="encryptionKey" placeholder="加密密钥" type="password" />
-        </label>
-        <button @click="generateSecureKey" class="key-gen-btn">🔑 生成安全密钥</button>
-      </div>
-    </div>
-
-    <div v-if="files.length > 0" class="files-list">
-      <h4>文件列表 ({{ files.length }})</h4>
-
-      <div class="file-item" v-for="file in files" :key="file.id">
-        <div class="file-info">
-          <div class="file-name">{{ file.name }}</div>
-          <div class="file-size">{{ formatFileSize(file.size) }}</div>
-          <div class="file-status" :class="file.status">
-            {{ getStatusText(file.status) }}
-          </div>
-        </div>
-
-        <div class="file-actions">
-          <button
-            v-if="file.status === 'ready'"
-            @click="encryptFile(file)"
-            :disabled="!encryptionKey"
-            class="encrypt-btn"
-          >
-            🔒 加密
-          </button>
-
-          <button
-            v-if="file.status === 'encrypted'"
-            @click="downloadEncryptedFile(file)"
-            class="download-btn"
-          >
-            💾 下载
-          </button>
-
-          <button @click="removeFile(file.id)" class="remove-btn">🗑️ 删除</button>
-        </div>
-
-        <div v-if="file.status === 'encrypting'" class="progress-bar">
-          <div class="progress-fill" :style="{ width: file.progress + '%' }"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { hash, keyGenerator } from '@ldesign/crypto'
 import { useCrypto } from '@ldesign/crypto/vue'
-import { keyGenerator, hash } from '@ldesign/crypto'
+import { nextTick, ref } from 'vue'
 
 interface FileItem {
   id: string
@@ -1011,7 +987,7 @@ const isDragOver = ref(false)
 const fileInput = ref<HTMLInputElement>()
 
 // 处理文件拖拽
-const handleDrop = (event: DragEvent) => {
+function handleDrop(event: DragEvent) {
   event.preventDefault()
   isDragOver.value = false
 
@@ -1020,19 +996,19 @@ const handleDrop = (event: DragEvent) => {
 }
 
 // 处理文件选择
-const handleFileSelect = (event: Event) => {
+function handleFileSelect(event: Event) {
   const target = event.target as HTMLInputElement
   const selectedFiles = Array.from(target.files || [])
   processFiles(selectedFiles)
 }
 
 // 触发文件输入
-const triggerFileInput = () => {
+function triggerFileInput() {
   fileInput.value?.click()
 }
 
 // 处理文件
-const processFiles = async (fileList: File[]) => {
+async function processFiles(fileList: File[]) {
   for (const file of fileList) {
     if (file.size > 5 * 1024 * 1024) {
       // 5MB 限制
@@ -1055,7 +1031,7 @@ const processFiles = async (fileList: File[]) => {
 }
 
 // 读取文件内容
-const readFileContent = (file: File): Promise<string> => {
+function readFileContent(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(reader.result as string)
@@ -1065,7 +1041,7 @@ const readFileContent = (file: File): Promise<string> => {
 }
 
 // 加密文件
-const encryptFile = async (file: FileItem) => {
+async function encryptFile(file: FileItem) {
   file.status = 'encrypting'
   file.progress = 0
 
@@ -1098,15 +1074,17 @@ const encryptFile = async (file: FileItem) => {
     setTimeout(() => {
       file.progress = 0
     }, 1000)
-  } catch (error) {
+  }
+  catch (error) {
     file.status = 'error'
     console.error('文件加密失败:', error)
   }
 }
 
 // 下载加密文件
-const downloadEncryptedFile = (file: FileItem) => {
-  if (!file.encryptedData) return
+function downloadEncryptedFile(file: FileItem) {
+  if (!file.encryptedData)
+    return
 
   const exportData = {
     originalName: file.name,
@@ -1131,7 +1109,7 @@ const downloadEncryptedFile = (file: FileItem) => {
 }
 
 // 移除文件
-const removeFile = (fileId: string) => {
+function removeFile(fileId: string) {
   const index = files.value.findIndex(f => f.id === fileId)
   if (index !== -1) {
     files.value.splice(index, 1)
@@ -1139,21 +1117,22 @@ const removeFile = (fileId: string) => {
 }
 
 // 生成安全密钥
-const generateSecureKey = () => {
+function generateSecureKey() {
   encryptionKey.value = keyGenerator.generateKey(32)
 }
 
 // 格式化文件大小
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes'
+function formatFileSize(bytes: number): string {
+  if (bytes === 0)
+    return '0 Bytes'
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
 }
 
 // 获取状态文本
-const getStatusText = (status: string): string => {
+function getStatusText(status: string): string {
   const statusMap = {
     ready: '准备就绪',
     encrypting: '加密中...',
@@ -1163,6 +1142,94 @@ const getStatusText = (status: string): string => {
   return statusMap[status] || status
 }
 </script>
+
+<template>
+  <div class="file-crypto-uploader">
+    <h3>安全文件上传</h3>
+
+    <div class="upload-section">
+      <div
+        class="drop-zone"
+        :class="{ 'drag-over': isDragOver }"
+        @drop="handleDrop"
+        @dragover.prevent="isDragOver = true"
+        @dragleave="isDragOver = false"
+        @click="triggerFileInput"
+      >
+        <input
+          ref="fileInput"
+          type="file"
+          style="display: none"
+          multiple
+          accept=".txt,.json,.csv"
+          @change="handleFileSelect"
+        >
+
+        <div class="drop-content">
+          <div class="icon">
+            📁
+          </div>
+          <p>拖拽文件到此处或点击选择文件</p>
+          <small>支持 .txt, .json, .csv 文件</small>
+        </div>
+      </div>
+
+      <div class="encryption-options">
+        <label>
+          <input v-model="encryptionKey" placeholder="加密密钥" type="password">
+        </label>
+        <button class="key-gen-btn" @click="generateSecureKey">
+          🔑 生成安全密钥
+        </button>
+      </div>
+    </div>
+
+    <div v-if="files.length > 0" class="files-list">
+      <h4>文件列表 ({{ files.length }})</h4>
+
+      <div v-for="file in files" :key="file.id" class="file-item">
+        <div class="file-info">
+          <div class="file-name">
+            {{ file.name }}
+          </div>
+          <div class="file-size">
+            {{ formatFileSize(file.size) }}
+          </div>
+          <div class="file-status" :class="file.status">
+            {{ getStatusText(file.status) }}
+          </div>
+        </div>
+
+        <div class="file-actions">
+          <button
+            v-if="file.status === 'ready'"
+            :disabled="!encryptionKey"
+            class="encrypt-btn"
+            @click="encryptFile(file)"
+          >
+            🔒 加密
+          </button>
+
+          <button
+            v-if="file.status === 'encrypted'"
+            class="download-btn"
+            @click="downloadEncryptedFile(file)"
+          >
+            💾 下载
+          </button>
+
+          <button class="remove-btn" @click="removeFile(file.id)">
+            🗑️ 删除
+          </button>
+        </div>
+
+        <div v-if="file.status === 'encrypting'" class="progress-bar">
+          <div class="progress-fill" :style="{ width: `${file.progress}%` }" />
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .file-crypto-uploader {
@@ -1373,9 +1440,9 @@ const getStatusText = (status: string): string => {
 ### 5. 测试
 
 ```typescript
+import { CryptoPlugin } from '@ldesign/crypto/vue'
 // tests/crypto.test.ts
 import { mount } from '@vue/test-utils'
-import { CryptoPlugin } from '@ldesign/crypto/vue'
 import YourComponent from '@/components/YourComponent.vue'
 
 describe('Crypto Integration', () => {

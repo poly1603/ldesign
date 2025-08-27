@@ -205,10 +205,10 @@ export const blowfish = {
   /**
    * 生成随机密钥
    */
-  generateKey: (length: number = 32): string => {
+  generateKey: (length: number = 16): string => {
     // 为了 Web 环境的兼容性，生成标准长度的密钥
-    // RandomUtils.generateKey 生成十六进制字符串，所以长度需要除以2
-    const keyLength = Math.max(8, Math.min(64, length))
-    return RandomUtils.generateKey(Math.floor(keyLength / 2))
+    // length 是字节长度，RandomUtils.generateKey 返回 length*2 个十六进制字符
+    const keyLength = Math.max(4, Math.min(32, length)) // 4-32字节
+    return RandomUtils.generateKey(keyLength)
   },
 }

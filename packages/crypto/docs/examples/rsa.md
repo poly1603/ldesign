@@ -221,8 +221,8 @@ console.log('签名验证:', isValid ? '✅ 有效' : '❌ 无效')
 import { useCrypto } from '@ldesign/crypto/vue'
 import { ref } from 'vue'
 
-const { generateRSAKeyPair, encryptRSA, decryptRSA, isEncrypting, isDecrypting, lastError } =
-  useCrypto()
+const { generateRSAKeyPair, encryptRSA, decryptRSA, isEncrypting, isDecrypting, lastError }
+  = useCrypto()
 
 const data = ref('Hello, Vue RSA!')
 const keyPair = ref(null)
@@ -237,30 +237,36 @@ async function generateKeys() {
     keyPair.value = await generateRSAKeyPair(2048)
     encryptedResult.value = null
     decryptedResult.value = null
-  } catch (err) {
+  }
+  catch (err) {
     console.error('密钥生成失败:', err)
-  } finally {
+  }
+  finally {
     isGenerating.value = false
   }
 }
 
 async function encryptData() {
-  if (!keyPair.value) return
+  if (!keyPair.value)
+    return
 
   try {
     encryptedResult.value = await encryptRSA(data.value, keyPair.value.publicKey)
     decryptedResult.value = null
-  } catch (err) {
+  }
+  catch (err) {
     console.error('加密失败:', err)
   }
 }
 
 async function decryptData() {
-  if (!keyPair.value || !encryptedResult.value) return
+  if (!keyPair.value || !encryptedResult.value)
+    return
 
   try {
     decryptedResult.value = await decryptRSA(encryptedResult.value, keyPair.value.privateKey)
-  } catch (err) {
+  }
+  catch (err) {
     console.error('解密失败:', err)
   }
 }
@@ -301,7 +307,9 @@ async function decryptData() {
       <p>{{ decryptedResult.data }}</p>
     </div>
 
-    <div v-if="error" class="error">错误: {{ error }}</div>
+    <div v-if="error" class="error">
+      错误: {{ error }}
+    </div>
   </div>
 </template>
 ```
@@ -404,7 +412,8 @@ class DigitalCertificate {
         'SHA256'
       )
 
-      if (!isValid) return false
+      if (!isValid)
+        return false
 
       // 检查证书是否过期
       const certData = JSON.parse(cert.data)
@@ -413,7 +422,8 @@ class DigitalCertificate {
       }
 
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -443,9 +453,9 @@ class HybridEncryption {
     data: string,
     rsaPublicKey: string
   ): {
-    encryptedData: any
-    encryptedKey: any
-  } {
+      encryptedData: any
+      encryptedKey: any
+    } {
     // 1. 生成随机 AES 密钥
     const aesKey = keyGenerator.generateKey(32) // 256位密钥
 

@@ -64,11 +64,12 @@ describe('encoding Algorithms', () => {
       expect(decoded).toBe(testData)
     })
 
-    it('should throw error for empty data', () => {
-      expect(() => encoder.encode('', 'base64')).toThrow('Data cannot be empty')
-      expect(() => encoder.decode('', 'base64')).toThrow(
-        'Encoded data cannot be empty',
-      )
+    it('should handle empty data', () => {
+      const encoded = encoder.encode('', 'base64')
+      expect(encoded).toBe('')
+
+      const decoded = encoder.decode('', 'base64')
+      expect(decoded).toBe('')
     })
 
     it('should throw error for unsupported encoding', () => {
@@ -152,9 +153,12 @@ describe('encoding Algorithms', () => {
   })
 
   describe('edge Cases', () => {
-    it('should handle empty string after validation', () => {
-      expect(() => encoding.encode('', 'base64')).toThrow()
-      expect(() => encoding.decode('', 'base64')).toThrow()
+    it('should handle empty string', () => {
+      const encoded = encoding.encode('', 'base64')
+      expect(encoded).toBe('')
+
+      const decoded = encoding.decode('', 'base64')
+      expect(decoded).toBe('')
     })
 
     it('should handle invalid Base64 input', () => {

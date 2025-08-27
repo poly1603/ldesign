@@ -32,9 +32,17 @@ describe('aES Encryption', () => {
       const encrypted192 = encryptor.encrypt(testData, testKey, options192)
       const encrypted256 = encryptor.encrypt(testData, testKey, options256)
 
-      expect(encrypted128.algorithm).toBe('AES-128-CBC')
-      expect(encrypted192.algorithm).toBe('AES-192-CBC')
-      expect(encrypted256.algorithm).toBe('AES-256-CBC')
+      expect(encrypted128.algorithm).toBe('AES')
+      expect(encrypted128.keySize).toBe(128)
+      expect(encrypted128.mode).toBe('CBC')
+
+      expect(encrypted192.algorithm).toBe('AES')
+      expect(encrypted192.keySize).toBe(192)
+      expect(encrypted192.mode).toBe('CBC')
+
+      expect(encrypted256.algorithm).toBe('AES')
+      expect(encrypted256.keySize).toBe(256)
+      expect(encrypted256.mode).toBe('CBC')
 
       // Verify decryption works
       expect(encryptor.decrypt(encrypted128, testKey, options128).data).toBe(
@@ -54,7 +62,9 @@ describe('aES Encryption', () => {
       modes.forEach((mode) => {
         const options: AESOptions = { mode }
         const encrypted = encryptor.encrypt(testData, testKey, options)
-        expect(encrypted.algorithm).toBe(`AES-256-${mode}`)
+        expect(encrypted.algorithm).toBe('AES')
+        expect(encrypted.mode).toBe(mode)
+        expect(encrypted.keySize).toBe(256) // default key size
 
         const decrypted = encryptor.decrypt(encrypted, testKey, options)
         expect(decrypted.success).toBe(true)
@@ -83,10 +93,13 @@ describe('aES Encryption', () => {
       expect(decrypted.error).toBeDefined()
     })
 
-    it('should throw error for empty data', () => {
-      expect(() => encryptor.encrypt('', testKey)).toThrow(
-        'Data cannot be empty',
-      )
+    it('should handle empty data', () => {
+      const encrypted = encryptor.encrypt('', testKey)
+      expect(encrypted.success).toBe(true)
+
+      const decrypted = encryptor.decrypt(encrypted, testKey)
+      expect(decrypted.success).toBe(true)
+      expect(decrypted.data).toBe('')
     })
 
     it('should throw error for empty key', () => {
@@ -110,9 +123,12 @@ describe('aES Encryption', () => {
       const encrypted192 = aes.encrypt192(testData, testKey)
       const encrypted256 = aes.encrypt256(testData, testKey)
 
-      expect(encrypted128.algorithm).toBe('AES-128-CBC')
-      expect(encrypted192.algorithm).toBe('AES-192-CBC')
-      expect(encrypted256.algorithm).toBe('AES-256-CBC')
+      expect(encrypted128.algorithm).toBe('AES')
+      expect(encrypted128.keySize).toBe(128)
+      expect(encrypted192.algorithm).toBe('AES')
+      expect(encrypted192.keySize).toBe(192)
+      expect(encrypted256.algorithm).toBe('AES')
+      expect(encrypted256.keySize).toBe(256)
 
       expect(aes.decrypt128(encrypted128, testKey).data).toBe(testData)
       expect(aes.decrypt192(encrypted192, testKey).data).toBe(testData)

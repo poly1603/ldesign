@@ -52,9 +52,9 @@ pnpm preview
 ### 1. 使用 Vue 插件
 
 ```typescript
+import { CryptoPlugin } from '@ldesign/crypto/vue'
 // main.ts
 import { createApp } from 'vue'
-import { CryptoPlugin } from '@ldesign/crypto/vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -71,61 +71,33 @@ app.mount('#app')
 
 ```vue
 <!-- 在组件中使用全局 API -->
-<template>
-  <div>
-    <button @click="handleEncrypt">加密数据</button>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { getCurrentInstance } from 'vue'
 
 const instance = getCurrentInstance()
 const $crypto = instance?.appContext.config.globalProperties.$crypto
 
-const handleEncrypt = () => {
+function handleEncrypt() {
   const result = $crypto.aes.encrypt('Hello, Vue!', 'my-secret-key')
   console.log(result)
 }
 </script>
+
+<template>
+  <div>
+    <button @click="handleEncrypt">
+      加密数据
+    </button>
+  </div>
+</template>
 ```
 
 ### 2. 使用 Composition API Hooks
 
 ```vue
-<template>
-  <div class="crypto-demo">
-    <div class="input-section">
-      <input v-model="plaintext" placeholder="输入要加密的文本" />
-      <input v-model="secretKey" placeholder="输入密钥" />
-      <button @click="handleEncrypt" :disabled="isEncrypting">
-        {{ isEncrypting ? '加密中...' : '加密' }}
-      </button>
-    </div>
-
-    <div class="result-section" v-if="encryptedData">
-      <h3>加密结果</h3>
-      <p>{{ encryptedData }}</p>
-      <button @click="handleDecrypt" :disabled="isDecrypting">
-        {{ isDecrypting ? '解密中...' : '解密' }}
-      </button>
-    </div>
-
-    <div class="decrypted-section" v-if="decryptedData">
-      <h3>解密结果</h3>
-      <p>{{ decryptedData }}</p>
-    </div>
-
-    <div class="error-section" v-if="lastError">
-      <p class="error">{{ lastError }}</p>
-      <button @click="clearError">清除错误</button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useCrypto } from '@ldesign/crypto/vue'
+import { ref } from 'vue'
 
 // 使用加密 Hook
 const { encryptAES, decryptAES, isEncrypting, isDecrypting, lastError, clearError } = useCrypto()
@@ -137,63 +109,75 @@ const encryptedData = ref('')
 const decryptedData = ref('')
 
 // 加密处理
-const handleEncrypt = async () => {
+async function handleEncrypt() {
   try {
     const result = await encryptAES(plaintext.value, secretKey.value, {
       keySize: 256,
       mode: 'CBC',
     })
     encryptedData.value = result
-  } catch (error) {
+  }
+  catch (error) {
     console.error('加密失败:', error)
   }
 }
 
 // 解密处理
-const handleDecrypt = async () => {
+async function handleDecrypt() {
   try {
     const result = await decryptAES(encryptedData.value, secretKey.value, {
       keySize: 256,
       mode: 'CBC',
     })
     decryptedData.value = result
-  } catch (error) {
+  }
+  catch (error) {
     console.error('解密失败:', error)
   }
 }
 </script>
+
+<template>
+  <div class="crypto-demo">
+    <div class="input-section">
+      <input v-model="plaintext" placeholder="输入要加密的文本">
+      <input v-model="secretKey" placeholder="输入密钥">
+      <button :disabled="isEncrypting" @click="handleEncrypt">
+        {{ isEncrypting ? '加密中...' : '加密' }}
+      </button>
+    </div>
+
+    <div v-if="encryptedData" class="result-section">
+      <h3>加密结果</h3>
+      <p>{{ encryptedData }}</p>
+      <button :disabled="isDecrypting" @click="handleDecrypt">
+        {{ isDecrypting ? '解密中...' : '解密' }}
+      </button>
+    </div>
+
+    <div v-if="decryptedData" class="decrypted-section">
+      <h3>解密结果</h3>
+      <p>{{ decryptedData }}</p>
+    </div>
+
+    <div v-if="lastError" class="error-section">
+      <p class="error">
+        {{ lastError }}
+      </p>
+      <button @click="clearError">
+        清除错误
+      </button>
+    </div>
+  </div>
+</template>
 ```
 
 ### 3. 使用哈希 Hook
 
 ```vue
-<template>
-  <div class="hash-demo">
-    <div class="input-section">
-      <textarea v-model="inputData" placeholder="输入要哈希的数据"></textarea>
-      <select v-model="selectedAlgorithm">
-        <option value="md5">MD5</option>
-        <option value="sha1">SHA1</option>
-        <option value="sha256">SHA256</option>
-        <option value="sha384">SHA384</option>
-        <option value="sha512">SHA512</option>
-      </select>
-      <button @click="calculateHash" :disabled="isHashing">
-        {{ isHashing ? '计算中...' : '计算哈希' }}
-      </button>
-    </div>
-
-    <div class="result-section" v-if="hashResult">
-      <h3>哈希结果 ({{ selectedAlgorithm.toUpperCase() }})</h3>
-      <p class="hash-value">{{ hashResult }}</p>
-      <button @click="copyToClipboard">复制到剪贴板</button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useHash } from '@ldesign/crypto/vue'
+import { ref } from 'vue'
 
 // 使用哈希 Hook
 const { md5, sha1, sha256, sha384, sha512, isHashing, lastError, clearError } = useHash()
@@ -204,7 +188,7 @@ const selectedAlgorithm = ref('sha256')
 const hashResult = ref('')
 
 // 计算哈希
-const calculateHash = async () => {
+async function calculateHash() {
   try {
     let result: string
 
@@ -229,21 +213,61 @@ const calculateHash = async () => {
     }
 
     hashResult.value = result
-  } catch (error) {
+  }
+  catch (error) {
     console.error('哈希计算失败:', error)
   }
 }
 
 // 复制到剪贴板
-const copyToClipboard = async () => {
+async function copyToClipboard() {
   try {
     await navigator.clipboard.writeText(hashResult.value)
     alert('已复制到剪贴板')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('复制失败:', error)
   }
 }
 </script>
+
+<template>
+  <div class="hash-demo">
+    <div class="input-section">
+      <textarea v-model="inputData" placeholder="输入要哈希的数据" />
+      <select v-model="selectedAlgorithm">
+        <option value="md5">
+          MD5
+        </option>
+        <option value="sha1">
+          SHA1
+        </option>
+        <option value="sha256">
+          SHA256
+        </option>
+        <option value="sha384">
+          SHA384
+        </option>
+        <option value="sha512">
+          SHA512
+        </option>
+      </select>
+      <button :disabled="isHashing" @click="calculateHash">
+        {{ isHashing ? '计算中...' : '计算哈希' }}
+      </button>
+    </div>
+
+    <div v-if="hashResult" class="result-section">
+      <h3>哈希结果 ({{ selectedAlgorithm.toUpperCase() }})</h3>
+      <p class="hash-value">
+        {{ hashResult }}
+      </p>
+      <button @click="copyToClipboard">
+        复制到剪贴板
+      </button>
+    </div>
+  </div>
+</template>
 ```
 
 ## 🏗️ 项目结构

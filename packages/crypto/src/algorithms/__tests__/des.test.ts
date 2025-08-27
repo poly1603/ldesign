@@ -79,7 +79,7 @@ describe('dES 加密算法', () => {
     it('应该能够生成密钥', () => {
       const key = des.generateKey()
       expect(key).toBeDefined()
-      expect(key.length).toBe(8) // DES 密钥长度为 8 字节
+      expect(key.length).toBe(16) // DES 密钥长度为 8 字节 = 16个十六进制字符
     })
   })
 

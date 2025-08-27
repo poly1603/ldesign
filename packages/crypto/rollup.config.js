@@ -7,4 +7,6 @@ export default createRollupConfig({
     'crypto-js': 'CryptoJS',
     'node-forge': 'forge',
   },
+  tsconfig: './tsconfig.build.json',
+  globIgnore: ['**/adapt/**', '**/vue/**'],
 })

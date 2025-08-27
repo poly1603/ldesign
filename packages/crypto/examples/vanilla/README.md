@@ -110,7 +110,7 @@ pnpm build
 
 ```javascript
 // main.js
-import { aes, hash, rsa, keyGenerator } from '@ldesign/crypto'
+import { aes, hash, keyGenerator, rsa } from '@ldesign/crypto'
 
 // 全局变量存储加密结果
 let encryptedData = ''
@@ -137,10 +137,12 @@ window.encryptData = async function () {
       document.getElementById('result').textContent = `加密成功:\n${result.data}\n\nIV: ${
         result.iv || 'N/A'
       }`
-    } else {
+    }
+    else {
       document.getElementById('result').textContent = `加密失败: ${result.error}`
     }
-  } catch (error) {
+  }
+  catch (error) {
     document.getElementById('result').textContent = `加密错误: ${error.message}`
   }
 }
@@ -163,10 +165,12 @@ window.decryptData = async function () {
 
     if (result.success) {
       document.getElementById('result').textContent = `解密成功:\n${result.data}`
-    } else {
+    }
+    else {
       document.getElementById('result').textContent = `解密失败: ${result.error}`
     }
-  } catch (error) {
+  }
+  catch (error) {
     document.getElementById('result').textContent = `解密错误: ${error.message}`
   }
 }
@@ -208,7 +212,8 @@ window.calculateHash = async function () {
     document.getElementById(
       'hashResult'
     ).textContent = `${algorithm.toUpperCase()} 哈希值:\n${result}`
-  } catch (error) {
+  }
+  catch (error) {
     document.getElementById('hashResult').textContent = `哈希计算错误: ${error.message}`
   }
 }
@@ -231,13 +236,14 @@ window.generateRSAKeys = async function () {
     console.log('原文:', testMessage)
     console.log('密文:', encrypted)
     console.log('解密:', decrypted)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('RSA 操作错误:', error)
   }
 }
 
 // 页面加载完成后的初始化
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
   console.log('🔐 LDesign Crypto 演示页面已加载')
   console.log('可用功能:')
   console.log('- encryptData(): AES 加密')

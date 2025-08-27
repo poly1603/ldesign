@@ -94,10 +94,12 @@ if (encrypted.success) {
 
   if (decrypted.success) {
     console.log('解密成功:', decrypted.data)
-  } else {
+  }
+  else {
     console.error('解密失败:', decrypted.error)
   }
-} else {
+}
+else {
   console.error('加密失败:', encrypted.error)
 }
 ```
@@ -264,7 +266,9 @@ function clearAll() {
   <div class="blowfish-demo">
     <h3>Blowfish 加密演示</h3>
 
-    <div v-if="warning" class="warning">⚠️ {{ warning }}</div>
+    <div v-if="warning" class="warning">
+      ⚠️ {{ warning }}
+    </div>
 
     <div class="form-group">
       <label>明文:</label>
@@ -273,7 +277,7 @@ function clearAll() {
 
     <div class="form-group">
       <label>密钥 ({{ key.length }} 字符):</label>
-      <input v-model="key" placeholder="输入密钥" />
+      <input v-model="key" placeholder="输入密钥">
       <div class="key-controls">
         <label>生成长度:</label>
         <select v-model="keyLength">
@@ -281,15 +285,21 @@ function clearAll() {
             {{ length }} 字节
           </option>
         </select>
-        <button class="btn-small" @click="generateRandomKey">生成随机密钥</button>
+        <button class="btn-small" @click="generateRandomKey">
+          生成随机密钥
+        </button>
       </div>
     </div>
 
     <div class="form-group">
       <label>加密模式:</label>
       <select v-model="mode">
-        <option value="CBC">CBC</option>
-        <option value="ECB">ECB</option>
+        <option value="CBC">
+          CBC
+        </option>
+        <option value="ECB">
+          ECB
+        </option>
       </select>
     </div>
 
@@ -300,10 +310,14 @@ function clearAll() {
       <button :disabled="isProcessing || !encrypted" @click="handleDecrypt">
         {{ isProcessing ? '处理中...' : '解密' }}
       </button>
-      <button class="btn-secondary" @click="clearAll">清空</button>
+      <button class="btn-secondary" @click="clearAll">
+        清空
+      </button>
     </div>
 
-    <div v-if="error" class="error">错误: {{ error }}</div>
+    <div v-if="error" class="error">
+      错误: {{ error }}
+    </div>
 
     <div v-if="encrypted" class="result">
       <h4>加密结果:</h4>

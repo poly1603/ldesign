@@ -1,4 +1,4 @@
-import { EncodingType, IEncoder } from '../types/index.js';
+import { IEncoder, EncodingType } from '../types/index.js';
 
 /**
  * 编码器

@@ -246,8 +246,8 @@ console.log('Hex 解码:', hexDecoded)
 import { useCrypto } from '@ldesign/crypto/vue'
 import { ref } from 'vue'
 
-const { encodeBase64, decodeBase64, encodeHex, decodeHex, isEncoding, isDecoding, lastError } =
-  useCrypto()
+const { encodeBase64, decodeBase64, encodeHex, decodeHex, isEncoding, isDecoding, lastError }
+  = useCrypto()
 
 const inputData = ref('Hello, Vue Encoding!')
 const encodingType = ref('base64')
@@ -269,7 +269,8 @@ async function encode() {
         break
     }
     decodedResult.value = ''
-  } catch (err) {
+  }
+  catch (err) {
     console.error('编码失败:', err)
   }
 }
@@ -287,7 +288,8 @@ async function decode() {
         decodedResult.value = await decodeBase64Url(encodedResult.value)
         break
     }
-  } catch (err) {
+  }
+  catch (err) {
     console.error('解码失败:', err)
   }
 }
@@ -303,9 +305,15 @@ async function decode() {
       <div>
         <label>编码类型:</label>
         <select v-model="encodingType">
-          <option value="base64">Base64</option>
-          <option value="hex">Hex</option>
-          <option value="base64url">URL 安全 Base64</option>
+          <option value="base64">
+            Base64
+          </option>
+          <option value="hex">
+            Hex
+          </option>
+          <option value="base64url">
+            URL 安全 Base64
+          </option>
         </select>
       </div>
 
@@ -327,7 +335,9 @@ async function decode() {
       <p>{{ decodedResult }}</p>
     </div>
 
-    <div v-if="error" class="error">错误: {{ error }}</div>
+    <div v-if="error" class="error">
+      错误: {{ error }}
+    </div>
   </div>
 </template>
 ```
@@ -350,7 +360,8 @@ class DataTransferEncoder {
     try {
       const jsonString = decrypt.base64(encodedData)
       return JSON.parse(jsonString)
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error('API 响应解码失败')
     }
   }
@@ -400,7 +411,8 @@ class URLParameterEncoder {
     try {
       const jsonString = decrypt.base64Url(encodedParam)
       return JSON.parse(jsonString)
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error('URL 参数解码失败')
     }
   }
@@ -451,7 +463,8 @@ class ConfigEncoder {
       const configJson = JSON.stringify(config, null, 2)
       const encodedConfig = encrypt.base64(configJson)
       localStorage.setItem(this.CONFIG_KEY, encodedConfig)
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error('配置保存失败')
     }
   }
@@ -466,7 +479,8 @@ class ConfigEncoder {
 
       const configJson = decrypt.base64(encodedConfig)
       return JSON.parse(configJson)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('配置读取失败:', error)
       return null
     }
@@ -488,7 +502,8 @@ class ConfigEncoder {
       const configJson = decrypt.base64(encodedConfig)
       const config = JSON.parse(configJson)
       this.saveConfig(config)
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error('配置导入失败')
     }
   }
@@ -516,7 +531,7 @@ console.log('加载的配置:', loadedConfig)
 // 二维码数据编码
 class QRCodeDataEncoder {
   // 编码二维码数据
-  static encodeQRData(data: { type: 'url' | 'text' | 'contact' | 'wifi'; content: any }): string {
+  static encodeQRData(data: { type: 'url' | 'text' | 'contact' | 'wifi', content: any }): string {
     const qrData = {
       ...data,
       timestamp: Date.now(),
@@ -532,7 +547,8 @@ class QRCodeDataEncoder {
     try {
       const jsonString = decrypt.base64Url(encodedData)
       return JSON.parse(jsonString)
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error('二维码数据解码失败')
     }
   }
@@ -656,7 +672,8 @@ function safeEncode(data: string, type: 'base64' | 'hex' | 'base64url') {
       default:
         throw new Error('不支持的编码类型')
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('编码失败:', error)
     return null
   }
@@ -674,7 +691,8 @@ function safeDecode(encodedData: string, type: 'base64' | 'hex' | 'base64url') {
       default:
         throw new Error('不支持的解码类型')
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('解码失败:', error)
     return null
   }

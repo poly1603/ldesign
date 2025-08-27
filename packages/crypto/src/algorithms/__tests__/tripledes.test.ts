@@ -79,7 +79,7 @@ describe('3DES 加密算法', () => {
     it('应该能够生成密钥', () => {
       const key = tripledes.generateKey()
       expect(key).toBeDefined()
-      expect(key.length).toBe(24) // 3DES 密钥长度为 24 字节
+      expect(key.length).toBe(48) // 3DES 密钥长度为 24 字节 = 48个十六进制字符
     })
   })
 

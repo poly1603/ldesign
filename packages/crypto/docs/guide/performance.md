@@ -13,9 +13,11 @@ import { decrypt, encrypt } from '@ldesign/crypto'
 function optimizeAESKeySize(dataSize: number) {
   if (dataSize < 1024) {
     return 128 // 小数据使用 AES-128
-  } else if (dataSize < 10240) {
+  }
+  else if (dataSize < 10240) {
     return 192 // 中等数据使用 AES-192
-  } else {
+  }
+  else {
     return 256 // 大数据使用 AES-256
   }
 }
@@ -78,7 +80,7 @@ function selectHashAlgorithm(purpose: string) {
 function batchHash(dataList: string[], algorithm = 'SHA256') {
   const startTime = performance.now()
 
-  const results = dataList.map(data => {
+  const results = dataList.map((data) => {
     switch (algorithm) {
       case 'MD5':
         return hash.md5(data)
@@ -239,7 +241,8 @@ class LRUCache<K, V> {
   set(key: K, value: V): void {
     if (this.cache.has(key)) {
       this.cache.delete(key)
-    } else if (this.cache.size >= this.maxSize) {
+    }
+    else if (this.cache.size >= this.maxSize) {
       // 删除最久未使用的项
       const firstKey = this.cache.keys().next().value
       this.cache.delete(firstKey)
@@ -363,7 +366,8 @@ self.onmessage = function (e) {
     }
 
     self.postMessage({ id, success: true, result })
-  } catch (error) {
+  }
+  catch (error) {
     self.postMessage({ id, success: false, error: error.message })
   }
 }
@@ -382,14 +386,15 @@ class CryptoWorkerPool {
   private createWorker(): Worker {
     const worker = new Worker('/crypto-worker.js')
 
-    worker.onmessage = e => {
+    worker.onmessage = (e) => {
       const { id, success, result, error } = e.data
       const task = this.taskQueue.find(t => t.id === id)
 
       if (task) {
         if (success) {
           task.resolve(result)
-        } else {
+        }
+        else {
           task.reject(new Error(error))
         }
 
@@ -408,7 +413,8 @@ class CryptoWorkerPool {
     }
 
     const task = this.taskQueue.find(t => !t.processing)
-    if (!task) return
+    if (!task)
+      return
 
     task.processing = true
     this.activeWorkers++
@@ -478,8 +484,8 @@ class BatchCrypto {
     this.batchTimeout = batchTimeout
   }
 
-  async batchEncrypt(items: Array<{ data: string; key: string }>): Promise<any[]> {
-    return new Promise(resolve => {
+  async batchEncrypt(items: Array<{ data: string, key: string }>): Promise<any[]> {
+    return new Promise((resolve) => {
       const batchId = Math.random().toString(36).substr(2, 9)
 
       this.processingQueue.push({
@@ -500,7 +506,8 @@ class BatchCrypto {
 
     if (this.processingQueue.length >= this.batchSize) {
       this.processBatch()
-    } else {
+    }
+    else {
       this.timeoutId = setTimeout(() => {
         this.processBatch()
       }, this.batchTimeout)
@@ -508,12 +515,13 @@ class BatchCrypto {
   }
 
   private async processBatch(): void {
-    if (this.processingQueue.length === 0) return
+    if (this.processingQueue.length === 0)
+      return
 
     const batch = this.processingQueue.splice(0, this.batchSize)
 
     // 并行处理批次中的所有项目
-    const promises = batch.map(async batchItem => {
+    const promises = batch.map(async (batchItem) => {
       const results = await Promise.all(
         batchItem.items.map(item => encrypt.aes(item.data, item.key))
       )

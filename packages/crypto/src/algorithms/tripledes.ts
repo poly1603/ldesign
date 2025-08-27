@@ -251,7 +251,7 @@ export const tripledes = {
    * 生成随机密钥
    */
   generateKey: (): string => {
-    return RandomUtils.generateKey(12) // 3DES 密钥长度为 24 字符（12字节的十六进制）
+    return RandomUtils.generateKey(24) // 3DES 密钥长度为 24 字节
   },
 }
 

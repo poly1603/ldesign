@@ -389,12 +389,15 @@ try {
   if (!decrypted.success) {
     console.error('解密失败:', decrypted.error)
   }
-} catch (error) {
+}
+catch (error) {
   if (error instanceof EncryptionError) {
     console.error('加密错误:', error.message)
-  } else if (error instanceof DecryptionError) {
+  }
+  else if (error instanceof DecryptionError) {
     console.error('解密错误:', error.message)
-  } else {
+  }
+  else {
     console.error('未知错误:', error.message)
   }
 }

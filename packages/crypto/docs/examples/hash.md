@@ -256,7 +256,8 @@ async function calculateHash() {
         hashResult.value = await sha512(data.value)
         break
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('哈希计算失败:', error)
   }
 }
@@ -269,11 +270,21 @@ async function calculateHash() {
     <div>
       <textarea v-model="data" placeholder="输入要哈希的数据" />
       <select v-model="algorithm">
-        <option value="MD5">MD5</option>
-        <option value="SHA1">SHA1</option>
-        <option value="SHA256">SHA256</option>
-        <option value="SHA384">SHA384</option>
-        <option value="SHA512">SHA512</option>
+        <option value="MD5">
+          MD5
+        </option>
+        <option value="SHA1">
+          SHA1
+        </option>
+        <option value="SHA256">
+          SHA256
+        </option>
+        <option value="SHA384">
+          SHA384
+        </option>
+        <option value="SHA512">
+          SHA512
+        </option>
       </select>
       <button :disabled="isHashing" @click="calculateHash">
         {{ isHashing ? '计算中...' : '计算哈希' }}

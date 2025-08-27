@@ -40,7 +40,8 @@ async function handleEncrypt() {
     clearError()
     encryptedResult.value = await encryptAES(data.value, key.value)
     decryptedResult.value = null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('加密失败:', error)
   }
 }
@@ -49,7 +50,8 @@ async function handleDecrypt() {
   try {
     clearError()
     decryptedResult.value = await decryptAES(encryptedResult.value, key.value)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('解密失败:', error)
   }
 }
@@ -61,8 +63,8 @@ async function handleDecrypt() {
 
     <!-- 输入表单 -->
     <div>
-      <input v-model="data" placeholder="输入要加密的数据" />
-      <input v-model="key" placeholder="输入密钥" />
+      <input v-model="data" placeholder="输入要加密的数据">
+      <input v-model="key" placeholder="输入密钥">
       <button :disabled="isEncrypting" @click="handleEncrypt">
         {{ isEncrypting ? '加密中...' : '加密' }}
       </button>
@@ -85,7 +87,9 @@ async function handleDecrypt() {
     </div>
 
     <!-- 错误显示 -->
-    <div v-if="lastError" class="error">错误: {{ lastError }}</div>
+    <div v-if="lastError" class="error">
+      错误: {{ lastError }}
+    </div>
   </div>
 </template>
 
@@ -118,13 +122,15 @@ async function generateKeys() {
 }
 
 async function encryptRSAData() {
-  if (!keyPair.value) return
+  if (!keyPair.value)
+    return
   encryptedRSA.value = await encryptRSA(rsaData.value, keyPair.value.publicKey)
   decryptedRSA.value = null
 }
 
 async function decryptRSAData() {
-  if (!keyPair.value || !encryptedRSA.value) return
+  if (!keyPair.value || !encryptedRSA.value)
+    return
   decryptedRSA.value = await decryptRSA(encryptedRSA.value, keyPair.value.privateKey)
 }
 </script>
@@ -135,9 +141,15 @@ async function decryptRSAData() {
 
     <div>
       <textarea v-model="rsaData" placeholder="输入要加密的数据" />
-      <button :disabled="isEncrypting" @click="generateKeys">生成密钥对</button>
-      <button :disabled="isEncrypting || !keyPair" @click="encryptRSA">加密</button>
-      <button :disabled="isDecrypting || !encryptedRSA" @click="decryptRSA">解密</button>
+      <button :disabled="isEncrypting" @click="generateKeys">
+        生成密钥对
+      </button>
+      <button :disabled="isEncrypting || !keyPair" @click="encryptRSA">
+        加密
+      </button>
+      <button :disabled="isDecrypting || !encryptedRSA" @click="decryptRSA">
+        解密
+      </button>
     </div>
 
     <div v-if="keyPair">
@@ -205,10 +217,18 @@ async function decodeHexData() {
 
     <div>
       <textarea v-model="encodingData" placeholder="输入要编码的数据" />
-      <button @click="encodeBase64Data">Base64 编码</button>
-      <button :disabled="!encodedBase64" @click="decodeBase64Data">Base64 解码</button>
-      <button @click="encodeHexData">Hex 编码</button>
-      <button :disabled="!encodedHex" @click="decodeHexData">Hex 解码</button>
+      <button @click="encodeBase64Data">
+        Base64 编码
+      </button>
+      <button :disabled="!encodedBase64" @click="decodeBase64Data">
+        Base64 解码
+      </button>
+      <button @click="encodeHexData">
+        Hex 编码
+      </button>
+      <button :disabled="!encodedHex" @click="decodeHexData">
+        Hex 解码
+      </button>
     </div>
 
     <div v-if="encodedBase64">
@@ -245,8 +265,8 @@ async function decodeHexData() {
 import { useHash } from '@ldesign/crypto/vue'
 import { ref } from 'vue'
 
-const { md5, sha1, sha256, sha384, sha512, hashMultiple, isHashing, lastError, clearError } =
-  useHash()
+const { md5, sha1, sha256, sha384, sha512, hashMultiple, isHashing, lastError, clearError }
+  = useHash()
 
 const hashData = ref('Hello, Hash!')
 const selectedAlgorithm = ref('SHA256')
@@ -275,7 +295,8 @@ async function calculateHash() {
         hashResult.value = await sha512(hashData.value)
         break
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('哈希计算失败:', error)
   }
 }
@@ -295,7 +316,8 @@ async function calculateAllHashes() {
     ])
 
     allHashResults.value = results
-  } catch (error) {
+  }
+  catch (error) {
     console.error('哈希计算失败:', error)
   }
 }
@@ -308,16 +330,28 @@ async function calculateAllHashes() {
     <div>
       <textarea v-model="hashData" placeholder="输入要哈希的数据" />
       <select v-model="selectedAlgorithm">
-        <option value="MD5">MD5</option>
-        <option value="SHA1">SHA1</option>
-        <option value="SHA256">SHA256</option>
-        <option value="SHA384">SHA384</option>
-        <option value="SHA512">SHA512</option>
+        <option value="MD5">
+          MD5
+        </option>
+        <option value="SHA1">
+          SHA1
+        </option>
+        <option value="SHA256">
+          SHA256
+        </option>
+        <option value="SHA384">
+          SHA384
+        </option>
+        <option value="SHA512">
+          SHA512
+        </option>
       </select>
       <button :disabled="isHashing" @click="calculateHash">
         {{ isHashing ? '计算中...' : '计算哈希' }}
       </button>
-      <button :disabled="isHashing" @click="calculateAllHashes">计算所有算法</button>
+      <button :disabled="isHashing" @click="calculateAllHashes">
+        计算所有算法
+      </button>
     </div>
 
     <div v-if="hashResult">
@@ -332,7 +366,9 @@ async function calculateAllHashes() {
       </div>
     </div>
 
-    <div v-if="lastError" class="error">错误: {{ lastError }}</div>
+    <div v-if="lastError" class="error">
+      错误: {{ lastError }}
+    </div>
   </div>
 </template>
 ```
@@ -373,7 +409,8 @@ async function calculateHMAC() {
         hmacResult.value = await hmacSha512(hmacData.value, hmacKey.value)
         break
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('HMAC 计算失败:', error)
   }
 }
@@ -386,7 +423,8 @@ async function verifyHMACValue() {
       hmacResult.value,
       hmacAlgorithm.value
     )
-  } catch (error) {
+  }
+  catch (error) {
     console.error('HMAC 验证失败:', error)
   }
 }
@@ -398,16 +436,30 @@ async function verifyHMACValue() {
 
     <div>
       <textarea v-model="hmacData" placeholder="输入消息" />
-      <input v-model="hmacKey" placeholder="输入密钥" />
+      <input v-model="hmacKey" placeholder="输入密钥">
       <select v-model="hmacAlgorithm">
-        <option value="MD5">HMAC-MD5</option>
-        <option value="SHA1">HMAC-SHA1</option>
-        <option value="SHA256">HMAC-SHA256</option>
-        <option value="SHA384">HMAC-SHA384</option>
-        <option value="SHA512">HMAC-SHA512</option>
+        <option value="MD5">
+          HMAC-MD5
+        </option>
+        <option value="SHA1">
+          HMAC-SHA1
+        </option>
+        <option value="SHA256">
+          HMAC-SHA256
+        </option>
+        <option value="SHA384">
+          HMAC-SHA384
+        </option>
+        <option value="SHA512">
+          HMAC-SHA512
+        </option>
       </select>
-      <button :disabled="isHashing" @click="calculateHMAC">计算 HMAC</button>
-      <button :disabled="!hmacResult" @click="verifyHMAC">验证 HMAC</button>
+      <button :disabled="isHashing" @click="calculateHMAC">
+        计算 HMAC
+      </button>
+      <button :disabled="!hmacResult" @click="verifyHMAC">
+        验证 HMAC
+      </button>
     </div>
 
     <div v-if="hmacResult">
@@ -456,7 +508,8 @@ async function signData() {
     // 为了演示，我们模拟签名过程
     signature.value = `mock-signature-${Date.now()}`
     verificationResult.value = null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('签名失败:', error)
   }
 }
@@ -467,7 +520,8 @@ async function verifySignature() {
     // 这里应该使用实际的公钥进行验证
     // 为了演示，我们模拟验证过程
     verificationResult.value = true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('验证失败:', error)
   }
 }
@@ -479,7 +533,9 @@ async function verifySignature() {
 
     <div>
       <textarea v-model="signatureData" placeholder="输入要签名的数据" />
-      <button @click="generateKeyPair">生成密钥对</button>
+      <button @click="generateKeyPair">
+        生成密钥对
+      </button>
       <button :disabled="isSigning || !keyPair" @click="signData">
         {{ isSigning ? '签名中...' : '数字签名' }}
       </button>
@@ -505,7 +561,9 @@ async function verifySignature() {
       <p>{{ verificationResult ? '✅ 验证成功' : '❌ 验证失败' }}</p>
     </div>
 
-    <div v-if="lastError" class="error">错误: {{ lastError }}</div>
+    <div v-if="lastError" class="error">
+      错误: {{ lastError }}
+    </div>
   </div>
 </template>
 ```
@@ -523,17 +581,19 @@ const { isEncrypting, isDecrypting, isHashing, isSigning, isVerifying } = useCry
 // 计算属性：任何操作正在进行
 const isLoading = computed(
   () =>
-    isEncrypting.value ||
-    isDecrypting.value ||
-    isHashing.value ||
-    isSigning.value ||
-    isVerifying.value
+    isEncrypting.value
+    || isDecrypting.value
+    || isHashing.value
+    || isSigning.value
+    || isVerifying.value
 )
 </script>
 
 <template>
   <div v-if="isLoading" class="loading-overlay">
-    <div class="spinner">处理中...</div>
+    <div class="spinner">
+      处理中...
+    </div>
   </div>
 </template>
 ```
@@ -545,7 +605,7 @@ const isLoading = computed(
 const { lastError, clearError } = useCrypto()
 
 // 监听错误变化
-watch(lastError, error => {
+watch(lastError, (error) => {
   if (error) {
     console.error('Crypto error:', error)
     // 可以显示通知或执行其他错误处理逻辑
@@ -570,7 +630,7 @@ onMounted(() => {
 const { lastResult } = useCrypto()
 
 // 监听结果变化
-watch(lastResult, result => {
+watch(lastResult, (result) => {
   if (result) {
     // 缓存结果或执行其他逻辑
     localStorage.setItem('lastCryptoResult', JSON.stringify(result))

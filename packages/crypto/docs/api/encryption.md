@@ -226,7 +226,8 @@ class EncryptionError extends Error {
 ```typescript
 try {
   const encrypted = encrypt.aes('data', 'key')
-} catch (error) {
+}
+catch (error) {
   if (error instanceof EncryptionError) {
     console.error('加密错误:', error.message)
     console.error('算法:', error.algorithm)

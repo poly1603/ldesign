@@ -39,7 +39,7 @@ export const securityChecklist = {
   recommended: ['CRYPTO_STRICT_MODE', 'CRYPTO_KEY_ROTATION_INTERVAL', 'CRYPTO_MAX_KEY_AGE'],
 
   // 🔍 安全验证函数
-  validate(): { valid: boolean; issues: string[] } {
+  validate(): { valid: boolean, issues: string[] } {
     const issues: string[] = []
 
     // 检查必需的环境变量
@@ -357,7 +357,7 @@ class User {
   private static readonly ENCRYPTION_KEY = process.env.DB_ENCRYPTION_KEY!
 
   // 加密敏感字段
-  static encryptSensitiveData(data: { email: string; phone?: string; ssn?: string }) {
+  static encryptSensitiveData(data: { email: string, phone?: string, ssn?: string }) {
     return {
       email: encrypt.aes(data.email, this.ENCRYPTION_KEY).data,
       phone: data.phone ? encrypt.aes(data.phone, this.ENCRYPTION_KEY).data : null,
@@ -366,7 +366,7 @@ class User {
   }
 
   // 解密敏感字段
-  static decryptSensitiveData(encryptedData: { email: string; phone?: string; ssn?: string }) {
+  static decryptSensitiveData(encryptedData: { email: string, phone?: string, ssn?: string }) {
     const result: any = {}
 
     if (encryptedData.email) {
@@ -428,7 +428,7 @@ export async function encryptExistingUserData() {
     }
 
     // 批量加密
-    const updates = users.map(user => {
+    const updates = users.map((user) => {
       const encryptedEmail = encrypt.aes(user.email, ENCRYPTION_KEY)
 
       return {
@@ -538,11 +538,11 @@ class SecurityMonitor extends EventEmitter {
 // 使用监控器
 const monitor = SecurityMonitor.getInstance()
 
-monitor.on('securityEvent', event => {
+monitor.on('securityEvent', (event) => {
   console.log(`安全事件: ${event.type}`, event.details)
 })
 
-monitor.on('anomaly', anomaly => {
+monitor.on('anomaly', (anomaly) => {
   console.warn(`检测到异常: ${anomaly.type}`, anomaly)
   // 发送告警通知
 })
@@ -556,7 +556,8 @@ export function monitoredEncrypt(data: string, key: string) {
       dataLength: data.length,
     })
     return result
-  } catch (error) {
+  }
+  catch (error) {
     monitor.logSecurityEvent('encryption_failed', {
       algorithm: 'AES-256',
       error: error.message,
@@ -598,7 +599,8 @@ class PerformanceMonitor {
 
   getStats(operation: string) {
     const durations = this.metrics.get(operation) || []
-    if (durations.length === 0) return null
+    if (durations.length === 0)
+      return null
 
     const sorted = [...durations].sort((a, b) => a - b)
 
@@ -622,7 +624,8 @@ export function monitoredEncryptPerf(data: string, key: string) {
   try {
     const result = encrypt.aes(data, key)
     return result
-  } finally {
+  }
+  finally {
     endTiming()
   }
 }
@@ -665,7 +668,8 @@ class KeyBackupManager {
 
       const backup = JSON.parse(decrypted.data)
       return backup.keys
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`密钥备份恢复失败: ${error.message}`)
     }
   }
@@ -675,7 +679,8 @@ class KeyBackupManager {
     try {
       this.restoreKeyBackup(encryptedBackup)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -722,7 +727,8 @@ class SecurityAudit {
     for (const varName of requiredVars) {
       if (!process.env[varName]) {
         issues.push(`缺少环境变量: ${varName}`)
-      } else if (process.env[varName]!.length < 32) {
+      }
+      else if (process.env[varName]!.length < 32) {
         issues.push(`环境变量 ${varName} 长度不足`)
       }
     }

@@ -125,8 +125,10 @@ export class RandomUtils {
 
   /**
    * 生成随机密钥
+   * @param length 期望的字节长度，返回的十六进制字符串长度为 length * 2
    */
   static generateKey(length: number = 32): string {
+    // length 是字节长度，生成对应的十六进制字符串（长度为 length * 2）
     return this.generateRandomString(length, 'hex')
   }
 }
@@ -158,6 +160,9 @@ export class ValidationUtils {
    * 验证是否为有效的 Hex 字符串
    */
   static isValidHex(str: string): boolean {
+    // 空字符串是有效的Hex字符串
+    if (str === '')
+      return true
     return /^[0-9a-f]+$/i.test(str) && str.length % 2 === 0
   }
 

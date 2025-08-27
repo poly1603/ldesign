@@ -38,7 +38,8 @@ const decrypted = decrypt.aes(encrypted, key)
 
 if (decrypted.success) {
   console.log('解密成功:', decrypted.data)
-} else {
+}
+else {
   console.error('解密失败:', decrypted.error)
 }
 ```
@@ -224,7 +225,8 @@ try {
   }
 
   console.log('解密成功:', decrypted.data)
-} catch (error) {
+}
+catch (error) {
   if (error instanceof DecryptionError) {
     console.error('解密异常:', error.message)
     console.error('算法:', error.algorithm)
@@ -254,7 +256,8 @@ const decryptedList = batchDecrypt(encryptedList, 'key')
 decryptedList.forEach((result, index) => {
   if (result.success) {
     console.log(`数据 ${index + 1} 解密成功:`, result.data)
-  } else {
+  }
+  else {
     console.error(`数据 ${index + 1} 解密失败:`, result.error)
   }
 })
@@ -332,7 +335,8 @@ class SecureDecryptor {
           console.warn(`解密尝试 ${attempt} 失败，${this.retryDelay}ms 后重试`)
           await this.delay(this.retryDelay)
         }
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error instanceof Error ? error.message : '解密异常'
 
         if (attempt < this.maxRetries) {
@@ -414,7 +418,8 @@ function validateDecryptedData(data: string, expectedFormat?: string): boolean {
       try {
         JSON.parse(data)
         return true
-      } catch {
+      }
+      catch {
         return false
       }
 

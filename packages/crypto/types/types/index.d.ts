@@ -113,9 +113,11 @@ interface DecryptResult {
  * 哈希结果
  */
 interface HashResult {
+    success: boolean;
     hash: string;
     algorithm: string;
     encoding: EncodingType;
+    error?: string;
 }
 /**
  * 密钥生成选项

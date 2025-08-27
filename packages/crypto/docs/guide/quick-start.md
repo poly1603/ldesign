@@ -151,7 +151,8 @@ async function handleEncrypt() {
     clearError()
     encryptedResult.value = await encryptAES(inputData.value, inputKey.value)
     decryptedResult.value = null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('加密失败:', error)
   }
 }
@@ -160,7 +161,8 @@ async function handleDecrypt() {
   try {
     clearError()
     decryptedResult.value = await decryptAES(encryptedResult.value, inputKey.value)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('解密失败:', error)
   }
 }
@@ -170,8 +172,8 @@ async function handleDecrypt() {
   <div>
     <h2>加密示例</h2>
     <div>
-      <input v-model="inputData" placeholder="输入要加密的数据" />
-      <input v-model="inputKey" placeholder="输入密钥" />
+      <input v-model="inputData" placeholder="输入要加密的数据">
+      <input v-model="inputKey" placeholder="输入密钥">
       <button :disabled="isEncrypting" @click="handleEncrypt">
         {{ isEncrypting ? '加密中...' : '加密' }}
       </button>
@@ -191,7 +193,9 @@ async function handleDecrypt() {
       <p>{{ decryptedResult.data }}</p>
     </div>
 
-    <div v-if="lastError" class="error">错误: {{ lastError }}</div>
+    <div v-if="lastError" class="error">
+      错误: {{ lastError }}
+    </div>
   </div>
 </template>
 
@@ -216,7 +220,8 @@ const inputText = ref('')
 const hashResults = ref([])
 
 async function calculateHash() {
-  if (!inputText.value) return
+  if (!inputText.value)
+    return
 
   try {
     const results = await Promise.all([
@@ -226,7 +231,8 @@ async function calculateHash() {
     ])
 
     hashResults.value = results
-  } catch (error) {
+  }
+  catch (error) {
     console.error('哈希计算失败:', error)
   }
 }
@@ -235,7 +241,7 @@ async function calculateHash() {
 <template>
   <div>
     <h2>哈希示例</h2>
-    <input v-model="inputText" placeholder="输入要哈希的文本" />
+    <input v-model="inputText" placeholder="输入要哈希的文本">
     <button :disabled="isHashing" @click="calculateHash">
       {{ isHashing ? '计算中...' : '计算哈希' }}
     </button>
@@ -320,16 +326,19 @@ class SecureStorage {
 
   getItem(key: string): any {
     const stored = localStorage.getItem(key)
-    if (!stored) return null
+    if (!stored)
+      return null
 
     try {
       const encrypted = JSON.parse(stored)
       const decrypted = decrypt.aes(encrypted, this.key)
 
-      if (!decrypted.success) return null
+      if (!decrypted.success)
+        return null
 
       return JSON.parse(decrypted.data)
-    } catch {
+    }
+    catch {
       return null
     }
   }

@@ -365,13 +365,15 @@ class PasswordHasher {
 
       // 使用常数时间比较防止时间攻击
       return this.constantTimeEquals(computedHash, expectedHash)
-    } catch {
+    }
+    catch {
       return false
     }
   }
 
   private static constantTimeEquals(a: string, b: string): boolean {
-    if (a.length !== b.length) return false
+    if (a.length !== b.length)
+      return false
 
     let result = 0
     for (let i = 0; i < a.length; i++) {
@@ -442,7 +444,7 @@ class FileIntegrityChecker {
       expectedHash: string
       algorithm?: HashAlgorithm
     }>
-  ): Array<{ index: number; valid: boolean; actualHash: string }> {
+  ): Array<{ index: number, valid: boolean, actualHash: string }> {
     return files.map((file, index) => {
       const algorithm = file.algorithm || 'SHA256'
       const actualHash = this.calculateFileHash(file.content, algorithm)
@@ -479,9 +481,9 @@ class APIRequestSigner {
     body: string,
     timestamp?: number
   ): {
-    signature: string
-    timestamp: number
-  } {
+      signature: string
+      timestamp: number
+    } {
     const requestTimestamp = timestamp || Date.now()
     const message = this.createSignatureMessage(method, url, body, requestTimestamp)
     const signature = hmac.sha256(message, this.secretKey)
@@ -500,7 +502,7 @@ class APIRequestSigner {
     timestamp: number,
     signature: string,
     maxAge: number = 300000 // 5分钟
-  ): { valid: boolean; reason?: string } {
+  ): { valid: boolean, reason?: string } {
     // 检查时间戳
     const now = Date.now()
     if (now - timestamp > maxAge) {
@@ -609,7 +611,8 @@ async function batchHashAsync(dataList: string[], algorithm: HashAlgorithm = 'SH
 ```typescript
 // 安全的哈希比较
 function secureHashCompare(hash1: string, hash2: string): boolean {
-  if (hash1.length !== hash2.length) return false
+  if (hash1.length !== hash2.length)
+    return false
 
   let result = 0
   for (let i = 0; i < hash1.length; i++) {

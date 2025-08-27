@@ -161,7 +161,8 @@ onMounted(async () => {
     decrypted.value = decryptResult.data
 
     success.value = decryptResult.data === original.value
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Test failed:', error)
   }
 })

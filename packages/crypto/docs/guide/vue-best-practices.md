@@ -108,7 +108,8 @@ export function useSecureCrypto() {
       }
 
       return result
-    } catch (error) {
+    }
+    catch (error) {
       encryptionHistory.value.unshift({
         timestamp: Date.now(),
         error: error.message,
@@ -167,7 +168,7 @@ export function useCryptoState() {
   })
 
   // 监听操作结果
-  watch(crypto.lastResult, result => {
+  watch(crypto.lastResult, (result) => {
     if (result) {
       state.lastOperation = {
         type: result.algorithm ? 'encrypt' : 'decrypt',
@@ -179,7 +180,7 @@ export function useCryptoState() {
   })
 
   // 监听错误
-  watch(crypto.lastError, error => {
+  watch(crypto.lastError, (error) => {
     if (error) {
       state.lastOperation = {
         type: 'error',
@@ -223,10 +224,12 @@ export function useSecureStorage(storageKey: string, userKey: string) {
 
       localStorage.setItem(storageKey, JSON.stringify(encrypted))
       data.value = value
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err.message
       throw err
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }
@@ -253,11 +256,13 @@ export function useSecureStorage(storageKey: string, userKey: string) {
       const value = JSON.parse(decrypted.data)
       data.value = value
       return value
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err.message
       data.value = null
       return null
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }
@@ -272,7 +277,7 @@ export function useSecureStorage(storageKey: string, userKey: string) {
   const enableAutoSave = () => {
     watch(
       data,
-      newValue => {
+      (newValue) => {
         if (newValue !== null) {
           save(newValue)
         }
@@ -318,9 +323,9 @@ const isProcessing = computed(() => isEncrypting.value)
 
 const canSubmit = computed(
   () =>
-    formData.value.sensitiveData.trim() &&
-    formData.value.encryptionKey.trim() &&
-    !isProcessing.value
+    formData.value.sensitiveData.trim()
+    && formData.value.encryptionKey.trim()
+    && !isProcessing.value
 )
 
 async function handleSubmit() {
@@ -339,7 +344,8 @@ async function handleSubmit() {
     // 清除敏感数据
     formData.value.sensitiveData = ''
     formData.value.encryptionKey = ''
-  } catch (err) {
+  }
+  catch (err) {
     emit('error', err)
   }
 }
@@ -370,7 +376,7 @@ function clearForm() {
         type="password"
         :disabled="isProcessing"
         placeholder="输入加密密钥"
-      />
+      >
     </div>
 
     <div class="form-actions">
@@ -378,7 +384,9 @@ function clearForm() {
         {{ isProcessing ? '处理中...' : '加密提交' }}
       </button>
 
-      <button type="button" :disabled="isProcessing" @click="clearForm">清除</button>
+      <button type="button" :disabled="isProcessing" @click="clearForm">
+        清除
+      </button>
     </div>
 
     <div v-if="result" class="result">
@@ -386,7 +394,9 @@ function clearForm() {
       <pre>{{ result }}</pre>
     </div>
 
-    <div v-if="error" class="error">错误: {{ error }}</div>
+    <div v-if="error" class="error">
+      错误: {{ error }}
+    </div>
   </form>
 </template>
 
@@ -507,7 +517,8 @@ export function useLazyCrypto() {
   const error = ref(null)
 
   const loadCrypto = async () => {
-    if (cryptoModule.value) return cryptoModule.value
+    if (cryptoModule.value)
+      return cryptoModule.value
 
     try {
       isLoading.value = true
@@ -517,10 +528,12 @@ export function useLazyCrypto() {
       cryptoModule.value = module.useCrypto()
 
       return cryptoModule.value
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err.message
       throw err
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }
@@ -625,7 +638,7 @@ import { onErrorCaptured, ref } from 'vue'
 const hasError = ref(false)
 const errorMessage = ref('')
 
-onErrorCaptured(error => {
+onErrorCaptured((error) => {
   if (error.name === 'CryptoError' || error.message.includes('crypto')) {
     hasError.value = true
     errorMessage.value = error.message
@@ -651,8 +664,12 @@ function reset() {
     <div v-else class="error-boundary">
       <h3>🔒 加密功能暂时不可用</h3>
       <p>{{ errorMessage }}</p>
-      <button @click="retry">重试</button>
-      <button @click="reset">重置</button>
+      <button @click="retry">
+        重试
+      </button>
+      <button @click="reset">
+        重置
+      </button>
     </div>
   </div>
 </template>
@@ -688,7 +705,8 @@ describe('useCrypto', () => {
 
     try {
       await encryptAES('', '') // 无效输入
-    } catch (error) {
+    }
+    catch (error) {
       expect(lastError.value).toBeTruthy()
     }
   })

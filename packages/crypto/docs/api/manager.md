@@ -381,7 +381,8 @@ async function example() {
     // 获取性能统计
     const stats = manager.getPerformanceStats()
     console.log('性能统计:', stats)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('操作失败:', error)
   }
 }

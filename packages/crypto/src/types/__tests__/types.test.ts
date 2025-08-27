@@ -3,70 +3,56 @@
  * 确保所有类型定义都正确工作
  */
 
-import { describe, it, expectTypeOf } from 'vitest'
 import type {
+  BatchOperation,
+  CryptoConfig,
+} from '../../core/manager'
+import type { CacheStats } from '../../core/performance'
+
+import type {
+  // 算法实现
+  AESEncryptor,
+  BlowfishEncryptor,
+  DESEncryptor,
+  RSAEncryptor,
+  TripleDESEncryptor,
+} from '../../index'
+
+import type {
+  // 算法选项
+  AESOptions,
+  BlowfishOptions,
+  DecryptResult,
+  DESOptions,
   // 基础类型
   EncryptionAlgorithm,
   EncryptResult,
-  DecryptResult,
-  HashResult,
-
-  // 算法选项
-  AESOptions,
-  DESOptions,
-  TripleDESOptions,
-  BlowfishOptions,
-  RSAOptions,
-  HashOptions,
-
   // 接口
   IEncryptor,
-  IHasher,
-  IEncoder,
-
-  // 其他类型
-  RSAKeyPair,
-  EncodingType,
-  HashAlgorithm,
 } from '../index'
 
-import type {
-  CryptoConfig,
-  BatchOperation,
-  BatchResult,
-} from '../../core/manager'
-
-import type { CacheStats } from '../../core/performance'
-
+import { describe, expectTypeOf, it } from 'vitest'
 import {
-  // 算法实现
-  AESEncryptor,
-  DESEncryptor,
-  TripleDESEncryptor,
-  BlowfishEncryptor,
-  RSAEncryptor,
-
-  // 管理器
-  CryptoManager,
-  PerformanceOptimizer,
 
   // 便捷函数
   aes,
-  des,
-  des3,
   blowfish,
-  rsa,
+
+  // 管理器
+  CryptoManager,
+  des,
+  PerformanceOptimizer,
 } from '../../index'
 
 describe('类型定义测试', () => {
   describe('基础类型', () => {
-    it('EncryptionAlgorithm 应该包含所有支持的算法', () => {
+    it('encryptionAlgorithm 应该包含所有支持的算法', () => {
       expectTypeOf<EncryptionAlgorithm>().toEqualTypeOf<
         'AES' | 'RSA' | 'DES' | '3DES' | 'Blowfish'
       >()
     })
 
-    it('EncryptResult 应该有正确的结构', () => {
+    it('encryptResult 应该有正确的结构', () => {
       expectTypeOf<EncryptResult>().toMatchTypeOf<{
         success: boolean
         data?: string
@@ -79,7 +65,7 @@ describe('类型定义测试', () => {
       }>()
     })
 
-    it('DecryptResult 应该有正确的结构', () => {
+    it('decryptResult 应该有正确的结构', () => {
       expectTypeOf<DecryptResult>().toMatchTypeOf<{
         success: boolean
         data?: string
@@ -91,7 +77,7 @@ describe('类型定义测试', () => {
   })
 
   describe('算法选项类型', () => {
-    it('AESOptions 应该有正确的属性', () => {
+    it('aESOptions 应该有正确的属性', () => {
       expectTypeOf<AESOptions>().toMatchTypeOf<{
         mode?: 'CBC' | 'ECB' | 'CFB' | 'OFB' | 'CTR' | 'GCM'
         keySize?: 128 | 192 | 256
@@ -100,7 +86,7 @@ describe('类型定义测试', () => {
       }>()
     })
 
-    it('DESOptions 应该有正确的属性', () => {
+    it('dESOptions 应该有正确的属性', () => {
       expectTypeOf<DESOptions>().toMatchTypeOf<{
         mode?: 'CBC' | 'ECB' | 'CFB' | 'OFB'
         iv?: string
@@ -108,7 +94,7 @@ describe('类型定义测试', () => {
       }>()
     })
 
-    it('BlowfishOptions 应该有正确的属性', () => {
+    it('blowfishOptions 应该有正确的属性', () => {
       expectTypeOf<BlowfishOptions>().toMatchTypeOf<{
         mode?: 'CBC' | 'ECB'
         iv?: string
@@ -118,7 +104,7 @@ describe('类型定义测试', () => {
   })
 
   describe('接口类型', () => {
-    it('IEncryptor 应该有正确的方法签名', () => {
+    it('iEncryptor 应该有正确的方法签名', () => {
       expectTypeOf<IEncryptor>().toMatchTypeOf<{
         encrypt: (data: string, key: string, options?: any) => EncryptResult
         decrypt: (
@@ -139,7 +125,7 @@ describe('类型定义测试', () => {
   })
 
   describe('管理器类型', () => {
-    it('CryptoConfig 应该有正确的属性', () => {
+    it('cryptoConfig 应该有正确的属性', () => {
       expectTypeOf<CryptoConfig>().toMatchTypeOf<{
         defaultAlgorithm?: EncryptionAlgorithm
         enableCache?: boolean
@@ -152,7 +138,7 @@ describe('类型定义测试', () => {
       }>()
     })
 
-    it('BatchOperation 应该有正确的结构', () => {
+    it('batchOperation 应该有正确的结构', () => {
       expectTypeOf<BatchOperation>().toMatchTypeOf<{
         id: string
         data: string
@@ -162,7 +148,7 @@ describe('类型定义测试', () => {
       }>()
     })
 
-    it('CacheStats 应该有正确的结构', () => {
+    it('cacheStats 应该有正确的结构', () => {
       expectTypeOf<CacheStats>().toMatchTypeOf<{
         keyCache: number
         resultCache: number
@@ -193,14 +179,14 @@ describe('类型定义测试', () => {
   })
 
   describe('类实例化', () => {
-    it('CryptoManager 应该可以正确实例化', () => {
+    it('cryptoManager 应该可以正确实例化', () => {
       const manager = new CryptoManager()
       expectTypeOf(manager.encryptData).toBeFunction()
       expectTypeOf(manager.decryptData).toBeFunction()
       expectTypeOf(manager.generateKey).toBeFunction()
     })
 
-    it('PerformanceOptimizer 应该可以正确实例化', () => {
+    it('performanceOptimizer 应该可以正确实例化', () => {
       const optimizer = new PerformanceOptimizer()
       expectTypeOf(optimizer.batchEncrypt).toBeFunction()
       expectTypeOf(optimizer.batchDecrypt).toBeFunction()

@@ -226,10 +226,10 @@ function hashMultiple(dataList: string[]): string[] {
 
 // 使用 Worker 进行大量数据的哈希计算（浏览器环境）
 function hashInWorker(data: string): Promise<string> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const worker = new Worker('hash-worker.js')
     worker.postMessage(data)
-    worker.onmessage = e => {
+    worker.onmessage = (e) => {
       resolve(e.data)
       worker.terminate()
     }

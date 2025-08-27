@@ -154,7 +154,7 @@ class ParallelCryptoProcessor {
     const executing: Promise<void>[] = []
 
     for (const item of items) {
-      const promise = processor(item).then(result => {
+      const promise = processor(item).then((result) => {
         results.push(result)
       })
 
@@ -181,7 +181,7 @@ class ParallelCryptoProcessor {
   ) {
     return this.processInParallel(
       items,
-      async item => {
+      async (item) => {
         return aes.encrypt(item.data, item.key, { keySize: 256 })
       },
       4 // 并发数
@@ -245,7 +245,8 @@ class OptimizedEncryptor {
       // 执行加密操作
       const result = this.performEncryption(data, key, buffer)
       return result
-    } finally {
+    }
+    finally {
       // 返回缓冲区到池中
       this.memoryPool.returnBuffer(buffer)
     }
@@ -340,8 +341,7 @@ const streamProcessor = new StreamCryptoProcessor()
 
 const largeData = 'x'.repeat(1024 * 1024) // 1MB 数据
 const encrypted = await streamProcessor.encryptLargeData(largeData, 'secret-key', progress =>
-  console.log(`加密进度: ${progress.toFixed(1)}%`)
-)
+  console.log(`加密进度: ${progress.toFixed(1)}%`))
 ```
 
 ## 4. 算法选择优化
@@ -412,9 +412,11 @@ class AlgorithmBenchmark {
   recommendAlgorithm(dataSize: number, securityLevel: 'low' | 'medium' | 'high'): string {
     if (securityLevel === 'high') {
       return dataSize > 1024 * 1024 ? 'AES' : 'AES' // 总是推荐AES用于高安全性
-    } else if (securityLevel === 'medium') {
+    }
+    else if (securityLevel === 'medium') {
       return dataSize > 1024 * 100 ? 'AES' : 'Blowfish'
-    } else {
+    }
+    else {
       return dataSize > 1024 * 10 ? 'Blowfish' : 'DES'
     }
   }
@@ -463,7 +465,8 @@ self.onmessage = function (e) {
     }
 
     self.postMessage({ id, success: true, result })
-  } catch (error) {
+  }
+  catch (error) {
     self.postMessage({
       id,
       success: false,
@@ -497,7 +500,8 @@ class WorkerCryptoManager {
 
       if (success) {
         operation.resolve(result)
-      } else {
+      }
+      else {
         operation.reject(new Error(error))
       }
     }
@@ -582,7 +586,8 @@ class CryptoPerformanceMonitor {
       })
 
       return result
-    } catch (error) {
+    }
+    catch (error) {
       const duration = performance.now() - startTime
 
       this.metrics.push({
@@ -602,7 +607,8 @@ class CryptoPerformanceMonitor {
       m => m.operation === operation && m.algorithm === algorithm
     )
 
-    if (relevantMetrics.length === 0) return null
+    if (relevantMetrics.length === 0)
+      return null
 
     const totalDuration = relevantMetrics.reduce((sum, m) => sum + m.duration, 0)
     const averageDuration = totalDuration / relevantMetrics.length
@@ -650,8 +656,7 @@ const monitor = new CryptoPerformanceMonitor()
 
 // 监控加密操作
 const encrypted = await monitor.measureOperation('encrypt', 'AES', 1024, () =>
-  aes.encrypt('test data', 'secret-key')
-)
+  aes.encrypt('test data', 'secret-key'))
 
 // 获取性能报告
 const report = monitor.exportMetrics()

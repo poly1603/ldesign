@@ -108,7 +108,7 @@ import { getGlobalConfig, resetGlobalConfig, updateGlobalConfig } from '@ldesign
 
 // 获取当前配置
 const currentConfig = getGlobalConfig()
-// eslint-disable-next-line no-console
+
 console.log('当前配置:', currentConfig)
 
 // 动态更新配置
@@ -295,7 +295,7 @@ registerAlgorithm('CUSTOM_AES', {
     return customDecrypt(encryptedData, key, options)
   },
 
-  generateKey: keySize => {
+  generateKey: (keySize) => {
     // 自定义密钥生成
     return customGenerateKey(keySize)
   },
@@ -410,7 +410,7 @@ if (!validation.valid) {
 import { addConfigValidator } from '@ldesign/crypto'
 
 // 添加自定义验证规则
-addConfigValidator('aes.keySize', value => {
+addConfigValidator('aes.keySize', (value) => {
   const validSizes = [128, 192, 256]
   if (!validSizes.includes(value)) {
     return `AES 密钥长度必须是 ${validSizes.join(', ')} 之一`
@@ -418,7 +418,7 @@ addConfigValidator('aes.keySize', value => {
   return null
 })
 
-addConfigValidator('rsa.keySize', value => {
+addConfigValidator('rsa.keySize', (value) => {
   if (value < 1024) {
     return 'RSA 密钥长度不能小于 1024 位'
   }
@@ -511,7 +511,8 @@ export class ConfigLoader {
     const keys = path.split('.')
     const lastKey = keys.pop()!
     const target = keys.reduce((current, key) => {
-      if (!current[key]) current[key] = {}
+      if (!current[key])
+        current[key] = {}
       return current[key]
     }, obj)
     target[lastKey] = value

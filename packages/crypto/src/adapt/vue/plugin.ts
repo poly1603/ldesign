@@ -141,7 +141,9 @@ export const CryptoPlugin: Plugin = {
 
     // 开发模式下的调试信息
     if (
+      // eslint-disable-next-line node/prefer-global/process
       typeof process !== 'undefined'
+      // eslint-disable-next-line node/prefer-global/process
       && process.env?.NODE_ENV === 'development'
     ) {
       console.warn('[LDesign Crypto] Plugin installed successfully')

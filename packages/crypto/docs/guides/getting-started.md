@@ -74,7 +74,7 @@ console.log('解密结果:', decrypted.data)
 RSA 适合加密小量数据和密钥交换。
 
 ```typescript
-import { rsa, keyGenerator } from '@ldesign/crypto'
+import { keyGenerator, rsa } from '@ldesign/crypto'
 
 // 生成 RSA 密钥对
 const keyPair = keyGenerator.generateRSAKeyPair(2048)
@@ -156,7 +156,7 @@ console.log('Hex 解码:', hexDecoded)
 ### 使用核心功能类
 
 ```typescript
-import { encrypt, decrypt, hash } from '@ldesign/crypto'
+import { decrypt, encrypt, hash } from '@ldesign/crypto'
 
 // 统一的加密接口
 const encrypted = encrypt.aes('data', 'key', { keySize: 256 })
@@ -188,9 +188,9 @@ const decrypted = await cryptoManager.decryptData(encrypted, 'key')
 ### 安装插件
 
 ```typescript
+import { CryptoPlugin } from '@ldesign/crypto/vue'
 // main.ts
 import { createApp } from 'vue'
-import { CryptoPlugin } from '@ldesign/crypto/vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -201,34 +201,37 @@ app.mount('#app')
 ### 使用 Composition API
 
 ```vue
-<template>
-  <div>
-    <input v-model="plaintext" placeholder="输入文本" />
-    <button @click="handleEncrypt" :disabled="isEncrypting">
-      {{ isEncrypting ? '加密中...' : '加密' }}
-    </button>
-    <div v-if="encryptedData">加密结果: {{ encryptedData }}</div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useCrypto } from '@ldesign/crypto/vue'
+import { ref } from 'vue'
 
 const { encryptAES, isEncrypting } = useCrypto()
 
 const plaintext = ref('Hello, Vue!')
 const encryptedData = ref('')
 
-const handleEncrypt = async () => {
+async function handleEncrypt() {
   try {
     const result = await encryptAES(plaintext.value, 'secret-key')
     encryptedData.value = result
-  } catch (error) {
+  }
+  catch (error) {
     console.error('加密失败:', error)
   }
 }
 </script>
+
+<template>
+  <div>
+    <input v-model="plaintext" placeholder="输入文本">
+    <button :disabled="isEncrypting" @click="handleEncrypt">
+      {{ isEncrypting ? '加密中...' : '加密' }}
+    </button>
+    <div v-if="encryptedData">
+      加密结果: {{ encryptedData }}
+    </div>
+  </div>
+</template>
 ```
 
 ## 常见用例
@@ -238,7 +241,7 @@ const handleEncrypt = async () => {
 ```typescript
 import { hash, RandomUtils } from '@ldesign/crypto'
 
-function hashPassword(password: string): { hash: string; salt: string } {
+function hashPassword(password: string): { hash: string, salt: string } {
   const salt = RandomUtils.generateRandomHex(32)
   const hashedPassword = hash.sha256(password + salt)
 
@@ -266,7 +269,7 @@ import { aes, keyGenerator } from '@ldesign/crypto'
 class DataVault {
   private masterKey = process.env.MASTER_KEY!
 
-  encrypt(data: string): { encrypted: string; iv: string } {
+  encrypt(data: string): { encrypted: string, iv: string } {
     const iv = keyGenerator.generateIV(16)
     const encrypted = aes.encrypt(data, this.masterKey, {
       keySize: 256,
@@ -355,10 +358,12 @@ try {
 
   if (encrypted.success) {
     console.log('加密成功:', encrypted.data)
-  } else {
+  }
+  else {
     console.error('加密失败:', encrypted.error)
   }
-} catch (error) {
+}
+catch (error) {
   console.error('加密异常:', error.message)
 }
 ```
@@ -366,17 +371,19 @@ try {
 ### 高级错误处理
 
 ```typescript
-import { EncryptionError, DecryptionError } from '@ldesign/crypto'
+import { DecryptionError, EncryptionError } from '@ldesign/crypto'
 
 function safeEncrypt(data: string, key: string) {
   try {
     const result = aes.encrypt(data, key)
     return { success: true, data: result.data }
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof EncryptionError) {
-      return { success: false, error: '加密失败: ' + error.message }
-    } else {
-      return { success: false, error: '未知错误: ' + error.message }
+      return { success: false, error: `加密失败: ${error.message}` }
+    }
+    else {
+      return { success: false, error: `未知错误: ${error.message}` }
     }
   }
 }

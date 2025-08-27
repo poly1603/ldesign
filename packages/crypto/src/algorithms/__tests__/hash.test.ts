@@ -75,8 +75,11 @@ describe('hash Algorithms', () => {
       })
     })
 
-    it('should throw error for empty data', () => {
-      expect(() => hasher.hash('', 'SHA256')).toThrow('Data cannot be empty')
+    it('should handle empty data', () => {
+      const result = hasher.hash('', 'SHA256')
+      expect(result.success).toBe(true)
+      expect(result.hash).toBeDefined()
+      expect(result.algorithm).toBe('SHA256')
     })
   })
 
@@ -126,13 +129,14 @@ describe('hash Algorithms', () => {
       })
     })
 
-    it('should throw error for empty data or key', () => {
-      expect(() => hmacHasher.hmac('', testKey, 'SHA256')).toThrow(
-        'Data cannot be empty',
-      )
-      expect(() => hmacHasher.hmac(testData, '', 'SHA256')).toThrow(
-        'Key cannot be empty',
-      )
+    it('should handle empty data and key', () => {
+      const emptyDataResult = hmacHasher.hmac('', testKey, 'SHA256')
+      expect(emptyDataResult.success).toBe(true)
+      expect(emptyDataResult.hash).toBeDefined()
+
+      const emptyKeyResult = hmacHasher.hmac(testData, '', 'SHA256')
+      expect(emptyKeyResult.success).toBe(true)
+      expect(emptyKeyResult.hash).toBeDefined()
     })
   })
 
@@ -204,9 +208,11 @@ describe('hash Algorithms', () => {
       expect(result).toHaveLength(64)
     })
 
-    it('should handle empty string after validation', () => {
-      // This should throw an error due to validation
-      expect(() => hash.sha256('')).toThrow()
+    it('should handle empty string', () => {
+      // Empty string should be supported
+      const result = hash.sha256('')
+      expect(result).toBeDefined()
+      expect(result).toHaveLength(64) // SHA256 always produces 64 hex characters
     })
   })
 })

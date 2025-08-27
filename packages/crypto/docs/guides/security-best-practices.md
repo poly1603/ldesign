@@ -96,11 +96,11 @@ class KeyDerivation {
     masterKey: string,
     purpose: string
   ): {
-    encryptionKey: string
-    authKey: string
-  } {
-    const encryptionKey = hash.sha256(masterKey + purpose + 'encryption')
-    const authKey = hash.sha256(masterKey + purpose + 'authentication')
+      encryptionKey: string
+      authKey: string
+    } {
+    const encryptionKey = hash.sha256(`${masterKey + purpose}encryption`)
+    const authKey = hash.sha256(`${masterKey + purpose}authentication`)
 
     return { encryptionKey, authKey }
   }
@@ -189,7 +189,7 @@ class SecureDataProcessor {
   validateInput(data: any): string {
     // 类型检查
     if (typeof data !== 'string') {
-      throw new Error('输入必须是字符串')
+      throw new TypeError('输入必须是字符串')
     }
 
     // 长度检查
@@ -390,11 +390,13 @@ class SecureErrorHandler {
     try {
       this.validateInput(data, key)
       return aes.encrypt(data, key).data!
-    } catch (error) {
+    }
+    catch (error) {
       // 不要在错误消息中暴露敏感信息
       if (error.message.includes('key')) {
         throw new Error('认证失败')
-      } else {
+      }
+      else {
         throw new Error('处理失败')
       }
     }
@@ -408,7 +410,8 @@ class SecureErrorHandler {
 // 不要暴露敏感信息
 try {
   const result = aes.decrypt(data, secretKey)
-} catch (error) {
+}
+catch (error) {
   // 错误：暴露了密钥信息
   throw new Error(`解密失败，使用的密钥是: ${secretKey}`)
 }
@@ -557,7 +560,8 @@ describe('Security Tests', () => {
     // 确保错误消息不包含敏感信息
     try {
       aes.encrypt('data', null as any)
-    } catch (error) {
+    }
+    catch (error) {
       expect(error.message).not.toContain(sensitiveKey)
     }
   })

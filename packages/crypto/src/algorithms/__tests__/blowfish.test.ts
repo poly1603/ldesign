@@ -83,11 +83,11 @@ describe('blowfish 加密算法', () => {
     })
 
     it('应该能够生成指定长度的密钥', () => {
-      const key16 = blowfish.generateKey(16)
-      expect(key16.length).toBe(16)
+      const key8 = blowfish.generateKey(8)
+      expect(key8.length).toBe(16) // 8字节 = 16个十六进制字符
 
-      const key64 = blowfish.generateKey(64)
-      expect(key64.length).toBe(64)
+      const key32 = blowfish.generateKey(32)
+      expect(key32.length).toBe(64) // 32字节 = 64个十六进制字符
     })
   })
 
