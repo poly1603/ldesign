@@ -269,10 +269,10 @@ const response = await http.get('/users', {
 
 现在你已经了解了基础用法，可以继续学习：
 
-- [HTTP 客户端详解](/guide/http-client) - 深入了解客户端配置
-- [适配器系统](/guide/adapters) - 了解不同的 HTTP 适配器
-- [拦截器使用](/guide/interceptors) - 学习如何使用拦截器
-- [错误处理](/guide/error-handling) - 掌握错误处理最佳实践
-- [Vue 集成指南](/guide/vue-plugin) - 深入了解 Vue 3 集成
+- [HTTP 客户端详解](./basic-usage) - 深入了解客户端配置
+- [适配器系统](./adapters) - 了解不同的 HTTP 适配器
+- [拦截器使用](./interceptors) - 学习如何使用拦截器
+- [错误处理](./error-handling) - 掌握错误处理最佳实践
+- [Vue 集成指南](./vue-plugin) - 深入了解 Vue 3 集成
 
-或者查看更多[示例](/examples/basic)来学习具体的使用场景。
+或者查看更多[示例](../examples/basic)来学习具体的使用场景。

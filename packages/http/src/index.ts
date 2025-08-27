@@ -47,13 +47,60 @@ export {
 // 核心类型导出
 export type * from './types'
 
+// 类型工具导出
+export {
+  assertType,
+  createEnum,
+  createTypedError,
+  deepClone,
+  isArray,
+  isFunction,
+  isNonNull,
+  isNumber,
+  isObject,
+  isString,
+  safeGet,
+  safeGetNested,
+  safeJsonParse,
+  typedEntries,
+  typedFilter,
+  typedKeys,
+  typedMerge,
+  typedValues,
+  wrapPromise,
+} from './types/utils'
+
+// 导出类型工具类型
+export type {
+  AllowsRequestBody,
+  AllStatusCode,
+  ArrayToUnion,
+  BuildUrlWithParams,
+  ClientErrorStatusCode,
+  DeepMerge,
+  DistributiveOmit,
+  ExtractPathParams,
+  FunctionKeys,
+  FunctionsOnly,
+  IsPromise,
+  NonFunctionKeys,
+  PropertiesOnly,
+  ReadonlyTuple,
+  RequestBodyType,
+  ServerErrorStatusCode,
+  StatusCodeMessages,
+  StrictEnum,
+  SuccessStatusCode,
+  UnionToIntersection,
+  UnwrapPromise,
+} from './types/utils'
+
 // 工具函数导出
 export {
   buildQueryString,
   buildURL,
   combineURLs,
   createHttpError,
-  deepClone,
   delay,
   generateId,
   isAbsoluteURL,
@@ -66,12 +113,22 @@ export {
 
 // 缓存功能导出
 export {
+  AdvancedCacheManager,
   CacheManager,
+  createAdvancedCacheManager,
   createCacheManager,
   createLocalStorage,
   createMemoryStorage,
   LocalStorageCacheStorage,
   MemoryCacheStorage,
+} from './utils/cache'
+
+// 导出缓存相关类型
+export type {
+  AdvancedCacheConfig,
+  CacheItemMetadata,
+  CacheStats,
+  EnhancedCacheItem,
 } from './utils/cache'
 
 // 取消功能导出
@@ -88,19 +145,68 @@ export {
 export {
   ConcurrencyManager,
   createConcurrencyManager,
+  createDeduplicationKeyGenerator,
   createDeduplicationManager,
   createRateLimitManager,
+  DeduplicationKeyGenerator,
   DeduplicationManager,
   RateLimitManager,
 } from './utils/concurrency'
 
+// 导出去重相关类型
+export type {
+  DeduplicationKeyConfig,
+} from './utils/concurrency'
+
+export {
+  createDownloadChunks,
+  createRangeHeader,
+  DownloadProgressCalculator,
+  formatDownloadSpeed,
+  formatTimeRemaining,
+  getFilenameFromResponse,
+  getFilenameFromURL,
+  getMimeTypeFromFilename,
+  isPreviewableFile,
+  mergeDownloadChunks,
+  parseContentRange,
+  saveFileToLocal,
+  supportsRangeRequests,
+} from './utils/download'
+
 // 错误处理导出
 export {
+  builtinRecoveryStrategies,
+  ErrorAnalyzer,
   ErrorHandler,
   ErrorType,
   RetryManager,
   TimeoutManager,
 } from './utils/error'
+
+// 导出错误处理相关类型
+export type {
+  ErrorRecoveryStrategy,
+  ErrorStats,
+} from './utils/error'
+
+// 文件上传下载导出
+export {
+  createFileChunks,
+  createFilePreviewURL,
+  createUploadFormData,
+  FileValidationError,
+  formatFileSize,
+  generateFileHash,
+  getFileExtension,
+  isAudioFile,
+  isDocumentFile,
+  isImageFile,
+  isVideoFile,
+  ProgressCalculator,
+  revokeFilePreviewURL,
+  validateFile,
+} from './utils/upload'
 
 // Vue 相关导出
 export * from './vue'

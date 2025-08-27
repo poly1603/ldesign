@@ -426,9 +426,9 @@ catch (error) {
 
 ## 📚 更多资源
 
-- [完整文档](../README.md)
-- [API 参考](../api/README.md)
-- [示例代码](../examples/README.md)
+- [完整文档](../index)
+- [API 参考](../api/)
+- [示例代码](../examples/)
 - [GitHub 仓库](https://github.com/ldesign/http)
 
 如果你的问题没有在这里找到答案，欢迎提交 Issue 或参与讨论！

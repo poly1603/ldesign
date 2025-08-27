@@ -146,6 +146,8 @@ export interface ConcurrencyConfig {
   maxConcurrent?: number
   /** 队列大小限制 */
   maxQueueSize?: number
+  /** 是否启用请求去重 */
+  deduplication?: boolean
 }
 
 /**
@@ -249,6 +251,16 @@ export interface HttpClient {
 
   /** 取消队列中的所有请求 */
   cancelQueue: (reason?: string) => void
+
+  /** 上传文件 */
+  upload: (
+    url: string,
+    file: File | File[],
+    config?: any
+  ) => Promise<any>
+
+  /** 下载文件 */
+  download: (url: string, config?: any) => Promise<any>
 }
 
 /**
@@ -287,6 +299,16 @@ export interface TypedHttpClient<TBaseResponse = any> extends HttpClient {
     url: string,
     config?: RequestConfig
   ) => Promise<ResponseData<T>>
+
+  /** 上传文件 */
+  upload: (
+    url: string,
+    file: File | File[],
+    config?: any
+  ) => Promise<any>
+
+  /** 下载文件 */
+  download: (url: string, config?: any) => Promise<any>
 }
 
 /**
@@ -373,3 +395,201 @@ export interface ExtendedRequestConfig extends RequestConfig {
   /** 自定义验证函数 */
   validate?: (response: ResponseData) => boolean
 }
+
+/**
+ * 严格的类型化请求配置
+ */
+export interface StrictRequestConfig<TData = any, TParams = any> extends Omit<RequestConfig, 'data' | 'params'> {
+  /** 类型化的请求体数据 */
+  data?: TData
+  /** 类型化的请求参数 */
+  params?: TParams
+}
+
+/**
+ * 严格的类型化响应数据
+ */
+export interface StrictResponseData<TData = any> extends Omit<ResponseData, 'data'> {
+  /** 类型化的响应数据 */
+  data: TData
+}
+
+/**
+ * API 端点定义
+ */
+export interface ApiEndpointDefinition<TRequest = any, TResponse = any, TParams = any> {
+  /** 端点路径 */
+  path: string
+  /** HTTP 方法 */
+  method: HttpMethod
+  /** 请求数据类型 */
+  requestType?: new () => TRequest
+  /** 响应数据类型 */
+  responseType?: new () => TResponse
+  /** 参数类型 */
+  paramsType?: new () => TParams
+  /** 端点描述 */
+  description?: string
+  /** 是否需要认证 */
+  requiresAuth?: boolean
+  /** 缓存配置 */
+  cache?: CacheConfig
+  /** 重试配置 */
+  retry?: RetryConfig
+}
+
+/**
+ * 类型化的 HTTP 客户端方法
+ */
+export interface TypedHttpMethods {
+  /** GET 请求 */
+  get: <TResponse = any, TParams = any>(
+    url: string,
+    config?: StrictRequestConfig<never, TParams>
+  ) => Promise<StrictResponseData<TResponse>>
+
+  /** POST 请求 */
+  post: <TResponse = any, TData = any, TParams = any>(
+    url: string,
+    data?: TData,
+    config?: StrictRequestConfig<TData, TParams>
+  ) => Promise<StrictResponseData<TResponse>>
+
+  /** PUT 请求 */
+  put: <TResponse = any, TData = any, TParams = any>(
+    url: string,
+    data?: TData,
+    config?: StrictRequestConfig<TData, TParams>
+  ) => Promise<StrictResponseData<TResponse>>
+
+  /** PATCH 请求 */
+  patch: <TResponse = any, TData = any, TParams = any>(
+    url: string,
+    data?: TData,
+    config?: StrictRequestConfig<TData, TParams>
+  ) => Promise<StrictResponseData<TResponse>>
+
+  /** DELETE 请求 */
+  delete: <TResponse = any, TParams = any>(
+    url: string,
+    config?: StrictRequestConfig<never, TParams>
+  ) => Promise<StrictResponseData<TResponse>>
+
+  /** HEAD 请求 */
+  head: <TParams = any>(
+    url: string,
+    config?: StrictRequestConfig<never, TParams>
+  ) => Promise<StrictResponseData<never>>
+
+  /** OPTIONS 请求 */
+  options: <TResponse = any, TParams = any>(
+    url: string,
+    config?: StrictRequestConfig<never, TParams>
+  ) => Promise<StrictResponseData<TResponse>>
+}
+
+/**
+ * 条件类型：根据方法确定数据类型
+ */
+export type RequestDataByMethod<TMethod extends HttpMethod, TData = any> =
+  TMethod extends 'GET' | 'HEAD' | 'DELETE' ? never : TData
+
+/**
+ * 条件类型：根据响应类型确定数据类型
+ */
+export type ResponseDataByType<TResponseType extends RequestConfig['responseType'], TData = any> =
+  TResponseType extends 'json' ? TData :
+    TResponseType extends 'text' ? string :
+      TResponseType extends 'blob' ? Blob :
+        TResponseType extends 'arrayBuffer' ? ArrayBuffer :
+          TResponseType extends 'stream' ? ReadableStream :
+            TData
+
+/**
+ * 工具类型：提取 Promise 的类型
+ */
+export type Awaited<T> = T extends Promise<infer U> ? U : T
+
+/**
+ * 工具类型：使某些属性必需
+ */
+export type RequiredKeys<T, K extends keyof T> = T & Required<Pick<T, K>>
+
+/**
+ * 工具类型：深度只读
+ */
+export type DeepReadonly<T> = {
+  readonly [P in keyof T]: T[P] extends object ? DeepReadonly<T[P]> : T[P]
+}
+
+/**
+ * 工具类型：深度可选
+ */
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
+}
+
+/**
+ * 类型守卫：检查是否为 HTTP 错误
+ */
+export function isHttpError(error: any): error is HttpError {
+  return error && typeof error === 'object' && 'config' in error
+}
+
+/**
+ * 类型守卫：检查是否为网络错误
+ */
+export function isNetworkError(error: any): error is HttpError & { isNetworkError: true } {
+  return isHttpError(error) && error.isNetworkError === true
+}
+
+/**
+ * 类型守卫：检查是否为超时错误
+ */
+export function isTimeoutError(error: any): error is HttpError & { isTimeoutError: true } {
+  return isHttpError(error) && error.isTimeoutError === true
+}
+
+/**
+ * 类型守卫：检查是否为取消错误
+ */
+export function isCancelError(error: any): error is HttpError & { isCancelError: true } {
+  return isHttpError(error) && error.isCancelError === true
+}
+
+/**
+ * 类型守卫：检查响应状态码
+ */
+export function isSuccessStatus(status: number): status is 200 | 201 | 202 | 204 {
+  return status >= 200 && status < 300
+}
+
+/**
+ * 类型守卫：检查是否为客户端错误
+ */
+export function isClientError(status: number): status is 400 | 401 | 403 | 404 | 409 | 422 | 429 {
+  return status >= 400 && status < 500
+}
+
+/**
+ * 类型守卫：检查是否为服务器错误
+ */
+export function isServerError(status: number): status is 500 | 502 | 503 | 504 {
+  return status >= 500 && status < 600
+}
+
+export type {
+  DownloadChunk,
+  DownloadConfig,
+  DownloadProgress,
+  DownloadResult,
+} from '../utils/download'
+
+// 重新导出上传下载相关类型
+export type {
+  ChunkInfo,
+  FileValidationError,
+  UploadConfig,
+  UploadProgress,
+  UploadResult,
+} from '../utils/upload'

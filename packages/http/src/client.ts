@@ -12,6 +12,14 @@ import type {
   RetryConfig,
 } from './types'
 import type { CancelManager } from './utils/cancel'
+import type {
+  DownloadConfig,
+  DownloadResult,
+} from './utils/download'
+import type {
+  UploadConfig,
+  UploadResult,
+} from './utils/upload'
 import { InterceptorManagerImpl } from './interceptors/manager'
 import { CacheManager } from './utils/cache'
 import { globalCancelManager } from './utils/cancel'
@@ -397,6 +405,205 @@ export class HttpClientImpl implements HttpClient {
     }
 
     return merged
+  }
+
+  /**
+   * 上传文件
+   */
+  async upload<T = any>(
+    url: string,
+    file: File | File[],
+    config: UploadConfig = {},
+  ): Promise<UploadResult<T>> {
+    this.checkDestroyed()
+
+    const files = Array.isArray(file) ? file : [file]
+
+    if (files.length === 1) {
+      return this.uploadSingleFile<T>(url, files[0], config)
+    }
+    else {
+      return this.uploadMultipleFiles<T>(url, files, config)
+    }
+  }
+
+  /**
+   * 上传单个文件
+   */
+  private async uploadSingleFile<T = any>(
+    url: string,
+    file: File,
+    config: UploadConfig,
+  ): Promise<UploadResult<T>> {
+    const { validateFile, createUploadFormData, ProgressCalculator } = await import('./utils/upload')
+
+    // 验证文件
+    validateFile(file, config)
+
+    const startTime = Date.now()
+    const progressCalculator = new ProgressCalculator()
+
+    // 创建表单数据
+    const formData = createUploadFormData(file, config)
+
+    // 配置请求
+    const requestConfig: RequestConfig = {
+      ...config,
+      method: 'POST',
+      url,
+      data: formData,
+      headers: {
+        ...config.headers,
+        // 不设置 Content-Type，让浏览器自动设置 multipart/form-data
+      },
+      onUploadProgress: config.onProgress
+        ? (progressEvent: any) => {
+            const progress = progressCalculator.calculate(
+              progressEvent.loaded,
+              progressEvent.total,
+              file,
+            )
+            config.onProgress!(progress)
+          }
+        : undefined,
+    }
+
+    const response = await this.request<T>(requestConfig)
+
+    return {
+      ...response,
+      file,
+      duration: Date.now() - startTime,
+    }
+  }
+
+  /**
+   * 上传多个文件
+   */
+  private async uploadMultipleFiles<T = any>(
+    url: string,
+    files: File[],
+    config: UploadConfig,
+  ): Promise<UploadResult<T>> {
+    const { validateFile, ProgressCalculator } = await import('./utils/upload')
+
+    // 验证所有文件
+    files.forEach(file => validateFile(file, config))
+
+    const startTime = Date.now()
+    const progressCalculator = new ProgressCalculator()
+
+    // 创建表单数据
+    const formData = new FormData()
+
+    // 添加所有文件
+    const fileField = config.fileField || 'files'
+    files.forEach((file, index) => {
+      formData.append(`${fileField}[${index}]`, file)
+    })
+
+    // 添加额外的表单数据
+    if (config.formData) {
+      Object.entries(config.formData).forEach(([key, value]) => {
+        formData.append(key, value)
+      })
+    }
+
+    // 配置请求
+    const requestConfig: RequestConfig = {
+      ...config,
+      method: 'POST',
+      url,
+      data: formData,
+      headers: {
+        ...config.headers,
+      },
+      onUploadProgress: config.onProgress
+        ? (progressEvent: any) => {
+            const progress = progressCalculator.calculate(
+              progressEvent.loaded,
+              progressEvent.total,
+            )
+            config.onProgress!(progress)
+          }
+        : undefined,
+    }
+
+    const response = await this.request<T>(requestConfig)
+
+    return {
+      ...response,
+      file: files[0], // 返回第一个文件作为代表
+      duration: Date.now() - startTime,
+    }
+  }
+
+  /**
+   * 下载文件
+   */
+  async download(
+    url: string,
+    config: DownloadConfig = {},
+  ): Promise<DownloadResult> {
+    this.checkDestroyed()
+
+    const {
+      getFilenameFromResponse,
+      getFilenameFromURL,
+      getMimeTypeFromFilename,
+      saveFileToLocal,
+      DownloadProgressCalculator,
+    } = await import('./utils/download')
+
+    const startTime = Date.now()
+    const progressCalculator = new DownloadProgressCalculator()
+
+    // 配置请求
+    const requestConfig: RequestConfig = {
+      ...config,
+      method: 'GET',
+      url,
+      responseType: 'blob',
+      onDownloadProgress: config.onProgress
+        ? (progressEvent: any) => {
+            const progress = progressCalculator.calculate(
+              progressEvent.loaded,
+              progressEvent.total,
+              config.filename,
+            )
+            config.onProgress!(progress)
+          }
+        : undefined,
+    }
+
+    const response = await this.request<Blob>(requestConfig)
+
+    // 确定文件名
+    let filename = config.filename
+    if (!filename) {
+      filename = getFilenameFromResponse(response.headers)
+        || getFilenameFromURL(response.config.url || url)
+        || 'download'
+    }
+
+    // 确定文件类型
+    const type = response.data?.type || getMimeTypeFromFilename(filename)
+
+    // 自动保存文件（浏览器环境）
+    let downloadUrl: string | undefined
+    if (config.autoSave !== false && typeof window !== 'undefined') {
+      saveFileToLocal(response.data, filename)
+      downloadUrl = URL.createObjectURL(response.data)
+    }
+
+    return {
+      data: response.data,
+      filename,
+      size: response.data.size,
+      type,
+      duration: Date.now() - startTime,
+      url: downloadUrl,
+    }
   }
 
   /**

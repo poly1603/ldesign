@@ -462,9 +462,9 @@ const http = createHttpClient({
 
 如果在迁移过程中遇到问题：
 
-1. 查看 [完整文档](../README.md)
-2. 参考 [示例代码](../examples/README.md)
-3. 查看 [常见问题](./faq.md)
+1. 查看 [完整文档](../index)
+2. 参考 [示例代码](../examples/)
+3. 查看 [常见问题](./faq)
 4. 提交 [GitHub Issue](https://github.com/ldesign/http/issues)
 
 迁移愉快！🚀

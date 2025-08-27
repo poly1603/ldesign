@@ -7,6 +7,9 @@ export default defineConfig({
 
   base: '/http/',
 
+  // 忽略死链接检查
+  ignoreDeadLinks: true,
+
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },

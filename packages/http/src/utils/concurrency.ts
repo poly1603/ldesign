@@ -20,18 +20,52 @@ export class ConcurrencyManager {
   private requestQueue: RequestTask[] = []
   private requestCounter = 0
   private processingQueue = false // 防止重复处理队列
+  private deduplicationManager: DeduplicationManager
+  private keyGenerator: DeduplicationKeyGenerator
 
   constructor(config: ConcurrencyConfig = {}) {
     this.config = {
       maxConcurrent: config.maxConcurrent ?? 10,
       maxQueueSize: config.maxQueueSize ?? 100,
+      deduplication: config.deduplication ?? true,
     }
+
+    // 初始化去重管理器
+    this.deduplicationManager = new DeduplicationManager()
+    this.keyGenerator = new DeduplicationKeyGenerator({
+      includeMethod: true,
+      includeUrl: true,
+      includeParams: true,
+      includeData: false, // 默认不包含请求体，避免大数据影响性能
+    })
   }
 
   /**
-   * 执行请求（带并发控制）
+   * 执行请求（带并发控制和去重）
    */
   async execute<T = any>(
+    requestFn: () => Promise<ResponseData<T>>,
+    config: RequestConfig,
+  ): Promise<ResponseData<T>> {
+    // 如果启用了去重功能
+    if (this.config.deduplication) {
+      const deduplicationKey = this.keyGenerator.generate(config)
+
+      // 使用去重管理器执行请求
+      return this.deduplicationManager.execute(
+        deduplicationKey,
+        () => this.executeWithConcurrencyControl(requestFn, config),
+      )
+    }
+
+    // 否则直接使用并发控制
+    return this.executeWithConcurrencyControl(requestFn, config)
+  }
+
+  /**
+   * 带并发控制的请求执行
+   */
+  private async executeWithConcurrencyControl<T = any>(
     requestFn: () => Promise<ResponseData<T>>,
     config: RequestConfig,
   ): Promise<ResponseData<T>> {
@@ -128,12 +162,14 @@ export class ConcurrencyManager {
     queuedCount: number
     maxConcurrent: number
     maxQueueSize: number
+    deduplication: DeduplicationStats
   } {
     return {
       activeCount: this.activeRequests.size,
       queuedCount: this.requestQueue.length,
       maxConcurrent: this.config.maxConcurrent,
       maxQueueSize: this.config.maxQueueSize,
+      deduplication: this.deduplicationManager.getStats(),
     }
   }
 
@@ -155,6 +191,70 @@ export class ConcurrencyManager {
   }
 
   /**
+   * 获取去重统计信息
+   */
+  getDeduplicationStats(): DeduplicationStats {
+    return this.deduplicationManager.getStats()
+  }
+
+  /**
+   * 重置去重统计信息
+   */
+  resetDeduplicationStats(): void {
+    this.deduplicationManager.resetStats()
+  }
+
+  /**
+   * 检查请求是否正在去重处理中
+   */
+  isRequestDeduplicating(config: RequestConfig): boolean {
+    const key = this.keyGenerator.generate(config)
+    return this.deduplicationManager.isRunning(key)
+  }
+
+  /**
+   * 取消特定的去重请求
+   */
+  cancelDeduplicatedRequest(config: RequestConfig): void {
+    const key = this.keyGenerator.generate(config)
+    this.deduplicationManager.cancel(key)
+  }
+
+  /**
+   * 等待特定去重请求完成
+   */
+  async waitForDeduplicatedRequest<T = any>(config: RequestConfig): Promise<ResponseData<T> | null> {
+    const key = this.keyGenerator.generate(config)
+    return this.deduplicationManager.waitFor<T>(key)
+  }
+
+  /**
+   * 获取所有去重任务信息
+   */
+  getDeduplicationTasksInfo(): Array<{
+    key: string
+    createdAt: number
+    refCount: number
+    duration: number
+  }> {
+    return this.deduplicationManager.getAllTaskInfo()
+  }
+
+  /**
+   * 清理超时的去重任务
+   */
+  cleanupTimeoutDeduplicationTasks(timeoutMs: number = 30000): number {
+    return this.deduplicationManager.cleanupTimeoutTasks(timeoutMs)
+  }
+
+  /**
+   * 配置去重键生成器
+   */
+  configureDeduplicationKeyGenerator(config: DeduplicationKeyConfig): void {
+    this.keyGenerator = new DeduplicationKeyGenerator(config)
+  }
+
+  /**
    * 生成任务 ID
    */
   private generateTaskId(): string {
@@ -163,10 +263,45 @@ export class ConcurrencyManager {
 }
 
 /**
+ * 去重任务信息
+ */
+interface DeduplicationTask<T = any> {
+  /** 任务 Promise */
+  promise: Promise<ResponseData<T>>
+  /** 创建时间 */
+  createdAt: number
+  /** 引用计数 */
+  refCount: number
+  /** 任务键 */
+  key: string
+}
+
+/**
+ * 去重统计信息
+ */
+export interface DeduplicationStats {
+  /** 执行的请求数 */
+  executions: number
+  /** 去重的请求数 */
+  duplications: number
+  /** 节省的请求数 */
+  savedRequests: number
+  /** 去重率 */
+  deduplicationRate: number
+  /** 当前待处理请求数 */
+  pendingCount: number
+}
+
+/**
  * 请求去重管理器
  */
 export class DeduplicationManager {
-  private pendingRequests = new Map<string, Promise<ResponseData>>()
+  private pendingRequests = new Map<string, DeduplicationTask>()
+  private stats = {
+    executions: 0,
+    duplications: 0,
+    savedRequests: 0,
+  }
 
   /**
    * 执行请求（带去重）
@@ -176,9 +311,14 @@ export class DeduplicationManager {
     requestFn: () => Promise<ResponseData<T>>,
   ): Promise<ResponseData<T>> {
     // 检查是否有相同的请求正在进行
-    const existingRequest = this.pendingRequests.get(key)
-    if (existingRequest) {
-      return existingRequest as Promise<ResponseData<T>>
+    const existingTask = this.pendingRequests.get(key)
+    if (existingTask) {
+      // 增加引用计数
+      existingTask.refCount++
+      this.stats.duplications++
+      this.stats.savedRequests++
+
+      return existingTask.promise as Promise<ResponseData<T>>
     }
 
     // 创建新的请求
@@ -187,7 +327,16 @@ export class DeduplicationManager {
       this.pendingRequests.delete(key)
     })
 
-    this.pendingRequests.set(key, requestPromise)
+    const task: DeduplicationTask<T> = {
+      promise: requestPromise,
+      createdAt: Date.now(),
+      refCount: 1,
+      key,
+    }
+
+    this.pendingRequests.set(key, task)
+    this.stats.executions++
+
     return requestPromise
   }
 
@@ -217,6 +366,164 @@ export class DeduplicationManager {
    */
   getPendingKeys(): string[] {
     return Array.from(this.pendingRequests.keys())
+  }
+
+  /**
+   * 检查请求是否正在进行
+   */
+  isRunning(key: string): boolean {
+    return this.pendingRequests.has(key)
+  }
+
+  /**
+   * 获取任务信息
+   */
+  getTaskInfo(key: string): {
+    key: string
+    createdAt: number
+    refCount: number
+    duration: number
+  } | null {
+    const task = this.pendingRequests.get(key)
+    if (!task) {
+      return null
+    }
+
+    return {
+      key: task.key,
+      createdAt: task.createdAt,
+      refCount: task.refCount,
+      duration: Date.now() - task.createdAt,
+    }
+  }
+
+  /**
+   * 获取所有任务信息
+   */
+  getAllTaskInfo(): Array<{
+    key: string
+    createdAt: number
+    refCount: number
+    duration: number
+  }> {
+    return Array.from(this.pendingRequests.values()).map(task => ({
+      key: task.key,
+      createdAt: task.createdAt,
+      refCount: task.refCount,
+      duration: Date.now() - task.createdAt,
+    }))
+  }
+
+  /**
+   * 获取统计信息
+   */
+  getStats(): DeduplicationStats {
+    const totalRequests = this.stats.executions + this.stats.duplications
+    return {
+      executions: this.stats.executions,
+      duplications: this.stats.duplications,
+      savedRequests: this.stats.savedRequests,
+      deduplicationRate: totalRequests > 0 ? this.stats.duplications / totalRequests : 0,
+      pendingCount: this.pendingRequests.size,
+    }
+  }
+
+  /**
+   * 重置统计信息
+   */
+  resetStats(): void {
+    this.stats = {
+      executions: 0,
+      duplications: 0,
+      savedRequests: 0,
+    }
+  }
+
+  /**
+   * 等待指定请求完成
+   */
+  async waitFor<T = any>(key: string): Promise<ResponseData<T> | null> {
+    const task = this.pendingRequests.get(key)
+    if (!task) {
+      return null
+    }
+
+    try {
+      return await task.promise as ResponseData<T>
+    }
+    catch {
+      return null
+    }
+  }
+
+  /**
+   * 等待所有请求完成
+   */
+  async waitForAll(): Promise<void> {
+    const promises = Array.from(this.pendingRequests.values()).map(
+      task => task.promise.catch(() => { }), // 忽略错误，只等待完成
+    )
+
+    await Promise.all(promises)
+  }
+
+  /**
+   * 获取引用计数最高的请求
+   */
+  getMostReferencedTask(): {
+    key: string
+    refCount: number
+  } | null {
+    let maxRefCount = 0
+    let mostReferencedKey = ''
+
+    for (const [key, task] of this.pendingRequests) {
+      if (task.refCount > maxRefCount) {
+        maxRefCount = task.refCount
+        mostReferencedKey = key
+      }
+    }
+
+    return maxRefCount > 0 ? { key: mostReferencedKey, refCount: maxRefCount } : null
+  }
+
+  /**
+   * 获取运行时间最长的请求
+   */
+  getLongestRunningTask(): {
+    key: string
+    duration: number
+  } | null {
+    let maxDuration = 0
+    let longestKey = ''
+
+    const now = Date.now()
+    for (const [key, task] of this.pendingRequests) {
+      const duration = now - task.createdAt
+      if (duration > maxDuration) {
+        maxDuration = duration
+        longestKey = key
+      }
+    }
+
+    return maxDuration > 0 ? { key: longestKey, duration: maxDuration } : null
+  }
+
+  /**
+   * 清理超时的请求
+   */
+  cleanupTimeoutTasks(timeoutMs: number): number {
+    const now = Date.now()
+    let cleanedCount = 0
+
+    for (const [key, task] of this.pendingRequests) {
+      if (now - task.createdAt > timeoutMs) {
+        this.pendingRequests.delete(key)
+        cleanedCount++
+      }
+    }
+
+    return cleanedCount
   }
 }
 
@@ -311,10 +618,207 @@ export function createConcurrencyManager(
 }
 
 /**
+ * 去重键生成器配置
+ */
+export interface DeduplicationKeyConfig {
+  /** 是否包含请求方法 */
+  includeMethod?: boolean
+  /** 是否包含URL */
+  includeUrl?: boolean
+  /** 是否包含查询参数 */
+  includeParams?: boolean
+  /** 是否包含请求体 */
+  includeData?: boolean
+  /** 是否包含请求头 */
+  includeHeaders?: boolean
+  /** 要包含的特定请求头 */
+  specificHeaders?: string[]
+  /** 自定义键生成函数 */
+  customGenerator?: (config: RequestConfig) => string
+}
+
+/**
+ * 智能去重键生成器
+ */
+export class DeduplicationKeyGenerator {
+  private config: Required<Omit<DeduplicationKeyConfig, 'customGenerator'>> & Pick<DeduplicationKeyConfig, 'customGenerator'>
+
+  constructor(config: DeduplicationKeyConfig = {}) {
+    this.config = {
+      includeMethod: true,
+      includeUrl: true,
+      includeParams: true,
+      includeData: false,
+      includeHeaders: false,
+      specificHeaders: [],
+      customGenerator: config.customGenerator,
+      ...config,
+    }
+  }
+
+  /**
+   * 生成去重键
+   */
+  generate(requestConfig: RequestConfig): string {
+    if (this.config.customGenerator) {
+      return this.config.customGenerator(requestConfig)
+    }
+
+    const parts: string[] = []
+
+    if (this.config.includeMethod && requestConfig.method) {
+      parts.push(`method:${requestConfig.method.toUpperCase()}`)
+    }
+
+    if (this.config.includeUrl && requestConfig.url) {
+      parts.push(`url:${requestConfig.url}`)
+    }
+
+    if (this.config.includeParams && requestConfig.params) {
+      const paramsStr = this.serializeParams(requestConfig.params)
+      if (paramsStr) {
+        parts.push(`params:${paramsStr}`)
+      }
+    }
+
+    if (this.config.includeData && requestConfig.data) {
+      const dataStr = this.serializeData(requestConfig.data)
+      if (dataStr) {
+        parts.push(`data:${dataStr}`)
+      }
+    }
+
+    if (this.config.includeHeaders && requestConfig.headers) {
+      const headersStr = this.serializeHeaders(requestConfig.headers)
+      if (headersStr) {
+        parts.push(`headers:${headersStr}`)
+      }
+    }
+
+    if (this.config.specificHeaders.length > 0 && requestConfig.headers) {
+      const specificHeadersStr = this.serializeSpecificHeaders(
+        requestConfig.headers,
+        this.config.specificHeaders,
+      )
+      if (specificHeadersStr) {
+        parts.push(`specific-headers:${specificHeadersStr}`)
+      }
+    }
+
+    return parts.join('|')
+  }
+
+  /**
+   * 序列化参数
+   */
+  private serializeParams(params: Record<string, any>): string {
+    try {
+      // 对键进行排序以确保一致性
+      const sortedKeys = Object.keys(params).sort()
+      const sortedParams = sortedKeys.reduce((acc, key) => {
+        acc[key] = params[key]
+        return acc
+      }, {} as Record<string, any>)
+
+      return JSON.stringify(sortedParams)
+    }
+    catch {
+      return String(params)
+    }
+  }
+
+  /**
+   * 序列化数据
+   */
+  private serializeData(data: any): string {
+    try {
+      if (data instanceof FormData) {
+        // FormData 特殊处理
+        const entries: string[] = []
+        for (const [key, value] of data.entries()) {
+          entries.push(`${key}:${typeof value === 'string' ? value : '[File]'}`)
+        }
+        return entries.sort().join(',')
+      }
+
+      if (typeof data === 'object' && data !== null) {
+        // 对象数据排序序列化
+        const sortedKeys = Object.keys(data).sort()
+        const sortedData = sortedKeys.reduce((acc, key) => {
+          acc[key] = data[key]
+          return acc
+        }, {} as Record<string, any>)
+
+        return JSON.stringify(sortedData)
+      }
+
+      return String(data)
+    }
+    catch {
+      return String(data)
+    }
+  }
+
+  /**
+   * 序列化请求头
+   */
+  private serializeHeaders(headers: Record<string, string>): string {
+    try {
+      // 排除一些动态的请求头
+      const excludeHeaders = ['authorization', 'x-request-id', 'x-timestamp']
+      const filteredHeaders = Object.keys(headers)
+        .filter(key => !excludeHeaders.includes(key.toLowerCase()))
+        .sort()
+        .reduce((acc, key) => {
+          acc[key] = headers[key]
+          return acc
+        }, {} as Record<string, string>)
+
+      return JSON.stringify(filteredHeaders)
+    }
+    catch {
+      return String(headers)
+    }
+  }
+
+  /**
+   * 序列化特定请求头
+   */
+  private serializeSpecificHeaders(
+    headers: Record<string, string>,
+    specificHeaders: string[],
+  ): string {
+    try {
+      const filteredHeaders = specificHeaders
+        .filter(header => headers[header] !== undefined)
+        .sort()
+        .reduce((acc, header) => {
+          acc[header] = headers[header]
+          return acc
+        }, {} as Record<string, string>)
+
+      return JSON.stringify(filteredHeaders)
+    }
+    catch {
+      return ''
+    }
+  }
+}
+
+/**
  * 创建去重管理器
  */
 export function createDeduplicationManager(): DeduplicationManager {
   return new DeduplicationManager()
+}
+
+/**
+ * 创建去重键生成器
+ */
+export function createDeduplicationKeyGenerator(
+  config?: DeduplicationKeyConfig,
+): DeduplicationKeyGenerator {
+  return new DeduplicationKeyGenerator(config)
 }
 
 /**

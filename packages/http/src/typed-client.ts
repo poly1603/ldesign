@@ -232,6 +232,24 @@ implements TypedHttpClient<TBaseResponse> {
 
     throw new Error('Polling max attempts reached')
   }
+
+  /**
+   * 上传文件
+   */
+  async upload(
+    url: string,
+    file: File | File[],
+    config?: any,
+  ): Promise<any> {
+    return this.client.upload(url, file, config)
+  }
+
+  /**
+   * 下载文件
+   */
+  async download(url: string, config?: any): Promise<any> {
+    return this.client.download(url, config)
+  }
 }
 
 /**

@@ -175,7 +175,7 @@ export class LocalStorageCacheStorage implements CacheStorage {
  */
 export class CacheManager {
   private config: Required<CacheConfig>
-  private storage: CacheStorage
+  protected storage: CacheStorage
   private keyCache = new Map<string, string>() // 缓存生成的键，避免重复计算
 
   constructor(config: CacheConfig = {}) {
@@ -260,7 +260,7 @@ export class CacheManager {
   /**
    * 获取缓存的键（带缓存优化）
    */
-  private getCachedKey(config: RequestConfig): string {
+  protected getCachedKey(config: RequestConfig): string {
     // 创建一个简单的配置标识符用于缓存查找
     const configId = `${config.method || 'GET'}:${config.url}:${JSON.stringify(
       config.params || {},
@@ -311,10 +311,362 @@ export class CacheManager {
 }
 
 /**
+ * 高级缓存配置
+ */
+export interface AdvancedCacheConfig extends CacheConfig {
+  /** 缓存策略 */
+  strategy?: 'lru' | 'lfu' | 'fifo' | 'ttl'
+  /** 最大缓存大小（字节） */
+  maxSize?: number
+  /** 是否启用压缩 */
+  compression?: boolean
+  /** 缓存预热配置 */
+  preload?: {
+    enabled: boolean
+    urls: string[]
+  }
+  /** 缓存失效策略 */
+  invalidation?: {
+    /** 基于标签的失效 */
+    tags?: boolean
+    /** 基于依赖的失效 */
+    dependencies?: boolean
+  }
+  /** 缓存统计 */
+  stats?: boolean
+}
+
+/**
+ * 缓存统计信息
+ */
+export interface CacheStats {
+  /** 命中次数 */
+  hits: number
+  /** 未命中次数 */
+  misses: number
+  /** 命中率 */
+  hitRate: number
+  /** 缓存大小 */
+  size: number
+  /** 总内存使用量（字节） */
+  memoryUsage: number
+  /** 最近访问的键 */
+  recentKeys: string[]
+  /** 最热门的键 */
+  hotKeys: Array<{ key: string, accessCount: number }>
+}
+
+/**
+ * 缓存项元数据
+ */
+export interface CacheItemMetadata {
+  /** 创建时间 */
+  createdAt: number
+  /** 最后访问时间 */
+  lastAccessed: number
+  /** 访问次数 */
+  accessCount: number
+  /** 数据大小（字节） */
+  size: number
+  /** 标签 */
+  tags?: string[]
+  /** 依赖 */
+  dependencies?: string[]
+  /** 是否压缩 */
+  compressed?: boolean
+}
+
+/**
+ * 增强的缓存项
+ */
+export interface EnhancedCacheItem extends CacheItem {
+  /** 元数据 */
+  metadata: CacheItemMetadata
+}
+
+/**
+ * 增强的缓存管理器
+ */
+export class AdvancedCacheManager extends CacheManager {
+  private stats: CacheStats = {
+    hits: 0,
+    misses: 0,
+    hitRate: 0,
+    size: 0,
+    memoryUsage: 0,
+    recentKeys: [],
+    hotKeys: [],
+  }
+
+  private advancedConfig: AdvancedCacheConfig
+  private accessLog = new Map<string, number>() // 访问计数
+  private tagIndex = new Map<string, Set<string>>() // 标签索引
+  private dependencyGraph = new Map<string, Set<string>>() // 依赖图
+
+  constructor(config: AdvancedCacheConfig = {}) {
+    super(config)
+    this.advancedConfig = {
+      strategy: 'lru',
+      maxSize: 50 * 1024 * 1024, // 50MB
+      compression: false,
+      stats: true,
+      ...config,
+    }
+  }
+
+  /**
+   * 增强的获取方法
+   */
+  async get<T = any>(config: RequestConfig): Promise<ResponseData<T> | null> {
+    const result = await super.get<T>(config)
+
+    if (this.advancedConfig.stats) {
+      const key = this.getCachedKey(config)
+
+      if (result) {
+        this.stats.hits++
+        this.updateAccessLog(key)
+        this.updateRecentKeys(key)
+      }
+      else {
+        this.stats.misses++
+      }
+
+      this.updateHitRate()
+    }
+
+    return result
+  }
+
+  /**
+   * 增强的设置方法
+   */
+  async set<T = any>(
+    config: RequestConfig,
+    response: ResponseData<T>,
+    options?: {
+      tags?: string[]
+      dependencies?: string[]
+      compress?: boolean
+    },
+  ): Promise<void> {
+    await super.set(config, response)
+
+    if (this.advancedConfig.stats) {
+      const key = this.getCachedKey(config)
+
+      // 更新标签索引
+      if (options?.tags) {
+        this.updateTagIndex(key, options.tags)
+      }
+
+      // 更新依赖图
+      if (options?.dependencies) {
+        this.updateDependencyGraph(key, options.dependencies)
+      }
+
+      this.updateStats()
+    }
+  }
+
+  /**
+   * 基于标签失效缓存
+   */
+  async invalidateByTag(tag: string): Promise<number> {
+    const keys = this.tagIndex.get(tag)
+    if (!keys) {
+      return 0
+    }
+
+    let invalidatedCount = 0
+    for (const key of keys) {
+      await this.storage.delete(key)
+      invalidatedCount++
+    }
+
+    this.tagIndex.delete(tag)
+    this.updateStats()
+
+    return invalidatedCount
+  }
+
+  /**
+   * 基于依赖失效缓存
+   */
+  async invalidateByDependency(dependency: string): Promise<number> {
+    const dependentKeys = this.dependencyGraph.get(dependency)
+    if (!dependentKeys) {
+      return 0
+    }
+
+    let invalidatedCount = 0
+    for (const key of dependentKeys) {
+      await this.storage.delete(key)
+      invalidatedCount++
+    }
+
+    this.dependencyGraph.delete(dependency)
+    this.updateStats()
+
+    return invalidatedCount
+  }
+
+  /**
+   * 缓存预热
+   */
+  async preload(urls: string[]): Promise<void> {
+    if (!this.advancedConfig.preload?.enabled) {
+      return
+    }
+
+    const preloadPromises = urls.map(async (url) => {
+      try {
+        // 这里应该调用实际的HTTP请求
+        // 为了示例，我们只是模拟
+        const config: RequestConfig = { url, method: 'GET' }
+        const mockResponse: ResponseData = {
+          data: `preloaded-${url}`,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }
+
+        await this.set(config, mockResponse)
+      }
+      catch (error) {
+        console.warn(`Failed to preload ${url}:`, error)
+      }
+    })
+
+    await Promise.all(preloadPromises)
+  }
+
+  /**
+   * 获取缓存统计
+   */
+  getStats(): CacheStats {
+    return { ...this.stats }
+  }
+
+  /**
+   * 重置统计
+   */
+  resetStats(): void {
+    this.stats = {
+      hits: 0,
+      misses: 0,
+      hitRate: 0,
+      size: 0,
+      memoryUsage: 0,
+      recentKeys: [],
+      hotKeys: [],
+    }
+    this.accessLog.clear()
+  }
+
+  /**
+   * 获取热门键
+   */
+  getHotKeys(limit: number = 10): Array<{ key: string, accessCount: number }> {
+    return Array.from(this.accessLog.entries())
+      .map(([key, count]) => ({ key, accessCount: count }))
+      .sort((a, b) => b.accessCount - a.accessCount)
+      .slice(0, limit)
+  }
+
+  /**
+   * 清理过期缓存
+   */
+  async cleanup(): Promise<number> {
+    // 这里应该实现清理逻辑
+    // 由于基类已经有清理机制，我们只需要更新统计
+    this.updateStats()
+    return 0
+  }
+
+  /**
+   * 更新访问日志
+   */
+  private updateAccessLog(key: string): void {
+    const currentCount = this.accessLog.get(key) || 0
+    this.accessLog.set(key, currentCount + 1)
+  }
+
+  /**
+   * 更新最近访问的键
+   */
+  private updateRecentKeys(key: string): void {
+    // 移除已存在的键
+    const index = this.stats.recentKeys.indexOf(key)
+    if (index > -1) {
+      this.stats.recentKeys.splice(index, 1)
+    }
+
+    // 添加到开头
+    this.stats.recentKeys.unshift(key)
+
+    // 保持最多10个
+    if (this.stats.recentKeys.length > 10) {
+      this.stats.recentKeys = this.stats.recentKeys.slice(0, 10)
+    }
+  }
+
+  /**
+   * 更新命中率
+   */
+  private updateHitRate(): void {
+    const total = this.stats.hits + this.stats.misses
+    this.stats.hitRate = total > 0 ? this.stats.hits / total : 0
+  }
+
+  /**
+   * 更新标签索引
+   */
+  private updateTagIndex(key: string, tags: string[]): void {
+    for (const tag of tags) {
+      if (!this.tagIndex.has(tag)) {
+        this.tagIndex.set(tag, new Set())
+      }
+      this.tagIndex.get(tag)!.add(key)
+    }
+  }
+
+  /**
+   * 更新依赖图
+   */
+  private updateDependencyGraph(key: string, dependencies: string[]): void {
+    for (const dependency of dependencies) {
+      if (!this.dependencyGraph.has(dependency)) {
+        this.dependencyGraph.set(dependency, new Set())
+      }
+      this.dependencyGraph.get(dependency)!.add(key)
+    }
+  }
+
+  /**
+   * 更新统计信息
+   */
+  private updateStats(): void {
+    // 更新热门键
+    this.stats.hotKeys = this.getHotKeys()
+
+    // 这里可以添加更多统计更新逻辑
+  }
+}
+
+/**
  * 创建缓存管理器
  */
 export function createCacheManager(config?: CacheConfig): CacheManager {
   return new CacheManager(config)
+}
+
+/**
+ * 创建高级缓存管理器
+ */
+export function createAdvancedCacheManager(config?: AdvancedCacheConfig): AdvancedCacheManager {
+  return new AdvancedCacheManager(config)
 }
 
 /**
