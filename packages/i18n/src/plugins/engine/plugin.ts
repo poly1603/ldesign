@@ -25,33 +25,97 @@ import zhCNLanguagePackage from '../../locales/zh-CN'
  * @param customTranslations 自定义翻译文件
  * @returns I18n 实例
  */
+/**
+ * 深度合并两个对象
+ * @param target 目标对象
+ * @param source 源对象
+ * @returns 合并后的对象
+ */
+function deepMerge(target: any, source: any): any {
+  if (typeof target !== 'object' || target === null) {
+    return source
+  }
+  if (typeof source !== 'object' || source === null) {
+    return target
+  }
+
+  const result = { ...target }
+
+  for (const key in source) {
+    if (source.hasOwnProperty(key)) {
+      if (typeof source[key] === 'object' && source[key] !== null && !Array.isArray(source[key])) {
+        result[key] = deepMerge(target[key], source[key])
+      } else {
+        result[key] = source[key]
+      }
+    }
+  }
+
+  return result
+}
+
 export async function createI18nInstance(
   options?: I18nOptions,
   customTranslations?: Record<string, any>,
 ): Promise<I18nInstance> {
   const loader = new StaticLoader()
 
-  // 如果有自定义翻译文件，使用自定义的，否则使用内置的
+  // 内置翻译包映射
+  const builtinPackages = {
+    'en': enLanguagePackage,
+    'zh-CN': zhCNLanguagePackage,
+    'ja': jaLanguagePackage,
+  }
+
+  // 始终注册内置翻译包
+  Object.entries(builtinPackages).forEach(([locale, packageData]) => {
+    loader.registerPackage(locale, packageData)
+  })
+
+  // 如果有自定义翻译，进行深度合并
   if (customTranslations) {
-    Object.entries(customTranslations).forEach(([locale, translations]) => {
-      // 将简单的翻译对象包装成LanguagePackage格式
-      const languagePackage = {
-        info: {
-          name: locale,
-          nativeName: locale,
-          code: locale,
-          region: locale.split('-')[1] || locale.toUpperCase(),
-          direction: 'ltr' as const,
-          dateFormat: 'YYYY-MM-DD',
-        },
-        translations,
+    console.log('[I18n Plugin] Merging custom translations with builtin translations')
+
+    Object.entries(customTranslations).forEach(([locale, customTranslations]) => {
+      const builtinPackage = builtinPackages[locale as keyof typeof builtinPackages]
+
+      if (builtinPackage) {
+        // 深度合并自定义翻译与内置翻译
+        const mergedTranslations = deepMerge(builtinPackage.translations, customTranslations)
+
+        const mergedLanguagePackage = {
+          ...builtinPackage,
+          translations: mergedTranslations,
+        }
+
+        // 重新注册合并后的语言包
+        loader.registerPackage(locale, mergedLanguagePackage)
+
+        console.log(`[I18n Plugin] Merged translations for locale: ${locale}`, {
+          builtinKeys: Object.keys(builtinPackage.translations),
+          customKeys: Object.keys(customTranslations),
+          mergedKeys: Object.keys(mergedTranslations),
+        })
+      } else {
+        // 如果没有内置翻译，直接使用自定义翻译
+        const languagePackage = {
+          info: {
+            name: locale,
+            nativeName: locale,
+            code: locale,
+            region: locale.split('-')[1] || locale.toUpperCase(),
+            direction: 'ltr' as const,
+            dateFormat: 'YYYY-MM-DD',
+          },
+          translations: customTranslations,
+        }
+        loader.registerPackage(locale, languagePackage)
+
+        console.log(`[I18n Plugin] Registered custom-only translations for locale: ${locale}`, {
+          customKeys: Object.keys(customTranslations),
+        })
       }
-      loader.registerPackage(locale, languagePackage)
     })
-  } else {
-    loader.registerPackage('en', enLanguagePackage)
-    loader.registerPackage('zh-CN', zhCNLanguagePackage)
-    loader.registerPackage('ja', jaLanguagePackage)
   }
 
   const i18n = new I18n({ defaultLocale: 'en', ...options })

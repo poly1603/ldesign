@@ -4,10 +4,15 @@
       <div class="header-top">
         <div class="header-content">
           <h1>🚀 Engine Router Demo</h1>
-          <p>演示Engine与Router + I18n的集成使用</p>
+          <p>演示Engine与Router + I18n + Color的集成使用</p>
         </div>
-        <div class="language-switcher">
-          <LanguageSwitcher />
+        <div class="header-controls">
+          <div class="language-switcher">
+            <LanguageSwitcher />
+          </div>
+          <div class="theme-switcher">
+            <ThemeColorPicker />
+          </div>
         </div>
       </div>
     </header>
@@ -24,16 +29,18 @@
     </main>
 
     <footer class="app-footer">
-      <p>Powered by @ldesign/engine + @ldesign/router</p>
+      <p>Powered by @ldesign/engine + @ldesign/router + @ldesign/color</p>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
 import { LanguageSwitcher } from '@ldesign/i18n'
+import { ThemeColorPicker } from '@ldesign/color'
 
 // RouterLink和RouterView组件由Engine Router插件自动注册，无需手动导入
 // LanguageSwitcher组件从@ldesign/i18n导入
+// ThemeColorPicker组件从@ldesign/color导入
 </script>
 
 <style scoped>
@@ -62,7 +69,14 @@ import { LanguageSwitcher } from '@ldesign/i18n'
   text-align: left;
 }
 
-.language-switcher {
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.language-switcher,
+.theme-switcher {
   display: flex;
   align-items: center;
 }

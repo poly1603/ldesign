@@ -104,6 +104,16 @@ export interface ThemeConfig {
 }
 
 /**
+ * CSS 变量组
+ */
+export interface CSSVariableGroup {
+  /** 注释说明 */
+  comment: string
+  /** 变量集合 */
+  variables: Record<string, ColorValue>
+}
+
+/**
  * 生成的主题数据
  */
 export interface GeneratedTheme {
@@ -113,14 +123,18 @@ export interface GeneratedTheme {
   light: {
     /** 各颜色类别的色阶 */
     scales: Record<ColorCategory, ColorScale>
-    /** CSS 变量 */
+    /** CSS 变量组 */
+    cssVariableGroups: CSSVariableGroup[]
+    /** CSS 变量（兼容旧版本） */
     cssVariables: Record<string, ColorValue>
   }
   /** 暗色模式数据 */
   dark: {
     /** 各颜色类别的色阶 */
     scales: Record<ColorCategory, ColorScale>
-    /** CSS 变量 */
+    /** CSS 变量组 */
+    cssVariableGroups: CSSVariableGroup[]
+    /** CSS 变量（兼容旧版本） */
     cssVariables: Record<string, ColorValue>
   }
   /** 生成时间戳 */
@@ -387,6 +401,12 @@ export interface CSSInjector {
     variables: Record<string, ColorValue>,
     id?: string,
     themeInfo?: { name?: string, mode?: string, primaryColor?: string },
+  ) => void
+
+  /** 注入带注释的 CSS 变量 */
+  injectVariablesWithComments: (
+    variableGroups: CSSVariableGroup[],
+    id?: string
   ) => void
 
   /** 移除 CSS 变量 */

@@ -7,6 +7,7 @@
 import { createEngine } from '@ldesign/engine'
 import { createRouterEnginePlugin } from '@ldesign/router'
 import { createI18nEnginePlugin } from '@ldesign/i18n'
+import { createColorEnginePlugin } from '@ldesign/color'
 import App from './App.vue'
 import { routes } from './router'
 // 导入翻译文件
@@ -44,9 +45,39 @@ async function main() {
     },
   })
 
+  // 创建Color插件
+  const colorPlugin = createColorEnginePlugin({
+    defaultTheme: 'default',
+    fallbackTheme: 'default',
+    autoDetect: true,
+    storage: 'localStorage',
+    storageKey: 'theme-preference',
+    // 自定义主题配置（可选）
+    customThemes: [
+      {
+        name: 'custom-blue',
+        displayName: '自定义蓝色',
+        description: '演示自定义主题配置',
+        light: {
+          primary: '#1890ff',
+          success: '#52c41a',
+          warning: '#faad14',
+          danger: '#ff4d4f',
+        },
+        dark: {
+          primary: '#177ddc',
+          success: '#49aa19',
+          warning: '#d48806',
+          danger: '#d9363e',
+        },
+      },
+    ],
+  })
+
   // 安装插件到Engine（支持延迟安装）
   await engine.use(routerPlugin)
   await engine.use(i18nPlugin)
+  await engine.use(colorPlugin)
 
   // 创建Vue应用（会触发插件的实际安装）
   const app = engine.createApp(App)
@@ -57,7 +88,7 @@ async function main() {
   // 挂载应用
   app.mount('#app')
 
-  console.log('应用启动成功 - 使用@ldesign/router和@ldesign/i18n Engine插件集成')
+  console.log('应用启动成功 - 使用@ldesign/router、@ldesign/i18n和@ldesign/color Engine插件集成')
 }
 
 // 启动应用

@@ -5,6 +5,7 @@
 import type {
   ColorGenerator,
   ColorMode,
+  ColorValue,
   CSSInjector,
   EventEmitter,
   GeneratedTheme,
@@ -329,7 +330,13 @@ export class ThemeManager implements ThemeManagerInstance {
     }
 
     const modeData = generatedTheme[mode]
-    this.cssInjector.injectVariables(modeData.cssVariables)
+    // 使用带注释的CSS变量注入
+    if (modeData.cssVariableGroups && modeData.cssVariableGroups.length > 0) {
+      this.cssInjector.injectVariablesWithComments(modeData.cssVariableGroups)
+    } else {
+      // 兼容旧版本
+      this.cssInjector.injectVariables(modeData.cssVariables)
+    }
   }
 
   /**
@@ -557,12 +564,12 @@ export class ThemeManager implements ThemeManagerInstance {
       : lightColors
     const darkColorConfig = config.dark
       ? {
-          primary: config.dark.primary,
-          success: darkColors.success || '#49aa19',
-          warning: darkColors.warning || '#d4b106',
-          danger: darkColors.danger || '#dc4446',
-          gray: darkColors.gray || '#8c8c8c',
-        }
+        primary: config.dark.primary,
+        success: darkColors.success || '#49aa19',
+        warning: darkColors.warning || '#d4b106',
+        danger: darkColors.danger || '#dc4446',
+        gray: darkColors.gray || '#8c8c8c',
+      }
       : lightColorConfig
 
     // 生成色阶
@@ -575,21 +582,37 @@ export class ThemeManager implements ThemeManagerInstance {
       'dark',
     )
 
-    // 生成 CSS 变量
-    const lightCSSVariables
-      = this.cssVariableGenerator.generateSemanticVariables(lightScales)
-    const darkCSSVariables
-      = this.cssVariableGenerator.generateSemanticVariables(darkScales)
+    // 生成完整的 CSS 变量（包含色阶、主色、语义化变量，带注释）
+    const lightCompleteVariables = this.cssVariableGenerator.generateCompleteVariables(lightScales)
+    const lightSemanticVariables = this.cssVariableGenerator.generateCompleteSemanticVariables(lightScales)
+    const lightCSSVariableGroups = [...lightCompleteVariables, ...lightSemanticVariables]
+
+    const darkCompleteVariables = this.cssVariableGenerator.generateCompleteVariables(darkScales)
+    const darkSemanticVariables = this.cssVariableGenerator.generateCompleteSemanticVariables(darkScales)
+    const darkCSSVariableGroups = [...darkCompleteVariables, ...darkSemanticVariables]
+
+    // 为兼容性生成扁平的CSS变量
+    const lightFlatVariables: Record<string, ColorValue> = {}
+    lightCSSVariableGroups.forEach(group => {
+      Object.assign(lightFlatVariables, group.variables)
+    })
+
+    const darkFlatVariables: Record<string, ColorValue> = {}
+    darkCSSVariableGroups.forEach(group => {
+      Object.assign(darkFlatVariables, group.variables)
+    })
 
     return {
       name: config.name,
       light: {
         scales: lightScales,
-        cssVariables: lightCSSVariables,
+        cssVariableGroups: lightCSSVariableGroups,
+        cssVariables: lightFlatVariables,
       },
       dark: {
         scales: darkScales,
-        cssVariables: darkCSSVariables,
+        cssVariableGroups: darkCSSVariableGroups,
+        cssVariables: darkFlatVariables,
       },
       timestamp: Date.now(),
     }

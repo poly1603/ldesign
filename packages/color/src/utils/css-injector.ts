@@ -55,6 +55,19 @@ export class CSSInjectorImpl implements CSSInjector {
   }
 
   /**
+   * 注入带注释的 CSS 变量
+   */
+  injectVariablesWithComments(
+    variableGroups: Array<{ comment: string, variables: Record<string, ColorValue> }>,
+    id?: string
+  ): void {
+    const styleId = id || this.options.styleId
+    const cssText = this.generateCSSTextWithComments(variableGroups)
+
+    this.updateStyleElement(styleId, cssText)
+  }
+
+  /**
    * 移除 CSS 变量
    */
   removeVariables(id?: string): void {
@@ -89,6 +102,29 @@ export class CSSInjectorImpl implements CSSInjector {
       .join('\n')
 
     return `${this.options.selector} {\n${declarations}\n}`
+  }
+
+  /**
+   * 生成带注释的 CSS 文本
+   */
+  private generateCSSTextWithComments(
+    variableGroups: Array<{ comment: string, variables: Record<string, ColorValue> }>
+  ): string {
+    const sections = variableGroups.map(({ comment, variables }) => {
+      const declarations = Object.entries(variables)
+        .map(([key, value]) => {
+          const varName = key.startsWith('--')
+            ? key
+            : `${this.options.prefix}-${key}`
+          const important = this.options.important ? ' !important' : ''
+          return `  ${varName}: ${value}${important};`
+        })
+        .join('\n')
+
+      return `  /* ${comment} */\n${declarations}`
+    }).join('\n\n')
+
+    return `${this.options.selector} {\n${sections}\n}`
   }
 
   /**
@@ -150,7 +186,51 @@ export class CSSVariableGenerator {
   }
 
   /**
-   * 从色阶生成 CSS 变量
+   * 从色阶生成完整的 CSS 变量集合
+   */
+  generateCompleteVariables(
+    scales: Record<ColorCategory, ColorScale>,
+    prefix?: string,
+  ): Array<{ comment: string, variables: Record<string, ColorValue> }> {
+    const varPrefix = prefix || this.prefix
+    const groups: Array<{ comment: string, variables: Record<string, ColorValue> }> = []
+
+    // 1. 色阶变量组
+    const scaleVariables: Record<string, ColorValue> = {}
+    for (const [category, scale] of Object.entries(scales) as [ColorCategory, ColorScale][]) {
+      // 生成标准色阶 (50, 100, 200, ..., 950)
+      const standardScales = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]
+      standardScales.forEach((scaleValue, index) => {
+        const color = scale.indices[index] || scale.colors[index] || scale.colors[0]
+        if (color) {
+          scaleVariables[`${varPrefix}-${category}-${scaleValue}`] = color
+        }
+      })
+    }
+    groups.push({ comment: '色阶变量 - Color Scales', variables: scaleVariables })
+
+    // 2. 主色变量组
+    const primaryVariables: Record<string, ColorValue> = {}
+    for (const [category, scale] of Object.entries(scales) as [ColorCategory, ColorScale][]) {
+      const baseColor = scale.indices[5] || scale.colors[4] || scale.colors[0]
+      if (baseColor) {
+        primaryVariables[`${varPrefix}-${category}`] = baseColor
+        primaryVariables[`${varPrefix}-${category}-hover`] = scale.indices[6] || baseColor
+        primaryVariables[`${varPrefix}-${category}-active`] = scale.indices[7] || baseColor
+        primaryVariables[`${varPrefix}-${category}-disabled`] = scale.indices[3] || baseColor
+        primaryVariables[`${varPrefix}-${category}-light`] = scale.indices[2] || baseColor
+        primaryVariables[`${varPrefix}-${category}-lighter`] = scale.indices[1] || baseColor
+        primaryVariables[`${varPrefix}-${category}-dark`] = scale.indices[8] || baseColor
+        primaryVariables[`${varPrefix}-${category}-darker`] = scale.indices[9] || baseColor
+      }
+    }
+    groups.push({ comment: '主色变量 - Primary Colors', variables: primaryVariables })
+
+    return groups
+  }
+
+  /**
+   * 从色阶生成 CSS 变量（兼容旧版本）
    */
   generateFromScales(
     scales: Record<ColorCategory, ColorScale>,
@@ -180,7 +260,65 @@ export class CSSVariableGenerator {
   }
 
   /**
-   * 生成语义化 CSS 变量
+   * 生成完整的语义化 CSS 变量
+   */
+  generateCompleteSemanticVariables(
+    scales: Record<ColorCategory, ColorScale>,
+    prefix?: string,
+  ): Array<{ comment: string, variables: Record<string, ColorValue> }> {
+    const varPrefix = prefix || this.prefix
+    const groups: Array<{ comment: string, variables: Record<string, ColorValue> }> = []
+
+    // 文本颜色变量组
+    const textVariables: Record<string, ColorValue> = {}
+    if (scales.gray) {
+      textVariables[`${varPrefix}-text-primary`] = scales.gray.indices[9] || scales.gray.colors[8] || '#000000'
+      textVariables[`${varPrefix}-text-secondary`] = scales.gray.indices[7] || scales.gray.colors[6] || '#666666'
+      textVariables[`${varPrefix}-text-tertiary`] = scales.gray.indices[5] || scales.gray.colors[4] || '#999999'
+      textVariables[`${varPrefix}-text-disabled`] = scales.gray.indices[3] || scales.gray.colors[2] || '#cccccc'
+      textVariables[`${varPrefix}-text-placeholder`] = scales.gray.indices[4] || scales.gray.colors[3] || '#aaaaaa'
+      textVariables[`${varPrefix}-text-inverse`] = scales.gray.indices[0] || '#ffffff'
+    }
+    groups.push({ comment: '文本颜色 - Text Colors', variables: textVariables })
+
+    // 背景颜色变量组
+    const backgroundVariables: Record<string, ColorValue> = {}
+    if (scales.gray) {
+      backgroundVariables[`${varPrefix}-bg-primary`] = scales.gray.indices[0] || '#ffffff'
+      backgroundVariables[`${varPrefix}-bg-secondary`] = scales.gray.indices[1] || scales.gray.colors[0] || '#fafafa'
+      backgroundVariables[`${varPrefix}-bg-tertiary`] = scales.gray.indices[2] || scales.gray.colors[1] || '#f5f5f5'
+      backgroundVariables[`${varPrefix}-bg-disabled`] = scales.gray.indices[2] || scales.gray.colors[1] || '#f5f5f5'
+      backgroundVariables[`${varPrefix}-bg-hover`] = scales.gray.indices[1] || scales.gray.colors[0] || '#fafafa'
+      backgroundVariables[`${varPrefix}-bg-active`] = scales.gray.indices[2] || scales.gray.colors[1] || '#f0f0f0'
+    }
+    groups.push({ comment: '背景颜色 - Background Colors', variables: backgroundVariables })
+
+    // 边框颜色变量组
+    const borderVariables: Record<string, ColorValue> = {}
+    if (scales.gray) {
+      borderVariables[`${varPrefix}-border-primary`] = scales.gray.indices[3] || scales.gray.colors[2] || '#d9d9d9'
+      borderVariables[`${varPrefix}-border-secondary`] = scales.gray.indices[2] || scales.gray.colors[1] || '#e8e8e8'
+      borderVariables[`${varPrefix}-border-tertiary`] = scales.gray.indices[1] || scales.gray.colors[0] || '#f0f0f0'
+      borderVariables[`${varPrefix}-border-disabled`] = scales.gray.indices[2] || scales.gray.colors[1] || '#e8e8e8'
+      borderVariables[`${varPrefix}-border-hover`] = scales.gray.indices[4] || scales.gray.colors[3] || '#bfbfbf'
+      borderVariables[`${varPrefix}-border-focus`] = scales.primary?.indices[5] || scales.primary?.colors[4] || '#1890ff'
+    }
+    groups.push({ comment: '边框颜色 - Border Colors', variables: borderVariables })
+
+    // 阴影颜色变量组
+    const shadowVariables: Record<string, ColorValue> = {}
+    if (scales.gray) {
+      shadowVariables[`${varPrefix}-shadow-light`] = scales.gray.indices[2] || scales.gray.colors[1] || '#f0f0f0'
+      shadowVariables[`${varPrefix}-shadow-medium`] = scales.gray.indices[3] || scales.gray.colors[2] || '#d9d9d9'
+      shadowVariables[`${varPrefix}-shadow-dark`] = scales.gray.indices[4] || scales.gray.colors[3] || '#bfbfbf'
+    }
+    groups.push({ comment: '阴影颜色 - Shadow Colors', variables: shadowVariables })
+
+    return groups
+  }
+
+  /**
+   * 生成语义化 CSS 变量（兼容旧版本）
    */
   generateSemanticVariables(
     scales: Record<ColorCategory, ColorScale>,

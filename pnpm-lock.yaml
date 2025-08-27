@@ -177,6 +177,9 @@ importers:
 
   apps/engine-router-demo:
     dependencies:
+      '@ldesign/color':
+        specifier: workspace:*
+        version: link:../../packages/color
       '@ldesign/engine':
         specifier: workspace:*
         version: link:../../packages/engine

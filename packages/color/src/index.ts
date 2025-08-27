@@ -316,6 +316,24 @@ export async function createCustomThemeManager(
   return manager
 }
 
+// 导出插件
+export {
+  createColorEnginePlugin,
+  createThemeManagerInstance,
+  useTheme,
+  useColor,
+  useThemeMode,
+  useThemeSwitch,
+  ThemeColorPicker,
+  ThemeSwitcher,
+  ModeToggler,
+} from './plugins'
+
+export type {
+  ColorEnginePluginOptions,
+  EnginePluginContext,
+} from './plugins'
+
 /**
  * 版本信息
  */
