@@ -79,12 +79,16 @@ export { createStateManager, stateModules } from './state/state-manager'
 
 // 类型导出
 export type * from './types'
+export type { RouterConfig, StoreConfig } from './types/engine'
 
 // 工具函数导出
 export * from './utils'
 
 // Vue集成导出
 export * from './vue'
+
+// 扩展模块导出
+export * from './extensions'
 
 // 版本信息
 export const version = '0.1.0'

@@ -110,7 +110,9 @@ export {
 
 // ==================== 插件系统导出 ====================
 
-// Engine 插件
+// ==================== Engine集成导出 ====================
+
+// Engine插件（用于Engine集成）
 export {
   createDefaultRouterEnginePlugin,
   createRouterEnginePlugin,
