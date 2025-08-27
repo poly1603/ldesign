@@ -286,7 +286,7 @@ export class EngineImpl implements Engine {
     // 自动安装引擎
     this.install(this._app)
 
-    // 触发应用创建事件，让适配器知道 Vue 应用已创建
+    // 触发应用创建事件，让扩展系统知道 Vue 应用已创建
     this.events.emit('app:created', this._app)
 
     this.logger.info('Vue app created with engine')
@@ -318,17 +318,17 @@ export class EngineImpl implements Engine {
       this.errors.captureError(error as Error, component || undefined, info)
     }
 
-    // 安装扩展适配器
-    if (this.router) {
+    // 安装扩展适配器（只安装已经设置的适配器，配置对象由扩展系统处理）
+    if (this.router && typeof this.router.install === 'function') {
       this.router.install(this)
     }
-    if (this.store) {
+    if (this.store && typeof this.store.install === 'function') {
       this.store.install(this)
     }
-    if (this.i18n) {
+    if (this.i18n && typeof this.i18n.install === 'function') {
       this.i18n.install(this)
     }
-    if (this.theme) {
+    if (this.theme && typeof this.theme.install === 'function') {
       this.theme.install(this)
     }
 

@@ -190,3 +190,186 @@ export function throttle<T extends (...args: any[]) => any>(
 export function isValidInput(input: unknown): boolean {
   return input != null
 }
+
+/**
+ * 检测用户偏好的尺寸模式
+ */
+export function detectPreferredSizeMode(): SizeMode {
+  if (typeof window === 'undefined') {
+    return 'medium'
+  }
+
+  // 检查媒体查询偏好
+  const preferLargeText = window.matchMedia('(prefers-reduced-motion: no-preference) and (min-width: 1200px)')
+  const preferSmallText = window.matchMedia('(max-width: 768px)')
+
+  if (preferLargeText.matches) {
+    return 'large'
+  }
+  else if (preferSmallText.matches) {
+    return 'small'
+  }
+
+  return 'medium'
+}
+
+/**
+ * 获取设备像素比
+ */
+export function getDevicePixelRatio(): number {
+  if (typeof window === 'undefined') {
+    return 1
+  }
+  return window.devicePixelRatio || 1
+}
+
+/**
+ * 检查是否为移动设备
+ */
+export function isMobileDevice(): boolean {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent,
+  )
+}
+
+/**
+ * 获取视口尺寸
+ */
+export function getViewportSize(): { width: number, height: number } {
+  if (typeof window === 'undefined') {
+    return { width: 1920, height: 1080 }
+  }
+
+  return {
+    width: window.innerWidth || document.documentElement.clientWidth,
+    height: window.innerHeight || document.documentElement.clientHeight,
+  }
+}
+
+/**
+ * 根据视口尺寸推荐尺寸模式
+ */
+export function getRecommendedSizeMode(): SizeMode {
+  const { width } = getViewportSize()
+  const isMobile = isMobileDevice()
+
+  if (isMobile || width < 768) {
+    return 'small'
+  }
+  else if (width >= 1200) {
+    return 'large'
+  }
+  else {
+    return 'medium'
+  }
+}
+
+/**
+ * 创建CSS变量名
+ */
+export function createCSSVariableName(prefix: string, name: string): string {
+  return `${prefix}-${name}`
+}
+
+/**
+ * 解析CSS变量名
+ */
+export function parseCSSVariableName(variableName: string): { prefix: string, name: string } {
+  const parts = variableName.split('-')
+  if (parts.length < 2) {
+    return { prefix: '', name: variableName }
+  }
+
+  const prefix = parts.slice(0, 2).join('-')
+  const name = parts.slice(2).join('-')
+  return { prefix, name }
+}
+
+/**
+ * 监听媒体查询变化
+ */
+export function watchMediaQuery(
+  query: string,
+  callback: (matches: boolean) => void,
+): () => void {
+  if (typeof window === 'undefined') {
+    return () => { }
+  }
+
+  const mediaQuery = window.matchMedia(query)
+  const handler = (e: MediaQueryListEvent) => callback(e.matches)
+
+  // 立即执行一次
+  callback(mediaQuery.matches)
+
+  // 监听变化
+  if (mediaQuery.addEventListener) {
+    mediaQuery.addEventListener('change', handler)
+    return () => mediaQuery.removeEventListener('change', handler)
+  }
+  else {
+    // 兼容旧版本浏览器
+    mediaQuery.addListener(handler)
+    return () => mediaQuery.removeListener(handler)
+  }
+}
+
+/**
+ * 监听视口尺寸变化
+ */
+export function watchViewportSize(
+  callback: (size: { width: number, height: number }) => void,
+): () => void {
+  if (typeof window === 'undefined') {
+    return () => { }
+  }
+
+  const handler = () => callback(getViewportSize())
+
+  // 立即执行一次
+  handler()
+
+  // 监听变化
+  window.addEventListener('resize', handler)
+  return () => window.removeEventListener('resize', handler)
+}
+
+/**
+ * 创建响应式尺寸监听器
+ */
+export function createResponsiveSizeWatcher(
+  callback: (recommendedMode: SizeMode) => void,
+): () => void {
+  const unsubscribers: Array<() => void> = []
+
+  // 监听视口尺寸变化
+  const unsubscribeViewport = watchViewportSize(() => {
+    const recommendedMode = getRecommendedSizeMode()
+    callback(recommendedMode)
+  })
+  unsubscribers.push(unsubscribeViewport)
+
+  // 监听设备方向变化
+  if (typeof window !== 'undefined' && 'orientation' in window) {
+    const handleOrientationChange = () => {
+      // 延迟执行，等待视口尺寸更新
+      setTimeout(() => {
+        const recommendedMode = getRecommendedSizeMode()
+        callback(recommendedMode)
+      }, 100)
+    }
+
+    window.addEventListener('orientationchange', handleOrientationChange)
+    unsubscribers.push(() => {
+      window.removeEventListener('orientationchange', handleOrientationChange)
+    })
+  }
+
+  return () => {
+    unsubscribers.forEach(unsubscribe => unsubscribe())
+  }
+}

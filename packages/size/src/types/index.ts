@@ -152,6 +152,14 @@ export interface SizeManagerOptions {
   selector?: string
   /** 是否自动注入样式 */
   autoInject?: boolean
+  /** 是否启用本地存储 */
+  enableStorage?: boolean
+  /** 存储类型 */
+  storageType?: 'localStorage' | 'sessionStorage' | 'memory'
+  /** 是否启用动画过渡 */
+  enableTransition?: boolean
+  /** 过渡持续时间 */
+  transitionDuration?: string
 }
 
 /**
@@ -171,21 +179,21 @@ export interface SizeChangeEvent {
  */
 export interface SizeManager {
   /** 获取当前尺寸模式 */
-  getCurrentMode(): SizeMode
+  getCurrentMode: () => SizeMode
   /** 设置尺寸模式 */
-  setMode(mode: SizeMode): void
+  setMode: (mode: SizeMode) => void
   /** 获取尺寸配置 */
-  getConfig(mode?: SizeMode): SizeConfig
+  getConfig: (mode?: SizeMode) => SizeConfig
   /** 生成CSS变量 */
-  generateCSSVariables(mode?: SizeMode): Record<string, string>
+  generateCSSVariables: (mode?: SizeMode) => Record<string, string>
   /** 注入CSS变量 */
-  injectCSS(mode?: SizeMode): void
+  injectCSS: (mode?: SizeMode) => void
   /** 移除CSS变量 */
-  removeCSS(): void
+  removeCSS: () => void
   /** 监听尺寸变化 */
-  onSizeChange(callback: (event: SizeChangeEvent) => void): () => void
+  onSizeChange: (callback: (event: SizeChangeEvent) => void) => () => void
   /** 销毁管理器 */
-  destroy(): void
+  destroy: () => void
 }
 
 /**

@@ -1,64 +1,128 @@
-# @ldesign/size 完整文档
+---
+layout: home
 
-欢迎来到 @ldesign/size 的完整文档！这里包含了所有你需要了解的信息，从基础概念到高级用法。
+hero:
+  name: "@ldesign/size"
+  text: "智能尺寸控制系统"
+  tagline: "🎯 让你的应用适配每一个屏幕，提供完美的用户体验"
+  image:
+    src: /logo.svg
+    alt: LDesign Size
+  actions:
+    - theme: brand
+      text: 快速开始
+      link: /getting-started/
+    - theme: alt
+      text: 查看示例
+      link: /examples/
+    - theme: alt
+      text: GitHub
+      link: https://github.com/ldesign/size
 
-## 📚 文档目录
+features:
+  - icon: 🎯
+    title: 智能尺寸控制
+    details: 支持小、中、大三种预设尺寸模式，智能适配不同设备和用户偏好
+  - icon: 🎨
+    title: CSS变量生成
+    details: 自动生成对应的CSS变量，无缝集成到你的样式系统中
+  - icon: 🔧
+    title: 灵活配置
+    details: 支持自定义尺寸配置、CSS变量前缀和各种个性化选项
+  - icon: 📱
+    title: 响应式支持
+    details: 根据设备特性和屏幕尺寸自动调整，提供最佳的视觉体验
+  - icon: 🎭
+    title: Vue完美集成
+    details: 提供完整的Vue组件库和Composition API，开箱即用
+  - icon: 💾
+    title: 持久化存储
+    details: 支持本地存储用户偏好设置，记住用户的选择
+  - icon: 🎬
+    title: 动画过渡
+    details: 平滑的尺寸切换动画效果，提升用户体验
+  - icon: ⚡
+    title: 轻量高效
+    details: 零依赖，体积小巧，性能优异，不影响应用加载速度
+  - icon: 🛠️
+    title: TypeScript支持
+    details: 完整的TypeScript类型定义，提供优秀的开发体验
+---
 
-### 🚀 快速开始
+## 🚀 快速体验
 
-- [安装指南](./getting-started/installation.md) - 如何安装和配置
-- [基础使用](./getting-started/basic-usage.md) - 最简单的使用方式
-- [Vue 集成](./getting-started/vue-integration.md) - 在 Vue 项目中的使用
+<div class="demo-container">
+  <div class="demo-card">
+    <h3>基础使用</h3>
 
-### 📖 核心概念
+```typescript
+import { Size } from '@ldesign/size'
 
-- [尺寸模式](./concepts/size-modes.md) - 理解四种尺寸模式
-- [CSS 变量系统](./concepts/css-variables.md) - CSS 变量的生成和使用
-- [管理器架构](./concepts/manager-architecture.md) - 尺寸管理器的设计原理
+// 设置尺寸模式
+Size.set('large')
 
-### 🛠️ API 参考
+// 获取当前模式
+const current = Size.get() // 'large'
 
-- [核心 API](./api/core.md) - 核心功能 API 文档
-- [Vue API](./api/vue.md) - Vue 相关 API 文档
-- [工具函数](./api/utils.md) - 实用工具函数
-- [类型定义](./api/types.md) - TypeScript 类型定义
+// 切换到下一个尺寸
+Size.next() // 'small'
 
-### 🎨 组件指南
+// 监听变化
+Size.watch((mode) => {
+  console.log('尺寸变更为:', mode)
+})
+```
+  </div>
 
-- [SizeSwitcher](./components/size-switcher.md) - 尺寸切换器组件
-- [SizeIndicator](./components/size-indicator.md) - 尺寸指示器组件
-- [SizeControlPanel](./components/size-control-panel.md) - 尺寸控制面板组件
+  <div class="demo-card">
+    <h3>Vue 组件</h3>
 
-### 🔧 高级用法
+```vue
+<template>
+  <div>
+    <!-- 尺寸切换器 -->
+    <SizeSwitcher
+      :show-icons="true"
+      :animated="true"
+      theme="auto"
+    />
 
-- [自定义配置](./advanced/custom-config.md) - 自定义尺寸配置
-- [主题集成](./advanced/theme-integration.md) - 与主题系统集成
-- [性能优化](./advanced/performance.md) - 性能优化技巧
-- [服务端渲染](./advanced/ssr.md) - SSR 支持
+    <!-- 尺寸指示器 -->
+    <SizeIndicator :show-scale="true" />
+  </div>
+</template>
 
-### 💡 最佳实践
+<script setup>
+import { SizeSwitcher, SizeIndicator } from '@ldesign/size/vue'
+</script>
+```
+  </div>
 
-- [设计规范](./best-practices/design-guidelines.md) - 设计规范和建议
-- [无障碍访问](./best-practices/accessibility.md) - 无障碍访问最佳实践
-- [响应式设计](./best-practices/responsive-design.md) - 响应式设计指南
-- [代码组织](./best-practices/code-organization.md) - 代码组织建议
+  <div class="demo-card">
+    <h3>Composition API</h3>
 
-### 📱 示例项目
+```vue
+<script setup>
+import { useSmartSize } from '@ldesign/size/vue'
 
-- [Vue 示例详解](./examples/vue-example.md) - Vue 示例项目详细说明
-- [原生 JS 示例详解](./examples/vanilla-example.md) - 原生 JS 示例项目详细说明
-- [实际项目案例](./examples/real-world-cases.md) - 真实项目使用案例
+const {
+  currentMode,
+  setMode,
+  isUsingRecommended,
+  resetToRecommended
+} = useSmartSize({
+  responsive: true,
+  remember: true
+})
 
-### 🔍 故障排除
-
-- [常见问题](./troubleshooting/faq.md) - 常见问题解答
-- [调试指南](./troubleshooting/debugging.md) - 调试技巧和工具
-- [兼容性](./troubleshooting/compatibility.md) - 浏览器和框架兼容性
-
-### 🚀 迁移指南
-
-- [版本升级](./migration/version-upgrade.md) - 版本升级指南
-- [从其他方案迁移](./migration/from-other-solutions.md) - 从其他尺寸方案迁移
+// 智能切换
+const handleSizeChange = (mode) => {
+  setMode(mode, true) // 记住用户选择
+}
+</script>
+```
+  </div>
+</div>
 
 ## 🎯 快速导航
 

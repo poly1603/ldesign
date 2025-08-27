@@ -11,6 +11,12 @@ interface CSSInjectionOptions {
     selector?: string;
     /** 是否使用 !important */
     important?: boolean;
+    /** 是否启用动画过渡 */
+    enableTransition?: boolean;
+    /** 过渡持续时间 */
+    transitionDuration?: string;
+    /** 过渡缓动函数 */
+    transitionEasing?: string;
 }
 /**
  * CSS注入器类

@@ -101,6 +101,11 @@ describe('sizeManagerImpl', () => {
   })
 
   describe('setMode', () => {
+    beforeEach(() => {
+      // 确保每个测试开始时都是medium模式
+      manager.setMode('medium')
+    })
+
     it('应该设置新的尺寸模式', () => {
       manager.setMode('large')
       expect(manager.getCurrentMode()).toBe('large')
@@ -210,6 +215,11 @@ describe('sizeManagerImpl', () => {
   })
 
   describe('onSizeChange', () => {
+    beforeEach(() => {
+      // 确保每个测试开始时都是medium模式
+      manager.setMode('medium')
+    })
+
     it('应该添加监听器', () => {
       const callback = vi.fn()
       const unsubscribe = manager.onSizeChange(callback)
@@ -235,7 +245,7 @@ describe('sizeManagerImpl', () => {
         throw new Error('Test error')
       })
       const normalCallback = vi.fn()
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
 
       manager.onSizeChange(errorCallback)
       manager.onSizeChange(normalCallback)

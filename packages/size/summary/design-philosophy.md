@@ -139,8 +139,8 @@ Vue集成：100%类型覆盖
 ```typescript
 // 抽象接口
 interface SizeManager {
-  setMode(mode: SizeMode): void
-  getCurrentMode(): SizeMode
+  setMode: (mode: SizeMode) => void
+  getCurrentMode: () => SizeMode
   // ...
 }
 
@@ -217,7 +217,6 @@ class SizeManagerImpl {
 function setMode(mode: SizeMode): void {
   if (!isValidSizeMode(mode)) {
     console.warn(`Invalid size mode: ${mode}`)
-    return
   }
   // 执行设置逻辑
 }
@@ -236,15 +235,15 @@ function setMode(mode: SizeMode): void {
 ```typescript
 interface SizePlugin {
   name: string
-  install(manager: SizeManager): void
-  uninstall?(manager: SizeManager): void
+  install: (manager: SizeManager) => void
+  uninstall?: (manager: SizeManager) => void
 }
 ```
 
 **事件系统**：
 
 ```typescript
-manager.on('beforeModeChange', event => {
+manager.on('beforeModeChange', (event) => {
   // 可以阻止模式切换
   if (shouldPreventChange) {
     event.preventDefault()

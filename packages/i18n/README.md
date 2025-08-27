@@ -7,8 +7,8 @@
 
 ### 🚀 性能优化
 
-- **智能缓存系统**：基于 LRU 算法的多层缓存，支持缓存预热和统计分析
-- **懒加载机制**：按需加载语言包，减少初始加载时间
+- **高性能缓存系统**：全新的 `PerformanceCache` 和 `TranslationCache`，支持 LRU/LFU/FIFO 策略
+- **智能懒加载**：按需加载语言包和命名空间，支持分块加载和优先级控制
 - **批量操作优化**：支持批量翻译和并行处理，提升大量翻译场景的性能
 - **内存管理**：自动内存清理和对象池优化，防止内存泄漏
 - **性能监控**：实时性能指标收集、分析和优化建议
@@ -31,7 +31,8 @@
 
 - **多语言支持**：支持任意数量的语言和地区
 - **智能检测**：自动检测浏览器语言偏好
-- **复数规则**：智能复数处理和格式化
+- **增强多元化**：全新的 `PluralizationEngine`，支持 ICU 格式和自定义规则
+- **强大格式化**：内置 `FormatterEngine`，支持日期、数字、货币、相对时间等格式化
 - **插值和格式化**：灵活的参数插值和字符串处理
 - **回退机制**：多级语言回退策略
 - **嵌套键支持**：点分隔的嵌套翻译键
@@ -119,6 +120,110 @@ globalErrorManager.addHandler({
 // 获取错误统计
 const errorStats = i18n.getErrorStats()
 console.log(errorStats)
+```
+
+### 🆕 增强功能
+
+#### 高性能缓存系统
+
+```typescript
+import { I18n, TranslationCache } from '@ldesign/i18n'
+
+const i18n = new I18n({
+  defaultLocale: 'en',
+  cache: {
+    enabled: true,
+    maxSize: 1000,
+    defaultTTL: 300000, // 5分钟
+  }
+})
+
+// 获取缓存统计
+const cacheStats = i18n.getCacheStats()
+console.log(`缓存命中率: ${(cacheStats.hitRate * 100).toFixed(1)}%`)
+
+// 清除缓存
+i18n.clearTranslationCache()
+```
+
+#### 增强的多元化支持
+
+```typescript
+// ICU 格式多元化
+const messages = {
+  items: '{count, plural, =0{no items} =1{one item} other{# items}}'
+}
+
+console.log(i18n.t('items', { count: 0 })) // "no items"
+console.log(i18n.t('items', { count: 1 })) // "one item"
+console.log(i18n.t('items', { count: 5 })) // "5 items"
+
+// 新格式多元化
+const newMessages = {
+  notifications: 'zero:No notifications|one:One notification|other:{{count}} notifications'
+}
+
+console.log(i18n.t('notifications', { count: 0 })) // "No notifications"
+console.log(i18n.t('notifications', { count: 3 })) // "3 notifications"
+```
+
+#### 强大的格式化功能
+
+```typescript
+// 日期格式化
+console.log(i18n.formatDate(new Date())) // "12/25/2023"
+console.log(i18n.formatDate(new Date(), { dateStyle: 'full' })) // "Monday, December 25, 2023"
+
+// 相对时间
+const oneHourAgo = new Date(Date.now() - 3600000)
+console.log(i18n.formatRelativeTime(oneHourAgo)) // "1 hour ago"
+
+// 数字和货币
+console.log(i18n.formatNumber(1234567.89)) // "1,234,567.89"
+console.log(i18n.formatCurrency(1234.56, 'USD')) // "$1,234.56"
+console.log(i18n.formatPercent(0.1234)) // "12%"
+
+// 列表格式化
+console.log(i18n.formatList(['Apple', 'Banana', 'Orange'])) // "Apple, Banana, and Orange"
+
+// 自定义格式化器
+i18n.registerFormatter('fileSize', (bytes: number) => {
+  const units = ['B', 'KB', 'MB', 'GB']
+  let size = bytes
+  let unitIndex = 0
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024
+    unitIndex++
+  }
+  return `${size.toFixed(2)} ${units[unitIndex]}`
+})
+
+console.log(i18n.format('fileSize', 1024 * 1024 * 2.5)) // "2.50 MB"
+```
+
+#### 独立使用增强组件
+
+```typescript
+import {
+  PluralizationEngine,
+  FormatterEngine,
+  TranslationCache,
+  PluralCategory,
+  PluralUtils
+} from '@ldesign/i18n'
+
+// 独立使用多元化引擎
+const pluralEngine = new PluralizationEngine()
+const category = pluralEngine.getCategory('en', 5) // PluralCategory.OTHER
+
+// 独立使用格式化引擎
+const formatter = new FormatterEngine({ defaultLocale: 'en' })
+const formatted = formatter.formatCurrency(1234.56, 'en', 'USD') // "$1,234.56"
+
+// 独立使用缓存系统
+const cache = new TranslationCache({ maxSize: 100, ttl: 60000 })
+cache.set('key', 'value')
+const value = cache.get('key')
 ```
 
 ### Vue 3 集成

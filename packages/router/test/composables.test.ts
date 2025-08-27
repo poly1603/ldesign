@@ -438,5 +438,46 @@ describe('composables', () => {
 
       expect(router.currentRoute.value.path).toBe('/user/123')
     })
+
+    it('应该处理无效的to参数', () => {
+      const TestComponent = {
+        setup() {
+          const link = useLink({ to: null as any })
+          return { href: link.href.value }
+        },
+        template: '<div>{{ href }}</div>'
+      }
+
+      const testApp = createApp(TestComponent)
+      testApp.use(router)
+      const wrapper = testApp.mount(document.createElement('div'))
+
+      expect(wrapper.href).toBe('/')
+    })
+
+    it('应该处理复杂的路由对象', () => {
+      const TestComponent = {
+        setup() {
+          const link = useLink({
+            to: {
+              name: 'user',
+              params: { id: '123' },
+              query: { tab: 'profile' },
+              hash: '#section1'
+            }
+          })
+          return { href: link.href.value }
+        },
+        template: '<div>{{ href }}</div>'
+      }
+
+      const testApp = createApp(TestComponent)
+      testApp.use(router)
+      const wrapper = testApp.mount(document.createElement('div'))
+
+      expect(wrapper.href).toContain('/user/123')
+    })
   })
+
+
 })

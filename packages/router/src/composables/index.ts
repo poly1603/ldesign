@@ -290,10 +290,13 @@ export function useLink(options: UseLinkOptions): UseLinkReturn {
   const currentRoute = useRoute()
 
   const to = computed(() => {
+    if (!options.to) {
+      return ''
+    }
     if (typeof options.to === 'string') {
       return options.to
     }
-    else if (typeof options.to === 'object' && 'value' in options.to) {
+    else if (typeof options.to === 'object' && options.to && 'value' in options.to) {
       // ComputedRef<RouteLocationRaw>
       return options.to.value
     }

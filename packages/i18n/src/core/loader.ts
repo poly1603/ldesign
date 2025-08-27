@@ -14,6 +14,24 @@ export interface LoaderOptions {
   maxConcurrent?: number
   /** 预加载优先级 */
   preloadPriority?: 'high' | 'normal' | 'low'
+  /** 懒加载配置 */
+  lazyLoad?: {
+    enabled?: boolean
+    chunkSize?: number
+    priority?: 'high' | 'normal' | 'low'
+  }
+  /** 按需加载配置 */
+  onDemand?: {
+    enabled?: boolean
+    namespaces?: string[]
+    threshold?: number
+  }
+  /** 缓存配置 */
+  cache?: {
+    enabled?: boolean
+    maxSize?: number
+    ttl?: number
+  }
 }
 
 /**
@@ -62,6 +80,24 @@ export abstract class EnhancedLoader implements Loader {
       exponentialBackoff: true,
       maxConcurrent: 5,
       preloadPriority: 'normal',
+      lazyLoad: {
+        enabled: true,
+        chunkSize: 50,
+        priority: 'normal',
+        ...options.lazyLoad,
+      },
+      onDemand: {
+        enabled: true,
+        namespaces: [],
+        threshold: 10,
+        ...options.onDemand,
+      },
+      cache: {
+        enabled: true,
+        maxSize: 100,
+        ttl: 300000, // 5 minutes
+        ...options.cache,
+      },
       ...options,
     }
   }
@@ -553,5 +589,171 @@ export class HttpLoader extends EnhancedLoader {
    */
   getLoadedPackage(locale: string): LanguagePackage | undefined {
     return this.loadedPackages.get(locale)
+  }
+
+  /**
+   * 懒加载语言包的特定命名空间
+   * @param locale 语言代码
+   * @param namespace 命名空间
+   * @returns 语言包的部分内容
+   */
+  async loadNamespace(locale: string, namespace: string): Promise<Partial<LanguagePackage>> {
+    if (!this.options.lazyLoad?.enabled) {
+      return this.load(locale)
+    }
+
+    const cacheKey = `${locale}:${namespace}`
+
+    // 检查缓存
+    if (this.loadedPackages.has(cacheKey)) {
+      return this.loadedPackages.get(cacheKey)!
+    }
+
+    try {
+      // 构建命名空间特定的 URL
+      const url = this.buildNamespaceUrl(locale, namespace)
+      const response = await fetch(url)
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+
+      // 缓存命名空间数据
+      this.loadedPackages.set(cacheKey, data)
+
+      return data
+    }
+    catch (error) {
+      throw new Error(
+        `Failed to load namespace '${namespace}' for locale '${locale}': ${error}`
+      )
+    }
+  }
+
+  /**
+   * 按需加载翻译键
+   * @param locale 语言代码
+   * @param keys 需要加载的键列表
+   * @returns 包含指定键的翻译对象
+   */
+  async loadKeys(locale: string, keys: string[]): Promise<Record<string, any>> {
+    if (!this.options.onDemand?.enabled || keys.length < (this.options.onDemand.threshold || 10)) {
+      const fullPackage = await this.load(locale)
+      return this.extractKeys(fullPackage.translations, keys)
+    }
+
+    try {
+      // 构建按需加载的 URL
+      const url = this.buildKeysUrl(locale, keys)
+      const response = await fetch(url)
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      return await response.json()
+    }
+    catch (error) {
+      // 回退到完整加载
+      const fullPackage = await this.load(locale)
+      return this.extractKeys(fullPackage.translations, keys)
+    }
+  }
+
+  /**
+   * 预加载多个语言包
+   * @param locales 语言代码列表
+   * @param priority 加载优先级
+   */
+  async preloadLocales(locales: string[], priority: 'high' | 'normal' | 'low' = 'normal'): Promise<void> {
+    const loadPromises = locales.map(locale =>
+      this.loadWithPriority(locale, priority)
+    )
+
+    await Promise.allSettled(loadPromises)
+  }
+
+  /**
+   * 带优先级的加载
+   * @param locale 语言代码
+   * @param priority 优先级
+   */
+  private async loadWithPriority(locale: string, priority: 'high' | 'normal' | 'low'): Promise<LanguagePackage> {
+    // 根据优先级调整加载延迟
+    const delay = priority === 'high' ? 0 : priority === 'normal' ? 100 : 500
+
+    if (delay > 0) {
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+
+    return this.load(locale)
+  }
+
+  /**
+   * 构建命名空间 URL
+   * @param locale 语言代码
+   * @param namespace 命名空间
+   */
+  private buildNamespaceUrl(locale: string, namespace: string): string {
+    return `${this.baseUrl}/${locale}/${namespace}.json`
+  }
+
+  /**
+   * 构建按需加载 URL
+   * @param locale 语言代码
+   * @param keys 键列表
+   */
+  private buildKeysUrl(locale: string, keys: string[]): string {
+    const keyParams = keys.join(',')
+    return `${this.baseUrl}/${locale}/keys?keys=${encodeURIComponent(keyParams)}`
+  }
+
+  /**
+   * 从翻译对象中提取指定的键
+   * @param translations 翻译对象
+   * @param keys 键列表
+   */
+  private extractKeys(translations: Record<string, any>, keys: string[]): Record<string, any> {
+    const result: Record<string, any> = {}
+
+    for (const key of keys) {
+      const value = this.getNestedValue(translations, key)
+      if (value !== undefined) {
+        this.setNestedValue(result, key, value)
+      }
+    }
+
+    return result
+  }
+
+  /**
+   * 获取嵌套对象的值
+   * @param obj 对象
+   * @param path 路径
+   */
+  private getNestedValue(obj: any, path: string): any {
+    return path.split('.').reduce((current, key) => current?.[key], obj)
+  }
+
+  /**
+   * 设置嵌套对象的值
+   * @param obj 对象
+   * @param path 路径
+   * @param value 值
+   */
+  private setNestedValue(obj: any, path: string, value: any): void {
+    const keys = path.split('.')
+    const lastKey = keys.pop()!
+
+    const target = keys.reduce((current, key) => {
+      if (!(key in current)) {
+        current[key] = {}
+      }
+      return current[key]
+    }, obj)
+
+    target[lastKey] = value
   }
 }
