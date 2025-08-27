@@ -147,7 +147,7 @@ describe('i18n Performance Tests', () => {
       }
 
       // 检查缓存统计
-      const stats = (smallCacheI18n as any).cache.getStats?.()
+      const stats = smallCacheI18n.getCacheStats?.()
       if (stats) {
         expect(stats.size).toBeLessThanOrEqual(10)
         expect(stats.evictionCount).toBeGreaterThan(0)

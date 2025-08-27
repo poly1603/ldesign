@@ -28,6 +28,9 @@ import {
   InitializationError,
   LanguageLoadError,
 } from './errors'
+import { TranslationCache } from './cache'
+import { PluralizationEngine, PluralCategory, PluralUtils } from './pluralization'
+import { FormatterEngine } from './formatters'
 import { DefaultLoader } from './loader'
 import { PerformanceManager } from './performance'
 import { I18nCoreManager, ManagerRegistry } from './registry'
@@ -78,6 +81,11 @@ export class I18n implements I18nInstance {
   private _errorManager?: ErrorManager
   private _registry?: ManagerRegistry
   private _coreManager?: I18nCoreManager
+
+  // 新增的增强功能
+  private _translationCache?: TranslationCache
+  private _pluralizationEngine?: PluralizationEngine
+  private _formatterEngine?: FormatterEngine
 
   private eventListeners = new Map<I18nEventType, Set<I18nEventListener>>()
   private isInitialized = false
@@ -191,6 +199,36 @@ export class I18n implements I18nInstance {
       this.registry.registerManager(this._coreManager)
     }
     return this._coreManager
+  }
+
+  private get translationCache(): TranslationCache {
+    if (!this._translationCache) {
+      this._translationCache = new TranslationCache({
+        maxSize: this.options.cache.maxSize,
+        ttl: this.options.cache.defaultTTL,
+        enableLRU: true,
+        strategy: 'lru',
+      })
+    }
+    return this._translationCache
+  }
+
+  private get pluralizationEngine(): PluralizationEngine {
+    if (!this._pluralizationEngine) {
+      this._pluralizationEngine = new PluralizationEngine()
+    }
+    return this._pluralizationEngine
+  }
+
+  private get formatterEngine(): FormatterEngine {
+    if (!this._formatterEngine) {
+      this._formatterEngine = new FormatterEngine({
+        defaultLocale: this.options.defaultLocale,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        currency: 'USD',
+      })
+    }
+    return this._formatterEngine
   }
 
   constructor(options: I18nOptions = {}) {
@@ -352,42 +390,13 @@ export class I18n implements I18nInstance {
     let fromCache = false
 
     try {
-      // 快速路径：如果没有参数且没有特殊选项，直接查找简单翻译
-      const hasParams = Object.keys(params).length > 0
-      const hasOptions = Object.keys(options).length > 0
-
-      if (!hasParams && !hasOptions && this.options.cache.enabled) {
-        // 使用简化的缓存键
-        const simpleCacheKey = `${this.currentLocale}:${key}`
-        const cached = this.cache.get(simpleCacheKey)
-        if (cached !== undefined) {
-          fromCache = true
-          return cached as T
-        }
-
-        // 快速翻译查找
-        const text = this.getTranslationTextOptimized(key, this.currentLocale)
-        if (
-          text !== undefined
-          && !hasInterpolation(text)
-          && !hasPluralExpression(text)
-        ) {
-          this.cache.set(simpleCacheKey, text)
-          return text as T
-        }
-      }
-
-      // 标准路径：生成完整缓存键
-      const cacheKey = this.generateCacheKeyOptimized(
-        key,
-        params,
-        options,
-        this.currentLocale,
-      )
-
-      // 尝试从缓存获取
+      // 检查增强缓存
       if (this.options.cache.enabled) {
-        const cached = this.cache.get(cacheKey)
+        const cached = this.translationCache.getCachedTranslation(
+          this.currentLocale,
+          key,
+          params
+        )
         if (cached !== undefined) {
           fromCache = true
           return cached as T
@@ -399,7 +408,12 @@ export class I18n implements I18nInstance {
 
       // 缓存结果
       if (this.options.cache.enabled) {
-        this.cache.set(cacheKey, result)
+        this.translationCache.cacheTranslation(
+          this.currentLocale,
+          key,
+          params,
+          result
+        )
       }
 
       return result as T
@@ -415,11 +429,9 @@ export class I18n implements I18nInstance {
       )
 
       // 更新缓存统计
-      if (this.cache instanceof LRUCacheImpl) {
-        const stats = this.cache.getStats()
-        this.performanceManager.updateCacheHitRate(stats.hitRate)
-        this.performanceManager.updateMemoryUsage(stats.size * 100) // 估算
-      }
+      const cacheStats = this.translationCache.getStats()
+      this.performanceManager.updateCacheHitRate(cacheStats.hitRate)
+      this.performanceManager.updateMemoryUsage(cacheStats.size * 100) // 估算
     }
   }
 
@@ -623,6 +635,18 @@ export class I18n implements I18nInstance {
   }
 
   /**
+   * 移除所有事件监听器
+   * @param event 可选的事件类型，如果不提供则移除所有事件的监听器
+   */
+  removeAllListeners(event?: I18nEventType): void {
+    if (event) {
+      this.eventListeners.delete(event)
+    } else {
+      this.eventListeners.clear()
+    }
+  }
+
+  /**
    * 触发事件
    * @param event 事件类型
    * @param args 事件参数
@@ -670,9 +694,9 @@ export class I18n implements I18nInstance {
       text = options.defaultValue || key
     }
 
-    // 处理复数
+    // 处理增强的多元化
     if (hasPluralExpression(text)) {
-      text = processPluralization(text, params, this.currentLocale)
+      text = this.processEnhancedPluralization(text, params, this.currentLocale)
     }
 
     // 处理插值
@@ -683,6 +707,109 @@ export class I18n implements I18nInstance {
     }
 
     return text
+  }
+
+  /**
+   * 处理增强的多元化
+   * @param text 包含多元化表达式的文本
+   * @param params 参数
+   * @param locale 语言代码
+   * @returns 处理后的文本
+   */
+  private processEnhancedPluralization(
+    text: string,
+    params: TranslationParams,
+    locale: string
+  ): string {
+    // 检查是否包含 ICU 格式的多元化表达式
+    const icuFormatMatch = text.match(/\{([^,]+),\s*plural,\s*(.+)\}/)
+
+    if (icuFormatMatch) {
+      const [fullMatch, countKey, pluralRules] = icuFormatMatch
+      const count = Number(params[countKey]) || 0
+
+      // 解析 ICU 格式的多元化规则
+      const result = this.parseICUPluralRules(pluralRules, count, params, locale)
+
+      return text.replace(fullMatch, result)
+    }
+
+    // 检查是否包含新格式的多元化表达式（用 | 分隔）
+    const newFormatMatch = text.match(/\{([^}]+)\s*,\s*plural\s*,\s*(.+)\}/)
+
+    if (newFormatMatch) {
+      const [, countKey, pluralRules] = newFormatMatch
+      const count = Number(params[countKey]) || 0
+
+      // 获取多元化类别
+      const category = this.pluralizationEngine.getCategory(locale, count)
+
+      // 解析多元化规则
+      const pluralObject = PluralUtils.parsePluralString(pluralRules)
+
+      // 格式化文本
+      const result = PluralUtils.formatPluralText(pluralObject, category, count, params)
+
+      return text.replace(newFormatMatch[0], result)
+    }
+
+    // 回退到原有的多元化处理
+    return processPluralization(text, params, locale)
+  }
+
+  /**
+   * 解析 ICU 格式的多元化规则
+   * @param rules 多元化规则字符串
+   * @param count 数量
+   * @param params 参数
+   * @param locale 语言代码
+   * @returns 处理后的文本
+   */
+  private parseICUPluralRules(
+    rules: string,
+    count: number,
+    params: TranslationParams,
+    locale: string
+  ): string {
+    // 解析 ICU 格式：=0{no items} =1{one item} other{# items}
+    const rulePattern = /(=\d+|zero|one|two|few|many|other)\{([^}]*)\}/g
+    const parsedRules: Record<string, string> = {}
+
+    let match
+    while ((match = rulePattern.exec(rules)) !== null) {
+      const [, key, value] = match
+      parsedRules[key] = value
+    }
+
+    // 确定使用哪个规则
+    let selectedRule = ''
+
+    // 首先检查精确匹配
+    const exactKey = `=${count}`
+    if (parsedRules[exactKey]) {
+      selectedRule = parsedRules[exactKey]
+    } else {
+      // 使用多元化引擎确定类别
+      const category = this.pluralizationEngine.getCategory(locale, count)
+
+      // 映射类别到规则
+      if (parsedRules[category]) {
+        selectedRule = parsedRules[category]
+      } else if (parsedRules.other) {
+        selectedRule = parsedRules.other
+      }
+    }
+
+    // 替换 # 为实际数量
+    selectedRule = selectedRule.replace(/#/g, count.toString())
+
+    // 处理其他插值
+    for (const [key, value] of Object.entries(params)) {
+      const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g')
+      selectedRule = selectedRule.replace(regex, String(value))
+    }
+
+    return selectedRule
   }
 
   /**
@@ -1049,5 +1176,131 @@ export class I18n implements I18nInstance {
   hasPlural(key: string): boolean {
     const text = this.getTranslationTextOptimized(key, this.currentLocale)
     return text ? hasPluralExpression(text) : false
+  }
+
+  // ==================== 格式化功能 ====================
+
+  /**
+   * 格式化日期
+   * @param date 日期
+   * @param options 格式化选项
+   * @returns 格式化后的字符串
+   */
+  formatDate(date: Date | number | string, options?: any): string {
+    return this.formatterEngine.formatDate(date, this.currentLocale, options)
+  }
+
+  /**
+   * 格式化数字
+   * @param number 数字
+   * @param options 格式化选项
+   * @returns 格式化后的字符串
+   */
+  formatNumber(number: number, options?: any): string {
+    return this.formatterEngine.formatNumber(number, this.currentLocale, options)
+  }
+
+  /**
+   * 格式化货币
+   * @param amount 金额
+   * @param currency 货币代码
+   * @param options 格式化选项
+   * @returns 格式化后的字符串
+   */
+  formatCurrency(amount: number, currency?: string, options?: any): string {
+    return this.formatterEngine.formatCurrency(amount, this.currentLocale, currency, options)
+  }
+
+  /**
+   * 格式化百分比
+   * @param value 值（0-1之间）
+   * @param options 格式化选项
+   * @returns 格式化后的字符串
+   */
+  formatPercent(value: number, options?: any): string {
+    return this.formatterEngine.formatPercent(value, this.currentLocale, options)
+  }
+
+  /**
+   * 格式化相对时间
+   * @param date 日期
+   * @param unit 时间单位
+   * @returns 格式化后的字符串
+   */
+  formatRelativeTime(date: Date, unit?: any): string {
+    return this.formatterEngine.formatRelativeTime(date, this.currentLocale, unit)
+  }
+
+  /**
+   * 格式化列表
+   * @param items 项目列表
+   * @param options 格式化选项
+   * @returns 格式化后的字符串
+   */
+  formatList(items: string[], options?: any): string {
+    return this.formatterEngine.formatList(items, this.currentLocale, options)
+  }
+
+  /**
+   * 使用自定义格式化器
+   * @param name 格式化器名称
+   * @param value 值
+   * @param options 选项
+   * @returns 格式化后的字符串
+   */
+  format(name: string, value: any, options?: any): string {
+    return this.formatterEngine.format(name, value, this.currentLocale, options)
+  }
+
+  /**
+   * 注册自定义格式化器
+   * @param name 格式化器名称
+   * @param formatter 格式化器函数
+   */
+  registerFormatter(name: string, formatter: any): void {
+    this.formatterEngine.registerFormatter(name, formatter)
+  }
+
+  // ==================== 缓存管理 ====================
+
+  /**
+   * 获取翻译缓存统计信息
+   * @returns 缓存统计信息
+   */
+  getCacheStats(): any {
+    return this.translationCache.getStats()
+  }
+
+  /**
+   * 清除翻译缓存
+   */
+  clearTranslationCache(): void {
+    this.translationCache.clear()
+  }
+
+  /**
+   * 清除格式化器缓存
+   */
+  clearFormatterCache(): void {
+    this.formatterEngine.clearCache()
+  }
+
+  /**
+   * 清除多元化缓存
+   */
+  clearPluralizationCache(): void {
+    this.pluralizationEngine.clearCache()
+  }
+
+  /**
+   * 清除所有缓存
+   */
+  clearAllCaches(): void {
+    this.clearTranslationCache()
+    this.clearFormatterCache()
+    this.clearPluralizationCache()
+    if (this._cache) {
+      this._cache.clear()
+    }
   }
 }
