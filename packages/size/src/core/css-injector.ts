@@ -12,6 +12,12 @@ export interface CSSInjectionOptions {
   selector?: string
   /** 是否使用 !important */
   important?: boolean
+  /** 是否启用动画过渡 */
+  enableTransition?: boolean
+  /** 过渡持续时间 */
+  transitionDuration?: string
+  /** 过渡缓动函数 */
+  transitionEasing?: string
 }
 
 /**
@@ -21,6 +27,9 @@ const DEFAULT_CSS_OPTIONS: Required<CSSInjectionOptions> = {
   styleId: 'ldesign-size-variables',
   selector: ':root',
   important: false,
+  enableTransition: true,
+  transitionDuration: '0.3s',
+  transitionEasing: 'ease-in-out',
 }
 
 /**
@@ -101,7 +110,14 @@ export class CSSInjector {
       .map(([name, value]) => `  ${name}: ${value}${important};`)
       .join('\n')
 
-    return `${this.options.selector} {\n${cssRules}\n}`
+    // 添加过渡动画
+    let transitionRules = ''
+    if (this.options.enableTransition) {
+      const transitionProperties = Object.keys(variables).join(', ')
+      transitionRules = `  transition: ${transitionProperties} ${this.options.transitionDuration} ${this.options.transitionEasing}${important};\n`
+    }
+
+    return `${this.options.selector} {\n${transitionRules}${cssRules}\n}`
   }
 
   /**

@@ -12,6 +12,7 @@ import type {
 import { CSSVariableGenerator } from './css-generator'
 import { CSSInjector } from './css-injector'
 import { getSizeConfig } from './presets'
+import { SizeStorageManager } from './storage-manager'
 
 /**
  * 默认尺寸管理器选项
@@ -22,6 +23,10 @@ const DEFAULT_OPTIONS: Required<SizeManagerOptions> = {
   styleId: 'ldesign-size-variables',
   selector: ':root',
   autoInject: true,
+  enableStorage: true,
+  storageType: 'localStorage',
+  enableTransition: true,
+  transitionDuration: '0.3s',
 }
 
 /**
@@ -32,17 +37,28 @@ export class SizeManagerImpl implements SizeManager {
   private currentMode: SizeMode
   private cssGenerator: CSSVariableGenerator
   private cssInjector: CSSInjector
+  private storageManager: SizeStorageManager
   private listeners: Array<(event: SizeChangeEvent) => void> = []
 
   constructor(options?: SizeManagerOptions) {
     this.options = { ...DEFAULT_OPTIONS, ...options }
-    this.currentMode = this.options.defaultMode
+
+    // 初始化存储管理器
+    this.storageManager = new SizeStorageManager({
+      enabled: this.options.enableStorage,
+      type: this.options.storageType,
+    })
+
+    // 从存储中恢复尺寸模式，如果没有则使用默认值
+    this.currentMode = this.storageManager.getSavedMode() || this.options.defaultMode
 
     // 初始化CSS生成器和注入器
     this.cssGenerator = new CSSVariableGenerator(this.options.prefix)
     this.cssInjector = new CSSInjector({
       styleId: this.options.styleId,
       selector: this.options.selector,
+      enableTransition: this.options.enableTransition,
+      transitionDuration: this.options.transitionDuration,
     })
 
     // 自动注入初始样式
@@ -68,6 +84,11 @@ export class SizeManagerImpl implements SizeManager {
 
     const previousMode = this.currentMode
     this.currentMode = mode
+
+    // 保存到存储
+    if (this.options.enableStorage) {
+      this.storageManager.saveCurrentMode(mode)
+    }
 
     // 重新注入CSS
     if (this.options.autoInject) {

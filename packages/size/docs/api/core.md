@@ -8,26 +8,26 @@
 import {
   // 管理器
   createSizeManager,
-  globalSizeManager,
-
-  // 预设配置
-  getSizeConfig,
-  getAvailableModes,
-  sizeConfigs,
+  CSSInjector,
 
   // CSS相关
   CSSVariableGenerator,
-  CSSInjector,
+  getAvailableModes,
+  getNextSizeMode,
 
+  getPreviousSizeMode,
+  // 预设配置
+  getSizeConfig,
+
+  globalSizeManager,
   // 工具函数
   isValidSizeMode,
-  getNextSizeMode,
-  getPreviousSizeMode,
+  type SizeConfig,
 
+  sizeConfigs,
+  type SizeManager,
   // 类型
   type SizeMode,
-  type SizeManager,
-  type SizeConfig,
 } from '@ldesign/size'
 ```
 
@@ -40,20 +40,20 @@ import {
 ```typescript
 interface SizeManager {
   // 基础操作
-  getCurrentMode(): SizeMode
-  setMode(mode: SizeMode): void
-  getConfig(mode?: SizeMode): SizeConfig
+  getCurrentMode: () => SizeMode
+  setMode: (mode: SizeMode) => void
+  getConfig: (mode?: SizeMode) => SizeConfig
 
   // CSS操作
-  generateCSSVariables(mode?: SizeMode): Record<string, string>
-  injectCSS(mode?: SizeMode): void
-  removeCSS(): void
+  generateCSSVariables: (mode?: SizeMode) => Record<string, string>
+  injectCSS: (mode?: SizeMode) => void
+  removeCSS: () => void
 
   // 事件监听
-  onSizeChange(callback: (event: SizeChangeEvent) => void): () => void
+  onSizeChange: (callback: (event: SizeChangeEvent) => void) => () => void
 
   // 生命周期
-  destroy(): void
+  destroy: () => void
 }
 ```
 
@@ -271,7 +271,7 @@ console.log(parseSizeMode('大')) // 'large'
 function formatCSSValue(value: string | number, unit?: string): string
 
 // 解析CSS值
-function parseCSSValue(value: string): { number: number; unit: string }
+function parseCSSValue(value: string): { number: number, unit: string }
 
 // 计算尺寸缩放比例
 function calculateSizeScale(fromMode: SizeMode, toMode: SizeMode): number
@@ -309,7 +309,7 @@ interface SizeChangeEvent {
 ### 事件监听
 
 ```typescript
-const unsubscribe = manager.onSizeChange(event => {
+const unsubscribe = manager.onSizeChange((event) => {
   console.log(`尺寸从 ${event.previousMode} 变为 ${event.currentMode}`)
 })
 

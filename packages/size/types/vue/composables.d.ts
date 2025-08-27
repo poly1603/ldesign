@@ -84,7 +84,7 @@ declare function useSizeSwitcher(options?: UseSizeOptions): {
 /**
  * 使用尺寸响应式 Hook
  */
-declare function useSizeResponsive(breakpoints?: Partial<Record<SizeMode, boolean>>): {
+declare function useSizeResponsive(_breakpoints?: Partial<Record<SizeMode, boolean>>): {
     currentMode: Ref<SizeMode>;
     isSmall: any;
     isMedium: any;

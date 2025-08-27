@@ -14,6 +14,7 @@ declare class SizeManagerImpl implements SizeManager {
     private currentMode;
     private cssGenerator;
     private cssInjector;
+    private storageManager;
     private listeners;
     constructor(options?: SizeManagerOptions);
     /**

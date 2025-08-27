@@ -56,5 +56,54 @@ declare function debounce<T extends (...args: any[]) => any>(func: T, wait: numb
  */
 declare function throttle<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void;
 declare function isValidInput(input: unknown): boolean;
+/**
+ * 检测用户偏好的尺寸模式
+ */
+declare function detectPreferredSizeMode(): SizeMode;
+/**
+ * 获取设备像素比
+ */
+declare function getDevicePixelRatio(): number;
+/**
+ * 检查是否为移动设备
+ */
+declare function isMobileDevice(): boolean;
+/**
+ * 获取视口尺寸
+ */
+declare function getViewportSize(): {
+    width: number;
+    height: number;
+};
+/**
+ * 根据视口尺寸推荐尺寸模式
+ */
+declare function getRecommendedSizeMode(): SizeMode;
+/**
+ * 创建CSS变量名
+ */
+declare function createCSSVariableName(prefix: string, name: string): string;
+/**
+ * 解析CSS变量名
+ */
+declare function parseCSSVariableName(variableName: string): {
+    prefix: string;
+    name: string;
+};
+/**
+ * 监听媒体查询变化
+ */
+declare function watchMediaQuery(query: string, callback: (matches: boolean) => void): () => void;
+/**
+ * 监听视口尺寸变化
+ */
+declare function watchViewportSize(callback: (size: {
+    width: number;
+    height: number;
+}) => void): () => void;
+/**
+ * 创建响应式尺寸监听器
+ */
+declare function createResponsiveSizeWatcher(callback: (recommendedMode: SizeMode) => void): () => void;
 
-export { calculateSizeScale, compareSizeModes, debounce, deepMergeConfig, formatCSSValue, getNextSizeMode, getPreviousSizeMode, getSizeModeDisplayName, isValidInput, isValidSizeMode, parseCSSValue, parseSizeMode, throttle };
+export { calculateSizeScale, compareSizeModes, createCSSVariableName, createResponsiveSizeWatcher, debounce, deepMergeConfig, detectPreferredSizeMode, formatCSSValue, getDevicePixelRatio, getNextSizeMode, getPreviousSizeMode, getRecommendedSizeMode, getSizeModeDisplayName, getViewportSize, isMobileDevice, isValidInput, isValidSizeMode, parseCSSValue, parseCSSVariableName, parseSizeMode, throttle, watchMediaQuery, watchViewportSize };

@@ -42,7 +42,7 @@ import { globalSizeManager } from '@ldesign/size'
 globalSizeManager.setMode('large')
 
 // 监听尺寸变化
-globalSizeManager.onSizeChange(event => {
+globalSizeManager.onSizeChange((event) => {
   console.log('尺寸变化:', event.currentMode)
 })
 ```
@@ -50,9 +50,9 @@ globalSizeManager.onSizeChange(event => {
 ### Vue 项目使用
 
 ```javascript
+import { VueSizePlugin } from '@ldesign/size/vue'
 // main.js
 import { createApp } from 'vue'
-import { VueSizePlugin } from '@ldesign/size/vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -102,7 +102,7 @@ const { currentMode, setMode } = useSize()
 ### 核心 API
 
 ```typescript
-import { createSizeManager, globalSizeManager, getSizeConfig, type SizeMode } from '@ldesign/size'
+import { createSizeManager, getSizeConfig, globalSizeManager, type SizeMode } from '@ldesign/size'
 
 // 创建管理器
 const manager = createSizeManager({
@@ -121,7 +121,7 @@ manager.generateCSSVariables() // 生成CSS变量
 ### Vue API
 
 ```typescript
-import { useSize, useSizeResponsive, SizeSwitcher, SizeIndicator } from '@ldesign/size/vue'
+import { SizeIndicator, SizeSwitcher, useSize, useSizeResponsive } from '@ldesign/size/vue'
 
 // Composition API
 const { currentMode, setMode, nextMode } = useSize()

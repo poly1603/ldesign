@@ -11,13 +11,49 @@ declare const SizeSwitcher: vue.DefineComponent<vue.ExtractPropTypes<{
         type: PropType<SizeMode>;
         default: undefined;
     };
+    modes: {
+        type: PropType<SizeMode[]>;
+        default: () => string[];
+    };
     showSwitcher: {
         type: BooleanConstructor;
         default: boolean;
     };
     switcherStyle: {
-        type: PropType<"button" | "select" | "radio">;
+        type: PropType<"button" | "select" | "radio" | "slider" | "segmented">;
         default: string;
+    };
+    showLabels: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    showIcons: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    showDescriptions: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    disabled: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    size: {
+        type: PropType<"small" | "medium" | "large">;
+        default: string;
+    };
+    theme: {
+        type: PropType<"light" | "dark" | "auto">;
+        default: string;
+    };
+    responsive: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    animated: {
+        type: BooleanConstructor;
+        default: boolean;
     };
     className: {
         type: StringConstructor;
@@ -28,13 +64,49 @@ declare const SizeSwitcher: vue.DefineComponent<vue.ExtractPropTypes<{
         type: PropType<SizeMode>;
         default: undefined;
     };
+    modes: {
+        type: PropType<SizeMode[]>;
+        default: () => string[];
+    };
     showSwitcher: {
         type: BooleanConstructor;
         default: boolean;
     };
     switcherStyle: {
-        type: PropType<"button" | "select" | "radio">;
+        type: PropType<"button" | "select" | "radio" | "slider" | "segmented">;
         default: string;
+    };
+    showLabels: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    showIcons: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    showDescriptions: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    disabled: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    size: {
+        type: PropType<"small" | "medium" | "large">;
+        default: string;
+    };
+    theme: {
+        type: PropType<"light" | "dark" | "auto">;
+        default: string;
+    };
+    responsive: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    animated: {
+        type: BooleanConstructor;
+        default: boolean;
     };
     className: {
         type: StringConstructor;
@@ -44,89 +116,19 @@ declare const SizeSwitcher: vue.DefineComponent<vue.ExtractPropTypes<{
     onChange?: ((...args: any[]) => any) | undefined;
     "onUpdate:mode"?: ((...args: any[]) => any) | undefined;
 }>, {
+    theme: "light" | "dark" | "auto";
+    size: "small" | "medium" | "large";
+    showSwitcher: boolean;
     mode: SizeMode;
-    showSwitcher: boolean;
-    switcherStyle: "button" | "select" | "radio";
+    modes: SizeMode[];
+    switcherStyle: "button" | "select" | "radio" | "slider" | "segmented";
+    showLabels: boolean;
+    showIcons: boolean;
+    showDescriptions: boolean;
+    disabled: boolean;
+    responsive: boolean;
+    animated: boolean;
     className: string;
-}, {}, {}, {}, string, vue.ComponentProvideOptions, true, {}, any>;
-/**
- * 尺寸指示器组件
- */
-declare const SizeIndicator: vue.DefineComponent<vue.ExtractPropTypes<{
-    showMode: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-    showScale: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-    className: {
-        type: StringConstructor;
-        default: string;
-    };
-}>, () => JSX.Element, {}, {}, {}, vue.ComponentOptionsMixin, vue.ComponentOptionsMixin, {}, string, vue.PublicProps, Readonly<vue.ExtractPropTypes<{
-    showMode: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-    showScale: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-    className: {
-        type: StringConstructor;
-        default: string;
-    };
-}>> & Readonly<{}>, {
-    className: string;
-    showMode: boolean;
-    showScale: boolean;
-}, {}, {}, {}, string, vue.ComponentProvideOptions, true, {}, any>;
-/**
- * 尺寸控制面板组件
- */
-declare const SizeControlPanel: vue.DefineComponent<vue.ExtractPropTypes<{
-    showSwitcher: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-    showIndicator: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-    switcherStyle: {
-        type: PropType<"button" | "select" | "radio">;
-        default: string;
-    };
-    className: {
-        type: StringConstructor;
-        default: string;
-    };
-}>, () => JSX.Element, {}, {}, {}, vue.ComponentOptionsMixin, vue.ComponentOptionsMixin, "change"[], "change", vue.PublicProps, Readonly<vue.ExtractPropTypes<{
-    showSwitcher: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-    showIndicator: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-    switcherStyle: {
-        type: PropType<"button" | "select" | "radio">;
-        default: string;
-    };
-    className: {
-        type: StringConstructor;
-        default: string;
-    };
-}>> & Readonly<{
-    onChange?: ((...args: any[]) => any) | undefined;
-}>, {
-    showSwitcher: boolean;
-    switcherStyle: "button" | "select" | "radio";
-    className: string;
-    showIndicator: boolean;
 }, {}, {}, {}, string, vue.ComponentProvideOptions, true, {}, any>;
 
-export { SizeControlPanel, SizeIndicator, SizeSwitcher, SizeSwitcher as default };
+export { SizeSwitcher, SizeSwitcher as default };

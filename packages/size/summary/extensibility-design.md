@@ -66,9 +66,9 @@ class CustomConfigGenerator {
 
   private generateAnimationConfig(mode: SizeMode) {
     const durations = {
-      small: '200ms',
-      medium: '300ms',
-      large: '400ms',
+      'small': '200ms',
+      'medium': '300ms',
+      'large': '400ms',
       'extra-large': '500ms',
     }
 
@@ -80,9 +80,9 @@ class CustomConfigGenerator {
 
   private generateLayoutConfig(mode: SizeMode) {
     const layouts = {
-      small: { containerWidth: '100%', sidebarWidth: '60px' },
-      medium: { containerWidth: '1200px', sidebarWidth: '200px' },
-      large: { containerWidth: '1400px', sidebarWidth: '250px' },
+      'small': { containerWidth: '100%', sidebarWidth: '60px' },
+      'medium': { containerWidth: '1200px', sidebarWidth: '200px' },
+      'large': { containerWidth: '1400px', sidebarWidth: '250px' },
       'extra-large': { containerWidth: '1600px', sidebarWidth: '300px' },
     }
 
@@ -169,9 +169,9 @@ themeManager.registerTheme({
   name: 'dark',
   displayName: '暗色主题',
   configs: {
-    small: { ...getSizeConfig('small') /* 暗色配置 */ },
-    medium: { ...getSizeConfig('medium') /* 暗色配置 */ },
-    large: { ...getSizeConfig('large') /* 暗色配置 */ },
+    'small': { ...getSizeConfig('small') /* 暗色配置 */ },
+    'medium': { ...getSizeConfig('medium') /* 暗色配置 */ },
+    'large': { ...getSizeConfig('large') /* 暗色配置 */ },
     'extra-large': { ...getSizeConfig('extra-large') /* 暗色配置 */ },
   },
   cssVariables: {
@@ -195,14 +195,14 @@ interface SizePlugin {
   dependencies?: string[]
 
   // 生命周期钩子
-  install(manager: SizeManager, options?: any): void | Promise<void>
-  uninstall?(manager: SizeManager): void | Promise<void>
+  install: (manager: SizeManager, options?: any) => void | Promise<void>
+  uninstall?: (manager: SizeManager) => void | Promise<void>
 
   // 可选的扩展点
-  beforeModeChange?(event: BeforeModeChangeEvent): void | boolean
-  afterModeChange?(event: AfterModeChangeEvent): void
-  onConfigGenerate?(config: SizeConfig, mode: SizeMode): SizeConfig
-  onCSSGenerate?(variables: Record<string, string>, mode: SizeMode): Record<string, string>
+  beforeModeChange?: (event: BeforeModeChangeEvent) => void | boolean
+  afterModeChange?: (event: AfterModeChangeEvent) => void
+  onConfigGenerate?: (config: SizeConfig, mode: SizeMode) => SizeConfig
+  onCSSGenerate?: (variables: Record<string, string>, mode: SizeMode) => Record<string, string>
 }
 
 // 插件管理器
@@ -340,7 +340,7 @@ const StoragePlugin: SizePlugin = {
     this.restorePreference(manager, config)
 
     // 监听变化并保存
-    manager.onSizeChange(event => {
+    manager.onSizeChange((event) => {
       this.savePreference(event.currentMode, config)
     })
   },
@@ -353,7 +353,8 @@ const StoragePlugin: SizePlugin = {
       if (saved && isValidSizeMode(saved)) {
         manager.setMode(saved as SizeMode)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to restore size preference:', error)
     }
   },
@@ -362,7 +363,8 @@ const StoragePlugin: SizePlugin = {
     try {
       const storage = window[config.storageType]
       storage.setItem(config.storageKey, mode)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to save size preference:', error)
     }
   },
@@ -407,10 +409,11 @@ class EventExtensionManager {
   emitEvent<K extends keyof CustomSizeEvents>(event: K, data: CustomSizeEvents[K]): void {
     const handlers = this.customEvents.get(event)
     if (handlers) {
-      handlers.forEach(handler => {
+      handlers.forEach((handler) => {
         try {
           handler(data)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`Error in custom event handler for ${event}:`, error)
         }
       })
@@ -427,7 +430,7 @@ interface SizeMiddleware {
   priority?: number
 
   // 中间件处理函数
-  process(context: MiddlewareContext, next: () => void): void
+  process: (context: MiddlewareContext, next: () => void) => void
 }
 
 interface MiddlewareContext {
@@ -588,7 +591,7 @@ export class SizeService {
     this.currentMode$.next(this.sizeManager.getCurrentMode())
     this.currentConfig$.next(this.sizeManager.getConfig())
 
-    this.sizeManager.onSizeChange(event => {
+    this.sizeManager.onSizeChange((event) => {
       this.currentMode$.next(event.currentMode)
       this.currentConfig$.next(this.sizeManager.getConfig(event.currentMode))
     })
@@ -626,7 +629,7 @@ export class SizeResponsiveDirective implements OnInit, OnDestroy {
     this.sizeService
       .getCurrentMode()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(mode => {
+      .subscribe((mode) => {
         this.applyModeStyles(mode)
       })
   }
@@ -654,16 +657,16 @@ export class SizeResponsiveDirective implements OnInit, OnDestroy {
 ```typescript
 interface VisualConfigTool {
   // 可视化编辑器
-  openEditor(): void
+  openEditor: () => void
 
   // 实时预览
-  previewMode(mode: SizeMode): void
+  previewMode: (mode: SizeMode) => void
 
   // 导出配置
-  exportConfig(): SizeConfig
+  exportConfig: () => SizeConfig
 
   // 导入配置
-  importConfig(config: SizeConfig): void
+  importConfig: (config: SizeConfig) => void
 }
 ```
 
@@ -672,13 +675,13 @@ interface VisualConfigTool {
 ```typescript
 interface CloudSyncExtension {
   // 同步到云端
-  syncToCloud(userId: string, preferences: UserPreferences): Promise<void>
+  syncToCloud: (userId: string, preferences: UserPreferences) => Promise<void>
 
   // 从云端恢复
-  restoreFromCloud(userId: string): Promise<UserPreferences>
+  restoreFromCloud: (userId: string) => Promise<UserPreferences>
 
   // 跨设备同步
-  enableCrossDeviceSync(userId: string): void
+  enableCrossDeviceSync: (userId: string) => void
 }
 ```
 
@@ -687,13 +690,13 @@ interface CloudSyncExtension {
 ```typescript
 interface AIRecommendationExtension {
   // 基于用户行为推荐尺寸
-  recommendSize(userBehavior: UserBehaviorData): SizeMode
+  recommendSize: (userBehavior: UserBehaviorData) => SizeMode
 
   // 自动调整
-  enableAutoAdjustment(preferences: AutoAdjustmentPreferences): void
+  enableAutoAdjustment: (preferences: AutoAdjustmentPreferences) => void
 
   // 学习用户偏好
-  learnUserPreferences(interactions: UserInteraction[]): void
+  learnUserPreferences: (interactions: UserInteraction[]) => void
 }
 ```
 

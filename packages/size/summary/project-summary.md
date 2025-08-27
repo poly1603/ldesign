@@ -104,8 +104,8 @@ generateVariables(config: SizeConfig): Record<string, string> {
 
 ```typescript
 interface SizePlugin {
-  install(manager: SizeManager, options?: any): void
-  uninstall?(manager: SizeManager): void
+  install: (manager: SizeManager, options?: any) => void
+  uninstall?: (manager: SizeManager) => void
   // 生命周期钩子
 }
 ```

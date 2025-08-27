@@ -36,7 +36,7 @@ globalSizeManager.setMode('medium')
 globalSizeManager.setMode('large')
 
 // 监听尺寸变化
-globalSizeManager.onSizeChange(event => {
+globalSizeManager.onSizeChange((event) => {
   console.log(`尺寸从 ${event.previousMode} 变为 ${event.currentMode}`)
 })
 ```
@@ -114,9 +114,9 @@ globalSizeManager.onSizeChange(event => {
 **安装插件**：
 
 ```javascript
+import { VueSizePlugin } from '@ldesign/size/vue'
 // main.js
 import { createApp } from 'vue'
-import { VueSizePlugin } from '@ldesign/size/vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -315,7 +315,7 @@ mainSizeManager.setMode('extra-large')
 import { globalSizeManager } from '@ldesign/size'
 
 // 基础事件监听
-const unsubscribe = globalSizeManager.onSizeChange(event => {
+const unsubscribe = globalSizeManager.onSizeChange((event) => {
   console.log('尺寸变化事件:', event)
 
   // 根据尺寸变化执行不同逻辑
@@ -333,7 +333,7 @@ const unsubscribe = globalSizeManager.onSizeChange(event => {
 })
 
 // 条件监听
-const conditionalUnsubscribe = globalSizeManager.onSizeChange(event => {
+const conditionalUnsubscribe = globalSizeManager.onSizeChange((event) => {
   // 只在特定条件下处理
   if (event.currentMode === 'extra-large' && event.previousMode !== 'extra-large') {
     // 进入演示模式
@@ -669,6 +669,9 @@ const handleFontSizeChange = mode => {
 // ✅ 推荐：使用全局管理器
 import { globalSizeManager } from '@ldesign/size'
 
+// ✅ 推荐：使用防抖处理频繁的尺寸切换
+import { debounce } from '@ldesign/size'
+
 // ❌ 不推荐：创建多个不必要的管理器实例
 const manager1 = createSizeManager()
 const manager2 = createSizeManager()
@@ -680,10 +683,7 @@ onUnmounted(() => {
   unsubscribe()
 })
 
-// ✅ 推荐：使用防抖处理频繁的尺寸切换
-import { debounce } from '@ldesign/size'
-
-const debouncedHandler = debounce(mode => {
+const debouncedHandler = debounce((mode) => {
   // 处理尺寸变化
 }, 300)
 
