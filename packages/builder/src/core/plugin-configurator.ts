@@ -99,6 +99,7 @@ export class PluginConfigurator {
 
     // 框架插件
     this.registerPlugin('vue', this.createVuePlugin)
+    this.registerPlugin('vue-jsx', this.createVueJsxPlugin)
     this.registerPlugin('react', this.createReactPlugin)
     this.registerPlugin('svelte', this.createSveltePlugin)
 
@@ -126,9 +127,10 @@ export class PluginConfigurator {
   private analyzeRequirements(scanResult: ProjectScanResult) {
     const files = scanResult.files || []
     const hasTypeScript = files.some(f => f.type === 'typescript' || f.type === 'tsx')
-    const hasJSX = files.some(f => f.type === 'jsx' || f.type === 'tsx')
+    const hasJSX = files.some(f => f.type === 'jsx')
+    const hasTsx = files.some(f => f.type === 'tsx')
     const hasVue = files.some(f => f.type === 'vue') || scanResult.projectType === 'vue'
-    const hasReact = hasJSX || scanResult.projectType === 'react'
+    const hasReact = (hasJSX || hasTsx) || scanResult.projectType === 'react'
     const hasSvelte = files.some(f => (f as any).type === 'svelte')
     const hasSass = files.some(f => f.type === 'scss')
     const hasLess = files.some(f => f.type === 'less')
@@ -138,6 +140,8 @@ export class PluginConfigurator {
       projectType: scanResult.projectType,
       hasTypeScript,
       hasJSX,
+      hasTsx,
+      hasJsx: hasJSX || hasTsx, // 兼容性别名
       hasVue,
       hasReact,
       hasSvelte,
@@ -253,6 +257,14 @@ export class PluginConfigurator {
       if (vuePlugin != null) {
         plugins.push(vuePlugin as Plugin)
       }
+
+      // 如果检测到 JSX/TSX 文件，添加 Vue JSX 支持
+      if (requirements.hasJSX || requirements.hasTsx) {
+        const vueJsxPlugin = await this.createPlugin('vue-jsx', context)
+        if (vueJsxPlugin != null) {
+          plugins.push(vueJsxPlugin as Plugin)
+        }
+      }
     }
 
     if (requirements.projectType === 'react') {
@@ -361,7 +373,7 @@ export class PluginConfigurator {
         ...context.options.nodeResolve,
       })
     }
-    catch (error) {
+    catch {
       logger.warn('无法加载 @rollup/plugin-node-resolve')
       return null
     }
@@ -378,7 +390,7 @@ export class PluginConfigurator {
         ...context.options.commonjs,
       })
     }
-    catch (error) {
+    catch {
       logger.warn('无法加载 @rollup/plugin-commonjs')
       return null
     }
@@ -549,14 +561,33 @@ export class PluginConfigurator {
    */
   private createVuePlugin: PluginFactory = async (context) => {
     try {
-      const { default: vue } = await import('rollup-plugin-vue')
+      const { default: vue } = await import('unplugin-vue/rollup')
       return vue({
-        css: true,
+        include: /\.vue$/,
         ...context.options.vue,
       })
     }
     catch (error) {
-      logger.warn('无法加载 rollup-plugin-vue')
+      logger.warn('无法加载 unplugin-vue')
+      return null
+    }
+  }
+
+  /**
+   * 创建 Vue JSX 插件
+   */
+  private createVueJsxPlugin: PluginFactory = async (context) => {
+    try {
+      const { default: vueJsx } = await import('unplugin-vue-jsx/rollup')
+      const plugin = vueJsx({
+        include: /\.[jt]sx$/,
+        ...context.options.vueJsx,
+      })
+      // 确保返回单个插件而不是数组
+      return Array.isArray(plugin) ? plugin[0] : plugin
+    }
+    catch (error) {
+      logger.warn('无法加载 unplugin-vue-jsx')
       return null
     }
   }

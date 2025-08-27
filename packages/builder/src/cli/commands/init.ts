@@ -151,7 +151,7 @@ export class InitCommand {
   /**
    * 生成配置文件内容
    */
-  private generateConfigContent(template: string, useTypeScript: boolean): string {
+  private generateConfigContent(_template: string, useTypeScript: boolean): string {
     const importStatement = useTypeScript
       ? 'import { defineConfig } from \'@ldesign/builder\''
       : 'const { defineConfig } = require(\'@ldesign/builder\')'
@@ -265,16 +265,10 @@ coverage/
 
     // 根据模板调整配置
     if (template === 'vue') {
-      config.compilerOptions = {
-        ...config.compilerOptions,
-        jsx: 'preserve' as any,
-      }
+      (config.compilerOptions as any).jsx = 'preserve'
     }
     else if (template === 'react') {
-      config.compilerOptions = {
-        ...config.compilerOptions,
-        jsx: 'react-jsx' as any,
-      }
+      (config.compilerOptions as any).jsx = 'react-jsx'
     }
 
     return JSON.stringify(config, null, 2)

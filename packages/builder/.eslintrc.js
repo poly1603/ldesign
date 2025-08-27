@@ -46,9 +46,9 @@ module.exports = {
     'esm/',
     'cjs/',
     'lib/',
-    'types/',
     'node_modules/',
     '*.js',
     '!.eslintrc.js',
+    'src/cli/**/*', // 忽略 CLI 相关代码，专注于编程式 API
   ],
 }

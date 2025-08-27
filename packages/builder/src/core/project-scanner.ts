@@ -67,7 +67,7 @@ export class ProjectScanner {
         projectType,
         files,
         entryPoints,
-        packageInfo,
+        ...(packageInfo && { packageInfo }),
         dependencyGraph,
         scanTime,
       }
@@ -520,7 +520,7 @@ export class ProjectScanner {
       entryPoints.push(exports)
     }
     else if (typeof exports === 'object' && exports !== null) {
-      for (const [key, value] of Object.entries(exports)) {
+      for (const [_key, value] of Object.entries(exports)) {
         if (typeof value === 'string') {
           entryPoints.push(value)
         }
@@ -572,7 +572,7 @@ export class ProjectScanner {
 
     // 创建边
     for (const file of files) {
-      const internalDeps = file.dependencies
+      const internalDeps = (file.dependencies || [])
         .filter(dep => !this.isExternalDependency(dep))
         .map(dep => this.resolveDependencyPath(dep, file.path, files))
         .filter(Boolean) as string[]

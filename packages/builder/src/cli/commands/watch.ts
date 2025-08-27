@@ -15,7 +15,6 @@ import { Logger } from '../../utils/logger'
 const logger = new Logger('Watch')
 
 export class WatchCommand {
-  private isWatching = false
   private builder?: RollupBuilder
   private scanner?: ProjectScanner
 
@@ -227,7 +226,7 @@ export class WatchCommand {
       persistent: true,
     })
 
-    this.isWatching = true
+    // 开始监听
 
     console.log(chalk.blue('🔍 正在监听文件变化...'))
     console.log()
@@ -260,12 +259,12 @@ export class WatchCommand {
       console.log('\n')
       console.log(chalk.yellow('正在停止监听...'))
       watcher.close()
-      this.isWatching = false
+      // 停止监听
       process.exit(0)
     })
 
     // 保持进程运行
-    return new Promise(() => {}) // 永不 resolve
+    return new Promise(() => { }) // 永不 resolve
   }
 
   /**

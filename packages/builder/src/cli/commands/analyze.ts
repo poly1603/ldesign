@@ -272,7 +272,7 @@ export class AnalyzeCommand {
     scanResult: ProjectScanResult,
     dependencyGraph: DependencyGraph,
     pluginConfig: any,
-    options: any,
+    _options: any,
   ): void {
     console.log()
     console.log(chalk.cyan.bold('📊 项目分析报告'))

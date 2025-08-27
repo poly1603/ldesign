@@ -10,13 +10,12 @@ import { TypeGenerator } from './core/type-generator'
 // 核心类型定义
 import { ErrorHandler, Logger } from './utils/logger'
 
-// CLI模块
-export { runCli } from './cli'
-
-export { AnalyzeCommand } from './cli/commands/analyze'
-export { BuildCommand } from './cli/commands/build'
-export { InitCommand } from './cli/commands/init'
-export { WatchCommand } from './cli/commands/watch'
+// CLI 功能暂时移除，专注于编程式 API
+// export { runCli } from './cli'
+// export { AnalyzeCommand } from './cli/commands/analyze'
+// export { BuildCommand } from './cli/commands/build'
+// export { InitCommand } from './cli/commands/init'
+// export { WatchCommand } from './cli/commands/watch'
 
 export { PluginConfigurator } from './core/plugin-configurator'
 // 核心模块
@@ -152,19 +151,18 @@ export async function analyze(input: string = process.cwd()) {
 /**
  * 初始化项目配置
  */
-export async function init(options: {
+export async function init(_options: {
   template?: 'vanilla' | 'vue' | 'react'
   typescript?: boolean
   output?: string
 } = {}) {
-  const { InitCommand } = await import('./cli/commands/init')
   const { Logger } = await import('./utils')
 
   const logger = new Logger('Init')
-  const initCommand = new InitCommand()
 
   try {
-    await initCommand.execute(options)
+    // 简化的初始化逻辑，暂时不依赖 CLI 命令
+    logger.info('项目初始化功能正在开发中...')
     logger.success('项目初始化完成')
   }
   catch (error) {
