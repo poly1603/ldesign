@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { useTheme } from '@ldesign/color/vue'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useNotification } from '@/composables/useNotification'
 
 const { themeManager, currentTheme, currentMode } = useTheme()
 const { showNotification } = useNotification()
-
-const hoveredColor = ref<string | null>(null)
 
 const categoryNames = {
   primary: '主色调',
@@ -24,16 +22,18 @@ const colorScales = computed(() => {
   const scales = generatedTheme[currentMode.value].scales
   const result: Record<
     string,
-    { colors: string[], indices: Record<string, string> }
+    { colors: string[], indices: Record<string, string>, baseColor: string }
   > = {}
 
   // 转换色阶数据格式
   for (const [category, scale] of Object.entries(scales)) {
     if (scale && typeof scale === 'object' && 'indices' in scale) {
       const indices = scale.indices as Record<string, string>
+      const colors = Object.values(indices)
       result[category] = {
-        colors: Object.values(indices),
+        colors,
         indices,
+        baseColor: colors[5] || colors[Math.floor(colors.length / 2)] || colors[0] || '#000000', // 使用中间色作为基础色
       }
     }
   }
@@ -41,23 +41,52 @@ const colorScales = computed(() => {
   return result
 })
 
-// 获取色阶中的特定颜色
-function _getScaleColor(category: string, index: number): string {
-  const scale = colorScales.value[category]
-  if (!scale || !scale.colors)
-    return ''
-  return scale.colors[index] || ''
-}
-
 // 获取颜色的对比度文本颜色
 function getContrastTextColor(backgroundColor: string): string {
-  // 简单的对比度计算，实际项目中可以使用更精确的算法
   const hex = backgroundColor.replace('#', '')
   const r = Number.parseInt(hex.substr(0, 2), 16)
   const g = Number.parseInt(hex.substr(2, 2), 16)
   const b = Number.parseInt(hex.substr(4, 2), 16)
   const brightness = (r * 299 + g * 587 + b * 114) / 1000
   return brightness > 128 ? '#000000' : '#ffffff'
+}
+
+// 计算对比度
+function getContrastRatio(color: string): string {
+  const rgb = hexToRgb(color)
+  if (!rgb) return '0.00'
+
+  const luminance = getLuminance(rgb.r, rgb.g, rgb.b)
+  const whiteLuminance = 1
+  const blackLuminance = 0
+
+  const contrastWithWhite = (whiteLuminance + 0.05) / (luminance + 0.05)
+  const contrastWithBlack = (luminance + 0.05) / (blackLuminance + 0.05)
+
+  const contrast = Math.max(contrastWithWhite, contrastWithBlack)
+  const rating = contrast >= 7 ? 'AAA' : contrast >= 4.5 ? 'AA' : contrast >= 3 ? 'A' : ''
+
+  return `${contrast.toFixed(2)} (${rating})`
+}
+
+// 工具函数
+function hexToRgb(hex: string) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+  return result
+    ? {
+        r: Number.parseInt(result[1], 16),
+        g: Number.parseInt(result[2], 16),
+        b: Number.parseInt(result[3], 16),
+      }
+    : null
+}
+
+function getLuminance(r: number, g: number, b: number): number {
+  const [rs, gs, bs] = [r, g, b].map((c) => {
+    c = c / 255
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  })
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs
 }
 
 function getCategoryName(category: string) {
@@ -88,33 +117,40 @@ async function copyColor(color: string) {
       <div
         v-for="(scale, category) in colorScales"
         :key="category"
-        class="scale-group"
+        class="color-palette-card"
       >
-        <div class="scale-header">
-          <h3 class="scale-title">
-            {{ getCategoryName(category) }}
-          </h3>
-          <span class="scale-count">10 级色阶</span>
+        <!-- 卡片头部 -->
+        <div
+          class="palette-header"
+          :style="{
+            backgroundColor: scale.baseColor,
+            color: getContrastTextColor(scale.baseColor),
+          }"
+        >
+          <div class="palette-title">{{ getCategoryName(category) }}</div>
+          <div class="palette-subtitle">{{ category }}</div>
+          <div class="base-info">
+            <div class="base-name">{{ category }}-6</div>
+            <div class="base-hex">{{ scale.baseColor }}</div>
+          </div>
         </div>
 
-        <div class="scale-colors">
+        <!-- 颜色列表 -->
+        <div class="palette-colors">
           <div
             v-for="(color, index) in scale.colors || []"
             :key="index"
-            class="scale-color"
+            class="color-item"
             :style="{
               backgroundColor: color,
               color: getContrastTextColor(color),
             }"
-            :title="`${category}-${index + 1}: ${color}`"
+            :title="`点击复制 ${color}`"
             @click="copyColor(color)"
-            @mouseenter="hoveredColor = color"
-            @mouseleave="hoveredColor = null"
           >
-            <span class="scale-index">{{ index + 1 }}</span>
-            <span v-if="hoveredColor === color" class="color-value">{{
-              color
-            }}</span>
+            <div class="color-name">{{ category }}-{{ index + 1 }}</div>
+            <div class="color-contrast">{{ getContrastRatio(color) }}</div>
+            <div class="color-hex">{{ color.toUpperCase() }}</div>
           </div>
         </div>
       </div>
@@ -135,85 +171,120 @@ async function copyColor(color: string) {
   gap: 1.5rem;
 }
 
-.scale-group {
-  border: 1px solid var(--color-border, #e8e8e8);
+/* ColorPaletteCard 样式 */
+.color-palette-card {
   border-radius: 8px;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: white;
+  margin-bottom: 24px;
 }
 
-.scale-header {
+.palette-header {
+  padding: 20px;
+  position: relative;
+}
+
+.palette-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.palette-subtitle {
+  font-size: 14px;
+  opacity: 0.9;
+  margin: 0 0 12px 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.base-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  background: var(--color-gray-1, #fafafa);
-  border-bottom: 1px solid var(--color-border, #e8e8e8);
 }
 
-.scale-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-text, #333);
+.base-name {
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.base-hex {
+  font-size: 14px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  opacity: 0.9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.palette-colors .color-item {
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: none;
+  border-radius: 0;
   margin: 0;
 }
 
-.scale-count {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary, #666);
-  background: var(--color-background, #ffffff);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+.palette-colors .color-item:hover {
+  transform: translateX(4px);
+  box-shadow: inset 4px 0 0 rgba(255, 255, 255, 0.3);
 }
 
-.scale-colors {
-  display: flex;
-  height: 60px;
+.palette-colors .color-item:last-child {
+  border-bottom: none;
 }
 
-.scale-color {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 0.875rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-  min-height: 60px;
-}
-
-.scale-color:hover {
-  transform: scale(1.05);
-  z-index: 1;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.scale-index {
-  font-size: 0.75rem;
-  opacity: 0.9;
-  margin-bottom: 0.25rem;
-}
-
-.color-value {
-  font-size: 0.7rem;
-  opacity: 0.8;
+.palette-colors .color-name {
+  font-size: 14px;
   font-weight: 500;
-  text-align: center;
-  line-height: 1;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  margin: 0;
+}
+
+.palette-colors .color-contrast {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.palette-colors .color-hex {
+  font-size: 14px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* 深色主题适配 */
+@media (prefers-color-scheme: dark) {
+  .color-palette-card {
+    background: #1a1a1a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
 }
 
 @media (max-width: 768px) {
-  .scale-colors {
-    flex-wrap: wrap;
-    height: auto;
+  .palette-header {
+    padding: 16px;
   }
 
-  .scale-color {
-    flex-basis: 20%;
-    min-height: 50px;
+  .palette-colors .color-item {
+    padding: 10px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .palette-colors .color-contrast {
+    font-size: 11px;
   }
 }
 </style>

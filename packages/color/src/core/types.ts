@@ -369,6 +369,13 @@ export interface IdleProcessor {
 
   /** 清空任务队列 */
   clear: () => void
+
+  /** 获取队列状态 */
+  getQueueStatus: () => {
+    length: number
+    isRunning: boolean
+    isProcessing: boolean
+  }
 }
 
 /**

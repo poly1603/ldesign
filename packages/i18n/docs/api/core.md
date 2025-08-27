@@ -377,3 +377,255 @@ interface BatchTranslationResult {
 ```
 
 批量翻译的结果对象。
+
+## 🆕 增强功能 API
+
+### 格式化方法
+
+#### formatDate()
+
+```typescript
+formatDate(date: Date | number | string, options?: DateFormatOptions): string
+```
+
+格式化日期。
+
+**参数：**
+- `date` - 要格式化的日期
+- `options` - 格式化选项
+
+**示例：**
+```typescript
+i18n.formatDate(new Date()) // "12/25/2023"
+i18n.formatDate(new Date(), { dateStyle: 'full' }) // "Monday, December 25, 2023"
+```
+
+#### formatNumber()
+
+```typescript
+formatNumber(number: number, options?: NumberFormatOptions): string
+```
+
+格式化数字。
+
+**示例：**
+```typescript
+i18n.formatNumber(1234567.89) // "1,234,567.89"
+i18n.formatNumber(1234567, { compact: true }) // "1.2M"
+```
+
+#### formatCurrency()
+
+```typescript
+formatCurrency(amount: number, currency?: string, options?: any): string
+```
+
+格式化货币。
+
+**示例：**
+```typescript
+i18n.formatCurrency(1234.56, 'USD') // "$1,234.56"
+i18n.formatCurrency(1234.56, 'EUR') // "€1,234.56"
+```
+
+#### formatPercent()
+
+```typescript
+formatPercent(value: number, options?: any): string
+```
+
+格式化百分比。
+
+**示例：**
+```typescript
+i18n.formatPercent(0.1234) // "12%"
+```
+
+#### formatRelativeTime()
+
+```typescript
+formatRelativeTime(date: Date, unit?: any): string
+```
+
+格式化相对时间。
+
+**示例：**
+```typescript
+const oneHourAgo = new Date(Date.now() - 3600000)
+i18n.formatRelativeTime(oneHourAgo) // "1 hour ago"
+```
+
+#### formatList()
+
+```typescript
+formatList(items: string[], options?: any): string
+```
+
+格式化列表。
+
+**示例：**
+```typescript
+i18n.formatList(['Apple', 'Banana', 'Orange']) // "Apple, Banana, and Orange"
+```
+
+#### format()
+
+```typescript
+format(name: string, value: any, options?: any): string
+```
+
+使用自定义格式化器。
+
+**示例：**
+```typescript
+i18n.format('fileSize', 1024 * 1024 * 2.5) // "2.50 MB"
+```
+
+#### registerFormatter()
+
+```typescript
+registerFormatter(name: string, formatter: FormatterFunction): void
+```
+
+注册自定义格式化器。
+
+**示例：**
+```typescript
+i18n.registerFormatter('temperature', (celsius: number) => {
+  const fahrenheit = (celsius * 9/5) + 32
+  return `${celsius}°C (${fahrenheit.toFixed(1)}°F)`
+})
+```
+
+### 缓存管理方法
+
+#### getCacheStats()
+
+```typescript
+getCacheStats(): CacheStats
+```
+
+获取翻译缓存统计信息。
+
+**返回：**
+```typescript
+interface CacheStats {
+  size: number
+  maxSize: number
+  hitCount: number
+  missCount: number
+  hitRate: number
+  evictionCount: number
+}
+```
+
+#### clearTranslationCache()
+
+```typescript
+clearTranslationCache(): void
+```
+
+清除翻译缓存。
+
+#### clearFormatterCache()
+
+```typescript
+clearFormatterCache(): void
+```
+
+清除格式化器缓存。
+
+#### clearPluralizationCache()
+
+```typescript
+clearPluralizationCache(): void
+```
+
+清除多元化缓存。
+
+#### clearAllCaches()
+
+```typescript
+clearAllCaches(): void
+```
+
+清除所有缓存。
+
+## 增强组件
+
+### TranslationCache
+
+高性能翻译缓存类。
+
+```typescript
+class TranslationCache extends PerformanceCache<string> {
+  constructor(config?: CacheConfig)
+  cacheTranslation(locale: string, key: string, params: Record<string, any> | undefined, result: string): void
+  getCachedTranslation(locale: string, key: string, params?: Record<string, any>): string | undefined
+}
+```
+
+### PluralizationEngine
+
+增强的多元化引擎。
+
+```typescript
+class PluralizationEngine {
+  constructor()
+  getCategory(locale: string, count: number, options?: PluralOptions): PluralCategory
+  registerRule(locale: string, rule: PluralRuleFunction): void
+  getSupportedLocales(): string[]
+  clearCache(locale?: string): void
+}
+```
+
+### FormatterEngine
+
+强大的格式化引擎。
+
+```typescript
+class FormatterEngine {
+  constructor(config?: FormatterConfig)
+  formatDate(date: Date | number | string, locale?: string, options?: DateFormatOptions): string
+  formatNumber(number: number, locale?: string, options?: NumberFormatOptions): string
+  formatCurrency(amount: number, locale?: string, currency?: string, options?: any): string
+  formatPercent(value: number, locale?: string, options?: any): string
+  formatRelativeTime(date: Date, locale?: string, unit?: any): string
+  formatList(items: string[], locale?: string, options?: any): string
+  registerFormatter(name: string, formatter: FormatterFunction): void
+  format(name: string, value: any, locale?: string, options?: any): string
+}
+```
+
+### 类型定义
+
+#### CacheConfig
+
+```typescript
+interface CacheConfig {
+  maxSize?: number
+  ttl?: number
+  enableLRU?: boolean
+  strategy?: 'lru' | 'lfu' | 'fifo'
+}
+```
+
+#### PluralOptions
+
+```typescript
+interface PluralOptions {
+  ordinal?: boolean
+  customRule?: PluralRuleFunction
+}
+```
+
+#### FormatterConfig
+
+```typescript
+interface FormatterConfig {
+  defaultLocale?: string
+  timeZone?: string
+  currency?: string
+  customFormatters?: Record<string, FormatterFunction>
+}
+```

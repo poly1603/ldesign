@@ -29,6 +29,23 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", "tests/**/*", "__tests__/**/*", "*.d.ts"],
-  "exclude": ["node_modules", "dist", "lib", "es", "types"]
+  "include": ["src/**/*", "*.d.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "lib",
+    "es",
+    "esm",
+    "cjs",
+    "types",
+    "__tests__",
+    "tests",
+    "test",
+    "e2e",
+    "examples",
+    "*.test.ts",
+    "*.spec.ts",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
 }

@@ -49,23 +49,26 @@ export const PaletteGenerator = defineComponent<PaletteGeneratorProps>({
 
     const palette = computed(() => {
       try {
+        const baseColor = localBaseColor.value || '#1890ff'
+        const count = localCount.value || 5
+
         switch (localPaletteType.value) {
           case 'monochromatic':
-            return generateMonochromaticPalette(localBaseColor.value, localCount.value)
+            return generateMonochromaticPalette(baseColor, count)
           case 'analogous':
-            return generateAnalogousPalette(localBaseColor.value, localCount.value)
+            return generateAnalogousPalette(baseColor, count)
           case 'complementary':
-            return generateComplementaryPalette(localBaseColor.value)
+            return generateComplementaryPalette(baseColor)
           case 'triadic':
-            return generateTriadicPalette(localBaseColor.value)
+            return generateTriadicPalette(baseColor)
           case 'tetradic':
-            return generateTetradicPalette(localBaseColor.value)
+            return generateTetradicPalette(baseColor)
           default:
-            return [localBaseColor.value]
+            return [baseColor]
         }
       }
       catch {
-        return [localBaseColor.value]
+        return [localBaseColor.value || '#1890ff']
       }
     })
 
@@ -119,13 +122,13 @@ export const PaletteGenerator = defineComponent<PaletteGeneratorProps>({
             <input
               type="color"
               value={localBaseColor.value}
-              onInput={e => updateBaseColor((e.target as HTMLInputElement).value)}
+              onInput={(e: Event) => updateBaseColor((e.target as HTMLInputElement).value)}
               class="palette-generator__color-input"
             />
             <input
               type="text"
               value={localBaseColor.value}
-              onInput={e => updateBaseColor((e.target as HTMLInputElement).value)}
+              onInput={(e: Event) => updateBaseColor((e.target as HTMLInputElement).value)}
               class="palette-generator__text-input"
             />
           </div>
@@ -134,7 +137,7 @@ export const PaletteGenerator = defineComponent<PaletteGeneratorProps>({
             <label class="palette-generator__label">调色板类型</label>
             <select
               value={localPaletteType.value}
-              onChange={e => updatePaletteType((e.target as HTMLSelectElement).value as any)}
+              onChange={(e: Event) => updatePaletteType((e.target as HTMLSelectElement).value as any)}
               class="palette-generator__select"
             >
               {paletteTypes.map(type => (
@@ -156,7 +159,7 @@ export const PaletteGenerator = defineComponent<PaletteGeneratorProps>({
                 min="3"
                 max="10"
                 value={localCount.value}
-                onInput={e => updateCount(Number.parseInt((e.target as HTMLInputElement).value))}
+                onInput={(e: Event) => updateCount(Number.parseInt((e.target as HTMLInputElement).value))}
                 class="palette-generator__range"
               />
             </div>
@@ -178,7 +181,7 @@ export const PaletteGenerator = defineComponent<PaletteGeneratorProps>({
               <div
                 key={`${color}-${index}`}
                 class="palette-generator__color-item"
-                onClick={() => copyColor(color)}
+                onClick={() => copyColor(color || '#000000')}
                 title={`点击复制 ${color}`}
               >
                 <div

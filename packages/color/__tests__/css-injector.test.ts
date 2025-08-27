@@ -43,8 +43,8 @@ function createMockDocument() {
         parentNode: null,
         tagName: tagName.toUpperCase(),
         remove() {
-          if (this.parentNode && this.parentNode.removeChild) {
-            this.parentNode.removeChild(this)
+          if (this.parentNode && (this.parentNode as any).removeChild) {
+            (this.parentNode as any).removeChild(this)
           }
         },
       }
@@ -110,8 +110,8 @@ function createTestEnvironment() {
           return this.attributes.get(name) || null
         },
         remove() {
-          if (this.parentNode && this.parentNode.removeChild) {
-            this.parentNode.removeChild(this)
+          if (this.parentNode && (this.parentNode as any).removeChild) {
+            (this.parentNode as any).removeChild(this)
           }
         },
       }
@@ -263,6 +263,18 @@ describe('cSSVariableGenerator', () => {
           colors: ['#f6ffed', '#52c41a', '#135200'],
           indices: { 1: '#f6ffed', 5: '#52c41a', 10: '#135200' },
         },
+        warning: {
+          colors: ['#fffbe6', '#faad14', '#613400'],
+          indices: { 1: '#fffbe6', 5: '#faad14', 10: '#613400' },
+        },
+        danger: {
+          colors: ['#fff2f0', '#f5222d', '#5c0011'],
+          indices: { 1: '#fff2f0', 5: '#f5222d', 10: '#5c0011' },
+        },
+        gray: {
+          colors: ['#fafafa', '#8c8c8c', '#262626'],
+          indices: { 1: '#fafafa', 5: '#8c8c8c', 10: '#262626' },
+        },
       }
 
       const variables = generator.generateFromScales(scales)
@@ -284,6 +296,22 @@ describe('cSSVariableGenerator', () => {
           colors: ['#e6f7ff', '#1890ff'],
           indices: { 1: '#e6f7ff', 5: '#1890ff' },
         },
+        success: {
+          colors: ['#f6ffed', '#52c41a'],
+          indices: { 1: '#f6ffed', 5: '#52c41a' },
+        },
+        warning: {
+          colors: ['#fffbe6', '#faad14'],
+          indices: { 1: '#fffbe6', 5: '#faad14' },
+        },
+        danger: {
+          colors: ['#fff2f0', '#f5222d'],
+          indices: { 1: '#fff2f0', 5: '#f5222d' },
+        },
+        gray: {
+          colors: ['#fafafa', '#8c8c8c'],
+          indices: { 1: '#fafafa', 5: '#8c8c8c' },
+        },
       }
 
       const variables = generator.generateFromScales(scales, '--my-theme')
@@ -299,7 +327,7 @@ describe('cSSVariableGenerator', () => {
       const generator = new CSSVariableGenerator()
       const scales = {
         primary: {
-          colors: Array.from({ length: 10 }).fill('#1890ff'),
+          colors: Array.from({ length: 10 }, () => '#1890ff') as string[],
           indices: {
             3: '#91d5ff',
             5: '#1890ff',
@@ -308,15 +336,31 @@ describe('cSSVariableGenerator', () => {
           },
         },
         success: {
-          colors: Array.from({ length: 10 }).fill('#52c41a'),
+          colors: Array.from({ length: 10 }, () => '#52c41a') as string[],
           indices: {
             5: '#52c41a',
             6: '#389e0d',
             7: '#237804',
           },
         },
+        warning: {
+          colors: Array.from({ length: 10 }, () => '#faad14') as string[],
+          indices: {
+            5: '#faad14',
+            6: '#d48806',
+            7: '#ad6800',
+          },
+        },
+        danger: {
+          colors: Array.from({ length: 10 }, () => '#f5222d') as string[],
+          indices: {
+            5: '#f5222d',
+            6: '#cf1322',
+            7: '#a8071a',
+          },
+        },
         gray: {
-          colors: Array.from({ length: 10 }).fill('#8c8c8c'),
+          colors: Array.from({ length: 10 }, () => '#8c8c8c') as string[],
           indices: {
             1: '#fafafa',
             3: '#d9d9d9',
@@ -383,6 +427,22 @@ describe('便捷函数', () => {
         colors: ['#e6f7ff', '#1890ff'],
         indices: { 1: '#e6f7ff', 5: '#1890ff' },
       },
+      success: {
+        colors: ['#f6ffed', '#52c41a'],
+        indices: { 1: '#f6ffed', 5: '#52c41a' },
+      },
+      warning: {
+        colors: ['#fffbe6', '#faad14'],
+        indices: { 1: '#fffbe6', 5: '#faad14' },
+      },
+      danger: {
+        colors: ['#fff2f0', '#f5222d'],
+        indices: { 1: '#fff2f0', 5: '#f5222d' },
+      },
+      gray: {
+        colors: ['#fafafa', '#8c8c8c'],
+        indices: { 1: '#fafafa', 5: '#8c8c8c' },
+      },
     }
 
     expect(() => {
@@ -401,6 +461,22 @@ describe('便捷函数', () => {
       primary: {
         colors: ['#e6f7ff', '#1890ff'],
         indices: { 3: '#91d5ff', 5: '#1890ff', 6: '#0050b3' },
+      },
+      success: {
+        colors: ['#f6ffed', '#52c41a'],
+        indices: { 3: '#b7eb8f', 5: '#52c41a', 6: '#389e0d' },
+      },
+      warning: {
+        colors: ['#fffbe6', '#faad14'],
+        indices: { 3: '#ffe58f', 5: '#faad14', 6: '#d48806' },
+      },
+      danger: {
+        colors: ['#fff2f0', '#f5222d'],
+        indices: { 3: '#ffadd2', 5: '#f5222d', 6: '#cf1322' },
+      },
+      gray: {
+        colors: ['#fafafa', '#8c8c8c'],
+        indices: { 3: '#d9d9d9', 5: '#8c8c8c', 6: '#737373' },
       },
     }
 

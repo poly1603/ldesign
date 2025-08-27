@@ -15,11 +15,27 @@
         <p>Vanilla JavaScript 示例演示</p>
       </header>
 
+      <!-- 导航标签 -->
+      <nav class="nav">
+        <div class="nav-tabs">
+          <button class="nav-tab active" data-tab="theme">🌙 主题演示</button>
+          <button class="nav-tab" data-tab="converter">🎨 颜色转换</button>
+          <button class="nav-tab" data-tab="mixer">🌈 颜色混合</button>
+          <button class="nav-tab" data-tab="palette">🎯 调色板生成</button>
+          <button class="nav-tab" data-tab="accessibility">♿ 可访问性检查</button>
+        </div>
+      </nav>
+
       <!-- 主要内容 -->
       <main class="main">
         <div class="container">
-          <!-- 主题控制面板 -->
-          <section class="card">
+          <!-- 主题演示 -->
+          <div id="theme-demo" class="demo-section active">
+            <h2>🌙 主题管理演示</h2>
+            <p>体验完整的主题切换和色阶展示功能</p>
+
+            <!-- 主题控制面板 -->
+            <section class="card">
             <h2 class="card-title">🎛️ 主题控制</h2>
 
             <div class="control-group">
@@ -76,6 +92,144 @@
               <!-- 色阶将在这里显示 -->
             </div>
           </section>
+          </div>
+
+          <!-- 颜色转换演示 -->
+          <div id="converter-demo" class="demo-section">
+            <h2>🎨 颜色转换演示</h2>
+            <p>支持 HEX、RGB、HSL、HSV 等多种颜色格式的相互转换</p>
+
+            <section class="card">
+              <h3 class="card-title">颜色转换器</h3>
+              <div class="converter-demo">
+                <div class="input-group">
+                  <label>输入颜色 (HEX):</label>
+                  <input id="input-color" type="color" value="#1890ff" />
+                  <input id="input-color-text" type="text" value="#1890ff" />
+                </div>
+
+                <div class="color-preview" id="color-preview">
+                  <span>预览颜色</span>
+                </div>
+
+                <div class="result-grid">
+                  <div class="result-item">
+                    <strong>HEX:</strong>
+                    <span id="result-hex">#1890ff</span>
+                  </div>
+                  <div class="result-item">
+                    <strong>RGB:</strong>
+                    <span id="result-rgb">rgb(24, 144, 255)</span>
+                  </div>
+                  <div class="result-item">
+                    <strong>HSL:</strong>
+                    <span id="result-hsl">hsl(210, 100%, 55%)</span>
+                  </div>
+                  <div class="result-item">
+                    <strong>HSV:</strong>
+                    <span id="result-hsv">hsv(210, 91%, 100%)</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- 颜色混合演示 -->
+          <div id="mixer-demo" class="demo-section">
+            <h2>🌈 颜色混合演示</h2>
+            <p>支持多种混合模式的颜色混合功能</p>
+
+            <section class="card">
+              <h3 class="card-title">颜色混合器</h3>
+              <div class="mixer-demo">
+                <div class="input-group">
+                  <label>颜色 1:</label>
+                  <input id="mixer-color1" type="color" value="#ff0000" />
+                  <input id="mixer-color1-text" type="text" value="#ff0000" />
+                </div>
+
+                <div class="input-group">
+                  <label>颜色 2:</label>
+                  <input id="mixer-color2" type="color" value="#0000ff" />
+                  <input id="mixer-color2-text" type="text" value="#0000ff" />
+                </div>
+
+                <div class="color-preview" id="mixed-color-preview">
+                  <span>混合结果</span>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- 调色板生成演示 -->
+          <div id="palette-demo" class="demo-section">
+            <h2>🎯 调色板生成演示</h2>
+            <p>基于色彩理论生成专业的调色板</p>
+
+            <section class="card">
+              <h3 class="card-title">调色板生成器</h3>
+              <div class="palette-demo">
+                <div class="input-group">
+                  <label>基础颜色:</label>
+                  <input id="palette-base-color" type="color" value="#1890ff" />
+                  <input id="palette-base-color-text" type="text" value="#1890ff" />
+                </div>
+
+                <div class="input-group">
+                  <label>调色板类型:</label>
+                  <select id="palette-type">
+                    <option value="monochromatic">单色调</option>
+                    <option value="analogous">类似色</option>
+                    <option value="complementary">互补色</option>
+                  </select>
+                </div>
+
+                <div id="generated-palette" class="palette-colors">
+                  <!-- 生成的调色板将在这里显示 -->
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- 可访问性检查演示 -->
+          <div id="accessibility-demo" class="demo-section">
+            <h2>♿ 可访问性检查演示</h2>
+            <p>WCAG 标准对比度检查和颜色盲模拟</p>
+
+            <section class="card">
+              <h3 class="card-title">可访问性检查器</h3>
+              <div class="accessibility-demo">
+                <div class="input-group">
+                  <label>前景色 (文字):</label>
+                  <input id="accessibility-fg" type="color" value="#000000" />
+                  <input id="accessibility-fg-text" type="text" value="#000000" />
+                </div>
+
+                <div class="input-group">
+                  <label>背景色:</label>
+                  <input id="accessibility-bg" type="color" value="#ffffff" />
+                  <input id="accessibility-bg-text" type="text" value="#ffffff" />
+                </div>
+
+                <div class="accessibility-result">
+                  <div class="text-preview" id="accessibility-preview">
+                    示例文本 Sample Text
+                  </div>
+
+                  <div class="result-info">
+                    <div class="result-item">
+                      <strong>对比度比值:</strong>
+                      <span id="contrast-ratio">21:1</span>
+                    </div>
+                    <div class="result-item">
+                      <strong>WCAG 等级:</strong>
+                      <span id="wcag-level" class="level aaa">AAA</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
         </div>
       </main>
 

@@ -48,8 +48,34 @@ export type { ErrorHandler } from './core/errors'
 // 导出核心类和接口
 export { I18n } from './core/i18n'
 
+// 导出缓存系统
+export { PerformanceCache, TranslationCache } from './core/cache'
+export type { CacheConfig, CacheStats } from './core/cache'
+
+// 导出多元化引擎
+export {
+  PluralizationEngine,
+  PluralCategory,
+  PluralUtils,
+  pluralizationEngine,
+} from './core/pluralization'
+export type { PluralOptions, PluralRuleFunction } from './core/pluralization'
+
+// 导出格式化引擎
+export {
+  FormatterEngine,
+  formatterEngine,
+} from './core/formatters'
+export type {
+  FormatterConfig,
+  FormatterFunction,
+  DateFormatOptions,
+  NumberFormatOptions,
+} from './core/formatters'
+
 // 导出加载器
 export { DefaultLoader, HttpLoader, StaticLoader } from './core/loader'
+export type { LoaderOptions, LoaderStats } from './core/loader'
 
 // 导出性能管理器
 export {

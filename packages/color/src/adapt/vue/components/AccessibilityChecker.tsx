@@ -53,9 +53,9 @@ export const AccessibilityChecker = defineComponent<AccessibilityCheckerProps>({
 
     const accessibilityResult = computed(() => {
       return checkAccessibility(
-        localForegroundColor.value,
-        localBackgroundColor.value,
-        localTextSize.value,
+        localForegroundColor.value || '#000000',
+        localBackgroundColor.value || '#ffffff',
+        localTextSize.value || 'normal',
       )
     })
 
@@ -63,8 +63,8 @@ export const AccessibilityChecker = defineComponent<AccessibilityCheckerProps>({
       return colorBlindnessTypes.map(type => ({
         type: type.value,
         label: type.label,
-        foreground: simulateColorBlindness(localForegroundColor.value, type.value),
-        background: simulateColorBlindness(localBackgroundColor.value, type.value),
+        foreground: simulateColorBlindness(localForegroundColor.value || '#000000', type.value),
+        background: simulateColorBlindness(localBackgroundColor.value || '#ffffff', type.value),
       }))
     })
 
@@ -104,13 +104,13 @@ export const AccessibilityChecker = defineComponent<AccessibilityCheckerProps>({
             <input
               type="color"
               value={localForegroundColor.value}
-              onInput={e => updateForegroundColor((e.target as HTMLInputElement).value)}
+              onInput={(e: Event) => updateForegroundColor((e.target as HTMLInputElement).value)}
               class="accessibility-checker__color-input"
             />
             <input
               type="text"
               value={localForegroundColor.value}
-              onInput={e => updateForegroundColor((e.target as HTMLInputElement).value)}
+              onInput={(e: Event) => updateForegroundColor((e.target as HTMLInputElement).value)}
               class="accessibility-checker__text-input"
             />
           </div>
@@ -120,13 +120,13 @@ export const AccessibilityChecker = defineComponent<AccessibilityCheckerProps>({
             <input
               type="color"
               value={localBackgroundColor.value}
-              onInput={e => updateBackgroundColor((e.target as HTMLInputElement).value)}
+              onInput={(e: Event) => updateBackgroundColor((e.target as HTMLInputElement).value)}
               class="accessibility-checker__color-input"
             />
             <input
               type="text"
               value={localBackgroundColor.value}
-              onInput={e => updateBackgroundColor((e.target as HTMLInputElement).value)}
+              onInput={(e: Event) => updateBackgroundColor((e.target as HTMLInputElement).value)}
               class="accessibility-checker__text-input"
             />
           </div>
@@ -135,7 +135,7 @@ export const AccessibilityChecker = defineComponent<AccessibilityCheckerProps>({
             <label class="accessibility-checker__label">WCAG 等级</label>
             <select
               value={localLevel.value}
-              onChange={e => updateLevel((e.target as HTMLSelectElement).value as WCAGLevel)}
+              onChange={(e: Event) => updateLevel((e.target as HTMLSelectElement).value as WCAGLevel)}
               class="accessibility-checker__select"
             >
               <option value="AA">AA</option>
@@ -147,7 +147,7 @@ export const AccessibilityChecker = defineComponent<AccessibilityCheckerProps>({
             <label class="accessibility-checker__label">文字大小</label>
             <select
               value={localTextSize.value}
-              onChange={e => updateTextSize((e.target as HTMLSelectElement).value as TextSize)}
+              onChange={(e: Event) => updateTextSize((e.target as HTMLSelectElement).value as TextSize)}
               class="accessibility-checker__select"
             >
               <option value="normal">正常</option>

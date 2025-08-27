@@ -36,6 +36,10 @@ export function createDebugPlugin(config: DebugPluginConfig = {}): VueI18nPlugin
 
   const finalConfig = { ...defaultConfig, ...config }
 
+  // 插件状态变量
+  let context: VueI18nPluginContext | null = null
+  let isInstalled = false
+
   return {
     name: 'vue-i18n-debug',
     version: '1.0.0',
@@ -86,16 +90,16 @@ export function createDebugPlugin(config: DebugPluginConfig = {}): VueI18nPlugin
       if (finalConfig.enablePerformanceMonitor) {
         const originalT = ctx.i18n.t.bind(ctx.i18n)
           ; (ctx.i18n as any).t = function (key: string, params?: any, options?: any) {
-          const start = performance.now()
-          const result = originalT(key, params, options)
-          const end = performance.now()
+            const start = performance.now()
+            const result = originalT(key, params, options)
+            const end = performance.now()
 
-          if (end - start > 10) { // 超过10ms的翻译记录警告
-            console.warn(`[I18n Performance] Slow translation: ${key} took ${(end - start).toFixed(2)}ms`)
+            if (end - start > 10) { // 超过10ms的翻译记录警告
+              console.warn(`[I18n Performance] Slow translation: ${key} took ${(end - start).toFixed(2)}ms`)
+            }
+
+            return result
           }
-
-          return result
-        }
       }
 
       // 监听语言变化
