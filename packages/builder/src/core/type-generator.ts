@@ -223,7 +223,7 @@ export class TypeGenerator {
    * 生成bundled类型文件
    */
   private async generateBundledTypes(
-    scanResult: ProjectScanResult,
+    _scanResult: ProjectScanResult,
     options: TypeGenerationOptions,
   ): Promise<string | null> {
     if (!this.program) {
@@ -232,12 +232,12 @@ export class TypeGenerator {
 
     try {
       // 确保输出目录存在
-      const outDir = resolve(options.outDir)
+      const outDir = resolve(options.outDir || 'dist/types')
       if (!existsSync(outDir)) {
         mkdirSync(outDir, { recursive: true })
       }
 
-      const outputPath = join(outDir, options.fileName)
+      const outputPath = join(outDir, options.fileName || 'index.d.ts')
 
       // 使用TypeScript编译器API生成声明文件
       const emitResult = this.program.emit(
@@ -287,7 +287,7 @@ export class TypeGenerator {
    * 生成分离的类型文件
    */
   private async generateSeparateTypes(
-    scanResult: ProjectScanResult,
+    _scanResult: ProjectScanResult,
     options: TypeGenerationOptions,
   ): Promise<string[]> {
     if (!this.program) {
@@ -298,7 +298,7 @@ export class TypeGenerator {
 
     try {
       // 确保输出目录存在
-      const outDir = resolve(options.outDir)
+      const outDir = resolve(options.outDir || 'dist/types')
       if (!existsSync(outDir)) {
         mkdirSync(outDir, { recursive: true })
       }
@@ -342,7 +342,7 @@ export class TypeGenerator {
    * 生成package.json的types字段建议
    */
   private async generatePackageTypesField(
-    scanResult: ProjectScanResult,
+    _scanResult: ProjectScanResult,
     buildOptions: BuildOptions,
     generatedFiles: string[],
   ): Promise<void> {
@@ -405,9 +405,9 @@ export class TypeGenerator {
         )
 
         // 检查语法错误
-        const diagnostics = sourceFile.parseDiagnostics
+        const diagnostics = ts.getPreEmitDiagnostics(this.program!, sourceFile)
         if (diagnostics.length > 0) {
-          const errors = diagnostics.map(d =>
+          const errors = diagnostics.map((d: ts.Diagnostic) =>
             ts.flattenDiagnosticMessageText(d.messageText, '\n'),
           )
           logger.error(`类型文件 ${filePath} 存在语法错误:`, errors.join('\n'))
@@ -451,7 +451,7 @@ export class TypeGenerator {
 
     ts.forEachChild(sourceFile, (node) => {
       if (ts.isExportDeclaration(node)
-        || (node.modifiers && node.modifiers.some(m => m.kind === ts.SyntaxKind.ExportKeyword))) {
+        || (ts.canHaveModifiers(node) && ts.getModifiers(node)?.some((m: ts.Modifier) => m.kind === ts.SyntaxKind.ExportKeyword))) {
         // 提取导出信息
         if (ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)) {
           exports.push(node.name.text)

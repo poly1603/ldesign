@@ -3,4 +3,4 @@
  */
 
 export * from './plugin'
-export type { EngineI18nPlugin, EnginePluginContext } from './plugin'
+export type { EnginePluginContext } from './plugin'

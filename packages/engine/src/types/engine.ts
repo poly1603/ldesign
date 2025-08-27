@@ -73,55 +73,13 @@ export interface Engine {
   validateManagers: () => { valid: boolean, errors: string[] }
 }
 
-// Router配置选项
-export interface RouterConfig {
-  routes: any[] // RouteRecordRaw[]
-  mode?: 'history' | 'hash' | 'memory'
-  base?: string
-  scrollBehavior?: any
-  linkActiveClass?: string
-  linkExactActiveClass?: string
-  preset?: 'spa' | 'mpa' | 'mobile' | 'desktop' | 'admin' | 'blog'
-  preload?: boolean | {
-    strategy?: 'hover' | 'visible' | 'idle'
-    delay?: number
-    enabled?: boolean
-  }
-  cache?: boolean | {
-    maxSize?: number
-    strategy?: 'memory' | 'session' | 'local'
-    enabled?: boolean
-  }
-  animation?: boolean | {
-    type?: 'fade' | 'slide' | 'scale' | 'flip'
-    duration?: number
-    enabled?: boolean
-  }
-  performance?: {
-    enableLazyLoading?: boolean
-    enableCodeSplitting?: boolean
-    enablePrefetch?: boolean
-    cacheSize?: number
-  }
-}
 
-// Store配置选项
-export interface StoreConfig {
-  modules?: Record<string, any>
-  plugins?: any[]
-  strict?: boolean
-  devtools?: boolean
-}
 
 // 创建引擎的选项
 export interface CreateEngineOptions {
   config?: EnhancedEngineConfig
   plugins?: any[]
   middleware?: any[]
-  router?: RouterAdapter | RouterConfig
-  store?: StateAdapter | StoreConfig
-  i18n?: I18nAdapter
-  theme?: ThemeAdapter
 
   // 配置选项
   configSchema?: Record<string, unknown>

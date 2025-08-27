@@ -47,8 +47,13 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "test:run": "vitest run",
-    "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix",
+    "test:e2e": "../../node_modules/.bin/playwright test",
+    "test:e2e:ui": "../../node_modules/.bin/playwright test --ui",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "clean": "rimraf dist",
     "prepublishOnly": "npm run clean && npm run build"
   },
@@ -74,14 +79,17 @@
     "vite": "^5.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@types/node": "^20.10.0",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vitest/ui": "^1.0.0",
     "eslint": "^8.55.0",
+    "playwright": "^1.40.1",
     "rimraf": "^5.0.5",
     "tsup": "^8.5.0",
     "typescript": "^5.3.0",
+    "vitepress": "^1.6.4",
     "vitest": "^1.0.0"
   }
 }

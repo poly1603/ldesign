@@ -318,7 +318,7 @@ export class EngineImpl implements Engine {
       this.errors.captureError(error as Error, component || undefined, info)
     }
 
-    // 安装扩展适配器（只安装已经设置的适配器，配置对象由扩展系统处理）
+    // 安装适配器（只安装已经设置的适配器）
     if (this.router && typeof this.router.install === 'function') {
       this.router.install(this)
     }

@@ -146,9 +146,6 @@ export { default as zhCNLanguagePackage } from './locales/zh-CN'
 
 // 导出插件系统
 export * from './plugins'
-
-// 导出 Engine 插件
-export * from './plugins/engine'
 export {
   batchInterpolate,
   extractInterpolationKeys,

@@ -369,8 +369,7 @@ export class ConfigManager {
 
   private isValidColor(color: string): boolean {
     // 简单的颜色格式验证
-    const colorRegex
-      = /^(#[0-9A-Fa-f]{3,8}|rgb\(|rgba\(|hsl\(|hsla\(|[a-zA-Z]+)$/
+    const colorRegex = /^(#[0-9A-Fa-f]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\)|[a-zA-Z]+|transparent)$/
     return colorRegex.test(color)
   }
 

@@ -68,28 +68,28 @@ export interface RouterEnginePluginOptions {
   preset?: RouterPreset
   /** 是否启用预加载 */
   preload?:
-    | boolean
-    | {
-      strategy?: 'hover' | 'visible' | 'idle'
-      delay?: number
-      enabled?: boolean
-    }
+  | boolean
+  | {
+    strategy?: 'hover' | 'visible' | 'idle'
+    delay?: number
+    enabled?: boolean
+  }
   /** 是否启用缓存 */
   cache?:
-    | boolean
-    | {
-      maxSize?: number
-      strategy?: 'memory' | 'session' | 'local'
-      enabled?: boolean
-    }
+  | boolean
+  | {
+    maxSize?: number
+    strategy?: 'memory' | 'session' | 'local'
+    enabled?: boolean
+  }
   /** 动画配置 */
   animation?:
-    | boolean
-    | {
-      type?: 'fade' | 'slide' | 'scale' | 'flip'
-      duration?: number
-      enabled?: boolean
-    }
+  | boolean
+  | {
+    type?: 'fade' | 'slide' | 'scale' | 'flip'
+    duration?: number
+    enabled?: boolean
+  }
   /** 性能配置 */
   performance?: {
     enableLazyLoading?: boolean
@@ -216,9 +216,9 @@ function mergeOptions(
       preload:
         typeof userOptions.preload === 'object' && userOptions.preload !== null
           ? {
-              ...(presetConfig.preload as any),
-              ...(userOptions.preload as any),
-            }
+            ...(presetConfig.preload as any),
+            ...(userOptions.preload as any),
+          }
           : userOptions.preload ?? presetConfig.preload,
       cache:
         typeof userOptions.cache === 'object' && userOptions.cache !== null
@@ -226,11 +226,11 @@ function mergeOptions(
           : userOptions.cache ?? presetConfig.cache,
       animation:
         typeof userOptions.animation === 'object'
-        && userOptions.animation !== null
+          && userOptions.animation !== null
           ? {
-              ...(presetConfig.animation as any),
-              ...(userOptions.animation as any),
-            }
+            ...(presetConfig.animation as any),
+            ...(userOptions.animation as any),
+          }
           : userOptions.animation ?? presetConfig.animation,
       performance: {
         ...presetConfig.performance,
@@ -316,137 +316,158 @@ export function createRouterEnginePlugin(
         // 从上下文中获取引擎实例
         const engine = context.engine || context
 
-        // 获取 Vue 应用实例
-        const vueApp = engine.getApp()
-        if (!vueApp) {
-          throw new Error(
-            'Vue app not found. Make sure the engine has created a Vue app before installing router plugin.',
-          )
-        }
-
-        // 记录插件安装开始
-        engine.logger.info(`Installing ${name} plugin...`, {
-          version,
-          mode,
-          base,
-          routesCount: routes.length,
-        })
-
-        // 创建历史管理器
-        let history
-        switch (mode) {
-          case 'hash':
-            history = createWebHashHistory(base)
-            break
-          case 'memory':
-            history = createMemoryHistory(base)
-            break
-          case 'history':
-          default:
-            history = createWebHistory(base)
-            break
-        }
-
-        // 创建路由器实例
-        const routerOptions: any = {
-          history,
-          routes,
-          linkActiveClass: linkActiveClass || 'router-link-active',
-          linkExactActiveClass: linkExactActiveClass || 'router-link-exact-active',
-        }
-        if (scrollBehavior) {
-          routerOptions.scrollBehavior = scrollBehavior
-        }
-        const router = createRouter(routerOptions)
-
-        // 手动安装路由器到 Vue 应用（避免调用 router.install）
-        // 提供路由器注入
-        vueApp.provide(ROUTER_INJECTION_SYMBOL, router)
-        vueApp.provide(ROUTE_INJECTION_SYMBOL, router.currentRoute)
-
-        // 注册路由器组件
-        vueApp.component('RouterView', RouterView)
-        vueApp.component('RouterLink', RouterLink)
-
-        // 设置全局属性
-        if (vueApp.config && vueApp.config.globalProperties) {
-          vueApp.config.globalProperties.$router = router
-          vueApp.config.globalProperties.$route = router.currentRoute
-        }
-
-        // 将路由器注册到 engine 上，使其可以通过 engine.router 访问
-        // 创建路由器适配器
-        const routerAdapter = {
-          install: (_engine: any) => {
-            // 已经安装，无需重复安装
-          },
-          push: router.push.bind(router),
-          replace: router.replace.bind(router),
-          go: router.go.bind(router),
-          back: router.back.bind(router),
-          forward: router.forward.bind(router),
-          getCurrentRoute: () => router.currentRoute,
-          getRoutes: router.getRoutes.bind(router),
-          addRoute: router.addRoute.bind(router),
-          removeRoute: router.removeRoute.bind(router),
-          hasRoute: router.hasRoute.bind(router),
-          resolve: router.resolve.bind(router),
-          beforeEach: router.beforeEach.bind(router),
-          beforeResolve: router.beforeResolve.bind(router),
-          afterEach: router.afterEach.bind(router),
-          onError: router.onError.bind(router),
-          getRouter: () => router, // 返回原始路由器实例
-        }
-
-        engine.router = routerAdapter
-
-        // 注册路由状态到 engine 状态管理
-        if (engine.state) {
-          // 同步当前路由信息
-          engine.state.set('router:currentRoute', router.currentRoute)
-          engine.state.set('router:mode', mode)
-          engine.state.set('router:base', base)
-
-          // 监听路由变化，更新状态
-          router.afterEach((to, from) => {
-            engine.state.set('router:currentRoute', to)
-
-            // 触发路由变化事件
-            if (engine.events) {
-              engine.events.emit('router:navigated', { to, from })
-            }
-          })
-        }
-
-        // 监听路由错误
-        router.onError((error) => {
-          engine.logger.error('Router navigation error:', error)
-          if (engine.events) {
-            engine.events.emit('router:error', error)
+        // 定义实际的安装逻辑
+        const performInstall = async () => {
+          // 获取 Vue 应用实例
+          const vueApp = engine.getApp()
+          if (!vueApp) {
+            throw new Error(
+              'Vue app not found. Make sure the engine has created a Vue app before installing router plugin.',
+            )
           }
-        })
 
-        // 等待路由器准备就绪（在测试环境中跳过）
-        const isTestEnv = nodeProcess?.env?.NODE_ENV === 'test'
-        if (!isTestEnv) {
-          engine.logger.info('Waiting for router to be ready...')
-          await router.isReady()
-          engine.logger.info('Router is ready!')
-        }
-
-        // 记录插件安装完成
-        engine.logger.info(`${name} plugin installed successfully`, {
-          currentRoute: router.currentRoute.value?.path || '/',
-        })
-
-        // 触发插件安装完成事件
-        if (engine.events) {
-          engine.events.emit(`plugin:${name}:installed`, {
-            router,
+          // 记录插件安装开始
+          engine.logger.info(`Installing ${name} plugin...`, {
+            version,
             mode,
             base,
             routesCount: routes.length,
           })
+
+          // 创建历史管理器
+          let history
+          switch (mode) {
+            case 'hash':
+              history = createWebHashHistory(base)
+              break
+            case 'memory':
+              history = createMemoryHistory(base)
+              break
+            case 'history':
+            default:
+              history = createWebHistory(base)
+              break
+          }
+
+          // 创建路由器实例
+          const routerOptions: any = {
+            history,
+            routes,
+            linkActiveClass: linkActiveClass || 'router-link-active',
+            linkExactActiveClass: linkExactActiveClass || 'router-link-exact-active',
+          }
+          if (scrollBehavior) {
+            routerOptions.scrollBehavior = scrollBehavior
+          }
+          const router = createRouter(routerOptions)
+
+          // 手动安装路由器到 Vue 应用（避免调用 router.install）
+          // 提供路由器注入
+          vueApp.provide(ROUTER_INJECTION_SYMBOL, router)
+          vueApp.provide(ROUTE_INJECTION_SYMBOL, router.currentRoute)
+
+          // 注册路由器组件
+          vueApp.component('RouterView', RouterView)
+          vueApp.component('RouterLink', RouterLink)
+
+          // 设置全局属性
+          if (vueApp.config && vueApp.config.globalProperties) {
+            vueApp.config.globalProperties.$router = router
+            vueApp.config.globalProperties.$route = router.currentRoute
+          }
+
+          // 将路由器注册到 engine 上，使其可以通过 engine.router 访问
+          // 创建路由器适配器
+          const routerAdapter = {
+            install: (_engine: any) => {
+              // 已经安装，无需重复安装
+            },
+            push: router.push.bind(router),
+            replace: router.replace.bind(router),
+            go: router.go.bind(router),
+            back: router.back.bind(router),
+            forward: router.forward.bind(router),
+            getCurrentRoute: () => router.currentRoute,
+            getRoutes: router.getRoutes.bind(router),
+            addRoute: router.addRoute.bind(router),
+            removeRoute: router.removeRoute.bind(router),
+            hasRoute: router.hasRoute.bind(router),
+            resolve: router.resolve.bind(router),
+            beforeEach: router.beforeEach.bind(router),
+            beforeResolve: router.beforeResolve.bind(router),
+            afterEach: router.afterEach.bind(router),
+            onError: router.onError.bind(router),
+            getRouter: () => router, // 返回原始路由器实例
+          }
+
+          engine.router = routerAdapter
+
+          // 注册路由状态到 engine 状态管理
+          if (engine.state) {
+            // 同步当前路由信息
+            engine.state.set('router:currentRoute', router.currentRoute)
+            engine.state.set('router:mode', mode)
+            engine.state.set('router:base', base)
+
+            // 监听路由变化，更新状态
+            router.afterEach((to, from) => {
+              engine.state.set('router:currentRoute', to)
+
+              // 触发路由变化事件
+              if (engine.events) {
+                engine.events.emit('router:navigated', { to, from })
+              }
+            })
+          }
+
+          // 监听路由错误
+          router.onError((error) => {
+            engine.logger.error('Router navigation error:', error)
+            if (engine.events) {
+              engine.events.emit('router:error', error)
+            }
+          })
+
+          // 等待路由器准备就绪（在测试环境中跳过）
+          const isTestEnv = nodeProcess?.env?.NODE_ENV === 'test'
+          if (!isTestEnv) {
+            engine.logger.info('Waiting for router to be ready...')
+            await router.isReady()
+            engine.logger.info('Router is ready!')
+          }
+
+          // 记录插件安装完成
+          engine.logger.info(`${name} plugin installed successfully`, {
+            currentRoute: router.currentRoute.value?.path || '/',
+          })
+
+          // 触发插件安装完成事件
+          if (engine.events) {
+            engine.events.emit(`plugin:${name}:installed`, {
+              router,
+              mode,
+              base,
+              routesCount: routes.length,
+            })
+          }
+        }
+
+        // 检查Vue应用是否已经创建
+        const vueApp = engine.getApp()
+        if (vueApp) {
+          // 如果Vue应用已经创建，立即安装
+          await performInstall()
+        } else {
+          // 如果Vue应用还没创建，监听应用创建事件
+          engine.events.once('app:created', async () => {
+            try {
+              await performInstall()
+            } catch (error) {
+              engine.logger.error(`Failed to install ${name} plugin after app creation:`, error)
+            }
+          })
+
+          engine.logger.info(`${name} plugin registered, waiting for Vue app creation...`)
         }
       }
       catch (error) {

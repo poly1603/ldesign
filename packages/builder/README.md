@@ -1,70 +1,110 @@
-# LDesign Builder
+# @ldesign/builder
 
-智能前端库打包工具，基于 Rollup 的零配置多格式打包解决方案。
+🚀 **智能化前端库打包工具** - 基于 Rollup 的现代化构建解决方案
 
-## 特性
+一个专为现代前端开发设计的智能打包工具，能够自动检测项目类型、智能配置构建选项，让你专注于代码而非配置！
 
-- 🚀 **零配置启动** - 自动检测项目类型和依赖
-- 📦 **多格式输出** - 支持 ES、CJS、UMD、IIFE 格式
-- 🔧 **智能插件配置** - 根据项目自动配置最佳插件组合
-- 📝 **TypeScript 支持** - 自动生成类型声明文件
-- 🎯 **框架支持** - 内置 Vue、React、Svelte 支持
-- 🔍 **项目分析** - 深度分析项目结构和依赖关系
-- 👀 **监听模式** - 文件变化自动重新构建
-- 🎨 **美观输出** - 彩色日志和进度显示
+## ✨ 核心特性
 
-## 安装
+### 🧠 智能项目检测
+- **自动识别项目类型**：Vue、React、TypeScript、JavaScript 等
+- **智能文件分析**：自动检测 .ts、.tsx、.vue、.jsx、.css、.less、.scss 等文件
+- **依赖关系分析**：构建完整的项目依赖图谱
+
+### 🔧 现代插件系统
+- **Vue 完美支持**：使用 `unplugin-vue` 处理 Vue 单文件组件
+- **Vue JSX 支持**：使用 `unplugin-vue-jsx` 处理 Vue JSX 语法
+- **TypeScript 原生支持**：完整的 TS 编译和类型生成
+- **样式预处理器**：支持 CSS、Less、Sass、Stylus 等
+
+### 📦 多格式输出
+- **ESM 格式**：现代 ES 模块，保持目录结构
+- **CJS 格式**：CommonJS 兼容，Node.js 友好
+- **UMD 格式**：通用模块，浏览器直接可用
+- **类型声明**：自动生成 TypeScript 声明文件
+
+### 🎯 编程式 API
+- **零配置体验**：开箱即用，无需复杂配置
+- **类型安全**：完整的 TypeScript 类型定义
+- **简洁优雅**：直观的 API 设计
+
+## 🚀 安装
 
 ```bash
-# 全局安装
-npm install -g @ldesign/builder
+# 使用 pnpm（推荐）
+pnpm add @ldesign/builder
 
-# 项目安装
-npm install --save-dev @ldesign/builder
+# 使用 npm
+npm install @ldesign/builder
+
+# 使用 yarn
+yarn add @ldesign/builder
 ```
 
-## 快速开始
+## 🚀 快速开始
 
-### 1. 初始化项目配置
+### 基础使用
 
-```bash
-ldesign init
+```typescript
+import { build } from '@ldesign/builder'
+
+// 最简单的使用方式 - 零配置！
+await build({
+  input: 'src/index.ts',
+  outDir: 'dist'
+})
+
+// 系统会自动：
+// ✅ 检测项目类型
+// ✅ 配置相应插件
+// ✅ 生成多种格式
+// ✅ 创建类型声明
 ```
 
-### 2. 构建项目
+### Vue 组件库
 
-```bash
-# 基础构建
-ldesign build
+```typescript
+import { build, defineConfig } from '@ldesign/builder'
 
-# 指定入口文件
-ldesign build src/index.ts
+const config = defineConfig({
+  input: 'src/index.ts',
+  outDir: 'dist',
+  formats: ['esm', 'cjs', 'umd'],
+  dts: true,
+  external: ['vue'],
+  globals: { vue: 'Vue' },
+  name: 'MyVueLibrary'
+})
 
-# 多格式输出
-ldesign build --format es,cjs,umd
-
-# 生成类型声明文件
-ldesign build --dts
+await build(config)
 ```
 
-### 3. 监听模式
+### React 组件库
 
-```bash
-# 启动监听模式
-ldesign watch
-
-# 指定入口文件监听
-ldesign watch src/index.ts
+```typescript
+await build({
+  input: 'src/index.tsx',
+  outDir: 'dist',
+  formats: ['esm', 'cjs'],
+  dts: true,
+  external: ['react', 'react-dom'],
+  globals: {
+    react: 'React',
+    'react-dom': 'ReactDOM'
+  }
+})
 ```
 
-### 4. 项目分析
+### TypeScript 工具库
 
-```bash
-# 分析当前项目
-ldesign analyze
-
-# 分析指定目录
-ldesign analyze ./src
+```typescript
+await build({
+  input: 'src/index.ts',
+  outDir: 'dist',
+  formats: ['esm', 'cjs'],
+  dts: true,
+  minify: true
+})
 ```
 
 ## 配置文件

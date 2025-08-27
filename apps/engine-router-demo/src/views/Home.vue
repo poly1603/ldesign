@@ -1,8 +1,8 @@
 <template>
   <div class="home">
     <div class="hero">
-      <h2>🎉 欢迎使用Engine Router Demo</h2>
-      <p>这是一个展示@ldesign/engine与@ldesign/router集成的示例应用</p>
+      <h2>🎉 {{ $t('home.welcome') }}</h2>
+      <p>{{ $t('home.description') }}</p>
     </div>
 
     <div class="features-grid">
@@ -22,18 +22,20 @@
       </div>
 
       <div class="feature-card">
-        <h3>🔧 扩展架构</h3>
-        <p>模块化的扩展系统，保持核心代码纯净，扩展功能完全隔离</p>
+        <h3>🔧 插件架构</h3>
+        <p>基于插件的集成方式，通过createRouterEnginePlugin实现Router功能</p>
       </div>
     </div>
 
     <div class="demo-info">
       <h3>📋 当前配置</h3>
       <ul>
+        <li><strong>集成方式:</strong> createRouterEnginePlugin</li>
         <li><strong>路由模式:</strong> {{ routerMode }}</li>
+        <li><strong>预设配置:</strong> SPA</li>
         <li><strong>Engine集成:</strong> ✅ 成功</li>
         <li><strong>Router功能:</strong> ✅ 完整</li>
-        <li><strong>组件注册:</strong> ✅ 正常</li>
+        <li><strong>组件注册:</strong> ✅ 自动注册</li>
         <li><strong>动画效果:</strong> ✅ RouterView内置动画</li>
       </ul>
       <p style="margin-top: 1rem; color: #28a745; font-weight: bold;">

@@ -128,10 +128,17 @@ export class RollupBuilder {
     catch (error) {
       const buildError: BuildError = {
         message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        file: undefined,
-        line: undefined,
-        column: undefined,
+      }
+
+      if (error instanceof Error) {
+        if (error.stack)
+          buildError.stack = error.stack
+        if ('file' in error && error.file)
+          buildError.file = String(error.file)
+        if ('line' in error && error.line)
+          buildError.line = Number(error.line)
+        if ('column' in error && error.column)
+          buildError.column = Number(error.column)
       }
 
       errors.push(buildError)
@@ -248,10 +255,10 @@ export class RollupBuilder {
                 outputs: [],
                 errors: [{
                   message: event.error.message,
-                  stack: event.error.stack,
-                  file: event.error.loc?.file,
-                  line: event.error.loc?.line,
-                  column: event.error.loc?.column,
+                  ...(event.error.stack && { stack: event.error.stack }),
+                  ...(event.error.loc?.file && { file: event.error.loc.file }),
+                  ...(event.error.loc?.line && { line: event.error.loc.line }),
+                  ...(event.error.loc?.column && { column: event.error.loc.column }),
                 }],
                 warnings: [],
                 stats: {
@@ -299,10 +306,11 @@ export class RollupBuilder {
   ): RollupOptions {
     const input = this.resolveInput(scanResult, buildOptions)
 
+    const external = this.resolveExternal(scanResult, buildOptions)
     const rollupOptions: RollupOptions = {
       input,
       plugins: pluginConfig.plugins,
-      external: this.resolveExternal(scanResult, buildOptions),
+      ...(external && { external }),
       onwarn: (warning) => {
         logger.warn(`Rollup警告: ${warning.message}`)
       },
@@ -380,21 +388,45 @@ export class RollupBuilder {
     buildOptions: BuildOptions,
   ): OutputOptions[] {
     const outputs: OutputOptions[] = []
-    const outDir = buildOptions.outDir || 'dist'
+    const baseOutDir = buildOptions.outDir || 'dist'
     const formats = (buildOptions.formats || ['esm', 'cjs']) as OutputFormat[]
 
     for (const format of formats) {
+      const formatDir = this.getFormatOutputDir(format, baseOutDir)
+      const formatSpecificOptions = this.getFormatSpecificOptions(format, scanResult, buildOptions)
+      const rollupFormat = this.mapToRollupFormat(format)
       const output: OutputOptions = {
-        dir: outDir,
-        format: this.mapToRollupFormat(format),
+        dir: formatDir,
+        format: rollupFormat,
         sourcemap: buildOptions.sourcemap !== false,
-        ...this.getFormatSpecificOptions(format, scanResult, buildOptions),
+        // 保持目录结构（除了 UMD 和 IIFE 格式）
+        preserveModules: format !== 'umd' && format !== 'iife',
+        preserveModulesRoot: 'src',
+        ...formatSpecificOptions,
       }
 
       outputs.push(output)
     }
 
     return outputs
+  }
+
+  /**
+   * 获取格式输出目录
+   */
+  private getFormatOutputDir(format: OutputFormat, baseOutDir: string): string {
+    switch (format) {
+      case 'esm':
+        return `${baseOutDir}/esm`
+      case 'cjs':
+        return `${baseOutDir}/cjs`
+      case 'umd':
+        return `${baseOutDir}/umd`
+      case 'iife':
+        return `${baseOutDir}/iife`
+      default:
+        return baseOutDir
+    }
   }
 
   /**
@@ -409,23 +441,22 @@ export class RollupBuilder {
 
     switch (format) {
       case 'esm':
-        options.entryFileNames = '[name].esm.js'
-        options.chunkFileNames = '[name]-[hash].esm.js'
+        // ESM 格式特定配置
         break
 
       case 'cjs':
-        options.entryFileNames = '[name].cjs.js'
-        options.chunkFileNames = '[name]-[hash].cjs.js'
         options.exports = 'auto'
         break
 
       case 'umd':
+        // UMD 格式不保持模块结构，使用单文件输出
         options.entryFileNames = '[name].umd.js'
         options.name = buildOptions.name || scanResult.packageInfo?.name || 'MyLibrary'
         options.globals = buildOptions.globals || {}
         break
 
       case 'iife':
+        // IIFE 格式不保持模块结构，使用单文件输出
         options.entryFileNames = '[name].iife.js'
         options.name = buildOptions.name || scanResult.packageInfo?.name || 'MyLibrary'
         options.globals = buildOptions.globals || {}
@@ -438,10 +469,10 @@ export class RollupBuilder {
   /**
    * 将内部格式映射到 Rollup 的格式
    */
-  private mapToRollupFormat(format: OutputFormat): OutputOptions['format'] {
+  private mapToRollupFormat(format: OutputFormat): NonNullable<OutputOptions['format']> {
     if (format === 'esm')
       return 'es'
-    return format as OutputOptions['format']
+    return format as NonNullable<OutputOptions['format']>
   }
 
   /**

@@ -41,12 +41,7 @@ export {
 
 // 导出组件
 export {
-  LanguageButton,
-  LanguageDetector,
   LanguageSwitcher,
-  TranslationForm,
-  TranslationProvider,
-  TranslationText,
 } from './components'
 
 // 导出组合式 API

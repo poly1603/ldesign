@@ -1,15 +1,22 @@
 <template>
   <div id="app">
     <header class="app-header">
-      <h1>🚀 Engine Router Demo</h1>
-      <p>演示Engine与Router的集成使用</p>
+      <div class="header-top">
+        <div class="header-content">
+          <h1>🚀 Engine Router Demo</h1>
+          <p>演示Engine与Router + I18n的集成使用</p>
+        </div>
+        <div class="language-switcher">
+          <LanguageSwitcher />
+        </div>
+      </div>
     </header>
 
     <nav class="app-nav">
-      <RouterLink to="/" class="nav-link">首页</RouterLink>
-      <RouterLink to="/about" class="nav-link">关于</RouterLink>
-      <RouterLink to="/features" class="nav-link">功能特性</RouterLink>
-      <RouterLink to="/config" class="nav-link">配置示例</RouterLink>
+      <RouterLink to="/" class="nav-link">{{ $t('nav.home') }}</RouterLink>
+      <RouterLink to="/about" class="nav-link">{{ $t('nav.about') }}</RouterLink>
+      <RouterLink to="/features" class="nav-link">{{ $t('nav.features') }}</RouterLink>
+      <RouterLink to="/config" class="nav-link">{{ $t('nav.config') }}</RouterLink>
     </nav>
 
     <main class="app-main">
@@ -23,7 +30,10 @@
 </template>
 
 <script setup lang="ts">
-import { RouterLink, RouterView } from '@ldesign/router'
+import { LanguageSwitcher } from '@ldesign/i18n'
+
+// RouterLink和RouterView组件由Engine Router插件自动注册，无需手动导入
+// LanguageSwitcher组件从@ldesign/i18n导入
 </script>
 
 <style scoped>
@@ -38,7 +48,23 @@ import { RouterLink, RouterView } from '@ldesign/router'
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding: 2rem;
-  text-align: center;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header-content {
+  text-align: left;
+}
+
+.language-switcher {
+  display: flex;
+  align-items: center;
 }
 
 .app-header h1 {

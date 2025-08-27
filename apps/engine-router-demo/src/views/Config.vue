@@ -28,33 +28,37 @@
       </section>
 
       <section class="config-section">
-        <h3>Router配置</h3>
+        <h3>Router插件配置</h3>
         <div class="code-block">
-          <pre><code>const engine = createEngine({
-  router: {
-    routes: [...],
-    mode: 'history',
-    base: '/',
-    preset: 'spa',
-    preload: {
-      strategy: 'hover',
-      enabled: true,
-    },
-    cache: {
-      strategy: 'memory',
-      enabled: true,
-    },
-    animation: {
-      type: 'fade',
-      enabled: true,
-    },
-    performance: {
-      enableLazyLoading: true,
-      enableCodeSplitting: true,
-      enablePrefetch: true,
-    },
+          <pre><code>import { createRouterEnginePlugin } from '@ldesign/router'
+
+// 创建Router插件
+const routerPlugin = createRouterEnginePlugin({
+  routes: [...],
+  mode: 'history',
+  base: '/',
+  preset: 'spa',
+  preload: {
+    strategy: 'hover',
+    enabled: true,
   },
-})</code></pre>
+  cache: {
+    strategy: 'memory',
+    enabled: true,
+  },
+  animation: {
+    type: 'fade',
+    enabled: true,
+  },
+  performance: {
+    enableLazyLoading: true,
+    enableCodeSplitting: true,
+    enablePrefetch: true,
+  },
+})
+
+// 安装到Engine
+await engine.use(routerPlugin)</code></pre>
         </div>
       </section>
 
@@ -80,22 +84,34 @@
         <h3>完整示例</h3>
         <div class="code-block">
           <pre><code>import { createEngine } from '@ldesign/engine'
+import { createRouterEnginePlugin } from '@ldesign/router'
 import App from './App.vue'
 import { routes } from './router'
 
-const engine = createEngine({
-  config: {
-    debug: process.env.NODE_ENV === 'development',
-    environment: process.env.NODE_ENV,
-  },
-  router: {
+async function main() {
+  // 创建Engine实例
+  const engine = createEngine({
+    config: {
+      debug: process.env.NODE_ENV === 'development',
+      environment: process.env.NODE_ENV,
+    },
+  })
+
+  // 创建Router插件
+  const routerPlugin = createRouterEnginePlugin({
     routes,
     preset: 'spa',
     mode: 'history',
-  },
-})
+  })
 
-engine.createApp(App).mount('#app')</code></pre>
+  // 安装Router插件
+  await engine.use(routerPlugin)
+
+  // 创建并挂载应用
+  engine.createApp(App).mount('#app')
+}
+
+main().catch(console.error)</code></pre>
         </div>
       </section>
     </div>

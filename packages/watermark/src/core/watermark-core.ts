@@ -43,6 +43,15 @@ export class WatermarkCore {
   private animationEngine: AnimationEngine
   private initialized = false
 
+  // 性能优化：添加缓存
+  private renderCache = new Map<string, HTMLElement[]>()
+  private configCache = new Map<string, WatermarkConfig>()
+  private contextCache = new Map<string, any>()
+
+  // 资源管理
+  private cleanupTasks: Array<() => void> = []
+  private isDisposed = false
+
   constructor() {
     this.configManager = new ConfigManager()
     this.instanceManager = new InstanceManager()
@@ -65,7 +74,19 @@ export class WatermarkCore {
       easing: 'ease-in-out',
     })
 
-    this.init()
+    // 延迟初始化，避免构造函数中的异步操作
+    this.initAsync()
+  }
+
+  /**
+   * 异步初始化
+   */
+  private async initAsync(): Promise<void> {
+    try {
+      await this.init()
+    } catch (error) {
+      console.error('Failed to initialize WatermarkCore:', error)
+    }
   }
 
   /**
@@ -118,32 +139,50 @@ export class WatermarkCore {
     options: CreateInstanceOptions = {},
   ): Promise<WatermarkInstance> {
     this.ensureInitialized()
+    this.ensureNotDisposed()
 
     try {
-      // 合并配置，确保content不为undefined
-      const fullConfig: WatermarkConfig = {
-        ...config,
-        container,
-        content: config.content || 'Watermark',
-      }
+      // 性能优化：检查缓存
+      const configKey = this.generateConfigKey(config)
+      let validatedConfig = this.configCache.get(configKey)
 
-      // 验证配置
-      const validatedConfig = await this.configManager.validate(fullConfig)
+      if (!validatedConfig) {
+        // 合并配置，确保content不为undefined
+        const fullConfig: WatermarkConfig = {
+          ...config,
+          container,
+          content: config.content || 'Watermark',
+        }
+
+        // 验证配置
+        validatedConfig = await this.configManager.validate(fullConfig)
+
+        // 缓存验证后的配置
+        this.configCache.set(configKey, validatedConfig)
+      }
 
       // 生成实例ID
       const instanceId = generateId('watermark')
 
-      // 创建渲染器
+      // 创建渲染器（带缓存）
       const renderer = this.rendererFactory.createRenderer(validatedConfig)
 
-      // 创建渲染上下文
-      const renderContext = {
-        containerRect: container.getBoundingClientRect(),
-        devicePixelRatio: window.devicePixelRatio || 1,
-        supportsCanvas: !!document.createElement('canvas').getContext,
-        supportsSVG: !!document.createElementNS,
-        userAgent: navigator.userAgent,
-        isMobile: /Mobile|Android|iPhone|iPad/.test(navigator.userAgent),
+      // 创建渲染上下文（带缓存）
+      const contextKey = this.generateContextKey(container)
+      let renderContext = this.contextCache.get(contextKey)
+
+      if (!renderContext) {
+        renderContext = {
+          containerRect: container.getBoundingClientRect(),
+          devicePixelRatio: window.devicePixelRatio || 1,
+          supportsCanvas: !!document.createElement('canvas').getContext,
+          supportsSVG: !!document.createElementNS,
+          userAgent: navigator.userAgent,
+          isMobile: /Mobile|Android|iPhone|iPad/.test(navigator.userAgent),
+        }
+
+        // 缓存渲染上下文
+        this.contextCache.set(contextKey, renderContext)
       }
 
       // 创建实例对象
@@ -486,11 +525,27 @@ export class WatermarkCore {
     if (!this.initialized)
       return
 
+    // 标记为已销毁
+    this.isDisposed = true
+
     // 销毁所有实例
     const instances = this.instanceManager.getAll()
     for (const instance of instances) {
       await this.destroy(instance.id)
     }
+
+    // 执行清理任务
+    this.cleanupTasks.forEach(cleanup => {
+      try {
+        cleanup()
+      } catch (error) {
+        console.warn('Cleanup task failed:', error)
+      }
+    })
+    this.cleanupTasks.length = 0
+
+    // 清理缓存
+    this.clearCaches()
 
     // 清理各个管理器
     await this.animationEngine.dispose()
@@ -511,6 +566,77 @@ export class WatermarkCore {
         WatermarkErrorCode.UNKNOWN_ERROR,
         ErrorSeverity.HIGH,
       )
+    }
+  }
+
+  /**
+   * 确保系统未被销毁
+   */
+  private ensureNotDisposed(): void {
+    if (this.isDisposed) {
+      throw new WatermarkError(
+        'WatermarkCore has been disposed',
+        WatermarkErrorCode.INSTANCE_DISPOSED,
+        ErrorSeverity.CRITICAL,
+      )
+    }
+  }
+
+  /**
+   * 生成配置缓存键
+   */
+  private generateConfigKey(config: Partial<WatermarkConfig>): string {
+    return JSON.stringify({
+      content: config.content,
+      style: config.style,
+      layout: config.layout,
+      renderMode: config.renderMode,
+      security: config.security,
+      responsive: config.responsive,
+      animation: config.animation,
+    })
+  }
+
+  /**
+   * 生成上下文缓存键
+   */
+  private generateContextKey(container: HTMLElement): string {
+    const rect = container.getBoundingClientRect()
+    return `${rect.width}x${rect.height}-${window.devicePixelRatio}-${navigator.userAgent.slice(0, 50)}`
+  }
+
+  /**
+   * 清理缓存
+   */
+  private clearCaches(): void {
+    this.renderCache.clear()
+    this.configCache.clear()
+    this.contextCache.clear()
+  }
+
+  /**
+   * 清理过期缓存
+   */
+  private cleanupExpiredCaches(): void {
+    // 限制缓存大小，防止内存泄漏
+    const maxCacheSize = 100
+
+    if (this.configCache.size > maxCacheSize) {
+      const entries = Array.from(this.configCache.entries())
+      const toDelete = entries.slice(0, entries.length - maxCacheSize)
+      toDelete.forEach(([key]) => this.configCache.delete(key))
+    }
+
+    if (this.contextCache.size > maxCacheSize) {
+      const entries = Array.from(this.contextCache.entries())
+      const toDelete = entries.slice(0, entries.length - maxCacheSize)
+      toDelete.forEach(([key]) => this.contextCache.delete(key))
+    }
+
+    if (this.renderCache.size > maxCacheSize) {
+      const entries = Array.from(this.renderCache.entries())
+      const toDelete = entries.slice(0, entries.length - maxCacheSize)
+      toDelete.forEach(([key]) => this.renderCache.delete(key))
     }
   }
 
@@ -535,17 +661,32 @@ export class WatermarkCore {
   // }
 
   private async renderInstance(instance: WatermarkInstance): Promise<void> {
-    // 清理旧元素
-    if (instance.elements.length > 0) {
-      await instance.renderer.destroy(instance.elements)
-      instance.elements = []
-    }
+    // 性能优化：检查渲染缓存
+    const renderKey = this.generateRenderKey(instance)
+    let elements = this.renderCache.get(renderKey)
 
-    // 渲染新元素
-    const elements = await instance.renderer.render(
-      instance.config,
-      instance.renderContext,
-    )
+    if (!elements) {
+      // 清理旧元素
+      if (instance.elements.length > 0) {
+        await instance.renderer.destroy(instance.elements)
+        instance.elements = []
+      }
+
+      // 渲染新元素
+      elements = await instance.renderer.render(
+        instance.config,
+        instance.renderContext,
+      )
+
+      // 缓存渲染结果
+      this.renderCache.set(renderKey, elements)
+
+      // 定期清理缓存
+      this.cleanupExpiredCaches()
+    } else {
+      // 使用缓存的元素，但需要克隆以避免DOM冲突
+      elements = elements.map(el => el.cloneNode(true) as HTMLElement)
+    }
 
     instance.elements = elements
 
@@ -553,6 +694,13 @@ export class WatermarkCore {
     elements.forEach((element) => {
       instance.container.appendChild(element)
     })
+  }
+
+  /**
+   * 生成渲染缓存键
+   */
+  private generateRenderKey(instance: WatermarkInstance): string {
+    return `${instance.id}-${JSON.stringify(instance.config)}-${instance.renderContext.containerRect.width}x${instance.renderContext.containerRect.height}`
   }
 
   private async setupAnimations(instance: WatermarkInstance): Promise<void> {
