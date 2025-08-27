@@ -136,10 +136,10 @@ await cache.get('key')
 
 ```typescript
 interface IStorageEngine {
-  set(key: string, value: any, options?: any): Promise<void>
-  get(key: string): Promise<any>
-  remove(key: string): Promise<void>
-  clear(): Promise<void>
+  set: (key: string, value: any, options?: any) => Promise<void>
+  get: (key: string) => Promise<any>
+  remove: (key: string) => Promise<void>
+  clear: () => Promise<void>
 }
 ```
 
@@ -156,11 +156,11 @@ const engine = await StorageEngineFactory.create('localStorage', config)
 事件驱动的架构，支持监听缓存操作：
 
 ```typescript
-cache.on('set', event => {
+cache.on('set', (event) => {
   console.log('数据已设置:', event)
 })
 
-cache.on('get', event => {
+cache.on('get', (event) => {
   console.log('数据已获取:', event)
 })
 ```
@@ -254,7 +254,8 @@ try {
   if (value !== null) {
     // 处理数据
   }
-} catch (error) {
+}
+catch (error) {
   console.error('缓存操作失败:', error)
 }
 

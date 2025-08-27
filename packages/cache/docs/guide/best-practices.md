@@ -46,7 +46,8 @@ async function safeGetCache(key: string, defaultValue: any = null) {
   try {
     const value = await cache.get(key)
     return value !== null ? value : defaultValue
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`缓存获取失败: ${key}`, error)
     return defaultValue
   }
@@ -56,7 +57,8 @@ async function safeSetCache(key: string, value: any, options?: any) {
   try {
     await cache.set(key, value, options)
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`缓存设置失败: ${key}`, error)
     return false
   }
@@ -83,7 +85,8 @@ class LayeredCache {
   async get(key: string) {
     // 从 L1 缓存开始查找
     let value = await this.l1Cache.get(key)
-    if (value !== null) return value
+    if (value !== null)
+      return value
 
     // L2 缓存
     value = await this.l2Cache.get(key)
@@ -244,7 +247,7 @@ class TabSyncCache {
 // ✅ 推荐：与服务器数据同步
 class ServerSyncCache {
   private cache: CacheManager
-  private syncQueue: Array<{ key: string; value: any }> = []
+  private syncQueue: Array<{ key: string, value: any }> = []
 
   constructor() {
     this.cache = createCache()
@@ -266,7 +269,8 @@ class ServerSyncCache {
   }
 
   private async syncToServer() {
-    if (this.syncQueue.length === 0) return
+    if (this.syncQueue.length === 0)
+      return
 
     try {
       await fetch('/api/cache/sync', {
@@ -277,7 +281,8 @@ class ServerSyncCache {
 
       // 清空同步队列
       this.syncQueue = []
-    } catch (error) {
+    }
+    catch (error) {
       console.error('服务器同步失败:', error)
     }
   }
@@ -320,7 +325,8 @@ class SecureCache {
   async getSensitive(key: string) {
     try {
       return await this.cache.get(key)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('敏感数据获取失败:', error)
       return null
     }
@@ -372,11 +378,12 @@ class CacheMonitor {
   }
 
   private setupMonitoring() {
-    this.cache.on('get', event => {
+    this.cache.on('get', (event) => {
       this.metrics.totalOperations++
       if (event.hit) {
         this.metrics.hits++
-      } else {
+      }
+      else {
         this.metrics.misses++
       }
     })
@@ -413,7 +420,7 @@ class CacheDebugger {
 
   private enableDebugMode() {
     // 监听所有缓存操作
-    this.cache.on('*', event => {
+    this.cache.on('*', (event) => {
       console.group(`[Cache] ${event.type}`)
       console.log('Key:', event.key)
       console.log('Engine:', event.engine)
@@ -471,7 +478,7 @@ class MemorySafeCache {
     // 检查内存使用
     const stats = await this.cache.getEngineStats('memory')
     if (stats.usagePercentage > 80) {
-      console.warn('内存缓存使用率过高:', stats.usagePercentage + '%')
+      console.warn('内存缓存使用率过高:', `${stats.usagePercentage}%`)
       // 可以触发额外的清理逻辑
     }
   }
@@ -787,7 +794,8 @@ class AntiPenetrationCache {
       setTimeout(() => {
         this.nullCache.delete(key)
       }, 5 * 60 * 1000) // 5分钟后重试
-    } else {
+    }
+    else {
       await this.cache.set(key, value)
     }
 

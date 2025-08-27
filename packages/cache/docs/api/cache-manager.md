@@ -307,7 +307,8 @@ const isIndexedDBAvailable = await cache.isEngineAvailable('indexedDB')
 if (isIndexedDBAvailable) {
   // 使用 IndexedDB 存储大数据
   await cache.set('large-dataset', data, { engine: 'indexedDB' })
-} else {
+}
+else {
   // 降级到 localStorage
   await cache.set('large-dataset', data, { engine: 'localStorage' })
 }
@@ -381,17 +382,17 @@ onUnmounted(async () => {
 
 ```typescript
 // 监听设置事件
-cache.on('set', event => {
+cache.on('set', (event) => {
   console.log('数据已设置:', event.key, event.value)
 })
 
 // 监听获取事件
-cache.on('get', event => {
+cache.on('get', (event) => {
   console.log('数据已获取:', event.key, event.hit)
 })
 
 // 监听错误事件
-cache.on('error', event => {
+cache.on('error', (event) => {
   console.error('缓存错误:', event.error)
 })
 ```

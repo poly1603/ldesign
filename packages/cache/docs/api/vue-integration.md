@@ -279,9 +279,9 @@ onUnmounted(() => {
 ### 基础用法
 
 ```typescript
+import { CacheProvider } from '@ldesign/cache/vue'
 // main.ts
 import { createApp } from 'vue'
-import { CacheProvider } from '@ldesign/cache/vue'
 
 const app = createApp(App)
 

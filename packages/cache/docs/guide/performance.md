@@ -67,7 +67,8 @@ class BatchOptimizedCache {
   }
 
   private async flushBatch() {
-    if (this.batchQueue.size === 0) return
+    if (this.batchQueue.size === 0)
+      return
 
     const operations = Array.from(this.batchQueue.entries()).map(([key, value]) =>
       this.cache.set(key, value)
@@ -101,7 +102,8 @@ class PreloadCache {
   // 预加载工作器
   private startPreloadWorker() {
     setInterval(async () => {
-      if (this.preloadQueue.size === 0) return
+      if (this.preloadQueue.size === 0)
+        return
 
       // 在空闲时间预加载
       if (this.isIdle()) {
@@ -110,7 +112,8 @@ class PreloadCache {
 
         try {
           await this.preloadData(key)
-        } catch (error) {
+        }
+        catch (error) {
           console.warn('预加载失败:', key, error)
         }
       }
@@ -207,7 +210,7 @@ class MemoryMonitor {
       const stats = await this.cache.getEngineStats('memory')
 
       if (stats.usagePercentage > this.memoryThreshold) {
-        console.warn('内存使用率过高:', stats.usagePercentage + '%')
+        console.warn('内存使用率过高:', `${stats.usagePercentage}%`)
         await this.performCleanup()
       }
     }, 30 * 1000) // 30秒检查一次
@@ -258,7 +261,8 @@ class ConcurrencyControlledCache {
           try {
             const result = await operation()
             resolve(result)
-          } catch (error) {
+          }
+          catch (error) {
             reject(error)
           }
         })
@@ -270,7 +274,8 @@ class ConcurrencyControlledCache {
     try {
       const result = await operation()
       return result
-    } finally {
+    }
+    finally {
       this.activeOperations--
 
       // 处理队列中的下一个操作
@@ -363,7 +368,8 @@ class PerformanceMonitor {
 
         this.recordOperation('set', duration, options?.engine)
         return result
-      } catch (error) {
+      }
+      catch (error) {
         this.recordError('set', options?.engine)
         throw error
       }
@@ -533,15 +539,19 @@ const cache = createCache({
 
     deserialize: (value: string) => {
       // 尝试快速解析
-      if (value === 'true') return true
-      if (value === 'false') return false
+      if (value === 'true')
+        return true
+      if (value === 'false')
+        return false
 
       const num = Number(value)
-      if (!isNaN(num)) return num
+      if (!Number.isNaN(num))
+        return num
 
       try {
         return JSON.parse(value)
-      } catch {
+      }
+      catch {
         return value
       }
     },
@@ -690,7 +700,7 @@ class WorkerOptimizedCache {
   }
 
   private setupWorkerCommunication() {
-    this.worker.onmessage = event => {
+    this.worker.onmessage = (event) => {
       const { type, key, result, error } = event.data
 
       if (type === 'compression-complete') {
@@ -711,7 +721,7 @@ class WorkerOptimizedCache {
 }
 
 // cache-worker.js
-self.onmessage = function (event) {
+globalThis.onmessage = function (event) {
   const { type, key, data } = event.data
 
   if (type === 'compress') {
@@ -719,13 +729,14 @@ self.onmessage = function (event) {
       // 在 Worker 中执行压缩
       const compressed = compressData(data)
 
-      self.postMessage({
+      globalThis.postMessage({
         type: 'compression-complete',
         key,
         result: compressed,
       })
-    } catch (error) {
-      self.postMessage({
+    }
+    catch (error) {
+      globalThis.postMessage({
         type: 'compression-error',
         key,
         error: error.message,
@@ -1014,7 +1025,8 @@ class NetworkAwareCache {
       try {
         await this.syncToServer(originalKey, data)
         await this.cache.remove(pendingKey)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('同步失败:', originalKey, error)
       }
     }

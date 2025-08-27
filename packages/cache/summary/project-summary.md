@@ -146,7 +146,7 @@ export function isBrowser(): boolean {
 }
 
 // 定时器兼容
-const setIntervalFn = typeof window !== 'undefined' ? window.setInterval : global.setInterval
+const setIntervalFn = typeof window !== 'undefined' ? window.setInterval : globalThis.setInterval
 ```
 
 ### 挑战 3: 类型安全与灵活性

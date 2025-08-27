@@ -35,9 +35,11 @@ export class MemoryEngine extends BaseStorageEngine {
    */
   private startCleanupTimer(interval: number): void {
     const setIntervalFn
-      = typeof window !== 'undefined' ? window.setInterval : global.setInterval
+      = typeof window !== 'undefined' ? window.setInterval : globalThis.setInterval
     this.cleanupTimer = setIntervalFn(() => {
-      this.cleanup().catch(console.error)
+      this.cleanup().catch((error) => {
+        console.error(error)
+      })
     }, interval) as unknown as number
   }
 
@@ -277,7 +279,7 @@ export class MemoryEngine extends BaseStorageEngine {
       const clearIntervalFn
         = typeof window !== 'undefined'
           ? window.clearInterval
-          : global.clearInterval
+          : globalThis.clearInterval
       clearIntervalFn(this.cleanupTimer)
       this.cleanupTimer = undefined
     }

@@ -1,6 +1,7 @@
 import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
 
 export default createRollupConfig({
+  // eslint-disable-next-line node/prefer-global/process
   packageDir: process.cwd(),
   packageName: 'LDesignCache',
   formats: ['es', 'cjs', 'umd'],

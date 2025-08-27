@@ -11,7 +11,7 @@ vi.mock('../../src/engines/indexeddb-engine', () => ({
   IndexedDBEngine: {
     create: vi.fn().mockResolvedValue(
       new (class MockIndexedDBEngine {
-        async set() {}
+        async set() { }
         async get() {
           return null
         }
@@ -20,8 +20,8 @@ vi.mock('../../src/engines/indexeddb-engine', () => ({
           return false
         }
 
-        async remove() {}
-        async clear() {}
+        async remove() { }
+        async clear() { }
         async keys() {
           return []
         }
@@ -87,14 +87,12 @@ describe('storageEngineFactory', () => {
       expect(sessionEngine).toBeInstanceOf(SessionStorageEngine)
 
       const cookieEngine = await StorageEngineFactory.create('cookie', {
-        enabled: true,
         domain: '.test.com',
       })
       expect(cookieEngine).toBeInstanceOf(CookieEngine)
 
       const memoryEngine = await StorageEngineFactory.create('memory', {
-        enabled: true,
-        maxItems: 100,
+        maxSize: 100 * 1024, // 100KB
       })
       expect(memoryEngine).toBeInstanceOf(MemoryEngine)
     })
@@ -139,8 +137,8 @@ describe('storageEngineFactory', () => {
 
     it('should handle errors gracefully', () => {
       // Mock window to be undefined to simulate server environment
-      const originalWindow = global.window
-      delete (global as any).window
+      const originalWindow = globalThis.window
+      delete (globalThis as any).window
 
       expect(StorageEngineFactory.isAvailable('localStorage')).toBe(false)
       expect(StorageEngineFactory.isAvailable('sessionStorage')).toBe(false)
@@ -148,34 +146,34 @@ describe('storageEngineFactory', () => {
       expect(StorageEngineFactory.isAvailable('memory')).toBe(true)
 
       // Restore window
-      global.window = originalWindow
+      globalThis.window = originalWindow
     })
 
     it('should handle document being undefined', () => {
-      const originalDocument = global.document
-      delete (global as any).document
+      const originalDocument = globalThis.document
+      delete (globalThis as any).document
 
       expect(StorageEngineFactory.isAvailable('cookie')).toBe(false)
 
       // Restore document
-      global.document = originalDocument
+      globalThis.document = originalDocument
     })
 
     it('should handle null storage objects', () => {
-      const originalLocalStorage = global.window.localStorage
-      const originalSessionStorage = global.window.sessionStorage
-      const originalIndexedDB = global.window.indexedDB
+      const originalLocalStorage = globalThis.window.localStorage
+      const originalSessionStorage = globalThis.window.sessionStorage
+      const originalIndexedDB = globalThis.window.indexedDB
 
       // Mock null storage
-      Object.defineProperty(global.window, 'localStorage', {
+      Object.defineProperty(globalThis.window, 'localStorage', {
         value: null,
         writable: true,
       })
-      Object.defineProperty(global.window, 'sessionStorage', {
+      Object.defineProperty(globalThis.window, 'sessionStorage', {
         value: null,
         writable: true,
       })
-      Object.defineProperty(global.window, 'indexedDB', {
+      Object.defineProperty(globalThis.window, 'indexedDB', {
         value: null,
         writable: true,
       })
@@ -185,15 +183,15 @@ describe('storageEngineFactory', () => {
       expect(StorageEngineFactory.isAvailable('indexedDB')).toBe(false)
 
       // Restore storage objects
-      Object.defineProperty(global.window, 'localStorage', {
+      Object.defineProperty(globalThis.window, 'localStorage', {
         value: originalLocalStorage,
         writable: true,
       })
-      Object.defineProperty(global.window, 'sessionStorage', {
+      Object.defineProperty(globalThis.window, 'sessionStorage', {
         value: originalSessionStorage,
         writable: true,
       })
-      Object.defineProperty(global.window, 'indexedDB', {
+      Object.defineProperty(globalThis.window, 'indexedDB', {
         value: originalIndexedDB,
         writable: true,
       })

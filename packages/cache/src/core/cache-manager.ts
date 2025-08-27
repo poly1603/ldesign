@@ -85,7 +85,9 @@ export class CacheManager implements ICacheManager {
   private startCleanupTimer(): void {
     if (this.options.cleanupInterval && this.options.cleanupInterval > 0) {
       this.cleanupTimer = window.setInterval(() => {
-        this.cleanup().catch(console.error)
+        this.cleanup().catch((error) => {
+          console.error(error)
+        })
       }, this.options.cleanupInterval)
     }
   }
@@ -123,6 +125,7 @@ export class CacheManager implements ICacheManager {
 
       // 调试输出策略选择结果
       if (this.options.debug) {
+        // eslint-disable-next-line no-console
         console.log(
           `[CacheManager] Strategy selected engine: ${result.engine}, reason: ${result.reason}, confidence: ${result.confidence}`,
         )
@@ -290,6 +293,7 @@ export class CacheManager implements ICacheManager {
     this.eventEmitter.emit(type, event)
 
     if (this.options.debug) {
+      // eslint-disable-next-line no-console
       console.log(`[CacheManager] ${type}:`, event)
     }
   }
@@ -321,6 +325,7 @@ export class CacheManager implements ICacheManager {
     this.eventEmitter.emit('strategy', event)
 
     if (this.options.debug) {
+      // eslint-disable-next-line no-console
       console.log(`[CacheManager] strategy:`, event)
     }
   }

@@ -24,7 +24,7 @@ if (!isAvailable) {
 
 // 检查存储配额
 const stats = await cache.getEngineStats('localStorage')
-console.log('存储使用情况:', stats.usagePercentage + '%')
+console.log('存储使用情况:', `${stats.usagePercentage}%`)
 
 // 设置备用引擎
 const cache = createCache({
@@ -33,7 +33,7 @@ const cache = createCache({
 })
 
 // 监听存储错误
-cache.on('error', event => {
+cache.on('error', (event) => {
   if (event.type === 'quota-exceeded') {
     console.warn('存储配额超限，切换到备用引擎')
   }
@@ -74,7 +74,8 @@ class PerformanceOptimizedCache {
       // 100KB
       // 大数据使用 IndexedDB
       await this.cache.set(key, data, { engine: 'indexedDB' })
-    } else {
+    }
+    else {
       // 小数据使用 localStorage
       await this.cache.set(key, data, { engine: 'localStorage' })
     }
@@ -168,7 +169,7 @@ const updateUser = async (updates: any) => {
 
 ```typescript
 // 处理存储配额超限
-cache.on('error', async event => {
+cache.on('error', async (event) => {
   if (event.error.name === 'QuotaExceededError') {
     console.warn('存储配额超限，开始清理...')
 
@@ -184,7 +185,8 @@ cache.on('error', async event => {
     // 重试操作
     try {
       await cache.set(event.key, event.value, { engine: 'memory' })
-    } catch (retryError) {
+    }
+    catch (retryError) {
       console.error('重试失败:', retryError)
     }
   }
@@ -201,14 +203,16 @@ class SafeSerializationCache {
   async set(key: string, value: any, options?: any) {
     try {
       await this.cache.set(key, value, options)
-    } catch (error) {
+    }
+    catch (error) {
       if (error.message.includes('circular')) {
         console.warn('检测到循环引用，使用安全序列化')
 
         // 移除循环引用
         const safeValue = this.removeCircularReferences(value)
         await this.cache.set(key, safeValue, options)
-      } else {
+      }
+      else {
         throw error
       }
     }
@@ -258,13 +262,14 @@ class RobustAsyncCache {
       try {
         await this.cache.set(key, value, options)
         return // 成功，退出重试循环
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error
 
         if (attempt < this.retryConfig.maxRetries - 1) {
           // 等待后重试
-          const delay =
-            this.retryConfig.retryDelay * Math.pow(this.retryConfig.backoffMultiplier, attempt)
+          const delay
+            = this.retryConfig.retryDelay * this.retryConfig.backoffMultiplier ** attempt
           await new Promise(resolve => setTimeout(resolve, delay))
         }
       }
@@ -300,7 +305,7 @@ class CacheDebugger {
 
   private setupDebugListeners() {
     // 监听所有事件
-    this.cache.on('*', event => {
+    this.cache.on('*', (event) => {
       this.logEvent(event)
     })
   }
@@ -310,7 +315,7 @@ class CacheDebugger {
     console.group(`[${timestamp}] Cache Event: ${event.type}`)
     console.log('Key:', event.key)
     console.log('Engine:', event.engine)
-    console.log('Duration:', event.duration + 'ms')
+    console.log('Duration:', `${event.duration}ms`)
     console.log('Data:', event.data)
     console.groupEnd()
   }
@@ -381,7 +386,8 @@ class PerformanceAnalyzer {
         this.recordPerformance('set', key, options?.engine || 'auto', duration)
 
         return result
-      } catch (error) {
+      }
+      catch (error) {
         const duration = performance.now() - start
         this.recordPerformance('set-error', key, options?.engine || 'auto', duration)
         throw error
@@ -539,7 +545,8 @@ class EnvironmentAdapter {
       localStorage.setItem(test, test)
       localStorage.removeItem(test)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -581,7 +588,8 @@ class SecureErrorHandling {
     try {
       await this.cache.set(key, data, { encrypt: false })
       console.warn('已降级到无加密存储')
-    } catch (fallbackError) {
+    }
+    catch (fallbackError) {
       console.error('降级存储也失败:', fallbackError)
       throw fallbackError
     }
@@ -590,7 +598,8 @@ class SecureErrorHandling {
   async safeGet(key: string) {
     try {
       return await this.cache.get(key)
-    } catch (error) {
+    }
+    catch (error) {
       if (error.message.includes('decryption')) {
         console.warn('解密失败，尝试清除损坏的数据')
         await this.cache.remove(key)
@@ -618,7 +627,8 @@ class KeyManagement {
       // 使用新密钥重新加密所有数据
       await this.reencryptAllData(oldKey, newKey)
       this.setCurrentKey(newKey)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('密钥轮换失败:', error)
       // 回滚到旧密钥
       this.setCurrentKey(oldKey)
@@ -645,7 +655,8 @@ class KeyManagement {
           await this.cache.set(key, data)
           return data
         }
-      } catch {
+      }
+      catch {
         // 继续尝试下一个密钥
       }
     }
@@ -688,11 +699,13 @@ class CacheHealthChecker {
 
         if (!isAvailable) {
           report.issues.push(`${engine} 引擎不可用`)
-        } else if (stats && stats.usagePercentage > 90) {
+        }
+        else if (stats && stats.usagePercentage > 90) {
           report.issues.push(`${engine} 使用率过高: ${stats.usagePercentage}%`)
           report.recommendations.push(`清理 ${engine} 中的过期数据`)
         }
-      } catch (error) {
+      }
+      catch (error) {
         report.engines[engine] = {
           available: false,
           healthy: false,
@@ -745,7 +758,8 @@ class AutoRepair {
       // 清理过期数据
       await this.cache.cleanup()
       report.repaired.push('清理过期数据')
-    } catch (error) {
+    }
+    catch (error) {
       report.failed.push(`清理过期数据失败: ${error.message}`)
     }
 
@@ -753,7 +767,8 @@ class AutoRepair {
       // 修复损坏的索引
       await this.repairIndexes()
       report.repaired.push('修复索引')
-    } catch (error) {
+    }
+    catch (error) {
       report.failed.push(`修复索引失败: ${error.message}`)
     }
 
@@ -761,7 +776,8 @@ class AutoRepair {
       // 压缩存储空间
       await this.compactStorage()
       report.repaired.push('压缩存储空间')
-    } catch (error) {
+    }
+    catch (error) {
       report.failed.push(`压缩存储失败: ${error.message}`)
     }
 
@@ -823,7 +839,7 @@ class AutoRepair {
 4. **检查错误日志**
 
    ```typescript
-   cache.on('error', event => {
+   cache.on('error', (event) => {
      console.error('缓存错误:', event)
    })
    ```
@@ -874,7 +890,8 @@ class EmergencyRecovery {
             }
           }
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`从 ${engine} 恢复数据失败:`, error)
       }
     }

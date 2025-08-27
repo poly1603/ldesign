@@ -169,7 +169,7 @@ const memoryCache = createCache({
 })
 
 // 缓存计算结果
-const fibonacci = async (n: number): Promise<number> => {
+async function fibonacci(n: number): Promise<number> {
   const cacheKey = `fib:${n}`
 
   // 检查缓存
@@ -182,7 +182,8 @@ const fibonacci = async (n: number): Promise<number> => {
   // 计算结果
   if (n <= 1) {
     result = n
-  } else {
+  }
+  else {
     result = (await fibonacci(n - 1)) + (await fibonacci(n - 2))
   }
 
@@ -358,7 +359,7 @@ const stats = await cache.getStats()
 console.log('缓存统计:', {
   总项目数: stats.totalItems,
   总大小: stats.totalSizeFormatted,
-  命中率: stats.hitRatePercentage + '%',
+  命中率: `${stats.hitRatePercentage}%`,
   未命中次数: stats.missCount,
   过期项目: stats.expiredItems,
 })
@@ -377,7 +378,7 @@ for (const [engine, engineStats] of Object.entries(stats.engines)) {
 
 ```typescript
 // 监听缓存操作事件
-cache.on('set', event => {
+cache.on('set', (event) => {
   console.log('数据已设置:', {
     键名: event.key,
     引擎: event.engine,
@@ -386,7 +387,7 @@ cache.on('set', event => {
   })
 })
 
-cache.on('get', event => {
+cache.on('get', (event) => {
   console.log('数据已获取:', {
     键名: event.key,
     命中: event.hit,
@@ -394,11 +395,11 @@ cache.on('get', event => {
   })
 })
 
-cache.on('remove', event => {
+cache.on('remove', (event) => {
   console.log('数据已删除:', event.key)
 })
 
-cache.on('error', event => {
+cache.on('error', (event) => {
   console.error('缓存错误:', event.error)
 })
 ```
@@ -420,7 +421,8 @@ class ShoppingCart {
     const existingItem = cart.find(item => item.id === product.id)
     if (existingItem) {
       existingItem.quantity += 1
-    } else {
+    }
+    else {
       cart.push({
         id: product.id,
         name: product.name,
@@ -623,7 +625,8 @@ async function safeGetCache(key: string, defaultValue: any = null) {
   try {
     const value = await cache.get(key)
     return value !== null ? value : defaultValue
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`获取缓存失败: ${key}`, error)
     return defaultValue
   }
@@ -634,7 +637,8 @@ async function safeSetCache(key: string, value: any, options?: any) {
     await cache.set(key, value, options)
     console.log(`缓存设置成功: ${key}`)
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`缓存设置失败: ${key}`, error)
     return false
   }
@@ -649,7 +653,7 @@ const success = await safeSetCache('user-data', newUserData)
 
 ```typescript
 // 处理存储配额超限
-cache.on('error', async event => {
+cache.on('error', async (event) => {
   if (event.error.name === 'QuotaExceededError') {
     console.warn('存储配额超限，开始清理...')
 
@@ -658,7 +662,7 @@ cache.on('error', async event => {
 
     // 获取使用情况
     const stats = await cache.getEngineStats(event.engine)
-    console.log(`${event.engine} 使用率:`, stats.usagePercentage + '%')
+    console.log(`${event.engine} 使用率:`, `${stats.usagePercentage}%`)
 
     if (stats.usagePercentage > 90) {
       // 清理最久未使用的数据
@@ -669,7 +673,8 @@ cache.on('error', async event => {
     try {
       await cache.set(event.key, event.value, { engine: 'memory' })
       console.log('已切换到内存存储')
-    } catch (retryError) {
+    }
+    catch (retryError) {
       console.error('重试失败:', retryError)
     }
   }

@@ -190,35 +190,35 @@ interface IStorageEngine {
     /**
      * 设置缓存项
      */
-    setItem(key: string, value: string, ttl?: number): Promise<void>;
+    setItem: (key: string, value: string, ttl?: number) => Promise<void>;
     /**
      * 获取缓存项
      */
-    getItem(key: string): Promise<string | null>;
+    getItem: (key: string) => Promise<string | null>;
     /**
      * 删除缓存项
      */
-    removeItem(key: string): Promise<void>;
+    removeItem: (key: string) => Promise<void>;
     /**
      * 清空所有缓存项
      */
-    clear(): Promise<void>;
+    clear: () => Promise<void>;
     /**
      * 获取所有键名
      */
-    keys(): Promise<string[]>;
+    keys: () => Promise<string[]>;
     /**
      * 检查键是否存在
      */
-    hasItem(key: string): Promise<boolean>;
+    hasItem: (key: string) => Promise<boolean>;
     /**
      * 获取缓存项数量
      */
-    length(): Promise<number>;
+    length: () => Promise<number>;
     /**
      * 清理过期项
      */
-    cleanup(): Promise<void>;
+    cleanup: () => Promise<void>;
 }
 /**
  * 缓存管理器接口
@@ -227,43 +227,43 @@ interface ICacheManager {
     /**
      * 设置缓存项
      */
-    set<T = any>(key: string, value: T, options?: SetOptions): Promise<void>;
+    set: <T = any>(key: string, value: T, options?: SetOptions) => Promise<void>;
     /**
      * 获取缓存项
      */
-    get<T = any>(key: string): Promise<T | null>;
+    get: <T = any>(key: string) => Promise<T | null>;
     /**
      * 删除缓存项
      */
-    remove(key: string): Promise<void>;
+    remove: (key: string) => Promise<void>;
     /**
      * 清空所有缓存项
      */
-    clear(engine?: StorageEngine): Promise<void>;
+    clear: (engine?: StorageEngine) => Promise<void>;
     /**
      * 检查键是否存在
      */
-    has(key: string): Promise<boolean>;
+    has: (key: string) => Promise<boolean>;
     /**
      * 获取所有键名
      */
-    keys(engine?: StorageEngine): Promise<string[]>;
+    keys: (engine?: StorageEngine) => Promise<string[]>;
     /**
      * 获取缓存项元数据
      */
-    getMetadata(key: string): Promise<CacheMetadata | null>;
+    getMetadata: (key: string) => Promise<CacheMetadata | null>;
     /**
      * 获取缓存统计信息
      */
-    getStats(): Promise<CacheStats>;
+    getStats: () => Promise<CacheStats>;
     /**
      * 清理过期项
      */
-    cleanup(): Promise<void>;
+    cleanup: () => Promise<void>;
     /**
      * 销毁缓存管理器
      */
-    destroy(): Promise<void>;
+    destroy: () => Promise<void>;
 }
 /**
  * 设置选项

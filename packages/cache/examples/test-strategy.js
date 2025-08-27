@@ -1,8 +1,11 @@
+/* eslint-disable no-console, no-var, vars-on-top, antfu/no-top-level-await, node/prefer-global/process */
 // 策略测试脚本
 console.log('🚀 开始加载缓存库...')
 
+var createCache
 try {
-  var { createCache } = await import('../es/index.js')
+  const module = await import('../es/index.js')
+  createCache = module.createCache
   console.log('✅ 缓存库加载成功')
 }
 catch (error) {
@@ -11,7 +14,7 @@ catch (error) {
 }
 
 // 模拟浏览器环境
-global.localStorage = {
+globalThis.localStorage = {
   data: {},
   getItem(key) {
     return this.data[key] || null
@@ -27,7 +30,7 @@ global.localStorage = {
   },
 }
 
-global.sessionStorage = {
+globalThis.sessionStorage = {
   data: {},
   getItem(key) {
     return this.data[key] || null
@@ -44,7 +47,7 @@ global.sessionStorage = {
 }
 
 // 模拟IndexedDB (简化版)
-global.indexedDB = {
+globalThis.indexedDB = {
   open() {
     return {
       onsuccess() {},
@@ -234,8 +237,8 @@ async function runAllTests() {
 
   // 显示存储状态
   console.log('\n📊 存储状态:')
-  console.log('localStorage:', Object.keys(global.localStorage.data))
-  console.log('sessionStorage:', Object.keys(global.sessionStorage.data))
+  console.log('localStorage:', Object.keys(globalThis.localStorage.data))
+  console.log('sessionStorage:', Object.keys(globalThis.sessionStorage.data))
 }
 
 runAllTests().catch(console.error)

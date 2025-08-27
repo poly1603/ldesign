@@ -173,7 +173,7 @@ const cache = createCache({
 
 ```typescript
 // 监听策略选择事件
-cache.on('strategy', event => {
+cache.on('strategy', (event) => {
   console.log('策略选择结果:', {
     key: event.key,
     selectedEngine: event.engine,

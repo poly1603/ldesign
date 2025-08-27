@@ -236,7 +236,7 @@ const cache = createCache({
 })
 
 // 缓存计算结果
-const expensiveCalculation = async input => {
+async function expensiveCalculation(input) {
   const cacheKey = `calc:${JSON.stringify(input)}`
 
   // 先检查缓存
@@ -347,7 +347,8 @@ const isAvailable = await cache.isEngineAvailable('indexedDB')
 
 if (isAvailable) {
   await cache.set('data', value, { engine: 'indexedDB' })
-} else {
+}
+else {
   // 使用备用方案
   await cache.set('data', value, { engine: 'localStorage' })
 }

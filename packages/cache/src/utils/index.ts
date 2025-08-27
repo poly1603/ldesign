@@ -20,9 +20,12 @@ export function isBrowser(): boolean {
  */
 export function isNode(): boolean {
   return (
+    // eslint-disable-next-line node/prefer-global/process
     typeof process !== 'undefined'
+    // eslint-disable-next-line node/prefer-global/process
     && process.versions
-    && !!process.versions.node
+    // eslint-disable-next-line node/prefer-global/process
+    && Boolean(process.versions.node)
   )
 }
 

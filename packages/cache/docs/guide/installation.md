@@ -184,9 +184,9 @@ const cache = createCache({
 ### Vue 3
 
 ```typescript
+import { CacheProvider } from '@ldesign/cache/vue'
 // main.ts
 import { createApp } from 'vue'
-import { CacheProvider } from '@ldesign/cache/vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -264,7 +264,7 @@ const cache = createCache({
 })
 
 // 监听跨标签页数据变化
-cache.on('storage', event => {
+cache.on('storage', (event) => {
   console.log('数据在其他标签页中被修改:', event)
 })
 ```

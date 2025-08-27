@@ -141,13 +141,14 @@ export class MemoryEngine extends BaseStorageEngine {
       this.storage.delete(key)
       freedSpace += itemSize
 
-      if (freedSpace >= requiredSpace) break
+      if (freedSpace >= requiredSpace)
+        break
     }
   }
 
   // 定期清理机制
   private startCleanupTimer(interval: number): void {
-    const setIntervalFn = typeof window !== 'undefined' ? window.setInterval : global.setInterval
+    const setIntervalFn = typeof window !== 'undefined' ? window.setInterval : globalThis.setInterval
     this.cleanupTimer = setIntervalFn(() => {
       this.cleanup().catch(console.error)
     }, interval) as number
@@ -172,7 +173,7 @@ export class IndexedDBEngine extends BaseStorageEngine {
     return new Promise((resolve, reject) => {
       const request = window.indexedDB.open(this.dbName, this.version)
 
-      request.onupgradeneeded = event => {
+      request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result
 
         if (!db.objectStoreNames.contains(this.storeName)) {
@@ -273,7 +274,8 @@ export function useCache(options?: UseCacheOptions) {
       return watch(
         value,
         async (newValue, oldValue) => {
-          if (oldValue === undefined) return // 跳过初始值
+          if (oldValue === undefined)
+            return // 跳过初始值
 
           if (newValue !== null && newValue !== undefined) {
             await set(key, newValue, setOptions)
@@ -298,7 +300,8 @@ export function useCacheStats(options?: { refreshInterval?: number }) {
 
   // 格式化统计数据
   const formattedStats = computed(() => {
-    if (!stats.value) return null
+    if (!stats.value)
+      return null
 
     return {
       ...stats.value,
@@ -384,9 +387,9 @@ export class StorageEngineFactory {
       switch (type) {
         case 'localStorage':
           return (
-            typeof window !== 'undefined' &&
-            'localStorage' in window &&
-            window.localStorage !== null
+            typeof window !== 'undefined'
+            && 'localStorage' in window
+            && window.localStorage !== null
           )
 
         case 'indexedDB':
@@ -394,7 +397,8 @@ export class StorageEngineFactory {
 
         // ... 其他引擎检测
       }
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -414,7 +418,7 @@ export function isNode(): boolean {
 }
 
 // 定时器兼容
-const setIntervalFn = typeof window !== 'undefined' ? window.setInterval : global.setInterval
+const setIntervalFn = typeof window !== 'undefined' ? window.setInterval : globalThis.setInterval
 ```
 
 ### 3. 降级处理
@@ -429,7 +433,8 @@ for (const engineType of fallbackChain) {
     if (engine.available) {
       return engine
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.warn(`Engine ${engineType} failed, trying next...`)
   }
 }

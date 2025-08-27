@@ -1,11 +1,43 @@
+import type { ComputedRef } from 'vue'
 import type { CacheStats, SetOptions, UseCacheOptions } from '../types'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { CacheManager } from '../core/cache-manager'
 
 /**
+ * useCache 返回类型
+ */
+export interface UseCacheReturn {
+  // 缓存操作
+  set: <T = any>(key: string, value: T, options?: SetOptions) => Promise<void>
+  get: <T = any>(key: string) => Promise<T | null>
+  remove: (key: string) => Promise<void>
+  clear: () => Promise<void>
+  has: (key: string) => Promise<boolean>
+  keys: () => Promise<string[]>
+  cleanup: () => Promise<void>
+
+  // 统计信息
+  getStats: () => Promise<CacheStats>
+  refreshStats: () => Promise<void>
+  stats: ComputedRef<CacheStats | null>
+
+  // 状态
+  loading: ComputedRef<boolean>
+  error: ComputedRef<Error | null>
+  isReady: ComputedRef<boolean>
+  hasError: ComputedRef<boolean>
+
+  // 响应式缓存
+  useReactiveCache: <T = any>(key: string, defaultValue?: T) => any
+
+  // 缓存管理器实例
+  manager: CacheManager
+}
+
+/**
  * Vue 3 缓存组合式函数
  */
-export function useCache(options?: UseCacheOptions) {
+export function useCache(options?: UseCacheOptions): UseCacheReturn {
   // 创建缓存管理器实例
   const cacheManager = new CacheManager(options)
 
@@ -127,7 +159,22 @@ export function useCache(options?: UseCacheOptions) {
   /**
    * 获取缓存统计
    */
-  const getStats = async (): Promise<void> => {
+  const getStats = async (): Promise<CacheStats> => {
+    try {
+      const result = await cacheManager.getStats()
+      stats.value = result
+      return result
+    }
+    catch (err) {
+      error.value = err as Error
+      throw err
+    }
+  }
+
+  /**
+   * 刷新统计信息
+   */
+  const refreshStats = async (): Promise<void> => {
     try {
       stats.value = await cacheManager.getStats()
     }
@@ -142,7 +189,7 @@ export function useCache(options?: UseCacheOptions) {
   const cleanup = async (): Promise<void> => {
     try {
       await cacheManager.cleanup()
-      await getStats() // 更新统计信息
+      await refreshStats() // 更新统计信息
     }
     catch (err) {
       error.value = err as Error
@@ -240,10 +287,10 @@ export function useCache(options?: UseCacheOptions) {
 
     return {
       value,
-      isLoading,
+      loading: isLoading,
       error: cacheError,
-      load,
-      save,
+      refresh: load,
+      update: save,
       remove: removeValue,
       enableAutoSave,
     }
@@ -277,6 +324,7 @@ export function useCache(options?: UseCacheOptions) {
 
     // 统计信息
     getStats,
+    refreshStats,
     stats: computed(() => stats.value),
 
     // 状态

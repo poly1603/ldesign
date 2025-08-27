@@ -5,7 +5,7 @@
 [![npm version](https://img.shields.io/npm/v/@ldesign/cache.svg)](https://www.npmjs.com/package/@ldesign/cache)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 [![Vue 3](https://img.shields.io/badge/Vue%203-Ready-green.svg)](https://vuejs.org/)
-[![Test Coverage](https://img.shields.io/badge/Coverage-57%25-yellow.svg)](./coverage)
+[![Test Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg)](./coverage)
 [![License](https://img.shields.io/npm/l/@ldesign/cache.svg)](./LICENSE)
 
 ## ✨ 特性亮点
@@ -190,11 +190,11 @@ interface CacheOptions {
 
   // 存储引擎配置
   engines?: {
-    localStorage?: { maxSize?: number; keyPrefix?: string }
-    sessionStorage?: { maxSize?: number; keyPrefix?: string }
-    cookie?: { domain?: string; path?: string; secure?: boolean }
-    indexedDB?: { dbName?: string; version?: number; storeName?: string }
-    memory?: { maxSize?: number; cleanupInterval?: number }
+    localStorage?: { maxSize?: number, keyPrefix?: string }
+    sessionStorage?: { maxSize?: number, keyPrefix?: string }
+    cookie?: { domain?: string, path?: string, secure?: boolean }
+    indexedDB?: { dbName?: string, version?: number, storeName?: string }
+    memory?: { maxSize?: number, cleanupInterval?: number }
   }
 }
 ```
@@ -209,11 +209,11 @@ const cache = createCache({
     encryption: {
       enabled: true,
       algorithm: 'custom',
-      customEncrypt: data => {
+      customEncrypt: (data) => {
         // 你的自定义加密逻辑
         return btoa(data) // 简单的 Base64 示例
       },
-      customDecrypt: data => {
+      customDecrypt: (data) => {
         // 你的自定义解密逻辑
         return atob(data)
       },
@@ -250,15 +250,15 @@ await cache.set('temp-token', token, { ttl: 1000 }) // 自动选择内存缓存
 
 ```typescript
 // 监听缓存事件
-cache.on('set', event => {
+cache.on('set', (event) => {
   console.log(`缓存设置: ${event.key} -> ${event.engine}`)
 })
 
-cache.on('expired', event => {
+cache.on('expired', (event) => {
   console.log(`缓存过期: ${event.key}`)
 })
 
-cache.on('error', event => {
+cache.on('error', (event) => {
   console.error(`缓存错误: ${event.error?.message}`)
 })
 ```
@@ -404,8 +404,8 @@ const {
 } = useCache(options)
 
 // useCacheStats
-const { stats, formattedStats, engineUsage, performanceMetrics, refresh, cleanupAndRefresh } =
-  useCacheStats({ refreshInterval: 5000 })
+const { stats, formattedStats, engineUsage, performanceMetrics, refresh, cleanupAndRefresh }
+  = useCacheStats({ refreshInterval: 5000 })
 ```
 
 ## 🛠️ 开发指南

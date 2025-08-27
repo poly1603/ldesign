@@ -259,14 +259,15 @@ class PredictiveCache {
         await this.cache.set(key, data, { ttl: 10 * 60 * 1000 })
         console.log('预加载完成:', key)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('预加载失败:', key, error)
     }
   }
 
   private async fetchFromDataSource(key: string): Promise<any> {
     // 模拟数据源获取
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       setTimeout(() => {
         resolve({ key, data: `预加载数据 ${key}`, timestamp: Date.now() })
       }, 100)
@@ -328,7 +329,8 @@ class DistributedCache {
       const keys = await this.localCache.keys()
       const pendingKeys = keys.filter(key => key.endsWith(':sync-pending'))
 
-      if (pendingKeys.length === 0) return
+      if (pendingKeys.length === 0)
+        return
 
       const syncData = []
       for (const pendingKey of pendingKeys) {
@@ -348,7 +350,7 @@ class DistributedCache {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${await this.getAuthToken()}`,
+          'Authorization': `Bearer ${await this.getAuthToken()}`,
         },
         body: JSON.stringify({
           userId: this.userId,
@@ -363,7 +365,8 @@ class DistributedCache {
         }
         console.log('同步完成:', syncData.length, '项')
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('同步失败:', error)
     }
   }
@@ -380,7 +383,8 @@ class DistributedCache {
         const data = await response.json()
         return data.value
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('远程获取失败:', key, error)
     }
 
@@ -421,9 +425,11 @@ function CacheMethod(
       let cacheKey: string
       if (typeof options.key === 'function') {
         cacheKey = options.key(...args)
-      } else if (options.key) {
+      }
+      else if (options.key) {
         cacheKey = options.key
-      } else {
+      }
+      else {
         cacheKey = `${target.constructor.name}:${propertyKey}:${JSON.stringify(args)}`
       }
 
@@ -456,9 +462,11 @@ function CacheMethod(
       let cacheKey: string
       if (typeof options.key === 'function') {
         cacheKey = options.key(...args)
-      } else if (options.key) {
+      }
+      else if (options.key) {
         cacheKey = options.key
-      } else {
+      }
+      else {
         cacheKey = `${target.constructor.name}:${propertyKey}:${JSON.stringify(args)}`
       }
 
@@ -514,7 +522,7 @@ class UserService {
 class EventDrivenCache {
   private cache = createCache()
   private eventBus = new EventTarget()
-  private subscribers = new Map<string, Set<Function>>()
+  private subscribers = new Map<string, Set<(...args: any[]) => any>>()
 
   constructor() {
     this.setupCacheEventListeners()
@@ -522,15 +530,15 @@ class EventDrivenCache {
 
   private setupCacheEventListeners() {
     // 监听缓存操作事件
-    this.cache.on('set', event => {
+    this.cache.on('set', (event) => {
       this.emit('cache:set', event)
     })
 
-    this.cache.on('get', event => {
+    this.cache.on('get', (event) => {
       this.emit('cache:get', event)
     })
 
-    this.cache.on('remove', event => {
+    this.cache.on('remove', (event) => {
       this.emit('cache:remove', event)
 
       // 触发依赖失效
@@ -583,7 +591,7 @@ eventCache.setDependency('user-dashboard', ['user-profile', 'user-settings'])
 eventCache.setDependency('user-stats', ['user-profile'])
 
 // 监听缓存事件
-eventCache.on('cache:dependency-invalidated', event => {
+eventCache.on('cache:dependency-invalidated', (event) => {
   console.log('依赖缓存已失效:', event.detail)
 })
 
@@ -602,9 +610,9 @@ interface CacheMiddleware {
     key: string,
     value: any,
     options?: any
-  ) => Promise<{ key: string; value: any; options?: any }>
+  ) => Promise<{ key: string, value: any, options?: any }>
   afterSet?: (key: string, value: any, options?: any) => Promise<void>
-  beforeGet?: (key: string, options?: any) => Promise<{ key: string; options?: any }>
+  beforeGet?: (key: string, options?: any) => Promise<{ key: string, options?: any }>
   afterGet?: (key: string, value: any, options?: any) => Promise<any>
 }
 

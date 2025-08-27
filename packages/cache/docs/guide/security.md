@@ -117,13 +117,15 @@ await cache.set('user-123-profile', userData)
     algorithm: 'custom',
     customObfuscate: (key: string) => {
       // 自定义混淆逻辑
+      const yourObfuscateFunction = (k: string) => k
       return yourObfuscateFunction(key)
     },
     customDeobfuscate: (key: string) => {
       // 自定义反混淆逻辑
+      const yourDeobfuscateFunction = (k: string) => k
       return yourDeobfuscateFunction(key)
-    }
-  }
+    },
+  },
 }
 ```
 
@@ -359,7 +361,7 @@ const cache = createCache({
       enabled: true,
       logLevel: 'info',
       logSensitiveData: false, // 不记录敏感数据
-      onAuditEvent: event => {
+      onAuditEvent: (event) => {
         // 发送到审计系统
         sendToAuditSystem(event)
       },

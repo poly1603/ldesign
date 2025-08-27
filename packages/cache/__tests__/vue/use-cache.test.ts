@@ -127,11 +127,11 @@ describe('useCache', () => {
       expect(reactiveCache.value.value).toBe('default-value')
 
       // 保存新值
-      await reactiveCache.save('new-value')
+      await reactiveCache.update('new-value')
       expect(reactiveCache.value.value).toBe('new-value')
 
       // 重新加载
-      await reactiveCache.load()
+      await reactiveCache.refresh()
       expect(reactiveCache.value.value).toBe('new-value')
     })
 
@@ -174,7 +174,7 @@ describe('useCache', () => {
       circularObj.self = circularObj
 
       try {
-        await reactiveCache.save(circularObj)
+        await reactiveCache.update(circularObj)
       }
       catch {
         // 预期会抛出错误

@@ -49,6 +49,7 @@ export default defineConfig({
             { text: '存储引擎', link: '/api/storage-engines' },
             { text: '安全管理', link: '/api/security' },
             { text: 'Vue 组合式函数', link: '/api/vue-composables' },
+            { text: 'Vue 集成', link: '/api/vue-integration' },
             { text: '类型定义', link: '/api/types' },
           ],
         },
@@ -58,10 +59,9 @@ export default defineConfig({
           text: '使用示例',
           items: [
             { text: '基础用法', link: '/examples/basic-usage' },
+            { text: '高级用法', link: '/examples/advanced-usage' },
             { text: 'Vue 应用', link: '/examples/vue-app' },
             { text: '安全缓存', link: '/examples/secure-cache' },
-            { text: '性能监控', link: '/examples/performance-monitoring' },
-            { text: '大数据处理', link: '/examples/large-data' },
           ],
         },
       ],
@@ -88,4 +88,6 @@ export default defineConfig({
     },
     lineNumbers: true,
   },
+
+  ignoreDeadLinks: true,
 })

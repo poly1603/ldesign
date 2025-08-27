@@ -5,11 +5,11 @@
   "description": "LDesign cache package",
   "author": "LDesign Team",
   "license": "MIT",
-  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/{{PACKAGE_NAME}}#readme",
+  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/cache#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/ldesign/ldesign.git",
-    "directory": "packages/{{PACKAGE_NAME}}"
+    "directory": "packages/cache"
   },
   "bugs": {
     "url": "https://github.com/ldesign/ldesign/issues"
