@@ -1,8 +1,25 @@
 import type { BuildOptions, DevOptions, LauncherOptions, ProjectType } from '../src/types'
-import fs from 'node:fs/promises'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ViteLauncher } from '../src/core/ViteLauncher'
+
+// Mock fs operations
+vi.mock('node:fs/promises', () => ({
+  default: {
+    readdir: vi.fn(),
+    mkdir: vi.fn(),
+    writeFile: vi.fn(),
+    stat: vi.fn(),
+    access: vi.fn(),
+    readFile: vi.fn(),
+  },
+  readdir: vi.fn(),
+  mkdir: vi.fn(),
+  writeFile: vi.fn(),
+  stat: vi.fn(),
+  access: vi.fn(),
+  readFile: vi.fn(),
+}))
 
 // Mock dependencies
 vi.mock('vite', () => ({
@@ -14,10 +31,18 @@ vi.mock('vite', () => ({
 
 // Mock service classes
 vi.mock('../src/services/ErrorHandler', () => ({
-  ErrorHandler: vi.fn().mockImplementation(() => ({
-    handleError: vi.fn().mockReturnValue({ message: 'Mock error', code: 'E001' }),
-    createError: vi.fn().mockReturnValue({ message: 'Mock error', code: 'E001' }),
-  })),
+  ErrorHandler: class MockErrorHandler {
+    static createError = vi.fn().mockImplementation((code: string, message: string) => {
+      const error = new Error(message)
+        ; (error as any).code = code
+      throw error
+    })
+
+    handleError = vi.fn().mockImplementation((error: Error) => {
+      // Don't throw, just return the original error for testing
+      return error
+    })
+  },
 }))
 
 vi.mock('../src/services/ProjectDetector', () => ({
@@ -39,41 +64,34 @@ vi.mock('../src/services/ConfigManager', () => ({
     mergeConfig: vi.fn().mockImplementation((base, override) => ({ ...base, ...override })),
     loadPreset: vi.fn().mockResolvedValue({ config: {} }),
     loadProjectConfig: vi.fn().mockResolvedValue({}),
+    generateConfigFile: vi.fn().mockResolvedValue('export default {}'),
   })),
 }))
 
 vi.mock('../src/services/PluginManager', () => ({
   PluginManager: vi.fn().mockImplementation(() => ({
     createPluginsForProject: vi.fn().mockResolvedValue([]),
+    getRequiredPlugins: vi.fn().mockReturnValue([]),
   })),
 }))
 
-vi.mock('fs/promises', () => ({
-  default: {
-    mkdir: vi.fn(),
-    readdir: vi.fn(),
-    stat: vi.fn(),
-    writeFile: vi.fn(),
-    rm: vi.fn(),
-  },
-  mkdir: vi.fn(),
-  readdir: vi.fn(),
-  stat: vi.fn(),
-  writeFile: vi.fn(),
-  rm: vi.fn(),
-}))
 
-vi.mock('../src/services/ErrorHandler')
-vi.mock('../src/services/ProjectDetector')
-vi.mock('../src/services/ConfigManager')
-vi.mock('../src/services/PluginManager')
 
 describe('viteLauncher', () => {
   let launcher: ViteLauncher
   let tempDir: string
+  let mockFs: any
 
-  beforeEach(() => {
+  beforeEach(async () => {
     tempDir = path.join(process.cwd(), 'temp-test')
+
+    // Get mocked fs
+    const fs = await import('node:fs/promises')
+    mockFs = vi.mocked(fs)
+
+    // Reset all mocks
+    vi.clearAllMocks()
+
     launcher = new ViteLauncher({
       logLevel: 'silent',
       mode: 'development',
@@ -82,13 +100,6 @@ describe('viteLauncher', () => {
 
   afterEach(async () => {
     await launcher.destroy()
-    // Clean up temp directory
-    try {
-      await fs.rm(tempDir, { recursive: true, force: true })
-    }
-    catch {
-      // Ignore cleanup errors
-    }
   })
 
   describe('constructor', () => {
@@ -114,10 +125,10 @@ describe('viteLauncher', () => {
       const projectType: ProjectType = 'vue3'
 
       // Mock fs operations - directory doesn't exist initially
-      vi.mocked(fs.stat).mockRejectedValue(new Error('ENOENT'))
-      vi.mocked(fs.mkdir).mockResolvedValue(undefined)
-      vi.mocked(fs.readdir).mockResolvedValue([])
-      vi.mocked(fs.writeFile).mockResolvedValue(undefined)
+      mockFs.stat.mockRejectedValue(new Error('ENOENT'))
+      mockFs.mkdir.mockResolvedValue(undefined)
+      mockFs.readdir.mockResolvedValue([])
+      mockFs.writeFile.mockResolvedValue(undefined)
 
       await expect(launcher.create(projectPath, projectType)).resolves.toBeUndefined()
     })
@@ -127,8 +138,8 @@ describe('viteLauncher', () => {
       const projectType: ProjectType = 'react'
 
       // Mock existing directory with files
-      vi.mocked(fs.stat).mockResolvedValue({ isDirectory: () => true } as any)
-      vi.mocked(fs.readdir).mockResolvedValue(['package.json', 'src'])
+      mockFs.stat.mockResolvedValue({ isDirectory: () => true } as any)
+      mockFs.readdir.mockResolvedValue(['package.json', 'src'])
 
       await expect(launcher.create(projectPath, projectType)).rejects.toThrow()
     })
@@ -138,10 +149,10 @@ describe('viteLauncher', () => {
       const projectType: ProjectType = 'vanilla'
 
       // Mock existing directory with files
-      vi.mocked(fs.stat).mockResolvedValue({ isDirectory: () => true } as any)
-      vi.mocked(fs.readdir).mockResolvedValue(['package.json'])
-      vi.mocked(fs.mkdir).mockResolvedValue(undefined)
-      vi.mocked(fs.writeFile).mockResolvedValue(undefined)
+      mockFs.stat.mockResolvedValue({ isDirectory: () => true } as any)
+      mockFs.readdir.mockResolvedValue(['package.json'])
+      mockFs.mkdir.mockResolvedValue(undefined)
+      mockFs.writeFile.mockResolvedValue(undefined)
 
       await expect(
         launcher.create(projectPath, projectType, { force: true }),
@@ -154,6 +165,7 @@ describe('viteLauncher', () => {
       const { createServer } = await import('vite')
       const mockServer = {
         listen: vi.fn().mockResolvedValue(undefined),
+        close: vi.fn().mockResolvedValue(undefined),
         config: {
           server: {
             port: 5173,
@@ -172,6 +184,7 @@ describe('viteLauncher', () => {
       const { createServer } = await import('vite')
       const mockServer = {
         listen: vi.fn().mockResolvedValue(undefined),
+        close: vi.fn().mockResolvedValue(undefined),
         config: {
           server: {
             port: 3000,
@@ -194,14 +207,20 @@ describe('viteLauncher', () => {
   describe('build', () => {
     it('应该构建项目', async () => {
       const { build } = await import('vite')
-      vi.mocked(build).mockResolvedValue(undefined)
+      // Mock build with a delay to ensure duration > 0
+      vi.mocked(build).mockImplementation(() =>
+        new Promise(resolve => setTimeout(() => resolve(undefined), 10))
+      )
 
       // Mock fs operations for build analysis
-      vi.mocked(fs.readdir).mockResolvedValue(['index.html', 'assets'])
-      vi.mocked(fs.stat).mockResolvedValue({
-        isFile: () => true,
-        isDirectory: () => false,
-      } as any)
+      mockFs.readdir.mockResolvedValue(['index.html', 'assets', 'index.js', 'style.css'])
+      mockFs.stat.mockImplementation((filePath: string) => {
+        const fileName = path.basename(filePath as string)
+        return Promise.resolve({
+          isFile: () => !fileName.includes('assets'),
+          isDirectory: () => fileName.includes('assets'),
+        } as any)
+      })
 
       const result = await launcher.build()
       expect(result.success).toBe(true)
@@ -246,10 +265,18 @@ describe('viteLauncher', () => {
       }
       vi.mocked(preview).mockResolvedValue(mockServer as any)
 
-      // Mock directory exists check
-      vi.mocked(fs.stat).mockResolvedValue({
+      // Mock directory exists check - all directories exist
+      mockFs.stat.mockResolvedValue({
         isDirectory: () => true,
       } as any)
+
+      // Mock readFile for package.json (used by projectDetector)
+      mockFs.readFile.mockResolvedValue(JSON.stringify({
+        dependencies: { vue: '^3.0.0' },
+      }))
+
+      // Mock access for file existence checks
+      mockFs.access.mockResolvedValue(undefined)
 
       const result = await launcher.preview()
       expect(result).toBe(mockServer)
@@ -257,7 +284,7 @@ describe('viteLauncher', () => {
 
     it('应该在构建输出不存在时抛出错误', async () => {
       // Mock directory does not exist
-      vi.mocked(fs.stat).mockRejectedValue(new Error('ENOENT'))
+      mockFs.stat.mockRejectedValue(new Error('ENOENT'))
 
       await expect(launcher.preview()).rejects.toThrow()
     })
@@ -306,9 +333,10 @@ describe('viteLauncher', () => {
   describe('getProjectInfo', () => {
     it('应该获取项目信息', async () => {
       const result = await launcher.getProjectInfo()
-      expect(result).toHaveProperty('path')
-      expect(result).toHaveProperty('type')
-      expect(result).toHaveProperty('isViteProject')
+      expect(result).toHaveProperty('framework')
+      expect(result).toHaveProperty('typescript')
+      expect(result).toHaveProperty('dependencies')
+      expect(result).toHaveProperty('confidence')
     })
   })
 

@@ -2,17 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ProjectDetector } from '../../src/services/ProjectDetector'
 
 // Mock fs operations
-vi.mock('fs/promises', () => ({
-  default: {
+vi.mock('node:fs', () => ({
+  promises: {
     readdir: vi.fn(),
     readFile: vi.fn(),
     stat: vi.fn(),
     access: vi.fn(),
   },
-  readdir: vi.fn(),
-  readFile: vi.fn(),
-  stat: vi.fn(),
-  access: vi.fn(),
 }))
 
 // Mock ErrorHandler
@@ -28,7 +24,8 @@ describe('projectDetector 简化测试', () => {
 
   beforeEach(async () => {
     detector = new ProjectDetector()
-    mockFs = vi.mocked(await import('node:fs/promises'))
+    const fs = await import('node:fs')
+    mockFs = vi.mocked(fs.promises)
 
     // Reset all mocks
     vi.clearAllMocks()
@@ -119,7 +116,13 @@ describe('projectDetector 简化测试', () => {
           'react-dom': '^18.0.0',
         },
       }))
-      mockFs.access.mockResolvedValue(undefined) // Files exist
+      // Mock specific files exist/don't exist
+      mockFs.access.mockImplementation((filePath: string) => {
+        if (filePath.includes('next.config')) {
+          return Promise.reject(new Error('ENOENT'))
+        }
+        return Promise.resolve()
+      })
 
       const result = await detector.detectProjectType(projectPath)
 
@@ -141,7 +144,13 @@ describe('projectDetector 简化测试', () => {
           vite: '^5.0.0',
         },
       }))
-      mockFs.access.mockResolvedValue(undefined) // Files exist
+      // Mock no TypeScript files exist
+      mockFs.access.mockImplementation((filePath: string) => {
+        if (filePath.includes('tsconfig.json') || filePath.includes('typescript')) {
+          return Promise.reject(new Error('ENOENT'))
+        }
+        return Promise.resolve()
+      })
 
       const result = await detector.detectProjectType(projectPath)
 

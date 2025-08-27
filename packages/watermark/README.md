@@ -1,63 +1,126 @@
 # @ldesign/watermark
 
-🌊 强大的水印组件库，支持文字水印、图片水印、Canvas 渲染、动画效果等多种功能。
+<div align="center">
 
-## ✨ 特性
+**强大、灵活、易用的前端水印解决方案**
 
-- 🚀 **高性能渲染** - 支持 DOM、Canvas、SVG 多种渲染模式
-- 🎯 **类型安全** - 完整的 TypeScript 支持
-- 📦 **轻量级** - 最小化的包体积，按需加载
-- 🔧 **易于使用** - 简洁直观的 API 设计
-- 🎨 **丰富样式** - 支持文字、图片、渐变等多种水印类型
-- 🔒 **安全防护** - 内置防篡改和防删除机制
-- 📱 **响应式** - 自动适配不同屏幕尺寸
-- ⚡ **动画效果** - 支持淡入淡出、旋转等动画
-- 🎭 **Vue3 集成** - 提供组合式 API 和组件
+[![npm version](https://img.shields.io/npm/v/@ldesign/watermark.svg)](https://www.npmjs.com/package/@ldesign/watermark)
+[![npm downloads](https://img.shields.io/npm/dm/@ldesign/watermark.svg)](https://www.npmjs.com/package/@ldesign/watermark)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/@ldesign/watermark.svg)](https://bundlephobia.com/package/@ldesign/watermark)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/npm/l/@ldesign/watermark.svg)](https://github.com/ldesign/watermark/blob/main/LICENSE)
+
+[📖 文档](./docs) | [🚀 快速开始](#快速开始) | [💡 示例](./docs/examples) | [🔧 API](./docs/api)
+
+</div>
+
+## ✨ 特性亮点
+
+### 🎯 核心功能
+- **🚀 开箱即用** - 零配置启动，简单 API 设计，几行代码即可添加水印
+- **🎨 多种渲染模式** - 支持 DOM、Canvas、SVG 三种渲染模式，满足不同场景需求
+- **🛡️ 安全防护** - 内置多重防篡改机制，DOM 监控、样式保护、Canvas 保护
+- **📱 响应式设计** - 智能适配不同屏幕尺寸，支持自定义断点和布局策略
+
+### ⚡ 性能优化
+- **虚拟化渲染** - 只渲染可见区域，大幅提升性能
+- **智能缓存** - 缓存渲染结果，避免重复计算
+- **异步处理** - 非阻塞 API，不影响页面响应
+- **内存优化** - 自动清理无用资源，防止内存泄漏
+
+### 🔧 开发体验
+- **TypeScript 原生支持** - 完整类型定义，优秀的 IDE 智能提示
+- **框架无关** - 支持 Vue、React、Angular 等主流框架
+- **插件化架构** - 支持自定义渲染器和功能扩展
+- **丰富的配置选项** - 满足各种复杂需求
+
+### 🎭 高级功能
+- **动画效果** - 内置多种动画效果，支持自定义动画和过渡
+- **多内容类型** - 支持文字、图片、多行文字、混合内容
+- **安全等级** - 可配置的安全防护等级，从基础到企业级
+- **事件系统** - 完整的事件监听和处理机制
 
 ## 📦 安装
 
 ```bash
+# npm
 npm install @ldesign/watermark
-# 或
-pnpm add @ldesign/watermark
-# 或
+
+# yarn
 yarn add @ldesign/watermark
+
+# pnpm
+pnpm add @ldesign/watermark
 ```
 
 ## 🚀 快速开始
 
-### 基础文字水印
+### 基础用法
 
-```typescript
+```javascript
 import { createWatermark } from '@ldesign/watermark'
 
 // 创建简单文字水印
-const instance = await createWatermark(document.body, {
-  content: '机密文档',
-  style: {
-    fontSize: 16,
-    color: 'rgba(0, 0, 0, 0.15)',
-    opacity: 0.8,
-  },
+const watermark = await createWatermark('#container', {
+  content: '机密文档'
 })
+
+// 自定义样式
+const styledWatermark = await createWatermark('#container', {
+  content: '版权所有',
+  style: {
+    fontSize: 18,
+    color: 'rgba(255, 0, 0, 0.3)',
+    rotate: -30,
+    opacity: 0.8
+  },
+  layout: {
+    gapX: 150,
+    gapY: 100
+  }
+})
+```
+
+### Vue 组件
+
+```vue
+<template>
+  <Watermark
+    content="机密文档"
+    :style="{ fontSize: 16, color: 'rgba(0,0,0,0.15)' }"
+    :security="{ level: 'high' }"
+  >
+    <div class="content">
+      <h1>文档标题</h1>
+      <p>这里是您的内容...</p>
+    </div>
+  </Watermark>
+</template>
+
+<script setup>
+import { Watermark } from '@ldesign/watermark/vue'
+</script>
 ```
 
 ### 图片水印
 
-```typescript
-import { createWatermark } from '@ldesign/watermark'
-
-// 创建图片水印
-const instance = await createWatermark('#container', {
+```javascript
+const imageWatermark = await createWatermark('#container', {
   content: {
-    src: '/logo.png',
-    width: 120,
-    height: 40,
-  },
-  layout: {
-    gapX: 200,
-    gapY: 150,
-  },
+    image: {
+      src: '/logo.png',
+      width: 100,
+      height: 50
+    }
+  }
+})
+```
+
+### 多行文字
+
+```javascript
+const multilineWatermark = await createWatermark('#container', {
+  content: ['第一行文字', '第二行文字', '第三行文字']
 })
 ```
 

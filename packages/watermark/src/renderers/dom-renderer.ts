@@ -217,13 +217,13 @@ export class DOMRendererImpl implements DOMRenderer {
     // 用户选择
     style.userSelect = 'none'
     style.webkitUserSelect = 'none'
-    ;(style as any).mozUserSelect = 'none'
-    ;(style as any).msUserSelect = 'none'
+      ; (style as any).mozUserSelect = 'none'
+      ; (style as any).msUserSelect = 'none'
 
-    // 防止拖拽
-    ;(style as any).webkitUserDrag = 'none'
-    ;(style as any).mozUserDrag = 'none'
-    ;(style as any).msUserDrag = 'none'
+      // 防止拖拽
+      ; (style as any).webkitUserDrag = 'none'
+      ; (style as any).mozUserDrag = 'none'
+      ; (style as any).msUserDrag = 'none'
 
     // 基本样式
     style.display = 'flex'
@@ -427,15 +427,23 @@ export class DOMRendererImpl implements DOMRenderer {
   supportsAnimation = true
   supportsOpacity = true
 
-  createElement(
-    _config: WatermarkConfig,
-    row: number,
-    col: number,
-  ): HTMLElement {
+  createElement(config: WatermarkConfig, row: number, col: number): HTMLElement {
     const element = document.createElement('div')
-    element.className = 'watermark-element'
+    element.className = 'watermark-item'
     element.dataset.row = row.toString()
     element.dataset.col = col.toString()
+
+    // 设置基础样式
+    element.style.position = 'absolute'
+    element.style.pointerEvents = 'none'
+    element.style.userSelect = 'none'
+      ; (element.style as any).webkitUserDrag = 'none'
+    element.style.display = 'flex'
+    element.style.alignItems = 'center'
+    element.style.justifyContent = 'center'
+    element.style.whiteSpace = 'nowrap'
+    element.style.overflow = 'hidden'
+
     return element
   }
 
@@ -456,9 +464,8 @@ export class DOMRendererImpl implements DOMRenderer {
 
   async applyAnimation(element: HTMLElement, animation: any): Promise<void> {
     if (animation.type) {
-      element.style.animation = `${animation.type} ${
-        animation.duration || '1s'
-      } ${animation.timing || 'ease'}`
+      element.style.animation = `${animation.type} ${animation.duration || '1s'
+        } ${animation.timing || 'ease'}`
     }
   }
 

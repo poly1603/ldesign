@@ -29,6 +29,7 @@ export enum WatermarkErrorCode {
   INSTANCE_UPDATE_FAILED = 1203,
   INSTANCE_DESTROY_FAILED = 1204,
   INVALID_INSTANCE_STATE = 1205,
+  INSTANCE_DISPOSED = 1206,
 
   // 安全错误 1300-1399
   SECURITY_VIOLATION = 1300,
@@ -174,10 +175,10 @@ export class WatermarkError extends Error {
       stack: this.stackTrace,
       originalError: this.originalError
         ? {
-            name: this.originalError.name,
-            message: this.originalError.message,
-            stack: this.originalError.stack,
-          }
+          name: this.originalError.name,
+          message: this.originalError.message,
+          stack: this.originalError.stack,
+        }
         : undefined,
     }
   }

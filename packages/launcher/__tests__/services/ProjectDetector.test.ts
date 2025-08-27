@@ -1,17 +1,14 @@
-import fs from 'node:fs/promises'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ProjectDetector } from '../../src/services/ProjectDetector'
 
 // Mock fs operations
-vi.mock('fs/promises', () => ({
-  default: {
+vi.mock('node:fs', () => ({
+  promises: {
     readdir: vi.fn(),
     readFile: vi.fn(),
     stat: vi.fn(),
+    access: vi.fn(),
   },
-  readdir: vi.fn(),
-  readFile: vi.fn(),
-  stat: vi.fn(),
 }))
 
 // Mock ErrorHandler
@@ -25,9 +22,10 @@ describe('projectDetector', () => {
   let detector: ProjectDetector
   let mockFs: any
 
-  beforeEach(() => {
+  beforeEach(async () => {
     detector = new ProjectDetector()
-    mockFs = vi.mocked(fs)
+    const fs = await import('node:fs')
+    mockFs = vi.mocked(fs.promises)
   })
 
   describe('detectProjectType', () => {
@@ -75,6 +73,14 @@ describe('projectDetector', () => {
           '@vitejs/plugin-react': '^4.0.0',
         },
       }))
+
+      // Mock access to ensure no Next.js files exist
+      mockFs.access.mockImplementation((filePath: string) => {
+        if (filePath.includes('next.config')) {
+          return Promise.reject(new Error('ENOENT'))
+        }
+        return Promise.resolve()
+      })
 
       const result = await detector.detectProjectType(projectPath)
 
@@ -126,6 +132,14 @@ describe('projectDetector', () => {
         },
       }))
 
+      // Mock access to ensure no TypeScript files exist
+      mockFs.access.mockImplementation((filePath: string) => {
+        if (filePath.includes('tsconfig.json') || filePath.includes('typescript')) {
+          return Promise.reject(new Error('ENOENT'))
+        }
+        return Promise.resolve()
+      })
+
       const result = await detector.detectProjectType(projectPath)
 
       expect(result.projectType).toBe('vanilla')
@@ -151,6 +165,14 @@ describe('projectDetector', () => {
         },
       }))
 
+      // Mock access to ensure tsconfig.json exists
+      mockFs.access.mockImplementation((filePath: string) => {
+        if (filePath.includes('tsconfig.json')) {
+          return Promise.resolve()
+        }
+        return Promise.reject(new Error('ENOENT'))
+      })
+
       const result = await detector.detectProjectType(projectPath)
 
       expect(result.report.detectedFiles).toContain('tsconfig.json')
@@ -171,32 +193,63 @@ describe('projectDetector', () => {
 
   describe('detectFramework', () => {
     it('应该检测Vue框架', async () => {
-      const dependencies = {
-        'vue': '^3.0.0',
-        '@vitejs/plugin-vue': '^4.0.0',
-      }
+      const projectPath = '/test/vue-project'
 
-      const framework = await detector.detectFramework(dependencies)
+      mockFs.stat.mockResolvedValue({ isDirectory: () => true } as any)
+      mockFs.readFile.mockResolvedValue(JSON.stringify({
+        dependencies: {
+          'vue': '^3.0.0',
+          '@vitejs/plugin-vue': '^4.0.0',
+        },
+      }))
+      mockFs.access.mockResolvedValue(undefined)
+
+      const framework = await detector.detectFramework(projectPath)
 
       expect(framework).toBe('vue3')
     })
 
     it('应该检测React框架', async () => {
-      const dependencies = {
-        'react': '^18.0.0',
-        'react-dom': '^18.0.0',
-        '@vitejs/plugin-react': '^4.0.0',
-      }
+      const projectPath = '/test/react-project'
 
-      const framework = await detector.detectFramework(dependencies)
+      mockFs.stat.mockResolvedValue({ isDirectory: () => true } as any)
+      mockFs.readFile.mockResolvedValue(JSON.stringify({
+        dependencies: {
+          'react': '^18.0.0',
+          'react-dom': '^18.0.0',
+          '@vitejs/plugin-react': '^4.0.0',
+        },
+      }))
+      mockFs.access.mockImplementation((filePath: string) => {
+        if (filePath.includes('next.config')) {
+          return Promise.reject(new Error('ENOENT'))
+        }
+        return Promise.resolve()
+      })
+
+      const framework = await detector.detectFramework(projectPath)
 
       expect(framework).toBe('react')
     })
 
     it('应该检测Vanilla框架', async () => {
-      const dependencies = {}
+      const projectPath = '/test/vanilla-project'
 
-      const framework = await detector.detectFramework(dependencies)
+      mockFs.stat.mockResolvedValue({ isDirectory: () => true } as any)
+      mockFs.readFile.mockResolvedValue(JSON.stringify({
+        dependencies: {},
+        devDependencies: {
+          vite: '^5.0.0',
+        },
+      }))
+      mockFs.access.mockImplementation((filePath: string) => {
+        if (filePath.includes('tsconfig.json') || filePath.includes('typescript')) {
+          return Promise.reject(new Error('ENOENT'))
+        }
+        return Promise.resolve()
+      })
+
+      const framework = await detector.detectFramework(projectPath)
 
       expect(framework).toBe('vanilla')
     })
@@ -206,11 +259,12 @@ describe('projectDetector', () => {
     it('应该检测TypeScript项目', async () => {
       const projectPath = '/test/ts-project'
 
-      mockFs.readdir.mockResolvedValue([
-        'tsconfig.json',
-        'main.ts',
-        'src/index.ts',
-      ])
+      mockFs.readFile.mockResolvedValue(JSON.stringify({
+        dependencies: {
+          typescript: '^5.0.0',
+        },
+      }))
+      mockFs.access.mockResolvedValue(undefined) // tsconfig.json exists
 
       const hasTypeScript = await detector.detectTypeScript(projectPath)
 
@@ -220,10 +274,10 @@ describe('projectDetector', () => {
     it('应该检测非TypeScript项目', async () => {
       const projectPath = '/test/js-project'
 
-      mockFs.readdir.mockResolvedValue([
-        'main.js',
-        'src/index.js',
-      ])
+      mockFs.readFile.mockResolvedValue(JSON.stringify({
+        dependencies: {},
+      }))
+      mockFs.access.mockRejectedValue(new Error('ENOENT')) // tsconfig.json doesn't exist
 
       const hasTypeScript = await detector.detectTypeScript(projectPath)
 
@@ -233,39 +287,56 @@ describe('projectDetector', () => {
 
   describe('detectCSSPreprocessor', () => {
     it('应该检测Sass预处理器', async () => {
-      const dependencies = {
-        sass: '^1.60.0',
-      }
+      const projectPath = '/test/sass-project'
 
-      const preprocessor = await detector.detectCSSPreprocessor(dependencies)
+      mockFs.readFile.mockResolvedValue(JSON.stringify({
+        devDependencies: {
+          sass: '^1.60.0',
+        },
+      }))
+
+      const preprocessor = await detector.detectCSSPreprocessor(projectPath)
 
       expect(preprocessor).toBe('sass')
     })
 
     it('应该检测Less预处理器', async () => {
-      const dependencies = {
-        less: '^4.1.0',
-      }
+      const projectPath = '/test/less-project'
 
-      const preprocessor = await detector.detectCSSPreprocessor(dependencies)
+      mockFs.readFile.mockResolvedValue(JSON.stringify({
+        devDependencies: {
+          less: '^4.1.0',
+        },
+      }))
+
+      const preprocessor = await detector.detectCSSPreprocessor(projectPath)
 
       expect(preprocessor).toBe('less')
     })
 
     it('应该检测Stylus预处理器', async () => {
-      const dependencies = {
-        stylus: '^0.59.0',
-      }
+      const projectPath = '/test/stylus-project'
 
-      const preprocessor = await detector.detectCSSPreprocessor(dependencies)
+      mockFs.readFile.mockResolvedValue(JSON.stringify({
+        devDependencies: {
+          stylus: '^0.59.0',
+        },
+      }))
+
+      const preprocessor = await detector.detectCSSPreprocessor(projectPath)
 
       expect(preprocessor).toBe('stylus')
     })
 
     it('应该返回undefined当没有预处理器时', async () => {
-      const dependencies = {}
+      const projectPath = '/test/no-preprocessor-project'
 
-      const preprocessor = await detector.detectCSSPreprocessor(dependencies)
+      mockFs.readFile.mockResolvedValue(JSON.stringify({
+        dependencies: {},
+        devDependencies: {},
+      }))
+
+      const preprocessor = await detector.detectCSSPreprocessor(projectPath)
 
       expect(preprocessor).toBeUndefined()
     })
