@@ -1,0 +1,352 @@
+/**
+ * LemonForm 样式入口文件
+ */
+
+// CSS 变量定义
+:root {
+  // 主色调
+  --lemon-primary: #f7d51d;
+  --lemon-primary-light: #f9e55b;
+  --lemon-primary-dark: #d4b91a;
+  
+  // 功能色
+  --lemon-success: #52c41a;
+  --lemon-warning: #faad14;
+  --lemon-error: #ff4d4f;
+  --lemon-info: #1890ff;
+  
+  // 文本色
+  --lemon-text-primary: #262626;
+  --lemon-text-secondary: #595959;
+  --lemon-text-tertiary: #8c8c8c;
+  --lemon-text-disabled: #bfbfbf;
+  
+  // 背景色
+  --lemon-bg-primary: #ffffff;
+  --lemon-bg-secondary: #fafafa;
+  --lemon-bg-tertiary: #f5f5f5;
+  --lemon-bg-disabled: #f5f5f5;
+  
+  // 边框色
+  --lemon-border-primary: #d9d9d9;
+  --lemon-border-secondary: #f0f0f0;
+  --lemon-border-focus: var(--lemon-primary);
+  
+  // 阴影
+  --lemon-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --lemon-shadow-md: 0 1px 6px rgba(0, 0, 0, 0.1);
+  --lemon-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+  
+  // 圆角
+  --lemon-radius-sm: 2px;
+  --lemon-radius-md: 4px;
+  --lemon-radius-lg: 6px;
+  
+  // 间距
+  --lemon-space-xs: 4px;
+  --lemon-space-sm: 8px;
+  --lemon-space-md: 16px;
+  --lemon-space-lg: 24px;
+  --lemon-space-xl: 32px;
+  
+  // 字体大小
+  --lemon-font-xs: 12px;
+  --lemon-font-sm: 14px;
+  --lemon-font-md: 16px;
+  --lemon-font-lg: 18px;
+  --lemon-font-xl: 20px;
+}
+
+// 基础样式
+.l-dynamic-form {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--lemon-font-md);
+  line-height: 1.5;
+  color: var(--lemon-text-primary);
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  &__fields {
+    display: grid;
+    gap: var(--lemon-space-md);
+  }
+  
+  // 加载状态
+  &--loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  
+  // 提交状态
+  &--submitting {
+    .l-form-actions button[type="submit"] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// 字段样式
+.l-form-field {
+  display: flex;
+  flex-direction: column;
+  
+  &__label {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--lemon-space-xs);
+    font-weight: 500;
+    color: var(--lemon-text-primary);
+    font-size: var(--lemon-font-sm);
+  }
+  
+  &__required {
+    color: var(--lemon-error);
+    margin-left: var(--lemon-space-xs);
+  }
+  
+  &__control {
+    position: relative;
+  }
+  
+  &__help {
+    margin-top: var(--lemon-space-xs);
+    font-size: var(--lemon-font-xs);
+    color: var(--lemon-text-tertiary);
+  }
+  
+  &__error {
+    margin-top: var(--lemon-space-xs);
+    font-size: var(--lemon-font-xs);
+    color: var(--lemon-error);
+  }
+  
+  // 字段状态
+  &--error {
+    .l-form-field__control input,
+    .l-form-field__control textarea,
+    .l-form-field__control select {
+      border-color: var(--lemon-error);
+      
+      &:focus {
+        border-color: var(--lemon-error);
+        box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+      }
+    }
+  }
+  
+  &--disabled {
+    opacity: 0.6;
+    
+    .l-form-field__control input,
+    .l-form-field__control textarea,
+    .l-form-field__control select {
+      background-color: var(--lemon-bg-disabled);
+      cursor: not-allowed;
+    }
+  }
+  
+  &--hidden {
+    display: none;
+  }
+  
+  // 尺寸
+  &--small {
+    .l-form-field__control input,
+    .l-form-field__control textarea,
+    .l-form-field__control select {
+      padding: 4px 8px;
+      font-size: var(--lemon-font-xs);
+    }
+  }
+  
+  &--large {
+    .l-form-field__control input,
+    .l-form-field__control textarea,
+    .l-form-field__control select {
+      padding: 12px 16px;
+      font-size: var(--lemon-font-lg);
+    }
+  }
+}
+
+// 基础输入控件样式
+.l-form-field__control {
+  input,
+  textarea,
+  select {
+    width: 100%;
+    padding: var(--lemon-space-sm) 12px;
+    border: 1px solid var(--lemon-border-primary);
+    border-radius: var(--lemon-radius-md);
+    font-size: var(--lemon-font-md);
+    line-height: 1.5;
+    color: var(--lemon-text-primary);
+    background-color: var(--lemon-bg-primary);
+    transition: all 0.2s ease;
+    
+    &::placeholder {
+      color: var(--lemon-text-disabled);
+    }
+    
+    &:focus {
+      outline: none;
+      border-color: var(--lemon-border-focus);
+      box-shadow: 0 0 0 2px rgba(247, 213, 29, 0.2);
+    }
+    
+    &:disabled {
+      background-color: var(--lemon-bg-disabled);
+      cursor: not-allowed;
+    }
+  }
+  
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+}
+
+// 操作按钮样式
+.l-form-actions {
+  display: flex;
+  gap: var(--lemon-space-sm);
+  justify-content: flex-end;
+  margin-top: var(--lemon-space-lg);
+  
+  button {
+    padding: var(--lemon-space-sm) var(--lemon-space-md);
+    border: 1px solid var(--lemon-border-primary);
+    border-radius: var(--lemon-radius-md);
+    font-size: var(--lemon-font-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      opacity: 0.8;
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    // 按钮变体
+    &.l-button--primary {
+      background-color: var(--lemon-primary);
+      border-color: var(--lemon-primary);
+      color: white;
+      
+      &:hover {
+        background-color: var(--lemon-primary-dark);
+        border-color: var(--lemon-primary-dark);
+      }
+    }
+    
+    &.l-button--secondary {
+      background-color: var(--lemon-bg-primary);
+      border-color: var(--lemon-border-primary);
+      color: var(--lemon-text-primary);
+      
+      &:hover {
+        background-color: var(--lemon-bg-secondary);
+      }
+    }
+  }
+}
+
+// 调试面板样式
+.l-form-debug-panel {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 400px;
+  max-height: 80vh;
+  background: var(--lemon-bg-primary);
+  border: 1px solid var(--lemon-border-primary);
+  border-radius: var(--lemon-radius-lg);
+  box-shadow: var(--lemon-shadow-lg);
+  z-index: 1000;
+  
+  &__header {
+    padding: var(--lemon-space-md);
+    border-bottom: 1px solid var(--lemon-border-secondary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  &__title {
+    font-weight: 600;
+    color: var(--lemon-text-primary);
+  }
+  
+  &__close {
+    background: none;
+    border: none;
+    font-size: var(--lemon-font-lg);
+    cursor: pointer;
+    color: var(--lemon-text-secondary);
+    
+    &:hover {
+      color: var(--lemon-text-primary);
+    }
+  }
+  
+  &__content {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  
+  &__tabs {
+    display: flex;
+    border-bottom: 1px solid var(--lemon-border-secondary);
+    
+    button {
+      flex: 1;
+      padding: var(--lemon-space-sm) var(--lemon-space-md);
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--lemon-text-secondary);
+      
+      &.active {
+        color: var(--lemon-primary);
+        border-bottom: 2px solid var(--lemon-primary);
+      }
+    }
+  }
+  
+  &__code {
+    padding: var(--lemon-space-md);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: var(--lemon-font-xs);
+    background: var(--lemon-bg-tertiary);
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .l-form-debug-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    width: auto;
+    max-height: none;
+    border-radius: 0;
+  }
+  
+  .l-form-actions {
+    flex-direction: column;
+    
+    button {
+      width: 100%;
+    }
+  }
+}

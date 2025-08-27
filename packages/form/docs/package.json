@@ -11,7 +11,7 @@
     "deploy": "sh deploy.sh"
   },
   "dependencies": {
-    "@ldesign/form": "workspace:*",
+    "@lemonform/form": "workspace:*",
     "vue": "^3.4.0"
   },
   "devDependencies": {

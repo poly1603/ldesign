@@ -1,26 +1,34 @@
-# @ldesign/form
+# 🍋 LemonForm
 
-一个功能完整的 Vue 3 表单系统，支持 Vue 组件、Composition API 以及原生 JavaScript 三种使用方式。
+一个强大、灵活、易用的动态表单库，专为 Vue 3 设计，提供完整的表单解决方案。
+
+[![npm version](https://badge.fury.io/js/@lemonform%2Fform.svg)](https://badge.fury.io/js/@lemonform%2Fform)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
+[![Vue 3](https://img.shields.io/badge/Vue-3.x-4FC08D.svg)](https://vuejs.org/)
 
 ## ✨ 特性
 
-- 🎯 **多种使用方式**：支持 Vue 组件、Composition API Hook 和原生 JavaScript
-- 📱 **响应式设计**：完全适配移动端，支持断点响应式布局
-- 🔧 **配置驱动**：通过配置快速创建功能丰富的表单
-- ✅ **强大验证**：内置丰富的验证规则，支持自定义验证器
-- 🎨 **主题系统**：支持自定义 CSS 变量和样式覆盖
-- 📦 **TypeScript**：完整的类型定义，确保类型安全
-- 🚀 **高性能**：优化的渲染和响应式系统
-- 🔌 **插件化**：支持通过插件机制扩展功能
+- 🚀 **开箱即用** - 零配置快速上手，内置常用字段类型
+- 🎨 **高度可定制** - 支持自定义组件、样式和验证规则
+- 📱 **响应式布局** - 自动适配不同屏幕尺寸，支持栅格布局
+- ✅ **强大验证** - 内置丰富验证规则，支持异步验证和自定义验证器
+- 🔄 **条件渲染** - 支持字段间联动，动态显示/隐藏字段
+- 🎯 **TypeScript** - 完整的类型定义，提供优秀的开发体验
+- 🛠 **调试友好** - 内置调试面板，实时查看表单状态
+- 📦 **轻量级** - 核心包体积小，支持按需加载
 
 ## 📦 安装
 
 ```bash
-npm install @ldesign/form
-# 或
-yarn add @ldesign/form
-# 或
-pnpm add @ldesign/form
+# npm
+npm install @lemonform/form
+
+# yarn
+yarn add @lemonform/form
+
+# pnpm
+pnpm add @lemonform/form
 ```
 
 ## 🚀 快速开始
