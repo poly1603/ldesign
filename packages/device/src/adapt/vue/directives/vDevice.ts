@@ -9,19 +9,58 @@ import { DeviceDetector } from '../../../core/DeviceDetector'
 interface ElementWithDeviceData extends HTMLElement {
   __deviceChangeHandler?: (deviceInfo: DeviceInfo) => void
   __deviceDetector?: DeviceDetector
+  __lastDeviceType?: DeviceType
+  __isVisible?: boolean
+  __directiveBinding?: DirectiveBinding<DeviceDirectiveValue>
 }
 
-// 全局设备检测器实例
+// 全局设备检测器实例和性能优化
 let globalDetector: DeviceDetector | null = null
+let elementCount = 0
+let lastGlobalDeviceType: DeviceType | null = null
+
+// 性能优化：批量更新队列
+let updateQueue: Set<ElementWithDeviceData> = new Set()
+let isUpdateScheduled = false
 
 /**
- * 获取全局设备检测器实例
+ * 获取全局设备检测器实例 - 优化版本
  */
 function getGlobalDetector(): DeviceDetector {
   if (!globalDetector) {
     globalDetector = new DeviceDetector()
+
+    // 全局设备变化处理器
+    globalDetector.on('deviceChange', (deviceInfo: DeviceInfo) => {
+      lastGlobalDeviceType = deviceInfo.type
+      scheduleUpdate()
+    })
   }
   return globalDetector
+}
+
+/**
+ * 调度批量更新
+ */
+function scheduleUpdate(): void {
+  if (isUpdateScheduled || updateQueue.size === 0) {
+    return
+  }
+
+  isUpdateScheduled = true
+  requestAnimationFrame(() => {
+    const elementsToUpdate = Array.from(updateQueue)
+    updateQueue.clear()
+    isUpdateScheduled = false
+
+    elementsToUpdate.forEach(element => {
+      if (element.isConnected && element.__directiveBinding) {
+        const detector = getGlobalDetector()
+        const currentType = detector.getDeviceType()
+        updateElementVisibility(element, element.__directiveBinding, currentType)
+      }
+    })
+  })
 }
 
 /**
@@ -72,30 +111,41 @@ function shouldShowElement(
 }
 
 /**
- * 更新元素显示状态
+ * 更新元素显示状态 - 优化版本
  */
 function updateElementVisibility(
-  el: HTMLElement,
+  el: ElementWithDeviceData,
   binding: DirectiveBinding<DeviceDirectiveValue>,
   currentType: DeviceType,
 ) {
+  // 性能优化：避免重复计算
+  if (el.__lastDeviceType === currentType) {
+    return
+  }
+
+  el.__lastDeviceType = currentType
   const { types, inverse } = parseDirectiveValue(binding.value)
   const shouldShow = shouldShowElement(currentType, types, inverse)
 
-  if (shouldShow) {
-    // 显示元素
-    if (el.style.display === 'none') {
-      el.style.display = el.dataset.originalDisplay || ''
+  // 性能优化：只在可见性真正改变时更新 DOM
+  if (el.__isVisible !== shouldShow) {
+    el.__isVisible = shouldShow
+
+    if (shouldShow) {
+      // 显示元素
+      if (el.style.display === 'none') {
+        el.style.display = el.dataset.originalDisplay || ''
+      }
+      el.removeAttribute('hidden')
     }
-    el.removeAttribute('hidden')
-  }
-  else {
-    // 隐藏元素
-    if (!el.dataset.originalDisplay) {
-      el.dataset.originalDisplay = el.style.display || ''
+    else {
+      // 隐藏元素
+      if (!el.dataset.originalDisplay) {
+        el.dataset.originalDisplay = el.style.display || ''
+      }
+      el.style.display = 'none'
+      el.setAttribute('hidden', '')
     }
-    el.style.display = 'none'
-    el.setAttribute('hidden', '')
   }
 }
 
@@ -105,20 +155,29 @@ function updateElementVisibility(
 export const vDevice: Directive<HTMLElement, DeviceDirectiveValue> = {
   mounted(el, binding) {
     const detector = getGlobalDetector()
+    const elementWithData = el as ElementWithDeviceData
     const currentType = detector.getDeviceType()
 
-    // 初始化显示状态
-    updateElementVisibility(el, binding, currentType)
+    // 增加元素计数
+    elementCount++
 
-    // 监听设备变化
+    // 初始化元素状态
+    elementWithData.__lastDeviceType = undefined
+    elementWithData.__isVisible = undefined
+    elementWithData.__directiveBinding = binding
+
+    // 初始化显示状态
+    updateElementVisibility(elementWithData, binding, currentType)
+
+    // 监听设备变化 - 使用批量更新优化性能
     const handleDeviceChange = (deviceInfo: DeviceInfo) => {
-      updateElementVisibility(el, binding, deviceInfo.type)
+      updateQueue.add(elementWithData)
+      scheduleUpdate()
     }
 
     detector.on('deviceChange', handleDeviceChange)
 
     // 将事件处理器存储到元素上，以便在卸载时移除
-    const elementWithData = el as ElementWithDeviceData
     elementWithData.__deviceChangeHandler = handleDeviceChange
     elementWithData.__deviceDetector = detector
   },
@@ -126,9 +185,13 @@ export const vDevice: Directive<HTMLElement, DeviceDirectiveValue> = {
   updated(el, binding) {
     const elementWithData = el as ElementWithDeviceData
     const detector = elementWithData.__deviceDetector
+
+    // 更新 binding 引用
+    elementWithData.__directiveBinding = binding
+
     if (detector) {
       const currentType = detector.getDeviceType()
-      updateElementVisibility(el, binding, currentType)
+      updateElementVisibility(elementWithData, binding, currentType)
     }
   },
 
@@ -137,6 +200,12 @@ export const vDevice: Directive<HTMLElement, DeviceDirectiveValue> = {
     const detector = elementWithData.__deviceDetector
     const handler = elementWithData.__deviceChangeHandler
 
+    // 减少元素计数
+    elementCount--
+
+    // 从更新队列中移除
+    updateQueue.delete(elementWithData)
+
     if (detector && handler) {
       detector.off('deviceChange', handler)
     }
@@ -144,6 +213,9 @@ export const vDevice: Directive<HTMLElement, DeviceDirectiveValue> = {
     // 清理引用
     delete elementWithData.__deviceChangeHandler
     delete elementWithData.__deviceDetector
+    delete elementWithData.__lastDeviceType
+    delete elementWithData.__isVisible
+    delete elementWithData.__directiveBinding
 
     // 恢复原始显示状态
     if (el.dataset.originalDisplay) {
@@ -151,6 +223,13 @@ export const vDevice: Directive<HTMLElement, DeviceDirectiveValue> = {
       delete el.dataset.originalDisplay
     }
     el.removeAttribute('hidden')
+
+    // 如果没有元素使用检测器了，清理全局检测器
+    if (elementCount === 0 && globalDetector) {
+      globalDetector.destroy()
+      globalDetector = null
+      lastGlobalDeviceType = null
+    }
   },
 }
 

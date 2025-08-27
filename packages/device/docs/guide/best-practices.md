@@ -159,7 +159,8 @@ class OrientationManager {
     if (this.currentOrientation === 'landscape') {
       // 横屏布局
       this.enableLandscapeMode()
-    } else {
+    }
+    else {
       // 竖屏布局
       this.enablePortraitMode()
     }
@@ -205,7 +206,7 @@ class ResourceManager {
     const networkModule = await this.detector.loadModule('network')
     const networkInfo = networkModule.getData()
 
-    this.detector.on('networkChange', info => {
+    this.detector.on('networkChange', (info) => {
       this.adaptToNetworkCondition(info)
     })
 
@@ -216,7 +217,8 @@ class ResourceManager {
     if (networkInfo.type === '2g' || networkInfo.saveData) {
       // 低速网络：加载低质量资源
       this.loadLowQualityAssets()
-    } else if (networkInfo.type === '4g' || networkInfo.type === '5g') {
+    }
+    else if (networkInfo.type === '4g' || networkInfo.type === '5g') {
       // 高速网络：加载高质量资源
       this.loadHighQualityAssets()
     }
@@ -245,14 +247,15 @@ class OfflineManager {
   private async setupOfflineHandling() {
     const networkModule = await this.detector.loadModule('network')
 
-    this.detector.on('networkChange', info => {
+    this.detector.on('networkChange', (info) => {
       const wasOnline = this.isOnline
       this.isOnline = info.status === 'online'
 
       if (!wasOnline && this.isOnline) {
         // 从离线恢复到在线
         this.handleBackOnline()
-      } else if (wasOnline && !this.isOnline) {
+      }
+      else if (wasOnline && !this.isOnline) {
         // 从在线变为离线
         this.handleGoOffline()
       }
@@ -289,14 +292,15 @@ class PowerManager {
     try {
       const batteryModule = await this.detector.loadModule('battery')
 
-      this.detector.on('batteryChange', info => {
+      this.detector.on('batteryChange', (info) => {
         this.adaptToBatteryLevel(info)
       })
 
       // 初始检查
       const batteryInfo = batteryModule.getData()
       this.adaptToBatteryLevel(batteryInfo)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('电池 API 不支持，跳过电池优化')
     }
   }
@@ -305,7 +309,8 @@ class PowerManager {
     if (batteryInfo.level < 0.2 && !batteryInfo.charging) {
       // 低电量且未充电：启用省电模式
       this.enablePowerSavingMode()
-    } else if (batteryInfo.level > 0.8 || batteryInfo.charging) {
+    }
+    else if (batteryInfo.level > 0.8 || batteryInfo.charging) {
       // 高电量或正在充电：启用完整功能
       this.enableFullFeatures()
     }
@@ -345,7 +350,8 @@ class LocationManager {
       }
 
       return await geolocationModule.getCurrentPosition()
-    } catch (error) {
+    }
+    catch (error) {
       this.handleLocationError(error)
       return null
     }
@@ -371,7 +377,8 @@ class LocationManager {
     try {
       const geolocationModule = await this.detector.loadModule('geolocation')
       this.watchId = await geolocationModule.startWatching(callback)
-    } catch (error) {
+    }
+    catch (error) {
       this.handleLocationError(error)
     }
   }
@@ -419,11 +426,12 @@ watch(deviceType, (newType, oldType) => {
 })
 
 // 监听网络变化
-watch(isOnline, online => {
+watch(isOnline, (online) => {
   if (online) {
     // 网络恢复，同步数据
     syncData()
-  } else {
+  }
+  else {
     // 网络断开，启用离线模式
     enableOfflineMode()
   }
@@ -436,15 +444,23 @@ watch(isOnline, online => {
 ```vue
 <template>
   <!-- 基础指令使用 -->
-  <nav v-device-mobile class="mobile-nav">移动端导航</nav>
+  <nav v-device-mobile class="mobile-nav">
+    移动端导航
+  </nav>
 
-  <nav v-device-desktop class="desktop-nav">桌面端导航</nav>
+  <nav v-device-desktop class="desktop-nav">
+    桌面端导航
+  </nav>
 
   <!-- 组合条件 -->
-  <div v-device="{ type: 'mobile', orientation: 'portrait' }">移动端竖屏专用内容</div>
+  <div v-device="{ type: 'mobile', orientation: 'portrait' }">
+    移动端竖屏专用内容
+  </div>
 
   <!-- 多设备支持 -->
-  <div v-device="['tablet', 'desktop']">平板和桌面设备内容</div>
+  <div v-device="['tablet', 'desktop']">
+    平板和桌面设备内容
+  </div>
 </template>
 ```
 
@@ -460,7 +476,8 @@ class DeviceService {
     try {
       this.detector = new DeviceDetector()
       return true
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('设备检测初始化失败，使用默认配置', error)
       this.setupFallback()
       return false
@@ -507,7 +524,8 @@ class ModuleManager {
       const module = await this.detector.loadModule<T>(name)
       this.loadedModules.add(name)
       return module
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`模块 ${name} 加载失败:`, error)
       return null
     }
@@ -548,8 +566,8 @@ describe('DeviceDetector', () => {
     expect(['mobile', 'tablet', 'desktop']).toContain(deviceInfo.type)
   })
 
-  it('应该正确处理事件监听', done => {
-    detector.on('deviceChange', info => {
+  it('应该正确处理事件监听', (done) => {
+    detector.on('deviceChange', (info) => {
       expect(info).toBeDefined()
       done()
     })

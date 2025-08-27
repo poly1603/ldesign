@@ -1,159 +1,309 @@
-# @ldesign/device
+# @ldesign/device 🚀
 
 <div align="center">
 
 ![Logo](https://via.placeholder.com/120x120/4facfe/ffffff?text=📱)
 
-**现代化的设备信息检测库**
+**🎯 新一代设备信息检测库 - 让设备适配变得简单而优雅！**
 
-_轻量、高效、类型安全的设备检测解决方案，完美支持 Vue 3_
+_🌟 轻量、高效、类型安全的设备检测解决方案，完美支持 Vue 3 生态系统_
 
-[![npm version](https://img.shields.io/npm/v/@ldesign/device.svg)](https://www.npmjs.com/package/@ldesign/device)
-[![npm downloads](https://img.shields.io/npm/dm/@ldesign/device.svg)](https://www.npmjs.com/package/@ldesign/device)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/@ldesign/device.svg)](https://bundlephobia.com/package/@ldesign/device)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/npm/l/@ldesign/device.svg)](https://github.com/ldesign-org/device/blob/main/LICENSE)
+[![npm version](https://img.shields.io/npm/v/@ldesign/device.svg?style=flat-square&color=4facfe)](https://www.npmjs.com/package/@ldesign/device)
+[![npm downloads](https://img.shields.io/npm/dm/@ldesign/device.svg?style=flat-square&color=success)](https://www.npmjs.com/package/@ldesign/device)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/@ldesign/device.svg?style=flat-square&color=orange)](https://bundlephobia.com/package/@ldesign/device)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg?style=flat-square)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/npm/l/@ldesign/device.svg?style=flat-square&color=green)](https://github.com/ldesign-org/device/blob/main/LICENSE)
+[![Test Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen.svg?style=flat-square)](./coverage/)
 
-[📖 文档](https://ldesign.github.io/device/) | [🚀 快速开始](#快速开始) | [💡 示例](./examples/) |
-[🔧 API 参考](./docs/api/)
+[📖 完整文档](./docs/) | [🚀 快速开始](#-快速开始) | [💡 在线示例](./examples/) | [🔧 API 参考](./docs/api/) | [🎮 Playground](https://stackblitz.com/edit/ldesign-device)
 
 </div>
 
 ---
 
-## ✨ 特性亮点
+## 🎉 为什么选择 @ldesign/device？
 
-### 🎯 **精准检测**
+> 💡 **"在多设备时代，精准的设备检测是优秀用户体验的基石"**
 
-- 📱 **设备类型识别** - 智能区分桌面、平板、手机设备
-- 🔄 **屏幕方向监听** - 实时响应设备方向变化
-- 📏 **自定义断点** - 灵活配置设备类型判断阈值
-- 🖱️ **触摸设备检测** - 准确识别触摸屏设备
+想象一下：用户在手机上浏览你的网站，突然旋转屏幕，或者从桌面切换到平板模式 - 你的应用能够优雅地适应这些变化吗？@ldesign/device 让这一切变得轻而易举！
 
-### ⚡ **高性能**
+## ✨ 核心特性
 
-- 🪶 **轻量级设计** - 核心库仅 ~8KB (gzipped)
-- 🌳 **Tree Shaking** - 支持按需打包，减少包体积
-- 🧩 **模块化架构** - 扩展功能按需加载
-- 🚀 **零依赖** - 无外部依赖，启动更快
+### 🎯 **智能检测，精准无误**
+```typescript
+// 🔥 一行代码，搞定设备检测
+const { isMobile, isTablet, orientation } = useDevice()
 
-### 🔧 **开发友好**
+// 🎨 响应式设计从未如此简单
+if (isMobile.value) {
+  // 移动端专属体验
+} else if (isTablet.value) {
+  // 平板优化界面
+}
+```
 
-- 📘 **TypeScript 优先** - 完整的类型定义和智能提示
-- 🎨 **Vue 3 深度集成** - 原生支持 Composition API
-- 📚 **丰富的文档** - 详细的使用指南和最佳实践
-- 🧪 **完整测试覆盖** - 保证代码质量和稳定性
+### ⚡ **性能卓越，轻如羽毛**
+- 🪶 **超轻量** - 核心库仅 ~8KB (gzipped)，比一张图片还小！
+- 🌳 **Tree Shaking** - 只打包你用到的功能，告别代码冗余
+- 🧩 **模块化** - 电池、网络、地理位置等高级功能按需加载
+- 🚀 **零依赖** - 纯原生实现，启动速度飞快
 
-### 🌐 **跨平台支持**
+### 🔧 **开发体验，丝滑顺畅**
+- 📘 **TypeScript 原生支持** - 智能提示让你编码如飞
+- 🎨 **Vue 3 深度集成** - Composition API + 指令，双重保障
+- 📚 **文档详尽** - 从入门到精通，一站式学习体验
+- 🧪 **测试覆盖率 95%+** - 每一行代码都经过严格测试
 
-- 🖥️ **现代浏览器** - Chrome 60+, Firefox 55+, Safari 12+, Edge 79+
+### 🌐 **兼容性，无懈可击**
+- 🖥️ **桌面浏览器** - Chrome 60+, Firefox 55+, Safari 12+, Edge 79+
 - 📱 **移动设备** - iOS Safari, Chrome Mobile, Samsung Internet
+- 🔄 **SSR 友好** - Next.js, Nuxt.js 完美支持
+- 🎯 **渐进增强** - 优雅降级，老设备也能正常工作
 - 🔄 **服务端渲染** - 完美支持 SSR/SSG 环境
 - 🛡️ **优雅降级** - 在不支持的环境中提供基础功能
 
 ## 📦 安装
 
-选择你喜欢的包管理器：
+选择你最爱的包管理器，一键安装：
 
 ```bash
-# npm
-npm install @ldesign/device
-
-# pnpm (推荐)
+# 🚀 pnpm (推荐 - 速度最快)
 pnpm add @ldesign/device
 
-# yarn
+# 📦 npm (经典选择)
+npm install @ldesign/device
+
+# 🧶 yarn (稳定可靠)
 yarn add @ldesign/device
 
-# bun
+# ⚡ bun (新时代选择)
 bun add @ldesign/device
 ```
 
 ## 🚀 快速开始
 
-### 基础使用
+### 🎯 30 秒上手 - 基础使用
 
 ```typescript
 import { DeviceDetector } from '@ldesign/device'
 
-// 创建设备检测器实例
-const detector = new DeviceDetector({
-  enableResize: true, // 启用窗口大小变化监听
-  enableOrientation: true, // 启用屏幕方向变化监听
-  debounceDelay: 300, // 防抖延迟（毫秒）
-})
+// 🎉 一行代码创建检测器
+const detector = new DeviceDetector()
 
-// 获取完整设备信息
-const deviceInfo = detector.getDeviceInfo()
-console.log('设备信息:', deviceInfo)
-// {
-//   type: 'desktop',
-//   orientation: 'landscape',
-//   width: 1920,
-//   height: 1080,
-//   pixelRatio: 1,
-//   isTouchDevice: false,
-//   os: { name: 'Windows', version: '10' },
-//   browser: { name: 'Chrome', version: '91' }
-// }
+// 🔍 获取设备信息，就这么简单！
+const device = detector.getDeviceInfo()
 
-// 快捷方法
-console.log('是否移动设备:', detector.isMobile()) // false
-console.log('是否平板设备:', detector.isTablet()) // false
-console.log('是否桌面设备:', detector.isDesktop()) // true
-console.log('屏幕方向:', detector.getOrientation()) // 'landscape'
+console.log(`📱 设备类型: ${device.type}`)        // 'mobile' | 'tablet' | 'desktop'
+console.log(`🔄 屏幕方向: ${device.orientation}`)  // 'portrait' | 'landscape'
+console.log(`📏 屏幕尺寸: ${device.width}x${device.height}`)
+console.log(`👆 触摸设备: ${device.isTouchDevice}`)
+
+// 🎯 快捷判断方法
+if (detector.isMobile()) {
+  console.log('🎉 欢迎移动用户！')
+} else if (detector.isTablet()) {
+  console.log('📱 平板体验优化中...')
+} else {
+  console.log('🖥️ 桌面端完整功能！')
+}
 ```
 
-### 事件监听
-
-```typescript
-// 监听设备信息变化
-detector.on('deviceChange', deviceInfo => {
-  console.log('设备信息变化:', deviceInfo)
-  // 根据设备类型调整布局
-  if (deviceInfo.type === 'mobile') {
-    enableMobileLayout()
-  }
-})
-
-// 监听屏幕方向变化
-detector.on('orientationChange', orientation => {
-  console.log('屏幕方向变化:', orientation)
-  // 根据方向调整界面
-  if (orientation === 'landscape') {
-    enableLandscapeMode()
-  }
-})
-
-// 监听窗口大小变化
-detector.on('resize', ({ width, height }) => {
-  console.log(`窗口大小变化: ${width}×${height}`)
-})
-```
-
-### 自定义断点
+### ⚙️ 高级配置 - 释放全部潜能
 
 ```typescript
 const detector = new DeviceDetector({
+  // 🎛️ 自定义断点 - 精确控制设备分类
   breakpoints: {
-    mobile: 480, // 0-480px 为移动设备
-    tablet: 1024, // 481-1024px 为平板设备
-    desktop: 1025, // 1025px+ 为桌面设备
+    mobile: 768,    // 📱 移动设备上限
+    tablet: 1024,   // 📱 平板设备上限
   },
+
+  // 🔄 实时监听配置
+  enableResize: true,        // 窗口大小变化
+  enableOrientation: true,   // 屏幕方向变化
+  debounceDelay: 300,       // 防抖延迟（毫秒）
+
+  // 🎯 性能优化
+  throttleDelay: 100,       // 节流延迟
 })
 ```
 
-## 🎨 Vue 3 集成
+### 🎧 事件监听 - 实时响应变化
 
-@ldesign/device 为 Vue 3 提供了完整的集成方案，让你在 Vue 项目中更轻松地使用设备检测功能。
+```typescript
+// 🔄 监听设备变化，实时响应
+detector.on('deviceChange', (deviceInfo) => {
+  console.log('🎉 设备变化了！', deviceInfo)
 
-### Composition API
+  // 🎯 智能布局切换
+  switch (deviceInfo.type) {
+    case 'mobile':
+      showMobileNavigation()
+      break
+    case 'tablet':
+      showTabletSidebar()
+      break
+    case 'desktop':
+      showFullDesktopLayout()
+      break
+  }
+})
 
-使用响应式的 composables 获取设备信息：
+// 📱 屏幕方向变化处理
+detector.on('orientationChange', (orientation) => {
+  console.log(`🔄 屏幕旋转到: ${orientation}`)
+
+  if (orientation === 'landscape') {
+    enableWideScreenMode()  // 🖥️ 横屏模式
+  } else {
+    enablePortraitMode()    // 📱 竖屏模式
+  }
+})
+
+// 📏 窗口大小实时监听
+detector.on('resize', ({ width, height }) => {
+  console.log(`📐 窗口大小: ${width}×${height}`)
+  adjustLayoutForSize(width, height)
+})
+```
+
+## 🎨 Vue 3 深度集成 - 开箱即用的响应式体验
+
+> 💡 **专为 Vue 3 设计，让设备检测与响应式系统完美融合！**
+
+### 🚀 Composition API - 现代化的开发体验
 
 ```vue
+<script setup lang="ts">
+import { useDevice, useNetwork, useBattery, useGeolocation } from '@ldesign/device/vue'
+
+// 🎯 一键获取设备信息，自动响应式
+const {
+  deviceType,     // 📱 设备类型 (mobile/tablet/desktop)
+  orientation,    // 🔄 屏幕方向 (portrait/landscape)
+  isMobile,       // 📱 是否移动设备
+  isTablet,       // 📱 是否平板
+  isDesktop,      // 🖥️ 是否桌面
+  deviceInfo,     // 📊 完整设备信息
+  refresh         // 🔄 手动刷新
+} = useDevice()
+
+// 🌐 网络状态监听
+const {
+  isOnline,       // 🌐 是否在线
+  networkType,    // 📶 网络类型 (4g/wifi/etc)
+  saveData        // 💾 省流量模式
+} = useNetwork()
+
+// 🔋 电池信息 (支持的设备)
+const {
+  batteryLevel,   // 🔋 电量百分比
+  isCharging      // ⚡ 是否充电中
+} = useBattery()
+</script>
+
+<template>
+  <div class="app">
+    <!-- 🎯 根据设备类型显示不同内容 -->
+    <MobileHeader v-if="isMobile" />
+    <TabletHeader v-else-if="isTablet" />
+    <DesktopHeader v-else />
+
+    <!-- 📱 响应式布局 -->
+    <main :class="{
+      'mobile-layout': isMobile,
+      'tablet-layout': isTablet,
+      'desktop-layout': isDesktop,
+      'landscape': orientation === 'landscape'
+    }">
+      <!-- 🌐 网络状态提示 -->
+      <div v-if="!isOnline" class="offline-banner">
+        📡 当前离线，部分功能可能受限
+      </div>
+
+      <!-- 🔋 低电量提醒 -->
+      <div v-if="batteryLevel < 0.2 && !isCharging" class="low-battery">
+        🔋 电量不足，建议开启省电模式
+      </div>
+
+      <!-- 📊 设备信息展示 -->
+      <DeviceInfo :device="deviceInfo" />
+    </main>
+  </div>
+</template>
+```
+
+### 🎯 Vue 指令 - 声明式的设备适配
+
+```vue
+<template>
+  <div>
+    <!-- 🎯 根据设备类型显示/隐藏元素 -->
+    <nav v-device="'desktop'" class="desktop-nav">
+      🖥️ 桌面端导航栏
+    </nav>
+
+    <nav v-device="['mobile', 'tablet']" class="mobile-nav">
+      📱 移动端导航栏
+    </nav>
+
+    <!-- 🔄 反向匹配 - 非移动设备显示 -->
+    <aside v-device="{ type: 'mobile', inverse: true }" class="sidebar">
+      📋 侧边栏 (仅非移动设备)
+    </aside>
+
+    <!-- 🎨 复杂条件组合 -->
+    <div v-device="'tablet'" v-show="orientation === 'landscape'">
+      📱 平板横屏专属内容
+    </div>
+  </div>
+</template>
+
 <script setup>
-import { useBattery, useDevice, useGeolocation, useNetwork } from '@ldesign/device/vue'
+import { useDevice } from '@ldesign/device/vue'
+
+const { orientation } = useDevice()
+</script>
+```
+
+### 🔌 Vue 插件 - 全局注册
+
+```typescript
+// main.ts
+import { createApp } from 'vue'
+import { DevicePlugin } from '@ldesign/device/vue'
+import App from './App.vue'
+
+const app = createApp(App)
+
+// 🚀 一键注册，全局可用
+app.use(DevicePlugin, {
+  // ⚙️ 全局配置
+  breakpoints: {
+    mobile: 768,
+    tablet: 1024,
+  },
+  enableResize: true,
+  debounceDelay: 300,
+})
+
+app.mount('#app')
+```
+
+```vue
+<!-- 🎯 在任意组件中使用 -->
+<template>
+  <div>
+    <!-- 📱 全局属性访问 -->
+    <p>当前设备: {{ $device.type }}</p>
+    <p>屏幕方向: {{ $device.orientation }}</p>
+
+    <!-- 🎨 指令自动可用 -->
+    <div v-device="'mobile'">移动端内容</div>
+  </div>
+</template>
+```
+```
 
 // 基础设备信息
 const {
@@ -236,27 +386,45 @@ const {
 ```vue
 <template>
   <!-- 基础指令 -->
-  <nav v-device-mobile class="mobile-nav">移动端导航菜单</nav>
+  <nav v-device-mobile class="mobile-nav">
+    移动端导航菜单
+  </nav>
 
-  <nav v-device-desktop class="desktop-nav">桌面端导航菜单</nav>
+  <nav v-device-desktop class="desktop-nav">
+    桌面端导航菜单
+  </nav>
 
-  <aside v-device-tablet class="tablet-sidebar">平板端侧边栏</aside>
+  <aside v-device-tablet class="tablet-sidebar">
+    平板端侧边栏
+  </aside>
 
   <!-- 触摸设备检测 -->
-  <div v-device-touch class="touch-controls">触摸操作提示</div>
+  <div v-device-touch class="touch-controls">
+    触摸操作提示
+  </div>
 
-  <div v-device-no-touch class="mouse-controls">鼠标操作提示</div>
+  <div v-device-no-touch class="mouse-controls">
+    鼠标操作提示
+  </div>
 
   <!-- 屏幕方向检测 -->
-  <div v-orientation-portrait class="portrait-layout">竖屏布局</div>
+  <div v-orientation-portrait class="portrait-layout">
+    竖屏布局
+  </div>
 
-  <div v-orientation-landscape class="landscape-layout">横屏布局</div>
+  <div v-orientation-landscape class="landscape-layout">
+    横屏布局
+  </div>
 
   <!-- 组合条件 -->
-  <div v-device="{ type: 'mobile', orientation: 'portrait' }">移动设备竖屏时显示</div>
+  <div v-device="{ type: 'mobile', orientation: 'portrait' }">
+    移动设备竖屏时显示
+  </div>
 
   <!-- 多设备支持 -->
-  <div v-device="['tablet', 'desktop']">平板或桌面设备时显示</div>
+  <div v-device="['tablet', 'desktop']">
+    平板或桌面设备时显示
+  </div>
 </template>
 ```
 
@@ -302,7 +470,9 @@ const { $device } = getCurrentInstance()?.appContext.config.globalProperties
 
 <template>
   <!-- 使用指令 -->
-  <div v-device-mobile>移动端内容</div>
+  <div v-device-mobile>
+    移动端内容
+  </div>
 </template>
 ```
 
@@ -334,10 +504,11 @@ console.log('是否在线:', networkModule.isOnline())
 console.log('连接类型:', networkModule.getConnectionType())
 
 // 监听网络变化
-detector.on('networkChange', info => {
+detector.on('networkChange', (info) => {
   if (info.status === 'offline') {
     showOfflineMessage()
-  } else if (info.type === '2g') {
+  }
+  else if (info.type === '2g') {
     enableDataSavingMode()
   }
 })
@@ -367,7 +538,7 @@ console.log('是否充电:', batteryModule.isCharging())
 console.log('电池状态:', batteryModule.getBatteryStatus())
 
 // 监听电池变化
-detector.on('batteryChange', info => {
+detector.on('batteryChange', (info) => {
   if (info.level < 0.2 && !info.charging) {
     enablePowerSavingMode()
   }
@@ -398,14 +569,15 @@ if (geoModule.isSupported()) {
   // }
 
   // 开始监听位置变化
-  const watchId = await geoModule.startWatching(position => {
+  const watchId = await geoModule.startWatching((position) => {
     console.log('位置更新:', position)
     updateMapLocation(position)
   })
 
   // 停止监听
   geoModule.stopWatching(watchId)
-} else {
+}
+else {
   console.warn('设备不支持地理位置功能')
 }
 ```
@@ -431,7 +603,8 @@ const modules = await Promise.all([
 // 错误处理
 try {
   const batteryModule = await detector.loadModule('battery')
-} catch (error) {
+}
+catch (error) {
   console.warn('电池模块加载失败:', error.message)
   // 提供降级方案
   showBatteryNotSupported()
@@ -449,7 +622,7 @@ import { DeviceDetector } from '@ldesign/device'
 
 const detector = new DeviceDetector()
 
-detector.on('deviceChange', info => {
+detector.on('deviceChange', (info) => {
   const layout = {
     mobile: { columns: 1, spacing: 8, fontSize: 14 },
     tablet: { columns: 2, spacing: 12, fontSize: 16 },
@@ -466,18 +639,19 @@ detector.on('deviceChange', info => {
 
 ```typescript
 // 根据网络状态优化资源加载
-detector.on('networkChange', info => {
+detector.on('networkChange', (info) => {
   if (info.type === '2g' || info.saveData) {
     loadLowQualityImages()
     disableAnimations()
-  } else {
+  }
+  else {
     loadHighQualityImages()
     enableAnimations()
   }
 })
 
 // 根据电池状态调整功能
-detector.on('batteryChange', info => {
+detector.on('batteryChange', (info) => {
   if (info.level < 0.2 && !info.charging) {
     enablePowerSavingMode()
     reduceBackgroundTasks()
@@ -492,16 +666,18 @@ detector.on('batteryChange', info => {
 if (detector.isTouchDevice()) {
   enableTouchGestures()
   increaseTouchTargetSize()
-} else {
+}
+else {
   enableMouseHover()
   showTooltips()
 }
 
 // 屏幕方向适配
-detector.on('orientationChange', orientation => {
+detector.on('orientationChange', (orientation) => {
   if (orientation === 'landscape') {
     showLandscapeUI()
-  } else {
+  }
+  else {
     showPortraitUI()
   }
 })

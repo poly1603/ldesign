@@ -87,7 +87,7 @@
 ### 基础使用
 
 ```typescript
-import { DeviceDetector, createDeviceManager } from '@ldesign/device'
+import { createDeviceManager, DeviceDetector } from '@ldesign/device'
 
 // 设备检测
 const detector = new DeviceDetector()
@@ -99,7 +99,7 @@ console.log(deviceInfo.browser.name) // 'Chrome' | 'Firefox' | 'Safari'
 
 // 设备管理器
 const deviceManager = createDeviceManager()
-deviceManager.onDeviceChange(newDevice => {
+deviceManager.onDeviceChange((newDevice) => {
   console.log('设备信息更新:', newDevice)
 })
 ```
@@ -108,7 +108,7 @@ deviceManager.onDeviceChange(newDevice => {
 
 ```vue
 <script setup>
-import { useDevice, useScreen, useNetwork } from '@ldesign/device/vue'
+import { useDevice, useNetwork, useScreen } from '@ldesign/device/vue'
 
 const { deviceInfo, isMobile, isDesktop } = useDevice()
 const { screenSize, orientation } = useScreen()
@@ -118,7 +118,8 @@ const { networkType, isOnline } = useNetwork()
 watchEffect(() => {
   if (isMobile.value) {
     // 移动端逻辑
-  } else if (isDesktop.value) {
+  }
+  else if (isDesktop.value) {
     // 桌面端逻辑
   }
 })

@@ -38,7 +38,9 @@ const {
     <p>设备类型: {{ deviceType }}</p>
     <p>屏幕方向: {{ orientation }}</p>
     <p>屏幕尺寸: {{ deviceInfo.width }} × {{ deviceInfo.height }}</p>
-    <button @click="refresh">刷新信息</button>
+    <button @click="refresh">
+      刷新信息
+    </button>
   </div>
 </template>
 ```
@@ -125,13 +127,25 @@ const {
 <template>
   <div>
     <div v-if="isSupported">
-      <p v-if="position">位置: {{ latitude.toFixed(6) }}, {{ longitude.toFixed(6) }}</p>
-      <p v-if="position">精度: {{ accuracy }}米</p>
-      <button @click="getCurrentPosition">获取位置</button>
-      <button :disabled="isWatching" @click="startWatching">开始监听</button>
-      <button :disabled="!isWatching" @click="stopWatching">停止监听</button>
+      <p v-if="position">
+        位置: {{ latitude.toFixed(6) }}, {{ longitude.toFixed(6) }}
+      </p>
+      <p v-if="position">
+        精度: {{ accuracy }}米
+      </p>
+      <button @click="getCurrentPosition">
+        获取位置
+      </button>
+      <button :disabled="isWatching" @click="startWatching">
+        开始监听
+      </button>
+      <button :disabled="!isWatching" @click="stopWatching">
+        停止监听
+      </button>
     </div>
-    <p v-else>不支持地理位置功能</p>
+    <p v-else>
+      不支持地理位置功能
+    </p>
     <p v-if="error" class="error">
       {{ error }}
     </p>
@@ -166,14 +180,13 @@ app.mount('#app')
 
 ```vue
 <script setup>
-import { getCurrentInstance } from 'vue'
-
-// 或者使用 inject
-import { inject } from 'vue'
+import { getCurrentInstance, inject } from 'vue'
 
 const instance = getCurrentInstance()
 const device = instance?.appContext.config.globalProperties.$device
-const device = inject('device')
+
+// 或者使用 inject
+const deviceFromInject = inject('device')
 </script>
 ```
 
@@ -186,19 +199,29 @@ const device = inject('device')
 ```vue
 <template>
   <!-- 只在移动设备显示 -->
-  <div v-device-mobile>移动设备专用内容</div>
+  <div v-device-mobile>
+    移动设备专用内容
+  </div>
 
   <!-- 只在平板设备显示 -->
-  <div v-device-tablet>平板设备专用内容</div>
+  <div v-device-tablet>
+    平板设备专用内容
+  </div>
 
   <!-- 只在桌面设备显示 -->
-  <div v-device-desktop>桌面设备专用内容</div>
+  <div v-device-desktop>
+    桌面设备专用内容
+  </div>
 
   <!-- 只在触摸设备显示 -->
-  <div v-device-touch>触摸设备专用内容</div>
+  <div v-device-touch>
+    触摸设备专用内容
+  </div>
 
   <!-- 只在非触摸设备显示 -->
-  <div v-device-no-touch>非触摸设备专用内容</div>
+  <div v-device-no-touch>
+    非触摸设备专用内容
+  </div>
 </template>
 ```
 
@@ -209,10 +232,14 @@ const device = inject('device')
 ```vue
 <template>
   <!-- 只在竖屏显示 -->
-  <div v-orientation-portrait>竖屏专用内容</div>
+  <div v-orientation-portrait>
+    竖屏专用内容
+  </div>
 
   <!-- 只在横屏显示 -->
-  <div v-orientation-landscape>横屏专用内容</div>
+  <div v-orientation-landscape>
+    横屏专用内容
+  </div>
 </template>
 ```
 
@@ -221,10 +248,14 @@ const device = inject('device')
 ```vue
 <template>
   <!-- 使用对象配置 -->
-  <div v-device="{ type: 'mobile', orientation: 'portrait' }">移动设备竖屏时显示</div>
+  <div v-device="{ type: 'mobile', orientation: 'portrait' }">
+    移动设备竖屏时显示
+  </div>
 
   <!-- 使用数组配置 -->
-  <div v-device="['mobile', 'tablet']">移动设备或平板设备时显示</div>
+  <div v-device="['mobile', 'tablet']">
+    移动设备或平板设备时显示
+  </div>
 </template>
 ```
 
@@ -323,7 +354,8 @@ onMounted(async () => {
     // 加载电池模块
     const batteryModule = await detector.loadModule('battery')
     batteryInfo.value = batteryModule.getData()
-  } catch (error) {
+  }
+  catch (error) {
     console.error('模块加载失败:', error)
   }
 })
@@ -405,7 +437,8 @@ const { getCurrentPosition, error } = useGeolocation()
 async function getLocation() {
   try {
     await getCurrentPosition()
-  } catch (err) {
+  }
+  catch (err) {
     console.error('获取位置失败:', err)
   }
 }
