@@ -39,14 +39,10 @@ class CSSVariableGenerator {
 
 ```typescript
 // BEM风格的变量命名
-const generateVariableName = (
-  prefix: string,
-  category: string,
-  size: string,
-  variant?: string
-): string => {
+function generateVariableName(prefix: string, category: string, size: string, variant?: string): string {
   const parts = [prefix, category, size]
-  if (variant) parts.push(variant)
+  if (variant)
+    parts.push(variant)
   return parts.join('-')
 }
 
@@ -88,7 +84,8 @@ class CSSInjector {
     if (style.styleSheet) {
       // IE8及以下版本
       style.styleSheet.cssText = cssString
-    } else {
+    }
+    else {
       style.appendChild(document.createTextNode(cssString))
     }
 
@@ -155,10 +152,11 @@ class ReactiveState<T> {
   }
 
   private notify(newValue: T, oldValue: T): void {
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener) => {
       try {
         listener(newValue)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Error in state listener:', error)
       }
     })
@@ -175,11 +173,13 @@ class StatePersistence {
   save(mode: SizeMode): void {
     try {
       localStorage.setItem(this.storageKey, mode)
-    } catch (error) {
+    }
+    catch (error) {
       // 降级到sessionStorage
       try {
         sessionStorage.setItem(this.storageKey, mode)
-      } catch (sessionError) {
+      }
+      catch (sessionError) {
         console.warn('Unable to persist size mode:', sessionError)
       }
     }
@@ -188,10 +188,12 @@ class StatePersistence {
   load(): SizeMode | null {
     try {
       return localStorage.getItem(this.storageKey) as SizeMode
-    } catch (error) {
+    }
+    catch (error) {
       try {
         return sessionStorage.getItem(this.storageKey) as SizeMode
-      } catch (sessionError) {
+      }
+      catch (sessionError) {
         return null
       }
     }
@@ -231,10 +233,11 @@ class EventEmitter<T = any> {
     if (callbacks) {
       // 异步执行回调，避免阻塞主线程
       Promise.resolve().then(() => {
-        callbacks.forEach(callback => {
+        callbacks.forEach((callback) => {
           try {
             callback(data)
-          } catch (error) {
+          }
+          catch (error) {
             console.error(`Error in event callback for ${event}:`, error)
           }
         })
@@ -286,7 +289,7 @@ function useSize(options: UseSizeOptions = {}): UseSizeReturn {
   const currentModeDisplayName = computed(() => getSizeModeDisplayName(currentMode.value))
 
   // 监听尺寸变化
-  const unsubscribe = sizeManager.onSizeChange(event => {
+  const unsubscribe = sizeManager.onSizeChange((event) => {
     // 更新响应式状态
     currentMode.value = event.currentMode
     currentConfig.value = sizeManager.getConfig(event.currentMode)
@@ -467,7 +470,8 @@ class CacheManager {
   set<T>(key: string, value: T, level: 1 | 2 = 1): void {
     if (level === 1) {
       this.l1Cache.set(key, value)
-    } else {
+    }
+    else {
       this.l2Cache.set(key, value)
     }
   }
@@ -499,7 +503,8 @@ class LazyLoader {
       const vueModule = await import('./vue')
       this.loadedModules.set('vue', vueModule)
       return vueModule
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to load Vue support:', error)
       throw error
     }
@@ -514,7 +519,8 @@ class LazyLoader {
       const reactModule = await import('./react')
       this.loadedModules.set('react', reactModule)
       return reactModule
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to load React support:', error)
       throw error
     }
@@ -543,17 +549,18 @@ class MemoryManager {
 
   cleanup(): void {
     // 清理弱引用
-    this.weakRefs.forEach(ref => {
+    this.weakRefs.forEach((ref) => {
       if (ref.deref() === undefined) {
         this.weakRefs.delete(ref)
       }
     })
 
     // 执行清理任务
-    this.cleanupTasks.forEach(task => {
+    this.cleanupTasks.forEach((task) => {
       try {
         task()
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Error in cleanup task:', error)
       }
     })
@@ -631,10 +638,11 @@ class ErrorHandler {
   }
 
   private report(error: SizeError): void {
-    this.errorReporters.forEach(reporter => {
+    this.errorReporters.forEach((reporter) => {
       try {
         reporter(error)
-      } catch (reportError) {
+      }
+      catch (reportError) {
         console.error('Error in error reporter:', reportError)
       }
     })
@@ -649,10 +657,11 @@ class ErrorHandler {
 ```typescript
 class DebugManager {
   private isEnabled = process.env.NODE_ENV === 'development'
-  private logs: Array<{ timestamp: number; level: string; message: string; data?: any }> = []
+  private logs: Array<{ timestamp: number, level: string, message: string, data?: any }> = []
 
   log(level: 'info' | 'warn' | 'error', message: string, data?: any): void {
-    if (!this.isEnabled) return
+    if (!this.isEnabled)
+      return
 
     const logEntry = {
       timestamp: Date.now(),

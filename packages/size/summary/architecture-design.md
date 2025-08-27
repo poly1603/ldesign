@@ -62,20 +62,20 @@
 ```typescript
 interface SizeManager {
   // 状态管理
-  getCurrentMode(): SizeMode
-  setMode(mode: SizeMode): void
-  getConfig(mode?: SizeMode): SizeConfig
+  getCurrentMode: () => SizeMode
+  setMode: (mode: SizeMode) => void
+  getConfig: (mode?: SizeMode) => SizeConfig
 
   // CSS操作
-  generateCSSVariables(mode?: SizeMode): Record<string, string>
-  injectCSS(mode?: SizeMode): void
-  removeCSS(): void
+  generateCSSVariables: (mode?: SizeMode) => Record<string, string>
+  injectCSS: (mode?: SizeMode) => void
+  removeCSS: () => void
 
   // 事件系统
-  onSizeChange(callback: SizeChangeCallback): UnsubscribeFunction
+  onSizeChange: (callback: SizeChangeCallback) => UnsubscribeFunction
 
   // 生命周期
-  destroy(): void
+  destroy: () => void
 }
 ```
 
@@ -250,7 +250,7 @@ function useSize(options: UseSizeOptions = {}): UseSizeReturn {
   const currentConfig = ref<SizeConfig>(sizeManager.getConfig())
 
   // 3. 监听变化
-  const unsubscribe = sizeManager.onSizeChange(event => {
+  const unsubscribe = sizeManager.onSizeChange((event) => {
     currentMode.value = event.currentMode
     currentConfig.value = sizeManager.getConfig(event.currentMode)
   })
@@ -322,10 +322,12 @@ export const SizeSwitcher = defineComponent({
 class SizeManagerImpl {
   setMode(mode: SizeMode): void {
     // 1. 验证输入
-    if (!isValidSizeMode(mode)) return
+    if (!isValidSizeMode(mode))
+      return
 
     // 2. 检查变化
-    if (mode === this.currentMode) return
+    if (mode === this.currentMode)
+      return
 
     // 3. 更新状态
     const previousMode = this.currentMode
@@ -378,10 +380,11 @@ class EventManager {
   }
 
   emit(event: SizeChangeEvent): void {
-    this.listeners.forEach(callback => {
+    this.listeners.forEach((callback) => {
       try {
         callback(event)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Error in size change callback:', error)
       }
     })
@@ -397,8 +400,8 @@ class EventManager {
 interface SizePlugin {
   name: string
   version?: string
-  install(manager: SizeManager, options?: any): void
-  uninstall?(manager: SizeManager): void
+  install: (manager: SizeManager, options?: any) => void
+  uninstall?: (manager: SizeManager) => void
 }
 
 class PluginManager {
@@ -449,7 +452,8 @@ class ThemeManager {
 
   switchTheme(themeName: string): void {
     const theme = this.themes.get(themeName)
-    if (!theme) return
+    if (!theme)
+      return
 
     this.currentTheme = themeName
     // 更新配置和CSS变量

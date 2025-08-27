@@ -1,5 +1,6 @@
 import { resolve } from 'node:path'
 import vue from '@vitejs/plugin-vue'
+import vueJsx from '@vitejs/plugin-vue-jsx'
 import { defineConfig } from 'vitest/config'
 
 export interface VitestConfigOptions {
@@ -39,7 +40,7 @@ export function createVitestConfig(options: VitestConfigOptions = {}) {
 
   const plugins = []
   if (enableVue) {
-    plugins.push(vue())
+    plugins.push(vue(), vueJsx())
   }
 
   const defaultAlias = {

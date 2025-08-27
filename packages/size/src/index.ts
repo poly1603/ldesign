@@ -1,11 +1,18 @@
-export * from './core/css-generator'
-
-export * from './core/css-injector'
+// API 导出
+export * from './api'
+// 便捷导出
+export { Size } from './api'
 // 核心功能导出
+export * from './core/css-generator'
+export * from './core/css-injector'
 export * from './core/presets'
+
 export * from './core/size-manager'
+
 // 默认导出
 export { globalSizeManager as default } from './core/size-manager'
+
+export * from './core/storage-manager'
 
 // 类型导出
 export * from './types'
