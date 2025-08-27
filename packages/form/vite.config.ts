@@ -1,59 +1,69 @@
 import { resolve } from 'node:path'
 import vue from '@vitejs/plugin-vue'
+import dts from 'vite-plugin-dts'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
     vue(),
-    // 暂时禁用DTS插件避免类型错误
-    // dts({
-    //   insertTypesEntry: true,
-    //   cleanVueFileName: true,
-    //   skipDiagnostics: true,
-    //   logDiagnostics: false,
-    //   noEmitOnError: false,
-    //   rollupTypes: true,
-    // }),
+    dts({
+      insertTypesEntry: true,
+      cleanVueFileName: true,
+      skipDiagnostics: false,
+      logDiagnostics: true,
+      rollupTypes: true,
+      include: ['src/**/*'],
+      exclude: ['src/**/*.test.*', 'src/**/*.spec.*']
+    })
   ],
 
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'LDesignForm',
-      formats: ['es', 'cjs'],
-      fileName: (format) => {
-        const ext = format === 'es' ? 'mjs' : 'cjs'
-        return `index.${ext}`
+      entry: {
+        index: resolve(__dirname, 'src/index.ts'),
+        core: resolve(__dirname, 'src/core/index.ts'),
+        vue: resolve(__dirname, 'src/vue/index.ts'),
+        utils: resolve(__dirname, 'src/utils/index.ts')
       },
+      name: 'LemonForm',
+      formats: ['es', 'cjs']
     },
     rollupOptions: {
       external: ['vue'],
       output: {
         globals: {
-          vue: 'Vue',
+          vue: 'Vue'
         },
-        exports: 'named',
-        assetFileNames: (assetInfo) => {
-          if (assetInfo.name === 'style.css') {
-            return 'index.css'
-          }
-          return assetInfo.name || 'asset'
-        },
-      },
+        exports: 'named'
+      }
     },
     sourcemap: true,
-    minify: 'terser',
-    cssCodeSplit: false,
+    minify: 'esbuild',
+    target: 'es2018'
   },
 
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
-    },
+      '@': resolve(__dirname, 'src')
+    }
+  },
+
+  css: {
+    preprocessorOptions: {
+      less: {
+        javascriptEnabled: true
+      }
+    }
   },
 
   test: {
     environment: 'jsdom',
     globals: true,
+    setupFiles: ['./test/setup.ts']
   },
+
+  server: {
+    port: 5173,
+    open: true
+  }
 })

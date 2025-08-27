@@ -2,9 +2,8 @@ import { resolve } from 'node:path'
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: '@ldesign/form',
-  description:
-    '现代化的 Vue 3 表单组件库 - 支持动态表单、验证、主题定制的完整解决方案',
+  title: 'LemonForm',
+  description: '一个强大、灵活、易用的动态表单库，专为 Vue 3 设计',
   lang: 'zh-CN',
 
   base: '/',
@@ -12,38 +11,37 @@ export default defineConfig({
 
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
-    ['meta', { name: 'theme-color', content: '#646cff' }],
+    ['meta', { name: 'theme-color', content: '#f7d51d' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:locale', content: 'zh-CN' }],
     [
       'meta',
-      { property: 'og:title', content: '@ldesign/form | Vue 3 表单组件库' },
+      { property: 'og:title', content: 'LemonForm | Vue 3 动态表单库' },
     ],
-    ['meta', { property: 'og:site_name', content: '@ldesign/form' }],
+    ['meta', { property: 'og:site_name', content: 'LemonForm' }],
     ['meta', { property: 'og:image', content: '/og-image.png' }],
     [
       'meta',
-      { property: 'og:url', content: 'https://ldesign.github.io/form/' },
+      { property: 'og:url', content: 'https://lemonform.github.io/form/' },
     ],
   ],
 
   themeConfig: {
     logo: '/logo.svg',
-    siteTitle: '@ldesign/form',
+    siteTitle: 'LemonForm',
 
     nav: [
-      { text: '指南', link: '/guide/introduction' },
-      { text: 'API', link: '/api/components' },
-      { text: '示例', link: '/examples/basic' },
-      { text: '主题', link: '/theme/presets' },
+      { text: '指南', link: '/guide/' },
+      { text: 'API', link: '/api/' },
+      { text: '示例', link: '/examples/' },
+      { text: '最佳实践', link: '/best-practices' },
       {
-        text: '更多',
+        text: '链接',
         items: [
+          { text: 'GitHub', link: 'https://github.com/lemonform/form' },
+          { text: 'NPM', link: 'https://www.npmjs.com/package/@lemonform/form' },
           { text: '更新日志', link: '/changelog' },
-          { text: '贡献指南', link: '/contributing' },
-          { text: 'GitHub', link: 'https://github.com/ldesign/form' },
-          { text: 'NPM', link: 'https://www.npmjs.com/package/@ldesign/form' },
-          { text: 'Issues', link: 'https://github.com/ldesign/form/issues' },
+          { text: '贡献指南', link: '/contributing' }
         ],
       },
     ],
@@ -155,21 +153,21 @@ export default defineConfig({
       ],
     },
 
-    socialLinks: [{ icon: 'github', link: 'https://github.com/ldesign/form' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/lemonform/form' }],
 
     footer: {
-      message: '基于 MIT 许可发布',
-      copyright: 'Copyright © 2024 LDesign Team',
+      message: 'Released under the MIT License.',
+      copyright: 'Copyright © 2024 LemonForm Team',
     },
 
     editLink: {
       pattern:
-        'https://github.com/ldesign/form/edit/main/packages/form/docs/:path',
-      text: '在 GitHub 上编辑此页面',
+        'https://github.com/lemonform/form/edit/main/packages/form/docs/:path',
+      text: '在 GitHub 上编辑此页',
     },
 
     lastUpdated: {
-      text: '最后更新于',
+      text: '最后更新',
       formatOptions: {
         dateStyle: 'short',
         timeStyle: 'medium',

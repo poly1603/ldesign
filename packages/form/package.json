@@ -1,80 +1,120 @@
 {
-  "name": "@ldesign/form",
+  "name": "@lemonform/form",
   "version": "1.0.0",
-  "description": "A modern Vue3 form library with TypeScript support",
-  "author": "LDesign Team",
-  "license": "MIT",
+  "description": "一个强大、灵活、易用的动态表单库，支持Vue 3，提供完整的表单解决方案",
   "keywords": [
-    "vue3",
     "form",
+    "dynamic-form",
+    "vue",
+    "vue3",
     "typescript",
-    "composition-api",
     "validation",
+    "layout",
     "responsive",
-    "modular"
+    "form-builder",
+    "form-engine"
   ],
+  "author": "LemonForm Team",
+  "license": "MIT",
+  "homepage": "https://github.com/lemonform/form#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lemonform/form.git",
+    "directory": "packages/form"
+  },
+  "bugs": {
+    "url": "https://github.com/lemonform/form/issues"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
-      "import": "./esm/index.js",
-      "require": "./cjs/index.js"
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     },
-    "./package.json": "./package.json"
+    "./core": {
+      "import": "./dist/core/index.esm.js",
+      "require": "./dist/core/index.js",
+      "types": "./dist/core/index.d.ts"
+    },
+    "./vue": {
+      "import": "./dist/vue/index.esm.js",
+      "require": "./dist/vue/index.js",
+      "types": "./dist/vue/index.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils/index.esm.js",
+      "require": "./dist/utils/index.js",
+      "types": "./dist/utils/index.d.ts"
+    },
+    "./style.css": "./dist/style.css"
   },
-  "main": "cjs/index.js",
-  "module": "esm/index.js",
-  "types": "types/index.d.ts",
   "files": [
-    "README.md",
-    "cjs",
     "dist",
-    "esm",
-    "src",
-    "types"
+    "README.md",
+    "CHANGELOG.md"
   ],
-  "engines": {
-    "node": ">=16.0.0"
-  },
   "scripts": {
-    "build": "node scripts/build.js",
+    "dev": "vite",
+    "build": "npm run build:lib && npm run build:types",
     "build:lib": "vite build",
-    "build:check": "vue-tsc && vite build",
     "build:types": "vue-tsc --declaration --emitDeclarationOnly",
+    "build:watch": "vite build --watch",
+    "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "lint": "eslint src --ext .ts,.vue",
-    "lint:fix": "eslint src --ext .ts,.vue --fix",
-    "format": "prettier --write src/**/*.{ts,vue,css,md}",
+    "test:e2e": "playwright test",
+    "lint": "eslint src --ext .ts,.vue --fix",
+    "lint:check": "eslint src --ext .ts,.vue",
     "type-check": "vue-tsc --noEmit",
-    "validate": "node validate-project.js",
-    "fix-types": "node fix-types.js",
-    "final-check": "node final-check.js",
-    "release": "npm run build && npm publish dist",
-    "prepublishOnly": "npm run build",
-    "clean": "rimraf esm cjs dist types lib coverage .nyc_output"
+    "format": "prettier --write \"src/**/*.{ts,vue,js,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,vue,js,json,md}\"",
+    "clean": "rimraf dist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "peerDependencies": {
-    "vue": "^3.4.0"
-  },
-  "dependencies": {
-    "vue": "^3.4.0"
+    "vue": "^3.3.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
-    "@vitejs/plugin-vue": "^5.0.0",
+    "@vitejs/plugin-vue": "^4.0.0",
     "@vue/eslint-config-typescript": "^12.0.0",
     "@vue/test-utils": "^2.4.0",
     "eslint": "^8.0.0",
     "eslint-plugin-vue": "^9.0.0",
-    "jsdom": "^23.0.0",
+    "jsdom": "^22.0.0",
+    "less": "^4.2.0",
+    "playwright": "^1.40.0",
+    "prettier": "^3.0.0",
+    "rimraf": "^5.0.0",
     "typescript": "^5.0.0",
     "vite": "^5.0.0",
     "vite-plugin-dts": "^3.0.0",
+    "vitepress": "^1.0.0",
     "vitest": "^1.0.0",
-    "vue-tsc": "^2.0.0"
+    "vue": "^3.3.0",
+    "vue-tsc": "^1.8.0"
   },
-  "browser": "dist/index.min.js"
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "sideEffects": [
+    "*.css",
+    "*.less",
+    "*.scss",
+    "*.vue"
+  ]
 }
