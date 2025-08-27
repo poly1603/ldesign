@@ -73,7 +73,7 @@ if (detector.isMobile()) {
 }
 
 // 监听设备变化
-detector.on('deviceChange', info => {
+detector.on('deviceChange', (info) => {
   console.log('设备信息已更新:', info)
 })
 ```
@@ -94,8 +94,12 @@ const { deviceType, orientation, isMobile, isTablet, isDesktop } = useDevice()
     <p>是否移动设备: {{ isMobile }}</p>
 
     <!-- 使用指令 -->
-    <div v-device-mobile>移动设备专用内容</div>
-    <div v-device-desktop>桌面设备专用内容</div>
+    <div v-device-mobile>
+      移动设备专用内容
+    </div>
+    <div v-device-desktop>
+      桌面设备专用内容
+    </div>
   </div>
 </template>
 ```

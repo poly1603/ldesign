@@ -1,63 +1,28 @@
-import type { DeviceInfo } from '../../types'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { DeviceDetector } from '../../core/DeviceDetector'
-
 /**
- * 设备检测组合式函数
+ * 重新导出优化后的 useDevice composable
+ *
+ * 这个文件保持向后兼容性，同时使用优化后的实现
  */
-export function useDevice() {
-  const detector = new DeviceDetector()
-  const deviceInfo = ref<DeviceInfo | null>(null)
+export {
+  useDevice,
+  useNetwork,
+  useBattery,
+  useGeolocation,
+} from '../../adapt/vue/composables/useDevice'
 
-  // 计算属性
-  const isMobile = computed(() => deviceInfo.value?.type === 'mobile')
-  const isTablet = computed(() => deviceInfo.value?.type === 'tablet')
-  const isDesktop = computed(() => deviceInfo.value?.type === 'desktop')
-  const isTouchDevice = computed(() => deviceInfo.value?.isTouchDevice || false)
-  const orientation = computed(
-    () => deviceInfo.value?.orientation || 'portrait',
-  )
-
-  // 检测设备信息
-  const detect = () => {
-    deviceInfo.value = detector.getDeviceInfo()
-  }
-
-  // 监听设备变化
-  const handleDeviceChange = (info: DeviceInfo) => {
-    deviceInfo.value = info
-  }
-
-  onMounted(() => {
-    detect()
-    detector.on('deviceChange', handleDeviceChange)
-  })
-
-  onUnmounted(() => {
-    detector.off('deviceChange', handleDeviceChange)
-    detector.destroy()
-  })
-
-  return {
-    deviceInfo,
-    isMobile,
-    isTablet,
-    isDesktop,
-    isTouchDevice,
-    orientation,
-    detect,
-  }
-}
+import type { DeviceInfo } from '../../types'
+import { computed } from 'vue'
+import { useDevice } from '../../adapt/vue/composables/useDevice'
 
 /**
  * 设备检测组合式函数（简化版）
+ * 保持向后兼容性
  */
 export function useDeviceDetection() {
-  const { deviceInfo, isMobile, isTablet, isDesktop, isTouchDevice }
-    = useDevice()
+  const { deviceInfo, isMobile, isTablet, isDesktop, isTouchDevice } = useDevice()
 
   return {
-    deviceInfo,
+    deviceInfo: computed(() => deviceInfo.value),
     isMobile,
     isTablet,
     isDesktop,

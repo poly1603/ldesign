@@ -1,11 +1,24 @@
 import type { DeviceModule, ModuleLoader as IModuleLoader } from '../types'
 
 /**
- * 模块加载器实现
+ * 高性能模块加载器实现
  */
 export class ModuleLoader implements IModuleLoader {
   private modules: Map<string, DeviceModule> = new Map()
   private loadingPromises: Map<string, Promise<unknown>> = new Map()
+
+  // 性能监控
+  private loadingStats = new Map<string, {
+    loadCount: number
+    totalLoadTime: number
+    averageLoadTime: number
+    lastLoadTime: number
+    errors: number
+  }>()
+
+  // 错误处理
+  private maxRetries = 3
+  private retryDelay = 1000
 
   /**
    * 加载模块并返回数据
@@ -121,19 +134,59 @@ export class ModuleLoader implements IModuleLoader {
   }
 
   /**
+   * 获取模块加载统计信息
+   */
+  getLoadingStats(name?: string) {
+    if (name) {
+      return this.loadingStats.get(name)
+    }
+    return Object.fromEntries(this.loadingStats.entries())
+  }
+
+  /**
    * 实际加载模块的方法
    */
   private async loadModule(name: string): Promise<DeviceModule> {
-    switch (name) {
-      case 'network':
-        return this.loadNetworkModule()
-      case 'battery':
-        return this.loadBatteryModule()
-      case 'geolocation':
-        return this.loadGeolocationModule()
-      default:
-        throw new Error(`Unknown module: ${name}`)
+    const startTime = performance.now()
+    let retries = 0
+
+    while (retries <= this.maxRetries) {
+      try {
+        let module: DeviceModule
+
+        switch (name) {
+          case 'network':
+            module = await this.loadNetworkModule()
+            break
+          case 'battery':
+            module = await this.loadBatteryModule()
+            break
+          case 'geolocation':
+            module = await this.loadGeolocationModule()
+            break
+          default:
+            throw new Error(`Unknown module: ${name}`)
+        }
+
+        // 更新统计信息
+        this.updateLoadingStats(name, performance.now() - startTime, false)
+
+        return module
+      }
+      catch (error) {
+        retries++
+        this.updateLoadingStats(name, performance.now() - startTime, true)
+
+        if (retries > this.maxRetries) {
+          throw new Error(`Failed to load module "${name}" after ${this.maxRetries} retries: ${error}`)
+        }
+
+        // 等待后重试
+        await new Promise(resolve => setTimeout(resolve, this.retryDelay * retries))
+      }
     }
+
+    throw new Error(`Failed to load module "${name}"`)
   }
 
   /**
@@ -164,5 +217,33 @@ export class ModuleLoader implements IModuleLoader {
     const module = new GeolocationModule()
     await module.init()
     return module
+  }
+
+  /**
+   * 更新加载统计信息
+   */
+  private updateLoadingStats(name: string, loadTime: number, isError: boolean): void {
+    if (!this.loadingStats.has(name)) {
+      this.loadingStats.set(name, {
+        loadCount: 0,
+        totalLoadTime: 0,
+        averageLoadTime: 0,
+        lastLoadTime: 0,
+        errors: 0,
+      })
+    }
+
+    const stats = this.loadingStats.get(name)!
+
+    if (isError) {
+      stats.errors++
+    }
+    else {
+      stats.loadCount++
+      stats.totalLoadTime += loadTime
+      stats.averageLoadTime = stats.totalLoadTime / stats.loadCount
+    }
+
+    stats.lastLoadTime = loadTime
   }
 }

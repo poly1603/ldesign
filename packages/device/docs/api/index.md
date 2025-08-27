@@ -173,7 +173,7 @@ detector.on('orientationChange', (orientation: 'portrait' | 'landscape') => {
 窗口大小发生变化时触发。
 
 ```typescript
-detector.on('resize', ({ width, height }: { width: number; height: number }) => {
+detector.on('resize', ({ width, height }: { width: number, height: number }) => {
   console.log('窗口大小变化:', width, height)
 })
 ```
@@ -337,10 +337,10 @@ function getPixelRatio(): number
 
 ```typescript
 /** 解析操作系统信息 */
-function parseOS(userAgent: string): { name: string; version: string }
+function parseOS(userAgent: string): { name: string, version: string }
 
 /** 解析浏览器信息 */
-function parseBrowser(userAgent: string): { name: string; version: string }
+function parseBrowser(userAgent: string): { name: string, version: string }
 ```
 
 ### 通用工具
@@ -357,7 +357,7 @@ function debounce<T extends (...args: unknown[]) => unknown>(
 function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number,
-  options?: { leading?: boolean; trailing?: boolean }
+  options?: { leading?: boolean, trailing?: boolean }
 ): (...args: Parameters<T>) => void
 
 /** 安全访问 navigator API */

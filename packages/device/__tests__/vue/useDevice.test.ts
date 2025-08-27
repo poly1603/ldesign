@@ -245,7 +245,7 @@ describe('vue Composables', () => {
 
       // 恢复 API
       if (originalGetBattery) {
-        ;(globalThis.navigator as any).getBattery = originalGetBattery
+        ; (globalThis.navigator as any).getBattery = originalGetBattery
       }
     })
   })
@@ -341,7 +341,7 @@ describe('vue Composables', () => {
       try {
         await vm.getCurrentPosition()
       }
-      catch (error) {
+      catch {
         // 预期会抛出错误
       }
       await nextTick()
@@ -374,7 +374,7 @@ describe('vue Composables', () => {
       try {
         await vm.getCurrentPosition()
       }
-      catch (error) {
+      catch {
         // 预期会抛出错误
       }
       await nextTick()

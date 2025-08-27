@@ -50,7 +50,8 @@ export function useGeolocation() {
         isLoaded.value = true
         error.value = null
       }
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err.message : 'Unknown error'
       throw err
     }

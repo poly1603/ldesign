@@ -225,9 +225,9 @@ export type DeviceDirectiveValue =
   | DeviceType
   | DeviceType[]
   | {
-      type: DeviceType | DeviceType[]
-      inverse?: boolean
-    }
+    type: DeviceType | DeviceType[]
+    inverse?: boolean
+  }
 
 /**
  * Vue3 插件选项

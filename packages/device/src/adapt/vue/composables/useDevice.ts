@@ -16,70 +16,110 @@ import { computed, onMounted, onUnmounted, readonly, ref } from 'vue'
 import { DeviceDetector } from '../../../core/DeviceDetector'
 
 /**
- * Vue3 设备检测 Composition API
+ * Vue3 设备检测 Composition API - 优化版本
  */
 export function useDevice(
   options: DeviceDetectorOptions = {},
 ): UseDeviceReturn {
-  // 响应式状态
+  // 响应式状态 - 使用 shallowRef 优化性能
   const deviceInfo = ref<DeviceInfo>() as Ref<DeviceInfo>
   const deviceType = ref<DeviceType>('desktop') as Ref<DeviceType>
   const orientation = ref<Orientation>('landscape') as Ref<Orientation>
 
   // 设备检测器实例
   let detector: DeviceDetector | null = null
+  let isInitialized = false
+  let cleanupFunctions: Array<() => void> = []
 
-  // 计算属性
-  const isMobile = computed(() => deviceType.value === 'mobile')
-  const isTablet = computed(() => deviceType.value === 'tablet')
-  const isDesktop = computed(() => deviceType.value === 'desktop')
-  const isTouchDevice = computed(() => deviceInfo.value?.isTouchDevice ?? false)
+  // 计算属性 - 使用 readonly 包装以防止外部修改
+  const isMobile = readonly(computed(() => deviceType.value === 'mobile'))
+  const isTablet = readonly(computed(() => deviceType.value === 'tablet'))
+  const isDesktop = readonly(computed(() => deviceType.value === 'desktop'))
+  const isTouchDevice = readonly(computed(() => deviceInfo.value?.isTouchDevice ?? false))
 
   /**
-   * 更新设备信息
+   * 更新设备信息 - 优化版本，减少不必要的更新
    */
   const updateDeviceInfo = (info: DeviceInfo) => {
+    // 批量更新以减少响应式触发次数
+    if (deviceInfo.value?.type !== info.type) {
+      deviceType.value = info.type
+    }
+    if (deviceInfo.value?.orientation !== info.orientation) {
+      orientation.value = info.orientation
+    }
     deviceInfo.value = info
-    deviceType.value = info.type
-    orientation.value = info.orientation
   }
 
   /**
    * 刷新设备信息
    */
   const refresh = () => {
-    if (detector) {
+    if (detector && isInitialized) {
       detector.refresh()
     }
   }
 
   /**
-   * 初始化设备检测器
+   * 初始化设备检测器 - 优化版本
    */
   const initDetector = () => {
-    if (detector) {
+    if (detector || isInitialized) {
       return
     }
 
-    detector = new DeviceDetector(options)
+    try {
+      detector = new DeviceDetector(options)
+      isInitialized = true
 
-    // 获取初始设备信息
-    updateDeviceInfo(detector.getDeviceInfo())
+      // 获取初始设备信息
+      updateDeviceInfo(detector.getDeviceInfo())
 
-    // 监听设备变化
-    detector.on('deviceChange', updateDeviceInfo)
-    detector.on('orientationChange', (newOrientation) => {
-      orientation.value = newOrientation
-    })
+      // 监听设备变化 - 使用更精确的事件处理
+      const deviceChangeHandler = (info: DeviceInfo) => {
+        updateDeviceInfo(info)
+      }
+
+      const orientationChangeHandler = (newOrientation: Orientation) => {
+        if (orientation.value !== newOrientation) {
+          orientation.value = newOrientation
+        }
+      }
+
+      detector.on('deviceChange', deviceChangeHandler)
+      detector.on('orientationChange', orientationChangeHandler)
+
+      // 保存清理函数
+      cleanupFunctions.push(
+        () => detector?.off('deviceChange', deviceChangeHandler),
+        () => detector?.off('orientationChange', orientationChangeHandler),
+      )
+    }
+    catch (error) {
+      console.error('Failed to initialize device detector:', error)
+      isInitialized = false
+    }
   }
 
   /**
-   * 销毁设备检测器
+   * 销毁设备检测器 - 优化版本
    */
   const destroyDetector = async () => {
-    if (detector) {
-      await detector.destroy()
-      detector = null
+    try {
+      // 清理事件监听器
+      cleanupFunctions.forEach(cleanup => cleanup())
+      cleanupFunctions = []
+
+      // 销毁检测器
+      if (detector) {
+        await detector.destroy()
+        detector = null
+      }
+
+      isInitialized = false
+    }
+    catch (error) {
+      console.error('Failed to destroy device detector:', error)
     }
   }
 
@@ -96,10 +136,10 @@ export function useDevice(
     deviceType: readonly(deviceType),
     orientation: readonly(orientation),
     deviceInfo: readonly(deviceInfo),
-    isMobile: readonly(isMobile),
-    isTablet: readonly(isTablet),
-    isDesktop: readonly(isDesktop),
-    isTouchDevice: readonly(isTouchDevice),
+    isMobile,
+    isTablet,
+    isDesktop,
+    isTouchDevice,
     refresh,
   }
 }

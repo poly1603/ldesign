@@ -16,6 +16,11 @@ declare class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
     private cachedBrowser?;
     private lastDetectionTime;
     private readonly minDetectionInterval;
+    private errorCount;
+    private readonly maxErrors;
+    private lastErrorTime;
+    private readonly errorCooldown;
+    private performanceMetrics;
     constructor(options?: DeviceDetectorOptions);
     /**
      * 获取当前设备类型
@@ -29,6 +34,14 @@ declare class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
      * 获取完整的设备信息
      */
     getDeviceInfo(): DeviceInfo;
+    /**
+     * 获取性能指标
+     */
+    getPerformanceMetrics(): {
+        detectionCount: number;
+        averageDetectionTime: number;
+        lastDetectionDuration: number;
+    };
     /**
      * 检查是否为移动设备
      */
@@ -69,6 +82,14 @@ declare class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
      * 销毁检测器，清理资源
      */
     destroy(): Promise<void>;
+    /**
+     * 更新性能指标
+     */
+    private updatePerformanceMetrics;
+    /**
+     * 处理检测错误
+     */
+    private handleDetectionError;
     /**
      * 检测设备信息
      */

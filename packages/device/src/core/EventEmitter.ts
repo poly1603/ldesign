@@ -1,12 +1,30 @@
 import type { EventListener } from '../types'
 
 /**
- * 简单的事件发射器实现
+ * 高性能事件发射器实现
  */
 export class EventEmitter<
   T extends Record<string, unknown> = Record<string, unknown>,
 > {
   private events: Map<keyof T, Set<EventListener<unknown>>> = new Map()
+  private maxListeners = 10
+  private errorHandler?: (error: Error, event: keyof T) => void
+
+  /**
+   * 设置最大监听器数量
+   */
+  setMaxListeners(max: number): this {
+    this.maxListeners = max
+    return this
+  }
+
+  /**
+   * 设置错误处理器
+   */
+  setErrorHandler(handler: (error: Error, event: keyof T) => void): this {
+    this.errorHandler = handler
+    return this
+  }
 
   /**
    * 添加事件监听器
@@ -15,7 +33,15 @@ export class EventEmitter<
     if (!this.events.has(event)) {
       this.events.set(event, new Set())
     }
-    this.events.get(event)!.add(listener as EventListener<unknown>)
+
+    const listeners = this.events.get(event)!
+
+    // 检查监听器数量限制
+    if (listeners.size >= this.maxListeners) {
+      console.warn(`Max listeners (${this.maxListeners}) exceeded for event: ${String(event)}`)
+    }
+
+    listeners.add(listener as EventListener<unknown>)
     return this
   }
 
@@ -56,17 +82,28 @@ export class EventEmitter<
    */
   emit<K extends keyof T>(event: K, data: T[K]): this {
     const listeners = this.events.get(event)
-    if (!listeners)
+    if (!listeners || listeners.size === 0) {
       return this
+    }
 
-    listeners.forEach((listener) => {
+    // 性能优化：将 Set 转换为数组以避免迭代器开销
+    const listenersArray = Array.from(listeners)
+
+    for (const listener of listenersArray) {
       try {
         listener(data)
       }
       catch (error) {
-        console.error(`Error in event listener for "${String(event)}":`, error)
+        const err = error instanceof Error ? error : new Error(String(error))
+
+        if (this.errorHandler) {
+          this.errorHandler(err, event)
+        }
+        else {
+          console.error(`Error in event listener for "${String(event)}":`, err)
+        }
       }
-    })
+    }
 
     return this
   }

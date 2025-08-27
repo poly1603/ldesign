@@ -31,10 +31,23 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
 
   // 性能优化：缓存计算结果
   private cachedUserAgent?: string
-  private cachedOS?: { name: string, version: string }
-  private cachedBrowser?: { name: string, version: string }
+  private cachedOS?: { name: string; version: string }
+  private cachedBrowser?: { name: string; version: string }
   private lastDetectionTime = 0
   private readonly minDetectionInterval = 16 // 约60fps
+
+  // 错误处理和重试机制
+  private errorCount = 0
+  private readonly maxErrors = 5
+  private lastErrorTime = 0
+  private readonly errorCooldown = 5000 // 5秒错误冷却时间
+
+  // 性能监控
+  private performanceMetrics = {
+    detectionCount: 0,
+    averageDetectionTime: 0,
+    lastDetectionDuration: 0,
+  }
 
   constructor(options: DeviceDetectorOptions = {}) {
     super()
@@ -76,6 +89,13 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
    */
   getDeviceInfo(): DeviceInfo {
     return { ...this.currentDeviceInfo }
+  }
+
+  /**
+   * 获取性能指标
+   */
+  getPerformanceMetrics() {
+    return { ...this.performanceMetrics }
   }
 
   /**
@@ -173,6 +193,38 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
   }
 
   /**
+   * 更新性能指标
+   */
+  private updatePerformanceMetrics(detectionTime: number): void {
+    this.performanceMetrics.detectionCount++
+    this.performanceMetrics.lastDetectionDuration = detectionTime
+
+    // 计算平均检测时间（使用移动平均）
+    const alpha = 0.1 // 平滑因子
+    this.performanceMetrics.averageDetectionTime =
+      this.performanceMetrics.averageDetectionTime * (1 - alpha) + detectionTime * alpha
+  }
+
+  /**
+   * 处理检测错误
+   */
+  private handleDetectionError(error: unknown): void {
+    this.errorCount++
+    this.lastErrorTime = performance.now()
+
+    console.warn('Device detection error:', error)
+
+    // 如果错误次数过多，触发错误事件
+    if (this.errorCount >= this.maxErrors) {
+      this.emit('error' as keyof DeviceDetectorEvents, {
+        message: 'Too many detection errors',
+        count: this.errorCount,
+        lastError: error,
+      } as any)
+    }
+  }
+
+  /**
    * 检测设备信息
    */
   private detectDevice(): DeviceInfo {
@@ -191,37 +243,59 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
       }
     }
 
-    // 性能优化：限制检测频率
+    // 错误处理：检查是否在错误冷却期
     const now = performance.now()
+    if (this.errorCount >= this.maxErrors && now - this.lastErrorTime < this.errorCooldown) {
+      return this.currentDeviceInfo
+    }
+
+    // 性能优化：限制检测频率
     if (now - this.lastDetectionTime < this.minDetectionInterval) {
       return this.currentDeviceInfo
     }
+
+    const startTime = now
     this.lastDetectionTime = now
 
-    const width = window.innerWidth
-    const height = window.innerHeight
-    const userAgent = navigator.userAgent
+    try {
+      const width = window.innerWidth
+      const height = window.innerHeight
+      const userAgent = navigator.userAgent
 
-    // 性能优化：缓存用户代理解析结果
-    let os = this.cachedOS
-    let browser = this.cachedBrowser
+      // 性能优化：缓存用户代理解析结果
+      let os = this.cachedOS
+      let browser = this.cachedBrowser
 
-    if (this.cachedUserAgent !== userAgent) {
-      this.cachedUserAgent = userAgent
-      this.cachedOS = os = parseOS(userAgent)
-      this.cachedBrowser = browser = parseBrowser(userAgent)
+      if (this.cachedUserAgent !== userAgent) {
+        this.cachedUserAgent = userAgent
+        this.cachedOS = os = parseOS(userAgent)
+        this.cachedBrowser = browser = parseBrowser(userAgent)
+      }
+
+      const deviceInfo = {
+        type: getDeviceTypeByWidth(width, this.options.breakpoints),
+        orientation: getScreenOrientation(),
+        width,
+        height,
+        pixelRatio: getPixelRatio(),
+        isTouchDevice: isTouchDevice(),
+        userAgent,
+        os: os!,
+        browser: browser!,
+      }
+
+      // 更新性能指标
+      const detectionTime = performance.now() - startTime
+      this.updatePerformanceMetrics(detectionTime)
+
+      // 重置错误计数
+      this.errorCount = 0
+
+      return deviceInfo
     }
-
-    return {
-      type: getDeviceTypeByWidth(width, this.options.breakpoints),
-      orientation: getScreenOrientation(),
-      width,
-      height,
-      pixelRatio: getPixelRatio(),
-      isTouchDevice: isTouchDevice(),
-      userAgent,
-      os: os!,
-      browser: browser!,
+    catch (error) {
+      this.handleDetectionError(error)
+      return this.currentDeviceInfo
     }
   }
 
@@ -269,33 +343,53 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
    * 处理设备变化 - 优化版本
    */
   private handleDeviceChange(): void {
-    const oldDeviceInfo = this.currentDeviceInfo
-    const newDeviceInfo = this.detectDevice()
+    if (this.isDestroyed) {
+      return
+    }
 
-    // 只有在真正发生变化时才更新和触发事件
-    if (this.hasDeviceInfoChanged(oldDeviceInfo, newDeviceInfo)) {
-      this.currentDeviceInfo = newDeviceInfo
+    try {
+      const oldDeviceInfo = this.currentDeviceInfo
+      const newDeviceInfo = this.detectDevice()
 
-      // 检查设备类型是否发生变化
-      if (oldDeviceInfo.type !== newDeviceInfo.type) {
-        this.emit('deviceChange', newDeviceInfo)
-      }
+      // 只有在真正发生变化时才更新和触发事件
+      if (this.hasDeviceInfoChanged(oldDeviceInfo, newDeviceInfo)) {
+        this.currentDeviceInfo = newDeviceInfo
 
-      // 检查屏幕方向是否发生变化
-      if (oldDeviceInfo.orientation !== newDeviceInfo.orientation) {
-        this.emit('orientationChange', newDeviceInfo.orientation)
-      }
+        // 批量触发事件以提高性能
+        const events: Array<{ event: keyof DeviceDetectorEvents; data: any }> = []
 
-      // 检查尺寸是否发生变化
-      if (
-        oldDeviceInfo.width !== newDeviceInfo.width
-        || oldDeviceInfo.height !== newDeviceInfo.height
-      ) {
-        this.emit('resize', {
-          width: newDeviceInfo.width,
-          height: newDeviceInfo.height,
+        // 检查设备类型是否发生变化
+        if (oldDeviceInfo.type !== newDeviceInfo.type) {
+          events.push({ event: 'deviceChange', data: newDeviceInfo })
+        }
+
+        // 检查屏幕方向是否发生变化
+        if (oldDeviceInfo.orientation !== newDeviceInfo.orientation) {
+          events.push({ event: 'orientationChange', data: newDeviceInfo.orientation })
+        }
+
+        // 检查尺寸是否发生变化
+        if (
+          oldDeviceInfo.width !== newDeviceInfo.width
+          || oldDeviceInfo.height !== newDeviceInfo.height
+        ) {
+          events.push({
+            event: 'resize',
+            data: {
+              width: newDeviceInfo.width,
+              height: newDeviceInfo.height,
+            },
+          })
+        }
+
+        // 批量触发事件
+        events.forEach(({ event, data }) => {
+          this.emit(event, data)
         })
       }
+    }
+    catch (error) {
+      this.handleDetectionError(error)
     }
   }
 

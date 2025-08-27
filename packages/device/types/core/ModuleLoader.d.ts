@@ -1,11 +1,14 @@
 import { ModuleLoader as ModuleLoader$1, DeviceModule } from '../types/index.js';
 
 /**
- * 模块加载器实现
+ * 高性能模块加载器实现
  */
 declare class ModuleLoader implements ModuleLoader$1 {
     private modules;
     private loadingPromises;
+    private loadingStats;
+    private maxRetries;
+    private retryDelay;
     /**
      * 加载模块并返回数据
      */
@@ -35,6 +38,24 @@ declare class ModuleLoader implements ModuleLoader$1 {
      */
     unloadAll(): Promise<void>;
     /**
+     * 获取模块加载统计信息
+     */
+    getLoadingStats(name?: string): {
+        loadCount: number;
+        totalLoadTime: number;
+        averageLoadTime: number;
+        lastLoadTime: number;
+        errors: number;
+    } | {
+        [k: string]: {
+            loadCount: number;
+            totalLoadTime: number;
+            averageLoadTime: number;
+            lastLoadTime: number;
+            errors: number;
+        };
+    } | undefined;
+    /**
      * 实际加载模块的方法
      */
     private loadModule;
@@ -50,6 +71,10 @@ declare class ModuleLoader implements ModuleLoader$1 {
      * 加载地理位置模块
      */
     private loadGeolocationModule;
+    /**
+     * 更新加载统计信息
+     */
+    private updateLoadingStats;
 }
 
 export { ModuleLoader };

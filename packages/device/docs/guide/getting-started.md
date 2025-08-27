@@ -47,9 +47,11 @@ console.log(deviceType) // 'mobile' | 'tablet' | 'desktop'
 // 使用便捷方法
 if (detector.isMobile()) {
   console.log('当前是移动设备')
-} else if (detector.isTablet()) {
+}
+else if (detector.isTablet()) {
   console.log('当前是平板设备')
-} else if (detector.isDesktop()) {
+}
+else if (detector.isDesktop()) {
   console.log('当前是桌面设备')
 }
 ```
@@ -77,17 +79,17 @@ if (detector.isTouchDevice()) {
 
 ```typescript
 // 监听设备信息变化
-detector.on('deviceChange', deviceInfo => {
+detector.on('deviceChange', (deviceInfo) => {
   console.log('设备信息已更新:', deviceInfo)
 })
 
 // 监听设备类型变化
-detector.on('deviceTypeChange', deviceType => {
+detector.on('deviceTypeChange', (deviceType) => {
   console.log('设备类型已变化:', deviceType)
 })
 
 // 监听屏幕方向变化
-detector.on('orientationChange', orientation => {
+detector.on('orientationChange', (orientation) => {
   console.log('屏幕方向已变化:', orientation)
 })
 ```
@@ -200,7 +202,7 @@ import { useDeviceDetector } from '@ldesign/device/vue'
 const detector = useDeviceDetector()
 
 // 监听设备变化
-detector.on('deviceChange', info => {
+detector.on('deviceChange', (info) => {
   console.log('设备信息变化:', info)
 })
 </script>
@@ -210,9 +212,15 @@ detector.on('deviceChange', info => {
     <p>设备类型: {{ $device.getDeviceType() }}</p>
 
     <!-- 使用指令 -->
-    <div v-device-mobile>移动设备内容</div>
-    <div v-device-tablet>平板设备内容</div>
-    <div v-device-desktop>桌面设备内容</div>
+    <div v-device-mobile>
+      移动设备内容
+    </div>
+    <div v-device-tablet>
+      平板设备内容
+    </div>
+    <div v-device-desktop>
+      桌面设备内容
+    </div>
   </div>
 </template>
 ```

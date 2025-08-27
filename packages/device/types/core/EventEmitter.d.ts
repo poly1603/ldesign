@@ -1,10 +1,20 @@
 import { EventListener } from '../types/index.js';
 
 /**
- * 简单的事件发射器实现
+ * 高性能事件发射器实现
  */
 declare class EventEmitter<T extends Record<string, unknown> = Record<string, unknown>> {
     private events;
+    private maxListeners;
+    private errorHandler?;
+    /**
+     * 设置最大监听器数量
+     */
+    setMaxListeners(max: number): this;
+    /**
+     * 设置错误处理器
+     */
+    setErrorHandler(handler: (error: Error, event: keyof T) => void): this;
     /**
      * 添加事件监听器
      */
