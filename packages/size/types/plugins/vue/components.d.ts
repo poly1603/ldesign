@@ -1,10 +1,11 @@
-import * as vue from 'vue';
-import { SizeMode } from '../../types/index.js';
-
+/**
+ * Size Vue 组件
+ */
+import type { SizeMode } from '../../types';
 /**
  * 尺寸切换器组件
  */
-declare const SizeSwitcher: vue.DefineComponent<vue.ExtractPropTypes<{
+export declare const SizeSwitcher: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
     /** 显示样式 */
     style: {
         type: () => "button" | "select" | "radio" | "segmented";
@@ -20,9 +21,9 @@ declare const SizeSwitcher: vue.DefineComponent<vue.ExtractPropTypes<{
         type: () => SizeMode[];
         default: () => string[];
     };
-}>, () => vue.VNode<vue.RendererNode, vue.RendererElement, {
+}>, () => import("vue").VNode<import("vue").RendererNode, import("vue").RendererElement, {
     [key: string]: any;
-}> | null, {}, {}, {}, vue.ComponentOptionsMixin, vue.ComponentOptionsMixin, {}, string, vue.PublicProps, Readonly<vue.ExtractPropTypes<{
+}> | null, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
     /** 显示样式 */
     style: {
         type: () => "button" | "select" | "radio" | "segmented";
@@ -40,8 +41,7 @@ declare const SizeSwitcher: vue.DefineComponent<vue.ExtractPropTypes<{
     };
 }>> & Readonly<{}>, {
     style: "button" | "select" | "radio" | "segmented";
-    showLabels: boolean;
     modes: SizeMode[];
-}, {}, {}, {}, string, vue.ComponentProvideOptions, true, {}, any>;
-
-export { SizeSwitcher };
+    showLabels: boolean;
+}, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+//# sourceMappingURL=components.d.ts.map

@@ -53,7 +53,7 @@
     "types"
   ],
   "scripts": {
-    "build": "pnpm run build:main && pnpm run build:modules",
+    "build": "ldesign-builder build",
     "build:main": "vite build",
     "build:modules": "vite build --config vite.config.modules.ts",
     "build:rollup": "rollup -c",
@@ -85,6 +85,7 @@
     }
   },
   "devDependencies": {
+    "@ldesign/builder": "workspace:*",
     "@playwright/test": "^1.40.1",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",

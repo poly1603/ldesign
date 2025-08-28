@@ -57,10 +57,16 @@ export class BuildCommand {
   private async parseBuildOptions(input: string, options: any): Promise<BuildOptions> {
     const root = process.cwd()
 
+    // 加载用户配置文件
+    const { loadUserConfig } = await import('../../utils/config-loader')
+    const userConfig = await loadUserConfig(root) || {}
+    logger.info('加载的用户配置:', JSON.stringify(userConfig, null, 2))
+
     // 如果配置文件中已经有完整的配置，直接使用
     if (options.input && typeof options.input === 'object') {
       return {
         root,
+        ...userConfig,
         ...options,
         outDir: options.outDir ? path.resolve(root, options.outDir) : path.resolve(root, 'dist'),
         dtsDir: options.dtsDir ? path.resolve(root, options.dtsDir) : path.resolve(root, 'types'),
@@ -88,22 +94,25 @@ export class BuildCommand {
 
     return {
       root,
+      ...userConfig, // 首先应用用户配置
       input: inputPath,
-      outDir: path.resolve(root, options.outDir || 'dist'),
+      outDir: path.resolve(root, options.outDir || userConfig.outDir || 'dist'),
       formats,
       mode,
-      dts: options.dts !== false, // 默认生成类型声明
-      dtsDir: path.resolve(root, options.dtsDir || 'types'),
-      minify: options.minify !== false && mode === 'production', // 生产模式默认压缩
-      sourcemap: options.sourcemap !== false, // 默认生成 sourcemap
-      clean: options.clean !== false, // 默认清理输出目录
-      verbose: options.verbose || false,
-      external: options.external,
-      globals: options.globals,
-      name: options.name,
-      lib: options.lib,
-      plugins: options.plugins,
-      rollupOptions: options.rollupOptions,
+      dts: options.dts !== false && userConfig.dts !== false, // 默认生成类型声明
+      dtsDir: path.resolve(root, options.dtsDir || userConfig.dtsDir || 'types'),
+      minify: (options.minify !== false && userConfig.minify !== false) && mode === 'production', // 生产模式默认压缩
+      sourcemap: options.sourcemap !== false && userConfig.sourcemap !== false, // 默认生成 sourcemap
+      clean: options.clean !== false && userConfig.clean !== false, // 默认清理输出目录
+      verbose: options.verbose || userConfig.verbose || false,
+      external: options.external || userConfig.external,
+      globals: options.globals || userConfig.globals,
+      name: options.name || userConfig.name,
+      lib: options.lib !== undefined ? options.lib : userConfig.lib,
+      plugins: options.plugins || userConfig.plugins,
+      rollupOptions: options.rollupOptions || userConfig.rollupOptions,
+      // 确保 css 配置被正确传递
+      css: options.css !== undefined ? options.css : userConfig.css,
     }
   }
 

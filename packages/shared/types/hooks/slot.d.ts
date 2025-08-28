@@ -1,6 +1,4 @@
-import '../node_modules/.pnpm/@vue_runtime-dom@3.5.18/node_modules/@vue/runtime-dom/dist/runtime-dom.d.js';
-import { Slots, VNode, RendererNode, RendererElement, VNodeArrayChildren, VNodeChild } from '../node_modules/.pnpm/@vue_runtime-core@3.5.18/node_modules/@vue/runtime-core/dist/runtime-core.d.js';
-
+import type { RendererElement, RendererNode, Slots, VNode, VNodeArrayChildren, VNodeChild } from 'vue';
 /**
  * 渲染default slot，获取子组件VNode。处理多种子组件创建场景
  * 使用场景：<t-steps> <t-steps-item /> </t-steps>, <t-steps> <t-steps-item v-for="(item, index)" :key="index" /> </t-steps>
@@ -10,7 +8,7 @@ import { Slots, VNode, RendererNode, RendererElement, VNodeArrayChildren, VNodeC
  * @example const getChildByName = useChildComponentSlots()
  * @example getChildComponentByName('TStepItem')
  */
-declare function useChildComponentSlots(): (childComponentName: string, slots?: Slots) => VNode[];
+export declare function useChildComponentSlots(): (childComponentName: string, slots?: Slots) => VNode[];
 /**
  * 渲染default slot，获取slot child
  * @param childComponentName
@@ -18,7 +16,7 @@ declare function useChildComponentSlots(): (childComponentName: string, slots?: 
  * @example const getChildSlots = useChildSlots()
  * @example getChildSlots()
  */
-declare function useChildSlots(): () => (VNode<RendererNode, RendererElement, {
+export declare function useChildSlots(): () => (VNode<RendererNode, RendererElement, {
     [key: string]: any;
 }> | VNodeArrayChildren | VNodeChild)[];
 /**
@@ -26,6 +24,5 @@ declare function useChildSlots(): () => (VNode<RendererNode, RendererElement, {
  * @example const useFlatChildrenSlots = useFlatChildrenSlotsHook()
  * @example useFlatChildrenSlots(children)
  */
-declare function useFlatChildrenSlots(): (children: VNodeChild[]) => VNodeChild[];
-
-export { useChildComponentSlots, useChildSlots, useFlatChildrenSlots };
+export declare function useFlatChildrenSlots(): (children: VNodeChild[]) => VNodeChild[];
+//# sourceMappingURL=slot.d.ts.map

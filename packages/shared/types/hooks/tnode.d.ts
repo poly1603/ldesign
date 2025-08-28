@@ -1,7 +1,5 @@
-import '../node_modules/.pnpm/@vue_runtime-dom@3.5.18/node_modules/@vue/runtime-dom/dist/runtime-dom.d.js';
-import { OptionsType, JSXRenderContext } from '../utils/renderNode.js';
-import { VNode } from '../node_modules/.pnpm/@vue_runtime-core@3.5.18/node_modules/@vue/runtime-core/dist/runtime-core.d.js';
-
+import type { VNode } from 'vue';
+import type { JSXRenderContext, OptionsType } from '../utils/renderNode';
 /**
 /**
  * 通过 JSX 的方式渲染 TNode，props 和 插槽同时处理，也能处理默认值为 true 则渲染默认节点的情况
@@ -15,7 +13,7 @@ import { VNode } from '../node_modules/.pnpm/@vue_runtime-core@3.5.18/node_modul
  * @example renderTNodeJSX('closeBtn', <close-icon />)。 当属性值为 true 时则渲染 <close-icon />
  * @example renderTNodeJSX('closeBtn', { defaultNode: <close-icon />, params })。 params 为渲染节点时所需的参数
  */
-declare function useTNodeJSX(): (name: string, options?: OptionsType) => any;
+export declare function useTNodeJSX(): (name: string, options?: OptionsType) => any;
 /**
  * 在setup中，通过JSX的方式 TNode，props 和 插槽同时处理。与 renderTNodeJSX 区别在于属性值为 undefined 时会渲染默认节点
  * @example const renderTNodeJSXDefault = useTNodeDefault()
@@ -25,7 +23,7 @@ declare function useTNodeJSX(): (name: string, options?: OptionsType) => any;
  * @example renderTNodeJSXDefault('closeBtn', <close-icon />) closeBtn 为空时，则兜底渲染 <close-icon />
  * @example renderTNodeJSXDefault('closeBtn', { defaultNode: <close-icon />, params }) 。params 为渲染节点时所需的参数
  */
-declare function useTNodeDefault(): (name: string, options?: VNode | JSXRenderContext) => any;
+export declare function useTNodeDefault(): (name: string, options?: VNode | JSXRenderContext) => any;
 /**
  * 在setup中，用于处理相同名称的 TNode 渲染
  * @example const renderContent = useContent()
@@ -37,13 +35,12 @@ declare function useTNodeDefault(): (name: string, options?: VNode | JSXRenderCo
  * @example renderContent('default', 'content', '我是默认内容')
  * @example renderContent('default', 'content', { defaultNode: '我是默认内容', params })
  */
-declare function useContent(): (name1: string, name2: string, options?: VNode | JSXRenderContext) => any;
+export declare function useContent(): (name1: string, name2: string, options?: VNode | JSXRenderContext) => any;
 /**
  * 过滤掉注释节点。
  *
  * @param nodes - VNode 数组
  * @returns 去除注释节点后的 VNode 数组。
  */
-declare function filterCommentNode(nodes: VNode[]): VNode[];
-
-export { filterCommentNode, useContent, useTNodeDefault, useTNodeJSX };
+export declare function filterCommentNode(nodes: VNode[]): VNode[];
+//# sourceMappingURL=tnode.d.ts.map

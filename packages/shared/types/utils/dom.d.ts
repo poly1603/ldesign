@@ -1,20 +1,17 @@
-import '../node_modules/.pnpm/@vue_runtime-dom@3.5.18/node_modules/@vue/runtime-dom/dist/runtime-dom.d.js';
-import { ScrollContainer, ScrollContainerElement } from '../types/common.js';
-import { EasingFunction } from './easing.js';
-import { VNode, ComponentPublicInstance } from '../node_modules/.pnpm/@vue_runtime-core@3.5.18/node_modules/@vue/runtime-core/dist/runtime-core.d.js';
-
 /**
  * Thanks to https://spothero.com/static/main/uniform/docs-js/module-DOMUtils.html
  */
-
-declare const isServer: boolean;
-declare const on: any;
-declare const off: any;
-declare function once(element: Node, event: string, handler: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-declare function hasClass(el: Element, cls: string): any;
-declare function addClass(el: Element, cls: string): any;
-declare function removeClass(el: Element, cls: string): any;
-declare function getAttach(node: any, triggerNode?: any): HTMLElement | Element | null;
+import type { ComponentPublicInstance, VNode } from 'vue';
+import type { ScrollContainer, ScrollContainerElement } from '../types';
+import type { EasingFunction } from './easing';
+export declare const isServer: boolean;
+export declare const on: any;
+export declare const off: any;
+export declare function once(element: Node, event: string, handler: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+export declare function hasClass(el: Element, cls: string): any;
+export declare function addClass(el: Element, cls: string): any;
+export declare function removeClass(el: Element, cls: string): any;
+export declare function getAttach(node: any, triggerNode?: any): HTMLElement | Element | null;
 /**
  * 获取滚动容器
  * 因为document不存在scroll等属性, 因此排除document
@@ -22,7 +19,7 @@ declare function getAttach(node: any, triggerNode?: any): HTMLElement | Element 
  * @param {ScrollContainerElement} [container]
  * @returns {ScrollContainer}
  */
-declare function getScrollContainer(container?: ScrollContainer): ScrollContainerElement;
+export declare function getScrollContainer(container?: ScrollContainer): ScrollContainerElement;
 type ScrollTarget = HTMLElement | Window | Document;
 /**
  * 获取滚动距离
@@ -32,7 +29,7 @@ type ScrollTarget = HTMLElement | Window | Document;
  * @param {boolean} isLeft true为获取scrollLeft, false为获取scrollTop
  * @returns {number}
  */
-declare function getScroll(target: ScrollTarget, isLeft?: boolean): number;
+export declare function getScroll(target: ScrollTarget, isLeft?: boolean): number;
 interface ScrollTopOptions {
     container?: ScrollTarget;
     duration?: number;
@@ -41,11 +38,11 @@ interface ScrollTopOptions {
 declare type ScrollToResult<T = any> = T | {
     default: T;
 };
-declare function scrollTo(target: number, opt: ScrollTopOptions): Promise<ScrollToResult>;
-declare function clickOut(els: VNode | Element | Iterable<any> | ArrayLike<any>, cb: () => void): void;
-declare function isTextEllipsis(ele: ComponentPublicInstance | Element | ComponentPublicInstance[] | Element[]): boolean;
-declare function scrollSelectedIntoView(parentEle: HTMLElement, selected: HTMLElement): void;
-declare function requestSubmit(target: HTMLFormElement): void;
+export declare function scrollTo(target: number, opt: ScrollTopOptions): Promise<ScrollToResult>;
+export declare function clickOut(els: VNode | Element | Iterable<any> | ArrayLike<any>, cb: () => void): void;
+export declare function isTextEllipsis(ele: ComponentPublicInstance | Element | ComponentPublicInstance[] | Element[]): boolean;
+export declare function scrollSelectedIntoView(parentEle: HTMLElement, selected: HTMLElement): void;
+export declare function requestSubmit(target: HTMLFormElement): void;
 /**
  * 检查元素是否在父元素视图
  * http://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport
@@ -53,25 +50,25 @@ declare function requestSubmit(target: HTMLFormElement): void;
  * @param parent
  * @returns boolean
  */
-declare function elementInViewport(elm: HTMLElement, parent?: HTMLElement): boolean;
+export declare function elementInViewport(elm: HTMLElement, parent?: HTMLElement): boolean;
 /**
  * 获取元素某个 css 对应的值
  * @param element 元素
  * @param propName css 名
  * @returns string
  */
-declare function getElmCssPropValue(element: HTMLElement, propName: string): string;
+export declare function getElmCssPropValue(element: HTMLElement, propName: string): string;
 /**
  * 判断元素是否处在 position fixed 中
  * @param element 元素
  * @returns boolean
  */
-declare function isFixed(element: HTMLElement): boolean;
+export declare function isFixed(element: HTMLElement): boolean;
 /**
  * 获取当前视图滑动的距离
  * @returns { scrollTop: number, scrollLeft: number }
  */
-declare function getWindowScroll(): {
+export declare function getWindowScroll(): {
     scrollTop: number;
     scrollLeft: number;
 };
@@ -79,7 +76,7 @@ declare function getWindowScroll(): {
  * 获取当前视图的大小
  * @returns { width: number, height: number }
  */
-declare function getWindowSize(): {
+export declare function getWindowSize(): {
     width: number;
     height: number;
 };
@@ -90,6 +87,6 @@ declare function getWindowSize(): {
  * @param node - 任意节点
  * @returns 是否为注释类型的 VNode
  */
-declare function isCommentVNode(node: unknown): node is VNode;
-
-export { addClass, clickOut, elementInViewport, getAttach, getElmCssPropValue, getScroll, getScrollContainer, getWindowScroll, getWindowSize, hasClass, isCommentVNode, isFixed, isServer, isTextEllipsis, off, on, once, removeClass, requestSubmit, scrollSelectedIntoView, scrollTo };
+export declare function isCommentVNode(node: unknown): node is VNode;
+export {};
+//# sourceMappingURL=dom.d.ts.map

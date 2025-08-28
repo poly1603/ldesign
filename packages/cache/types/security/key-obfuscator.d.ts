@@ -1,9 +1,8 @@
-import { ObfuscationConfig } from '../types/index.js';
-
+import type { ObfuscationConfig } from '../types';
 /**
  * 键名混淆器
  */
-declare class KeyObfuscator {
+export declare class KeyObfuscator {
     private config;
     private keyMap;
     private reverseKeyMap;
@@ -60,5 +59,4 @@ declare class KeyObfuscator {
      */
     getConfig(): ObfuscationConfig;
 }
-
-export { KeyObfuscator };
+//# sourceMappingURL=key-obfuscator.d.ts.map

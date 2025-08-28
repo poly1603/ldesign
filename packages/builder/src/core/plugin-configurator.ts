@@ -28,6 +28,7 @@ export class PluginConfigurator {
    */
   async configure(scanResult: ProjectScanResult, buildOptions?: Partial<BuildOptions>): Promise<Plugin[]> {
     logger.info('开始配置插件...')
+    logger.info('buildOptions:', JSON.stringify(buildOptions, null, 2))
 
     const context: BuildContext = {
       options: (buildOptions || {}) as BuildOptions,
@@ -41,6 +42,8 @@ export class PluginConfigurator {
       root: process.cwd(),
       outDir: buildOptions?.outDir || 'dist',
     }
+
+    logger.info('context.options.css:', context.options.css)
 
     const plugins: Plugin[] = []
 
@@ -217,6 +220,12 @@ export class PluginConfigurator {
   private async configureStylePlugins(context: BuildContext, requirements: any, plugins: Plugin[]): Promise<void> {
     logger.info('配置样式插件，requirements:', requirements)
 
+    // 检查是否禁用了样式处理
+    if (context.options.css === false) {
+      logger.info('样式处理已禁用 (css: false)')
+      return
+    }
+
     if (requirements.hasStyles) {
       // PostCSS（处理 CSS）
       const postcssPlugin = await this.createPlugin('postcss', context)
@@ -250,6 +259,13 @@ export class PluginConfigurator {
    */
   private async configureFrameworkPlugins(context: BuildContext, requirements: any, plugins: Plugin[]): Promise<void> {
     if (requirements.projectType === 'vue' || requirements.hasVue) {
+      // 如果禁用了样式处理，添加预处理插件来移除样式块
+      if (context.options.css === false) {
+        logger.info('添加 Vue 样式移除插件')
+        const vueStyleStripPlugin = this.createVueStyleStripPlugin()
+        plugins.push(vueStyleStripPlugin)
+      }
+
       const vuePlugin = await this.createPlugin('vue', context)
       if (vuePlugin != null) {
         plugins.push(vuePlugin as Plugin)
@@ -583,12 +599,40 @@ export class PluginConfigurator {
   }
 
   /**
+   * 创建 Vue 样式移除插件
+   */
+  private createVueStyleStripPlugin(): Plugin {
+    return {
+      name: 'vue-style-strip',
+      transform(code: string, id: string) {
+        if (id.endsWith('.vue') && !id.includes('?vue&type=')) {
+          logger.info(`[vue-style-strip] 处理文件: ${id}`)
+          // 移除 Vue SFC 中的 <style> 块，包括各种属性
+          const styleRegex = /<style[^>]*(?:\s+lang=["'][^"']*["'])?[^>]*>[\s\S]*?<\/style>/gi
+          const originalLength = code.length
+          const cleanedCode = code.replace(styleRegex, '<!-- style block removed -->')
+          const newLength = cleanedCode.length
+
+          if (originalLength !== newLength) {
+            logger.info(`[vue-style-strip] 移除了样式块，文件大小从 ${originalLength} 减少到 ${newLength}`)
+            return {
+              code: cleanedCode,
+              map: { mappings: '' } // 提供空的 sourcemap 而不是 null
+            }
+          }
+        }
+        return null
+      }
+    }
+  }
+
+  /**
    * 创建 Vue 插件
    */
   private createVuePlugin: PluginFactory = async (context) => {
     try {
       const { default: vue } = await import('unplugin-vue/rollup')
-      return vue({
+      const vueConfig: any = {
         include: [/\.vue$/], // 只处理 Vue 文件，不处理 TSX
         script: {
           defineModel: true,
@@ -600,7 +644,11 @@ export class PluginConfigurator {
           },
         },
         ...context.options.vue,
-      })
+      }
+
+      // 样式处理现在由专门的样式移除插件处理
+
+      return vue(vueConfig)
     }
     catch (error) {
       logger.warn('无法加载 unplugin-vue')

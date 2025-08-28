@@ -1,30 +1,30 @@
-import { CacheOptions } from './types/index.js';
-export { CacheEvent, CacheEventListener, CacheEventType, CacheItem, CacheMetadata, CacheStats, DataType, EncryptionConfig, EngineStats, ICacheManager, IStorageEngine, ObfuscationConfig, SecurityConfig, SetOptions, StorageEngine, StorageEngineConfig, StorageStrategyConfig, StorageStrategyResult, UseCacheOptions } from './types/index.js';
-import { CacheManager } from './core/cache-manager.js';
-import { StorageEngineFactory } from './engines/factory.js';
-export { BaseStorageEngine } from './engines/base-engine.js';
-export { CookieEngine } from './engines/cookie-engine.js';
-export { IndexedDBEngine } from './engines/indexeddb-engine.js';
-export { LocalStorageEngine } from './engines/local-storage-engine.js';
-export { MemoryEngine } from './engines/memory-engine.js';
-export { SessionStorageEngine } from './engines/session-storage-engine.js';
-export { AESCrypto } from './security/aes-crypto.js';
-export { KeyObfuscator } from './security/key-obfuscator.js';
-export { SecurityManager } from './security/security-manager.js';
-export { StorageStrategy } from './strategies/storage-strategy.js';
-export { debounce, deepClone, delay, formatBytes, generateId, isBrowser, isNode, isValidInput, safeJsonParse, safeJsonStringify, throttle } from './utils/index.js';
-export { EventEmitter } from './utils/event-emitter.js';
-
+import type { CacheOptions } from './types';
+import { CacheManager } from './core/cache-manager';
+import { StorageEngineFactory } from './engines/factory';
+export { CacheManager } from './core/cache-manager';
+export { BaseStorageEngine } from './engines/base-engine';
+export { CookieEngine } from './engines/cookie-engine';
+export { StorageEngineFactory } from './engines/factory';
+export { IndexedDBEngine } from './engines/indexeddb-engine';
+export { LocalStorageEngine } from './engines/local-storage-engine';
+export { MemoryEngine } from './engines/memory-engine';
+export { SessionStorageEngine } from './engines/session-storage-engine';
+export { AESCrypto } from './security/aes-crypto';
+export { KeyObfuscator } from './security/key-obfuscator';
+export { SecurityManager } from './security/security-manager';
+export { StorageStrategy } from './strategies/storage-strategy';
+export * from './types';
+export * from './utils';
 /**
  * 创建缓存管理器实例
  */
-declare function createCache(options?: CacheOptions): CacheManager;
-declare const defaultCache: CacheManager;
+export declare function createCache(options?: CacheOptions): CacheManager;
+export declare const defaultCache: CacheManager;
 declare const _default: {
     CacheManager: typeof CacheManager;
     createCache: typeof createCache;
     defaultCache: CacheManager;
     StorageEngineFactory: typeof StorageEngineFactory;
 };
-
-export { CacheManager, CacheOptions, StorageEngineFactory, createCache, _default as default, defaultCache };
+export default _default;
+//# sourceMappingURL=index.d.ts.map

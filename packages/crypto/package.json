@@ -44,8 +44,8 @@
     "types"
   ],
   "scripts": {
-    "build": "rollup -c",
-    "build:watch": "rollup -c -w",
+    "build": "ldesign-builder build",
+    "build:watch": "ldesign-builder build --watch",
     "dev": "rollup -c -w",
     "type-check": "vue-tsc --noEmit",
     "lint": "eslint . --fix",
@@ -81,6 +81,7 @@
     "tslib": "^2.6.2"
   },
   "devDependencies": {
+    "@ldesign/builder": "workspace:*",
     "@playwright/test": "^1.40.1",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",

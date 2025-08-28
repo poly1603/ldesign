@@ -1,15 +1,15 @@
 /**
  * 存储引擎类型
  */
-type StorageEngine = 'localStorage' | 'sessionStorage' | 'cookie' | 'indexedDB' | 'memory';
+export type StorageEngine = 'localStorage' | 'sessionStorage' | 'cookie' | 'indexedDB' | 'memory';
 /**
  * 数据类型
  */
-type DataType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'binary';
+export type DataType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'binary';
 /**
  * 缓存项元数据
  */
-interface CacheMetadata {
+export interface CacheMetadata {
     /** 创建时间戳 */
     createdAt: number;
     /** 最后访问时间戳 */
@@ -30,7 +30,7 @@ interface CacheMetadata {
 /**
  * 缓存项
  */
-interface CacheItem<T = any> {
+export interface CacheItem<T = any> {
     /** 缓存键 */
     key: string;
     /** 缓存值 */
@@ -41,7 +41,7 @@ interface CacheItem<T = any> {
 /**
  * 加密配置
  */
-interface EncryptionConfig {
+export interface EncryptionConfig {
     /** 是否启用加密 */
     enabled: boolean;
     /** 加密算法 */
@@ -56,7 +56,7 @@ interface EncryptionConfig {
 /**
  * 键名混淆配置
  */
-interface ObfuscationConfig {
+export interface ObfuscationConfig {
     /** 是否启用键名混淆 */
     enabled: boolean;
     /** 混淆前缀 */
@@ -71,7 +71,7 @@ interface ObfuscationConfig {
 /**
  * 安全配置
  */
-interface SecurityConfig {
+export interface SecurityConfig {
     /** 加密配置 */
     encryption: EncryptionConfig;
     /** 键名混淆配置 */
@@ -80,7 +80,7 @@ interface SecurityConfig {
 /**
  * 存储引擎配置
  */
-interface StorageEngineConfig {
+export interface StorageEngineConfig {
     /** localStorage 配置 */
     localStorage?: {
         /** 最大存储大小（字节） */
@@ -128,7 +128,7 @@ interface StorageEngineConfig {
 /**
  * 智能存储策略配置
  */
-interface StorageStrategyConfig {
+export interface StorageStrategyConfig {
     /** 是否启用智能策略 */
     enabled: boolean;
     /** 数据大小阈值配置 */
@@ -155,7 +155,7 @@ interface StorageStrategyConfig {
 /**
  * 缓存配置选项
  */
-interface CacheOptions {
+export interface CacheOptions {
     /** 默认存储引擎 */
     defaultEngine?: StorageEngine;
     /** 默认过期时间（毫秒） */
@@ -178,7 +178,7 @@ interface CacheOptions {
 /**
  * 存储引擎接口
  */
-interface IStorageEngine {
+export interface IStorageEngine {
     /** 引擎名称 */
     readonly name: StorageEngine;
     /** 是否可用 */
@@ -223,7 +223,7 @@ interface IStorageEngine {
 /**
  * 缓存管理器接口
  */
-interface ICacheManager {
+export interface ICacheManager {
     /**
      * 设置缓存项
      */
@@ -268,7 +268,7 @@ interface ICacheManager {
 /**
  * 设置选项
  */
-interface SetOptions {
+export interface SetOptions {
     /** 过期时间（毫秒） */
     ttl?: number;
     /** 指定存储引擎 */
@@ -283,7 +283,7 @@ interface SetOptions {
 /**
  * 缓存统计信息
  */
-interface CacheStats {
+export interface CacheStats {
     /** 总缓存项数量 */
     totalItems: number;
     /** 总存储大小（字节） */
@@ -298,7 +298,7 @@ interface CacheStats {
 /**
  * 存储引擎统计信息
  */
-interface EngineStats {
+export interface EngineStats {
     /** 缓存项数量 */
     itemCount: number;
     /** 存储大小（字节） */
@@ -313,7 +313,7 @@ interface EngineStats {
 /**
  * 存储策略结果
  */
-interface StorageStrategyResult {
+export interface StorageStrategyResult {
     /** 推荐的存储引擎 */
     engine: StorageEngine;
     /** 推荐原因 */
@@ -324,11 +324,11 @@ interface StorageStrategyResult {
 /**
  * 事件类型
  */
-type CacheEventType = 'set' | 'get' | 'remove' | 'clear' | 'expired' | 'error' | 'strategy';
+export type CacheEventType = 'set' | 'get' | 'remove' | 'clear' | 'expired' | 'error' | 'strategy';
 /**
  * 缓存事件
  */
-interface CacheEvent<T = any> {
+export interface CacheEvent<T = any> {
     /** 事件类型 */
     type: CacheEventType;
     /** 缓存键 */
@@ -353,11 +353,11 @@ interface CacheEvent<T = any> {
 /**
  * 事件监听器
  */
-type CacheEventListener<T = any> = (event: CacheEvent<T>) => void;
+export type CacheEventListener<T = any> = (event: CacheEvent<T>) => void;
 /**
  * Vue 组合式函数选项
  */
-interface UseCacheOptions extends Omit<CacheOptions, 'keyPrefix'> {
+export interface UseCacheOptions extends Omit<CacheOptions, 'keyPrefix'> {
     /** 键前缀 */
     keyPrefix?: string;
     /** 是否立即初始化 */
@@ -365,5 +365,4 @@ interface UseCacheOptions extends Omit<CacheOptions, 'keyPrefix'> {
     /** 是否在组件卸载时清理 */
     cleanupOnUnmount?: boolean;
 }
-
-export type { CacheEvent, CacheEventListener, CacheEventType, CacheItem, CacheMetadata, CacheOptions, CacheStats, DataType, EncryptionConfig, EngineStats, ICacheManager, IStorageEngine, ObfuscationConfig, SecurityConfig, SetOptions, StorageEngine, StorageEngineConfig, StorageStrategyConfig, StorageStrategyResult, UseCacheOptions };
+//# sourceMappingURL=index.d.ts.map

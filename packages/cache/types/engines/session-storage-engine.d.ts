@@ -1,10 +1,9 @@
-import { StorageEngineConfig } from '../types/index.js';
-import { BaseStorageEngine } from './base-engine.js';
-
+import type { StorageEngineConfig } from '../types';
+import { BaseStorageEngine } from './base-engine';
 /**
  * sessionStorage 存储引擎
  */
-declare class SessionStorageEngine extends BaseStorageEngine {
+export declare class SessionStorageEngine extends BaseStorageEngine {
     readonly name: "sessionStorage";
     readonly maxSize: number;
     private keyPrefix;
@@ -51,5 +50,4 @@ declare class SessionStorageEngine extends BaseStorageEngine {
      */
     getUsageRatio(): number;
 }
-
-export { SessionStorageEngine };
+//# sourceMappingURL=session-storage-engine.d.ts.map

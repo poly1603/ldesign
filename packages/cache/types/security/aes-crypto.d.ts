@@ -1,9 +1,8 @@
-import { EncryptionConfig } from '../types/index.js';
-
+import type { EncryptionConfig } from '../types';
 /**
  * AES 加密实现
  */
-declare class AESCrypto {
+export declare class AESCrypto {
     private config;
     private cryptoKey;
     constructor(config: EncryptionConfig);
@@ -56,5 +55,4 @@ declare class AESCrypto {
      */
     getConfig(): EncryptionConfig;
 }
-
-export { AESCrypto };
+//# sourceMappingURL=aes-crypto.d.ts.map

@@ -1,14 +1,12 @@
-import { Plugin } from 'vue';
-import { SizeManager } from '../../types/index.js';
-
 /**
  * Size Vue 插件
  */
-
+import type { Plugin } from 'vue';
+import type { SizeManager } from '../../types';
 /**
  * Size 插件选项
  */
-interface SizePluginOptions {
+export interface SizePluginOptions {
     /** 尺寸管理器实例 */
     sizeManager?: SizeManager;
     /** 是否注册全局属性 */
@@ -19,16 +17,19 @@ interface SizePluginOptions {
 /**
  * Size Vue 插件符号
  */
-declare const SizeSymbol: unique symbol;
+export declare const SizeSymbol: unique symbol;
 /**
  * Size Vue 插件
  */
-declare const SizePlugin: Plugin;
+export declare const SizePlugin: Plugin;
 /**
  * 创建 Size Vue 插件
  */
-declare function createSizePlugin(options?: SizePluginOptions): Plugin;
-
+export declare function createSizePlugin(options?: SizePluginOptions): Plugin;
+/**
+ * 默认导出插件
+ */
+export default SizePlugin;
 declare module 'vue' {
     interface ComponentCustomProperties {
         $size: SizeManager;
@@ -37,6 +38,4 @@ declare module 'vue' {
         $getSizeConfig: (mode?: string) => any;
     }
 }
-
-export { SizePlugin, SizeSymbol, createSizePlugin, SizePlugin as default };
-export type { SizePluginOptions };
+//# sourceMappingURL=plugin.d.ts.map

@@ -1,13 +1,11 @@
-import { SizeConfig } from '../types/index.js';
-
 /**
  * CSS变量生成器
  */
-
+import type { SizeConfig } from '../types';
 /**
  * CSS变量生成器类
  */
-declare class CSSVariableGenerator {
+export declare class CSSVariableGenerator {
     private prefix;
     constructor(prefix?: string);
     /**
@@ -50,10 +48,9 @@ declare class CSSVariableGenerator {
 /**
  * 创建CSS变量生成器实例
  */
-declare function createCSSVariableGenerator(prefix?: string): CSSVariableGenerator;
+export declare function createCSSVariableGenerator(prefix?: string): CSSVariableGenerator;
 /**
  * 默认CSS变量生成器实例
  */
-declare const defaultCSSVariableGenerator: CSSVariableGenerator;
-
-export { CSSVariableGenerator, createCSSVariableGenerator, defaultCSSVariableGenerator };
+export declare const defaultCSSVariableGenerator: CSSVariableGenerator;
+//# sourceMappingURL=css-generator.d.ts.map

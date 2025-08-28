@@ -1,27 +1,25 @@
-import { Ref } from 'vue';
-export { Ref } from 'vue';
-import { DeviceDetector } from '../core/DeviceDetector.js';
-
+import type { Ref } from 'vue';
+import type { DeviceDetector } from '../core/DeviceDetector';
 /**
  * 设备类型枚举
  */
-type DeviceType = 'desktop' | 'tablet' | 'mobile';
+export type DeviceType = 'desktop' | 'tablet' | 'mobile';
 /**
  * 屏幕方向枚举
  */
-type Orientation = 'portrait' | 'landscape';
+export type Orientation = 'portrait' | 'landscape';
 /**
  * 网络连接类型
  */
-type NetworkType = 'wifi' | 'cellular' | 'ethernet' | 'bluetooth' | 'unknown';
+export type NetworkType = 'wifi' | 'cellular' | 'ethernet' | 'bluetooth' | 'unknown';
 /**
  * 网络连接状态
  */
-type NetworkStatus = 'online' | 'offline';
+export type NetworkStatus = 'online' | 'offline';
 /**
  * 设备检测器配置选项
  */
-interface DeviceDetectorOptions {
+export interface DeviceDetectorOptions {
     /** 是否启用窗口缩放监听 */
     enableResize?: boolean;
     /** 是否启用设备方向监听 */
@@ -37,7 +35,7 @@ interface DeviceDetectorOptions {
 /**
  * 设备信息接口
  */
-interface DeviceInfo {
+export interface DeviceInfo {
     /** 设备类型 */
     type: DeviceType;
     /** 屏幕方向 */
@@ -66,7 +64,7 @@ interface DeviceInfo {
 /**
  * 网络信息接口
  */
-interface NetworkInfo {
+export interface NetworkInfo {
     /** 网络状态 */
     status: NetworkStatus;
     /** 连接类型 */
@@ -81,7 +79,7 @@ interface NetworkInfo {
 /**
  * 电池信息接口
  */
-interface BatteryInfo {
+export interface BatteryInfo {
     /** 电池电量（0-1） */
     level: number;
     /** 是否正在充电 */
@@ -94,7 +92,7 @@ interface BatteryInfo {
 /**
  * 地理位置信息接口
  */
-interface GeolocationInfo {
+export interface GeolocationInfo {
     /** 纬度 */
     latitude: number;
     /** 经度 */
@@ -113,11 +111,11 @@ interface GeolocationInfo {
 /**
  * 事件监听器类型
  */
-type EventListener<T = any> = (data: T) => void;
+export type EventListener<T = any> = (data: T) => void;
 /**
  * 设备检测器事件映射
  */
-interface DeviceDetectorEvents extends Record<string, unknown> {
+export interface DeviceDetectorEvents extends Record<string, unknown> {
     deviceChange: DeviceInfo;
     orientationChange: Orientation;
     resize: {
@@ -130,7 +128,7 @@ interface DeviceDetectorEvents extends Record<string, unknown> {
 /**
  * 模块加载器接口
  */
-interface ModuleLoader {
+export interface ModuleLoader {
     /** 加载模块 */
     load: <T = any>(name: string) => Promise<T>;
     /** 卸载模块 */
@@ -141,7 +139,7 @@ interface ModuleLoader {
 /**
  * 扩展模块接口
  */
-interface DeviceModule {
+export interface DeviceModule {
     /** 模块名称 */
     name: string;
     /** 初始化模块 */
@@ -154,7 +152,7 @@ interface DeviceModule {
 /**
  * 网络模块接口
  */
-interface NetworkModule extends DeviceModule {
+export interface NetworkModule extends DeviceModule {
     getData: () => NetworkInfo;
     isOnline: () => boolean;
     getConnectionType: () => string;
@@ -162,7 +160,7 @@ interface NetworkModule extends DeviceModule {
 /**
  * 电池模块接口
  */
-interface BatteryModule extends DeviceModule {
+export interface BatteryModule extends DeviceModule {
     getData: () => BatteryInfo;
     getLevel: () => number;
     isCharging: () => boolean;
@@ -171,7 +169,7 @@ interface BatteryModule extends DeviceModule {
 /**
  * 地理位置模块接口
  */
-interface GeolocationModule extends DeviceModule {
+export interface GeolocationModule extends DeviceModule {
     getData: () => GeolocationInfo | null;
     isSupported: () => boolean;
     getCurrentPosition: () => Promise<GeolocationInfo>;
@@ -181,7 +179,7 @@ interface GeolocationModule extends DeviceModule {
 /**
  * Vue3 集成相关类型
  */
-interface UseDeviceReturn {
+export interface UseDeviceReturn {
     /** 设备类型 */
     deviceType: Readonly<Ref<DeviceType>>;
     /** 屏幕方向 */
@@ -202,14 +200,14 @@ interface UseDeviceReturn {
 /**
  * Vue3 指令绑定值类型
  */
-type DeviceDirectiveValue = DeviceType | DeviceType[] | {
+export type DeviceDirectiveValue = DeviceType | DeviceType[] | {
     type: DeviceType | DeviceType[];
     inverse?: boolean;
 };
 /**
  * Vue3 插件选项
  */
-interface DevicePluginOptions extends DeviceDetectorOptions {
+export interface DevicePluginOptions extends DeviceDetectorOptions {
     /** 全局属性名称 */
     globalPropertyName?: string;
 }
@@ -218,7 +216,7 @@ declare module 'vue' {
         $device: DeviceDetector;
     }
 }
-
+export type { Ref };
 /**
  * 扩展 Navigator 接口以支持 Battery API
  */
@@ -234,5 +232,4 @@ declare global {
         }>;
     }
 }
-
-export type { BatteryInfo, BatteryModule, DeviceDetectorEvents, DeviceDetectorOptions, DeviceDirectiveValue, DeviceInfo, DeviceModule, DevicePluginOptions, DeviceType, EventListener, GeolocationInfo, GeolocationModule, ModuleLoader, NetworkInfo, NetworkModule, NetworkStatus, NetworkType, Orientation, UseDeviceReturn };
+//# sourceMappingURL=index.d.ts.map

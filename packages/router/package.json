@@ -49,8 +49,8 @@
     "pnpm": ">=8.0.0"
   },
   "scripts": {
-    "build": "rollup -c",
-    "build:watch": "rollup -c -w",
+    "build": "ldesign-builder build",
+    "build:watch": "ldesign-builder build --watch",
     "dev": "rollup -c -w",
     "type-check": "vue-tsc --noEmit",
     "lint": "eslint . --fix",
@@ -110,6 +110,7 @@
     "@ldesign/device": "workspace:*"
   },
   "devDependencies": {
+    "@ldesign/builder": "workspace:*",
     "@ldesign/engine": "workspace:*",
     "@ldesign/template": "workspace:*",
     "@playwright/test": "^1.54.2",

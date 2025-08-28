@@ -1,10 +1,11 @@
-export { DeviceDetector, DeviceDetector as default } from './core/DeviceDetector.js';
-export { EventEmitter } from './core/EventEmitter.js';
-export { ModuleLoader } from './core/ModuleLoader.js';
-export { BatteryModule } from './modules/BatteryModule.js';
-export { GeolocationModule } from './modules/GeolocationModule.js';
-export { NetworkModule } from './modules/NetworkModule.js';
-export { BatteryInfo, DeviceDetectorEvents, DeviceDetectorOptions, DeviceInfo, DeviceModule, DeviceType, EventListener, GeolocationInfo, ModuleLoader as IModuleLoader, NetworkInfo, NetworkStatus, NetworkType, Orientation } from './types/index.js';
-export { debounce, formatBytes, generateId, getDeviceTypeByWidth, getPixelRatio, getScreenOrientation, isAPISupported, isMobileDevice, isTouchDevice, parseBrowser, parseOS, safeNavigatorAccess, throttle } from './utils/index.js';
-export { useDeviceDetection } from './vue/composables/useDevice.js';
-export { useDevice } from './adapt/vue/composables/useDevice.js';
+export { DeviceDetector } from './core/DeviceDetector';
+export { DeviceDetector as default } from './core/DeviceDetector';
+export { EventEmitter } from './core/EventEmitter';
+export { ModuleLoader } from './core/ModuleLoader';
+export { BatteryModule } from './modules/BatteryModule';
+export { GeolocationModule } from './modules/GeolocationModule';
+export { NetworkModule } from './modules/NetworkModule';
+export type { BatteryInfo, DeviceDetectorEvents, DeviceDetectorOptions, DeviceInfo, DeviceModule, DeviceType, EventListener, GeolocationInfo, ModuleLoader as IModuleLoader, NetworkInfo, NetworkStatus, NetworkType, Orientation, } from './types';
+export { debounce, formatBytes, generateId, getDeviceTypeByWidth, getPixelRatio, getScreenOrientation, isAPISupported, isMobileDevice, isTouchDevice, parseBrowser, parseOS, safeNavigatorAccess, throttle, } from './utils';
+export * from './vue';
+//# sourceMappingURL=index.d.ts.map

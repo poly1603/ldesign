@@ -1,10 +1,9 @@
-import { DeviceDetectorEvents, DeviceDetectorOptions, DeviceType, Orientation, DeviceInfo, DeviceModule } from '../types/index.js';
-import { EventEmitter } from './EventEmitter.js';
-
+import type { DeviceDetectorEvents, DeviceDetectorOptions, DeviceInfo, DeviceModule, DeviceType, Orientation } from '../types';
+import { EventEmitter } from './EventEmitter';
 /**
  * 设备检测器主类
  */
-declare class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
+export declare class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
     private options;
     private moduleLoader;
     private currentDeviceInfo;
@@ -111,5 +110,4 @@ declare class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
      */
     private removeEventListeners;
 }
-
-export { DeviceDetector };
+//# sourceMappingURL=DeviceDetector.d.ts.map

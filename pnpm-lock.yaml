@@ -233,6 +233,9 @@ importers:
       '@antfu/eslint-config':
         specifier: ^3.0.0
         version: 3.16.0(@typescript-eslint/utils@8.41.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(@vue/compiler-sfc@3.5.18)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.1(eslint@9.32.0(jiti@2.5.1)))(eslint-plugin-react-hooks@4.6.2(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2)(vitest@2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@playwright/test':
         specifier: ^1.40.1
         version: 1.54.1
@@ -456,6 +459,9 @@ importers:
       '@antfu/eslint-config':
         specifier: ^3.0.0
         version: 3.16.0(@typescript-eslint/utils@8.41.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(@vue/compiler-sfc@3.5.18)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.1(eslint@9.32.0(jiti@2.5.1)))(eslint-plugin-react-hooks@4.6.2(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2)(vitest@2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@playwright/test':
         specifier: ^1.40.1
         version: 1.54.1
@@ -575,6 +581,9 @@ importers:
         specifier: ^2.6.2
         version: 2.8.1
     devDependencies:
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
         version: 25.0.8(rollup@4.46.1)
@@ -750,6 +759,9 @@ importers:
         specifier: ^2.6.2
         version: 2.8.1
     devDependencies:
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@playwright/test':
         specifier: ^1.40.1
         version: 1.54.1
@@ -867,6 +879,9 @@ importers:
 
   packages/device:
     devDependencies:
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@playwright/test':
         specifier: ^1.40.1
         version: 1.54.1
@@ -959,6 +974,9 @@ importers:
 
   packages/engine:
     devDependencies:
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
         version: 25.0.8(rollup@4.46.1)
@@ -1074,6 +1092,9 @@ importers:
 
   packages/form:
     devDependencies:
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.9
@@ -1135,12 +1156,6 @@ importers:
         specifier: ^1.8.0
         version: 1.8.27(typescript@5.8.3)
 
-  packages/form/dist:
-    dependencies:
-      vue:
-        specifier: ^3.4.0
-        version: 3.5.18(typescript@5.9.2)
-
   packages/form/docs:
     dependencies:
       '@lemonform/form':
@@ -1181,6 +1196,9 @@ importers:
 
   packages/http:
     devDependencies:
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@playwright/test':
         specifier: ^1.40.1
         version: 1.54.1
@@ -1280,6 +1298,9 @@ importers:
         specifier: ^2.6.2
         version: 2.8.1
     devDependencies:
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
         version: 25.0.8(rollup@4.46.1)
@@ -1478,6 +1499,9 @@ importers:
         specifier: ^1.5.3
         version: 1.5.4
     devDependencies:
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.9
@@ -1536,6 +1560,9 @@ importers:
         specifier: workspace:*
         version: link:../device
     devDependencies:
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@ldesign/engine':
         specifier: workspace:*
         version: link:../engine
@@ -1696,6 +1723,9 @@ importers:
       '@antfu/eslint-config':
         specifier: ^3.0.0
         version: 3.16.0(@typescript-eslint/utils@8.41.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(@vue/compiler-sfc@3.5.18)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.1(eslint@9.32.0(jiti@2.5.1)))(eslint-plugin-react-hooks@4.6.2(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2)(vitest@2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@playwright/test':
         specifier: ^1.40.1
         version: 1.54.2
@@ -1783,6 +1813,9 @@ importers:
       '@antfu/eslint-config':
         specifier: ^3.0.0
         version: 3.16.0(@typescript-eslint/utils@8.41.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(@vue/compiler-sfc@3.5.18)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.1(eslint@9.32.0(jiti@2.5.1)))(eslint-plugin-react-hooks@4.6.2(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2)(vitest@2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@playwright/test':
         specifier: ^1.40.1
         version: 1.54.1
@@ -1905,6 +1938,9 @@ importers:
         specifier: ^2.6.2
         version: 2.8.1
     devDependencies:
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@playwright/test':
         specifier: ^1.40.1
         version: 1.54.1
@@ -2233,6 +2269,9 @@ importers:
       '@antfu/eslint-config':
         specifier: ^3.0.0
         version: 3.16.0(@typescript-eslint/utils@8.41.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(@vue/compiler-sfc@3.5.18)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.1(eslint@9.32.0(jiti@2.5.1)))(eslint-plugin-react-hooks@4.6.2(eslint@9.32.0(jiti@2.5.1)))(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2)(vitest@2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@playwright/test':
         specifier: ^1.40.1
         version: 1.54.1
@@ -2357,6 +2396,9 @@ importers:
 
   packages/watermark:
     devDependencies:
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
       '@playwright/test':
         specifier: ^1.40.1
         version: 1.54.1
@@ -15346,7 +15388,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.16.5)(@vitest/ui@3.2.4)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.16.5)(@vitest/ui@3.2.4)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
 
   '@vitest/utils@0.34.6':
     dependencies:

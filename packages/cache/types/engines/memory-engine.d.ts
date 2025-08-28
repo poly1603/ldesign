@@ -1,6 +1,5 @@
-import { StorageEngineConfig } from '../types/index.js';
-import { BaseStorageEngine } from './base-engine.js';
-
+import type { StorageEngineConfig } from '../types';
+import { BaseStorageEngine } from './base-engine';
 /**
  * 内存缓存项
  */
@@ -12,7 +11,7 @@ interface MemoryCacheItem {
 /**
  * 内存存储引擎
  */
-declare class MemoryEngine extends BaseStorageEngine {
+export declare class MemoryEngine extends BaseStorageEngine {
     readonly name: "memory";
     readonly available = true;
     readonly maxSize: number;
@@ -92,5 +91,5 @@ declare class MemoryEngine extends BaseStorageEngine {
      */
     destroy(): Promise<void>;
 }
-
-export { MemoryEngine };
+export {};
+//# sourceMappingURL=memory-engine.d.ts.map

@@ -1,36 +1,33 @@
-import { SizeConfig, SizeMode } from '../types/index.js';
-
 /**
  * 尺寸配置预设
  */
-
+import type { SizeConfig, SizeMode } from '../types';
 /**
  * 小尺寸配置
  */
-declare const smallSizeConfig: SizeConfig;
+export declare const smallSizeConfig: SizeConfig;
 /**
  * 中等尺寸配置（默认）
  */
-declare const mediumSizeConfig: SizeConfig;
+export declare const mediumSizeConfig: SizeConfig;
 /**
  * 大尺寸配置
  */
-declare const largeSizeConfig: SizeConfig;
+export declare const largeSizeConfig: SizeConfig;
 /**
  * 超大尺寸配置
  */
-declare const extraLargeSizeConfig: SizeConfig;
+export declare const extraLargeSizeConfig: SizeConfig;
 /**
  * 所有尺寸配置的映射
  */
-declare const sizeConfigs: Record<SizeMode, SizeConfig>;
+export declare const sizeConfigs: Record<SizeMode, SizeConfig>;
 /**
  * 获取指定模式的尺寸配置
  */
-declare function getSizeConfig(mode: SizeMode): SizeConfig;
+export declare function getSizeConfig(mode: SizeMode): SizeConfig;
 /**
  * 获取所有可用的尺寸模式
  */
-declare function getAvailableModes(): SizeMode[];
-
-export { extraLargeSizeConfig, getAvailableModes, getSizeConfig, largeSizeConfig, mediumSizeConfig, sizeConfigs, smallSizeConfig };
+export declare function getAvailableModes(): SizeMode[];
+//# sourceMappingURL=presets.d.ts.map

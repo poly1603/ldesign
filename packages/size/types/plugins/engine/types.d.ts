@@ -1,13 +1,11 @@
-import { SizeManagerOptions, SizeMode } from '../../types/index.js';
-
 /**
  * Engine 插件类型定义
  */
-
+import type { SizeManagerOptions, SizeMode } from '../../types';
 /**
  * Size Engine 插件选项
  */
-interface SizeEnginePluginOptions extends SizeManagerOptions {
+export interface SizeEnginePluginOptions extends SizeManagerOptions {
     /** 插件名称 */
     name?: string;
     /** 插件版本 */
@@ -24,7 +22,7 @@ interface SizeEnginePluginOptions extends SizeManagerOptions {
 /**
  * Size 适配器接口
  */
-interface SizeAdapter {
+export interface SizeAdapter {
     /** 安装适配器 */
     install: (engine: any) => void;
     /** 获取当前尺寸模式 */
@@ -42,5 +40,4 @@ interface SizeAdapter {
     /** 销毁适配器 */
     destroy: () => void;
 }
-
-export type { SizeAdapter, SizeEnginePluginOptions };
+//# sourceMappingURL=types.d.ts.map

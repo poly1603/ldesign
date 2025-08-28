@@ -1,10 +1,9 @@
-import { StorageEngineConfig } from '../types/index.js';
-import { BaseStorageEngine } from './base-engine.js';
-
+import type { StorageEngineConfig } from '../types';
+import { BaseStorageEngine } from './base-engine';
 /**
  * Cookie 存储引擎
  */
-declare class CookieEngine extends BaseStorageEngine {
+export declare class CookieEngine extends BaseStorageEngine {
     readonly name: "cookie";
     readonly maxSize: number;
     private domain?;
@@ -51,5 +50,4 @@ declare class CookieEngine extends BaseStorageEngine {
      */
     getUsageRatio(): number;
 }
-
-export { CookieEngine };
+//# sourceMappingURL=cookie-engine.d.ts.map

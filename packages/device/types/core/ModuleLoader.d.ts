@@ -1,9 +1,8 @@
-import { ModuleLoader as ModuleLoader$1, DeviceModule } from '../types/index.js';
-
+import type { DeviceModule, ModuleLoader as IModuleLoader } from '../types';
 /**
  * 高性能模块加载器实现
  */
-declare class ModuleLoader implements ModuleLoader$1 {
+export declare class ModuleLoader implements IModuleLoader {
     private modules;
     private loadingPromises;
     private loadingStats;
@@ -76,5 +75,4 @@ declare class ModuleLoader implements ModuleLoader$1 {
      */
     private updateLoadingStats;
 }
-
-export { ModuleLoader };
+//# sourceMappingURL=ModuleLoader.d.ts.map

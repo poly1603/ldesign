@@ -1,11 +1,11 @@
 /**
  * 尺寸模式枚举
  */
-type SizeMode = 'small' | 'medium' | 'large' | 'extra-large';
+export type SizeMode = 'small' | 'medium' | 'large' | 'extra-large';
 /**
  * CSS变量配置接口
  */
-interface CSSVariableConfig {
+export interface CSSVariableConfig {
     /** 变量名 */
     name: string;
     /** 变量值 */
@@ -16,7 +16,7 @@ interface CSSVariableConfig {
 /**
  * 尺寸配置接口
  */
-interface SizeConfig {
+export interface SizeConfig {
     /** 字体大小配置 */
     fontSize: FontSizeConfig;
     /** 间距配置 */
@@ -31,7 +31,7 @@ interface SizeConfig {
 /**
  * 字体大小配置
  */
-interface FontSizeConfig {
+export interface FontSizeConfig {
     /** 超小字体 */
     xs: string;
     /** 小字体 */
@@ -55,7 +55,7 @@ interface FontSizeConfig {
 /**
  * 间距配置
  */
-interface SpacingConfig {
+export interface SpacingConfig {
     /** 超小间距 */
     xs: string;
     /** 小间距 */
@@ -72,7 +72,7 @@ interface SpacingConfig {
 /**
  * 组件尺寸配置
  */
-interface ComponentSizeConfig {
+export interface ComponentSizeConfig {
     /** 按钮高度 */
     buttonHeight: {
         small: string;
@@ -101,7 +101,7 @@ interface ComponentSizeConfig {
 /**
  * 边框圆角配置
  */
-interface BorderRadiusConfig {
+export interface BorderRadiusConfig {
     /** 无圆角 */
     none: string;
     /** 小圆角 */
@@ -118,7 +118,7 @@ interface BorderRadiusConfig {
 /**
  * 阴影配置
  */
-interface ShadowConfig {
+export interface ShadowConfig {
     /** 无阴影 */
     none: string;
     /** 小阴影 */
@@ -133,7 +133,7 @@ interface ShadowConfig {
 /**
  * 尺寸管理器选项
  */
-interface SizeManagerOptions {
+export interface SizeManagerOptions {
     /** CSS变量前缀 */
     prefix?: string;
     /** 默认尺寸模式 */
@@ -156,7 +156,7 @@ interface SizeManagerOptions {
 /**
  * 尺寸变化事件
  */
-interface SizeChangeEvent {
+export interface SizeChangeEvent {
     /** 之前的尺寸模式 */
     previousMode: SizeMode;
     /** 当前的尺寸模式 */
@@ -167,7 +167,7 @@ interface SizeChangeEvent {
 /**
  * 尺寸管理器接口
  */
-interface SizeManager {
+export interface SizeManager {
     /** 获取当前尺寸模式 */
     getCurrentMode: () => SizeMode;
     /** 设置尺寸模式 */
@@ -196,14 +196,14 @@ interface SizeManager {
 /**
  * Vue插件选项
  */
-interface VueSizePluginOptions extends SizeManagerOptions {
+export interface VueSizePluginOptions extends SizeManagerOptions {
     /** 全局属性名 */
     globalPropertyName?: string;
 }
 /**
  * Vue组件属性
  */
-interface VueSizeComponentProps {
+export interface VueSizeComponentProps {
     /** 尺寸模式 */
     mode?: SizeMode;
     /** 是否显示切换器 */
@@ -213,5 +213,4 @@ interface VueSizeComponentProps {
     /** 自定义类名 */
     className?: string;
 }
-
-export type { BorderRadiusConfig, CSSVariableConfig, ComponentSizeConfig, FontSizeConfig, ShadowConfig, SizeChangeEvent, SizeConfig, SizeManager, SizeManagerOptions, SizeMode, SpacingConfig, VueSizeComponentProps, VueSizePluginOptions };
+//# sourceMappingURL=index.d.ts.map

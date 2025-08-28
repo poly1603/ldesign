@@ -1,7 +1,7 @@
 /**
  * 事件发射器
  */
-declare class EventEmitter<T = any> {
+export declare class EventEmitter<T = any> {
     private listeners;
     /**
      * 添加事件监听器
@@ -36,5 +36,4 @@ declare class EventEmitter<T = any> {
      */
     hasListeners(event?: string): boolean;
 }
-
-export { EventEmitter };
+//# sourceMappingURL=event-emitter.d.ts.map

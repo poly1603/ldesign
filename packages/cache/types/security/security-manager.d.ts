@@ -1,9 +1,8 @@
-import { SecurityConfig } from '../types/index.js';
-
+import type { SecurityConfig } from '../types';
 /**
  * 安全管理器
  */
-declare class SecurityManager {
+export declare class SecurityManager {
     private encryption;
     private obfuscation;
     private config;
@@ -61,5 +60,4 @@ declare class SecurityManager {
         webCrypto: boolean;
     };
 }
-
-export { SecurityManager };
+//# sourceMappingURL=security-manager.d.ts.map

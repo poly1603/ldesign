@@ -1,10 +1,8 @@
-import { SizeEnginePluginOptions } from './types.js';
-import { SizeManagerImpl } from '../../core/size-manager.js';
-
 /**
  * Size Engine 插件
  */
-
+import type { SizeEnginePluginOptions } from './types';
+import { SizeManagerImpl } from '../../core/size-manager';
 /**
  * 创建尺寸管理器实例
  */
@@ -22,7 +20,7 @@ interface Plugin {
 /**
  * Engine 插件上下文
  */
-interface EnginePluginContext {
+export interface EnginePluginContext {
     engine: any;
     logger: any;
     config: any;
@@ -32,7 +30,7 @@ interface EnginePluginContext {
  * @param options 插件配置选项
  * @returns Engine 插件
  */
-declare function createSizeEnginePlugin(options?: SizeEnginePluginOptions): Plugin;
-
-export { createSizeEnginePlugin, createSizeManagerInstance, createSizeEnginePlugin as default };
-export type { EnginePluginContext };
+export declare function createSizeEnginePlugin(options?: SizeEnginePluginOptions): Plugin;
+export { createSizeManagerInstance };
+export { createSizeEnginePlugin as default };
+//# sourceMappingURL=plugin.d.ts.map

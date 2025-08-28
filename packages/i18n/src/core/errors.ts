@@ -459,9 +459,8 @@ export class ErrorManager {
 
     // Node.js环境检查
     // eslint-disable-next-line node/prefer-global/process
-    if (typeof globalThis.process !== 'undefined' && globalThis.process?.env) {
-      // eslint-disable-next-line node/prefer-global/process
-      return globalThis.process.env.NODE_ENV === 'development'
+    if (typeof process !== 'undefined' && process && process.env) {
+      return process.env.NODE_ENV === 'development';
     }
 
     return false

@@ -4,7 +4,7 @@
 /**
  * CSS注入选项
  */
-interface CSSInjectionOptions {
+export interface CSSInjectionOptions {
     /** 样式标签ID */
     styleId?: string;
     /** 目标选择器 */
@@ -21,7 +21,7 @@ interface CSSInjectionOptions {
 /**
  * CSS注入器类
  */
-declare class CSSInjector {
+export declare class CSSInjector {
     private options;
     private styleElement;
     constructor(options?: CSSInjectionOptions);
@@ -69,31 +69,29 @@ declare class CSSInjector {
 /**
  * 全局CSS注入器实例
  */
-declare const globalCSSInjector: CSSInjector;
+export declare const globalCSSInjector: CSSInjector;
 /**
  * 创建CSS注入器实例
  */
-declare function createCSSInjector(options?: CSSInjectionOptions): CSSInjector;
+export declare function createCSSInjector(options?: CSSInjectionOptions): CSSInjector;
 /**
  * 便捷函数：注入CSS变量到全局
  */
-declare function injectGlobalVariables(variables: Record<string, string>, options?: CSSInjectionOptions): void;
+export declare function injectGlobalVariables(variables: Record<string, string>, options?: CSSInjectionOptions): void;
 /**
  * 便捷函数：移除全局CSS变量
  */
-declare function removeGlobalVariables(styleId?: string): void;
+export declare function removeGlobalVariables(styleId?: string): void;
 /**
  * 便捷函数：检查CSS变量是否已注入
  */
-declare function isVariablesInjected(styleId?: string): boolean;
+export declare function isVariablesInjected(styleId?: string): boolean;
 /**
  * 便捷函数：获取CSS变量值
  */
-declare function getCSSVariableValue(name: string, element?: Element): string;
+export declare function getCSSVariableValue(name: string, element?: Element): string;
 /**
  * 便捷函数：设置CSS变量值
  */
-declare function setCSSVariableValue(name: string, value: string, element?: Element): void;
-
-export { CSSInjector, createCSSInjector, getCSSVariableValue, globalCSSInjector, injectGlobalVariables, isVariablesInjected, removeGlobalVariables, setCSSVariableValue };
-export type { CSSInjectionOptions };
+export declare function setCSSVariableValue(name: string, value: string, element?: Element): void;
+//# sourceMappingURL=css-injector.d.ts.map

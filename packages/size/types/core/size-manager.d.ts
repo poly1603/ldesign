@@ -1,15 +1,13 @@
-import { SizeManager, SizeManagerOptions, SizeMode, SizeConfig, SizeChangeEvent } from '../types/index.js';
-import { CSSVariableGenerator } from './css-generator.js';
-import { CSSInjector } from './css-injector.js';
-
 /**
  * 尺寸管理器
  */
-
+import type { SizeChangeEvent, SizeConfig, SizeManager, SizeManagerOptions, SizeMode } from '../types';
+import { CSSVariableGenerator } from './css-generator';
+import { CSSInjector } from './css-injector';
 /**
  * 尺寸管理器实现
  */
-declare class SizeManagerImpl implements SizeManager {
+export declare class SizeManagerImpl implements SizeManager {
     private options;
     private currentMode;
     private cssGenerator;
@@ -94,22 +92,21 @@ declare class SizeManagerImpl implements SizeManager {
 /**
  * 全局尺寸管理器实例
  */
-declare const globalSizeManager: SizeManagerImpl;
+export declare const globalSizeManager: SizeManagerImpl;
 /**
  * 创建尺寸管理器实例
  */
-declare function createSizeManager(options?: SizeManagerOptions): SizeManager;
+export declare function createSizeManager(options?: SizeManagerOptions): SizeManager;
 /**
  * 便捷函数：设置全局尺寸模式
  */
-declare function setGlobalSizeMode(mode: SizeMode): void;
+export declare function setGlobalSizeMode(mode: SizeMode): void;
 /**
  * 便捷函数：获取全局尺寸模式
  */
-declare function getGlobalSizeMode(): SizeMode;
+export declare function getGlobalSizeMode(): SizeMode;
 /**
  * 便捷函数：监听全局尺寸变化
  */
-declare function onGlobalSizeChange(callback: (event: SizeChangeEvent) => void): () => void;
-
-export { SizeManagerImpl, createSizeManager, getGlobalSizeMode, globalSizeManager, onGlobalSizeChange, setGlobalSizeMode };
+export declare function onGlobalSizeChange(callback: (event: SizeChangeEvent) => void): () => void;
+//# sourceMappingURL=size-manager.d.ts.map

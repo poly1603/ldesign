@@ -1,2 +1,6 @@
-export { default as SizePlugin, SizePluginOptions, SizeSymbol, createSizePlugin } from './plugin.js';
-export { SizeSwitcher } from './components.js';
+/**
+ * Vue 插件导出
+ */
+export * from './plugin';
+export * from './components';
+//# sourceMappingURL=index.d.ts.map

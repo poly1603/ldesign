@@ -1,2 +1,6 @@
-export { EnginePluginContext, default as createSizeEnginePlugin, createSizeManagerInstance } from './plugin.js';
-export { SizeAdapter, SizeEnginePluginOptions } from './types.js';
+/**
+ * Engine 插件导出
+ */
+export * from './plugin';
+export * from './types';
+//# sourceMappingURL=index.d.ts.map

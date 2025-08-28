@@ -1,9 +1,8 @@
-import { StorageStrategyConfig, SetOptions, StorageStrategyResult } from '../types/index.js';
-
+import type { SetOptions, StorageStrategyConfig, StorageStrategyResult } from '../types';
 /**
  * 智能存储策略
  */
-declare class StorageStrategy {
+export declare class StorageStrategy {
     private config;
     constructor(config?: Partial<StorageStrategyConfig>);
     /**
@@ -55,5 +54,4 @@ declare class StorageStrategy {
      */
     getConfig(): StorageStrategyConfig;
 }
-
-export { StorageStrategy };
+//# sourceMappingURL=storage-strategy.d.ts.map

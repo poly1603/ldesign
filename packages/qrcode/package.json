@@ -45,7 +45,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build && npm run build:types",
+    "build": "ldesign-builder build",
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -64,6 +64,7 @@
     "qrcode": "^1.5.3"
   },
   "devDependencies": {
+    "@ldesign/builder": "workspace:*",
     "@types/node": "^20.0.0",
     "@types/qrcode": "^1.5.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",

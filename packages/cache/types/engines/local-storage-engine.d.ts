@@ -1,10 +1,9 @@
-import { StorageEngineConfig } from '../types/index.js';
-import { BaseStorageEngine } from './base-engine.js';
-
+import type { StorageEngineConfig } from '../types';
+import { BaseStorageEngine } from './base-engine';
 /**
  * localStorage 存储引擎
  */
-declare class LocalStorageEngine extends BaseStorageEngine {
+export declare class LocalStorageEngine extends BaseStorageEngine {
     readonly name: "localStorage";
     readonly maxSize: number;
     private keyPrefix;
@@ -51,5 +50,4 @@ declare class LocalStorageEngine extends BaseStorageEngine {
      */
     getUsageRatio(): number;
 }
-
-export { LocalStorageEngine };
+//# sourceMappingURL=local-storage-engine.d.ts.map

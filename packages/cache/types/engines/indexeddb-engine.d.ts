@@ -1,10 +1,9 @@
-import { StorageEngineConfig } from '../types/index.js';
-import { BaseStorageEngine } from './base-engine.js';
-
+import type { StorageEngineConfig } from '../types';
+import { BaseStorageEngine } from './base-engine';
 /**
  * IndexedDB 存储引擎
  */
-declare class IndexedDBEngine extends BaseStorageEngine {
+export declare class IndexedDBEngine extends BaseStorageEngine {
     readonly name: "indexedDB";
     readonly maxSize: number;
     private db;
@@ -70,5 +69,4 @@ declare class IndexedDBEngine extends BaseStorageEngine {
      */
     protected updateUsedSize(): Promise<void>;
 }
-
-export { IndexedDBEngine };
+//# sourceMappingURL=indexeddb-engine.d.ts.map

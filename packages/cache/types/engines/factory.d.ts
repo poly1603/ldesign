@@ -1,9 +1,8 @@
-import { StorageEngine, StorageEngineConfig, IStorageEngine } from '../types/index.js';
-
+import type { IStorageEngine, StorageEngine, StorageEngineConfig } from '../types';
 /**
  * 存储引擎工厂
  */
-declare class StorageEngineFactory {
+export declare class StorageEngineFactory {
     /**
      * 创建存储引擎实例
      */
@@ -21,5 +20,4 @@ declare class StorageEngineFactory {
      */
     static getRecommendedEngine(): StorageEngine;
 }
-
-export { StorageEngineFactory };
+//# sourceMappingURL=factory.d.ts.map

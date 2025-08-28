@@ -1,45 +1,42 @@
-import '../node_modules/.pnpm/@vue_runtime-dom@3.5.18/node_modules/@vue/runtime-dom/dist/runtime-dom.d.js';
-import { AppContext as AppContext$1, VNode as VNode$1, h } from '../node_modules/.pnpm/@vue_runtime-core@3.5.18/node_modules/@vue/runtime-core/dist/runtime-core.d.js';
-
 /** Vue3 特有全局类型 */
-type VNode = VNode$1;
-type AppContext = AppContext$1;
-type ScopedSlot = () => SlotReturnValue;
-type SlotReturnValue = VNode | string | boolean | null | undefined | SlotReturnArray;
-type SlotReturnArray = Array<SlotReturnValue>;
-interface TVNode extends VNode {
+type VNode = import('vue').VNode;
+export type AppContext = import('vue').AppContext;
+export type ScopedSlot = () => SlotReturnValue;
+export type SlotReturnValue = VNode | string | boolean | null | undefined | SlotReturnArray;
+export type SlotReturnArray = Array<SlotReturnValue>;
+export interface TVNode extends VNode {
     name: string;
 }
-type TNodeReturnValue = SlotReturnValue;
-type TNode<T = undefined> = T extends undefined ? (h: typeof h) => TNodeReturnValue : (h: typeof h, props: T) => TNodeReturnValue;
-type AttachNodeReturnValue = HTMLElement | Element | Document;
-type AttachNode = CSSSelector | ((triggerNode?: HTMLElement) => AttachNodeReturnValue);
-type ScrollContainerElement = Window | HTMLElement;
-type ScrollContainer = (() => ScrollContainerElement) | CSSSelector;
-type ComponentType = any;
-type FormResetEvent = Event;
-type FormSubmitEvent = Event;
-interface Styles {
+export type TNodeReturnValue = SlotReturnValue;
+export type TNode<T = undefined> = T extends undefined ? (h: typeof import('vue').h) => TNodeReturnValue : (h: typeof import('vue').h, props: T) => TNodeReturnValue;
+export type AttachNodeReturnValue = HTMLElement | Element | Document;
+export type AttachNode = CSSSelector | ((triggerNode?: HTMLElement) => AttachNodeReturnValue);
+export type ScrollContainerElement = Window | HTMLElement;
+export type ScrollContainer = (() => ScrollContainerElement) | CSSSelector;
+export type ComponentType = any;
+export type FormResetEvent = Event;
+export type FormSubmitEvent = Event;
+export interface Styles {
     [css: string]: string | number;
 }
-interface UploadDisplayDragEvents {
+export interface UploadDisplayDragEvents {
     onDrop?: (event: DragEvent) => void;
     onDragenter?: (event: DragEvent) => void;
     onDragover?: (event: DragEvent) => void;
     onDragleave?: (event: DragEvent) => void;
 }
-type ImageEvent = Event;
+export type ImageEvent = Event;
 /**
  * 通用全局类型
  */
-interface PlainObject {
+export interface PlainObject {
     [key: string]: any;
 }
-type OptionData = {
+export type OptionData = {
     label?: string;
     value?: string | number;
 } & PlainObject;
-type TreeOptionData<T = string | number> = {
+export type TreeOptionData<T = string | number> = {
     children?: Array<TreeOptionData<T>> | boolean;
     /** option label content */
     label?: string | TNode;
@@ -50,27 +47,27 @@ type TreeOptionData<T = string | number> = {
     /** option node content */
     content?: string | TNode;
 } & PlainObject;
-type SizeEnum = 'small' | 'medium' | 'large';
-type ShapeEnum = 'circle' | 'round';
-type HorizontalAlignEnum = 'left' | 'center' | 'right';
-type VerticalAlignEnum = 'top' | 'middle' | 'bottom';
-type LayoutEnum = 'vertical' | 'horizontal';
-type ClassName = {
+export type SizeEnum = 'small' | 'medium' | 'large';
+export type ShapeEnum = 'circle' | 'round';
+export type HorizontalAlignEnum = 'left' | 'center' | 'right';
+export type VerticalAlignEnum = 'top' | 'middle' | 'bottom';
+export type LayoutEnum = 'vertical' | 'horizontal';
+export type ClassName = {
     [className: string]: any;
 } | ClassName[] | string;
-type CSSSelector = string;
-interface KeysType {
+export type CSSSelector = string;
+export interface KeysType {
     value?: string;
     label?: string;
     disabled?: string;
 }
-interface TreeKeysType extends KeysType {
+export interface TreeKeysType extends KeysType {
     children?: string;
 }
-interface HTMLElementAttributes {
+export interface HTMLElementAttributes {
     [attribute: string]: string;
 }
-interface TScroll {
+export interface TScroll {
     /**
      * 表示除可视区域外，额外渲染的行数，避免快速滚动过程中，新出现的内容来不及渲染从而出现空白
      * @default 20
@@ -98,8 +95,8 @@ interface TScroll {
 /**
  * @deprecated use TScroll instead
  */
-type InfinityScroll = TScroll;
-interface ScrollToElementParams {
+export type InfinityScroll = TScroll;
+export interface ScrollToElementParams {
     /** 跳转元素下标 */
     index?: number;
     /** 跳转元素距离顶部的距离 */
@@ -108,8 +105,8 @@ interface ScrollToElementParams {
     time?: number;
     behavior?: 'auto' | 'smooth';
 }
-interface ComponentScrollToElementParams extends ScrollToElementParams {
+export interface ComponentScrollToElementParams extends ScrollToElementParams {
     key?: string | number;
 }
-
-export type { AppContext, AttachNode, AttachNodeReturnValue, CSSSelector, ClassName, ComponentScrollToElementParams, ComponentType, FormResetEvent, FormSubmitEvent, HTMLElementAttributes, HorizontalAlignEnum, ImageEvent, InfinityScroll, KeysType, LayoutEnum, OptionData, PlainObject, ScopedSlot, ScrollContainer, ScrollContainerElement, ScrollToElementParams, ShapeEnum, SizeEnum, SlotReturnArray, SlotReturnValue, Styles, TNode, TNodeReturnValue, TScroll, TVNode, TreeKeysType, TreeOptionData, UploadDisplayDragEvents, VerticalAlignEnum };
+export {};
+//# sourceMappingURL=common.d.ts.map

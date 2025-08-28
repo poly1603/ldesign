@@ -164,8 +164,8 @@ export class I18n implements I18nInstance {
     }
 
     // Node.js环境检查
-    if (typeof globalThis.process !== 'undefined' && globalThis.process?.env) {
-      return globalThis.process.env.NODE_ENV !== 'production'
+    if (typeof process !== 'undefined' && process && process.env) {
+      return process.env.NODE_ENV !== 'production';
     }
 
     return true // 默认开启性能监控

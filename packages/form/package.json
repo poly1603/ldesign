@@ -58,7 +58,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:lib && npm run build:types",
+    "build": "ldesign-builder build",
     "build:lib": "vite build",
     "build:types": "vue-tsc --declaration --emitDeclarationOnly",
     "build:watch": "vite build --watch",
@@ -82,6 +82,7 @@
     "vue": "^3.3.0"
   },
   "devDependencies": {
+    "@ldesign/builder": "workspace:*",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",

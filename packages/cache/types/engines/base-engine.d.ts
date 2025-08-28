@@ -1,9 +1,8 @@
-import { IStorageEngine, StorageEngine } from '../types/index.js';
-
+import type { IStorageEngine, StorageEngine } from '../types';
 /**
  * 存储引擎基类
  */
-declare abstract class BaseStorageEngine implements IStorageEngine {
+export declare abstract class BaseStorageEngine implements IStorageEngine {
     abstract readonly name: StorageEngine;
     abstract readonly available: boolean;
     abstract readonly maxSize: number;
@@ -65,5 +64,4 @@ declare abstract class BaseStorageEngine implements IStorageEngine {
         expired: boolean;
     };
 }
-
-export { BaseStorageEngine };
+//# sourceMappingURL=base-engine.d.ts.map

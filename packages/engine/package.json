@@ -37,7 +37,7 @@
     "types"
   ],
   "scripts": {
-    "build": "rollup -c",
+    "build": "ldesign-builder build",
     "build:rollup": "rollup -c",
     "build:clean": "node scripts/build.js --clean",
     "build:types": "node scripts/build.js --types",
@@ -72,6 +72,7 @@
     }
   },
   "devDependencies": {
+    "@ldesign/builder": "workspace:*",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.6",

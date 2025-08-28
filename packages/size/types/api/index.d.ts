@@ -1,90 +1,93 @@
-import { SizeMode, SizeManagerOptions, SizeManager } from '../types/index.js';
-import { getRecommendedSizeMode } from '../utils/index.js';
-
+/**
+ * 便捷API函数
+ * 提供简化的使用方式
+ */
+import type { SizeManagerOptions, SizeMode } from '../types';
+import { getRecommendedSizeMode } from '../utils';
 /**
  * 快速设置全局尺寸模式
  */
-declare function setGlobalSize(mode: SizeMode): void;
+export declare function setGlobalSize(mode: SizeMode): void;
 /**
  * 获取当前全局尺寸模式
  */
-declare function getGlobalSize(): SizeMode;
+export declare function getGlobalSize(): SizeMode;
 /**
  * 切换到下一个尺寸模式
  */
-declare function nextGlobalSize(): void;
+export declare function nextGlobalSize(): void;
 /**
  * 切换到上一个尺寸模式
  */
-declare function previousGlobalSize(): void;
+export declare function previousGlobalSize(): void;
 /**
  * 在指定的尺寸模式之间循环切换
  */
-declare function toggleGlobalSize(modes?: SizeMode[]): void;
+export declare function toggleGlobalSize(modes?: SizeMode[]): void;
 /**
  * 重置为推荐的尺寸模式
  */
-declare function resetToRecommendedSize(): void;
+export declare function resetToRecommendedSize(): void;
 /**
  * 自动检测并设置最佳尺寸模式
  */
-declare function autoDetectSize(): void;
+export declare function autoDetectSize(): void;
 /**
  * 监听全局尺寸变化
  */
-declare function watchGlobalSize(callback: (mode: SizeMode) => void): () => void;
+export declare function watchGlobalSize(callback: (mode: SizeMode) => void): () => void;
 /**
  * 创建尺寸管理器的便捷函数
  */
-declare function createSize(options?: SizeManagerOptions): SizeManager;
+export declare function createSize(options?: SizeManagerOptions): import("..").SizeManager;
 /**
  * 批量设置尺寸配置
  */
-declare function configureSizes(_configs: Record<SizeMode, any>): void;
+export declare function configureSizes(_configs: Record<SizeMode, any>): void;
 /**
  * 获取所有可用的尺寸模式
  */
-declare function getAvailableSizes(): SizeMode[];
+export declare function getAvailableSizes(): SizeMode[];
 /**
  * 检查是否为有效的尺寸模式
  */
-declare function isValidSize(mode: string): mode is SizeMode;
+export declare function isValidSize(mode: string): mode is SizeMode;
 /**
  * 获取尺寸模式的显示名称
  */
-declare function getSizeDisplayName(mode: SizeMode): string;
+export declare function getSizeDisplayName(mode: SizeMode): string;
 /**
  * 获取尺寸模式的描述
  */
-declare function getSizeDescription(mode: SizeMode): string;
+export declare function getSizeDescription(mode: SizeMode): string;
 /**
  * 比较两个尺寸模式的大小
  */
-declare function compareSizes(a: SizeMode, b: SizeMode): number;
+export declare function compareSizes(a: SizeMode, b: SizeMode): number;
 /**
  * 获取比指定模式更大的模式
  */
-declare function getLargerSize(mode: SizeMode): SizeMode | null;
+export declare function getLargerSize(mode: SizeMode): SizeMode | null;
 /**
  * 获取比指定模式更小的模式
  */
-declare function getSmallerSize(mode: SizeMode): SizeMode | null;
+export declare function getSmallerSize(mode: SizeMode): SizeMode | null;
 /**
  * 检查是否为最小尺寸
  */
-declare function isSmallestSize(mode: SizeMode): boolean;
+export declare function isSmallestSize(mode: SizeMode): boolean;
 /**
  * 检查是否为最大尺寸
  */
-declare function isLargestSize(mode: SizeMode): boolean;
+export declare function isLargestSize(mode: SizeMode): boolean;
 /**
  * 获取尺寸范围内的所有模式
  */
-declare function getSizeRange(from: SizeMode, to: SizeMode): SizeMode[];
+export declare function getSizeRange(from: SizeMode, to: SizeMode): SizeMode[];
 /**
  * 创建尺寸切换器
  */
-declare function createSizeToggler(modes?: SizeMode[]): {
+export declare function createSizeToggler(modes?: SizeMode[]): {
     current: () => SizeMode;
     next: () => SizeMode;
     previous: () => SizeMode;
@@ -94,7 +97,7 @@ declare function createSizeToggler(modes?: SizeMode[]): {
 /**
  * 创建尺寸状态管理器
  */
-declare function createSizeState(initialMode?: SizeMode): {
+export declare function createSizeState(initialMode?: SizeMode): {
     get: () => SizeMode;
     set: (mode: SizeMode) => void;
     subscribe: (listener: (mode: SizeMode) => void) => () => void;
@@ -103,7 +106,7 @@ declare function createSizeState(initialMode?: SizeMode): {
 /**
  * 便捷的尺寸管理对象
  */
-declare const Size: {
+export declare const Size: {
     get: typeof getGlobalSize;
     set: typeof setGlobalSize;
     next: typeof nextGlobalSize;
@@ -130,5 +133,5 @@ declare const Size: {
     MEDIUM: "medium";
     LARGE: "large";
 };
-
-export { Size, autoDetectSize, compareSizes, configureSizes, createSize, createSizeState, createSizeToggler, Size as default, getAvailableSizes, getGlobalSize, getLargerSize, getSizeDescription, getSizeDisplayName, getSizeRange, getSmallerSize, isLargestSize, isSmallestSize, isValidSize, nextGlobalSize, previousGlobalSize, resetToRecommendedSize, setGlobalSize, toggleGlobalSize, watchGlobalSize };
+export default Size;
+//# sourceMappingURL=index.d.ts.map

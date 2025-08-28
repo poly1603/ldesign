@@ -1,9 +1,8 @@
-import { ICacheManager, CacheOptions, SetOptions, StorageEngine, CacheMetadata, CacheStats, CacheEventType, CacheEventListener } from '../types/index.js';
-
+import type { CacheEventListener, CacheEventType, CacheMetadata, CacheOptions, CacheStats, ICacheManager, SetOptions, StorageEngine } from '../types';
 /**
  * 缓存管理器核心实现
  */
-declare class CacheManager implements ICacheManager {
+export declare class CacheManager implements ICacheManager {
     private options;
     private engines;
     private strategy;
@@ -111,5 +110,4 @@ declare class CacheManager implements ICacheManager {
      */
     destroy(): Promise<void>;
 }
-
-export { CacheManager };
+//# sourceMappingURL=cache-manager.d.ts.map
