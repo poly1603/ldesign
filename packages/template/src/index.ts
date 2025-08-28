@@ -28,3 +28,6 @@ export * from './utils'
 
 // Vue 集成
 export * from './vue'
+
+// Engine 集成
+export * from './engine'

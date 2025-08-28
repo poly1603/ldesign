@@ -7,6 +7,7 @@ export default {
     about: '关于',
     features: '功能特性',
     config: '配置示例',
+    login: '登录',
   },
   home: {
     title: 'Engine Router Demo',
@@ -25,5 +26,9 @@ export default {
   config: {
     title: '配置示例',
     description: '展示配置选项',
+  },
+  login: {
+    title: '登录',
+    description: 'Template插件登录模板演示',
   },
 }

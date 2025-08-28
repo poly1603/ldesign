@@ -192,6 +192,9 @@ importers:
       '@ldesign/size':
         specifier: workspace:*
         version: link:../../packages/size
+      '@ldesign/template':
+        specifier: workspace:*
+        version: link:../../packages/template
       vue:
         specifier: ^3.5.18
         version: 3.5.18(typescript@5.9.2)

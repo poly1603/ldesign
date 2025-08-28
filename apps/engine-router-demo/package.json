@@ -16,6 +16,7 @@
     "@ldesign/i18n": "workspace:*",
     "@ldesign/color": "workspace:*",
     "@ldesign/size": "workspace:*",
+    "@ldesign/template": "workspace:*",
     "vue": "^3.5.18"
   },
   "devDependencies": {

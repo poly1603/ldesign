@@ -9,6 +9,7 @@ import { createRouterEnginePlugin } from '@ldesign/router'
 import { createI18nEnginePlugin } from '@ldesign/i18n'
 import { createColorEnginePlugin } from '@ldesign/color'
 import { createSizeEnginePlugin } from '@ldesign/size'
+import { createTemplateEnginePlugin } from '@ldesign/template'
 import App from './App.vue'
 import { routes } from './router'
 // 导入翻译文件
@@ -88,11 +89,32 @@ async function main() {
     },
   })
 
+  // 创建Template插件
+  const templatePlugin = createTemplateEnginePlugin({
+    scanner: {
+      scanPaths: ['src/templates/**/*.vue'],
+    },
+    loader: {
+      enableCache: true,
+      preloadStrategy: 'critical',
+    },
+    deviceAdapter: {
+      autoDetect: true,
+      watchDeviceChange: true,
+    },
+    cache: {
+      enabled: true,
+      strategy: 'lru',
+      maxSize: 50,
+    },
+  })
+
   // 安装插件到Engine（支持延迟安装）
   await engine.use(routerPlugin)
   await engine.use(i18nPlugin)
   await engine.use(colorPlugin)
   await engine.use(sizePlugin)
+  await engine.use(templatePlugin)
 
   // 创建Vue应用（会触发插件的实际安装）
   const app = engine.createApp(App)
@@ -103,7 +125,7 @@ async function main() {
   // 挂载应用
   app.mount('#app')
 
-  console.log('应用启动成功 - 使用@ldesign/router、@ldesign/i18n和@ldesign/color Engine插件集成')
+  console.log('应用启动成功 - 使用@ldesign/router、@ldesign/i18n、@ldesign/color、@ldesign/size和@ldesign/template Engine插件集成')
 }
 
 // 启动应用

@@ -7,6 +7,7 @@ export default {
     about: 'について',
     features: '機能',
     config: '設定',
+    login: 'ログイン',
   },
   home: {
     title: 'Engine Router Demo',
@@ -25,5 +26,9 @@ export default {
   config: {
     title: '設定',
     description: '設定オプションを表示',
+  },
+  login: {
+    title: 'ログイン',
+    description: 'テンプレートプラグインログインデモ',
   },
 }

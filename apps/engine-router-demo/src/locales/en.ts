@@ -7,6 +7,7 @@ export default {
     about: 'About',
     features: 'Features',
     config: 'Config',
+    login: 'Login',
   },
   home: {
     title: 'Engine Router Demo',
@@ -25,5 +26,9 @@ export default {
   config: {
     title: 'Configuration',
     description: 'Show configuration options',
+  },
+  login: {
+    title: 'Login',
+    description: 'Template Plugin Login Demo',
   },
 }

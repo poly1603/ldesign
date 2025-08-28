@@ -44,6 +44,15 @@ export const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/Login.vue'),
+    meta: {
+      title: '登录',
+      description: '用户登录页面，展示Template插件的登录模板',
+    },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/NotFound.vue'),

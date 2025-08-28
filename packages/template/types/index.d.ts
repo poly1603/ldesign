@@ -11,3 +11,4 @@ export { createExternalTemplate, createExternalTemplateFromPath, useTemplateExte
 export { useTemplateRegistry } from './vue/composables/useTemplateRegistry.js';
 export { installTemplateDirectives, templateDirectives, vTemplate, vTemplateCache, vTemplateLazy, vTemplatePreload } from './vue/directives/template.js';
 export { TemplateManagerSymbol, default as TemplatePlugin, configureTemplateManager, createTemplatePlugin, install, useTemplateManager } from './vue/plugin.js';
+export { TemplateEnginePluginOptions, createDefaultTemplateEnginePlugin, createTemplateEnginePlugin } from './engine/plugin.js';

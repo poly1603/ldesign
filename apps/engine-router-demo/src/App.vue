@@ -4,7 +4,7 @@
       <div class="header-top">
         <div class="header-content">
           <h1>🚀 Engine Router Demo</h1>
-          <p>演示Engine与Router + I18n + Color的集成使用</p>
+          <p>演示Engine与Router + I18n + Color + Size + Template的集成使用</p>
         </div>
         <div class="header-controls">
           <div class="language-switcher">
@@ -25,6 +25,7 @@
       <RouterLink to="/about" class="nav-link">{{ $t('nav.about') }}</RouterLink>
       <RouterLink to="/features" class="nav-link">{{ $t('nav.features') }}</RouterLink>
       <RouterLink to="/config" class="nav-link">{{ $t('nav.config') }}</RouterLink>
+      <RouterLink to="/login" class="nav-link">{{ $t('nav.login') }}</RouterLink>
     </nav>
 
     <main class="app-main">
@@ -32,7 +33,7 @@
     </main>
 
     <footer class="app-footer">
-      <p>Powered by @ldesign/engine + @ldesign/router + @ldesign/i18n + @ldesign/color + @ldesign/size</p>
+      <p>Powered by @ldesign/engine + @ldesign/router + @ldesign/i18n + @ldesign/color + @ldesign/size + @ldesign/template</p>
     </footer>
   </div>
 </template>
