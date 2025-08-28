@@ -122,70 +122,146 @@ main().catch(console.error)</code></pre>
 .config {
   max-width: 1000px;
   margin: 0 auto;
+  padding: var(--size-lg, 1rem);
+  font-size: var(--size-base, 1rem);
+  color: var(--color-text, #1a202c);
+  transition: all 0.3s ease;
 }
 
 .config h2 {
-  color: #2c3e50;
-  margin-bottom: 2rem;
+  color: var(--color-text, #1a202c);
+  margin-bottom: var(--size-4xl, 2rem);
+  font-size: var(--size-3xl, 2rem);
+  font-weight: 700;
+  text-align: center;
 }
 
 .config-sections {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--size-4xl, 2rem);
 }
 
 .config-section {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e9ecef;
+  background: var(--color-surface, white);
+  padding: var(--size-2xl, 1.5rem);
+  border-radius: var(--size-md, 8px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-border, #e2e8f0);
+  transition: all 0.3s ease;
+}
+
+.config-section:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
 .config-section h3 {
-  margin: 0 0 1rem 0;
-  color: #495057;
+  margin: 0 0 var(--size-lg, 1rem) 0;
+  color: var(--color-text, #1a202c);
+  font-size: var(--size-xl, 1.25rem);
+  font-weight: 600;
 }
 
 .code-block {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
-  padding: 1rem;
+  background: var(--color-muted, #f7fafc);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--size-sm, 4px);
+  padding: var(--size-lg, 1rem);
   overflow-x: auto;
+  margin-top: var(--size-sm, 0.5rem);
 }
 
 .code-block pre {
   margin: 0;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 0.9rem;
+  font-size: var(--size-sm, 0.9rem);
   line-height: 1.4;
-  color: #495057;
+  color: var(--color-text, #1a202c);
 }
 
 .preset-options {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
+  gap: var(--size-lg, 1rem);
+  margin-top: var(--size-sm, 0.5rem);
 }
 
 .preset-item {
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 4px;
-  border: 1px solid #e9ecef;
+  background: var(--color-muted, #f7fafc);
+  padding: var(--size-lg, 1rem);
+  border-radius: var(--size-sm, 4px);
+  border: 1px solid var(--color-border, #e2e8f0);
+  transition: all 0.2s ease;
+}
+
+.preset-item:hover {
+  background: var(--color-surface, white);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
 }
 
 .preset-item h4 {
-  margin: 0 0 0.5rem 0;
-  color: #007bff;
+  margin: 0 0 var(--size-sm, 0.5rem) 0;
+  color: var(--color-primary, #3b82f6);
+  font-size: var(--size-lg, 1.1rem);
+  font-weight: 600;
 }
 
 .preset-item p {
   margin: 0;
-  color: #6c757d;
-  font-size: 0.9rem;
+  color: var(--color-text-secondary, #4a5568);
+  font-size: var(--size-sm, 0.9rem);
   line-height: 1.5;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .config {
+    padding: var(--size-sm, 0.5rem);
+  }
+
+  .config h2 {
+    font-size: var(--size-2xl, 1.5rem);
+    margin-bottom: var(--size-2xl, 1.5rem);
+  }
+
+  .config-sections {
+    gap: var(--size-2xl, 1.5rem);
+  }
+
+  .config-section {
+    padding: var(--size-lg, 1rem);
+  }
+
+  .config-section h3 {
+    font-size: var(--size-lg, 1.1rem);
+  }
+
+  .code-block {
+    padding: var(--size-sm, 0.5rem);
+    font-size: var(--size-xs, 0.8rem);
+  }
+
+  .code-block pre {
+    font-size: var(--size-xs, 0.8rem);
+  }
+
+  .preset-options {
+    grid-template-columns: 1fr;
+    gap: var(--size-sm, 0.5rem);
+  }
+
+  .preset-item {
+    padding: var(--size-sm, 0.5rem);
+  }
+
+  .preset-item h4 {
+    font-size: var(--size-base, 1rem);
+  }
+
+  .preset-item p {
+    font-size: var(--size-xs, 0.8rem);
+  }
 }
 </style>

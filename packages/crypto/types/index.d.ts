@@ -124,4 +124,11 @@ declare const LDesignCrypto: {
     name: string;
 };
 
+// Vue 适配器模块
+export { CryptoPlugin, createCryptoPlugin, installCrypto, type CryptoPluginOptions, type GlobalCrypto } from './adapt/vue/plugin.js';
+export { useCrypto, useHash, useSignature } from './adapt/vue/composables/index.js';
+
+// Engine 插件模块
+export { createCryptoEnginePlugin, createDefaultCryptoEnginePlugin, createPerformanceCryptoEnginePlugin, createDebugCryptoEnginePlugin, cryptoEnginePlugin, type CryptoEnginePluginOptions } from './engine/index.js';
+
 export { AESOptions, BlowfishOptions, CryptoManager, DESOptions, Decrypt, DecryptResult, DigitalSignature, EncodingType, Encrypt, EncryptResult, ErrorUtils, HMAC, Hash, KeyGenerator, PerformanceOptimizer, RSAKeyPair, RSAOptions, RandomUtils, StringUtils, TripleDESOptions, ValidationUtils, LDesignCrypto as default };

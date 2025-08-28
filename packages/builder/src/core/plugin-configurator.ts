@@ -215,6 +215,8 @@ export class PluginConfigurator {
    * 配置样式插件
    */
   private async configureStylePlugins(context: BuildContext, requirements: any, plugins: Plugin[]): Promise<void> {
+    logger.info('配置样式插件，requirements:', requirements)
+
     if (requirements.hasStyles) {
       // PostCSS（处理 CSS）
       const postcssPlugin = await this.createPlugin('postcss', context)
@@ -224,27 +226,22 @@ export class PluginConfigurator {
 
       // Sass/SCSS
       if ((requirements.fileTypes.scss || 0) > 0) {
+        logger.info(`发现 ${requirements.fileTypes.scss} 个 SCSS 文件`)
         const sassPlugin = await this.createPlugin('sass', context)
         if (sassPlugin) {
           plugins.push(sassPlugin)
         }
       }
 
-      // Less
-      if ((requirements.fileTypes.less || 0) > 0) {
-        const lessPlugin = await this.createPlugin('less', context)
-        if (lessPlugin) {
-          plugins.push(lessPlugin)
-        }
+      // Less - 暂时跳过 Less 文件处理
+      if (requirements.hasLess) {
+        logger.warn(`发现 Less 文件，但暂时跳过处理以避免构建错误`)
+      } else {
+        logger.info('没有发现 Less 文件')
       }
 
-      // Stylus
-      if (false) { // Stylus support not implemented yet
-        const stylusPlugin = await this.createPlugin('stylus', context)
-        if (stylusPlugin != null) {
-          plugins.push(stylusPlugin as Plugin)
-        }
-      }
+      // Stylus - 暂未实现
+      // TODO: 实现 Stylus 支持
     }
   }
 
@@ -434,8 +431,19 @@ export class PluginConfigurator {
     try {
       const { default: typescript } = await import('@rollup/plugin-typescript')
       return typescript({
-        tsconfig: 'tsconfig.json',
+        tsconfig: context.options.typescript?.tsconfig || 'tsconfig.json',
+        include: [/(\.tsx?|\.vue)(\?.*)?$/], // 包含 Vue 文件
         declaration: false, // 由单独的类型生成器处理
+        declarationMap: false,
+        noEmitOnError: false,
+        skipLibCheck: true,
+        compilerOptions: {
+          skipLibCheck: true,
+          noUnusedLocals: false,
+          noUnusedParameters: false,
+          jsx: 'preserve', // 保留 JSX 语法，让 Vue 插件处理
+          ...context.options.typescript?.compilerOptions,
+        },
         ...context.options.typescript,
       })
     }
@@ -493,9 +501,23 @@ export class PluginConfigurator {
   private createPostCSSPlugin: PluginFactory = async (context) => {
     try {
       const postcss = await import('rollup-plugin-postcss')
+
+      // 检查是否需要处理 Less 文件
+      const hasLess = context.scanResult.files.some(file => file.path.endsWith('.less'))
+      const use = []
+
+      if (hasLess) {
+        // 添加 Less 处理器配置
+        use.push(['less', { javascriptEnabled: true }])
+        logger.info('PostCSS 配置包含 Less 处理器')
+      }
+
       return postcss.default({
         extract: true,
         minimize: context.options.mode === 'production',
+        use: use.length > 0 ? use : undefined,
+        // 确保 Less 文件被正确处理
+        include: hasLess ? /\.(css|less)$/ : /\.css$/,
         ...context.options.postcss,
       })
     }
@@ -528,13 +550,17 @@ export class PluginConfigurator {
   private createLessPlugin: PluginFactory = async (context) => {
     try {
       const { default: less } = await import('rollup-plugin-less')
-      return less({
-        output: true,
+      logger.info('成功加载 rollup-plugin-less')
+      const plugin = less({
+        output: context.options.less?.output || false, // 不输出到文件，而是内联到 JS 中
+        insert: true, // 插入到 DOM 中
         ...context.options.less,
       })
+      logger.info('Less 插件配置完成')
+      return plugin
     }
     catch (error) {
-      logger.warn('无法加载 rollup-plugin-less')
+      logger.warn('无法加载 rollup-plugin-less:', error)
       return null
     }
   }
@@ -563,7 +589,16 @@ export class PluginConfigurator {
     try {
       const { default: vue } = await import('unplugin-vue/rollup')
       return vue({
-        include: /\.vue$/,
+        include: [/\.vue$/], // 只处理 Vue 文件，不处理 TSX
+        script: {
+          defineModel: true,
+          propsDestructure: true,
+        },
+        template: {
+          compilerOptions: {
+            isCustomElement: (tag: string) => tag.startsWith('router-'),
+          },
+        },
         ...context.options.vue,
       })
     }

@@ -16,6 +16,7 @@ import type {
 import { DeviceAdapter } from './device-adapter'
 import { TemplateLoader } from './loader'
 import { TemplateScanner } from './scanner'
+import { BUILTIN_TEMPLATES, getBuiltinTemplates } from '../templates'
 
 /**
  * 模板管理器类
@@ -98,18 +99,122 @@ export class TemplateManager {
     duration: number
   }> {
     const startTime = Date.now()
-    const result = await this.scanner.scan()
 
-    if (result.success) {
-      this.templateIndex = result.index
+    // 获取内置模板
+    const builtinTemplates = [...BUILTIN_TEMPLATES]
+
+    // 扫描用户自定义模板（如果配置了扫描路径）
+    let userTemplates: TemplateInfo[] = []
+    if (this.config.scanner?.scanPaths && this.config.scanner.scanPaths.length > 0) {
+      const scanResult = await this.scanner.scan()
+      userTemplates = scanResult.success ? (scanResult.index?.templates || []) : []
+    }
+
+    // 合并模板：内置模板作为基础，用户自定义模板可以覆盖同名模板
+    const mergedTemplates = this.mergeTemplates(builtinTemplates, userTemplates)
+
+    // 重建模板索引
+    this.templateIndex = {
+      version: '1.0.0',
+      scanPaths: Array.isArray(this.config.scanner?.scanPaths)
+        ? this.config.scanner.scanPaths
+        : this.config.scanner?.scanPaths
+          ? [this.config.scanner.scanPaths]
+          : [],
+      templates: mergedTemplates,
+      totalCount: mergedTemplates.length,
+      categories: this.buildCategoriesIndex(mergedTemplates),
+      stats: {
+        scanDuration: Date.now() - startTime,
+        totalFiles: mergedTemplates.length,
+        templateFiles: mergedTemplates.length,
+        configFiles: 0,
+        assetFiles: 0,
+        errors: 0
+      },
+      createdAt: Date.now(),
+      updatedAt: Date.now()
     }
 
     const duration = Date.now() - startTime
+
+    console.log('模板扫描完成:', {
+      内置模板数量: builtinTemplates.length,
+      用户模板数量: userTemplates.length,
+      合并后总数: mergedTemplates.length,
+      扫描耗时: `${duration}ms`
+    })
+
     return {
-      count: result.index?.templates.length || 0,
-      templates: result.index?.templates || [],
+      count: mergedTemplates.length,
+      templates: mergedTemplates,
       duration,
     }
+  }
+
+  /**
+   * 合并内置模板和用户自定义模板
+   * 内置模板作为基础，用户自定义模板可以覆盖同名的内置模板
+   */
+  private mergeTemplates(builtinTemplates: TemplateInfo[], userTemplates: TemplateInfo[]): TemplateInfo[] {
+    const templateMap = new Map<string, TemplateInfo>()
+
+    // 首先添加内置模板，确保它们始终存在
+    for (const template of builtinTemplates) {
+      const key = `${template.category}:${template.deviceType}:${template.name}`
+      templateMap.set(key, {
+        ...template,
+        isBuiltin: true, // 标记为内置模板
+      })
+    }
+
+    // 然后添加用户自定义模板，可以覆盖同名的内置模板
+    for (const template of userTemplates) {
+      const key = `${template.category}:${template.deviceType}:${template.name}`
+      const existingTemplate = templateMap.get(key)
+
+      if (existingTemplate && existingTemplate.isBuiltin) {
+        // 如果存在同名的内置模板，合并配置但保留用户模板的组件
+        templateMap.set(key, {
+          ...existingTemplate,
+          ...template,
+          isBuiltin: false, // 标记为用户覆盖的模板
+          originalBuiltin: existingTemplate, // 保留原始内置模板引用
+        })
+      } else {
+        // 新的用户模板
+        templateMap.set(key, {
+          ...template,
+          isBuiltin: false,
+        })
+      }
+    }
+
+    const result = Array.from(templateMap.values())
+
+    console.log('模板合并详情:', {
+      内置模板: builtinTemplates.map(t => `${t.category}:${t.deviceType}:${t.name}`),
+      用户模板: userTemplates.map(t => `${t.category}:${t.deviceType}:${t.name}`),
+      最终模板: result.map(t => `${t.category}:${t.deviceType}:${t.name}${t.isBuiltin ? '(内置)' : '(用户)'}`),
+    })
+
+    return result
+  }
+
+  /**
+   * 构建类别索引
+   */
+  private buildCategoriesIndex(templates: TemplateInfo[]): Record<string, Record<DeviceType, TemplateInfo>> {
+    const categories: Record<string, Record<DeviceType, TemplateInfo>> = {}
+
+    for (const template of templates) {
+      if (!categories[template.category]) {
+        categories[template.category] = {} as Record<DeviceType, TemplateInfo>
+      }
+      categories[template.category][template.deviceType as DeviceType] = template
+    }
+
+    return categories
   }
 
   /**

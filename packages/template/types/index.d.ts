@@ -1,14 +1,12 @@
-export { CacheConfig, CacheItem, CacheStrategy, DeepReadonly, DeviceAdapterConfig, DeviceType, EventData, EventListener, EventType, ExternalTemplate, ExtractFunction, ExtractPromise, LoadResult, LoaderConfig, Optional, PluginConfig, PluginInstallOptions, PreloadStrategy, Required, ScanResult, ScannerConfig, TemplateConfig, TemplateExtensionOptions, TemplateFileInfo, TemplateIndex, TemplateInfo, TemplateManagerConfig, TemplateMetadata, TemplateRegistryItem, TemplateRendererProps, TemplateStatus, VueApp, VueComponent } from './types/index.js';
-export { DeviceAdapter } from './core/device-adapter.js';
-export { TemplateLoader } from './core/loader.js';
-export { TemplateManager, TemplateManager as default } from './core/manager.js';
-export { TemplateScanner } from './core/scanner.js';
-export { CacheService } from './services/cache-service.js';
-export { DeviceService } from './services/device-service.js';
-export { cacheUtils, deviceUtils, errorUtils, logUtils, performanceUtils, templateUtils } from './utils/index.js';
-export { useTemplate, useTemplateCache, useTemplateScanner } from './vue/composables/useTemplate.js';
-export { createExternalTemplate, createExternalTemplateFromPath, useTemplateExtension } from './vue/composables/useTemplateExtension.js';
-export { useTemplateRegistry } from './vue/composables/useTemplateRegistry.js';
-export { installTemplateDirectives, templateDirectives, vTemplate, vTemplateCache, vTemplateLazy, vTemplatePreload } from './vue/directives/template.js';
-export { TemplateManagerSymbol, default as TemplatePlugin, configureTemplateManager, createTemplatePlugin, install, useTemplateManager } from './vue/plugin.js';
-export { TemplateEnginePluginOptions, createDefaultTemplateEnginePlugin, createTemplateEnginePlugin } from './engine/plugin.js';
+/**
+ * @ldesign/template 主入口文件
+ * 高性能动态模板管理系统
+ */
+export { DeviceAdapter, TemplateLoader, TemplateManager, TemplateScanner, } from './core';
+export { TemplateManager as default } from './core/manager';
+export { CacheService, DeviceService, } from './services';
+export type * from './types';
+export * from './utils';
+export * from './vue';
+export * from './engine';
+//# sourceMappingURL=index.d.ts.map

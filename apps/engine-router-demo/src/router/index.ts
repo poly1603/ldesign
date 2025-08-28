@@ -53,6 +53,15 @@ export const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/decrypt',
+    name: 'Decrypt',
+    component: () => import('@/views/Decrypt.vue'),
+    meta: {
+      title: '文件解密',
+      description: '安全的文件解密工具，支持文件上传和解密操作',
+    },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/NotFound.vue'),

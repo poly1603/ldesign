@@ -7,9 +7,7 @@ import type { BuildMode, BuildOptions, OutputFormat } from '../../types'
 import path from 'node:path'
 import chalk from 'chalk'
 import ora from 'ora'
-import { PluginConfigurator } from '../../core/plugin-configurator'
-import { ProjectScanner } from '../../core/project-scanner'
-import { RollupBuilder } from '../../core/rollup-builder'
+
 import { FileUtils } from '../../utils'
 import { Logger } from '../../utils/logger'
 
@@ -27,27 +25,12 @@ export class BuildCommand {
       // 解析构建选项
       const buildOptions = await this.parseBuildOptions(input, options)
 
-      // 显示构建信息
-      this.showBuildInfo(buildOptions)
-
-      // 扫描项目
-      spinner.text = '正在扫描项目结构...'
-      const scanner = new ProjectScanner()
-      const scanResult = await scanner.scan(buildOptions.root!)
-
-      logger.info(`检测到项目类型: ${chalk.cyan(scanResult.projectType)}`)
-      logger.info(`发现 ${chalk.yellow(scanResult.entryPoints.length)} 个入口文件`)
-      logger.info(`扫描到 ${chalk.yellow(scanResult.files.length)} 个源文件`)
-
-      // 配置插件
-      spinner.text = '正在配置构建环境...'
-      const configurator = new PluginConfigurator()
-      const plugins = await configurator.configure(scanResult, buildOptions)
-
-      // 执行构建
+      // 执行构建（使用智能化构建函数）
       spinner.text = '正在构建项目...'
-      const builder = new RollupBuilder()
-      const result = await builder.build(scanResult, { plugins }, buildOptions)
+      const { build } = await import('../..')
+
+      // 在构建函数内部会进行智能增强配置，然后显示构建信息
+      const result = await build(buildOptions)
 
       spinner.stop()
 
@@ -74,18 +57,31 @@ export class BuildCommand {
   private async parseBuildOptions(input: string, options: any): Promise<BuildOptions> {
     const root = process.cwd()
 
+    // 如果配置文件中已经有完整的配置，直接使用
+    if (options.input && typeof options.input === 'object') {
+      return {
+        root,
+        ...options,
+        outDir: options.outDir ? path.resolve(root, options.outDir) : path.resolve(root, 'dist'),
+        dtsDir: options.dtsDir ? path.resolve(root, options.dtsDir) : path.resolve(root, 'types'),
+      }
+    }
+
     // 解析输入
     let inputPath: string | string[]
     if (input) {
       inputPath = path.resolve(root, input)
+    }
+    else if (options.input) {
+      inputPath = options.input
     }
     else {
       // 自动检测入口文件
       inputPath = await this.detectEntryFiles(root)
     }
 
-    // 解析输出格式
-    const formats = this.parseFormats(options.format)
+    // 解析输出格式（让智能配置处理默认值）
+    const formats = options.formats || (options.format ? this.parseFormats(options.format) : undefined)
 
     // 解析构建模式
     const mode: BuildMode = options.mode === 'development' ? 'development' : 'production'
@@ -102,6 +98,12 @@ export class BuildCommand {
       sourcemap: options.sourcemap !== false, // 默认生成 sourcemap
       clean: options.clean !== false, // 默认清理输出目录
       verbose: options.verbose || false,
+      external: options.external,
+      globals: options.globals,
+      name: options.name,
+      lib: options.lib,
+      plugins: options.plugins,
+      rollupOptions: options.rollupOptions,
     }
   }
 
@@ -154,22 +156,7 @@ export class BuildCommand {
     return formats
   }
 
-  /**
-   * 显示构建信息
-   */
-  private showBuildInfo(options: BuildOptions): void {
-    console.log()
-    console.log(chalk.cyan.bold('📦 开始构建'))
-    console.log(chalk.gray('─'.repeat(50)))
-    console.log(`${chalk.bold('项目根目录:')} ${chalk.cyan(process.cwd())}`)
-    console.log(`${chalk.bold('输出目录:')} ${chalk.cyan(options.outDir || 'dist')}`)
-    console.log(`${chalk.bold('输出格式:')} ${chalk.yellow(options.formats?.join(', '))}`)
-    console.log(`${chalk.bold('生成类型声明:')} ${options.dts ? chalk.green('是') : chalk.red('否')}`)
-    console.log(`${chalk.bold('代码压缩:')} ${options.minify ? chalk.green('是') : chalk.red('否')}`)
-    console.log(`${chalk.bold('Source Map:')} ${options.sourcemap ? chalk.green('是') : chalk.red('否')}`)
-    console.log(chalk.gray('─'.repeat(50)))
-    console.log()
-  }
+
 
   /**
    * 显示构建成功信息

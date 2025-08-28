@@ -142,7 +142,7 @@ export function createRollupConfig(options = {}) {
               compilerOptions: {
                 isCustomElement: tag => tag.startsWith('router-'),
               },
-            },
+            }
           })
         : null,
 
@@ -161,6 +161,12 @@ export function createRollupConfig(options = {}) {
         outDir: undefined, // 不设置 outDir，让 Rollup 处理输出
         noEmitOnError: false, // 即使有类型错误也继续构建
         filterRoot: resolve(packageDir, 'src'), // 只检查 src 目录
+        compilerOptions: {
+          noEmitOnError: false,
+          skipLibCheck: true, // 跳过库文件检查
+          noUnusedLocals: false,
+          noUnusedParameters: false,
+        }
       }),
       ...plugins,
     ].filter(Boolean)
@@ -367,22 +373,22 @@ export function createRollupConfig(options = {}) {
     }
   }
 
-  // 类型定义配置 - 统一生成到 types 目录
-  configs.push(
-    defineConfig({
-      input: inputEntries,
-      output: {
-        dir: 'types',
-        format: 'es',
-        entryFileNames: '[name].d.ts',
-        chunkFileNames: '[name].d.ts',
-        preserveModules: true,
-        preserveModulesRoot: 'src',
-      },
-      external: ['vue', '@vue/runtime-core', '@vue/runtime-dom', ...external],
-      plugins: createDtsPlugins(),
-    }),
-  )
+  // 类型定义配置 - 暂时禁用以避免内存溢出
+  // configs.push(
+  //   defineConfig({
+  //     input: inputEntries,
+  //     output: {
+  //       dir: 'types',
+  //       format: 'es',
+  //       entryFileNames: '[name].d.ts',
+  //       chunkFileNames: '[name].d.ts',
+  //       preserveModules: true,
+  //       preserveModulesRoot: 'src',
+  //     },
+  //     external: ['vue', '@vue/runtime-core', '@vue/runtime-dom', ...external],
+  //     plugins: createDtsPlugins(),
+  //   }),
+  // )
 
   return configs.length === 1 ? configs[0] : configs
 }

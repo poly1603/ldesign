@@ -14,6 +14,7 @@ import type {
 import path from 'node:path'
 import { glob } from 'glob'
 import { Logger } from '../utils/logger'
+import fs from 'fs-extra'
 
 const logger = new Logger('ProjectScanner')
 
@@ -87,7 +88,6 @@ export class ProjectScanner {
    */
   private async readPackageInfo(root: string): Promise<PackageInfo | null> {
     try {
-      const fs = await import('fs-extra')
       const packagePath = path.join(root, 'package.json')
 
       if (!await fs.pathExists(packagePath)) {
@@ -143,6 +143,7 @@ export class ProjectScanner {
 
       // 使用 glob 扫描文件
       for (const pattern of includePatterns) {
+        logger.info(`使用模式扫描文件: ${pattern}`)
         const matchedFiles = await glob(pattern, {
           cwd: root,
           ignore: allIgnorePatterns,
@@ -150,6 +151,14 @@ export class ProjectScanner {
           nodir: true,
           maxDepth,
         })
+
+        logger.info(`模式 ${pattern} 匹配到 ${matchedFiles.length} 个文件`)
+
+        // 特别检查 Less 文件
+        const lessMatches = matchedFiles.filter(f => f.endsWith('.less'))
+        if (lessMatches.length > 0) {
+          logger.info(`发现 ${lessMatches.length} 个 Less 文件:`, lessMatches)
+        }
 
         for (const filePath of matchedFiles) {
           const fileInfo = await this.analyzeFile(filePath, root)
@@ -162,6 +171,21 @@ export class ProjectScanner {
       // 去重并排序
       const uniqueFiles = this.deduplicateFiles(files)
       uniqueFiles.sort((a, b) => a.path.localeCompare(b.path))
+
+      // 调试信息：显示扫描到的文件类型统计
+      const fileTypeStats: Record<string, number> = {}
+      uniqueFiles.forEach(file => {
+        fileTypeStats[file.type] = (fileTypeStats[file.type] || 0) + 1
+      })
+      logger.info('扫描到的文件类型统计:', fileTypeStats)
+
+      // 特别检查 Less 文件
+      const lessFiles = uniqueFiles.filter(f => f.type === 'less')
+      if (lessFiles.length > 0) {
+        logger.info(`发现 ${lessFiles.length} 个 Less 文件:`, lessFiles.map(f => f.relativePath))
+      } else {
+        logger.info('没有发现 Less 文件')
+      }
 
       return uniqueFiles
     }
@@ -176,7 +200,6 @@ export class ProjectScanner {
    */
   private async analyzeFile(filePath: string, root: string): Promise<FileInfo | null> {
     try {
-      const fs = await import('fs-extra')
       const stats = await fs.stat(filePath)
 
       if (!stats.isFile()) {
@@ -322,7 +345,6 @@ export class ProjectScanner {
    */
   private async analyzeFileContent(fileInfo: FileInfo): Promise<void> {
     try {
-      const fs = await import('fs-extra')
       const content = await fs.readFile(fileInfo.path, 'utf-8')
 
       // 提取依赖

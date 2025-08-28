@@ -144,7 +144,8 @@ export class TypeGenerator {
           ...parsedConfig.options,
           declaration: true,
           emitDeclarationOnly: true,
-          outDir: buildOptions.outDir || 'dist',
+          outDir: resolve(buildOptions.root || process.cwd(), 'types'),
+          rootDir: resolve(buildOptions.root || process.cwd(), 'src'), // 设置根目录为 src
         }
 
         rootNames = parsedConfig.fileNames
@@ -157,7 +158,8 @@ export class TypeGenerator {
           moduleResolution: ts.ModuleResolutionKind.NodeJs,
           declaration: true,
           emitDeclarationOnly: true,
-          outDir: buildOptions.outDir || 'dist',
+          outDir: resolve(buildOptions.root || process.cwd(), 'types'),
+          rootDir: resolve(buildOptions.root || process.cwd(), 'src'), // 设置根目录为 src
           strict: true,
           esModuleInterop: true,
           skipLibCheck: true,
@@ -204,9 +206,13 @@ export class TypeGenerator {
    * 获取类型生成选项
    */
   private getTypeGenerationOptions(buildOptions: BuildOptions): TypeGenerationOptions {
+    // 类型文件输出到根目录的 types 文件夹
+    const projectRoot = resolve(buildOptions.root || process.cwd())
+    const typesDir = resolve(projectRoot, 'types')
+
     const defaultOptions: TypeGenerationOptions = {
-      bundled: true,
-      outDir: buildOptions.outDir || 'dist',
+      bundled: false, // 使用目录结构模式，保持与源码相同的层级
+      outDir: typesDir,
       fileName: 'index.d.ts',
       includePrivate: false,
       followSymlinks: true,
@@ -287,7 +293,7 @@ export class TypeGenerator {
    * 生成分离的类型文件
    */
   private async generateSeparateTypes(
-    _scanResult: ProjectScanResult,
+    scanResult: ProjectScanResult,
     options: TypeGenerationOptions,
   ): Promise<string[]> {
     if (!this.program) {
@@ -303,17 +309,43 @@ export class TypeGenerator {
         mkdirSync(outDir, { recursive: true })
       }
 
+      // 获取项目根目录和源码目录
+      const projectRoot = resolve(scanResult.root)
+      const srcDir = resolve(projectRoot, 'src')
+
       // 为每个源文件生成对应的声明文件
       const sourceFiles = this.program.getSourceFiles()
-        .filter(sf => !sf.isDeclarationFile && !sf.fileName.includes('node_modules'))
+        .filter(sf => {
+          const normalizedFileName = resolve(sf.fileName)
+          const normalizedSrcDir = resolve(srcDir)
+          return !sf.isDeclarationFile &&
+            !sf.fileName.includes('node_modules') &&
+            normalizedFileName.startsWith(normalizedSrcDir)
+        })
+
+      logger.info(`找到 ${sourceFiles.length} 个源文件需要生成类型声明`)
+      sourceFiles.forEach(sf => {
+        logger.info(`  - ${sf.fileName}`)
+      })
 
       for (const sourceFile of sourceFiles) {
+        // 计算相对于 src 目录的路径
+        const relativePath = relative(srcDir, sourceFile.fileName)
+        const outputPath = resolve(outDir, relativePath.replace(/\.tsx?$/, '.d.ts'))
+
+        // 确保输出目录存在
+        const outputDirPath = dirname(outputPath)
+        if (!existsSync(outputDirPath)) {
+          mkdirSync(outputDirPath, { recursive: true })
+        }
+
         const emitResult = this.program.emit(
           sourceFile,
           (fileName, data) => {
             if (fileName.endsWith('.d.ts')) {
-              writeFileSync(fileName, data)
-              generatedFiles.push(fileName)
+              // 使用计算出的输出路径
+              writeFileSync(outputPath, data)
+              generatedFiles.push(outputPath)
             }
           },
           undefined,
@@ -329,7 +361,7 @@ export class TypeGenerator {
         }
       }
 
-      logger.info(`生成 ${generatedFiles.length} 个分离的类型文件`)
+      logger.info(`生成 ${generatedFiles.length} 个分离的类型文件，保持目录结构`)
       return generatedFiles
     }
     catch (error) {

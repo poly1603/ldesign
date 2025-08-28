@@ -9,6 +9,7 @@ import { RollupBuilder } from './core/rollup-builder'
 import { TypeGenerator } from './core/type-generator'
 // 核心类型定义
 import { ErrorHandler, Logger } from './utils/logger'
+import chalk from 'chalk'
 
 // CLI 功能暂时移除，专注于编程式 API
 // export { runCli } from './cli'
@@ -42,7 +43,234 @@ export {
 } from './utils/logger'
 
 // 版本信息
-export const version: string = require('../package.json').version
+import packageJson from '../package.json' assert { type: 'json' }
+export const version: string = packageJson.version
+
+/**
+ * 定义配置
+ */
+export function defineConfig(config: import('./types').BuildOptions): import('./types').BuildOptions {
+  return config
+}
+
+/**
+ * 智能化增强配置选项
+ */
+async function enhanceOptions(options: import('./types').BuildOptions): Promise<import('./types').BuildOptions> {
+
+  const root = options.root || process.cwd()
+
+  // 智能处理入口文件
+  let input = options.input
+  if (!input) {
+    input = await smartDetectInput(root)
+  }
+
+  // 智能处理输出格式
+  const formats = options.formats || ['esm', 'cjs', 'umd']
+
+  // 智能处理外部依赖
+  const external = await smartDetectExternal(root, options.external)
+
+  // 智能处理全局变量映射
+  const globals = await smartDetectGlobals(root, external, options.globals)
+
+  // 调试信息
+  const { Logger } = await import('./utils')
+  const logger = new Logger('SmartConfig')
+  logger.info('原始 formats 配置:', options.formats)
+  logger.info('智能增强后的 formats:', formats)
+  logger.info('智能检测到的外部依赖:', external)
+  logger.info('智能生成的全局变量映射:', globals)
+
+  // 默认启用的选项
+  const enhanced: import('./types').BuildOptions = {
+    ...options,
+    root,
+    input,
+    formats,
+    external,
+    globals,
+    outDir: options.outDir || 'dist',
+    dts: options.dts !== false, // 默认生成类型文件
+    clean: options.clean !== false, // 默认清理
+    minify: options.minify !== false, // 默认压缩
+    sourcemap: options.sourcemap !== false, // 默认生成 sourcemap
+    lib: options.lib !== false, // 默认库模式
+  }
+
+  return enhanced
+}
+
+/**
+ * 智能检测入口文件
+ */
+async function smartDetectInput(root: string): Promise<string> {
+  const { resolve } = await import('node:path')
+  const { existsSync } = await import('node:fs')
+
+  // 自动检测入口文件
+  const possibleEntries = [
+    'src/index.ts',
+    'src/index.js',
+    'src/main.ts',
+    'src/main.js',
+    'index.ts',
+    'index.js'
+  ]
+
+  for (const entry of possibleEntries) {
+    const entryPath = resolve(root, entry)
+    if (existsSync(entryPath)) {
+      return entryPath
+    }
+  }
+
+  return 'src/index.ts' // 默认值
+}
+
+/**
+ * 智能检测外部依赖
+ */
+async function smartDetectExternal(root: string, userExternal?: string[] | ((id: string) => boolean)): Promise<string[]> {
+  const { resolve } = await import('node:path')
+  const { existsSync, readFileSync } = await import('node:fs')
+
+  const external: string[] = []
+
+  // 1. 添加用户指定的外部依赖
+  if (Array.isArray(userExternal)) {
+    external.push(...userExternal)
+  }
+
+  // 2. 从 package.json 读取依赖
+  const packageJsonPath = resolve(root, 'package.json')
+  if (existsSync(packageJsonPath)) {
+    try {
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+
+      // 添加 peerDependencies
+      if (packageJson.peerDependencies) {
+        external.push(...Object.keys(packageJson.peerDependencies))
+      }
+
+      // 添加 dependencies 中的框架依赖和 @ldesign/* 包
+      if (packageJson.dependencies) {
+        const frameworkDeps = Object.keys(packageJson.dependencies).filter(dep =>
+          isFrameworkDependency(dep)
+        )
+        external.push(...frameworkDeps)
+      }
+    } catch (error) {
+      // 忽略 package.json 解析错误
+    }
+  }
+
+  // 3. 自动添加 @ldesign/* 系列包
+  external.push('@ldesign/cache', '@ldesign/device', '@ldesign/engine', '@ldesign/shared')
+
+  // 4. 添加常见的框架依赖
+  const commonFrameworks = [
+    'vue', 'react', 'react-dom', 'angular', 'svelte',
+    '@vue/runtime-core', '@vue/runtime-dom', '@vue/reactivity', '@vue/shared',
+    '@vueuse/core', '@vueuse/shared'
+  ]
+  external.push(...commonFrameworks)
+
+  // 去重并返回
+  return [...new Set(external)]
+}
+
+/**
+ * 智能检测全局变量映射
+ */
+async function smartDetectGlobals(_root: string, external: string[], userGlobals?: Record<string, string>): Promise<Record<string, string>> {
+  const globals: Record<string, string> = {}
+
+  // 1. 添加用户指定的全局变量映射
+  if (userGlobals) {
+    Object.assign(globals, userGlobals)
+  }
+
+  // 2. 为外部依赖生成默认的全局变量映射
+  for (const dep of external) {
+    if (!globals[dep]) {
+      globals[dep] = getDefaultGlobalName(dep)
+    }
+  }
+
+  return globals
+}
+
+/**
+ * 判断是否为框架依赖
+ */
+function isFrameworkDependency(dep: string): boolean {
+  const frameworkPatterns = [
+    /^vue$/,
+    /^react$/,
+    /^react-dom$/,
+    /^@vue\//,
+    /^@react\//,
+    /^@angular\//,
+    /^svelte/,
+    /^@svelte\//,
+    /^@vueuse\//,
+    /^@ldesign\//,
+  ]
+
+  return frameworkPatterns.some(pattern => pattern.test(dep))
+}
+
+/**
+ * 获取默认的全局变量名
+ */
+function getDefaultGlobalName(dep: string): string {
+  // 预定义的全局变量映射
+  const predefinedGlobals: Record<string, string> = {
+    'vue': 'Vue',
+    'react': 'React',
+    'react-dom': 'ReactDOM',
+    '@vue/runtime-core': 'Vue',
+    '@vue/runtime-dom': 'Vue',
+    '@vue/reactivity': 'Vue',
+    '@vue/shared': 'Vue',
+    '@vueuse/core': 'VueUse',
+    '@vueuse/shared': 'VueUse',
+    '@ldesign/cache': 'LDesignCache',
+    '@ldesign/device': 'LDesignDevice',
+    '@ldesign/engine': 'LDesignEngine',
+    '@ldesign/shared': 'LDesignShared',
+    '@ldesign/template': 'LDesignTemplate',
+  }
+
+  if (predefinedGlobals[dep]) {
+    return predefinedGlobals[dep]
+  }
+
+  // 自动生成全局变量名
+  return dep
+    .replace(/[@\/\-]/g, '')
+    .replace(/^./, c => c.toUpperCase())
+    .replace(/[A-Z]/g, (match, offset) => offset > 0 ? match : match.toUpperCase())
+}
+
+/**
+ * 显示构建信息
+ */
+function showBuildInfo(options: import('./types').BuildOptions): void {
+  console.log()
+  console.log(chalk.cyan.bold('📦 开始构建'))
+  console.log(chalk.gray('─'.repeat(50)))
+  console.log(`${chalk.bold('项目根目录:')} ${chalk.cyan(options.root || process.cwd())}`)
+  console.log(`${chalk.bold('输出目录:')} ${chalk.cyan(options.outDir || 'dist')}`)
+  console.log(`${chalk.bold('输出格式:')} ${chalk.yellow(options.formats?.join(', ') || 'esm, cjs')}`)
+  console.log(`${chalk.bold('生成类型声明:')} ${options.dts ? chalk.green('是') : chalk.red('否')}`)
+  console.log(`${chalk.bold('代码压缩:')} ${options.minify ? chalk.green('是') : chalk.red('否')}`)
+  console.log(`${chalk.bold('Source Map:')} ${options.sourcemap ? chalk.green('是') : chalk.red('否')}`)
+  console.log(chalk.gray('─'.repeat(50)))
+  console.log()
+}
 
 /**
  * 快速构建函数
@@ -58,27 +286,36 @@ export async function build(options: import('./types').BuildOptions) {
   logger.info('开始构建项目...')
 
   try {
+    // 智能化配置处理
+    const enhancedOptions = await enhanceOptions(options)
+
+    // 显示构建信息
+    showBuildInfo(enhancedOptions)
+
     // 扫描项目
     const scanner = new ProjectScanner()
-    const scanResult = await scanner.scan(options.root || process.cwd(), {
+    const scanResult = await scanner.scan(enhancedOptions.root || process.cwd(), {
       ignorePatterns: ['node_modules/**', '.git/**'],
-      includePatterns: ['**/*.{ts,tsx,js,jsx,vue}'],
+      includePatterns: ['**/*.{ts,tsx,js,jsx,vue,css,less,scss,sass,styl,stylus}'],
     })
 
     // 配置插件
     const configurator = new PluginConfigurator()
-    const plugins = await configurator.configure(scanResult, options)
+    const plugins = await configurator.configure(scanResult, enhancedOptions)
 
     // 创建构建器
     const builder = new RollupBuilder()
 
     // 执行构建
-    const result = await builder.build(scanResult, { plugins }, options)
+    const result = await builder.build(scanResult, { plugins }, enhancedOptions)
 
     // 生成类型文件
-    if (options.dts) {
+    if (enhancedOptions.dts) {
+      logger.info('开始生成类型文件...')
       const typeGenerator = new TypeGenerator()
-      await typeGenerator.generate(scanResult, options)
+      await typeGenerator.generate(scanResult, enhancedOptions)
+    } else {
+      logger.info('跳过类型文件生成 (dts = false)')
     }
 
     logger.success('构建完成')
@@ -106,7 +343,7 @@ export async function watch(options: import('./types').BuildOptions): Promise<vo
   const scanner = new ProjectScanner()
   const scanResult = await scanner.scan(options.root || process.cwd(), {
     ignorePatterns: ['node_modules/**', '.git/**'],
-    includePatterns: ['**/*.{ts,tsx,js,jsx,vue}'],
+    includePatterns: ['**/*.{ts,tsx,js,jsx,vue,css,less,scss,sass,styl,stylus}'],
   })
 
   // 配置插件
@@ -186,7 +423,4 @@ export default {
   ErrorHandler,
 }
 
-// 轻量配置辅助，便于用户在 ldesign.config.ts 中编写配置
-export function defineConfig(config: import('./types').BuildOptions) {
-  return config
-}
+

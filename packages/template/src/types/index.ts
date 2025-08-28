@@ -109,13 +109,19 @@ export interface TemplateConfig {
  */
 export interface TemplateMetadata {
   /** 模板名称 */
-  name: string
+  name?: string
+  /** 模板标题 */
+  title?: string
   /** 模板描述 */
   description?: string
   /** 模板版本 */
   version?: string
   /** 作者信息 */
   author?: string
+  /** 模板分类 */
+  category?: string
+  /** 设备类型 */
+  deviceType?: DeviceType
   /** 创建时间 */
   createdAt?: string
   /** 更新时间 */
@@ -124,6 +130,8 @@ export interface TemplateMetadata {
   tags?: string[]
   /** 依赖关系 */
   dependencies?: string[]
+  /** 模板属性 */
+  props?: Record<string, any>
   /** 兼容性信息 */
   compatibility?: {
     vue?: string
@@ -140,8 +148,10 @@ export interface TemplateMetadata {
 export interface TemplateFileInfo {
   /** 文件路径 */
   path: string
+  /** 文件名 */
+  name?: string
   /** 文件类型 */
-  type: 'template' | 'config' | 'asset'
+  type?: 'template' | 'config' | 'asset'
   /** 文件大小（字节） */
   size?: number
   /** 最后修改时间 */
@@ -156,6 +166,24 @@ export interface TemplateFileInfo {
 export interface TemplateInfo {
   /** 模板名称 */
   name: string
+  /** 模板显示名称 */
+  displayName?: string
+  /** 模板描述 */
+  description?: string
+  /** 模板版本 */
+  version?: string
+  /** 模板作者 */
+  author?: string
+  /** 模板标签 */
+  tags?: string[]
+  /** 模板路径 */
+  path?: string
+  /** 模板缩略图 */
+  thumbnail?: string
+  /** 模板依赖 */
+  dependencies?: string[]
+  /** 模板属性 */
+  props?: Record<string, any>
   /** 模板分类（目录名） */
   category: string
   /** 设备类型 */
@@ -172,6 +200,16 @@ export interface TemplateInfo {
   metadata: TemplateMetadata
   /** 模板状态 */
   status: TemplateStatus
+  /** 是否为内置模板 */
+  isBuiltin?: boolean
+  /** 原始内置模板引用（当用户模板覆盖内置模板时） */
+  originalBuiltin?: TemplateInfo
+  /** 模板组件 */
+  component?: any
+  /** 创建时间 */
+  createdAt?: number
+  /** 更新时间 */
+  updatedAt?: number
   /** 加载时间戳 */
   loadedAt?: number
   /** 错误信息 */
@@ -195,6 +233,10 @@ export interface TemplateRegistryItem {
   isDefault?: boolean
   component?: any
   metadata?: Record<string, any>
+  /** 是否为内置模板 */
+  isBuiltin?: boolean
+  /** 原始内置模板引用（当用户模板覆盖内置模板时） */
+  originalBuiltin?: TemplateRegistryItem
   /** 是否为外部模板 */
   isExternal?: boolean
   /** 外部模板引用 */

@@ -3,10 +3,12 @@
  * @ldesign/template Vue 3 集成
  */
 
-// 组件 - 在开发环境中直接导入，避免构建问题
-// export { default as TemplateRenderer } from './components/TemplateRenderer.vue'
-// export { default as TemplateRendererWithSelector } from './components/TemplateRendererWithSelector.vue'
-// export { default as TemplateSelector } from './components/TemplateSelector.vue'
+// 组件 - Vue组件通过Vite单独构建
+// 在构建的esm/vue/index.js中可以找到：
+// export { TemplateRenderer, TemplateSelector }
+//
+// 为了避免Rollup构建冲突，这里不直接导出Vue组件
+// Vue组件的导出由Vite构建处理
 
 // 重新导出类型
 export type * from '../types'
@@ -50,3 +52,4 @@ export {
 
 // 默认导出插件
 export { TemplatePlugin as default } from './plugin'
+export * from './components'

@@ -14,7 +14,7 @@ import type {
   PluginConfiguration,
   ProjectScanResult,
 } from '../types'
-import { existsSync, mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync, rmSync } from 'node:fs'
 import { basename, extname, resolve } from 'node:path'
 import { type OutputOptions, rollup, type RollupBuild, type RollupOptions, type RollupWatcher, watch } from 'rollup'
 import { Logger } from '../utils/logger'
@@ -41,6 +41,11 @@ export class RollupBuilder {
     const outputFiles: OutputFile[] = []
 
     try {
+      // 清理输出目录
+      if (buildOptions.clean !== false) {
+        await this.cleanOutputDirs(buildOptions)
+      }
+
       // 生成 Rollup 配置
       const rollupOptions = this.generateRollupOptions(
         scanResult,
@@ -51,36 +56,100 @@ export class RollupBuilder {
       // 创建输出目录
       this.ensureOutputDir(buildOptions.outDir || 'dist')
 
-      // 执行构建
-      this.currentBuild = await rollup(rollupOptions)
+      // 分离不同格式的构建
+      const formats = (buildOptions.formats || ['esm', 'cjs']) as OutputFormat[]
+      const moduleFormats = formats.filter(f => f === 'esm' || f === 'cjs')
+      const bundleFormats = formats.filter(f => f === 'umd' || f === 'iife')
+      const baseOutDir = buildOptions.outDir || 'dist'
 
-      // 生成输出文件
-      const outputs = this.generateOutputOptions(scanResult, buildOptions)
+      // 构建模块化格式（支持代码分割）
+      if (moduleFormats.length > 0) {
+        this.currentBuild = await rollup(rollupOptions)
 
-      for (const output of outputs) {
-        logger.info(`生成 ${output.format} 格式文件...`)
-
-        const { output: generatedFiles } = await this.currentBuild.write(output)
-
-        // 收集输出文件信息
-        for (const file of generatedFiles) {
-          if (file.type === 'chunk') {
-            outputFiles.push({
-              path: file.fileName,
-              format: output.format as OutputFormat,
-              size: file.code.length,
-              gzipSize: this.calculateGzipSize(file.code),
-              isEntry: file.isEntry,
-            })
+        // 只为模块化格式生成输出配置
+        for (const format of moduleFormats) {
+          const formatDir = this.getFormatOutputDir(format, baseOutDir)
+          const formatSpecificOptions = this.getFormatSpecificOptions(format, scanResult, buildOptions)
+          const rollupFormat = this.mapToRollupFormat(format)
+          const output: OutputOptions = {
+            dir: formatDir,
+            format: rollupFormat,
+            sourcemap: buildOptions.sourcemap !== false,
+            preserveModules: true,
+            preserveModulesRoot: 'src',
+            ...formatSpecificOptions,
           }
-          else if (file.type === 'asset') {
-            outputFiles.push({
-              path: file.fileName,
-              format: output.format as OutputFormat,
-              size: typeof file.source === 'string' ? file.source.length : file.source.byteLength,
-              gzipSize: this.calculateGzipSize(typeof file.source === 'string' ? file.source : file.source.toString()),
-              isEntry: false,
-            })
+
+          logger.info(`生成 ${output.format} 格式文件...`)
+          const { output: generatedFiles } = await this.currentBuild.write(output)
+
+          // 收集输出文件信息
+          for (const file of generatedFiles) {
+            if (file.type === 'chunk') {
+              outputFiles.push({
+                path: file.fileName,
+                format: output.format as OutputFormat,
+                size: file.code.length,
+                gzipSize: this.calculateGzipSize(file.code),
+                isEntry: file.isEntry,
+              })
+            }
+            else if (file.type === 'asset') {
+              outputFiles.push({
+                path: file.fileName,
+                format: output.format as OutputFormat,
+                size: typeof file.source === 'string' ? file.source.length : file.source.byteLength,
+                gzipSize: this.calculateGzipSize(typeof file.source === 'string' ? file.source : file.source.toString()),
+                isEntry: false,
+              })
+            }
+          }
+        }
+
+        await this.currentBuild.close()
+      }
+
+      // 构建打包格式（不支持代码分割）
+      if (bundleFormats.length > 0) {
+        const bundleRollupOptions = this.generateBundleRollupOptions(scanResult, pluginConfig, buildOptions)
+        this.currentBuild = await rollup(bundleRollupOptions)
+
+        // 只为打包格式生成输出配置
+        for (const format of bundleFormats) {
+          const formatDir = this.getFormatOutputDir(format, baseOutDir)
+          const formatSpecificOptions = this.getFormatSpecificOptions(format, scanResult, buildOptions)
+          const rollupFormat = this.mapToRollupFormat(format)
+          const output: OutputOptions = {
+            dir: formatDir,
+            format: rollupFormat,
+            sourcemap: buildOptions.sourcemap !== false,
+            preserveModules: false,
+            ...formatSpecificOptions,
+          }
+
+          logger.info(`生成 ${output.format} 格式文件...`)
+          const { output: generatedFiles } = await this.currentBuild.write(output)
+
+          // 收集输出文件信息
+          for (const file of generatedFiles) {
+            if (file.type === 'chunk') {
+              outputFiles.push({
+                path: file.fileName,
+                format: output.format as OutputFormat,
+                size: file.code.length,
+                gzipSize: this.calculateGzipSize(file.code),
+                isEntry: file.isEntry,
+              })
+            }
+            else if (file.type === 'asset') {
+              outputFiles.push({
+                path: file.fileName,
+                format: output.format as OutputFormat,
+                size: typeof file.source === 'string' ? file.source.length : file.source.byteLength,
+                gzipSize: this.calculateGzipSize(typeof file.source === 'string' ? file.source : file.source.toString()),
+                isEntry: false,
+              })
+            }
           }
         }
       }
@@ -391,7 +460,12 @@ export class RollupBuilder {
     const baseOutDir = buildOptions.outDir || 'dist'
     const formats = (buildOptions.formats || ['esm', 'cjs']) as OutputFormat[]
 
-    for (const format of formats) {
+    // 分离模块化格式和打包格式
+    const moduleFormats = formats.filter(f => f === 'esm' || f === 'cjs')
+    const bundleFormats = formats.filter(f => f === 'umd' || f === 'iife')
+
+    // 处理模块化格式（支持代码分割）
+    for (const format of moduleFormats) {
       const formatDir = this.getFormatOutputDir(format, baseOutDir)
       const formatSpecificOptions = this.getFormatSpecificOptions(format, scanResult, buildOptions)
       const rollupFormat = this.mapToRollupFormat(format)
@@ -399,9 +473,24 @@ export class RollupBuilder {
         dir: formatDir,
         format: rollupFormat,
         sourcemap: buildOptions.sourcemap !== false,
-        // 保持目录结构（除了 UMD 和 IIFE 格式）
-        preserveModules: format !== 'umd' && format !== 'iife',
+        preserveModules: true,
         preserveModulesRoot: 'src',
+        ...formatSpecificOptions,
+      }
+
+      outputs.push(output)
+    }
+
+    // 处理打包格式（不支持代码分割）
+    for (const format of bundleFormats) {
+      const formatDir = this.getFormatOutputDir(format, baseOutDir)
+      const formatSpecificOptions = this.getFormatSpecificOptions(format, scanResult, buildOptions)
+      const rollupFormat = this.mapToRollupFormat(format)
+      const output: OutputOptions = {
+        dir: formatDir,
+        format: rollupFormat,
+        sourcemap: buildOptions.sourcemap !== false,
+        preserveModules: false,
         ...formatSpecificOptions,
       }
 
@@ -415,15 +504,19 @@ export class RollupBuilder {
    * 获取格式输出目录
    */
   private getFormatOutputDir(format: OutputFormat, baseOutDir: string): string {
+    // 获取项目根目录（baseOutDir 的父目录）
+    const projectRoot = resolve(baseOutDir, '..')
+
     switch (format) {
       case 'esm':
-        return `${baseOutDir}/esm`
+        return resolve(projectRoot, 'esm')
       case 'cjs':
-        return `${baseOutDir}/cjs`
+        return resolve(projectRoot, 'cjs')
       case 'umd':
-        return `${baseOutDir}/umd`
+        // UMD 文件直接输出到 dist 根目录
+        return baseOutDir
       case 'iife':
-        return `${baseOutDir}/iife`
+        return resolve(baseOutDir, 'iife')
       default:
         return baseOutDir
     }
@@ -489,16 +582,9 @@ export class RollupBuilder {
   /**
    * 计算 Gzip 大小
    */
-  private calculateGzipSize(content: string | Buffer): number {
-    try {
-      const { gzipSync } = require('node:zlib')
-      const buffer = typeof content === 'string' ? Buffer.from(content) : content
-      return gzipSync(buffer).length
-    }
-    catch (error) {
-      logger.warn('无法计算 Gzip 大小:', error)
-      return 0
-    }
+  private calculateGzipSize(_content: string | Buffer): number {
+    // 暂时禁用 gzip 计算以避免打包问题
+    return 0
   }
 
   /**
@@ -537,5 +623,97 @@ export class RollupBuilder {
    */
   isWatching(): boolean {
     return this.currentWatcher !== null
+  }
+
+  /**
+   * 生成打包格式的 Rollup 配置（不支持代码分割）
+   */
+  private generateBundleRollupOptions(
+    scanResult: ProjectScanResult,
+    pluginConfig: PluginConfiguration,
+    buildOptions: BuildOptions,
+  ): RollupOptions {
+    // 为打包格式使用单一入口
+    let input: string
+    if (typeof buildOptions.input === 'string') {
+      input = buildOptions.input
+    } else if (buildOptions.input && typeof buildOptions.input === 'object' && !Array.isArray(buildOptions.input)) {
+      input = buildOptions.input['index'] || 'src/index.ts'
+    } else {
+      input = 'src/index.ts'
+    }
+
+    const external = this.resolveExternal(scanResult, buildOptions)
+
+    const config: RollupOptions = {
+      input,
+      plugins: pluginConfig.plugins,
+      onwarn: (warning, warn) => {
+        // 过滤一些常见的警告
+        if (warning.code === 'CIRCULAR_DEPENDENCY') {
+          logger.warn(`Rollup警告: ${warning.message}`)
+          return
+        }
+        warn(warning)
+      },
+      ...buildOptions.rollupOptions,
+    }
+
+    if (external) {
+      config.external = external
+    }
+
+    return config
+  }
+
+  /**
+   * 清理输出目录
+   */
+  private async cleanOutputDirs(buildOptions: BuildOptions): Promise<void> {
+    const projectRoot = resolve(buildOptions.root || process.cwd())
+    const formats = (buildOptions.formats || ['esm', 'cjs']) as OutputFormat[]
+
+    logger.info('清理输出目录...')
+
+    for (const format of formats) {
+      let outputDir: string
+
+      switch (format) {
+        case 'esm':
+          outputDir = resolve(projectRoot, 'esm')
+          break
+        case 'cjs':
+          outputDir = resolve(projectRoot, 'cjs')
+          break
+        case 'umd':
+        case 'iife':
+          outputDir = resolve(projectRoot, buildOptions.outDir || 'dist')
+          break
+        default:
+          continue
+      }
+
+      if (existsSync(outputDir)) {
+        try {
+          rmSync(outputDir, { recursive: true, force: true })
+          logger.info(`已清理: ${outputDir}`)
+        } catch (error) {
+          logger.warn(`清理目录失败: ${outputDir}`, error)
+        }
+      }
+    }
+
+    // 清理 types 目录
+    if (buildOptions.dts) {
+      const typesDir = resolve(projectRoot, 'types')
+      if (existsSync(typesDir)) {
+        try {
+          rmSync(typesDir, { recursive: true, force: true })
+          logger.info(`已清理: ${typesDir}`)
+        } catch (error) {
+          logger.warn(`清理类型目录失败: ${typesDir}`, error)
+        }
+      }
+    }
   }
 }

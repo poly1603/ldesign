@@ -55,9 +55,9 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "build": "rollup -c",
-    "build:watch": "rollup -c -w",
-    "dev": "rollup -c -w",
+    "build": "ldesign-builder build",
+    "build:watch": "ldesign-builder watch",
+    "dev": "ldesign-builder watch",
     "type-check": "vue-tsc --noEmit",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
@@ -99,16 +99,13 @@
   "dependencies": {
     "@ldesign/cache": "workspace:*",
     "@ldesign/device": "workspace:*",
+    "@ldesign/engine": "workspace:*",
     "@ldesign/shared": "workspace:*",
     "@vueuse/core": "^13.7.0"
-
   },
   "devDependencies": {
+    "@ldesign/builder": "workspace:*",
     "@playwright/test": "^1.40.1",
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-replace": "^6.0.2",
-    "@rollup/plugin-typescript": "^11.1.6",
     "@types/node": "^22.0.0",
     "@vitejs/plugin-vue": "^5.0.3",
     "@vitest/ui": "^3.2.4",
@@ -121,6 +118,7 @@
     "rollup": "^4.9.6",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-less": "^1.1.3",
     "rollup-plugin-postcss": "^4.0.2",
     "sass": "^1.89.2",
     "size-limit": "^11.0.0",

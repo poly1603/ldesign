@@ -164,6 +164,31 @@ export {
   ValidationUtils,
 } from './utils'
 
+// === Vue 适配器模块 ===
+export {
+  CryptoPlugin,
+  createCryptoPlugin,
+  installCrypto,
+  type CryptoPluginOptions,
+  type GlobalCrypto,
+} from './adapt/vue/plugin'
+
+export {
+  useCrypto,
+  useHash,
+  useSignature,
+} from './adapt/vue/composables'
+
+// === Engine 插件模块 ===
+export {
+  createCryptoEnginePlugin,
+  createDefaultCryptoEnginePlugin,
+  createPerformanceCryptoEnginePlugin,
+  createDebugCryptoEnginePlugin,
+  cryptoEnginePlugin,
+  type CryptoEnginePluginOptions,
+} from './engine'
+
 const LDesignCrypto = {
   // === 核心功能 ===
   encrypt,

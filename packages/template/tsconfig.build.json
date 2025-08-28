@@ -1,22 +1,39 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "../../tools/configs/build/tsconfig.base.json",
   "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "baseUrl": ".",
+    "moduleResolution": "bundler",
     "rootDir": "src",
     "declaration": true,
     "declarationMap": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "types": ["vite/client", "node", "@vue/runtime-core"],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmitOnError": false
   },
   "include": [
     "src/**/*"
   ],
   "exclude": [
-    "src/vue/components/**/*.vue",
-    "src/templates/**/*",
+    "examples/**/*",
     "tests/**/*",
     "e2e/**/*",
+    "__tests__/**/*",
+    "test/**/*",
     "**/*.test.ts",
     "**/*.spec.ts",
     "node_modules",
-    "dist"
+    "dist",
+    "esm",
+    "cjs",
+    "types",
+    "coverage"
   ]
 }

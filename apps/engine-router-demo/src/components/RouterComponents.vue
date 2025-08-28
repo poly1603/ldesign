@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts">
 /**
  * 简化的Router组件实现
  * 用于演示Engine与Router集成
@@ -14,7 +14,10 @@ export const RouterLink = defineComponent({
       type: String,
       required: true
     },
-    class: String
+    class: {
+      type: String,
+      default: ''
+    }
   },
   setup(props, { slots }) {
     const router = inject('router') as any

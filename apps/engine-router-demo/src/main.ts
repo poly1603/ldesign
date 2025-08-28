@@ -22,6 +22,7 @@ async function main() {
   const engine = createEngine({
     config: {
       debug: true,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any,
   })
 
@@ -89,11 +90,12 @@ async function main() {
     },
   })
 
-  // 创建Template插件
+  // 创建Template插件 - 不配置scanPaths以确保内置模板可用
   const templatePlugin = createTemplateEnginePlugin({
-    scanner: {
-      scanPaths: ['src/templates/**/*.vue'],
-    },
+    // 注释掉scanPaths配置，使用内置模板
+    // scanner: {
+    //   scanPaths: ['src/templates/**/*.vue'],
+    // },
     loader: {
       enableCache: true,
       preloadStrategy: 'critical',
@@ -125,7 +127,7 @@ async function main() {
   // 挂载应用
   app.mount('#app')
 
-  console.log('应用启动成功 - 使用@ldesign/router、@ldesign/i18n、@ldesign/color、@ldesign/size和@ldesign/template Engine插件集成')
+  console.log('应用启动成功 - 使用@ldesign/router、@ldesign/i18n、@ldesign/color、@ldesign/size、@ldesign/template Engine插件集成')
 }
 
 // 启动应用
