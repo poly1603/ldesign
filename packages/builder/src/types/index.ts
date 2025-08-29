@@ -96,6 +96,19 @@ export interface TypeGenerationResult {
 }
 
 /**
+ * 构建产物验证结果
+ */
+export interface ValidationResult {
+  success: boolean
+  foundArtifacts: import('../core/build-validator').ExpectedArtifact[]
+  missingArtifacts: import('../core/build-validator').ExpectedArtifact[]
+  errors: string[]
+  warnings: string[]
+  validationTime: number
+  summary: string
+}
+
+/**
  * 单个插件配置
  */
 export interface PluginConfig {

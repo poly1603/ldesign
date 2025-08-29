@@ -87,7 +87,7 @@ export class RollupBuilder {
           for (const file of generatedFiles) {
             if (file.type === 'chunk') {
               outputFiles.push({
-                path: file.fileName,
+                path: resolve(formatDir, file.fileName),
                 format: output.format as OutputFormat,
                 size: file.code.length,
                 gzipSize: this.calculateGzipSize(file.code),
@@ -96,7 +96,7 @@ export class RollupBuilder {
             }
             else if (file.type === 'asset') {
               outputFiles.push({
-                path: file.fileName,
+                path: resolve(formatDir, file.fileName),
                 format: output.format as OutputFormat,
                 size: typeof file.source === 'string' ? file.source.length : file.source.byteLength,
                 gzipSize: this.calculateGzipSize(typeof file.source === 'string' ? file.source : file.source.toString()),
@@ -134,7 +134,7 @@ export class RollupBuilder {
           for (const file of generatedFiles) {
             if (file.type === 'chunk') {
               outputFiles.push({
-                path: file.fileName,
+                path: resolve(formatDir, file.fileName),
                 format: output.format as OutputFormat,
                 size: file.code.length,
                 gzipSize: this.calculateGzipSize(file.code),
@@ -143,7 +143,7 @@ export class RollupBuilder {
             }
             else if (file.type === 'asset') {
               outputFiles.push({
-                path: file.fileName,
+                path: resolve(formatDir, file.fileName),
                 format: output.format as OutputFormat,
                 size: typeof file.source === 'string' ? file.source.length : file.source.byteLength,
                 gzipSize: this.calculateGzipSize(typeof file.source === 'string' ? file.source : file.source.toString()),

@@ -1,6 +1,4 @@
-import { defineConfig } from '@ldesign/builder'
-
-export default defineConfig({
+export default {
   // 基础配置
   root: process.cwd(),
   outDir: 'dist',
@@ -19,14 +17,16 @@ export default defineConfig({
   
   // 外部依赖（不打包进最终产物）
   external: [
-    'vue'
+    'vue',
+    '@ldesign/shared'
   ],
   
   // UMD 格式的全局变量映射
   globals: {
-    'vue': 'Vue'
+    'vue': 'Vue',
+    '@ldesign/shared': 'LDesignShared'
   },
   
   // UMD 格式的库名称
-  name: 'LDesignColor'
-})
+  name: 'LDesignI18n'
+}

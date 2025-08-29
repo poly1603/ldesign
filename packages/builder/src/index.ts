@@ -281,9 +281,9 @@ export async function build(options: import('./types').BuildOptions) {
   const { PluginConfigurator } = await import('./core/plugin-configurator')
   const { RollupBuilder } = await import('./core/rollup-builder')
   const { TypeGenerator } = await import('./core/type-generator')
+  const { BuildValidator } = await import('./core/build-validator')
 
   const logger = new Logger('Builder')
-  logger.info('开始构建项目...')
 
   try {
     // 智能化配置处理
@@ -303,19 +303,54 @@ export async function build(options: import('./types').BuildOptions) {
     const configurator = new PluginConfigurator()
     const plugins = await configurator.configure(scanResult, enhancedOptions)
 
-    // 创建构建器
+    // 创建构建器并执行构建
     const builder = new RollupBuilder()
-
-    // 执行构建
     const result = await builder.build(scanResult, { plugins }, enhancedOptions)
 
+    if (!result.success) {
+      logger.error('构建失败')
+      if (result.errors.length > 0) {
+        result.errors.forEach(error => {
+          logger.error(`${error.message}`)
+          if (error.file) logger.error(`  文件: ${error.file}`)
+          if (error.line) logger.error(`  行号: ${error.line}`)
+        })
+      }
+      return result
+    }
+
     // 生成类型文件
-    if (enhancedOptions.dts) {
-      logger.info('开始生成类型文件...')
+    let typeGenerationResult = null
+    if (enhancedOptions.dts !== false) {
       const typeGenerator = new TypeGenerator()
-      await typeGenerator.generate(scanResult, enhancedOptions)
-    } else {
-      logger.info('跳过类型文件生成 (dts = false)')
+      typeGenerationResult = await typeGenerator.generate(scanResult, enhancedOptions)
+
+      if (!typeGenerationResult.success) {
+        logger.error('类型文件生成失败')
+        typeGenerationResult.errors.forEach(error => {
+          logger.error(`${error}`)
+        })
+        // 类型生成失败不应该导致整个构建失败，但要记录错误
+        result.warnings = result.warnings || []
+        result.warnings.push(...typeGenerationResult.errors.map(error => ({ message: error })))
+      }
+    }
+
+    // 验证构建产物
+    const validator = new BuildValidator()
+    const validationResult = await validator.validate(scanResult, enhancedOptions, result)
+
+    if (!validationResult.success) {
+      // 将验证错误添加到构建结果中
+      result.warnings = result.warnings || []
+      result.warnings.push(...validationResult.errors.map(error => ({ message: error })))
+      result.warnings.push(...validationResult.warnings.map(warning => ({ message: warning })))
+    }
+
+    // 添加验证结果到构建结果中
+    ; (result as any).validation = validationResult
+    if (typeGenerationResult) {
+      ; (result as any).typeGeneration = typeGenerationResult
     }
 
     logger.success('构建完成')
@@ -323,6 +358,9 @@ export async function build(options: import('./types').BuildOptions) {
   }
   catch (error) {
     logger.error('构建失败:', error)
+    if (error instanceof Error && error.stack) {
+      logger.error('错误堆栈:', error.stack)
+    }
     throw error
   }
 }

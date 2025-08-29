@@ -1,6 +1,4 @@
-import { defineConfig } from '@ldesign/builder'
-
-export default defineConfig({
+export default {
   // 入口文件 - 自动检测
   // input: 'src/index.ts', // 可省略，自动检测
 

@@ -26,11 +26,11 @@ export class LdInput {
   @State() private focused: boolean = false
   @State() private reveal: boolean = false
 
-  @Event() ldInput: EventEmitter<string>
-  @Event() ldChange: EventEmitter<string>
-  @Event() ldFocus: EventEmitter<FocusEvent>
-  @Event() ldBlur: EventEmitter<FocusEvent>
-  @Event() ldClear: EventEmitter<void>
+  @Event() ldInput!: EventEmitter<string>
+  @Event() ldChange!: EventEmitter<string>
+  @Event() ldFocus!: EventEmitter<FocusEvent>
+  @Event() ldBlur!: EventEmitter<FocusEvent>
+  @Event() ldClear!: EventEmitter<void>
 
   private inputEl?: HTMLInputElement
 
@@ -116,18 +116,18 @@ export class LdInput {
             <div class="ld-input__suffix">
               {this.clearable && !!this.value && !this.readonly && !this.disabled
                 ? (
-                    <button class="ld-input__clear" type="button" onClick={this.onClear} aria-label="clear" />
-                  )
+                  <button class="ld-input__clear" type="button" onClick={this.onClear} aria-label="clear" />
+                )
                 : null}
               {this.type === 'password' && this.showPassword
                 ? (
-                    <button
-                      class="ld-input__password-toggle"
-                      type="button"
-                      onClick={this.togglePassword}
-                      aria-label={this.reveal ? 'hide password' : 'show password'}
-                    />
-                  )
+                  <button
+                    class="ld-input__password-toggle"
+                    type="button"
+                    onClick={this.togglePassword}
+                    aria-label={this.reveal ? 'hide password' : 'show password'}
+                  />
+                )
                 : null}
             </div>
           )}

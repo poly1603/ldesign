@@ -32,23 +32,23 @@
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
-      "import": "./esm/index.js",
-      "require": "./cjs/index.js"
+      "import": "./es/index.js",
+      "require": "./lib/index.js"
     },
     "./vue": {
       "types": "./types/vue/index.d.ts",
-      "import": "./esm/vue/index.js",
-      "require": "./cjs/vue/index.js"
+      "import": "./es/vue/index.js",
+      "require": "./lib/vue/index.js"
     },
     "./package.json": "./package.json"
   },
-  "main": "cjs/index.js",
-  "module": "esm/index.js",
+  "main": "lib/index.js",
+  "module": "es/index.js",
   "types": "types/index.d.ts",
   "files": [
-    "cjs",
+    "lib",
     "dist",
-    "esm",
+    "es",
     "types"
   ],
   "engines": {

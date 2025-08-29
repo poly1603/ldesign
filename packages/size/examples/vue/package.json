@@ -6,7 +6,7 @@
   "description": "Vue示例项目 - 展示@ldesign/size在Vue项目中的使用方式",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
+    "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "type-check": "vue-tsc --noEmit"
   },

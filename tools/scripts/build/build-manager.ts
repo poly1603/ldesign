@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { performance } from 'node:perf_hooks'
 import { logger } from '../../utils/dev-logger'
+import { SmartBuildValidator } from './smart-build-validator'
 
 interface BuildOptions {
   target?: 'all' | 'packages' | 'docs' | 'examples'
@@ -46,16 +47,27 @@ class BuildManager {
   }
 
   private log(message: string, level: 'info' | 'warn' | 'error' = 'info') {
+    // 在生产模式下只显示关键信息
+    if (this.options.mode === 'production' && level === 'info') {
+      // 只显示开始、完成、错误等关键状态
+      const keywordPatterns = [
+        /开始构建/, /构建完成/, /构建失败/, /构建流程/,
+        /类型检查/, /运行测试/, /版本号更新/, /构建报告/
+      ]
+      const isKeyMessage = keywordPatterns.some(pattern => pattern.test(message))
+      if (!isKeyMessage) return
+    }
+
     switch (level) {
       case 'warn':
-        logger.warn(message, { prefix: 'BUILD' })
+        logger.warn(message, { prefix: 'BUILD', timestamp: false })
         break
       case 'error':
-        logger.error(message, undefined, { prefix: 'BUILD' })
+        logger.error(message, undefined, { prefix: 'BUILD', timestamp: false })
         break
       case 'info':
       default:
-        logger.info(message, { prefix: 'BUILD' })
+        logger.info(message, { prefix: 'BUILD', timestamp: false })
         break
     }
   }
@@ -68,7 +80,7 @@ class BuildManager {
       const output = execSync(command, {
         cwd: cwd || process.cwd(),
         encoding: 'utf8',
-        stdio: 'pipe',
+        stdio: this.options.mode === 'production' ? 'pipe' : 'inherit',
       })
       return { success: true, output }
     }
@@ -77,6 +89,13 @@ class BuildManager {
       const stdout: string = error?.stdout?.toString?.() || ''
       const msg = error?.message || 'Unknown error'
       const code: number | undefined = typeof error?.status === 'number' ? error.status : undefined
+
+      // 在生产模式下，只返回关键错误信息
+      if (this.options.mode === 'production') {
+        const combined = stderr || stdout || msg
+        return { success: false, output: combined, error: msg, code }
+      }
+
       const combined = [msg, stderr, stdout].filter(Boolean).join('\n')
       return { success: false, output: combined, error: msg, code }
     }
@@ -105,7 +124,10 @@ class BuildManager {
       const buildResult = await this.executeCommand(buildCommand)
 
       if (!buildResult.success) {
-        this.log(`构建命令失败:\n${buildResult.output}`, 'error')
+        this.log(`构建命令失败`, 'error')
+        if (this.options.mode !== 'production') {
+          this.log(`详细错误信息:\n${buildResult.output}`, 'error')
+        }
         throw new Error(buildResult.error || '构建失败')
       }
 
@@ -114,9 +136,15 @@ class BuildManager {
         this.log('运行测试...')
         const testResult = await this.executeCommand('pnpm test:run')
         if (!testResult.success) {
-          this.log(`测试失败: ${testResult.error}\n${testResult.output}`, 'warn')
+          this.log(`测试失败: ${testResult.error}`, 'warn')
+          if (this.options.mode !== 'production') {
+            this.log(`详细测试信息:\n${testResult.output}`, 'warn')
+          }
         }
       }
+
+      // 运行构建产物验证
+      await this.validateBuildArtifacts()
 
       const duration = performance.now() - startTime
       this.log(`包构建完成，耗时: ${Math.round(duration)}ms`)
@@ -214,6 +242,46 @@ class BuildManager {
     }
     catch (error: any) {
       this.log(`版本号更新失败: ${error.message}`, 'error')
+    }
+  }
+
+  private async validateBuildArtifacts(): Promise<void> {
+    this.log('验证构建产物...')
+
+    try {
+      const packagesDir = join(process.cwd(), 'packages')
+      if (!existsSync(packagesDir)) return
+
+      const { readdirSync, statSync } = require('node:fs')
+      const packages = readdirSync(packagesDir).filter((name: string) => {
+        const packagePath = join(packagesDir, name)
+        return (
+          statSync(packagePath).isDirectory() &&
+          existsSync(join(packagePath, 'package.json'))
+        )
+      })
+
+      let validationErrors = 0
+      for (const packageName of packages) {
+        const packagePath = join(packagesDir, packageName)
+        try {
+          const validator = new SmartBuildValidator(packagePath)
+          const result = await validator.validate()
+          if (!result.success) {
+            validationErrors++
+          }
+        } catch (error: any) {
+          this.log(`验证包 ${packageName} 时出错: ${error.message}`, 'warn')
+        }
+      }
+
+      if (validationErrors === 0) {
+        this.log('所有包的构建产物验证通过')
+      } else {
+        this.log(`${validationErrors} 个包的构建产物验证失败`, 'warn')
+      }
+    } catch (error: any) {
+      this.log(`构建产物验证过程出错: ${error.message}`, 'warn')
     }
   }
 
