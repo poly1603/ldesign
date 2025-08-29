@@ -21,9 +21,6 @@ export async function loadUserConfig(cwd: string = process.cwd()): Promise<Parti
           // 对于 TypeScript 配置文件，使用动态导入
           try {
             // 先尝试使用 tsx 来处理 TypeScript 文件
-            const { spawn } = await import('node:child_process')
-            const { promisify } = await import('node:util')
-            const execFile = promisify(spawn)
 
             // 创建临时的 JS 文件来执行 TS 配置
             const tempFile = path.join(cwd, `temp-config-${Date.now()}.mjs`)

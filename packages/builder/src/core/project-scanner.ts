@@ -157,7 +157,7 @@ export class ProjectScanner {
         // 特别检查 Less 文件
         const lessMatches = matchedFiles.filter(f => f.endsWith('.less'))
         if (lessMatches.length > 0) {
-          logger.info(`发现 ${lessMatches.length} 个 Less 文件:`, lessMatches)
+          logger.info(`发现 ${lessMatches.length} 个 Less 文件: [${lessMatches.map(f => path.basename(f)).join(', ')}]`)
         }
 
         for (const filePath of matchedFiles) {
@@ -182,9 +182,7 @@ export class ProjectScanner {
       // 特别检查 Less 文件
       const lessFiles = uniqueFiles.filter(f => f.type === 'less')
       if (lessFiles.length > 0) {
-        logger.info(`发现 ${lessFiles.length} 个 Less 文件:`, lessFiles.map(f => f.relativePath))
-      } else {
-        logger.info('没有发现 Less 文件')
+        logger.info(`发现 ${lessFiles.length} 个 Less 文件: [${lessFiles.map(f => path.basename(f.relativePath)).join(', ')}]`)
       }
 
       return uniqueFiles

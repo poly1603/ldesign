@@ -245,8 +245,6 @@ export class PluginConfigurator {
       // Less - 暂时跳过 Less 文件处理
       if (requirements.hasLess) {
         logger.warn(`发现 Less 文件，但暂时跳过处理以避免构建错误`)
-      } else {
-        logger.info('没有发现 Less 文件')
       }
 
       // Stylus - 暂未实现

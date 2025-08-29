@@ -69,8 +69,8 @@ export class BuildValidator {
       // 验证构建结果中报告的输出文件
       if (buildResult.outputs) {
         for (const output of buildResult.outputs) {
-          const fullPath = resolve(output.path)
-          if (!existsSync(fullPath)) {
+          // RollupBuilder现在提供绝对路径，直接检查即可
+          if (!existsSync(output.path)) {
             errors.push(`构建结果中报告的文件不存在: ${output.path}`)
           }
         }
@@ -188,13 +188,18 @@ export class BuildValidator {
 
     // CSS 文件 - 只有在项目包含样式文件且未禁用时才检测
     if (this.shouldGenerateCss(scanResult, buildOptions)) {
-      const distDir = resolve(projectRoot, buildOptions.outDir || 'dist')
-      artifacts.push({
-        path: resolve(distDir, 'style.css'),
-        type: 'css',
-        required: false,
-        description: 'CSS 样式文件',
-      })
+      // 检查各个格式目录中的CSS文件
+      for (const format of formats) {
+        const outputDir = this.getFormatOutputDir(format, projectRoot)
+        const cssFile = resolve(outputDir, 'index.css')
+        artifacts.push({
+          path: cssFile,
+          type: 'css',
+          format,
+          required: false,
+          description: `${format.toUpperCase()} CSS 样式文件`,
+        })
+      }
     }
 
     return artifacts
@@ -268,6 +273,7 @@ export class BuildValidator {
    * 获取格式输出目录
    */
   private getFormatOutputDir(format: OutputFormat, projectRoot: string): string {
+    // 根据实际构建输出结构修正路径
     switch (format) {
       case 'esm':
         return resolve(projectRoot, 'esm')
@@ -312,30 +318,40 @@ export class BuildValidator {
     lines.push('构建产物验证摘要:')
     lines.push(`  ✓ 找到: ${foundArtifacts.length} | ✗ 缺失: ${missingArtifacts.length} | ❌ 错误: ${errors.length} | ⚠️ 警告: ${warnings.length}`)
 
-    // 只显示错误和必需的缺失产物
-    const criticalIssues = [
-      ...errors,
-      ...missingArtifacts.filter(artifact => artifact.required).map(artifact => `缺少必需产物: ${artifact.description}`)
-    ]
+    // 去重并分类错误
+    const uniqueErrors = [...new Set(errors)]
+    const criticalMissing = missingArtifacts.filter(artifact => artifact.required)
 
-    if (criticalIssues.length > 0) {
+    if (uniqueErrors.length > 0 || criticalMissing.length > 0) {
       lines.push('')
       lines.push('关键问题:')
-      criticalIssues.forEach(issue => {
-        lines.push(`  ❌ ${issue}`)
+
+      // 显示必需产物缺失
+      criticalMissing.forEach(artifact => {
+        lines.push(`  ❌ 缺少必需产物: ${artifact.description}`)
+      })
+
+      // 显示其他错误（去重后）
+      uniqueErrors.forEach(error => {
+        lines.push(`  ❌ ${error}`)
       })
     }
 
     // 只显示警告（可选产物缺失）
-    const optionalWarnings = [
-      ...warnings,
-      ...missingArtifacts.filter(artifact => !artifact.required).map(artifact => `缺少可选产物: ${artifact.description}`)
-    ]
+    const optionalMissing = missingArtifacts.filter(artifact => !artifact.required)
+    const uniqueWarnings = [...new Set(warnings)]
 
-    if (optionalWarnings.length > 0) {
+    if (uniqueWarnings.length > 0 || optionalMissing.length > 0) {
       lines.push('')
       lines.push('警告:')
-      optionalWarnings.forEach(warning => {
+
+      // 显示可选产物缺失
+      optionalMissing.forEach(artifact => {
+        lines.push(`  ⚠️ 缺少可选产物: ${artifact.description}`)
+      })
+
+      // 显示其他警告（去重后）
+      uniqueWarnings.forEach(warning => {
         lines.push(`  ⚠️ ${warning}`)
       })
     }

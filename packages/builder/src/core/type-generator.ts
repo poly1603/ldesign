@@ -399,9 +399,6 @@ export class TypeGenerator {
         })
 
       logger.info(`找到 ${sourceFiles.length} 个源文件需要生成类型声明`)
-      sourceFiles.forEach(sf => {
-        logger.info(`  - ${sf.fileName}`)
-      })
 
       for (const sourceFile of sourceFiles) {
         // 计算相对于 src 目录的路径
@@ -419,12 +416,8 @@ export class TypeGenerator {
           (fileName, data) => {
             if (fileName.endsWith('.d.ts')) {
               // 使用计算出的输出路径
-              logger.info(`正在写入类型文件: ${outputPath}`)
-              logger.info(`原始文件名: ${fileName}`)
-              logger.info(`数据长度: ${data.length}`)
               writeFileSync(outputPath, data)
               generatedFiles.push(outputPath)
-              logger.info(`成功写入类型文件: ${outputPath}`)
             }
           },
           undefined,
@@ -436,7 +429,7 @@ export class TypeGenerator {
           const errors = emitResult.diagnostics.map(diagnostic =>
             ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'),
           )
-          logger.warn(`文件 ${sourceFile.fileName} 编译警告:`, errors.join('\n'))
+          logger.warn(`文件 ${sourceFile.fileName} 编译警告: ${errors.join(', ')}`)
         }
       }
 
