@@ -15,7 +15,7 @@ export class LdButton {
   @Prop({ reflect: true }) disabled: boolean = false
   @Prop({ reflect: true }) loading: boolean = false
 
-  @Event() ldClick: EventEmitter<MouseEvent>
+  @Event() ldClick!: EventEmitter<MouseEvent>
 
   private handleClick = (ev: MouseEvent) => {
     if (this.disabled || this.loading) {
@@ -42,10 +42,10 @@ export class LdButton {
         <button class={classes} disabled={this.disabled} onClick={this.handleClick}>
           {this.loading
             ? (
-                <span class="ld-button__loading" aria-hidden="true">
-                  <span class="ld-button__loading-icon" />
-                </span>
-              )
+              <span class="ld-button__loading" aria-hidden="true">
+                <span class="ld-button__loading-icon" />
+              </span>
+            )
             : null}
           <span class="ld-button__content">
             <slot />

@@ -27,8 +27,6 @@ export class TypeGenerator {
     scanResult: ProjectScanResult,
     buildOptions: BuildOptions,
   ): Promise<TypeGenerationResult> {
-    logger.info('开始生成TypeScript声明文件...')
-
     const startTime = Date.now()
     const generatedFiles: string[] = []
     const errors: string[] = []
@@ -36,7 +34,6 @@ export class TypeGenerator {
     try {
       // 检查是否需要生成类型文件
       if (!this.shouldGenerateTypes(scanResult, buildOptions)) {
-        logger.info('跳过类型生成（项目不包含TypeScript文件）')
         return {
           success: true,
           generatedFiles: [],
@@ -49,7 +46,15 @@ export class TypeGenerator {
       await this.createProgram(scanResult, buildOptions)
 
       if (!this.program || !this.checker) {
-        throw new Error('无法创建TypeScript程序')
+        const error = '无法创建TypeScript程序'
+        logger.error(error)
+        errors.push(error)
+        return {
+          success: false,
+          generatedFiles,
+          errors,
+          generationTime: Date.now() - startTime,
+        }
       }
 
       // 生成声明文件
@@ -68,13 +73,23 @@ export class TypeGenerator {
         generatedFiles.push(...separateFiles)
       }
 
+      // 确保至少生成了主入口的类型文件
+      if (generatedFiles.length === 0) {
+        const forceGeneratedFile = await this.forceGenerateMainTypes(scanResult, typeOptions)
+        if (forceGeneratedFile) {
+          generatedFiles.push(forceGeneratedFile)
+        }
+      }
+
       // 生成package.json的types字段建议
       await this.generatePackageTypesField(scanResult, buildOptions, generatedFiles)
 
       const endTime = Date.now()
       const generationTime = endTime - startTime
 
-      logger.info(`类型生成完成，耗时 ${generationTime}ms，生成 ${generatedFiles.length} 个文件`)
+      if (generatedFiles.length === 0) {
+        logger.warn(`类型生成完成，但没有生成任何文件，耗时 ${generationTime}ms`)
+      }
 
       return {
         success: true,
@@ -85,8 +100,12 @@ export class TypeGenerator {
     }
     catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
+      const errorStack = error instanceof Error ? error.stack : undefined
       errors.push(errorMessage)
       logger.error('类型生成失败:', error)
+      if (errorStack) {
+        logger.error('错误堆栈:', errorStack)
+      }
 
       return {
         success: false,
@@ -106,6 +125,7 @@ export class TypeGenerator {
   ): boolean {
     // 用户明确禁用
     if (buildOptions.dts === false) {
+      logger.info('类型生成已被用户禁用 (dts: false)')
       return false
     }
 
@@ -114,7 +134,15 @@ export class TypeGenerator {
       file.type === 'typescript' || file.type === 'tsx',
     )
 
-    return hasTypeScriptFiles
+    // 更宽松的检测：如果有.ts或.tsx文件，或者存在tsconfig.json
+    const hasTsConfig = this.findTsConfig() !== null
+    const hasTypeScriptExtensions = scanResult.files.some(file =>
+      file.path.endsWith('.ts') || file.path.endsWith('.tsx')
+    )
+
+    const shouldGenerate = hasTypeScriptFiles || hasTsConfig || hasTypeScriptExtensions
+
+    return shouldGenerate
   }
 
   /**
@@ -134,16 +162,27 @@ export class TypeGenerator {
       if (tsconfigPath && existsSync(tsconfigPath)) {
         // 使用现有的tsconfig.json
         const configFile = ts.readConfigFile(tsconfigPath, ts.sys.readFile)
+
+        if (configFile.error) {
+          logger.warn('读取tsconfig.json时出现错误:', ts.flattenDiagnosticMessageText(configFile.error.messageText, '\n'))
+        }
+
         const parsedConfig = ts.parseJsonConfigFileContent(
           configFile.config,
           ts.sys,
           dirname(tsconfigPath),
         )
 
+        if (parsedConfig.errors.length > 0) {
+          const errors = parsedConfig.errors.map(err => ts.flattenDiagnosticMessageText(err.messageText, '\n'))
+          logger.warn('解析tsconfig.json时出现错误:', errors.join('\n'))
+        }
+
         compilerOptions = {
           ...parsedConfig.options,
           declaration: true,
           emitDeclarationOnly: true,
+          noEmit: false, // 强制允许输出
           outDir: resolve(buildOptions.root || process.cwd(), 'types'),
           rootDir: resolve(buildOptions.root || process.cwd(), 'src'), // 设置根目录为 src
         }
@@ -158,6 +197,7 @@ export class TypeGenerator {
           moduleResolution: ts.ModuleResolutionKind.NodeJs,
           declaration: true,
           emitDeclarationOnly: true,
+          noEmit: false, // 强制允许输出
           outDir: resolve(buildOptions.root || process.cwd(), 'types'),
           rootDir: resolve(buildOptions.root || process.cwd(), 'src'), // 设置根目录为 src
           strict: true,
@@ -166,15 +206,51 @@ export class TypeGenerator {
           forceConsistentCasingInFileNames: true,
         }
 
-        // 收集所有TypeScript文件
+        // 收集所有TypeScript文件 - 更宽松的检测
         rootNames = scanResult.files
-          .filter(file => file.type === 'typescript' || file.type === 'tsx')
+          .filter(file => {
+            const isTs = file.type === 'typescript' || file.type === 'tsx' ||
+              file.path.endsWith('.ts') || file.path.endsWith('.tsx')
+            return isTs
+          })
           .map(file => file.path)
+
+        // 如果没有找到TypeScript文件，尝试手动查找
+        if (rootNames.length === 0) {
+          const projectRoot = resolve(buildOptions.root || process.cwd())
+          const srcDir = resolve(projectRoot, 'src')
+
+          const possibleFiles = [
+            resolve(srcDir, 'index.ts'),
+            resolve(srcDir, 'index.tsx'),
+            resolve(srcDir, 'main.ts'),
+            resolve(srcDir, 'main.tsx'),
+          ]
+
+          for (const file of possibleFiles) {
+            if (existsSync(file)) {
+              rootNames.push(file)
+            }
+          }
+        }
+
+        logger.info(`收集到 ${rootNames.length} 个TypeScript文件`)
+      }
+
+      if (rootNames.length === 0) {
+        throw new Error('没有找到任何TypeScript文件')
       }
 
       // 创建程序
       this.program = ts.createProgram(rootNames, compilerOptions)
       this.checker = this.program.getTypeChecker()
+
+      // 检查预编译诊断
+      const diagnostics = ts.getPreEmitDiagnostics(this.program)
+      if (diagnostics.length > 0) {
+        const errors = diagnostics.map(d => ts.flattenDiagnosticMessageText(d.messageText, '\n'))
+        logger.warn('TypeScript预编译诊断:', errors.join('\n'))
+      }
     }
     catch (error) {
       logger.error('创建TypeScript程序失败:', error)
@@ -277,7 +353,6 @@ export class TypeGenerator {
       }
 
       if (existsSync(outputPath)) {
-        logger.info(`生成bundled类型文件: ${outputPath}`)
         return outputPath
       }
 
@@ -344,8 +419,12 @@ export class TypeGenerator {
           (fileName, data) => {
             if (fileName.endsWith('.d.ts')) {
               // 使用计算出的输出路径
+              logger.info(`正在写入类型文件: ${outputPath}`)
+              logger.info(`原始文件名: ${fileName}`)
+              logger.info(`数据长度: ${data.length}`)
               writeFileSync(outputPath, data)
               generatedFiles.push(outputPath)
+              logger.info(`成功写入类型文件: ${outputPath}`)
             }
           },
           undefined,
@@ -413,6 +492,131 @@ export class TypeGenerator {
     }
     catch (error) {
       logger.warn('处理package.json types字段失败:', error)
+    }
+  }
+
+  /**
+   * 强制生成主入口类型文件
+   */
+  private async forceGenerateMainTypes(
+    scanResult: ProjectScanResult,
+    options: TypeGenerationOptions,
+  ): Promise<string | null> {
+    if (!this.program) {
+      logger.error('TypeScript程序未初始化，无法强制生成类型文件')
+      return null
+    }
+
+    try {
+      // 确保输出目录存在
+      const outDir = resolve(options.outDir || 'dist/types')
+      if (!existsSync(outDir)) {
+        mkdirSync(outDir, { recursive: true })
+      }
+
+      const outputPath = join(outDir, 'index.d.ts')
+      logger.info(`强制生成主入口类型文件: ${outputPath}`)
+
+      // 获取项目根目录和源码目录
+      const projectRoot = resolve(scanResult.root)
+      const srcDir = resolve(projectRoot, 'src')
+
+      // 查找主入口文件
+      const possibleEntries = [
+        resolve(srcDir, 'index.ts'),
+        resolve(srcDir, 'index.tsx'),
+        resolve(srcDir, 'main.ts'),
+        resolve(srcDir, 'main.tsx'),
+      ]
+
+      let mainEntryFile = null
+      for (const entry of possibleEntries) {
+        if (existsSync(entry)) {
+          mainEntryFile = entry
+          break
+        }
+      }
+
+      if (!mainEntryFile) {
+        logger.warn('未找到主入口文件，无法强制生成类型文件')
+        return null
+      }
+
+      logger.info(`找到主入口文件: ${mainEntryFile}`)
+
+      // 获取主入口文件的源文件对象
+      const sourceFile = this.program.getSourceFile(mainEntryFile)
+      if (!sourceFile) {
+        logger.warn(`无法获取源文件对象: ${mainEntryFile}`)
+        return null
+      }
+
+      // 生成类型文件
+      let generatedFile = null
+      const emitResult = this.program.emit(
+        sourceFile,
+        (fileName, data) => {
+          if (fileName.endsWith('.d.ts')) {
+            // 计算相对于 src 目录的路径
+            const relativePath = relative(srcDir, sourceFile.fileName)
+            const finalOutputPath = resolve(outDir, relativePath.replace(/\.tsx?$/, '.d.ts'))
+
+            // 确保输出目录存在
+            const outputDirPath = dirname(finalOutputPath)
+            if (!existsSync(outputDirPath)) {
+              mkdirSync(outputDirPath, { recursive: true })
+            }
+
+            logger.info(`强制生成类型文件: ${finalOutputPath}`)
+            logger.info(`文件名: ${fileName}, 数据长度: ${data.length}`)
+            writeFileSync(finalOutputPath, data)
+            generatedFile = finalOutputPath
+            logger.info(`成功写入强制生成的类型文件: ${finalOutputPath}`)
+          }
+        },
+        undefined,
+        true,
+      )
+
+      // 处理编译错误
+      if (emitResult.diagnostics.length > 0) {
+        const errors = emitResult.diagnostics.map(diagnostic =>
+          ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'),
+        )
+        logger.warn(`强制生成类型文件时出现警告:`, errors.join('\n'))
+      }
+
+      // 如果通过emit回调生成了文件，直接返回
+      if (generatedFile && existsSync(generatedFile)) {
+        logger.info(`强制生成类型文件成功: ${generatedFile}`)
+        return generatedFile
+      }
+
+      // 检查预期的输出路径
+      if (existsSync(outputPath)) {
+        logger.info(`在预期路径找到类型文件: ${outputPath}`)
+        return outputPath
+      }
+
+      // 如果index.d.ts不存在，检查是否生成了其他文件
+      const checkPaths = [
+        resolve(outDir, 'index.d.ts'),
+        resolve(outDir, 'main.d.ts'),
+      ]
+
+      for (const checkPath of checkPaths) {
+        if (existsSync(checkPath)) {
+          logger.info(`找到替代类型文件: ${checkPath}`)
+          return checkPath
+        }
+      }
+
+      logger.warn('强制生成类型文件失败，没有找到任何生成的文件')
+      return null
+    }
+    catch (error) {
+      logger.error('强制生成类型文件失败:', error)
+      return null
     }
   }
 

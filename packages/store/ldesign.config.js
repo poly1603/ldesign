@@ -1,6 +1,4 @@
-import { defineConfig } from '@ldesign/builder'
-
-export default defineConfig({
+export default {
   // 基础配置
   root: process.cwd(),
   outDir: 'dist',
@@ -30,5 +28,5 @@ export default defineConfig({
   },
   
   // UMD 格式的库名称
-  name: 'LDesignI18n'
-})
+  name: 'LDesignStore'
+}

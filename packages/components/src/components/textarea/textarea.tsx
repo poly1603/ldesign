@@ -26,10 +26,10 @@ export class LdTextarea {
 
   @State() private focused: boolean = false
 
-  @Event() ldInput: EventEmitter<string>
-  @Event() ldChange: EventEmitter<string>
-  @Event() ldFocus: EventEmitter<FocusEvent>
-  @Event() ldBlur: EventEmitter<FocusEvent>
+  @Event() ldInput!: EventEmitter<string>
+  @Event() ldChange!: EventEmitter<string>
+  @Event() ldFocus!: EventEmitter<FocusEvent>
+  @Event() ldBlur!: EventEmitter<FocusEvent>
 
   private textareaEl?: HTMLTextAreaElement
 
@@ -116,8 +116,8 @@ export class LdTextarea {
           />
           {this.showCount
             ? (
-                <div class="ld-textarea__count">{max ? `${length}/${max}` : length}</div>
-              )
+              <div class="ld-textarea__count">{max ? `${length}/${max}` : length}</div>
+            )
             : null}
         </div>
       </Host>
