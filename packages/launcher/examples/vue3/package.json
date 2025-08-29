@@ -2,6 +2,18 @@
   "name": "launcher-example-vue3",
   "type": "module",
   "private": true,
-  "description": "Vue3 example powered by @ldesign/launcher programmatic API",
-  "license": "MIT"
+  "version": "0.0.0",
+  "description": "Vue3 example powered by @ldesign/launcher",
+  "license": "MIT",
+  "scripts": {
+    "dev": "ldesign-launcher dev",
+    "build": "ldesign-launcher build",
+    "preview": "ldesign-launcher preview"
+  },
+  "dependencies": {
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@ldesign/launcher": "workspace:*"
+  }
 }

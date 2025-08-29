@@ -173,11 +173,30 @@ export class ProjectDetector implements IProjectDetector {
         'vue.config.ts',
         'nuxt.config.js',
         'nuxt.config.ts',
+        'src/App.vue',
+        'src/main.js',
+        'src/main.ts',
         // React 特征文件
         'next.config.js',
         'next.config.ts',
         'gatsby-config.js',
         'gatsby-config.ts',
+        'src/App.jsx',
+        'src/App.tsx',
+        'src/index.jsx',
+        'src/index.tsx',
+        // Lit 特征文件
+        'src/my-element.js',
+        'src/my-element.ts',
+        'lit-element.js',
+        'lit-element.ts',
+        // 原生 HTML 特征文件
+        'index.html',
+        'src/index.html',
+        'public/index.html',
+        'src/script.js',
+        'src/style.css',
+        'src/styles.css',
         // Vite 配置文件
         'vite.config.js',
         'vite.config.ts',
@@ -201,6 +220,12 @@ export class ProjectDetector implements IProjectDetector {
           // 文件不存在，继续检查下一个
         }
       }
+
+      // 检测 Lit 组件文件模式
+      await this.detectLitComponents(projectRoot, detectedFiles)
+
+      // 检测原生 HTML 项目特征
+      await this.detectNativeHtmlFeatures(projectRoot, detectedFiles)
 
       report.detectedFiles.push(...detectedFiles)
       step.success = true
@@ -249,8 +274,8 @@ export class ProjectDetector implements IProjectDetector {
         frameworks.push('React')
       }
 
-      // Lit 检测
-      if (allDeps.lit) {
+      // Lit 检测 - 增强检测
+      if (allDeps.lit || allDeps['lit-element'] || allDeps['@lit/reactive-element']) {
         frameworks.push('Lit')
       }
 
@@ -321,8 +346,8 @@ export class ProjectDetector implements IProjectDetector {
       }
     }
 
-    // Lit 项目检测
-    if (allDeps.lit) {
+    // Lit 项目检测 - 增强检测逻辑
+    if (allDeps.lit || allDeps['lit-element'] || allDeps['@lit/reactive-element'] || this.hasLitFeatures(detectedFiles)) {
       confidence += 90
       report.confidence = Math.min(confidence, 100)
       return 'lit'
@@ -340,6 +365,13 @@ export class ProjectDetector implements IProjectDetector {
       confidence += 90
       report.confidence = Math.min(confidence, 100)
       return 'angular'
+    }
+
+    // 原生 HTML 项目检测 - 新增
+    if (this.isNativeHtmlProject(detectedFiles, allDeps)) {
+      confidence += 70
+      report.confidence = Math.min(confidence, 100)
+      return 'html'
     }
 
     // TypeScript 项目检测
@@ -371,6 +403,8 @@ export class ProjectDetector implements IProjectDetector {
         return 'react'
       case 'lit':
         return 'lit'
+      case 'html':
+        return 'html'
       case 'svelte':
       case 'angular':
       case 'vanilla':
@@ -530,6 +564,131 @@ export class ProjectDetector implements IProjectDetector {
     catch {
       return undefined
     }
+  }
+
+  /**
+   * 检测 Lit 组件文件
+   * @param projectRoot 项目根目录
+   * @param detectedFiles 已检测到的文件列表
+   */
+  private async detectLitComponents(projectRoot: string, detectedFiles: string[]): Promise<void> {
+    try {
+      // 检查 src 目录下的 JS/TS 文件是否包含 Lit 相关代码
+      const srcDir = path.join(projectRoot, 'src')
+      try {
+        const files = await fs.readdir(srcDir)
+        for (const file of files) {
+          if (file.endsWith('.js') || file.endsWith('.ts')) {
+            const filePath = path.join(srcDir, file)
+            const content = await fs.readFile(filePath, 'utf-8')
+
+            // 检查是否包含 Lit 相关导入或代码
+            if (content.includes('from \'lit\'') ||
+              content.includes('from "lit"') ||
+              content.includes('LitElement') ||
+              content.includes('@customElement') ||
+              content.includes('html`') ||
+              content.includes('css`')) {
+              detectedFiles.push(`src/${file}`)
+            }
+          }
+        }
+      } catch {
+        // src 目录不存在或无法读取
+      }
+    } catch {
+      // 忽略错误
+    }
+  }
+
+  /**
+   * 检测原生 HTML 项目特征
+   * @param projectRoot 项目根目录
+   * @param detectedFiles 已检测到的文件列表
+   */
+  private async detectNativeHtmlFeatures(projectRoot: string, detectedFiles: string[]): Promise<void> {
+    try {
+      // 检查是否有 index.html 文件
+      const indexHtmlPath = path.join(projectRoot, 'index.html')
+      try {
+        await fs.access(indexHtmlPath)
+        const content = await fs.readFile(indexHtmlPath, 'utf-8')
+
+        // 检查 HTML 文件是否包含原生特征（没有框架特定的标记）
+        const hasVueFeatures = content.includes('{{ ') || content.includes('v-') || content.includes('#app')
+        const hasReactFeatures = content.includes('react') || content.includes('ReactDOM')
+        const hasAngularFeatures = content.includes('ng-') || content.includes('angular')
+
+        if (!hasVueFeatures && !hasReactFeatures && !hasAngularFeatures) {
+          detectedFiles.push('index.html')
+
+          // 检查是否有对应的 CSS 和 JS 文件
+          const possibleFiles = [
+            'style.css',
+            'styles.css',
+            'main.css',
+            'script.js',
+            'main.js',
+            'app.js'
+          ]
+
+          for (const file of possibleFiles) {
+            try {
+              await fs.access(path.join(projectRoot, file))
+              detectedFiles.push(file)
+            } catch {
+              // 文件不存在
+            }
+          }
+        }
+      } catch {
+        // index.html 不存在
+      }
+    } catch {
+      // 忽略错误
+    }
+  }
+
+  /**
+   * 检查是否有 Lit 特征
+   * @param detectedFiles 检测到的文件列表
+   * @returns 是否有 Lit 特征
+   */
+  private hasLitFeatures(detectedFiles: string[]): boolean {
+    return detectedFiles.some(file =>
+      file.includes('lit-element') ||
+      file.includes('my-element') ||
+      (file.startsWith('src/') && (file.endsWith('.js') || file.endsWith('.ts')))
+    )
+  }
+
+  /**
+   * 检查是否是原生 HTML 项目
+   * @param detectedFiles 检测到的文件列表
+   * @param allDeps 所有依赖
+   * @returns 是否是原生 HTML 项目
+   */
+  private isNativeHtmlProject(detectedFiles: string[], allDeps: Record<string, string>): boolean {
+    // 有 index.html 文件
+    const hasIndexHtml = detectedFiles.includes('index.html')
+
+    // 有基本的 CSS/JS 文件
+    const hasBasicFiles = detectedFiles.some(file =>
+      file.endsWith('.css') ||
+      file.endsWith('.js') ||
+      file === 'script.js' ||
+      file === 'main.js' ||
+      file === 'app.js'
+    )
+
+    // 没有主要框架依赖
+    const hasNoFrameworkDeps = !allDeps.vue &&
+      !allDeps.react &&
+      !allDeps.lit &&
+      !allDeps.svelte &&
+      !allDeps['@angular/core']
+
+    return hasIndexHtml && hasBasicFiles && hasNoFrameworkDeps
   }
 }
 

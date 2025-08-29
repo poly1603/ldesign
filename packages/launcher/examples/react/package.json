@@ -2,6 +2,21 @@
   "name": "launcher-example-react",
   "type": "module",
   "private": true,
-  "description": "React example powered by @ldesign/launcher programmatic API",
-  "license": "MIT"
+  "version": "0.0.0",
+  "description": "React example powered by @ldesign/launcher",
+  "license": "MIT",
+  "scripts": {
+    "dev": "ldesign-launcher dev",
+    "build": "ldesign-launcher build",
+    "preview": "ldesign-launcher preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@ldesign/launcher": "workspace:*",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0"
+  }
 }

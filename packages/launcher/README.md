@@ -4,7 +4,7 @@
 
 ## 特性
 
-- 🚀 **快速创建项目** - 支持 Vue2/3、React、Lit、Svelte、Angular、Vanilla/TS 等多种框架
+- 🚀 **快速创建项目** - 支持 Vue2/3、React、Lit、原生HTML、Svelte、Angular、Vanilla/TS 等多种框架
 - 🔧 **智能配置管理** - 自动检测项目类型并生成最优配置
 - 📦 **插件管理** - 内置常用插件，支持自定义插件扩展
 - 🛠️ **开发工具集成** - 集成开发服务器、构建工具、预览服务器
@@ -66,8 +66,11 @@ import {
   createLauncher 
 } from '@ldesign/launcher';
 
-// 快速创建项目
+// 快速创建不同类型的项目
 await createProject('./my-vue-app', 'vue3');
+await createProject('./my-react-app', 'react');
+await createProject('./my-lit-app', 'lit');
+await createProject('./my-html-app', 'html');
 
 // 快速启动开发服务器
 const server = await startDev('./my-vue-app', { port: 3000 });
@@ -214,11 +217,26 @@ launcher.configure({
 - `vue3` - Vue 3.x 项目
 - `react` - React 项目
 - `react-next` - Next.js 项目
-- `lit` - Lit 项目
+- `lit` - Lit 元素项目（Web Components）
+- `html` - 原生 HTML 项目（纯 HTML/CSS/JS）
 - `svelte` - Svelte 项目
 - `angular` - Angular 项目
 - `vanilla` - 原生 JavaScript 项目
 - `vanilla-ts` - 原生 TypeScript 项目
+
+#### 新增项目类型详解
+
+**Lit 项目 (`lit`)**
+- 基于 Lit 3.0 的 Web Components 开发
+- 支持 TypeScript 和装饰器语法
+- 自动配置 Lit 相关的构建选项
+- 包含示例组件和最佳实践
+
+**原生 HTML 项目 (`html`)**
+- 纯 HTML/CSS/JavaScript 开发
+- 无框架依赖，轻量级
+- 适合静态网站和简单交互页面
+- 支持现代 ES6+ 语法和模块化
 
 ### 类型定义
 

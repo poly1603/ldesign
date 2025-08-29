@@ -12,11 +12,16 @@ import { ViteLauncher } from './core/ViteLauncher'
 // 核心类导出
 export { ViteLauncher } from './core/ViteLauncher'
 
+export { AssetManager, assetManager } from './services/AssetManager'
 export { ConfigManager } from './services/ConfigManager'
+export { EnvironmentOptimizer, environmentOptimizer } from './services/EnvironmentOptimizer'
 // 服务类导出
 export { ErrorHandler } from './services/ErrorHandler'
+export { NetworkManager, networkManager } from './services/NetworkManager'
+export { PluginEcosystem, pluginEcosystem } from './services/PluginEcosystem'
 export { PluginManager, pluginManager } from './services/PluginManager'
 export { ProjectDetector } from './services/ProjectDetector'
+export { SecurityManager, securityManager } from './services/SecurityManager'
 
 // 默认配置
 const defaultOptions: LauncherOptions = {
@@ -65,6 +70,47 @@ export type {
 
   RunMode,
 } from './types'
+
+// 网络配置工具导出
+export {
+  ProxyTemplates,
+  ProxyConfigBuilder,
+  ProxyConfigValidator,
+  ProxyConfigMerger,
+  createProxyBuilder,
+  createApiProxy,
+  createDevProxy,
+  createMicroserviceProxy,
+} from './utils/proxy-helper'
+
+// SSL 证书工具导出
+export {
+  SSLCertificateGenerator,
+  generateDevSSLCert,
+  saveDevSSLCert,
+} from './utils/ssl-generator'
+
+// 字体处理工具导出
+export {
+  FontProcessor,
+  optimizeChineseFont,
+  generateWebFont,
+} from './utils/font-processor'
+
+// 插件生态导出
+export {
+  PluginPresets,
+  PluginFactory,
+  PluginConfigHelper,
+  createQuickPlugins,
+  // 优化插件
+  createCompressionPlugin,
+  createCodeSplittingPlugin,
+  // 开发插件
+  createHMREnhancedPlugin,
+  // 分析插件
+  createBundleAnalyzerPlugin,
+} from './plugins'
 
 // 常量导出
 export { ERROR_CODES } from './types'
@@ -161,4 +207,17 @@ export function createLauncher(options?: LauncherOptions): ViteLauncher {
 export async function detectProject(projectPath?: string) {
   const detector = new (await import('./services/ProjectDetector')).ProjectDetector()
   return detector.detectProjectType(projectPath || process.cwd())
+}
+
+// 导出配置相关
+export { loadUserConfig, mergeConfig } from './utils/config-loader'
+
+/**
+ * 定义 Launcher 配置的辅助函数
+ * 提供类型提示和智能补全
+ * @param config 配置对象
+ * @returns 配置对象
+ */
+export function defineConfig(config: import('./types').LauncherConfig): import('./types').LauncherConfig {
+  return config
 }

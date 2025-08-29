@@ -8,12 +8,12 @@ export type LogLevel = 'error' | 'warn' | 'info' | 'silent';
 /**
  * 支持的前端框架类型
  */
-export type FrameworkType = 'vue2' | 'vue3' | 'react' | 'vanilla' | 'vanilla-ts' | 'lit' | 'svelte';
+export type FrameworkType = 'vue2' | 'vue3' | 'react' | 'vanilla' | 'vanilla-ts' | 'html' | 'lit' | 'svelte';
 
 /**
  * 项目类型（更详细的分类）
  */
-export type ProjectType = 'vue2' | 'vue3' | 'react' | 'react-next' | 'lit' | 'svelte' | 'angular' | 'vanilla' | 'vanilla-ts' | 'unknown';
+export type ProjectType = 'vue2' | 'vue3' | 'react' | 'react-next' | 'lit' | 'svelte' | 'angular' | 'vanilla' | 'vanilla-ts' | 'html' | 'unknown';
 
 /**
  * CSS预处理器类型
@@ -168,9 +168,9 @@ export interface PresetConfig {
 }
 
 /**
- * 插件配置信息
+ * 插件配置信息（旧版本，保持向后兼容）
  */
-export interface PluginConfig {
+export interface LegacyPluginConfig {
   /** 插件名称 */
   name: string;
   /** 插件包名 */
@@ -332,9 +332,9 @@ export interface IPluginManager {
   /** 加载框架插件 */
   loadFrameworkPlugins(framework: FrameworkType): Promise<PluginOption[]>;
   /** 注册自定义插件 */
-  registerPlugin(plugin: PluginConfig): void;
+  registerPlugin(plugin: LegacyPluginConfig): void;
   /** 获取所有可用插件 */
-  getAvailablePlugins(): Promise<PluginConfig[]>;
+  getAvailablePlugins(): Promise<LegacyPluginConfig[]>;
   /** 解析插件选项 */
   resolvePluginOptions(pluginName: string, options?: Record<string, any>): Record<string, any>;
 }
@@ -371,3 +371,272 @@ export const ERROR_CODES = {
 } as const;
 
 export type ErrorCode = typeof ERROR_CODES[keyof typeof ERROR_CODES];
+
+/**
+ * Launcher 配置文件类型
+ */
+export interface LauncherConfig {
+  /**
+   * Vite 配置
+   */
+  vite?: {
+    plugins?: any[]
+    define?: Record<string, any>
+    resolve?: {
+      alias?: Record<string, string>
+    }
+    server?: {
+      port?: number
+      host?: string
+      open?: boolean
+      cors?: boolean
+    }
+    build?: {
+      target?: string
+      outDir?: string
+      assetsDir?: string
+      sourcemap?: boolean
+      minify?: boolean | string
+      rollupOptions?: any
+    }
+    css?: {
+      preprocessorOptions?: any
+      modules?: any
+    }
+    [key: string]: any
+  }
+
+  /**
+   * 网络配置
+   */
+  network?: {
+    /** 代理配置 */
+    proxy?: Record<string, any>
+    /** 路径别名配置 */
+    alias?: Record<string, string>
+    /** CORS 配置 */
+    cors?: Record<string, any>
+    /** 主机配置 */
+    host?: string
+    /** 端口配置 */
+    port?: number
+    /** 是否自动打开浏览器 */
+    open?: boolean | string
+    /** 是否启用 HTTPS */
+    https?: boolean
+    /** 网络超时配置 */
+    timeout?: {
+      connect?: number
+      read?: number
+      write?: number
+    }
+  }
+
+  /**
+   * 安全配置
+   */
+  security?: {
+    /** HTTPS 配置 */
+    https?: Record<string, any>
+    /** SSL 配置 */
+    ssl?: Record<string, any>
+    /** 安全头配置 */
+    headers?: Record<string, any>
+    /** CSP 配置 */
+    csp?: Record<string, any>
+    /** CORS 安全配置 */
+    cors?: Record<string, any>
+  }
+
+  /**
+   * 资源配置
+   */
+  assets?: {
+    /** 字体优化配置 */
+    fonts?: Record<string, any>
+    /** SVG 处理配置 */
+    svg?: {
+      /** 是否启用 SVG 组件转换 */
+      componentGeneration?: boolean
+      /** 是否启用 SVG 优化 */
+      optimization?: boolean
+      /** 是否生成 SVG 精灵图 */
+      sprite?: boolean
+      /** SVG 优化选项 */
+      optimizationOptions?: Record<string, any>
+      /** 组件生成选项 */
+      componentOptions?: Record<string, any>
+      /** 精灵图生成选项 */
+      spriteOptions?: Record<string, any>
+    }
+    /** 图片优化配置 */
+    images?: Record<string, any>
+    /** 静态资源目录 */
+    staticDir?: string
+    /** 输出目录 */
+    outputDir?: string
+    /** 是否启用资源哈希 */
+    hash?: boolean
+  }
+
+  /**
+   * 插件生态配置
+   */
+  plugins?: {
+    /** 内置插件配置 */
+    builtin?: {
+      /** 压缩插件 */
+      compression?: Record<string, any>
+      /** 代码分割插件 */
+      codeSplitting?: Record<string, any>
+      /** 热重载增强插件 */
+      hmrEnhanced?: Record<string, any>
+      /** 构建分析插件 */
+      bundleAnalyzer?: Record<string, any>
+    }
+    /** 外部插件 */
+    external?: string[]
+    /** 禁用的插件 */
+    disabled?: string[]
+    /** 插件加载顺序 */
+    order?: string[]
+  }
+
+  /**
+   * 环境优化配置
+   */
+  optimization?: {
+    /** 热重载优化 */
+    hotReload?: Record<string, any>
+    /** 错误提示优化 */
+    errorDisplay?: Record<string, any>
+    /** 构建分析 */
+    buildAnalysis?: Record<string, any>
+    /** 性能监控 */
+    performance?: Record<string, any>
+    /** 缓存优化 */
+    cache?: Record<string, any>
+    /** 开发服务器优化 */
+    devServer?: Record<string, any>
+    /** 构建优化 */
+    build?: Record<string, any>
+  }
+
+  /**
+   * 项目类型覆盖
+   */
+  projectType?: ProjectType
+
+
+
+  /**
+   * 开发服务器配置
+   */
+  dev?: DevOptions
+
+  /**
+   * 构建配置
+   */
+  build?: BuildOptions
+
+  /**
+   * 预览配置
+   */
+  preview?: PreviewOptions
+}
+
+// 导出网络配置相关类型
+export type {
+  AliasConfig,
+  AliasResolveOptions,
+  AliasResolveResult,
+  CORSConfig,
+  INetworkManager,
+  NetworkConfig,
+  NetworkConfigValidation,
+  NetworkStats,
+  ProxyConfig,
+  ProxyEventData,
+  ProxyEventType,
+  ProxyMatchResult,
+  ProxyMiddlewareOptions,
+  ProxyRule,
+} from './network'
+
+// 导出安全配置相关类型
+export type {
+  CertificateStorageOptions,
+  CertificateValidation,
+  CORSSecurityConfig,
+  CSPConfig,
+  HTTPSOptions,
+  ISecurityManager,
+  SecurityConfig,
+  SecurityEventData,
+  SecurityEventType,
+  SecurityHeaders,
+  SecurityStats,
+  SSLCertificate,
+  SSLCertGenerationOptions,
+  SSLConfig,
+} from './security'
+
+// 导出资源处理相关类型
+export type {
+  AssetConfig,
+  AssetEventData,
+  AssetEventType,
+  AssetProcessingResult,
+  AssetStats,
+  ChineseCharsetType,
+  FontInfo,
+  FontOptimizationConfig,
+  FontProcessingResult,
+  IAssetManager,
+  ImageOptimizationConfig,
+  ImageProcessingResult,
+  SVGComponentOptions,
+  SVGInfo,
+  SVGOptimizationOptions,
+  SVGProcessingResult,
+  SVGSpriteOptions,
+} from './assets'
+
+// 导出插件生态相关类型
+export type {
+  BuiltinPlugin,
+  BuiltinPluginType,
+  BundleAnalyzerPluginConfig,
+  CodeSplittingPluginConfig,
+  CompressionPluginConfig,
+  ErrorOverlayPluginConfig,
+  HMREnhancedPluginConfig,
+  IPluginEcosystem,
+  PerformancePluginConfig,
+  PluginConfig,
+  PluginEcosystemConfig,
+  PluginEventData,
+  PluginEventType,
+  PluginInfo,
+  PluginInstallResult,
+  PluginSearchResult,
+  PluginStats,
+  PreloadPluginConfig,
+} from './plugins'
+
+// 导出环境优化相关类型
+export type {
+  BuildAnalysisConfig,
+  BuildOptimizationConfig,
+  CacheOptimizationConfig,
+  DevServerOptimizationConfig,
+  EnvironmentOptimizationConfig,
+  ErrorDisplayConfig,
+  HotReloadOptimizationConfig,
+  IEnvironmentOptimizer,
+  OptimizationEventData,
+  OptimizationEventType,
+  OptimizationStats,
+  OptimizationSuggestion,
+  PerformanceMonitoringConfig,
+} from './optimization'

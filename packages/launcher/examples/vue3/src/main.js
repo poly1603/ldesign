@@ -1,6 +1,4 @@
-import { createApp } from 'https://esm.sh/vue@3'
+import { createApp } from 'vue'
+import App from './App.vue'
 
-createApp({
-  data: () => ({ msg: 'Hello Vue 3 + @ldesign/launcher' }),
-  template: '<h1>{{ msg }}</h1>',
-}).mount('#app')
+createApp(App).mount('#app')

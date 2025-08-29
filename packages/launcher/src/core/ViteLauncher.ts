@@ -17,7 +17,8 @@ import path from 'node:path'
 import process from 'node:process'
 import { build, createServer, preview } from 'vite'
 import { ERROR_CODES } from '@/types'
-import { ConfigManager, ErrorHandler, PluginManager, ProjectDetector } from '../services'
+import { ConfigManager, EnvironmentOptimizer, ErrorHandler, NetworkManager, PluginEcosystem, PluginManager, ProjectDetector, SecurityManager } from '../services'
+import { loadUserConfig, mergeConfig } from '../utils/config-loader'
 
 /**
  * Vite 前端项目启动器核心类
@@ -28,6 +29,10 @@ export class ViteLauncher implements IViteLauncher {
   private projectDetector: ProjectDetector
   private configManager: ConfigManager
   private pluginManager: PluginManager
+  private pluginEcosystem: PluginEcosystem
+  private networkManager: NetworkManager
+  private securityManager: SecurityManager
+  private environmentOptimizer: EnvironmentOptimizer
   private currentServer?: ViteDevServer | null
   private config?: InlineConfig
   private projectType?: ProjectType
@@ -46,6 +51,10 @@ export class ViteLauncher implements IViteLauncher {
     this.projectDetector = new ProjectDetector()
     this.configManager = new ConfigManager()
     this.pluginManager = new PluginManager()
+    this.pluginEcosystem = new PluginEcosystem()
+    this.networkManager = new NetworkManager()
+    this.securityManager = new SecurityManager()
+    this.environmentOptimizer = new EnvironmentOptimizer()
 
     this.log('ViteLauncher 初始化完成', 'info')
   }
@@ -362,6 +371,9 @@ export class ViteLauncher implements IViteLauncher {
     mode: RunMode,
     options: any = {},
   ): Promise<InlineConfig> {
+    // 加载用户配置文件
+    const userConfig = await loadUserConfig(projectPath)
+
     // 获取预设配置
     const presetConfig = await this.configManager.loadPreset(projectType)
 
@@ -369,7 +381,60 @@ export class ViteLauncher implements IViteLauncher {
     const projectConfig = await this.configManager.loadProjectConfig(projectPath)
 
     // 获取推荐插件
-    const plugins = await this.pluginManager.createPluginsForProject(projectType)
+    let plugins = await this.pluginManager.createPluginsForProject(projectType)
+
+    // 添加插件生态系统生成的插件
+    const ecosystemPlugins = this.pluginEcosystem.generateVitePlugins()
+    plugins = [...plugins, ...ecosystemPlugins]
+
+    // 如果用户配置中有自定义插件，合并它们
+    if (userConfig?.plugins && Array.isArray(userConfig.plugins)) {
+      plugins = [...plugins, ...userConfig.plugins]
+    }
+
+    // 如果用户配置中有 Vite 插件，合并它们
+    if (userConfig?.vite?.plugins) {
+      plugins = [...plugins, ...userConfig.vite.plugins]
+    }
+
+    // 配置网络管理器
+    if (userConfig?.network) {
+      if (userConfig.network.proxy) {
+        this.networkManager.configureProxy(userConfig.network.proxy)
+      }
+      if (userConfig.network.alias) {
+        this.networkManager.configureAlias(userConfig.network.alias)
+      }
+      if (userConfig.network.cors) {
+        this.networkManager.configureCORS(userConfig.network.cors)
+      }
+    }
+
+    // 配置安全管理器
+    if (userConfig?.security) {
+      if (userConfig.security.ssl) {
+        this.securityManager.configureSSL(userConfig.security.ssl as any)
+      }
+      if (userConfig.security.https) {
+        this.securityManager.enableHTTPS(userConfig.security.https as any)
+      }
+      if (userConfig.security.headers) {
+        this.securityManager.configureSecurityHeaders(userConfig.security.headers as any)
+      }
+      if (userConfig.security.csp) {
+        this.securityManager.configureCSP(userConfig.security.csp as any)
+      }
+    }
+
+    // 配置插件生态
+    if (userConfig?.plugins) {
+      this.pluginEcosystem.applyConfig(userConfig.plugins)
+    }
+
+    // 配置环境优化
+    if (userConfig?.optimization) {
+      this.environmentOptimizer.applyOptimizations(userConfig.optimization)
+    }
 
     // 合并配置
     const baseConfig: InlineConfig = {
@@ -382,24 +447,96 @@ export class ViteLauncher implements IViteLauncher {
 
     // 根据模式调整配置
     if (mode === 'development') {
+      const devOptions = mergeConfig(
+        {
+          port: options.port || userConfig?.network?.port || 5173,
+          host: options.host || userConfig?.network?.host || 'localhost',
+          open: options.open || userConfig?.network?.open || false,
+        },
+        userConfig?.dev || {}
+      )
+
+      // 应用网络配置
+      const proxyConfig = this.networkManager.generateViteProxyConfig()
+      const corsConfig = this.networkManager.getCORSConfig()
+
+      // 应用安全配置
+      const httpsConfig = this.securityManager.generateViteHTTPSConfig()
+      const securityHeaders = this.securityManager.generateSecurityHeadersConfig()
+
+      // 应用环境优化配置
+      const optimizationConfig = this.environmentOptimizer.generateViteOptimizationConfig()
+
       baseConfig.server = {
-        port: options.port || 5173,
-        host: options.host || 'localhost',
-        open: options.open || false,
         ...baseConfig.server,
+        ...devOptions,
+        proxy: Object.keys(proxyConfig).length > 0 ? proxyConfig : undefined,
+        cors: corsConfig,
+        https: httpsConfig,
+        headers: Object.keys(securityHeaders).length > 0 ? securityHeaders : undefined,
+        ...optimizationConfig.server,
+        ...(userConfig?.vite?.server || {}),
+      }
+
+      // 合并优化配置到基础配置
+      if (optimizationConfig.optimizeDeps) {
+        baseConfig.optimizeDeps = {
+          ...baseConfig.optimizeDeps,
+          ...optimizationConfig.optimizeDeps,
+        }
+      }
+
+      if (optimizationConfig.build) {
+        baseConfig.build = {
+          ...baseConfig.build,
+          ...optimizationConfig.build,
+        }
+      }
+
+      if (optimizationConfig.cacheDir) {
+        baseConfig.cacheDir = optimizationConfig.cacheDir
+      }
+
+      // 应用别名配置
+      const aliasConfig = this.networkManager.generateViteAliasConfig()
+      if (Object.keys(aliasConfig).length > 0) {
+        baseConfig.resolve = {
+          ...baseConfig.resolve,
+          alias: {
+            ...aliasConfig,
+            ...(baseConfig.resolve?.alias || {}),
+            ...(userConfig?.vite?.resolve?.alias || {}),
+          },
+        }
       }
     }
     else if (mode === 'production') {
+      const buildOptions = mergeConfig(
+        {
+          outDir: options.outDir || 'dist',
+          sourcemap: options.sourcemap || false,
+          minify: options.minify !== false ? (options.minify || 'esbuild') : false,
+        },
+        userConfig?.build || {}
+      )
+
       baseConfig.build = {
-        outDir: options.outDir || 'dist',
-        sourcemap: options.sourcemap || false,
-        minify: options.minify !== false,
         ...baseConfig.build,
+        ...buildOptions,
+        ...(userConfig?.vite?.build || {}),
       }
+    }
+
+    // 合并用户的 Vite 配置
+    if (userConfig?.vite) {
+      const { plugins: userPlugins, server, build, ...otherViteConfig } = userConfig.vite
+      Object.assign(baseConfig, otherViteConfig)
     }
 
     // 合并项目配置
     const finalConfig = this.configManager.mergeConfig(baseConfig, projectConfig)
+
+    this.log(`已加载配置文件: ${userConfig ? '是' : '否'}`, 'info')
 
     return finalConfig
   }
@@ -457,7 +594,10 @@ export class ViteLauncher implements IViteLauncher {
     // 根据项目类型添加特定依赖
     const requiredPlugins = this.pluginManager.getRequiredPlugins(projectType)
     for (const plugin of requiredPlugins) {
-      basePackage.devDependencies[plugin.name] = plugin.version
+      // 使用 packageName 和 version 属性，如果不存在则使用默认值
+      const pluginName = (plugin as any).packageName || (plugin as any).name || 'unknown-plugin'
+      const pluginVersion = (plugin as any).version || 'latest'
+      basePackage.devDependencies[pluginName] = pluginVersion
     }
 
     // 添加框架特定的依赖
@@ -485,6 +625,16 @@ export class ViteLauncher implements IViteLauncher {
           },
         })
         break
+      case 'lit':
+        Object.assign(basePackage, {
+          dependencies: { 'lit': '^3.0.0' },
+          devDependencies: {
+            ...basePackage.devDependencies,
+            'typescript': '^5.0.0',
+            '@types/node': '^20.0.0'
+          },
+        })
+        break
       case 'vanilla-ts':
         Object.assign(basePackage, {
           devDependencies: { ...basePackage.devDependencies, typescript: '^5.0.0' },
@@ -501,17 +651,28 @@ export class ViteLauncher implements IViteLauncher {
   private generateIndexHtml(projectType: ProjectType): string {
     const title = `Vite + ${projectType.charAt(0).toUpperCase() + projectType.slice(1)}`
 
+    // 确定入口文件扩展名
+    let entryExt = 'js'
+    if (projectType === 'lit' || projectType === 'vanilla-ts') {
+      entryExt = 'ts'
+    } else if (projectType === 'react') {
+      entryExt = 'jsx'
+    }
+
+    // 原生 HTML 项目需要包含 CSS 文件
+    const cssLink = projectType === 'html' ? '\n    <link rel="stylesheet" href="/src/style.css" />' : ''
+
     return `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${title}</title>
+    <title>${title}</title>${cssLink}
   </head>
   <body>
     <div id="app"></div>
-    <script type="module" src="/src/main.${projectType.includes('ts') ? 'ts' : 'js'}"></script>
+    <script type="module" src="/src/main.${entryExt}"></script>
   </body>
 </html>`
   }
@@ -521,6 +682,10 @@ export class ViteLauncher implements IViteLauncher {
    */
   private async generateEntryFiles(srcDir: string, projectType: ProjectType): Promise<void> {
     switch (projectType) {
+      case 'vue2':
+        await fs.writeFile(path.join(srcDir, 'main.js'), `import Vue from 'vue'\nimport App from './App.vue'\n\nnew Vue({\n  render: h => h(App),\n}).$mount('#app')`)
+        await fs.writeFile(path.join(srcDir, 'App.vue'), `<template>\n  <div id="app">\n    <h1>Hello Vue 2!</h1>\n  </div>\n</template>\n\n<script>\nexport default {\n  name: 'App'\n}\n</script>\n\n<style>\n#app {\n  font-family: Avenir, Helvetica, Arial, sans-serif;\n  text-align: center;\n  color: #2c3e50;\n  margin-top: 60px;\n}\n</style>`)
+        break
       case 'vue3':
         await fs.writeFile(path.join(srcDir, 'main.js'), `import { createApp } from 'vue'\nimport App from './App.vue'\n\ncreateApp(App).mount('#app')`)
         await fs.writeFile(path.join(srcDir, 'App.vue'), `<template>\n  <div>\n    <h1>Hello Vue 3!</h1>\n  </div>\n</template>\n\n<script>\nexport default {\n  name: 'App'\n}\n</script>`)
@@ -528,6 +693,15 @@ export class ViteLauncher implements IViteLauncher {
       case 'react':
         await fs.writeFile(path.join(srcDir, 'main.jsx'), `import React from 'react'\nimport ReactDOM from 'react-dom/client'\nimport App from './App.jsx'\n\nReactDOM.createRoot(document.getElementById('app')).render(<App />)`)
         await fs.writeFile(path.join(srcDir, 'App.jsx'), `function App() {\n  return <h1>Hello React!</h1>\n}\n\nexport default App`)
+        break
+      case 'lit':
+        await fs.writeFile(path.join(srcDir, 'main.ts'), `import './my-element.js'\n\ndocument.querySelector('#app')!.innerHTML = \`\n  <my-element>\n    <p>This is child content</p>\n  </my-element>\n\``)
+        await fs.writeFile(path.join(srcDir, 'my-element.ts'), `import { LitElement, html, css } from 'lit'\nimport { customElement, property } from 'lit/decorators.js'\n\n@customElement('my-element')\nexport class MyElement extends LitElement {\n  static styles = css\`\n    :host {\n      display: block;\n      border: solid 1px gray;\n      padding: 16px;\n      max-width: 800px;\n    }\n  \`\n\n  @property()\n  name = 'World'\n\n  render() {\n    return html\`\n      <h1>Hello, \${this.name}!</h1>\n      <button @click=\${this._onClick} part="button">\n        Click Count: \${this.count}\n      </button>\n      <slot></slot>\n    \`\n  }\n\n  @property({ type: Number })\n  count = 0\n\n  private _onClick() {\n    this.count++\n  }\n}`)
+        break
+      case 'html':
+        // 原生 HTML 项目不需要复杂的入口文件，只需要基本的 JS 和 CSS
+        await fs.writeFile(path.join(srcDir, 'main.js'), `// 原生 HTML 项目的主 JavaScript 文件\nconsole.log('Hello from native HTML project!');\n\n// 你可以在这里添加你的 JavaScript 代码\ndocument.addEventListener('DOMContentLoaded', function() {\n  const app = document.getElementById('app');\n  if (app) {\n    app.innerHTML = '<h1>Hello Native HTML!</h1><p>This is a native HTML project powered by Vite.</p>';\n  }\n});`)
+        await fs.writeFile(path.join(srcDir, 'style.css'), `/* 原生 HTML 项目的主样式文件 */\nbody {\n  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',\n    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',\n    sans-serif;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n  margin: 0;\n  padding: 0;\n  background-color: #f5f5f5;\n}\n\n#app {\n  text-align: center;\n  padding: 2rem;\n}\n\nh1 {\n  color: #333;\n  margin-bottom: 1rem;\n}\n\np {\n  color: #666;\n  line-height: 1.6;\n}`)
         break
       case 'vanilla':
         await fs.writeFile(path.join(srcDir, 'main.js'), `document.querySelector('#app').innerHTML = '<h1>Hello Vite!</h1>'`)

@@ -1,8 +1,9 @@
-import { createRoot } from 'https://esm.sh/react-dom@18/client'
+import { StrictMode } from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.jsx'
 
-function App() {
-  return <h1>Hello React + @ldesign/launcher</h1>
-}
-
-const root = createRoot(document.getElementById('root'))
-root.render(<App />)
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+)

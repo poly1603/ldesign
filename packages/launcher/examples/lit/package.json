@@ -1,0 +1,21 @@
+{
+  "name": "launcher-example-lit",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Lit example powered by @ldesign/launcher",
+  "license": "MIT",
+  "scripts": {
+    "dev": "ldesign-launcher dev",
+    "build": "ldesign-launcher build",
+    "preview": "ldesign-launcher preview"
+  },
+  "dependencies": {
+    "lit": "^3.1.0"
+  },
+  "devDependencies": {
+    "@ldesign/launcher": "workspace:*",
+    "typescript": "^5.3.0",
+    "@types/node": "^20.10.0"
+  }
+}

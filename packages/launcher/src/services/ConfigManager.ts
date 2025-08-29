@@ -189,6 +189,33 @@ export class ConfigManager implements IConfigManager {
       priority: 1,
       description: 'Vanilla JavaScript项目的默认配置',
     })
+
+    // 原生 HTML 预设配置
+    this.presetConfigs.set('html', {
+      name: '原生 HTML 项目',
+      framework: 'html',
+      config: {
+        build: {
+          target: 'es2015',
+          outDir: 'dist',
+          assetsDir: 'assets',
+          sourcemap: false,
+          minify: 'esbuild',
+          rollupOptions: {
+            input: {
+              main: 'index.html'
+            }
+          }
+        },
+        server: {
+          port: 3000,
+          open: true,
+          cors: true,
+        },
+      },
+      priority: 1,
+      description: '原生 HTML 项目的默认配置',
+    })
   }
 
   /**

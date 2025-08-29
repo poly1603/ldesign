@@ -2,7 +2,7 @@ import type { Plugin, PluginOption } from 'vite'
 import type {
   FrameworkType,
   IPluginManager,
-  PluginConfig,
+  LegacyPluginConfig,
   ProjectType,
 } from '@/types'
 import { ErrorHandler } from './ErrorHandler'
@@ -13,7 +13,7 @@ import { ErrorHandler } from './ErrorHandler'
  */
 export class PluginManager implements IPluginManager {
   private errorHandler: ErrorHandler
-  private pluginRegistry: Map<string, PluginConfig>
+  private pluginRegistry: Map<string, LegacyPluginConfig>
   private loadedPlugins: Map<string, Plugin>
 
   constructor() {
@@ -84,16 +84,28 @@ export class PluginManager implements IPluginManager {
       required: false,
     })
 
-    // Lit 插件
-    this.pluginRegistry.set('@vitejs/plugin-lit', {
-      name: '@vitejs/plugin-lit',
-      packageName: '@vitejs/plugin-lit',
+    // Lit 插件 - 官方插件已废弃，使用社区插件
+    this.pluginRegistry.set('vite-plugin-lit', {
+      name: 'vite-plugin-lit',
+      packageName: 'vite-plugin-lit',
       version: '^1.0.0',
       description: 'Lit 元素支持',
       frameworks: ['lit'],
       supportedFrameworks: ['lit'],
       defaultOptions: {},
-      required: true,
+      required: false,
+    })
+
+    // Lit CSS 插件
+    this.pluginRegistry.set('vite-plugin-lit-css', {
+      name: 'vite-plugin-lit-css',
+      packageName: 'vite-plugin-lit-css',
+      version: '^1.0.0',
+      description: 'Lit CSS 模块支持',
+      frameworks: ['lit'],
+      supportedFrameworks: ['lit'],
+      defaultOptions: {},
+      required: false,
     })
 
     // Svelte 插件
@@ -238,8 +250,8 @@ export class PluginManager implements IPluginManager {
    * @param projectType 项目类型
    * @returns 推荐插件列表
    */
-  getRecommendedPlugins(projectType: ProjectType): PluginConfig[] {
-    const recommended: PluginConfig[] = []
+  getRecommendedPlugins(projectType: ProjectType): LegacyPluginConfig[] {
+    const recommended: LegacyPluginConfig[] = []
 
     for (const [, config] of this.pluginRegistry.entries()) {
       if (config.supportedFrameworks.includes(projectType as any)) {
@@ -261,7 +273,7 @@ export class PluginManager implements IPluginManager {
    * @param projectType 项目类型
    * @returns 必需插件列表
    */
-  getRequiredPlugins(projectType: ProjectType): PluginConfig[] {
+  getRequiredPlugins(projectType: ProjectType): LegacyPluginConfig[] {
     return this.getRecommendedPlugins(projectType).filter(config => config.required)
   }
 
@@ -329,7 +341,7 @@ export class PluginManager implements IPluginManager {
    * 注册自定义插件
    * @param config 插件配置
    */
-  registerPlugin(config: PluginConfig): void {
+  registerPlugin(config: LegacyPluginConfig): void {
     this.pluginRegistry.set(config.name, config)
   }
 
@@ -347,7 +359,7 @@ export class PluginManager implements IPluginManager {
    * @param pluginName 插件名称
    * @returns 插件配置
    */
-  getPluginConfig(pluginName: string): PluginConfig | undefined {
+  getPluginConfig(pluginName: string): LegacyPluginConfig | undefined {
     return this.pluginRegistry.get(pluginName)
   }
 
@@ -355,7 +367,7 @@ export class PluginManager implements IPluginManager {
    * 获取所有已注册的插件
    * @returns 插件配置映射
    */
-  getAllPlugins(): Map<string, PluginConfig> {
+  getAllPlugins(): Map<string, LegacyPluginConfig> {
     return new Map(this.pluginRegistry)
   }
 
@@ -395,7 +407,7 @@ export class PluginManager implements IPluginManager {
    * @param framework 可选的框架类型过滤
    * @returns 插件配置数组
    */
-  async getAvailablePlugins(framework?: FrameworkType): Promise<PluginConfig[]> {
+  async getAvailablePlugins(framework?: FrameworkType): Promise<LegacyPluginConfig[]> {
     if (framework) {
       return Array.from(this.pluginRegistry.values())
         .filter(plugin => plugin.supportedFrameworks.includes(framework))
