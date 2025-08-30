@@ -66,13 +66,8 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
   // 尝试从上下文获取管理器实例
   const injectedManager = inject<TemplateManager>(TEMPLATE_MANAGER_KEY, null)
 
-  // 创建或使用注入的管理器
+  // 优先使用注入的管理器，如果没有则创建新的
   const manager = injectedManager || new TemplateManager(options)
-
-  // 确保管理器已初始化
-  if (!injectedManager && !initialized.value) {
-    manager.initialize().catch(console.error)
-  }
 
   // 响应式状态
   const currentTemplate = ref<TemplateInfo | null>(null)
@@ -82,7 +77,7 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
   const availableTemplates = ref<TemplateInfo[]>([])
   const availableCategories = ref<string[]>([])
   const availableDevices = ref<DeviceType[]>([])
-  const initialized = ref(false)
+  const initialized = ref(false) // 总是需要检查初始化状态
 
   // 计算属性
   const isReady = computed(() => initialized.value && !loading.value)
@@ -94,6 +89,37 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
     currentDevice.value = manager.getCurrentDevice()
   }
 
+  // 如果使用注入的管理器，立即更新状态
+  if (injectedManager) {
+    updateState()
+  } else if (!initialized.value) {
+    // 只有在没有注入管理器时才初始化新的管理器
+    manager.initialize().catch(console.error)
+  }
+
+  // 监听全局模板注册事件
+  const handleTemplatesRegistered = (event: CustomEvent) => {
+    if (injectedManager) {
+      // 如果使用注入的管理器，直接更新状态
+      updateState()
+    } else if (event.detail?.templates) {
+      // 如果当前使用的是独立的管理器实例，也注册这些模板
+      const templates = event.detail.templates
+
+      // 直接注册模板（内置模板已经包含组件加载器）
+      for (const template of templates) {
+        manager.registerTemplate(template)
+      }
+      updateState()
+      console.log(`useTemplate: 同步注册了 ${templates.length} 个模板`)
+    }
+  }
+
+  // 在浏览器环境中监听事件
+  if (typeof window !== 'undefined') {
+    window.addEventListener('templates-registered', handleTemplatesRegistered as EventListener)
+  }
+
   const initialize = async () => {
     if (initialized.value) return
 
@@ -101,7 +127,26 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
       loading.value = true
       error.value = null
 
-      await manager.initialize()
+      // 如果使用注入的管理器，等待它初始化完成
+      if (injectedManager) {
+        // 等待注入的管理器初始化完成
+        let retries = 0
+        const maxRetries = 50 // 最多等待5秒
+        while (!injectedManager.isInitialized && retries < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+          retries++
+        }
+
+        if (!injectedManager.isInitialized) {
+          console.warn('Injected template manager is not initialized after waiting')
+        }
+      } else {
+        // 确保管理器已初始化
+        if (!manager.isInitialized) {
+          await manager.initialize()
+        }
+      }
+
       updateState()
       initialized.value = true
     } catch (err) {
@@ -170,7 +215,20 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
   }
 
   const getTemplates = (category?: string, deviceType?: DeviceType): TemplateInfo[] => {
-    return manager.getTemplates(category, deviceType)
+    // 使用响应式的 availableTemplates 而不是直接调用 manager
+    let templates = availableTemplates.value
+
+    // 按分类过滤
+    if (category) {
+      templates = templates.filter(t => t.category === category)
+    }
+
+    // 按设备类型过滤
+    if (deviceType) {
+      templates = templates.filter(t => t.deviceType === deviceType)
+    }
+
+    return templates
   }
 
   const hasTemplate = (category: string, deviceType?: DeviceType, templateName?: string): boolean => {
@@ -240,6 +298,9 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
   onUnmounted(() => {
     // 清理事件监听器
     // 注意：这里不销毁管理器，因为可能被其他组件使用
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('templates-registered', handleTemplatesRegistered as EventListener)
+    }
   })
 
   return {

@@ -75,10 +75,10 @@ export class DeviceAdapter {
   private setupAutoDetection(): void {
     // 监听窗口大小变化
     this.setupResizeObserver()
-    
+
     // 监听媒体查询变化
     this.setupMediaQueries()
-    
+
     // 监听方向变化
     this.setupOrientationChange()
   }
@@ -91,7 +91,7 @@ export class DeviceAdapter {
       this.resizeObserver = new ResizeObserver(() => {
         this.handleResize()
       })
-      
+
       this.resizeObserver.observe(document.documentElement)
     } else {
       // 降级到window.resize事件
@@ -136,9 +136,9 @@ export class DeviceAdapter {
   private handleResize(): void {
     const oldDevice = this.currentDevice
     const oldDeviceInfo = { ...this.currentDeviceInfo }
-    
+
     this.updateDeviceInfo()
-    
+
     if (oldDevice !== this.currentDevice) {
       this.notifyDeviceChange(oldDevice, oldDeviceInfo)
     }
@@ -156,8 +156,12 @@ export class DeviceAdapter {
    */
   private updateDeviceInfo(): void {
     const newDeviceInfo = this.createDeviceInfo()
-    const newDeviceType = this.detectDeviceType(newDeviceInfo)
-    
+
+    // 如果禁用自动检测，使用默认设备类型
+    const newDeviceType = this.config.autoDetect
+      ? this.detectDeviceType(newDeviceInfo)
+      : this.config.defaultDevice || 'desktop'
+
     this.currentDeviceInfo = newDeviceInfo
     this.currentDevice = newDeviceType
   }
@@ -186,8 +190,10 @@ export class DeviceAdapter {
     const userAgent = navigator.userAgent
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
 
-    // 基于宽度的设备类型检测
-    const type = this.detectDeviceTypeByWidth(width)
+    // 基于宽度的设备类型检测（如果启用自动检测）
+    const type = this.config.autoDetect
+      ? this.detectDeviceTypeByWidth(width)
+      : this.config.defaultDevice || 'desktop'
 
     return {
       type,
@@ -259,7 +265,7 @@ export class DeviceAdapter {
    */
   addDeviceChangeListener(callback: DeviceChangeCallback): () => void {
     this.listeners.add(callback)
-    
+
     // 返回取消监听的函数
     return () => {
       this.listeners.delete(callback)
@@ -279,7 +285,7 @@ export class DeviceAdapter {
   setDeviceType(deviceType: DeviceType): void {
     const oldDevice = this.currentDevice
     const oldDeviceInfo = { ...this.currentDeviceInfo }
-    
+
     this.currentDevice = deviceType
     this.currentDeviceInfo = {
       ...this.currentDeviceInfo,
@@ -288,7 +294,7 @@ export class DeviceAdapter {
       isTablet: deviceType === 'tablet',
       isDesktop: deviceType === 'desktop',
     }
-    
+
     if (oldDevice !== deviceType) {
       this.notifyDeviceChange(oldDevice, oldDeviceInfo)
     }
@@ -327,7 +333,7 @@ export class DeviceAdapter {
    */
   updateConfig(config: Partial<DeviceDetectionConfig>): void {
     this.config = { ...this.config, ...config }
-    
+
     if (this.isInitialized) {
       this.updateDeviceInfo()
     }
@@ -364,7 +370,7 @@ export class DeviceAdapter {
 
     // 清理回调函数
     this.listeners.clear()
-    
+
     this.isInitialized = false
   }
 }

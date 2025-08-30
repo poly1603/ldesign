@@ -3,9 +3,10 @@
  * 支持根据分类和设备类型渲染对应模板，内置模板选择器功能
  */
 
-import { defineComponent, ref, computed, watch, onMounted, PropType, VNode } from 'vue'
+import { defineComponent, ref, computed, watch, onMounted, inject, PropType, VNode, h } from 'vue'
 import TemplateSelector from './TemplateSelector'
-import { useTemplateManager } from '../composables/useTemplate'
+import { useTemplate, TEMPLATE_MANAGER_KEY } from '../composables/useTemplate'
+import { TemplateManager } from '../../core/template-manager'
 import type { TemplateInfo, DeviceType, TemplateRendererProps, TemplateSelectorOptions } from '../../types'
 import './TemplateRenderer.less'
 
@@ -60,7 +61,12 @@ export default defineComponent({
   },
   emits: ['error', 'template-change', 'template-loaded'],
   setup(props, { emit, slots }) {
-    // 使用模板管理器
+    // 尝试获取注入的模板管理器
+    const injectedManager = inject<TemplateManager>(TEMPLATE_MANAGER_KEY, null)
+
+
+
+    // 使用模板管理器（优先使用注入的实例）
     const {
       currentTemplate,
       currentDevice,
@@ -70,7 +76,7 @@ export default defineComponent({
       render,
       switchTemplate,
       getTemplates,
-    } = useTemplateManager()
+    } = useTemplate(injectedManager ? undefined : {})
 
     // 响应式数据
     const isSelectorVisible = ref(false)
@@ -126,7 +132,12 @@ export default defineComponent({
       try {
         isRendering.value = true
         const result = await switchTemplate(props.category, template.name, targetDevice.value)
-        renderedComponent.value = result.vnode || null
+        // 使用组件创建VNode
+        if (result.component) {
+          renderedComponent.value = h(result.component, props.props || {})
+        } else {
+          renderedComponent.value = null
+        }
         handleTemplateChange(template)
         handleTemplateLoaded(template)
       } catch (err) {
@@ -151,7 +162,12 @@ export default defineComponent({
           props.props
         )
 
-        renderedComponent.value = result.vnode || null
+        // 使用组件创建VNode
+        if (result.component) {
+          renderedComponent.value = h(result.component, props.props || {})
+        } else {
+          renderedComponent.value = null
+        }
         handleTemplateLoaded(result.template)
       } catch (err) {
         handleError(err as Error)
@@ -169,9 +185,34 @@ export default defineComponent({
       renderTemplate()
     }, { deep: true })
 
+    // 监听模板数量变化
+    watch(() => availableTemplates.value.length, (newCount, oldCount) => {
+      if (newCount > 0 && oldCount === 0) {
+        // 模板从无到有，重新渲染
+        renderTemplate()
+      }
+    })
+
     // 生命周期
     onMounted(() => {
       renderTemplate()
+
+      // 监听全局模板注册事件
+      const handleTemplatesRegistered = () => {
+        // 延迟一点时间让模板管理器更新状态
+        setTimeout(() => {
+          renderTemplate()
+        }, 50)
+      }
+
+      if (typeof window !== 'undefined') {
+        window.addEventListener('templates-registered', handleTemplatesRegistered)
+
+        // 清理函数
+        return () => {
+          window.removeEventListener('templates-registered', handleTemplatesRegistered)
+        }
+      }
     })
 
     // 渲染函数

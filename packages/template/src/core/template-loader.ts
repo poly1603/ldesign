@@ -48,7 +48,7 @@ export class TemplateLoader {
   async load(template: TemplateInfo, options: LoadOptions = {}): Promise<LoadResult> {
     const startTime = Date.now()
     const cacheKey = this.getCacheKey(template)
-    
+
     try {
       // 检查缓存
       if (!options.forceReload && this.config.enabled && options.cache !== false) {
@@ -81,7 +81,7 @@ export class TemplateLoader {
 
       try {
         const component = await loadPromise
-        
+
         // 缓存组件
         if (this.config.enabled && options.cache !== false) {
           this.setCache(cacheKey, component)
@@ -131,7 +131,7 @@ export class TemplateLoader {
       // 尝试多种加载方式
       const loadPromise = this.tryLoadComponent(template)
       const component = await Promise.race([loadPromise, timeoutPromise])
-      
+
       if (!component) {
         throw new Error('Component is null or undefined')
       }
@@ -147,6 +147,20 @@ export class TemplateLoader {
    * 尝试加载组件的多种方式
    */
   private async tryLoadComponent(template: TemplateInfo): Promise<Component> {
+    // 优先使用 component 函数（用于手动注册的模板）
+    if (template.component && typeof template.component === 'function') {
+      try {
+        const module = await template.component()
+        const component = module.default || module[template.name] || module
+        if (component) {
+          return component
+        }
+      } catch (error) {
+        console.error(`Failed to load component using component function for template ${template.id}:`, error)
+      }
+    }
+
+    // 回退到路径加载方式
     const { componentPath, path } = template
     const possiblePaths = [
       componentPath,
@@ -181,7 +195,7 @@ export class TemplateLoader {
    */
   private getFromCache(cacheKey: string): Component | null {
     const item = this.cache.get(cacheKey)
-    
+
     if (!item) {
       return null
     }
@@ -296,7 +310,7 @@ export class TemplateLoader {
    * 预加载模板
    */
   async preload(templates: TemplateInfo[]): Promise<void> {
-    const loadPromises = templates.map(template => 
+    const loadPromises = templates.map(template =>
       this.load(template, { cache: true }).catch(error => {
         console.warn(`Failed to preload template ${template.id}:`, error)
       })
@@ -359,12 +373,12 @@ export class TemplateLoader {
    */
   updateConfig(config: Partial<CacheConfig>): void {
     this.config = { ...this.config, ...config }
-    
+
     // 如果缓存被禁用，清空缓存
     if (!this.config.enabled) {
       this.clearCache()
     }
-    
+
     // 如果最大大小减小，进行缓存淘汰
     while (this.cache.size > this.config.maxSize) {
       this.evictCache()

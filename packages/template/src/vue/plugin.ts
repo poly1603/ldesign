@@ -165,6 +165,8 @@ export class TemplatePlugin {
     app.config.globalProperties.$getTemplates = (category?: string, deviceType?: string) => {
       return this.manager.getTemplates(category, deviceType as any)
     }
+
+
   }
 
   /**
@@ -172,10 +174,34 @@ export class TemplatePlugin {
    */
   private async initializeManager() {
     try {
+      // 首先注册内置模板
+      await this.registerBuiltinTemplates()
+
+      // 然后初始化管理器（这会扫描文件系统中的模板）
       await this.manager.initialize()
+
       console.log('Template manager initialized successfully')
     } catch (error) {
       console.error('Failed to initialize template manager:', error)
+    }
+  }
+
+  /**
+   * 注册内置模板
+   */
+  private async registerBuiltinTemplates() {
+    try {
+      // 动态导入内置模板
+      const { BUILTIN_TEMPLATES } = await import('../templates')
+
+      // 注册所有内置模板
+      this.manager.registerTemplates(BUILTIN_TEMPLATES)
+
+      if (this.options.debug) {
+        console.log(`Registered ${BUILTIN_TEMPLATES.length} builtin templates`)
+      }
+    } catch (error) {
+      console.error('Failed to register builtin templates:', error)
     }
   }
 
@@ -228,9 +254,6 @@ export function install(app: App, options: TemplatePluginOptions = {}) {
  */
 export default {
   install,
-  createTemplatePlugin,
-  configureTemplateManager,
-  TemplatePlugin,
 }
 
 // 类型声明扩展

@@ -82,11 +82,24 @@ export class TemplateManager {
     try {
       const result = await this.scanner.scan()
 
+      // 保存已注册的内置模板
+      const existingTemplates = new Map(this.templates)
+      const existingCategoryIndex = new Map()
+      for (const [category, deviceMap] of this.categoryIndex) {
+        existingCategoryIndex.set(category, new Map(deviceMap))
+      }
+
       // 清空现有索引
       this.templates.clear()
       this.categoryIndex.clear()
 
-      // 构建索引
+      // 重新添加已注册的内置模板
+      for (const [id, template] of existingTemplates) {
+        this.templates.set(id, template)
+        this.addToIndex(template)
+      }
+
+      // 添加扫描到的模板
       for (const template of result.templates) {
         this.templates.set(template.id, template)
         this.addToIndex(template)
@@ -117,6 +130,33 @@ export class TemplateManager {
     }
 
     categoryMap.get(template.deviceType)!.push(template)
+  }
+
+  /**
+   * 手动注册模板
+   */
+  registerTemplate(template: TemplateInfo): void {
+    // 添加到模板映射
+    this.templates.set(template.id, template)
+    // 添加到索引
+    this.addToIndex(template)
+
+    if (this.config.debug) {
+      console.log(`Registered template: ${template.id}`)
+    }
+  }
+
+  /**
+   * 批量注册模板
+   */
+  registerTemplates(templates: TemplateInfo[]): void {
+    for (const template of templates) {
+      this.registerTemplate(template)
+    }
+
+    if (this.config.debug) {
+      console.log(`Registered ${templates.length} templates`)
+    }
   }
 
   /**
@@ -313,6 +353,13 @@ export class TemplateManager {
    */
   setDeviceType(deviceType: DeviceType): void {
     this.deviceAdapter.setDeviceType(deviceType)
+  }
+
+  /**
+   * 获取初始化状态
+   */
+  get isInitialized(): boolean {
+    return this.initialized
   }
 
   /**

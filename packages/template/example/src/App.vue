@@ -7,14 +7,18 @@
           <h1>🎨 LDesign Template</h1>
           <span class="nav-subtitle">示例项目</span>
         </div>
-        
+
         <div class="nav-links">
-          <router-link to="/" class="nav-link">首页</router-link>
-          <router-link to="/basic" class="nav-link">基础示例</router-link>
-          <router-link to="/advanced" class="nav-link">高级示例</router-link>
-          <router-link to="/composition" class="nav-link">Composition API</router-link>
+          <router-link to="/component" class="nav-link">
+            <span class="nav-icon">🎨</span>
+            组件方式
+          </router-link>
+          <router-link to="/hook" class="nav-link">
+            <span class="nav-icon">⚡</span>
+            Hook 方式
+          </router-link>
         </div>
-        
+
         <!-- 设备类型显示 -->
         <div class="device-indicator">
           <span class="device-label">当前设备:</span>
@@ -113,7 +117,7 @@ const deviceDisplayName = computed(() => {
 
 .nav-links {
   display: flex;
-  gap: 2rem;
+  gap: 1rem;
   align-items: center;
 }
 
@@ -121,19 +125,34 @@ const deviceDisplayName = computed(() => {
   text-decoration: none;
   color: #555;
   font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.5);
+  border: 2px solid transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .nav-link:hover {
   background: rgba(102, 126, 234, 0.1);
   color: #667eea;
+  border-color: rgba(102, 126, 234, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
 }
 
 .nav-link.router-link-active {
-  background: #667eea;
+  background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
+  border-color: #764ba2;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.nav-icon {
+  font-size: 1.1rem;
 }
 
 .device-indicator {

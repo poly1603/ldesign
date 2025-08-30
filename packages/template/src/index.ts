@@ -12,5 +12,5 @@ export * from './vue'
 // 类型导出
 export type * from './types'
 
-// 默认导出模板管理器
-export { TemplateManager as default } from './core/template-manager'
+// 默认导出Vue插件
+export { default } from './vue/plugin'
