@@ -1,332 +1,346 @@
-import { computed, defineComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import type { DeviceType } from '../../types'
+/**
+ * 模板选择器组件
+ * 支持弹窗显示当前设备类型下的所有模板，支持模板预览和切换
+ */
+
+import { defineComponent, ref, computed, watch, onMounted, PropType } from 'vue'
+import type { TemplateInfo, DeviceType, TemplateSelectorOptions } from '../../types'
 import './TemplateSelector.less'
 
-export interface TemplateOption {
-  name: string
-  displayName?: string
-  description?: string
-  version?: string
-  tags?: string[]
-  thumbnail?: string
-}
-
-interface SelectorConfig {
-  position?: 'top' | 'bottom' | 'overlay'
-  style?: 'tabs' | 'dropdown' | 'grid'
-  showThumbnail?: boolean
-  showDescription?: boolean
-  layout?: 'slot' | 'header'
-}
-
-interface Props {
+export interface TemplateSelectorProps {
+  /** 是否显示选择器 */
+  visible: boolean
+  /** 当前分类 */
   category: string
-  deviceType: DeviceType
-  currentTemplate: string
-  templates: TemplateOption[]
-  config?: SelectorConfig
+  /** 当前设备类型 */
+  deviceType?: DeviceType
+  /** 当前选中的模板 */
+  currentTemplate?: string
+  /** 可用模板列表 */
+  templates: TemplateInfo[]
+  /** 选择器配置 */
+  options?: TemplateSelectorOptions
+  /** 是否显示预览 */
+  showPreview?: boolean
+  /** 是否显示搜索 */
+  showSearch?: boolean
+  /** 布局模式 */
+  layout?: 'grid' | 'list'
+  /** 每行显示数量（网格模式） */
+  columns?: number
 }
 
-interface Emits {
-  (e: 'template-select', templateName: string): void
-  (e: 'selector-open'): void
-  (e: 'selector-close'): void
+export interface TemplateSelectorEmits {
+  /** 更新显示状态 */
+  'update:visible': (visible: boolean) => void
+  /** 选择模板 */
+  'select': (template: TemplateInfo) => void
+  /** 预览模板 */
+  'preview': (template: TemplateInfo) => void
+  /** 关闭选择器 */
+  'close': () => void
 }
 
 export default defineComponent({
   name: 'TemplateSelector',
   props: {
+    visible: {
+      type: Boolean,
+      default: false,
+    },
     category: {
       type: String,
-      required: true
+      required: true,
     },
     deviceType: {
-      type: String as () => DeviceType,
-      required: true
+      type: String as PropType<DeviceType>,
+      default: 'desktop',
     },
     currentTemplate: {
       type: String,
-      required: true
+      default: '',
     },
     templates: {
-      type: Array as () => TemplateOption[],
-      default: () => []
+      type: Array as PropType<TemplateInfo[]>,
+      default: () => [],
     },
-    config: {
-      type: Object as () => SelectorConfig,
-      default: () => ({
-        position: 'top',
-        style: 'tabs',
-        showThumbnail: true,
-        showDescription: true,
-        layout: 'header'
-      })
-    }
+    options: {
+      type: Object as PropType<TemplateSelectorOptions>,
+      default: () => ({}),
+    },
+    showPreview: {
+      type: Boolean,
+      default: true,
+    },
+    showSearch: {
+      type: Boolean,
+      default: true,
+    },
+    layout: {
+      type: String as PropType<'grid' | 'list'>,
+      default: 'grid',
+    },
+    columns: {
+      type: Number,
+      default: 3,
+    },
   },
-  emits: ['template-select', 'selector-open', 'selector-close'],
-  setup(props: Props, { emit }) {
-    const isOpen = ref(false)
-    const dropdownRef = ref<HTMLElement>()
-    const selectedIndex = ref(0)
+  emits: ['update:visible', 'select', 'preview', 'close'],
+  setup(props, { emit }) {
+    // 响应式数据
+    const searchQuery = ref('')
+    const previewTemplate = ref<TemplateInfo | null>(null)
+    const isPreviewVisible = ref(false)
 
     // 计算属性
-    const selectorClasses = computed(() => ({
-      'template-selector': true,
-      [`template-selector--${props.config?.style || 'tabs'}`]: true,
-      [`template-selector--${props.config?.position || 'top'}`]: true,
-      'template-selector--open': isOpen.value,
-      'template-selector--with-thumbnails': props.config?.showThumbnail,
-      'template-selector--with-descriptions': props.config?.showDescription,
-    }))
+    const filteredTemplates = computed(() => {
+      let templates = props.templates.filter(template => 
+        template.category === props.category && 
+        template.deviceType === props.deviceType
+      )
 
-    const currentTemplateOption = computed(() => {
-      return props.templates.find(t => t.name === props.currentTemplate)
+      // 应用搜索过滤
+      if (searchQuery.value) {
+        const query = searchQuery.value.toLowerCase()
+        templates = templates.filter(template =>
+          template.name.toLowerCase().includes(query) ||
+          template.displayName.toLowerCase().includes(query) ||
+          template.description.toLowerCase().includes(query) ||
+          template.tags.some(tag => tag.toLowerCase().includes(query))
+        )
+      }
+
+      // 应用自定义过滤器
+      if (props.options?.filter) {
+        templates = templates.filter(props.options.filter)
+      }
+
+      return templates
     })
 
+    const gridStyle = computed(() => ({
+      gridTemplateColumns: `repeat(${props.columns}, 1fr)`,
+    }))
+
     // 方法
-    const selectTemplate = (template: TemplateOption) => {
-      if (template.name !== props.currentTemplate) {
-        emit('template-select', template.name)
-      }
-      closeSelector()
+    const handleClose = () => {
+      emit('update:visible', false)
+      emit('close')
     }
 
-    const openSelector = () => {
-      isOpen.value = true
-      emit('selector-open')
+    const handleSelect = (template: TemplateInfo) => {
+      emit('select', template)
+      handleClose()
     }
 
-    const closeSelector = () => {
-      isOpen.value = false
-      emit('selector-close')
+    const handlePreview = (template: TemplateInfo) => {
+      previewTemplate.value = template
+      isPreviewVisible.value = true
+      emit('preview', template)
     }
 
-    const toggleSelector = () => {
-      if (isOpen.value) {
-        closeSelector()
-      } else {
-        openSelector()
-      }
+    const handlePreviewClose = () => {
+      isPreviewVisible.value = false
+      previewTemplate.value = null
     }
 
-    const handleKeydown = (event: KeyboardEvent) => {
-      if (!isOpen.value) return
-
-      switch (event.key) {
-        case 'Escape':
-          closeSelector()
-          break
-        case 'ArrowUp':
-          event.preventDefault()
-          selectedIndex.value = Math.max(0, selectedIndex.value - 1)
-          break
-        case 'ArrowDown':
-          event.preventDefault()
-          selectedIndex.value = Math.min(props.templates.length - 1, selectedIndex.value + 1)
-          break
-        case 'Enter':
-          event.preventDefault()
-          if (props.templates[selectedIndex.value]) {
-            selectTemplate(props.templates[selectedIndex.value])
-          }
-          break
+    const handleBackdropClick = (event: MouseEvent) => {
+      if (event.target === event.currentTarget) {
+        handleClose()
       }
     }
 
-    const handleClickOutside = (event: Event) => {
-      if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
-        closeSelector()
-      }
+    const clearSearch = () => {
+      searchQuery.value = ''
     }
 
     // 监听器
-    watch(() => props.currentTemplate, (newTemplate) => {
-      const index = props.templates.findIndex(t => t.name === newTemplate)
-      if (index !== -1) {
-        selectedIndex.value = index
+    watch(() => props.visible, (visible) => {
+      if (visible) {
+        searchQuery.value = ''
       }
     })
 
-    // 生命周期
-    onMounted(() => {
-      document.addEventListener('keydown', handleKeydown)
-      document.addEventListener('click', handleClickOutside)
-      
-      // 设置初始选中索引
-      const index = props.templates.findIndex(t => t.name === props.currentTemplate)
-      if (index !== -1) {
-        selectedIndex.value = index
-      }
-    })
+    // 渲染函数
+    const renderSearchBar = () => {
+      if (!props.showSearch) return null
 
-    onUnmounted(() => {
-      document.removeEventListener('keydown', handleKeydown)
-      document.removeEventListener('click', handleClickOutside)
-    })
-
-    return {
-      isOpen,
-      dropdownRef,
-      selectedIndex,
-      selectorClasses,
-      currentTemplateOption,
-      selectTemplate,
-      openSelector,
-      closeSelector,
-      toggleSelector
-    }
-  },
-  render() {
-    const { config, templates } = this.$props
-
-    // 标签页样式
-    if (config?.style === 'tabs') {
       return (
-        <div class={this.selectorClasses}>
-          <div class="template-tabs">
-            {templates.map((template, index) => (
+        <div class="template-selector__search">
+          <div class="search-input">
+            <input
+              type="text"
+              v-model={searchQuery.value}
+              placeholder="搜索模板..."
+              class="search-field"
+            />
+            {searchQuery.value && (
               <button
-                key={template.name}
-                class={[
-                  'template-tab',
-                  { 
-                    'template-tab--active': template.name === this.$props.currentTemplate,
-                    'template-tab--selected': index === this.selectedIndex
-                  }
-                ]}
-                onClick={() => this.selectTemplate(template)}
+                class="search-clear"
+                onClick={clearSearch}
+                title="清除搜索"
               >
-                {config?.showThumbnail && template.thumbnail && (
-                  <img 
-                    src={template.thumbnail} 
-                    alt={template.displayName || template.name}
-                    class="template-thumbnail"
-                  />
-                )}
-                <div class="template-info">
-                  <span class="template-name">
-                    {template.displayName || template.name}
-                  </span>
-                  {config?.showDescription && template.description && (
-                    <span class="template-description">
-                      {template.description}
-                    </span>
-                  )}
-                </div>
+                ×
               </button>
-            ))}
+            )}
           </div>
         </div>
       )
     }
 
-    // 下拉选择样式
-    if (config?.style === 'dropdown') {
-      return (
-        <div class={this.selectorClasses} ref="dropdownRef">
-          <button 
-            class="template-dropdown-trigger"
-            onClick={this.toggleSelector}
-          >
-            <div class="current-template">
-              {config?.showThumbnail && this.currentTemplateOption?.thumbnail && (
-                <img 
-                  src={this.currentTemplateOption.thumbnail} 
-                  alt={this.currentTemplateOption.displayName || this.currentTemplateOption.name}
-                  class="template-thumbnail"
-                />
-              )}
-              <span class="template-name">
-                {this.currentTemplateOption?.displayName || this.currentTemplateOption?.name || '选择模板'}
-              </span>
-            </div>
-            <svg class="dropdown-arrow" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </button>
+    const renderTemplateCard = (template: TemplateInfo) => {
+      const isSelected = template.name === props.currentTemplate
+      const cardClass = [
+        'template-card',
+        {
+          'template-card--selected': isSelected,
+          'template-card--default': template.isDefault,
+        }
+      ]
 
-          {this.isOpen && (
-            <div class="template-dropdown-menu">
-              {templates.map((template, index) => (
-                <button
-                  key={template.name}
-                  class={[
-                    'template-dropdown-item',
-                    { 
-                      'template-dropdown-item--active': template.name === this.$props.currentTemplate,
-                      'template-dropdown-item--selected': index === this.selectedIndex
-                    }
-                  ]}
-                  onClick={() => this.selectTemplate(template)}
-                >
-                  {config?.showThumbnail && template.thumbnail && (
-                    <img 
-                      src={template.thumbnail} 
-                      alt={template.displayName || template.name}
-                      class="template-thumbnail"
-                    />
-                  )}
-                  <div class="template-info">
-                    <span class="template-name">
-                      {template.displayName || template.name}
-                    </span>
-                    {config?.showDescription && template.description && (
-                      <span class="template-description">
-                        {template.description}
-                      </span>
-                    )}
-                  </div>
-                </button>
-              ))}
+      return (
+        <div
+          key={template.id}
+          class={cardClass}
+          onClick={() => handleSelect(template)}
+          onMouseenter={() => props.showPreview && handlePreview(template)}
+        >
+          {/* 模板缩略图 */}
+          <div class="template-card__thumbnail">
+            {template.thumbnail ? (
+              <img src={template.thumbnail} alt={template.displayName} />
+            ) : (
+              <div class="template-card__placeholder">
+                <span class="placeholder-icon">🎨</span>
+              </div>
+            )}
+            {template.isDefault && (
+              <div class="template-card__badge">默认</div>
+            )}
+          </div>
+
+          {/* 模板信息 */}
+          <div class="template-card__content">
+            <h3 class="template-card__title">{template.displayName}</h3>
+            <p class="template-card__description">{template.description}</p>
+            
+            {/* 标签 */}
+            {template.tags.length > 0 && (
+              <div class="template-card__tags">
+                {template.tags.slice(0, 3).map(tag => (
+                  <span key={tag} class="template-tag">{tag}</span>
+                ))}
+              </div>
+            )}
+
+            {/* 版本信息 */}
+            <div class="template-card__meta">
+              <span class="template-version">v{template.version}</span>
+              <span class="template-author">{template.author}</span>
+            </div>
+          </div>
+
+          {/* 选中状态 */}
+          {isSelected && (
+            <div class="template-card__selected">
+              <span class="selected-icon">✓</span>
             </div>
           )}
         </div>
       )
     }
 
-    // 网格样式
-    if (config?.style === 'grid') {
-      return (
-        <div class={this.selectorClasses}>
-          <div class="template-grid">
-            {templates.map((template, index) => (
-              <button
-                key={template.name}
-                class={[
-                  'template-grid-item',
-                  { 
-                    'template-grid-item--active': template.name === this.$props.currentTemplate,
-                    'template-grid-item--selected': index === this.selectedIndex
-                  }
-                ]}
-                onClick={() => this.selectTemplate(template)}
-              >
-                {config?.showThumbnail && template.thumbnail && (
-                  <div class="template-thumbnail-wrapper">
-                    <img 
-                      src={template.thumbnail} 
-                      alt={template.displayName || template.name}
-                      class="template-thumbnail"
-                    />
-                  </div>
-                )}
-                <div class="template-info">
-                  <span class="template-name">
-                    {template.displayName || template.name}
-                  </span>
-                  {config?.showDescription && template.description && (
-                    <span class="template-description">
-                      {template.description}
-                    </span>
-                  )}
-                </div>
+    const renderTemplateList = () => {
+      if (filteredTemplates.value.length === 0) {
+        return (
+          <div class="template-selector__empty">
+            <div class="empty-icon">📭</div>
+            <p class="empty-text">
+              {searchQuery.value ? '没有找到匹配的模板' : '暂无可用模板'}
+            </p>
+            {searchQuery.value && (
+              <button class="empty-action" onClick={clearSearch}>
+                清除搜索条件
               </button>
-            ))}
+            )}
+          </div>
+        )
+      }
+
+      const containerClass = [
+        'template-selector__list',
+        `template-selector__list--${props.layout}`
+      ]
+
+      const containerStyle = props.layout === 'grid' ? gridStyle.value : {}
+
+      return (
+        <div class={containerClass} style={containerStyle}>
+          {filteredTemplates.value.map(renderTemplateCard)}
+        </div>
+      )
+    }
+
+    const renderPreview = () => {
+      if (!isPreviewVisible.value || !previewTemplate.value) return null
+
+      return (
+        <div class="template-preview" onClick={handlePreviewClose}>
+          <div class="template-preview__content" onClick={(e) => e.stopPropagation()}>
+            <div class="template-preview__header">
+              <h3>{previewTemplate.value.displayName}</h3>
+              <button class="preview-close" onClick={handlePreviewClose}>×</button>
+            </div>
+            <div class="template-preview__body">
+              <p>{previewTemplate.value.description}</p>
+              {/* 这里可以添加模板的实际预览 */}
+            </div>
           </div>
         </div>
       )
     }
 
-    return null
-  }
+    return () => {
+      if (!props.visible) return null
+
+      return (
+        <div class="template-selector" onClick={handleBackdropClick}>
+          <div class="template-selector__dialog">
+            {/* 头部 */}
+            <div class="template-selector__header">
+              <h2 class="selector-title">
+                选择{props.category}模板 ({props.deviceType})
+              </h2>
+              <button class="selector-close" onClick={handleClose}>
+                ×
+              </button>
+            </div>
+
+            {/* 搜索栏 */}
+            {renderSearchBar()}
+
+            {/* 模板列表 */}
+            <div class="template-selector__body">
+              {renderTemplateList()}
+            </div>
+
+            {/* 底部 */}
+            <div class="template-selector__footer">
+              <div class="selector-info">
+                共 {filteredTemplates.value.length} 个模板
+              </div>
+              <div class="selector-actions">
+                <button class="btn btn-secondary" onClick={handleClose}>
+                  取消
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* 预览弹窗 */}
+          {renderPreview()}
+        </div>
+      )
+    }
+  },
 })

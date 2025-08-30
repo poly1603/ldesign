@@ -1,232 +1,377 @@
 /**
  * 设备适配器
- * 基于 @ldesign/device 包的轻量级适配层，专注于模板系统的设备适配
+ * 负责设备类型检测和响应式切换
  */
 
-import type { DeviceDetectorOptions, DeviceInfo } from '@ldesign/device'
-import type {
-  DeviceAdapterConfig,
-  DeviceType,
-  EventData,
-  EventListener,
-  TemplateInfo,
-} from '../types'
+import type { DeviceType, DeviceDetectionConfig } from '../types'
 
-import { DeviceDetector } from '@ldesign/device'
+export interface DeviceInfo {
+  /** 设备类型 */
+  type: DeviceType
+  /** 屏幕宽度 */
+  width: number
+  /** 屏幕高度 */
+  height: number
+  /** 像素比 */
+  pixelRatio: number
+  /** 是否为触摸设备 */
+  isTouchDevice: boolean
+  /** 用户代理字符串 */
+  userAgent: string
+  /** 是否为移动设备 */
+  isMobile: boolean
+  /** 是否为平板设备 */
+  isTablet: boolean
+  /** 是否为桌面设备 */
+  isDesktop: boolean
+}
+
+export type DeviceChangeCallback = (deviceType: DeviceType, deviceInfo: DeviceInfo) => void
 
 /**
- * 设备适配器类 - 简化版本，完全依赖 @ldesign/device
+ * 设备适配器类
+ * 提供设备检测、监听和适配功能
  */
 export class DeviceAdapter {
-  private config: Required<DeviceAdapterConfig>
-  private deviceDetector: DeviceDetector
-  private listeners = new Map<string, EventListener[]>()
+  private config: DeviceDetectionConfig
+  private currentDevice: DeviceType
+  private currentDeviceInfo: DeviceInfo
+  private listeners: Set<DeviceChangeCallback> = new Set()
+  private resizeObserver?: ResizeObserver
+  private mediaQueryLists: MediaQueryList[] = []
+  private isInitialized = false
 
-  constructor(config: DeviceAdapterConfig = {}) {
-    this.config = this.normalizeConfig(config)
-
-    // 配置设备检测器，使用 @ldesign/device 的标准配置
-    const detectorOptions: DeviceDetectorOptions = {
-      enableResize: this.config.watchDeviceChange,
-      enableOrientation: this.config.watchDeviceChange,
-      breakpoints: {
-        mobile: this.config.breakpoints?.mobile || 768,
-        tablet: this.config.breakpoints?.tablet || 1024,
-      },
-      debounceDelay: this.config.debounceDelay,
-    }
-
-    this.deviceDetector = new DeviceDetector(detectorOptions)
-    this.setupDeviceListeners()
+  constructor(config: DeviceDetectionConfig) {
+    this.config = { ...config }
+    this.currentDevice = config.customDetector?.() || 'desktop'
+    this.currentDeviceInfo = this.createDeviceInfo()
   }
 
   /**
-   * 标准化配置
+   * 初始化设备适配器
    */
-  private normalizeConfig(config: DeviceAdapterConfig): Required<DeviceAdapterConfig> {
+  initialize(): void {
+    if (this.isInitialized) return
+
+    if (typeof window === 'undefined') {
+      // 服务端渲染环境
+      this.isInitialized = true
+      return
+    }
+
+    // 初始检测
+    this.updateDeviceInfo()
+
+    if (this.config.autoDetect) {
+      this.setupAutoDetection()
+    }
+
+    this.isInitialized = true
+  }
+
+  /**
+   * 设置自动检测
+   */
+  private setupAutoDetection(): void {
+    // 监听窗口大小变化
+    this.setupResizeObserver()
+    
+    // 监听媒体查询变化
+    this.setupMediaQueries()
+    
+    // 监听方向变化
+    this.setupOrientationChange()
+  }
+
+  /**
+   * 设置ResizeObserver监听
+   */
+  private setupResizeObserver(): void {
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.handleResize()
+      })
+      
+      this.resizeObserver.observe(document.documentElement)
+    } else {
+      // 降级到window.resize事件
+      window.addEventListener('resize', this.handleResize.bind(this))
+    }
+  }
+
+  /**
+   * 设置媒体查询监听
+   */
+  private setupMediaQueries(): void {
+    const queries = [
+      `(max-width: ${this.config.mobileBreakpoint - 1}px)`,
+      `(min-width: ${this.config.mobileBreakpoint}px) and (max-width: ${this.config.tabletBreakpoint - 1}px)`,
+      `(min-width: ${this.config.tabletBreakpoint}px)`,
+    ]
+
+    queries.forEach(query => {
+      const mql = window.matchMedia(query)
+      mql.addEventListener('change', this.handleMediaQueryChange.bind(this))
+      this.mediaQueryLists.push(mql)
+    })
+  }
+
+  /**
+   * 设置方向变化监听
+   */
+  private setupOrientationChange(): void {
+    if ('orientation' in window) {
+      window.addEventListener('orientationchange', () => {
+        // 延迟执行，等待方向变化完成
+        setTimeout(() => {
+          this.handleResize()
+        }, 100)
+      })
+    }
+  }
+
+  /**
+   * 处理窗口大小变化
+   */
+  private handleResize(): void {
+    const oldDevice = this.currentDevice
+    const oldDeviceInfo = { ...this.currentDeviceInfo }
+    
+    this.updateDeviceInfo()
+    
+    if (oldDevice !== this.currentDevice) {
+      this.notifyDeviceChange(oldDevice, oldDeviceInfo)
+    }
+  }
+
+  /**
+   * 处理媒体查询变化
+   */
+  private handleMediaQueryChange(): void {
+    this.handleResize()
+  }
+
+  /**
+   * 更新设备信息
+   */
+  private updateDeviceInfo(): void {
+    const newDeviceInfo = this.createDeviceInfo()
+    const newDeviceType = this.detectDeviceType(newDeviceInfo)
+    
+    this.currentDeviceInfo = newDeviceInfo
+    this.currentDevice = newDeviceType
+  }
+
+  /**
+   * 创建设备信息对象
+   */
+  private createDeviceInfo(): DeviceInfo {
+    if (typeof window === 'undefined') {
+      return {
+        type: 'desktop',
+        width: 1920,
+        height: 1080,
+        pixelRatio: 1,
+        isTouchDevice: false,
+        userAgent: '',
+        isMobile: false,
+        isTablet: false,
+        isDesktop: true,
+      }
+    }
+
+    const width = window.innerWidth
+    const height = window.innerHeight
+    const pixelRatio = window.devicePixelRatio || 1
+    const userAgent = navigator.userAgent
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+
+    // 基于宽度的设备类型检测
+    const type = this.detectDeviceTypeByWidth(width)
+
     return {
-      defaultDeviceType: config.defaultDeviceType ?? 'desktop',
-      fallbackStrategy: config.fallbackStrategy ?? {
-        mobile: ['mobile', 'tablet', 'desktop'],
-        tablet: ['tablet', 'desktop', 'mobile'],
-        desktop: ['desktop', 'tablet', 'mobile'],
-      },
-      autoDetect: config.autoDetect ?? true,
-      watchDeviceChange: config.watchDeviceChange ?? true,
-      breakpoints: config.breakpoints ?? { mobile: 768, tablet: 1024 },
-      debounceDelay: config.debounceDelay ?? 150,
+      type,
+      width,
+      height,
+      pixelRatio,
+      isTouchDevice,
+      userAgent,
+      isMobile: type === 'mobile',
+      isTablet: type === 'tablet',
+      isDesktop: type === 'desktop',
     }
   }
 
   /**
-   * 设置设备监听器
+   * 检测设备类型
    */
-  private setupDeviceListeners(): void {
-    if (this.config.watchDeviceChange) {
-      // 监听设备类型变化
-      this.deviceDetector.on('deviceChange', (deviceInfo: any) => {
-        this.emit('device:change', {
-          type: 'device:change',
-          oldDeviceType: this.getCurrentDeviceType(),
-          newDeviceType: deviceInfo.type as DeviceType,
-          deviceInfo,
-          timestamp: Date.now(),
-        })
-      })
-
-      // 监听屏幕方向变化
-      this.deviceDetector.on('orientationChange', (orientation: any) => {
-        this.emit('device:orientation:change', {
-          type: 'device:orientation:change',
-          orientation,
-          timestamp: Date.now(),
-        })
-      })
+  private detectDeviceType(deviceInfo: DeviceInfo): DeviceType {
+    // 优先使用自定义检测器
+    if (this.config.customDetector) {
+      return this.config.customDetector()
     }
+
+    return this.detectDeviceTypeByWidth(deviceInfo.width)
+  }
+
+  /**
+   * 根据宽度检测设备类型
+   */
+  private detectDeviceTypeByWidth(width: number): DeviceType {
+    if (width < this.config.mobileBreakpoint) {
+      return 'mobile'
+    } else if (width < this.config.tabletBreakpoint) {
+      return 'tablet'
+    } else {
+      return 'desktop'
+    }
+  }
+
+  /**
+   * 通知设备变化
+   */
+  private notifyDeviceChange(oldDevice: DeviceType, oldDeviceInfo: DeviceInfo): void {
+    this.listeners.forEach(callback => {
+      try {
+        callback(this.currentDevice, this.currentDeviceInfo)
+      } catch (error) {
+        console.error('Device change callback error:', error)
+      }
+    })
   }
 
   /**
    * 获取当前设备类型
    */
-  getCurrentDeviceType(): DeviceType {
-    if (this.config.autoDetect) {
-      return this.deviceDetector.getDeviceType() as DeviceType
-    }
-    return this.config.defaultDeviceType
+  getCurrentDevice(): DeviceType {
+    return this.currentDevice
   }
 
   /**
-   * 选择最适合的模板
+   * 获取当前设备信息
    */
-  selectBestTemplate(
-    category: string,
-    availableTemplates: TemplateInfo[],
-  ): TemplateInfo | null {
-    const targetDeviceType = this.getCurrentDeviceType()
-
-    // 按设备类型分组
-    const templatesByDevice = availableTemplates.reduce((acc, template) => {
-      if (template.category === category) {
-        acc[template.deviceType] = template
-      }
-      return acc
-    }, {} as Record<DeviceType, TemplateInfo>)
-
-    // 应用回退策略
-    const fallbackOrder = this.config.fallbackStrategy[targetDeviceType] || [targetDeviceType]
-
-    for (const deviceType of fallbackOrder) {
-      if (templatesByDevice[deviceType]) {
-        return templatesByDevice[deviceType]
-      }
-    }
-
-    return null
+  getCurrentDeviceInfo(): DeviceInfo {
+    return { ...this.currentDeviceInfo }
   }
 
   /**
-   * 获取设备信息
+   * 添加设备变化监听器
    */
-  getDeviceInfo(): DeviceInfo {
-    return this.deviceDetector.getDeviceInfo()
-  }
-
-  /**
-   * 添加事件监听器
-   */
-  on(event: string, listener: EventListener): void {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, [])
-    }
-    this.listeners.get(event)!.push(listener)
-  }
-
-  /**
-   * 移除事件监听器
-   */
-  off(event: string, listener: EventListener): void {
-    const eventListeners = this.listeners.get(event)
-    if (eventListeners) {
-      const index = eventListeners.indexOf(listener)
-      if (index > -1) {
-        eventListeners.splice(index, 1)
-      }
+  addDeviceChangeListener(callback: DeviceChangeCallback): () => void {
+    this.listeners.add(callback)
+    
+    // 返回取消监听的函数
+    return () => {
+      this.listeners.delete(callback)
     }
   }
 
   /**
-   * 触发事件
+   * 移除设备变化监听器
    */
-  private emit(event: string, data: EventData): void {
-    const eventListeners = this.listeners.get(event)
-    if (eventListeners) {
-      eventListeners.forEach((listener) => {
-        try {
-          listener(data)
-        }
-        catch (error) {
-          console.error(`Error in event listener for ${event}:`, error)
-        }
-      })
-    }
+  removeDeviceChangeListener(callback: DeviceChangeCallback): void {
+    this.listeners.delete(callback)
   }
 
   /**
-   * 检查是否有指定模板
-   */
-  hasTemplate(
-    category: string,
-    templates: TemplateInfo[],
-    targetDeviceType?: DeviceType,
-  ): boolean {
-    const deviceType = targetDeviceType || this.getCurrentDeviceType()
-    return templates.some(template =>
-      template.category === category && template.deviceType === deviceType,
-    )
-  }
-
-  /**
-   * 设置设备类型
+   * 手动设置设备类型
    */
   setDeviceType(deviceType: DeviceType): void {
-    // 这里可以强制设置设备类型，覆盖自动检测
-    this.config.defaultDeviceType = deviceType
-    this.emit('device:change', {
-      type: 'device:change',
-      oldDeviceType: this.getCurrentDeviceType(),
-      newDeviceType: deviceType,
-      timestamp: Date.now(),
-    })
+    const oldDevice = this.currentDevice
+    const oldDeviceInfo = { ...this.currentDeviceInfo }
+    
+    this.currentDevice = deviceType
+    this.currentDeviceInfo = {
+      ...this.currentDeviceInfo,
+      type: deviceType,
+      isMobile: deviceType === 'mobile',
+      isTablet: deviceType === 'tablet',
+      isDesktop: deviceType === 'desktop',
+    }
+    
+    if (oldDevice !== deviceType) {
+      this.notifyDeviceChange(oldDevice, oldDeviceInfo)
+    }
   }
 
   /**
-   * 启用自动检测
+   * 检查是否为指定设备类型
    */
-  enableAutoDetect(): void {
-    this.config.autoDetect = true
-    // 重新启动设备检测
-    this.setupDeviceListeners()
+  isDevice(deviceType: DeviceType): boolean {
+    return this.currentDevice === deviceType
   }
 
   /**
-   * 禁用自动检测
+   * 检查是否为移动设备
    */
-  disableAutoDetect(): void {
-    this.config.autoDetect = false
+  isMobile(): boolean {
+    return this.currentDevice === 'mobile'
   }
 
   /**
-   * 销毁适配器（别名方法）
+   * 检查是否为平板设备
    */
-  dispose(): void {
-    this.destroy()
+  isTablet(): boolean {
+    return this.currentDevice === 'tablet'
+  }
+
+  /**
+   * 检查是否为桌面设备
+   */
+  isDesktop(): boolean {
+    return this.currentDevice === 'desktop'
+  }
+
+  /**
+   * 更新配置
+   */
+  updateConfig(config: Partial<DeviceDetectionConfig>): void {
+    this.config = { ...this.config, ...config }
+    
+    if (this.isInitialized) {
+      this.updateDeviceInfo()
+    }
+  }
+
+  /**
+   * 获取配置
+   */
+  getConfig(): DeviceDetectionConfig {
+    return { ...this.config }
   }
 
   /**
    * 销毁适配器
    */
   destroy(): void {
-    this.deviceDetector.destroy()
+    // 清理ResizeObserver
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = undefined
+    }
+
+    // 清理媒体查询监听器
+    this.mediaQueryLists.forEach(mql => {
+      mql.removeEventListener('change', this.handleMediaQueryChange.bind(this))
+    })
+    this.mediaQueryLists = []
+
+    // 清理事件监听器
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('resize', this.handleResize.bind(this))
+      window.removeEventListener('orientationchange', this.handleResize.bind(this))
+    }
+
+    // 清理回调函数
     this.listeners.clear()
+    
+    this.isInitialized = false
   }
+}
+
+/**
+ * 创建设备适配器实例
+ */
+export function createDeviceAdapter(config: DeviceDetectionConfig): DeviceAdapter {
+  return new DeviceAdapter(config)
 }

@@ -2,11 +2,8 @@
  * @ldesign/template 主入口文件
  * 高性能动态模板管理系统
  */
-export { DeviceAdapter, TemplateLoader, TemplateManager, TemplateScanner, } from './core';
-export { TemplateManager as default } from './core/manager';
-export { CacheService, DeviceService, } from './services';
-export type * from './types';
-export * from './utils';
+export * from './core';
 export * from './vue';
-export * from './engine';
+export type * from './types';
+export { TemplateManager as default } from './core/template-manager';
 //# sourceMappingURL=index.d.ts.map
