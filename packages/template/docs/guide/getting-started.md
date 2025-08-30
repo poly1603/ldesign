@@ -2,6 +2,43 @@
 
 > 🚀 5分钟带你体验模板管理的魅力！
 
+## 📦 安装
+
+首先，让我们安装 `@ldesign/template`：
+
+```bash
+# 使用 pnpm (推荐)
+pnpm add @ldesign/template
+
+# 使用 npm
+npm install @ldesign/template
+
+# 使用 yarn
+yarn add @ldesign/template
+```
+
+## 🏗️ 项目结构
+
+在开始之前，让我们了解一下模板的目录结构：
+
+```
+src/templates/
+├── login/                    # 登录模板分类
+│   ├── desktop/             # 桌面端版本
+│   │   ├── default/         # 默认模板
+│   │   │   ├── index.tsx    # 模板组件
+│   │   │   ├── index.less   # 样式文件
+│   │   │   └── config.ts    # 配置文件
+│   │   ├── modern/          # 现代风格模板
+│   │   └── classic/         # 经典风格模板
+│   ├── tablet/              # 平板端版本
+│   └── mobile/              # 移动端版本
+└── dashboard/               # 仪表板模板分类
+    ├── desktop/
+    ├── tablet/
+    └── mobile/
+```
+
 ## 🎯 第一个例子
 
 让我们从最简单的例子开始：
@@ -11,20 +48,318 @@ import { TemplateManager } from '@ldesign/template'
 
 // 1. 创建模板管理器
 const manager = new TemplateManager({
+  templateRoot: 'src/templates',
   enableCache: true,
   defaultDevice: 'desktop'
 })
 
-// 2. 扫描可用模板
-const scanResult = await manager.scanTemplates()
-console.log(`发现 ${scanResult.count} 个模板！`)
+// 2. 初始化并扫描模板
+await manager.initialize()
+console.log(`发现 ${manager.getTemplates().length} 个模板！`)
 
 // 3. 渲染一个登录模板
-const loginTemplate = await manager.render({
+const result = await manager.render('login', 'desktop', 'default')
+console.log('模板渲染成功！', result.template.displayName)
+```
+
+## 🎪 Vue 3 集成
+
+如果你使用 Vue 3，可以享受更简单的集成体验：
+
+### 1. 安装插件
+
+```typescript
+import { createApp } from 'vue'
+import TemplatePlugin from '@ldesign/template'
+import App from './App.vue'
+
+const app = createApp(App)
+
+// 安装模板插件
+app.use(TemplatePlugin, {
+  templateRoot: 'src/templates',
+  enableCache: true,
+  deviceDetection: {
+    mobileBreakpoint: 768,
+    tabletBreakpoint: 992,
+    autoDetect: true
+  }
+})
+
+app.mount('#app')
+```
+
+### 2. 使用组件
+
+```vue
+<template>
+  <div class="app">
+    <!-- 自动渲染登录模板，支持设备响应式切换 -->
+    <TemplateRenderer
+      category="login"
+      :show-selector="true"
+      @template-change="handleTemplateChange"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { TemplateRenderer } from '@ldesign/template'
+
+const handleTemplateChange = (template) => {
+  console.log('切换到模板:', template.displayName)
+}
+</script>
+```
+
+### 3. 使用 Composition API
+
+```vue
+<script setup lang="ts">
+import { useTemplate } from '@ldesign/template'
+
+const {
+  currentTemplate,
+  currentDevice,
+  loading,
+  availableTemplates,
+  render,
+  switchTemplate
+} = useTemplate({
+  templateRoot: 'src/templates'
+})
+
+// 渲染登录模板
+const renderLogin = async () => {
+  await render('login')
+}
+
+// 切换到现代风格
+const switchToModern = async () => {
+  await switchTemplate('login', 'modern')
+}
+</script>
+
+<template>
+  <div>
+    <p>当前设备: {{ currentDevice }}</p>
+    <p>当前模板: {{ currentTemplate?.displayName }}</p>
+
+    <button @click="renderLogin" :disabled="loading">
+      渲染登录模板
+    </button>
+
+    <button @click="switchToModern" :disabled="loading">
+      切换到现代风格
+    </button>
+  </div>
+</template>
+```
+
+## 🎨 创建你的第一个模板
+
+让我们创建一个简单的登录模板：
+
+### 1. 创建模板目录
+
+```bash
+mkdir -p src/templates/login/desktop/my-template
+```
+
+### 2. 创建模板组件
+
+```tsx
+// src/templates/login/desktop/my-template/index.tsx
+import { defineComponent } from 'vue'
+import './index.less'
+
+export default defineComponent({
+  name: 'MyLoginTemplate',
+  props: {
+    title: {
+      type: String,
+      default: '欢迎登录'
+    },
+    showLogo: {
+      type: Boolean,
+      default: true
+    }
+  },
+  setup(props) {
+    const handleLogin = () => {
+      console.log('登录逻辑')
+    }
+
+    return {
+      handleLogin
+    }
+  },
+  render() {
+    return (
+      <div class="my-login-template">
+        {this.showLogo && (
+          <div class="logo">
+            <img src="/logo.png" alt="Logo" />
+          </div>
+        )}
+
+        <h1 class="title">{this.title}</h1>
+
+        <form class="login-form" onSubmit={this.handleLogin}>
+          <input
+            type="text"
+            placeholder="用户名"
+            class="form-input"
+          />
+          <input
+            type="password"
+            placeholder="密码"
+            class="form-input"
+          />
+          <button type="submit" class="login-btn">
+            登录
+          </button>
+        </form>
+      </div>
+    )
+  }
+})
+```
+
+### 3. 创建样式文件
+
+```less
+// src/templates/login/desktop/my-template/index.less
+.my-login-template {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 40px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
+  .logo {
+    text-align: center;
+    margin-bottom: 24px;
+
+    img {
+      width: 80px;
+      height: 80px;
+    }
+  }
+
+  .title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 32px;
+  }
+
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .form-input {
+      padding: 12px 16px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+
+      &:focus {
+        border-color: #007bff;
+      }
+    }
+
+    .login-btn {
+      padding: 12px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: #0056b3;
+      }
+    }
+  }
+}
+```
+
+### 4. 创建配置文件
+
+```typescript
+// src/templates/login/desktop/my-template/config.ts
+import type { TemplateConfig } from '@ldesign/template'
+
+const config: TemplateConfig = {
+  id: 'my-template',
+  name: '我的登录模板',
+  description: '一个简洁美观的登录模板',
+  version: '1.0.0',
+  author: '你的名字',
   category: 'login',
   device: 'desktop',
-  template: 'classic'
-})
+  variant: 'my-template',
+  isDefault: false,
+  features: ['responsive', 'accessible'],
+  thumbnail: '/thumbnails/my-login-template.png',
+  props: {
+    title: {
+      type: 'string',
+      default: '欢迎登录',
+      description: '登录页面标题'
+    },
+    showLogo: {
+      type: 'boolean',
+      default: true,
+      description: '是否显示Logo'
+    }
+  }
+}
+
+export default config
+```
+
+## 🚀 运行你的模板
+
+现在你可以在应用中使用你的模板了：
+
+```vue
+<template>
+  <TemplateRenderer
+    category="login"
+    template="my-template"
+    :props="{
+      title: '欢迎回来！',
+      showLogo: true
+    }"
+  />
+</template>
+```
+
+## 🎉 恭喜！
+
+你已经成功创建了第一个模板！接下来你可以：
+
+- 📱 [创建响应式模板](./responsive-templates.md) - 适配不同设备
+- 🎨 [自定义模板选择器](./template-selector.md) - 让用户自由切换
+- ⚡ [性能优化](./performance.md) - 让模板加载更快
+- 🧪 [编写测试](./testing.md) - 确保模板质量
+
+## 💡 小贴士
+
+- 🔍 使用 `manager.getTemplates()` 查看所有可用模板
+- 🎯 使用 `manager.getCurrentDevice()` 获取当前设备类型
+- 🔄 使用 `manager.on('template:loaded', callback)` 监听模板加载事件
+- 🧹 使用 `manager.clearCache()` 清除缓存以便开发调试
 
 // 4. 使用渲染结果
 console.log('模板组件:', loginTemplate.component)

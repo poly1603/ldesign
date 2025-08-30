@@ -1,609 +1,355 @@
 /**
- * 模板扫描引擎
- * 可配置的模板扫描器，支持智能文件分类、目录结构解析和元数据提取
+ * 模板扫描器
+ * 自动扫描templates目录，支持多层级目录结构（分类/设备类型/模板名称）
  */
 
-import type {
-  DeviceType,
-  EventData,
-  EventListener,
-  ScannerConfig,
-  ScanResult,
-  TemplateIndex,
-  TemplateInfo,
-  TemplateMetadata,
-  TemplateStatus,
-} from '../types'
-// 浏览器兼容的路径工具函数
-function basename(path: string, ext?: string) {
-  const parts = path.split('/')
-  let name = parts[parts.length - 1] || ''
-  if (ext && name.endsWith(ext)) {
-    name = name.slice(0, -ext.length)
+// 条件导入Node.js模块
+let readdir: any, stat: any, join: any, resolve: any, extname: any, basename: any
+
+// 在浏览器环境中提供mock实现
+if (typeof window === 'undefined') {
+  // Node.js环境
+  try {
+    const fs = require('fs/promises')
+    const path = require('path')
+    readdir = fs.readdir
+    stat = fs.stat
+    join = path.join
+    resolve = path.resolve
+    extname = path.extname
+    basename = path.basename
+  } catch (error) {
+    console.warn('Failed to import Node.js modules:', error)
   }
-  return name
+} else {
+  // 浏览器环境的mock实现
+  readdir = async () => []
+  stat = async () => ({ isDirectory: () => false })
+  join = (...args: string[]) => args.join('/')
+  resolve = (path: string) => path
+  extname = (path: string) => path.split('.').pop() || ''
+  basename = (path: string) => path.split('/').pop() || ''
+}
+import type { DeviceType, TemplateConfig, TemplateInfo } from '../types'
+
+export interface ScanOptions {
+  /** 模板根目录，支持多个目录 */
+  templateRoot: string | string[]
+  /** 支持的文件扩展名 */
+  extensions?: string[]
+  /** 是否递归扫描 */
+  recursive?: boolean
+  /** 最大扫描深度 */
+  maxDepth?: number
 }
 
-function dirname(path: string) {
-  const parts = path.split('/')
-  return parts.slice(0, -1).join('/') || '.'
-}
-
-function extname(path: string) {
-  const name = basename(path)
-  const lastDot = name.lastIndexOf('.')
-  return lastDot > 0 ? name.slice(lastDot) : ''
+export interface ScanResult {
+  /** 扫描到的模板数量 */
+  count: number
+  /** 模板信息列表 */
+  templates: TemplateInfo[]
+  /** 扫描耗时（毫秒） */
+  duration: number
+  /** 扫描的目录结构 */
+  structure: Record<string, Record<DeviceType, string[]>>
 }
 
 /**
  * 模板扫描器类
- * 实现可配置的模板扫描、智能文件分类和目录结构解析
+ * 负责自动发现和解析模板文件
  */
 export class TemplateScanner {
-  private config: Required<ScannerConfig>
-  private cache = new Map<string, TemplateIndex>()
-  private listeners = new Map<string, EventListener[]>()
+  private options: Required<ScanOptions>
 
-  constructor(config: ScannerConfig) {
-    this.config = this.normalizeConfig(config)
-  }
-
-  /**
-   * 标准化配置
-   */
-  private normalizeConfig(config: ScannerConfig): Required<ScannerConfig> {
-    const scanPaths = Array.isArray(config.scanPaths)
-      ? config.scanPaths
-      : [config.scanPaths]
-
-    return {
-      scanPaths,
-      recursive: config.recursive ?? true,
-      include: config.include ?? ['**/*.vue', '**/*.json', '**/*.js', '**/*.ts'],
-      exclude: config.exclude ?? ['**/node_modules/**', '**/dist/**', '**/.git/**'],
-      maxDepth: config.maxDepth ?? 10,
-      enableCache: config.enableCache ?? true,
-      cacheTTL: config.cacheTTL ?? 5 * 60 * 1000, // 5分钟
-      watchFiles: config.watchFiles ?? false,
-      concurrency: config.concurrency ?? 10,
+  constructor(options: ScanOptions) {
+    this.options = {
+      extensions: ['.vue', '.tsx', '.ts', '.jsx', '.js'],
+      recursive: true,
+      maxDepth: 3,
+      ...options,
     }
   }
 
   /**
-   * 执行模板扫描
+   * 解析模板路径
+   */
+  private resolveTemplatePath(templatePath: string): string {
+    // 处理特殊的包路径
+    if (templatePath.startsWith('@ldesign/template/templates')) {
+      // 在浏览器环境中，这个路径会被Vite处理
+      // 在Node.js环境中，需要解析到实际的文件系统路径
+      if (typeof window === 'undefined') {
+        // Node.js环境：解析到包的实际路径
+        try {
+          const packagePath = require.resolve('@ldesign/template/package.json')
+          const packageDir = path.dirname(packagePath)
+          return path.join(packageDir, 'src', 'templates')
+        } catch {
+          // 如果无法解析包路径，使用相对路径
+          return resolve('../../src/templates')
+        }
+      } else {
+        // 浏览器环境：使用相对路径
+        return resolve('../../src/templates')
+      }
+    }
+
+    return resolve(templatePath)
+  }
+
+  /**
+   * 扫描模板目录
    */
   async scan(): Promise<ScanResult> {
     const startTime = Date.now()
-
-    this.emit('template:scan:start', { scanPaths: this.config.scanPaths })
+    const templates: TemplateInfo[] = []
+    const structure: Record<string, Record<DeviceType, string[]>> = {}
 
     try {
-      // 检查缓存
-      const cacheKey = this.generateCacheKey()
-      if (this.config.enableCache && this.cache.has(cacheKey)) {
-        const cachedIndex = this.cache.get(cacheKey)!
-        const duration = Date.now() - startTime
+      // 支持多个模板目录
+      const templateRoots = Array.isArray(this.options.templateRoot)
+        ? this.options.templateRoot
+        : [this.options.templateRoot]
 
-        this.emit('template:scan:complete', {
-          fromCache: true,
-          duration,
-          templateCount: cachedIndex.totalCount,
-        })
+      // 扫描所有模板目录
+      for (const templateRootPath of templateRoots) {
+        const templateRoot = this.resolveTemplatePath(templateRootPath)
 
-        return {
-          success: true,
-          index: cachedIndex,
-          duration,
-          errors: [],
-          warnings: [],
+        // 检查模板根目录是否存在
+        try {
+          await stat(templateRoot)
+        } catch {
+          console.warn(`Template root directory not found: ${templateRoot}`)
+          continue
         }
-      }
 
-      // 扫描所有路径
-      const allFiles = await this.scanAllPaths()
+        // 扫描第一层：模板分类
+        const categories = await this.scanDirectory(templateRoot)
 
-      // 解析目录结构
-      const index = await this.parseDirectoryStructure(allFiles)
+        for (const category of categories) {
+          const categoryPath = join(templateRoot, category)
+          const categoryStats = await stat(categoryPath)
 
-      // 缓存结果
-      if (this.config.enableCache) {
-        this.cache.set(cacheKey, index)
-        // 设置缓存过期
-        setTimeout(() => {
-          this.cache.delete(cacheKey)
-        }, this.config.cacheTTL)
-      }
+          if (!categoryStats.isDirectory()) continue
 
-      const duration = Date.now() - startTime
+          structure[category] = {} as Record<DeviceType, string[]>
 
-      this.emit('template:scan:complete', {
-        fromCache: false,
-        duration,
-        templateCount: index.totalCount,
-      })
+          // 扫描第二层：设备类型
+          const devices = await this.scanDirectory(categoryPath)
 
-      return {
-        success: true,
-        index,
-        duration,
-        errors: [],
-        warnings: [],
-      }
-    }
-    catch (error) {
-      const duration = Date.now() - startTime
+          for (const device of devices) {
+            if (!this.isValidDeviceType(device)) continue
 
-      this.emit('template:scan:error', { error, duration })
+            const devicePath = join(categoryPath, device)
+            const deviceStats = await stat(devicePath)
 
-      return {
-        success: false,
-        index: this.createEmptyIndex(),
-        duration,
-        errors: [error as Error],
-        warnings: [],
-      }
-    }
-  }
+            if (!deviceStats.isDirectory()) continue
 
-  /**
-   * 扫描所有配置的路径
-   */
-  private async scanAllPaths(): Promise<Record<string, any>> {
-    const allFiles: Record<string, any> = {}
+            structure[category][device as DeviceType] = []
 
-    for (const scanPath of this.config.scanPaths) {
-      try {
-        // 使用回退扫描方法（在测试环境中）
-        const files = await this.fallbackScan(scanPath)
+            // 扫描第三层：具体模板
+            const templateNames = await this.scanDirectory(devicePath)
 
-        Object.assign(allFiles, files)
-      }
-      catch (error) {
-        console.warn(`Failed to scan path: ${scanPath}`, error)
-      }
-    }
+            for (const templateName of templateNames) {
+              const templatePath = join(devicePath, templateName)
+              const templateStats = await stat(templatePath)
 
-    return allFiles
-  }
+              if (!templateStats.isDirectory()) continue
 
-  /**
-   * 回退扫描方法（当 import.meta.glob 不可用时）
-   */
-  private async fallbackScan(scanPath: string): Promise<Record<string, any>> {
-    // 这里可以实现基于 Node.js fs 的扫描逻辑
-    // 或者返回空对象，在运行时环境中处理
-    console.warn(`Fallback scan not implemented for: ${scanPath}`)
-    return {}
-  }
+              // 解析模板信息
+              const templateInfo = await this.parseTemplate(
+                category,
+                device as DeviceType,
+                templateName,
+                templatePath
+              )
 
-  /**
-   * 解析目录结构并构建模板索引
-   */
-  private async parseDirectoryStructure(files: Record<string, any>): Promise<TemplateIndex> {
-    const startTime = Date.now()
-    const categories: Record<string, Record<DeviceType, TemplateInfo>> = {}
-    const templates: TemplateInfo[] = []
-    const stats = {
-      scanDuration: 0,
-      totalFiles: Object.keys(files).length,
-      templateFiles: 0,
-      configFiles: 0,
-      assetFiles: 0,
-      errors: 0,
-    }
-
-    // 按路径分组文件
-    const pathGroups = this.groupFilesByPath(files)
-
-    for (const [groupPath, groupFiles] of pathGroups) {
-      try {
-        const templateInfo = await this.parseTemplateGroup(groupPath, groupFiles)
-        if (templateInfo) {
-          templates.push(templateInfo)
-
-          // 按分类和设备类型组织
-          if (!categories[templateInfo.category]) {
-            categories[templateInfo.category] = {} as Record<DeviceType, TemplateInfo>
+              if (templateInfo) {
+                templates.push(templateInfo)
+                structure[category][device as DeviceType].push(templateName)
+              }
+            }
           }
-          categories[templateInfo.category][templateInfo.deviceType] = templateInfo
-
-          // 更新统计
-          stats.templateFiles += templateInfo.templateFile ? 1 : 0
-          stats.configFiles += templateInfo.configFile ? 1 : 0
-          stats.assetFiles += templateInfo.assets?.length || 0
         }
       }
-      catch (error) {
-        stats.errors++
-        console.warn(`Failed to parse template group: ${groupPath}`, error)
+
+      return {
+        count: templates.length,
+        templates,
+        duration: Date.now() - startTime,
+        structure,
       }
-    }
-
-    stats.scanDuration = Date.now() - startTime
-
-    return {
-      version: '1.0.0',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      scanPaths: Array.isArray(this.config.scanPaths) ? this.config.scanPaths : [this.config.scanPaths],
-      totalCount: templates.length,
-      categories,
-      templates,
-      stats,
-    }
-  }
-
-  /**
-   * 按路径分组文件
-   * 实现三层目录结构：分类/设备类型/模板文件
-   */
-  private groupFilesByPath(files: Record<string, any>): Map<string, string[]> {
-    const groups = new Map<string, string[]>()
-
-    for (const filePath of Object.keys(files)) {
-      const pathParts = filePath.split('/')
-
-      // 至少需要3层：templates/category/device/file
-      if (pathParts.length >= 4 && pathParts[0] === 'templates') {
-        const category = pathParts[1]
-        const deviceType = pathParts[2]
-        const groupKey = `${category}/${deviceType}`
-
-        if (!groups.has(groupKey)) {
-          groups.set(groupKey, [])
-        }
-        groups.get(groupKey)!.push(filePath)
-      }
-    }
-
-    return groups
-  }
-
-  /**
-   * 解析模板组（同一分类和设备类型下的所有文件）
-   */
-  private async parseTemplateGroup(groupPath: string, filePaths: string[]): Promise<TemplateInfo | null> {
-    const [category, deviceType] = groupPath.split('/')
-
-    if (!this.isValidDeviceType(deviceType)) {
-      return null
-    }
-
-    // 分类文件
-    const templateFiles = filePaths.filter(path => this.classifyFile(path) === 'template')
-    const configFiles = filePaths.filter(path => this.classifyFile(path) === 'config')
-    const assetFiles = filePaths.filter(path => this.classifyFile(path) === 'asset')
-
-    // 必须有模板文件
-    if (templateFiles.length === 0) {
-      return null
-    }
-
-    // 选择主模板文件（优先选择 index.vue）
-    const mainTemplateFile = templateFiles.find(path => basename(path, extname(path)) === 'index')
-      || templateFiles[0]
-
-    // 选择配置文件
-    const mainConfigFile = configFiles.find(path => basename(path, extname(path)) === 'config')
-      || configFiles[0]
-
-    // 提取元数据
-    const metadata = await this.extractMetadata(mainTemplateFile, mainConfigFile)
-
-    return {
-      name: metadata.name || `${category}-${deviceType}`,
-      category,
-      deviceType: deviceType as DeviceType,
-      templateFile: {
-        path: mainTemplateFile,
-        type: 'template',
-        size: 0, // 在实际实现中可以获取文件大小
-        lastModified: Date.now(),
-      },
-      configFile: mainConfigFile
-        ? {
-          path: mainConfigFile,
-          type: 'config',
-          size: 0,
-          lastModified: Date.now(),
-        }
-        : undefined,
-      assets: assetFiles.map(path => ({
-        path,
-        type: 'asset' as const,
-        size: 0,
-        lastModified: Date.now(),
-      })),
-      metadata,
-      status: 'pending' as TemplateStatus,
-      loadedAt: undefined,
-      error: undefined,
-    }
-  }
-
-  /**
-   * 识别文件类型
-   */
-  private classifyFile(filePath: string): 'template' | 'config' | 'asset' {
-    const ext = extname(filePath).toLowerCase()
-    const name = basename(filePath, ext).toLowerCase()
-
-    // 模板文件
-    if (ext === '.vue') {
-      return 'template'
-    }
-
-    // 配置文件
-    if (['.json', '.js', '.ts'].includes(ext)
-      && ['config', 'meta', 'metadata'].includes(name)) {
-      return 'config'
-    }
-
-    // 其他都是资源文件
-    return 'asset'
-  }
-
-  /**
-   * 验证设备类型
-   */
-  private isValidDeviceType(deviceType: string): deviceType is DeviceType {
-    return ['desktop', 'mobile', 'tablet'].includes(deviceType)
-  }
-
-  /**
-   * 提取模板元数据
-   */
-  private async extractMetadata(templatePath: string, configPath?: string): Promise<TemplateMetadata> {
-    const metadata: TemplateMetadata = {
-      name: basename(dirname(templatePath)),
-      description: '',
-      version: '1.0.0',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-
-    // 从配置文件中提取元数据
-    if (configPath) {
-      try {
-        // 在实际实现中，这里会动态导入配置文件
-        // const config = await import(configPath)
-        // Object.assign(metadata, config.default || config)
-      }
-      catch (error) {
-        console.warn(`Failed to load config from: ${configPath}`, error)
-      }
-    }
-
-    return metadata
-  }
-
-  /**
-   * 生成缓存键
-   */
-  private generateCacheKey(): string {
-    const pathsArray = Array.isArray(this.config.scanPaths) ? this.config.scanPaths : [this.config.scanPaths]
-    const pathsHash = pathsArray.join('|')
-    const configHash = JSON.stringify({
-      include: this.config.include,
-      exclude: this.config.exclude,
-      maxDepth: this.config.maxDepth,
-    })
-    return `scanner:${btoa(pathsHash + configHash)}`
-  }
-
-  /**
-   * 创建空索引
-   */
-  private createEmptyIndex(): TemplateIndex {
-    return {
-      version: '1.0.0',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      scanPaths: Array.isArray(this.config.scanPaths) ? this.config.scanPaths : [this.config.scanPaths],
-      totalCount: 0,
-      categories: {},
-      templates: [],
-      stats: {
-        scanDuration: 0,
-        totalFiles: 0,
-        templateFiles: 0,
-        configFiles: 0,
-        assetFiles: 0,
-        errors: 0,
-      },
-    }
-  }
-
-  /**
-   * 事件发射器
-   */
-  private emit(type: string, data: any): void {
-    const eventData: EventData = {
-      type: type as any,
-      timestamp: Date.now(),
-      data,
-    }
-
-    const listeners = this.listeners.get(type) || []
-    listeners.forEach((listener) => {
-      try {
-        listener(eventData)
-      }
-      catch (error) {
-        console.error(`Error in event listener for ${type}:`, error)
-      }
-    })
-  }
-
-  /**
-   * 添加事件监听器
-   */
-  on(type: string, listener: EventListener): void {
-    if (!this.listeners.has(type)) {
-      this.listeners.set(type, [])
-    }
-    this.listeners.get(type)!.push(listener)
-  }
-
-  /**
-   * 移除事件监听器
-   */
-  off(type: string, listener: EventListener): void {
-    const listeners = this.listeners.get(type)
-    if (listeners) {
-      const index = listeners.indexOf(listener)
-      if (index > -1) {
-        listeners.splice(index, 1)
+    } catch (error) {
+      console.error('Template scanning failed:', error)
+      return {
+        count: 0,
+        templates: [],
+        duration: Date.now() - startTime,
+        structure: {},
       }
     }
   }
 
   /**
-   * 扫描模板（公共API）
+   * 扫描目录，返回子目录和文件名列表
    */
-  async scanTemplates(): Promise<{
-    count: number
-    templates: TemplateInfo[]
-    duration: number
-  }> {
-    const startTime = Date.now()
-    const result = await this.scan()
-    const duration = Date.now() - startTime
-
-    return {
-      count: result.index.templates.length,
-      templates: result.index.templates,
-      duration,
-    }
-  }
-
-  /**
-   * 获取模板列表
-   */
-  getTemplates(category?: string, deviceType?: DeviceType): TemplateInfo[] {
-    // 从缓存中获取最新的模板索引
-    const cacheKey = this.generateCacheKey()
-    const templateIndex = this.cache.get(cacheKey)
-
-    if (!templateIndex) {
+  private async scanDirectory(dirPath: string): Promise<string[]> {
+    try {
+      const entries = await readdir(dirPath)
+      return entries.filter(entry => !entry.startsWith('.'))
+    } catch {
       return []
     }
+  }
 
-    return templateIndex.templates.filter((template: TemplateInfo) => {
-      if (category && template.category !== category) {
-        return false
+  /**
+   * 检查是否为有效的设备类型
+   */
+  private isValidDeviceType(device: string): boolean {
+    return ['desktop', 'tablet', 'mobile'].includes(device)
+  }
+
+  /**
+   * 解析单个模板
+   */
+  private async parseTemplate(
+    category: string,
+    deviceType: DeviceType,
+    templateName: string,
+    templatePath: string
+  ): Promise<TemplateInfo | null> {
+    try {
+      // 查找配置文件
+      const configPath = join(templatePath, 'config.ts')
+      let config: TemplateConfig | null = null
+
+      try {
+        // 动态导入配置文件
+        const configModule = await import(configPath)
+        config = configModule.default || configModule.config
+      } catch {
+        // 如果没有配置文件，使用默认配置
+        config = this.createDefaultConfig(category, deviceType, templateName)
       }
-      if (deviceType && template.deviceType !== deviceType) {
-        return false
+
+      // 查找组件文件
+      const componentFile = await this.findComponentFile(templatePath)
+      if (!componentFile) {
+        console.warn(`No component file found in template: ${templatePath}`)
+        return null
       }
-      return true
-    })
+
+      // 构建模板信息
+      const templateInfo: TemplateInfo = {
+        id: `${category}-${deviceType}-${templateName}`,
+        name: config?.name || templateName,
+        displayName: config?.name || this.formatDisplayName(templateName),
+        description: config?.description || `${category} template for ${deviceType}`,
+        category,
+        deviceType,
+        version: config?.version || '1.0.0',
+        author: config?.author || 'Unknown',
+        tags: config?.tags || [category, deviceType],
+        path: templatePath,
+        componentPath: componentFile,
+        component: null, // 将在运行时动态加载
+        thumbnail: config?.thumbnail || '',
+        status: 'discovered',
+        dependencies: config?.dependencies || [],
+        props: config?.props || {},
+        isDefault: config?.isDefault || false,
+        features: config?.features || [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+
+      return templateInfo
+    } catch (error) {
+      console.error(`Failed to parse template ${templatePath}:`, error)
+      return null
+    }
   }
 
   /**
-   * 查找模板
+   * 查找组件文件
    */
-  findTemplate(category: string, deviceType: DeviceType, templateName?: string): TemplateInfo | null {
-    const templates = this.getTemplates(category, deviceType)
+  private async findComponentFile(templatePath: string): Promise<string | null> {
+    const possibleFiles = [
+      'index.vue',
+      'index.tsx',
+      'index.ts',
+      'index.jsx',
+      'index.js',
+      'component.vue',
+      'component.tsx',
+      'template.vue',
+      'template.tsx',
+    ]
 
-    if (templateName) {
-      return templates.find(t => t.metadata.name === templateName) || null
+    for (const fileName of possibleFiles) {
+      const filePath = join(templatePath, fileName)
+      try {
+        await stat(filePath)
+        return filePath
+      } catch {
+        continue
+      }
     }
 
-    return templates[0] || null
+    return null
   }
 
   /**
-   * 检查模板是否存在
+   * 创建默认配置
    */
-  hasTemplate(category: string, deviceType: DeviceType, templateName?: string): boolean {
-    return this.findTemplate(category, deviceType, templateName) !== null
-  }
-
-  /**
-   * 获取可用分类
-   */
-  getAvailableCategories(): string[] {
-    const categories = new Set<string>()
-    const templates = this.getTemplates()
-
-    templates.forEach((template: TemplateInfo) => {
-      categories.add(template.category)
-    })
-    return Array.from(categories)
-  }
-
-  /**
-   * 获取可用设备类型
-   */
-  getAvailableDevices(category?: string): DeviceType[] {
-    const devices = new Set<DeviceType>()
-    const templates = this.getTemplates(category)
-
-    templates.forEach((template: TemplateInfo) => {
-      devices.add(template.deviceType)
-    })
-
-    return Array.from(devices)
-  }
-
-  /**
-   * 获取缓存统计
-   */
-  getCacheStats(): {
-    size: number
-    maxSize: number
-    hitRate: number
-  } {
-    const cacheKey = this.generateCacheKey()
-    const templateIndex = this.cache.get(cacheKey)
-
+  private createDefaultConfig(
+    category: string,
+    deviceType: DeviceType,
+    templateName: string
+  ): TemplateConfig {
     return {
-      size: templateIndex?.templates.length || 0,
-      maxSize: 1000, // 假设最大缓存大小
-      hitRate: 0.85, // 假设命中率
+      id: templateName,
+      name: this.formatDisplayName(templateName),
+      description: `${category} template for ${deviceType}`,
+      version: '1.0.0',
+      author: 'LDesign Team',
+      category,
+      device: deviceType,
+      variant: templateName,
+      isDefault: templateName === 'default',
+      features: ['responsive'],
+      props: {},
     }
   }
 
   /**
-   * 获取扫描统计
+   * 格式化显示名称
    */
-  getStats(): {
-    totalTemplates: number
-    categories: number
-    devices: number
-    lastScanTime: number
-  } {
-    const templates = this.getTemplates()
-
-    return {
-      totalTemplates: templates.length,
-      categories: this.getAvailableCategories().length,
-      devices: this.getAvailableDevices().length,
-      lastScanTime: Date.now(),
-    }
+  private formatDisplayName(name: string): string {
+    return name
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
   }
 
   /**
-   * 获取所有模板（兼容性方法）
+   * 更新扫描选项
    */
-  getAllTemplates(): TemplateInfo[] {
-    return this.getTemplates()
+  updateOptions(options: Partial<ScanOptions>): void {
+    this.options = { ...this.options, ...options }
   }
 
   /**
-   * 清空缓存
+   * 获取当前扫描选项
    */
-  clearCache(): void {
-    this.cache.clear()
-    this.emit('cache:cleared', {})
+  getOptions(): Required<ScanOptions> {
+    return { ...this.options }
   }
+}
 
-  /**
-   * 清理资源
-   */
-  dispose(): void {
-    this.cache.clear()
-    this.listeners.clear()
-  }
+/**
+ * 创建模板扫描器实例
+ */
+export function createTemplateScanner(options: ScanOptions): TemplateScanner {
+  return new TemplateScanner(options)
 }
