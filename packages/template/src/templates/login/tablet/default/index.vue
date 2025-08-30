@@ -1,233 +1,743 @@
-<script setup lang="ts">
-import { ref } from 'vue'
-
-interface Props {
-  title?: string
-  subtitle?: string
-  showRememberMe?: boolean
-  showForgotPassword?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  title: '平板端登录',
-  subtitle: '请输入您的账号信息',
-  showRememberMe: true,
-  showForgotPassword: true,
-})
-
-const form = ref({
-  username: '',
-  password: '',
-  rememberMe: false,
-})
-
-function handleSubmit() {
-  console.log('平板端登录提交:', form.value)
-  alert('这是一个演示模板，登录功能仅供展示')
-}
-</script>
-
 <template>
-  <div class="tablet-default-login-template">
-    <div class="login-container">
-      <div class="login-panel">
-        <div class="login-header">
-          <h2 class="login-title">
-            {{ title }}
-          </h2>
-          <p class="login-subtitle">
-            {{ subtitle }}
-          </p>
-        </div>
+  <div class="login-template-tablet" :style="cssVars" :class="{ 'landscape': isLandscape }">
+    <!-- 背景 -->
+    <div class="tablet-background" :style="backgroundStyle">
+      <div class="background-overlay"></div>
+    </div>
 
-        <form class="login-form" @submit.prevent="handleSubmit">
-          <div class="form-group">
-            <input
-              id="tablet-username"
-              v-model="form.username"
-              type="text"
-              placeholder="用户名"
-              class="form-input"
-              required
-            >
+    <div class="tablet-container">
+      <!-- 侧边栏（横屏模式） -->
+      <div v-if="isLandscape && enableLandscapeMode" class="sidebar-section">
+        <slot name="sidebar">
+          <div class="sidebar-content">
+            <div class="brand-section">
+              <div class="brand-icon">📱</div>
+              <h2 class="brand-title">{{ title }}</h2>
+              <p class="brand-subtitle">{{ subtitle }}</p>
+            </div>
+            
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-icon">✨</div>
+                <div class="feature-text">优雅的设计</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-icon">🚀</div>
+                <div class="feature-text">快速响应</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-icon">🔒</div>
+                <div class="feature-text">安全可靠</div>
+              </div>
+            </div>
           </div>
-
-          <div class="form-group">
-            <input
-              id="tablet-password"
-              v-model="form.password"
-              type="password"
-              placeholder="密码"
-              class="form-input"
-              required
-            >
-          </div>
-
-          <div v-if="showRememberMe" class="form-options">
-            <label class="checkbox-label">
-              <input v-model="form.rememberMe" type="checkbox">
-              <span>记住我</span>
-            </label>
-            <a v-if="showForgotPassword" href="#" class="forgot-link">忘记密码？</a>
-          </div>
-
-          <button type="submit" class="login-button">
-            登录
-          </button>
-        </form>
+        </slot>
       </div>
+
+      <!-- 主要内容区域 -->
+      <div class="main-section">
+        <div class="login-card">
+          <!-- 头部 -->
+          <div class="card-header">
+            <slot name="header">
+              <div class="logo-section">
+                <div v-if="logoUrl" class="logo-image">
+                  <img :src="logoUrl" :alt="title" />
+                </div>
+                <div v-else class="logo-icon">🔐</div>
+                
+                <!-- 竖屏模式显示标题 -->
+                <div v-if="!isLandscape || !enableLandscapeMode" class="title-section">
+                  <h1 class="login-title">{{ title }}</h1>
+                  <p class="login-subtitle">{{ subtitle }}</p>
+                </div>
+              </div>
+            </slot>
+          </div>
+
+          <!-- 登录表单 -->
+          <form class="tablet-form" @submit.prevent="handleSubmit">
+            <div class="form-group">
+              <label for="username" class="form-label">用户名</label>
+              <div class="input-wrapper">
+                <div class="input-icon">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
+                <input
+                  id="username"
+                  v-model="formData.username"
+                  type="text"
+                  class="form-input"
+                  placeholder="请输入用户名或邮箱"
+                  required
+                  :disabled="loading"
+                  @focus="handleInputFocus"
+                  @blur="handleInputBlur"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="password" class="form-label">密码</label>
+              <div class="input-wrapper">
+                <div class="input-icon">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18,8h-1V6c0-2.76-2.24-5-5-5S7,3.24,7,6v2H6c-1.1,0-2,0.9-2,2v10c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V10C20,8.9,19.1,8,18,8z M12,17c-1.1,0-2-0.9-2-2s0.9-2,2-2s2,0.9,2,2S13.1,17,12,17z M15.1,8H8.9V6c0-1.71,1.39-3.1,3.1-3.1s3.1,1.39,3.1,3.1V8z"/>
+                  </svg>
+                </div>
+                <input
+                  id="password"
+                  v-model="formData.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  class="form-input"
+                  placeholder="请输入密码"
+                  required
+                  :disabled="loading"
+                  @focus="handleInputFocus"
+                  @blur="handleInputBlur"
+                />
+                <button
+                  type="button"
+                  class="password-toggle"
+                  @click="showPassword = !showPassword"
+                  :disabled="loading"
+                >
+                  <svg v-if="showPassword" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
+                  </svg>
+                  <svg v-else viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11.83,9L15,12.16C15,12.11 15,12.05 15,12A3,3 0 0,0 12,9C11.94,9 11.89,9 11.83,9M7.53,9.8L9.08,11.35C9.03,11.56 9,11.77 9,12A3,3 0 0,0 12,15C12.22,15 12.44,14.97 12.65,14.92L14.2,16.47C13.53,16.8 12.79,17 12,17A5,5 0 0,1 7,12C7,11.21 7.2,10.47 7.53,9.8M2,4.27L4.28,6.55L4.73,7C3.08,8.3 1.78,10 1,12C2.73,16.39 7,19.5 12,19.5C13.55,19.5 15.03,19.2 16.38,18.66L16.81,19.09L19.73,22L21,20.73L3.27,3M12,7A5,5 0 0,1 17,12C17,12.64 16.87,13.26 16.64,13.82L19.57,16.75C21.07,15.5 22.27,13.86 23,12C21.27,7.61 17,4.5 12,4.5C10.6,4.5 9.26,4.75 8,5.2L10.17,7.35C10.76,7.13 11.37,7 12,7Z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-options">
+              <label v-if="showRemember" class="tablet-checkbox">
+                <input
+                  v-model="formData.remember"
+                  type="checkbox"
+                  class="checkbox-input"
+                  :disabled="loading"
+                />
+                <span class="checkbox-custom"></span>
+                <span class="checkbox-text">记住我</span>
+              </label>
+              
+              <a v-if="showForgot" href="#" class="forgot-link" @click.prevent="handleForgot">
+                忘记密码？
+              </a>
+            </div>
+
+            <button type="submit" class="tablet-button" :disabled="loading">
+              <span v-if="loading" class="loading-spinner"></span>
+              <span>{{ loading ? '登录中...' : '登录' }}</span>
+            </button>
+
+            <div v-if="showRegister" class="register-section">
+              <p class="register-text">
+                还没有账户？
+                <a href="#" class="register-link" @click.prevent="handleRegister">
+                  立即注册
+                </a>
+              </p>
+            </div>
+
+            <slot name="extra"></slot>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部 -->
+    <div class="tablet-footer">
+      <slot name="footer">
+        <p class="footer-text">&copy; 2024 ldesign. 专为平板优化</p>
+      </slot>
     </div>
   </div>
 </template>
 
-<style scoped>
-.tablet-default-login-template {
-  min-height: 500px;
+<script setup lang="ts">
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+
+// Props定义
+interface Props {
+  title?: string
+  subtitle?: string
+  showRemember?: boolean
+  showRegister?: boolean
+  showForgot?: boolean
+  logoUrl?: string
+  backgroundImage?: string
+  primaryColor?: string
+  enableLandscapeMode?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  title: '平板登录',
+  subtitle: '在平板上享受更好的体验',
+  showRemember: true,
+  showRegister: true,
+  showForgot: true,
+  logoUrl: '',
+  backgroundImage: '',
+  primaryColor: '#667eea',
+  enableLandscapeMode: true
+})
+
+// 状态管理
+const formData = reactive({
+  username: '',
+  password: '',
+  remember: false
+})
+
+const loading = ref(false)
+const showPassword = ref(false)
+const isLandscape = ref(false)
+
+// 计算属性
+const cssVars = computed(() => ({
+  '--primary-color': props.primaryColor
+}))
+
+const backgroundStyle = computed(() => {
+  if (props.backgroundImage) {
+    return {
+      backgroundImage: `url(${props.backgroundImage})`
+    }
+  }
+  return {}
+})
+
+// 检测屏幕方向
+const checkOrientation = () => {
+  isLandscape.value = window.innerWidth > window.innerHeight
+}
+
+// 处理输入框焦点（平板键盘适配）
+const handleInputFocus = () => {
+  // 平板键盘弹出时的处理
+  if (window.innerHeight < 600) {
+    document.body.style.height = '100vh'
+  }
+}
+
+const handleInputBlur = () => {
+  // 键盘收起时的处理
+  document.body.style.height = 'auto'
+}
+
+// 事件处理
+const handleSubmit = async () => {
+  loading.value = true
+  
+  try {
+    // 触觉反馈（如果支持）
+    if ('vibrate' in navigator) {
+      navigator.vibrate(50)
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    
+    console.log('平板登录数据:', formData)
+    alert(`登录成功！用户名: ${formData.username}`)
+  } catch (error) {
+    console.error('登录失败:', error)
+    
+    // 错误震动反馈
+    if ('vibrate' in navigator) {
+      navigator.vibrate([100, 50, 100])
+    }
+    
+    alert('登录失败，请重试')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleForgot = () => {
+  alert('忘记密码功能')
+}
+
+const handleRegister = () => {
+  alert('注册功能')
+}
+
+// 生命周期
+onMounted(() => {
+  checkOrientation()
+  window.addEventListener('resize', checkOrientation)
+  window.addEventListener('orientationchange', checkOrientation)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkOrientation)
+  window.removeEventListener('orientationchange', checkOrientation)
+  document.body.style.height = 'auto'
+})
+</script>
+
+<style lang="less" scoped>
+.login-template-tablet {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+// 背景
+.tablet-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--primary-color, #667eea) 0%, #764ba2 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  .background-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.1);
+  }
+}
+
+// 主容器
+.tablet-container {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  padding: 2rem;
+  gap: 2rem;
+}
+
+// 侧边栏（横屏模式）
+.sidebar-section {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2rem;
+
+  .sidebar-content {
+    color: white;
+    text-align: center;
+
+    .brand-section {
+      margin-bottom: 3rem;
+
+      .brand-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: float 3s ease-in-out infinite;
+      }
+
+      .brand-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .brand-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+    }
+
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+
+      .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+
+        .feature-icon {
+          font-size: 1.5rem;
+        }
+
+        .feature-text {
+          font-size: 1rem;
+          font-weight: 500;
+        }
+      }
+    }
+  }
 }
 
-.login-container {
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+// 主要内容区域
+.main-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+// 竖屏模式调整
+.login-template-tablet:not(.landscape) {
+  .tablet-container {
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .main-section {
+    max-width: 600px;
+  }
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  padding: 3rem;
   width: 100%;
-  max-width: 480px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.login-panel {
-  padding: 3rem 2.5rem;
-}
-
-.login-header {
+// 卡片头部
+.card-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+
+  .logo-section {
+    .logo-image {
+      margin-bottom: 1.5rem;
+      
+      img {
+        height: 70px;
+        width: auto;
+      }
+    }
+
+    .logo-icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+      color: var(--primary-color, #667eea);
+    }
+
+    .title-section {
+      .login-title {
+        font-size: 2.2rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+      }
+
+      .login-subtitle {
+        color: #7f8c8d;
+        font-size: 1rem;
+      }
+    }
+  }
 }
 
-.login-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1a202c;
-  margin-bottom: 0.5rem;
-}
-
-.login-subtitle {
-  color: #718096;
-  font-size: 1rem;
-  margin: 0;
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-input {
-  padding: 1rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 1rem;
-  transition: all 0.2s ease;
-  background: #f7fafc;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #667eea;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: -0.5rem 0;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: #4a5568;
-  cursor: pointer;
-}
-
-.checkbox-label input[type="checkbox"] {
-  width: 1rem;
-  height: 1rem;
-  accent-color: #667eea;
-}
-
-.forgot-link {
-  color: #667eea;
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.forgot-link:hover {
-  text-decoration: underline;
-}
-
-.login-button {
-  padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.login-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-}
-
-.login-button:active {
-  transform: translateY(0);
-}
-
-/* 平板端特定样式 */
-@media (min-width: 768px) and (max-width: 1024px) {
-  .tablet-default-login-template {
-    padding: 3rem;
+// 平板表单
+.tablet-form {
+  .form-group {
+    margin-bottom: 2rem;
   }
 
-  .login-container {
-    max-width: 520px;
+  .form-label {
+    display: block;
+    font-weight: 500;
+    color: #2c3e50;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
   }
 
-  .login-panel {
-    padding: 3.5rem 3rem;
+  .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .input-icon {
+      position: absolute;
+      left: 1.25rem;
+      width: 22px;
+      height: 22px;
+      color: #adb5bd;
+      z-index: 2;
+
+      svg {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 1.25rem 1.25rem 1.25rem 3.5rem;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      background: white;
+
+      &:focus {
+        outline: none;
+        border-color: var(--primary-color, #667eea);
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+      }
+
+      &:disabled {
+        background: #f8f9fa;
+        cursor: not-allowed;
+      }
+
+      &::placeholder {
+        color: #adb5bd;
+      }
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 1.25rem;
+      background: none;
+      border: none;
+      width: 22px;
+      height: 22px;
+      color: #adb5bd;
+      cursor: pointer;
+      transition: color 0.3s ease;
+      z-index: 2;
+      padding: 0.5rem;
+      margin: -0.5rem;
+      border-radius: 8px;
+
+      &:hover:not(:disabled) {
+        color: var(--primary-color, #667eea);
+        background: rgba(102, 126, 234, 0.1);
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      svg {
+        width: 100%;
+        height: 100%;
+      }
+    }
   }
 
-  .login-title {
-    font-size: 2rem;
+  .form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
   }
 
-  .form-input {
+  .tablet-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1rem;
+
+    .checkbox-input {
+      display: none;
+    }
+
+    .checkbox-custom {
+      width: 22px;
+      height: 22px;
+      border: 2px solid #e9ecef;
+      border-radius: 6px;
+      margin-right: 0.75rem;
+      position: relative;
+      transition: all 0.3s ease;
+
+      &::after {
+        content: '✓';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        color: white;
+        font-size: 14px;
+        font-weight: bold;
+        transition: transform 0.2s ease;
+      }
+    }
+
+    .checkbox-input:checked + .checkbox-custom {
+      background: var(--primary-color, #667eea);
+      border-color: var(--primary-color, #667eea);
+
+      &::after {
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    .checkbox-text {
+      color: #6c757d;
+    }
+  }
+
+  .forgot-link {
+    color: var(--primary-color, #667eea);
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+    padding: 0.5rem;
+    margin: -0.5rem;
+    border-radius: 8px;
+
+    &:hover {
+      color: #5a6fd8;
+      background: rgba(102, 126, 234, 0.1);
+    }
+  }
+
+  .tablet-button {
+    width: 100%;
+    background: linear-gradient(135deg, var(--primary-color, #667eea) 0%, #764ba2 100%);
+    color: white;
+    border: none;
     padding: 1.25rem;
+    border-radius: 12px;
     font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loading-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
   }
 
-  .login-button {
-    padding: 1.25rem;
-    font-size: 1.1rem;
+  .register-section {
+    text-align: center;
+    margin-top: 2.5rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid #e9ecef;
+
+    .register-text {
+      color: #6c757d;
+      font-size: 1rem;
+    }
+
+    .register-link {
+      color: var(--primary-color, #667eea);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+      padding: 0.5rem;
+      margin: -0.5rem;
+      border-radius: 8px;
+
+      &:hover {
+        color: #5a6fd8;
+        background: rgba(102, 126, 234, 0.1);
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// 底部
+.tablet-footer {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 1.5rem;
+
+  .footer-text {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+  }
+}
+
+// 响应式设计
+@media (max-width: 1024px) and (orientation: portrait) {
+  .tablet-container {
+    padding: 1.5rem;
+  }
+
+  .login-card {
+    padding: 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .tablet-container {
+    padding: 1rem;
+  }
+
+  .login-card {
+    padding: 2rem;
+    border-radius: 16px;
+  }
+
+  .card-header .logo-section .title-section .login-title {
+    font-size: 1.8rem;
+  }
+}
+
+// 触摸设备优化
+@media (hover: none) and (pointer: coarse) {
+  .tablet-button:hover,
+  .password-toggle:hover,
+  .forgot-link:hover,
+  .register-link:hover {
+    transform: none;
+    background: initial;
+  }
+
+  .tablet-button:active {
+    transform: scale(0.98);
   }
 }
 </style>

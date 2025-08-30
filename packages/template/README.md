@@ -9,6 +9,7 @@
 
 ## ✨ 特性
 
+- 🎯 **内置模板库** - 丰富的内置模板，涵盖登录、仪表板等常见场景
 - 🚀 **开箱即用** - 零配置启动，智能模板扫描
 - 📱 **响应式设计** - 自动设备检测，完美适配各种屏幕
 - ⚡ **性能优化** - 懒加载、缓存机制、预加载支持
@@ -97,6 +98,106 @@ app.use(TemplatePlugin, {
 })
 
 app.mount('#app')
+```
+
+## 🎨 内置模板库
+
+@ldesign/template 提供了丰富的内置模板，开箱即用，无需额外配置。
+
+### 登录模板 (login)
+
+#### 桌面端 (desktop)
+- **default** - 经典登录页面
+  - 简洁大方的设计风格
+  - 支持用户名/邮箱登录
+  - 记住我功能
+  - 忘记密码链接
+
+- **modern** - 现代化登录页面
+  - 卡片式布局设计
+  - 渐变背景效果
+  - 动画过渡效果
+  - 响应式适配
+
+- **creative** - 创意登录页面
+  - 艺术化设计元素
+  - 动态背景动画
+  - 创意图形装饰
+  - 沉浸式体验
+
+#### 平板端 (tablet)
+- **default** - 平板优化登录页面
+  - 触摸友好的交互设计
+  - 横屏竖屏自适应
+  - 中等尺寸布局
+  - 手势支持
+
+#### 移动端 (mobile)
+- **default** - 移动端登录页面
+  - 全屏设计布局
+  - 生物识别登录支持
+  - 触摸优化交互
+  - 键盘适配
+
+### 仪表板模板 (dashboard)
+
+#### 桌面端 (desktop)
+- **admin** - 管理后台仪表板
+  - 完整的侧边栏导航
+  - 数据统计卡片
+  - 表格数据管理
+  - 用户权限控制
+
+- **analytics** - 数据分析仪表板
+  - 专业的图表展示
+  - 实时数据更新
+  - 多维度分析
+  - 智能洞察功能
+
+### 使用内置模板
+
+```vue
+<template>
+  <!-- 使用桌面端默认登录模板 -->
+  <TemplateRenderer
+    category="login"
+    device="desktop"
+    template="default"
+    :props="{
+      title: '欢迎登录',
+      subtitle: '请输入您的账号信息',
+      primaryColor: '#667eea',
+      showRemember: true,
+      showRegister: true
+    }"
+  />
+
+  <!-- 使用移动端登录模板 -->
+  <TemplateRenderer
+    category="login"
+    device="mobile"
+    template="default"
+    :props="{
+      title: '手机登录',
+      subtitle: '随时随地，安全登录',
+      enableBiometric: true,
+      showQuickLogin: true
+    }"
+  />
+
+  <!-- 使用管理后台仪表板 -->
+  <TemplateRenderer
+    category="dashboard"
+    device="desktop"
+    template="admin"
+    :props="{
+      title: '管理后台',
+      userName: '管理员',
+      showSidebar: true,
+      darkMode: false
+    }"
+  />
+</template>
 ```
 
 ### 2. Composable 方式

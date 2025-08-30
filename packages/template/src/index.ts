@@ -1,16 +1,33 @@
 /**
- * @ldesign/template 主入口文件
- * 高性能动态模板管理系统
+ * @ldesign/template - Vue3模板管理和渲染功能库
+ *
+ * 功能强大、性能卓越的 Vue3 模板管理和渲染功能库
+ * 支持智能预加载、懒加载、虚拟滚动等性能优化功能
+ *
+ * @author ldesign
+ * @version 1.0.0
  */
 
-// 核心功能导出
-export * from './core'
+// 导出组件
+export * from './components'
 
-// Vue 集成导出
-export * from './vue'
+// 导出Hook函数
+export * from './composables'
 
-// 类型导出
-export type * from './types'
+// 导出Vue3插件
+export { getPluginOptions, getPluginState, getScanner, default as TemplatePlugin } from './plugin'
 
-// 默认导出Vue插件
-export { default } from './vue/plugin'
+// 默认导出插件
+export { default } from './plugin'
+
+// 导出扫描器
+export * from './scanner'
+
+// 导出核心类型
+export * from './types'
+
+// 版本信息
+export const version = '1.0.0'
+
+// 导出工具函数
+export * from './utils'

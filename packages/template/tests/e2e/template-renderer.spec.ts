@@ -2,262 +2,239 @@
  * TemplateRenderer E2E 测试
  */
 
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('TemplateRenderer E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
     // 导航到测试页面
-    await page.goto('/template-renderer')
+    await page.goto('/template-renderer-demo')
   })
 
-  test('应该渲染默认模板', async ({ page }) => {
-    // 等待模板渲染器加载
+  test('应该正确渲染模板渲染器', async ({ page }) => {
+    // 等待组件加载
     await page.waitForSelector('.template-renderer')
-    
-    // 检查是否显示了模板内容
+
+    // 验证基本结构
     const renderer = page.locator('.template-renderer')
     await expect(renderer).toBeVisible()
-    
-    // 检查是否显示了选择器按钮
-    const selectorButton = page.locator('.template-renderer__selector-btn')
-    await expect(selectorButton).toBeVisible()
+
+    const content = page.locator('.template-renderer__content')
+    await expect(content).toBeVisible()
   })
 
   test('应该显示加载状态', async ({ page }) => {
     // 模拟慢速网络
-    await page.route('**/templates/**', route => {
+    await page.route('**/templates/**', (route) => {
       setTimeout(() => route.continue(), 2000)
     })
-    
-    await page.goto('/template-renderer')
-    
-    // 检查加载状态
-    const loading = page.locator('.template-renderer__loading')
+
+    // 触发模板加载
+    await page.click('[data-testid="load-template-btn"]')
+
+    // 验证加载状态
+    const loading = page.locator('.template-loading')
     await expect(loading).toBeVisible()
-    await expect(loading.locator('.loading-text')).toContainText('加载模板中')
+
+    const loadingText = page.locator('.template-loading__text')
+    await expect(loadingText).toHaveText('加载模板中...')
+
+    // 等待加载完成
+    await expect(loading).not.toBeVisible({ timeout: 5000 })
   })
 
-  test('应该打开模板选择器', async ({ page }) => {
-    // 等待页面加载
-    await page.waitForSelector('.template-renderer__selector-btn')
-    
-    // 点击选择器按钮
-    await page.click('.template-renderer__selector-btn')
-    
-    // 检查选择器是否打开
-    const selector = page.locator('.template-selector')
-    await expect(selector).toBeVisible()
-    
-    // 检查选择器标题
-    const title = page.locator('.selector-title')
-    await expect(title).toContainText('选择')
+  test('应该处理模板切换', async ({ page }) => {
+    // 等待初始模板加载
+    await page.waitForSelector('[data-testid="current-template"]')
+
+    // 获取当前模板名称
+    const initialTemplate = await page.textContent('[data-testid="current-template"]')
+
+    // 切换到不同的模板
+    await page.selectOption('[data-testid="template-selector"]', 'modern')
+
+    // 等待模板切换完成
+    await page.waitForFunction(
+      (initial) => {
+        const current = document.querySelector('[data-testid="current-template"]')?.textContent
+        return current && current !== initial
+      },
+      initialTemplate,
+    )
+
+    // 验证模板已切换
+    const newTemplate = await page.textContent('[data-testid="current-template"]')
+    expect(newTemplate).not.toBe(initialTemplate)
   })
 
-  test('应该切换模板', async ({ page }) => {
-    // 打开模板选择器
-    await page.click('.template-renderer__selector-btn')
-    await page.waitForSelector('.template-selector')
-    
-    // 选择一个不同的模板
-    const templateCard = page.locator('.template-card').nth(1)
-    await templateCard.click()
-    
-    // 检查选择器是否关闭
-    const selector = page.locator('.template-selector')
-    await expect(selector).not.toBeVisible()
-    
-    // 检查是否触发了模板切换事件
-    // 这里可以检查页面内容的变化或者事件日志
-  })
-
-  test('应该搜索模板', async ({ page }) => {
-    // 打开模板选择器
-    await page.click('.template-renderer__selector-btn')
-    await page.waitForSelector('.template-selector')
-    
-    // 在搜索框中输入
-    const searchInput = page.locator('.search-field')
-    await searchInput.fill('modern')
-    
-    // 检查搜索结果
-    const templateCards = page.locator('.template-card')
-    const cardCount = await templateCards.count()
-    
-    // 应该只显示匹配的模板
-    expect(cardCount).toBeGreaterThan(0)
-    
-    // 检查显示的模板是否包含搜索关键词
-    const firstCard = templateCards.first()
-    const cardText = await firstCard.textContent()
-    expect(cardText?.toLowerCase()).toContain('modern')
-  })
-
-  test('应该清除搜索', async ({ page }) => {
-    // 打开模板选择器并搜索
-    await page.click('.template-renderer__selector-btn')
-    await page.waitForSelector('.template-selector')
-    
-    const searchInput = page.locator('.search-field')
-    await searchInput.fill('test')
-    
-    // 点击清除按钮
-    const clearButton = page.locator('.search-clear')
-    await clearButton.click()
-    
-    // 检查搜索框是否被清空
-    await expect(searchInput).toHaveValue('')
-  })
-
-  test('应该关闭模板选择器', async ({ page }) => {
-    // 打开模板选择器
-    await page.click('.template-renderer__selector-btn')
-    await page.waitForSelector('.template-selector')
-    
-    // 点击关闭按钮
-    await page.click('.selector-close')
-    
-    // 检查选择器是否关闭
-    const selector = page.locator('.template-selector')
-    await expect(selector).not.toBeVisible()
-  })
-
-  test('应该通过背景点击关闭选择器', async ({ page }) => {
-    // 打开模板选择器
-    await page.click('.template-renderer__selector-btn')
-    await page.waitForSelector('.template-selector')
-    
-    // 点击背景区域
-    await page.click('.template-selector', { position: { x: 10, y: 10 } })
-    
-    // 检查选择器是否关闭
-    const selector = page.locator('.template-selector')
-    await expect(selector).not.toBeVisible()
-  })
-
-  test('应该响应设备类型变化', async ({ page }) => {
-    // 设置桌面端视口
-    await page.setViewportSize({ width: 1200, height: 800 })
-    await page.reload()
-    
-    // 检查当前设备类型
-    let deviceInfo = await page.locator('[data-device-type]').getAttribute('data-device-type')
-    expect(deviceInfo).toBe('desktop')
-    
-    // 切换到移动端视口
-    await page.setViewportSize({ width: 375, height: 667 })
-    
-    // 等待设备类型更新
-    await page.waitForTimeout(500)
-    
-    // 检查设备类型是否更新
-    deviceInfo = await page.locator('[data-device-type]').getAttribute('data-device-type')
-    expect(deviceInfo).toBe('mobile')
-  })
-
-  test('应该显示错误状态', async ({ page }) => {
+  test('应该显示错误状态并支持重试', async ({ page }) => {
     // 模拟网络错误
-    await page.route('**/templates/**', route => {
+    await page.route('**/templates/error-template/**', (route) => {
       route.abort('failed')
     })
-    
-    await page.goto('/template-renderer')
-    
-    // 检查错误状态
-    const error = page.locator('.template-renderer__error')
+
+    // 尝试加载错误模板
+    await page.selectOption('[data-testid="template-selector"]', 'error-template')
+
+    // 验证错误状态
+    const error = page.locator('.template-error')
     await expect(error).toBeVisible()
-    await expect(error.locator('.error-message')).toContainText('模板加载失败')
-    
-    // 检查重试按钮
-    const retryButton = page.locator('.error-retry')
-    await expect(retryButton).toBeVisible()
+
+    const errorMessage = page.locator('.template-error__message')
+    await expect(errorMessage).toBeVisible()
+
+    // 点击重试按钮
+    const retryBtn = page.locator('.template-error__retry')
+    await expect(retryBtn).toBeVisible()
+    await retryBtn.click()
+
+    // 验证重试后的状态
+    await expect(error).toBeVisible() // 由于仍然会失败
   })
 
-  test('应该重试加载模板', async ({ page }) => {
-    // 首先模拟错误
-    let shouldFail = true
-    await page.route('**/templates/**', route => {
-      if (shouldFail) {
-        route.abort('failed')
-      } else {
-        route.continue()
+  test('应该支持响应式设备切换', async ({ page }) => {
+    // 设置桌面视口
+    await page.setViewportSize({ width: 1200, height: 800 })
+    await page.reload()
+
+    // 验证桌面模板
+    await page.waitForSelector('[data-testid="device-type"]')
+    let deviceType = await page.textContent('[data-testid="device-type"]')
+    expect(deviceType).toBe('desktop')
+
+    // 切换到移动视口
+    await page.setViewportSize({ width: 375, height: 667 })
+
+    // 等待设备类型更新
+    await page.waitForFunction(() => {
+      const element = document.querySelector('[data-testid="device-type"]')
+      return element?.textContent === 'mobile'
+    })
+
+    deviceType = await page.textContent('[data-testid="device-type"]')
+    expect(deviceType).toBe('mobile')
+  })
+
+  test('应该显示模板选择器', async ({ page }) => {
+    // 启用模板选择器
+    await page.check('[data-testid="show-selector-checkbox"]')
+
+    // 验证选择器触发器显示
+    const trigger = page.locator('.template-selector-trigger')
+    await expect(trigger).toBeVisible()
+
+    // 点击触发器
+    const triggerBtn = page.locator('.template-selector-trigger__button')
+    await triggerBtn.click()
+
+    // 验证选择器对话框打开
+    const dialog = page.locator('.template-selector')
+    await expect(dialog).toBeVisible()
+
+    // 验证对话框内容
+    const title = page.locator('.template-selector__title')
+    await expect(title).toHaveText('选择模板')
+
+    // 关闭对话框
+    const closeBtn = page.locator('.template-selector__close')
+    await closeBtn.click()
+
+    await expect(dialog).not.toBeVisible()
+  })
+
+  test('应该传递props给模板组件', async ({ page }) => {
+    // 设置自定义props
+    await page.fill('[data-testid="template-title-input"]', '自定义标题')
+    await page.click('[data-testid="apply-props-btn"]')
+
+    // 验证props传递到模板
+    await page.waitForSelector('[data-testid="template-content"]')
+    const templateContent = page.locator('[data-testid="template-content"]')
+    await expect(templateContent).toContainText('自定义标题')
+  })
+
+  test('应该触发事件回调', async ({ page }) => {
+    // 监听事件
+    let templateChangeEvent = null
+    let loadSuccessEvent = null
+
+    await page.exposeFunction('onTemplateChange', (templateName) => {
+      templateChangeEvent = templateName
+    })
+
+    await page.exposeFunction('onLoadSuccess', (template) => {
+      loadSuccessEvent = template
+    })
+
+    // 绑定事件监听器
+    await page.evaluate(() => {
+      const renderer = document.querySelector('[data-testid="template-renderer"]')
+      if (renderer) {
+        renderer.addEventListener('template-change', (e) => {
+          window.onTemplateChange(e.detail)
+        })
+        renderer.addEventListener('load-success', (e) => {
+          window.onLoadSuccess(e.detail)
+        })
       }
     })
-    
-    await page.goto('/template-renderer')
-    
-    // 等待错误状态显示
-    await page.waitForSelector('.template-renderer__error')
-    
-    // 修复网络问题
-    shouldFail = false
-    
-    // 点击重试按钮
-    await page.click('.error-retry')
-    
-    // 检查是否成功加载
-    await page.waitForSelector('.template-renderer__content')
-    const error = page.locator('.template-renderer__error')
-    await expect(error).not.toBeVisible()
-  })
 
-  test('应该显示空状态', async ({ page }) => {
-    // 导航到没有模板的分类
-    await page.goto('/template-renderer?category=nonexistent')
-    
-    // 检查空状态
-    const empty = page.locator('.template-renderer__empty')
-    await expect(empty).toBeVisible()
-    await expect(empty.locator('.empty-message')).toContainText('暂无可用模板')
+    // 切换模板
+    await page.selectOption('[data-testid="template-selector"]', 'classic')
+
+    // 等待事件触发
+    await page.waitForFunction(() => window.templateChangeEvent !== null)
+
+    // 验证事件数据
+    expect(templateChangeEvent).toBe('classic')
+    expect(loadSuccessEvent).toBeTruthy()
   })
 
   test('应该支持键盘导航', async ({ page }) => {
-    // 打开模板选择器
-    await page.click('.template-renderer__selector-btn')
-    await page.waitForSelector('.template-selector')
-    
-    // 使用 Tab 键导航
+    // 启用模板选择器
+    await page.check('[data-testid="show-selector-checkbox"]')
+
+    // 使用Tab键导航到选择器按钮
     await page.keyboard.press('Tab')
     await page.keyboard.press('Tab')
-    
-    // 使用 Enter 键选择模板
+
+    // 使用Enter键打开选择器
     await page.keyboard.press('Enter')
-    
-    // 检查选择器是否关闭
-    const selector = page.locator('.template-selector')
-    await expect(selector).not.toBeVisible()
-  })
 
-  test('应该支持 ESC 键关闭选择器', async ({ page }) => {
-    // 打开模板选择器
-    await page.click('.template-renderer__selector-btn')
-    await page.waitForSelector('.template-selector')
-    
-    // 按 ESC 键
+    // 验证选择器打开
+    const dialog = page.locator('.template-selector')
+    await expect(dialog).toBeVisible()
+
+    // 使用Escape键关闭选择器
     await page.keyboard.press('Escape')
-    
-    // 检查选择器是否关闭
-    const selector = page.locator('.template-selector')
-    await expect(selector).not.toBeVisible()
+
+    await expect(dialog).not.toBeVisible()
   })
 
-  test('应该在不同设备类型下显示不同模板', async ({ page }) => {
-    // 桌面端
-    await page.setViewportSize({ width: 1200, height: 800 })
-    await page.reload()
-    
-    let templateContent = await page.locator('.template-renderer__content').textContent()
-    const desktopContent = templateContent
-    
-    // 移动端
-    await page.setViewportSize({ width: 375, height: 667 })
-    await page.waitForTimeout(500)
-    
-    templateContent = await page.locator('.template-renderer__content').textContent()
-    const mobileContent = templateContent
-    
-    // 内容应该不同（如果有不同的模板）
-    // 这个测试取决于实际的模板内容
-    expect(desktopContent).toBeDefined()
-    expect(mobileContent).toBeDefined()
+  test('应该支持无障碍访问', async ({ page }) => {
+    // 检查ARIA属性
+    const renderer = page.locator('.template-renderer')
+    await expect(renderer).toHaveAttribute('role', 'region')
+
+    // 检查加载状态的ARIA属性
+    await page.click('[data-testid="load-template-btn"]')
+
+    const loading = page.locator('.template-loading')
+    await expect(loading).toHaveAttribute('aria-live', 'polite')
+    await expect(loading).toHaveAttribute('aria-busy', 'true')
+  })
+
+  test('应该在不同浏览器中正常工作', async ({ page, browserName }) => {
+    // 基本功能测试
+    await page.waitForSelector('.template-renderer')
+
+    // 模板切换测试
+    await page.selectOption('[data-testid="template-selector"]', 'modern')
+    await page.waitForSelector('[data-testid="current-template"]')
+
+    const templateName = await page.textContent('[data-testid="current-template"]')
+    expect(templateName).toContain('modern')
+
+    // 记录浏览器特定的行为
+    console.log(`测试在 ${browserName} 浏览器中通过`)
   })
 })
