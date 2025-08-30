@@ -42,6 +42,14 @@ export {
   Timer,
 } from './utils/logger'
 
+// 配置加载相关函数
+export {
+  loadUserConfig,
+  resolveConfigFile,
+  mergeConfig,
+  validateConfig,
+} from './utils/config-loader'
+
 // 版本信息
 import packageJson from '../package.json' assert { type: 'json' }
 export const version: string = packageJson.version

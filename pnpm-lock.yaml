@@ -359,6 +359,9 @@ importers:
       gzip-size:
         specifier: ^7.0.0
         version: 7.0.0
+      jiti:
+        specifier: ^1.21.0
+        version: 1.21.7
       ora:
         specifier: ^5.4.1
         version: 5.4.1
