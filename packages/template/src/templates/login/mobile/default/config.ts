@@ -1,60 +1,73 @@
-import type { TemplateConfig } from '../../../../types'
+/**
+ * 默认移动端登录模板配置
+ */
 
-export const config: TemplateConfig = {
-  id: 'login-mobile-default',
-  name: '默认移动登录',
-  description: '移动端默认登录模板，简洁易用',
-  category: 'login',
-  device: 'mobile',
-  variant: 'default',
-  isDefault: true, // 设为移动端默认模板
+import type { TemplateConfig } from '../../../../types/template'
+
+const config: TemplateConfig = {
+  name: 'default',
+  displayName: '移动端默认登录模板',
+  description: '专为移动设备优化的登录界面，采用全屏设计、大按钮和触摸友好的交互。完美适配各种手机屏幕尺寸。',
   version: '1.0.0',
-  author: 'LDesign Team',
-  tags: ['默认', '移动端', '简洁', '易用'],
-  preview: '/previews/login-mobile-default.png',
-  features: ['移动端优化', '简洁设计', '触摸友好', '快速登录', '响应式布局'],
+  author: 'ldesign',
+  isDefault: true,
+  tags: ['移动端', '触摸优化', '全屏设计', '手机适配'],
+  preview: './preview.png',
   props: {
     title: {
-      type: 'string',
-      default: '登录',
-      description: '登录页面标题',
+      type: String,
+      default: '手机登录'
     },
     subtitle: {
-      type: 'string',
-      default: '欢迎回来',
-      description: '登录页面副标题',
+      type: String,
+      default: '随时随地，安全登录'
     },
-    logo: {
-      type: 'string',
-      default: '',
-      description: '登录页面logo',
+    showRemember: {
+      type: Boolean,
+      default: false
     },
-    showRememberMe: {
-      type: 'boolean',
-      default: false,
-      description: '是否显示记住我选项',
+    showQuickLogin: {
+      type: Boolean,
+      default: true
     },
-    showForgotPassword: {
-      type: 'boolean',
-      default: true,
-      description: '是否显示忘记密码链接',
+    showRegister: {
+      type: Boolean,
+      default: true
     },
-    showThirdPartyLogin: {
-      type: 'boolean',
-      default: true,
-      description: '是否显示第三方登录',
+    logoUrl: {
+      type: String,
+      default: ''
     },
-    thirdPartyProviders: {
-      type: 'array',
-      default: ['wechat', 'qq', 'weibo'],
-      description: '第三方登录提供商',
+    primaryColor: {
+      type: String,
+      default: '#667eea'
     },
+    enableBiometric: {
+      type: Boolean,
+      default: true
+    },
+    showStatusBar: {
+      type: Boolean,
+      default: true
+    }
   },
+  slots: ['header', 'footer', 'quick-actions', 'status-bar'],
   dependencies: [],
-  compatibility: {
-    vue: '^3.0.0',
-    typescript: '^4.0.0',
-  },
+  minVueVersion: '3.0.0',
+  features: [
+    '移动端全屏设计',
+    '生物识别登录',
+    '触摸手势支持',
+    '状态栏集成',
+    '键盘适配',
+    '震动反馈',
+    '快捷登录',
+    '安全指示器'
+  ],
+  screenshots: [
+    './screenshot-light.png',
+    './screenshot-dark.png'
+  ]
 }
 
 export default config
