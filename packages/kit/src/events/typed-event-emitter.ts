@@ -1,0 +1,359 @@
+/**
+ * 类型安全的事件发射器
+ * 提供完整的TypeScript类型支持
+ */
+
+import { EventEmitter } from './event-emitter'
+
+/**
+ * 事件映射类型
+ */
+export type EventMap = Record<string, any[]>
+
+/**
+ * 事件监听器类型
+ */
+export type TypedEventListener<T extends any[]> = (...args: T) => void | Promise<void>
+
+/**
+ * 类型安全的事件发射器
+ */
+export class TypedEventEmitter<TEventMap extends EventMap> extends EventEmitter {
+  /**
+   * 添加类型安全的事件监听器
+   */
+  on<K extends keyof TEventMap>(
+    event: K,
+    listener: TypedEventListener<TEventMap[K]>,
+    options?: {
+      priority?: number
+      namespace?: string
+      tags?: string[]
+    }
+  ): this {
+    return super.on(event as string, listener as any, options)
+  }
+
+  /**
+   * 添加类型安全的一次性事件监听器
+   */
+  once<K extends keyof TEventMap>(
+    event: K,
+    listener: TypedEventListener<TEventMap[K]>,
+    options?: {
+      priority?: number
+      namespace?: string
+      tags?: string[]
+    }
+  ): this {
+    return super.once(event as string, listener as any, options)
+  }
+
+  /**
+   * 移除类型安全的事件监听器
+   */
+  off<K extends keyof TEventMap>(
+    event: K,
+    listener?: TypedEventListener<TEventMap[K]>
+  ): this {
+    return super.off(event as string, listener as any)
+  }
+
+  /**
+   * 发射类型安全的事件
+   */
+  emit<K extends keyof TEventMap>(event: K, ...args: TEventMap[K]): boolean {
+    return super.emit(event as string, ...args)
+  }
+
+  /**
+   * 异步发射类型安全的事件
+   */
+  async emitAsync<K extends keyof TEventMap>(event: K, ...args: TEventMap[K]): Promise<any[]> {
+    return super.emitAsync(event as string, ...args)
+  }
+
+  /**
+   * 等待类型安全的事件
+   */
+  waitFor<K extends keyof TEventMap>(event: K, timeout?: number): Promise<TEventMap[K]> {
+    return super.waitFor(event as string, timeout) as Promise<TEventMap[K]>
+  }
+
+  /**
+   * 检查是否有指定事件的监听器
+   */
+  hasListeners<K extends keyof TEventMap>(event: K): boolean {
+    return super.hasListeners(event as string)
+  }
+
+  /**
+   * 获取指定事件的监听器数量
+   */
+  getListenerCount<K extends keyof TEventMap>(event: K): number {
+    return super.getListenerCount(event as string)
+  }
+
+  /**
+   * 创建类型安全的事件发射器实例
+   */
+  static create<TEventMap extends EventMap>(options?: any): TypedEventEmitter<TEventMap> {
+    return new TypedEventEmitter<TEventMap>(options)
+  }
+}
+
+/**
+ * 事件发射器构建器
+ */
+export class EventEmitterBuilder<TEventMap extends EventMap = {}> {
+  private eventMap: TEventMap = {} as TEventMap
+
+  /**
+   * 添加事件类型定义
+   */
+  addEvent<K extends string, T extends any[]>(
+    event: K,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _args: T
+  ): EventEmitterBuilder<TEventMap & Record<K, T>> {
+    return this as any
+  }
+
+  /**
+   * 构建类型安全的事件发射器
+   */
+  build(options?: any): TypedEventEmitter<TEventMap> {
+    return new TypedEventEmitter<TEventMap>(options)
+  }
+
+  /**
+   * 创建构建器实例
+   */
+  static create(): EventEmitterBuilder {
+    return new EventEmitterBuilder()
+  }
+}
+
+/**
+ * 预定义的常用事件类型
+ */
+export interface CommonEvents {
+  error: [Error]
+  ready: []
+  close: []
+  connect: []
+  disconnect: []
+  data: [any]
+  change: [any, any] // [newValue, oldValue]
+  update: [any]
+  create: [any]
+  delete: [any]
+  start: []
+  stop: []
+  pause: []
+  resume: []
+  progress: [number] // percentage
+  complete: []
+  timeout: []
+  retry: [number] // attempt number
+}
+
+/**
+ * HTTP事件类型
+ */
+export interface HttpEvents {
+  request: [any] // request object
+  response: [any] // response object
+  'request:start': [string] // url
+  'request:end': [string, number] // url, status
+  'request:error': [string, Error] // url, error
+}
+
+/**
+ * 数据库事件类型
+ */
+export interface DatabaseEvents {
+  'db:connect': []
+  'db:disconnect': []
+  'db:query': [string] // sql
+  'db:result': [any] // result
+  'db:error': [Error]
+  'db:transaction:start': []
+  'db:transaction:commit': []
+  'db:transaction:rollback': []
+}
+
+/**
+ * 文件系统事件类型
+ */
+export interface FileSystemEvents {
+  'file:create': [string] // path
+  'file:change': [string] // path
+  'file:delete': [string] // path
+  'file:rename': [string, string] // oldPath, newPath
+  'dir:create': [string] // path
+  'dir:delete': [string] // path
+}
+
+/**
+ * 缓存事件类型
+ */
+export interface CacheEvents {
+  'cache:hit': [string] // key
+  'cache:miss': [string] // key
+  'cache:set': [string, any] // key, value
+  'cache:delete': [string] // key
+  'cache:clear': []
+  'cache:expire': [string] // key
+}
+
+/**
+ * 用户事件类型
+ */
+export interface UserEvents {
+  'user:login': [string] // userId
+  'user:logout': [string] // userId
+  'user:register': [string] // userId
+  'user:update': [string, any] // userId, userData
+  'user:delete': [string] // userId
+}
+
+/**
+ * 应用事件类型
+ */
+export interface AppEvents extends CommonEvents {
+  'app:start': []
+  'app:stop': []
+  'app:restart': []
+  'app:config:change': [any] // config
+  'app:health:check': [boolean] // healthy
+}
+
+/**
+ * 组合事件类型
+ */
+export type AllEvents = CommonEvents & HttpEvents & DatabaseEvents & FileSystemEvents & CacheEvents & UserEvents & AppEvents
+
+/**
+ * 创建类型安全的事件发射器
+ */
+export function createTypedEventEmitter<TEventMap extends EventMap>(
+  options?: any
+): TypedEventEmitter<TEventMap> {
+  return new TypedEventEmitter<TEventMap>(options)
+}
+
+/**
+ * 创建带有常用事件的事件发射器
+ */
+export function createCommonEventEmitter(options?: any): TypedEventEmitter<CommonEvents> {
+  return new TypedEventEmitter<CommonEvents>(options)
+}
+
+/**
+ * 创建带有所有预定义事件的事件发射器
+ */
+export function createFullEventEmitter(options?: any): TypedEventEmitter<AllEvents> {
+  return new TypedEventEmitter<AllEvents>(options)
+}
+
+/**
+ * 事件类型工具
+ */
+export namespace EventTypes {
+  /**
+   * 提取事件名称
+   */
+  export type EventNames<TEventMap extends EventMap> = keyof TEventMap
+
+  /**
+   * 提取事件参数
+   */
+  export type EventArgs<TEventMap extends EventMap, K extends keyof TEventMap> = TEventMap[K]
+
+  /**
+   * 提取事件监听器类型
+   */
+  export type EventListener<TEventMap extends EventMap, K extends keyof TEventMap> = TypedEventListener<TEventMap[K]>
+
+  /**
+   * 检查事件是否存在
+   */
+  export type HasEvent<TEventMap extends EventMap, K extends string> = K extends keyof TEventMap ? true : false
+
+  /**
+   * 合并事件映射
+   */
+  export type MergeEventMaps<T1 extends EventMap, T2 extends EventMap> = T1 & T2
+
+  /**
+   * 过滤事件映射
+   */
+  export type FilterEventMap<TEventMap extends EventMap, K extends keyof TEventMap> = Pick<TEventMap, K>
+
+  /**
+   * 排除事件映射
+   */
+  export type OmitEventMap<TEventMap extends EventMap, K extends keyof TEventMap> = Omit<TEventMap, K>
+}
+
+/**
+ * 事件装饰器
+ */
+export function EventHandler<TEventMap extends EventMap, K extends keyof TEventMap>(
+  event: K,
+  options?: {
+    priority?: number
+    namespace?: string
+    tags?: string[]
+    once?: boolean
+  }
+) {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value
+
+    descriptor.value = function (...args: any[]) {
+      const emitter = this.eventEmitter || this.emitter
+      if (emitter && typeof emitter.on === 'function') {
+        const listener = originalMethod.bind(this)
+        if (options?.once) {
+          emitter.once(event, listener, options)
+        } else {
+          emitter.on(event, listener, options)
+        }
+      }
+      return originalMethod.apply(this, args)
+    }
+
+    return descriptor
+  }
+}
+
+/**
+ * 自动事件绑定装饰器
+ */
+export function AutoBind<TEventMap extends EventMap>(eventMap: TEventMap) {
+  return function <T extends { new (...args: any[]): {} }>(constructor: T) {
+    return class extends constructor {
+      constructor(...args: any[]) {
+        super(...args)
+        
+        // 自动绑定事件处理方法
+        const prototype = Object.getPrototypeOf(this)
+        const methodNames = Object.getOwnPropertyNames(prototype)
+        
+        for (const methodName of methodNames) {
+          if (methodName.startsWith('on') && typeof this[methodName] === 'function') {
+            const eventName = methodName.slice(2).toLowerCase()
+            if (eventName in eventMap) {
+              const emitter = this.eventEmitter || this.emitter
+              if (emitter && typeof emitter.on === 'function') {
+                emitter.on(eventName, this[methodName].bind(this))
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
