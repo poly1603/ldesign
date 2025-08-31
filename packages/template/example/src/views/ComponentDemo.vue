@@ -223,6 +223,9 @@ const handleTemplateSelect = (templateName: string) => {
     // 在手动模式下，直接更新选择的模板
     selectedTemplate.value = templateName
   }
+
+  // 选择模板后自动隐藏选择器
+  showTemplateSelector.value = false
 }
 
 // 处理模板变化

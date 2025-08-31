@@ -293,8 +293,13 @@ const handleTemplateSelect = async (templateName: string) => {
       await switchTemplateHook(templateName)
     }
     console.log(`选择器切换模板成功: ${templateName}`)
+
+    // 选择模板后自动隐藏选择器
+    showTemplateSelector.value = false
   } catch (error) {
     console.error('选择器切换模板失败:', error)
+    // 即使出错也隐藏选择器，避免界面卡住
+    showTemplateSelector.value = false
   }
 }
 
