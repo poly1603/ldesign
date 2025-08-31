@@ -14,6 +14,119 @@
   }
 }
 
+// 模板选择器包装器
+.template-selector-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+// 模板选择器触发按钮
+.template-selector-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  color: #495057;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.15);
+  }
+
+  &__icon {
+    font-size: 16px;
+  }
+
+  &__text {
+    flex: 1;
+    text-align: left;
+    font-weight: 500;
+  }
+
+  &__arrow {
+    font-size: 12px;
+    color: #6c757d;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover &__arrow {
+    transform: translateY(1px);
+  }
+}
+
+// 模板选择器模态框
+.template-selector-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+  }
+
+  &__content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+  }
+}
+
+// 模态框动画
+.template-selector-modal-enter-active,
+.template-selector-modal-leave-active {
+  transition: all 0.3s ease;
+}
+
+.template-selector-modal-enter-from,
+.template-selector-modal-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.template-selector-modal-enter-active .template-selector-modal__backdrop,
+.template-selector-modal-leave-active .template-selector-modal__backdrop {
+  transition: opacity 0.3s ease;
+}
+
+.template-selector-modal-enter-from .template-selector-modal__backdrop,
+.template-selector-modal-leave-to .template-selector-modal__backdrop {
+  opacity: 0;
+}
+
+.template-selector-modal-enter-active .template-selector-modal__content,
+.template-selector-modal-leave-active .template-selector-modal__content {
+  transition: all 0.3s ease;
+}
+
+.template-selector-modal-enter-from .template-selector-modal__content,
+.template-selector-modal-leave-to .template-selector-modal__content {
+  opacity: 0;
+  transform: scale(0.9) translateY(-20px);
+}
+
 // 加载状态样式
 .template-loading {
   display: flex;
@@ -40,8 +153,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 // 错误状态样式

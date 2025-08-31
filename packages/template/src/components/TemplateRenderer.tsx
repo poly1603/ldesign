@@ -13,6 +13,7 @@ import {
   onUnmounted,
   h,
   Fragment,
+  Transition,
   type PropType,
   type Component
 } from 'vue'
@@ -23,6 +24,7 @@ import type {
 import { useTemplate } from '../composables/useTemplate'
 import { useDeviceDetection } from '../composables/useDeviceDetection'
 import { useResponsiveTemplate } from '../composables/useResponsiveTemplate'
+import { TemplateSelector } from './TemplateSelector'
 
 /**
  * 默认加载组件
@@ -163,6 +165,7 @@ export const TemplateRenderer = defineComponent({
     const hasTriedFallback = ref(false)
     const retryCount = ref(0)
     const maxRetries = 3
+    const showSelectorModal = ref(false)
 
     // 计算属性
     const LoadingComponent = computed(() =>
@@ -257,23 +260,52 @@ export const TemplateRenderer = defineComponent({
     }
 
     /**
+     * 处理模板选择
+     */
+    const handleTemplateSelect = async (templateName: string) => {
+      showSelectorModal.value = false
+      await handleTemplateSwitch(templateName)
+    }
+
+    /**
      * 渲染模板选择器
      */
     const renderSelector = () => {
       if (!shouldShowSelector.value) return null
 
       return (
-        <div class="template-selector-trigger">
+        <div class="template-selector-wrapper">
           <button
-            class="template-selector-trigger__button"
-            onClick={() => {
-              // 这里应该打开模板选择器对话框
-              // 暂时简单实现为下拉选择
-              console.log('Open template selector')
-            }}
+            class="template-selector-trigger"
+            onClick={() => showSelectorModal.value = true}
           >
-            选择模板 ({currentTemplate.value?.displayName || '未选择'})
+            <span class="template-selector-trigger__icon">🎨</span>
+            <span class="template-selector-trigger__text">
+              {currentTemplate.value?.displayName || '选择模板'}
+            </span>
+            <span class="template-selector-trigger__arrow">▼</span>
           </button>
+
+          <Transition name="template-selector-modal">
+            {showSelectorModal.value && (
+              <div class="template-selector-modal">
+                <div class="template-selector-modal__backdrop"
+                  onClick={() => showSelectorModal.value = false} />
+                <div class="template-selector-modal__content">
+                  <TemplateSelector
+                    category={props.category}
+                    device={currentDevice.value}
+                    currentTemplate={currentTemplate.value?.name}
+                    visible={showSelectorModal.value}
+                    showPreview={false}
+                    searchable={true}
+                    onSelect={handleTemplateSelect}
+                    onClose={() => showSelectorModal.value = false}
+                  />
+                </div>
+              </div>
+            )}
+          </Transition>
         </div>
       )
     }

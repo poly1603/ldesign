@@ -9,36 +9,25 @@
       <!-- 简化的控制面板 -->
       <div class="control-panel">
         <div class="control-group">
-          <label>当前模板：{{ currentTemplateName }}</label>
+          <label>组件方式演示</label>
         </div>
 
         <div class="control-actions">
           <button
-            @click="showTemplateSelector = !showTemplateSelector"
+            @click="showSelector = !showSelector"
             class="btn"
           >
-            {{ showTemplateSelector ? '隐藏选择器' : '显示选择器' }}
+            {{ showSelector ? '隐藏选择器' : '显示选择器' }}
           </button>
         </div>
       </div>
 
-      <!-- 简化的模板选择器 -->
-      <div v-if="showTemplateSelector" class="template-selector">
-        <TemplateSelector
-          category="login"
-          :current-template="currentTemplateName"
-          :visible="showTemplateSelector"
-          :show-preview="false"
-          :searchable="false"
-          @select="handleTemplateSelect"
-        />
-      </div>
-
-      <!-- 简化的模板渲染区域 -->
+      <!-- 集成模板选择器的渲染器 -->
       <div class="template-container">
         <TemplateRenderer
           category="login"
           :template-name="currentTemplateName"
+          :show-selector="showSelector"
           :props="templateProps"
           @template-change="handleTemplateChange"
           @load-success="handleTemplateLoaded"
@@ -51,10 +40,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { TemplateRenderer, TemplateSelector } from '@ldesign/template'
+import { TemplateRenderer } from '@ldesign/template'
 
 // 响应式数据
-const showTemplateSelector = ref<boolean>(false)
+const showSelector = ref<boolean>(true)
 const selectedTemplate = ref<string>('default')
 
 // 计算属性
@@ -67,22 +56,19 @@ const templateProps = computed(() => ({
 }))
 
 // 简化的方法
-const handleTemplateSelect = (templateName: string) => {
-  console.log('选择模板:', templateName)
-  selectedTemplate.value = templateName
-  showTemplateSelector.value = false
+const handleTemplateChange = (template: any) => {
+  console.log('模板变化:', template)
+  if (template?.name) {
+    selectedTemplate.value = template.name
+  }
 }
 
-const handleTemplateChange = () => {
-  // 模板变化处理
+const handleTemplateLoaded = (template: any) => {
+  console.log('模板加载成功:', template)
 }
 
-const handleTemplateLoaded = () => {
-  // 模板加载成功处理
-}
-
-const handleError = () => {
-  // 错误处理
+const handleError = (error: any) => {
+  console.error('模板加载错误:', error)
 }
 </script>
 
