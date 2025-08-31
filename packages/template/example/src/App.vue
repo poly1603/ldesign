@@ -15,11 +15,6 @@
             Hook 方式
           </router-link>
         </div>
-
-        <!-- 简化的设备显示 -->
-        <div class="device-indicator">
-          {{ deviceDisplayName }}
-        </div>
       </div>
     </nav>
 
@@ -42,25 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useTemplate } from '@ldesign/template'
-
-// 使用模板管理器 - 提供必需的 options 参数
-const { deviceType: currentDevice } = useTemplate({
-  category: 'login', // 必需的 category 参数
-  autoDetectDevice: true,
-  enableCache: true
-})
-
-// 设备类型显示名称
-const deviceDisplayName = computed(() => {
-  const names = {
-    desktop: '🖥️ 桌面端',
-    tablet: '📱 平板端',
-    mobile: '📱 移动端',
-  }
-  return names[currentDevice.value] || '未知设备'
-})
+// 简化的App组件，不包含任何业务逻辑
 </script>
 
 <style scoped>
@@ -125,15 +102,6 @@ const deviceDisplayName = computed(() => {
   background: #007bff;
   color: white;
   border-color: #007bff;
-}
-
-.device-indicator {
-  padding: 0.25rem 0.75rem;
-  background: #e9ecef;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  color: #6c757d;
-  font-weight: 500;
 }
 
 /* 简化的主要内容区域 */

@@ -9,17 +9,10 @@
       <!-- 简化的控制面板 -->
       <div class="control-panel">
         <div class="control-group">
-          <label>当前设备：{{ deviceTypeLabels[currentDevice] }}</label>
-          <label>模板：{{ currentTemplateName }}</label>
+          <label>当前模板：{{ currentTemplateName }}</label>
         </div>
 
         <div class="control-actions">
-          <button
-            @click="toggleResponsive"
-            :class="['btn', { 'btn-active': isResponsive }]"
-          >
-            {{ isResponsive ? '禁用响应式' : '启用响应式' }}
-          </button>
           <button
             @click="showTemplateSelector = !showTemplateSelector"
             class="btn"
@@ -33,7 +26,6 @@
       <div v-if="showTemplateSelector" class="template-selector">
         <TemplateSelector
           category="login"
-          :device="currentDevice"
           :current-template="currentTemplateName"
           :visible="showTemplateSelector"
           :show-preview="false"
@@ -46,9 +38,7 @@
       <div class="template-container">
         <TemplateRenderer
           category="login"
-          :device="currentDevice"
           :template-name="currentTemplateName"
-          :responsive="isResponsive"
           :props="templateProps"
           @template-change="handleTemplateChange"
           @load-success="handleTemplateLoaded"
@@ -61,27 +51,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { TemplateRenderer, TemplateSelector, useDeviceDetection } from '@ldesign/template'
-
-// 设备检测
-const { deviceType } = useDeviceDetection({
-  enableResponsive: true
-})
+import { TemplateRenderer, TemplateSelector } from '@ldesign/template'
 
 // 响应式数据
-const isResponsive = ref<boolean>(true)
 const showTemplateSelector = ref<boolean>(false)
 const selectedTemplate = ref<string>('default')
 
-// 设备类型标签映射
-const deviceTypeLabels = {
-  desktop: '桌面端',
-  tablet: '平板端',
-  mobile: '移动端'
-}
-
 // 计算属性
-const currentDevice = computed(() => deviceType.value)
 const currentTemplateName = computed(() => selectedTemplate.value)
 
 // 简化的模板属性
@@ -91,10 +67,6 @@ const templateProps = computed(() => ({
 }))
 
 // 简化的方法
-const toggleResponsive = () => {
-  isResponsive.value = !isResponsive.value
-}
-
 const handleTemplateSelect = (templateName: string) => {
   console.log('选择模板:', templateName)
   selectedTemplate.value = templateName
