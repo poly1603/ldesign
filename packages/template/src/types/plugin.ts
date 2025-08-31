@@ -4,29 +4,34 @@
 
 import type { App } from 'vue'
 import type { DeviceType } from './template'
+import type { TemplateSystemConfig } from './config'
 
 /**
- * 插件配置选项
+ * 插件配置选项（向后兼容的接口）
+ *
+ * 这个接口保持向后兼容性，同时支持新的配置系统
+ * 旧的配置选项会被自动转换为新的配置格式
  */
-export interface TemplatePluginOptions {
-  /** 自定义模板目录路径（默认: 'src/templates'） */
-  templatesDir?: string
-  /** 是否自动扫描（默认: true） */
-  autoScan?: boolean
-  /** 是否启用缓存（默认: true） */
+export interface TemplatePluginOptions extends Partial<TemplateSystemConfig> {
+  /** @deprecated 使用 cache.enabled 替代 */
   cache?: boolean
-  /** 是否启用热更新（默认: 开发环境为true，生产环境为false） */
-  enableHMR?: boolean
-  /** 默认设备类型（默认: 'desktop'） */
-  defaultDevice?: DeviceType
-  /** 是否启用性能监控（默认: false） */
-  enablePerformanceMonitor?: boolean
-  /** 预加载策略配置 */
+  /** @deprecated 使用 preloadStrategy.priority 替代 */
+  preloadTemplates?: string[]
+  /** @deprecated 使用 cache.maxSize 替代 */
+  cacheLimit?: number
+  /** @deprecated 使用 deviceDetection.breakpoints.mobile 替代 */
+  mobileBreakpoint?: number
+  /** @deprecated 使用 deviceDetection.breakpoints.tablet 替代 */
+  tabletBreakpoint?: number
+  /** @deprecated 使用 deviceDetection.breakpoints.desktop 替代 */
+  desktopBreakpoint?: number
+  /** @deprecated 使用 preloadStrategy 替代 */
   preloadStrategy?: PreloadStrategy
 }
 
 /**
- * 预加载策略
+ * 预加载策略（向后兼容）
+ * @deprecated 使用 PreloadStrategyConfig 替代
  */
 export interface PreloadStrategy {
   /** 是否启用预加载 */

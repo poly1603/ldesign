@@ -16,7 +16,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      // '@ldesign/template': resolve(__dirname, '../src'),
+      '@ldesign/template': resolve(__dirname, '../src'),
     },
   },
 
@@ -51,5 +51,11 @@ export default defineConfig({
   esbuild: {
     target: 'es2020',
     keepNames: true,
+  },
+
+  // 定义全局变量
+  define: {
+    'process.env': {},
+    global: 'globalThis',
   },
 })

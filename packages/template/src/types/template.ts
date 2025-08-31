@@ -30,7 +30,7 @@ export interface TemplateConfig {
   /** 预览图路径（可选） */
   preview?: string
   /** 支持的props定义（可选） */
-  props?: Record<string, PropType<any> | any>
+  props?: Record<string, PropType<unknown> | { type: PropType<unknown>; default?: unknown; required?: boolean; validator?: (value: unknown) => boolean }>
   /** 支持的插槽列表（可选） */
   slots?: string[]
   /** 依赖的其他模板或组件（可选） */
@@ -52,7 +52,7 @@ export interface TemplateMetadata extends TemplateConfig {
   /** 模板文件路径 */
   componentPath: string
   /** 组件加载器函数 */
-  componentLoader?: () => Promise<any>
+  componentLoader?: () => Promise<Component>
   /** 样式文件路径 */
   stylePath?: string
   /** 配置文件路径 */

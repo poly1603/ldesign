@@ -2363,6 +2363,9 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.16.5
+      '@types/react':
+        specifier: ^19.1.12
+        version: 19.1.12
       '@vitejs/plugin-vue':
         specifier: ^5.0.3
         version: 5.2.4(vite@5.4.19(@types/node@22.16.5)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.18(typescript@5.8.3))
@@ -2375,6 +2378,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.21
         version: 10.4.21(postcss@8.5.6)
+      chokidar:
+        specifier: ^3.6.0
+        version: 3.6.0
       eslint:
         specifier: ^9.0.0
         version: 9.32.0(jiti@1.21.7)
@@ -2430,33 +2436,17 @@ importers:
         specifier: ^3.0.5
         version: 3.0.5(typescript@5.8.3)
 
-<<<<<<< HEAD
   packages/template/example:
     dependencies:
-=======
-  packages/template/examples/template-demo:
-    dependencies:
-      '@ldesign/device':
-        specifier: workspace:*
-        version: link:../../../device
->>>>>>> c3ccccb0 (refactor(template): 重构模板系统架构和示例项目)
       '@ldesign/template':
         specifier: workspace:*
         version: link:..
       vue:
-<<<<<<< HEAD
         specifier: ^3.4.0
         version: 3.5.18(typescript@5.3.3)
       vue-router:
         specifier: ^4.2.0
         version: 4.5.1(vue@3.5.18(typescript@5.3.3))
-=======
-        specifier: ^3.4.15
-        version: 3.5.18(typescript@5.9.2)
-      vue-router:
-        specifier: ^4.2.5
-        version: 4.5.1(vue@3.5.18(typescript@5.9.2))
->>>>>>> c3ccccb0 (refactor(template): 重构模板系统架构和示例项目)
     devDependencies:
       '@playwright/test':
         specifier: ^1.40.0
@@ -2471,7 +2461,6 @@ importers:
         specifier: ^6.14.0
         version: 6.21.0(eslint@8.57.1)(typescript@5.3.3)
       '@vitejs/plugin-vue':
-<<<<<<< HEAD
         specifier: ^4.5.0
         version: 4.6.2(vite@5.4.19(@types/node@20.19.9)(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.18(typescript@5.3.3))
       '@vitejs/plugin-vue-jsx':
@@ -2516,7 +2505,35 @@ importers:
       vue-tsc:
         specifier: ^1.8.0
         version: 1.8.27(typescript@5.3.3)
-=======
+
+  packages/template/examples/template-demo:
+    dependencies:
+      '@ldesign/device':
+        specifier: workspace:*
+        version: link:../../../device
+      '@ldesign/template':
+        specifier: workspace:*
+        version: link:..
+      vue:
+        specifier: ^3.4.15
+        version: 3.5.18(typescript@5.9.2)
+      vue-router:
+        specifier: ^4.2.5
+        version: 4.5.1(vue@3.5.18(typescript@5.9.2))
+    devDependencies:
+      '@playwright/test':
+        specifier: ^1.40.0
+        version: 1.55.0
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.9
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^6.14.0
+        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.3.3))(eslint@8.57.1)(typescript@5.3.3)
+      '@typescript-eslint/parser':
+        specifier: ^6.14.0
+        version: 6.21.0(eslint@8.57.1)(typescript@5.3.3)
+      '@vitejs/plugin-vue':
         specifier: ^5.0.3
         version: 5.2.4(vite@5.4.19(@types/node@20.19.9)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.18(typescript@5.9.2))
       '@vitejs/plugin-vue-jsx':
@@ -2537,7 +2554,6 @@ importers:
       vue-tsc:
         specifier: ^3.0.5
         version: 3.0.5(typescript@5.9.2)
->>>>>>> c3ccccb0 (refactor(template): 重构模板系统架构和示例项目)
 
   packages/template/vite-test:
     devDependencies:
@@ -4836,6 +4852,9 @@ packages:
   '@types/react@18.3.23':
     resolution: {integrity: sha512-/LDXMQh55EzZQ0uVAZmKKhfENivEvWz6E+EYzh+/MCjMhNsotd+ZHhBGIjFDTi6+fz0OhQQQLbTgdQIxxCsC0w==}
 
+  '@types/react@19.1.12':
+    resolution: {integrity: sha512-cMoR+FoAf/Jyq6+Df2/Z41jISvGZZ2eTlnsaJRptmZ76Caldwy1odD4xTr/gNV9VLj0AWgg/nmkevIyUfIIq5w==}
+
   '@types/readdir-glob@1.1.5':
     resolution: {integrity: sha512-raiuEPUYqXu+nvtY2Pe8s8FEmZ3x5yAH4VkLdihcPdalvsHltomrRC9BzuStrJ9yk06470hS0Crw0f1pXqD+Hg==}
 
@@ -5853,6 +5872,7 @@ packages:
   are-we-there-yet@2.0.0:
     resolution: {integrity: sha512-Ci/qENmwHnsYo9xKIcUJN5LeDKdJ6R1Z1j9V/J5wyq8nh/mYPEpIKJbBZXtZjG04HiK7zV/p6Vs9952MrMeUIw==}
     engines: {node: '>=10'}
+    deprecated: This package is no longer supported.
 
   arg@4.1.3:
     resolution: {integrity: sha512-58S9QDqG0Xx27YwPSt9fJxivjYl432YCwfDMfZ+71RAqUrZef7LrKQZ3LHLOwCS4FLNBplP533Zx895SeOCHvA==}
@@ -7432,6 +7452,7 @@ packages:
   gauge@3.0.2:
     resolution: {integrity: sha512-+5J6MS/5XksCuXq++uFRsnUd7Ovu1XenbeuIuNRJxYWjgQbPuFhT14lAvsWfqfAmnwluf1OwMjz39HjfLPci0Q==}
     engines: {node: '>=10'}
+    deprecated: This package is no longer supported.
 
   generic-names@4.0.0:
     resolution: {integrity: sha512-ySFolZQfw9FoDb3ed9d80Cm9f0+r7qj+HJkWjeD9RBfpxEVTlVhol+gvaQB/78WbwYfbnNh8nWHHBSlg072y6A==}
@@ -9083,6 +9104,7 @@ packages:
 
   npmlog@5.0.1:
     resolution: {integrity: sha512-AqZtDUWOMKs1G/8lwylVjrdYgqA4d9nu8hc+0gzRxlDb1I10+FHBGMXs6aiQHFdCUUlqH99MUMuLfzWDNDtfxw==}
+    deprecated: This package is no longer supported.
 
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
@@ -14659,6 +14681,10 @@ snapshots:
       '@types/prop-types': 15.7.15
       csstype: 3.1.3
 
+  '@types/react@19.1.12':
+    dependencies:
+      csstype: 3.1.3
+
   '@types/readdir-glob@1.1.5':
     dependencies:
       '@types/node': 20.19.9
@@ -15487,7 +15513,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-<<<<<<< HEAD
   '@vitejs/plugin-vue-jsx@5.1.0(vite@5.4.19(@types/node@22.16.5)(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.18(typescript@5.9.2))':
     dependencies:
       '@babel/core': 7.28.3
@@ -15501,9 +15526,6 @@ snapshots:
       - supports-color
 
   '@vitejs/plugin-vue2@2.3.3(vite@5.4.19(@types/node@20.19.9)(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.18(typescript@5.9.2))':
-=======
-  '@vitejs/plugin-vue-jsx@5.1.0(vite@5.4.19(@types/node@22.16.5)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.18(typescript@5.9.2))':
->>>>>>> c3ccccb0 (refactor(template): 重构模板系统架构和示例项目)
     dependencies:
       vite: 5.4.19(@types/node@20.19.9)(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
       vue: 3.5.18(typescript@5.9.2)
@@ -15966,7 +15988,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.16.5)(@vitest/ui@3.2.4)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.16.5)(@vitest/ui@3.2.4)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1)
 
   '@vitest/utils@0.34.6':
     dependencies:

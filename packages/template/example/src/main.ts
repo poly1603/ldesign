@@ -45,26 +45,78 @@ const router = createRouter({
 // 创建应用
 const app = createApp(App)
 
-// 安装模板插件（使用内置模板）
+// 安装模板插件（使用新的配置系统）
 app.use(TemplatePlugin, {
-  // 模板目录配置 - 指向正确的模板目录
+  // 基础配置
   templatesDir: '../src/templates',
-  // 自动扫描模板
   autoScan: true,
-  // 启用缓存
-  cache: true,
-  // 开发环境启用热更新
   enableHMR: import.meta.env.DEV,
-  // 默认设备类型
   defaultDevice: 'desktop',
-  // 启用性能监控（开发环境）
   enablePerformanceMonitor: import.meta.env.DEV,
-  // 预加载策略
+  debug: import.meta.env.DEV,
+
+  // 缓存配置
+  cache: {
+    enabled: true,
+    strategy: 'lru',
+    maxSize: 50,
+    ttl: 30 * 60 * 1000, // 30分钟
+    enableCompression: false,
+    enablePersistence: false
+  },
+
+  // 设备检测配置
+  deviceDetection: {
+    breakpoints: {
+      mobile: 768,
+      tablet: 992,
+      desktop: 1200
+    },
+    debounceDelay: 300,
+    enableResize: true,
+    enableOrientation: true
+  },
+
+  // 预加载策略配置
   preloadStrategy: {
     enabled: true,
     mode: 'lazy',
     limit: 5,
-    priority: ['login-desktop-default', 'login-desktop-modern']
+    priority: [], // 移除硬编码的优先级列表
+    intersection: {
+      rootMargin: '50px',
+      threshold: 0.1
+    },
+    delay: 1000
+  },
+
+  // 扫描器配置
+  scanner: {
+    maxDepth: 5,
+    includeExtensions: ['.vue', '.tsx', '.js', '.ts'],
+    excludePatterns: ['node_modules', '.git', 'dist', 'coverage'],
+    enableCache: true,
+    watchMode: import.meta.env.DEV,
+    debounceDelay: 300,
+    batchSize: 10
+  },
+
+  // 性能优化配置
+  performance: {
+    enableLazyLoading: true,
+    enableVirtualScroll: false,
+    chunkSize: 20,
+    enableMetrics: import.meta.env.DEV,
+    metricsInterval: 5000
+  },
+
+  // 开发工具配置
+  devtools: {
+    enabled: import.meta.env.DEV,
+    enableInspector: import.meta.env.DEV,
+    enableLogger: import.meta.env.DEV,
+    logLevel: 'info',
+    enableTimeline: import.meta.env.DEV
   }
 })
 
@@ -75,8 +127,10 @@ app.use(router)
 app.mount('#app')
 
 // 开发环境下的调试信息
-if (typeof window !== 'undefined' && window.location?.hostname === 'localhost') {
+if (import.meta.env.DEV && typeof window !== 'undefined') {
   console.log('🎨 LDesign Template 示例项目启动成功！')
-  console.log('📱 支持的设备类型: desktop, tablet, mobile')
-  console.log('🎯 可用的模板分类: login')
+  console.log('📊 配置系统已启用，支持动态配置管理')
+  console.log('🔧 开发工具已启用，支持实时调试和性能监控')
+  console.log('📱 设备类型将根据配置动态检测')
+  console.log('🎯 模板分类将通过扫描器自动发现')
 }

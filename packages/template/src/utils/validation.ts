@@ -346,17 +346,114 @@ export const configValidator = new ConfigValidator()
  */
 export const validationUtils = {
   /**
+   * 验证模板元数据
+   */
+  validateTemplateMetadata(metadata: any): { valid: boolean; errors: string[] } {
+    const errors: string[] = []
+
+    // 验证必需字段
+    if (!metadata.name || typeof metadata.name !== 'string' || !metadata.name.trim()) {
+      errors.push('name is required and must be a non-empty string')
+    }
+
+    if (!metadata.displayName || typeof metadata.displayName !== 'string' || !metadata.displayName.trim()) {
+      errors.push('displayName is required and must be a non-empty string')
+    }
+
+    if (!metadata.componentPath || typeof metadata.componentPath !== 'string' || !metadata.componentPath.trim()) {
+      errors.push('componentPath is required and must be a non-empty string')
+    }
+
+    // 验证设备类型
+    if (!this.isValidDeviceType(metadata.device)) {
+      errors.push('device must be one of: desktop, tablet, mobile')
+    }
+
+    // 验证版本格式
+    if (metadata.version && !this.validateVersionFormat(metadata.version)) {
+      errors.push('version must be a valid semantic version format')
+    }
+
+    // 验证标签数组
+    if (metadata.tags && !Array.isArray(metadata.tags)) {
+      errors.push('tags must be an array')
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors
+    }
+  },
+
+  /**
    * 快速验证配置
    */
-  validateConfig(config: TemplateConfig): ValidationResult {
-    return configValidator.validate(config)
+  validateConfig(config: any): { valid: boolean; errors: string[]; fixedConfig?: any } {
+    const errors: string[] = []
+    let fixedConfig: any = null
+
+    // 验证模板目录
+    if (!config.templatesDir || typeof config.templatesDir !== 'string' || !config.templatesDir.trim()) {
+      errors.push('templatesDir is required and must be a non-empty string')
+    }
+
+    // 验证扫描器配置
+    if (config.scanner) {
+      if (config.scanner.maxDepth !== undefined && (typeof config.scanner.maxDepth !== 'number' || config.scanner.maxDepth < 0)) {
+        errors.push('scanner.maxDepth must be a non-negative number')
+      }
+
+      if (config.scanner.batchSize !== undefined && (typeof config.scanner.batchSize !== 'number' || config.scanner.batchSize <= 0)) {
+        errors.push('scanner.batchSize must be a positive number')
+      }
+    }
+
+    // 验证缓存配置
+    if (config.cache) {
+      if (config.cache.strategy && !['lru', 'fifo', 'lfu'].includes(config.cache.strategy)) {
+        errors.push('cache.strategy must be one of: lru, fifo, lfu')
+      }
+
+      if (config.cache.maxSize !== undefined && (typeof config.cache.maxSize !== 'number' || config.cache.maxSize <= 0)) {
+        errors.push('cache.maxSize must be a positive number')
+      }
+
+      if (config.cache.ttl !== undefined && (typeof config.cache.ttl !== 'number' || config.cache.ttl < 0)) {
+        errors.push('cache.ttl must be a non-negative number')
+      }
+    }
+
+    // 验证错误处理配置
+    if (config.errorHandling && config.errorHandling.logLevel) {
+      if (!['error', 'warn', 'info', 'debug'].includes(config.errorHandling.logLevel)) {
+        errors.push('errorHandling.logLevel must be one of: error, warn, info, debug')
+      }
+    }
+
+    // 提供修复建议
+    if (errors.length > 0) {
+      fixedConfig = {
+        ...config,
+        templatesDir: config.templatesDir || 'src/templates',
+        scanner: {
+          ...config.scanner,
+          maxDepth: config.scanner?.maxDepth < 0 ? 5 : config.scanner?.maxDepth
+        }
+      }
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      fixedConfig
+    }
   },
 
   /**
    * 检查配置是否有效
    */
-  isValidConfig(config: TemplateConfig): boolean {
-    return configValidator.validate(config).valid
+  isValidConfig(config: any): boolean {
+    return this.validateConfig(config).valid
   },
 
   /**
@@ -364,6 +461,95 @@ export const validationUtils = {
    */
   isValidDeviceType(device: string): device is DeviceType {
     return validateDeviceType(device)
+  },
+
+  /**
+   * 验证模板分类
+   */
+  isValidTemplateCategory(category: string): boolean {
+    if (!category || typeof category !== 'string') return false
+    const validCategories = ['login', 'dashboard', 'user', 'form', 'ecommerce']
+    return validCategories.includes(category)
+  },
+
+  /**
+   * 验证版本格式
+   */
+  validateVersionFormat(version: string): boolean {
+    if (!version || typeof version !== 'string') return false
+    return /^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/.test(version)
+  },
+
+  /**
+   * 验证文件扩展名
+   */
+  isValidExtension(extension: string, validExtensions: string[]): boolean {
+    if (!extension || !Array.isArray(validExtensions)) return false
+
+    const normalizedExt = extension.toLowerCase()
+    const normalizedValid = validExtensions.map(ext => ext.toLowerCase())
+
+    // 处理没有点的扩展名
+    const extWithDot = normalizedExt.startsWith('.') ? normalizedExt : '.' + normalizedExt
+
+    return normalizedValid.includes(extWithDot)
+  },
+
+  /**
+   * 验证路径
+   */
+  validatePath(path: string): boolean {
+    if (!path || typeof path !== 'string' || !path.trim()) return false
+
+    // 检查是否包含无效字符
+    const invalidChars = /[<>|"*?]/
+    if (invalidChars.test(path)) return false
+
+    return true
+  },
+
+  /**
+   * 清理用户输入
+   */
+  sanitizeInput(input: any): string {
+    if (!input) return ''
+
+    const str = String(input)
+
+    // 移除HTML标签和脚本
+    let cleaned = str.replace(/<[^>]*>/g, '')
+
+    // 移除控制字符
+    cleaned = cleaned.replace(/[\n\r\t]/g, ' ')
+
+    // 移除多余空格
+    cleaned = cleaned.replace(/\s+/g, ' ').trim()
+
+    return cleaned
+  },
+
+  /**
+   * 验证邮箱地址
+   */
+  validateEmail(email: string): boolean {
+    if (!email || typeof email !== 'string') return false
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  },
+
+  /**
+   * 验证URL
+   */
+  validateUrl(url: string): boolean {
+    if (!url || typeof url !== 'string') return false
+
+    try {
+      new URL(url)
+      return true
+    } catch {
+      return false
+    }
   },
 
   /**

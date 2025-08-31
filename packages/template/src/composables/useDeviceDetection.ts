@@ -1,11 +1,12 @@
 /**
  * 设备检测Hook
- * 
- * 集成 @ldesign/device 包，实现高效的设备类型检测和响应式切换
+ *
+ * 集成配置系统，实现高效的设备类型检测和响应式切换
  */
 
-import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted, inject, type Ref } from 'vue'
 import type { DeviceType } from '../types/template'
+import type { TemplateSystemConfig } from '../types/config'
 
 /**
  * 设备检测选项
@@ -15,14 +16,16 @@ interface UseDeviceDetectionOptions {
   initialDevice?: DeviceType
   /** 是否启用响应式监听 */
   enableResponsive?: boolean
-  /** 断点配置 */
+  /** 断点配置（覆盖全局配置） */
   breakpoints?: {
     mobile: number
     tablet: number
     desktop: number
   }
-  /** 防抖延迟（毫秒） */
+  /** 防抖延迟（毫秒，覆盖全局配置） */
   debounceDelay?: number
+  /** 自定义设备检测函数 */
+  customDetector?: (width: number, height: number, userAgent: string) => DeviceType
 }
 
 /**
@@ -52,23 +55,23 @@ interface UseDeviceDetectionReturn {
 }
 
 /**
- * 默认断点配置
- */
-const DEFAULT_BREAKPOINTS = {
-  mobile: 768,
-  tablet: 1024,
-  desktop: 1200
-}
-
-/**
  * 设备检测Hook
  */
 export function useDeviceDetection(options: UseDeviceDetectionOptions = {}): UseDeviceDetectionReturn {
+  // 注入全局配置
+  const globalConfig = inject<TemplateSystemConfig>('templateSystemConfig')
+
+  // 合并配置
   const {
-    initialDevice,
-    enableResponsive = true,
-    breakpoints = DEFAULT_BREAKPOINTS,
-    debounceDelay = 150
+    initialDevice = globalConfig?.defaultDevice || 'desktop',
+    enableResponsive = globalConfig?.deviceDetection.enableResize ?? true,
+    breakpoints = globalConfig?.deviceDetection.breakpoints || {
+      mobile: 768,
+      tablet: 1024,
+      desktop: 1200
+    },
+    debounceDelay = globalConfig?.deviceDetection.debounceDelay ?? 150,
+    customDetector = globalConfig?.deviceDetection.customDetector
   } = options
 
   // 响应式状态
@@ -91,11 +94,23 @@ export function useDeviceDetection(options: UseDeviceDetectionOptions = {}): Use
    */
   function detectDeviceType(): DeviceType {
     if (typeof window === 'undefined') {
-      return 'desktop' // 服务器端默认返回桌面端
+      return initialDevice // 服务器端返回初始设备类型
     }
 
     const width = window.innerWidth
+    const height = window.innerHeight
+    const userAgent = navigator.userAgent
 
+    // 如果有自定义检测器，优先使用
+    if (customDetector) {
+      try {
+        return customDetector(width, height, userAgent)
+      } catch (error) {
+        console.warn('自定义设备检测器执行失败，使用默认检测逻辑:', error)
+      }
+    }
+
+    // 默认检测逻辑
     if (width < breakpoints.mobile) {
       return 'mobile'
     } else if (width < breakpoints.tablet) {
