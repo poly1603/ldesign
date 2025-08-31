@@ -7,11 +7,11 @@ import type { TemplateConfig } from '../../../../types/template'
 const config: TemplateConfig = {
   name: 'modern',
   displayName: '现代商务登录模板',
-  description: '现代化设计风格的登录界面，采用流行的毛玻璃效果、渐变背景和微交互动画。适合科技公司和现代化企业应用。',
-  version: '1.0.0',
+  description: '现代化设计风格的登录界面，采用多层渐变背景、毛玻璃装饰球（4个不同尺寸）、现代几何图案（六边形、三角形、菱形）和点阵背景。包含渐变色相变化、图形旋转、发光脉冲等动态效果。适合科技公司、现代企业和创新产品。',
+  version: '2.0.0',
   author: 'ldesign',
   isDefault: false,
-  tags: ['现代', '商务', '毛玻璃', '动画', '渐变'],
+  tags: ['现代', '商务', '毛玻璃', '渐变', '几何', '动画', '科技'],
   preview: './preview.png',
   props: {
     title: {
@@ -59,14 +59,22 @@ const config: TemplateConfig = {
   dependencies: [],
   minVueVersion: '3.0.0',
   features: [
-    '毛玻璃效果',
+    '多层渐变背景（3层叠加）',
+    '毛玻璃装饰球（4个不同尺寸）',
+    '现代几何图案（六边形、三角形、菱形）',
+    '点阵背景纹理',
+    '渐变色相变化动画',
+    '图形旋转动画',
+    '发光脉冲效果',
     '粒子动画背景',
     '社交登录',
     '微交互动画',
-    '渐变设计',
+    '现代化UI设计',
     '响应式布局',
     '自定义主题',
-    '表单验证'
+    '表单验证',
+    'backdrop-filter 毛玻璃',
+    '高性能动画优化'
   ],
   screenshots: [
     './screenshot-1.png',

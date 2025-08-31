@@ -43,6 +43,8 @@ export interface TemplateConfig {
  * 模板元数据
  */
 export interface TemplateMetadata extends TemplateConfig {
+  /** 模板唯一标识符 */
+  id?: string
   /** 模板分类 */
   category: string
   /** 设备类型 */

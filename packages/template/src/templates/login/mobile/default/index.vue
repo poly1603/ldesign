@@ -1,5 +1,19 @@
 <template>
   <div class="login-template-mobile" :style="cssVars">
+    <!-- 模板标识横幅 -->
+    <div class="template-banner">
+      <div class="banner-content">
+        <div class="template-info">
+          <span class="template-name">移动端登录模板</span>
+          <span class="template-meta">
+            <span class="device-type">📱 Mobile</span>
+            <span class="template-version">v1.0.0</span>
+          </span>
+        </div>
+        <div class="template-category">Login</div>
+      </div>
+    </div>
+
     <!-- 状态栏 -->
     <div v-if="showStatusBar" class="status-bar">
       <slot name="status-bar">
@@ -76,6 +90,7 @@
                 type="text"
                 class="form-input"
                 placeholder="手机号/邮箱"
+                autocomplete="username"
                 required
                 :disabled="loading"
                 @focus="handleInputFocus('username')"
@@ -93,6 +108,7 @@
                 :type="showPassword ? 'text' : 'password'"
                 class="form-input"
                 placeholder="密码"
+                autocomplete="current-password"
                 required
                 :disabled="loading"
                 @focus="handleInputFocus('password')"
@@ -359,12 +375,102 @@ onUnmounted(() => {
 </script>
 
 <style lang="less" scoped>
+// 模板标识横幅样式
+.template-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  background: linear-gradient(135deg, rgba(46, 204, 113, 0.95), rgba(52, 152, 219, 0.95));
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+.banner-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.template-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.template-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.template-meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.device-type, .template-version {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.template-category {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 15px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 .login-template-mobile {
   min-height: 100vh;
   background: linear-gradient(180deg, var(--primary-color, #667eea) 0%, #764ba2 100%);
   position: relative;
   overflow-x: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  // 移动端专用装饰背景
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.06) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  // 移动端装饰元素
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+      linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.02) 50%, transparent 60%),
+      linear-gradient(-45deg, transparent 40%, rgba(255, 255, 255, 0.02) 50%, transparent 60%);
+    background-size: 60px 60px, 80px 80px;
+    animation: mobile-pattern-shift 20s linear infinite;
+    pointer-events: none;
+  }
 }
 
 // 状态栏
@@ -409,6 +515,74 @@ onUnmounted(() => {
   position: relative;
   display: flex;
   flex-direction: column;
+
+  // 移动端专用装饰元素
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background: linear-gradient(180deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  // 手势提示动画
+  .gesture-hints {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 2;
+
+    .swipe-indicator {
+      position: absolute;
+      top: 50%;
+      right: 20px;
+      width: 30px;
+      height: 2px;
+      background: rgba(102, 126, 234, 0.3);
+      border-radius: 1px;
+      animation: swipe-hint 3s ease-in-out infinite;
+
+      &::after {
+        content: '';
+        position: absolute;
+        right: -8px;
+        top: -3px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid rgba(102, 126, 234, 0.3);
+        border-top: 4px solid transparent;
+        border-bottom: 4px solid transparent;
+      }
+    }
+
+    .tap-indicator {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border: 2px solid rgba(102, 126, 234, 0.2);
+      border-radius: 50%;
+      animation: tap-pulse 4s ease-in-out infinite;
+
+      &.tap-1 {
+        top: 30%;
+        left: 30px;
+        animation-delay: 0s;
+      }
+
+      &.tap-2 {
+        bottom: 25%;
+        right: 40px;
+        animation-delay: -2s;
+      }
+    }
+  }
 }
 
 // 头部
@@ -876,12 +1050,60 @@ onUnmounted(() => {
 }
 
 // 触摸设备优化
+// 移动端专用动画
+@keyframes mobile-pattern-shift {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 60px 60px, -80px -80px;
+  }
+}
+
+@keyframes swipe-hint {
+  0%, 100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(10px);
+  }
+}
+
+@keyframes tap-pulse {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
+}
+
+// 触摸设备优化
 @media (hover: none) and (pointer: coarse) {
   .quick-btn:hover,
   .form-link:hover,
   .register-button:hover {
     transform: none;
     background: initial;
+  }
+
+  // 增强触摸反馈
+  .mobile-button:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  }
+
+  .form-input:focus {
+    transform: scale(1.02);
+  }
+
+  .quick-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 }
 </style>

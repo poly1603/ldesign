@@ -4,18 +4,18 @@
  * 提供模板选择界面，支持搜索、过滤、预览等功能
  */
 
-import { 
-  defineComponent, 
-  ref, 
-  computed, 
+import {
+  defineComponent,
+  ref,
+  computed,
   watch,
   nextTick,
-  type PropType 
+  type PropType
 } from 'vue'
-import type { 
-  TemplateSelectorProps, 
-  TemplateMetadata, 
-  DeviceType 
+import type {
+  TemplateSelectorProps,
+  TemplateMetadata,
+  DeviceType
 } from '../types/template'
 import { useTemplateList } from '../composables/useTemplate'
 
@@ -73,10 +73,13 @@ export const TemplateSelector = defineComponent({
   },
   emits: ['select', 'close', 'preview'],
   setup(props, { emit, slots }) {
+    // 创建响应式的设备类型引用
+    const deviceRef = computed(() => props.device)
+
     // 获取模板列表
     const { availableTemplates, loading, error } = useTemplateList(
-      props.category, 
-      props.device
+      props.category,
+      deviceRef
     )
 
     // 内部状态
@@ -102,7 +105,7 @@ export const TemplateSelector = defineComponent({
       // 搜索过滤
       if (searchQuery.value.trim()) {
         const query = searchQuery.value.toLowerCase().trim()
-        filtered = filtered.filter(template => 
+        filtered = filtered.filter(template =>
           template.name.toLowerCase().includes(query) ||
           template.displayName.toLowerCase().includes(query) ||
           template.description.toLowerCase().includes(query) ||
@@ -135,7 +138,7 @@ export const TemplateSelector = defineComponent({
       return filteredTemplates.value.slice(start, end)
     })
 
-    const totalPages = computed(() => 
+    const totalPages = computed(() =>
       Math.ceil(filteredTemplates.value.length / props.pageSize)
     )
 
@@ -216,7 +219,7 @@ export const TemplateSelector = defineComponent({
             />
             <div class="search-input__icon">🔍</div>
           </div>
-          
+
           {allTags.value.length > 0 && (
             <div class="search-tags">
               <div class="search-tags__label">标签筛选：</div>
@@ -238,7 +241,7 @@ export const TemplateSelector = defineComponent({
           )}
 
           {(searchQuery.value || selectedTags.value.length > 0) && (
-            <button 
+            <button
               class="search-clear"
               onClick={clearFilters}
             >
@@ -264,9 +267,9 @@ export const TemplateSelector = defineComponent({
             ]}
             onClick={() => toggleSort(field)}
           >
-            {field === 'displayName' ? '名称' : 
-             field === 'name' ? '标识' :
-             field === 'version' ? '版本' : '作者'}
+            {field === 'displayName' ? '名称' :
+              field === 'name' ? '标识' :
+                field === 'version' ? '版本' : '作者'}
             {sortBy.value === field && (
               <span class="sort-arrow">
                 {sortOrder.value === 'asc' ? '↑' : '↓'}
@@ -281,7 +284,7 @@ export const TemplateSelector = defineComponent({
      * 渲染模板卡片
      */
     const renderTemplateCard = (template: TemplateMetadata) => (
-      <div 
+      <div
         key={template.name}
         class={[
           'template-card',
@@ -290,8 +293,8 @@ export const TemplateSelector = defineComponent({
       >
         {props.showPreview && template.preview && (
           <div class="template-card__preview">
-            <img 
-              src={template.preview} 
+            <img
+              src={template.preview}
               alt={template.displayName}
               loading="lazy"
               onError={(e) => {
@@ -301,19 +304,19 @@ export const TemplateSelector = defineComponent({
             />
           </div>
         )}
-        
+
         <div class="template-card__content">
           <div class="template-card__header">
             <h3 class="template-card__title">{template.displayName}</h3>
             <span class="template-card__version">v{template.version}</span>
           </div>
-          
+
           <p class="template-card__description">{template.description}</p>
-          
+
           {template.author && (
             <div class="template-card__author">作者: {template.author}</div>
           )}
-          
+
           {template.tags && template.tags.length > 0 && (
             <div class="template-card__tags">
               {template.tags.map(tag => (
@@ -321,17 +324,17 @@ export const TemplateSelector = defineComponent({
               ))}
             </div>
           )}
-          
+
           <div class="template-card__actions">
             {props.showPreview && (
-              <button 
+              <button
                 class="template-card__preview-btn"
                 onClick={() => handlePreview(template)}
               >
                 预览
               </button>
             )}
-            <button 
+            <button
               class="template-card__select-btn"
               onClick={() => handleSelect(template)}
             >
@@ -350,19 +353,19 @@ export const TemplateSelector = defineComponent({
 
       return (
         <div class="template-selector__pagination">
-          <button 
+          <button
             class="pagination-btn"
             disabled={currentPage.value === 1}
             onClick={() => currentPage.value--}
           >
             上一页
           </button>
-          
+
           <span class="pagination-info">
             {currentPage.value} / {totalPages.value}
           </span>
-          
-          <button 
+
+          <button
             class="pagination-btn"
             disabled={currentPage.value === totalPages.value}
             onClick={() => currentPage.value++}
@@ -384,22 +387,22 @@ export const TemplateSelector = defineComponent({
       return (
         <div class="template-selector">
           <div class="template-selector__overlay" onClick={handleClose} />
-          
+
           <div class="template-selector__dialog">
             <div class="template-selector__header">
               <h2 class="template-selector__title">选择模板</h2>
-              <button 
+              <button
                 class="template-selector__close"
                 onClick={handleClose}
               >
                 ✕
               </button>
             </div>
-            
+
             <div class="template-selector__body">
               {renderSearchBar()}
               {renderSortBar()}
-              
+
               {loading.value ? (
                 <div class="template-selector__loading">加载中...</div>
               ) : error.value ? (

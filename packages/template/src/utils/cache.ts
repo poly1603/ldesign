@@ -204,9 +204,9 @@ export class ComponentCache extends CacheManager<Component> {
    * 缓存组件
    */
   cacheComponent(
-    category: string, 
-    device: string, 
-    templateName: string, 
+    category: string,
+    device: string,
+    templateName: string,
     component: Component
   ): void {
     const key = this.generateKey(category, device, templateName)
@@ -217,8 +217,8 @@ export class ComponentCache extends CacheManager<Component> {
    * 获取缓存的组件
    */
   getComponent(
-    category: string, 
-    device: string, 
+    category: string,
+    device: string,
     templateName: string
   ): Component | null {
     const key = this.generateKey(category, device, templateName)
@@ -260,6 +260,24 @@ export class MetadataCache extends CacheManager<TemplateMetadata> {
  */
 export const componentCache = new ComponentCache()
 export const metadataCache = new MetadataCache()
+
+/**
+ * 创建模板缓存
+ *
+ * @param options 缓存配置选项
+ * @returns 缓存管理器实例
+ */
+export function createTemplateCache(options: CacheOptions = {}) {
+  return new CacheManager(options)
+}
+
+/**
+ * 清空模板缓存
+ */
+export function clearTemplateCache(): void {
+  componentCache.clear()
+  metadataCache.clear()
+}
 
 /**
  * 缓存工具函数

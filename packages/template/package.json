@@ -31,14 +31,14 @@
   ],
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.js"
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "require": "./src/index.ts"
     },
     "./vue": {
-      "types": "./types/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./lib/vue/index.js"
+      "types": "./src/vue/index.ts",
+      "import": "./src/vue/index.ts",
+      "require": "./src/vue/index.ts"
     },
     "./package.json": "./package.json"
   },

@@ -1,18 +1,73 @@
 <template>
   <div class="login-template-creative" :style="cssVars">
+    <!-- 模板标识横幅 -->
+    <div class="template-banner">
+      <div class="banner-content">
+        <div class="template-info">
+          <span class="template-name">创意登录模板</span>
+          <span class="template-meta">
+            <span class="device-type">🖥️ Desktop</span>
+            <span class="template-version">v3.0.0</span>
+          </span>
+        </div>
+        <div class="template-category">Login</div>
+      </div>
+    </div>
+
+    <!-- 调试信息显示 -->
+    <div class="debug-info" v-if="showDebugInfo">
+      <div class="debug-panel">
+        <h4>🔧 调试信息</h4>
+        <div class="debug-items">
+          <div class="debug-item">
+            <span class="debug-label">设备类型:</span>
+            <span class="debug-value device-type" :class="`device-${currentDeviceType}`">
+              {{ deviceTypeLabels[currentDeviceType] || currentDeviceType }}
+            </span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">模板名称:</span>
+            <span class="debug-value template-name">{{ currentTemplateName }}</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">模板版本:</span>
+            <span class="debug-value">v3.0.0</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">渲染时间:</span>
+            <span class="debug-value">{{ renderTime }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 创意背景 -->
     <div class="creative-background">
+      <!-- 动态几何形状 -->
       <div class="bg-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
-        <div class="shape shape-4"></div>
-        <div class="shape shape-5"></div>
+        <div class="shape shape-1" :style="{ animationDelay: '0s' }"></div>
+        <div class="shape shape-2" :style="{ animationDelay: '2s' }"></div>
+        <div class="shape shape-3" :style="{ animationDelay: '4s' }"></div>
+        <div class="shape shape-4" :style="{ animationDelay: '1s' }"></div>
+        <div class="shape shape-5" :style="{ animationDelay: '3s' }"></div>
+        <div class="shape shape-6" :style="{ animationDelay: '5s' }"></div>
       </div>
-      
+
+      <!-- 粒子系统 -->
+      <div v-if="enableAnimations" class="particle-system">
+        <div v-for="i in 30" :key="`particle-${i}`" class="particle" :style="getParticleStyle(i)"></div>
+      </div>
+
       <!-- 动态网格 -->
       <div v-if="enableAnimations" class="grid-overlay">
-        <div v-for="i in 20" :key="i" class="grid-line" :style="getGridLineStyle(i)"></div>
+        <div v-for="i in 20" :key="`grid-${i}`" class="grid-line" :style="getGridLineStyle(i)"></div>
+      </div>
+
+      <!-- 光效 -->
+      <div class="light-effects">
+        <div class="light-beam light-beam-1"></div>
+        <div class="light-beam light-beam-2"></div>
+        <div class="light-beam light-beam-3"></div>
       </div>
     </div>
 
@@ -249,7 +304,7 @@ const getGridLineStyle = (index: number) => {
   const position = (index / 20) * 100
   const opacity = Math.random() * 0.3 + 0.1
   const animationDelay = Math.random() * 5
-  
+
   if (isVertical) {
     return {
       left: `${position}%`,
@@ -266,6 +321,26 @@ const getGridLineStyle = (index: number) => {
       opacity,
       animationDelay: `${animationDelay}s`
     }
+  }
+}
+
+// 粒子样式生成
+const getParticleStyle = (index: number) => {
+  const size = Math.random() * 6 + 2
+  const left = Math.random() * 100
+  const top = Math.random() * 100
+  const animationDelay = Math.random() * 10
+  const animationDuration = Math.random() * 15 + 10
+  const opacity = Math.random() * 0.8 + 0.2
+
+  return {
+    width: `${size}px`,
+    height: `${size}px`,
+    left: `${left}%`,
+    top: `${top}%`,
+    opacity,
+    animationDelay: `${animationDelay}s`,
+    animationDuration: `${animationDuration}s`
   }
 }
 
@@ -295,6 +370,66 @@ const handleRegister = () => {
 </script>
 
 <style lang="less" scoped>
+// 模板标识横幅样式
+.template-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  background: linear-gradient(135deg, rgba(230, 126, 34, 0.95), rgba(231, 76, 60, 0.95));
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+.banner-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.template-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.template-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.template-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.device-type, .template-version {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.template-category {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.375rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 .login-template-creative {
   min-height: 100vh;
   position: relative;
@@ -369,6 +504,33 @@ const handleRegister = () => {
         right: 5%;
         animation-delay: -7s;
       }
+
+      &.shape-6 {
+        width: 90px;
+        height: 90px;
+        background: var(--tertiary-accent);
+        top: 70%;
+        left: 60%;
+        animation-delay: -12s;
+        clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      }
+    }
+  }
+
+  // 粒子系统
+  .particle-system {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+
+    .particle {
+      position: absolute;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: particle-float 20s linear infinite;
     }
   }
 
@@ -385,18 +547,67 @@ const handleRegister = () => {
       animation: grid-pulse 3s ease-in-out infinite;
     }
   }
+
+  // 光效
+  .light-effects {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+
+    .light-beam {
+      position: absolute;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      animation: light-sweep 8s ease-in-out infinite;
+
+      &.light-beam-1 {
+        width: 2px;
+        height: 100%;
+        left: 20%;
+        animation-delay: 0s;
+      }
+
+      &.light-beam-2 {
+        width: 100%;
+        height: 2px;
+        top: 30%;
+        animation-delay: 2s;
+      }
+
+      &.light-beam-3 {
+        width: 2px;
+        height: 100%;
+        right: 25%;
+        animation-delay: 4s;
+      }
+    }
+  }
 }
 
 @keyframes float-shape {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  25% { transform: translateY(-20px) rotate(90deg); }
-  50% { transform: translateY(0px) rotate(180deg); }
-  75% { transform: translateY(20px) rotate(270deg); }
+  0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+  25% { transform: translateY(-20px) rotate(90deg) scale(1.1); }
+  50% { transform: translateY(0px) rotate(180deg) scale(0.9); }
+  75% { transform: translateY(20px) rotate(270deg) scale(1.05); }
+}
+
+@keyframes particle-float {
+  0% { transform: translateY(0px) translateX(0px) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100px) translateX(50px) rotate(360deg); opacity: 0; }
 }
 
 @keyframes grid-pulse {
   0%, 100% { opacity: 0.1; }
   50% { opacity: 0.3; }
+}
+
+@keyframes light-sweep {
+  0%, 100% { opacity: 0; transform: translateX(-100px); }
+  50% { opacity: 0.5; transform: translateX(100px); }
 }
 
 // 主容器

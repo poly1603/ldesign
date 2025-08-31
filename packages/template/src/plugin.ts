@@ -5,9 +5,9 @@
  */
 
 import type { App } from 'vue'
-import type { 
-  TemplatePluginOptions, 
-  TemplatePluginInstance 
+import type {
+  TemplatePluginOptions,
+  TemplatePluginInstance
 } from './types/plugin'
 import { TemplateScanner } from './scanner'
 import { componentCache } from './utils/cache'
@@ -74,13 +74,17 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
     }
   })
 
-  // 提供全局属性
-  app.config.globalProperties.$templateScanner = pluginState.scanner
-  app.config.globalProperties.$templateOptions = pluginState.options
+  // 提供全局属性（安全检查）
+  if (app && app.config && app.config.globalProperties) {
+    app.config.globalProperties.$templateScanner = pluginState.scanner
+    app.config.globalProperties.$templateOptions = pluginState.options
+  }
 
-  // 提供依赖注入
-  app.provide('templateScanner', pluginState.scanner)
-  app.provide('templateOptions', pluginState.options)
+  // 提供依赖注入（安全检查）
+  if (app && typeof app.provide === 'function') {
+    app.provide('templateScanner', pluginState.scanner)
+    app.provide('templateOptions', pluginState.options)
+  }
 
   // 自动扫描
   if (pluginState.options.autoScan) {
@@ -115,12 +119,12 @@ function setupHMR(): void {
   // 监听模板文件变化
   import.meta.hot.on('template-config-updated', (data) => {
     console.log('[TemplatePlugin] Template config updated:', data)
-    
+
     // 清除相关缓存
     if (pluginState.options.cache) {
       componentCache.clear()
     }
-    
+
     // 重新扫描
     if (pluginState.scanner) {
       pluginState.scanner.scan().catch(error => {
@@ -132,7 +136,7 @@ function setupHMR(): void {
   // 监听模板组件变化
   import.meta.hot.on('template-component-updated', (data) => {
     console.log('[TemplatePlugin] Template component updated:', data)
-    
+
     // 清除特定组件缓存
     if (pluginState.options.cache && data.category && data.device && data.name) {
       componentCache.removeComponent(data.category, data.device, data.name)
@@ -203,6 +207,33 @@ export default TemplatePlugin
 
 // 具名导出
 export { TemplatePlugin }
+
+/**
+ * 创建模板引擎插件
+ *
+ * 为Engine系统创建模板插件实例
+ *
+ * @param options 插件配置选项
+ * @returns Engine插件实例
+ */
+export function createTemplateEnginePlugin(options: TemplatePluginOptions = {}) {
+  return {
+    name: 'template',
+    version: '1.0.0',
+    install(engine: any) {
+      // 获取Vue应用实例
+      const app = engine.app || engine
+
+      // 安装Vue插件
+      if (app && typeof app.use === 'function') {
+        app.use(TemplatePlugin, options)
+      } else {
+        // 直接调用插件的install方法
+        TemplatePlugin.install(app, options)
+      }
+    }
+  }
+}
 
 // 类型导出
 export type { TemplatePluginOptions, TemplatePluginInstance }

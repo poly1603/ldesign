@@ -1,9 +1,63 @@
 <template>
   <div class="login-template-default" :style="{ '--primary-color': primaryColor }">
-    <div class="login-background" :style="backgroundStyle">
-      <div class="background-overlay"></div>
+    <!-- 模板标识横幅 -->
+    <div class="template-banner">
+      <div class="banner-content">
+        <div class="template-info">
+          <span class="template-name">默认登录模板</span>
+          <span class="template-meta">
+            <span class="device-type">🖥️ Desktop</span>
+            <span class="template-version">v1.0.0</span>
+          </span>
+        </div>
+        <div class="template-category">Login</div>
+      </div>
     </div>
-    
+
+    <!-- 调试信息显示 -->
+    <div class="debug-info" v-if="showDebugInfo">
+      <div class="debug-panel">
+        <h4>🔧 调试信息</h4>
+        <div class="debug-items">
+          <div class="debug-item">
+            <span class="debug-label">设备类型:</span>
+            <span class="debug-value device-type" :class="`device-${currentDeviceType}`">
+              {{ deviceTypeLabels[currentDeviceType] || currentDeviceType }}
+            </span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">模板名称:</span>
+            <span class="debug-value template-name">{{ currentTemplateName }}</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">模板版本:</span>
+            <span class="debug-value">v1.0.0</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">渲染时间:</span>
+            <span class="debug-value">{{ renderTime }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 专业背景 -->
+    <div class="professional-background" :style="backgroundStyle">
+      <div class="background-overlay"></div>
+      <!-- 几何装饰 -->
+      <div class="geometric-decoration">
+        <div class="geo-shape geo-circle-1"></div>
+        <div class="geo-shape geo-circle-2"></div>
+        <div class="geo-shape geo-square-1"></div>
+        <div class="geo-shape geo-line-1"></div>
+        <div class="geo-shape geo-line-2"></div>
+      </div>
+      <!-- 品牌水印 -->
+      <div class="brand-watermark">
+        <div class="watermark-text">LDesign</div>
+      </div>
+    </div>
+
     <div class="login-container">
       <div class="login-card">
         <div class="login-header">
@@ -31,11 +85,11 @@
                 </svg>
               </div>
               <input
-                id="username"
                 v-model="formData.username"
                 type="text"
                 class="form-input"
                 placeholder="请输入用户名或邮箱"
+                autocomplete="username"
                 required
                 :disabled="loading"
               />
@@ -51,11 +105,11 @@
                 </svg>
               </div>
               <input
-                id="password"
                 v-model="formData.password"
                 :type="showPassword ? 'text' : 'password'"
                 class="form-input"
                 placeholder="请输入密码"
+                autocomplete="current-password"
                 required
                 :disabled="loading"
               />
@@ -120,7 +174,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 
 // Props定义
 interface Props {
@@ -132,6 +186,13 @@ interface Props {
   logoUrl?: string
   backgroundImage?: string
   primaryColor?: string
+  debugInfo?: {
+    deviceType?: string
+    templateName?: string
+    isResponsive?: boolean
+    screenWidth?: number
+    renderMode?: string
+  }
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -143,6 +204,26 @@ const props = withDefaults(defineProps<Props>(), {
   logoUrl: '',
   backgroundImage: '',
   primaryColor: '#667eea'
+})
+
+// 调试信息相关
+const showDebugInfo = ref(true) // 开发环境下默认显示调试信息
+const renderTime = ref('')
+
+// 设备类型标签映射
+const deviceTypeLabels = {
+  desktop: '🖥️ 桌面端',
+  tablet: '📱 平板端',
+  mobile: '📱 移动端'
+}
+
+// 计算属性
+const currentDeviceType = computed(() => {
+  return props.debugInfo?.deviceType || 'desktop'
+})
+
+const currentTemplateName = computed(() => {
+  return props.debugInfo?.templateName || 'default'
 })
 
 // 表单数据
@@ -191,6 +272,12 @@ const handleForgot = () => {
 const handleRegister = () => {
   alert('注册功能')
 }
+
+// 生命周期
+onMounted(() => {
+  renderTime.value = new Date().toLocaleTimeString()
+  console.log(`模板渲染完成: ${currentTemplateName.value} (${currentDeviceType.value})`)
+})
 </script>
 
 <style lang="less" scoped>
@@ -203,7 +290,7 @@ const handleRegister = () => {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.login-background {
+.professional-background {
   position: absolute;
   top: 0;
   left: 0;
@@ -221,6 +308,82 @@ const handleRegister = () => {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.1);
+  }
+
+  // 几何装饰
+  .geometric-decoration {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+
+    .geo-shape {
+      position: absolute;
+      opacity: 0.1;
+
+      &.geo-circle-1 {
+        width: 300px;
+        height: 300px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        top: -150px;
+        right: -150px;
+      }
+
+      &.geo-circle-2 {
+        width: 200px;
+        height: 200px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        bottom: -100px;
+        left: -100px;
+      }
+
+      &.geo-square-1 {
+        width: 100px;
+        height: 100px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transform: rotate(45deg);
+        top: 20%;
+        left: 10%;
+      }
+
+      &.geo-line-1 {
+        width: 200px;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.2);
+        top: 60%;
+        right: 20%;
+        transform: rotate(30deg);
+      }
+
+      &.geo-line-2 {
+        width: 150px;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.2);
+        bottom: 30%;
+        left: 15%;
+        transform: rotate(-20deg);
+      }
+    }
+  }
+
+  // 品牌水印
+  .brand-watermark {
+    position: absolute;
+    bottom: 50px;
+    left: 50px;
+    pointer-events: none;
+
+    .watermark-text {
+      font-size: 4rem;
+      font-weight: 100;
+      color: rgba(255, 255, 255, 0.05);
+      letter-spacing: 0.2em;
+      transform: rotate(-15deg);
+    }
   }
 }
 
@@ -501,6 +664,131 @@ const handleRegister = () => {
   100% { transform: rotate(360deg); }
 }
 
+// 模板标识横幅样式
+.template-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.95), rgba(118, 75, 162, 0.95));
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+.banner-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.template-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.template-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.template-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.device-type, .template-version {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.template-category {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.375rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+// 调试信息样式
+.debug-info {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9999;
+  max-width: 300px;
+}
+
+.debug-panel {
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.debug-panel h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.debug-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.debug-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.debug-label {
+  color: #aaa;
+  font-weight: 500;
+}
+
+.debug-value {
+  font-weight: 600;
+  color: white;
+}
+
+.debug-value.device-type.device-desktop {
+  color: #4CAF50;
+}
+
+.debug-value.device-type.device-tablet {
+  color: #FF9800;
+}
+
+.debug-value.device-type.device-mobile {
+  color: #2196F3;
+}
+
+.debug-value.template-name {
+  color: #E91E63;
+}
+
 // 响应式设计
 @media (max-width: 480px) {
   .login-container {
@@ -513,6 +801,18 @@ const handleRegister = () => {
 
   .login-header .logo-section .login-title {
     font-size: 1.5rem;
+  }
+
+  .debug-info {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-bottom: 1rem;
+    max-width: none;
+  }
+
+  .debug-panel {
+    background: rgba(0, 0, 0, 0.8);
   }
 }
 </style>

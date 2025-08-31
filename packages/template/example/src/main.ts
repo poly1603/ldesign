@@ -5,6 +5,8 @@
 import { createApp } from 'vue'
 import './styles/common.css'
 import './styles/demo.css'
+// 导入模板组件样式
+import './styles/template-components.css'
 import { createRouter, createWebHistory } from 'vue-router'
 import TemplatePlugin from '@ldesign/template'
 import App from './App.vue'
@@ -45,32 +47,25 @@ const app = createApp(App)
 
 // 安装模板插件（使用内置模板）
 app.use(TemplatePlugin, {
-  // 使用内置模板，从核心包的 src/templates 目录加载
-  templateRoot: [
-    // 内置模板目录（相对于包根目录）
-    '@ldesign/template/templates',
-    // 用户自定义模板目录
-    'src/templates'
-  ],
+  // 模板目录配置 - 指向正确的模板目录
+  templatesDir: '../src/templates',
+  // 自动扫描模板
+  autoScan: true,
+  // 启用缓存
+  cache: true,
+  // 开发环境启用热更新
+  enableHMR: import.meta.env.DEV,
+  // 默认设备类型
   defaultDevice: 'desktop',
-  deviceDetection: {
-    mobileBreakpoint: 768,
-    tabletBreakpoint: 992,
-    desktopBreakpoint: 1200,
-    autoDetect: false, // 禁用自动检测，强制使用默认设备
-  },
-  cache: {
+  // 启用性能监控（开发环境）
+  enablePerformanceMonitor: import.meta.env.DEV,
+  // 预加载策略
+  preloadStrategy: {
     enabled: true,
-    strategy: 'lru',
-    maxSize: 50,
-    ttl: 30 * 60 * 1000, // 30分钟
-  },
-  debug: true,
-  // 组件配置
-  componentPrefix: 'L',
-  registerComponents: true,
-  registerDirectives: true,
-  provideGlobalProperties: true,
+    mode: 'lazy',
+    limit: 5,
+    priority: ['login-desktop-default', 'login-desktop-modern']
+  }
 })
 
 // 安装路由

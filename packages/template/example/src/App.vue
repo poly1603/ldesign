@@ -52,8 +52,12 @@
 import { computed } from 'vue'
 import { useTemplate } from '@ldesign/template'
 
-// 使用模板管理器
-const { currentDevice } = useTemplate()
+// 使用模板管理器 - 提供必需的 options 参数
+const { deviceType: currentDevice } = useTemplate({
+  category: 'login', // 必需的 category 参数
+  autoDetectDevice: true,
+  enableCache: true
+})
 
 // 设备类型显示名称
 const deviceDisplayName = computed(() => {

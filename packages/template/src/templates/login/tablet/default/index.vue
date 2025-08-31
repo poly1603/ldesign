@@ -1,8 +1,38 @@
 <template>
   <div class="login-template-tablet" :style="cssVars" :class="{ 'landscape': isLandscape }">
-    <!-- 背景 -->
+    <!-- 模板标识横幅 -->
+    <div class="template-banner">
+      <div class="banner-content">
+        <div class="template-info">
+          <span class="template-name">平板端登录模板</span>
+          <span class="template-meta">
+            <span class="device-type">📱 Tablet</span>
+            <span class="template-version">v1.0.0</span>
+          </span>
+        </div>
+        <div class="template-category">Login</div>
+      </div>
+    </div>
+
+    <!-- 平板优化背景 -->
     <div class="tablet-background" :style="backgroundStyle">
       <div class="background-overlay"></div>
+
+      <!-- 平板专用装饰元素 -->
+      <div class="tablet-decorations">
+        <div class="decoration-circle circle-1"></div>
+        <div class="decoration-circle circle-2"></div>
+        <div class="decoration-wave wave-1"></div>
+        <div class="decoration-wave wave-2"></div>
+        <div class="decoration-grid"></div>
+      </div>
+
+      <!-- 触摸友好的视觉提示 -->
+      <div class="touch-indicators">
+        <div class="touch-ripple ripple-1"></div>
+        <div class="touch-ripple ripple-2"></div>
+        <div class="touch-ripple ripple-3"></div>
+      </div>
     </div>
 
     <div class="tablet-container">
@@ -282,6 +312,65 @@ onUnmounted(() => {
 </script>
 
 <style lang="less" scoped>
+// 模板标识横幅样式
+.template-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  background: linear-gradient(135deg, rgba(155, 89, 182, 0.95), rgba(142, 68, 173, 0.95));
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+.banner-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.9rem;
+}
+
+.template-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.template-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.template-meta {
+  display: flex;
+  gap: 0.8rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.device-type, .template-version {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.template-category {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: 18px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 .login-template-tablet {
   min-height: 100vh;
   display: flex;
@@ -309,6 +398,114 @@ onUnmounted(() => {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.1);
+  }
+
+  // 平板专用装饰元素
+  .tablet-decorations {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+
+    .decoration-circle {
+      position: absolute;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      animation: float-decoration 12s ease-in-out infinite;
+
+      &.circle-1 {
+        width: 200px;
+        height: 200px;
+        top: 15%;
+        right: 10%;
+        animation-delay: 0s;
+      }
+
+      &.circle-2 {
+        width: 150px;
+        height: 150px;
+        bottom: 20%;
+        left: 15%;
+        animation-delay: -6s;
+      }
+    }
+
+    .decoration-wave {
+      position: absolute;
+      width: 300px;
+      height: 100px;
+      opacity: 0.1;
+
+      &.wave-1 {
+        top: 30%;
+        left: -50px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 100'%3E%3Cpath d='M0,50 Q75,10 150,50 T300,50' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+        animation: wave-flow 8s ease-in-out infinite;
+      }
+
+      &.wave-2 {
+        bottom: 25%;
+        right: -50px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 100'%3E%3Cpath d='M0,50 Q75,90 150,50 T300,50' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+        animation: wave-flow 10s ease-in-out infinite reverse;
+      }
+    }
+
+    .decoration-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+      animation: grid-shift 15s linear infinite;
+    }
+  }
+
+  // 触摸友好的视觉提示
+  .touch-indicators {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+
+    .touch-ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+      animation: touch-pulse 6s ease-in-out infinite;
+
+      &.ripple-1 {
+        width: 80px;
+        height: 80px;
+        top: 25%;
+        left: 20%;
+        animation-delay: 0s;
+      }
+
+      &.ripple-2 {
+        width: 60px;
+        height: 60px;
+        top: 60%;
+        right: 25%;
+        animation-delay: -2s;
+      }
+
+      &.ripple-3 {
+        width: 100px;
+        height: 100px;
+        bottom: 30%;
+        left: 60%;
+        animation-delay: -4s;
+      }
+    }
   }
 }
 
@@ -738,6 +935,47 @@ onUnmounted(() => {
 
   .tablet-button:active {
     transform: scale(0.98);
+  }
+}
+
+// 平板专用动画
+@keyframes float-decoration {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+    opacity: 0.4;
+  }
+}
+
+@keyframes wave-flow {
+  0%, 100% {
+    transform: translateX(0px) scaleX(1);
+  }
+  50% {
+    transform: translateX(20px) scaleX(1.1);
+  }
+}
+
+@keyframes grid-shift {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(50px, 50px);
+  }
+}
+
+@keyframes touch-pulse {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2);
   }
 }
 </style>

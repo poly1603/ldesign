@@ -4,7 +4,7 @@ import type { DeviceType } from '@ldesign/template'
 import { TemplateRenderer } from '@ldesign/template/vue'
 
 // 当前选中的模板
-const currentTemplate = ref('login-default')
+const currentTemplate = ref('login-desktop-default')
 const currentCategory = ref('login')
 const currentDeviceType = ref<DeviceType>('desktop')
 const isAutoDetecting = ref(true)
@@ -31,7 +31,7 @@ function detectDeviceType(): DeviceType {
 
 // 设备类型对应的默认模板映射
 const deviceTemplateMap = {
-  desktop: 'login-default',
+  desktop: 'login-desktop-default',
   tablet: 'login-tablet-default',
   mobile: 'login-mobile-default',
 }
@@ -49,9 +49,9 @@ function updateDeviceType() {
 }
 
 // 事件处理器
-function handleTemplateChanged(oldTemplate: string, newTemplate: string) {
-  console.log('模板已切换:', { from: oldTemplate, to: newTemplate })
-  currentTemplate.value = newTemplate
+function handleTemplateChanged(templateName: string) {
+  console.log('模板已切换:', { to: templateName })
+  currentTemplate.value = templateName
 }
 
 function handleTemplateSelected(templateName: string) {
@@ -141,14 +141,13 @@ onUnmounted(() => {
     <div class="template-container">
       <TemplateRenderer
         :key="`${currentTemplate}-${currentDeviceType}`"
-        :template="currentTemplate"
+        :template-name="currentTemplate"
         :category="currentCategory"
-        :device-type="currentDeviceType"
-        :template-props="templateProps"
+        :device="currentDeviceType"
+        :props="templateProps"
         :show-selector="true"
-        :selector-config="{ layout: 'header' }"
-        @template-changed="handleTemplateChanged"
-        @template-selected="handleTemplateSelected"
+        @template-change="handleTemplateChanged"
+        @load-error="(error) => console.error('Template load error:', error)"
       />
     </div>
 

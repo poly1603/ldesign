@@ -104,50 +104,174 @@ export class TemplateScanner {
    */
   private async scanBuiltInTemplates(errors: ScanError[]): Promise<void> {
     try {
-      // 扫描内置模板配置文件和组件文件（相对于当前包，使用相对路径字面量）
-      const configModules = import.meta.glob('../templates/**/config.{js,ts}', { eager: false })
-      const componentModules = import.meta.glob('../templates/**/index.vue', { eager: false })
+      // 使用 import.meta.glob 扫描内置模板配置文件
+      // Vite 要求使用字面量字符串，所以我们尝试多个可能的路径
+      let configModules: Record<string, () => Promise<any>> = {}
 
-      // 创建组件路径映射
-      const componentMap = new Map<string, () => Promise<any>>()
-      for (const [componentPath, moduleLoader] of Object.entries(componentModules)) {
-        const basePath = componentPath.replace(/\/index\.vue$/, '')
-        componentMap.set(basePath, moduleLoader)
+      // 尝试不同的 glob 模式（必须使用字面量）
+      try {
+        configModules = import.meta.glob('/src/templates/**/config.{js,ts}', { eager: false })
+        if (Object.keys(configModules).length > 0) {
+          console.log(`[TemplateScanner] Found ${Object.keys(configModules).length} config files with pattern: /src/templates/**/config.{js,ts}`)
+        }
+      } catch (error) {
+        // 继续尝试其他模式
       }
 
-      for (const [configPath, configLoader] of Object.entries(configModules)) {
+      if (Object.keys(configModules).length === 0) {
         try {
-          const basePath = configPath.replace(/\/config\.(js|ts)$/, '')
-          const componentLoader = componentMap.get(basePath)
-
-          if (!componentLoader) {
-            errors.push({
-              type: 'FILE_NOT_FOUND',
-              message: `Component file not found for config: ${configPath}`,
-              filePath: `${basePath}/index.vue`,
-              details: null
-            })
-            continue
+          configModules = import.meta.glob('../src/templates/**/config.{js,ts}', { eager: false })
+          if (Object.keys(configModules).length > 0) {
+            console.log(`[TemplateScanner] Found ${Object.keys(configModules).length} config files with pattern: ../src/templates/**/config.{js,ts}`)
           }
+        } catch (error) {
+          // 继续尝试其他模式
+        }
+      }
 
-          await this.processTemplateFiles(configPath, configLoader, componentLoader, errors, true)
+      if (Object.keys(configModules).length === 0) {
+        try {
+          configModules = import.meta.glob('../../src/templates/**/config.{js,ts}', { eager: false })
+          if (Object.keys(configModules).length > 0) {
+            console.log(`[TemplateScanner] Found ${Object.keys(configModules).length} config files with pattern: ../../src/templates/**/config.{js,ts}`)
+          }
+        } catch (error) {
+          // 继续尝试其他模式
+        }
+      }
+
+      // 如果没有找到配置文件，使用直接扫描方式
+      if (Object.keys(configModules).length === 0) {
+        console.warn('[TemplateScanner] No config files found with glob patterns, using direct template scanning...')
+        await this.scanDirectTemplates(errors)
+        return
+      }
+
+      // 处理每个配置文件
+      for (const [configPath, moduleLoader] of Object.entries(configModules)) {
+        try {
+          await this.processConfigFile(configPath, moduleLoader, errors, true)
         } catch (error) {
           errors.push({
             type: 'CONFIG_PARSE_ERROR',
-            message: `Failed to process built-in template: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            message: `Failed to process built-in config file: ${error instanceof Error ? error.message : 'Unknown error'}`,
             filePath: configPath,
             details: error
           })
         }
       }
     } catch (error) {
+      // 如果无法扫描内置模板，记录错误但继续扫描
       errors.push({
         type: 'VALIDATION_ERROR',
         message: `Failed to scan built-in templates: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        filePath: '/src/templates',
+        filePath: 'src/templates',
         details: error
       })
     }
+  }
+
+  /**
+   * 直接扫描已知模板（备用方案）
+   */
+  private async scanDirectTemplates(errors: ScanError[]): Promise<void> {
+    const knownTemplates = [
+      {
+        category: 'login',
+        device: 'desktop' as DeviceType,
+        templates: ['default', 'modern', 'creative']
+      },
+      {
+        category: 'login',
+        device: 'tablet' as DeviceType,
+        templates: ['default']
+      },
+      {
+        category: 'login',
+        device: 'mobile' as DeviceType,
+        templates: ['default']
+      }
+    ]
+
+    for (const { category, device, templates } of knownTemplates) {
+      for (const templateName of templates) {
+        try {
+          // 创建模板元数据
+          const metadata: TemplateMetadata = {
+            name: templateName,
+            displayName: this.getDisplayName(category, device, templateName),
+            description: this.getDescription(category, device, templateName),
+            version: '1.0.0',
+            author: '@ldesign/template',
+            tags: this.getTags(templateName),
+            category,
+            device,
+            componentPath: `../src/templates/${category}/${device}/${templateName}/index.vue`,
+            stylePath: `../src/templates/${category}/${device}/${templateName}/style.less`,
+            configPath: `../src/templates/${category}/${device}/${templateName}/config.ts`,
+            lastModified: Date.now(),
+            isBuiltIn: true,
+            isDefault: templateName === 'default'
+          }
+
+          // 添加到索引
+          this.addToIndex(metadata)
+
+          // 缓存处理
+          if (this.options.enableCache) {
+            this.scanCache.set(`${category}-${device}-${templateName}`, metadata)
+          }
+
+        } catch (error) {
+          errors.push({
+            type: 'CONFIG_PARSE_ERROR',
+            message: `Failed to process direct template ${category}/${device}/${templateName}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            filePath: `src/templates/${category}/${device}/${templateName}`,
+            details: error
+          })
+        }
+      }
+    }
+  }
+
+  /**
+   * 获取模板显示名称
+   */
+  private getDisplayName(category: string, device: DeviceType, templateName: string): string {
+    const displayNames: Record<string, string> = {
+      'login-desktop-default': '默认登录模板',
+      'login-desktop-modern': '现代登录模板',
+      'login-desktop-creative': '创意登录模板',
+      'login-tablet-default': '平板登录模板',
+      'login-mobile-default': '移动登录模板'
+    }
+    return displayNames[`${category}-${device}-${templateName}`] || `${templateName} ${category} 模板`
+  }
+
+  /**
+   * 获取模板描述
+   */
+  private getDescription(category: string, device: DeviceType, templateName: string): string {
+    const descriptions: Record<string, string> = {
+      'login-desktop-default': '简洁优雅的默认登录模板',
+      'login-desktop-modern': '现代化设计的登录模板',
+      'login-desktop-creative': '富有创意的登录模板',
+      'login-tablet-default': '适配平板设备的登录模板',
+      'login-mobile-default': '适配移动设备的登录模板'
+    }
+    return descriptions[`${category}-${device}-${templateName}`] || `${templateName} ${category} 模板`
+  }
+
+  /**
+   * 获取模板标签
+   */
+  private getTags(templateName: string): string[] {
+    const tagMap: Record<string, string[]> = {
+      'default': ['default', 'simple', 'clean'],
+      'modern': ['modern', 'stylish', 'gradient'],
+      'creative': ['creative', 'artistic', 'unique']
+    }
+    return tagMap[templateName] || [templateName]
   }
 
   /**
@@ -302,6 +426,8 @@ export class TemplateScanner {
         lastModified: Date.now(),
         isBuiltIn
       }
+
+
 
       // 添加到索引
       this.addToIndex(metadata)

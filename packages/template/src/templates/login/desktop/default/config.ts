@@ -7,11 +7,11 @@ import type { TemplateConfig } from '../../../../types/template'
 const config: TemplateConfig = {
   name: 'default',
   displayName: '默认登录模板',
-  description: '简洁清爽的默认登录界面，适合大多数商务应用场景。采用经典的居中布局，配色温和，用户体验友好。',
-  version: '1.0.0',
+  description: '简洁专业的默认登录界面，采用经典的对称布局和商务配色。包含专业几何装饰元素（圆形、方形、线条）和品牌水印设计。适合企业应用、管理系统和商务平台。',
+  version: '2.0.0',
   author: 'ldesign',
   isDefault: true,
-  tags: ['简洁', '默认', '经典', '商务'],
+  tags: ['简洁', '默认', '经典', '商务', '专业', '几何', '品牌'],
   preview: './preview.png',
   props: {
     title: {
@@ -51,13 +51,20 @@ const config: TemplateConfig = {
   dependencies: [],
   minVueVersion: '3.0.0',
   features: [
+    '对称经典布局',
+    '专业几何装饰',
+    '品牌水印设计',
+    '商务渐变背景',
     '响应式设计',
     '表单验证',
     '记住密码',
     '忘记密码',
     '注册链接',
     '自定义主题色',
-    '自定义背景'
+    '自定义背景',
+    '无障碍访问优化',
+    '企业级安全',
+    '专业视觉风格'
   ],
   screenshots: [
     './screenshot-1.png',

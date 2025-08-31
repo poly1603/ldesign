@@ -1,10 +1,71 @@
 <template>
   <div class="login-template-modern" :style="cssVars">
-    <!-- 动态背景 -->
+    <!-- 模板标识横幅 -->
+    <div class="template-banner">
+      <div class="banner-content">
+        <div class="template-info">
+          <span class="template-name">现代登录模板</span>
+          <span class="template-meta">
+            <span class="device-type">🖥️ Desktop</span>
+            <span class="template-version">v2.0.0</span>
+          </span>
+        </div>
+        <div class="template-category">Login</div>
+      </div>
+    </div>
+
+    <!-- 调试信息显示 -->
+    <div class="debug-info" v-if="showDebugInfo">
+      <div class="debug-panel">
+        <h4>🔧 调试信息</h4>
+        <div class="debug-items">
+          <div class="debug-item">
+            <span class="debug-label">设备类型:</span>
+            <span class="debug-value device-type" :class="`device-${currentDeviceType}`">
+              {{ deviceTypeLabels[currentDeviceType] || currentDeviceType }}
+            </span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">模板名称:</span>
+            <span class="debug-value template-name">{{ currentTemplateName }}</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">模板版本:</span>
+            <span class="debug-value">v2.0.0</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">渲染时间:</span>
+            <span class="debug-value">{{ renderTime }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 现代动态背景 -->
     <div class="background-container">
-      <div class="gradient-bg"></div>
+      <!-- 多层渐变背景 -->
+      <div class="gradient-bg gradient-primary"></div>
+      <div class="gradient-bg gradient-secondary"></div>
+      <div class="gradient-bg gradient-accent"></div>
+
       <div v-if="backgroundImage" class="custom-bg" :style="{ backgroundImage: `url(${backgroundImage})` }"></div>
-      
+
+      <!-- 毛玻璃装饰球 -->
+      <div class="glass-orbs">
+        <div class="glass-orb orb-1"></div>
+        <div class="glass-orb orb-2"></div>
+        <div class="glass-orb orb-3"></div>
+        <div class="glass-orb orb-4"></div>
+      </div>
+
+      <!-- 现代几何图案 -->
+      <div class="modern-patterns">
+        <div class="pattern-hexagon"></div>
+        <div class="pattern-triangle"></div>
+        <div class="pattern-diamond"></div>
+        <div class="pattern-dots"></div>
+      </div>
+
       <!-- 粒子效果 -->
       <div v-if="enableParticles" class="particles-container">
         <slot name="particles">
@@ -69,6 +130,7 @@
                 type="text"
                 class="form-input"
                 placeholder=" "
+                autocomplete="username"
                 required
                 :disabled="loading"
                 @focus="focusedField = 'username'"
@@ -84,6 +146,7 @@
                 :type="showPassword ? 'text' : 'password'"
                 class="form-input"
                 placeholder=" "
+                autocomplete="current-password"
                 required
                 :disabled="loading"
                 @focus="focusedField = 'password'"
@@ -174,6 +237,13 @@ interface Props {
   primaryColor?: string
   secondaryColor?: string
   enableParticles?: boolean
+  debugInfo?: {
+    deviceType?: string
+    templateName?: string
+    isResponsive?: boolean
+    screenWidth?: number
+    renderMode?: string
+  }
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -200,6 +270,26 @@ const loading = ref(false)
 const showPassword = ref(false)
 const focusedField = ref('')
 const isFormActive = ref(false)
+
+// 调试信息相关
+const showDebugInfo = ref(true) // 开发环境下默认显示调试信息
+const renderTime = ref('')
+
+// 设备类型标签映射
+const deviceTypeLabels = {
+  desktop: '🖥️ 桌面端',
+  tablet: '📱 平板端',
+  mobile: '📱 移动端'
+}
+
+// 调试信息计算属性
+const currentDeviceType = computed(() => {
+  return props.debugInfo?.deviceType || 'desktop'
+})
+
+const currentTemplateName = computed(() => {
+  return props.debugInfo?.templateName || 'modern'
+})
 
 // 计算属性
 const cssVars = computed(() => ({
@@ -253,6 +343,9 @@ const handleRegister = () => {
 
 // 生命周期
 onMounted(() => {
+  renderTime.value = new Date().toLocaleTimeString()
+  console.log(`模板渲染完成: ${currentTemplateName.value} (${currentDeviceType.value})`)
+
   setTimeout(() => {
     isFormActive.value = true
   }, 100)
@@ -285,7 +378,31 @@ onMounted(() => {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    animation: gradient-shift 10s ease-in-out infinite;
+
+    &.gradient-primary {
+      background: linear-gradient(135deg,
+        rgba(99, 102, 241, 0.8) 0%,
+        rgba(168, 85, 247, 0.8) 50%,
+        rgba(236, 72, 153, 0.8) 100%
+      );
+    }
+
+    &.gradient-secondary {
+      background: linear-gradient(45deg,
+        rgba(59, 130, 246, 0.3) 0%,
+        rgba(147, 51, 234, 0.3) 100%
+      );
+      animation-delay: -3s;
+    }
+
+    &.gradient-accent {
+      background: radial-gradient(circle at 30% 70%,
+        rgba(236, 72, 153, 0.2) 0%,
+        transparent 50%
+      );
+      animation-delay: -6s;
+    }
   }
 
   .custom-bg {
@@ -298,6 +415,109 @@ onMounted(() => {
     background-position: center;
     background-repeat: no-repeat;
     opacity: 0.3;
+  }
+
+  // 毛玻璃装饰球
+  .glass-orbs {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+
+    .glass-orb {
+      position: absolute;
+      border-radius: 50%;
+      backdrop-filter: blur(20px);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      animation: float-orb 15s ease-in-out infinite;
+
+      &.orb-1 {
+        width: 200px;
+        height: 200px;
+        top: 10%;
+        right: 15%;
+        animation-delay: 0s;
+      }
+
+      &.orb-2 {
+        width: 150px;
+        height: 150px;
+        bottom: 20%;
+        left: 10%;
+        animation-delay: -5s;
+      }
+
+      &.orb-3 {
+        width: 100px;
+        height: 100px;
+        top: 60%;
+        right: 30%;
+        animation-delay: -10s;
+      }
+
+      &.orb-4 {
+        width: 80px;
+        height: 80px;
+        top: 30%;
+        left: 20%;
+        animation-delay: -7s;
+      }
+    }
+  }
+
+  // 现代几何图案
+  .modern-patterns {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+
+    .pattern-hexagon {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      top: 25%;
+      left: 15%;
+      background: rgba(255, 255, 255, 0.05);
+      clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+      animation: rotate-slow 20s linear infinite;
+    }
+
+    .pattern-triangle {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      top: 70%;
+      right: 25%;
+      background: rgba(255, 255, 255, 0.05);
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      animation: rotate-slow 15s linear infinite reverse;
+    }
+
+    .pattern-diamond {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      top: 45%;
+      right: 10%;
+      background: rgba(255, 255, 255, 0.05);
+      transform: rotate(45deg);
+      animation: pulse-glow 8s ease-in-out infinite;
+    }
+
+    .pattern-dots {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-image: radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.1) 1px, transparent 0);
+      background-size: 40px 40px;
+      opacity: 0.3;
+    }
   }
 }
 
@@ -332,6 +552,43 @@ onMounted(() => {
   100% {
     transform: translateY(-100px) rotate(360deg);
     opacity: 0;
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    filter: hue-rotate(0deg) brightness(1);
+  }
+  50% {
+    filter: hue-rotate(30deg) brightness(1.1);
+  }
+}
+
+@keyframes float-orb {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px) scale(1);
+  }
+  33% {
+    transform: translateY(-20px) translateX(10px) scale(1.05);
+  }
+  66% {
+    transform: translateY(10px) translateX(-15px) scale(0.95);
+  }
+}
+
+@keyframes rotate-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.05;
+    transform: rotate(45deg) scale(1);
+  }
+  50% {
+    opacity: 0.15;
+    transform: rotate(45deg) scale(1.1);
   }
 }
 
@@ -742,6 +999,131 @@ onMounted(() => {
   }
 }
 
+// 模板标识横幅样式
+.template-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.95), rgba(155, 89, 182, 0.95));
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+.banner-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.template-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.template-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.template-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.device-type, .template-version {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.template-category {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.375rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+// 调试信息样式
+.debug-info {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9999;
+  max-width: 300px;
+}
+
+.debug-panel {
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.debug-panel h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.debug-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.debug-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.debug-label {
+  color: #aaa;
+  font-weight: 500;
+}
+
+.debug-value {
+  font-weight: 600;
+  color: white;
+}
+
+.debug-value.device-type.device-desktop {
+  color: #4CAF50;
+}
+
+.debug-value.device-type.device-tablet {
+  color: #FF9800;
+}
+
+.debug-value.device-type.device-mobile {
+  color: #2196F3;
+}
+
+.debug-value.template-name {
+  color: #E91E63;
+}
+
 // 响应式设计
 @media (max-width: 480px) {
   .login-card {
@@ -756,6 +1138,18 @@ onMounted(() => {
   .footer-links {
     flex-direction: column;
     gap: 0.5rem;
+  }
+
+  .debug-info {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-bottom: 1rem;
+    max-width: none;
+  }
+
+  .debug-panel {
+    background: rgba(0, 0, 0, 0.8);
   }
 }
 </style>

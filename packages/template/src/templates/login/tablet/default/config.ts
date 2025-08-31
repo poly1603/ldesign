@@ -7,11 +7,11 @@ import type { TemplateConfig } from '../../../../types/template'
 const config: TemplateConfig = {
   name: 'default',
   displayName: '平板端默认登录模板',
-  description: '专为平板设备优化的登录界面，采用适中的布局尺寸和触摸友好的交互设计。完美适配iPad等平板设备。',
-  version: '1.0.0',
+  description: '专为平板设备优化的登录界面，包含平板专用装饰元素（圆形、波浪、网格）、触摸友好的视觉提示（3个触摸涟漪效果）和SVG波浪动画。支持横屏竖屏自动适配，完美适配iPad等平板设备。',
+  version: '2.0.0',
   author: 'ldesign',
   isDefault: true,
-  tags: ['平板', '触摸优化', '中等尺寸', '横屏适配'],
+  tags: ['平板', '触摸优化', '中等尺寸', '横屏适配', '波浪', '涟漪', 'SVG'],
   preview: './preview.png',
   props: {
     title: {
@@ -55,6 +55,11 @@ const config: TemplateConfig = {
   dependencies: [],
   minVueVersion: '3.0.0',
   features: [
+    '平板专用装饰元素',
+    '触摸涟漪效果（3个提示）',
+    'SVG波浪动画',
+    '动态网格背景',
+    '浮动装饰动画',
     '平板优化布局',
     '触摸友好交互',
     '横屏竖屏适配',
@@ -62,7 +67,9 @@ const config: TemplateConfig = {
     '手势支持',
     '分屏布局',
     '响应式字体',
-    '触摸反馈'
+    '触摸反馈增强',
+    '屏幕方向检测',
+    '触摸区域优化'
   ],
   screenshots: [
     './screenshot-portrait.png',

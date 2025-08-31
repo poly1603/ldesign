@@ -282,11 +282,22 @@ export const TemplateRenderer = defineComponent({
     const renderTemplate = () => {
       // 加载状态
       if (loading.value) {
+        // 检查是否有自定义加载插槽
+        if (slots.loading) {
+          return slots.loading()
+        }
         return <LoadingComponent.value />
       }
 
       // 错误状态
       if (error.value) {
+        // 检查是否有自定义错误插槽
+        if (slots.error) {
+          return slots.error({
+            error: error.value,
+            retry: retryLoad
+          })
+        }
         return (
           <ErrorComponent.value
             error={error.value}
@@ -307,6 +318,11 @@ export const TemplateRenderer = defineComponent({
       }
 
       // 无模板状态
+      // 检查是否有自定义空状态插槽
+      if (slots.empty) {
+        return slots.empty()
+      }
+
       return (
         <div class="template-empty">
           <div class="template-empty__message">
@@ -335,9 +351,17 @@ export const TemplateRenderer = defineComponent({
       await refreshTemplates()
     })
 
+    // 监听模板列表变化，当模板加载完成后尝试切换到指定模板
+    watch(availableTemplates, async (templates) => {
+      if (templates.length > 0 && props.templateName && !currentTemplate.value) {
+        await handleTemplateSwitch(props.templateName)
+      }
+    }, { immediate: true })
+
     // 组件挂载时初始化
     onMounted(async () => {
-      if (props.templateName) {
+      // 如果模板已经加载完成，直接切换
+      if (availableTemplates.value.length > 0 && props.templateName) {
         await handleTemplateSwitch(props.templateName)
       }
     })

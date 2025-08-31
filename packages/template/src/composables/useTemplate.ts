@@ -4,13 +4,13 @@
  * 主要的模板管理Hook，提供模板加载、切换、缓存等功能
  */
 
-import { ref, computed, watch, onMounted, onUnmounted, type Ref } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, markRaw, unref, type Ref } from 'vue'
 import type { Component } from 'vue'
-import type { 
-  UseTemplateOptions, 
-  UseTemplateReturn, 
-  TemplateMetadata, 
-  DeviceType 
+import type {
+  UseTemplateOptions,
+  UseTemplateReturn,
+  TemplateMetadata,
+  DeviceType
 } from '../types/template'
 import { TemplateScanner } from '../scanner'
 import { componentLoader, loaderUtils } from '../utils/loader'
@@ -76,7 +76,7 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
 
       // 扫描模板
       const scanResult = await scanner.scan()
-      
+
       if (scanResult.errors.length > 0) {
         console.warn('Template scan errors:', scanResult.errors)
       }
@@ -86,10 +86,10 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
       availableTemplates.value = templates
 
       // 如果没有当前模板或当前模板不在列表中，选择默认模板
-      if (!currentTemplate.value || !templates.find(t => t.name === currentTemplate.value!.name)) {
+      if (!currentTemplate.value || !templates.find(t => t.id === currentTemplate.value!.id || t.name === currentTemplate.value!.name)) {
         const defaultTemplate = templates.find(t => t.isDefault) || templates[0]
         if (defaultTemplate) {
-          await switchTemplate(defaultTemplate.name)
+          await switchTemplate(defaultTemplate.id || defaultTemplate.name)
         }
       }
 
@@ -109,8 +109,15 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
       loading.value = true
       error.value = null
 
-      // 查找模板元数据
-      const template = availableTemplates.value.find(t => t.name === templateName)
+      // 如果模板列表还没有加载，先等待加载完成
+      if (availableTemplates.value.length === 0) {
+        await loadTemplates()
+      }
+
+      // 查找模板元数据（优先使用ID匹配，然后使用name匹配）
+      const template = availableTemplates.value.find(t =>
+        t.id === templateName || t.name === templateName
+      )
       if (!template) {
         throw new Error(`Template not found: ${templateName}`)
       }
@@ -124,7 +131,8 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
         )
         if (cachedComponent) {
           currentTemplate.value = template
-          currentComponent.value = cachedComponent
+          // 使用 markRaw 防止组件被包装成响应式对象
+          currentComponent.value = markRaw(cachedComponent)
           loading.value = false
           return
         }
@@ -132,9 +140,10 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
 
       // 加载组件
       const loadResult = await componentLoader.loadComponent(template)
-      
+
       currentTemplate.value = template
-      currentComponent.value = loadResult.component
+      // 使用 markRaw 防止组件被包装成响应式对象
+      currentComponent.value = markRaw(loadResult.component)
 
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to switch template'
@@ -152,7 +161,7 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
     if (enableCache) {
       componentCache.clear()
     }
-    
+
     // 重新加载
     await loadTemplates()
   }
@@ -215,7 +224,7 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
       const currentIndex = availableTemplates.value.findIndex(t => t.name === newTemplate.name)
       const nextIndex = (currentIndex + 1) % availableTemplates.value.length
       const nextTemplate = availableTemplates.value[nextIndex]
-      
+
       if (nextTemplate) {
         componentLoader.preloadComponent(nextTemplate).catch(() => {
           // 忽略预加载错误
@@ -227,7 +236,7 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
   // 初始化
   onMounted(async () => {
     await loadTemplates()
-    
+
     // 延迟预加载常用模板
     setTimeout(() => {
       preloadCommonTemplates().catch(() => {
@@ -259,17 +268,17 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
 /**
  * 简化版模板Hook（仅用于获取模板列表）
  */
-export function useTemplateList(category: string, device?: DeviceType) {
+export function useTemplateList(category: string, device?: DeviceType | Ref<DeviceType>) {
   const availableTemplates = ref<TemplateMetadata[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
 
   const { deviceType } = useDeviceDetection({
-    initialDevice: device,
+    initialDevice: unref(device),
     enableResponsive: !device
   })
 
-  const currentDevice = computed(() => device || deviceType.value)
+  const currentDevice = computed(() => unref(device) || deviceType.value)
 
   async function loadTemplates() {
     try {
@@ -278,12 +287,13 @@ export function useTemplateList(category: string, device?: DeviceType) {
 
       const scanner = getGlobalScanner()
       const scanResult = await scanner.scan()
-      
+
       if (scanResult.errors.length > 0) {
         console.warn('Template scan errors:', scanResult.errors)
       }
 
-      availableTemplates.value = scanner.getTemplates(category, currentDevice.value)
+      const templates = scanner.getTemplates(category, currentDevice.value)
+      availableTemplates.value = templates
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load templates'
     } finally {

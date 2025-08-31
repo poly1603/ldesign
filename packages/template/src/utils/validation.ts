@@ -64,7 +64,7 @@ export class ConfigValidator {
     // 验证每个字段
     for (const [field, rules] of this.rules) {
       const value = (config as any)[field]
-      
+
       for (const rule of rules) {
         if (!rule.validate(value, config)) {
           const error: ValidationError = {
@@ -314,6 +314,17 @@ export class ConfigValidator {
  */
 export function validateDeviceType(device: string): device is DeviceType {
   return ['desktop', 'tablet', 'mobile'].includes(device)
+}
+
+/**
+ * 验证模板配置
+ *
+ * @param config 模板配置对象
+ * @returns 验证结果
+ */
+export function validateTemplate(config: TemplateConfig): ValidationResult {
+  const validator = new ConfigValidator()
+  return validator.validate(config)
 }
 
 /**
