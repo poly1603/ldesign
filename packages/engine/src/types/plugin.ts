@@ -21,7 +21,7 @@ export interface PluginMetadata {
 
 // 插件上下文
 export interface PluginContext<_TEngine = Engine> {
-  readonly engine: TEngine
+  readonly engine: _TEngine
   readonly logger: any
   readonly config: any
   readonly events: any
@@ -38,6 +38,9 @@ export interface Plugin<TEngine = Engine> extends BasePlugin {
   beforeUninstall?: (context: PluginContext<TEngine>) => void | Promise<void>
   afterUninstall?: (context: PluginContext<TEngine>) => void | Promise<void>
 
+  // 插件状态
+  isEnabled?: () => boolean
+
   // 插件配置
   readonly config?: Record<string, unknown>
 
@@ -46,7 +49,12 @@ export interface Plugin<TEngine = Engine> extends BasePlugin {
 }
 
 // 插件状态
-export type PluginStatus = 'pending' | 'installing' | 'installed' | 'uninstalling' | 'error'
+export type PluginStatus =
+  | 'pending'
+  | 'installing'
+  | 'installed'
+  | 'uninstalling'
+  | 'error'
 
 // 插件信息
 export interface PluginInfo<TEngine = Engine> {
@@ -78,7 +86,7 @@ export interface PluginManager<TEngine = Engine> extends BaseManager {
   }
   getLoadOrder: () => string[]
   getDependencyGraph: () => Record<string, string[]>
-  validateDependencies: () => { valid: boolean, errors: string[] }
+  validateDependencies: () => { valid: boolean; errors: string[] }
   resolveDependencies: (plugins: Plugin<TEngine>[]) => Plugin<TEngine>[]
 
   // 统计信息
@@ -104,12 +112,17 @@ export interface PluginLoader<TEngine = Engine> {
   load: (path: string) => Promise<Plugin<TEngine>>
   loadFromURL: (url: string) => Promise<Plugin<TEngine>>
   loadFromPackage: (packageName: string) => Promise<Plugin<TEngine>>
-  validate: (plugin: Plugin<TEngine>) => { valid: boolean, errors: string[] }
-  getLoadHistory: () => Array<{ timestamp: number, path: string, success: boolean, error?: string }>
+  validate: (plugin: Plugin<TEngine>) => { valid: boolean; errors: string[] }
+  getLoadHistory: () => Array<{
+    timestamp: number
+    path: string
+    success: boolean
+    error?: string
+  }>
 }
 
 // 插件热重载接口
-export interface PluginHotReload<TEngine = Engine> {
+export interface PluginHotReload<_TEngine = Engine> {
   enable: () => void
   disable: () => void
   isEnabled: () => boolean
@@ -125,7 +138,9 @@ export interface PluginMarketplace<TEngine = Engine> {
   getCategories: () => Promise<string[]>
   getPopular: () => Promise<Plugin<TEngine>[]>
   getLatest: () => Promise<Plugin<TEngine>[]>
-  getRating: (pluginName: string) => Promise<{ rating: number, reviews: number }>
+  getRating: (
+    pluginName: string
+  ) => Promise<{ rating: number; reviews: number }>
   install: (pluginName: string) => Promise<void>
   uninstall: (pluginName: string) => Promise<void>
   update: (pluginName: string) => Promise<void>
@@ -133,10 +148,23 @@ export interface PluginMarketplace<TEngine = Engine> {
 
 // 插件验证器接口
 export interface PluginValidator<TEngine = Engine> {
-  validate: (plugin: Plugin<TEngine>) => { valid: boolean, errors: string[], warnings: string[] }
-  validateDependencies: (plugin: Plugin<TEngine>, installed: Plugin<TEngine>[]) => { satisfied: boolean, missing: string[] }
-  validateSecurity: (plugin: Plugin<TEngine>) => { safe: boolean, risks: string[] }
-  validatePerformance: (plugin: Plugin<TEngine>) => { acceptable: boolean, issues: string[] }
+  validate: (plugin: Plugin<TEngine>) => {
+    valid: boolean
+    errors: string[]
+    warnings: string[]
+  }
+  validateDependencies: (
+    plugin: Plugin<TEngine>,
+    installed: Plugin<TEngine>[]
+  ) => { satisfied: boolean; missing: string[] }
+  validateSecurity: (plugin: Plugin<TEngine>) => {
+    safe: boolean
+    risks: string[]
+  }
+  validatePerformance: (plugin: Plugin<TEngine>) => {
+    acceptable: boolean
+    issues: string[]
+  }
 }
 
 // 插件隔离器接口
@@ -145,5 +173,8 @@ export interface PluginIsolator<TEngine = Engine> {
   deisolate: (plugin: Plugin<TEngine>) => Promise<void>
   isIsolated: (plugin: Plugin<TEngine>) => boolean
   getIsolationInfo: (plugin: Plugin<TEngine>) => Record<string, unknown>
-  setIsolationLevel: (plugin: Plugin<TEngine>, level: 'strict' | 'moderate' | 'loose') => void
+  setIsolationLevel: (
+    plugin: Plugin<TEngine>,
+    level: 'strict' | 'moderate' | 'loose'
+  ) => void
 }

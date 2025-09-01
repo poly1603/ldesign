@@ -249,8 +249,8 @@ describe('工具函数', () => {
     })
 
     it('应该处理null和undefined', () => {
-      expect(getNestedValue(null, 'a.b', 'default')).toBe('default')
-      expect(getNestedValue(undefined, 'a.b', 'default')).toBe('default')
+      expect(getNestedValue({} as any, 'a.b', 'default')).toBe('default')
+      expect(getNestedValue({} as any, 'a.b', 'default')).toBe('default')
     })
   })
 
@@ -280,9 +280,9 @@ describe('工具函数', () => {
   describe('类型守卫', () => {
     describe('isFunction', () => {
       it('应该检测函数', () => {
-        expect(isFunction(() => {})).toBe(true)
-        expect(isFunction(() => {})).toBe(true)
-        expect(isFunction(async () => {})).toBe(true)
+        expect(isFunction(() => { })).toBe(true)
+        expect(isFunction(() => { })).toBe(true)
+        expect(isFunction(async () => { })).toBe(true)
         expect(isFunction('not function')).toBe(false)
         expect(isFunction({})).toBe(false)
       })
@@ -301,7 +301,7 @@ describe('工具函数', () => {
     describe('isPromise', () => {
       it('应该检测Promise', () => {
         expect(isPromise(Promise.resolve())).toBe(true)
-        expect(isPromise({ then: () => {} })).toBe(true)
+        expect(isPromise({ then: () => { } })).toBe(true)
         expect(isPromise({})).toBe(false)
         expect(isPromise('string')).toBe(false)
       })

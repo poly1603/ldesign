@@ -60,8 +60,8 @@ describe('cacheManager', () => {
       const result = cacheManager.get('key1') // 触发清理
       expect(result).toBeUndefined() // 过期项应该返回 undefined
 
-        // 手动触发清理队列处理
-        ; (cacheManager as any).forceCleanup()
+      // 手动触发清理队列处理
+      ; (cacheManager as any).forceCleanup()
       expect(cacheManager.size()).toBe(0)
     })
   })

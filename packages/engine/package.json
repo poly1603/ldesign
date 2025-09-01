@@ -38,7 +38,6 @@
   ],
   "scripts": {
     "build": "ldesign-builder build",
-    "build:rollup": "rollup -c",
     "build:clean": "node scripts/build.js --clean",
     "build:types": "node scripts/build.js --types",
     "build:analyze": "node scripts/analyze-bundle.js",
@@ -48,12 +47,19 @@
     "type-check": "vue-tsc --noEmit",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
     "test": "vitest",
+    "test:unit": "vitest run --reporter=verbose --coverage",
+    "test:integration": "vitest run tests/integration --reporter=verbose",
+    "test:performance": "vitest run tests/performance --reporter=verbose",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:all": "pnpm run test:unit && pnpm run test:integration && pnpm run test:e2e",
     "clean": "rimraf esm cjs dist types lib coverage .nyc_output",
     "size-check": "size-limit",
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
@@ -61,7 +67,11 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "dev:examples": "vite serve examples --port 5173",
-    "serve:examples": "vite preview examples --port 5173"
+    "serve:examples": "vite preview examples --port 5173",
+    "ci": "pnpm run lint:check && pnpm run format:check && pnpm run type-check && pnpm run test:all",
+    "precommit": "pnpm run lint && pnpm run format && pnpm run type-check",
+    "security:audit": "pnpm audit",
+    "security:fix": "pnpm audit --fix"
   },
   "peerDependencies": {
     "vue": "^3.5.18"

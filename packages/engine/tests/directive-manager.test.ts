@@ -5,6 +5,7 @@ import {
   commonDirectives,
   createDirectiveManager,
 } from '../src/directives/directive-manager'
+import { createHybridDirectiveAdapter } from '../src/directives/utils/directive-compatibility'
 
 // Mock DOM APIs
 Object.defineProperty(globalThis, 'IntersectionObserver', {
@@ -52,7 +53,7 @@ describe('directiveManager', () => {
         unmounted: vi.fn(),
       }
 
-      directiveManager.register('test', testDirective)
+      directiveManager.register('test', createHybridDirectiveAdapter(testDirective))
 
       expect((directiveManager as any).has('test')).toBe(true)
       expect(directiveManager.get('test')).toBe(testDirective)
@@ -65,8 +66,8 @@ describe('directiveManager', () => {
       const directive1: Directive = { mounted: vi.fn() }
       const directive2: Directive = { mounted: vi.fn() }
 
-      directiveManager.register('test', directive1)
-      directiveManager.register('test', directive2)
+      directiveManager.register('test', createHybridDirectiveAdapter(directive1))
+      directiveManager.register('test', createHybridDirectiveAdapter(directive2))
 
       expect(consoleSpy).toHaveBeenCalledWith(
         'Directive "test" is already registered. It will be replaced.',
@@ -79,7 +80,7 @@ describe('directiveManager', () => {
     it('应该卸载指令', () => {
       const testDirective: Directive = { mounted: vi.fn() }
 
-      directiveManager.register('test', testDirective)
+      directiveManager.register('test', createHybridDirectiveAdapter(testDirective))
       expect((directiveManager as any).has('test')).toBe(true)
 
       directiveManager.unregister('test')
@@ -91,8 +92,8 @@ describe('directiveManager', () => {
       const directive1: Directive = { mounted: vi.fn() }
       const directive2: Directive = { mounted: vi.fn() }
 
-      directiveManager.register('test1', directive1)
-      directiveManager.register('test2', directive2)
+      directiveManager.register('test1', createHybridDirectiveAdapter(directive1))
+      directiveManager.register('test2', createHybridDirectiveAdapter(directive2))
 
       const allDirectives = directiveManager.getAll()
       expect(allDirectives).toHaveLength(2)
@@ -101,8 +102,8 @@ describe('directiveManager', () => {
     })
 
     it('应该获取所有指令名称', () => {
-      directiveManager.register('test1', { mounted: vi.fn() })
-      directiveManager.register('test2', { mounted: vi.fn() })
+      directiveManager.register('test1', createHybridDirectiveAdapter({ mounted: vi.fn() }))
+      directiveManager.register('test2', createHybridDirectiveAdapter({ mounted: vi.fn() }))
 
       const names = (directiveManager as any).getNames()
       expect(names).toEqual(['test1', 'test2'])
@@ -137,9 +138,9 @@ describe('directiveManager', () => {
     })
 
     it('应该批量卸载指令', () => {
-      directiveManager.register('test1', { mounted: vi.fn() })
-      directiveManager.register('test2', { mounted: vi.fn() })
-      directiveManager.register('test3', { mounted: vi.fn() })
+      directiveManager.register('test1', createHybridDirectiveAdapter({ mounted: vi.fn() }))
+      directiveManager.register('test2', createHybridDirectiveAdapter({ mounted: vi.fn() }))
+      directiveManager.register('test3', createHybridDirectiveAdapter({ mounted: vi.fn() }))
 
       directiveManager.unregisterBatch(['test1', 'test3'])
 
@@ -193,11 +194,11 @@ describe('预定义指令功能测试', () => {
       const binding = { value: callback }
 
         ; (commonDirectives.clickOutside as any).mounted!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
 
       // 模拟点击外部
       const clickEvent = { target: document.body }
@@ -220,17 +221,17 @@ describe('预定义指令功能测试', () => {
       const binding = { value: callback }
 
         ; (commonDirectives.clickOutside as any).mounted!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
-      ; (commonDirectives.clickOutside as any).unmounted!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
+        ; (commonDirectives.clickOutside as any).unmounted!(
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
 
       expect(document.removeEventListener).toHaveBeenCalledWith(
         'click',
@@ -244,11 +245,11 @@ describe('预定义指令功能测试', () => {
       const binding = { value: true }
 
         ; (commonDirectives.focus as any).mounted!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
 
       expect(mockElement.focus).toHaveBeenCalled()
     })
@@ -257,11 +258,11 @@ describe('预定义指令功能测试', () => {
       const binding = { value: false }
 
         ; (commonDirectives.focus as any).mounted!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
 
       expect(mockElement.focus).not.toHaveBeenCalled()
     })
@@ -270,11 +271,11 @@ describe('预定义指令功能测试', () => {
       const binding = { value: true, oldValue: false }
 
         ; (commonDirectives.focus as any).updated!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
 
       expect(mockElement.focus).toHaveBeenCalled()
     })
@@ -286,11 +287,11 @@ describe('预定义指令功能测试', () => {
       const binding = { value: callback, arg: 'click' }
 
         ; (commonDirectives.debounce as any).mounted!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
 
       expect(mockElement.addEventListener).toHaveBeenCalledWith(
         'click',
@@ -303,17 +304,17 @@ describe('预定义指令功能测试', () => {
       const binding = { value: callback, arg: 'click' }
 
         ; (commonDirectives.debounce as any).mounted!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
-      ; (commonDirectives.debounce as any).unmounted!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
+        ; (commonDirectives.debounce as any).unmounted!(
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
 
       expect(mockElement.removeEventListener).toHaveBeenCalledWith(
         'click',
@@ -328,11 +329,11 @@ describe('预定义指令功能测试', () => {
       const binding = { value: callback, arg: 'click' }
 
         ; (commonDirectives.throttle as any).mounted!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
 
       expect(mockElement.addEventListener).toHaveBeenCalledWith(
         'click',
@@ -345,17 +346,17 @@ describe('预定义指令功能测试', () => {
       const binding = { value: callback, arg: 'click' }
 
         ; (commonDirectives.throttle as any).mounted!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
-      ; (commonDirectives.throttle as any).unmounted!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
+        ; (commonDirectives.throttle as any).unmounted!(
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
 
       expect(mockElement.removeEventListener).toHaveBeenCalledWith(
         'click',
@@ -370,11 +371,11 @@ describe('预定义指令功能测试', () => {
       const binding = { value: callback }
 
         ; (commonDirectives.lazy as any).mounted!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
 
       expect(IntersectionObserver).toHaveBeenCalled()
     })
@@ -391,12 +392,12 @@ describe('预定义指令功能测试', () => {
       // 模拟观察器
       mockElement._lazyObserver = mockObserver as any
 
-      ; (commonDirectives.lazy as any).unmounted!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
+        ; (commonDirectives.lazy as any).unmounted!(
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
 
       expect(mockObserver.disconnect).toHaveBeenCalled()
     })
@@ -407,11 +408,11 @@ describe('预定义指令功能测试', () => {
       const binding = { value: 'user', modifiers: { hide: true } }
 
         ; (commonDirectives.permission as any).mounted!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
 
       // 由于 checkPermission 总是返回 true，元素不应该被隐藏
       expect(mockElement.style.display).toBeUndefined()
@@ -423,11 +424,11 @@ describe('预定义指令功能测试', () => {
       const binding = { value: ['admin', 'user'], modifiers: {} }
 
         ; (commonDirectives.permission as any).mounted!(
-        mockElement,
-        binding as any,
-        {} as any,
-        {} as any,
-      )
+          mockElement,
+          binding as any,
+          {} as any,
+          {} as any,
+        )
 
       // 由于 checkPermission 总是返回 true，元素不应该被移除
       expect(mockElement.remove).not.toHaveBeenCalled()
@@ -442,11 +443,11 @@ describe('预定义指令功能测试', () => {
       expect(() => {
         const binding = { value: 'test', modifiers: {} }
           ; (commonDirectives.permission as any).mounted!(
-          mockElement,
-          binding as any,
-          {} as any,
-          {} as any,
-        )
+            mockElement,
+            binding as any,
+            {} as any,
+            {} as any,
+          )
       }).not.toThrow()
     })
   })

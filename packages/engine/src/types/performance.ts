@@ -22,6 +22,7 @@ export interface PerformanceMonitor {
 // 性能管理器接口（别名，保持向后兼容性）
 export interface PerformanceManager extends PerformanceMonitor {
   // 继承PerformanceMonitor的所有方法
+  getReport: () => PerformanceReport
 }
 
 // 性能指标收集器接口
@@ -105,7 +106,10 @@ export interface PerformanceAnalyzer {
   analyze: (metrics: PerformanceMetrics[]) => PerformanceAnalysis
   identifyBottlenecks: (metrics: PerformanceMetrics[]) => string[]
   suggestOptimizations: (metrics: PerformanceMetrics[]) => string[]
-  compare: (baseline: PerformanceMetrics, current: PerformanceMetrics) => PerformanceComparison
+  compare: (
+    baseline: PerformanceMetrics,
+    current: PerformanceMetrics
+  ) => PerformanceComparison
 }
 
 // 性能分析结果

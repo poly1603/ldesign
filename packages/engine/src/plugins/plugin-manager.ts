@@ -10,7 +10,7 @@ export class PluginManagerImpl implements PluginManager {
 
   // 性能优化：缓存依赖图和验证结果
   private dependencyGraphCache?: Record<string, string[]>
-  private validationCache?: { valid: boolean, errors: string[] }
+  private validationCache?: { valid: boolean; errors: string[] }
   private dependentsCache = new Map<string, string[]>()
 
   constructor(engine?: Engine) {
@@ -27,7 +27,7 @@ export class PluginManagerImpl implements PluginManager {
       for (const dep of plugin.dependencies) {
         if (!this.plugins.has(dep)) {
           throw new Error(
-            `Plugin "${plugin.name}" depends on "${dep}" which is not registered`,
+            `Plugin "${plugin.name}" depends on "${dep}" which is not registered`
           )
         }
       }
@@ -58,7 +58,7 @@ export class PluginManagerImpl implements PluginManager {
           {
             version: plugin.version,
             dependencies: plugin.dependencies,
-          },
+          }
         )
       }
 
@@ -69,8 +69,7 @@ export class PluginManagerImpl implements PluginManager {
           plugin,
         })
       }
-    }
-    catch (error) {
+    } catch (error) {
       // 注册失败时清理
       this.plugins.delete(plugin.name)
       const index = this.loadOrder.indexOf(plugin.name)
@@ -81,7 +80,7 @@ export class PluginManagerImpl implements PluginManager {
       if (this.engine?.logger) {
         this.engine.logger.error(
           `Failed to register plugin "${plugin.name}"`,
-          error,
+          error
         )
       }
       throw error
@@ -99,8 +98,8 @@ export class PluginManagerImpl implements PluginManager {
     if (dependents.length > 0) {
       throw new Error(
         `Cannot unregister plugin "${name}" because it is required by: ${dependents.join(
-          ', ',
-        )}`,
+          ', '
+        )}`
       )
     }
 
@@ -134,8 +133,7 @@ export class PluginManagerImpl implements PluginManager {
           plugin,
         })
       }
-    }
-    catch (error) {
+    } catch (error) {
       if (this.engine?.logger) {
         this.engine.logger.error(`Failed to unregister plugin "${name}"`, error)
       }
@@ -222,7 +220,7 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   // 验证插件依赖（带缓存）
-  validateDependencies(): { valid: boolean, errors: string[] } {
+  validateDependencies(): { valid: boolean; errors: string[] } {
     if (this.validationCache) {
       return this.validationCache
     }
@@ -281,8 +279,7 @@ export class PluginManagerImpl implements PluginManager {
   // 获取插件信息
   getInfo(name: string): any | undefined {
     const plugin = this.plugins.get(name)
-    if (!plugin)
-      return undefined
+    if (!plugin) return undefined
 
     return {
       name: plugin.name,
@@ -295,13 +292,14 @@ export class PluginManagerImpl implements PluginManager {
 
   // 获取所有插件信息
   getAllInfo(): any[] {
-    return Array.from(this.plugins.keys()).map(name => this.getInfo(name)!).filter(Boolean)
+    return Array.from(this.plugins.keys())
+      .map(name => this.getInfo(name)!)
+      .filter(Boolean)
   }
 
   // 获取插件状态
   getStatus(name: string): any | undefined {
-    if (!this.plugins.has(name))
-      return undefined
+    if (!this.plugins.has(name)) return undefined
     return 'installed' // 简化实现
   }
 
@@ -313,22 +311,23 @@ export class PluginManagerImpl implements PluginManager {
 
   // 按关键词查找插件
   findByKeyword(keyword: string): Plugin[] {
-    return Array.from(this.plugins.values()).filter(plugin =>
-      plugin.description?.includes(keyword) || plugin.name.includes(keyword),
+    return Array.from(this.plugins.values()).filter(
+      plugin =>
+        plugin.description?.includes(keyword) || plugin.name.includes(keyword)
     )
   }
 
   // 按作者查找插件
   findByAuthor(author: string): Plugin[] {
-    return Array.from(this.plugins.values()).filter(plugin =>
-      (plugin as any).author === author,
+    return Array.from(this.plugins.values()).filter(
+      plugin => (plugin as any).author === author
     )
   }
 
   // 按依赖查找插件
   findByDependency(dependency: string): Plugin[] {
     return Array.from(this.plugins.values()).filter(plugin =>
-      plugin.dependencies?.includes(dependency),
+      plugin.dependencies?.includes(dependency)
     )
   }
 
@@ -337,9 +336,13 @@ export class PluginManagerImpl implements PluginManager {
     for (const plugin of this.plugins.values()) {
       if (plugin.uninstall) {
         try {
-          plugin.uninstall({ engine: this.engine! })
-        }
-        catch (error) {
+          plugin.uninstall({
+            engine: this.engine!,
+            logger: this.engine!.logger,
+            config: this.engine!.config,
+            events: this.engine!.events,
+          } as any)
+        } catch (error) {
           console.error(`Error uninstalling plugin ${plugin.name}:`, error)
         }
       }

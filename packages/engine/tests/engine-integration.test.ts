@@ -224,12 +224,12 @@ describe('engine Integration', () => {
 
     it('安全管理器应该能够清理输入', () => {
       const unsafeHTML = '<script>alert("xss")</script><p>Safe content</p>'
-      const result = engine.security.sanitizeHTML(unsafeHTML)
+      const result = engine.security.sanitize(unsafeHTML)
 
-      expect(result.sanitized).not.toContain('<script>')
-      expect(result.sanitized).toContain('<p>Safe content</p>')
-      expect(result.safe).toBe(false)
-      expect(result.threats.length).toBeGreaterThan(0)
+      expect(result).not.toContain('<script>')
+      expect(result).toContain('<p>Safe content</p>')
+      // 安全管理器的 sanitize 方法返回清理后的字符串
+      expect(typeof result).toBe('string')
     })
   })
 

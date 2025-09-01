@@ -32,17 +32,37 @@ export interface UtilityFunctions {
   unique: <T>(array: T[]) => T[]
   shuffle: <T>(array: T[]) => T[]
   sortBy: <T>(array: T[], key: keyof T | ((item: T) => unknown)) => T[]
-  groupBy: <T>(array: T[], key: keyof T | ((item: T) => string)) => Record<string, T[]>
-  countBy: <T>(array: T[], key: keyof T | ((item: T) => string)) => Record<string, number>
+  groupBy: <T>(
+    array: T[],
+    key: keyof T | ((item: T) => string)
+  ) => Record<string, T[]>
+  countBy: <T>(
+    array: T[],
+    key: keyof T | ((item: T) => string)
+  ) => Record<string, number>
 
   // 对象操作
   keys: <T extends Record<string, unknown>>(obj: T) => (keyof T)[]
   values: <T extends Record<string, unknown>>(obj: T) => T[keyof T][]
-  entries: <T extends Record<string, unknown>>(obj: T) => [keyof T, T[keyof T]][]
-  assign: <T extends Record<string, unknown>>(target: T, ...sources: Partial<T>[]) => T
-  merge: <T extends Record<string, unknown>>(target: T, ...sources: Partial<T>[]) => T
-  pick: <T extends Record<string, unknown>, K extends keyof T>(obj: T, keys: K[]) => Pick<T, K>
-  omit: <T extends Record<string, unknown>, K extends keyof T>(obj: T, keys: K[]) => Omit<T, K>
+  entries: <T extends Record<string, unknown>>(
+    obj: T
+  ) => [keyof T, T[keyof T]][]
+  assign: <T extends Record<string, unknown>>(
+    target: T,
+    ...sources: Partial<T>[]
+  ) => T
+  merge: <T extends Record<string, unknown>>(
+    target: T,
+    ...sources: Partial<T>[]
+  ) => T
+  pick: <T extends Record<string, unknown>, K extends keyof T>(
+    obj: T,
+    keys: K[]
+  ) => Pick<T, K>
+  omit: <T extends Record<string, unknown>, K extends keyof T>(
+    obj: T,
+    keys: K[]
+  ) => Omit<T, K>
   clone: <T>(value: T) => T
   deepClone: <T>(value: T) => T
   isEmpty: (value: unknown) => boolean
@@ -78,13 +98,29 @@ export interface UtilityFunctions {
   isNaN: (num: number) => boolean
 
   // 函数操作
-  debounce: <T extends (...args: unknown[]) => unknown>(func: T, wait: number) => T
-  throttle: <T extends (...args: unknown[]) => unknown>(func: T, wait: number) => T
+  debounce: <T extends (...args: unknown[]) => unknown>(
+    func: T,
+    wait: number
+  ) => T
+  throttle: <T extends (...args: unknown[]) => unknown>(
+    func: T,
+    wait: number
+  ) => T
   once: <T extends (...args: unknown[]) => unknown>(func: T) => T
-  memoize: <T extends (...args: unknown[]) => unknown>(func: T, resolver?: (...args: Parameters<T>) => string) => T
-  curry: <T extends (...args: unknown[]) => unknown>(func: T, arity?: number) => (...args: unknown[]) => unknown
-  compose: (...funcs: ((...args: unknown[]) => unknown)[]) => (...args: unknown[]) => unknown
-  pipe: (...funcs: ((...args: unknown[]) => unknown)[]) => (...args: unknown[]) => unknown
+  memoize: <T extends (...args: unknown[]) => unknown>(
+    func: T,
+    resolver?: (...args: Parameters<T>) => string
+  ) => T
+  curry: <T extends (...args: unknown[]) => unknown>(
+    func: T,
+    arity?: number
+  ) => (...args: unknown[]) => unknown
+  compose: (
+    ...funcs: ((...args: unknown[]) => unknown)[]
+  ) => (...args: unknown[]) => unknown
+  pipe: (
+    ...funcs: ((...args: unknown[]) => unknown)[]
+  ) => (...args: unknown[]) => unknown
 
   // 时间操作
   now: () => number
@@ -155,10 +191,17 @@ export interface UtilityFunctions {
   sleep: (ms: number) => Promise<void>
   retry: <T>(fn: () => Promise<T>, options?: RetryOptions) => Promise<T>
   timeout: <T>(promise: Promise<T>, ms: number) => Promise<T>
-  parallel: <T>(tasks: (() => Promise<T>)[], concurrency?: number) => Promise<T[]>
+  parallel: <T>(
+    tasks: (() => Promise<T>)[],
+    concurrency?: number
+  ) => Promise<T[]>
   series: <T>(tasks: (() => Promise<T>)[]) => Promise<T[]>
   waterfall: <T>(tasks: ((...args: unknown[]) => Promise<T>)[]) => Promise<T>
-  mapLimit: <T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>) => Promise<R[]>
+  mapLimit: <T, R>(
+    items: T[],
+    limit: number,
+    fn: (item: T) => Promise<R>
+  ) => Promise<R[]>
 }
 
 // 数字格式化选项

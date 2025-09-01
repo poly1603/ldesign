@@ -140,11 +140,11 @@ export interface FontFamily {
 
 // 字体大小
 export interface FontSize {
-  'xs': string
-  'sm': string
-  'base': string
-  'lg': string
-  'xl': string
+  xs: string
+  sm: string
+  base: string
+  lg: string
+  xl: string
   '2xl': string
   '3xl': string
   '4xl': string
@@ -189,7 +189,13 @@ export interface LetterSpacing {
 }
 
 // 文本对齐
-export type TextAlign = 'left' | 'center' | 'right' | 'justify' | 'start' | 'end'
+export type TextAlign =
+  | 'left'
+  | 'center'
+  | 'right'
+  | 'justify'
+  | 'start'
+  | 'end'
 
 // 文本转换
 export type TextTransform = 'none' | 'uppercase' | 'lowercase' | 'capitalize'
@@ -238,14 +244,14 @@ export interface Spacing {
 
 // 阴影
 export interface Shadows {
-  'none': string
-  'sm': string
-  'base': string
-  'md': string
-  'lg': string
-  'xl': string
+  none: string
+  sm: string
+  base: string
+  md: string
+  lg: string
+  xl: string
   '2xl': string
-  'inner': string
+  inner: string
 }
 
 // 边框
@@ -313,10 +319,10 @@ export type PlayState = 'running' | 'paused'
 
 // 断点
 export interface Breakpoints {
-  'sm': string
-  'md': string
-  'lg': string
-  'xl': string
+  sm: string
+  md: string
+  lg: string
+  xl: string
   '2xl': string
 }
 

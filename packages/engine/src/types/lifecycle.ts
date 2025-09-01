@@ -24,6 +24,7 @@ export type LifecyclePhase =
   | 'destroy'
   | 'afterDestroy'
   | 'error'
+  | 'test-phase'
 
 // 生命周期状态
 export type LifecycleStatus =
@@ -64,12 +65,13 @@ export interface LifecycleManager {
   get: (name: string) => LifecycleHook | undefined
   getAll: () => LifecycleHook[]
   getByPhase: (phase: LifecyclePhase) => LifecycleHook[]
-  execute: (phase: LifecyclePhase) => Promise<void>
+  execute: (phase: LifecyclePhase, context?: any) => Promise<void>
   executeAll: () => Promise<void>
   getStatus: () => LifecycleStatus
   getCurrentPhase: () => LifecyclePhase
   getEvents: () => LifecycleEvent[]
   reset: () => void
+  on: (phase: LifecyclePhase, callback: () => void) => void
 }
 
 // 验证结果类型

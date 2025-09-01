@@ -16,13 +16,12 @@ export class MiddlewareManagerImpl implements MiddlewareManager {
   use(middleware: Middleware): void {
     // 检查是否已存在同名中间件
     const existingIndex = this.middleware.findIndex(
-      m => m.name === middleware.name,
+      m => m.name === middleware.name
     )
     if (existingIndex > -1) {
       // 替换现有中间件
       this.middleware[existingIndex] = middleware
-    }
-    else {
+    } else {
       // 添加新中间件
       this.middleware.push(middleware)
     }
@@ -44,7 +43,7 @@ export class MiddlewareManagerImpl implements MiddlewareManager {
 
   async execute(
     contextOrName: MiddlewareContext | string,
-    context?: MiddlewareContext,
+    context?: MiddlewareContext
   ): Promise<any> {
     // 重载处理
     if (typeof contextOrName === 'string') {
@@ -64,8 +63,7 @@ export class MiddlewareManagerImpl implements MiddlewareManager {
 
       await middleware.handler(ctx, next)
       return result
-    }
-    else {
+    } else {
       // 执行所有中间件
       const ctx = contextOrName
       let index = 0
@@ -78,8 +76,7 @@ export class MiddlewareManagerImpl implements MiddlewareManager {
         const middleware = this.middleware[index++]
         try {
           await middleware.handler(ctx, next)
-        }
-        catch (error) {
+        } catch (error) {
           // 将错误添加到上下文中
           ctx.error = error as Error
           throw error
@@ -132,7 +129,7 @@ export function createRequestMiddleware(
     context: MiddlewareContext,
     next: MiddlewareNext
   ) => Promise<void> | void,
-  priority = 50,
+  priority = 50
 ): Middleware {
   return {
     name,
@@ -147,7 +144,7 @@ export function createResponseMiddleware(
     context: MiddlewareContext,
     next: MiddlewareNext
   ) => Promise<void> | void,
-  priority = 50,
+  priority = 50
 ): Middleware {
   return {
     name,
@@ -162,7 +159,7 @@ export function createErrorMiddleware(
     context: MiddlewareContext,
     next: MiddlewareNext
   ) => Promise<void> | void,
-  priority = 90,
+  priority = 90
 ): Middleware {
   return {
     name,
@@ -186,7 +183,7 @@ export const commonMiddleware = {
         const duration = Date.now() - start
         logger.info('Middleware execution completed', { duration, context })
       },
-      10,
+      10
     ),
 
   // 错误处理中间件
@@ -196,14 +193,13 @@ export const commonMiddleware = {
       async (context, next) => {
         try {
           await next()
-        }
-        catch (error) {
+        } catch (error) {
           errorManager.captureError(error as Error)
           context.error = error as Error
           // 不重新抛出错误，让后续中间件处理
         }
       },
-      100,
+      100
     ),
 
   // 性能监控中间件
@@ -224,7 +220,7 @@ export const commonMiddleware = {
           })
         }
       },
-      20,
+      20
     ),
 
   // 安全中间件
@@ -235,6 +231,6 @@ export const commonMiddleware = {
         logger.debug('Security middleware executed', { context })
         await next()
       },
-      30,
+      30
     ),
 }

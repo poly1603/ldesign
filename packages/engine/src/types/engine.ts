@@ -4,12 +4,14 @@
  */
 
 import type { App, Component } from '@vue/runtime-dom'
-import type { I18nAdapter, RouterAdapter, StateAdapter, ThemeAdapter } from './base'
-import type { CacheManager } from './cache'
 import type {
-  ConfigManager,
-  EnhancedEngineConfig,
-} from './config'
+  I18nAdapter,
+  RouterAdapter,
+  StateAdapter,
+  ThemeAdapter,
+} from './base'
+import type { CacheManager } from './cache'
+import type { ConfigManager, EnhancedEngineConfig } from './config'
 import type { DirectiveManager } from './directive'
 import type { EnvironmentManager } from './environment'
 import type { ErrorManager } from './error'
@@ -47,6 +49,8 @@ export interface Engine {
   theme?: ThemeAdapter
 
   // 核心方法
+  init: () => Promise<void>
+  isReady: () => boolean
   createApp: (rootComponent: Component) => App
   install: (app: App) => void
   use: (plugin: any) => Promise<void>
@@ -70,10 +74,8 @@ export interface Engine {
 
   // 管理器统计
   getManagerStats: () => Record<string, unknown>
-  validateManagers: () => { valid: boolean, errors: string[] }
+  validateManagers: () => { valid: boolean; errors: string[] }
 }
-
-
 
 // 创建引擎的选项
 export interface CreateEngineOptions {
@@ -88,7 +90,12 @@ export interface CreateEngineOptions {
 }
 
 // 引擎状态
-export type EngineStatus = 'initializing' | 'ready' | 'running' | 'error' | 'destroyed'
+export type EngineStatus =
+  | 'initializing'
+  | 'ready'
+  | 'running'
+  | 'error'
+  | 'destroyed'
 
 // 引擎信息
 export interface EngineInfo {
@@ -118,13 +125,17 @@ export interface EngineStats {
 
 // 引擎事件类型
 export interface EngineEvents {
-  'engine:init': { timestamp: number, config: EnhancedEngineConfig }
-  'engine:ready': { timestamp: number, info: EngineInfo }
+  'engine:init': { timestamp: number; config: EnhancedEngineConfig }
+  'engine:ready': { timestamp: number; info: EngineInfo }
   'engine:start': { timestamp: number }
   'engine:stop': { timestamp: number }
   'engine:destroy': { timestamp: number }
-  'engine:error': { error: Error, context?: string }
-  'engine:status-change': { from: EngineStatus, to: EngineStatus, timestamp: number }
+  'engine:error': { error: Error; context?: string }
+  'engine:status-change': {
+    from: EngineStatus
+    to: EngineStatus
+    timestamp: number
+  }
 }
 
 // 引擎生命周期钩子
@@ -141,9 +152,15 @@ export interface EngineLifecycle {
 
 // 引擎配置验证器
 export interface EngineConfigValidator {
-  validate: (config: EnhancedEngineConfig) => { valid: boolean, errors: string[] }
+  validate: (config: EnhancedEngineConfig) => {
+    valid: boolean
+    errors: string[]
+  }
   sanitize: (config: EnhancedEngineConfig) => EnhancedEngineConfig
-  merge: (base: EnhancedEngineConfig, override: Partial<EnhancedEngineConfig>) => EnhancedEngineConfig
+  merge: (
+    base: EnhancedEngineConfig,
+    override: Partial<EnhancedEngineConfig>
+  ) => EnhancedEngineConfig
 }
 
 // 引擎性能监控器
@@ -153,7 +170,9 @@ export interface EnginePerformanceMonitor {
   getMetrics: () => Record<string, unknown>
   onMetric: (callback: (metric: Record<string, unknown>) => void) => () => void
   setThresholds: (thresholds: Record<string, number>) => void
-  onThresholdViolation: (callback: (violation: Record<string, unknown>) => void) => void
+  onThresholdViolation: (
+    callback: (violation: Record<string, unknown>) => void
+  ) => void
 }
 
 // 引擎错误处理器
@@ -165,24 +184,44 @@ export interface EngineErrorHandler {
   clearErrors: () => void
   clearWarnings: () => void
   setErrorHandler: (handler: (error: Error, context?: string) => void) => void
-  setWarningHandler: (handler: (warning: string, context?: string) => void) => void
+  setWarningHandler: (
+    handler: (warning: string, context?: string) => void
+  ) => void
 }
 
 // 引擎健康检查器
 export interface EngineHealthChecker {
-  checkHealth: () => Promise<{ healthy: boolean, issues: string[], details: Record<string, unknown> }>
-  getHealthStatus: () => { healthy: boolean, lastCheck: number, issues: string[] }
+  checkHealth: () => Promise<{
+    healthy: boolean
+    issues: string[]
+    details: Record<string, unknown>
+  }>
+  getHealthStatus: () => {
+    healthy: boolean
+    lastCheck: number
+    issues: string[]
+  }
   setHealthCheckInterval: (interval: number) => void
-  onHealthChange: (callback: (healthy: boolean, issues: string[]) => void) => () => void
+  onHealthChange: (
+    callback: (healthy: boolean, issues: string[]) => void
+  ) => () => void
   addHealthCheck: (name: string, check: () => Promise<boolean>) => void
   removeHealthCheck: (name: string) => void
 }
 
 // 引擎诊断器
 export interface EngineDiagnostics {
-  diagnose: () => Promise<{ issues: string[], recommendations: string[], details: Record<string, unknown> }>
+  diagnose: () => Promise<{
+    issues: string[]
+    recommendations: string[]
+    details: Record<string, unknown>
+  }>
   generateReport: () => Promise<string>
   exportDiagnostics: (format: 'json' | 'html' | 'text') => Promise<string>
-  getDiagnosticHistory: () => Array<{ timestamp: number, issues: string[], recommendations: string[] }>
+  getDiagnosticHistory: () => Array<{
+    timestamp: number
+    issues: string[]
+    recommendations: string[]
+  }>
   clearDiagnosticHistory: () => void
 }

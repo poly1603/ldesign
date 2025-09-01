@@ -14,6 +14,7 @@ export interface ErrorManager {
   offError: (handler: ErrorHandler) => void
   captureError: (error: Error, component?: unknown, info?: string) => void
   getErrors: () => ErrorInfo[]
+  hasErrors: () => boolean
   clearErrors: () => void
 }
 
@@ -48,14 +49,14 @@ export interface ErrorAggregator {
 export interface ErrorAnalyzer {
   analyze: (errors: ErrorInfo[]) => ErrorAnalysis
   getPatterns: () => string[]
-  getFrequentErrors: () => Array<{ error: string, count: number }>
+  getFrequentErrors: () => Array<{ error: string; count: number }>
   getStatistics: () => ErrorStatistics
 }
 
 // 错误分析结果
 export interface ErrorAnalysis {
   patterns: string[]
-  frequentErrors: Array<{ error: string, count: number }>
+  frequentErrors: Array<{ error: string; count: number }>
   statistics: ErrorStatistics
   recommendations: string[]
 }

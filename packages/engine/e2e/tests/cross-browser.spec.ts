@@ -1,3 +1,4 @@
+/// <reference path="../global.d.ts" />
 import { devices, expect, test } from '@playwright/test'
 
 test.describe('跨浏览器兼容性测试', () => {
@@ -67,7 +68,7 @@ test.describe('跨浏览器兼容性测试', () => {
 
         const envInfo = await page.evaluate(() => {
           return window.engine.environment.detect()
-        })
+        }) as any
 
         expect(envInfo.platform).toBe('browser')
         expect(envInfo.browser.name).toBeDefined()
@@ -189,7 +190,7 @@ test.describe('跨浏览器兼容性测试', () => {
 
           const envInfo = await page.evaluate(() => {
             return window.engine.environment.detect()
-          })
+          }) as any
 
           expect(envInfo.device.isMobile || envInfo.device.isTablet).toBe(true)
         })
@@ -247,10 +248,10 @@ test.describe('跨浏览器兼容性测试', () => {
       const memoryInfo = await page.evaluate(() => {
         return (performance as any).memory
           ? {
-              usedJSHeapSize: (performance as any).memory.usedJSHeapSize,
-              totalJSHeapSize: (performance as any).memory.totalJSHeapSize,
-              jsHeapSizeLimit: (performance as any).memory.jsHeapSizeLimit,
-            }
+            usedJSHeapSize: (performance as any).memory.usedJSHeapSize,
+            totalJSHeapSize: (performance as any).memory.totalJSHeapSize,
+            jsHeapSizeLimit: (performance as any).memory.jsHeapSizeLimit,
+          }
           : null
       })
 

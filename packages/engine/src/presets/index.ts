@@ -49,9 +49,9 @@ interface PresetTemplate {
     sampleRate: number
     maxEntries: number
     thresholds: {
-      responseTime: { good: number, poor: number }
-      fps: { good: number, poor: number }
-      memory: { warning: number, critical: number }
+      responseTime: { good: number; poor: number }
+      fps: { good: number; poor: number }
+      memory: { warning: number; critical: number }
     }
   }
   /** 通知配置 */
@@ -59,7 +59,13 @@ interface PresetTemplate {
     enabled: boolean
     maxNotifications: number
     defaultDuration: number
-    defaultPosition: 'top-center' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right'
+    defaultPosition:
+      | 'top-center'
+      | 'top-left'
+      | 'top-right'
+      | 'bottom-left'
+      | 'bottom-center'
+      | 'bottom-right'
     defaultTheme: 'auto' | 'light' | 'dark'
   }
 }
@@ -81,8 +87,12 @@ function createPresetConfig(
       logger: template.logger,
       cache: {
         enabled: template.features.enableCaching,
-        maxSize: template.environment === 'development' ? 1000 :
-          template.environment === 'production' ? 500 : 100,
+        maxSize:
+          template.environment === 'development'
+            ? 1000
+            : template.environment === 'production'
+              ? 500
+              : 100,
         defaultTTL: template.environment === 'development' ? 600000 : 300000, // 开发环境10分钟，其他5分钟
         strategy: 'lru',
         enableStats: true,
@@ -98,12 +108,16 @@ function createPresetConfig(
           },
         },
         csrf: {
-          enabled: template.environment === 'production' && template.features.enableSecurityProtection,
+          enabled:
+            template.environment === 'production' &&
+            template.features.enableSecurityProtection,
           tokenName: 'csrf-token',
           headerName: 'X-CSRF-Token',
         },
         csp: {
-          enabled: template.environment === 'production' && template.features.enableSecurityProtection,
+          enabled:
+            template.environment === 'production' &&
+            template.features.enableSecurityProtection,
           directives: {},
           reportOnly: template.environment !== 'production',
         },
@@ -114,8 +128,12 @@ function createPresetConfig(
       custom: {},
     },
     enableAutoSave: template.environment !== 'test',
-    autoSaveInterval: template.environment === 'development' ? 30000 :
-      template.environment === 'production' ? 60000 : 300000,
+    autoSaveInterval:
+      template.environment === 'development'
+        ? 30000
+        : template.environment === 'production'
+          ? 60000
+          : 300000,
   }
 
   // 根据环境添加中间件
@@ -126,7 +144,10 @@ function createPresetConfig(
     middleware.push(commonMiddleware.performance(createLogger(logLevel)))
   }
 
-  if (template.features.enableSecurityProtection && template.environment === 'production') {
+  if (
+    template.features.enableSecurityProtection &&
+    template.environment === 'production'
+  ) {
     middleware.push(commonMiddleware.security(createLogger('info')))
   }
 

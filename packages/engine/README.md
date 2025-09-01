@@ -142,7 +142,7 @@ engine.events.on('user:login', (data) => {
 ```typescript
 const myPlugin = {
   name: 'my-plugin',
-  install: (engine) => {
+  install: (_engine) => {
     // 插件逻辑
   },
 }
@@ -155,7 +155,7 @@ engine.use(myPlugin)
 强大的中间件管道，支持请求/响应处理、权限验证、日志记录等横切关注点。
 
 ```typescript
-const authMiddleware = {
+const _authMiddleware = {
   name: 'auth',
   handler: async (context, next) => {
     // 认证逻辑
@@ -198,10 +198,10 @@ engine.state.subscribe('user.profile', (newValue) => {
 
 ```typescript
 // XSS 防护
-const safeContent = engine.security.sanitize(userInput)
+const _safeContent = engine.security.sanitize(userInput)
 
 // CSRF 验证
-const isValid = engine.security.validateCSRF(token)
+const _isValid = engine.security.validateCSRF(token)
 ```
 
 ### ⚡ 性能监控
@@ -280,7 +280,7 @@ async function login() {
     engine.events.emit('user:login', userData)
     engine.notifications.success('登录成功')
   }
-  catch (error) {
+  catch (_error) {
     engine.notifications.error('登录失败')
   }
   finally {
@@ -370,10 +370,10 @@ engine.state.set('user.profile', {
 })
 
 // 获取状态
-const profile = engine.state.get('user.profile')
+const _profile = engine.state.get('user.profile')
 
 // 监听状态变化
-engine.state.watch('user.profile', (newValue, oldValue) => {
+engine.state.watch('user.profile', (newValue, _oldValue) => {
   console.log('用户资料已更新:', newValue)
 })
 
@@ -394,18 +394,18 @@ console.log(result.safe) // false
 console.log(result.threats) // ['Script tags detected']
 
 // 输入验证
-const isValidText = engine.security.validateInput('Hello World')
+const _isValidText = engine.security.validateInput('Hello World')
 // 结果: true
 
-const isValidHtml = engine.security.validateInput('<p>Safe HTML</p>', 'html')
+const _isValidHtml = engine.security.validateInput('<p>Safe HTML</p>', 'html')
 // 结果: true
 
-const isValidUrl = engine.security.validateInput('https://example.com', 'url')
+const _isValidUrl = engine.security.validateInput('https://example.com', 'url')
 // 结果: true
 
 // CSRF 令牌
 const csrfToken = engine.security.generateCSRFToken()
-const isValidToken = engine.security.validateCSRFToken(csrfToken.token)
+const _isValidToken = engine.security.validateCSRFToken(csrfToken.token)
 // 结果: true
 ```
 
@@ -447,7 +447,7 @@ engine.performance.stopMonitoring()
 ```typescript
 // 基础缓存
 engine.cache.set('user:123', userData, 3600000) // 缓存1小时
-const user = engine.cache.get('user:123')
+const _user = engine.cache.get('user:123')
 
 // 命名空间缓存
 const userCache = engine.cache.namespace('users')
@@ -510,7 +510,7 @@ const errors = engine.errors.getErrors()
 console.log('错误列表:', errors)
 
 // 按类型获取错误
-const networkErrors = engine.errors.getErrorsByType('NetworkError')
+const _networkErrors = engine.errors.getErrorsByType('NetworkError')
 
 // 清除错误
 engine.errors.clearErrors()

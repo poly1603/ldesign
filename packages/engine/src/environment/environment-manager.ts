@@ -7,7 +7,14 @@ export type Environment = 'development' | 'production' | 'test'
 export type Platform = 'browser' | 'node' | 'webworker' | 'electron' | 'unknown'
 
 // 浏览器类型
-export type Browser = 'chrome' | 'firefox' | 'safari' | 'edge' | 'ie' | 'opera' | 'unknown'
+export type Browser =
+  | 'chrome'
+  | 'firefox'
+  | 'safari'
+  | 'edge'
+  | 'ie'
+  | 'opera'
+  | 'unknown'
 
 // 设备类型
 export type DeviceType = 'desktop' | 'mobile' | 'tablet' | 'unknown'
@@ -132,8 +139,8 @@ export interface EnvironmentManager {
   detect: () => EnvironmentInfo
   getEnvironment: () => Environment
   getPlatform: () => Platform
-  getBrowser: () => { name: Browser, version: string }
-  getDevice: () => { type: DeviceType, isMobile: boolean }
+  getBrowser: () => { name: Browser; version: string }
+  getDevice: () => { type: DeviceType; isMobile: boolean }
 
   // 特性检测
   hasFeature: (feature: string) => boolean
@@ -147,11 +154,16 @@ export interface EnvironmentManager {
 
   // 性能监控
   getPerformanceInfo: () => EnvironmentInfo['performance']
-  monitorPerformance: (callback: (info: EnvironmentInfo['performance']) => void) => void
+  monitorPerformance: (
+    callback: (info: EnvironmentInfo['performance']) => void
+  ) => void
 
   // 事件监听
   onEnvironmentChange: (callback: (info: EnvironmentInfo) => void) => () => void
-  onFeatureChange: (feature: string, callback: (available: boolean) => void) => () => void
+  onFeatureChange: (
+    feature: string,
+    callback: (available: boolean) => void
+  ) => () => void
 }
 
 // 环境管理器实现
@@ -159,7 +171,11 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
   private environmentInfo: EnvironmentInfo
   private adaptation: EnvironmentAdaptation
   private changeListeners: Array<(info: EnvironmentInfo) => void> = []
-  private featureListeners = new Map<string, Array<(available: boolean) => void>>()
+  private featureListeners = new Map<
+    string,
+    Array<(available: boolean) => void>
+  >()
+
   private logger?: Logger
 
   constructor(logger?: Logger) {
@@ -190,14 +206,14 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
     return this.environmentInfo.platform
   }
 
-  getBrowser(): { name: Browser, version: string } {
+  getBrowser(): { name: Browser; version: string } {
     return {
       name: this.environmentInfo.browser.name,
       version: this.environmentInfo.browser.version,
     }
   }
 
-  getDevice(): { type: DeviceType, isMobile: boolean } {
+  getDevice(): { type: DeviceType; isMobile: boolean } {
     return {
       type: this.environmentInfo.device.type,
       isMobile: this.environmentInfo.device.isMobile,
@@ -205,7 +221,11 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
   }
 
   hasFeature(feature: string): boolean {
-    return this.environmentInfo.features[feature as keyof typeof this.environmentInfo.features] || false
+    return (
+      this.environmentInfo.features[
+        feature as keyof typeof this.environmentInfo.features
+      ] || false
+    )
   }
 
   getFeatures(): Record<string, boolean> {
@@ -216,7 +236,13 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
     // 检查浏览器版本兼容性
     if (requirements.browser) {
       const browserReq = requirements.browser[this.environmentInfo.browser.name]
-      if (browserReq && !this.isVersionCompatible(this.environmentInfo.browser.version, browserReq)) {
+      if (
+        browserReq &&
+        !this.isVersionCompatible(
+          this.environmentInfo.browser.version,
+          browserReq
+        )
+      ) {
         return false
       }
     }
@@ -242,8 +268,14 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
       ...this.adaptation,
       ...adaptation,
       fallbacks: { ...this.adaptation.fallbacks, ...adaptation.fallbacks },
-      optimizations: { ...this.adaptation.optimizations, ...adaptation.optimizations },
-      compatibility: { ...this.adaptation.compatibility, ...adaptation.compatibility },
+      optimizations: {
+        ...this.adaptation.optimizations,
+        ...adaptation.optimizations,
+      },
+      compatibility: {
+        ...this.adaptation.compatibility,
+        ...adaptation.compatibility,
+      },
     }
 
     this.logger?.debug('Environment adaptation updated', adaptation)
@@ -282,7 +314,9 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
     return { ...this.environmentInfo.performance }
   }
 
-  monitorPerformance(callback: (info: EnvironmentInfo['performance']) => void): void {
+  monitorPerformance(
+    callback: (info: EnvironmentInfo['performance']) => void
+  ): void {
     const monitor = () => {
       const perfInfo = this.detectPerformanceInfo()
       callback(perfInfo)
@@ -306,7 +340,10 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
     }
   }
 
-  onFeatureChange(feature: string, callback: (available: boolean) => void): () => void {
+  onFeatureChange(
+    feature: string,
+    callback: (available: boolean) => void
+  ): () => void {
     if (!this.featureListeners.has(feature)) {
       this.featureListeners.set(feature, [])
     }
@@ -344,26 +381,27 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
       const nodeProcess = require('node:process')
       if (typeof nodeProcess !== 'undefined' && nodeProcess.env) {
         const nodeEnv = nodeProcess.env.NODE_ENV
-        if (nodeEnv === 'production')
-          return 'production'
-        if (nodeEnv === 'test')
-          return 'test'
+        if (nodeEnv === 'production') return 'production'
+        if (nodeEnv === 'test') return 'test'
       }
 
       // 检测测试环境
-      if (typeof globalThis !== 'undefined'
-        && (globalThis as any).__vitest__ !== undefined) {
+      if (
+        typeof globalThis !== 'undefined' &&
+        (globalThis as any).__vitest__ !== undefined
+      ) {
         return 'test'
       }
 
-      if (typeof window !== 'undefined'
-        && (window as any).__karma__ !== undefined) {
+      if (
+        typeof window !== 'undefined' &&
+        (window as any).__karma__ !== undefined
+      ) {
         return 'test'
       }
 
       return 'development'
-    }
-    catch {
+    } catch {
       return 'development'
     }
   }
@@ -392,13 +430,16 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
       }
 
       return 'unknown'
-    }
-    catch {
+    } catch {
       return 'unknown'
     }
   }
 
-  private detectBrowser(): { name: Browser, version: string, userAgent: string } {
+  private detectBrowser(): {
+    name: Browser
+    version: string
+    userAgent: string
+  } {
     if (typeof navigator === 'undefined') {
       return { name: 'unknown', version: '', userAgent: '' }
     }
@@ -459,15 +500,16 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
     }
 
     const userAgent = navigator.userAgent
-    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)
+    const isMobile =
+      /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)
     const isTablet = /iPad|Android(?=.*Tablet)|Tablet/i.test(userAgent)
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+    const isTouchDevice =
+      'ontouchstart' in window || navigator.maxTouchPoints > 0
 
     let type: DeviceType = 'desktop'
     if (isTablet) {
       type = 'tablet'
-    }
-    else if (isMobile) {
+    } else if (isMobile) {
       type = 'mobile'
     }
 
@@ -566,7 +608,10 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
       availHeight: screen.availHeight,
       colorDepth: screen.colorDepth,
       pixelRatio: typeof window !== 'undefined' ? window.devicePixelRatio : 1,
-      orientation: typeof screen.orientation !== 'undefined' ? screen.orientation.type : undefined,
+      orientation:
+        typeof screen.orientation !== 'undefined'
+          ? screen.orientation.type
+          : undefined,
     }
   }
 
@@ -575,7 +620,9 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
     const january = new Date(now.getFullYear(), 0, 1)
     const july = new Date(now.getFullYear(), 6, 1)
     const offset = -now.getTimezoneOffset()
-    const dst = offset !== -january.getTimezoneOffset() || offset !== -july.getTimezoneOffset()
+    const dst =
+      offset !== -january.getTimezoneOffset() ||
+      offset !== -july.getTimezoneOffset()
 
     return {
       name: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -586,24 +633,22 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
 
   private checkWebGL(): boolean {
     try {
-      if (typeof document === 'undefined')
-        return false
+      if (typeof document === 'undefined') return false
       const canvas = document.createElement('canvas')
-      return !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
-    }
-    catch {
+      return !!(
+        canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+      )
+    } catch {
       return false
     }
   }
 
   private checkWebGL2(): boolean {
     try {
-      if (typeof document === 'undefined')
-        return false
+      if (typeof document === 'undefined') return false
       const canvas = document.createElement('canvas')
       return !!canvas.getContext('webgl2')
-    }
-    catch {
+    } catch {
       return false
     }
   }
@@ -636,8 +681,7 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
   }
 
   private setupEnvironmentListeners(): void {
-    if (typeof window === 'undefined')
-      return
+    if (typeof window === 'undefined') return
 
     // 监听在线状态变化
     window.addEventListener('online', () => this.handleEnvironmentChange())
@@ -645,7 +689,9 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
 
     // 监听屏幕方向变化
     if (screen.orientation) {
-      screen.orientation.addEventListener('change', () => this.handleEnvironmentChange())
+      screen.orientation.addEventListener('change', () =>
+        this.handleEnvironmentChange()
+      )
     }
 
     // 监听窗口大小变化
@@ -654,15 +700,15 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
 
   private handleEnvironmentChange(): void {
     const newInfo = this.detectEnvironment()
-    const hasChanged = JSON.stringify(newInfo) !== JSON.stringify(this.environmentInfo)
+    const hasChanged =
+      JSON.stringify(newInfo) !== JSON.stringify(this.environmentInfo)
 
     if (hasChanged) {
       this.environmentInfo = newInfo
-      this.changeListeners.forEach((callback) => {
+      this.changeListeners.forEach(callback => {
         try {
           callback(newInfo)
-        }
-        catch (error) {
+        } catch (error) {
           this.logger?.error('Error in environment change callback', error)
         }
       })
@@ -673,14 +719,16 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
     const currentParts = current.split('.').map(Number)
     const requiredParts = required.split('.').map(Number)
 
-    for (let i = 0; i < Math.max(currentParts.length, requiredParts.length); i++) {
+    for (
+      let i = 0;
+      i < Math.max(currentParts.length, requiredParts.length);
+      i++
+    ) {
       const currentPart = currentParts[i] || 0
       const requiredPart = requiredParts[i] || 0
 
-      if (currentPart > requiredPart)
-        return true
-      if (currentPart < requiredPart)
-        return false
+      if (currentPart > requiredPart) return true
+      if (currentPart < requiredPart) return false
     }
 
     return true

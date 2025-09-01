@@ -82,8 +82,7 @@ export class ErrorManagerImpl implements ErrorManager {
     for (const handler of this.errorHandlers) {
       try {
         handler(errorInfo)
-      }
-      catch (handlerError) {
+      } catch (handlerError) {
         console.error('Error in error handler:', handlerError)
       }
     }
@@ -91,6 +90,10 @@ export class ErrorManagerImpl implements ErrorManager {
 
   getErrors(): ErrorInfo[] {
     return [...this.errors]
+  }
+
+  hasErrors(): boolean {
+    return this.errors.length > 0
   }
 
   clearErrors(): void {
@@ -118,7 +121,7 @@ export class ErrorManagerImpl implements ErrorManager {
   // 按时间范围获取错误
   getErrorsByTimeRange(startTime: number, endTime: number): ErrorInfo[] {
     return this.errors.filter(
-      error => error.timestamp >= startTime && error.timestamp <= endTime,
+      error => error.timestamp >= startTime && error.timestamp <= endTime
     )
   }
 
@@ -132,9 +135,9 @@ export class ErrorManagerImpl implements ErrorManager {
     const lowerQuery = query.toLowerCase()
     return this.errors.filter(
       error =>
-        error.message.toLowerCase().includes(lowerQuery)
-        || (error.stack && error.stack.toLowerCase().includes(lowerQuery))
-        || (error.info && error.info.toLowerCase().includes(lowerQuery)),
+        error.message.toLowerCase().includes(lowerQuery) ||
+        (error.stack && error.stack.toLowerCase().includes(lowerQuery)) ||
+        (error.info && error.info.toLowerCase().includes(lowerQuery))
     )
   }
 
@@ -182,8 +185,7 @@ export class ErrorManagerImpl implements ErrorManager {
   exportErrors(format: 'json' | 'csv' = 'json'): string {
     if (format === 'json') {
       return JSON.stringify(this.errors, null, 2)
-    }
-    else {
+    } else {
       const headers = ['timestamp', 'level', 'message', 'stack', 'info']
       const rows = this.errors.map(error => [
         new Date(error.timestamp).toISOString(),
@@ -201,7 +203,7 @@ export class ErrorManagerImpl implements ErrorManager {
   createErrorReport(): {
     summary: ReturnType<ErrorManagerImpl['getErrorStats']>
     recentErrors: ErrorInfo[]
-    topErrors: Array<{ message: string, count: number }>
+    topErrors: Array<{ message: string; count: number }>
   } {
     const summary = this.getErrorStats()
     const recentErrors = this.getRecentErrors(10)
@@ -231,7 +233,7 @@ export class ErrorManagerImpl implements ErrorManager {
     this.recoveryStrategies.set('network', {
       canRecover: error =>
         error.message.includes('network') || error.message.includes('fetch'),
-      recover: async (error) => {
+      recover: async error => {
         this.logger?.info('Attempting network error recovery', error)
         // 简单的重试逻辑
         return new Promise(resolve => setTimeout(() => resolve(true), 1000))
@@ -242,7 +244,7 @@ export class ErrorManagerImpl implements ErrorManager {
     // 组件错误恢复策略
     this.recoveryStrategies.set('component', {
       canRecover: error => !!error.component,
-      recover: async (error) => {
+      recover: async error => {
         this.logger?.info('Attempting component error recovery', error)
         // 组件重新渲染逻辑
         return true
@@ -262,8 +264,7 @@ export class ErrorManagerImpl implements ErrorManager {
       if (this.errorBurst > 10) {
         this.logger?.warn('Error burst detected', { count: this.errorBurst })
       }
-    }
-    else {
+    } else {
       this.errorBurst = 1
     }
 
@@ -275,9 +276,9 @@ export class ErrorManagerImpl implements ErrorManager {
     const message = error.message.toLowerCase()
 
     if (
-      message.includes('network')
-      || message.includes('fetch')
-      || message.includes('xhr')
+      message.includes('network') ||
+      message.includes('fetch') ||
+      message.includes('xhr')
     ) {
       return ErrorCategory.NETWORK
     }
@@ -295,17 +296,17 @@ export class ErrorManagerImpl implements ErrorManager {
     }
 
     if (
-      message.includes('security')
-      || message.includes('xss')
-      || message.includes('csrf')
+      message.includes('security') ||
+      message.includes('xss') ||
+      message.includes('csrf')
     ) {
       return ErrorCategory.SECURITY
     }
 
     if (
-      message.includes('performance')
-      || message.includes('memory')
-      || message.includes('timeout')
+      message.includes('performance') ||
+      message.includes('memory') ||
+      message.includes('timeout')
     ) {
       return ErrorCategory.PERFORMANCE
     }
@@ -342,8 +343,7 @@ export class ErrorManagerImpl implements ErrorManager {
           this.logger?.info('Error recovery successful', error)
           return true
         }
-      }
-      catch (recoveryError) {
+      } catch (recoveryError) {
         this.logger?.error('Error recovery failed', recoveryError)
       }
     }
@@ -378,14 +378,13 @@ export function createErrorManager(logger?: Logger): ErrorManager {
 export const errorHandlers = {
   // 控制台错误处理器
   console: (errorInfo: ErrorInfo) => {
-    const method
-      = errorInfo.level === 'error'
+    const method =
+      errorInfo.level === 'error'
         ? 'error'
         : errorInfo.level === 'warn'
           ? 'warn'
           : 'info'
 
-    // eslint-disable-next-line no-console
     console[method]('Engine Error:', {
       message: errorInfo.message,
       timestamp: new Date(errorInfo.timestamp).toISOString(),
@@ -409,56 +408,54 @@ export const errorHandlers = {
 
   // 远程上报错误处理器
   remote:
-    (config: { endpoint: string, apiKey?: string }) =>
-      async (errorInfo: ErrorInfo) => {
-        try {
-          const payload = {
-            ...errorInfo,
-            userAgent: navigator.userAgent,
-            url: window.location.href,
-            timestamp: new Date(errorInfo.timestamp).toISOString(),
-          }
-
-          const headers: Record<string, string> = {
-            'Content-Type': 'application/json',
-          }
-
-          if (config.apiKey) {
-            headers.Authorization = `Bearer ${config.apiKey}`
-          }
-
-          await fetch(config.endpoint, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(payload),
-          })
+    (config: { endpoint: string; apiKey?: string }) =>
+    async (errorInfo: ErrorInfo) => {
+      try {
+        const payload = {
+          ...errorInfo,
+          userAgent: navigator.userAgent,
+          url: window.location.href,
+          timestamp: new Date(errorInfo.timestamp).toISOString(),
         }
-        catch (error) {
-          console.error('Failed to report error to remote service:', error)
+
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
         }
-      },
+
+        if (config.apiKey) {
+          headers.Authorization = `Bearer ${config.apiKey}`
+        }
+
+        await fetch(config.endpoint, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload),
+        })
+      } catch (error) {
+        console.error('Failed to report error to remote service:', error)
+      }
+    },
 
   // 本地存储错误处理器
   localStorage:
     (key = 'engine-errors') =>
-      (errorInfo: ErrorInfo) => {
-        try {
-          const stored = localStorage.getItem(key)
-          const errors = stored ? JSON.parse(stored) : []
+    (errorInfo: ErrorInfo) => {
+      try {
+        const stored = localStorage.getItem(key)
+        const errors = stored ? JSON.parse(stored) : []
 
-          errors.unshift(errorInfo)
+        errors.unshift(errorInfo)
 
-          // 限制存储的错误数量
-          if (errors.length > 50) {
-            errors.splice(50)
-          }
-
-          localStorage.setItem(key, JSON.stringify(errors))
+        // 限制存储的错误数量
+        if (errors.length > 50) {
+          errors.splice(50)
         }
-        catch (error) {
-          console.error('Failed to store error in localStorage:', error)
-        }
-      },
+
+        localStorage.setItem(key, JSON.stringify(errors))
+      } catch (error) {
+        console.error('Failed to store error in localStorage:', error)
+      }
+    },
 }
 
 // 错误边界组件工厂
@@ -472,8 +469,8 @@ export function createErrorBoundary(errorManager: ErrorManager) {
       }
     },
     errorCaptured(error: Error, component: Component, info: string) {
-      ; (this as any).hasError = true
-      ; (this as any).error = error
+      ;(this as any).hasError = true
+      ;(this as any).error = error
 
       // 捕获错误到错误管理器
       errorManager.captureError(error, component, info)
@@ -485,8 +482,8 @@ export function createErrorBoundary(errorManager: ErrorManager) {
       const self = this as any
       if (self.hasError) {
         return (
-          self.$slots.fallback?.({ error: self.error })
-          || 'Something went wrong. Please try again.'
+          self.$slots.fallback?.({ error: self.error }) ||
+          'Something went wrong. Please try again.'
         )
       }
 

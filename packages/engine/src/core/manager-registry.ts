@@ -22,11 +22,7 @@ export class ManagerRegistry {
   }
 
   // 注册管理器
-  register(
-    name: string,
-    dependencies: string[] = [],
-    lazy = false,
-  ): void {
+  register(name: string, dependencies: string[] = [], lazy = false): void {
     if (this.managers.has(name)) {
       this.logger?.warn(`Manager "${name}" already registered`)
       return
@@ -43,7 +39,7 @@ export class ManagerRegistry {
     this.managers.set(name, status)
 
     // 更新依赖关系
-    dependencies.forEach((dep) => {
+    dependencies.forEach(dep => {
       const depStatus = this.managers.get(dep)
       if (depStatus) {
         depStatus.dependents.push(name)
@@ -71,14 +67,13 @@ export class ManagerRegistry {
     if (!error) {
       this.initOrder.push(name)
       this.logger?.debug(`Manager "${name}" initialized successfully`)
-    }
-    else {
+    } else {
       this.logger?.error(`Manager "${name}" initialization failed`, error)
     }
   }
 
   // 检查依赖是否满足
-  checkDependencies(name: string): { satisfied: boolean, missing: string[] } {
+  checkDependencies(name: string): { satisfied: boolean; missing: string[] } {
     const status = this.managers.get(name)
     if (!status) {
       return { satisfied: false, missing: [name] }
@@ -105,8 +100,7 @@ export class ManagerRegistry {
     const visiting = new Set<string>()
 
     const visit = (name: string): void => {
-      if (visited.has(name))
-        return
+      if (visited.has(name)) return
       if (visiting.has(name)) {
         throw new Error(`Circular dependency detected involving "${name}"`)
       }
@@ -115,7 +109,7 @@ export class ManagerRegistry {
       const status = this.managers.get(name)
       if (status && !status.lazy) {
         // 先访问依赖
-        status.dependencies.forEach((dep) => {
+        status.dependencies.forEach(dep => {
           const depStatus = this.managers.get(dep)
           if (depStatus && !depStatus.lazy) {
             visit(dep)
@@ -165,9 +159,10 @@ export class ManagerRegistry {
       .map(s => s.initTime)
       .filter(t => t !== undefined) as number[]
 
-    const averageInitTime = initTimes.length > 0
-      ? initTimes.reduce((sum, time) => sum + time, 0) / initTimes.length
-      : 0
+    const averageInitTime =
+      initTimes.length > 0
+        ? initTimes.reduce((sum, time) => sum + time, 0) / initTimes.length
+        : 0
 
     return {
       total: all.length,
@@ -191,8 +186,7 @@ export class ManagerRegistry {
     // 检查循环依赖
     try {
       this.getInitializationOrder()
-    }
-    catch (error) {
+    } catch (error) {
       errors.push((error as Error).message)
     }
 
@@ -271,7 +265,7 @@ export function setGlobalManagerRegistry(registry: ManagerRegistry): void {
 export function Manager(
   name: string,
   dependencies: string[] = [],
-  lazy = false,
+  lazy = false
 ) {
   return function <T extends new (...args: any[]) => any>(constructor: T) {
     const registry = getGlobalManagerRegistry()

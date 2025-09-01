@@ -43,19 +43,18 @@ export function isDev(): boolean {
     // eslint-disable-next-line ts/no-require-imports
     const nodeProcess = require('node:process')
     return (
-      typeof nodeProcess !== 'undefined'
-      && nodeProcess.env?.NODE_ENV === 'development'
+      typeof nodeProcess !== 'undefined' &&
+      nodeProcess.env?.NODE_ENV === 'development'
     )
-  }
-  catch {
+  } catch {
     // 如果无法获取process，检查其他方式
     if (isBrowser()) {
       // 浏览器环境检查
       return (
-        window.location.hostname === 'localhost'
-        || window.location.hostname === '127.0.0.1'
-        || window.location.hostname.includes('dev')
-        || window.location.hostname.includes('staging')
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname.includes('dev') ||
+        window.location.hostname.includes('staging')
       )
     }
     return false
@@ -81,11 +80,10 @@ export function isProd(): boolean {
     // eslint-disable-next-line ts/no-require-imports
     const nodeProcess = require('node:process')
     return (
-      typeof nodeProcess !== 'undefined'
-      && nodeProcess.env?.NODE_ENV === 'production'
+      typeof nodeProcess !== 'undefined' &&
+      nodeProcess.env?.NODE_ENV === 'production'
     )
-  }
-  catch {
+  } catch {
     if (isBrowser()) {
       return !isDev()
     }
@@ -129,7 +127,7 @@ export function generateUUID(): string {
   }
 
   // 降级方案
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
     const r = (Math.random() * 16) | 0
     const v = c === 'x' ? r : (r & 0x3) | 0x8
     return v.toString(16)
@@ -155,23 +153,22 @@ export function generateUUID(): string {
  */
 export function deepMerge<T extends Record<string, unknown>>(
   target: T,
-  source: Partial<T>,
+  source: Partial<T>
 ): T {
   const result = { ...target }
 
   for (const key in source) {
     if (
-      source[key]
-      && typeof source[key] === 'object'
-      && !Array.isArray(source[key])
-      && source[key] !== null
+      source[key] &&
+      typeof source[key] === 'object' &&
+      !Array.isArray(source[key]) &&
+      source[key] !== null
     ) {
       result[key] = deepMerge(
         (result[key] || {}) as Record<string, unknown>,
-        source[key] as Record<string, unknown>,
+        source[key] as Record<string, unknown>
       ) as T[Extract<keyof T, string>]
-    }
-    else {
+    } else {
       result[key] = source[key] as T[Extract<keyof T, string>]
     }
   }
@@ -197,7 +194,7 @@ export function deepMerge<T extends Record<string, unknown>>(
  */
 export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
-  wait: number,
+  wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | number
 
@@ -224,7 +221,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
  */
 export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
-  wait: number,
+  wait: number
 ): (...args: Parameters<T>) => void {
   let lastTime = 0
 
@@ -354,7 +351,7 @@ export function isEmpty(value: unknown): boolean {
 export function getByPath<T = unknown>(
   obj: Record<string, unknown>,
   path: string,
-  defaultValue?: T,
+  defaultValue?: T
 ): T | undefined {
   const keys = path.split('.')
   let result: unknown = obj
@@ -362,8 +359,7 @@ export function getByPath<T = unknown>(
   for (const key of keys) {
     if (result && typeof result === 'object' && key in result) {
       result = (result as Record<string, unknown>)[key]
-    }
-    else {
+    } else {
       return defaultValue
     }
   }
@@ -408,7 +404,7 @@ export const getNestedValue = getByPath
 export function setByPath(
   obj: Record<string, unknown>,
   path: string,
-  value: unknown,
+  value: unknown
 ): boolean {
   const keys = path.split('.')
   let current: Record<string, unknown> = obj
@@ -459,8 +455,7 @@ export const setNestedValue = setByPath
  * ```
  */
 export function formatFileSize(bytes: number, decimals = 2): string {
-  if (bytes === 0)
-    return '0 Bytes'
+  if (bytes === 0) return '0 Bytes'
 
   const k = 1024
   const dm = decimals < 0 ? 0 : decimals
@@ -487,22 +482,19 @@ export function formatFileSize(bytes: number, decimals = 2): string {
  */
 export function formatTime(
   time: Date | number,
-  format = 'YYYY-MM-DD HH:mm:ss',
+  format = 'YYYY-MM-DD HH:mm:ss'
 ): string {
   // 如果传入的是毫秒数且小于一天的毫秒数，则按持续时间处理
   if (typeof time === 'number' && time < 24 * 60 * 60 * 1000) {
     if (time < 1000) {
       return `${time}ms`
-    }
-    else if (time < 60 * 1000) {
+    } else if (time < 60 * 1000) {
       return `${Math.floor(time / 1000)}s`
-    }
-    else if (time < 60 * 60 * 1000) {
+    } else if (time < 60 * 60 * 1000) {
       const minutes = Math.floor(time / (60 * 1000))
       const seconds = Math.floor((time % (60 * 1000)) / 1000)
       return `${minutes}m ${seconds}s`
-    }
-    else {
+    } else {
       const hours = Math.floor(time / (60 * 60 * 1000))
       const minutes = Math.floor((time % (60 * 60 * 1000)) / (60 * 1000))
       return `${hours}h ${minutes}m`
@@ -541,7 +533,10 @@ export function formatTime(
  * randomString(16, '0123456789') // '1234567890123456'
  * ```
  */
-export function randomString(length = 8, charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'): string {
+export function randomString(
+  length = 8,
+  charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+): string {
   let result = ''
   for (let i = 0; i < length; i++) {
     result += charset.charAt(Math.floor(Math.random() * charset.length))
@@ -567,8 +562,7 @@ export function isValidURL(url: string): boolean {
     // eslint-disable-next-line no-new
     new URL(url)
     return true
-  }
-  catch {
+  } catch {
     return false
   }
 }
@@ -629,16 +623,19 @@ export function unique<T>(arr: T[]): T[] {
  */
 export function groupBy<T, K extends string | number>(
   arr: T[],
-  keyFn: (item: T) => K,
+  keyFn: (item: T) => K
 ): Record<K, T[]> {
-  return arr.reduce((groups, item) => {
-    const key = keyFn(item)
-    if (!groups[key]) {
-      groups[key] = []
-    }
-    groups[key].push(item)
-    return groups
-  }, {} as Record<K, T[]>)
+  return arr.reduce(
+    (groups, item) => {
+      const key = keyFn(item)
+      if (!groups[key]) {
+        groups[key] = []
+      }
+      groups[key].push(item)
+      return groups
+    },
+    {} as Record<K, T[]>
+  )
 }
 
 /**
@@ -679,8 +676,7 @@ export function chunk<T>(arr: T[], size: number): T[][] {
 export function safeJsonParse<T>(json: string, defaultValue: T): T {
   try {
     return JSON.parse(json) as T
-  }
-  catch {
+  } catch {
     return defaultValue
   }
 }
@@ -702,8 +698,7 @@ export function safeJsonParse<T>(json: string, defaultValue: T): T {
 export function safeJsonStringify(obj: unknown, space?: number): string {
   try {
     return JSON.stringify(obj, null, space)
-  }
-  catch {
+  } catch {
     return '{}'
   }
 }
@@ -722,7 +717,9 @@ export function safeJsonStringify(obj: unknown, space?: number): string {
  * isFunction('not a function') // false
  * ```
  */
-export function isFunction(value: unknown): value is (...args: unknown[]) => unknown {
+export function isFunction(
+  value: unknown
+): value is (...args: unknown[]) => unknown {
   return typeof value === 'function'
 }
 
@@ -741,7 +738,12 @@ export function isFunction(value: unknown): value is (...args: unknown[]) => unk
  * ```
  */
 export function isPromise(value: unknown): value is Promise<unknown> {
-  return Boolean(value && typeof value === 'object' && 'then' in value && typeof (value as any).then === 'function')
+  return Boolean(
+    value &&
+      typeof value === 'object' &&
+      'then' in value &&
+      typeof (value as any).then === 'function'
+  )
 }
 
 /**
@@ -777,15 +779,14 @@ export function delay(ms: number): Promise<void> {
 export async function retry<T>(
   fn: () => Promise<T>,
   maxAttempts = 3,
-  delayMs = 1000,
+  delayMs = 1000
 ): Promise<T> {
   let lastError: Error | undefined
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await fn()
-    }
-    catch (error) {
+    } catch (error) {
       lastError = error as Error
 
       if (attempt === maxAttempts) {

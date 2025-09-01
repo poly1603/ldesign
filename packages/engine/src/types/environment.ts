@@ -17,6 +17,7 @@ export interface EnvironmentManager {
   getInfo: () => EnvironmentInfo
   getConfig: () => EnvironmentConfig
   setConfig: (config: Partial<EnvironmentConfig>) => void
+  detect: () => Environment
 }
 
 // 环境配置
@@ -100,7 +101,11 @@ export interface ScreenInfo {
 
 // 屏幕方向
 export interface ScreenOrientation {
-  type: 'portrait-primary' | 'portrait-secondary' | 'landscape-primary' | 'landscape-secondary'
+  type:
+    | 'portrait-primary'
+    | 'portrait-secondary'
+    | 'landscape-primary'
+    | 'landscape-secondary'
   angle: number
 }
 
@@ -217,8 +222,12 @@ export interface EnvironmentOverrideManager {
 export interface EnvironmentValidator {
   validate: (env: Environment) => EnvironmentValidationResult
   validateConfig: (config: EnvironmentConfig) => EnvironmentValidationResult
-  validateFeatures: (features: Record<string, boolean>) => EnvironmentValidationResult
-  validateVariables: (variables: Record<string, string>) => EnvironmentValidationResult
+  validateFeatures: (
+    features: Record<string, boolean>
+  ) => EnvironmentValidationResult
+  validateVariables: (
+    variables: Record<string, string>
+  ) => EnvironmentValidationResult
   getSchema: () => unknown
   setSchema: (schema: unknown) => void
 }

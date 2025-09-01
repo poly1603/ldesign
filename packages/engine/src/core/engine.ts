@@ -23,7 +23,10 @@ import type {
 } from '../types'
 import { type App, type Component, createApp } from 'vue'
 import { createCacheManager } from '../cache/cache-manager'
-import { createConfigManager, defaultConfigSchema } from '../config/config-manager'
+import {
+  createConfigManager,
+  defaultConfigSchema,
+} from '../config/config-manager'
 import { createDirectiveManager } from '../directives/directive-manager'
 import { createEnvironmentManager } from '../environment/environment-manager'
 import { createErrorManager } from '../errors/error-manager'
@@ -63,6 +66,9 @@ export class EngineImpl implements Engine {
 
   /** 引擎是否已挂载 */
   private _mounted = false
+
+  /** 引擎是否已准备就绪 */
+  private _isReady = false
 
   /** 挂载目标元素 */
   private _mountTarget?: string | Element
@@ -128,7 +134,9 @@ export class EngineImpl implements Engine {
   get cache(): CacheManager {
     if (!this._cache) {
       const startTime = Date.now()
-      this._cache = createCacheManager(this.config.get('cache', {}) as any)
+      this._cache = createCacheManager(
+        this.config.get('cache', {}) as any
+      ) as any
       const initTime = Date.now() - startTime
       this.managerRegistry.markInitialized('cache')
       this.logger.debug('Cache manager initialized lazily', {
@@ -188,7 +196,9 @@ export class EngineImpl implements Engine {
     this.config.setSchema(defaultConfigSchema)
 
     // 2. 基于配置创建日志器 - 所有组件都需要记录日志
-    this.logger = createLogger(this.config.get('debug', false) ? 'debug' : 'info')
+    this.logger = createLogger(
+      this.config.get('debug', false) ? 'debug' : 'info'
+    )
 
     // 3. 创建管理器注册表 - 管理所有管理器的依赖关系和初始化顺序
     this.managerRegistry = new ManagerRegistry(this.logger)
@@ -215,14 +225,14 @@ export class EngineImpl implements Engine {
     })
 
     // 执行初始化后的生命周期钩子
-    this.lifecycle.execute('afterInit').catch((error) => {
+    this.lifecycle.execute('afterInit').catch(error => {
       this.logger.error('Error in afterInit lifecycle hooks', error)
     })
   }
 
   private setupErrorHandling(): void {
     // 监听全局错误
-    this.errors.onError((errorInfo) => {
+    this.errors.onError(errorInfo => {
       this.logger.error('Global error captured', errorInfo)
 
       // 发送错误事件
@@ -272,6 +282,16 @@ export class EngineImpl implements Engine {
       this.logger.info('Cache configuration changed', newCacheConfig)
       // 这里可以重新配置缓存管理器
     })
+  }
+
+  // 核心方法
+  async init(): Promise<void> {
+    // 初始化引擎
+    this._isReady = true
+  }
+
+  isReady(): boolean {
+    return this._isReady
   }
 
   // 创建Vue应用
@@ -343,7 +363,7 @@ export class EngineImpl implements Engine {
   async mount(selector: string | Element): Promise<void> {
     if (!this._app) {
       throw new Error(
-        'Engine must have a Vue app before mounting. Use createApp() first.',
+        'Engine must have a Vue app before mounting. Use createApp() first.'
       )
     }
 
@@ -469,7 +489,9 @@ export class EngineImpl implements Engine {
   // 配置相关方法
   updateConfig(config: Partial<Record<string, any>>): void {
     this.config.merge(config)
-    this.logger.info('Engine configuration updated', { keys: Object.keys(config) })
+    this.logger.info('Engine configuration updated', {
+      keys: Object.keys(config),
+    })
   }
 
   getConfig<T = any>(path: string, defaultValue?: T): T {
@@ -531,8 +553,7 @@ export class EngineImpl implements Engine {
 
       // 按顺序初始化管理器
       this.initializeManagersInOrder(initOrder)
-    }
-    catch (error) {
+    } catch (error) {
       this.logger.error('Failed to initialize managers', error)
       throw error
     }
@@ -576,10 +597,12 @@ export class EngineImpl implements Engine {
         this.logger.debug(`Manager "${managerName}" initialized`, {
           initTime: `${initTime}ms`,
         })
-      }
-      catch (error) {
+      } catch (error) {
         this.managerRegistry.markInitialized(managerName, error as Error)
-        this.logger.error(`Failed to initialize manager "${managerName}"`, error)
+        this.logger.error(
+          `Failed to initialize manager "${managerName}"`,
+          error
+        )
         throw error
       }
     }

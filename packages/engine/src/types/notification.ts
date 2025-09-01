@@ -3,7 +3,12 @@
  * 包含通知管理器、通知类型等相关类型
  */
 
-import type { NotificationAnimation, NotificationPosition, NotificationTheme, NotificationType } from './base'
+import type {
+  NotificationAnimation,
+  NotificationPosition,
+  NotificationTheme,
+  NotificationType,
+} from './base'
 
 // 通知管理器接口
 export interface NotificationManager {
@@ -11,11 +16,21 @@ export interface NotificationManager {
   hide: (id: string) => void
   hideAll: () => void
   update: (id: string, options: Partial<NotificationOptions>) => void
-  get: (id: string) => Notification | undefined
-  getAll: () => Notification[]
+  get: (id: string) => EngineNotification | undefined
+  getAll: () => EngineNotification[]
   clear: () => void
   setDefaultOptions: (options: Partial<NotificationOptions>) => void
   getDefaultOptions: () => Partial<NotificationOptions>
+  destroy: () => void
+  setPosition: (position: NotificationPosition) => void
+  getPosition: () => NotificationPosition
+  setTheme: (theme: NotificationTheme) => void
+  getTheme: () => NotificationTheme
+  setMaxNotifications: (max: number) => void
+  getMaxNotifications: () => number
+  setDefaultDuration: (duration: number) => void
+  getDefaultDuration: () => number
+  getStats: () => Record<string, any>
 }
 
 // 通知进度
@@ -24,6 +39,7 @@ export interface NotificationProgress {
   max: number
   label?: string
   showText?: boolean
+  color?: string
 }
 
 // 通知选项
@@ -55,7 +71,7 @@ export interface NotificationOptions {
 }
 
 // 通知实例
-export interface Notification {
+export interface EngineNotification {
   id: string
   title: string
   message?: string
@@ -74,6 +90,13 @@ export interface Notification {
   timestamp: number
   isVisible: boolean
   isAnimating: boolean
+  showProgress?: boolean
+  progress?: NotificationProgress
+  createdAt?: number
+  visible?: boolean
+  element?: HTMLElement
+  timeoutId?: number
+  animating?: boolean
 }
 
 // 通知操作
@@ -82,7 +105,7 @@ export interface NotificationAction {
   action: () => void
   handler?: () => void
   type?: 'primary' | 'secondary' | 'danger'
-  style?: string
+  style?: 'primary' | 'secondary' | 'danger'
   disabled?: boolean
   loading?: boolean
 }
@@ -91,7 +114,7 @@ export interface NotificationAction {
 export interface NotificationGroup {
   id: string
   name: string
-  notifications: Notification[]
+  notifications: EngineNotification[]
   maxCount: number
   position: NotificationPosition
   theme: NotificationTheme
@@ -111,19 +134,19 @@ export interface NotificationTemplate {
 
 // 通知历史
 export interface NotificationHistory {
-  notifications: Notification[]
+  notifications: EngineNotification[]
   maxSize: number
   autoCleanup: boolean
   cleanupInterval: number
   export: () => NotificationHistoryExport
   clear: () => void
-  search: (query: string) => Notification[]
-  filter: (criteria: NotificationFilterCriteria) => Notification[]
+  search: (query: string) => EngineNotification[]
+  filter: (criteria: NotificationFilterCriteria) => EngineNotification[]
 }
 
 // 通知历史导出
 export interface NotificationHistoryExport {
-  notifications: Notification[]
+  notifications: EngineNotification[]
   exportTime: number
   totalCount: number
   format: 'json' | 'csv' | 'html'
@@ -158,11 +181,14 @@ export interface NotificationStats {
 
 // 通知分析器
 export interface NotificationAnalyzer {
-  analyze: (notifications: Notification[]) => NotificationAnalysis
+  analyze: (notifications: EngineNotification[]) => NotificationAnalysis
   getStats: () => NotificationStats
   identifyTrends: () => NotificationTrend[]
   suggestImprovements: () => string[]
-  compare: (period1: Notification[], period2: Notification[]) => NotificationComparison
+  compare: (
+    period1: EngineNotification[],
+    period2: EngineNotification[]
+  ) => NotificationComparison
 }
 
 // 通知分析结果

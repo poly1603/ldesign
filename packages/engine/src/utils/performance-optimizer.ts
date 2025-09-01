@@ -34,7 +34,7 @@ export class BatchProcessor<T> {
    */
   add(item: T): void {
     this.queue.push(item)
-    
+
     // 如果队列满了，立即处理
     if (this.queue.length >= this.config.batchSize) {
       this.process()
@@ -66,7 +66,7 @@ export class BatchProcessor<T> {
     }
 
     this.processing = true
-    
+
     // 清除定时器
     if (this.timer) {
       clearTimeout(this.timer)
@@ -83,7 +83,7 @@ export class BatchProcessor<T> {
       console.error('Batch processing error:', error)
     } finally {
       this.processing = false
-      
+
       // 如果还有剩余项目，继续处理
       if (this.queue.length > 0) {
         setTimeout(() => this.process(), 0)
@@ -132,17 +132,17 @@ export function debounce<T extends (...args: any[]) => any>(
     }
 
     const callNow = immediate && !timeout
-    
+
     if (timeout) {
       clearTimeout(timeout)
     }
-    
+
     timeout = setTimeout(later, wait)
-    
+
     if (callNow) {
       result = func.apply(this, args)
     }
-    
+
     return result
   }
 
@@ -153,7 +153,7 @@ export function debounce<T extends (...args: any[]) => any>(
     }
   }
 
-  return debounced as T
+  return debounced as unknown as T
 }
 
 /**
@@ -173,13 +173,13 @@ export function throttle<T extends (...args: any[]) => any>(
 
   const throttled = function (this: any, ...args: Parameters<T>) {
     const now = Date.now()
-    
+
     if (!previous && !leading) {
       previous = now
     }
-    
+
     const remaining = wait - (now - previous)
-    
+
     if (remaining <= 0 || remaining > wait) {
       if (timeout) {
         clearTimeout(timeout)
@@ -194,7 +194,7 @@ export function throttle<T extends (...args: any[]) => any>(
         result = func.apply(this, args)
       }, remaining)
     }
-    
+
     return result
   }
 
@@ -206,7 +206,7 @@ export function throttle<T extends (...args: any[]) => any>(
     previous = 0
   }
 
-  return throttled as T
+  return throttled as unknown as T
 }
 
 /**
@@ -219,11 +219,7 @@ export class ObjectPool<T> {
   private resetFn?: (obj: T) => void
   private maxSize: number
 
-  constructor(
-    createFn: () => T,
-    resetFn?: (obj: T) => void,
-    maxSize = 100
-  ) {
+  constructor(createFn: () => T, resetFn?: (obj: T) => void, maxSize = 100) {
     this.createFn = createFn
     this.resetFn = resetFn
     this.maxSize = maxSize
@@ -271,28 +267,28 @@ export class ObjectPool<T> {
  * 🎯 监控函数执行性能
  */
 export class PerformanceMonitor {
-  private metrics = new Map<string, {
-    count: number
-    totalTime: number
-    minTime: number
-    maxTime: number
-    avgTime: number
-  }>()
+  private metrics = new Map<
+    string,
+    {
+      count: number
+      totalTime: number
+      minTime: number
+      maxTime: number
+      avgTime: number
+    }
+  >()
 
   /**
    * 包装函数以监控性能
    */
-  wrap<T extends (...args: any[]) => any>(
-    name: string,
-    func: T
-  ): T {
+  wrap<T extends (...args: any[]) => any>(name: string, func: T): T {
     return ((...args: Parameters<T>) => {
       const start = performance.now()
       const result = func(...args)
       const end = performance.now()
-      
+
       this.recordMetric(name, end - start)
-      
+
       return result
     }) as T
   }
@@ -302,7 +298,7 @@ export class PerformanceMonitor {
    */
   recordMetric(name: string, time: number): void {
     const existing = this.metrics.get(name)
-    
+
     if (existing) {
       existing.count++
       existing.totalTime += time
@@ -325,11 +321,11 @@ export class PerformanceMonitor {
    */
   getMetrics(): Record<string, any> {
     const result: Record<string, any> = {}
-    
+
     for (const [name, metric] of this.metrics) {
       result[name] = { ...metric }
     }
-    
+
     return result
   }
 

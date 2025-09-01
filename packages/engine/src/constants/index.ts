@@ -160,7 +160,12 @@ export const LOG_LEVELS = ['debug', 'info', 'warn', 'error'] as const
  * 通知类型常量
  * 🔔 定义通知系统的标准类型
  */
-export const NOTIFICATION_TYPES = ['success', 'error', 'warning', 'info'] as const
+export const NOTIFICATION_TYPES = [
+  'success',
+  'error',
+  'warning',
+  'info',
+] as const
 
 /**
  * 通知位置常量

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import type { LogEntry, Logger } from '../src/types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {

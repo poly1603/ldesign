@@ -3,7 +3,13 @@
  * 包含配置管理器、配置Schema等相关类型
  */
 
-import type { ConfigPath, ConfigSchema, ConfigValue, UnwatchFunction, ValidationResult } from './base'
+import type {
+  ConfigPath,
+  ConfigSchema,
+  ConfigValue,
+  UnwatchFunction,
+  ValidationResult,
+} from './base'
 
 // 严格类型的配置接口
 export interface StrictEngineConfig {
@@ -85,7 +91,11 @@ export interface ConfigSnapshot {
 }
 
 // 配置监听器类型
-export type ConfigWatcher = (newValue: unknown, oldValue: unknown, path: string) => void
+export type ConfigWatcher = (
+  newValue: unknown,
+  oldValue: unknown,
+  path: string
+) => void
 
 // 类型安全的配置管理器接口
 export interface ConfigManager<TConfig = Record<string, unknown>> {
@@ -93,12 +103,14 @@ export interface ConfigManager<TConfig = Record<string, unknown>> {
   get: (<P extends ConfigPath<TConfig>>(
     path: P,
     defaultValue?: ConfigValue<TConfig, P>
-  ) => ConfigValue<TConfig, P>) & (<T = unknown>(path: string, defaultValue?: T) => T)
+  ) => ConfigValue<TConfig, P>) &
+    (<T = unknown>(path: string, defaultValue?: T) => T)
 
   set: (<P extends ConfigPath<TConfig>>(
     path: P,
     value: ConfigValue<TConfig, P>
-  ) => void) & ((path: string, value: unknown) => void)
+  ) => void) &
+    ((path: string, value: unknown) => void)
 
   has: (path: string) => boolean
   remove: (path: string) => void
@@ -191,9 +203,9 @@ export interface PerformanceConfig {
   sampleRate: number
   maxEntries: number
   thresholds: {
-    responseTime: { good: number, poor: number }
-    fps: { good: number, poor: number }
-    memory: { warning: number, critical: number }
+    responseTime: { good: number; poor: number }
+    fps: { good: number; poor: number }
+    memory: { warning: number; critical: number }
   }
 }
 
@@ -201,15 +213,30 @@ export interface NotificationConfig {
   enabled: boolean
   maxNotifications: number
   defaultDuration: number
-  defaultPosition: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right'
+  defaultPosition:
+    | 'top-left'
+    | 'top-center'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-center'
+    | 'bottom-right'
   defaultTheme: 'light' | 'dark' | 'auto'
 }
 
 // 配置验证器接口
 export interface ConfigValidator {
-  validate: (config: Record<string, unknown>, schema: ConfigSchema) => ValidationResult
-  sanitize: (config: Record<string, unknown>, schema: ConfigSchema) => Record<string, unknown>
-  merge: (base: Record<string, unknown>, override: Record<string, unknown>) => Record<string, unknown>
+  validate: (
+    config: Record<string, unknown>,
+    schema: ConfigSchema
+  ) => ValidationResult
+  sanitize: (
+    config: Record<string, unknown>,
+    schema: ConfigSchema
+  ) => Record<string, unknown>
+  merge: (
+    base: Record<string, unknown>,
+    override: Record<string, unknown>
+  ) => Record<string, unknown>
 }
 
 // 配置持久化接口
@@ -240,8 +267,15 @@ export interface ConfigSync {
 
 // 配置迁移接口
 export interface ConfigMigration {
-  migrate: (fromVersion: string, toVersion: string, config: Record<string, unknown>) => Promise<Record<string, unknown>>
+  migrate: (
+    fromVersion: string,
+    toVersion: string,
+    config: Record<string, unknown>
+  ) => Promise<Record<string, unknown>>
   getMigrationPath: (fromVersion: string, toVersion: string) => string[]
   validateMigration: (migration: Record<string, unknown>) => boolean
-  rollback: (config: Record<string, unknown>, targetVersion: string) => Promise<Record<string, unknown>>
+  rollback: (
+    config: Record<string, unknown>,
+    targetVersion: string
+  ) => Promise<Record<string, unknown>>
 }
