@@ -77,7 +77,7 @@ export function useResponsiveTemplate(options: UseResponsiveTemplateOptions): Us
     deviceType: detectedDevice,
     setDeviceType,
   } = useDeviceDetection({
-    initialDevice,
+    initialDevice: initialDevice || 'desktop',
     enableResponsive: enableAutoDeviceSwitch,
   })
 

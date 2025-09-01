@@ -62,7 +62,7 @@ export function useTemplateRenderer(options: UseTemplateRendererOptions = {}): U
 
       // 尝试从缓存获取
       if (enableCache) {
-        component = componentCache.get(template.category, template.device, template.name)
+        component = componentCache.getComponent(template.category, template.device, template.name)
       }
 
       // 如果缓存中没有，则加载组件
@@ -76,7 +76,7 @@ export function useTemplateRenderer(options: UseTemplateRendererOptions = {}): U
 
         // 缓存组件
         if (enableCache && component) {
-          componentCache.set(template.category, template.device, template.name, component)
+          componentCache.cacheComponent(template.category, template.device, template.name, component)
         }
       }
 
@@ -127,7 +127,7 @@ export function useTemplateRenderer(options: UseTemplateRendererOptions = {}): U
 
     try {
       // 检查缓存中是否已存在
-      const cached = componentCache.get(template.category, template.device, template.name)
+      const cached = componentCache.getComponent(template.category, template.device, template.name)
       if (cached) {
         return
       }
@@ -143,7 +143,7 @@ export function useTemplateRenderer(options: UseTemplateRendererOptions = {}): U
 
       // 缓存组件
       if (component) {
-        componentCache.set(template.category, template.device, template.name, component)
+        componentCache.cacheComponent(template.category, template.device, template.name, component)
       }
     }
     catch (err) {

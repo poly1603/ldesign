@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, onMounted } from 'vue'
+
+
 
 // Props定义
 interface Props {
@@ -13,6 +15,10 @@ interface Props {
   secondaryAccent?: string
   tertiaryAccent?: string
   enableAnimations?: boolean
+  debugInfo?: {
+    deviceType?: string
+    templateName?: string
+  }
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -27,6 +33,29 @@ const props = withDefaults(defineProps<Props>(), {
   tertiaryAccent: '#45b7d1',
   enableAnimations: true,
 })
+
+// 调试开关（开发环境默认显示，可按需关闭）
+const showDebugInfo = ref(true)
+
+// 调试信息相关
+const renderTime = ref('')
+
+// 设备类型标签映射
+const deviceTypeLabels = ref({
+  desktop: '🖥️ 桌面端',
+  tablet: '📱 平板端',
+  mobile: '📱 移动端',
+})
+
+// 计算属性
+const currentDeviceType = computed(() => {
+  return props.debugInfo?.deviceType || 'desktop'
+})
+
+const currentTemplateName = computed(() => {
+  return props.debugInfo?.templateName || 'creative'
+})
+
 
 // 状态管理
 const formData = reactive({
@@ -118,6 +147,12 @@ function handleForgot() {
 function handleRegister() {
   alert('注册功能')
 }
+
+// 生命周期
+onMounted(() => {
+  renderTime.value = new Date().toLocaleTimeString()
+  console.log(`模板渲染完成: ${currentTemplateName.value} (${currentDeviceType.value})`)
+})
 </script>
 
 <template>

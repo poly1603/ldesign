@@ -1,6 +1,6 @@
 /**
  * TemplateSelector 组件样式
- * 
+ *
  * 负责模板选择器的所有样式，包括弹窗、卡片、动画效果
  */
 
@@ -91,6 +91,8 @@
     /* 确保内容在遮罩层之上 */
     pointer-events: auto;
     /* 确保内容区域可以接收点击事件 */
+    display: flex;
+    flex-direction: column;
   }
 
   // 弹窗头部
@@ -245,11 +247,40 @@
     }
   }
 
+  // 弹窗主体内容（可滚动区域）
+  &__body {
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(80vh - 120px);
+    /* 减去头部高度 */
+
+    /* 美化滚动条样式 */
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    /* Firefox 滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  }
+
   // 模板列表
   &__list {
     padding: 1.5rem 2rem;
-    max-height: 400px;
-    overflow-y: auto;
   }
 
   // 模板网格
@@ -257,6 +288,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 1rem;
+    padding: 1.5rem 2rem;
   }
 }
 
@@ -420,11 +452,26 @@
 }
 
 // ===== 模板选择器动画样式 =====
-.template-selector-enter-active,
-.template-selector-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.template-selector-enter-active {
+  transition: all 250ms cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
+.template-selector-leave-active {
+  transition: all 200ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+// 为遮罩与内容添加明确的过渡，确保关闭时也有过渡效果
+.template-selector__backdrop {
+  transition: opacity 250ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.template-selector__content {
+  transition:
+    opacity 250ms cubic-bezier(0.25, 0.8, 0.25, 1),
+    transform 250ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+// 进入动画：淡入淡出 + 缩放效果
 .template-selector-enter-from {
   opacity: 0;
 
@@ -434,10 +481,11 @@
 
   .template-selector__content {
     opacity: 0;
-    transform: translateY(-20px) scale(0.95);
+    transform: scale(0.95);
   }
 }
 
+// 退出动画：淡入淡出 + 缩放效果
 .template-selector-leave-to {
   opacity: 0;
 
@@ -447,10 +495,11 @@
 
   .template-selector__content {
     opacity: 0;
-    transform: translateY(10px) scale(1.02);
+    transform: scale(0.95);
   }
 }
 
+// 完全显示状态
 .template-selector-enter-to,
 .template-selector-leave-from {
   opacity: 1;
@@ -461,6 +510,6 @@
 
   .template-selector__content {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: scale(1);
   }
 }

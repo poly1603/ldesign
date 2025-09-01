@@ -53,17 +53,17 @@ export const TemplateSelector = defineComponent({
     /** 是否显示搜索框 */
     showSearch: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     /** 是否显示标签筛选 */
     showTags: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     /** 是否显示排序选项 */
     showSort: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     /** 每行显示数量 */
     itemsPerRow: {
@@ -168,18 +168,12 @@ export const TemplateSelector = defineComponent({
      * 处理模板选择
      */
     const handleSelect = async (template: TemplateMetadata) => {
-      // 添加选择动画延迟，让用户看到选择反馈
-      await new Promise(resolve => setTimeout(resolve, 200))
-
       // 触发选择事件
       props.onSelect?.(template.name)
       emit('select', template.name)
 
-      // 延迟关闭弹窗，确保选择反馈和关闭动画流畅
-      // 延迟时间应该大于CSS动画时长（300ms）
-      setTimeout(() => {
-        handleClose()
-      }, 350)
+      // 立即关闭弹窗，让父组件处理关闭动画
+      handleClose()
     }
 
     /**
@@ -431,74 +425,61 @@ export const TemplateSelector = defineComponent({
     })
 
     return () => (
-      <Transition
-        name="template-selector"
-        appear={true}
-        enterActiveClass="template-selector-enter-active"
-        leaveActiveClass="template-selector-leave-active"
-        enterFromClass="template-selector-enter-from"
-        enterToClass="template-selector-enter-to"
-        leaveFromClass="template-selector-leave-from"
-        leaveToClass="template-selector-leave-to"
-      >
-        {props.visible && (
-          <div class="template-selector">
-            {/* 遮罩层 - 只处理背景点击 */}
-            <div
-              class="template-selector__backdrop"
+      <div class="template-selector">
+        {/* 遮罩层 - 只处理背景点击 */}
+        <div
+          class="template-selector__backdrop"
+          onClick={handleClose}
+        />
+
+        {/* 内容区域 - 阻止事件冒泡 */}
+        <div
+          class="template-selector__content"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div class="template-selector__header">
+            <h2 class="template-selector__title">选择模板</h2>
+            <button
+              class="template-selector__close"
               onClick={handleClose}
-            />
-
-            {/* 内容区域 - 阻止事件冒泡 */}
-            <div
-              class="template-selector__content"
-              onClick={(e) => e.stopPropagation()}
             >
-              <div class="template-selector__header">
-                <h2 class="template-selector__title">选择模板</h2>
-                <button
-                  class="template-selector__close"
-                  onClick={handleClose}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div class="template-selector__body">
-                {renderSearchBar()}
-                {renderSortBar()}
-
-                {loading.value
-                  ? (
-                    <div class="template-selector__loading">加载中...</div>
-                  )
-                  : error.value
-                    ? (
-                      <div class="template-selector__error">
-                        加载失败:
-                        {' '}
-                        {error.value}
-                      </div>
-                    )
-                    : !hasResults.value
-                      ? (
-                        <div class="template-selector__empty">
-                          没有找到匹配的模板
-                        </div>
-                      )
-                      : (
-                        <>
-                          <div class="template-selector__grid">
-                            {paginatedTemplates.value.map(renderTemplateCard)}
-                          </div>
-                          {renderPagination()}
-                        </>
-                      )}
-              </div>
-            </div>
+              ✕
+            </button>
           </div>
-        )}
-      </Transition>
+
+          <div class="template-selector__body">
+            {renderSearchBar()}
+            {renderSortBar()}
+
+            {loading.value
+              ? (
+                <div class="template-selector__loading">加载中...</div>
+              )
+              : error.value
+                ? (
+                  <div class="template-selector__error">
+                    加载失败:
+                    {' '}
+                    {error.value}
+                  </div>
+                )
+                : !hasResults.value
+                  ? (
+                    <div class="template-selector__empty">
+                      没有找到匹配的模板
+                    </div>
+                  )
+                  : (
+                    <>
+                      <div class="template-selector__grid">
+                        {paginatedTemplates.value.map(renderTemplateCard)}
+                      </div>
+                      {renderPagination()}
+                    </>
+                  )}
+          </div>
+        </div>
+      </div>
     )
   },
 })

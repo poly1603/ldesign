@@ -141,7 +141,7 @@ export const TemplateRenderer = defineComponent({
   setup(props, { emit, slots }) {
     // 设备检测
     const { deviceType } = useDeviceDetection({
-      initialDevice: props.device,
+      initialDevice: props.device || 'desktop',
       enableResponsive: props.responsive && !props.device,
     })
 
@@ -273,19 +273,12 @@ export const TemplateRenderer = defineComponent({
      * 处理模板选择
      */
     const handleTemplateSelect = async (templateName: string) => {
-      // 优化选择流程，立即响应
       try {
-        // 立即开始关闭动画和模板切换准备
-        const [,] = await Promise.all([
-          handleSelectorClose(),
-          templateSwitchAnimation.leave()
-        ])
+        // 先关闭选择器，让关闭动画正常播放
+        await handleSelectorClose()
 
-        // 切换模板
+        // 然后切换模板
         await handleTemplateSwitch(templateName)
-
-        // 完成模板切换动画
-        await templateSwitchAnimation.enter()
       } catch (error) {
         console.error('模板选择失败:', error)
         // 确保选择器关闭
@@ -305,18 +298,14 @@ export const TemplateRenderer = defineComponent({
      * 处理选择器关闭
      */
     const handleSelectorClose = async () => {
-      // 优化关闭动画性能，使用requestAnimationFrame
+      // 立即设置关闭状态，让Vue Transition处理动画
+      showSelectorModal.value = false
+
+      // 等待动画完成（250ms离开动画时长）
       return new Promise<void>((resolve) => {
-        requestAnimationFrame(async () => {
-          try {
-            await selectorAnimation.leave()
-          } catch (error) {
-            console.warn('选择器关闭动画失败:', error)
-          } finally {
-            showSelectorModal.value = false
-            resolve()
-          }
-        })
+        setTimeout(() => {
+          resolve()
+        }, 270) // 稍微多一点时间确保动画完成
       })
     }
 
@@ -406,7 +395,7 @@ export const TemplateRenderer = defineComponent({
                     category={props.category}
                     device={currentDevice.value}
                     currentTemplate={currentTemplate.value?.name}
-                    visible={showSelectorModal.value}
+                    visible={true}
                     showPreview={false}
                     showSearch={config.showSearch}
                     showTags={config.showTags}

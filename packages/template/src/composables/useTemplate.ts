@@ -2,9 +2,10 @@
  * 模板管理Hook
  *
  * 主要的模板管理Hook，提供模板加载、切换、缓存等功能
+ * 支持简化模式，可以返回可直接渲染的组件
  */
 
-import { ref, computed, markRaw, onMounted, onUnmounted, unref, watch, type Component, type Ref } from 'vue'
+import { ref, computed, markRaw, onMounted, onUnmounted, unref, watch, defineComponent, type Component, type Ref, h } from 'vue'
 import type {
   DeviceType,
   TemplateMetadata,
@@ -13,6 +14,7 @@ import type {
 } from '../types/template'
 
 import { HookTemplateRenderer } from '../components/TemplateTransition'
+import { TemplateRenderer } from '../components/TemplateRenderer'
 import { TemplateScanner } from '../scanner'
 import { componentCache } from '../utils/cache'
 import { componentLoader } from '../utils/loader'
@@ -38,11 +40,11 @@ function getGlobalScanner(): TemplateScanner {
 }
 
 /**
- * 模板管理Hook
+ * 简化版模板Hook - 返回可直接渲染的组件
  */
-export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
+export function useTemplate(options: UseTemplateOptions = {}) {
   const {
-    category,
+    category = 'login',
     device: initialDevice,
     autoDetectDevice = true,
     enableCache = true,
@@ -52,7 +54,7 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
 
   // 设备检测
   const { deviceType: detectedDevice } = useDeviceDetection({
-    initialDevice,
+    initialDevice: initialDevice || 'desktop',
     enableResponsive: autoDetectDevice,
   })
 
@@ -99,7 +101,7 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
       }
 
       // 获取当前分类和设备的模板列表
-      const templates = scanner.getTemplates(category, deviceType.value)
+      const templates = scanner.getTemplates(category || 'default', deviceType.value)
       availableTemplates.value = templates
 
       // 如果没有当前模板或当前模板不在列表中，选择默认模板
@@ -314,7 +316,7 @@ export function useTemplateList(category: string, device?: DeviceType | Ref<Devi
   const error = ref<string | null>(null)
 
   const { deviceType } = useDeviceDetection({
-    initialDevice: unref(device),
+    initialDevice: unref(device) || 'desktop',
     enableResponsive: !device,
   })
 
@@ -357,5 +359,71 @@ export function useTemplateList(category: string, device?: DeviceType | Ref<Devi
     error,
     deviceType: currentDevice,
     refresh: loadTemplates,
+  }
+}
+
+/**
+ * 简化版模板Hook - 返回可直接渲染的组件
+ * 这是新的推荐API，简化了使用方式
+ */
+export function useSimpleTemplate(options: {
+  category?: string
+  device?: DeviceType
+  showSelector?: boolean
+  selectorConfig?: any
+  templateProps?: any
+} = {}) {
+  const {
+    category = 'login',
+    device,
+    showSelector = false,
+    selectorConfig = {},
+    templateProps = {},
+  } = options
+
+  // 内部状态
+  const showSelectorModal = ref(showSelector)
+  const selectedTemplate = ref<string>()
+
+  // 创建渲染组件
+  const TemplateComponent = defineComponent({
+    name: 'SimpleTemplateComponent',
+    setup() {
+      return () => h(TemplateRenderer, {
+        category,
+        device: device || 'desktop',
+        templateName: selectedTemplate.value || undefined,
+        showSelector: showSelectorModal.value,
+        selectorConfig,
+        props: templateProps,
+        onTemplateChange: (templateName: string) => {
+          selectedTemplate.value = templateName
+          showSelectorModal.value = false
+        }
+      })
+    }
+  })
+
+  // 控制方法
+  const openSelector = () => {
+    showSelectorModal.value = true
+  }
+
+  const closeSelector = () => {
+    showSelectorModal.value = false
+  }
+
+  const switchTemplate = (templateName: string) => {
+    selectedTemplate.value = templateName
+    showSelectorModal.value = false
+  }
+
+  return {
+    TemplateComponent: markRaw(TemplateComponent),
+    showSelector: showSelectorModal,
+    selectedTemplate,
+    openSelector,
+    closeSelector,
+    switchTemplate,
   }
 }

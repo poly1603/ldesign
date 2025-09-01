@@ -175,8 +175,8 @@ export interface TemplateRendererProps {
  * useTemplate Hook选项
  */
 export interface UseTemplateOptions {
-  /** 模板分类 */
-  category: string
+  /** 模板分类（可选，如果不提供则显示所有分类） */
+  category?: string
   /** 设备类型 */
   device?: DeviceType
   /** 是否自动检测设备 */

@@ -171,6 +171,8 @@ export interface ErrorHandlingConfig {
   fallbackTemplate: string
   /** 是否启用错误报告 */
   enableReporting: boolean
+  /** 日志级别（向后兼容） */
+  logLevel?: LogLevel
 }
 
 /**
@@ -205,6 +207,10 @@ export interface TemplateSystemConfig {
   enablePerformanceMonitor: boolean
   /** 是否启用调试模式 */
   debug: boolean
+  /** 是否启用缓存（向后兼容） */
+  enableCache?: boolean
+  /** 是否启用开发工具 */
+  enableDevtools?: boolean
 
   /** 扫描器配置 */
   scanner: ScannerConfig
@@ -224,6 +230,12 @@ export interface TemplateSystemConfig {
   errorHandling: ErrorHandlingConfig
   /** 开发工具配置 */
   devtools: DevtoolsConfig
+  /** 动画配置（向后兼容） */
+  animation?: {
+    enable?: boolean
+    duration?: number
+    easing?: string
+  }
 }
 
 /**
