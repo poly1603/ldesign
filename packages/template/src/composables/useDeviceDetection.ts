@@ -64,7 +64,7 @@ interface UseDeviceDetectionReturn {
 /**
  * 设备检测Hook
  */
-export function useDeviceDetection(options: UseDeviceDetectionOptions = {}): UseDeviceDetectionReturn {
+export function useDeviceDetection(options: Partial<UseDeviceDetectionOptions> = {}): UseDeviceDetectionReturn {
   // 注入全局配置
   const globalConfig = inject<TemplateSystemConfig>('templateSystemConfig')
 

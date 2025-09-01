@@ -36,11 +36,11 @@ const showDebugInfo = ref(true) // 开发环境下默认显示调试信息
 const renderTime = ref('')
 
 // 设备类型标签映射
-const deviceTypeLabels = {
+const deviceTypeLabels = ref({
   desktop: '🖥️ 桌面端',
   tablet: '📱 平板端',
   mobile: '📱 移动端',
-}
+})
 
 // 计算属性
 const currentDeviceType = computed(() => {

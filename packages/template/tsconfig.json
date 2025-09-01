@@ -11,7 +11,9 @@
       "@/utils/*": ["src/utils/*"],
       "@/components/*": ["src/components/*"],
       "@/composables/*": ["src/composables/*"],
-      "@/templates/*": ["src/templates/*"]
+      "@/templates/*": ["src/templates/*"],
+      "@test-utils": ["src/test-utils/index.ts"],
+      "@test-utils/*": ["src/test-utils/*"]
     },
     "types": ["vite/client", "node", "@vue/runtime-core"],
     "strict": true,
