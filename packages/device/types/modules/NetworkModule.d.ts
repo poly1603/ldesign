@@ -1,8 +1,11 @@
 import type { DeviceModule, NetworkInfo, NetworkStatus, NetworkType } from '../types';
+import { EventEmitter } from '../core/EventEmitter';
 /**
  * 网络信息模块
  */
-export declare class NetworkModule implements DeviceModule {
+export declare class NetworkModule extends EventEmitter<{
+    networkChange: NetworkInfo;
+}> implements DeviceModule {
     name: string;
     private networkInfo;
     private connection;
@@ -22,6 +25,10 @@ export declare class NetworkModule implements DeviceModule {
      * 获取网络信息
      */
     getData(): NetworkInfo;
+    /**
+     * 获取网络信息（别名方法，用于测试兼容性）
+     */
+    getNetworkInfo(): NetworkInfo;
     /**
      * 获取网络连接状态
      */

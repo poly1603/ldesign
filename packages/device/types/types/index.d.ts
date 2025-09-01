@@ -75,6 +75,10 @@ export interface NetworkInfo {
     rtt?: number;
     /** 是否为计量连接 */
     saveData?: boolean;
+    /** 是否在线（兼容性属性） */
+    online?: boolean;
+    /** 有效连接类型（兼容性属性） */
+    effectiveType?: string;
 }
 /**
  * 电池信息接口

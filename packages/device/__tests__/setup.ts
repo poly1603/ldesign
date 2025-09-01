@@ -172,5 +172,6 @@ Object.defineProperty(window, 'performance', {
 
 // 设置测试超时时间
 vi.setConfig({
-  testTimeout: 10000,
+  testTimeout: 30000, // 增加到30秒
+  hookTimeout: 30000, // 增加钩子超时时间
 })

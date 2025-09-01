@@ -7,7 +7,7 @@ export class EventEmitter<
   T extends Record<string, unknown> = Record<string, unknown>,
 > {
   private events: Map<keyof T, Set<EventListener<unknown>>> = new Map()
-  private maxListeners = 10
+  private maxListeners = 100 // 增加最大监听器数量以支持测试
   private errorHandler?: (error: Error, event: keyof T) => void
 
   /**

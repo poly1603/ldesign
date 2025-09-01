@@ -33,9 +33,21 @@ export declare class ModuleLoader implements IModuleLoader {
      */
     getLoadedModules(): string[];
     /**
+     * 卸载模块（别名方法，用于测试兼容性）
+     */
+    unloadModule(name: string): Promise<void>;
+    /**
      * 卸载所有模块
      */
     unloadAll(): Promise<void>;
+    /**
+     * 卸载所有模块（别名方法，用于测试兼容性）
+     */
+    unloadAllModules(): Promise<void>;
+    /**
+     * 检查模块是否已加载（别名方法，用于测试兼容性）
+     */
+    isModuleLoaded(name: string): boolean;
     /**
      * 获取模块加载统计信息
      */

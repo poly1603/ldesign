@@ -140,7 +140,7 @@ describe('Vue 指令', () => {
 
       // 触发设备变化事件
       const deviceChangeCallback = mockDetector.on.mock.calls
-        .find(call => call[0] === 'deviceChange')?.[1]
+        .find((call: unknown[]) => call[0] === 'deviceChange')?.[1] as ((data: any) => void) | undefined
 
       if (deviceChangeCallback) {
         deviceChangeCallback({
@@ -253,7 +253,7 @@ describe('Vue 指令', () => {
 
       // 触发相同的设备变化事件
       const deviceChangeCallback = mockDetector.on.mock.calls
-        .find(call => call[0] === 'deviceChange')?.[1]
+        .find((call: unknown[]) => call[0] === 'deviceChange')?.[1] as ((data: any) => void) | undefined
 
       if (deviceChangeCallback) {
         // 触发相同的设备信息

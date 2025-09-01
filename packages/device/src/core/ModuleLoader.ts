@@ -124,6 +124,13 @@ export class ModuleLoader implements IModuleLoader {
   }
 
   /**
+   * 卸载模块（别名方法，用于测试兼容性）
+   */
+  async unloadModule(name: string): Promise<void> {
+    return this.unload(name)
+  }
+
+  /**
    * 卸载所有模块
    */
   async unloadAll(): Promise<void> {
@@ -131,6 +138,20 @@ export class ModuleLoader implements IModuleLoader {
       this.unload(name),
     )
     await Promise.all(unloadPromises)
+  }
+
+  /**
+   * 卸载所有模块（别名方法，用于测试兼容性）
+   */
+  async unloadAllModules(): Promise<void> {
+    return this.unloadAll()
+  }
+
+  /**
+   * 检查模块是否已加载（别名方法，用于测试兼容性）
+   */
+  isModuleLoaded(name: string): boolean {
+    return this.isLoaded(name)
   }
 
   /**

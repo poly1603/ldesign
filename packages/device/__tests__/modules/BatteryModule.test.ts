@@ -118,7 +118,7 @@ describe('BatteryModule', () => {
       // 模拟电池电量变化
       mockBattery.level = 0.5
       const levelChangeHandler = mockBattery.addEventListener.mock.calls
-        .find(call => call[0] === 'levelchange')?.[1]
+        .find((call: unknown[]) => call[0] === 'levelchange')?.[1] as (() => void) | undefined
 
       if (levelChangeHandler) {
         levelChangeHandler()
