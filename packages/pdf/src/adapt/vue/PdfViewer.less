@@ -1,0 +1,413 @@
+/**
+ * PDF预览器组件样式
+ */
+
+.ldesign-pdf-viewer-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  // 工具栏样式
+  .pdf-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #dee2e6;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toolbar-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      background-color: #ffffff;
+      color: #495057;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+
+      &:hover:not(:disabled) {
+        background-color: #e9ecef;
+        border-color: #adb5bd;
+      }
+
+      &:active:not(:disabled) {
+        background-color: #dee2e6;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      &.active {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: #ffffff;
+
+        &:hover {
+          background-color: #0056b3;
+          border-color: #0056b3;
+        }
+      }
+    }
+
+    .page-info {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 14px;
+
+      .page-input {
+        width: 50px;
+        height: 32px;
+        padding: 4px 8px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        text-align: center;
+        font-size: 14px;
+
+        &:focus {
+          outline: none;
+          border-color: #007bff;
+          box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+      }
+
+      .page-total {
+        color: #6c757d;
+      }
+    }
+
+    .zoom-select {
+      height: 32px;
+      padding: 4px 8px;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      background-color: #ffffff;
+      font-size: 14px;
+      cursor: pointer;
+
+      &:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+      }
+    }
+  }
+
+  // 搜索栏样式
+  .pdf-search-bar {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: #fff3cd;
+    border-bottom: 1px solid #ffeaa7;
+
+    .search-input {
+      flex: 1;
+      height: 32px;
+      padding: 4px 12px;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      font-size: 14px;
+
+      &:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+      }
+    }
+
+    .search-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: 12px;
+
+      .search-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        background-color: #ffffff;
+        color: #495057;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 12px;
+
+        &:hover:not(:disabled) {
+          background-color: #e9ecef;
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+
+      .search-results {
+        font-size: 12px;
+        color: #6c757d;
+        min-width: 60px;
+        text-align: center;
+      }
+    }
+  }
+
+  // 内容区域样式
+  .pdf-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+
+    .pdf-sidebar {
+      width: 250px;
+      background-color: #ffffff;
+      border-right: 1px solid #dee2e6;
+      overflow-y: auto;
+
+      .sidebar-content {
+        padding: 16px;
+
+        .thumbnails-section {
+          h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+          }
+
+          .thumbnails-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+
+            .thumbnail-placeholder {
+              padding: 20px;
+              text-align: center;
+              color: #6c757d;
+              font-size: 12px;
+              border: 1px dashed #dee2e6;
+              border-radius: 4px;
+            }
+          }
+        }
+      }
+    }
+
+    .pdf-main {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+
+      .pdf-container {
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: #e9ecef;
+      }
+    }
+  }
+
+  // 加载状态样式
+  .pdf-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #6c757d;
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e9ecef;
+      border-top: 4px solid #007bff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    .loading-text {
+      font-size: 14px;
+    }
+  }
+
+  // 错误状态样式
+  .pdf-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #dc3545;
+
+    .error-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .error-message {
+      font-size: 14px;
+      text-align: center;
+      max-width: 400px;
+    }
+  }
+
+  // 进度条样式
+  .pdf-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: #e9ecef;
+    z-index: 20;
+
+    .progress-bar {
+      height: 100%;
+      background-color: #007bff;
+      transition: width 0.3s ease;
+    }
+  }
+
+  // 动画
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  // 响应式设计
+  @media (max-width: 768px) {
+    .pdf-toolbar {
+      padding: 4px 8px;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      .toolbar-group {
+        gap: 4px;
+      }
+
+      .toolbar-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+      }
+
+      .page-input {
+        width: 40px;
+        height: 28px;
+      }
+
+      .zoom-select {
+        height: 28px;
+        font-size: 12px;
+      }
+    }
+
+    .pdf-content .pdf-sidebar {
+      width: 200px;
+    }
+
+    .pdf-search-bar {
+      padding: 4px 8px;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      .search-controls {
+        margin-left: 0;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    .pdf-content .pdf-sidebar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 15;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+
+      &.show {
+        transform: translateX(0);
+      }
+    }
+  }
+}
+
+// 全屏模式样式
+.ldesign-pdf-viewer-wrapper:fullscreen {
+  .pdf-toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+  }
+
+  .pdf-content {
+    padding-top: 60px;
+  }
+}
+
+// 搜索高亮样式
+.pdf-search-highlight {
+  background-color: #ffeb3b;
+  color: #000000;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+.pdf-search-current {
+  background-color: #ff9800;
+  color: #ffffff;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+// 缩略图样式
+.pdf-thumbnail {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 8px;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #adb5bd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  &.active {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  }
+
+  canvas {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+}
