@@ -41,6 +41,19 @@ export declare class SecurityManager {
     generateSecureKey(length?: number): string;
     /**
      * 验证数据完整性
+     *
+     * 通过比较原始数据和存储数据来验证数据完整性
+     * 如果启用了加密，会先解密存储数据再进行比较
+     *
+     * @param originalData - 原始数据
+     * @param storedData - 存储的数据（可能已加密）
+     * @returns 数据完整性验证结果
+     *
+     * @example
+     * ```typescript
+     * const isValid = await securityManager.verifyIntegrity('original', 'stored')
+     * console.log(isValid) // true 或 false
+     * ```
      */
     verifyIntegrity(originalData: string, storedData: string): Promise<boolean>;
     /**

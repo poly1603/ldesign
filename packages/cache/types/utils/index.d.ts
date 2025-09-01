@@ -1,4 +1,6 @@
 export { EventEmitter } from './event-emitter';
+export * from './error-handler';
+export * from './validator';
 /**
  * 工具函数
  */

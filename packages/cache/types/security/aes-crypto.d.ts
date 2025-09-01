@@ -28,6 +28,10 @@ export declare class AESCrypto {
     private encryptAES;
     /**
      * AES-GCM 解密
+     *
+     * @param data - 需要解密的Base64编码数据
+     * @returns 解密后的原始字符串
+     * @throws {Error} 当数据格式无效或解密失败时抛出错误
      */
     private decryptAES;
     /**

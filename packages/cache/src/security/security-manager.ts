@@ -152,20 +152,56 @@ export class SecurityManager {
 
   /**
    * 验证数据完整性
+   *
+   * 通过比较原始数据和存储数据来验证数据完整性
+   * 如果启用了加密，会先解密存储数据再进行比较
+   *
+   * @param originalData - 原始数据
+   * @param storedData - 存储的数据（可能已加密）
+   * @returns 数据完整性验证结果
+   *
+   * @example
+   * ```typescript
+   * const isValid = await securityManager.verifyIntegrity('original', 'stored')
+   * console.log(isValid) // true 或 false
+   * ```
    */
   async verifyIntegrity(
     originalData: string,
     storedData: string,
   ): Promise<boolean> {
     try {
+      // 输入验证
+      if (typeof originalData !== 'string' || typeof storedData !== 'string') {
+        console.warn('Invalid data types for integrity verification')
+        return false
+      }
+
+      // 如果两个数据都为空，认为是相等的
+      if (!originalData && !storedData) {
+        return true
+      }
+
+      // 如果其中一个为空，另一个不为空，则不相等
+      if (!originalData || !storedData) {
+        return false
+      }
+
       if (this.config.encryption.enabled) {
-        const decrypted = await this.decrypt(storedData)
-        return decrypted === originalData
+        try {
+          const decrypted = await this.decrypt(storedData)
+          return decrypted === originalData
+        } catch (error) {
+          // 解密失败可能意味着数据被篡改或使用了错误的密钥
+          console.warn('Decryption failed during integrity verification:', error instanceof Error ? error.message : 'Unknown error')
+          return false
+        }
       }
 
       return storedData === originalData
     }
-    catch {
+    catch (error) {
+      console.error('Integrity verification failed:', error instanceof Error ? error.message : 'Unknown error')
       return false
     }
   }

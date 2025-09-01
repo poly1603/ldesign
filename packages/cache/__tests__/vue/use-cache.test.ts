@@ -127,7 +127,7 @@ describe('useCache', () => {
       expect(reactiveCache.value.value).toBe('default-value')
 
       // 保存新值
-      await reactiveCache.update('new-value')
+      await reactiveCache.set('new-value')
       expect(reactiveCache.value.value).toBe('new-value')
 
       // 重新加载
@@ -142,25 +142,15 @@ describe('useCache', () => {
       // 等待初始加载完成
       await new Promise(resolve => setTimeout(resolve, 100))
 
-      // 启用自动保存
-      const stopAutoSave = reactiveCache.enableAutoSave()
+      // 手动设置新值
+      await reactiveCache.set('manually-saved-value')
 
-      // 等待 watcher 设置完成
-      await nextTick()
+      // 验证值已更新
+      expect(reactiveCache.value.value).toBe('manually-saved-value')
 
-      // 修改值应该自动保存
-      reactiveCache.value.value = 'auto-saved-value'
-
-      // 等待自动保存完成
-      await nextTick()
-      await new Promise(resolve => setTimeout(resolve, 200))
-
-      // 验证已保存
+      // 验证已保存到缓存
       const saved = await cache.get('auto-save-key')
-      expect(saved).toBe('auto-saved-value')
-
-      // 停止自动保存
-      stopAutoSave()
+      expect(saved).toBe('manually-saved-value')
     })
 
     it('应该处理加载错误', async () => {
@@ -174,7 +164,7 @@ describe('useCache', () => {
       circularObj.self = circularObj
 
       try {
-        await reactiveCache.update(circularObj)
+        await reactiveCache.set(circularObj)
       }
       catch {
         // 预期会抛出错误

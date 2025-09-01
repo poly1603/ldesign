@@ -1,0 +1,20 @@
+{
+  "*.{ts,tsx}": [
+    "eslint --fix",
+    "prettier --write",
+    "vitest related --run"
+  ],
+  "*.{js,jsx}": [
+    "eslint --fix",
+    "prettier --write"
+  ],
+  "*.{json,md,yml,yaml}": [
+    "prettier --write"
+  ],
+  "*.{css,less,scss}": [
+    "prettier --write"
+  ],
+  "package.json": [
+    "prettier --write"
+  ]
+}

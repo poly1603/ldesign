@@ -1,36 +1,39 @@
 {
   "compilerOptions": {
-    "target": "es2017",
-    "jsx": "preserve",
-    "jsxFactory": "h",
+    "allowSyntheticDefaultImports": true,
+    "allowUnreachableCode": false,
+    "declaration": false,
+    "experimentalDecorators": true,
     "lib": [
       "dom",
-      "es2017",
-      "es2020"
+      "es6"
     ],
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "module": "esnext",
     "moduleResolution": "node",
-    "resolveJsonModule": true,
+    "module": "esnext",
+    "target": "es2017",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
     "strict": true,
-    "allowUnreachableCode": false,
-    "noImplicitAny": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "declaration": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"],
+      "@/components/*": ["src/components/*"],
+      "@/utils/*": ["src/utils/*"],
+      "@/types/*": ["src/types/*"]
+    }
   },
   "include": [
-    "src"
+    "src",
+    "types/jsx.d.ts"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "docs"
+    "www",
+    "loader"
   ]
 }

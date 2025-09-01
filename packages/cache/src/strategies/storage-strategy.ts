@@ -8,9 +8,20 @@ import type {
 
 /**
  * 智能存储策略
+ *
+ * 优化版本，包含缓存和性能改进
  */
 export class StorageStrategy {
   private config: Required<StorageStrategyConfig>
+
+  // 性能优化：缓存计算结果
+  private readonly strategyCache = new Map<string, StorageStrategyResult>()
+  private readonly maxCacheSize = 1000
+  private cacheHits = 0
+  private cacheMisses = 0
+
+  // 性能优化：预计算的权重
+  private readonly engineWeights: Record<StorageEngine, number>
 
   constructor(config?: Partial<StorageStrategyConfig>) {
     this.config = {
@@ -35,10 +46,46 @@ export class StorageStrategy {
         'cookie',
       ],
     }
+
+    // 预计算引擎优先级权重
+    this.engineWeights = this.precomputeEngineWeights()
+  }
+
+  /**
+   * 预计算引擎优先级权重
+   *
+   * 性能优化：避免每次计算时重复计算权重
+   */
+  private precomputeEngineWeights(): Record<StorageEngine, number> {
+    const weights: Record<StorageEngine, number> = {
+      localStorage: 0,
+      sessionStorage: 0,
+      cookie: 0,
+      indexedDB: 0,
+      memory: 0,
+    }
+
+    this.config.enginePriority.forEach((engine, index) => {
+      const priorityScore = (this.config.enginePriority.length - index) / this.config.enginePriority.length
+      weights[engine] = 0.05 * priorityScore
+    })
+
+    return weights
+  }
+
+  /**
+   * 生成缓存键
+   *
+   * 基于数据特征生成缓存键，用于策略结果缓存
+   */
+  private generateCacheKey(dataSize: number, ttl: number | undefined, dataType: DataType): string {
+    return `${dataSize}:${ttl || 0}:${dataType}`
   }
 
   /**
    * 选择最适合的存储引擎
+   *
+   * 优化版本：包含结果缓存和快速路径
    */
   async selectEngine(
     key: string,
@@ -53,36 +100,178 @@ export class StorageStrategy {
       }
     }
 
+    // 性能优化：快速计算数据特征
     const dataType = this.getDataType(value)
-    const dataSize = this.calculateDataSize(value)
+    const dataSize = this.fastCalculateDataSize(value, dataType)
     const ttl = options?.ttl
 
-    // 基于数据大小的策略
-    const sizeBasedEngine = this.selectBySize(dataSize)
+    // 性能优化：检查缓存
+    const cacheKey = this.generateCacheKey(dataSize, ttl, dataType)
+    const cachedResult = this.strategyCache.get(cacheKey)
 
-    // 基于TTL的策略
-    const ttlBasedEngine = this.selectByTTL(ttl)
+    if (cachedResult) {
+      this.cacheHits++
+      return { ...cachedResult } // 返回副本避免修改缓存
+    }
 
-    // 基于数据类型的策略
-    const typeBasedEngine = this.selectByDataType(dataType)
+    this.cacheMisses++
 
-    // 综合评分
-    const scores = this.calculateEngineScores({
-      sizeBasedEngine,
-      ttlBasedEngine,
-      typeBasedEngine,
-      dataSize,
-      ttl,
-      dataType,
-    })
+    // 性能优化：快速路径 - 处理常见情况
+    const quickResult = this.tryQuickPath(dataSize, ttl, dataType)
+    if (quickResult) {
+      this.cacheResult(cacheKey, quickResult)
+      return quickResult
+    }
 
-    // 选择得分最高的引擎
-    const bestEngine = this.getBestEngine(scores)
+    // 完整计算路径
+    const result = this.calculateFullStrategy(dataSize, ttl, dataType)
+    this.cacheResult(cacheKey, result)
 
+    return result
+  }
+
+  /**
+   * 快速计算数据大小
+   *
+   * 性能优化：根据数据类型使用不同的计算策略
+   */
+  private fastCalculateDataSize(value: any, dataType: DataType): number {
+    // 处理 null 和 undefined
+    if (value === null || value === undefined) {
+      return 4 // 估算大小
+    }
+
+    switch (dataType) {
+      case 'string':
+        return (value as string).length * 2 // 估算UTF-16编码
+      case 'number':
+        return 8 // 64位数字
+      case 'boolean':
+        return 1
+      case 'object':
+      case 'array':
+        // 对于复杂对象，使用快速估算避免完整序列化
+        return this.estimateObjectSize(value)
+      default:
+        return JSON.stringify(value).length * 2
+    }
+  }
+
+  /**
+   * 估算对象大小
+   *
+   * 性能优化：避免完整序列化，使用启发式方法
+   */
+  private estimateObjectSize(obj: any): number {
+    if (obj === null || obj === undefined) return 0
+
+    let size = 0
+    const visited = new WeakSet()
+
+    const estimate = (value: any, depth = 0): number => {
+      // 防止深度递归和循环引用
+      if (depth > 10 || (typeof value === 'object' && value !== null && visited.has(value))) {
+        return 100 // 估算值
+      }
+
+      if (typeof value === 'object' && value !== null) {
+        visited.add(value)
+      }
+
+      switch (typeof value) {
+        case 'string':
+          return value.length * 2
+        case 'number':
+          return 8
+        case 'boolean':
+          return 1
+        case 'object':
+          if (value === null) return 0
+          if (Array.isArray(value)) {
+            return value.reduce((acc, item) => acc + estimate(item, depth + 1), 0)
+          }
+          return Object.keys(value).reduce((acc, key) => {
+            return acc + key.length * 2 + estimate(value[key], depth + 1)
+          }, 0)
+        default:
+          return 50 // 默认估算
+      }
+    }
+
+    return estimate(obj)
+  }
+
+  /**
+   * 快速路径检查
+   *
+   * 性能优化：处理常见情况，避免复杂计算
+   */
+  private tryQuickPath(dataSize: number, ttl: number | undefined, dataType: DataType): StorageStrategyResult | null {
+    // 超大数据直接使用 IndexedDB
+    if (dataSize > this.config.sizeThresholds.large) {
+      return {
+        engine: 'indexedDB',
+        reason: 'Large data size requires IndexedDB',
+        confidence: 0.9,
+      }
+    }
+
+    // 超短TTL使用内存
+    if (ttl && ttl < 5000) {
+      return {
+        engine: 'memory',
+        reason: 'Very short TTL, using memory for best performance',
+        confidence: 0.95,
+      }
+    }
+
+    // Cookie大小限制
+    if (dataSize > 4096) {
+      // 不能使用cookie，但不直接返回结果，让完整算法处理
+      return null
+    }
+
+    // 简单类型小数据
+    if (dataSize <= this.config.sizeThresholds.small && (dataType === 'string' || dataType === 'number' || dataType === 'boolean')) {
+      return {
+        engine: 'localStorage',
+        reason: 'Small simple data, localStorage is optimal',
+        confidence: 0.8,
+      }
+    }
+
+    return null // 需要完整计算
+  }
+
+  /**
+   * 缓存策略结果
+   *
+   * 性能优化：LRU缓存管理
+   */
+  private cacheResult(cacheKey: string, result: StorageStrategyResult): void {
+    // 简单的LRU实现：当缓存满时删除最旧的条目
+    if (this.strategyCache.size >= this.maxCacheSize) {
+      const firstKey = this.strategyCache.keys().next().value
+      if (firstKey) {
+        this.strategyCache.delete(firstKey)
+      }
+    }
+
+    this.strategyCache.set(cacheKey, { ...result })
+  }
+
+  /**
+   * 获取缓存统计信息
+   *
+   * 用于性能监控
+   */
+  getCacheStats(): { hits: number; misses: number; hitRate: number; cacheSize: number } {
+    const total = this.cacheHits + this.cacheMisses
     return {
-      engine: bestEngine.engine,
-      reason: bestEngine.reason,
-      confidence: bestEngine.confidence,
+      hits: this.cacheHits,
+      misses: this.cacheMisses,
+      hitRate: total > 0 ? this.cacheHits / total : 0,
+      cacheSize: this.strategyCache.size,
     }
   }
 
@@ -150,7 +339,38 @@ export class StorageStrategy {
   }
 
   /**
+   * 完整策略计算
+   *
+   * 当快速路径无法处理时使用的完整计算逻辑
+   */
+  private calculateFullStrategy(dataSize: number, ttl: number | undefined, dataType: DataType): StorageStrategyResult {
+    // 基于数据大小的策略
+    const sizeBasedEngine = this.selectBySize(dataSize)
+
+    // 基于TTL的策略
+    const ttlBasedEngine = this.selectByTTL(ttl)
+
+    // 基于数据类型的策略
+    const typeBasedEngine = this.selectByDataType(dataType)
+
+    // 综合评分
+    const scores = this.calculateEngineScores({
+      sizeBasedEngine,
+      ttlBasedEngine,
+      typeBasedEngine,
+      dataSize,
+      ttl,
+      dataType,
+    })
+
+    // 选择得分最高的引擎
+    return this.getBestEngine(scores)
+  }
+
+  /**
    * 计算各引擎得分
+   *
+   * 性能优化：使用预计算的权重
    */
   private calculateEngineScores(factors: {
     sizeBasedEngine: StorageEngine
@@ -160,13 +380,8 @@ export class StorageStrategy {
     ttl?: number
     dataType: DataType
   }): Record<StorageEngine, number> {
-    const scores: Record<StorageEngine, number> = {
-      localStorage: 0,
-      sessionStorage: 0,
-      cookie: 0,
-      indexedDB: 0,
-      memory: 0,
-    }
+    // 性能优化：使用预计算的基础权重
+    const scores: Record<StorageEngine, number> = { ...this.engineWeights }
 
     // TTL权重 (50%) - 提高TTL的权重
     scores[factors.ttlBasedEngine] += 0.5
@@ -176,14 +391,6 @@ export class StorageStrategy {
 
     // 数据类型权重 (15%)
     scores[factors.typeBasedEngine] += 0.15
-
-    // 引擎优先级权重 (5%)
-    this.config.enginePriority.forEach((engine, index) => {
-      const priorityScore
-        = (this.config.enginePriority.length - index)
-          / this.config.enginePriority.length
-      scores[engine] += 0.05 * priorityScore
-    })
 
     // 特殊情况调整
     this.applySpecialRules(scores, factors)

@@ -13,7 +13,7 @@ import type {
 import { StorageEngineFactory } from '../engines/factory'
 import { SecurityManager } from '../security/security-manager'
 import { StorageStrategy } from '../strategies/storage-strategy'
-import { EventEmitter } from '../utils'
+import { EventEmitter, validateSetInput } from '../utils'
 
 /**
  * 缓存管理器核心实现
@@ -196,36 +196,148 @@ export class CacheManager implements ICacheManager {
 
   /**
    * 序列化数据
+   *
+   * 将任意类型的数据序列化为字符串，支持加密选项
+   *
+   * @param value - 需要序列化的数据
+   * @param options - 序列化选项，包含加密设置
+   * @returns 序列化后的字符串
+   * @throws {Error} 当序列化失败时抛出错误
+   *
+   * @example
+   * ```typescript
+   * const serialized = await serializeValue({ name: 'test' })
+   * ```
    */
   private async serializeValue(
     value: any,
     options?: SetOptions,
   ): Promise<string> {
-    let serialized = JSON.stringify(value)
+    try {
+      // 检查循环引用
+      let serialized: string
 
-    // 加密
-    if (options?.encrypt || this.options.security?.encryption?.enabled) {
-      serialized = await this.security.encrypt(serialized)
+      try {
+        serialized = JSON.stringify(value)
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('circular')) {
+          // 处理循环引用：创建一个简化的版本
+          const simplifiedValue = this.removeCircularReferences(value)
+          serialized = JSON.stringify(simplifiedValue)
+
+          // 记录警告但不阻止操作
+          console.warn('Circular reference detected in cache value, using simplified version:', error.message)
+        } else {
+          throw new Error(`JSON serialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
+      }
+
+      // 加密
+      if (options?.encrypt || this.options.security?.encryption?.enabled) {
+        try {
+          serialized = await this.security.encrypt(serialized)
+        } catch (error) {
+          throw new Error(`Encryption failed during serialization: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
+      }
+
+      return serialized
+    } catch (error) {
+      // 发出错误事件
+      this.emitEvent('error', 'serialization', 'memory', value, error as Error)
+      throw error
     }
-
-    return serialized
   }
 
   /**
    * 反序列化数据
+   *
+   * 将字符串反序列化为原始数据类型，支持解密选项
+   *
+   * @param data - 需要反序列化的字符串数据
+   * @param encrypted - 数据是否已加密
+   * @returns 反序列化后的原始数据
+   * @throws {Error} 当反序列化失败时抛出错误
+   *
+   * @example
+   * ```typescript
+   * const original = await deserializeValue<MyType>(serializedData, false)
+   * ```
    */
   private async deserializeValue<T>(
     data: string,
     encrypted: boolean,
   ): Promise<T> {
-    let deserialized = data
+    try {
+      let deserialized = data
 
-    // 解密
-    if (encrypted) {
-      deserialized = await this.security.decrypt(deserialized)
+      // 解密
+      if (encrypted) {
+        try {
+          deserialized = await this.security.decrypt(deserialized)
+        } catch (error) {
+          throw new Error(`Decryption failed during deserialization: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
+      }
+
+      // JSON 解析
+      try {
+        return JSON.parse(deserialized)
+      } catch (error) {
+        throw new Error(`JSON parsing failed during deserialization: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+    } catch (error) {
+      // 发出错误事件
+      this.emitEvent('error', 'deserialization', 'memory', data, error as Error)
+      throw error
+    }
+  }
+
+  /**
+   * 移除对象中的循环引用
+   *
+   * @param obj - 需要处理的对象
+   * @param seen - 已访问的对象集合（用于检测循环引用）
+   * @returns 移除循环引用后的对象
+   */
+  private removeCircularReferences(obj: any, seen = new WeakSet()): any {
+    if (obj === null || typeof obj !== 'object') {
+      return obj
     }
 
-    return JSON.parse(deserialized)
+    if (seen.has(obj)) {
+      return '[Circular Reference]'
+    }
+
+    seen.add(obj)
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.removeCircularReferences(item, seen))
+    }
+
+    const result: any = {}
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        result[key] = this.removeCircularReferences(obj[key], seen)
+      }
+    }
+
+    return result
+  }
+
+  /**
+   * 验证 set 方法的输入参数
+   *
+   * 使用统一的验证工具进行参数验证
+   *
+   * @param key - 缓存键
+   * @param value - 缓存值
+   * @param options - 设置选项
+   * @throws {ValidationError} 当输入参数无效时抛出错误
+   */
+  private validateSetInput<T>(key: string, value: T, options?: SetOptions): void {
+    // 使用统一的验证工具
+    validateSetInput(key, value, options)
   }
 
   /**
@@ -332,12 +444,35 @@ export class CacheManager implements ICacheManager {
 
   /**
    * 设置缓存项
+   *
+   * 将键值对存储到缓存中，支持多种存储引擎和配置选项
+   *
+   * @param key - 缓存键，必须是非空字符串
+   * @param value - 缓存值，支持任意可序列化的数据类型
+   * @param options - 可选的设置选项，包括TTL、存储引擎、加密等
+   * @throws {Error} 当键无效、值无法序列化或存储失败时抛出错误
+   *
+   * @example
+   * ```typescript
+   * // 基础用法
+   * await cache.set('user:123', { name: 'John', age: 30 })
+   *
+   * // 带选项
+   * await cache.set('session:abc', sessionData, {
+   *   ttl: 3600000, // 1小时
+   *   engine: 'localStorage',
+   *   encrypt: true
+   * })
+   * ```
    */
   async set<T = any>(
     key: string,
     value: T,
     options?: SetOptions,
   ): Promise<void> {
+    // 输入验证
+    this.validateSetInput(key, value, options)
+
     await this.ensureInitialized()
 
     try {
@@ -366,44 +501,76 @@ export class CacheManager implements ICacheManager {
 
   /**
    * 获取缓存项
+   *
+   * 从缓存中获取指定键的值，支持多存储引擎查找和自动过期检查
+   *
+   * @template T - 期望返回的数据类型
+   * @param key - 缓存键，必须是非空字符串
+   * @returns 缓存的值，如果不存在或已过期则返回 null
+   * @throws {Error} 当键无效或反序列化失败时抛出错误
+   *
+   * @example
+   * ```typescript
+   * // 获取字符串值
+   * const name = await cache.get<string>('user:name')
+   *
+   * // 获取对象值
+   * const user = await cache.get<User>('user:123')
+   * if (user) {
+   *   console.log(user.name, user.age)
+   * }
+   *
+   * // 处理不存在的键
+   * const data = await cache.get('nonexistent') // 返回 null
+   * ```
    */
   async get<T = any>(key: string): Promise<T | null> {
+    // 确保缓存管理器已初始化
     await this.ensureInitialized()
 
+    // 处理缓存键（可能包含混淆处理）
     const processedKey = await this.processKey(key)
 
-    // 尝试从所有可用引擎中查找
+    // 按优先级顺序尝试从各个存储引擎获取数据
+    // 优先级：memory > localStorage > sessionStorage > cookie > indexedDB
     for (const [engineType, engine] of this.engines) {
       try {
+        // 从当前引擎获取原始数据
         const itemData = await engine.getItem(processedKey)
         if (itemData) {
+          // 解析存储的数据结构 { value, metadata }
           const { value, metadata } = JSON.parse(itemData)
 
-          // 检查是否过期
+          // 检查缓存项是否已过期
           if (metadata.expiresAt && Date.now() > metadata.expiresAt) {
+            // 过期则从当前引擎中移除
             await engine.removeItem(processedKey)
+            // 发出过期事件
             this.emitEvent('expired', key, engineType)
-            continue
+            continue // 继续尝试下一个引擎
           }
 
-          // 更新访问统计
+          // 更新访问统计信息
           metadata.lastAccessedAt = Date.now()
           metadata.accessCount++
 
+          // 更新引擎命中统计
           const stats = this.stats.get(engineType)!
           stats.hits++
 
-          // 反序列化值
+          // 反序列化缓存值（处理加密数据）
           const deserializedValue = await this.deserializeValue<T>(
             value,
             metadata.encrypted,
           )
 
+          // 发出获取成功事件
           this.emitEvent('get', key, engineType, deserializedValue)
           return deserializedValue
         }
       }
       catch (error) {
+        // 记录引擎错误但不中断查找过程
         console.warn(`Error getting from ${engineType}:`, error)
       }
     }
@@ -419,18 +586,42 @@ export class CacheManager implements ICacheManager {
 
   /**
    * 删除缓存项
+   *
+   * 从所有存储引擎中删除指定键的缓存项，确保数据完全清除
+   *
+   * @param key - 要删除的缓存键
+   * @throws {Error} 当键无效时抛出错误
+   *
+   * @example
+   * ```typescript
+   * // 删除单个缓存项
+   * await cache.remove('user:123')
+   *
+   * // 删除后检查是否存在
+   * const exists = await cache.has('user:123') // false
+   *
+   * // 删除不存在的键不会报错
+   * await cache.remove('nonexistent-key') // 正常执行
+   * ```
    */
   async remove(key: string): Promise<void> {
+    // 确保缓存管理器已初始化
     await this.ensureInitialized()
 
+    // 处理缓存键（可能包含混淆处理）
     const processedKey = await this.processKey(key)
 
+    // 从所有存储引擎中删除该键
+    // 即使某个引擎删除失败，也要继续删除其他引擎中的数据
     for (const [engineType, engine] of this.engines) {
       try {
+        // 从当前引擎删除缓存项
         await engine.removeItem(processedKey)
+        // 发出删除成功事件
         this.emitEvent('remove', key, engineType)
       }
       catch (error) {
+        // 记录删除错误但不中断其他引擎的删除操作
         console.warn(`Error removing from ${engineType}:`, error)
       }
     }

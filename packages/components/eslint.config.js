@@ -1,22 +1,43 @@
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { FlatCompat } from '@eslint/eslintrc'
+import { defineConfig } from 'eslint-define-config';
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-})
-
-export default [
-  ...compat.extends('@stencil/core/eslint.config'),
-  {
-    files: ['**/*.ts', '**/*.tsx'],
-    rules: {
-      '@typescript-eslint/no-unused-vars': 'error',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      'prefer-const': 'error',
+export default defineConfig({
+  root: true,
+  env: {
+    browser: true,
+    es6: true,
+    node: true,
+    jest: true,
+  },
+  extends: [
+    'eslint:recommended',
+    '@typescript-eslint/recommended',
+  ],
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaVersion: 2020,
+    sourceType: 'module',
+    ecmaFeatures: {
+      jsx: true,
     },
   },
-]
+  plugins: [
+    '@typescript-eslint',
+  ],
+  rules: {
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/ban-ts-comment': 'warn',
+    'no-console': 'warn',
+    'no-debugger': 'error',
+  },
+  ignorePatterns: [
+    'dist/',
+    'www/',
+    'loader/',
+    'hydrate/',
+    'coverage/',
+    '*.d.ts',
+  ],
+});

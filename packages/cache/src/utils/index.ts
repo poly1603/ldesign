@@ -1,6 +1,12 @@
 // 导出事件发射器
 export { EventEmitter } from './event-emitter'
 
+// 导出错误处理工具
+export * from './error-handler'
+
+// 导出数据验证工具
+export * from './validator'
+
 /**
  * 工具函数
  */

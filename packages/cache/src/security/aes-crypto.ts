@@ -143,6 +143,10 @@ export class AESCrypto {
 
   /**
    * AES-GCM 解密
+   *
+   * @param data - 需要解密的Base64编码数据
+   * @returns 解密后的原始字符串
+   * @throws {Error} 当数据格式无效或解密失败时抛出错误
    */
   private async decryptAES(data: string): Promise<string> {
     if (!this.isAvailable()) {
@@ -156,12 +160,27 @@ export class AESCrypto {
     }
 
     try {
+      // 验证输入数据格式
+      if (!data || typeof data !== 'string') {
+        throw new Error('Invalid encrypted data format')
+      }
+
       // 从 Base64 转换
       const combined = new Uint8Array(this.base64ToArrayBuffer(data))
+
+      // 验证数据长度（至少需要12字节的IV + 一些加密数据）
+      if (combined.length < 13) {
+        throw new Error('Encrypted data is too small - minimum 13 bytes required (12 bytes IV + 1 byte data)')
+      }
 
       // 分离 IV 和加密数据
       const iv = combined.slice(0, 12)
       const encryptedData = combined.slice(12)
+
+      // 验证加密数据不为空
+      if (encryptedData.length === 0) {
+        throw new Error('No encrypted data found after IV')
+      }
 
       const decryptedBuffer = await window.crypto.subtle.decrypt(
         { name: 'AES-GCM', iv },
@@ -174,7 +193,18 @@ export class AESCrypto {
     }
     catch (error) {
       console.error('AES decryption failed:', error)
-      throw new Error('AES decryption failed')
+
+      // 提供更详细的错误信息
+      if (error instanceof Error) {
+        if (error.message.includes('too small')) {
+          throw new Error(`AES decryption failed: ${error.message}`)
+        }
+        if (error.name === 'OperationError') {
+          throw new Error('AES decryption failed: Invalid encrypted data or wrong key')
+        }
+      }
+
+      throw new Error(`AES decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
