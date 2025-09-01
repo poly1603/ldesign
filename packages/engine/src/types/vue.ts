@@ -115,7 +115,11 @@ export interface VueLifecycleHooks {
   updated?: () => void
   beforeUnmount?: () => void
   unmounted?: () => void
-  errorCaptured?: (error: Error, instance: Component | null, info: string) => boolean | void
+  errorCaptured?: (
+    error: Error,
+    instance: Component | null,
+    info: string
+  ) => boolean | void
   renderTracked?: (event: any) => void
   renderTriggered?: (event: any) => void
   activated?: () => void
@@ -128,7 +132,11 @@ export interface VueReactive {
   ref: <T>(value: T) => Ref<T>
   reactive: <T extends object>(target: T) => T
   computed: <T>(getter: () => T) => ComputedRef<T>
-  watch: <T>(source: T | (() => T), callback: (newValue: T, oldValue: T) => void, options?: WatchOptions) => StopHandle
+  watch: <T>(
+    source: T | (() => T),
+    callback: (newValue: T, oldValue: T) => void,
+    options?: WatchOptions
+  ) => StopHandle
   watchEffect: (effect: () => void) => StopHandle
 }
 
@@ -205,10 +213,20 @@ export interface VueComponentConfig {
   $mount?: (el?: string | HTMLElement) => Component
   $set?: (target: object | Array<any>, key: string | number, value: any) => void
   $delete?: (target: object | Array<any>, key: string | number) => void
-  $watch?: (expOrFn: string | ((...args: unknown[]) => unknown), callback: (...args: unknown[]) => unknown, options?: WatchOptions) => (...args: unknown[]) => unknown
+  $watch?: (
+    expOrFn: string | ((...args: unknown[]) => unknown),
+    callback: (...args: unknown[]) => unknown,
+    options?: WatchOptions
+  ) => (...args: unknown[]) => unknown
   $on?: (event: string, callback: (...args: unknown[]) => unknown) => Component
-  $once?: (event: string, callback: (...args: unknown[]) => unknown) => Component
-  $off?: (event?: string, callback?: ((...args: unknown[]) => unknown)) => Component
+  $once?: (
+    event: string,
+    callback: (...args: unknown[]) => unknown
+  ) => Component
+  $off?: (
+    event?: string,
+    callback?: (...args: unknown[]) => unknown
+  ) => Component
   $emit?: (event: string, ...args: any[]) => Component
 }
 
@@ -219,8 +237,18 @@ export interface VueDirectiveConfig {
   engineConfig?: Record<string, unknown>
   bind?: (el: HTMLElement, binding: DirectiveBinding, vnode: VNode) => void
   inserted?: (el: HTMLElement, binding: DirectiveBinding, vnode: VNode) => void
-  update?: (el: HTMLElement, binding: DirectiveBinding, vnode: VNode, oldVnode: VNode) => void
-  componentUpdated?: (el: HTMLElement, binding: DirectiveBinding, vnode: VNode, oldVnode: VNode) => void
+  update?: (
+    el: HTMLElement,
+    binding: DirectiveBinding,
+    vnode: VNode,
+    oldVnode: VNode
+  ) => void
+  componentUpdated?: (
+    el: HTMLElement,
+    binding: DirectiveBinding,
+    vnode: VNode,
+    oldVnode: VNode
+  ) => void
   unbind?: (el: HTMLElement, binding: DirectiveBinding, vnode: VNode) => void
 }
 
@@ -279,8 +307,14 @@ export interface VNodeData {
   attrs?: Record<string, any>
   domProps?: Record<string, any>
   hook?: Record<string, (...args: unknown[]) => unknown>
-  on?: Record<string, ((...args: unknown[]) => unknown) | ((...args: unknown[]) => unknown)[]>
-  nativeOn?: Record<string, ((...args: unknown[]) => unknown) | ((...args: unknown[]) => unknown)[]>
+  on?: Record<
+    string,
+    ((...args: unknown[]) => unknown) | ((...args: unknown[]) => unknown)[]
+  >
+  nativeOn?: Record<
+    string,
+    ((...args: unknown[]) => unknown) | ((...args: unknown[]) => unknown)[]
+  >
   transition?: any
   show?: boolean
   inlineTemplate?: {
@@ -305,7 +339,9 @@ export interface ComponentOptions {
   mixins?: VueMixin[]
   extends?: Component
   provide?: Record<string | symbol, unknown> | ((...args: unknown[]) => unknown)
-  inject?: string[] | Record<string, string | symbol | { from: string | symbol, default: any }>
+  inject?:
+    | string[]
+    | Record<string, string | symbol | { from: string | symbol; default: any }>
   model?: {
     prop?: string
     event?: string

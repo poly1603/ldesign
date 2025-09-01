@@ -39,6 +39,9 @@ export { EngineImpl } from './core/engine'
 
 export { createApp, createEngine } from './core/factory'
 
+// Dialog弹窗系统导出
+export * from './dialog'
+
 export {
   commonDirectives,
   createDirectiveManager,
@@ -49,6 +52,32 @@ export { createErrorManager, errorHandlers } from './errors/error-manager'
 export { createEventManager, ENGINE_EVENTS } from './events/event-manager'
 
 export { createLogger, logFormatters, logTransports } from './logger/logger'
+
+// 消息系统导出
+// 选择性导出消息模块以避免冲突
+export {
+  calculateMessagePosition,
+  createMessageManager,
+  createMessageQueue,
+  generateMessageId,
+  getViewportSize,
+  messageDebounce,
+  messageDeepClone,
+  MessageManager,
+  messageThrottle,
+  validateMessageConfig,
+} from './message'
+
+export type {
+  MessageConfig,
+  MessageInstance,
+  MessageManagerConfig,
+  MessagePosition,
+  MessageType,
+} from './message'
+
+// 新增中间件系统导出
+export * from './middleware'
 
 export {
   commonMiddleware,
@@ -65,6 +94,9 @@ export {
   PerformanceEventType,
 } from './performance/performance-manager'
 
+// 新增插件系统导出
+export * from './plugins'
+
 export { createPluginManager } from './plugins/plugin-manager'
 
 // 预设配置导出
@@ -78,7 +110,47 @@ export {
 export { createStateManager, stateModules } from './state/state-manager'
 
 // 类型导出
-export type * from './types'
+// 选择性导出类型以避免冲突
+export type {
+  // 配置类型
+  ConfigManager,
+
+  // 指令类型
+  DirectiveManager,
+  // 引擎类型
+  EngineConfig,
+  EngineDirective,
+  // 通知类型
+  NotificationManager as EngineNotificationManager,
+  NotificationOptions as EngineNotificationOptions,
+  NotificationProgress as EngineNotificationProgress,
+  EnhancedEngineConfig,
+
+  // 环境类型
+  EnvironmentManager,
+
+  // 事件类型
+  EventManager,
+  EventMap,
+  I18nAdapter,
+
+  // 生命周期类型
+  LifecycleManager,
+  NotificationAction,
+  NotificationPosition,
+  NotificationTheme,
+  NotificationType,
+  // 性能类型
+  PerformanceManager,
+  // 适配器类型
+  RouterAdapter,
+  // 安全类型
+  SecurityManager,
+  StateAdapter,
+  // 基础类型
+  Stats,
+  ThemeAdapter,
+} from './types'
 
 // 工具函数导出
 export * from './utils'

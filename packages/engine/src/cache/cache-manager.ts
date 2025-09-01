@@ -149,8 +149,7 @@ class LRUCache<T = unknown> {
 
   has(key: string): boolean {
     const item = this.cache.get(key)
-    if (!item)
-      return false
+    if (!item) return false
 
     // 检查TTL
     if (item.ttl && Date.now() - item.timestamp > item.ttl) {
@@ -249,7 +248,7 @@ class LRUCache<T = unknown> {
   }
 
   // 预热缓存
-  warmup(entries: Array<{ key: string, value: T, ttl?: number }>): void {
+  warmup(entries: Array<{ key: string; value: T; ttl?: number }>): void {
     for (const entry of entries) {
       this.set(entry.key, entry.value, entry.ttl)
     }
@@ -340,8 +339,7 @@ class LRUCache<T = unknown> {
     if (memoryUsage > 0.9) {
       status = 'critical'
       recommendations.push('缓存使用率过高，考虑增加缓存大小或调整TTL')
-    }
-    else if (memoryUsage > 0.7) {
+    } else if (memoryUsage > 0.7) {
       status = 'warning'
       recommendations.push('缓存使用率较高，建议监控内存使用情况')
     }
@@ -371,7 +369,7 @@ export class CacheManagerImpl implements CacheManager {
       defaultTTL: 0, // 0表示永不过期
       strategy: CacheStrategy.LRU,
       enableStats: true,
-      onEvict: () => { },
+      onEvict: () => {},
       ...config,
     }
 
@@ -452,7 +450,7 @@ export class CacheManagerImpl implements CacheManager {
     if (!this.namespaces.has(name)) {
       this.namespaces.set(
         name,
-        new NamespacedCacheManager(this, name) as CacheManager,
+        new NamespacedCacheManager(this, name) as CacheManager
       )
     }
     return this.namespaces.get(name)!
@@ -461,7 +459,10 @@ export class CacheManagerImpl implements CacheManager {
 
 // 命名空间缓存管理器
 class NamespacedCacheManager implements CacheManager {
-  constructor(private parent: CacheManager, private namespaceName: string) { }
+  constructor(
+    private parent: CacheManager,
+    private namespaceName: string
+  ) {}
 
   private getKey(key: string): string {
     return `${this.namespaceName}:${key}`

@@ -7,6 +7,7 @@
 export interface SecurityManager {
   validate: (input: unknown) => SecurityValidationResult
   sanitize: (input: string) => string
+  validateInput: (input: string, type: string) => boolean
   encrypt: (data: string) => Promise<string>
   decrypt: (data: string) => Promise<string>
   hash: (data: string) => Promise<string>

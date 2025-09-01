@@ -1,4 +1,9 @@
-import type { EngineEventMap, EventHandler, EventManager, Logger } from '../types'
+import type {
+  EngineEventMap,
+  EventHandler,
+  EventManager,
+  Logger,
+} from '../types'
 
 interface EventListener {
   handler: EventHandler
@@ -14,10 +19,10 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
   private sortedListenersCache = new Map<string, EventListener[]>()
 
   // 性能优化：事件统计和监控
-  private eventStats = new Map<string, { count: number, lastEmit: number }>()
+  private eventStats = new Map<string, { count: number; lastEmit: number }>()
 
   // 性能优化：批量处理队列
-  private eventQueue: Array<{ event: string, args: any[] }> = []
+  private eventQueue: Array<{ event: string; args: any[] }> = []
   private processingQueue = false
   private batchSize = 10
 
@@ -66,7 +71,7 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
     let listenersToExecute = this.sortedListenersCache.get(event)
     if (!listenersToExecute) {
       listenersToExecute = [...listeners].sort(
-        (a, b) => b.priority - a.priority,
+        (a, b) => b.priority - a.priority
       )
       this.sortedListenersCache.set(event, listenersToExecute)
     }
@@ -77,8 +82,7 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
     for (const listener of listenersToExecute) {
       try {
         listener.handler(args[0])
-      }
-      catch (error) {
+      } catch (error) {
         if (this.logger) {
           this.logger.error(`Error in event handler for "${event}":`, error)
         } else {
@@ -106,7 +110,7 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
     event: string,
     handler: EventHandler,
     once: boolean,
-    priority: number,
+    priority: number
   ): void {
     if (!this.events.has(event)) {
       this.events.set(event, [])
@@ -117,9 +121,9 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
     // 检查监听器数量限制
     if (listeners.length >= this.maxListeners) {
       console.warn(
-        `MaxListenersExceededWarning: Possible EventManager memory leak detected. `
-        + `${listeners.length + 1} "${event}" listeners added. `
-        + `Use setMaxListeners() to increase limit.`,
+        `MaxListenersExceededWarning: Possible EventManager memory leak detected. ` +
+          `${listeners.length + 1} "${event}" listeners added. ` +
+          `Use setMaxListeners() to increase limit.`
       )
     }
 
@@ -164,8 +168,7 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
   removeAllListeners(event?: string): void {
     if (event) {
       this.events.delete(event)
-    }
-    else {
+    } else {
       this.events.clear()
     }
   }
@@ -193,7 +196,10 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
   /**
    * 性能优化：批量移除监听器
    */
-  private batchRemoveListeners(event: string, listenersToRemove: EventListener[]): void {
+  private batchRemoveListeners(
+    event: string,
+    listenersToRemove: EventListener[]
+  ): void {
     const listeners = this.events.get(event)
     if (!listeners) return
 
@@ -229,7 +235,7 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
   /**
    * 获取事件统计信息
    */
-  getEventStats(): Map<string, { count: number, lastEmit: number }> {
+  getEventStats(): Map<string, { count: number; lastEmit: number }> {
     return new Map(this.eventStats)
   }
 
@@ -246,7 +252,7 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
   prependOnceListener(
     event: string,
     handler: EventHandler,
-    priority = 1000,
+    priority = 1000
   ): void {
     this.addEventListener(event, handler, true, priority)
   }
@@ -280,7 +286,10 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
 
 // 事件命名空间类
 export class EventNamespace {
-  constructor(private eventManager: EventManager, private namespace: string) { }
+  constructor(
+    private eventManager: EventManager,
+    private namespace: string
+  ) {}
 
   private getEventName(event: string): string {
     return `${this.namespace}:${event}`

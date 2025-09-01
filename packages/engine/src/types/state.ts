@@ -3,13 +3,25 @@
  * 包含状态管理器、状态变更等相关类型
  */
 
-import type { StateChangeHandler, StateMap, StatePath, StateValue } from './base'
+import type {
+  StateChangeHandler,
+  StateMap,
+  StatePath,
+  StateValue,
+} from './base'
 
 // 状态管理器接口
 export interface StateManager<TState extends StateMap = StateMap> {
-  get: (<P extends StatePath<TState>>(key: P) => StateValue<TState, P> | undefined) & (<T = unknown>(key: string) => T | undefined)
+  get: (<P extends StatePath<TState>>(
+    key: P
+  ) => StateValue<TState, P> | undefined) &
+    (<T = unknown>(key: string) => T | undefined)
 
-  set: (<P extends StatePath<TState>>(key: P, value: StateValue<TState, P>) => void) & (<T = unknown>(key: string, value: T) => void)
+  set: (<P extends StatePath<TState>>(
+    key: P,
+    value: StateValue<TState, P>
+  ) => void) &
+    (<T = unknown>(key: string, value: T) => void)
 
   remove: (key: string) => void
   has: (key: string) => boolean
@@ -18,10 +30,8 @@ export interface StateManager<TState extends StateMap = StateMap> {
   watch: (<P extends StatePath<TState>>(
     key: P,
     callback: StateChangeHandler<StateValue<TState, P>>
-  ) => () => void) & (<T = unknown>(
-    key: string,
-    callback: StateChangeHandler<T>
-  ) => () => void)
+  ) => () => void) &
+    (<T = unknown>(key: string, callback: StateChangeHandler<T>) => () => void)
 
   keys: () => string[]
   namespace: (name: string) => StateManager
@@ -65,9 +75,18 @@ export interface StateSync {
 
 // 状态验证接口
 export interface StateValidator {
-  validate: (state: Record<string, unknown>, schema: Record<string, unknown>) => { valid: boolean, errors: string[] }
-  sanitize: (state: Record<string, unknown>, schema: Record<string, unknown>) => Record<string, unknown>
-  transform: (state: Record<string, unknown>, rules: Record<string, unknown>) => Record<string, unknown>
+  validate: (
+    state: Record<string, unknown>,
+    schema: Record<string, unknown>
+  ) => { valid: boolean; errors: string[] }
+  sanitize: (
+    state: Record<string, unknown>,
+    schema: Record<string, unknown>
+  ) => Record<string, unknown>
+  transform: (
+    state: Record<string, unknown>,
+    rules: Record<string, unknown>
+  ) => Record<string, unknown>
 }
 
 // 状态加密接口
@@ -88,17 +107,29 @@ export interface StateCompression {
 
 // 状态迁移接口
 export interface StateMigration {
-  migrate: (fromVersion: string, toVersion: string, state: Record<string, unknown>) => Promise<Record<string, unknown>>
+  migrate: (
+    fromVersion: string,
+    toVersion: string,
+    state: Record<string, unknown>
+  ) => Promise<Record<string, unknown>>
   getMigrationPath: (fromVersion: string, toVersion: string) => string[]
   validateMigration: (migration: Record<string, unknown>) => boolean
-  rollback: (state: Record<string, unknown>, targetVersion: string) => Promise<Record<string, unknown>>
+  rollback: (
+    state: Record<string, unknown>,
+    targetVersion: string
+  ) => Promise<Record<string, unknown>>
 }
 
 // 状态备份接口
 export interface StateBackup {
-  create: (state: Record<string, unknown>, metadata?: Record<string, unknown>) => Promise<string>
+  create: (
+    state: Record<string, unknown>,
+    metadata?: Record<string, unknown>
+  ) => Promise<string>
   restore: (backupId: string) => Promise<Record<string, unknown>>
-  list: () => Promise<Array<{ id: string, timestamp: number, metadata?: Record<string, unknown> }>>
+  list: () => Promise<
+    Array<{ id: string; timestamp: number; metadata?: Record<string, unknown> }>
+  >
   remove: (backupId: string) => Promise<void>
   clear: () => Promise<void>
 }

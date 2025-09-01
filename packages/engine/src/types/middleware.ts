@@ -31,7 +31,10 @@ export interface Middleware {
 export interface MiddlewareManager {
   use: (middleware: Middleware) => void
   remove: (name: string) => void
-  execute: ((context: MiddlewareContext) => Promise<void>) & ((name: string, context: MiddlewareContext) => Promise<unknown>)
+  get: (name: string) => Middleware | undefined
+  getAll: () => Middleware[]
+  execute: ((context: MiddlewareContext) => Promise<void>) &
+    ((name: string, context: MiddlewareContext) => Promise<unknown>)
 }
 
 // 中间件管道接口
@@ -46,8 +49,12 @@ export interface MiddlewarePipeline {
 // 中间件错误处理接口
 export interface MiddlewareErrorHandler {
   onError: (error: Error, context: MiddlewareContext) => void
-  setErrorHandler: (handler: (error: Error, context: MiddlewareContext) => void) => void
-  getErrorHandler: () => ((error: Error, context: MiddlewareContext) => void) | undefined
+  setErrorHandler: (
+    handler: (error: Error, context: MiddlewareContext) => void
+  ) => void
+  getErrorHandler: () =>
+    | ((error: Error, context: MiddlewareContext) => void)
+    | undefined
 }
 
 // 中间件性能监控接口
@@ -61,8 +68,11 @@ export interface MiddlewarePerformanceMonitor {
 
 // 中间件验证接口
 export interface MiddlewareValidator {
-  validate: (middleware: Middleware) => { valid: boolean, errors: string[] }
-  validatePipeline: (middleware: Middleware[]) => { valid: boolean, errors: string[] }
+  validate: (middleware: Middleware) => { valid: boolean; errors: string[] }
+  validatePipeline: (middleware: Middleware[]) => {
+    valid: boolean
+    errors: string[]
+  }
   getValidationRules: () => Record<string, unknown>
   setValidationRules: (rules: Record<string, unknown>) => void
 }
@@ -86,5 +96,8 @@ export interface MiddlewareStats {
   averageExecutionTime: number
   lastExecuted: number
   byPriority: Record<number, number>
-  byName: Record<string, { executions: number, errors: number, avgTime: number }>
+  byName: Record<
+    string,
+    { executions: number; errors: number; avgTime: number }
+  >
 }

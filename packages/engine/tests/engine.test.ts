@@ -8,8 +8,70 @@ describe('engine', () => {
   beforeEach(() => {
     engine = createEngine({
       config: {
+        app: { name: 'Test App', version: '1.0.0' },
+        environment: 'test' as const,
         debug: true,
-        appName: 'Test App',
+        features: {
+          enableHotReload: false,
+          enableDevTools: false,
+          enablePerformanceMonitoring: false,
+          enableErrorReporting: false,
+          enableSecurityProtection: false,
+          enableCaching: false,
+          enableNotifications: false,
+        },
+        logger: {
+          level: 'error' as const,
+          maxLogs: 1000,
+          enableConsole: false,
+          enableStorage: false,
+          storageKey: 'engine-logs',
+          transports: [],
+        },
+        cache: {
+          enabled: true,
+          maxSize: 100,
+          defaultTTL: 300000,
+          strategy: 'lru' as const,
+          enableStats: false,
+          cleanupInterval: 60000,
+        },
+        security: {
+          xss: {
+            enabled: false,
+            allowedTags: [],
+            allowedAttributes: {},
+          },
+          csrf: {
+            enabled: false,
+            tokenName: '_token',
+            headerName: 'X-CSRF-Token',
+          },
+          csp: {
+            enabled: false,
+            directives: {},
+            reportOnly: false,
+          },
+        },
+        performance: {
+          enabled: false,
+          sampleRate: 1,
+          maxEntries: 1000,
+          thresholds: {
+            responseTime: { good: 100, poor: 1000 },
+            fps: { good: 60, poor: 30 },
+            memory: { warning: 50, critical: 80 },
+          },
+        },
+        notifications: {
+          enabled: true,
+          maxNotifications: 5,
+          defaultDuration: 3000,
+          defaultPosition: 'top-right' as const,
+          defaultTheme: 'auto' as const,
+        },
+        env: {},
+        custom: {},
       },
     })
   })
@@ -17,7 +79,7 @@ describe('engine', () => {
   describe('创建和配置', () => {
     it('应该创建引擎实例', () => {
       expect(engine).toBeDefined()
-      expect(engine.getConfig('appName')).toBe('Test App')
+      expect(engine.getConfig('app.name')).toBe('Test App')
       expect(engine.getConfig('debug')).toBe(true)
     })
 
@@ -101,7 +163,7 @@ describe('engine', () => {
       const result = await engine.middleware.execute('test-middleware', context)
 
       expect(middleware.handler).toHaveBeenCalled()
-      expect(result.processed).toBe(true)
+      expect((result as any).processed).toBe(true)
     })
 
     it('应该按优先级执行中间件', async () => {
@@ -342,12 +404,20 @@ describe('engine', () => {
   describe('扩展适配器', () => {
     it('应该设置路由适配器', () => {
       const router = {
+        name: 'test-router',
+        version: '1.0.0',
         install: vi.fn(),
+        navigate: vi.fn(),
         push: vi.fn(),
         replace: vi.fn(),
         go: vi.fn(),
         back: vi.fn(),
         forward: vi.fn(),
+        getCurrentRoute: vi.fn().mockReturnValue('/'),
+        getCurrentParams: vi.fn().mockReturnValue({}),
+        getCurrentQuery: vi.fn().mockReturnValue({}),
+        onRouteChange: vi.fn().mockReturnValue(() => { }),
+        destroy: vi.fn(),
       }
 
       engine.setRouter(router)
@@ -356,9 +426,17 @@ describe('engine', () => {
 
     it('应该设置状态适配器', () => {
       const store = {
+        name: 'test-store',
+        version: '1.0.0',
         install: vi.fn(),
-        createStore: vi.fn(),
-        getStore: vi.fn(),
+        get: vi.fn(),
+        set: vi.fn(),
+        delete: vi.fn(),
+        clear: vi.fn(),
+        has: vi.fn().mockReturnValue(false),
+        keys: vi.fn().mockReturnValue([]),
+        subscribe: vi.fn().mockReturnValue(() => { }),
+        destroy: vi.fn(),
       }
 
       engine.setStore(store)
@@ -367,11 +445,16 @@ describe('engine', () => {
 
     it('应该设置国际化适配器', () => {
       const i18n = {
+        name: 'test-i18n',
+        version: '1.0.0',
         install: vi.fn(),
         t: vi.fn(),
         locale: 'en',
         setLocale: vi.fn(),
-        getLocale: vi.fn().mockReturnValue('en'),
+        getLocale: vi.fn(),
+        getAvailableLocales: vi.fn(),
+        onLocaleChange: vi.fn(),
+        destroy: vi.fn().mockReturnValue('en'),
       }
 
       engine.setI18n(i18n)
@@ -380,10 +463,15 @@ describe('engine', () => {
 
     it('应该设置主题适配器', () => {
       const theme = {
+        name: 'test-theme',
+        version: '1.0.0',
         install: vi.fn(),
         setTheme: vi.fn(),
         getTheme: vi.fn(),
         getThemes: vi.fn().mockReturnValue(['light', 'dark']),
+        getAvailableThemes: vi.fn(),
+        onThemeChange: vi.fn(),
+        destroy: vi.fn(),
       }
 
       engine.setTheme(theme)
@@ -419,7 +507,7 @@ describe('engine', () => {
 
   describe('错误处理集成', () => {
     it('应该在调试模式下显示错误通知', async () => {
-      const debugEngine = createEngine({ config: { debug: true } })
+      const debugEngine = createEngine({ config: { debug: true } as any })
 
       const error = new Error('Debug error')
       debugEngine.errors.captureError(error)
@@ -434,7 +522,62 @@ describe('engine', () => {
     })
 
     it('应该在生产模式下不显示错误通知', () => {
-      const prodEngine = createEngine({ config: { debug: false } })
+      const prodEngine = createEngine({
+        config: {
+          app: { name: 'Test App', version: '1.0.0' },
+          environment: 'production' as const,
+          debug: false,
+          features: {
+            enableHotReload: false,
+            enableDevTools: false,
+            enablePerformanceMonitoring: false,
+            enableErrorReporting: false,
+            enableSecurityProtection: false,
+            enableCaching: false,
+            enableNotifications: false,
+          },
+          logger: {
+            level: 'error' as const,
+            maxLogs: 1000,
+            enableConsole: false,
+            enableStorage: false,
+            storageKey: 'engine-logs',
+            transports: [],
+          },
+          cache: {
+            enabled: true,
+            maxSize: 100,
+            defaultTTL: 300000,
+            strategy: 'lru' as const,
+            enableStats: false,
+            cleanupInterval: 60000,
+          },
+          security: {
+            xss: { enabled: false, allowedTags: [], allowedAttributes: {} },
+            csrf: { enabled: false, tokenName: '_token', headerName: 'X-CSRF-Token' },
+            csp: { enabled: false, directives: {}, reportOnly: false },
+          },
+          performance: {
+            enabled: false,
+            sampleRate: 1,
+            maxEntries: 1000,
+            thresholds: {
+              responseTime: { good: 100, poor: 1000 },
+              fps: { good: 60, poor: 30 },
+              memory: { warning: 50, critical: 80 },
+            },
+          },
+          notifications: {
+            enabled: true,
+            maxNotifications: 5,
+            defaultDuration: 3000,
+            defaultPosition: 'top-right' as const,
+            defaultTheme: 'auto' as const,
+          },
+          env: {},
+          custom: {},
+        }
+      })
 
       const error = new Error('Production error')
       prodEngine.errors.captureError(error)
@@ -489,20 +632,69 @@ describe('engine', () => {
     it('应该合并自定义配置', () => {
       const customEngine = createEngine({
         config: {
+          app: { name: 'Custom App', version: '1.0.0' },
+          environment: 'test' as const,
           debug: true,
-          appName: 'Custom App',
-          version: '1.0.0',
+          features: {
+            enableHotReload: false,
+            enableDevTools: false,
+            enablePerformanceMonitoring: false,
+            enableErrorReporting: false,
+            enableSecurityProtection: false,
+            enableCaching: false,
+            enableNotifications: false,
+          },
+          logger: {
+            level: 'error' as const,
+            maxLogs: 1000,
+            enableConsole: false,
+            enableStorage: false,
+            storageKey: 'engine-logs',
+            transports: [],
+          },
+          cache: {
+            enabled: true,
+            maxSize: 100,
+            defaultTTL: 300000,
+            strategy: 'lru' as const,
+            enableStats: false,
+            cleanupInterval: 60000,
+          },
+          security: {
+            xss: { enabled: false, allowedTags: [], allowedAttributes: {} },
+            csrf: { enabled: false, tokenName: '_token', headerName: 'X-CSRF-Token' },
+            csp: { enabled: false, directives: {}, reportOnly: false },
+          },
+          performance: {
+            enabled: false,
+            sampleRate: 1,
+            maxEntries: 1000,
+            thresholds: {
+              responseTime: { good: 100, poor: 1000 },
+              fps: { good: 60, poor: 30 },
+              memory: { warning: 50, critical: 80 },
+            },
+          },
+          notifications: {
+            enabled: true,
+            maxNotifications: 5,
+            defaultDuration: 3000,
+            defaultPosition: 'top-right' as const,
+            defaultTheme: 'auto' as const,
+          },
+          env: {},
+          custom: {},
         },
       })
 
       expect(customEngine.getConfig('debug')).toBe(true)
-      expect(customEngine.getConfig('appName')).toBe('Custom App')
-      expect(customEngine.getConfig('version')).toBe('1.0.0')
+      expect(customEngine.getConfig('app.name')).toBe('Custom App')
+      expect(customEngine.getConfig('app.version')).toBe('1.0.0')
     })
 
     it('应该根据调试模式设置日志级别', () => {
-      const debugEngine = createEngine({ config: { debug: true } })
-      const prodEngine = createEngine({ config: { debug: false } })
+      const debugEngine = createEngine({ config: { debug: true } as any })
+      const prodEngine = createEngine({ config: { debug: false } as any })
 
       expect(debugEngine.logger.getLevel()).toBe('debug')
       expect(prodEngine.logger.getLevel()).toBe('info')

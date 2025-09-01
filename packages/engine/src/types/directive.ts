@@ -3,18 +3,63 @@
  * 包含指令管理器、指令类型等相关类型
  */
 
-// 引擎指令接口
+// Vue 指令绑定类型
+export interface VueDirectiveBinding {
+  value: any
+  oldValue: any
+  arg?: string
+  modifiers: Record<string, boolean>
+  instance: any
+  dir: any
+}
+
+// Vue 指令生命周期方法签名
+export interface VueDirectiveHooks {
+  vueCreated?: (el: HTMLElement, binding: VueDirectiveBinding) => void
+  vueBeforeMount?: (el: HTMLElement, binding: VueDirectiveBinding) => void
+  vueMounted?: (el: HTMLElement, binding: VueDirectiveBinding) => void
+  vueBeforeUpdate?: (el: HTMLElement, binding: VueDirectiveBinding) => void
+  vueUpdated?: (el: HTMLElement, binding: VueDirectiveBinding) => void
+  vueBeforeUnmount?: (el: HTMLElement, binding: VueDirectiveBinding) => void
+  vueUnmounted?: (el: HTMLElement, binding: VueDirectiveBinding) => void
+}
+
+// 引擎指令生命周期方法签名
+export interface EngineDirectiveHooks {
+  beforeCreate?: () => void
+  created?: () => void
+  beforeMount?: () => void
+  mounted?: () => void
+  beforeUpdate?: () => void
+  updated?: () => void
+  beforeUnmount?: () => void
+  unmounted?: () => void
+  error?: (error: Error) => void
+}
+
+// 引擎指令接口 - 使用联合类型而不是继承
 export interface EngineDirective {
-  name: string
+  name?: string
   description?: string
-  version: string
+  version?: string
   author?: string
   category?: string
   tags?: string[]
   dependencies?: string[]
   config?: DirectiveConfig
-  lifecycle: DirectiveLifecycle
+  lifecycle?: DirectiveLifecycle
   metadata?: Record<string, unknown>
+
+  // 支持两种风格的生命周期方法
+  beforeCreate?: () => void
+  created?: (() => void) | ((el: HTMLElement, binding: VueDirectiveBinding) => void)
+  beforeMount?: (() => void) | ((el: HTMLElement, binding: VueDirectiveBinding) => void)
+  mounted?: (() => void) | ((el: HTMLElement, binding: VueDirectiveBinding) => void)
+  beforeUpdate?: (() => void) | ((el: HTMLElement, binding: VueDirectiveBinding) => void)
+  updated?: (() => void) | ((el: HTMLElement, binding: VueDirectiveBinding) => void)
+  beforeUnmount?: (() => void) | ((el: HTMLElement, binding: VueDirectiveBinding) => void)
+  unmounted?: (() => void) | ((el: HTMLElement, binding: VueDirectiveBinding) => void)
+  error?: (error: Error) => void
 }
 
 // 指令配置
@@ -28,23 +73,32 @@ export interface DirectiveConfig {
   logging: boolean
 }
 
-// 指令生命周期
+// 指令生命周期 - 支持两种签名
 export interface DirectiveLifecycle {
+  // 引擎风格的生命周期方法
   beforeCreate?: () => void
-  created?: () => void
-  beforeMount?: () => void
-  mounted?: () => void
-  beforeUpdate?: () => void
-  updated?: () => void
-  beforeUnmount?: () => void
-  unmounted?: () => void
+  created?: (() => void) | ((el: HTMLElement, binding: VueDirectiveBinding) => void)
+  beforeMount?: (() => void) | ((el: HTMLElement, binding: VueDirectiveBinding) => void)
+  mounted?: (() => void) | ((el: HTMLElement, binding: VueDirectiveBinding) => void)
+  beforeUpdate?: (() => void) | ((el: HTMLElement, binding: VueDirectiveBinding) => void)
+  updated?: (() => void) | ((el: HTMLElement, binding: VueDirectiveBinding) => void)
+  beforeUnmount?: (() => void) | ((el: HTMLElement, binding: VueDirectiveBinding) => void)
+  unmounted?: (() => void) | ((el: HTMLElement, binding: VueDirectiveBinding) => void)
   error?: (error: Error) => void
+
+  // 可以包含额外的生命周期配置
+  autoCleanup?: boolean
+  errorHandling?: 'throw' | 'log' | 'ignore'
+  performance?: {
+    enableProfiling?: boolean
+    maxExecutionTime?: number
+  }
 }
 
 // 指令管理器接口
 export interface DirectiveManager {
-  register: (name: string, directive: EngineDirective) => void
-  registerBatch: (directives: Record<string, EngineDirective>) => void
+  register: (name: string, directive: any) => void
+  registerBatch: (directives: Record<string, any>) => void
   unregister: (name: string) => void
   get: (name: string) => EngineDirective | undefined
   getAll: () => EngineDirective[]
@@ -54,6 +108,8 @@ export interface DirectiveManager {
   disable: (name: string) => void
   reload: (name: string) => void
   validate: (directive: EngineDirective) => DirectiveValidationResult
+  clear: () => void
+  unregisterBatch: (names: string[]) => void
 }
 
 // 指令验证结果
@@ -100,8 +156,13 @@ export interface DirectiveMarketplace {
 export interface DirectiveValidator {
   validate: (directive: EngineDirective) => DirectiveValidationResult
   validateSchema: (schema: unknown) => DirectiveValidationResult
-  validateDependencies: (directive: EngineDirective) => DirectiveValidationResult
-  validateCompatibility: (directive: EngineDirective, target: string) => DirectiveValidationResult
+  validateDependencies: (
+    directive: EngineDirective
+  ) => DirectiveValidationResult
+  validateCompatibility: (
+    directive: EngineDirective,
+    target: string
+  ) => DirectiveValidationResult
   getSchema: () => unknown
   setSchema: (schema: unknown) => void
 }
@@ -126,4 +187,24 @@ export interface SandboxConfig {
   timeout: number
   networkAccess: boolean
   fileAccess: boolean
+}
+
+// 指令类型工具
+export type DirectiveType = 'vue' | 'engine' | 'hybrid'
+
+// 指令兼容性检查器
+export interface DirectiveCompatibilityChecker {
+  checkType: (directive: any) => DirectiveType
+  isVueDirective: (directive: any) => boolean
+  isEngineDirective: (directive: any) => boolean
+  isHybridDirective: (directive: any) => boolean
+  convertToEngineDirective: (vueDirective: any) => EngineDirective
+  convertToVueDirective: (engineDirective: EngineDirective) => any
+}
+
+// 指令适配器工厂
+export interface DirectiveAdapterFactory {
+  createVueAdapter: (engineDirective: EngineDirective) => any
+  createEngineAdapter: (vueDirective: any) => EngineDirective
+  createHybridAdapter: (directive: any) => EngineDirective
 }

@@ -59,12 +59,12 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
   engine.directives.registerBatch(commonDirectives)
 
   // 注册中间件
-  middleware.forEach((m) => {
+  middleware.forEach(m => {
     engine.middleware.use(m)
   })
 
   // 注册插件（异步）
-  Promise.all(plugins.map(plugin => engine.use(plugin))).catch((error) => {
+  Promise.all(plugins.map(plugin => engine.use(plugin))).catch(error => {
     engine.logger.error('Failed to register plugins', error)
   })
 
@@ -93,7 +93,7 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
  */
 export function createApp(
   rootComponent: Component,
-  options: CreateEngineOptions = {},
+  options: CreateEngineOptions = {}
 ): Engine {
   // 创建引擎实例
   const engine = createEngine(options)
@@ -118,11 +118,7 @@ export const creators = {
    * @param options 其他选项
    * @returns 插件对象
    */
-  plugin: (
-    name: string,
-    install: any,
-    options?: Record<string, unknown>,
-  ) => ({
+  plugin: (name: string, install: any, options?: Record<string, unknown>) => ({
     name,
     install,
     ...options,
@@ -136,17 +132,9 @@ export const creators = {
    * @param priority 优先级
    * @returns 中间件对象
    */
-  middleware: (
-    name: string,
-    handler: any,
-    priority?: number,
-  ) => ({
+  middleware: (name: string, handler: any, priority?: number) => ({
     name,
     handler,
     priority,
   }),
 }
-
-
-
-

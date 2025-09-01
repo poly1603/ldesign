@@ -10,19 +10,23 @@ export interface EventManager<TEventMap extends EventMap = EventMap> {
   on: (<K extends keyof TEventMap>(
     event: K,
     handler: EventHandler<TEventMap[K]>
-  ) => void) & ((event: string, handler: EventHandler) => void)
+  ) => void) &
+    ((event: string, handler: EventHandler) => void)
 
   off: (<K extends keyof TEventMap>(
     event: K,
     handler?: EventHandler<TEventMap[K]>
-  ) => void) & ((event: string, handler?: EventHandler) => void)
+  ) => void) &
+    ((event: string, handler?: EventHandler) => void)
 
-  emit: (<K extends keyof TEventMap>(event: K, data: TEventMap[K]) => void) & ((event: string, ...args: unknown[]) => void)
+  emit: (<K extends keyof TEventMap>(event: K, data: TEventMap[K]) => void) &
+    ((event: string, ...args: unknown[]) => void)
 
   once: (<K extends keyof TEventMap>(
     event: K,
     handler: EventHandler<TEventMap[K]>
-  ) => void) & ((event: string, handler: EventHandler) => void)
+  ) => void) &
+    ((event: string, handler: EventHandler) => void)
 
   eventNames: () => string[]
   listenerCount: (event: string) => number
@@ -30,6 +34,7 @@ export interface EventManager<TEventMap extends EventMap = EventMap> {
   removeAllListeners: (event?: string) => void
   setMaxListeners: (n: number) => void
   getMaxListeners: () => number
+  getStats: () => Record<string, unknown>
 }
 
 // 事件总线接口
@@ -77,16 +82,18 @@ export interface EventAggregator {
 
 // 事件分析器接口
 export interface EventAnalyzer {
-  analyze: (events: Array<{ event: string, data: unknown, timestamp: number }>) => EventAnalysis
+  analyze: (
+    events: Array<{ event: string; data: unknown; timestamp: number }>
+  ) => EventAnalysis
   getPatterns: () => string[]
-  getFrequentEvents: () => Array<{ event: string, count: number }>
+  getFrequentEvents: () => Array<{ event: string; count: number }>
   getStatistics: () => EventStatistics
 }
 
 // 事件分析结果
 export interface EventAnalysis {
   patterns: string[]
-  frequentEvents: Array<{ event: string, count: number }>
+  frequentEvents: Array<{ event: string; count: number }>
   statistics: EventStatistics
   recommendations: string[]
 }
@@ -103,32 +110,42 @@ export interface EventStatistics {
 
 // 引擎事件映射类型
 export interface EngineEventMap {
-  'engine:start': { timestamp: number, config: Record<string, unknown> }
-  'engine:stop': { timestamp: number, reason: string }
-  'engine:error': { error: Error, context: string, timestamp: number }
-  'engine:warning': { message: string, context: string, timestamp: number }
-  'engine:info': { message: string, context: string, timestamp: number }
-  'plugin:load': { name: string, version: string, timestamp: number }
-  'plugin:unload': { name: string, timestamp: number }
-  'plugin:error': { name: string, error: Error, timestamp: number }
-  'middleware:add': { name: string, priority: number, timestamp: number }
-  'middleware:remove': { name: string, timestamp: number }
-  'middleware:error': { name: string, error: Error, timestamp: number }
-  'config:change': { path: string, oldValue: unknown, newValue: unknown, timestamp: number }
-  'state:change': { path: string, oldValue: unknown, newValue: unknown, timestamp: number }
-  'cache:set': { key: string, value: unknown, timestamp: number }
-  'cache:get': { key: string, value: unknown, timestamp: number }
-  'cache:delete': { key: string, timestamp: number }
+  'engine:start': { timestamp: number; config: Record<string, unknown> }
+  'engine:stop': { timestamp: number; reason: string }
+  'engine:error': { error: Error; context: string; timestamp: number }
+  'engine:warning': { message: string; context: string; timestamp: number }
+  'engine:info': { message: string; context: string; timestamp: number }
+  'plugin:load': { name: string; version: string; timestamp: number }
+  'plugin:unload': { name: string; timestamp: number }
+  'plugin:error': { name: string; error: Error; timestamp: number }
+  'middleware:add': { name: string; priority: number; timestamp: number }
+  'middleware:remove': { name: string; timestamp: number }
+  'middleware:error': { name: string; error: Error; timestamp: number }
+  'config:change': {
+    path: string
+    oldValue: unknown
+    newValue: unknown
+    timestamp: number
+  }
+  'state:change': {
+    path: string
+    oldValue: unknown
+    newValue: unknown
+    timestamp: number
+  }
+  'cache:set': { key: string; value: unknown; timestamp: number }
+  'cache:get': { key: string; value: unknown; timestamp: number }
+  'cache:delete': { key: string; timestamp: number }
   'cache:clear': { timestamp: number }
-  'performance:measure': { name: string, duration: number, timestamp: number }
-  'security:check': { type: string, result: boolean, timestamp: number }
-  'notification:show': { type: string, message: string, timestamp: number }
-  'notification:hide': { id: string, timestamp: number }
-  'lifecycle:phase': { phase: string, timestamp: number }
-  'directive:register': { name: string, timestamp: number }
-  'directive:unregister': { name: string, timestamp: number }
-  'environment:change': { oldEnv: string, newEnv: string, timestamp: number }
-  'logger:log': { level: string, message: string, timestamp: number }
-  'error:caught': { error: Error, context: string, timestamp: number }
-  'error:handled': { error: Error, context: string, timestamp: number }
+  'performance:measure': { name: string; duration: number; timestamp: number }
+  'security:check': { type: string; result: boolean; timestamp: number }
+  'notification:show': { type: string; message: string; timestamp: number }
+  'notification:hide': { id: string; timestamp: number }
+  'lifecycle:phase': { phase: string; timestamp: number }
+  'directive:register': { name: string; timestamp: number }
+  'directive:unregister': { name: string; timestamp: number }
+  'environment:change': { oldEnv: string; newEnv: string; timestamp: number }
+  'logger:log': { level: string; message: string; timestamp: number }
+  'error:caught': { error: Error; context: string; timestamp: number }
+  'error:handled': { error: Error; context: string; timestamp: number }
 }

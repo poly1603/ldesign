@@ -1,3 +1,4 @@
+/// <reference path="../global.d.ts" />
 import { expect, test } from '@playwright/test'
 
 test.describe('LDesign Engine 基础功能', () => {
@@ -97,7 +98,7 @@ test.describe('LDesign Engine 基础功能', () => {
   test('应该正确处理环境检测', async ({ page }) => {
     const envInfo = await page.evaluate(() => {
       return window.engine.environment.detect()
-    })
+    }) as any
 
     expect(envInfo).toBeDefined()
     expect(envInfo.platform).toBe('browser')

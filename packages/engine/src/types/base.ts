@@ -256,30 +256,13 @@ export interface PerformanceMetrics {
   [key: string]: any
 }
 
-// 通用安全配置接口
-export interface SecurityConfig {
-  xss: {
-    enabled: boolean
-    allowedTags: string[]
-    allowedAttributes: Record<string, string[]>
-  }
-  csrf: {
-    enabled: boolean
-    tokenName: string
-    headerName: string
-  }
-  csp: {
-    enabled: boolean
-    directives: Record<string, string[]>
-    reportOnly: boolean
-  }
-}
+// 注意：SecurityConfig 已在 config.ts 中定义，这里不再重复定义
 
 // 通用环境信息接口
 export interface EnvironmentInfo {
   platform: string
-  browser: { name: string, version: string }
-  device: { type: string, isMobile: boolean }
+  browser: { name: string; version: string }
+  device: { type: string; isMobile: boolean }
   features: Record<string, boolean>
   [key: string]: any
 }

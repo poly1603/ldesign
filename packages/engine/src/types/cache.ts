@@ -100,5 +100,7 @@ export interface CacheMonitor {
   onHit: (callback: (key: string, value: unknown) => void) => () => void
   onMiss: (callback: (key: string) => void) => () => void
   onEviction: (callback: (key: string, reason: string) => void) => () => void
-  onSizeChange: (callback: (oldSize: number, newSize: number) => void) => () => void
+  onSizeChange: (
+    callback: (oldSize: number, newSize: number) => void
+  ) => () => void
 }

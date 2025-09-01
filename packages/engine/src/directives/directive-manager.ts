@@ -1,4 +1,5 @@
 import type { DirectiveManager, EngineDirective, Logger } from '../types'
+import { createHybridDirectiveAdapter } from './utils/directive-compatibility'
 
 export class DirectiveManagerImpl implements DirectiveManager {
   private directives = new Map<string, EngineDirective>()
@@ -9,14 +10,17 @@ export class DirectiveManagerImpl implements DirectiveManager {
     // logger参数保留用于未来扩展
   }
 
-  register(name: string, directive: EngineDirective): void {
+  register(name: string, directive: any): void {
     if (this.directives.has(name)) {
       console.warn(
-        `Directive "${name}" is already registered. It will be replaced.`,
+        `Directive "${name}" is already registered. It will be replaced.`
       )
     }
 
-    this.directives.set(name, directive)
+    // 使用兼容性工具转换指令
+    const engineDirective = createHybridDirectiveAdapter(directive)
+    this.directives.set(name, engineDirective)
+    this.logger?.debug(`Directive "${name}" registered`)
   }
 
   unregister(name: string): void {
@@ -52,7 +56,7 @@ export class DirectiveManagerImpl implements DirectiveManager {
   }
 
   // 批量注册指令
-  registerBatch(directives: Record<string, EngineDirective>): void {
+  registerBatch(directives: Record<string, any>): void {
     for (const [name, directive] of Object.entries(directives)) {
       this.register(name, directive)
     }
@@ -67,15 +71,15 @@ export class DirectiveManagerImpl implements DirectiveManager {
 
   // 按分类获取指令
   getByCategory(category: string): EngineDirective[] {
-    return Array.from(this.directives.values()).filter(directive =>
-      directive.category === category,
+    return Array.from(this.directives.values()).filter(
+      directive => directive.category === category
     )
   }
 
   // 按标签获取指令
   getByTag(tag: string): EngineDirective[] {
     return Array.from(this.directives.values()).filter(directive =>
-      directive.tags?.includes(tag),
+      directive.tags?.includes(tag)
     )
   }
 
@@ -151,8 +155,8 @@ export const commonDirectives = {
 
           // 触发成功回调
           if (
-            binding.arg === 'success'
-            && typeof binding.modifiers.callback === 'function'
+            binding.arg === 'success' &&
+            typeof binding.modifiers.callback === 'function'
           ) {
             binding.modifiers.callback(text)
           }
@@ -162,14 +166,13 @@ export const commonDirectives = {
           setTimeout(() => {
             el.classList.remove('copy-success')
           }, 1000)
-        }
-        catch (error) {
+        } catch (error) {
           console.error('Failed to copy text:', error)
 
           // 触发错误回调
           if (
-            binding.arg === 'error'
-            && typeof binding.modifiers.callback === 'function'
+            binding.arg === 'error' &&
+            typeof binding.modifiers.callback === 'function'
           ) {
             binding.modifiers.callback(error)
           }
@@ -196,14 +199,13 @@ export const commonDirectives = {
         ...binding.value?.options,
       }
 
-      el._lazyObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
+      el._lazyObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
             // 执行懒加载回调
             if (typeof binding.value === 'function') {
               binding.value(el)
-            }
-            else if (typeof binding.value?.callback === 'function') {
+            } else if (typeof binding.value?.callback === 'function') {
               binding.value.callback(el)
             }
 
@@ -234,8 +236,7 @@ export const commonDirectives = {
         el._debounceTimer = window.setTimeout(() => {
           if (typeof binding.value === 'function') {
             binding.value(...args)
-          }
-          else if (typeof binding.value?.callback === 'function') {
+          } else if (typeof binding.value?.callback === 'function') {
             binding.value.callback(...args)
           }
         }, delay)
@@ -272,8 +273,7 @@ export const commonDirectives = {
           lastTime = now
           if (typeof binding.value === 'function') {
             binding.value(...args)
-          }
-          else if (typeof binding.value?.callback === 'function') {
+          } else if (typeof binding.value?.callback === 'function') {
             binding.value.callback(...args)
           }
         }
@@ -304,13 +304,11 @@ export const commonDirectives = {
       if (!hasPermission) {
         if (binding.modifiers.hide) {
           el.style.display = 'none'
-        }
-        else if (binding.modifiers.disable) {
+        } else if (binding.modifiers.disable) {
           el.setAttribute('disabled', 'true')
           el.style.opacity = '0.5'
           el.style.pointerEvents = 'none'
-        }
-        else {
+        } else {
           el.remove()
         }
       }

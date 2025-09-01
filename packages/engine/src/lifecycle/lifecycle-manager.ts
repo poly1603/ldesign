@@ -18,7 +18,9 @@ export type LifecyclePhase =
   | 'custom'
 
 // 生命周期钩子函数
-export type LifecycleHook<T = any> = (context: LifecycleContext<T>) => void | Promise<void>
+export type LifecycleHook<T = any> = (
+  context: LifecycleContext<T>
+) => void | Promise<void>
 
 // 生命周期上下文
 export interface LifecycleContext<T = any> {
@@ -55,8 +57,16 @@ export interface LifecycleEvent {
 // 生命周期管理器接口
 export interface LifecycleManager<T = any> {
   // 钩子注册
-  on: (phase: LifecyclePhase, hook: LifecycleHook<T>, priority?: number) => string
-  once: (phase: LifecyclePhase, hook: LifecycleHook<T>, priority?: number) => string
+  on: (
+    phase: LifecyclePhase,
+    hook: LifecycleHook<T>,
+    priority?: number
+  ) => string
+  once: (
+    phase: LifecyclePhase,
+    hook: LifecycleHook<T>,
+    priority?: number
+  ) => string
   off: (hookId: string) => boolean
   offAll: (phase?: LifecyclePhase) => number
 
@@ -67,7 +77,11 @@ export interface LifecycleManager<T = any> {
   getHookCount: (phase?: LifecyclePhase) => number
 
   // 生命周期执行
-  execute: (phase: LifecyclePhase, engine: T, data?: any) => Promise<LifecycleEvent>
+  execute: (
+    phase: LifecyclePhase,
+    engine: T,
+    data?: any
+  ) => Promise<LifecycleEvent>
   executeSync: (phase: LifecyclePhase, engine: T, data?: any) => LifecycleEvent
 
   // 生命周期状态
@@ -77,7 +91,9 @@ export interface LifecycleManager<T = any> {
   isPhaseExecuted: (phase: LifecyclePhase) => boolean
 
   // 错误处理
-  onError: (callback: (error: Error, context: LifecycleContext<T>) => void) => () => void
+  onError: (
+    callback: (error: Error, context: LifecycleContext<T>) => void
+  ) => () => void
 
   // 统计信息
   getStats: () => {
@@ -99,7 +115,10 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
   private phaseHooks = new Map<LifecyclePhase, Set<string>>()
   private history: LifecycleEvent[] = []
   private currentPhase?: LifecyclePhase
-  private errorCallbacks: Array<(error: Error, context: LifecycleContext<T>) => void> = []
+  private errorCallbacks: Array<
+    (error: Error, context: LifecycleContext<T>) => void
+  > = []
+
   private hookIdCounter = 0
   private maxHistorySize = 100
   private logger?: Logger
@@ -200,8 +219,7 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
         }
         this.phaseHooks.delete(phase)
       }
-    }
-    else {
+    } else {
       removedCount = this.hooks.size
       this.hooks.clear()
       this.phaseHooks.clear()
@@ -231,8 +249,9 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
   }
 
   getAllHooks(): HookInfo[] {
-    return Array.from(this.hooks.values())
-      .sort((a, b) => b.priority - a.priority)
+    return Array.from(this.hooks.values()).sort(
+      (a, b) => b.priority - a.priority
+    )
   }
 
   hasHooks(phase: LifecyclePhase): boolean {
@@ -249,7 +268,11 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
   }
 
   // 生命周期执行
-  async execute(phase: LifecyclePhase, engine: T, data?: any): Promise<LifecycleEvent> {
+  async execute(
+    phase: LifecyclePhase,
+    engine: T,
+    data?: any
+  ): Promise<LifecycleEvent> {
     const startTime = Date.now()
     this.currentPhase = phase
 
@@ -278,8 +301,7 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
           if (hookInfo.once) {
             this.off(hookInfo.id)
           }
-        }
-        catch (hookError) {
+        } catch (hookError) {
           error = hookError as Error
           this.logger?.error(`Error in lifecycle hook`, {
             phase,
@@ -288,12 +310,14 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
           })
 
           // 通知错误回调
-          this.errorCallbacks.forEach((callback) => {
+          this.errorCallbacks.forEach(callback => {
             try {
               callback(error!, { ...context, error })
-            }
-            catch (callbackError) {
-              this.logger?.error('Error in lifecycle error callback', callbackError)
+            } catch (callbackError) {
+              this.logger?.error(
+                'Error in lifecycle error callback',
+                callbackError
+              )
             }
           })
 
@@ -303,8 +327,7 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
           }
         }
       }
-    }
-    catch (executionError) {
+    } catch (executionError) {
       error = executionError as Error
       this.logger?.error(`Critical error during lifecycle execution`, {
         phase,
@@ -372,8 +395,7 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
           if (hookInfo.once) {
             this.off(hookInfo.id)
           }
-        }
-        catch (hookError) {
+        } catch (hookError) {
           error = hookError as Error
           this.logger?.error(`Error in lifecycle hook`, {
             phase,
@@ -382,12 +404,14 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
           })
 
           // 通知错误回调
-          this.errorCallbacks.forEach((callback) => {
+          this.errorCallbacks.forEach(callback => {
             try {
               callback(error!, { ...context, error })
-            }
-            catch (callbackError) {
-              this.logger?.error('Error in lifecycle error callback', callbackError)
+            } catch (callbackError) {
+              this.logger?.error(
+                'Error in lifecycle error callback',
+                callbackError
+              )
             }
           })
 
@@ -397,8 +421,7 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
           }
         }
       }
-    }
-    catch (executionError) {
+    } catch (executionError) {
       error = executionError as Error
       this.logger?.error(`Critical error during sync lifecycle execution`, {
         phase,
@@ -446,7 +469,9 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
   }
 
   // 错误处理
-  onError(callback: (error: Error, context: LifecycleContext<T>) => void): () => void {
+  onError(
+    callback: (error: Error, context: LifecycleContext<T>) => void
+  ): () => void {
     this.errorCallbacks.push(callback)
 
     return () => {
@@ -477,9 +502,11 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
       .filter(event => event.duration !== undefined)
       .map(event => event.duration!)
 
-    const averageExecutionTime = executionTimes.length > 0
-      ? executionTimes.reduce((sum, time) => sum + time, 0) / executionTimes.length
-      : 0
+    const averageExecutionTime =
+      executionTimes.length > 0
+        ? executionTimes.reduce((sum, time) => sum + time, 0) /
+          executionTimes.length
+        : 0
 
     // 统计错误数量
     const errorCount = this.history.filter(event => !event.success).length
@@ -525,11 +552,7 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
 
   private isCriticalPhase(phase: LifecyclePhase): boolean {
     // 定义关键阶段，这些阶段的错误会停止后续钩子执行
-    const criticalPhases: LifecyclePhase[] = [
-      'init',
-      'mount',
-      'destroy',
-    ]
+    const criticalPhases: LifecyclePhase[] = ['init', 'mount', 'destroy']
 
     return criticalPhases.includes(phase)
   }
@@ -549,7 +572,9 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
 
   getOrder(phase: LifecyclePhase): string[] {
     const hooks = this.getHooks(phase)
-    return hooks.sort((a, b) => (b?.priority || 0) - (a?.priority || 0)).map(h => h?.id || '')
+    return hooks
+      .sort((a, b) => (b?.priority || 0) - (a?.priority || 0))
+      .map(h => h?.id || '')
   }
 
   validate(): any {
@@ -567,19 +592,28 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
 }
 
 // 工厂函数
-export function createLifecycleManager<T = any>(logger?: Logger): LifecycleManager<T> {
+export function createLifecycleManager<T = any>(
+  logger?: Logger
+): LifecycleManager<T> {
   return new LifecycleManagerImpl<T>(logger)
 }
 
 // 生命周期装饰器
 export function LifecycleHookDecorator(phase: LifecyclePhase, priority = 0) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
     const originalMethod = descriptor.value
 
     // 在类实例化时自动注册钩子
     descriptor.value = function (...args: any[]) {
-      if ((this as any).lifecycle && typeof (this as any).lifecycle.on === 'function') {
-        ; (this as any).lifecycle.on(phase, originalMethod.bind(this), priority)
+      if (
+        (this as any).lifecycle &&
+        typeof (this as any).lifecycle.on === 'function'
+      ) {
+        ;(this as any).lifecycle.on(phase, originalMethod.bind(this), priority)
       }
       return originalMethod.apply(this, args)
     }
@@ -638,7 +672,10 @@ export class LifecycleHelper {
     return index1 > index2
   }
 
-  static isPhaseBefore(phase1: LifecyclePhase, phase2: LifecyclePhase): boolean {
+  static isPhaseBefore(
+    phase1: LifecyclePhase,
+    phase2: LifecyclePhase
+  ): boolean {
     const index1 = this.getPhaseIndex(phase1)
     const index2 = this.getPhaseIndex(phase2)
     return index1 < index2

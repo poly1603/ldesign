@@ -19,10 +19,7 @@ export class ConfigManagerImpl implements ConfigManager {
   private maxSnapshots = 10
   private logger?: Logger
 
-  constructor(
-    initialConfig: Record<string, any> = {},
-    logger?: Logger,
-  ) {
+  constructor(initialConfig: Record<string, any> = {}, logger?: Logger) {
     this.config = { ...initialConfig }
     this.logger = logger
     this.environment = this.detectEnvironment()
@@ -49,7 +46,9 @@ export class ConfigManagerImpl implements ConfigManager {
     if (this.schema) {
       const validation = this.validatePath(path, value)
       if (!validation.valid) {
-        throw new Error(`Configuration validation failed for "${path}": ${validation.errors.join(', ')}`)
+        throw new Error(
+          `Configuration validation failed for "${path}": ${validation.errors.join(', ')}`
+        )
       }
     }
 
@@ -105,16 +104,13 @@ export class ConfigManagerImpl implements ConfigManager {
         const defaultValue = this.getDefaultValue(path)
         if (defaultValue !== undefined) {
           this.set(path, defaultValue)
-        }
-        else {
+        } else {
           this.remove(path)
         }
-      }
-      else {
+      } else {
         this.remove(path)
       }
-    }
-    else {
+    } else {
       // 重置整个配置
       this.clear()
       if (this.schema) {
@@ -153,10 +149,13 @@ export class ConfigManagerImpl implements ConfigManager {
     // 验证当前配置
     const validation = this.validate()
     if (!validation.valid) {
-      this.logger?.warn('Current configuration is invalid after schema update', {
-        errors: validation.errors,
-        warnings: validation.warnings,
-      })
+      this.logger?.warn(
+        'Current configuration is invalid after schema update',
+        {
+          errors: validation.errors,
+          warnings: validation.warnings,
+        }
+      )
     }
 
     this.logger?.info('Configuration schema updated')
@@ -181,8 +180,7 @@ export class ConfigManagerImpl implements ConfigManager {
 
   unwatch(path: string, callback?: ConfigWatcher): void {
     const callbacks = this.watchers.get(path)
-    if (!callbacks)
-      return
+    if (!callbacks) return
 
     if (callback) {
       const index = callbacks.indexOf(callback)
@@ -193,8 +191,7 @@ export class ConfigManagerImpl implements ConfigManager {
       if (callbacks.length === 0) {
         this.watchers.delete(path)
       }
-    }
-    else {
+    } else {
       this.watchers.delete(path)
     }
   }
@@ -213,8 +210,7 @@ export class ConfigManagerImpl implements ConfigManager {
       }
 
       this.logger?.debug('Configuration saved to storage')
-    }
-    catch (error) {
+    } catch (error) {
       this.logger?.error('Failed to save configuration', error)
       throw error
     }
@@ -236,8 +232,7 @@ export class ConfigManagerImpl implements ConfigManager {
       this.environment = parsed.environment || this.environment
 
       this.logger?.debug('Configuration loaded from storage')
-    }
-    catch (error) {
+    } catch (error) {
       this.logger?.error('Failed to load configuration', error)
       throw error
     }
@@ -247,7 +242,7 @@ export class ConfigManagerImpl implements ConfigManager {
     this.disableAutoSave()
 
     this.autoSaveInterval = setInterval(() => {
-      this.save().catch((error) => {
+      this.save().catch(error => {
         this.logger?.error('Auto-save failed', error)
       })
     }, interval)
@@ -310,7 +305,7 @@ export class ConfigManagerImpl implements ConfigManager {
   } {
     const totalWatchers = Array.from(this.watchers.values()).reduce(
       (sum, array) => sum + array.length,
-      0,
+      0
     )
 
     const memoryUsage = JSON.stringify(this.config).length
@@ -335,8 +330,7 @@ export class ConfigManagerImpl implements ConfigManager {
 
     if (format === 'json') {
       return JSON.stringify(data, null, 2)
-    }
-    else {
+    } else {
       // 简单的YAML导出（实际项目中可以使用yaml库）
       return this.toYAML(data)
     }
@@ -348,8 +342,7 @@ export class ConfigManagerImpl implements ConfigManager {
 
       if (format === 'json') {
         parsed = JSON.parse(data)
-      }
-      else {
+      } else {
         // 简单的YAML解析（实际项目中可以使用yaml库）
         parsed = this.fromYAML(data)
       }
@@ -363,8 +356,7 @@ export class ConfigManagerImpl implements ConfigManager {
       }
 
       this.logger?.info('Configuration imported', { format })
-    }
-    catch (error) {
+    } catch (error) {
       this.logger?.error('Failed to import configuration', error)
       throw error
     }
@@ -391,14 +383,15 @@ export class ConfigManagerImpl implements ConfigManager {
       }
 
       // 在测试环境中，vitest会设置NODE_ENV为test
-      if (typeof globalThis !== 'undefined'
-        && (globalThis as any).__vitest__ !== undefined) {
+      if (
+        typeof globalThis !== 'undefined' &&
+        (globalThis as any).__vitest__ !== undefined
+      ) {
         return 'test'
       }
 
       return 'development'
-    }
-    catch {
+    } catch {
       return 'development'
     }
   }
@@ -406,12 +399,14 @@ export class ConfigManagerImpl implements ConfigManager {
   private triggerWatchers(path: string, newValue: any, oldValue: any): void {
     const callbacks = this.watchers.get(path)
     if (callbacks) {
-      callbacks.forEach((callback) => {
+      callbacks.forEach(callback => {
         try {
           callback(newValue, oldValue, path)
-        }
-        catch (error) {
-          this.logger?.error('Error in config watcher callback', { path, error })
+        } catch (error) {
+          this.logger?.error('Error in config watcher callback', {
+            path,
+            error,
+          })
         }
       })
     }
@@ -424,11 +419,10 @@ export class ConfigManagerImpl implements ConfigManager {
       if (parentCallbacks) {
         const parentNewValue = this.get(parentPath)
         const parentOldValue = this.get(parentPath) // 这里需要优化，应该保存旧值
-        parentCallbacks.forEach((callback) => {
+        parentCallbacks.forEach(callback => {
           try {
             callback(parentNewValue, parentOldValue, parentPath)
-          }
-          catch (error) {
+          } catch (error) {
             this.logger?.error('Error in parent config watcher callback', {
               path: parentPath,
               error,
@@ -439,7 +433,10 @@ export class ConfigManagerImpl implements ConfigManager {
     }
   }
 
-  private triggerMergeWatchers(oldConfig: Record<string, any>, newConfig: Record<string, any>): void {
+  private triggerMergeWatchers(
+    oldConfig: Record<string, any>,
+    newConfig: Record<string, any>
+  ): void {
     const allKeys = new Set([
       ...this.getAllKeysFromObject(oldConfig),
       ...this.getAllKeysFromObject(newConfig),
@@ -477,14 +474,17 @@ export class ConfigManagerImpl implements ConfigManager {
           target[key] = {}
         }
         this.deepMerge(target[key], source[key])
-      }
-      else {
+      } else {
         target[key] = source[key]
       }
     }
   }
 
-  private validateConfig(config: any, schema: ConfigSchema, basePath = ''): ValidationResult {
+  private validateConfig(
+    config: any,
+    schema: ConfigSchema,
+    basePath = ''
+  ): ValidationResult {
     const errors: string[] = []
     const warnings: string[] = []
 
@@ -505,7 +505,9 @@ export class ConfigManagerImpl implements ConfigManager {
 
       // 类型验证
       if (!this.validateType(value, schemaItem.type)) {
-        errors.push(`Field "${fullPath}" has invalid type. Expected ${schemaItem.type}, got ${typeof value}`)
+        errors.push(
+          `Field "${fullPath}" has invalid type. Expected ${schemaItem.type}, got ${typeof value}`
+        )
         continue
       }
 
@@ -516,8 +518,16 @@ export class ConfigManagerImpl implements ConfigManager {
       }
 
       // 递归验证子对象
-      if (schemaItem.type === 'object' && schemaItem.children && isObject(value)) {
-        const childResult = this.validateConfig(config, schemaItem.children, fullPath)
+      if (
+        schemaItem.type === 'object' &&
+        schemaItem.children &&
+        isObject(value)
+      ) {
+        const childResult = this.validateConfig(
+          config,
+          schemaItem.children,
+          fullPath
+        )
         errors.push(...childResult.errors)
         warnings.push(...childResult.warnings)
       }
@@ -546,7 +556,9 @@ export class ConfigManagerImpl implements ConfigManager {
         if (!this.validateType(value, schemaItem.type)) {
           return {
             valid: false,
-            errors: [`Invalid type. Expected ${schemaItem.type}, got ${typeof value}`],
+            errors: [
+              `Invalid type. Expected ${schemaItem.type}, got ${typeof value}`,
+            ],
             warnings: [],
           }
         }
@@ -565,8 +577,7 @@ export class ConfigManagerImpl implements ConfigManager {
       // 继续到下一级
       if (schemaItem.children) {
         currentSchema = schemaItem.children
-      }
-      else {
+      } else {
         return { valid: true, errors: [], warnings: [] }
       }
     }
@@ -592,8 +603,7 @@ export class ConfigManagerImpl implements ConfigManager {
   }
 
   private getDefaultValue(path: string): any {
-    if (!this.schema)
-      return undefined
+    if (!this.schema) return undefined
 
     const pathParts = path.split('.')
     let currentSchema = this.schema
@@ -611,8 +621,7 @@ export class ConfigManagerImpl implements ConfigManager {
 
       if (schemaItem.children) {
         currentSchema = schemaItem.children
-      }
-      else {
+      } else {
         return undefined
       }
     }
@@ -621,15 +630,18 @@ export class ConfigManagerImpl implements ConfigManager {
   }
 
   private getDefaultConfig(): Record<string, any> {
-    if (!this.schema)
-      return {}
+    if (!this.schema) return {}
 
     const config: Record<string, any> = {}
     this.buildDefaultConfig(config, this.schema)
     return config
   }
 
-  private buildDefaultConfig(config: Record<string, any>, schema: ConfigSchema, basePath = ''): void {
+  private buildDefaultConfig(
+    config: Record<string, any>,
+    schema: ConfigSchema,
+    basePath = ''
+  ): void {
     for (const [key, schemaItem] of Object.entries(schema)) {
       const fullPath = basePath ? `${basePath}.${key}` : key
 
@@ -669,14 +681,12 @@ export class ConfigManagerImpl implements ConfigManager {
     for (const [key, value] of Object.entries(obj)) {
       if (isObject(value)) {
         result += `${spaces}${key}:\n${this.toYAML(value, indent + 1)}`
-      }
-      else if (Array.isArray(value)) {
+      } else if (Array.isArray(value)) {
         result += `${spaces}${key}:\n`
-        value.forEach((item) => {
+        value.forEach(item => {
           result += `${spaces}  - ${item}\n`
         })
-      }
-      else {
+      } else {
         result += `${spaces}${key}: ${value}\n`
       }
     }
@@ -690,10 +700,9 @@ export class ConfigManagerImpl implements ConfigManager {
     const result: any = {}
 
     // 这里只是一个简单的实现，实际应该使用js-yaml等库
-    lines.forEach((line) => {
+    lines.forEach(line => {
       const colonIndex = line.indexOf(':')
-      if (colonIndex === -1)
-        return
+      if (colonIndex === -1) return
 
       const beforeColon = line.slice(0, colonIndex)
       const afterColon = line.slice(colonIndex + 1)
@@ -703,8 +712,7 @@ export class ConfigManagerImpl implements ConfigManager {
       if (key && value !== undefined) {
         try {
           result[key] = JSON.parse(value)
-        }
-        catch {
+        } catch {
           result[key] = value
         }
       }
@@ -718,8 +726,8 @@ export class ConfigManagerImpl implements ConfigManager {
 export class NamespacedConfigManager implements ConfigManager {
   constructor(
     private parent: ConfigManager,
-    private namespaceName: string,
-  ) { }
+    private namespaceName: string
+  ) {}
 
   private getKey(key: string): string {
     return `${this.namespaceName}.${key}`
@@ -727,7 +735,7 @@ export class NamespacedConfigManager implements ConfigManager {
 
   // 基础操作
   get<T = any>(key: string, defaultValue?: T): T {
-    return this.parent.get(this.getKey(key), defaultValue)
+    return this.parent.get(this.getKey(key), defaultValue) as T
   }
 
   set(key: string, value: any): void {
@@ -759,8 +767,7 @@ export class NamespacedConfigManager implements ConfigManager {
   reset(path?: string): void {
     if (path) {
       this.parent.reset(this.getKey(path))
-    }
-    else {
+    } else {
       this.clear()
     }
   }
@@ -860,7 +867,7 @@ export class NamespacedConfigManager implements ConfigManager {
 // 工厂函数
 export function createConfigManager(
   initialConfig?: Record<string, any>,
-  logger?: Logger,
+  logger?: Logger
 ): ConfigManager {
   return new ConfigManagerImpl(initialConfig, logger)
 }
@@ -905,7 +912,8 @@ export const defaultConfigSchema: ConfigSchema = {
     type: 'string',
     required: true,
     default: 'development',
-    validator: (value: string) => ['development', 'production', 'test'].includes(value),
+    validator: (value: string) =>
+      ['development', 'production', 'test'].includes(value),
     description: '运行环境',
   },
   debug: {
