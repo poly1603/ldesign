@@ -40,6 +40,9 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
     configSchema,
     enableAutoSave = false,
     autoSaveInterval = 30000,
+    rootComponent,
+    mountElement,
+    autoMount = false,
   } = options
 
   // 创建引擎实例
@@ -64,9 +67,24 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
   })
 
   // 注册插件（异步）
-  Promise.all(plugins.map(plugin => engine.use(plugin))).catch(error => {
+  const pluginPromise = Promise.all(plugins.map(plugin => engine.use(plugin))).catch(error => {
     engine.logger.error('Failed to register plugins', error)
   })
+
+  // 如果提供了根组件，自动创建Vue应用
+  if (rootComponent) {
+    engine.createApp(rootComponent)
+
+    // 如果启用自动挂载且提供了挂载元素
+    if (autoMount && mountElement) {
+      // 等待插件加载完成后再挂载
+      pluginPromise.finally(() => {
+        engine.mount(mountElement).catch(error => {
+          engine.logger.error('Failed to auto-mount application', error)
+        })
+      })
+    }
+  }
 
   return engine
 }
@@ -95,13 +113,50 @@ export function createApp(
   rootComponent: Component,
   options: CreateEngineOptions = {}
 ): Engine {
-  // 创建引擎实例
-  const engine = createEngine(options)
+  // 将根组件添加到选项中
+  const enhancedOptions = {
+    ...options,
+    rootComponent,
+  }
 
-  // 创建Vue应用
-  engine.createApp(rootComponent)
+  // 创建引擎实例（会自动创建Vue应用）
+  return createEngine(enhancedOptions)
+}
 
-  return engine
+/**
+ * 创建并自动挂载Vue3应用（一步到位API）
+ *
+ * 🚀 这是最简化的API，一步完成应用创建、配置和挂载
+ *
+ * @param rootComponent 根组件
+ * @param mountElement 挂载元素选择器或DOM元素
+ * @param options 引擎配置选项
+ * @returns 配置完整且已挂载的引擎实例
+ *
+ * @example
+ * ```typescript
+ * // 最简单的使用方式
+ * const engine = createAndMountApp(App, '#app')
+ *
+ * // 带配置的使用方式
+ * const engine = createAndMountApp(App, '#app', {
+ *   config: { debug: true },
+ *   plugins: [routerPlugin, storePlugin]
+ * })
+ * ```
+ */
+export function createAndMountApp(
+  rootComponent: Component,
+  mountElement: string | Element,
+  options: CreateEngineOptions = {}
+): Engine {
+  // 创建引擎实例并自动挂载
+  return createEngine({
+    ...options,
+    rootComponent,
+    mountElement,
+    autoMount: true,
+  })
 }
 
 /**

@@ -37,7 +37,7 @@ export * from './constants'
 // 核心导出
 export { EngineImpl } from './core/engine'
 
-export { createApp, createEngine } from './core/factory'
+export { createApp, createAndMountApp, createEngine } from './core/factory'
 
 // Dialog弹窗系统导出
 export * from './dialog'
@@ -77,8 +77,6 @@ export type {
 } from './message'
 
 // 新增中间件系统导出
-export * from './middleware'
-
 export {
   commonMiddleware,
   createMiddlewareManager,
@@ -95,8 +93,6 @@ export {
 } from './performance/performance-manager'
 
 // 新增插件系统导出
-export * from './plugins'
-
 export { createPluginManager } from './plugins/plugin-manager'
 
 // 预设配置导出

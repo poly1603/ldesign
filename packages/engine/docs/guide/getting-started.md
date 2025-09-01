@@ -25,24 +25,68 @@ yarn add @ldesign/engine
 
 ## 🚀 第一个应用
 
-### 1. 创建引擎实例
+### 方式一：一步到位API（推荐）
 
 ```typescript
-import { createEngine } from '@ldesign/engine'
+import { createAndMountApp } from '@ldesign/engine'
+import App from './App.vue'
 
-// 创建引擎实例
-const engine = createEngine({
-  appName: 'My First App',
-  debug: true,
-  features: {
-    enableHotReload: true,
-    enableDevTools: true,
-    enablePerformanceMonitoring: true
+// 最简单的使用方式 - 一步完成应用创建、配置和挂载
+const engine = createAndMountApp(App, '#app', {
+  config: {
+    debug: true,
+    appName: 'My First App',
+    features: {
+      enableHotReload: true,
+      enableDevTools: true,
+      enablePerformanceMonitoring: true
+    }
   }
 })
 
+console.log('应用已创建并挂载！', engine.getConfig('appName'))
+```
+
+### 方式二：分步骤API
+
+```typescript
+import { createEngine } from '@ldesign/engine'
+import { createApp } from 'vue'
+import App from './App.vue'
+
+// 创建引擎实例
+const engine = createEngine({
+  config: {
+    appName: 'My First App',
+    debug: true,
+    features: {
+      enableHotReload: true,
+      enableDevTools: true,
+      enablePerformanceMonitoring: true
+    }
+  }
+})
+
+// 创建Vue应用
+const app = createApp(App)
+
+// 安装引擎
+engine.install(app)
+
+// 挂载应用
+app.mount('#app')
+
 console.log('引擎创建成功！', engine.getConfig('appName'))
-  ...presets.development(), // 使用开发环境预设
+```
+
+### 方式三：简化API
+
+```typescript
+import { createApp } from '@ldesign/engine'
+import App from './App.vue'
+
+// 使用简化API，自动创建引擎和Vue应用
+const engine = createApp(App, {
   config: {
     debug: true,
     appName: 'My First Engine App',
@@ -50,20 +94,27 @@ console.log('引擎创建成功！', engine.getConfig('appName'))
   },
 })
 
-// 挂载应用
+// 手动挂载应用
 engine.mount('#app')
 
 // 导出引擎实例供其他模块使用
 export { engine }
 ```
 
-### 传统 API
+### 🎯 API对比
+
+| API | 使用场景 | 代码量 | 控制度 |
+|-----|---------|--------|--------|
+| `createAndMountApp` | 快速原型、简单应用 | 最少 | 低 |
+| `createApp` | 需要手动控制挂载时机 | 中等 | 中 |
+| `createEngine` | 需要完全控制Vue应用创建 | 最多 | 高 |
+
+### 传统 API（完全控制）
 
 如果你需要更多控制，也可以使用传统方式：
 
 ```typescript
 import { createEngine } from '@ldesign/engine'
-// main.ts
 import { createApp } from 'vue'
 import App from './App.vue'
 

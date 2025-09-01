@@ -1,8 +1,8 @@
 <template>
   <div class="home-page">
     <header class="home-header">
-      <h1>欢迎使用 LDesign Router</h1>
-      <p class="subtitle">这是首页，展示路由集成功能</p>
+      <h1>欢迎使用 LDesign Demo</h1>
+      <p class="subtitle">展示优化后的 Engine API 设计和功能</p>
     </header>
     
     <main class="home-content">
@@ -28,7 +28,7 @@
       </section>
       
       <section class="navigation-section">
-        <h2>导航测试</h2>
+        <h2>路由导航测试</h2>
         <div class="nav-buttons">
           <router-link to="/login" class="nav-button primary">
             前往登录页
@@ -38,14 +38,25 @@
           </button>
         </div>
       </section>
-      
+
       <section class="info-section">
         <h2>当前路由信息</h2>
         <div class="route-info">
-          <p><strong>路径:</strong> {{ $route.path }}</p>
-          <p><strong>名称:</strong> {{ $route.name }}</p>
-          <p><strong>参数:</strong> {{ JSON.stringify($route.params) }}</p>
-          <p><strong>查询:</strong> {{ JSON.stringify($route.query) }}</p>
+          <p><strong>路径:</strong> {{ route.path }}</p>
+          <p><strong>名称:</strong> {{ route.name }}</p>
+          <p><strong>参数:</strong> {{ JSON.stringify(route.params) }}</p>
+          <p><strong>查询:</strong> {{ JSON.stringify(route.query) }}</p>
+          <p><strong>元信息:</strong> {{ JSON.stringify(route.meta) }}</p>
+        </div>
+      </section>
+
+      <section class="api-section">
+        <h2>LDesign Engine + Router 集成</h2>
+        <div class="api-info">
+          <p><strong>Engine API:</strong> createAndMountApp 一步到位</p>
+          <p><strong>Router 集成:</strong> createRouterEnginePlugin</p>
+          <p><strong>路由模式:</strong> Hash 模式</p>
+          <p><strong>功能特性:</strong> 预加载、缓存、动画、性能监控</p>
         </div>
       </section>
     </main>
@@ -53,21 +64,26 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from '@ldesign/router'
+import { useRoute, useRouter } from '@ldesign/router'
 
 /**
  * 首页组件
- * 展示 LDesign Router 的基础功能和导航测试
+ * 展示 LDesign Demo 的基础功能和 @ldesign/router 集成
  */
 
-// 获取路由器实例
+// 获取路由信息
+const route = useRoute()
 const router = useRouter()
 
 /**
  * 测试编程式导航
  */
 const testNavigation = () => {
-  router.push('/login?from=home')
+  console.log('🧭 使用编程式导航跳转到登录页')
+  router.push({
+    path: '/login',
+    query: { from: 'home' }
+  })
 }
 </script>
 

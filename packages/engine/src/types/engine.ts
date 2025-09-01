@@ -87,6 +87,11 @@ export interface CreateEngineOptions {
   configSchema?: Record<string, unknown>
   enableAutoSave?: boolean
   autoSaveInterval?: number
+
+  // 新增：自动挂载选项
+  rootComponent?: Component
+  mountElement?: string | Element
+  autoMount?: boolean
 }
 
 // 引擎状态
