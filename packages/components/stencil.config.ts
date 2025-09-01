@@ -28,7 +28,7 @@ export const config: Config = {
     // Vue.js Integration
     vueOutputTarget({
       componentCorePackage: '@ldesign/components',
-      proxiesFile: '../vue/src/components.ts',
+      proxiesFile: './vue/src/components.ts',
       includeDefineCustomElements: true,
     }),
     // Documentation generation

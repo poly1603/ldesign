@@ -1,0 +1,224 @@
+:host {
+  display: block;
+}
+
+.ld-input-container {
+  width: 100%;
+}
+
+.ld-input-label {
+  display: block;
+  margin-bottom: var(--ld-spacing-xs);
+  font-size: var(--ld-font-size-sm);
+  font-weight: var(--ld-font-weight-medium);
+  color: var(--ld-color-text);
+  
+  .ld-input-required {
+    color: var(--ld-color-error);
+    margin-left: 2px;
+  }
+}
+
+.ld-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: var(--ld-color-bg);
+  border: 1px solid var(--ld-color-border);
+  border-radius: var(--ld-radius-md);
+  transition: all var(--ld-transition-normal) ease;
+  
+  // Size variants
+  &--small {
+    border-radius: var(--ld-radius-sm);
+    
+    .ld-input {
+      padding: var(--ld-spacing-xs) var(--ld-spacing-sm);
+      font-size: var(--ld-font-size-sm);
+    }
+  }
+  
+  &--medium {
+    .ld-input {
+      padding: var(--ld-spacing-sm) var(--ld-spacing-md);
+      font-size: var(--ld-font-size-md);
+    }
+  }
+  
+  &--large {
+    border-radius: var(--ld-radius-lg);
+    
+    .ld-input {
+      padding: var(--ld-spacing-md) var(--ld-spacing-lg);
+      font-size: var(--ld-font-size-lg);
+    }
+  }
+  
+  // States
+  &--focused {
+    border-color: var(--ld-color-primary);
+    box-shadow: 0 0 0 2px fade(var(--ld-color-primary), 20%);
+  }
+  
+  &--disabled {
+    background-color: var(--ld-color-bg-secondary);
+    cursor: not-allowed;
+    
+    .ld-input {
+      color: var(--ld-color-text-disabled);
+      cursor: not-allowed;
+    }
+  }
+  
+  &--readonly {
+    background-color: var(--ld-color-bg-tertiary);
+    
+    .ld-input {
+      cursor: default;
+    }
+  }
+  
+  &--error {
+    border-color: var(--ld-color-error);
+    
+    &.ld-input-wrapper--focused {
+      box-shadow: 0 0 0 2px fade(var(--ld-color-error), 20%);
+    }
+  }
+  
+  &--full-width {
+    width: 100%;
+  }
+  
+  &--has-icon {
+    .ld-input {
+      padding-left: calc(var(--ld-spacing-md) + var(--ld-spacing-lg) + var(--ld-spacing-xs));
+    }
+  }
+  
+  &--has-icon-end {
+    .ld-input {
+      padding-right: calc(var(--ld-spacing-md) + var(--ld-spacing-lg) + var(--ld-spacing-xs));
+    }
+  }
+  
+  // Hover effect
+  &:hover:not(&--disabled):not(&--readonly) {
+    border-color: var(--ld-color-primary-hover);
+  }
+}
+
+.ld-input {
+  .input-base();
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  
+  &::placeholder {
+    color: var(--ld-color-text-tertiary);
+  }
+  
+  // Remove default styling
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  &[type="number"] {
+    -moz-appearance: textfield;
+  }
+  
+  &::-webkit-search-cancel-button,
+  &::-webkit-search-decoration {
+    -webkit-appearance: none;
+  }
+}
+
+.ld-input-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ld-color-text-tertiary);
+  pointer-events: none;
+  
+  &--start {
+    left: var(--ld-spacing-md);
+  }
+  
+  &--end {
+    right: var(--ld-spacing-md);
+  }
+}
+
+.ld-input-clear {
+  position: absolute;
+  top: 50%;
+  right: var(--ld-spacing-md);
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--ld-spacing-xs);
+  border-radius: var(--ld-radius-sm);
+  color: var(--ld-color-text-tertiary);
+  transition: all var(--ld-transition-fast) ease;
+  
+  &:hover {
+    color: var(--ld-color-text);
+    background-color: var(--ld-color-bg-tertiary);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--ld-color-primary-light);
+  }
+}
+
+.ld-input-error {
+  display: flex;
+  align-items: center;
+  margin-top: var(--ld-spacing-xs);
+  font-size: var(--ld-font-size-sm);
+  color: var(--ld-color-error);
+  
+  .ld-input-error-icon {
+    margin-right: var(--ld-spacing-xs);
+    flex-shrink: 0;
+  }
+}
+
+.ld-input-help {
+  margin-top: var(--ld-spacing-xs);
+  font-size: var(--ld-font-size-sm);
+  color: var(--ld-color-text-secondary);
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .ld-input-wrapper {
+    &--large {
+      .ld-input {
+        padding: var(--ld-spacing-sm) var(--ld-spacing-md);
+        font-size: var(--ld-font-size-md);
+      }
+    }
+  }
+}
+
+// Dark theme adjustments
+:host([data-theme="dark"]) {
+  .ld-input-wrapper {
+    background-color: var(--ld-color-bg-secondary);
+    border-color: var(--ld-color-border);
+    
+    &--disabled {
+      background-color: var(--ld-color-bg-tertiary);
+    }
+    
+    &--readonly {
+      background-color: var(--ld-color-bg-quaternary);
+    }
+  }
+}
