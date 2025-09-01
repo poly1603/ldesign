@@ -184,6 +184,11 @@ export class DeviceRouterPlugin {
         templateRoot: 'src/templates',
         enableCache: true,
         timeout: 10000,
+        autoScan: true,
+        enableHMR: false,
+        defaultDevice: 'desktop',
+        enablePerformanceMonitor: false,
+        debug: false,
       },
       ...options,
     }

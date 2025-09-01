@@ -45,8 +45,15 @@ export default defineConfig({
           text: '设备适配',
           items: [
             { text: '设备路由', link: '/guide/device-routing' },
-            { text: '模板系统', link: '/guide/template-system' },
             { text: '设备守卫', link: '/guide/device-guards' },
+          ],
+        },
+        {
+          text: '模板集成',
+          items: [
+            { text: '模板路由', link: '/guide/template-routing' },
+            { text: '模板解析器', link: '/guide/template-resolver' },
+            { text: '设备模板', link: '/guide/device-templates' },
           ],
         },
         {

@@ -31,6 +31,9 @@ const mockEngine = {
   },
   events: {
     emit: vi.fn(),
+    once: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
   },
   router: null,
 }
@@ -131,7 +134,7 @@ describe('router Engine Plugin', () => {
       }
     })
 
-    it('should throw error if Vue app is not found', async () => {
+    it('should wait for Vue app creation when app is not found', async () => {
       const plugin = createRouterEnginePlugin({
         routes: mockRoutes,
       })
@@ -139,10 +142,24 @@ describe('router Engine Plugin', () => {
       const engineWithoutApp = {
         ...mockEngine,
         getApp: vi.fn(() => null),
+        logger: {
+          info: vi.fn(),
+          error: vi.fn(),
+        },
       }
 
-      await expect(plugin.install(engineWithoutApp)).rejects.toThrow(
-        'Vue app not found. Make sure the engine has created a Vue app before installing router plugin.',
+      // 插件安装应该成功（会等待 app:created 事件）
+      await expect(plugin.install(engineWithoutApp)).resolves.toBeUndefined()
+
+      // 验证日志记录
+      expect(engineWithoutApp.logger.info).toHaveBeenCalledWith(
+        expect.stringContaining('plugin registered, waiting for Vue app creation'),
+      )
+
+      // 验证事件监听器被注册
+      expect(engineWithoutApp.events.once).toHaveBeenCalledWith(
+        'app:created',
+        expect.any(Function),
       )
     })
 

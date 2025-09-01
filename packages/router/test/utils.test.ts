@@ -350,9 +350,6 @@ describe('utils', () => {
         expect(isChildRoute('/user', '/admin')).toBe(false)
         expect(isChildRoute('/user/123', '/user')).toBe(false)
       })
-
     })
   })
-
-
 })
