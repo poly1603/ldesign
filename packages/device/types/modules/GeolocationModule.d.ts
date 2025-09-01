@@ -27,7 +27,7 @@ export declare class GeolocationModule implements DeviceModule {
     /**
      * 获取当前位置
      */
-    getCurrentPosition(): Promise<GeolocationInfo>;
+    getCurrentPosition(options?: PositionOptions): Promise<GeolocationInfo>;
     /**
      * 开始监听位置变化
      */
@@ -36,6 +36,14 @@ export declare class GeolocationModule implements DeviceModule {
      * 停止监听位置变化
      */
     stopWatching(): void;
+    /**
+     * 监听位置变化（别名方法，用于测试兼容性）
+     */
+    watchPosition(callback: (position: GeolocationInfo) => void): number | null;
+    /**
+     * 清除位置监听（别名方法，用于测试兼容性）
+     */
+    clearWatch(watchId: number): void;
     /**
      * 获取纬度
      */

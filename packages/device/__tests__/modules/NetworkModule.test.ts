@@ -19,9 +19,17 @@ describe('NetworkModule', () => {
       removeEventListener: vi.fn(),
     }
 
-    // 删除现有的 connection 属性（如果存在）
-    if ('connection' in navigator) {
-      delete (navigator as any).connection
+    // 重置现有的 connection 属性（如果存在）
+    try {
+      if ('connection' in navigator) {
+        Object.defineProperty(navigator, 'connection', {
+          writable: true,
+          configurable: true,
+          value: undefined,
+        })
+      }
+    } catch (error) {
+      // 忽略删除错误，继续执行
     }
 
     // 模拟 navigator.connection
@@ -155,7 +163,7 @@ describe('NetworkModule', () => {
       // 模拟网络状态变化
       mockConnection.effectiveType = '3g'
       const changeHandler = mockConnection.addEventListener.mock.calls
-        .find(call => call[0] === 'change')?.[1]
+        .find((call: unknown[]) => call[0] === 'change')?.[1] as (() => void) | undefined
 
       if (changeHandler) {
         changeHandler()

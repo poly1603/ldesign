@@ -5,6 +5,7 @@ import type {
   NetworkType,
 } from '../types'
 import { safeNavigatorAccess } from '../utils'
+import { EventEmitter } from '../core/EventEmitter'
 
 interface NetworkConnection {
   type?: string
@@ -19,7 +20,7 @@ interface NetworkConnection {
 /**
  * 网络信息模块
  */
-export class NetworkModule implements DeviceModule {
+export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> implements DeviceModule {
   name = 'network'
   private networkInfo: NetworkInfo
   private connection: NetworkConnection | null = null
@@ -28,6 +29,7 @@ export class NetworkModule implements DeviceModule {
   private changeHandler?: () => void
 
   constructor() {
+    super()
     this.networkInfo = this.detectNetworkInfo()
   }
 
@@ -65,6 +67,13 @@ export class NetworkModule implements DeviceModule {
    */
   getData(): NetworkInfo {
     return { ...this.networkInfo }
+  }
+
+  /**
+   * 获取网络信息（别名方法，用于测试兼容性）
+   */
+  getNetworkInfo(): NetworkInfo {
+    return this.getData()
   }
 
   /**
@@ -140,6 +149,9 @@ export class NetworkModule implements DeviceModule {
       type: this.parseConnectionType(
         connection?.effectiveType || connection?.type,
       ),
+      // 兼容性属性
+      online: status === 'online',
+      effectiveType: connection?.effectiveType || connection?.type || 'unknown',
     }
 
     // 添加额外的网络信息（如果可用）
@@ -183,7 +195,22 @@ export class NetworkModule implements DeviceModule {
    * 更新网络信息
    */
   private updateNetworkInfo(): void {
-    this.networkInfo = this.detectNetworkInfo()
+    const oldInfo = this.networkInfo
+    const newInfo = this.detectNetworkInfo()
+
+    // 检查是否有变化
+    const hasChanged =
+      oldInfo.status !== newInfo.status ||
+      oldInfo.type !== newInfo.type ||
+      oldInfo.online !== newInfo.online ||
+      oldInfo.effectiveType !== newInfo.effectiveType
+
+    this.networkInfo = newInfo
+
+    // 如果有变化，触发事件
+    if (hasChanged) {
+      this.emit('networkChange', newInfo)
+    }
   }
 
   /**

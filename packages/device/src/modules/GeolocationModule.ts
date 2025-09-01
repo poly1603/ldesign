@@ -63,7 +63,9 @@ export class GeolocationModule implements DeviceModule {
   /**
    * 获取当前位置
    */
-  async getCurrentPosition(): Promise<GeolocationInfo> {
+  async getCurrentPosition(options?: PositionOptions): Promise<GeolocationInfo> {
+    const positionOptions = options ? { ...this.options, ...options } : this.options
+
     return new Promise((resolve, reject) => {
       if (!this.isSupported()) {
         reject(new Error('Geolocation API is not supported'))
@@ -79,7 +81,7 @@ export class GeolocationModule implements DeviceModule {
         (error) => {
           reject(this.parseGeolocationError(error))
         },
-        this.options,
+        positionOptions,
       )
     })
   }
@@ -119,6 +121,48 @@ export class GeolocationModule implements DeviceModule {
     if (this.watchId !== null && this.isSupported()) {
       navigator.geolocation.clearWatch(this.watchId)
       this.watchId = null
+    }
+  }
+
+  /**
+   * 监听位置变化（别名方法，用于测试兼容性）
+   */
+  watchPosition(callback: (position: GeolocationInfo) => void): number | null {
+    if (!this.isSupported()) {
+      throw new Error('Geolocation API is not supported')
+    }
+
+    if (this.watchId !== null) {
+      this.stopWatching()
+    }
+
+    this.watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const info = this.parsePosition(position)
+        this.geolocationInfo = info
+        callback(info)
+      },
+      (error) => {
+        console.error(
+          'Geolocation watch error:',
+          this.parseGeolocationError(error),
+        )
+      },
+      this.options,
+    )
+
+    return this.watchId
+  }
+
+  /**
+   * 清除位置监听（别名方法，用于测试兼容性）
+   */
+  clearWatch(watchId: number): void {
+    if (this.isSupported()) {
+      navigator.geolocation.clearWatch(watchId)
+      if (this.watchId === watchId) {
+        this.watchId = null
+      }
     }
   }
 
@@ -188,7 +232,7 @@ export class GeolocationModule implements DeviceModule {
 
     const a
       = Math.sin(Δφ / 2) * Math.sin(Δφ / 2)
-        + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
+      + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 
     return R * c

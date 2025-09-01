@@ -20,6 +20,32 @@ import { ModuleLoader } from './ModuleLoader'
 
 /**
  * 设备检测器主类
+ *
+ * 这是一个高性能的设备检测器，能够：
+ * - 检测设备类型（桌面、移动、平板）
+ * - 监听屏幕方向变化
+ * - 检测浏览器和操作系统信息
+ * - 动态加载扩展模块（电池、地理位置、网络等）
+ * - 提供响应式的设备信息更新
+ *
+ * @example
+ * ```typescript
+ * // 创建设备检测器实例
+ * const detector = new DeviceDetector({
+ *   enableResize: true,
+ *   enableOrientation: true,
+ *   modules: ['network', 'battery']
+ * })
+ *
+ * // 监听设备变化
+ * detector.on('deviceChange', (deviceInfo) => {
+ *   console.log('设备信息更新:', deviceInfo)
+ * })
+ *
+ * // 获取当前设备信息
+ * const deviceInfo = detector.getDeviceInfo()
+ * console.log('当前设备类型:', deviceInfo.type)
+ * ```
  */
 export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
   private options: Required<DeviceDetectorOptions>
@@ -49,6 +75,34 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
     lastDetectionDuration: 0,
   }
 
+  /**
+   * 构造函数 - 创建设备检测器实例
+   *
+   * @param options 配置选项
+   * @param options.enableResize 是否启用窗口大小变化监听，默认 true
+   * @param options.enableOrientation 是否启用屏幕方向变化监听，默认 true
+   * @param options.modules 要加载的扩展模块列表，如 ['network', 'battery', 'geolocation']
+   * @param options.breakpoints 设备类型断点配置，用于判断设备类型
+   * @param options.debounceTime 事件防抖时间（毫秒），默认 100ms
+   *
+   * @example
+   * ```typescript
+   * // 基础配置
+   * const detector = new DeviceDetector()
+   *
+   * // 自定义配置
+   * const detector = new DeviceDetector({
+   *   enableResize: true,
+   *   enableOrientation: true,
+   *   modules: ['network', 'battery'],
+   *   breakpoints: {
+   *     mobile: 768,
+   *     tablet: 1024
+   *   },
+   *   debounceTime: 200
+   * })
+   * ```
+   */
   constructor(options: DeviceDetectorOptions = {}) {
     super()
 
@@ -86,6 +140,27 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
 
   /**
    * 获取完整的设备信息
+   *
+   * 返回当前设备的完整信息对象，包括：
+   * - 设备类型（desktop、mobile、tablet）
+   * - 屏幕尺寸和分辨率信息
+   * - 浏览器和操作系统信息
+   * - 设备方向和像素比
+   * - 触摸支持情况
+   *
+   * @returns DeviceInfo 设备信息对象
+   *
+   * @example
+   * ```typescript
+   * const detector = new DeviceDetector()
+   * const deviceInfo = detector.getDeviceInfo()
+   *
+   * console.log('设备类型:', deviceInfo.type) // 'mobile' | 'tablet' | 'desktop'
+   * console.log('屏幕宽度:', deviceInfo.screen.width)
+   * console.log('浏览器:', deviceInfo.browser.name)
+   * console.log('操作系统:', deviceInfo.os.name)
+   * console.log('是否支持触摸:', deviceInfo.features.touch)
+   * ```
    */
   getDeviceInfo(): DeviceInfo {
     return { ...this.currentDeviceInfo }
