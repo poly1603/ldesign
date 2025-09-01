@@ -180,6 +180,15 @@ importers:
       '@ldesign/engine':
         specifier: workspace:*
         version: link:../packages/engine
+      '@ldesign/router':
+        specifier: workspace:*
+        version: link:../packages/router
+      '@ldesign/template':
+        specifier: workspace:*
+        version: link:../packages/template
+      vue:
+        specifier: ^3.4.0
+        version: 3.5.18(typescript@5.9.2)
     devDependencies:
       '@ldesign/builder':
         specifier: workspace:*

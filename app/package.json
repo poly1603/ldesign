@@ -7,7 +7,10 @@
     "dev": "ldesign-launcher dev"
   },
   "dependencies": {
-    "@ldesign/engine": "workspace:*"
+    "@ldesign/engine": "workspace:*",
+    "@ldesign/router": "workspace:*",
+    "@ldesign/template": "workspace:*",
+    "vue": "^3.4.0"
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
