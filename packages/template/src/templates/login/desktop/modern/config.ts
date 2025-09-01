@@ -16,44 +16,44 @@ const config: TemplateConfig = {
   props: {
     title: {
       type: String,
-      default: '现代登录'
+      default: '现代登录',
     },
     subtitle: {
       type: String,
-      default: '体验现代化的登录方式'
+      default: '体验现代化的登录方式',
     },
     showRemember: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showSocialLogin: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showRegister: {
       type: Boolean,
-      default: true
+      default: true,
     },
     logoUrl: {
       type: String,
-      default: ''
+      default: '',
     },
     backgroundImage: {
       type: String,
-      default: ''
+      default: '',
     },
     primaryColor: {
       type: String,
-      default: '#667eea'
+      default: '#667eea',
     },
     secondaryColor: {
       type: String,
-      default: '#764ba2'
+      default: '#764ba2',
     },
     enableParticles: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   slots: ['header', 'footer', 'social', 'particles'],
   dependencies: [],
@@ -74,13 +74,13 @@ const config: TemplateConfig = {
     '自定义主题',
     '表单验证',
     'backdrop-filter 毛玻璃',
-    '高性能动画优化'
+    '高性能动画优化',
   ],
   screenshots: [
     './screenshot-1.png',
     './screenshot-2.png',
-    './screenshot-3.png'
-  ]
+    './screenshot-3.png',
+  ],
 }
 
 export default config

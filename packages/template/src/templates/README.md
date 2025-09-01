@@ -142,13 +142,6 @@ const loginTemplates = templates.value.get('login-desktop-default')
 ### 渲染模板
 
 ```vue
-<template>
-  <component 
-    :is="templateComponent" 
-    v-bind="templateProps"
-  />
-</template>
-
 <script setup lang="ts">
 import { useTemplateRenderer } from '@ldesign/template/composables'
 
@@ -161,6 +154,13 @@ await renderTemplate({
   device: 'desktop'
 })
 </script>
+
+<template>
+  <component
+    :is="templateComponent"
+    v-bind="templateProps"
+  />
+</template>
 ```
 
 ## 📋 模板规范
@@ -212,7 +212,7 @@ export default {
 所有模板都必须支持响应式设计：
 
 - **Desktop**: ≥ 1024px
-- **Tablet**: 768px - 1023px  
+- **Tablet**: 768px - 1023px
 - **Mobile**: < 768px
 
 ### 颜色规范
@@ -257,15 +257,15 @@ touch index.vue config.ts style.css README.md
 3. **实现模板组件**
 ```vue
 <!-- index.vue -->
+<script setup lang="ts">
+// 组件逻辑
+</script>
+
 <template>
   <div class="template-container">
     <!-- 模板内容 -->
   </div>
 </template>
-
-<script setup lang="ts">
-// 组件逻辑
-</script>
 
 <style scoped>
 /* 组件样式 */

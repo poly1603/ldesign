@@ -282,17 +282,17 @@ export type ConfigListener = (event: ConfigUpdateEvent) => void
  */
 export interface ConfigManager {
   /** 获取当前配置 */
-  getConfig(): TemplateSystemConfig
+  getConfig: () => TemplateSystemConfig
   /** 更新配置 */
-  updateConfig(config: Partial<TemplateSystemConfig>): void
+  updateConfig: (config: Partial<TemplateSystemConfig>) => void
   /** 重置为默认配置 */
-  resetConfig(): void
+  resetConfig: () => void
   /** 验证配置 */
-  validateConfig(config: Partial<TemplateSystemConfig>): ConfigValidationResult
+  validateConfig: (config: Partial<TemplateSystemConfig>) => ConfigValidationResult
   /** 监听配置变化 */
-  onConfigChange(listener: ConfigListener): () => void
+  onConfigChange: (listener: ConfigListener) => () => void
   /** 从文件加载配置 */
-  loadFromFile(filePath: string): Promise<void>
+  loadFromFile: (filePath: string) => Promise<void>
   /** 保存配置到文件 */
-  saveToFile(filePath: string): Promise<void>
+  saveToFile: (filePath: string) => Promise<void>
 }

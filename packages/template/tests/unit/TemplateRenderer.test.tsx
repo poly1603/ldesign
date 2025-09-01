@@ -2,11 +2,11 @@
  * TemplateRenderer 组件单元测试
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import type { TemplateMetadata } from '@/types/template'
 import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { TemplateRenderer } from '@/components/TemplateRenderer'
-import type { TemplateMetadata } from '@/types/template'
 
 // Mock 依赖
 vi.mock('@/composables/useTemplate', () => ({
@@ -17,17 +17,17 @@ vi.mock('@/composables/useTemplate', () => ({
     loading: { value: false },
     error: { value: null },
     switchTemplate: vi.fn(),
-    refreshTemplates: vi.fn()
-  })
+    refreshTemplates: vi.fn(),
+  }),
 }))
 
 vi.mock('@/composables/useDeviceDetection', () => ({
   useDeviceDetection: vi.fn().mockReturnValue({
-    deviceType: { value: 'desktop' }
-  })
+    deviceType: { value: 'desktop' },
+  }),
 }))
 
-describe('TemplateRenderer', () => {
+describe('templateRenderer', () => {
   const mockTemplate: TemplateMetadata = {
     name: 'test-template',
     displayName: '测试模板',
@@ -37,13 +37,13 @@ describe('TemplateRenderer', () => {
     device: 'desktop',
     componentPath: '/templates/login/desktop/test/index.vue',
     configPath: '/templates/login/desktop/test/config.js',
-    isDefault: true
+    isDefault: true,
   }
 
   const MockTemplateComponent = {
     name: 'MockTemplate',
     props: ['title'],
-    template: '<div class="mock-template">{{ title || "Mock Template" }}</div>'
+    template: '<div class="mock-template">{{ title || "Mock Template" }}</div>',
   }
 
   beforeEach(() => {
@@ -53,8 +53,8 @@ describe('TemplateRenderer', () => {
   it('应该渲染基本组件结构', () => {
     const wrapper = mount(TemplateRenderer, {
       props: {
-        category: 'login'
-      }
+        category: 'login',
+      },
     })
 
     expect(wrapper.find('.template-renderer').exists()).toBe(true)
@@ -70,13 +70,13 @@ describe('TemplateRenderer', () => {
       loading: { value: true },
       error: { value: null },
       switchTemplate: vi.fn(),
-      refreshTemplates: vi.fn()
+      refreshTemplates: vi.fn(),
     } as any)
 
     const wrapper = mount(TemplateRenderer, {
       props: {
-        category: 'login'
-      }
+        category: 'login',
+      },
     })
 
     expect(wrapper.find('.template-loading').exists()).toBe(true)
@@ -92,13 +92,13 @@ describe('TemplateRenderer', () => {
       loading: { value: false },
       error: { value: '加载失败' },
       switchTemplate: vi.fn(),
-      refreshTemplates: vi.fn()
+      refreshTemplates: vi.fn(),
     } as any)
 
     const wrapper = mount(TemplateRenderer, {
       props: {
-        category: 'login'
-      }
+        category: 'login',
+      },
     })
 
     expect(wrapper.find('.template-error').exists()).toBe(true)
@@ -114,14 +114,14 @@ describe('TemplateRenderer', () => {
       loading: { value: false },
       error: { value: null },
       switchTemplate: vi.fn(),
-      refreshTemplates: vi.fn()
+      refreshTemplates: vi.fn(),
     } as any)
 
     const wrapper = mount(TemplateRenderer, {
       props: {
         category: 'login',
-        props: { title: '自定义标题' }
-      }
+        props: { title: '自定义标题' },
+      },
     })
 
     await nextTick()
@@ -138,14 +138,14 @@ describe('TemplateRenderer', () => {
       loading: { value: false },
       error: { value: null },
       switchTemplate: vi.fn(),
-      refreshTemplates: vi.fn()
+      refreshTemplates: vi.fn(),
     } as any)
 
     const wrapper = mount(TemplateRenderer, {
       props: {
         category: 'login',
-        showSelector: true
-      }
+        showSelector: true,
+      },
     })
 
     expect(wrapper.find('.template-selector-trigger').exists()).toBe(true)
@@ -162,7 +162,7 @@ describe('TemplateRenderer', () => {
       loading: { value: false },
       error: { value: null },
       switchTemplate: mockSwitchTemplate,
-      refreshTemplates: vi.fn()
+      refreshTemplates: vi.fn(),
     } as any)
 
     const onTemplateChange = vi.fn()
@@ -170,8 +170,8 @@ describe('TemplateRenderer', () => {
       props: {
         category: 'login',
         templateName: 'new-template',
-        onTemplateChange
-      }
+        onTemplateChange,
+      },
     })
 
     await nextTick()
@@ -188,13 +188,13 @@ describe('TemplateRenderer', () => {
       loading: { value: false },
       error: { value: '加载失败' },
       switchTemplate: vi.fn(),
-      refreshTemplates: mockRefreshTemplates
+      refreshTemplates: mockRefreshTemplates,
     } as any)
 
     const wrapper = mount(TemplateRenderer, {
       props: {
-        category: 'login'
-      }
+        category: 'login',
+      },
     })
 
     const retryButton = wrapper.find('.template-error__retry')
@@ -207,7 +207,7 @@ describe('TemplateRenderer', () => {
   it('应该使用自定义加载组件', async () => {
     const CustomLoadingComponent = {
       name: 'CustomLoading',
-      template: '<div class="custom-loading">自定义加载中...</div>'
+      template: '<div class="custom-loading">自定义加载中...</div>',
     }
 
     const { useTemplate } = await import('@/composables/useTemplate')
@@ -218,14 +218,14 @@ describe('TemplateRenderer', () => {
       loading: { value: true },
       error: { value: null },
       switchTemplate: vi.fn(),
-      refreshTemplates: vi.fn()
+      refreshTemplates: vi.fn(),
     } as any)
 
     const wrapper = mount(TemplateRenderer, {
       props: {
         category: 'login',
-        loadingComponent: CustomLoadingComponent
-      }
+        loadingComponent: CustomLoadingComponent,
+      },
     })
 
     expect(wrapper.find('.custom-loading').exists()).toBe(true)
@@ -236,7 +236,7 @@ describe('TemplateRenderer', () => {
     const CustomErrorComponent = {
       name: 'CustomError',
       props: ['error', 'retry'],
-      template: '<div class="custom-error">{{ error }} <button @click="retry">重试</button></div>'
+      template: '<div class="custom-error">{{ error }} <button @click="retry">重试</button></div>',
     }
 
     const { useTemplate } = await import('@/composables/useTemplate')
@@ -247,14 +247,14 @@ describe('TemplateRenderer', () => {
       loading: { value: false },
       error: { value: '自定义错误' },
       switchTemplate: vi.fn(),
-      refreshTemplates: vi.fn()
+      refreshTemplates: vi.fn(),
     } as any)
 
     const wrapper = mount(TemplateRenderer, {
       props: {
         category: 'login',
-        errorComponent: CustomErrorComponent
-      }
+        errorComponent: CustomErrorComponent,
+      },
     })
 
     expect(wrapper.find('.custom-error').exists()).toBe(true)
@@ -270,13 +270,13 @@ describe('TemplateRenderer', () => {
       loading: { value: false },
       error: { value: null },
       switchTemplate: vi.fn().mockResolvedValue(undefined),
-      refreshTemplates: vi.fn()
+      refreshTemplates: vi.fn(),
     } as any)
 
     const wrapper = mount(TemplateRenderer, {
       props: {
-        category: 'login'
-      }
+        category: 'login',
+      },
     })
 
     // 模拟模板切换成功
@@ -290,14 +290,14 @@ describe('TemplateRenderer', () => {
   it('应该支持响应式设备切换', async () => {
     const { useDeviceDetection } = await import('@/composables/useDeviceDetection')
     vi.mocked(useDeviceDetection).mockReturnValue({
-      deviceType: { value: 'mobile' }
+      deviceType: { value: 'mobile' },
     } as any)
 
     const wrapper = mount(TemplateRenderer, {
       props: {
         category: 'login',
-        responsive: true
-      }
+        responsive: true,
+      },
     })
 
     // 验证组件使用了移动设备类型
@@ -313,13 +313,13 @@ describe('TemplateRenderer', () => {
       loading: { value: false },
       error: { value: null },
       switchTemplate: vi.fn(),
-      refreshTemplates: vi.fn()
+      refreshTemplates: vi.fn(),
     } as any)
 
     const wrapper = mount(TemplateRenderer, {
       props: {
-        category: 'login'
-      }
+        category: 'login',
+      },
     })
 
     expect(wrapper.find('.template-empty').exists()).toBe(true)

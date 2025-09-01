@@ -16,40 +16,40 @@ const config: TemplateConfig = {
   props: {
     title: {
       type: String,
-      default: '平板登录'
+      default: '平板登录',
     },
     subtitle: {
       type: String,
-      default: '在平板上享受更好的体验'
+      default: '在平板上享受更好的体验',
     },
     showRemember: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showRegister: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showForgot: {
       type: Boolean,
-      default: true
+      default: true,
     },
     logoUrl: {
       type: String,
-      default: ''
+      default: '',
     },
     backgroundImage: {
       type: String,
-      default: ''
+      default: '',
     },
     primaryColor: {
       type: String,
-      default: '#667eea'
+      default: '#667eea',
     },
     enableLandscapeMode: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   slots: ['header', 'footer', 'extra', 'sidebar'],
   dependencies: [],
@@ -69,12 +69,12 @@ const config: TemplateConfig = {
     '响应式字体',
     '触摸反馈增强',
     '屏幕方向检测',
-    '触摸区域优化'
+    '触摸区域优化',
   ],
   screenshots: [
     './screenshot-portrait.png',
-    './screenshot-landscape.png'
-  ]
+    './screenshot-landscape.png',
+  ],
 }
 
 export default config

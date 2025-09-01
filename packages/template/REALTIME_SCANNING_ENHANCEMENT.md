@@ -148,10 +148,10 @@ graph TD
 ### 扫描器监听配置
 ```typescript
 const scannerConfig = {
-  watchMode: true,              // 启用监听模式
-  debounceDelay: 300,          // 防抖延迟
-  batchSize: 10,               // 批处理大小
-  maxDepth: 5,                 // 最大扫描深度
+  watchMode: true, // 启用监听模式
+  debounceDelay: 300, // 防抖延迟
+  batchSize: 10, // 批处理大小
+  maxDepth: 5, // 最大扫描深度
   includeExtensions: ['.vue', '.js', '.ts'],
   excludePatterns: ['node_modules', '.git']
 }
@@ -160,21 +160,21 @@ const scannerConfig = {
 ### 热更新管理器配置
 ```typescript
 const hotReloadConfig = {
-  enabled: true,               // 启用热更新
-  debug: true,                 // 调试模式
-  updateDelay: 100,           // 更新延迟
-  autoRefresh: false,         // 自动刷新页面
-  preserveState: true         // 保持组件状态
+  enabled: true, // 启用热更新
+  debug: true, // 调试模式
+  updateDelay: 100, // 更新延迟
+  autoRefresh: false, // 自动刷新页面
+  preserveState: true // 保持组件状态
 }
 ```
 
 ### 文件监听器配置
 ```typescript
 const watcherConfig = {
-  rootDir: 'src/templates',    // 监听根目录
-  recursive: true,             // 递归监听
-  maxDepth: 10,               // 最大深度
-  debounceDelay: 300          // 防抖延迟
+  rootDir: 'src/templates', // 监听根目录
+  recursive: true, // 递归监听
+  maxDepth: 10, // 最大深度
+  debounceDelay: 300 // 防抖延迟
 }
 ```
 

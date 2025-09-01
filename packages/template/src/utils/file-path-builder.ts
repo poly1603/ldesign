@@ -28,16 +28,16 @@ export class FilePathBuilder {
    */
   buildStylePath(configPath: string): string | null {
     const basePath = this.getBasePath(configPath)
-    
+
     // 尝试查找匹配的样式文件
     const stylePattern = this.config.styleFile
     const extensions = this.config.allowedStyleExtensions
-    
+
     // 如果样式文件配置包含扩展名模式
     if (stylePattern.includes('{') && stylePattern.includes('}')) {
       // 提取基础文件名
       const baseFileName = stylePattern.replace(/\{.*\}/, '')
-      
+
       // 尝试每个允许的扩展名
       for (const ext of extensions) {
         const stylePath = `${basePath}/${baseFileName}${ext}`
@@ -45,7 +45,7 @@ export class FilePathBuilder {
         return stylePath
       }
     }
-    
+
     // 如果是固定文件名
     return `${basePath}/${stylePattern}`
   }
@@ -55,18 +55,18 @@ export class FilePathBuilder {
    */
   buildPreviewPath(configPath: string): string | null {
     const basePath = this.getBasePath(configPath)
-    
+
     const previewPattern = this.config.previewFile
-    
+
     // 如果预览文件配置包含扩展名模式
     if (previewPattern.includes('{') && previewPattern.includes('}')) {
       // 提取基础文件名
       const baseFileName = previewPattern.replace(/\{.*\}/, '')
-      
+
       // 默认使用 .png 扩展名
       return `${basePath}/${baseFileName}.png`
     }
-    
+
     // 如果是固定文件名
     return `${basePath}/${previewPattern}`
   }
@@ -77,18 +77,18 @@ export class FilePathBuilder {
   validateConfigPath(configPath: string): boolean {
     const configPattern = this.config.configFile
     const extensions = this.config.allowedConfigExtensions
-    
+
     // 如果配置文件模式包含扩展名模式
     if (configPattern.includes('{') && configPattern.includes('}')) {
       const baseFileName = configPattern.replace(/\{.*\}/, '')
-      
+
       // 检查是否匹配任何允许的扩展名
-      return extensions.some(ext => {
+      return extensions.some((ext) => {
         const expectedPath = baseFileName + ext
         return configPath.endsWith(expectedPath)
       })
     }
-    
+
     // 如果是固定文件名
     return configPath.endsWith(configPattern)
   }
@@ -99,11 +99,11 @@ export class FilePathBuilder {
   private getBasePath(configPath: string): string {
     const configPattern = this.config.configFile
     const extensions = this.config.allowedConfigExtensions
-    
+
     // 如果配置文件模式包含扩展名模式
     if (configPattern.includes('{') && configPattern.includes('}')) {
       const baseFileName = configPattern.replace(/\{.*\}/, '')
-      
+
       // 尝试每个允许的扩展名
       for (const ext of extensions) {
         const fullConfigName = baseFileName + ext
@@ -112,12 +112,12 @@ export class FilePathBuilder {
         }
       }
     }
-    
+
     // 如果是固定文件名
     if (configPath.endsWith(configPattern)) {
       return configPath.slice(0, -configPattern.length)
     }
-    
+
     // 降级处理：使用正则表达式移除配置文件名
     return configPath.replace(/\/config\.(js|ts)$/, '')
   }
@@ -133,13 +133,13 @@ export class FilePathBuilder {
     configPath: string
   } {
     const basePath = this.getBasePath(configPath)
-    
+
     return {
       basePath,
       componentPath: this.buildComponentPath(configPath),
       stylePath: this.buildStylePath(configPath),
       previewPath: this.buildPreviewPath(configPath),
-      configPath
+      configPath,
     }
   }
 
@@ -174,15 +174,15 @@ export const defaultFilePathBuilder = new FilePathBuilder({
   styleFile: 'style.{css,less,scss}',
   previewFile: 'preview.{png,jpg,jpeg,webp}',
   allowedConfigExtensions: ['.js', '.ts'],
-  allowedStyleExtensions: ['.css', '.less', '.scss']
+  allowedStyleExtensions: ['.css', '.less', '.scss'],
 })
 
 /**
  * 工具函数：快速构建模板路径
  */
 export function buildTemplatePaths(
-  configPath: string, 
-  config?: FileNamingConfig
+  configPath: string,
+  config?: FileNamingConfig,
 ): ReturnType<FilePathBuilder['buildTemplatePaths']> {
   const builder = config ? createFilePathBuilder(config) : defaultFilePathBuilder
   return builder.buildTemplatePaths(configPath)
@@ -192,8 +192,8 @@ export function buildTemplatePaths(
  * 工具函数：验证配置文件路径
  */
 export function validateConfigPath(
-  configPath: string, 
-  config?: FileNamingConfig
+  configPath: string,
+  config?: FileNamingConfig,
 ): boolean {
   const builder = config ? createFilePathBuilder(config) : defaultFilePathBuilder
   return builder.validateConfigPath(configPath)

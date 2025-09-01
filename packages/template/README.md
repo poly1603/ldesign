@@ -13,6 +13,7 @@
 - 🚀 **开箱即用** - 零配置启动，智能模板扫描
 - 📱 **响应式设计** - 自动设备检测，完美适配各种屏幕
 - ⚡ **性能优化** - 懒加载、缓存机制、预加载支持
+- 🎬 **流畅动画** - 丰富的动画效果，支持自定义配置和响应式适配
 - 🎯 **类型安全** - 完整的 TypeScript 支持
 - 🔧 **灵活配置** - 支持自定义配置和扩展
 - 🎪 **多种用法** - Composable、组件、指令、插件
@@ -168,7 +169,7 @@ app.mount('#app')
       subtitle: '请输入您的账号信息',
       primaryColor: '#667eea',
       showRemember: true,
-      showRegister: true
+      showRegister: true,
     }"
   />
 
@@ -181,7 +182,7 @@ app.mount('#app')
       title: '手机登录',
       subtitle: '随时随地，安全登录',
       enableBiometric: true,
-      showQuickLogin: true
+      showQuickLogin: true,
     }"
   />
 
@@ -194,7 +195,7 @@ app.mount('#app')
       title: '管理后台',
       userName: '管理员',
       showSidebar: true,
-      darkMode: false
+      darkMode: false,
     }"
   />
 </template>
@@ -471,6 +472,191 @@ export default defineComponent({
     )
   },
 })
+```
+
+## 🎬 动画配置
+
+LDesign Template 提供了丰富的动画效果，让模板切换和交互更加流畅自然。
+
+### 基础动画配置
+
+```vue
+<template>
+  <TemplateRenderer
+    category="login"
+    :show-selector="true"
+    :animation-config="{
+      enabled: true,
+      selector: {
+        type: 'scale-fade',
+        duration: 200,
+        easing: 'cubic-bezier(0.25, 0.8, 0.25, 1)',
+      },
+      templateSwitch: {
+        type: 'fade',
+        duration: 300,
+        easing: 'ease-in-out',
+      },
+    }"
+  />
+</template>
+```
+
+### 动画类型
+
+支持多种动画类型：
+
+- **fade** - 淡入淡出效果
+- **slide** - 滑动效果（支持上下左右方向）
+- **scale** - 缩放效果
+- **slide-fade** - 滑动+淡入淡出组合
+- **scale-fade** - 缩放+淡入淡出组合
+
+### 动画方向
+
+对于滑动类型的动画，支持四个方向：
+
+- **up** - 向上滑动
+- **down** - 向下滑动
+- **left** - 向左滑动
+- **right** - 向右滑动
+
+### 预设动画配置
+
+```typescript
+import { ANIMATION_PRESETS } from '@ldesign/template'
+
+// 快速动画
+const quickConfig = {
+  selector: ANIMATION_PRESETS.quickFade,
+  templateSwitch: ANIMATION_PRESETS.quickSlide
+}
+
+// 标准动画
+const standardConfig = {
+  selector: ANIMATION_PRESETS.standardScale,
+  templateSwitch: ANIMATION_PRESETS.standardFade
+}
+
+// 弹性动画
+const bounceConfig = {
+  selector: ANIMATION_PRESETS.bounceIn,
+  templateSwitch: ANIMATION_PRESETS.standardFade
+}
+```
+
+### 响应式动画
+
+根据设备类型自动调整动画效果：
+
+```typescript
+import { useResponsiveAnimation } from '@ldesign/template'
+
+const { currentConfig } = useResponsiveAnimation(
+  {
+    type: 'fade',
+    duration: 300,
+    easing: 'ease-in-out'
+  },
+  {
+    // 移动端使用更快的动画
+    768: { duration: 200 },
+    // 小屏幕设备使用最快的动画
+    480: { duration: 150 }
+  }
+)
+```
+
+### 动画序列
+
+创建复杂的动画序列：
+
+```typescript
+import { useAnimationSequence } from '@ldesign/template'
+
+const animations = [
+  { type: 'fade', duration: 200 },
+  { type: 'slide', duration: 300, direction: 'down' },
+  { type: 'scale', duration: 250 }
+]
+
+const { play, pause, stop } = useAnimationSequence(animations)
+
+// 播放动画序列
+await play()
+```
+
+### 交错动画
+
+为多个元素创建交错动画效果：
+
+```typescript
+import { useStaggeredAnimation } from '@ldesign/template'
+
+const elements = ref([]) // 元素引用数组
+const { playStaggered } = useStaggeredAnimation(
+  elements,
+  { type: 'fade', duration: 200 },
+  100 // 交错延迟时间
+)
+
+// 播放交错动画
+await playStaggered()
+```
+
+### 性能优化
+
+#### 减少动画偏好
+
+自动检测用户的减少动画偏好设置：
+
+```typescript
+const animationConfig = {
+  respectReducedMotion: true, // 自动检测并禁用动画
+  enabled: true
+}
+```
+
+#### 动画性能监控
+
+```typescript
+import { useAnimationPerformance } from '@ldesign/template'
+
+const { metrics, startAnimation, endAnimation } = useAnimationPerformance()
+
+// 监控动画性能
+startAnimation()
+// ... 执行动画
+endAnimation()
+
+console.log('动画统计:', metrics.value)
+// {
+//   animationCount: 5,
+//   totalDuration: 1250,
+//   averageDuration: 250,
+//   lastAnimationTime: 1640995200000
+// }
+```
+
+### 自定义缓动函数
+
+使用内置的缓动函数或自定义：
+
+```typescript
+import { EASING_FUNCTIONS } from '@ldesign/template'
+
+const animationConfig = {
+  selector: {
+    type: 'scale-fade',
+    duration: 300,
+    easing: EASING_FUNCTIONS.easeOutBack // 弹性效果
+  },
+  templateSwitch: {
+    type: 'fade',
+    duration: 250,
+    easing: 'cubic-bezier(0.68, -0.6, 0.32, 1.6)' // 自定义贝塞尔曲线
+  }
+}
 ```
 
 ## 🔧 高级配置

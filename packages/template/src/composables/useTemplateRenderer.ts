@@ -2,10 +2,10 @@
  * 模板渲染器组合式函数
  */
 
-import { ref, computed, watch, markRaw, type Ref, type Component } from 'vue'
-import type { TemplateMetadata, DeviceType } from '../types/template'
-import { componentLoader } from '../utils/loader'
+import type { TemplateMetadata } from '../types/template'
+import { type Component, markRaw, ref, type Ref } from 'vue'
 import { componentCache } from '../utils/cache'
+import { componentLoader } from '../utils/loader'
 
 /**
  * 渲染器选项
@@ -69,7 +69,8 @@ export function useTemplateRenderer(options: UseTemplateRendererOptions = {}): U
       if (!component) {
         if (template.componentLoader) {
           component = await template.componentLoader()
-        } else {
+        }
+        else {
           component = await componentLoader.loadComponent(template.componentPath)
         }
 
@@ -82,15 +83,18 @@ export function useTemplateRenderer(options: UseTemplateRendererOptions = {}): U
       if (component) {
         currentTemplate.value = template
         currentComponent.value = markRaw(component)
-      } else {
+      }
+      else {
         throw new Error(`Failed to load component: ${template.componentPath}`)
       }
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err.message : '加载模板失败'
       console.error('Template render failed:', err)
       currentTemplate.value = null
       currentComponent.value = null
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -132,7 +136,8 @@ export function useTemplateRenderer(options: UseTemplateRendererOptions = {}): U
       let component: Component | null = null
       if (template.componentLoader) {
         component = await template.componentLoader()
-      } else {
+      }
+      else {
         component = await componentLoader.loadComponent(template.componentPath)
       }
 
@@ -140,7 +145,8 @@ export function useTemplateRenderer(options: UseTemplateRendererOptions = {}): U
       if (component) {
         componentCache.set(template.category, template.device, template.name, component)
       }
-    } catch (err) {
+    }
+    catch (err) {
       console.warn('Template preload failed:', err)
     }
   }
@@ -153,6 +159,6 @@ export function useTemplateRenderer(options: UseTemplateRendererOptions = {}): U
     renderTemplate,
     clearTemplate,
     retryLoad,
-    preloadTemplate
+    preloadTemplate,
   }
 }

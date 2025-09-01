@@ -4,29 +4,25 @@
  */
 
 import type { Component } from 'vue'
-import type { 
-  TemplateConfig, 
-  TemplateMetadata, 
-  DeviceType 
-} from '../src/types/template'
-import type { 
+import type {
   TemplateSystemConfig,
-  ConfigManager,
-  ConfigValidationResult 
 } from '../src/types/config'
 import type {
-  TemplateCategory,
-  TemplateTag,
-  ExtendedTemplateMetadata,
-  TemplateFilter,
-  TemplateSortOptions
-} from '../src/types/template-categories'
-import type {
-  StrictTemplateConfig,
-  StrictTemplateMetadata,
+  StrictApiResponse,
   StrictError,
-  StrictApiResponse
+  StrictTemplateConfig,
 } from '../src/types/strict-types'
+import type {
+  TemplateConfig,
+  TemplateMetadata,
+} from '../src/types/template'
+import type {
+  ExtendedTemplateMetadata,
+  TemplateCategory,
+  TemplateFilter,
+  TemplateSortOptions,
+  TemplateTag,
+} from '../src/types/template-categories'
 
 /**
  * 类型检查函数集合
@@ -50,17 +46,17 @@ export class TypeChecker {
         title: {
           type: String,
           default: '默认标题',
-          required: false
+          required: false,
         },
         count: {
           type: Number,
           default: 0,
-          validator: (value: unknown): value is number => typeof value === 'number' && value >= 0
-        }
+          validator: (value: unknown): value is number => typeof value === 'number' && value >= 0,
+        },
       },
       slots: ['header', 'content', 'footer'],
       dependencies: ['vue', '@vueuse/core'],
-      minVueVersion: '3.0.0'
+      minVueVersion: '3.0.0',
     }
 
     // 验证配置对象的类型正确性
@@ -88,7 +84,7 @@ export class TypeChecker {
       stylePath: '/path/to/style.css',
       configPath: '/path/to/config.ts',
       lastModified: Date.now(),
-      isBuiltIn: false
+      isBuiltIn: false,
     }
 
     console.log('✓ TemplateMetadata 类型检查通过')
@@ -112,7 +108,7 @@ export class TypeChecker {
         enableCache: true,
         watchMode: true,
         debounceDelay: 300,
-        batchSize: 10
+        batchSize: 10,
       },
       cache: {
         enabled: true,
@@ -120,17 +116,17 @@ export class TypeChecker {
         maxSize: 50,
         ttl: 30 * 60 * 1000,
         enableCompression: false,
-        enablePersistence: false
+        enablePersistence: false,
       },
       deviceDetection: {
         breakpoints: {
           mobile: 768,
           tablet: 992,
-          desktop: 1200
+          desktop: 1200,
         },
         debounceDelay: 300,
         enableResize: true,
-        enableOrientation: true
+        enableOrientation: true,
       },
       preloadStrategy: {
         enabled: true,
@@ -139,16 +135,16 @@ export class TypeChecker {
         priority: [],
         intersection: {
           rootMargin: '50px',
-          threshold: 0.1
+          threshold: 0.1,
         },
-        delay: 1000
+        delay: 1000,
       },
       loader: {
         timeout: 10000,
         retryCount: 3,
         retryDelay: 1000,
         enableParallelLoading: true,
-        maxConcurrency: 3
+        maxConcurrency: 3,
       },
       fileNaming: {
         componentFile: 'index.vue',
@@ -156,28 +152,28 @@ export class TypeChecker {
         styleFile: 'style.{css,less,scss}',
         previewFile: 'preview.{png,jpg,jpeg,webp}',
         allowedConfigExtensions: ['.js', '.ts'],
-        allowedStyleExtensions: ['.css', '.less', '.scss']
+        allowedStyleExtensions: ['.css', '.less', '.scss'],
       },
       performance: {
         enableLazyLoading: true,
         enableVirtualScroll: false,
         chunkSize: 20,
         enableMetrics: true,
-        metricsInterval: 5000
+        metricsInterval: 5000,
       },
       errorHandling: {
         enableGlobalHandler: true,
         enableReporting: false,
         maxRetries: 3,
-        fallbackTemplate: 'error'
+        fallbackTemplate: 'error',
       },
       devtools: {
         enabled: true,
         enableInspector: true,
         enableLogger: true,
         logLevel: 'info',
-        enableTimeline: true
-      }
+        enableTimeline: true,
+      },
     }
 
     console.log('✓ TemplateSystemConfig 类型检查通过')
@@ -203,7 +199,7 @@ export class TypeChecker {
         count: 10,
         lastUsed: new Date(),
         rating: 4.5,
-        ratingCount: 20
+        ratingCount: 20,
       },
       compatibility: {
         vue: '3.0.0',
@@ -211,14 +207,14 @@ export class TypeChecker {
         node: '16.0.0',
         dependencies: {
           'vue': '^3.0.0',
-          '@vueuse/core': '^9.0.0'
-        }
+          '@vueuse/core': '^9.0.0',
+        },
       },
       performance: {
         bundleSize: 150,
         loadTime: 200,
         renderTime: 50,
-        memoryUsage: 10
+        memoryUsage: 10,
       },
       seo: {
         title: '测试模板页面',
@@ -226,15 +222,15 @@ export class TypeChecker {
         keywords: ['template', 'vue', 'test'],
         structuredData: {
           '@type': 'WebPage',
-          'name': '测试模板'
-        }
+          'name': '测试模板',
+        },
       },
       accessibility: {
         wcagLevel: 'AA',
         assistiveTech: ['screen-reader', 'keyboard'],
         keyboardNavigation: true,
-        screenReader: true
-      }
+        screenReader: true,
+      },
     }
 
     console.log('✓ ExtendedTemplateMetadata 类型检查通过')
@@ -255,9 +251,9 @@ export class TypeChecker {
           type: String,
           default: '严格标题',
           required: true,
-          validator: (value: string): boolean => value.length > 0
-        }
-      }
+          validator: (value: string): boolean => value.length > 0,
+        },
+      },
     }
 
     const strictError: StrictError = {
@@ -267,8 +263,8 @@ export class TypeChecker {
       severity: 'high',
       context: {
         templateName: 'test-template',
-        errorType: 'load-failure'
-      }
+        errorType: 'load-failure',
+      },
     }
 
     const apiResponse: StrictApiResponse<string> = {
@@ -277,8 +273,8 @@ export class TypeChecker {
       metadata: {
         timestamp: Date.now(),
         requestId: 'req-123',
-        version: '1.0.0'
-      }
+        version: '1.0.0',
+      },
     }
 
     console.log('✓ 严格类型定义检查通过')
@@ -297,17 +293,17 @@ export class TypeChecker {
       keyword: '搜索关键词',
       rating: {
         min: 4.0,
-        max: 5.0
+        max: 5.0,
       },
       createdRange: {
         start: new Date('2024-01-01'),
-        end: new Date('2024-12-31')
-      }
+        end: new Date('2024-12-31'),
+      },
     }
 
     const sortOptions: TemplateSortOptions = {
       field: 'rating',
-      direction: 'desc'
+      direction: 'desc',
     }
 
     console.log('✓ 过滤器和排序类型检查通过')
@@ -331,7 +327,8 @@ export class TypeChecker {
       console.log('📊 类型安全性: 100%')
       console.log('🚫 any类型使用: 0个')
       console.log('✨ 类型覆盖率: 完整')
-    } catch (error) {
+    }
+    catch (error) {
       console.error('\n❌ TypeScript类型检查失败:', error)
       process.exit(1)
     }

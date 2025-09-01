@@ -2,17 +2,16 @@
  * 文件监听器测试
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { 
-  FileWatcher, 
-  createFileWatcher,
-  getFileWatcher,
-  resetFileWatcher 
+import type {
+  FileWatcherCallbacks,
+  FileWatcherOptions,
 } from '../src/utils/file-watcher'
-import type { 
-  FileWatcherOptions, 
-  FileChangeEvent, 
-  FileWatcherCallbacks 
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  createFileWatcher,
+  FileWatcher,
+  getFileWatcher,
+  resetFileWatcher,
 } from '../src/utils/file-watcher'
 
 // 模拟 chokidar
@@ -21,13 +20,13 @@ const mockChokidar = {
   close: vi.fn(),
   on: vi.fn(),
   add: vi.fn(),
-  unwatch: vi.fn()
+  unwatch: vi.fn(),
 }
 
 // 模拟 fs.watch
 const mockFsWatch = {
   close: vi.fn(),
-  on: vi.fn()
+  on: vi.fn(),
 }
 
 const mockFs = {
@@ -35,27 +34,27 @@ const mockFs = {
   existsSync: vi.fn(),
   statSync: vi.fn(),
   promises: {
-    stat: vi.fn()
-  }
+    stat: vi.fn(),
+  },
 }
 
 // 模拟路径操作
 const mockPath = {
   join: vi.fn((...args) => args.join('/')),
-  resolve: vi.fn((...args) => '/' + args.join('/')),
+  resolve: vi.fn((...args) => `/${args.join('/')}`),
   dirname: vi.fn(p => p.split('/').slice(0, -1).join('/')),
   basename: vi.fn(p => p.split('/').pop()),
-  extname: vi.fn(p => {
+  extname: vi.fn((p) => {
     const parts = p.split('.')
-    return parts.length > 1 ? '.' + parts.pop() : ''
-  })
+    return parts.length > 1 ? `.${parts.pop()}` : ''
+  }),
 }
 
 // 设置模拟
 vi.mock('chokidar', () => ({
   default: {
-    watch: mockChokidar.watch.mockReturnValue(mockChokidar)
-  }
+    watch: mockChokidar.watch.mockReturnValue(mockChokidar),
+  },
 }))
 
 vi.mock('fs', () => mockFs)
@@ -63,7 +62,7 @@ vi.mock('node:fs', () => mockFs)
 vi.mock('path', () => mockPath)
 vi.mock('node:path', () => mockPath)
 
-describe('FileWatcher', () => {
+describe('fileWatcher', () => {
   let fileWatcher: FileWatcher
   let mockOptions: FileWatcherOptions
   let mockCallbacks: FileWatcherCallbacks
@@ -78,12 +77,12 @@ describe('FileWatcher', () => {
       excludePatterns: ['node_modules', '.git'],
       debounceDelay: 300,
       recursive: true,
-      maxDepth: 5
+      maxDepth: 5,
     }
 
     mockCallbacks = {
       onTemplateChange: vi.fn(),
-      onError: vi.fn()
+      onError: vi.fn(),
     }
 
     // 模拟文件系统
@@ -92,14 +91,14 @@ describe('FileWatcher', () => {
       isDirectory: () => true,
       isFile: () => false,
       mtime: new Date(),
-      size: 1024
+      size: 1024,
     })
 
     mockFs.promises.stat.mockResolvedValue({
       isDirectory: () => true,
       isFile: () => false,
       mtime: new Date(),
-      size: 1024
+      size: 1024,
     })
 
     fileWatcher = new FileWatcher(mockOptions, mockCallbacks)
@@ -116,7 +115,7 @@ describe('FileWatcher', () => {
   describe('构造函数', () => {
     it('应该使用默认选项创建监听器', () => {
       const defaultWatcher = new FileWatcher({
-        rootDir: 'default/templates'
+        rootDir: 'default/templates',
       })
 
       const options = defaultWatcher.getOptions()
@@ -150,8 +149,8 @@ describe('FileWatcher', () => {
         expect.objectContaining({
           ignored: expect.any(Function),
           persistent: true,
-          ignoreInitial: true
-        })
+          ignoreInitial: true,
+        }),
       )
     })
 
@@ -179,10 +178,10 @@ describe('FileWatcher', () => {
 
     it('应该检测文件添加事件', () => {
       const filePath = 'test/templates/login/desktop/default/index.vue'
-      
+
       // 模拟 chokidar 的 add 事件
       const addHandler = mockChokidar.on.mock.calls.find(
-        call => call[0] === 'add'
+        call => call[0] === 'add',
       )?.[1]
 
       expect(addHandler).toBeDefined()
@@ -199,17 +198,17 @@ describe('FileWatcher', () => {
             category: 'login',
             device: 'desktop',
             templateName: 'default',
-            fileType: 'component'
-          })
-        })
+            fileType: 'component',
+          }),
+        }),
       )
     })
 
     it('应该检测文件修改事件', () => {
       const filePath = 'test/templates/dashboard/desktop/overview/config.ts'
-      
+
       const changeHandler = mockChokidar.on.mock.calls.find(
-        call => call[0] === 'change'
+        call => call[0] === 'change',
       )?.[1]
 
       expect(changeHandler).toBeDefined()
@@ -226,17 +225,17 @@ describe('FileWatcher', () => {
             category: 'dashboard',
             device: 'desktop',
             templateName: 'overview',
-            fileType: 'config'
-          })
-        })
+            fileType: 'config',
+          }),
+        }),
       )
     })
 
     it('应该检测文件删除事件', () => {
       const filePath = 'test/templates/user/mobile/profile/style.css'
-      
+
       const unlinkHandler = mockChokidar.on.mock.calls.find(
-        call => call[0] === 'unlink'
+        call => call[0] === 'unlink',
       )?.[1]
 
       expect(unlinkHandler).toBeDefined()
@@ -253,9 +252,9 @@ describe('FileWatcher', () => {
             category: 'user',
             device: 'mobile',
             templateName: 'profile',
-            fileType: 'style'
-          })
-        })
+            fileType: 'style',
+          }),
+        }),
       )
     })
   })
@@ -267,9 +266,9 @@ describe('FileWatcher', () => {
 
     it('应该过滤不支持的文件扩展名', () => {
       const txtFilePath = 'test/templates/login/desktop/default/readme.txt'
-      
+
       const addHandler = mockChokidar.on.mock.calls.find(
-        call => call[0] === 'add'
+        call => call[0] === 'add',
       )?.[1]
 
       addHandler(txtFilePath)
@@ -280,9 +279,9 @@ describe('FileWatcher', () => {
 
     it('应该过滤排除模式匹配的文件', () => {
       const nodeModulesFile = 'test/templates/node_modules/package/index.js'
-      
+
       const addHandler = mockChokidar.on.mock.calls.find(
-        call => call[0] === 'add'
+        call => call[0] === 'add',
       )?.[1]
 
       addHandler(nodeModulesFile)
@@ -294,9 +293,9 @@ describe('FileWatcher', () => {
     it('应该过滤超过最大深度的文件', () => {
       // 创建深度超过 maxDepth 的文件路径
       const deepPath = 'test/templates/a/b/c/d/e/f/g/file.vue' // 深度 > 5
-      
+
       const addHandler = mockChokidar.on.mock.calls.find(
-        call => call[0] === 'add'
+        call => call[0] === 'add',
       )?.[1]
 
       addHandler(deepPath)
@@ -313,9 +312,9 @@ describe('FileWatcher', () => {
 
     it('应该对快速连续的文件变化进行防抖', () => {
       const filePath = 'test/templates/login/desktop/default/index.vue'
-      
+
       const changeHandler = mockChokidar.on.mock.calls.find(
-        call => call[0] === 'change'
+        call => call[0] === 'change',
       )?.[1]
 
       // 快速触发多次变化
@@ -335,9 +334,9 @@ describe('FileWatcher', () => {
     it('应该为不同文件分别处理防抖', () => {
       const file1 = 'test/templates/login/desktop/default/index.vue'
       const file2 = 'test/templates/dashboard/desktop/overview/index.vue'
-      
+
       const changeHandler = mockChokidar.on.mock.calls.find(
-        call => call[0] === 'change'
+        call => call[0] === 'change',
       )?.[1]
 
       changeHandler(file1)
@@ -358,8 +357,8 @@ describe('FileWatcher', () => {
             category: 'login',
             device: 'desktop',
             templateName: 'default',
-            fileType: 'component'
-          }
+            fileType: 'component',
+          },
         },
         {
           path: 'test/templates/dashboard/tablet/overview/config.ts',
@@ -367,8 +366,8 @@ describe('FileWatcher', () => {
             category: 'dashboard',
             device: 'tablet',
             templateName: 'overview',
-            fileType: 'config'
-          }
+            fileType: 'config',
+          },
         },
         {
           path: 'test/templates/user/mobile/profile/style.less',
@@ -376,8 +375,8 @@ describe('FileWatcher', () => {
             category: 'user',
             device: 'mobile',
             templateName: 'profile',
-            fileType: 'style'
-          }
+            fileType: 'style',
+          },
         },
         {
           path: 'test/templates/form/desktop/contact/preview.png',
@@ -385,9 +384,9 @@ describe('FileWatcher', () => {
             category: 'form',
             device: 'desktop',
             templateName: 'contact',
-            fileType: 'preview'
-          }
-        }
+            fileType: 'preview',
+          },
+        },
       ]
 
       testCases.forEach(({ path, expected }) => {
@@ -400,10 +399,10 @@ describe('FileWatcher', () => {
       const invalidPaths = [
         'invalid/path.vue',
         'test/templates/category/index.vue', // 缺少设备类型
-        'test/templates/category/device/index.vue' // 缺少模板名称
+        'test/templates/category/device/index.vue', // 缺少模板名称
       ]
 
-      invalidPaths.forEach(path => {
+      invalidPaths.forEach((path) => {
         const metadata = fileWatcher.extractTemplateInfo(path)
         expect(metadata).toBeNull()
       })
@@ -422,16 +421,16 @@ describe('FileWatcher', () => {
 
     it('应该能够销毁监听器', async () => {
       await fileWatcher.startWatching()
-      
+
       fileWatcher.destroy()
-      
+
       expect(fileWatcher.isWatching()).toBe(false)
       expect(mockChokidar.close).toHaveBeenCalled()
     })
 
     it('应该处理停止监听时的错误', async () => {
       await fileWatcher.startWatching()
-      
+
       mockChokidar.close.mockImplementation(() => {
         throw new Error('Close failed')
       })
@@ -445,7 +444,7 @@ describe('FileWatcher', () => {
       await fileWatcher.startWatching()
 
       const errorHandler = mockChokidar.on.mock.calls.find(
-        call => call[0] === 'error'
+        call => call[0] === 'error',
       )?.[1]
 
       expect(errorHandler).toBeDefined()
@@ -462,7 +461,7 @@ describe('FileWatcher', () => {
       await fileWatcher.startWatching()
 
       const addHandler = mockChokidar.on.mock.calls.find(
-        call => call[0] === 'add'
+        call => call[0] === 'add',
       )?.[1]
 
       addHandler('test/templates/login/desktop/default/index.vue')
@@ -471,8 +470,8 @@ describe('FileWatcher', () => {
       // 应该仍然触发回调，但没有文件大小信息
       expect(mockCallbacks.onTemplateChange).toHaveBeenCalledWith(
         expect.objectContaining({
-          size: undefined
-        })
+          size: undefined,
+        }),
       )
     })
   })

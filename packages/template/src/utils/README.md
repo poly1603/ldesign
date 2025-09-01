@@ -33,14 +33,14 @@ utils/
 
 ```typescript
 import {
-  LRUCache,
   ComponentCache,
   FileWatcher,
+  formatUtils,
   HotReloadManager,
-  TemplateCategoryManager,
+  LRUCache,
   pathUtils,
-  validationUtils,
-  formatUtils
+  TemplateCategoryManager,
+  validationUtils
 } from '@ldesign/template/utils'
 ```
 
@@ -48,7 +48,7 @@ import {
 
 ```typescript
 // 缓存系统
-import { LRUCache, ComponentCache } from '@ldesign/template/utils/cache'
+import { ComponentCache, LRUCache } from '@ldesign/template/utils/cache'
 
 // 文件监听
 import { FileWatcher } from '@ldesign/template/utils/file-watcher'
@@ -67,7 +67,7 @@ import { TemplateCategoryManager } from '@ldesign/template/utils/template-catego
 提供高性能的缓存解决方案：
 
 ```typescript
-import { LRUCache, ComponentCache } from '@ldesign/template/utils/cache'
+import { ComponentCache, LRUCache } from '@ldesign/template/utils/cache'
 
 // LRU缓存
 const cache = new LRUCache<string>({ maxSize: 100, ttl: 60000 })
@@ -265,7 +265,8 @@ const errorContext = debugUtils.createErrorContext({
 
 try {
   await scanner.scan()
-} catch (error) {
+}
+catch (error) {
   debugUtils.reportError(error, errorContext)
 }
 ```

@@ -40,17 +40,17 @@ packages/template/
 **位置**: `src/plugin.ts`
 ```typescript
 const DEFAULT_OPTIONS: Required<TemplatePluginOptions> = {
-  templatesDir: 'src/templates',        // 硬编码路径
+  templatesDir: 'src/templates', // 硬编码路径
   autoScan: true,
   cache: true,
   enableHMR: import.meta.env?.DEV ?? false,
-  defaultDevice: 'desktop',             // 硬编码默认设备
+  defaultDevice: 'desktop', // 硬编码默认设备
   enablePerformanceMonitor: false,
   preloadStrategy: {
     enabled: true,
     mode: 'lazy',
-    limit: 5,                          // 硬编码限制
-    priority: []                       // 空数组，但结构硬编码
+    limit: 5, // 硬编码限制
+    priority: [] // 空数组，但结构硬编码
   }
 }
 ```
@@ -60,9 +60,9 @@ const DEFAULT_OPTIONS: Required<TemplatePluginOptions> = {
 **位置**: `example/src/main.ts`
 ```typescript
 app.use(TemplatePlugin, {
-  templatesDir: '../src/templates',      // 硬编码相对路径
+  templatesDir: '../src/templates', // 硬编码相对路径
   preloadStrategy: {
-    priority: ['login-desktop-default', 'login-desktop-modern']  // 硬编码优先级
+    priority: ['login-desktop-default', 'login-desktop-modern'] // 硬编码优先级
   }
 })
 ```
@@ -80,11 +80,13 @@ const breakpoints = {
 
 function detectDeviceType(): DeviceType {
   const width = window.innerWidth
-  if (width < breakpoints.mobile) {      // 硬编码判断逻辑
+  if (width < breakpoints.mobile) { // 硬编码判断逻辑
     return 'mobile'
-  } else if (width < breakpoints.tablet) {
+  }
+  else if (width < breakpoints.tablet) {
     return 'tablet'
-  } else {
+  }
+  else {
     return 'desktop'
   }
 }
@@ -95,12 +97,12 @@ function detectDeviceType(): DeviceType {
 **位置**: `src/scanner/index.ts`
 ```typescript
 this.options = {
-  templatesDir: 'src/templates',         // 硬编码默认路径
+  templatesDir: 'src/templates', // 硬编码默认路径
   enableCache: true,
   enableHMR: false,
-  maxDepth: 5,                          // 硬编码深度限制
-  includeExtensions: ['.vue', '.tsx', '.js', '.ts'],  // 硬编码扩展名
-  excludePatterns: ['node_modules', '.git', 'dist'],  // 硬编码排除模式
+  maxDepth: 5, // 硬编码深度限制
+  includeExtensions: ['.vue', '.tsx', '.js', '.ts'], // 硬编码扩展名
+  excludePatterns: ['node_modules', '.git', 'dist'], // 硬编码排除模式
   ...options
 }
 ```
@@ -111,8 +113,8 @@ this.options = {
 ```typescript
 // 硬编码路径构建逻辑
 const basePath = configPath.replace(/\/config\.(js|ts)$/, '')
-const componentPath = `${basePath}/index.vue`     // 硬编码文件名
-const stylePath = `${basePath}/style.less`        // 硬编码样式文件名
+const componentPath = `${basePath}/index.vue` // 硬编码文件名
+const stylePath = `${basePath}/style.less` // 硬编码样式文件名
 ```
 
 ### 6. 缓存配置硬编码
@@ -121,9 +123,9 @@ const stylePath = `${basePath}/style.less`        // 硬编码样式文件名
 ```typescript
 // 硬编码缓存参数
 const cacheConfig = {
-  maxSize: 50,                          // 硬编码缓存大小
-  ttl: 30 * 60 * 1000,                 // 硬编码过期时间
-  strategy: 'lru'                       // 硬编码策略
+  maxSize: 50, // 硬编码缓存大小
+  ttl: 30 * 60 * 1000, // 硬编码过期时间
+  strategy: 'lru' // 硬编码策略
 }
 ```
 

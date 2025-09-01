@@ -46,7 +46,7 @@ const config = {
   templatesDir: process.env.TEMPLATE_TEMPLATES_DIR || 'src/templates',
   cache: {
     enabled: process.env.TEMPLATE_CACHE_ENABLED === 'true',
-    maxSize: parseInt(process.env.TEMPLATE_CACHE_MAX_SIZE || '50')
+    maxSize: Number.parseInt(process.env.TEMPLATE_CACHE_MAX_SIZE || '50')
   }
 }
 ```
@@ -157,28 +157,28 @@ interface TemplateSystemConfig {
 
   // 扫描器配置
   scanner: ScannerConfig
-  
+
   // 缓存配置
   cache: CacheConfig
-  
+
   // 设备检测配置
   deviceDetection: DeviceDetectionConfig
-  
+
   // 预加载策略配置
   preloadStrategy: PreloadStrategyConfig
-  
+
   // 加载器配置
   loader: LoaderConfig
-  
+
   // 文件命名约定配置
   fileNaming: FileNamingConfig
-  
+
   // 性能优化配置
   performance: PerformanceConfig
-  
+
   // 错误处理配置
   errorHandling: ErrorHandlingConfig
-  
+
   // 开发工具配置
   devtools: DevtoolsConfig
 }

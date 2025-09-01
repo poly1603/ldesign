@@ -1,13 +1,13 @@
 /**
  * 响应式模板切换 Hook
- * 
+ *
  * 实现设备切换时的自动模板切换和手动模板切换功能
  */
 
-import { ref, computed, watch, nextTick, type Ref } from 'vue'
+import type { DeviceType, TemplateMetadata } from '../types/template'
+import { computed, nextTick, ref, type Ref, watch } from 'vue'
 import { useDeviceDetection } from './useDeviceDetection'
 import { useTemplate } from './useTemplate'
-import type { DeviceType, TemplateMetadata } from '../types/template'
 
 /**
  * 响应式模板切换选项
@@ -69,16 +69,16 @@ export function useResponsiveTemplate(options: UseResponsiveTemplateOptions): Us
     enableTransition = true,
     transitionDuration = 300,
     deviceTemplateMap = {},
-    switchDebounce = 100
+    switchDebounce = 100,
   } = options
 
   // 设备检测
   const {
     deviceType: detectedDevice,
-    setDeviceType
+    setDeviceType,
   } = useDeviceDetection({
     initialDevice,
-    enableResponsive: enableAutoDeviceSwitch
+    enableResponsive: enableAutoDeviceSwitch,
   })
 
   // 模板管理
@@ -86,11 +86,11 @@ export function useResponsiveTemplate(options: UseResponsiveTemplateOptions): Us
     availableTemplates: templates,
     loading: templateLoading,
     error: templateError,
-    refresh: refreshTemplates
+    refresh: refreshTemplates,
   } = useTemplate({
     category,
     autoDetectDevice: false, // 由当前 Hook 管理设备切换
-    enableCache: true
+    enableCache: true,
   })
 
   // 状态管理
@@ -106,9 +106,9 @@ export function useResponsiveTemplate(options: UseResponsiveTemplateOptions): Us
   // 工具函数：获取模板
   const getTemplate = (category: string, device: DeviceType, templateName: string) => {
     return templates.value.find(t =>
-      t.category === category &&
-      t.device === device &&
-      t.name === templateName
+      t.category === category
+      && t.device === device
+      && t.name === templateName,
     )
   }
 
@@ -128,7 +128,7 @@ export function useResponsiveTemplate(options: UseResponsiveTemplateOptions): Us
   function getAvailableTemplates(device?: DeviceType): TemplateMetadata[] {
     const targetDevice = device || currentDevice.value
     return templates.value.filter(template =>
-      template.category === category && template.device === targetDevice
+      template.category === category && template.device === targetDevice,
     )
   }
 
@@ -168,11 +168,12 @@ export function useResponsiveTemplate(options: UseResponsiveTemplateOptions): Us
       if (enableTransition && transitionDuration > 0) {
         await new Promise(resolve => setTimeout(resolve, transitionDuration / 2))
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       switchError.value = error instanceof Error ? error.message : 'Unknown switch error'
       throw error
-    } finally {
+    }
+    finally {
       isSwitching.value = false
     }
   }
@@ -190,9 +191,11 @@ export function useResponsiveTemplate(options: UseResponsiveTemplateOptions): Us
         try {
           await performTemplateSwitch(template, device)
           resolve()
-        } catch (error) {
+        }
+        catch (error) {
           reject(error)
-        } finally {
+        }
+        finally {
           switchTimer = null
         }
       }, switchDebounce)
@@ -203,7 +206,8 @@ export function useResponsiveTemplate(options: UseResponsiveTemplateOptions): Us
    * 手动切换设备类型
    */
   async function switchDevice(device: DeviceType): Promise<void> {
-    if (device === currentDevice.value) return
+    if (device === currentDevice.value)
+      return
 
     const template = getDefaultTemplateForDevice(device)
     await debouncedSwitch(template, device)
@@ -245,16 +249,18 @@ export function useResponsiveTemplate(options: UseResponsiveTemplateOptions): Us
   watch(
     detectedDevice,
     async (newDevice) => {
-      if (!enableAutoDeviceSwitch || newDevice === currentDevice.value) return
+      if (!enableAutoDeviceSwitch || newDevice === currentDevice.value)
+        return
 
       try {
         const template = getDefaultTemplateForDevice(newDevice)
         await switchDevice(newDevice)
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Auto device switch failed:', error)
       }
     },
-    { immediate: false }
+    { immediate: false },
   )
 
   // 监听模板加载完成
@@ -268,7 +274,7 @@ export function useResponsiveTemplate(options: UseResponsiveTemplateOptions): Us
         }
       }
     },
-    { immediate: true }
+    { immediate: true },
   )
 
   // 初始化当前模板元数据
@@ -287,7 +293,7 @@ export function useResponsiveTemplate(options: UseResponsiveTemplateOptions): Us
     switchDevice,
     switchTemplate,
     getAvailableTemplates,
-    reset
+    reset,
   }
 }
 
@@ -299,13 +305,13 @@ export function useSimpleResponsiveTemplate(category: string, initialTemplate = 
     category,
     initialTemplate,
     enableAutoDeviceSwitch: true,
-    enableTransition: false
+    enableTransition: false,
   })
 
   return {
     currentDevice,
     currentTemplate,
     switchDevice,
-    switchTemplate
+    switchTemplate,
   }
 }

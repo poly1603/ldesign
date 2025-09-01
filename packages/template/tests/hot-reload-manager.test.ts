@@ -2,17 +2,16 @@
  * 热更新管理器测试
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { 
-  HotReloadManager, 
-  createHotReloadManager, 
-  getHotReloadManager,
-  resetHotReloadManager 
+import type {
+  HotReloadEvent,
+  HotReloadManagerOptions,
 } from '../src/utils/hot-reload-manager'
-import type { 
-  HotReloadEvent, 
-  HotReloadListener, 
-  HotReloadManagerOptions 
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  createHotReloadManager,
+  getHotReloadManager,
+  HotReloadManager,
+  resetHotReloadManager,
 } from '../src/utils/hot-reload-manager'
 
 // 模拟 import.meta.hot
@@ -21,32 +20,32 @@ const mockHMR = {
   off: vi.fn(),
   send: vi.fn(),
   accept: vi.fn(),
-  dispose: vi.fn()
+  dispose: vi.fn(),
 }
 
 // 模拟 import.meta.env
 const mockEnv = {
   DEV: true,
   PROD: false,
-  MODE: 'development'
+  MODE: 'development',
 }
 
-describe('HotReloadManager', () => {
+describe('hotReloadManager', () => {
   let hotReloadManager: HotReloadManager
   let mockOptions: Partial<HotReloadManagerOptions>
 
   beforeEach(() => {
     vi.useFakeTimers()
-    
+
     // 模拟 HMR 环境
     Object.defineProperty(globalThis, 'import', {
       value: {
         meta: {
           hot: mockHMR,
-          env: mockEnv
-        }
+          env: mockEnv,
+        },
       },
-      configurable: true
+      configurable: true,
     })
 
     mockOptions = {
@@ -54,7 +53,7 @@ describe('HotReloadManager', () => {
       debug: false,
       updateDelay: 100,
       autoRefresh: false,
-      preserveState: true
+      preserveState: true,
     }
 
     hotReloadManager = new HotReloadManager(mockOptions)
@@ -85,7 +84,7 @@ describe('HotReloadManager', () => {
         enabled: false,
         debug: true,
         updateDelay: 200,
-        autoRefresh: true
+        autoRefresh: true,
       }
 
       const customManager = new HotReloadManager(customOptions)
@@ -123,10 +122,10 @@ describe('HotReloadManager', () => {
         template: {
           category: 'login',
           device: 'desktop',
-          name: 'default'
+          name: 'default',
         },
         filePath: '/path/to/template.vue',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       hotReloadManager.triggerUpdate(event)
@@ -149,10 +148,10 @@ describe('HotReloadManager', () => {
         template: {
           category: 'login',
           device: 'desktop',
-          name: 'default'
+          name: 'default',
         },
         filePath: '/path/to/template.vue',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       hotReloadManager.triggerUpdate(event)
@@ -177,10 +176,10 @@ describe('HotReloadManager', () => {
         template: {
           category: 'login',
           device: 'desktop',
-          name: 'default'
+          name: 'default',
         },
         filePath: '/path/to/template.vue',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       hotReloadManager.triggerUpdate(event)
@@ -204,12 +203,12 @@ describe('HotReloadManager', () => {
         device: 'desktop',
         templateName: 'default',
         filePath: '/path/to/template.vue',
-        changeType: 'changed'
+        changeType: 'changed',
       }
 
       // 获取注册的 HMR 监听器
       const templateFileHandler = mockHMR.on.mock.calls.find(
-        call => call[0] === 'template-file-changed'
+        call => call[0] === 'template-file-changed',
       )?.[1]
 
       expect(templateFileHandler).toBeDefined()
@@ -224,10 +223,10 @@ describe('HotReloadManager', () => {
           template: {
             category: 'login',
             device: 'desktop',
-            name: 'default'
+            name: 'default',
           },
-          filePath: '/path/to/template.vue'
-        })
+          filePath: '/path/to/template.vue',
+        }),
       )
     })
 
@@ -239,11 +238,11 @@ describe('HotReloadManager', () => {
         category: 'login',
         device: 'desktop',
         templateName: 'default',
-        filePath: '/path/to/config.ts'
+        filePath: '/path/to/config.ts',
       }
 
       const configHandler = mockHMR.on.mock.calls.find(
-        call => call[0] === 'template-config-changed'
+        call => call[0] === 'template-config-changed',
       )?.[1]
 
       expect(configHandler).toBeDefined()
@@ -257,9 +256,9 @@ describe('HotReloadManager', () => {
           template: {
             category: 'login',
             device: 'desktop',
-            name: 'default'
-          }
-        })
+            name: 'default',
+          },
+        }),
       )
     })
 
@@ -271,11 +270,11 @@ describe('HotReloadManager', () => {
         category: 'login',
         device: 'desktop',
         templateName: 'default',
-        filePath: '/path/to/style.css'
+        filePath: '/path/to/style.css',
       }
 
       const styleHandler = mockHMR.on.mock.calls.find(
-        call => call[0] === 'template-style-changed'
+        call => call[0] === 'template-style-changed',
       )?.[1]
 
       expect(styleHandler).toBeDefined()
@@ -285,8 +284,8 @@ describe('HotReloadManager', () => {
 
       expect(listener).toHaveBeenCalledWith(
         expect.objectContaining({
-          type: 'style-updated'
-        })
+          type: 'style-updated',
+        }),
       )
     })
 
@@ -298,11 +297,11 @@ describe('HotReloadManager', () => {
         category: 'login',
         device: 'desktop',
         templateName: 'default',
-        filePath: '/path/to/component.vue'
+        filePath: '/path/to/component.vue',
       }
 
       const componentHandler = mockHMR.on.mock.calls.find(
-        call => call[0] === 'template-component-changed'
+        call => call[0] === 'template-component-changed',
       )?.[1]
 
       expect(componentHandler).toBeDefined()
@@ -312,8 +311,8 @@ describe('HotReloadManager', () => {
 
       expect(listener).toHaveBeenCalledWith(
         expect.objectContaining({
-          type: 'component-updated'
-        })
+          type: 'component-updated',
+        }),
       )
     })
   })
@@ -327,14 +326,14 @@ describe('HotReloadManager', () => {
         type: 'template-updated',
         template: { category: 'login', device: 'desktop', name: 'default' },
         filePath: '/path/to/template.vue',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       const event2: HotReloadEvent = {
         type: 'template-updated',
         template: { category: 'login', device: 'desktop', name: 'default' },
         filePath: '/path/to/template.vue',
-        timestamp: Date.now() + 50
+        timestamp: Date.now() + 50,
       }
 
       // 快速触发两个事件
@@ -359,14 +358,14 @@ describe('HotReloadManager', () => {
         type: 'template-updated',
         template: { category: 'login', device: 'desktop', name: 'default' },
         filePath: '/path/to/login.vue',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       const event2: HotReloadEvent = {
         type: 'template-updated',
         template: { category: 'dashboard', device: 'desktop', name: 'default' },
         filePath: '/path/to/dashboard.vue',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       hotReloadManager.triggerUpdate(event1)
@@ -402,7 +401,7 @@ describe('HotReloadManager', () => {
         type: 'template-updated',
         template: { category: 'login', device: 'desktop', name: 'default' },
         filePath: '/path/to/template.vue',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       hotReloadManager.triggerUpdate(event)
@@ -426,7 +425,7 @@ describe('HotReloadManager', () => {
       const newOptions = {
         debug: true,
         updateDelay: 200,
-        autoRefresh: true
+        autoRefresh: true,
       }
 
       hotReloadManager.updateOptions(newOptions)
@@ -458,7 +457,7 @@ describe('HotReloadManager', () => {
         type: 'template-updated',
         template: { category: 'login', device: 'desktop', name: 'default' },
         filePath: '/path/to/template.vue',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       debugManager.triggerUpdate(event)

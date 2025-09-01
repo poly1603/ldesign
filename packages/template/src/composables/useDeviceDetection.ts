@@ -4,18 +4,25 @@
  * 集成配置系统，实现高效的设备类型检测和响应式切换
  */
 
-import { ref, computed, onMounted, onUnmounted, inject, type Ref } from 'vue'
-import type { DeviceType } from '../types/template'
 import type { TemplateSystemConfig } from '../types/config'
+import type { DeviceType } from '../types/template'
+import { computed, inject, onMounted, onUnmounted, ref, type Ref } from 'vue'
+
+// 默认断点配置
+const DEFAULT_BREAKPOINTS = {
+  mobile: 768,
+  tablet: 1024,
+  desktop: 1200,
+}
 
 /**
  * 设备检测选项
  */
 interface UseDeviceDetectionOptions {
   /** 初始设备类型 */
-  initialDevice?: DeviceType
+  initialDevice: DeviceType
   /** 是否启用响应式监听 */
-  enableResponsive?: boolean
+  enableResponsive: boolean
   /** 断点配置（覆盖全局配置） */
   breakpoints?: {
     mobile: number
@@ -68,10 +75,10 @@ export function useDeviceDetection(options: UseDeviceDetectionOptions = {}): Use
     breakpoints = globalConfig?.deviceDetection.breakpoints || {
       mobile: 768,
       tablet: 1024,
-      desktop: 1200
+      desktop: 1200,
     },
     debounceDelay = globalConfig?.deviceDetection.debounceDelay ?? 150,
-    customDetector = globalConfig?.deviceDetection.customDetector
+    customDetector = globalConfig?.deviceDetection.customDetector,
   } = options
 
   // 响应式状态
@@ -105,7 +112,8 @@ export function useDeviceDetection(options: UseDeviceDetectionOptions = {}): Use
     if (customDetector) {
       try {
         return customDetector(width, height, userAgent)
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('自定义设备检测器执行失败，使用默认检测逻辑:', error)
       }
     }
@@ -113,9 +121,11 @@ export function useDeviceDetection(options: UseDeviceDetectionOptions = {}): Use
     // 默认检测逻辑
     if (width < breakpoints.mobile) {
       return 'mobile'
-    } else if (width < breakpoints.tablet) {
+    }
+    else if (width < breakpoints.tablet) {
       return 'tablet'
-    } else {
+    }
+    else {
       return 'desktop'
     }
   }
@@ -129,10 +139,10 @@ export function useDeviceDetection(options: UseDeviceDetectionOptions = {}): Use
     }
 
     return (
-      'ontouchstart' in window ||
-      navigator.maxTouchPoints > 0 ||
+      'ontouchstart' in window
+      || navigator.maxTouchPoints > 0
       // @ts-ignore
-      navigator.msMaxTouchPoints > 0
+      || navigator.msMaxTouchPoints > 0
     )
   }
 
@@ -140,7 +150,8 @@ export function useDeviceDetection(options: UseDeviceDetectionOptions = {}): Use
    * 更新设备信息
    */
   function updateDeviceInfo(): void {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     screenWidth.value = window.innerWidth
     screenHeight.value = window.innerHeight
@@ -160,7 +171,8 @@ export function useDeviceDetection(options: UseDeviceDetectionOptions = {}): Use
    * 防抖更新
    */
   function debouncedUpdate(): void {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     if (debounceTimer) {
       clearTimeout(debounceTimer)
@@ -249,20 +261,23 @@ export function useDeviceDetection(options: UseDeviceDetectionOptions = {}): Use
     devicePixelRatio,
     isTouchDevice,
     setDeviceType,
-    refresh
+    refresh,
   }
 }
 
 /**
  * 简化版设备检测Hook（仅检测当前设备类型）
  */
-export function useSimpleDeviceDetection(): { deviceType: DeviceType; isMobile: boolean; isTablet: boolean; isDesktop: boolean } {
+export function useSimpleDeviceDetection(): { deviceType: DeviceType, isMobile: boolean, isTablet: boolean, isDesktop: boolean } {
   const detectDevice = (): DeviceType => {
-    if (typeof window === 'undefined') return 'desktop'
+    if (typeof window === 'undefined')
+      return 'desktop'
 
     const width = window.innerWidth
-    if (width < DEFAULT_BREAKPOINTS.mobile) return 'mobile'
-    if (width < DEFAULT_BREAKPOINTS.tablet) return 'tablet'
+    if (width < DEFAULT_BREAKPOINTS.mobile)
+      return 'mobile'
+    if (width < DEFAULT_BREAKPOINTS.tablet)
+      return 'tablet'
     return 'desktop'
   }
 
@@ -272,7 +287,7 @@ export function useSimpleDeviceDetection(): { deviceType: DeviceType; isMobile: 
     deviceType,
     isMobile: deviceType === 'mobile',
     isTablet: deviceType === 'tablet',
-    isDesktop: deviceType === 'desktop'
+    isDesktop: deviceType === 'desktop',
   }
 }
 
@@ -294,7 +309,8 @@ export function useMediaQuery(query: string): Ref<boolean> {
       // 兼容性处理
       if (mediaQuery.addEventListener) {
         mediaQuery.addEventListener('change', handler)
-      } else {
+      }
+      else {
         // @ts-ignore - 兼容旧版本浏览器
         mediaQuery.addListener(handler)
       }
@@ -302,7 +318,8 @@ export function useMediaQuery(query: string): Ref<boolean> {
       onUnmounted(() => {
         if (mediaQuery.removeEventListener) {
           mediaQuery.removeEventListener('change', handler)
-        } else {
+        }
+        else {
           // @ts-ignore - 兼容旧版本浏览器
           mediaQuery.removeListener(handler)
         }
@@ -322,6 +339,6 @@ export function useBreakpoints() {
     isTablet: useMediaQuery(`(min-width: ${DEFAULT_BREAKPOINTS.mobile}px) and (max-width: ${DEFAULT_BREAKPOINTS.tablet - 1}px)`),
     isDesktop: useMediaQuery(`(min-width: ${DEFAULT_BREAKPOINTS.tablet}px)`),
     isSmallScreen: useMediaQuery(`(max-width: ${DEFAULT_BREAKPOINTS.tablet - 1}px)`),
-    isLargeScreen: useMediaQuery(`(min-width: ${DEFAULT_BREAKPOINTS.desktop}px)`)
+    isLargeScreen: useMediaQuery(`(min-width: ${DEFAULT_BREAKPOINTS.desktop}px)`),
   }
 }

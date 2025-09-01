@@ -1,0 +1,285 @@
+/**
+ * Z-Index 层级管理
+ * 统一管理所有组件的层级关系，避免遮挡问题
+ */
+
+/* CSS变量定义 - 统一的z-index层级 */
+:root {
+  /* 基础层级 */
+  --z-base: 1;
+  --z-content: 10;
+  --z-header: 100;
+  --z-navigation: 200;
+  
+  /* 交互层级 */
+  --z-dropdown: 1000;
+  --z-tooltip: 1100;
+  --z-popover: 1200;
+  --z-modal-backdrop: 1300;
+  --z-modal: 1400;
+  --z-notification: 1500;
+  --z-loading: 1600;
+  
+  /* 最高层级 */
+  --z-debug: 9999;
+}
+
+/* ===== 基础布局层级 ===== */
+
+/* 页面主体内容 */
+.main-content {
+  position: relative;
+  z-index: var(--z-content);
+}
+
+/* 导航栏 */
+.navbar {
+  position: relative;
+  z-index: var(--z-navigation);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 1rem 0;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* 页脚 */
+.footer {
+  position: relative;
+  z-index: var(--z-base);
+}
+
+/* ===== 模板组件层级 ===== */
+
+/* 模板渲染器容器 */
+.template-renderer {
+  position: relative;
+  z-index: var(--z-content);
+}
+
+/* 模板选择器触发按钮 */
+.template-selector-wrapper {
+  position: relative;
+  z-index: var(--z-content);
+}
+
+.template-selector-trigger {
+  position: relative;
+  z-index: var(--z-content);
+}
+
+/* 模板选择器模态框 */
+.template-selector-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  pointer-events: auto; /* 确保可以接收点击事件 */
+}
+
+.template-selector-modal__backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1; /* 相对层级，低于内容 */
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  pointer-events: auto; /* 背景可点击关闭 */
+}
+
+.template-selector-modal__content {
+  position: relative;
+  z-index: 2; /* 相对层级，高于背景 */
+  width: 100%;
+  max-width: 1200px;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  pointer-events: auto; /* 内容区域可交互 */
+}
+
+/* ===== 下拉菜单和弹出框层级 ===== */
+
+/* 下拉菜单 */
+.dropdown-menu {
+  position: absolute;
+  z-index: var(--z-dropdown);
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 工具提示 */
+.tooltip {
+  position: absolute;
+  z-index: var(--z-tooltip);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+/* 弹出框 */
+.popover {
+  position: absolute;
+  z-index: var(--z-popover);
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== 加载和通知层级 ===== */
+
+/* 加载遮罩 */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-loading);
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 通知消息 */
+.notification {
+  position: fixed;
+  z-index: var(--z-notification);
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  padding: 1rem;
+  min-width: 300px;
+}
+
+/* 通知容器 */
+.notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: var(--z-notification);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ===== 响应式层级调整 ===== */
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .template-selector-modal {
+    padding: 10px;
+  }
+  
+  .template-selector-modal__content {
+    max-height: 95vh;
+    border-radius: 8px;
+  }
+  
+  .notification-container {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+  }
+  
+  .notification {
+    min-width: auto;
+    width: 100%;
+  }
+}
+
+/* ===== 调试模式 ===== */
+
+/* 开发环境下的层级调试 */
+.debug-z-index {
+  position: relative;
+}
+
+.debug-z-index::before {
+  content: 'z-index: ' attr(data-z-index);
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: var(--z-debug);
+  background: #ff6b6b;
+  color: white;
+  padding: 2px 6px;
+  font-size: 10px;
+  border-radius: 0 0 0 4px;
+  pointer-events: none;
+}
+
+/* ===== 层级冲突修复 ===== */
+
+/* 确保导航栏不被模态框遮挡 */
+.navbar.navbar--below-modal {
+  z-index: calc(var(--z-modal) - 1);
+}
+
+/* 确保内容区域正确层级 */
+.template-renderer__content {
+  position: relative;
+  z-index: var(--z-content);
+}
+
+/* 修复模板选择器与导航栏的层级冲突 */
+.template-selector-trigger:focus,
+.template-selector-trigger:active {
+  z-index: calc(var(--z-navigation) + 1);
+}
+
+/* 确保模板内容不会遮挡选择器 */
+.template-content-wrapper {
+  position: relative;
+  z-index: var(--z-base);
+}
+
+/* ===== 无障碍支持 ===== */
+
+/* 焦点管理 */
+.modal-open {
+  overflow: hidden;
+}
+
+.modal-open .navbar {
+  /* 模态框打开时降低导航栏层级 */
+  z-index: calc(var(--z-modal) - 100);
+}
+
+/* 键盘导航支持 */
+.focus-trap {
+  position: relative;
+  z-index: inherit;
+}
+
+/* ===== 打印样式 ===== */
+
+@media print {
+  .template-selector-modal,
+  .notification,
+  .loading-overlay {
+    display: none !important;
+  }
+  
+  .template-renderer {
+    z-index: auto;
+    position: static;
+  }
+}

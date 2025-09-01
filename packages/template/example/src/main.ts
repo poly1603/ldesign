@@ -2,16 +2,18 @@
  * LDesign Template 示例项目入口文件
  */
 
+import TemplatePlugin from '@ldesign/template'
 import { createApp } from 'vue'
+import { createRouter, createWebHistory } from 'vue-router'
+import App from './App.vue'
+import ComponentDemo from './views/ComponentDemo.vue'
+import HookDemo from './views/HookDemo.vue'
 import './styles/common.css'
 import './styles/demo.css'
 // 导入模板组件样式
 import './styles/template-components.css'
-import { createRouter, createWebHistory } from 'vue-router'
-import TemplatePlugin from '@ldesign/template'
-import App from './App.vue'
-import ComponentDemo from './views/ComponentDemo.vue'
-import HookDemo from './views/HookDemo.vue'
+// 导入现代化设计样式（修复UI问题）
+import './styles/modern-design.css'
 
 // 创建路由
 const router = createRouter({
@@ -19,7 +21,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/component'
+      redirect: '/component',
     },
     {
       path: '/component',
@@ -27,8 +29,8 @@ const router = createRouter({
       component: ComponentDemo,
       meta: {
         title: '组件方式演示',
-        description: '使用 TemplateRenderer 组件渲染内置 login 模板'
-      }
+        description: '使用 TemplateRenderer 组件渲染内置 login 模板',
+      },
     },
     {
       path: '/hook',
@@ -36,8 +38,8 @@ const router = createRouter({
       component: HookDemo,
       meta: {
         title: 'Hook 方式演示',
-        description: '使用 useTemplate hook 管理和渲染内置 login 模板'
-      }
+        description: '使用 useTemplate hook 管理和渲染内置 login 模板',
+      },
     },
   ],
 })
@@ -62,7 +64,7 @@ app.use(TemplatePlugin, {
     maxSize: 50,
     ttl: 30 * 60 * 1000, // 30分钟
     enableCompression: false,
-    enablePersistence: false
+    enablePersistence: false,
   },
 
   // 设备检测配置
@@ -70,11 +72,11 @@ app.use(TemplatePlugin, {
     breakpoints: {
       mobile: 768,
       tablet: 992,
-      desktop: 1200
+      desktop: 1200,
     },
     debounceDelay: 300,
     enableResize: true,
-    enableOrientation: true
+    enableOrientation: true,
   },
 
   // 预加载策略配置
@@ -85,9 +87,9 @@ app.use(TemplatePlugin, {
     priority: [], // 移除硬编码的优先级列表
     intersection: {
       rootMargin: '50px',
-      threshold: 0.1
+      threshold: 0.1,
     },
-    delay: 1000
+    delay: 1000,
   },
 
   // 扫描器配置
@@ -98,7 +100,7 @@ app.use(TemplatePlugin, {
     enableCache: true,
     watchMode: import.meta.env.DEV,
     debounceDelay: 300,
-    batchSize: 10
+    batchSize: 10,
   },
 
   // 性能优化配置
@@ -107,7 +109,7 @@ app.use(TemplatePlugin, {
     enableVirtualScroll: false,
     chunkSize: 20,
     enableMetrics: import.meta.env.DEV,
-    metricsInterval: 5000
+    metricsInterval: 5000,
   },
 
   // 开发工具配置
@@ -116,8 +118,8 @@ app.use(TemplatePlugin, {
     enableInspector: import.meta.env.DEV,
     enableLogger: import.meta.env.DEV,
     logLevel: 'info',
-    enableTimeline: import.meta.env.DEV
-  }
+    enableTimeline: import.meta.env.DEV,
+  },
 })
 
 // 安装路由

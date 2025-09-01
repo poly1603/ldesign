@@ -1,3 +1,65 @@
+<script setup lang="ts">
+import { useTemplate, TemplateSelector } from '@ldesign/template'
+import { computed, onMounted } from 'vue'
+
+// 使用 useTemplate hook - 启用内置选择器
+const {
+  currentTemplate,
+  currentComponent,
+  loading: isLoading,
+  error,
+  switchTemplate,
+  refreshTemplates,
+  TemplateTransition,
+  showSelector,
+  selectorConfig,
+  openSelector,
+  closeSelector,
+  availableTemplates,
+} = useTemplate({
+  category: 'login',
+  enableCache: true,
+  showSelector: false,  // 禁用自动弹出，改为手动触发
+  selectorConfig: {
+    theme: 'default',
+    position: 'center',
+    triggerStyle: 'dropdown',
+    modalStyle: 'modal',
+    animation: 'slide',
+    showSearch: true,
+    showTags: true,
+    showSort: true,
+  },
+})
+
+// 模板属性
+const templateProps = computed(() => ({
+  title: '用户登录',
+  subtitle: '欢迎回来，请登录您的账户',
+}))
+
+// 初始化模板
+onMounted(async () => {
+  try {
+    // 等待模板扫描完成
+    await new Promise(resolve => setTimeout(resolve, 2000))
+
+    // 刷新模板列表
+    await refreshTemplates()
+
+    // 等待一下确保模板列表已更新
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    // 如果没有当前模板，尝试加载默认模板
+    if (!currentTemplate.value) {
+      await switchTemplate('default')
+    }
+  } catch (error) {
+    console.error('初始化模板失败:', error)
+  }
+})
+</script>
+
 <template>
   <div class="demo-page">
     <div class="demo-header">
@@ -6,126 +68,111 @@
     </div>
 
     <div class="demo-content">
-      <!-- 简化的控制面板 -->
-      <div class="control-panel">
-        <div class="control-group">
-          <label>Hook 方式演示</label>
+      <!-- 控制面板 -->
+      <div class="card">
+        <div class="card__header">
+          <h3>控制面板</h3>
         </div>
+        <div class="card__body">
+          <div class="control-panel">
+            <div class="control-group">
+              <div class="control-item">
+                <label>Hook 方式演示</label>
+                <p>使用 useTemplate hook 和内置模板选择器</p>
+              </div>
 
-        <div class="control-actions">
-          <button
-            @click="showSelector = !showSelector"
-            class="btn"
-          >
-            {{ showSelector ? '隐藏选择器' : '显示选择器' }}
-          </button>
+              <!-- 模板选择器触发按钮 -->
+              <div class="control-item">
+                <button
+                  class="template-selector-trigger"
+                  @click="openSelector"
+                  :class="{ 'template-selector-trigger--active': showSelector }"
+                >
+                  <span class="template-selector-trigger__icon">🎨</span>
+                  <span class="template-selector-trigger__text">
+                    {{ currentTemplate?.displayName || currentTemplate?.name || '选择模板' }}
+                  </span>
+                  <span class="template-selector-trigger__arrow">▼</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="control-actions">
+              <button class="btn btn-secondary" @click="refreshTemplates">
+                刷新模板
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Hook 渲染区域 -->
-      <div class="template-container">
-        <div v-if="isLoading" class="loading-state">
-          <p>正在加载模板...</p>
-        </div>
-
-        <div v-else-if="error" class="error-state">
-          <p>加载失败: {{ error || '未知错误' }}</p>
-          <button @click="refreshTemplates" class="btn">重试</button>
-        </div>
-
-        <div v-else-if="currentComponent" class="template-render-area">
-          <!-- 模板选择器（当启用时） -->
-          <div v-if="showSelector" class="hook-template-selector">
-            <button
-              class="template-selector-trigger"
-              @click="showSelectorModal = !showSelectorModal"
+      <div class="card">
+        <div class="card__body">
+          <!-- Hook 组件渲染区域 - 纯Hook方式 -->
+          <div class="template-render-area">
+            <TemplateTransition
+              :current-component="currentComponent"
+              :loading="isLoading"
+              :error="error"
+              :template-props="templateProps"
+              :animation-config="{
+                name: 'template-content',
+                mode: 'out-in',
+                appear: true
+              }"
+              @retry="refreshTemplates"
             >
-              <span>🎨</span>
-              <span>{{ currentTemplateName }}</span>
-              <span>▼</span>
-            </button>
+              <template #loading>
+                <div class="template-loading">
+                  <div class="template-loading__spinner"></div>
+                  <div class="template-loading__text">正在加载模板...</div>
+                </div>
+              </template>
 
-            <div v-if="showSelectorModal" class="selector-dropdown">
-              <div class="selector-option"
-                   v-for="template in ['default', 'modern', 'creative']"
-                   :key="template"
-                   @click="handleTemplateSelect(template)">
-                {{ template }}
-              </div>
-            </div>
+              <template #error="{ error, retry }">
+                <div class="template-error">
+                  <div class="template-error__icon">⚠️</div>
+                  <div class="template-error__title">加载失败</div>
+                  <div class="template-error__message">{{ error || '未知错误' }}</div>
+                  <div class="template-error__actions">
+                    <button class="template-error__retry-btn" @click="retry">
+                      <span class="retry-icon">🔄</span>
+                      <span class="retry-text">重试</span>
+                    </button>
+                  </div>
+                </div>
+              </template>
+
+              <template #empty>
+                <div class="template-empty">
+                  <div class="template-empty__icon">📄</div>
+                  <div class="template-empty__title">没有找到模板</div>
+                  <div class="template-empty__message">请检查模板配置或重新加载</div>
+                  <button class="template-empty__action" @click="refreshTemplates">
+                    重新加载
+                  </button>
+                </div>
+              </template>
+            </TemplateTransition>
           </div>
-
-          <!-- Hook 组件渲染 -->
-          <component
-            :is="currentComponent"
-            v-bind="templateProps"
-            @login="handleLogin"
-          />
-        </div>
-
-        <div v-else class="empty-state">
-          <p>没有找到匹配的模板</p>
         </div>
       </div>
     </div>
+
+    <!-- 模板选择器组件 -->
+    <TemplateSelector
+      :visible="showSelector"
+      :templates="availableTemplates"
+      :current-template="currentTemplate"
+      :config="selectorConfig"
+      category="login"
+      device="desktop"
+      @close="closeSelector"
+      @select="switchTemplate"
+    />
   </div>
 </template>
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useTemplate } from '@ldesign/template'
-
-// 使用 useTemplate hook
-const {
-  currentTemplate,
-  currentComponent,
-  loading: isLoading,
-  error,
-  switchTemplate: switchTemplateHook,
-  refreshTemplates
-} = useTemplate({
-  category: 'login',
-  enableCache: true
-})
-
-// 响应式数据
-const showSelector = ref<boolean>(true)
-const showSelectorModal = ref<boolean>(false)
-const selectedTemplate = ref<string>('default')
-
-// 计算属性
-const currentTemplateName = computed(() => {
-  return currentTemplate.value?.displayName || selectedTemplate.value
-})
-
-// 简化的模板属性
-const templateProps = computed(() => ({
-  title: '用户登录',
-  subtitle: '欢迎回来，请登录您的账户'
-}))
-
-// 简化的方法
-const handleTemplateSelect = async (templateName: string) => {
-  console.log('Hook方式选择模板:', templateName)
-  selectedTemplate.value = templateName
-  showSelectorModal.value = false
-
-  // 使用Hook方式切换模板
-  try {
-    if (typeof switchTemplateHook === 'function') {
-      await switchTemplateHook(templateName)
-      console.log('Hook模板切换成功:', templateName)
-    }
-  } catch (error) {
-    console.error('Hook模板切换失败:', error)
-  }
-}
-
-const handleLogin = (data: any) => {
-  console.log('登录数据:', data)
-}
-
-
-</script>
 
 <style scoped>
 .demo-page {
@@ -150,17 +197,13 @@ const handleLogin = (data: any) => {
   font-size: 1rem;
 }
 
-/* 简化的控制面板 */
+/* 控制面板 */
 .control-panel {
-  background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .control-group {
@@ -202,22 +245,35 @@ const handleLogin = (data: any) => {
   border-color: #007bff;
 }
 
-/* 简化的模板选择器 */
-.template-selector {
-  background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 1rem;
+/* 卡片样式 */
+.card {
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   margin-bottom: 2rem;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
 }
 
-/* 简化的模板容器 */
-.template-container {
-  background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.card__header {
+  padding: 1.5rem 2rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card__header h3 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.card__body {
   padding: 2rem;
-  min-height: 400px;
 }
 
 .loading-state, .error-state, .empty-state {
@@ -229,12 +285,15 @@ const handleLogin = (data: any) => {
 .template-render-area {
   width: 100%;
   min-height: 300px;
+  position: relative;
+  z-index: 1; /* 确保模板内容在选择器下方 */
 }
 
 /* Hook 模板选择器样式 */
 .hook-template-selector {
   position: relative;
   margin-bottom: 1rem;
+  z-index: 100; /* 确保选择器在模板内容之上 */
 }
 
 .template-selector-trigger {
@@ -266,7 +325,7 @@ const handleLogin = (data: any) => {
   border: 1px solid #e1e5e9;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 100;
+  z-index: 200; /* 确保下拉菜单在最上层 */
   margin-top: 4px;
 }
 
@@ -283,6 +342,131 @@ const handleLogin = (data: any) => {
 
 .selector-option:hover {
   background-color: #f8f9fa;
+}
+
+/* 下拉选择器动画 */
+.selector-dropdown-enter-active {
+  transition: all 250ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.selector-dropdown-leave-active {
+  transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.selector-dropdown-enter-from {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+}
+
+.selector-dropdown-enter-to {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.selector-dropdown-leave-from {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.selector-dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+}
+
+/* 模板内容动画 - 与组件方式保持一致 */
+.template-content-enter-active {
+  transition: all 400ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.template-content-leave-active {
+  transition: all 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.template-content-enter-from {
+  opacity: 0;
+  transform: translateX(30px) scale(0.98);
+}
+
+.template-content-enter-to {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.template-content-leave-from {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.template-content-leave-to {
+  opacity: 0;
+  transform: translateX(-30px) scale(0.98);
+}
+
+/* 模板选择器触发按钮样式 */
+.template-selector-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  color: #495057;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+
+  &:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.15);
+  }
+
+  &--active {
+    border-color: #007bff;
+    background: #f8f9fa;
+  }
+
+  &__icon {
+    font-size: 16px;
+  }
+
+  &__text {
+    flex: 1;
+    text-align: left;
+    font-weight: 500;
+  }
+
+  &__arrow {
+    font-size: 12px;
+    transition: transform 0.2s ease;
+  }
+
+  &--active &__arrow {
+    transform: rotate(180deg);
+  }
+}
+
+/* 统一状态容器样式 */
+.template-content-wrapper,
+.template-content-loading,
+.template-content-error,
+.template-content-empty {
+  width: 100%;
+  min-height: 300px;
+}
+
+.template-content-loading,
+.template-content-error,
+.template-content-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
 }
 
 /* 响应式设计 */
@@ -309,8 +493,4 @@ const handleLogin = (data: any) => {
     padding: 1rem;
   }
 }
-
-
-
-
 </style>

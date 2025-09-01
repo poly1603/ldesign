@@ -4,31 +4,34 @@
  */
 
 // 导出配置管理器
-export { TemplateConfigManager, getConfigManager, resetConfigManager } from './config-manager'
-
-// 导出默认配置
-export { defaultConfig, getDefaultConfig, mergeConfig } from './default.config'
+// 重新导出类型以便于使用
+import type { TemplateSystemConfig } from '../types/config'
 
 // 导出配置类型
 export type {
-  TemplateSystemConfig,
-  ConfigManager,
-  ConfigValidationResult,
-  ConfigUpdateEvent,
-  ConfigListener,
-  DeviceDetectionConfig,
-  ScannerConfig,
   CacheConfig,
-  PreloadStrategyConfig,
-  LoaderConfig,
-  FileNamingConfig,
-  PerformanceConfig,
-  ErrorHandlingConfig,
-  DevtoolsConfig,
   CacheStrategy,
+  ConfigListener,
+  ConfigManager,
+  ConfigUpdateEvent,
+  ConfigValidationResult,
+  DeviceDetectionConfig,
+  DevtoolsConfig,
+  ErrorHandlingConfig,
+  FileNamingConfig,
+  LoaderConfig,
+  LogLevel,
+  PerformanceConfig,
   PreloadMode,
-  LogLevel
+  PreloadStrategyConfig,
+  ScannerConfig,
+  TemplateSystemConfig,
 } from '../types/config'
+
+export { getConfigManager, resetConfigManager, TemplateConfigManager } from './config-manager'
+
+// 导出默认配置
+export { defaultConfig, getDefaultConfig, mergeConfig } from './default.config'
 
 /**
  * 创建配置管理器的便捷函数
@@ -53,7 +56,7 @@ export const configPresets = {
       enableInspector: true,
       enableLogger: true,
       logLevel: 'debug' as const,
-      enableTimeline: true
+      enableTimeline: true,
     },
     cache: {
       enabled: true,
@@ -61,17 +64,17 @@ export const configPresets = {
       maxSize: 20, // 开发环境较小的缓存
       ttl: 10 * 60 * 1000, // 10分钟
       enableCompression: false,
-      enablePersistence: false
+      enablePersistence: false,
     },
     scanner: {
       watchMode: true,
       debounceDelay: 150, // 更快的响应
-      batchSize: 5
+      batchSize: 5,
     },
     performance: {
       enableMetrics: true,
-      metricsInterval: 3000 // 更频繁的监控
-    }
+      metricsInterval: 3000, // 更频繁的监控
+    },
   },
 
   /**
@@ -86,7 +89,7 @@ export const configPresets = {
       enableInspector: false,
       enableLogger: false,
       logLevel: 'error' as const,
-      enableTimeline: false
+      enableTimeline: false,
     },
     cache: {
       enabled: true,
@@ -94,23 +97,23 @@ export const configPresets = {
       maxSize: 100, // 生产环境较大的缓存
       ttl: 60 * 60 * 1000, // 1小时
       enableCompression: true,
-      enablePersistence: true
+      enablePersistence: true,
     },
     scanner: {
       watchMode: false,
       debounceDelay: 500,
-      batchSize: 20
+      batchSize: 20,
     },
     performance: {
       enableMetrics: false,
       enableLazyLoading: true,
-      enableVirtualScroll: true
+      enableVirtualScroll: true,
     },
     preloadStrategy: {
       enabled: true,
       mode: 'intersection' as const,
-      limit: 10
-    }
+      limit: 10,
+    },
   },
 
   /**
@@ -125,27 +128,27 @@ export const configPresets = {
       enableInspector: false,
       enableLogger: false,
       logLevel: 'silent' as const,
-      enableTimeline: false
+      enableTimeline: false,
     },
     cache: {
       enabled: false, // 测试环境禁用缓存
       strategy: 'lru' as const,
       maxSize: 10,
-      ttl: 1000
+      ttl: 1000,
     },
     scanner: {
       watchMode: false,
       debounceDelay: 0, // 测试环境无延迟
-      batchSize: 1
+      batchSize: 1,
     },
     performance: {
       enableMetrics: false,
       enableLazyLoading: false,
-      enableVirtualScroll: false
+      enableVirtualScroll: false,
     },
     preloadStrategy: {
-      enabled: false
-    }
+      enabled: false,
+    },
   },
 
   /**
@@ -157,21 +160,21 @@ export const configPresets = {
       breakpoints: {
         mobile: 480,
         tablet: 768,
-        desktop: 1024
+        desktop: 1024,
       },
-      debounceDelay: 200
+      debounceDelay: 200,
     },
     cache: {
       enabled: true,
       strategy: 'lru' as const,
       maxSize: 30, // 移动端较小的缓存
       ttl: 30 * 60 * 1000,
-      enableCompression: true
+      enableCompression: true,
     },
     performance: {
       enableLazyLoading: true,
       enableVirtualScroll: true,
-      chunkSize: 10 // 移动端较小的分块
+      chunkSize: 10, // 移动端较小的分块
     },
     preloadStrategy: {
       enabled: true,
@@ -179,10 +182,10 @@ export const configPresets = {
       limit: 3, // 移动端较少的预加载
       intersection: {
         rootMargin: '20px',
-        threshold: 0.2
-      }
-    }
-  }
+        threshold: 0.2,
+      },
+    },
+  },
 }
 
 /**
@@ -197,7 +200,7 @@ export function getPresetConfig(preset: keyof typeof configPresets) {
  */
 export function mergePresetConfig(
   preset: keyof typeof configPresets,
-  customConfig?: Partial<TemplateSystemConfig>
+  customConfig?: Partial<TemplateSystemConfig>,
 ): TemplateSystemConfig {
   const presetConfig = getPresetConfig(preset)
   return mergeConfig({ ...presetConfig, ...customConfig })
@@ -209,19 +212,22 @@ export function mergePresetConfig(
 export function getAutoPresetConfig(customConfig?: Partial<TemplateSystemConfig>): TemplateSystemConfig {
   // 检测环境
   let preset: keyof typeof configPresets = 'development'
-  
+
   if (typeof process !== 'undefined') {
     // Node.js 环境
     if (process.env.NODE_ENV === 'production') {
       preset = 'production'
-    } else if (process.env.NODE_ENV === 'test') {
+    }
+    else if (process.env.NODE_ENV === 'test') {
       preset = 'testing'
     }
-  } else if (typeof import.meta !== 'undefined' && import.meta.env) {
+  }
+  else if (typeof import.meta !== 'undefined' && import.meta.env) {
     // Vite 环境
     if (import.meta.env.PROD) {
       preset = 'production'
-    } else if (import.meta.env.MODE === 'test') {
+    }
+    else if (import.meta.env.MODE === 'test') {
       preset = 'testing'
     }
   }
@@ -253,7 +259,7 @@ export function debugConfig(config: TemplateSystemConfig) {
   console.log('📊 Basic Config:', {
     templatesDir: config.templatesDir,
     defaultDevice: config.defaultDevice,
-    debug: config.debug
+    debug: config.debug,
   })
   console.log('💾 Cache Config:', config.cache)
   console.log('📱 Device Detection:', config.deviceDetection)
@@ -261,7 +267,4 @@ export function debugConfig(config: TemplateSystemConfig) {
   console.log('🔍 Scanner Config:', config.scanner)
   console.groupEnd()
 }
-
-// 重新导出类型以便于使用
-import type { TemplateSystemConfig } from '../types/config'
 export type { TemplateSystemConfig }

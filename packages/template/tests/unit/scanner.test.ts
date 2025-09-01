@@ -2,19 +2,19 @@
  * 模板扫描器单元测试
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { TemplateScanner } from '@/scanner'
 import type { TemplateConfig } from '@/types/template'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { TemplateScanner } from '@/scanner'
 
 // Mock import.meta.glob
 const mockGlob = vi.fn()
 vi.stubGlobal('import', {
   meta: {
-    glob: mockGlob
-  }
+    glob: mockGlob,
+  },
 })
 
-describe('TemplateScanner', () => {
+describe('templateScanner', () => {
   let scanner: TemplateScanner
 
   beforeEach(() => {
@@ -22,14 +22,14 @@ describe('TemplateScanner', () => {
     scanner = new TemplateScanner({
       templatesDir: 'src/templates',
       enableCache: true,
-      enableHMR: false
+      enableHMR: false,
     })
   })
 
   describe('构造函数', () => {
     it('应该使用默认配置创建扫描器', () => {
       const defaultScanner = new TemplateScanner({
-        templatesDir: 'src/templates'
+        templatesDir: 'src/templates',
       })
       expect(defaultScanner).toBeDefined()
     })
@@ -39,7 +39,7 @@ describe('TemplateScanner', () => {
         templatesDir: 'custom/templates',
         enableCache: false,
         enableHMR: true,
-        maxDepth: 10
+        maxDepth: 10,
       })
       expect(customScanner).toBeDefined()
     })
@@ -55,11 +55,11 @@ describe('TemplateScanner', () => {
         version: '1.0.0',
         isDefault: true,
         author: 'Test Author',
-        tags: ['test', 'demo']
+        tags: ['test', 'demo'],
       }
 
       mockGlob.mockReturnValue({
-        '/src/templates/login/desktop/default/config.js': () => Promise.resolve({ default: mockConfig })
+        '/src/templates/login/desktop/default/config.js': () => Promise.resolve({ default: mockConfig }),
       })
 
       const result = await scanner.scan()
@@ -71,7 +71,7 @@ describe('TemplateScanner', () => {
 
     it('应该处理配置文件解析错误', async () => {
       mockGlob.mockReturnValue({
-        '/src/templates/login/desktop/default/config.js': () => Promise.reject(new Error('Parse error'))
+        '/src/templates/login/desktop/default/config.js': () => Promise.reject(new Error('Parse error')),
       })
 
       const result = await scanner.scan()
@@ -82,12 +82,12 @@ describe('TemplateScanner', () => {
 
     it('应该验证模板配置的必需字段', async () => {
       const invalidConfig = {
-        name: 'test-template'
+        name: 'test-template',
         // 缺少必需字段
       }
 
       mockGlob.mockReturnValue({
-        '/src/templates/login/desktop/default/config.js': () => Promise.resolve({ default: invalidConfig })
+        '/src/templates/login/desktop/default/config.js': () => Promise.resolve({ default: invalidConfig }),
       })
 
       const result = await scanner.scan()
@@ -101,11 +101,11 @@ describe('TemplateScanner', () => {
         name: 'modern-template',
         displayName: '现代模板',
         description: '现代风格的模板',
-        version: '2.0.0'
+        version: '2.0.0',
       }
 
       mockGlob.mockReturnValue({
-        '/src/templates/dashboard/tablet/modern/config.js': () => Promise.resolve({ default: mockConfig })
+        '/src/templates/dashboard/tablet/modern/config.js': () => Promise.resolve({ default: mockConfig }),
       })
 
       const result = await scanner.scan()
@@ -123,8 +123,8 @@ describe('TemplateScanner', () => {
             name: 'default-login',
             displayName: '默认登录',
             description: '默认登录模板',
-            version: '1.0.0'
-          }
+            version: '1.0.0',
+          },
         },
         {
           path: '/src/templates/login/mobile/default/config.js',
@@ -132,8 +132,8 @@ describe('TemplateScanner', () => {
             name: 'mobile-login',
             displayName: '移动登录',
             description: '移动端登录模板',
-            version: '1.0.0'
-          }
+            version: '1.0.0',
+          },
         },
         {
           path: '/src/templates/dashboard/desktop/admin/config.js',
@@ -141,9 +141,9 @@ describe('TemplateScanner', () => {
             name: 'admin-dashboard',
             displayName: '管理面板',
             description: '管理员面板模板',
-            version: '1.0.0'
-          }
-        }
+            version: '1.0.0',
+          },
+        },
       ]
 
       const mockGlobResult: Record<string, () => Promise<any>> = {}
@@ -169,11 +169,11 @@ describe('TemplateScanner', () => {
         name: 'test-template',
         displayName: '测试模板',
         description: '这是一个测试模板',
-        version: '1.0.0'
+        version: '1.0.0',
       }
 
       mockGlob.mockReturnValue({
-        '/src/templates/login/desktop/test/config.js': () => Promise.resolve({ default: mockConfig })
+        '/src/templates/login/desktop/test/config.js': () => Promise.resolve({ default: mockConfig }),
       })
 
       await scanner.scan()
@@ -202,11 +202,11 @@ describe('TemplateScanner', () => {
         name: 'specific-template',
         displayName: '特定模板',
         description: '特定的测试模板',
-        version: '1.0.0'
+        version: '1.0.0',
       }
 
       mockGlob.mockReturnValue({
-        '/src/templates/profile/mobile/specific/config.js': () => Promise.resolve({ default: mockConfig })
+        '/src/templates/profile/mobile/specific/config.js': () => Promise.resolve({ default: mockConfig }),
       })
 
       await scanner.scan()

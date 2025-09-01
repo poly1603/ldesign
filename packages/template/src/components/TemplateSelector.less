@@ -1,0 +1,466 @@
+/**
+ * TemplateSelector 组件样式
+ * 
+ * 负责模板选择器的所有样式，包括弹窗、卡片、动画效果
+ */
+
+// ===== 模板选择器主体样式 =====
+.template-selector {
+  position: relative;
+  width: 100%;
+
+  // 选择器包装器
+  &-wrapper {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+
+  // 触发按钮
+  &-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #ffffff;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    color: #495057;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      border-color: #007bff;
+      box-shadow: 0 2px 6px rgba(0, 123, 255, 0.15);
+    }
+
+    &--active {
+      border-color: #007bff;
+      background: #f8f9fa;
+    }
+
+    &__icon {
+      font-size: 16px;
+    }
+
+    &__text {
+      flex: 1;
+      text-align: left;
+      font-weight: 500;
+    }
+
+    &__arrow {
+      font-size: 12px;
+      transition: transform 0.2s ease;
+
+      &--up {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  // 弹窗遮罩
+  &__backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  // 弹窗内容
+  &__content {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    max-height: 80vh;
+    background: white;
+    border-radius: 16px;
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.15),
+      0 8px 32px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    z-index: 10000;
+    /* 确保内容在遮罩层之上 */
+    pointer-events: auto;
+    /* 确保内容区域可以接收点击事件 */
+  }
+
+  // 弹窗头部
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e9ecef;
+    background: #f8f9fa;
+
+    h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #212529;
+    }
+  }
+
+  // 关闭按钮
+  &__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    color: #6c757d;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #e9ecef;
+      color: #495057;
+    }
+  }
+
+  // 搜索区域
+  &__search {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e9ecef;
+    background: #ffffff;
+
+    .search-input {
+      position: relative;
+      margin-bottom: 1rem;
+
+      &__field {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.2s ease;
+
+        &:focus {
+          outline: none;
+          border-color: #007bff;
+          box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+      }
+
+      &__icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        font-size: 16px;
+      }
+    }
+
+    .search-tags {
+      &__label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+      }
+
+      &__list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      &__tag {
+        padding: 0.25rem 0.75rem;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 16px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #e9ecef;
+        }
+
+        &--active {
+          background: #007bff;
+          border-color: #007bff;
+          color: white;
+        }
+      }
+    }
+  }
+
+  // 排序区域
+  &__sort {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+
+    .sort-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #495057;
+    }
+
+    .sort-button {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem 0.75rem;
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #f8f9fa;
+      }
+
+      &--active {
+        background: #007bff;
+        border-color: #007bff;
+        color: white;
+      }
+
+      .sort-arrow {
+        font-size: 10px;
+      }
+    }
+  }
+
+  // 模板列表
+  &__list {
+    padding: 1.5rem 2rem;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  // 模板网格
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+}
+
+// ===== 模板卡片样式 =====
+.template-card {
+  position: relative;
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // 渐变边框效果
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 12px;
+    padding: 2px;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  // 选中状态
+  &--selected {
+    border-color: #007bff;
+    background: #f8f9ff;
+
+    &::before {
+      opacity: 1;
+    }
+
+    .template-card__badge {
+      opacity: 1;
+    }
+  }
+
+  // 选中徽章
+  &__badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 24px;
+    height: 24px;
+    background: #28a745;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  // 卡片头部
+  &__header {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f3f4;
+
+    h3 {
+      margin: 0 0 0.25rem 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #212529;
+    }
+
+    .version {
+      font-size: 0.75rem;
+      color: #6c757d;
+      background: #f8f9fa;
+      padding: 0.125rem 0.5rem;
+      border-radius: 12px;
+      display: inline-block;
+    }
+  }
+
+  // 卡片内容
+  &__content {
+    padding: 1rem;
+
+    .description {
+      font-size: 0.875rem;
+      color: #6c757d;
+      line-height: 1.4;
+      margin-bottom: 0.75rem;
+    }
+
+    .author {
+      font-size: 0.75rem;
+      color: #495057;
+      margin-bottom: 0.75rem;
+    }
+  }
+
+  // 标签列表
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+
+    .tag {
+      padding: 0.125rem 0.5rem;
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 12px;
+      font-size: 0.625rem;
+      color: #495057;
+    }
+  }
+
+  // 卡片底部
+  &__footer {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid #f1f3f4;
+    background: #fafbfc;
+
+    .select-button {
+      width: 100%;
+      padding: 0.5rem;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background: #0056b3;
+      }
+
+      &--selected {
+        background: #28a745;
+
+        &:hover {
+          background: #1e7e34;
+        }
+      }
+    }
+  }
+}
+
+// ===== 模板选择器动画样式 =====
+.template-selector-enter-active,
+.template-selector-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.template-selector-enter-from {
+  opacity: 0;
+
+  .template-selector__backdrop {
+    opacity: 0;
+  }
+
+  .template-selector__content {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+}
+
+.template-selector-leave-to {
+  opacity: 0;
+
+  .template-selector__backdrop {
+    opacity: 0;
+  }
+
+  .template-selector__content {
+    opacity: 0;
+    transform: translateY(10px) scale(1.02);
+  }
+}
+
+.template-selector-enter-to,
+.template-selector-leave-from {
+  opacity: 1;
+
+  .template-selector__backdrop {
+    opacity: 1;
+  }
+
+  .template-selector__content {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

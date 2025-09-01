@@ -4,19 +4,19 @@
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "baseUrl": ".",
-    "moduleResolution": "bundler",
     "rootDir": "src",
-    "declaration": true,
-    "declarationMap": true,
-    "outDir": "dist",
+    "moduleResolution": "bundler",
     "paths": {
       "@/*": ["src/*"]
     },
     "types": ["vite/client", "node", "@vue/runtime-core"],
+    "declaration": true,
+    "declarationMap": true,
+    "noEmitOnError": false,
+    "outDir": "dist",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "noEmitOnError": false
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*"

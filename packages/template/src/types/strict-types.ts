@@ -271,37 +271,37 @@ export interface StrictSearchResult<T = unknown> {
  */
 export function isStrictTemplateConfig(value: unknown): value is StrictTemplateConfig {
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof (value as StrictTemplateConfig).name === 'string' &&
-    typeof (value as StrictTemplateConfig).displayName === 'string' &&
-    typeof (value as StrictTemplateConfig).description === 'string' &&
-    typeof (value as StrictTemplateConfig).version === 'string'
+    typeof value === 'object'
+    && value !== null
+    && typeof (value as StrictTemplateConfig).name === 'string'
+    && typeof (value as StrictTemplateConfig).displayName === 'string'
+    && typeof (value as StrictTemplateConfig).description === 'string'
+    && typeof (value as StrictTemplateConfig).version === 'string'
   )
 }
 
 export function isStrictTemplateMetadata(value: unknown): value is StrictTemplateMetadata {
   return (
-    isStrictTemplateConfig(value) &&
-    typeof (value as StrictTemplateMetadata).id === 'string' &&
-    typeof (value as StrictTemplateMetadata).category === 'string' &&
-    typeof (value as StrictTemplateMetadata).device === 'string' &&
-    typeof (value as StrictTemplateMetadata).componentPath === 'string' &&
-    typeof (value as StrictTemplateMetadata).componentLoader === 'function' &&
-    typeof (value as StrictTemplateMetadata).configPath === 'string' &&
-    typeof (value as StrictTemplateMetadata).lastModified === 'number' &&
-    typeof (value as StrictTemplateMetadata).isBuiltIn === 'boolean'
+    isStrictTemplateConfig(value)
+    && typeof (value as StrictTemplateMetadata).id === 'string'
+    && typeof (value as StrictTemplateMetadata).category === 'string'
+    && typeof (value as StrictTemplateMetadata).device === 'string'
+    && typeof (value as StrictTemplateMetadata).componentPath === 'string'
+    && typeof (value as StrictTemplateMetadata).componentLoader === 'function'
+    && typeof (value as StrictTemplateMetadata).configPath === 'string'
+    && typeof (value as StrictTemplateMetadata).lastModified === 'number'
+    && typeof (value as StrictTemplateMetadata).isBuiltIn === 'boolean'
   )
 }
 
 export function isStrictError(value: unknown): value is StrictError {
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof (value as StrictError).code === 'string' &&
-    typeof (value as StrictError).message === 'string' &&
-    typeof (value as StrictError).timestamp === 'number' &&
-    ['low', 'medium', 'high', 'critical'].includes((value as StrictError).severity)
+    typeof value === 'object'
+    && value !== null
+    && typeof (value as StrictError).code === 'string'
+    && typeof (value as StrictError).message === 'string'
+    && typeof (value as StrictError).timestamp === 'number'
+    && ['low', 'medium', 'high', 'critical'].includes((value as StrictError).severity)
   )
 }
 

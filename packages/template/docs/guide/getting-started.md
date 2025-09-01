@@ -79,35 +79,6 @@ src/
 ::: code-group
 
 ```vue [src/templates/login/desktop/default/index.vue]
-<template>
-  <div class="login-container">
-    <div class="login-card">
-      <h1>{{ title }}</h1>
-      <form @submit.prevent="handleLogin">
-        <div class="form-group">
-          <input
-            v-model="form.username"
-            type="text"
-            placeholder="用户名"
-            required
-          />
-        </div>
-        <div class="form-group">
-          <input
-            v-model="form.password"
-            type="password"
-            placeholder="密码"
-            required
-          />
-        </div>
-        <button type="submit" class="login-button">
-          登录
-        </button>
-      </form>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { reactive } from 'vue'
 
@@ -124,10 +95,39 @@ const form = reactive({
   password: ''
 })
 
-const handleLogin = () => {
+function handleLogin() {
   console.log('登录信息:', form)
 }
 </script>
+
+<template>
+  <div class="login-container">
+    <div class="login-card">
+      <h1>{{ title }}</h1>
+      <form @submit.prevent="handleLogin">
+        <div class="form-group">
+          <input
+            v-model="form.username"
+            type="text"
+            placeholder="用户名"
+            required
+          >
+        </div>
+        <div class="form-group">
+          <input
+            v-model="form.password"
+            type="password"
+            placeholder="密码"
+            required
+          >
+        </div>
+        <button type="submit" class="login-button">
+          登录
+        </button>
+      </form>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .login-container {
@@ -214,10 +214,10 @@ export default {
 在您的 Vue 应用中集成模板系统：
 
 ```typescript
+import { TemplatePlugin } from '@ldesign/template'
 // main.ts
 import { createApp } from 'vue'
 import App from './App.vue'
-import { TemplatePlugin } from '@ldesign/template'
 
 const app = createApp(App)
 
@@ -233,43 +233,13 @@ app.mount('#app')
 
 ```vue
 <!-- App.vue -->
-<template>
-  <div id="app">
-    <div v-if="isLoading">加载模板中...</div>
-    <div v-else-if="error">{{ error }}</div>
-    <div v-else>
-      <!-- 模板选择器 -->
-      <div class="template-selector">
-        <select v-model="selectedTemplateId" @change="loadTemplate">
-          <option value="">选择模板</option>
-          <option
-            v-for="template in availableTemplates"
-            :key="template.name"
-            :value="template.name"
-          >
-            {{ template.displayName }}
-          </option>
-        </select>
-      </div>
-
-      <!-- 模板渲染器 -->
-      <TemplateRenderer
-        v-if="currentTemplate"
-        :template="currentTemplate"
-        :props="templateProps"
-        @login="handleLogin"
-      />
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
 import {
   TemplateRenderer,
-  useTemplateScanner,
-  useDeviceDetection
+  useDeviceDetection,
+  useTemplateScanner
 } from '@ldesign/template'
+import { computed, onMounted, ref } from 'vue'
 
 // 扫描模板
 const {
@@ -301,7 +271,7 @@ const availableTemplates = computed(() => {
 })
 
 // 加载模板
-const loadTemplate = async () => {
+async function loadTemplate() {
   if (!selectedTemplateId.value) {
     currentTemplate.value = null
     return
@@ -314,7 +284,7 @@ const loadTemplate = async () => {
 }
 
 // 处理登录事件
-const handleLogin = (loginData: any) => {
+function handleLogin(loginData: any) {
   console.log('用户登录:', loginData)
   // 处理登录逻辑
 }
@@ -330,6 +300,42 @@ onMounted(async () => {
   }
 })
 </script>
+
+<template>
+  <div id="app">
+    <div v-if="isLoading">
+      加载模板中...
+    </div>
+    <div v-else-if="error">
+      {{ error }}
+    </div>
+    <div v-else>
+      <!-- 模板选择器 -->
+      <div class="template-selector">
+        <select v-model="selectedTemplateId" @change="loadTemplate">
+          <option value="">
+            选择模板
+          </option>
+          <option
+            v-for="template in availableTemplates"
+            :key="template.name"
+            :value="template.name"
+          >
+            {{ template.displayName }}
+          </option>
+        </select>
+      </div>
+
+      <!-- 模板渲染器 -->
+      <TemplateRenderer
+        v-if="currentTemplate"
+        :template="currentTemplate"
+        :props="templateProps"
+        @login="handleLogin"
+      />
+    </div>
+  </div>
+</template>
 
 <style>
 #app {
@@ -433,5 +439,3 @@ app.use(TemplatePlugin, {
 2. 搜索 [GitHub Issues](https://github.com/ldesign-org/template/issues)
 3. 加入我们的 [Discord 社区](https://discord.gg/ldesign)
 4. 提交新的 [Issue](https://github.com/ldesign-org/template/issues/new)
-
-

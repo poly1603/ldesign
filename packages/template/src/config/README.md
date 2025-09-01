@@ -60,34 +60,34 @@ const config = configManager.getConfig()
 ```typescript
 interface TemplateSystemConfig {
   // 基础配置
-  templatesDir: string              // 模板目录路径
-  autoScan: boolean                 // 是否自动扫描
-  enableHMR: boolean               // 是否启用热更新
-  defaultDevice: DeviceType        // 默认设备类型
-  debug: boolean                   // 调试模式
+  templatesDir: string // 模板目录路径
+  autoScan: boolean // 是否自动扫描
+  enableHMR: boolean // 是否启用热更新
+  defaultDevice: DeviceType // 默认设备类型
+  debug: boolean // 调试模式
 
   // 扫描器配置
   scanner: {
-    maxDepth: number               // 最大扫描深度
-    includeExtensions: string[]    // 包含的文件扩展名
-    excludePatterns: string[]      // 排除的路径模式
-    enableCache: boolean           // 是否启用缓存
-    watchMode: boolean             // 是否启用监听模式
-    debounceDelay: number          // 防抖延迟
-    batchSize: number              // 批处理大小
+    maxDepth: number // 最大扫描深度
+    includeExtensions: string[] // 包含的文件扩展名
+    excludePatterns: string[] // 排除的路径模式
+    enableCache: boolean // 是否启用缓存
+    watchMode: boolean // 是否启用监听模式
+    debounceDelay: number // 防抖延迟
+    batchSize: number // 批处理大小
   }
 
   // 缓存配置
   cache: {
-    enabled: boolean               // 是否启用缓存
-    strategy: 'lru' | 'fifo'      // 缓存策略
-    maxSize: number                // 最大缓存大小
-    ttl: number                    // 缓存过期时间
+    enabled: boolean // 是否启用缓存
+    strategy: 'lru' | 'fifo' // 缓存策略
+    maxSize: number // 最大缓存大小
+    ttl: number // 缓存过期时间
   }
 
   // 错误处理配置
   errorHandling: {
-    enableReporting: boolean       // 是否启用错误报告
+    enableReporting: boolean // 是否启用错误报告
     logLevel: 'error' | 'warn' | 'info' | 'debug'
   }
 }
@@ -201,10 +201,10 @@ unsubscribe()
 
 ```typescript
 interface ConfigUpdateEvent {
-  path: string          // 配置路径
-  oldValue: any         // 旧值
-  newValue: any         // 新值
-  timestamp: number     // 时间戳
+  path: string // 配置路径
+  oldValue: any // 旧值
+  newValue: any // 新值
+  timestamp: number // 时间戳
 }
 ```
 
@@ -271,15 +271,15 @@ TEMPLATE_SCANNER_INCLUDE_EXTENSIONS=.vue,.js,.ts → scanner.includeExtensions: 
 ```typescript
 // 验证配置
 const result = configManager.validateConfig({
-  templatesDir: '',  // 无效：空字符串
+  templatesDir: '', // 无效：空字符串
   scanner: {
-    maxDepth: -1     // 无效：负数
+    maxDepth: -1 // 无效：负数
   }
 })
 
 if (!result.valid) {
   console.log('配置错误:', result.errors)
-  
+
   // 使用修复后的配置
   if (result.fixedConfig) {
     configManager.updateConfig(result.fixedConfig)
@@ -294,13 +294,13 @@ if (!result.valid) {
 class CustomConfigManager extends TemplateConfigManager {
   validateConfig(config: any): ValidationResult {
     const result = super.validateConfig(config)
-    
+
     // 添加自定义验证逻辑
     if (config.templatesDir && !config.templatesDir.startsWith('src/')) {
       result.valid = false
       result.errors.push('模板目录必须在src目录下')
     }
-    
+
     return result
   }
 }
@@ -312,10 +312,10 @@ class CustomConfigManager extends TemplateConfigManager {
 
 ```typescript
 // 导出当前配置
-const configJson = configManager.exportConfig()
-
 // 保存到文件
-import fs from 'fs'
+import fs from 'node:fs'
+
+const configJson = configManager.exportConfig()
 fs.writeFileSync('config.json', configJson)
 ```
 
@@ -323,7 +323,7 @@ fs.writeFileSync('config.json', configJson)
 
 ```typescript
 // 从文件加载配置
-import fs from 'fs'
+import fs from 'node:fs'
 const configJson = fs.readFileSync('config.json', 'utf-8')
 
 // 导入配置
@@ -379,7 +379,7 @@ A: 确保使用 `set()` 或 `updateConfig()` 方法更新配置。
 
 ```typescript
 const configManager = new TemplateConfigManager({
-  debug: true  // 启用调试输出
+  debug: true // 启用调试输出
 })
 
 // 查看配置加载过程

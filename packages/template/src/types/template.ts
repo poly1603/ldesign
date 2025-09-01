@@ -5,6 +5,11 @@
 import type { Component, PropType } from 'vue'
 
 /**
+ * 导入Ref类型
+ */
+import type { Ref } from 'vue'
+
+/**
  * 设备类型
  */
 export type DeviceType = 'desktop' | 'tablet' | 'mobile'
@@ -30,7 +35,7 @@ export interface TemplateConfig {
   /** 预览图路径（可选） */
   preview?: string
   /** 支持的props定义（可选） */
-  props?: Record<string, PropType<unknown> | { type: PropType<unknown>; default?: unknown; required?: boolean; validator?: (value: unknown) => boolean }>
+  props?: Record<string, PropType<unknown> | { type: PropType<unknown>, default?: unknown, required?: boolean, validator?: (value: unknown) => boolean }>
   /** 支持的插槽列表（可选） */
   slots?: string[]
   /** 依赖的其他模板或组件（可选） */
@@ -69,6 +74,68 @@ export interface TemplateMetadata extends TemplateConfig {
 export type TemplateIndex = Map<string, Map<DeviceType, Map<string, TemplateMetadata>>>
 
 /**
+ * 模板渲染器动画配置
+ */
+export interface TemplateRendererAnimationConfig {
+  /** 模板选择器动画配置 */
+  selector?: {
+    type?: 'fade' | 'slide' | 'scale' | 'slide-fade' | 'scale-fade'
+    duration?: number
+    direction?: 'up' | 'down' | 'left' | 'right'
+    easing?: string
+    delay?: number
+    enabled?: boolean
+  }
+  /** 模板切换动画配置 */
+  templateSwitch?: {
+    type?: 'fade' | 'slide' | 'scale' | 'slide-fade' | 'scale-fade'
+    duration?: number
+    direction?: 'up' | 'down' | 'left' | 'right'
+    easing?: string
+    delay?: number
+    enabled?: boolean
+  }
+  /** 是否启用动画 */
+  enabled?: boolean
+  /** 全局动画时长倍数 */
+  durationMultiplier?: number
+  /** 是否尊重用户的减少动画偏好 */
+  respectReducedMotion?: boolean
+}
+
+/**
+ * 模板选择器样式配置
+ */
+export interface TemplateSelectorConfig {
+  /** 选择器主题 */
+  theme?: 'default' | 'modern' | 'minimal' | 'elegant'
+  /** 选择器位置 */
+  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center'
+  /** 触发按钮样式 */
+  triggerStyle?: 'button' | 'dropdown' | 'floating' | 'inline'
+  /** 弹窗样式 */
+  modalStyle?: 'overlay' | 'dropdown' | 'sidebar' | 'fullscreen'
+  /** 动画类型 */
+  animation?: 'fade' | 'slide' | 'scale' | 'bounce' | 'elastic'
+  /** 自定义CSS类名 */
+  customClass?: string
+  /** 自定义样式 */
+  customStyle?: Record<string, any>
+  /** 是否显示搜索框 */
+  showSearch?: boolean
+  /** 是否显示标签筛选 */
+  showTags?: boolean
+  /** 是否显示排序选项 */
+  showSort?: boolean
+  /** 每行显示的模板数量 */
+  itemsPerRow?: number
+  /** 最大高度 */
+  maxHeight?: string | number
+  /** 最大宽度 */
+  maxWidth?: string | number
+}
+
+/**
  * 模板渲染器Props
  */
 export interface TemplateRendererProps {
@@ -90,10 +157,18 @@ export interface TemplateRendererProps {
   errorComponent?: Component
   /** 传递给模板的属性（可选） */
   props?: Record<string, any>
+  /** 动画配置（可选） */
+  animationConfig?: TemplateRendererAnimationConfig
+  /** 模板选择器样式配置（可选） */
+  selectorConfig?: TemplateSelectorConfig
   /** 模板切换回调（可选） */
   onTemplateChange?: (templateName: string) => void
   /** 加载错误回调（可选） */
   onLoadError?: (error: Error) => void
+  /** 动画开始回调（可选） */
+  onAnimationStart?: (type: string) => void
+  /** 动画结束回调（可选） */
+  onAnimationEnd?: (type: string) => void
 }
 
 /**
@@ -108,6 +183,10 @@ export interface UseTemplateOptions {
   autoDetectDevice?: boolean
   /** 是否启用缓存 */
   enableCache?: boolean
+  /** 是否显示内置模板选择器 */
+  showSelector?: boolean
+  /** 模板选择器配置 */
+  selectorConfig?: TemplateSelectorConfig
 }
 
 /**
@@ -134,6 +213,16 @@ export interface UseTemplateReturn {
   preloadTemplate: (templateName: string) => Promise<void>
   /** 清除缓存 */
   clearCache: () => void
+  /** 动画包装组件 */
+  TemplateTransition: Component
+  /** 是否显示选择器 */
+  showSelector: Ref<boolean>
+  /** 选择器配置 */
+  selectorConfig: Ref<TemplateSelectorConfig>
+  /** 打开选择器 */
+  openSelector: () => void
+  /** 关闭选择器 */
+  closeSelector: () => void
 }
 
 /**
@@ -157,8 +246,3 @@ export interface TemplateSelectorProps {
   /** 关闭回调 */
   onClose?: () => void
 }
-
-/**
- * 导入Ref类型
- */
-import type { Ref } from 'vue'

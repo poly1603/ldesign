@@ -16,40 +16,40 @@ const config: TemplateConfig = {
   props: {
     title: {
       type: String,
-      default: '手机登录'
+      default: '手机登录',
     },
     subtitle: {
       type: String,
-      default: '随时随地，安全登录'
+      default: '随时随地，安全登录',
     },
     showRemember: {
       type: Boolean,
-      default: false
+      default: false,
     },
     showQuickLogin: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showRegister: {
       type: Boolean,
-      default: true
+      default: true,
     },
     logoUrl: {
       type: String,
-      default: ''
+      default: '',
     },
     primaryColor: {
       type: String,
-      default: '#667eea'
+      default: '#667eea',
     },
     enableBiometric: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showStatusBar: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   slots: ['header', 'footer', 'quick-actions', 'status-bar'],
   dependencies: [],
@@ -70,12 +70,12 @@ const config: TemplateConfig = {
     '快捷登录',
     '安全指示器',
     '单手操作优化',
-    '视口自适应'
+    '视口自适应',
   ],
   screenshots: [
     './screenshot-light.png',
-    './screenshot-dark.png'
-  ]
+    './screenshot-dark.png',
+  ],
 }
 
 export default config

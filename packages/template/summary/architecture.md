@@ -73,12 +73,12 @@ class TemplateManager {
   private scanner: TemplateScanner
   private loader: TemplateLoader
   private deviceAdapter: DeviceAdapter
-  
+
   // 状态管理
   private templates: Map<string, TemplateInfo>
   private categoryIndex: Map<string, Map<DeviceType, TemplateInfo[]>>
   private listeners: Map<string, Set<Function>>
-  
+
   // 核心方法
   async initialize(): Promise<void>
   async scanTemplates(): Promise<ScanResult>
@@ -99,7 +99,7 @@ class TemplateManager {
 class TemplateScanner {
   // 配置选项
   private options: ScanOptions
-  
+
   // 核心方法
   async scan(): Promise<ScanResult>
   private async parseTemplate(path: string): Promise<TemplateInfo>
@@ -121,7 +121,7 @@ class TemplateLoader {
   // 缓存管理
   private cache: Map<string, CacheItem>
   private loadingPromises: Map<string, Promise<Component>>
-  
+
   // 核心方法
   async load(template: TemplateInfo, options?: LoadOptions): Promise<LoadResult>
   private async loadComponent(template: TemplateInfo): Promise<Component>
@@ -144,11 +144,11 @@ class DeviceAdapter {
   private currentDevice: DeviceType
   private currentDeviceInfo: DeviceInfo
   private listeners: Set<DeviceChangeCallback>
-  
+
   // 监听器
   private resizeObserver?: ResizeObserver
   private mediaQueryLists: MediaQueryList[]
-  
+
   // 核心方法
   initialize(): void
   getCurrentDevice(): DeviceType

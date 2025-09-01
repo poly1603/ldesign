@@ -2,17 +2,17 @@
  * TemplateRenderer 组件单元测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import type { TemplateManager } from '../../../src/core/template-manager'
+import type { TemplateInfo } from '../../../src/types'
 import { mount } from '@vue/test-utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import TemplateRenderer from '../../../src/vue/components/TemplateRenderer'
-import { TemplateManager } from '../../../src/core/template-manager'
-import type { TemplateInfo } from '../../../src/types'
 
 // Mock 模板管理器
 vi.mock('../../../src/core/template-manager')
 
-describe('TemplateRenderer', () => {
+describe('templateRenderer', () => {
   let mockManager: TemplateManager
   let mockTemplates: TemplateInfo[]
 
@@ -313,7 +313,7 @@ describe('TemplateRenderer', () => {
         'dashboard',
         'desktop',
         undefined,
-        {}
+        {},
       )
     })
 
@@ -331,7 +331,7 @@ describe('TemplateRenderer', () => {
         'login',
         'mobile',
         undefined,
-        {}
+        {},
       )
     })
 
@@ -349,7 +349,7 @@ describe('TemplateRenderer', () => {
         'login',
         'desktop',
         undefined,
-        { title: 'New Title' }
+        { title: 'New Title' },
       )
     })
   })

@@ -1,20 +1,21 @@
 /**
  * 模板管理Hook
- * 
+ *
  * 主要的模板管理Hook，提供模板加载、切换、缓存等功能
  */
 
-import { ref, computed, watch, onMounted, onUnmounted, markRaw, unref, type Ref } from 'vue'
-import type { Component } from 'vue'
+import { ref, computed, markRaw, onMounted, onUnmounted, unref, watch, type Component, type Ref } from 'vue'
 import type {
+  DeviceType,
+  TemplateMetadata,
   UseTemplateOptions,
   UseTemplateReturn,
-  TemplateMetadata,
-  DeviceType
 } from '../types/template'
+
+import { HookTemplateRenderer } from '../components/TemplateTransition'
 import { TemplateScanner } from '../scanner'
-import { componentLoader, loaderUtils } from '../utils/loader'
 import { componentCache } from '../utils/cache'
+import { componentLoader } from '../utils/loader'
 import { useDeviceDetection } from './useDeviceDetection'
 
 /**
@@ -30,7 +31,7 @@ function getGlobalScanner(): TemplateScanner {
     globalScanner = new TemplateScanner({
       templatesDir: 'src/templates',
       enableCache: true,
-      enableHMR: import.meta.env.DEV
+      enableHMR: import.meta.env.DEV,
     })
   }
   return globalScanner
@@ -44,13 +45,15 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
     category,
     device: initialDevice,
     autoDetectDevice = true,
-    enableCache = true
+    enableCache = true,
+    showSelector: showSelectorOption = false,
+    selectorConfig: selectorConfigOption = {},
   } = options
 
   // 设备检测
   const { deviceType: detectedDevice } = useDeviceDetection({
     initialDevice,
-    enableResponsive: autoDetectDevice
+    enableResponsive: autoDetectDevice,
   })
 
   // 响应式状态
@@ -59,6 +62,20 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
   const availableTemplates = ref<TemplateMetadata[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
+
+  // 选择器相关状态
+  const showSelector = ref(showSelectorOption)
+  const selectorConfig = ref({
+    theme: 'default',
+    position: 'bottom',
+    triggerStyle: 'dropdown',
+    modalStyle: 'dropdown',
+    animation: 'slide',
+    showSearch: false,
+    showTags: false,
+    showSort: false,
+    ...selectorConfigOption,
+  })
 
   // 当前设备类型
   const deviceType = computed(() => initialDevice || detectedDevice.value)
@@ -92,11 +109,12 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
           await switchTemplate(defaultTemplate.id || defaultTemplate.name)
         }
       }
-
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load templates'
       console.error('Failed to load templates:', err)
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -116,7 +134,7 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
 
       // 查找模板元数据（优先使用ID匹配，然后使用name匹配）
       const template = availableTemplates.value.find(t =>
-        t.id === templateName || t.name === templateName
+        t.id === templateName || t.name === templateName,
       )
       if (!template) {
         throw new Error(`Template not found: ${templateName}`)
@@ -127,7 +145,7 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
         const cachedComponent = componentCache.getComponent(
           template.category,
           template.device,
-          template.name
+          template.name,
         )
         if (cachedComponent) {
           currentTemplate.value = template
@@ -144,11 +162,12 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
       currentTemplate.value = template
       // 使用 markRaw 防止组件被包装成响应式对象
       currentComponent.value = markRaw(loadResult.component)
-
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to switch template'
       console.error('Failed to switch template:', err)
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -177,7 +196,8 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
       }
 
       await componentLoader.preloadComponent(template)
-    } catch (err) {
+    }
+    catch (err) {
       console.warn(`Failed to preload template: ${templateName}`, err)
     }
   }
@@ -197,16 +217,17 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
    */
   async function preloadCommonTemplates(): Promise<void> {
     const templates = availableTemplates.value
-    if (templates.length === 0) return
+    if (templates.length === 0)
+      return
 
     // 预加载默认模板和前3个模板
     const toPreload = [
       ...templates.filter(t => t.isDefault),
-      ...templates.slice(0, 3)
+      ...templates.slice(0, 3),
     ].slice(0, 5) // 最多预加载5个
 
     await Promise.allSettled(
-      toPreload.map(template => componentLoader.preloadComponent(template))
+      toPreload.map(template => componentLoader.preloadComponent(template)),
     )
   }
 
@@ -246,6 +267,20 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
   })
 
   // 清理
+  /**
+   * 打开选择器
+   */
+  function openSelector() {
+    showSelector.value = true
+  }
+
+  /**
+   * 关闭选择器
+   */
+  function closeSelector() {
+    showSelector.value = false
+  }
+
   onUnmounted(() => {
     // 清理加载中的Promise
     componentLoader.clearLoadingPromises()
@@ -261,7 +296,12 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
     switchTemplate,
     refreshTemplates,
     preloadTemplate,
-    clearCache
+    clearCache,
+    TemplateTransition: markRaw(HookTemplateRenderer),
+    showSelector,
+    selectorConfig,
+    openSelector,
+    closeSelector,
   }
 }
 
@@ -275,7 +315,7 @@ export function useTemplateList(category: string, device?: DeviceType | Ref<Devi
 
   const { deviceType } = useDeviceDetection({
     initialDevice: unref(device),
-    enableResponsive: !device
+    enableResponsive: !device,
   })
 
   const currentDevice = computed(() => unref(device) || deviceType.value)
@@ -294,9 +334,11 @@ export function useTemplateList(category: string, device?: DeviceType | Ref<Devi
 
       const templates = scanner.getTemplates(category, currentDevice.value)
       availableTemplates.value = templates
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load templates'
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -314,6 +356,6 @@ export function useTemplateList(category: string, device?: DeviceType | Ref<Devi
     loading,
     error,
     deviceType: currentDevice,
-    refresh: loadTemplates
+    refresh: loadTemplates,
   }
 }

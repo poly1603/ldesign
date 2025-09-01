@@ -1,3 +1,125 @@
+<script setup lang="ts">
+import { computed, reactive, ref } from 'vue'
+
+// Props定义
+interface Props {
+  title?: string
+  subtitle?: string
+  showRemember?: boolean
+  showRegister?: boolean
+  showCreativeElements?: boolean
+  logoUrl?: string
+  accentColor?: string
+  secondaryAccent?: string
+  tertiaryAccent?: string
+  enableAnimations?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  title: '创意登录',
+  subtitle: '释放你的创造力',
+  showRemember: true,
+  showRegister: true,
+  showCreativeElements: true,
+  logoUrl: '',
+  accentColor: '#ff6b6b',
+  secondaryAccent: '#4ecdc4',
+  tertiaryAccent: '#45b7d1',
+  enableAnimations: true,
+})
+
+// 状态管理
+const formData = reactive({
+  username: '',
+  password: '',
+  remember: false,
+})
+
+const loading = ref(false)
+const showPassword = ref(false)
+const focusedField = ref('')
+
+// 计算属性
+const cssVars = computed(() => ({
+  '--accent-color': props.accentColor,
+  '--secondary-accent': props.secondaryAccent,
+  '--tertiary-accent': props.tertiaryAccent,
+}))
+
+// 网格线样式生成
+function getGridLineStyle(index: number) {
+  const isVertical = index % 2 === 0
+  const position = (index / 20) * 100
+  const opacity = Math.random() * 0.3 + 0.1
+  const animationDelay = Math.random() * 5
+
+  if (isVertical) {
+    return {
+      left: `${position}%`,
+      width: '1px',
+      height: '100%',
+      opacity,
+      animationDelay: `${animationDelay}s`,
+    }
+  }
+  else {
+    return {
+      top: `${position}%`,
+      height: '1px',
+      width: '100%',
+      opacity,
+      animationDelay: `${animationDelay}s`,
+    }
+  }
+}
+
+// 粒子样式生成
+function getParticleStyle(index: number) {
+  const size = Math.random() * 6 + 2
+  const left = Math.random() * 100
+  const top = Math.random() * 100
+  const animationDelay = Math.random() * 10
+  const animationDuration = Math.random() * 15 + 10
+  const opacity = Math.random() * 0.8 + 0.2
+
+  return {
+    width: `${size}px`,
+    height: `${size}px`,
+    left: `${left}%`,
+    top: `${top}%`,
+    opacity,
+    animationDelay: `${animationDelay}s`,
+    animationDuration: `${animationDuration}s`,
+  }
+}
+
+// 事件处理
+async function handleSubmit() {
+  loading.value = true
+
+  try {
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    console.log('创意登录数据:', formData)
+    alert(`欢迎来到创意世界！${formData.username}`)
+  }
+  catch (error) {
+    console.error('登录失败:', error)
+    alert('登录失败，请重试')
+  }
+  finally {
+    loading.value = false
+  }
+}
+
+function handleForgot() {
+  alert('忘记密码功能')
+}
+
+function handleRegister() {
+  alert('注册功能')
+}
+</script>
+
 <template>
   <div class="login-template-creative" :style="cssVars">
     <!-- 模板标识横幅 -->
@@ -10,12 +132,14 @@
             <span class="template-version">v3.0.0</span>
           </span>
         </div>
-        <div class="template-category">Login</div>
+        <div class="template-category">
+          Login
+        </div>
       </div>
     </div>
 
     <!-- 调试信息显示 -->
-    <div class="debug-info" v-if="showDebugInfo">
+    <div v-if="showDebugInfo" class="debug-info">
       <div class="debug-panel">
         <h4>🔧 调试信息</h4>
         <div class="debug-items">
@@ -45,29 +169,29 @@
     <div class="creative-background">
       <!-- 动态几何形状 -->
       <div class="bg-shapes">
-        <div class="shape shape-1" :style="{ animationDelay: '0s' }"></div>
-        <div class="shape shape-2" :style="{ animationDelay: '2s' }"></div>
-        <div class="shape shape-3" :style="{ animationDelay: '4s' }"></div>
-        <div class="shape shape-4" :style="{ animationDelay: '1s' }"></div>
-        <div class="shape shape-5" :style="{ animationDelay: '3s' }"></div>
-        <div class="shape shape-6" :style="{ animationDelay: '5s' }"></div>
+        <div class="shape shape-1" :style="{ animationDelay: '0s' }" />
+        <div class="shape shape-2" :style="{ animationDelay: '2s' }" />
+        <div class="shape shape-3" :style="{ animationDelay: '4s' }" />
+        <div class="shape shape-4" :style="{ animationDelay: '1s' }" />
+        <div class="shape shape-5" :style="{ animationDelay: '3s' }" />
+        <div class="shape shape-6" :style="{ animationDelay: '5s' }" />
       </div>
 
       <!-- 粒子系统 -->
       <div v-if="enableAnimations" class="particle-system">
-        <div v-for="i in 30" :key="`particle-${i}`" class="particle" :style="getParticleStyle(i)"></div>
+        <div v-for="i in 30" :key="`particle-${i}`" class="particle" :style="getParticleStyle(i)" />
       </div>
 
       <!-- 动态网格 -->
       <div v-if="enableAnimations" class="grid-overlay">
-        <div v-for="i in 20" :key="`grid-${i}`" class="grid-line" :style="getGridLineStyle(i)"></div>
+        <div v-for="i in 20" :key="`grid-${i}`" class="grid-line" :style="getGridLineStyle(i)" />
       </div>
 
       <!-- 光效 -->
       <div class="light-effects">
-        <div class="light-beam light-beam-1"></div>
-        <div class="light-beam light-beam-2"></div>
-        <div class="light-beam light-beam-3"></div>
+        <div class="light-beam light-beam-1" />
+        <div class="light-beam light-beam-2" />
+        <div class="light-beam light-beam-3" />
       </div>
     </div>
 
@@ -76,24 +200,36 @@
       <div class="artwork-section">
         <slot name="artwork">
           <div class="artwork-content">
-            <div class="floating-elements" v-if="showCreativeElements">
-              <div class="element element-circle"></div>
-              <div class="element element-triangle"></div>
-              <div class="element element-square"></div>
-              <div class="element element-hexagon"></div>
+            <div v-if="showCreativeElements" class="floating-elements">
+              <div class="element element-circle" />
+              <div class="element element-triangle" />
+              <div class="element element-square" />
+              <div class="element element-hexagon" />
             </div>
-            
+
             <div class="artwork-text">
-              <h2 class="artwork-title">设计改变世界</h2>
-              <p class="artwork-subtitle">每一次登录都是创意的开始</p>
+              <h2 class="artwork-title">
+                设计改变世界
+              </h2>
+              <p class="artwork-subtitle">
+                每一次登录都是创意的开始
+              </p>
               <div class="artwork-stats">
                 <div class="stat-item">
-                  <div class="stat-number">10K+</div>
-                  <div class="stat-label">创意作品</div>
+                  <div class="stat-number">
+                    10K+
+                  </div>
+                  <div class="stat-label">
+                    创意作品
+                  </div>
                 </div>
                 <div class="stat-item">
-                  <div class="stat-number">500+</div>
-                  <div class="stat-label">设计师</div>
+                  <div class="stat-number">
+                    500+
+                  </div>
+                  <div class="stat-label">
+                    设计师
+                  </div>
                 </div>
               </div>
             </div>
@@ -109,17 +245,21 @@
             <slot name="header">
               <div class="logo-section">
                 <div v-if="logoUrl" class="logo-image">
-                  <img :src="logoUrl" :alt="title" />
+                  <img :src="logoUrl" :alt="title">
                 </div>
                 <div v-else class="logo-creative">
                   <div class="logo-shapes">
-                    <div class="logo-shape logo-shape-1"></div>
-                    <div class="logo-shape logo-shape-2"></div>
-                    <div class="logo-shape logo-shape-3"></div>
+                    <div class="logo-shape logo-shape-1" />
+                    <div class="logo-shape logo-shape-2" />
+                    <div class="logo-shape logo-shape-3" />
                   </div>
                 </div>
-                <h1 class="login-title">{{ title }}</h1>
-                <p class="login-subtitle">{{ subtitle }}</p>
+                <h1 class="login-title">
+                  {{ title }}
+                </h1>
+                <p class="login-subtitle">
+                  {{ subtitle }}
+                </p>
               </div>
             </slot>
           </div>
@@ -127,8 +267,8 @@
           <!-- 登录表单 -->
           <form class="creative-form" @submit.prevent="handleSubmit">
             <div class="form-group">
-              <div class="input-container" :class="{ 'active': focusedField === 'username' }">
-                <div class="input-decoration"></div>
+              <div class="input-container" :class="{ active: focusedField === 'username' }">
+                <div class="input-decoration" />
                 <input
                   v-model="formData.username"
                   type="text"
@@ -138,14 +278,14 @@
                   :disabled="loading"
                   @focus="focusedField = 'username'"
                   @blur="focusedField = ''"
-                />
-                <div class="input-highlight"></div>
+                >
+                <div class="input-highlight" />
               </div>
             </div>
 
             <div class="form-group">
-              <div class="input-container" :class="{ 'active': focusedField === 'password' }">
-                <div class="input-decoration"></div>
+              <div class="input-container" :class="{ active: focusedField === 'password' }">
+                <div class="input-decoration" />
                 <input
                   v-model="formData.password"
                   :type="showPassword ? 'text' : 'password'"
@@ -155,20 +295,20 @@
                   :disabled="loading"
                   @focus="focusedField = 'password'"
                   @blur="focusedField = ''"
-                />
+                >
                 <button
                   type="button"
                   class="password-toggle"
-                  @click="showPassword = !showPassword"
                   :disabled="loading"
+                  @click="showPassword = !showPassword"
                 >
-                  <div class="toggle-icon" :class="{ 'visible': showPassword }">
-                    <span class="eye-line eye-line-1"></span>
-                    <span class="eye-line eye-line-2"></span>
-                    <span class="eye-circle"></span>
+                  <div class="toggle-icon" :class="{ visible: showPassword }">
+                    <span class="eye-line eye-line-1" />
+                    <span class="eye-line eye-line-2" />
+                    <span class="eye-circle" />
                   </div>
                 </button>
-                <div class="input-highlight"></div>
+                <div class="input-highlight" />
               </div>
             </div>
 
@@ -179,33 +319,33 @@
                   type="checkbox"
                   class="checkbox-input"
                   :disabled="loading"
-                />
+                >
                 <div class="checkbox-design">
-                  <div class="checkbox-bg"></div>
+                  <div class="checkbox-bg" />
                   <div class="checkbox-check">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                      <polyline points="20,6 9,17 4,12"></polyline>
+                      <polyline points="20,6 9,17 4,12" />
                     </svg>
                   </div>
                 </div>
                 <span class="checkbox-text">记住我</span>
               </label>
-              
+
               <a href="#" class="forgot-link" @click.prevent="handleForgot">
                 <span class="link-text">忘记密码？</span>
-                <div class="link-underline"></div>
+                <div class="link-underline" />
               </a>
             </div>
 
             <button type="submit" class="creative-button" :disabled="loading">
               <div class="button-bg">
-                <div class="button-layer layer-1"></div>
-                <div class="button-layer layer-2"></div>
-                <div class="button-layer layer-3"></div>
+                <div class="button-layer layer-1" />
+                <div class="button-layer layer-2" />
+                <div class="button-layer layer-3" />
               </div>
               <span class="button-content">
                 <span v-if="loading" class="loading-creative">
-                  <div class="loading-shape"></div>
+                  <div class="loading-shape" />
                 </span>
                 <span v-else class="button-text">开始创作</span>
               </span>
@@ -214,9 +354,9 @@
 
           <div v-if="showRegister" class="register-section">
             <div class="register-divider">
-              <div class="divider-line"></div>
+              <div class="divider-line" />
               <span class="divider-text">或者</span>
-              <div class="divider-line"></div>
+              <div class="divider-line" />
             </div>
             <p class="register-text">
               还没有账户？
@@ -230,9 +370,9 @@
           <!-- 创意元素 -->
           <div v-if="showCreativeElements" class="creative-decorations">
             <slot name="creative-elements">
-              <div class="decoration decoration-1"></div>
-              <div class="decoration decoration-2"></div>
-              <div class="decoration decoration-3"></div>
+              <div class="decoration decoration-1" />
+              <div class="decoration decoration-2" />
+              <div class="decoration decoration-3" />
             </slot>
           </div>
         </div>
@@ -249,125 +389,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
-
-// Props定义
-interface Props {
-  title?: string
-  subtitle?: string
-  showRemember?: boolean
-  showRegister?: boolean
-  showCreativeElements?: boolean
-  logoUrl?: string
-  accentColor?: string
-  secondaryAccent?: string
-  tertiaryAccent?: string
-  enableAnimations?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  title: '创意登录',
-  subtitle: '释放你的创造力',
-  showRemember: true,
-  showRegister: true,
-  showCreativeElements: true,
-  logoUrl: '',
-  accentColor: '#ff6b6b',
-  secondaryAccent: '#4ecdc4',
-  tertiaryAccent: '#45b7d1',
-  enableAnimations: true
-})
-
-// 状态管理
-const formData = reactive({
-  username: '',
-  password: '',
-  remember: false
-})
-
-const loading = ref(false)
-const showPassword = ref(false)
-const focusedField = ref('')
-
-// 计算属性
-const cssVars = computed(() => ({
-  '--accent-color': props.accentColor,
-  '--secondary-accent': props.secondaryAccent,
-  '--tertiary-accent': props.tertiaryAccent
-}))
-
-// 网格线样式生成
-const getGridLineStyle = (index: number) => {
-  const isVertical = index % 2 === 0
-  const position = (index / 20) * 100
-  const opacity = Math.random() * 0.3 + 0.1
-  const animationDelay = Math.random() * 5
-
-  if (isVertical) {
-    return {
-      left: `${position}%`,
-      width: '1px',
-      height: '100%',
-      opacity,
-      animationDelay: `${animationDelay}s`
-    }
-  } else {
-    return {
-      top: `${position}%`,
-      height: '1px',
-      width: '100%',
-      opacity,
-      animationDelay: `${animationDelay}s`
-    }
-  }
-}
-
-// 粒子样式生成
-const getParticleStyle = (index: number) => {
-  const size = Math.random() * 6 + 2
-  const left = Math.random() * 100
-  const top = Math.random() * 100
-  const animationDelay = Math.random() * 10
-  const animationDuration = Math.random() * 15 + 10
-  const opacity = Math.random() * 0.8 + 0.2
-
-  return {
-    width: `${size}px`,
-    height: `${size}px`,
-    left: `${left}%`,
-    top: `${top}%`,
-    opacity,
-    animationDelay: `${animationDelay}s`,
-    animationDuration: `${animationDuration}s`
-  }
-}
-
-// 事件处理
-const handleSubmit = async () => {
-  loading.value = true
-  
-  try {
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    console.log('创意登录数据:', formData)
-    alert(`欢迎来到创意世界！${formData.username}`)
-  } catch (error) {
-    console.error('登录失败:', error)
-    alert('登录失败，请重试')
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleForgot = () => {
-  alert('忘记密码功能')
-}
-
-const handleRegister = () => {
-  alert('注册功能')
-}
-</script>
 
 <style lang="less" scoped>
 // 模板标识横幅样式

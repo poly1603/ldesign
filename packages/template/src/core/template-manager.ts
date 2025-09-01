@@ -3,18 +3,18 @@
  * 统一管理模板扫描、加载、缓存和设备适配
  */
 
-import { TemplateScanner } from './scanner'
-import { TemplateLoader } from './template-loader'
-import { DeviceAdapter } from './device-adapter'
 import type {
-  TemplateManagerConfig,
-  TemplateInfo,
   DeviceType,
-  LoadResult,
   EventListener,
+  LoadResult,
   TemplateEvents,
+  TemplateInfo,
+  TemplateManagerConfig,
 } from '../types'
 import { DEFAULT_CONFIG } from '../types'
+import { DeviceAdapter } from './device-adapter'
+import { TemplateScanner } from './scanner'
+import { TemplateLoader } from './template-loader'
 
 /**
  * 模板管理器类
@@ -54,7 +54,8 @@ export class TemplateManager {
    * 初始化管理器
    */
   async initialize(): Promise<void> {
-    if (this.initialized) return
+    if (this.initialized)
+      return
 
     try {
       // 初始化设备适配器
@@ -69,7 +70,8 @@ export class TemplateManager {
       }
 
       this.initialized = true
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to initialize TemplateManager:', error)
       throw error
     }
@@ -78,7 +80,7 @@ export class TemplateManager {
   /**
    * 扫描模板
    */
-  async scanTemplates(): Promise<{ count: number; templates: TemplateInfo[]; duration: number }> {
+  async scanTemplates(): Promise<{ count: number, templates: TemplateInfo[], duration: number }> {
     try {
       const result = await this.scanner.scan()
 
@@ -110,7 +112,8 @@ export class TemplateManager {
       }
 
       return result
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Template scanning failed:', error)
       throw error
     }
@@ -166,7 +169,7 @@ export class TemplateManager {
     category: string,
     deviceType?: DeviceType,
     templateName?: string,
-    props?: Record<string, any>
+    props?: Record<string, any>,
   ): Promise<LoadResult> {
     if (!this.initialized) {
       await this.initialize()
@@ -185,7 +188,8 @@ export class TemplateManager {
       const result = await this.loader.load(template)
       this.emit('template:loaded', template)
       return result
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('template:error', template.id, error as Error)
       throw error
     }
@@ -197,10 +201,11 @@ export class TemplateManager {
   private findBestTemplate(
     category: string,
     deviceType: DeviceType,
-    templateName?: string
+    templateName?: string,
   ): TemplateInfo | null {
     const categoryMap = this.categoryIndex.get(category)
-    if (!categoryMap) return null
+    if (!categoryMap)
+      return null
 
     const deviceTemplates = categoryMap.get(deviceType)
     if (!deviceTemplates || deviceTemplates.length === 0) {
@@ -215,7 +220,8 @@ export class TemplateManager {
 
     // 查找默认模板
     const defaultTemplate = deviceTemplates.find(t => t.isDefault)
-    if (defaultTemplate) return defaultTemplate
+    if (defaultTemplate)
+      return defaultTemplate
 
     // 返回第一个模板
     return deviceTemplates[0] || null
@@ -226,7 +232,8 @@ export class TemplateManager {
    */
   private findFallbackTemplate(category: string, deviceType: DeviceType): TemplateInfo | null {
     const categoryMap = this.categoryIndex.get(category)
-    if (!categoryMap) return null
+    if (!categoryMap)
+      return null
 
     // 降级顺序
     const fallbackOrder: Record<DeviceType, DeviceType[]> = {
@@ -252,7 +259,7 @@ export class TemplateManager {
   async switchTemplate(
     category: string,
     templateName: string,
-    deviceType?: DeviceType
+    deviceType?: DeviceType,
   ): Promise<LoadResult> {
     const targetDevice = deviceType || this.deviceAdapter.getCurrentDevice()
     const oldTemplate = this.findBestTemplate(category, targetDevice)
@@ -275,7 +282,7 @@ export class TemplateManager {
       const template = this.findBestTemplate(
         category,
         (device as DeviceType) || this.deviceAdapter.getCurrentDevice(),
-        name
+        name,
       )
 
       if (template) {
@@ -295,7 +302,8 @@ export class TemplateManager {
     }
 
     const categoryMap = this.categoryIndex.get(category)
-    if (!categoryMap) return []
+    if (!categoryMap)
+      return []
 
     if (!deviceType) {
       const allTemplates: TemplateInfo[] = []
@@ -320,7 +328,8 @@ export class TemplateManager {
    */
   getAvailableDeviceTypes(category: string): DeviceType[] {
     const categoryMap = this.categoryIndex.get(category)
-    if (!categoryMap) return []
+    if (!categoryMap)
+      return []
 
     return Array.from(categoryMap.keys())
   }
@@ -368,9 +377,11 @@ export class TemplateManager {
   clearCache(category?: string, deviceType?: DeviceType): void {
     if (category && deviceType) {
       this.loader.clearCache(`${category}:${deviceType}:.*`)
-    } else if (category) {
+    }
+    else if (category) {
       this.loader.clearCache(`${category}:.*`)
-    } else {
+    }
+    else {
       this.loader.clearCache()
     }
 
@@ -410,10 +421,11 @@ export class TemplateManager {
   private emit<K extends keyof TemplateEvents>(event: K, ...args: Parameters<TemplateEvents[K]>): void {
     const eventListeners = this.listeners.get(event)
     if (eventListeners) {
-      eventListeners.forEach(listener => {
+      eventListeners.forEach((listener) => {
         try {
           listener(...args)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`Error in ${event} listener:`, error)
         }
       })

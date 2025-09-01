@@ -56,13 +56,13 @@ interface UseScannerReturn {
   templates: Ref<Map<string, TemplateMetadata>>
   isScanning: Ref<boolean>
   scanError: Ref<Error | null>
-  
+
   // 方法
   scan: () => Promise<ScanResult>
   getTemplatesByCategory: (category: string) => TemplateMetadata[]
   getTemplatesByDevice: (device: DeviceType) => TemplateMetadata[]
   searchTemplates: (filter: TemplateFilter) => TemplateMetadata[]
-  
+
   // 扫描器实例
   scanner: TemplateScanner
 }
@@ -73,20 +73,33 @@ interface UseScannerReturn {
 ### 基础模板列表
 
 ```vue
+<script setup lang="ts">
+import { useTemplateScanner } from '@ldesign/template/composables'
+
+const {
+  templates,
+  isScanning,
+  scanError
+} = useTemplateScanner({
+  templatesDir: 'src/templates',
+  autoScan: true
+})
+</script>
+
 <template>
   <div class="template-list">
     <div v-if="isScanning" class="loading">
       扫描模板中...
     </div>
-    
+
     <div v-else-if="scanError" class="error">
       扫描失败: {{ scanError.message }}
     </div>
-    
+
     <div v-else>
       <h3>可用模板 ({{ templates.size }})</h3>
-      <div 
-        v-for="[name, template] in templates" 
+      <div
+        v-for="[name, template] in templates"
         :key="name"
         class="template-item"
       >
@@ -100,54 +113,14 @@ interface UseScannerReturn {
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { useTemplateScanner } from '@ldesign/template/composables'
-
-const {
-  templates,
-  isScanning,
-  scanError
-} = useTemplateScanner({
-  templatesDir: 'src/templates',
-  autoScan: true
-})
-</script>
 ```
 
 ### 分类过滤
 
 ```vue
-<template>
-  <div class="categorized-templates">
-    <div class="category-tabs">
-      <button
-        v-for="category in categories"
-        :key="category"
-        :class="{ active: selectedCategory === category }"
-        @click="selectedCategory = category"
-      >
-        {{ category }} ({{ getCategoryCount(category) }})
-      </button>
-    </div>
-    
-    <div class="template-grid">
-      <div
-        v-for="template in filteredTemplates"
-        :key="template.name"
-        class="template-card"
-      >
-        <img :src="template.preview" :alt="template.displayName" />
-        <h4>{{ template.displayName }}</h4>
-        <p>{{ template.description }}</p>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { useTemplateScanner } from '@ldesign/template/composables'
+import { computed, ref } from 'vue'
 
 const {
   templates,
@@ -173,70 +146,45 @@ const filteredTemplates = computed(() => {
 })
 
 // 获取分类数量
-const getCategoryCount = (category: string) => {
+function getCategoryCount(category: string) {
   return getTemplatesByCategory(category).length
 }
 </script>
+
+<template>
+  <div class="categorized-templates">
+    <div class="category-tabs">
+      <button
+        v-for="category in categories"
+        :key="category"
+        :class="{ active: selectedCategory === category }"
+        @click="selectedCategory = category"
+      >
+        {{ category }} ({{ getCategoryCount(category) }})
+      </button>
+    </div>
+
+    <div class="template-grid">
+      <div
+        v-for="template in filteredTemplates"
+        :key="template.name"
+        class="template-card"
+      >
+        <img :src="template.preview" :alt="template.displayName">
+        <h4>{{ template.displayName }}</h4>
+        <p>{{ template.description }}</p>
+      </div>
+    </div>
+  </div>
+</template>
 ```
 
 ### 搜索功能
 
 ```vue
-<template>
-  <div class="template-search">
-    <div class="search-controls">
-      <input
-        v-model="searchKeyword"
-        type="text"
-        placeholder="搜索模板..."
-        class="search-input"
-      />
-      
-      <select v-model="selectedDevice" class="device-filter">
-        <option value="">所有设备</option>
-        <option value="desktop">桌面端</option>
-        <option value="tablet">平板端</option>
-        <option value="mobile">移动端</option>
-      </select>
-      
-      <div class="tag-filters">
-        <label v-for="tag in availableTags" :key="tag">
-          <input
-            v-model="selectedTags"
-            :value="tag"
-            type="checkbox"
-          />
-          {{ tag }}
-        </label>
-      </div>
-    </div>
-    
-    <div class="search-results">
-      <p>找到 {{ searchResults.length }} 个模板</p>
-      <div
-        v-for="template in searchResults"
-        :key="template.name"
-        class="result-item"
-      >
-        <h4>{{ template.displayName }}</h4>
-        <p>{{ template.description }}</p>
-        <div class="tags">
-          <span
-            v-for="tag in template.tags"
-            :key="tag"
-            class="tag"
-          >
-            {{ tag }}
-          </span>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { useTemplateScanner } from '@ldesign/template/composables'
+import { computed, ref } from 'vue'
 
 const {
   templates,
@@ -267,40 +215,74 @@ const searchResults = computed(() => {
   })
 })
 </script>
+
+<template>
+  <div class="template-search">
+    <div class="search-controls">
+      <input
+        v-model="searchKeyword"
+        type="text"
+        placeholder="搜索模板..."
+        class="search-input"
+      >
+
+      <select v-model="selectedDevice" class="device-filter">
+        <option value="">
+          所有设备
+        </option>
+        <option value="desktop">
+          桌面端
+        </option>
+        <option value="tablet">
+          平板端
+        </option>
+        <option value="mobile">
+          移动端
+        </option>
+      </select>
+
+      <div class="tag-filters">
+        <label v-for="tag in availableTags" :key="tag">
+          <input
+            v-model="selectedTags"
+            :value="tag"
+            type="checkbox"
+          >
+          {{ tag }}
+        </label>
+      </div>
+    </div>
+
+    <div class="search-results">
+      <p>找到 {{ searchResults.length }} 个模板</p>
+      <div
+        v-for="template in searchResults"
+        :key="template.name"
+        class="result-item"
+      >
+        <h4>{{ template.displayName }}</h4>
+        <p>{{ template.description }}</p>
+        <div class="tags">
+          <span
+            v-for="tag in template.tags"
+            :key="tag"
+            class="tag"
+          >
+            {{ tag }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 ```
 
 ### 文件监听
 
 ```vue
-<template>
-  <div class="template-watcher">
-    <div class="watcher-controls">
-      <button @click="toggleWatching">
-        {{ isWatching ? '停止监听' : '开始监听' }}
-      </button>
-      <span class="status">
-        {{ isWatching ? '🟢 监听中' : '🔴 已停止' }}
-      </span>
-    </div>
-    
-    <div class="activity-log">
-      <h4>活动日志</h4>
-      <div
-        v-for="activity in activities"
-        :key="activity.id"
-        class="activity-item"
-      >
-        <span class="timestamp">{{ activity.timestamp }}</span>
-        <span class="action">{{ activity.action }}</span>
-        <span class="template">{{ activity.template }}</span>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
 import { useTemplateScanner } from '@ldesign/template/composables'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 const {
   scanner
@@ -317,24 +299,25 @@ const activities = ref<Array<{
   template: string
 }>>([])
 
-const toggleWatching = async () => {
+async function toggleWatching() {
   if (isWatching.value) {
     await scanner.stopWatching()
     isWatching.value = false
-  } else {
+  }
+  else {
     await scanner.startWatching()
     isWatching.value = true
   }
 }
 
-const addActivity = (action: string, template: string) => {
+function addActivity(action: string, template: string) {
   activities.value.unshift({
     id: Date.now().toString(),
     timestamp: new Date().toLocaleTimeString(),
     action,
     template
   })
-  
+
   // 保持最新的20条记录
   if (activities.value.length > 20) {
     activities.value = activities.value.slice(0, 20)
@@ -346,11 +329,11 @@ onMounted(() => {
   scanner.on('template:added', (template) => {
     addActivity('新增', template.displayName)
   })
-  
+
   scanner.on('template:updated', (template) => {
     addActivity('更新', template.displayName)
   })
-  
+
   scanner.on('template:removed', (templateName) => {
     addActivity('删除', templateName)
   })
@@ -362,6 +345,32 @@ onUnmounted(async () => {
   }
 })
 </script>
+
+<template>
+  <div class="template-watcher">
+    <div class="watcher-controls">
+      <button @click="toggleWatching">
+        {{ isWatching ? '停止监听' : '开始监听' }}
+      </button>
+      <span class="status">
+        {{ isWatching ? '🟢 监听中' : '🔴 已停止' }}
+      </span>
+    </div>
+
+    <div class="activity-log">
+      <h4>活动日志</h4>
+      <div
+        v-for="activity in activities"
+        :key="activity.id"
+        class="activity-item"
+      >
+        <span class="timestamp">{{ activity.timestamp }}</span>
+        <span class="action">{{ activity.action }}</span>
+        <span class="template">{{ activity.template }}</span>
+      </div>
+    </div>
+  </div>
+</template>
 ```
 
 ## 错误处理
@@ -385,11 +394,12 @@ const {
 })
 
 // 手动扫描并处理错误
-const handleScan = async () => {
+async function handleScan() {
   try {
     const result = await scan()
     console.log(`扫描完成，发现 ${result.templates.size} 个模板`)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('扫描失败:', error)
   }
 }
@@ -414,7 +424,7 @@ const {
 // 预加载常用模板
 onMounted(async () => {
   const commonTemplates = ['login', 'dashboard', 'user']
-  
+
   for (const category of commonTemplates) {
     const categoryTemplates = getTemplatesByCategory(category)
     // 预加载模板组件
@@ -427,7 +437,7 @@ onMounted(async () => {
 })
 
 // 清除缓存
-const clearCache = () => {
+function clearCache() {
   scanner.clearCache()
   console.log('缓存已清除')
 }

@@ -1,195 +1,5 @@
-<template>
-  <div class="login-template-mobile" :style="cssVars">
-    <!-- 模板标识横幅 -->
-    <div class="template-banner">
-      <div class="banner-content">
-        <div class="template-info">
-          <span class="template-name">移动端登录模板</span>
-          <span class="template-meta">
-            <span class="device-type">📱 Mobile</span>
-            <span class="template-version">v1.0.0</span>
-          </span>
-        </div>
-        <div class="template-category">Login</div>
-      </div>
-    </div>
-
-    <!-- 状态栏 -->
-    <div v-if="showStatusBar" class="status-bar">
-      <slot name="status-bar">
-        <div class="status-left">
-          <span class="time">{{ currentTime }}</span>
-        </div>
-        <div class="status-center">
-          <div class="notch"></div>
-        </div>
-        <div class="status-right">
-          <span class="battery">🔋</span>
-          <span class="signal">📶</span>
-          <span class="wifi">📶</span>
-        </div>
-      </slot>
-    </div>
-
-    <div class="mobile-container">
-      <!-- 头部区域 -->
-      <div class="mobile-header">
-        <slot name="header">
-          <div class="header-content">
-            <div v-if="logoUrl" class="logo-image">
-              <img :src="logoUrl" :alt="title" />
-            </div>
-            <div v-else class="app-icon">📱</div>
-            <h1 class="app-title">{{ title }}</h1>
-            <p class="app-subtitle">{{ subtitle }}</p>
-          </div>
-        </slot>
-      </div>
-
-      <!-- 主要内容区域 -->
-      <div class="mobile-main">
-        <!-- 快捷登录 -->
-        <div v-if="showQuickLogin" class="quick-login">
-          <slot name="quick-actions">
-            <div class="quick-title">快速登录</div>
-            <div class="quick-buttons">
-              <button 
-                v-if="enableBiometric" 
-                class="quick-btn quick-btn--fingerprint" 
-                @click="handleBiometricLogin('fingerprint')"
-              >
-                <div class="quick-icon">👆</div>
-                <span>指纹</span>
-              </button>
-              <button 
-                v-if="enableBiometric" 
-                class="quick-btn quick-btn--face" 
-                @click="handleBiometricLogin('face')"
-              >
-                <div class="quick-icon">😊</div>
-                <span>面容</span>
-              </button>
-              <button class="quick-btn quick-btn--sms" @click="handleSmsLogin">
-                <div class="quick-icon">💬</div>
-                <span>短信</span>
-              </button>
-            </div>
-            <div class="quick-divider">
-              <span>或使用账号密码</span>
-            </div>
-          </slot>
-        </div>
-
-        <!-- 登录表单 -->
-        <form class="mobile-form" @submit.prevent="handleSubmit">
-          <div class="form-group">
-            <div class="input-wrapper" :class="{ 'focused': focusedField === 'username' }">
-              <div class="input-icon">👤</div>
-              <input
-                v-model="formData.username"
-                type="text"
-                class="form-input"
-                placeholder="手机号/邮箱"
-                autocomplete="username"
-                required
-                :disabled="loading"
-                @focus="handleInputFocus('username')"
-                @blur="handleInputBlur"
-              />
-              <div class="input-line"></div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <div class="input-wrapper" :class="{ 'focused': focusedField === 'password' }">
-              <div class="input-icon">🔒</div>
-              <input
-                v-model="formData.password"
-                :type="showPassword ? 'text' : 'password'"
-                class="form-input"
-                placeholder="密码"
-                autocomplete="current-password"
-                required
-                :disabled="loading"
-                @focus="handleInputFocus('password')"
-                @blur="handleInputBlur"
-              />
-              <button
-                type="button"
-                class="password-toggle"
-                @click="togglePassword"
-                :disabled="loading"
-              >
-                {{ showPassword ? '👁️' : '👁️‍🗨️' }}
-              </button>
-              <div class="input-line"></div>
-            </div>
-          </div>
-
-          <div class="form-options" v-if="showRemember">
-            <label class="mobile-checkbox">
-              <input
-                v-model="formData.remember"
-                type="checkbox"
-                class="checkbox-input"
-                :disabled="loading"
-              />
-              <span class="checkbox-mark"></span>
-              <span class="checkbox-text">记住登录状态</span>
-            </label>
-          </div>
-
-          <button type="submit" class="mobile-button" :disabled="loading">
-            <div class="button-content">
-              <div v-if="loading" class="loading-spinner"></div>
-              <span>{{ loading ? '登录中...' : '立即登录' }}</span>
-            </div>
-            <div class="button-ripple" :class="{ active: rippleActive }"></div>
-          </button>
-
-          <div class="form-links">
-            <a href="#" class="form-link" @click.prevent="handleForgot">忘记密码？</a>
-            <a href="#" class="form-link" @click.prevent="handleSmsLogin">短信登录</a>
-          </div>
-        </form>
-
-        <!-- 注册区域 -->
-        <div v-if="showRegister" class="register-section">
-          <p class="register-text">还没有账户？</p>
-          <button class="register-button" @click="handleRegister">
-            免费注册
-          </button>
-        </div>
-      </div>
-
-      <!-- 底部区域 -->
-      <div class="mobile-footer">
-        <slot name="footer">
-          <div class="footer-content">
-            <div class="footer-links">
-              <a href="#" class="footer-link">用户协议</a>
-              <span class="footer-separator">|</span>
-              <a href="#" class="footer-link">隐私政策</a>
-            </div>
-            <p class="copyright">© 2024 ldesign</p>
-          </div>
-        </slot>
-      </div>
-
-      <!-- 安全指示器 -->
-      <div class="security-indicator">
-        <div class="security-icon">🔐</div>
-        <span class="security-text">安全连接</span>
-      </div>
-    </div>
-
-    <!-- 键盘占位符 -->
-    <div class="keyboard-spacer" :class="{ active: keyboardVisible }"></div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 
 // Props定义
 interface Props {
@@ -213,14 +23,14 @@ const props = withDefaults(defineProps<Props>(), {
   logoUrl: '',
   primaryColor: '#667eea',
   enableBiometric: true,
-  showStatusBar: true
+  showStatusBar: true,
 })
 
 // 状态管理
 const formData = reactive({
   username: '',
   password: '',
-  remember: false
+  remember: false,
 })
 
 const loading = ref(false)
@@ -232,42 +42,42 @@ const keyboardVisible = ref(false)
 
 // 计算属性
 const cssVars = computed(() => ({
-  '--primary-color': props.primaryColor
+  '--primary-color': props.primaryColor,
 }))
 
 // 更新时间
-const updateTime = () => {
+function updateTime() {
   const now = new Date()
-  currentTime.value = now.toLocaleTimeString('zh-CN', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  currentTime.value = now.toLocaleTimeString('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit',
   })
 }
 
 let timeInterval: number
 
 // 键盘检测
-const detectKeyboard = () => {
+function detectKeyboard() {
   const initialHeight = window.innerHeight
-  
+
   const handleResize = () => {
     const currentHeight = window.innerHeight
     keyboardVisible.value = currentHeight < initialHeight * 0.75
   }
-  
+
   window.addEventListener('resize', handleResize)
   return () => window.removeEventListener('resize', handleResize)
 }
 
 // 事件处理
-const handleInputFocus = (field: string) => {
+function handleInputFocus(field: string) {
   focusedField.value = field
-  
+
   // 触觉反馈
   if ('vibrate' in navigator) {
     navigator.vibrate(10)
   }
-  
+
   // 滚动到输入框
   setTimeout(() => {
     const element = document.querySelector('.form-input:focus')
@@ -277,48 +87,50 @@ const handleInputFocus = (field: string) => {
   }, 100)
 }
 
-const handleInputBlur = () => {
+function handleInputBlur() {
   focusedField.value = ''
 }
 
-const togglePassword = () => {
+function togglePassword() {
   showPassword.value = !showPassword.value
-  
+
   // 触觉反馈
   if ('vibrate' in navigator) {
     navigator.vibrate(10)
   }
 }
 
-const handleSubmit = async () => {
+async function handleSubmit() {
   loading.value = true
   rippleActive.value = true
-  
+
   // 触觉反馈
   if ('vibrate' in navigator) {
     navigator.vibrate(50)
   }
-  
+
   try {
     await new Promise(resolve => setTimeout(resolve, 2000))
-    
+
     console.log('移动端登录数据:', formData)
     alert(`登录成功！用户名: ${formData.username}`)
-    
+
     // 成功震动
     if ('vibrate' in navigator) {
       navigator.vibrate([100, 50, 100])
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('登录失败:', error)
-    
+
     // 错误震动
     if ('vibrate' in navigator) {
       navigator.vibrate([100, 50, 100, 50, 100])
     }
-    
+
     alert('登录失败，请重试')
-  } finally {
+  }
+  finally {
     loading.value = false
     setTimeout(() => {
       rippleActive.value = false
@@ -326,25 +138,25 @@ const handleSubmit = async () => {
   }
 }
 
-const handleBiometricLogin = (type: string) => {
+function handleBiometricLogin(type: string) {
   if ('vibrate' in navigator) {
     navigator.vibrate(30)
   }
   alert(`${type === 'fingerprint' ? '指纹' : '面容'}登录`)
 }
 
-const handleSmsLogin = () => {
+function handleSmsLogin() {
   if ('vibrate' in navigator) {
     navigator.vibrate(30)
   }
   alert('短信登录功能')
 }
 
-const handleForgot = () => {
+function handleForgot() {
   alert('忘记密码功能')
 }
 
-const handleRegister = () => {
+function handleRegister() {
   if ('vibrate' in navigator) {
     navigator.vibrate(30)
   }
@@ -355,15 +167,15 @@ const handleRegister = () => {
 onMounted(() => {
   updateTime()
   timeInterval = window.setInterval(updateTime, 1000)
-  
+
   const cleanupKeyboard = detectKeyboard()
-  
+
   // 防止页面缩放
   const viewport = document.querySelector('meta[name="viewport"]')
   if (viewport) {
     viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no')
   }
-  
+
   return cleanupKeyboard
 })
 
@@ -373,6 +185,222 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<template>
+  <div class="login-template-mobile" :style="cssVars">
+    <!-- 模板标识横幅 -->
+    <div class="template-banner">
+      <div class="banner-content">
+        <div class="template-info">
+          <span class="template-name">移动端登录模板</span>
+          <span class="template-meta">
+            <span class="device-type">📱 Mobile</span>
+            <span class="template-version">v1.0.0</span>
+          </span>
+        </div>
+        <div class="template-category">
+          Login
+        </div>
+      </div>
+    </div>
+
+    <!-- 状态栏 -->
+    <div v-if="showStatusBar" class="status-bar">
+      <slot name="status-bar">
+        <div class="status-left">
+          <span class="time">{{ currentTime }}</span>
+        </div>
+        <div class="status-center">
+          <div class="notch" />
+        </div>
+        <div class="status-right">
+          <span class="battery">🔋</span>
+          <span class="signal">📶</span>
+          <span class="wifi">📶</span>
+        </div>
+      </slot>
+    </div>
+
+    <div class="mobile-container">
+      <!-- 头部区域 -->
+      <div class="mobile-header">
+        <slot name="header">
+          <div class="header-content">
+            <div v-if="logoUrl" class="logo-image">
+              <img :src="logoUrl" :alt="title">
+            </div>
+            <div v-else class="app-icon">
+              📱
+            </div>
+            <h1 class="app-title">
+              {{ title }}
+            </h1>
+            <p class="app-subtitle">
+              {{ subtitle }}
+            </p>
+          </div>
+        </slot>
+      </div>
+
+      <!-- 主要内容区域 -->
+      <div class="mobile-main">
+        <!-- 快捷登录 -->
+        <div v-if="showQuickLogin" class="quick-login">
+          <slot name="quick-actions">
+            <div class="quick-title">
+              快速登录
+            </div>
+            <div class="quick-buttons">
+              <button
+                v-if="enableBiometric"
+                class="quick-btn quick-btn--fingerprint"
+                @click="handleBiometricLogin('fingerprint')"
+              >
+                <div class="quick-icon">
+                  👆
+                </div>
+                <span>指纹</span>
+              </button>
+              <button
+                v-if="enableBiometric"
+                class="quick-btn quick-btn--face"
+                @click="handleBiometricLogin('face')"
+              >
+                <div class="quick-icon">
+                  😊
+                </div>
+                <span>面容</span>
+              </button>
+              <button class="quick-btn quick-btn--sms" @click="handleSmsLogin">
+                <div class="quick-icon">
+                  💬
+                </div>
+                <span>短信</span>
+              </button>
+            </div>
+            <div class="quick-divider">
+              <span>或使用账号密码</span>
+            </div>
+          </slot>
+        </div>
+
+        <!-- 登录表单 -->
+        <form class="mobile-form" @submit.prevent="handleSubmit">
+          <div class="form-group">
+            <div class="input-wrapper" :class="{ focused: focusedField === 'username' }">
+              <div class="input-icon">
+                👤
+              </div>
+              <input
+                v-model="formData.username"
+                type="text"
+                class="form-input"
+                placeholder="手机号/邮箱"
+                autocomplete="username"
+                required
+                :disabled="loading"
+                @focus="handleInputFocus('username')"
+                @blur="handleInputBlur"
+              >
+              <div class="input-line" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="input-wrapper" :class="{ focused: focusedField === 'password' }">
+              <div class="input-icon">
+                🔒
+              </div>
+              <input
+                v-model="formData.password"
+                :type="showPassword ? 'text' : 'password'"
+                class="form-input"
+                placeholder="密码"
+                autocomplete="current-password"
+                required
+                :disabled="loading"
+                @focus="handleInputFocus('password')"
+                @blur="handleInputBlur"
+              >
+              <button
+                type="button"
+                class="password-toggle"
+                :disabled="loading"
+                @click="togglePassword"
+              >
+                {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+              </button>
+              <div class="input-line" />
+            </div>
+          </div>
+
+          <div v-if="showRemember" class="form-options">
+            <label class="mobile-checkbox">
+              <input
+                v-model="formData.remember"
+                type="checkbox"
+                class="checkbox-input"
+                :disabled="loading"
+              >
+              <span class="checkbox-mark" />
+              <span class="checkbox-text">记住登录状态</span>
+            </label>
+          </div>
+
+          <button type="submit" class="mobile-button" :disabled="loading">
+            <div class="button-content">
+              <div v-if="loading" class="loading-spinner" />
+              <span>{{ loading ? '登录中...' : '立即登录' }}</span>
+            </div>
+            <div class="button-ripple" :class="{ active: rippleActive }" />
+          </button>
+
+          <div class="form-links">
+            <a href="#" class="form-link" @click.prevent="handleForgot">忘记密码？</a>
+            <a href="#" class="form-link" @click.prevent="handleSmsLogin">短信登录</a>
+          </div>
+        </form>
+
+        <!-- 注册区域 -->
+        <div v-if="showRegister" class="register-section">
+          <p class="register-text">
+            还没有账户？
+          </p>
+          <button class="register-button" @click="handleRegister">
+            免费注册
+          </button>
+        </div>
+      </div>
+
+      <!-- 底部区域 -->
+      <div class="mobile-footer">
+        <slot name="footer">
+          <div class="footer-content">
+            <div class="footer-links">
+              <a href="#" class="footer-link">用户协议</a>
+              <span class="footer-separator">|</span>
+              <a href="#" class="footer-link">隐私政策</a>
+            </div>
+            <p class="copyright">
+              © 2024 ldesign
+            </p>
+          </div>
+        </slot>
+      </div>
+
+      <!-- 安全指示器 -->
+      <div class="security-indicator">
+        <div class="security-icon">
+          🔐
+        </div>
+        <span class="security-text">安全连接</span>
+      </div>
+    </div>
+
+    <!-- 键盘占位符 -->
+    <div class="keyboard-spacer" :class="{ active: keyboardVisible }" />
+  </div>
+</template>
 
 <style lang="less" scoped>
 // 模板标识横幅样式
@@ -595,7 +623,7 @@ onUnmounted(() => {
   .header-content {
     .logo-image {
       margin-bottom: 1rem;
-      
+
       img {
         height: 60px;
         width: auto;

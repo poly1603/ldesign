@@ -2,7 +2,7 @@
  * 路径工具函数测试
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { pathUtils } from '../../src/utils/path'
 
 describe('pathUtils', () => {
@@ -29,23 +29,23 @@ describe('pathUtils', () => {
   describe('parseTemplatePath', () => {
     it('应该解析标准模板路径', () => {
       const result = pathUtils.parseTemplatePath('templates/login/desktop/default/index.vue')
-      
+
       expect(result).toEqual({
         category: 'login',
         device: 'desktop',
         templateName: 'default',
-        fileName: 'index.vue'
+        fileName: 'index.vue',
       })
     })
 
     it('应该解析嵌套模板路径', () => {
       const result = pathUtils.parseTemplatePath('src/templates/auth/login/mobile/modern/component.tsx')
-      
+
       expect(result).toEqual({
         category: 'auth/login',
         device: 'mobile',
         templateName: 'modern',
-        fileName: 'component.tsx'
+        fileName: 'component.tsx',
       })
     })
 
@@ -59,7 +59,7 @@ describe('pathUtils', () => {
       const vueResult = pathUtils.parseTemplatePath('templates/login/desktop/default/index.vue')
       const tsxResult = pathUtils.parseTemplatePath('templates/login/desktop/default/index.tsx')
       const jsResult = pathUtils.parseTemplatePath('templates/login/desktop/default/index.js')
-      
+
       expect(vueResult.fileName).toBe('index.vue')
       expect(tsxResult.fileName).toBe('index.tsx')
       expect(jsResult.fileName).toBe('index.js')
@@ -80,7 +80,7 @@ describe('pathUtils', () => {
     it('应该处理可选的文件名', () => {
       const pathWithoutFile = pathUtils.buildTemplatePath('login', 'desktop', 'default')
       expect(pathWithoutFile).toBe('login/desktop/default')
-      
+
       const pathWithFile = pathUtils.buildTemplatePath('login', 'desktop', 'default', 'index.vue')
       expect(pathWithFile).toBe('login/desktop/default/index.vue')
     })

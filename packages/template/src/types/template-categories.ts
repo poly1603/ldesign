@@ -71,7 +71,7 @@ export enum TemplateCategory {
 
   // 其他
   MISC = 'misc',
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
 /**
@@ -122,7 +122,7 @@ export enum TemplateTag {
   PRODUCTION = 'production',
   PROTOTYPE = 'prototype',
   DEMO = 'demo',
-  EXAMPLE = 'example'
+  EXAMPLE = 'example',
 }
 
 /**
@@ -132,7 +132,7 @@ export enum TemplatePriority {
   LOW = 1,
   NORMAL = 2,
   HIGH = 3,
-  CRITICAL = 4
+  CRITICAL = 4,
 }
 
 /**
@@ -143,7 +143,7 @@ export enum TemplateStatus {
   DEPRECATED = 'deprecated',
   BETA = 'beta',
   EXPERIMENTAL = 'experimental',
-  MAINTENANCE = 'maintenance'
+  MAINTENANCE = 'maintenance',
 }
 
 /**
@@ -338,21 +338,21 @@ export interface TemplateGroupOptions {
  */
 export interface TemplateCategoryManager {
   /** 获取分类信息 */
-  getCategoryInfo(category: TemplateCategory): CategoryInfo | undefined
+  getCategoryInfo: (category: TemplateCategory) => CategoryInfo | undefined
   /** 获取标签信息 */
-  getTagInfo(tag: TemplateTag): TagInfo | undefined
+  getTagInfo: (tag: TemplateTag) => TagInfo | undefined
   /** 获取分类层次结构 */
-  getCategoryHierarchy(): Map<TemplateCategory, TemplateCategory[]>
+  getCategoryHierarchy: () => Map<TemplateCategory, TemplateCategory[]>
   /** 搜索和过滤模板 */
-  filterTemplates(templates: ExtendedTemplateMetadata[], filter: TemplateFilter): ExtendedTemplateMetadata[]
+  filterTemplates: (templates: ExtendedTemplateMetadata[], filter: TemplateFilter) => ExtendedTemplateMetadata[]
   /** 排序模板 */
-  sortTemplates(templates: ExtendedTemplateMetadata[], options: TemplateSortOptions): ExtendedTemplateMetadata[]
+  sortTemplates: (templates: ExtendedTemplateMetadata[], options: TemplateSortOptions) => ExtendedTemplateMetadata[]
   /** 分组模板 */
-  groupTemplates(templates: ExtendedTemplateMetadata[], options: TemplateGroupOptions): Map<string, ExtendedTemplateMetadata[]>
+  groupTemplates: (templates: ExtendedTemplateMetadata[], options: TemplateGroupOptions) => Map<string, ExtendedTemplateMetadata[]>
   /** 添加自定义分类 */
-  addCustomCategory(category: CategoryInfo): void
+  addCustomCategory: (category: CategoryInfo) => void
   /** 添加自定义标签 */
-  addCustomTag(tag: TagInfo): void
+  addCustomTag: (tag: TagInfo) => void
   /** 验证模板元数据 */
-  validateMetadata(metadata: ExtendedTemplateMetadata): boolean
+  validateMetadata: (metadata: ExtendedTemplateMetadata) => boolean
 }

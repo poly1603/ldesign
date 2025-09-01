@@ -2,7 +2,7 @@
  * 扫描器相关类型定义
  */
 
-import type { TemplateMetadata, TemplateIndex, DeviceType } from '../types/template'
+import type { DeviceType, TemplateIndex, TemplateMetadata } from '../types/template'
 
 /**
  * 扫描器配置选项

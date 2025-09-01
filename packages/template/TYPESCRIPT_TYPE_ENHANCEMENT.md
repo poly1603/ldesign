@@ -54,10 +54,10 @@ interface StrictConfig {
 // 类型安全检查
 export function isStrictTemplateConfig(value: unknown): value is StrictTemplateConfig {
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof (value as StrictTemplateConfig).name === 'string' &&
-    typeof (value as StrictTemplateConfig).displayName === 'string'
+    typeof value === 'object'
+    && value !== null
+    && typeof (value as StrictTemplateConfig).name === 'string'
+    && typeof (value as StrictTemplateConfig).displayName === 'string'
   )
 }
 ```
@@ -185,11 +185,11 @@ export function toStrictTemplateConfig(value: unknown): StrictTemplateConfig {
 // 运行时类型验证
 export function validateTemplateConfig(config: unknown): ConfigValidationResult {
   const errors: ValidationError[] = []
-  
+
   if (!isStrictTemplateConfig(config)) {
     errors.push({ field: 'config', message: 'Invalid template config' })
   }
-  
+
   return { valid: errors.length === 0, errors }
 }
 ```
@@ -232,15 +232,15 @@ npm run dev
 ```typescript
 // 导入严格类型
 import type {
+  StrictError,
   StrictTemplateConfig,
-  StrictTemplateMetadata,
-  StrictError
+  StrictTemplateMetadata
 } from '@/types/strict-types'
 
 // 导入类型守卫
 import {
-  isStrictTemplateConfig,
-  assertStrictTemplateConfig
+  assertStrictTemplateConfig,
+  isStrictTemplateConfig
 } from '@/types/strict-types'
 ```
 
@@ -252,7 +252,7 @@ function processConfig(config: unknown): StrictTemplateConfig {
   if (!isStrictTemplateConfig(config)) {
     throw new Error('Invalid config')
   }
-  
+
   // 类型安全的处理
   return config
 }

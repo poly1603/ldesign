@@ -1,28 +1,27 @@
 /**
  * 模板扫描器
- * 
+ *
  * 使用 import.meta.glob 递归扫描模板目录，建立完整的模板索引
  */
 
+import type { FileNamingConfig } from '../types/config'
 import type {
+  DeviceType,
   TemplateConfig,
-  TemplateMetadata,
   TemplateIndex,
-  DeviceType
+  TemplateMetadata,
 } from '../types/template'
+import type { ExtendedTemplateMetadata, TemplateFilter, TemplateSortOptions } from '../types/template-categories'
 import type {
+  ScanError,
+  ScannerEventCallbacks,
   ScannerOptions,
   ScanResult,
   ScanStats,
-  ScanError,
-  ScannerEventCallbacks
 } from './types'
 import { createFilePathBuilder, type FilePathBuilder } from '../utils/file-path-builder'
-import { createFileWatcher, type FileWatcher, type FileChangeEvent } from '../utils/file-watcher'
+import { createFileWatcher, type FileChangeEvent, type FileWatcher } from '../utils/file-watcher'
 import { getTemplateCategoryManager, type TemplateCategoryManager } from '../utils/template-category-manager'
-import type { FileNamingConfig } from '../types/config'
-import type { ExtendedTemplateMetadata, TemplateFilter, TemplateSortOptions } from '../types/template-categories'
-import type { StrictTemplateMetadata, StrictScanResult, StrictError } from '../types/strict-types'
 
 /**
  * 模板扫描器类
@@ -49,7 +48,7 @@ export class TemplateScanner {
       excludePatterns: options.excludePatterns || ['node_modules', '.git', 'dist'],
       watchMode: options.watchMode ?? false,
       debounceDelay: options.debounceDelay ?? 300,
-      batchSize: options.batchSize ?? 10
+      batchSize: options.batchSize ?? 10,
     }
     this.callbacks = callbacks || {}
 
@@ -60,7 +59,7 @@ export class TemplateScanner {
       styleFile: 'style.{css,less,scss}',
       previewFile: 'preview.{png,jpg,jpeg,webp}',
       allowedConfigExtensions: ['.js', '.ts'],
-      allowedStyleExtensions: ['.css', '.less', '.scss']
+      allowedStyleExtensions: ['.css', '.less', '.scss'],
     })
 
     // 初始化模板分类管理器
@@ -85,7 +84,7 @@ export class TemplateScanner {
       byCategory: {},
       byDevice: { desktop: 0, tablet: 0, mobile: 0 },
       scanTime: 0,
-      lastScanTime: startTime
+      lastScanTime: startTime,
     }
 
     try {
@@ -106,18 +105,18 @@ export class TemplateScanner {
       const result: ScanResult = {
         templates: this.templateIndex,
         stats,
-        errors
+        errors,
       }
 
       this.callbacks.onScanComplete?.(result)
       return result
-
-    } catch (error) {
+    }
+    catch (error) {
       const scanError: ScanError = {
         type: 'VALIDATION_ERROR',
         message: `Scan failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         filePath: this.options.templatesDir,
-        details: error
+        details: error,
       }
       errors.push(scanError)
       this.callbacks.onScanError?.(scanError)
@@ -125,7 +124,7 @@ export class TemplateScanner {
       return {
         templates: this.templateIndex,
         stats,
-        errors
+        errors,
       }
     }
   }
@@ -145,7 +144,8 @@ export class TemplateScanner {
         if (Object.keys(configModules).length > 0) {
           console.log(`[TemplateScanner] Found ${Object.keys(configModules).length} config files with pattern: /src/templates/**/config.{js,ts}`)
         }
-      } catch (error) {
+      }
+      catch (error) {
         // 继续尝试其他模式
       }
 
@@ -155,7 +155,8 @@ export class TemplateScanner {
           if (Object.keys(configModules).length > 0) {
             console.log(`[TemplateScanner] Found ${Object.keys(configModules).length} config files with pattern: ../src/templates/**/config.{js,ts}`)
           }
-        } catch (error) {
+        }
+        catch (error) {
           // 继续尝试其他模式
         }
       }
@@ -166,7 +167,8 @@ export class TemplateScanner {
           if (Object.keys(configModules).length > 0) {
             console.log(`[TemplateScanner] Found ${Object.keys(configModules).length} config files with pattern: ../../src/templates/**/config.{js,ts}`)
           }
-        } catch (error) {
+        }
+        catch (error) {
           // 继续尝试其他模式
         }
       }
@@ -182,22 +184,24 @@ export class TemplateScanner {
       for (const [configPath, moduleLoader] of Object.entries(configModules)) {
         try {
           await this.processConfigFile(configPath, moduleLoader, errors, true)
-        } catch (error) {
+        }
+        catch (error) {
           errors.push({
             type: 'CONFIG_PARSE_ERROR',
             message: `Failed to process built-in config file: ${error instanceof Error ? error.message : 'Unknown error'}`,
             filePath: configPath,
-            details: error
+            details: error,
           })
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       // 如果无法扫描内置模板，记录错误但继续扫描
       errors.push({
         type: 'VALIDATION_ERROR',
         message: `Failed to scan built-in templates: ${error instanceof Error ? error.message : 'Unknown error'}`,
         filePath: 'src/templates',
-        details: error
+        details: error,
       })
     }
   }
@@ -210,18 +214,18 @@ export class TemplateScanner {
       {
         category: 'login',
         device: 'desktop' as DeviceType,
-        templates: ['default', 'modern', 'creative']
+        templates: ['default', 'modern', 'creative'],
       },
       {
         category: 'login',
         device: 'tablet' as DeviceType,
-        templates: ['default']
+        templates: ['default'],
       },
       {
         category: 'login',
         device: 'mobile' as DeviceType,
-        templates: ['default']
-      }
+        templates: ['default'],
+      },
     ]
 
     for (const { category, device, templates } of knownTemplates) {
@@ -242,7 +246,7 @@ export class TemplateScanner {
             configPath: `../src/templates/${category}/${device}/${templateName}/config.ts`,
             lastModified: Date.now(),
             isBuiltIn: true,
-            isDefault: templateName === 'default'
+            isDefault: templateName === 'default',
           }
 
           // 添加到索引
@@ -252,13 +256,13 @@ export class TemplateScanner {
           if (this.options.enableCache) {
             this.scanCache.set(`${category}-${device}-${templateName}`, metadata)
           }
-
-        } catch (error) {
+        }
+        catch (error) {
           errors.push({
             type: 'CONFIG_PARSE_ERROR',
             message: `Failed to process direct template ${category}/${device}/${templateName}: ${error instanceof Error ? error.message : 'Unknown error'}`,
             filePath: `src/templates/${category}/${device}/${templateName}`,
-            details: error
+            details: error,
           })
         }
       }
@@ -274,7 +278,7 @@ export class TemplateScanner {
       'login-desktop-modern': '现代登录模板',
       'login-desktop-creative': '创意登录模板',
       'login-tablet-default': '平板登录模板',
-      'login-mobile-default': '移动登录模板'
+      'login-mobile-default': '移动登录模板',
     }
     return displayNames[`${category}-${device}-${templateName}`] || `${templateName} ${category} 模板`
   }
@@ -288,7 +292,7 @@ export class TemplateScanner {
       'login-desktop-modern': '现代化设计的登录模板',
       'login-desktop-creative': '富有创意的登录模板',
       'login-tablet-default': '适配平板设备的登录模板',
-      'login-mobile-default': '适配移动设备的登录模板'
+      'login-mobile-default': '适配移动设备的登录模板',
     }
     return descriptions[`${category}-${device}-${templateName}`] || `${templateName} ${category} 模板`
   }
@@ -298,9 +302,9 @@ export class TemplateScanner {
    */
   private getTags(templateName: string): string[] {
     const tagMap: Record<string, string[]> = {
-      'default': ['default', 'simple', 'clean'],
-      'modern': ['modern', 'stylish', 'gradient'],
-      'creative': ['creative', 'artistic', 'unique']
+      default: ['default', 'simple', 'clean'],
+      modern: ['modern', 'stylish', 'gradient'],
+      creative: ['creative', 'artistic', 'unique'],
     }
     return tagMap[templateName] || [templateName]
   }
@@ -317,21 +321,23 @@ export class TemplateScanner {
       for (const [configPath, moduleLoader] of Object.entries(configModules)) {
         try {
           await this.processConfigFile(configPath, moduleLoader, errors, false)
-        } catch (error) {
+        }
+        catch (error) {
           errors.push({
             type: 'CONFIG_PARSE_ERROR',
             message: `Failed to process user config file: ${error instanceof Error ? error.message : 'Unknown error'}`,
             filePath: configPath,
-            details: error
+            details: error,
           })
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       errors.push({
         type: 'VALIDATION_ERROR',
         message: `Failed to scan user templates: ${error instanceof Error ? error.message : 'Unknown error'}`,
         filePath: this.options.templatesDir,
-        details: error
+        details: error,
       })
     }
   }
@@ -344,7 +350,7 @@ export class TemplateScanner {
     configLoader: () => Promise<any>,
     componentLoader: () => Promise<any>,
     errors: ScanError[],
-    isBuiltIn: boolean = false
+    isBuiltIn: boolean = false,
   ): Promise<void> {
     try {
       // 解析路径结构: /src/templates/{category}/{device}/{templateName}/config.js
@@ -386,7 +392,7 @@ export class TemplateScanner {
         stylePath,
         configPath,
         lastModified: Date.now(),
-        isBuiltIn
+        isBuiltIn,
       }
 
       // 添加到索引
@@ -396,13 +402,13 @@ export class TemplateScanner {
       if (this.options.enableCache) {
         this.scanCache.set(configPath, metadata)
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       errors.push({
         type: 'CONFIG_PARSE_ERROR',
         message: error instanceof Error ? error.message : 'Unknown error',
         filePath: configPath,
-        details: error
+        details: error,
       })
     }
   }
@@ -414,7 +420,7 @@ export class TemplateScanner {
     configPath: string,
     moduleLoader: () => Promise<any>,
     errors: ScanError[],
-    isBuiltIn: boolean = false
+    isBuiltIn: boolean = false,
   ): Promise<void> {
     try {
       // 解析路径结构: /src/templates/{category}/{device}/{templateName}/config.js
@@ -453,10 +459,8 @@ export class TemplateScanner {
         stylePath: templatePaths.stylePath,
         configPath: templatePaths.configPath,
         lastModified: Date.now(),
-        isBuiltIn
+        isBuiltIn,
       }
-
-
 
       // 添加到索引
       this.addToIndex(metadata)
@@ -465,13 +469,13 @@ export class TemplateScanner {
       if (this.options.enableCache) {
         this.scanCache.set(configPath, metadata)
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       errors.push({
         type: 'CONFIG_PARSE_ERROR',
         message: error instanceof Error ? error.message : 'Unknown error',
         filePath: configPath,
-        details: error
+        details: error,
       })
     }
   }
@@ -550,10 +554,12 @@ export class TemplateScanner {
    */
   getTemplates(category: string, device: DeviceType): TemplateMetadata[] {
     const categoryMap = this.templateIndex.get(category)
-    if (!categoryMap) return []
+    if (!categoryMap)
+      return []
 
     const deviceMap = categoryMap.get(device)
-    if (!deviceMap) return []
+    if (!deviceMap)
+      return []
 
     return Array.from(deviceMap.values())
   }
@@ -583,9 +589,9 @@ export class TemplateScanner {
       excludePatterns: this.options.excludePatterns,
       debounceDelay: this.options.debounceDelay,
       recursive: true,
-      maxDepth: this.options.maxDepth
+      maxDepth: this.options.maxDepth,
     }, {
-      onTemplateChange: (event) => this.handleTemplateFileChange(event),
+      onTemplateChange: event => this.handleTemplateFileChange(event),
       onError: (error) => {
         console.error('文件监听器错误:', error)
         this.callbacks.onScanError?.(error)
@@ -597,7 +603,7 @@ export class TemplateScanner {
       onWatchStop: () => {
         this.isWatchingEnabled = false
         console.log('模板文件监听已停止')
-      }
+      },
     })
   }
 
@@ -612,7 +618,8 @@ export class TemplateScanner {
     if (this.fileWatcher && !this.isWatchingEnabled) {
       try {
         await this.fileWatcher.startWatching()
-      } catch (error) {
+      }
+      catch (error) {
         console.error('启动文件监听失败:', error)
         this.callbacks.onScanError?.(error as Error)
       }
@@ -626,7 +633,8 @@ export class TemplateScanner {
     if (this.fileWatcher && this.isWatchingEnabled) {
       try {
         await this.fileWatcher.stopWatching()
-      } catch (error) {
+      }
+      catch (error) {
         console.error('停止文件监听失败:', error)
       }
     }
@@ -657,9 +665,10 @@ export class TemplateScanner {
       this.callbacks.onScanComplete?.({
         templates: this.templateIndex,
         stats: this.calculateCurrentStats(),
-        errors: []
+        errors: [],
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.error('处理模板文件变化失败:', error)
       this.callbacks.onScanError?.(error as Error)
     }
@@ -673,12 +682,13 @@ export class TemplateScanner {
     device: DeviceType,
     templateName: string,
     fileType: string,
-    filePath: string
+    filePath: string,
   ): Promise<void> {
     // 如果是配置文件变化，重新扫描整个模板
     if (fileType === 'config') {
       await this.rescanSingleTemplate(category, device, templateName, filePath)
-    } else {
+    }
+    else {
       // 其他文件变化，更新现有模板的元数据
       this.updateTemplateMetadata(category, device, templateName, fileType, filePath)
     }
@@ -691,12 +701,13 @@ export class TemplateScanner {
     category: string,
     device: DeviceType,
     templateName: string,
-    fileType: string
+    fileType: string,
   ): Promise<void> {
     // 如果是配置文件被删除，移除整个模板
     if (fileType === 'config') {
       this.removeTemplate(category, device, templateName)
-    } else {
+    }
+    else {
       // 其他文件被删除，更新模板元数据
       this.updateTemplateMetadata(category, device, templateName, fileType, null)
     }
@@ -709,7 +720,7 @@ export class TemplateScanner {
     category: string,
     device: DeviceType,
     templateName: string,
-    configPath: string
+    configPath: string,
   ): Promise<void> {
     const errors: any[] = []
     await this.scanTemplateConfig(configPath, category, device, true, errors)
@@ -727,16 +738,19 @@ export class TemplateScanner {
     device: DeviceType,
     templateName: string,
     fileType: string,
-    filePath: string | null
+    filePath: string | null,
   ): void {
     const categoryMap = this.templateIndex.get(category)
-    if (!categoryMap) return
+    if (!categoryMap)
+      return
 
     const deviceMap = categoryMap.get(device)
-    if (!deviceMap) return
+    if (!deviceMap)
+      return
 
     const template = deviceMap.get(templateName)
-    if (!template) return
+    if (!template)
+      return
 
     // 更新相应的文件路径
     switch (fileType) {
@@ -761,10 +775,12 @@ export class TemplateScanner {
    */
   private removeTemplate(category: string, device: DeviceType, templateName: string): void {
     const categoryMap = this.templateIndex.get(category)
-    if (!categoryMap) return
+    if (!categoryMap)
+      return
 
     const deviceMap = categoryMap.get(device)
-    if (!deviceMap) return
+    if (!deviceMap)
+      return
 
     deviceMap.delete(templateName)
 
@@ -792,7 +808,7 @@ export class TemplateScanner {
       byCategory: {} as Record<string, number>,
       byDevice: { desktop: 0, tablet: 0, mobile: 0 } as Record<DeviceType, number>,
       scanTime: 0,
-      lastScanTime: Date.now()
+      lastScanTime: Date.now(),
     }
 
     for (const [category, categoryMap] of this.templateIndex) {
@@ -835,14 +851,14 @@ export class TemplateScanner {
         count: 0,
         lastUsed: undefined,
         rating: undefined,
-        ratingCount: 0
+        ratingCount: 0,
       },
       compatibility: {
-        vue: template.minVueVersion || '3.0.0'
+        vue: template.minVueVersion || '3.0.0',
       },
       performance: {},
       seo: {},
-      accessibility: {}
+      accessibility: {},
     }))
 
     return this.categoryManager.filterTemplates(extendedTemplates, filter) as TemplateMetadata[]
@@ -865,14 +881,14 @@ export class TemplateScanner {
         count: 0,
         lastUsed: undefined,
         rating: undefined,
-        ratingCount: 0
+        ratingCount: 0,
       },
       compatibility: {
-        vue: template.minVueVersion || '3.0.0'
+        vue: template.minVueVersion || '3.0.0',
       },
       performance: {},
       seo: {},
-      accessibility: {}
+      accessibility: {},
     }))
 
     return this.categoryManager.sortTemplates(extendedTemplates, options) as TemplateMetadata[]
@@ -900,7 +916,8 @@ export class TemplateScanner {
    */
   getTemplatesByCategory(category: string): TemplateMetadata[] {
     const categoryMap = this.templateIndex.get(category)
-    if (!categoryMap) return []
+    if (!categoryMap)
+      return []
 
     const templates: TemplateMetadata[] = []
     for (const deviceMap of categoryMap.values()) {
@@ -950,7 +967,7 @@ export class TemplateScanner {
       totalTemplates: 0,
       byCategory: {} as Record<string, number>,
       byDevice: { desktop: 0, tablet: 0, mobile: 0 } as Record<DeviceType, number>,
-      byTag: {} as Record<string, number>
+      byTag: {} as Record<string, number>,
     }
 
     for (const [category, categoryMap] of this.templateIndex) {
@@ -963,7 +980,7 @@ export class TemplateScanner {
         // 统计标签
         for (const template of deviceMap.values()) {
           if (template.tags) {
-            template.tags.forEach(tag => {
+            template.tags.forEach((tag) => {
               stats.byTag[tag] = (stats.byTag[tag] || 0) + 1
             })
           }
@@ -991,7 +1008,7 @@ export class TemplateScanner {
  */
 export function createScanner(
   options: ScannerOptions,
-  callbacks?: ScannerEventCallbacks
+  callbacks?: ScannerEventCallbacks,
 ): TemplateScanner {
   return new TemplateScanner(options, callbacks)
 }

@@ -2,19 +2,19 @@
  * 配置管理器测试
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { TemplateConfigManager, getConfigManager, resetConfigManager } from '../src/config/config-manager'
+import type { TemplateSystemConfig } from '../src/types/config'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { getConfigManager, resetConfigManager, TemplateConfigManager } from '../src/config/config-manager'
 import { defaultConfig } from '../src/config/default.config'
-import type { TemplateSystemConfig, ConfigUpdateEvent } from '../src/types/config'
 
-describe('TemplateConfigManager', () => {
+describe('templateConfigManager', () => {
   let configManager: TemplateConfigManager
   let mockConfig: Partial<TemplateSystemConfig>
 
   beforeEach(() => {
     // 重置全局配置管理器
     resetConfigManager()
-    
+
     // 创建测试配置
     mockConfig = {
       templatesDir: 'test/templates',
@@ -26,7 +26,7 @@ describe('TemplateConfigManager', () => {
         enabled: true,
         strategy: 'lru',
         maxSize: 50,
-        ttl: 30 * 60 * 1000
+        ttl: 30 * 60 * 1000,
       },
       scanner: {
         maxDepth: 3,
@@ -35,8 +35,8 @@ describe('TemplateConfigManager', () => {
         enableCache: true,
         watchMode: false,
         debounceDelay: 200,
-        batchSize: 5
-      }
+        batchSize: 5,
+      },
     }
 
     configManager = new TemplateConfigManager(mockConfig)
@@ -107,7 +107,7 @@ describe('TemplateConfigManager', () => {
   describe('配置更新', () => {
     it('应该能够更新单个配置值', () => {
       configManager.set('templatesDir', 'new/templates')
-      
+
       const updatedValue = configManager.get('templatesDir')
       expect(updatedValue).toBe('new/templates')
     })
@@ -126,8 +126,8 @@ describe('TemplateConfigManager', () => {
         debug: false,
         cache: {
           enabled: false,
-          maxSize: 200
-        }
+          maxSize: 200,
+        },
       }
 
       configManager.updateConfig(updates)
@@ -149,8 +149,8 @@ describe('TemplateConfigManager', () => {
           path: 'templatesDir',
           oldValue: 'test/templates',
           newValue: 'event/templates',
-          timestamp: expect.any(Number)
-        })
+          timestamp: expect.any(Number),
+        }),
       )
     })
   })
@@ -160,7 +160,7 @@ describe('TemplateConfigManager', () => {
       const validConfig = {
         templatesDir: 'valid/templates',
         autoScan: true,
-        enableHMR: false
+        enableHMR: false,
       }
 
       const result = configManager.validateConfig(validConfig)
@@ -174,8 +174,8 @@ describe('TemplateConfigManager', () => {
         templatesDir: '', // 空字符串无效
         autoScan: 'invalid', // 应该是布尔值
         cache: {
-          maxSize: -1 // 负数无效
-        }
+          maxSize: -1, // 负数无效
+        },
       }
 
       const result = configManager.validateConfig(invalidConfig as any)
@@ -188,8 +188,8 @@ describe('TemplateConfigManager', () => {
       const invalidConfig = {
         templatesDir: '',
         cache: {
-          maxSize: -1
-        }
+          maxSize: -1,
+        },
       }
 
       const result = configManager.validateConfig(invalidConfig as any)
@@ -226,7 +226,7 @@ describe('TemplateConfigManager', () => {
     it('应该优先使用显式配置而不是环境变量', () => {
       const explicitConfig = {
         templatesDir: 'explicit/templates',
-        debug: false
+        debug: false,
       }
 
       const manager = new TemplateConfigManager(explicitConfig)
@@ -297,7 +297,7 @@ describe('TemplateConfigManager', () => {
     it('应该使用初始配置创建全局实例', () => {
       const initialConfig = {
         templatesDir: 'global/templates',
-        debug: true
+        debug: true,
       }
 
       const manager = getConfigManager(initialConfig)
@@ -356,8 +356,8 @@ describe('TemplateConfigManager', () => {
 
     it('应该高效处理大量监听器', () => {
       const listeners = Array.from({ length: 100 }, () => vi.fn())
-      
-      listeners.forEach(listener => {
+
+      listeners.forEach((listener) => {
         configManager.addListener(listener)
       })
 
