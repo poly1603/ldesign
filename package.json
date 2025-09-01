@@ -9,7 +9,8 @@
     "packages/**",
     "apps/**",
     "examples/**",
-    "docs"
+    "docs",
+    "app"
   ],
   "author": "LDesign Team",
   "license": "MIT",

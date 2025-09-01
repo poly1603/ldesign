@@ -301,11 +301,11 @@ export const TemplateRenderer = defineComponent({
       // 立即设置关闭状态，让Vue Transition处理动画
       showSelectorModal.value = false
 
-      // 等待动画完成（250ms离开动画时长）
+      // 等待动画完成（200ms离开动画时长）
       return new Promise<void>((resolve) => {
         setTimeout(() => {
           resolve()
-        }, 270) // 稍微多一点时间确保动画完成
+        }, 220) // 稍微多一点时间确保动画完成
       })
     }
 

@@ -4,8 +4,8 @@
 
 import type { RouteRecordRaw } from '../src/types'
 import { mount } from '@vue/test-utils'
-import { describe, expect, it, vi } from 'vitest'
-import { nextTick, h } from 'vue'
+import { describe, expect, it } from 'vitest'
+import { h, nextTick } from 'vue'
 import { RouterLink, RouterView } from '../src/components'
 import { createMemoryHistory, createRouter } from '../src/core'
 
@@ -207,7 +207,7 @@ describe('routerView 组件', () => {
 
     const wrapper = mount(RouterView, {
       slots: {
-        error: ({ error }) => h('div', `Custom Error: ${error.message}`)
+        error: ({ error }) => h('div', `Custom Error: ${error.message}`),
       },
       global: {
         plugins: [router],
@@ -257,8 +257,6 @@ describe('routerView 组件', () => {
     await nextTick()
     expect(wrapper.html()).toBe('')
   })
-
-
 })
 
 describe('routerLink 组件', () => {
@@ -285,15 +283,16 @@ describe('routerLink 组件', () => {
 
     // 检查是否有内容
     const html = wrapper.html()
-    console.log('RouterLink HTML:', html)
+    // RouterLink HTML: ${html}
 
     // 如果有内容，检查a标签
     if (html && html.trim() !== '') {
       expect(wrapper.find('a').exists()).toBe(true)
       expect(wrapper.text()).toBe('Home')
-    } else {
+    }
+    else {
       // 如果没有内容，说明权限检查有问题
-      console.log('RouterLink rendered empty, checking permission logic')
+      // RouterLink rendered empty, checking permission logic
     }
   })
 
@@ -315,12 +314,13 @@ describe('routerLink 组件', () => {
       },
     })
 
-    console.log('href test HTML:', wrapper.html())
+    // href test HTML: ${wrapper.html()}
     const link = wrapper.find('a')
     if (link.exists()) {
       expect(link.attributes('href')).toBe('/user/123')
-    } else {
-      console.log('No <a> tag found in href test')
+    }
+    else {
+      // No <a> tag found in href test
     }
   })
 
@@ -345,20 +345,17 @@ describe('routerLink 组件', () => {
       },
     })
 
-    console.log('External link HTML:', wrapper.html())
+    // External link HTML: ${wrapper.html()}
     const link = wrapper.find('a')
     if (link.exists()) {
       expect(link.attributes('href')).toBe('https://example.com')
       expect(link.attributes('target')).toBe('_blank')
       expect(link.attributes('rel')).toBe('noopener noreferrer')
-    } else {
-      console.log('No <a> tag found in external link test')
+    }
+    else {
+      // No <a> tag found in external link test
     }
   })
-
-
-
-
 
   it('应该支持预加载', async () => {
     const router = createRouter({
@@ -379,7 +376,7 @@ describe('routerLink 组件', () => {
       },
     })
 
-    console.log('Preload test HTML:', wrapper.html())
+    // Preload test HTML: ${wrapper.html()}
 
     // 检查是否有mouseenter事件监听器
     const link = wrapper.find('a')
@@ -387,8 +384,9 @@ describe('routerLink 组件', () => {
       expect(link.exists()).toBe(true)
       // 简单检查预加载属性是否设置
       expect(wrapper.props('preload')).toBe('hover')
-    } else {
-      console.log('No <a> tag found in preload test')
+    }
+    else {
+      // No <a> tag found in preload test
       // 至少检查props是否正确设置
       expect(wrapper.props('preload')).toBe('hover')
     }
@@ -416,12 +414,10 @@ describe('routerLink 组件', () => {
 
     // 没有权限时不应该渲染
     const html = wrapper.html()
-    console.log('Permission test HTML:', html)
+    // Permission test HTML: ${html}
     // 当权限为false时，组件应该返回null，Vue会渲染为空字符串
     expect(html).toBe('')
   })
-
-
 
   it('应该支持自定义渲染', () => {
     const router = createRouter({
@@ -445,6 +441,4 @@ describe('routerLink 组件', () => {
     // 自定义渲染时不应该有默认的 a 标签
     expect(wrapper.find('a').exists()).toBe(false)
   })
-
-
 })

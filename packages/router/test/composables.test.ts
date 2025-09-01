@@ -445,12 +445,12 @@ describe('composables', () => {
           const link = useLink({ to: null as any })
           return { href: link.href.value }
         },
-        template: '<div>{{ href }}</div>'
+        template: '<div>{{ href }}</div>',
       }
 
       const testApp = createApp(TestComponent)
       testApp.use(router)
-      const wrapper = testApp.mount(document.createElement('div'))
+      const wrapper = testApp.mount(document.createElement('div')) as any
 
       expect(wrapper.href).toBe('/')
     })
@@ -463,21 +463,19 @@ describe('composables', () => {
               name: 'user',
               params: { id: '123' },
               query: { tab: 'profile' },
-              hash: '#section1'
-            }
+              hash: '#section1',
+            },
           })
           return { href: link.href.value }
         },
-        template: '<div>{{ href }}</div>'
+        template: '<div>{{ href }}</div>',
       }
 
       const testApp = createApp(TestComponent)
       testApp.use(router)
-      const wrapper = testApp.mount(document.createElement('div'))
+      const wrapper = testApp.mount(document.createElement('div')) as any
 
       expect(wrapper.href).toContain('/user/123')
     })
   })
-
-
 })

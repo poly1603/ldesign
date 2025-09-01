@@ -68,28 +68,28 @@ export interface RouterEnginePluginOptions {
   preset?: RouterPreset
   /** 是否启用预加载 */
   preload?:
-  | boolean
-  | {
-    strategy?: 'hover' | 'visible' | 'idle'
-    delay?: number
-    enabled?: boolean
-  }
+    | boolean
+    | {
+      strategy?: 'hover' | 'visible' | 'idle'
+      delay?: number
+      enabled?: boolean
+    }
   /** 是否启用缓存 */
   cache?:
-  | boolean
-  | {
-    maxSize?: number
-    strategy?: 'memory' | 'session' | 'local'
-    enabled?: boolean
-  }
+    | boolean
+    | {
+      maxSize?: number
+      strategy?: 'memory' | 'session' | 'local'
+      enabled?: boolean
+    }
   /** 动画配置 */
   animation?:
-  | boolean
-  | {
-    type?: 'fade' | 'slide' | 'scale' | 'flip'
-    duration?: number
-    enabled?: boolean
-  }
+    | boolean
+    | {
+      type?: 'fade' | 'slide' | 'scale' | 'flip'
+      duration?: number
+      enabled?: boolean
+    }
   /** 性能配置 */
   performance?: {
     enableLazyLoading?: boolean
@@ -216,9 +216,9 @@ function mergeOptions(
       preload:
         typeof userOptions.preload === 'object' && userOptions.preload !== null
           ? {
-            ...(presetConfig.preload as any),
-            ...(userOptions.preload as any),
-          }
+              ...(presetConfig.preload as any),
+              ...(userOptions.preload as any),
+            }
           : userOptions.preload ?? presetConfig.preload,
       cache:
         typeof userOptions.cache === 'object' && userOptions.cache !== null
@@ -226,11 +226,11 @@ function mergeOptions(
           : userOptions.cache ?? presetConfig.cache,
       animation:
         typeof userOptions.animation === 'object'
-          && userOptions.animation !== null
+        && userOptions.animation !== null
           ? {
-            ...(presetConfig.animation as any),
-            ...(userOptions.animation as any),
-          }
+              ...(presetConfig.animation as any),
+              ...(userOptions.animation as any),
+            }
           : userOptions.animation ?? presetConfig.animation,
       performance: {
         ...presetConfig.performance,
@@ -457,12 +457,14 @@ export function createRouterEnginePlugin(
         if (vueApp) {
           // 如果Vue应用已经创建，立即安装
           await performInstall()
-        } else {
+        }
+        else {
           // 如果Vue应用还没创建，监听应用创建事件
           engine.events.once('app:created', async () => {
             try {
               await performInstall()
-            } catch (error) {
+            }
+            catch (error) {
               engine.logger.error(`Failed to install ${name} plugin after app creation:`, error)
             }
           })

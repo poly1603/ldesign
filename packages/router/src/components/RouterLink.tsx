@@ -83,8 +83,6 @@ export const RouterLink = defineComponent({
       return true
     })
 
-
-
     const classes = computed(() => {
       const result: string[] = []
 

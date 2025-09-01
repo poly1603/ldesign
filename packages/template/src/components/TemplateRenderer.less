@@ -336,9 +336,12 @@
 }
 
 // ===== 模板选择器模态框动画样式 =====
-.template-selector-modal-slide-enter-active,
-.template-selector-modal-slide-leave-active {
+.template-selector-modal-slide-enter-active {
   transition: all 250ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.template-selector-modal-slide-leave-active {
+  transition: all 200ms cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .template-selector-modal-slide-enter-from {
@@ -378,6 +381,9 @@
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
+    transition:
+      opacity 250ms cubic-bezier(0.25, 0.8, 0.25, 1),
+      backdrop-filter 250ms cubic-bezier(0.25, 0.8, 0.25, 1);
   }
 
   &__content {
@@ -392,5 +398,30 @@
       0 20px 60px rgba(0, 0, 0, 0.15),
       0 8px 32px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    transition:
+      transform 250ms cubic-bezier(0.25, 0.8, 0.25, 1),
+      opacity 250ms cubic-bezier(0.25, 0.8, 0.25, 1),
+      box-shadow 250ms cubic-bezier(0.25, 0.8, 0.25, 1);
   }
+}
+
+// 确保背景遮罩和内容的动画同步
+.template-selector-modal-slide-enter-from .template-selector-modal__backdrop {
+  opacity: 0;
+  backdrop-filter: blur(0px);
+}
+
+.template-selector-modal-slide-leave-to .template-selector-modal__backdrop {
+  opacity: 0;
+  backdrop-filter: blur(0px);
+}
+
+.template-selector-modal-slide-enter-from .template-selector-modal__content {
+  transform: scale(0.95);
+  opacity: 0;
+}
+
+.template-selector-modal-slide-leave-to .template-selector-modal__content {
+  transform: scale(0.95);
+  opacity: 0;
 }

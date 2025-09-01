@@ -590,6 +590,7 @@ export interface DeviceGuardOptions {
 
 /**
  * 模板路由配置
+ * 兼容新版 @ldesign/template 包的配置结构
  */
 export interface TemplateRouteConfig {
   /** 默认模板分类 */
@@ -600,6 +601,16 @@ export interface TemplateRouteConfig {
   enableCache?: boolean
   /** 模板加载超时时间 */
   timeout?: number
+  /** 是否自动扫描模板 */
+  autoScan?: boolean
+  /** 是否启用热更新 */
+  enableHMR?: boolean
+  /** 默认设备类型 */
+  defaultDevice?: 'mobile' | 'tablet' | 'desktop'
+  /** 是否启用性能监控 */
+  enablePerformanceMonitor?: boolean
+  /** 是否启用调试模式 */
+  debug?: boolean
 }
 
 /**

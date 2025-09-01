@@ -64,14 +64,18 @@ export function useDeviceComponent(
   }
 
   // 创建模板组件
+  // 使用更新后的 TemplateRouteResolver API
   const createTemplateComponent = (record: RouteRecordNormalized): RouteComponent => {
     return async () => {
       try {
         const { TemplateRouteResolver } = await import('../device/template')
-        const templateResolver = new TemplateRouteResolver()
+
+        // 使用路由元信息中的模板配置
+        const templateConfig = record.meta.templateConfig || {}
+        const templateResolver = new TemplateRouteResolver(templateConfig)
 
         return await templateResolver.resolveTemplate(
-          record.meta.templateCategory || 'default',
+          record.meta.templateCategory || (templateConfig as any).defaultCategory || 'pages',
           record.meta.template!,
           currentDevice.value,
         )

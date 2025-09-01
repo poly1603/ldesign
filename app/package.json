@@ -1,0 +1,19 @@
+{
+  "name": "@ldesign/app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ldesign-launcher dev"
+  },
+  "dependencies": {
+    "@ldesign/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@ldesign/launcher": "workspace:*"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
