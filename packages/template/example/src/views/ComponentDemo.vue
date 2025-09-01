@@ -1,46 +1,6 @@
-<template>
-  <div class="demo-page">
-    <div class="demo-header">
-      <h1>组件方式演示</h1>
-      <p>使用 TemplateRenderer 组件渲染模板</p>
-    </div>
-
-    <div class="demo-content">
-      <!-- 简化的控制面板 -->
-      <div class="control-panel">
-        <div class="control-group">
-          <label>组件方式演示</label>
-        </div>
-
-        <div class="control-actions">
-          <button
-            @click="showSelector = !showSelector"
-            class="btn"
-          >
-            {{ showSelector ? '隐藏选择器' : '显示选择器' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- 集成模板选择器的渲染器 -->
-      <div class="template-container">
-        <TemplateRenderer
-          category="login"
-          :template-name="currentTemplateName"
-          :show-selector="showSelector"
-          :props="templateProps"
-          @template-change="handleTemplateChange"
-          @load-success="handleTemplateLoaded"
-          @load-error="handleError"
-        />
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { TemplateRenderer } from '@ldesign/template'
+import { computed, ref } from 'vue'
 
 // 响应式数据
 const showSelector = ref<boolean>(true)
@@ -52,143 +12,158 @@ const currentTemplateName = computed(() => selectedTemplate.value)
 // 简化的模板属性
 const templateProps = computed(() => ({
   title: '用户登录',
-  subtitle: '欢迎回来，请登录您的账户'
+  subtitle: '欢迎回来，请登录您的账户',
+}))
+
+// 简化的模板选择器配置
+const selectorConfig = computed(() => ({
+  theme: 'default',
+  animation: 'scale',
+  showSearch: false,   // 隐藏搜索框
+  showTags: false,     // 隐藏标签筛选
+  showSort: false,     // 隐藏排序选项
 }))
 
 // 简化的方法
-const handleTemplateChange = (template: any) => {
+function handleTemplateChange(template: any) {
   console.log('模板变化:', template)
   if (template?.name) {
     selectedTemplate.value = template.name
   }
 }
 
-const handleTemplateLoaded = (template: any) => {
+function handleTemplateLoaded(template: any) {
   console.log('模板加载成功:', template)
 }
 
-const handleError = (error: any) => {
+function handleError(error: any) {
   console.error('模板加载错误:', error)
 }
 </script>
 
+<template>
+  <div class="demo-page">
+    <div class="demo-header">
+      <h1>组件方式演示</h1>
+      <p>使用 TemplateRenderer 组件渲染模板</p>
+    </div>
+
+    <div class="demo-content">
+      <!-- 简化的控制面板 -->
+      <div class="card">
+        <div class="card__body">
+          <div class="flex items-center justify-between gap-4">
+            <div class="control-group">
+              <span class="label">组件方式演示</span>
+              <p class="text-sm text-gray-500">
+                使用 TemplateRenderer 组件渲染模板
+              </p>
+            </div>
+
+            <div class="control-actions">
+              <button
+                class="btn" :class="[showSelector ? 'btn--primary' : 'btn--secondary']"
+                @click="showSelector = !showSelector"
+              >
+                {{ showSelector ? '隐藏选择器' : '显示选择器' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 集成模板选择器的渲染器 -->
+      <div class="card">
+        <div class="card__body">
+          <TemplateRenderer
+            category="login"
+            :template-name="currentTemplateName"
+            :show-selector="showSelector"
+            :props="templateProps"
+            :selector-config="selectorConfig"
+            @template-change="handleTemplateChange"
+            @load-success="handleTemplateLoaded"
+            @load-error="handleError"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <style scoped>
+/* 使用简化设计系统的样式 */
 .demo-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+  padding: var(--spacing-8);
 }
 
 .demo-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-8);
 }
 
 .demo-header h1 {
-  color: #495057;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
+  color: var(--color-gray-800);
+  margin-bottom: var(--spacing-2);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-2xl);
 }
 
 .demo-header p {
-  color: #6c757d;
-  font-size: 1rem;
+  color: var(--color-gray-600);
+  font-size: var(--font-size-base);
+  margin: 0;
 }
 
-/* 简化的控制面板 */
-.control-panel {
-  background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-
+/* 控制面板样式 */
 .control-group {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
+  flex: 1;
 }
 
-.control-group label {
-  color: #495057;
-  font-weight: 500;
-  font-size: 0.9rem;
+.control-group .label {
+  margin-bottom: var(--spacing-1);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+}
+
+.text-sm {
+  font-size: var(--font-size-sm);
+}
+
+.text-gray-500 {
+  color: var(--color-gray-500);
 }
 
 .control-actions {
-  display: flex;
-  gap: 0.5rem;
+  flex-shrink: 0;
 }
 
-.btn {
-  padding: 0.5rem 1rem;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  background: white;
-  color: #495057;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-}
-
-.btn:hover {
-  background: #f8f9fa;
-  border-color: #adb5bd;
-}
-
-.btn-active {
-  background: #007bff;
-  color: white;
-  border-color: #007bff;
-}
-
-/* 简化的模板选择器 */
-.template-selector {
-  background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 2rem;
-}
-
-/* 简化的模板容器 */
-.template-container {
-  background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 2rem;
-  min-height: 400px;
+/* 间距工具类 */
+.mb-8 {
+  margin-bottom: var(--spacing-8);
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
   .demo-page {
-    padding: 1rem;
+    padding: var(--spacing-4);
   }
 
-  .control-panel {
+  .demo-header {
+    margin-bottom: var(--spacing-6);
+  }
+
+  .demo-header h1 {
+    font-size: var(--font-size-xl);
+  }
+
+  .flex {
     flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-
-  .control-group {
-    justify-content: center;
+    align-items: stretch !important;
   }
 
   .control-actions {
-    justify-content: center;
-  }
-
-  .template-container {
-    padding: 1rem;
+    margin-top: var(--spacing-4);
   }
 }
-
-
 </style>

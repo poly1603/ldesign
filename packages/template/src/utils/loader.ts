@@ -1,11 +1,11 @@
 /**
  * 动态加载器工具
- * 
+ *
  * 提供模板组件的动态加载功能
  */
 
-import { defineAsyncComponent, type Component, type AsyncComponentLoader } from 'vue'
 import type { TemplateMetadata } from '../types/template'
+import { type AsyncComponentLoader, type Component, defineAsyncComponent } from 'vue'
 import { componentCache } from './cache'
 
 /**
@@ -56,7 +56,7 @@ export class ComponentLoader {
       showLoading: true,
       loadingComponent: null,
       errorComponent: null,
-      ...options
+      ...options,
     }
   }
 
@@ -72,13 +72,13 @@ export class ComponentLoader {
       const cachedComponent = componentCache.getComponent(
         metadata.category,
         metadata.device,
-        metadata.name
+        metadata.name,
       )
       if (cachedComponent) {
         return {
           component: cachedComponent,
           fromCache: true,
-          loadTime: Date.now() - startTime
+          loadTime: Date.now() - startTime,
         }
       }
     }
@@ -90,7 +90,7 @@ export class ComponentLoader {
       return {
         component,
         fromCache: false,
-        loadTime: Date.now() - startTime
+        loadTime: Date.now() - startTime,
       }
     }
 
@@ -107,16 +107,17 @@ export class ComponentLoader {
           metadata.category,
           metadata.device,
           metadata.name,
-          component
+          component,
         )
       }
 
       return {
         component,
         fromCache: false,
-        loadTime: Date.now() - startTime
+        loadTime: Date.now() - startTime,
       }
-    } finally {
+    }
+    finally {
       this.loadingPromises.delete(cacheKey)
     }
   }
@@ -133,7 +134,7 @@ export class ComponentLoader {
       errorComponent: this.options.errorComponent || undefined,
       delay: 200,
       timeout: this.options.timeout,
-      suspensible: false
+      suspensible: false,
     })
   }
 
@@ -143,7 +144,8 @@ export class ComponentLoader {
   async preloadComponent(metadata: TemplateMetadata): Promise<void> {
     try {
       await this.loadComponent(metadata)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Failed to preload component: ${metadata.name}`, error)
     }
   }
@@ -172,7 +174,8 @@ export class ComponentLoader {
     for (let attempt = 0; attempt <= this.options.retryCount; attempt++) {
       try {
         return await this.loadComponentFromMetadata(metadata)
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error as Error
 
         if (attempt < this.options.retryCount) {
@@ -214,7 +217,8 @@ export class ComponentLoader {
       }
 
       throw new Error(`No component loader or path found for template: ${metadata.name}`)
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to load component for ${metadata.name}: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -246,7 +250,7 @@ export class ComponentLoader {
   getLoadingStats() {
     return {
       activeLoading: this.loadingPromises.size,
-      cacheStats: componentCache.getStats()
+      cacheStats: componentCache.getStats(),
     }
   }
 }
@@ -288,5 +292,5 @@ export const loaderUtils = {
   clearAll(): void {
     componentLoader.clearLoadingPromises()
     componentCache.clear()
-  }
+  },
 }

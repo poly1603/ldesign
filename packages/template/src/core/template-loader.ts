@@ -4,7 +4,7 @@
  */
 
 import type { Component } from 'vue'
-import type { TemplateInfo, LoadResult, CacheConfig, CacheStrategy } from '../types'
+import type { CacheConfig, LoadResult, TemplateInfo } from '../types'
 
 export interface LoadOptions {
   /** 是否强制重新加载 */
@@ -98,10 +98,12 @@ export class TemplateLoader {
           loadTime: Date.now() - startTime,
           fromCache: false,
         }
-      } finally {
+      }
+      finally {
         this.loadingPromises.delete(cacheKey)
       }
-    } catch (error) {
+    }
+    catch (error) {
       // 更新模板状态
       template.status = 'error'
       template.error = error as Error
@@ -137,7 +139,8 @@ export class TemplateLoader {
       }
 
       return component
-    } catch (error) {
+    }
+    catch (error) {
       console.error(`Failed to load component for template ${template.id}:`, error)
       throw error
     }
@@ -155,7 +158,8 @@ export class TemplateLoader {
         if (component) {
           return component
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`Failed to load component using component function for template ${template.id}:`, error)
       }
     }
@@ -181,7 +185,8 @@ export class TemplateLoader {
         if (component) {
           return component
         }
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error as Error
         continue
       }
@@ -236,7 +241,8 @@ export class TemplateLoader {
    * 缓存淘汰
    */
   private evictCache(): void {
-    if (this.cache.size === 0) return
+    if (this.cache.size === 0)
+      return
 
     switch (this.config.strategy) {
       case 'lru':
@@ -311,9 +317,9 @@ export class TemplateLoader {
    */
   async preload(templates: TemplateInfo[]): Promise<void> {
     const loadPromises = templates.map(template =>
-      this.load(template, { cache: true }).catch(error => {
+      this.load(template, { cache: true }).catch((error) => {
         console.warn(`Failed to preload template ${template.id}:`, error)
-      })
+      }),
     )
 
     await Promise.allSettled(loadPromises)
@@ -352,7 +358,7 @@ export class TemplateLoader {
     size: number
     maxSize: number
     hitRate: number
-    items: Array<{ key: string; accessCount: number; age: number }>
+    items: Array<{ key: string, accessCount: number, age: number }>
   } {
     const items = Array.from(this.cache.entries()).map(([key, item]) => ({
       key,

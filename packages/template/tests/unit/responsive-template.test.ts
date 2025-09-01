@@ -2,10 +2,10 @@
  * 响应式模板切换功能测试
  */
 
-import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest'
-import { ref, nextTick } from 'vue'
-import { useResponsiveTemplate } from '../../src/composables/useResponsiveTemplate'
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
+import { nextTick, ref } from 'vue'
 import { useDeviceDetection } from '../../src/composables/useDeviceDetection'
+import { useResponsiveTemplate } from '../../src/composables/useResponsiveTemplate'
 import { useTemplate } from '../../src/composables/useTemplate'
 
 // Mock composables
@@ -18,11 +18,11 @@ const mockUseTemplate = useTemplate as Mock
 describe('响应式模板切换', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // 默认 mock 设置
     mockUseDeviceDetection.mockReturnValue({
       deviceType: ref('desktop'),
-      setDeviceType: vi.fn()
+      setDeviceType: vi.fn(),
     })
 
     mockUseTemplate.mockReturnValue({
@@ -30,7 +30,7 @@ describe('响应式模板切换', () => {
       loading: ref(false),
       error: ref(null),
       getTemplate: vi.fn(),
-      loadTemplate: vi.fn()
+      loadTemplate: vi.fn(),
     })
   })
 
@@ -41,8 +41,8 @@ describe('响应式模板切换', () => {
           name: 'default',
           category: 'login',
           device: 'desktop',
-          componentLoader: vi.fn()
-        }
+          componentLoader: vi.fn(),
+        },
       ]
 
       mockUseTemplate.mockReturnValue({
@@ -50,17 +50,17 @@ describe('响应式模板切换', () => {
         loading: ref(false),
         error: ref(null),
         getTemplate: vi.fn().mockReturnValue(mockTemplates[0]),
-        loadTemplate: vi.fn()
+        loadTemplate: vi.fn(),
       })
 
       const {
         currentDevice,
         currentTemplate,
-        currentTemplateMetadata
+        currentTemplateMetadata,
       } = useResponsiveTemplate({
         category: 'login',
         initialTemplate: 'default',
-        initialDevice: 'desktop'
+        initialDevice: 'desktop',
       })
 
       expect(currentDevice.value).toBe('desktop')
@@ -70,11 +70,11 @@ describe('响应式模板切换', () => {
     it('应该支持自定义初始配置', () => {
       const {
         currentDevice,
-        currentTemplate
+        currentTemplate,
       } = useResponsiveTemplate({
         category: 'dashboard',
         initialTemplate: 'admin',
-        initialDevice: 'tablet'
+        initialDevice: 'tablet',
       })
 
       expect(currentDevice.value).toBe('tablet')
@@ -89,12 +89,12 @@ describe('响应式模板切换', () => {
         name: 'default',
         category: 'login',
         device: 'mobile',
-        componentLoader: vi.fn()
+        componentLoader: vi.fn(),
       })
 
       mockUseDeviceDetection.mockReturnValue({
         deviceType: ref('desktop'),
-        setDeviceType: mockSetDeviceType
+        setDeviceType: mockSetDeviceType,
       })
 
       mockUseTemplate.mockReturnValue({
@@ -102,12 +102,12 @@ describe('响应式模板切换', () => {
         loading: ref(false),
         error: ref(null),
         getTemplate: mockGetTemplate,
-        loadTemplate: vi.fn()
+        loadTemplate: vi.fn(),
       })
 
       const { switchDevice, currentDevice } = useResponsiveTemplate({
         category: 'login',
-        enableAutoDeviceSwitch: true
+        enableAutoDeviceSwitch: true,
       })
 
       await switchDevice('mobile')
@@ -120,14 +120,14 @@ describe('响应式模板切换', () => {
       const deviceTemplateMap = {
         desktop: 'default',
         tablet: 'tablet-optimized',
-        mobile: 'mobile-first'
+        mobile: 'mobile-first',
       }
 
       const mockGetTemplate = vi.fn()
         .mockReturnValueOnce({
           name: 'tablet-optimized',
           category: 'login',
-          device: 'tablet'
+          device: 'tablet',
         })
 
       mockUseTemplate.mockReturnValue({
@@ -135,12 +135,12 @@ describe('响应式模板切换', () => {
         loading: ref(false),
         error: ref(null),
         getTemplate: mockGetTemplate,
-        loadTemplate: vi.fn()
+        loadTemplate: vi.fn(),
       })
 
       const { switchDevice, currentTemplate } = useResponsiveTemplate({
         category: 'login',
-        deviceTemplateMap
+        deviceTemplateMap,
       })
 
       await switchDevice('tablet')
@@ -156,16 +156,17 @@ describe('响应式模板切换', () => {
         loading: ref(false),
         error: ref(null),
         getTemplate: mockGetTemplate,
-        loadTemplate: vi.fn()
+        loadTemplate: vi.fn(),
       })
 
       const { switchDevice, switchError } = useResponsiveTemplate({
-        category: 'login'
+        category: 'login',
       })
 
       try {
         await switchDevice('mobile')
-      } catch (error) {
+      }
+      catch (error) {
         expect(switchError.value).toContain('Template not found')
       }
     })
@@ -177,7 +178,7 @@ describe('响应式模板切换', () => {
         name: 'modern',
         category: 'login',
         device: 'desktop',
-        componentLoader: vi.fn()
+        componentLoader: vi.fn(),
       }
 
       mockUseTemplate.mockReturnValue({
@@ -185,11 +186,11 @@ describe('响应式模板切换', () => {
         loading: ref(false),
         error: ref(null),
         getTemplate: vi.fn().mockReturnValue(mockTemplate),
-        loadTemplate: vi.fn()
+        loadTemplate: vi.fn(),
       })
 
       const { switchTemplate, currentTemplate } = useResponsiveTemplate({
-        category: 'login'
+        category: 'login',
       })
 
       await switchTemplate('modern')
@@ -202,7 +203,7 @@ describe('响应式模板切换', () => {
         name: 'default',
         category: 'login',
         device: 'mobile',
-        componentLoader: vi.fn()
+        componentLoader: vi.fn(),
       }
 
       mockUseTemplate.mockReturnValue({
@@ -210,11 +211,11 @@ describe('响应式模板切换', () => {
         loading: ref(false),
         error: ref(null),
         getTemplate: vi.fn().mockReturnValue(mockTemplate),
-        loadTemplate: vi.fn()
+        loadTemplate: vi.fn(),
       })
 
       const { switchTemplate, currentDevice, currentTemplate } = useResponsiveTemplate({
-        category: 'login'
+        category: 'login',
       })
 
       await switchTemplate('default', 'mobile')
@@ -231,12 +232,12 @@ describe('响应式模板切换', () => {
         loading: ref(false),
         error: ref(null),
         getTemplate: mockGetTemplate,
-        loadTemplate: vi.fn()
+        loadTemplate: vi.fn(),
       })
 
       const { switchTemplate } = useResponsiveTemplate({
         category: 'login',
-        initialTemplate: 'default'
+        initialTemplate: 'default',
       })
 
       // 切换到相同的模板应该不执行任何操作
@@ -252,12 +253,12 @@ describe('响应式模板切换', () => {
       const mockGetTemplate = vi.fn().mockReturnValue({
         name: 'default',
         category: 'login',
-        device: 'mobile'
+        device: 'mobile',
       })
 
       mockUseDeviceDetection.mockReturnValue({
         deviceType: deviceTypeRef,
-        setDeviceType: vi.fn()
+        setDeviceType: vi.fn(),
       })
 
       mockUseTemplate.mockReturnValue({
@@ -265,12 +266,12 @@ describe('响应式模板切换', () => {
         loading: ref(false),
         error: ref(null),
         getTemplate: mockGetTemplate,
-        loadTemplate: vi.fn()
+        loadTemplate: vi.fn(),
       })
 
       const { currentDevice } = useResponsiveTemplate({
         category: 'login',
-        enableAutoDeviceSwitch: true
+        enableAutoDeviceSwitch: true,
       })
 
       // 模拟设备类型变化
@@ -288,12 +289,12 @@ describe('响应式模板切换', () => {
 
       mockUseDeviceDetection.mockReturnValue({
         deviceType: deviceTypeRef,
-        setDeviceType: vi.fn()
+        setDeviceType: vi.fn(),
       })
 
       const { currentDevice } = useResponsiveTemplate({
         category: 'login',
-        enableAutoDeviceSwitch: false
+        enableAutoDeviceSwitch: false,
       })
 
       const initialDevice = currentDevice.value
@@ -313,7 +314,7 @@ describe('响应式模板切换', () => {
         name: 'modern',
         category: 'login',
         device: 'desktop',
-        componentLoader: vi.fn()
+        componentLoader: vi.fn(),
       }
 
       mockUseTemplate.mockReturnValue({
@@ -321,13 +322,13 @@ describe('响应式模板切换', () => {
         loading: ref(false),
         error: ref(null),
         getTemplate: vi.fn().mockReturnValue(mockTemplate),
-        loadTemplate: vi.fn()
+        loadTemplate: vi.fn(),
       })
 
       const { switchTemplate, isSwitching } = useResponsiveTemplate({
         category: 'login',
         enableTransition: true,
-        transitionDuration: 100
+        transitionDuration: 100,
       })
 
       const switchPromise = switchTemplate('modern')
@@ -346,7 +347,7 @@ describe('响应式模板切换', () => {
         name: 'modern',
         category: 'login',
         device: 'desktop',
-        componentLoader: vi.fn()
+        componentLoader: vi.fn(),
       }
 
       mockUseTemplate.mockReturnValue({
@@ -354,12 +355,12 @@ describe('响应式模板切换', () => {
         loading: ref(false),
         error: ref(null),
         getTemplate: vi.fn().mockReturnValue(mockTemplate),
-        loadTemplate: vi.fn()
+        loadTemplate: vi.fn(),
       })
 
       const { switchTemplate } = useResponsiveTemplate({
         category: 'login',
-        enableTransition: false
+        enableTransition: false,
       })
 
       const startTime = Date.now()
@@ -376,7 +377,7 @@ describe('响应式模板切换', () => {
       const mockTemplates = [
         { name: 'default', category: 'login', device: 'desktop' },
         { name: 'modern', category: 'login', device: 'desktop' },
-        { name: 'default', category: 'login', device: 'mobile' }
+        { name: 'default', category: 'login', device: 'mobile' },
       ]
 
       mockUseTemplate.mockReturnValue({
@@ -384,11 +385,11 @@ describe('响应式模板切换', () => {
         loading: ref(false),
         error: ref(null),
         getTemplate: vi.fn(),
-        loadTemplate: vi.fn()
+        loadTemplate: vi.fn(),
       })
 
       const { getAvailableTemplates } = useResponsiveTemplate({
-        category: 'login'
+        category: 'login',
       })
 
       const desktopTemplates = getAvailableTemplates('desktop')
@@ -404,7 +405,7 @@ describe('响应式模板切换', () => {
       const { reset, currentDevice, currentTemplate, switchError } = useResponsiveTemplate({
         category: 'login',
         initialTemplate: 'default',
-        initialDevice: 'desktop'
+        initialDevice: 'desktop',
       })
 
       // 修改状态
@@ -424,7 +425,7 @@ describe('响应式模板切换', () => {
       const mockGetTemplate = vi.fn().mockReturnValue({
         name: 'modern',
         category: 'login',
-        device: 'desktop'
+        device: 'desktop',
       })
 
       mockUseTemplate.mockReturnValue({
@@ -432,12 +433,12 @@ describe('响应式模板切换', () => {
         loading: ref(false),
         error: ref(null),
         getTemplate: mockGetTemplate,
-        loadTemplate: vi.fn()
+        loadTemplate: vi.fn(),
       })
 
       const { switchTemplate } = useResponsiveTemplate({
         category: 'login',
-        switchDebounce: 50
+        switchDebounce: 50,
       })
 
       // 快速连续切换

@@ -91,31 +91,14 @@ pnpm add @ldesign/template
 ### 基础使用
 
 ```vue
-<template>
-  <div>
-    <!-- 模板选择器 -->
-    <TemplateSelector
-      v-model="selectedTemplate"
-      :templates="templates"
-      :device="currentDevice"
-    />
-
-    <!-- 模板渲染器 -->
-    <TemplateRenderer
-      :template="selectedTemplate"
-      :props="templateProps"
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref } from 'vue'
 import {
-  TemplateSelector,
   TemplateRenderer,
-  useTemplateScanner,
-  useDeviceDetection
+  TemplateSelector,
+  useDeviceDetection,
+  useTemplateScanner
 } from '@ldesign/template'
+import { ref } from 'vue'
 
 // 扫描模板
 const { templates } = useTemplateScanner({
@@ -135,6 +118,23 @@ const templateProps = ref({
   theme: 'modern'
 })
 </script>
+
+<template>
+  <div>
+    <!-- 模板选择器 -->
+    <TemplateSelector
+      v-model="selectedTemplate"
+      :templates="templates"
+      :device="currentDevice"
+    />
+
+    <!-- 模板渲染器 -->
+    <TemplateRenderer
+      :template="selectedTemplate"
+      :props="templateProps"
+    />
+  </div>
+</template>
 ```
 
 ## 📊 性能对比

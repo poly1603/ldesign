@@ -1,9 +1,9 @@
 {
   "name": "@ldesign/template-example",
+  "type": "module",
   "version": "1.0.0",
   "private": true,
   "description": "LDesign Template 示例项目",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",

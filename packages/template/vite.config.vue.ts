@@ -1,19 +1,19 @@
-import { defineConfig } from 'vite'
+import { resolve } from 'node:path'
 import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    vue()
+    vue(),
   ],
   build: {
     lib: {
       entry: {
         'vue/index': resolve(__dirname, 'src/vue/index.ts'),
         'vue/components/TemplateRenderer': resolve(__dirname, 'src/vue/components/TemplateRenderer.vue'),
-        'vue/components/TemplateSelector': resolve(__dirname, 'src/vue/components/TemplateSelector.vue')
+        'vue/components/TemplateSelector': resolve(__dirname, 'src/vue/components/TemplateSelector.vue'),
       },
-      formats: ['es', 'cjs']
+      formats: ['es', 'cjs'],
     },
     rollupOptions: {
       external: [
@@ -26,29 +26,29 @@ export default defineConfig({
         '@ldesign/device',
         '@ldesign/engine',
         '@ldesign/shared',
-        '@vueuse/core'
+        '@vueuse/core',
       ],
       output: [
         {
           format: 'es',
           dir: 'esm',
           entryFileNames: '[name].js',
-          preserveModules: false
+          preserveModules: false,
         },
         {
           format: 'cjs',
           dir: 'cjs',
           entryFileNames: '[name].js',
-          preserveModules: false
-        }
-      ]
+          preserveModules: false,
+        },
+      ],
     },
     outDir: 'dist-vue',
-    emptyOutDir: false
+    emptyOutDir: false,
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
-    }
-  }
+      '@': resolve(__dirname, 'src'),
+    },
+  },
 })

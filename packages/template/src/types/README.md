@@ -35,16 +35,16 @@ types/
 import type * as TemplateTypes from '@ldesign/template/types'
 
 // 导入特定类型
-import type { 
-  TemplateMetadata, 
-  TemplateConfig, 
+import type {
   DeviceType,
-  ScanResult 
+  ScanResult,
+  TemplateConfig,
+  TemplateMetadata
 } from '@ldesign/template/types'
 
+import type { TemplateSystemConfig } from '@ldesign/template/types/config'
 // 按模块导入
 import type { TemplateMetadata } from '@ldesign/template/types/template'
-import type { TemplateSystemConfig } from '@ldesign/template/types/config'
 ```
 
 ### 使用类型
@@ -79,49 +79,49 @@ const config: TemplateSystemConfig = {
 interface TemplateMetadata {
   /** 模板唯一标识符 */
   name: string
-  
+
   /** 模板显示名称 */
   displayName: string
-  
+
   /** 模板描述 */
   description: string
-  
+
   /** 模板版本 */
   version: string
-  
+
   /** 模板作者 */
   author: string
-  
+
   /** 模板分类 */
   category: TemplateCategory
-  
+
   /** 目标设备类型 */
   device: DeviceType
-  
+
   /** 组件文件路径 */
   componentPath: string
-  
+
   /** 组件加载器函数 */
   componentLoader?: () => Promise<Component>
-  
+
   /** 配置文件路径 */
   configPath?: string
-  
+
   /** 样式文件路径 */
   stylePath?: string
-  
+
   /** 预览图片路径 */
   previewPath?: string
-  
+
   /** 最后修改时间 */
   lastModified: number
-  
+
   /** 是否为内置模板 */
   isBuiltIn: boolean
-  
+
   /** 模板标签 */
   tags?: string[]
-  
+
   /** 自定义元数据 */
   metadata?: Record<string, any>
 }
@@ -135,52 +135,52 @@ interface TemplateMetadata {
 interface TemplateConfig {
   /** 模板名称 */
   name: string
-  
+
   /** 显示名称 */
   displayName: string
-  
+
   /** 描述信息 */
   description: string
-  
+
   /** 版本号 */
   version: string
-  
+
   /** 作者信息 */
   author: string
-  
+
   /** 分类 */
   category: TemplateCategory
-  
+
   /** 设备类型 */
   device: DeviceType
-  
+
   /** 标签列表 */
   tags?: string[]
-  
+
   /** 预览图片 */
   preview?: string
-  
+
   /** 支持的属性 */
   props?: Record<string, PropDefinition>
-  
+
   /** 插槽定义 */
   slots?: SlotDefinition[]
-  
+
   /** 事件定义 */
   events?: EventDefinition[]
-  
+
   /** 依赖项 */
   dependencies?: string[]
-  
+
   /** 最小Vue版本 */
   minVueVersion?: string
-  
+
   /** 功能特性 */
   features?: string[]
-  
+
   /** 使用场景 */
   useCases?: string[]
-  
+
   /** 自定义配置 */
   customConfig?: Record<string, any>
 }
@@ -191,44 +191,44 @@ interface TemplateConfig {
 模板分类枚举：
 
 ```typescript
-type TemplateCategory = 
-  | 'auth'           // 认证相关
-  | 'login'          // 登录
-  | 'register'       // 注册
+type TemplateCategory =
+  | 'auth' // 认证相关
+  | 'login' // 登录
+  | 'register' // 注册
   | 'reset-password' // 重置密码
-  | 'verify'         // 验证
-  | 'dashboard'      // 仪表板
-  | 'overview'       // 概览
-  | 'analytics'      // 分析
-  | 'reports'        // 报告
-  | 'metrics'        // 指标
-  | 'user'           // 用户管理
-  | 'profile'        // 个人资料
-  | 'settings'       // 设置
-  | 'permissions'    // 权限
-  | 'account'        // 账户
-  | 'form'           // 表单
-  | 'contact'        // 联系
-  | 'survey'         // 调查
-  | 'feedback'       // 反馈
-  | 'wizard'         // 向导
-  | 'content'        // 内容
-  | 'article'        // 文章
-  | 'blog'           // 博客
-  | 'news'           // 新闻
-  | 'gallery'        // 画廊
-  | 'ecommerce'      // 电商
-  | 'product'        // 产品
-  | 'cart'           // 购物车
-  | 'checkout'       // 结账
-  | 'order'          // 订单
-  | 'common'         // 通用
-  | 'header'         // 头部
-  | 'footer'         // 底部
-  | 'navigation'     // 导航
-  | 'error'          // 错误页面
-  | 'not-found'      // 404页面
-  | 'maintenance'    // 维护页面
+  | 'verify' // 验证
+  | 'dashboard' // 仪表板
+  | 'overview' // 概览
+  | 'analytics' // 分析
+  | 'reports' // 报告
+  | 'metrics' // 指标
+  | 'user' // 用户管理
+  | 'profile' // 个人资料
+  | 'settings' // 设置
+  | 'permissions' // 权限
+  | 'account' // 账户
+  | 'form' // 表单
+  | 'contact' // 联系
+  | 'survey' // 调查
+  | 'feedback' // 反馈
+  | 'wizard' // 向导
+  | 'content' // 内容
+  | 'article' // 文章
+  | 'blog' // 博客
+  | 'news' // 新闻
+  | 'gallery' // 画廊
+  | 'ecommerce' // 电商
+  | 'product' // 产品
+  | 'cart' // 购物车
+  | 'checkout' // 结账
+  | 'order' // 订单
+  | 'common' // 通用
+  | 'header' // 头部
+  | 'footer' // 底部
+  | 'navigation' // 导航
+  | 'error' // 错误页面
+  | 'not-found' // 404页面
+  | 'maintenance' // 维护页面
 ```
 
 ### 2. 设备类型 (Device Types)
@@ -264,25 +264,25 @@ interface DeviceDetectionResult {
 interface TemplateSystemConfig {
   /** 模板根目录 */
   templatesDir: string
-  
+
   /** 是否自动扫描 */
   autoScan: boolean
-  
+
   /** 是否启用热更新 */
   enableHMR: boolean
-  
+
   /** 默认设备类型 */
   defaultDevice: DeviceType
-  
+
   /** 调试模式 */
   debug: boolean
-  
+
   /** 扫描器配置 */
   scanner: ScannerConfig
-  
+
   /** 缓存配置 */
   cache: CacheConfig
-  
+
   /** 错误处理配置 */
   errorHandling: ErrorHandlingConfig
 }
@@ -296,22 +296,22 @@ interface TemplateSystemConfig {
 interface ScannerConfig {
   /** 最大扫描深度 */
   maxDepth: number
-  
+
   /** 包含的文件扩展名 */
   includeExtensions: string[]
-  
+
   /** 排除的路径模式 */
   excludePatterns: string[]
-  
+
   /** 是否启用缓存 */
   enableCache: boolean
-  
+
   /** 是否启用监听模式 */
   watchMode: boolean
-  
+
   /** 防抖延迟时间 */
   debounceDelay: number
-  
+
   /** 批处理大小 */
   batchSize: number
 }
@@ -327,13 +327,13 @@ interface ScannerConfig {
 interface ScanResult {
   /** 扫描到的模板 */
   templates: Map<string, TemplateMetadata>
-  
+
   /** 扫描统计信息 */
   stats: ScanStats
-  
+
   /** 扫描错误 */
   errors: ScanError[]
-  
+
   /** 扫描时间戳 */
   timestamp: number
 }
@@ -347,22 +347,22 @@ interface ScanResult {
 interface ScanStats {
   /** 总模板数 */
   totalTemplates: number
-  
+
   /** 总文件数 */
   totalFiles: number
-  
+
   /** 扫描耗时 */
   scanDuration: number
-  
+
   /** 缓存命中次数 */
   cacheHits: number
-  
+
   /** 按分类统计 */
   byCategory: Record<string, number>
-  
+
   /** 按设备统计 */
   byDevice: Record<string, number>
-  
+
   /** 按文件类型统计 */
   byFileType: Record<string, number>
 }
@@ -378,13 +378,13 @@ type CacheStrategy = 'lru' | 'fifo' | 'lfu'
 interface CacheConfig {
   /** 是否启用缓存 */
   enabled: boolean
-  
+
   /** 缓存策略 */
   strategy: CacheStrategy
-  
+
   /** 最大缓存大小 */
   maxSize: number
-  
+
   /** 缓存过期时间 */
   ttl: number
 }
@@ -393,16 +393,16 @@ interface CacheConfig {
 interface CacheItem<T> {
   /** 缓存值 */
   value: T
-  
+
   /** 创建时间 */
   createdAt: number
-  
+
   /** 最后访问时间 */
   lastAccessed: number
-  
+
   /** 访问次数 */
   accessCount: number
-  
+
   /** 过期时间 */
   expiresAt?: number
 }
@@ -412,7 +412,7 @@ interface CacheItem<T> {
 
 ```typescript
 /** 模板事件类型 */
-type TemplateEventType = 
+type TemplateEventType =
   | 'template-found'
   | 'template-updated'
   | 'template-removed'
@@ -490,20 +490,27 @@ function isValidDeviceType(value: any): value is DeviceType {
 /** 检查是否为有效的模板分类 */
 function isValidTemplateCategory(value: any): value is TemplateCategory {
   return [
-    'auth', 'login', 'register', 'dashboard', 
-    'user', 'form', 'content', 'ecommerce', 
-    'common', 'error'
+    'auth',
+    'login',
+    'register',
+    'dashboard',
+    'user',
+    'form',
+    'content',
+    'ecommerce',
+    'common',
+    'error'
   ].includes(value)
 }
 
 /** 检查是否为完整的模板元数据 */
 function isCompleteTemplateMetadata(value: any): value is TemplateMetadata {
   return (
-    typeof value === 'object' &&
-    typeof value.name === 'string' &&
-    typeof value.displayName === 'string' &&
-    isValidTemplateCategory(value.category) &&
-    isValidDeviceType(value.device)
+    typeof value === 'object'
+    && typeof value.name === 'string'
+    && typeof value.displayName === 'string'
+    && isValidTemplateCategory(value.category)
+    && isValidDeviceType(value.device)
   )
 }
 ```
@@ -515,12 +522,13 @@ function isCompleteTemplateMetadata(value: any): value is TemplateMetadata {
 function validateTemplateConfig(config: any): config is TemplateConfig {
   try {
     return (
-      typeof config.name === 'string' &&
-      typeof config.displayName === 'string' &&
-      isValidTemplateCategory(config.category) &&
-      isValidDeviceType(config.device)
+      typeof config.name === 'string'
+      && typeof config.displayName === 'string'
+      && isValidTemplateCategory(config.category)
+      && isValidDeviceType(config.device)
     )
-  } catch {
+  }
+  catch {
     return false
   }
 }
@@ -529,11 +537,12 @@ function validateTemplateConfig(config: any): config is TemplateConfig {
 function validateSystemConfig(config: any): config is TemplateSystemConfig {
   try {
     return (
-      typeof config.templatesDir === 'string' &&
-      typeof config.autoScan === 'boolean' &&
-      isValidDeviceType(config.defaultDevice)
+      typeof config.templatesDir === 'string'
+      && typeof config.autoScan === 'boolean'
+      && isValidDeviceType(config.defaultDevice)
     )
-  } catch {
+  }
+  catch {
     return false
   }
 }
@@ -544,7 +553,7 @@ function validateSystemConfig(config: any): config is TemplateSystemConfig {
 ### 创建类型安全的模板
 
 ```typescript
-import type { TemplateMetadata, TemplateConfig } from '@ldesign/template/types'
+import type { TemplateConfig, TemplateMetadata } from '@ldesign/template/types'
 
 // 定义模板元数据
 const loginTemplate: TemplateMetadata = {
@@ -584,11 +593,11 @@ const loginConfig: TemplateConfig = {
 ### 类型安全的函数定义
 
 ```typescript
-import type { 
-  TemplateMetadata, 
-  TemplateFilter, 
+import type {
+  DeviceType,
   SortOptions,
-  DeviceType 
+  TemplateFilter,
+  TemplateMetadata
 } from '@ldesign/template/types'
 
 // 过滤模板函数
@@ -596,7 +605,7 @@ function filterTemplates(
   templates: TemplateMetadata[],
   filter: TemplateFilter
 ): TemplateMetadata[] {
-  return templates.filter(template => {
+  return templates.filter((template) => {
     if (filter.categories && !filter.categories.includes(template.category)) {
       return false
     }
@@ -618,10 +627,11 @@ function sortTemplates(
   return [...templates].sort((a, b) => {
     const aValue = a[options.field]
     const bValue = b[options.field]
-    
+
     if (options.direction === 'asc') {
       return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
-    } else {
+    }
+    else {
       return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
     }
   })

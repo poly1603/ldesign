@@ -2,16 +2,16 @@
  * 插件系统测试
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { createApp } from 'vue'
-import { TemplatePlugin, install, uninstall } from '../src/plugin'
 import type { TemplateSystemConfig } from '../src/types/config'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createApp } from 'vue'
+import { install, TemplatePlugin, uninstall } from '../src/plugin'
 
 // 模拟Vue应用
-const createMockApp = () => {
+function createMockApp() {
   const app = createApp({})
   app.config = {
-    globalProperties: {}
+    globalProperties: {},
   }
   app.provide = vi.fn()
   app.use = vi.fn()
@@ -23,7 +23,7 @@ const mockFs = {
   existsSync: vi.fn(),
   readFileSync: vi.fn(),
   readdirSync: vi.fn(),
-  statSync: vi.fn()
+  statSync: vi.fn(),
 }
 
 vi.mock('fs', () => mockFs)
@@ -32,21 +32,21 @@ vi.mock('node:fs', () => mockFs)
 // 模拟路径操作
 const mockPath = {
   join: vi.fn((...args) => args.join('/')),
-  resolve: vi.fn((...args) => '/' + args.join('/')),
+  resolve: vi.fn((...args) => `/${args.join('/')}`),
   dirname: vi.fn(p => p.split('/').slice(0, -1).join('/')),
-  basename: vi.fn(p => p.split('/').pop())
+  basename: vi.fn(p => p.split('/').pop()),
 }
 
 vi.mock('path', () => mockPath)
 vi.mock('node:path', () => mockPath)
 
-describe('TemplatePlugin', () => {
+describe('templatePlugin', () => {
   let app: ReturnType<typeof createMockApp>
   let mockConfig: Partial<TemplateSystemConfig>
 
   beforeEach(() => {
     app = createMockApp()
-    
+
     mockConfig = {
       templatesDir: 'test/templates',
       autoScan: false, // 禁用自动扫描以避免文件系统调用
@@ -60,14 +60,14 @@ describe('TemplatePlugin', () => {
         enableCache: true,
         watchMode: false,
         debounceDelay: 200,
-        batchSize: 5
+        batchSize: 5,
       },
       cache: {
         enabled: true,
         strategy: 'lru',
         maxSize: 50,
-        ttl: 30 * 60 * 1000
-      }
+        ttl: 30 * 60 * 1000,
+      },
     }
 
     // 模拟文件系统
@@ -76,7 +76,7 @@ describe('TemplatePlugin', () => {
     mockFs.statSync.mockReturnValue({
       isDirectory: () => true,
       isFile: () => false,
-      mtime: new Date()
+      mtime: new Date(),
     })
 
     // 清理之前的安装
@@ -121,11 +121,11 @@ describe('TemplatePlugin', () => {
 
     it('应该防止重复安装', () => {
       app.use(TemplatePlugin, mockConfig)
-      
+
       // 第二次安装应该被忽略
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
       app.use(TemplatePlugin, mockConfig)
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('[TemplatePlugin] Plugin already installed')
       consoleSpy.mockRestore()
     })
@@ -144,7 +144,7 @@ describe('TemplatePlugin', () => {
     it('应该处理部分配置', () => {
       const partialConfig = {
         templatesDir: 'partial/templates',
-        debug: true
+        debug: true,
       }
 
       app.use(TemplatePlugin, partialConfig)
@@ -171,7 +171,7 @@ describe('TemplatePlugin', () => {
 
       const scanner = app.config.globalProperties.$templateScanner
       const options = scanner.getOptions()
-      
+
       expect(options.templatesDir).toBe('test/templates')
       expect(options.maxDepth).toBe(3)
       expect(options.enableCache).toBe(true)
@@ -180,7 +180,7 @@ describe('TemplatePlugin', () => {
     it('应该在启用自动扫描时执行扫描', async () => {
       const configWithAutoScan = {
         ...mockConfig,
-        autoScan: true
+        autoScan: true,
       }
 
       app.use(TemplatePlugin, configWithAutoScan)
@@ -208,7 +208,7 @@ describe('TemplatePlugin', () => {
 
       const configManager = app.config.globalProperties.$templateConfig
       const config = configManager.getConfig()
-      
+
       expect(config.templatesDir).toBe('test/templates')
       expect(config.debug).toBe(false)
     })
@@ -218,7 +218,7 @@ describe('TemplatePlugin', () => {
     it('应该在启用HMR时创建热更新管理器', () => {
       const configWithHMR = {
         ...mockConfig,
-        enableHMR: true
+        enableHMR: true,
       }
 
       app.use(TemplatePlugin, configWithHMR)
@@ -242,8 +242,8 @@ describe('TemplatePlugin', () => {
         ...mockConfig,
         scanner: {
           ...mockConfig.scanner!,
-          watchMode: true
-        }
+          watchMode: true,
+        },
       }
 
       app.use(TemplatePlugin, configWithWatch)
@@ -267,8 +267,8 @@ describe('TemplatePlugin', () => {
         ...mockConfig,
         autoScan: true,
         errorHandling: {
-          enableReporting: true
-        }
+          enableReporting: true,
+        },
       }
 
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -286,8 +286,8 @@ describe('TemplatePlugin', () => {
       const invalidConfig = {
         templatesDir: '', // 无效配置
         scanner: {
-          maxDepth: -1 // 无效值
-        }
+          maxDepth: -1, // 无效值
+        },
       }
 
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -302,7 +302,7 @@ describe('TemplatePlugin', () => {
   describe('插件卸载', () => {
     it('应该能够卸载插件', () => {
       app.use(TemplatePlugin, mockConfig)
-      
+
       expect(() => {
         uninstall()
       }).not.toThrow()
@@ -313,12 +313,12 @@ describe('TemplatePlugin', () => {
         ...mockConfig,
         scanner: {
           ...mockConfig.scanner!,
-          watchMode: true
-        }
+          watchMode: true,
+        },
       }
 
       app.use(TemplatePlugin, configWithWatch)
-      
+
       // 等待初始化完成
       await new Promise(resolve => setTimeout(resolve, 100))
 
@@ -349,7 +349,7 @@ describe('独立安装函数', () => {
     expect(() => {
       install(app, {
         templatesDir: 'standalone/templates',
-        autoScan: false
+        autoScan: false,
       })
     }).not.toThrow()
 
@@ -366,7 +366,7 @@ describe('独立安装函数', () => {
   })
 })
 
-describe('HMR集成测试', () => {
+describe('hMR集成测试', () => {
   beforeEach(() => {
     // 模拟HMR环境
     Object.defineProperty(globalThis, 'import', {
@@ -376,11 +376,11 @@ describe('HMR集成测试', () => {
             on: vi.fn(),
             off: vi.fn(),
             send: vi.fn(),
-            accept: vi.fn()
-          }
-        }
+            accept: vi.fn(),
+          },
+        },
       },
-      configurable: true
+      configurable: true,
     })
   })
 
@@ -393,7 +393,7 @@ describe('HMR集成测试', () => {
     const configWithHMR = {
       templatesDir: 'hmr/templates',
       enableHMR: true,
-      autoScan: false
+      autoScan: false,
     }
 
     app.use(TemplatePlugin, configWithHMR)

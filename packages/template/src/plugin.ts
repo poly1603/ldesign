@@ -5,12 +5,11 @@
  */
 
 import type { App } from 'vue'
-import type { TemplatePluginOptions } from './types/plugin'
 import type { TemplateSystemConfig } from './types/config'
+import type { TemplatePluginOptions } from './types/plugin'
+import { getConfigManager, TemplateConfigManager } from './config/config-manager'
 import { TemplateScanner } from './scanner'
 import { componentCache } from './utils/cache'
-import { getConfigManager, TemplateConfigManager } from './config/config-manager'
-import { mergeConfig } from './config/default.config'
 import { getHotReloadManager, type HotReloadManager } from './utils/hot-reload-manager'
 
 /**
@@ -20,11 +19,16 @@ function convertLegacyOptions(options: TemplatePluginOptions): Partial<TemplateS
   const config: Partial<TemplateSystemConfig> = {}
 
   // 基础配置转换
-  if (options.templatesDir !== undefined) config.templatesDir = options.templatesDir
-  if (options.autoScan !== undefined) config.autoScan = options.autoScan
-  if (options.enableHMR !== undefined) config.enableHMR = options.enableHMR
-  if (options.defaultDevice !== undefined) config.defaultDevice = options.defaultDevice
-  if (options.enablePerformanceMonitor !== undefined) config.enablePerformanceMonitor = options.enablePerformanceMonitor
+  if (options.templatesDir !== undefined)
+    config.templatesDir = options.templatesDir
+  if (options.autoScan !== undefined)
+    config.autoScan = options.autoScan
+  if (options.enableHMR !== undefined)
+    config.enableHMR = options.enableHMR
+  if (options.defaultDevice !== undefined)
+    config.defaultDevice = options.defaultDevice
+  if (options.enablePerformanceMonitor !== undefined)
+    config.enablePerformanceMonitor = options.enablePerformanceMonitor
 
   // 缓存配置转换（向后兼容）
   if (options.cache !== undefined) {
@@ -41,8 +45,8 @@ function convertLegacyOptions(options: TemplatePluginOptions): Partial<TemplateS
       breakpoints: {
         mobile: options.mobileBreakpoint ?? 768,
         tablet: options.tabletBreakpoint ?? 992,
-        desktop: options.desktopBreakpoint ?? 1200
-      }
+        desktop: options.desktopBreakpoint ?? 1200,
+      },
     }
   }
 
@@ -53,17 +57,24 @@ function convertLegacyOptions(options: TemplatePluginOptions): Partial<TemplateS
   if (options.preloadTemplates !== undefined) {
     config.preloadStrategy = {
       ...config.preloadStrategy,
-      priority: options.preloadTemplates
+      priority: options.preloadTemplates,
     }
   }
 
   // 直接复制新格式的配置
   const newConfigKeys: (keyof TemplateSystemConfig)[] = [
-    'scanner', 'cache', 'deviceDetection', 'preloadStrategy',
-    'loader', 'fileNaming', 'performance', 'errorHandling', 'devtools'
+    'scanner',
+    'cache',
+    'deviceDetection',
+    'preloadStrategy',
+    'loader',
+    'fileNaming',
+    'performance',
+    'errorHandling',
+    'devtools',
   ]
 
-  newConfigKeys.forEach(key => {
+  newConfigKeys.forEach((key) => {
     if (options[key] !== undefined) {
       config[key] = options[key] as any
     }
@@ -86,7 +97,7 @@ const pluginState: PluginState = {
   scanner: null,
   configManager: null,
   hotReloadManager: null,
-  installed: false
+  installed: false,
 }
 
 /**
@@ -116,7 +127,8 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
 
     config = pluginState.configManager.getConfig()
     console.log('[TemplatePlugin] Config loaded:', config)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('[TemplatePlugin] Error creating config manager:', error)
     throw error
   }
@@ -128,7 +140,7 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
       debug: config.devtools.enableLogger,
       updateDelay: 100,
       autoRefresh: false,
-      preserveState: true
+      preserveState: true,
     })
 
     // 设置热更新监听器
@@ -139,7 +151,7 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
 
       // 触发扫描器重新扫描
       if (pluginState.scanner) {
-        pluginState.scanner.scan().catch(error => {
+        pluginState.scanner.scan().catch((error) => {
           console.error('[TemplatePlugin] Hot reload scan failed:', error)
         })
       }
@@ -156,7 +168,7 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
     excludePatterns: config.scanner.excludePatterns,
     watchMode: config.scanner.watchMode,
     debounceDelay: config.scanner.debounceDelay,
-    batchSize: config.scanner.batchSize
+    batchSize: config.scanner.batchSize,
   }, {
     onScanComplete: (result) => {
       if (config.enablePerformanceMonitor || config.devtools.enableLogger) {
@@ -168,7 +180,7 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
       if (config.errorHandling.enableReporting) {
         // 这里可以添加错误报告逻辑
       }
-    }
+    },
   })
 
   // 提供全局属性（安全检查）
@@ -189,7 +201,7 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
 
   // 自动扫描
   if (config.autoScan) {
-    pluginState.scanner.scan().catch(error => {
+    pluginState.scanner.scan().catch((error) => {
       console.error('[TemplatePlugin] Auto scan failed:', error)
       if (config.errorHandling.enableReporting) {
         // 这里可以添加错误报告逻辑
@@ -199,7 +211,7 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
 
   // 启动文件监听（如果启用了监听模式）
   if (config.scanner.watchMode && pluginState.scanner) {
-    pluginState.scanner.startWatching().catch(error => {
+    pluginState.scanner.startWatching().catch((error) => {
       console.error('[TemplatePlugin] Start watching failed:', error)
     })
   }
@@ -238,7 +250,8 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
  * 设置热更新
  */
 function setupHMR(config: TemplateSystemConfig): void {
-  if (!import.meta.hot || !pluginState.hotReloadManager) return
+  if (!import.meta.hot || !pluginState.hotReloadManager)
+    return
 
   // 监听模板文件变化
   import.meta.hot.on('template-config-updated', (data) => {
@@ -257,11 +270,11 @@ function setupHMR(config: TemplateSystemConfig): void {
       template: {
         category: data.category,
         device: data.device,
-        name: data.templateName
+        name: data.templateName,
       },
       filePath: data.filePath,
       timestamp: Date.now(),
-      data
+      data,
     })
   })
 
@@ -282,11 +295,11 @@ function setupHMR(config: TemplateSystemConfig): void {
       template: {
         category: data.category,
         device: data.device,
-        name: data.templateName
+        name: data.templateName,
       },
       filePath: data.filePath,
       timestamp: Date.now(),
-      data
+      data,
     })
   })
 
@@ -302,11 +315,11 @@ function setupHMR(config: TemplateSystemConfig): void {
       template: {
         category: data.category,
         device: data.device,
-        name: data.templateName
+        name: data.templateName,
       },
       filePath: data.filePath,
       timestamp: Date.now(),
-      data
+      data,
     })
   })
 
@@ -328,8 +341,9 @@ function setupHMR(config: TemplateSystemConfig): void {
       console.log('[TemplatePlugin] Template file changed:', data)
     }
 
-    const eventType = data.changeType === 'added' ? 'template-added' :
-      data.changeType === 'removed' ? 'template-removed' : 'template-updated'
+    const eventType = data.changeType === 'added'
+      ? 'template-added'
+      : data.changeType === 'removed' ? 'template-removed' : 'template-updated'
 
     // 触发热更新事件
     pluginState.hotReloadManager?.triggerUpdate({
@@ -337,11 +351,11 @@ function setupHMR(config: TemplateSystemConfig): void {
       template: {
         category: data.category,
         device: data.device,
-        name: data.templateName
+        name: data.templateName,
       },
       filePath: data.filePath,
       timestamp: Date.now(),
-      data
+      data,
     })
   })
 }
@@ -350,7 +364,8 @@ function setupHMR(config: TemplateSystemConfig): void {
  * 设置性能监控
  */
 function setupPerformanceMonitor(config: TemplateSystemConfig): void {
-  if (!config.performance.enableMetrics) return
+  if (!config.performance.enableMetrics)
+    return
 
   // 定期输出缓存统计
   setInterval(() => {
@@ -367,9 +382,9 @@ function setupPerformanceMonitor(config: TemplateSystemConfig): void {
       const memory = window.performance.memory
       if (memory && config.devtools.enableLogger) {
         console.log('[TemplatePlugin] Memory usage:', {
-          used: Math.round(memory.usedJSHeapSize / 1024 / 1024) + 'MB',
-          total: Math.round(memory.totalJSHeapSize / 1024 / 1024) + 'MB',
-          limit: Math.round(memory.jsHeapSizeLimit / 1024 / 1024) + 'MB'
+          used: `${Math.round(memory.usedJSHeapSize / 1024 / 1024)}MB`,
+          total: `${Math.round(memory.totalJSHeapSize / 1024 / 1024)}MB`,
+          limit: `${Math.round(memory.jsHeapSizeLimit / 1024 / 1024)}MB`,
         })
       }
     }, config.performance.metricsInterval * 2) // 内存监控频率较低
@@ -416,7 +431,7 @@ export function getPluginOptions(): TemplateSystemConfig | null {
 const TemplatePlugin = {
   install,
   version: '1.0.0',
-  name: 'TemplatePlugin'
+  name: 'TemplatePlugin',
 }
 
 // 默认导出插件
@@ -444,14 +459,15 @@ export function createTemplateEnginePlugin(options: TemplatePluginOptions = {}) 
       // 安装Vue插件
       if (app && typeof app.use === 'function') {
         app.use(TemplatePlugin, options)
-      } else {
+      }
+      else {
         // 直接调用插件的install方法
         TemplatePlugin.install(app, options)
       }
-    }
+    },
   }
 }
 
 // 类型导出
 export type { TemplatePluginOptions }
-export type { TemplateSystemConfig, ConfigManager } from './types/config'
+export type { ConfigManager, TemplateSystemConfig } from './types/config'

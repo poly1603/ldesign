@@ -14,16 +14,16 @@
       "@/templates/*": ["src/templates/*"]
     },
     "types": ["vite/client", "node", "@vue/runtime-core"],
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
     "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
     "strictFunctionTypes": true,
-    "noImplicitReturns": true,
+    "strictNullChecks": true,
+    "exactOptionalPropertyTypes": true,
     "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   },
   "include": [
     "src/**/*",

@@ -2,8 +2,8 @@
  * 模板选择器组合式函数
  */
 
-import { ref, computed, watch, type Ref, type ComputedRef } from 'vue'
-import type { TemplateMetadata, DeviceType } from '../types/template'
+import type { DeviceType, TemplateMetadata } from '../types/template'
+import { computed, type ComputedRef, ref, type Ref, watch } from 'vue'
 
 /**
  * 选择器选项
@@ -63,10 +63,10 @@ export function useTemplateSelector(options: UseTemplateSelectorOptions = {}): U
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase()
       filtered = filtered.filter(template =>
-        template.name.toLowerCase().includes(query) ||
-        template.displayName?.toLowerCase().includes(query) ||
-        template.description?.toLowerCase().includes(query) ||
-        template.tags?.some(tag => tag.toLowerCase().includes(query))
+        template.name.toLowerCase().includes(query)
+        || template.displayName?.toLowerCase().includes(query)
+        || template.description?.toLowerCase().includes(query)
+        || template.tags?.some(tag => tag.toLowerCase().includes(query)),
       )
     }
 
@@ -165,6 +165,6 @@ export function useTemplateSelector(options: UseTemplateSelectorOptions = {}): U
     setDevice,
     setSearchQuery,
     reset,
-    previewTemplate
+    previewTemplate,
   }
 }

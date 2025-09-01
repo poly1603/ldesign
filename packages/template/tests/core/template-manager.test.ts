@@ -2,9 +2,9 @@
  * 模板管理器单元测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import type { TemplateInfo, TemplateManagerConfig } from '../../src/types'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TemplateManager } from '../../src/core/template-manager'
-import type { TemplateManagerConfig, TemplateInfo } from '../../src/types'
 
 // Mock 文件系统
 vi.mock('fs/promises', () => ({
@@ -15,12 +15,12 @@ vi.mock('fs/promises', () => ({
 // Mock 路径模块
 vi.mock('path', () => ({
   join: vi.fn((...args) => args.join('/')),
-  resolve: vi.fn((path) => path),
-  extname: vi.fn((path) => path.split('.').pop() || ''),
-  basename: vi.fn((path) => path.split('/').pop() || ''),
+  resolve: vi.fn(path => path),
+  extname: vi.fn(path => path.split('.').pop() || ''),
+  basename: vi.fn(path => path.split('/').pop() || ''),
 }))
 
-describe('TemplateManager', () => {
+describe('templateManager', () => {
   let manager: TemplateManager
   let mockConfig: Partial<TemplateManagerConfig>
 
@@ -97,13 +97,17 @@ describe('TemplateManager', () => {
   describe('模板扫描', () => {
     it('应该扫描并返回模板信息', async () => {
       // Mock 文件系统调用
-      const { readdir, stat } = await import('fs/promises')
-      
+      const { readdir, stat } = await import('node:fs/promises')
+
       vi.mocked(readdir).mockImplementation(async (path) => {
-        if (path === 'src/templates') return ['login']
-        if (path === 'src/templates/login') return ['desktop', 'mobile']
-        if (path === 'src/templates/login/desktop') return ['default', 'modern']
-        if (path === 'src/templates/login/mobile') return ['simple']
+        if (path === 'src/templates')
+          return ['login']
+        if (path === 'src/templates/login')
+          return ['desktop', 'mobile']
+        if (path === 'src/templates/login/desktop')
+          return ['default', 'modern']
+        if (path === 'src/templates/login/mobile')
+          return ['simple']
         return []
       })
 
@@ -112,7 +116,7 @@ describe('TemplateManager', () => {
       } as any)
 
       const result = await manager.scanTemplates()
-      
+
       expect(result.count).toBeGreaterThanOrEqual(0)
       expect(Array.isArray(result.templates)).toBe(true)
       expect(typeof result.duration).toBe('number')
@@ -135,7 +139,7 @@ describe('TemplateManager', () => {
       manager.on('device:change', listener)
 
       manager.setDeviceType('tablet')
-      
+
       expect(listener).toHaveBeenCalledWith('desktop', 'tablet')
     })
   })
@@ -242,7 +246,7 @@ describe('TemplateManager', () => {
       manager.on('cache:clear', listener)
 
       manager.clearCache('login', 'desktop')
-      
+
       expect(listener).toHaveBeenCalledWith('login', 'desktop')
     })
   })
@@ -250,10 +254,10 @@ describe('TemplateManager', () => {
   describe('事件系统', () => {
     it('应该添加和移除事件监听器', () => {
       const listener = vi.fn()
-      
+
       manager.on('template:loaded', listener)
       manager.off('template:loaded', listener)
-      
+
       // 触发事件不应该调用已移除的监听器
       expect(listener).not.toHaveBeenCalled()
     })
@@ -262,9 +266,9 @@ describe('TemplateManager', () => {
       const errorListener = vi.fn(() => {
         throw new Error('Test error')
       })
-      
+
       manager.on('template:loaded', errorListener)
-      
+
       // 应该不会抛出错误
       expect(() => {
         // 手动触发事件来测试错误处理
@@ -281,7 +285,7 @@ describe('TemplateManager', () => {
       }
 
       manager.updateConfig(newConfig)
-      
+
       const config = manager.getConfig()
       expect(config.defaultDevice).toBe('mobile')
       expect(config.debug).toBe(true)
@@ -290,7 +294,7 @@ describe('TemplateManager', () => {
     it('应该返回配置副本', () => {
       const config1 = manager.getConfig()
       const config2 = manager.getConfig()
-      
+
       expect(config1).toEqual(config2)
       expect(config1).not.toBe(config2) // 不是同一个对象引用
     })

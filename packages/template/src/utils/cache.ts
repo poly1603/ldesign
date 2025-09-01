@@ -1,12 +1,12 @@
 /**
  * 缓存管理工具
- * 
+ *
  * 提供模板组件和配置的缓存功能
  */
 
 import type { Component } from 'vue'
+import type { StrictCacheStats } from '../types/strict-types'
 import type { TemplateMetadata } from '../types/template'
-import type { StrictCacheItem, StrictCacheStats } from '../types/strict-types'
 
 /**
  * 缓存项接口
@@ -48,7 +48,7 @@ class CacheManager<T> {
       maxSize: 100,
       defaultTTL: 30 * 60 * 1000, // 30分钟
       enableLRU: true,
-      ...options
+      ...options,
     }
   }
 
@@ -62,7 +62,7 @@ class CacheManager<T> {
       timestamp: now,
       ttl: ttl || this.options.defaultTTL,
       accessCount: 0,
-      lastAccessed: now
+      lastAccessed: now,
     }
 
     // 检查缓存大小限制
@@ -78,7 +78,8 @@ class CacheManager<T> {
    */
   get(key: string): T | null {
     const item = this.cache.get(key)
-    if (!item) return null
+    if (!item)
+      return null
 
     const now = Date.now()
 
@@ -139,7 +140,7 @@ class CacheManager<T> {
       maxSize: this.options.maxSize,
       expiredCount,
       totalAccess,
-      hitRate: totalAccess > 0 ? (totalSize / totalAccess) : 0
+      hitRate: totalAccess > 0 ? (totalSize / totalAccess) : 0,
     }
   }
 
@@ -164,7 +165,8 @@ class CacheManager<T> {
    * LRU淘汰策略
    */
   private evictLRU(): void {
-    if (!this.options.enableLRU || this.cache.size === 0) return
+    if (!this.options.enableLRU || this.cache.size === 0)
+      return
 
     let lruKey = ''
     let lruTime = Date.now()
@@ -190,7 +192,7 @@ export class ComponentCache extends CacheManager<Component> {
     super({
       maxSize: 50,
       defaultTTL: 60 * 60 * 1000, // 1小时
-      enableLRU: true
+      enableLRU: true,
     })
   }
 
@@ -208,7 +210,7 @@ export class ComponentCache extends CacheManager<Component> {
     category: string,
     device: string,
     templateName: string,
-    component: Component
+    component: Component,
   ): void {
     const key = this.generateKey(category, device, templateName)
     this.set(key, component)
@@ -220,7 +222,7 @@ export class ComponentCache extends CacheManager<Component> {
   getComponent(
     category: string,
     device: string,
-    templateName: string
+    templateName: string,
   ): Component | null {
     const key = this.generateKey(category, device, templateName)
     return this.get(key)
@@ -251,7 +253,7 @@ export class MetadataCache extends CacheManager<TemplateMetadata> {
     super({
       maxSize: 200,
       defaultTTL: 10 * 60 * 1000, // 10分钟
-      enableLRU: true
+      enableLRU: true,
     })
   }
 }
@@ -337,7 +339,7 @@ export class LRUCache<T> {
       timestamp: now,
       ttl: this.options.ttl,
       accessCount: 0,
-      lastAccessed: now
+      lastAccessed: now,
     }
 
     this.cache.set(key, item)
@@ -381,7 +383,8 @@ export class LRUCache<T> {
    */
   has(key: string): boolean {
     const item = this.cache.get(key)
-    if (!item) return false
+    if (!item)
+      return false
 
     // 检查TTL
     if (item.ttl && Date.now() - item.timestamp > item.ttl) {
@@ -428,7 +431,7 @@ export class LRUCache<T> {
       hits: this.stats.hits,
       misses: this.stats.misses,
       hitRate: total > 0 ? this.stats.hits / total : 0,
-      size: this.cache.size
+      size: this.cache.size,
     }
   }
 
@@ -453,8 +456,6 @@ export class LRUCache<T> {
   }
 }
 
-
-
 /**
  * 缓存工具函数
  */
@@ -470,20 +471,20 @@ export const cacheUtils = {
   /**
    * 获取所有缓存统计信息
    */
-  getAllStats(): { component: StrictCacheStats; metadata: StrictCacheStats } {
+  getAllStats(): { component: StrictCacheStats, metadata: StrictCacheStats } {
     return {
       component: componentCache.getStats(),
-      metadata: metadataCache.getStats()
+      metadata: metadataCache.getStats(),
     }
   },
 
   /**
    * 清理所有过期缓存
    */
-  cleanupAll(): { component: number; metadata: number } {
+  cleanupAll(): { component: number, metadata: number } {
     return {
       component: componentCache.cleanup(),
-      metadata: metadataCache.cleanup()
+      metadata: metadataCache.cleanup(),
     }
-  }
+  },
 }

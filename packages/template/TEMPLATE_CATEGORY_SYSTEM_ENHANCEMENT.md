@@ -190,8 +190,8 @@ const grouped = categoryManager.groupTemplates(templates, {
 ```typescript
 const categoryConfig = {
   categories: new Map(), // 分类信息映射
-  tags: new Map(),       // 标签信息映射
-  hierarchy: new Map(),  // 分类层次结构
+  tags: new Map(), // 标签信息映射
+  hierarchy: new Map(), // 分类层次结构
   defaultCategory: 'login',
   enabledCategories: new Set(),
   customCategories: new Map() // 自定义分类

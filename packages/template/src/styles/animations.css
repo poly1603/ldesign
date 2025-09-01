@@ -1,0 +1,330 @@
+/**
+ * 模板动画样式
+ * 提供统一的动画效果定义
+ */
+
+/* CSS变量定义 */
+:root {
+  --animation-duration: 250ms;
+  --animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-delay: 0ms;
+  
+  /* 动画距离 */
+  --slide-distance: 20px;
+  --scale-from: 0.95;
+  --scale-to: 1;
+  
+  /* 透明度 */
+  --opacity-from: 0;
+  --opacity-to: 1;
+}
+
+/* 基础过渡类 */
+.template-animation-base {
+  transition-duration: var(--animation-duration);
+  transition-timing-function: var(--animation-easing);
+  transition-delay: var(--animation-delay);
+}
+
+/* ===== 淡入淡出动画 ===== */
+.template-animation-fade-enter-active,
+.template-animation-fade-leave-active {
+  transition: opacity var(--animation-duration) var(--animation-easing);
+}
+
+.template-animation-fade-enter-from,
+.template-animation-fade-leave-to {
+  opacity: var(--opacity-from);
+}
+
+.template-animation-fade-enter-to,
+.template-animation-fade-leave-from {
+  opacity: var(--opacity-to);
+}
+
+/* ===== 滑动动画 ===== */
+/* 向下滑动 */
+.template-animation-slide-down-enter-active,
+.template-animation-slide-down-leave-active {
+  transition: all var(--animation-duration) var(--animation-easing);
+}
+
+.template-animation-slide-down-enter-from {
+  opacity: var(--opacity-from);
+  transform: translateY(calc(-1 * var(--slide-distance)));
+}
+
+.template-animation-slide-down-leave-to {
+  opacity: var(--opacity-from);
+  transform: translateY(var(--slide-distance));
+}
+
+.template-animation-slide-down-enter-to,
+.template-animation-slide-down-leave-from {
+  opacity: var(--opacity-to);
+  transform: translateY(0);
+}
+
+/* 向上滑动 */
+.template-animation-slide-up-enter-active,
+.template-animation-slide-up-leave-active {
+  transition: all var(--animation-duration) var(--animation-easing);
+}
+
+.template-animation-slide-up-enter-from {
+  opacity: var(--opacity-from);
+  transform: translateY(var(--slide-distance));
+}
+
+.template-animation-slide-up-leave-to {
+  opacity: var(--opacity-from);
+  transform: translateY(calc(-1 * var(--slide-distance)));
+}
+
+.template-animation-slide-up-enter-to,
+.template-animation-slide-up-leave-from {
+  opacity: var(--opacity-to);
+  transform: translateY(0);
+}
+
+/* 向左滑动 */
+.template-animation-slide-left-enter-active,
+.template-animation-slide-left-leave-active {
+  transition: all var(--animation-duration) var(--animation-easing);
+}
+
+.template-animation-slide-left-enter-from {
+  opacity: var(--opacity-from);
+  transform: translateX(var(--slide-distance));
+}
+
+.template-animation-slide-left-leave-to {
+  opacity: var(--opacity-from);
+  transform: translateX(calc(-1 * var(--slide-distance)));
+}
+
+.template-animation-slide-left-enter-to,
+.template-animation-slide-left-leave-from {
+  opacity: var(--opacity-to);
+  transform: translateX(0);
+}
+
+/* 向右滑动 */
+.template-animation-slide-right-enter-active,
+.template-animation-slide-right-leave-active {
+  transition: all var(--animation-duration) var(--animation-easing);
+}
+
+.template-animation-slide-right-enter-from {
+  opacity: var(--opacity-from);
+  transform: translateX(calc(-1 * var(--slide-distance)));
+}
+
+.template-animation-slide-right-leave-to {
+  opacity: var(--opacity-from);
+  transform: translateX(var(--slide-distance));
+}
+
+.template-animation-slide-right-enter-to,
+.template-animation-slide-right-leave-from {
+  opacity: var(--opacity-to);
+  transform: translateX(0);
+}
+
+/* ===== 缩放动画 ===== */
+.template-animation-scale-enter-active,
+.template-animation-scale-leave-active {
+  transition: all var(--animation-duration) var(--animation-easing);
+}
+
+.template-animation-scale-enter-from,
+.template-animation-scale-leave-to {
+  opacity: var(--opacity-from);
+  transform: scale(var(--scale-from));
+}
+
+.template-animation-scale-enter-to,
+.template-animation-scale-leave-from {
+  opacity: var(--opacity-to);
+  transform: scale(var(--scale-to));
+}
+
+/* ===== 滑动+淡入淡出组合动画 ===== */
+.template-animation-slide-fade-down-enter-active,
+.template-animation-slide-fade-down-leave-active {
+  transition: all var(--animation-duration) var(--animation-easing);
+}
+
+.template-animation-slide-fade-down-enter-from {
+  opacity: var(--opacity-from);
+  transform: translateY(calc(-1 * var(--slide-distance)));
+}
+
+.template-animation-slide-fade-down-leave-to {
+  opacity: var(--opacity-from);
+  transform: translateY(var(--slide-distance));
+}
+
+.template-animation-slide-fade-down-enter-to,
+.template-animation-slide-fade-down-leave-from {
+  opacity: var(--opacity-to);
+  transform: translateY(0);
+}
+
+/* ===== 缩放+淡入淡出组合动画 ===== */
+.template-animation-scale-fade-enter-active,
+.template-animation-scale-fade-leave-active {
+  transition: all var(--animation-duration) var(--animation-easing);
+  transform-origin: center top;
+}
+
+.template-animation-scale-fade-enter-from,
+.template-animation-scale-fade-leave-to {
+  opacity: var(--opacity-from);
+  transform: scale(var(--scale-from)) translateY(calc(-1 * var(--slide-distance) / 2));
+}
+
+.template-animation-scale-fade-enter-to,
+.template-animation-scale-fade-leave-from {
+  opacity: var(--opacity-to);
+  transform: scale(var(--scale-to)) translateY(0);
+}
+
+/* ===== 模板选择器专用样式 ===== */
+.template-selector-modal {
+  --animation-duration: 250ms;
+  --animation-easing: cubic-bezier(0.25, 0.8, 0.25, 1);
+  --scale-from: 0.95;
+  --slide-distance: 10px;
+}
+
+/* 模板选择器模态框动画 */
+.template-selector-modal-enter-active,
+.template-selector-modal-leave-active {
+  transition: all var(--animation-duration) var(--animation-easing);
+}
+
+.template-selector-modal-enter-from,
+.template-selector-modal-leave-to {
+  opacity: 0;
+}
+
+.template-selector-modal-enter-to,
+.template-selector-modal-leave-from {
+  opacity: 1;
+}
+
+/* 背景遮罩动画 */
+.template-selector-modal__backdrop {
+  --animation-duration: 200ms;
+  --animation-easing: ease-out;
+  transition: opacity var(--animation-duration) var(--animation-easing);
+}
+
+/* 内容区域动画 */
+.template-selector-modal__content {
+  --animation-duration: 250ms;
+  --animation-easing: cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform-origin: center top;
+  transition: all var(--animation-duration) var(--animation-easing);
+}
+
+.template-selector-modal-enter-from .template-selector-modal__content,
+.template-selector-modal-leave-to .template-selector-modal__content {
+  opacity: 0;
+  transform: scale(0.95) translateY(-20px);
+}
+
+.template-selector-modal-enter-to .template-selector-modal__content,
+.template-selector-modal-leave-from .template-selector-modal__content {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* 模板选择器触发按钮样式 */
+.template-selector-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  color: #495057;
+}
+
+.template-selector-trigger:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.template-selector-trigger__icon {
+  font-size: 1rem;
+}
+
+.template-selector-trigger__text {
+  font-weight: 500;
+}
+
+.template-selector-trigger__arrow {
+  transition: transform 0.2s ease;
+  font-size: 0.75rem;
+  color: #6c757d;
+}
+
+.template-selector-trigger__arrow--open {
+  transform: rotate(180deg);
+}
+
+/* ===== 模板内容切换专用样式 ===== */
+.template-content-transition {
+  --animation-duration: 300ms;
+  --animation-easing: ease-in-out;
+  --slide-distance: 30px;
+}
+
+/* ===== 响应式动画调整 ===== */
+@media (max-width: 768px) {
+  :root {
+    --animation-duration: 200ms;
+    --slide-distance: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --animation-duration: 150ms;
+    --slide-distance: 10px;
+  }
+}
+
+/* ===== 减少动画偏好设置 ===== */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --animation-duration: 0ms;
+    --animation-delay: 0ms;
+  }
+  
+  .template-animation-fade-enter-active,
+  .template-animation-fade-leave-active,
+  .template-animation-slide-down-enter-active,
+  .template-animation-slide-down-leave-active,
+  .template-animation-slide-up-enter-active,
+  .template-animation-slide-up-leave-active,
+  .template-animation-slide-left-enter-active,
+  .template-animation-slide-left-leave-active,
+  .template-animation-slide-right-enter-active,
+  .template-animation-slide-right-leave-active,
+  .template-animation-scale-enter-active,
+  .template-animation-scale-leave-active,
+  .template-animation-slide-fade-down-enter-active,
+  .template-animation-slide-fade-down-leave-active,
+  .template-animation-scale-fade-enter-active,
+  .template-animation-scale-fade-leave-active {
+    transition: none !important;
+  }
+}

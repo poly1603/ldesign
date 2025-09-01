@@ -16,36 +16,36 @@ const config: TemplateConfig = {
   props: {
     title: {
       type: String,
-      default: '用户登录'
+      default: '用户登录',
     },
     subtitle: {
       type: String,
-      default: '欢迎回来，请登录您的账户'
+      default: '欢迎回来，请登录您的账户',
     },
     showRemember: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showRegister: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showForgot: {
       type: Boolean,
-      default: true
+      default: true,
     },
     logoUrl: {
       type: String,
-      default: ''
+      default: '',
     },
     backgroundImage: {
       type: String,
-      default: ''
+      default: '',
     },
     primaryColor: {
       type: String,
-      default: '#667eea'
-    }
+      default: '#667eea',
+    },
   },
   slots: ['header', 'footer', 'extra', 'logo'],
   dependencies: [],
@@ -64,12 +64,12 @@ const config: TemplateConfig = {
     '自定义背景',
     '无障碍访问优化',
     '企业级安全',
-    '专业视觉风格'
+    '专业视觉风格',
   ],
   screenshots: [
     './screenshot-1.png',
-    './screenshot-2.png'
-  ]
+    './screenshot-2.png',
+  ],
 }
 
 export default config

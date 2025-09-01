@@ -3,14 +3,14 @@
  * 提供配置的加载、验证、更新和监听功能
  */
 
-import { reactive, watch } from 'vue'
 import type {
-  TemplateSystemConfig,
-  ConfigManager,
-  ConfigValidationResult,
   ConfigListener,
-  ConfigUpdateEvent
+  ConfigManager,
+  ConfigUpdateEvent,
+  ConfigValidationResult,
+  TemplateSystemConfig,
 } from '../types/config'
+import { reactive, watch } from 'vue'
 import { defaultConfig, mergeConfig } from './default.config'
 
 /**
@@ -34,7 +34,8 @@ export class TemplateConfigManager implements ConfigManager {
       console.log('[TemplateConfigManager] Setting up config watcher...')
       this.setupConfigWatcher()
       console.log('[TemplateConfigManager] Constructor completed successfully')
-    } catch (error) {
+    }
+    catch (error) {
       console.error('[TemplateConfigManager] Error in constructor:', error)
       throw error
     }
@@ -50,7 +51,7 @@ export class TemplateConfigManager implements ConfigManager {
         // 深度比较配置变化
         this.notifyConfigChange('', oldConfig, newConfig)
       },
-      { deep: true }
+      { deep: true },
     )
 
     this.watchStoppers.push(stopWatcher)
@@ -64,13 +65,14 @@ export class TemplateConfigManager implements ConfigManager {
       path,
       oldValue,
       newValue,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
 
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener) => {
       try {
         listener(event)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('配置监听器执行错误:', error)
       }
     })
@@ -224,7 +226,7 @@ export class TemplateConfigManager implements ConfigManager {
       valid: errors.length === 0,
       errors,
       warnings,
-      fixedConfig: errors.length === 0 ? config as TemplateSystemConfig : undefined
+      fixedConfig: errors.length === 0 ? config as TemplateSystemConfig : undefined,
     }
   }
 
@@ -260,7 +262,8 @@ export class TemplateConfigManager implements ConfigManager {
       if (this.config.debug) {
         console.log(`已从文件加载配置: ${filePath}`)
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`加载配置文件失败: ${error}`)
     }
   }
@@ -283,16 +286,18 @@ export default ${JSON.stringify(this.config, null, 2)}
         a.download = filePath.split('/').pop() || 'template.config.js'
         a.click()
         URL.revokeObjectURL(url)
-      } else {
+      }
+      else {
         // Node.js 环境中的文件写入逻辑
-        const fs = await import('fs/promises')
+        const fs = await import('node:fs/promises')
         await fs.writeFile(filePath, configContent, 'utf-8')
       }
 
       if (this.config.debug) {
         console.log(`配置已保存到文件: ${filePath}`)
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`保存配置文件失败: ${error}`)
     }
   }
@@ -331,7 +336,8 @@ export function getConfigManager(initialConfig?: Partial<TemplateSystemConfig>):
       console.log('[ConfigManager] Creating new TemplateConfigManager')
       globalConfigManager = new TemplateConfigManager(initialConfig)
       console.log('[ConfigManager] TemplateConfigManager created successfully:', globalConfigManager)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('[ConfigManager] Error creating TemplateConfigManager:', error)
       throw error
     }

@@ -4,16 +4,16 @@
  */
 
 import type {
-  TemplateCategory,
-  TemplateTag,
   CategoryInfo,
-  TagInfo,
-  TemplateCategoryConfig,
   ExtendedTemplateMetadata,
+  TagInfo,
+  TemplateCategory,
+  TemplateCategoryConfig,
+  TemplateCategoryManager,
   TemplateFilter,
-  TemplateSortOptions,
   TemplateGroupOptions,
-  TemplateCategoryManager
+  TemplateSortOptions,
+  TemplateTag,
 } from '../types/template-categories'
 
 /**
@@ -29,7 +29,7 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
       hierarchy: new Map(),
       defaultCategory: 'login' as TemplateCategory,
       enabledCategories: new Set(),
-      ...config
+      ...config,
     }
 
     // 初始化默认分类和标签
@@ -42,10 +42,10 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
   private initializeDefaults(): void {
     // 初始化默认分类
     this.initializeDefaultCategories()
-    
+
     // 初始化默认标签
     this.initializeDefaultTags()
-    
+
     // 构建分类层次结构
     this.buildCategoryHierarchy()
   }
@@ -65,7 +65,7 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
         defaultTags: ['responsive', 'accessible'] as TemplateTag[],
         supportedDevices: ['desktop', 'tablet', 'mobile'],
         priority: 4,
-        enabled: true
+        enabled: true,
       },
       {
         id: 'login' as TemplateCategory,
@@ -76,7 +76,7 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
         defaultTags: ['responsive', 'accessible', 'professional'] as TemplateTag[],
         supportedDevices: ['desktop', 'tablet', 'mobile'],
         priority: 4,
-        enabled: true
+        enabled: true,
       },
       {
         id: 'register' as TemplateCategory,
@@ -87,7 +87,7 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
         defaultTags: ['responsive', 'accessible'] as TemplateTag[],
         supportedDevices: ['desktop', 'tablet', 'mobile'],
         priority: 3,
-        enabled: true
+        enabled: true,
       },
 
       // 仪表板相关
@@ -100,7 +100,7 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
         defaultTags: ['responsive', 'interactive', 'professional'] as TemplateTag[],
         supportedDevices: ['desktop', 'tablet'],
         priority: 4,
-        enabled: true
+        enabled: true,
       },
       {
         id: 'overview' as TemplateCategory,
@@ -111,7 +111,7 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
         defaultTags: ['responsive', 'interactive'] as TemplateTag[],
         supportedDevices: ['desktop', 'tablet'],
         priority: 3,
-        enabled: true
+        enabled: true,
       },
 
       // 用户管理
@@ -124,7 +124,7 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
         defaultTags: ['responsive', 'accessible'] as TemplateTag[],
         supportedDevices: ['desktop', 'tablet', 'mobile'],
         priority: 3,
-        enabled: true
+        enabled: true,
       },
       {
         id: 'profile' as TemplateCategory,
@@ -135,7 +135,7 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
         defaultTags: ['responsive', 'accessible'] as TemplateTag[],
         supportedDevices: ['desktop', 'tablet', 'mobile'],
         priority: 3,
-        enabled: true
+        enabled: true,
       },
 
       // 表单相关
@@ -148,7 +148,7 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
         defaultTags: ['responsive', 'accessible'] as TemplateTag[],
         supportedDevices: ['desktop', 'tablet', 'mobile'],
         priority: 3,
-        enabled: true
+        enabled: true,
       },
 
       // 通用组件
@@ -161,7 +161,7 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
         defaultTags: ['responsive', 'accessible', 'reusable'] as TemplateTag[],
         supportedDevices: ['desktop', 'tablet', 'mobile'],
         priority: 2,
-        enabled: true
+        enabled: true,
       },
 
       // 错误页面
@@ -174,12 +174,12 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
         defaultTags: ['responsive', 'accessible'] as TemplateTag[],
         supportedDevices: ['desktop', 'tablet', 'mobile'],
         priority: 2,
-        enabled: true
-      }
+        enabled: true,
+      },
     ]
 
     // 添加到配置中
-    defaultCategories.forEach(category => {
+    defaultCategories.forEach((category) => {
       this.config.categories.set(category.id, category)
       this.config.enabledCategories.add(category.id)
     })
@@ -216,11 +216,11 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
 
       // 复杂度
       { id: 'simple' as TemplateTag, name: '简单', description: '简单易用', color: '#22c55e', group: '复杂度' },
-      { id: 'advanced' as TemplateTag, name: '高级', description: '功能丰富复杂', color: '#ef4444', group: '复杂度' }
+      { id: 'advanced' as TemplateTag, name: '高级', description: '功能丰富复杂', color: '#ef4444', group: '复杂度' },
     ]
 
     // 添加到配置中
-    defaultTags.forEach(tag => {
+    defaultTags.forEach((tag) => {
       this.config.tags.set(tag.id, tag)
     })
   }
@@ -261,7 +261,7 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
    * 搜索和过滤模板
    */
   filterTemplates(templates: ExtendedTemplateMetadata[], filter: TemplateFilter): ExtendedTemplateMetadata[] {
-    return templates.filter(template => {
+    return templates.filter((template) => {
       // 分类过滤
       if (filter.categories && filter.categories.length > 0) {
         if (!filter.categories.includes(template.category)) {
@@ -352,7 +352,7 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
   groupTemplates(templates: ExtendedTemplateMetadata[], options: TemplateGroupOptions): Map<string, ExtendedTemplateMetadata[]> {
     const groups = new Map<string, ExtendedTemplateMetadata[]>()
 
-    templates.forEach(template => {
+    templates.forEach((template) => {
       let groupKey: string
 
       switch (options.field) {
@@ -367,7 +367,7 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
           break
         case 'tag':
           // 为每个标签创建一个分组
-          template.tags.forEach(tag => {
+          template.tags.forEach((tag) => {
             if (!groups.has(tag)) {
               groups.set(tag, [])
             }

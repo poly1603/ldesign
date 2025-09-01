@@ -39,14 +39,14 @@
   margin: 16px;
 }
 
-/* TemplateSelector 样式 */
+/* TemplateSelector 样式 - 使用统一的z-index管理 */
 .template-selector {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 1000;
+  /* z-index 由 z-index.css 统一管理 */
   display: flex;
   align-items: center;
   justify-content: center;

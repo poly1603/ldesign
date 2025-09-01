@@ -12,18 +12,21 @@ function getEnvValue<T>(key: string, defaultValue: T, parser?: (value: string) =
   // 安全地访问环境变量，避免在浏览器环境中出错
   let envValue: string | undefined
   try {
-    envValue = (typeof process !== 'undefined' && process.env ? process.env[key] : undefined) ||
-      (typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env[key] : undefined)
-  } catch {
+    envValue = (typeof process !== 'undefined' && process.env ? process.env[key] : undefined)
+      || (typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env[key] : undefined)
+  }
+  catch {
     envValue = undefined
   }
 
-  if (!envValue) return defaultValue
+  if (!envValue)
+    return defaultValue
 
   if (parser) {
     try {
       return parser(envValue)
-    } catch {
+    }
+    catch {
       return defaultValue
     }
   }
@@ -50,7 +53,8 @@ function parseBooleanEnv(value: string): boolean {
  */
 function parseNumberEnv(value: string): number {
   const num = Number(value)
-  if (isNaN(num)) throw new Error(`Invalid number: ${value}`)
+  if (isNaN(num))
+    throw new Error(`Invalid number: ${value}`)
   return num
 }
 
@@ -82,7 +86,7 @@ export const defaultConfig: TemplateSystemConfig = {
     enableCache: getEnvValue('TEMPLATE_SCANNER_CACHE', true, parseBooleanEnv),
     watchMode: getEnvValue('TEMPLATE_SCANNER_WATCH', import.meta.env?.DEV ?? false, parseBooleanEnv),
     debounceDelay: getEnvValue('TEMPLATE_SCANNER_DEBOUNCE', 300, parseNumberEnv),
-    batchSize: getEnvValue('TEMPLATE_SCANNER_BATCH_SIZE', 10, parseNumberEnv)
+    batchSize: getEnvValue('TEMPLATE_SCANNER_BATCH_SIZE', 10, parseNumberEnv),
   },
 
   // 缓存配置
@@ -94,7 +98,7 @@ export const defaultConfig: TemplateSystemConfig = {
     checkPeriod: getEnvValue('TEMPLATE_CACHE_CHECK_PERIOD', 5 * 60 * 1000, parseNumberEnv), // 5分钟
     enableCompression: getEnvValue('TEMPLATE_CACHE_COMPRESSION', false, parseBooleanEnv),
     enablePersistence: getEnvValue('TEMPLATE_CACHE_PERSISTENCE', false, parseBooleanEnv),
-    persistenceKey: getEnvValue('TEMPLATE_CACHE_PERSISTENCE_KEY', 'ldesign_template_cache')
+    persistenceKey: getEnvValue('TEMPLATE_CACHE_PERSISTENCE_KEY', 'ldesign_template_cache'),
   },
 
   // 设备检测配置
@@ -102,12 +106,12 @@ export const defaultConfig: TemplateSystemConfig = {
     breakpoints: {
       mobile: getEnvValue('TEMPLATE_BREAKPOINT_MOBILE', 768, parseNumberEnv),
       tablet: getEnvValue('TEMPLATE_BREAKPOINT_TABLET', 992, parseNumberEnv),
-      desktop: getEnvValue('TEMPLATE_BREAKPOINT_DESKTOP', 1200, parseNumberEnv)
+      desktop: getEnvValue('TEMPLATE_BREAKPOINT_DESKTOP', 1200, parseNumberEnv),
     },
     debounceDelay: getEnvValue('TEMPLATE_DEVICE_DEBOUNCE', 300, parseNumberEnv),
     enableResize: getEnvValue('TEMPLATE_DEVICE_RESIZE', true, parseBooleanEnv),
     enableOrientation: getEnvValue('TEMPLATE_DEVICE_ORIENTATION', true, parseBooleanEnv),
-    customDetector: undefined as any // 运行时设置
+    customDetector: undefined as any, // 运行时设置
   },
 
   // 预加载策略配置
@@ -118,9 +122,9 @@ export const defaultConfig: TemplateSystemConfig = {
     priority: getEnvValue('TEMPLATE_PRELOAD_PRIORITY', [], parseJsonEnv),
     intersection: {
       rootMargin: getEnvValue('TEMPLATE_PRELOAD_ROOT_MARGIN', '50px'),
-      threshold: getEnvValue('TEMPLATE_PRELOAD_THRESHOLD', 0.1, parseNumberEnv)
+      threshold: getEnvValue('TEMPLATE_PRELOAD_THRESHOLD', 0.1, parseNumberEnv),
     },
-    delay: getEnvValue('TEMPLATE_PRELOAD_DELAY', 1000, parseNumberEnv)
+    delay: getEnvValue('TEMPLATE_PRELOAD_DELAY', 1000, parseNumberEnv),
   },
 
   // 加载器配置
@@ -129,7 +133,7 @@ export const defaultConfig: TemplateSystemConfig = {
     retryCount: getEnvValue('TEMPLATE_LOADER_RETRY_COUNT', 3, parseNumberEnv),
     retryDelay: getEnvValue('TEMPLATE_LOADER_RETRY_DELAY', 1000, parseNumberEnv),
     enableParallel: getEnvValue('TEMPLATE_LOADER_PARALLEL', true, parseBooleanEnv),
-    maxConcurrent: getEnvValue('TEMPLATE_LOADER_MAX_CONCURRENT', 5, parseNumberEnv)
+    maxConcurrent: getEnvValue('TEMPLATE_LOADER_MAX_CONCURRENT', 5, parseNumberEnv),
   },
 
   // 模板文件命名约定
@@ -139,7 +143,7 @@ export const defaultConfig: TemplateSystemConfig = {
     styleFile: getEnvValue('TEMPLATE_STYLE_FILE', 'style.{css,less,scss}'),
     previewFile: getEnvValue('TEMPLATE_PREVIEW_FILE', 'preview.{png,jpg,jpeg,webp}'),
     allowedConfigExtensions: getEnvValue('TEMPLATE_CONFIG_EXTENSIONS', ['.js', '.ts'], parseJsonEnv),
-    allowedStyleExtensions: getEnvValue('TEMPLATE_STYLE_EXTENSIONS', ['.css', '.less', '.scss'], parseJsonEnv)
+    allowedStyleExtensions: getEnvValue('TEMPLATE_STYLE_EXTENSIONS', ['.css', '.less', '.scss'], parseJsonEnv),
   },
 
   // 性能优化配置
@@ -148,7 +152,7 @@ export const defaultConfig: TemplateSystemConfig = {
     enableVirtualScroll: getEnvValue('TEMPLATE_VIRTUAL_SCROLL', false, parseBooleanEnv),
     chunkSize: getEnvValue('TEMPLATE_CHUNK_SIZE', 20, parseNumberEnv),
     enableMetrics: getEnvValue('TEMPLATE_METRICS', import.meta.env?.DEV ?? false, parseBooleanEnv),
-    metricsInterval: getEnvValue('TEMPLATE_METRICS_INTERVAL', 5000, parseNumberEnv)
+    metricsInterval: getEnvValue('TEMPLATE_METRICS_INTERVAL', 5000, parseNumberEnv),
   },
 
   // 错误处理配置
@@ -158,7 +162,7 @@ export const defaultConfig: TemplateSystemConfig = {
     maxRetries: getEnvValue('TEMPLATE_ERROR_MAX_RETRIES', 3, parseNumberEnv),
     enableFallback: getEnvValue('TEMPLATE_ERROR_FALLBACK', true, parseBooleanEnv),
     fallbackTemplate: getEnvValue('TEMPLATE_ERROR_FALLBACK_TEMPLATE', 'error'),
-    enableReporting: getEnvValue('TEMPLATE_ERROR_REPORTING', false, parseBooleanEnv)
+    enableReporting: getEnvValue('TEMPLATE_ERROR_REPORTING', false, parseBooleanEnv),
   },
 
   // 开发工具配置
@@ -167,8 +171,8 @@ export const defaultConfig: TemplateSystemConfig = {
     enableInspector: getEnvValue('TEMPLATE_INSPECTOR', import.meta.env?.DEV ?? false, parseBooleanEnv),
     enableLogger: getEnvValue('TEMPLATE_LOGGER', import.meta.env?.DEV ?? false, parseBooleanEnv),
     logLevel: getEnvValue('TEMPLATE_LOG_LEVEL', 'info' as const),
-    enableTimeline: getEnvValue('TEMPLATE_TIMELINE', import.meta.env?.DEV ?? false, parseBooleanEnv)
-  }
+    enableTimeline: getEnvValue('TEMPLATE_TIMELINE', import.meta.env?.DEV ?? false, parseBooleanEnv),
+  },
 }
 
 /**
@@ -187,47 +191,47 @@ export function mergeConfig(userConfig: Partial<TemplateSystemConfig>): Template
     ...userConfig,
     scanner: {
       ...defaultConfig.scanner,
-      ...userConfig.scanner
+      ...userConfig.scanner,
     },
     cache: {
       ...defaultConfig.cache,
-      ...userConfig.cache
+      ...userConfig.cache,
     },
     deviceDetection: {
       ...defaultConfig.deviceDetection,
       ...userConfig.deviceDetection,
       breakpoints: {
         ...defaultConfig.deviceDetection.breakpoints,
-        ...userConfig.deviceDetection?.breakpoints
-      }
+        ...userConfig.deviceDetection?.breakpoints,
+      },
     },
     preloadStrategy: {
       ...defaultConfig.preloadStrategy,
       ...userConfig.preloadStrategy,
       intersection: {
         ...defaultConfig.preloadStrategy.intersection,
-        ...userConfig.preloadStrategy?.intersection
-      }
+        ...userConfig.preloadStrategy?.intersection,
+      },
     },
     loader: {
       ...defaultConfig.loader,
-      ...userConfig.loader
+      ...userConfig.loader,
     },
     fileNaming: {
       ...defaultConfig.fileNaming,
-      ...userConfig.fileNaming
+      ...userConfig.fileNaming,
     },
     performance: {
       ...defaultConfig.performance,
-      ...userConfig.performance
+      ...userConfig.performance,
     },
     errorHandling: {
       ...defaultConfig.errorHandling,
-      ...userConfig.errorHandling
+      ...userConfig.errorHandling,
     },
     devtools: {
       ...defaultConfig.devtools,
-      ...userConfig.devtools
-    }
+      ...userConfig.devtools,
+    },
   }
 }

@@ -2,10 +2,9 @@
  * 模板扫描器测试
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import type { ScannerOptions } from '../src/scanner/types'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TemplateScanner } from '../src/scanner'
-import type { ScannerOptions, ScanResult } from '../src/scanner/types'
-import type { TemplateMetadata, DeviceType } from '../src/types/template'
 
 // 模拟文件系统
 const mockFs = {
@@ -16,8 +15,8 @@ const mockFs = {
   promises: {
     readdir: vi.fn(),
     stat: vi.fn(),
-    readFile: vi.fn()
-  }
+    readFile: vi.fn(),
+  },
 }
 
 vi.mock('fs', () => mockFs)
@@ -26,19 +25,19 @@ vi.mock('node:fs', () => mockFs)
 // 模拟路径操作
 const mockPath = {
   join: vi.fn((...args) => args.join('/')),
-  resolve: vi.fn((...args) => '/' + args.join('/')),
+  resolve: vi.fn((...args) => `/${args.join('/')}`),
   dirname: vi.fn(p => p.split('/').slice(0, -1).join('/')),
   basename: vi.fn(p => p.split('/').pop()),
-  extname: vi.fn(p => {
+  extname: vi.fn((p) => {
     const parts = p.split('.')
-    return parts.length > 1 ? '.' + parts.pop() : ''
-  })
+    return parts.length > 1 ? `.${parts.pop()}` : ''
+  }),
 }
 
 vi.mock('path', () => mockPath)
 vi.mock('node:path', () => mockPath)
 
-describe('TemplateScanner', () => {
+describe('templateScanner', () => {
   let scanner: TemplateScanner
   let mockOptions: ScannerOptions
   let mockCallbacks: any
@@ -57,14 +56,14 @@ describe('TemplateScanner', () => {
       excludePatterns: ['node_modules', '.git', 'dist'],
       watchMode: false,
       debounceDelay: 300,
-      batchSize: 10
+      batchSize: 10,
     }
 
     // 设置回调函数
     mockCallbacks = {
       onScanComplete: vi.fn(),
       onScanError: vi.fn(),
-      onTemplateFound: vi.fn()
+      onTemplateFound: vi.fn(),
     }
 
     // 模拟文件系统结构
@@ -72,13 +71,13 @@ describe('TemplateScanner', () => {
     mockFs.readdirSync.mockReturnValue([
       'login',
       'dashboard',
-      'user'
+      'user',
     ])
-    
+
     mockFs.statSync.mockReturnValue({
       isDirectory: () => true,
       isFile: () => false,
-      mtime: new Date()
+      mtime: new Date(),
     })
 
     // 创建扫描器实例
@@ -94,7 +93,7 @@ describe('TemplateScanner', () => {
   describe('构造函数', () => {
     it('应该使用默认选项创建扫描器', () => {
       const defaultScanner = new TemplateScanner({
-        templatesDir: 'test/templates'
+        templatesDir: 'test/templates',
       })
 
       expect(defaultScanner).toBeDefined()
@@ -109,7 +108,7 @@ describe('TemplateScanner', () => {
         enableCache: false,
         maxDepth: 3,
         includeExtensions: ['.vue'],
-        excludePatterns: ['test']
+        excludePatterns: ['test'],
       }
 
       const customScanner = new TemplateScanner(customOptions)
@@ -127,9 +126,9 @@ describe('TemplateScanner', () => {
     beforeEach(() => {
       // 模拟模板目录结构
       const mockDirectoryStructure = {
-        'login': ['desktop', 'tablet', 'mobile'],
-        'dashboard': ['desktop', 'tablet'],
-        'user': ['desktop']
+        login: ['desktop', 'tablet', 'mobile'],
+        dashboard: ['desktop', 'tablet'],
+        user: ['desktop'],
       }
 
       mockFs.readdirSync.mockImplementation((path: string) => {
@@ -137,13 +136,13 @@ describe('TemplateScanner', () => {
         if (pathStr.includes('templates')) {
           return Object.keys(mockDirectoryStructure)
         }
-        
+
         for (const [category, devices] of Object.entries(mockDirectoryStructure)) {
           if (pathStr.includes(category)) {
             return devices
           }
         }
-        
+
         return ['default']
       })
 
@@ -206,12 +205,12 @@ describe('TemplateScanner', () => {
     it('应该启用缓存时使用缓存', async () => {
       const scannerWithCache = new TemplateScanner({
         ...mockOptions,
-        enableCache: true
+        enableCache: true,
       })
 
       // 第一次扫描
       await scannerWithCache.scan()
-      
+
       // 第二次扫描应该使用缓存
       await scannerWithCache.scan()
 
@@ -225,12 +224,12 @@ describe('TemplateScanner', () => {
 
     it('应该能够清除缓存', async () => {
       await scanner.scan()
-      
+
       scanner.clearCache()
-      
+
       // 清除缓存后再次扫描应该重新读取文件
       await scanner.scan()
-      
+
       expect(mockFs.readdirSync).toHaveBeenCalled()
     })
   })
@@ -245,7 +244,7 @@ describe('TemplateScanner', () => {
       const filter = {
         categories: ['login'],
         tags: ['modern'],
-        keyword: '登录'
+        keyword: '登录',
       }
 
       const results = scanner.searchTemplates(filter)
@@ -256,7 +255,7 @@ describe('TemplateScanner', () => {
       const templates = scanner.getAllTemplates()
       const sortedTemplates = scanner.sortTemplates(templates, {
         field: 'name',
-        direction: 'asc'
+        direction: 'asc',
       })
 
       expect(Array.isArray(sortedTemplates)).toBe(true)
@@ -278,7 +277,7 @@ describe('TemplateScanner', () => {
     it('应该能够启动文件监听', async () => {
       const watchScanner = new TemplateScanner({
         ...mockOptions,
-        watchMode: true
+        watchMode: true,
       })
 
       await watchScanner.startWatching()
@@ -291,7 +290,7 @@ describe('TemplateScanner', () => {
     it('应该处理文件变化事件', async () => {
       const watchScanner = new TemplateScanner({
         ...mockOptions,
-        watchMode: true
+        watchMode: true,
       })
 
       await watchScanner.startWatching()

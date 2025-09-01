@@ -311,14 +311,15 @@ console.log('缓存命中率:', cacheStats.hitRate)
 ```typescript
 try {
   const result = await scanner.scan()
-  
+
   if (result.errors.length > 0) {
     console.warn('扫描过程中发现错误:')
-    result.errors.forEach(error => {
+    result.errors.forEach((error) => {
       console.warn(`- ${error.path}: ${error.message}`)
     })
   }
-} catch (error) {
+}
+catch (error) {
   console.error('扫描失败:', error)
 }
 ```

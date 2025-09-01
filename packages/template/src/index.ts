@@ -14,14 +14,14 @@ export * from './components'
 // 导出Hook函数
 export * from './composables'
 
+// 导出配置系统
+export * from './config'
+
 // 导出Vue3插件
-export { getPluginOptions, getPluginState, getScanner, getConfigManager, createTemplateEnginePlugin, default as TemplatePlugin } from './plugin'
+export { createTemplateEnginePlugin, getConfigManager, getPluginOptions, getPluginState, getScanner, default as TemplatePlugin } from './plugin'
 
 // 默认导出插件
 export { default } from './plugin'
-
-// 导出配置系统
-export * from './config'
 
 // 导出扫描器
 export * from './scanner'

@@ -101,24 +101,24 @@ vi.mock('vue', async () => {
   }
 })
 
-  // Global test utilities
-  ; (global as any).createMockTemplate = (overrides = {}) => ({
-    category: 'login',
-    device: 'desktop',
-    template: 'classic',
-    name: 'Classic Login',
-    description: 'A classic login template',
-    path: '../templates/login/desktop/classic/index.vue',
-    componentPath: '../templates/login/desktop/classic/index.vue',
-    tags: ['login', 'desktop'],
-    recommended: true,
-    ...overrides,
-  })
+// Global test utilities
+; (global as any).createMockTemplate = (overrides = {}) => ({
+  category: 'login',
+  device: 'desktop',
+  template: 'classic',
+  name: 'Classic Login',
+  description: 'A classic login template',
+  path: '../templates/login/desktop/classic/index.vue',
+  componentPath: '../templates/login/desktop/classic/index.vue',
+  tags: ['login', 'desktop'],
+  recommended: true,
+  ...overrides,
+})
 
-  ; (global as any).createMockComponent = () => ({
-    name: 'MockComponent',
-    setup: () => () => ({ tag: 'div', props: {}, children: 'Mock Component' }),
-  })
+; (global as any).createMockComponent = () => ({
+  name: 'MockComponent',
+  setup: () => () => ({ tag: 'div', props: {}, children: 'Mock Component' }),
+})
 
 beforeEach(() => {
   vi.useFakeTimers()

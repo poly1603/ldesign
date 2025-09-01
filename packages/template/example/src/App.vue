@@ -1,3 +1,7 @@
+<script setup lang="ts">
+// 简化的App组件，不包含任何业务逻辑
+</script>
+
 <template>
   <div id="app">
     <!-- 简化的导航栏 -->
@@ -36,23 +40,21 @@
   </div>
 </template>
 
-<script setup lang="ts">
-// 简化的App组件，不包含任何业务逻辑
-</script>
-
 <style scoped>
-/* 简化的全局样式 */
+/* 使用简化设计系统的全局样式 */
 #app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #333;
-  background: #f8f9fa;
+  font-family: var(--font-family-sans);
+  color: var(--color-gray-700);
+  background: var(--color-gray-50);
 }
 
 /* 简化的导航栏样式 */
 .navbar {
+  position: relative;
+  z-index: 200; /* 确保导航栏在内容之上，但在模态框之下 */
   background: white;
   border-bottom: 1px solid #e9ecef;
   padding: 1rem 0;
@@ -62,85 +64,87 @@
 .nav-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 var(--spacing-8);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
+  gap: var(--spacing-8);
 }
 
 .nav-brand h1 {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #495057;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-800);
 }
 
 .nav-links {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--spacing-2);
   align-items: center;
 }
 
 .nav-link {
   text-decoration: none;
-  color: #6c757d;
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  color: var(--color-gray-600);
+  font-weight: var(--font-weight-medium);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-base);
+  transition: all var(--transition-fast);
   border: 1px solid transparent;
+  font-size: var(--font-size-sm);
 }
 
 .nav-link:hover {
-  background: #f8f9fa;
-  color: #495057;
-  border-color: #dee2e6;
+  background: var(--color-gray-100);
+  color: var(--color-gray-700);
+  border-color: var(--color-gray-200);
 }
 
 .nav-link.router-link-active {
-  background: #007bff;
-  color: white;
-  border-color: #007bff;
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary);
 }
 
 /* 简化的主要内容区域 */
 .main-content {
   flex: 1;
-  padding: 2rem 0;
+  padding: var(--spacing-8) 0;
 }
 
 /* 简化的页脚样式 */
 .footer {
-  background: #343a40;
-  color: white;
-  padding: 1.5rem 0;
+  background: var(--color-gray-800);
+  color: var(--color-white);
+  padding: var(--spacing-6) 0;
   margin-top: auto;
 }
 
 .footer-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 var(--spacing-8);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
+  gap: var(--spacing-4);
 }
 
 .footer-links {
   display: flex;
-  gap: 1.5rem;
+  gap: var(--spacing-6);
 }
 
 .footer-links a {
-  color: #adb5bd;
+  color: var(--color-gray-400);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color var(--transition-fast);
+  font-size: var(--font-size-sm);
 }
 
 .footer-links a:hover {
-  color: white;
+  color: var(--color-white);
 }
 
 /* 简化的响应式设计 */

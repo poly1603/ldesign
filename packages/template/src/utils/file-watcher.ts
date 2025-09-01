@@ -82,7 +82,7 @@ export class FileWatcher {
       excludePatterns: options.excludePatterns || ['node_modules', '.git', 'dist'],
       debounceDelay: options.debounceDelay ?? 300,
       recursive: options.recursive ?? true,
-      maxDepth: options.maxDepth ?? 10
+      maxDepth: options.maxDepth ?? 10,
     }
     this.callbacks = callbacks
   }
@@ -100,13 +100,15 @@ export class FileWatcher {
       // 在浏览器环境中使用不同的策略
       if (typeof window !== 'undefined') {
         await this.startBrowserWatching()
-      } else {
+      }
+      else {
         await this.startNodeWatching()
       }
 
       this.isWatching = true
       this.callbacks.onWatchStart?.()
-    } catch (error) {
+    }
+    catch (error) {
       this.callbacks.onError?.(error as Error)
       throw error
     }
@@ -126,7 +128,8 @@ export class FileWatcher {
         if (watcher && typeof watcher.close === 'function') {
           await watcher.close()
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(`关闭监听器失败: ${path}`, error)
       }
     }
@@ -159,18 +162,19 @@ export class FileWatcher {
         depth: this.options.maxDepth,
         awaitWriteFinish: {
           stabilityThreshold: 100,
-          pollInterval: 50
-        }
+          pollInterval: 50,
+        },
       })
 
       watcher
-        .on('add', (path) => this.handleFileChange('added', path))
-        .on('change', (path) => this.handleFileChange('changed', path))
-        .on('unlink', (path) => this.handleFileChange('removed', path))
-        .on('error', (error) => this.callbacks.onError?.(error))
+        .on('add', path => this.handleFileChange('added', path))
+        .on('change', path => this.handleFileChange('changed', path))
+        .on('unlink', path => this.handleFileChange('removed', path))
+        .on('error', error => this.callbacks.onError?.(error))
 
       this.watchers.set('main', watcher)
-    } catch (error) {
+    }
+    catch (error) {
       // 如果 chokidar 不可用，回退到原生 fs.watch
       await this.startNativeWatching()
     }
@@ -180,15 +184,17 @@ export class FileWatcher {
    * 原生 fs.watch 监听（Node.js 回退方案）
    */
   private async startNativeWatching(): Promise<void> {
-    const fs = await import('fs')
-    const path = await import('path')
+    const fs = await import('node:fs')
+    const path = await import('node:path')
 
     const watchDir = async (dir: string, depth = 0) => {
-      if (depth > this.options.maxDepth) return
+      if (depth > this.options.maxDepth)
+        return
 
       try {
         const watcher = fs.watch(dir, { recursive: this.options.recursive }, (eventType, filename) => {
-          if (!filename) return
+          if (!filename)
+            return
 
           const fullPath = path.join(dir, filename)
           const changeType: FileChangeType = eventType === 'rename' ? 'added' : 'changed'
@@ -196,7 +202,8 @@ export class FileWatcher {
         })
 
         this.watchers.set(dir, watcher)
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(`无法监听目录: ${dir}`, error)
       }
     }
@@ -262,7 +269,7 @@ export class FileWatcher {
       path: filePath,
       filename: this.getFilename(filePath),
       timestamp: Date.now(),
-      templateInfo: this.extractTemplateInfo(filePath)
+      templateInfo: this.extractTemplateInfo(filePath),
     }
 
     // 触发通用文件变化回调
@@ -280,7 +287,7 @@ export class FileWatcher {
   private shouldProcessFile(filePath: string): boolean {
     // 检查文件扩展名
     const hasValidExtension = this.options.includeExtensions.some(ext =>
-      filePath.toLowerCase().endsWith(ext.toLowerCase())
+      filePath.toLowerCase().endsWith(ext.toLowerCase()),
     )
 
     if (!hasValidExtension) {
@@ -289,7 +296,7 @@ export class FileWatcher {
 
     // 检查排除模式
     const isExcluded = this.options.excludePatterns.some(pattern =>
-      filePath.includes(pattern)
+      filePath.includes(pattern),
     )
 
     return !isExcluded
@@ -316,13 +323,17 @@ export class FileWatcher {
     let fileType: 'config' | 'component' | 'style' | 'preview'
     if (filename.startsWith('config.')) {
       fileType = 'config'
-    } else if (filename === 'index.vue') {
+    }
+    else if (filename === 'index.vue') {
       fileType = 'component'
-    } else if (filename.startsWith('style.') || filename.includes('.css') || filename.includes('.less') || filename.includes('.scss')) {
+    }
+    else if (filename.startsWith('style.') || filename.includes('.css') || filename.includes('.less') || filename.includes('.scss')) {
       fileType = 'style'
-    } else if (filename.startsWith('preview.')) {
+    }
+    else if (filename.startsWith('preview.')) {
       fileType = 'preview'
-    } else {
+    }
+    else {
       return undefined
     }
 
@@ -330,7 +341,7 @@ export class FileWatcher {
       category,
       device,
       templateName,
-      fileType
+      fileType,
     }
   }
 
@@ -346,7 +357,7 @@ export class FileWatcher {
    */
   private buildIgnorePattern(): RegExp {
     const patterns = this.options.excludePatterns.map(pattern =>
-      pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
     ).join('|')
     return new RegExp(`(${patterns})`)
   }
@@ -378,7 +389,7 @@ export class FileWatcher {
  */
 export function createFileWatcher(
   options: FileWatcherOptions,
-  callbacks?: FileWatcherCallbacks
+  callbacks?: FileWatcherCallbacks,
 ): FileWatcher {
   return new FileWatcher(options, callbacks)
 }

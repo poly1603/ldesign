@@ -16,44 +16,44 @@ const config: TemplateConfig = {
   props: {
     title: {
       type: String,
-      default: '创意登录'
+      default: '创意登录',
     },
     subtitle: {
       type: String,
-      default: '释放你的创造力'
+      default: '释放你的创造力',
     },
     showRemember: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showRegister: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showCreativeElements: {
       type: Boolean,
-      default: true
+      default: true,
     },
     logoUrl: {
       type: String,
-      default: ''
+      default: '',
     },
     accentColor: {
       type: String,
-      default: '#ff6b6b'
+      default: '#ff6b6b',
     },
     secondaryAccent: {
       type: String,
-      default: '#4ecdc4'
+      default: '#4ecdc4',
     },
     tertiaryAccent: {
       type: String,
-      default: '#45b7d1'
+      default: '#45b7d1',
     },
     enableAnimations: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   slots: ['header', 'footer', 'creative-elements', 'artwork'],
   dependencies: [],
@@ -73,13 +73,13 @@ const config: TemplateConfig = {
     '视觉冲击力',
     '个性化定制',
     '高性能动画优化',
-    '响应式粒子适配'
+    '响应式粒子适配',
   ],
   screenshots: [
     './screenshot-1.png',
     './screenshot-2.png',
-    './screenshot-3.png'
-  ]
+    './screenshot-3.png',
+  ],
 }
 
 export default config

@@ -23,6 +23,7 @@ export default defineConfig({
   server: {
     port: 5174,
     open: true,
+    host: true,
     cors: true,
   },
 
@@ -56,6 +57,6 @@ export default defineConfig({
   // 定义全局变量
   define: {
     'process.env': {},
-    global: 'globalThis',
+    'global': 'globalThis',
   },
 })

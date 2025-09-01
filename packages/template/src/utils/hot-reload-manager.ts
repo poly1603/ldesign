@@ -3,8 +3,7 @@
  * 提供模板系统的热更新功能，支持开发环境下的实时更新
  */
 
-import type { DeviceType, TemplateMetadata } from '../types/template'
-import type { TemplateSystemConfig } from '../types/config'
+import type { DeviceType } from '../types/template'
 
 /**
  * 热更新事件类型
@@ -74,7 +73,7 @@ export class HotReloadManager {
       debug: options.debug ?? false,
       updateDelay: options.updateDelay ?? 100,
       autoRefresh: options.autoRefresh ?? false,
-      preserveState: options.preserveState ?? true
+      preserveState: options.preserveState ?? true,
     }
 
     this.isEnabled = this.options.enabled && this.isHMRSupported()
@@ -88,16 +87,17 @@ export class HotReloadManager {
    * 检查是否支持 HMR
    */
   private isHMRSupported(): boolean {
-    return typeof import.meta !== 'undefined' &&
-      import.meta.hot !== undefined &&
-      import.meta.env?.DEV === true
+    return typeof import.meta !== 'undefined'
+      && import.meta.hot !== undefined
+      && import.meta.env?.DEV === true
   }
 
   /**
    * 设置 HMR 处理器
    */
   private setupHMRHandlers(): void {
-    if (!import.meta.hot) return
+    if (!import.meta.hot)
+      return
 
     // 监听模板文件变化
     import.meta.hot.on('template-file-changed', (data) => {
@@ -133,11 +133,11 @@ export class HotReloadManager {
       template: {
         category: data.category,
         device: data.device,
-        name: data.templateName
+        name: data.templateName,
       },
       filePath: data.filePath,
       timestamp: Date.now(),
-      data
+      data,
     }
 
     this.queueUpdate(event)
@@ -152,11 +152,11 @@ export class HotReloadManager {
       template: {
         category: data.category,
         device: data.device,
-        name: data.templateName
+        name: data.templateName,
       },
       filePath: data.filePath,
       timestamp: Date.now(),
-      data
+      data,
     }
 
     this.queueUpdate(event)
@@ -171,11 +171,11 @@ export class HotReloadManager {
       template: {
         category: data.category,
         device: data.device,
-        name: data.templateName
+        name: data.templateName,
       },
       filePath: data.filePath,
       timestamp: Date.now(),
-      data
+      data,
     }
 
     this.queueUpdate(event)
@@ -190,11 +190,11 @@ export class HotReloadManager {
       template: {
         category: data.category,
         device: data.device,
-        name: data.templateName
+        name: data.templateName,
       },
       filePath: data.filePath,
       timestamp: Date.now(),
-      data
+      data,
     }
 
     this.queueUpdate(event)
@@ -253,10 +253,11 @@ export class HotReloadManager {
    * 通知监听器
    */
   private notifyListeners(event: HotReloadEvent): void {
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener) => {
       try {
         listener(event)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('热更新监听器执行错误:', error)
       }
     })
@@ -285,7 +286,8 @@ export class HotReloadManager {
    * 手动触发热更新事件
    */
   triggerUpdate(event: HotReloadEvent): void {
-    if (!this.isEnabled) return
+    if (!this.isEnabled)
+      return
 
     this.queueUpdate(event)
   }
@@ -339,7 +341,8 @@ export class HotReloadManager {
     if (newOptions.enabled !== undefined) {
       if (newOptions.enabled) {
         this.enable()
-      } else {
+      }
+      else {
         this.disable()
       }
     }
@@ -369,7 +372,7 @@ export class HotReloadManager {
  * 创建热更新管理器
  */
 export function createHotReloadManager(
-  options?: Partial<HotReloadManagerOptions>
+  options?: Partial<HotReloadManagerOptions>,
 ): HotReloadManager {
   return new HotReloadManager(options)
 }
@@ -383,7 +386,7 @@ let globalHotReloadManager: HotReloadManager | null = null
  * 获取全局热更新管理器
  */
 export function getHotReloadManager(
-  options?: Partial<HotReloadManagerOptions>
+  options?: Partial<HotReloadManagerOptions>,
 ): HotReloadManager {
   if (!globalHotReloadManager) {
     globalHotReloadManager = createHotReloadManager(options)

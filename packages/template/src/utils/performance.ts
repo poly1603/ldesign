@@ -1,6 +1,6 @@
 /**
  * 性能优化工具
- * 
+ *
  * 提供性能监控、预加载策略、虚拟滚动等性能优化功能
  */
 
@@ -38,7 +38,7 @@ export class PerformanceMonitor {
       count: values.length,
       avg: sum / values.length,
       min: Math.min(...values),
-      max: Math.max(...values)
+      max: Math.max(...values),
     }
   }
 
@@ -47,7 +47,7 @@ export class PerformanceMonitor {
    */
   monitorComponentLoad(templateName: string): () => void {
     const startTime = performance.now()
-    
+
     return () => {
       const endTime = performance.now()
       const loadTime = endTime - startTime
@@ -76,7 +76,8 @@ export class PerformanceMonitor {
   clearMetrics(name?: string): void {
     if (name) {
       this.metrics.delete(name)
-    } else {
+    }
+    else {
       this.metrics.clear()
     }
   }
@@ -108,7 +109,7 @@ export class PreloadStrategy {
       maxConcurrent?: number
       priority?: string[]
       delayMs?: number
-    } = {}
+    } = {},
   ) {
     this.maxConcurrent = options.maxConcurrent || 3
   }
@@ -117,7 +118,7 @@ export class PreloadStrategy {
    * 添加到预加载队列
    */
   addToQueue(templates: TemplateMetadata[]): void {
-    const newTemplates = templates.filter(template => {
+    const newTemplates = templates.filter((template) => {
       const key = this.getTemplateKey(template)
       return !this.preloadedSet.has(key)
     })
@@ -127,11 +128,14 @@ export class PreloadStrategy {
       newTemplates.sort((a, b) => {
         const aPriority = this.options.priority!.indexOf(a.name)
         const bPriority = this.options.priority!.indexOf(b.name)
-        
-        if (aPriority === -1 && bPriority === -1) return 0
-        if (aPriority === -1) return 1
-        if (bPriority === -1) return -1
-        
+
+        if (aPriority === -1 && bPriority === -1)
+          return 0
+        if (aPriority === -1)
+          return 1
+        if (bPriority === -1)
+          return -1
+
         return aPriority - bPriority
       })
     }
@@ -144,7 +148,8 @@ export class PreloadStrategy {
    * 处理预加载队列
    */
   private async processQueue(): Promise<void> {
-    if (this.isPreloading || this.preloadQueue.length === 0) return
+    if (this.isPreloading || this.preloadQueue.length === 0)
+      return
 
     this.isPreloading = true
 
@@ -161,7 +166,8 @@ export class PreloadStrategy {
    */
   private async preloadTemplate(template: TemplateMetadata): Promise<void> {
     const key = this.getTemplateKey(template)
-    if (this.preloadedSet.has(key)) return
+    if (this.preloadedSet.has(key))
+      return
 
     this.currentPreloading++
 
@@ -173,11 +179,13 @@ export class PreloadStrategy {
 
       await componentLoader.preloadComponent(template)
       this.preloadedSet.add(key)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Failed to preload template: ${template.name}`, error)
-    } finally {
+    }
+    finally {
       this.currentPreloading--
-      
+
       // 继续处理队列
       if (this.preloadQueue.length > 0) {
         this.processQueue()
@@ -210,7 +218,7 @@ export class PreloadStrategy {
       queueLength: this.preloadQueue.length,
       preloadedCount: this.preloadedSet.size,
       currentPreloading: this.currentPreloading,
-      isPreloading: this.isPreloading
+      isPreloading: this.isPreloading,
     }
   }
 }
@@ -226,15 +234,15 @@ export class IntersectionObserverManager {
    * 观察元素
    */
   observe(
-    element: Element, 
-    callback: () => void, 
-    options: IntersectionObserverInit = {}
+    element: Element,
+    callback: () => void,
+    options: IntersectionObserverInit = {},
   ): void {
     const key = this.getObserverKey(options)
-    
+
     if (!this.observers.has(key)) {
       const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const callback = this.callbacks.get(entry.target)
             if (callback) {
@@ -244,7 +252,7 @@ export class IntersectionObserverManager {
           }
         })
       }, options)
-      
+
       this.observers.set(key, observer)
     }
 
@@ -258,7 +266,7 @@ export class IntersectionObserverManager {
    */
   unobserve(element: Element): void {
     this.callbacks.delete(element)
-    
+
     for (const observer of this.observers.values()) {
       observer.unobserve(element)
     }
@@ -281,7 +289,7 @@ export class IntersectionObserverManager {
   private getObserverKey(options: IntersectionObserverInit): string {
     return JSON.stringify({
       rootMargin: options.rootMargin || '0px',
-      threshold: options.threshold || 0
+      threshold: options.threshold || 0,
     })
   }
 }
@@ -291,7 +299,7 @@ export class IntersectionObserverManager {
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeout: number | null = null
 
@@ -299,7 +307,7 @@ export function debounce<T extends (...args: any[]) => any>(
     if (timeout) {
       clearTimeout(timeout)
     }
-    
+
     timeout = window.setTimeout(() => {
       func(...args)
       timeout = null
@@ -312,7 +320,7 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let lastTime = 0
 
@@ -331,7 +339,8 @@ export function throttle<T extends (...args: any[]) => any>(
 export function runWhenIdle(callback: () => void, timeout = 5000): void {
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
     window.requestIdleCallback(callback, { timeout })
-  } else {
+  }
+  else {
     setTimeout(callback, 0)
   }
 }
@@ -346,7 +355,7 @@ export const performanceMonitor = new PerformanceMonitor()
  */
 export const preloadStrategy = new PreloadStrategy({
   maxConcurrent: 3,
-  delayMs: 100
+  delayMs: 100,
 })
 
 /**
@@ -363,15 +372,15 @@ export const performanceUtils = {
    */
   measureTime: <T extends (...args: any[]) => any>(
     name: string,
-    func: T
+    func: T,
   ): T => {
     return ((...args: Parameters<T>) => {
       const start = performance.now()
       const result = func(...args)
       const end = performance.now()
-      
+
       performanceMonitor.recordMetric(name, end - start)
-      
+
       return result
     }) as T
   },
@@ -381,15 +390,15 @@ export const performanceUtils = {
    */
   measureAsyncTime: <T extends (...args: any[]) => Promise<any>>(
     name: string,
-    func: T
+    func: T,
   ): T => {
     return (async (...args: Parameters<T>) => {
       const start = performance.now()
       const result = await func(...args)
       const end = performance.now()
-      
+
       performanceMonitor.recordMetric(name, end - start)
-      
+
       return result
     }) as T
   },
@@ -404,7 +413,7 @@ export const performanceUtils = {
       memory: typeof window !== 'undefined' && 'performance' in window && 'memory' in window.performance
         // @ts-ignore
         ? window.performance.memory
-        : null
+        : null,
     }
-  }
+  },
 }

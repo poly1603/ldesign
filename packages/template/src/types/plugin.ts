@@ -3,7 +3,6 @@
  */
 
 import type { App } from 'vue'
-import type { DeviceType } from './template'
 import type { TemplateSystemConfig } from './config'
 
 /**

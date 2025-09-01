@@ -10,7 +10,8 @@ export const pathUtils = {
    * 规范化路径
    */
   normalize(path: string): string {
-    if (!path) return '.'
+    if (!path)
+      return '.'
 
     // 将反斜杠转换为正斜杠
     let normalized = path.replace(/\\/g, '/')
@@ -24,7 +25,8 @@ export const pathUtils = {
     }
 
     // 如果是空字符串，返回当前目录
-    if (!normalized) return '.'
+    if (!normalized)
+      return '.'
 
     return normalized
   },
@@ -69,7 +71,7 @@ export const pathUtils = {
       category,
       device,
       templateName,
-      fileName
+      fileName,
     }
   },
 
@@ -93,12 +95,13 @@ export const pathUtils = {
    * 检查文件是否在目录内
    */
   isInsideDirectory(filePath: string, dirPath: string): boolean {
-    if (!filePath || !dirPath) return false
+    if (!filePath || !dirPath)
+      return false
 
     const normalizedFile = this.normalize(filePath)
     const normalizedDir = this.normalize(dirPath)
 
-    return normalizedFile.startsWith(normalizedDir + '/') && normalizedFile !== normalizedDir
+    return normalizedFile.startsWith(`${normalizedDir}/`) && normalizedFile !== normalizedDir
   },
 
   /**
@@ -112,7 +115,7 @@ export const pathUtils = {
       return '.'
     }
 
-    if (normalizedTarget.startsWith(normalizedBase + '/')) {
+    if (normalizedTarget.startsWith(`${normalizedBase}/`)) {
       return normalizedTarget.slice(normalizedBase.length + 1)
     }
 
@@ -124,7 +127,8 @@ export const pathUtils = {
     for (let i = 0; i < Math.min(baseParts.length, targetParts.length); i++) {
       if (baseParts[i] === targetParts[i]) {
         commonLength++
-      } else {
+      }
+      else {
         break
       }
     }
@@ -141,14 +145,16 @@ export const pathUtils = {
    */
   joinPaths(...segments: string[]): string {
     const filtered = segments.filter(segment => segment && segment.trim())
-    if (filtered.length === 0) return ''
+    if (filtered.length === 0)
+      return ''
 
     let result = filtered[0]
     for (let i = 1; i < filtered.length; i++) {
       const segment = filtered[i]
       if (segment.startsWith('/')) {
         result = segment
-      } else {
+      }
+      else {
         if (!result.endsWith('/')) {
           result += '/'
         }
@@ -177,7 +183,8 @@ export const pathUtils = {
    * 获取文件名
    */
   getFileName(filePath: string): string {
-    if (!filePath) return ''
+    if (!filePath)
+      return ''
     const normalized = this.normalize(filePath)
     const parts = normalized.split('/')
     return parts[parts.length - 1] || ''
@@ -205,16 +212,20 @@ export const pathUtils = {
    * 检查是否为绝对路径
    */
   isAbsolutePath(path: string): boolean {
-    if (!path) return false
+    if (!path)
+      return false
 
     // Unix 绝对路径
-    if (path.startsWith('/')) return true
+    if (path.startsWith('/'))
+      return true
 
     // Windows 绝对路径
-    if (/^[A-Za-z]:[\\\/]/.test(path)) return true
+    if (/^[A-Z]:[\\/]/i.test(path))
+      return true
 
     // UNC 路径
-    if (path.startsWith('\\\\')) return true
+    if (path.startsWith('\\\\'))
+      return true
 
     return false
   },
@@ -237,22 +248,25 @@ export const pathUtils = {
     for (const part of parts) {
       if (part === '.' || part === '') {
         continue
-      } else if (part === '..') {
+      }
+      else if (part === '..') {
         if (resolved.length > 0 && resolved[resolved.length - 1] !== '..') {
           resolved.pop()
-        } else if (!normalized.startsWith('/')) {
+        }
+        else if (!normalized.startsWith('/')) {
           resolved.push('..')
         }
-      } else {
+      }
+      else {
         resolved.push(part)
       }
     }
 
     let result = resolved.join('/')
     if (normalized.startsWith('/') && !result.startsWith('/')) {
-      result = '/' + result
+      result = `/${result}`
     }
 
     return result || (normalized.startsWith('/') ? '/' : '.')
-  }
+  },
 }

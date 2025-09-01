@@ -1,10 +1,10 @@
 /**
  * 配置验证工具
- * 
+ *
  * 提供模板配置的验证功能
  */
 
-import type { TemplateConfig, DeviceType } from '../types/template'
+import type { DeviceType, TemplateConfig } from '../types/template'
 
 /**
  * 验证错误接口
@@ -70,12 +70,13 @@ export class ConfigValidator {
           const error: ValidationError = {
             field,
             message: rule.message,
-            value
+            value,
           }
 
           if (rule.warning) {
             warnings.push(error)
-          } else {
+          }
+          else {
             errors.push(error)
           }
         }
@@ -85,7 +86,7 @@ export class ConfigValidator {
     return {
       valid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     }
   }
 
@@ -119,192 +120,202 @@ export class ConfigValidator {
     // name字段验证
     this.addRule('name', {
       name: 'required',
-      validate: (value) => typeof value === 'string' && value.trim().length > 0,
-      message: 'Template name is required and must be a non-empty string'
+      validate: value => typeof value === 'string' && value.trim().length > 0,
+      message: 'Template name is required and must be a non-empty string',
     })
 
     this.addRule('name', {
       name: 'format',
-      validate: (value) => typeof value === 'string' && /^[a-zA-Z0-9_-]+$/.test(value),
-      message: 'Template name must contain only letters, numbers, underscores, and hyphens'
+      validate: value => typeof value === 'string' && /^[\w-]+$/.test(value),
+      message: 'Template name must contain only letters, numbers, underscores, and hyphens',
     })
 
     this.addRule('name', {
       name: 'length',
-      validate: (value) => typeof value === 'string' && value.length <= 50,
-      message: 'Template name must be 50 characters or less'
+      validate: value => typeof value === 'string' && value.length <= 50,
+      message: 'Template name must be 50 characters or less',
     })
 
     // displayName字段验证
     this.addRule('displayName', {
       name: 'required',
-      validate: (value) => typeof value === 'string' && value.trim().length > 0,
-      message: 'Display name is required and must be a non-empty string'
+      validate: value => typeof value === 'string' && value.trim().length > 0,
+      message: 'Display name is required and must be a non-empty string',
     })
 
     this.addRule('displayName', {
       name: 'length',
-      validate: (value) => typeof value === 'string' && value.length <= 100,
-      message: 'Display name must be 100 characters or less'
+      validate: value => typeof value === 'string' && value.length <= 100,
+      message: 'Display name must be 100 characters or less',
     })
 
     // description字段验证
     this.addRule('description', {
       name: 'required',
-      validate: (value) => typeof value === 'string' && value.trim().length > 0,
-      message: 'Description is required and must be a non-empty string'
+      validate: value => typeof value === 'string' && value.trim().length > 0,
+      message: 'Description is required and must be a non-empty string',
     })
 
     this.addRule('description', {
       name: 'length',
-      validate: (value) => typeof value === 'string' && value.length <= 500,
-      message: 'Description must be 500 characters or less'
+      validate: value => typeof value === 'string' && value.length <= 500,
+      message: 'Description must be 500 characters or less',
     })
 
     // version字段验证
     this.addRule('version', {
       name: 'required',
-      validate: (value) => typeof value === 'string' && value.trim().length > 0,
-      message: 'Version is required and must be a non-empty string'
+      validate: value => typeof value === 'string' && value.trim().length > 0,
+      message: 'Version is required and must be a non-empty string',
     })
 
     this.addRule('version', {
       name: 'semver',
-      validate: (value) => typeof value === 'string' && /^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/.test(value),
-      message: 'Version must be a valid semantic version (e.g., 1.0.0)'
+      validate: value => typeof value === 'string' && /^\d+\.\d+\.\d+(-[a-z0-9.-]+)?(\+[a-z0-9.-]+)?$/i.test(value),
+      message: 'Version must be a valid semantic version (e.g., 1.0.0)',
     })
 
     // isDefault字段验证
     this.addRule('isDefault', {
       name: 'type',
-      validate: (value) => value === undefined || typeof value === 'boolean',
-      message: 'isDefault must be a boolean value'
+      validate: value => value === undefined || typeof value === 'boolean',
+      message: 'isDefault must be a boolean value',
     })
 
     // author字段验证
     this.addRule('author', {
       name: 'type',
-      validate: (value) => value === undefined || typeof value === 'string',
-      message: 'Author must be a string'
+      validate: value => value === undefined || typeof value === 'string',
+      message: 'Author must be a string',
     })
 
     this.addRule('author', {
       name: 'length',
-      validate: (value) => value === undefined || (typeof value === 'string' && value.length <= 100),
-      message: 'Author name must be 100 characters or less'
+      validate: value => value === undefined || (typeof value === 'string' && value.length <= 100),
+      message: 'Author name must be 100 characters or less',
     })
 
     // tags字段验证
     this.addRule('tags', {
       name: 'type',
-      validate: (value) => value === undefined || Array.isArray(value),
-      message: 'Tags must be an array'
+      validate: value => value === undefined || Array.isArray(value),
+      message: 'Tags must be an array',
     })
 
     this.addRule('tags', {
       name: 'items',
       validate: (value) => {
-        if (value === undefined) return true
-        if (!Array.isArray(value)) return false
+        if (value === undefined)
+          return true
+        if (!Array.isArray(value))
+          return false
         return value.every(tag => typeof tag === 'string' && tag.trim().length > 0)
       },
-      message: 'All tags must be non-empty strings'
+      message: 'All tags must be non-empty strings',
     })
 
     this.addRule('tags', {
       name: 'length',
-      validate: (value) => value === undefined || (Array.isArray(value) && value.length <= 20),
-      message: 'Maximum 20 tags allowed'
+      validate: value => value === undefined || (Array.isArray(value) && value.length <= 20),
+      message: 'Maximum 20 tags allowed',
     })
 
     // preview字段验证
     this.addRule('preview', {
       name: 'type',
-      validate: (value) => value === undefined || typeof value === 'string',
-      message: 'Preview must be a string'
+      validate: value => value === undefined || typeof value === 'string',
+      message: 'Preview must be a string',
     })
 
     this.addRule('preview', {
       name: 'format',
       validate: (value) => {
-        if (value === undefined) return true
-        if (typeof value !== 'string') return false
+        if (value === undefined)
+          return true
+        if (typeof value !== 'string')
+          return false
         return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(value)
       },
-      message: 'Preview must be a valid image file path'
+      message: 'Preview must be a valid image file path',
     })
 
     // slots字段验证
     this.addRule('slots', {
       name: 'type',
-      validate: (value) => value === undefined || Array.isArray(value),
-      message: 'Slots must be an array'
+      validate: value => value === undefined || Array.isArray(value),
+      message: 'Slots must be an array',
     })
 
     this.addRule('slots', {
       name: 'items',
       validate: (value) => {
-        if (value === undefined) return true
-        if (!Array.isArray(value)) return false
+        if (value === undefined)
+          return true
+        if (!Array.isArray(value))
+          return false
         return value.every(slot => typeof slot === 'string' && slot.trim().length > 0)
       },
-      message: 'All slot names must be non-empty strings'
+      message: 'All slot names must be non-empty strings',
     })
 
     // dependencies字段验证
     this.addRule('dependencies', {
       name: 'type',
-      validate: (value) => value === undefined || Array.isArray(value),
-      message: 'Dependencies must be an array'
+      validate: value => value === undefined || Array.isArray(value),
+      message: 'Dependencies must be an array',
     })
 
     this.addRule('dependencies', {
       name: 'items',
       validate: (value) => {
-        if (value === undefined) return true
-        if (!Array.isArray(value)) return false
+        if (value === undefined)
+          return true
+        if (!Array.isArray(value))
+          return false
         return value.every(dep => typeof dep === 'string' && dep.trim().length > 0)
       },
-      message: 'All dependencies must be non-empty strings'
+      message: 'All dependencies must be non-empty strings',
     })
 
     // minVueVersion字段验证
     this.addRule('minVueVersion', {
       name: 'type',
-      validate: (value) => value === undefined || typeof value === 'string',
-      message: 'minVueVersion must be a string'
+      validate: value => value === undefined || typeof value === 'string',
+      message: 'minVueVersion must be a string',
     })
 
     this.addRule('minVueVersion', {
       name: 'semver',
       validate: (value) => {
-        if (value === undefined) return true
-        if (typeof value !== 'string') return false
-        return /^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/.test(value)
+        if (value === undefined)
+          return true
+        if (typeof value !== 'string')
+          return false
+        return /^\d+\.\d+\.\d+(-[a-z0-9.-]+)?(\+[a-z0-9.-]+)?$/i.test(value)
       },
-      message: 'minVueVersion must be a valid semantic version'
+      message: 'minVueVersion must be a valid semantic version',
     })
 
     // 警告规则
     this.addRule('author', {
       name: 'recommended',
-      validate: (value) => value !== undefined && typeof value === 'string' && value.trim().length > 0,
+      validate: value => value !== undefined && typeof value === 'string' && value.trim().length > 0,
       message: 'It is recommended to specify an author',
-      warning: true
+      warning: true,
     })
 
     this.addRule('tags', {
       name: 'recommended',
-      validate: (value) => value !== undefined && Array.isArray(value) && value.length > 0,
+      validate: value => value !== undefined && Array.isArray(value) && value.length > 0,
       message: 'It is recommended to add tags for better discoverability',
-      warning: true
+      warning: true,
     })
 
     this.addRule('preview', {
       name: 'recommended',
-      validate: (value) => value !== undefined && typeof value === 'string' && value.trim().length > 0,
+      validate: value => value !== undefined && typeof value === 'string' && value.trim().length > 0,
       message: 'It is recommended to provide a preview image',
-      warning: true
+      warning: true,
     })
   }
 }
@@ -332,7 +343,7 @@ export function validateTemplate(config: TemplateConfig): ValidationResult {
  */
 export function validateTemplatePath(path: string): boolean {
   // 验证路径格式: /src/templates/{category}/{device}/{templateName}/
-  const pathRegex = /^\/.*\/templates\/[^\/]+\/(desktop|tablet|mobile)\/[^\/]+\/$/
+  const pathRegex = /^\/.*\/templates\/[^/]+\/(desktop|tablet|mobile)\/[^/]+\/$/
   return pathRegex.test(path)
 }
 
@@ -348,7 +359,7 @@ export const validationUtils = {
   /**
    * 验证模板元数据
    */
-  validateTemplateMetadata(metadata: any): { valid: boolean; errors: string[] } {
+  validateTemplateMetadata(metadata: any): { valid: boolean, errors: string[] } {
     const errors: string[] = []
 
     // 验证必需字段
@@ -381,14 +392,14 @@ export const validationUtils = {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     }
   },
 
   /**
    * 快速验证配置
    */
-  validateConfig(config: any): { valid: boolean; errors: string[]; fixedConfig?: any } {
+  validateConfig(config: any): { valid: boolean, errors: string[], fixedConfig?: any } {
     const errors: string[] = []
     let fixedConfig: any = null
 
@@ -437,15 +448,15 @@ export const validationUtils = {
         templatesDir: config.templatesDir || 'src/templates',
         scanner: {
           ...config.scanner,
-          maxDepth: config.scanner?.maxDepth < 0 ? 5 : config.scanner?.maxDepth
-        }
+          maxDepth: config.scanner?.maxDepth < 0 ? 5 : config.scanner?.maxDepth,
+        },
       }
     }
 
     return {
       valid: errors.length === 0,
       errors,
-      fixedConfig
+      fixedConfig,
     }
   },
 
@@ -467,7 +478,8 @@ export const validationUtils = {
    * 验证模板分类
    */
   isValidTemplateCategory(category: string): boolean {
-    if (!category || typeof category !== 'string') return false
+    if (!category || typeof category !== 'string')
+      return false
     const validCategories = ['login', 'dashboard', 'user', 'form', 'ecommerce']
     return validCategories.includes(category)
   },
@@ -476,21 +488,23 @@ export const validationUtils = {
    * 验证版本格式
    */
   validateVersionFormat(version: string): boolean {
-    if (!version || typeof version !== 'string') return false
-    return /^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/.test(version)
+    if (!version || typeof version !== 'string')
+      return false
+    return /^\d+\.\d+\.\d+(-[a-z0-9.-]+)?(\+[a-z0-9.-]+)?$/i.test(version)
   },
 
   /**
    * 验证文件扩展名
    */
   isValidExtension(extension: string, validExtensions: string[]): boolean {
-    if (!extension || !Array.isArray(validExtensions)) return false
+    if (!extension || !Array.isArray(validExtensions))
+      return false
 
     const normalizedExt = extension.toLowerCase()
     const normalizedValid = validExtensions.map(ext => ext.toLowerCase())
 
     // 处理没有点的扩展名
-    const extWithDot = normalizedExt.startsWith('.') ? normalizedExt : '.' + normalizedExt
+    const extWithDot = normalizedExt.startsWith('.') ? normalizedExt : `.${normalizedExt}`
 
     return normalizedValid.includes(extWithDot)
   },
@@ -499,11 +513,13 @@ export const validationUtils = {
    * 验证路径
    */
   validatePath(path: string): boolean {
-    if (!path || typeof path !== 'string' || !path.trim()) return false
+    if (!path || typeof path !== 'string' || !path.trim())
+      return false
 
     // 检查是否包含无效字符
     const invalidChars = /[<>|"*?]/
-    if (invalidChars.test(path)) return false
+    if (invalidChars.test(path))
+      return false
 
     return true
   },
@@ -512,7 +528,8 @@ export const validationUtils = {
    * 清理用户输入
    */
   sanitizeInput(input: any): string {
-    if (!input) return ''
+    if (!input)
+      return ''
 
     const str = String(input)
 
@@ -532,9 +549,10 @@ export const validationUtils = {
    * 验证邮箱地址
    */
   validateEmail(email: string): boolean {
-    if (!email || typeof email !== 'string') return false
+    if (!email || typeof email !== 'string')
+      return false
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/
     return emailRegex.test(email)
   },
 
@@ -542,12 +560,14 @@ export const validationUtils = {
    * 验证URL
    */
   validateUrl(url: string): boolean {
-    if (!url || typeof url !== 'string') return false
+    if (!url || typeof url !== 'string')
+      return false
 
     try {
       new URL(url)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   },
@@ -557,5 +577,5 @@ export const validationUtils = {
    */
   isValidTemplatePath(path: string): boolean {
     return validateTemplatePath(path)
-  }
+  },
 }

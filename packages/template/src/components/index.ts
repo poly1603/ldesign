@@ -1,7 +1,12 @@
 /**
  * 组件导出文件
+ *
+ * 重构后的三个核心组件：
+ * - TemplateSelector: 模板选择器组件
+ * - TemplateRenderer: 模板渲染器组件
+ * - TemplateTransition: 模板过渡动画组件
  */
 
 export { default as TemplateRenderer } from './TemplateRenderer'
 export { default as TemplateSelector } from './TemplateSelector'
-export { default as VirtualTemplateSelector } from './VirtualTemplateSelector'
+export { TemplateTransition, TemplateContentWrapper } from './TemplateTransition'

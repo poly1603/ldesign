@@ -2,7 +2,7 @@
  * 模板切换 E2E 测试
  */
 
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('模板切换功能', () => {
   test.beforeEach(async ({ page }) => {
@@ -58,7 +58,7 @@ test.describe('模板切换功能', () => {
   test('应该能够在模态框中配置模板属性', async ({ page }) => {
     // 打开模板预览
     await page.locator('.template-card').first().click()
-    
+
     const modal = page.locator('.template-modal')
     await expect(modal).toBeVisible()
 
@@ -72,7 +72,7 @@ test.describe('模板切换功能', () => {
 
     // 检查预览是否更新（这里需要根据实际实现调整）
     await page.waitForTimeout(500)
-    
+
     // 验证配置已应用
     const titleValue = await titleInput.inputValue()
     expect(titleValue).toBe('自定义标题')
@@ -81,7 +81,7 @@ test.describe('模板切换功能', () => {
   test('应该能够关闭模态框', async ({ page }) => {
     // 打开模板预览
     await page.locator('.template-card').first().click()
-    
+
     const modal = page.locator('.template-modal')
     await expect(modal).toBeVisible()
 
@@ -95,7 +95,7 @@ test.describe('模板切换功能', () => {
   test('应该能够通过点击背景关闭模态框', async ({ page }) => {
     // 打开模板预览
     await page.locator('.template-card').first().click()
-    
+
     const modal = page.locator('.template-modal')
     await expect(modal).toBeVisible()
 
@@ -132,9 +132,9 @@ test.describe('模板切换功能', () => {
     await page.setViewportSize({ width: 1200, height: 800 })
     await page.waitForTimeout(300)
 
-    let templateGrid = page.locator('.templates-grid')
-    let gridColumns = await templateGrid.evaluate(el => 
-      window.getComputedStyle(el).gridTemplateColumns.split(' ').length
+    const templateGrid = page.locator('.templates-grid')
+    let gridColumns = await templateGrid.evaluate(el =>
+      window.getComputedStyle(el).gridTemplateColumns.split(' ').length,
     )
     expect(gridColumns).toBeGreaterThan(1)
 
@@ -142,8 +142,8 @@ test.describe('模板切换功能', () => {
     await page.setViewportSize({ width: 375, height: 667 })
     await page.waitForTimeout(300)
 
-    gridColumns = await templateGrid.evaluate(el => 
-      window.getComputedStyle(el).gridTemplateColumns.split(' ').length
+    gridColumns = await templateGrid.evaluate(el =>
+      window.getComputedStyle(el).gridTemplateColumns.split(' ').length,
     )
     expect(gridColumns).toBe(1)
   })
@@ -192,10 +192,10 @@ test.describe('设备响应式切换', () => {
 
     // 检查加载状态（可能很快，所以使用 waitFor）
     const loadingIndicator = page.locator('.template-loading, .loading-spinner')
-    
+
     // 等待加载完成
     await page.waitForTimeout(1000)
-    
+
     // 加载完成后，加载指示器应该消失
     await expect(loadingIndicator).toHaveCount(0)
   })
@@ -250,7 +250,7 @@ test.describe('模板渲染器', () => {
   test('应该支持插槽内容', async ({ page }) => {
     // 检查是否有插槽内容
     const slotContent = page.locator('[data-testid="template-renderer"] [slot]')
-    
+
     if (await slotContent.count() > 0) {
       await expect(slotContent.first()).toBeVisible()
     }
@@ -267,10 +267,10 @@ test.describe('性能测试', () => {
 
     // 执行模板切换
     await page.click('button:has-text("移动端")')
-    
+
     // 等待切换完成
     await page.waitForSelector('[data-testid="template-renderer"]')
-    
+
     const endTime = Date.now()
     const switchTime = endTime - startTime
 

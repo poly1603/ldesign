@@ -46,9 +46,9 @@
   "module": "es/index.js",
   "types": "types/index.d.ts",
   "files": [
-    "lib",
     "dist",
     "es",
+    "lib",
     "types"
   ],
   "engines": {

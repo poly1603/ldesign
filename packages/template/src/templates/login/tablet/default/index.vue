@@ -1,197 +1,5 @@
-<template>
-  <div class="login-template-tablet" :style="cssVars" :class="{ 'landscape': isLandscape }">
-    <!-- 模板标识横幅 -->
-    <div class="template-banner">
-      <div class="banner-content">
-        <div class="template-info">
-          <span class="template-name">平板端登录模板</span>
-          <span class="template-meta">
-            <span class="device-type">📱 Tablet</span>
-            <span class="template-version">v1.0.0</span>
-          </span>
-        </div>
-        <div class="template-category">Login</div>
-      </div>
-    </div>
-
-    <!-- 平板优化背景 -->
-    <div class="tablet-background" :style="backgroundStyle">
-      <div class="background-overlay"></div>
-
-      <!-- 平板专用装饰元素 -->
-      <div class="tablet-decorations">
-        <div class="decoration-circle circle-1"></div>
-        <div class="decoration-circle circle-2"></div>
-        <div class="decoration-wave wave-1"></div>
-        <div class="decoration-wave wave-2"></div>
-        <div class="decoration-grid"></div>
-      </div>
-
-      <!-- 触摸友好的视觉提示 -->
-      <div class="touch-indicators">
-        <div class="touch-ripple ripple-1"></div>
-        <div class="touch-ripple ripple-2"></div>
-        <div class="touch-ripple ripple-3"></div>
-      </div>
-    </div>
-
-    <div class="tablet-container">
-      <!-- 侧边栏（横屏模式） -->
-      <div v-if="isLandscape && enableLandscapeMode" class="sidebar-section">
-        <slot name="sidebar">
-          <div class="sidebar-content">
-            <div class="brand-section">
-              <div class="brand-icon">📱</div>
-              <h2 class="brand-title">{{ title }}</h2>
-              <p class="brand-subtitle">{{ subtitle }}</p>
-            </div>
-            
-            <div class="feature-list">
-              <div class="feature-item">
-                <div class="feature-icon">✨</div>
-                <div class="feature-text">优雅的设计</div>
-              </div>
-              <div class="feature-item">
-                <div class="feature-icon">🚀</div>
-                <div class="feature-text">快速响应</div>
-              </div>
-              <div class="feature-item">
-                <div class="feature-icon">🔒</div>
-                <div class="feature-text">安全可靠</div>
-              </div>
-            </div>
-          </div>
-        </slot>
-      </div>
-
-      <!-- 主要内容区域 -->
-      <div class="main-section">
-        <div class="login-card">
-          <!-- 头部 -->
-          <div class="card-header">
-            <slot name="header">
-              <div class="logo-section">
-                <div v-if="logoUrl" class="logo-image">
-                  <img :src="logoUrl" :alt="title" />
-                </div>
-                <div v-else class="logo-icon">🔐</div>
-                
-                <!-- 竖屏模式显示标题 -->
-                <div v-if="!isLandscape || !enableLandscapeMode" class="title-section">
-                  <h1 class="login-title">{{ title }}</h1>
-                  <p class="login-subtitle">{{ subtitle }}</p>
-                </div>
-              </div>
-            </slot>
-          </div>
-
-          <!-- 登录表单 -->
-          <form class="tablet-form" @submit.prevent="handleSubmit">
-            <div class="form-group">
-              <label for="username" class="form-label">用户名</label>
-              <div class="input-wrapper">
-                <div class="input-icon">
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                  </svg>
-                </div>
-                <input
-                  id="username"
-                  v-model="formData.username"
-                  type="text"
-                  class="form-input"
-                  placeholder="请输入用户名或邮箱"
-                  required
-                  :disabled="loading"
-                  @focus="handleInputFocus"
-                  @blur="handleInputBlur"
-                />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="password" class="form-label">密码</label>
-              <div class="input-wrapper">
-                <div class="input-icon">
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18,8h-1V6c0-2.76-2.24-5-5-5S7,3.24,7,6v2H6c-1.1,0-2,0.9-2,2v10c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V10C20,8.9,19.1,8,18,8z M12,17c-1.1,0-2-0.9-2-2s0.9-2,2-2s2,0.9,2,2S13.1,17,12,17z M15.1,8H8.9V6c0-1.71,1.39-3.1,3.1-3.1s3.1,1.39,3.1,3.1V8z"/>
-                  </svg>
-                </div>
-                <input
-                  id="password"
-                  v-model="formData.password"
-                  :type="showPassword ? 'text' : 'password'"
-                  class="form-input"
-                  placeholder="请输入密码"
-                  required
-                  :disabled="loading"
-                  @focus="handleInputFocus"
-                  @blur="handleInputBlur"
-                />
-                <button
-                  type="button"
-                  class="password-toggle"
-                  @click="showPassword = !showPassword"
-                  :disabled="loading"
-                >
-                  <svg v-if="showPassword" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
-                  </svg>
-                  <svg v-else viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M11.83,9L15,12.16C15,12.11 15,12.05 15,12A3,3 0 0,0 12,9C11.94,9 11.89,9 11.83,9M7.53,9.8L9.08,11.35C9.03,11.56 9,11.77 9,12A3,3 0 0,0 12,15C12.22,15 12.44,14.97 12.65,14.92L14.2,16.47C13.53,16.8 12.79,17 12,17A5,5 0 0,1 7,12C7,11.21 7.2,10.47 7.53,9.8M2,4.27L4.28,6.55L4.73,7C3.08,8.3 1.78,10 1,12C2.73,16.39 7,19.5 12,19.5C13.55,19.5 15.03,19.2 16.38,18.66L16.81,19.09L19.73,22L21,20.73L3.27,3M12,7A5,5 0 0,1 17,12C17,12.64 16.87,13.26 16.64,13.82L19.57,16.75C21.07,15.5 22.27,13.86 23,12C21.27,7.61 17,4.5 12,4.5C10.6,4.5 9.26,4.75 8,5.2L10.17,7.35C10.76,7.13 11.37,7 12,7Z"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div class="form-options">
-              <label v-if="showRemember" class="tablet-checkbox">
-                <input
-                  v-model="formData.remember"
-                  type="checkbox"
-                  class="checkbox-input"
-                  :disabled="loading"
-                />
-                <span class="checkbox-custom"></span>
-                <span class="checkbox-text">记住我</span>
-              </label>
-              
-              <a v-if="showForgot" href="#" class="forgot-link" @click.prevent="handleForgot">
-                忘记密码？
-              </a>
-            </div>
-
-            <button type="submit" class="tablet-button" :disabled="loading">
-              <span v-if="loading" class="loading-spinner"></span>
-              <span>{{ loading ? '登录中...' : '登录' }}</span>
-            </button>
-
-            <div v-if="showRegister" class="register-section">
-              <p class="register-text">
-                还没有账户？
-                <a href="#" class="register-link" @click.prevent="handleRegister">
-                  立即注册
-                </a>
-              </p>
-            </div>
-
-            <slot name="extra"></slot>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- 底部 -->
-    <div class="tablet-footer">
-      <slot name="footer">
-        <p class="footer-text">&copy; 2024 ldesign. 专为平板优化</p>
-      </slot>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 
 // Props定义
 interface Props {
@@ -215,14 +23,14 @@ const props = withDefaults(defineProps<Props>(), {
   logoUrl: '',
   backgroundImage: '',
   primaryColor: '#667eea',
-  enableLandscapeMode: true
+  enableLandscapeMode: true,
 })
 
 // 状态管理
 const formData = reactive({
   username: '',
   password: '',
-  remember: false
+  remember: false,
 })
 
 const loading = ref(false)
@@ -231,69 +39,71 @@ const isLandscape = ref(false)
 
 // 计算属性
 const cssVars = computed(() => ({
-  '--primary-color': props.primaryColor
+  '--primary-color': props.primaryColor,
 }))
 
 const backgroundStyle = computed(() => {
   if (props.backgroundImage) {
     return {
-      backgroundImage: `url(${props.backgroundImage})`
+      backgroundImage: `url(${props.backgroundImage})`,
     }
   }
   return {}
 })
 
 // 检测屏幕方向
-const checkOrientation = () => {
+function checkOrientation() {
   isLandscape.value = window.innerWidth > window.innerHeight
 }
 
 // 处理输入框焦点（平板键盘适配）
-const handleInputFocus = () => {
+function handleInputFocus() {
   // 平板键盘弹出时的处理
   if (window.innerHeight < 600) {
     document.body.style.height = '100vh'
   }
 }
 
-const handleInputBlur = () => {
+function handleInputBlur() {
   // 键盘收起时的处理
   document.body.style.height = 'auto'
 }
 
 // 事件处理
-const handleSubmit = async () => {
+async function handleSubmit() {
   loading.value = true
-  
+
   try {
     // 触觉反馈（如果支持）
     if ('vibrate' in navigator) {
       navigator.vibrate(50)
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, 1500))
-    
+
     console.log('平板登录数据:', formData)
     alert(`登录成功！用户名: ${formData.username}`)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('登录失败:', error)
-    
+
     // 错误震动反馈
     if ('vibrate' in navigator) {
       navigator.vibrate([100, 50, 100])
     }
-    
+
     alert('登录失败，请重试')
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
-const handleForgot = () => {
+function handleForgot() {
   alert('忘记密码功能')
 }
 
-const handleRegister = () => {
+function handleRegister() {
   alert('注册功能')
 }
 
@@ -310,6 +120,226 @@ onUnmounted(() => {
   document.body.style.height = 'auto'
 })
 </script>
+
+<template>
+  <div class="login-template-tablet" :style="cssVars" :class="{ landscape: isLandscape }">
+    <!-- 模板标识横幅 -->
+    <div class="template-banner">
+      <div class="banner-content">
+        <div class="template-info">
+          <span class="template-name">平板端登录模板</span>
+          <span class="template-meta">
+            <span class="device-type">📱 Tablet</span>
+            <span class="template-version">v1.0.0</span>
+          </span>
+        </div>
+        <div class="template-category">
+          Login
+        </div>
+      </div>
+    </div>
+
+    <!-- 平板优化背景 -->
+    <div class="tablet-background" :style="backgroundStyle">
+      <div class="background-overlay" />
+
+      <!-- 平板专用装饰元素 -->
+      <div class="tablet-decorations">
+        <div class="decoration-circle circle-1" />
+        <div class="decoration-circle circle-2" />
+        <div class="decoration-wave wave-1" />
+        <div class="decoration-wave wave-2" />
+        <div class="decoration-grid" />
+      </div>
+
+      <!-- 触摸友好的视觉提示 -->
+      <div class="touch-indicators">
+        <div class="touch-ripple ripple-1" />
+        <div class="touch-ripple ripple-2" />
+        <div class="touch-ripple ripple-3" />
+      </div>
+    </div>
+
+    <div class="tablet-container">
+      <!-- 侧边栏（横屏模式） -->
+      <div v-if="isLandscape && enableLandscapeMode" class="sidebar-section">
+        <slot name="sidebar">
+          <div class="sidebar-content">
+            <div class="brand-section">
+              <div class="brand-icon">
+                📱
+              </div>
+              <h2 class="brand-title">
+                {{ title }}
+              </h2>
+              <p class="brand-subtitle">
+                {{ subtitle }}
+              </p>
+            </div>
+
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-icon">
+                  ✨
+                </div>
+                <div class="feature-text">
+                  优雅的设计
+                </div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-icon">
+                  🚀
+                </div>
+                <div class="feature-text">
+                  快速响应
+                </div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-icon">
+                  🔒
+                </div>
+                <div class="feature-text">
+                  安全可靠
+                </div>
+              </div>
+            </div>
+          </div>
+        </slot>
+      </div>
+
+      <!-- 主要内容区域 -->
+      <div class="main-section">
+        <div class="login-card">
+          <!-- 头部 -->
+          <div class="card-header">
+            <slot name="header">
+              <div class="logo-section">
+                <div v-if="logoUrl" class="logo-image">
+                  <img :src="logoUrl" :alt="title">
+                </div>
+                <div v-else class="logo-icon">
+                  🔐
+                </div>
+
+                <!-- 竖屏模式显示标题 -->
+                <div v-if="!isLandscape || !enableLandscapeMode" class="title-section">
+                  <h1 class="login-title">
+                    {{ title }}
+                  </h1>
+                  <p class="login-subtitle">
+                    {{ subtitle }}
+                  </p>
+                </div>
+              </div>
+            </slot>
+          </div>
+
+          <!-- 登录表单 -->
+          <form class="tablet-form" @submit.prevent="handleSubmit">
+            <div class="form-group">
+              <label for="username" class="form-label">用户名</label>
+              <div class="input-wrapper">
+                <div class="input-icon">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                </div>
+                <input
+                  id="username"
+                  v-model="formData.username"
+                  type="text"
+                  class="form-input"
+                  placeholder="请输入用户名或邮箱"
+                  required
+                  :disabled="loading"
+                  @focus="handleInputFocus"
+                  @blur="handleInputBlur"
+                >
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="password" class="form-label">密码</label>
+              <div class="input-wrapper">
+                <div class="input-icon">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18,8h-1V6c0-2.76-2.24-5-5-5S7,3.24,7,6v2H6c-1.1,0-2,0.9-2,2v10c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V10C20,8.9,19.1,8,18,8z M12,17c-1.1,0-2-0.9-2-2s0.9-2,2-2s2,0.9,2,2S13.1,17,12,17z M15.1,8H8.9V6c0-1.71,1.39-3.1,3.1-3.1s3.1,1.39,3.1,3.1V8z" />
+                  </svg>
+                </div>
+                <input
+                  id="password"
+                  v-model="formData.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  class="form-input"
+                  placeholder="请输入密码"
+                  required
+                  :disabled="loading"
+                  @focus="handleInputFocus"
+                  @blur="handleInputBlur"
+                >
+                <button
+                  type="button"
+                  class="password-toggle"
+                  :disabled="loading"
+                  @click="showPassword = !showPassword"
+                >
+                  <svg v-if="showPassword" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z" />
+                  </svg>
+                  <svg v-else viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11.83,9L15,12.16C15,12.11 15,12.05 15,12A3,3 0 0,0 12,9C11.94,9 11.89,9 11.83,9M7.53,9.8L9.08,11.35C9.03,11.56 9,11.77 9,12A3,3 0 0,0 12,15C12.22,15 12.44,14.97 12.65,14.92L14.2,16.47C13.53,16.8 12.79,17 12,17A5,5 0 0,1 7,12C7,11.21 7.2,10.47 7.53,9.8M2,4.27L4.28,6.55L4.73,7C3.08,8.3 1.78,10 1,12C2.73,16.39 7,19.5 12,19.5C13.55,19.5 15.03,19.2 16.38,18.66L16.81,19.09L19.73,22L21,20.73L3.27,3M12,7A5,5 0 0,1 17,12C17,12.64 16.87,13.26 16.64,13.82L19.57,16.75C21.07,15.5 22.27,13.86 23,12C21.27,7.61 17,4.5 12,4.5C10.6,4.5 9.26,4.75 8,5.2L10.17,7.35C10.76,7.13 11.37,7 12,7Z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-options">
+              <label v-if="showRemember" class="tablet-checkbox">
+                <input
+                  v-model="formData.remember"
+                  type="checkbox"
+                  class="checkbox-input"
+                  :disabled="loading"
+                >
+                <span class="checkbox-custom" />
+                <span class="checkbox-text">记住我</span>
+              </label>
+
+              <a v-if="showForgot" href="#" class="forgot-link" @click.prevent="handleForgot">
+                忘记密码？
+              </a>
+            </div>
+
+            <button type="submit" class="tablet-button" :disabled="loading">
+              <span v-if="loading" class="loading-spinner" />
+              <span>{{ loading ? '登录中...' : '登录' }}</span>
+            </button>
+
+            <div v-if="showRegister" class="register-section">
+              <p class="register-text">
+                还没有账户？
+                <a href="#" class="register-link" @click.prevent="handleRegister">
+                  立即注册
+                </a>
+              </p>
+            </div>
+
+            <slot name="extra" />
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部 -->
+    <div class="tablet-footer">
+      <slot name="footer">
+        <p class="footer-text">
+          &copy; 2024 ldesign. 专为平板优化
+        </p>
+      </slot>
+    </div>
+  </div>
+</template>
 
 <style lang="less" scoped>
 // 模板标识横幅样式
@@ -623,7 +653,7 @@ onUnmounted(() => {
   .logo-section {
     .logo-image {
       margin-bottom: 1.5rem;
-      
+
       img {
         height: 70px;
         width: auto;

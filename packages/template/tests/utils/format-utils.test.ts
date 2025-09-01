@@ -2,7 +2,7 @@
  * 格式化工具函数测试
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { formatUtils } from '../../src/utils/format'
 
 describe('formatUtils', () => {
@@ -143,7 +143,7 @@ describe('formatUtils', () => {
     it('应该格式化Error对象', () => {
       const error = new Error('Test error message')
       const formatted = formatUtils.formatError(error)
-      
+
       expect(formatted).toContain('Test error message')
       expect(formatted).toContain('Error')
     })
@@ -156,7 +156,7 @@ describe('formatUtils', () => {
     it('应该格式化对象错误', () => {
       const error = { message: 'Object error', code: 500 }
       const formatted = formatUtils.formatError(error)
-      
+
       expect(formatted).toContain('Object error')
       expect(formatted).toContain('500')
     })
@@ -164,7 +164,7 @@ describe('formatUtils', () => {
     it('应该处理未知错误类型', () => {
       const formatted = formatUtils.formatError(null)
       expect(formatted).toBe('Unknown error')
-      
+
       const formatted2 = formatUtils.formatError(undefined)
       expect(formatted2).toBe('Unknown error')
     })
@@ -172,7 +172,7 @@ describe('formatUtils', () => {
     it('应该包含堆栈信息', () => {
       const error = new Error('Test error')
       const formatted = formatUtils.formatError(error, true)
-      
+
       expect(formatted).toContain('Test error')
       expect(formatted).toContain('Stack trace:')
     })
@@ -321,7 +321,7 @@ describe('formatUtils', () => {
     it('应该处理午夜和正午', () => {
       const midnight = new Date('2024-01-01T00:00:00Z')
       const noon = new Date('2024-01-01T12:00:00Z')
-      
+
       expect(formatUtils.formatTime(midnight, true)).toBe('12:00:00 AM')
       expect(formatUtils.formatTime(noon, true)).toBe('12:00:00 PM')
     })

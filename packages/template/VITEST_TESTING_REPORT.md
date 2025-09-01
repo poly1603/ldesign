@@ -132,7 +132,7 @@
 ### 1. 测试类型覆盖
 ```typescript
 // 单元测试
-- 函数级别的独立测试
+-函数级别的独立测试
 - 类方法的行为验证
 - 边界条件和异常处理
 
@@ -174,7 +174,7 @@ const mockDeviceDetector = {
 ### 3. 错误处理测试
 ```typescript
 // 系统性错误场景覆盖
-- 文件系统权限错误
+-文件系统权限错误
 - 网络连接失败
 - 配置验证失败
 - 组件加载失败
@@ -192,11 +192,11 @@ it('应该对快速连续的文件变化进行防抖', () => {
   changeHandler(filePath)
   changeHandler(filePath)
   changeHandler(filePath)
-  
+
   // 验证防抖效果
   vi.advanceTimersByTime(200)
   expect(callback).not.toHaveBeenCalled()
-  
+
   vi.advanceTimersByTime(100)
   expect(callback).toHaveBeenCalledTimes(1)
 })
@@ -207,11 +207,11 @@ it('应该对快速连续的文件变化进行防抖', () => {
 // 模板扫描异步测试
 it('应该执行模板扫描', async () => {
   const { scan, isScanning } = useTemplateScanner()
-  
+
   expect(isScanning.value).toBe(false)
   const scanPromise = scan()
   expect(isScanning.value).toBe(true)
-  
+
   await scanPromise
   expect(isScanning.value).toBe(false)
 })
@@ -222,11 +222,11 @@ it('应该执行模板扫描', async () => {
 // 缓存性能测试
 it('应该快速处理大量操作', () => {
   const startTime = Date.now()
-  
+
   for (let i = 0; i < 1000; i++) {
     cache.set(`key${i}`, `value${i}`)
   }
-  
+
   const endTime = Date.now()
   expect(endTime - startTime).toBeLessThan(100)
 })
@@ -248,13 +248,15 @@ global.testUtils = {
 ### 模拟数据工厂
 ```typescript
 // 模板数据工厂
-const createMockTemplate = (overrides = {}) => ({
-  name: 'test-template',
-  displayName: '测试模板',
-  category: 'login',
-  device: 'desktop',
-  ...overrides
-})
+function createMockTemplate(overrides = {}) {
+  return {
+    name: 'test-template',
+    displayName: '测试模板',
+    category: 'login',
+    device: 'desktop',
+    ...overrides
+  }
+}
 ```
 
 ## 📈 测试执行和报告

@@ -157,6 +157,14 @@ LDesign Template 提供了丰富的预制模板，涵盖了常见的业务场景
 ### 浏览模板
 
 ```vue
+<script setup lang="ts">
+import { TemplateSelector } from '@ldesign/template'
+
+function handleTemplateSelect(template) {
+  console.log('选中模板:', template.displayName)
+}
+</script>
+
 <template>
   <div class="template-browser">
     <TemplateSelector
@@ -166,28 +174,11 @@ LDesign Template 提供了丰富的预制模板，涵盖了常见的业务场景
     />
   </div>
 </template>
-
-<script setup lang="ts">
-import { TemplateSelector } from '@ldesign/template'
-
-const handleTemplateSelect = (template) => {
-  console.log('选中模板:', template.displayName)
-}
-</script>
 ```
 
 ### 渲染模板
 
 ```vue
-<template>
-  <TemplateRenderer
-    category="login"
-    device="desktop"
-    template="modern"
-    :props="templateProps"
-  />
-</template>
-
 <script setup lang="ts">
 import { TemplateRenderer } from '@ldesign/template'
 
@@ -197,6 +188,15 @@ const templateProps = {
   enableSocialLogin: true
 }
 </script>
+
+<template>
+  <TemplateRenderer
+    category="login"
+    device="desktop"
+    template="modern"
+    :props="templateProps"
+  />
+</template>
 ```
 
 ## 📋 模板规范
@@ -227,7 +227,7 @@ export default {
   category: 'login',
   device: 'desktop',
   tags: ['modern', 'responsive'],
-  
+
   props: {
     title: {
       type: String,
@@ -235,7 +235,7 @@ export default {
       description: '页面标题'
     }
   },
-  
+
   events: [
     {
       name: 'submit',
@@ -272,7 +272,7 @@ import { useTheme } from '@ldesign/template'
 
 const { setTheme, currentTheme } = useTheme()
 
-const switchTheme = (theme: 'light' | 'dark') => {
+function switchTheme(theme: 'light' | 'dark') {
   setTheme(theme)
 }
 </script>
@@ -317,7 +317,7 @@ const searchResults = searchTemplates({
 
 ```typescript
 // 模板组件懒加载
-const LazyTemplate = defineAsyncComponent(() => 
+const LazyTemplate = defineAsyncComponent(() =>
   import('./templates/login/desktop/default/index.vue')
 )
 ```

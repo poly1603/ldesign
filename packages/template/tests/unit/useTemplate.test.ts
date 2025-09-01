@@ -2,11 +2,11 @@
  * useTemplate Hook 单元测试
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { nextTick } from 'vue'
-import { mount } from '@vue/test-utils'
-import { useTemplate } from '@/composables/useTemplate'
 import type { TemplateMetadata } from '@/types/template'
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
+import { useTemplate } from '@/composables/useTemplate'
 
 // Mock 依赖
 vi.mock('@/scanner', () => ({
@@ -14,11 +14,11 @@ vi.mock('@/scanner', () => ({
     scan: vi.fn().mockResolvedValue({
       templates: new Map(),
       stats: { totalTemplates: 0, byCategory: {}, byDevice: { desktop: 0, tablet: 0, mobile: 0 }, scanTime: 0, lastScanTime: 0 },
-      errors: []
+      errors: [],
     }),
     getTemplates: vi.fn().mockReturnValue([]),
-    getTemplate: vi.fn().mockReturnValue(null)
-  }))
+    getTemplate: vi.fn().mockReturnValue(null),
+  })),
 }))
 
 vi.mock('@/utils/loader', () => ({
@@ -26,24 +26,24 @@ vi.mock('@/utils/loader', () => ({
     loadComponent: vi.fn().mockResolvedValue({
       component: { name: 'MockComponent' },
       fromCache: false,
-      loadTime: 100
+      loadTime: 100,
     }),
     preloadComponent: vi.fn().mockResolvedValue(undefined),
-    clearLoadingPromises: vi.fn()
-  }
+    clearLoadingPromises: vi.fn(),
+  },
 }))
 
 vi.mock('@/utils/cache', () => ({
   componentCache: {
     getComponent: vi.fn().mockReturnValue(null),
-    clear: vi.fn()
-  }
+    clear: vi.fn(),
+  },
 }))
 
 vi.mock('@/composables/useDeviceDetection', () => ({
   useDeviceDetection: vi.fn().mockReturnValue({
-    deviceType: { value: 'desktop' }
-  })
+    deviceType: { value: 'desktop' },
+  }),
 }))
 
 describe('useTemplate', () => {
@@ -56,7 +56,7 @@ describe('useTemplate', () => {
     device: 'desktop',
     componentPath: '/templates/login/desktop/test/index.vue',
     configPath: '/templates/login/desktop/test/config.js',
-    isDefault: true
+    isDefault: true,
   }
 
   beforeEach(() => {
@@ -68,11 +68,11 @@ describe('useTemplate', () => {
       setup() {
         const templateHook = useTemplate({
           category: 'login',
-          device: 'desktop'
+          device: 'desktop',
         })
         return { templateHook }
       },
-      template: '<div></div>'
+      template: '<div></div>',
     }
 
     const wrapper = mount(TestComponent)
@@ -91,15 +91,15 @@ describe('useTemplate', () => {
       setup() {
         const templateHook = useTemplate({
           category: 'login',
-          device: 'desktop'
+          device: 'desktop',
         })
-        
+
         // Mock 可用模板
         templateHook.availableTemplates.value = [mockTemplate]
-        
+
         return { templateHook }
       },
-      template: '<div></div>'
+      template: '<div></div>',
     }
 
     const wrapper = mount(TestComponent)
@@ -116,11 +116,11 @@ describe('useTemplate', () => {
       setup() {
         const templateHook = useTemplate({
           category: 'login',
-          device: 'desktop'
+          device: 'desktop',
         })
         return { templateHook }
       },
-      template: '<div></div>'
+      template: '<div></div>',
     }
 
     const wrapper = mount(TestComponent)
@@ -137,14 +137,14 @@ describe('useTemplate', () => {
       setup() {
         const templateHook = useTemplate({
           category: 'login',
-          device: 'desktop'
+          device: 'desktop',
         })
-        
+
         templateHook.availableTemplates.value = [mockTemplate]
-        
+
         return { templateHook }
       },
-      template: '<div></div>'
+      template: '<div></div>',
     }
 
     const wrapper = mount(TestComponent)
@@ -161,11 +161,11 @@ describe('useTemplate', () => {
       setup() {
         const templateHook = useTemplate({
           category: 'login',
-          device: 'desktop'
+          device: 'desktop',
         })
         return { templateHook }
       },
-      template: '<div></div>'
+      template: '<div></div>',
     }
 
     const wrapper = mount(TestComponent)
@@ -182,11 +182,11 @@ describe('useTemplate', () => {
       setup() {
         const templateHook = useTemplate({
           category: 'login',
-          device: 'desktop'
+          device: 'desktop',
         })
         return { templateHook }
       },
-      template: '<div></div>'
+      template: '<div></div>',
     }
 
     const wrapper = mount(TestComponent)
@@ -203,11 +203,11 @@ describe('useTemplate', () => {
       setup() {
         const templateHook = useTemplate({
           category: 'login',
-          autoDetectDevice: true
+          autoDetectDevice: true,
         })
         return { templateHook }
       },
-      template: '<div></div>'
+      template: '<div></div>',
     }
 
     const wrapper = mount(TestComponent)
@@ -222,11 +222,11 @@ describe('useTemplate', () => {
         const templateHook = useTemplate({
           category: 'login',
           device: 'desktop',
-          enableCache: false
+          enableCache: false,
         })
         return { templateHook }
       },
-      template: '<div></div>'
+      template: '<div></div>',
     }
 
     const wrapper = mount(TestComponent)

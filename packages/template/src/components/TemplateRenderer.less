@@ -1,0 +1,318 @@
+/**
+ * TemplateRenderer 组件样式
+ * 
+ * 负责模板渲染器的所有样式，包括加载状态、错误状态、重试动画
+ */
+
+// ===== TemplateRenderer 主体样式 =====
+.template-renderer {
+  position: relative;
+  width: 100%;
+
+  &__content {
+    width: 100%;
+  }
+
+  // 选择器包装器
+  &__selector-wrapper {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+
+  // 渲染区域
+  &__render-area {
+    position: relative;
+    width: 100%;
+    min-height: 200px;
+  }
+}
+
+// ===== 加载状态样式 =====
+.template-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+
+  &__spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e9ecef;
+    border-top: 3px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+
+  &__text {
+    font-size: 0.875rem;
+    color: #6c757d;
+    text-align: center;
+  }
+
+  &__progress {
+    width: 200px;
+    height: 4px;
+    background: #e9ecef;
+    border-radius: 2px;
+    margin-top: 1rem;
+    overflow: hidden;
+
+    &-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #007bff, #0056b3);
+      border-radius: 2px;
+      animation: progress 2s ease-in-out infinite;
+    }
+  }
+}
+
+// ===== 错误状态样式 =====
+.template-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 12px;
+  text-align: center;
+
+  &__icon {
+    width: 48px;
+    height: 48px;
+    background: #fed7d7;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #e53e3e;
+    margin-bottom: 1rem;
+    animation: shake 0.5s ease-in-out;
+  }
+
+  &__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #e53e3e;
+    margin-bottom: 0.5rem;
+  }
+
+  &__message {
+    font-size: 0.875rem;
+    color: #a0aec0;
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  &__retry-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: #e53e3e;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+      background: #c53030;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &--loading {
+      pointer-events: none;
+
+      .retry-icon {
+        animation: spin 1s linear infinite;
+      }
+    }
+
+    .retry-icon {
+      font-size: 16px;
+      transition: transform 0.2s ease;
+    }
+
+    .retry-text {
+      position: relative;
+    }
+
+    // 波纹效果
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.3s ease, height 0.3s ease;
+    }
+
+    &:active::after {
+      width: 200px;
+      height: 200px;
+    }
+  }
+
+  &__cancel-btn {
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    color: #a0aec0;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #f7fafc;
+      border-color: #cbd5e0;
+      color: #4a5568;
+    }
+  }
+}
+
+// ===== 空状态样式 =====
+.template-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 12px;
+  text-align: center;
+
+  &__icon {
+    width: 64px;
+    height: 64px;
+    background: #e9ecef;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: #adb5bd;
+    margin-bottom: 1rem;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  &__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+
+  &__message {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+  }
+
+  &__action {
+    padding: 0.75rem 1.5rem;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #0056b3;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    }
+  }
+}
+
+// ===== 动画定义 =====
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+// ===== 响应式设计 =====
+@media (max-width: 768px) {
+  .template-loading,
+  .template-error,
+  .template-empty {
+    padding: 2rem 1rem;
+  }
+
+  .template-error__actions {
+    flex-direction: column;
+    width: 100%;
+
+    button {
+      width: 100%;
+    }
+  }
+}

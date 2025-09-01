@@ -2,16 +2,16 @@
  * 组合式函数测试
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { ref, nextTick } from 'vue'
-import { 
+import type { TemplateMetadata } from '../src/types/template'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
+import {
+  useDeviceDetection,
+  useTemplateConfig,
+  useTemplateRenderer,
   useTemplateScanner,
   useTemplateSelector,
-  useTemplateRenderer,
-  useTemplateConfig,
-  useDeviceDetection
 } from '../src/composables'
-import type { TemplateMetadata, DeviceType } from '../src/types/template'
 
 // 模拟依赖
 vi.mock('@ldesign/device', () => ({
@@ -23,8 +23,8 @@ vi.mock('@ldesign/device', () => ({
     isDesktop: vi.fn().mockReturnValue(true),
     on: vi.fn(),
     off: vi.fn(),
-    emit: vi.fn()
-  }))
+    emit: vi.fn(),
+  })),
 }))
 
 describe('useTemplateScanner', () => {
@@ -41,10 +41,10 @@ describe('useTemplateScanner', () => {
       scan,
       getTemplatesByCategory,
       getTemplatesByDevice,
-      searchTemplates
+      searchTemplates,
     } = useTemplateScanner({
       templatesDir: 'test/templates',
-      autoScan: false
+      autoScan: false,
     })
 
     expect(scanner).toBeDefined()
@@ -60,7 +60,7 @@ describe('useTemplateScanner', () => {
   it('应该执行模板扫描', async () => {
     const { scan, isScanning, templates } = useTemplateScanner({
       templatesDir: 'test/templates',
-      autoScan: false
+      autoScan: false,
     })
 
     expect(isScanning.value).toBe(false)
@@ -76,11 +76,11 @@ describe('useTemplateScanner', () => {
   it('应该处理扫描错误', async () => {
     const { scan, scanError } = useTemplateScanner({
       templatesDir: 'nonexistent/templates',
-      autoScan: false
+      autoScan: false,
     })
 
     await scan()
-    
+
     // 由于模拟的文件系统，这里可能不会产生真实错误
     // 但我们可以测试错误状态的响应性
     expect(scanError.value).toBeDefined()
@@ -89,39 +89,39 @@ describe('useTemplateScanner', () => {
   it('应该按分类获取模板', async () => {
     const { scan, getTemplatesByCategory } = useTemplateScanner({
       templatesDir: 'test/templates',
-      autoScan: false
+      autoScan: false,
     })
 
     await scan()
     const loginTemplates = getTemplatesByCategory('login')
-    
+
     expect(Array.isArray(loginTemplates.value)).toBe(true)
   })
 
   it('应该按设备类型获取模板', async () => {
     const { scan, getTemplatesByDevice } = useTemplateScanner({
       templatesDir: 'test/templates',
-      autoScan: false
+      autoScan: false,
     })
 
     await scan()
     const desktopTemplates = getTemplatesByDevice('desktop')
-    
+
     expect(Array.isArray(desktopTemplates.value)).toBe(true)
   })
 
   it('应该搜索模板', async () => {
     const { scan, searchTemplates } = useTemplateScanner({
       templatesDir: 'test/templates',
-      autoScan: false
+      autoScan: false,
     })
 
     await scan()
     const searchResults = searchTemplates({
       keyword: '登录',
-      categories: ['login']
+      categories: ['login'],
     })
-    
+
     expect(Array.isArray(searchResults.value)).toBe(true)
   })
 })
@@ -144,7 +144,7 @@ describe('useTemplateSelector', () => {
         configPath: '/path/to/config.ts',
         lastModified: Date.now(),
         isBuiltIn: true,
-        tags: ['classic', 'responsive']
+        tags: ['classic', 'responsive'],
       },
       {
         name: 'dashboard-modern',
@@ -159,8 +159,8 @@ describe('useTemplateSelector', () => {
         configPath: '/path/to/config.ts',
         lastModified: Date.now(),
         isBuiltIn: true,
-        tags: ['modern', 'interactive']
-      }
+        tags: ['modern', 'interactive'],
+      },
     ]
   })
 
@@ -177,10 +177,10 @@ describe('useTemplateSelector', () => {
       searchTemplates,
       filterByCategory,
       filterByDevice,
-      reset
+      reset,
     } = useTemplateSelector({
       templates: mockTemplates,
-      device: 'desktop'
+      device: 'desktop',
     })
 
     expect(availableTemplates.value).toEqual(mockTemplates)
@@ -200,7 +200,7 @@ describe('useTemplateSelector', () => {
   it('应该选择模板', async () => {
     const { selectTemplate, selectedTemplate } = useTemplateSelector({
       templates: mockTemplates,
-      device: 'desktop'
+      device: 'desktop',
     })
 
     await selectTemplate(mockTemplates[0])
@@ -210,11 +210,11 @@ describe('useTemplateSelector', () => {
   it('应该搜索模板', async () => {
     const { searchTemplates, filteredTemplates, searchQuery } = useTemplateSelector({
       templates: mockTemplates,
-      device: 'desktop'
+      device: 'desktop',
     })
 
     await searchTemplates('登录')
-    
+
     expect(searchQuery.value).toBe('登录')
     expect(filteredTemplates.value.length).toBeLessThanOrEqual(mockTemplates.length)
   })
@@ -222,36 +222,36 @@ describe('useTemplateSelector', () => {
   it('应该按分类过滤模板', async () => {
     const { filterByCategory, filteredTemplates } = useTemplateSelector({
       templates: mockTemplates,
-      device: 'desktop'
+      device: 'desktop',
     })
 
     await filterByCategory('login')
-    
+
     expect(filteredTemplates.value.every(t => t.category === 'login')).toBe(true)
   })
 
   it('应该按设备类型过滤模板', async () => {
     const { filterByDevice, filteredTemplates } = useTemplateSelector({
       templates: mockTemplates,
-      device: 'desktop'
+      device: 'desktop',
     })
 
     await filterByDevice('mobile')
-    
+
     expect(filteredTemplates.value.every(t => t.device === 'mobile')).toBe(true)
   })
 
   it('应该重置选择器状态', () => {
-    const { 
-      selectTemplate, 
-      searchTemplates, 
+    const {
+      selectTemplate,
+      searchTemplates,
       reset,
       selectedTemplate,
       searchQuery,
-      filteredTemplates
+      filteredTemplates,
     } = useTemplateSelector({
       templates: mockTemplates,
-      device: 'desktop'
+      device: 'desktop',
     })
 
     // 设置一些状态
@@ -271,11 +271,11 @@ describe('useTemplateSelector', () => {
     const { previewTemplate } = useTemplateSelector({
       templates: mockTemplates,
       device: 'desktop',
-      onPreview
+      onPreview,
     })
 
     await previewTemplate(mockTemplates[0])
-    
+
     expect(onPreview).toHaveBeenCalledWith(mockTemplates[0])
   })
 })
@@ -295,11 +295,11 @@ describe('useTemplateRenderer', () => {
       componentPath: '/path/to/component.vue',
       componentLoader: vi.fn().mockResolvedValue({
         name: 'TestComponent',
-        setup: () => () => ({ tag: 'div', children: 'Test Component' })
+        setup: () => () => ({ tag: 'div', children: 'Test Component' }),
       }),
       configPath: '/path/to/config.ts',
       lastModified: Date.now(),
-      isBuiltIn: true
+      isBuiltIn: true,
     }
   })
 
@@ -310,7 +310,7 @@ describe('useTemplateRenderer', () => {
       isLoading,
       loadError,
       renderTemplate,
-      clearTemplate
+      clearTemplate,
     } = useTemplateRenderer()
 
     expect(currentTemplate.value).toBeNull()
@@ -339,7 +339,7 @@ describe('useTemplateRenderer', () => {
   it('应该处理加载错误', async () => {
     const errorTemplate = {
       ...mockTemplate,
-      componentLoader: vi.fn().mockRejectedValue(new Error('Load failed'))
+      componentLoader: vi.fn().mockRejectedValue(new Error('Load failed')),
     }
 
     const { renderTemplate, loadError } = useTemplateRenderer()
@@ -381,10 +381,10 @@ describe('useTemplateConfig', () => {
       resetConfig,
       validateConfig,
       exportConfig,
-      importConfig
+      importConfig,
     } = useTemplateConfig({
       templatesDir: 'test/templates',
-      debug: true
+      debug: true,
     })
 
     expect(config.value).toBeDefined()
@@ -399,12 +399,12 @@ describe('useTemplateConfig', () => {
 
   it('应该更新配置', async () => {
     const { config, updateConfig } = useTemplateConfig({
-      templatesDir: 'initial/templates'
+      templatesDir: 'initial/templates',
     })
 
     await updateConfig({
       templatesDir: 'updated/templates',
-      debug: true
+      debug: true,
     })
 
     expect(config.value.templatesDir).toBe('updated/templates')
@@ -416,12 +416,12 @@ describe('useTemplateConfig', () => {
 
     const validConfig = {
       templatesDir: 'valid/templates',
-      autoScan: true
+      autoScan: true,
     }
 
     const invalidConfig = {
       templatesDir: '', // 无效
-      autoScan: 'invalid' // 类型错误
+      autoScan: 'invalid', // 类型错误
     }
 
     const validResult = validateConfig(validConfig)
@@ -434,7 +434,7 @@ describe('useTemplateConfig', () => {
   it('应该导出和导入配置', () => {
     const { config, exportConfig, importConfig } = useTemplateConfig({
       templatesDir: 'export/templates',
-      debug: true
+      debug: true,
     })
 
     const exported = exportConfig()
@@ -457,7 +457,7 @@ describe('useDeviceDetection', () => {
       isTablet,
       isDesktop,
       detectDevice,
-      onDeviceChange
+      onDeviceChange,
     } = useDeviceDetection()
 
     expect(currentDevice.value).toBe('desktop')

@@ -2,8 +2,8 @@
  * 模板配置管理组合式函数
  */
 
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import type { TemplateSystemConfig } from '../types/config'
+import { computed, type ComputedRef, onMounted, onUnmounted, ref, type Ref, watch } from 'vue'
 import { TemplateConfigManager } from '../config/config-manager'
 import { validationUtils } from '../utils/validation'
 
@@ -92,7 +92,8 @@ export function useTemplateConfig(options: UseTemplateConfigOptions = {}): UseTe
       })
 
       error.value = null
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err.message : '配置更新失败'
       console.error('Config update failed:', err)
     }
@@ -114,7 +115,7 @@ export function useTemplateConfig(options: UseTemplateConfigOptions = {}): UseTe
    */
   const validateConfig = (): boolean => {
     const result = validationUtils.validateConfig(config.value)
-    
+
     if (!result.valid) {
       error.value = `配置验证失败: ${result.errors.join(', ')}`
       return false
@@ -130,7 +131,8 @@ export function useTemplateConfig(options: UseTemplateConfigOptions = {}): UseTe
   const exportConfig = (): string => {
     try {
       return JSON.stringify(config.value, null, 2)
-    } catch (err) {
+    }
+    catch (err) {
       error.value = '配置导出失败'
       return ''
     }
@@ -142,7 +144,7 @@ export function useTemplateConfig(options: UseTemplateConfigOptions = {}): UseTe
   const importConfig = (configData: string): boolean => {
     try {
       const importedConfig = JSON.parse(configData)
-      
+
       // 验证导入的配置
       const validationResult = validationUtils.validateConfig(importedConfig)
       if (!validationResult.valid) {
@@ -154,7 +156,8 @@ export function useTemplateConfig(options: UseTemplateConfigOptions = {}): UseTe
       updateConfig(importedConfig)
       error.value = null
       return true
-    } catch (err) {
+    }
+    catch (err) {
       error.value = '配置导入失败: 无效的JSON格式'
       return false
     }
@@ -188,6 +191,6 @@ export function useTemplateConfig(options: UseTemplateConfigOptions = {}): UseTe
     resetConfig,
     validateConfig,
     exportConfig,
-    importConfig
+    importConfig,
   }
 }

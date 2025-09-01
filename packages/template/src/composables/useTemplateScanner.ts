@@ -2,8 +2,8 @@
  * 模板扫描器组合式函数
  */
 
-import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
-import type { TemplateMetadata, DeviceType } from '../types/template'
+import type { DeviceType, TemplateMetadata } from '../types/template'
+import { onMounted, onUnmounted, ref, type Ref } from 'vue'
 import { TemplateScanner } from '../scanner'
 
 /**
@@ -45,7 +45,7 @@ export function useTemplateScanner(options: UseTemplateScannerOptions = {}): Use
     scanner = new TemplateScanner({
       templatesDir: options.templatesDir || 'src/templates',
       enableCache: options.enableCache ?? true,
-      enableHMR: options.enableHMR ?? import.meta.env.DEV
+      enableHMR: options.enableHMR ?? import.meta.env.DEV,
     })
   }
 
@@ -63,10 +63,12 @@ export function useTemplateScanner(options: UseTemplateScannerOptions = {}): Use
     try {
       const result = await scanner!.scan()
       templates.value = Array.from(result.templates.values()).flat()
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err.message : '扫描失败'
       console.error('Template scan failed:', err)
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -91,10 +93,10 @@ export function useTemplateScanner(options: UseTemplateScannerOptions = {}): Use
   const searchTemplates = (query: string): TemplateMetadata[] => {
     const lowerQuery = query.toLowerCase()
     return templates.value.filter(template =>
-      template.name.toLowerCase().includes(lowerQuery) ||
-      template.displayName?.toLowerCase().includes(lowerQuery) ||
-      template.description?.toLowerCase().includes(lowerQuery) ||
-      template.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
+      template.name.toLowerCase().includes(lowerQuery)
+      || template.displayName?.toLowerCase().includes(lowerQuery)
+      || template.description?.toLowerCase().includes(lowerQuery)
+      || template.tags?.some(tag => tag.toLowerCase().includes(lowerQuery)),
     )
   }
 
@@ -115,6 +117,6 @@ export function useTemplateScanner(options: UseTemplateScannerOptions = {}): Use
     scan,
     getTemplatesByCategory,
     getTemplatesByDevice,
-    searchTemplates
+    searchTemplates,
   }
 }

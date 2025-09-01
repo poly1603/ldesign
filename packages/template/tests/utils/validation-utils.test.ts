@@ -2,9 +2,9 @@
  * 验证工具函数测试
  */
 
-import { describe, it, expect } from 'vitest'
-import { validationUtils } from '../../src/utils/validation'
 import type { TemplateMetadata, TemplateSystemConfig } from '../../src/types'
+import { describe, expect, it } from 'vitest'
+import { validationUtils } from '../../src/utils/validation'
 
 describe('validationUtils', () => {
   describe('validateTemplateMetadata', () => {
@@ -18,7 +18,7 @@ describe('validationUtils', () => {
       device: 'desktop',
       componentPath: '/path/to/component.vue',
       lastModified: Date.now(),
-      isBuiltIn: false
+      isBuiltIn: false,
     }
 
     it('应该验证有效的模板元数据', () => {
@@ -31,7 +31,7 @@ describe('validationUtils', () => {
       const invalidTemplate = {
         ...validTemplate,
         name: '',
-        displayName: ''
+        displayName: '',
       }
 
       const result = validationUtils.validateTemplateMetadata(invalidTemplate)
@@ -44,7 +44,7 @@ describe('validationUtils', () => {
     it('应该验证设备类型', () => {
       const invalidTemplate = {
         ...validTemplate,
-        device: 'invalid-device' as any
+        device: 'invalid-device' as any,
       }
 
       const result = validationUtils.validateTemplateMetadata(invalidTemplate)
@@ -55,7 +55,7 @@ describe('validationUtils', () => {
     it('应该验证模板分类', () => {
       const invalidTemplate = {
         ...validTemplate,
-        category: 'invalid-category' as any
+        category: 'invalid-category' as any,
       }
 
       const result = validationUtils.validateTemplateMetadata(invalidTemplate)
@@ -66,7 +66,7 @@ describe('validationUtils', () => {
     it('应该验证版本格式', () => {
       const invalidTemplate = {
         ...validTemplate,
-        version: 'invalid-version'
+        version: 'invalid-version',
       }
 
       const result = validationUtils.validateTemplateMetadata(invalidTemplate)
@@ -77,7 +77,7 @@ describe('validationUtils', () => {
     it('应该验证组件路径', () => {
       const invalidTemplate = {
         ...validTemplate,
-        componentPath: ''
+        componentPath: '',
       }
 
       const result = validationUtils.validateTemplateMetadata(invalidTemplate)
@@ -89,7 +89,7 @@ describe('validationUtils', () => {
       const templateWithOptionalFields = {
         ...validTemplate,
         tags: ['tag1', 'tag2'],
-        metadata: { custom: 'value' }
+        metadata: { custom: 'value' },
       }
 
       const result = validationUtils.validateTemplateMetadata(templateWithOptionalFields)
@@ -99,7 +99,7 @@ describe('validationUtils', () => {
     it('应该验证标签数组', () => {
       const invalidTemplate = {
         ...validTemplate,
-        tags: 'invalid-tags' as any
+        tags: 'invalid-tags' as any,
       }
 
       const result = validationUtils.validateTemplateMetadata(invalidTemplate)
@@ -122,18 +122,18 @@ describe('validationUtils', () => {
         enableCache: true,
         watchMode: false,
         debounceDelay: 300,
-        batchSize: 10
+        batchSize: 10,
       },
       cache: {
         enabled: true,
         strategy: 'lru',
         maxSize: 100,
-        ttl: 60000
+        ttl: 60000,
       },
       errorHandling: {
         enableReporting: true,
-        logLevel: 'error'
-      }
+        logLevel: 'error',
+      },
     }
 
     it('应该验证有效的配置', () => {
@@ -145,7 +145,7 @@ describe('validationUtils', () => {
     it('应该检测无效的模板目录', () => {
       const invalidConfig = {
         ...validConfig,
-        templatesDir: ''
+        templatesDir: '',
       }
 
       const result = validationUtils.validateConfig(invalidConfig)
@@ -159,8 +159,8 @@ describe('validationUtils', () => {
         scanner: {
           ...validConfig.scanner,
           maxDepth: -1,
-          batchSize: 0
-        }
+          batchSize: 0,
+        },
       }
 
       const result = validationUtils.validateConfig(invalidConfig)
@@ -176,8 +176,8 @@ describe('validationUtils', () => {
           ...validConfig.cache,
           strategy: 'invalid-strategy' as any,
           maxSize: -1,
-          ttl: -1000
-        }
+          ttl: -1000,
+        },
       }
 
       const result = validationUtils.validateConfig(invalidConfig)
@@ -192,8 +192,8 @@ describe('validationUtils', () => {
         ...validConfig,
         errorHandling: {
           ...validConfig.errorHandling,
-          logLevel: 'invalid-level' as any
-        }
+          logLevel: 'invalid-level' as any,
+        },
       }
 
       const result = validationUtils.validateConfig(invalidConfig)
@@ -207,8 +207,8 @@ describe('validationUtils', () => {
         templatesDir: '',
         scanner: {
           ...validConfig.scanner,
-          maxDepth: -1
-        }
+          maxDepth: -1,
+        },
       }
 
       const result = validationUtils.validateConfig(invalidConfig)
@@ -221,7 +221,7 @@ describe('validationUtils', () => {
   describe('isValidExtension', () => {
     it('应该验证有效的文件扩展名', () => {
       const validExtensions = ['.vue', '.js', '.ts', '.tsx']
-      
+
       expect(validationUtils.isValidExtension('.vue', validExtensions)).toBe(true)
       expect(validationUtils.isValidExtension('.js', validExtensions)).toBe(true)
       expect(validationUtils.isValidExtension('.ts', validExtensions)).toBe(true)
@@ -230,7 +230,7 @@ describe('validationUtils', () => {
 
     it('应该拒绝无效的文件扩展名', () => {
       const validExtensions = ['.vue', '.js', '.ts']
-      
+
       expect(validationUtils.isValidExtension('.css', validExtensions)).toBe(false)
       expect(validationUtils.isValidExtension('.html', validExtensions)).toBe(false)
       expect(validationUtils.isValidExtension('.txt', validExtensions)).toBe(false)
@@ -238,7 +238,7 @@ describe('validationUtils', () => {
 
     it('应该处理大小写不敏感', () => {
       const validExtensions = ['.vue', '.js', '.ts']
-      
+
       expect(validationUtils.isValidExtension('.VUE', validExtensions)).toBe(true)
       expect(validationUtils.isValidExtension('.JS', validExtensions)).toBe(true)
       expect(validationUtils.isValidExtension('.TS', validExtensions)).toBe(true)
@@ -246,7 +246,7 @@ describe('validationUtils', () => {
 
     it('应该处理没有点的扩展名', () => {
       const validExtensions = ['.vue', '.js', '.ts']
-      
+
       expect(validationUtils.isValidExtension('vue', validExtensions)).toBe(true)
       expect(validationUtils.isValidExtension('js', validExtensions)).toBe(true)
     })

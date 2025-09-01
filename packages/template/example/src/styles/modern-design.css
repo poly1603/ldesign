@@ -1,0 +1,340 @@
+/**
+ * 现代化设计样式
+ * 修复UI问题并提供更好的视觉体验
+ */
+
+/* 简洁白色背景 */
+body {
+  background: #ffffff;
+  min-height: 100vh;
+  color: #2c3e50;
+}
+
+/* 简洁导航栏 */
+.navbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e9ecef !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+  z-index: 1000 !important;
+}
+
+/* 简洁卡片样式 */
+.card {
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* 模板选择器模态框修复 */
+.template-selector-modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 2000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  pointer-events: auto !important;
+}
+
+.template-selector-modal__backdrop {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 1 !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+  pointer-events: auto !important;
+}
+
+.template-selector-modal__content {
+  position: relative !important;
+  z-index: 2 !important;
+  width: 100% !important;
+  max-width: 1200px !important;
+  max-height: 90vh !important;
+  background: #fff !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+  overflow: hidden !important;
+  pointer-events: auto !important;
+}
+
+/* 模板选择器动画 - 更优雅的效果 */
+.template-selector-modal-enter-active {
+  transition: all 350ms cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.template-selector-modal-leave-active {
+  transition: all 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+
+.template-selector-modal-enter-from {
+  opacity: 0 !important;
+}
+
+.template-selector-modal-enter-to {
+  opacity: 1 !important;
+}
+
+.template-selector-modal-leave-from {
+  opacity: 1 !important;
+}
+
+.template-selector-modal-leave-to {
+  opacity: 0 !important;
+}
+
+/* 模态框内容动画 */
+.template-selector-modal__content {
+  transition: all 350ms cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.template-selector-modal-enter-from .template-selector-modal__content {
+  opacity: 0 !important;
+  transform: scale(0.8) translateY(-40px) !important;
+}
+
+.template-selector-modal-enter-to .template-selector-modal__content {
+  opacity: 1 !important;
+  transform: scale(1) translateY(0) !important;
+}
+
+.template-selector-modal-leave-from .template-selector-modal__content {
+  opacity: 1 !important;
+  transform: scale(1) translateY(0) !important;
+}
+
+.template-selector-modal-leave-to .template-selector-modal__content {
+  opacity: 0 !important;
+  transform: scale(0.9) translateY(-20px) !important;
+}
+
+/* 背景遮罩动画 */
+.template-selector-modal__backdrop {
+  transition: all 300ms ease-out !important;
+}
+
+.template-selector-modal-enter-from .template-selector-modal__backdrop {
+  opacity: 0 !important;
+}
+
+.template-selector-modal-enter-to .template-selector-modal__backdrop {
+  opacity: 1 !important;
+}
+
+.template-selector-modal-leave-from .template-selector-modal__backdrop {
+  opacity: 1 !important;
+}
+
+.template-selector-modal-leave-to .template-selector-modal__backdrop {
+  opacity: 0 !important;
+}
+
+/* 模板卡片交互修复 */
+.template-card {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.template-card__select-btn {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  z-index: 10 !important;
+  position: relative !important;
+}
+
+/* 简洁按钮样式 */
+.btn {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn--primary {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.btn--primary:hover {
+  background: #0056b3;
+  border-color: #0056b3;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+/* 页脚样式 */
+.footer {
+  background: #f8f9fa !important;
+  border-top: 1px solid #e9ecef !important;
+  color: #6c757d !important;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .template-selector-modal {
+    padding: 10px !important;
+  }
+  
+  .template-selector-modal__content {
+    max-height: 95vh !important;
+    border-radius: 12px !important;
+  }
+}
+
+/* 修复遮挡问题 */
+.background-overlay {
+  pointer-events: none !important;
+}
+
+/* 确保所有交互元素可点击 */
+button, a, input, select, textarea {
+  pointer-events: auto !important;
+}
+
+/* 模板内容区域 */
+.template-renderer__content {
+  position: relative;
+  z-index: 1;
+}
+
+/* 修复模板内容遮挡选择器按钮的问题 */
+.template-content-wrapper,
+.template-content-loading,
+.template-content-error,
+.template-content-empty {
+  pointer-events: none !important;
+}
+
+/* 但是模板内部的交互元素需要可点击 */
+.template-content-wrapper button,
+.template-content-wrapper input,
+.template-content-wrapper a,
+.template-content-wrapper select,
+.template-content-wrapper textarea {
+  pointer-events: auto !important;
+}
+
+/* 模板选择器区域优先级最高 */
+.template-selector-wrapper {
+  position: relative !important;
+  z-index: 100 !important;
+  pointer-events: auto !important;
+}
+
+/* 模板选择器触发按钮 */
+.template-selector-trigger {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  pointer-events: auto !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.template-selector-trigger:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.template-selector-trigger__arrow {
+  transition: transform 0.2s ease;
+}
+
+.template-selector-trigger__arrow--open {
+  transform: rotate(180deg);
+}
+
+/* 模板内容切换动画 */
+.template-content-enter-active {
+  transition: all 400ms cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+.template-content-leave-active {
+  transition: all 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+
+.template-content-enter-from {
+  opacity: 0 !important;
+  transform: translateX(30px) scale(0.98) !important;
+}
+
+.template-content-enter-to {
+  opacity: 1 !important;
+  transform: translateX(0) scale(1) !important;
+}
+
+.template-content-leave-from {
+  opacity: 1 !important;
+  transform: translateX(0) scale(1) !important;
+}
+
+.template-content-leave-to {
+  opacity: 0 !important;
+  transform: translateX(-30px) scale(0.98) !important;
+}
+
+/* 模板内容容器 */
+.template-content-wrapper,
+.template-content-loading,
+.template-content-error,
+.template-content-empty {
+  width: 100% !important;
+  min-height: 200px !important;
+}
+
+/* 加载状态动画 */
+.template-content-loading {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* 错误状态动画 */
+.template-content-error {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: column !important;
+}
+
+/* 空状态动画 */
+.template-content-empty {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: column !important;
+}
