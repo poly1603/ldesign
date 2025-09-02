@@ -167,28 +167,62 @@ export function mergeConfig(base: Partial<BuildOptions>, override: Partial<Build
  * @param config 配置对象
  * @returns 验证结果
  */
-export function validateConfig(config: Partial<BuildOptions>): { valid: boolean; errors: string[] } {
+export function validateConfig(config: Partial<BuildOptions>): { valid: boolean; errors: string[]; warnings: string[] } {
   const errors: string[] = []
+  const warnings: string[] = []
 
   // 验证基本结构
   if (typeof config !== 'object' || config === null) {
     errors.push('配置必须是一个对象')
-    return { valid: false, errors }
+    return { valid: false, errors, warnings }
   }
 
   // 验证 formats 配置
-  if (config.formats && !Array.isArray(config.formats)) {
-    errors.push('formats 配置必须是一个数组')
+  if (config.formats) {
+    if (!Array.isArray(config.formats)) {
+      errors.push('formats 配置必须是一个数组')
+    } else {
+      const validFormats = ['esm', 'cjs', 'iife', 'umd']
+      const invalidFormats = config.formats.filter(format => !validFormats.includes(format))
+      if (invalidFormats.length > 0) {
+        errors.push(`无效的输出格式: ${invalidFormats.join(', ')}。有效格式: ${validFormats.join(', ')}`)
+      }
+      
+      // 检查格式组合的兼容性
+      if (config.formats.includes('umd') && !config.name) {
+        warnings.push('UMD 格式建议设置 name 字段，用于定义全局变量名')
+      }
+      if (config.formats.includes('iife') && !config.name) {
+        warnings.push('IIFE 格式建议设置 name 字段，用于定义全局变量名')
+      }
+    }
   }
 
   // 验证 external 配置
-  if (config.external && !Array.isArray(config.external)) {
-    errors.push('external 配置必须是一个数组')
+  if (config.external) {
+    if (!Array.isArray(config.external) && typeof config.external !== 'function') {
+      errors.push('external 配置必须是一个数组或函数')
+    } else if (Array.isArray(config.external)) {
+      const invalidExternals = config.external.filter(ext => typeof ext !== 'string')
+      if (invalidExternals.length > 0) {
+        errors.push('external 数组中的所有项都必须是字符串')
+      }
+    }
   }
 
   // 验证 plugins 配置
-  if (config.plugins && !Array.isArray(config.plugins)) {
-    errors.push('plugins 配置必须是一个数组')
+  if (config.plugins) {
+    if (!Array.isArray(config.plugins)) {
+      errors.push('plugins 配置必须是一个数组')
+    } else {
+      config.plugins.forEach((plugin, index) => {
+        if (!plugin || typeof plugin !== 'object') {
+          errors.push(`plugins[${index}] 必须是一个对象`)
+        } else if (!plugin.name || typeof plugin.name !== 'string') {
+          errors.push(`plugins[${index}] 必须包含有效的 name 字段`)
+        }
+      })
+    }
   }
 
   // 验证 name 配置
@@ -196,5 +230,63 @@ export function validateConfig(config: Partial<BuildOptions>): { valid: boolean;
     errors.push('name 配置必须是一个字符串')
   }
 
-  return { valid: errors.length === 0, errors }
+  // 验证 input 配置
+  if (config.input) {
+    const inputType = typeof config.input
+    if (inputType !== 'string' && !Array.isArray(config.input) && inputType !== 'object') {
+      errors.push('input 配置必须是字符串、数组或对象')
+    } else if (Array.isArray(config.input)) {
+      const invalidInputs = config.input.filter(inp => typeof inp !== 'string')
+      if (invalidInputs.length > 0) {
+        errors.push('input 数组中的所有项都必须是字符串')
+      }
+    }
+  }
+
+  // 验证 outDir 配置
+  if (config.outDir && typeof config.outDir !== 'string') {
+    errors.push('outDir 配置必须是一个字符串')
+  }
+
+  // 验证 dts 配置
+  if (config.dts && typeof config.dts !== 'boolean' && typeof config.dts !== 'object') {
+    errors.push('dts 配置必须是 boolean 或 对象')
+  }
+
+  // 验证 mode 配置
+  if (config.mode && !['development', 'production'].includes(config.mode)) {
+    errors.push('mode 配置必须是 "development" 或 "production"')
+  }
+
+  // 验证 sourcemap 配置
+  if (config.sourcemap !== undefined) {
+    const validSourcemapValues = [true, false, 'inline', 'hidden']
+    if (!validSourcemapValues.includes(config.sourcemap as any)) {
+      errors.push('sourcemap 配置必须是 boolean、"inline" 或 "hidden"')
+    }
+  }
+
+  // 验证 globals 配置
+  if (config.globals) {
+    if (typeof config.globals !== 'object' || Array.isArray(config.globals)) {
+      errors.push('globals 配置必须是一个对象')
+    } else {
+      Object.entries(config.globals).forEach(([key, value]) => {
+        if (typeof key !== 'string' || typeof value !== 'string') {
+          errors.push('globals 对象的键和值都必须是字符串')
+        }
+      })
+    }
+  }
+
+  // 逻辑验证：检查配置组合的合理性
+  if (config.formats?.includes('umd') || config.formats?.includes('iife')) {
+    if (config.external && Array.isArray(config.external) && config.external.length > 0) {
+      if (!config.globals || Object.keys(config.globals).length === 0) {
+        warnings.push('使用 UMD/IIFE 格式时，建议为 external 依赖配置对应的 globals 映射')
+      }
+    }
+  }
+
+  return { valid: errors.length === 0, errors, warnings }
 }

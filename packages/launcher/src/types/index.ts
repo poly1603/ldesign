@@ -85,6 +85,8 @@ export interface DevOptions {
 export interface BuildOptions {
   /** 输出目录 */
   outDir?: string;
+  /** 构建模式 */
+  mode?: 'development' | 'production';
   /** 是否压缩代码 */
   minify?: boolean | 'terser' | 'esbuild';
   /** 是否生成sourcemap */
@@ -219,6 +221,10 @@ export interface DetectionResult {
   framework: FrameworkType;
   /** 检测置信度 */
   confidence: number;
+  /** 主要依赖 */
+  dependencies?: Record<string, string>;
+  /** 检测到的特征文件 */
+  detectedFiles?: string[];
   /** 检测报告 */
   report: DetectionReport;
   /** 错误信息 */

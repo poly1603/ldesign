@@ -38,6 +38,10 @@ export class PluginManager implements IPluginManager {
       defaultOptions: {
         include: [/\.vue$/],
         exclude: [],
+        reactivityTransform: true,
+        script: {
+          defineModel: true,
+        },
       },
       required: true,
     })
@@ -53,6 +57,10 @@ export class PluginManager implements IPluginManager {
       defaultOptions: {
         include: [/\.vue$/],
         exclude: [],
+        jsx: true,
+        jsxOptions: {
+          functional: false,
+        },
       },
       required: true,
     })
@@ -68,6 +76,13 @@ export class PluginManager implements IPluginManager {
       defaultOptions: {
         include: '**/*.{jsx,tsx}',
         exclude: [],
+        jsxImportSource: 'react',
+        babel: {
+          plugins: [
+            ['@babel/plugin-proposal-decorators', { legacy: true }],
+            ['@babel/plugin-proposal-class-properties', { loose: true }],
+          ],
+        },
       },
       required: true,
     })
@@ -84,24 +99,28 @@ export class PluginManager implements IPluginManager {
       required: false,
     })
 
-    // Lit 插件 - 官方插件已废弃，使用社区插件
-    this.pluginRegistry.set('vite-plugin-lit', {
-      name: 'vite-plugin-lit',
-      packageName: 'vite-plugin-lit',
-      version: '^1.0.0',
-      description: 'Lit 元素支持',
+    // Lit 的 TypeScript 支持（使用 esbuild 内置支持）
+    this.pluginRegistry.set('vite-typescript', {
+      name: 'vite-typescript',
+      packageName: 'typescript',
+      version: '^5.0.0',
+      description: 'Lit TypeScript 支持',
       frameworks: ['lit'],
       supportedFrameworks: ['lit'],
-      defaultOptions: {},
-      required: false,
+      defaultOptions: {
+        target: 'es2020',
+        experimentalDecorators: true,
+        emitDecoratorMetadata: true,
+      },
+      required: true,
     })
 
-    // Lit CSS 插件
-    this.pluginRegistry.set('vite-plugin-lit-css', {
-      name: 'vite-plugin-lit-css',
-      packageName: 'vite-plugin-lit-css',
-      version: '^1.0.0',
-      description: 'Lit CSS 模块支持',
+    // 更好的 Lit 插件
+    this.pluginRegistry.set('@lit-labs/rollup-plugin-minify-html-literals', {
+      name: '@lit-labs/rollup-plugin-minify-html-literals',
+      packageName: '@lit-labs/rollup-plugin-minify-html-literals',
+      version: '^1.2.0',
+      description: 'Lit HTML 模板字符串压缩',
       frameworks: ['lit'],
       supportedFrameworks: ['lit'],
       defaultOptions: {},
@@ -180,9 +199,81 @@ export class PluginManager implements IPluginManager {
       frameworks: ['vue3', 'vue2', 'react'],
       supportedFrameworks: ['vue3', 'vue2', 'react'],
       defaultOptions: {
-        imports: ['vue', 'vue-router'],
+        imports: [
+          'vue',
+          'vue-router',
+          'react',
+          '@vueuse/core',
+          '@vueuse/head',
+        ],
         dts: true,
+        eslintrc: {
+          enabled: true,
+        },
       },
+      required: false,
+    })
+
+    // 现代 CSS 处理插件
+    this.pluginRegistry.set('@vitejs/plugin-postcss', {
+      name: '@vitejs/plugin-postcss',
+      packageName: 'postcss',
+      version: '^8.4.0',
+      description: 'PostCSS 处理支持',
+      frameworks: ['vue3', 'vue2', 'react', 'vanilla', 'vanilla-ts', 'lit', 'html'],
+      supportedFrameworks: ['vue3', 'vue2', 'react', 'vanilla', 'vanilla-ts', 'lit', 'html'],
+      defaultOptions: {
+        plugins: [
+          // 这些插件会在运行时动态加载
+          'autoprefixer',
+          'cssnano'
+        ],
+      },
+      required: false,
+    })
+
+    // PWA 支持
+    this.pluginRegistry.set('vite-plugin-pwa', {
+      name: 'vite-plugin-pwa',
+      packageName: 'vite-plugin-pwa',
+      version: '^0.17.0',
+      description: 'PWA 功能支持',
+      frameworks: ['vue3', 'vue2', 'react', 'vanilla', 'vanilla-ts', 'lit'],
+      supportedFrameworks: ['vue3', 'vue2', 'react', 'vanilla', 'vanilla-ts', 'lit'],
+      defaultOptions: {
+        registerType: 'autoUpdate',
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        },
+      },
+      required: false,
+    })
+
+    // Bundle 分析器
+    this.pluginRegistry.set('rollup-plugin-visualizer', {
+      name: 'rollup-plugin-visualizer',
+      packageName: 'rollup-plugin-visualizer',
+      version: '^5.9.0',
+      description: 'Bundle 大小分析和可视化',
+      frameworks: ['vue3', 'vue2', 'react', 'vanilla', 'vanilla-ts', 'lit', 'html'],
+      supportedFrameworks: ['vue3', 'vue2', 'react', 'vanilla', 'vanilla-ts', 'lit', 'html'],
+      defaultOptions: {
+        filename: 'dist/stats.html',
+        open: false,
+        gzipSize: true,
+      },
+      required: false,
+    })
+
+    // 环境变量插件
+    this.pluginRegistry.set('vite-plugin-environment', {
+      name: 'vite-plugin-environment',
+      packageName: 'vite-plugin-environment',
+      version: '^1.1.0',
+      description: '环境变量支持',
+      frameworks: ['vue3', 'vue2', 'react', 'vanilla', 'vanilla-ts', 'lit', 'html'],
+      supportedFrameworks: ['vue3', 'vue2', 'react', 'vanilla', 'vanilla-ts', 'lit', 'html'],
+      defaultOptions: {},
       required: false,
     })
   }
@@ -314,19 +405,18 @@ export class PluginManager implements IPluginManager {
     additionalPlugins: Array<{ name: string, options?: any }> = [],
   ): Promise<PluginOption[]> {
     try {
-      // 获取必需插件
-      const requiredPlugins = this.getRequiredPlugins(projectType)
+      const plugins: PluginOption[] = []
 
-      // 构建插件配置列表
-      const pluginConfigs = [
-        ...requiredPlugins.map(config => ({ name: config.name, options: config.defaultOptions })),
-        ...additionalPlugins,
-      ]
+      // 根据项目类型加载对应的插件
+      await this.loadProjectSpecificPlugins(projectType, plugins)
 
-      // 加载所有插件
-      const plugins = await this.loadPlugins(pluginConfigs)
+      // 加载额外插件
+      if (additionalPlugins.length > 0) {
+        const extraPlugins = await this.loadPlugins(additionalPlugins)
+        plugins.push(...extraPlugins)
+      }
 
-      return plugins as PluginOption[]
+      return plugins
     }
     catch (error) {
       const launcherError = this.errorHandler.handleError(
@@ -334,6 +424,91 @@ export class PluginManager implements IPluginManager {
         `create plugins for ${projectType}`,
       )
       throw launcherError
+    }
+  }
+
+  /**
+   * 加载项目特定的插件
+   * @param projectType 项目类型
+   * @param plugins 插件数组
+   */
+  private async loadProjectSpecificPlugins(projectType: ProjectType, plugins: PluginOption[]): Promise<void> {
+    try {
+      switch (projectType) {
+        case 'vue3':
+          const vue3Plugin = await import('@vitejs/plugin-vue')
+          plugins.push(vue3Plugin.default({
+            include: [/\.vue$/],
+          }))
+          break
+
+        case 'vue2':
+          const vue2Plugin = await import('@vitejs/plugin-vue2')
+          plugins.push(vue2Plugin.default({
+            include: [/\.vue$/],
+          }))
+          break
+
+        case 'react':
+          const reactPlugin = await import('@vitejs/plugin-react')
+          plugins.push(reactPlugin.default({
+            include: '**/*.{jsx,tsx}',
+            babel: {
+              plugins: [
+                ['@babel/plugin-proposal-decorators', { legacy: true }],
+              ],
+            },
+          }))
+          break
+
+        case 'lit':
+          // Lit 使用 TypeScript 内置支持，不需要特定插件
+          break
+
+        case 'vanilla-ts':
+          // TypeScript 内置支持，不需要特定插件
+          break
+
+        case 'svelte':
+          const sveltePlugin = await import('@sveltejs/vite-plugin-svelte')
+          plugins.push(sveltePlugin.svelte({
+            hot: true,
+          }))
+          break
+
+        default:
+          // 默认情况下不加载任何特定插件
+          break
+      }
+
+      // 对所有项目都有用的通用插件
+      await this.loadCommonPlugins(plugins)
+    }
+    catch (error) {
+      console.warn(`加载 ${projectType} 特定插件失败:`, error)
+    }
+  }
+
+  /**
+   * 加载通用插件
+   * @param plugins 插件数组
+   */
+  private async loadCommonPlugins(plugins: PluginOption[]): Promise<void> {
+    try {
+      // 在生产环境下加载旧浏览器支持
+      if (process.env.NODE_ENV === 'production') {
+        try {
+          const legacyPlugin = await import('@vitejs/plugin-legacy')
+          plugins.push(legacyPlugin.default({
+            targets: ['defaults', 'not IE 11'],
+          }))
+        } catch {
+          // 如果没有安装 legacy 插件，忽略错误
+        }
+      }
+    }
+    catch (error) {
+      console.warn('加载通用插件失败:', error)
     }
   }
 

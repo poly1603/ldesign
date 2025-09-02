@@ -582,9 +582,16 @@ export class RollupBuilder {
   /**
    * 计算 Gzip 大小
    */
-  private calculateGzipSize(_content: string | Buffer): number {
-    // 暂时禁用 gzip 计算以避免打包问题
-    return 0
+  private calculateGzipSize(content: string | Buffer): number {
+    try {
+      const { gzipSync } = require('node:zlib')
+      const buffer = typeof content === 'string' ? Buffer.from(content, 'utf-8') : content
+      const compressed = gzipSync(buffer)
+      return compressed.length
+    } catch (error) {
+      logger.warn('计算Gzip大小失败:', error)
+      return 0
+    }
   }
 
   /**

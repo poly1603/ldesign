@@ -7,6 +7,7 @@ import { PluginConfigurator } from './core/plugin-configurator'
 import { ProjectScanner } from './core/project-scanner'
 import { RollupBuilder } from './core/rollup-builder'
 import { TypeGenerator } from './core/type-generator'
+import type { InitializationOptions } from './core/project-initializer'
 // 核心类型定义
 import { ErrorHandler, Logger } from './utils/logger'
 import chalk from 'chalk'
@@ -23,6 +24,11 @@ export { PluginConfigurator } from './core/plugin-configurator'
 export { ProjectScanner } from './core/project-scanner'
 export { RollupBuilder } from './core/rollup-builder'
 export { TypeGenerator } from './core/type-generator'
+export { BuildValidator } from './core/build-validator'
+export { DependencyAnalyzer } from './core/dependency-analyzer'
+export { BuildCache } from './core/build-cache'
+export { FormatDetector } from './core/format-detector'
+export { ProjectInitializer } from './core/project-initializer'
 export * from './types'
 
 // 工具函数
@@ -268,7 +274,7 @@ function getDefaultGlobalName(dep: string): string {
  */
 function showBuildInfo(options: import('./types').BuildOptions): void {
   console.log()
-  console.log(chalk.cyan.bold('📦 开始构建'))
+  console.log(chalk.cyan.bold('📦 开始智能构建'))
   console.log(chalk.gray('─'.repeat(50)))
   console.log(`${chalk.bold('项目根目录:')} ${chalk.cyan(options.root || process.cwd())}`)
   console.log(`${chalk.bold('输出目录:')} ${chalk.cyan(options.outDir || 'dist')}`)
@@ -276,6 +282,7 @@ function showBuildInfo(options: import('./types').BuildOptions): void {
   console.log(`${chalk.bold('生成类型声明:')} ${options.dts ? chalk.green('是') : chalk.red('否')}`)
   console.log(`${chalk.bold('代码压缩:')} ${options.minify ? chalk.green('是') : chalk.red('否')}`)
   console.log(`${chalk.bold('Source Map:')} ${options.sourcemap ? chalk.green('是') : chalk.red('否')}`)
+  console.log(`${chalk.bold('智能缓存:')} ${chalk.green('已启用')}`)
   console.log(chalk.gray('─'.repeat(50)))
   console.log()
 }
@@ -290,6 +297,9 @@ export async function build(options: import('./types').BuildOptions) {
   const { RollupBuilder } = await import('./core/rollup-builder')
   const { TypeGenerator } = await import('./core/type-generator')
   const { BuildValidator } = await import('./core/build-validator')
+  const { FormatDetector } = await import('./core/format-detector')
+  const { BuildCache } = await import('./core/build-cache')
+  const { DependencyAnalyzer } = await import('./core/dependency-analyzer')
 
   const logger = new Logger('Builder')
 
@@ -297,15 +307,45 @@ export async function build(options: import('./types').BuildOptions) {
     // 智能化配置处理
     const enhancedOptions = await enhanceOptions(options)
 
-    // 显示构建信息
-    showBuildInfo(enhancedOptions)
-
     // 扫描项目
     const scanner = new ProjectScanner()
     const scanResult = await scanner.scan(enhancedOptions.root || process.cwd(), {
       ignorePatterns: ['node_modules/**', '.git/**'],
       includePatterns: ['**/*.{ts,tsx,js,jsx,vue,css,less,scss,sass,styl,stylus}'],
     })
+
+    // 智能格式检测（如果用户未指定格式）
+    if (!options.formats || options.formats.length === 0) {
+      const formatDetector = new FormatDetector()
+      const detectionResult = await formatDetector.detect(scanResult, enhancedOptions)
+      enhancedOptions.formats = detectionResult.primary.formats
+      
+      logger.info(`🎯 智能格式检测完成：${detectionResult.primary.formats.join(', ')}`)
+      logger.info(`推荐理由：${detectionResult.primary.reasons.join('; ')}`)
+    }
+
+    // 初始化构建缓存
+    const buildCache = new BuildCache(enhancedOptions.root || process.cwd())
+    await buildCache.initialize(enhancedOptions)
+
+    // 验证缓存
+    const cacheResult = await buildCache.validateCache(scanResult)
+    if (cacheResult.hitRate > 0) {
+      logger.info(`📦 构建缓存命中率: ${cacheResult.hitRate.toFixed(1)}%`)
+    }
+
+    // 依赖分析日志
+    const dependencyAnalyzer = new DependencyAnalyzer()
+    const dependencyResult = await dependencyAnalyzer.analyze(scanResult)
+    if (dependencyResult.circularDependencies.length > 0) {
+      logger.warn(`⚠️ 发现 ${dependencyResult.circularDependencies.length} 个循环依赖`)
+    }
+    if (dependencyResult.orphanedFiles.length > 0) {
+      logger.warn(`👻 发现 ${dependencyResult.orphanedFiles.length} 个孤儿文件`)
+    }
+
+    // 显示构建信息
+    showBuildInfo(enhancedOptions)
 
     // 配置插件
     const configurator = new PluginConfigurator()
@@ -434,19 +474,65 @@ export async function analyze(input: string = process.cwd()) {
 /**
  * 初始化项目配置
  */
-export async function init(_options: {
-  template?: 'vanilla' | 'vue' | 'react'
+export async function init(options: {
+  template?: 'library' | 'application' | 'component'
+  type?: 'vue' | 'react' | 'typescript' | 'javascript'
   typescript?: boolean
-  output?: string
+  target?: 'browser' | 'node' | 'universal'
+  name?: string
+  outDir?: string
+  force?: boolean
+  projectPath?: string
 } = {}) {
   const { Logger } = await import('./utils')
 
   const logger = new Logger('Init')
 
   try {
-    // 简化的初始化逻辑，暂时不依赖 CLI 命令
-    logger.info('项目初始化功能正在开发中...')
-    logger.success('项目初始化完成')
+    const { ProjectInitializer } = await import('./core/project-initializer')
+    const initializer = new ProjectInitializer()
+    const projectPath = options.projectPath || process.cwd()
+    
+    const initOptions: InitializationOptions = {
+      template: options.template || 'library',
+      target: options.target || 'universal',
+    }
+    
+    if (options.type !== undefined) {
+      initOptions.type = options.type
+    }
+    
+    if (options.typescript !== undefined) {
+      initOptions.typescript = options.typescript
+    }
+    
+    if (options.name !== undefined) {
+      initOptions.name = options.name
+    }
+    
+    if (options.outDir !== undefined) {
+      initOptions.outDir = options.outDir
+    }
+    
+    if (options.force !== undefined) {
+      initOptions.force = options.force
+    }
+    
+    const result = await initializer.initialize(projectPath, initOptions)
+    
+    if (result.success) {
+      logger.success('项目初始化完成')
+      result.messages.forEach(message => {
+        console.log(message)
+      })
+      
+      return result
+    } else {
+      result.errors.forEach(error => {
+        logger.error(error)
+      })
+      throw new Error('初始化失败')
+    }
   }
   catch (error) {
     logger.error('项目初始化失败:', error)
