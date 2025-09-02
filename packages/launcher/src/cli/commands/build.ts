@@ -12,7 +12,7 @@ export class BuildCommand {
       console.log(chalk.cyan('🔨 开始构建项目...'))
       console.log(chalk.gray(`   项目目录: ${root}`))
       console.log(chalk.gray(`   输出目录: ${options.outDir || 'dist'}`))
-      
+
       const launcher = createLauncher({
         logLevel: options.verbose ? 'info' : options.silent ? 'error' : 'warn',
         mode: options.mode || 'production'
@@ -28,19 +28,19 @@ export class BuildCommand {
       const startTime = Date.now()
       const result = await launcher.build(root, buildOptions)
       const duration = Date.now() - startTime
-      
+
       console.log()
       console.log(chalk.green('✅ 项目构建成功!'))
       console.log(chalk.blue(`📦 构建耗时: ${duration}ms`))
       console.log(chalk.blue(`📁 输出目录: ${buildOptions.outDir}`))
-      
+
       if (result.outputFiles && result.outputFiles.length > 0) {
         console.log(chalk.gray('   输出文件:'))
         result.outputFiles.forEach(file => {
           console.log(chalk.gray(`   - ${file}`))
         })
       }
-      
+
       console.log()
     } catch (error) {
       console.error(chalk.red('❌ 项目构建失败:'))

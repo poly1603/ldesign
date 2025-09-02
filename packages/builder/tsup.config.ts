@@ -1,23 +1,8 @@
 import { defineConfig } from 'tsup'
 
 export default defineConfig({
-  // 入口文件
-  entry: {
-    'index': 'src/index.ts',
-    'cli/index': 'src/cli/index.ts',
-    'cli/commands/build': 'src/cli/commands/build.ts',
-    'cli/commands/watch': 'src/cli/commands/watch.ts',
-    'cli/commands/analyze': 'src/cli/commands/analyze.ts',
-    'cli/commands/init': 'src/cli/commands/init.ts',
-    'core/plugin-configurator': 'src/core/plugin-configurator.ts',
-    'core/project-scanner': 'src/core/project-scanner.ts',
-    'core/rollup-builder': 'src/core/rollup-builder.ts',
-    'core/type-generator': 'src/core/type-generator.ts',
-    'utils/index': 'src/utils/index.ts',
-    'utils/logger': 'src/utils/logger.ts',
-    'utils/config-loader': 'src/utils/config-loader.ts',
-    'types/index': 'src/types/index.ts',
-  },
+  // 入口文件 - 打包src中所有TypeScript文件
+  entry: ['src/**/*.ts'],
 
   // 输出格式
   format: ['esm', 'cjs'],

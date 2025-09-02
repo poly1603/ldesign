@@ -15,6 +15,7 @@ import type {
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
+import pc from 'picocolors'
 import { build, createServer, preview } from 'vite'
 import { ERROR_CODES } from '@/types'
 import { ConfigManager, EnvironmentOptimizer, ErrorHandler, NetworkManager, PluginEcosystem, PluginManager, ProjectDetector, SecurityManager } from '../services'
@@ -47,6 +48,7 @@ export class ViteLauncher implements IViteLauncher {
       ...options,
     }
 
+    // 初始化服务组件
     this.errorHandler = new ErrorHandler()
     this.projectDetector = new ProjectDetector()
     this.configManager = new ConfigManager()
@@ -72,7 +74,7 @@ export class ViteLauncher implements IViteLauncher {
   ): Promise<void> {
     this.checkDestroyed()
 
-    try {
+    return ErrorHandler.wrapAsync(async () => {
       this.log(`开始创建 ${projectType} 项目: ${projectPath}`, 'info')
 
       const absolutePath = path.resolve(projectPath)
@@ -102,14 +104,7 @@ export class ViteLauncher implements IViteLauncher {
       this.log('运行以下命令开始开发:', 'info')
       this.log(`  cd ${path.relative(process.cwd(), absolutePath)}`, 'info')
       this.log('  npm run dev', 'info')
-    }
-    catch (error) {
-      const launcherError = this.errorHandler.handleError(
-        error as Error,
-        'create project',
-      )
-      throw launcherError
-    }
+    }, 'create project')()
   }
 
   /**
@@ -124,7 +119,7 @@ export class ViteLauncher implements IViteLauncher {
   ): Promise<ViteDevServer> {
     this.checkDestroyed()
 
-    try {
+    return ErrorHandler.wrapAsync(async () => {
       this.log('启动开发服务器...', 'info')
 
       const absolutePath = path.resolve(projectPath)
@@ -148,19 +143,12 @@ export class ViteLauncher implements IViteLauncher {
       const port = this.currentServer.config.server?.port || 5173
       const host = this.currentServer.config.server?.host || 'localhost'
 
-      this.log(`开发服务器已启动:`, 'info')
-      this.log(`  本地地址: http://${host}:${port}`, 'info')
-      this.log(`  网络地址: http://localhost:${port}`, 'info')
+      this.logSuccess('开发服务器已启动:')
+      this.log(`  ${pc.green('➜')} 本地地址: ${pc.cyan(`http://${host}:${port}`)}`, 'info')
+      this.log(`  ${pc.green('➜')} 网络地址: ${pc.cyan(`http://localhost:${port}`)}`, 'info')
 
       return this.currentServer
-    }
-    catch (error) {
-      const launcherError = this.errorHandler.handleError(
-        error as Error,
-        'start dev server',
-      )
-      throw launcherError
-    }
+    }, 'start dev server')()
   }
 
   /**
@@ -206,12 +194,12 @@ export class ViteLauncher implements IViteLauncher {
         stats,
       }
 
-      this.log(`构建完成! 耗时: ${duration}ms`, 'info')
-      this.log(`输出目录: ${outputPath}`, 'info')
-      this.log(`入口文件数: ${stats.entryCount}`, 'info')
-      this.log(`模块数量: ${stats.moduleCount}`, 'info')
-      this.log(`资源文件数: ${stats.assetCount}`, 'info')
-      this.log(`代码块数: ${stats.chunkCount}`, 'info')
+      this.logSuccess(`构建完成! 耗时: ${pc.yellow(`${duration}ms`)}`)
+      this.log(`📁 输出目录: ${pc.cyan(outputPath)}`, 'info')
+      this.log(`📄 入口文件数: ${pc.green(stats.entryCount)}`, 'info')
+      this.log(`📦 模块数量: ${pc.green(stats.moduleCount)}`, 'info')
+      this.log(`🎨 资源文件数: ${pc.green(stats.assetCount)}`, 'info')
+      this.log(`🧩 代码块数: ${pc.green(stats.chunkCount)}`, 'info')
 
       return result
     }
@@ -244,7 +232,7 @@ export class ViteLauncher implements IViteLauncher {
   ): Promise<ViteDevServer> {
     this.checkDestroyed()
 
-    try {
+    return ErrorHandler.wrapAsync(async () => {
       this.log('启动预览服务器...', 'info')
 
       const absolutePath = path.resolve(projectPath)
@@ -273,19 +261,12 @@ export class ViteLauncher implements IViteLauncher {
       const port = options.port || 4173
       const host = options.host || 'localhost'
 
-      this.log(`预览服务器已启动:`, 'info')
-      this.log(`  本地地址: http://${host}:${port}`, 'info')
-      this.log(`  预览目录: ${outputPath}`, 'info')
+      this.logSuccess('预览服务器已启动:')
+      this.log(`  ${pc.green('➜')} 本地地址: ${pc.cyan(`http://${host}:${port}`)}`, 'info')
+      this.log(`  ${pc.blue('📁')} 预览目录: ${pc.gray(outputPath)}`, 'info')
 
       return previewServer as ViteDevServer
-    }
-    catch (error) {
-      const launcherError = this.errorHandler.handleError(
-        error as Error,
-        'start preview server',
-      )
-      throw launcherError
-    }
+    }, 'start preview server')()
   }
 
   /**
@@ -293,9 +274,15 @@ export class ViteLauncher implements IViteLauncher {
    */
   async stop(): Promise<void> {
     if (this.currentServer) {
-      await this.currentServer.close()
-      this.currentServer = null
-      this.log('服务器已停止', 'info')
+      try {
+        await this.currentServer.close()
+        this.currentServer = null
+        this.log('服务器已停止', 'info')
+      } catch (error) {
+        this.logWarn(`停止服务器时出现错误: ${(error as Error).message}`)
+        // 强制清理
+        this.currentServer = null
+      }
     }
   }
 
@@ -342,7 +329,7 @@ export class ViteLauncher implements IViteLauncher {
   async getProjectInfo(projectPath: string = process.cwd()): Promise<ProjectInfo> {
     this.checkDestroyed()
 
-    try {
+    return ErrorHandler.wrapAsync(async () => {
       const absolutePath = path.resolve(projectPath)
       const detection = await this.projectDetector.detectProjectType(absolutePath)
 
@@ -352,14 +339,7 @@ export class ViteLauncher implements IViteLauncher {
         dependencies: Object.keys(detection.report.dependencies || {}),
         confidence: detection.confidence,
       }
-    }
-    catch (error) {
-      const launcherError = this.errorHandler.handleError(
-        error as Error,
-        'get project info',
-      )
-      throw launcherError
-    }
+    }, 'get project info')()
   }
 
   /**
@@ -810,9 +790,41 @@ export class ViteLauncher implements IViteLauncher {
     }
 
     if (levels[level] <= levels[this.options.logLevel || 'info']) {
-      console.log(`[ViteLauncher] ${message}`)
+      const timestamp = new Date().toLocaleTimeString()
+      const prefix = pc.gray(`[${timestamp}] [ViteLauncher]`)
+      
+      switch (level) {
+        case 'error':
+          console.error(`${prefix} ${pc.red('❌')} ${message}`)
+          break
+        case 'warn':
+          console.warn(`${prefix} ${pc.yellow('⚠️')} ${message}`)
+          break
+        default:
+          console.log(`${prefix} ${pc.blue('ℹ️')} ${message}`)
+          break
+      }
     }
   }
+
+  /**
+   * 记录成功日志
+   */
+  private logSuccess(message: string): void {
+    if (this.options.logLevel === 'silent') return
+    
+    const timestamp = new Date().toLocaleTimeString()
+    const prefix = pc.gray(`[${timestamp}] [ViteLauncher]`)
+    console.log(`${prefix} ${pc.green('✅')} ${message}`)
+  }
+
+  /**
+   * 记录警告日志
+   */
+  private logWarn(message: string): void {
+    this.log(message, 'warn')
+  }
+
 }
 
 /**

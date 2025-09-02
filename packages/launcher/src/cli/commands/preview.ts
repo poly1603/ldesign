@@ -23,7 +23,7 @@ export class PreviewCommand {
         open: options.open !== false
       }
 
-      const server = await launcher.preview(root, previewOptions)
+      await launcher.preview(root, previewOptions)
       
       console.log()
       console.log(chalk.green('✅ 预览服务器启动成功!'))

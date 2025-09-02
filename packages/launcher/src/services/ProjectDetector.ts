@@ -173,39 +173,73 @@ export class ProjectDetector implements IProjectDetector {
         'vue.config.ts',
         'nuxt.config.js',
         'nuxt.config.ts',
+        'quasar.config.js',
         'src/App.vue',
         'src/main.js',
         'src/main.ts',
+        'src/components/HelloWorld.vue',
+        'app.vue',
+        'pages/index.vue',
         // React 特征文件
         'next.config.js',
         'next.config.ts',
+        'next.config.mjs',
         'gatsby-config.js',
         'gatsby-config.ts',
+        'remix.config.js',
         'src/App.jsx',
         'src/App.tsx',
         'src/index.jsx',
         'src/index.tsx',
+        'src/App.js',
+        'src/components/App.jsx',
+        'app/layout.tsx', // Next.js App Router
+        'pages/_app.tsx', // Next.js Pages Router
+        // Svelte 特征文件
+        'svelte.config.js',
+        'src/App.svelte',
+        'src/main.js',
+        'src/routes/+page.svelte', // SvelteKit
+        // Angular 特征文件
+        'angular.json',
+        'src/app/app.component.ts',
+        'src/main.ts',
         // Lit 特征文件
         'src/my-element.js',
         'src/my-element.ts',
         'lit-element.js',
         'lit-element.ts',
+        'src/components/my-element.ts',
         // 原生 HTML 特征文件
         'index.html',
         'src/index.html',
         'public/index.html',
         'src/script.js',
+        'src/main.js',
         'src/style.css',
         'src/styles.css',
+        'assets/style.css',
         // Vite 配置文件
         'vite.config.js',
         'vite.config.ts',
         'vite.config.mjs',
-        // 其他配置文件
+        'vitest.config.js',
+        'vitest.config.ts',
+        // 其他构建工具配置文件
         'webpack.config.js',
         'rollup.config.js',
+        'parcel.config.js',
+        'snowpack.config.js',
+        // TypeScript 配置
         'tsconfig.json',
         'jsconfig.json',
+        'tsconfig.app.json',
+        'tsconfig.node.json',
+        // 包管理器文件
+        'pnpm-lock.yaml',
+        'yarn.lock',
+        'package-lock.json',
+        'bun.lockb',
       ]
 
       const detectedFiles: string[] = []
@@ -221,11 +255,14 @@ export class ProjectDetector implements IProjectDetector {
         }
       }
 
-      // 检测 Lit 组件文件模式
+      // 检测 Lit 组件文件
       await this.detectLitComponents(projectRoot, detectedFiles)
 
       // 检测原生 HTML 项目特征
       await this.detectNativeHtmlFeatures(projectRoot, detectedFiles)
+
+      // 检测更多框架特征
+      await this.detectAdvancedFrameworkFeatures(projectRoot, detectedFiles)
 
       report.detectedFiles.push(...detectedFiles)
       step.success = true
@@ -257,37 +294,102 @@ export class ProjectDetector implements IProjectDetector {
     try {
       const allDeps = { ...report.dependencies, ...report.devDependencies }
       const frameworks: string[] = []
+      const detectedFrameworks = new Set<string>()
 
-      // Vue 检测
+      // Vue 生态检测
       if (allDeps.vue) {
         const vueVersion = this.extractVersion(allDeps.vue)
         if (vueVersion && vueVersion.startsWith('2.')) {
           frameworks.push('Vue 2')
-        }
-        else {
+          detectedFrameworks.add('vue2')
+        } else {
           frameworks.push('Vue 3')
+          detectedFrameworks.add('vue3')
         }
       }
+      
+      // 检测 Nuxt.js
+      if (allDeps.nuxt || allDeps['@nuxt/kit'] || allDeps.nuxt3) {
+        frameworks.push('Nuxt.js')
+        detectedFrameworks.add('vue3')
+      }
+      
+      // 检测 Quasar
+      if (allDeps.quasar || allDeps['@quasar/app']) {
+        frameworks.push('Quasar')
+        detectedFrameworks.add('vue3')
+      }
 
-      // React 检测
+      // React 生态检测
       if (allDeps.react) {
         frameworks.push('React')
+        detectedFrameworks.add('react')
+        
+        // 检测 Next.js
+        if (allDeps.next) {
+          frameworks.push('Next.js')
+        }
+        
+        // 检测 Gatsby
+        if (allDeps.gatsby) {
+          frameworks.push('Gatsby')
+        }
+        
+        // 检测 Remix
+        if (allDeps['@remix-run/node'] || allDeps['@remix-run/react']) {
+          frameworks.push('Remix')
+        }
       }
 
-      // Lit 检测 - 增强检测
-      if (allDeps.lit || allDeps['lit-element'] || allDeps['@lit/reactive-element']) {
+      // Lit 生态检测 - 增强检测
+      if (allDeps.lit || allDeps['lit-element'] || allDeps['@lit/reactive-element'] || allDeps['@lit/lit-element']) {
         frameworks.push('Lit')
+        detectedFrameworks.add('lit')
       }
 
-      // Svelte 检测
+      // Svelte 生态检测
       if (allDeps.svelte) {
         frameworks.push('Svelte')
+        detectedFrameworks.add('svelte')
+        
+        // 检测 SvelteKit
+        if (allDeps['@sveltejs/kit']) {
+          frameworks.push('SvelteKit')
+        }
       }
 
-      // Angular 检测
+      // Angular 生态检测
       if (allDeps['@angular/core']) {
         frameworks.push('Angular')
+        detectedFrameworks.add('angular')
       }
+      
+      // Solid.js 检测
+      if (allDeps['solid-js']) {
+        frameworks.push('Solid.js')
+        detectedFrameworks.add('solid')
+      }
+      
+      // Preact 检测
+      if (allDeps.preact) {
+        frameworks.push('Preact')
+        detectedFrameworks.add('preact')
+      }
+      
+      // Alpine.js 检测
+      if (allDeps.alpinejs || allDeps['@alpinejs/core']) {
+        frameworks.push('Alpine.js')
+        detectedFrameworks.add('alpine')
+      }
+      
+      // Stencil 检测
+      if (allDeps['@stencil/core']) {
+        frameworks.push('Stencil')
+        detectedFrameworks.add('stencil')
+      }
+
+      // 将检测到的框架添加到报告中
+      report.detectedDependencies = Array.from(detectedFrameworks)
 
       step.success = true
       step.result = 'success'
@@ -689,6 +791,120 @@ export class ProjectDetector implements IProjectDetector {
       !allDeps['@angular/core']
 
     return hasIndexHtml && hasBasicFiles && hasNoFrameworkDeps
+  }
+  
+  /**
+   * 检测高级框架特征
+   * @param projectRoot 项目根目录
+   * @param detectedFiles 已检测到的文件列表
+   */
+  private async detectAdvancedFrameworkFeatures(projectRoot: string, detectedFiles: string[]): Promise<void> {
+    try {
+      // 检测 Svelte 文件
+      const svelteFiles = await this.findFilesByExtension(projectRoot, '.svelte', ['src', 'pages', 'routes'])
+      detectedFiles.push(...svelteFiles)
+      
+      // 检测 Vue 文件
+      const vueFiles = await this.findFilesByExtension(projectRoot, '.vue', ['src', 'pages', 'components'])
+      detectedFiles.push(...vueFiles.slice(0, 3)) // 只添加前3个作为示例
+      
+      // 检测 JSX/TSX 文件
+      const jsxFiles = await this.findFilesByExtension(projectRoot, ['.jsx', '.tsx'], ['src', 'pages', 'app', 'components'])
+      detectedFiles.push(...jsxFiles.slice(0, 3)) // 只添加前3个作为示例
+      
+      // 检测 Angular 文件
+      const ngFiles = await this.findFilesByPattern(projectRoot, '*.component.ts', ['src/app'])
+      detectedFiles.push(...ngFiles.slice(0, 2))
+      
+      // 检测 Stencil 组件
+      const stencilFiles = await this.findFilesByPattern(projectRoot, '*.tsx', ['src/components'])
+      if (stencilFiles.length > 0) {
+        // 检查是否真的是 Stencil 文件
+        for (const file of stencilFiles.slice(0, 2)) {
+          try {
+            const filePath = path.join(projectRoot, file)
+            const content = await fs.readFile(filePath, 'utf-8')
+            if (content.includes('@Component') && content.includes('@stencil/core')) {
+              detectedFiles.push(file)
+            }
+          } catch {
+            // 忽略读取错误
+          }
+        }
+      }
+    } catch {
+      // 忽略错误
+    }
+  }
+  
+  /**
+   * 按扩展名查找文件
+   * @param projectRoot 项目根目录
+   * @param extensions 文件扩展名（单个或数组）
+   * @param searchDirs 搜索目录
+   * @returns 找到的文件列表
+   */
+  private async findFilesByExtension(
+    projectRoot: string, 
+    extensions: string | string[], 
+    searchDirs: string[] = ['src']
+  ): Promise<string[]> {
+    const foundFiles: string[] = []
+    const exts = Array.isArray(extensions) ? extensions : [extensions]
+    
+    for (const dir of searchDirs) {
+      try {
+        const dirPath = path.join(projectRoot, dir)
+        const files = await fs.readdir(dirPath, { recursive: true })
+        
+        for (const file of files) {
+          const fileName = file.toString()
+          if (exts.some(ext => fileName.endsWith(ext))) {
+            foundFiles.push(`${dir}/${fileName}`)
+          }
+        }
+      } catch {
+        // 目录不存在或无法访问
+      }
+    }
+    
+    return foundFiles
+  }
+  
+  /**
+   * 按模式查找文件
+   * @param projectRoot 项目根目录
+   * @param pattern 文件模式
+   * @param searchDirs 搜索目录
+   * @returns 找到的文件列表
+   */
+  private async findFilesByPattern(
+    projectRoot: string, 
+    pattern: string, 
+    searchDirs: string[] = ['src']
+  ): Promise<string[]> {
+    const foundFiles: string[] = []
+    
+    // 简化的模式匹配（支持 *.ext 格式）
+    const regex = new RegExp(pattern.replace('*', '.*'))
+    
+    for (const dir of searchDirs) {
+      try {
+        const dirPath = path.join(projectRoot, dir)
+        const files = await fs.readdir(dirPath, { recursive: true })
+        
+        for (const file of files) {
+          const fileName = file.toString()
+          if (regex.test(fileName)) {
+            foundFiles.push(`${dir}/${fileName}`)
+          }
+        }
+      } catch {
+        // 目录不存在或无法访问
+      }
+    }
+    
+    return foundFiles
   }
 }
 
