@@ -1,0 +1,14 @@
+{
+  "name": "@ldesign/i18n-demo",
+  "version": "1.0.0",
+  "description": "@ldesign/i18n 功能演示",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

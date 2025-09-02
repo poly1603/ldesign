@@ -10,6 +10,7 @@
     "@ldesign/engine": "workspace:*",
     "@ldesign/router": "workspace:*",
     "@ldesign/template": "workspace:*",
+    "@ldesign/i18n": "workspace:*",
     "vue": "^3.4.0",
     "vue-router": "^4.0.0"
   },

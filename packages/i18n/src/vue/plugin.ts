@@ -1,221 +1,177 @@
-import type { App } from 'vue'
+/**
+ * Vue 3 插件集成
+ * 提供类似 vue-i18n 的 API 和功能
+ */
 
-import type { I18nInstance, I18nOptions } from '../core/types'
-import type {
-  I18nDirectiveBinding,
-  VueI18nOptions,
-  VueI18nPlugin,
-} from './types'
-
-import { I18n } from '../core/i18n'
-import { createVueI18nPluginManager } from '../plugins/vue/plugin-manager'
-import { I18N_INJECTION_KEY } from './composables'
-import { createModifiableVTDirective, vTAttr, vTHtml, vTPlural } from './directives'
+import type { App, Plugin, InjectionKey } from 'vue'
+import { inject, reactive, computed, ref, watch } from 'vue'
+import type { I18n } from '../core/i18n'
+import type { CreateI18nOptions } from '../core/createI18n'
+import { createI18n } from '../core/createI18n'
 
 /**
- * 默认插件选项
+ * Vue I18n 实例的注入键
  */
-const DEFAULT_PLUGIN_OPTIONS = {
-  globalInjection: true,
-  globalPropertyName: '$t',
-  defaultLocale: 'en',
-  fallbackLocale: 'en',
-  storage: 'localStorage' as const,
-  storageKey: 'i18n-locale',
-  autoDetect: true,
-  preload: [],
-  cache: {
-    enabled: true,
-    maxSize: 1000,
-  },
+export const I18nInjectionKey: InjectionKey<VueI18n> = Symbol('i18n')
+
+/**
+ * Vue I18n 实例接口
+ */
+export interface VueI18n {
+  /** 核心 I18n 实例 */
+  global: I18n
+  /** 当前语言 */
+  locale: string
+  /** 可用语言列表 */
+  availableLocales: string[]
+  /** 翻译函数 */
+  t: (key: string, params?: Record<string, unknown>) => string
+  /** 检查键是否存在 */
+  te: (key: string, locale?: string) => boolean
+  /** 切换语言 */
+  setLocale: (locale: string) => Promise<void>
+  /** 添加语言包 */
+  setLocaleMessage: (locale: string, messages: Record<string, unknown>) => void
+  /** 获取语言包 */
+  getLocaleMessage: (locale: string) => Record<string, unknown>
 }
 
 /**
- * 创建 Vue I18n 插件
- * @param i18nInstance I18n 实例，如果不提供则创建新实例
- * @returns Vue I18n 插件
+ * 创建 Vue I18n 实例
+ * @param options 配置选项
+ * @returns Vue I18n 实例
  */
-export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
-  const global = i18nInstance || new I18n()
-  const pluginManager = createVueI18nPluginManager(undefined, global)
+export function createVueI18n(options: CreateI18nOptions): VueI18n {
+  // 创建响应式状态
+  const state = reactive({
+    locale: options.locale || 'en',
+    availableLocales: [] as string[]
+  })
 
-  const plugin: VueI18nPlugin = {
-    global,
-    plugins: pluginManager,
-    async install(app: App, options: Partial<VueI18nOptions> = {}) {
-      const opts = { ...DEFAULT_PLUGIN_OPTIONS, ...options }
-
-      // 确保 I18n 实例已初始化
-      if (!global.isReady()) {
-        await global.init()
+  // 添加语言变化监听器到选项中
+  const enhancedOptions = {
+    ...options,
+    onLanguageChanged: (newLocale: string) => {
+      state.locale = newLocale
+      // 如果用户也提供了回调，也要调用
+      if (options.onLanguageChanged) {
+        options.onLanguageChanged(newLocale)
       }
+    }
+  }
 
-      // 设置插件管理器上下文
-      pluginManager.setContext(app, global, opts)
+  // 创建核心 I18n 实例
+  const i18n = createI18n(enhancedOptions)
 
-      // 提供 I18n 实例给子组件
-      app.provide(I18N_INJECTION_KEY, global)
+  // 初始化可用语言列表
+  const updateAvailableLocales = () => {
+    if (i18n.loader && typeof i18n.loader.getAvailableLocales === 'function') {
+      state.availableLocales = i18n.loader.getAvailableLocales()
+    } else {
+      // 如果加载器没有 getAvailableLocales 方法，使用默认值
+      state.availableLocales = [options.locale || 'en']
+    }
+  }
 
-      // 注入全局属性
-      if (opts.globalInjection) {
-        // 确保 t 方法存在
-        if (typeof global.t === 'function') {
-          // 注入翻译函数，确保正确绑定 this 上下文
-          ; (app.config.globalProperties as any)[opts.globalPropertyName]
-            = global.t.bind(global)
-          ; (app.config.globalProperties as any).$i18n = global
+  // 翻译函数
+  const t = (key: string, params?: Record<string, unknown>): string => {
+    return i18n.t(key, params as any)
+  }
 
-          // 为了类型安全，也在 app.config.globalProperties 上设置
-          Object.defineProperty(app.config.globalProperties, '$t', {
-            get() {
-              return global.t.bind(global)
-            },
-          })
-        }
-        else {
-          console.error('I18n instance does not have a t method')
-        }
-      }
+  // 检查键是否存在
+  const te = (key: string, locale?: string): boolean => {
+    return i18n.exists(key, locale)
+  }
 
-      // 注册增强的 v-t 指令系统
-      // 主要的 v-t 指令（支持修饰符）
-      const tDirective = createModifiableVTDirective(global)
-      app.directive('t', tDirective)
+  // 切换语言
+  const setLocale = async (locale: string): Promise<void> => {
+    await i18n.changeLanguage(locale)
+    state.locale = locale
+  }
 
-      // 专用指令
-      app.directive('t-html', vTHtml)
-      app.directive('t-attr', vTAttr)
-      app.directive('t-plural', vTPlural)
+  // 添加语言包
+  const setLocaleMessage = (locale: string, messages: Record<string, unknown>): void => {
+    // 这里需要扩展核心 I18n 类来支持动态添加语言包
+    console.warn('setLocaleMessage: 动态添加语言包功能待实现')
+  }
 
-      // 监听语言变更，更新所有使用 v-t 指令的元素
-      global.on('languageChanged', () => {
-        // 触发 Vue 的响应式更新
-        ; (app as any)._instance?.proxy?.$forceUpdate?.()
-      })
+  // 获取语言包
+  const getLocaleMessage = (locale: string): Record<string, unknown> => {
+    // 这里需要扩展核心 I18n 类来支持获取语言包
+    console.warn('getLocaleMessage: 获取语言包功能待实现')
+    return {}
+  }
 
-      // 如果提供了初始化选项，初始化 I18n
-      if (Object.keys(options).length > 0) {
-        // 过滤出 I18n 相关的选项
-        const i18nOptions = { ...options }
-        delete i18nOptions.globalInjection
-        delete i18nOptions.globalPropertyName
+  // 初始化
+  i18n.init().then(() => {
+    updateAvailableLocales()
+  })
 
-        if (Object.keys(i18nOptions).length > 0) {
-          // 更新 I18n 配置
-          Object.assign(global, i18nOptions)
-
-          // 如果还没有初始化，则初始化
-          global.init().catch((error) => {
-            console.error('Failed to initialize I18n:', error)
-          })
-        }
-      }
+  return {
+    global: i18n,
+    get locale() {
+      return state.locale
     },
-  }
-
-  return plugin
-}
-
-/**
- * 创建带有预配置的 Vue I18n 插件
- * @param options I18n 配置选项
- * @returns Vue I18n 插件
- */
-export function createI18nWithOptions(options: VueI18nOptions): VueI18nPlugin {
-  const i18n = new I18n(options)
-  return createI18n(i18n)
-}
-
-/**
- * 默认的 Vue I18n 插件实例
- */
-export const vueI18n = createI18n()
-
-/**
- * 安装 Vue I18n 插件的便捷方法
- * @param app Vue 应用实例
- * @param options 插件选项
- */
-export function installI18n(app: App, options?: VueI18nOptions) {
-  const plugin = options ? createI18nWithOptions(options) : vueI18n
-  app.use(plugin, options)
-  return plugin
-}
-
-/**
- * Vue I18n 插件工厂函数
- * @param defaultOptions 默认选项
- * @returns 插件创建函数
- */
-export function createI18nPlugin(defaultOptions: Partial<VueI18nOptions> = {}) {
-  return (options: Partial<VueI18nOptions> = {}) => {
-    const mergedOptions = { ...defaultOptions, ...options }
-    return createI18nWithOptions(mergedOptions)
+    get availableLocales() {
+      return state.availableLocales
+    },
+    t,
+    te,
+    setLocale,
+    setLocaleMessage,
+    getLocaleMessage
   }
 }
 
 /**
- * 获取全局 I18n 实例
- * @returns 全局 I18n 实例
+ * Vue I18n 插件
+ * @param options 配置选项
+ * @returns Vue 插件
  */
-export function getGlobalI18n(): I18nInstance {
-  return vueI18n.global
+export function createI18nPlugin(options: CreateI18nOptions): Plugin {
+  return {
+    install(app: App) {
+      const i18n = createVueI18n(options)
+
+      // 提供全局实例
+      app.provide(I18nInjectionKey, i18n)
+
+      // 添加全局属性
+      app.config.globalProperties.$i18n = i18n
+      app.config.globalProperties.$t = i18n.t
+      app.config.globalProperties.$te = i18n.te
+    }
+  }
 }
 
 /**
- * 安装带有内置语言包的 I18n 插件
- * @param app Vue 应用实例
- * @param options I18n 配置选项
- * @returns Promise<I18nInstance> I18n 实例
+ * 使用 I18n 的组合式 API
+ * @returns I18n 实例和相关方法
  */
-export async function installI18nPlugin(
-  app: App,
-  options?: I18nOptions & {
-    globalInjection?: boolean
-    globalPropertyName?: string
-    createI18n?: (options?: I18nOptions) => Promise<I18nInstance>
-  },
-): Promise<I18nInstance> {
-  // 提取 Vue 插件选项
-  const {
-    globalInjection = true,
-    globalPropertyName = '$t',
-    createI18n: customCreateI18n,
-    ...i18nOptions
-  } = options || {}
+export function useI18n() {
+  const i18n = inject(I18nInjectionKey)
 
-  console.warn('🔧 installI18nPlugin 选项:', {
-    globalInjection,
-    globalPropertyName,
-    hasCustomCreateI18n: !!customCreateI18n,
-    i18nOptions,
-  })
-
-  // 创建 I18n 实例 - 使用自定义创建函数或默认函数
-  let i18nInstance: I18nInstance
-  if (customCreateI18n) {
-    console.warn('✨ 使用自定义 i18n 创建函数')
-    i18nInstance = await customCreateI18n(i18nOptions)
-  }
-  else {
-    console.warn('📦 使用默认 i18n 实例')
-    // 创建默认的 i18n 实例
-    i18nInstance = new I18n(i18nOptions)
-    await i18nInstance.init()
+  if (!i18n) {
+    throw new Error('useI18n() 必须在安装了 I18n 插件的 Vue 应用中使用')
   }
 
-  // 创建 Vue 插件
-  const plugin = createI18n(i18nInstance)
-
-  // 安装插件，使用传入的选项
-  app.use(plugin, {
-    globalInjection,
-    globalPropertyName,
-  })
-
-  console.warn('✅ i18n Vue 插件安装成功')
-  return i18nInstance
+  return {
+    locale: computed(() => i18n.locale),
+    availableLocales: computed(() => i18n.availableLocales),
+    t: i18n.t,
+    te: i18n.te,
+    setLocale: i18n.setLocale,
+    setLocaleMessage: i18n.setLocaleMessage,
+    getLocaleMessage: i18n.getLocaleMessage
+  }
 }
 
-// 导出类型
-export type { I18nDirectiveBinding, VueI18nOptions, VueI18nPlugin }
+/**
+ * 默认导出
+ */
+export default {
+  createVueI18n,
+  createI18nPlugin,
+  useI18n,
+  I18nInjectionKey
+}

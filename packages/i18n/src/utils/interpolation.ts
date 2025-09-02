@@ -4,8 +4,8 @@ import type { InterpolationOptions, TranslationParams } from '../core/types'
  * 默认插值选项
  */
 const DEFAULT_OPTIONS: Required<InterpolationOptions> = {
-  prefix: '{{',
-  suffix: '}}',
+  prefix: '{',
+  suffix: '}',
   escapeValue: true,
 }
 
@@ -76,12 +76,12 @@ function parseExpression(
     }
     if (typeof value === 'object' && value !== null) {
       value = (value as Record<string, unknown>)[key] as
-      | string
-      | number
-      | boolean
-      | null
-      | undefined
-      | Record<string, unknown>
+        | string
+        | number
+        | boolean
+        | null
+        | undefined
+        | Record<string, unknown>
     }
     else {
       return undefined

@@ -1,173 +1,178 @@
 /**
- * Vue 3 I18n 集成
- *
- * 这个模块提供了与 Vue 3 的完整集成，包括：
- * - Vue 插件
- * - 组合式 API
- * - 指令支持
- * - TypeScript 类型定义
+ * Vue I18n 集成
+ * 提供完整的 Vue 3 国际化解决方案
+ * 
+ * @example
+ * ```typescript
+ * // main.ts
+ * import { createApp } from 'vue'
+ * import { createI18nPlugin } from '@ldesign/i18n/vue'
+ * import App from './App.vue'
+ * 
+ * const app = createApp(App)
+ * 
+ * // 安装 I18n 插件
+ * app.use(createI18nPlugin({
+ *   locale: 'zh-CN',
+ *   fallbackLocale: 'en',
+ *   messages: {
+ *     'zh-CN': {
+ *       hello: '你好',
+ *       welcome: '欢迎 {name}'
+ *     },
+ *     'en': {
+ *       hello: 'Hello',
+ *       welcome: 'Welcome {name}'
+ *     }
+ *   }
+ * }))
+ * 
+ * app.mount('#app')
+ * ```
+ * 
+ * @example
+ * ```vue
+ * <!-- App.vue -->
+ * <template>
+ *   <div>
+ *     <!-- 使用组合式 API -->
+ *     <p>{{ t('hello') }}</p>
+ *     <p>{{ t('welcome', { name: 'Vue' }) }}</p>
+ *     
+ *     <!-- 使用组件 -->
+ *     <I18nT keypath="hello" />
+ *     <I18nT keypath="welcome" :params="{ name: 'Vue' }" />
+ *     
+ *     <!-- 使用指令 -->
+ *     <p v-t="'hello'"></p>
+ *     <p v-t="{ key: 'welcome', params: { name: 'Vue' } }"></p>
+ *     
+ *     <!-- 语言切换 -->
+ *     <select @change="setLocale($event.target.value)">
+ *       <option v-for="locale in availableLocales" :key="locale" :value="locale">
+ *         {{ locale }}
+ *       </option>
+ *     </select>
+ *   </div>
+ * </template>
+ * 
+ * <script setup>
+ * import { useI18n } from '@ldesign/i18n/vue'
+ * 
+ * const { t, locale, availableLocales, setLocale } = useI18n()
+ * </script>
+ * ```
  */
-
-// 重新导出核心类型，方便使用
-export type {
-  I18nInstance,
-  I18nOptions,
-  LanguageInfo,
-  LanguagePackage,
-  TranslationFunction,
-  TranslationOptions,
-  TranslationParams,
-} from '../core/types'
-
-// 重新导出插件
-export {
-  cachePlugin,
-  performancePlugin,
-} from '../plugins'
-
-// 导出内置插件
-export {
-  createDebugPlugin,
-  debugPlugin,
-  devDebugPlugin,
-  prodDebugPlugin,
-} from '../plugins/vue'
-
-// 导出插件管理器
-export {
-  createVueI18nPluginManager,
-  VueI18nPluginManagerImpl,
-} from '../plugins/vue/plugin-manager'
-
-// 导出组件
-export {
-  LanguageSwitcher,
-} from './components'
-
-// 导出组合式 API
-export {
-  I18N_INJECTION_KEY,
-  // 新增的增强 API
-  useAsyncTranslation,
-  useAvailableLanguages,
-  useBatchReactiveTranslation,
-  useBatchTranslation,
-  useComputedTranslation,
-  useConditionalTranslation,
-  // 响应式系统增强 API
-  useDeepReactiveTranslation,
-  useEnhancedLocale,
-  useFormattedTranslation,
-  useI18n,
-  useI18nDebugger,
-  useI18nDevTools,
-  // 性能监控和调试 API
-  useI18nPerformanceMonitor,
-  useI18nWithInstance,
-  useLanguageSwitcher,
-  useLocale,
-  useReactiveTranslation,
-  useTranslation,
-  useTranslationCache,
-  useTranslationCacheManager,
-  useTranslationDebug,
-  useTranslationFormValidation,
-  useTranslationHistory,
-  useTranslationPerformance,
-  useTranslationTheme,
-  useTranslationValidation,
-} from './composables'
-
-export {
-  createDebugger,
-  DebugLevel,
-  I18nDebugger,
-} from './debug'
-
-export type {
-  DebuggerConfig,
-  DebuggerOptions,
-  DebugMessage,
-  TranslationCoverage,
-} from './debug'
-
-// 导出指令
-export {
-  createModifiableVTDirective,
-  createVTDirective,
-  vT,
-  vTAttr,
-  vTHtml,
-  vTPlural,
-} from './directives'
-
-// 导出指令类型
-export type {
-  DirectiveModifiers,
-  VTDirectiveValue,
-} from './directives'
-
-// 导出性能监控和调试系统
-export {
-  createPerformanceMonitor,
-  I18nPerformanceMonitor,
-} from './performance'
-
-// 导出性能监控和调试类型
-export type {
-  DebugInfo,
-  PerformanceMetrics,
-  PerformanceMonitorOptions,
-} from './performance'
 
 // 导出插件相关
 export {
-  createI18n,
+  createVueI18n,
   createI18nPlugin,
-  createI18nWithOptions,
-  getGlobalI18n,
-  installI18n,
-  installI18nPlugin,
-  vueI18n,
+  useI18n,
+  I18nInjectionKey,
+  type VueI18n
 } from './plugin'
 
-// 导出响应式系统
+// 导出组件
 export {
-  createReactiveTranslationManager,
-  ReactiveTranslationManager,
-} from './reactivity'
+  I18nT,
+  I18nN,
+  I18nD,
+  LanguageSwitcher,
+  TranslationProvider,
+  TranslationMissing,
+  installComponents,
+  components
+} from './components/index'
 
-// 导出响应式系统类型
-export type {
-  BatchTranslationOptions,
-  ReactiveTranslationOptions,
-} from './reactivity'
-
-// 导出SSR支持
+// 导出指令
 export {
-  createSSRManager,
-  createSSRPlugin,
-  hydrateI18n,
-  LocaleDetector,
-  SEOOptimizer,
-  SSRManager,
-} from './ssr'
+  vT,
+  vTHtml,
+  vTTitle,
+  installDirectives,
+  directives
+} from './directives'
 
-// 导出SSR类型
-export type {
-  SSRConfig,
-  SSRContext,
-} from './ssr'
+// 导出 Engine 插件
+export {
+  createI18nEnginePlugin,
+  createSPAI18n,
+  createMobileI18n,
+  createDesktopI18n,
+  createAdminI18n,
+  createBlogI18n,
+  createEcommerceI18n,
+  createSimpleI18n,
+  i18nPlugin,
+  validateI18nConfig,
+  getI18nPluginState,
+  getI18nInstance,
+  getI18nPluginOptions
+} from './engine-plugin'
 
-// 导出类型定义
+// 导出核心类型
 export type {
-  I18nContext,
-  I18nDirectiveBinding,
-  I18nDirectiveOptions,
-  UseI18nReturn,
-  VueI18nOptions,
-  VueI18nPlugin,
-  VueI18nPluginContext,
-  VueI18nPluginInterface,
-  VueI18nPluginManager,
-} from './types/index'
+  CreateI18nOptions
+} from '../core/createI18n'
+
+export type {
+  I18nOptions,
+  LanguagePackage,
+  TranslationMessages
+} from '../types'
+
+// 导出 Vue 特定类型
+export type {
+  I18nEnginePluginOptions,
+  I18nPreset,
+  I18nPluginOptions,
+  DirectiveBinding,
+  LanguageInfo,
+  TranslationContext,
+  I18nPluginState,
+  UseI18nReturn
+} from './types'
+
+/**
+ * 安装所有 Vue I18n 功能的便捷函数
+ * 
+ * @param app Vue 应用实例
+ * @param options I18n 配置选项
+ * 
+ * @example
+ * ```typescript
+ * import { createApp } from 'vue'
+ * import { installI18n } from '@ldesign/i18n/vue'
+ * import App from './App.vue'
+ * 
+ * const app = createApp(App)
+ * 
+ * installI18n(app, {
+ *   locale: 'zh-CN',
+ *   messages: {
+ *     'zh-CN': { hello: '你好' },
+ *     'en': { hello: 'Hello' }
+ *   }
+ * })
+ * 
+ * app.mount('#app')
+ * ```
+ */
+export function installI18n(app: any, options: any) {
+  // 安装插件
+  app.use(createI18nPlugin(options))
+
+  // 注册所有组件
+  installComponents(app)
+
+  // 注册所有指令
+  installDirectives(app)
+}
+
+/**
+ * 默认导出
+ */
+export default {
+  install: installI18n
+}

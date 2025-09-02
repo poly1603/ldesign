@@ -2,166 +2,193 @@
 layout: home
 
 hero:
-  name: '@ldesign/i18n'
-  text: '多语言管理系统'
-  tagline: 功能完整的框架无关国际化解决方案
+  name: "@ldesign/i18n"
+  text: "企业级国际化解决方案"
+  tagline: "功能强大、类型安全、高性能的多语言库，支持 Vue 3 深度集成"
   image:
     src: /logo.svg
-    alt: ldesign i18n
+    alt: LDesign I18n
   actions:
     - theme: brand
       text: 快速开始
       link: /guide/getting-started
     - theme: alt
       text: 查看示例
-      link: /examples/vanilla
+      link: /examples/basic
+    - theme: alt
+      text: GitHub
+      link: https://github.com/ldesign/i18n
 
 features:
-  - icon: 🌍
-    title: 框架无关
-    details: 可在任何 JavaScript 环境中使用，不依赖特定框架
-  - icon: 🎯
-    title: Vue 3 集成
-    details: 提供完整的 Vue 3 插件和组合式 API 支持
+  - icon: 🚀
+    title: 高性能
+    details: 智能缓存机制、异步加载、内存优化，确保最佳性能表现
+  
   - icon: 🔒
-    title: TypeScript 支持
-    details: 完整的类型定义，提供类型安全的翻译功能
-  - icon: ⚡
-    title: 高性能缓存
-    details: 内置 LRU 缓存机制，优化翻译性能
+    title: 类型安全
+    details: 完整的 TypeScript 支持，编译时类型检查，避免运行时错误
+  
+  - icon: 🎯
+    title: 框架无关
+    details: 核心库独立于任何框架，同时提供 Vue 3 深度集成支持
+  
   - icon: 🔄
-    title: 动态加载
-    details: 支持语言包的懒加载和预加载策略
+    title: 异步加载
+    details: 支持动态加载语言包，减少初始包体积，提升用户体验
+  
+  - icon: 🧠
+    title: 智能缓存
+    details: 多层缓存策略，内存管理，TTL 支持，确保数据新鲜度
+  
   - icon: 🌐
-    title: 自动检测
-    details: 智能检测浏览器语言偏好设置
-  - icon: 💾
-    title: 持久化存储
-    details: 支持 localStorage、sessionStorage、Cookie 等多种存储方式
-  - icon: 🔤
-    title: 插值支持
-    details: 强大的字符串插值功能，支持 HTML 转义
-  - icon: 📊
-    title: 复数处理
-    details: 支持多语言复数规则和 ICU 语法
+    title: 语言检测
+    details: 自动检测用户语言偏好，支持浏览器、URL、存储等多种检测方式
+  
+  - icon: 📦
+    title: 多种格式
+    details: 支持 ESM、CJS、UMD 多种模块格式，适配各种构建工具
+  
+  - icon: 🛠️
+    title: 丰富工具
+    details: 插值、复数化、格式化、验证等完整工具链支持
+  
+  - icon: ⚡
+    title: Vue 集成
+    details: 类似 vue-i18n 的 API，组合式 API、组件、指令全面支持
 ---
 
 ## 快速体验
 
-### 安装
-
-::: code-group
-
-```bash [pnpm]
-pnpm add @ldesign/i18n
-```
-
-```bash [npm]
-npm install @ldesign/i18n
-```
-
-```bash [yarn]
-yarn add @ldesign/i18n
-```
-
-:::
-
 ### 基础用法
 
 ```typescript
-import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
+import { I18n } from '@ldesign/i18n'
 
 // 创建 I18n 实例
-const i18n = await createI18nWithBuiltinLocales({
-  defaultLocale: 'en',
+const i18n = new I18n({
+  defaultLocale: 'zh-CN',
   fallbackLocale: 'en',
-  autoDetect: true,
+  messages: {
+    'zh-CN': {
+      hello: '你好',
+      welcome: '欢迎 {name}！'
+    },
+    'en': {
+      hello: 'Hello',
+      welcome: 'Welcome {name}!'
+    }
+  }
 })
 
-// 基础翻译
-console.log(i18n.t('common.ok')) // "OK"
+// 初始化
+await i18n.init()
 
-// 插值翻译
-console.log(i18n.t('common.pageOf', { current: 1, total: 10 }))
-// "Page 1 of 10"
+// 翻译
+console.log(i18n.t('hello')) // "你好"
+console.log(i18n.t('welcome', { name: '张三' })) // "欢迎 张三！"
 
 // 切换语言
-await i18n.changeLanguage('zh-CN')
-console.log(i18n.t('common.ok')) // "确定"
+await i18n.changeLanguage('en')
+console.log(i18n.t('hello')) // "Hello"
 ```
 
 ### Vue 3 集成
 
-```typescript
-import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
-import { createI18n } from '@ldesign/i18n/vue'
-// main.ts
-import { createApp } from 'vue'
-import App from './App.vue'
-
-async function bootstrap() {
-  const i18nInstance = await createI18nWithBuiltinLocales({
-    defaultLocale: 'en',
-  })
-
-  const vueI18nPlugin = createI18n(i18nInstance)
-
-  const app = createApp(App)
-  app.use(vueI18nPlugin)
-  app.mount('#app')
-}
-
-bootstrap()
-```
-
 ```vue
-<!-- App.vue -->
-<script setup>
-import { useI18n } from '@ldesign/i18n/vue'
-
-const { t, availableLanguages, changeLanguage } = useI18n()
-</script>
-
 <template>
   <div>
     <!-- 使用组合式 API -->
-    <h1>{{ t('common.welcome') }}</h1>
-
+    <h1>{{ t('hello') }}</h1>
+    <p>{{ t('welcome', { name: 'Vue' }) }}</p>
+    
+    <!-- 使用组件 -->
+    <I18nT keypath="hello" />
+    <I18nT keypath="welcome" :params="{ name: 'Vue' }" />
+    
     <!-- 使用指令 -->
-    <button v-t="'common.save'" />
-
+    <button v-t="'hello'"></button>
+    <span v-t="{ key: 'welcome', params: { name: 'Vue' } }"></span>
+    
     <!-- 语言切换 -->
-    <select @change="changeLanguage($event.target.value)">
-      <option v-for="lang in availableLanguages" :key="lang.code" :value="lang.code">
-        {{ lang.nativeName }}
+    <select @change="setLocale($event.target.value)">
+      <option v-for="locale in availableLocales" :key="locale" :value="locale">
+        {{ locale }}
       </option>
     </select>
   </div>
 </template>
+
+<script setup>
+import { useI18n } from '@ldesign/i18n/vue'
+
+const { t, locale, availableLocales, setLocale } = useI18n()
+</script>
 ```
+
+### 安装
+
+```bash
+# npm
+npm install @ldesign/i18n
+
+# yarn
+yarn add @ldesign/i18n
+
+# pnpm
+pnpm add @ldesign/i18n
+```
+
+## 核心特性
+
+### 🎯 企业级功能
+
+- **多层缓存**：内存缓存 + 持久化存储，智能缓存策略
+- **异步加载**：按需加载语言包，支持 HTTP、静态文件等多种加载方式
+- **语言检测**：自动检测用户语言偏好，支持多种检测策略
+- **降级机制**：翻译缺失时自动使用降级语言
+- **性能监控**：内置性能监控，帮助优化应用性能
+
+### 🔧 开发体验
+
+- **TypeScript 优先**：完整的类型定义，优秀的开发体验
+- **热重载支持**：开发时语言包变更自动重载
+- **调试工具**：详细的错误信息和调试日志
+- **插件系统**：可扩展的插件架构
+- **测试友好**：提供测试工具和 Mock 支持
+
+### 🌟 Vue 生态
+
+- **组合式 API**：`useI18n` Hook，完美融入 Vue 3
+- **组件支持**：`I18nT`、`I18nN`、`I18nD` 声明式组件
+- **指令支持**：`v-t`、`v-t-html`、`v-t-title` 指令
+- **响应式**：语言切换自动更新所有相关组件
+- **SSR 支持**：完整的服务端渲染支持
 
 ## 为什么选择 @ldesign/i18n？
 
-### 🚀 现代化设计
+### 🆚 对比其他方案
 
-采用现代 JavaScript/TypeScript 技术栈，支持 ES modules、Tree-shaking 和按需导入。
+| 特性 | @ldesign/i18n | vue-i18n | react-i18next | i18next |
+|------|---------------|-----------|---------------|---------|
+| TypeScript 支持 | ✅ 完整 | ✅ 良好 | ✅ 良好 | ✅ 基础 |
+| 框架无关 | ✅ 是 | ❌ Vue 专用 | ❌ React 专用 | ✅ 是 |
+| Vue 3 集成 | ✅ 深度集成 | ✅ 原生 | ❌ 无 | ⚠️ 需配置 |
+| 异步加载 | ✅ 内置 | ✅ 支持 | ✅ 支持 | ✅ 支持 |
+| 智能缓存 | ✅ 多层缓存 | ⚠️ 基础 | ⚠️ 基础 | ⚠️ 基础 |
+| 性能监控 | ✅ 内置 | ❌ 无 | ❌ 无 | ❌ 无 |
+| 包体积 | 🎯 优化 | 📦 中等 | 📦 较大 | 📦 较大 |
 
-### 🎨 灵活的架构
+### 🎨 设计理念
 
-模块化设计，可以根据需要选择使用的功能，支持自定义加载器、存储和检测器。
-
-### 📦 开箱即用
-
-内置英语、中文、日语三种语言包，包含常用的界面文本和验证信息。
-
-### 🔧 易于扩展
-
-提供丰富的 API 和插件机制，可以轻松扩展功能和集成到现有项目中。
+- **性能优先**：每个功能都经过性能优化，确保生产环境的最佳表现
+- **开发体验**：提供优秀的 TypeScript 支持和调试工具
+- **渐进增强**：从简单的翻译到复杂的企业级需求，逐步增强
+- **生态友好**：与现有工具链无缝集成，不破坏现有架构
 
 ---
 
 <div style="text-align: center; margin-top: 2rem;">
-  <a href="/guide/getting-started" style="display: inline-block; padding: 12px 24px; background: #007bff; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">
+  <a href="/guide/getting-started" style="background: #007acc; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 500;">
     开始使用 →
   </a>
 </div>

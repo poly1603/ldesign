@@ -4,7 +4,7 @@
     <nav class="app-nav">
       <div class="nav-container">
         <div class="nav-brand">
-          <h1>LDesign Demo</h1>
+          <h1>{{ t('demo.welcome') }}</h1>
         </div>
         <div class="nav-links">
           <router-link
@@ -13,15 +13,23 @@
             active-class="active"
             exact-active-class="active"
           >
-            首页
+            {{ t('nav.home') }}
           </router-link>
           <router-link
             to="/login"
             class="nav-link"
             active-class="active"
           >
-            登录
+            {{ t('user.login') }}
           </router-link>
+        </div>
+        <div class="nav-actions">
+          <!-- 语言切换器 -->
+          <LanguageSwitcher
+            mode="dropdown"
+            @change="onLanguageChange"
+            class="language-switcher-nav"
+          />
         </div>
       </div>
     </nav>
@@ -34,7 +42,12 @@
     <!-- 应用底部 -->
     <footer class="app-footer">
       <div class="footer-container">
-        <p>&copy; 2024 LDesign Demo App - 展示优化后的 Engine + Router API</p>
+        <p>&copy; 2024 {{ t('page.home.title') }} - {{ t('demo.description') }}</p>
+        <div class="footer-info">
+          <span>{{ t('language.current') }}: {{ getCurrentLanguageName() }}</span>
+          <span class="separator">|</span>
+          <span>{{ t('theme.title') }}: {{ t('theme.light') }}</span>
+        </div>
       </div>
     </footer>
   </div>
@@ -44,12 +57,40 @@
 /**
  * 应用根组件
  * 提供应用的基本布局和导航结构
- * 使用 @ldesign/router 的路由系统
+ * 使用 @ldesign/router 的路由系统和 @ldesign/i18n 的国际化功能
  */
+
+import { computed } from 'vue'
+import { useI18n } from '@ldesign/i18n'
+import LanguageSwitcher from './components/LanguageSwitcher.vue'
+import { supportedLocales, languageManager } from './i18n'
+
+// 使用国际化
+const { t } = useI18n()
+
+// 获取当前语言名称
+const getCurrentLanguageName = computed(() => {
+  const currentLocale = languageManager.getLocale()
+  const locale = supportedLocales.find(l => l.code === currentLocale)
+  return locale?.name || currentLocale
+})
+
+// 语言切换事件处理
+const onLanguageChange = (newLocale: string, oldLocale: string) => {
+  console.log(`🌐 语言已切换: ${oldLocale} → ${newLocale}`)
+
+  // 可以在这里添加其他语言切换后的逻辑
+  // 比如重新加载某些数据、更新页面标题等
+
+  // 更新页面标题
+  document.title = t('page.home.title')
+}
 
 console.log('🎉 App.vue 组件已加载')
 console.log('🚀 使用 @ldesign/router 路由系统')
-console.log('🔧 展示优化后的 LDesign Engine + Router 集成')
+console.log('🌐 使用 @ldesign/i18n 国际化系统')
+console.log('🔧 展示优化后的 LDesign Engine + Router + I18n 集成')
+console.log(`📍 当前语言: ${languageManager.getLocale()}`)
 </script>
 
 <style>
@@ -87,6 +128,17 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 2rem;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.language-switcher-nav {
+  /* 导航栏中的语言切换器样式 */
 }
 
 .nav-brand h1 {
@@ -137,17 +189,44 @@ body {
   padding: 0 2rem;
 }
 
+.footer-info {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.separator {
+  color: rgba(255, 255, 255, 0.5);
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .nav-container {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .nav-links {
     gap: 1rem;
   }
-  
+
+  .nav-actions {
+    order: -1; /* 在移动端将语言切换器放到顶部 */
+  }
+
+  .footer-info {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .separator {
+    display: none; /* 在移动端隐藏分隔符 */
+  }
+
   .nav-container,
   .footer-container {
     padding: 0 1rem;

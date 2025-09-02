@@ -1,98 +1,62 @@
 /**
- * Vue 组件导出
+ * Vue I18n 组件导出
+ * 
+ * 提供所有 Vue I18n 组件的统一导出
  */
 
-import { defineComponent, ref, computed, getCurrentInstance, onMounted } from 'vue'
+// 导入所有组件
+import I18nT from './I18nT.vue'
+import I18nN from './I18nN.vue'
+import I18nD from './I18nD.vue'
+import LanguageSwitcher from './LanguageSwitcher.vue'
+import TranslationProvider from './TranslationProvider.vue'
+import TranslationMissing from './TranslationMissing.vue'
 
-// 创建LanguageSwitcher组件
-export const LanguageSwitcher = defineComponent({
-  name: 'LanguageSwitcher',
-  props: {
-    locales: {
-      type: Array,
-      default: () => [
-        { code: 'en', name: 'English' },
-        { code: 'zh-CN', name: '中文' },
-        { code: 'ja', name: '日本語' }
-      ]
-    }
-  },
-  setup(props) {
-    // 当前语言
-    const currentLocale = ref('zh-CN')
+// 组件类型定义
+export type { default as I18nTComponent } from './I18nT.vue'
+export type { default as I18nNComponent } from './I18nN.vue'
+export type { default as I18nDComponent } from './I18nD.vue'
+export type { default as LanguageSwitcherComponent } from './LanguageSwitcher.vue'
+export type { default as TranslationProviderComponent } from './TranslationProvider.vue'
+export type { default as TranslationMissingComponent } from './TranslationMissing.vue'
 
-    // 获取Vue实例
-    const instance = getCurrentInstance()
+/**
+ * 所有组件的映射
+ */
+export const components = {
+  I18nT,
+  I18nN,
+  I18nD,
+  LanguageSwitcher,
+  TranslationProvider,
+  TranslationMissing
+} as const
 
-    onMounted(() => {
-      // 从全局属性获取当前语言
-      if (instance?.appContext.config.globalProperties.$i18n) {
-        const i18n = instance.appContext.config.globalProperties.$i18n
-        currentLocale.value = i18n.getCurrentLanguage()
-      }
-    })
+/**
+ * 组件安装函数
+ * 
+ * @param app Vue 应用实例
+ */
+export function installComponents(app: any) {
+  // 注册所有组件
+  Object.entries(components).forEach(([name, component]) => {
+    app.component(name, component)
+  })
+}
 
-    const availableLocales = computed(() => props.locales)
+/**
+ * 单独导出所有组件
+ */
+export {
+  I18nT,
+  I18nN,
+  I18nD,
+  LanguageSwitcher,
+  TranslationProvider,
+  TranslationMissing
+}
 
-    const handleLanguageChange = async (event: Event) => {
-      const target = event.target as HTMLSelectElement
-      const locale = target.value
-
-      // 通过全局属性切换语言
-      if (instance?.appContext.config.globalProperties.$i18n) {
-        const i18n = instance.appContext.config.globalProperties.$i18n
-        await i18n.changeLanguage(locale)
-        currentLocale.value = locale
-        console.log('LanguageSwitcher: Language changed to:', locale)
-      } else {
-        console.warn('LanguageSwitcher: $i18n not found')
-      }
-    }
-
-    return {
-      currentLocale,
-      availableLocales,
-      handleLanguageChange
-    }
-  },
-  template: `
-    <div class="language-switcher">
-      <select
-        :value="currentLocale"
-        @change="handleLanguageChange"
-        class="language-select"
-      >
-        <option
-          v-for="locale in availableLocales"
-          :key="locale.code"
-          :value="locale.code"
-        >
-          {{ locale.name }}
-        </option>
-      </select>
-    </div>
-  `,
-  styles: [`
-    .language-switcher {
-      display: inline-block;
-    }
-
-    .language-select {
-      padding: 4px 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: white;
-      cursor: pointer;
-    }
-
-    .language-select:hover {
-      border-color: #999;
-    }
-
-    .language-select:focus {
-      outline: none;
-      border-color: #007bff;
-      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-    }
-  `]
-})
+/**
+ * 默认导出组件集合
+ */
+export default components

@@ -4,29 +4,30 @@
 
 ## I18n 类
 
-主要的国际化类，提供完整的多语言功能。
-
 ### 构造函数
 
 ```typescript
-constructor(options?: I18nOptions)
+new I18n(options: I18nOptions)
 ```
 
 创建一个新的 I18n 实例。
 
-**参数：**
+#### 参数
 
-- `options` - 可选的配置选项
+- `options` - I18n 配置选项
 
-**示例：**
+#### 示例
 
 ```typescript
 import { I18n } from '@ldesign/i18n'
 
 const i18n = new I18n({
-  defaultLocale: 'en',
+  defaultLocale: 'zh-CN',
   fallbackLocale: 'en',
-  autoDetect: true,
+  messages: {
+    'zh-CN': { hello: '你好' },
+    'en': { hello: 'Hello' }
+  }
 })
 ```
 
@@ -40,8 +41,6 @@ async init(): Promise<void>
 
 初始化 I18n 实例，加载默认语言包。
 
-**示例：**
-
 ```typescript
 await i18n.init()
 ```
@@ -49,121 +48,26 @@ await i18n.init()
 #### t()
 
 ```typescript
-t<T = string>(
-  key: string,
-  params?: TranslationParams,
-  options?: TranslationOptions
-): T
+t(key: string, params?: InterpolationParams): string
 ```
 
 翻译指定的键。
 
 **参数：**
+- `key` - 翻译键，支持嵌套路径（如 `user.profile.name`）
+- `params` - 插值参数
 
-- `key` - 翻译键，支持点分隔的嵌套键
-- `params` - 可选的插值参数
-- `options` - 可选的翻译选项
-
-**返回：**
-
-- 翻译后的字符串
-
-**示例：**
+**返回：** 翻译后的文本
 
 ```typescript
 // 基础翻译
-i18n.t('common.ok') // "OK"
+i18n.t('hello') // "你好"
 
-// 插值翻译
-i18n.t('common.welcome', { name: 'John' }) // "Welcome, John!"
+// 带参数翻译
+i18n.t('welcome', { name: '张三' }) // "欢迎 张三！"
 
-// 带选项的翻译
-i18n.t('nonexistent.key', {}, { defaultValue: 'Default' }) // "Default"
-```
-
-#### changeLanguage()
-
-```typescript
-async changeLanguage(locale: string): Promise<void>
-```
-
-切换到指定语言。
-
-**参数：**
-
-- `locale` - 目标语言代码
-
-**示例：**
-
-```typescript
-await i18n.changeLanguage('zh-CN')
-```
-
-#### getCurrentLanguage()
-
-```typescript
-getCurrentLanguage(): string
-```
-
-获取当前语言代码。
-
-**返回：**
-
-- 当前语言代码
-
-**示例：**
-
-```typescript
-const currentLang = i18n.getCurrentLanguage() // "en"
-```
-
-#### getAvailableLanguages()
-
-```typescript
-getAvailableLanguages(): LanguageInfo[]
-```
-
-获取所有可用语言的信息。
-
-**返回：**
-
-- 语言信息数组
-
-**示例：**
-
-```typescript
-const languages = i18n.getAvailableLanguages()
-// [
-//   { name: 'English', nativeName: 'English', code: 'en', ... },
-//   { name: '中文', nativeName: '中文（简体）', code: 'zh-CN', ... }
-// ]
-```
-
-#### batchTranslate()
-
-```typescript
-batchTranslate(
-  keys: string[],
-  params?: TranslationParams
-): BatchTranslationResult
-```
-
-批量翻译多个键。
-
-**参数：**
-
-- `keys` - 翻译键数组
-- `params` - 可选的插值参数
-
-**返回：**
-
-- 键值对形式的翻译结果
-
-**示例：**
-
-```typescript
-const result = i18n.batchTranslate(['common.ok', 'common.cancel'])
-// { 'common.ok': 'OK', 'common.cancel': 'Cancel' }
+// 嵌套键翻译
+i18n.t('user.profile.name') // "姓名"
 ```
 
 #### exists()
@@ -175,457 +79,309 @@ exists(key: string, locale?: string): boolean
 检查翻译键是否存在。
 
 **参数：**
-
 - `key` - 翻译键
-- `locale` - 可选的语言代码，默认为当前语言
+- `locale` - 可选，指定语言代码
 
-**返回：**
-
-- 是否存在
-
-**示例：**
+**返回：** 键是否存在
 
 ```typescript
-i18n.exists('common.ok') // true
-i18n.exists('nonexistent.key') // false
+i18n.exists('hello') // true
+i18n.exists('nonexistent') // false
+i18n.exists('hello', 'en') // true
 ```
 
-#### preloadLanguage()
+#### changeLanguage()
 
 ```typescript
-async preloadLanguage(locale: string): Promise<void>
+async changeLanguage(locale: string): Promise<void>
 ```
 
-预加载指定语言包。
+切换当前语言。
 
 **参数：**
-
-- `locale` - 语言代码
-
-**示例：**
+- `locale` - 目标语言代码
 
 ```typescript
-await i18n.preloadLanguage('zh-CN')
+await i18n.changeLanguage('en')
 ```
 
-#### isLanguageLoaded()
+#### getCurrentLanguage()
 
 ```typescript
-isLanguageLoaded(locale: string): boolean
+getCurrentLanguage(): string
 ```
 
-检查语言包是否已加载。
+获取当前语言代码。
+
+```typescript
+const currentLang = i18n.getCurrentLanguage() // "zh-CN"
+```
+
+#### getAvailableLanguages()
+
+```typescript
+getAvailableLanguages(): string[]
+```
+
+获取所有可用的语言代码列表。
+
+```typescript
+const languages = i18n.getAvailableLanguages() // ["zh-CN", "en"]
+```
+
+#### translateBatch()
+
+```typescript
+translateBatch(keys: string[], params?: InterpolationParams): BatchTranslationResult
+```
+
+批量翻译多个键。
 
 **参数：**
+- `keys` - 翻译键数组
+- `params` - 插值参数
 
-- `locale` - 语言代码
-
-**返回：**
-
-- 是否已加载
-
-**示例：**
+**返回：** 批量翻译结果
 
 ```typescript
-i18n.isLanguageLoaded('en') // true
+const result = i18n.translateBatch(['hello', 'welcome'], { name: '张三' })
+// {
+//   translations: {
+//     hello: '你好',
+//     welcome: '欢迎 张三！'
+//   },
+//   errors: []
+// }
 ```
 
-### 事件方法
-
-#### on()
+## createI18n 函数
 
 ```typescript
-on(event: I18nEventType, listener: I18nEventListener): void
+createI18n(options: CreateI18nOptions): I18n
 ```
 
-添加事件监听器。
-
-**参数：**
-
-- `event` - 事件类型
-- `listener` - 监听器函数
-
-**示例：**
+便捷函数，用于创建和配置 I18n 实例。
 
 ```typescript
-i18n.on('languageChanged', (locale, previousLocale) => {
-  console.log(`Language changed from ${previousLocale} to ${locale}`)
+import { createI18n } from '@ldesign/i18n'
+
+const i18n = createI18n({
+  locale: 'zh-CN',
+  fallbackLocale: 'en',
+  messages: {
+    'zh-CN': { hello: '你好' },
+    'en': { hello: 'Hello' }
+  }
 })
 ```
 
-#### off()
+## 全局实例管理
+
+### createGlobalI18n()
 
 ```typescript
-off(event: I18nEventType, listener: I18nEventListener): void
+createGlobalI18n(options: CreateI18nOptions): I18n
 ```
 
-移除事件监听器。
-
-#### emit()
+创建全局 I18n 实例。
 
 ```typescript
-emit(event: I18nEventType, ...args: any[]): void
+import { createGlobalI18n } from '@ldesign/i18n'
+
+const globalI18n = createGlobalI18n({
+  locale: 'zh-CN',
+  messages: { /* ... */ }
+})
 ```
 
-触发事件。
+### getGlobalI18n()
 
-## 配置选项
+```typescript
+getGlobalI18n(): I18n | null
+```
+
+获取全局 I18n 实例。
+
+```typescript
+import { getGlobalI18n } from '@ldesign/i18n'
+
+const i18n = getGlobalI18n()
+if (i18n) {
+  console.log(i18n.t('hello'))
+}
+```
+
+### hasGlobalI18n()
+
+```typescript
+hasGlobalI18n(): boolean
+```
+
+检查是否存在全局 I18n 实例。
+
+```typescript
+import { hasGlobalI18n } from '@ldesign/i18n'
+
+if (hasGlobalI18n()) {
+  // 全局实例存在
+}
+```
+
+### destroyGlobalI18n()
+
+```typescript
+async destroyGlobalI18n(): Promise<void>
+```
+
+销毁全局 I18n 实例。
+
+```typescript
+import { destroyGlobalI18n } from '@ldesign/i18n'
+
+await destroyGlobalI18n()
+```
+
+## 类型定义
 
 ### I18nOptions
 
 ```typescript
 interface I18nOptions {
-  defaultLocale: string // 默认语言
-  fallbackLocale?: string // 降级语言
-  storage?: 'localStorage' | 'sessionStorage' | 'none' // 存储方式
-  storageKey?: string // 存储键名
-  autoDetect?: boolean // 自动检测浏览器语言
-  preload?: string[] // 预加载的语言列表
-  cache?: CacheOptions // 缓存配置
-  onLanguageChanged?: (locale: string) => void // 语言切换回调
-  onLoadError?: (locale: string, error: Error) => void // 加载错误回调
+  /** 默认语言 */
+  defaultLocale: string
+  
+  /** 降级语言 */
+  fallbackLocale?: string
+  
+  /** 语言包 */
+  messages?: TranslationMessages
+  
+  /** 加载器实例 */
+  loader?: Loader
+  
+  /** 存储类型 */
+  storage?: StorageType | Storage
+  
+  /** 存储键名 */
+  storageKey?: string
+  
+  /** 是否自动检测语言 */
+  autoDetect?: boolean
+  
+  /** 预加载的语言列表 */
+  preload?: string[]
+  
+  /** 缓存配置 */
+  cache?: CacheOptions
+  
+  /** 语言变化回调 */
+  onLanguageChanged?: (locale: string) => void
+  
+  /** 加载错误回调 */
+  onLoadError?: (error: Error) => void
 }
 ```
 
-### CacheOptions
+### InterpolationParams
 
 ```typescript
-interface CacheOptions {
-  enabled: boolean // 是否启用缓存
-  maxSize: number // 最大缓存条目数
-}
+type InterpolationParams = Record<string, string | number | boolean | null | undefined>
 ```
-
-### TranslationOptions
-
-```typescript
-interface TranslationOptions {
-  defaultValue?: string // 默认值
-  escapeValue?: boolean // 是否转义HTML
-  count?: number // 计数（用于复数）
-  context?: string // 上下文
-}
-```
-
-## 便捷函数
-
-### createI18n()
-
-```typescript
-function createI18n(options?: I18nOptions): I18nInstance
-```
-
-创建 I18n 实例的便捷函数。
-
-### createI18nWithBuiltinLocales()
-
-```typescript
-async function createI18nWithBuiltinLocales(options?: I18nOptions): Promise<I18nInstance>
-```
-
-创建带有内置语言包的 I18n 实例。
-
-### createSimpleI18n()
-
-```typescript
-async function createSimpleI18n(options?: I18nOptions): Promise<I18nInstance>
-```
-
-创建简单的 I18n 实例（仅英语）。
-
-## 事件类型
-
-### I18nEventType
-
-```typescript
-type I18nEventType = 'languageChanged' | 'loaded' | 'loadError'
-```
-
-- `languageChanged` - 语言切换时触发
-- `loaded` - 语言包加载完成时触发
-- `loadError` - 语言包加载失败时触发
-
-## 类型定义
-
-### LanguageInfo
-
-```typescript
-interface LanguageInfo {
-  name: string // 语言显示名称
-  nativeName: string // 本地语言名称
-  code: string // ISO 639-1 语言代码
-  region?: string // ISO 3166-1 区域代码
-  direction: 'ltr' | 'rtl' // 文本方向
-  dateFormat: string // 默认日期格式
-}
-```
-
-### TranslationParams
-
-```typescript
-type TranslationParams = Record<string, any>
-```
-
-翻译参数对象，用于字符串插值。
 
 ### BatchTranslationResult
 
 ```typescript
 interface BatchTranslationResult {
-  [key: string]: string
+  /** 翻译结果 */
+  translations: Record<string, string>
+  
+  /** 错误列表 */
+  errors: Array<{
+    key: string
+    error: string
+  }>
 }
 ```
 
-批量翻译的结果对象。
-
-## 🆕 增强功能 API
-
-### 格式化方法
-
-#### formatDate()
+### TranslationMessages
 
 ```typescript
-formatDate(date: Date | number | string, options?: DateFormatOptions): string
+type TranslationMessages = Record<string, Record<string, unknown>>
 ```
 
-格式化日期。
+## 错误处理
 
-**参数：**
-- `date` - 要格式化的日期
-- `options` - 格式化选项
+### TranslationError
 
-**示例：**
 ```typescript
-i18n.formatDate(new Date()) // "12/25/2023"
-i18n.formatDate(new Date(), { dateStyle: 'full' }) // "Monday, December 25, 2023"
+class TranslationError extends Error {
+  constructor(
+    message: string,
+    public key: string,
+    public locale: string,
+    public cause?: Error
+  )
+}
 ```
 
-#### formatNumber()
+翻译过程中发生的错误。
+
+### LoaderError
 
 ```typescript
-formatNumber(number: number, options?: NumberFormatOptions): string
+class LoaderError extends Error {
+  constructor(
+    message: string,
+    public locale: string,
+    public cause?: Error
+  )
+}
 ```
 
-格式化数字。
+语言包加载过程中发生的错误。
 
-**示例：**
-```typescript
-i18n.formatNumber(1234567.89) // "1,234,567.89"
-i18n.formatNumber(1234567, { compact: true }) // "1.2M"
-```
+## 事件系统
 
-#### formatCurrency()
+I18n 实例支持事件监听：
 
 ```typescript
-formatCurrency(amount: number, currency?: string, options?: any): string
-```
+// 监听语言变化
+i18n.on('languageChanged', (locale: string) => {
+  console.log('语言已切换到:', locale)
+})
 
-格式化货币。
+// 监听翻译错误
+i18n.on('translationError', (error: TranslationError) => {
+  console.error('翻译错误:', error)
+})
 
-**示例：**
-```typescript
-i18n.formatCurrency(1234.56, 'USD') // "$1,234.56"
-i18n.formatCurrency(1234.56, 'EUR') // "€1,234.56"
-```
-
-#### formatPercent()
-
-```typescript
-formatPercent(value: number, options?: any): string
-```
-
-格式化百分比。
-
-**示例：**
-```typescript
-i18n.formatPercent(0.1234) // "12%"
-```
-
-#### formatRelativeTime()
-
-```typescript
-formatRelativeTime(date: Date, unit?: any): string
-```
-
-格式化相对时间。
-
-**示例：**
-```typescript
-const oneHourAgo = new Date(Date.now() - 3600000)
-i18n.formatRelativeTime(oneHourAgo) // "1 hour ago"
-```
-
-#### formatList()
-
-```typescript
-formatList(items: string[], options?: any): string
-```
-
-格式化列表。
-
-**示例：**
-```typescript
-i18n.formatList(['Apple', 'Banana', 'Orange']) // "Apple, Banana, and Orange"
-```
-
-#### format()
-
-```typescript
-format(name: string, value: any, options?: any): string
-```
-
-使用自定义格式化器。
-
-**示例：**
-```typescript
-i18n.format('fileSize', 1024 * 1024 * 2.5) // "2.50 MB"
-```
-
-#### registerFormatter()
-
-```typescript
-registerFormatter(name: string, formatter: FormatterFunction): void
-```
-
-注册自定义格式化器。
-
-**示例：**
-```typescript
-i18n.registerFormatter('temperature', (celsius: number) => {
-  const fahrenheit = (celsius * 9/5) + 32
-  return `${celsius}°C (${fahrenheit.toFixed(1)}°F)`
+// 监听加载错误
+i18n.on('loadError', (error: LoaderError) => {
+  console.error('加载错误:', error)
 })
 ```
 
-### 缓存管理方法
-
-#### getCacheStats()
+## 性能监控
 
 ```typescript
-getCacheStats(): CacheStats
+// 获取性能统计
+const stats = i18n.getPerformanceStats()
+console.log('翻译次数:', stats.translationCount)
+console.log('缓存命中率:', stats.cacheHitRate)
+console.log('平均翻译时间:', stats.averageTranslationTime)
+
+// 重置统计
+i18n.resetPerformanceStats()
 ```
 
-获取翻译缓存统计信息。
-
-**返回：**
-```typescript
-interface CacheStats {
-  size: number
-  maxSize: number
-  hitCount: number
-  missCount: number
-  hitRate: number
-  evictionCount: number
-}
-```
-
-#### clearTranslationCache()
+## 调试模式
 
 ```typescript
-clearTranslationCache(): void
-```
+const i18n = new I18n({
+  defaultLocale: 'zh-CN',
+  debug: true, // 启用调试模式
+  // ...
+})
 
-清除翻译缓存。
-
-#### clearFormatterCache()
-
-```typescript
-clearFormatterCache(): void
-```
-
-清除格式化器缓存。
-
-#### clearPluralizationCache()
-
-```typescript
-clearPluralizationCache(): void
-```
-
-清除多元化缓存。
-
-#### clearAllCaches()
-
-```typescript
-clearAllCaches(): void
-```
-
-清除所有缓存。
-
-## 增强组件
-
-### TranslationCache
-
-高性能翻译缓存类。
-
-```typescript
-class TranslationCache extends PerformanceCache<string> {
-  constructor(config?: CacheConfig)
-  cacheTranslation(locale: string, key: string, params: Record<string, any> | undefined, result: string): void
-  getCachedTranslation(locale: string, key: string, params?: Record<string, any>): string | undefined
-}
-```
-
-### PluralizationEngine
-
-增强的多元化引擎。
-
-```typescript
-class PluralizationEngine {
-  constructor()
-  getCategory(locale: string, count: number, options?: PluralOptions): PluralCategory
-  registerRule(locale: string, rule: PluralRuleFunction): void
-  getSupportedLocales(): string[]
-  clearCache(locale?: string): void
-}
-```
-
-### FormatterEngine
-
-强大的格式化引擎。
-
-```typescript
-class FormatterEngine {
-  constructor(config?: FormatterConfig)
-  formatDate(date: Date | number | string, locale?: string, options?: DateFormatOptions): string
-  formatNumber(number: number, locale?: string, options?: NumberFormatOptions): string
-  formatCurrency(amount: number, locale?: string, currency?: string, options?: any): string
-  formatPercent(value: number, locale?: string, options?: any): string
-  formatRelativeTime(date: Date, locale?: string, unit?: any): string
-  formatList(items: string[], locale?: string, options?: any): string
-  registerFormatter(name: string, formatter: FormatterFunction): void
-  format(name: string, value: any, locale?: string, options?: any): string
-}
-```
-
-### 类型定义
-
-#### CacheConfig
-
-```typescript
-interface CacheConfig {
-  maxSize?: number
-  ttl?: number
-  enableLRU?: boolean
-  strategy?: 'lru' | 'lfu' | 'fifo'
-}
-```
-
-#### PluralOptions
-
-```typescript
-interface PluralOptions {
-  ordinal?: boolean
-  customRule?: PluralRuleFunction
-}
-```
-
-#### FormatterConfig
-
-```typescript
-interface FormatterConfig {
-  defaultLocale?: string
-  timeZone?: string
-  currency?: string
-  customFormatters?: Record<string, FormatterFunction>
-}
+// 调试模式下会输出详细的日志信息
 ```

@@ -1,4 +1,4 @@
-import type { LRUCache, Storage } from './types'
+import type { LRUCache, Storage, CacheStats } from './types'
 
 /**
  * 缓存项接口
@@ -60,8 +60,8 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
     ttl?: number
   }> = []
 
-  private batchTimeout: NodeJS.Timeout | null = null
-  private cleanupTimer: NodeJS.Timeout | null = null
+  private batchTimeout: any | null = null
+  private cleanupTimer: any | null = null
 
   constructor(options: CacheOptions = {}) {
     this.options = {
@@ -438,30 +438,14 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
    * 获取缓存统计信息
    * @returns 统计信息对象
    */
-  getStats(): {
-    size: number
-    memoryUsage: number
-    memoryUsagePercent: number
-    hitRate: number
-    missRate: number
-    evictionCount: number
-    setCount: number
-    hitCount: number
-    missCount: number
-    averageItemSize: number
-  } {
+  getStats(): CacheStats {
     const total = this.hitCount + this.missCount
     return {
       size: this.cache.size,
-      memoryUsage: this.currentMemoryUsage,
-      memoryUsagePercent: this.currentMemoryUsage / this.options.maxMemory,
+      hits: this.hitCount,
+      misses: this.missCount,
       hitRate: total > 0 ? this.hitCount / total : 0,
-      missRate: total > 0 ? this.missCount / total : 0,
-      evictionCount: this.evictionCount,
-      setCount: this.setCount,
-      hitCount: this.hitCount,
-      missCount: this.missCount,
-      averageItemSize: this.cache.size > 0 ? this.currentMemoryUsage / this.cache.size : 0,
+      memoryUsagePercent: this.currentMemoryUsage / this.options.maxMemory,
     }
   }
 

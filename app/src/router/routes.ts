@@ -39,4 +39,19 @@ export const routes: RouteRecordRaw[] = [
       animation: 'slide',
     },
   },
+  {
+    path: '/i18n-demo',
+    name: 'i18nDemo',
+    component: () => import('../views/I18nDemo.vue'),
+    meta: {
+      title: 'I18n 功能演示',
+      description: '展示 @ldesign/i18n 的所有 Vue 组件和功能',
+      // 演示页面需要缓存
+      cache: true,
+      // 预加载配置
+      preload: true,
+      // 页面切换动画
+      animation: 'fade',
+    },
+  },
 ]

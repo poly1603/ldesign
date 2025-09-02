@@ -1,32 +1,38 @@
+/**
+ * VitePress 配置文件
+ * @ldesign/i18n 文档站点配置
+ */
+
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: '@ldesign/i18n',
-  description: '现代化、高性能的国际化解决方案，经过全面优化',
+  description: '企业级国际化解决方案 - 功能强大、类型安全、高性能的多语言库',
+  
+  // 基础配置
   base: '/i18n/',
-
-  head: [
-    ['link', { rel: 'icon', href: '/i18n/favicon.ico' }],
-    ['meta', { name: 'theme-color', content: '#007bff' }],
-  ],
-
+  lang: 'zh-CN',
+  
+  // 主题配置
   themeConfig: {
-    logo: '/logo.svg',
-
+    // 导航栏
     nav: [
+      { text: '首页', link: '/' },
       { text: '指南', link: '/guide/getting-started' },
-      { text: 'API 参考', link: '/api/core' },
-      { text: '性能', link: '/performance/overview' },
-      { text: '示例', link: '/examples/vanilla' },
+      { text: 'API', link: '/api/core' },
+      { text: 'Vue 集成', link: '/vue/installation' },
+      { text: '示例', link: '/examples/basic' },
       {
-        text: '相关链接',
+        text: '更多',
         items: [
-          { text: 'GitHub', link: 'https://github.com/ldesign/i18n' },
-          { text: 'NPM', link: 'https://www.npmjs.com/package/@ldesign/i18n' },
-        ],
-      },
+          { text: '更新日志', link: '/changelog' },
+          { text: '贡献指南', link: '/contributing' },
+          { text: 'GitHub', link: 'https://github.com/ldesign/i18n' }
+        ]
+      }
     ],
 
+    // 侧边栏
     sidebar: {
       '/guide/': [
         {
@@ -35,113 +41,114 @@ export default defineConfig({
             { text: '快速开始', link: '/guide/getting-started' },
             { text: '安装', link: '/guide/installation' },
             { text: '基础概念', link: '/guide/concepts' },
-          ],
+            { text: '配置选项', link: '/guide/configuration' }
+          ]
         },
         {
           text: '核心功能',
           items: [
             { text: '翻译功能', link: '/guide/translation' },
-            { text: '插值和复数', link: '/guide/interpolation' },
-            { text: '语言包管理', link: '/guide/language-packs' },
-            { text: '批量操作', link: '/guide/batch-operations' },
-          ],
+            { text: '插值与格式化', link: '/guide/interpolation' },
+            { text: '复数化', link: '/guide/pluralization' },
+            { text: '语言切换', link: '/guide/language-switching' },
+            { text: '降级语言', link: '/guide/fallback' }
+          ]
         },
         {
-          text: '性能与可靠性',
+          text: '高级功能',
           items: [
-            { text: '性能优化', link: '/guide/performance' },
-            { text: '缓存策略', link: '/guide/caching' },
-            { text: '错误处理', link: '/guide/error-handling' },
-            { text: '性能监控', link: '/guide/monitoring' },
-          ],
-        },
-        {
-          text: '框架集成',
-          items: [
-            { text: 'Vue 3 集成', link: '/guide/vue-integration' },
-            { text: 'React 集成', link: '/guide/react-integration' },
-            { text: '其他框架', link: '/guide/other-frameworks' },
-          ],
-        },
-        {
-          text: '高级用法',
-          items: [
-            { text: '高级用法指南', link: '/guide/advanced-usage' },
-            { text: '最佳实践', link: '/guide/best-practices' },
-            { text: '故障排除', link: '/guide/troubleshooting' },
-          ],
-        },
+            { text: '异步加载', link: '/guide/async-loading' },
+            { text: '缓存机制', link: '/guide/caching' },
+            { text: '语言检测', link: '/guide/detection' },
+            { text: '存储管理', link: '/guide/storage' },
+            { text: '性能优化', link: '/guide/performance' }
+          ]
+        }
       ],
       '/api/': [
         {
           text: 'API 参考',
           items: [
             { text: '核心 API', link: '/api/core' },
-            { text: 'Vue API', link: '/api/vue' },
-            { text: 'Engine API', link: '/api/engine' },
-            { text: '性能 API', link: '/api/performance' },
-            { text: '错误处理 API', link: '/api/error-handling' },
+            { text: '加载器', link: '/api/loaders' },
+            { text: '存储', link: '/api/storage' },
+            { text: '检测器', link: '/api/detectors' },
             { text: '工具函数', link: '/api/utils' },
-            { text: '类型定义', link: '/api/types' },
-          ],
-        },
+            { text: '类型定义', link: '/api/types' }
+          ]
+        }
       ],
-      '/performance/': [
+      '/vue/': [
         {
-          text: '性能指南',
+          text: 'Vue 集成',
           items: [
-            { text: '性能概述', link: '/performance/overview' },
-            { text: '缓存策略', link: '/performance/caching' },
-            { text: '性能监控', link: '/performance/monitoring' },
-            { text: '优化技巧', link: '/performance/optimization' },
-            { text: '基准测试', link: '/performance/benchmarks' },
-            { text: '故障排除', link: '/performance/troubleshooting' },
-          ],
-        },
+            { text: '安装配置', link: '/vue/installation' },
+            { text: '组合式 API', link: '/vue/composition-api' },
+            { text: '组件', link: '/vue/components' },
+            { text: '指令', link: '/vue/directives' },
+            { text: '最佳实践', link: '/vue/best-practices' }
+          ]
+        }
       ],
       '/examples/': [
         {
           text: '示例',
           items: [
-            { text: 'Vanilla JavaScript', link: '/examples/vanilla' },
-            { text: 'Vue 3', link: '/examples/vue' },
-            { text: '最佳实践', link: '/examples/best-practices' },
-          ],
-        },
-      ],
+            { text: '基础用法', link: '/examples/basic' },
+            { text: 'Vue 项目', link: '/examples/vue' },
+            { text: 'React 项目', link: '/examples/react' },
+            { text: '服务端渲染', link: '/examples/ssr' },
+            { text: '微前端', link: '/examples/micro-frontend' }
+          ]
+        }
+      ]
     },
 
-    socialLinks: [{ icon: 'github', link: 'https://github.com/ldesign/i18n' }],
+    // 社交链接
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/ldesign/i18n' }
+    ],
 
+    // 页脚
     footer: {
-      message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2024 ldesign',
+      message: '基于 MIT 许可发布',
+      copyright: 'Copyright © 2024 LDesign Team'
     },
 
+    // 搜索
     search: {
-      provider: 'local',
+      provider: 'local'
     },
 
+    // 编辑链接
     editLink: {
-      pattern:
-        'https://github.com/ldesign/i18n/edit/main/packages/i18n/docs/:path',
-      text: '在 GitHub 上编辑此页',
+      pattern: 'https://github.com/ldesign/i18n/edit/main/packages/i18n/docs/:path',
+      text: '在 GitHub 上编辑此页'
     },
 
+    // 最后更新时间
     lastUpdated: {
-      text: '最后更新',
+      text: '最后更新于',
       formatOptions: {
         dateStyle: 'short',
-        timeStyle: 'medium',
-      },
-    },
+        timeStyle: 'medium'
+      }
+    }
   },
 
+  // Markdown 配置
   markdown: {
-    theme: {
-      light: 'github-light',
-      dark: 'github-dark',
-    },
+    theme: 'github-dark',
     lineNumbers: true,
+    config: (md) => {
+      // 自定义 markdown 插件
+    }
   },
+
+  // 构建配置
+  vite: {
+    define: {
+      __VUE_OPTIONS_API__: false
+    }
+  }
 })

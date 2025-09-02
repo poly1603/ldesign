@@ -4,6 +4,9 @@
  * 提供统一的错误类型和处理机制
  */
 
+// 全局声明 process 变量
+declare const process: any
+
 /**
  * 错误严重级别
  */
@@ -133,8 +136,8 @@ export class I18nError extends Error {
     }
 
     // 确保错误堆栈正确显示
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor)
+    if ((Error as any).captureStackTrace) {
+      (Error as any).captureStackTrace(this, this.constructor)
     }
   }
 
@@ -459,8 +462,8 @@ export class ErrorManager {
 
     // Node.js环境检查
     // eslint-disable-next-line node/prefer-global/process
-    if (typeof process !== 'undefined' && process && process.env) {
-      return process.env.NODE_ENV === 'development';
+    if (typeof process !== 'undefined' && process && (process as any).env) {
+      return (process as any).env.NODE_ENV === 'development';
     }
 
     return false

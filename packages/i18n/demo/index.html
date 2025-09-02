@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ldesign/i18n Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #3b82f6;
+            margin-bottom: 10px;
+        }
+
+        .language-switcher {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .language-switcher select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .demo-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .demo-section h2 {
+            color: #1f2937;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 5px;
+        }
+
+        .demo-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 4px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .demo-item h3 {
+            color: #374151;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .demo-item .result {
+            font-weight: 500;
+            color: #059669;
+        }
+
+        .demo-item .code {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin-top: 5px;
+            overflow-x: auto;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0369a1;
+        }
+
+        .stat-card .label {
+            color: #0369a1;
+            font-size: 14px;
+        }
+
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #dc2626;
+        }
+
+        .success {
+            color: #059669;
+            background: #f0fdf4;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #059669;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>@ldesign/i18n 功能演示</h1>
+            <p>企业级国际化解决方案 - 功能强大、类型安全、高性能</p>
+            
+            <div class="language-switcher">
+                <label>选择语言:</label>
+                <select id="languageSelect">
+                    <option value="zh-CN">中文</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="loading" class="loading">
+            <p>正在初始化 I18n...</p>
+        </div>
+
+        <div id="content" style="display: none;">
+            <!-- 基础翻译 -->
+            <div class="demo-section">
+                <h2>基础翻译功能</h2>
+                
+                <div class="demo-item">
+                    <h3>简单翻译</h3>
+                    <div class="result" id="simple-translation"></div>
+                    <div class="code">i18n.t('hello')</div>
+                </div>
+
+                <div class="demo-item">
+                    <h3>带参数翻译</h3>
+                    <div class="result" id="param-translation"></div>
+                    <div class="code">i18n.t('welcome', { name: '张三' })</div>
+                </div>
+
+                <div class="demo-item">
+                    <h3>嵌套键翻译</h3>
+                    <div class="result" id="nested-translation"></div>
+                    <div class="code">i18n.t('user.profile.name')</div>
+                </div>
+            </div>
+
+            <!-- 高级功能 -->
+            <div class="demo-section">
+                <h2>高级功能</h2>
+                
+                <div class="demo-item">
+                    <h3>复数化</h3>
+                    <div class="result" id="pluralization"></div>
+                    <div class="code">i18n.t('item', { count: 1 }) / i18n.t('item', { count: 5 })</div>
+                </div>
+
+                <div class="demo-item">
+                    <h3>批量翻译</h3>
+                    <div class="result" id="batch-translation"></div>
+                    <div class="code">i18n.translateBatch(['hello', 'welcome'])</div>
+                </div>
+
+                <div class="demo-item">
+                    <h3>键存在性检查</h3>
+                    <div class="result" id="key-exists"></div>
+                    <div class="code">i18n.exists('hello') / i18n.exists('nonexistent')</div>
+                </div>
+            </div>
+
+            <!-- 格式化功能 -->
+            <div class="demo-section">
+                <h2>格式化功能</h2>
+                
+                <div class="demo-item">
+                    <h3>数字格式化</h3>
+                    <div class="result" id="number-format"></div>
+                    <div class="code">formatNumber(1234.56, 'zh-CN')</div>
+                </div>
+
+                <div class="demo-item">
+                    <h3>货币格式化</h3>
+                    <div class="result" id="currency-format"></div>
+                    <div class="code">formatCurrency(1234.56, { locale: 'zh-CN', currency: 'CNY' })</div>
+                </div>
+
+                <div class="demo-item">
+                    <h3>日期格式化</h3>
+                    <div class="result" id="date-format"></div>
+                    <div class="code">formatDate(new Date(), 'zh-CN')</div>
+                </div>
+            </div>
+
+            <!-- 性能统计 -->
+            <div class="demo-section">
+                <h2>性能统计</h2>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="value" id="current-language">-</div>
+                        <div class="label">当前语言</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="available-languages">-</div>
+                        <div class="label">可用语言数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="translation-count">-</div>
+                        <div class="label">翻译次数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="cache-status">-</div>
+                        <div class="label">缓存状态</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 状态信息 -->
+            <div class="demo-section">
+                <h2>状态信息</h2>
+                <div id="status-info"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入构建后的库 -->
+    <script type="module" src="./demo.js"></script>
+</body>
+</html>

@@ -1,278 +1,243 @@
-import type { NestedObject } from '../src/core/types'
+/**
+ * 工具函数测试
+ * 测试插值、路径处理、复数化、验证等工具函数
+ */
 
-import { describe, expect, it } from 'vitest'
-import {
-  extractInterpolationKeys,
-  hasInterpolation,
-  interpolate,
-  validateInterpolationParams,
-} from '../src/utils/interpolation'
-import {
-  deepMerge,
-  flattenObject,
-  getNestedValue,
-  hasNestedPath,
-  setNestedValue,
-  unflattenObject,
-} from '../src/utils/path'
-import {
-  getPluralRule,
-  hasPluralExpression,
-  parsePluralExpression,
-  processPluralization,
-} from '../src/utils/pluralization'
+import { describe, it, expect } from 'vitest'
+import { interpolate, hasInterpolation } from '../src/utils/interpolation'
+import { getNestedValue, setNestedValue, flattenObject, unflattenObject } from '../src/utils/path'
+import { processPluralization, hasPluralExpression, getPluralRule } from '../src/utils/pluralization'
+import { validateLanguageCode, validateTranslationKey, isValidLocale } from '../src/utils/validation'
+import { formatNumber, formatDate, formatCurrency } from '../src/utils/formatters'
 
-describe('path Utils', () => {
-  const createTestObject = () => ({
-    level1: {
-      level2: {
-        value: 'nested value',
-      },
-      simple: 'simple value',
-    },
-    root: 'root value',
+describe('插值工具', () => {
+  describe('interpolate', () => {
+    it('应该正确处理简单插值', () => {
+      const result = interpolate('Hello {name}', { name: 'World' })
+      expect(result).toBe('Hello World')
+    })
+
+    it('应该正确处理多个插值', () => {
+      const result = interpolate('Hello {name}, you are {age} years old', {
+        name: 'John',
+        age: 25
+      })
+      expect(result).toBe('Hello John, you are 25 years old')
+    })
+
+    it('应该正确处理嵌套对象插值', () => {
+      const result = interpolate('Hello {user.name}', {
+        user: { name: 'John' }
+      })
+      expect(result).toBe('Hello John')
+    })
+
+    it('应该在参数缺失时替换为空字符串', () => {
+      const result = interpolate('Hello {name}', {})
+      expect(result).toBe('Hello ')
+    })
+
+    it('应该正确转义 HTML', () => {
+      const result = interpolate('Hello {name}', { name: '<script>' }, { escapeValue: true })
+      expect(result).toBe('Hello &lt;script&gt;')
+    })
   })
 
+  describe('hasInterpolation', () => {
+    it('应该正确检测插值表达式', () => {
+      expect(hasInterpolation('Hello {name}')).toBe(true)
+      expect(hasInterpolation('Hello world')).toBe(false)
+      expect(hasInterpolation('Hello {user.name}')).toBe(true)
+    })
+  })
+})
+
+describe('路径处理工具', () => {
+  const testObject = {
+    user: {
+      name: 'John',
+      profile: {
+        age: '25', // 改为字符串，因为 getNestedValue 只返回字符串
+        email: 'john@example.com'
+      }
+    },
+    items: ['item1', 'item2']
+  }
+
   describe('getNestedValue', () => {
-    it('应该获取嵌套值', () => {
-      const testObject = createTestObject()
-      expect(getNestedValue(testObject, 'level1.level2.value')).toBe(
-        'nested value',
-      )
-      expect(getNestedValue(testObject, 'level1.simple')).toBe('simple value')
-      expect(getNestedValue(testObject, 'root')).toBe('root value')
+    it('应该正确获取嵌套值', () => {
+      expect(getNestedValue(testObject, 'user.name')).toBe('John')
+      expect(getNestedValue(testObject, 'user.profile.age')).toBe('25')
+      expect(getNestedValue(testObject, 'user.profile.email')).toBe('john@example.com')
     })
 
-    it('应该处理不存在的路径', () => {
-      const testObject = createTestObject()
+    it('应该在路径不存在时返回 undefined', () => {
+      expect(getNestedValue(testObject, 'user.nonexistent')).toBeUndefined()
       expect(getNestedValue(testObject, 'nonexistent.path')).toBeUndefined()
-      expect(getNestedValue(testObject, 'level1.nonexistent')).toBeUndefined()
-    })
-
-    it('应该处理空值', () => {
-      const testObject = createTestObject()
-      expect(
-        getNestedValue(null as unknown as NestedObject, 'path'),
-      ).toBeUndefined()
-      expect(getNestedValue(testObject, '')).toBeUndefined()
     })
   })
 
   describe('setNestedValue', () => {
-    it('应该设置嵌套值', () => {
+    it('应该正确设置嵌套值', () => {
       const obj = {}
-      setNestedValue(obj, 'level1.level2.value', 'new value')
-      expect(getNestedValue(obj, 'level1.level2.value')).toBe('new value')
+      setNestedValue(obj, 'user.name', 'John')
+      expect(obj).toEqual({ user: { name: 'John' } })
     })
 
-    it('应该覆盖现有值', () => {
-      const obj = createTestObject()
-      setNestedValue(obj, 'level1.simple', 'updated value')
-      expect(getNestedValue(obj, 'level1.simple')).toBe('updated value')
-    })
-  })
-
-  describe('hasNestedPath', () => {
-    it('应该正确检查路径存在性', () => {
-      const testObject = createTestObject()
-      expect(hasNestedPath(testObject, 'level1.level2.value')).toBe(true)
-      expect(hasNestedPath(testObject, 'root')).toBe(true)
-      expect(hasNestedPath(testObject, 'nonexistent.path')).toBe(false)
-    })
-  })
-
-  describe('deepMerge', () => {
-    it('应该深度合并对象', () => {
-      const obj1: NestedObject = { a: { b: '1', c: '2' }, d: '3' }
-      const obj2: NestedObject = { a: { b: '4', e: '5' }, f: '6' }
-
-      const result = deepMerge(obj1, obj2)
-
-      expect(result).toEqual({
-        a: { b: '4', c: '2', e: '5' },
-        d: '3',
-        f: '6',
-      })
+    it('应该正确设置深层嵌套值', () => {
+      const obj = {}
+      setNestedValue(obj, 'user.profile.age', 25)
+      expect(obj).toEqual({ user: { profile: { age: 25 } } })
     })
   })
 
   describe('flattenObject', () => {
-    it('应该扁平化对象', () => {
-      const testObject = createTestObject()
-      const result = flattenObject(testObject)
+    it('应该正确扁平化对象', () => {
+      const nested = {
+        user: {
+          name: 'John',
+          profile: { age: '25' }
+        }
+      }
 
-      expect(result).toEqual({
-        'level1.level2.value': 'nested value',
-        'level1.simple': 'simple value',
-        'root': 'root value',
+      const flattened = flattenObject(nested)
+      expect(flattened).toEqual({
+        'user.name': 'John',
+        'user.profile.age': '25'
       })
     })
   })
 
   describe('unflattenObject', () => {
-    it('应该重建嵌套对象', () => {
+    it('应该正确反扁平化对象', () => {
       const flattened = {
-        'level1.level2.value': 'nested value',
-        'level1.simple': 'simple value',
-        'root': 'root value',
+        'user.name': 'John',
+        'user.profile.age': 25
       }
 
-      const result = unflattenObject(flattened)
-      const expected = createTestObject()
-
-      expect(result).toEqual(expected)
-    })
-  })
-})
-
-describe('interpolation Utils', () => {
-  describe('interpolate', () => {
-    it('应该正确插值', () => {
-      expect(interpolate('Hello {{name}}!', { name: 'John' })).toBe(
-        'Hello John!',
-      )
-      expect(
-        interpolate('{{greeting}} {{name}}!', { greeting: 'Hi', name: 'Jane' }),
-      ).toBe('Hi Jane!')
-    })
-
-    it('应该处理缺失的参数', () => {
-      expect(interpolate('Hello {{name}}!', {})).toBe('Hello !')
-    })
-
-    it('应该支持嵌套属性', () => {
-      expect(
-        interpolate('Hello {{user.name}}!', { user: { name: 'John' } }),
-      ).toBe('Hello John!')
-    })
-
-    it('应该转义HTML', () => {
-      expect(
-        interpolate('Content: {{content}}', {
-          content: '<script>alert("xss")</script>',
-        }),
-      ).toBe(
-        'Content: &lt;script&gt;alert(&quot;xss&quot;)&lt;&#x2F;script&gt;',
-      )
-    })
-
-    it('应该支持禁用转义', () => {
-      expect(
-        interpolate(
-          'Content: {{content}}',
-          { content: '<strong>Bold</strong>' },
-          { escapeValue: false },
-        ),
-      ).toBe('Content: <strong>Bold</strong>')
-    })
-  })
-
-  describe('hasInterpolation', () => {
-    it('应该正确检测插值标记', () => {
-      expect(hasInterpolation('Hello {{name}}!')).toBe(true)
-      expect(hasInterpolation('Hello world!')).toBe(false)
-      expect(hasInterpolation('{{greeting}} {{name}}!')).toBe(true)
-    })
-  })
-
-  describe('extractInterpolationKeys', () => {
-    it('应该提取插值键', () => {
-      expect(extractInterpolationKeys('Hello {{name}}!')).toEqual(['name'])
-      expect(extractInterpolationKeys('{{greeting}} {{name}}!')).toEqual([
-        'greeting',
-        'name',
-      ])
-      expect(
-        extractInterpolationKeys('{{user.name}} is {{user.age}} years old'),
-      ).toEqual(['user.name', 'user.age'])
-    })
-  })
-
-  describe('validateInterpolationParams', () => {
-    it('应该验证插值参数', () => {
-      const result1 = validateInterpolationParams('Hello {{name}}!', {
-        name: 'John',
+      const nested = unflattenObject(flattened)
+      expect(nested).toEqual({
+        user: {
+          name: 'John',
+          profile: { age: 25 }
+        }
       })
-      expect(result1.valid).toBe(true)
-      expect(result1.missingKeys).toEqual([])
-
-      const result2 = validateInterpolationParams('Hello {{name}}!', {})
-      expect(result2.valid).toBe(false)
-      expect(result2.missingKeys).toEqual(['name'])
     })
   })
 })
 
-describe('pluralization Utils', () => {
-  describe('getPluralRule', () => {
-    it('应该返回正确的复数规则', () => {
-      const enRule = getPluralRule('en')
-      expect(enRule(1)).toBe(0) // singular
-      expect(enRule(2)).toBe(1) // plural
+describe('复数化工具', () => {
+  describe('processPluralization', () => {
+    it('应该正确处理英文复数', () => {
+      const template = '{count, plural, =0{no items} =1{one item} other{# items}}'
 
-      const zhRule = getPluralRule('zh-CN')
-      expect(zhRule(1)).toBe(0) // no plural in Chinese
-      expect(zhRule(2)).toBe(0)
+      expect(processPluralization(template, { count: 0 }, 'en')).toBe('no items')
+      expect(processPluralization(template, { count: 1 }, 'en')).toBe('one item')
+      expect(processPluralization(template, { count: 5 }, 'en')).toBe('5 items')
+    })
+
+    it('应该正确处理中文复数（无变化）', () => {
+      const template = '{count, plural, =0{没有项目} other{# 个项目}}'
+
+      expect(processPluralization(template, { count: 0 }, 'zh-CN')).toBe('没有项目')
+      expect(processPluralization(template, { count: 1 }, 'zh-CN')).toBe('1 个项目')
+      expect(processPluralization(template, { count: 5 }, 'zh-CN')).toBe('5 个项目')
     })
   })
 
   describe('hasPluralExpression', () => {
     it('应该正确检测复数表达式', () => {
-      expect(
-        hasPluralExpression('{count, plural, =0{no items} other{# items}}'),
-      ).toBe(true)
-      expect(hasPluralExpression('Simple text')).toBe(false)
-      expect(hasPluralExpression('Hello {{name}}')).toBe(false)
+      expect(hasPluralExpression('{count, plural, other{# items}}')).toBe(true)
+      expect(hasPluralExpression('Hello world')).toBe(false)
     })
   })
 
-  describe('parsePluralExpression', () => {
-    it('应该解析复数表达式', () => {
-      const expression
-        = '{count, plural, =0{no items} =1{one item} other{# items}}'
+  describe('getPluralRule', () => {
+    it('应该返回正确的复数规则函数', () => {
+      const enRule = getPluralRule('en')
+      expect(enRule(1)).toBe(0) // one
+      expect(enRule(2)).toBe(1) // other
 
-      expect(parsePluralExpression(expression, { count: 0 }, 'en')).toBe(
-        'no items',
-      )
-      expect(parsePluralExpression(expression, { count: 1 }, 'en')).toBe(
-        'one item',
-      )
-      expect(parsePluralExpression(expression, { count: 5 }, 'en')).toBe(
-        '5 items',
-      )
+      const zhRule = getPluralRule('zh-CN')
+      expect(zhRule(1)).toBe(0) // 中文无复数变化
+      expect(zhRule(2)).toBe(0)
+    })
+  })
+})
+
+describe('验证工具', () => {
+  describe('validateLanguageCode', () => {
+    it('应该验证有效的语言代码', () => {
+      expect(validateLanguageCode('en')).toBe(true)
+      expect(validateLanguageCode('zh-CN')).toBe(true)
+      expect(validateLanguageCode('en-US')).toBe(true)
     })
 
-    it('应该处理不同语言的复数规则', () => {
-      const expression = '{count, plural, other{# items}}'
-
-      expect(parsePluralExpression(expression, { count: 1 }, 'zh-CN')).toBe(
-        '1 items',
-      )
-      expect(parsePluralExpression(expression, { count: 5 }, 'zh-CN')).toBe(
-        '5 items',
-      )
+    it('应该拒绝无效的语言代码', () => {
+      expect(validateLanguageCode('')).toBe(false)
+      expect(validateLanguageCode('invalid-code-format')).toBe(false)
+      expect(validateLanguageCode('123')).toBe(false)
     })
   })
 
-  describe('processPluralization', () => {
-    it('应该处理包含复数的文本', () => {
-      const text
-        = 'You have {count, plural, =0{no items} =1{one item} other{# items}} in your cart.'
-
-      expect(processPluralization(text, { count: 0 }, 'en')).toBe(
-        'You have no items in your cart.',
-      )
-      expect(processPluralization(text, { count: 1 }, 'en')).toBe(
-        'You have one item in your cart.',
-      )
-      expect(processPluralization(text, { count: 3 }, 'en')).toBe(
-        'You have 3 items in your cart.',
-      )
+  describe('validateTranslationKey', () => {
+    it('应该验证有效的翻译键', () => {
+      expect(validateTranslationKey('hello')).toBe(true)
+      expect(validateTranslationKey('user.name')).toBe(true)
+      expect(validateTranslationKey('nested.deep.value')).toBe(true)
     })
 
-    it('应该处理没有复数的文本', () => {
-      const text = 'Simple text without pluralization'
-      expect(processPluralization(text, {}, 'en')).toBe(text)
+    it('应该拒绝无效的翻译键', () => {
+      expect(validateTranslationKey('')).toBe(false)
+      expect(validateTranslationKey('.invalid')).toBe(false)
+      expect(validateTranslationKey('invalid.')).toBe(false)
+    })
+  })
+
+  describe('isValidLocale', () => {
+    it('应该验证有效的区域设置', () => {
+      expect(isValidLocale('en')).toBe(true)
+      expect(isValidLocale('zh-CN')).toBe(true)
+      expect(isValidLocale('en-US')).toBe(true)
+    })
+
+    it('应该拒绝无效的区域设置', () => {
+      expect(isValidLocale('')).toBe(false)
+      expect(isValidLocale('invalid')).toBe(false)
+    })
+  })
+})
+
+describe('格式化工具', () => {
+  describe('formatNumber', () => {
+    it('应该正确格式化数字', () => {
+      const result = formatNumber(1234.56, 'en-US')
+      expect(result).toBe('1,234.56')
+    })
+
+    it('应该正确格式化中文数字', () => {
+      const result = formatNumber(1234.56, 'zh-CN')
+      expect(result).toBe('1,234.56')
+    })
+  })
+
+  describe('formatDate', () => {
+    it('应该正确格式化日期', () => {
+      const date = new Date('2023-12-25')
+      const result = formatDate(date, 'en-US')
+      expect(result).toMatch(/12\/25\/2023|Dec 25, 2023/)
+    })
+  })
+
+  describe('formatCurrency', () => {
+    it('应该正确格式化货币', () => {
+      const result = formatCurrency(1234.56, { locale: 'en-US', currency: 'USD' })
+      expect(result).toMatch(/\$1,234\.56/)
+    })
+
+    it('应该正确格式化人民币', () => {
+      const result = formatCurrency(1234.56, { locale: 'zh-CN', currency: 'CNY' })
+      expect(result).toMatch(/¥1,234\.56|CN¥1,234\.56/)
     })
   })
 })

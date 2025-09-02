@@ -1,54 +1,35 @@
 # @ldesign/i18n
 
-🌍 一个现代化、高性能的国际化解决方案，专为 LDesign 生态系统设计。经过全面优化，提供企业级的性能和可
-靠性。
+[![npm version](https://badge.fury.io/js/@ldesign%2Fi18n.svg)](https://badge.fury.io/js/@ldesign%2Fi18n)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+[![Vue 3](https://img.shields.io/badge/Vue-3.x-green.svg)](https://vuejs.org/)
+
+企业级国际化解决方案 - 功能强大、类型安全、高性能的多语言库，支持 Vue 3 深度集成。
 
 ## ✨ 特性
 
-### 🚀 性能优化
-
-- **高性能缓存系统**：全新的 `PerformanceCache` 和 `TranslationCache`，支持 LRU/LFU/FIFO 策略
-- **智能懒加载**：按需加载语言包和命名空间，支持分块加载和优先级控制
-- **批量操作优化**：支持批量翻译和并行处理，提升大量翻译场景的性能
-- **内存管理**：自动内存清理和对象池优化，防止内存泄漏
-- **性能监控**：实时性能指标收集、分析和优化建议
-
-### 🛡️ 可靠性保障
-
-- **错误处理系统**：统一的错误管理、分类和优雅降级
-- **类型安全**：完整的 TypeScript 支持，编译时错误检查
-- **测试覆盖**：全面的单元测试、性能测试和 E2E 测试
-- **管理器架构**：模块化设计，支持依赖注入和生命周期管理
-
-### 🔧 开发体验
-
-- **Vue 3 深度集成**：完整的 Vue 3 插件和组合式 API
-- **Engine 集成**：与 @ldesign/engine 深度集成，支持插件化架构
-- **开发工具**：性能分析、错误统计、调试支持和热重载
-- **零依赖**：轻量级设计，无外部依赖
-
-### 🌐 国际化功能
-
-- **多语言支持**：支持任意数量的语言和地区
-- **智能检测**：自动检测浏览器语言偏好
-- **增强多元化**：全新的 `PluralizationEngine`，支持 ICU 格式和自定义规则
-- **强大格式化**：内置 `FormatterEngine`，支持日期、数字、货币、相对时间等格式化
-- **插值和格式化**：灵活的参数插值和字符串处理
-- **回退机制**：多级语言回退策略
-- **嵌套键支持**：点分隔的嵌套翻译键
-- **持久化存储**：支持多种存储方式
+- 🚀 **高性能** - 智能缓存机制、异步加载、内存优化
+- 🔒 **类型安全** - 完整的 TypeScript 支持，编译时类型检查
+- 🎯 **框架无关** - 核心库独立于任何框架，同时提供 Vue 3 深度集成
+- 🔄 **异步加载** - 支持动态加载语言包，减少初始包体积
+- 🧠 **智能缓存** - 多层缓存策略，内存管理，TTL 支持
+- 🌐 **语言检测** - 自动检测用户语言偏好
+- 📦 **多种格式** - 支持 ESM、CJS、UMD 多种模块格式
+- 🛠️ **丰富工具** - 插值、复数化、格式化、验证等完整工具链
+- ⚡ **Vue 集成** - 类似 vue-i18n 的 API，组合式 API、组件、指令全面支持
 
 ## 📦 安装
 
 ```bash
-# 使用 pnpm
-pnpm add @ldesign/i18n
-
-# 使用 npm
+# npm
 npm install @ldesign/i18n
 
-# 使用 yarn
+# yarn
 yarn add @ldesign/i18n
+
+# pnpm
+pnpm add @ldesign/i18n
 ```
 
 ## 🚀 快速开始
@@ -56,491 +37,265 @@ yarn add @ldesign/i18n
 ### 基础用法
 
 ```typescript
-import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
+import { I18n } from '@ldesign/i18n'
 
 // 创建 I18n 实例
-const i18n = await createI18nWithBuiltinLocales({
-  defaultLocale: 'en',
+const i18n = new I18n({
+  defaultLocale: 'zh-CN',
   fallbackLocale: 'en',
-  autoDetect: true,
+  messages: {
+    'zh-CN': {
+      hello: '你好',
+      welcome: '欢迎 {name}！'
+    },
+    'en': {
+      hello: 'Hello',
+      welcome: 'Welcome {name}!'
+    }
+  }
 })
 
-// 基础翻译
-console.log(i18n.t('common.ok')) // "OK"
+// 初始化
+await i18n.init()
 
-// 插值翻译
-console.log(i18n.t('common.pageOf', { current: 1, total: 10 }))
-// "Page 1 of 10"
-
-// 批量翻译（性能优化）
-const batchResult = i18n.batchTranslate(['common.ok', 'common.cancel'])
-console.log(batchResult.translations) // { 'common.ok': 'OK', 'common.cancel': 'Cancel' }
-console.log(batchResult.successCount) // 2
+// 翻译
+console.log(i18n.t('hello')) // "你好"
+console.log(i18n.t('welcome', { name: '张三' })) // "欢迎 张三！"
 
 // 切换语言
-await i18n.changeLanguage('zh-CN')
-console.log(i18n.t('common.ok')) // "确定"
-```
-
-### 性能监控
-
-```typescript
-// 获取性能指标
-const metrics = i18n.getPerformanceMetrics()
-console.log(metrics.translationCalls) // 翻译调用次数
-console.log(metrics.averageTranslationTime) // 平均翻译时间
-console.log(metrics.cacheHitRate) // 缓存命中率
-
-// 生成性能报告
-const report = i18n.generatePerformanceReport()
-console.log(report)
-
-// 获取优化建议
-const suggestions = i18n.getOptimizationSuggestions()
-console.log(suggestions)
-
-// 预热缓存（提升性能）
-i18n.warmUpCache(['common.ok', 'common.cancel', 'common.save'])
-```
-
-### 错误处理
-
-```typescript
-import { globalErrorManager, I18nError } from '@ldesign/i18n'
-
-// 自定义错误处理器
-globalErrorManager.addHandler({
-  canHandle: error => error instanceof I18nError,
-  handle: (error) => {
-    console.error('I18n Error:', error.getDetails())
-    // 发送到错误监控服务
-  },
-})
-
-// 获取错误统计
-const errorStats = i18n.getErrorStats()
-console.log(errorStats)
-```
-
-### 🆕 增强功能
-
-#### 高性能缓存系统
-
-```typescript
-import { I18n, TranslationCache } from '@ldesign/i18n'
-
-const i18n = new I18n({
-  defaultLocale: 'en',
-  cache: {
-    enabled: true,
-    maxSize: 1000,
-    defaultTTL: 300000, // 5分钟
-  }
-})
-
-// 获取缓存统计
-const cacheStats = i18n.getCacheStats()
-console.log(`缓存命中率: ${(cacheStats.hitRate * 100).toFixed(1)}%`)
-
-// 清除缓存
-i18n.clearTranslationCache()
-```
-
-#### 增强的多元化支持
-
-```typescript
-// ICU 格式多元化
-const messages = {
-  items: '{count, plural, =0{no items} =1{one item} other{# items}}'
-}
-
-console.log(i18n.t('items', { count: 0 })) // "no items"
-console.log(i18n.t('items', { count: 1 })) // "one item"
-console.log(i18n.t('items', { count: 5 })) // "5 items"
-
-// 新格式多元化
-const newMessages = {
-  notifications: 'zero:No notifications|one:One notification|other:{{count}} notifications'
-}
-
-console.log(i18n.t('notifications', { count: 0 })) // "No notifications"
-console.log(i18n.t('notifications', { count: 3 })) // "3 notifications"
-```
-
-#### 强大的格式化功能
-
-```typescript
-// 日期格式化
-console.log(i18n.formatDate(new Date())) // "12/25/2023"
-console.log(i18n.formatDate(new Date(), { dateStyle: 'full' })) // "Monday, December 25, 2023"
-
-// 相对时间
-const oneHourAgo = new Date(Date.now() - 3600000)
-console.log(i18n.formatRelativeTime(oneHourAgo)) // "1 hour ago"
-
-// 数字和货币
-console.log(i18n.formatNumber(1234567.89)) // "1,234,567.89"
-console.log(i18n.formatCurrency(1234.56, 'USD')) // "$1,234.56"
-console.log(i18n.formatPercent(0.1234)) // "12%"
-
-// 列表格式化
-console.log(i18n.formatList(['Apple', 'Banana', 'Orange'])) // "Apple, Banana, and Orange"
-
-// 自定义格式化器
-i18n.registerFormatter('fileSize', (bytes: number) => {
-  const units = ['B', 'KB', 'MB', 'GB']
-  let size = bytes
-  let unitIndex = 0
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024
-    unitIndex++
-  }
-  return `${size.toFixed(2)} ${units[unitIndex]}`
-})
-
-console.log(i18n.format('fileSize', 1024 * 1024 * 2.5)) // "2.50 MB"
-```
-
-#### 独立使用增强组件
-
-```typescript
-import {
-  PluralizationEngine,
-  FormatterEngine,
-  TranslationCache,
-  PluralCategory,
-  PluralUtils
-} from '@ldesign/i18n'
-
-// 独立使用多元化引擎
-const pluralEngine = new PluralizationEngine()
-const category = pluralEngine.getCategory('en', 5) // PluralCategory.OTHER
-
-// 独立使用格式化引擎
-const formatter = new FormatterEngine({ defaultLocale: 'en' })
-const formatted = formatter.formatCurrency(1234.56, 'en', 'USD') // "$1,234.56"
-
-// 独立使用缓存系统
-const cache = new TranslationCache({ maxSize: 100, ttl: 60000 })
-cache.set('key', 'value')
-const value = cache.get('key')
+await i18n.changeLanguage('en')
+console.log(i18n.t('hello')) // "Hello"
 ```
 
 ### Vue 3 集成
 
 ```typescript
-import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
-import { createI18n } from '@ldesign/i18n/vue'
 // main.ts
 import { createApp } from 'vue'
+import { createI18nPlugin } from '@ldesign/i18n/vue'
 import App from './App.vue'
 
-async function bootstrap() {
-  // 创建 I18n 实例
-  const i18nInstance = await createI18nWithBuiltinLocales({
-    defaultLocale: 'en',
-    fallbackLocale: 'en',
-  })
+const app = createApp(App)
 
-  // 创建 Vue 插件
-  const vueI18nPlugin = createI18n(i18nInstance)
+app.use(createI18nPlugin({
+  locale: 'zh-CN',
+  fallbackLocale: 'en',
+  messages: {
+    'zh-CN': { hello: '你好' },
+    'en': { hello: 'Hello' }
+  }
+}))
 
-  // 创建应用并安装插件
-  const app = createApp(App)
-  app.use(vueI18nPlugin)
-  app.mount('#app')
-}
-
-bootstrap()
+app.mount('#app')
 ```
 
 ```vue
-<!-- App.vue -->
-<script setup>
-import { useI18n } from '@ldesign/i18n/vue'
-
-const { t, availableLanguages, changeLanguage } = useI18n()
-</script>
-
 <template>
   <div>
-    <!-- 使用组合式 API -->
-    <h1>{{ t('common.welcome') }}</h1>
-
-    <!-- 使用指令 -->
-    <button v-t="'common.save'" />
-
+    <!-- 组合式 API -->
+    <h1>{{ t('hello') }}</h1>
+    
+    <!-- 组件 -->
+    <I18nT keypath="welcome" :params="{ name: 'Vue' }" />
+    
+    <!-- 指令 -->
+    <button v-t="'hello'"></button>
+    
     <!-- 语言切换 -->
-    <select @change="changeLanguage($event.target.value)">
-      <option v-for="lang in availableLanguages" :key="lang.code" :value="lang.code">
-        {{ lang.nativeName }}
-      </option>
+    <select @change="setLocale($event.target.value)">
+      <option value="zh-CN">中文</option>
+      <option value="en">English</option>
     </select>
   </div>
 </template>
+
+<script setup>
+import { useI18n } from '@ldesign/i18n/vue'
+
+const { t, locale, setLocale } = useI18n()
+</script>
 ```
 
-### Engine 集成
+## 📚 文档
+
+- [快速开始](./docs/guide/getting-started.md)
+- [配置选项](./docs/guide/configuration.md)
+- [Vue 集成](./docs/vue/installation.md)
+- [API 参考](./docs/api/core.md)
+- [示例](./docs/examples/vue.md)
+
+## 🎯 核心功能
+
+### 智能缓存
 
 ```typescript
-import { createEngine } from '@ldesign/engine'
-import { createI18nEnginePlugin } from '@ldesign/i18n'
-
-// 创建 Engine 实例
-const engine = createEngine()
-
-// 创建 I18n 插件
-const i18nPlugin = createI18nEnginePlugin({
-  defaultLanguage: 'en',
-  fallbackLanguage: 'en',
-  enablePerformanceMonitoring: true,
-  enableErrorReporting: true,
-  preloadLanguages: ['en', 'zh-CN'],
-})
-
-// 安装插件
-await engine.use(i18nPlugin)
-
-// 监听 I18n 事件
-engine.events.on('i18n:languageChanged', ({ locale }) => {
-  console.log('Language changed to:', locale)
-})
-
-engine.events.on('i18n:performanceReport', ({ metrics }) => {
-  console.log('Performance metrics:', metrics)
-})
-```
-
-## 📚 API 文档
-
-### 核心 API
-
-#### I18n 类
-
-```typescript
-class I18n {
-  constructor(options?: I18nOptions)
-
-  // 初始化
-  async init(): Promise<void>
-
-  // 翻译
-  t<T = string>(key: string, params?: TranslationParams, options?: TranslationOptions): T
-
-  // 批量翻译
-  batchTranslate(keys: string[], params?: TranslationParams): BatchTranslationResult
-
-  // 语言管理
-  async changeLanguage(locale: string): Promise<void>
-  getCurrentLanguage(): string
-  getAvailableLanguages(): LanguageInfo[]
-
-  // 预加载
-  async preloadLanguage(locale: string): Promise<void>
-  async batchPreloadLanguages(locales: string[]): Promise<void>
-  isLanguageLoaded(locale: string): boolean
-
-  // 性能监控
-  getPerformanceMetrics(): PerformanceMetrics
-  generatePerformanceReport(): string
-  getOptimizationSuggestions(): string[]
-  warmUpCache(keys: string[]): void
-  cleanupCache(): void
-
-  // 错误处理
-  getErrorStats(): Record<string, number>
-  resetErrorStats(): void
-
-  // 工具方法
-  exists(key: string, locale?: string): boolean
-  getKeys(locale?: string): string[]
-  getSuggestions(partialKey: string, limit?: number): string[]
-  hasInterpolation(key: string): boolean
-  hasPlural(key: string): boolean
-
-  // 工具方法
-  exists(key: string, locale?: string): boolean
-  getKeys(locale?: string): string[]
-
-  // 事件
-  on(event: I18nEventType, listener: I18nEventListener): void
-  off(event: I18nEventType, listener: I18nEventListener): void
-}
-```
-
-#### 配置选项
-
-```typescript
-interface I18nOptions {
-  defaultLocale: string // 默认语言
-  fallbackLocale?: string // 降级语言
-  storage?: 'localStorage' | 'sessionStorage' | 'none' // 存储方式
-  storageKey?: string // 存储键名
-  autoDetect?: boolean // 自动检测浏览器语言
-  preload?: string[] // 预加载的语言列表
-  cache?: {
-    // 缓存配置
-    enabled: boolean
-    maxSize: number
+const i18n = new I18n({
+  defaultLocale: 'zh-CN',
+  cache: {
+    enabled: true,
+    maxSize: 1000,
+    defaultTTL: 60 * 60 * 1000, // 1小时
+    enableTTL: true
   }
-  onLanguageChanged?: (locale: string) => void // 语言切换回调
-  onLoadError?: (locale: string, error: Error) => void // 加载错误回调
-}
+})
 ```
 
-### Vue 3 API
-
-#### 组合式 API
-
-```typescript
-// 主要的 I18n 钩子
-function useI18n(): UseI18nReturn
-
-// 语言切换钩子
-function useLanguageSwitcher(): {
-  locale: Ref<string>
-  availableLanguages: ComputedRef<LanguageInfo[]>
-  isChanging: Ref<boolean>
-  switchLanguage: (locale: string) => Promise<void>
-}
-
-// 批量翻译钩子
-function useBatchTranslation(keys: string[]): ComputedRef<Record<string, string>>
-
-// 条件翻译钩子
-function useConditionalTranslation(
-  condition: (() => boolean) | Ref<boolean>,
-  trueKey: string,
-  falseKey: string
-): ComputedRef<string>
-```
-
-#### 插件选项
-
-```typescript
-interface VueI18nOptions extends I18nOptions {
-  globalInjection?: boolean // 是否注入全局属性
-  globalPropertyName?: string // 全局属性名称
-}
-```
-
-#### 指令
-
-```vue
-<!-- 基础用法 -->
-<div v-t="'common.save'"></div>
-
-<!-- 带参数 -->
-<div v-t="{ key: 'common.welcome', params: { name: 'John' } }"></div>
-
-<!-- 输入框占位符 -->
-<input v-t="'common.searchPlaceholder'" />
-```
-
-## 🌍 内置语言包
-
-库内置了三种语言的完整翻译：
-
-- **English (en)** - 英语
-- **中文简体 (zh-CN)** - 简体中文
-- **日本語 (ja)** - 日语
-
-每种语言包含以下模块：
-
-- `common` - 通用文本（按钮、状态、导航等）
-- `validation` - 表单验证信息
-- `menu` - 菜单相关文本
-- `date` - 日期时间格式
-
-## 🔧 高级用法
-
-### 自定义加载器
+### 异步加载
 
 ```typescript
 import { HttpLoader } from '@ldesign/i18n'
 
-const httpLoader = new HttpLoader('https://api.example.com/locales')
-const i18n = new I18n()
-i18n.setLoader(httpLoader)
-```
-
-### 自定义存储
-
-```typescript
-import { CookieStorage } from '@ldesign/i18n'
-
-const cookieStorage = new CookieStorage('my-locale', {
-  expires: 30, // 30天
-  path: '/',
-  secure: true,
+const i18n = new I18n({
+  defaultLocale: 'zh-CN',
+  loader: new HttpLoader('/locales') // 从 /locales/zh-CN.json 加载
 })
-
-const i18n = new I18n()
-i18n.setStorage(cookieStorage)
 ```
 
-### 复数处理
+### 语言检测
 
 ```typescript
-// 支持 ICU 复数语法
-i18n.t('items', {
-  count: 0,
-}) // "no items"
+import { createDetector } from '@ldesign/i18n'
 
-i18n.t('items', {
-  count: 1,
-}) // "1 item"
-
-i18n.t('items', {
-  count: 5,
-}) // "5 items"
+const detector = createDetector('browser')
+const detectedLanguages = detector.detect() // ['zh-CN', 'zh', 'en-US', 'en']
 ```
 
-### 插值和转义
+### 复数化支持
 
 ```typescript
-// HTML 转义（默认开启）
-i18n.t('message', {
-  content: '<script>alert("xss")</script>',
-})
-
-// 禁用转义
-i18n.t(
-  'message',
-  {
-    content: '<strong>Bold</strong>',
-  },
-  {
-    escapeValue: false,
+const messages = {
+  'en': {
+    item: 'item | items'
   }
-)
+}
+
+console.log(i18n.t('item', { count: 1 })) // "item"
+console.log(i18n.t('item', { count: 2 })) // "items"
 ```
+
+### 格式化支持
+
+```vue
+<template>
+  <!-- 数字格式化 -->
+  <I18nN :value="1234.56" format="currency" currency="USD" />
+  
+  <!-- 日期格式化 -->
+  <I18nD :value="new Date()" format="long" />
+</template>
+```
+
+## 🔧 高级配置
+
+### 完整配置示例
+
+```typescript
+import { I18n, HttpLoader, createDetector, createStorage } from '@ldesign/i18n'
+
+const i18n = new I18n({
+  // 基础配置
+  defaultLocale: 'zh-CN',
+  fallbackLocale: 'en',
+  
+  // 加载器配置
+  loader: new HttpLoader('/api/locales'),
+  
+  // 存储配置
+  storage: createStorage('localStorage', 'app-locale'),
+  
+  // 缓存配置
+  cache: {
+    enabled: true,
+    maxSize: 1000,
+    maxMemory: 50 * 1024 * 1024, // 50MB
+    defaultTTL: 60 * 60 * 1000,
+    enableTTL: true,
+    cleanupInterval: 5 * 60 * 1000,
+    memoryPressureThreshold: 0.8
+  },
+  
+  // 自动检测
+  autoDetect: true,
+  
+  // 预加载
+  preload: ['zh-CN', 'en'],
+  
+  // 回调函数
+  onLanguageChanged: (locale) => {
+    document.documentElement.lang = locale
+  },
+  
+  onLoadError: (error) => {
+    console.error('Language pack load failed:', error)
+  }
+})
+```
+
+## 🆚 对比其他方案
+
+| 特性 | @ldesign/i18n | vue-i18n | react-i18next | i18next |
+|------|---------------|-----------|---------------|---------|
+| TypeScript 支持 | ✅ 完整 | ✅ 良好 | ✅ 良好 | ✅ 基础 |
+| 框架无关 | ✅ 是 | ❌ Vue 专用 | ❌ React 专用 | ✅ 是 |
+| Vue 3 集成 | ✅ 深度集成 | ✅ 原生 | ❌ 无 | ⚠️ 需配置 |
+| 异步加载 | ✅ 内置 | ✅ 支持 | ✅ 支持 | ✅ 支持 |
+| 智能缓存 | ✅ 多层缓存 | ⚠️ 基础 | ⚠️ 基础 | ⚠️ 基础 |
+| 性能监控 | ✅ 内置 | ❌ 无 | ❌ 无 | ❌ 无 |
+| 包体积 | 🎯 优化 | 📦 中等 | 📦 较大 | 📦 较大 |
 
 ## 🧪 测试
 
 ```bash
-# 运行测试
-pnpm test
+# 运行所有测试
+npm test
 
-# 运行测试并生成覆盖率报告
-pnpm coverage
+# 运行特定测试
+npm test -- core.test.ts
 
-# 运行测试 UI
-pnpm test:ui
+# 测试覆盖率
+npm run test:coverage
 ```
 
-## 📝 许可证
+## 🔨 开发
 
-MIT License
+```bash
+# 克隆项目
+git clone https://github.com/ldesign/i18n.git
+
+# 安装依赖
+cd i18n
+pnpm install
+
+# 开发模式
+pnpm dev
+
+# 构建
+pnpm build
+
+# 运行测试
+pnpm test
+```
+
+## 📄 许可证
+
+[MIT](./LICENSE) © 2024 LDesign Team
 
 ## 🤝 贡献
 
-欢迎提交 Issue 和 Pull Request！
+欢迎贡献代码！请查看 [贡献指南](./CONTRIBUTING.md) 了解详情。
 
 ## 📞 支持
 
-如果您在使用过程中遇到问题，请：
+- [GitHub Issues](https://github.com/ldesign/i18n/issues)
+- [讨论区](https://github.com/ldesign/i18n/discussions)
+- [文档站点](https://ldesign.github.io/i18n/)
 
-1. 查看 [示例代码](./examples/)
-2. 提交 [Issue](https://github.com/ldesign/i18n/issues)
-3. 查看 [API 文档](#-api-文档)
+## 🙏 致谢
+
+感谢所有为这个项目做出贡献的开发者！
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ by <a href="https://github.com/ldesign">LDesign Team</a></sub>
+</div>

@@ -1,17 +1,23 @@
 {
   "name": "@ldesign/i18n",
   "type": "module",
-  "version": "0.1.0",
-  "description": "A framework-agnostic internationalization library with Vue 3 integration",
+  "version": "2.0.0",
+  "description": "现代化的国际化解决方案，支持任意前端框架，内置 Vue 3 集成",
   "author": "ldesign",
   "license": "MIT",
   "keywords": [
     "i18n",
     "internationalization",
     "localization",
+    "vue",
     "vue3",
     "typescript",
-    "framework-agnostic"
+    "framework-agnostic",
+    "multilingual",
+    "translation",
+    "locale",
+    "reactive",
+    "composition-api"
   ],
   "exports": {
     ".": {
@@ -23,11 +29,6 @@
       "types": "./types/vue/index.d.ts",
       "import": "./esm/vue/index.js",
       "require": "./cjs/vue/index.js"
-    },
-    "./web-components": {
-      "types": "./types/web-components/index.d.ts",
-      "import": "./esm/web-components/index.js",
-      "require": "./cjs/web-components/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -75,7 +76,6 @@
     }
   },
   "dependencies": {
-    "lit": "^3.0.0",
     "tslib": "^2.6.2"
   },
   "devDependencies": {

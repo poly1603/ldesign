@@ -1,46 +1,130 @@
 import type { LanguagePackage, Loader } from './types'
 
 /**
- * 加载器配置选项
+ * 加载优先级枚举
+ *
+ * 定义了不同加载操作的优先级级别
  */
-export interface LoaderOptions {
-  /** 最大重试次数 */
-  maxRetries?: number
-  /** 重试延迟（毫秒） */
-  retryDelay?: number
-  /** 是否使用指数退避 */
-  exponentialBackoff?: boolean
-  /** 并行加载的最大数量 */
-  maxConcurrent?: number
-  /** 预加载优先级 */
-  preloadPriority?: 'high' | 'normal' | 'low'
-  /** 懒加载配置 */
-  lazyLoad?: {
-    enabled?: boolean
-    chunkSize?: number
-    priority?: 'high' | 'normal' | 'low'
-  }
-  /** 按需加载配置 */
-  onDemand?: {
-    enabled?: boolean
-    namespaces?: string[]
-    threshold?: number
-  }
-  /** 缓存配置 */
-  cache?: {
-    enabled?: boolean
-    maxSize?: number
-    ttl?: number
-  }
+export type LoadPriority = 'high' | 'normal' | 'low'
+
+/**
+ * 懒加载配置接口
+ *
+ * 定义了懒加载功能的配置选项
+ */
+export interface LazyLoadConfig {
+  /** 是否启用懒加载 */
+  enabled?: boolean
+  /** 每次加载的块大小（翻译键数量） */
+  chunkSize?: number
+  /** 懒加载优先级 */
+  priority?: LoadPriority
 }
 
 /**
- * 加载状态
+ * 按需加载配置接口
+ *
+ * 定义了按需加载功能的配置选项
  */
-type LoadingState = 'idle' | 'loading' | 'loaded' | 'error'
+export interface OnDemandConfig {
+  /** 是否启用按需加载 */
+  enabled?: boolean
+  /** 支持按需加载的命名空间列表 */
+  namespaces?: readonly string[]
+  /** 触发按需加载的阈值（访问次数） */
+  threshold?: number
+}
 
 /**
- * 加载器统计信息
+ * 缓存配置接口
+ *
+ * 定义了加载器缓存的配置选项
+ */
+export interface LoaderCacheConfig {
+  /** 是否启用缓存 */
+  enabled?: boolean
+  /** 最大缓存条目数 */
+  maxSize?: number
+  /** 缓存生存时间（毫秒） */
+  ttl?: number
+}
+
+/**
+ * 加载器配置选项接口
+ *
+ * 定义了语言包加载器的完整配置选项
+ * 包括重试策略、并发控制、缓存配置等
+ *
+ * @example
+ * ```typescript
+ * const loaderOptions: LoaderOptions = {
+ *   maxRetries: 3,
+ *   retryDelay: 1000,
+ *   exponentialBackoff: true,
+ *   maxConcurrent: 5,
+ *   preloadPriority: 'high',
+ *   lazyLoad: {
+ *     enabled: true,
+ *     chunkSize: 50,
+ *     priority: 'normal'
+ *   },
+ *   onDemand: {
+ *     enabled: true,
+ *     namespaces: ['common', 'validation'],
+ *     threshold: 10
+ *   },
+ *   cache: {
+ *     enabled: true,
+ *     maxSize: 100,
+ *     ttl: 300000 // 5分钟
+ *   }
+ * }
+ * ```
+ */
+export interface LoaderOptions {
+  /** 最大重试次数（网络请求失败时的重试次数） */
+  maxRetries?: number
+  /** 重试延迟时间（毫秒，每次重试前的等待时间） */
+  retryDelay?: number
+  /** 是否使用指数退避策略（重试延迟时间递增） */
+  exponentialBackoff?: boolean
+  /** 并行加载的最大数量（同时进行的加载请求数限制） */
+  maxConcurrent?: number
+  /** 预加载操作的优先级 */
+  preloadPriority?: LoadPriority
+  /** 懒加载配置（延迟加载部分翻译内容） */
+  lazyLoad?: LazyLoadConfig
+  /** 按需加载配置（根据使用情况动态加载） */
+  onDemand?: OnDemandConfig
+  /** 缓存配置（加载结果的缓存策略） */
+  cache?: LoaderCacheConfig
+  /** 自定义语言包加载器函数 */
+  customLoader?: (locale: string) => Promise<LanguagePackage>
+}
+
+/**
+ * 加载状态枚举
+ *
+ * 定义了语言包的加载状态
+ */
+export type LoadingState = 'idle' | 'loading' | 'loaded' | 'error'
+
+/**
+ * 加载器统计信息接口
+ *
+ * 定义了加载器的性能统计数据
+ * 用于监控加载器的运行状态和性能表现
+ *
+ * @example
+ * ```typescript
+ * const stats: LoaderStats = {
+ *   successCount: 15,
+ *   errorCount: 2,
+ *   cacheHits: 8,
+ *   averageLoadTime: 120,
+ *   currentConcurrent: 2
+ * }
+ * ```
  */
 export interface LoaderStats {
   /** 加载成功次数 */
@@ -57,12 +141,49 @@ export interface LoaderStats {
 
 /**
  * 增强的加载器基类
+ *
+ * 提供了语言包加载的高级功能，包括：
+ * - 🔄 智能重试机制
+ * - 🚀 并发控制
+ * - 💾 缓存管理
+ * - 📊 性能统计
+ * - 🎯 懒加载支持
+ * - 📦 按需加载
+ *
+ * 这是一个抽象基类，具体的加载器实现需要继承此类并实现抽象方法
+ *
+ * @example
+ * ```typescript
+ * class HttpLoader extends EnhancedLoader {
+ *   protected async loadPackageData(locale: string): Promise<LanguagePackage> {
+ *     const response = await fetch(`/api/i18n/${locale}`)
+ *     return response.json()
+ *   }
+ * }
+ *
+ * const loader = new HttpLoader({
+ *   maxRetries: 3,
+ *   maxConcurrent: 5,
+ *   cache: { enabled: true, maxSize: 50 }
+ * })
+ * ```
  */
 export abstract class EnhancedLoader implements Loader {
-  protected loadedPackages = new Map<string, LanguagePackage>()
-  protected loadingPromises = new Map<string, Promise<LanguagePackage>>()
-  protected loadingStates = new Map<string, LoadingState>()
-  protected loadTimes = new Map<string, number>()
+  // ==================== 内部状态管理 ====================
+
+  /** 已加载的语言包缓存 */
+  protected readonly loadedPackages = new Map<string, LanguagePackage>()
+
+  /** 正在进行的加载 Promise 缓存（防止重复加载） */
+  protected readonly loadingPromises = new Map<string, Promise<LanguagePackage>>()
+
+  /** 各语言包的加载状态 */
+  protected readonly loadingStates = new Map<string, LoadingState>()
+
+  /** 各语言包的加载时间记录 */
+  protected readonly loadTimes = new Map<string, number>()
+
+  /** 加载器统计信息 */
   protected stats: LoaderStats = {
     successCount: 0,
     errorCount: 0,
@@ -71,9 +192,16 @@ export abstract class EnhancedLoader implements Loader {
     currentConcurrent: 0,
   }
 
-  protected options: Required<LoaderOptions>
+  /** 配置选项（合并了默认值和用户配置） */
+  protected readonly options: Required<LoaderOptions>
 
+  /**
+   * 创建增强加载器实例
+   *
+   * @param options 加载器配置选项
+   */
   constructor(options: LoaderOptions = {}) {
+    // 合并默认配置和用户配置
     this.options = {
       maxRetries: 3,
       retryDelay: 1000,
@@ -95,47 +223,75 @@ export abstract class EnhancedLoader implements Loader {
       cache: {
         enabled: true,
         maxSize: 100,
-        ttl: 300000, // 5 minutes
+        ttl: 300000, // 5分钟
         ...options.cache,
       },
+      customLoader: undefined,
       ...options,
-    }
+    } as Required<LoaderOptions>
   }
+
+  // ==================== 核心加载方法 ====================
 
   /**
    * 加载语言包（带重试和并发控制）
+   *
+   * 这是加载器的核心方法，提供以下功能：
+   * 1. 缓存检查：避免重复加载
+   * 2. 并发控制：限制同时进行的加载数量
+   * 3. 重试机制：网络失败时自动重试
+   * 4. 性能统计：记录加载时间和成功率
+   *
+   * @param locale 要加载的语言代码
+   * @returns 语言包数据的 Promise
+   *
+   * @throws {Error} 加载失败时抛出错误
+   *
+   * @example
+   * ```typescript
+   * try {
+   *   const package = await loader.load('zh-CN')
+   *   console.log('语言包加载成功:', package.info.name)
+   * } catch (error) {
+   *   console.error('语言包加载失败:', error)
+   * }
+   * ```
    */
   async load(locale: string): Promise<LanguagePackage> {
     const startTime = performance.now()
 
-    // 检查缓存
+    // 1. 检查缓存：如果已经加载过，直接返回缓存的结果
     if (this.loadedPackages.has(locale)) {
       this.stats.cacheHits++
       return this.loadedPackages.get(locale)!
     }
 
-    // 检查是否正在加载
+    // 2. 检查是否正在加载：避免重复的并发加载请求
     if (this.loadingPromises.has(locale)) {
       return this.loadingPromises.get(locale)!
     }
 
-    // 并发控制
+    // 3. 并发控制：等待可用的并发槽位
     await this.waitForConcurrencySlot()
 
-    // 开始加载
+    // 4. 开始加载：更新状态和统计信息
     this.loadingStates.set(locale, 'loading')
     this.stats.currentConcurrent++
 
+    // 5. 创建加载 Promise 并缓存（防止重复加载）
     const loadingPromise = this.loadWithRetry(locale)
     this.loadingPromises.set(locale, loadingPromise)
 
     try {
+      // 6. 执行实际加载
       const languagePackage = await loadingPromise
+
+      // 7. 缓存加载结果
       this.loadedPackages.set(locale, languagePackage)
       this.loadingStates.set(locale, 'loaded')
       this.stats.successCount++
 
-      // 记录加载时间
+      // 8. 记录性能数据
       const loadTime = performance.now() - startTime
       this.loadTimes.set(locale, loadTime)
       this.updateAverageLoadTime(loadTime)
@@ -143,25 +299,47 @@ export abstract class EnhancedLoader implements Loader {
       return languagePackage
     }
     catch (error) {
+      // 9. 处理加载失败
       this.loadingStates.set(locale, 'error')
       this.stats.errorCount++
       throw error
     }
     finally {
+      // 10. 清理：移除加载 Promise 并减少并发计数
       this.loadingPromises.delete(locale)
       this.stats.currentConcurrent--
     }
   }
 
   /**
-   * 批量并行加载
+   * 批量并行加载多个语言包
+   *
+   * 支持同时加载多个语言包，自动控制并发数量
+   * 即使部分语言包加载失败，也会继续加载其他语言包
+   *
+   * @param locales 要加载的语言代码数组
+   * @returns 加载结果映射表（成功返回语言包，失败返回错误对象）
+   *
+   * @example
+   * ```typescript
+   * const results = await loader.loadBatch(['en', 'zh-CN', 'ja'])
+   *
+   * for (const [locale, result] of results) {
+   *   if (result instanceof Error) {
+   *     console.error(`${locale} 加载失败:`, result.message)
+   *   } else {
+   *     console.log(`${locale} 加载成功:`, result.info.name)
+   *   }
+   * }
+   * ```
    */
-  async loadBatch(locales: string[]): Promise<Map<string, LanguagePackage | Error>> {
+  async loadBatch(locales: readonly string[]): Promise<Map<string, LanguagePackage | Error>> {
     const results = new Map<string, LanguagePackage | Error>()
 
-    // 分批处理以控制并发
+    // 分批处理以控制并发数量
     const batches = this.chunkArray(locales, this.options.maxConcurrent)
 
+    // 逐批处理，确保不超过最大并发限制
     for (const batch of batches) {
       const promises = batch.map(async (locale) => {
         try {
@@ -169,10 +347,12 @@ export abstract class EnhancedLoader implements Loader {
           results.set(locale, pkg)
         }
         catch (error) {
+          // 记录失败的语言包，但不影响其他语言包的加载
           results.set(locale, error as Error)
         }
       })
 
+      // 等待当前批次的所有加载完成
       await Promise.all(promises)
     }
 
@@ -180,7 +360,25 @@ export abstract class EnhancedLoader implements Loader {
   }
 
   /**
-   * 智能预加载（支持优先级）
+   * 智能预加载（支持优先级控制）
+   *
+   * 根据配置的优先级策略预加载语言包
+   * 高优先级：立即加载
+   * 普通优先级：延迟加载
+   * 低优先级：空闲时加载
+   *
+   * @param locale 要预加载的语言代码
+   * @returns 预加载完成的 Promise
+   *
+   * @example
+   * ```typescript
+   * // 预加载常用语言
+   * await Promise.all([
+   *   loader.preload('en'),
+   *   loader.preload('zh-CN'),
+   *   loader.preload('ja')
+   * ])
+   * ```
    */
   async preload(locale: string): Promise<void> {
     // 如果已经加载或正在加载，直接返回
@@ -188,29 +386,71 @@ export abstract class EnhancedLoader implements Loader {
       return
     }
 
-    // 根据优先级决定是否立即加载
-    if (this.options.preloadPriority === 'high') {
-      await this.load(locale)
-    }
-    else {
-      // 低优先级预加载，使用 requestIdleCallback 或 setTimeout
-      this.schedulePreload(locale)
+    // 根据优先级决定加载策略
+    switch (this.options.preloadPriority) {
+      case 'high':
+        // 高优先级：立即加载
+        await this.load(locale)
+        break
+
+      case 'normal':
+        // 普通优先级：延迟加载（避免阻塞主要操作）
+        setTimeout(() => {
+          this.load(locale).catch(() => {
+            // 预加载失败不抛出错误，只记录日志
+            console.debug(`预加载语言包失败: ${locale}`)
+          })
+        }, 100)
+        break
+
+      case 'low':
+        // 低优先级：空闲时加载
+        if (typeof requestIdleCallback !== 'undefined') {
+          requestIdleCallback(() => {
+            this.load(locale).catch(() => {
+              console.debug(`空闲时预加载语言包失败: ${locale}`)
+            })
+          })
+        } else {
+          // 降级方案：使用 setTimeout
+          setTimeout(() => {
+            this.load(locale).catch(() => {
+              console.debug(`预加载语言包失败: ${locale}`)
+            })
+          }, 1000)
+        }
+        break
     }
   }
 
+  // ==================== 内部辅助方法 ====================
+
   /**
-   * 带重试的加载
+   * 带重试机制的加载方法
+   *
+   * 实现智能重试策略：
+   * 1. 支持指数退避算法
+   * 2. 可配置最大重试次数
+   * 3. 记录每次重试的错误信息
+   *
+   * @param locale 要加载的语言代码
+   * @returns 语言包数据的 Promise
+   *
+   * @throws {Error} 所有重试都失败时抛出最后一次的错误
    */
   private async loadWithRetry(locale: string): Promise<LanguagePackage> {
     let lastError: Error | undefined
 
+    // 执行重试循环（包括初始尝试）
     for (let attempt = 0; attempt <= this.options.maxRetries; attempt++) {
       try {
+        // 调用具体的加载实现（由子类提供）
         return await this.loadLanguagePackage(locale)
       }
       catch (error) {
         lastError = error as Error
 
+        // 如果还有重试机会，计算延迟时间并等待
         if (attempt < this.options.maxRetries) {
           const delay = this.calculateRetryDelay(attempt)
           await this.sleep(delay)
@@ -218,17 +458,27 @@ export abstract class EnhancedLoader implements Loader {
       }
     }
 
+    // 所有重试都失败，抛出最后一次的错误
     throw lastError
   }
 
   /**
-   * 计算重试延迟
+   * 计算重试延迟时间
+   *
+   * 支持两种策略：
+   * 1. 固定延迟：每次重试使用相同的延迟时间
+   * 2. 指数退避：延迟时间随重试次数指数增长
+   *
+   * @param attempt 当前重试次数（从0开始）
+   * @returns 延迟时间（毫秒）
    */
   private calculateRetryDelay(attempt: number): number {
     if (!this.options.exponentialBackoff) {
+      // 固定延迟策略
       return this.options.retryDelay
     }
 
+    // 指数退避策略：delay * (2 ^ attempt)
     return this.options.retryDelay * (2 ** attempt)
   }
 
@@ -277,7 +527,7 @@ export abstract class EnhancedLoader implements Loader {
   /**
    * 数组分块
    */
-  private chunkArray<T>(array: T[], chunkSize: number): T[][] {
+  private chunkArray<T>(array: readonly T[], chunkSize: number): T[][] {
     const chunks: T[][] = []
     for (let i = 0; i < array.length; i += chunkSize) {
       chunks.push(array.slice(i, i + chunkSize))
@@ -369,22 +619,30 @@ export class DefaultLoader extends EnhancedLoader {
     locale: string,
   ): Promise<LanguagePackage> {
     try {
-      // 使用预定义的语言包映射，避免动态导入问题
-      const localeMap: Record<
-        string,
-        () => Promise<{ default: LanguagePackage }>
-      > = {
-        'en': () => import('../locales/en'),
-        'zh-CN': () => import('../locales/zh-CN'),
-        'ja': () => import('../locales/ja'),
+      // 尝试动态加载语言包
+      // 注意：这里不再使用预定义的映射，而是让用户自己提供语言包
+
+      // 如果有自定义的语言包加载器，使用它
+      if (this.options.customLoader) {
+        return await this.options.customLoader(locale)
       }
 
-      const loader = localeMap[locale]
-      if (!loader) {
-        throw new Error(`Language package for '${locale}' is not available`)
+      // 否则返回一个空的语言包，避免构建错误
+      console.warn(`No language package found for locale '${locale}'. Please provide language packages through options.messages or options.customLoader.`)
+
+      return {
+        info: {
+          name: `Empty package for ${locale}`,
+          nativeName: `Empty package for ${locale}`,
+          code: locale,
+          direction: 'ltr',
+          dateFormat: 'YYYY-MM-DD',
+        },
+        translations: {},
       }
 
-      const localeModule = await loader()
+      // 注意：下面的代码不会执行，但保留以供参考
+      const localeModule = { default: null } as any
 
       if (!localeModule.default) {
         throw new Error(

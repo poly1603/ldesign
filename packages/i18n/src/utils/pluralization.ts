@@ -12,7 +12,7 @@ const defaultPluralRule: PluralRule = (count: number): number => {
 /**
  * 各语言的复数规则
  */
-const PLURAL_RULES: PluralRules = {
+const PLURAL_RULES: Record<string, PluralRule> = {
   // 英语：单数/复数
   'en': (count: number) => (count === 1 ? 0 : 1),
   'en-US': (count: number) => (count === 1 ? 0 : 1),

@@ -1,690 +1,760 @@
-# Vue 3 示例
+# Vue 项目示例
 
-本页面展示如何在 Vue 3 项目中使用 @ldesign/i18n。
+本页面展示了如何在 Vue 3 项目中使用 @ldesign/i18n 的完整示例。
 
-## 在线演示
+## 完整项目结构
 
-你可以在 [这里](../../examples/vue/) 查看完整的在线演示。
-
-## 项目设置
-
-### 安装和配置
-
-```bash
-# 安装依赖
-pnpm add @ldesign/i18n vue@^3.4.0
-
-# 开发依赖
-pnpm add -D @vitejs/plugin-vue typescript vue-tsc vite
+```
+vue-i18n-example/
+├── src/
+│   ├── components/
+│   │   ├── LanguageSwitcher.vue
+│   │   ├── UserProfile.vue
+│   │   └── ProductCard.vue
+│   ├── locales/
+│   │   ├── zh-CN.json
+│   │   ├── en.json
+│   │   └── index.ts
+│   ├── i18n/
+│   │   └── index.ts
+│   ├── App.vue
+│   └── main.ts
+├── package.json
+└── vite.config.ts
 ```
 
-### 主入口文件
+## 1. 项目配置
 
-```typescript
-import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
-import { createI18n } from '@ldesign/i18n/vue'
-// main.ts
-import { createApp } from 'vue'
-import App from './App.vue'
+### package.json
 
-async function bootstrap() {
-  try {
-    // 创建 I18n 实例
-    const i18nInstance = await createI18nWithBuiltinLocales({
-      defaultLocale: 'en',
-      fallbackLocale: 'en',
-      autoDetect: true,
-      storage: 'localStorage',
-      storageKey: 'vue-i18n-locale',
-      cache: {
-        enabled: true,
-        maxSize: 1000,
-      },
-      onLanguageChanged: (locale) => {
-        console.log('Language changed to:', locale)
-        document.documentElement.lang = locale
-      },
-      onLoadError: (locale, error) => {
-        console.error(`Failed to load language '${locale}':`, error)
-      },
-    })
-
-    // 创建 Vue I18n 插件
-    const vueI18nPlugin = createI18n(i18nInstance)
-
-    // 创建 Vue 应用
-    const app = createApp(App)
-
-    // 安装 I18n 插件
-    app.use(vueI18nPlugin, {
-      globalInjection: true,
-      globalPropertyName: '$t',
-    })
-
-    // 挂载应用
-    app.mount('#app')
-
-    console.log('Vue I18n example app started successfully')
-  }
-  catch (error) {
-    console.error('Failed to bootstrap Vue I18n example:', error)
+```json
+{
+  "name": "vue-i18n-example",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.3.0",
+    "@ldesign/i18n": "^2.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^4.0.0"
   }
 }
-
-bootstrap()
 ```
 
-## 主组件示例
+### vite.config.ts
+
+```typescript
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+export default defineConfig({
+  plugins: [vue()],
+  define: {
+    // 环境变量配置
+    __I18N_DEFAULT_LOCALE__: JSON.stringify('zh-CN'),
+    __I18N_FALLBACK_LOCALE__: JSON.stringify('en')
+  }
+})
+```
+
+## 2. 语言包配置
+
+### src/locales/zh-CN.json
+
+```json
+{
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "confirm": "确认",
+    "delete": "删除",
+    "edit": "编辑",
+    "loading": "加载中..."
+  },
+  "nav": {
+    "home": "首页",
+    "products": "产品",
+    "about": "关于我们",
+    "contact": "联系我们"
+  },
+  "user": {
+    "profile": "用户资料",
+    "name": "姓名",
+    "email": "邮箱",
+    "phone": "电话",
+    "welcome": "欢迎回来，{name}！",
+    "lastLogin": "上次登录：{date}"
+  },
+  "product": {
+    "title": "产品名称",
+    "price": "价格",
+    "description": "产品描述",
+    "addToCart": "加入购物车",
+    "outOfStock": "缺货",
+    "discount": "折扣 {percent}%"
+  },
+  "validation": {
+    "required": "此字段为必填项",
+    "email": "请输入有效的邮箱地址",
+    "minLength": "最少需要 {min} 个字符",
+    "maxLength": "最多允许 {max} 个字符"
+  }
+}
+```
+
+### src/locales/en.json
+
+```json
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading..."
+  },
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "about": "About Us",
+    "contact": "Contact Us"
+  },
+  "user": {
+    "profile": "User Profile",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "welcome": "Welcome back, {name}!",
+    "lastLogin": "Last login: {date}"
+  },
+  "product": {
+    "title": "Product Name",
+    "price": "Price",
+    "description": "Product Description",
+    "addToCart": "Add to Cart",
+    "outOfStock": "Out of Stock",
+    "discount": "{percent}% Off"
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Please enter a valid email address",
+    "minLength": "Minimum {min} characters required",
+    "maxLength": "Maximum {max} characters allowed"
+  }
+}
+```
+
+### src/locales/index.ts
+
+```typescript
+import zhCN from './zh-CN.json'
+import en from './en.json'
+
+export const messages = {
+  'zh-CN': zhCN,
+  'en': en
+}
+
+export const availableLocales = [
+  { code: 'zh-CN', name: '中文' },
+  { code: 'en', name: 'English' }
+]
+```
+
+## 3. I18n 配置
+
+### src/i18n/index.ts
+
+```typescript
+import { createI18nPlugin } from '@ldesign/i18n/vue'
+import { messages } from '../locales'
+
+export const i18nPlugin = createI18nPlugin({
+  locale: 'zh-CN',
+  fallbackLocale: 'en',
+  messages,
+  
+  // 存储配置
+  storage: 'localStorage',
+  storageKey: 'app-locale',
+  
+  // 自动检测用户语言
+  autoDetect: true,
+  
+  // 缓存配置
+  cache: {
+    enabled: true,
+    maxSize: 1000,
+    defaultTTL: 60 * 60 * 1000 // 1小时
+  },
+  
+  // 回调函数
+  onLanguageChanged: (locale) => {
+    document.documentElement.lang = locale
+    console.log('Language changed to:', locale)
+  },
+  
+  onLoadError: (error) => {
+    console.error('Failed to load language pack:', error)
+  }
+})
+```
+
+## 4. 主应用配置
+
+### src/main.ts
+
+```typescript
+import { createApp } from 'vue'
+import App from './App.vue'
+import { i18nPlugin } from './i18n'
+
+const app = createApp(App)
+
+// 安装 I18n 插件
+app.use(i18nPlugin)
+
+app.mount('#app')
+```
+
+## 5. 组件示例
+
+### src/components/LanguageSwitcher.vue
 
 ```vue
-<!-- App.vue -->
-<script setup lang="ts">
-import {
-  useBatchTranslation,
-  useConditionalTranslation,
-  useI18n,
-  useLanguageSwitcher,
-} from '@ldesign/i18n/vue'
-import { computed, onMounted, ref } from 'vue'
-
-// 使用 I18n 组合式 API
-const { t, i18n } = useI18n()
-const { locale, availableLanguages, isChanging, switchLanguage } = useLanguageSwitcher()
-
-// 错误状态
-const error = ref<string>('')
-
-// 当前语言信息
-const currentLanguageInfo = computed(() => i18n.getCurrentLanguageInfo())
-
-// 批量翻译示例
-const batchTranslations = useBatchTranslation(['common.save', 'common.cancel', 'common.delete'])
-
-// 条件翻译示例
-const isOnline = ref(true)
-const conditionalStatus = useConditionalTranslation(isOnline, 'common.online', 'common.offline')
-
-// 组件挂载时的初始化
-onMounted(() => {
-  console.log('Vue I18n example mounted')
-  console.log('Current locale:', locale.value)
-  console.log('Available languages:', availableLanguages.value)
-})
-
-// 错误处理
-i18n.on('loadError', (locale: string, err: Error) => {
-  error.value = `Failed to load language '${locale}': ${err.message}`
-  setTimeout(() => {
-    error.value = ''
-  }, 5000)
-})
-</script>
-
 <template>
-  <div class="app">
-    <header class="header">
-      <h1>@ldesign/i18n</h1>
-      <p>Vue 3 Example</p>
-      <div class="current-language">
-        {{ t('common.language') }}: {{ currentLanguageInfo?.nativeName }} ({{ locale }})
-      </div>
-    </header>
-
-    <!-- 语言切换器 -->
-    <div class="controls">
-      <button
-        v-for="lang in availableLanguages"
-        :key="lang.code"
-        class="btn"
-        :class="[{ active: locale === lang.code }]"
-        :disabled="isChanging"
-        @click="switchLanguage(lang.code)"
+  <div class="language-switcher">
+    <label>{{ t('common.language') }}:</label>
+    <select :value="locale" @change="handleLanguageChange">
+      <option 
+        v-for="lang in availableLocales" 
+        :key="lang.code" 
+        :value="lang.code"
       >
-        {{ lang.nativeName }}
-        <span v-if="isChanging && locale === lang.code" class="loading">...</span>
-      </button>
-    </div>
-
-    <!-- 基础翻译示例 -->
-    <section class="section">
-      <h3>{{ t('examples.basic') }}</h3>
-      <div class="example">
-        <div class="code">
-          {{ "t('common.ok')" }}
-        </div>
-        <div class="result">
-          {{ t('common.ok') }}
-        </div>
-      </div>
-      <div class="example">
-        <div class="code">
-          {{ "t('common.cancel')" }}
-        </div>
-        <div class="result">
-          {{ t('common.cancel') }}
-        </div>
-      </div>
-    </section>
-
-    <!-- 插值翻译示例 -->
-    <section class="section">
-      <h3>{{ t('examples.interpolation') }}</h3>
-      <div class="example">
-        <div class="code">
-          {{ "t('common.pageOf', { current: 1, total: 10 })" }}
-        </div>
-        <div class="result">
-          {{ t('common.pageOf', { current: 1, total: 10 }) }}
-        </div>
-      </div>
-      <div class="example">
-        <div class="code">
-          {{ "t('common.showingItems', { start: 1, end: 20, total: 100 })" }}
-        </div>
-        <div class="result">
-          {{ t('common.showingItems', { start: 1, end: 20, total: 100 }) }}
-        </div>
-      </div>
-    </section>
-
-    <!-- 复数处理示例 -->
-    <section class="section">
-      <h3>{{ t('examples.pluralization') }}</h3>
-      <div class="example">
-        <div class="code">
-          {{ "t('date.duration.minutes', { count: 1 })" }}
-        </div>
-        <div class="result">
-          {{ t('date.duration.minutes', { count: 1 }) }}
-        </div>
-      </div>
-      <div class="example">
-        <div class="code">
-          {{ "t('date.duration.minutes', { count: 5 })" }}
-        </div>
-        <div class="result">
-          {{ t('date.duration.minutes', { count: 5 }) }}
-        </div>
-      </div>
-    </section>
-
-    <!-- 指令示例 -->
-    <section class="section">
-      <h3>{{ t('examples.directive') }}</h3>
-      <div class="example">
-        <div class="code">
-          {{ '
-          <div v-t="\'common.save\'"></div>
-          ' }}
-        </div>
-        <div v-t="'common.save'" class="result" />
-      </div>
-      <div class="example">
-        <div class="code">
-          {{ '<input v-t="{ key: \'common.searchPlaceholder\' }" />' }}
-        </div>
-        <input v-t="{ key: 'common.searchPlaceholder' }" class="input-example">
-      </div>
-    </section>
-
-    <!-- 批量翻译示例 -->
-    <section class="section">
-      <h3>{{ t('examples.batch') }}</h3>
-      <div class="example">
-        <div class="code">
-          useBatchTranslation(['common.save', 'common.cancel', 'common.delete'])
-        </div>
-        <pre class="result">{{ JSON.stringify(batchTranslations, null, 2) }}</pre>
-      </div>
-    </section>
-
-    <!-- 条件翻译示例 -->
-    <section class="section">
-      <h3>{{ t('examples.conditional') }}</h3>
-      <div class="example">
-        <label>
-          <input v-model="isOnline" type="checkbox">
-          {{ t('common.online') }} / {{ t('common.offline') }}
-        </label>
-        <div class="result">
-          {{ t('examples.status') }}: {{ conditionalStatus }}
-        </div>
-      </div>
-    </section>
-
-    <!-- 语言信息示例 -->
-    <section class="section">
-      <h3>{{ t('examples.info') }}</h3>
-      <div class="example">
-        <div class="code">
-          getCurrentLanguageInfo()
-        </div>
-        <pre class="result">{{ JSON.stringify(currentLanguageInfo, null, 2) }}</pre>
-      </div>
-    </section>
-
-    <!-- 错误处理 -->
-    <div v-if="error" class="error">
-      {{ error }}
-    </div>
+        {{ lang.name }}
+      </option>
+    </select>
   </div>
 </template>
 
+<script setup lang="ts">
+import { useI18n } from '@ldesign/i18n/vue'
+import { availableLocales } from '../locales'
+
+const { t, locale, setLocale } = useI18n()
+
+const handleLanguageChange = async (event: Event) => {
+  const target = event.target as HTMLSelectElement
+  await setLocale(target.value)
+}
+</script>
+
 <style scoped>
-.app {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  line-height: 1.6;
-}
-
-.header {
-  text-align: center;
-  margin-bottom: 40px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
-}
-
-.current-language {
-  color: #666;
-  font-size: 14px;
-  margin-top: 10px;
-}
-
-.controls {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 30px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.btn {
-  padding: 8px 16px;
-  border: 1px solid #ddd;
-  background: #f5f5f5;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 14px;
-  position: relative;
-}
-
-.btn:hover:not(:disabled) {
-  background: #e5e5e5;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn.active {
-  background: #007bff;
-  color: white;
-  border-color: #007bff;
-}
-
-.loading {
-  margin-left: 4px;
-  font-size: 12px;
-}
-
-.section {
-  margin-bottom: 30px;
-  padding: 20px;
-  border: 1px solid #eee;
-  border-radius: 8px;
-}
-
-.section h3 {
-  margin-top: 0;
-  color: #333;
-  font-size: 18px;
-}
-
-.example {
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 4px;
-  margin: 10px 0;
-}
-
-.code {
-  font-family: 'Monaco', 'Menlo', monospace;
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 8px;
-}
-
-.result {
-  font-weight: bold;
-  color: #007bff;
-}
-
-.result pre {
-  margin: 0;
-  white-space: pre-wrap;
-  font-size: 12px;
-}
-
-.input-example {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  width: 200px;
-}
-
-.error {
-  color: #dc3545;
-  background: #f8d7da;
-  padding: 15px;
-  border-radius: 4px;
-  margin: 20px 0;
-  border: 1px solid #f5c6cb;
-}
-
-label {
+.language-switcher {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
 }
 
-input[type='checkbox'] {
-  margin: 0;
+select {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 </style>
 ```
 
-## 组合式 API 详细示例
-
-### 基础使用
+### src/components/UserProfile.vue
 
 ```vue
-<script setup lang="ts">
-import { useI18n } from '@ldesign/i18n/vue'
-
-// 获取翻译函数和当前语言
-const { t, locale } = useI18n()
-
-// 使用翻译
-const title = t('page.title')
-const message = t('page.welcome', { name: 'Vue' })
-</script>
-```
-
-### 语言切换器组件
-
-```vue
-<!-- LanguageSwitcher.vue -->
-<script setup lang="ts">
-import { useLanguageSwitcher } from '@ldesign/i18n/vue'
-import { ref, watch } from 'vue'
-
-const { locale, availableLanguages, isChanging, switchLanguage } = useLanguageSwitcher()
-
-const currentLocale = ref(locale.value)
-
-// 监听语言变化
-watch(locale, (newLocale) => {
-  currentLocale.value = newLocale
-  // 更新页面元数据
-  document.title = t('app.title')
-  document.documentElement.lang = newLocale
-})
-
-async function handleLanguageChange() {
-  await switchLanguage(currentLocale.value)
-}
-</script>
-
 <template>
-  <div class="language-switcher">
-    <select v-model="currentLocale" :disabled="isChanging" @change="handleLanguageChange">
-      <option v-for="lang in availableLanguages" :key="lang.code" :value="lang.code">
-        {{ lang.nativeName }}
-      </option>
-    </select>
-    <span v-if="isChanging" class="loading">
-      {{ t('common.loading') }}
-    </span>
+  <div class="user-profile">
+    <h2>{{ t('user.profile') }}</h2>
+    
+    <!-- 使用组合式 API -->
+    <div class="welcome-message">
+      {{ t('user.welcome', { name: user.name }) }}
+    </div>
+    
+    <!-- 使用组件 -->
+    <div class="last-login">
+      <I18nT 
+        keypath="user.lastLogin" 
+        :params="{ date: formatDate(user.lastLogin) }" 
+      />
+    </div>
+    
+    <!-- 使用指令 -->
+    <form @submit.prevent="saveProfile">
+      <div class="form-group">
+        <label v-t="'user.name'"></label>
+        <input 
+          v-model="user.name" 
+          :placeholder="t('user.name')"
+          required
+        />
+      </div>
+      
+      <div class="form-group">
+        <label v-t="'user.email'"></label>
+        <input 
+          v-model="user.email" 
+          type="email"
+          :placeholder="t('user.email')"
+          required
+        />
+      </div>
+      
+      <div class="form-group">
+        <label v-t="'user.phone'"></label>
+        <input 
+          v-model="user.phone" 
+          :placeholder="t('user.phone')"
+        />
+      </div>
+      
+      <div class="form-actions">
+        <button type="submit" v-t="'common.save'"></button>
+        <button type="button" v-t="'common.cancel'" @click="resetForm"></button>
+      </div>
+    </form>
   </div>
 </template>
-```
 
-### 表单验证组件
-
-```vue
-<!-- FormValidation.vue -->
 <script setup lang="ts">
+import { ref, reactive } from 'vue'
 import { useI18n } from '@ldesign/i18n/vue'
-import { reactive, ref } from 'vue'
 
 const { t } = useI18n()
 
-const form = reactive({
-  name: '',
-  email: '',
+const user = reactive({
+  name: '张三',
+  email: 'zhangsan@example.com',
+  phone: '13800138000',
+  lastLogin: new Date('2024-01-15T10:30:00')
 })
 
-const errors = reactive({
-  name: '',
-  email: '',
-})
-
-const isSubmitting = ref(false)
-
-function validateForm() {
-  errors.name = ''
-  errors.email = ''
-
-  if (!form.name) {
-    errors.name = t('validation.required')
-  }
-
-  if (!form.email) {
-    errors.email = t('validation.required')
-  }
-  else if (!/\S[^\s@]*@\S+\.\S+/.test(form.email)) {
-    errors.email = t('validation.email')
-  }
-
-  return !errors.name && !errors.email
+const formatDate = (date: Date) => {
+  return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(date)
 }
 
-async function handleSubmit() {
-  if (!validateForm())
-    return
+const saveProfile = () => {
+  console.log('Saving profile:', user)
+  // 保存逻辑
+}
 
-  isSubmitting.value = true
-  try {
-    // 提交表单逻辑
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    alert(t('form.submitSuccess'))
-  }
-  catch (error) {
-    alert(t('form.submitError'))
-  }
-  finally {
-    isSubmitting.value = false
-  }
+const resetForm = () => {
+  // 重置表单逻辑
 }
 </script>
 
+<style scoped>
+.user-profile {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.welcome-message {
+  background: #f0f9ff;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  color: #0369a1;
+}
+
+.last-login {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.form-actions button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.form-actions button[type="submit"] {
+  background: #3b82f6;
+  color: white;
+}
+
+.form-actions button[type="button"] {
+  background: #6b7280;
+  color: white;
+}
+</style>
+```
+
+### src/components/ProductCard.vue
+
+```vue
 <template>
-  <form @submit.prevent="handleSubmit">
-    <div class="field">
-      <label>{{ t('form.name') }}</label>
-      <input
-        v-model="form.name"
-        :placeholder="t('form.namePlaceholder')"
-        :class="{ error: errors.name }"
-      >
-      <span v-if="errors.name" class="error-message">
-        {{ errors.name }}
-      </span>
+  <div class="product-card">
+    <div class="product-image">
+      <img :src="product.image" :alt="product.title" />
+      
+      <!-- 折扣标签 -->
+      <div v-if="product.discount" class="discount-badge">
+        <I18nT 
+          keypath="product.discount" 
+          :params="{ percent: product.discount }" 
+        />
+      </div>
     </div>
-
-    <div class="field">
-      <label>{{ t('form.email') }}</label>
-      <input
-        v-model="form.email"
-        type="email"
-        :placeholder="t('form.emailPlaceholder')"
-        :class="{ error: errors.email }"
-      >
-      <span v-if="errors.email" class="error-message">
-        {{ errors.email }}
-      </span>
+    
+    <div class="product-info">
+      <h3 class="product-title">{{ product.title }}</h3>
+      <p class="product-description">{{ product.description }}</p>
+      
+      <!-- 价格显示 -->
+      <div class="product-price">
+        <I18nN 
+          :value="product.price" 
+          format="currency" 
+          currency="CNY" 
+        />
+      </div>
+      
+      <!-- 操作按钮 -->
+      <div class="product-actions">
+        <button 
+          v-if="product.inStock" 
+          class="add-to-cart-btn"
+          @click="addToCart"
+        >
+          {{ t('product.addToCart') }}
+        </button>
+        <button v-else class="out-of-stock-btn" disabled>
+          {{ t('product.outOfStock') }}
+        </button>
+      </div>
     </div>
-
-    <button type="submit" :disabled="isSubmitting">
-      {{ isSubmitting ? t('common.loading') : t('form.submit') }}
-    </button>
-  </form>
-</template>
-```
-
-## 高级功能示例
-
-### 动态语言包加载
-
-```vue
-<script setup lang="ts">
-import { useI18n } from '@ldesign/i18n/vue'
-import { ref, watch } from 'vue'
-
-const { i18n, locale } = useI18n()
-const isLoading = ref(false)
-
-// 监听语言变化，动态加载语言包
-watch(locale, async (newLocale) => {
-  if (!i18n.isLanguageLoaded(newLocale)) {
-    isLoading.value = true
-    try {
-      await i18n.preloadLanguage(newLocale)
-      console.log(`Language ${newLocale} loaded successfully`)
-    }
-    catch (error) {
-      console.error(`Failed to load language ${newLocale}:`, error)
-    }
-    finally {
-      isLoading.value = false
-    }
-  }
-})
-</script>
-```
-
-### 自定义格式化
-
-```vue
-<script setup lang="ts">
-import { useI18n } from '@ldesign/i18n/vue'
-
-const { t, i18n } = useI18n()
-
-// 注册自定义格式化函数
-i18n.addFormatter('currency', (value: number, locale: string) => {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: 'USD',
-  }).format(value)
-})
-
-i18n.addFormatter('date', (value: number, locale: string) => {
-  return new Intl.DateTimeFormat(locale).format(new Date(value))
-})
-
-// 使用自定义格式化
-const price = t('product.price', { amount: 99.99 })
-const date = t('product.date', { timestamp: Date.now() })
-</script>
-```
-
-## 运行示例
-
-### 启动步骤
-
-```bash
-# 1. 确保主项目已构建
-cd packages/i18n
-pnpm build
-
-# 2. 进入 Vue 示例目录
-cd examples/vue
-
-# 3. 安装依赖
-pnpm install
-
-# 4. 启动开发服务器
-pnpm dev
-```
-
-### 构建生产版本
-
-```bash
-# 构建
-pnpm build
-
-# 预览
-pnpm preview
-```
-
-## 最佳实践
-
-### 1. 组件级别的翻译管理
-
-```vue
-<script setup lang="ts">
-// 为每个组件定义专门的翻译键前缀
-const COMPONENT_PREFIX = 'components.userCard'
-
-const { t } = useI18n()
-
-// 使用前缀简化翻译调用
-const ct = (key: string, params?: any) => t(`${COMPONENT_PREFIX}.${key}`, params)
-</script>
-
-<template>
-  <div class="user-card">
-    <h3>{{ ct('title') }}</h3>
-    <p>{{ ct('description', { name: user.name }) }}</p>
   </div>
 </template>
-```
 
-### 2. 错误边界处理
-
-```vue
 <script setup lang="ts">
 import { useI18n } from '@ldesign/i18n/vue'
-import { onErrorCaptured, ref } from 'vue'
+
+interface Product {
+  id: string
+  title: string
+  description: string
+  price: number
+  image: string
+  inStock: boolean
+  discount?: number
+}
+
+const props = defineProps<{
+  product: Product
+}>()
 
 const { t } = useI18n()
-const error = ref<string>('')
 
-onErrorCaptured((err) => {
-  if (err.message.includes('translation')) {
-    error.value = t('errors.translationFailed')
-    return false
-  }
-})
+const addToCart = () => {
+  console.log('Adding to cart:', props.product.id)
+  // 添加到购物车逻辑
+}
 </script>
+
+<style scoped>
+.product-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.product-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.product-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.discount-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #ef4444;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.product-info {
+  padding: 16px;
+}
+
+.product-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+.product-description {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.product-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: #059669;
+  margin-bottom: 16px;
+}
+
+.product-actions button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-to-cart-btn {
+  background: #3b82f6;
+  color: white;
+}
+
+.add-to-cart-btn:hover {
+  background: #2563eb;
+}
+
+.out-of-stock-btn {
+  background: #9ca3af;
+  color: white;
+  cursor: not-allowed;
+}
+</style>
 ```
 
-### 3. 性能优化
+## 6. 主应用组件
+
+### src/App.vue
 
 ```vue
-<script setup lang="ts">
-import { useBatchTranslation } from '@ldesign/i18n/vue'
+<template>
+  <div id="app">
+    <header class="app-header">
+      <nav class="app-nav">
+        <div class="nav-brand">
+          <h1>{{ t('nav.home') }}</h1>
+        </div>
+        
+        <div class="nav-links">
+          <a href="#" v-t="'nav.home'"></a>
+          <a href="#" v-t="'nav.products'"></a>
+          <a href="#" v-t="'nav.about'"></a>
+          <a href="#" v-t="'nav.contact'"></a>
+        </div>
+        
+        <LanguageSwitcher />
+      </nav>
+    </header>
+    
+    <main class="app-main">
+      <UserProfile />
+      
+      <section class="products-section">
+        <h2 v-t="'nav.products'"></h2>
+        <div class="products-grid">
+          <ProductCard 
+            v-for="product in products" 
+            :key="product.id" 
+            :product="product" 
+          />
+        </div>
+      </section>
+    </main>
+  </div>
+</template>
 
-// 批量翻译减少函数调用
-const buttonTexts = useBatchTranslation(['common.save', 'common.cancel', 'common.delete'])
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useI18n } from '@ldesign/i18n/vue'
+import LanguageSwitcher from './components/LanguageSwitcher.vue'
+import UserProfile from './components/UserProfile.vue'
+import ProductCard from './components/ProductCard.vue'
+
+const { t } = useI18n()
+
+const products = ref([
+  {
+    id: '1',
+    title: 'iPhone 15 Pro',
+    description: '最新的 iPhone，配备 A17 Pro 芯片',
+    price: 7999,
+    image: '/images/iphone15pro.jpg',
+    inStock: true,
+    discount: 10
+  },
+  {
+    id: '2',
+    title: 'MacBook Air M2',
+    description: '轻薄便携的笔记本电脑',
+    price: 8999,
+    image: '/images/macbook-air.jpg',
+    inStock: false
+  },
+  {
+    id: '3',
+    title: 'AirPods Pro',
+    description: '主动降噪无线耳机',
+    price: 1899,
+    image: '/images/airpods-pro.jpg',
+    inStock: true
+  }
+])
 </script>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+.app-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0 20px;
+}
+
+.app-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 64px;
+}
+
+.nav-brand h1 {
+  color: #3b82f6;
+  font-size: 24px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #374151;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover {
+  color: #3b82f6;
+}
+
+.app-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.products-section {
+  margin-top: 60px;
+}
+
+.products-section h2 {
+  font-size: 28px;
+  margin-bottom: 24px;
+  color: #111827;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+</style>
 ```
 
-这个 Vue 3 示例展示了 @ldesign/i18n 在 Vue 项目中的完整使用方法，包括组合式 API、指令、组件设计和最
-佳实践。
+## 7. 运行项目
+
+```bash
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+
+# 构建生产版本
+npm run build
+```
+
+这个完整的示例展示了如何在 Vue 3 项目中使用 @ldesign/i18n 的所有主要功能，包括组合式 API、组件、指令、格式化等。

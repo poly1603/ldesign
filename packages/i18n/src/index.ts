@@ -1,225 +1,214 @@
 /**
- * @ldesign/i18n - 框架无关的多语言管理系统
+ * @ldesign/i18n - 通用多语言国际化库
  *
- * 这是一个功能完整的国际化库，提供：
- * - 框架无关的核心功能
- * - Vue 3 集成支持
- * - TypeScript 类型安全
- * - 高性能缓存
- * - 灵活的加载策略
- * - 完整的插值和复数支持
+ * 一个现代化的、类型安全的国际化解决方案
+ * 专注于核心多语言功能
  *
- * @version 0.1.0
- * @author ldesign
+ * @author LDesign Team
+ * @version 2.0.0
  */
 
-import type { I18nInstance, I18nOptions } from './core/types'
-// 导入核心类
-import { I18n } from './core/i18n'
+// ==================== 核心功能导出 ====================
 
-// 导出检测器
-export {
-  BrowserDetector,
-  browserDetector,
-  createDetector,
-  ManualDetector,
-} from './core/detector'
-
-// 导出错误处理系统
-export {
-  CacheError,
-  ConfigurationError,
-  DefaultErrorHandler,
-  DevelopmentErrorHandler,
-  ErrorManager,
-  globalErrorManager,
-  handleErrors,
-  I18nError,
-  InitializationError,
-  InterpolationError,
-  LanguageLoadError,
-  PluralRuleError,
-  SilentErrorHandler,
-  TranslationKeyError,
-} from './core/errors'
-
-export type { ErrorHandler } from './core/errors'
-
-// 导出核心类和接口
+// 核心类和接口
 export { I18n } from './core/i18n'
-
-// 导出缓存系统
-export { PerformanceCache, TranslationCache } from './core/cache'
-export type { CacheConfig, CacheStats } from './core/cache'
-
-// 导出多元化引擎
 export {
-  PluralizationEngine,
-  PluralCategory,
-  PluralUtils,
-  pluralizationEngine,
-} from './core/pluralization'
-export type { PluralOptions, PluralRuleFunction } from './core/pluralization'
+  DefaultLoader,
+  StaticLoader,
+  HttpLoader,
+  EnhancedLoader,
+  type LoaderOptions,
+  type LoaderStats,
+  type LoadingState,
+  type LoadPriority,
+  type LazyLoadConfig,
+  type OnDemandConfig,
+  type LoaderCacheConfig,
+} from './core/loader'
+export { createDetector } from './core/detector'
+export { createStorage } from './core/storage'
 
-// 导出格式化引擎
-export {
-  FormatterEngine,
-  formatterEngine,
-} from './core/formatters'
+// 核心类型定义
 export type {
-  FormatterConfig,
-  FormatterFunction,
-  DateFormatOptions,
-  NumberFormatOptions,
-} from './core/formatters'
-
-// 导出加载器
-export { DefaultLoader, HttpLoader, StaticLoader } from './core/loader'
-export type { LoaderOptions, LoaderStats } from './core/loader'
-
-// 导出性能管理器
-export {
-  globalPerformanceManager,
-  PerformanceManager,
-  performanceMonitor,
-} from './core/performance'
-
-export type { PerformanceConfig, PerformanceMetrics } from './core/performance'
-// 导出管理器注册表
-export {
-  globalRegistry,
-  I18nCoreManager,
-  inject,
-  ManagerRegistry,
-  registerManager,
-} from './core/registry'
-
-export type { Manager, ManagerFactory } from './core/registry'
-// 导出存储实现
-export {
-  CookieStorage,
-  createStorage,
-  LocalStorage,
-  LRUCacheImpl,
-  MemoryStorage,
-  NoStorage,
-  SessionStorage,
-} from './core/storage'
-
-// 导出核心类型定义
-export type {
-  BatchTranslationResult,
-  CacheItem,
-  CacheOptions,
-  Detector,
-  EventEmitter,
-  I18nEventListener,
-  // 事件相关
-  I18nEventType,
-  // 主要接口
+  // 基础类型
   I18nInstance,
   I18nOptions,
-  InterpolationOptions,
   LanguageInfo,
   LanguagePackage,
-  // 组件接口
-  Loader,
-  LRUCache,
-
-  // 工具类型
-  NestedObject,
-  PluralRule,
-  PluralRules,
-  Storage,
-
-  // 翻译相关
-  TranslationFunction,
-  TranslationOptions,
   TranslationParams,
+  TranslationOptions,
+
+  // 加载器相关
+  Loader,
+
+  // 存储相关
+  Storage,
+  StorageType,
+
+  // 检测器相关
+  Detector,
+
+  // 缓存相关
+  LRUCache,
+  CacheStats,
+
+  // 事件相关
+  I18nEventType,
+  LanguageChangedEventArgs,
+  LoadedEventArgs,
+  LoadErrorEventArgs,
+  TranslationMissingEventArgs,
+
+  // 性能相关
+  PerformanceMetrics,
+  OptimizationSuggestion,
+
+  // 批量翻译
+  BatchTranslationResult,
+
+  // 嵌套对象
+  NestedObject,
 } from './core/types'
-// 导出内置语言包
-export { default as enLanguagePackage } from './locales/en'
 
-export { default as jaLanguagePackage } from './locales/ja'
-
-export { default as zhCNLanguagePackage } from './locales/zh-CN'
-
-// 导出插件系统
-export * from './plugins'
+// 便捷创建函数
 export {
-  batchInterpolate,
-  extractInterpolationKeys,
-  hasInterpolation,
-  // 插值工具
+  createI18n,
+  createGlobalI18n,
+  getGlobalI18n,
+  hasGlobalI18n,
+  destroyGlobalI18n,
+  createScopedI18n,
+  type CreateI18nOptions
+} from './core/createI18n'
+
+// ==================== 工具函数导出 ====================
+
+// 插值工具
+export {
   interpolate,
-  validateInterpolationParams,
+  hasInterpolation,
+  // escapeHtml, // 暂时注释，函数不存在
+  // unescapeHtml, // 暂时注释，函数不存在
 } from './utils/interpolation'
-// 导出工具函数
+
+// 路径工具
 export {
-  deepMerge,
-  flattenObject,
-  getAllPaths,
-  // 路径工具
   getNestedValue,
-  hasNestedPath,
   setNestedValue,
+  // hasNestedKey, // 暂时注释，函数不存在
+  flattenObject,
   unflattenObject,
 } from './utils/path'
 
+// 复数工具
 export {
-  extractPluralKeys,
-  // 复数工具
-  getPluralRule,
-  getSupportedPluralLocales,
-  hasPluralExpression,
-  parsePluralExpression,
   processPluralization,
-  registerPluralRule,
+  hasPluralExpression,
+  getPluralRule,
+  // createPluralRule, // 暂时注释，函数不存在
 } from './utils/pluralization'
 
+// 验证工具
+export {
+  validateLanguageCode,
+  validateTranslationKey,
+  validateTranslationParams,
+  isValidLocale,
+} from './utils/validation'
+
+// 格式化工具
+export {
+  formatNumber,
+  formatDate,
+  formatCurrency,
+  formatRelativeTime,
+} from './utils/formatters'
+
+// ==================== 便捷创建函数 ====================
+// 注意：createI18n 已经从 './core/createI18n' 导出，这里不需要重复定义
+
+// ==================== 默认导出 ====================
+// 注意：默认导出在文件末尾统一处理
+
+// ==================== 版本信息 ====================
+
 /**
- * 创建 I18n 实例
+ * 库版本信息
+ */
+export const VERSION = '2.0.0'
+
+/**
+ * 库名称
+ */
+export const LIBRARY_NAME = '@ldesign/i18n'
+
+/**
+ * 构建信息
+ */
+export const BUILD_INFO = {
+  version: VERSION,
+  name: LIBRARY_NAME,
+  buildDate: new Date().toISOString(),
+  features: [
+    'Framework Agnostic Core',
+    'TypeScript Support',
+    'Async Loading',
+    'Caching System',
+    'Pluralization Support',
+    'Interpolation',
+    'Language Detection',
+    'Vue 3 Integration',
+  ],
+} as const
+
+// ==================== Vue 集成导出 ====================
+
+/**
+ * Vue 3 集成支持
  *
- * 默认自动加载所有内置语言包（en、zh-CN、ja）
+ * @example
+ * ```typescript
+ * // 在 Vue 项目中使用
+ * import { createApp } from 'vue'
+ * import { createI18nPlugin } from '@ldesign/i18n/vue'
  *
- * @param options I18n 配置选项
- * @returns I18n 实例
+ * const app = createApp(App)
+ * app.use(createI18nPlugin({
+ *   locale: 'zh-CN',
+ *   messages: { ... }
+ * }))
+ * ```
  */
-export async function createI18n(
-  options?: I18nOptions,
-): Promise<I18nInstance> {
-  const { StaticLoader } = await import('./core/loader')
-  const enPkg = await import('./locales/en')
-  const zhCNPkg = await import('./locales/zh-CN')
-  const jaPkg = await import('./locales/ja')
+export type {
+  VueI18n
+} from './vue/plugin'
 
-  const loader = new StaticLoader()
-  loader.registerPackage('en', enPkg.default)
-  loader.registerPackage('zh-CN', zhCNPkg.default)
-  loader.registerPackage('ja', jaPkg.default)
+export {
+  createVueI18n,
+  createI18nPlugin,
+  useI18n,
+  I18nInjectionKey
+} from './vue/plugin'
 
-  const i18n = new I18n({ defaultLocale: 'en', ...options })
-  i18n.setLoader(loader)
+export {
+  I18nT,
+  I18nN,
+  I18nD
+} from './vue/components'
 
-  await i18n.init()
-  return i18n
-}
+export {
+  vT,
+  vTHtml,
+  vTTitle
+} from './vue/directives'
+
+export {
+  installI18n
+} from './vue'
+
+// ==================== 默认导出 ====================
 
 /**
- * 版本信息
+ * 默认导出核心 I18n 类
  */
-export const version = '0.1.0'
-
-// 导出 Vue 集成（可选，需要单独导入）
-export * as vue from './vue'
-
-// 导出 Vue 组件（直接导出以便使用）
-export { LanguageSwitcher } from './vue/components'
-
-// 导出 Web Components
-export * from './web-components'
-
-/**
- * 默认导出（主要的 I18n 类）
- */
-export default I18n
+export { I18n as default } from './core/i18n'
