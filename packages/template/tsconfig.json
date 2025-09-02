@@ -1,6 +1,9 @@
 {
-  "extends": "../../tools/configs/build/tsconfig.base.json",
   "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "baseUrl": ".",

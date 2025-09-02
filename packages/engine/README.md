@@ -50,18 +50,61 @@
 ### 🚀 快速体验
 
 ```typescript
-import { createEngine } from '@ldesign/engine'
+import { createAndMountApp } from '@ldesign/engine'
+import App from './App.vue'
 
-// 创建引擎实例 - 就这么简单！
-const engine = createEngine({
-  appName: 'My Awesome App',
-  debug: true,
-  features: {
-    enableHotReload: true,
-    enableDevTools: true,
-    enablePerformanceMonitoring: true
+// 一步到位 - 创建、配置、挂载全部搞定！
+const engine = createAndMountApp(App, '#app', {
+  config: {
+    appName: 'My Awesome App',
+    debug: true,
+    features: {
+      enableHotReload: true,
+      enableDevTools: true,
+      enablePerformanceMonitoring: true
+    }
   }
 })
+
+// 应用已经运行起来了！
+console.log('应用已启动:', engine.getConfig('appName'))
+```
+
+### 📚 多种使用方式
+
+#### 方式一：一步到位（推荐新手）
+```typescript
+import { createAndMountApp } from '@ldesign/engine'
+import App from './App.vue'
+
+const engine = createAndMountApp(App, '#app', {
+  config: { debug: true }
+})
+```
+
+#### 方式二：简化API（推荐进阶）
+```typescript
+import { createApp } from '@ldesign/engine'
+import App from './App.vue'
+
+const engine = createApp(App, {
+  config: { debug: true }
+})
+engine.mount('#app')
+```
+
+#### 方式三：完全控制（推荐专家）
+```typescript
+import { createEngine } from '@ldesign/engine'
+import { createApp } from 'vue'
+import App from './App.vue'
+
+const engine = createEngine({
+  config: { debug: true }
+})
+const app = createApp(App)
+engine.install(app)
+app.mount('#app')
 
 // 环境检测
 const envInfo = engine.environment.detect()
