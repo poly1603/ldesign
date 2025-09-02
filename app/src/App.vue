@@ -7,30 +7,16 @@
           <h1>{{ t('demo.welcome') }}</h1>
         </div>
         <div class="nav-links">
-          <router-link
-            to="/"
-            class="nav-link"
-            active-class="active"
-            exact-active-class="active"
-          >
-            {{ t('nav.home') }}
+          <router-link to="/" class="nav-link" active-class="active" exact-active-class="active">
+            首页
           </router-link>
-          <router-link
-            to="/login"
-            class="nav-link"
-            active-class="active"
-          >
-            {{ t('user.login') }}
+          <router-link to="/login" class="nav-link" active-class="active">
+            登录
           </router-link>
         </div>
-        <div class="nav-actions">
-          <!-- 语言切换器 -->
-          <LanguageSwitcher
-            mode="dropdown"
-            @change="onLanguageChange"
-            class="language-switcher-nav"
-          />
-        </div>
+        <ThemeSelector mode="select" :show-preview="true" :custom-themes="customThemes"
+          :disabled-builtin-themes="disabledBuiltinThemes" placeholder="选择主题" />
+        <DarkModeToggle />
       </div>
     </nav>
 
@@ -60,31 +46,42 @@
  * 使用 @ldesign/router 的路由系统和 @ldesign/i18n 的国际化功能
  */
 
-import { computed } from 'vue'
-import { useI18n } from '@ldesign/i18n'
-import LanguageSwitcher from './components/LanguageSwitcher.vue'
-import { supportedLocales, languageManager } from './i18n'
+import { ref } from 'vue'
+import { ThemeSelector, DarkModeToggle } from '@ldesign/color/src/vue'
+import type { ThemeConfig } from '@ldesign/color/src/themes/presets'
 
-// 使用国际化
-const { t } = useI18n()
+// 自定义主题配置
+const customThemes = ref<ThemeConfig[]>([
+  {
+    name: 'custom-brand',
+    displayName: '品牌主题',
+    description: '公司品牌色主题',
+    builtin: false,
+    colors: {
+      primary: '#6366f1',
+      secondary: '#8b5cf6',
+      success: '#10b981',
+      warning: '#f59e0b',
+      danger: '#ef4444'
+    }
+  },
+  {
+    name: 'custom-ocean',
+    displayName: '海洋主题',
+    description: '深海蓝色主题',
+    builtin: false,
+    colors: {
+      primary: '#0ea5e9',
+      secondary: '#06b6d4',
+      success: '#059669',
+      warning: '#d97706',
+      danger: '#dc2626'
+    }
+  }
+])
 
-// 获取当前语言名称
-const getCurrentLanguageName = computed(() => {
-  const currentLocale = languageManager.getLocale()
-  const locale = supportedLocales.find(l => l.code === currentLocale)
-  return locale?.name || currentLocale
-})
-
-// 语言切换事件处理
-const onLanguageChange = (newLocale: string, oldLocale: string) => {
-  console.log(`🌐 语言已切换: ${oldLocale} → ${newLocale}`)
-
-  // 可以在这里添加其他语言切换后的逻辑
-  // 比如重新加载某些数据、更新页面标题等
-
-  // 更新页面标题
-  document.title = t('page.home.title')
-}
+// 禁用的内置主题列表（示例：禁用红色和粉色主题）
+const disabledBuiltinThemes = ref<string[]>(['red', 'pink'])
 
 console.log('🎉 App.vue 组件已加载')
 console.log('🚀 使用 @ldesign/router 路由系统')
@@ -101,10 +98,46 @@ console.log(`📍 当前语言: ${languageManager.getLocale()}`)
   box-sizing: border-box;
 }
 
+/* CSS变量定义 - 亮色模式 */
+:root {
+  --color-text: #333333;
+  --color-text-secondary: #666666;
+  --color-text-muted: #999999;
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f8f9fa;
+  --color-bg-tertiary: #e9ecef;
+  --color-border: #dee2e6;
+  --color-primary: #2c3e50;
+  --color-secondary: #3498db;
+  --color-success: #27ae60;
+  --color-warning: #f39c12;
+  --color-danger: #e74c3c;
+  --color-shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* 暗黑模式变量 */
+[data-mode="dark"] {
+  --color-text: #ffffff;
+  --color-text-secondary: #e0e0e0;
+  --color-text-muted: #b0b0b0;
+  --color-bg: #1a1a1a;
+  --color-bg-secondary: #2d2d2d;
+  --color-bg-tertiary: #404040;
+  --color-border: #555555;
+  --color-primary: #4a5568;
+  --color-secondary: #4299e1;
+  --color-success: #48bb78;
+  --color-warning: #ed8936;
+  --color-danger: #f56565;
+  --color-shadow: rgba(0, 0, 0, 0.3);
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   line-height: 1.6;
-  color: #333;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  transition: all 0.3s ease;
 }
 
 #app {
@@ -115,10 +148,12 @@ body {
 
 /* 导航栏样式 */
 .app-nav {
-  background: #2c3e50;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-text);
   padding: 1rem 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--color-shadow);
+  transition: all 0.3s ease;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .nav-container {
@@ -128,17 +163,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 2rem;
-}
-
-.nav-actions {
-  display: flex;
-  align-items: center;
   gap: 1rem;
-}
-
-.language-switcher-nav {
-  /* 导航栏中的语言切换器样式 */
 }
 
 .nav-brand h1 {
@@ -152,7 +177,7 @@ body {
 }
 
 .nav-link {
-  color: white;
+  color: var(--color-text);
   text-decoration: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -161,26 +186,29 @@ body {
 }
 
 .nav-link:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
 }
 
 .nav-link.active {
-  background: #3498db;
-  color: white;
+  background: var(--color-secondary);
+  color: var(--color-text);
 }
 
 /* 主内容区域 */
 .app-main {
   flex: 1;
+  background-color: var(--color-bg);
+  transition: all 0.3s ease;
 }
 
 /* 底部样式 */
 .app-footer {
-  background: #34495e;
-  color: white;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
   padding: 1rem 0;
   text-align: center;
+  border-top: 1px solid var(--color-border);
 }
 
 .footer-container {
@@ -189,18 +217,15 @@ body {
   padding: 0 2rem;
 }
 
-.footer-info {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-  opacity: 0.8;
+/* 控制组件样式 */
+.app-controls {
   display: flex;
-  justify-content: center;
   align-items: center;
   gap: 1rem;
 }
 
-.separator {
-  color: rgba(255, 255, 255, 0.5);
+.app-controls>* {
+  flex-shrink: 0;
 }
 
 /* 响应式设计 */
@@ -212,19 +237,6 @@ body {
 
   .nav-links {
     gap: 1rem;
-  }
-
-  .nav-actions {
-    order: -1; /* 在移动端将语言切换器放到顶部 */
-  }
-
-  .footer-info {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .separator {
-    display: none; /* 在移动端隐藏分隔符 */
   }
 
   .nav-container,

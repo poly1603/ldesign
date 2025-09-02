@@ -177,6 +177,9 @@ importers:
 
   app:
     dependencies:
+      '@ldesign/color':
+        specifier: workspace:*
+        version: link:../packages/color
       '@ldesign/engine':
         specifier: workspace:*
         version: link:../packages/engine
@@ -567,10 +570,10 @@ importers:
         specifier: workspace:*
         version: link:../builder
       '@rollup/plugin-commonjs':
-        specifier: ^25.0.7
+        specifier: ^25.0.8
         version: 25.0.8(rollup@4.46.1)
       '@rollup/plugin-node-resolve':
-        specifier: ^15.2.3
+        specifier: ^15.3.1
         version: 15.3.1(rollup@4.46.1)
       '@rollup/plugin-typescript':
         specifier: ^11.1.6
@@ -605,6 +608,12 @@ importers:
       rollup-plugin-dts:
         specifier: ^6.1.0
         version: 6.2.1(rollup@4.46.1)(typescript@5.8.3)
+      rollup-plugin-terser:
+        specifier: ^7.0.2
+        version: 7.0.2(rollup@4.46.1)
+      rollup-plugin-vue:
+        specifier: ^6.0.0
+        version: 6.0.0(@vue/compiler-sfc@3.5.18)
       size-limit:
         specifier: ^11.0.0
         version: 11.2.0
@@ -5597,7 +5606,7 @@ packages:
     resolution: {integrity: sha512-+fksAx9eG3Ab6LDnLs3ZqZa8KVJ/jYnX+D4Qe1azX+LFGFAXqynCQLOdLpNYN/l9e7l6hMWwZbrnctqr6eSQSw==}
 
   ansi-styles@2.2.1:
-    resolution: {integrity: sha512-kmCevFghRiWM7HB5zTPULl4r9bVFSWjz62MhqizDGUrq2NWuNMQyuv4tHHoKJHs69M/MF64lEcHdYIocrdWQYA==}
+    resolution: {integrity: sha1-tDLdM1i2NM914eRmQ2gkBTPB3b4=}
     engines: {node: '>=0.10.0'}
 
   ansi-styles@4.3.0:
@@ -7653,11 +7662,19 @@ packages:
     resolution: {integrity: sha512-U82MsXXiFIrjCK4otLT+o2NA2Cd2g5MLoOVXUZjIOhLurrRxpEXzI8O0KZHr3IjLvlAH1kTPYSuqer5T9ZVBKQ==}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   is-reference@3.0.3:
     resolution: {integrity: sha512-ixkJoqQvAP88E6wLydLGGqCJsrFUnqoH6HnaczB8XmDH1oaWU+xxdptvikTgaEhtZ53Ky6YXiBuUI2WXLMCwjw==}
 
 >>>>>>> 1bed47c11d2714e1200857c5fea6c080cf97b5a4
+=======
+  is-reference@3.0.3:
+    resolution: {integrity: sha512-ixkJoqQvAP88E6wLydLGGqCJsrFUnqoH6HnaczB8XmDH1oaWU+xxdptvikTgaEhtZ53Ky6YXiBuUI2WXLMCwjw==}
+
+=======
+>>>>>>> c466d182 (refactor(color): 重构颜色管理模块并优化LRU缓存实现)
+>>>>>>> 3eb75cea (refactor(color): 重构颜色管理模块并优化LRU缓存实现)
   is-regex@1.2.1:
     resolution: {integrity: sha512-MjYsKHO5O7mCsmRGxWcLWheFqN9DJ/2TmngvjKXihe6efViPqc274+Fx/4fYj/r03+ESvBdTXK0V6tA3rgez1g==}
     engines: {node: '>= 0.4'}
@@ -7881,6 +7898,10 @@ packages:
   jest-watcher@29.7.0:
     resolution: {integrity: sha512-49Fg7WXkU3Vl2h6LbLtMQ/HyB6rXSIX7SqvBLQmssRBGN9I0PNvPmAmCWSOY6SOvrjhI/F7/bGAv9RtnsPA03g==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
+
+  jest-worker@26.6.2:
+    resolution: {integrity: sha512-KWYVV1c4i+jbMpaBC+U++4Va0cp8OisU185o73T1vo99hqi7w8tSJfUXYswwqqrjzwxa6KpRK54WhPvwf5w6PQ==}
+    engines: {node: '>= 10.13.0'}
 
   jest-worker@29.7.0:
     resolution: {integrity: sha512-eIz2msL/EzL9UFTFFx7jBTkeZfku0yUAyZZZmJ93H2TYEiroIx2PQjEXcwYtYl8zXCxb+PAmA2hLIt/6ZEkPHw==}
@@ -9777,6 +9798,12 @@ packages:
     resolution: {integrity: sha512-flEiKD/f8eKVbbt1ePcmYC7efGsNC643XDKhXFKoQsZx4OaedO4sNnCHHsegUhLaqbICu9BnPCn43bndNnukAA==}
     deprecated: Deprecated. Use 'rollup-plugin-stylus-css-modules' module instead.
 
+  rollup-plugin-terser@7.0.2:
+    resolution: {integrity: sha512-w3iIaU4OxcF52UUXiZNsNeuXIMDvFrr+ZXK6bFZ0Q60qyVfq4uLptoS4bbq3paG3x216eQllFZX7zt6TIImguQ==}
+    deprecated: This package has been deprecated and is no longer maintained. Please use @rollup/plugin-terser
+    peerDependencies:
+      rollup: ^2.0.0
+
   rollup-plugin-visualizer@6.0.3:
     resolution: {integrity: sha512-ZU41GwrkDcCpVoffviuM9Clwjy5fcUxlz0oMoTXTYsK+tcIFzbdacnrr2n8TXcHxbGKKXtOdjxM2HUS4HjkwIw==}
     engines: {node: '>=18'}
@@ -10006,6 +10033,9 @@ packages:
   send@0.19.0:
     resolution: {integrity: sha512-dW41u5VfLXu8SJh5bwRmyYUbAoSB3c9uQh6L8h/KtsFREPWpbX1lrljJo186Jc4nmci/sGUZ9a0a0J2zgfq2hw==}
     engines: {node: '>= 0.8.0'}
+
+  serialize-javascript@4.0.0:
+    resolution: {integrity: sha512-GaNA54380uFefWghODBWEGisLZFj00nS5ACs6yHa9nLqlLpVLO8ChDGeKRjZnV4Nh4n0Qi7nhYZD/9fCPzEqkw==}
 
   serialize-javascript@6.0.2:
     resolution: {integrity: sha512-Saa1xPByTTq2gdeFZYLLo+RFE35NHZkAbqZeWNd3BpzppeVisAqpDjcp8dyf6uIvEqJRd46jemmyA4iFIeVk8g==}
@@ -14938,12 +14968,15 @@ snapshots:
       - supports-color
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@vitejs/plugin-vue-jsx@3.1.0(vite@5.4.19(@types/node@20.19.9)(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.18(typescript@5.3.3))':
     dependencies:
       '@babel/core': 7.28.3
       '@babel/plugin-transform-typescript': 7.28.0(@babel/core@7.28.3)
       '@vue/babel-plugin-jsx': 1.5.0(@babel/core@7.28.3)
 =======
+=======
+>>>>>>> 3eb75cea (refactor(color): 重构颜色管理模块并优化LRU缓存实现)
   '@vitejs/plugin-react@5.0.2(vite@5.4.19(@types/node@20.19.9)(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))':
     dependencies:
       '@babel/core': 7.28.3
@@ -14956,6 +14989,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+=======
+>>>>>>> c466d182 (refactor(color): 重构颜色管理模块并优化LRU缓存实现)
   '@vitejs/plugin-vue-jsx@3.1.0(vite@5.4.19(@types/node@20.19.9)(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.18(typescript@5.3.3))':
     dependencies:
       '@babel/core': 7.28.0
@@ -15495,7 +15530,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.16.5)(@vitest/ui@3.2.4)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.16.5)(@vitest/ui@3.2.4)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
 
   '@vitest/utils@0.34.6':
     dependencies:
@@ -16677,10 +16712,17 @@ snapshots:
   clsx@2.1.1: {}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   co@4.6.0: {}
 
 >>>>>>> 1bed47c11d2714e1200857c5fea6c080cf97b5a4
+=======
+  co@4.6.0: {}
+
+=======
+>>>>>>> c466d182 (refactor(color): 重构颜色管理模块并优化LRU缓存实现)
+>>>>>>> 3eb75cea (refactor(color): 重构颜色管理模块并优化LRU缓存实现)
   code-point-at@1.1.0: {}
 
   collect-v8-coverage@1.0.2: {}
@@ -18517,12 +18559,20 @@ snapshots:
       '@types/estree': 1.0.8
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 3eb75cea (refactor(color): 重构颜色管理模块并优化LRU缓存实现)
   is-reference@3.0.3:
     dependencies:
       '@types/estree': 1.0.8
 
+<<<<<<< HEAD
 >>>>>>> 1bed47c11d2714e1200857c5fea6c080cf97b5a4
+=======
+=======
+>>>>>>> c466d182 (refactor(color): 重构颜色管理模块并优化LRU缓存实现)
+>>>>>>> 3eb75cea (refactor(color): 重构颜色管理模块并优化LRU缓存实现)
   is-regex@1.2.1:
     dependencies:
       call-bound: 1.0.4
@@ -18932,6 +18982,12 @@ snapshots:
       emittery: 0.13.1
       jest-util: 29.7.0
       string-length: 4.0.2
+
+  jest-worker@26.6.2:
+    dependencies:
+      '@types/node': 20.19.9
+      merge-stream: 2.0.0
+      supports-color: 7.2.0
 
   jest-worker@29.7.0:
     dependencies:
@@ -21201,6 +21257,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  rollup-plugin-terser@7.0.2(rollup@4.46.1):
+    dependencies:
+      '@babel/code-frame': 7.27.1
+      jest-worker: 26.6.2
+      rollup: 4.46.1
+      serialize-javascript: 4.0.0
+      terser: 5.43.1
+
   rollup-plugin-visualizer@6.0.3(rollup@4.46.1):
     dependencies:
       open: 8.4.2
@@ -21443,6 +21507,10 @@ snapshots:
       statuses: 2.0.1
     transitivePeerDependencies:
       - supports-color
+
+  serialize-javascript@4.0.0:
+    dependencies:
+      randombytes: 2.1.0
 
   serialize-javascript@6.0.2:
     dependencies:

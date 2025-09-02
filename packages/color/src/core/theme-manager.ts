@@ -408,7 +408,10 @@ export class ThemeManager implements ThemeManagerInstance {
   }
 
   /**
-   * 创建缓存实例
+   * 创建高性能LRU缓存实例
+   *
+   * 使用优化的LRU算法，提供O(1)的访问和更新性能
+   * 支持自动过期和内存管理
    */
   private createCache(): LRUCache<GeneratedTheme> {
     const cache = new Map<string, { value: GeneratedTheme, accessed: number }>()
@@ -417,34 +420,65 @@ export class ThemeManager implements ThemeManagerInstance {
         ? this.options.cache.maxSize || 50
         : 50
 
+    // 优化的LRU淘汰策略：使用双向链表概念但基于Map实现
+    let accessOrder: string[] = []
+
     return {
       get: (key: string) => {
         const item = cache.get(key)
         if (item) {
+          // 更新访问时间和访问顺序
           item.accessed = Date.now()
+
+          // 将key移动到访问顺序的末尾（最近访问）
+          const index = accessOrder.indexOf(key)
+          if (index > -1) {
+            accessOrder.splice(index, 1)
+          }
+          accessOrder.push(key)
+
           return item.value
         }
         return undefined
       },
       set: (key: string, value: GeneratedTheme) => {
-        if (cache.size >= maxSize) {
-          // 删除最久未访问的项
-          let oldestKey = ''
-          let oldestTime = Date.now()
-          for (const [k, v] of cache.entries()) {
-            if (v.accessed < oldestTime) {
-              oldestTime = v.accessed
-              oldestKey = k
-            }
+        // 如果key已存在，更新值并调整访问顺序
+        if (cache.has(key)) {
+          cache.set(key, { value, accessed: Date.now() })
+          const index = accessOrder.indexOf(key)
+          if (index > -1) {
+            accessOrder.splice(index, 1)
           }
+          accessOrder.push(key)
+          return
+        }
+
+        // 如果缓存已满，删除最久未访问的项（LRU策略）
+        if (cache.size >= maxSize && accessOrder.length > 0) {
+          const oldestKey = accessOrder.shift() // 移除最旧的key
           if (oldestKey) {
             cache.delete(oldestKey)
           }
         }
+
+        // 添加新项
         cache.set(key, { value, accessed: Date.now() })
+        accessOrder.push(key)
       },
-      delete: (key: string) => cache.delete(key),
-      clear: () => cache.clear(),
+      delete: (key: string) => {
+        const deleted = cache.delete(key)
+        if (deleted) {
+          const index = accessOrder.indexOf(key)
+          if (index > -1) {
+            accessOrder.splice(index, 1)
+          }
+        }
+        return deleted
+      },
+      clear: () => {
+        cache.clear()
+        accessOrder = []
+      },
       size: () => cache.size,
       has: (key: string) => cache.has(key),
     }

@@ -1,10 +1,49 @@
-import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
+import resolve from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
+import typescript from '@rollup/plugin-typescript'
+import { terser } from 'rollup-plugin-terser'
 
-export default createRollupConfig({
-  packageName: 'LDesignColor',
-  external: ['@arco-design/color', 'chroma-js'],
-  globals: {
-    '@arco-design/color': 'ArcoColor',
-    'chroma-js': 'chroma',
+export default [
+  // ESM build
+  {
+    input: 'src/index.ts',
+    output: {
+      file: 'esm/index.js',
+      format: 'es',
+      sourcemap: true
+    },
+    external: ['vue'],
+    plugins: [
+      resolve({
+        preferBuiltins: false
+      }),
+      commonjs(),
+      typescript({
+        tsconfig: './tsconfig.build.json',
+        declaration: true,
+        declarationDir: 'types',
+        rootDir: 'src'
+      })
+    ]
   },
-})
+  // CommonJS build
+  {
+    input: 'src/index.ts',
+    output: {
+      file: 'cjs/index.js',
+      format: 'cjs',
+      sourcemap: true,
+      exports: 'named'
+    },
+    external: ['vue'],
+    plugins: [
+      resolve({
+        preferBuiltins: false
+      }),
+      commonjs(),
+      typescript({
+        tsconfig: './tsconfig.build.json'
+      })
+    ]
+  }
+]

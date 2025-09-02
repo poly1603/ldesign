@@ -46,10 +46,10 @@ export class ColorScaleGenerator {
     let colors: string[]
 
     if (category === 'gray') {
-      colors = this.generateGrayScale(normalizedColor, config.count, mode)
+      colors = this.generateGrayScale(normalizedColor || '#808080', config.count, mode)
     }
     else {
-      colors = this.generateColorScale(normalizedColor, config.count, mode)
+      colors = this.generateColorScale(normalizedColor || '#808080', config.count, mode)
     }
 
     // 创建索引映射
@@ -225,10 +225,10 @@ export class ColorScaleGenerator {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
     return result
       ? {
-          r: Number.parseInt(result[1], 16),
-          g: Number.parseInt(result[2], 16),
-          b: Number.parseInt(result[3], 16),
-        }
+        r: Number.parseInt(result[1], 16),
+        g: Number.parseInt(result[2], 16),
+        b: Number.parseInt(result[3], 16),
+      }
       : null
   }
 

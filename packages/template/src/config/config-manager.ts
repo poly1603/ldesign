@@ -22,18 +22,12 @@ export class TemplateConfigManager implements ConfigManager {
   private watchStoppers: (() => void)[] = []
 
   constructor(initialConfig?: Partial<TemplateSystemConfig>) {
-    console.log('[TemplateConfigManager] Constructor called with:', initialConfig)
-
     try {
       // 合并初始配置
-      console.log('[TemplateConfigManager] Merging config...')
       this.config = reactive(mergeConfig(initialConfig || {}))
-      console.log('[TemplateConfigManager] Config merged successfully:', this.config)
-
+      
       // 设置深度监听
-      console.log('[TemplateConfigManager] Setting up config watcher...')
       this.setupConfigWatcher()
-      console.log('[TemplateConfigManager] Constructor completed successfully')
     }
     catch (error) {
       console.error('[TemplateConfigManager] Error in constructor:', error)
@@ -248,7 +242,7 @@ export class TemplateConfigManager implements ConfigManager {
   async loadFromFile(filePath: string): Promise<void> {
     try {
       // 动态导入配置文件
-      const configModule = await import(filePath)
+      const configModule = await import(/* @vite-ignore */ filePath)
       const fileConfig = configModule.default || configModule
 
       // 验证并更新配置
@@ -289,7 +283,7 @@ export default ${JSON.stringify(this.config, null, 2)}
       }
       else {
         // Node.js 环境中的文件写入逻辑
-        const fs = await import('node:fs/promises')
+        const fs = await import(/* @vite-ignore */ 'node:fs/promises')
         await fs.writeFile(filePath, configContent, 'utf-8')
       }
 
@@ -328,14 +322,9 @@ let globalConfigManager: TemplateConfigManager | null = null
  * 获取全局配置管理器
  */
 export function getConfigManager(initialConfig?: Partial<TemplateSystemConfig>): TemplateConfigManager {
-  console.log('[ConfigManager] getConfigManager called with:', initialConfig)
-  console.log('[ConfigManager] Current globalConfigManager:', globalConfigManager)
-
   if (!globalConfigManager) {
     try {
-      console.log('[ConfigManager] Creating new TemplateConfigManager')
       globalConfigManager = new TemplateConfigManager(initialConfig)
-      console.log('[ConfigManager] TemplateConfigManager created successfully:', globalConfigManager)
     }
     catch (error) {
       console.error('[ConfigManager] Error creating TemplateConfigManager:', error)
@@ -343,7 +332,6 @@ export function getConfigManager(initialConfig?: Partial<TemplateSystemConfig>):
     }
   }
 
-  console.log('[ConfigManager] Returning globalConfigManager:', globalConfigManager)
   return globalConfigManager
 }
 

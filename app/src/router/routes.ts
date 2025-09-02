@@ -5,6 +5,7 @@
 
 import type { RouteRecordRaw } from '@ldesign/router'
 import Home from '../pages/Home.vue'
+import ThemeDemo from '../pages/ThemeDemo.vue'
 
 /**
  * 路由配置

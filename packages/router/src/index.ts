@@ -9,6 +9,7 @@
 
 // Vue 组件
 export { DeviceUnsupported, RouterLink, RouterView } from './components'
+import { RouterLink, RouterView } from './components'
 // 设备适配组件类型
 export type { DeviceUnsupportedProps } from './components'
 // 组件类型
@@ -372,6 +373,11 @@ export async function createFullRouter(options: {
     plugins,
     install(app: any) {
       app.use(router)
+
+      // 注册 Router 组件
+      app.component('router-link', RouterLink)
+      app.component('router-view', RouterView)
+
       plugins.forEach((plugin) => {
         if (plugin.install) {
           plugin.install(app, router)

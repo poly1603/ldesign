@@ -4,7 +4,7 @@
       <h1>欢迎使用 LDesign Demo</h1>
       <p class="subtitle">展示优化后的 Engine API 设计和功能</p>
     </header>
-    
+
     <main class="home-content">
       <section class="feature-section">
         <h2>功能特性</h2>
@@ -24,14 +24,22 @@
             <h3>模板集成</h3>
             <p>与模板系统深度集成</p>
           </div>
+          <div class="feature-card">
+            <div class="feature-icon">🎨</div>
+            <h3>主题管理</h3>
+            <p>智能主题选择和切换系统</p>
+          </div>
         </div>
       </section>
-      
+
       <section class="navigation-section">
         <h2>路由导航测试</h2>
         <div class="nav-buttons">
           <router-link to="/login" class="nav-button primary">
             前往登录页
+          </router-link>
+          <router-link to="/theme-demo" class="nav-button primary">
+            🎨 主题演示
           </router-link>
           <button @click="testNavigation" class="nav-button secondary">
             编程式导航测试
@@ -90,9 +98,10 @@ const testNavigation = () => {
 <style scoped>
 .home-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--color-bg);
+  color: var(--color-text);
   padding: 2rem;
+  transition: all 0.3s ease;
 }
 
 .home-header {
@@ -134,12 +143,13 @@ const testNavigation = () => {
 }
 
 .feature-card {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
   padding: 2rem;
   border-radius: 12px;
   text-align: center;
-  backdrop-filter: blur(10px);
-  transition: transform 0.3s ease;
+  box-shadow: 0 2px 8px var(--color-shadow);
+  transition: all 0.3s ease;
 }
 
 .feature-card:hover {
@@ -185,26 +195,48 @@ const testNavigation = () => {
 }
 
 .nav-button.primary {
-  background: #fff;
-  color: #667eea;
+  background: var(--color-secondary);
+  color: var(--color-text);
 }
 
 .nav-button.secondary {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
 }
 
 .nav-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  opacity: 0.9;
 }
 
 .info-section {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
   padding: 2rem;
   border-radius: 12px;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px var(--color-shadow);
+}
+
+.api-section {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px var(--color-shadow);
+  margin-top: 2rem;
+}
+
+.api-section h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  color: var(--color-text);
+}
+
+.api-info p {
+  margin-bottom: 0.5rem;
+  color: var(--color-text-secondary);
 }
 
 .info-section h2 {
@@ -218,23 +250,23 @@ const testNavigation = () => {
 }
 
 .route-info strong {
-  color: #ffd700;
+  color: var(--color-warning);
 }
 
 @media (max-width: 768px) {
   .home-header h1 {
     font-size: 2rem;
   }
-  
+
   .features-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .nav-buttons {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .nav-button {
     width: 200px;
   }

@@ -1,16 +1,15 @@
 /**
- * @ldesign/color - 框架无关的主题色管理系统
+ * @ldesign/color - 现代颜色处理库
  *
- * 这是一个功能完整的主题色管理库，提供：
- * - 框架无关的核心功能
- * - TypeScript 类型安全
- * - 高性能缓存和闲时处理
- * - 灵活的颜色生成算法
- * - 完整的主题预设和自定义支持
- * - 多框架适配器支持（Vue、React等）
+ * 提供完整的颜色管理解决方案，包括：
+ * - 颜色格式转换 (HEX, RGB, HSL, HSV)
+ * - 智能调色板生成
+ * - 可访问性检查 (WCAG 标准)
+ * - 主题管理系统
+ * - Vue 3 深度集成
  *
- * @version 0.1.0
- * @author ldesign
+ * @version 1.0.0
+ * @author LDesign Team
  */
 
 import type { ThemeManagerInstance, ThemeManagerOptions } from './core/types'
@@ -45,6 +44,13 @@ export {
 
 // 导出核心类和接口
 export { ThemeManager } from './core/theme-manager'
+
+// 导出 Vue 集成
+export {
+  createColorEnginePlugin,
+  createColorPlugin,
+  useTheme
+} from './vue'
 
 // 导出核心类型定义
 export type {
@@ -316,23 +322,9 @@ export async function createCustomThemeManager(
   return manager
 }
 
-// 导出插件
-export {
-  createColorEnginePlugin,
-  createThemeManagerInstance,
-  useTheme,
-  useColor,
-  useThemeMode,
-  useThemeSwitch,
-  ThemeColorPicker,
-  ThemeSwitcher,
-  ModeToggler,
-} from './plugins'
 
-export type {
-  ColorEnginePluginOptions,
-  EnginePluginContext,
-} from './plugins'
+
+
 
 /**
  * 版本信息

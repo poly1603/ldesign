@@ -72,7 +72,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
     }
 
     const normalizedPrimary = normalizeHex(primary)
-    const primaryHsl = hexToHsl(normalizedPrimary)
+    const primaryHsl = hexToHsl(normalizedPrimary || '#1890ff')
 
     if (!primaryHsl) {
       throw new Error(`Failed to parse hex color: ${primary}`)
@@ -545,7 +545,7 @@ export function generateColorConfig(
   const generatedColors = generator.generateColors(primary)
 
   return {
-    primary: normalizeHex(primary),
+    primary: normalizeHex(primary) || '#1890ff',
     ...generatedColors,
   }
 }

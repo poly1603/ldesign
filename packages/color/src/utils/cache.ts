@@ -172,7 +172,7 @@ export class LRUCacheImpl<K, V> implements LRUCache<K, V> {
 
     if (this.data.has(key)) {
       // 更新现有项 - 需要重新插入以更新Map中的位置
-      const _item = this.data.get(key)
+      this.data.get(key)
       this.data.delete(key) // 先删除
       this.data.set(key, { // 再重新插入到最后
         value,
