@@ -1,418 +1,360 @@
 # 快速开始
 
-本指南将帮助您快速上手 LDesign Vue 引擎，从安装到创建第一个应用。
-
-## 环境要求
-
-在开始之前，请确保您的开发环境满足以下要求：
-
-- **Node.js**: >= 18.0.0
-- **Vue**: >= 3.3.0
-- **TypeScript**: >= 5.0.0 (可选，但推荐)
+本指南将帮助你快速上手 LDesign 组件库，在几分钟内就能在你的项目中使用我们的组件。
 
 ## 安装
 
-### 使用包管理器安装
+### 使用 CDN
+
+最简单的方式是通过 CDN 直接引入：
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign 快速开始</title>
+  <!-- 引入 LDesign 组件库 -->
+  <script type="module" src="https://unpkg.com/@ldesign/component/dist/ldesign/ldesign.esm.js"></script>
+</head>
+<body>
+  <div id="app">
+    <ld-button type="primary">Hello LDesign!</ld-button>
+  </div>
+</body>
+</html>
+```
+
+### 使用 NPM
+
+如果你使用构建工具，推荐通过 npm 安装：
 
 ::: code-group
 
 ```bash [pnpm]
-pnpm add @ldesign/engine
+pnpm add @ldesign/component
 ```
 
 ```bash [npm]
-npm install @ldesign/engine
+npm install @ldesign/component
 ```
 
 ```bash [yarn]
-yarn add @ldesign/engine
+yarn add @ldesign/component
 ```
 
 :::
 
-### 安装其他核心包
+## 基础用法
 
-根据您的需求，可以安装其他核心包：
+### 在原生 HTML 中使用
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <script type="module" src="https://unpkg.com/@ldesign/component/dist/ldesign/ldesign.esm.js"></script>
+</head>
+<body>
+  <!-- 按钮组件 -->
+  <ld-button type="primary" size="large">
+    主要按钮
+  </ld-button>
+
+  <!-- 输入框组件 -->
+  <ld-input
+    placeholder="请输入内容"
+    clearable
+    prefix-icon="search">
+  </ld-input>
+
+  <!-- 卡片组件 -->
+  <ld-card title="卡片标题" shadow="hover">
+    <p>这是卡片的内容区域</p>
+    <div slot="footer">
+      <ld-button type="text">取消</ld-button>
+      <ld-button type="primary">确定</ld-button>
+    </div>
+  </ld-card>
+</body>
+</html>
+
+### 在 Vue 3 中使用
+
+首先安装 Vue 适配器：
 
 ```bash
-# 路由系统
-pnpm add @ldesign/router
-
-# HTTP请求库
-pnpm add @ldesign/http
-
-# 加密工具
-pnpm add @ldesign/crypto
-
-# 设备检测
-pnpm add @ldesign/device
-
-# 模板系统
-pnpm add @ldesign/template
-
-# 颜色工具
-pnpm add @ldesign/color
-
-# 国际化
-pnpm add @ldesign/i18n
+npm install @ldesign/component-vue
 ```
 
-## 创建第一个应用
-
-### 1. 基础设置
-
-创建一个新的 Vue 项目或在现有项目中集成 LDesign：
-
-```typescript
-import { createEngine } from '@ldesign/engine'
-// main.ts
-import { createApp } from 'vue'
-import App from './App.vue'
-
-// 创建LDesign引擎
-const engine = createEngine({
-  // 引擎配置
-  debug: true, // 开发模式下启用调试
-  performance: true, // 启用性能监控
-})
-
-// 创建Vue应用
-const app = engine.createApp(App)
-
-// 挂载应用
-app.mount('#app')
-```
-
-### 2. 添加路由
-
-```typescript
-// main.ts
-import { createEngine } from '@ldesign/engine'
-import { createRouter } from '@ldesign/router'
-import App from './App.vue'
-import About from './views/About.vue'
-import Home from './views/Home.vue'
-
-// 创建路由
-const router = createRouter({
-  history: 'hash', // 或 'history'
-  routes: [
-    {
-      path: '/',
-      name: 'Home',
-      component: Home,
-    },
-    {
-      path: '/about',
-      name: 'About',
-      component: About,
-    },
-  ],
-})
-
-// 创建引擎并安装路由
-const engine = createEngine()
-engine.use(router)
-
-const app = engine.createApp(App)
-app.mount('#app')
-```
-
-### 3. 配置 HTTP 客户端
-
-```typescript
-// main.ts
-import { createEngine } from '@ldesign/engine'
-import { createHttpClient } from '@ldesign/http'
-
-// 创建HTTP客户端
-const http = createHttpClient({
-  baseURL: 'https://api.example.com',
-  timeout: 10000,
-  interceptors: {
-    request: [
-      // 请求拦截器
-      config => {
-        // 添加认证头
-        config.headers.Authorization = `Bearer ${getToken()}`
-        return config
-      },
-    ],
-    response: [
-      // 响应拦截器
-      response => {
-        return response.data
-      },
-      error => {
-        console.error('请求失败:', error)
-        return Promise.reject(error)
-      },
-    ],
-  },
-})
-
-// 创建引擎并安装HTTP客户端
-const engine = createEngine()
-engine.use(http)
-
-function getToken() {
-  return localStorage.getItem('token') || ''
-}
-```
-
-## 应用模板
-
-### App.vue
+然后在你的 Vue 应用中使用：
 
 ```vue
-<script setup lang="ts">
-// 可以在这里使用LDesign的composables
-import { useEngine } from '@ldesign/engine'
-
-const engine = useEngine()
-console.log('引擎实例:', engine)
-</script>
-
 <template>
-  <div id="app">
-    <nav>
-      <router-link to="/"> 首页 </router-link>
-      <router-link to="/about"> 关于 </router-link>
-    </nav>
+  <div class="demo">
+    <h1>LDesign + Vue 3</h1>
 
-    <main>
-      <router-view />
-    </main>
+    <!-- 按钮组件 -->
+    <ld-button
+      type="primary"
+      @click="handleClick"
+      :loading="loading">
+      {{ loading ? '加载中...' : '点击我' }}
+    </ld-button>
+
+    <!-- 输入框组件 -->
+    <ld-input
+      v-model="inputValue"
+      placeholder="请输入内容"
+      clearable
+      @input="handleInput">
+    </ld-input>
+
+    <!-- 卡片组件 -->
+    <ld-card title="用户信息" shadow="always">
+      <p>姓名：{{ userInfo.name }}</p>
+      <p>邮箱：{{ userInfo.email }}</p>
+      <template #footer>
+        <ld-button type="text" @click="editUser">编辑</ld-button>
+        <ld-button type="primary" @click="saveUser">保存</ld-button>
+      </template>
+    </ld-card>
   </div>
 </template>
 
-<style scoped>
-nav {
-  padding: 20px;
-  background: #f5f5f5;
-}
-
-nav a {
-  margin-right: 10px;
-  text-decoration: none;
-  color: #1890ff;
-}
-
-nav a:hover {
-  text-decoration: underline;
-}
-
-main {
-  padding: 20px;
-}
-</style>
-```
-
-### Home.vue
-
-```vue
 <script setup lang="ts">
-import { useHttp } from '@ldesign/http'
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 
-const http = useHttp()
+// 响应式数据
 const loading = ref(false)
-const data = ref(null)
+const inputValue = ref('')
+const userInfo = reactive({
+  name: '张三',
+  email: 'zhangsan@example.com'
+})
 
-async function fetchData() {
+// 事件处理
+const handleClick = () => {
   loading.value = true
-  try {
-    const result = await http.get('/api/data')
-    data.value = result
-  } catch (error) {
-    console.error('获取数据失败:', error)
-  } finally {
+  setTimeout(() => {
     loading.value = false
-  }
+  }, 2000)
+}
+
+const handleInput = (event: CustomEvent) => {
+  console.log('输入内容：', event.detail)
+}
+
+const editUser = () => {
+  console.log('编辑用户')
+}
+
+const saveUser = () => {
+  console.log('保存用户')
 }
 </script>
 
-<template>
-  <div class="home">
-    <h1>欢迎使用 LDesign</h1>
-    <p>这是一个基于Vue3的现代化前端开发引擎</p>
-
-    <div class="features">
-      <div class="feature">
-        <h3>🚀 高性能</h3>
-        <p>基于Vue3构建，提供卓越的性能表现</p>
-      </div>
-
-      <div class="feature">
-        <h3>🔧 插件化</h3>
-        <p>完整的插件系统，支持按需加载</p>
-      </div>
-
-      <div class="feature">
-        <h3>📱 跨平台</h3>
-        <p>支持多种平台和设备类型</p>
-      </div>
-    </div>
-
-    <button @click="fetchData">获取数据</button>
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="data">
-      {{ data }}
-    </div>
-  </div>
-</template>
-
 <style scoped>
-.home {
-  text-align: center;
-}
-
-.features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin: 40px 0;
-}
-
-.feature {
+.demo {
   padding: 20px;
-  border: 1px solid #e8e8e8;
-  border-radius: 8px;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.feature h3 {
-  margin: 0 0 10px 0;
-  color: #1890ff;
-}
-
-button {
-  padding: 10px 20px;
-  background: #1890ff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #40a9ff;
+.demo > * {
+  margin-bottom: 16px;
 }
 </style>
 ```
+```
 
-## 配置选项
+### 在 React 中使用
 
-### 引擎配置
+首先安装 React 适配器：
 
-```typescript
-const engine = createEngine({
-  // 调试模式
-  debug: process.env.NODE_ENV === 'development',
+```bash
+npm install @ldesign/component-react
+```
 
-  // 性能监控
-  performance: {
-    enabled: true,
-    thresholds: {
-      responseTime: 1000,
-      fps: 30,
-      memory: 100 * 1024 * 1024, // 100MB
-    },
-  },
+然后在你的 React 应用中使用：
 
-  // 缓存配置
-  cache: {
-    strategy: 'lru',
-    maxSize: 100,
-    ttl: 5 * 60 * 1000, // 5分钟
-  },
+```jsx
+import React, { useState } from 'react'
+import { LdButton, LdInput, LdCard } from '@ldesign/component-react'
 
-  // 安全配置
-  security: {
-    xss: true,
-    csrf: true,
-    csp: {
-      enabled: true,
-      directives: {
-        'default-src': ["'self'"],
-        'script-src': ["'self'", "'unsafe-inline'"],
-      },
-    },
-  },
+function App() {
+  const [loading, setLoading] = useState(false)
+  const [inputValue, setInputValue] = useState('')
+  const [userInfo] = useState({
+    name: '张三',
+    email: 'zhangsan@example.com'
+  })
 
-  // 错误处理
-  errorHandler: (error, instance, info) => {
-    console.error('应用错误:', error, info)
-    // 可以发送错误到监控服务
-  },
-})
+  const handleClick = () => {
+    setLoading(true)
+    setTimeout(() => {
+      setLoading(false)
+    }, 2000)
+  }
+
+  const handleInput = (event) => {
+    setInputValue(event.target.value)
+    console.log('输入内容：', event.target.value)
+  }
+
+  const editUser = () => {
+    console.log('编辑用户')
+  }
+
+  const saveUser = () => {
+    console.log('保存用户')
+  }
+
+  return (
+    <div className="demo">
+      <h1>LDesign + React</h1>
+
+      {/* 按钮组件 */}
+      <LdButton
+        type="primary"
+        loading={loading}
+        onClick={handleClick}>
+        {loading ? '加载中...' : '点击我'}
+      </LdButton>
+
+      {/* 输入框组件 */}
+      <LdInput
+        value={inputValue}
+        placeholder="请输入内容"
+        clearable
+        onInput={handleInput}
+      />
+
+      {/* 卡片组件 */}
+      <LdCard title="用户信息" shadow="always">
+        <p>姓名：{userInfo.name}</p>
+        <p>邮箱：{userInfo.email}</p>
+        <div slot="footer">
+          <LdButton type="text" onClick={editUser}>编辑</LdButton>
+          <LdButton type="primary" onClick={saveUser}>保存</LdButton>
+        </div>
+      </LdCard>
+    </div>
+  )
+}
+
+export default App
+```
+
+## 主题定制
+
+LDesign 提供了丰富的 CSS 变量用于主题定制：
+
+```css
+:root {
+  /* 主色调 */
+  --ld-color-primary: #1976d2;
+  --ld-color-success: #4caf50;
+  --ld-color-warning: #ff9800;
+  --ld-color-error: #f44336;
+
+  /* 字体 */
+  --ld-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ld-font-size-base: 14px;
+
+  /* 间距 */
+  --ld-spacing-xs: 4px;
+  --ld-spacing-sm: 8px;
+  --ld-spacing-md: 16px;
+  --ld-spacing-lg: 24px;
+
+  /* 圆角 */
+  --ld-border-radius-base: 4px;
+  --ld-border-radius-small: 2px;
+  --ld-border-radius-large: 8px;
+}
+
+```
+
+### 暗色主题
+
+LDesign 内置了暗色主题支持：
+
+```css
+/* 暗色主题 */
+[data-theme="dark"] {
+  --ld-color-bg-base: #1a1a1a;
+  --ld-color-text-base: #ffffff;
+  --ld-color-border-base: #333333;
+}
+```
+
+```javascript
+// 切换主题
+document.documentElement.setAttribute('data-theme', 'dark')
+```
+
+## 按需引入
+
+为了减少包体积，你可以只引入需要的组件：
+
+```javascript
+// 只引入按钮组件
+import { defineCustomElement as defineButton } from '@ldesign/component/dist/components/ld-button'
+
+// 定义自定义元素
+defineButton()
+
+// 现在可以使用 <ld-button> 了
 ```
 
 ## TypeScript 支持
 
-LDesign 提供完整的 TypeScript 支持。创建类型声明文件：
+LDesign 提供了完整的 TypeScript 类型定义：
 
 ```typescript
-// types/ldesign.d.ts
-import type { Engine } from '@ldesign/engine'
+import type { ButtonType, ButtonSize } from '@ldesign/component'
 
-declare module '@vue/runtime-core' {
-  interface ComponentCustomProperties {
-    $engine: Engine
-  }
+interface ButtonProps {
+  type?: ButtonType
+  size?: ButtonSize
+  disabled?: boolean
+  loading?: boolean
 }
-
-export {}
 ```
 
 ## 下一步
 
-现在您已经成功创建了第一个 LDesign 应用！接下来可以：
+现在你已经了解了 LDesign 的基础用法，接下来可以：
 
-- [了解插件系统](./plugins) - 学习如何使用和创建插件
-- [探索核心包](../packages/) - 深入了解各个核心包的功能
-- [查看示例项目](../examples/) - 学习最佳实践和高级用法
-- [性能优化指南](./performance) - 优化应用性能
+- [查看安装指南](./installation) - 了解更多安装选项
+- [浏览组件文档](../components/button) - 探索所有可用组件
+- [学习主题定制](./theming) - 深入了解主题系统
+- [查看框架集成](./framework-integration) - 了解如何在不同框架中使用
 
 ## 常见问题
 
-### Q: 如何在现有 Vue 项目中集成 LDesign？
+### Q: LDesign 支持哪些浏览器？
 
-A: 只需要将 `createApp` 替换为 `engine.createApp` 即可：
+A: LDesign 支持所有现代浏览器：
+- Chrome >= 60
+- Firefox >= 63
+- Safari >= 11
+- Edge >= 79
 
-```typescript
-// 之前
-const app = createApp(App)
+### Q: 如何在现有项目中使用 LDesign？
 
-// 现在
-const engine = createEngine()
-const app = engine.createApp(App)
-```
+A: 你可以通过 CDN 或 npm 安装 LDesign，然后直接在项目中使用组件，无需额外配置。
 
-### Q: 是否支持 Vue 2？
+### Q: LDesign 组件是否支持服务端渲染？
 
-A: LDesign 专为 Vue 3 设计，不支持 Vue 2。如果您使用的是 Vue 2，建议先升级到 Vue 3。
+A: 是的，LDesign 基于 Web Components 标准，支持服务端渲染和静态生成。
 
-### Q: 如何启用调试模式？
+### Q: 如何自定义组件样式？
 
-A: 在创建引擎时设置 `debug: true`：
+A: 你可以通过 CSS 变量来自定义组件样式，或者直接覆盖组件的 CSS 类名。
 
-```typescript
-const engine = createEngine({
-  debug: true,
-})
-```
+### Q: 是否可以按需引入组件？
 
-### Q: 如何自定义错误处理？
-
-A: 可以在引擎配置中设置自定义错误处理器：
-
-```typescript
-const engine = createEngine({
-  errorHandler: (error, instance, info) => {
-    // 自定义错误处理逻辑
-    console.error('错误:', error)
-    // 发送到错误监控服务
-    errorReporting.captureException(error)
-  },
-})
-```
+A: 是的，LDesign 支持按需引入，你可以只引入需要的组件来减少包体积。

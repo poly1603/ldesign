@@ -1,0 +1,154 @@
+/* 自定义样式 */
+
+/* 组件演示容器 */
+.demo-container {
+  border: 1px solid var(--vp-c-border);
+  border-radius: 8px;
+  padding: 24px;
+  margin: 16px 0;
+  background-color: var(--vp-c-bg-soft);
+}
+
+.demo-container + .demo-container {
+  margin-top: 32px;
+}
+
+/* 组件演示标题 */
+.demo-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--vp-c-text-1);
+}
+
+/* 组件演示描述 */
+.demo-description {
+  font-size: 14px;
+  color: var(--vp-c-text-2);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+/* 组件演示区域 */
+.demo-showcase {
+  padding: 24px;
+  background-color: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+/* 组件间距 */
+.demo-showcase > * + * {
+  margin-left: 12px;
+}
+
+.demo-showcase.vertical > * + * {
+  margin-left: 0;
+  margin-top: 12px;
+}
+
+/* 代码展示区域 */
+.demo-code {
+  margin-top: 16px;
+}
+
+/* 属性表格样式 */
+.props-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+
+.props-table th,
+.props-table td {
+  border: 1px solid var(--vp-c-divider);
+  padding: 12px;
+  text-align: left;
+}
+
+.props-table th {
+  background-color: var(--vp-c-bg-soft);
+  font-weight: 600;
+}
+
+.props-table code {
+  background-color: var(--vp-c-bg-mute);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* 主题变量覆盖 */
+:root {
+  --vp-c-brand-1: #1976d2;
+  --vp-c-brand-2: #1565c0;
+  --vp-c-brand-3: #0d47a1;
+}
+
+/* 暗色主题 */
+.dark {
+  --vp-c-brand-1: #42a5f5;
+  --vp-c-brand-2: #1976d2;
+  --vp-c-brand-3: #1565c0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .demo-container {
+    padding: 16px;
+  }
+  
+  .demo-showcase {
+    padding: 16px;
+  }
+  
+  .demo-showcase > * + * {
+    margin-left: 0;
+    margin-top: 12px;
+  }
+}
+
+/* 组件特定样式调整 */
+.demo-showcase ld-button {
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+.demo-showcase ld-input {
+  margin-right: 8px;
+  margin-bottom: 8px;
+  max-width: 200px;
+}
+
+.demo-showcase ld-card {
+  margin-bottom: 16px;
+  max-width: 300px;
+}
+
+/* 表格组件演示样式 */
+.demo-showcase ld-table {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* 表单组件演示样式 */
+.demo-showcase ld-form {
+  max-width: 400px;
+}
+
+.demo-showcase ld-form-item {
+  margin-bottom: 16px;
+}
+
+/* 提示框演示样式 */
+.tooltip-demo {
+  display: inline-block;
+  margin: 8px;
+}
+
+/* 模态框演示按钮 */
+.modal-demo-btn {
+  margin-right: 8px;
+  margin-bottom: 8px;
+}

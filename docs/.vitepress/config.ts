@@ -2,18 +2,18 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: 'LDesign Vue引擎',
+  title: 'LDesign 组件库',
   description:
-    '基于Vue3的现代化前端开发引擎，提供完整的插件化架构和跨框架兼容性',
+    '基于 Stencil 的现代化 Web Components 组件库，支持跨框架使用',
   base: '/',
   lang: 'zh-CN',
 
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
-    ['meta', { name: 'theme-color', content: '#1890ff' }],
+    ['meta', { name: 'theme-color', content: '#1976d2' }],
     ['meta', { name: 'og:type', content: 'website' }],
     ['meta', { name: 'og:locale', content: 'zh-CN' }],
-    ['meta', { name: 'og:site_name', content: 'LDesign Vue引擎' }],
+    ['meta', { name: 'og:site_name', content: 'LDesign 组件库' }],
   ],
 
   themeConfig: {
@@ -22,117 +22,67 @@ export default defineConfig({
 
     nav: [
       { text: '首页', link: '/' },
-      { text: '快速开始', link: '/guide/getting-started' },
+      { text: '指南', link: '/guide/introduction' },
+      { text: '组件', link: '/components/button' },
+      { text: '示例', link: '/examples/basic' },
       {
-        text: '核心包',
+        text: '相关链接',
         items: [
-          { text: 'Engine 核心引擎', link: '/packages/engine/' },
-          { text: 'Router 路由系统', link: '/packages/router/' },
-          { text: 'HTTP 请求库', link: '/packages/http/' },
-          { text: 'Crypto 加密工具', link: '/packages/crypto/' },
-          { text: 'Device 设备检测', link: '/packages/device/' },
-          { text: 'Template 模板系统', link: '/packages/template/' },
-          { text: 'Color 颜色工具', link: '/packages/color/' },
-          { text: 'I18n 国际化', link: '/packages/i18n/' },
-        ],
-      },
-      { text: '示例', link: '/examples/' },
-      { text: '演示', link: '/demo/' },
-      {
-        text: '更多',
-        items: [
-          { text: 'API 参考', link: '/api/' },
-          { text: '最佳实践', link: '/best-practices/' },
-          { text: '贡献指南', link: '/contributing' },
-          { text: '开发指南', link: '/guide/DEVELOPMENT' },
-          { text: '部署指南', link: '/guide/DEPLOYMENT' },
-          { text: '项目报告', link: '/reports/' },
           { text: 'GitHub', link: 'https://github.com/ldesign-org/ldesign' },
-        ],
-      },
+          { text: 'NPM', link: 'https://www.npmjs.com/package/@ldesign/component' },
+          { text: 'Stencil', link: 'https://stenciljs.com/' }
+        ]
+      }
     ],
 
     sidebar: {
       '/guide/': [
         {
-          text: '开始使用',
+          text: '开始',
           items: [
-            { text: '介绍', link: '/guide/' },
+            { text: '介绍', link: '/guide/introduction' },
             { text: '快速开始', link: '/guide/getting-started' },
-            { text: '安装配置', link: '/guide/installation' },
-            { text: '项目结构', link: '/guide/project-structure' },
-            { text: '开发指南', link: '/guide/DEVELOPMENT' },
-            { text: '部署指南', link: '/guide/DEPLOYMENT' },
-          ],
+            { text: '安装', link: '/guide/installation' }
+          ]
         },
         {
-          text: '核心概念',
+          text: '进阶',
           items: [
-            { text: '插件系统', link: '/guide/plugins' },
-            { text: '中间件', link: '/guide/middleware' },
-            { text: '事件系统', link: '/guide/events' },
-            { text: '状态管理', link: '/guide/state' },
-          ],
-        },
-        {
-          text: '高级用法',
-          items: [
-            { text: '自定义插件', link: '/guide/custom-plugins' },
-            { text: '性能优化', link: '/guide/performance' },
-            { text: '错误处理', link: '/guide/error-handling' },
-            { text: '调试技巧', link: '/guide/debugging' },
-          ],
-        },
+            { text: '主题定制', link: '/guide/theming' },
+            { text: '框架集成', link: '/guide/framework-integration' },
+            { text: '最佳实践', link: '/guide/best-practices' }
+          ]
+        }
       ],
-      '/packages/': [
+      '/components/': [
         {
-          text: '核心包',
+          text: '基础组件',
           items: [
-            { text: 'Engine 核心引擎', link: '/packages/engine/' },
-            { text: 'Router 路由系统', link: '/packages/router/' },
-            { text: 'HTTP 请求库', link: '/packages/http/' },
-            { text: 'Crypto 加密工具', link: '/packages/crypto/' },
-            { text: 'Device 设备检测', link: '/packages/device/' },
-            { text: 'Template 模板系统', link: '/packages/template/' },
-            { text: 'Color 颜色工具', link: '/packages/color/' },
-            { text: 'I18n 国际化', link: '/packages/i18n/' },
-          ],
+            { text: 'Button 按钮', link: '/components/button' },
+            { text: 'Input 输入框', link: '/components/input' },
+            { text: 'Card 卡片', link: '/components/card' }
+          ]
         },
+        {
+          text: '高级组件',
+          items: [
+            { text: 'Modal 模态框', link: '/components/modal' },
+            { text: 'Table 表格', link: '/components/table' },
+            { text: 'Form 表单', link: '/components/form' }
+          ]
+        }
       ],
       '/examples/': [
         {
-          text: '示例项目',
+          text: '示例',
           items: [
-            { text: '概览', link: '/examples/' },
-            { text: '基础应用', link: '/examples/basic-app' },
-            { text: '企业级应用', link: '/examples/enterprise-app' },
-            { text: '多页面应用', link: '/examples/multi-page-app' },
-            { text: '移动端应用', link: '/examples/mobile-app' },
-          ],
-        },
-      ],
-      '/demo/': [
-        {
-          text: '在线演示',
-          items: [
-            { text: '演示首页', link: '/demo/' },
-            { text: '功能展示', link: '/demo/features' },
-            { text: '性能测试', link: '/demo/performance' },
-            { text: '兼容性测试', link: '/demo/compatibility' },
-          ],
-        },
-      ],
-      '/reports/': [
-        {
-          text: '项目报告',
-          items: [
-            { text: '构建报告', link: '/reports/BUILD_STATUS_REPORT' },
-            { text: '项目状态', link: '/reports/PROJECT_STATUS_REPORT' },
-            { text: '标准化报告', link: '/reports/STANDARDIZATION_REPORT' },
-            { text: '验证报告', link: '/reports/VERIFICATION_REPORT' },
-          ],
-        },
-      ],
+            { text: '基础用法', link: '/examples/basic' },
+            { text: 'Vue 集成', link: '/examples/vue' },
+            { text: 'React 集成', link: '/examples/react' },
+            { text: 'Angular 集成', link: '/examples/angular' }
+          ]
+        }
+      ]
     },
 
     socialLinks: [
@@ -186,31 +136,17 @@ export default defineConfig({
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('../', import.meta.url)),
-        '@ldesign/engine': fileURLToPath(
-          new URL('../packages/engine/src', import.meta.url),
-        ),
-        '@ldesign/router': fileURLToPath(
-          new URL('../packages/router/src', import.meta.url),
-        ),
-        '@ldesign/http': fileURLToPath(
-          new URL('../packages/http/src', import.meta.url),
-        ),
-        '@ldesign/crypto': fileURLToPath(
-          new URL('../packages/crypto/src', import.meta.url),
-        ),
-        '@ldesign/device': fileURLToPath(
-          new URL('../packages/device/src', import.meta.url),
-        ),
-        '@ldesign/template': fileURLToPath(
-          new URL('../packages/template/src', import.meta.url),
-        ),
-        '@ldesign/color': fileURLToPath(
-          new URL('../packages/color/src', import.meta.url),
-        ),
-        '@ldesign/i18n': fileURLToPath(
-          new URL('../packages/i18n/src', import.meta.url),
+        '@ldesign/component': fileURLToPath(
+          new URL('../packages/component/src', import.meta.url),
         ),
       },
     },
+    server: {
+      port: 5173,
+      host: true
+    },
+    build: {
+      chunkSizeWarningLimit: 1000
+    }
   },
 })
