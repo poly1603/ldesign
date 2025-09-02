@@ -1,0 +1,361 @@
+/**
+ * FormItem 表单项样式
+ */
+
+@import '../../global/variables.less';
+@import '../../global/mixins.less';
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+// ==================== 表单项主体 ====================
+
+.ld-form-item {
+  position: relative;
+  margin-bottom: var(--ld-form-item-margin-bottom, 24px);
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// ==================== 标签 ====================
+
+.ld-form-item__label {
+  display: inline-block;
+  font-size: var(--ld-form-label-font-size, 14px);
+  font-weight: var(--ld-form-label-font-weight, 400);
+  color: var(--ld-form-label-color, rgba(0, 0, 0, 0.85));
+  line-height: var(--ld-form-label-line-height, 1.5715);
+  text-align: var(--ld-form-label-align, right);
+  vertical-align: top;
+  
+  // 必填标记
+  &.ld-form-item__label--required {
+    &::before {
+      content: '*';
+      color: var(--ld-form-required-color, #ff4d4f);
+      margin-right: 4px;
+      font-family: inherit;
+    }
+  }
+  
+  // 冒号
+  &::after {
+    content: ':';
+    margin: 0 8px 0 2px;
+    position: relative;
+    top: -0.5px;
+  }
+  
+  // 顶部对齐时不显示冒号
+  :host(.ld-form--label-top) &::after,
+  :host(.ld-form--vertical) &::after,
+  :host(.ld-form--inline) &::after {
+    display: none;
+  }
+}
+
+// ==================== 内容区域 ====================
+
+.ld-form-item__content {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.ld-form-item__control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: var(--ld-form-control-height, 32px);
+  
+  // 表单控件样式
+  ::slotted(ld-input),
+  ::slotted(ld-textarea),
+  ::slotted(ld-select),
+  ::slotted(ld-date-picker),
+  ::slotted(ld-time-picker),
+  ::slotted(ld-cascader),
+  ::slotted(ld-tree-select) {
+    width: 100%;
+  }
+  
+  ::slotted(ld-checkbox-group),
+  ::slotted(ld-radio-group) {
+    width: 100%;
+  }
+  
+  ::slotted(ld-switch) {
+    margin: 4px 0;
+  }
+  
+  ::slotted(ld-slider) {
+    width: 100%;
+    margin: 8px 0;
+  }
+  
+  ::slotted(ld-rate) {
+    margin: 4px 0;
+  }
+  
+  ::slotted(ld-upload) {
+    width: 100%;
+  }
+}
+
+// ==================== 验证图标 ====================
+
+.ld-form-item__validate-icon {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  font-size: 14px;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 1;
+  
+  &.ld-form-item__validate-icon--success {
+    color: var(--ld-form-success-color, #52c41a);
+  }
+  
+  &.ld-form-item__validate-icon--error {
+    color: var(--ld-form-error-color, #ff4d4f);
+  }
+  
+  &.ld-form-item__validate-icon--validating {
+    color: var(--ld-form-validating-color, #1976d2);
+    animation: ld-form-item-spin 1s linear infinite;
+  }
+}
+
+// ==================== 验证消息 ====================
+
+.ld-form-item__message {
+  margin-top: var(--ld-form-message-margin-top, 4px);
+  font-size: var(--ld-form-message-font-size, 12px);
+  line-height: var(--ld-form-message-line-height, 1.5);
+  min-height: 18px;
+  
+  &.ld-form-item__message--error {
+    color: var(--ld-form-error-color, #ff4d4f);
+  }
+  
+  &.ld-form-item__message--warning {
+    color: var(--ld-form-warning-color, #faad14);
+  }
+  
+  &.ld-form-item__message--success {
+    color: var(--ld-form-success-color, #52c41a);
+  }
+}
+
+// ==================== 帮助文本 ====================
+
+.ld-form-item__help {
+  margin-top: var(--ld-form-help-margin-top, 4px);
+  font-size: var(--ld-form-help-font-size, 12px);
+  line-height: var(--ld-form-help-line-height, 1.5);
+  color: var(--ld-form-help-color, rgba(0, 0, 0, 0.45));
+}
+
+// ==================== 验证状态 ====================
+
+.ld-form-item--validating {
+  ::slotted(ld-input),
+  ::slotted(ld-textarea),
+  ::slotted(ld-select) {
+    border-color: var(--ld-form-validating-color, #1976d2) !important;
+  }
+}
+
+.ld-form-item--success {
+  ::slotted(ld-input),
+  ::slotted(ld-textarea),
+  ::slotted(ld-select) {
+    border-color: var(--ld-form-success-color, #52c41a) !important;
+  }
+}
+
+.ld-form-item--error {
+  ::slotted(ld-input),
+  ::slotted(ld-textarea),
+  ::slotted(ld-select) {
+    border-color: var(--ld-form-error-color, #ff4d4f) !important;
+    
+    &:focus {
+      border-color: var(--ld-form-error-color, #ff4d4f) !important;
+      box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2) !important;
+    }
+  }
+}
+
+// ==================== 布局适配 ====================
+
+// 水平布局
+:host(.ld-form--horizontal) {
+  .ld-form-item {
+    display: flex;
+    align-items: flex-start;
+    
+    .ld-form-item__label {
+      flex: 0 0 auto;
+      width: var(--ld-form-label-width, 100px);
+      padding-right: var(--ld-form-label-padding, 12px);
+      line-height: var(--ld-form-control-height, 32px);
+    }
+    
+    .ld-form-item__content {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+}
+
+// 垂直布局
+:host(.ld-form--vertical) {
+  .ld-form-item {
+    .ld-form-item__label {
+      display: block;
+      margin-bottom: var(--ld-form-label-margin-bottom, 8px);
+      text-align: left;
+      width: auto;
+      padding-right: 0;
+    }
+    
+    .ld-form-item__content {
+      width: 100%;
+    }
+  }
+}
+
+// 内联布局
+:host(.ld-form--inline) {
+  .ld-form-item {
+    display: inline-flex;
+    align-items: center;
+    margin-right: var(--ld-form-inline-gap, 16px);
+    margin-bottom: 0;
+    vertical-align: top;
+    
+    .ld-form-item__label {
+      flex: 0 0 auto;
+      margin-right: var(--ld-form-label-margin-right, 8px);
+      text-align: left;
+      width: auto;
+      padding-right: 0;
+      line-height: var(--ld-form-control-height, 32px);
+    }
+    
+    .ld-form-item__content {
+      flex: 0 0 auto;
+    }
+  }
+}
+
+// ==================== 动画 ====================
+
+@keyframes ld-form-item-spin {
+  0% {
+    transform: translateY(-50%) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
+
+// ==================== 响应式设计 ====================
+
+@media (max-width: 768px) {
+  :host(.ld-form--horizontal) {
+    .ld-form-item {
+      flex-direction: column;
+      align-items: stretch;
+      
+      .ld-form-item__label {
+        width: auto;
+        text-align: left;
+        padding-right: 0;
+        margin-bottom: var(--ld-form-label-margin-bottom, 8px);
+        line-height: normal;
+      }
+    }
+  }
+  
+  :host(.ld-form--inline) {
+    .ld-form-item {
+      display: flex;
+      width: 100%;
+      margin-right: 0;
+      margin-bottom: var(--ld-form-item-margin-bottom, 16px);
+      
+      .ld-form-item__content {
+        flex: 1;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .ld-form-item {
+    margin-bottom: var(--ld-form-item-margin-bottom, 16px);
+  }
+  
+  .ld-form-item__label {
+    font-size: 13px;
+  }
+  
+  .ld-form-item__message,
+  .ld-form-item__help {
+    font-size: 11px;
+  }
+  
+  .ld-form-item__validate-icon {
+    font-size: 12px;
+    right: 6px;
+  }
+}
+
+// ==================== 暗色主题 ====================
+
+:host([data-theme="dark"]) {
+  .ld-form-item__label {
+    --ld-form-label-color: rgba(255, 255, 255, 0.85);
+  }
+  
+  .ld-form-item__help {
+    --ld-form-help-color: rgba(255, 255, 255, 0.45);
+  }
+}
+
+// ==================== 高对比度模式 ====================
+
+@media (prefers-contrast: high) {
+  .ld-form-item--error {
+    ::slotted(ld-input),
+    ::slotted(ld-textarea),
+    ::slotted(ld-select) {
+      border-width: 2px !important;
+    }
+  }
+  
+  .ld-form-item__label--required::before {
+    font-weight: bold;
+    font-size: 16px;
+  }
+  
+  .ld-form-item__validate-icon {
+    font-weight: bold;
+  }
+}
+
+// ==================== 减少动画模式 ====================
+
+@media (prefers-reduced-motion: reduce) {
+  .ld-form-item__validate-icon--validating {
+    animation: none;
+  }
+}

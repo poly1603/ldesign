@@ -1,0 +1,369 @@
+/**
+ * Table 表格样式
+ */
+
+@import '../../global/variables.less';
+@import '../../global/mixins.less';
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.ld-table-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+// ==================== 加载状态 ====================
+
+.ld-table__loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--ld-table-loading-bg, rgba(255, 255, 255, 0.8));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+// ==================== 表格容器 ====================
+
+.ld-table-container {
+  width: 100%;
+  overflow: auto;
+  
+  // 固定表头时的样式
+  &.ld-table--fixed-header {
+    overflow-y: auto;
+  }
+}
+
+// ==================== 表格主体 ====================
+
+.ld-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  background: var(--ld-table-bg, #fff);
+  font-size: var(--ld-table-font-size, 14px);
+  line-height: var(--ld-table-line-height, 1.5715);
+  color: var(--ld-table-color, rgba(0, 0, 0, 0.85));
+  
+  // 边框样式
+  &.ld-table--bordered {
+    border: var(--ld-table-border, 1px solid #f0f0f0);
+    
+    th,
+    td {
+      border-right: var(--ld-table-border, 1px solid #f0f0f0);
+      
+      &:last-child {
+        border-right: none;
+      }
+    }
+  }
+  
+  // 斑马纹样式
+  &.ld-table--striped {
+    tbody tr:nth-child(even) {
+      background: var(--ld-table-striped-bg, #fafafa);
+    }
+  }
+  
+  // 尺寸样式
+  &.ld-table--small {
+    --ld-table-padding-vertical: 8px;
+    --ld-table-padding-horizontal: 8px;
+    --ld-table-font-size: 12px;
+  }
+  
+  &.ld-table--medium {
+    --ld-table-padding-vertical: 12px;
+    --ld-table-padding-horizontal: 16px;
+    --ld-table-font-size: 14px;
+  }
+  
+  &.ld-table--large {
+    --ld-table-padding-vertical: 16px;
+    --ld-table-padding-horizontal: 24px;
+    --ld-table-font-size: 16px;
+  }
+  
+  // 固定表头样式
+  &.ld-table--fixed-header {
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--ld-table-header-bg, #fafafa);
+    }
+  }
+}
+
+// ==================== 表头 ====================
+
+.ld-table__header {
+  background: var(--ld-table-header-bg, #fafafa);
+  
+  th {
+    padding: var(--ld-table-padding-vertical, 12px) var(--ld-table-padding-horizontal, 16px);
+    font-weight: var(--ld-table-header-font-weight, 500);
+    color: var(--ld-table-header-color, rgba(0, 0, 0, 0.85));
+    text-align: left;
+    border-bottom: var(--ld-table-border, 1px solid #f0f0f0);
+    background: var(--ld-table-header-bg, #fafafa);
+    position: relative;
+    
+    &.ld-table__header-cell--sortable {
+      cursor: pointer;
+      user-select: none;
+      
+      &:hover {
+        background: var(--ld-table-header-hover-bg, #f5f5f5);
+      }
+    }
+    
+    &.ld-table__header-cell--filtered {
+      background: var(--ld-table-header-filtered-bg, #e6f7ff);
+    }
+  }
+}
+
+.ld-table__header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ld-table__header-title {
+  flex: 1;
+}
+
+// ==================== 选择列 ====================
+
+.ld-table__selection-column {
+  width: 60px;
+  text-align: center;
+  
+  ld-checkbox,
+  ld-radio {
+    margin: 0;
+  }
+}
+
+// ==================== 排序图标 ====================
+
+.ld-table__sort-icon {
+  display: flex;
+  flex-direction: column;
+  margin-left: 8px;
+}
+
+.ld-table__sort-btn {
+  width: 14px;
+  height: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--ld-table-sort-color, #bfbfbf);
+  transition: color 0.25s ease;
+  
+  &:hover {
+    color: var(--ld-table-sort-hover-color, #1976d2);
+  }
+  
+  &.ld-table__sort-btn--active {
+    color: var(--ld-table-sort-active-color, #1976d2);
+  }
+  
+  &:first-child {
+    margin-bottom: -2px;
+  }
+}
+
+// ==================== 筛选图标 ====================
+
+.ld-table__filter-icon {
+  margin-left: 8px;
+}
+
+.ld-table__filter-btn {
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--ld-table-filter-color, #bfbfbf);
+  transition: color 0.25s ease;
+  
+  &:hover {
+    color: var(--ld-table-filter-hover-color, #1976d2);
+  }
+  
+  &.ld-table__filter-btn--active {
+    color: var(--ld-table-filter-active-color, #1976d2);
+  }
+}
+
+// ==================== 表体 ====================
+
+.ld-table__body {
+  tr {
+    transition: background-color 0.25s ease;
+    
+    &:hover {
+      background: var(--ld-table-row-hover-bg, #f5f5f5);
+    }
+    
+    &.ld-table__row--selected {
+      background: var(--ld-table-row-selected-bg, #e6f7ff);
+      
+      &:hover {
+        background: var(--ld-table-row-selected-hover-bg, #bae7ff);
+      }
+    }
+    
+    &.ld-table__row--clickable {
+      cursor: pointer;
+    }
+  }
+  
+  td {
+    padding: var(--ld-table-padding-vertical, 12px) var(--ld-table-padding-horizontal, 16px);
+    border-bottom: var(--ld-table-border, 1px solid #f0f0f0);
+    color: var(--ld-table-cell-color, rgba(0, 0, 0, 0.65));
+    word-break: break-word;
+    
+    &:last-child {
+      border-right: none;
+    }
+  }
+}
+
+// ==================== 空数据 ====================
+
+.ld-table__empty {
+  text-align: center;
+  color: var(--ld-table-empty-color, rgba(0, 0, 0, 0.25));
+  padding: var(--ld-table-empty-padding, 64px 16px);
+  font-size: var(--ld-table-empty-font-size, 14px);
+}
+
+// ==================== 分页 ====================
+
+.ld-table__pagination {
+  margin-top: var(--ld-table-pagination-margin, 16px);
+  display: flex;
+  justify-content: flex-end;
+}
+
+// ==================== 响应式设计 ====================
+
+@media (max-width: 768px) {
+  .ld-table-container {
+    overflow-x: auto;
+  }
+  
+  .ld-table {
+    min-width: 600px;
+    
+    &.ld-table--small {
+      min-width: 500px;
+    }
+    
+    &.ld-table--large {
+      min-width: 700px;
+    }
+  }
+  
+  .ld-table__header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .ld-table__sort-icon,
+  .ld-table__filter-icon {
+    margin-left: 0;
+    margin-top: 4px;
+  }
+  
+  .ld-table__pagination {
+    justify-content: center;
+    margin-top: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ld-table {
+    th,
+    td {
+      padding: 8px 4px;
+      font-size: 12px;
+    }
+  }
+  
+  .ld-table__selection-column {
+    width: 40px;
+  }
+  
+  .ld-table__empty {
+    padding: 32px 8px;
+    font-size: 12px;
+  }
+}
+
+// ==================== 暗色主题 ====================
+
+:host([data-theme="dark"]) {
+  .ld-table {
+    --ld-table-bg: #1f1f1f;
+    --ld-table-color: rgba(255, 255, 255, 0.85);
+    --ld-table-border: 1px solid #303030;
+    --ld-table-header-bg: #262626;
+    --ld-table-header-color: rgba(255, 255, 255, 0.85);
+    --ld-table-header-hover-bg: #303030;
+    --ld-table-header-filtered-bg: #003a8c;
+    --ld-table-row-hover-bg: #262626;
+    --ld-table-row-selected-bg: #003a8c;
+    --ld-table-row-selected-hover-bg: #0050b3;
+    --ld-table-cell-color: rgba(255, 255, 255, 0.65);
+    --ld-table-striped-bg: #262626;
+    --ld-table-empty-color: rgba(255, 255, 255, 0.25);
+    --ld-table-loading-bg: rgba(31, 31, 31, 0.8);
+  }
+}
+
+// ==================== 高对比度模式 ====================
+
+@media (prefers-contrast: high) {
+  .ld-table {
+    --ld-table-border: 2px solid;
+    
+    th,
+    td {
+      border-width: 2px;
+    }
+  }
+  
+  .ld-table__row--selected {
+    outline: 2px solid;
+  }
+}
+
+// ==================== 减少动画模式 ====================
+
+@media (prefers-reduced-motion: reduce) {
+  .ld-table__body tr,
+  .ld-table__sort-btn,
+  .ld-table__filter-btn {
+    transition: none;
+  }
+}

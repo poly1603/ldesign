@@ -1,0 +1,292 @@
+/**
+ * 全局 Less 混合函数
+ * 
+ * 这个文件定义了组件库中常用的 Less 混合函数
+ * 包括按钮样式、输入框样式、动画效果等可复用的样式片段
+ */
+
+// ==================== 基础混合函数 ====================
+
+// 清除浮动
+.clearfix() {
+  &::before,
+  &::after {
+    content: '';
+    display: table;
+  }
+  &::after {
+    clear: both;
+  }
+}
+
+// 文本省略
+.text-ellipsis() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 多行文本省略
+.text-ellipsis-multiline(@lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: @lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// 居中对齐
+.center-flex() {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// 垂直居中
+.center-vertical() {
+  display: flex;
+  align-items: center;
+}
+
+// 水平居中
+.center-horizontal() {
+  display: flex;
+  justify-content: center;
+}
+
+// ==================== 按钮混合函数 ====================
+
+// 基础按钮样式
+.button-base() {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  font-weight: var(--ld-font-weight-normal);
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  transition: all var(--ld-duration-base) var(--ld-ease-in-out);
+  text-decoration: none;
+  outline: none;
+  position: relative;
+  
+  &:focus {
+    outline: 2px solid var(--ld-color-primary);
+    outline-offset: 2px;
+  }
+  
+  &:disabled,
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+// 按钮尺寸
+.button-size(@padding-vertical, @padding-horizontal, @font-size, @border-radius) {
+  padding: @padding-vertical @padding-horizontal;
+  font-size: @font-size;
+  border-radius: @border-radius;
+  min-height: (@font-size * 1.5 + @padding-vertical * 2);
+}
+
+// 按钮颜色变体
+.button-variant(@color, @background, @border) {
+  color: @color;
+  background-color: @background;
+  border-color: @border;
+  
+  &:hover:not(:disabled) {
+    color: @color;
+    background-color: lighten(@background, 10%);
+    border-color: lighten(@border, 10%);
+  }
+  
+  &:active:not(:disabled) {
+    color: @color;
+    background-color: darken(@background, 5%);
+    border-color: darken(@border, 5%);
+  }
+}
+
+// 按钮轮廓样式
+.button-outline(@color) {
+  color: @color;
+  background-color: transparent;
+  border-color: @color;
+  
+  &:hover:not(:disabled) {
+    color: #fff;
+    background-color: @color;
+    border-color: @color;
+  }
+  
+  &:active:not(:disabled) {
+    color: #fff;
+    background-color: darken(@color, 10%);
+    border-color: darken(@color, 10%);
+  }
+}
+
+// ==================== 输入框混合函数 ====================
+
+// 基础输入框样式
+.input-base() {
+  display: inline-block;
+  width: 100%;
+  padding: var(--ld-spacing-sm) var(--ld-spacing-base);
+  font-size: var(--ld-font-size-base);
+  font-weight: var(--ld-font-weight-normal);
+  line-height: var(--ld-line-height-base);
+  color: var(--ld-color-text-primary);
+  background-color: var(--ld-color-bg-primary);
+  background-image: none;
+  border: 1px solid var(--ld-color-border-primary);
+  border-radius: var(--ld-border-radius-base);
+  outline: none;
+  transition: all var(--ld-duration-base) var(--ld-ease-in-out);
+  
+  &::placeholder {
+    color: var(--ld-color-text-tertiary);
+    opacity: 1;
+  }
+  
+  &:hover {
+    border-color: var(--ld-color-primary-hover);
+  }
+  
+  &:focus {
+    border-color: var(--ld-color-primary);
+    box-shadow: 0 0 0 2px fade(var(--ld-color-primary), 20%);
+  }
+  
+  &:disabled {
+    background-color: var(--ld-color-bg-disabled);
+    border-color: var(--ld-color-border-secondary);
+    color: var(--ld-color-text-disabled);
+    cursor: not-allowed;
+    
+    &::placeholder {
+      color: var(--ld-color-text-disabled);
+    }
+  }
+}
+
+// 输入框尺寸
+.input-size(@padding-vertical, @padding-horizontal, @font-size, @border-radius) {
+  padding: @padding-vertical @padding-horizontal;
+  font-size: @font-size;
+  border-radius: @border-radius;
+}
+
+// ==================== 卡片混合函数 ====================
+
+// 基础卡片样式
+.card-base() {
+  background: var(--ld-color-bg-primary);
+  border-radius: var(--ld-border-radius-lg);
+  border: 1px solid var(--ld-color-border-secondary);
+  box-shadow: var(--ld-shadow-sm);
+  transition: all var(--ld-duration-base) var(--ld-ease-in-out);
+  
+  &:hover {
+    box-shadow: var(--ld-shadow-base);
+  }
+}
+
+// ==================== 动画混合函数 ====================
+
+// 淡入动画
+.fade-in(@duration: var(--ld-duration-base)) {
+  animation: fadeIn @duration var(--ld-ease-out);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// 滑入动画
+.slide-in-up(@duration: var(--ld-duration-base)) {
+  animation: slideInUp @duration var(--ld-ease-out);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 缩放动画
+.scale-in(@duration: var(--ld-duration-base)) {
+  animation: scaleIn @duration var(--ld-ease-out);
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// ==================== 响应式混合函数 ====================
+
+// 媒体查询断点
+@screen-xs: 480px;
+@screen-sm: 576px;
+@screen-md: 768px;
+@screen-lg: 992px;
+@screen-xl: 1200px;
+@screen-xxl: 1600px;
+
+// 响应式混合函数
+.respond-to(@breakpoint) when (@breakpoint = xs) {
+  @media (min-width: @screen-xs) {
+    .respond-content();
+  }
+}
+
+.respond-to(@breakpoint) when (@breakpoint = sm) {
+  @media (min-width: @screen-sm) {
+    .respond-content();
+  }
+}
+
+.respond-to(@breakpoint) when (@breakpoint = md) {
+  @media (min-width: @screen-md) {
+    .respond-content();
+  }
+}
+
+.respond-to(@breakpoint) when (@breakpoint = lg) {
+  @media (min-width: @screen-lg) {
+    .respond-content();
+  }
+}
+
+.respond-to(@breakpoint) when (@breakpoint = xl) {
+  @media (min-width: @screen-xl) {
+    .respond-content();
+  }
+}
+
+.respond-to(@breakpoint) when (@breakpoint = xxl) {
+  @media (min-width: @screen-xxl) {
+    .respond-content();
+  }
+}

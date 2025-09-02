@@ -1,0 +1,164 @@
+/**
+ * 全局 CSS 变量定义
+ * 
+ * 这个文件定义了整个组件库的设计令牌（Design Tokens）
+ * 包括颜色、字体、间距、阴影等基础样式变量
+ * 支持主题切换和自定义主题
+ */
+
+// ==================== 颜色系统 ====================
+
+// 主色调
+:root {
+  // 品牌色
+  --ld-color-primary: #1890ff;
+  --ld-color-primary-hover: #40a9ff;
+  --ld-color-primary-active: #096dd9;
+  --ld-color-primary-light: #e6f7ff;
+  --ld-color-primary-lighter: #f0f9ff;
+
+  // 成功色
+  --ld-color-success: #52c41a;
+  --ld-color-success-hover: #73d13d;
+  --ld-color-success-active: #389e0d;
+  --ld-color-success-light: #f6ffed;
+
+  // 警告色
+  --ld-color-warning: #faad14;
+  --ld-color-warning-hover: #ffc53d;
+  --ld-color-warning-active: #d48806;
+  --ld-color-warning-light: #fffbe6;
+
+  // 错误色
+  --ld-color-error: #ff4d4f;
+  --ld-color-error-hover: #ff7875;
+  --ld-color-error-active: #d9363e;
+  --ld-color-error-light: #fff2f0;
+
+  // 信息色
+  --ld-color-info: #1890ff;
+  --ld-color-info-hover: #40a9ff;
+  --ld-color-info-active: #096dd9;
+  --ld-color-info-light: #e6f7ff;
+
+  // 中性色
+  --ld-color-text-primary: #262626;
+  --ld-color-text-secondary: #595959;
+  --ld-color-text-tertiary: #8c8c8c;
+  --ld-color-text-quaternary: #bfbfbf;
+  --ld-color-text-disabled: #d9d9d9;
+
+  // 背景色
+  --ld-color-bg-primary: #ffffff;
+  --ld-color-bg-secondary: #fafafa;
+  --ld-color-bg-tertiary: #f5f5f5;
+  --ld-color-bg-quaternary: #f0f0f0;
+  --ld-color-bg-disabled: #f5f5f5;
+
+  // 边框色
+  --ld-color-border-primary: #d9d9d9;
+  --ld-color-border-secondary: #f0f0f0;
+  --ld-color-border-tertiary: #fafafa;
+
+  // ==================== 字体系统 ====================
+  
+  // 字体族
+  --ld-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --ld-font-family-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+
+  // 字体大小
+  --ld-font-size-xs: 12px;
+  --ld-font-size-sm: 14px;
+  --ld-font-size-base: 16px;
+  --ld-font-size-lg: 18px;
+  --ld-font-size-xl: 20px;
+  --ld-font-size-2xl: 24px;
+  --ld-font-size-3xl: 30px;
+  --ld-font-size-4xl: 36px;
+
+  // 行高
+  --ld-line-height-xs: 1.2;
+  --ld-line-height-sm: 1.4;
+  --ld-line-height-base: 1.5;
+  --ld-line-height-lg: 1.6;
+  --ld-line-height-xl: 1.8;
+
+  // 字重
+  --ld-font-weight-light: 300;
+  --ld-font-weight-normal: 400;
+  --ld-font-weight-medium: 500;
+  --ld-font-weight-semibold: 600;
+  --ld-font-weight-bold: 700;
+
+  // ==================== 间距系统 ====================
+  
+  --ld-spacing-xs: 4px;
+  --ld-spacing-sm: 8px;
+  --ld-spacing-base: 16px;
+  --ld-spacing-lg: 24px;
+  --ld-spacing-xl: 32px;
+  --ld-spacing-2xl: 48px;
+  --ld-spacing-3xl: 64px;
+
+  // ==================== 圆角系统 ====================
+  
+  --ld-border-radius-xs: 2px;
+  --ld-border-radius-sm: 4px;
+  --ld-border-radius-base: 6px;
+  --ld-border-radius-lg: 8px;
+  --ld-border-radius-xl: 12px;
+  --ld-border-radius-2xl: 16px;
+  --ld-border-radius-full: 50%;
+
+  // ==================== 阴影系统 ====================
+  
+  --ld-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ld-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ld-shadow-base: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --ld-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --ld-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --ld-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  // ==================== 动画系统 ====================
+  
+  --ld-duration-fast: 0.15s;
+  --ld-duration-base: 0.25s;
+  --ld-duration-slow: 0.35s;
+  --ld-duration-slower: 0.5s;
+
+  --ld-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ld-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ld-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  // ==================== Z-index 系统 ====================
+  
+  --ld-z-index-dropdown: 1000;
+  --ld-z-index-sticky: 1020;
+  --ld-z-index-fixed: 1030;
+  --ld-z-index-modal-backdrop: 1040;
+  --ld-z-index-modal: 1050;
+  --ld-z-index-popover: 1060;
+  --ld-z-index-tooltip: 1070;
+  --ld-z-index-toast: 1080;
+}
+
+// ==================== 暗色主题 ====================
+
+[data-theme="dark"] {
+  // 重新定义暗色主题下的颜色变量
+  --ld-color-text-primary: #ffffff;
+  --ld-color-text-secondary: #d9d9d9;
+  --ld-color-text-tertiary: #8c8c8c;
+  --ld-color-text-quaternary: #595959;
+  --ld-color-text-disabled: #434343;
+
+  --ld-color-bg-primary: #141414;
+  --ld-color-bg-secondary: #1f1f1f;
+  --ld-color-bg-tertiary: #262626;
+  --ld-color-bg-quaternary: #2f2f2f;
+  --ld-color-bg-disabled: #262626;
+
+  --ld-color-border-primary: #434343;
+  --ld-color-border-secondary: #303030;
+  --ld-color-border-tertiary: #262626;
+}
