@@ -617,10 +617,10 @@ onMounted(() => {
 }
 
 .login-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--ldesign-bg-color-page, rgba(255, 255, 255, 0.95));
   backdrop-filter: blur(20px);
   border-radius: 20px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 25px 50px var(--ldesign-shadow-2, rgba(0, 0, 0, 0.15));
   padding: 2.5rem;
   width: 420px;
   border: 1px solid rgba(255, 255, 255, 0.2);

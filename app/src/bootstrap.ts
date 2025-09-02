@@ -2,10 +2,11 @@ import { createAndMountApp } from '@ldesign/engine'
 import { routerPlugin } from './router'
 import App from './App.vue'
 import { templatePlugin } from './templates'
+import { colorPlugin } from './color'
 
 /**
  * 应用启动配置
- * 使用优化后的 LDesign Engine API，集成 Router、Template 和 I18n 系统
+ * 使用优化后的 LDesign Engine API，集成 Router、Template、Color 和 I18n 系统
  */
 export async function bootstrap() {
 
@@ -25,7 +26,7 @@ export async function bootstrap() {
         enableNotifications: true
       }
     },
-    plugins: [routerPlugin, templatePlugin],
+    plugins: [routerPlugin, templatePlugin, colorPlugin],
     middleware: []
   })
 

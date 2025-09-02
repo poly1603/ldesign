@@ -67,6 +67,7 @@
 
 <script setup lang="ts">
 import { ref, computed, inject, onMounted, watch } from 'vue'
+import { globalThemeApplier } from '../../utils/css-variables'
 
 // Props
 interface Props {
@@ -90,8 +91,8 @@ const emit = defineEmits<{
   afterChange: [isDark: boolean]
 }>()
 
-// 获取主题管理器
-const themeManager = inject<any>('themeManager')
+// 获取主题管理器（带错误处理）
+const themeManager = inject<any>('themeManager', null)
 
 // 响应式数据
 const isDark = ref(false)
@@ -133,65 +134,39 @@ function saveThemeToStorage(dark: boolean): void {
   }
 }
 
-// 应用主题到 DOM
-function applyTheme(dark: boolean): void {
-  const root = document.documentElement
-  
-  // 设置 data 属性
-  root.setAttribute('data-theme-mode', dark ? 'dark' : 'light')
-  
-  // 设置 CSS 类
-  if (dark) {
-    root.classList.add('dark')
-    root.classList.remove('light')
-  } else {
-    root.classList.add('light')
-    root.classList.remove('dark')
-  }
-  
-  // 设置 CSS 变量（与 ThemeSelector 保持一致）
-  if (dark) {
-    root.style.setProperty('--color-bg', '#0f0f0f')
-    root.style.setProperty('--color-surface', '#1a1a1a')
-    root.style.setProperty('--color-surface-variant', '#2a2a2a')
-    root.style.setProperty('--color-text', '#ffffff')
-    root.style.setProperty('--color-text-secondary', '#a3a3a3')
-    root.style.setProperty('--color-border', '#404040')
-    root.style.setProperty('--color-shadow', 'rgba(0, 0, 0, 0.5)')
-  } else {
-    root.style.setProperty('--color-bg', '#ffffff')
-    root.style.setProperty('--color-surface', '#f8f9fa')
-    root.style.setProperty('--color-surface-variant', '#f1f3f4')
-    root.style.setProperty('--color-text', '#1f2937')
-    root.style.setProperty('--color-text-secondary', '#6b7280')
-    root.style.setProperty('--color-border', '#e5e7eb')
-    root.style.setProperty('--color-shadow', 'rgba(0, 0, 0, 0.1)')
-  }
-  
+// 应用模式切换到 DOM（只切换data-theme-mode属性，不重新生成CSS）
+function applyModeSwitch(dark: boolean): void {
+  const mode = dark ? 'dark' : 'light'
+
+  // 使用新的模式切换方法，只切换data-theme-mode属性
+  globalThemeApplier.switchMode(mode)
+
+  console.log(`🌓 [DarkModeToggle] 模式已切换: ${mode} (仅切换属性，CSS自动应用)`)
+
   // 注意：不在这里调用 themeManager.setMode，避免循环调用
   // 主题管理器会在需要时调用这个方法来应用样式
 }
 
-// 使用 View Transition API 的主题切换
+// 使用 View Transition API 的模式切换
 async function toggleWithTransition(): Promise<void> {
   if (!supportsViewTransition.value) {
     // 降级处理：直接切换
     const newMode = !isDark.value
     isDark.value = newMode
-    applyTheme(newMode)
+    applyModeSwitch(newMode)
     return
   }
 
   isAnimating.value = true
-  
+
   try {
     // 使用 View Transition API
     const transition = (document as any).startViewTransition(() => {
       const newMode = !isDark.value
       isDark.value = newMode
-      applyTheme(newMode)
+      applyModeSwitch(newMode)
     })
-    
+
     // 等待动画完成
     await transition.finished
   } catch (error) {
@@ -199,7 +174,7 @@ async function toggleWithTransition(): Promise<void> {
     // 降级处理
     const newMode = !isDark.value
     isDark.value = newMode
-    applyTheme(newMode)
+    applyModeSwitch(newMode)
   } finally {
     isAnimating.value = false
   }
@@ -211,7 +186,7 @@ async function toggleWithCircleTransition(clickX: number, clickY: number): Promi
     // 降级处理：直接切换
     const newMode = !isDark.value
     isDark.value = newMode
-    applyTheme(newMode)
+    applyModeSwitch(newMode)
     return
   }
 
@@ -231,7 +206,7 @@ async function toggleWithCircleTransition(clickX: number, clickY: number): Promi
     const transition = (document as any).startViewTransition(() => {
       const newMode = !isDark.value
       isDark.value = newMode
-      applyTheme(newMode)
+      applyModeSwitch(newMode)
     })
     
     // 等待动画完成
@@ -241,7 +216,7 @@ async function toggleWithCircleTransition(clickX: number, clickY: number): Promi
     // 降级处理
     const newMode = !isDark.value
     isDark.value = newMode
-    applyTheme(newMode)
+    applyModeSwitch(newMode)
   }
 }
 
@@ -299,7 +274,7 @@ function setupSystemThemeListener(): void {
     const storedTheme = loadThemeFromStorage()
     if (storedTheme === null) {
       isDark.value = e.matches
-      applyTheme(e.matches)
+      applyModeSwitch(e.matches)
       emit('change', e.matches)
     }
   }
@@ -354,7 +329,7 @@ onMounted(() => {
   }
   
   // 应用初始主题
-  applyTheme(isDark.value)
+  applyModeSwitch(isDark.value)
   
   // 设置系统主题监听
   setupSystemThemeListener()
@@ -363,183 +338,3 @@ onMounted(() => {
 // 注意：不在这里监听 isDark 变化来调用 themeManager.setMode
 // 避免循环调用，主题管理器的状态变化会通过其他方式同步到组件
 </script>
-
-<style scoped>
-.dark-mode-toggle {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 8px;
-  background: var(--color-surface, #ffffff);
-  color: var(--color-text, #1f2937);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  overflow: hidden;
-}
-
-.dark-mode-toggle:hover {
-  border-color: var(--color-primary, #3b82f6);
-  box-shadow: 0 2px 8px var(--color-shadow, rgba(0, 0, 0, 0.1));
-}
-
-.dark-mode-toggle:active {
-  transform: scale(0.98);
-}
-
-.dark-mode-toggle--disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.dark-mode-toggle--animating {
-  pointer-events: none;
-}
-
-/* 尺寸变体 */
-.dark-mode-toggle--small {
-  width: 32px;
-  height: 32px;
-  padding: 6px;
-}
-
-.dark-mode-toggle--medium {
-  width: 40px;
-  height: 40px;
-  padding: 8px;
-}
-
-.dark-mode-toggle--large {
-  width: 48px;
-  height: 48px;
-  padding: 10px;
-}
-
-/* 图标样式 */
-.dark-mode-toggle__icon {
-  width: 100%;
-  height: 100%;
-  transition: all 0.3s ease;
-}
-
-.dark-mode-toggle__sun {
-  color: #f59e0b;
-}
-
-.dark-mode-toggle__moon {
-  color: #6366f1;
-}
-
-/* 加载动画 */
-.dark-mode-toggle__spinner {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-surface, #ffffff);
-}
-
-.dark-mode-toggle__spinner svg {
-  width: 60%;
-  height: 60%;
-  animation: spin 1s linear infinite;
-}
-
-.dark-mode-toggle__spinner circle {
-  animation: dash 1.5s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes dash {
-  0% {
-    stroke-dasharray: 1, 150;
-    stroke-dashoffset: 0;
-  }
-  50% {
-    stroke-dasharray: 90, 150;
-    stroke-dashoffset: -35;
-  }
-  100% {
-    stroke-dasharray: 90, 150;
-    stroke-dashoffset: -124;
-  }
-}
-
-/* 暗色模式样式 */
-.dark-mode-toggle--dark {
-  background: var(--color-surface, #1a1a1a);
-  border-color: var(--color-border, #404040);
-  color: var(--color-text, #ffffff);
-}
-
-.dark-mode-toggle--dark:hover {
-  border-color: var(--color-primary, #60a5fa);
-}
-
-/* 圆形扩散动画 - View Transition API */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 0.6s;
-  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* 从点击点扩散的圆形动画 */
-@media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(root) {
-    animation-name: circle-shrink;
-    clip-path: circle(var(--max-radius) at var(--click-x) var(--click-y));
-  }
-  
-  ::view-transition-new(root) {
-    animation-name: circle-expand;
-    clip-path: circle(0 at var(--click-x) var(--click-y));
-  }
-}
-
-@keyframes circle-expand {
-  from {
-    clip-path: circle(0 at var(--click-x) var(--click-y));
-  }
-  to {
-    clip-path: circle(var(--max-radius) at var(--click-x) var(--click-y));
-  }
-}
-
-@keyframes circle-shrink {
-  from {
-    clip-path: circle(var(--max-radius) at var(--click-x) var(--click-y));
-  }
-  to {
-    clip-path: circle(0 at var(--click-x) var(--click-y));
-  }
-}
-
-/* 降级动画（不支持 prefers-reduced-motion 或旧浏览器） */
-::view-transition-old(root) {
-  animation-name: fade-out;
-}
-
-::view-transition-new(root) {
-  animation-name: fade-in;
-}
-
-@keyframes fade-out {
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-}
-</style>

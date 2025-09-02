@@ -14,9 +14,11 @@
             登录
           </router-link>
         </div>
-        <ThemeSelector mode="select" :show-preview="true" :custom-themes="customThemes"
-          :disabled-builtin-themes="disabledBuiltinThemes" placeholder="选择主题" />
-        <DarkModeToggle />
+        <div class="app-controls">
+          <ThemeSelector mode="select" :show-preview="true" :custom-themes="customThemes"
+            :disabled-builtin-themes="disabledBuiltinThemes" placeholder="选择主题" />
+          <DarkModeToggle />
+        </div>
       </div>
     </nav>
 
@@ -49,6 +51,10 @@
 import { ref } from 'vue'
 import { ThemeSelector, DarkModeToggle } from '@ldesign/color'
 import type { ThemeConfig } from '@ldesign/color'
+
+// 导入国际化相关功能
+const t = (key: string) => key // 临时的翻译函数
+const getCurrentLanguageName = () => 'Chinese' // 临时的语言名称函数
 
 // 自定义主题配置
 const customThemes = ref<ThemeConfig[]>([
@@ -87,7 +93,7 @@ console.log('🎉 App.vue 组件已加载')
 console.log('🚀 使用 @ldesign/router 路由系统')
 console.log('🌐 使用 @ldesign/i18n 国际化系统')
 console.log('🔧 展示优化后的 LDesign Engine + Router + I18n 集成')
-console.log(`📍 当前语言: ${languageManager.getLocale()}`)
+console.log('🎨 使用 @ldesign/color 主题管理系统')
 </script>
 
 <style>
@@ -98,38 +104,43 @@ console.log(`📍 当前语言: ${languageManager.getLocale()}`)
   box-sizing: border-box;
 }
 
-/* CSS变量定义 - 亮色模式 */
+/*
+ * 使用 @ldesign/color 生成的CSS变量
+ * 这些变量由主题管理器动态注入到 #ldesign-color-variables style标签中
+ * 这里定义的是语义化映射，将业务语义映射到设计系统变量
+ */
 :root {
-  --color-text: #333333;
-  --color-text-secondary: #666666;
-  --color-text-muted: #999999;
-  --color-bg: #ffffff;
-  --color-bg-secondary: #f8f9fa;
-  --color-bg-tertiary: #e9ecef;
-  --color-border: #dee2e6;
-  --color-primary: #2c3e50;
-  --color-secondary: #3498db;
-  --color-success: #27ae60;
-  --color-warning: #f39c12;
-  --color-danger: #e74c3c;
-  --color-shadow: rgba(0, 0, 0, 0.1);
-}
+  /* 文本颜色 - 映射到 @ldesign/color 变量 */
+  --color-text: var(--ldesign-text-color, var(--ldesign-font-gray-4, #1f2937));
+  --color-text-secondary: var(--ldesign-text-color-secondary, var(--ldesign-font-gray-3, #6b7280));
+  --color-text-muted: var(--ldesign-text-color-placeholder, var(--ldesign-font-gray-2, #9ca3af));
 
-/* 暗黑模式变量 */
-[data-mode="dark"] {
-  --color-text: #ffffff;
-  --color-text-secondary: #e0e0e0;
-  --color-text-muted: #b0b0b0;
-  --color-bg: #1a1a1a;
-  --color-bg-secondary: #2d2d2d;
-  --color-bg-tertiary: #404040;
-  --color-border: #555555;
-  --color-primary: #4a5568;
-  --color-secondary: #4299e1;
-  --color-success: #48bb78;
-  --color-warning: #ed8936;
-  --color-danger: #f56565;
-  --color-shadow: rgba(0, 0, 0, 0.3);
+  /* 背景颜色 - 映射到 @ldesign/color 变量 */
+  --color-bg: var(--ldesign-bg-color-page, #ffffff);
+  --color-bg-secondary: var(--ldesign-bg-color-container, #f8f9fa);
+  --color-bg-tertiary: var(--ldesign-bg-color-component, #f1f3f4);
+
+  /* 边框和阴影 - 映射到 @ldesign/color 变量 */
+  --color-border: var(--ldesign-border-color, var(--ldesign-border-level-1-color, #e5e7eb));
+  --color-shadow: var(--ldesign-shadow-1, rgba(0, 0, 0, 0.1));
+
+  /* 功能色 - 映射到 @ldesign/color 变量 */
+  --color-primary: var(--ldesign-brand-color, #1677ff);
+  --color-secondary: var(--ldesign-brand-color-6, #0062eb);
+  --color-success: var(--ldesign-success-color, #52c41a);
+  --color-warning: var(--ldesign-warning-color, #faad14);
+  --color-danger: var(--ldesign-danger-color, #ff4d4f);
+
+  /* 主题色阶 - 直接使用 @ldesign/color 生成的色阶 */
+  --color-primary-light: var(--ldesign-brand-color-3, #66a6ff);
+  --color-primary-lighter: var(--ldesign-brand-color-1, #b8d5ff);
+  --color-primary-dark: var(--ldesign-brand-color-8, #004099);
+  --color-primary-darker: var(--ldesign-brand-color-10, #001e47);
+
+  /* 交互状态色 */
+  --color-primary-hover: var(--ldesign-brand-color-hover, var(--ldesign-brand-color-5, #4096ff));
+  --color-primary-active: var(--ldesign-brand-color-active, var(--ldesign-brand-color-7, #0050b3));
+  --color-primary-focus: var(--ldesign-brand-color-focus, var(--ldesign-brand-color-4, #69b1ff));
 }
 
 body {
@@ -146,14 +157,15 @@ body {
   flex-direction: column;
 }
 
-/* 导航栏样式 */
+/* 导航栏样式 - 使用主题色阶 */
 .app-nav {
-  background: var(--color-primary);
-  color: var(--color-text);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-bg);
   padding: 1rem 0;
-  box-shadow: 0 2px 4px var(--color-shadow);
+  box-shadow: 0 2px 8px var(--color-shadow);
   transition: all 0.3s ease;
   border-bottom: 1px solid var(--color-border);
+  backdrop-filter: blur(10px);
 }
 
 .nav-container {
@@ -177,22 +189,25 @@ body {
 }
 
 .nav-link {
-  color: var(--color-text);
+  color: var(--color-bg);
   text-decoration: none;
   padding: 0.5rem 1rem;
-  border-radius: 4px;
+  border-radius: 6px;
   transition: all 0.3s ease;
   display: inline-block;
+  font-weight: 500;
 }
 
 .nav-link:hover {
-  background: var(--color-bg-secondary);
-  color: var(--color-text);
+  background: var(--color-primary-lighter);
+  color: var(--color-primary-darker);
+  transform: translateY(-1px);
 }
 
 .nav-link.active {
-  background: var(--color-secondary);
-  color: var(--color-text);
+  background: var(--color-bg);
+  color: var(--color-primary);
+  box-shadow: 0 2px 4px var(--color-shadow);
 }
 
 /* 主内容区域 */
@@ -200,15 +215,18 @@ body {
   flex: 1;
   background-color: var(--color-bg);
   transition: all 0.3s ease;
+  min-height: calc(100vh - 200px);
 }
 
 /* 底部样式 */
 .app-footer {
-  background: var(--color-bg-secondary);
+  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
   color: var(--color-text-secondary);
-  padding: 1rem 0;
+  padding: 2rem 0;
   text-align: center;
   border-top: 1px solid var(--color-border);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
 }
 
 .footer-container {

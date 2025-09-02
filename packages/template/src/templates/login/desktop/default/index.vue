@@ -440,12 +440,12 @@ onMounted(() => {
     .login-title {
       font-size: 2rem;
       font-weight: 600;
-      color: #2c3e50;
+      color: var(--ldesign-text-color, #2c3e50);
       margin-bottom: 0.5rem;
     }
 
     .login-subtitle {
-      color: #7f8c8d;
+      color: var(--ldesign-text-color-secondary, #7f8c8d);
       font-size: 0.9rem;
     }
   }
@@ -459,7 +459,7 @@ onMounted(() => {
   .form-label {
     display: block;
     font-weight: 500;
-    color: #2c3e50;
+    color: var(--ldesign-text-color, #2c3e50);
     margin-bottom: 0.5rem;
     font-size: 0.9rem;
   }
@@ -474,7 +474,7 @@ onMounted(() => {
       left: 1rem;
       width: 20px;
       height: 20px;
-      color: #adb5bd;
+      color: var(--ldesign-text-color-placeholder, #adb5bd);
       z-index: 2;
 
       svg {
@@ -486,25 +486,25 @@ onMounted(() => {
     .form-input {
       width: 100%;
       padding: 0.875rem 1rem 0.875rem 3rem;
-      border: 2px solid #e9ecef;
+      border: 2px solid var(--ldesign-border-color, #e9ecef);
       border-radius: 8px;
       font-size: 1rem;
       transition: all 0.3s ease;
-      background: white;
+      background: var(--ldesign-bg-color-page, white);
 
       &:focus {
         outline: none;
-        border-color: var(--primary-color, #667eea);
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: var(--ldesign-brand-color, #667eea);
+        box-shadow: 0 0 0 3px var(--ldesign-brand-color-1, rgba(102, 126, 234, 0.1));
       }
 
       &:disabled {
-        background: #f8f9fa;
+        background: var(--ldesign-bg-color-component, #f8f9fa);
         cursor: not-allowed;
       }
 
       &::placeholder {
-        color: #adb5bd;
+        color: var(--ldesign-text-color-placeholder, #adb5bd);
       }
     }
 
@@ -515,13 +515,13 @@ onMounted(() => {
       border: none;
       width: 20px;
       height: 20px;
-      color: #adb5bd;
+      color: var(--ldesign-text-color-placeholder, #adb5bd);
       cursor: pointer;
       transition: color 0.3s ease;
       z-index: 2;
 
       &:hover:not(:disabled) {
-        color: var(--primary-color, #667eea);
+        color: var(--ldesign-brand-color, #667eea);
       }
 
       &:disabled {
@@ -556,7 +556,7 @@ onMounted(() => {
     .checkbox-custom {
       width: 18px;
       height: 18px;
-      border: 2px solid #e9ecef;
+      border: 2px solid var(--ldesign-border-color, #e9ecef);
       border-radius: 4px;
       margin-right: 0.5rem;
       position: relative;
@@ -568,7 +568,7 @@ onMounted(() => {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%) scale(0);
-        color: white;
+        color: var(--ldesign-bg-color-page, white);
         font-size: 12px;
         font-weight: bold;
         transition: transform 0.2s ease;
@@ -576,8 +576,8 @@ onMounted(() => {
     }
 
     .checkbox-input:checked + .checkbox-custom {
-      background: var(--primary-color, #667eea);
-      border-color: var(--primary-color, #667eea);
+      background: var(--ldesign-brand-color, #667eea);
+      border-color: var(--ldesign-brand-color, #667eea);
 
       &::after {
         transform: translate(-50%, -50%) scale(1);
@@ -585,26 +585,26 @@ onMounted(() => {
     }
 
     .checkbox-text {
-      color: #6c757d;
+      color: var(--ldesign-text-color-secondary, #6c757d);
     }
   }
 
   .forgot-link {
-    color: var(--primary-color, #667eea);
+    color: var(--ldesign-brand-color, #667eea);
     text-decoration: none;
     font-size: 0.9rem;
     transition: color 0.3s ease;
 
     &:hover {
-      color: #5a6fd8;
+      color: var(--ldesign-brand-color-hover, #5a6fd8);
       text-decoration: underline;
     }
   }
 
   .login-button {
     width: 100%;
-    background: linear-gradient(135deg, var(--primary-color, #667eea) 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--ldesign-brand-color, #667eea) 0%, var(--ldesign-brand-color-8, #764ba2) 100%);
+    color: var(--ldesign-bg-color-page, white);
     border: none;
     padding: 0.875rem;
     border-radius: 8px;
@@ -619,7 +619,7 @@ onMounted(() => {
 
     &:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 8px 20px var(--ldesign-brand-color-3, rgba(102, 126, 234, 0.3));
     }
 
     &:disabled {
@@ -642,21 +642,21 @@ onMounted(() => {
     text-align: center;
     margin-top: 2rem;
     padding-top: 2rem;
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid var(--ldesign-border-color, #e9ecef);
 
     .register-text {
-      color: #6c757d;
+      color: var(--ldesign-text-color-secondary, #6c757d);
       font-size: 0.9rem;
     }
 
     .register-link {
-      color: var(--primary-color, #667eea);
+      color: var(--ldesign-brand-color, #667eea);
       text-decoration: none;
       font-weight: 500;
       transition: color 0.3s ease;
 
       &:hover {
-        color: #5a6fd8;
+        color: var(--ldesign-brand-color-hover, #5a6fd8);
         text-decoration: underline;
       }
     }
@@ -668,7 +668,7 @@ onMounted(() => {
   margin-top: 2rem;
 
   .footer-text {
-    color: #adb5bd;
+    color: var(--ldesign-text-color-placeholder, #adb5bd);
     font-size: 0.8rem;
   }
 }
@@ -685,10 +685,10 @@ onMounted(() => {
   left: 0;
   right: 0;
   z-index: 10000;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.95), rgba(118, 75, 162, 0.95));
+  background: linear-gradient(135deg, var(--ldesign-brand-color, rgba(102, 126, 234, 0.95)), var(--ldesign-brand-color-8, rgba(118, 75, 162, 0.95)));
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 20px var(--ldesign-shadow-1, rgba(0, 0, 0, 0.1));
 }
 
 .banner-content {

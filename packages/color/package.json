@@ -35,6 +35,11 @@
       "import": "./src/themes/presets.ts",
       "require": "./src/themes/presets.ts"
     },
+    "./utils/css-variables": {
+      "types": "./types/utils/css-variables.d.ts",
+      "import": "./esm/utils/css-variables.js",
+      "require": "./cjs/utils/css-variables.js"
+    },
     "./package.json": "./package.json"
   },
   "main": "cjs/index.js",
@@ -47,12 +52,7 @@
     "types"
   ],
   "scripts": {
-    "build": "pnpm run clean && pnpm run build:types && pnpm run build:esm && pnpm run build:cjs",
-    "build:esm": "rollup -c rollup.config.js --format es --file esm/index.js",
-    "build:cjs": "rollup -c rollup.config.js --format cjs --file cjs/index.js",
-    "build:types": "tsc --project tsconfig.build.json --declaration --emitDeclarationOnly --outDir types",
-    "build:watch": "pnpm run build:types --watch & rollup -c -w",
-    "build:prod": "NODE_ENV=production pnpm run build",
+    "build": "ldesign-builder build",
     "dev": "rollup -c -w",
     "type-check": "tsc --noEmit --project tsconfig.json",
     "type-check:test": "tsc --noEmit --project tsconfig.test.json",

@@ -24,6 +24,7 @@ import { ColorScaleGenerator } from '../utils/color-scale'
 import { CSSInjectorImpl, CSSVariableGenerator } from '../utils/css-injector'
 import { EventEmitterImpl } from '../utils/event-emitter'
 import { IdleProcessorImpl } from '../utils/idle-processor'
+import { globalThemeApplier } from '../utils/css-variables'
 
 /**
  * 默认主题管理器选项
@@ -324,18 +325,33 @@ export class ThemeManager implements ThemeManagerInstance {
    * 应用主题到页面
    */
   applyTheme(name: string, mode: ColorMode): void {
-    const generatedTheme = this.getGeneratedTheme(name)
-    if (!generatedTheme) {
-      throw new Error(`Generated theme data for "${name}" not found`)
+    const config = this.getThemeConfig(name)
+    if (!config) {
+      throw new Error(`Theme config for "${name}" not found`)
     }
 
-    const modeData = generatedTheme[mode]
-    // 使用带注释的CSS变量注入
-    if (modeData.cssVariableGroups && modeData.cssVariableGroups.length > 0) {
-      this.cssInjector.injectVariablesWithComments(modeData.cssVariableGroups)
+    // 获取主色调
+    const modeColors = config[mode] || config.light || config.dark
+    const primaryColor = modeColors?.primary
+
+    if (primaryColor) {
+      // 使用增强的主题应用器，根据当前模式生成完整的色阶
+      globalThemeApplier.applyTheme(primaryColor, mode, config)
     } else {
-      // 兼容旧版本
-      this.cssInjector.injectVariables(modeData.cssVariables)
+      console.warn(`[ThemeManager] 主题 "${name}" 没有定义主色调`)
+
+      // 回退到原有逻辑
+      const generatedTheme = this.getGeneratedTheme(name)
+      if (generatedTheme) {
+        const modeData = generatedTheme[mode]
+        // 使用带注释的CSS变量注入
+        if (modeData.cssVariableGroups && modeData.cssVariableGroups.length > 0) {
+          this.cssInjector.injectVariablesWithComments(modeData.cssVariableGroups)
+        } else {
+          // 兼容旧版本
+          this.cssInjector.injectVariables(modeData.cssVariables)
+        }
+      }
     }
   }
 

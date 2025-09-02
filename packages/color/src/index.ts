@@ -52,7 +52,8 @@ export {
   useTheme,
   ThemeSelector,
   DarkModeToggle,
-
+  ColorPicker,
+  ModeToggle
 } from './vue'
 
 // 导出核心类型定义
@@ -223,6 +224,8 @@ export {
   CSSVariableInjector,
   getCSSVariableValue,
   globalCSSInjector,
+  globalThemeApplier,
+  globalThemeCacheManager,
   injectThemeVariables,
   setCSSVariableValue,
   toggleThemeMode,

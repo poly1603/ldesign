@@ -5,32 +5,32 @@
 
 /* ===== 设计令牌 ===== */
 :root {
-  /* 颜色系统 - 简化调色板 */
-  --color-primary: #2563eb;
-  --color-primary-light: #3b82f6;
-  --color-primary-dark: #1d4ed8;
-  
-  --color-secondary: #64748b;
-  --color-secondary-light: #94a3b8;
-  --color-secondary-dark: #475569;
-  
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-info: #06b6d4;
-  
-  /* 中性色 */
-  --color-white: #ffffff;
-  --color-gray-50: #f8fafc;
-  --color-gray-100: #f1f5f9;
-  --color-gray-200: #e2e8f0;
-  --color-gray-300: #cbd5e1;
-  --color-gray-400: #94a3b8;
-  --color-gray-500: #64748b;
-  --color-gray-600: #475569;
-  --color-gray-700: #334155;
-  --color-gray-800: #1e293b;
-  --color-gray-900: #0f172a;
+  /* 颜色系统 - 使用 @ldesign/color 变量 */
+  --color-primary: var(--ldesign-brand-color, #2563eb);
+  --color-primary-light: var(--ldesign-brand-color-3, #3b82f6);
+  --color-primary-dark: var(--ldesign-brand-color-8, #1d4ed8);
+
+  --color-secondary: var(--ldesign-text-color-secondary, #64748b);
+  --color-secondary-light: var(--ldesign-text-color-placeholder, #94a3b8);
+  --color-secondary-dark: var(--ldesign-text-color, #475569);
+
+  --color-success: var(--ldesign-success-color, #10b981);
+  --color-warning: var(--ldesign-warning-color, #f59e0b);
+  --color-error: var(--ldesign-danger-color, #ef4444);
+  --color-info: var(--ldesign-info-color, #06b6d4);
+
+  /* 中性色 - 使用 @ldesign/color 变量 */
+  --color-white: var(--ldesign-bg-color-page, #ffffff);
+  --color-gray-50: var(--ldesign-bg-color-component, #f8fafc);
+  --color-gray-100: var(--ldesign-bg-color-container, #f1f5f9);
+  --color-gray-200: var(--ldesign-border-color, #e2e8f0);
+  --color-gray-300: var(--ldesign-border-level-1-color, #cbd5e1);
+  --color-gray-400: var(--ldesign-text-color-placeholder, #94a3b8);
+  --color-gray-500: var(--ldesign-text-color-secondary, #64748b);
+  --color-gray-600: var(--ldesign-text-color, #475569);
+  --color-gray-700: var(--ldesign-font-gray-4, #334155);
+  --color-gray-800: var(--ldesign-font-gray-3, #1e293b);
+  --color-gray-900: var(--ldesign-font-gray-2, #0f172a);
   
   /* 字体系统 */
   --font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;

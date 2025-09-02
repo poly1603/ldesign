@@ -41,6 +41,9 @@
           <router-link to="/theme-demo" class="nav-button primary">
             🎨 主题演示
           </router-link>
+          <router-link to="/color-scales" class="nav-button primary">
+            🌈 色阶展示
+          </router-link>
           <button @click="testNavigation" class="nav-button secondary">
             编程式导航测试
           </button>
@@ -150,10 +153,30 @@ const testNavigation = () => {
   text-align: center;
   box-shadow: 0 2px 8px var(--color-shadow);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .feature-card:hover {
   transform: translateY(-5px);
+  box-shadow: 0 8px 24px var(--color-shadow);
+  border-color: var(--color-primary-light);
+}
+
+.feature-card:hover::before {
+  opacity: 1;
 }
 
 .feature-icon {
@@ -195,37 +218,73 @@ const testNavigation = () => {
 }
 
 .nav-button.primary {
-  background: var(--color-secondary);
-  color: var(--color-text);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-bg);
+  border: 2px solid transparent;
+  font-weight: 600;
 }
 
 .nav-button.secondary {
   background: var(--color-bg-secondary);
-  color: var(--color-text);
-  border: 2px solid var(--color-border);
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary-light);
 }
 
 .nav-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  opacity: 0.9;
+  box-shadow: 0 8px 20px var(--color-shadow);
+}
+
+.nav-button.primary:hover {
+  background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary-darker) 100%);
+  box-shadow: 0 8px 20px var(--ldesign-shadow-2, rgba(0, 0, 0, 0.3));
+}
+
+.nav-button.secondary:hover {
+  background: var(--color-primary-lighter);
+  color: var(--color-primary-darker);
+  border-color: var(--color-primary);
 }
 
 .info-section {
-  background: var(--color-bg-secondary);
+  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
   border: 1px solid var(--color-border);
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px var(--color-shadow);
+  box-shadow: 0 4px 16px var(--color-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.info-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%);
 }
 
 .api-section {
-  background: var(--color-bg-secondary);
+  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
   border: 1px solid var(--color-border);
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px var(--color-shadow);
+  box-shadow: 0 4px 16px var(--color-shadow);
   margin-top: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.api-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-success) 0%, var(--color-primary) 100%);
 }
 
 .api-section h2 {
@@ -250,7 +309,8 @@ const testNavigation = () => {
 }
 
 .route-info strong {
-  color: var(--color-warning);
+  color: var(--color-primary);
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {

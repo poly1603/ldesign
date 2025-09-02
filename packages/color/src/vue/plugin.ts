@@ -5,7 +5,7 @@
  */
 
 import type { App, Plugin } from 'vue'
-import { inject } from 'vue'
+import { inject, ref, computed } from 'vue'
 import { ThemeManager } from '../core/theme-manager'
 // import ThemeSelector from './components/ThemeSelector.vue'
 import type { ThemeManagerInstance } from '../core/types'
@@ -275,21 +275,74 @@ export function createColorPlugin(options: ColorPluginOptions = {}): Plugin {
  * 组合式函数：使用主题
  */
 export function useTheme() {
-  const themeManager = inject('themeManager')
-  
+  const themeManager = inject('themeManager') as any
+
   if (!themeManager) {
     console.warn('themeManager not found. Make sure to install the color plugin.')
     return {
-      setTheme: () => {},
+      currentTheme: ref('blue'),
+      currentMode: ref('light' as const),
+      isDark: computed(() => false),
+      isLight: computed(() => true),
+      availableThemes: computed(() => []),
+      setTheme: () => { },
+      setMode: () => { },
+      toggleMode: () => { },
       getCurrentTheme: () => 'blue',
       getCurrentMode: () => 'light' as const
     }
   }
-  
+
+  // 响应式状态
+  const currentTheme = ref(themeManager.currentTheme || 'blue')
+  const currentMode = ref(themeManager.currentMode || 'light')
+
+  // 计算属性
+  const isDark = computed(() => currentMode.value === 'dark')
+  const isLight = computed(() => currentMode.value === 'light')
+  const availableThemes = computed(() => {
+    if (typeof themeManager.getAvailableThemes === 'function') {
+      return themeManager.getAvailableThemes()
+    }
+    return []
+  })
+
+  // 方法
+  const setTheme = async (theme: string, mode?: 'light' | 'dark') => {
+    try {
+      await themeManager.setTheme(theme, mode)
+      currentTheme.value = theme
+      if (mode) {
+        currentMode.value = mode
+      }
+    } catch (error) {
+      console.error('[useTheme] 设置主题失败:', error)
+    }
+  }
+
+  const setMode = async (mode: 'light' | 'dark') => {
+    try {
+      await themeManager.setTheme(currentTheme.value, mode)
+      currentMode.value = mode
+    } catch (error) {
+      console.error('[useTheme] 设置模式失败:', error)
+    }
+  }
+
+  const toggleMode = async () => {
+    const newMode = currentMode.value === 'light' ? 'dark' : 'light'
+    await setMode(newMode)
+  }
+
   return {
-    setTheme: (theme: string, mode?: 'light' | 'dark') => {
-      themeManager.setTheme(theme, mode)
-    },
+    currentTheme,
+    currentMode,
+    isDark,
+    isLight,
+    availableThemes,
+    setTheme,
+    setMode,
+    toggleMode,
     getCurrentTheme: () => themeManager.currentTheme,
     getCurrentMode: () => themeManager.currentMode
   }

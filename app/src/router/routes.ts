@@ -39,4 +39,27 @@ export const routes: RouteRecordRaw[] = [
       animation: 'slide',
     },
   },
+  {
+    path: '/theme-demo',
+    name: 'theme-demo',
+    component: Home, // 重定向到首页，因为首页已经有主题演示功能
+    meta: {
+      title: '主题演示',
+      description: '主题切换演示页面',
+      cache: true,
+      preload: true,
+    },
+  },
+  {
+    path: '/color-scales',
+    name: 'color-scales',
+    component: () => import('../pages/ColorScales.vue'),
+    meta: {
+      title: '色阶展示',
+      description: '@ldesign/color 10级色阶展示页面',
+      cache: true,
+      preload: true,
+      animation: 'fade',
+    },
+  },
 ]

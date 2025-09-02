@@ -28,8 +28,16 @@ export class CSSVariableInjector {
     if (typeof document === 'undefined')
       return
 
+    // 先检查是否已存在
+    let existingElement = document.getElementById('ldesign-color-variables') as HTMLStyleElement
+    if (existingElement) {
+      this.styleElement = existingElement
+      return
+    }
+
     this.styleElement = document.createElement('style')
     this.styleElement.id = 'ldesign-color-variables'
+    this.styleElement.type = 'text/css'
     document.head.appendChild(this.styleElement)
   }
 
@@ -99,6 +107,41 @@ export class CSSVariableInjector {
   }
 
   /**
+   * 注入主题CSS变量（支持亮色和暗色模式）
+   */
+  injectThemeVariables(
+    lightVariables: Record<string, string>,
+    darkVariables: Record<string, string>,
+    themeInfo?: { name: string; primaryColor: string }
+  ): void {
+    if (!this.styleElement)
+      return
+
+    // 生成主题信息注释
+    const themeComment = themeInfo
+      ? `/* LDesign Theme: ${themeInfo.name} (${themeInfo.primaryColor}) */\n`
+      : '/* LDesign Theme Variables */\n'
+
+    // 生成亮色模式CSS变量
+    const lightCssRules = Object.entries(lightVariables)
+      .map(([name, value]) => `  ${name}: ${value};`)
+      .join('\n')
+
+    // 生成暗色模式CSS变量
+    const darkCssRules = Object.entries(darkVariables)
+      .map(([name, value]) => `  ${name}: ${value};`)
+      .join('\n')
+
+    // 组合完整的CSS内容
+    const cssText = `${themeComment}:root {\n${lightCssRules}\n}\n\n[data-theme-mode="dark"] {\n${darkCssRules}\n}`
+
+    this.styleElement.textContent = cssText
+
+    // 更新当前变量记录（合并亮色和暗色）
+    this.currentVariables = { ...lightVariables, ...darkVariables }
+  }
+
+  /**
    * 销毁注入器
    */
   destroy(): void {
@@ -163,6 +206,519 @@ export function injectThemeVariables(
 
   globalCSSInjector.injectVariables(variables)
 }
+
+/**
+ * 增强的主题应用器
+ * 根据当前模式生成完整的色阶CSS变量并注入到专门的style标签中
+ * 支持主题状态缓存和恢复
+ */
+export class EnhancedThemeApplier {
+  private cssInjector: CSSVariableInjector
+  private cacheManager: ThemeCacheManager
+  private currentTheme: string = 'blue'
+  private currentMode: 'light' | 'dark' = 'light'
+
+  constructor() {
+    this.cssInjector = new CSSVariableInjector()
+    this.cacheManager = new ThemeCacheManager()
+  }
+
+  /**
+   * 应用主题色（生成亮色和暗色两套完整色阶）
+   * @param primaryColor 主色调
+   * @param currentMode 当前模式 (light/dark)
+   * @param themeConfig 主题配置
+   * @param saveToCache 是否保存到缓存
+   */
+  applyTheme(primaryColor: string, currentMode: 'light' | 'dark', themeConfig?: any, saveToCache: boolean = true): void {
+    try {
+      // 更新当前状态
+      this.currentMode = currentMode
+
+      // 生成亮色模式的CSS变量
+      const lightVariables: Record<string, string> = {}
+      const darkVariables: Record<string, string> = {}
+
+      // 生成完整的色彩系统
+      this.generateCompleteColorSystem(primaryColor, lightVariables, darkVariables)
+
+      // 注入两套CSS变量到不同的选择器，并添加主题信息注释
+      const themeInfo = {
+        name: themeConfig?.name || 'Custom',
+        primaryColor: primaryColor
+      }
+      this.cssInjector.injectThemeVariables(lightVariables, darkVariables, themeInfo)
+
+      // 设置模式属性
+      this.setModeAttributes(currentMode)
+
+      // 保存到缓存（如果需要）
+      if (saveToCache && themeConfig?.name) {
+        this.currentTheme = themeConfig.name
+        this.cacheManager.saveThemeState(themeConfig.name, currentMode)
+      }
+
+      console.log(`🎨 主题已应用: ${themeInfo.name} (${primaryColor}) - 当前模式: ${currentMode}${saveToCache ? ' [已缓存]' : ''}`)
+      console.log(`📊 已生成完整色彩系统 - 亮色变量: ${Object.keys(lightVariables).length}个, 暗色变量: ${Object.keys(darkVariables).length}个`)
+    } catch (error) {
+      console.error('🚨 主题应用失败:', error)
+    }
+  }
+
+  /**
+   * 生成完整的色彩系统
+   * @param primaryColor 主色调
+   * @param lightVariables 亮色模式变量对象
+   * @param darkVariables 暗色模式变量对象
+   */
+  private generateCompleteColorSystem(
+    primaryColor: string,
+    lightVariables: Record<string, string>,
+    darkVariables: Record<string, string>
+  ): void {
+    // 1. 生成主色系（brand/primary）1-10级色阶
+    this.generateBrandColorScale(primaryColor, lightVariables, darkVariables)
+
+    // 2. 生成功能色系（warning、success、error、gray）各1-14级色阶
+    this.generateFunctionalColorScales(lightVariables, darkVariables)
+
+    // 3. 生成文字颜色系统
+    this.generateTextColorSystem(lightVariables, darkVariables)
+
+    // 4. 生成背景色系统
+    this.generateBackgroundColorSystem(lightVariables, darkVariables)
+
+    // 5. 生成边框和阴影系统
+    this.generateBorderAndShadowSystem(lightVariables, darkVariables)
+
+    // 6. 生成语义化映射
+    this.generateSemanticMappings(lightVariables, darkVariables)
+  }
+
+  /**
+   * 生成主色系（brand/primary）1-10级色阶
+   */
+  private generateBrandColorScale(
+    primaryColor: string,
+    lightVariables: Record<string, string>,
+    darkVariables: Record<string, string>
+  ): void {
+    const baseColor = this.hexToHsl(primaryColor)
+
+    for (let i = 1; i <= 10; i++) {
+      // 亮色模式：1号最浅，10号最深
+      const lightLightness = Math.max(5, Math.min(95, 95 - (i - 1) * 9))
+      const lightColor = this.hslToHex({
+        h: baseColor.h,
+        s: Math.max(20, Math.min(100, baseColor.s * (0.8 + i * 0.02))),
+        l: lightLightness
+      })
+      lightVariables[`--ldesign-brand-color-${i}`] = lightColor
+
+      // 暗色模式：1号最深，10号最浅
+      const darkLightness = Math.max(5, Math.min(95, 10 + (i - 1) * 8))
+      const darkColor = this.hslToHex({
+        h: baseColor.h,
+        s: Math.max(20, Math.min(100, baseColor.s * (0.7 + i * 0.03))),
+        l: darkLightness
+      })
+      darkVariables[`--ldesign-brand-color-${i}`] = darkColor
+    }
+  }
+
+  /**
+   * 生成功能色系（warning、success、error、gray）各1-10级色阶
+   */
+  private generateFunctionalColorScales(
+    lightVariables: Record<string, string>,
+    darkVariables: Record<string, string>
+  ): void {
+    // 功能色基础色值
+    const functionalColors = {
+      warning: { h: 45, s: 100, l: 50 },   // 橙色
+      success: { h: 120, s: 60, l: 45 },   // 绿色
+      error: { h: 0, s: 85, l: 55 },       // 红色
+      gray: { h: 0, s: 0, l: 50 }          // 纯中性灰色，不混入主色
+    }
+
+    Object.entries(functionalColors).forEach(([colorName, baseHsl]) => {
+      // 生成1-10级色阶（与其他色阶保持一致）
+      for (let i = 1; i <= 10; i++) {
+        // 亮色模式
+        const lightLightness = Math.max(5, Math.min(95, 95 - (i - 1) * 9))
+        const lightColor = this.hslToHex({
+          h: baseHsl.h,
+          s: colorName === 'gray' ? 0 : Math.max(20, baseHsl.s - i * 2), // gray色阶饱和度为0，保持纯中性
+          l: lightLightness
+        })
+        lightVariables[`--ldesign-${colorName}-color-${i}`] = lightColor
+
+        // 暗色模式
+        const darkLightness = Math.max(5, Math.min(95, 10 + (i - 1) * 9))
+        const darkColor = this.hslToHex({
+          h: baseHsl.h,
+          s: colorName === 'gray' ? 0 : Math.max(15, baseHsl.s - i * 1.5), // gray色阶饱和度为0，保持纯中性
+          l: darkLightness
+        })
+        darkVariables[`--ldesign-${colorName}-color-${i}`] = darkColor
+      }
+    })
+  }
+
+  /**
+   * 生成文字颜色系统
+   */
+  private generateTextColorSystem(
+    lightVariables: Record<string, string>,
+    darkVariables: Record<string, string>
+  ): void {
+    // 亮色模式文字颜色
+    lightVariables['--ldesign-font-gray-1'] = 'rgba(0, 0, 0, 90%)'     // 主要文字
+    lightVariables['--ldesign-font-gray-2'] = 'rgba(0, 0, 0, 70%)'     // 次要文字
+    lightVariables['--ldesign-font-gray-3'] = 'rgba(0, 0, 0, 50%)'     // 辅助文字
+    lightVariables['--ldesign-font-gray-4'] = 'rgba(0, 0, 0, 30%)'     // 禁用文字
+
+    lightVariables['--ldesign-font-white-1'] = 'rgba(255, 255, 255, 100%)'
+    lightVariables['--ldesign-font-white-2'] = 'rgba(255, 255, 255, 85%)'
+    lightVariables['--ldesign-font-white-3'] = 'rgba(255, 255, 255, 70%)'
+    lightVariables['--ldesign-font-white-4'] = 'rgba(255, 255, 255, 55%)'
+
+    // 暗色模式文字颜色
+    darkVariables['--ldesign-font-gray-1'] = 'rgba(255, 255, 255, 90%)'
+    darkVariables['--ldesign-font-gray-2'] = 'rgba(255, 255, 255, 70%)'
+    darkVariables['--ldesign-font-gray-3'] = 'rgba(255, 255, 255, 50%)'
+    darkVariables['--ldesign-font-gray-4'] = 'rgba(255, 255, 255, 30%)'
+
+    darkVariables['--ldesign-font-white-1'] = 'rgba(0, 0, 0, 90%)'
+    darkVariables['--ldesign-font-white-2'] = 'rgba(0, 0, 0, 70%)'
+    darkVariables['--ldesign-font-white-3'] = 'rgba(0, 0, 0, 50%)'
+    darkVariables['--ldesign-font-white-4'] = 'rgba(0, 0, 0, 30%)'
+  }
+
+  /**
+   * 设置模式相关的DOM属性
+   */
+  private setModeAttributes(mode: 'light' | 'dark'): void {
+    const root = document.documentElement
+
+    // 设置 data 属性
+    root.setAttribute('data-theme-mode', mode)
+
+    // 设置 CSS 类
+    if (mode === 'dark') {
+      root.classList.add('dark')
+      root.classList.remove('light')
+    } else {
+      root.classList.add('light')
+      root.classList.remove('dark')
+    }
+  }
+
+  /**
+   * 生成背景色系统
+   */
+  private generateBackgroundColorSystem(
+    lightVariables: Record<string, string>,
+    darkVariables: Record<string, string>
+  ): void {
+    // 亮色模式背景色
+    lightVariables['--ldesign-bg-color-page'] = '#f5f5f5'           // 页面背景
+    lightVariables['--ldesign-bg-color-container'] = '#ffffff'      // 容器背景
+    lightVariables['--ldesign-bg-color-container-hover'] = '#fafafa' // 容器悬浮
+    lightVariables['--ldesign-bg-color-container-active'] = '#f0f0f0' // 容器激活
+    lightVariables['--ldesign-bg-color-container-disabled'] = '#f5f5f5' // 容器禁用
+    lightVariables['--ldesign-bg-color-component'] = '#ffffff'      // 组件背景
+    lightVariables['--ldesign-bg-color-component-hover'] = '#f8f8f8' // 组件悬浮
+    lightVariables['--ldesign-bg-color-component-active'] = '#f0f0f0' // 组件激活
+    lightVariables['--ldesign-bg-color-component-disabled'] = '#fafafa' // 组件禁用
+
+    // 暗色模式背景色
+    darkVariables['--ldesign-bg-color-page'] = '#0f0f0f'
+    darkVariables['--ldesign-bg-color-container'] = '#1a1a1a'
+    darkVariables['--ldesign-bg-color-container-hover'] = '#252525'
+    darkVariables['--ldesign-bg-color-container-active'] = '#303030'
+    darkVariables['--ldesign-bg-color-container-disabled'] = '#1f1f1f'
+    darkVariables['--ldesign-bg-color-component'] = '#1a1a1a'
+    darkVariables['--ldesign-bg-color-component-hover'] = '#252525'
+    darkVariables['--ldesign-bg-color-component-active'] = '#303030'
+    darkVariables['--ldesign-bg-color-component-disabled'] = '#1f1f1f'
+  }
+
+  /**
+   * 生成边框和阴影系统
+   */
+  private generateBorderAndShadowSystem(
+    lightVariables: Record<string, string>,
+    darkVariables: Record<string, string>
+  ): void {
+    // 亮色模式边框色
+    lightVariables['--ldesign-border-level-1-color'] = '#e5e5e5'    // 一级边框
+    lightVariables['--ldesign-border-level-2-color'] = '#d9d9d9'    // 二级边框
+    lightVariables['--ldesign-border-level-3-color'] = '#cccccc'    // 三级边框
+
+    // 亮色模式阴影
+    lightVariables['--ldesign-shadow-1'] = '0 1px 10px rgba(0, 0, 0, 5%)'     // 一级阴影
+    lightVariables['--ldesign-shadow-2'] = '0 4px 20px rgba(0, 0, 0, 8%)'     // 二级阴影
+    lightVariables['--ldesign-shadow-3'] = '0 8px 30px rgba(0, 0, 0, 12%)'    // 三级阴影
+    lightVariables['--ldesign-shadow-inset'] = 'inset 0 1px 2px rgba(0, 0, 0, 8%)'  // 内阴影
+    lightVariables['--ldesign-shadow-table'] = '0 2px 8px rgba(0, 0, 0, 6%)'  // 表格阴影
+
+    // 暗色模式边框色
+    darkVariables['--ldesign-border-level-1-color'] = '#404040'
+    darkVariables['--ldesign-border-level-2-color'] = '#4a4a4a'
+    darkVariables['--ldesign-border-level-3-color'] = '#555555'
+
+    // 暗色模式阴影
+    darkVariables['--ldesign-shadow-1'] = '0 1px 10px rgba(0, 0, 0, 20%)'
+    darkVariables['--ldesign-shadow-2'] = '0 4px 20px rgba(0, 0, 0, 25%)'
+    darkVariables['--ldesign-shadow-3'] = '0 8px 30px rgba(0, 0, 0, 30%)'
+    darkVariables['--ldesign-shadow-inset'] = 'inset 0 1px 2px rgba(0, 0, 0, 25%)'
+    darkVariables['--ldesign-shadow-table'] = '0 2px 8px rgba(0, 0, 0, 20%)'
+  }
+
+  /**
+   * 生成语义化映射
+   */
+  private generateSemanticMappings(
+    lightVariables: Record<string, string>,
+    darkVariables: Record<string, string>
+  ): void {
+    // 语义化基础色映射
+    const semanticMappings = {
+      // 主色映射
+      '--ldesign-brand-color': 'var(--ldesign-brand-color-7)',
+      '--ldesign-warning-color': 'var(--ldesign-warning-color-5)',
+      '--ldesign-success-color': 'var(--ldesign-success-color-5)',
+      '--ldesign-error-color': 'var(--ldesign-error-color-5)',
+
+      // 交互状态扩展
+      '--ldesign-brand-color-hover': 'var(--ldesign-brand-color-6)',
+      '--ldesign-brand-color-focus': 'var(--ldesign-brand-color-2)',
+      '--ldesign-brand-color-active': 'var(--ldesign-brand-color-8)',
+      '--ldesign-brand-color-disabled': 'var(--ldesign-brand-color-3)',
+
+      '--ldesign-warning-color-hover': 'var(--ldesign-warning-color-4)',
+      '--ldesign-warning-color-focus': 'var(--ldesign-warning-color-2)',
+      '--ldesign-warning-color-active': 'var(--ldesign-warning-color-6)',
+      '--ldesign-warning-color-disabled': 'var(--ldesign-warning-color-3)',
+
+      '--ldesign-success-color-hover': 'var(--ldesign-success-color-4)',
+      '--ldesign-success-color-focus': 'var(--ldesign-success-color-2)',
+      '--ldesign-success-color-active': 'var(--ldesign-success-color-6)',
+      '--ldesign-success-color-disabled': 'var(--ldesign-success-color-3)',
+
+      '--ldesign-error-color-hover': 'var(--ldesign-error-color-4)',
+      '--ldesign-error-color-focus': 'var(--ldesign-error-color-2)',
+      '--ldesign-error-color-active': 'var(--ldesign-error-color-6)',
+      '--ldesign-error-color-disabled': 'var(--ldesign-error-color-3)',
+
+      // 文本色系统映射
+      '--ldesign-text-color-primary': 'var(--ldesign-font-gray-1)',
+      '--ldesign-text-color-secondary': 'var(--ldesign-font-gray-2)',
+      '--ldesign-text-color-placeholder': 'var(--ldesign-font-gray-3)',
+      '--ldesign-text-color-disabled': 'var(--ldesign-font-gray-4)',
+
+      // 背景色系统映射
+      '--ldesign-bg-color-page': 'var(--ldesign-bg-color-page)',
+      '--ldesign-bg-color-container': 'var(--ldesign-bg-color-container)',
+      '--ldesign-bg-color-component': 'var(--ldesign-bg-color-component)',
+
+      // 边框色映射
+      '--ldesign-border-color': 'var(--ldesign-border-level-1-color)',
+      '--ldesign-border-color-hover': 'var(--ldesign-border-level-2-color)',
+      '--ldesign-border-color-focus': 'var(--ldesign-brand-color)',
+    }
+
+    // 将语义化映射添加到两套变量中
+    Object.entries(semanticMappings).forEach(([key, value]) => {
+      lightVariables[key] = value
+      darkVariables[key] = value
+    })
+  }
+
+  /**
+   * 从缓存中恢复主题状态
+   */
+  restoreFromCache(): { theme: string; mode: 'light' | 'dark' } {
+    const state = this.cacheManager.loadThemeState()
+    this.currentTheme = state.theme
+    this.currentMode = state.mode
+    return state
+  }
+
+  /**
+   * 获取当前主题状态
+   */
+  getCurrentState(): { theme: string; mode: 'light' | 'dark' } {
+    return {
+      theme: this.currentTheme,
+      mode: this.currentMode
+    }
+  }
+
+  /**
+   * 切换模式（保持当前主题，只切换data-theme-mode属性）
+   */
+  toggleMode(): 'light' | 'dark' {
+    const newMode = this.currentMode === 'light' ? 'dark' : 'light'
+    this.switchMode(newMode)
+    return newMode
+  }
+
+  /**
+   * 切换到指定模式（只切换data-theme-mode属性，不重新生成色阶）
+   * @param mode 目标模式
+   */
+  switchMode(mode: 'light' | 'dark'): void {
+    try {
+      this.currentMode = mode
+
+      // 只设置模式属性，CSS会自动应用对应的色阶
+      this.setModeAttributes(mode)
+
+      // 保存新模式到缓存
+      this.cacheManager.saveThemeState(this.currentTheme, mode)
+
+      console.log(`🌓 模式已切换: ${mode} (CSS自动应用对应色阶)`)
+    } catch (error) {
+      console.error('🚨 模式切换失败:', error)
+    }
+  }
+
+  /**
+   * 清除所有主题变量和缓存
+   */
+  clearTheme(): void {
+    this.cssInjector.clearVariables()
+    this.cacheManager.clearThemeState()
+  }
+
+  /**
+   * 将十六进制颜色转换为HSL
+   */
+  private hexToHsl(hex: string): { h: number, s: number, l: number } {
+    // 移除 # 符号
+    hex = hex.replace('#', '')
+
+    // 转换为RGB
+    const r = parseInt(hex.substr(0, 2), 16) / 255
+    const g = parseInt(hex.substr(2, 2), 16) / 255
+    const b = parseInt(hex.substr(4, 2), 16) / 255
+
+    const max = Math.max(r, g, b)
+    const min = Math.min(r, g, b)
+    let h = 0, s = 0, l = (max + min) / 2
+
+    if (max !== min) {
+      const d = max - min
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break
+        case g: h = (b - r) / d + 2; break
+        case b: h = (r - g) / d + 4; break
+      }
+      h /= 6
+    }
+
+    return {
+      h: Math.round(h * 360),
+      s: Math.round(s * 100),
+      l: Math.round(l * 100)
+    }
+  }
+
+  /**
+   * 将HSL颜色转换为十六进制
+   */
+  private hslToHex({ h, s, l }: { h: number, s: number, l: number }): string {
+    h /= 360
+    s /= 100
+    l /= 100
+
+    const hue2rgb = (p: number, q: number, t: number) => {
+      if (t < 0) t += 1
+      if (t > 1) t -= 1
+      if (t < 1 / 6) return p + (q - p) * 6 * t
+      if (t < 1 / 2) return q
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6
+      return p
+    }
+
+    let r, g, b
+
+    if (s === 0) {
+      r = g = b = l // achromatic
+    } else {
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s
+      const p = 2 * l - q
+      r = hue2rgb(p, q, h + 1 / 3)
+      g = hue2rgb(p, q, h)
+      b = hue2rgb(p, q, h - 1 / 3)
+    }
+
+    const toHex = (c: number) => {
+      const hex = Math.round(c * 255).toString(16)
+      return hex.length === 1 ? '0' + hex : hex
+    }
+
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+  }
+}
+
+/**
+ * 主题缓存管理器
+ * 负责主题状态的持久化存储和恢复
+ */
+export class ThemeCacheManager {
+  private readonly THEME_KEY = 'ldesign-theme'
+  private readonly MODE_KEY = 'ldesign-mode'
+
+  /**
+   * 保存主题状态到缓存
+   */
+  saveThemeState(theme: string, mode: 'light' | 'dark'): void {
+    try {
+      localStorage.setItem(this.THEME_KEY, theme)
+      localStorage.setItem(this.MODE_KEY, mode)
+      console.log(`💾 主题状态已缓存: ${theme} (${mode})`)
+    } catch (error) {
+      console.warn('⚠️ 主题状态缓存失败:', error)
+    }
+  }
+
+  /**
+   * 从缓存中恢复主题状态
+   */
+  loadThemeState(): { theme: string; mode: 'light' | 'dark' } {
+    try {
+      const theme = localStorage.getItem(this.THEME_KEY) || 'blue'
+      const mode = (localStorage.getItem(this.MODE_KEY) as 'light' | 'dark') || 'light'
+      console.log(`📂 主题状态已恢复: ${theme} (${mode})`)
+      return { theme, mode }
+    } catch (error) {
+      console.warn('⚠️ 主题状态恢复失败，使用默认值:', error)
+      return { theme: 'blue', mode: 'light' }
+    }
+  }
+
+  /**
+   * 清除缓存的主题状态
+   */
+  clearThemeState(): void {
+    try {
+      localStorage.removeItem(this.THEME_KEY)
+      localStorage.removeItem(this.MODE_KEY)
+      console.log('🗑️ 主题状态缓存已清除')
+    } catch (error) {
+      console.warn('⚠️ 清除主题状态缓存失败:', error)
+    }
+  }
+}
+
+// 创建全局实例
+export const globalThemeApplier = new EnhancedThemeApplier()
+export const globalThemeCacheManager = new ThemeCacheManager()
 
 /**
  * 添加语义化CSS变量

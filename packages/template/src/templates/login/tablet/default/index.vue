@@ -349,10 +349,10 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   z-index: 10000;
-  background: linear-gradient(135deg, rgba(155, 89, 182, 0.95), rgba(142, 68, 173, 0.95));
+  background: linear-gradient(135deg, var(--ldesign-brand-color, rgba(155, 89, 182, 0.95)), var(--ldesign-brand-color-8, rgba(142, 68, 173, 0.95)));
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 20px var(--ldesign-shadow-1, rgba(0, 0, 0, 0.1));
 }
 
 .banner-content {
@@ -636,10 +636,10 @@ onUnmounted(() => {
 }
 
 .login-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--ldesign-bg-color-page, rgba(255, 255, 255, 0.95));
   backdrop-filter: blur(20px);
   border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 40px var(--ldesign-shadow-2, rgba(0, 0, 0, 0.15));
   padding: 3rem;
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.2);

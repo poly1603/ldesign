@@ -88,6 +88,50 @@ export class CSSInjectorImpl implements CSSInjector {
   }
 
   /**
+   * 注入主题变量（亮色和暗色两套）
+   * @param lightVariables 亮色模式变量
+   * @param darkVariables 暗色模式变量
+   * @param themeInfo 主题信息（用于生成注释）
+   * @param id 样式标签ID
+   */
+  injectThemeVariables(
+    lightVariables: Record<string, string>,
+    darkVariables: Record<string, string>,
+    themeInfo?: { name: string; primaryColor: string },
+    id?: string
+  ): void {
+    const styleId = id || this.options.styleId
+
+    // 生成主题信息注释
+    const themeComment = themeInfo
+      ? `/* LDesign Theme: ${themeInfo.name} | Primary Color: ${themeInfo.primaryColor} | Generated: ${new Date().toISOString()} */\n`
+      : `/* LDesign Theme Variables | Generated: ${new Date().toISOString()} */\n`
+
+    // 生成亮色模式CSS规则
+    const lightDeclarations = Object.entries(lightVariables)
+      .map(([key, value]) => {
+        const varName = key.startsWith('--') ? key : `${this.options.prefix}-${key}`
+        const important = this.options.important ? ' !important' : ''
+        return `  ${varName}: ${value}${important};`
+      })
+      .join('\n')
+
+    // 生成暗色模式CSS规则
+    const darkDeclarations = Object.entries(darkVariables)
+      .map(([key, value]) => {
+        const varName = key.startsWith('--') ? key : `${this.options.prefix}-${key}`
+        const important = this.options.important ? ' !important' : ''
+        return `  ${varName}: ${value}${important};`
+      })
+      .join('\n')
+
+    // 组合CSS文本
+    const cssText = `${themeComment}/* Light Mode Variables */\n:root {\n${lightDeclarations}\n}\n\n/* Dark Mode Variables */\n:root[data-theme-mode="dark"] {\n${darkDeclarations}\n}`
+
+    this.updateStyleElement(styleId, cssText)
+  }
+
+  /**
    * 生成 CSS 文本
    */
   private generateCSSText(variables: Record<string, ColorValue>): string {

@@ -152,6 +152,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, inject, onMounted } from 'vue'
 import { presetThemes, type ThemeConfig } from '../../themes/presets'
+import { globalThemeApplier } from '../../utils/css-variables'
 
 // Props
 interface Props {
@@ -226,12 +227,14 @@ const currentTheme = computed(() => mergedThemes.value.find(t => t.name === sele
 
 // 方法
 const handleThemeChange = () => {
+  // 应用主题（不传入模式参数，让applyTheme自动检测当前模式）
+  applyTheme(selectedTheme.value)
+
   // 通知主题管理器，让它处理存储
   if (themeManager && typeof themeManager.setTheme === 'function') {
     themeManager.setTheme(selectedTheme.value, currentMode.value)
   } else {
-    // 如果没有主题管理器，使用本地逻辑
-    applyTheme(selectedTheme.value, currentMode.value)
+    // 如果没有主题管理器，使用本地逻辑保存
     saveThemeToStorage(selectedTheme.value, currentMode.value)
   }
   emit('themeChange', selectedTheme.value, currentMode.value)
@@ -296,49 +299,56 @@ const handleOverlayClick = (e: MouseEvent) => {
   }
 }
 
-const applyTheme = (theme: string, mode: 'light' | 'dark') => {
+const applyTheme = (theme: string, mode?: 'light' | 'dark') => {
   const themeData = mergedThemes.value.find(t => t.name === theme)
   if (!themeData) return
 
-  const root = document.documentElement
-  
+  // 如果没有传入模式，获取当前模式状态
+  let currentMode = mode
+  if (!currentMode) {
+    // 从DOM获取当前模式
+    const isDark = document.documentElement.classList.contains('dark')
+    const dataThemeMode = document.documentElement.getAttribute('data-theme-mode')
+
+    // 优先使用data-theme-mode属性，其次使用class判断
+    if (dataThemeMode === 'dark' || dataThemeMode === 'light') {
+      currentMode = dataThemeMode
+    } else {
+      currentMode = isDark ? 'dark' : 'light'
+    }
+
+    console.log(`🔍 [ThemeSelector] 检测到当前模式: ${currentMode}`)
+  }
+
   // 获取主题颜色，优先使用 colors 对象，其次使用 light/dark 模式颜色
   const getColor = (colorKey: string) => {
     if (themeData.colors?.[colorKey]) {
       return themeData.colors[colorKey]
     }
-    
+
     // 对于预设主题，使用对应模式下的 primary 颜色
-    const modeColors = themeData[mode] || themeData.light || themeData.dark
+    const modeColors = themeData[currentMode] || themeData.light || themeData.dark
     if (colorKey === 'primary' && modeColors?.primary) {
       return modeColors.primary
     }
-    
+
     return null
   }
 
-  // 设置主题色变量
+  // 获取主色调
   const primaryColor = getColor('primary')
   if (primaryColor) {
-    root.style.setProperty('--color-primary', primaryColor)
-    // 如果没有其他颜色定义，基于主色生成
-    root.style.setProperty('--color-secondary', getColor('secondary') || '#52c41a')
-    root.style.setProperty('--color-success', getColor('success') || '#52c41a')
-    root.style.setProperty('--color-warning', getColor('warning') || '#faad14')
-    root.style.setProperty('--color-danger', getColor('danger') || '#ff4d4f')
-  }
+    // 使用增强的主题应用器，根据当前模式生成完整的色阶
+    // 传入完整的主题配置以便缓存
+    const themeConfig = {
+      ...themeData,
+      name: theme
+    }
+    globalThemeApplier.applyTheme(primaryColor, currentMode, themeConfig)
 
-  // 设置模式相关变量
-  if (mode === 'dark') {
-    root.style.setProperty('--color-bg', '#1a1a1a')
-    root.style.setProperty('--color-surface', '#2a2a2a')
-    root.style.setProperty('--color-text', '#ffffff')
-    root.style.setProperty('--color-border', '#404040')
+    console.log(`🎨 [ThemeSelector] 主题已切换: ${theme} (${currentMode} 模式，主色调: ${primaryColor})`)
   } else {
-    root.style.setProperty('--color-bg', '#ffffff')
-    root.style.setProperty('--color-surface', '#f8f9fa')
-    root.style.setProperty('--color-text', '#333333')
-    root.style.setProperty('--color-border', '#e0e0e0')
+    console.warn(`[ThemeSelector] 主题 "${theme}" 没有定义主色调`)
   }
 
   // 注意：不在这里调用 themeManager.setTheme，避免循环调用
@@ -397,7 +407,7 @@ onMounted(() => {
       const { theme: savedTheme, mode: savedMode } = loadThemeFromStorage()
       selectedTheme.value = savedTheme || (mergedThemes.value[0]?.name || 'blue')
       currentMode.value = savedMode
-      applyTheme(selectedTheme.value, currentMode.value)
+      applyTheme(selectedTheme.value)
     }
   } else {
     // 如果没有主题管理器，使用本地存储的值
@@ -410,7 +420,7 @@ onMounted(() => {
     currentMode.value = savedMode
     
     // 应用初始主题
-    applyTheme(selectedTheme.value, currentMode.value)
+    applyTheme(selectedTheme.value)
   }
 })
 

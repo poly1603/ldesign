@@ -144,57 +144,61 @@ const handleRegister = () => {
   /* 移除原有的背景样式，让模板自己处理 */
 }
 
-/* 自定义footer样式 */
+/* 自定义footer样式 - 使用主题色变量 */
 .custom-footer {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--ldesign-bg-color-component, rgba(255, 255, 255, 0.05));
+  border-top: 1px solid var(--ldesign-border-color, rgba(255, 255, 255, 0.1));
 }
 
 .back-link {
-  color: #667eea;
+  color: var(--ldesign-brand-color, #1677ff);
   text-decoration: none;
   font-size: 0.9rem;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
   padding: 0.5rem 1rem;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--ldesign-brand-color-1, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--ldesign-brand-color-3, transparent);
 }
 
 .back-link:hover {
-  color: #764ba2;
-  background: rgba(255, 255, 255, 0.2);
+  color: var(--ldesign-brand-color-9, #b8d5ff);
+  background: var(--ldesign-brand-color-2, rgba(255, 255, 255, 0.2));
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--ldesign-shadow-1, rgba(0, 0, 0, 0.1));
 }
 
 .footer-text {
   margin: 0;
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--ldesign-text-color-secondary, rgba(255, 255, 255, 0.7));
   text-align: center;
 }
 
-/* 模板演示信息样式 */
+/* 模板演示信息样式 - 使用主题色变量 */
 .template-demo-info {
   margin-top: 1rem;
   padding: 1rem;
-  background: rgba(102, 126, 234, 0.1);
+  background: var(--ldesign-brand-color-1, rgba(102, 126, 234, 0.1));
   border-radius: 8px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid var(--ldesign-brand-color, #1677ff);
+  backdrop-filter: blur(5px);
 }
 
 .demo-note {
   margin: 0;
   font-size: 0.9rem;
-  color: #2c3e50;
+  color: var(--ldesign-text-color, #1f2937);
   text-align: center;
 }
 
 .demo-note strong {
-  color: #667eea;
+  color: var(--ldesign-brand-color, #1677ff);
   font-weight: 600;
 }
 
@@ -219,28 +223,28 @@ const handleRegister = () => {
   min-height: 100vh;
 }
 
-/* 模板加载状态样式 */
+/* 模板加载状态样式 - 使用主题色变量 */
 :deep(.template-loading) {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--ldesign-brand-color, #1677ff) 0%, var(--ldesign-brand-color-8, #004099) 100%);
 }
 
 :deep(.template-loading__spinner) {
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top: 4px solid white;
+  border: 4px solid var(--ldesign-brand-color-3, rgba(255, 255, 255, 0.3));
+  border-top: 4px solid var(--ldesign-bg-color-page, white);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
 }
 
 :deep(.template-loading__text) {
-  color: white;
+  color: var(--ldesign-bg-color-page, white);
   font-size: 1rem;
 }
 
@@ -249,15 +253,15 @@ const handleRegister = () => {
   100% { transform: rotate(360deg); }
 }
 
-/* 模板错误状态样式 */
+/* 模板错误状态样式 - 使用主题色变量 */
 :deep(.template-error) {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--ldesign-danger-color, #ff4d4f) 0%, var(--ldesign-brand-color-9, #b8d5ff) 100%);
+  color: var(--ldesign-bg-color-page, white);
   text-align: center;
   padding: 2rem;
 }
@@ -265,24 +269,29 @@ const handleRegister = () => {
 :deep(.template-error__icon) {
   font-size: 3rem;
   margin-bottom: 1rem;
+  color: var(--ldesign-bg-color-page, white);
 }
 
 :deep(.template-error__message) {
   font-size: 1.1rem;
   margin-bottom: 1.5rem;
+  color: var(--ldesign-bg-color-page, white);
 }
 
 :deep(.template-error__retry) {
   padding: 0.75rem 1.5rem;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: var(--ldesign-surface-variant, rgba(255, 255, 255, 0.2));
+  color: var(--ldesign-bg, white);
+  border: 1px solid var(--ldesign-border, rgba(255, 255, 255, 0.3));
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-weight: 500;
 }
 
 :deep(.template-error__retry:hover) {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--ldesign-surface, rgba(255, 255, 255, 0.3));
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--ldesign-shadow, rgba(0, 0, 0, 0.2));
 }
 </style>
