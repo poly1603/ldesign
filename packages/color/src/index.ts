@@ -49,7 +49,10 @@ export { ThemeManager } from './core/theme-manager'
 export {
   createColorEnginePlugin,
   createColorPlugin,
-  useTheme
+  useTheme,
+  ThemeSelector,
+  DarkModeToggle,
+
 } from './vue'
 
 // 导出核心类型定义

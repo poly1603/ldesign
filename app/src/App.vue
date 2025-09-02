@@ -47,8 +47,8 @@
  */
 
 import { ref } from 'vue'
-import { ThemeSelector, DarkModeToggle } from '@ldesign/color/src/vue'
-import type { ThemeConfig } from '@ldesign/color/src/themes/presets'
+import { ThemeSelector, DarkModeToggle } from '@ldesign/color'
+import type { ThemeConfig } from '@ldesign/color'
 
 // 自定义主题配置
 const customThemes = ref<ThemeConfig[]>([
