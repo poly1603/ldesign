@@ -5,6 +5,7 @@ import { templatePlugin } from './templates'
 import { colorPlugin } from './color'
 import { i18nPlugin } from './i18n'
 import { sizePlugin } from './size'
+import { httpPlugin } from './http'
 
 /**
  * 应用启动配置
@@ -28,7 +29,7 @@ export async function bootstrap() {
         enableNotifications: true
       }
     },
-    plugins: [routerPlugin, templatePlugin, colorPlugin, i18nPlugin, sizePlugin],
+    plugins: [routerPlugin, templatePlugin, colorPlugin, i18nPlugin, sizePlugin, httpPlugin],
     middleware: []
   })
 

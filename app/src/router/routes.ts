@@ -74,4 +74,16 @@ export const routes: RouteRecordRaw[] = [
       animation: 'slide',
     },
   },
+  {
+    path: '/http-demo',
+    name: 'http-demo',
+    component: () => import('../pages/HttpDemo.vue'),
+    meta: {
+      title: 'HTTP 演示',
+      description: '@ldesign/http 包功能演示页面',
+      cache: true,
+      preload: true,
+      animation: 'fade',
+    },
+  },
 ]

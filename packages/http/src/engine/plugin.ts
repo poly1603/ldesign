@@ -75,27 +75,29 @@ export function createHttpEnginePlugin(
 
     async install(engine) {
       try {
-        // 获取 Vue 应用实例
-        const vueApp = engine.getApp()
-        if (!vueApp) {
-          throw new Error(
-            'Vue app not found. Make sure the engine has created a Vue app before installing HTTP plugin.',
-          )
-        }
+        // 定义实际的安装逻辑
+        const performInstall = async () => {
+          // 获取 Vue 应用实例
+          const vueApp = engine.getApp()
+          if (!vueApp) {
+            throw new Error(
+              'Vue app not found. Make sure the engine has created a Vue app before installing HTTP plugin.',
+            )
+          }
 
-        // 记录插件安装开始
-        engine.logger.info(`Installing ${name} plugin...`, {
-          version,
-          options: {
-            baseURL: clientConfig.baseURL,
-            timeout: clientConfig.timeout,
-            globalPropertyName,
-          },
-        })
+          // 记录插件安装开始
+          engine.logger.info(`Installing ${name} plugin...`, {
+            version,
+            options: {
+              baseURL: clientConfig.baseURL,
+              timeout: clientConfig.timeout,
+              globalPropertyName,
+            },
+          })
 
-        // 创建或使用提供的 HTTP 客户端
-        const httpClient
-          = providedClient
+          // 创建或使用提供的 HTTP 客户端
+          const httpClient
+            = providedClient
             || (() => {
               const adapter = createAdapter(clientConfig.adapter)
               return new HttpClientImpl(
@@ -107,31 +109,47 @@ export function createHttpEnginePlugin(
               )
             })()
 
-        // 安装 HTTP Vue 插件
-        vueApp.use(HttpPlugin, {
-          client: httpClient,
-          globalConfig: globalConfig || clientConfig,
-          globalProperty: globalPropertyName,
-          ...httpOptions,
-        })
+          // 安装 HTTP Vue 插件
+          vueApp.use(HttpPlugin, {
+            client: httpClient,
+            globalConfig: globalConfig || clientConfig,
+            globalProperty: globalPropertyName,
+            ...httpOptions,
+          })
 
-        // 将 HTTP 客户端注册到引擎中，便于其他插件访问
-        if (engine.http) {
-          // 如果引擎支持 HTTP 适配器，设置适配器
-          engine.http.setInstance(httpClient)
-        }
-        else {
-          // 否则直接挂载到引擎上
-          ; (engine as any).httpClient = httpClient
+          // 将 HTTP 客户端注册到引擎中，便于其他插件访问
+          if (engine.http) {
+            // 如果引擎支持 HTTP 适配器，设置适配器
+            engine.http.setInstance(httpClient)
+          }
+          else {
+            // 否则直接挂载到引擎上
+            ; (engine as any).httpClient = httpClient
+          }
+
+          // 记录插件安装成功
+          engine.logger.info(`${name} plugin installed successfully`, {
+            version,
+            clientType: httpClient.constructor.name,
+          })
         }
 
-        // 记录插件安装成功
-        engine.logger.info(`${name} plugin installed successfully`, {
-          version,
-          clientType: httpClient.constructor.name,
-        })
-      }
-      catch (error) {
+        // 检查 Vue 应用是否已经创建
+        const vueApp = engine.getApp()
+        if (vueApp) {
+          engine.logger.info(`[HTTP Plugin] Vue app found, installing immediately`)
+          await performInstall()
+        } else {
+          engine.logger.info(`[HTTP Plugin] Vue app not found, registering event listener`)
+          // 如果 Vue 应用还没有创建，监听 app:created 事件
+          engine.events.once('app:created', async () => {
+            engine.logger.info(`[HTTP Plugin] app:created event received, installing now`)
+            await performInstall()
+          })
+        }
+
+        engine.logger.info(`${name} plugin registered, waiting for Vue app creation...`)
+      } catch (error) {
         engine.logger.error(`Failed to install ${name} plugin:`, error)
         throw error
       }
