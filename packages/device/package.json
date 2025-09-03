@@ -22,31 +22,24 @@
   ],
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
-      "import": "./esm/index.js",
-      "require": "./cjs/index.js"
-    },
-    "./vue": {
-      "types": "./types/vue/index.d.ts",
-      "import": "./esm/vue/index.js",
-      "require": "./cjs/vue/index.js"
-    },
-    "./package.json": "./package.json"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
   },
-  "main": "cjs/index.js",
-  "module": "esm/index.js",
-  "types": "types/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "cjs",
-    "dist",
-    "esm",
-    "types"
+    "README.md",
+    "CHANGELOG.md",
+    "dist"
   ],
   "engines": {
     "node": ">=16"
   },
   "scripts": {
-    "build": "ldesign-builder build",
+    "build": "node scripts/build.js",
     "build:watch": "ldesign-builder build --watch",
     "dev": "rollup -c -w",
     "type-check": "vue-tsc --noEmit --project tsconfig.test.json",
@@ -67,7 +60,8 @@
     "build:check": "pnpm run build && node ../../tools/scripts/build/bundle-validator.js",
     "build:analyze": "pnpm run build && node ../../tools/scripts/build/bundle-analyzer.js",
     "build:validate": "pnpm run build && node ../../tools/scripts/build/validate-build.js",
-    "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js"
+    "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js",
+    "build:dev": "node scripts/build.js --dev"
   },
   "peerDependencies": {
     "vue": "^3.3.0"

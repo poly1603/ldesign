@@ -1,8 +1,12 @@
 import { defineConfig } from 'tsup'
 
 export default defineConfig({
-  // 入口文件 - 打包src中所有TypeScript文件
-  entry: ['src/**/*.ts'],
+  // 入口文件 - 只打包核心文件，排除测试文件
+  entry: [
+    'src/index.ts',
+    'src/simple-builder.ts',
+    'src/vue-builder.ts'
+  ],
 
   // 输出格式
   format: ['esm', 'cjs'],

@@ -26,26 +26,21 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.js"
-    },
-    "./vue": {
-      "types": "./dist/vue.d.ts",
-      "import": "./dist/vue.esm.js",
-      "require": "./dist/vue.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
-  "main": "dist/index.js",
-  "module": "dist/index.esm.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "README.md",
-    "dist",
-    "src"
+    "CHANGELOG.md",
+    "dist"
   ],
   "scripts": {
     "dev": "vite",
-    "build": "ldesign-builder build",
+    "build": "node scripts/build.js",
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -55,7 +50,8 @@
     "check": "npm run lint && npm run test && npm run build",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "build:dev": "node scripts/build.js --dev"
   },
   "peerDependencies": {
     "vue": "^3.0.0"

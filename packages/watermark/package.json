@@ -31,29 +31,22 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
-      "import": "./esm/index.js",
-      "require": "./cjs/index.js"
-    },
-    "./vue": {
-      "types": "./types/vue/index.d.ts",
-      "import": "./esm/vue/index.js",
-      "require": "./cjs/vue/index.js"
-    },
-    "./package.json": "./package.json"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
   },
-  "main": "cjs/index.js",
-  "module": "esm/index.js",
-  "types": "types/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "browser": "dist/index.min.js",
   "files": [
-    "cjs",
-    "dist",
-    "esm",
-    "types"
+    "README.md",
+    "CHANGELOG.md",
+    "dist"
   ],
   "scripts": {
-    "build": "ldesign-builder build",
+    "build": "node scripts/build.js",
     "build:main": "vite build",
     "build:modules": "vite build --config vite.config.modules.ts",
     "build:rollup": "rollup -c",
@@ -74,7 +67,8 @@
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "build:dev": "node scripts/build.js --dev"
   },
   "peerDependencies": {
     "vue": "^3.3.0"

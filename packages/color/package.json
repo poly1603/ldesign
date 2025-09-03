@@ -16,43 +16,21 @@
   ],
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
-      "import": "./esm/index.js",
-      "require": "./cjs/index.js"
-    },
-    "./vue": {
-      "types": "./types/adapt/vue/index.d.ts",
-      "import": "./esm/adapt/vue/index.js",
-      "require": "./cjs/adapt/vue/index.js"
-    },
-    "./src/vue": {
-      "types": "./src/vue/index.ts",
-      "import": "./src/vue/index.ts",
-      "require": "./src/vue/index.ts"
-    },
-    "./src/themes/presets": {
-      "types": "./src/themes/presets.ts",
-      "import": "./src/themes/presets.ts",
-      "require": "./src/themes/presets.ts"
-    },
-    "./utils/css-variables": {
-      "types": "./types/utils/css-variables.d.ts",
-      "import": "./esm/utils/css-variables.js",
-      "require": "./cjs/utils/css-variables.js"
-    },
-    "./package.json": "./package.json"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
   },
-  "main": "cjs/index.js",
-  "module": "esm/index.js",
-  "types": "types/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "cjs",
-    "dist",
-    "esm",
-    "types"
+    "README.md",
+    "CHANGELOG.md",
+    "dist"
   ],
   "scripts": {
-    "build": "ldesign-builder build",
+    "build": "node scripts/build.js",
     "dev": "rollup -c -w",
     "type-check": "tsc --noEmit --project tsconfig.json",
     "type-check:test": "tsc --noEmit --project tsconfig.test.json",
@@ -78,7 +56,8 @@
     "docs:serve": "vitepress serve docs --port 4173",
     "ci": "pnpm run lint:check && pnpm run type-check && pnpm run test:run",
     "ci:coverage": "pnpm run lint:check && pnpm run type-check && pnpm run test:coverage",
-    "release": "pnpm run ci:coverage && pnpm run build:prod && changeset publish"
+    "release": "pnpm run ci:coverage && pnpm run build:prod && changeset publish",
+    "build:dev": "node scripts/build.js --dev"
   },
   "peerDependencies": {
     "vue": "^3.3.0"

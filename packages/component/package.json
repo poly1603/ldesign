@@ -15,38 +15,33 @@
     "design-system",
     "accessibility"
   ],
-  "main": "dist/index.cjs.js",
+  "main": "dist/index.cjs",
   "module": "dist/index.js",
   "es2015": "dist/esm/index.mjs",
   "es2017": "dist/esm/index.mjs",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/index.d.ts",
   "collection": "dist/collection/collection-manifest.json",
   "collection:main": "dist/collection/index.js",
   "unpkg": "dist/ldesign-component/ldesign-component.esm.js",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs.js"
+      "require": "./dist/index.cjs"
     },
     "./vue": {
-      "types": "./dist/types/vue.d.ts",
+      "types": "./dist/vue.d.ts",
       "import": "./dist/vue.js",
-      "require": "./dist/vue.cjs.js"
-    },
-    "./loader": {
-      "types": "./loader/index.d.ts",
-      "import": "./loader/index.js",
-      "require": "./loader/index.cjs"
-    },
-    "./dist/ldesign-component/ldesign-component.css": "./dist/ldesign-component/ldesign-component.css"
+      "require": "./dist/vue.cjs"
+    }
   },
   "files": [
-    "dist/",
-    "loader/"
+    "README.md",
+    "CHANGELOG.md",
+    "dist"
   ],
   "scripts": {
-    "build": "stencil build",
+    "build": "node scripts/build.js",
     "build:watch": "stencil build --watch",
     "build:prod": "stencil build --prod",
     "build:docs": "stencil build --docs",
@@ -64,7 +59,8 @@
     "docs:dev": "vitepress dev docs --port 3001",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "prepublishOnly": "pnpm run build:prod"
+    "prepublishOnly": "pnpm run build:prod",
+    "build:dev": "node scripts/build.js --dev"
   },
   "dependencies": {
     "@stencil/core": "^4.36.3",
@@ -85,7 +81,8 @@
     "rimraf": "^5.0.0",
     "typescript": "^5.6.0",
     "vitepress": "^1.6.4",
-    "vue": "^3.5.21"
+    "vue": "^3.5.21",
+    "@ldesign/builder": "workspace:*"
   },
   "peerDependencies": {
     "vue": "^3.3.0"

@@ -284,4 +284,3 @@ export const themeManager = new ThemeManager();
 
 // 导出主题相关的所有功能
 export * from '../types';
-export { ThemeConfig } from '../types';

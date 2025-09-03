@@ -5,7 +5,8 @@
 
 // 导出原有的指令管理器（向后兼容）
 // 便捷导入
-import { ModernDirectiveManager } from './modern-directive-manager'
+// TODO: ModernDirectiveManager 文件缺失，暂时注释
+// import { ModernDirectiveManager } from './modern-directive-manager'
 import { directiveInstances, vueDirectives } from './modules'
 
 // 导出基础类和适配器
@@ -19,17 +20,20 @@ export {
 } from './directive-manager'
 
 // 导出现代化指令管理器
-export { ModernDirectiveManager } from './modern-directive-manager'
+// TODO: ModernDirectiveManager 文件缺失，暂时注释
+// export { ModernDirectiveManager } from './modern-directive-manager'
 
-export type { ModernDirectiveManagerConfig } from './modern-directive-manager'
+// export type { ModernDirectiveManagerConfig } from './modern-directive-manager'
 // 导出所有指令模块
 export * from './modules'
 
 /**
  * 创建现代化指令管理器实例
+ * TODO: ModernDirectiveManager 文件缺失，暂时返回 null
  */
 export function createModernDirectiveManager(config?: any) {
-  return new ModernDirectiveManager(config)
+  // return new ModernDirectiveManager(config)
+  return null
 }
 
 /**
@@ -47,4 +51,6 @@ export function getAllVueDirectives() {
 }
 
 // 默认导出现代化指令管理器
-export default ModernDirectiveManager
+// TODO: ModernDirectiveManager 文件缺失，暂时导出 null
+// export default ModernDirectiveManager
+export default null

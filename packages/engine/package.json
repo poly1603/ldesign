@@ -15,29 +15,22 @@
   ],
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
-      "import": "./esm/index.js",
-      "require": "./cjs/index.js"
-    },
-    "./vue": {
-      "types": "./types/vue/index.d.ts",
-      "import": "./esm/vue/index.js",
-      "require": "./cjs/vue/index.js"
-    },
-    "./package.json": "./package.json"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
   },
-  "main": "cjs/index.js",
-  "module": "esm/index.js",
-  "types": "types/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "browser": "dist/index.min.js",
   "files": [
-    "cjs",
-    "dist",
-    "esm",
-    "types"
+    "README.md",
+    "CHANGELOG.md",
+    "dist"
   ],
   "scripts": {
-    "build": "ldesign-builder build",
+    "build": "node scripts/build.js",
     "build:clean": "node scripts/build.js --clean",
     "build:types": "node scripts/build.js --types",
     "build:analyze": "node scripts/analyze-bundle.js",
@@ -71,7 +64,8 @@
     "ci": "pnpm run lint:check && pnpm run format:check && pnpm run type-check && pnpm run test:all",
     "precommit": "pnpm run lint && pnpm run format && pnpm run type-check",
     "security:audit": "pnpm audit",
-    "security:fix": "pnpm audit --fix"
+    "security:fix": "pnpm audit --fix",
+    "build:dev": "node scripts/build.js --dev"
   },
   "peerDependencies": {
     "vue": "^3.5.18"

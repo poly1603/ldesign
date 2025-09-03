@@ -26,30 +26,26 @@
   ],
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
-      "import": "./esm/index.js",
-      "require": "./cjs/index.js"
-    },
-    "./package.json": "./package.json"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
   },
-  "main": "cjs/index.js",
-  "module": "esm/index.js",
-  "types": "types/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "browser": "dist/index.min.js",
   "files": [
-    "CHANGELOG.md",
     "README.md",
-    "cjs",
-    "dist",
-    "esm",
-    "types"
+    "CHANGELOG.md",
+    "dist"
   ],
   "engines": {
     "node": ">=16.0.0",
     "pnpm": ">=8.0.0"
   },
   "scripts": {
-    "build": "ldesign-builder build",
+    "build": "node scripts/build.js",
     "build:watch": "ldesign-builder build --watch",
     "dev": "rollup -c -w",
     "type-check": "vue-tsc --noEmit",
@@ -84,7 +80,8 @@
     "commit-msg": "commitlint --edit",
     "commit:interactive": "node scripts/commit.js",
     "validate:full": "node scripts/validate.js",
-    "validate:e2e": "node scripts/validate.js --e2e"
+    "validate:e2e": "node scripts/validate.js --e2e",
+    "build:dev": "node scripts/build.js --dev"
   },
   "peerDependencies": {
     "@ldesign/device": "^1.0.0",

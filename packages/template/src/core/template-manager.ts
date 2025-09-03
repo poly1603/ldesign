@@ -13,7 +13,7 @@ import type {
 } from '../types'
 import { DEFAULT_CONFIG } from '../types'
 import { DeviceAdapter } from './device-adapter'
-import { TemplateScanner } from './scanner'
+import { TemplateScanner } from '../scanner'
 import { TemplateLoader } from './template-loader'
 
 /**
