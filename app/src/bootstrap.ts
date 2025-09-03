@@ -6,10 +6,11 @@ import { colorPlugin } from './color'
 import { i18nPlugin } from './i18n'
 import { sizePlugin } from './size'
 import { httpPlugin } from './http' // 重新启用HTTP插件
+import { storePlugin } from './store' // 添加Store插件
 
 /**
  * 应用启动配置
- * 使用优化后的 LDesign Engine API，集成 Router、Template、Color 和 I18n 系统
+ * 使用优化后的 LDesign Engine API，集成 Router、Template、Color、I18n 和 Store 系统
  */
 export async function bootstrap() {
 
@@ -29,7 +30,7 @@ export async function bootstrap() {
         enableNotifications: true
       }
     },
-    plugins: [routerPlugin, templatePlugin, colorPlugin, i18nPlugin, sizePlugin, httpPlugin], // 重新添加httpPlugin
+    plugins: [routerPlugin, templatePlugin, colorPlugin, i18nPlugin, sizePlugin, httpPlugin, storePlugin], // 添加storePlugin
     middleware: []
   })
 

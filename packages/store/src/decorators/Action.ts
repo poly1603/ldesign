@@ -1,5 +1,5 @@
-import type { ActionDecoratorOptions, DecoratorMetadata } from '@/types'
-import { DECORATOR_METADATA_KEY } from '@/types/decorators'
+import type { ActionDecoratorOptions, DecoratorMetadata } from '../types'
+import { DECORATOR_METADATA_KEY } from '../types/decorators'
 import 'reflect-metadata'
 
 /**
@@ -98,7 +98,7 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
         }
 
         return new Promise((resolve, reject) => {
-          ;(this as any)[`_debounce_${propertyKey}`] = setTimeout(async () => {
+          ; (this as any)[`_debounce_${propertyKey}`] = setTimeout(async () => {
             try {
               const result = await originalMethod.apply(this, args)
               resolve(result)
@@ -119,7 +119,7 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
           return (this as any)[`_throttle_${propertyKey}_result`]
         }
 
-        ;(this as any)[`_throttle_${propertyKey}_last`] = now
+        ; (this as any)[`_throttle_${propertyKey}_last`] = now
       }
 
       // 执行原始方法
@@ -137,7 +137,7 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
 
             // 保存节流结果
             if (options.throttle) {
-              ;(this as any)[`_throttle_${propertyKey}_result`] = res
+              ; (this as any)[`_throttle_${propertyKey}_result`] = res
             }
 
             return res
@@ -156,7 +156,7 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
 
       // 保存节流结果
       if (options.throttle) {
-        ;(this as any)[`_throttle_${propertyKey}_result`] = result
+        ; (this as any)[`_throttle_${propertyKey}_result`] = result
       }
 
       return result

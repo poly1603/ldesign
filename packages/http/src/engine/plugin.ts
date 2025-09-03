@@ -73,8 +73,11 @@ export function createHttpEnginePlugin(
     version,
     dependencies: [], // HTTP 插件通常不依赖其他插件
 
-    async install(engine) {
+    async install(context) {
       try {
+        // 从上下文中获取引擎实例
+        const engine = context.engine || context
+
         // 定义实际的安装逻辑
         const performInstall = async () => {
           // 获取 Vue 应用实例
@@ -155,8 +158,11 @@ export function createHttpEnginePlugin(
       }
     },
 
-    async uninstall(engine) {
+    async uninstall(context) {
       try {
+        // 从上下文中获取引擎实例
+        const engine = context.engine || context
+
         // 清理 HTTP 客户端
         if ((engine as any).httpClient) {
           const httpClient = (engine as any).httpClient as HttpClient

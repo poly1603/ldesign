@@ -10,7 +10,7 @@ import type {
   GetterDefinition,
   CacheOptions,
   PersistOptions,
-} from '@/types'
+} from '../types'
 import { defineStore as piniaDefineStore } from 'pinia'
 import { PerformanceOptimizer } from './PerformanceOptimizer'
 

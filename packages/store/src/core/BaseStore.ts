@@ -8,9 +8,9 @@ import type {
   StoreOptions,
   MutationCallback,
   ActionContext,
-} from '@/types'
+} from '../types'
 import { defineStore } from 'pinia'
-import { DECORATOR_METADATA_KEY } from '@/types/decorators'
+import { DECORATOR_METADATA_KEY } from '../types/decorators'
 import { PerformanceOptimizer } from './PerformanceOptimizer'
 
 /**

@@ -1,5 +1,5 @@
-import type { DecoratorMetadata, GetterDecoratorOptions } from '@/types'
-import { DECORATOR_METADATA_KEY } from '@/types/decorators'
+import type { DecoratorMetadata, GetterDecoratorOptions } from '../types'
+import { DECORATOR_METADATA_KEY } from '../types/decorators'
 import 'reflect-metadata'
 
 /**
@@ -108,9 +108,8 @@ export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
 
     // 添加清除缓存的方法
     if (options.cache) {
-      const clearCacheMethodName = `clear${
-        propertyKey.charAt(0).toUpperCase() + propertyKey.slice(1)
-      }Cache`
+      const clearCacheMethodName = `clear${propertyKey.charAt(0).toUpperCase() + propertyKey.slice(1)
+        }Cache`
 
       Object.defineProperty(target, clearCacheMethodName, {
         value(this: any) {

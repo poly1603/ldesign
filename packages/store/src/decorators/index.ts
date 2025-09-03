@@ -26,7 +26,7 @@ export type {
   DecoratorType,
   GetterDecoratorOptions,
   StateDecoratorOptions,
-} from '@/types/decorators'
+} from '../types/decorators'
 
 // 常量
-export { DECORATOR_METADATA_KEY } from '@/types/decorators'
+export { DECORATOR_METADATA_KEY } from '../types/decorators'

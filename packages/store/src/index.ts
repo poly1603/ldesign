@@ -69,6 +69,9 @@ export * from './hooks'
 // Vue 集成
 export * from './vue'
 
+// Engine 集成
+export * from './engine'
+
 // 类型定义
 export type {
   StateDefinition,

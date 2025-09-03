@@ -99,6 +99,18 @@ export const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/store-test',
+    name: 'store-test',
+    component: () => import('../store/test-page.vue'),
+    meta: {
+      title: 'Store 状态管理测试',
+      description: '验证 @ldesign/store 包的功能和集成效果',
+      cache: false,
+      preload: false,
+      animation: 'slide',
+    },
+  },
+  {
     path: '/health-check',
     name: 'health-check',
     component: () => import('../test-app-health.vue'),

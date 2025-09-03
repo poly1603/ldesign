@@ -44,6 +44,9 @@
           <router-link to="/color-scales" class="nav-button primary">
             🌈 {{ t('demo.colorSystem') }}
           </router-link>
+          <router-link to="/store-test" class="nav-button primary">
+            🗃️ Store 状态管理
+          </router-link>
           <button @click="testNavigation" class="nav-button secondary">
             {{ t('home.buttons.tryDemo') }}
           </button>

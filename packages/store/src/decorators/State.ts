@@ -1,5 +1,5 @@
-import type { DecoratorMetadata, StateDecoratorOptions } from '@/types'
-import { DECORATOR_METADATA_KEY } from '@/types/decorators'
+import type { DecoratorMetadata, StateDecoratorOptions } from '../types'
+import { DECORATOR_METADATA_KEY } from '../types/decorators'
 import 'reflect-metadata'
 
 /**

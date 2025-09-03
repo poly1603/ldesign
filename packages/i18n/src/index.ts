@@ -206,6 +206,32 @@ export {
   installI18n
 } from './vue'
 
+// ==================== Engine 插件导出 ====================
+
+/**
+ * Engine 插件支持
+ *
+ * @example
+ * ```typescript
+ * // 在 Engine 项目中使用
+ * import { createI18nEnginePlugin } from '@ldesign/i18n'
+ *
+ * const i18nPlugin = createI18nEnginePlugin({
+ *   locale: 'zh-CN',
+ *   messages: { ... }
+ * })
+ *
+ * await engine.use(i18nPlugin)
+ * ```
+ */
+export {
+  createI18nEnginePlugin
+} from './vue/engine-plugin'
+
+export type {
+  I18nEnginePluginOptions
+} from './vue/engine-plugin'
+
 // ==================== 默认导出 ====================
 
 /**
