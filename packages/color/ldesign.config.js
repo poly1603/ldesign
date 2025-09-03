@@ -26,5 +26,8 @@ export default {
   },
 
   // UMD 格式的库名称
-  name: 'LDesignColor'
+  name: 'LDesignColor',
+
+  // 禁用 CSS 处理，让 Vue 文件中的样式保持原样
+  css: false
 }

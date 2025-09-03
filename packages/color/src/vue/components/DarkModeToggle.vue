@@ -5,61 +5,33 @@
 -->
 
 <template>
-  <button
-    class="dark-mode-toggle"
-    :class="[
-      sizeClass,
-      {
-        'dark-mode-toggle--dark': isDark,
-        'dark-mode-toggle--disabled': disabled,
-        'dark-mode-toggle--animating': isAnimating
-      }
-    ]"
-    :disabled="disabled"
-    :title="isDark ? '切换到亮色模式' : '切换到暗色模式'"
-    @click="handleToggle"
-  >
+  <button class="dark-mode-toggle" :class="[
+    sizeClass,
+    {
+      'dark-mode-toggle--dark': isDark,
+      'dark-mode-toggle--disabled': disabled,
+      'dark-mode-toggle--animating': isAnimating
+    }
+  ]" :disabled="disabled" :title="isDark ? '切换到亮色模式' : '切换到暗色模式'" @click="handleToggle">
     <!-- 太阳图标 (亮色模式) -->
-    <svg
-      v-show="!isDark"
-      class="dark-mode-toggle__icon dark-mode-toggle__sun"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
+    <svg v-show="!isDark" class="dark-mode-toggle__icon dark-mode-toggle__sun" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="5" />
-      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+      <path
+        d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
     </svg>
 
     <!-- 月亮图标 (暗色模式) -->
-    <svg
-      v-show="isDark"
-      class="dark-mode-toggle__icon dark-mode-toggle__moon"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
+    <svg v-show="isDark" class="dark-mode-toggle__icon dark-mode-toggle__moon" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
 
     <!-- 加载动画 -->
     <div v-if="isAnimating" class="dark-mode-toggle__spinner">
       <svg viewBox="0 0 24 24" fill="none">
-        <circle
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-dasharray="31.416"
-          stroke-dashoffset="31.416"
-        />
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="31.416"
+          stroke-dashoffset="31.416" />
       </svg>
     </div>
   </button>
@@ -75,13 +47,22 @@ interface Props {
   disabled?: boolean
   autoDetect?: boolean
   storageKey?: string
+  /** 动画类型 */
+  animationType?: 'circle' | 'slide' | 'fade' | 'flip' | 'zoom' | 'wipe'
+  /** 动画持续时间（毫秒） */
+  animationDuration?: number
+  /** 是否启用触发点动画 */
+  enableTriggerAnimation?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   size: 'medium',
   disabled: false,
   autoDetect: true,
-  storageKey: 'ldesign-dark-mode'
+  storageKey: 'ldesign-dark-mode',
+  animationType: 'circle',
+  animationDuration: 300,
+  enableTriggerAnimation: true
 })
 
 // Emits
@@ -201,6 +182,7 @@ async function toggleWithCircleTransition(clickX: number, clickY: number): Promi
     document.documentElement.style.setProperty('--click-x', `${clickX}px`)
     document.documentElement.style.setProperty('--click-y', `${clickY}px`)
     document.documentElement.style.setProperty('--max-radius', `${maxRadius}px`)
+    document.documentElement.style.setProperty('--animation-duration', `${props.animationDuration}ms`)
 
     // 使用 View Transition API
     const transition = (document as any).startViewTransition(() => {
@@ -208,7 +190,7 @@ async function toggleWithCircleTransition(clickX: number, clickY: number): Promi
       isDark.value = newMode
       applyModeSwitch(newMode)
     })
-    
+
     // 等待动画完成
     await transition.finished
   } catch (error) {
@@ -220,25 +202,159 @@ async function toggleWithCircleTransition(clickX: number, clickY: number): Promi
   }
 }
 
+// 使用滑动动画的主题切换
+async function toggleWithSlideTransition(direction: 'left' | 'right' | 'up' | 'down' = 'right'): Promise<void> {
+  if (!supportsViewTransition.value) {
+    const newMode = !isDark.value
+    isDark.value = newMode
+    applyModeSwitch(newMode)
+    return
+  }
+
+  try {
+    document.documentElement.style.setProperty('--slide-direction', direction)
+    document.documentElement.style.setProperty('--animation-duration', `${props.animationDuration}ms`)
+    document.documentElement.setAttribute('data-animation', 'slide')
+
+    const transition = (document as any).startViewTransition(() => {
+      const newMode = !isDark.value
+      isDark.value = newMode
+      applyModeSwitch(newMode)
+    })
+
+    await transition.finished
+  } catch (error) {
+    console.warn('[DarkModeToggle] Slide Transition 失败，使用降级方案:', error)
+    const newMode = !isDark.value
+    isDark.value = newMode
+    applyModeSwitch(newMode)
+  }
+}
+
+// 使用翻转动画的主题切换
+async function toggleWithFlipTransition(axis: 'x' | 'y' = 'y'): Promise<void> {
+  if (!supportsViewTransition.value) {
+    const newMode = !isDark.value
+    isDark.value = newMode
+    applyModeSwitch(newMode)
+    return
+  }
+
+  try {
+    document.documentElement.style.setProperty('--flip-axis', axis)
+    document.documentElement.style.setProperty('--animation-duration', `${props.animationDuration}ms`)
+    document.documentElement.setAttribute('data-animation', 'flip')
+
+    const transition = (document as any).startViewTransition(() => {
+      const newMode = !isDark.value
+      isDark.value = newMode
+      applyModeSwitch(newMode)
+    })
+
+    await transition.finished
+  } catch (error) {
+    console.warn('[DarkModeToggle] Flip Transition 失败，使用降级方案:', error)
+    const newMode = !isDark.value
+    isDark.value = newMode
+    applyModeSwitch(newMode)
+  }
+}
+
+// 使用缩放动画的主题切换
+async function toggleWithZoomTransition(): Promise<void> {
+  if (!supportsViewTransition.value) {
+    const newMode = !isDark.value
+    isDark.value = newMode
+    applyModeSwitch(newMode)
+    return
+  }
+
+  try {
+    document.documentElement.style.setProperty('--animation-duration', `${props.animationDuration}ms`)
+    document.documentElement.setAttribute('data-animation', 'zoom')
+
+    const transition = (document as any).startViewTransition(() => {
+      const newMode = !isDark.value
+      isDark.value = newMode
+      applyModeSwitch(newMode)
+    })
+
+    await transition.finished
+  } catch (error) {
+    console.warn('[DarkModeToggle] Zoom Transition 失败，使用降级方案:', error)
+    const newMode = !isDark.value
+    isDark.value = newMode
+    applyModeSwitch(newMode)
+  }
+}
+
+// 使用擦除动画的主题切换
+async function toggleWithWipeTransition(direction: 'horizontal' | 'vertical' = 'horizontal'): Promise<void> {
+  if (!supportsViewTransition.value) {
+    const newMode = !isDark.value
+    isDark.value = newMode
+    applyModeSwitch(newMode)
+    return
+  }
+
+  try {
+    document.documentElement.style.setProperty('--wipe-direction', direction)
+    document.documentElement.style.setProperty('--animation-duration', `${props.animationDuration}ms`)
+    document.documentElement.setAttribute('data-animation', 'wipe')
+
+    const transition = (document as any).startViewTransition(() => {
+      const newMode = !isDark.value
+      isDark.value = newMode
+      applyModeSwitch(newMode)
+    })
+
+    await transition.finished
+  } catch (error) {
+    console.warn('[DarkModeToggle] Wipe Transition 失败，使用降级方案:', error)
+    const newMode = !isDark.value
+    isDark.value = newMode
+    applyModeSwitch(newMode)
+  }
+}
+
 // 处理切换事件
 async function handleToggle(event: MouseEvent): Promise<void> {
   if (props.disabled || isAnimating.value) return
-  
+
   const newMode = !isDark.value
-  
+
   // 触发 beforeChange 事件
   emit('beforeChange', newMode)
-  
+
   isAnimating.value = true
-  
+
   try {
-    // 获取点击位置
-    const clickX = event.clientX
-    const clickY = event.clientY
-    
-    // 使用圆形扩散动画进行主题切换
-    await toggleWithCircleTransition(clickX, clickY)
-    
+    // 根据动画类型选择不同的切换方式
+    switch (props.animationType) {
+      case 'circle':
+        const clickX = event.clientX
+        const clickY = event.clientY
+        await toggleWithCircleTransition(clickX, clickY)
+        break
+      case 'slide':
+        await toggleWithSlideTransition('right')
+        break
+      case 'fade':
+        await toggleWithTransition()
+        break
+      case 'flip':
+        await toggleWithFlipTransition('y')
+        break
+      case 'zoom':
+        await toggleWithZoomTransition()
+        break
+      case 'wipe':
+        await toggleWithWipeTransition('horizontal')
+        break
+      default:
+        await toggleWithTransition()
+    }
+
     // 通知主题管理器处理存储和状态同步
     if (themeManager && typeof themeManager.setMode === 'function') {
       try {
@@ -252,7 +368,7 @@ async function handleToggle(event: MouseEvent): Promise<void> {
       // 如果没有主题管理器，使用本地存储
       saveThemeToStorage(isDark.value)
     }
-    
+
     // 触发事件
     emit('change', isDark.value)
     emit('afterChange', isDark.value)
@@ -266,9 +382,9 @@ async function handleToggle(event: MouseEvent): Promise<void> {
 // 监听系统主题变化
 function setupSystemThemeListener(): void {
   if (typeof window === 'undefined' || !props.autoDetect) return
-  
+
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-  
+
   const handleSystemThemeChange = (e: MediaQueryListEvent) => {
     // 只有在没有用户设置时才跟随系统
     const storedTheme = loadThemeFromStorage()
@@ -278,7 +394,7 @@ function setupSystemThemeListener(): void {
       emit('change', e.matches)
     }
   }
-  
+
   // 现代浏览器
   if (mediaQuery.addEventListener) {
     mediaQuery.addEventListener('change', handleSystemThemeChange)
@@ -292,7 +408,7 @@ function setupSystemThemeListener(): void {
 onMounted(() => {
   // 检查 View Transition 支持
   supportsViewTransition.value = checkViewTransitionSupport()
-  
+
   // 优先从主题管理器获取状态
   if (themeManager && typeof themeManager.getCurrentMode === 'function') {
     try {
@@ -327,10 +443,10 @@ onMounted(() => {
       isDark.value = getSystemTheme()
     }
   }
-  
+
   // 应用初始主题
   applyModeSwitch(isDark.value)
-  
+
   // 设置系统主题监听
   setupSystemThemeListener()
 })
@@ -338,3 +454,225 @@ onMounted(() => {
 // 注意：不在这里监听 isDark 变化来调用 themeManager.setMode
 // 避免循环调用，主题管理器的状态变化会通过其他方式同步到组件
 </script>
+
+<style scoped>
+.dark-mode-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.dark-mode-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.dark-mode-toggle--dark:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode-toggle--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dark-mode-toggle--animating {
+  pointer-events: none;
+}
+
+.dark-mode-toggle__icon {
+  width: 20px;
+  height: 20px;
+  transition: all 0.3s ease;
+}
+
+.dark-mode-toggle__sun {
+  color: #faad14;
+}
+
+.dark-mode-toggle__moon {
+  color: #722ed1;
+}
+
+.dark-mode-toggle__spinner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+.dark-mode-toggle__spinner svg {
+  width: 100%;
+  height: 100%;
+}
+
+.dark-mode-toggle__spinner circle {
+  animation: dash 1.5s ease-in-out infinite;
+}
+
+/* 尺寸变体 */
+.dark-mode-toggle--small {
+  width: 32px;
+  height: 32px;
+}
+
+.dark-mode-toggle--small .dark-mode-toggle__icon,
+.dark-mode-toggle--small .dark-mode-toggle__spinner {
+  width: 16px;
+  height: 16px;
+}
+
+.dark-mode-toggle--medium {
+  width: 40px;
+  height: 40px;
+}
+
+.dark-mode-toggle--large {
+  width: 48px;
+  height: 48px;
+}
+
+.dark-mode-toggle--large .dark-mode-toggle__icon,
+.dark-mode-toggle--large .dark-mode-toggle__spinner {
+  width: 24px;
+  height: 24px;
+}
+
+/* 触发点动画 */
+.dark-mode-toggle:active {
+  transform: scale(0.95);
+}
+
+/* 动画关键帧 */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
+}
+</style>
+
+<!-- 全局样式：View Transition 动画 -->
+<style>
+/* 圆形扩散动画 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--animation-duration, 300ms);
+}
+
+::view-transition-new(root) {
+  mask: circle(0 at var(--click-x, 50%) var(--click-y, 50%));
+}
+
+::view-transition-old(root) {
+  mask: circle(var(--max-radius, 100vh) at var(--click-x, 50%) var(--click-y, 50%));
+}
+
+/* 滑动动画 */
+[data-animation="slide"] ::view-transition-old(root) {
+  animation: slide-out var(--animation-duration, 300ms) ease-in-out;
+}
+
+[data-animation="slide"] ::view-transition-new(root) {
+  animation: slide-in var(--animation-duration, 300ms) ease-in-out;
+}
+
+@keyframes slide-out {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+/* 翻转动画 */
+[data-animation="flip"] ::view-transition-old(root) {
+  animation: flip-out var(--animation-duration, 300ms) ease-in-out;
+}
+
+[data-animation="flip"] ::view-transition-new(root) {
+  animation: flip-in var(--animation-duration, 300ms) ease-in-out;
+}
+
+@keyframes flip-out {
+  to {
+    transform: rotateY(90deg);
+  }
+}
+
+@keyframes flip-in {
+  from {
+    transform: rotateY(-90deg);
+  }
+}
+
+/* 缩放动画 */
+[data-animation="zoom"] ::view-transition-old(root) {
+  animation: zoom-out var(--animation-duration, 300ms) ease-in-out;
+}
+
+[data-animation="zoom"] ::view-transition-new(root) {
+  animation: zoom-in var(--animation-duration, 300ms) ease-in-out;
+}
+
+@keyframes zoom-out {
+  to {
+    transform: scale(0);
+  }
+}
+
+@keyframes zoom-in {
+  from {
+    transform: scale(0);
+  }
+}
+
+/* 擦除动画 */
+[data-animation="wipe"] ::view-transition-old(root) {
+  mask: linear-gradient(90deg, transparent 0%, black 100%);
+  animation: wipe-out var(--animation-duration, 300ms) ease-in-out;
+}
+
+[data-animation="wipe"] ::view-transition-new(root) {
+  mask: linear-gradient(90deg, black 0%, transparent 100%);
+  animation: wipe-in var(--animation-duration, 300ms) ease-in-out;
+}
+
+@keyframes wipe-out {
+  to {
+    mask-position: 100% 0;
+  }
+}
+
+@keyframes wipe-in {
+  from {
+    mask-position: -100% 0;
+  }
+}
+</style>

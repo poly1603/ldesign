@@ -350,6 +350,13 @@ export class ProjectScanner {
 
       // 提取导出
       fileInfo.exports = this.extractExports(content)
+
+      // 检查 Vue 文件中的样式语言
+      if (fileInfo.path.endsWith('.vue')) {
+        if (content.includes('lang="less"') || content.includes("lang='less'")) {
+          logger.info(`发现 Vue 文件中的 Less 样式: ${fileInfo.relativePath}`)
+        }
+      }
     }
     catch (error) {
       logger.warn(`分析文件内容失败 ${fileInfo.path}:`, error)

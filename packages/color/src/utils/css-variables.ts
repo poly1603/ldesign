@@ -11,13 +11,58 @@ import type {
 } from '../core/types'
 
 /**
+ * CSS变量配置接口
+ */
+export interface CSSVariableConfig {
+  /** CSS 变量前缀，默认为 'ldesign' */
+  prefix?: string
+  /** 是否包含变量描述注释 */
+  includeComments?: boolean
+  /** 是否包含主题信息注释 */
+  includeThemeInfo?: boolean
+  /** 背景色生成策略 */
+  backgroundStrategy?: 'neutral' | 'primary-based' | 'custom'
+  /** 是否根据主色调生成背景色 */
+  generateBackgroundFromPrimary?: boolean
+  /** 自定义背景色配置 */
+  customBackgroundColors?: {
+    light?: string[]
+    dark?: string[]
+  }
+}
+
+/**
+ * 颜色变量描述信息
+ */
+export interface ColorVariableInfo {
+  /** 变量名 */
+  name: string
+  /** 变量值 */
+  value: string
+  /** 变量描述 */
+  description?: string
+  /** 变量分类 */
+  category?: string
+  /** 使用场景 */
+  usage?: string
+}
+
+/**
  * CSS变量注入器
  */
 export class CSSVariableInjector {
   private styleElement: HTMLStyleElement | null = null
   private currentVariables: Record<string, string> = {}
+  private config: CSSVariableConfig = {
+    prefix: 'ldesign',
+    includeComments: true,
+    includeThemeInfo: true,
+    backgroundStrategy: 'neutral',
+    generateBackgroundFromPrimary: false
+  }
 
-  constructor() {
+  constructor(config?: Partial<CSSVariableConfig>) {
+    this.config = { ...this.config, ...config }
     this.createStyleElement()
   }
 
@@ -28,15 +73,17 @@ export class CSSVariableInjector {
     if (typeof document === 'undefined')
       return
 
+    const elementId = `${this.config.prefix}-color-variables`
+
     // 先检查是否已存在
-    let existingElement = document.getElementById('ldesign-color-variables') as HTMLStyleElement
+    let existingElement = document.getElementById(elementId) as HTMLStyleElement
     if (existingElement) {
       this.styleElement = existingElement
       return
     }
 
     this.styleElement = document.createElement('style')
-    this.styleElement.id = 'ldesign-color-variables'
+    this.styleElement.id = elementId
     this.styleElement.type = 'text/css'
     document.head.appendChild(this.styleElement)
   }
@@ -98,12 +145,48 @@ export class CSSVariableInjector {
   /**
    * 生成CSS文本
    */
-  private generateCSSText(variables: Record<string, string>): string {
-    const cssRules = Object.entries(variables)
-      .map(([name, value]) => `  ${name}: ${value};`)
-      .join('\n')
+  private generateCSSText(variables: Record<string, string>, variableInfos?: ColorVariableInfo[]): string {
+    let cssContent = ''
 
-    return `:root {\n${cssRules}\n}`
+    if (this.config.includeComments) {
+      cssContent += `/*\n * ${this.config.prefix?.toUpperCase()} Design System - CSS Variables\n * Generated automatically - Do not edit manually\n */\n\n`
+    }
+
+    const cssRules: string[] = []
+
+    if (variableInfos && this.config.includeComments) {
+      // 按分类组织变量
+      const categorizedVars = new Map<string, ColorVariableInfo[]>()
+
+      for (const info of variableInfos) {
+        const category = info.category || 'General'
+        if (!categorizedVars.has(category)) {
+          categorizedVars.set(category, [])
+        }
+        categorizedVars.get(category)!.push(info)
+      }
+
+      // 生成分类注释和变量
+      for (const [category, infos] of categorizedVars) {
+        cssRules.push(`  /* ${category} Colors */`)
+        for (const info of infos) {
+          if (info.description) {
+            cssRules.push(`  /* ${info.description} */`)
+          }
+          if (info.usage) {
+            cssRules.push(`  /* Usage: ${info.usage} */`)
+          }
+          cssRules.push(`  ${info.name}: ${info.value};`)
+          cssRules.push('')
+        }
+      }
+    } else {
+      // 简单模式，直接生成变量
+      cssRules.push(...Object.entries(variables).map(([name, value]) => `  ${name}: ${value};`))
+    }
+
+    cssContent += `:root {\n${cssRules.join('\n')}\n}`
+    return cssContent
   }
 
   /**
@@ -112,33 +195,176 @@ export class CSSVariableInjector {
   injectThemeVariables(
     lightVariables: Record<string, string>,
     darkVariables: Record<string, string>,
-    themeInfo?: { name: string; primaryColor: string }
+    themeInfo?: {
+      name: string
+      displayName?: string
+      description?: string
+      primaryColor: string
+      version?: string
+    },
+    lightVariableInfos?: ColorVariableInfo[],
+    darkVariableInfos?: ColorVariableInfo[]
   ): void {
     if (!this.styleElement)
       return
 
+    let cssContent = ''
+
     // 生成主题信息注释
-    const themeComment = themeInfo
-      ? `/* LDesign Theme: ${themeInfo.name} (${themeInfo.primaryColor}) */\n`
-      : '/* LDesign Theme Variables */\n'
+    if (this.config.includeThemeInfo && themeInfo) {
+      cssContent += `/*\n`
+      cssContent += ` * ${this.config.prefix?.toUpperCase()} Design System\n`
+      cssContent += ` * Theme: ${themeInfo.displayName || themeInfo.name}\n`
+      if (themeInfo.description) {
+        cssContent += ` * Description: ${themeInfo.description}\n`
+      }
+      cssContent += ` * Primary Color: ${themeInfo.primaryColor}\n`
+      if (themeInfo.version) {
+        cssContent += ` * Version: ${themeInfo.version}\n`
+      }
+      cssContent += ` * Generated: ${new Date().toISOString()}\n`
+      cssContent += ` */\n\n`
+    }
 
     // 生成亮色模式CSS变量
-    const lightCssRules = Object.entries(lightVariables)
-      .map(([name, value]) => `  ${name}: ${value};`)
-      .join('\n')
+    cssContent += this.generateModeVariables('light', lightVariables, lightVariableInfos)
+    cssContent += '\n\n'
 
     // 生成暗色模式CSS变量
-    const darkCssRules = Object.entries(darkVariables)
-      .map(([name, value]) => `  ${name}: ${value};`)
-      .join('\n')
+    cssContent += this.generateModeVariables('dark', darkVariables, darkVariableInfos)
 
-    // 组合完整的CSS内容
-    const cssText = `${themeComment}:root {\n${lightCssRules}\n}\n\n[data-theme-mode="dark"] {\n${darkCssRules}\n}`
-
-    this.styleElement.textContent = cssText
+    this.styleElement.textContent = cssContent
 
     // 更新当前变量记录（合并亮色和暗色）
     this.currentVariables = { ...lightVariables, ...darkVariables }
+  }
+
+  /**
+   * 生成特定模式的CSS变量
+   */
+  private generateModeVariables(
+    mode: 'light' | 'dark',
+    variables: Record<string, string>,
+    variableInfos?: ColorVariableInfo[]
+  ): string {
+    const selector = mode === 'light' ? ':root' : '[data-theme-mode="dark"]'
+    let content = ''
+
+    if (this.config.includeComments) {
+      content += `/* ${mode === 'light' ? 'Light' : 'Dark'} Mode Variables */\n`
+    }
+
+    const cssRules: string[] = []
+
+    if (variableInfos && this.config.includeComments) {
+      // 按分类组织变量
+      const categorizedVars = new Map<string, ColorVariableInfo[]>()
+
+      for (const info of variableInfos) {
+        const category = info.category || 'General'
+        if (!categorizedVars.has(category)) {
+          categorizedVars.set(category, [])
+        }
+        categorizedVars.get(category)!.push(info)
+      }
+
+      // 生成分类注释和变量
+      for (const [category, infos] of categorizedVars) {
+        cssRules.push(`  /* ${category} */`)
+        for (const info of infos) {
+          if (info.description) {
+            cssRules.push(`  /* ${info.description} */`)
+          }
+          cssRules.push(`  ${info.name}: ${info.value};`)
+        }
+        cssRules.push('')
+      }
+    } else {
+      // 简单模式，直接生成变量
+      cssRules.push(...Object.entries(variables).map(([name, value]) => `  ${name}: ${value};`))
+    }
+
+    content += `${selector} {\n${cssRules.join('\n')}\n}`
+    return content
+  }
+
+  /**
+   * 生成背景色变量
+   */
+  generateBackgroundColors(primaryColor: string, mode: 'light' | 'dark' = 'light'): Record<string, string> {
+    const backgrounds: Record<string, string> = {}
+    const prefix = `--${this.config.prefix}`
+
+    switch (this.config.backgroundStrategy) {
+      case 'primary-based':
+        if (this.config.generateBackgroundFromPrimary) {
+          // 基于主色调生成背景色
+          backgrounds[`${prefix}-bg-primary`] = this.adjustColorOpacity(primaryColor, mode === 'light' ? 0.05 : 0.1)
+          backgrounds[`${prefix}-bg-secondary`] = this.adjustColorOpacity(primaryColor, mode === 'light' ? 0.03 : 0.08)
+          backgrounds[`${prefix}-bg-tertiary`] = this.adjustColorOpacity(primaryColor, mode === 'light' ? 0.02 : 0.05)
+        }
+        break
+      case 'custom':
+        if (this.config.customBackgroundColors) {
+          const colors = mode === 'light'
+            ? this.config.customBackgroundColors.light
+            : this.config.customBackgroundColors.dark
+          if (colors) {
+            colors.forEach((color, index) => {
+              backgrounds[`${prefix}-bg-${index + 1}`] = color
+            })
+          }
+        }
+        break
+      case 'neutral':
+      default:
+        // 默认灰色调背景
+        if (mode === 'light') {
+          backgrounds[`${prefix}-bg-primary`] = '#ffffff'
+          backgrounds[`${prefix}-bg-secondary`] = '#fafafa'
+          backgrounds[`${prefix}-bg-tertiary`] = '#f5f5f5'
+          backgrounds[`${prefix}-bg-quaternary`] = '#f0f0f0'
+          backgrounds[`${prefix}-bg-disabled`] = '#f5f5f5'
+        } else {
+          backgrounds[`${prefix}-bg-primary`] = '#141414'
+          backgrounds[`${prefix}-bg-secondary`] = '#1f1f1f'
+          backgrounds[`${prefix}-bg-tertiary`] = '#262626'
+          backgrounds[`${prefix}-bg-quaternary`] = '#2f2f2f'
+          backgrounds[`${prefix}-bg-disabled`] = '#262626'
+        }
+        break
+    }
+
+    return backgrounds
+  }
+
+  /**
+   * 调整颜色透明度
+   */
+  private adjustColorOpacity(color: string, opacity: number): string {
+    // 简单的颜色透明度调整，实际项目中可能需要更复杂的颜色处理
+    if (color.startsWith('#')) {
+      const hex = color.slice(1)
+      const r = parseInt(hex.slice(0, 2), 16)
+      const g = parseInt(hex.slice(2, 4), 16)
+      const b = parseInt(hex.slice(4, 6), 16)
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`
+    }
+    return color
+  }
+
+  /**
+   * 更新配置
+   */
+  updateConfig(config: Partial<CSSVariableConfig>): void {
+    this.config = { ...this.config, ...config }
+  }
+
+  /**
+   * 获取当前配置
+   */
+  getConfig(): CSSVariableConfig {
+    return { ...this.config }
   }
 
   /**
@@ -159,33 +385,94 @@ export class CSSVariableInjector {
 export const globalCSSInjector = new CSSVariableInjector()
 
 /**
- * 便捷函数：注入颜色主题CSS变量
+ * 创建配置化的CSS变量注入器
+ */
+export function createCSSVariableInjector(config?: Partial<CSSVariableConfig>): CSSVariableInjector {
+  return new CSSVariableInjector(config)
+}
+
+/**
+ * 便捷函数：注入颜色主题CSS变量（增强版）
  */
 export function injectThemeVariables(
   colors: ColorConfig,
   scales: Record<string, ColorScale>,
   neutralColors?: NeutralColors,
   mode: ColorMode = 'light',
-  prefix = '--color',
+  prefix = '--ldesign',
+  config?: Partial<CSSVariableConfig>
 ): void {
+  const injector = config ? createCSSVariableInjector(config) : globalCSSInjector
   const variables: Record<string, string> = {}
+  const variableInfos: ColorVariableInfo[] = []
 
   // 基础颜色
   variables[`${prefix}-primary`] = colors.primary
-  if (colors.success)
+  variableInfos.push({
+    name: `${prefix}-primary`,
+    value: colors.primary,
+    description: '主要颜色，用于品牌色、按钮、链接等',
+    category: 'Primary Colors',
+    usage: 'background-color, border-color, color'
+  })
+
+  if (colors.success) {
     variables[`${prefix}-success`] = colors.success
-  if (colors.warning)
+    variableInfos.push({
+      name: `${prefix}-success`,
+      value: colors.success,
+      description: '成功状态颜色，用于成功提示、确认按钮等',
+      category: 'Status Colors',
+      usage: 'background-color, border-color, color'
+    })
+  }
+
+  if (colors.warning) {
     variables[`${prefix}-warning`] = colors.warning
-  if (colors.danger)
+    variableInfos.push({
+      name: `${prefix}-warning`,
+      value: colors.warning,
+      description: '警告状态颜色，用于警告提示、注意事项等',
+      category: 'Status Colors',
+      usage: 'background-color, border-color, color'
+    })
+  }
+
+  if (colors.danger) {
     variables[`${prefix}-danger`] = colors.danger
-  if (colors.gray)
+    variableInfos.push({
+      name: `${prefix}-danger`,
+      value: colors.danger,
+      description: '危险状态颜色，用于错误提示、删除按钮等',
+      category: 'Status Colors',
+      usage: 'background-color, border-color, color'
+    })
+  }
+
+  if (colors.gray) {
     variables[`${prefix}-gray`] = colors.gray
+    variableInfos.push({
+      name: `${prefix}-gray`,
+      value: colors.gray,
+      description: '中性灰色，用于文本、边框、背景等',
+      category: 'Neutral Colors',
+      usage: 'color, border-color, background-color'
+    })
+  }
 
   // 色阶
   for (const [category, scale] of Object.entries(scales)) {
     if (scale && scale.indices) {
       for (const [index, color] of Object.entries(scale.indices)) {
-        variables[`${prefix}-${category}-${index}`] = color
+        const varName = `${prefix}-${category}-${index}`
+        variables[varName] = color
+        variableInfos.push({
+          name: varName,
+          value: color,
+          description: `${category} 色阶 ${index}`,
+          category: 'Color Scales',
+          usage: 'background-color, border-color, color'
+        })
       }
     }
   }
@@ -195,16 +482,60 @@ export function injectThemeVariables(
     for (const [category, scale] of Object.entries(neutralColors)) {
       if (scale && scale.indices) {
         for (const [index, color] of Object.entries(scale.indices)) {
-          variables[`${prefix}-${category}-${index}`] = color as string
+          const varName = `${prefix}-${category}-${index}`
+          variables[varName] = color as string
+          variableInfos.push({
+            name: varName,
+            value: color as string,
+            description: `${category} 中性色 ${index}`,
+            category: 'Neutral Colors',
+            usage: 'color, border-color, background-color'
+          })
         }
       }
     }
   }
 
+  // 生成背景色
+  if (injector.getConfig().backgroundStrategy !== 'neutral' || injector.getConfig().generateBackgroundFromPrimary) {
+    const backgroundColors = injector.generateBackgroundColors(colors.primary, mode)
+    Object.assign(variables, backgroundColors)
+
+    Object.entries(backgroundColors).forEach(([name, value]) => {
+      variableInfos.push({
+        name,
+        value,
+        description: '背景色变量',
+        category: 'Background Colors',
+        usage: 'background-color'
+      })
+    })
+  }
+
   // 语义化变量
   addSemanticVariables(variables, mode, prefix)
 
-  globalCSSInjector.injectVariables(variables)
+  // 添加语义化变量的描述信息
+  const semanticVariableNames = [
+    `${prefix}-bg-primary`, `${prefix}-bg-secondary`, `${prefix}-bg-tertiary`,
+    `${prefix}-text-primary`, `${prefix}-text-secondary`, `${prefix}-text-tertiary`,
+    `${prefix}-border-primary`, `${prefix}-border-secondary`,
+    `${prefix}-shadow-sm`, `${prefix}-shadow-md`, `${prefix}-shadow-lg`
+  ]
+
+  semanticVariableNames.forEach(name => {
+    if (variables[name]) {
+      variableInfos.push({
+        name,
+        value: variables[name],
+        description: '语义化变量',
+        category: 'Semantic Variables',
+        usage: 'background-color, color, border-color, box-shadow'
+      })
+    }
+  })
+
+  injector.injectVariables(variables)
 }
 
 /**
