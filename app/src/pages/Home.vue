@@ -1,73 +1,73 @@
 <template>
   <div class="home-page">
     <header class="home-header">
-      <h1>欢迎使用 LDesign Demo</h1>
-      <p class="subtitle">展示优化后的 Engine API 设计和功能</p>
+      <h1>{{ t('home.title') }}</h1>
+      <p class="subtitle">{{ t('home.subtitle') }}</p>
     </header>
 
     <main class="home-content">
       <section class="feature-section">
-        <h2>功能特性</h2>
+        <h2>{{ t('home.features.title') }}</h2>
         <div class="features-grid">
           <div class="feature-card">
             <div class="feature-icon">🚀</div>
-            <h3>高性能路由</h3>
-            <p>基于 LDesign Engine 的高性能路由系统</p>
+            <h3>{{ t('home.features.router') }}</h3>
+            <p>{{ t('demo.routerSystem') }}</p>
           </div>
           <div class="feature-card">
             <div class="feature-icon">📱</div>
-            <h3>设备适配</h3>
-            <p>智能设备检测和适配功能</p>
+            <h3>{{ t('home.features.template') }}</h3>
+            <p>{{ t('demo.templateEngine') }}</p>
           </div>
           <div class="feature-card">
             <div class="feature-icon">🔗</div>
-            <h3>模板集成</h3>
-            <p>与模板系统深度集成</p>
+            <h3>{{ t('home.features.color') }}</h3>
+            <p>{{ t('demo.colorSystem') }}</p>
           </div>
           <div class="feature-card">
             <div class="feature-icon">🎨</div>
-            <h3>主题管理</h3>
-            <p>智能主题选择和切换系统</p>
+            <h3>{{ t('home.features.i18n') }}</h3>
+            <p>{{ t('demo.i18nSystem') }}</p>
           </div>
         </div>
       </section>
 
       <section class="navigation-section">
-        <h2>路由导航测试</h2>
+        <h2>{{ t('home.sections.engineApi') }}</h2>
         <div class="nav-buttons">
           <router-link to="/login" class="nav-button primary">
-            前往登录页
+            {{ t('nav.login') }}
           </router-link>
           <router-link to="/theme-demo" class="nav-button primary">
-            🎨 主题演示
+            🎨 {{ t('app.theme') }}
           </router-link>
           <router-link to="/color-scales" class="nav-button primary">
-            🌈 色阶展示
+            🌈 {{ t('demo.colorSystem') }}
           </router-link>
           <button @click="testNavigation" class="nav-button secondary">
-            编程式导航测试
+            {{ t('home.buttons.tryDemo') }}
           </button>
         </div>
       </section>
 
       <section class="info-section">
-        <h2>当前路由信息</h2>
+        <h2>{{ t('home.sections.pluginSystem') }}</h2>
         <div class="route-info">
-          <p><strong>路径:</strong> {{ route.path }}</p>
-          <p><strong>名称:</strong> {{ route.name }}</p>
-          <p><strong>参数:</strong> {{ JSON.stringify(route.params) }}</p>
-          <p><strong>查询:</strong> {{ JSON.stringify(route.query) }}</p>
-          <p><strong>元信息:</strong> {{ JSON.stringify(route.meta) }}</p>
+          <p><strong>{{ t('nav.home') }}:</strong> {{ route.path }}</p>
+          <p><strong>{{ t('user.name') }}:</strong> {{ route.name }}</p>
+          <p><strong>{{ t('common.info') }}:</strong> {{ JSON.stringify(route.params) }}</p>
+          <p><strong>{{ t('common.search') }}:</strong> {{ JSON.stringify(route.query) }}</p>
+          <p><strong>Meta:</strong> {{ JSON.stringify(route.meta) }}</p>
         </div>
       </section>
 
       <section class="api-section">
-        <h2>LDesign Engine + Router 集成</h2>
+        <h2>{{ t('home.sections.typeScript') }}</h2>
         <div class="api-info">
-          <p><strong>Engine API:</strong> createAndMountApp 一步到位</p>
-          <p><strong>Router 集成:</strong> createRouterEnginePlugin</p>
-          <p><strong>路由模式:</strong> Hash 模式</p>
-          <p><strong>功能特性:</strong> 预加载、缓存、动画、性能监控</p>
+          <p><strong>{{ t('home.sections.engineApi') }}:</strong> createAndMountApp</p>
+          <p><strong>{{ t('demo.routerSystem') }}:</strong> createRouterEnginePlugin</p>
+          <p><strong>{{ t('demo.i18nSystem') }}:</strong> createI18nEnginePlugin</p>
+          <p><strong>{{ t('home.features.performance') }}:</strong> {{ t('demo.performanceMonitor') }}</p>
         </div>
       </section>
     </main>
@@ -76,6 +76,7 @@
 
 <script setup lang="ts">
 import { useRoute, useRouter } from '@ldesign/router'
+import { useI18n } from '@ldesign/i18n/vue'
 
 /**
  * 首页组件
@@ -85,6 +86,9 @@ import { useRoute, useRouter } from '@ldesign/router'
 // 获取路由信息
 const route = useRoute()
 const router = useRouter()
+
+// 获取国际化功能
+const { t } = useI18n()
 
 /**
  * 测试编程式导航

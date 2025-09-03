@@ -98,7 +98,7 @@ export class Button implements ButtonProps {
   /**
    * Tab 索引
    */
-  @Prop() tabIndex?: number;
+  @Prop() tabindex?: number;
 
   /**
    * 自动聚焦
@@ -423,7 +423,7 @@ export class Button implements ButtonProps {
       class: this.getButtonClasses(),
       style: this.getButtonStyles(),
       disabled: this.disabled || this.loading,
-      tabindex: this.tabIndex,
+      tabindex: this.tabindex,
       onClick: this.handleClick,
       onFocus: this.handleFocus,
       onBlur: this.handleBlur,

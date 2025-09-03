@@ -3,6 +3,7 @@ import { routerPlugin } from './router'
 import App from './App.vue'
 import { templatePlugin } from './templates'
 import { colorPlugin } from './color'
+import { i18nPlugin } from './i18n'
 
 /**
  * 应用启动配置
@@ -26,7 +27,7 @@ export async function bootstrap() {
         enableNotifications: true
       }
     },
-    plugins: [routerPlugin, templatePlugin, colorPlugin],
+    plugins: [routerPlugin, templatePlugin, colorPlugin, i18nPlugin],
     middleware: []
   })
 

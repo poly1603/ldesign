@@ -25,7 +25,7 @@
 | `shape`       | `shape`        | 按钮形状           | `"circle" \| "default" \| "round"`                                      | `'default'` |
 | `size`        | `size`         | 按钮尺寸           | `"large" \| "medium" \| "small"`                                        | `'medium'`  |
 | `status`      | `status`       | 按钮状态           | `"default" \| "error" \| "info" \| "primary" \| "success" \| "warning"` | `undefined` |
-| `tabIndex`    | `tab-index`    | Tab 索引         | `number`                                                                | `undefined` |
+| `tabindex`    | `tabindex`     | Tab 索引         | `number`                                                                | `undefined` |
 | `target`      | `target`       | 链接打开方式         | `"_blank" \| "_parent" \| "_self" \| "_top"`                            | `'_self'`   |
 | `text`        | `text`         | 按钮文本内容         | `string`                                                                | `undefined` |
 | `type`        | `type`         | 按钮类型           | `"dashed" \| "default" \| "link" \| "primary" \| "text"`                | `'default'` |

@@ -44,7 +44,7 @@
 | `step`          | `step`           | 步长          | `number \| string`                                                                        | `undefined`  |
 | `suffix`        | `suffix`         | 后缀文本        | `string`                                                                                  | `undefined`  |
 | `suffixIcon`    | `suffix-icon`    | 后缀图标        | `string`                                                                                  | `undefined`  |
-| `tabIndex`      | `tab-index`      | Tab 索引      | `number`                                                                                  | `undefined`  |
+| `tabindex`      | `tabindex`       | Tab 索引      | `number`                                                                                  | `undefined`  |
 | `type`          | `type`           | 输入框类型       | `"email" \| "number" \| "password" \| "search" \| "tel" \| "text" \| "textarea" \| "url"` | `'text'`     |
 | `value`         | `value`          | 输入框值        | `string`                                                                                  | `undefined`  |
 | `variant`       | `variant`        | 输入框变体       | `"borderless" \| "filled" \| "outlined"`                                                  | `'outlined'` |

@@ -4,22 +4,23 @@
     <nav class="app-nav">
       <div class="nav-container">
         <div class="nav-brand">
-          <h1>{{ t('demo.welcome') }}</h1>
+          <h1>{{ t('app.welcome') }}</h1>
         </div>
         <div class="nav-links">
           <router-link to="/" class="nav-link" active-class="active" exact-active-class="active">
-            首页
+            {{ t('nav.home') }}
           </router-link>
           <router-link to="/packages" class="nav-link" active-class="active">
-            包测试
+            {{ t('nav.products') }}
           </router-link>
           <router-link to="/login" class="nav-link" active-class="active">
-            登录
+            {{ t('nav.login') }}
           </router-link>
         </div>
         <div class="app-controls">
+          <LanguageSwitcher type="buttons" :show-flag="true" />
           <ThemeSelector mode="select" :show-preview="true"
-            :disabled-builtin-themes="disabledBuiltinThemes" placeholder="选择主题" />
+            :disabled-builtin-themes="disabledBuiltinThemes" :placeholder="t('app.theme')" />
           <DarkModeToggle />
         </div>
       </div>
@@ -33,11 +34,11 @@
     <!-- 应用底部 -->
     <footer class="app-footer">
       <div class="footer-container">
-        <p>&copy; 2024 {{ t('page.home.title') }} - {{ t('demo.description') }}</p>
+        <p>&copy; 2024 {{ t('app.title') }} - {{ t('app.description') }}</p>
         <div class="footer-info">
-          <span>{{ t('language.current') }}: {{ getCurrentLanguageName() }}</span>
+          <span>{{ t('app.language') }}: {{ currentLocaleInfo?.nativeName }}</span>
           <span class="separator">|</span>
-          <span>{{ t('theme.title') }}: {{ t('theme.light') }}</span>
+          <span>{{ t('app.version') }}: 1.0.0</span>
         </div>
       </div>
     </footer>
@@ -51,12 +52,19 @@
  * 使用 @ldesign/router 的路由系统和 @ldesign/i18n 的国际化功能
  */
 
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { ThemeSelector, DarkModeToggle } from '@ldesign/color'
+import { useI18n, LanguageSwitcher } from '@ldesign/i18n/vue'
+import { getAvailableLocales } from './i18n/locales'
 
-// 导入国际化相关功能
-const t = (key: string) => key // 临时的翻译函数
-const getCurrentLanguageName = () => 'Chinese' // 临时的语言名称函数
+// 使用国际化功能
+const { t, locale } = useI18n()
+
+// 当前语言信息
+const availableLocales = getAvailableLocales()
+const currentLocaleInfo = computed(() => {
+  return availableLocales.find((item: any) => item.code === locale.value)
+})
 
 // 禁用的内置主题列表（示例：禁用红色和粉色主题）
 const disabledBuiltinThemes = ref<string[]>(['red', 'pink'])
@@ -196,6 +204,8 @@ body {
 .app-controls>* {
   flex-shrink: 0;
 }
+
+
 
 /* 响应式设计 */
 @media (max-width: 768px) {

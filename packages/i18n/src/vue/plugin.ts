@@ -119,7 +119,10 @@ export function createVueI18n(options: CreateI18nOptions): VueI18n {
     te,
     setLocale,
     setLocaleMessage,
-    getLocaleMessage
+    getLocaleMessage,
+    getCurrentLanguage: () => state.locale,
+    getAvailableLanguages: () => state.availableLocales,
+    changeLanguage: setLocale
   }
 }
 
@@ -155,11 +158,25 @@ export function useI18n() {
     throw new Error('useI18n() 必须在安装了 I18n 插件的 Vue 应用中使用')
   }
 
+  // 创建响应式的翻译函数
+  const t = (key: string, params?: Record<string, unknown>): string => {
+    // 通过访问 locale 来触发响应式更新
+    i18n.locale
+    return i18n.t(key, params)
+  }
+
+  // 创建响应式的键存在检查函数
+  const te = (key: string, locale?: string): boolean => {
+    // 通过访问 locale 来触发响应式更新
+    i18n.locale
+    return i18n.te(key, locale)
+  }
+
   return {
     locale: computed(() => i18n.locale),
     availableLocales: computed(() => i18n.availableLocales),
-    t: i18n.t,
-    te: i18n.te,
+    t,
+    te,
     setLocale: i18n.setLocale,
     setLocaleMessage: i18n.setLocaleMessage,
     getLocaleMessage: i18n.getLocaleMessage

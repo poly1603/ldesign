@@ -200,7 +200,7 @@ export class Input implements InputProps {
   /**
    * Tab 索引
    */
-  @Prop() tabIndex?: number;
+  @Prop() tabindex?: number;
 
   /**
    * 自动聚焦
@@ -683,7 +683,7 @@ export class Input implements InputProps {
       readonly: this.readonly,
       required: this.required,
       name: this.name,
-      tabindex: this.tabIndex,
+      tabindex: this.tabindex,
       maxlength: this.maxlength,
       minlength: this.minlength,
       autocomplete: this.autocomplete,

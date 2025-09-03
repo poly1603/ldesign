@@ -9,7 +9,7 @@ import type { I18nEnginePluginOptions, I18nPreset } from './types'
 import { createI18n } from '../core/createI18n'
 import { installComponents } from './components/index'
 import { installDirectives } from './directives'
-import { I18N_INJECTION_KEY } from './types'
+import { I18nInjectionKey, createVueI18n } from './plugin'
 
 /**
  * Engine 插件接口（临时定义，避免循环依赖）
@@ -334,8 +334,15 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
           // 初始化 I18n
           await pluginState.i18n.init()
 
-          // 提供 I18n 实例到 Vue 应用
-          vueApp.provide(I18N_INJECTION_KEY, pluginState.i18n)
+          // 创建 Vue I18n 适配器
+          const vueI18n = createVueI18n({
+            locale: mergedOptions.locale,
+            fallbackLocale: mergedOptions.fallbackLocale,
+            messages: mergedOptions.messages
+          })
+
+          // 提供 Vue I18n 实例到 Vue 应用
+          vueApp.provide(I18nInjectionKey, vueI18n)
 
           // 设置全局属性
           if (vueApp.config && vueApp.config.globalProperties) {

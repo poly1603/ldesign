@@ -6,51 +6,37 @@
 
 最简单的按钮用法。
 
-<div class="demo-container">
-  <div class="demo-title">基础按钮</div>
-  <div class="demo-description">按钮有五种基础类型：主按钮、默认按钮、虚线按钮、文本按钮和链接按钮。</div>
-  <div class="demo-showcase">
-    <ld-button type="primary">主要按钮</ld-button>
-    <ld-button type="default">默认按钮</ld-button>
-    <ld-button type="dashed">虚线按钮</ld-button>
-    <ld-button type="text">文本按钮</ld-button>
-    <ld-button type="link">链接按钮</ld-button>
-  </div>
-  <div class="demo-code">
-
-```html
-<ld-button type="primary">主要按钮</ld-button>
+<Demo 
+  title="基础按钮" 
+  description="按钮有五种基础类型：主按钮、默认按钮、虚线按钮、文本按钮和链接按钮。"
+  :code='`<ld-button type="primary">主要按钮</ld-button>
 <ld-button type="default">默认按钮</ld-button>
 <ld-button type="dashed">虚线按钮</ld-button>
 <ld-button type="text">文本按钮</ld-button>
-<ld-button type="link">链接按钮</ld-button>
-```
-
-  </div>
-</div>
+<ld-button type="link">链接按钮</ld-button>`'
+>
+  <ld-button type="primary">主要按钮</ld-button>
+  <ld-button type="default">默认按钮</ld-button>
+  <ld-button type="dashed">虚线按钮</ld-button>
+  <ld-button type="text">文本按钮</ld-button>
+  <ld-button type="link">链接按钮</ld-button>
+</Demo>
 
 ## 按钮尺寸
 
 按钮有大、中、小三种尺寸。
 
-<div class="demo-container">
-  <div class="demo-title">不同尺寸</div>
-  <div class="demo-description">通过设置 size 属性来控制按钮大小。</div>
-  <div class="demo-showcase">
-    <ld-button type="primary" size="large">大按钮</ld-button>
-    <ld-button type="primary" size="medium">中按钮</ld-button>
-    <ld-button type="primary" size="small">小按钮</ld-button>
-  </div>
-  <div class="demo-code">
-
-```html
-<ld-button type="primary" size="large">大按钮</ld-button>
+<Demo 
+  title="不同尺寸" 
+  description="通过设置 size 属性来控制按钮大小。"
+  :code='`<ld-button type="primary" size="large">大按钮</ld-button>
 <ld-button type="primary" size="medium">中按钮</ld-button>
-<ld-button type="primary" size="small">小按钮</ld-button>
-```
-
-  </div>
-</div>
+<ld-button type="primary" size="small">小按钮</ld-button>`'
+>
+  <ld-button type="primary" size="large">大按钮</ld-button>
+  <ld-button type="primary" size="medium">中按钮</ld-button>
+  <ld-button type="primary" size="small">小按钮</ld-button>
+</Demo>
 
 ## 按钮状态
 
@@ -58,122 +44,208 @@
 
 添加 `disabled` 属性即可让按钮处于不可用状态。
 
-<div class="demo-container">
-  <div class="demo-title">禁用状态</div>
-  <div class="demo-description">按钮不可点击。</div>
-  <div class="demo-showcase">
-    <ld-button type="primary" disabled>禁用按钮</ld-button>
-    <ld-button type="default" disabled>禁用按钮</ld-button>
-    <ld-button type="dashed" disabled>禁用按钮</ld-button>
-    <ld-button type="text" disabled>禁用按钮</ld-button>
-    <ld-button type="link" disabled>禁用按钮</ld-button>
-  </div>
-  <div class="demo-code">
-
-```html
-<ld-button type="primary" disabled>禁用按钮</ld-button>
+<Demo 
+  title="禁用状态" 
+  description="按钮不可点击。"
+  :code='`<ld-button type="primary" disabled>禁用按钮</ld-button>
 <ld-button type="default" disabled>禁用按钮</ld-button>
 <ld-button type="dashed" disabled>禁用按钮</ld-button>
 <ld-button type="text" disabled>禁用按钮</ld-button>
-<ld-button type="link" disabled>禁用按钮</ld-button>
-```
-
-  </div>
-</div>
+<ld-button type="link" disabled>禁用按钮</ld-button>`'
+>
+  <ld-button type="primary" disabled>禁用按钮</ld-button>
+  <ld-button type="default" disabled>禁用按钮</ld-button>
+  <ld-button type="dashed" disabled>禁用按钮</ld-button>
+  <ld-button type="text" disabled>禁用按钮</ld-button>
+  <ld-button type="link" disabled>禁用按钮</ld-button>
+</Demo>
 
 ### 加载状态
 
 添加 `loading` 属性即可让按钮处于加载状态。
 
-<div class="demo-container">
-  <div class="demo-title">加载状态</div>
-  <div class="demo-description">按钮处于加载中状态。</div>
-  <div class="demo-showcase">
-    <ld-button type="primary" loading>加载中</ld-button>
-    <ld-button type="default" loading>加载中</ld-button>
-  </div>
-  <div class="demo-code">
-
-```html
-<ld-button type="primary" loading>加载中</ld-button>
-<ld-button type="default" loading>加载中</ld-button>
-```
-
-  </div>
-</div>
+<Demo 
+  title="加载状态" 
+  description="按钮处于加载中状态。"
+  :code='`<ld-button type="primary" loading>加载中</ld-button>
+<ld-button type="default" loading>加载中</ld-button>`'
+>
+  <ld-button type="primary" loading>加载中</ld-button>
+  <ld-button type="default" loading>加载中</ld-button>
+</Demo>
 
 ## 危险按钮
 
 `danger` 属性可以让按钮显示为危险状态。
 
-<div class="demo-container">
-  <div class="demo-title">危险按钮</div>
-  <div class="demo-description">用于危险操作，如删除等。</div>
-  <div class="demo-showcase">
-    <ld-button type="primary" danger>危险主按钮</ld-button>
-    <ld-button type="default" danger>危险按钮</ld-button>
-    <ld-button type="dashed" danger>危险虚线按钮</ld-button>
-    <ld-button type="text" danger>危险文本按钮</ld-button>
-    <ld-button type="link" danger>危险链接按钮</ld-button>
-  </div>
-  <div class="demo-code">
-
-```html
-<ld-button type="primary" danger>危险主按钮</ld-button>
+<Demo 
+  title="危险按钮" 
+  description="用于危险操作，如删除等。"
+  :code='`<ld-button type="primary" danger>危险主按钮</ld-button>
 <ld-button type="default" danger>危险按钮</ld-button>
 <ld-button type="dashed" danger>危险虚线按钮</ld-button>
 <ld-button type="text" danger>危险文本按钮</ld-button>
-<ld-button type="link" danger>危险链接按钮</ld-button>
-```
-
-  </div>
-</div>
+<ld-button type="link" danger>危险链接按钮</ld-button>`'
+>
+  <ld-button type="primary" danger>危险主按钮</ld-button>
+  <ld-button type="default" danger>危险按钮</ld-button>
+  <ld-button type="dashed" danger>危险虚线按钮</ld-button>
+  <ld-button type="text" danger>危险文本按钮</ld-button>
+  <ld-button type="link" danger>危险链接按钮</ld-button>
+</Demo>
 
 ## 块级按钮
 
 `block` 属性将使按钮适合其父宽度。
 
-<div class="demo-container">
-  <div class="demo-title">块级按钮</div>
-  <div class="demo-description">按钮宽度充满父容器。</div>
-  <div class="demo-showcase vertical">
-    <ld-button type="primary" block>块级主按钮</ld-button>
-    <ld-button type="default" block>块级默认按钮</ld-button>
-  </div>
-  <div class="demo-code">
-
-```html
-<ld-button type="primary" block>块级主按钮</ld-button>
-<ld-button type="default" block>块级默认按钮</ld-button>
-```
-
-  </div>
-</div>
+<Demo 
+  title="块级按钮" 
+  description="按钮宽度充满父容器。"
+  vertical
+  :code='`<ld-button type="primary" block>块级主按钮</ld-button>
+<ld-button type="default" block>块级默认按钮</ld-button>`'
+>
+  <ld-button type="primary" block>块级主按钮</ld-button>
+  <ld-button type="default" block>块级默认按钮</ld-button>
+</Demo>
 
 ## 图标按钮
 
 可以在按钮中添加图标。
 
-<div class="demo-container">
-  <div class="demo-title">图标按钮</div>
-  <div class="demo-description">带图标的按钮可以更直观地表达按钮功能。</div>
-  <div class="demo-showcase">
-    <ld-button type="primary" icon="search">搜索</ld-button>
-    <ld-button type="default" icon="download">下载</ld-button>
-    <ld-button type="primary" icon="plus" icon-only></ld-button>
-    <ld-button type="default" icon="setting" icon-only></ld-button>
-  </div>
-  <div class="demo-code">
-
-```html
-<ld-button type="primary" icon="search">搜索</ld-button>
+<Demo 
+  title="图标按钮" 
+  description="带图标的按钮可以更直观地表达按钮功能。"
+  :code='`<ld-button type="primary" icon="search">搜索</ld-button>
 <ld-button type="default" icon="download">下载</ld-button>
-<ld-button type="primary" icon="plus" icon-only></ld-button>
-<ld-button type="default" icon="setting" icon-only></ld-button>
-```
+<ld-button type="primary" icon="plus"></ld-button>
+<ld-button type="default" icon="setting"></ld-button>`'
+>
+  <ld-button type="primary" icon="search">搜索</ld-button>
+  <ld-button type="default" icon="download">下载</ld-button>
+  <ld-button type="primary" icon="plus"></ld-button>
+  <ld-button type="default" icon="setting"></ld-button>
+</Demo>
 
-  </div>
-</div>
+## 交互式演示
+
+在下面的演示中可以实时调整按钮属性，查看不同配置下的效果。
+
+<ComponentPlayground
+  title="按钮属性配置"
+  component="ld-button"
+  :defaultProps="{
+    type: 'primary',
+    size: 'medium',
+    disabled: false,
+    loading: false,
+    danger: false,
+    block: false,
+    ghost: false,
+    text: '点击按钮'
+  }"
+>
+  <template #preview="{ props }">
+    <ld-button 
+      :type="props.type"
+      :size="props.size"
+      :disabled="props.disabled"
+      :loading="props.loading"
+      :danger="props.danger"
+      :block="props.block"
+      :ghost="props.ghost"
+      @ldClick="handleButtonClick"
+    >
+      {{ props.text }}
+    </ld-button>
+  </template>
+  
+  <template #controls="{ props, updateProp }">
+    <PropertyControl 
+      label="按钮类型"
+      description="控制按钮的视觉风格"
+      type="select"
+      :modelValue="props.type"
+      @update:modelValue="updateProp('type', $event)"
+      :options="[
+        { label: '主要按钮', value: 'primary' },
+        { label: '默认按钮', value: 'default' },
+        { label: '虚线按钮', value: 'dashed' },
+        { label: '文本按钮', value: 'text' },
+        { label: '链接按钮', value: 'link' }
+      ]"
+    />
+    
+    <PropertyControl 
+      label="按钮尺寸"
+      description="控制按钮的大小"
+      type="select"
+      :modelValue="props.size"
+      @update:modelValue="updateProp('size', $event)"
+      :options="[
+        { label: '小', value: 'small' },
+        { label: '中', value: 'medium' },
+        { label: '大', value: 'large' }
+      ]"
+    />
+    
+    <PropertyControl 
+      label="按钮文本"
+      description="按钮显示的文本内容"
+      type="text"
+      :modelValue="props.text"
+      @update:modelValue="updateProp('text', $event)"
+      placeholder="请输入按钮文本"
+    />
+    
+    <PropertyControl 
+      label="禁用状态"
+      description="按钮是否不可点击"
+      type="boolean"
+      :modelValue="props.disabled"
+      @update:modelValue="updateProp('disabled', $event)"
+    />
+    
+    <PropertyControl 
+      label="加载状态"
+      description="按钮是否显示加载中"
+      type="boolean"
+      :modelValue="props.loading"
+      @update:modelValue="updateProp('loading', $event)"
+    />
+    
+    <PropertyControl 
+      label="危险按钮"
+      description="用于危险操作"
+      type="boolean"
+      :modelValue="props.danger"
+      @update:modelValue="updateProp('danger', $event)"
+    />
+    
+    <PropertyControl 
+      label="块级按钮"
+      description="按钮宽度充满父容器"
+      type="boolean"
+      :modelValue="props.block"
+      @update:modelValue="updateProp('block', $event)"
+    />
+    
+    <PropertyControl 
+      label="幽灵按钮"
+      description="背景透明的按钮样式"
+      type="boolean"
+      :modelValue="props.ghost"
+      @update:modelValue="updateProp('ghost', $event)"
+    />
+  </template>
+</ComponentPlayground>
+
+<script setup>
+const handleButtonClick = (event) => {
+  console.log('按钮被点击:', event)
+  alert('按钮被点击！')
+}
+</script>
 
 ## API
 

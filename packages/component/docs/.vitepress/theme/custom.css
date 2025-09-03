@@ -1,3 +1,219 @@
+/**
+ * VitePress 自定义样式
+ * 用于优化组件展示效果
+ */
+
+/* CSS 变量定义 */
+:root {
+  --demo-border-color: #e4e7ed;
+  --demo-bg-color: #ffffff;
+  --demo-code-bg: #f8f9fa;
+  --demo-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+html.dark {
+  --demo-border-color: #303640;
+  --demo-bg-color: #1e1e20;
+  --demo-code-bg: #161618;
+  --demo-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 组件演示容器样式 */
+.demo-container {
+  margin: 24px 0;
+  border: 1px solid var(--demo-border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.demo-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+  padding: 16px 20px 8px;
+  background: var(--demo-bg-color);
+}
+
+.demo-description {
+  color: var(--vp-c-text-2);
+  padding: 0 20px 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  background: var(--demo-bg-color);
+}
+
+.demo-showcase {
+  padding: 24px;
+  background: var(--vp-c-bg-soft);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-height: 80px;
+}
+
+.demo-showcase.vertical {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.demo-code {
+  background: var(--demo-code-bg);
+  border-top: 1px solid var(--demo-border-color);
+}
+
+.demo-code pre {
+  margin: 0;
+  padding: 16px 20px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.6;
+  background: transparent;
+}
+
+.demo-code code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  color: var(--vp-c-text-1);
+}
+
+/* 组件间距调整 */
+.demo-showcase ld-button {
+  margin: 4px;
+}
+
+.demo-showcase ld-input {
+  margin: 4px;
+  max-width: 240px;
+}
+
+.demo-showcase ld-card {
+  margin: 8px;
+}
+
+/* 属性表格样式 */
+.props-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+.props-table th,
+.props-table td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid var(--vp-c-divider);
+}
+
+.props-table th {
+  background: var(--vp-c-bg-soft);
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+
+.props-table td {
+  color: var(--vp-c-text-2);
+}
+
+.props-table code {
+  background: var(--vp-code-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--vp-c-brand);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .demo-showcase {
+    padding: 16px;
+  }
+  
+  .demo-title {
+    padding: 12px 16px 6px;
+  }
+  
+  .demo-description {
+    padding: 0 16px 12px;
+  }
+  
+  .demo-code pre {
+    padding: 12px 16px;
+    font-size: 12px;
+  }
+  
+  .props-table {
+    font-size: 13px;
+  }
+  
+  .props-table th,
+  .props-table td {
+    padding: 8px;
+  }
+}
+
+/* 代码块增强 */
+.vp-code-group {
+  margin: 16px 0;
+}
+
+/* 确保 Stencil 组件正确显示 */
+ld-button,
+ld-input,
+ld-card,
+ld-form,
+ld-form-item,
+ld-table,
+ld-tooltip,
+ld-modal {
+  display: inline-block;
+}
+
+/* 修复可能的样式冲突 */
+.demo-showcase * {
+  box-sizing: border-box;
+}
+
+/* 加载状态 */
+.components-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--vp-c-text-2);
+  font-size: 14px;
+}
+
+.components-loading::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  border: 2px solid var(--vp-c-text-3);
+  border-top-color: var(--vp-c-brand);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 首页组件展示优化 */
+.VPContent.is-home .demo-container {
+  box-shadow: var(--demo-shadow);
+}
+
+.VPContent.is-home .demo-showcase {
+  justify-content: center;
+}
+
 /* 自定义样式 */
 
 /* 组件演示容器 */

@@ -99,7 +99,7 @@ export namespace Components {
         /**
           * Tab 索引
          */
-        "tabIndex"?: number;
+        "tabindex"?: number;
         /**
           * 链接打开方式
           * @default '_self'
@@ -555,7 +555,7 @@ export namespace Components {
         /**
           * Tab 索引
          */
-        "tabIndex"?: number;
+        "tabindex"?: number;
         /**
           * 输入框类型
           * @default 'text'
@@ -615,11 +615,6 @@ export namespace Components {
          */
         "customClass"?: string;
         /**
-          * 是否可拖拽
-          * @default false
-         */
-        "draggable": boolean;
-        /**
           * 是否显示底部操作区域
           * @default true
          */
@@ -633,6 +628,11 @@ export namespace Components {
           * 模态框高度
          */
         "height"?: string | number;
+        /**
+          * 是否可拖拽
+          * @default false
+         */
+        "isDraggable": boolean;
         /**
           * 是否支持键盘 ESC 关闭
           * @default true
@@ -648,6 +648,10 @@ export namespace Components {
           * @default true
          */
         "maskClosable": boolean;
+        /**
+          * 模态框标题
+         */
+        "modalTitle"?: string;
         /**
           * 确认按钮文本
           * @default '确定'
@@ -667,10 +671,6 @@ export namespace Components {
           * @default false
          */
         "resizable": boolean;
-        /**
-          * 模态框标题
-         */
-        "title"?: string;
         /**
           * 是否可见
           * @default false
@@ -1219,7 +1219,7 @@ declare namespace LocalJSX {
         /**
           * Tab 索引
          */
-        "tabIndex"?: number;
+        "tabindex"?: number;
         /**
           * 链接打开方式
           * @default '_self'
@@ -1687,7 +1687,7 @@ declare namespace LocalJSX {
         /**
           * Tab 索引
          */
-        "tabIndex"?: number;
+        "tabindex"?: number;
         /**
           * 输入框类型
           * @default 'text'
@@ -1743,11 +1743,6 @@ declare namespace LocalJSX {
          */
         "customClass"?: string;
         /**
-          * 是否可拖拽
-          * @default false
-         */
-        "draggable"?: boolean;
-        /**
           * 是否显示底部操作区域
           * @default true
          */
@@ -1761,6 +1756,11 @@ declare namespace LocalJSX {
           * 模态框高度
          */
         "height"?: string | number;
+        /**
+          * 是否可拖拽
+          * @default false
+         */
+        "isDraggable"?: boolean;
         /**
           * 是否支持键盘 ESC 关闭
           * @default true
@@ -1776,6 +1776,10 @@ declare namespace LocalJSX {
           * @default true
          */
         "maskClosable"?: boolean;
+        /**
+          * 模态框标题
+         */
+        "modalTitle"?: string;
         /**
           * 确认按钮文本
           * @default '确定'
@@ -1807,10 +1811,6 @@ declare namespace LocalJSX {
           * @default false
          */
         "resizable"?: boolean;
-        /**
-          * 模态框标题
-         */
-        "title"?: string;
         /**
           * 是否可见
           * @default false
