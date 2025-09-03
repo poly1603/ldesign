@@ -726,7 +726,7 @@ importers:
         specifier: ^3.5.21
         version: 3.5.21(typescript@5.9.2)
 
-  packages/component/docs-site:
+  packages/component/docs:
     devDependencies:
       vitepress:
         specifier: ^1.0.0
@@ -1147,6 +1147,49 @@ importers:
       vite:
         specifier: ^5.0.0
         version: 5.4.19(@types/node@20.19.9)(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
+
+  packages/git:
+    dependencies:
+      simple-git:
+        specifier: ^3.20.0
+        version: 3.28.0
+      tslib:
+        specifier: ^2.6.2
+        version: 2.8.1
+    devDependencies:
+      '@playwright/test':
+        specifier: ^1.40.1
+        version: 1.55.0
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.16.5
+      '@vitest/ui':
+        specifier: ^3.2.4
+        version: 3.2.4(vitest@3.2.4)
+      eslint:
+        specifier: ^9.0.0
+        version: 9.32.0(jiti@1.21.7)
+      jsdom:
+        specifier: ^24.0.0
+        version: 24.1.3(canvas@2.11.2(encoding@0.1.13))
+      size-limit:
+        specifier: ^11.0.0
+        version: 11.2.0
+      tsup:
+        specifier: ^8.5.0
+        version: 8.5.0(@microsoft/api-extractor@7.43.0(@types/node@22.16.5))(jiti@1.21.7)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.9.2)(yaml@2.8.0)
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.2
+      vite:
+        specifier: ^5.0.12
+        version: 5.4.19(@types/node@22.16.5)(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
+      vitepress:
+        specifier: ^1.0.0
+        version: 1.6.4(@algolia/client-search@5.34.1)(@types/node@22.16.5)(@types/react@18.3.23)(async-validator@4.2.5)(axios@1.11.0)(fuse.js@7.1.0)(less@4.4.1)(lightningcss@1.30.1)(nprogress@0.2.0)(postcss@8.5.6)(qrcode@1.5.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass-embedded@1.90.0)(sass@1.90.0)(search-insights@2.17.3)(stylus@0.64.0)(terser@5.43.1)(typescript@5.9.2)
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.16.5)(@vitest/ui@3.2.4)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
 
   packages/http:
     devDependencies:
@@ -15774,7 +15817,7 @@ snapshots:
     dependencies:
       '@vitest/spy': 2.1.9
       estree-walker: 3.0.3
-      magic-string: 0.30.17
+      magic-string: 0.30.18
     optionalDependencies:
       vite: 5.4.19(@types/node@20.19.9)(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
 
@@ -15782,7 +15825,7 @@ snapshots:
     dependencies:
       '@vitest/spy': 2.1.9
       estree-walker: 3.0.3
-      magic-string: 0.30.17
+      magic-string: 0.30.18
     optionalDependencies:
       vite: 5.4.19(@types/node@22.16.5)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
 
@@ -15798,7 +15841,7 @@ snapshots:
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
-      magic-string: 0.30.17
+      magic-string: 0.30.18
     optionalDependencies:
       vite: 5.4.19(@types/node@22.16.5)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1)
 
@@ -15814,7 +15857,7 @@ snapshots:
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
-      magic-string: 0.30.17
+      magic-string: 0.30.18
     optionalDependencies:
       vite: 5.4.19(@types/node@22.16.5)(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
 
@@ -15851,7 +15894,7 @@ snapshots:
 
   '@vitest/snapshot@0.34.6':
     dependencies:
-      magic-string: 0.30.17
+      magic-string: 0.30.18
       pathe: 1.1.2
       pretty-format: 29.7.0
 
@@ -18539,7 +18582,7 @@ snapshots:
 
   fix-dts-default-cjs-exports@1.0.1:
     dependencies:
-      magic-string: 0.30.17
+      magic-string: 0.30.18
       mlly: 1.7.4
       rollup: 4.46.1
 
@@ -23042,6 +23085,35 @@ snapshots:
       - tsx
       - yaml
 
+  tsup@8.5.0(@microsoft/api-extractor@7.43.0(@types/node@22.16.5))(jiti@1.21.7)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.9.2)(yaml@2.8.0):
+    dependencies:
+      bundle-require: 5.1.0(esbuild@0.25.8)
+      cac: 6.7.14
+      chokidar: 4.0.3
+      consola: 3.4.2
+      debug: 4.4.1
+      esbuild: 0.25.8
+      fix-dts-default-cjs-exports: 1.0.1
+      joycon: 3.1.1
+      picocolors: 1.1.1
+      postcss-load-config: 6.0.1(jiti@1.21.7)(postcss@8.5.6)(tsx@4.20.3)(yaml@2.8.0)
+      resolve-from: 5.0.0
+      rollup: 4.46.1
+      source-map: 0.8.0-beta.0
+      sucrase: 3.35.0
+      tinyexec: 0.3.2
+      tinyglobby: 0.2.14
+      tree-kill: 1.2.2
+    optionalDependencies:
+      '@microsoft/api-extractor': 7.43.0(@types/node@22.16.5)
+      postcss: 8.5.6
+      typescript: 5.9.2
+    transitivePeerDependencies:
+      - jiti
+      - supports-color
+      - tsx
+      - yaml
+
   tsx@4.20.3:
     dependencies:
       esbuild: 0.25.8
@@ -23793,7 +23865,7 @@ snapshots:
       '@types/markdown-it': 14.1.2
       '@vitejs/plugin-vue': 5.2.4(vite@5.4.19(@types/node@20.19.9)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.21(typescript@5.8.3))
       '@vue/devtools-api': 7.7.7
-      '@vue/shared': 3.5.18
+      '@vue/shared': 3.5.21
       '@vueuse/core': 12.8.2(typescript@5.8.3)
       '@vueuse/integrations': 12.8.2(async-validator@4.2.5)(axios@1.11.0)(focus-trap@7.6.5)(fuse.js@7.1.0)(nprogress@0.2.0)(qrcode@1.5.4)(typescript@5.8.3)
       focus-trap: 7.6.5
@@ -23842,7 +23914,7 @@ snapshots:
       '@types/markdown-it': 14.1.2
       '@vitejs/plugin-vue': 5.2.4(vite@5.4.19(@types/node@20.19.9)(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.21(typescript@5.9.2))
       '@vue/devtools-api': 7.7.7
-      '@vue/shared': 3.5.18
+      '@vue/shared': 3.5.21
       '@vueuse/core': 12.8.2(typescript@5.9.2)
       '@vueuse/integrations': 12.8.2(async-validator@4.2.5)(axios@1.11.0)(focus-trap@7.6.5)(fuse.js@7.1.0)(nprogress@0.2.0)(qrcode@1.5.4)(typescript@5.9.2)
       focus-trap: 7.6.5
@@ -23940,7 +24012,7 @@ snapshots:
       '@types/markdown-it': 14.1.2
       '@vitejs/plugin-vue': 5.2.4(vite@5.4.19(@types/node@22.16.5)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.21(typescript@5.9.2))
       '@vue/devtools-api': 7.7.7
-      '@vue/shared': 3.5.18
+      '@vue/shared': 3.5.21
       '@vueuse/core': 12.8.2(typescript@5.9.2)
       '@vueuse/integrations': 12.8.2(async-validator@4.2.5)(axios@1.11.0)(focus-trap@7.6.5)(fuse.js@7.1.0)(nprogress@0.2.0)(qrcode@1.5.4)(typescript@5.9.2)
       focus-trap: 7.6.5
@@ -23989,7 +24061,7 @@ snapshots:
       '@types/markdown-it': 14.1.2
       '@vitejs/plugin-vue': 5.2.4(vite@5.4.19(@types/node@22.16.5)(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.21(typescript@5.8.3))
       '@vue/devtools-api': 7.7.7
-      '@vue/shared': 3.5.18
+      '@vue/shared': 3.5.21
       '@vueuse/core': 12.8.2(typescript@5.8.3)
       '@vueuse/integrations': 12.8.2(async-validator@4.2.5)(axios@1.11.0)(focus-trap@7.6.5)(fuse.js@7.1.0)(nprogress@0.2.0)(qrcode@1.5.4)(typescript@5.8.3)
       focus-trap: 7.6.5
@@ -24038,7 +24110,7 @@ snapshots:
       '@types/markdown-it': 14.1.2
       '@vitejs/plugin-vue': 5.2.4(vite@5.4.19(@types/node@22.16.5)(less@4.4.1)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.21(typescript@5.9.2))
       '@vue/devtools-api': 7.7.7
-      '@vue/shared': 3.5.18
+      '@vue/shared': 3.5.21
       '@vueuse/core': 12.8.2(typescript@5.9.2)
       '@vueuse/integrations': 12.8.2(async-validator@4.2.5)(axios@1.11.0)(focus-trap@7.6.5)(fuse.js@7.1.0)(nprogress@0.2.0)(qrcode@1.5.4)(typescript@5.9.2)
       focus-trap: 7.6.5
@@ -24392,7 +24464,7 @@ snapshots:
       chai: 5.2.1
       debug: 4.4.1
       expect-type: 1.2.2
-      magic-string: 0.30.17
+      magic-string: 0.30.18
       pathe: 2.0.3
       picomatch: 4.0.3
       std-env: 3.9.0
@@ -24476,7 +24548,7 @@ snapshots:
       chai: 5.2.1
       debug: 4.4.1
       expect-type: 1.2.2
-      magic-string: 0.30.17
+      magic-string: 0.30.18
       pathe: 2.0.3
       picomatch: 4.0.3
       std-env: 3.9.0
