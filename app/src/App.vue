@@ -10,6 +10,9 @@
           <router-link to="/" class="nav-link" active-class="active" exact-active-class="active">
             首页
           </router-link>
+          <router-link to="/packages" class="nav-link" active-class="active">
+            包测试
+          </router-link>
           <router-link to="/login" class="nav-link" active-class="active">
             登录
           </router-link>

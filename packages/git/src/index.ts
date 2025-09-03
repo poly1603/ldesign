@@ -71,6 +71,8 @@ import { GitRepository } from './core/GitRepository.js'
 import { GitBranch } from './core/GitBranch.js'
 import { GitStatus } from './core/GitStatus.js'
 import { GitRemote } from './core/GitRemote.js'
+import { GitStash } from './core/GitStash.js'
+import { SmartSync, SmartSyncOptions, SmartSyncResult } from './core/SmartSync.js'
 import type { GitRepositoryOptions } from './types/index.js'
 
 export class Git {
@@ -82,6 +84,10 @@ export class Git {
   public readonly status: GitStatus
   /** Git 远程仓库操作实例 */
   public readonly remote: GitRemote
+  /** Git stash 操作实例 */
+  public readonly stash: GitStash
+  /** 智能同步实例 */
+  public readonly smartSync: SmartSync
 
   /**
    * 构造函数
@@ -90,14 +96,17 @@ export class Git {
    */
   constructor(baseDir?: string, options?: GitRepositoryOptions) {
     this.repository = new GitRepository(baseDir, options)
-    
+
     // 获取 Simple Git 实例（通过私有属性访问）
     const git = (this.repository as any).git
     const repoBaseDir = this.repository.getBaseDir()
-    
+    const repoOptions = this.repository.getOptions()
+
     this.branch = new GitBranch(git, repoBaseDir)
     this.status = new GitStatus(git, repoBaseDir)
     this.remote = new GitRemote(git, repoBaseDir)
+    this.stash = new GitStash(repoBaseDir, repoOptions)
+    this.smartSync = new SmartSync(this)
   }
 
   /**
@@ -238,7 +247,41 @@ export class Git {
   public async listRemotes() {
     return this.remote.list(true)
   }
+
+  /**
+   * 智能同步提交
+   * 自动处理 stash、pull、pop、commit、push 流程
+   * @param commitMessage 提交消息
+   * @param files 要提交的文件列表
+   * @param options 智能同步选项
+   */
+  public async syncCommit(
+    commitMessage: string,
+    files?: string[],
+    options?: SmartSyncOptions
+  ): Promise<SmartSyncResult> {
+    // 创建带选项的智能同步实例
+    const smartSync = new SmartSync(this, options)
+    return smartSync.syncCommit(commitMessage, files)
+  }
+
+  /**
+   * 回滚智能同步操作
+   * @param stashId stash ID
+   */
+  public async rollbackSync(stashId?: string): Promise<SmartSyncResult> {
+    return this.smartSync.rollback(stashId)
+  }
 }
+
+// 导出工具类
+export { ConflictResolver } from './utils/ConflictResolver.js'
+export { ProgressIndicator } from './utils/ProgressIndicator.js'
+
+// 导出核心类
+export { GitStash } from './core/GitStash.js'
+export { SmartSync } from './core/SmartSync.js'
+export type { SmartSyncOptions, SmartSyncResult } from './core/SmartSync.js'
 
 // 默认导出
 export default Git

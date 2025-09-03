@@ -5,6 +5,8 @@
 
 import { Git } from './index.js'
 import { GitError } from './errors/index.js'
+import { ConflictResolver } from './utils/ConflictResolver.js'
+import { SmartSyncOptions } from './core/SmartSync.js'
 
 /**
  * 显示帮助信息
@@ -34,8 +36,13 @@ function showHelp(): void {
   remote list                     列出远程仓库
   remote add <name> <url>         添加远程仓库
   remote remove <name>            删除远程仓库
-  
+
   clone <url> [dir]               克隆仓库
+
+  智能同步命令:
+  sync-commit <message> [files...] 智能同步提交（自动处理冲突）
+  rollback [stash-id]              回滚智能同步操作
+  resolve [--ours|--theirs]        解决合并冲突
   
 选项:
   --help, -h                      显示帮助信息
@@ -48,6 +55,12 @@ function showHelp(): void {
   ldesign-git commit "Initial commit"
   ldesign-git branch create feature/new-feature
   ldesign-git push origin main
+
+  智能同步示例:
+  ldesign-git sync-commit "Add new feature"
+  ldesign-git sync-commit "Fix bug" src/main.js
+  ldesign-git resolve --ours
+  ldesign-git rollback
 `)
 }
 
@@ -322,6 +335,144 @@ async function main(): Promise<void> {
           const [url, dir] = cmdArgs
           const result = await git.clone(url, dir)
           formatResult(result)
+        }
+        break
+
+      case 'sync-commit':
+        {
+          if (cmdArgs.length === 0) {
+            console.error('❌ 请指定提交消息')
+            process.exit(1)
+          }
+
+          const [message, ...files] = cmdArgs
+
+          // 解析选项
+          const options: SmartSyncOptions = {
+            showProgress: true,
+            autoResolveConflicts: args.includes('--auto-resolve'),
+            conflictStrategy: args.includes('--ours') ? 'ours' :
+              args.includes('--theirs') ? 'theirs' : 'manual',
+            confirmBeforeAction: !args.includes('--no-confirm')
+          }
+
+          console.log('🚀 开始智能同步提交...')
+          const result = await git.syncCommit(message, files.length > 0 ? files : undefined, options)
+
+          if (result.success) {
+            console.log('\n✅ 智能同步提交成功!')
+            console.log(`📝 ${result.message}`)
+
+            if (result.steps.length > 0) {
+              console.log('\n执行步骤:')
+              result.steps.forEach(step => console.log(`  ${step}`))
+            }
+          } else {
+            console.error('\n❌ 智能同步提交失败!')
+            console.error(`📝 ${result.message}`)
+
+            if (result.error) {
+              console.error(`🔍 错误详情: ${result.error}`)
+            }
+
+            if (result.conflicts && !result.conflicts.resolved) {
+              console.log('\n🔀 检测到合并冲突:')
+              const resolver = new ConflictResolver(git)
+              const suggestions = resolver.getResolutionSuggestions(result.conflicts.conflictFiles)
+              suggestions.forEach(suggestion => console.log(suggestion))
+            }
+
+            if (result.rollbackAvailable) {
+              console.log('\n💡 可以使用以下命令回滚:')
+              console.log(`   ldesign-git rollback ${result.stashId || ''}`)
+            }
+
+            process.exit(1)
+          }
+        }
+        break
+
+      case 'rollback':
+        {
+          const stashId = cmdArgs[0]
+          console.log('↩️ 开始回滚操作...')
+
+          const result = await git.rollbackSync(stashId)
+
+          if (result.success) {
+            console.log('\n✅ 回滚成功!')
+            console.log(`📝 ${result.message}`)
+
+            if (result.steps.length > 0) {
+              console.log('\n执行步骤:')
+              result.steps.forEach(step => console.log(`  ${step}`))
+            }
+          } else {
+            console.error('\n❌ 回滚失败!')
+            console.error(`📝 ${result.message}`)
+            if (result.error) {
+              console.error(`🔍 错误详情: ${result.error}`)
+            }
+            process.exit(1)
+          }
+        }
+        break
+
+      case 'resolve':
+        {
+          const resolver = new ConflictResolver(git)
+
+          // 检查是否有冲突
+          const hasConflicts = await resolver.hasConflicts()
+          if (!hasConflicts) {
+            console.log('✅ 没有检测到合并冲突')
+            break
+          }
+
+          // 获取冲突文件
+          const conflictFiles = await resolver.getConflictFiles()
+          if (!conflictFiles.success || !conflictFiles.data) {
+            console.error('❌ 无法获取冲突文件信息')
+            process.exit(1)
+          }
+
+          console.log('🔀 检测到以下冲突文件:')
+          conflictFiles.data.forEach(file => {
+            console.log(`  - ${file.path} (${file.status})`)
+          })
+
+          // 解析解决策略
+          let strategy: 'ours' | 'theirs' | 'manual' = 'manual'
+          if (args.includes('--ours')) {
+            strategy = 'ours'
+          } else if (args.includes('--theirs')) {
+            strategy = 'theirs'
+          }
+
+          if (strategy !== 'manual') {
+            console.log(`\n🔧 使用策略 "${strategy}" 自动解决冲突...`)
+
+            const result = await resolver.resolveConflicts({
+              strategy,
+              autoResolve: true
+            })
+
+            if (result.resolved) {
+              console.log('✅ 冲突已自动解决!')
+              console.log('💡 请运行 git commit 完成合并')
+            } else {
+              console.error('❌ 自动解决冲突失败')
+              console.log('💡 请手动解决剩余冲突:')
+              result.unresolvedFiles.forEach(file => {
+                console.log(`  - ${file}`)
+              })
+            }
+          } else {
+            // 手动解决模式，显示建议
+            const suggestions = resolver.getResolutionSuggestions(conflictFiles.data)
+            console.log('\n💡 解决建议:')
+            suggestions.forEach(suggestion => console.log(suggestion))
+          }
         }
         break
 

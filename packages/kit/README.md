@@ -16,6 +16,8 @@
 - **❓ 交互询问** - 用户输入和选择界面
 - **🔔 系统通知** - 跨平台系统通知
 - **⚡ 性能监控** - 性能测试和监控工具
+- **🏗️ 脚手架系统** - 项目模板和脚手架管理
+- **🎨 控制台 UI** - 进度条、加载动画、状态指示器
 
 ## 📦 安装
 
@@ -39,7 +41,11 @@ import {
   PackageManager,
   SSLUtils,
   NotificationUtils,
-  PerformanceUtils
+  PerformanceUtils,
+  ScaffoldManager,
+  ProgressBar,
+  LoadingSpinner,
+  StatusIndicator
 } from '@ldesign/kit'
 
 // 字符串工具
@@ -600,6 +606,88 @@ const comparison = await PerformanceUtils.compareFunctions([
 comparison.forEach((result, index) => {
   console.log(`排名 ${result.rank}: ${result.name} - ${result.averageTime}ms`)
 })
+```
+
+### 🏗️ 脚手架系统
+
+```typescript
+import { ScaffoldManager, CliBuilder } from '@ldesign/kit'
+
+// 创建脚手架管理器
+const scaffold = new ScaffoldManager({
+  name: 'my-cli',
+  version: '1.0.0',
+  description: '我的项目脚手架',
+  environments: ['development', 'production', 'staging'],
+  defaultEnvironment: 'development'
+})
+
+// 初始化脚手架
+await scaffold.initialize()
+
+// 创建项目
+const result = await scaffold.createProject({
+  name: 'my-project',
+  template: 'vue-app',
+  environment: 'development',
+  interactive: true
+})
+
+// 创建 CLI 工具
+const cli = new CliBuilder({
+  name: 'my-cli',
+  version: '1.0.0',
+  description: '我的 CLI 工具',
+  scaffoldManager: scaffold
+})
+
+// 解析命令行参数
+cli.parse()
+```
+
+### 🎨 控制台 UI 组件
+
+```typescript
+import {
+  ProgressBar,
+  LoadingSpinner,
+  StatusIndicator,
+  MultiProgress,
+  ConsoleTheme
+} from '@ldesign/kit'
+
+// 进度条
+const progressBar = ProgressBar.createDetailed(100)
+progressBar.start()
+for (let i = 0; i <= 100; i += 10) {
+  progressBar.update(i)
+  await new Promise(resolve => setTimeout(resolve, 100))
+}
+progressBar.complete()
+
+// 加载动画
+const spinner = LoadingSpinner.createDots('加载中...')
+spinner.start()
+await someAsyncOperation()
+spinner.succeed('加载完成')
+
+// 状态指示器
+const status = StatusIndicator.create()
+status.success('操作成功')
+status.error('操作失败')
+status.warning('警告信息')
+status.info('提示信息')
+
+// 多任务进度
+const multiProgress = MultiProgress.create()
+multiProgress.start()
+multiProgress.addTask({ id: 'task1', name: '任务1', total: 100 })
+multiProgress.addTask({ id: 'task2', name: '任务2', total: 50 })
+
+// 主题系统
+const theme = ConsoleTheme.create('colorful')
+console.log(theme.success('成功消息'))
+console.log(theme.error('错误消息'))
 ```
 
 ## 🧪 测试

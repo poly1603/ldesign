@@ -419,4 +419,20 @@ export class GitRepository {
       return false
     }
   }
+
+  /**
+   * 执行原始 Git 命令
+   * @param args Git 命令参数
+   * @returns 操作结果
+   */
+  public async executeGitCommand(args: string[]): Promise<GitOperationResult<string>> {
+    return wrapGitOperation(async () => {
+      try {
+        const result = await this.git.raw(args)
+        return result
+      } catch (error: any) {
+        throw new Error(error?.message || error)
+      }
+    })
+  }
 }

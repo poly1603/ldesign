@@ -93,7 +93,6 @@ export {
   LoggerManager,
   ConsoleLogger,
   FileLogger,
-  ProgressBar,
   Timer,
   ErrorHandler
 } from './logger'
@@ -105,8 +104,35 @@ export {
   ConfigValidator,
   ConfigWatcher,
   EnvConfig,
-  SchemaValidator
+  SchemaValidator,
+  ConfigCache,
+  ConfigHotReload
 } from './config'
+
+export {
+  // IconFont 工具
+  SvgToIconFont,
+  IconFontGenerator,
+  CssGenerator
+} from './iconfont'
+
+export {
+  // 脚手架系统
+  ScaffoldManager,
+  TemplateManager,
+  PluginManager,
+  EnvironmentManager,
+  CliBuilder
+} from './scaffold'
+
+export {
+  // 控制台 UI 组件
+  ProgressBar,
+  LoadingSpinner,
+  StatusIndicator,
+  MultiProgress,
+  ConsoleTheme
+} from './console'
 
 export {
   // 缓存系统

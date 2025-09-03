@@ -7,6 +7,7 @@ import { promises as fs } from 'node:fs'
 import { join, extname, resolve } from 'node:path'
 import { EventEmitter } from 'node:events'
 import { FileSystem } from '../filesystem'
+import JSON5 from 'json5'
 import { StringUtils } from '../utils'
 
 /**
@@ -114,27 +115,37 @@ export class ConfigLoader extends EventEmitter {
     switch (ext) {
       case '.json':
         return this.parseJSON(content)
-      
+
+      case '.json5':
+        return this.parseJSON5(content)
+
       case '.yaml':
       case '.yml':
         return this.parseYAML(content)
-      
+
       case '.toml':
         return this.parseTOML(content)
-      
+
       case '.js':
       case '.mjs':
+      case '.cjs':
         return this.parseJavaScript(filePath)
-      
+
       case '.ts':
+      case '.mts':
+      case '.cts':
         return this.parseTypeScript(filePath)
-      
+
       case '.ini':
         return this.parseINI(content)
-      
+
       case '.env':
+      case '.env.local':
+      case '.env.development':
+      case '.env.production':
+      case '.env.test':
         return this.parseEnv(content)
-      
+
       default:
         // 尝试作为 JSON 解析
         try {
@@ -181,6 +192,17 @@ export class ConfigLoader extends EventEmitter {
       return JSON.parse(content)
     } catch (error) {
       throw new Error(`Invalid JSON format: ${error}`)
+    }
+  }
+
+  /**
+   * 解析 JSON5
+   */
+  private parseJSON5(content: string): Record<string, any> {
+    try {
+      return JSON5.parse(content)
+    } catch (error) {
+      throw new Error(`Invalid JSON5 format: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -403,10 +425,12 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 导出配置
    */
-  export(config: Record<string, any>, format: 'json' | 'yaml' | 'toml' | 'ini' | 'env'): string {
+  export(config: Record<string, any>, format: 'json' | 'json5' | 'yaml' | 'toml' | 'ini' | 'env'): string {
     switch (format) {
       case 'json':
         return JSON.stringify(config, null, 2)
+      case 'json5':
+        return JSON5.stringify(config, null, 2)
       case 'yaml':
         return this.serializeYAML(config)
       case 'toml':
@@ -423,10 +447,12 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 导入配置
    */
-  import(data: string, format: 'json' | 'yaml' | 'toml' | 'ini' | 'env'): Record<string, any> {
+  import(data: string, format: 'json' | 'json5' | 'yaml' | 'toml' | 'ini' | 'env'): Record<string, any> {
     switch (format) {
       case 'json':
         return this.parseJSON(data)
+      case 'json5':
+        return this.parseJSON5(data)
       case 'yaml':
         return this.parseYAML(data)
       case 'toml':

@@ -62,4 +62,16 @@ export const routes: RouteRecordRaw[] = [
       animation: 'fade',
     },
   },
+  {
+    path: '/packages',
+    name: 'packages',
+    component: () => import('../pages/PackageTest.vue'),
+    meta: {
+      title: '包测试',
+      description: 'LDesign 工作空间包测试页面',
+      cache: true,
+      preload: true,
+      animation: 'slide',
+    },
+  },
 ]

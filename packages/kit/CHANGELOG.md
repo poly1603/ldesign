@@ -8,7 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial release of @ldesign/kit
+- **Scaffold System** - Complete project scaffolding solution
+  - ScaffoldManager: Unified scaffolding management
+  - TemplateManager: Template rendering and management
+  - PluginManager: Extensible plugin system
+  - EnvironmentManager: Multi-environment configuration
+  - CliBuilder: CAC-based CLI interface builder
+
+- **Console UI Components** - Rich terminal UI components
+  - ProgressBar: Multiple progress bar styles with themes
+  - LoadingSpinner: Various loading animations
+  - StatusIndicator: Success/error/warning/info status display
+  - MultiProgress: Parallel task progress management
+  - ConsoleTheme: Customizable theme system
+
 - Complete TypeScript support with full type definitions
 - Comprehensive test suite with high coverage
 - Detailed documentation and examples

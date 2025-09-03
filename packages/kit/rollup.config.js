@@ -92,7 +92,13 @@ const subModules = [
   'cli',
   'inquirer',
   'notification',
-  'performance'
+  'performance',
+  'config',
+  'database',
+  'events',
+  'logger',
+  'network',
+  'process'
 ]
 
 const subModuleConfigs = subModules.map(module => defineConfig({

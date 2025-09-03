@@ -119,6 +119,16 @@
       "import": "./dist/database/index.js",
       "require": "./dist/database/index.cjs",
       "types": "./dist/database/index.d.ts"
+    },
+    "./scaffold": {
+      "import": "./dist/scaffold/index.js",
+      "require": "./dist/scaffold/index.cjs",
+      "types": "./dist/scaffold/index.d.ts"
+    },
+    "./console": {
+      "import": "./dist/console/index.js",
+      "require": "./dist/console/index.cjs",
+      "types": "./dist/console/index.d.ts"
     }
   },
   "files": [
@@ -147,18 +157,30 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "docs:typedoc": "typedoc"
+    "docs:typedoc": "typedoc",
+    "demo:scaffold": "node examples/scaffold-demo.js",
+    "demo:console": "node examples/console-ui-demo.js"
   },
   "dependencies": {
     "archiver": "^6.0.1",
     "cac": "^6.7.14",
     "chalk": "^5.3.0",
+    "chalk-animation": "^2.0.3",
+    "cli-progress": "^3.12.0",
+    "figlet": "^1.8.2",
     "glob": "^10.3.10",
     "jiti": "^1.21.0",
+    "json5": "^2.2.3",
     "node-fetch": "^3.3.2",
     "node-notifier": "^10.0.1",
+    "ora": "^5.4.1",
     "prompts": "^2.4.2",
     "simple-git": "^3.20.0",
+    "svg2ttf": "^6.0.3",
+    "svgicons2svgfont": "^15.0.1",
+    "ttf2eot": "^3.1.0",
+    "ttf2woff": "^3.0.0",
+    "ttf2woff2": "^8.0.0",
     "ws": "^8.14.2",
     "yauzl": "^3.0.0"
   },
