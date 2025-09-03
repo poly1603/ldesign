@@ -29,6 +29,7 @@ export * from './ssl'
 export * from './inquirer'
 export * from './notification'
 export * from './performance'
+export * from './builder'
 
 // 便捷导入
 export {
@@ -161,6 +162,19 @@ export {
   FormValidator,
   ValidationRules
 } from './validation'
+
+export {
+  // 构建工具
+  ViteBuilder,
+  RollupBuilder,
+  BuilderFactory,
+  BuilderUtils,
+  createViteBuilder,
+  createRollupBuilder,
+  createViteBuilderWithPreset,
+  createRollupBuilderWithPreset,
+  BuiltinPresets
+} from './builder'
 
 // 版本信息
 export const version = '1.0.0'
