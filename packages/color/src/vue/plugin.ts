@@ -136,7 +136,9 @@ function createThemeManagerConfig(config: ColorPluginOptions) {
       strategy: config.backgroundStrategy,
       basedOnPrimary: config.generateBackgroundFromPrimary
     },
-    debug: config.debug
+    debug: config.debug,
+    onThemeChanged: config.onThemeChanged,
+    onError: config.onError
   }
 }
 
@@ -183,8 +185,15 @@ export function createColorEnginePlugin(options: ColorPluginOptions = {}) {
         // 兼容不同的应用实例类型
         if (typeof app.provide === 'function') {
           app.provide('themeManager', themeManager)
+          app.provide('$themeManager', themeManager) // 额外的注入键
         } else if ((app as any).app && typeof (app as any).app.provide === 'function') {
           (app as any).app.provide('themeManager', themeManager)
+            (app as any).app.provide('$themeManager', themeManager)
+        }
+
+        // 同时添加到 window 对象作为备用方案
+        if (typeof window !== 'undefined') {
+          (window as any).themeManager = themeManager
         }
 
         // 注册组件 (暂时注释掉，等待 Vue 构建支持)
@@ -195,15 +204,8 @@ export function createColorEnginePlugin(options: ColorPluginOptions = {}) {
         // 应用初始主题（通过主题管理器）
         await themeManager.setTheme(config.defaultTheme, config.defaultMode)
 
-        // 设置主题切换回调
-        if (config.onThemeChanged) {
-          themeManager.onThemeChange(config.onThemeChanged)
-        }
-
-        // 设置错误处理回调
-        if (config.onError) {
-          themeManager.onError(config.onError)
-        }
+        // 注意：主题切换回调和错误处理回调已在ThemeManager构造时设置
+        // 不需要在这里重复设置
 
         if (config.debug) {
           console.log('🎨 Color Engine 插件安装成功')
@@ -339,8 +341,15 @@ export function createColorPlugin(options: ColorPluginOptions = {}): Plugin {
         // 兼容不同的应用实例类型
         if (typeof app.provide === 'function') {
           app.provide('themeManager', themeManager)
+          app.provide('$themeManager', themeManager) // 额外的注入键
         } else if ((app as any).app && typeof (app as any).app.provide === 'function') {
           (app as any).app.provide('themeManager', themeManager)
+            (app as any).app.provide('$themeManager', themeManager)
+        }
+
+        // 同时添加到 window 对象作为备用方案
+        if (typeof window !== 'undefined') {
+          (window as any).themeManager = themeManager
         }
 
         // 注册组件 (暂时注释掉，等待 Vue 构建支持)

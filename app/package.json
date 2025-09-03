@@ -17,7 +17,6 @@
     "@ldesign/crypto": "workspace:*",
     "@ldesign/device": "workspace:*",
     "@ldesign/engine": "workspace:*",
-    "@lemonform/form": "workspace:*",
     "@ldesign/git": "workspace:*",
     "@ldesign/http": "workspace:*",
     "@ldesign/i18n": "workspace:*",
@@ -31,12 +30,14 @@
     "@ldesign/template": "workspace:*",
     "@ldesign/theme": "workspace:*",
     "@ldesign/watermark": "workspace:*",
+    "@lemonform/form": "workspace:*",
     "vue": "^3.4.0",
     "vue-router": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@vitejs/plugin-vue": "^5.0.0",
+    "@vitejs/plugin-vue-jsx": "^5.1.1",
     "typescript": "^5.0.0",
     "vite": "^5.0.0",
     "vue-tsc": "^2.0.0"

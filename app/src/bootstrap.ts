@@ -13,13 +13,13 @@ export async function bootstrap() {
   // 使用优化后的一步到位API创建并挂载应用
   const engine = createAndMountApp(App, '#app', {
     config: {
-      debug: true,
+      debug: false, // 关闭调试模式减少控制台输出
       appName: 'LDesign Demo App',
       version: '1.0.0',
       features: {
         enableHotReload: true,
-        enableDevTools: true,
-        enablePerformanceMonitoring: true,
+        enableDevTools: false, // 关闭开发工具
+        enablePerformanceMonitoring: false, // 关闭性能监控
         enableErrorReporting: true,
         enableSecurityProtection: false,
         enableCaching: true,

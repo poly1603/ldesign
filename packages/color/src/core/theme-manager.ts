@@ -39,7 +39,7 @@ const DEFAULT_OPTIONS: Required<
   defaultTheme: 'default',
   fallbackTheme: 'default',
   storage: 'localStorage',
-  storageKey: 'ldesign-theme',
+  storageKey: 'ldesign-theme-manager',
   autoDetect: true,
   themes: [],
   cache: true,

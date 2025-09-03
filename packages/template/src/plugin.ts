@@ -452,17 +452,60 @@ export function createTemplateEnginePlugin(options: TemplatePluginOptions = {}) 
   return {
     name: 'template',
     version: '1.0.0',
-    install(engine: any) {
-      // 获取Vue应用实例
-      const app = engine.app || engine
+    async install(context: any) {
+      const { engine } = context
 
-      // 安装Vue插件
-      if (app && typeof app.use === 'function') {
-        app.use(TemplatePlugin, options)
-      }
-      else {
-        // 直接调用插件的install方法
-        TemplatePlugin.install(app, options)
+      try {
+        // 定义实际的安装逻辑
+        const performInstall = async () => {
+          engine.logger?.info(`[Template Plugin] performInstall called`)
+
+          // 获取 Vue 应用实例
+          const vueApp = engine.getApp()
+          if (!vueApp) {
+            throw new Error(
+              'Vue app not found. Make sure the engine has created a Vue app before installing template plugin.',
+            )
+          }
+
+          engine.logger?.info(`[Template Plugin] Vue app found, proceeding with installation`)
+
+          // 记录插件安装开始
+          engine.logger?.info(`Installing template plugin...`, {
+            version: '1.0.0',
+            options,
+          })
+
+          // 安装Vue插件
+          if (vueApp && typeof vueApp.use === 'function') {
+            vueApp.use(TemplatePlugin, options)
+          }
+          else {
+            // 直接调用插件的install方法
+            TemplatePlugin.install(vueApp, options)
+          }
+
+          engine.logger?.info(`Template plugin installed successfully`)
+        }
+
+        // 检查 Vue 应用是否已经创建
+        const vueApp = engine.getApp()
+        if (vueApp) {
+          engine.logger?.info(`[Template Plugin] Vue app found, installing immediately`)
+          await performInstall()
+        } else {
+          engine.logger?.info(`[Template Plugin] Vue app not found, registering event listener`)
+          // 如果 Vue 应用还没有创建，监听 app:created 事件
+          engine.events?.once('app:created', async () => {
+            engine.logger?.info(`[Template Plugin] app:created event received, installing now`)
+            await performInstall()
+          })
+        }
+
+        engine.logger?.info(`Template plugin registered, waiting for Vue app creation...`)
+      } catch (error) {
+        console.error(`[Template Plugin] Installation failed:`, error)
+        throw error
       }
     },
   }

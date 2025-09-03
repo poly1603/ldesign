@@ -18,7 +18,7 @@
           </router-link>
         </div>
         <div class="app-controls">
-          <ThemeSelector mode="select" :show-preview="true" :custom-themes="customThemes"
+          <ThemeSelector mode="select" :show-preview="true"
             :disabled-builtin-themes="disabledBuiltinThemes" placeholder="选择主题" />
           <DarkModeToggle />
         </div>
@@ -53,50 +53,18 @@
 
 import { ref } from 'vue'
 import { ThemeSelector, DarkModeToggle } from '@ldesign/color'
-import type { ThemeConfig } from '@ldesign/color'
 
 // 导入国际化相关功能
 const t = (key: string) => key // 临时的翻译函数
 const getCurrentLanguageName = () => 'Chinese' // 临时的语言名称函数
 
-// 自定义主题配置
-const customThemes = ref<ThemeConfig[]>([
-  {
-    name: 'custom-brand',
-    displayName: '品牌主题',
-    description: '公司品牌色主题',
-    builtin: false,
-    colors: {
-      primary: '#6366f1',
-      secondary: '#8b5cf6',
-      success: '#10b981',
-      warning: '#f59e0b',
-      danger: '#ef4444'
-    }
-  },
-  {
-    name: 'custom-ocean',
-    displayName: '海洋主题',
-    description: '深海蓝色主题',
-    builtin: false,
-    colors: {
-      primary: '#0ea5e9',
-      secondary: '#06b6d4',
-      success: '#059669',
-      warning: '#d97706',
-      danger: '#dc2626'
-    }
-  }
-])
-
 // 禁用的内置主题列表（示例：禁用红色和粉色主题）
 const disabledBuiltinThemes = ref<string[]>(['red', 'pink'])
 
-console.log('🎉 App.vue 组件已加载')
-console.log('🚀 使用 @ldesign/router 路由系统')
-console.log('🌐 使用 @ldesign/i18n 国际化系统')
-console.log('🔧 展示优化后的 LDesign Engine + Router + I18n 集成')
-console.log('🎨 使用 @ldesign/color 主题管理系统')
+// 注意：自定义主题配置已移除，避免配置错误
+// 如需自定义主题，请参考 @ldesign/color 包的文档
+
+// 应用组件已加载，减少控制台输出
 </script>
 
 <style>
@@ -108,49 +76,29 @@ console.log('🎨 使用 @ldesign/color 主题管理系统')
 }
 
 /*
- * 使用 @ldesign/color 生成的CSS变量
- * 这些变量由主题管理器动态注入到 #ldesign-color-variables style标签中
- * 这里定义的是语义化映射，将业务语义映射到设计系统变量
+ * 直接使用 @ldesign/color 生成的CSS变量
+ * 这些变量由主题管理器动态注入，无需重复定义
+ *
+ * 可用的变量包括：
+ * - 文本颜色：--ldesign-text-color-primary, --ldesign-text-color-secondary, --ldesign-text-color-placeholder, --ldesign-text-color-disabled
+ * - 背景颜色：--ldesign-bg-color-page, --ldesign-bg-color-container, --ldesign-bg-color-component
+ * - 边框颜色：--ldesign-border-color, --ldesign-border-color-hover, --ldesign-border-color-focus
+ * - 主题色：--ldesign-brand-color, --ldesign-brand-color-hover, --ldesign-brand-color-active
+ * - 功能色：--ldesign-success-color, --ldesign-warning-color, --ldesign-error-color
+ * - 色阶：--ldesign-brand-color-1 到 --ldesign-brand-color-10
+ * - 阴影：--ldesign-shadow-1, --ldesign-shadow-2, --ldesign-shadow-3
  */
-:root {
-  /* 文本颜色 - 映射到 @ldesign/color 变量 */
-  --color-text: var(--ldesign-text-color, var(--ldesign-font-gray-4, #1f2937));
-  --color-text-secondary: var(--ldesign-text-color-secondary, var(--ldesign-font-gray-3, #6b7280));
-  --color-text-muted: var(--ldesign-text-color-placeholder, var(--ldesign-font-gray-2, #9ca3af));
 
-  /* 背景颜色 - 映射到 @ldesign/color 变量 */
-  --color-bg: var(--ldesign-bg-color-page, #ffffff);
-  --color-bg-secondary: var(--ldesign-bg-color-container, #f8f9fa);
-  --color-bg-tertiary: var(--ldesign-bg-color-component, #f1f3f4);
-
-  /* 边框和阴影 - 映射到 @ldesign/color 变量 */
-  --color-border: var(--ldesign-border-color, var(--ldesign-border-level-1-color, #e5e7eb));
-  --color-shadow: var(--ldesign-shadow-1, rgba(0, 0, 0, 0.1));
-
-  /* 功能色 - 映射到 @ldesign/color 变量 */
-  --color-primary: var(--ldesign-brand-color, #1677ff);
-  --color-secondary: var(--ldesign-brand-color-6, #0062eb);
-  --color-success: var(--ldesign-success-color, #52c41a);
-  --color-warning: var(--ldesign-warning-color, #faad14);
-  --color-danger: var(--ldesign-danger-color, #ff4d4f);
-
-  /* 主题色阶 - 直接使用 @ldesign/color 生成的色阶 */
-  --color-primary-light: var(--ldesign-brand-color-3, #66a6ff);
-  --color-primary-lighter: var(--ldesign-brand-color-1, #b8d5ff);
-  --color-primary-dark: var(--ldesign-brand-color-8, #004099);
-  --color-primary-darker: var(--ldesign-brand-color-10, #001e47);
-
-  /* 交互状态色 */
-  --color-primary-hover: var(--ldesign-brand-color-hover, var(--ldesign-brand-color-5, #4096ff));
-  --color-primary-active: var(--ldesign-brand-color-active, var(--ldesign-brand-color-7, #0050b3));
-  --color-primary-focus: var(--ldesign-brand-color-focus, var(--ldesign-brand-color-4, #69b1ff));
+/* 确保主题切换有平滑过渡效果 */
+html, body {
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   line-height: 1.6;
-  color: var(--color-text);
-  background-color: var(--color-bg);
+  color: var(--ldesign-text-color-primary);
+  background-color: var(--ldesign-bg-color-page);
   transition: all 0.3s ease;
 }
 
@@ -160,14 +108,14 @@ body {
   flex-direction: column;
 }
 
-/* 导航栏样式 - 使用主题色阶 */
+/* 导航栏样式 - 直接使用 @ldesign/color 变量 */
 .app-nav {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  color: var(--color-bg);
+  background: linear-gradient(135deg, var(--ldesign-brand-color) 0%, var(--ldesign-brand-color-8) 100%);
+  color: var(--ldesign-font-white-1);
   padding: 1rem 0;
-  box-shadow: 0 2px 8px var(--color-shadow);
+  box-shadow: var(--ldesign-shadow-2);
   transition: all 0.3s ease;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--ldesign-border-color);
   backdrop-filter: blur(10px);
 }
 
@@ -192,7 +140,7 @@ body {
 }
 
 .nav-link {
-  color: var(--color-bg);
+  color: var(--ldesign-font-white-1);
   text-decoration: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -202,32 +150,32 @@ body {
 }
 
 .nav-link:hover {
-  background: var(--color-primary-lighter);
-  color: var(--color-primary-darker);
+  background: var(--ldesign-brand-color-2);
+  color: var(--ldesign-brand-color-9);
   transform: translateY(-1px);
 }
 
 .nav-link.active {
-  background: var(--color-bg);
-  color: var(--color-primary);
-  box-shadow: 0 2px 4px var(--color-shadow);
+  background: var(--ldesign-font-white-1);
+  color: var(--ldesign-brand-color);
+  box-shadow: var(--ldesign-shadow-1);
 }
 
 /* 主内容区域 */
 .app-main {
   flex: 1;
-  background-color: var(--color-bg);
+  background-color: var(--ldesign-bg-color-page);
   transition: all 0.3s ease;
   min-height: calc(100vh - 200px);
 }
 
 /* 底部样式 */
 .app-footer {
-  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
-  color: var(--color-text-secondary);
+  background: linear-gradient(135deg, var(--ldesign-bg-color-container) 0%, var(--ldesign-bg-color-component) 100%);
+  color: var(--ldesign-text-color-secondary);
   padding: 2rem 0;
   text-align: center;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--ldesign-border-color);
   transition: all 0.3s ease;
   backdrop-filter: blur(5px);
 }

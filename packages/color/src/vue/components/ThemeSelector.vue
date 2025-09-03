@@ -161,12 +161,15 @@ const emit = defineEmits<{
   modeChange: [mode: 'light' | 'dark']
 }>()
 
-// 获取主题管理器
-const themeManager = inject<any>('themeManager', null)
+// 获取主题管理器 - 尝试多种注入方式
+const themeManager = inject<any>('themeManager', null) ||
+                    inject<any>('$themeManager', null) ||
+                    (typeof window !== 'undefined' && (window as any).themeManager)
 
 // 检查主题管理器是否可用
 if (!themeManager) {
   console.warn('[ThemeSelector] themeManager 未找到，某些功能可能无法正常工作')
+  console.warn('[ThemeSelector] 请确保已正确安装 color 插件')
 }
 
 // 响应式数据
@@ -500,6 +503,7 @@ onUnmounted(() => {
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 200px;
+  white-space: nowrap;
 }
 
 .theme-selector__select-enhanced:hover {
@@ -516,6 +520,9 @@ onUnmounted(() => {
 .theme-selector__select-label {
   font-weight: 500;
   color: #262626;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .theme-selector__select-desc {
@@ -563,6 +570,7 @@ onUnmounted(() => {
   padding: 8px 12px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  min-height: 48px;
 }
 
 .theme-selector__select-option:hover {
@@ -576,11 +584,16 @@ onUnmounted(() => {
 
 .theme-selector__select-option-content {
   flex: 1;
+  min-width: 0; /* 允许flex子元素收缩 */
+  overflow: hidden;
 }
 
 .theme-selector__select-option-label {
   display: block;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .theme-selector__select-option-desc {
@@ -588,6 +601,10 @@ onUnmounted(() => {
   font-size: 12px;
   color: #8c8c8c;
   margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
 }
 
 .theme-selector__select-option-check {

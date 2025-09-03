@@ -41,9 +41,9 @@ const themeColorMap: Record<string, string> = {
  */
 export const colorPlugin = createColorEnginePlugin({
   // 基础配置 - 使用缓存的状态或默认值
-  defaultTheme: cachedState.theme || 'blue', // 优先使用缓存的主题
-  defaultMode: cachedState.mode || 'light', // 优先使用缓存的模式
-  debug: true, // 开发环境启用调试
+  defaultTheme: 'default', // 使用默认主题，确保主题存在
+  defaultMode: 'light', // 默认亮色模式
+  debug: false, // 关闭调试减少控制台输出
 
   // 组件注册
   registerComponents: true, // 自动注册主题组件
@@ -73,35 +73,8 @@ export const colorPlugin = createColorEnginePlugin({
     // 例如：通知其他系统、更新用户偏好设置等
   },
 
-  // 插件初始化完成回调
-  onReady: async (themeManager: any) => {
-    console.log(`🚀 [ColorPlugin] 插件初始化完成，恢复缓存主题: ${cachedState.theme} (${cachedState.mode})`)
-
-    // 如果有缓存的主题，应用对应的主题色
-    if (cachedState.theme && cachedState.theme !== 'blue') {
-      const themeColor = themeColorMap[cachedState.theme]
-      if (themeColor) {
-        // 使用增强的主题应用器应用缓存的主题
-        globalThemeApplier.applyTheme(themeColor, cachedState.mode, { name: cachedState.theme })
-        console.log(`✅ [ColorPlugin] 缓存主题已恢复: ${cachedState.theme} -> ${themeColor}`)
-      }
-    }
-  },
-
-  // 错误处理回调
-  onError: (error: Error) => {
-    console.error('🚨 主题管理错误:', error)
-
-    // 在生产环境中，可以将错误发送到监控系统
-    if (process.env.NODE_ENV === 'production') {
-      // 发送错误到监控系统
-      // errorReporting.captureException(error)
-    }
-
-    // 显示用户友好的错误提示
-    // 这里可以集成应用的通知系统
-    // notification.error('主题切换失败，请稍后重试')
-  }
+  // 简化配置，移除有问题的回调
+  // 主题变化会自动处理，无需手动回调
 })
 
 /**

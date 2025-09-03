@@ -849,10 +849,9 @@ export class EnhancedThemeApplier {
       '--ldesign-text-color-placeholder': 'var(--ldesign-font-gray-3)',
       '--ldesign-text-color-disabled': 'var(--ldesign-font-gray-4)',
 
-      // 背景色系统映射
-      '--ldesign-bg-color-page': 'var(--ldesign-bg-color-page)',
-      '--ldesign-bg-color-container': 'var(--ldesign-bg-color-container)',
-      '--ldesign-bg-color-component': 'var(--ldesign-bg-color-component)',
+      // 背景色系统映射（移除自引用，直接使用具体的背景色变量）
+      // 注意：这些变量已经在 generateBackgroundColorSystem 中定义了具体值
+      // 不需要在这里重复映射
 
       // 边框色映射
       '--ldesign-border-color': 'var(--ldesign-border-level-1-color)',
@@ -1000,18 +999,18 @@ export class EnhancedThemeApplier {
 /**
  * 主题缓存管理器
  * 负责主题状态的持久化存储和恢复
+ * 与ThemeManager使用相同的存储格式，避免冲突
  */
 export class ThemeCacheManager {
-  private readonly THEME_KEY = 'ldesign-theme'
-  private readonly MODE_KEY = 'ldesign-mode'
+  private readonly STORAGE_KEY = 'ldesign-color-theme'
 
   /**
    * 保存主题状态到缓存
    */
   saveThemeState(theme: string, mode: 'light' | 'dark'): void {
     try {
-      localStorage.setItem(this.THEME_KEY, theme)
-      localStorage.setItem(this.MODE_KEY, mode)
+      const data = { theme, mode }
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data))
       console.log(`💾 主题状态已缓存: ${theme} (${mode})`)
     } catch (error) {
       console.warn('⚠️ 主题状态缓存失败:', error)
@@ -1023,14 +1022,22 @@ export class ThemeCacheManager {
    */
   loadThemeState(): { theme: string; mode: 'light' | 'dark' } {
     try {
-      const theme = localStorage.getItem(this.THEME_KEY) || 'blue'
-      const mode = (localStorage.getItem(this.MODE_KEY) as 'light' | 'dark') || 'light'
-      console.log(`📂 主题状态已恢复: ${theme} (${mode})`)
-      return { theme, mode }
+      const stored = localStorage.getItem(this.STORAGE_KEY)
+      if (stored) {
+        const { theme, mode } = JSON.parse(stored)
+        console.log(`📂 主题状态已恢复: ${theme} (${mode})`)
+        return { theme: theme || 'default', mode: mode || 'light' }
+      }
     } catch (error) {
       console.warn('⚠️ 主题状态恢复失败，使用默认值:', error)
-      return { theme: 'blue', mode: 'light' }
+      // 清理可能损坏的数据
+      this.clearThemeState()
     }
+
+    // 返回默认值
+    const defaultState = { theme: 'default', mode: 'light' as const }
+    console.log(`📂 使用默认主题状态: ${defaultState.theme} (${defaultState.mode})`)
+    return defaultState
   }
 
   /**
@@ -1038,8 +1045,10 @@ export class ThemeCacheManager {
    */
   clearThemeState(): void {
     try {
-      localStorage.removeItem(this.THEME_KEY)
-      localStorage.removeItem(this.MODE_KEY)
+      localStorage.removeItem(this.STORAGE_KEY)
+      // 同时清理旧的存储格式
+      localStorage.removeItem('ldesign-theme')
+      localStorage.removeItem('ldesign-mode')
       console.log('🗑️ 主题状态缓存已清除')
     } catch (error) {
       console.warn('⚠️ 清除主题状态缓存失败:', error)
