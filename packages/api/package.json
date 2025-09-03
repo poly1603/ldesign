@@ -29,31 +29,22 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
-      "import": "./esm/index.js",
-      "require": "./cjs/index.js"
-    },
-    "./vue": {
-      "types": "./types/vue/index.d.ts",
-      "import": "./esm/vue/index.js",
-      "require": "./cjs/vue/index.js"
-    },
-    "./package.json": "./package.json"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
   },
-  "main": "cjs/index.js",
-  "module": "esm/index.js",
-  "types": "types/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "browser": "dist/index.min.js",
   "files": [
-    "CHANGELOG.md",
     "README.md",
-    "cjs",
-    "dist",
-    "esm",
-    "types"
+    "CHANGELOG.md",
+    "dist"
   ],
   "scripts": {
-    "build": "ldesign-builder build",
+    "build": "node scripts/build.js",
     "build:watch": "ldesign-builder build --watch",
     "dev": "rollup -c -w",
     "type-check": "vue-tsc --noEmit",
@@ -74,7 +65,8 @@
     "deploy": "tsx ../../tools/deploy/package-deployer.ts api",
     "deploy:beta": "tsx ../../tools/deploy/package-deployer.ts api --tag beta",
     "deploy:alpha": "tsx ../../tools/deploy/package-deployer.ts api --tag alpha",
-    "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts api --dry-run"
+    "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts api --dry-run",
+    "build:dev": "node scripts/build.js --dev"
   },
   "peerDependencies": {
     "vue": "^3.3.0"

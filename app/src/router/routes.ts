@@ -86,4 +86,28 @@ export const routes: RouteRecordRaw[] = [
       animation: 'fade',
     },
   },
+  {
+    path: '/http-test',
+    name: 'http-test',
+    component: () => import('../http/test-page.vue'),
+    meta: {
+      title: 'HTTP 插件重构测试',
+      description: '验证重构后的 HTTP 插件功能',
+      cache: false,
+      preload: false,
+      animation: 'slide',
+    },
+  },
+  {
+    path: '/health-check',
+    name: 'health-check',
+    component: () => import('../test-app-health.vue'),
+    meta: {
+      title: '应用健康检查',
+      description: '检查所有插件和功能是否正常工作',
+      cache: false,
+      preload: false,
+      animation: 'fade',
+    },
+  },
 ]
