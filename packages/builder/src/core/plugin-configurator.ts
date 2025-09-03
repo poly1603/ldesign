@@ -10,7 +10,7 @@ import type {
   ProjectScanResult,
 } from '../types'
 import { Logger } from '../utils/logger'
-import path from 'path'
+
 
 const logger = new Logger('PluginConfigurator')
 
@@ -238,16 +238,14 @@ export class PluginConfigurator {
 
     logger.info('CSS 处理已启用，开始配置样式插件...')
 
-    // 对于 Vue 项目：先提取并移除 SFC 内样式，由我们统一汇总到独立 CSS
+    // 对于 Vue 项目：添加样式提取插件
     if (requirements.hasVue) {
       const vueStyleExtractPlugin = this.createVueStyleExtractPlugin(context)
       plugins.push(vueStyleExtractPlugin)
-      const vueStyleStripPlugin = this.createVueStyleStripPlugin()
-      plugins.push(vueStyleStripPlugin)
-      logger.info('Vue 样式提取与移除插件配置成功')
+      logger.info('Vue 样式提取插件配置成功')
     }
 
-    // 配置主要的 CSS 提取插件（处理独立样式文件），并避免处理 Vue 的样式虚拟模块
+    // 配置主要的 CSS 提取插件（处理独立样式文件和 Vue 提取的样式）
     const postcssPlugin = await this.createPlugin('postcss', context)
     if (postcssPlugin) {
       plugins.push(postcssPlugin)
@@ -276,23 +274,12 @@ export class PluginConfigurator {
    */
   private async configureFrameworkPlugins(context: BuildContext, requirements: any, plugins: Plugin[]): Promise<void> {
     if (requirements.projectType === 'vue' || requirements.hasVue) {
-      // 如果禁用了样式处理，添加预处理插件来移除样式块
-      if (context.options.css === false) {
-        logger.info('添加 Vue 样式移除插件')
-        const vueStyleStripPlugin = this.createVueStyleStripPlugin()
-        plugins.push(vueStyleStripPlugin)
-      } else {
-        logger.info('启用 CSS 处理，保留 Vue 文件中的样式')
-      }
+      logger.info('配置 Vue 插件')
 
       const vuePlugin = await this.createPlugin('vue', context)
       if (vuePlugin != null) {
         plugins.push(vuePlugin as Plugin)
       }
-
-      // 添加 Vue 文件名优化插件
-      const vueFilenamePlugin = this.createVueFilenamePlugin()
-      plugins.push(vueFilenamePlugin)
 
       // 如果检测到 JSX/TSX 文件，添加 Vue JSX 支持
       if (requirements.hasJSX || requirements.hasTsx) {
@@ -423,6 +410,8 @@ export class PluginConfigurator {
       const { default: commonjs } = await import('@rollup/plugin-commonjs')
       return commonjs({
         include: ['node_modules/**'],
+        requireReturnsDefault: 'auto',
+        defaultIsModuleExports: true,
         ...context.options.commonjs,
       })
     }
@@ -555,6 +544,7 @@ export class PluginConfigurator {
   private createPostCSSPlugin: PluginFactory = async (context) => {
     try {
       const postcss = await import('rollup-plugin-postcss')
+      const autoprefixer = (await import('autoprefixer')).default
 
       // 始终启用 Less 支持，以处理 Vue SFC 中的 <style lang="less">
       const use = [
@@ -566,13 +556,16 @@ export class PluginConfigurator {
         }]
       ] as Array<[string, Record<string, unknown>]>
 
+      // 暂时跳过 cssnano 集成，专注于核心功能验证
+      const plugins = [autoprefixer()]
+
       return postcss.default({
-        extract: 'index.css',
+        extract: true, // 提取所有 CSS 到单独文件
         minimize: context.options.mode === 'production',
+        plugins,
         use,
-        // 仅处理独立样式文件，排除 Vue 的样式虚拟模块（由我们自定义插件处理）
+        // 处理所有样式文件，包括 Vue 生成的 CSS
         include: /\.(css|less|scss|sass|styl|stylus)$/,
-        exclude: [/\.vue$/, /\?vue&type=style/],
         sourceMap: context.options.sourcemap !== false,
         inject: false,
         loaderOptions: {
@@ -633,44 +626,11 @@ export class PluginConfigurator {
     }
   }
 
-  /**
-   * 创建 Vue 样式移除插件
-   */
-  private createVueStyleStripPlugin(): Plugin {
-    return {
-      name: 'vue-style-strip',
-      transform(code: string, id: string) {
-        if (id.endsWith('.vue') && !id.includes('?vue&type=')) {
-          logger.info(`[vue-style-strip] 处理文件: ${id}`)
 
-          // 移除 Vue SFC 中的 <style> 块，包括各种属性（CSS、Less、Sass等）
-          const styleRegex = /<style[^>]*(?:\s+lang=["'](?:css|less|scss|sass|stylus)["'])?[^>]*>[\s\S]*?<\/style>/gi
-          const originalLength = code.length
-          const cleanedCode = code.replace(styleRegex, (match) => {
-            // 保留样式块的基本结构信息用于调试
-            const langMatch = match.match(/lang=["']([^"']+)["']/)
-            const lang = langMatch ? langMatch[1] : 'css'
-            return `<!-- style block (${lang}) removed -->`
-          })
-          const newLength = cleanedCode.length
-
-          if (originalLength !== newLength) {
-            logger.info(`[vue-style-strip] 移除了样式块，文件大小从 ${originalLength} 减少到 ${newLength}`)
-            return {
-              code: cleanedCode,
-              map: { mappings: '' } // 提供空的 sourcemap 而不是 null
-            }
-          }
-        }
-        return null
-      }
-    }
-  }
 
   /**
    * 创建 Vue 样式提取插件
    */
-  // 提取 Vue SFC 样式内容并合并为独立的 index.css 文件
   private createVueStyleExtractPlugin(_context: BuildContext): Plugin {
     const extractedStyles: string[] = []
 
@@ -680,7 +640,7 @@ export class PluginConfigurator {
         if (id.endsWith('.vue') && !id.includes('?vue&type=')) {
           logger.info(`[vue-style-extract] 处理文件: ${id}`)
 
-          // 提取 Vue SFC 中的 <style> 块（更健壮的属性解析，支持任意顺序）
+          // 提取 Vue SFC 中的 <style> 块
           const styleRegex = /<style([^>]*)>([\s\S]*?)<\/style>/gi
           let match: RegExpExecArray | null
           let hasStyles = false
@@ -690,24 +650,20 @@ export class PluginConfigurator {
             const langMatch = attr.match(/lang=["']([^"']+)["']/i)
             const langAttr = (langMatch?.[1] || '').toLowerCase()
             let styleContent = match[2].trim()
-            // 兼容性判断：未声明 lang 但包含 Less 语法（变量或嵌套 &），也按 Less 处理
-            const maybeLessSyntax = /(^|[;{\s])@[\w-]+\s*:/.test(styleContent) || /&[\w-]|\.[\w-]+\s*\{[\s\S]*?&/.test(styleContent)
-            const isLess = langAttr === 'less' || maybeLessSyntax
 
             if (styleContent) {
               hasStyles = true
-              const label = isLess ? 'less' : (langAttr || 'css')
+              const label = langAttr || 'css'
               logger.info(`[vue-style-extract] 提取 ${label} 样式，长度: ${styleContent.length}`)
 
-              if (isLess) {
-                // 编译 Less 为 CSS，避免后续 PostCSS 误解析
+              // 如果是 Less，编译为 CSS
+              if (langAttr === 'less') {
                 try {
                   const lessMod: any = await import('less')
                   const less = (lessMod && (lessMod.default || lessMod)) as any
                   const result = await less.render(styleContent, {
                     javascriptEnabled: true,
-                    // 避免 calc() 等与 Less 数学运算冲突
-                    math: 'parens-division',
+                    math: 'always',
                     relativeUrls: true,
                   })
                   styleContent = result.css
@@ -722,6 +678,12 @@ export class PluginConfigurator {
 
           if (hasStyles) {
             logger.info(`[vue-style-extract] 从 ${id} 提取了样式`)
+            // 移除样式块，返回清理后的代码
+            const cleanedCode = code.replace(styleRegex, '<!-- style extracted -->')
+            return {
+              code: cleanedCode,
+              map: { mappings: '' }
+            }
           }
         }
         return null
@@ -732,140 +694,26 @@ export class PluginConfigurator {
           // 合并所有提取的样式
           const allStyles = extractedStyles.join('\n\n')
 
-          // 使用 Less 再编译一次（支持嵌套语法、变量等），纯 CSS 也兼容
-          let finalCss = allStyles
-          try {
-            const lessMod: any = await import('less')
-            const less = (lessMod && (lessMod.default || lessMod)) as any
-            const result = await less.render(allStyles, {
-              javascriptEnabled: true,
-              math: 'always',
-              filename: 'bundle.less',
-              relativeUrls: true,
-            })
-            finalCss = result.css
-          } catch (e) {
-            logger.warn('[vue-style-extract] 汇总 Less 编译失败，按原样输出', e)
-          }
-
           // 创建 CSS 文件
           const cssFileName = 'index.css'
+          const existing = (bundle as any)[cssFileName]
+          if (existing && existing.type === 'asset') {
+            const prev = typeof existing.source === 'string' ? existing.source : String(existing.source || '')
+            const merged = prev && prev.trim().length > 0 ? `${prev}\n\n${allStyles}` : allStyles
+            existing.source = merged
+            logger.info(`[vue-style-extract] 合并到已存在的 CSS: ${cssFileName}`)
+          } else {
             ; (bundle as any)[cssFileName] = {
               type: 'asset',
               fileName: cssFileName,
-              source: finalCss,
+              source: allStyles,
               needsCodeReference: false,
               name: undefined,
               names: [],
               originalFileName: null,
               originalFileNames: []
             }
-
-          logger.info(`[vue-style-extract] 生成 CSS 文件: ${cssFileName}，大小: ${finalCss.length} 字符`)
-        }
-      }
-    }
-  }
-
-  /**
-   * 创建 Vue 文件名优化插件
-   */
-  private createVueFilenamePlugin(): Plugin {
-    return {
-      name: 'vue-filename-optimizer',
-      // 使用 generateBundle 钩子，在生成 bundle 时修改文件名，并同步修正引用路径
-      generateBundle(_options, bundle) {
-        // 遍历所有生成的文件
-        const filesToRename: Array<{ oldName: string; newName: string }> = []
-
-        for (const [fileName] of Object.entries(bundle)) {
-          // 处理所有包含 .vue 的 JavaScript 文件
-          if (fileName.includes('.vue') && fileName.endsWith('.js')) {
-            // 更全面的文件名处理
-            let newFileName = fileName
-
-            // 处理 .vue2.js -> 2.js 的情况
-            newFileName = newFileName.replace(/\.vue(\d+)\.js$/, '$1.js')
-            // 处理 .vue.js -> .js 的情况
-            newFileName = newFileName.replace(/\.vue\.js$/, '.js')
-
-            if (newFileName !== fileName) {
-              filesToRename.push({ oldName: fileName, newName: newFileName })
-            }
-          }
-        }
-
-        // 执行重命名操作
-        for (const { oldName, newName } of filesToRename) {
-          logger.info(`[vue-filename-optimizer] 重命名文件: ${oldName} -> ${newName}`)
-
-          // 重命名主文件
-          const chunk = bundle[oldName]
-          if (chunk) {
-            // 修改 chunk 的 fileName 属性
-            if (chunk.type === 'chunk') {
-              (chunk as any).fileName = newName
-            } else if (chunk.type === 'asset') {
-              (chunk as any).fileName = newName
-            }
-            bundle[newName] = chunk
-            delete bundle[oldName]
-          }
-
-          // 重命名对应的 sourcemap 文件
-          const mapFileName = oldName + '.map'
-          const newMapFileName = newName + '.map'
-          if (bundle[mapFileName]) {
-            const mapChunk = bundle[mapFileName]
-            if (mapChunk.type === 'asset') {
-              (mapChunk as any).fileName = newMapFileName
-            }
-            bundle[newMapFileName] = mapChunk
-            delete bundle[mapFileName]
-            logger.info(`[vue-filename-optimizer] 重命名 sourcemap: ${mapFileName} -> ${newMapFileName}`)
-          }
-        }
-
-        // 二次遍历：修正所有 chunk 内部对旧文件名的引用（静态与动态）
-        for (const [, chunk] of Object.entries(bundle)) {
-          if (chunk.type === 'chunk') {
-            let code = (chunk as any).code as string
-            let modified = false
-
-            for (const { oldName, newName } of filesToRename) {
-              // 计算相对路径片段（只替换文件名部分）
-              const oldBase = path.posix.basename(oldName)
-              const newBase = path.posix.basename(newName)
-
-              // 替换 import 语句文本中的 .vue*.js 片段
-              const before = code
-              code = code.replace(new RegExp(oldBase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), newBase)
-              if (code !== before) modified = true
-
-              // 同步修正 Rollup 记录的 imports/dynamicImports 数组
-              const c: any = chunk
-              if (Array.isArray(c.imports)) {
-                c.imports = c.imports.map((imp: string) => imp === oldName ? newName : imp)
-              }
-              if (Array.isArray(c.dynamicImports)) {
-                c.dynamicImports = c.dynamicImports.map((imp: string) => imp === oldName ? newName : imp)
-              }
-              if (Array.isArray(c.referencedFiles)) {
-                c.referencedFiles = c.referencedFiles.map((f: string) => f === oldName ? newName : f)
-              }
-            }
-
-            // 兜底：对所有 .vue*.js 与 .map 片段做安全替换，防止遗漏
-            const before2 = code
-            code = code.replace(/\.vue(\d+)\.js/g, '$1.js')
-            code = code.replace(/\.vue\.js/g, '.js')
-            code = code.replace(/\.vue(\d+)\.js\.map/g, '$1.js.map')
-            code = code.replace(/\.vue\.js\.map/g, '.js.map')
-            if (code !== before2) modified = true
-
-            if (modified) {
-              (chunk as any).code = code
-            }
+            logger.info(`[vue-style-extract] 生成 CSS 文件: ${cssFileName}`)
           }
         }
       }
@@ -877,7 +725,7 @@ export class PluginConfigurator {
    */
   private createVuePlugin: PluginFactory = async (context) => {
     try {
-      // 按需求强制使用 unplugin-vue（避免 @vitejs/plugin-vue 在 Rollup 环境的兼容性问题）
+      // 优先使用 unplugin-vue，它对 TypeScript 支持更好
       const { default: vue } = await import('unplugin-vue/rollup')
       logger.info('使用 unplugin-vue/rollup')
 
@@ -892,19 +740,21 @@ export class PluginConfigurator {
             isCustomElement: (tag: string) => tag.startsWith('router-'),
           },
         },
-        // 不让该插件处理样式，统一交由自定义样式提取与 PostCSS 处理
-        // unplugin-vue 本身没有 style 选项，这里只作说明
+        // 禁用样式处理，让 PostCSS 插件处理
+        style: false,
         ...context.options.vue,
       }
 
       const pluginCandidate: any = vue(vueConfig)
-      // 兼容返回数组的情况，优先取第一个插件
       return Array.isArray(pluginCandidate) ? pluginCandidate[0] : pluginCandidate
     }
     catch (error) {
-      logger.warn('无法加载 unplugin-vue/rollup，回退到 rollup-plugin-vue')
+      logger.warn('无法加载 unplugin-vue/rollup，尝试 rollup-plugin-vue')
       try {
         const { default: vue } = await import('rollup-plugin-vue')
+        const fs = await import('fs')
+        logger.info('使用 rollup-plugin-vue')
+
         const vueConfig: any = {
           include: [/\.vue$/],
           compileTemplate: {
@@ -912,14 +762,30 @@ export class PluginConfigurator {
               isCustomElement: (tag: string) => tag.startsWith('router-'),
             },
           },
+          // 提供 fs 选项以支持 TypeScript 类型解析
+          compileScript: {
+            fs: {
+              fileExists: fs.existsSync,
+              readFile: (file: string) => fs.readFileSync(file, 'utf-8'),
+              realpath: fs.realpathSync,
+            },
+          },
           style: {
-            extract: context.options.css !== false,
+            // 简化样式处理：所有样式都提取到单独的 CSS 文件
+            extract: true,
+            preprocessOptions: {
+              less: {
+                javascriptEnabled: true,
+                math: 'always',
+              },
+            },
           },
           ...context.options.vue,
         }
+
         return vue(vueConfig)
       } catch (fallbackError) {
-        logger.warn('无法加载 rollup-plugin-vue:', fallbackError)
+        logger.warn('无法加载任何 Vue 插件:', fallbackError)
         return null
       }
     }

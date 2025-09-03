@@ -380,6 +380,13 @@ export class RollupBuilder {
       input,
       plugins: pluginConfig.plugins,
       ...(external && { external }),
+      // 更安全的默认设置，贴合主流组件库实践
+      treeshake: buildOptions.rollupOptions?.treeshake ?? {
+        moduleSideEffects: 'no-external',
+        propertyReadSideEffects: false,
+        tryCatchDeoptimization: false,
+      },
+      preserveEntrySignatures: buildOptions.rollupOptions?.preserveEntrySignatures ?? 'exports-only',
       onwarn: (warning) => {
         logger.warn(`Rollup警告: ${warning.message}`)
       },
@@ -546,6 +553,8 @@ export class RollupBuilder {
         options.entryFileNames = '[name].umd.js'
         options.name = buildOptions.name || scanResult.packageInfo?.name || 'MyLibrary'
         options.globals = buildOptions.globals || {}
+        options.exports = 'named'
+        options.inlineDynamicImports = true
         break
 
       case 'iife':
@@ -553,6 +562,7 @@ export class RollupBuilder {
         options.entryFileNames = '[name].iife.js'
         options.name = buildOptions.name || scanResult.packageInfo?.name || 'MyLibrary'
         options.globals = buildOptions.globals || {}
+        options.inlineDynamicImports = true
         break
     }
 
