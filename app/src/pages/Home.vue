@@ -47,6 +47,9 @@
           <router-link to="/store-test" class="nav-button primary">
             🗃️ Store 状态管理
           </router-link>
+          <router-link to="/crypto-demo" class="nav-button primary">
+            🔐 Crypto 加密演示
+          </router-link>
           <button @click="testNavigation" class="nav-button secondary">
             {{ t('home.buttons.tryDemo') }}
           </button>

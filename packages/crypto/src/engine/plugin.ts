@@ -194,11 +194,13 @@ export function createCryptoEnginePlugin(
             if (debug) {
               console.log('[Crypto Plugin] Vue plugin installed successfully')
             }
+          } else {
+            // 如果不自动安装 Vue 插件，则手动注册全局提供者
+            vueApp.provide('crypto', globalCrypto)
+            vueApp.provide('cryptoConfig', config.config)
           }
 
-          // 注册全局提供者
-          vueApp.provide('crypto', globalCrypto)
-          vueApp.provide('cryptoConfig', config.config)
+          // 注册管理器（不会重复）
           vueApp.provide('cryptoManager', cryptoManager)
 
           // 性能监控

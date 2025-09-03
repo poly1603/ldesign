@@ -111,6 +111,18 @@ export const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/crypto-demo',
+    name: 'crypto-demo',
+    component: () => import('../pages/CryptoDemo.vue'),
+    meta: {
+      title: 'Crypto 加密演示',
+      description: '验证 @ldesign/crypto 包的功能和集成效果',
+      cache: true,
+      preload: true,
+      animation: 'fade',
+    },
+  },
+  {
     path: '/health-check',
     name: 'health-check',
     component: () => import('../test-app-health.vue'),
