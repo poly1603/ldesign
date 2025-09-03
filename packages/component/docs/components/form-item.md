@@ -1,3 +1,149 @@
+# Form Item 表单项
+
+表单中的单个项目，包含标签和控件。
+
+## 基础用法
+
+最简单的表单项用法。
+
+<Demo 
+  title="基础表单项" 
+  description="包含标签的表单项。"
+  :code='`<ld-form-item label="用户名">
+  <ld-input placeholder="请输入用户名"></ld-input>
+</ld-form-item>`'
+>
+  <ld-form-item label="用户名">
+    <ld-input placeholder="请输入用户名"></ld-input>
+  </ld-form-item>
+</Demo>
+
+## 必填项
+
+设置表单项为必填。
+
+<Demo 
+  title="必填表单项" 
+  description="必填项会显示红色星号。"
+  :code='`<ld-form-item label="用户名" required>
+  <ld-input placeholder="请输入用户名"></ld-input>
+</ld-form-item>
+<ld-form-item label="密码" required>
+  <ld-input type="password" placeholder="请输入密码"></ld-input>
+</ld-form-item>`'
+  vertical
+>
+  <ld-form-item label="用户名" required>
+    <ld-input placeholder="请输入用户名"></ld-input>
+  </ld-form-item>
+  <ld-form-item label="密码" required>
+    <ld-input type="password" placeholder="请输入密码"></ld-input>
+  </ld-form-item>
+</Demo>
+
+## 验证状态
+
+表单项支持不同的验证状态。
+
+<Demo 
+  title="验证状态" 
+  description="显示不同的验证状态效果。"
+  :code='`<ld-form-item label="成功状态" status="success">
+  <ld-input value="验证通过" readonly></ld-input>
+</ld-form-item>
+<ld-form-item label="错误状态" status="error" validate-message="用户名不能为空">
+  <ld-input placeholder="请输入用户名"></ld-input>
+</ld-form-item>
+<ld-form-item label="警告状态" status="warning" validate-message="用户名格式建议调整">
+  <ld-input value="admin" placeholder="请输入用户名"></ld-input>
+</ld-form-item>`'
+  vertical
+>
+  <ld-form-item label="成功状态" status="success">
+    <ld-input value="验证通过" readonly></ld-input>
+  </ld-form-item>
+  <ld-form-item label="错误状态" status="error" validate-message="用户名不能为空">
+    <ld-input placeholder="请输入用户名"></ld-input>
+  </ld-form-item>
+  <ld-form-item label="警告状态" status="warning" validate-message="用户名格式建议调整">
+    <ld-input value="admin" placeholder="请输入用户名"></ld-input>
+  </ld-form-item>
+</Demo>
+
+## API
+
+### 属性
+
+<table class="props-table">
+  <thead>
+    <tr>
+      <th>属性</th>
+      <th>说明</th>
+      <th>类型</th>
+      <th>默认值</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td>标签文本</td>
+      <td><code>string</code></td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><code>prop</code></td>
+      <td>表单域 model 字段</td>
+      <td><code>string</code></td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><code>required</code></td>
+      <td>是否必填</td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+    </tr>
+    <tr>
+      <td><code>status</code></td>
+      <td>验证状态</td>
+      <td><code>'success' | 'error' | 'warning' | 'validating'</code></td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><code>validate-message</code></td>
+      <td>校验失败时提示文本</td>
+      <td><code>string</code></td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><code>help-text</code></td>
+      <td>帮助信息</td>
+      <td><code>string</code></td>
+      <td>-</td>
+    </tr>
+  </tbody>
+</table>
+
+### 插槽
+
+<table class="props-table">
+  <thead>
+    <tr>
+      <th>插槽名</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>default</td>
+      <td>表单控件内容</td>
+    </tr>
+    <tr>
+      <td>label</td>
+      <td>自定义标签内容</td>
+    </tr>
+  </tbody>
+</table>
+
 # FormItem 表单项
 
 表单项组件，用于包装表单控件。

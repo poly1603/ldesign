@@ -107,55 +107,55 @@ const testNavigation = () => {
   min-height: 100vh;
   background: var(--color-bg);
   color: var(--color-text);
-  padding: 2rem;
+  padding: var(--ls-spacing-xl);
   transition: all 0.3s ease;
 }
 
 .home-header {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: var(--ls-spacing-3xl);
 }
 
 .home-header h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  font-weight: 700;
+  font-size: var(--ls-font-size-3xl);
+  margin-bottom: var(--ls-spacing-lg);
+  font-weight: var(--ls-font-weight-bold);
 }
 
 .subtitle {
-  font-size: 1.2rem;
+  font-size: var(--ls-font-size-lg);
   opacity: 0.9;
 }
 
 .home-content {
-  max-width: 1200px;
+  max-width: var(--ls-container-max-width);
   margin: 0 auto;
 }
 
 .feature-section {
-  margin-bottom: 3rem;
+  margin-bottom: var(--ls-spacing-3xl);
 }
 
 .feature-section h2 {
   text-align: center;
-  margin-bottom: 2rem;
-  font-size: 2rem;
+  margin-bottom: var(--ls-spacing-xl);
+  font-size: var(--ls-font-size-2xl);
 }
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-bottom: 3rem;
+  grid-template-columns: repeat(auto-fit, minmax(var(--ls-grid-min-width), 1fr));
+  gap: var(--ls-spacing-xl);
+  margin-bottom: var(--ls-spacing-3xl);
 }
 
 .feature-card {
   background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  padding: 2rem;
-  border-radius: 12px;
+  border: var(--ls-border-width) solid var(--color-border);
+  padding: var(--ls-spacing-xl);
+  border-radius: var(--ls-border-radius-lg);
   text-align: center;
-  box-shadow: 0 2px 8px var(--color-shadow);
+  box-shadow: var(--ls-shadow-sm);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -167,15 +167,15 @@ const testNavigation = () => {
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
+  height: var(--ls-border-accent-height);
   background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 .feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 24px var(--color-shadow);
+  transform: translateY(var(--ls-transform-hover-y-lg));
+  box-shadow: var(--ls-shadow-lg);
   border-color: var(--color-primary-light);
 }
 
@@ -184,37 +184,37 @@ const testNavigation = () => {
 }
 
 .feature-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: var(--ls-font-size-3xl);
+  margin-bottom: var(--ls-spacing-lg);
 }
 
 .feature-card h3 {
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
+  margin-bottom: var(--ls-spacing-lg);
+  font-size: var(--ls-font-size-xl);
 }
 
 .navigation-section {
-  margin-bottom: 3rem;
+  margin-bottom: var(--ls-spacing-3xl);
   text-align: center;
 }
 
 .navigation-section h2 {
-  margin-bottom: 2rem;
-  font-size: 2rem;
+  margin-bottom: var(--ls-spacing-xl);
+  font-size: var(--ls-font-size-2xl);
 }
 
 .nav-buttons {
   display: flex;
-  gap: 1rem;
+  gap: var(--ls-spacing-lg);
   justify-content: center;
   flex-wrap: wrap;
 }
 
 .nav-button {
-  padding: 1rem 2rem;
+  padding: var(--ls-spacing-lg) var(--ls-spacing-xl);
   border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
+  border-radius: var(--ls-border-radius);
+  font-size: var(--ls-font-size-lg);
   text-decoration: none;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -224,24 +224,24 @@ const testNavigation = () => {
 .nav-button.primary {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   color: var(--color-bg);
-  border: 2px solid transparent;
-  font-weight: 600;
+  border: var(--ls-border-width-thick) solid transparent;
+  font-weight: var(--ls-font-weight-semibold);
 }
 
 .nav-button.secondary {
   background: var(--color-bg-secondary);
   color: var(--color-primary);
-  border: 2px solid var(--color-primary-light);
+  border: var(--ls-border-width-thick) solid var(--color-primary-light);
 }
 
 .nav-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px var(--color-shadow);
+  transform: translateY(var(--ls-transform-hover-y));
+  box-shadow: var(--ls-shadow-lg);
 }
 
 .nav-button.primary:hover {
   background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary-darker) 100%);
-  box-shadow: 0 8px 20px var(--ldesign-shadow-2, rgba(0, 0, 0, 0.3));
+  box-shadow: var(--ls-shadow-lg);
 }
 
 .nav-button.secondary:hover {
@@ -252,10 +252,10 @@ const testNavigation = () => {
 
 .info-section {
   background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
-  border: 1px solid var(--color-border);
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px var(--color-shadow);
+  border: var(--ls-border-width) solid var(--color-border);
+  padding: var(--ls-spacing-xl);
+  border-radius: var(--ls-border-radius-lg);
+  box-shadow: var(--ls-shadow-md);
   position: relative;
   overflow: hidden;
 }
@@ -266,17 +266,17 @@ const testNavigation = () => {
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: var(--ls-border-accent-height-sm);
   background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%);
 }
 
 .api-section {
   background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
-  border: 1px solid var(--color-border);
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px var(--color-shadow);
-  margin-top: 2rem;
+  border: var(--ls-border-width) solid var(--color-border);
+  padding: var(--ls-spacing-xl);
+  border-radius: var(--ls-border-radius-lg);
+  box-shadow: var(--ls-shadow-md);
+  margin-top: var(--ls-spacing-xl);
   position: relative;
   overflow: hidden;
 }
@@ -287,39 +287,39 @@ const testNavigation = () => {
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: var(--ls-border-accent-height-sm);
   background: linear-gradient(90deg, var(--color-success) 0%, var(--color-primary) 100%);
 }
 
 .api-section h2 {
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
+  margin-bottom: var(--ls-spacing-lg);
+  font-size: var(--ls-font-size-xl);
   color: var(--color-text);
 }
 
 .api-info p {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--ls-spacing-sm);
   color: var(--color-text-secondary);
 }
 
 .info-section h2 {
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
+  margin-bottom: var(--ls-spacing-lg);
+  font-size: var(--ls-font-size-xl);
 }
 
 .route-info p {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--ls-spacing-sm);
   font-family: 'Courier New', monospace;
 }
 
 .route-info strong {
   color: var(--color-primary);
-  font-weight: 600;
+  font-weight: var(--ls-font-weight-semibold);
 }
 
-@media (max-width: 768px) {
+@media (max-width: var(--ls-breakpoint-md)) {
   .home-header h1 {
-    font-size: 2rem;
+    font-size: var(--ls-font-size-2xl);
   }
 
   .features-grid {
@@ -332,7 +332,7 @@ const testNavigation = () => {
   }
 
   .nav-button {
-    width: 200px;
+    width: var(--ls-button-width-mobile);
   }
 }
 </style>

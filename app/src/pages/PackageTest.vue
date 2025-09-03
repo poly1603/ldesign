@@ -345,59 +345,59 @@ onMounted(async () => {
 
 <style scoped>
 .package-test {
-  padding: 2rem;
-  max-width: 1200px;
+  padding: var(--ls-spacing-xl);
+  max-width: var(--ls-container-max-width);
   margin: 0 auto;
 }
 
 .container h1 {
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: var(--ls-spacing-lg);
   color: var(--color-primary);
 }
 
 .description {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--ls-spacing-xl);
   color: var(--color-text-secondary);
 }
 
 .test-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(var(--ls-grid-min-width), 1fr));
+  gap: var(--ls-spacing-xl);
+  margin-bottom: var(--ls-spacing-xl);
 }
 
 .test-card {
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 1.5rem;
+  border: var(--ls-border-width) solid var(--color-border);
+  border-radius: var(--ls-border-radius);
+  padding: var(--ls-spacing-xl);
   background: var(--color-bg);
-  box-shadow: 0 2px 4px var(--color-shadow);
+  box-shadow: var(--ls-shadow-sm);
   transition: all 0.3s ease;
 }
 
 .test-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px var(--color-shadow);
+  transform: translateY(var(--ls-transform-hover-y));
+  box-shadow: var(--ls-shadow-md);
 }
 
 .test-card h3 {
-  margin-bottom: 1rem;
+  margin-bottom: var(--ls-spacing-lg);
   color: var(--color-primary);
   font-family: 'Courier New', monospace;
 }
 
 .test-content {
-  margin-bottom: 1rem;
-  min-height: 60px;
+  margin-bottom: var(--ls-spacing-lg);
+  min-height: var(--ls-content-min-height);
 }
 
 .test-status {
   font-weight: bold;
-  padding: 0.5rem;
-  border-radius: 4px;
+  padding: var(--ls-spacing-sm);
+  border-radius: var(--ls-border-radius-sm);
   text-align: center;
   background: var(--color-bg-secondary);
   color: var(--color-danger);
@@ -410,23 +410,23 @@ onMounted(async () => {
 .color-demo {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--ls-spacing-sm);
 }
 
 .color-box {
-  padding: 0.5rem;
-  border-radius: 4px;
+  padding: var(--ls-spacing-sm);
+  border-radius: var(--ls-border-radius-sm);
   color: white;
   text-align: center;
-  font-size: 0.875rem;
+  font-size: var(--ls-font-size-sm);
 }
 
 button {
   background: var(--color-primary);
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  padding: var(--ls-spacing-sm) var(--ls-spacing-lg);
+  border-radius: var(--ls-border-radius-sm);
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -437,13 +437,13 @@ button:hover {
 
 .summary {
   background: var(--color-bg-secondary);
-  padding: 1.5rem;
-  border-radius: 8px;
+  padding: var(--ls-spacing-xl);
+  border-radius: var(--ls-border-radius);
   text-align: center;
 }
 
 .summary h2 {
-  margin-bottom: 1rem;
+  margin-bottom: var(--ls-spacing-lg);
   color: var(--color-primary);
 }
 
@@ -458,17 +458,17 @@ button:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ls-spacing-sm);
 }
 
 .label {
-  font-size: 0.875rem;
+  font-size: var(--ls-font-size-sm);
   color: var(--color-text-secondary);
 }
 
 .value {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: var(--ls-font-size-xl);
+  font-weight: var(--ls-font-weight-bold);
   color: var(--color-text);
 }
 
@@ -480,13 +480,13 @@ button:hover {
   color: var(--color-danger);
 }
 
-@media (max-width: 768px) {
+@media (max-width: var(--ls-breakpoint-md)) {
   .test-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .summary-stats {
-    gap: 1rem;
+    gap: var(--ls-spacing-lg);
   }
 }
 </style>

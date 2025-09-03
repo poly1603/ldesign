@@ -183,7 +183,7 @@ const handleColorChange = (event: Event) => {
   cursor: pointer;
 }
 
-.checkbox-label input[type=\"checkbox\"] {
+.checkbox-label input[type="checkbox"] {
   width: 16px;
   height: 16px;
   accent-color: var(--vp-c-brand);
@@ -197,4 +197,42 @@ const handleColorChange = (event: Event) => {
 .control-select,
 .control-number,
 .control-text {
-  padding: 6px 8px;\n  font-size: 13px;\n  border: 1px solid var(--vp-c-border);\n  border-radius: 4px;\n  background: var(--vp-c-bg);\n  color: var(--vp-c-text-1);\n  width: 100%;\n  transition: border-color 0.2s;\n}\n\n.control-select:focus,\n.control-number:focus,\n.control-text:focus {\n  outline: none;\n  border-color: var(--vp-c-brand);\n}\n\n.control-color {\n  width: 32px;\n  height: 32px;\n  border: 1px solid var(--vp-c-border);\n  border-radius: 4px;\n  cursor: pointer;\n  padding: 0;\n  background: transparent;\n}\n\n.control-range {\n  flex: 1;\n  accent-color: var(--vp-c-brand);\n}\n\n.range-value {\n  font-size: 12px;\n  color: var(--vp-c-text-2);\n  min-width: 30px;\n  text-align: right;\n}\n</style>"}
+  padding: 6px 8px;
+  font-size: 13px;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 4px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+.control-select:focus,
+.control-number:focus,
+.control-text:focus {
+  outline: none;
+  border-color: var(--vp-c-brand);
+}
+
+.control-color {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+  background: transparent;
+}
+
+.control-range {
+  flex: 1;
+  accent-color: var(--vp-c-brand);
+}
+
+.range-value {
+  font-size: 12px;
+  color: var(--vp-c-text-2);
+  min-width: 30px;
+  text-align: right;
+}
+</style>

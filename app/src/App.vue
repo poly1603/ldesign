@@ -21,6 +21,11 @@
           <LanguageSwitcher type="buttons" :show-flag="true" />
           <ThemeSelector mode="select" :show-preview="true"
             :disabled-builtin-themes="disabledBuiltinThemes" :placeholder="t('app.theme')" />
+          <SizeSwitcher
+            switcher-style="segmented"
+            :show-icons="true"
+            :animated="true"
+            :modes="['small', 'medium', 'large', 'extra-large']" />
           <DarkModeToggle />
         </div>
       </div>
@@ -55,6 +60,7 @@
 import { ref, computed } from 'vue'
 import { ThemeSelector, DarkModeToggle } from '@ldesign/color'
 import { useI18n, LanguageSwitcher } from '@ldesign/i18n/vue'
+import { SizeSwitcher } from '@ldesign/size/vue'
 import { getAvailableLocales } from './i18n/locales'
 
 // 使用国际化功能
@@ -116,51 +122,51 @@ body {
   flex-direction: column;
 }
 
-/* 导航栏样式 - 直接使用 @ldesign/color 变量 */
+/* 导航栏样式 - 使用 @ldesign/color 和 @ldesign/size 变量 */
 .app-nav {
   background: linear-gradient(135deg, var(--ldesign-brand-color) 0%, var(--ldesign-brand-color-8) 100%);
   color: var(--ldesign-font-white-1);
-  padding: 1rem 0;
+  padding: var(--ls-spacing-lg) 0;
   box-shadow: var(--ldesign-shadow-2);
   transition: all 0.3s ease;
-  border-bottom: 1px solid var(--ldesign-border-color);
+  border-bottom: var(--ls-border-width) solid var(--ldesign-border-color);
   backdrop-filter: blur(10px);
 }
 
 .nav-container {
-  max-width: 1200px;
+  max-width: var(--ls-container-max-width);
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 var(--ls-spacing-xl);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
+  gap: var(--ls-spacing-lg);
 }
 
 .nav-brand h1 {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: var(--ls-font-size-xl);
+  font-weight: var(--ls-font-weight-semibold);
 }
 
 .nav-links {
   display: flex;
-  gap: 2rem;
+  gap: var(--ls-spacing-xl);
 }
 
 .nav-link {
   color: var(--ldesign-font-white-1);
   text-decoration: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  padding: var(--ls-spacing-sm) var(--ls-spacing-lg);
+  border-radius: var(--ls-border-radius);
   transition: all 0.3s ease;
   display: inline-block;
-  font-weight: 500;
+  font-weight: var(--ls-font-weight-medium);
 }
 
 .nav-link:hover {
   background: var(--ldesign-brand-color-2);
   color: var(--ldesign-brand-color-9);
-  transform: translateY(-1px);
+  transform: translateY(var(--ls-transform-hover-y));
 }
 
 .nav-link.active {
@@ -174,31 +180,31 @@ body {
   flex: 1;
   background-color: var(--ldesign-bg-color-page);
   transition: all 0.3s ease;
-  min-height: calc(100vh - 200px);
+  min-height: calc(100vh - var(--ls-header-footer-height));
 }
 
 /* 底部样式 */
 .app-footer {
   background: linear-gradient(135deg, var(--ldesign-bg-color-container) 0%, var(--ldesign-bg-color-component) 100%);
   color: var(--ldesign-text-color-secondary);
-  padding: 2rem 0;
+  padding: var(--ls-spacing-xl) 0;
   text-align: center;
-  border-top: 1px solid var(--ldesign-border-color);
+  border-top: var(--ls-border-width) solid var(--ldesign-border-color);
   transition: all 0.3s ease;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(var(--ls-blur-sm));
 }
 
 .footer-container {
-  max-width: 1200px;
+  max-width: var(--ls-container-max-width);
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 var(--ls-spacing-xl);
 }
 
 /* 控制组件样式 */
 .app-controls {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--ls-spacing-lg);
 }
 
 .app-controls>* {
@@ -208,19 +214,19 @@ body {
 
 
 /* 响应式设计 */
-@media (max-width: 768px) {
+@media (max-width: var(--ls-breakpoint-md)) {
   .nav-container {
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--ls-spacing-lg);
   }
 
   .nav-links {
-    gap: 1rem;
+    gap: var(--ls-spacing-lg);
   }
 
   .nav-container,
   .footer-container {
-    padding: 0 1rem;
+    padding: 0 var(--ls-spacing-lg);
   }
 }
 </style>

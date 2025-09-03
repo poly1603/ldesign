@@ -6,28 +6,23 @@
 
 最简单的用法。
 
-<div class="demo-container">
-  <div class="demo-title">基础模态框</div>
-  <div class="demo-description">点击按钮打开模态框。</div>
-  <div class="demo-showcase">
-    <ld-button type="primary" onclick="document.getElementById('basic-modal').visible = true">打开模态框</ld-button>
-    <ld-modal id="basic-modal" modal-title="基础模态框">
-      <p>这是模态框的内容</p>
-      <p>可以放置任何内容</p>
-    </ld-modal>
-  </div>
-  <div class="demo-code">
-
-```html
-<ld-button type="primary" onclick="document.getElementById('basic-modal').visible = true">打开模态框</ld-button>
-<ld-modal id="basic-modal" modal-title="基础模态框">
-  <p>这是模态框的内容</p>
-  <p>可以放置任何内容</p>
-</ld-modal>
-```
-
-  </div>
-</div>
+<Demo 
+  title="基础模态框" 
+  description="点击按钮打开模态框。"
+  :code='`<ld-button type="primary" onclick="document.querySelector(&quot;#modal1&quot;).open = true">打开模态框</ld-button>
+<ld-modal id="modal1" title="基础模态框">
+  <p>这里是模态框的内容。</p>
+</ld-modal>`'
+>
+  <ld-button type="primary" onclick="showModal('demo-modal-1')">打开模态框</ld-button>
+  <ld-modal id="demo-modal-1" title="基础模态框">
+    <p>这里是模态框的内容。</p>
+    <div slot="footer">
+      <ld-button type="primary" size="small" onclick="closeModal('demo-modal-1')">确定</ld-button>
+      <ld-button size="small" onclick="closeModal('demo-modal-1')">取消</ld-button>
+    </div>
+  </ld-modal>
+</Demo>
 
 ## 自定义页脚
 
@@ -346,6 +341,25 @@
     </tr>
   </tbody>
 </table>
+
+<script setup>
+// 全局模态框管理函数
+if (typeof window !== 'undefined') {
+  window.showModal = (id) => {
+    const modal = document.getElementById(id)
+    if (modal) {
+      modal.open = true
+    }
+  }
+  
+  window.closeModal = (id) => {
+    const modal = document.getElementById(id)
+    if (modal) {
+      modal.open = false
+    }
+  }
+}
+</script>
 
 ### 事件
 
