@@ -43,4 +43,6 @@ declare module 'rollup-plugin-livereload' {
   export default livereload
 }
 
-
+declare module 'less' {
+  export function render(input: string, options?: any): Promise<{ css: string }>
+}

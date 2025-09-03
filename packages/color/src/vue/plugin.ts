@@ -9,6 +9,8 @@ import { inject, ref, computed } from 'vue'
 import { ThemeManager } from '../core/theme-manager'
 // import ThemeSelector from './components/ThemeSelector.vue'
 import type { ThemeManagerInstance } from '../core/types'
+import { presetThemes } from '../themes/presets'
+import type { ThemeConfig } from '../themes/presets'
 
 /**
  * 插件配置选项
@@ -24,17 +26,118 @@ export interface ColorPluginOptions {
   defaultMode?: 'light' | 'dark'
   /** 是否启用调试模式 */
   debug?: boolean
+  /** CSS 变量前缀，默认为 'ldesign' */
+  cssVariablePrefix?: string
+  /** 是否启用缓存，默认为 true */
+  enableCache?: boolean
+  /** 缓存存储类型 */
+  cacheStorage?: 'localStorage' | 'sessionStorage' | 'memory'
+  /** 自定义主题色配置 */
+  customThemes?: Array<{
+    name: string
+    displayName: string
+    description?: string
+    light?: Record<string, string>
+    dark?: Record<string, string>
+    colors?: Record<string, string>
+  }>
+  /** 禁用的内置主题名称列表 */
+  disabledBuiltinThemes?: string[]
+  /** 背景色生成策略 */
+  backgroundStrategy?: 'neutral' | 'primary-based' | 'custom'
+  /** 是否根据主色调生成背景色 */
+  generateBackgroundFromPrimary?: boolean
+  /** 初始化完成回调 */
+  onReady?: (themeManager: any) => void | Promise<void>
+  /** 主题切换回调 */
+  onThemeChanged?: (theme: string, mode: 'light' | 'dark') => void | Promise<void>
+  /** 错误处理回调 */
+  onError?: (error: Error) => void
 }
 
 /**
  * 默认配置
  */
-const defaultOptions: Required<ColorPluginOptions> = {
+const defaultOptions: Required<Omit<ColorPluginOptions, 'customThemes' | 'disabledBuiltinThemes' | 'onReady' | 'onThemeChanged' | 'onError'>> & {
+  customThemes: ColorPluginOptions['customThemes']
+  disabledBuiltinThemes: ColorPluginOptions['disabledBuiltinThemes']
+  onReady: ColorPluginOptions['onReady']
+  onThemeChanged: ColorPluginOptions['onThemeChanged']
+  onError: ColorPluginOptions['onError']
+} = {
   registerComponents: true,
   componentPrefix: 'LColor',
   defaultTheme: 'blue',
   defaultMode: 'light',
-  debug: false
+  debug: false,
+  cssVariablePrefix: 'ldesign',
+  enableCache: true,
+  cacheStorage: 'localStorage',
+  customThemes: undefined,
+  disabledBuiltinThemes: undefined,
+  backgroundStrategy: 'neutral',
+  generateBackgroundFromPrimary: false,
+  onReady: undefined,
+  onThemeChanged: undefined,
+  onError: undefined
+}
+
+/**
+ * 处理主题配置，合并内置主题和自定义主题
+ */
+function processThemeConfig(config: ColorPluginOptions): ThemeConfig[] {
+  // 获取启用的内置主题
+  let enabledBuiltinThemes = presetThemes
+
+  if (config.disabledBuiltinThemes && config.disabledBuiltinThemes.length > 0) {
+    enabledBuiltinThemes = presetThemes.filter(
+      theme => !config.disabledBuiltinThemes!.includes(theme.name)
+    )
+  }
+
+  // 转换自定义主题格式
+  const customThemes: ThemeConfig[] = []
+  if (config.customThemes && config.customThemes.length > 0) {
+    for (const customTheme of config.customThemes) {
+      const themeConfig: ThemeConfig = {
+        name: customTheme.name,
+        displayName: customTheme.displayName,
+        description: customTheme.description,
+        builtin: false,
+        light: customTheme.light || {},
+        dark: customTheme.dark || {},
+        colors: customTheme.colors
+      }
+      customThemes.push(themeConfig)
+    }
+  }
+
+  return [...enabledBuiltinThemes, ...customThemes]
+}
+
+/**
+ * 创建增强的主题管理器配置
+ */
+function createThemeManagerConfig(config: ColorPluginOptions) {
+  const themes = processThemeConfig(config)
+
+  return {
+    defaultTheme: config.defaultTheme,
+    autoDetect: true,
+    themes,
+    cache: config.enableCache,
+    storage: config.cacheStorage,
+    cssVariables: {
+      prefix: config.cssVariablePrefix,
+      includeComments: true,
+      includeThemeInfo: true
+    },
+    backgroundGeneration: {
+      strategy: config.backgroundStrategy,
+      basedOnPrimary: config.generateBackgroundFromPrimary
+    },
+    debug: config.debug
+  }
 }
 
 /**
@@ -61,53 +164,13 @@ export function createColorEnginePlugin(options: ColorPluginOptions = {}) {
           throw new Error('无法获取 Vue 应用实例')
         }
 
-        // 创建主题管理器实例
-        const themeManager = new ThemeManager({
-          defaultTheme: config.defaultTheme,
-          autoDetect: true,
-          themes: [
-            {
-              name: 'blue',
-              displayName: '蓝色主题',
-              light: {
-                primary: '#1890ff',
-                secondary: '#722ed1',
-                success: '#52c41a',
-                warning: '#faad14',
-                danger: '#ff4d4f',
-                gray: '#8c8c8c'
-              },
-              dark: {
-                primary: '#177ddc',
-                secondary: '#531dab',
-                success: '#389e0d',
-                warning: '#d48806',
-                danger: '#cf1322',
-                gray: '#595959'
-              }
-            },
-            {
-              name: 'green',
-              displayName: '绿色主题',
-              light: {
-                primary: '#52c41a',
-                secondary: '#1890ff',
-                success: '#52c41a',
-                warning: '#faad14',
-                danger: '#ff4d4f',
-                gray: '#8c8c8c'
-              },
-              dark: {
-                primary: '#389e0d',
-                secondary: '#177ddc',
-                success: '#389e0d',
-                warning: '#d48806',
-                danger: '#cf1322',
-                gray: '#595959'
-              }
-            }
-          ]
-        })
+        if (config.debug) {
+          console.log('🎨 [ColorEngine] 开始安装插件，配置:', config)
+        }
+
+        // 创建增强的主题管理器实例
+        const themeManagerConfig = createThemeManagerConfig(config)
+        const themeManager = new ThemeManager(themeManagerConfig)
 
         // 初始化主题管理器
         await themeManager.init()
@@ -132,10 +195,21 @@ export function createColorEnginePlugin(options: ColorPluginOptions = {}) {
         // 应用初始主题（通过主题管理器）
         await themeManager.setTheme(config.defaultTheme, config.defaultMode)
 
+        // 设置主题切换回调
+        if (config.onThemeChanged) {
+          themeManager.onThemeChange(config.onThemeChanged)
+        }
+
+        // 设置错误处理回调
+        if (config.onError) {
+          themeManager.onError(config.onError)
+        }
+
         if (config.debug) {
           console.log('🎨 Color Engine 插件安装成功')
           console.log('🎯 主题管理器:', themeManager)
           console.log('⚙️ 配置:', config)
+          console.log('🎨 可用主题:', themeManagerConfig.themes.map(t => t.name))
         }
 
         // 将配置存储到引擎中
@@ -143,8 +217,30 @@ export function createColorEnginePlugin(options: ColorPluginOptions = {}) {
           engine.config.color = config
         }
 
+        // 调用初始化完成回调
+        if (config.onReady) {
+          try {
+            await config.onReady(themeManager)
+          } catch (error) {
+            console.warn('🚨 [ColorEngine] onReady 回调执行失败:', error)
+            if (config.onError) {
+              config.onError(error as Error)
+            }
+          }
+        }
+
       } catch (error) {
         console.error('❌ Color Engine 插件安装失败:', error)
+
+        // 调用错误处理回调
+        if (config.onError) {
+          try {
+            config.onError(error as Error)
+          } catch (callbackError) {
+            console.error('❌ onError 回调执行失败:', callbackError)
+          }
+        }
+
         throw error
       }
     },

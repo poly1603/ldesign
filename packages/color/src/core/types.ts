@@ -101,6 +101,8 @@ export interface ThemeConfig {
   builtin?: boolean
   /** 主题元数据 */
   meta?: Record<string, unknown>
+  /** 简化的颜色配置（用于快速配置） */
+  colors?: Record<string, string>
 }
 
 /**

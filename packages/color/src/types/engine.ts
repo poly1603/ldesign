@@ -86,7 +86,7 @@ export interface PerformanceConfig {
  * CSS 变量配置接口
  */
 export interface CSSVariableConfig {
-  /** CSS 变量前缀 */
+  /** CSS 变量前缀，默认为 'ldesign' */
   prefix?: string
   /** CSS 变量作用域 */
   scope?: string
@@ -94,6 +94,59 @@ export interface CSSVariableConfig {
   enableTransition?: boolean
   /** 过渡动画持续时间 */
   transitionDuration?: string
+  /** 是否启用语义化变量 */
+  enableSemanticVariables?: boolean
+  /** 是否启用色阶变量 */
+  enableScaleVariables?: boolean
+  /** 是否包含变量描述注释 */
+  includeComments?: boolean
+  /** 是否包含主题信息注释 */
+  includeThemeInfo?: boolean
+}
+
+/**
+ * 缓存配置接口
+ */
+export interface CacheConfig {
+  /** 是否启用缓存，默认为 true */
+  enabled?: boolean
+  /** 缓存存储类型 */
+  storage?: 'localStorage' | 'sessionStorage' | 'memory'
+  /** 缓存键名前缀 */
+  keyPrefix?: string
+  /** 缓存过期时间（毫秒），0 表示永不过期 */
+  expiration?: number
+  /** 是否在页面刷新时恢复缓存 */
+  restoreOnReload?: boolean
+}
+
+/**
+ * 背景色生成策略配置接口
+ */
+export interface BackgroundGenerationConfig {
+  /** 背景色生成策略 */
+  strategy?: 'neutral' | 'primary-based' | 'custom'
+  /** 当策略为 'primary-based' 时，是否根据主色调生成背景色 */
+  basedOnPrimary?: boolean
+  /** 自定义背景色配置（当策略为 'custom' 时使用） */
+  customColors?: {
+    light?: string[]
+    dark?: string[]
+  }
+  /** 背景色透明度范围 */
+  opacityRange?: [number, number]
+}
+
+/**
+ * 主题禁用配置接口
+ */
+export interface ThemeDisableConfig {
+  /** 禁用的内置主题名称列表 */
+  disabledBuiltinThemes?: string[]
+  /** 是否完全禁用内置主题 */
+  disableAllBuiltin?: boolean
+  /** 禁用特定主题的某些颜色类别 */
+  disabledCategories?: Record<string, string[]>
 }
 
 /**
@@ -104,6 +157,10 @@ export interface DevelopmentConfig {
   enableDebugMode?: boolean
   /** 启用性能监控 */
   enablePerformanceMonitoring?: boolean
+  /** 是否在控制台显示详细日志 */
+  verboseLogging?: boolean
+  /** 是否启用热重载 */
+  enableHotReload?: boolean
 }
 
 /**
@@ -124,6 +181,14 @@ export interface ColorEnginePluginConfig {
   performance?: PerformanceConfig
   /** CSS 变量配置 */
   cssVariables?: CSSVariableConfig
+  /** 缓存配置 */
+  cache?: CacheConfig
+  /** 背景色生成策略配置 */
+  backgroundGeneration?: BackgroundGenerationConfig
+  /** 主题禁用配置 */
+  themeDisable?: ThemeDisableConfig
+  /** 自定义主题色配置 */
+  customThemes?: ThemeConfig[]
   /** 开发配置 */
   development?: DevelopmentConfig
 }

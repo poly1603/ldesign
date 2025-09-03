@@ -129,6 +129,150 @@ const onPaletteChange = (colors: string[]) => {
 </script>
 ```
 
+### 🎨 增强的主题选择器
+
+新版本的 ThemeSelector 组件支持三种显示模式和丰富的配置选项：
+
+```vue
+<template>
+  <div>
+    <!-- 选择器模式 -->
+    <ThemeSelector
+      mode="select"
+      :custom-themes="customThemes"
+      :disabled-builtin-themes="['green']"
+      show-preview
+      size="medium"
+      @theme-change="handleThemeChange"
+    />
+
+    <!-- 弹出层模式 -->
+    <ThemeSelector
+      mode="popup"
+      button-text="选择主题"
+      popup-animation="bounce"
+      :custom-themes="customThemes"
+    />
+
+    <!-- 对话框模式 -->
+    <ThemeSelector
+      mode="dialog"
+      dialog-title="主题设置"
+      dialog-animation="zoom"
+      :custom-themes="customThemes"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ThemeSelector } from '@ldesign/color/vue'
+
+const customThemes = [
+  {
+    name: 'purple',
+    displayName: '紫色主题',
+    description: '优雅的紫色配色方案',
+    light: { primary: '#722ed1' },
+    dark: { primary: '#531dab' }
+  }
+]
+
+const handleThemeChange = (theme: string) => {
+  console.log('主题已切换:', theme)
+}
+</script>
+```
+
+### 🌙 增强的暗色模式切换
+
+DarkModeToggle 组件现在支持多种动画效果和 View Transition API：
+
+```vue
+<template>
+  <DarkModeToggle
+    animation-type="circle"
+    :animation-duration="300"
+    enable-trigger-animation
+    auto-detect
+    @change="handleModeChange"
+    @before-change="handleBeforeChange"
+  />
+</template>
+
+<script setup lang="ts">
+import { DarkModeToggle } from '@ldesign/color/vue'
+
+const handleModeChange = (isDark: boolean) => {
+  console.log('模式已切换:', isDark ? '暗色' : '亮色')
+}
+
+const handleBeforeChange = (isDark: boolean) => {
+  console.log('即将切换到:', isDark ? '暗色' : '亮色')
+}
+</script>
+```
+
+**支持的动画类型：**
+- `circle` - 圆形扩散动画（需要 View Transition API）
+- `slide` - 滑动动画
+- `fade` - 淡入淡出
+- `flip` - 翻转动画
+- `zoom` - 缩放动画
+- `wipe` - 擦除动画
+
+### 🎛️ 增强的插件配置
+
+createColorEnginePlugin 现在支持更丰富的配置选项：
+
+```typescript
+import { createColorEnginePlugin } from '@ldesign/color/vue'
+
+const colorPlugin = createColorEnginePlugin({
+  // CSS 变量前缀
+  cssVariablePrefix: 'my-design',
+
+  // 缓存配置
+  enableCache: true,
+  cacheStorage: 'localStorage', // 'localStorage' | 'sessionStorage'
+
+  // 背景色生成策略
+  backgroundStrategy: 'primary-based', // 'neutral' | 'primary-based' | 'custom'
+  generateBackgroundFromPrimary: true,
+
+  // 自定义背景色
+  customBackgroundColors: {
+    light: ['#ffffff', '#f8f9fa', '#f1f3f4'],
+    dark: ['#1a1a1a', '#2d2d2d', '#404040']
+  },
+
+  // 自定义主题
+  customThemes: [
+    {
+      name: 'brand',
+      displayName: '品牌主题',
+      description: '符合品牌调性的配色方案',
+      light: { primary: '#ff6b35' },
+      dark: { primary: '#ff8c69' },
+      version: '1.0.0'
+    }
+  ],
+
+  // 禁用内置主题
+  disabledBuiltinThemes: ['green', 'red'],
+
+  // 回调函数
+  onReady: () => console.log('颜色引擎已就绪'),
+  onThemeChanged: (theme) => console.log('主题已切换:', theme),
+  onError: (error) => console.error('颜色引擎错误:', error),
+
+  // 调试模式
+  debug: process.env.NODE_ENV === 'development'
+})
+
+// 在 Vue 应用中使用
+app.use(colorPlugin)
+```
+
 ## 📚 API 文档
 
 ### 颜色转换
