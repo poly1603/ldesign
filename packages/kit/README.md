@@ -18,6 +18,7 @@
 - **⚡ 性能监控** - 性能测试和监控工具
 - **🏗️ 脚手架系统** - 项目模板和脚手架管理
 - **🎨 控制台 UI** - 进度条、加载动画、状态指示器
+- **⚡ 构建工具** - Vite 和 Rollup 构建器封装
 
 ## 📦 安装
 
@@ -45,7 +46,10 @@ import {
   ScaffoldManager,
   ProgressBar,
   LoadingSpinner,
-  StatusIndicator
+  StatusIndicator,
+  ViteBuilder,
+  RollupBuilder,
+  BuilderFactory
 } from '@ldesign/kit'
 
 // 字符串工具
@@ -688,6 +692,173 @@ multiProgress.addTask({ id: 'task2', name: '任务2', total: 50 })
 const theme = ConsoleTheme.create('colorful')
 console.log(theme.success('成功消息'))
 console.log(theme.error('错误消息'))
+```
+
+### ⚡ 构建工具模块 (Builder)
+
+强大的 Vite 和 Rollup 构建器封装：
+
+```typescript
+import {
+  ViteBuilder,
+  RollupBuilder,
+  BuilderFactory,
+  createViteBuilder,
+  createRollupBuilder,
+  createViteBuilderWithPreset,
+  createRollupBuilderWithPreset
+} from '@ldesign/kit'
+
+// Vite 构建器
+const viteBuilder = new ViteBuilder({
+  entry: 'src/index.ts',
+  outDir: 'dist',
+  server: {
+    port: 3000,
+    open: true
+  }
+})
+
+// 构建项目
+const buildResult = await viteBuilder.build()
+console.log('构建结果:', buildResult)
+
+// 启动开发服务器
+const devServer = await viteBuilder.dev()
+console.log(`开发服务器: ${devServer.url}`)
+
+// 构建库
+const libBuilder = new ViteBuilder({
+  lib: {
+    entry: 'src/index.ts',
+    name: 'MyLibrary',
+    formats: ['es', 'cjs', 'umd']
+  }
+})
+await libBuilder.buildLib()
+
+// Rollup 构建器
+const rollupBuilder = new RollupBuilder({
+  input: 'src/index.ts',
+  output: [
+    { file: 'dist/index.js', format: 'es' },
+    { file: 'dist/index.cjs', format: 'cjs' },
+    { file: 'dist/index.umd.js', format: 'umd', name: 'MyLib' }
+  ]
+})
+
+// 构建多种格式
+const results = await rollupBuilder.buildMultiple(['es', 'cjs', 'umd'])
+results.forEach((result, index) => {
+  console.log(`格式 ${['es', 'cjs', 'umd'][index]}: ${result.success ? '成功' : '失败'}`)
+})
+
+// 使用预设创建构建器
+const vueBuilder = createViteBuilderWithPreset('vue-app', {
+  server: { port: 8080 }
+})
+
+const libBuilder2 = createRollupBuilderWithPreset('rollup-library', {
+  input: 'src/my-lib.ts'
+})
+
+// 工厂方法
+const builder1 = BuilderFactory.createViteBuilder({
+  entry: 'src/app.ts'
+})
+
+const builder2 = BuilderFactory.createRollupBuilder({
+  input: 'src/lib.ts',
+  output: { file: 'dist/lib.js', format: 'es' }
+})
+
+// 监听构建事件
+viteBuilder.on('build:start', ({ mode }) => {
+  console.log(`开始构建 (${mode})`)
+})
+
+viteBuilder.on('build:end', ({ result }) => {
+  console.log(`构建完成: ${result.success ? '成功' : '失败'}`)
+})
+
+// 监听模式
+await viteBuilder.watch() // Vite 监听模式
+await rollupBuilder.watch() // Rollup 监听模式
+
+// 清理资源
+await viteBuilder.destroy()
+await rollupBuilder.destroy()
+```
+
+#### 内置预设
+
+```typescript
+// Vue 应用预设
+const vueApp = createViteBuilderWithPreset('vue-app')
+
+// React 应用预设
+const reactApp = createViteBuilderWithPreset('react-app')
+
+// 库开发预设
+const library = createViteBuilderWithPreset('library')
+
+// TypeScript 库预设
+const tsLibrary = createViteBuilderWithPreset('ts-library')
+
+// Node.js 应用预设
+const nodeApp = createViteBuilderWithPreset('node-app')
+
+// Rollup 库预设
+const rollupLib = createRollupBuilderWithPreset('rollup-library')
+
+// UMD 库预设
+const umdLib = createRollupBuilderWithPreset('umd-library')
+```
+
+#### 构建工具函数
+
+```typescript
+import { BuilderUtils } from '@ldesign/kit'
+
+// 检测项目类型
+const projectType = BuilderUtils.detectProjectType('./my-project')
+console.log('项目类型:', projectType) // 'vue', 'react', 'library', etc.
+
+// 查找入口文件
+const entryFile = BuilderUtils.findEntryFile('./my-project')
+console.log('入口文件:', entryFile)
+
+// 查找多个入口文件
+const entries = BuilderUtils.findMultipleEntries('./my-project', 'src/*/index.ts')
+console.log('多入口:', entries)
+
+// 生成文件名
+const fileName = BuilderUtils.generateFileName('es', 'index', { minify: true })
+console.log('文件名:', fileName) // 'index.min.js'
+
+// 格式化构建结果
+const formatted = BuilderUtils.formatBuildResult(buildResult)
+console.log(formatted)
+
+// 格式化文件大小
+const size = BuilderUtils.formatFileSize(1024 * 1024)
+console.log('文件大小:', size) // '1 MB'
+
+// 检查依赖
+const depCheck = BuilderUtils.checkDependencies('./my-project', ['react', 'vue'])
+console.log('已安装:', depCheck.installed)
+console.log('缺失:', depCheck.missing)
+
+// 获取推荐配置
+const recommendedConfig = BuilderUtils.getRecommendedConfig('./my-project')
+console.log('推荐配置:', recommendedConfig)
+
+// 验证配置
+const validation = BuilderUtils.validateConfig(config)
+console.log('配置有效:', validation.valid)
+if (!validation.valid) {
+  console.log('错误:', validation.errors)
+}
 ```
 
 ## 🧪 测试
