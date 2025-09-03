@@ -7,7 +7,7 @@ import { EventEmitter } from 'node:events'
 import { promises as fs } from 'node:fs'
 import { resolve } from 'node:path'
 import { Readable } from 'node:stream'
-import SVGIcons2SVGFont from 'svgicons2svgfont'
+import * as SVGIcons2SVGFont from 'svgicons2svgfont'
 import svg2ttf from 'svg2ttf'
 import ttf2eot from 'ttf2eot'
 import ttf2woff from 'ttf2woff'
@@ -48,10 +48,10 @@ export class IconFontGenerator extends EventEmitter {
 
       // 生成 SVG 字体
       const svgBuffer = await this.generateSvgFont(icons)
-      
+
       // 生成 TTF 字体
       const ttfBuffer = this.generateTtfFont(svgBuffer)
-      
+
       // 根据配置生成其他格式
       for (const format of this.options.formats) {
         const result = await this.generateFontFormat(format, svgBuffer, ttfBuffer)
@@ -74,7 +74,7 @@ export class IconFontGenerator extends EventEmitter {
    */
   private async generateSvgFont(icons: SvgIcon[]): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      const fontStream = new SVGIcons2SVGFont({
+      const fontStream = new (SVGIcons2SVGFont as any)({
         fontName: this.options.fontName,
         fontHeight: this.options.fontHeight,
         descent: this.options.descent,
@@ -100,11 +100,11 @@ export class IconFontGenerator extends EventEmitter {
         glyph.push(icon.content)
         glyph.push(null)
 
-        // 设置字形属性
-        ;(glyph as any).metadata = {
-          unicode: [icon.unicode],
-          name: icon.name
-        }
+          // 设置字形属性
+          ; (glyph as any).metadata = {
+            unicode: [icon.unicode],
+            name: icon.name
+          }
 
         fontStream.write(glyph)
       })
@@ -231,13 +231,13 @@ export class IconFontGenerator extends EventEmitter {
     }
 
     // 检查是否包含路径或形状
-    const hasPath = content.includes('<path') || 
-                   content.includes('<circle') || 
-                   content.includes('<rect') || 
-                   content.includes('<polygon') || 
-                   content.includes('<polyline') || 
-                   content.includes('<ellipse') || 
-                   content.includes('<line')
+    const hasPath = content.includes('<path') ||
+      content.includes('<circle') ||
+      content.includes('<rect') ||
+      content.includes('<polygon') ||
+      content.includes('<polyline') ||
+      content.includes('<ellipse') ||
+      content.includes('<line')
 
     if (!hasPath) {
       result.warnings.push('SVG does not contain any visible shapes')

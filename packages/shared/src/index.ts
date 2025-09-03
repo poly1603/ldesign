@@ -13,5 +13,5 @@ export * from './types'
 // 导出工具函数
 export * from './utils'
 
-// 导出 UI 组件
-export * from './components'
+// 暂时注释掉组件导出，因为 Vue 编译问题
+// export * from './components'

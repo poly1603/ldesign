@@ -3,13 +3,14 @@ import { defineConfig } from '@ldesign/builder'
 export default defineConfig({
   // 基础配置
   root: process.cwd(),
+  entry: 'src/index.ts',
   outDir: 'dist',
 
   // 输出格式：ESM、CJS、UMD
   formats: ['esm', 'cjs', 'umd'],
 
   // 生成类型声明文件
-  dts: true,
+  dts: false,
 
   // 生产环境压缩代码
   minify: true,

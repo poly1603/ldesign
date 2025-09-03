@@ -75,3 +75,5 @@ publish-report.json
 # Examples build
 examples/dist
 examples/node_modules
+
+tdesign/
