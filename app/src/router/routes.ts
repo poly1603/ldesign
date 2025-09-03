@@ -123,6 +123,18 @@ export const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/cache-demo',
+    name: 'cache-demo',
+    component: () => import('../pages/CacheDemo.vue'),
+    meta: {
+      title: 'Cache 缓存演示',
+      description: '验证 @ldesign/cache 包的功能和集成效果',
+      cache: true,
+      preload: true,
+      animation: 'fade',
+    },
+  },
+  {
     path: '/health-check',
     name: 'health-check',
     component: () => import('../test-app-health.vue'),

@@ -50,6 +50,9 @@
           <router-link to="/crypto-demo" class="nav-button primary">
             🔐 Crypto 加密演示
           </router-link>
+          <router-link to="/cache-demo" class="nav-button primary">
+            💾 Cache 缓存演示
+          </router-link>
           <button @click="testNavigation" class="nav-button secondary">
             {{ t('home.buttons.tryDemo') }}
           </button>

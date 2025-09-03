@@ -45,6 +45,10 @@ export const defaultCache = (() => {
   return _defaultCache
 })()
 
+// Engine 插件
+export { createCacheEnginePlugin } from './engine/plugin'
+export type { CacheEnginePluginOptions } from './engine/plugin'
+
 // 默认导出
 export default {
   CacheManager,

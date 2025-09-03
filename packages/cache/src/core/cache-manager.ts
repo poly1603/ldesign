@@ -13,7 +13,7 @@ import type {
 import { StorageEngineFactory } from '../engines/factory'
 import { SecurityManager } from '../security/security-manager'
 import { StorageStrategy } from '../strategies/storage-strategy'
-import { EventEmitter, validateSetInput } from '../utils'
+import { EventEmitter, Validator } from '../utils'
 
 /**
  * 缓存管理器核心实现
@@ -337,7 +337,7 @@ export class CacheManager implements ICacheManager {
    */
   private validateSetInput<T>(key: string, value: T, options?: SetOptions): void {
     // 使用统一的验证工具
-    validateSetInput(key, value, options)
+    Validator.validateSetInput(key, value, options)
   }
 
   /**
