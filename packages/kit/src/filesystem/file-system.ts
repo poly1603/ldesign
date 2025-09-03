@@ -7,9 +7,10 @@ import { promises as fs, constants, Stats } from 'node:fs'
 import { join, dirname, basename, extname } from 'node:path'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { pipeline } from 'node:stream/promises'
+import { tmpdir } from 'node:os'
 import type { FileInfo, ScanOptions } from '../types'
 import { FileSystemError } from '../types'
-import { PathUtils } from '../utils'
+import { PathUtils, RandomUtils } from '../utils'
 
 /**
  * 文件系统操作类
@@ -439,6 +440,141 @@ export class FileSystem {
       await pipeline(readStream, writeStream)
     } catch (error) {
       throw new FileSystemError(`Failed to stream copy: ${src} -> ${dest}`, src, error as Error)
+    }
+  }
+
+  /**
+   * 获取文件状态信息
+   * @param path 文件路径
+   * @returns 文件状态
+   */
+  static async stat(path: string): Promise<Stats> {
+    try {
+      return await fs.stat(path)
+    } catch (error) {
+      throw new FileSystemError(`Failed to get file stats: ${path}`, path, error as Error)
+    }
+  }
+
+  /**
+   * 获取路径的目录部分
+   * @param path 文件路径
+   * @returns 目录路径
+   */
+  static dirname(path: string): string {
+    return dirname(path)
+  }
+
+  /**
+   * 获取路径的基名部分
+   * @param path 文件路径
+   * @returns 文件名
+   */
+  static basename(path: string): string {
+    return basename(path)
+  }
+
+  /**
+   * 连接路径
+   * @param paths 路径片段
+   * @returns 连接后的路径
+   */
+  static join(...paths: string[]): string {
+    return join(...paths)
+  }
+
+  /**
+   * 复制文件或目录
+   * @param src 源路径
+   * @param dest 目标路径
+   * @param overwrite 是否覆盖
+   */
+  static async copy(src: string, dest: string, overwrite = true): Promise<void> {
+    try {
+      const srcStat = await fs.stat(src)
+      
+      if (srcStat.isDirectory()) {
+        await FileSystem.copyDir(src, dest, overwrite)
+      } else {
+        await FileSystem.copyFile(src, dest, overwrite)
+      }
+    } catch (error) {
+      throw new FileSystemError(`Failed to copy: ${src} -> ${dest}`, src, error as Error)
+    }
+  }
+
+  /**
+   * 移动文件或目录
+   * @param src 源路径
+   * @param dest 目标路径
+   */
+  static async move(src: string, dest: string): Promise<void> {
+    try {
+      const srcStat = await fs.stat(src)
+      
+      if (srcStat.isDirectory()) {
+        await FileSystem.moveDir(src, dest)
+      } else {
+        await FileSystem.moveFile(src, dest)
+      }
+    } catch (error) {
+      throw new FileSystemError(`Failed to move: ${src} -> ${dest}`, src, error as Error)
+    }
+  }
+
+  /**
+   * 删除文件
+   * @param path 文件路径
+   */
+  static async deleteFile(path: string): Promise<void> {
+    await FileSystem.removeFile(path)
+  }
+
+  /**
+   * 删除文件或目录（通用方法）
+   * @param path 文件或目录路径
+   */
+  static async remove(path: string): Promise<void> {
+    try {
+      const stat = await fs.stat(path)
+      if (stat.isDirectory()) {
+        await FileSystem.removeDir(path)
+      } else {
+        await FileSystem.removeFile(path)
+      }
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw new FileSystemError(`Failed to remove: ${path}`, path, error as Error)
+      }
+    }
+  }
+
+  /**
+   * 创建临时目录
+   * @param prefix 目录前缀
+   * @returns 临时目录路径
+   */
+  static async createTempDir(prefix = 'ldesign-kit-'): Promise<string> {
+    try {
+      const tempPath = join(tmpdir(), prefix + RandomUtils.generateId(8))
+      await FileSystem.createDir(tempPath)
+      return tempPath
+    } catch (error) {
+      throw new FileSystemError(`Failed to create temp directory`, '', error as Error)
+    }
+  }
+
+  /**
+   * 设置文件时间戳
+   * @param path 文件路径
+   * @param atime 访问时间
+   * @param mtime 修改时间
+   */
+  static async setTimestamps(path: string, atime: Date, mtime: Date): Promise<void> {
+    try {
+      await fs.utimes(path, atime, mtime)
+    } catch (error) {
+      throw new FileSystemError(`Failed to set timestamps: ${path}`, path, error as Error)
     }
   }
 }

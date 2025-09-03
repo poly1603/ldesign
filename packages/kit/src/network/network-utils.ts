@@ -139,7 +139,7 @@ export class NetworkUtils {
       const result = await dnsLookup(hostname, { family })
       return result.address
     } catch (error) {
-      throw new NetworkError(`Failed to resolve hostname: ${hostname}`, undefined, undefined, error as Error)
+      throw new NetworkError(`Failed to resolve hostname: ${hostname}`, undefined, error as Error)
     }
   }
 
@@ -154,7 +154,7 @@ export class NetworkUtils {
       const reverseAsync = promisify(reverse)
       return await reverseAsync(ip)
     } catch (error) {
-      throw new NetworkError(`Failed to reverse resolve IP: ${ip}`, undefined, undefined, error as Error)
+      throw new NetworkError(`Failed to reverse resolve IP: ${ip}`, undefined, error as Error)
     }
   }
 
@@ -219,7 +219,7 @@ export class NetworkUtils {
         href: parsed.href
       }
     } catch (error) {
-      throw new NetworkError(`Invalid URL: ${url}`, undefined, undefined, error as Error)
+      throw new NetworkError(`Invalid URL: ${url}`, undefined, error as Error)
     }
   }
 
@@ -244,7 +244,7 @@ export class NetworkUtils {
       
       return url.toString()
     } catch (error) {
-      throw new NetworkError(`Failed to build URL: ${base}`, undefined, undefined, error as Error)
+      throw new NetworkError(`Failed to build URL: ${base}`, undefined, error as Error)
     }
   }
 

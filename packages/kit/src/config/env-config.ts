@@ -3,7 +3,6 @@
  * 提供环境变量加载和转换功能
  */
 
-import { ObjectUtils, StringUtils } from '../utils'
 
 /**
  * 环境变量配置选项
@@ -201,13 +200,17 @@ export class EnvConfig {
 
     for (let i = 0; i < keys.length - 1; i++) {
       const k = keys[i]
+      if (!k) continue
       if (!(k in current) || typeof current[k] !== 'object' || current[k] === null) {
         current[k] = {}
       }
       current = current[k]
     }
 
-    current[keys[keys.length - 1]] = value
+    const lastKey = keys[keys.length - 1]
+    if (lastKey) {
+      current[lastKey] = value
+    }
   }
 
   /**

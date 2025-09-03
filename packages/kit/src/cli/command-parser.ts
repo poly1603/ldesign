@@ -25,6 +25,7 @@ export class CommandParser {
       helpOption: options.helpOption ?? true,
       versionOption: options.versionOption ?? true,
       version: options.version ?? '1.0.0',
+      description: options.description ?? '',
       ...options
     }
 
@@ -76,9 +77,9 @@ export class CommandParser {
     let currentCommand: CommandOptions | null = null
 
     // 查找命令
-    if (args.length > 0 && !args[0].startsWith('-')) {
+    if (args.length > 0 && args[0] && !args[0].startsWith('-')) {
       const commandName = args[0]
-      currentCommand = this.commands.get(commandName)
+      currentCommand = this.commands.get(commandName) || null
       
       if (currentCommand) {
         result.command = commandName
@@ -95,18 +96,26 @@ export class CommandParser {
     // 解析选项和参数
     while (i < args.length) {
       const arg = args[i]
+      if (!arg) {
+        i++
+        continue
+      }
 
       if (arg.startsWith('--')) {
         // 长选项
         const [name, value] = arg.slice(2).split('=', 2)
-        const option = this.findOption(availableOptions, name)
-
-        if (option) {
-          const parsedValue = this.parseOptionValue(option, value, args, i)
-          result.options[option.name] = parsedValue.value
-          i += parsedValue.consumed
-        } else {
+        if (!name) {
           this.handleUnknownOption(result, arg)
+        } else {
+          const option = this.findOption(availableOptions, name)
+
+          if (option) {
+            const parsedValue = this.parseOptionValue(option, value, args, i)
+            result.options[option.name] = parsedValue.value
+            i += parsedValue.consumed
+          } else {
+            this.handleUnknownOption(result, arg)
+          }
         }
       } else if (arg.startsWith('-') && arg.length > 1) {
         // 短选项
@@ -114,6 +123,7 @@ export class CommandParser {
         
         for (let j = 0; j < flags.length; j++) {
           const flag = flags[j]
+          if (!flag) continue
           const option = this.findOptionByAlias(availableOptions, flag)
 
           if (option) {
@@ -125,7 +135,7 @@ export class CommandParser {
 
               if (j === flags.length - 1) {
                 // 最后一个标志，从下一个参数获取值
-                if (i + 1 < args.length && !args[i + 1].startsWith('-')) {
+                if (i + 1 < args.length && args[i + 1] && !args[i + 1].startsWith('-')) {
                   value = args[i + 1]
                   i++
                 }
@@ -200,7 +210,7 @@ export class CommandParser {
     }
 
     if (value === undefined) {
-      if (args && index !== undefined && index + 1 < args.length && !args[index + 1].startsWith('-')) {
+      if (args && index !== undefined && index + 1 < args.length && args[index + 1] && !args[index + 1].startsWith('-')) {
         value = args[index + 1]
         consumed = 2
       } else if (option.required) {
@@ -220,7 +230,7 @@ export class CommandParser {
 
       case 'string':
       default:
-        if (option.choices && !option.choices.includes(value)) {
+        if (option.choices && value !== undefined && !option.choices.includes(value)) {
           throw new Error(`选项 --${option.name} 的值必须是以下之一: ${option.choices.join(', ')}`)
         }
         return { value, consumed }

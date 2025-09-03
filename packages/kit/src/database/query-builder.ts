@@ -527,6 +527,8 @@ export class QueryBuilder {
 
     for (let i = 0; i < conditions.length; i++) {
       const condition = conditions[i]
+      if (!condition) continue
+      
       let clause = ''
 
       if (i > 0) {
@@ -630,7 +632,7 @@ export class QueryBuilder {
    * 克隆查询构建器
    */
   clone(): QueryBuilder {
-    const builder = new QueryBuilder(this.connection)
+    const builder = new QueryBuilder(this.connection || null)
     builder.queryType = this.queryType
     builder.tableName = this.tableName
     builder.selectFields = [...this.selectFields]

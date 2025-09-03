@@ -99,7 +99,8 @@ const subModules = [
   'logger',
   'network',
   'process',
-  'builder'
+  'builder',
+  'project'
 ]
 
 const subModuleConfigs = subModules.map(module => defineConfig({

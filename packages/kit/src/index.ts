@@ -10,18 +10,91 @@
 // 导出所有类型定义
 export * from './types'
 
-// 导出核心工具模块
-export * from './utils'
+// 导出核心工具模块 - 避免冲突的具体导出
+export {
+  ArrayUtils,
+  AsyncUtils,
+  ObjectUtils,
+  PathUtils,
+  StringUtils,
+  DateUtils,
+  NumberUtils,
+  ValidationUtils,
+  CryptoUtils,
+  RandomUtils,
+  SystemUtils,
+  HttpUtils,
+  HttpRequestOptions,
+  HttpResponse as UtilsHttpResponse // Renamed to avoid conflict
+} from './utils'
+
 export * from './filesystem'
 export * from './network'
 export * from './process'
 export * from './database'
-export * from './logger'
-export * from './config'
-export * from './cache'
+
+// Export project module with renamed conflicting types
+export {
+  ProjectDetector,
+  DependencyAnalyzer,
+  BuildToolDetector,
+  PackageManagerDetector,
+  ProjectType,
+  PackageManager as ProjectPackageManager,
+  BuildTool,
+  BuildToolFeature,
+  PackageManagerFeature,
+  createProjectDetector,
+  createDependencyAnalyzer,
+  createBuildToolDetector,
+  createPackageManagerDetector,
+  detectProjectType,
+  detectBuildTools,
+  detectPackageManager,
+  analyzeDependencies
+} from './project'
+
+// Specific exports to avoid conflicts
+export {
+  Logger,
+  LoggerManager,
+  ConsoleLogger,
+  FileLogger,
+  Timer,
+  ErrorHandler,
+  BenchmarkResult as LoggerBenchmarkResult // Renamed to avoid conflict
+} from './logger'
+
+export {
+  ConfigManager,
+  ConfigLoader,
+  ConfigValidator,
+  ConfigWatcher,
+  EnvConfig,
+  SchemaValidator as ConfigSchemaValidator, // Renamed to avoid conflict
+  ConfigCache,
+  ConfigHotReload,
+  ValidationError as ConfigValidationError, // Renamed to avoid conflict
+  ValidationResult as ConfigValidationResult, // Renamed to avoid conflict  
+  ValidationRule as ConfigValidationRule // Renamed to avoid conflict
+} from './config'
+
+export {
+  CacheManager,
+  MemoryCache,
+  FileCache,
+  RedisCache,
+  AbstractCacheStore,
+  CacheStoreDecorator,
+  CompressedCacheStore,
+  SerializedCacheStore,
+  NamespacedCacheStore,
+  CacheSerializer
+} from './cache'
+
 export * from './events'
 export * from './validation'
-// export * from './archive' // 暂时禁用，需要修复类型错误
+export * from './archive'
 export * from './git'
 export * from './package'
 export * from './cli'
@@ -32,19 +105,6 @@ export * from './performance'
 export * from './builder'
 
 // 便捷导入
-export {
-  // 工具函数
-  ArrayUtils,
-  AsyncUtils,
-  ObjectUtils,
-  PathUtils,
-  StringUtils,
-  DateUtils,
-  NumberUtils,
-  ValidationUtils,
-  CryptoUtils,
-  RandomUtils
-} from './utils'
 
 export {
   // 文件系统
@@ -88,27 +148,7 @@ export {
   TransactionManager
 } from './database'
 
-export {
-  // 日志系统
-  Logger,
-  LoggerManager,
-  ConsoleLogger,
-  FileLogger,
-  Timer,
-  ErrorHandler
-} from './logger'
 
-export {
-  // 配置管理
-  ConfigManager,
-  ConfigLoader,
-  ConfigValidator,
-  ConfigWatcher,
-  EnvConfig,
-  SchemaValidator,
-  ConfigCache,
-  ConfigHotReload
-} from './config'
 
 export {
   // IconFont 工具
@@ -135,15 +175,6 @@ export {
   ConsoleTheme
 } from './console'
 
-export {
-  // 缓存系统
-  CacheManager,
-  MemoryCache,
-  FileCache,
-  RedisCache,
-  CacheSerializer,
-  AbstractCacheStore
-} from './cache'
 
 export {
   // 事件系统
@@ -154,14 +185,6 @@ export {
   TypedEventEmitter
 } from './events'
 
-export {
-  // 验证系统
-  Validator,
-  RuleEngine,
-  SchemaValidator as ValidationSchemaValidator,
-  FormValidator,
-  ValidationRules
-} from './validation'
 
 export {
   // 构建工具

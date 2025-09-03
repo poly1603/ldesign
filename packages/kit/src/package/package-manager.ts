@@ -28,11 +28,11 @@ export class PackageManager {
   constructor(cwd: string = process.cwd(), options: PackageManagerOptions = {}) {
     this.cwd = cwd
     this.options = {
-      timeout: options.timeout ?? 60000,
-      encoding: options.encoding ?? 'utf8',
-      maxBuffer: options.maxBuffer ?? 1024 * 1024 * 10, // 10MB
-      registry: options.registry,
-      ...options
+      timeout: options.timeout || 60000,
+      encoding: options.encoding || 'utf8',
+      maxBuffer: options.maxBuffer || 1024 * 1024 * 10, // 10MB
+      registry: options.registry || 'https://registry.npmjs.org/',
+      packageManager: options.packageManager || 'npm'
     }
     this.packageManager = options.packageManager ?? 'npm'
   }

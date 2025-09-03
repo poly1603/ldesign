@@ -4,7 +4,8 @@
  */
 
 import { EventEmitter } from 'node:events'
-import { watch, FSWatcher } from 'node:fs'
+import { watch } from 'node:fs'
+import type { FSWatcher } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { FileSystem } from '../filesystem'
 

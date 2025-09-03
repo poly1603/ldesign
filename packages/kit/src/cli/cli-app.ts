@@ -183,7 +183,9 @@ export class CLIApp extends EventEmitter {
       }
 
       const middleware = this.middlewares[index++]
-      await middleware(context, next)
+      if (middleware) {
+        await middleware(context, next)
+      }
     }
 
     await next()

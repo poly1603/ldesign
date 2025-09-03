@@ -3,9 +3,9 @@
  */
 
 import { EventEmitter } from 'node:events'
-import { createReadStream, createWriteStream } from 'node:fs'
+import { createWriteStream } from 'node:fs'
 import { pipeline } from 'node:stream/promises'
-import * as archiver from 'archiver'
+import archiver from 'archiver'
 import * as yauzl from 'yauzl'
 import { FileSystem } from '../filesystem'
 import type { 
@@ -33,8 +33,8 @@ export class ZipManager extends EventEmitter {
       followSymlinks: options.followSymlinks ?? false,
       ignoreHidden: options.ignoreHidden ?? false,
       maxFileSize: options.maxFileSize ?? 100 * 1024 * 1024, // 100MB
-      password: options.password,
-      comment: options.comment,
+      password: options.password ?? '',
+      comment: options.comment ?? '',
       ...options
     }
   }
@@ -372,7 +372,7 @@ export class ZipManager extends EventEmitter {
       if (await FileSystem.exists(source)) {
         const stat = await FileSystem.stat(source)
         
-        if (stat.isDirectory) {
+        if (stat.isDirectory()) {
           archive.directory(source, false, (entry) => {
             if (options.ignoreHidden && entry.name.startsWith('.')) {
               return false

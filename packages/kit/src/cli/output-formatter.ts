@@ -201,7 +201,7 @@ export class OutputFormatter {
 
     // 输出表头
     const headerRow = columns.map((col, i) => 
-      this.padString(col, columnWidths[i])
+      this.padString(col, columnWidths[i] || 0)
     ).join(opts.border ? ' | ' : '  ')
     
     console.log(opts.border ? `| ${headerRow} |` : headerRow)
@@ -211,7 +211,7 @@ export class OutputFormatter {
     // 输出数据行
     data.forEach(row => {
       const dataRow = columns.map((col, i) => 
-        this.padString(String(row[col] || ''), columnWidths[i])
+        this.padString(String(row[col] || ''), columnWidths[i] || 0)
       ).join(opts.border ? ' | ' : '  ')
       
       console.log(opts.border ? `| ${dataRow} |` : dataRow)

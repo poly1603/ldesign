@@ -413,8 +413,8 @@ export class SchemaValidator extends EventEmitter {
     // 属性验证
     if (schema.properties) {
       for (const [prop, propSchema] of Object.entries(schema.properties)) {
+        const propPath = path ? `${path}.${prop}` : prop
         if (prop in value) {
-          const propPath = path ? `${path}.${prop}` : prop
           this.validateValue(value[prop], propSchema, propPath, result)
         } else if (propSchema.default !== undefined && this.options.useDefaults) {
           // 应用默认值

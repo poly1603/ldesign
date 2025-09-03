@@ -4,7 +4,8 @@
  */
 
 import { EventEmitter } from 'node:events'
-import ora, { Ora } from 'ora'
+import ora from 'ora'
+import type { Ora } from 'ora'
 import { ConsoleTheme } from './console-theme'
 
 /**

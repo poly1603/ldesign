@@ -185,7 +185,7 @@ export class ResponseHandler<T = any> {
       try {
         return JSON.parse(this.response.data)
       } catch (error) {
-        throw new NetworkError('Failed to parse JSON response', this.response.config, this.response, error as Error)
+        throw new NetworkError('Failed to parse JSON response', this.response.config.url, error as Error)
       }
     }
     return this.response.data as U
@@ -232,7 +232,7 @@ export class ResponseHandler<T = any> {
    */
   validate(validator: (data: T) => boolean): ResponseHandler<T> {
     if (!validator(this.response.data)) {
-      throw new NetworkError('Response validation failed', this.response.config, this.response)
+      throw new NetworkError('Response validation failed', this.response.config.url)
     }
     return this
   }
@@ -258,8 +258,7 @@ export class ResponseHandler<T = any> {
     if (this.isError()) {
       const error = new NetworkError(
         `HTTP ${this.response.status}: ${this.response.statusText}`,
-        this.response.config,
-        this.response
+        this.response.config.url
       )
       
       try {

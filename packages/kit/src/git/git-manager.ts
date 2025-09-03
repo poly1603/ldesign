@@ -39,7 +39,7 @@ export class GitManager {
   /**
    * 执行 Git 命令
    */
-  private async exec(command: string): Promise<string> {
+  async exec(command: string): Promise<string> {
     try {
       const { stdout } = await execAsync(`git ${command}`, {
         cwd: this.cwd,

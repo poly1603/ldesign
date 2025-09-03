@@ -20,13 +20,18 @@ import type {
 export class SSLManager {
   private options: Required<SSLOptions>
 
-  constructor(options: SSLOptions = {}) {
+  constructor(options: Partial<SSLOptions> = {}) {
     this.options = {
-      keySize: options.keySize ?? 2048,
-      algorithm: options.algorithm ?? 'rsa',
-      hashAlgorithm: options.hashAlgorithm ?? 'sha256',
-      validityDays: options.validityDays ?? 365,
-      ...options
+      commonName: options.commonName || 'localhost',
+      organization: options.organization || '',
+      organizationUnit: options.organizationUnit || '',
+      country: options.country || '',
+      state: options.state || '',
+      locality: options.locality || '',
+      validityDays: options.validityDays || 365,
+      keySize: options.keySize || 2048,
+      algorithm: options.algorithm || 'rsa',
+      hashAlgorithm: options.hashAlgorithm || 'sha256'
     }
   }
 
@@ -353,7 +358,9 @@ export class SSLManager {
    * 解析主题信息
    */
   private parseSubject(subjectString: string): CertificateRequest['subject'] {
-    const subject: CertificateRequest['subject'] = {}
+    const subject: CertificateRequest['subject'] = {
+      commonName: 'localhost' // default value
+    }
     const parts = subjectString.split(', ')
     
     for (const part of parts) {

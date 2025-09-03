@@ -168,7 +168,10 @@ export class PromptManager {
     choices: Array<{ title: string; value: T; description?: string }>
   ): Promise<T> {
     if (!this.options.enabled) {
-      return choices[0]?.value
+      if (choices[0]?.value !== undefined) {
+        return choices[0].value
+      }
+      throw new Error('No choices available and prompts are disabled')
     }
 
     console.log(message)
@@ -181,7 +184,7 @@ export class PromptManager {
       const answer = await this.input('请选择 (输入数字)')
       const index = parseInt(answer) - 1
       
-      if (index >= 0 && index < choices.length) {
+      if (index >= 0 && index < choices.length && choices[index]) {
         return choices[index].value
       }
       
@@ -215,7 +218,7 @@ export class PromptManager {
         .filter(i => i >= 0 && i < choices.length)
       
       if (indices.length > 0) {
-        return indices.map(i => choices[i].value)
+        return indices.map(i => choices[i]).filter(choice => choice).map(choice => choice.value)
       }
       
       if (answer.trim() === '') {
@@ -275,7 +278,7 @@ export class PromptManager {
         choice.toLowerCase().includes(answer.toLowerCase())
       )
       
-      if (matches.length === 1) {
+      if (matches.length === 1 && matches[0]) {
         return matches[0]
       } else if (matches.length > 1) {
         console.log('多个匹配项:', matches.join(', '))
@@ -295,7 +298,10 @@ export class PromptManager {
     searchPlaceholder = '搜索...'
   ): Promise<T> {
     if (!this.options.enabled) {
-      return choices[0]?.value
+      if (choices[0]?.value !== undefined) {
+        return choices[0].value
+      }
+      throw new Error('No choices available and prompts are disabled')
     }
 
     console.log(message)
@@ -312,7 +318,7 @@ export class PromptManager {
       
       // 尝试数字选择
       const index = parseInt(answer) - 1
-      if (index >= 0 && index < choices.length) {
+      if (index >= 0 && index < choices.length && choices[index]) {
         return choices[index].value
       }
       
@@ -325,7 +331,7 @@ export class PromptManager {
       if (filtered.length === 0) {
         console.log('没有找到匹配项，请重试')
         continue
-      } else if (filtered.length === 1) {
+      } else if (filtered.length === 1 && filtered[0]) {
         return filtered[0].value
       } else {
         console.log(`找到 ${filtered.length} 个匹配项:`)

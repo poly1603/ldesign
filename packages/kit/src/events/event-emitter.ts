@@ -24,7 +24,7 @@ interface ListenerInfo {
  * 增强的事件发射器类
  */
 export class EventEmitter extends NodeEventEmitter {
-  private listeners: Map<string, ListenerInfo[]> = new Map()
+  private listenerInfos: Map<string, ListenerInfo[]> = new Map()
   private stats: Map<string, EventStats> = new Map()
   private maxListenersPerEvent = 100
   private enableStats = true
@@ -43,13 +43,13 @@ export class EventEmitter extends NodeEventEmitter {
   /**
    * 添加事件监听器
    */
-  on(event: string, listener: EventListener, options: {
+  override on(event: string, listener: EventListener, options: {
     priority?: number
     namespace?: string
     tags?: string[]
     once?: boolean
   } = {}): this {
-    return this.addListener(event, listener, {
+    return this.addListenerWithOptions(event, listener, {
       ...options,
       once: false
     })
@@ -58,12 +58,12 @@ export class EventEmitter extends NodeEventEmitter {
   /**
    * 添加一次性事件监听器
    */
-  once(event: string, listener: EventListener, options: {
+  override once(event: string, listener: EventListener, options: {
     priority?: number
     namespace?: string
     tags?: string[]
   } = {}): this {
-    return this.addListener(event, listener, {
+    return this.addListenerWithOptions(event, listener, {
       ...options,
       once: true
     })
@@ -72,7 +72,7 @@ export class EventEmitter extends NodeEventEmitter {
   /**
    * 添加监听器（内部方法）
    */
-  private addListener(event: string, listener: EventListener, options: {
+  private addListenerWithOptions(event: string, listener: EventListener, options: {
     priority?: number
     namespace?: string
     tags?: string[]
@@ -89,11 +89,11 @@ export class EventEmitter extends NodeEventEmitter {
     }
 
     // 添加到内部监听器列表
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, [])
+    if (!this.listenerInfos.has(event)) {
+      this.listenerInfos.set(event, [])
     }
     
-    const eventListeners = this.listeners.get(event)!
+    const eventListeners = this.listenerInfos.get(event)!
     eventListeners.push(listenerInfo)
     
     // 按优先级排序（高优先级先执行）
@@ -134,12 +134,12 @@ export class EventEmitter extends NodeEventEmitter {
   /**
    * 移除事件监听器
    */
-  off(event: string, listener?: EventListener): this {
+  override off(event: string, listener?: EventListener): this {
     if (!listener) {
       return this.removeAllListeners(event)
     }
 
-    const eventListeners = this.listeners.get(event)
+    const eventListeners = this.listenerInfos.get(event)
     if (eventListeners) {
       const index = eventListeners.findIndex(info => info.listener === listener)
       if (index !== -1) {
@@ -160,9 +160,9 @@ export class EventEmitter extends NodeEventEmitter {
   /**
    * 移除所有监听器
    */
-  removeAllListeners(event?: string): this {
+  override removeAllListeners(event?: string): this {
     if (event) {
-      this.listeners.delete(event)
+      this.listenerInfos.delete(event)
       if (this.enableStats) {
         const stats = this.stats.get(event)
         if (stats) {
@@ -170,7 +170,7 @@ export class EventEmitter extends NodeEventEmitter {
         }
       }
     } else {
-      this.listeners.clear()
+      this.listenerInfos.clear()
       if (this.enableStats) {
         for (const stats of this.stats.values()) {
           stats.listenerCount = 0
@@ -185,7 +185,7 @@ export class EventEmitter extends NodeEventEmitter {
   /**
    * 发射事件
    */
-  emit(event: string, ...args: any[]): boolean {
+  override emit(event: string, ...args: any[]): boolean {
     const startTime = this.enableStats ? Date.now() : 0
     
     // 更新统计信息
@@ -198,7 +198,7 @@ export class EventEmitter extends NodeEventEmitter {
     }
 
     // 更新监听器调用统计
-    const eventListeners = this.listeners.get(event)
+    const eventListeners = this.listenerInfos.get(event)
     if (eventListeners) {
       for (const listenerInfo of eventListeners) {
         listenerInfo.callCount++
@@ -225,7 +225,7 @@ export class EventEmitter extends NodeEventEmitter {
    * 异步发射事件
    */
   async emitAsync(event: string, ...args: any[]): Promise<any[]> {
-    const eventListeners = this.listeners.get(event)
+    const eventListeners = this.listenerInfos.get(event)
     if (!eventListeners || eventListeners.length === 0) {
       return []
     }
@@ -277,11 +277,11 @@ export class EventEmitter extends NodeEventEmitter {
    * 按命名空间移除监听器
    */
   removeListenersByNamespace(namespace: string): this {
-    for (const [event, eventListeners] of this.listeners) {
-      const filteredListeners = eventListeners.filter(info => info.namespace !== namespace)
+    for (const [event, eventListeners] of this.listenerInfos) {
+      const filteredListeners = eventListeners.filter((info: ListenerInfo) => info.namespace !== namespace)
       
       if (filteredListeners.length !== eventListeners.length) {
-        this.listeners.set(event, filteredListeners)
+        this.listenerInfos.set(event, filteredListeners)
         
         // 更新统计信息
         if (this.enableStats) {
@@ -311,11 +311,11 @@ export class EventEmitter extends NodeEventEmitter {
    * 按标签移除监听器
    */
   removeListenersByTag(tag: string): this {
-    for (const [event, eventListeners] of this.listeners) {
-      const filteredListeners = eventListeners.filter(info => !info.tags.includes(tag))
+    for (const [event, eventListeners] of this.listenerInfos) {
+      const filteredListeners = eventListeners.filter((info: ListenerInfo) => !info.tags.includes(tag))
       
       if (filteredListeners.length !== eventListeners.length) {
-        this.listeners.set(event, filteredListeners)
+        this.listenerInfos.set(event, filteredListeners)
         
         // 更新统计信息
         if (this.enableStats) {
@@ -344,7 +344,7 @@ export class EventEmitter extends NodeEventEmitter {
    * 获取事件的监听器信息
    */
   getListenerInfo(event: string): ListenerInfo[] {
-    return this.listeners.get(event) || []
+    return this.listenerInfos.get(event) || []
   }
 
   /**
@@ -399,7 +399,7 @@ export class EventEmitter extends NodeEventEmitter {
    * 获取所有事件名称
    */
   getEventNames(): string[] {
-    return Array.from(this.listeners.keys())
+    return Array.from(this.listenerInfos.keys())
   }
 
   /**
@@ -407,11 +407,11 @@ export class EventEmitter extends NodeEventEmitter {
    */
   getListenerCount(event?: string): number {
     if (event) {
-      return this.listeners.get(event)?.length || 0
+      return this.listenerInfos.get(event)?.length || 0
     }
     
     let total = 0
-    for (const listeners of this.listeners.values()) {
+    for (const listeners of this.listenerInfos.values()) {
       total += listeners.length
     }
     return total

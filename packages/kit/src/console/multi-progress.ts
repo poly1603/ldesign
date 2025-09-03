@@ -4,7 +4,7 @@
  */
 
 import { EventEmitter } from 'node:events'
-import cliProgress from 'cli-progress'
+import * as cliProgress from 'cli-progress'
 import { ProgressBar } from './progress-bar'
 import { LoadingSpinner } from './loading-spinner'
 import { StatusIndicator } from './status-indicator'

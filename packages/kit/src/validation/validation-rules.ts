@@ -29,7 +29,7 @@ export class ValidationRules {
   /**
    * 字符串长度验证
    */
-  static length(min?: number, max?: number, message?: string): ValidationRule {
+  static stringLength(min?: number, max?: number, message?: string): ValidationRule {
     return {
       code: 'LENGTH',
       message: message || `长度必须在 ${min || 0} 到 ${max || '∞'} 之间`,

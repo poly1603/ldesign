@@ -5,8 +5,8 @@
 import { EventEmitter } from 'node:events'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { pipeline } from 'node:stream/promises'
-import { createGzip, createGunzip, createDeflate, createInflate } from 'node:zlib'
-import * as archiver from 'archiver'
+import { createGzip, createGunzip } from 'node:zlib'
+import archiver from 'archiver'
 import * as yauzl from 'yauzl'
 import { FileSystem } from '../filesystem'
 import type { 
@@ -34,7 +34,7 @@ export class ArchiveManager extends EventEmitter {
       followSymlinks: options.followSymlinks ?? false,
       ignoreHidden: options.ignoreHidden ?? false,
       maxFileSize: options.maxFileSize ?? 100 * 1024 * 1024, // 100MB
-      password: options.password,
+      password: options.password ?? '',
       ...options
     }
   }
@@ -50,78 +50,82 @@ export class ArchiveManager extends EventEmitter {
     const sourceList = Array.isArray(sources) ? sources : [sources]
     const mergedOptions = { ...this.options, ...options }
 
-    return new Promise((resolve, reject) => {
-      const output = createWriteStream(outputPath)
-      const archive = archiver('zip', {
-        zlib: { level: mergedOptions.compressionLevel }
-      })
+    return new Promise(async (resolve, reject) => {
+      try {
+        const output = createWriteStream(outputPath)
+        const archive = archiver('zip', {
+          zlib: { level: mergedOptions.compressionLevel }
+        })
 
-      let stats: ArchiveStats = {
-        totalFiles: 0,
-        totalSize: 0,
-        compressedSize: 0,
-        compressionRatio: 0,
-        startTime: new Date(),
-        endTime: new Date(),
-        duration: 0
-      }
-
-      // 监听事件
-      archive.on('entry', (entry) => {
-        stats.totalFiles++
-        stats.totalSize += entry.stats?.size || 0
-        
-        this.emit('entry', {
-          name: entry.name,
-          size: entry.stats?.size || 0,
-          type: entry.stats?.isDirectory() ? 'directory' : 'file'
-        } as ArchiveEntry)
-      })
-
-      archive.on('progress', (progress) => {
-        const progressInfo: ArchiveProgress = {
-          processedFiles: progress.entries.processed,
-          totalFiles: progress.entries.total,
-          processedBytes: progress.fs.processedBytes,
-          totalBytes: progress.fs.totalBytes,
-          percentage: (progress.fs.processedBytes / progress.fs.totalBytes) * 100
+        let stats: ArchiveStats = {
+          totalFiles: 0,
+          totalSize: 0,
+          compressedSize: 0,
+          compressionRatio: 0,
+          startTime: new Date(),
+          endTime: new Date(),
+          duration: 0
         }
-        
-        this.emit('progress', progressInfo)
-      })
 
-      archive.on('error', reject)
-
-      output.on('close', () => {
-        stats.endTime = new Date()
-        stats.duration = stats.endTime.getTime() - stats.startTime.getTime()
-        stats.compressedSize = archive.pointer()
-        stats.compressionRatio = stats.totalSize > 0 
-          ? (1 - stats.compressedSize / stats.totalSize) * 100 
-          : 0
-
-        this.emit('complete', stats)
-        resolve(stats)
-      })
-
-      // 连接流
-      archive.pipe(output)
-
-      // 添加文件/目录
-      for (const source of sourceList) {
-        if (await FileSystem.exists(source)) {
-          const stat = await FileSystem.stat(source)
+        // 监听事件
+        archive.on('entry', (entry) => {
+          stats.totalFiles++
+          stats.totalSize += entry.stats?.size || 0
           
-          if (stat.isDirectory) {
-            archive.directory(source, false)
-          } else {
-            archive.file(source, { name: source })
+          this.emit('entry', {
+            name: entry.name,
+            size: entry.stats?.size || 0,
+            type: entry.stats?.isDirectory() ? 'directory' : 'file'
+          } as ArchiveEntry)
+        })
+
+        archive.on('progress', (progress) => {
+          const progressInfo: ArchiveProgress = {
+            processedFiles: progress.entries.processed,
+            totalFiles: progress.entries.total,
+            processedBytes: progress.fs.processedBytes,
+            totalBytes: progress.fs.totalBytes,
+            percentage: (progress.fs.processedBytes / progress.fs.totalBytes) * 100
+          }
+          
+          this.emit('progress', progressInfo)
+        })
+
+        archive.on('error', reject)
+
+        output.on('close', () => {
+          stats.endTime = new Date()
+          stats.duration = stats.endTime.getTime() - stats.startTime.getTime()
+          stats.compressedSize = archive.pointer()
+          stats.compressionRatio = stats.totalSize > 0 
+            ? (1 - stats.compressedSize / stats.totalSize) * 100 
+            : 0
+
+          this.emit('complete', stats)
+          resolve(stats)
+        })
+
+        // 连接流
+        archive.pipe(output)
+
+        // 添加文件/目录
+        for (const source of sourceList) {
+          if (await FileSystem.exists(source)) {
+            const stat = await FileSystem.stat(source)
+            
+            if (stat.isDirectory()) {
+              archive.directory(source, false)
+            } else {
+              archive.file(source, { name: source })
+            }
           }
         }
-      }
 
-      // 完成压缩
-      archive.finalize()
+        // 完成压缩
+        archive.finalize()
+      } catch (error) {
+        reject(error)
+      }
     })
   }
 
@@ -136,68 +140,72 @@ export class ArchiveManager extends EventEmitter {
     const sourceList = Array.isArray(sources) ? sources : [sources]
     const mergedOptions = { ...this.options, ...options }
 
-    return new Promise((resolve, reject) => {
-      const output = createWriteStream(outputPath)
-      const archive = archiver('tar', {
-        gzip: mergedOptions.gzip,
-        gzipOptions: {
-          level: mergedOptions.compressionLevel
+    return new Promise(async (resolve, reject) => {
+      try {
+        const output = createWriteStream(outputPath)
+        const archive = archiver('tar', {
+          gzip: mergedOptions.gzip,
+          gzipOptions: {
+            level: mergedOptions.compressionLevel
+          }
+        })
+
+        let stats: ArchiveStats = {
+          totalFiles: 0,
+          totalSize: 0,
+          compressedSize: 0,
+          compressionRatio: 0,
+          startTime: new Date(),
+          endTime: new Date(),
+          duration: 0
         }
-      })
 
-      let stats: ArchiveStats = {
-        totalFiles: 0,
-        totalSize: 0,
-        compressedSize: 0,
-        compressionRatio: 0,
-        startTime: new Date(),
-        endTime: new Date(),
-        duration: 0
-      }
-
-      // 监听事件
-      archive.on('entry', (entry) => {
-        stats.totalFiles++
-        stats.totalSize += entry.stats?.size || 0
-        
-        this.emit('entry', {
-          name: entry.name,
-          size: entry.stats?.size || 0,
-          type: entry.stats?.isDirectory() ? 'directory' : 'file'
-        } as ArchiveEntry)
-      })
-
-      archive.on('error', reject)
-
-      output.on('close', () => {
-        stats.endTime = new Date()
-        stats.duration = stats.endTime.getTime() - stats.startTime.getTime()
-        stats.compressedSize = archive.pointer()
-        stats.compressionRatio = stats.totalSize > 0 
-          ? (1 - stats.compressedSize / stats.totalSize) * 100 
-          : 0
-
-        resolve(stats)
-      })
-
-      // 连接流
-      archive.pipe(output)
-
-      // 添加文件/目录
-      for (const source of sourceList) {
-        if (await FileSystem.exists(source)) {
-          const stat = await FileSystem.stat(source)
+        // 监听事件
+        archive.on('entry', (entry) => {
+          stats.totalFiles++
+          stats.totalSize += entry.stats?.size || 0
           
-          if (stat.isDirectory) {
-            archive.directory(source, false)
-          } else {
-            archive.file(source, { name: source })
+          this.emit('entry', {
+            name: entry.name,
+            size: entry.stats?.size || 0,
+            type: entry.stats?.isDirectory() ? 'directory' : 'file'
+          } as ArchiveEntry)
+        })
+
+        archive.on('error', reject)
+
+        output.on('close', () => {
+          stats.endTime = new Date()
+          stats.duration = stats.endTime.getTime() - stats.startTime.getTime()
+          stats.compressedSize = archive.pointer()
+          stats.compressionRatio = stats.totalSize > 0 
+            ? (1 - stats.compressedSize / stats.totalSize) * 100 
+            : 0
+
+          resolve(stats)
+        })
+
+        // 连接流
+        archive.pipe(output)
+
+        // 添加文件/目录
+        for (const source of sourceList) {
+          if (await FileSystem.exists(source)) {
+            const stat = await FileSystem.stat(source)
+            
+            if (stat.isDirectory()) {
+              archive.directory(source, false)
+            } else {
+              archive.file(source, { name: source })
+            }
           }
         }
-      }
 
-      // 完成压缩
-      archive.finalize()
+        // 完成压缩
+        archive.finalize()
+      } catch (error) {
+        reject(error)
+      }
     })
   }
 
@@ -209,7 +217,8 @@ export class ArchiveManager extends EventEmitter {
     outputDir: string,
     options: ExtractionOptions = {}
   ): Promise<ArchiveStats> {
-    const mergedOptions = { ...this.options, ...options }
+    // Remove unused variable
+    // const mergedOptions = { ...this.options, ...options }
 
     return new Promise((resolve, reject) => {
       yauzl.open(archivePath, { lazyEntries: true }, async (err, zipfile) => {

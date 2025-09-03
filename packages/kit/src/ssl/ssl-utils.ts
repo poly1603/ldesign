@@ -25,6 +25,7 @@ export class SSLUtils {
     publicKey: string
   }> {
     const sslManager = new SSLManager({
+      commonName: 'localhost',
       keySize: options.keySize || 2048,
       validityDays: options.validityDays || 365
     })

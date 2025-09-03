@@ -199,6 +199,15 @@ export class RandomUtils {
   }
 
   /**
+   * 生成随机ID字符串
+   * @param length 长度
+   * @returns 随机ID
+   */
+  static generateId(length: number = 8): string {
+    return RandomUtils.string(length, 'abcdefghijklmnopqrstuvwxyz0123456789')
+  }
+
+  /**
    * 生成随机字母数字字符串
    * @param length 长度
    * @returns 随机字母数字字符串

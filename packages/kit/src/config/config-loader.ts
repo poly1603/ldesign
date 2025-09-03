@@ -7,7 +7,7 @@ import { promises as fs } from 'node:fs'
 import { join, extname, resolve } from 'node:path'
 import { EventEmitter } from 'node:events'
 import { FileSystem } from '../filesystem'
-import JSON5 from 'json5'
+import * as JSON5 from 'json5'
 import { StringUtils } from '../utils'
 
 /**

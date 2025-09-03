@@ -231,10 +231,10 @@ export class HttpClient extends EventEmitter {
       const duration = Date.now() - startTime
       
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new NetworkError('Request timeout', config, undefined, error)
+        throw new NetworkError('Request timeout', config.url, error)
       }
       
-      throw new NetworkError('Request failed', config, undefined, error as Error)
+      throw new NetworkError('Request failed', config.url, error as Error)
     }
   }
 

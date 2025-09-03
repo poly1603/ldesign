@@ -3,12 +3,13 @@
  * 提供文件和目录变更监听功能
  */
 
-import { watch, FSWatcher, WatchOptions } from 'node:fs'
+import { watch } from 'node:fs'
+import type { FSWatcher } from 'node:fs'
 import { EventEmitter } from 'node:events'
-import { join, relative } from 'node:path'
+import { join } from 'node:path'
 import { glob } from 'glob'
 import { FileSystemError } from '../types'
-import { PathUtils, AsyncUtils } from '../utils'
+import { PathUtils } from '../utils'
 import { FileSystem } from './file-system'
 
 /**

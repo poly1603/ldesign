@@ -22,7 +22,7 @@ export class TypedEventEmitter<TEventMap extends EventMap> extends EventEmitter 
   /**
    * 添加类型安全的事件监听器
    */
-  on<K extends keyof TEventMap>(
+  override on<K extends keyof TEventMap>(
     event: K,
     listener: TypedEventListener<TEventMap[K]>,
     options?: {
@@ -37,7 +37,7 @@ export class TypedEventEmitter<TEventMap extends EventMap> extends EventEmitter 
   /**
    * 添加类型安全的一次性事件监听器
    */
-  once<K extends keyof TEventMap>(
+  override once<K extends keyof TEventMap>(
     event: K,
     listener: TypedEventListener<TEventMap[K]>,
     options?: {
@@ -52,7 +52,7 @@ export class TypedEventEmitter<TEventMap extends EventMap> extends EventEmitter 
   /**
    * 移除类型安全的事件监听器
    */
-  off<K extends keyof TEventMap>(
+  override off<K extends keyof TEventMap>(
     event: K,
     listener?: TypedEventListener<TEventMap[K]>
   ): this {
@@ -62,42 +62,49 @@ export class TypedEventEmitter<TEventMap extends EventMap> extends EventEmitter 
   /**
    * 发射类型安全的事件
    */
-  emit<K extends keyof TEventMap>(event: K, ...args: TEventMap[K]): boolean {
+  override emit<K extends keyof TEventMap>(event: K, ...args: TEventMap[K]): boolean {
     return super.emit(event as string, ...args)
   }
 
   /**
    * 异步发射类型安全的事件
    */
-  async emitAsync<K extends keyof TEventMap>(event: K, ...args: TEventMap[K]): Promise<any[]> {
+  override async emitAsync<K extends keyof TEventMap>(event: K, ...args: TEventMap[K]): Promise<any[]> {
     return super.emitAsync(event as string, ...args)
   }
 
   /**
    * 等待类型安全的事件
    */
-  waitFor<K extends keyof TEventMap>(event: K, timeout?: number): Promise<TEventMap[K]> {
+  override waitFor<K extends keyof TEventMap>(event: K, timeout?: number): Promise<TEventMap[K]> {
     return super.waitFor(event as string, timeout) as Promise<TEventMap[K]>
   }
 
   /**
    * 检查是否有指定事件的监听器
    */
-  hasListeners<K extends keyof TEventMap>(event: K): boolean {
+  override hasListeners<K extends keyof TEventMap>(event: K): boolean {
     return super.hasListeners(event as string)
   }
 
   /**
    * 获取指定事件的监听器数量
    */
-  getListenerCount<K extends keyof TEventMap>(event: K): number {
+  override getListenerCount(event?: string): number {
+    return super.getListenerCount(event)
+  }
+
+  /**
+   * 获取指定事件的监听器数量（类型安全）
+   */
+  getTypedListenerCount<K extends keyof TEventMap>(event: K): number {
     return super.getListenerCount(event as string)
   }
 
   /**
    * 创建类型安全的事件发射器实例
    */
-  static create<TEventMap extends EventMap>(options?: any): TypedEventEmitter<TEventMap> {
+  static override create<TEventMap extends EventMap>(options?: any): TypedEventEmitter<TEventMap> {
     return new TypedEventEmitter<TEventMap>(options)
   }
 }
@@ -138,6 +145,7 @@ export class EventEmitterBuilder<TEventMap extends EventMap = {}> {
  * 预定义的常用事件类型
  */
 export interface CommonEvents {
+  [event: string]: any[]
   error: [Error]
   ready: []
   close: []
@@ -232,7 +240,9 @@ export interface AppEvents extends CommonEvents {
 /**
  * 组合事件类型
  */
-export type AllEvents = CommonEvents & HttpEvents & DatabaseEvents & FileSystemEvents & CacheEvents & UserEvents & AppEvents
+export interface AllEvents extends CommonEvents, HttpEvents, DatabaseEvents, FileSystemEvents, CacheEvents, UserEvents, AppEvents {
+  [event: string]: any[]
+}
 
 /**
  * 创建类型安全的事件发射器
@@ -313,7 +323,7 @@ export function EventHandler<TEventMap extends EventMap, K extends keyof TEventM
     const originalMethod = descriptor.value
 
     descriptor.value = function (...args: any[]) {
-      const emitter = this.eventEmitter || this.emitter
+      const emitter = (this as any).eventEmitter || (this as any).emitter
       if (emitter && typeof emitter.on === 'function') {
         const listener = originalMethod.bind(this)
         if (options?.once) {
@@ -343,12 +353,12 @@ export function AutoBind<TEventMap extends EventMap>(eventMap: TEventMap) {
         const methodNames = Object.getOwnPropertyNames(prototype)
         
         for (const methodName of methodNames) {
-          if (methodName.startsWith('on') && typeof this[methodName] === 'function') {
+          if (methodName.startsWith('on') && typeof (this as any)[methodName] === 'function') {
             const eventName = methodName.slice(2).toLowerCase()
             if (eventName in eventMap) {
-              const emitter = this.eventEmitter || this.emitter
+              const emitter = (this as any).eventEmitter || (this as any).emitter
               if (emitter && typeof emitter.on === 'function') {
-                emitter.on(eventName, this[methodName].bind(this))
+                emitter.on(eventName, (this as any)[methodName].bind(this))
               }
             }
           }

@@ -4,7 +4,7 @@
  */
 
 import { EventEmitter } from 'node:events'
-import cliProgress from 'cli-progress'
+import * as cliProgress from 'cli-progress'
 import { ConsoleTheme } from './console-theme'
 
 /**

@@ -26,12 +26,11 @@ export class NotificationManager {
 
   constructor(options: NotificationConfig = {}) {
     this.options = {
-      appName: options.appName ?? 'Node.js App',
-      icon: options.icon,
-      sound: options.sound ?? true,
-      persistent: options.persistent ?? false,
-      maxHistory: options.maxHistory ?? 100,
-      ...options
+      appName: options.appName || 'Node.js App',
+      icon: options.icon || '',
+      sound: options.sound !== false,
+      persistent: options.persistent || false,
+      maxHistory: options.maxHistory || 100
     }
   }
 

@@ -3,16 +3,13 @@
  * 封装 Vite 的构建、开发服务器、预览等功能
  */
 
-import { build, createServer, preview, resolveConfig, type ViteDevServer, type PreviewServer } from 'vite'
+import { build, createServer, preview, type ViteDevServer, type PreviewServer } from 'vite'
 import { EventEmitter } from 'events'
-import { resolve, join } from 'path'
-import { existsSync } from 'fs'
 import type {
   ViteBuilderConfig,
   BuildResult,
   DevServerResult,
   IViteBuilder,
-  BuilderEvents,
   BuildMode,
   OutputFormat
 } from './types'

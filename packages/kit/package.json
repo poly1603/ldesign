@@ -134,6 +134,11 @@
       "import": "./dist/builder/index.js",
       "require": "./dist/builder/index.cjs",
       "types": "./dist/builder/index.d.ts"
+    },
+    "./project": {
+      "import": "./dist/project/index.js",
+      "require": "./dist/project/index.cjs",
+      "types": "./dist/project/index.d.ts"
     }
   },
   "files": [
@@ -142,9 +147,9 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "rollup -c",
-    "build:watch": "rollup -c -w",
-    "dev": "rollup -c -w",
+    "build": "pnpm clean && tsup",
+    "build:watch": "tsup --watch",
+    "dev": "tsup --watch",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
@@ -198,8 +203,10 @@
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.5",
     "@types/archiver": "^6.0.2",
+    "@types/cli-progress": "^3.11.6",
     "@types/node": "^20.10.0",
     "@types/prompts": "^2.4.9",
+    "@types/tar": "^6.1.13",
     "@types/ws": "^8.5.10",
     "@types/yauzl": "^2.10.3",
     "@typescript-eslint/eslint-plugin": "^6.13.0",
@@ -212,6 +219,7 @@
     "rollup": "^4.6.0",
     "rollup-plugin-dts": "^6.1.0",
     "size-limit": "^11.0.0",
+    "tsup": "^8.0.0",
     "typedoc": "^0.25.0",
     "typescript": "^5.3.0",
     "vitepress": "^1.6.4",

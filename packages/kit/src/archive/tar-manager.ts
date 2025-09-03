@@ -5,7 +5,6 @@
 import { EventEmitter } from 'node:events'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { pipeline } from 'node:stream/promises'
-import { createGzip, createGunzip } from 'node:zlib'
 import * as tar from 'tar'
 import { FileSystem } from '../filesystem'
 import type { 
@@ -34,6 +33,7 @@ export class TarManager extends EventEmitter {
       followSymlinks: options.followSymlinks ?? false,
       ignoreHidden: options.ignoreHidden ?? false,
       maxFileSize: options.maxFileSize ?? 100 * 1024 * 1024, // 100MB
+      password: options.password ?? '',
       ...options
     }
   }
@@ -64,7 +64,7 @@ export class TarManager extends EventEmitter {
     for (const source of sourceList) {
       if (await FileSystem.exists(source)) {
         const sourceStat = await FileSystem.stat(source)
-        if (sourceStat.isDirectory) {
+        if (sourceStat.isDirectory()) {
           const dirFiles = await this.getDirectoryFiles(source, mergedOptions)
           files.push(...dirFiles)
         } else {
@@ -221,15 +221,13 @@ export class TarManager extends EventEmitter {
           name: entry.path,
           size: entry.size || 0,
           type: entry.type === 'Directory' ? 'directory' : 'file',
-          lastModified: entry.mtime
+          lastModified: entry.mtime ? new Date(entry.mtime) : undefined
         })
       }
     })
 
-    return new Promise((resolve, reject) => {
-      listStream.on('end', () => resolve(entries))
-      listStream.on('error', reject)
-    })
+    await listStream
+    return entries
   }
 
   /**
@@ -292,14 +290,14 @@ export class TarManager extends EventEmitter {
   ): Promise<string[]> {
     const files: string[] = []
     
-    const entries = await FileSystem.readDir(dirPath, { recursive: true })
+    const entries = await FileSystem.readDir(dirPath)
     
     for (const entry of entries) {
-      if (options.ignoreHidden && entry.name.startsWith('.')) {
+      if (options.ignoreHidden && (typeof entry === 'string' ? entry.startsWith('.') : entry.name.startsWith('.'))) {
         continue
       }
       
-      if (entry.isFile) {
+      if (typeof entry === 'object' && entry.isFile) {
         files.push(entry.path)
       }
     }
@@ -337,7 +335,7 @@ export class TarManager extends EventEmitter {
     // 检测是否为 gzipped
     const buffer = Buffer.alloc(2)
     const file = await FileSystem.readFile(archivePath)
-    file.copy(buffer, 0, 0, 2)
+    Buffer.from(file).copy(buffer, 0, 0, 2)
     const isGzipped = buffer[0] === 0x1f && buffer[1] === 0x8b
 
     return {

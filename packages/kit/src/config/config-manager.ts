@@ -30,18 +30,21 @@ export class ConfigManager extends EventEmitter {
     super()
     
     this.options = {
-      configFile: options.configFile || 'config.json',
-      configDir: options.configDir || process.cwd(),
-      envPrefix: options.envPrefix || 'APP',
-      envSeparator: options.envSeparator || '_',
-      watch: options.watch !== false,
-      strict: options.strict !== false,
-      allowUnknown: options.allowUnknown !== false,
-      caseSensitive: options.caseSensitive !== false,
-      freezeConfig: options.freezeConfig !== false,
-      validateOnLoad: options.validateOnLoad !== false,
-      mergeArrays: options.mergeArrays !== false,
-      ...options
+      cwd: options.cwd ?? process.cwd(),
+      configFile: options.configFile ?? 'config.json',
+      schema: options.schema,
+      defaults: options.defaults ?? {},
+      env: options.env ?? true,
+      envPrefix: options.envPrefix ?? 'APP',
+      configDir: options.configDir ?? process.cwd(),
+      envSeparator: options.envSeparator ?? '_',
+      watch: options.watch ?? true,
+      strict: options.strict ?? true,
+      allowUnknown: options.allowUnknown ?? true,
+      caseSensitive: options.caseSensitive ?? true,
+      freezeConfig: options.freezeConfig ?? true,
+      validateOnLoad: options.validateOnLoad ?? true,
+      mergeArrays: options.mergeArrays ?? true
     }
 
     this.loader = new ConfigLoader({
@@ -221,7 +224,7 @@ export class ConfigManager extends EventEmitter {
     }
 
     const oldValue = this.get(key)
-    ObjectUtils.delete(this.config, key)
+    ObjectUtils.unset(this.config, key)
     
     this.emit('deleted', { key, oldValue })
     this.emit(`deleted:${key}`, { oldValue })

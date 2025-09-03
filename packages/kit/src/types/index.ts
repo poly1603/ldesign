@@ -97,8 +97,8 @@ export interface DownloadOptions {
   resumable?: boolean
 }
 
-// 压缩选项
-export interface ArchiveOptions {
+// 简单压缩选项
+export interface SimpleArchiveOptions {
   compression?: 'none' | 'gzip' | 'brotli'
   level?: number
   password?: string
@@ -118,8 +118,8 @@ export interface GitInfo {
   behind: number
 }
 
-// 包信息
-export interface PackageInfo {
+// 包信息 (基础版本)
+export interface BasicPackageInfo {
   name: string
   version: string
   description?: string
@@ -142,11 +142,12 @@ export interface SSLOptions {
   locality?: string
   validityDays?: number
   keySize?: number
-  algorithm?: 'rsa' | 'ec'
+  algorithm?: 'rsa' | 'ec' | 'ed25519'
+  hashAlgorithm?: 'sha256' | 'sha384' | 'sha512'
 }
 
-// CLI 命令选项
-export interface CommandOptions {
+// CLI 命令选项 (基础版本)
+export interface BasicCommandOptions {
   name: string
   description: string
   usage?: string
@@ -155,8 +156,8 @@ export interface CommandOptions {
   action: (...args: any[]) => Awaitable<void>
 }
 
-// CLI 选项定义
-export interface OptionDefinition {
+// CLI 选项定义 (基础版本)
+export interface BasicOptionDefinition {
   name: string
   alias?: string
   description: string
@@ -181,10 +182,15 @@ export interface PromptOptions {
 export interface NotificationOptions {
   title: string
   message: string
+  type?: 'success' | 'error' | 'warning' | 'info'
   icon?: string
   sound?: boolean
   timeout?: number
-  actions?: Array<{ text: string; type?: string }>
+  urgency?: 'low' | 'normal' | 'critical'
+  actions?: NotificationAction[]
+  persistent?: boolean
+  subtitle?: string
+  progress?: number
   onClick?: () => void
 }
 
@@ -1013,13 +1019,6 @@ export interface OutputFormatterOptions {
   maxWidth?: number
 }
 
-// SSL 模块类型
-export interface SSLOptions {
-  keySize?: number
-  algorithm?: 'rsa' | 'ec' | 'ed25519'
-  hashAlgorithm?: 'sha256' | 'sha384' | 'sha512'
-  validityDays?: number
-}
 
 export interface KeyPair {
   publicKey: string
@@ -1110,20 +1109,6 @@ export interface Answer {
   [key: string]: any
 }
 
-// Notification 模块类型
-export interface NotificationOptions {
-  title: string
-  message: string
-  type?: 'success' | 'error' | 'warning' | 'info'
-  icon?: string
-  sound?: boolean
-  timeout?: number
-  urgency?: 'low' | 'normal' | 'critical'
-  actions?: NotificationAction[]
-  persistent?: boolean
-  subtitle?: string
-  progress?: number
-}
 
 export interface NotificationConfig {
   appName?: string

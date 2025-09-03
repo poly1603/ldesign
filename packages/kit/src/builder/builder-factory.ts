@@ -9,7 +9,6 @@ import type {
   ViteBuilderConfig,
   RollupBuilderConfig,
   PresetConfig,
-  BuildEnvironment,
   OutputFormat
 } from './types'
 

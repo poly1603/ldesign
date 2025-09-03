@@ -215,42 +215,42 @@ export class CacheStoreDecorator extends AbstractCacheStore {
     return await this.store.clear()
   }
 
-  async mget<T = any>(keys: string[]): Promise<Map<string, T>> {
+  override async mget<T = any>(keys: string[]): Promise<Map<string, T>> {
     if (this.store.mget) {
       return await this.store.mget<T>(keys)
     }
     return await super.mget<T>(keys)
   }
 
-  async mset<T = any>(entries: Map<string, T>, ttl?: number): Promise<void> {
+  override async mset<T = any>(entries: Map<string, T>, ttl?: number): Promise<void> {
     if (this.store.mset) {
       return await this.store.mset(entries, ttl)
     }
     return await super.mset(entries, ttl)
   }
 
-  async mdel(keys: string[]): Promise<number> {
+  override async mdel(keys: string[]): Promise<number> {
     if (this.store.mdel) {
       return await this.store.mdel(keys)
     }
     return await super.mdel(keys)
   }
 
-  async keys(pattern?: string): Promise<string[]> {
+  override async keys(pattern?: string): Promise<string[]> {
     if (this.store.keys) {
       return await this.store.keys(pattern)
     }
     return []
   }
 
-  async expire(key: string, ttl: number): Promise<boolean> {
+  override async expire(key: string, ttl: number): Promise<boolean> {
     if (this.store.expire) {
       return await this.store.expire(key, ttl)
     }
     return false
   }
 
-  async ttl(key: string): Promise<number> {
+  override async ttl(key: string): Promise<number> {
     if (this.store.ttl) {
       return await this.store.ttl(key)
     }
@@ -261,7 +261,7 @@ export class CacheStoreDecorator extends AbstractCacheStore {
     return await this.store.getStats()
   }
 
-  async destroy(): Promise<void> {
+  override async destroy(): Promise<void> {
     if (this.store.destroy) {
       await this.store.destroy()
     }
@@ -277,7 +277,7 @@ export class CompressedCacheStore extends CacheStoreDecorator {
     super(store)
   }
 
-  async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
+  override async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
     let processedValue = value
     
     // 如果值是字符串且超过阈值，进行压缩
@@ -297,7 +297,7 @@ export class CompressedCacheStore extends CacheStoreDecorator {
     return await this.store.set(key, processedValue, ttl)
   }
 
-  async get<T = any>(key: string): Promise<T | undefined> {
+  override async get<T = any>(key: string): Promise<T | undefined> {
     const value = await this.store.get<T>(key)
     
     if (typeof value === 'string' && value.startsWith('__compressed__')) {
@@ -329,7 +329,7 @@ export class SerializedCacheStore extends CacheStoreDecorator {
     super(store)
   }
 
-  async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
+  override async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
     let serializedValue: string
     
     try {
@@ -342,7 +342,7 @@ export class SerializedCacheStore extends CacheStoreDecorator {
     return await this.store.set(key, serializedValue, ttl)
   }
 
-  async get<T = any>(key: string): Promise<T | undefined> {
+  override async get<T = any>(key: string): Promise<T | undefined> {
     const value = await this.store.get<string>(key)
     
     if (value === undefined) {
@@ -376,23 +376,23 @@ export class NamespacedCacheStore extends CacheStoreDecorator {
     return key.startsWith(prefix) ? key.slice(prefix.length) : key
   }
 
-  async get<T = any>(key: string): Promise<T | undefined> {
+  override async get<T = any>(key: string): Promise<T | undefined> {
     return await this.store.get<T>(this.addNamespace(key))
   }
 
-  async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
+  override async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
     return await this.store.set(this.addNamespace(key), value, ttl)
   }
 
-  async has(key: string): Promise<boolean> {
+  override async has(key: string): Promise<boolean> {
     return await this.store.has(this.addNamespace(key))
   }
 
-  async delete(key: string): Promise<boolean> {
+  override async delete(key: string): Promise<boolean> {
     return await this.store.delete(this.addNamespace(key))
   }
 
-  async mget<T = any>(keys: string[]): Promise<Map<string, T>> {
+  override async mget<T = any>(keys: string[]): Promise<Map<string, T>> {
     const namespacedKeys = keys.map(key => this.addNamespace(key))
     const results = await super.mget<T>(namespacedKeys)
     
@@ -405,7 +405,7 @@ export class NamespacedCacheStore extends CacheStoreDecorator {
     return finalResults
   }
 
-  async mset<T = any>(entries: Map<string, T>, ttl?: number): Promise<void> {
+  override async mset<T = any>(entries: Map<string, T>, ttl?: number): Promise<void> {
     const namespacedEntries = new Map<string, T>()
     for (const [key, value] of entries) {
       namespacedEntries.set(this.addNamespace(key), value)
@@ -414,23 +414,23 @@ export class NamespacedCacheStore extends CacheStoreDecorator {
     return await super.mset(namespacedEntries, ttl)
   }
 
-  async mdel(keys: string[]): Promise<number> {
+  override async mdel(keys: string[]): Promise<number> {
     const namespacedKeys = keys.map(key => this.addNamespace(key))
     return await super.mdel(namespacedKeys)
   }
 
-  async keys(pattern?: string): Promise<string[]> {
+  override async keys(pattern?: string): Promise<string[]> {
     const namespacedPattern = pattern ? this.addNamespace(pattern) : `${this.namespace}:*`
     const namespacedKeys = await super.keys(namespacedPattern)
     
     return namespacedKeys.map(key => this.removeNamespace(key))
   }
 
-  async expire(key: string, ttl: number): Promise<boolean> {
+  override async expire(key: string, ttl: number): Promise<boolean> {
     return await super.expire(this.addNamespace(key), ttl)
   }
 
-  async ttl(key: string): Promise<number> {
+  override async ttl(key: string): Promise<number> {
     return await super.ttl(this.addNamespace(key))
   }
 }

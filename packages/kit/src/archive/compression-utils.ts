@@ -218,7 +218,7 @@ export class CompressionUtils {
     level: CompressionLevel = 6,
     concurrency: number = 4
   ): Promise<Array<{ input: string; output: string; success: boolean; error?: string }>> {
-    const results = []
+    const results: Array<{ input: string; output: string; success: boolean; error?: string }> = []
     const semaphore = new Array(concurrency).fill(null)
     
     const processFile = async (file: { input: string; output: string }) => {
@@ -279,7 +279,12 @@ export class CompressionUtils {
     
     if (file.length < 10) return null
     
-    file.copy(buffer, 0, 0, 10)
+    // Copy first 10 bytes to buffer for magic number detection
+    if (Buffer.isBuffer(file)) {
+      file.copy(buffer, 0, 0, 10)
+    } else {
+      Buffer.from(file).copy(buffer, 0, 0, 10)
+    }
     
     // GZIP 魔数: 1f 8b
     if (buffer[0] === 0x1f && buffer[1] === 0x8b) {
@@ -289,14 +294,15 @@ export class CompressionUtils {
     // DEFLATE 通常没有固定魔数，但可以通过 zlib 头部检测
     if (buffer[0] === 0x78) {
       const check = buffer[1]
-      if ((check & 0x9c) === 0x9c || (check & 0xda) === 0xda) {
+      if (check !== undefined && ((check & 0x9c) === 0x9c || (check & 0xda) === 0xda)) {
         return 'deflate'
       }
     }
     
     // Brotli 没有标准魔数，但可以尝试解压来检测
     try {
-      await this.decompress(file.slice(0, 100), 'brotli')
+      const testData = Buffer.isBuffer(file) ? file.slice(0, 100) : Buffer.from(file).slice(0, 100)
+      await this.decompress(testData, 'brotli')
       return 'brotli'
     } catch {
       // 不是 Brotli 格式
@@ -327,11 +333,12 @@ export class CompressionUtils {
     if (algorithm) {
       try {
         const compressed = await FileSystem.readFile(filePath)
-        const decompressed = await this.decompress(compressed, algorithm)
+        const compressedBuffer = Buffer.isBuffer(compressed) ? compressed : Buffer.from(compressed)
+        const decompressed = await this.decompress(compressedBuffer, algorithm)
         info.originalSize = decompressed.length
         info.compressionRatio = this.calculateCompressionRatio(
           decompressed.length, 
-          compressed.length
+          compressedBuffer.length
         )
       } catch {
         // 无法解压，可能文件损坏
@@ -353,7 +360,8 @@ export class CompressionUtils {
       if (!detectedAlgorithm) return false
       
       const compressed = await FileSystem.readFile(filePath)
-      await this.decompress(compressed, detectedAlgorithm)
+      const compressedBuffer = Buffer.isBuffer(compressed) ? compressed : Buffer.from(compressed)
+      await this.decompress(compressedBuffer, detectedAlgorithm)
       
       return true
     } catch {

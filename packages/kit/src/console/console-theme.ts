@@ -195,7 +195,8 @@ export class ConsoleTheme {
   private customThemes = new Map<string, ThemeConfig>()
 
   constructor(themeName = 'default') {
-    this.currentTheme = THEMES[themeName] || THEMES.default
+    const selectedTheme = THEMES[themeName as keyof typeof THEMES]
+    this.currentTheme = selectedTheme || THEMES.default
   }
 
   /**
@@ -420,7 +421,7 @@ export class ConsoleTheme {
     baseTheme: string = 'default',
     overrides: Partial<ThemeConfig> = {}
   ): ThemeConfig {
-    const base = THEMES[baseTheme] || THEMES.default
+    const base = THEMES[baseTheme as keyof typeof THEMES] || THEMES.default
     
     return {
       ...base,

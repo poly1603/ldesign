@@ -321,13 +321,17 @@ export class ConfigValidator extends EventEmitter {
     
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i]
+      if (!key) continue
       if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
         current[key] = {}
       }
       current = current[key]
     }
     
-    current[keys[keys.length - 1]] = value
+    const lastKey = keys[keys.length - 1]
+    if (lastKey) {
+      current[lastKey] = value
+    }
   }
 
   /**
