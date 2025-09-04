@@ -1,10 +1,28 @@
 /**
  * 构建工具类型定义
- * 定义 ViteBuilder 和 RollupBuilder 的接口和配置选项
+ * @module types
+ * @description 定义 ViteBuilder 和 RollupBuilder 的接口和配置选项
+ * 
+ * @author LDesign Team
+ * @since 1.0.0
  */
 
-import type { Plugin as VitePlugin, UserConfig as ViteConfig, BuildOptions as ViteBuildOptions } from 'vite'
-import type { Plugin as RollupPlugin, RollupOptions, OutputOptions } from 'rollup'
+import type { 
+  Plugin as VitePlugin, 
+  UserConfig as ViteConfig, 
+  BuildOptions as ViteBuildOptions,
+  InlineConfig as ViteInlineConfig,
+  ServerOptions,
+  PreviewServerOptions
+} from 'vite'
+import type { 
+  Plugin as RollupPlugin, 
+  RollupOptions, 
+  OutputOptions,
+  WatcherOptions,
+  TreeshakingOptions,
+  ModuleFormat
+} from 'rollup'
 
 /**
  * 构建环境类型
@@ -47,6 +65,9 @@ export interface BaseBuilderConfig {
 
 /**
  * Vite 构建器配置接口
+ * @interface ViteBuilderConfig
+ * @extends BaseBuilderConfig
+ * @description Vite 构建器的完整配置选项
  */
 export interface ViteBuilderConfig extends BaseBuilderConfig {
   /** 入口文件 */
@@ -111,10 +132,84 @@ export interface ViteBuilderConfig extends BaseBuilderConfig {
   plugins?: VitePlugin[]
   /** 原始 Vite 配置 */
   viteConfig?: Partial<ViteConfig>
+  /** 构建选项 */
+  build?: Partial<ViteBuildOptions>
+  /** SSR 配置 */
+  ssr?: {
+    entry?: string | string[]
+    external?: string[]
+    noExternal?: string[] | boolean
+    target?: 'node' | 'webworker'
+  }
+  /** 优化依赖配置 */
+  optimizeDeps?: {
+    include?: string[]
+    exclude?: string[]
+    esbuildOptions?: Record<string, any>
+    force?: boolean
+  }
+  /** 构建优化配置 */
+  optimization?: {
+    treeshake?: boolean
+    sideEffects?: boolean
+    usedExports?: boolean
+    concatenateModules?: boolean
+    splitChunks?: boolean
+    runtimeChunk?: boolean | 'single' | 'multiple'
+    moduleIds?: 'natural' | 'named' | 'deterministic' | 'size'
+    chunkIds?: 'natural' | 'named' | 'deterministic' | 'size' | 'total-size'
+  }
+  /** 输出配置 */
+  output?: {
+    format?: OutputFormat
+    exports?: 'auto' | 'default' | 'named' | 'none'
+    preserveModules?: boolean
+    preserveModulesRoot?: string
+    entryFileNames?: string
+    chunkFileNames?: string
+    assetFileNames?: string
+    manualChunks?: Record<string, string[]> | ((id: string) => string | undefined)
+    inlineDynamicImports?: boolean
+  }
+  /** 解析配置 */
+  resolve?: {
+    extensions?: string[]
+    mainFields?: string[]
+    conditions?: string[]
+    preserveSymlinks?: boolean
+  }
+  /** esbuild 配置 */
+  esbuild?: {
+    jsxFactory?: string
+    jsxFragment?: string
+    jsxInject?: string
+    target?: string | string[]
+  }
+  /** 公共目录 */
+  publicDir?: string | false
+  /** 缓存目录 */
+  cacheDir?: string
+  /** 环境目录 */
+  envDir?: string
+  /** 环境变量前缀 */
+  envPrefix?: string | string[]
+  /** 日志级别 */
+  logLevel?: 'error' | 'warn' | 'info' | 'silent'
+  /** 清屏 */
+  clearScreen?: boolean
+  /** 自动插件 */
+  autoPlugins?: boolean
+  /** 资源包含规则 */
+  assetsInclude?: string | RegExp | (string | RegExp)[]
+  /** 版本信息 */
+  version?: string
 }
 
 /**
  * Rollup 构建器配置接口
+ * @interface RollupBuilderConfig
+ * @extends BaseBuilderConfig
+ * @description Rollup 构建器的完整配置选项
  */
 export interface RollupBuilderConfig extends BaseBuilderConfig {
   /** 入口文件 */
@@ -136,6 +231,30 @@ export interface RollupBuilderConfig extends BaseBuilderConfig {
   }
   /** 原始 Rollup 配置 */
   rollupConfig?: Partial<RollupOptions>
+  /** treeshake 配置 */
+  treeshake?: boolean | TreeshakingOptions
+  /** 缓存配置 */
+  cache?: boolean | Record<string, any>
+  /** 严格废弃警告 */
+  strictDeprecations?: boolean
+  /** 保留入口签名 */
+  preserveEntrySignatures?: boolean | 'strict' | 'allow-extension' | 'exports-only'
+  /** 最大并行文件操作数 */
+  maxParallelFileOps?: number
+  /** 性能 */
+  perf?: boolean
+  /** 上下文 */
+  context?: string
+  /** 模块上下文 */
+  moduleContext?: Record<string, string> | ((id: string) => string)
+  /** acorn 配置 */
+  acorn?: Record<string, any>
+  /** acorn 插件注入 */
+  acornInjectPlugins?: any[]
+  /** 保留符号链接 */
+  preserveSymlinks?: boolean
+  /** 自动插件 */
+  autoPlugins?: boolean
 }
 
 /**

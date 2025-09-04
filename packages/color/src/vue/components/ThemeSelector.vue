@@ -19,11 +19,12 @@
       <LPopup placement="bottom" trigger="click" :animation="popupAnimation" :disabled="disabled">
         <!-- 触发按钮 -->
         <button class="theme-selector__trigger" :class="[`theme-selector__trigger--${size}`]" :disabled="disabled">
-          <span class="theme-selector__trigger-icon">🎨</span>
+          <Palette class="theme-selector__trigger-icon" />
           <span class="theme-selector__trigger-text">{{ buttonText }}</span>
           <span v-if="currentTheme" class="theme-selector__trigger-preview">
             <span class="theme-selector__color-dot" :style="{ backgroundColor: getCurrentThemeColor('primary') }" />
           </span>
+          <ChevronDown class="theme-selector__trigger-arrow" />
         </button>
 
         <!-- 弹出内容 -->
@@ -55,10 +56,9 @@
     <div v-else-if="mode === 'dialog'">
       <!-- 触发按钮 -->
       <button class="theme-selector__trigger" :disabled="disabled" @click="showDialog = true">
-        <svg class="theme-selector__icon" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-        </svg>
+        <Sparkles class="theme-selector__icon" />
         {{ buttonText }}
+        <ChevronDown class="theme-selector__trigger-arrow" />
       </button>
 
       <!-- 对话框 -->
@@ -117,6 +117,7 @@ import { presetThemes } from '../../themes/presets'
 import type { ThemeConfig } from '../../core/types'
 import { globalThemeApplier } from '../../utils/css-variables'
 import { LSelect, LPopup, LDialog } from '@ldesign/shared'
+import { Palette, ChevronDown, Check, Sparkles } from 'lucide-vue-next'
 
 // Props
 interface Props {
@@ -480,177 +481,8 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
-.theme-selector {
-  display: inline-block;
-  position: relative;
-}
+<style scoped lang="less">
+@import './ThemeSelector.less';
 
-/* 美化的选择器样式 */
-.theme-selector__select-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-.theme-selector__select-enhanced {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  border: 1px solid #d9d9d9;
-  border-radius: 6px;
-  background: #fff;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 200px;
-  white-space: nowrap;
-}
-
-.theme-selector__select-enhanced:hover {
-  border-color: #40a9ff;
-}
-
-.theme-selector__select-value {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-}
-
-.theme-selector__select-label {
-  font-weight: 500;
-  color: #262626;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.theme-selector__select-desc {
-  font-size: 12px;
-  color: #8c8c8c;
-}
-
-.theme-selector__select-placeholder {
-  color: #bfbfbf;
-}
-
-.theme-selector__select-arrow {
-  font-size: 12px;
-  color: #bfbfbf;
-  transition: transform 0.2s ease;
-}
-
-.theme-selector__select-arrow--open {
-  transform: rotate(180deg);
-}
-
-.theme-selector__select-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  margin-top: 4px;
-  background: #fff;
-  border: 1px solid #d9d9d9;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
-}
-
-.theme-selector__select-options {
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.theme-selector__select-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  min-height: 48px;
-}
-
-.theme-selector__select-option:hover {
-  background: #f5f5f5;
-}
-
-.theme-selector__select-option--selected {
-  background: #e6f7ff;
-  color: #1890ff;
-}
-
-.theme-selector__select-option-content {
-  flex: 1;
-  min-width: 0; /* 允许flex子元素收缩 */
-  overflow: hidden;
-}
-
-.theme-selector__select-option-label {
-  display: block;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.theme-selector__select-option-desc {
-  display: block;
-  font-size: 12px;
-  color: #8c8c8c;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 180px;
-}
-
-.theme-selector__select-option-check {
-  color: #1890ff;
-  font-weight: bold;
-}
-
-.theme-selector__color-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 1px solid #d9d9d9;
-  flex-shrink: 0;
-}
-
-/* 动画效果 */
-.theme-selector-dropdown-enter-active,
-.theme-selector-dropdown-leave-active {
-  transition: all 0.2s ease;
-}
-
-.theme-selector-dropdown-enter-from,
-.theme-selector-dropdown-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
-/* 尺寸变体 */
-.theme-selector--small .theme-selector__select-enhanced {
-  padding: 4px 8px;
-  font-size: 12px;
-}
-
-.theme-selector--large .theme-selector__select-enhanced {
-  padding: 12px 16px;
-  font-size: 16px;
-}
-
-/* 禁用状态 */
-.theme-selector--disabled .theme-selector__select-enhanced {
-  background: #f5f5f5;
-  color: #bfbfbf;
-  cursor: not-allowed;
-}
-
-.theme-selector--disabled .theme-selector__select-enhanced:hover {
-  border-color: #d9d9d9;
-}
+/* 样式已移至 ThemeSelector.less */
 </style>

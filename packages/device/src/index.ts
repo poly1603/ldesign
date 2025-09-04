@@ -47,3 +47,6 @@ export {
 
 // Vue集成
 export * from './vue'
+
+// Engine集成
+export * from './engine'

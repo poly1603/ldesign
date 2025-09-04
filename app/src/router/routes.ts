@@ -135,5 +135,17 @@ export const routes: RouteRecordRaw[] = [
       animation: 'fade',
     },
   },
+  {
+    path: '/device-demo',
+    name: 'device-demo',
+    component: () => import('../pages/DeviceDemo.vue'),
+    meta: {
+      title: 'Device 设备检测演示',
+      description: '验证 @ldesign/device 包的功能和集成效果',
+      cache: true,
+      preload: true,
+      animation: 'fade',
+    },
+  },
 
 ]

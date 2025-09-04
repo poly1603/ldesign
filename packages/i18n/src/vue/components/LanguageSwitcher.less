@@ -1,0 +1,314 @@
+/**
+ * LanguageSwitcher 语言切换组件样式
+ * 使用 LDESIGN 设计系统变量，提供现代化的视觉效果
+ */
+
+.language-switcher {
+  display: inline-flex;
+  align-items: center;
+  font-family: inherit;
+
+  // 通用图标样式
+  &__icon {
+    width: var(--ls-icon-size-small, 16px);
+    height: var(--ls-icon-size-small, 16px);
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+
+  // 通用文本样式
+  &__text {
+    font-size: var(--ls-font-size-sm, 14px);
+    font-weight: 500;
+    letter-spacing: 0.025em;
+  }
+
+  // 加载状态
+  &__loading {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-spacing-xs, 6px);
+    color: var(--ldesign-text-color-secondary);
+    font-size: var(--ls-font-size-sm, 14px);
+  }
+
+  &__spinner {
+    width: var(--ls-icon-size-small, 16px);
+    height: var(--ls-icon-size-small, 16px);
+    animation: spin 1s linear infinite;
+  }
+
+  // 下拉选择器模式
+  &--dropdown {
+    .language-switcher__select {
+      padding: var(--ls-spacing-sm, 12px) var(--ls-spacing-base, 20px);
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-base, 6px);
+      background: var(--ldesign-bg-color-component);
+      color: var(--ldesign-text-color-primary);
+      font-size: var(--ls-font-size-sm, 14px);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      outline: none;
+
+      &:hover {
+        border-color: var(--ldesign-border-color-hover);
+        background: var(--ldesign-bg-color-component-hover);
+      }
+
+      &:focus {
+        border-color: var(--ldesign-brand-color);
+        box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: var(--ldesign-bg-color-component-disabled);
+      }
+    }
+  }
+
+  // 标签页模式
+  &--tabs {
+    .language-switcher__tabs {
+      display: flex;
+      background: var(--ldesign-bg-color-container);
+      border-radius: var(--ls-border-radius-lg, 12px);
+      padding: var(--ls-spacing-xs, 6px);
+      gap: var(--ls-spacing-xs, 6px);
+      box-shadow: var(--ldesign-shadow-inset);
+    }
+
+    .language-switcher__tab {
+      display: flex;
+      align-items: center;
+      gap: var(--ls-spacing-xs, 6px);
+      padding: var(--ls-spacing-sm, 12px) var(--ls-spacing-base, 20px);
+      border: none;
+      border-radius: var(--ls-border-radius-base, 6px);
+      background: transparent;
+      color: var(--ldesign-text-color-secondary);
+      font-size: var(--ls-font-size-sm, 14px);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--ldesign-brand-color);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        z-index: 0;
+      }
+
+      &:hover {
+        color: var(--ldesign-text-color-primary);
+        background: var(--ldesign-bg-color-component-hover);
+        transform: translateY(-1px);
+      }
+
+      &--active {
+        color: var(--ldesign-brand-color);
+        background: var(--ldesign-bg-color-component);
+        box-shadow: var(--ldesign-shadow-1);
+
+        &::before {
+          opacity: 0.1;
+        }
+
+        .language-switcher__icon {
+          color: var(--ldesign-brand-color);
+        }
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .language-switcher__icon,
+      .language-switcher__flag,
+      .language-switcher__name {
+        position: relative;
+        z-index: 1;
+      }
+    }
+  }
+
+  // 按钮组模式
+  &--buttons {
+    .language-switcher__buttons {
+      display: flex;
+      background: var(--ldesign-bg-color-container);
+      border-radius: var(--ls-border-radius-lg, 12px);
+      padding: var(--ls-spacing-xs, 6px);
+      gap: var(--ls-spacing-xs, 6px);
+      box-shadow: var(--ldesign-shadow-inset);
+    }
+
+    .language-switcher__button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--ls-spacing-xs, 6px);
+      min-width: 44px;
+      height: 36px;
+      padding: var(--ls-spacing-xs, 6px) var(--ls-spacing-sm, 12px);
+      border: none;
+      border-radius: var(--ls-border-radius-base, 6px);
+      background: transparent;
+      color: var(--ldesign-text-color-secondary);
+      font-size: var(--ls-font-size-sm, 14px);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--ldesign-brand-color);
+        opacity: 0;
+        transition: all 0.2s ease;
+        transform: scale(0.8);
+        border-radius: inherit;
+      }
+
+      &:hover {
+        color: var(--ldesign-text-color-primary);
+        background: var(--ldesign-bg-color-component-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--ldesign-shadow-1);
+
+        &::before {
+          opacity: 0.05;
+          transform: scale(1);
+        }
+      }
+
+      &--active {
+        color: var(--ldesign-font-white-1);
+        background: var(--ldesign-brand-color);
+        box-shadow: var(--ldesign-shadow-2);
+        transform: translateY(-1px);
+
+        &::before {
+          opacity: 0.2;
+          transform: scale(1);
+        }
+
+        .language-switcher__icon {
+          color: var(--ldesign-font-white-1);
+        }
+
+        &:hover {
+          background: var(--ldesign-brand-color-hover);
+          transform: translateY(-2px);
+          box-shadow: var(--ldesign-shadow-3);
+        }
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .language-switcher__icon,
+      .language-switcher__flag,
+      .language-switcher__text {
+        position: relative;
+        z-index: 1;
+      }
+    }
+  }
+
+  // 链接模式
+  &--links {
+    .language-switcher__links {
+      display: flex;
+      gap: var(--ls-spacing-lg, 28px);
+    }
+
+    .language-switcher__link {
+      display: flex;
+      align-items: center;
+      gap: var(--ls-spacing-xs, 6px);
+      padding: var(--ls-spacing-sm, 12px);
+      color: var(--ldesign-text-color-secondary);
+      text-decoration: none;
+      font-size: var(--ls-font-size-sm, 14px);
+      font-weight: 500;
+      border-radius: var(--ls-border-radius-base, 6px);
+      transition: all 0.2s ease;
+
+      &:hover {
+        color: var(--ldesign-text-color-primary);
+        background: var(--ldesign-bg-color-component-hover);
+        text-decoration: none;
+      }
+
+      &--active {
+        color: var(--ldesign-brand-color);
+        background: var(--ldesign-brand-color-focus);
+
+        .language-switcher__icon {
+          color: var(--ldesign-brand-color);
+        }
+      }
+    }
+  }
+}
+
+// 旋转动画
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .language-switcher {
+    &--tabs,
+    &--buttons {
+      .language-switcher__tabs,
+      .language-switcher__buttons {
+        gap: var(--ls-spacing-xs, 4px);
+        padding: var(--ls-spacing-xs, 4px);
+      }
+
+      .language-switcher__tab,
+      .language-switcher__button {
+        min-width: 36px;
+        height: 32px;
+        padding: var(--ls-spacing-xs, 4px) var(--ls-spacing-sm, 8px);
+        font-size: var(--ls-font-size-xs, 12px);
+      }
+    }
+
+    &--links {
+      .language-switcher__links {
+        gap: var(--ls-spacing-base, 16px);
+      }
+    }
+  }
+}

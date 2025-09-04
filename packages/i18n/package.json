@@ -70,6 +70,7 @@
     }
   },
   "dependencies": {
+    "lucide-vue-next": "^0.542.0",
     "tslib": "^2.6.2"
   },
   "devDependencies": {

@@ -71,6 +71,7 @@
     "@arco-design/color": "^0.4.0",
     "@ldesign/shared": "workspace:*",
     "chroma-js": "^3.1.2",
+    "lucide-vue-next": "^0.542.0",
     "tslib": "^2.6.2"
   },
   "devDependencies": {

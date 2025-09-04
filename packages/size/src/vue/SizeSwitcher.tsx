@@ -7,6 +7,7 @@ import type { SizeMode } from '../types'
 import { defineComponent, type PropType, computed, ref, onMounted, onUnmounted } from 'vue'
 import { useSizeSwitcher } from './composables'
 import { getRecommendedSizeMode, createResponsiveSizeWatcher } from '../utils'
+import { Minus, Type, Plus, Maximize2 } from 'lucide-vue-next'
 import './SizeSwitcher.less'
 
 // 尺寸模式标签
@@ -17,12 +18,12 @@ const SIZE_MODE_LABELS: Partial<Record<SizeMode, string>> = {
   'extra-large': '超大',
 }
 
-// 尺寸模式图标
-const SIZE_MODE_ICONS: Partial<Record<SizeMode, string>> = {
-  small: '🔍',
-  medium: '📏',
-  large: '🔎',
-  'extra-large': '🔍',
+// 尺寸模式图标组件
+const SIZE_MODE_ICONS: Partial<Record<SizeMode, any>> = {
+  small: Minus,
+  medium: Type,
+  large: Plus,
+  'extra-large': Maximize2,
 }
 
 // 尺寸模式描述
@@ -195,19 +196,22 @@ export const SizeSwitcher = defineComponent({
       emit('update:mode', mode)
     }
 
-    const renderModeContent = (mode: SizeMode) => (
-      <>
-        {props.showIcons && (
-          <span class="size-switcher__button-icon">{SIZE_MODE_ICONS[mode]}</span>
-        )}
-        {props.showLabels && (
-          <span class="size-switcher__button-text">{getModeDisplayName(mode)}</span>
-        )}
-        {props.showDescriptions && (
-          <div class="size-switcher__description">{SIZE_MODE_DESCRIPTIONS[mode]}</div>
-        )}
-      </>
-    )
+    const renderModeContent = (mode: SizeMode) => {
+      const IconComponent = SIZE_MODE_ICONS[mode]
+      return (
+        <>
+          {props.showIcons && IconComponent && (
+            <IconComponent class="size-switcher__button-icon" size={16} />
+          )}
+          {props.showLabels && (
+            <span class="size-switcher__button-text">{getModeDisplayName(mode)}</span>
+          )}
+          {props.showDescriptions && (
+            <div class="size-switcher__description">{SIZE_MODE_DESCRIPTIONS[mode]}</div>
+          )}
+        </>
+      )
+    }
 
     const renderButtonSwitcher = () => (
       <div class="size-switcher__buttons">
@@ -262,7 +266,6 @@ export const SizeSwitcher = defineComponent({
       >
         {computedModes.value.map(mode => (
           <option key={mode} value={mode}>
-            {props.showIcons ? `${SIZE_MODE_ICONS[mode]} ` : ''}
             {getModeDisplayName(mode)}
           </option>
         ))}
@@ -283,9 +286,10 @@ export const SizeSwitcher = defineComponent({
               onChange={() => handleModeChange(mode)}
             />
             <span class="size-switcher__radio-text">
-              {props.showIcons && (
-                <span class="size-switcher__radio-icon">{SIZE_MODE_ICONS[mode]}</span>
-              )}
+              {props.showIcons && SIZE_MODE_ICONS[mode] && (() => {
+                const IconComponent = SIZE_MODE_ICONS[mode]
+                return <IconComponent class="size-switcher__radio-icon" size={16} />
+              })()}
               {props.showLabels && getModeDisplayName(mode)}
             </span>
             {props.showDescriptions && (

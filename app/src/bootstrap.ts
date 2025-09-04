@@ -10,10 +10,11 @@ import { storePlugin } from './store' // 添加Store插件
 import { cryptoPlugin } from './crypto' // 添加Crypto插件
 import { cachePlugin } from './cache' // 添加Cache插件
 import { apiPlugin, systemPlugin, customApiPlugin } from './api' // 添加API插件
+import { devicePlugin } from './device' // 添加Device插件
 
 /**
  * 应用启动配置
- * 使用优化后的 LDesign Engine API，集成 Router、Template、Color、I18n、Store、Crypto、Cache 和 API 系统
+ * 使用优化后的 LDesign Engine API，集成 Router、Template、Color、I18n、Store、Crypto、Cache、API 和 Device 系统
  */
 export async function bootstrap() {
 
@@ -33,7 +34,7 @@ export async function bootstrap() {
         enableNotifications: true
       }
     },
-    plugins: [routerPlugin, templatePlugin, colorPlugin, i18nPlugin, sizePlugin, httpPlugin, storePlugin, cryptoPlugin, cachePlugin, apiPlugin, systemPlugin, customApiPlugin], // 添加所有插件
+    plugins: [routerPlugin, templatePlugin, colorPlugin, i18nPlugin, sizePlugin, httpPlugin, storePlugin, cryptoPlugin, cachePlugin, apiPlugin, systemPlugin, customApiPlugin, devicePlugin], // 添加所有插件
     middleware: []
   })
 

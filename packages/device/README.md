@@ -476,6 +476,76 @@ const { $device } = getCurrentInstance()?.appContext.config.globalProperties
 </template>
 ```
 
+### 🚀 LDesign Engine 集成 - 企业级应用框架
+
+> 💡 **专为 LDesign Engine 设计的插件，让设备检测与企业级应用框架无缝集成！**
+
+如果你正在使用 LDesign Engine 构建企业级应用，可以使用专门的 Engine 插件来获得更好的集成体验：
+
+```typescript
+// 使用 LDesign Engine 插件
+import { createDeviceEnginePlugin } from '@ldesign/device'
+import { createAndMountApp } from '@ldesign/engine'
+import App from './App.vue'
+
+// 创建 Device Engine 插件
+const devicePlugin = createDeviceEnginePlugin({
+  // 插件基础信息
+  name: 'device',
+  version: '1.0.0',
+
+  // 功能开关
+  enableResize: true,        // 启用窗口大小变化监听
+  enableOrientation: true,   // 启用屏幕方向变化监听
+
+  // 模块配置
+  modules: ['network', 'battery', 'geolocation'],
+
+  // Vue 集成配置
+  globalPropertyName: '$device',  // 全局属性名
+  autoInstall: true,             // 自动安装 Vue 插件
+
+  // 开发配置
+  debug: false,                           // 调试模式
+  enablePerformanceMonitoring: false,    // 性能监控
+})
+
+// 在 Engine 中使用
+const engine = createAndMountApp(App, '#app', {
+  plugins: [devicePlugin], // 添加到插件列表
+  config: {
+    debug: true,
+    appName: 'My App',
+  }
+})
+```
+
+**Engine 插件的优势：**
+
+- 🔄 **统一生命周期** - 与 Engine 生命周期完美同步
+- 📊 **状态管理集成** - 自动注册到 Engine 状态管理系统
+- 🔍 **调试支持** - 集成 Engine 的调试和日志系统
+- ⚡ **性能监控** - 内置性能监控和优化建议
+- 🛡️ **错误处理** - 统一的错误处理和恢复机制
+
+**在组件中使用：**
+
+```vue
+<script setup lang="ts">
+import { useDevice } from '@ldesign/device/vue'
+
+// 所有功能都可以正常使用
+const { deviceInfo, isMobile, isDesktop } = useDevice()
+</script>
+
+<template>
+  <div>
+    <p>设备类型: {{ deviceInfo.type }}</p>
+    <p>是否移动设备: {{ isMobile ? '是' : '否' }}</p>
+  </div>
+</template>
+```
+
 ## 🧩 扩展模块
 
 @ldesign/device 采用模块化设计，核心功能保持轻量，扩展功能按需加载。

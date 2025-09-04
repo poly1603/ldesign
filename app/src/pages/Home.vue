@@ -126,6 +126,14 @@
               立即体验
             </router-link>
           </div>
+          <div class="demo-card">
+            <div class="demo-icon">📱</div>
+            <h3>设备检测</h3>
+            <p>强大的设备信息检测和监控功能</p>
+            <router-link to="/device-demo" class="demo-link">
+              立即体验
+            </router-link>
+          </div>
         </div>
       </section>
 

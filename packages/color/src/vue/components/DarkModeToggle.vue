@@ -14,32 +14,32 @@
     }
   ]" :disabled="disabled" :title="isDark ? '切换到亮色模式' : '切换到暗色模式'" @click="handleToggle">
     <!-- 太阳图标 (亮色模式) -->
-    <svg v-show="!isDark" class="dark-mode-toggle__icon dark-mode-toggle__sun" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="5" />
-      <path
-        d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-    </svg>
+    <Sun
+      v-show="!isDark && !isAnimating"
+      class="dark-mode-toggle__icon dark-mode-toggle__sun"
+      :size="20"
+    />
 
     <!-- 月亮图标 (暗色模式) -->
-    <svg v-show="isDark" class="dark-mode-toggle__icon dark-mode-toggle__moon" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-    </svg>
+    <Moon
+      v-show="isDark && !isAnimating"
+      class="dark-mode-toggle__icon dark-mode-toggle__moon"
+      :size="20"
+    />
 
     <!-- 加载动画 -->
-    <div v-if="isAnimating" class="dark-mode-toggle__spinner">
-      <svg viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="31.416"
-          stroke-dashoffset="31.416" />
-      </svg>
-    </div>
+    <Loader2
+      v-if="isAnimating"
+      class="dark-mode-toggle__icon dark-mode-toggle__spinner"
+      :size="20"
+    />
   </button>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, inject, onMounted, watch } from 'vue'
 import { globalThemeApplier } from '../../utils/css-variables'
+import { Sun, Moon, Loader2 } from 'lucide-vue-next'
 
 // Props
 interface Props {
@@ -455,123 +455,10 @@ onMounted(() => {
 // 避免循环调用，主题管理器的状态变化会通过其他方式同步到组件
 </script>
 
-<style scoped>
-.dark-mode-toggle {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-  overflow: hidden;
-}
+<style scoped lang="less">
+@import './DarkModeToggle.less';
 
-.dark-mode-toggle:hover {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.dark-mode-toggle--dark:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.dark-mode-toggle--disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.dark-mode-toggle--animating {
-  pointer-events: none;
-}
-
-.dark-mode-toggle__icon {
-  width: 20px;
-  height: 20px;
-  transition: all 0.3s ease;
-}
-
-.dark-mode-toggle__sun {
-  color: #faad14;
-}
-
-.dark-mode-toggle__moon {
-  color: #722ed1;
-}
-
-.dark-mode-toggle__spinner {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  animation: spin 1s linear infinite;
-}
-
-.dark-mode-toggle__spinner svg {
-  width: 100%;
-  height: 100%;
-}
-
-.dark-mode-toggle__spinner circle {
-  animation: dash 1.5s ease-in-out infinite;
-}
-
-/* 尺寸变体 */
-.dark-mode-toggle--small {
-  width: 32px;
-  height: 32px;
-}
-
-.dark-mode-toggle--small .dark-mode-toggle__icon,
-.dark-mode-toggle--small .dark-mode-toggle__spinner {
-  width: 16px;
-  height: 16px;
-}
-
-.dark-mode-toggle--medium {
-  width: 40px;
-  height: 40px;
-}
-
-.dark-mode-toggle--large {
-  width: 48px;
-  height: 48px;
-}
-
-.dark-mode-toggle--large .dark-mode-toggle__icon,
-.dark-mode-toggle--large .dark-mode-toggle__spinner {
-  width: 24px;
-  height: 24px;
-}
-
-/* 触发点动画 */
-.dark-mode-toggle:active {
-  transform: scale(0.95);
-}
-
-/* 动画关键帧 */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes dash {
-  0% {
-    stroke-dasharray: 1, 150;
-    stroke-dashoffset: 0;
-  }
-
-  50% {
-    stroke-dasharray: 90, 150;
-    stroke-dashoffset: -35;
-  }
-
-  100% {
-    stroke-dasharray: 90, 150;
-    stroke-dashoffset: -124;
-  }
-}
+/* 样式已移至 DarkModeToggle.less */
 </style>
 
 <!-- 全局样式：View Transition 动画 -->

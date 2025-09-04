@@ -1,27 +1,29 @@
 <!--
   LanguageSwitcher 语言切换组件
-  
+
   提供语言切换功能的 Vue 组件，自动从 I18n 核心获取可用语言
-  
+  使用现代化设计和 Lucide 图标
+
   @example
   <LanguageSwitcher />
   <LanguageSwitcher type="dropdown" />
   <LanguageSwitcher type="tabs" show-flag />
+  <LanguageSwitcher type="buttons" :use-icons="true" />
 -->
 
 <template>
   <div class="language-switcher" :class="`language-switcher--${type}`">
     <!-- 下拉选择器模式 -->
-    <select 
+    <select
       v-if="type === 'dropdown'"
       :value="currentLocale"
       @change="handleLanguageChange"
       class="language-switcher__select"
       :disabled="loading"
     >
-      <option 
-        v-for="lang in availableLanguages" 
-        :key="lang.code" 
+      <option
+        v-for="lang in availableLanguages"
+        :key="lang.code"
         :value="lang.code"
       >
         {{ showFlag ? lang.flag + ' ' : '' }}{{ lang.name }}
@@ -39,8 +41,14 @@
           { 'language-switcher__tab--active': currentLocale === lang.code }
         ]"
         :disabled="loading"
+        :title="lang.name"
       >
-        <span v-if="showFlag" class="language-switcher__flag">{{ lang.flag }}</span>
+        <component
+          v-if="useIcons"
+          :is="getLanguageIcon(lang.code)"
+          class="language-switcher__icon"
+        />
+        <span v-else-if="showFlag" class="language-switcher__flag">{{ lang.flag }}</span>
         <span class="language-switcher__name">{{ lang.name }}</span>
       </button>
     </div>
@@ -56,8 +64,15 @@
           { 'language-switcher__button--active': currentLocale === lang.code }
         ]"
         :disabled="loading"
+        :title="lang.name"
       >
-        {{ showFlag ? lang.flag : lang.code.toUpperCase() }}
+        <component
+          v-if="useIcons"
+          :is="getLanguageIcon(lang.code)"
+          class="language-switcher__icon"
+        />
+        <span v-else-if="showFlag" class="language-switcher__flag">{{ lang.flag }}</span>
+        <span v-else class="language-switcher__text">{{ lang.code.toUpperCase() }}</span>
       </button>
     </div>
 
@@ -72,14 +87,21 @@
           { 'language-switcher__link--active': currentLocale === lang.code }
         ]"
         href="#"
+        :title="lang.name"
       >
-        {{ showFlag ? lang.flag + ' ' : '' }}{{ lang.name }}
+        <component
+          v-if="useIcons"
+          :is="getLanguageIcon(lang.code)"
+          class="language-switcher__icon"
+        />
+        <span v-else-if="showFlag" class="language-switcher__flag">{{ lang.flag }}</span>
+        <span class="language-switcher__name">{{ lang.name }}</span>
       </a>
     </div>
 
     <!-- 加载状态 -->
     <div v-if="loading" class="language-switcher__loading">
-      <span class="language-switcher__spinner"></span>
+      <Loader2 class="language-switcher__spinner" />
       <span v-if="showLoadingText">{{ loadingText }}</span>
     </div>
   </div>
@@ -89,6 +111,7 @@
 import { computed, inject, ref } from 'vue'
 import type { I18nInjectionKey } from '../types'
 import { I18nInjectionKey as InjectionKey } from '../plugin'
+import { Globe, Languages, Loader2 } from 'lucide-vue-next'
 
 /**
  * 语言信息接口
@@ -113,6 +136,8 @@ interface Props {
   type?: SwitcherType
   /** 是否显示国旗 */
   showFlag?: boolean
+  /** 是否使用图标替代国旗 */
+  useIcons?: boolean
   /** 是否显示加载文本 */
   showLoadingText?: boolean
   /** 自定义加载文本 */
@@ -124,6 +149,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   type: 'dropdown',
   showFlag: false,
+  useIcons: true,
   showLoadingText: true,
   loadingText: '切换中...'
 })
@@ -229,6 +255,34 @@ const switchLanguage = async (locale: string) => {
 }
 
 /**
+ * 获取语言对应的图标组件
+ */
+const getLanguageIcon = (langCode: string) => {
+  const iconMap: Record<string, any> = {
+    'zh-CN': Languages,
+    'zh-TW': Languages,
+    'en-US': Globe,
+    'en': Globe,
+    'ja-JP': Languages,
+    'ja': Languages,
+    'ko-KR': Languages,
+    'ko': Languages,
+    'fr': Globe,
+    'de': Globe,
+    'es': Globe,
+    'it': Globe,
+    'pt': Globe,
+    'ru': Globe,
+    'ar': Globe,
+    'hi': Globe,
+    'th': Globe,
+    'vi': Globe
+  }
+
+  return iconMap[langCode] || Globe
+}
+
+/**
  * 处理下拉选择器变化
  */
 const handleLanguageChange = (event: Event) => {
@@ -247,4 +301,6 @@ export default {
 }
 </script>
 
-
+<style lang="less">
+@import './LanguageSwitcher.less';
+</style>
