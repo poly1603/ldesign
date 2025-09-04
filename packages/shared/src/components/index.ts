@@ -10,11 +10,13 @@
 export { default as LSelect } from './select/LSelect.vue'
 export { default as LPopup } from './popup/LPopup.vue'
 export { default as LDialog } from './dialog/LDialog.vue'
+export { default as LButton } from './button/LButton'
 
 // 导出组件类型
 export type { SelectProps, SelectOption } from './select/types'
 export type { PopupProps, PopupPlacement } from './popup/types'
 export type { DialogProps } from './dialog/types'
+export type { ButtonProps, ButtonEmits, ButtonSlots } from './button/types'
 
 // 导出安装函数
 export { installComponents } from './install'

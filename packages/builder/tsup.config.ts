@@ -5,7 +5,8 @@ export default defineConfig({
   entry: [
     'src/index.ts',
     'src/simple-builder.ts',
-    'src/vue-builder.ts'
+    'src/vue-builder.ts',
+    'src/cli/index.ts'
   ],
 
   // 输出格式

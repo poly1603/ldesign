@@ -1,178 +1,380 @@
 <template>
   <div class="cache-demo">
+    <!-- 页面头部 -->
     <div class="demo-header">
-      <h1>Cache 缓存系统演示</h1>
-      <p>展示 @ldesign/cache 包的各种缓存功能</p>
-    </div>
-
-    <!-- 基础缓存操作 -->
-    <div class="demo-section">
-      <h2>基础缓存操作</h2>
-      <div class="operation-panel">
-        <div class="input-group">
-          <label>缓存键:</label>
-          <input 
-            v-model="basicKey" 
-            placeholder="输入缓存键" 
-            class="input-field"
-          />
+      <div class="header-content">
+        <div class="header-badge">
+          <span class="badge-icon">💾</span>
+          <span class="badge-text">Cache System</span>
         </div>
-        <div class="input-group">
-          <label>缓存值:</label>
-          <textarea 
-            v-model="basicValue" 
-            placeholder="输入缓存值（支持JSON）" 
-            class="input-field textarea"
-            rows="3"
-          ></textarea>
-        </div>
-        <div class="button-group">
-          <button @click="setBasicCache" class="btn btn-primary">设置缓存</button>
-          <button @click="getBasicCache" class="btn btn-secondary">获取缓存</button>
-          <button @click="deleteBasicCache" class="btn btn-danger">删除缓存</button>
-          <button @click="checkBasicCache" class="btn btn-info">检查存在</button>
-        </div>
-      </div>
-      <div v-if="basicResult" class="result-panel">
-        <h3>操作结果:</h3>
-        <pre class="result-content">{{ basicResult }}</pre>
-      </div>
-    </div>
-
-    <!-- 存储引擎切换 -->
-    <div class="demo-section">
-      <h2>存储引擎管理</h2>
-      <div class="operation-panel">
-        <div class="input-group">
-          <label>当前引擎:</label>
-          <span class="current-engine">{{ currentEngine }}</span>
-        </div>
-        <div class="input-group">
-          <label>切换引擎:</label>
-          <select v-model="selectedEngine" class="select-field">
-            <option value="memory">Memory (内存)</option>
-            <option value="localStorage">LocalStorage</option>
-            <option value="sessionStorage">SessionStorage</option>
-            <option value="indexedDB">IndexedDB</option>
-            <option value="cookie">Cookie</option>
-          </select>
-        </div>
-        <div class="button-group">
-          <button @click="switchEngine" class="btn btn-primary">切换引擎</button>
-          <button @click="getEngineInfo" class="btn btn-info">引擎信息</button>
-        </div>
-      </div>
-      <div v-if="engineResult" class="result-panel">
-        <h3>引擎信息:</h3>
-        <pre class="result-content">{{ engineResult }}</pre>
-      </div>
-    </div>
-
-    <!-- 批量操作 -->
-    <div class="demo-section">
-      <h2>批量操作</h2>
-      <div class="operation-panel">
-        <div class="input-group">
-          <label>批量数据 (JSON格式):</label>
-          <textarea 
-            v-model="batchData" 
-            placeholder='{"key1": "value1", "key2": "value2"}' 
-            class="input-field textarea"
-            rows="4"
-          ></textarea>
-        </div>
-        <div class="button-group">
-          <button @click="setBatchCache" class="btn btn-primary">批量设置</button>
-          <button @click="getBatchCache" class="btn btn-secondary">批量获取</button>
-          <button @click="getAllKeys" class="btn btn-info">获取所有键</button>
-          <button @click="clearAllCache" class="btn btn-danger">清空缓存</button>
-        </div>
-      </div>
-      <div v-if="batchResult" class="result-panel">
-        <h3>批量操作结果:</h3>
-        <pre class="result-content">{{ batchResult }}</pre>
-      </div>
-    </div>
-
-    <!-- 缓存统计 -->
-    <div class="demo-section">
-      <h2>缓存统计</h2>
-      <div class="operation-panel">
-        <div class="button-group">
-          <button @click="getStats" class="btn btn-info">获取统计</button>
-          <button @click="refreshStats" class="btn btn-secondary">刷新统计</button>
-          <button @click="cleanup" class="btn btn-warning">清理过期</button>
-        </div>
-      </div>
-      <div v-if="statsResult" class="result-panel">
-        <h3>缓存统计:</h3>
-        <div class="stats-grid">
+        <h1 class="header-title">缓存系统演示</h1>
+        <p class="header-subtitle">体验 @ldesign/cache 包的强大缓存功能</p>
+        <div class="header-stats">
           <div class="stat-item">
-            <span class="stat-label">总大小:</span>
-            <span class="stat-value">{{ formatBytes(statsResult.size || 0) }}</span>
+            <span class="stat-value">{{ stats.count }}</span>
+            <span class="stat-label">缓存项</span>
           </div>
           <div class="stat-item">
-            <span class="stat-label">缓存数量:</span>
-            <span class="stat-value">{{ statsResult.count || 0 }}</span>
+            <span class="stat-value">{{ formatBytes(stats.size) }}</span>
+            <span class="stat-label">总大小</span>
           </div>
           <div class="stat-item">
-            <span class="stat-label">命中率:</span>
-            <span class="stat-value">{{ ((statsResult.hitRate || 0) * 100).toFixed(2) }}%</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">命中次数:</span>
-            <span class="stat-value">{{ statsResult.hits || 0 }}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">未命中次数:</span>
-            <span class="stat-value">{{ statsResult.misses || 0 }}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">过期数量:</span>
-            <span class="stat-value">{{ statsResult.expired || 0 }}</span>
+            <span class="stat-value">{{ stats.hitRate }}%</span>
+            <span class="stat-label">命中率</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 高级功能 -->
-    <div class="demo-section">
-      <h2>高级功能</h2>
-      <div class="operation-panel">
-        <div class="input-group">
-          <label>TTL (毫秒):</label>
-          <input 
-            v-model.number="ttl" 
-            type="number" 
-            placeholder="过期时间" 
-            class="input-field"
-          />
+    <div class="demo-content">
+      <!-- 基础缓存操作 -->
+      <div class="demo-section">
+        <div class="section-header">
+          <div class="section-icon">🔧</div>
+          <div class="section-info">
+            <h2 class="section-title">基础缓存操作</h2>
+            <p class="section-description">设置、获取、删除和检查缓存项</p>
+          </div>
         </div>
-        <div class="input-group">
-          <label>带TTL的键:</label>
-          <input 
-            v-model="ttlKey" 
-            placeholder="输入键名" 
-            class="input-field"
-          />
-        </div>
-        <div class="input-group">
-          <label>带TTL的值:</label>
-          <input 
-            v-model="ttlValue" 
-            placeholder="输入值" 
-            class="input-field"
-          />
-        </div>
-        <div class="button-group">
-          <button @click="setWithTTL" class="btn btn-primary">设置带TTL缓存</button>
-          <button @click="getTTL" class="btn btn-info">获取剩余TTL</button>
-          <button @click="extendTTL" class="btn btn-secondary">延长TTL</button>
+
+        <div class="operation-card">
+          <div class="card-content">
+            <div class="input-row">
+              <div class="input-group">
+                <label class="input-label">
+                  <span class="label-icon">🔑</span>
+                  缓存键
+                </label>
+                <input
+                  v-model="basicKey"
+                  placeholder="输入缓存键，例如：user:123"
+                  class="input-field"
+                />
+              </div>
+              <div class="input-group">
+                <label class="input-label">
+                  <span class="label-icon">📝</span>
+                  缓存值
+                </label>
+                <textarea
+                  v-model="basicValue"
+                  placeholder="输入缓存值（支持JSON格式）"
+                  class="input-field textarea"
+                  rows="3"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button @click="setBasicCache" class="btn btn-primary">
+                <span class="btn-icon">💾</span>
+                设置缓存
+              </button>
+              <button @click="getBasicCache" class="btn btn-secondary">
+                <span class="btn-icon">🔍</span>
+                获取缓存
+              </button>
+              <button @click="deleteBasicCache" class="btn btn-danger">
+                <span class="btn-icon">🗑️</span>
+                删除缓存
+              </button>
+              <button @click="checkBasicCache" class="btn btn-info">
+                <span class="btn-icon">✅</span>
+                检查存在
+              </button>
+            </div>
+          </div>
+
+          <div v-if="basicResult" class="result-panel">
+            <div class="result-header">
+              <span class="result-icon">📋</span>
+              <h3 class="result-title">操作结果</h3>
+            </div>
+            <pre class="result-content">{{ basicResult }}</pre>
+          </div>
         </div>
       </div>
-      <div v-if="advancedResult" class="result-panel">
-        <h3>高级功能结果:</h3>
-        <pre class="result-content">{{ advancedResult }}</pre>
+
+      <!-- 存储引擎管理 -->
+      <div class="demo-section">
+        <div class="section-header">
+          <div class="section-icon">⚙️</div>
+          <div class="section-info">
+            <h2 class="section-title">存储引擎管理</h2>
+            <p class="section-description">切换不同的存储引擎，体验各种存储方式</p>
+          </div>
+        </div>
+
+        <div class="operation-card">
+          <div class="card-content">
+            <div class="engine-status">
+              <div class="status-item">
+                <span class="status-label">当前引擎</span>
+                <div class="status-value">
+                  <span class="engine-badge">{{ currentEngine }}</span>
+                  <span class="engine-indicator active"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="engine-selector">
+              <label class="input-label">
+                <span class="label-icon">🔄</span>
+                选择存储引擎
+              </label>
+              <div class="engine-options">
+                <div
+                  v-for="engine in engineOptions"
+                  :key="engine.value"
+                  class="engine-option"
+                  :class="{ active: selectedEngine === engine.value }"
+                  @click="selectedEngine = engine.value"
+                >
+                  <div class="option-icon">{{ engine.icon }}</div>
+                  <div class="option-info">
+                    <div class="option-name">{{ engine.name }}</div>
+                    <div class="option-desc">{{ engine.description }}</div>
+                  </div>
+                  <div class="option-check" v-if="selectedEngine === engine.value">✓</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button @click="switchEngine" class="btn btn-primary" :disabled="selectedEngine === currentEngine">
+                <span class="btn-icon">🔄</span>
+                切换引擎
+              </button>
+              <button @click="getEngineInfo" class="btn btn-info">
+                <span class="btn-icon">ℹ️</span>
+                引擎信息
+              </button>
+            </div>
+          </div>
+
+          <div v-if="engineResult" class="result-panel">
+            <div class="result-header">
+              <span class="result-icon">⚙️</span>
+              <h3 class="result-title">引擎信息</h3>
+            </div>
+            <pre class="result-content">{{ engineResult }}</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 批量操作 -->
+      <div class="demo-section">
+        <div class="section-header">
+          <div class="section-icon">📦</div>
+          <div class="section-info">
+            <h2 class="section-title">批量操作</h2>
+            <p class="section-description">批量设置、获取缓存数据，提高操作效率</p>
+          </div>
+        </div>
+
+        <div class="operation-card">
+          <div class="card-content">
+            <div class="input-group">
+              <label class="input-label">
+                <span class="label-icon">📋</span>
+                批量数据 (JSON格式)
+              </label>
+              <textarea
+                v-model="batchData"
+                placeholder='{"user:1": {"name": "Alice", "role": "admin"}, "user:2": {"name": "Bob", "role": "user"}}'
+                class="input-field textarea batch-textarea"
+                rows="6"
+              ></textarea>
+              <div class="input-hint">
+                <span class="hint-icon">💡</span>
+                支持嵌套对象和数组，自动进行JSON序列化
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button @click="setBatchCache" class="btn btn-primary">
+                <span class="btn-icon">📥</span>
+                批量设置
+              </button>
+              <button @click="getBatchCache" class="btn btn-secondary">
+                <span class="btn-icon">📤</span>
+                批量获取
+              </button>
+              <button @click="getAllKeys" class="btn btn-info">
+                <span class="btn-icon">🔑</span>
+                获取所有键
+              </button>
+              <button @click="clearAllCache" class="btn btn-danger">
+                <span class="btn-icon">🧹</span>
+                清空缓存
+              </button>
+            </div>
+          </div>
+
+          <div v-if="batchResult" class="result-panel">
+            <div class="result-header">
+              <span class="result-icon">📦</span>
+              <h3 class="result-title">批量操作结果</h3>
+            </div>
+            <pre class="result-content">{{ batchResult }}</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 缓存统计 -->
+      <div class="demo-section">
+        <div class="section-header">
+          <div class="section-icon">📊</div>
+          <div class="section-info">
+            <h2 class="section-title">缓存统计</h2>
+            <p class="section-description">实时监控缓存性能和使用情况</p>
+          </div>
+        </div>
+
+        <div class="operation-card">
+          <div class="card-content">
+            <div class="action-buttons">
+              <button @click="getStats" class="btn btn-primary">
+                <span class="btn-icon">📊</span>
+                获取统计
+              </button>
+              <button @click="refreshStats" class="btn btn-secondary">
+                <span class="btn-icon">🔄</span>
+                刷新统计
+              </button>
+              <button @click="cleanup" class="btn btn-warning">
+                <span class="btn-icon">🧹</span>
+                清理过期
+              </button>
+            </div>
+
+            <div v-if="statsResult" class="stats-dashboard">
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <div class="stat-icon">💾</div>
+                  <div class="stat-info">
+                    <div class="stat-value">{{ formatBytes(statsResult.size || 0) }}</div>
+                    <div class="stat-label">总大小</div>
+                  </div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-icon">📝</div>
+                  <div class="stat-info">
+                    <div class="stat-value">{{ statsResult.count || 0 }}</div>
+                    <div class="stat-label">缓存数量</div>
+                  </div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-icon">🎯</div>
+                  <div class="stat-info">
+                    <div class="stat-value">{{ ((statsResult.hitRate || 0) * 100).toFixed(2) }}%</div>
+                    <div class="stat-label">命中率</div>
+                  </div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-icon">✅</div>
+                  <div class="stat-info">
+                    <div class="stat-value">{{ statsResult.hits || 0 }}</div>
+                    <div class="stat-label">命中次数</div>
+                  </div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-icon">❌</div>
+                  <div class="stat-info">
+                    <div class="stat-value">{{ statsResult.misses || 0 }}</div>
+                    <div class="stat-label">未命中次数</div>
+                  </div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-icon">⏰</div>
+                  <div class="stat-info">
+                    <div class="stat-value">{{ statsResult.expired || 0 }}</div>
+                    <div class="stat-label">过期数量</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 高级功能 -->
+      <div class="demo-section">
+        <div class="section-header">
+          <div class="section-icon">⚡</div>
+          <div class="section-info">
+            <h2 class="section-title">高级功能</h2>
+            <p class="section-description">TTL过期时间管理，支持自动过期和时间延长</p>
+          </div>
+        </div>
+
+        <div class="operation-card">
+          <div class="card-content">
+            <div class="input-row">
+              <div class="input-group">
+                <label class="input-label">
+                  <span class="label-icon">⏱️</span>
+                  TTL (毫秒)
+                </label>
+                <input
+                  v-model.number="ttl"
+                  type="number"
+                  placeholder="过期时间，例如：30000"
+                  class="input-field"
+                />
+                <div class="input-hint">
+                  <span class="hint-icon">💡</span>
+                  设置缓存项的生存时间，单位为毫秒
+                </div>
+              </div>
+              <div class="input-group">
+                <label class="input-label">
+                  <span class="label-icon">🔑</span>
+                  带TTL的键
+                </label>
+                <input
+                  v-model="ttlKey"
+                  placeholder="输入键名，例如：temp-session"
+                  class="input-field"
+                />
+              </div>
+              <div class="input-group">
+                <label class="input-label">
+                  <span class="label-icon">📝</span>
+                  带TTL的值
+                </label>
+                <input
+                  v-model="ttlValue"
+                  placeholder="输入值，例如：临时会话数据"
+                  class="input-field"
+                />
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button @click="setWithTTL" class="btn btn-primary">
+                <span class="btn-icon">⏰</span>
+                设置带TTL缓存
+              </button>
+              <button @click="getTTL" class="btn btn-info">
+                <span class="btn-icon">🔍</span>
+                获取剩余TTL
+              </button>
+              <button @click="extendTTL" class="btn btn-secondary">
+                <span class="btn-icon">⏳</span>
+                延长TTL
+              </button>
+            </div>
+          </div>
+
+          <div v-if="advancedResult" class="result-panel">
+            <div class="result-header">
+              <span class="result-icon">⚡</span>
+              <h3 class="result-title">高级功能结果</h3>
+            </div>
+            <pre class="result-content">{{ advancedResult }}</pre>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -232,6 +434,76 @@ const ttlKey = ref('temp-key')
 const ttlValue = ref('临时数据')
 const advancedResult = ref('')
 
+// 统计数据（用于头部显示）
+const stats = ref({
+  count: 0,
+  size: 0,
+  hitRate: 0,
+  hits: 0,
+  misses: 0,
+  expired: 0
+})
+
+// 存储引擎选项
+const engineOptions = ref([
+  {
+    value: 'memory',
+    name: 'Memory',
+    description: '内存存储，速度最快但不持久',
+    icon: '🧠'
+  },
+  {
+    value: 'localStorage',
+    name: 'LocalStorage',
+    description: '本地存储，持久化保存',
+    icon: '💾'
+  },
+  {
+    value: 'sessionStorage',
+    name: 'SessionStorage',
+    description: '会话存储，关闭浏览器后清除',
+    icon: '🔄'
+  },
+  {
+    value: 'indexedDB',
+    name: 'IndexedDB',
+    description: '浏览器数据库，支持大容量存储',
+    icon: '🗄️'
+  },
+  {
+    value: 'cookie',
+    name: 'Cookie',
+    description: 'Cookie存储，自动发送到服务器',
+    icon: '🍪'
+  }
+])
+
+// 辅助方法
+const formatBytes = (bytes: number): string => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+// 更新统计数据
+const updateStats = async () => {
+  try {
+    const result = await cacheManager.getStats()
+    stats.value = {
+      count: result.count || 0,
+      size: result.size || 0,
+      hitRate: ((result.hitRate || 0) * 100).toFixed(2),
+      hits: result.hits || 0,
+      misses: result.misses || 0,
+      expired: result.expired || 0
+    }
+  } catch (error) {
+    console.error('Failed to update stats:', error)
+  }
+}
+
 // 基础缓存操作方法
 const setBasicCache = async () => {
   try {
@@ -241,9 +513,10 @@ const setBasicCache = async () => {
     } catch {
       // 如果不是JSON，就使用原始字符串
     }
-    
+
     await set(basicKey.value, value)
     basicResult.value = `✅ 缓存设置成功\n键: ${basicKey.value}\n值: ${JSON.stringify(value, null, 2)}`
+    await updateStats() // 更新统计数据
   } catch (error) {
     basicResult.value = `❌ 设置失败: ${error}`
   }
@@ -257,6 +530,7 @@ const getBasicCache = async () => {
     } else {
       basicResult.value = `✅ 缓存获取成功\n键: ${basicKey.value}\n值: ${JSON.stringify(data, null, 2)}`
     }
+    await updateStats() // 更新统计数据
   } catch (error) {
     basicResult.value = `❌ 获取失败: ${error}`
   }
@@ -266,6 +540,7 @@ const deleteBasicCache = async () => {
   try {
     await del(basicKey.value)
     basicResult.value = `✅ 缓存删除成功: ${basicKey.value}`
+    await updateStats() // 更新统计数据
   } catch (error) {
     basicResult.value = `❌ 删除失败: ${error}`
   }
@@ -456,18 +731,12 @@ const extendTTL = async () => {
   }
 }
 
-// 工具方法
-const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes'
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
+
 
 // 组件挂载时初始化
 onMounted(async () => {
-  await getStats()
+  await updateStats() // 使用新的 updateStats 方法
+  await getStats() // 保留原有的 getStats 调用
   try {
     // 检查是否有 getCurrentEngine 方法
     if (typeof cacheManager.getCurrentEngine === 'function') {
@@ -489,45 +758,144 @@ onMounted(async () => {
 
 <style scoped lang="less">
 .cache-demo {
+  min-height: 100vh;
+  background: var(--ldesign-bg-color-page);
+  color: var(--ldesign-text-color-primary);
+}
+
+/* 页面头部样式 */
+.demo-header {
+  position: relative;
+  background: linear-gradient(135deg,
+    var(--ldesign-brand-color-1) 0%,
+    var(--ldesign-brand-color-2) 50%,
+    var(--ldesign-brand-color-3) 100%);
+  padding: var(--ls-spacing-xxl) var(--ls-spacing-xl);
+  margin-bottom: var(--ls-spacing-xxl);
+  overflow: hidden;
+}
+
+.header-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: var(--ldesign-spacing-lg);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.demo-header {
   text-align: center;
-  margin-bottom: var(--ldesign-spacing-xl);
-  
-  h1 {
-    color: var(--ldesign-brand-color);
-    margin-bottom: var(--ldesign-spacing-sm);
-    font-size: 2.5rem;
-    font-weight: 600;
-  }
-  
-  p {
-    color: var(--ldesign-text-color-secondary);
-    font-size: 1.1rem;
-  }
+  position: relative;
+  z-index: 2;
 }
 
-.demo-section {
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ls-spacing-sm);
+  padding: var(--ls-spacing-sm) var(--ls-spacing-lg);
+  background: var(--ldesign-brand-color);
+  color: white;
+  border-radius: var(--ls-border-radius-full);
+  font-size: var(--ls-font-size-sm);
+  font-weight: 600;
+  margin-bottom: var(--ls-spacing-lg);
+  box-shadow: var(--ldesign-shadow-2);
+}
+
+.badge-icon {
+  font-size: 1.2em;
+}
+
+.header-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  margin-bottom: var(--ls-spacing-lg);
+  background: linear-gradient(135deg,
+    var(--ldesign-brand-color-8) 0%,
+    var(--ldesign-brand-color-6) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-subtitle {
+  font-size: var(--ls-font-size-lg);
+  color: var(--ldesign-text-color-secondary);
+  margin-bottom: var(--ls-spacing-xl);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.header-stats {
+  display: flex;
+  justify-content: center;
+  gap: var(--ls-spacing-xl);
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+  padding: var(--ls-spacing-lg);
   background: var(--ldesign-bg-color-container);
-  border: 1px solid var(--ldesign-border-color);
-  border-radius: 8px;
-  padding: var(--ldesign-spacing-lg);
-  margin-bottom: var(--ldesign-spacing-lg);
+  border-radius: var(--ls-border-radius-lg);
   box-shadow: var(--ldesign-shadow-1);
-  
-  h2 {
-    color: var(--ldesign-text-color-primary);
-    margin-bottom: var(--ldesign-spacing-md);
-    font-size: 1.5rem;
-    font-weight: 500;
-    border-bottom: 2px solid var(--ldesign-brand-color);
-    padding-bottom: var(--ldesign-spacing-sm);
-  }
+  min-width: 120px;
+}
+
+.stat-value {
+  display: block;
+  font-size: var(--ls-font-size-xl);
+  font-weight: 700;
+  color: var(--ldesign-brand-color);
+  margin-bottom: var(--ls-spacing-xs);
+}
+
+.stat-label {
+  font-size: var(--ls-font-size-sm);
+  color: var(--ldesign-text-color-secondary);
+}
+
+/* 主要内容区域 */
+.demo-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--ls-spacing-xl) var(--ls-spacing-xxl);
+}
+
+/* 区域样式 */
+.demo-section {
+  margin-bottom: var(--ls-spacing-xxl);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--ls-spacing-lg);
+  margin-bottom: var(--ls-spacing-xl);
+}
+
+.section-icon {
+  font-size: 2.5rem;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ldesign-brand-color-1);
+  border-radius: var(--ls-border-radius-lg);
+  flex-shrink: 0;
+}
+
+.section-info {
+  flex: 1;
+}
+
+.section-title {
+  font-size: var(--ls-font-size-h3);
+  font-weight: 600;
+  color: var(--ldesign-text-color-primary);
+  margin-bottom: var(--ls-spacing-xs);
+}
+
+.section-description {
+  color: var(--ldesign-text-color-secondary);
+  line-height: 1.6;
 }
 
 .operation-panel {

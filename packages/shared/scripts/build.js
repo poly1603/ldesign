@@ -15,7 +15,7 @@ async function build() {
   const builder = new VueBuilder({
     root: process.cwd(),
     src: 'src',
-    formats: ["esm","cjs","dts"],
+    formats: ["esm","cjs","umd","dts"],
     sourcemap: true,
     minify: !isDev,
     clean: true,

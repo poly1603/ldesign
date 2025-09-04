@@ -20,9 +20,6 @@ import vue from 'rollup-plugin-vue'
 import postcss from 'rollup-plugin-postcss'
 import dts from 'rollup-plugin-dts'
 
-// LESS 支持
-// import less from 'rollup-plugin-less'
-
 // 自定义插件
 import { vueTypeScriptPreprocessor } from './plugins/vue-typescript-preprocessor'
 
@@ -75,7 +72,7 @@ export class VueBuilder {
     this.options = {
       root: this.root,
       src: options.src || 'src',
-      formats: options.formats || ['esm', 'cjs', 'dts'],
+      formats: options.formats || ['esm', 'cjs', 'umd', 'dts'],
       minify: options.minify ?? true,
       sourcemap: options.sourcemap ?? true,
       external: options.external || [],
@@ -146,7 +143,7 @@ export class VueBuilder {
    * 清理输出目录
    */
   private async cleanOutput(): Promise<void> {
-    const outputDirs = ['dist', 'esm', 'cjs', 'types']
+    const outputDirs = ['dist']
     
     for (const dir of outputDirs) {
       const outPath = join(this.root, dir)
@@ -321,7 +318,14 @@ export class VueBuilder {
           '.ts': 'ts',
           '.tsx': 'tsx'
         },
-        minify: false // 由 terser 处理压缩
+        jsx: 'automatic',
+        jsxImportSource: 'vue',
+        minify: false, // 由 terser 处理压缩
+        define: {
+          __VUE_OPTIONS_API__: 'true',
+          __VUE_PROD_DEVTOOLS__: 'false',
+          'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
+        }
       })
     )
     
@@ -340,22 +344,16 @@ export class VueBuilder {
       )
     }
     
-    // LESS 处理 (暂时禁用以测试 Vue 构建)
-    // plugins.push(
-    //   less({
-    //     output: false, // 内联到 JS
-    //     option: {
-    //       javascriptEnabled: true
-    //     }
-    //   })
-    // )
+    // PostCSS + LESS 处理
+    const shouldExtract = format !== 'umd' // UMD格式内联，其他格式提取
     
-    // CSS/PostCSS 处理
     plugins.push(
       postcss({
-        extract: false, // 内联 CSS 到 JS 中
-        minimize: this.options.minify && format === 'umd',
-        sourceMap: this.options.sourcemap
+        extract: shouldExtract ? 'style.css' : false,
+        minimize: this.options.minify,
+        sourceMap: this.options.sourcemap,
+        use: ['less'],
+        inject: !shouldExtract // 如果不提取，则注入到JS中
       })
     )
 
@@ -480,8 +478,10 @@ export class VueBuilder {
     const pureTypeScriptEntries: Record<string, string> = {}
     
     for (const [name, path] of Object.entries(entries)) {
-      if ((path.endsWith('.ts') || path.endsWith('.tsx')) && !this.hasDirectVueImports(path)) {
-        pureTypeScriptEntries[name] = path
+      if (path.endsWith('.ts') || (path.endsWith('.tsx') && !this.isVueComponent(path))) {
+        if (!this.hasDirectVueImports(path)) {
+          pureTypeScriptEntries[name] = path
+        }
       }
     }
     
@@ -492,7 +492,7 @@ export class VueBuilder {
     const config: RollupOptions = {
       input: pureTypeScriptEntries,
       output: {
-        dir: join(this.root, 'types'),
+        dir: join(this.root, 'dist'),
         format: 'es',
         preserveModules: true,
         preserveModulesRoot: this.options.src,
@@ -520,9 +520,10 @@ export class VueBuilder {
    */
   private async generateVueComponentDeclarations(entries: Record<string, string>): Promise<void> {
     for (const [name, path] of Object.entries(entries)) {
-      if (path.endsWith('.vue')) {
-        const componentDir = dirname(join(this.root, 'types', name))
-        const componentFile = join(this.root, 'types', name + '.d.ts')
+      // 支持.vue和.tsx组件
+      if (path.endsWith('.vue') || (path.endsWith('.tsx') && this.isVueComponent(path))) {
+        const componentDir = dirname(join(this.root, 'dist', name))
+        const componentFile = join(this.root, 'dist', name + '.d.ts')
         
         // 确保目录存在
         if (!existsSync(componentDir)) {
@@ -541,11 +542,24 @@ export default _default
   }
   
   /**
+   * 检查TSX文件是否为Vue组件
+   */
+  private isVueComponent(filePath: string): boolean {
+    try {
+      const content = readFileSync(filePath, 'utf-8')
+      // 检查是否包含defineComponent或者Vue相关导入
+      return /defineComponent|from\s+['"](vue|@vue)/.test(content)
+    } catch {
+      return false
+    }
+  }
+  
+  /**
    * 生成主入口声明文件
    */
   private async generateMainDeclarations(analysis: any): Promise<void> {
-    const mainIndexFile = join(this.root, 'types', 'index.d.ts')
-    const componentsIndexFile = join(this.root, 'types', 'components', 'index.d.ts')
+    const mainIndexFile = join(this.root, 'dist', 'index.d.ts')
+    const componentsIndexFile = join(this.root, 'dist', 'components', 'index.d.ts')
     
     // 确保目录存在
     if (!existsSync(dirname(componentsIndexFile))) {
@@ -555,10 +569,23 @@ export default _default
     // 生成组件入口声明
     let componentsDeclaration = `// Vue 组件声明\n`
     
+    // 导出Vue SFC组件
     for (const vueFile of analysis.vueFiles) {
       const componentName = vueFile.split('/').pop()?.replace('.vue', '') || ''
       const componentPath = './' + vueFile.replace('.vue', '')
       componentsDeclaration += `export { default as ${componentName} } from '${componentPath}'\n`
+    }
+    
+    // 导出TSX组件 - 检查所有.tsx文件
+    const srcDir = join(this.root, this.options.src)
+    const tsxFiles = await fg(['**/*.tsx'], { cwd: srcDir })
+    for (const tsxFile of tsxFiles) {
+      const filePath = join(srcDir, tsxFile)
+      if (this.isVueComponent(filePath)) {
+        const componentName = tsxFile.split('/').pop()?.replace('.tsx', '') || ''
+        const componentPath = './' + tsxFile.replace('.tsx', '')
+        componentsDeclaration += `export { default as ${componentName} } from '${componentPath}'\n`
+      }
     }
     
     // 导出组件类型
@@ -566,11 +593,12 @@ export default _default
     componentsDeclaration += `export type { SelectProps, SelectOption } from './select/types'\n`
     componentsDeclaration += `export type { PopupProps, PopupPlacement } from './popup/types'\n`
     componentsDeclaration += `export type { DialogProps } from './dialog/types'\n`
+    componentsDeclaration += `export type { ButtonProps, ButtonEmits, ButtonSlots } from './button/types'\n`
     
     writeFileSync(componentsIndexFile, componentsDeclaration)
     
     // 生成主入口声明
-    const mainDeclaration = `// 导出 Vue 组合式函数\nexport * from './hooks'\n\n// 导出类型定义\nexport * from './types'\n\n// 导出工具函数\nexport * from './utils'\n\n// 导出 UI 组件\nexport * from './components'\n`
+    const mainDeclaration = `// 导出 Vue 组合式函数\nexport * from './hooks'\n\n// 导出类型定义\nexport * from './types'\n\n// 导出工具函数\nexport * from './utils'\n\n// 导出UI组件\nexport * from './components'\n`
     
     writeFileSync(mainIndexFile, mainDeclaration)
   }
@@ -601,7 +629,7 @@ export default _default
     return {
       input: tsOnlyEntries,
       output: {
-        dir: join(this.root, 'types'),
+        dir: join(this.root, 'dist'),
         format: 'es',
         preserveModules: true,
         preserveModulesRoot: this.options.src,
@@ -641,13 +669,12 @@ export default _default
       }
     }
 
-    // ESM -> esm/ 目录, CJS -> cjs/ 目录
-    const outDir = format === 'esm' ? 'esm' : 'cjs'
+    // 为了兼容标准包结构，使用 dist/ 目录统一输出
     const ext = format === 'esm' ? 'js' : 'cjs'
     
     return {
       format: format === 'esm' ? 'es' : 'cjs',
-      dir: join(this.root, outDir),
+      dir: join(this.root, 'dist'),
       sourcemap: this.options.sourcemap,
       preserveModules: true,
       preserveModulesRoot: this.options.src,

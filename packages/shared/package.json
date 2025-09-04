@@ -8,7 +8,7 @@
   "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/{{PACKAGE_NAME}}#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ldesign/ldesign.git",
+    "url": "git+https://github.com/ldesign/ldesign.git",
     "directory": "packages/{{PACKAGE_NAME}}"
   },
   "bugs": {
@@ -111,5 +111,8 @@
       "path": "dist/index.js",
       "limit": "50 KB"
     }
-  ]
+  ],
+  "directories": {
+    "doc": "docs"
+  }
 }

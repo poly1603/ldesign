@@ -7,12 +7,13 @@ import type { App } from 'vue'
 import LSelect from './select/LSelect.vue'
 import LPopup from './popup/LPopup.vue'
 import LDialog from './dialog/LDialog.vue'
+import LButton from './button/LButton'
 
 export interface ComponentInstallOptions {
   /** 组件名称前缀 */
   prefix?: string
   /** 要安装的组件列表，如果不指定则安装所有组件 */
-  components?: ('select' | 'popup' | 'dialog')[]
+  components?: ('select' | 'popup' | 'dialog' | 'button')[]
 }
 
 /**
@@ -24,7 +25,8 @@ export function installComponents(app: App, options: ComponentInstallOptions = {
   const componentMap = {
     select: LSelect,
     popup: LPopup,
-    dialog: LDialog
+    dialog: LDialog,
+    button: LButton
   }
 
   const componentsToInstall = components || Object.keys(componentMap) as (keyof typeof componentMap)[]

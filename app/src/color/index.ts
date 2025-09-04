@@ -40,9 +40,9 @@ const themeColorMap: Record<string, string> = {
  * 性能优化和错误处理等特性，支持主题状态缓存和恢复
  */
 export const colorPlugin = createColorEnginePlugin({
-  // 基础配置 - 使用缓存的状态或默认值
-  defaultTheme: 'default', // 使用默认主题，确保主题存在
-  defaultMode: 'light', // 默认亮色模式
+  // 基础配置 - 优先使用缓存的状态，如果没有缓存则使用默认值
+  defaultTheme: cachedState?.theme || 'default', // 优先使用缓存的主题
+  defaultMode: cachedState?.mode || 'light', // 优先使用缓存的模式
   debug: false, // 关闭调试减少控制台输出
 
   // 组件注册

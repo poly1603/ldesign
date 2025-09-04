@@ -340,7 +340,7 @@ defineExpose({
 })
 </script>
 
-<style lang="less" scoped>
+<style lang="less">
 .l-dialog-wrapper {
   position: fixed;
   top: 0;

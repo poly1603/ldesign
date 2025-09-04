@@ -10,9 +10,6 @@
           <router-link to="/" class="nav-link" active-class="active" exact-active-class="active">
             {{ t('nav.home') }}
           </router-link>
-          <router-link to="/packages" class="nav-link" active-class="active">
-            {{ t('nav.products') }}
-          </router-link>
           <router-link to="/login" class="nav-link" active-class="active">
             {{ t('nav.login') }}
           </router-link>
@@ -131,6 +128,9 @@ body {
   transition: all 0.3s ease;
   border-bottom: var(--ls-border-width) solid var(--ldesign-border-color);
   backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .nav-container {

@@ -1,82 +1,163 @@
 <template>
   <div class="home-page">
-    <header class="home-header">
-      <h1>{{ t('home.title') }}</h1>
-      <p class="subtitle">{{ t('home.subtitle') }}</p>
-    </header>
+    <!-- 英雄区域 -->
+    <section class="hero-section">
+      <div class="hero-background">
+        <div class="hero-pattern"></div>
+      </div>
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-text">✨ LDesign v1.0</span>
+        </div>
+        <h1 class="hero-title">{{ t('home.title') }}</h1>
+        <p class="hero-subtitle">{{ t('home.subtitle') }}</p>
+        <div class="hero-actions">
+          <router-link to="/color-scales" class="btn btn-primary btn-large">
+            <span class="btn-icon">🌈</span>
+            开始探索
+          </router-link>
+          <router-link to="/cache-demo" class="btn btn-secondary btn-large">
+            <span class="btn-icon">💾</span>
+            查看演示
+          </router-link>
+        </div>
+      </div>
+    </section>
 
     <main class="home-content">
-      <section class="feature-section">
-        <h2>{{ t('home.features.title') }}</h2>
+      <!-- 核心特性区域 -->
+      <section class="features-section">
+        <div class="section-header">
+          <h2 class="section-title">{{ t('home.features.title') }}</h2>
+          <p class="section-subtitle">强大的功能，优雅的设计</p>
+        </div>
         <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">🚀</div>
-            <h3>{{ t('home.features.router') }}</h3>
-            <p>{{ t('demo.routerSystem') }}</p>
+          <div class="feature-card" data-feature="router">
+            <div class="feature-header">
+              <div class="feature-icon">🚀</div>
+              <h3>{{ t('home.features.router') }}</h3>
+            </div>
+            <p class="feature-description">{{ t('demo.routerSystem') }}</p>
+            <div class="feature-footer">
+              <router-link to="/login" class="feature-link">
+                体验路由 →
+              </router-link>
+            </div>
           </div>
-          <div class="feature-card">
-            <div class="feature-icon">📱</div>
-            <h3>{{ t('home.features.template') }}</h3>
-            <p>{{ t('demo.templateEngine') }}</p>
+          <div class="feature-card" data-feature="template">
+            <div class="feature-header">
+              <div class="feature-icon">📱</div>
+              <h3>{{ t('home.features.template') }}</h3>
+            </div>
+            <p class="feature-description">{{ t('demo.templateEngine') }}</p>
+            <div class="feature-footer">
+              <span class="feature-link">模板引擎 →</span>
+            </div>
           </div>
-          <div class="feature-card">
-            <div class="feature-icon">🔗</div>
-            <h3>{{ t('home.features.color') }}</h3>
-            <p>{{ t('demo.colorSystem') }}</p>
+          <div class="feature-card" data-feature="color">
+            <div class="feature-header">
+              <div class="feature-icon">🎨</div>
+              <h3>{{ t('home.features.color') }}</h3>
+            </div>
+            <p class="feature-description">{{ t('demo.colorSystem') }}</p>
+            <div class="feature-footer">
+              <router-link to="/color-scales" class="feature-link">
+                色彩系统 →
+              </router-link>
+            </div>
           </div>
-          <div class="feature-card">
-            <div class="feature-icon">🎨</div>
-            <h3>{{ t('home.features.i18n') }}</h3>
-            <p>{{ t('demo.i18nSystem') }}</p>
+          <div class="feature-card" data-feature="i18n">
+            <div class="feature-header">
+              <div class="feature-icon">🌍</div>
+              <h3>{{ t('home.features.i18n') }}</h3>
+            </div>
+            <p class="feature-description">{{ t('demo.i18nSystem') }}</p>
+            <div class="feature-footer">
+              <span class="feature-link">国际化 →</span>
+            </div>
           </div>
         </div>
       </section>
 
-      <section class="navigation-section">
-        <h2>{{ t('home.sections.engineApi') }}</h2>
-        <div class="nav-buttons">
-          <router-link to="/login" class="nav-button primary">
-            {{ t('nav.login') }}
-          </router-link>
-          <router-link to="/theme-demo" class="nav-button primary">
-            🎨 {{ t('app.theme') }}
-          </router-link>
-          <router-link to="/color-scales" class="nav-button primary">
-            🌈 {{ t('demo.colorSystem') }}
-          </router-link>
-          <router-link to="/store-test" class="nav-button primary">
-            🗃️ Store 状态管理
-          </router-link>
-          <router-link to="/crypto-demo" class="nav-button primary">
-            🔐 Crypto 加密演示
-          </router-link>
-          <router-link to="/cache-demo" class="nav-button primary">
-            💾 Cache 缓存演示
-          </router-link>
-          <button @click="testNavigation" class="nav-button secondary">
-            {{ t('home.buttons.tryDemo') }}
-          </button>
+      <!-- 演示区域 -->
+      <section class="demos-section">
+        <div class="section-header">
+          <h2 class="section-title">{{ t('home.sections.engineApi') }}</h2>
+          <p class="section-subtitle">体验完整的功能演示</p>
+        </div>
+        <div class="demos-grid">
+          <div class="demo-card">
+            <div class="demo-icon">🔐</div>
+            <h3>加密演示</h3>
+            <p>体验强大的加密解密功能</p>
+            <router-link to="/crypto-demo" class="demo-link">
+              立即体验
+            </router-link>
+          </div>
+          <div class="demo-card">
+            <div class="demo-icon">💾</div>
+            <h3>缓存系统</h3>
+            <p>高性能的缓存管理解决方案</p>
+            <router-link to="/cache-demo" class="demo-link">
+              立即体验
+            </router-link>
+          </div>
+          <div class="demo-card">
+            <div class="demo-icon">🗃️</div>
+            <h3>状态管理</h3>
+            <p>优雅的状态管理和数据流</p>
+            <router-link to="/store-test" class="demo-link">
+              立即体验
+            </router-link>
+          </div>
+          <div class="demo-card">
+            <div class="demo-icon">🌐</div>
+            <h3>HTTP 客户端</h3>
+            <p>强大的网络请求处理能力</p>
+            <router-link to="/http-demo" class="demo-link">
+              立即体验
+            </router-link>
+          </div>
         </div>
       </section>
 
-      <section class="info-section">
-        <h2>{{ t('home.sections.pluginSystem') }}</h2>
-        <div class="route-info">
-          <p><strong>{{ t('nav.home') }}:</strong> {{ route.path }}</p>
-          <p><strong>{{ t('user.name') }}:</strong> {{ route.name }}</p>
-          <p><strong>{{ t('common.info') }}:</strong> {{ JSON.stringify(route.params) }}</p>
-          <p><strong>{{ t('common.search') }}:</strong> {{ JSON.stringify(route.query) }}</p>
-          <p><strong>Meta:</strong> {{ JSON.stringify(route.meta) }}</p>
-        </div>
-      </section>
-
-      <section class="api-section">
-        <h2>{{ t('home.sections.typeScript') }}</h2>
-        <div class="api-info">
-          <p><strong>{{ t('home.sections.engineApi') }}:</strong> createAndMountApp</p>
-          <p><strong>{{ t('demo.routerSystem') }}:</strong> createRouterEnginePlugin</p>
-          <p><strong>{{ t('demo.i18nSystem') }}:</strong> createI18nEnginePlugin</p>
-          <p><strong>{{ t('home.features.performance') }}:</strong> {{ t('demo.performanceMonitor') }}</p>
+      <!-- 技术信息区域 -->
+      <section class="tech-section">
+        <div class="tech-grid">
+          <div class="tech-card">
+            <h3>{{ t('home.sections.pluginSystem') }}</h3>
+            <div class="tech-info">
+              <div class="info-item">
+                <span class="info-label">{{ t('nav.home') }}:</span>
+                <span class="info-value">{{ route.path }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">{{ t('user.name') }}:</span>
+                <span class="info-value">{{ route.name }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Meta:</span>
+                <span class="info-value">{{ JSON.stringify(route.meta) }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="tech-card">
+            <h3>{{ t('home.sections.typeScript') }}</h3>
+            <div class="tech-info">
+              <div class="info-item">
+                <span class="info-label">{{ t('home.sections.engineApi') }}:</span>
+                <span class="info-value">createAndMountApp</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">{{ t('demo.routerSystem') }}:</span>
+                <span class="info-value">createRouterEnginePlugin</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">{{ t('demo.i18nSystem') }}:</span>
+                <span class="info-value">createI18nEnginePlugin</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </main>
@@ -111,63 +192,213 @@ const testNavigation = () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .home-page {
   min-height: 100vh;
-  background: var(--color-bg);
-  color: var(--color-text);
-  padding: var(--ls-spacing-xl);
-  transition: all 0.3s ease;
+  background: var(--ldesign-bg-color-page);
+  color: var(--ldesign-text-color-primary);
+  overflow-x: hidden;
 }
 
-.home-header {
+/* 英雄区域样式 */
+.hero-section {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ls-spacing-xxl) var(--ls-spacing-xl);
+  background: linear-gradient(135deg,
+    var(--ldesign-brand-color-1) 0%,
+    var(--ldesign-brand-color-2) 50%,
+    var(--ldesign-brand-color-3) 100%);
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.hero-pattern {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background-image:
+    radial-gradient(circle at 25% 25%, var(--ldesign-brand-color-2) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, var(--ldesign-brand-color-3) 0%, transparent 50%);
+  animation: float 20s ease-in-out infinite;
+  opacity: 0.3;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(30px, -30px) rotate(120deg); }
+  66% { transform: translate(-20px, 20px) rotate(240deg); }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
   text-align: center;
-  margin-bottom: var(--ls-spacing-3xl);
+  max-width: 800px;
 }
 
-.home-header h1 {
-  font-size: var(--ls-font-size-3xl);
+.hero-badge {
+  display: inline-block;
   margin-bottom: var(--ls-spacing-lg);
-  font-weight: var(--ls-font-weight-bold);
+  padding: var(--ls-spacing-sm) var(--ls-spacing-lg);
+  background: var(--ldesign-brand-color);
+  color: white;
+  border-radius: var(--ls-border-radius-full);
+  font-size: var(--ls-font-size-sm);
+  font-weight: 500;
+  box-shadow: var(--ldesign-shadow-2);
+  animation: pulse 2s ease-in-out infinite;
 }
 
-.subtitle {
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 700;
+  margin-bottom: var(--ls-spacing-lg);
+  background: linear-gradient(135deg,
+    var(--ldesign-brand-color-8) 0%,
+    var(--ldesign-brand-color-6) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: var(--ls-font-size-xl);
+  color: var(--ldesign-text-color-secondary);
+  margin-bottom: var(--ls-spacing-xxl);
+  line-height: 1.6;
+}
+
+.hero-actions {
+  display: flex;
+  gap: var(--ls-spacing-lg);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* 按钮样式 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ls-spacing-sm);
+  padding: var(--ls-spacing-lg) var(--ls-spacing-xl);
+  border: none;
+  border-radius: var(--ls-border-radius-lg);
+  font-size: var(--ls-font-size-base);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-large {
+  padding: var(--ls-spacing-xl) var(--ls-spacing-xxl);
   font-size: var(--ls-font-size-lg);
-  opacity: 0.9;
 }
 
+.btn-primary {
+  background: linear-gradient(135deg,
+    var(--ldesign-brand-color) 0%,
+    var(--ldesign-brand-color-6) 100%);
+  color: white;
+  box-shadow: var(--ldesign-shadow-2);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--ldesign-shadow-3);
+  background: linear-gradient(135deg,
+    var(--ldesign-brand-color-6) 0%,
+    var(--ldesign-brand-color-8) 100%);
+}
+
+.btn-secondary {
+  background: var(--ldesign-bg-color-container);
+  color: var(--ldesign-brand-color);
+  border: 2px solid var(--ldesign-brand-color-3);
+  box-shadow: var(--ldesign-shadow-1);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  background: var(--ldesign-brand-color-1);
+  border-color: var(--ldesign-brand-color);
+  box-shadow: var(--ldesign-shadow-2);
+}
+
+.btn-icon {
+  font-size: 1.2em;
+}
+
+/* 主要内容区域 */
 .home-content {
-  max-width: var(--ls-container-max-width);
+  max-width: 1200px;
   margin: 0 auto;
+  padding: var(--ls-spacing-xxl) var(--ls-spacing-xl);
 }
 
-.feature-section {
-  margin-bottom: var(--ls-spacing-3xl);
-}
-
-.feature-section h2 {
+/* 区域标题样式 */
+.section-header {
   text-align: center;
-  margin-bottom: var(--ls-spacing-xl);
-  font-size: var(--ls-font-size-2xl);
+  margin-bottom: var(--ls-spacing-xxl);
+}
+
+.section-title {
+  font-size: var(--ls-font-size-h2);
+  font-weight: 700;
+  margin-bottom: var(--ls-spacing-lg);
+  color: var(--ldesign-text-color-primary);
+}
+
+.section-subtitle {
+  font-size: var(--ls-font-size-lg);
+  color: var(--ldesign-text-color-secondary);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* 特性区域样式 */
+.features-section {
+  margin-bottom: var(--ls-spacing-xxl);
 }
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--ls-grid-min-width), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: var(--ls-spacing-xl);
-  margin-bottom: var(--ls-spacing-3xl);
 }
 
 .feature-card {
-  background: var(--color-bg-secondary);
-  border: var(--ls-border-width) solid var(--color-border);
-  padding: var(--ls-spacing-xl);
+  background: var(--ldesign-bg-color-container);
+  border: 1px solid var(--ldesign-border-color);
   border-radius: var(--ls-border-radius-lg);
-  text-align: center;
-  box-shadow: var(--ls-shadow-sm);
+  padding: var(--ls-spacing-xl);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .feature-card::before {
@@ -176,172 +407,311 @@ const testNavigation = () => {
   top: 0;
   left: 0;
   right: 0;
-  height: var(--ls-border-accent-height);
-  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  height: 4px;
+  background: linear-gradient(90deg,
+    var(--ldesign-brand-color) 0%,
+    var(--ldesign-brand-color-6) 100%);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
 }
 
 .feature-card:hover {
-  transform: translateY(var(--ls-transform-hover-y-lg));
-  box-shadow: var(--ls-shadow-lg);
-  border-color: var(--color-primary-light);
+  transform: translateY(-8px);
+  box-shadow: var(--ldesign-shadow-3);
+  border-color: var(--ldesign-brand-color-3);
 }
 
 .feature-card:hover::before {
-  opacity: 1;
+  transform: scaleX(1);
+}
+
+.feature-header {
+  display: flex;
+  align-items: center;
+  gap: var(--ls-spacing-lg);
+  margin-bottom: var(--ls-spacing-lg);
 }
 
 .feature-icon {
-  font-size: var(--ls-font-size-3xl);
-  margin-bottom: var(--ls-spacing-lg);
+  font-size: 2.5rem;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ldesign-brand-color-1);
+  border-radius: var(--ls-border-radius-lg);
+  flex-shrink: 0;
 }
 
 .feature-card h3 {
-  margin-bottom: var(--ls-spacing-lg);
   font-size: var(--ls-font-size-xl);
+  font-weight: 600;
+  color: var(--ldesign-text-color-primary);
+  margin: 0;
 }
 
-.navigation-section {
-  margin-bottom: var(--ls-spacing-3xl);
-  text-align: center;
+.feature-description {
+  color: var(--ldesign-text-color-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--ls-spacing-lg);
 }
 
-.navigation-section h2 {
-  margin-bottom: var(--ls-spacing-xl);
-  font-size: var(--ls-font-size-2xl);
+.feature-footer {
+  margin-top: auto;
 }
 
-.nav-buttons {
-  display: flex;
-  gap: var(--ls-spacing-lg);
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.nav-button {
-  padding: var(--ls-spacing-lg) var(--ls-spacing-xl);
-  border: none;
-  border-radius: var(--ls-border-radius);
-  font-size: var(--ls-font-size-lg);
+.feature-link {
+  color: var(--ldesign-brand-color);
   text-decoration: none;
-  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.feature-link:hover {
+  color: var(--ldesign-brand-color-hover);
+}
+
+/* 演示区域样式 */
+.demos-section {
+  margin-bottom: var(--ls-spacing-xxl);
+  padding: var(--ls-spacing-xxl) 0;
+  background: linear-gradient(135deg,
+    var(--ldesign-bg-color-container) 0%,
+    var(--ldesign-bg-color-component) 100%);
+  border-radius: var(--ls-border-radius-xl);
+}
+
+.demos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--ls-spacing-xl);
+}
+
+.demo-card {
+  background: var(--ldesign-bg-color-page);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-lg);
+  padding: var(--ls-spacing-xl);
+  text-align: center;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.demo-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--ldesign-brand-color-1) 50%,
+    transparent 100%);
+  transition: left 0.6s ease;
+}
+
+.demo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--ldesign-shadow-2);
+  border-color: var(--ldesign-brand-color-3);
+}
+
+.demo-card:hover::after {
+  left: 100%;
+}
+
+.demo-icon {
+  font-size: 3rem;
+  margin-bottom: var(--ls-spacing-lg);
   display: inline-block;
+  padding: var(--ls-spacing-lg);
+  background: var(--ldesign-brand-color-1);
+  border-radius: var(--ls-border-radius-full);
+  position: relative;
+  z-index: 1;
 }
 
-.nav-button.primary {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  color: var(--color-bg);
-  border: var(--ls-border-width-thick) solid transparent;
-  font-weight: var(--ls-font-weight-semibold);
+.demo-card h3 {
+  font-size: var(--ls-font-size-xl);
+  font-weight: 600;
+  margin-bottom: var(--ls-spacing-sm);
+  color: var(--ldesign-text-color-primary);
+  position: relative;
+  z-index: 1;
 }
 
-.nav-button.secondary {
-  background: var(--color-bg-secondary);
-  color: var(--color-primary);
-  border: var(--ls-border-width-thick) solid var(--color-primary-light);
+.demo-card p {
+  color: var(--ldesign-text-color-secondary);
+  margin-bottom: var(--ls-spacing-lg);
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
 }
 
-.nav-button:hover {
-  transform: translateY(var(--ls-transform-hover-y));
-  box-shadow: var(--ls-shadow-lg);
+.demo-link {
+  display: inline-block;
+  padding: var(--ls-spacing-sm) var(--ls-spacing-lg);
+  background: var(--ldesign-brand-color);
+  color: white;
+  text-decoration: none;
+  border-radius: var(--ls-border-radius-base);
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
 }
 
-.nav-button.primary:hover {
-  background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary-darker) 100%);
-  box-shadow: var(--ls-shadow-lg);
+.demo-link:hover {
+  background: var(--ldesign-brand-color-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--ldesign-shadow-1);
 }
 
-.nav-button.secondary:hover {
-  background: var(--color-primary-lighter);
-  color: var(--color-primary-darker);
-  border-color: var(--color-primary);
+/* 技术信息区域样式 */
+.tech-section {
+  margin-bottom: var(--ls-spacing-xxl);
 }
 
-.info-section {
-  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
-  border: var(--ls-border-width) solid var(--color-border);
-  padding: var(--ls-spacing-xl);
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--ls-spacing-xl);
+}
+
+.tech-card {
+  background: var(--ldesign-bg-color-container);
+  border: 1px solid var(--ldesign-border-color);
   border-radius: var(--ls-border-radius-lg);
-  box-shadow: var(--ls-shadow-md);
+  padding: var(--ls-spacing-xl);
   position: relative;
   overflow: hidden;
 }
 
-.info-section::before {
+.tech-card::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: var(--ls-border-accent-height-sm);
-  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  height: 3px;
+  background: linear-gradient(90deg,
+    var(--ldesign-brand-color) 0%,
+    var(--ldesign-brand-color-6) 50%,
+    var(--ldesign-success-color) 100%);
 }
 
-.api-section {
-  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
-  border: var(--ls-border-width) solid var(--color-border);
-  padding: var(--ls-spacing-xl);
-  border-radius: var(--ls-border-radius-lg);
-  box-shadow: var(--ls-shadow-md);
-  margin-top: var(--ls-spacing-xl);
-  position: relative;
-  overflow: hidden;
-}
-
-.api-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--ls-border-accent-height-sm);
-  background: linear-gradient(90deg, var(--color-success) 0%, var(--color-primary) 100%);
-}
-
-.api-section h2 {
-  margin-bottom: var(--ls-spacing-lg);
+.tech-card h3 {
   font-size: var(--ls-font-size-xl);
-  color: var(--color-text);
-}
-
-.api-info p {
-  margin-bottom: var(--ls-spacing-sm);
-  color: var(--color-text-secondary);
-}
-
-.info-section h2 {
+  font-weight: 600;
   margin-bottom: var(--ls-spacing-lg);
-  font-size: var(--ls-font-size-xl);
+  color: var(--ldesign-text-color-primary);
 }
 
-.route-info p {
-  margin-bottom: var(--ls-spacing-sm);
+.tech-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ls-spacing-sm);
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ls-spacing-sm);
+  padding: var(--ls-spacing-sm);
+  background: var(--ldesign-bg-color-component);
+  border-radius: var(--ls-border-radius-base);
+  border-left: 3px solid var(--ldesign-brand-color-3);
+}
+
+.info-label {
+  font-weight: 600;
+  color: var(--ldesign-brand-color);
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.info-value {
+  color: var(--ldesign-text-color-secondary);
   font-family: 'Courier New', monospace;
+  font-size: var(--ls-font-size-sm);
+  word-break: break-all;
+  line-height: 1.4;
 }
 
-.route-info strong {
-  color: var(--color-primary);
-  font-weight: var(--ls-font-weight-semibold);
-}
-
-@media (max-width: var(--ls-breakpoint-md)) {
-  .home-header h1 {
-    font-size: var(--ls-font-size-2xl);
+/* 响应式设计 */
+@media (max-width: 1024px) {
+  .hero-title {
+    font-size: clamp(2rem, 4vw, 3rem);
   }
 
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .nav-buttons {
+  .hero-actions {
     flex-direction: column;
     align-items: center;
   }
 
-  .nav-button {
-    width: var(--ls-button-width-mobile);
+  .btn-large {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: 80vh;
+    padding: var(--ls-spacing-xl) var(--ls-spacing-lg);
+  }
+
+  .home-content {
+    padding: var(--ls-spacing-xl) var(--ls-spacing-lg);
+  }
+
+  .features-grid,
+  .demos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tech-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .feature-icon {
+    margin: 0 auto;
+  }
+
+  .hero-badge {
+    font-size: var(--ls-font-size-xs);
+    padding: var(--ls-spacing-xs) var(--ls-spacing-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: var(--ls-font-size-base);
+  }
+
+  .section-title {
+    font-size: var(--ls-font-size-h3);
+  }
+
+  .info-item {
+    flex-direction: column;
+    gap: var(--ls-spacing-xs);
+  }
+
+  .info-label {
+    min-width: auto;
   }
 }
 </style>

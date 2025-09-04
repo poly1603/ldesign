@@ -62,18 +62,7 @@ export const routes: RouteRecordRaw[] = [
       animation: 'fade',
     },
   },
-  {
-    path: '/packages',
-    name: 'packages',
-    component: () => import('../pages/PackageTest.vue'),
-    meta: {
-      title: '包测试',
-      description: 'LDesign 工作空间包测试页面',
-      cache: true,
-      preload: true,
-      animation: 'slide',
-    },
-  },
+
   {
     path: '/http-demo',
     name: 'http-demo',
@@ -134,16 +123,5 @@ export const routes: RouteRecordRaw[] = [
       animation: 'fade',
     },
   },
-  {
-    path: '/health-check',
-    name: 'health-check',
-    component: () => import('../test-app-health.vue'),
-    meta: {
-      title: '应用健康检查',
-      description: '检查所有插件和功能是否正常工作',
-      cache: false,
-      preload: false,
-      animation: 'fade',
-    },
-  },
+
 ]
