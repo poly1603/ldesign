@@ -1,8 +1,9 @@
-import type {
-  HttpClientConfig,
-  RequestConfig,
-  ResponseData,
-} from '@ldesign/http'
+/**
+ * @ldesign/api 核心类型定义
+ * 提供完整的 TypeScript 类型支持
+ */
+
+import type { HttpClientConfig, HttpClient, RequestConfig, ResponseData } from '@ldesign/http'
 
 /**
  * API 引擎配置
@@ -12,7 +13,7 @@ export interface ApiEngineConfig {
   appName?: string
   /** 版本号 */
   version?: string
-  /** 是否启用调试模式 */
+  /** 调试模式 */
   debug?: boolean
   /** HTTP 客户端配置 */
   http?: HttpClientConfig
@@ -22,8 +23,6 @@ export interface ApiEngineConfig {
   debounce?: DebounceConfig
   /** 请求去重配置 */
   deduplication?: DeduplicationConfig
-  /** 自定义配置 */
-  [key: string]: any
 }
 
 /**
@@ -32,14 +31,14 @@ export interface ApiEngineConfig {
 export interface CacheConfig {
   /** 是否启用缓存 */
   enabled?: boolean
-  /** 默认缓存时间（毫秒） */
+  /** 默认缓存时间 (毫秒) */
   ttl?: number
   /** 最大缓存条目数 */
   maxSize?: number
   /** 缓存存储类型 */
   storage?: 'memory' | 'localStorage' | 'sessionStorage'
-  /** 缓存键前缀 */
-  prefix?: string
+  /** 缓存键生成函数 */
+  keyGenerator?: (methodName: string, params?: any) => string
 }
 
 /**
@@ -48,7 +47,7 @@ export interface CacheConfig {
 export interface DebounceConfig {
   /** 是否启用防抖 */
   enabled?: boolean
-  /** 默认防抖延迟（毫秒） */
+  /** 防抖延迟时间 (毫秒) */
   delay?: number
 }
 
@@ -59,29 +58,31 @@ export interface DeduplicationConfig {
   /** 是否启用请求去重 */
   enabled?: boolean
   /** 去重键生成函数 */
-  keyGenerator?: (config: RequestConfig) => string
+  keyGenerator?: (methodName: string, params?: any) => string
 }
 
 /**
- * API 方法定义
+ * API 方法配置
  */
-export interface ApiMethod<T = any, P = any> {
+export interface ApiMethodConfig {
   /** 方法名称 */
   name: string
-  /** 请求配置 */
-  config: RequestConfig | ((params?: P) => RequestConfig)
+  /** HTTP 请求配置 */
+  config: RequestConfig | ((params?: any) => RequestConfig)
+  /** 数据转换函数 */
+  transform?: (response: ResponseData) => any
+  /** 数据验证函数 */
+  validate?: (data: any) => boolean
+  /** 错误处理函数 */
+  onError?: (error: any) => void
+  /** 成功回调函数 */
+  onSuccess?: (data: any) => void
   /** 缓存配置 */
   cache?: Partial<CacheConfig>
   /** 防抖配置 */
   debounce?: Partial<DebounceConfig>
-  /** 是否启用请求去重 */
-  deduplication?: boolean
-  /** 数据转换函数 */
-  transform?: (data: any) => T
-  /** 验证函数 */
-  validate?: (data: any) => boolean
-  /** 错误处理函数 */
-  onError?: (error: any) => void
+  /** 请求去重配置 */
+  deduplication?: Partial<DeduplicationConfig>
 }
 
 /**
@@ -92,14 +93,34 @@ export interface ApiPlugin {
   name: string
   /** 插件版本 */
   version?: string
-  /** 依赖的插件 */
+  /** 插件依赖 */
   dependencies?: string[]
+  /** API 方法定义 */
+  apis?: Record<string, ApiMethodConfig>
   /** 插件安装函数 */
-  install: (engine: ApiEngine) => void | Promise<void>
+  install?: (engine: ApiEngine) => void | Promise<void>
   /** 插件卸载函数 */
   uninstall?: (engine: ApiEngine) => void | Promise<void>
-  /** 插件提供的 API 方法 */
-  apis?: Record<string, ApiMethod>
+}
+
+/**
+ * API 调用选项
+ */
+export interface ApiCallOptions {
+  /** 是否跳过缓存 */
+  skipCache?: boolean
+  /** 是否跳过防抖 */
+  skipDebounce?: boolean
+  /** 是否跳过去重 */
+  skipDeduplication?: boolean
+  /** 自定义缓存配置 */
+  cache?: Partial<CacheConfig>
+  /** 自定义防抖配置 */
+  debounce?: Partial<DebounceConfig>
+  /** 成功回调 */
+  onSuccess?: (data: any) => void
+  /** 错误回调 */
+  onError?: (error: any) => void
 }
 
 /**
@@ -107,43 +128,190 @@ export interface ApiPlugin {
  */
 export interface ApiEngine {
   /** 配置 */
-  config: ApiEngineConfig
-  /** 使用插件 */
-  use: (plugin: ApiPlugin) => Promise<void>
-  /** 注册 API 方法 */
-  register: (name: string, method: ApiMethod) => void
-  /** 批量注册 API 方法 */
-  registerBatch: (methods: Record<string, ApiMethod>) => void
-  /** 调用 API 方法 */
-  call: <
-    T = unknown,
-    P extends Record<string, unknown> | undefined = Record<string, unknown>
-  >(
-    name: string,
-    params?: P
-  ) => Promise<T>
-  /** 获取 API 方法 */
-  getMethod: (name: string) => ApiMethod | undefined
-  /** 获取所有 API 方法 */
-  getAllMethods: () => Record<string, ApiMethod>
-  /** 销毁引擎 */
-  destroy: () => void
+  readonly config: ApiEngineConfig
+  /** HTTP 客户端 */
+  readonly httpClient: HttpClient
+  /** 已注册的插件 */
+  readonly plugins: Map<string, ApiPlugin>
+  /** 已注册的方法 */
+  readonly methods: Map<string, ApiMethodConfig>
+
+  /**
+   * 注册插件
+   */
+  use(plugin: ApiPlugin): Promise<void>
+
+  /**
+   * 卸载插件
+   */
+  unuse(pluginName: string): Promise<void>
+
+  /**
+   * 注册 API 方法
+   */
+  register(methodName: string, config: ApiMethodConfig): void
+
+  /**
+   * 注册多个 API 方法
+   */
+  registerBatch(methods: Record<string, ApiMethodConfig>): void
+
+  /**
+   * 取消注册 API 方法
+   */
+  unregister(methodName: string): void
+
+  /**
+   * 调用 API 方法
+   */
+  call<T = any>(methodName: string, params?: any, options?: ApiCallOptions): Promise<T>
+
+  /**
+   * 批量调用 API 方法
+   */
+  callBatch<T = any>(calls: Array<{ methodName: string; params?: any; options?: ApiCallOptions }>): Promise<T[]>
+
+  /**
+   * 检查方法是否存在
+   */
+  hasMethod(methodName: string): boolean
+
+  /**
+   * 获取所有方法名称
+   */
+  getMethodNames(): string[]
+
+  /**
+   * 清除缓存
+   */
+  clearCache(methodName?: string): void
+
+  /**
+   * 获取缓存统计
+   */
+  getCacheStats(): CacheStats
+
+  /**
+   * 销毁引擎
+   */
+  destroy(): void
 }
 
 /**
- * 系统 API 响应数据结构
+ * 缓存统计信息
  */
-export interface SystemApiResponse<T = any> {
-  /** 状态码 */
-  code: number
-  /** 响应消息 */
-  message: string
-  /** 响应数据 */
-  data: T
-  /** 时间戳 */
-  timestamp?: number
-  /** 请求ID */
-  requestId?: string
+export interface CacheStats {
+  /** 总缓存条目数 */
+  totalItems: number
+  /** 缓存命中次数 */
+  hits: number
+  /** 缓存未命中次数 */
+  misses: number
+  /** 缓存命中率 */
+  hitRate: number
+  /** 缓存大小 (字节) */
+  size: number
+}
+
+/**
+ * 缓存项
+ */
+export interface CacheItem {
+  /** 缓存数据 */
+  data: any
+  /** 创建时间 */
+  timestamp: number
+  /** 过期时间 */
+  expireTime: number
+  /** 访问次数 */
+  accessCount: number
+  /** 最后访问时间 */
+  lastAccessTime: number
+}
+
+/**
+ * 防抖管理器
+ */
+export interface DebounceManager {
+  /** 执行防抖函数 */
+  execute<T>(key: string, fn: () => Promise<T>, delay: number): Promise<T>
+  /** 取消防抖 */
+  cancel(key: string): void
+  /** 清除所有防抖 */
+  clear(): void
+}
+
+/**
+ * 去重管理器
+ */
+export interface DeduplicationManager {
+  /** 执行去重函数 */
+  execute<T>(key: string, fn: () => Promise<T>): Promise<T>
+  /** 清除去重缓存 */
+  clear(): void
+}
+
+/**
+ * 系统 API 方法名称常量
+ */
+export const SYSTEM_API_METHODS = {
+  /** 获取验证码 */
+  GET_CAPTCHA: 'getCaptcha',
+  /** 用户登录 */
+  LOGIN: 'login',
+  /** 用户登出 */
+  LOGOUT: 'logout',
+  /** 获取用户信息 */
+  GET_USER_INFO: 'getUserInfo',
+  /** 更新用户信息 */
+  UPDATE_USER_INFO: 'updateUserInfo',
+  /** 获取系统菜单 */
+  GET_MENUS: 'getMenus',
+  /** 获取用户权限 */
+  GET_PERMISSIONS: 'getPermissions',
+  /** 刷新令牌 */
+  REFRESH_TOKEN: 'refreshToken',
+  /** 修改密码 */
+  CHANGE_PASSWORD: 'changePassword',
+  /** 获取系统配置 */
+  GET_SYSTEM_CONFIG: 'getSystemConfig',
+} as const
+
+/**
+ * 系统 API 方法名称类型
+ */
+export type SystemApiMethodName = typeof SYSTEM_API_METHODS[keyof typeof SYSTEM_API_METHODS]
+
+/**
+ * 登录参数
+ */
+export interface LoginParams {
+  /** 用户名 */
+  username: string
+  /** 密码 */
+  password: string
+  /** 验证码 */
+  captcha?: string
+  /** 验证码ID */
+  captchaId?: string
+  /** 记住我 */
+  rememberMe?: boolean
+}
+
+/**
+ * 登录结果
+ */
+export interface LoginResult {
+  /** 访问令牌 */
+  accessToken: string
+  /** 刷新令牌 */
+  refreshToken?: string
+  /** 令牌类型 */
+  tokenType?: string
+  /** 过期时间 (秒) */
+  expiresIn?: number
+  /** 用户信息 */
+  userInfo?: UserInfo
 }
 
 /**
@@ -166,8 +334,14 @@ export interface UserInfo {
   roles?: string[]
   /** 权限 */
   permissions?: string[]
-  /** 扩展信息 */
-  [key: string]: any
+  /** 部门 */
+  department?: string
+  /** 状态 */
+  status?: 'active' | 'inactive' | 'locked'
+  /** 创建时间 */
+  createdAt?: string
+  /** 更新时间 */
+  updatedAt?: string
 }
 
 /**
@@ -194,28 +368,8 @@ export interface MenuItem {
   hidden?: boolean
   /** 子菜单 */
   children?: MenuItem[]
-  /** 扩展信息 */
-  [key: string]: any
-}
-
-/**
- * 会话信息
- */
-export interface SessionInfo {
-  /** 会话ID */
-  sessionId: string
-  /** 用户ID */
-  userId: string | number
-  /** 访问令牌 */
-  accessToken: string
-  /** 刷新令牌 */
-  refreshToken?: string
-  /** 过期时间 */
-  expiresAt: number
-  /** 创建时间 */
-  createdAt: number
-  /** 扩展信息 */
-  [key: string]: any
+  /** 元数据 */
+  meta?: Record<string, any>
 }
 
 /**
@@ -224,43 +378,8 @@ export interface SessionInfo {
 export interface CaptchaInfo {
   /** 验证码ID */
   captchaId: string
-  /** 验证码图片（base64） */
-  image: string
-  /** 过期时间 */
-  expiresAt: number
+  /** 验证码图片 (base64) */
+  captchaImage: string
+  /** 过期时间 (秒) */
+  expiresIn?: number
 }
-
-/**
- * 登录参数
- */
-export interface LoginParams {
-  /** 用户名 */
-  username: string
-  /** 密码 */
-  password: string
-  /** 验证码 */
-  captcha?: string
-  /** 验证码ID */
-  captchaId?: string
-  /** 记住我 */
-  rememberMe?: boolean
-  /** 扩展参数 */
-  [key: string]: any
-}
-
-/**
- * 登录响应
- */
-export interface LoginResponse {
-  /** 访问令牌 */
-  accessToken: string
-  /** 刷新令牌 */
-  refreshToken?: string
-  /** 过期时间 */
-  expiresIn: number
-  /** 用户信息 */
-  userInfo: UserInfo
-}
-
-// 导出所有类型
-export type { HttpClientConfig, RequestConfig, ResponseData }

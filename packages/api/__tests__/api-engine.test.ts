@@ -1,243 +1,289 @@
-import type { ApiEngine, ApiMethod, ApiPlugin } from '../src/types'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createApiEngine } from '../src/core/api-engine'
+/**
+ * API 引擎测试
+ */
 
-describe('apiEngine', () => {
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { createApiEngine } from '../src/core/factory'
+import { systemApiPlugin } from '../src/plugins/systemApi'
+import type { ApiEngine, ApiPlugin, ApiMethodConfig } from '../src/types'
+
+describe('ApiEngine', () => {
   let apiEngine: ApiEngine
 
   beforeEach(() => {
     apiEngine = createApiEngine({
       debug: false,
-      cache: { enabled: false }, // 禁用缓存以简化测试
-      debounce: { enabled: false }, // 禁用防抖以简化测试
-      deduplication: { enabled: false }, // 禁用去重以简化测试
+      http: {
+        baseURL: 'https://api.test.com',
+        timeout: 5000,
+      },
+      cache: {
+        enabled: true,
+        ttl: 60000,
+        maxSize: 10,
+        storage: 'memory',
+      },
+      debounce: {
+        enabled: true,
+        delay: 100,
+      },
+      deduplication: {
+        enabled: true,
+      },
     })
   })
 
+  afterEach(() => {
+    apiEngine.destroy()
+  })
+
   describe('基础功能', () => {
-    it('应该能够创建 API 引擎实例', () => {
+    it('应该正确创建 API 引擎实例', () => {
       expect(apiEngine).toBeDefined()
       expect(apiEngine.config).toBeDefined()
+      expect(apiEngine.httpClient).toBeDefined()
+      expect(apiEngine.plugins).toBeDefined()
+      expect(apiEngine.methods).toBeDefined()
     })
 
-    it('应该能够注册 API 方法', () => {
-      const method: ApiMethod = {
-        name: 'testMethod',
-        config: {
-          method: 'GET',
-          url: '/test',
-        },
-      }
-
-      apiEngine.register('testMethod', method)
-
-      const registeredMethod = apiEngine.getMethod('testMethod')
-      expect(registeredMethod).toEqual(method)
-    })
-
-    it('应该能够批量注册 API 方法', () => {
-      const methods = {
-        method1: {
-          name: 'method1',
-          config: { method: 'GET' as const, url: '/method1' },
-        },
-        method2: {
-          name: 'method2',
-          config: { method: 'POST' as const, url: '/method2' },
-        },
-      }
-
-      apiEngine.registerBatch(methods)
-
-      expect(apiEngine.getMethod('method1')).toBeDefined()
-      expect(apiEngine.getMethod('method2')).toBeDefined()
-    })
-
-    it('应该能够获取所有 API 方法', () => {
-      const methods = {
-        method1: {
-          name: 'method1',
-          config: { method: 'GET' as const, url: '/method1' },
-        },
-        method2: {
-          name: 'method2',
-          config: { method: 'POST' as const, url: '/method2' },
-        },
-      }
-
-      apiEngine.registerBatch(methods)
-
-      const allMethods = apiEngine.getAllMethods()
-      expect(Object.keys(allMethods)).toHaveLength(2)
-      expect(allMethods.method1).toBeDefined()
-      expect(allMethods.method2).toBeDefined()
+    it('应该有正确的配置', () => {
+      expect(apiEngine.config.http?.baseURL).toBe('https://api.test.com')
+      expect(apiEngine.config.http?.timeout).toBe(5000)
+      expect(apiEngine.config.cache?.enabled).toBe(true)
+      expect(apiEngine.config.debounce?.enabled).toBe(true)
+      expect(apiEngine.config.deduplication?.enabled).toBe(true)
     })
   })
 
   describe('插件系统', () => {
     it('应该能够注册插件', async () => {
-      const plugin: ApiPlugin = {
-        name: 'testPlugin',
+      const testPlugin: ApiPlugin = {
+        name: 'test-plugin',
         version: '1.0.0',
-        install: vi.fn(),
         apis: {
-          pluginMethod: {
-            name: 'pluginMethod',
-            config: { method: 'GET', url: '/plugin' },
+          testMethod: {
+            name: 'testMethod',
+            config: { method: 'GET', url: '/test' },
+          },
+        },
+        install: vi.fn(),
+      }
+
+      await apiEngine.use(testPlugin)
+
+      expect(apiEngine.plugins.has('test-plugin')).toBe(true)
+      expect(apiEngine.hasMethod('testMethod')).toBe(true)
+      expect(testPlugin.install).toHaveBeenCalledWith(apiEngine)
+    })
+
+    it('应该能够卸载插件', async () => {
+      const testPlugin: ApiPlugin = {
+        name: 'test-plugin',
+        version: '1.0.0',
+        apis: {
+          testMethod: {
+            name: 'testMethod',
+            config: { method: 'GET', url: '/test' },
+          },
+        },
+        uninstall: vi.fn(),
+      }
+
+      await apiEngine.use(testPlugin)
+      expect(apiEngine.plugins.has('test-plugin')).toBe(true)
+
+      await apiEngine.unuse('test-plugin')
+      expect(apiEngine.plugins.has('test-plugin')).toBe(false)
+      expect(apiEngine.hasMethod('testMethod')).toBe(false)
+      expect(testPlugin.uninstall).toHaveBeenCalledWith(apiEngine)
+    })
+
+    it('应该检查插件依赖', async () => {
+      const dependentPlugin: ApiPlugin = {
+        name: 'dependent-plugin',
+        version: '1.0.0',
+        dependencies: ['non-existent-plugin'],
+        apis: {},
+      }
+
+      await expect(apiEngine.use(dependentPlugin)).rejects.toThrow(
+        'Plugin "dependent-plugin" depends on "non-existent-plugin", but it\'s not registered'
+      )
+    })
+  })
+
+  describe('方法注册', () => {
+    it('应该能够注册单个方法', () => {
+      const methodConfig: ApiMethodConfig = {
+        name: 'testMethod',
+        config: { method: 'GET', url: '/test' },
+      }
+
+      apiEngine.register('testMethod', methodConfig)
+
+      expect(apiEngine.hasMethod('testMethod')).toBe(true)
+      expect(apiEngine.methods.get('testMethod')).toBe(methodConfig)
+    })
+
+    it('应该能够批量注册方法', () => {
+      const methods = {
+        method1: {
+          name: 'method1',
+          config: { method: 'GET', url: '/method1' },
+        },
+        method2: {
+          name: 'method2',
+          config: { method: 'POST', url: '/method2' },
+        },
+      }
+
+      apiEngine.registerBatch(methods)
+
+      expect(apiEngine.hasMethod('method1')).toBe(true)
+      expect(apiEngine.hasMethod('method2')).toBe(true)
+    })
+
+    it('应该能够取消注册方法', () => {
+      const methodConfig: ApiMethodConfig = {
+        name: 'testMethod',
+        config: { method: 'GET', url: '/test' },
+      }
+
+      apiEngine.register('testMethod', methodConfig)
+      expect(apiEngine.hasMethod('testMethod')).toBe(true)
+
+      apiEngine.unregister('testMethod')
+      expect(apiEngine.hasMethod('testMethod')).toBe(false)
+    })
+  })
+
+  describe('API 调用', () => {
+    beforeEach(() => {
+      // Mock HTTP 客户端
+      vi.spyOn(apiEngine.httpClient, 'request').mockResolvedValue({
+        data: { message: 'success' },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {},
+      })
+    })
+
+    it('应该能够调用已注册的方法', async () => {
+      apiEngine.register('testMethod', {
+        name: 'testMethod',
+        config: { method: 'GET', url: '/test' },
+      })
+
+      const result = await apiEngine.call('testMethod')
+      expect(result).toEqual({ message: 'success' })
+    })
+
+    it('应该在调用不存在的方法时抛出错误', async () => {
+      await expect(apiEngine.call('nonExistentMethod')).rejects.toThrow(
+        'Method "nonExistentMethod" not found'
+      )
+    })
+
+    it('应该支持参数化配置', async () => {
+      apiEngine.register('parameterizedMethod', {
+        name: 'parameterizedMethod',
+        config: (params) => ({
+          method: 'POST',
+          url: '/test',
+          data: params,
+        }),
+      })
+
+      const params = { name: 'test' }
+      await apiEngine.call('parameterizedMethod', params)
+
+      expect(apiEngine.httpClient.request).toHaveBeenCalledWith({
+        method: 'POST',
+        url: '/test',
+        data: params,
+      })
+    })
+
+    it('应该支持数据转换', async () => {
+      apiEngine.register('transformMethod', {
+        name: 'transformMethod',
+        config: { method: 'GET', url: '/test' },
+        transform: (response) => response.data.message.toUpperCase(),
+      })
+
+      const result = await apiEngine.call('transformMethod')
+      expect(result).toBe('SUCCESS')
+    })
+
+    it('应该支持批量调用', async () => {
+      apiEngine.register('method1', {
+        name: 'method1',
+        config: { method: 'GET', url: '/method1' },
+      })
+      apiEngine.register('method2', {
+        name: 'method2',
+        config: { method: 'GET', url: '/method2' },
+      })
+
+      const results = await apiEngine.callBatch([
+        { methodName: 'method1' },
+        { methodName: 'method2' },
+      ])
+
+      expect(results).toHaveLength(2)
+      expect(results[0]).toEqual({ message: 'success' })
+      expect(results[1]).toEqual({ message: 'success' })
+    })
+  })
+
+  describe('系统 API 插件', () => {
+    it('应该能够注册系统 API 插件', async () => {
+      await apiEngine.use(systemApiPlugin)
+
+      expect(apiEngine.plugins.has('system-apis')).toBe(true)
+      expect(apiEngine.hasMethod('login')).toBe(true)
+      expect(apiEngine.hasMethod('getUserInfo')).toBe(true)
+      expect(apiEngine.hasMethod('getMenus')).toBe(true)
+    })
+  })
+
+  describe('销毁功能', () => {
+    it('应该能够正确销毁引擎', async () => {
+      const testPlugin: ApiPlugin = {
+        name: 'test-plugin',
+        apis: {
+          testMethod: {
+            name: 'testMethod',
+            config: { method: 'GET', url: '/test' },
           },
         },
       }
 
-      await apiEngine.use(plugin)
-
-      expect(plugin.install).toHaveBeenCalledWith(apiEngine)
-      expect(apiEngine.getMethod('pluginMethod')).toBeDefined()
-    })
-
-    it('应该能够处理插件依赖', async () => {
-      const basePlugin: ApiPlugin = {
-        name: 'basePlugin',
-        install: vi.fn(),
-      }
-
-      const dependentPlugin: ApiPlugin = {
-        name: 'dependentPlugin',
-        dependencies: ['basePlugin'],
-        install: vi.fn(),
-      }
-
-      await apiEngine.use(basePlugin)
-      await apiEngine.use(dependentPlugin)
-
-      expect(basePlugin.install).toHaveBeenCalled()
-      expect(dependentPlugin.install).toHaveBeenCalled()
-    })
-
-    it('应该在依赖不满足时抛出错误', async () => {
-      const dependentPlugin: ApiPlugin = {
-        name: 'dependentPlugin',
-        dependencies: ['nonExistentPlugin'],
-        install: vi.fn(),
-      }
-
-      await expect(apiEngine.use(dependentPlugin)).rejects.toThrow()
-    })
-  })
-
-  describe('aPI 调用', () => {
-    it('应该在调用不存在的方法时抛出错误', async () => {
-      await expect(apiEngine.call('nonExistentMethod')).rejects.toThrow(
-        'API method "nonExistentMethod" not found',
-      )
-    })
-
-    it('应该能够处理数据转换', async () => {
-      // Mock HTTP 客户端
-      const mockHttpClient = {
-        request: vi.fn().mockResolvedValue({
-          data: { code: 200, data: 'raw data', message: 'success' },
-        }),
-      }
-
-      // 替换内部的 HTTP 客户端（这里需要访问私有属性，实际测试中可能需要不同的方法）
-      ;(apiEngine as any).httpClient = mockHttpClient
-
-      const method: ApiMethod = {
-        name: 'transformMethod',
-        config: { method: 'GET', url: '/transform' },
-        transform: data => data.data, // 提取 data 字段
-      }
-
-      apiEngine.register('transformMethod', method)
-
-      const result = await apiEngine.call('transformMethod')
-      expect(result).toBe('raw data')
-    })
-
-    it('应该能够处理数据验证', async () => {
-      const mockHttpClient = {
-        request: vi.fn().mockResolvedValue({
-          data: { invalid: true },
-        }),
-      }
-
-      ;(apiEngine as any).httpClient = mockHttpClient
-
-      const method: ApiMethod = {
-        name: 'validateMethod',
-        config: { method: 'GET', url: '/validate' },
-        validate: data => data.valid === true, // 验证 valid 字段
-      }
-
-      apiEngine.register('validateMethod', method)
-
-      await expect(apiEngine.call('validateMethod')).rejects.toThrow(
-        'API method "validateMethod" response validation failed',
-      )
-    })
-
-    it('应该能够处理错误回调', async () => {
-      const mockHttpClient = {
-        request: vi.fn().mockRejectedValue(new Error('Network error')),
-      }
-
-      ;(apiEngine as any).httpClient = mockHttpClient
-
-      const onError = vi.fn()
-      const method: ApiMethod = {
-        name: 'errorMethod',
-        config: { method: 'GET', url: '/error' },
-        onError,
-      }
-
-      apiEngine.register('errorMethod', method)
-
-      await expect(apiEngine.call('errorMethod')).rejects.toThrow(
-        'Network error',
-      )
-      expect(onError).toHaveBeenCalledWith(expect.any(Error))
-    })
-  })
-
-  describe('生命周期', () => {
-    it('应该能够销毁引擎', () => {
-      apiEngine.destroy()
-
-      expect(() =>
-        apiEngine.register('test', {
-          name: 'test',
-          config: { method: 'GET', url: '/test' },
-        }),
-      ).toThrow('API Engine has been destroyed')
-    })
-
-    it('销毁后不应该能够调用 API', async () => {
-      apiEngine.destroy()
-
-      await expect(apiEngine.call('test')).rejects.toThrow(
-        'API Engine has been destroyed',
-      )
-    })
-  })
-
-  describe('配置', () => {
-    it('应该使用默认配置', () => {
-      const engine = createApiEngine()
-
-      expect(engine.config.debug).toBe(false)
-      expect(engine.config.cache?.enabled).toBe(true)
-      expect(engine.config.debounce?.enabled).toBe(true)
-      expect(engine.config.deduplication?.enabled).toBe(true)
-    })
-
-    it('应该能够覆盖默认配置', () => {
-      const engine = createApiEngine({
-        debug: true,
-        cache: { enabled: false },
+      await apiEngine.use(testPlugin)
+      apiEngine.register('testMethod', {
+        name: 'testMethod',
+        config: { method: 'GET', url: '/test' },
       })
 
-      expect(engine.config.debug).toBe(true)
-      expect(engine.config.cache?.enabled).toBe(false)
+      expect(apiEngine.plugins.size).toBeGreaterThan(0)
+      expect(apiEngine.methods.size).toBeGreaterThan(0)
+
+      apiEngine.destroy()
+
+      expect(apiEngine.plugins.size).toBe(0)
+      expect(apiEngine.methods.size).toBe(0)
+    })
+
+    it('应该在销毁后拒绝操作', () => {
+      apiEngine.destroy()
+
+      expect(() => apiEngine.register('test', {
+        name: 'test',
+        config: { method: 'GET', url: '/test' },
+      })).toThrow('API Engine has been destroyed')
+
+      expect(apiEngine.use(systemApiPlugin)).rejects.toThrow('API Engine has been destroyed')
     })
   })
 })

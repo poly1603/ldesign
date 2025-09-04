@@ -118,6 +118,14 @@
               立即体验
             </router-link>
           </div>
+          <div class="demo-card">
+            <div class="demo-icon">🔌</div>
+            <h3>API 接口管理</h3>
+            <p>统一的接口调用和缓存管理</p>
+            <router-link to="/api-demo" class="demo-link">
+              立即体验
+            </router-link>
+          </div>
         </div>
       </section>
 

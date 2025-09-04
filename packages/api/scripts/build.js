@@ -3,36 +3,35 @@
  * 使用 @ldesign/builder 进行零配置打包
  */
 
-import { SimpleBuilder } from '@ldesign/builder'
+import { LibraryBuilder } from '@ldesign/builder'
 import { sep } from 'path'
 
 async function build() {
   const isDev = process.argv.includes('--dev')
-  
-  const builder = new SimpleBuilder({
-    root: process.cwd(),
-    src: 'src',
-    outDir: 'dist',
-    formats: ["esm","cjs"],
-    sourcemap: true,
-    minify: !isDev,
-    clean: true,
-    external: [
-      'vue',
-      'react', 
-      'react-dom',
-      '@ldesign/shared',
-      '@ldesign/utils'
-    ],
-    globals: {
-      'vue': 'Vue',
-      'react': 'React',
-      'react-dom': 'ReactDOM'
-    }
-  })
 
   try {
-    const result = await builder.build()
+    const result = await LibraryBuilder.build({
+      root: process.cwd(),
+      srcDir: 'src',
+      outDir: 'dist',
+      formats: ["esm","cjs"],
+      sourcemap: true,
+      minify: !isDev,
+      clean: true,
+      external: [
+        'vue',
+        'react',
+        'react-dom',
+        '@ldesign/http',
+        '@ldesign/engine'
+      ],
+      globals: {
+        'vue': 'Vue',
+        'react': 'React',
+        'react-dom': 'ReactDOM'
+      }
+    })
+
     if (result.success) {
       console.log(`✅ ${process.cwd().split(sep).pop()} 构建成功！`)
     } else {

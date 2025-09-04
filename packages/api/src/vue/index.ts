@@ -1,80 +1,60 @@
-import type { ApiEngine, ApiEngineConfig } from '../types'
-import { type App, inject, type InjectionKey, provide } from 'vue'
-import { createApiEngine } from '../core/api-engine'
-
 /**
- * Vue 插件选项
+ * Vue 集成模块入口
+ * 导出所有 Vue 相关的功能
  */
-export interface ApiVuePluginOptions extends ApiEngineConfig {
-  /** 全局属性名称 */
-  globalPropertyName?: string
-  /** 注入键名称 */
-  injectionKey?: string | symbol
-}
 
-/**
- * API 引擎注入键
- */
-export const API_ENGINE_KEY: InjectionKey<ApiEngine> = Symbol('api-engine')
+// Vue 插件
+export {
+  ApiVuePlugin,
+  createApiVuePlugin,
+  installApiVuePlugin,
+  getApiEngineFromApp,
+  API_ENGINE_INJECTION_KEY,
+} from './plugin'
+export type { ApiVuePluginOptions } from './plugin'
 
-/**
- * Vue 插件
- */
-export const apiVuePlugin = {
-  install(app: App, options: ApiVuePluginOptions = {}) {
-    const {
-      globalPropertyName = '$api',
-      injectionKey = API_ENGINE_KEY,
-      ...engineConfig
-    } = options
+// 组合式 API
+export {
+  useApi,
+  useApiCall,
+  useBatchApiCall,
+  useSystemApi,
+  useApiCleanup,
+} from './composables'
+export type {
+  ApiCallState,
+  UseApiCallOptions,
+} from './composables'
 
-    // 创建 API 引擎实例
-    const apiEngine = createApiEngine(engineConfig)
+// Engine 插件集成
+export {
+  createApiEnginePlugin,
+  defaultApiEnginePlugin,
+  apiPlugin,
+  createDevelopmentApiEnginePlugin,
+  createProductionApiEnginePlugin,
+  createApiEnginePluginByEnv,
+} from './engine'
+export type { ApiEnginePluginOptions } from './engine'
 
-    // 提供依赖注入
-    app.provide(injectionKey, apiEngine)
+// 重新导出核心类型
+export type {
+  ApiEngine,
+  ApiEngineConfig,
+  ApiPlugin,
+  ApiMethodConfig,
+  ApiCallOptions,
+  CacheConfig,
+  DebounceConfig,
+  DeduplicationConfig,
+  CacheStats,
+  SystemApiMethodName,
+  LoginParams,
+  LoginResult,
+  UserInfo,
+  MenuItem,
+  CaptchaInfo,
+} from '../types'
 
-    // 添加全局属性
-    ;(app.config.globalProperties as Record<string, unknown>)[
-      globalPropertyName
-    ] = apiEngine
-
-    // 在应用卸载时清理资源
-    const originalUnmount = app.unmount
-    app.unmount = function () {
-      apiEngine.destroy()
-      originalUnmount.call(this)
-    }
-  },
-}
-
-/**
- * 使用 API 引擎的组合式函数
- */
-export function useApi(
-  injectionKey: InjectionKey<ApiEngine> | string | symbol = API_ENGINE_KEY,
-): ApiEngine {
-  const apiEngine = inject(injectionKey as InjectionKey<ApiEngine>)
-  if (!apiEngine) {
-    throw new Error(
-      'API Engine not found. Make sure you have installed the apiVuePlugin.',
-    )
-  }
-  return apiEngine
-}
-
-/**
- * 创建 API 引擎提供者
- */
-export function createApiProvider(
-  config?: ApiEngineConfig,
-  injectionKey: InjectionKey<ApiEngine> | string | symbol = API_ENGINE_KEY,
-) {
-  const apiEngine = createApiEngine(config)
-
-  return {
-    apiEngine,
-    provide: () => provide(injectionKey as InjectionKey<ApiEngine>, apiEngine),
-    use: () => useApi(injectionKey),
-  }
-}
+// 重新导出系统 API 常量
+export { SYSTEM_API_METHODS } from '../types'

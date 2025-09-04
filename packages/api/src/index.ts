@@ -1,32 +1,86 @@
-// 核心引擎
-export { ApiEngineImpl as ApiEngine, createApiEngine } from './core/api-engine'
-export { CacheManager } from './core/cache-manager'
+/**
+ * @ldesign/api 主入口文件
+ * 导出所有公共 API
+ */
 
-export { DebounceManager } from './core/debounce-manager'
-export { DeduplicationManager } from './core/deduplication-manager'
-export { PluginManager } from './core/plugin-manager'
-// 内置插件
+// 核心功能
+export { ApiEngineImpl } from './core/ApiEngine'
 export {
-  createSystemApiPlugin,
-  SYSTEM_API_METHODS,
-  type SystemApiConfig,
-  type SystemApiEndpoints,
-  type SystemApiMethodName,
-  systemApiPlugin,
-} from './plugins/system-apis'
-// 核心导出
-export * from './types'
+  createApiEngine,
+  createApiEngineWithDefaults,
+  createDevelopmentApiEngine,
+  createProductionApiEngine,
+  createTestApiEngine,
+  createApiEngineByEnv,
+  createApiEngineWithPlugins,
+  createSingletonApiEngine,
+  destroySingletonApiEngine,
+} from './core/factory'
 
-export * from './utils'
+// 类型定义
+export type {
+  ApiEngine,
+  ApiEngineConfig,
+  ApiPlugin,
+  ApiMethodConfig,
+  ApiCallOptions,
+  CacheConfig,
+  DebounceConfig,
+  DeduplicationConfig,
+  CacheStats,
+  CacheItem,
+  DebounceManager,
+  DeduplicationManager,
+  SystemApiMethodName,
+  LoginParams,
+  LoginResult,
+  UserInfo,
+  MenuItem,
+  CaptchaInfo,
+} from './types'
 
-// 便捷创建函数
-export function createApi(config?: import('./types').ApiEngineConfig) {
-  // eslint-disable-next-line ts/no-require-imports
-  const { createApiEngine } = require('./core/api-engine')
-  return createApiEngine(config)
-}
+// 系统 API 常量和方法
+export { SYSTEM_API_METHODS } from './types'
+export { systemApiPlugin, createCustomSystemApiPlugin } from './plugins/systemApi'
 
-// 默认导出
-export default {
-  createApi,
-}
+// 工具类
+export { CacheManager } from './utils/CacheManager'
+export { DebounceManagerImpl } from './utils/DebounceManager'
+export { DeduplicationManagerImpl } from './utils/DeduplicationManager'
+
+// 工具函数
+export {
+  createDebounceFunction,
+  createKeyedDebounceFunction,
+  debounce,
+  keyedDebounce,
+} from './utils/DebounceManager'
+
+export {
+  createDeduplicatedFunction,
+  deduplicate,
+  classBasedDeduplicate,
+  globalDeduplicationManager,
+  deduplicateGlobally,
+} from './utils/DeduplicationManager'
+
+// Vue 集成（仅在 Vue 环境中可用）
+export {
+  createApiEnginePlugin,
+  defaultApiEnginePlugin,
+  apiPlugin,
+  createDevelopmentApiEnginePlugin,
+  createProductionApiEnginePlugin,
+  createApiEnginePluginByEnv,
+} from './vue/engine'
+export type { ApiEnginePluginOptions } from './vue/engine'
+
+/**
+ * 版本信息
+ */
+export const version = '1.0.0'
+
+/**
+ * 默认导出：创建 API 引擎的便捷函数
+ */
+export { createApiEngine as default }

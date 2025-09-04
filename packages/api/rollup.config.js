@@ -1,8 +1,51 @@
-import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
+import { defineConfig } from 'rollup'
+import typescript from '@rollup/plugin-typescript'
+import resolve from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
 
-export default createRollupConfig({
-  packageName: 'LDesignApi',
-  vue: false,
-  external: [], // API 包不依赖 Vue
-  globals: {},
-})
+const external = [
+  'vue',
+  '@ldesign/http',
+  '@ldesign/engine'
+]
+
+export default defineConfig([
+  // ESM build
+  {
+    input: 'src/index.ts',
+    output: {
+      file: 'dist/index.js',
+      format: 'es',
+      sourcemap: true
+    },
+    external,
+    plugins: [
+      resolve(),
+      commonjs(),
+      typescript({
+        tsconfig: './tsconfig.json',
+        declaration: true,
+        declarationDir: 'dist',
+        outDir: 'dist'
+      })
+    ]
+  },
+  // Vue build
+  {
+    input: 'src/vue.ts',
+    output: {
+      file: 'dist/vue.js',
+      format: 'es',
+      sourcemap: true
+    },
+    external,
+    plugins: [
+      resolve(),
+      commonjs(),
+      typescript({
+        tsconfig: './tsconfig.json',
+        declaration: false
+      })
+    ]
+  }
+])

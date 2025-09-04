@@ -1,36 +1,44 @@
-import { computed, onUnmounted, ref, type Ref } from 'vue'
-import { useApi } from './index'
+/**
+ * Vue 组合式 API
+ * 提供 Vue 3 组合式 API 钩子函数
+ */
+
+import { ref, computed, inject, getCurrentInstance, onUnmounted } from 'vue'
+import type { Ref, ComputedRef } from 'vue'
+import type { ApiEngine, ApiCallOptions, SystemApiMethodName, LoginParams, LoginResult, UserInfo, MenuItem } from '../types'
+import { API_ENGINE_INJECTION_KEY } from './plugin'
+import { SYSTEM_API_METHODS } from '../types'
 
 /**
  * API 调用状态
  */
-export interface ApiCallState<T = unknown> {
+export interface ApiCallState<T = any> {
   /** 响应数据 */
   data: Ref<T | null>
   /** 加载状态 */
   loading: Ref<boolean>
   /** 错误信息 */
   error: Ref<Error | null>
-  /** 是否已完成（成功或失败） */
-  finished: Ref<boolean>
-  /** 执行 API 调用 */
-  execute: (params?: any) => Promise<T>
+  /** 执行函数 */
+  execute: (params?: any, options?: ApiCallOptions) => Promise<T>
   /** 重置状态 */
   reset: () => void
-  /** 取消请求 */
-  cancel: () => void
+  /** 是否已完成 */
+  isFinished: ComputedRef<boolean>
+  /** 是否成功 */
+  isSuccess: ComputedRef<boolean>
+  /** 是否失败 */
+  isError: ComputedRef<boolean>
 }
 
 /**
  * API 调用选项
  */
-export interface UseApiCallOptions {
+export interface UseApiCallOptions extends ApiCallOptions {
   /** 是否立即执行 */
   immediate?: boolean
-  /** 默认参数 */
-  defaultParams?: unknown
   /** 成功回调 */
-  onSuccess?: (data: unknown) => void
+  onSuccess?: (data: any) => void
   /** 错误回调 */
   onError?: (error: Error) => void
   /** 完成回调 */
@@ -38,77 +46,97 @@ export interface UseApiCallOptions {
 }
 
 /**
- * 使用 API 调用的组合式函数
+ * 获取 API 引擎实例
+ * 
+ * @returns API 引擎实例
+ * 
+ * @example
+ * ```typescript
+ * import { useApi } from '@ldesign/api/vue'
+ * 
+ * const apiEngine = useApi()
+ * const result = await apiEngine.call('getUserInfo')
+ * ```
  */
-export function useApiCall<
-  T = unknown,
-  P extends Record<string, unknown> | undefined = Record<string, unknown>,
->(methodName: string, options: UseApiCallOptions = {}): ApiCallState<T> {
-  const {
-    immediate = false,
-    defaultParams,
-    onSuccess,
-    onError,
-    onFinally,
-  } = options
+export function useApi(): ApiEngine {
+  // 尝试从依赖注入获取
+  const injectedEngine = inject<ApiEngine>(API_ENGINE_INJECTION_KEY)
+  if (injectedEngine) {
+    return injectedEngine
+  }
 
+  // 尝试从全局属性获取
+  const instance = getCurrentInstance()
+  if (instance?.appContext.app.config.globalProperties.$api) {
+    return instance.appContext.app.config.globalProperties.$api
+  }
+
+  throw new Error('API Engine not found. Please install ApiVuePlugin first.')
+}
+
+/**
+ * API 调用钩子
+ * 
+ * @param methodName API 方法名称
+ * @param options 调用选项
+ * @returns API 调用状态
+ * 
+ * @example
+ * ```typescript
+ * import { useApiCall } from '@ldesign/api/vue'
+ * 
+ * const { data, loading, error, execute } = useApiCall('getUserInfo', {
+ *   immediate: true,
+ *   onSuccess: (data) => console.log('Success:', data),
+ *   onError: (error) => console.error('Error:', error),
+ * })
+ * ```
+ */
+export function useApiCall<T = any>(
+  methodName: string,
+  options: UseApiCallOptions = {}
+): ApiCallState<T> {
   const apiEngine = useApi()
-
+  
   const data = ref<T | null>(null)
   const loading = ref(false)
   const error = ref<Error | null>(null)
-  const finished = ref(false)
 
-  let cancelFlag = false
+  const isFinished = computed(() => !loading.value)
+  const isSuccess = computed(() => !loading.value && !error.value && data.value !== null)
+  const isError = computed(() => !loading.value && error.value !== null)
 
-  const execute = async (params?: P): Promise<T> => {
-    if (loading.value) {
-      return data.value as T
-    }
-
+  const execute = async (params?: any, executeOptions?: ApiCallOptions): Promise<T> => {
     loading.value = true
     error.value = null
-    finished.value = false
-    cancelFlag = false
 
     try {
-      const result = await apiEngine.call<T, P>(methodName, params)
-
-      if (cancelFlag) {
-        throw new Error('Request cancelled')
-      }
-
+      const result = await apiEngine.call<T>(methodName, params, {
+        ...options,
+        ...executeOptions,
+      })
+      
       data.value = result
-      finished.value = true
-
-      if (onSuccess) {
-        onSuccess(result)
+      
+      if (options.onSuccess) {
+        options.onSuccess(result)
       }
-
+      
       return result
-    }
-    catch (err) {
-      if (cancelFlag) {
-        return data.value as T
-      }
-
+    } catch (err) {
       const apiError = err instanceof Error ? err : new Error(String(err))
       error.value = apiError
-      finished.value = true
-
-      if (onError) {
-        onError(apiError)
+      
+      if (options.onError) {
+        options.onError(apiError)
       }
-
+      
       throw apiError
-    }
-    finally {
-      if (!cancelFlag) {
-        loading.value = false
-
-        if (onFinally) {
-          onFinally()
-        }
+    } finally {
+      loading.value = false
+      
+      if (options.onFinally) {
+        options.onFinally()
       }
     }
   }
@@ -117,174 +145,234 @@ export function useApiCall<
     data.value = null
     loading.value = false
     error.value = null
-    finished.value = false
-    cancelFlag = false
-  }
-
-  const cancel = () => {
-    cancelFlag = true
-    loading.value = false
   }
 
   // 立即执行
-  if (immediate) {
-    execute(defaultParams as P)
+  if (options.immediate) {
+    execute()
   }
 
-  // 组件卸载时取消请求
-  onUnmounted(() => {
-    cancel()
-  })
-
   return {
-    data: data as Ref<T | null>,
+    data,
     loading,
     error,
-    finished,
     execute,
     reset,
-    cancel,
+    isFinished,
+    isSuccess,
+    isError,
   }
 }
 
 /**
- * 使用系统 API 的组合式函数
+ * 批量 API 调用钩子
+ * 
+ * @param calls API 调用配置数组
+ * @param options 调用选项
+ * @returns 批量调用状态
+ * 
+ * @example
+ * ```typescript
+ * import { useBatchApiCall } from '@ldesign/api/vue'
+ * 
+ * const { data, loading, errors, execute } = useBatchApiCall([
+ *   { methodName: 'getUserInfo' },
+ *   { methodName: 'getMenus' },
+ *   { methodName: 'getPermissions' },
+ * ])
+ * ```
  */
-export function useSystemApi() {
+export function useBatchApiCall<T = any>(
+  calls: Array<{ methodName: string; params?: any; options?: ApiCallOptions }>,
+  options: Omit<UseApiCallOptions, 'onSuccess' | 'onError'> & {
+    onSuccess?: (results: T[]) => void
+    onError?: (errors: (Error | null)[]) => void
+  } = {}
+): {
+  data: Ref<T[]>
+  loading: Ref<boolean>
+  errors: Ref<(Error | null)[]>
+  execute: () => Promise<T[]>
+  reset: () => void
+  isFinished: ComputedRef<boolean>
+  isSuccess: ComputedRef<boolean>
+  hasErrors: ComputedRef<boolean>
+} {
   const apiEngine = useApi()
-
-  return {
-    // 验证码相关
-    getCaptcha: () => useApiCall('getCaptcha'),
-
-    // 认证相关
-    login: (options?: UseApiCallOptions) => useApiCall('login', options),
-    logout: (options?: UseApiCallOptions) => useApiCall('logout', options),
-    getSession: (options?: UseApiCallOptions) =>
-      useApiCall('getSession', options),
-    refreshToken: (options?: UseApiCallOptions) =>
-      useApiCall('refreshToken', options),
-
-    // 用户相关
-    getUserInfo: (options?: UseApiCallOptions) =>
-      useApiCall('getUserInfo', options),
-    changePassword: (options?: UseApiCallOptions) =>
-      useApiCall('changePassword', options),
-    getPermissions: (options?: UseApiCallOptions) =>
-      useApiCall('getPermissions', options),
-
-    // 菜单相关
-    getMenus: (options?: UseApiCallOptions) => useApiCall('getMenus', options),
-
-    // 直接调用 API 引擎
-    call: apiEngine.call.bind(apiEngine),
-    register: apiEngine.register.bind(apiEngine),
-    getMethod: apiEngine.getMethod.bind(apiEngine),
-  }
-}
-
-/**
- * 使用 API 统计信息的组合式函数
- */
-export function useApiStats() {
-  const apiEngine = useApi() as any
-
-  const stats = computed(() => {
-    const cacheStats = apiEngine.cacheManager?.getStats?.() || {}
-    const debounceStats = apiEngine.debounceManager?.getStats?.() || {}
-    const deduplicationStats
-      = apiEngine.deduplicationManager?.getStats?.() || {}
-
-    return {
-      cache: cacheStats,
-      debounce: debounceStats,
-      deduplication: deduplicationStats,
-    }
-  })
-
-  return {
-    stats,
-    clearCache: () => apiEngine.cacheManager?.clear?.(),
-    cancelAllDebounce: () => apiEngine.debounceManager?.cancelAll?.(),
-    cancelAllDeduplication: () => apiEngine.deduplicationManager?.cancelAll?.(),
-  }
-}
-
-/**
- * 批量 API 调用的组合式函数
- */
-export function useBatchApiCall<T = unknown>(
-  methodNames: string[],
-  _options: UseApiCallOptions = {},
-) {
-  const apiEngine = useApi()
-
-  const data = ref<Record<string, T>>({})
+  
+  const data = ref<T[]>([])
   const loading = ref(false)
-  const errors = ref<Record<string, Error>>({})
-  const finished = ref(false)
+  const errors = ref<(Error | null)[]>([])
 
-  const execute = async (params?: Record<string, any>) => {
+  const isFinished = computed(() => !loading.value)
+  const isSuccess = computed(() => !loading.value && errors.value.every(err => err === null))
+  const hasErrors = computed(() => errors.value.some(err => err !== null))
+
+  const execute = async (): Promise<T[]> => {
     loading.value = true
-    errors.value = {}
-    finished.value = false
+    errors.value = []
+    data.value = []
 
     try {
-      const promises = methodNames.map(async (methodName) => {
-        try {
-          const result = await apiEngine.call<T>(
-            methodName,
-            params?.[methodName],
-          )
-          return { methodName, result, error: null }
-        }
-        catch (error) {
-          return { methodName, result: null, error: error as Error }
-        }
-      })
+      const results = await Promise.allSettled(
+        calls.map(({ methodName, params, options: callOptions }) =>
+          apiEngine.call<T>(methodName, params, { ...options, ...callOptions })
+        )
+      )
 
-      const results = await Promise.all(promises)
+      const successResults: T[] = []
+      const errorResults: (Error | null)[] = []
 
-      const newData: Record<string, T> = {}
-      const newErrors: Record<string, Error> = {}
-
-      results.forEach(({ methodName, result, error }) => {
-        if (error) {
-          newErrors[methodName] = error
-        }
-        else if (result !== null) {
-          newData[methodName] = result
+      results.forEach((result) => {
+        if (result.status === 'fulfilled') {
+          successResults.push(result.value)
+          errorResults.push(null)
+        } else {
+          successResults.push(null as any)
+          errorResults.push(result.reason instanceof Error ? result.reason : new Error(String(result.reason)))
         }
       })
 
-      data.value = newData
-      errors.value = newErrors
-      finished.value = true
+      data.value = successResults
+      errors.value = errorResults
 
-      return newData
-    }
-    catch (error) {
-      finished.value = true
-      throw error
-    }
-    finally {
+      if (options.onSuccess) {
+        options.onSuccess(successResults)
+      }
+
+      return successResults
+    } catch (err) {
+      const apiError = err instanceof Error ? err : new Error(String(err))
+      
+      if (options.onError) {
+        options.onError([apiError])
+      }
+      
+      throw apiError
+    } finally {
       loading.value = false
+      
+      if (options.onFinally) {
+        options.onFinally()
+      }
     }
   }
 
   const reset = () => {
-    data.value = {}
+    data.value = []
     loading.value = false
-    errors.value = {}
-    finished.value = false
+    errors.value = []
+  }
+
+  // 立即执行
+  if (options.immediate) {
+    execute()
   }
 
   return {
     data,
     loading,
     errors,
-    finished,
     execute,
     reset,
+    isFinished,
+    isSuccess,
+    hasErrors,
   }
+}
+
+/**
+ * 系统 API 钩子
+ * 
+ * @returns 系统 API 方法对象
+ * 
+ * @example
+ * ```typescript
+ * import { useSystemApi } from '@ldesign/api/vue'
+ * 
+ * const systemApi = useSystemApi()
+ * 
+ * const { data: userInfo, loading, execute: fetchUserInfo } = systemApi.getUserInfo({
+ *   immediate: true,
+ * })
+ * 
+ * const { execute: login } = systemApi.login({
+ *   onSuccess: (result) => console.log('登录成功:', result),
+ * })
+ * ```
+ */
+export function useSystemApi() {
+  return {
+    /**
+     * 获取验证码
+     */
+    getCaptcha: (options: UseApiCallOptions = {}) =>
+      useApiCall<import('../types').CaptchaInfo>(SYSTEM_API_METHODS.GET_CAPTCHA, options),
+
+    /**
+     * 用户登录
+     */
+    login: (options: UseApiCallOptions = {}) =>
+      useApiCall<LoginResult>(SYSTEM_API_METHODS.LOGIN, options),
+
+    /**
+     * 用户登出
+     */
+    logout: (options: UseApiCallOptions = {}) =>
+      useApiCall<void>(SYSTEM_API_METHODS.LOGOUT, options),
+
+    /**
+     * 获取用户信息
+     */
+    getUserInfo: (options: UseApiCallOptions = {}) =>
+      useApiCall<UserInfo>(SYSTEM_API_METHODS.GET_USER_INFO, options),
+
+    /**
+     * 更新用户信息
+     */
+    updateUserInfo: (options: UseApiCallOptions = {}) =>
+      useApiCall<UserInfo>(SYSTEM_API_METHODS.UPDATE_USER_INFO, options),
+
+    /**
+     * 获取系统菜单
+     */
+    getMenus: (options: UseApiCallOptions = {}) =>
+      useApiCall<MenuItem[]>(SYSTEM_API_METHODS.GET_MENUS, options),
+
+    /**
+     * 获取用户权限
+     */
+    getPermissions: (options: UseApiCallOptions = {}) =>
+      useApiCall<string[]>(SYSTEM_API_METHODS.GET_PERMISSIONS, options),
+
+    /**
+     * 刷新令牌
+     */
+    refreshToken: (options: UseApiCallOptions = {}) =>
+      useApiCall<LoginResult>(SYSTEM_API_METHODS.REFRESH_TOKEN, options),
+
+    /**
+     * 修改密码
+     */
+    changePassword: (options: UseApiCallOptions = {}) =>
+      useApiCall<void>(SYSTEM_API_METHODS.CHANGE_PASSWORD, options),
+
+    /**
+     * 获取系统配置
+     */
+    getSystemConfig: (options: UseApiCallOptions = {}) =>
+      useApiCall<any>(SYSTEM_API_METHODS.GET_SYSTEM_CONFIG, options),
+  }
+}
+
+/**
+ * 清理钩子，在组件卸载时自动清理资源
+ */
+export function useApiCleanup(): void {
+  const apiEngine = useApi()
+  
+  onUnmounted(() => {
+    // 可以在这里添加清理逻辑
+    // 例如：取消正在进行的请求、清理缓存等
+  })
 }

@@ -123,5 +123,17 @@ export const routes: RouteRecordRaw[] = [
       animation: 'fade',
     },
   },
+  {
+    path: '/api-demo',
+    name: 'api-demo',
+    component: () => import('../pages/ApiDemo.vue'),
+    meta: {
+      title: 'API 接口管理演示',
+      description: '验证 @ldesign/api 包的功能和集成效果',
+      cache: true,
+      preload: true,
+      animation: 'fade',
+    },
+  },
 
 ]
