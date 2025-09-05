@@ -48,3 +48,9 @@ egnine,template,device
 - 验证主题切换、暗黑模式等功能的完整性
 
 请按照上述要求逐步完善这个主题色管理包。
+
+sebastian05510@outlook.com----Dh948407416
+mackay36350@outlook.com----Aj383186139
+finnegan549@outlook.com----Ah4710441197
+orr590@outlook.com----Tu008622148
+evan60330@outlook.com----As3863435722

@@ -15,6 +15,9 @@ export default antfu(
       '**/.trae/**',
       // 忽略所有 Markdown 文件中的代码块
       '**/*.md',
+      // 仅对 kit 包额外忽略 docs 与 examples
+      'packages/kit/docs/**',
+      'packages/kit/examples/**',
     ],
   },
   {
@@ -24,6 +27,16 @@ export default antfu(
       '@typescript-eslint/no-explicit-any': 'warn',
       'prefer-const': 'error',
       'no-var': 'error',
+    },
+  },
+  // 针对 @ldesign/kit 的专属覆盖：关闭不合适的 Node 全局首选规则
+  {
+    files: ['packages/kit/**/*.{ts,js,tsx,jsx}'],
+    rules: {
+      'node/prefer-global/process': 'off',
+      'node/prefer-global/buffer': 'off',
+      'n/prefer-global/process': 'off',
+      'n/prefer-global/buffer': 'off',
     },
   },
 )
