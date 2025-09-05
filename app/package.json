@@ -30,7 +30,7 @@
     "@ldesign/template": "workspace:*",
     "@ldesign/theme": "workspace:*",
     "@ldesign/watermark": "workspace:*",
-    "@lemonform/form": "workspace:*",
+    "@ldesign/form": "workspace:*",
     "vue": "^3.4.0",
     "vue-router": "^4.0.0"
   },

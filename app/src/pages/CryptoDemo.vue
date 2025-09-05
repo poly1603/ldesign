@@ -315,7 +315,10 @@ const handleAESEncrypt = async () => {
       // 更新统计数据
       const operationTime = endTime - startTime
       updateStats(operationTime, aesData.plaintext.length)
-      console.log(`AES 加密耗时: ${operationTime}ms`)
+      // 只在开发模式下输出日志
+      if (import.meta.env.DEV) {
+        console.info(`AES 加密耗时: ${operationTime}ms`)
+      }
     } else {
       throw new Error(result?.error || '加密失败')
     }
@@ -344,7 +347,10 @@ const handleAESDecrypt = async () => {
       throw new Error(result?.error || '解密失败')
     }
 
-    console.log(`AES 解密耗时: ${endTime - startTime}ms`)
+    // 只在开发模式下输出日志
+    if (import.meta.env.DEV) {
+      console.info(`AES 解密耗时: ${endTime - startTime}ms`)
+    }
   } catch (err) {
     error.value = `AES 解密失败: ${err instanceof Error ? err.message : String(err)}`
   }
@@ -384,7 +390,10 @@ const handleHashCalculate = async () => {
     hashData.result = result
     const endTime = performance.now()
     
-    console.log(`${hashData.algorithm.toUpperCase()} 哈希计算耗时: ${endTime - startTime}ms`)
+    // 只在开发模式下输出日志
+    if (import.meta.env.DEV) {
+      console.info(`${hashData.algorithm.toUpperCase()} 哈希计算耗时: ${endTime - startTime}ms`)
+    }
   } catch (err) {
     error.value = `哈希计算失败: ${err instanceof Error ? err.message : String(err)}`
   }

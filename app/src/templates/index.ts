@@ -6,8 +6,8 @@ export const templatePlugin = createTemplateEnginePlugin({
   autoScan: true,
   enableHMR: true,
   defaultDevice: 'desktop',
-  enablePerformanceMonitor: true,
-  debug: true,
+  enablePerformanceMonitor: false, // 禁用性能监控以减少控制台输出
+  debug: false, // 禁用调试模式以减少控制台输出
 
   // 使用向后兼容的简化配置
   cache: true, // 启用缓存

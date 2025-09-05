@@ -66,27 +66,21 @@ const httpClientConfig: HttpClientConfig = {
   // 拦截器配置
   interceptors: {
     request: [
-      // 请求日志拦截器
+      // 请求日志拦截器（已禁用）
       (config: any) => {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🚀 [HTTP] 发送请求: ${config.method?.toUpperCase()} ${config.url}`)
-        }
+        // 已禁用调试日志输出
         return config
       }
     ],
     response: [
-      // 响应日志拦截器
+      // 响应日志拦截器（已禁用）
       (response: any) => {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`✅ [HTTP] 响应成功: ${response.status} ${response.config?.url}`)
-        }
+        // 已禁用调试日志输出
         return response
       },
-      // 错误处理拦截器
+      // 错误处理拦截器（已禁用）
       (error: any) => {
-        if (process.env.NODE_ENV === 'development') {
-          console.error(`❌ [HTTP] 请求失败:`, error.message)
-        }
+        // 已禁用调试日志输出
         return Promise.reject(error)
       }
     ]

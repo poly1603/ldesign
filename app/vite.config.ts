@@ -77,9 +77,10 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3000,
+    port: 8888,
     open: true,
     cors: true,
+    host: true,
     hmr: {
       overlay: true
     }

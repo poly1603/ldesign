@@ -49,7 +49,7 @@ export const sizePlugin = createSizeEnginePlugin({
   
   // 尺寸变化回调
   onSizeChanged: async (previousMode: SizeMode, currentMode: SizeMode) => {
-    console.log(`📏 [SizePlugin] 尺寸已切换: ${previousMode} → ${currentMode}`)
+    // 已禁用调试日志输出
     
     // 添加尺寸切换的动画效果
     document.documentElement.style.setProperty('--size-transition', 'all 0.3s ease')

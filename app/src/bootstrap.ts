@@ -22,8 +22,6 @@ export async function bootstrap() {
   const engine = createAndMountApp(App, '#app', {
     config: {
       debug: false, // 关闭调试模式减少控制台输出
-      appName: 'LDesign Demo App',
-      version: '1.0.0',
       features: {
         enableHotReload: true,
         enableDevTools: false, // 关闭开发工具

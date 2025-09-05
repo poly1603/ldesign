@@ -12,7 +12,7 @@ export const apiPlugin = createApiEnginePlugin({
   name: 'api',
   version: '1.0.0',
   clientConfig: {
-    debug: import.meta.env.DEV,
+    debug: false, // 关闭调试模式减少控制台输出
     appName: 'LDesign Demo App',
     version: '1.0.0',
     http: {
@@ -51,7 +51,7 @@ export const systemPlugin = {
   dependencies: ['api'],
 
   async install(engine: any) {
-    console.log('[System API Plugin] 正在安装系统 API 插件...')
+    // 已禁用日志输出以减少控制台信息
 
     // 延迟安装，避免时序问题
     setTimeout(async () => {
@@ -67,23 +67,22 @@ export const systemPlugin = {
       if (engine.apiEngine) {
         try {
           await engine.apiEngine.use(systemApiPlugin)
-          console.log('[System API Plugin] 系统 API 插件安装成功')
+          // 已禁用日志输出
         } catch (error) {
-          console.error('[System API Plugin] 安装失败:', error)
+          // 已禁用错误日志输出
         }
       } else {
         // 静默跳过，因为API演示页面会手动注册方法
-        console.debug('[System API Plugin] API 引擎未找到，使用手动注册方式')
       }
     }, 2000)
   },
 
   async uninstall(engine: any) {
-    console.log('[System API Plugin] 正在卸载系统 API 插件...')
+    // 已禁用日志输出
 
     if (engine.apiEngine) {
       await engine.apiEngine.unuse('system-apis')
-      console.log('[System API Plugin] 系统 API 插件卸载成功')
+      // 已禁用日志输出
     }
   },
 }
@@ -98,7 +97,7 @@ export const customApiPlugin = {
   dependencies: ['api'],
 
   async install(engine: any) {
-    console.log('[Custom API Plugin] 正在安装自定义 API 插件...')
+    // 已禁用日志输出
 
     // 延迟安装，避免时序问题
     setTimeout(async () => {
@@ -155,9 +154,7 @@ export const customApiPlugin = {
                 data: params,
               }),
               transform: (response: any) => response.data,
-              onSuccess: (data: any) => {
-                console.log('文章创建成功:', data)
-              },
+              // onSuccess 已禁用以减少控制台输出
               cache: {
                 enabled: false, // 创建操作不缓存
               },
@@ -172,9 +169,7 @@ export const customApiPlugin = {
                 data: params,
               }),
               transform: (response: any) => response.data,
-              onSuccess: (data: any) => {
-                console.log('文章更新成功:', data)
-              },
+              // onSuccess 已禁用以减少控制台输出
               cache: {
                 enabled: false,
               },
@@ -187,9 +182,7 @@ export const customApiPlugin = {
                 method: 'DELETE',
                 url: `/posts/${params.id}`,
               }),
-              onSuccess: () => {
-                console.log('文章删除成功')
-              },
+              // onSuccess 已禁用以减少控制台输出
               cache: {
                 enabled: false,
               },
@@ -224,30 +217,24 @@ export const customApiPlugin = {
               },
             },
           },
-          install: (engine: any) => {
-            console.log('[Custom API Plugin] 自定义 API 插件已安装')
-          },
-          uninstall: (engine: any) => {
-            console.log('[Custom API Plugin] 自定义 API 插件已卸载')
-          },
+          // install/uninstall 方法已禁用日志输出
         }
 
         try {
           // 使用API引擎的use方法安装插件
           await engine.apiEngine.use(customApiPlugin)
-          console.log('[Custom API Plugin] 自定义 API 插件安装成功')
+          // 已禁用日志输出
         } catch (error) {
-          console.error('[Custom API Plugin] 安装失败:', error)
+          // 已禁用错误日志输出
         }
       } else {
         // 静默跳过，因为API演示页面会手动注册方法
-        console.debug('[Custom API Plugin] API 引擎未找到，使用手动注册方式')
       }
     }, 3000)
   },
 
   async uninstall(engine: any) {
-    console.log('[Custom API Plugin] 正在卸载自定义 API 插件...')
+    // 已禁用日志输出
 
     if (engine.apiEngine) {
       // 取消注册自定义 API 方法
@@ -260,7 +247,7 @@ export const customApiPlugin = {
         engine.apiEngine.unregister(method)
       })
 
-      console.log('[Custom API Plugin] 自定义 API 插件卸载成功')
+      // 已禁用日志输出
     }
   },
 }

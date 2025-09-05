@@ -335,7 +335,10 @@ const handleDeviceDetection = async () => {
     updateStats(endTime - startTime)
     stats.modulesLoaded = Math.max(stats.modulesLoaded, 1)
     
-    console.log('设备检测完成:', deviceInfo.value)
+    // 只在开发模式下输出日志
+    if (import.meta.env.DEV) {
+      console.info('设备检测完成:', deviceInfo.value)
+    }
   } catch (err) {
     error.value = `设备检测失败: ${err instanceof Error ? err.message : String(err)}`
   }

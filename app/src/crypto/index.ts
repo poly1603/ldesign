@@ -58,8 +58,8 @@ const cryptoConfig: CryptoEnginePluginOptions = {
  * 帮助开发者了解加密操作的性能特征
  */
 const developmentConfig: Partial<CryptoEnginePluginOptions> = {
-  debug: true,
-  enablePerformanceMonitoring: true,
+  debug: false, // 禁用调试模式以减少控制台输出
+  enablePerformanceMonitoring: false, // 禁用性能监控以减少控制台输出
   config: {
     ...cryptoConfig.config,
     // 开发环境可以使用更强的 RSA 密钥

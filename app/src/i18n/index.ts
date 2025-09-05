@@ -53,9 +53,7 @@ export const i18nPlugin = createI18nEnginePlugin({
     document.documentElement.lang = locale
 
     // 可以在这里添加其他语言切换后的处理逻辑
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[I18n] Language changed to: ${locale}`)
-    }
+    // 已禁用调试日志输出
   },
 
   onLoadError: (error: Error) => {

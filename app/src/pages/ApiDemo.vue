@@ -212,7 +212,10 @@ async function fetchPost(id: number) {
   try {
     selectedPost.value = await api.call('getPost', { id })
   } catch (error) {
-    console.error('获取文章详情失败:', error)
+    // 只在开发模式下输出错误日志
+    if (import.meta.env.DEV) {
+      console.error('获取文章详情失败:', error)
+    }
   }
 }
 
@@ -247,7 +250,10 @@ async function executeBatchCall() {
  */
 function clearPostsCache() {
   api.clearCache('getPosts')
-  console.log('文章缓存已清除')
+  // 只在开发模式下输出日志
+  if (import.meta.env.DEV) {
+    console.log('文章缓存已清除')
+  }
 }
 
 /**
@@ -256,7 +262,10 @@ function clearPostsCache() {
 function clearAllCache() {
   api.clearCache()
   refreshCacheStats()
-  console.log('所有缓存已清除')
+  // 只在开发模式下输出日志
+  if (import.meta.env.DEV) {
+    console.log('所有缓存已清除')
+  }
 }
 
 /**
@@ -277,7 +286,10 @@ function refreshApiMethods() {
 onMounted(async () => {
   // 手动注册API方法，确保演示功能正常工作
   try {
-    console.log('[API Demo] 开始注册API方法...')
+    // 只在开发模式下输出日志
+    if (import.meta.env.DEV) {
+      console.log('[API Demo] 开始注册API方法...')
+    }
 
     // 注册自定义API方法
     await api.registerBatch({
@@ -339,9 +351,15 @@ onMounted(async () => {
       },
     })
 
-    console.log('[API Demo] API方法注册成功')
+    // 只在开发模式下输出日志
+    if (import.meta.env.DEV) {
+      console.log('[API Demo] API方法注册成功')
+    }
   } catch (error) {
-    console.error('[API Demo] API方法注册失败:', error)
+    // 只在开发模式下输出错误日志
+    if (import.meta.env.DEV) {
+      console.error('[API Demo] API方法注册失败:', error)
+    }
   }
 
   refreshCacheStats()

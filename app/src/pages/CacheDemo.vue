@@ -500,7 +500,10 @@ const updateStats = async () => {
       expired: result.expired || 0
     }
   } catch (error) {
-    console.error('Failed to update stats:', error)
+    // 只在开发模式下输出错误日志
+    if (import.meta.env.DEV) {
+      console.error('Failed to update stats:', error)
+    }
   }
 }
 
@@ -651,7 +654,10 @@ const getStats = async () => {
     const currentStats = await cacheManager.getStats()
     statsResult.value = currentStats
   } catch (error) {
-    console.error('获取统计失败:', error)
+    // 只在开发模式下输出错误日志
+    if (import.meta.env.DEV) {
+      console.error('获取统计失败:', error)
+    }
     statsResult.value = { error: String(error) }
   }
 }

@@ -64,8 +64,8 @@ const cacheConfig: CacheEnginePluginOptions['cacheConfig'] = {
  * 开发环境配置
  */
 const developmentConfig: Partial<CacheEnginePluginOptions> = {
-  debug: true,
-  enablePerformanceMonitoring: true,
+  debug: false, // 禁用调试模式以减少控制台输出
+  enablePerformanceMonitoring: false, // 禁用性能监控以减少控制台输出
   cacheConfig: {
     ...cacheConfig,
     // 开发环境使用较短的过期时间

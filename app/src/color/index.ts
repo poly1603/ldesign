@@ -51,14 +51,14 @@ export const colorPlugin = createColorEnginePlugin({
 
   // 主题变化回调
   onThemeChanged: async (theme: string, mode: ColorMode) => {
-    console.log(`🎨 [ColorPlugin] 主题已切换: ${theme} (${mode})`)
+    // 已禁用调试日志输出
 
     // 确保主题状态被正确缓存
     // 这里通过增强的主题应用器来处理缓存
     const currentState = globalThemeApplier.getCurrentState()
     if (currentState.theme !== theme || currentState.mode !== mode) {
       // 如果状态不一致，更新缓存
-      console.log(`📝 [ColorPlugin] 更新主题缓存: ${theme} (${mode})`)
+      // 已禁用调试日志输出
     }
 
     // 添加主题切换的动画效果

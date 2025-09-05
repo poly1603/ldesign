@@ -181,7 +181,7 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute, useRouter } from '@ldesign/router'
+import { useRoute } from '@ldesign/router'
 import { useI18n } from '@ldesign/i18n/vue'
 
 /**
@@ -191,21 +191,9 @@ import { useI18n } from '@ldesign/i18n/vue'
 
 // 获取路由信息
 const route = useRoute()
-const router = useRouter()
 
 // 获取国际化功能
 const { t } = useI18n()
-
-/**
- * 测试编程式导航
- */
-const testNavigation = () => {
-  console.log('🧭 使用编程式导航跳转到登录页')
-  router.push({
-    path: '/login',
-    query: { from: 'home' }
-  })
-}
 </script>
 
 <style scoped lang="less">

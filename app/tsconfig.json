@@ -57,9 +57,9 @@
       "@ldesign/engine/*": ["../packages/engine/src/*"],
       "@ldesign/engine/vue": ["../packages/engine/src/vue"],
 
-      "@lemonform/form": ["../packages/form/src"],
-      "@lemonform/form/*": ["../packages/form/src/*"],
-      "@lemonform/form/vue": ["../packages/form/src/vue"],
+      "@ldesign/form": ["../packages/form/src"],
+      "@ldesign/form/*": ["../packages/form/src/*"],
+      "@ldesign/form/vue": ["../packages/form/src/vue"],
 
       "@ldesign/git": ["../packages/git/src"],
       "@ldesign/git/*": ["../packages/git/src/*"],
