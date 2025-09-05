@@ -1,833 +1,1073 @@
-import type { InlineConfig, ViteDevServer } from 'vite'
+/**
+ * ViteLauncher 核心类
+ * 
+ * 封装 Vite JavaScript API，提供统一的开发服务器、构建和预览功能
+ * 
+ * @author LDesign Team
+ * @since 1.0.0
+ */
+
+import { EventEmitter } from 'events'
 import type {
-  BuildOptions,
-  BuildResult,
-  BuildStats,
-  DevOptions,
+  ViteDevServer,
+  PreviewServer,
+  Plugin
+} from 'vite'
+
+import type { RollupOutput, RollupWatcher } from 'rollup'
+
+// 导入内部工具
+import { Logger } from '../utils/logger'
+import { ErrorHandler } from '../utils/error-handler'
+import { FileSystem } from '../utils/file-system'
+import { PathUtils } from '../utils/path-utils'
+import { ConfigManager } from './ConfigManager'
+import { SmartPluginManager } from './SmartPluginManager'
+
+// 导入类型定义
+import type {
   IViteLauncher,
+  ViteLauncherConfig,
+  LauncherHooks,
+  LauncherEventData,
   LauncherOptions,
-  LogLevel,
-  PreviewOptions,
-  ProjectInfo,
-  ProjectType,
-  RunMode,
-} from '@/types'
-import fs from 'node:fs/promises'
-import path from 'node:path'
-import process from 'node:process'
-import pc from 'picocolors'
-import { build, createServer, preview } from 'vite'
-import { ERROR_CODES } from '@/types'
-import { ConfigManager, EnvironmentOptimizer, ErrorHandler, NetworkManager, PluginEcosystem, PluginManager, ProjectDetector, SecurityManager } from '../services'
-import { loadUserConfig, mergeConfig } from '../utils/config-loader'
+  LauncherStats,
+  PerformanceMetrics,
+  ServerInfo
+} from '../types'
+import { LauncherStatus, LauncherEvent, ServerType } from '../types'
+
+// 导入常量
+import {
+  DEFAULT_VITE_LAUNCHER_CONFIG,
+  DEFAULT_PORT,
+  DEFAULT_HOST,
+  DEFAULT_LOG_LEVEL
+} from '../constants'
 
 /**
- * Vite 前端项目启动器核心类
- * 提供项目创建、开发、构建和预览功能
+ * ViteLauncher 核心类
+ * 
+ * 提供完整的 Vite 项目启动、构建和预览功能
+ * 支持插件系统、配置管理、生命周期钩子等高级特性
  */
-export class ViteLauncher implements IViteLauncher {
+export class ViteLauncher extends EventEmitter implements IViteLauncher {
+  /** 当前状态 */
+  private status: LauncherStatus = LauncherStatus.IDLE
+
+  /** 当前配置 */
+  private config: ViteLauncherConfig
+
+  /** 开发服务器实例 */
+  private devServer: ViteDevServer | null = null
+
+  /** 预览服务器实例 */
+  private previewServer: PreviewServer | null = null
+
+  /** 构建监听器实例 */
+  private buildWatcher: RollupWatcher | null = null
+
+  /** 日志记录器 */
+  private logger: Logger
+
+  /** 错误处理器 */
   private errorHandler: ErrorHandler
-  private projectDetector: ProjectDetector
+
+  /** 配置管理器 */
   private configManager: ConfigManager
-  private pluginManager: PluginManager
-  private pluginEcosystem: PluginEcosystem
-  private networkManager: NetworkManager
-  private securityManager: SecurityManager
-  private environmentOptimizer: EnvironmentOptimizer
-  private currentServer?: ViteDevServer | null
-  private config?: InlineConfig
-  private projectType?: ProjectType
-  private options: LauncherOptions
-  private isDestroyed = false
 
+  /** 插件列表 */
+  private plugins: Plugin[] = []
+
+  /** 统计信息 */
+  private stats: LauncherStats = {
+    startCount: 0,
+    buildCount: 0,
+    errorCount: 0,
+    totalRuntime: 0,
+    averageStartTime: 0,
+    averageBuildTime: 0,
+    lastActivity: Date.now()
+  }
+
+  /** 性能监控数据 */
+  private performanceMetrics: PerformanceMetrics = {
+    memory: { used: 0, total: 0, percentage: 0 },
+    cpu: { usage: 0, loadAverage: [] },
+    startupTime: 0,
+    buildTime: 0,
+    hmrTime: 0,
+    fileChangeResponseTime: 0
+  }
+
+  /** 启动时间 */
+  private startTime: number = 0
+
+  /** 工作目录 */
+  private cwd: string
+
+  /** 智能插件管理器 */
+  private smartPluginManager: SmartPluginManager
+
+  /**
+   * 构造函数
+   * 
+   * @param options - 启动器选项
+   */
   constructor(options: LauncherOptions = {}) {
-    this.options = {
-      logLevel: 'info',
-      mode: 'development',
-      autoDetect: true,
-      ...options,
-    }
+    super()
 
-    // 初始化服务组件
-    this.errorHandler = new ErrorHandler()
-    this.projectDetector = new ProjectDetector()
-    this.configManager = new ConfigManager()
-    this.pluginManager = new PluginManager()
-    this.pluginEcosystem = new PluginEcosystem()
-    this.networkManager = new NetworkManager()
-    this.securityManager = new SecurityManager()
-    this.environmentOptimizer = new EnvironmentOptimizer()
+    // 设置工作目录
+    this.cwd = options.cwd || process.cwd()
 
-    this.log('ViteLauncher 初始化完成', 'info')
+    // 初始化配置
+    this.config = this.mergeConfig(DEFAULT_VITE_LAUNCHER_CONFIG, options.config || {})
+
+    // 初始化日志记录器
+    const isDebug = process.env.NODE_ENV === 'development' ||
+      process.argv.includes('--debug') ||
+      process.argv.includes('-d')
+
+    this.logger = new Logger('ViteLauncher', {
+      level: this.config.launcher?.logLevel || DEFAULT_LOG_LEVEL,
+      colors: true,
+      timestamp: isDebug, // 只在 debug 模式显示时间戳
+      compact: !isDebug   // 非 debug 模式使用简洁输出
+    })
+
+    // 初始化错误处理器
+    this.errorHandler = new ErrorHandler({
+      logger: this.logger,
+      exitOnError: false
+    })
+
+    // 初始化配置管理器
+    const configLogger = new Logger('ConfigManager', {
+      level: this.logger.getLevel(),
+      colors: true,
+      timestamp: isDebug,
+      compact: !isDebug
+    })
+    this.configManager = new ConfigManager({
+      configFile: this.config.launcher?.configFile,
+      watch: this.config.launcher?.autoRestart || false,
+      logger: configLogger
+    })
+
+    // 初始化智能插件管理器
+    const smartLogger = new Logger('SmartPluginManager', {
+      level: this.logger.getLevel(),
+      colors: true,
+      timestamp: isDebug,
+      compact: !isDebug
+    })
+    this.smartPluginManager = new SmartPluginManager(this.cwd, smartLogger)
+
+    // 设置事件监听器
+    this.setupEventListeners(options.listeners)
+
+    // 设置错误处理
+    this.setupErrorHandling()
+
+    this.logger.debug('ViteLauncher 基础初始化完成')
   }
 
   /**
-   * 创建新项目
-   * @param projectPath 项目路径
-   * @param projectType 项目类型
-   * @param options 创建选项
+   * 异步初始化方法
+   * 加载配置文件并完成完整初始化
    */
-  async create(
-    projectPath: string,
-    projectType: ProjectType,
-    options: { template?: string, force?: boolean } = {},
-  ): Promise<void> {
-    this.checkDestroyed()
+  async initialize(): Promise<void> {
+    try {
+      // 自动加载配置文件
+      await this.autoLoadConfig()
 
-    return ErrorHandler.wrapAsync(async () => {
-      this.log(`开始创建 ${projectType} 项目: ${projectPath}`, 'info')
-
-      const absolutePath = path.resolve(projectPath)
-
-      // 检查目录是否存在
-      const exists = await this.checkDirectoryExists(absolutePath)
-      if (exists && !options.force) {
-        const files = await fs.readdir(absolutePath)
-        if (files.length > 0) {
-          throw ErrorHandler.createError(
-            ERROR_CODES.INVALID_PROJECT_ROOT,
-            `目录 ${absolutePath} 不为空。使用 force: true 选项覆盖。`,
-          )
-        }
-      }
-
-      // 创建目录
-      await fs.mkdir(absolutePath, { recursive: true })
-
-      // 生成项目文件
-      await this.generateProjectFiles(absolutePath, projectType, options.template)
-
-      // 安装依赖
-      await this.installDependencies(absolutePath)
-
-      this.log(`项目创建完成: ${absolutePath}`, 'info')
-      this.log('运行以下命令开始开发:', 'info')
-      this.log(`  cd ${path.relative(process.cwd(), absolutePath)}`, 'info')
-      this.log('  npm run dev', 'info')
-    }, 'create project')()
+      this.logger.info('ViteLauncher 初始化完成')
+    } catch (error) {
+      this.logger.warn('配置文件加载失败，使用默认配置', { error: (error as Error).message })
+    }
   }
 
   /**
    * 启动开发服务器
-   * @param projectPath 项目路径
-   * @param options 开发选项
+   * 
+   * @param config - 可选的配置覆盖
    * @returns 开发服务器实例
    */
-  async dev(
-    projectPath: string = process.cwd(),
-    options: DevOptions = {},
-  ): Promise<ViteDevServer> {
-    this.checkDestroyed()
+  async startDev(config?: ViteLauncherConfig): Promise<ViteDevServer> {
+    try {
+      // 确保已初始化（加载配置文件）
+      await this.initialize()
 
-    return ErrorHandler.wrapAsync(async () => {
-      this.log('启动开发服务器...', 'info')
+      this.setStatus(LauncherStatus.STARTING)
+      this.startTime = Date.now()
 
-      const absolutePath = path.resolve(projectPath)
+      // 合并配置
+      let mergedConfig = config ? this.mergeConfig(this.config, config) : this.config
 
-      // 检测项目类型
-      const detection = await this.projectDetector.detectProjectType(absolutePath)
-      if (detection.projectType === 'unknown') {
-        this.log('检测到非 Vite 项目，将使用默认配置', 'warn')
-      }
+      // 添加智能检测的插件
+      mergedConfig = await this.enhanceConfigWithSmartPlugins(mergedConfig)
 
-      // 生成 Vite 配置
-      const viteConfig = await this.generateViteConfig(absolutePath, detection.projectType, 'development', options)
+      // 执行启动前钩子
+      await this.executeHook('beforeStart')
+
+      this.logger.info('正在启动开发服务器...', {
+        host: mergedConfig.server?.host || DEFAULT_HOST,
+        port: mergedConfig.server?.port || DEFAULT_PORT
+      })
+
+      // 动态导入 Vite
+      const { createServer } = await import('vite')
 
       // 创建开发服务器
-      this.currentServer = await createServer(viteConfig)
+      this.devServer = await createServer(mergedConfig)
 
       // 启动服务器
-      await this.currentServer.listen()
+      await this.devServer.listen()
 
-      // Logger info available if needed
-      const port = this.currentServer.config.server?.port || 5173
-      const host = this.currentServer.config.server?.host || 'localhost'
+      // 更新统计信息
+      this.updateStats('start')
 
-      this.logSuccess('开发服务器已启动:')
-      this.log(`  ${pc.green('➜')} 本地地址: ${pc.cyan(`http://${host}:${port}`)}`, 'info')
-      this.log(`  ${pc.green('➜')} 网络地址: ${pc.cyan(`http://localhost:${port}`)}`, 'info')
+      // 设置状态
+      this.setStatus(LauncherStatus.RUNNING)
 
-      return this.currentServer
-    }, 'start dev server')()
+      // 执行启动后钩子
+      await this.executeHook('afterStart')
+
+      // 触发服务器就绪事件
+      this.emit(LauncherEvent.SERVER_READY, {
+        server: this.devServer,
+        url: this.getServerUrl(this.devServer),
+        timestamp: Date.now()
+      } as LauncherEventData[LauncherEvent.SERVER_READY])
+
+      this.logger.success('开发服务器启动成功', {
+        url: this.getServerUrl(this.devServer),
+        duration: Date.now() - this.startTime
+      })
+
+      return this.devServer
+
+    } catch (error) {
+      this.handleError(error as Error, '开发服务器启动失败')
+      throw error
+    }
   }
 
   /**
-   * 构建项目
-   * @param projectPath 项目路径
-   * @param options 构建选项
-   * @returns 构建结果
+   * 停止开发服务器
    */
-  async build(
-    projectPath: string = process.cwd(),
-    options: BuildOptions = {},
-  ): Promise<BuildResult> {
-    this.checkDestroyed()
-
+  async stopDev(): Promise<void> {
     try {
-      this.log('开始构建项目...', 'info')
-
-      const absolutePath = path.resolve(projectPath)
-      const startTime = Date.now()
-
-      // 检测项目类型
-      const detection = await this.projectDetector.detectProjectType(absolutePath)
-
-      // 生成 Vite 配置
-      const viteConfig = await this.generateViteConfig(absolutePath, detection.projectType, 'production', options)
-
-      // 执行构建
-      await build(viteConfig)
-
-      const endTime = Date.now()
-      const duration = endTime - startTime
-
-      // 分析构建结果
-      const outputDir = viteConfig.build?.outDir || 'dist'
-      const outputPath = path.resolve(absolutePath, outputDir)
-      const stats = await this.analyzeBuildOutput(outputPath)
-
-      const result: BuildResult = {
-        success: true,
-        outputFiles: [outputPath],
-        duration,
-        size: 0, // 可以后续计算总大小
-        stats,
+      if (!this.devServer) {
+        this.logger.warn('开发服务器未运行')
+        return
       }
 
-      this.logSuccess(`构建完成! 耗时: ${pc.yellow(`${duration}ms`)}`)
-      this.log(`📁 输出目录: ${pc.cyan(outputPath)}`, 'info')
-      this.log(`📄 入口文件数: ${pc.green(stats.entryCount)}`, 'info')
-      this.log(`📦 模块数量: ${pc.green(stats.moduleCount)}`, 'info')
-      this.log(`🎨 资源文件数: ${pc.green(stats.assetCount)}`, 'info')
-      this.log(`🧩 代码块数: ${pc.green(stats.chunkCount)}`, 'info')
+      this.setStatus(LauncherStatus.STOPPING)
+
+      this.logger.info('正在停止开发服务器...')
+
+      // 执行关闭前钩子
+      await this.executeHook('beforeClose')
+
+      // 关闭服务器
+      await this.devServer.close()
+      this.devServer = null
+
+      // 设置状态
+      this.setStatus(LauncherStatus.STOPPED)
+
+      // 执行关闭后钩子
+      await this.executeHook('afterClose')
+
+      this.logger.success('开发服务器已停止')
+
+    } catch (error) {
+      this.handleError(error as Error, '停止开发服务器失败')
+      throw error
+    }
+  }
+
+  /**
+   * 重启开发服务器
+   */
+  async restartDev(): Promise<void> {
+    try {
+      this.logger.info('正在重启开发服务器...')
+
+      // 保存当前配置
+      const currentConfig = { ...this.config }
+
+      // 停止服务器
+      await this.stopDev()
+
+      // 重新启动
+      await this.startDev(currentConfig)
+
+      this.logger.success('开发服务器重启完成')
+
+    } catch (error) {
+      this.handleError(error as Error, '重启开发服务器失败')
+      throw error
+    }
+  }
+
+  /**
+   * 执行生产构建
+   * 
+   * @param config - 可选的配置覆盖
+   * @returns 构建结果
+   */
+  async build(config?: ViteLauncherConfig): Promise<RollupOutput> {
+    try {
+      // 确保已初始化（加载配置文件）
+      await this.initialize()
+
+      this.setStatus(LauncherStatus.BUILDING)
+      const buildStartTime = Date.now()
+
+      // 合并配置
+      let mergedConfig = config ? this.mergeConfig(this.config, config) : this.config
+
+      // 添加智能检测的插件
+      mergedConfig = await this.enhanceConfigWithSmartPlugins(mergedConfig)
+
+      // 执行构建前钩子
+      await this.executeHook('beforeBuild')
+
+      this.logger.info('正在执行生产构建...')
+
+      // 触发构建开始事件
+      this.emit(LauncherEvent.BUILD_START, {
+        config: mergedConfig,
+        timestamp: Date.now()
+      } as LauncherEventData[LauncherEvent.BUILD_START])
+
+      // 动态导入 Vite
+      const { build } = await import('vite')
+
+      // 执行构建
+      const result = await build(mergedConfig) as RollupOutput
+
+      // 更新统计信息
+      this.updateStats('build', Date.now() - buildStartTime)
+
+      // 设置状态
+      this.setStatus(LauncherStatus.IDLE)
+
+      // 执行构建后钩子
+      await this.executeHook('afterBuild')
+
+      // 触发构建完成事件
+      this.emit(LauncherEvent.BUILD_END, {
+        result,
+        duration: Date.now() - buildStartTime,
+        timestamp: Date.now()
+      } as LauncherEventData[LauncherEvent.BUILD_END])
+
+      this.logger.success('生产构建完成', {
+        duration: Date.now() - buildStartTime,
+        count: Array.isArray(result.output) ? result.output.length : 0
+      })
+
+      return result
+
+    } catch (error) {
+      this.handleError(error as Error, '生产构建失败')
+      throw error
+    }
+  }
+
+  /**
+   * 启动监听模式构建
+   * 
+   * @param config - 可选的配置覆盖
+   * @returns 构建监听器
+   */
+  async buildWatch(config?: ViteLauncherConfig): Promise<RollupWatcher> {
+    try {
+      // 合并配置，启用监听模式
+      const mergedConfig = config ? this.mergeConfig(this.config, config) : this.config
+      if (mergedConfig.build) {
+        mergedConfig.build.watch = {}
+      }
+
+      this.logger.info('正在启动监听模式构建...')
+
+      // 动态导入 Vite
+      const { build } = await import('vite')
+
+      // 执行监听构建
+      this.buildWatcher = await build(mergedConfig) as RollupWatcher
+
+      this.logger.success('监听模式构建已启动')
+
+      return this.buildWatcher
+
+    } catch (error) {
+      this.handleError(error as Error, '启动监听模式构建失败')
+      throw error
+    }
+  }
+
+  /**
+   * 启动预览服务器
+   *
+   * @param config - 可选的配置覆盖
+   * @returns 预览服务器实例
+   */
+  async preview(config?: ViteLauncherConfig): Promise<PreviewServer> {
+    try {
+      // 确保已初始化（加载配置文件）
+      await this.initialize()
+
+      this.setStatus(LauncherStatus.PREVIEWING)
+
+      // 合并配置
+      const mergedConfig = config ? this.mergeConfig(this.config, config) : this.config
+
+      // 执行预览前钩子
+      await this.executeHook('beforePreview')
+
+      this.logger.info('正在启动预览服务器...', {
+        host: mergedConfig.preview?.host || DEFAULT_HOST,
+        port: mergedConfig.preview?.port || 4173
+      })
+
+      // 动态导入 Vite
+      const { preview } = await import('vite')
+
+      // 创建预览服务器
+      this.previewServer = await preview(mergedConfig)
+
+      // 执行预览后钩子
+      await this.executeHook('afterPreview')
+
+      this.logger.success('预览服务器启动成功', {
+        url: this.getPreviewServerUrl(this.previewServer)
+      })
+
+      return this.previewServer
+
+    } catch (error) {
+      this.handleError(error as Error, '预览服务器启动失败')
+      throw error
+    }
+  }
+
+  /**
+   * 合并配置
+   *
+   * @param base - 基础配置
+   * @param override - 覆盖配置
+   * @returns 合并后的配置
+   */
+  mergeConfig(base: ViteLauncherConfig, override: ViteLauncherConfig): ViteLauncherConfig {
+    // 检查参数有效性
+    if (!base) base = {}
+    if (!override) return base
+
+    // 简单的深度合并实现
+    const deepMerge = (target: any, source: any): any => {
+      if (!target) target = {}
+      if (!source) return target
+
+      const result = { ...target }
+
+      for (const key in source) {
+        if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+          result[key] = deepMerge(target[key] || {}, source[key])
+        } else {
+          result[key] = source[key]
+        }
+      }
 
       return result
     }
-    catch (error) {
-      const launcherError = this.errorHandler.handleError(
-        error as Error,
-        'build project',
-      )
+
+    return deepMerge(base, override)
+  }
+
+  /**
+   * 验证配置
+   *
+   * @param config - 要验证的配置
+   * @returns 验证结果
+   */
+  validateConfig(config: ViteLauncherConfig): import('../types').ValidationResult {
+    const errors: string[] = []
+    const warnings: string[] = []
+
+    try {
+      // 验证基本配置
+      if (config.server?.port && (config.server.port < 1 || config.server.port > 65535)) {
+        errors.push('服务器端口号必须在 1-65535 范围内')
+      }
+
+      if (config.preview?.port && (config.preview.port < 1 || config.preview.port > 65535)) {
+        errors.push('预览服务器端口号必须在 1-65535 范围内')
+      }
+
+      // 验证构建配置
+      if (config.build?.outDir && !PathUtils.isAbsolute(config.build.outDir)) {
+        // 相对路径是允许的，但给出警告
+        warnings.push('建议使用绝对路径作为输出目录')
+      }
+
+      // 验证 launcher 特有配置
+      if (config.launcher?.logLevel && !['silent', 'error', 'warn', 'info', 'debug'].includes(config.launcher.logLevel)) {
+        errors.push('日志级别必须是 silent、error、warn、info 或 debug 之一')
+      }
 
       return {
-        success: false,
-        outputFiles: [],
-        duration: 0,
-        size: 0,
-        errors: [launcherError?.message || '构建失败'],
-        stats: { entryCount: 0, moduleCount: 0, assetCount: 0, chunkCount: 0 },
+        valid: errors.length === 0,
+        errors,
+        warnings
+      }
+
+    } catch (error) {
+      return {
+        valid: false,
+        errors: [`配置验证过程中发生错误: ${(error as Error).message}`],
+        warnings
       }
     }
   }
 
   /**
-   * 预览构建结果
-   * @param projectPath 项目路径
-   * @param options 预览选项
-   * @returns 预览服务器实例
+   * 加载配置文件
+   *
+   * @param configPath - 配置文件路径
+   * @returns 加载的配置
    */
-  async preview(
-    projectPath: string = process.cwd(),
-    options: PreviewOptions = {},
-  ): Promise<ViteDevServer> {
-    this.checkDestroyed()
+  async loadConfig(configPath?: string): Promise<ViteLauncherConfig> {
+    try {
+      if (configPath) {
+        // 加载指定的配置文件
+        const configExists = await FileSystem.exists(configPath)
+        if (!configExists) {
+          throw new Error(`配置文件不存在: ${configPath}`)
+        }
 
-    return ErrorHandler.wrapAsync(async () => {
-      this.log('启动预览服务器...', 'info')
+        this.logger.info('正在加载配置文件', { path: configPath })
 
-      const absolutePath = path.resolve(projectPath)
+        // 使用配置管理器加载
+        const loadedConfig = await this.configManager.loadConfig(configPath)
 
-      // 检查构建输出是否存在
-      const outputDir = options.outDir || 'dist'
-      const outputPath = path.resolve(absolutePath, outputDir)
+        // 合并到当前配置
+        this.config = this.mergeConfig(this.config, loadedConfig)
 
-      const exists = await this.checkDirectoryExists(outputPath)
-      if (!exists) {
-        throw ErrorHandler.createError(
-          ERROR_CODES.BUILD_OUTPUT_NOT_FOUND,
-          `构建输出目录不存在: ${outputPath}。请先运行构建命令。`,
-        )
+        // 验证配置
+        const validation = this.validateConfig(this.config)
+        if (!validation.valid) {
+          this.logger.warn('配置验证失败', { errors: validation.errors })
+        }
+
+        if (validation.warnings.length > 0) {
+          this.logger.warn('配置警告', { warnings: validation.warnings })
+        }
+
+        this.logger.success('配置文件加载成功', { path: configPath })
+
+        return this.config
+      } else {
+        // 自动查找配置文件
+        return await this.autoLoadConfig()
       }
 
-      // 检测项目类型
-      const detection = await this.projectDetector.detectProjectType(absolutePath)
-
-      // 生成 Vite 配置
-      const viteConfig = await this.generateViteConfig(absolutePath, detection.projectType, 'production', options)
-
-      // 启动预览服务器
-      const previewServer = await preview(viteConfig)
-
-      const port = options.port || 4173
-      const host = options.host || 'localhost'
-
-      this.logSuccess('预览服务器已启动:')
-      this.log(`  ${pc.green('➜')} 本地地址: ${pc.cyan(`http://${host}:${port}`)}`, 'info')
-      this.log(`  ${pc.blue('📁')} 预览目录: ${pc.gray(outputPath)}`, 'info')
-
-      return previewServer as ViteDevServer
-    }, 'start preview server')()
+    } catch (error) {
+      this.handleError(error as Error, '加载配置文件失败')
+      throw error
+    }
   }
 
   /**
-   * 停止当前服务器
+   * 添加插件
+   *
+   * @param plugin - 要添加的插件
    */
-  async stop(): Promise<void> {
-    if (this.currentServer) {
-      try {
-        await this.currentServer.close()
-        this.currentServer = null
-        this.log('服务器已停止', 'info')
-      } catch (error) {
-        this.logWarn(`停止服务器时出现错误: ${(error as Error).message}`)
-        // 强制清理
-        this.currentServer = null
+  addPlugin(plugin: Plugin): void {
+    try {
+      // 检查插件是否已存在
+      const existingIndex = this.plugins.findIndex(p => p.name === plugin.name)
+
+      if (existingIndex >= 0) {
+        this.logger.warn('插件已存在，将被替换', { name: plugin.name })
+        this.plugins[existingIndex] = plugin
+      } else {
+        this.plugins.push(plugin)
+        this.logger.info('插件已添加', { name: plugin.name })
       }
+
+      // 更新配置中的插件列表
+      if (!this.config.plugins) {
+        this.config.plugins = []
+      }
+
+      // 确保插件在配置中
+      const configPluginIndex = this.config.plugins.findIndex(p =>
+        p && typeof p === 'object' && 'name' in p && p.name === plugin.name
+      )
+      if (configPluginIndex >= 0) {
+        this.config.plugins[configPluginIndex] = plugin
+      } else {
+        this.config.plugins.push(plugin)
+      }
+
+    } catch (error) {
+      this.handleError(error as Error, '添加插件失败')
     }
+  }
+
+  /**
+   * 移除插件
+   *
+   * @param pluginName - 要移除的插件名称
+   */
+  removePlugin(pluginName: string): void {
+    try {
+      const index = this.plugins.findIndex(p => p.name === pluginName)
+
+      if (index >= 0) {
+        this.plugins.splice(index, 1)
+        this.logger.info('插件已移除', { name: pluginName })
+
+        // 从配置中移除
+        if (this.config.plugins) {
+          const configIndex = this.config.plugins.findIndex(p =>
+            p && typeof p === 'object' && 'name' in p && p.name === pluginName
+          )
+          if (configIndex >= 0) {
+            this.config.plugins.splice(configIndex, 1)
+          }
+        }
+      } else {
+        this.logger.warn('插件不存在', { name: pluginName })
+      }
+
+    } catch (error) {
+      this.handleError(error as Error, '移除插件失败')
+    }
+  }
+
+  /**
+   * 获取插件列表
+   *
+   * @returns 插件列表
+   */
+  getPlugins(): Plugin[] {
+    return [...this.plugins]
+  }
+
+  /**
+   * 注册生命周期钩子 - 就绪回调
+   *
+   * @param callback - 回调函数
+   */
+  onReady(callback: () => void): void {
+    this.on('ready', callback)
+  }
+
+  /**
+   * 注册生命周期钩子 - 错误回调
+   *
+   * @param callback - 错误处理回调
+   */
+  onError(callback: (error: Error) => void): void {
+    this.on('error', callback)
+  }
+
+  /**
+   * 注册生命周期钩子 - 关闭回调
+   *
+   * @param callback - 关闭回调
+   */
+  onClose(callback: () => void): void {
+    this.on('close', callback)
+  }
+
+  /**
+   * 获取当前状态
+   *
+   * @returns 当前状态
+   */
+  getStatus(): LauncherStatus {
+    return this.status
+  }
+
+  /**
+   * 检查是否正在运行
+   *
+   * @returns 是否正在运行
+   */
+  isRunning(): boolean {
+    return this.status === LauncherStatus.RUNNING ||
+      this.status === LauncherStatus.BUILDING ||
+      this.status === LauncherStatus.PREVIEWING
   }
 
   /**
    * 获取当前配置
+   *
+   * @returns 当前配置
    */
-  getConfig(): InlineConfig {
-    return this.config || {}
+  getConfig(): ViteLauncherConfig {
+    return { ...this.config }
   }
 
   /**
-   * 获取项目类型信息
+   * 获取统计信息
+   *
+   * @returns 统计信息
    */
-  getProjectType(): ProjectType {
-    return this.projectType || 'unknown'
+  getStats(): LauncherStats {
+    return { ...this.stats }
   }
 
   /**
-   * 更新配置
+   * 获取性能指标
+   *
+   * @returns 性能指标
    */
-  configure(config: Partial<InlineConfig>): void {
-    this.config = this.configManager.mergeConfig(this.config || {}, config)
-    this.log('配置已更新', 'info')
+  getPerformanceMetrics(): PerformanceMetrics {
+    return { ...this.performanceMetrics }
+  }
+
+  /**
+   * 获取服务器信息
+   *
+   * @returns 服务器信息
+   */
+  getServerInfo(): ServerInfo | null {
+    if (!this.devServer) {
+      return null
+    }
+
+    return {
+      type: ServerType.DEV,
+      status: this.status as any, // 临时类型转换
+      instance: this.devServer,
+      config: {
+        type: ServerType.DEV,
+        host: typeof this.config.server?.host === 'string' ? this.config.server.host : DEFAULT_HOST,
+        port: this.config.server?.port || DEFAULT_PORT,
+        https: typeof this.config.server?.https === 'boolean' ? this.config.server.https : false
+      },
+      url: this.getServerUrl(this.devServer),
+      host: typeof this.config.server?.host === 'string' ? this.config.server.host : DEFAULT_HOST,
+      port: this.config.server?.port || DEFAULT_PORT,
+      https: typeof this.config.server?.https === 'boolean' ? this.config.server.https : false,
+      startTime: this.startTime
+    }
+  }
+
+  /**
+   * 设置状态
+   *
+   * @param newStatus - 新状态
+   */
+  private setStatus(newStatus: LauncherStatus): void {
+    const oldStatus = this.status
+    this.status = newStatus
+
+    // 更新最后活动时间
+    this.stats.lastActivity = Date.now()
+
+    // 触发状态变更事件
+    this.emit(LauncherEvent.STATUS_CHANGE, {
+      from: oldStatus,
+      to: newStatus,
+      timestamp: Date.now()
+    } as LauncherEventData[LauncherEvent.STATUS_CHANGE])
+
+    this.logger.debug('状态变更', { from: oldStatus, to: newStatus })
+  }
+
+  /**
+   * 执行生命周期钩子
+   *
+   * @param hookName - 钩子名称
+   */
+  private async executeHook(hookName: keyof LauncherHooks): Promise<void> {
+    try {
+      const hook = this.config.launcher?.hooks?.[hookName]
+      if (hook && typeof hook === 'function') {
+        await Promise.resolve((hook as () => void | Promise<void>)())
+        this.logger.debug('生命周期钩子执行完成', { hook: hookName })
+      }
+    } catch (error) {
+      this.logger.error('生命周期钩子执行失败', {
+        hook: hookName,
+        error: (error as Error).message
+      })
+      // 钩子执行失败不应该阻止主流程
+    }
+  }
+
+  /**
+   * 处理错误
+   *
+   * @param error - 错误对象
+   * @param context - 错误上下文
+   */
+  private handleError(error: Error, context: string): void {
+    // 更新错误统计
+    this.stats.errorCount++
+
+    // 设置错误状态
+    this.setStatus(LauncherStatus.ERROR)
+
+    // 记录错误日志
+    this.logger.error(context, {
+      error: error.message,
+      stack: error.stack
+    })
+
+    // 使用错误处理器处理
+    this.errorHandler.handle(error, { operation: context })
+
+    // 触发错误事件
+    this.emit(LauncherEvent.ERROR, {
+      error,
+      context,
+      timestamp: Date.now()
+    } as LauncherEventData[LauncherEvent.ERROR])
+
+    // 执行错误钩子
+    this.executeHook('onError')
+  }
+
+  /**
+   * 更新统计信息
+   *
+   * @param operation - 操作类型
+   * @param duration - 持续时间（可选）
+   */
+  private updateStats(operation: 'start' | 'build', duration?: number): void {
+    switch (operation) {
+      case 'start':
+        this.stats.startCount++
+        if (duration) {
+          this.stats.averageStartTime =
+            (this.stats.averageStartTime * (this.stats.startCount - 1) + duration) / this.stats.startCount
+        }
+        break
+
+      case 'build':
+        this.stats.buildCount++
+        if (duration) {
+          this.stats.averageBuildTime =
+            (this.stats.averageBuildTime * (this.stats.buildCount - 1) + duration) / this.stats.buildCount
+        }
+        break
+    }
+
+    this.stats.lastActivity = Date.now()
+  }
+
+  /**
+   * 设置事件监听器
+   *
+   * @param listeners - 事件监听器映射
+   */
+  private setupEventListeners(listeners?: Partial<{
+    [K in LauncherEvent]: (data: LauncherEventData[K]) => void
+  }>): void {
+    if (!listeners) return
+
+    // 注册所有提供的监听器
+    Object.entries(listeners).forEach(([event, listener]) => {
+      if (listener) {
+        this.on(event, listener)
+      }
+    })
+  }
+
+  /**
+   * 设置错误处理
+   */
+  private setupErrorHandling(): void {
+    // 监听未捕获的异常
+    process.on('uncaughtException', (error) => {
+      this.handleError(error, '未捕获的异常')
+    })
+
+    // 监听未处理的 Promise 拒绝
+    process.on('unhandledRejection', (reason) => {
+      const error = reason instanceof Error ? reason : new Error(String(reason))
+      this.handleError(error, '未处理的 Promise 拒绝')
+    })
+  }
+
+  /**
+   * 自动加载配置文件
+   *
+   * @returns 加载的配置
+   */
+  private async autoLoadConfig(): Promise<ViteLauncherConfig> {
+    const { DEFAULT_CONFIG_FILES } = await import('../constants')
+
+    for (const configFile of DEFAULT_CONFIG_FILES) {
+      const configPath = PathUtils.resolve(this.cwd, configFile)
+
+      if (await FileSystem.exists(configPath)) {
+        this.logger.info('找到配置文件', { path: configPath })
+
+        // 直接加载配置文件，避免递归调用
+        const loadedConfig = await this.configManager.loadConfig(configPath)
+
+        // 合并到当前配置
+        this.config = this.mergeConfig(this.config, loadedConfig)
+
+        this.logger.success('配置文件加载成功', { path: configPath })
+        return this.config
+      }
+    }
+
+    this.logger.info('未找到配置文件，使用默认配置')
+    return this.config
+  }
+
+  /**
+   * 获取服务器 URL
+   *
+   * @param server - 服务器实例
+   * @returns 服务器 URL
+   */
+  private getServerUrl(server: ViteDevServer): string {
+    try {
+      if (server.resolvedUrls?.local?.[0]) {
+        return server.resolvedUrls.local[0]
+      }
+
+      // 回退到手动构建 URL
+      const host = this.config.server?.host || DEFAULT_HOST
+      const port = this.config.server?.port || DEFAULT_PORT
+      const protocol = this.config.server?.https ? 'https' : 'http'
+
+      return `${protocol}://${host}:${port}`
+    } catch (error) {
+      this.logger.warn('获取服务器 URL 失败', { error: (error as Error).message })
+      return 'http://localhost:3000'
+    }
+  }
+
+  /**
+   * 获取预览服务器 URL
+   *
+   * @param server - 预览服务器实例
+   * @returns 预览服务器 URL
+   */
+  private getPreviewServerUrl(server: PreviewServer): string {
+    try {
+      if (server.resolvedUrls?.local?.[0]) {
+        return server.resolvedUrls.local[0]
+      }
+
+      // 回退到手动构建 URL
+      const host = this.config.preview?.host || DEFAULT_HOST
+      const port = this.config.preview?.port || 4173
+      const protocol = this.config.preview?.https ? 'https' : 'http'
+
+      return `${protocol}://${host}:${port}`
+    } catch (error) {
+      this.logger.warn('获取预览服务器 URL 失败', { error: (error as Error).message })
+      return 'http://localhost:4173'
+    }
   }
 
   /**
    * 销毁实例
+   * 清理资源和事件监听器
    */
   async destroy(): Promise<void> {
-    if (this.isDestroyed)
-      return
-
-    await this.stop()
-    this.currentServer = null
-    this.isDestroyed = true
-    this.log('ViteLauncher 实例已销毁', 'info')
-  }
-
-  /**
-   * 获取项目信息
-   * @param projectPath 项目路径
-   * @returns 项目信息
-   */
-  async getProjectInfo(projectPath: string = process.cwd()): Promise<ProjectInfo> {
-    this.checkDestroyed()
-
-    return ErrorHandler.wrapAsync(async () => {
-      const absolutePath = path.resolve(projectPath)
-      const detection = await this.projectDetector.detectProjectType(absolutePath)
-
-      return {
-        framework: detection.framework,
-        typescript: detection.report.detectedFiles.some((file: string) => file.endsWith('.ts') || file.endsWith('.tsx')),
-        dependencies: Object.keys(detection.report.dependencies || {}),
-        confidence: detection.confidence,
-      }
-    }, 'get project info')()
-  }
-
-  /**
-   * 生成 Vite 配置
-   */
-  private async generateViteConfig(
-    projectPath: string,
-    projectType: ProjectType,
-    mode: RunMode,
-    options: any = {},
-  ): Promise<InlineConfig> {
-    // 加载用户配置文件
-    const userConfig = await loadUserConfig(projectPath)
-
-    // 获取预设配置
-    const presetConfig = await this.configManager.loadPreset(projectType)
-
-    // 加载项目配置
-    const projectConfig = await this.configManager.loadProjectConfig(projectPath)
-
-    // 获取推荐插件
-    let plugins = await this.pluginManager.createPluginsForProject(projectType)
-
-    // 添加插件生态系统生成的插件
-    const ecosystemPlugins = this.pluginEcosystem.generateVitePlugins()
-    plugins = [...plugins, ...ecosystemPlugins]
-
-    // 如果用户配置中有自定义插件，合并它们
-    if (userConfig?.plugins && Array.isArray(userConfig.plugins)) {
-      plugins = [...plugins, ...userConfig.plugins]
-    }
-
-    // 如果用户配置中有 Vite 插件，合并它们
-    if (userConfig?.vite?.plugins) {
-      plugins = [...plugins, ...userConfig.vite.plugins]
-    }
-
-    // 配置网络管理器
-    if (userConfig?.network) {
-      if (userConfig.network.proxy) {
-        this.networkManager.configureProxy(userConfig.network.proxy)
-      }
-      if (userConfig.network.alias) {
-        this.networkManager.configureAlias(userConfig.network.alias)
-      }
-      if (userConfig.network.cors) {
-        this.networkManager.configureCORS(userConfig.network.cors)
-      }
-    }
-
-    // 配置安全管理器
-    if (userConfig?.security) {
-      if (userConfig.security.ssl) {
-        this.securityManager.configureSSL(userConfig.security.ssl as any)
-      }
-      if (userConfig.security.https) {
-        this.securityManager.enableHTTPS(userConfig.security.https as any)
-      }
-      if (userConfig.security.headers) {
-        this.securityManager.configureSecurityHeaders(userConfig.security.headers as any)
-      }
-      if (userConfig.security.csp) {
-        this.securityManager.configureCSP(userConfig.security.csp as any)
-      }
-    }
-
-    // 配置插件生态
-    if (userConfig?.plugins) {
-      this.pluginEcosystem.applyConfig(userConfig.plugins)
-    }
-
-    // 配置环境优化
-    if (userConfig?.optimization) {
-      this.environmentOptimizer.applyOptimizations(userConfig.optimization)
-    }
-
-    // 合并配置
-    const baseConfig: InlineConfig = {
-      root: projectPath,
-      mode,
-      logLevel: this.options.logLevel || 'info',
-      plugins,
-      ...presetConfig.config,
-    }
-
-    // 根据模式调整配置
-    if (mode === 'development') {
-      const devOptions = mergeConfig(
-        {
-          port: options.port || userConfig?.network?.port || 5173,
-          host: options.host || userConfig?.network?.host || 'localhost',
-          open: options.open || userConfig?.network?.open || false,
-        },
-        userConfig?.dev || {}
-      )
-
-      // 应用网络配置
-      const proxyConfig = this.networkManager.generateViteProxyConfig()
-      const corsConfig = this.networkManager.getCORSConfig()
-
-      // 应用安全配置
-      const httpsConfig = this.securityManager.generateViteHTTPSConfig()
-      const securityHeaders = this.securityManager.generateSecurityHeadersConfig()
-
-      // 应用环境优化配置
-      const optimizationConfig = this.environmentOptimizer.generateViteOptimizationConfig()
-
-      baseConfig.server = {
-        ...baseConfig.server,
-        ...devOptions,
-        proxy: Object.keys(proxyConfig).length > 0 ? proxyConfig : undefined,
-        cors: corsConfig,
-        https: httpsConfig,
-        headers: Object.keys(securityHeaders).length > 0 ? securityHeaders : undefined,
-        ...optimizationConfig.server,
-        ...(userConfig?.vite?.server || {}),
-      }
-
-      // 合并优化配置到基础配置
-      if (optimizationConfig.optimizeDeps) {
-        baseConfig.optimizeDeps = {
-          ...baseConfig.optimizeDeps,
-          ...optimizationConfig.optimizeDeps,
-        }
-      }
-
-      if (optimizationConfig.build) {
-        baseConfig.build = {
-          ...baseConfig.build,
-          ...optimizationConfig.build,
-        }
-      }
-
-      if (optimizationConfig.cacheDir) {
-        baseConfig.cacheDir = optimizationConfig.cacheDir
-      }
-
-      // 应用别名配置
-      const aliasConfig = this.networkManager.generateViteAliasConfig()
-      if (Object.keys(aliasConfig).length > 0) {
-        baseConfig.resolve = {
-          ...baseConfig.resolve,
-          alias: {
-            ...aliasConfig,
-            ...(baseConfig.resolve?.alias || {}),
-            ...(userConfig?.vite?.resolve?.alias || {}),
-          },
-        }
-      }
-    }
-    else if (mode === 'production') {
-      const buildOptions = mergeConfig(
-        {
-          outDir: options.outDir || 'dist',
-          sourcemap: options.sourcemap || false,
-          minify: options.minify !== false ? (options.minify || 'esbuild') : false,
-        },
-        userConfig?.build || {}
-      )
-
-      baseConfig.build = {
-        ...baseConfig.build,
-        ...buildOptions,
-        ...(userConfig?.vite?.build || {}),
-      }
-    }
-
-    // 合并用户的 Vite 配置
-    if (userConfig?.vite) {
-      const { plugins: userPlugins, server, build, ...otherViteConfig } = userConfig.vite
-      Object.assign(baseConfig, otherViteConfig)
-    }
-
-    // 合并项目配置
-    const finalConfig = this.configManager.mergeConfig(baseConfig, projectConfig)
-
-    this.log(`已加载配置文件: ${userConfig ? '是' : '否'}`, 'info')
-
-    return finalConfig
-  }
-
-  /**
-   * 生成项目文件
-   */
-  private async generateProjectFiles(
-    projectPath: string,
-    projectType: ProjectType,
-    _template?: string,
-  ): Promise<void> {
-    // 生成 package.json
-    const packageJson = this.generatePackageJson(projectType)
-    await fs.writeFile(
-      path.join(projectPath, 'package.json'),
-      JSON.stringify(packageJson, null, 2),
-    )
-
-    // 生成 index.html
-    const indexHtml = this.generateIndexHtml(projectType)
-    await fs.writeFile(path.join(projectPath, 'index.html'), indexHtml)
-
-    // 生成 Vite 配置文件
-    const viteConfig = await this.configManager.generateConfigFile(projectType)
-    await fs.writeFile(path.join(projectPath, 'vite.config.ts'), viteConfig)
-
-    // 创建 src 目录和基础文件
-    const srcDir = path.join(projectPath, 'src')
-    await fs.mkdir(srcDir, { recursive: true })
-
-    // 根据项目类型生成不同的入口文件
-    await this.generateEntryFiles(srcDir, projectType)
-  }
-
-  /**
-   * 生成 package.json
-   */
-  private generatePackageJson(projectType: ProjectType) {
-    const basePackage = {
-      name: 'vite-project',
-      private: true,
-      version: '0.0.0',
-      type: 'module',
-      scripts: {
-        dev: 'vite',
-        build: 'vite build',
-        preview: 'vite preview',
-      },
-      devDependencies: {
-        vite: '^5.0.0',
-      } as Record<string, string>,
-    }
-
-    // 根据项目类型添加特定依赖
-    const requiredPlugins = this.pluginManager.getRequiredPlugins(projectType)
-    for (const plugin of requiredPlugins) {
-      // 使用 packageName 和 version 属性，如果不存在则使用默认值
-      const pluginName = (plugin as any).packageName || (plugin as any).name || 'unknown-plugin'
-      const pluginVersion = (plugin as any).version || 'latest'
-      basePackage.devDependencies[pluginName] = pluginVersion
-    }
-
-    // 添加框架特定的依赖
-    switch (projectType) {
-      case 'vue3':
-        Object.assign(basePackage, {
-          dependencies: { vue: '^3.3.0' },
-          devDependencies: { ...basePackage.devDependencies, '@vitejs/plugin-vue': '^5.0.0' },
-        })
-        break
-      case 'vue2':
-        Object.assign(basePackage, {
-          dependencies: { vue: '^2.7.0' },
-          devDependencies: { ...basePackage.devDependencies, '@vitejs/plugin-vue2': '^2.3.0' },
-        })
-        break
-      case 'react':
-        Object.assign(basePackage, {
-          dependencies: { 'react': '^18.2.0', 'react-dom': '^18.2.0' },
-          devDependencies: {
-            ...basePackage.devDependencies,
-            '@vitejs/plugin-react': '^4.0.0',
-            '@types/react': '^18.2.0',
-            '@types/react-dom': '^18.2.0',
-          },
-        })
-        break
-      case 'lit':
-        Object.assign(basePackage, {
-          dependencies: { 'lit': '^3.0.0' },
-          devDependencies: {
-            ...basePackage.devDependencies,
-            'typescript': '^5.0.0',
-            '@types/node': '^20.0.0'
-          },
-        })
-        break
-      case 'vanilla-ts':
-        Object.assign(basePackage, {
-          devDependencies: { ...basePackage.devDependencies, typescript: '^5.0.0' },
-        })
-        break
-    }
-
-    return basePackage
-  }
-
-  /**
-   * 生成 index.html
-   */
-  private generateIndexHtml(projectType: ProjectType): string {
-    const title = `Vite + ${projectType.charAt(0).toUpperCase() + projectType.slice(1)}`
-
-    // 确定入口文件扩展名
-    let entryExt = 'js'
-    if (projectType === 'lit' || projectType === 'vanilla-ts') {
-      entryExt = 'ts'
-    } else if (projectType === 'react') {
-      entryExt = 'jsx'
-    }
-
-    // 原生 HTML 项目需要包含 CSS 文件
-    const cssLink = projectType === 'html' ? '\n    <link rel="stylesheet" href="/src/style.css" />' : ''
-
-    return `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${title}</title>${cssLink}
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.${entryExt}"></script>
-  </body>
-</html>`
-  }
-
-  /**
-   * 生成入口文件
-   */
-  private async generateEntryFiles(srcDir: string, projectType: ProjectType): Promise<void> {
-    switch (projectType) {
-      case 'vue2':
-        await fs.writeFile(path.join(srcDir, 'main.js'), `import Vue from 'vue'\nimport App from './App.vue'\n\nnew Vue({\n  render: h => h(App),\n}).$mount('#app')`)
-        await fs.writeFile(path.join(srcDir, 'App.vue'), `<template>\n  <div id="app">\n    <h1>Hello Vue 2!</h1>\n  </div>\n</template>\n\n<script>\nexport default {\n  name: 'App'\n}\n</script>\n\n<style>\n#app {\n  font-family: Avenir, Helvetica, Arial, sans-serif;\n  text-align: center;\n  color: #2c3e50;\n  margin-top: 60px;\n}\n</style>`)
-        break
-      case 'vue3':
-        await fs.writeFile(path.join(srcDir, 'main.js'), `import { createApp } from 'vue'\nimport App from './App.vue'\n\ncreateApp(App).mount('#app')`)
-        await fs.writeFile(path.join(srcDir, 'App.vue'), `<template>\n  <div>\n    <h1>Hello Vue 3!</h1>\n  </div>\n</template>\n\n<script>\nexport default {\n  name: 'App'\n}\n</script>`)
-        break
-      case 'react':
-        await fs.writeFile(path.join(srcDir, 'main.jsx'), `import React from 'react'\nimport ReactDOM from 'react-dom/client'\nimport App from './App.jsx'\n\nReactDOM.createRoot(document.getElementById('app')).render(<App />)`)
-        await fs.writeFile(path.join(srcDir, 'App.jsx'), `function App() {\n  return <h1>Hello React!</h1>\n}\n\nexport default App`)
-        break
-      case 'lit':
-        await fs.writeFile(path.join(srcDir, 'main.ts'), `import './my-element.js'\n\ndocument.querySelector('#app')!.innerHTML = \`\n  <my-element>\n    <p>This is child content</p>\n  </my-element>\n\``)
-        await fs.writeFile(path.join(srcDir, 'my-element.ts'), `import { LitElement, html, css } from 'lit'\nimport { customElement, property } from 'lit/decorators.js'\n\n@customElement('my-element')\nexport class MyElement extends LitElement {\n  static styles = css\`\n    :host {\n      display: block;\n      border: solid 1px gray;\n      padding: 16px;\n      max-width: 800px;\n    }\n  \`\n\n  @property()\n  name = 'World'\n\n  render() {\n    return html\`\n      <h1>Hello, \${this.name}!</h1>\n      <button @click=\${this._onClick} part="button">\n        Click Count: \${this.count}\n      </button>\n      <slot></slot>\n    \`\n  }\n\n  @property({ type: Number })\n  count = 0\n\n  private _onClick() {\n    this.count++\n  }\n}`)
-        break
-      case 'html':
-        // 原生 HTML 项目不需要复杂的入口文件，只需要基本的 JS 和 CSS
-        await fs.writeFile(path.join(srcDir, 'main.js'), `// 原生 HTML 项目的主 JavaScript 文件\nconsole.log('Hello from native HTML project!');\n\n// 你可以在这里添加你的 JavaScript 代码\ndocument.addEventListener('DOMContentLoaded', function() {\n  const app = document.getElementById('app');\n  if (app) {\n    app.innerHTML = '<h1>Hello Native HTML!</h1><p>This is a native HTML project powered by Vite.</p>';\n  }\n});`)
-        await fs.writeFile(path.join(srcDir, 'style.css'), `/* 原生 HTML 项目的主样式文件 */\nbody {\n  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',\n    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',\n    sans-serif;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n  margin: 0;\n  padding: 0;\n  background-color: #f5f5f5;\n}\n\n#app {\n  text-align: center;\n  padding: 2rem;\n}\n\nh1 {\n  color: #333;\n  margin-bottom: 1rem;\n}\n\np {\n  color: #666;\n  line-height: 1.6;\n}`)
-        break
-      case 'vanilla':
-        await fs.writeFile(path.join(srcDir, 'main.js'), `document.querySelector('#app').innerHTML = '<h1>Hello Vite!</h1>'`)
-        break
-      case 'vanilla-ts':
-        await fs.writeFile(path.join(srcDir, 'main.ts'), `const app = document.querySelector<HTMLDivElement>('#app')!\napp.innerHTML = '<h1>Hello Vite + TypeScript!</h1>'`)
-        break
-    }
-  }
-
-  /**
-   * 安装依赖
-   */
-  private async installDependencies(_projectPath: string): Promise<void> {
-    this.log('安装依赖...', 'info')
-
-    // 这里可以根据检测到的包管理器执行安装命令
-    // 为了简化，这里只是记录日志
-    this.log('请手动运行 npm install 安装依赖', 'info')
-  }
-
-  /**
-   * 检查目录是否存在
-   */
-  private async checkDirectoryExists(dirPath: string): Promise<boolean> {
     try {
-      const stat = await fs.stat(dirPath)
-      return stat.isDirectory()
-    }
-    catch {
-      return false
+      this.logger.info('正在销毁 ViteLauncher 实例...')
+
+      // 停止所有服务
+      if (this.devServer) {
+        await this.stopDev()
+      }
+
+      if (this.buildWatcher) {
+        this.buildWatcher.close()
+        this.buildWatcher = null
+      }
+
+      if (this.previewServer) {
+        await this.previewServer.close()
+        this.previewServer = null
+      }
+
+      // 移除所有事件监听器
+      this.removeAllListeners()
+
+      // 清理配置管理器
+      if (this.configManager) {
+        this.configManager.removeAllListeners()
+      }
+
+      this.setStatus(LauncherStatus.STOPPED)
+
+      this.logger.success('ViteLauncher 实例已销毁')
+
+    } catch (error) {
+      this.handleError(error as Error, '销毁实例失败')
+      throw error
     }
   }
 
   /**
-   * 分析构建输出
+   * 使用智能插件增强配置
+   *
+   * @param config - 原始配置
+   * @returns 增强后的配置
    */
-  private async analyzeBuildOutput(outputPath: string): Promise<BuildStats> {
-    const stats: BuildStats = {
-      entryCount: 0,
-      moduleCount: 0,
-      assetCount: 0,
-      chunkCount: 0,
-    }
-
+  private async enhanceConfigWithSmartPlugins(config: ViteLauncherConfig): Promise<ViteLauncherConfig> {
     try {
-      const files = await fs.readdir(outputPath, { recursive: true })
+      // 获取智能检测的插件
+      const smartPlugins = await this.smartPluginManager.getRecommendedPlugins()
 
-      for (const file of files) {
-        const filePath = path.join(outputPath, file.toString())
-        const stat = await fs.stat(filePath)
+      if (smartPlugins.length > 0) {
+        // 合并用户配置的插件和智能检测的插件（按名称去重，避免重复注册）
+        const userPluginsRaw = config.plugins || []
 
-        if (stat.isFile()) {
-          const fileName = file.toString()
-          const ext = path.extname(fileName).slice(1)
+        // 将可能的嵌套数组拍平
+        const flatten = (arr: any[]): any[] => arr.flat ? arr.flat(Infinity) : ([] as any[]).concat(...arr)
+        const userPlugins = Array.isArray(userPluginsRaw) ? flatten(userPluginsRaw) : [userPluginsRaw]
+        const smartFlat = Array.isArray(smartPlugins) ? flatten(smartPlugins) : [smartPlugins]
 
-          // 统计不同类型的文件
-          if (fileName.includes('index') && (ext === 'js' || ext === 'ts')) {
-            stats.entryCount++
-          }
-          if (ext === 'js' || ext === 'ts' || ext === 'jsx' || ext === 'tsx') {
-            stats.moduleCount++
-          }
-          if (ext === 'css' || ext === 'png' || ext === 'jpg' || ext === 'svg' || ext === 'ico') {
-            stats.assetCount++
-          }
-          if (fileName.includes('chunk') || fileName.includes('vendor')) {
-            stats.chunkCount++
+        const exists = new Set<string>(
+          userPlugins
+            .filter((p: any) => p && typeof p === 'object' && 'name' in p)
+            .map((p: any) => p.name as string)
+        )
+
+        const merged: any[] = [...userPlugins]
+        for (const p of smartFlat) {
+          const name = p && typeof p === 'object' && 'name' in p ? (p as any).name as string : undefined
+          if (!name || !exists.has(name)) {
+            merged.unshift(p) // 智能插件优先，但不覆盖用户已显式配置的插件
+            if (name) exists.add(name)
           }
         }
+
+        this.logger.debug('智能插件增强完成', {
+          smartPlugins: smartFlat.length,
+          userPlugins: userPlugins.length,
+          total: merged.length
+        })
+
+        return {
+          ...config,
+          plugins: merged
+        }
       }
-    }
-    catch (error) {
-      this.log(`分析构建输出失败: ${(error as Error).message}`, 'warn')
-    }
 
-    return stats
-  }
-
-  /**
-   * 格式化字节数
-   */
-  // formatBytes method removed as it's not currently used
-
-  /**
-   * 检查实例是否已销毁
-   */
-  private checkDestroyed(): void {
-    if (this.isDestroyed) {
-      throw new Error('ViteLauncher 实例已销毁，无法执行操作')
+      return config
+    } catch (error) {
+      this.logger.warn('智能插件增强失败', { error: (error as Error).message })
+      return config
     }
   }
-
-  /**
-   * 记录日志
-   */
-  private log(message: string, level: LogLevel = 'info'): void {
-    if (this.options.logLevel === 'silent')
-      return
-
-    const levels: Record<LogLevel, number> = {
-      error: 0,
-      warn: 1,
-      info: 2,
-      silent: 3,
-    }
-
-    if (levels[level] <= levels[this.options.logLevel || 'info']) {
-      const timestamp = new Date().toLocaleTimeString()
-      const prefix = pc.gray(`[${timestamp}] [ViteLauncher]`)
-      
-      switch (level) {
-        case 'error':
-          console.error(`${prefix} ${pc.red('❌')} ${message}`)
-          break
-        case 'warn':
-          console.warn(`${prefix} ${pc.yellow('⚠️')} ${message}`)
-          break
-        default:
-          console.log(`${prefix} ${pc.blue('ℹ️')} ${message}`)
-          break
-      }
-    }
-  }
-
-  /**
-   * 记录成功日志
-   */
-  private logSuccess(message: string): void {
-    if (this.options.logLevel === 'silent') return
-    
-    const timestamp = new Date().toLocaleTimeString()
-    const prefix = pc.gray(`[${timestamp}] [ViteLauncher]`)
-    console.log(`${prefix} ${pc.green('✅')} ${message}`)
-  }
-
-  /**
-   * 记录警告日志
-   */
-  private logWarn(message: string): void {
-    this.log(message, 'warn')
-  }
-
 }
-
-/**
- * 默认启动器实例
- */
-export const viteLauncher = new ViteLauncher()

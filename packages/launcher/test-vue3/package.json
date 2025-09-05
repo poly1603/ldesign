@@ -1,0 +1,19 @@
+{
+  "name": "test-vue3",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Vue 3 测试项目 - 用于验证 @ldesign/launcher 功能",
+  "type": "module",
+  "scripts": {
+    "dev": "launcher dev",
+    "build": "launcher build",
+    "preview": "launcher preview"
+  },
+  "dependencies": {
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@ldesign/launcher": "workspace:*",
+    "typescript": "^5.0.0"
+  }
+}

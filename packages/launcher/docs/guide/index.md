@@ -1,53 +1,47 @@
 # 介绍
 
-Vite Launcher 是一个基于 Vite 的前端项目启动器，提供程序化的 API 来简化前端项目的创建、开发和构建流程。
+@ldesign/launcher 是一个基于 Vite JavaScript API 的前端项目启动器，提供统一的开发服务器、构建工具和预览服务。
 
-## 主要特性
+## 什么是 @ldesign/launcher？
 
-### 🚀 快速项目创建
-支持多种前端框架的项目模板，一键创建完整的项目结构：
+@ldesign/launcher 是一个现代化的前端开发工具，它封装了 Vite 的强大功能，为开发者提供了简单易用的 API 和 CLI 工具。无论你是在开发简单的静态网站还是复杂的单页应用，@ldesign/launcher 都能为你提供一致且高效的开发体验。
 
-- Vue 3/2 项目
-- React 项目
-- Next.js 项目
-- Vanilla JavaScript/TypeScript 项目
-- 其他流行框架
+## 核心特性
 
-### 🔧 程序化 API
-提供完整的 TypeScript 类型支持，易于集成到现有工具链：
+### 🚀 基于 Vite
+
+@ldesign/launcher 基于 Vite 构建，继承了 Vite 的所有优势：
+
+- **极速的冷启动** - 利用 ES 模块的原生支持
+- **即时热更新** - 快速的 HMR 体验
+- **丰富的插件生态** - 支持各种前端框架和工具
+- **优化的构建** - 基于 Rollup 的生产构建
+
+### 🛠️ 统一 API
+
+提供一致的编程接口，简化开发工作流程：
 
 ```typescript
-import { ViteLauncher, createProject, startDev } from '@ldesign/launcher'
+const launcher = new ViteLauncher()
 
-// 创建项目
-await createProject('./my-app', 'vue3')
+// 开发
+await launcher.startDev()
 
-// 启动开发服务器
-const server = await startDev('./my-app', { port: 3000 })
+// 构建
+await launcher.build()
+
+// 预览
+await launcher.preview()
 ```
 
-### 🎯 智能检测
-自动检测项目类型、依赖关系和配置需求：
+### 🔧 高度可配置
 
-```typescript
-import { detectProject } from '@ldesign/launcher'
+支持灵活的配置管理：
 
-const projectInfo = await detectProject('./my-project')
-console.log('项目类型:', projectInfo.projectType)
-console.log('框架:', projectInfo.framework)
-```
-
-### 🛠️ 灵活配置
-支持自定义配置，满足不同项目的特殊需求：
-
-```typescript
-const launcher = new ViteLauncher({
-  logLevel: 'info',
-  mode: 'development',
-  autoDetect: true
-})
-
-launcher.configure({
+- **多种配置格式** - 支持 JS、TS、JSON 等格式
+- **配置验证** - 自动验证配置的正确性
+- **配置合并** - 智能合并多个配置源
+- **热重载** - 配置变更时自动重启
   server: { port: 3000 },
   build: { outDir: 'dist' }
 })

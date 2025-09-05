@@ -1,96 +1,153 @@
 ---
 layout: home
+
 hero:
-  name: Vite Launcher
-  text: 基于Vite的前端项目启动器
-  tagline: 提供程序化API，支持多种前端框架，简化项目创建和开发流程
+  name: "@ldesign/launcher"
+  text: "前端项目启动器"
+  tagline: "基于 Vite JavaScript API 的统一开发、构建和预览解决方案"
+  image:
+    src: /logo.svg
+    alt: LDesign Launcher
   actions:
     - theme: brand
       text: 快速开始
       link: /guide/getting-started
     - theme: alt
-      text: 查看API
-      link: /api/vite-launcher
-    - theme: alt
-      text: 在GitHub上查看
-      link: https://github.com/ldesign/ldesign
+      text: 查看 GitHub
+      link: https://github.com/ldesign/launcher
 
 features:
   - icon: 🚀
-    title: 快速启动
-    details: 一键创建Vue、React、Vanilla等多种类型的前端项目，自动配置开发环境
-  - icon: 🔧
-    title: 程序化API
-    details: 提供完整的TypeScript类型支持，易于集成到现有工具链中
-  - icon: 🎯
-    title: 智能检测
-    details: 自动检测项目类型和依赖，智能配置构建参数
+    title: 基于 Vite
+    details: 利用 Vite 的强大功能和生态系统，提供极速的开发体验
+
   - icon: 🛠️
-    title: 灵活配置
-    details: 支持自定义配置，满足不同项目的特殊需求
-  - icon: 📦
-    title: 模块化设计
-    details: 清晰的架构分离，易于扩展和维护
-  - icon: 🧪
-    title: 完整测试
-    details: 全面的测试覆盖，确保稳定性和可靠性
+    title: 统一 API
+    details: 提供一致的开发、构建和预览体验，简化前端工作流程
 
+  - icon: 🔧
+    title: 高度可配置
+    details: 支持灵活的配置管理和扩展，满足各种项目需求
+
+  - icon: 🔌
+    title: 插件系统
+    details: 支持插件扩展和自定义功能，构建强大的工具链
+
+  - icon: 📊
+    title: 性能监控
+    details: 内置性能监控和优化建议，帮助提升开发效率
+
+  - icon: 🎯
+    title: TypeScript
+    details: 完整的 TypeScript 支持，提供类型安全的开发体验
+
+  - icon: 📱
+    title: CLI 工具
+    details: 提供友好的命令行界面，支持各种开发场景
+
+  - icon: ⚡
+    title: 高性能
+    details: 基于 Vite 5.0+ 的高性能构建，快速启动和热更新
+
+  - icon: 🔥
+    title: 热更新
+    details: 完整的 HMR 支持，实时预览代码变更
 ---
-
-## 测试状态
-
-当前测试通过率: **62/91 (68.1%)**
-
-- ✅ ViteLauncher基础功能测试 (11/11)
-- ✅ ViteLauncher简化测试 (8/8)  
-- ✅ ErrorHandler服务测试 (7/7)
-- ✅ 集成测试 (9/11)
-- ⚠️ ProjectDetector测试 (需要进一步修复)
-- ⚠️ 复杂集成测试 (需要进一步修复)
 
 ## 快速体验
 
-```typescript
-import { ViteLauncher, createProject, startDev } from '@ldesign/launcher'
+### 安装
 
-// 创建Vue3项目
-await createProject('./my-vue-app', 'vue3', { force: true })
+::: code-group
 
-// 启动开发服务器
-const server = await startDev('./my-vue-app', { port: 3000 })
-
-// 构建项目
-const result = await buildProject('./my-vue-app', { outDir: 'dist' })
+```bash [pnpm]
+pnpm add @ldesign/launcher
 ```
 
-## 支持的项目类型
+```bash [npm]
+npm install @ldesign/launcher
+```
 
-- **Vue 3** - 现代化的Vue框架
-- **Vue 2** - 经典Vue框架
-- **React** - 流行的React框架
-- **React + Next.js** - 全栈React框架
-- **Vanilla** - 原生JavaScript项目
-- **TypeScript** - TypeScript项目
-- **Lit** - Web Components框架
-- **Svelte** - 现代前端框架
-- **Angular** - 企业级前端框架
+```bash [yarn]
+yarn add @ldesign/launcher
+```
 
-## 核心特性
+:::
 
-### 🎯 智能项目检测
-自动识别项目类型、依赖关系和配置需求
+### 编程式 API
 
-### 🔧 统一API接口
-提供一致的API设计，简化集成工作
+```typescript
+import { ViteLauncher } from '@ldesign/launcher'
 
-### 📦 模块化架构
-清晰的关注点分离，易于扩展和维护
+// 创建启动器实例
+const launcher = new ViteLauncher({
+  cwd: process.cwd(),
+  config: {
+    server: {
+      port: 3000,
+      host: 'localhost'
+    }
+  }
+})
 
-### 🛡️ 类型安全
-完整的TypeScript支持，提供优秀的开发体验
+// 启动开发服务器
+await launcher.startDev()
 
-### 🚀 高性能
-基于Vite构建，提供快速的开发体验
+// 执行构建
+await launcher.build()
 
-### 🧪 测试覆盖
-全面的测试覆盖，确保代码质量
+// 启动预览服务器
+await launcher.preview()
+```
+
+### CLI 工具
+
+```bash
+# 启动开发服务器
+launcher dev
+
+# 执行生产构建
+launcher build
+
+# 预览构建结果
+launcher preview
+
+# 查看帮助
+launcher --help
+```
+
+## 为什么选择 @ldesign/launcher？
+
+### 🎯 专注开发体验
+
+@ldesign/launcher 专注于提供最佳的前端开发体验。通过统一的 API 和配置，让开发者能够专注于业务逻辑，而不是工具配置。
+
+### 🔧 灵活且强大
+
+基于 Vite 的强大功能，同时提供了丰富的扩展能力。无论是简单的静态站点还是复杂的单页应用，都能轻松应对。
+
+### 📊 性能优先
+
+内置性能监控和优化建议，帮助开发者识别和解决性能问题，确保应用的最佳性能表现。
+
+### 🌟 现代化工具链
+
+采用最新的前端技术栈，支持 ES 模块、TypeScript、热更新等现代化特性，让开发更加高效。
+
+## 生态系统
+
+@ldesign/launcher 是 LDesign 生态系统的重要组成部分：
+
+- **[@ldesign/kit](https://github.com/ldesign/kit)** - 核心工具库
+- **[@ldesign/builder](https://github.com/ldesign/builder)** - 构建工具
+- **[@ldesign/components](https://github.com/ldesign/components)** - 组件库
+
+## 社区
+
+- [GitHub 讨论](https://github.com/ldesign/launcher/discussions) - 提问和讨论
+- [GitHub Issues](https://github.com/ldesign/launcher/issues) - 报告问题
+- [贡献指南](https://github.com/ldesign/launcher/blob/main/CONTRIBUTING.md) - 参与贡献
+
+## 许可证
+
+[MIT](https://github.com/ldesign/launcher/blob/main/LICENSE) © LDesign Team

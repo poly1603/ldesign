@@ -1,194 +1,313 @@
 /**
- * CLI 主模块
- * 处理命令行参数解析和命令分发
+ * CLI 工具主入口
+ * 
+ * 基于 @ldesign/kit 包的 CLI 工具实现命令行接口
+ * 支持开发服务器、构建、预览等核心功能
+ * 
+ * @author LDesign Team
+ * @since 1.0.0
  */
 
-import chalk from 'chalk'
-import { Command } from 'commander'
+import { Logger } from '../utils/logger'
+import type { CliConfig, CliContext } from '../types'
+import { CliCommand } from '../types'
 import { DevCommand } from './commands/dev'
 import { BuildCommand } from './commands/build'
 import { PreviewCommand } from './commands/preview'
-import { CreateCommand } from './commands/create'
-import { DetectCommand } from './commands/detect'
+import { ConfigCommand } from './commands/config'
+import { HelpCommand } from './commands/help'
+import { VersionCommand } from './commands/version'
 
 /**
- * 创建 CLI 程序
+ * 创建 CLI 应用
+ * 
+ * @param config - CLI 配置
+ * @returns CLI 应用实例
  */
-function createProgram(): Command {
-  const program = new Command()
+export function createCli(config?: Partial<CliConfig>) {
+  // 根据环境变量和参数决定日志级别和模式
+  const isDebug = process.argv.includes('--debug') || process.argv.includes('-d')
+  const isSilent = process.argv.includes('--silent') || process.argv.includes('-s')
 
-  program
-    .name('ldesign-launcher')
-    .description('前端项目启动器 - 基于 Vite 的零配置多框架开发工具')
-    .version(getVersion())
-    .option('-c, --config <path>', '指定配置文件路径')
-    .option('-v, --verbose', '启用详细日志输出')
-    .option('--silent', '静默模式，只输出错误信息')
+  const logger = new Logger('CLI', {
+    level: isSilent ? 'silent' : (isDebug ? 'debug' : 'info'),
+    colors: true,
+    compact: !isDebug // 非 debug 模式使用简洁输出
+  })
 
-  // 开发服务器命令
-  program
-    .command('dev')
-    .description('启动开发服务器')
-    .argument('[root]', '项目根目录', '.')
-    .option('-p, --port <port>', '端口号', '3000')
-    .option('--host <host>', '主机地址', 'localhost')
-    .option('--open', '自动打开浏览器')
-    .option('--no-open', '不自动打开浏览器')
-    .action(async (root: string, options: any) => {
-      const devCommand = new DevCommand()
-      await devCommand.execute(root, options)
-    })
-
-  // 构建命令
-  program
-    .command('build')
-    .description('构建项目')
-    .argument('[root]', '项目根目录', '.')
-    .option('-o, --outDir <dir>', '输出目录', 'dist')
-    .option('-m, --mode <mode>', '构建模式', 'production')
-    .option('--minify', '压缩输出代码')
-    .option('--no-minify', '不压缩输出代码')
-    .option('--sourcemap', '生成 source map')
-    .option('--no-sourcemap', '不生成 source map')
-    .action(async (root: string, options: any) => {
-      const buildCommand = new BuildCommand()
-      await buildCommand.execute(root, options)
-    })
-
-  // 预览命令
-  program
-    .command('preview')
-    .description('预览构建结果')
-    .argument('[root]', '项目根目录', '.')
-    .option('-p, --port <port>', '端口号', '4173')
-    .option('--host <host>', '主机地址', 'localhost')
-    .option('--open', '自动打开浏览器')
-    .option('--no-open', '不自动打开浏览器')
-    .action(async (root: string, options: any) => {
-      const previewCommand = new PreviewCommand()
-      await previewCommand.execute(root, options)
-    })
-
-  // 创建项目命令
-  program
-    .command('create')
-    .description('创建新项目')
-    .argument('<name>', '项目名称')
-    .option('-t, --type <type>', '项目类型 (vue2,vue3,react,lit,html,vanilla,vanilla-ts)', 'vue3')
-    .option('-d, --dir <dir>', '项目目录')
-    .action(async (name: string, options: any) => {
-      const createCommand = new CreateCommand()
-      await createCommand.execute(name, options)
-    })
-
-  // 检测项目命令
-  program
-    .command('detect')
-    .description('检测项目类型')
-    .argument('[root]', '项目根目录', '.')
-    .option('--json', '以 JSON 格式输出结果')
-    .action(async (root: string, options: any) => {
-      const detectCommand = new DetectCommand()
-      await detectCommand.execute(root, options)
-    })
-
-  return program
-}
-
-/**
- * 获取版本号
- */
-function getVersion(): string {
-  try {
-    const packageJson = require('../../package.json')
-    return packageJson.version || '1.0.0'
+  const defaultConfig: CliConfig = {
+    name: '@ldesign/launcher',
+    version: '1.0.0',
+    description: '基于 Vite JavaScript API 的前端项目启动器',
+    commands: [],
+    globalOptions: [
+      {
+        name: 'config',
+        alias: 'c',
+        description: '指定配置文件路径',
+        type: 'string'
+      },
+      {
+        name: 'mode',
+        alias: 'm',
+        description: '指定运行模式 (development, production, test)',
+        type: 'string',
+        choices: ['development', 'production', 'test']
+      },
+      {
+        name: 'debug',
+        alias: 'd',
+        description: '启用调试模式',
+        type: 'boolean',
+        default: false
+      },
+      {
+        name: 'silent',
+        alias: 's',
+        description: '静默模式',
+        type: 'boolean',
+        default: false
+      },
+      {
+        name: 'help',
+        alias: 'h',
+        description: '显示帮助信息',
+        type: 'boolean',
+        default: false
+      },
+      {
+        name: 'version',
+        alias: 'v',
+        description: '显示版本信息',
+        type: 'boolean',
+        default: false
+      }
+    ],
+    help: {
+      showExamples: true,
+      showAliases: true,
+      showDefaults: true,
+      maxWidth: 80
+    },
+    theme: {
+      primary: '#722ED1',
+      success: '#52c41a',
+      warning: '#faad14',
+      error: '#f5222d',
+      info: '#1890ff',
+      debug: '#722ED1',
+      enableColors: true,
+      enableIcons: true
+    }
   }
-  catch {
-    return '1.0.0'
-  }
-}
 
-/**
- * 设置全局错误处理
- */
-function setupErrorHandling(): void {
-  // 处理未捕获的异常
-  process.on('uncaughtException', (error) => {
-    console.error('❌ Uncaught Exception:', error)
-    process.exit(1)
-  })
+  const mergedConfig = { ...defaultConfig, ...config }
 
-  // 处理未处理的 Promise 拒绝
-  process.on('unhandledRejection', (reason, promise) => {
-    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason)
-    process.exit(1)
-  })
+  // 注册命令
+  const commands = new Map<string, any>([
+    ['dev', new DevCommand()],
+    ['build', new BuildCommand()],
+    ['preview', new PreviewCommand()],
+    ['config', new ConfigCommand()],
+    ['help', new HelpCommand()],
+    ['version', new VersionCommand()]
+  ])
 
-  // 处理 SIGINT 信号 (Ctrl+C)
-  process.on('SIGINT', () => {
-    console.log('\n')
-    console.log('🛑 服务已停止')
-    process.exit(0)
-  })
-
-  // 处理 SIGTERM 信号
-  process.on('SIGTERM', () => {
-    console.log('🛑 收到终止信号，正在退出...')
-    process.exit(0)
-  })
-}
-
-/**
- * 显示欢迎信息
- */
-function showWelcome(): void {
-  const version = getVersion()
-  console.log()
-  console.log(chalk.cyan.bold('🚀 LDesign Launcher'))
-  console.log(chalk.gray(`   前端项目启动器 v${version}`))
-  console.log(chalk.gray('   基于 Vite 的零配置多框架开发工具'))
-  console.log()
-}
-
-/**
- * 运行 CLI
- */
-export async function runCli(): Promise<void> {
-  try {
-    // 设置错误处理
-    setupErrorHandling()
-
-    // 创建程序
-    const program = createProgram()
-
-    // 解析命令行参数
-    const args = process.argv
-
-    // 如果没有提供命令，显示帮助信息
-    if (args.length <= 2) {
-      showWelcome()
-      program.help()
-      return
+  /**
+   * 解析命令行参数
+   * 
+   * @param args - 命令行参数
+   * @returns 解析结果
+   */
+  function parseArgs(args: string[]) {
+    const result = {
+      command: 'help' as CliCommand,
+      options: {} as Record<string, any>,
+      args: [] as string[]
     }
 
-    // 如果是 --version 或 -V，显示版本信息
-    if (args.includes('--version') || args.includes('-V')) {
-      console.log(getVersion())
-      return
+    let i = 0
+    while (i < args.length) {
+      const arg = args[i]
+
+      if (arg.startsWith('--')) {
+        // 长选项
+        const [key, value] = arg.slice(2).split('=')
+        if (value !== undefined) {
+          result.options[key] = value
+        } else if (i + 1 < args.length && !args[i + 1].startsWith('-')) {
+          result.options[key] = args[++i]
+        } else {
+          result.options[key] = true
+        }
+      } else if (arg.startsWith('-')) {
+        // 短选项
+        const key = arg.slice(1)
+        if (i + 1 < args.length && !args[i + 1].startsWith('-')) {
+          result.options[key] = args[++i]
+        } else {
+          result.options[key] = true
+        }
+      } else if (!result.command || result.command === 'help') {
+        // 命令
+        if (commands.has(arg)) {
+          result.command = arg as CliCommand
+        } else {
+          result.args.push(arg)
+        }
+      } else {
+        // 参数
+        result.args.push(arg)
+      }
+
+      i++
     }
 
-    // 如果是 --help 或 -h，显示帮助信息
-    if (args.includes('--help') || args.includes('-h')) {
-      showWelcome()
-      program.help()
-      return
-    }
-
-    // 解析并执行命令
-    await program.parseAsync(args)
+    return result
   }
-  catch (error) {
-    console.error('❌ CLI 执行失败:', error)
-    process.exit(1)
+
+  /**
+   * 创建 CLI 上下文
+   * 
+   * @param command - 命令
+   * @param options - 选项
+   * @param args - 参数
+   * @returns CLI 上下文
+   */
+  function createContext(
+    command: CliCommand,
+    options: Record<string, any>,
+    args: string[]
+  ): CliContext {
+    return {
+      command,
+      options,
+      args,
+      cwd: process.cwd(),
+      configFile: options.config,
+      interactive: process.stdin.isTTY,
+      terminal: {
+        width: process.stdout.columns || 80,
+        height: process.stdout.rows || 24,
+        supportsColor: process.stdout.hasColors?.() || false,
+        isTTY: process.stdout.isTTY,
+        type: process.env.TERM,
+        supportsUnicode: process.env.LANG?.includes('UTF-8') || false
+      },
+      environment: {
+        nodeVersion: process.version,
+        npmVersion: process.env.npm_version,
+        pnpmVersion: process.env.PNPM_VERSION,
+        yarnVersion: process.env.YARN_VERSION,
+        os: process.platform,
+        arch: process.arch,
+        memory: process.memoryUsage().heapTotal,
+        env: process.env as Record<string, string>
+      }
+    }
+  }
+
+  /**
+   * 运行 CLI
+   * 
+   * @param argv - 命令行参数
+   */
+  async function run(argv: string[] = process.argv.slice(2)) {
+    try {
+      // 解析参数
+      const parsed = parseArgs(argv)
+
+      // 处理全局选项
+      if (parsed.options.help || parsed.command === 'help') {
+        const helpCommand = commands.get('help')!
+        const context = createContext(CliCommand.HELP, parsed.options, parsed.args)
+        await helpCommand.handler(context)
+        return
+      }
+
+      if (parsed.options.version || parsed.command === 'version') {
+        const versionCommand = commands.get('version')!
+        const context = createContext(CliCommand.VERSION, parsed.options, parsed.args)
+        await versionCommand.handler(context)
+        return
+      }
+
+      // 设置日志级别
+      if (parsed.options.silent) {
+        logger.setLevel('silent')
+      } else if (parsed.options.debug) {
+        logger.setLevel('debug')
+      }
+
+      // 获取命令处理器
+      const commandHandler = commands.get(parsed.command)
+      if (!commandHandler) {
+        logger.error(`未知命令: ${parsed.command}`)
+        logger.info('使用 --help 查看可用命令')
+        process.exit(1)
+      }
+
+      // 创建上下文
+      const context = createContext(parsed.command, parsed.options, parsed.args)
+
+      // 验证命令
+      if (commandHandler.validate) {
+        const validation = commandHandler.validate(context)
+        if (validation !== true) {
+          logger.error(typeof validation === 'string' ? validation : '命令验证失败')
+          process.exit(1)
+        }
+      }
+
+      // 执行命令
+      logger.debug('执行命令', {
+        command: parsed.command,
+        options: parsed.options,
+        args: parsed.args
+      })
+
+      await commandHandler.handler(context)
+
+    } catch (error) {
+      logger.error('CLI 执行失败', { error: (error as Error).message })
+
+      if (logger.getLevel() === 'debug') {
+        console.error((error as Error).stack)
+      }
+
+      process.exit(1)
+    }
+  }
+
+  /**
+   * 显示帮助信息
+   * 
+   * @param commandName - 命令名称（可选）
+   */
+  function showHelp(commandName?: string) {
+    const helpCommand = commands.get('help')!
+    const context = createContext(CliCommand.HELP, {}, commandName ? [commandName] : [])
+    helpCommand.handler(context)
+  }
+
+  /**
+   * 显示版本信息
+   */
+  function showVersion() {
+    const versionCommand = commands.get('version')!
+    const context = createContext(CliCommand.VERSION, {}, [])
+    versionCommand.handler(context)
+  }
+
+  return {
+    run,
+    showHelp,
+    showVersion,
+    config: mergedConfig,
+    commands,
+    logger
   }
 }
+
+// 默认导出
+export default createCli

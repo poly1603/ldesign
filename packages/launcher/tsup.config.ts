@@ -1,28 +1,31 @@
 import { defineConfig } from 'tsup'
 
 export default defineConfig({
-  entry: ['src/**/*.ts'],
+  entry: ['src/index.ts', 'src/cli/index.ts'],
   format: ['cjs', 'esm'],
   dts: true,
+  clean: true,
   splitting: false,
   sourcemap: true,
-  clean: true,
-  treeshake: true,
-  external: ['vite', 'vue', 'react'],
-  outDir: 'dist',
+  minify: false,
   target: 'node16',
-  platform: 'node',
-  // 修复混合导出警告
-  bundle: true,
-  // 忽略空 chunk 警告（类型文件）
-  onSuccess: async () => {
-    console.log('构建完成！')
-  },
+  outDir: 'dist',
+  external: [
+    'vite',
+    '@vitejs/plugin-vue',
+    '@vitejs/plugin-vue2',
+    '@vitejs/plugin-react',
+    '@vitejs/plugin-legacy',
+    '@sveltejs/vite-plugin-svelte'
+  ],
+  noExternal: [
+    'chalk',
+    'commander',
+    'fast-glob',
+    'jiti',
+    'picocolors'
+  ],
   esbuildOptions(options) {
-    options.alias = {
-      '@': './src',
-    }
-    // 忽略空文件警告
-    options.ignoreAnnotations = true
-  },
+    options.conditions = ['node']
+  }
 })
