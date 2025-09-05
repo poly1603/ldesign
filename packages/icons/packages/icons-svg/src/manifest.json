@@ -1,0 +1,32 @@
+[
+  {
+    "name": "user",
+    "componentName": "User",
+    "fileName": "user.svg",
+    "viewBox": "0 0 24 24"
+  },
+  {
+    "name": "settings",
+    "componentName": "Settings",
+    "fileName": "settings.svg",
+    "viewBox": "0 0 24 24"
+  },
+  {
+    "name": "search",
+    "componentName": "Search",
+    "fileName": "search.svg",
+    "viewBox": "0 0 24 24"
+  },
+  {
+    "name": "home",
+    "componentName": "Home",
+    "fileName": "home.svg",
+    "viewBox": "0 0 24 24"
+  },
+  {
+    "name": "heart",
+    "componentName": "Heart",
+    "fileName": "heart.svg",
+    "viewBox": "0 0 24 24"
+  }
+]
