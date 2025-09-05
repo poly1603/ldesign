@@ -4,6 +4,9 @@
 
 import { SimpleGit } from 'simple-git'
 
+// 导出补充的类型定义
+export * from './git-types'
+
 /**
  * Git 仓库配置选项
  */
