@@ -1,24 +1,24 @@
 /**
  * Crypto Engine 插件
- * 
+ *
  * 将 Crypto 功能集成到 LDesign Engine 中，提供统一的加密解密管理体验
  */
 
 import type { Plugin } from '@ldesign/engine/types'
 import { CryptoPlugin, type CryptoPluginOptions } from '../adapt/vue/plugin'
 import {
-  encrypt,
+  aes,
+  base64,
+  cryptoManager,
   decrypt,
+  digitalSignature,
+  encoding,
+  encrypt,
   hash,
+  hex,
   hmac,
   keyGenerator,
-  digitalSignature,
-  aes,
   rsa,
-  encoding,
-  base64,
-  hex,
-  cryptoManager,
 } from '../core'
 
 /**
@@ -92,16 +92,16 @@ function createGlobalCryptoInstance(options?: CryptoEnginePluginOptions) {
 
 /**
  * 创建 Crypto Engine 插件
- * 
+ *
  * 将 Crypto 功能集成到 LDesign Engine 中，提供统一的加密解密管理体验
- * 
+ *
  * @param options 插件配置选项
  * @returns Engine 插件实例
- * 
+ *
  * @example
  * ```typescript
  * import { createCryptoEnginePlugin } from '@ldesign/crypto'
- * 
+ *
  * const cryptoPlugin = createCryptoEnginePlugin({
  *   config: {
  *     defaultAESKeySize: 256,
@@ -111,7 +111,7 @@ function createGlobalCryptoInstance(options?: CryptoEnginePluginOptions) {
  *   globalPropertyName: '$crypto',
  *   enablePerformanceMonitoring: true
  * })
- * 
+ *
  * await engine.use(cryptoPlugin)
  * ```
  */
@@ -124,7 +124,7 @@ export function createCryptoEnginePlugin(
   const {
     name = 'crypto',
     version = '1.0.0',
-    description = 'LDesign Crypto Engine Plugin',
+    description: _description = 'LDesign Crypto Engine Plugin',
     dependencies = [],
     autoInstall = true,
     enablePerformanceMonitoring = false,
@@ -132,7 +132,8 @@ export function createCryptoEnginePlugin(
   } = config
 
   if (debug) {
-    console.log('[Crypto Plugin] createCryptoEnginePlugin called with options:', options)
+    /* eslint-disable-next-line no-console */
+    console.info('[Crypto Plugin] createCryptoEnginePlugin called with options:', options)
   }
 
   return {
@@ -140,17 +141,19 @@ export function createCryptoEnginePlugin(
     version,
     dependencies,
 
-    async install(context) {
+    async install(context: any) {
       try {
         if (debug) {
-          console.log('[Crypto Plugin] install method called with context:', context)
+          /* eslint-disable-next-line no-console */
+          console.info('[Crypto Plugin] install method called with context:', context)
         }
 
         // 从上下文中获取引擎实例
         const engine = context.engine || context
 
         if (debug) {
-          console.log('[Crypto Plugin] engine instance:', !!engine)
+          /* eslint-disable-next-line no-console */
+          console.info('[Crypto Plugin] engine instance:', !!engine)
         }
 
         // 定义实际的安装逻辑
@@ -192,9 +195,11 @@ export function createCryptoEnginePlugin(
             })
 
             if (debug) {
-              console.log('[Crypto Plugin] Vue plugin installed successfully')
+              /* eslint-disable-next-line no-console */
+              console.info('[Crypto Plugin] Vue plugin installed successfully')
             }
-          } else {
+          }
+          else {
             // 如果不自动安装 Vue 插件，则手动注册全局提供者
             vueApp.provide('crypto', globalCrypto)
             vueApp.provide('cryptoConfig', config.config)
@@ -225,7 +230,8 @@ export function createCryptoEnginePlugin(
         if (vueApp) {
           engine.logger?.info(`[Crypto Plugin] Vue app found, installing immediately`)
           await performInstall()
-        } else {
+        }
+        else {
           engine.logger?.info(`[Crypto Plugin] Vue app not found, registering event listener`)
           // 如果 Vue 应用还没有创建，监听 app:created 事件
           engine.events?.once('app:created', async () => {
@@ -235,13 +241,20 @@ export function createCryptoEnginePlugin(
         }
 
         engine.logger?.info(`${name} plugin registered, waiting for Vue app creation...`)
-      } catch (error) {
-        console.error(`[Crypto Plugin] Installation failed:`, error)
+      }
+      catch (error) {
+        // 使用engine.logger记录错误，如果不可用则使用console.error
+        if (context.engine?.logger) {
+          context.engine.logger.error(`[Crypto Plugin] Installation failed:`, error)
+        }
+        else {
+          console.error(`[Crypto Plugin] Installation failed:`, error)
+        }
         throw error
       }
     },
 
-    async uninstall(context) {
+    async uninstall(context: any) {
       try {
         const engine = context.engine || context
 
@@ -264,7 +277,8 @@ export function createCryptoEnginePlugin(
         }
 
         engine.logger?.info(`${name} plugin uninstalled successfully`)
-      } catch (error) {
+      }
+      catch (error) {
         const engine = context.engine || context
         if (
           engine
@@ -272,7 +286,8 @@ export function createCryptoEnginePlugin(
           && typeof engine.logger.error === 'function'
         ) {
           engine.logger.error(`Failed to uninstall ${name} plugin:`, error)
-        } else {
+        }
+        else {
           console.error(`Failed to uninstall ${name} plugin:`, error)
         }
         throw error

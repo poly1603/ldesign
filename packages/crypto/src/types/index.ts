@@ -7,9 +7,6 @@ export type EncryptionAlgorithm =
   | 'DES'
   | '3DES'
   | 'Blowfish'
-  | 'DES'
-  | '3DES'
-  | 'Blowfish'
 
 /**
  * AES 加密模式

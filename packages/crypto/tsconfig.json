@@ -2,7 +2,9 @@
   "extends": "../../tools/build/tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "rootDir": "src",
     "paths": {
+      "vue": ["../../node_modules/vue"],
       "@/*": ["src/*"]
     }
   },
@@ -20,6 +22,8 @@
     "test",
     "e2e",
     "examples",
+    "src/engine/**/*",
+    "src/vue/**/*",
     "*.test.ts",
     "*.spec.ts",
     "**/*.test.ts",

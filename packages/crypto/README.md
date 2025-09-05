@@ -31,7 +31,7 @@ yarn add @ldesign/crypto
 ### 基础用法
 
 ```typescript
-import { aes, encoding, hash } from '@ldesign/crypto'
+import { aes, encoding, hash, hmac } from '@ldesign/crypto'
 
 // AES 加密
 const encrypted = aes.encrypt('Hello World', 'secret-key')
@@ -46,16 +46,13 @@ const decrypted = aes.decrypt(encrypted, 'secret-key')
 console.log(decrypted.success) // true
 console.log(decrypted.data) // 'Hello World'
 
-// 哈希
-const sha256Result = hash.sha256('Hello World')
-console.log(sha256Result.success) // true
-console.log(sha256Result.hash) // SHA256 哈希值
-console.log(sha256Result.algorithm) // 'SHA256'
+// 哈希（默认 Hex 编码字符串）
+const sha256 = hash.sha256('Hello World')
+console.log(sha256) // SHA256 哈希值（hex）
 
-// HMAC
-const hmacResult = hash.hmac('Hello World', 'secret-key', 'SHA256')
-console.log(hmacResult.success) // true
-console.log(hmacResult.hash) // HMAC 值
+// HMAC（单独的 hmac 模块）
+const mac = hmac.sha256('Hello World', 'secret-key')
+console.log(mac) // HMAC 值（hex）
 
 // Base64 编码
 const encoded = encoding.encode('Hello World', 'base64')
@@ -116,16 +113,16 @@ const iv = RandomUtils.generateIV(16)
 #### 数据完整性验证
 
 ```typescript
-import { hash } from '@ldesign/crypto'
+import { hmac } from '@ldesign/crypto'
 
 const data = 'Important data'
 const secretKey = 'verification-key'
 
-// 生成HMAC用于验证数据完整性
-const hmacResult = hash.hmac(data, secretKey, 'SHA256')
+// 生成 HMAC 用于验证数据完整性
+const mac = hmac.sha256(data, secretKey)
 
 // 验证数据完整性
-const isValid = hash.verify(data, hmacResult.hash, 'SHA256')
+const isValid = hmac.verify(data, secretKey, mac, 'SHA256')
 console.log(isValid) // true
 ```
 
@@ -181,7 +178,8 @@ export default {
 
 ## 文档
 
-详细文档请访问: [文档地址]
+- 本地文档：在本包目录运行 `pnpm docs:dev` 启动文档站点
+- 构建预览：`pnpm docs:build && pnpm docs:preview`
 
 ## 示例
 

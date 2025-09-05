@@ -1,3 +1,5 @@
+import process from 'node:process'
+
 export default {
   // 基础配置
   root: process.cwd(),
@@ -17,14 +19,14 @@ export default {
 
   // 外部依赖（不打包进最终产物）
   external: [
-    'vue'
+    'vue',
   ],
 
   // UMD 格式的全局变量映射
   globals: {
-    'vue': 'Vue'
+    vue: 'Vue',
   },
 
   // UMD 格式的库名称
-  name: 'LDesignCrypto'
+  name: 'LDesignCrypto',
 }

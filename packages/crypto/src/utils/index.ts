@@ -146,10 +146,38 @@ export class ValidationUtils {
 
   /**
    * 验证是否为有效的 Base64 字符串
+   * 兼容浏览器与 Node 环境（无 atob/btoa 时使用正则与 CryptoJS 校验）
    */
   static isValidBase64(str: string): boolean {
+    if (typeof str !== 'string')
+      return false
+    // 允许空字符串作为有效 Base64（某些场景下编码空字符串）
+    if (str.length === 0)
+      return true
+
+    // 基础格式校验：长度为 4 的倍数，允许 0~2 个 '=' 结尾填充
+    if (str.length % 4 !== 0)
+      return false
+    if (!/^[A-Z0-9+/]+={0,2}$/i.test(str))
+      return false
+
+    // 优先尝试浏览器原生 API（若存在）
     try {
-      return btoa(atob(str)) === str
+      // 在浏览器环境优先使用原生 API
+      if (typeof atob === 'function' && typeof btoa === 'function') {
+        return btoa(atob(str)) === str
+      }
+    }
+    catch {
+      // 若原生 API 失败，继续使用 CryptoJS 进行校验
+    }
+
+    // 使用 CryptoJS 进行安全的解析/回写校验
+    try {
+      const wa = CryptoJS.enc.Base64.parse(str)
+      const roundtrip = CryptoJS.enc.Base64.stringify(wa)
+      // 去除末尾填充后比较，避免等价的不同填充形式导致误判
+      return roundtrip.replace(/=+$/, '') === str.replace(/=+$/, '')
     }
     catch {
       return false

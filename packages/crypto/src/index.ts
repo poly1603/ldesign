@@ -60,6 +60,21 @@ import {
   ValidationUtils,
 } from './utils'
 
+export {
+  useCrypto,
+  useHash,
+  useSignature,
+} from './adapt/vue/composables'
+
+// === Vue 适配器模块 ===
+export {
+  createCryptoPlugin,
+  CryptoPlugin,
+  type CryptoPluginOptions,
+  type GlobalCrypto,
+  installCrypto,
+} from './adapt/vue/plugin'
+
 // === 算法实现模块 ===
 export {
   aes,
@@ -121,6 +136,16 @@ export type {
   PerformanceMetrics,
 } from './core'
 
+// === Engine 插件模块 ===
+export {
+  createCryptoEnginePlugin,
+  createDebugCryptoEnginePlugin,
+  createDefaultCryptoEnginePlugin,
+  createPerformanceCryptoEnginePlugin,
+  cryptoEnginePlugin,
+  type CryptoEnginePluginOptions,
+} from './engine'
+
 // === 类型定义模块 ===
 export type {
   AESKeySize,
@@ -163,31 +188,6 @@ export {
   StringUtils,
   ValidationUtils,
 } from './utils'
-
-// === Vue 适配器模块 ===
-export {
-  CryptoPlugin,
-  createCryptoPlugin,
-  installCrypto,
-  type CryptoPluginOptions,
-  type GlobalCrypto,
-} from './adapt/vue/plugin'
-
-export {
-  useCrypto,
-  useHash,
-  useSignature,
-} from './adapt/vue/composables'
-
-// === Engine 插件模块 ===
-export {
-  createCryptoEnginePlugin,
-  createDefaultCryptoEnginePlugin,
-  createPerformanceCryptoEnginePlugin,
-  createDebugCryptoEnginePlugin,
-  cryptoEnginePlugin,
-  type CryptoEnginePluginOptions,
-} from './engine'
 
 const LDesignCrypto = {
   // === 核心功能 ===

@@ -76,11 +76,11 @@ export interface GlobalCrypto {
  */
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
-    $crypto: GlobalCrypto
+    $crypto?: GlobalCrypto
   }
 
   interface GlobalProperties {
-    $crypto: GlobalCrypto
+    $crypto?: GlobalCrypto
   }
 }
 
@@ -146,9 +146,11 @@ export const CryptoPlugin: Plugin = {
       // eslint-disable-next-line node/prefer-global/process
       && process.env?.NODE_ENV === 'development'
     ) {
-      console.warn('[LDesign Crypto] Plugin installed successfully')
-      console.warn('[LDesign Crypto] Global property:', globalPropertyName)
-      console.warn('[LDesign Crypto] Config:', config)
+      /* eslint-disable no-console */
+      console.info('[LDesign Crypto] Plugin installed successfully')
+      console.info('[LDesign Crypto] Global property:', globalPropertyName)
+      console.info('[LDesign Crypto] Config:', config)
+      /* eslint-enable no-console */
     }
   },
 }

@@ -32,8 +32,8 @@
   "types": "dist/index.d.ts",
   "browser": "dist/index.min.js",
   "files": [
-    "README.md",
     "CHANGELOG.md",
+    "README.md",
     "dist"
   ],
   "scripts": {
