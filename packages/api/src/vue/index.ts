@@ -3,58 +3,55 @@
  * 导出所有 Vue 相关的功能
  */
 
-// Vue 插件
-export {
-  ApiVuePlugin,
-  createApiVuePlugin,
-  installApiVuePlugin,
-  getApiEngineFromApp,
-  API_ENGINE_INJECTION_KEY,
-} from './plugin'
-export type { ApiVuePluginOptions } from './plugin'
+// 重新导出核心类型
+export type {
+  ApiCallOptions,
+  ApiEngine,
+  ApiEngineConfig,
+  ApiMethodConfig,
+  ApiPlugin,
+  CacheConfig,
+  CacheStats,
+  CaptchaInfo,
+  DebounceConfig,
+  DeduplicationConfig,
+  LoginParams,
+  LoginResult,
+  MenuItem,
+  SystemApiMethodName,
+  UserInfo,
+} from '../types'
+// 重新导出系统 API 常量
+export { SYSTEM_API_METHODS } from '../types'
 
 // 组合式 API
 export {
   useApi,
   useApiCall,
+  useApiCleanup,
   useBatchApiCall,
   useSystemApi,
-  useApiCleanup,
 } from './composables'
-export type {
-  ApiCallState,
-  UseApiCallOptions,
-} from './composables'
+export type { ApiCallState, UseApiCallOptions } from './composables'
 
 // Engine 插件集成
 export {
-  createApiEnginePlugin,
-  defaultApiEnginePlugin,
   apiPlugin,
+  createApiEnginePlugin,
+  createApiEnginePluginByEnv,
   createDevelopmentApiEnginePlugin,
   createProductionApiEnginePlugin,
-  createApiEnginePluginByEnv,
+  defaultApiEnginePlugin,
 } from './engine'
 export type { ApiEnginePluginOptions } from './engine'
 
-// 重新导出核心类型
-export type {
-  ApiEngine,
-  ApiEngineConfig,
-  ApiPlugin,
-  ApiMethodConfig,
-  ApiCallOptions,
-  CacheConfig,
-  DebounceConfig,
-  DeduplicationConfig,
-  CacheStats,
-  SystemApiMethodName,
-  LoginParams,
-  LoginResult,
-  UserInfo,
-  MenuItem,
-  CaptchaInfo,
-} from '../types'
+// Vue 插件
+export {
+  API_ENGINE_INJECTION_KEY,
+  ApiVuePlugin,
+  createApiVuePlugin,
+  getApiEngineFromApp,
+  installApiVuePlugin,
+} from './plugin'
 
-// 重新导出系统 API 常量
-export { SYSTEM_API_METHODS } from '../types'
+export type { ApiVuePluginOptions } from './plugin'

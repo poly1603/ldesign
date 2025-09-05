@@ -12,11 +12,11 @@ interface DebounceItem {
   /** 定时器ID */
   timerId: number
   /** Promise resolve 函数 */
-  resolve: (value: any) => void
+  resolve: (value: unknown) => void
   /** Promise reject 函数 */
-  reject: (reason: any) => void
+  reject: (reason: unknown) => void
   /** 执行函数 */
-  fn: () => Promise<any>
+  fn: () => Promise<unknown>
   /** 创建时间 */
   createdAt: number
 }
@@ -31,7 +31,11 @@ export class DebounceManagerImpl implements DebounceManager {
   /**
    * 执行防抖函数
    */
-  async execute<T>(key: string, fn: () => Promise<T>, delay: number): Promise<T> {
+  async execute<T>(
+    key: string,
+    fn: () => Promise<T>,
+    delay: number,
+  ): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       // 取消之前的防抖
       this.cancel(key)
@@ -41,9 +45,11 @@ export class DebounceManagerImpl implements DebounceManager {
         try {
           const result = await fn()
           resolve(result)
-        } catch (error) {
+        }
+        catch (error) {
           reject(error)
-        } finally {
+        }
+        finally {
           // 清理防抖项
           this.debounceItems.delete(key)
         }
@@ -52,9 +58,9 @@ export class DebounceManagerImpl implements DebounceManager {
       // 保存防抖项
       this.debounceItems.set(key, {
         timerId,
-        resolve,
-        reject,
-        fn,
+        resolve: resolve as unknown as (value: unknown) => void,
+        reject: reject as unknown as (reason: unknown) => void,
+        fn: fn as () => Promise<unknown>,
         createdAt: Date.now(),
       })
     })
@@ -75,7 +81,7 @@ export class DebounceManagerImpl implements DebounceManager {
    * 清除所有防抖
    */
   clear(): void {
-    this.debounceItems.forEach((item, key) => {
+    this.debounceItems.forEach((item) => {
       clearTimeout(item.timerId)
     })
     this.debounceItems.clear()
@@ -116,13 +122,15 @@ export class DebounceManagerImpl implements DebounceManager {
 
     try {
       // 立即执行函数
-      const result = await item.fn()
+      const result = (await item.fn()) as T
       item.resolve(result)
       return result
-    } catch (error) {
+    }
+    catch (error) {
       item.reject(error)
       throw error
-    } finally {
+    }
+    finally {
       // 清理防抖项
       this.debounceItems.delete(key)
     }
@@ -132,10 +140,10 @@ export class DebounceManagerImpl implements DebounceManager {
    * 立即执行所有防抖函数
    */
   async flushAll(): Promise<void> {
-    const promises = Array.from(this.debounceItems.keys()).map(key => 
+    const promises = Array.from(this.debounceItems.keys()).map(key =>
       this.flush(key).catch(() => {
         // 忽略错误，继续执行其他项
-      })
+      }),
     )
     await Promise.all(promises)
   }
@@ -143,7 +151,7 @@ export class DebounceManagerImpl implements DebounceManager {
   /**
    * 获取防抖项信息
    */
-  getInfo(key: string): { createdAt: number; delay: number } | null {
+  getInfo(key: string): { createdAt: number, delay: number } | null {
     const item = this.debounceItems.get(key)
     if (!item) {
       return null
@@ -158,9 +166,9 @@ export class DebounceManagerImpl implements DebounceManager {
   /**
    * 获取所有防抖项信息
    */
-  getAllInfo(): Array<{ key: string; createdAt: number; delay: number }> {
-    const result: Array<{ key: string; createdAt: number; delay: number }> = []
-    
+  getAllInfo(): Array<{ key: string, createdAt: number, delay: number }> {
+    const result: Array<{ key: string, createdAt: number, delay: number }> = []
+
     this.debounceItems.forEach((item, key) => {
       result.push({
         key,
@@ -186,7 +194,7 @@ export class DebounceManagerImpl implements DebounceManager {
       }
     })
 
-    toDelete.forEach(key => {
+    toDelete.forEach((key) => {
       this.debounceItems.delete(key)
     })
   }
@@ -195,11 +203,9 @@ export class DebounceManagerImpl implements DebounceManager {
 /**
  * 创建防抖函数
  */
-export function createDebounceFunction<T extends (...args: any[]) => Promise<any>>(
-  fn: T,
-  delay: number,
-  key?: string
-): T {
+export function createDebounceFunction<
+  T extends (...args: unknown[]) => Promise<unknown>,
+>(fn: T, delay: number, key?: string): T {
   const manager = new DebounceManagerImpl()
   const debounceKey = key || 'default'
 
@@ -211,11 +217,9 @@ export function createDebounceFunction<T extends (...args: any[]) => Promise<any
 /**
  * 创建带键的防抖函数
  */
-export function createKeyedDebounceFunction<T extends (...args: any[]) => Promise<any>>(
-  fn: T,
-  delay: number,
-  keyGenerator: (...args: Parameters<T>) => string
-): T {
+export function createKeyedDebounceFunction<
+  T extends (...args: unknown[]) => Promise<unknown>,
+>(fn: T, delay: number, keyGenerator: (...args: Parameters<T>) => string): T {
   const manager = new DebounceManagerImpl()
 
   return ((...args: Parameters<T>) => {
@@ -228,10 +232,10 @@ export function createKeyedDebounceFunction<T extends (...args: any[]) => Promis
  * 防抖装饰器
  */
 export function debounce(delay: number, key?: string) {
-  return function <T extends (...args: any[]) => Promise<any>>(
-    target: any,
+  return function <T extends (...args: unknown[]) => Promise<unknown>>(
+    target: { constructor: { name: string } },
     propertyKey: string,
-    descriptor: TypedPropertyDescriptor<T>
+    descriptor: TypedPropertyDescriptor<T>,
   ) {
     if (!descriptor.value) {
       return descriptor
@@ -240,10 +244,14 @@ export function debounce(delay: number, key?: string) {
     const originalMethod = descriptor.value
     const manager = new DebounceManagerImpl()
 
-    descriptor.value = (function (this: any, ...args: Parameters<T>) {
+    descriptor.value = function (this: unknown, ...args: Parameters<T>) {
       const debounceKey = key || `${target.constructor.name}.${propertyKey}`
-      return manager.execute(debounceKey, () => originalMethod.apply(this, args), delay)
-    }) as T
+      return manager.execute(
+        debounceKey,
+        () => (originalMethod as (...a: Parameters<T>) => Promise<unknown>).apply(this as never, args),
+        delay,
+      )
+    } as T
 
     return descriptor
   }
@@ -252,14 +260,14 @@ export function debounce(delay: number, key?: string) {
 /**
  * 带键的防抖装饰器
  */
-export function keyedDebounce<T extends (...args: any[]) => Promise<any>>(
+export function keyedDebounce<T extends (...args: unknown[]) => Promise<unknown>>(
   delay: number,
-  keyGenerator: (...args: Parameters<T>) => string
+  keyGenerator: (...args: Parameters<T>) => string,
 ) {
   return function (
-    target: any,
+    target: unknown,
     propertyKey: string,
-    descriptor: TypedPropertyDescriptor<T>
+    descriptor: TypedPropertyDescriptor<T>,
   ) {
     if (!descriptor.value) {
       return descriptor
@@ -268,10 +276,10 @@ export function keyedDebounce<T extends (...args: any[]) => Promise<any>>(
     const originalMethod = descriptor.value
     const manager = new DebounceManagerImpl()
 
-    descriptor.value = (function (this: any, ...args: Parameters<T>) {
+    descriptor.value = function (this: unknown, ...args: Parameters<T>) {
       const key = keyGenerator(...args)
-      return manager.execute(key, () => originalMethod.apply(this, args), delay)
-    }) as T
+      return manager.execute(key, () => (originalMethod as (...a: Parameters<T>) => Promise<unknown>).apply(this as never, args), delay)
+    } as T
 
     return descriptor
   }

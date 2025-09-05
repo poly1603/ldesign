@@ -39,7 +39,8 @@ export const ApiVuePlugin: Plugin = {
       engine: providedEngine,
       config = {},
       globalPropertyName = '$api',
-      registerComposables = true,
+      // registerComposables 目前未使用，保留以兼容未来扩展
+      registerComposables: _registerComposables = true,
       provideDependencyInjection = true,
       injectionKey = API_ENGINE_INJECTION_KEY,
     } = options
@@ -60,27 +61,30 @@ export const ApiVuePlugin: Plugin = {
     // 存储引擎实例到应用实例
     app._apiEngine = engine
 
-    console.log('[API Vue Plugin] Vue 插件已安装')
+    // 只在开发模式下输出日志
+    if (config.debug || (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development')) {
+      console.info('[API Vue Plugin] Vue 插件已安装')
+    }
   },
 }
 
 /**
  * 创建 API Vue 插件
- * 
+ *
  * @param options 插件选项
  * @returns Vue 插件
- * 
+ *
  * @example
  * ```typescript
  * import { createApiVuePlugin } from '@ldesign/api/vue'
- * 
+ *
  * const apiPlugin = createApiVuePlugin({
  *   config: {
  *     http: { baseURL: 'https://api.example.com' },
  *   },
  *   globalPropertyName: '$api',
  * })
- * 
+ *
  * app.use(apiPlugin)
  * ```
  */
@@ -94,14 +98,14 @@ export function createApiVuePlugin(options: ApiVuePluginOptions = {}): Plugin {
 
 /**
  * 安装 API Vue 插件的便捷函数
- * 
+ *
  * @param app Vue 应用实例
  * @param options 插件选项
- * 
+ *
  * @example
  * ```typescript
  * import { installApiVuePlugin } from '@ldesign/api/vue'
- * 
+ *
  * installApiVuePlugin(app, {
  *   config: {
  *     http: { baseURL: 'https://api.example.com' },
@@ -109,18 +113,21 @@ export function createApiVuePlugin(options: ApiVuePluginOptions = {}): Plugin {
  * })
  * ```
  */
-export function installApiVuePlugin(app: App, options: ApiVuePluginOptions = {}): void {
+export function installApiVuePlugin(
+  app: App,
+  options: ApiVuePluginOptions = {},
+): void {
   app.use(ApiVuePlugin, options)
 }
 
 /**
  * 从 Vue 应用实例获取 API 引擎
- * 
+ *
  * @param app Vue 应用实例
  * @returns API 引擎实例
  */
 export function getApiEngineFromApp(app: App): ApiEngine | undefined {
-  return (app as any)._apiEngine
+  return (app as unknown as { _apiEngine?: ApiEngine })._apiEngine
 }
 
 // 扩展 Vue 应用类型
@@ -128,7 +135,7 @@ declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     $api: ApiEngine
   }
-  
+
   interface App {
     _apiEngine?: ApiEngine
   }

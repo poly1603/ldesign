@@ -3,7 +3,12 @@
  * 提供完整的 TypeScript 类型支持
  */
 
-import type { HttpClientConfig, HttpClient, RequestConfig, ResponseData } from '@ldesign/http'
+import type {
+  HttpClientConfig,
+  HttpClient,
+  RequestConfig,
+  ResponseData,
+} from '@ldesign/http'
 
 /**
  * API 引擎配置
@@ -164,12 +169,18 @@ export interface ApiEngine {
   /**
    * 调用 API 方法
    */
-  call<T = any>(methodName: string, params?: any, options?: ApiCallOptions): Promise<T>
+  call<T = any>(
+    methodName: string,
+    params?: any,
+    options?: ApiCallOptions
+  ): Promise<T>
 
   /**
    * 批量调用 API 方法
    */
-  callBatch<T = any>(calls: Array<{ methodName: string; params?: any; options?: ApiCallOptions }>): Promise<T[]>
+  callBatch<T = any>(
+    calls: Array<{ methodName: string; params?: any; options?: ApiCallOptions }>
+  ): Promise<T[]>
 
   /**
    * 检查方法是否存在
@@ -280,7 +291,8 @@ export const SYSTEM_API_METHODS = {
 /**
  * 系统 API 方法名称类型
  */
-export type SystemApiMethodName = typeof SYSTEM_API_METHODS[keyof typeof SYSTEM_API_METHODS]
+export type SystemApiMethodName =
+  (typeof SYSTEM_API_METHODS)[keyof typeof SYSTEM_API_METHODS]
 
 /**
  * 登录参数

@@ -75,7 +75,7 @@ global.setTimeout = vi.fn((fn, delay) => {
   return 0
 }) as any
 
-global.clearTimeout = vi.fn((id) => {
+global.clearTimeout = vi.fn(id => {
   originalClearTimeout(id)
 })
 
@@ -87,7 +87,7 @@ global.setInterval = vi.fn((fn, delay) => {
   return 0
 }) as any
 
-global.clearInterval = vi.fn((id) => {
+global.clearInterval = vi.fn(id => {
   originalClearInterval(id)
 })
 

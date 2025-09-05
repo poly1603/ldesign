@@ -439,7 +439,11 @@ enum ErrorType {
 }
 
 class ApiError extends Error {
-  constructor(public type: ErrorType, message: string, public originalError?: Error) {
+  constructor(
+    public type: ErrorType,
+    message: string,
+    public originalError?: Error
+  ) {
     super(message)
     this.name = 'ApiError'
   }
@@ -581,5 +585,4 @@ interface PluginRegistry {
 }
 ```
 
-这种架构设计确保了 @ldesign/api 具有良好的可扩展性、可维护性和性能，同时保持了简洁的 API 和优秀的开
-发体验。
+这种架构设计确保了 @ldesign/api 具有良好的可扩展性、可维护性和性能，同时保持了简洁的 API 和优秀的开发体验。

@@ -4,13 +4,13 @@
  */
 
 import type {
-  ApiPlugin,
   ApiMethodConfig,
+  ApiPlugin,
+  CaptchaInfo,
   LoginParams,
   LoginResult,
-  UserInfo,
   MenuItem,
-  CaptchaInfo,
+  UserInfo,
 } from '../types'
 import { SYSTEM_API_METHODS } from '../types'
 
@@ -182,19 +182,42 @@ const systemApiMethods: Record<string, ApiMethodConfig> = {
       const data = response.data
       const menus = Array.isArray(data) ? data : data.menus || []
 
-      return menus.map((menu: any): MenuItem => ({
-        id: menu.id || menu.menuId,
-        name: menu.name || menu.menuName,
-        title: menu.title || menu.menuTitle || menu.name,
-        icon: menu.icon,
-        path: menu.path || menu.url,
-        component: menu.component,
-        parentId: menu.parentId || menu.pid,
-        sort: menu.sort || menu.orderNum,
-        hidden: menu.hidden || menu.isHidden,
-        children: menu.children || [],
-        meta: menu.meta || {},
-      }))
+      interface RawMenu {
+        id?: string | number
+        menuId?: string | number
+        name?: string
+        menuName?: string
+        title?: string
+        menuTitle?: string
+        icon?: string
+        path?: string
+        url?: string
+        component?: string
+        parentId?: string | number
+        pid?: string | number
+        sort?: number
+        orderNum?: number
+        hidden?: boolean
+        isHidden?: boolean
+        children?: unknown[]
+        meta?: Record<string, unknown>
+      }
+
+      return menus.map(
+        (menu: RawMenu): MenuItem => ({
+          id: (menu.id ?? menu.menuId ?? '') as string | number,
+          name: (menu.name ?? menu.menuName ?? ''),
+          title: (menu.title ?? menu.menuTitle ?? menu.name ?? ''),
+          icon: menu.icon,
+          path: menu.path || menu.url,
+          component: menu.component,
+          parentId: menu.parentId || menu.pid,
+          sort: menu.sort || menu.orderNum,
+          hidden: menu.hidden || menu.isHidden,
+          children: (menu.children as MenuItem[] | undefined) || [],
+          meta: (menu.meta as Record<string, unknown> | undefined) || {},
+        }),
+      )
     },
     cache: {
       enabled: true,
@@ -267,7 +290,11 @@ const systemApiMethods: Record<string, ApiMethodConfig> = {
    */
   [SYSTEM_API_METHODS.CHANGE_PASSWORD]: {
     name: SYSTEM_API_METHODS.CHANGE_PASSWORD,
-    config: (params: { oldPassword: string; newPassword: string; confirmPassword?: string }) => ({
+    config: (params: {
+      oldPassword: string
+      newPassword: string
+      confirmPassword?: string
+    }) => ({
       method: 'PUT',
       url: '/user/password',
       data: params,
@@ -308,28 +335,37 @@ export const systemApiPlugin: ApiPlugin = {
   apis: systemApiMethods,
 
   install: (engine) => {
-    console.log('[System API Plugin] 系统 API 插件已安装')
+    // 只在开发模式或debug模式下输出日志
+    if (engine.config?.debug || (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development')) {
+      console.info('[System API Plugin] 系统 API 插件已安装')
+    }
 
     // 可以在这里添加额外的初始化逻辑
     // 例如：设置全局请求拦截器、错误处理等
   },
 
   uninstall: (engine) => {
-    console.log('[System API Plugin] 系统 API 插件已卸载')
+    // 只在开发模式或debug模式下输出日志
+    if (engine.config?.debug || (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development')) {
+      console.info('[System API Plugin] 系统 API 插件已卸载')
+    }
   },
 }
 
 /**
  * 创建自定义系统 API 插件
- * 
+ *
  * @param customMethods 自定义方法配置
  * @param options 插件选项
+ * @param options.name 插件名称
+ * @param options.version 插件版本
+ * @param options.overrideDefaults 是否覆盖默认方法
  * @returns 自定义系统 API 插件
- * 
+ *
  * @example
  * ```typescript
  * import { createCustomSystemApiPlugin } from '@ldesign/api'
- * 
+ *
  * const customPlugin = createCustomSystemApiPlugin({
  *   getProfile: {
  *     name: 'getProfile',
@@ -344,7 +380,7 @@ export function createCustomSystemApiPlugin(
     name?: string
     version?: string
     overrideDefaults?: boolean
-  } = {}
+  } = {},
 ): ApiPlugin {
   const {
     name = 'custom-system-apis',
@@ -360,11 +396,11 @@ export function createCustomSystemApiPlugin(
     name,
     version,
     apis,
-    install: (engine) => {
-      console.log(`[${name}] 自定义系统 API 插件已安装`)
+    install: (_engine) => {
+      console.warn(`[${name}] 自定义系统 API 插件已安装`)
     },
-    uninstall: (engine) => {
-      console.log(`[${name}] 自定义系统 API 插件已卸载`)
+    uninstall: (_engine) => {
+      console.warn(`[${name}] 自定义系统 API 插件已卸载`)
     },
   }
 }

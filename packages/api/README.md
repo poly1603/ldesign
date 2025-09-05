@@ -8,11 +8,12 @@
 
 ## ✨ 特性
 
-🔌 **插件化架构** - 通过 `engine.use()` 方法轻松扩展和管理接口方法 🎯 **内置系统接口** - 提供常用的
-系统接口，如登录、用户信息、菜单等 ⚡ **性能优化** - 内置缓存、防抖、请求去重等性能优化机制 🌟 **框
-架无关** - 纯 JavaScript/TypeScript 包，可在任何前端框架中使用 💎 **Vue 3 深度集成** - 专为 Vue 3 设
-计的组合式 API 和插件系统 🛡️ **TypeScript 优先** - 完整的类型定义，提供出色的开发体验 🔧 **高度可配
-置** - 灵活的配置选项，满足各种业务需求 📦 **轻量级** - 精心设计的架构，保持包体积小巧
+🔌 **插件化架构** - 通过 `engine.use()` 方法轻松扩展和管理接口方法 🎯
+**内置系统接口** - 提供常用的系统接口，如登录、用户信息、菜单等 ⚡
+**性能优化** - 内置缓存、防抖、请求去重等性能优化机制 🌟
+**框架无关** - 纯 JavaScript/TypeScript 包，可在任何前端框架中使用 💎 **Vue 3 深度集成** - 专为 Vue
+3 设计的组合式 API 和插件系统 🛡️ **TypeScript 优先** - 完整的类型定义，提供出色的开发体验 🔧
+**高度可配置** - 灵活的配置选项，满足各种业务需求 📦 **轻量级** - 精心设计的架构，保持包体积小巧
 
 ## 🚀 快速开始
 
@@ -61,7 +62,7 @@ const loginResult = await apiEngine.call('login', {
 
 ```vue
 <script setup lang="ts">
-import { useSystemApi } from '@ldesign/api/vue'
+import { useSystemApi } from '@ldesign/api'
 
 const systemApi = useSystemApi()
 
@@ -300,7 +301,7 @@ const [result1, result2, result3] = await Promise.all([
 ### 安装插件
 
 ```typescript
-import { apiVuePlugin, systemApiPlugin } from '@ldesign/api/vue'
+import { ApiVuePlugin, systemApiPlugin } from '@ldesign/api'
 // main.ts
 import { createApp } from 'vue'
 import App from './App.vue'
@@ -308,7 +309,7 @@ import App from './App.vue'
 const app = createApp(App)
 
 // 安装 API 插件
-app.use(apiVuePlugin, {
+app.use(ApiVuePlugin, {
   debug: true,
   http: {
     baseURL: import.meta.env.VITE_API_BASE_URL,

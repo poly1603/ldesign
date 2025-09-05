@@ -107,12 +107,12 @@ const userInfo = await apiEngine.call('getUserInfo')
 ### 3. Vue 3 集成
 
 ```typescript
-import { apiVuePlugin } from '@ldesign/api/vue'
+import { ApiVuePlugin } from '@ldesign/api'
 // main.ts
 import { createApp } from 'vue'
 
 const app = createApp(App)
-app.use(apiVuePlugin, {
+app.use(ApiVuePlugin, {
   http: {
     baseURL: 'https://api.example.com',
   },
@@ -122,7 +122,7 @@ app.use(apiVuePlugin, {
 ```vue
 <!-- 组件中使用 -->
 <script setup lang="ts">
-import { useSystemApi } from '@ldesign/api/vue'
+import { useSystemApi } from '@ldesign/api'
 
 const { getUserInfo } = useSystemApi()
 const { data, loading, execute } = getUserInfo({ immediate: true })

@@ -21,6 +21,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      '@ldesign/http': resolve(__dirname, '__tests__/stubs/ldesign-http.ts'),
     },
   },
 })

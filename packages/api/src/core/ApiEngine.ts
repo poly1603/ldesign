@@ -3,19 +3,18 @@
  * 提供插件系统、方法注册、调用机制等核心功能
  */
 
-import { createHttpClient } from '@ldesign/http'
 import type { HttpClient } from '@ldesign/http'
 import type {
+  ApiCallOptions,
   ApiEngine,
   ApiEngineConfig,
-  ApiPlugin,
   ApiMethodConfig,
-  ApiCallOptions,
+  ApiPlugin,
   CacheStats,
-  CacheItem,
   DebounceManager,
   DeduplicationManager,
 } from '../types'
+import { createHttpClient } from '@ldesign/http'
 import { CacheManager } from '../utils/CacheManager'
 import { DebounceManagerImpl } from '../utils/DebounceManager'
 import { DeduplicationManagerImpl } from '../utils/DeduplicationManager'
@@ -53,27 +52,27 @@ export class ApiEngineImpl implements ApiEngine {
       appName: 'LDesign API',
       version: '1.0.0',
       debug: false,
+      ...config,
       http: {
         timeout: 10000,
-        ...config.http,
+        ...(config.http || {}),
       },
       cache: {
         enabled: true,
         ttl: 300000, // 5分钟
         maxSize: 100,
         storage: 'memory',
-        ...config.cache,
+        ...(config.cache || {}),
       },
       debounce: {
         enabled: true,
         delay: 300,
-        ...config.debounce,
+        ...(config.debounce || {}),
       },
       deduplication: {
         enabled: true,
-        ...config.deduplication,
+        ...(config.deduplication || {}),
       },
-      ...config,
     }
 
     // 创建 HTTP 客户端
@@ -104,7 +103,9 @@ export class ApiEngineImpl implements ApiEngine {
     if (plugin.dependencies) {
       for (const dep of plugin.dependencies) {
         if (!this.plugins.has(dep)) {
-          throw new Error(`Plugin "${plugin.name}" depends on "${dep}", but it's not registered`)
+          throw new Error(
+            `Plugin "${plugin.name}" depends on "${dep}", but it's not registered`,
+          )
         }
       }
     }
@@ -142,7 +143,9 @@ export class ApiEngineImpl implements ApiEngine {
     // 检查是否有其他插件依赖此插件
     for (const [name, p] of this.plugins) {
       if (name !== pluginName && p.dependencies?.includes(pluginName)) {
-        throw new Error(`Cannot uninstall plugin "${pluginName}" because "${name}" depends on it`)
+        throw new Error(
+          `Cannot uninstall plugin "${pluginName}" because "${name}" depends on it`,
+        )
       }
     }
 
@@ -204,7 +207,11 @@ export class ApiEngineImpl implements ApiEngine {
   /**
    * 调用 API 方法
    */
-  async call<T = any>(methodName: string, params?: any, options: ApiCallOptions = {}): Promise<T> {
+  async call<T = unknown>(
+    methodName: string,
+    params?: unknown,
+    options: ApiCallOptions = {},
+  ): Promise<T> {
     if (this.destroyed) {
       throw new Error('API Engine has been destroyed')
     }
@@ -220,7 +227,7 @@ export class ApiEngineImpl implements ApiEngine {
 
       // 检查缓存
       if (!options.skipCache && this.shouldUseCache(methodConfig, options)) {
-        const cachedData = this.cacheManager.get(cacheKey)
+        const cachedData = this.cacheManager.get<T>(cacheKey)
         if (cachedData !== null) {
           this.log(`Cache hit for method "${methodName}"`)
           return cachedData
@@ -230,9 +237,10 @@ export class ApiEngineImpl implements ApiEngine {
       // 创建执行函数
       const executeRequest = async (): Promise<T> => {
         // 生成请求配置
-        const requestConfig = typeof methodConfig.config === 'function'
-          ? methodConfig.config(params)
-          : methodConfig.config
+        const requestConfig
+          = typeof methodConfig.config === 'function'
+            ? methodConfig.config(params)
+            : methodConfig.config
 
         // 发送请求
         const response = await this.httpClient.request(requestConfig)
@@ -250,8 +258,12 @@ export class ApiEngineImpl implements ApiEngine {
 
         // 缓存结果
         if (!options.skipCache && this.shouldUseCache(methodConfig, options)) {
-          const cacheConfig = { ...this.config.cache, ...methodConfig.cache, ...options.cache }
-          this.cacheManager.set(cacheKey, data, cacheConfig.ttl!)
+          const cacheConfig = {
+            ...this.config.cache,
+            ...methodConfig.cache,
+            ...options.cache,
+          }
+          this.cacheManager.set<T>(cacheKey, data, cacheConfig.ttl!)
         }
 
         // 成功回调
@@ -266,21 +278,42 @@ export class ApiEngineImpl implements ApiEngine {
       }
 
       // 请求去重
-      if (!options.skipDeduplication && this.shouldUseDeduplication(methodConfig, options)) {
-        const deduplicationKey = this.generateDeduplicationKey(methodName, params)
-        return await this.deduplicationManager.execute(deduplicationKey, executeRequest)
+      if (
+        !options.skipDeduplication
+        && this.shouldUseDeduplication(methodConfig, options)
+      ) {
+        const deduplicationKey = this.generateDeduplicationKey(
+          methodName,
+          params,
+        )
+        return await this.deduplicationManager.execute(
+          deduplicationKey,
+          executeRequest,
+        )
       }
 
       // 防抖处理
-      if (!options.skipDebounce && this.shouldUseDebounce(methodConfig, options)) {
+      if (
+        !options.skipDebounce
+        && this.shouldUseDebounce(methodConfig, options)
+      ) {
         const debounceKey = this.generateDebounceKey(methodName, params)
-        const debounceConfig = { ...this.config.debounce, ...methodConfig.debounce, ...options.debounce }
-        return await this.debounceManager.execute(debounceKey, executeRequest, debounceConfig.delay!)
+        const debounceConfig = {
+          ...this.config.debounce,
+          ...methodConfig.debounce,
+          ...options.debounce,
+        }
+        return await this.debounceManager.execute(
+          debounceKey,
+          executeRequest,
+          debounceConfig.delay!,
+        )
       }
 
       // 直接执行
       return await executeRequest()
-    } catch (error) {
+    }
+    catch (error) {
       this.log(`Error calling method "${methodName}":`, error)
 
       // 错误处理
@@ -298,9 +331,11 @@ export class ApiEngineImpl implements ApiEngine {
   /**
    * 批量调用 API 方法
    */
-  async callBatch<T = any>(calls: Array<{ methodName: string; params?: any; options?: ApiCallOptions }>): Promise<T[]> {
+  async callBatch<T = unknown>(
+    calls: Array<{ methodName: string, params?: unknown, options?: ApiCallOptions }>,
+  ): Promise<T[]> {
     const promises = calls.map(({ methodName, params, options }) =>
-      this.call<T>(methodName, params, options)
+      this.call<T>(methodName, params, options),
     )
     return Promise.all(promises)
   }
@@ -327,7 +362,8 @@ export class ApiEngineImpl implements ApiEngine {
       // 清除特定方法的缓存
       const pattern = new RegExp(`^${methodName}:`)
       this.cacheManager.clearByPattern(pattern)
-    } else {
+    }
+    else {
       // 清除所有缓存
       this.cacheManager.clear()
     }
@@ -361,7 +397,7 @@ export class ApiEngineImpl implements ApiEngine {
   /**
    * 生成缓存键
    */
-  private generateCacheKey(methodName: string, params?: any): string {
+  private generateCacheKey(methodName: string, params?: unknown): string {
     const keyGenerator = this.config.cache?.keyGenerator
     if (keyGenerator) {
       return keyGenerator(methodName, params)
@@ -372,14 +408,14 @@ export class ApiEngineImpl implements ApiEngine {
   /**
    * 生成防抖键
    */
-  private generateDebounceKey(methodName: string, params?: any): string {
+  private generateDebounceKey(methodName: string, params?: unknown): string {
     return `${methodName}:${JSON.stringify(params || {})}`
   }
 
   /**
    * 生成去重键
    */
-  private generateDeduplicationKey(methodName: string, params?: any): string {
+  private generateDeduplicationKey(methodName: string, params?: unknown): string {
     const keyGenerator = this.config.deduplication?.keyGenerator
     if (keyGenerator) {
       return keyGenerator(methodName, params)
@@ -390,7 +426,10 @@ export class ApiEngineImpl implements ApiEngine {
   /**
    * 判断是否应该使用缓存
    */
-  private shouldUseCache(methodConfig: ApiMethodConfig, options: ApiCallOptions): boolean {
+  private shouldUseCache(
+    methodConfig: ApiMethodConfig,
+    options: ApiCallOptions,
+  ): boolean {
     const globalEnabled = this.config.cache?.enabled ?? true
     const methodEnabled = methodConfig.cache?.enabled ?? true
     const optionEnabled = options.cache?.enabled ?? true
@@ -400,7 +439,10 @@ export class ApiEngineImpl implements ApiEngine {
   /**
    * 判断是否应该使用防抖
    */
-  private shouldUseDebounce(methodConfig: ApiMethodConfig, options: ApiCallOptions): boolean {
+  private shouldUseDebounce(
+    methodConfig: ApiMethodConfig,
+    options: ApiCallOptions,
+  ): boolean {
     const globalEnabled = this.config.debounce?.enabled ?? true
     const methodEnabled = methodConfig.debounce?.enabled ?? true
     const optionEnabled = options.debounce?.enabled ?? true
@@ -410,7 +452,10 @@ export class ApiEngineImpl implements ApiEngine {
   /**
    * 判断是否应该使用去重
    */
-  private shouldUseDeduplication(methodConfig: ApiMethodConfig, options: ApiCallOptions): boolean {
+  private shouldUseDeduplication(
+    methodConfig: ApiMethodConfig,
+    _options: ApiCallOptions,
+  ): boolean {
     const globalEnabled = this.config.deduplication?.enabled ?? true
     const methodEnabled = methodConfig.deduplication?.enabled ?? true
     return globalEnabled && methodEnabled
@@ -419,9 +464,9 @@ export class ApiEngineImpl implements ApiEngine {
   /**
    * 日志输出
    */
-  private log(message: string, ...args: any[]): void {
+  private log(message: string, ...args: unknown[]): void {
     if (this.config.debug) {
-      console.log(`[API Engine] ${message}`, ...args)
+      console.warn(`[API Engine] ${message}`, ...args)
     }
   }
 }

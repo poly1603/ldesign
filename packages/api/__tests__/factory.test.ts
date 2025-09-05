@@ -194,7 +194,7 @@ describe('工厂函数', () => {
       const engine = createApiEngineWithDefaults('https://api.example.com', {
         http: {
           headers: {
-            'Authorization': 'Bearer token',
+            Authorization: 'Bearer token',
           },
         },
         cache: {
@@ -205,7 +205,9 @@ describe('工厂函数', () => {
 
       expect(engine.config.http?.baseURL).toBe('https://api.example.com')
       expect(engine.config.http?.timeout).toBe(10000) // 默认值
-      expect(engine.config.http?.headers?.['Authorization']).toBe('Bearer token')
+      expect(engine.config.http?.headers?.['Authorization']).toBe(
+        'Bearer token'
+      )
       expect(engine.config.cache?.enabled).toBe(true) // 默认值
       expect(engine.config.cache?.maxSize).toBe(200) // 覆盖值
     })

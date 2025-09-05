@@ -52,7 +52,8 @@ describe('Vue 集成', () => {
 
     it('应该能够通过全局属性访问 API 引擎', () => {
       const app = createApp({
-        template: '<div>{{ $api ? "API Available" : "API Not Available" }}</div>',
+        template:
+          '<div>{{ $api ? "API Available" : "API Not Available" }}</div>',
       })
 
       app.use(ApiVuePlugin, {

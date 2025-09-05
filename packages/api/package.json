@@ -5,11 +5,11 @@
   "description": "一个功能强大的通用系统接口管理包，支持插件化架构、内置系统接口、性能优化，完美集成 Vue 3",
   "author": "LDesign Team",
   "license": "MIT",
-  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/{{PACKAGE_NAME}}#readme",
+  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/api#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/ldesign/ldesign.git",
-    "directory": "packages/{{PACKAGE_NAME}}"
+    "directory": "packages/api"
   },
   "bugs": {
     "url": "https://github.com/ldesign/ldesign/issues"
@@ -48,8 +48,8 @@
     "build:watch": "ldesign-builder build --watch",
     "dev": "rollup -c -w",
     "type-check": "vue-tsc --noEmit",
-    "lint": "eslint . --fix",
-    "lint:check": "eslint .",
+    "lint": "eslint --config ../../eslint.config.js \"src/**/*.{ts,tsx,js,jsx}\" --fix",
+    "lint:check": "eslint --config ../../eslint.config.js \"src/**/*.{ts,tsx,js,jsx}\"",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
@@ -106,7 +106,7 @@
     "vitepress": "^1.0.0",
     "vitest": "^2.0.0",
     "vue": "^3.4.15",
-    "vue-tsc": "^1.8.27"
+    "vue-tsc": "^3.0.5"
   },
   "size-limit": [
     {

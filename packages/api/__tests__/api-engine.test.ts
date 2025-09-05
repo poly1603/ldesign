@@ -188,7 +188,7 @@ describe('ApiEngine', () => {
     it('应该支持参数化配置', async () => {
       apiEngine.register('parameterizedMethod', {
         name: 'parameterizedMethod',
-        config: (params) => ({
+        config: params => ({
           method: 'POST',
           url: '/test',
           data: params,
@@ -209,7 +209,7 @@ describe('ApiEngine', () => {
       apiEngine.register('transformMethod', {
         name: 'transformMethod',
         config: { method: 'GET', url: '/test' },
-        transform: (response) => response.data.message.toUpperCase(),
+        transform: response => response.data.message.toUpperCase(),
       })
 
       const result = await apiEngine.call('transformMethod')
@@ -278,12 +278,16 @@ describe('ApiEngine', () => {
     it('应该在销毁后拒绝操作', () => {
       apiEngine.destroy()
 
-      expect(() => apiEngine.register('test', {
-        name: 'test',
-        config: { method: 'GET', url: '/test' },
-      })).toThrow('API Engine has been destroyed')
+      expect(() =>
+        apiEngine.register('test', {
+          name: 'test',
+          config: { method: 'GET', url: '/test' },
+        })
+      ).toThrow('API Engine has been destroyed')
 
-      expect(apiEngine.use(systemApiPlugin)).rejects.toThrow('API Engine has been destroyed')
+      expect(apiEngine.use(systemApiPlugin)).rejects.toThrow(
+        'API Engine has been destroyed'
+      )
     })
   })
 })

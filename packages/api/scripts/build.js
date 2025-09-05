@@ -14,7 +14,7 @@ async function build() {
       root: process.cwd(),
       srcDir: 'src',
       outDir: 'dist',
-      formats: ["esm","cjs"],
+      formats: ['esm', 'cjs'],
       sourcemap: true,
       minify: !isDev,
       clean: true,
@@ -23,13 +23,13 @@ async function build() {
         'react',
         'react-dom',
         '@ldesign/http',
-        '@ldesign/engine'
+        '@ldesign/engine',
       ],
       globals: {
-        'vue': 'Vue',
-        'react': 'React',
-        'react-dom': 'ReactDOM'
-      }
+        vue: 'Vue',
+        react: 'React',
+        'react-dom': 'ReactDOM',
+      },
     })
 
     if (result.success) {

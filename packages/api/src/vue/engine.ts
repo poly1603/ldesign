@@ -5,9 +5,10 @@
 
 import type { Plugin as EnginePlugin } from '@ldesign/engine'
 import type { ApiEngine, ApiEngineConfig } from '../types'
+import type { ApiVuePluginOptions } from './plugin'
+import process from 'node:process'
 import { createApiEngine } from '../core/factory'
 import { ApiVuePlugin } from './plugin'
-import type { ApiVuePluginOptions } from './plugin'
 
 /**
  * API Engine 插件选项
@@ -31,14 +32,14 @@ export interface ApiEnginePluginOptions extends ApiVuePluginOptions {
 
 /**
  * 创建 API Engine 插件
- * 
+ *
  * @param options 插件选项
  * @returns Engine 插件实例
- * 
+ *
  * @example
  * ```typescript
  * import { createApiEnginePlugin } from '@ldesign/api'
- * 
+ *
  * const apiPlugin = createApiEnginePlugin({
  *   name: 'api',
  *   version: '1.0.0',
@@ -51,12 +52,12 @@ export interface ApiEnginePluginOptions extends ApiVuePluginOptions {
  *   globalInjection: true,
  *   globalPropertyName: '$api',
  * })
- * 
+ *
  * await engine.use(apiPlugin)
  * ```
  */
 export function createApiEnginePlugin(
-  options: ApiEnginePluginOptions = {}
+  options: ApiEnginePluginOptions = {},
 ): EnginePlugin {
   const {
     name = 'api',
@@ -69,28 +70,37 @@ export function createApiEnginePlugin(
     ...vueOptions
   } = options
 
+  interface VueAppLike { use: (plugin: unknown, options?: unknown) => unknown }
+
   return {
     name,
     version,
     dependencies: [],
 
     async install(engine) {
-      console.log(`[API Engine Plugin] Installing plugin "${name}"...`)
+      // 只在开发模式下输出日志
+      if (clientConfig.debug) {
+        console.info(`[API Engine Plugin] Installing plugin \"${name}\"...`)
+      }
 
       // 监听 app:created 事件
-      engine.events.once('app:created', async (vueApp: any) => {
+      engine.events.once('app:created', async (vueApp: VueAppLike) => {
         try {
           // 创建或使用提供的 API 引擎
-          const apiEngine = providedClient || createApiEngine({
-            ...clientConfig,
-            ...globalConfig,
-          })
+          const apiEngine
+            = providedClient
+            || createApiEngine({
+              ...clientConfig,
+              ...globalConfig,
+            })
 
           // 安装 Vue 插件
           vueApp.use(ApiVuePlugin, {
             engine: apiEngine,
             config: globalConfig || clientConfig,
-            globalPropertyName: globalInjection ? globalPropertyName : undefined,
+            globalPropertyName: globalInjection
+              ? globalPropertyName
+              : undefined,
             registerComposables: true,
             provideDependencyInjection: true,
             ...vueOptions,
@@ -99,16 +109,28 @@ export function createApiEnginePlugin(
           // 将 API 引擎实例添加到 engine
           engine.apiEngine = apiEngine
 
-          console.log(`[API Engine Plugin] Plugin "${name}" installed successfully`)
-        } catch (error) {
-          console.error(`[API Engine Plugin] Failed to install plugin "${name}":`, error)
+          // 只在开发模式下输出日志
+          if (clientConfig.debug) {
+            console.info(
+              `[API Engine Plugin] Plugin \"${name}\" installed successfully`,
+            )
+          }
+        }
+        catch (error) {
+          // 只在开发模式下输出错误日志
+          if (clientConfig.debug) {
+            console.error(
+              `[API Engine Plugin] Failed to install plugin "${name}":`,
+              error,
+            )
+          }
           throw error
         }
       })
     },
 
     async uninstall(engine) {
-      console.log(`[API Engine Plugin] Uninstalling plugin "${name}"...`)
+      console.warn(`[API Engine Plugin] Uninstalling plugin \"${name}\"...`)
 
       // 清理 API 引擎
       if (engine.apiEngine) {
@@ -116,7 +138,12 @@ export function createApiEnginePlugin(
         delete engine.apiEngine
       }
 
-      console.log(`[API Engine Plugin] Plugin "${name}" uninstalled successfully`)
+      // 只在开发模式下输出日志
+      if (clientConfig.debug) {
+        console.info(
+          `[API Engine Plugin] Plugin \"${name}\" uninstalled successfully`,
+        )
+      }
     },
   }
 }
@@ -160,7 +187,7 @@ export const apiPlugin = defaultApiEnginePlugin
 
 /**
  * 创建开发环境 API Engine 插件
- * 
+ *
  * @param baseURL API 基础地址
  * @param options 额外选项
  * @returns Engine 插件实例
@@ -171,7 +198,7 @@ export function createDevelopmentApiEnginePlugin(
     clientConfig?: Omit<ApiEngineConfig, 'debug' | 'http'> & {
       http?: Omit<ApiEngineConfig['http'], 'baseURL'>
     }
-  } = {}
+  } = {},
 ): EnginePlugin {
   return createApiEnginePlugin({
     ...options,
@@ -192,7 +219,7 @@ export function createDevelopmentApiEnginePlugin(
 
 /**
  * 创建生产环境 API Engine 插件
- * 
+ *
  * @param baseURL API 基础地址
  * @param options 额外选项
  * @returns Engine 插件实例
@@ -203,7 +230,7 @@ export function createProductionApiEnginePlugin(
     clientConfig?: Omit<ApiEngineConfig, 'debug' | 'http'> & {
       http?: Omit<ApiEngineConfig['http'], 'baseURL'>
     }
-  } = {}
+  } = {},
 ): EnginePlugin {
   return createApiEnginePlugin({
     ...options,
@@ -234,7 +261,7 @@ export function createProductionApiEnginePlugin(
 
 /**
  * 根据环境创建 API Engine 插件
- * 
+ *
  * @param baseURL API 基础地址
  * @param options 额外选项
  * @returns Engine 插件实例
@@ -245,17 +272,20 @@ export function createApiEnginePluginByEnv(
     clientConfig?: Omit<ApiEngineConfig, 'http'> & {
       http?: Omit<ApiEngineConfig['http'], 'baseURL'>
     }
-  } = {}
+  } = {},
 ): EnginePlugin {
   // 检测环境
-  const isDevelopment = 
-    (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') ||
-    (typeof import.meta !== 'undefined' && import.meta.env?.DEV) ||
-    (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'development')
+  const isDevelopment
+    = (typeof process !== 'undefined'
+      && process.env?.NODE_ENV === 'development')
+    || (typeof import.meta !== 'undefined' && import.meta.env?.DEV)
+    || (typeof import.meta !== 'undefined'
+      && import.meta.env?.MODE === 'development')
 
   if (isDevelopment) {
     return createDevelopmentApiEnginePlugin(baseURL, options)
-  } else {
+  }
+  else {
     return createProductionApiEnginePlugin(baseURL, options)
   }
 }

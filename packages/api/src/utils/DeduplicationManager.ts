@@ -8,7 +8,7 @@ import type { DeduplicationManager } from '../types'
 /**
  * 去重项
  */
-interface DeduplicationItem<T = any> {
+interface DeduplicationItem<T = unknown> {
   /** Promise 实例 */
   promise: Promise<T>
   /** 创建时间 */
@@ -46,7 +46,7 @@ export class DeduplicationManagerImpl implements DeduplicationManager {
 
     // 创建新的请求
     const promise = this.createDeduplicatedPromise(key, fn)
-    
+
     // 保存去重项
     this.deduplicationItems.set(key, {
       promise,
@@ -95,7 +95,9 @@ export class DeduplicationManagerImpl implements DeduplicationManager {
   /**
    * 获取去重项信息
    */
-  getInfo(key: string): { createdAt: number; refCount: number; age: number } | null {
+  getInfo(
+    key: string,
+  ): { createdAt: number, refCount: number, age: number } | null {
     const item = this.deduplicationItems.get(key)
     if (!item) {
       return null
@@ -111,9 +113,19 @@ export class DeduplicationManagerImpl implements DeduplicationManager {
   /**
    * 获取所有去重项信息
    */
-  getAllInfo(): Array<{ key: string; createdAt: number; refCount: number; age: number }> {
-    const result: Array<{ key: string; createdAt: number; refCount: number; age: number }> = []
-    
+  getAllInfo(): Array<{
+    key: string
+    createdAt: number
+    refCount: number
+    age: number
+  }> {
+    const result: Array<{
+      key: string
+      createdAt: number
+      refCount: number
+      age: number
+    }> = []
+
     this.deduplicationItems.forEach((item, key) => {
       result.push({
         key,
@@ -141,9 +153,10 @@ export class DeduplicationManagerImpl implements DeduplicationManager {
     const totalItems = items.length
     const totalRefCount = items.reduce((sum, item) => sum + item.refCount, 0)
     const averageRefCount = totalItems > 0 ? totalRefCount / totalItems : 0
-    const oldestItemAge = items.length > 0 
-      ? Math.max(...items.map(item => now - item.createdAt))
-      : 0
+    const oldestItemAge
+      = items.length > 0
+        ? Math.max(...items.map(item => now - item.createdAt))
+        : 0
 
     return {
       totalItems,
@@ -167,14 +180,17 @@ export class DeduplicationManagerImpl implements DeduplicationManager {
   /**
    * 创建去重的 Promise
    */
-  private createDeduplicatedPromise<T>(key: string, fn: () => Promise<T>): Promise<T> {
+  private createDeduplicatedPromise<T>(
+    key: string,
+    fn: () => Promise<T>,
+  ): Promise<T> {
     return fn()
-      .then(result => {
+      .then((result) => {
         // 请求成功，清理去重项
         this.deduplicationItems.delete(key)
         return result
       })
-      .catch(error => {
+      .catch((error) => {
         // 请求失败，清理去重项
         this.deduplicationItems.delete(key)
         throw error
@@ -204,7 +220,7 @@ export class DeduplicationManagerImpl implements DeduplicationManager {
       }
     })
 
-    toDelete.forEach(key => {
+    toDelete.forEach((key) => {
       this.deduplicationItems.delete(key)
     })
   }
@@ -213,15 +229,16 @@ export class DeduplicationManagerImpl implements DeduplicationManager {
 /**
  * 创建去重函数
  */
-export function createDeduplicatedFunction<T extends (...args: any[]) => Promise<any>>(
-  fn: T,
-  keyGenerator?: (...args: Parameters<T>) => string
-): T {
+export function createDeduplicatedFunction<
+  T extends (...args: unknown[]) => Promise<unknown>,
+>(fn: T, keyGenerator?: (...args: Parameters<T>) => string): T {
   const manager = new DeduplicationManagerImpl()
   const defaultKeyGenerator = (...args: Parameters<T>) => JSON.stringify(args)
 
   return ((...args: Parameters<T>) => {
-    const key = keyGenerator ? keyGenerator(...args) : defaultKeyGenerator(...args)
+    const key = keyGenerator
+      ? keyGenerator(...args)
+      : defaultKeyGenerator(...args)
     return manager.execute(key, () => fn(...args))
   }) as T
 }
@@ -229,11 +246,11 @@ export function createDeduplicatedFunction<T extends (...args: any[]) => Promise
 /**
  * 去重装饰器
  */
-export function deduplicate(keyGenerator?: (...args: any[]) => string) {
-  return function <T extends (...args: any[]) => Promise<any>>(
-    target: any,
+export function deduplicate(keyGenerator?: (...args: unknown[]) => string) {
+  return function <T extends (...args: unknown[]) => Promise<unknown>>(
+    target: { constructor: { name: string } },
     propertyKey: string,
-    descriptor: TypedPropertyDescriptor<T>
+    descriptor: TypedPropertyDescriptor<T>,
   ) {
     if (!descriptor.value) {
       return descriptor
@@ -241,13 +258,15 @@ export function deduplicate(keyGenerator?: (...args: any[]) => string) {
 
     const originalMethod = descriptor.value
     const manager = new DeduplicationManagerImpl()
-    const defaultKeyGenerator = (...args: Parameters<T>) => 
+    const defaultKeyGenerator = (...args: Parameters<T>) =>
       `${target.constructor.name}.${propertyKey}:${JSON.stringify(args)}`
 
-    descriptor.value = (function (this: any, ...args: Parameters<T>) {
-      const key = keyGenerator ? keyGenerator(...args) : defaultKeyGenerator(...args)
-      return manager.execute(key, () => originalMethod.apply(this, args))
-    }) as T
+    descriptor.value = function (this: unknown, ...args: Parameters<T>) {
+      const key = keyGenerator
+        ? keyGenerator(...args)
+        : defaultKeyGenerator(...args)
+      return manager.execute(key, () => (originalMethod as (...a: Parameters<T>) => Promise<unknown>).apply(this as never, args))
+    } as T
 
     return descriptor
   }
@@ -256,28 +275,30 @@ export function deduplicate(keyGenerator?: (...args: any[]) => string) {
 /**
  * 基于类的去重装饰器
  */
-export function classBasedDeduplicate<T extends (...args: any[]) => Promise<any>>(
-  keyGenerator?: (...args: Parameters<T>) => string
-) {
+export function classBasedDeduplicate<
+  T extends (...args: unknown[]) => Promise<unknown>,
+>(keyGenerator?: (...args: Parameters<T>) => string) {
   const manager = new DeduplicationManagerImpl()
 
   return function (
-    target: any,
+    target: unknown,
     propertyKey: string,
-    descriptor: TypedPropertyDescriptor<T>
+    descriptor: TypedPropertyDescriptor<T>,
   ) {
     if (!descriptor.value) {
       return descriptor
     }
 
     const originalMethod = descriptor.value
-    const defaultKeyGenerator = (...args: Parameters<T>) => 
+    const defaultKeyGenerator = (...args: Parameters<T>) =>
       `${propertyKey}:${JSON.stringify(args)}`
 
-    descriptor.value = (function (this: any, ...args: Parameters<T>) {
-      const key = keyGenerator ? keyGenerator(...args) : defaultKeyGenerator(...args)
-      return manager.execute(key, () => originalMethod.apply(this, args))
-    }) as T
+    descriptor.value = function (this: unknown, ...args: Parameters<T>) {
+      const key = keyGenerator
+        ? keyGenerator(...args)
+        : defaultKeyGenerator(...args)
+      return manager.execute(key, () => (originalMethod as (...a: Parameters<T>) => Promise<unknown>).apply(this as never, args))
+    } as T
 
     return descriptor
   }
@@ -291,6 +312,9 @@ export const globalDeduplicationManager = new DeduplicationManagerImpl()
 /**
  * 使用全局去重管理器的便捷函数
  */
-export function deduplicateGlobally<T>(key: string, fn: () => Promise<T>): Promise<T> {
+export function deduplicateGlobally<T>(
+  key: string,
+  fn: () => Promise<T>,
+): Promise<T> {
   return globalDeduplicationManager.execute(key, fn)
 }

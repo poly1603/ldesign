@@ -9,11 +9,11 @@ import type { CacheConfig, CacheItem, CacheStats } from '../types'
  * 缓存存储接口
  */
 interface CacheStorage {
-  get(key: string): string | null
-  set(key: string, value: string): void
-  remove(key: string): void
-  clear(): void
-  keys(): string[]
+  get: (key: string) => string | null
+  set: (key: string, value: string) => void
+  remove: (key: string) => void
+  clear: () => void
+  keys: () => string[]
 }
 
 /**
@@ -52,7 +52,8 @@ class LocalStorageCacheStorage implements CacheStorage {
   get(key: string): string | null {
     try {
       return localStorage.getItem(this.prefix + key)
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -60,7 +61,8 @@ class LocalStorageCacheStorage implements CacheStorage {
   set(key: string, value: string): void {
     try {
       localStorage.setItem(this.prefix + key, value)
-    } catch {
+    }
+    catch {
       // 忽略存储错误
     }
   }
@@ -68,7 +70,8 @@ class LocalStorageCacheStorage implements CacheStorage {
   remove(key: string): void {
     try {
       localStorage.removeItem(this.prefix + key)
-    } catch {
+    }
+    catch {
       // 忽略删除错误
     }
   }
@@ -77,7 +80,8 @@ class LocalStorageCacheStorage implements CacheStorage {
     try {
       const keys = this.keys()
       keys.forEach(key => this.remove(key))
-    } catch {
+    }
+    catch {
       // 忽略清除错误
     }
   }
@@ -92,7 +96,8 @@ class LocalStorageCacheStorage implements CacheStorage {
         }
       }
       return keys
-    } catch {
+    }
+    catch {
       return []
     }
   }
@@ -107,7 +112,8 @@ class SessionStorageCacheStorage implements CacheStorage {
   get(key: string): string | null {
     try {
       return sessionStorage.getItem(this.prefix + key)
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -115,7 +121,8 @@ class SessionStorageCacheStorage implements CacheStorage {
   set(key: string, value: string): void {
     try {
       sessionStorage.setItem(this.prefix + key, value)
-    } catch {
+    }
+    catch {
       // 忽略存储错误
     }
   }
@@ -123,7 +130,8 @@ class SessionStorageCacheStorage implements CacheStorage {
   remove(key: string): void {
     try {
       sessionStorage.removeItem(this.prefix + key)
-    } catch {
+    }
+    catch {
       // 忽略删除错误
     }
   }
@@ -132,7 +140,8 @@ class SessionStorageCacheStorage implements CacheStorage {
     try {
       const keys = this.keys()
       keys.forEach(key => this.remove(key))
-    } catch {
+    }
+    catch {
       // 忽略清除错误
     }
   }
@@ -147,7 +156,8 @@ class SessionStorageCacheStorage implements CacheStorage {
         }
       }
       return keys
-    } catch {
+    }
+    catch {
       return []
     }
   }
@@ -172,7 +182,8 @@ export class CacheManager {
       ttl: 300000, // 5分钟
       maxSize: 100,
       storage: 'memory',
-      keyGenerator: (methodName: string, params?: any) => `${methodName}:${JSON.stringify(params || {})}`,
+      keyGenerator: (methodName: string, params?: unknown) =>
+        `${methodName}:${JSON.stringify(params || {})}`,
       ...config,
     }
 
@@ -195,7 +206,7 @@ export class CacheManager {
   /**
    * 获取缓存数据
    */
-  get<T = any>(key: string): T | null {
+  get<T = unknown>(key: string): T | null {
     if (!this.config.enabled) {
       return null
     }
@@ -224,7 +235,8 @@ export class CacheManager {
 
       this.stats.hits++
       return item.data
-    } catch {
+    }
+    catch {
       this.stats.misses++
       return null
     }
@@ -233,7 +245,7 @@ export class CacheManager {
   /**
    * 设置缓存数据
    */
-  set<T = any>(key: string, data: T, ttl?: number): void {
+  set<T = unknown>(key: string, data: T, ttl?: number): void {
     if (!this.config.enabled) {
       return
     }
@@ -253,7 +265,8 @@ export class CacheManager {
 
       this.storage.set(key, JSON.stringify(item))
       this.updateStats()
-    } catch {
+    }
+    catch {
       // 忽略设置错误
     }
   }
@@ -282,7 +295,7 @@ export class CacheManager {
    */
   clearByPattern(pattern: RegExp): void {
     const keys = this.storage.keys()
-    keys.forEach(key => {
+    keys.forEach((key) => {
       if (pattern.test(key)) {
         this.storage.remove(key)
       }
@@ -297,9 +310,10 @@ export class CacheManager {
     this.updateStats()
     return {
       ...this.stats,
-      hitRate: this.stats.hits + this.stats.misses > 0
-        ? this.stats.hits / (this.stats.hits + this.stats.misses)
-        : 0,
+      hitRate:
+        this.stats.hits + this.stats.misses > 0
+          ? this.stats.hits / (this.stats.hits + this.stats.misses)
+          : 0,
     }
   }
 
@@ -324,16 +338,17 @@ export class CacheManager {
     const keys = this.storage.keys()
     if (keys.length >= this.config.maxSize) {
       // 使用 LRU 策略删除最少使用的缓存
-      const items: Array<{ key: string; item: CacheItem }> = []
+      const items: Array<{ key: string, item: CacheItem }> = []
 
-      keys.forEach(key => {
+      keys.forEach((key) => {
         try {
           const itemStr = this.storage.get(key)
           if (itemStr) {
             const item: CacheItem = JSON.parse(itemStr)
             items.push({ key, item })
           }
-        } catch {
+        }
+        catch {
           // 忽略解析错误的项
         }
       })
@@ -354,7 +369,7 @@ export class CacheManager {
 
     // 计算缓存大小
     let totalSize = 0
-    keys.forEach(key => {
+    keys.forEach((key) => {
       const itemStr = this.storage.get(key)
       if (itemStr) {
         totalSize += itemStr.length * 2 // 估算字符串大小（UTF-16）
@@ -368,9 +383,12 @@ export class CacheManager {
    */
   private startCleanupTimer(): void {
     // 每5分钟清理一次过期缓存
-    setInterval(() => {
-      this.cleanupExpiredItems()
-    }, 5 * 60 * 1000)
+    setInterval(
+      () => {
+        this.cleanupExpiredItems()
+      },
+      5 * 60 * 1000,
+    )
   }
 
   /**
@@ -380,7 +398,7 @@ export class CacheManager {
     const now = Date.now()
     const keys = this.storage.keys()
 
-    keys.forEach(key => {
+    keys.forEach((key) => {
       try {
         const itemStr = this.storage.get(key)
         if (itemStr) {
@@ -389,7 +407,8 @@ export class CacheManager {
             this.storage.remove(key)
           }
         }
-      } catch {
+      }
+      catch {
         // 删除无法解析的项
         this.storage.remove(key)
       }
