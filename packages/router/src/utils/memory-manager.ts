@@ -427,7 +427,10 @@ export class MemoryManager {
    * 处理内存警告
    */
   private handleMemoryWarning(stats: MemoryStats): void {
-    console.warn('内存使用量警告:', stats)
+    // 只在开发模式下输出内存警告
+    if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+      console.warn('内存使用量警告:', stats)
+    }
 
     if (this.cleanupStrategy === 'aggressive') {
       this.performCleanup('moderate')
