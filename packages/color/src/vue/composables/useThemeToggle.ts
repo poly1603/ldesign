@@ -1,12 +1,12 @@
 /**
  * 主题切换组合式API
- * 
+ *
  * 提供简单的主题模式切换功能
  */
 
-import { ref, computed, inject, onMounted, watch } from 'vue'
-import type { Ref, ComputedRef } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
 import type { ColorMode } from '../../core/types'
+import { computed, inject, onMounted, ref, watch } from 'vue'
 
 /**
  * 主题切换返回类型
@@ -48,18 +48,18 @@ export interface UseThemeToggleOptions {
 
 /**
  * 主题切换组合式API
- * 
+ *
  * @param options 配置选项
  * @returns 主题切换API
- * 
+ *
  * @example
  * ```vue
  * <script setup>
  * import { useThemeToggle } from '@ldesign/color/vue'
- * 
+ *
  * const { isDark, toggle, setLight, setDark } = useThemeToggle()
  * </script>
- * 
+ *
  * <template>
  *   <button @click="toggle">
  *     切换到{{ isDark ? '亮色' : '暗色' }}模式
@@ -74,7 +74,7 @@ export function useThemeToggle(options: UseThemeToggleOptions = {}): UseThemeTog
     storageKey = 'ldesign-theme-toggle',
     autoDetect = false,
     onBeforeToggle,
-    onAfterToggle
+    onAfterToggle,
   } = options
 
   // 获取主题管理器
@@ -100,14 +100,16 @@ export function useThemeToggle(options: UseThemeToggleOptions = {}): UseThemeTog
     if (themeManager && typeof themeManager.setMode === 'function') {
       try {
         await themeManager.setMode(mode)
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('[useThemeToggle] 主题管理器设置失败:', error)
         // 回退到本地存储
         if (autoSave) {
           saveToStorage()
         }
       }
-    } else if (autoSave) {
+    }
+    else if (autoSave) {
       saveToStorage()
     }
 
@@ -131,16 +133,18 @@ export function useThemeToggle(options: UseThemeToggleOptions = {}): UseThemeTog
   }
 
   // 存储相关
-  const saveToStorage = (): void => {
-    if (typeof localStorage === 'undefined') return
+  function saveToStorage(): void {
+    if (typeof localStorage === 'undefined')
+      return
 
     try {
       const data = {
         mode: currentMode.value,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
       localStorage.setItem(storageKey, JSON.stringify(data))
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('[useThemeToggle] 保存到存储失败:', error)
     }
   }
@@ -156,7 +160,8 @@ export function useThemeToggle(options: UseThemeToggleOptions = {}): UseThemeTog
         const data = JSON.parse(stored)
         return data.mode || defaultMode
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('[useThemeToggle] 从存储加载失败:', error)
     }
 
@@ -172,7 +177,8 @@ export function useThemeToggle(options: UseThemeToggleOptions = {}): UseThemeTog
     try {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
       return mediaQuery.matches ? 'dark' : 'light'
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('[useThemeToggle] 系统主题检测失败:', error)
       return defaultMode
     }
@@ -191,11 +197,12 @@ export function useThemeToggle(options: UseThemeToggleOptions = {}): UseThemeTog
       }
 
       mediaQuery.addEventListener('change', handler)
-      
+
       return () => {
         mediaQuery.removeEventListener('change', handler)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('[useThemeToggle] 系统主题监听设置失败:', error)
       return null
     }
@@ -211,13 +218,16 @@ export function useThemeToggle(options: UseThemeToggleOptions = {}): UseThemeTog
         if (typeof themeManager.getCurrentMode === 'function') {
           initialMode = themeManager.getCurrentMode() || defaultMode
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('[useThemeToggle] 主题管理器初始化失败:', error)
       }
-    } else if (autoDetect) {
+    }
+    else if (autoDetect) {
       // 自动检测系统主题
       initialMode = detectSystemTheme()
-    } else if (autoSave) {
+    }
+    else if (autoSave) {
       // 从存储加载
       initialMode = loadFromStorage()
     }
@@ -226,7 +236,7 @@ export function useThemeToggle(options: UseThemeToggleOptions = {}): UseThemeTog
 
     // 设置系统主题监听
     const cleanup = setupSystemThemeWatcher()
-    
+
     // 组件卸载时清理
     if (cleanup) {
       // 注意：这里应该在 onUnmounted 中调用，但为了简化示例，暂时省略
@@ -248,6 +258,6 @@ export function useThemeToggle(options: UseThemeToggleOptions = {}): UseThemeTog
     toggle,
     setLight,
     setDark,
-    setMode
+    setMode,
   }
 }

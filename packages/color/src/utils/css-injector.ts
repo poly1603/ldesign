@@ -59,7 +59,7 @@ export class CSSInjectorImpl implements CSSInjector {
    */
   injectVariablesWithComments(
     variableGroups: Array<{ comment: string, variables: Record<string, ColorValue> }>,
-    id?: string
+    id?: string,
   ): void {
     const styleId = id || this.options.styleId
     const cssText = this.generateCSSTextWithComments(variableGroups)
@@ -97,8 +97,8 @@ export class CSSInjectorImpl implements CSSInjector {
   injectThemeVariables(
     lightVariables: Record<string, string>,
     darkVariables: Record<string, string>,
-    themeInfo?: { name: string; primaryColor: string },
-    id?: string
+    themeInfo?: { name: string, primaryColor: string },
+    id?: string,
   ): void {
     const styleId = id || this.options.styleId
 
@@ -152,7 +152,7 @@ export class CSSInjectorImpl implements CSSInjector {
    * 生成带注释的 CSS 文本
    */
   private generateCSSTextWithComments(
-    variableGroups: Array<{ comment: string, variables: Record<string, ColorValue> }>
+    variableGroups: Array<{ comment: string, variables: Record<string, ColorValue> }>,
   ): string {
     const sections = variableGroups.map(({ comment, variables }) => {
       const declarations = Object.entries(variables)

@@ -45,17 +45,6 @@ export {
 // 导出核心类和接口
 export { ThemeManager } from './core/theme-manager'
 
-// 导出 Vue 集成
-export {
-  createColorEnginePlugin,
-  createColorPlugin,
-  useTheme,
-  ThemeSelector,
-  DarkModeToggle,
-  ColorPicker,
-  ModeToggle
-} from './vue'
-
 // 导出核心类型定义
 export type {
   CacheItem,
@@ -249,6 +238,17 @@ export {
 
 export type { IdleProcessorOptions } from './utils/idle-processor'
 
+// 导出 Vue 集成
+export {
+  ColorPicker,
+  createColorEnginePlugin,
+  createColorPlugin,
+  DarkModeToggle,
+  ModeToggle,
+  ThemeSelector,
+  useTheme,
+} from './vue'
+
 // 便捷的创建函数
 export function createThemeManager(
   options?: ThemeManagerOptions,
@@ -327,10 +327,6 @@ export async function createCustomThemeManager(
   await manager.init()
   return manager
 }
-
-
-
-
 
 /**
  * 版本信息

@@ -1,7 +1,9 @@
 import { resolve } from 'node:path'
 import { defineConfig } from 'vitest/config'
+import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
+  plugins: [vue()],
   test: {
     globals: true,
     environment: 'jsdom',
@@ -68,6 +70,7 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, 'src'),
       '@tests': resolve(__dirname, '__tests__'),
+      '@ldesign/shared': resolve(__dirname, '__tests__/mocks/ldesign-shared.ts'),
     },
   },
   // 优化构建性能

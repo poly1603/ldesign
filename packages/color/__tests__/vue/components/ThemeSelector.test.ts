@@ -98,7 +98,7 @@ describe('ThemeSelector', () => {
     expect(wrapper.emitted('themeChange')).toBeTruthy()
   })
 
-  it('应该正确显示主题颜色预览', () => {
+it('应该正确显示主题颜色预览', async () => {
     const wrapper = mount(ThemeSelector, {
       props: {
         mode: 'select',
@@ -108,7 +108,7 @@ describe('ThemeSelector', () => {
     })
 
     // 打开下拉框
-    wrapper.find('.theme-selector__select-enhanced').trigger('click')
+    await wrapper.find('.theme-selector__select-enhanced').trigger('click')
     
     const colorDots = wrapper.findAll('.theme-selector__color-dot')
     expect(colorDots.length).toBeGreaterThan(0)
@@ -159,7 +159,7 @@ describe('ThemeSelector', () => {
     expect(greenOption).toBeFalsy()
   })
 
-  it('应该正确显示自定义主题', () => {
+it('应该正确显示自定义主题', async () => {
     const customTheme: ThemeConfig = {
       name: 'purple',
       displayName: '紫色主题',
@@ -176,7 +176,7 @@ describe('ThemeSelector', () => {
     })
 
     // 打开下拉框
-    wrapper.find('.theme-selector__select-enhanced').trigger('click')
+    await wrapper.find('.theme-selector__select-enhanced').trigger('click')
     
     const options = wrapper.findAll('.theme-selector__select-option-label')
     const purpleOption = options.find(option => option.text() === '紫色主题')
@@ -198,7 +198,7 @@ describe('ThemeSelector', () => {
     expect(wrapper.find('.theme-selector__popup').exists()).toBe(true)
   })
 
-  it('应该正确显示主题描述', () => {
+it('应该正确显示主题描述', async () => {
     const wrapper = mount(ThemeSelector, {
       props: {
         mode: 'select',
@@ -207,7 +207,7 @@ describe('ThemeSelector', () => {
     })
 
     // 打开下拉框
-    wrapper.find('.theme-selector__select-enhanced').trigger('click')
+    await wrapper.find('.theme-selector__select-enhanced').trigger('click')
     
     const descriptions = wrapper.findAll('.theme-selector__select-option-desc')
     expect(descriptions.length).toBeGreaterThan(0)

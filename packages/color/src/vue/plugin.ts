@@ -1,16 +1,15 @@
 /**
  * Vue 插件 - 颜色管理系统
- * 
+ *
  * 提供主题管理和颜色处理功能的 Vue 插件
  */
 
 import type { App, Plugin } from 'vue'
-import { inject, ref, computed } from 'vue'
-import { ThemeManager } from '../core/theme-manager'
 // import ThemeSelector from './components/ThemeSelector.vue'
-import type { ThemeManagerInstance } from '../core/types'
+import type { ThemeConfig, ThemeManagerInstance } from '../core/types'
+import { computed, inject, ref } from 'vue'
+import { ThemeManager } from '../core/theme-manager'
 import { presetThemes } from '../themes/presets'
-import type { ThemeConfig } from '../themes/presets'
 
 /**
  * 插件配置选项
@@ -67,7 +66,7 @@ const defaultOptions: Required<Omit<ColorPluginOptions, 'customThemes' | 'disabl
 } = {
   registerComponents: true,
   componentPrefix: 'LColor',
-  defaultTheme: 'blue',
+  defaultTheme: 'default',
   defaultMode: 'light',
   debug: false,
   cssVariablePrefix: 'ldesign',
@@ -79,7 +78,7 @@ const defaultOptions: Required<Omit<ColorPluginOptions, 'customThemes' | 'disabl
   generateBackgroundFromPrimary: false,
   onReady: undefined,
   onThemeChanged: undefined,
-  onError: undefined
+  onError: undefined,
 }
 
 /**
@@ -91,7 +90,7 @@ function processThemeConfig(config: ColorPluginOptions): ThemeConfig[] {
 
   if (config.disabledBuiltinThemes && config.disabledBuiltinThemes.length > 0) {
     enabledBuiltinThemes = presetThemes.filter(
-      theme => !config.disabledBuiltinThemes!.includes(theme.name)
+      theme => !config.disabledBuiltinThemes!.includes(theme.name),
     )
   }
 
@@ -104,9 +103,22 @@ function processThemeConfig(config: ColorPluginOptions): ThemeConfig[] {
         displayName: customTheme.displayName,
         description: customTheme.description,
         builtin: false,
-        light: customTheme.light || {},
-        dark: customTheme.dark || {},
-        colors: customTheme.colors
+        light: {
+          // 确保 primary 存在，避免类型错误
+          primary: (customTheme.light as any)?.primary
+            ?? customTheme.colors?.primary
+            ?? '#1890ff',
+          ...(customTheme.light || {} as any),
+        } as any,
+        dark: customTheme.dark
+          ? ({
+              primary: (customTheme.dark as any)?.primary
+                ?? customTheme.colors?.primary
+                ?? '#177ddc',
+              ...(customTheme.dark || {} as any),
+            } as any)
+          : undefined,
+        colors: customTheme.colors,
       }
       customThemes.push(themeConfig)
     }
@@ -130,23 +142,23 @@ function createThemeManagerConfig(config: ColorPluginOptions) {
     cssVariables: {
       prefix: config.cssVariablePrefix,
       includeComments: true,
-      includeThemeInfo: true
+      includeThemeInfo: true,
     },
     backgroundGeneration: {
       strategy: config.backgroundStrategy,
-      basedOnPrimary: config.generateBackgroundFromPrimary
+      basedOnPrimary: config.generateBackgroundFromPrimary,
     },
     debug: config.debug,
     onThemeChanged: config.onThemeChanged,
-    onError: config.onError
+    onError: config.onError,
   }
 }
 
 /**
  * 创建颜色管理 Engine 插件
- * 
+ *
  * 用于集成到 LDesign Engine 系统中
- * 
+ *
  * @param options 插件配置选项
  * @returns Engine 插件实例
  */
@@ -167,7 +179,7 @@ export function createColorEnginePlugin(options: ColorPluginOptions = {}) {
         }
 
         if (config.debug) {
-          console.log('🎨 [ColorEngine] 开始安装插件，配置:', config)
+          console.log(`🎨 [ColorEngine] 开始安装插件，配置: ${JSON.stringify(config)}`)
         }
 
         // 创建增强的主题管理器实例
@@ -186,9 +198,13 @@ export function createColorEnginePlugin(options: ColorPluginOptions = {}) {
         if (typeof app.provide === 'function') {
           app.provide('themeManager', themeManager)
           app.provide('$themeManager', themeManager) // 额外的注入键
-        } else if ((app as any).app && typeof (app as any).app.provide === 'function') {
-          (app as any).app.provide('themeManager', themeManager)
-            (app as any).app.provide('$themeManager', themeManager)
+        }
+        else {
+          const appAny = app as any
+          if (appAny.app && typeof appAny.app.provide === 'function') {
+            appAny.app.provide('themeManager', themeManager)
+            appAny.app.provide('$themeManager', themeManager)
+          }
         }
 
         // 同时添加到 window 对象作为备用方案
@@ -223,22 +239,24 @@ export function createColorEnginePlugin(options: ColorPluginOptions = {}) {
         if (config.onReady) {
           try {
             await config.onReady(themeManager)
-          } catch (error) {
+          }
+          catch (error) {
             console.warn('🚨 [ColorEngine] onReady 回调执行失败:', error)
             if (config.onError) {
               config.onError(error as Error)
             }
           }
         }
-
-      } catch (error) {
+      }
+      catch (error) {
         console.error('❌ Color Engine 插件安装失败:', error)
 
         // 调用错误处理回调
         if (config.onError) {
           try {
             config.onError(error as Error)
-          } catch (callbackError) {
+          }
+          catch (callbackError) {
             console.error('❌ onError 回调执行失败:', callbackError)
           }
         }
@@ -259,20 +277,20 @@ export function createColorEnginePlugin(options: ColorPluginOptions = {}) {
         if (defaultOptions.debug) {
           console.log('🎨 Color Engine 插件卸载成功')
         }
-
-      } catch (error) {
+      }
+      catch (error) {
         console.error('❌ Color Engine 插件卸载失败:', error)
         throw error
       }
-    }
+    },
   }
 }
 
 /**
  * 创建 Vue 插件
- * 
+ *
  * 用于直接在 Vue 应用中使用
- * 
+ *
  * @param options 插件配置选项
  * @returns Vue 插件实例
  */
@@ -296,7 +314,7 @@ export function createColorPlugin(options: ColorPluginOptions = {}): Plugin {
                 success: '#52c41a',
                 warning: '#faad14',
                 danger: '#ff4d4f',
-                gray: '#8c8c8c'
+                gray: '#8c8c8c',
               },
               dark: {
                 primary: '#177ddc',
@@ -304,8 +322,8 @@ export function createColorPlugin(options: ColorPluginOptions = {}): Plugin {
                 success: '#389e0d',
                 warning: '#d48806',
                 danger: '#cf1322',
-                gray: '#595959'
-              }
+                gray: '#595959',
+              },
             },
             {
               name: 'green',
@@ -316,7 +334,7 @@ export function createColorPlugin(options: ColorPluginOptions = {}): Plugin {
                 success: '#52c41a',
                 warning: '#faad14',
                 danger: '#ff4d4f',
-                gray: '#8c8c8c'
+                gray: '#8c8c8c',
               },
               dark: {
                 primary: '#389e0d',
@@ -324,10 +342,10 @@ export function createColorPlugin(options: ColorPluginOptions = {}): Plugin {
                 success: '#389e0d',
                 warning: '#d48806',
                 danger: '#cf1322',
-                gray: '#595959'
-              }
-            }
-          ]
+                gray: '#595959',
+              },
+            },
+          ],
         })
 
         // 初始化主题管理器
@@ -342,9 +360,13 @@ export function createColorPlugin(options: ColorPluginOptions = {}): Plugin {
         if (typeof app.provide === 'function') {
           app.provide('themeManager', themeManager)
           app.provide('$themeManager', themeManager) // 额外的注入键
-        } else if ((app as any).app && typeof (app as any).app.provide === 'function') {
-          (app as any).app.provide('themeManager', themeManager)
-            (app as any).app.provide('$themeManager', themeManager)
+        }
+        else {
+          const appAny = app as any
+          if (appAny.app && typeof appAny.app.provide === 'function') {
+            appAny.app.provide('themeManager', themeManager)
+            appAny.app.provide('$themeManager', themeManager)
+          }
         }
 
         // 同时添加到 window 对象作为备用方案
@@ -365,16 +387,14 @@ export function createColorPlugin(options: ColorPluginOptions = {}): Plugin {
           console.log('🎯 主题管理器:', themeManager)
           console.log('⚙️ 配置:', config)
         }
-
-      } catch (error) {
+      }
+      catch (error) {
         console.error('❌ Color Vue 插件安装失败:', error)
         throw error
       }
-    }
+    },
   }
 }
-
-
 
 /**
  * 组合式函数：使用主题
@@ -394,7 +414,7 @@ export function useTheme() {
       setMode: () => { },
       toggleMode: () => { },
       getCurrentTheme: () => 'blue',
-      getCurrentMode: () => 'light' as const
+      getCurrentMode: () => 'light' as const,
     }
   }
 
@@ -420,7 +440,8 @@ export function useTheme() {
       if (mode) {
         currentMode.value = mode
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('[useTheme] 设置主题失败:', error)
     }
   }
@@ -429,7 +450,8 @@ export function useTheme() {
     try {
       await themeManager.setTheme(currentTheme.value, mode)
       currentMode.value = mode
-    } catch (error) {
+    }
+    catch (error) {
       console.error('[useTheme] 设置模式失败:', error)
     }
   }
@@ -449,7 +471,7 @@ export function useTheme() {
     setMode,
     toggleMode,
     getCurrentTheme: () => themeManager.currentTheme,
-    getCurrentMode: () => themeManager.currentMode
+    getCurrentMode: () => themeManager.currentMode,
   }
 }
 
@@ -457,7 +479,7 @@ export function useTheme() {
 const ColorVuePlugin = {
   createColorEnginePlugin,
   createColorPlugin,
-  useTheme
+  useTheme,
 }
 
 export default ColorVuePlugin

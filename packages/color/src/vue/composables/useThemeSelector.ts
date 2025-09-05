@@ -1,13 +1,13 @@
 /**
  * 主题选择器组合式API
- * 
+ *
  * 提供主题选择和管理功能的组合式API
  */
 
-import { ref, computed, inject, onMounted, watch } from 'vue'
-import type { Ref, ComputedRef } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
+import type { ColorMode, ThemeConfig } from '../../core/types'
+import { computed, inject, onMounted, ref, watch } from 'vue'
 import { presetThemes } from '../../themes/presets'
-import type { ThemeConfig, ColorMode } from '../../core/types'
 
 /**
  * 主题选择器返回类型
@@ -57,15 +57,15 @@ export interface UseThemeSelectorOptions {
 
 /**
  * 主题选择器组合式API
- * 
+ *
  * @param options 配置选项
  * @returns 主题选择器API
- * 
+ *
  * @example
  * ```vue
  * <script setup>
  * import { useThemeSelector } from '@ldesign/color/vue'
- * 
+ *
  * const {
  *   currentTheme,
  *   currentMode,
@@ -83,7 +83,7 @@ export function useThemeSelector(options: UseThemeSelectorOptions = {}): UseThem
     defaultTheme = 'default',
     defaultMode = 'light',
     autoSave = true,
-    storageKey = 'ldesign-theme-selector'
+    storageKey = 'ldesign-theme-selector',
   } = options
 
   // 获取主题管理器
@@ -97,16 +97,16 @@ export function useThemeSelector(options: UseThemeSelectorOptions = {}): UseThem
   const availableThemes = computed(() => {
     // 过滤掉被禁用的内置主题
     const enabledBuiltinThemes = presetThemes.filter(
-      theme => !disabledBuiltinThemes.includes(theme.name)
+      theme => !disabledBuiltinThemes.includes(theme.name),
     )
-    
+
     // 合并内置主题和用户自定义主题
     return [...enabledBuiltinThemes, ...customThemes]
   })
 
   const themeConfigs = computed(() => {
     const configs: Record<string, ThemeConfig> = {}
-    availableThemes.value.forEach(theme => {
+    availableThemes.value.forEach((theme) => {
       configs[theme.name] = theme
     })
     return configs
@@ -127,14 +127,16 @@ export function useThemeSelector(options: UseThemeSelectorOptions = {}): UseThem
     if (themeManager && typeof themeManager.setTheme === 'function') {
       try {
         await themeManager.setTheme(themeName, currentMode.value)
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('[useThemeSelector] 主题管理器设置失败:', error)
         // 回退到本地存储
         if (autoSave) {
           saveToStorage()
         }
       }
-    } else if (autoSave) {
+    }
+    else if (autoSave) {
       saveToStorage()
     }
   }
@@ -146,14 +148,16 @@ export function useThemeSelector(options: UseThemeSelectorOptions = {}): UseThem
     if (themeManager && typeof themeManager.setTheme === 'function') {
       try {
         await themeManager.setTheme(currentTheme.value, mode)
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('[useThemeSelector] 主题管理器设置失败:', error)
         // 回退到本地存储
         if (autoSave) {
           saveToStorage()
         }
       }
-    } else if (autoSave) {
+    }
+    else if (autoSave) {
       saveToStorage()
     }
   }
@@ -178,22 +182,24 @@ export function useThemeSelector(options: UseThemeSelectorOptions = {}): UseThem
   }
 
   // 存储相关
-  const saveToStorage = (): void => {
-    if (typeof localStorage === 'undefined') return
+  function saveToStorage(): void {
+    if (typeof localStorage === 'undefined')
+      return
 
     try {
       const data = {
         theme: currentTheme.value,
         mode: currentMode.value,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
       localStorage.setItem(storageKey, JSON.stringify(data))
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('[useThemeSelector] 保存到存储失败:', error)
     }
   }
 
-  const loadFromStorage = (): { theme: string; mode: ColorMode } => {
+  function loadFromStorage(): { theme: string, mode: ColorMode } {
     if (typeof localStorage === 'undefined') {
       return { theme: defaultTheme, mode: defaultMode }
     }
@@ -204,10 +210,11 @@ export function useThemeSelector(options: UseThemeSelectorOptions = {}): UseThem
         const data = JSON.parse(stored)
         return {
           theme: data.theme || defaultTheme,
-          mode: data.mode || defaultMode
+          mode: data.mode || defaultMode,
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('[useThemeSelector] 从存储加载失败:', error)
     }
 
@@ -225,14 +232,16 @@ export function useThemeSelector(options: UseThemeSelectorOptions = {}): UseThem
         if (typeof themeManager.getCurrentMode === 'function') {
           currentMode.value = themeManager.getCurrentMode() || defaultMode
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('[useThemeSelector] 主题管理器初始化失败，使用存储:', error)
         // 回退到存储
         const { theme, mode } = loadFromStorage()
         currentTheme.value = theme
         currentMode.value = mode
       }
-    } else if (autoSave) {
+    }
+    else if (autoSave) {
       // 如果没有主题管理器，从存储加载
       const { theme, mode } = loadFromStorage()
       currentTheme.value = theme
@@ -258,6 +267,6 @@ export function useThemeSelector(options: UseThemeSelectorOptions = {}): UseThem
     toggleMode,
     getThemeConfig,
     getThemeDisplayName,
-    getThemeDescription
+    getThemeDescription,
   }
 }

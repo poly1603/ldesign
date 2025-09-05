@@ -5,119 +5,13 @@
   使用 @ldesign/shared 中的通用组件实现
 -->
 
-<template>
-  <div class="theme-selector" :class="[sizeClass, { 'theme-selector--disabled': disabled }]">
-    <!-- 美化的下拉选择形式 -->
-    <div v-if="mode === 'select'" class="theme-selector__select-wrapper">
-      <LSelect :model-value="selectedTheme" :options="selectOptions" :placeholder="placeholder" :disabled="disabled"
-        :size="size" :show-color="showPreview" :show-description="true" :animation="selectAnimation"
-        @update:model-value="selectTheme" />
-    </div>
-
-    <!-- 弹出层形式 -->
-    <div v-else-if="mode === 'popup'" class="theme-selector__popup-wrapper">
-      <LPopup placement="bottom" trigger="click" :animation="popupAnimation" :disabled="disabled">
-        <!-- 触发按钮 -->
-        <button class="theme-selector__trigger" :class="[`theme-selector__trigger--${size}`]" :disabled="disabled">
-          <Palette class="theme-selector__trigger-icon" />
-          <span class="theme-selector__trigger-text">{{ buttonText }}</span>
-          <span v-if="currentTheme" class="theme-selector__trigger-preview">
-            <span class="theme-selector__color-dot" :style="{ backgroundColor: getCurrentThemeColor('primary') }" />
-          </span>
-          <ChevronDown class="theme-selector__trigger-arrow" />
-        </button>
-
-        <!-- 弹出内容 -->
-        <template #content>
-          <div class="theme-selector__popup-content">
-            <div class="theme-selector__popup-title">{{ popupTitle }}</div>
-            <div class="theme-selector__themes-grid theme-selector__themes-grid--compact">
-              <div v-for="theme in mergedThemes" :key="theme.name"
-                class="theme-selector__theme-card theme-selector__theme-card--compact"
-                :class="{ 'theme-selector__theme-card--active': selectedTheme === theme.name }"
-                @click="selectTheme(theme.name)">
-                <div class="theme-selector__theme-preview">
-                  <div class="theme-selector__color-dot"
-                    :style="{ backgroundColor: getThemeColor(theme, 'primary') }" />
-                  <div class="theme-selector__color-dot"
-                    :style="{ backgroundColor: getThemeColor(theme, 'success') }" />
-                  <div class="theme-selector__color-dot"
-                    :style="{ backgroundColor: getThemeColor(theme, 'warning') }" />
-                </div>
-                <div class="theme-selector__theme-name">{{ theme.displayName }}</div>
-              </div>
-            </div>
-          </div>
-        </template>
-      </LPopup>
-    </div>
-
-    <!-- 按钮弹窗形式 -->
-    <div v-else-if="mode === 'dialog'">
-      <!-- 触发按钮 -->
-      <button class="theme-selector__trigger" :disabled="disabled" @click="showDialog = true">
-        <Sparkles class="theme-selector__icon" />
-        {{ buttonText }}
-        <ChevronDown class="theme-selector__trigger-arrow" />
-      </button>
-
-      <!-- 对话框 -->
-      <LDialog v-model:visible="showDialog" :title="dialogTitle" width="600" :animation="dialogAnimation">
-        <!-- 内置主题选择网格 -->
-        <div v-if="categorizedThemes.builtin.length > 0" class="theme-selector__themes-section">
-          <label class="theme-selector__themes-label">内置主题</label>
-          <div class="theme-selector__themes-grid">
-            <div v-for="theme in categorizedThemes.builtin" :key="theme.name" class="theme-selector__theme-card"
-              :class="{ active: selectedTheme === theme.name }" @click="selectTheme(theme.name)">
-              <div class="theme-selector__theme-preview">
-                <div class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'primary') }"
-                  :title="`主色: ${getThemeColor(theme, 'primary')}`" />
-                <div class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'success') }"
-                  :title="`成功色: ${getThemeColor(theme, 'success')}`" />
-                <div class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'warning') }"
-                  :title="`警告色: ${getThemeColor(theme, 'warning')}`" />
-                <div class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'danger') }"
-                  :title="`危险色: ${getThemeColor(theme, 'danger')}`" />
-              </div>
-              <div class="theme-selector__theme-name">{{ theme.displayName }}</div>
-              <div class="theme-selector__theme-desc">{{ theme.description }}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 自定义主题选择网格 -->
-        <div v-if="categorizedThemes.custom.length > 0" class="theme-selector__themes-section">
-          <label class="theme-selector__themes-label">自定义主题</label>
-          <div class="theme-selector__themes-grid">
-            <div v-for="theme in categorizedThemes.custom" :key="theme.name" class="theme-selector__theme-card"
-              :class="{ active: selectedTheme === theme.name }" @click="selectTheme(theme.name)">
-              <div class="theme-selector__theme-preview">
-                <div class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'primary') }"
-                  :title="`主色: ${getThemeColor(theme, 'primary')}`" />
-                <div class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'success') }"
-                  :title="`成功色: ${getThemeColor(theme, 'success')}`" />
-                <div class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'warning') }"
-                  :title="`警告色: ${getThemeColor(theme, 'warning')}`" />
-                <div class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'danger') }"
-                  :title="`危险色: ${getThemeColor(theme, 'danger')}`" />
-              </div>
-              <div class="theme-selector__theme-name">{{ theme.displayName }}</div>
-              <div class="theme-selector__theme-desc">{{ theme.description }}</div>
-            </div>
-          </div>
-        </div>
-      </LDialog>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, watch, inject, onMounted, onUnmounted } from 'vue'
-import { presetThemes } from '../../themes/presets'
 import type { ThemeConfig } from '../../core/types'
+import { LDialog, LPopup, LSelect } from '@ldesign/shared'
+import { ChevronDown, Palette, Sparkles } from 'lucide-vue-next'
+import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue'
+import { presetThemes } from '../../themes/presets'
 import { globalThemeApplier } from '../../utils/css-variables'
-import { LSelect, LPopup, LDialog } from '@ldesign/shared'
-import { Palette, ChevronDown, Check, Sparkles } from 'lucide-vue-next'
 
 // Props
 interface Props {
@@ -153,7 +47,7 @@ const props = withDefaults(defineProps<Props>(), {
   selectAnimation: 'fade',
   popupAnimation: 'fade',
   customThemes: () => [],
-  disabledBuiltinThemes: () => []
+  disabledBuiltinThemes: () => [],
 })
 
 // Emits
@@ -163,9 +57,9 @@ const emit = defineEmits<{
 }>()
 
 // 获取主题管理器 - 尝试多种注入方式
-const themeManager = inject<any>('themeManager', null) ||
-                    inject<any>('$themeManager', null) ||
-                    (typeof window !== 'undefined' && (window as any).themeManager)
+const themeManager = inject<any>('themeManager', null)
+  || inject<any>('$themeManager', null)
+  || (typeof window !== 'undefined' && (window as any).themeManager)
 
 // 检查主题管理器是否可用
 if (!themeManager) {
@@ -174,7 +68,7 @@ if (!themeManager) {
 }
 
 // 响应式数据
-const selectedTheme = ref('blue')
+const selectedTheme = ref('')
 const currentMode = ref<'light' | 'dark'>('light')
 const showDialog = ref(false)
 const showPopup = ref(false)
@@ -184,11 +78,11 @@ const showSelectDropdown = ref(false)
 const mergedThemes = computed(() => {
   // 过滤掉被禁用的内置主题
   const enabledBuiltinThemes = presetThemes.filter(
-    theme => !props.disabledBuiltinThemes.includes(theme.name)
+    theme => !props.disabledBuiltinThemes.includes(theme.name),
   )
 
-  // 合并内置主题和用户自定义主题
-  return [...enabledBuiltinThemes, ...props.customThemes]
+  // 合并内置主题和用户自定义主题（自定义优先显示）
+  return [...props.customThemes, ...enabledBuiltinThemes]
 })
 
 // 分类主题（内置 vs 自定义）
@@ -213,32 +107,33 @@ const selectOptions = computed(() => {
     value: theme.name,
     label: theme.displayName || theme.name,
     description: theme.description,
-    color: getThemeColor(theme, 'primary')
+    color: getThemeColor(theme, 'primary'),
   }))
 })
 
 // 方法
-const handleThemeChange = () => {
+function handleThemeChange() {
   // 应用主题（不传入模式参数，让applyTheme自动检测当前模式）
   applyTheme(selectedTheme.value)
 
   // 通知主题管理器，让它处理存储
   if (themeManager && typeof themeManager.setTheme === 'function') {
     themeManager.setTheme(selectedTheme.value, currentMode.value)
-  } else {
+  }
+  else {
     // 如果没有主题管理器，使用本地逻辑保存
     saveThemeToStorage(selectedTheme.value, currentMode.value)
   }
   emit('themeChange', selectedTheme.value, currentMode.value)
 }
 
-const selectTheme = (themeName: string) => {
+function selectTheme(themeName: string) {
   selectedTheme.value = themeName
   handleThemeChange()
   showDialog.value = false
 }
 
-const getThemeColor = (theme: ThemeConfig, colorKey: string) => {
+function getThemeColor(theme: ThemeConfig, colorKey: string) {
   // 优先使用 colors 对象中的颜色
   if (theme.colors?.[colorKey]) {
     return theme.colors[colorKey]
@@ -256,34 +151,37 @@ const getThemeColor = (theme: ThemeConfig, colorKey: string) => {
     secondary: '#52c41a',
     success: '#52c41a',
     warning: '#faad14',
-    danger: '#ff4d4f'
+    danger: '#ff4d4f',
   }
 
   return defaultColors[colorKey as keyof typeof defaultColors] || '#1890ff'
 }
 
-const getCurrentThemeColor = (colorKey: string) => {
-  if (!currentTheme.value) return '#1890ff'
+function getCurrentThemeColor(colorKey: string) {
+  if (!currentTheme.value)
+    return '#1890ff'
   return getThemeColor(currentTheme.value, colorKey)
 }
 
-const handleModeToggle = () => {
+function handleModeToggle() {
   const newMode = currentMode.value === 'light' ? 'dark' : 'light'
   setMode(newMode)
 }
 
 // 新增的方法
-const toggleSelectDropdown = () => {
-  if (props.disabled) return
+function toggleSelectDropdown() {
+  if (props.disabled)
+    return
   showSelectDropdown.value = !showSelectDropdown.value
 }
 
-const togglePopup = () => {
-  if (props.disabled) return
+function togglePopup() {
+  if (props.disabled)
+    return
   showPopup.value = !showPopup.value
 }
 
-const handleOverlayClick = (e: MouseEvent) => {
+function handleOverlayClick(e: MouseEvent) {
   const target = e.target as Element
   if (!target.closest('.theme-selector')) {
     showSelectDropdown.value = false
@@ -295,12 +193,13 @@ const handleOverlayClick = (e: MouseEvent) => {
   }
 }
 
-const setMode = (mode: 'light' | 'dark') => {
+function setMode(mode: 'light' | 'dark') {
   currentMode.value = mode
   // 通知主题管理器，让它处理存储
   if (themeManager && typeof themeManager.setTheme === 'function') {
     themeManager.setTheme(selectedTheme.value, mode)
-  } else {
+  }
+  else {
     // 如果没有主题管理器，使用本地逻辑
     applyTheme(selectedTheme.value, mode)
     saveThemeToStorage(selectedTheme.value, mode)
@@ -308,11 +207,10 @@ const setMode = (mode: 'light' | 'dark') => {
   emit('modeChange', mode)
 }
 
-
-
-const applyTheme = (theme: string, mode?: 'light' | 'dark') => {
+function applyTheme(theme: string, mode?: 'light' | 'dark') {
   const themeData = mergedThemes.value.find(t => t.name === theme)
-  if (!themeData) return
+  if (!themeData)
+    return
 
   // 如果没有传入模式，获取当前模式状态
   let currentMode = mode
@@ -324,7 +222,8 @@ const applyTheme = (theme: string, mode?: 'light' | 'dark') => {
     // 优先使用data-theme-mode属性，其次使用class判断
     if (dataThemeMode === 'dark' || dataThemeMode === 'light') {
       currentMode = dataThemeMode
-    } else {
+    }
+    else {
       currentMode = isDark ? 'dark' : 'light'
     }
 
@@ -353,12 +252,13 @@ const applyTheme = (theme: string, mode?: 'light' | 'dark') => {
     // 传入完整的主题配置以便缓存
     const themeConfig = {
       ...themeData,
-      name: theme
+      name: theme,
     }
     globalThemeApplier.applyTheme(primaryColor, currentMode, themeConfig)
 
     console.log(`🎨 [ThemeSelector] 主题已切换: ${theme} (${currentMode} 模式，主色调: ${primaryColor})`)
-  } else {
+  }
+  else {
     console.warn(`[ThemeSelector] 主题 "${theme}" 没有定义主色调`)
   }
 
@@ -371,27 +271,29 @@ const THEME_STORAGE_KEY = 'ldesign-theme-selector'
 const MODE_STORAGE_KEY = 'ldesign-theme-mode'
 
 // 从本地存储加载主题设置
-const loadThemeFromStorage = () => {
+function loadThemeFromStorage() {
   try {
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY)
     const savedMode = localStorage.getItem(MODE_STORAGE_KEY) as 'light' | 'dark'
 
     return {
       theme: savedTheme,
-      mode: savedMode || 'light'
+      mode: savedMode || 'light',
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('[ThemeSelector] 读取本地存储失败:', error)
     return { theme: null, mode: 'light' as const }
   }
 }
 
 // 保存主题设置到本地存储
-const saveThemeToStorage = (theme: string, mode: 'light' | 'dark') => {
+function saveThemeToStorage(theme: string, mode: 'light' | 'dark') {
   try {
     localStorage.setItem(THEME_STORAGE_KEY, theme)
     localStorage.setItem(MODE_STORAGE_KEY, mode)
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('[ThemeSelector] 保存到本地存储失败:', error)
   }
 }
@@ -412,7 +314,8 @@ onMounted(() => {
       if (typeof themeManager.setTheme === 'function') {
         themeManager.setTheme(selectedTheme.value, currentMode.value)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('[ThemeSelector] 主题管理器初始化失败，使用本地存储:', error)
       // 回退到本地存储逻辑
       const { theme: savedTheme, mode: savedMode } = loadThemeFromStorage()
@@ -420,12 +323,14 @@ onMounted(() => {
       currentMode.value = savedMode
       applyTheme(selectedTheme.value)
     }
-  } else {
+  }
+  else {
     // 如果没有主题管理器，使用本地存储的值
     const { theme: savedTheme, mode: savedMode } = loadThemeFromStorage()
     if (savedTheme && mergedThemes.value.find(t => t.name === savedTheme)) {
       selectedTheme.value = savedTheme
-    } else if (mergedThemes.value.length > 0) {
+    }
+    else if (mergedThemes.value.length > 0) {
       selectedTheme.value = mergedThemes.value[0].name
     }
     currentMode.value = savedMode
@@ -480,6 +385,154 @@ onUnmounted(() => {
   document.removeEventListener('click', handleOverlayClick)
 })
 </script>
+
+<template>
+  <div class="theme-selector" :class="[sizeClass, { 'theme-selector--disabled': disabled }]">
+    <!-- 美化的下拉选择形式 -->
+    <div v-if="mode === 'select'" class="theme-selector__select-wrapper">
+      <LSelect
+        :model-value="selectedTheme" :options="selectOptions" :placeholder="placeholder" :disabled="disabled"
+        :size="size" :show-color="showPreview" :show-description="true" :animation="selectAnimation"
+        @update:model-value="selectTheme"
+      />
+    </div>
+
+    <!-- 弹出层形式 -->
+    <div v-else-if="mode === 'popup'" class="theme-selector__popup-wrapper">
+      <LPopup placement="bottom" trigger="click" :animation="popupAnimation" :disabled="disabled">
+        <!-- 触发按钮 -->
+        <button class="theme-selector__trigger" :class="[`theme-selector__trigger--${size}`]" :disabled="disabled">
+          <Palette class="theme-selector__trigger-icon" />
+          <span class="theme-selector__trigger-text">{{ buttonText }}</span>
+          <span v-if="currentTheme" class="theme-selector__trigger-preview">
+            <span class="theme-selector__color-dot" :style="{ backgroundColor: getCurrentThemeColor('primary') }" />
+          </span>
+          <ChevronDown class="theme-selector__trigger-arrow" />
+        </button>
+
+        <!-- 弹出内容 -->
+        <template #content>
+          <div class="theme-selector__popup-content">
+            <div class="theme-selector__popup-title">
+              {{ popupTitle }}
+            </div>
+            <div class="theme-selector__themes-grid theme-selector__themes-grid--compact">
+              <div
+                v-for="theme in mergedThemes" :key="theme.name"
+                class="theme-selector__theme-card theme-selector__theme-card--compact"
+                :class="{ 'theme-selector__theme-card--active': selectedTheme === theme.name }"
+                @click="selectTheme(theme.name)"
+              >
+                <div class="theme-selector__theme-preview">
+                  <div
+                    class="theme-selector__color-dot"
+                    :style="{ backgroundColor: getThemeColor(theme, 'primary') }"
+                  />
+                  <div
+                    class="theme-selector__color-dot"
+                    :style="{ backgroundColor: getThemeColor(theme, 'success') }"
+                  />
+                  <div
+                    class="theme-selector__color-dot"
+                    :style="{ backgroundColor: getThemeColor(theme, 'warning') }"
+                  />
+                </div>
+                <div class="theme-selector__theme-name">
+                  {{ theme.displayName }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </LPopup>
+    </div>
+
+    <!-- 按钮弹窗形式 -->
+    <div v-else-if="mode === 'dialog'">
+      <!-- 触发按钮 -->
+      <button class="theme-selector__trigger" :disabled="disabled" @click="showDialog = true">
+        <Sparkles class="theme-selector__icon" />
+        {{ buttonText }}
+        <ChevronDown class="theme-selector__trigger-arrow" />
+      </button>
+
+      <!-- 对话框 -->
+      <LDialog v-model:visible="showDialog" :title="dialogTitle" width="600" :animation="dialogAnimation">
+        <!-- 内置主题选择网格 -->
+        <div v-if="categorizedThemes.builtin.length > 0" class="theme-selector__themes-section">
+          <label class="theme-selector__themes-label">内置主题</label>
+          <div class="theme-selector__themes-grid">
+            <div
+              v-for="theme in categorizedThemes.builtin" :key="theme.name" class="theme-selector__theme-card"
+              :class="{ active: selectedTheme === theme.name }" @click="selectTheme(theme.name)"
+            >
+              <div class="theme-selector__theme-preview">
+                <div
+                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'primary') }"
+                  :title="`主色: ${getThemeColor(theme, 'primary')}`"
+                />
+                <div
+                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'success') }"
+                  :title="`成功色: ${getThemeColor(theme, 'success')}`"
+                />
+                <div
+                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'warning') }"
+                  :title="`警告色: ${getThemeColor(theme, 'warning')}`"
+                />
+                <div
+                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'danger') }"
+                  :title="`危险色: ${getThemeColor(theme, 'danger')}`"
+                />
+              </div>
+              <div class="theme-selector__theme-name">
+                {{ theme.displayName }}
+              </div>
+              <div class="theme-selector__theme-desc">
+                {{ theme.description }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 自定义主题选择网格 -->
+        <div v-if="categorizedThemes.custom.length > 0" class="theme-selector__themes-section">
+          <label class="theme-selector__themes-label">自定义主题</label>
+          <div class="theme-selector__themes-grid">
+            <div
+              v-for="theme in categorizedThemes.custom" :key="theme.name" class="theme-selector__theme-card"
+              :class="{ active: selectedTheme === theme.name }" @click="selectTheme(theme.name)"
+            >
+              <div class="theme-selector__theme-preview">
+                <div
+                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'primary') }"
+                  :title="`主色: ${getThemeColor(theme, 'primary')}`"
+                />
+                <div
+                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'success') }"
+                  :title="`成功色: ${getThemeColor(theme, 'success')}`"
+                />
+                <div
+                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'warning') }"
+                  :title="`警告色: ${getThemeColor(theme, 'warning')}`"
+                />
+                <div
+                  class="theme-selector__color-dot" :style="{ backgroundColor: getThemeColor(theme, 'danger') }"
+                  :title="`危险色: ${getThemeColor(theme, 'danger')}`"
+                />
+              </div>
+              <div class="theme-selector__theme-name">
+                {{ theme.displayName }}
+              </div>
+              <div class="theme-selector__theme-desc">
+                {{ theme.description }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </LDialog>
+    </div>
+  </div>
+</template>
 
 <style scoped lang="less">
 @import './ThemeSelector.less';

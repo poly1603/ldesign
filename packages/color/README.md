@@ -460,3 +460,15 @@ cache.set('color1', '#1890ff')
 ## 📄 许可证
 
 MIT License
+
+## 🛠 变更说明（2025-09）
+
+- 修复：generateMonochromaticPalette 与 generateAnalogousPalette 在 count=1 时的除零问题（现在将返回 [baseColor]）
+- 修复：Vue 插件类型错误（ThemeConfig 导入路径修正），并在自定义主题未提供 primary 时使用默认主色确保类型安全
+- 改进：新增 .vue SFC 类型声明（src/types/vue-shim.d.ts），解决导入 .vue 文件的类型检查报错
+- 改进：优化 ESLint 忽略配置，排除构建产物、测试与文档目录，减少无关噪声
+
+## 🧩 组件别名与兼容性
+
+- ColorPicker 是 ThemeSelector 的别名导出，ModeToggle 是 DarkModeToggle 的别名导出，用于向后兼容旧用法。
+- 建议在新项目中直接使用 ThemeSelector 与 DarkModeToggle。

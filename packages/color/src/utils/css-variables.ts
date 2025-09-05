@@ -58,7 +58,7 @@ export class CSSVariableInjector {
     includeComments: true,
     includeThemeInfo: true,
     backgroundStrategy: 'neutral',
-    generateBackgroundFromPrimary: false
+    generateBackgroundFromPrimary: false,
   }
 
   constructor(config?: Partial<CSSVariableConfig>) {
@@ -76,7 +76,7 @@ export class CSSVariableInjector {
     const elementId = `${this.config.prefix}-color-variables`
 
     // 先检查是否已存在
-    let existingElement = document.getElementById(elementId) as HTMLStyleElement
+    const existingElement = document.getElementById(elementId) as HTMLStyleElement
     if (existingElement) {
       this.styleElement = existingElement
       return
@@ -89,9 +89,30 @@ export class CSSVariableInjector {
   }
 
   /**
+   * 确保样式元素存在于文档中
+   * 当外部代码清空了 head/body 时（如测试环境的 beforeEach），需要重新创建
+   */
+  private ensureStyleElement(): void {
+    if (typeof document === 'undefined')
+      return
+
+    const elementId = `${this.config.prefix}-color-variables`
+    let el = document.getElementById(elementId) as HTMLStyleElement | null
+    if (!el) {
+      el = document.createElement('style')
+      el.id = elementId
+      el.type = 'text/css'
+      document.head.appendChild(el)
+    }
+    this.styleElement = el
+  }
+
+  /**
    * 注入CSS变量
    */
   injectVariables(variables: Record<string, string>): void {
+    // 确保样式元素存在（处理被外部清空 DOM 的场景）
+    this.ensureStyleElement()
     if (!this.styleElement)
       return
 
@@ -180,7 +201,8 @@ export class CSSVariableInjector {
           cssRules.push('')
         }
       }
-    } else {
+    }
+    else {
       // 简单模式，直接生成变量
       cssRules.push(...Object.entries(variables).map(([name, value]) => `  ${name}: ${value};`))
     }
@@ -203,8 +225,10 @@ export class CSSVariableInjector {
       version?: string
     },
     lightVariableInfos?: ColorVariableInfo[],
-    darkVariableInfos?: ColorVariableInfo[]
+    darkVariableInfos?: ColorVariableInfo[],
   ): void {
+    // 确保样式元素存在（处理被外部清空 DOM 的场景）
+    this.ensureStyleElement()
     if (!this.styleElement)
       return
 
@@ -245,7 +269,7 @@ export class CSSVariableInjector {
   private generateModeVariables(
     mode: 'light' | 'dark',
     variables: Record<string, string>,
-    variableInfos?: ColorVariableInfo[]
+    variableInfos?: ColorVariableInfo[],
   ): string {
     const selector = mode === 'light' ? ':root' : '[data-theme-mode="dark"]'
     let content = ''
@@ -279,7 +303,8 @@ export class CSSVariableInjector {
         }
         cssRules.push('')
       }
-    } else {
+    }
+    else {
       // 简单模式，直接生成变量
       cssRules.push(...Object.entries(variables).map(([name, value]) => `  ${name}: ${value};`))
     }
@@ -325,7 +350,8 @@ export class CSSVariableInjector {
           backgrounds[`${prefix}-bg-tertiary`] = '#f5f5f5'
           backgrounds[`${prefix}-bg-quaternary`] = '#f0f0f0'
           backgrounds[`${prefix}-bg-disabled`] = '#f5f5f5'
-        } else {
+        }
+        else {
           backgrounds[`${prefix}-bg-primary`] = '#141414'
           backgrounds[`${prefix}-bg-secondary`] = '#1f1f1f'
           backgrounds[`${prefix}-bg-tertiary`] = '#262626'
@@ -345,9 +371,9 @@ export class CSSVariableInjector {
     // 简单的颜色透明度调整，实际项目中可能需要更复杂的颜色处理
     if (color.startsWith('#')) {
       const hex = color.slice(1)
-      const r = parseInt(hex.slice(0, 2), 16)
-      const g = parseInt(hex.slice(2, 4), 16)
-      const b = parseInt(hex.slice(4, 6), 16)
+      const r = Number.parseInt(hex.slice(0, 2), 16)
+      const g = Number.parseInt(hex.slice(2, 4), 16)
+      const b = Number.parseInt(hex.slice(4, 6), 16)
       return `rgba(${r}, ${g}, ${b}, ${opacity})`
     }
     return color
@@ -400,7 +426,7 @@ export function injectThemeVariables(
   neutralColors?: NeutralColors,
   mode: ColorMode = 'light',
   prefix = '--ldesign',
-  config?: Partial<CSSVariableConfig>
+  config?: Partial<CSSVariableConfig>,
 ): void {
   const injector = config ? createCSSVariableInjector(config) : globalCSSInjector
   const variables: Record<string, string> = {}
@@ -413,7 +439,7 @@ export function injectThemeVariables(
     value: colors.primary,
     description: '主要颜色，用于品牌色、按钮、链接等',
     category: 'Primary Colors',
-    usage: 'background-color, border-color, color'
+    usage: 'background-color, border-color, color',
   })
 
   if (colors.success) {
@@ -423,7 +449,7 @@ export function injectThemeVariables(
       value: colors.success,
       description: '成功状态颜色，用于成功提示、确认按钮等',
       category: 'Status Colors',
-      usage: 'background-color, border-color, color'
+      usage: 'background-color, border-color, color',
     })
   }
 
@@ -434,7 +460,7 @@ export function injectThemeVariables(
       value: colors.warning,
       description: '警告状态颜色，用于警告提示、注意事项等',
       category: 'Status Colors',
-      usage: 'background-color, border-color, color'
+      usage: 'background-color, border-color, color',
     })
   }
 
@@ -445,7 +471,7 @@ export function injectThemeVariables(
       value: colors.danger,
       description: '危险状态颜色，用于错误提示、删除按钮等',
       category: 'Status Colors',
-      usage: 'background-color, border-color, color'
+      usage: 'background-color, border-color, color',
     })
   }
 
@@ -456,7 +482,7 @@ export function injectThemeVariables(
       value: colors.gray,
       description: '中性灰色，用于文本、边框、背景等',
       category: 'Neutral Colors',
-      usage: 'color, border-color, background-color'
+      usage: 'color, border-color, background-color',
     })
   }
 
@@ -471,7 +497,7 @@ export function injectThemeVariables(
           value: color,
           description: `${category} 色阶 ${index}`,
           category: 'Color Scales',
-          usage: 'background-color, border-color, color'
+          usage: 'background-color, border-color, color',
         })
       }
     }
@@ -489,7 +515,7 @@ export function injectThemeVariables(
             value: color as string,
             description: `${category} 中性色 ${index}`,
             category: 'Neutral Colors',
-            usage: 'color, border-color, background-color'
+            usage: 'color, border-color, background-color',
           })
         }
       }
@@ -507,7 +533,7 @@ export function injectThemeVariables(
         value,
         description: '背景色变量',
         category: 'Background Colors',
-        usage: 'background-color'
+        usage: 'background-color',
       })
     })
   }
@@ -517,20 +543,27 @@ export function injectThemeVariables(
 
   // 添加语义化变量的描述信息
   const semanticVariableNames = [
-    `${prefix}-bg-primary`, `${prefix}-bg-secondary`, `${prefix}-bg-tertiary`,
-    `${prefix}-text-primary`, `${prefix}-text-secondary`, `${prefix}-text-tertiary`,
-    `${prefix}-border-primary`, `${prefix}-border-secondary`,
-    `${prefix}-shadow-sm`, `${prefix}-shadow-md`, `${prefix}-shadow-lg`
+    `${prefix}-bg-primary`,
+    `${prefix}-bg-secondary`,
+    `${prefix}-bg-tertiary`,
+    `${prefix}-text-primary`,
+    `${prefix}-text-secondary`,
+    `${prefix}-text-tertiary`,
+    `${prefix}-border-primary`,
+    `${prefix}-border-secondary`,
+    `${prefix}-shadow-sm`,
+    `${prefix}-shadow-md`,
+    `${prefix}-shadow-lg`,
   ]
 
-  semanticVariableNames.forEach(name => {
+  semanticVariableNames.forEach((name) => {
     if (variables[name]) {
       variableInfos.push({
         name,
         value: variables[name],
         description: '语义化变量',
         category: 'Semantic Variables',
-        usage: 'background-color, color, border-color, box-shadow'
+        usage: 'background-color, color, border-color, box-shadow',
       })
     }
   })
@@ -576,7 +609,7 @@ export class EnhancedThemeApplier {
       // 注入两套CSS变量到不同的选择器，并添加主题信息注释
       const themeInfo = {
         name: themeConfig?.name || 'Custom',
-        primaryColor: primaryColor
+        primaryColor,
       }
       this.cssInjector.injectThemeVariables(lightVariables, darkVariables, themeInfo)
 
@@ -591,7 +624,8 @@ export class EnhancedThemeApplier {
 
       console.log(`🎨 主题已应用: ${themeInfo.name} (${primaryColor}) - 当前模式: ${currentMode}${saveToCache ? ' [已缓存]' : ''}`)
       console.log(`📊 已生成完整色彩系统 - 亮色变量: ${Object.keys(lightVariables).length}个, 暗色变量: ${Object.keys(darkVariables).length}个`)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('🚨 主题应用失败:', error)
     }
   }
@@ -605,7 +639,7 @@ export class EnhancedThemeApplier {
   private generateCompleteColorSystem(
     primaryColor: string,
     lightVariables: Record<string, string>,
-    darkVariables: Record<string, string>
+    darkVariables: Record<string, string>,
   ): void {
     // 1. 生成主色系（brand/primary）1-10级色阶
     this.generateBrandColorScale(primaryColor, lightVariables, darkVariables)
@@ -632,7 +666,7 @@ export class EnhancedThemeApplier {
   private generateBrandColorScale(
     primaryColor: string,
     lightVariables: Record<string, string>,
-    darkVariables: Record<string, string>
+    darkVariables: Record<string, string>,
   ): void {
     const baseColor = this.hexToHsl(primaryColor)
 
@@ -642,7 +676,7 @@ export class EnhancedThemeApplier {
       const lightColor = this.hslToHex({
         h: baseColor.h,
         s: Math.max(20, Math.min(100, baseColor.s * (0.8 + i * 0.02))),
-        l: lightLightness
+        l: lightLightness,
       })
       lightVariables[`--ldesign-brand-color-${i}`] = lightColor
 
@@ -651,7 +685,7 @@ export class EnhancedThemeApplier {
       const darkColor = this.hslToHex({
         h: baseColor.h,
         s: Math.max(20, Math.min(100, baseColor.s * (0.7 + i * 0.03))),
-        l: darkLightness
+        l: darkLightness,
       })
       darkVariables[`--ldesign-brand-color-${i}`] = darkColor
     }
@@ -662,14 +696,14 @@ export class EnhancedThemeApplier {
    */
   private generateFunctionalColorScales(
     lightVariables: Record<string, string>,
-    darkVariables: Record<string, string>
+    darkVariables: Record<string, string>,
   ): void {
     // 功能色基础色值
     const functionalColors = {
-      warning: { h: 45, s: 100, l: 50 },   // 橙色
-      success: { h: 120, s: 60, l: 45 },   // 绿色
-      error: { h: 0, s: 85, l: 55 },       // 红色
-      gray: { h: 0, s: 0, l: 50 }          // 纯中性灰色，不混入主色
+      warning: { h: 45, s: 100, l: 50 }, // 橙色
+      success: { h: 120, s: 60, l: 45 }, // 绿色
+      error: { h: 0, s: 85, l: 55 }, // 红色
+      gray: { h: 0, s: 0, l: 50 }, // 纯中性灰色，不混入主色
     }
 
     Object.entries(functionalColors).forEach(([colorName, baseHsl]) => {
@@ -680,7 +714,7 @@ export class EnhancedThemeApplier {
         const lightColor = this.hslToHex({
           h: baseHsl.h,
           s: colorName === 'gray' ? 0 : Math.max(20, baseHsl.s - i * 2), // gray色阶饱和度为0，保持纯中性
-          l: lightLightness
+          l: lightLightness,
         })
         lightVariables[`--ldesign-${colorName}-color-${i}`] = lightColor
 
@@ -689,7 +723,7 @@ export class EnhancedThemeApplier {
         const darkColor = this.hslToHex({
           h: baseHsl.h,
           s: colorName === 'gray' ? 0 : Math.max(15, baseHsl.s - i * 1.5), // gray色阶饱和度为0，保持纯中性
-          l: darkLightness
+          l: darkLightness,
         })
         darkVariables[`--ldesign-${colorName}-color-${i}`] = darkColor
       }
@@ -701,13 +735,13 @@ export class EnhancedThemeApplier {
    */
   private generateTextColorSystem(
     lightVariables: Record<string, string>,
-    darkVariables: Record<string, string>
+    darkVariables: Record<string, string>,
   ): void {
     // 亮色模式文字颜色
-    lightVariables['--ldesign-font-gray-1'] = 'rgba(0, 0, 0, 90%)'     // 主要文字
-    lightVariables['--ldesign-font-gray-2'] = 'rgba(0, 0, 0, 70%)'     // 次要文字
-    lightVariables['--ldesign-font-gray-3'] = 'rgba(0, 0, 0, 50%)'     // 辅助文字
-    lightVariables['--ldesign-font-gray-4'] = 'rgba(0, 0, 0, 30%)'     // 禁用文字
+    lightVariables['--ldesign-font-gray-1'] = 'rgba(0, 0, 0, 90%)' // 主要文字
+    lightVariables['--ldesign-font-gray-2'] = 'rgba(0, 0, 0, 70%)' // 次要文字
+    lightVariables['--ldesign-font-gray-3'] = 'rgba(0, 0, 0, 50%)' // 辅助文字
+    lightVariables['--ldesign-font-gray-4'] = 'rgba(0, 0, 0, 30%)' // 禁用文字
 
     lightVariables['--ldesign-font-white-1'] = 'rgba(255, 255, 255, 100%)'
     lightVariables['--ldesign-font-white-2'] = 'rgba(255, 255, 255, 85%)'
@@ -739,7 +773,8 @@ export class EnhancedThemeApplier {
     if (mode === 'dark') {
       root.classList.add('dark')
       root.classList.remove('light')
-    } else {
+    }
+    else {
       root.classList.add('light')
       root.classList.remove('dark')
     }
@@ -750,15 +785,15 @@ export class EnhancedThemeApplier {
    */
   private generateBackgroundColorSystem(
     lightVariables: Record<string, string>,
-    darkVariables: Record<string, string>
+    darkVariables: Record<string, string>,
   ): void {
     // 亮色模式背景色
-    lightVariables['--ldesign-bg-color-page'] = '#f5f5f5'           // 页面背景
-    lightVariables['--ldesign-bg-color-container'] = '#ffffff'      // 容器背景
+    lightVariables['--ldesign-bg-color-page'] = '#f5f5f5' // 页面背景
+    lightVariables['--ldesign-bg-color-container'] = '#ffffff' // 容器背景
     lightVariables['--ldesign-bg-color-container-hover'] = '#fafafa' // 容器悬浮
     lightVariables['--ldesign-bg-color-container-active'] = '#f0f0f0' // 容器激活
     lightVariables['--ldesign-bg-color-container-disabled'] = '#f5f5f5' // 容器禁用
-    lightVariables['--ldesign-bg-color-component'] = '#ffffff'      // 组件背景
+    lightVariables['--ldesign-bg-color-component'] = '#ffffff' // 组件背景
     lightVariables['--ldesign-bg-color-component-hover'] = '#f8f8f8' // 组件悬浮
     lightVariables['--ldesign-bg-color-component-active'] = '#f0f0f0' // 组件激活
     lightVariables['--ldesign-bg-color-component-disabled'] = '#fafafa' // 组件禁用
@@ -780,19 +815,19 @@ export class EnhancedThemeApplier {
    */
   private generateBorderAndShadowSystem(
     lightVariables: Record<string, string>,
-    darkVariables: Record<string, string>
+    darkVariables: Record<string, string>,
   ): void {
     // 亮色模式边框色
-    lightVariables['--ldesign-border-level-1-color'] = '#e5e5e5'    // 一级边框
-    lightVariables['--ldesign-border-level-2-color'] = '#d9d9d9'    // 二级边框
-    lightVariables['--ldesign-border-level-3-color'] = '#cccccc'    // 三级边框
+    lightVariables['--ldesign-border-level-1-color'] = '#e5e5e5' // 一级边框
+    lightVariables['--ldesign-border-level-2-color'] = '#d9d9d9' // 二级边框
+    lightVariables['--ldesign-border-level-3-color'] = '#cccccc' // 三级边框
 
     // 亮色模式阴影
-    lightVariables['--ldesign-shadow-1'] = '0 1px 10px rgba(0, 0, 0, 5%)'     // 一级阴影
-    lightVariables['--ldesign-shadow-2'] = '0 4px 20px rgba(0, 0, 0, 8%)'     // 二级阴影
-    lightVariables['--ldesign-shadow-3'] = '0 8px 30px rgba(0, 0, 0, 12%)'    // 三级阴影
-    lightVariables['--ldesign-shadow-inset'] = 'inset 0 1px 2px rgba(0, 0, 0, 8%)'  // 内阴影
-    lightVariables['--ldesign-shadow-table'] = '0 2px 8px rgba(0, 0, 0, 6%)'  // 表格阴影
+    lightVariables['--ldesign-shadow-1'] = '0 1px 10px rgba(0, 0, 0, 5%)' // 一级阴影
+    lightVariables['--ldesign-shadow-2'] = '0 4px 20px rgba(0, 0, 0, 8%)' // 二级阴影
+    lightVariables['--ldesign-shadow-3'] = '0 8px 30px rgba(0, 0, 0, 12%)' // 三级阴影
+    lightVariables['--ldesign-shadow-inset'] = 'inset 0 1px 2px rgba(0, 0, 0, 8%)' // 内阴影
+    lightVariables['--ldesign-shadow-table'] = '0 2px 8px rgba(0, 0, 0, 6%)' // 表格阴影
 
     // 暗色模式边框色
     darkVariables['--ldesign-border-level-1-color'] = '#404040'
@@ -812,7 +847,7 @@ export class EnhancedThemeApplier {
    */
   private generateSemanticMappings(
     lightVariables: Record<string, string>,
-    darkVariables: Record<string, string>
+    darkVariables: Record<string, string>,
   ): void {
     // 语义化基础色映射
     const semanticMappings = {
@@ -869,7 +904,7 @@ export class EnhancedThemeApplier {
   /**
    * 从缓存中恢复主题状态
    */
-  restoreFromCache(): { theme: string; mode: 'light' | 'dark' } {
+  restoreFromCache(): { theme: string, mode: 'light' | 'dark' } {
     const state = this.cacheManager.loadThemeState()
     this.currentTheme = state.theme
     this.currentMode = state.mode
@@ -879,10 +914,10 @@ export class EnhancedThemeApplier {
   /**
    * 获取当前主题状态
    */
-  getCurrentState(): { theme: string; mode: 'light' | 'dark' } {
+  getCurrentState(): { theme: string, mode: 'light' | 'dark' } {
     return {
       theme: this.currentTheme,
-      mode: this.currentMode
+      mode: this.currentMode,
     }
   }
 
@@ -910,7 +945,8 @@ export class EnhancedThemeApplier {
       this.cacheManager.saveThemeState(this.currentTheme, mode)
 
       console.log(`🌓 模式已切换: ${mode} (CSS自动应用对应色阶)`)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('🚨 模式切换失败:', error)
     }
   }
@@ -931,13 +967,13 @@ export class EnhancedThemeApplier {
     hex = hex.replace('#', '')
 
     // 转换为RGB
-    const r = parseInt(hex.substr(0, 2), 16) / 255
-    const g = parseInt(hex.substr(2, 2), 16) / 255
-    const b = parseInt(hex.substr(4, 2), 16) / 255
+    const r = Number.parseInt(hex.substr(0, 2), 16) / 255
+    const g = Number.parseInt(hex.substr(2, 2), 16) / 255
+    const b = Number.parseInt(hex.substr(4, 2), 16) / 255
 
     const max = Math.max(r, g, b)
     const min = Math.min(r, g, b)
-    let h = 0, s = 0, l = (max + min) / 2
+    let h = 0; let s = 0; const l = (max + min) / 2
 
     if (max !== min) {
       const d = max - min
@@ -954,7 +990,7 @@ export class EnhancedThemeApplier {
     return {
       h: Math.round(h * 360),
       s: Math.round(s * 100),
-      l: Math.round(l * 100)
+      l: Math.round(l * 100),
     }
   }
 
@@ -967,11 +1003,16 @@ export class EnhancedThemeApplier {
     l /= 100
 
     const hue2rgb = (p: number, q: number, t: number) => {
-      if (t < 0) t += 1
-      if (t > 1) t -= 1
-      if (t < 1 / 6) return p + (q - p) * 6 * t
-      if (t < 1 / 2) return q
-      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6
+      if (t < 0)
+        t += 1
+      if (t > 1)
+        t -= 1
+      if (t < 1 / 6)
+        return p + (q - p) * 6 * t
+      if (t < 1 / 2)
+        return q
+      if (t < 2 / 3)
+        return p + (q - p) * (2 / 3 - t) * 6
       return p
     }
 
@@ -979,7 +1020,8 @@ export class EnhancedThemeApplier {
 
     if (s === 0) {
       r = g = b = l // achromatic
-    } else {
+    }
+    else {
       const q = l < 0.5 ? l * (1 + s) : l + s - l * s
       const p = 2 * l - q
       r = hue2rgb(p, q, h + 1 / 3)
@@ -989,7 +1031,7 @@ export class EnhancedThemeApplier {
 
     const toHex = (c: number) => {
       const hex = Math.round(c * 255).toString(16)
-      return hex.length === 1 ? '0' + hex : hex
+      return hex.length === 1 ? `0${hex}` : hex
     }
 
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`
@@ -1012,7 +1054,8 @@ export class ThemeCacheManager {
       const data = { theme, mode }
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data))
       console.log(`💾 主题状态已缓存: ${theme} (${mode})`)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('⚠️ 主题状态缓存失败:', error)
     }
   }
@@ -1020,7 +1063,7 @@ export class ThemeCacheManager {
   /**
    * 从缓存中恢复主题状态
    */
-  loadThemeState(): { theme: string; mode: 'light' | 'dark' } {
+  loadThemeState(): { theme: string, mode: 'light' | 'dark' } {
     try {
       const stored = localStorage.getItem(this.STORAGE_KEY)
       if (stored) {
@@ -1028,7 +1071,8 @@ export class ThemeCacheManager {
         console.log(`📂 主题状态已恢复: ${theme} (${mode})`)
         return { theme: theme || 'default', mode: mode || 'light' }
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('⚠️ 主题状态恢复失败，使用默认值:', error)
       // 清理可能损坏的数据
       this.clearThemeState()
@@ -1050,7 +1094,8 @@ export class ThemeCacheManager {
       localStorage.removeItem('ldesign-theme')
       localStorage.removeItem('ldesign-mode')
       console.log('🗑️ 主题状态缓存已清除')
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('⚠️ 清除主题状态缓存失败:', error)
     }
   }

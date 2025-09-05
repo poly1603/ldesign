@@ -542,10 +542,15 @@ export function adjustHue(color: string, amount: number): string {
  * @param baseColor 基础颜色 (hex)
  * @param count 颜色数量
  * @returns 调色板颜色数组
+ * @remarks 当 count === 1 时，直接返回包含基础颜色的数组 [baseColor]
  */
 export function generateMonochromaticPalette(baseColor: string, count: number = 5): string[] {
   if (count < 1) {
     throw new Error('Count must be at least 1')
+  }
+  // 边界处理：当只需要一个颜色时，直接返回基础颜色，避免除以 0 的情况
+  if (count === 1) {
+    return [baseColor]
   }
 
   const colors: string[] = []
@@ -564,10 +569,15 @@ export function generateMonochromaticPalette(baseColor: string, count: number = 
  * @param baseColor 基础颜色 (hex)
  * @param count 颜色数量
  * @returns 调色板颜色数组
+ * @remarks 当 count === 1 时，直接返回包含基础颜色的数组 [baseColor]
  */
 export function generateAnalogousPalette(baseColor: string, count: number = 5): string[] {
   if (count < 1) {
     throw new Error('Count must be at least 1')
+  }
+  // 边界处理：当只需要一个颜色时，直接返回基础颜色，避免除以 0 的情况
+  if (count === 1) {
+    return [baseColor]
   }
 
   const colors: string[] = []

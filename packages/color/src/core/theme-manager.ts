@@ -22,9 +22,9 @@ import type {
 import { ColorGeneratorImpl } from '../utils/color-generator'
 import { ColorScaleGenerator } from '../utils/color-scale'
 import { CSSInjectorImpl, CSSVariableGenerator } from '../utils/css-injector'
+import { globalThemeApplier } from '../utils/css-variables'
 import { EventEmitterImpl } from '../utils/event-emitter'
 import { IdleProcessorImpl } from '../utils/idle-processor'
-import { globalThemeApplier } from '../utils/css-variables'
 
 /**
  * 默认主题管理器选项
@@ -337,7 +337,8 @@ export class ThemeManager implements ThemeManagerInstance {
     if (primaryColor) {
       // 使用增强的主题应用器，根据当前模式生成完整的色阶
       globalThemeApplier.applyTheme(primaryColor, mode, config)
-    } else {
+    }
+    else {
       console.warn(`[ThemeManager] 主题 "${name}" 没有定义主色调`)
 
       // 回退到原有逻辑
@@ -347,7 +348,8 @@ export class ThemeManager implements ThemeManagerInstance {
         // 使用带注释的CSS变量注入
         if (modeData.cssVariableGroups && modeData.cssVariableGroups.length > 0) {
           this.cssInjector.injectVariablesWithComments(modeData.cssVariableGroups)
-        } else {
+        }
+        else {
           // 兼容旧版本
           this.cssInjector.injectVariables(modeData.cssVariables)
         }
@@ -614,12 +616,12 @@ export class ThemeManager implements ThemeManagerInstance {
       : lightColors
     const darkColorConfig = config.dark
       ? {
-        primary: config.dark.primary,
-        success: darkColors.success || '#49aa19',
-        warning: darkColors.warning || '#d4b106',
-        danger: darkColors.danger || '#dc4446',
-        gray: darkColors.gray || '#8c8c8c',
-      }
+          primary: config.dark.primary,
+          success: darkColors.success || '#49aa19',
+          warning: darkColors.warning || '#d4b106',
+          danger: darkColors.danger || '#dc4446',
+          gray: darkColors.gray || '#8c8c8c',
+        }
       : lightColorConfig
 
     // 生成色阶
@@ -643,12 +645,12 @@ export class ThemeManager implements ThemeManagerInstance {
 
     // 为兼容性生成扁平的CSS变量
     const lightFlatVariables: Record<string, ColorValue> = {}
-    lightCSSVariableGroups.forEach(group => {
+    lightCSSVariableGroups.forEach((group) => {
       Object.assign(lightFlatVariables, group.variables)
     })
 
     const darkFlatVariables: Record<string, ColorValue> = {}
-    darkCSSVariableGroups.forEach(group => {
+    darkCSSVariableGroups.forEach((group) => {
       Object.assign(darkFlatVariables, group.variables)
     })
 

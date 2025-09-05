@@ -115,10 +115,10 @@ export function hexToRgb(hex: string): RGB | null {
   const result = /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(normalizedHex)
   const rgb = result
     ? {
-      r: Number.parseInt(result[1], 16),
-      g: Number.parseInt(result[2], 16),
-      b: Number.parseInt(result[3], 16),
-    }
+        r: Number.parseInt(result[1], 16),
+        g: Number.parseInt(result[2], 16),
+        b: Number.parseInt(result[3], 16),
+      }
     : null
 
   // 缓存结果
@@ -150,10 +150,10 @@ export function clamp(value: number, min: number, max: number): number {
  */
 function isValidRgb(r: number, g: number, b: number): boolean {
   return (
-    typeof r === 'number' && r >= 0 && r <= 255 &&
-    typeof g === 'number' && g >= 0 && g <= 255 &&
-    typeof b === 'number' && b >= 0 && b <= 255 &&
-    !Number.isNaN(r) && !Number.isNaN(g) && !Number.isNaN(b)
+    typeof r === 'number' && r >= 0 && r <= 255
+    && typeof g === 'number' && g >= 0 && g <= 255
+    && typeof b === 'number' && b >= 0 && b <= 255
+    && !Number.isNaN(r) && !Number.isNaN(g) && !Number.isNaN(b)
   )
 }
 
@@ -217,10 +217,10 @@ export function normalizeHue(hue: number): number {
  */
 function isValidHsl(h: number, s: number, l: number): boolean {
   return (
-    typeof h === 'number' && h >= 0 && h <= 360 &&
-    typeof s === 'number' && s >= 0 && s <= 100 &&
-    typeof l === 'number' && l >= 0 && l <= 100 &&
-    !Number.isNaN(h) && !Number.isNaN(s) && !Number.isNaN(l)
+    typeof h === 'number' && h >= 0 && h <= 360
+    && typeof s === 'number' && s >= 0 && s <= 100
+    && typeof l === 'number' && l >= 0 && l <= 100
+    && !Number.isNaN(h) && !Number.isNaN(s) && !Number.isNaN(l)
   )
 }
 
@@ -326,11 +326,16 @@ export function hslToRgb(h: number, s: number, l: number): RGB {
    * @returns RGB分量值 (0-1)
    */
   const hue2rgb = (p: number, q: number, t: number): number => {
-    if (t < 0) t += 1
-    if (t > 1) t -= 1
-    if (t < 1 / 6) return p + (q - p) * 6 * t
-    if (t < 1 / 2) return q
-    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6
+    if (t < 0)
+      t += 1
+    if (t > 1)
+      t -= 1
+    if (t < 1 / 6)
+      return p + (q - p) * 6 * t
+    if (t < 1 / 2)
+      return q
+    if (t < 2 / 3)
+      return p + (q - p) * (2 / 3 - t) * 6
     return p
   }
 
@@ -377,8 +382,6 @@ export function hslToHex(h: number, s: number, l: number): string {
   const rgb = hslToRgb(h, s, l)
   return rgbToHex(rgb.r, rgb.g, rgb.b)
 }
-
-
 
 /**
  * 将 RGB 颜色转换为 HSV

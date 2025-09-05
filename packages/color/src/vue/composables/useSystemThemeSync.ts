@@ -1,12 +1,12 @@
 /**
  * 系统主题同步组合式API
- * 
+ *
  * 提供与系统主题同步的功能
  */
 
-import { ref, computed, inject, onMounted, onUnmounted } from 'vue'
-import type { Ref, ComputedRef } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
 import type { ColorMode } from '../../core/types'
+import { computed, inject, onMounted, onUnmounted, ref } from 'vue'
 
 /**
  * 系统主题同步返回类型
@@ -50,15 +50,15 @@ export interface UseSystemThemeSyncOptions {
 
 /**
  * 系统主题同步组合式API
- * 
+ *
  * @param options 配置选项
  * @returns 系统主题同步API
- * 
+ *
  * @example
  * ```vue
  * <script setup>
  * import { useSystemThemeSync } from '@ldesign/color/vue'
- * 
+ *
  * const {
  *   systemTheme,
  *   isSystemDark,
@@ -71,7 +71,7 @@ export interface UseSystemThemeSyncOptions {
  *   onSync: (theme) => console.log('系统主题变化:', theme)
  * })
  * </script>
- * 
+ *
  * <template>
  *   <div>
  *     <p>系统主题: {{ systemTheme }}</p>
@@ -86,7 +86,7 @@ export function useSystemThemeSync(options: UseSystemThemeSyncOptions = {}): Use
     autoStart = false,
     onSync,
     onError,
-    syncOnVisibilityChange = true
+    syncOnVisibilityChange = true,
   } = options
 
   // 获取主题管理器
@@ -105,9 +105,9 @@ export function useSystemThemeSync(options: UseSystemThemeSyncOptions = {}): Use
   const isSystemDark = computed(() => systemTheme.value === 'dark')
   const isSystemLight = computed(() => systemTheme.value === 'light')
   const isSupported = computed(() => {
-    return typeof window !== 'undefined' &&
-      window.matchMedia &&
-      typeof window.matchMedia === 'function'
+    return typeof window !== 'undefined'
+      && window.matchMedia
+      && typeof window.matchMedia === 'function'
   })
 
   // 方法
@@ -119,7 +119,8 @@ export function useSystemThemeSync(options: UseSystemThemeSyncOptions = {}): Use
     try {
       const query = window.matchMedia('(prefers-color-scheme: dark)')
       return query.matches ? 'dark' : 'light'
-    } catch (error) {
+    }
+    catch (error) {
       if (onError) {
         onError(error as Error)
       }
@@ -138,7 +139,8 @@ export function useSystemThemeSync(options: UseSystemThemeSyncOptions = {}): Use
       if (onSync) {
         try {
           await onSync(newTheme)
-        } catch (error) {
+        }
+        catch (error) {
           if (onError) {
             onError(error as Error)
           }
@@ -166,7 +168,8 @@ export function useSystemThemeSync(options: UseSystemThemeSyncOptions = {}): Use
       if (onSync) {
         await onSync(systemMode)
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (onError) {
         onError(error as Error)
       }
@@ -217,7 +220,8 @@ export function useSystemThemeSync(options: UseSystemThemeSyncOptions = {}): Use
       updateSystemTheme()
 
       isSyncing.value = true
-    } catch (error) {
+    }
+    catch (error) {
       if (onError) {
         onError(error as Error)
       }
@@ -244,7 +248,8 @@ export function useSystemThemeSync(options: UseSystemThemeSyncOptions = {}): Use
       }
 
       isSyncing.value = false
-    } catch (error) {
+    }
+    catch (error) {
       if (onError) {
         onError(error as Error)
       }
@@ -254,7 +259,8 @@ export function useSystemThemeSync(options: UseSystemThemeSyncOptions = {}): Use
   const toggleSync = (): void => {
     if (isSyncing.value) {
       stopSync()
-    } else {
+    }
+    else {
       startSync()
     }
   }
@@ -285,6 +291,6 @@ export function useSystemThemeSync(options: UseSystemThemeSyncOptions = {}): Use
     stopSync,
     toggleSync,
     syncOnce,
-    syncWithSystem
+    syncWithSystem,
   }
 }

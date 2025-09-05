@@ -15,7 +15,8 @@ Object.defineProperty(document, 'startViewTransition', {
       ready: Promise.resolve()
     }
   }),
-  writable: true
+  writable: true,
+  configurable: true
 })
 
 describe('DarkModeToggle', () => {
@@ -195,13 +196,10 @@ describe('DarkModeToggle', () => {
       props: { animationType: 'circle' }
     })
 
-    const clickEvent = new MouseEvent('click', {
+    await wrapper.find('.dark-mode-toggle').trigger('click', {
       clientX: 100,
-      clientY: 200,
-      bubbles: true
+      clientY: 200
     })
-
-    await wrapper.find('.dark-mode-toggle').trigger(clickEvent)
 
     // 验证 CSS 变量被设置
     expect(document.documentElement.style.getPropertyValue('--click-x')).toBe('100px')
