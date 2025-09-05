@@ -5,8 +5,8 @@
  * 验证字符串或数组的长度
  */
 
-import type { ValidatorFunction, ValidationResult, ValidationContext } from '@/types/core';
-import type { LengthValidatorParams } from '@/types/validator';
+import type { ValidatorFunction, ValidationResult, ValidationContext } from '../types/core';
+import type { LengthValidatorParams } from '../types/validator';
 
 /**
  * 获取值的长度
@@ -17,15 +17,15 @@ function getLength(value: any): number {
   if (value === null || value === undefined) {
     return 0;
   }
-  
+
   if (typeof value === 'string' || Array.isArray(value)) {
     return value.length;
   }
-  
+
   if (typeof value === 'object') {
     return Object.keys(value).length;
   }
-  
+
   return String(value).length;
 }
 
@@ -43,17 +43,17 @@ export const minLengthValidator: ValidatorFunction = (
   if (value === null || value === undefined || value === '') {
     return { valid: true };
   }
-  
+
   const params = context.params as LengthValidatorParams | undefined;
   const minLength = params?.min;
-  
+
   if (minLength === undefined) {
     throw new Error('minLength parameter is required');
   }
-  
+
   const length = getLength(value);
   const isValid = length >= minLength;
-  
+
   return {
     valid: isValid,
     message: params?.message || `${context.fieldConfig.label || context.fieldName} must be at least ${minLength} characters`,
@@ -75,17 +75,17 @@ export const maxLengthValidator: ValidatorFunction = (
   if (value === null || value === undefined || value === '') {
     return { valid: true };
   }
-  
+
   const params = context.params as LengthValidatorParams | undefined;
   const maxLength = params?.max;
-  
+
   if (maxLength === undefined) {
     throw new Error('maxLength parameter is required');
   }
-  
+
   const length = getLength(value);
   const isValid = length <= maxLength;
-  
+
   return {
     valid: isValid,
     message: params?.message || `${context.fieldConfig.label || context.fieldName} must be no more than ${maxLength} characters`,
@@ -107,20 +107,20 @@ export const lengthValidator: ValidatorFunction = (
   if (value === null || value === undefined || value === '') {
     return { valid: true };
   }
-  
+
   const params = context.params as LengthValidatorParams | undefined;
   const minLength = params?.min;
   const maxLength = params?.max;
-  
+
   if (minLength === undefined && maxLength === undefined) {
     throw new Error('At least one of min or max length parameter is required');
   }
-  
+
   const length = getLength(value);
   let isValid = true;
   let message = '';
   let code = '';
-  
+
   if (minLength !== undefined && length < minLength) {
     isValid = false;
     message = `${context.fieldConfig.label || context.fieldName} must be at least ${minLength} characters`;
@@ -130,11 +130,11 @@ export const lengthValidator: ValidatorFunction = (
     message = `${context.fieldConfig.label || context.fieldName} must be no more than ${maxLength} characters`;
     code = 'MAX_LENGTH';
   }
-  
+
   if (!isValid && params?.message) {
     message = params.message;
   }
-  
+
   return {
     valid: isValid,
     message: isValid ? undefined : message,

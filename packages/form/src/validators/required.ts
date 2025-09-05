@@ -5,8 +5,8 @@
  * 验证字段是否为必填项
  */
 
-import type { ValidatorFunction, ValidationResult, ValidationContext } from '@/types/core';
-import type { RequiredValidatorParams } from '@/types/validator';
+import type { ValidatorFunction, ValidationResult, ValidationContext } from '../types/core';
+import type { RequiredValidatorParams } from '../types/validator';
 
 /**
  * 检查值是否为空
@@ -17,19 +17,19 @@ function isEmpty(value: any): boolean {
   if (value === null || value === undefined) {
     return true;
   }
-  
+
   if (typeof value === 'string') {
     return value.trim().length === 0;
   }
-  
+
   if (Array.isArray(value)) {
     return value.length === 0;
   }
-  
+
   if (typeof value === 'object') {
     return Object.keys(value).length === 0;
   }
-  
+
   return false;
 }
 
@@ -45,13 +45,13 @@ export const requiredValidator: ValidatorFunction = (
 ): ValidationResult => {
   const params = context.params as RequiredValidatorParams | undefined;
   const required = params?.required ?? true;
-  
+
   if (!required) {
     return { valid: true };
   }
-  
+
   const isValueEmpty = isEmpty(value);
-  
+
   return {
     valid: !isValueEmpty,
     message: params?.message || `${context.fieldConfig.label || context.fieldName} is required`,

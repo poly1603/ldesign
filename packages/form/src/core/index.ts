@@ -8,9 +8,23 @@
 // === 核心类 ===
 export { Form, createForm } from './form';
 export { Field, createField } from './field';
+export { DynamicQueryForm } from './query-form';
+export type { QueryFormField, QueryFormOptions } from './query-form';
+
+// 导入用于默认导出
+import { Form, createForm } from './form';
+import { Field, createField } from './field';
 
 // === 状态管理 ===
 export {
+  FormStateManager,
+  FieldStateManager,
+  createFormStateManager,
+  createFieldStateManager
+} from './state';
+
+// 导入用于默认导出
+import {
   FormStateManager,
   FieldStateManager,
   createFormStateManager,
@@ -28,8 +42,27 @@ export {
   validatorFactory
 } from './validator';
 
+// 导入用于默认导出
+import {
+  ValidatorRegistryImpl,
+  ValidatorExecutorImpl,
+  ValidatorFactoryImpl,
+  createValidatorRegistry,
+  createValidatorExecutor,
+  createValidatorFactory,
+  validatorFactory
+} from './validator';
+
 // === 事件系统 ===
 export {
+  EventBusImpl,
+  createEventBus,
+  createTypedEventBus,
+  EVENT_NAMES
+} from './events';
+
+// 导入用于默认导出
+import {
   EventBusImpl,
   createEventBus,
   createTypedEventBus,

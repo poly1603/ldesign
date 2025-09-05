@@ -3,154 +3,270 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LDesign Form - 原生 HTML 示例</title>
+  <title>LDesign Form - 查询表单演示 HTML</title>
   <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .demo-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 30px;
+      min-height: 100vh;
+    }
+    
+    .config-panel {
+      background: var(--ldesign-bg-color-container);
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-base);
+      padding: 20px;
+      height: fit-content;
+      position: sticky;
+      top: 20px;
+    }
+    
+    .config-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--ldesign-text-color-primary);
+      border-bottom: 1px solid var(--ldesign-border-color);
+      padding-bottom: 10px;
+    }
+    
+    .config-group {
+      margin-bottom: 20px;
+    }
+    
+    .config-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--ldesign-text-color-primary);
+    }
+    
+    .config-input, .config-select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-sm);
+      font-size: 14px;
+      background: var(--ldesign-bg-color-component);
+    }
+    
+    .config-input:focus, .config-select:focus {
+      outline: none;
+      border-color: var(--ldesign-brand-color);
+    }
+
+    .config-select:disabled {
+      background: var(--ldesign-bg-color-component-disabled);
+      color: var(--ldesign-text-color-disabled);
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    .config-checkbox {
+      margin-right: 8px;
+    }
+    
+    .config-button {
+      width: 100%;
+      padding: 10px;
+      background: var(--ldesign-brand-color);
+      color: white;
+      border: none;
+      border-radius: var(--ls-border-radius-sm);
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    
+    .config-button:hover {
+      background: var(--ldesign-brand-color-hover);
+    }
+    
+    .render-area {
+      background: var(--ldesign-bg-color-container);
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-base);
+      padding: 30px;
+    }
+    
+    .render-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--ldesign-text-color-primary);
+      border-bottom: 1px solid var(--ldesign-border-color);
+      padding-bottom: 10px;
+    }
+    
+    .status-info {
+      background: var(--ldesign-bg-color-page);
+      padding: 15px;
+      border-radius: var(--ls-border-radius-sm);
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: var(--ldesign-text-color-secondary);
+    }
+    
+    .event-log {
+      background: var(--ldesign-bg-color-page);
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-sm);
+      padding: 15px;
+      margin-top: 20px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .event-log-title {
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--ldesign-text-color-primary);
+    }
+    
+    .event-item {
+      font-size: 12px;
+      color: var(--ldesign-text-color-secondary);
+      margin-bottom: 5px;
+      font-family: monospace;
+    }
+    
+    @media (max-width: 1200px) {
+      .demo-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .config-panel {
+        position: static;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <!-- 页面头部 -->
-    <header class="header">
-      <h1>LDesign Form</h1>
-      <p class="subtitle">原生 HTML 示例项目</p>
-      <p class="description">
-        展示如何在原生 HTML 和 JavaScript 环境中使用 LDesign Form 的核心 API
-      </p>
-    </header>
-
-    <!-- 示例导航 -->
-    <nav class="examples-nav">
-      <h2>示例列表</h2>
-      <div class="examples-grid">
-        <!-- 基础表单示例 -->
-        <div class="example-card">
-          <div class="example-icon">📝</div>
-          <h3>基础表单</h3>
-          <p>展示表单创建、字段注册和基础验证功能</p>
-          <div class="example-features">
-            <span class="feature-tag">表单创建</span>
-            <span class="feature-tag">字段管理</span>
-            <span class="feature-tag">基础验证</span>
-          </div>
-          <a href="basic-form.html" class="example-link">查看示例</a>
-        </div>
-
-        <!-- 查询表单示例 -->
-        <div class="example-card">
-          <div class="example-icon">🔍</div>
-          <h3>查询表单</h3>
-          <p>专门用于查询场景的表单组件，支持展开/收起、智能按钮布局和响应式设计</p>
-          <div class="example-features">
-            <span class="feature-tag">展开收起</span>
-            <span class="feature-tag">智能布局</span>
-            <span class="feature-tag">响应式</span>
-            <span class="feature-tag">查询优化</span>
-          </div>
-          <a href="query-form.html" class="example-link">查看示例</a>
-        </div>
-
-        <!-- 动态字段示例 -->
-        <div class="example-card">
-          <div class="example-icon">🔄</div>
-          <h3>动态字段</h3>
-          <p>展示如何动态添加、删除字段和数组字段管理</p>
-          <div class="example-features">
-            <span class="feature-tag">动态添加</span>
-            <span class="feature-tag">动态删除</span>
-            <span class="feature-tag">数组字段</span>
-          </div>
-          <a href="dynamic-fields.html" class="example-link">查看示例</a>
-        </div>
-
-        <!-- 验证示例 -->
-        <div class="example-card">
-          <div class="example-icon">✅</div>
-          <h3>验证功能</h3>
-          <p>展示内置验证器、自定义验证器和异步验证</p>
-          <div class="example-features">
-            <span class="feature-tag">内置验证器</span>
-            <span class="feature-tag">自定义验证</span>
-            <span class="feature-tag">异步验证</span>
-          </div>
-          <a href="validation.html" class="example-link">查看示例</a>
+  <div class="demo-container">
+    <!-- 配置面板 -->
+    <div class="config-panel">
+      <div class="config-title">🎛️ 配置面板</div>
+      
+      <div class="config-group">
+        <label class="config-label">字段数量</label>
+        <input type="range" id="fieldCount" class="config-input" min="1" max="10" value="3">
+        <div style="text-align: center; margin-top: 5px;">
+          <span id="fieldCountValue">3</span> 个字段
         </div>
       </div>
-    </nav>
-
-    <!-- 快速开始 -->
-    <section class="quick-start">
-      <h2>快速开始</h2>
-      <div class="code-example">
-        <h3>1. 创建表单实例</h3>
-        <pre><code>import { createForm } from '@ldesign/form';
-
-const form = createForm({
-  initialValues: {
-    name: '',
-    email: ''
-  }
-});</code></pre>
+      
+      <div class="config-group">
+        <label class="config-label">列数</label>
+        <select id="colCount" class="config-select">
+          <option value="3">3列</option>
+          <option value="4" selected>4列</option>
+          <option value="5">5列</option>
+          <option value="6">6列</option>
+        </select>
       </div>
 
-      <div class="code-example">
-        <h3>2. 注册字段</h3>
-        <pre><code>const nameField = form.registerField({
-  name: 'name',
-  rules: [
-    { required: true, message: '姓名是必填项' }
-  ]
-});</code></pre>
+      <div class="config-group">
+        <label class="config-label">
+          <input type="checkbox" id="autoColCount" class="config-checkbox">
+          自动计算列数
+        </label>
+      </div>
+      
+      <div class="config-group">
+        <label class="config-label">默认行数</label>
+        <input type="number" id="defaultRowCount" class="config-input" min="1" max="3" value="1">
+      </div>
+      
+      <div class="config-group">
+        <label class="config-label">按钮位置</label>
+        <select id="actionPosition" class="config-select">
+          <option value="auto">自动</option>
+          <option value="inline" selected>内联</option>
+          <option value="block">独占行</option>
+        </select>
+      </div>
+      
+      <div class="config-group">
+        <label class="config-label">按钮对齐</label>
+        <select id="actionAlign" class="config-select">
+          <option value="left">左对齐</option>
+          <option value="center">居中</option>
+          <option value="right" selected>右对齐</option>
+          <option value="justify">两端对齐</option>
+        </select>
+      </div>
+      
+      <div class="config-group">
+        <label class="config-label">
+          <input type="checkbox" id="collapsed" class="config-checkbox" checked>
+          收起状态
+        </label>
+      </div>
+      
+      <div class="config-group">
+        <label class="config-label">
+          <input type="checkbox" id="showCollapseButton" class="config-checkbox" checked>
+          显示展开/收起按钮
+        </label>
       </div>
 
-      <div class="code-example">
-        <h3>3. 处理表单提交</h3>
-        <pre><code>form.onSubmit((event) => {
-  if (event.valid) {
-    console.log('表单数据:', event.data);
-  } else {
-    console.log('验证失败:', event.errors);
-  }
-});</code></pre>
+      <div class="config-group">
+        <label class="config-label">标签位置</label>
+        <select id="labelPosition" class="config-select">
+          <option value="top">顶部</option>
+          <option value="left" selected>左侧</option>
+        </select>
       </div>
-    </section>
 
-    <!-- 特性介绍 -->
-    <section class="features">
-      <h2>核心特性</h2>
-      <div class="features-grid">
-        <div class="feature-item">
-          <div class="feature-icon">🎯</div>
-          <h3>框架无关</h3>
-          <p>核心 API 不依赖任何框架，可在任何 JavaScript 环境中使用</p>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon">🔧</div>
-          <h3>灵活配置</h3>
-          <p>支持丰富的配置选项，满足各种表单需求</p>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon">✨</div>
-          <h3>强大验证</h3>
-          <p>内置常用验证器，支持自定义验证规则和异步验证</p>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon">📊</div>
-          <h3>状态管理</h3>
-          <p>完整的表单和字段状态跟踪，实时反馈用户操作</p>
+      <div class="config-group">
+        <label class="config-label">标签对齐</label>
+        <select id="labelAlign" class="config-select">
+          <option value="left">左对齐</option>
+          <option value="right" selected>右对齐</option>
+          <option value="justify">两端对齐</option>
+        </select>
+      </div>
+
+      <div class="config-group">
+        <label class="config-label">
+          <input type="checkbox" id="responsive" class="config-checkbox" checked>
+          响应式布局
+        </label>
+      </div>
+
+      <button id="updateForm" class="config-button">🔄 更新表单</button>
+      <button id="resetConfig" class="config-button" style="background: var(--ldesign-gray-color-6); margin-top: 5px;">
+        ↩️ 重置配置
+      </button>
+    </div>
+    
+    <!-- 渲染区域 -->
+    <div class="render-area">
+      <div class="render-title">📋 查询表单演示</div>
+      
+      <div class="status-info" id="statusInfo">
+        当前配置：3个字段，4列布局，收起状态，内联按钮，右对齐
+      </div>
+      
+      <div id="queryFormContainer">
+        <!-- 查询表单将在这里动态渲染 -->
+      </div>
+      
+      <div class="event-log">
+        <div class="event-log-title">📝 事件日志</div>
+        <div id="eventLog">
+          <div class="event-item">等待表单初始化...</div>
         </div>
       </div>
-    </section>
-
-    <!-- 页面底部 -->
-    <footer class="footer">
-      <p>&copy; 2024 LDesign Team. All rights reserved.</p>
-      <p>
-        <a href="https://github.com/ldesign/form" target="_blank">GitHub</a> |
-        <a href="https://ldesign.dev/form" target="_blank">文档</a> |
-        <a href="https://ldesign.dev" target="_blank">官网</a>
-      </p>
-    </footer>
+    </div>
   </div>
 
-  <script type="module" src="js/main.js"></script>
+  <script type="module" src="src/main.ts"></script>
 </body>
 </html>

@@ -6,8 +6,8 @@
  */
 
 import { ref, computed, onUnmounted, watch, inject, type Ref, type ComputedRef } from 'vue';
-import type { FieldInstance, ValidationResult, FieldChangeEvent } from '@/types/core';
-import type { UseFieldOptions, UseFieldReturn, ReactiveFieldInstance, ReactiveFormInstance } from '@/types/vue';
+import type { FieldInstance, ValidationResult, FieldChangeEvent } from '../../types/core';
+import type { UseFieldOptions, UseFieldReturn, ReactiveFieldInstance, ReactiveFormInstance } from '../../types/vue';
 
 /**
  * 表单上下文注入键
@@ -166,9 +166,15 @@ export function useField(name: string, options: UseFieldOptions = {}): UseFieldR
   };
 
   // 组件卸载时清理
-  onUnmounted(() => {
-    form.unregisterField(name);
-  });
+  try {
+    onUnmounted(() => {
+      form.unregisterField(name);
+    });
+  } catch (error) {
+    // 如果没有活动的组件实例，忽略错误
+    // 这通常发生在组件重新渲染或异步操作中
+    console.warn('Failed to register onUnmounted hook:', error);
+  }
 
   return returnValue;
 }

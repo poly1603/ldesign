@@ -6,7 +6,7 @@
  */
 
 import { cloneDeep, isEqual, set, get } from 'lodash-es';
-import { FormState } from '@/types/core';
+import { FormState } from '../types/core';
 import type {
   FormInstance,
   FormConfig,
@@ -17,14 +17,14 @@ import type {
   EventListener,
   EventBus,
   FieldConfig
-} from '@/types/core';
+} from '../types/core';
 import type {
   FormOperationOptions,
   FormResetOptions,
   FormValidationOptions,
   FormSubmitOptions,
   FormSnapshot
-} from '@/types/form';
+} from '../types/form';
 import { FormStateManager } from './state';
 import { createEventBus } from './events';
 import { createField } from './field';

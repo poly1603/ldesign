@@ -5,8 +5,8 @@
  * 验证邮箱地址格式是否正确
  */
 
-import type { ValidatorFunction, ValidationResult, ValidationContext } from '@/types/core';
-import type { EmailValidatorParams } from '@/types/validator';
+import type { ValidatorFunction, ValidationResult, ValidationContext } from '../types/core';
+import type { EmailValidatorParams } from '../types/validator';
 
 /**
  * 默认邮箱正则表达式
@@ -28,15 +28,15 @@ export const emailValidator: ValidatorFunction = (
   if (value === null || value === undefined || value === '') {
     return { valid: true };
   }
-  
+
   const params = context.params as EmailValidatorParams | undefined;
   const pattern = params?.pattern || DEFAULT_EMAIL_PATTERN;
-  
+
   // 确保值是字符串
   const stringValue = String(value);
-  
+
   const isValid = pattern.test(stringValue);
-  
+
   return {
     valid: isValid,
     message: params?.message || `${context.fieldConfig.label || context.fieldName} must be a valid email address`,

@@ -1,0 +1,229 @@
+/**
+ * LDesign Button 组件样式
+ * 使用 LDESIGN Design System 颜色变量
+ */
+
+.ldesign-button {
+  // 基础样式
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ls-spacing-xs);
+  
+  // 字体和文本
+  font-family: inherit;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+  
+  // 边框和圆角
+  border: 1px solid transparent;
+  border-radius: var(--ls-border-radius-base);
+  
+  // 过渡效果
+  transition: all 0.2s ease-in-out;
+  
+  // 禁用状态
+  &:disabled,
+  &--disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  
+  // 聚焦状态
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+  }
+  
+  // 尺寸变体
+  &--small {
+    height: var(--ls-button-height-small);
+    padding: 0 var(--ls-padding-sm);
+    font-size: var(--ls-font-size-xs);
+  }
+  
+  &--medium {
+    height: var(--ls-button-height-medium);
+    padding: 0 var(--ls-padding-base);
+    font-size: var(--ls-font-size-sm);
+  }
+  
+  &--large {
+    height: var(--ls-button-height-large);
+    padding: 0 var(--ls-padding-lg);
+    font-size: var(--ls-font-size-base);
+  }
+  
+  // 形状变体
+  &--round {
+    border-radius: var(--ls-border-radius-xl);
+  }
+  
+  &--circle {
+    border-radius: var(--ls-border-radius-full);
+    width: var(--ls-button-height-medium);
+    padding: 0;
+    
+    &.ldesign-button--small {
+      width: var(--ls-button-height-small);
+    }
+    
+    &.ldesign-button--large {
+      width: var(--ls-button-height-large);
+    }
+  }
+  
+  // 块级按钮
+  &--block {
+    display: flex;
+    width: 100%;
+  }
+  
+  // 类型变体 - Primary
+  &--primary {
+    background-color: var(--ldesign-brand-color);
+    border-color: var(--ldesign-brand-color);
+    color: var(--ldesign-font-white-1);
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled) {
+      background-color: var(--ldesign-brand-color-hover);
+      border-color: var(--ldesign-brand-color-hover);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled) {
+      background-color: var(--ldesign-brand-color-active);
+      border-color: var(--ldesign-brand-color-active);
+    }
+  }
+  
+  // 类型变体 - Secondary
+  &--secondary {
+    background-color: transparent;
+    border-color: var(--ldesign-border-color);
+    color: var(--ldesign-text-color-primary);
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled) {
+      border-color: var(--ldesign-brand-color-hover);
+      color: var(--ldesign-brand-color-hover);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled) {
+      border-color: var(--ldesign-brand-color-active);
+      color: var(--ldesign-brand-color-active);
+    }
+  }
+  
+  // 类型变体 - Success
+  &--success {
+    background-color: var(--ldesign-success-color);
+    border-color: var(--ldesign-success-color);
+    color: var(--ldesign-font-white-1);
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled) {
+      background-color: var(--ldesign-success-color-hover);
+      border-color: var(--ldesign-success-color-hover);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled) {
+      background-color: var(--ldesign-success-color-active);
+      border-color: var(--ldesign-success-color-active);
+    }
+  }
+  
+  // 类型变体 - Warning
+  &--warning {
+    background-color: var(--ldesign-warning-color);
+    border-color: var(--ldesign-warning-color);
+    color: var(--ldesign-font-white-1);
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled) {
+      background-color: var(--ldesign-warning-color-hover);
+      border-color: var(--ldesign-warning-color-hover);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled) {
+      background-color: var(--ldesign-warning-color-active);
+      border-color: var(--ldesign-warning-color-active);
+    }
+  }
+  
+  // 类型变体 - Error
+  &--error {
+    background-color: var(--ldesign-error-color);
+    border-color: var(--ldesign-error-color);
+    color: var(--ldesign-font-white-1);
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled) {
+      background-color: var(--ldesign-error-color-hover);
+      border-color: var(--ldesign-error-color-hover);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled) {
+      background-color: var(--ldesign-error-color-active);
+      border-color: var(--ldesign-error-color-active);
+    }
+  }
+  
+  // 类型变体 - Info
+  &--info {
+    background-color: var(--ldesign-gray-color-6);
+    border-color: var(--ldesign-gray-color-6);
+    color: var(--ldesign-font-white-1);
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled) {
+      background-color: var(--ldesign-gray-color-5);
+      border-color: var(--ldesign-gray-color-5);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled) {
+      background-color: var(--ldesign-gray-color-7);
+      border-color: var(--ldesign-gray-color-7);
+    }
+  }
+  
+  // 加载状态
+  &--loading {
+    cursor: wait;
+    
+    .ldesign-button__loading-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      
+      .ldesign-icon-loading {
+        width: 1em;
+        height: 1em;
+        animation: ldesign-button-loading-spin 1s linear infinite;
+      }
+    }
+  }
+  
+  // 图标样式
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1em;
+  }
+  
+  // 内容样式
+  &__content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+// 加载动画
+@keyframes ldesign-button-loading-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

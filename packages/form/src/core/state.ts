@@ -5,8 +5,8 @@
  * 提供表单和字段的状态管理功能，包括状态变更、状态检查等
  */
 
-import { FormState, FieldState } from '@/types/core';
-import type { EventBus } from '@/types/core';
+import { FormState, FieldState } from '../types/core';
+import type { EventBus } from '../types/core';
 import { EVENT_NAMES } from './events';
 
 /**

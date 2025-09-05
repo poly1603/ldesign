@@ -24,7 +24,11 @@ const props = defineProps<FormProviderProps>();
 const emit = defineEmits<FormProviderEmits>();
 
 // === 提供表单上下文 ===
-provide(FORM_CONTEXT_KEY, props.form);
+if (props.form) {
+  provide(FORM_CONTEXT_KEY, props.form);
+} else {
+  console.warn('FormProvider: form prop is required');
+}
 
 // === 暴露的方法和属性 ===
 defineExpose<FormProviderExpose>({

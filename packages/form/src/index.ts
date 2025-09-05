@@ -11,8 +11,8 @@ export * from './types';
 // === 核心库 ===
 export * from './core';
 
-// === Vue 3 适配器 ===
-export * from './vue';
+// === Vue 3 适配器（按需导出） ===
+// export * from './vue';
 
 // === 工具函数 ===
 export * from './utils';
@@ -27,16 +27,16 @@ export * from './legacy';
 export const version = '1.0.0';
 
 // === 默认导出（Vue 插件） ===
-import { App } from 'vue';
-import { install } from './vue';
+// import { App } from 'vue';
+// import { install } from './vue';
 
-export default {
-  install,
-  version
-};
+// export default {
+//   install,
+//   version
+// };
 
 // === 安装函数（支持全局安装） ===
-export { install };
+// export { install };
 
 // === 类型声明增强 ===
 declare module '@vue/runtime-core' {
@@ -51,5 +51,12 @@ declare module 'vue' {
     LDesignFormItem: any; // 将在实现时提供具体类型
     FieldArray: any; // 将在实现时提供具体类型
     FormProvider: any; // 将在实现时提供具体类型
+    // TSX 组件
+    LDesignButton: any;
+    LDesignInput: any;
   }
 }
+
+// === TSX 组件导出（用于测试 TSX 打包） ===
+// 暂时注释掉，因为 @ldesign/builder 可能不支持 TSX
+// export * from './vue/components/tsx'

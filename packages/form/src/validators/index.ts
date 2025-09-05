@@ -31,9 +31,9 @@ export {
 } from './length';
 
 // === 内置验证器配置集合 ===
-import { requiredValidatorConfig } from './required';
-import { emailValidatorConfig } from './email';
-import { minLengthValidatorConfig, maxLengthValidatorConfig, lengthValidatorConfig } from './length';
+import { requiredValidatorConfig, required } from './required';
+import { emailValidatorConfig, email } from './email';
+import { minLengthValidatorConfig, maxLengthValidatorConfig, lengthValidatorConfig, minLength, maxLength, length } from './length';
 
 export const builtinValidators = [
   requiredValidatorConfig,

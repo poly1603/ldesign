@@ -6,7 +6,7 @@
  */
 
 import { isEqual } from 'lodash-es';
-import { FieldState } from '@/types/core';
+import { FieldState } from '../types/core';
 import type {
   FieldInstance,
   FieldConfig,

@@ -558,24 +558,185 @@ body {
   align-items: end;
 }
 
+.query-form-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  transition: all 0.3s ease-in-out;
+}
+
+.query-form-field[style*="display: none"] {
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.query-form-label {
+  font-size: var(--ls-font-size-sm);
+  color: var(--ldesign-text-color-primary);
+  margin-bottom: var(--ls-spacing-xs);
+  font-weight: 500;
+}
+
+.query-form-input,
+.query-form-select {
+  height: var(--ls-input-height-medium);
+  padding: 0 var(--ls-padding-sm);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  font-size: var(--ls-font-size-sm);
+  color: var(--ldesign-text-color-primary);
+  background: var(--ldesign-bg-color-component);
+  transition: all 0.2s ease-in-out;
+}
+
+.query-form-input:focus,
+.query-form-select:focus {
+  outline: none;
+  border-color: var(--ldesign-brand-color-6);
+  box-shadow: 0 0 0 2px var(--ldesign-brand-color-2);
+}
+
+.query-form-input::placeholder {
+  color: var(--ldesign-text-color-placeholder);
+}
+
+.query-form-radio-group {
+  display: flex;
+  gap: var(--ls-spacing-base);
+  align-items: center;
+  min-height: var(--ls-input-height-medium);
+}
+
+.query-form-radio-label {
+  display: flex;
+  align-items: center;
+  gap: var(--ls-spacing-xs);
+  cursor: pointer;
+  font-size: var(--ls-font-size-sm);
+  color: var(--ldesign-text-color-primary);
+}
+
+.query-form-radio {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.query-form-checkbox {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+/* 兼容旧版本样式 */
 .query-form-field-hidden {
   display: none;
   transition: all 0.3s ease-in-out;
+}
+
+/* === 标签对齐样式 === */
+.query-form-field[data-label-align="left"] .query-form-label {
+  text-align: left;
+}
+
+.query-form-field[data-label-align="right"] .query-form-label {
+  text-align: right;
+}
+
+.query-form-field[data-label-align="justify"] .query-form-label {
+  text-align: justify;
+  text-align-last: justify;
+}
+
+/* 左侧标签布局时的特殊样式 */
+.query-form-field[data-label-position="left"] {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--ls-spacing-sm);
+}
+
+.query-form-field[data-label-position="left"] .query-form-label {
+  flex: 0 0 auto;
+  min-width: 80px;
+  margin-bottom: 0;
+  line-height: var(--ls-input-height-medium);
+}
+
+.query-form-field[data-label-position="left"] .query-form-input,
+.query-form-field[data-label-position="left"] .query-form-select {
+  flex: 1;
+  min-width: 0;
 }
 
 .query-form-actions {
   display: flex;
   align-items: center;
   min-height: var(--ls-input-height-medium);
+  gap: var(--ls-spacing-sm);
 }
 
+.query-form-actions__primary {
+  display: flex;
+  align-items: center;
+  gap: var(--ls-spacing-sm);
+  flex-shrink: 0;
+}
+
+.query-form-actions__collapse {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* 兼容旧版本样式 */
 .query-form-actions-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   width: 100%;
   gap: var(--ls-spacing-sm);
 }
+
+/* 按钮组布局模式 */
+.query-form-actions.action-inline {
+  justify-content: flex-start;
+}
+
+.query-form-actions.action-block {
+  justify-content: flex-start;
+}
+
+/* 按钮对齐方式 */
+.query-form-actions.action-align-left {
+  justify-content: flex-start;
+}
+
+.query-form-actions.action-align-center {
+  justify-content: center;
+}
+
+.query-form-actions.action-align-right {
+  justify-content: flex-end;
+}
+
+.query-form-actions.action-align-justify {
+  justify-content: space-between;
+}
+
+.query-form-actions.action-align-justify .query-form-actions__collapse {
+  margin-left: 0;
+}
+
+/* 兼容旧版本样式 */
+.query-form-actions.action-align-left .query-form-actions-content { justify-content: flex-start; }
+.query-form-actions.action-align-center .query-form-actions-content { justify-content: center; }
+.query-form-actions.action-align-right .query-form-actions-content { justify-content: flex-end; }
+.query-form-actions.action-align-justify .query-form-actions-content { justify-content: space-between; }
+.query-form-actions.action-align-justify .collapse-actions { margin-left: 0; }
 
 .primary-actions {
   display: flex;

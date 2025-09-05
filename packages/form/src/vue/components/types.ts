@@ -84,10 +84,12 @@ export interface LDesignFormItemProps {
   disabled?: boolean;
   /** 是否只读 */
   readonly?: boolean;
+  /** 标签位置 */
+  labelPosition?: LabelPosition;
   /** 标签宽度 */
   labelWidth?: string | number;
   /** 标签对齐方式 */
-  labelAlign?: 'left' | 'right' | 'center';
+  labelAlign?: LabelAlign;
   /** 字段尺寸 */
   size?: 'small' | 'medium' | 'large';
   /** 是否显示验证图标 */
@@ -188,6 +190,7 @@ export interface FormProviderExpose {
 // === 通用类型 ===
 export type ComponentSize = 'small' | 'medium' | 'large';
 export type LabelAlign = 'left' | 'right' | 'center';
+export type LabelPosition = 'top' | 'left';
 export type FormLayout = 'horizontal' | 'vertical' | 'inline';
 export type ValidateStatus = 'success' | 'warning' | 'error' | 'validating';
 
@@ -221,6 +224,22 @@ export interface QueryFormField {
   key?: string | number;
 }
 
+// === 响应式断点配置 ===
+export interface QueryFormBreakpoints {
+  /** 超小屏幕 < 576px */
+  xs: number;
+  /** 小屏幕 >= 576px */
+  sm: number;
+  /** 中等屏幕 >= 768px */
+  md: number;
+  /** 大屏幕 >= 992px */
+  lg: number;
+  /** 超大屏幕 >= 1200px */
+  xl: number;
+  /** 超超大屏幕 >= 1400px */
+  xxl: number;
+}
+
 // === LDesignQueryForm 组件类型 ===
 export interface LDesignQueryFormProps {
   /** 表单字段配置 */
@@ -237,15 +256,19 @@ export interface LDesignQueryFormProps {
   readonly?: boolean;
   /** 表单布局 */
   layout?: FormLayout;
+  /** 标签位置 */
+  labelPosition?: LabelPosition;
   /** 标签对齐方式 */
   labelAlign?: LabelAlign;
+  /** 标签宽度（仅在 labelPosition='left' 时有效） */
+  labelWidth?: string | number;
   /** 表单尺寸 */
   size?: ComponentSize;
   /** 是否默认收起 */
   collapsed?: boolean;
   /** 默认显示行数 */
   defaultRowCount?: number;
-  /** 每行列数 */
+  /** 每行列数（当 responsive 为 false 时使用） */
   colCount?: number;
   /** 栅格间距 */
   gutter?: number;
@@ -259,12 +282,18 @@ export interface LDesignQueryFormProps {
   collapseText?: string;
   /** 是否显示展开/收起按钮 */
   showCollapseButton?: boolean;
-  /** 按钮组位置 */
+  /** 按钮组位置模式 */
   actionPosition?: 'auto' | 'inline' | 'block';
   /** 按钮组对齐方式 */
-  actionAlign?: 'left' | 'center' | 'right';
-  /** 是否响应式 */
+  actionAlign?: 'left' | 'center' | 'right' | 'justify';
+  /** 是否启用响应式列数 */
   responsive?: boolean;
+  /** 自定义断点配置 */
+  breakpoints?: Partial<QueryFormBreakpoints>;
+  /** 表单标题文本（可选） */
+  title?: string;
+  /** 表单标题位置：顶部或左侧 */
+  titlePosition?: 'top' | 'left';
 }
 
 // === LDesignQueryForm 组件事件 ===

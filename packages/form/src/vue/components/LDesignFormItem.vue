@@ -66,6 +66,7 @@ import type { LDesignFormItemProps, LDesignFormItemEmits, LDesignFormItemExpose 
 
 // === Props 定义 ===
 const props = withDefaults(defineProps<LDesignFormItemProps>(), {
+  labelPosition: 'left',
   labelAlign: 'left',
   size: 'medium',
   showValidationIcon: true
@@ -93,6 +94,7 @@ const isRequired = computed(() => {
 const formItemClasses = computed(() => [
   'ldesign-form-item',
   `ldesign-form-item--${props.size}`,
+  `ldesign-form-item--label-${props.labelPosition}`,
   {
     'ldesign-form-item--required': isRequired.value,
     'ldesign-form-item--disabled': props.disabled,
@@ -350,6 +352,42 @@ export default {
 
   &--touched {
     // 已触摸状态样式
+  }
+
+  // 标签位置变体
+  &--label-top {
+    // 顶部标签：垂直布局
+    .ldesign-form-item__label {
+      display: block;
+      margin-bottom: var(--ls-spacing-xs);
+    }
+  }
+
+  &--label-left {
+    // 左侧标签：水平布局
+    display: flex;
+    align-items: flex-start;
+
+    .ldesign-form-item__label {
+      flex: 0 0 auto;
+      width: var(--label-width);
+      min-width: 80px;
+      margin-right: var(--ls-spacing-sm);
+      margin-bottom: 0;
+      padding-top: calc(var(--ls-input-height-medium) / 2 - var(--ls-font-size-base) / 2);
+      line-height: var(--ls-font-size-base);
+    }
+
+    .ldesign-form-item__content {
+      flex: 1;
+      min-width: 0; // 防止内容溢出
+    }
+
+    // 错误信息在左侧标签模式下需要调整位置
+    .ldesign-form-item__error,
+    .ldesign-form-item__help {
+      margin-left: calc(var(--label-width, 100px) + var(--ls-spacing-sm));
+    }
   }
 }
 

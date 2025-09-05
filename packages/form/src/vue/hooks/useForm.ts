@@ -6,9 +6,9 @@
  */
 
 import { ref, computed, onUnmounted, watch, type Ref, type ComputedRef } from 'vue';
-import { createForm } from '@/core/form';
-import type { FormInstance, FormConfig, ValidationResult, FormChangeEvent, FormSubmitEvent } from '@/types/core';
-import type { UseFormOptions, UseFormReturn, ReactiveFormInstance, ReactiveFieldInstance } from '@/types/vue';
+import { createForm } from '../../core/form';
+import type { FormInstance, FormConfig, ValidationResult, FormChangeEvent, FormSubmitEvent } from '../../types/core';
+import type { UseFormOptions, UseFormReturn, ReactiveFormInstance, ReactiveFieldInstance } from '../../types/vue';
 import { useField } from './useField';
 
 /**
@@ -213,10 +213,16 @@ export function useForm(options: UseFormOptions = {}): UseFormReturn {
   };
 
   // 组件卸载时清理
-  onUnmounted(() => {
-    form.destroy();
-    registeredFields.clear();
-  });
+  try {
+    onUnmounted(() => {
+      form.destroy();
+      registeredFields.clear();
+    });
+  } catch (error) {
+    // 如果没有活动的组件实例，忽略错误
+    // 这通常发生在组件重新渲染或异步操作中
+    console.warn('Failed to register onUnmounted hook:', error);
+  }
 
   return returnValue;
 }
