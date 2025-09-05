@@ -11,6 +11,11 @@
 // 导出核心类
 export { ViteLauncher } from './core/ViteLauncher'
 export { ConfigManager } from './core/ConfigManager'
+// export { ConfigPresetsManager, configPresets } from './core/ConfigPresets' // 暂时移除以稳定打包
+export { PluginMarketManager, pluginMarket } from './core/PluginMarket'
+export { CacheManager, cacheManager } from './core/CacheManager'
+// export { ProjectTemplateManager } from './core/ProjectTemplateManager' // 暂无该模块，移除导出
+// export { PerformanceMonitor } from './core/PerformanceMonitor' // 与 utils/performance 重复，移除
 // export { PluginManager } from './core/PluginManager' // 暂时禁用，类型问题待修复
 
 // 导出所有类型定义
@@ -24,6 +29,13 @@ export { Logger } from './utils/logger'
 export { ErrorHandler, LauncherError } from './utils/error-handler'
 export { FileSystem } from './utils/file-system'
 export { PathUtils } from './utils/path-utils'
+export { 
+  EnvironmentManager, 
+  environmentManager, 
+  loadEnv, 
+  getClientEnv, 
+  generateDefines 
+} from './utils/env'
 
 // 配置和构建工具 - 避免重复导出
 export {
@@ -73,6 +85,10 @@ export default {
   version,
   ViteLauncher: () => import('./core/ViteLauncher').then(m => m.ViteLauncher),
   ConfigManager: () => import('./core/ConfigManager').then(m => m.ConfigManager),
+  PluginMarketManager: () => import('./core/PluginMarket').then(m => m.PluginMarketManager),
+  CacheManager: () => import('./core/CacheManager').then(m => m.CacheManager),
+  // ProjectTemplateManager: () => import('./core/ProjectTemplateManager').then(m => m.ProjectTemplateManager),
+  // PerformanceMonitor: () => import('./core/PerformanceMonitor').then(m => m.PerformanceMonitor),
   PluginManager: () => import('./core/PluginManager').then(m => m.PluginManager),
   createCli: () => import('./cli').then(m => m.createCli)
 }

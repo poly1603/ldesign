@@ -9,8 +9,10 @@ import { EventEmitter } from 'events'
 import { Logger } from '../utils/logger'
 import { FileSystem } from '../utils/file-system'
 import { PathUtils } from '../utils/path-utils'
-import type { ViteLauncherConfig } from '../types'
+import { environmentManager } from '../utils/env'
+import type { ViteLauncherConfig, ProjectPreset } from '../types'
 import { DEFAULT_VITE_LAUNCHER_CONFIG } from '../constants'
+import { configPresets } from './ConfigPresets'
 import { pathToFileURL } from 'url'
 
 export interface ConfigManagerOptions {
@@ -217,6 +219,283 @@ export class ConfigManager extends EventEmitter {
   destroy(): void {
     this.removeAllListeners()
     this.logger.info('ConfigManager 已销毁')
+  }
+
+  /**
+   * 处理配置继承
+   */
+  async resolveExtends(config: ViteLauncherConfig, basePath: string): Promise<ViteLauncherConfig> {
+    if (!config.launcher?.extends) {
+      return config
+    }
+
+    const extendsConfig = config.launcher.extends
+    const extendsArray = Array.isArray(extendsConfig) ? extendsConfig : [extendsConfig]
+    let resolvedConfig = { ...config }
+
+    for (const extendPath of extendsArray) {
+      try {
+        let baseConfig: ViteLauncherConfig
+
+        // 检查是否是预设名称
+        if (configPresets.has(extendPath as ProjectPreset)) {
+          baseConfig = configPresets.getConfig(extendPath as ProjectPreset)!
+          this.logger.debug(`应用预设配置: ${extendPath}`)
+        } else {
+          // 作为文件路径处理
+          const configPath = PathUtils.isAbsolute(extendPath)
+            ? extendPath
+            : PathUtils.resolve(basePath, extendPath)
+
+          baseConfig = await this.loadConfig(configPath)
+          this.logger.debug(`继承配置文件: ${extendPath}`)
+        }
+
+        // 深度合并配置
+        resolvedConfig = this.deepMerge(baseConfig, resolvedConfig)
+      } catch (error) {
+        this.logger.warn(`配置继承失败: ${extendPath}`, error)
+      }
+    }
+
+    return resolvedConfig
+  }
+
+  /**
+   * 应用预设配置
+   */
+  async applyPreset(config: ViteLauncherConfig, preset: ProjectPreset): Promise<ViteLauncherConfig> {
+    try {
+      const presetConfig = configPresets.getConfig(preset)
+      if (!presetConfig) {
+        throw new Error(`未找到预设: ${preset}`)
+      }
+
+      this.logger.info(`应用预设配置: ${preset}`)
+      return this.deepMerge(presetConfig, config)
+    } catch (error) {
+      this.logger.error(`应用预设配置失败: ${preset}`, error)
+      throw error
+    }
+  }
+
+  /**
+   * 自动检测并应用项目预设
+   */
+  async autoDetectPreset(cwd: string = process.cwd()): Promise<ProjectPreset | null> {
+    try {
+      const detectedPreset = await configPresets.detectProjectType(cwd)
+      if (detectedPreset) {
+        this.logger.info(`检测到项目类型: ${detectedPreset}`)
+        return detectedPreset
+      }
+      return null
+    } catch (error) {
+      this.logger.warn('项目类型检测失败', error)
+      return null
+    }
+  }
+
+  /**
+   * 处理环境变量配置
+   */
+  async processEnvironmentConfig(config: ViteLauncherConfig, cwd: string): Promise<ViteLauncherConfig> {
+    if (!config.launcher?.env) {
+      return config
+    }
+
+    try {
+      await environmentManager.loadConfig(config.launcher.env, cwd)
+      this.logger.info('环境变量配置处理完成')
+
+      // 更新配置中的环境变量引用
+      return this.resolveEnvironmentVariables(config)
+    } catch (error) {
+      this.logger.warn('环境变量配置处理失败', error)
+      return config
+    }
+  }
+
+  /**
+   * 解析配置中的环境变量引用
+   */
+  private resolveEnvironmentVariables(config: ViteLauncherConfig): ViteLauncherConfig {
+    const resolveValue = (value: any): any => {
+      if (typeof value === 'string') {
+        // 解析环境变量引用 ${VAR_NAME} 或 $VAR_NAME
+        return value.replace(/\$\{([^}]+)\}/g, (match, varName) => {
+          return process.env[varName] || match
+        }).replace(/\$([A-Z_][A-Z0-9_]*)/g, (match, varName) => {
+          return process.env[varName] || match
+        })
+      } else if (Array.isArray(value)) {
+        return value.map(resolveValue)
+      } else if (value && typeof value === 'object') {
+        const resolved: any = {}
+        for (const [key, val] of Object.entries(value)) {
+          resolved[key] = resolveValue(val)
+        }
+        return resolved
+      }
+      return value
+    }
+
+    return resolveValue(config)
+  }
+
+  /**
+   * 生成配置文件模板
+   */
+  async generateConfigTemplate(
+    preset: ProjectPreset,
+    filePath: string,
+    options: {
+      typescript?: boolean
+      includeComments?: boolean
+    } = {}
+  ): Promise<void> {
+    const { typescript = true, includeComments = true } = options
+    
+    const presetConfig = configPresets.getConfig(preset)
+    if (!presetConfig) {
+      throw new Error(`未找到预设: ${preset}`)
+    }
+
+    const content = this.generateConfigFileContent(
+      presetConfig,
+      typescript,
+      includeComments,
+      preset
+    )
+
+    await FileSystem.writeFile(filePath, content)
+    this.logger.success(`配置文件模板生成成功: ${filePath}`)
+  }
+
+  /**
+   * 生成配置文件内容（增强版）
+   */
+  private generateConfigFileContent(
+    config: ViteLauncherConfig,
+    isTypeScript: boolean,
+    includeComments: boolean,
+    preset?: ProjectPreset
+  ): string {
+    const typeImport = isTypeScript
+      ? "import { defineConfig } from '@ldesign/launcher'\n\n"
+      : ''
+
+    const comments = includeComments ? this.generateConfigComments(preset) : ''
+    
+    const configString = JSON.stringify(config, null, 2)
+      .replace(/"([^"]+)":/g, '$1:') // 移除属性名的引号
+      .replace(/"/g, "'") // 使用单引号
+
+    return `${typeImport}${comments}export default defineConfig(${configString})\n`
+  }
+
+  /**
+   * 生成配置注释
+   */
+  private generateConfigComments(preset?: ProjectPreset): string {
+    const presetInfo = preset ? configPresets.get(preset) : null
+    
+    return `/**
+ * @ldesign/launcher 配置文件
+ * 
+${presetInfo ? ` * 项目类型: ${presetInfo.description}\n` : ''}${presetInfo ? ` * 预设插件: ${presetInfo.plugins.join(', ')}\n` : ''} * 
+ * @see https://github.com/ldesign/launcher
+ */\n\n`
+  }
+
+  /**
+   * 验证配置完整性
+   */
+  validateConfigIntegrity(config: ViteLauncherConfig): {
+    valid: boolean
+    errors: string[]
+    warnings: string[]
+  } {
+    const errors: string[] = []
+    const warnings: string[] = []
+
+    try {
+      // 验证基本结构
+      if (!config || typeof config !== 'object') {
+        errors.push('配置必须是一个对象')
+        return { valid: false, errors, warnings }
+      }
+
+      // 验证预设配置
+      if (config.launcher?.preset && !configPresets.has(config.launcher.preset)) {
+        errors.push(`未知的预设类型: ${config.launcher.preset}`)
+      }
+
+      // 验证继承配置
+      if (config.launcher?.extends) {
+        const extendsArray = Array.isArray(config.launcher.extends)
+          ? config.launcher.extends
+          : [config.launcher.extends]
+        
+        for (const extendPath of extendsArray) {
+          if (typeof extendPath !== 'string') {
+            errors.push('配置继承路径必须是字符串')
+          }
+        }
+      }
+
+      // 验证环境变量配置
+      if (config.launcher?.env) {
+        if (config.launcher.env.required && !Array.isArray(config.launcher.env.required)) {
+          errors.push('必需环境变量配置必须是字符串数组')
+        }
+        
+        if (config.launcher.env.variables && typeof config.launcher.env.variables !== 'object') {
+          errors.push('环境变量配置必须是对象')
+        }
+      }
+
+      return {
+        valid: errors.length === 0,
+        errors,
+        warnings
+      }
+    } catch (error) {
+      return {
+        valid: false,
+        errors: [`配置验证过程中发生错误: ${(error as Error).message}`],
+        warnings
+      }
+    }
+  }
+
+  /**
+   * 获取推荐的项目脚本
+   */
+  getRecommendedScripts(preset?: ProjectPreset): Record<string, string> {
+    if (preset && configPresets.has(preset)) {
+      return configPresets.getScripts(preset) || {}
+    }
+    
+    return {
+      dev: 'launcher dev',
+      build: 'launcher build',
+      preview: 'launcher preview'
+    }
+  }
+
+  /**
+   * 获取推荐的依赖
+   */
+  getRecommendedDependencies(preset?: ProjectPreset) {
+    if (preset && configPresets.has(preset)) {
+      return configPresets.getDependencies(preset)
+    }
+    
+    return {
+      dependencies: [],
+      devDependencies: ['@ldesign/launcher']
+    }
   }
 
   private formatConfigContent(config: ViteLauncherConfig): string {

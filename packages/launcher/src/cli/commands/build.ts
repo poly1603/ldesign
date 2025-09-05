@@ -284,6 +284,11 @@ export class BuildCommand implements CliCommandDefinition {
 
         // 清理资源
         await launcher.destroy()
+
+        // 构建完成后确保退出进程，避免悬挂
+        if (!context.options.watch) {
+          process.exit(0)
+        }
       }
 
     } catch (error) {
@@ -349,7 +354,7 @@ function formatFileSize(bytes: number): string {
  */
 async function getDirectorySize(dirPath: string): Promise<number> {
   try {
-    const files = await FileSystem.readdir(dirPath)
+    const files = await FileSystem.readDir(dirPath)
     let totalSize = 0
 
     for (const file of files) {
