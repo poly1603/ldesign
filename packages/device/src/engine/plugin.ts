@@ -60,7 +60,7 @@ function createGlobalDeviceInstance(config: DeviceEnginePluginOptions): DeviceDe
   } = config
 
   if (debug) {
-    console.log('[Device Plugin] Creating global device instance with config:', {
+    console.info('[Device Plugin] Creating global device instance with config:', {
       enableResize,
       enableOrientation,
       modules,
@@ -86,7 +86,7 @@ function createGlobalDeviceInstance(config: DeviceEnginePluginOptions): DeviceDe
   }
 
   if (debug) {
-    console.log('[Device Plugin] Global device instance created successfully')
+    console.info('[Device Plugin] Global device instance created successfully')
   }
 
   return detector
@@ -231,10 +231,6 @@ export function createDeviceEnginePlugin(
       } catch (error) {
         const errorMessage = `Failed to install ${name} plugin: ${error instanceof Error ? error.message : String(error)}`
 
-        if (debug) {
-          console.error('[Device Plugin] Installation error:', error)
-        }
-
         // 记录错误日志
         if (context.engine?.logger) {
           context.engine.logger.error(errorMessage, { error })
@@ -274,10 +270,6 @@ export function createDeviceEnginePlugin(
 
       } catch (error) {
         const errorMessage = `Failed to uninstall ${name} plugin: ${error instanceof Error ? error.message : String(error)}`
-
-        if (debug) {
-          console.error('[Device Plugin] Uninstallation error:', error)
-        }
 
         if (context.engine?.logger) {
           context.engine.logger.error(errorMessage, { error })

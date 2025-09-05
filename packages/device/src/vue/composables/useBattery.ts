@@ -69,8 +69,8 @@ export function useBattery() {
     batteryInfo.value = info
     batteryLevel.value = info.level
     isCharging.value = info.charging
-    batteryStatus.value = info.chargingTime > 0 ? 'charging' : 
-                         info.dischargingTime > 0 ? 'discharging' : 'unknown'
+    batteryStatus.value = info.chargingTime > 0 ? 'charging' :
+      info.dischargingTime > 0 ? 'discharging' : 'unknown'
   }
 
   /**
@@ -95,7 +95,7 @@ export function useBattery() {
         }
 
         batteryModule.on('batteryChange', batteryChangeHandler)
-        
+
         // 保存清理函数
         cleanupFunctions.push(
           () => batteryModule?.off('batteryChange', batteryChangeHandler)
@@ -104,7 +104,10 @@ export function useBattery() {
     }
     catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load battery module'
-      console.warn('Failed to load battery module:', err)
+      // 只在开发模式下输出错误日志
+      if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+        console.warn('Failed to load battery module:', err)
+      }
       throw err
     }
   }

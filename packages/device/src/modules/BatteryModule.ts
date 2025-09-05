@@ -18,6 +18,7 @@ export class BatteryModule implements DeviceModule {
   private batteryInfo: BatteryInfo
   private battery: BatteryManager | null = null
   private eventHandlers: Map<string, () => void> = new Map()
+  private customEventHandlers: Map<string, Set<(data: any) => void>> = new Map()
 
   constructor() {
     this.batteryInfo = this.getDefaultBatteryInfo()
@@ -165,12 +166,16 @@ export class BatteryModule implements DeviceModule {
     if (!this.battery)
       return
 
+    const oldInfo = { ...this.batteryInfo }
     this.batteryInfo = {
       level: this.battery.level || 1,
       charging: this.battery.charging || false,
       chargingTime: this.battery.chargingTime || Number.POSITIVE_INFINITY,
       dischargingTime: this.battery.dischargingTime || Number.POSITIVE_INFINITY,
     }
+
+    // 触发电池状态变化事件
+    this.emit('batteryChange', this.batteryInfo)
   }
 
   /**
@@ -228,5 +233,44 @@ export class BatteryModule implements DeviceModule {
       }
     })
     this.eventHandlers.clear()
+  }
+
+  /**
+   * 添加自定义事件监听器
+   */
+  on(event: string, handler: (data: any) => void): void {
+    if (!this.customEventHandlers.has(event)) {
+      this.customEventHandlers.set(event, new Set())
+    }
+    this.customEventHandlers.get(event)!.add(handler)
+  }
+
+  /**
+   * 移除自定义事件监听器
+   */
+  off(event: string, handler: (data: any) => void): void {
+    const handlers = this.customEventHandlers.get(event)
+    if (handlers) {
+      handlers.delete(handler)
+      if (handlers.size === 0) {
+        this.customEventHandlers.delete(event)
+      }
+    }
+  }
+
+  /**
+   * 触发自定义事件
+   */
+  private emit(event: string, data: any): void {
+    const handlers = this.customEventHandlers.get(event)
+    if (handlers) {
+      handlers.forEach(handler => {
+        try {
+          handler(data)
+        } catch (error) {
+          console.warn(`Error in battery event handler for ${event}:`, error)
+        }
+      })
+    }
   }
 }
