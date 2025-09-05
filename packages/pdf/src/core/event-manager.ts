@@ -8,13 +8,13 @@ import type { PdfViewerEvents } from './types'
 /**
  * 事件监听器类型
  */
-type EventListener<T = any> = (data: T) => void
+type EventListenerAny = (...args: any[]) => void
 
 /**
  * 事件管理器实现
  */
 export class EventManager {
-  private listeners = new Map<keyof PdfViewerEvents, Set<EventListener>>()
+  private listeners = new Map<keyof PdfViewerEvents, Set<EventListenerAny>>()
 
   /**
    * 添加事件监听器
@@ -26,7 +26,7 @@ export class EventManager {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set())
     }
-    this.listeners.get(event)!.add(listener as EventListener)
+    this.listeners.get(event)!.add(listener as unknown as EventListenerAny)
   }
 
   /**
@@ -38,7 +38,7 @@ export class EventManager {
   ): void {
     const eventListeners = this.listeners.get(event)
     if (eventListeners) {
-      eventListeners.delete(listener as EventListener)
+      eventListeners.delete(listener as unknown as EventListenerAny)
       if (eventListeners.size === 0) {
         this.listeners.delete(event)
       }
@@ -52,11 +52,11 @@ export class EventManager {
     event: K,
     listener: PdfViewerEvents[K]
   ): void {
-    const onceListener = (data: any) => {
-      this.off(event, onceListener as PdfViewerEvents[K])
-      ;(listener as EventListener)(data)
+    const onceListener = (...args: any[]) => {
+      this.off(event, onceListener as unknown as PdfViewerEvents[K])
+      ;(listener as unknown as EventListenerAny)(...args)
     }
-    this.on(event, onceListener as PdfViewerEvents[K])
+    this.on(event, onceListener as unknown as PdfViewerEvents[K])
   }
 
   /**
@@ -64,13 +64,13 @@ export class EventManager {
    */
   emit<K extends keyof PdfViewerEvents>(
     event: K,
-    data: Parameters<PdfViewerEvents[K]>[0]
+    ...args: Parameters<PdfViewerEvents[K]>
   ): void {
     const eventListeners = this.listeners.get(event)
     if (eventListeners) {
       eventListeners.forEach((listener) => {
         try {
-          listener(data)
+          (listener as EventListenerAny)(...args)
         }
         catch (error) {
           console.error(`Error in event listener for ${String(event)}:`, error)

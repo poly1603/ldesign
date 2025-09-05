@@ -293,6 +293,11 @@ export interface IPdfViewer {
   getDocumentInfo(): PdfDocumentInfo | null
   /** 销毁预览器 */
   destroy(): void
+
+  /** 事件订阅 */
+  on<K extends keyof PdfViewerEvents>(event: K, listener: PdfViewerEvents[K]): void
+  off<K extends keyof PdfViewerEvents>(event: K, listener: PdfViewerEvents[K]): void
+  once<K extends keyof PdfViewerEvents>(event: K, listener: PdfViewerEvents[K]): void
 }
 
 /**

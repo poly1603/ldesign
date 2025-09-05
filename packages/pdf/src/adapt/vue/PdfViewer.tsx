@@ -95,8 +95,8 @@ export default defineComponent({
     'renderComplete',
   ],
   setup(props, { emit, expose }) {
-    const containerRef = ref<HTMLElement>()
-    const searchInputRef = ref<HTMLInputElement>()
+    const containerRef = ref<HTMLElement | null>(null)
+    const searchInputRef = ref<HTMLInputElement | null>(null)
     const showSidebar = ref(props.enableSidebar)
     const showSearch = ref(false)
 

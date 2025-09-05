@@ -3,9 +3,13 @@
   "compilerOptions": {
     "baseUrl": ".",
     "rootDir": "src",
+    "outDir": "dist",
+    "declarationDir": "dist",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "types": ["vue/jsx"],
+    "jsxImportSource": "vue"
   },
   "include": ["src/**/*"],
   "exclude": [

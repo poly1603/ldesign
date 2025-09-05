@@ -5,6 +5,8 @@
  * 提供PDF文档加载、页面渲染、缩放、旋转、搜索等功能
  */
 
+import { PdfViewer } from './core/pdf-viewer'
+
 // 核心类型导出
 export type {
   PdfInput,
@@ -64,10 +66,3 @@ export function createPdfViewer(config: import('./core/types').PdfViewerConfig):
 
 // 版本信息
 export const version = '0.1.0'
-
-// 默认导出
-export default {
-  PdfViewer,
-  createPdfViewer,
-  version,
-}

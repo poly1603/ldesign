@@ -32,14 +32,14 @@ export class PdfDocumentManager implements IPdfDocumentManager {
           try {
             // 优先使用 classic worker，确保与 pdfjs-dist@3 兼容
             const worker = new Worker('/pdf.worker.min.js')
-            // @ts-expect-error: workerPort 在运行时可用
-            pdfjsLib.GlobalWorkerOptions.workerPort = worker
+            const gwo = (pdfjsLib as any).GlobalWorkerOptions
+            if (gwo) gwo.workerPort = worker
           } catch (e) {
             // 兼容某些环境需要 type: 'module'
             try {
-              const worker = new Worker('/pdf.worker.min.js', { type: 'module' as unknown as WorkerType })
-              // @ts-expect-error: workerPort 在运行时可用
-              pdfjsLib.GlobalWorkerOptions.workerPort = worker
+              const worker = new Worker('/pdf.worker.min.js', { type: 'module' as any })
+              const gwo = (pdfjsLib as any).GlobalWorkerOptions
+              if (gwo) gwo.workerPort = worker
             } catch (e2) {
               console.warn('使用内置Worker失败，降级为仅设置workerSrc。错误：', e2)
             }
@@ -77,7 +77,7 @@ export class PdfDocumentManager implements IPdfDocumentManager {
 
       console.log('PDF文档加载成功:', {
         numPages: this.document.numPages,
-        fingerprint: this.document.fingerprint
+        fingerprint: (this.document as any).fingerprint ?? (this.document as any).fingerprints
       })
 
       // 清空页面缓存
@@ -109,7 +109,10 @@ export class PdfDocumentManager implements IPdfDocumentManager {
     }
     else if (input instanceof ArrayBuffer || input instanceof Uint8Array) {
       // 直接返回二进制数据
-      console.log('使用二进制数据加载PDF:', input.byteLength || input.length, 'bytes')
+      const size = input instanceof Uint8Array
+        ? input.byteLength
+        : (input as ArrayBuffer).byteLength
+      console.log('使用二进制数据加载PDF:', size, 'bytes')
       return input
     }
     else {
@@ -174,19 +177,19 @@ export class PdfDocumentManager implements IPdfDocumentManager {
 
     try {
       const metadata = await this.document.getMetadata()
-      const info = metadata.info
+      const info: any = metadata.info as any
 
       return {
-        title: info.Title || undefined,
-        author: info.Author || undefined,
-        subject: info.Subject || undefined,
-        keywords: info.Keywords || undefined,
-        creator: info.Creator || undefined,
-        producer: info.Producer || undefined,
-        creationDate: info.CreationDate ? new Date(info.CreationDate) : undefined,
-        modificationDate: info.ModDate ? new Date(info.ModDate) : undefined,
+        title: info?.Title || undefined,
+        author: info?.Author || undefined,
+        subject: info?.Subject || undefined,
+        keywords: info?.Keywords || undefined,
+        creator: info?.Creator || undefined,
+        producer: info?.Producer || undefined,
+        creationDate: info?.CreationDate ? new Date(info.CreationDate) : undefined,
+        modificationDate: info?.ModDate ? new Date(info.ModDate) : undefined,
         numPages: this.document.numPages,
-        pdfVersion: info.PDFFormatVersion || undefined,
+        pdfVersion: info?.PDFFormatVersion || undefined,
       }
     }
     catch (error) {

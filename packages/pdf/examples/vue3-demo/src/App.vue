@@ -307,8 +307,8 @@ console.log(`找到 ${results.length} 个匹配项`)</code></pre>
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { PdfViewer, usePdfViewer, usePdfSearch } from '../../../esm/adapt/vue/index.js'
-import '../../../esm/index.css'
+import { PdfViewer, usePdfViewer, usePdfSearch } from '@ldesign/pdf/adapt/vue'
+import '@ldesign/pdf/esm/adapt/vue/index.css'
 import type { PdfDocumentInfo, PdfPageInfo, ZoomMode } from '@ldesign/pdf'
 
 // 标签页状态

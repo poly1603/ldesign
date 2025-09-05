@@ -3,6 +3,8 @@ import { defineConfig } from 'rollup'
 import typescript from '@rollup/plugin-typescript'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
+import { babel } from '@rollup/plugin-babel'
+import postcss from 'rollup-plugin-postcss'
 import dts from 'rollup-plugin-dts'
 
 const coreInput = 'src/index.ts'
@@ -20,7 +22,7 @@ export default defineConfig([
       sourcemap: true,
     },
     plugins: [
-      nodeResolve(),
+      nodeResolve({ browser: true, preferBuiltins: false }),
       commonjs(),
       typescript({
         tsconfig: './tsconfig.json',
@@ -39,12 +41,27 @@ export default defineConfig([
       sourcemap: true,
     },
     plugins: [
-      nodeResolve(),
+      nodeResolve({ browser: true, preferBuiltins: false }),
       commonjs(),
+      json(),
+      postcss({
+        extensions: ['.css', '.less'],
+        extract: 'esm/adapt/vue/index.css',
+        minimize: true,
+        use: ['less'],
+      }),
       typescript({
         tsconfig: './tsconfig.json',
         outDir: 'esm',
         declaration: false,
+      }),
+      babel({
+        babelHelpers: 'bundled',
+        extensions: ['.ts', '.tsx'],
+        presets: [
+          ['@babel/preset-typescript', { isTSX: true, allExtensions: true }],
+        ],
+        plugins: ['@vue/babel-plugin-jsx'],
       }),
     ],
   },
@@ -56,10 +73,12 @@ export default defineConfig([
       file: 'cjs/index.js',
       format: 'cjs',
       sourcemap: true,
+      exports: 'named',
     },
     plugins: [
-      nodeResolve(),
+      nodeResolve({ browser: true, preferBuiltins: false }),
       commonjs(),
+      json(),
       typescript({
         tsconfig: './tsconfig.json',
         outDir: 'cjs',
@@ -75,36 +94,30 @@ export default defineConfig([
       file: 'cjs/adapt/vue/index.js',
       format: 'cjs',
       sourcemap: true,
+      exports: 'named',
     },
     plugins: [
-      nodeResolve(),
+      nodeResolve({ browser: true, preferBuiltins: false }),
       commonjs(),
+      json(),
+      postcss({
+        extensions: ['.css', '.less'],
+        extract: 'cjs/adapt/vue/index.css',
+        minimize: true,
+        use: ['less'],
+      }),
       typescript({
         tsconfig: './tsconfig.json',
         outDir: 'cjs',
         declaration: false,
       }),
-    ],
-  },
-  // UMD build
-  {
-    input: coreInput,
-    external: ['vue'],
-    output: {
-      file: 'dist/index.umd.js',
-      format: 'umd',
-      name: 'LDesignPdf',
-      sourcemap: true,
-      globals: {
-        vue: 'Vue',
-      },
-    },
-    plugins: [
-      nodeResolve(),
-      commonjs(),
-      typescript({
-        tsconfig: './tsconfig.json',
-        declaration: false,
+      babel({
+        babelHelpers: 'bundled',
+        extensions: ['.ts', '.tsx'],
+        presets: [
+          ['@babel/preset-typescript', { isTSX: true, allExtensions: true }],
+        ],
+        plugins: ['@vue/babel-plugin-jsx'],
       }),
     ],
   },

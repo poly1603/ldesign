@@ -3,33 +3,38 @@
  * 使用 @ldesign/builder 进行零配置打包
  */
 
-import { SimpleBuilder } from '@ldesign/builder'
-import { sep } from 'path'
+import { createBuilder } from '@ldesign/builder'
+import { sep, resolve } from 'path'
 
 async function build() {
   const isDev = process.argv.includes('--dev')
-  
-  const builder = new SimpleBuilder({
-    root: process.cwd(),
-    src: 'src',
-    outDir: 'dist',
-    formats: ["esm","cjs"],
-    sourcemap: true,
-    minify: !isDev,
-    clean: true,
+
+  // 将最简构建选项映射为 @ldesign/builder 的配置
+  const config = {
+    input: 'src/index.ts',
+    output: {
+      dir: resolve(process.cwd(), 'dist'),
+      format: ['esm', 'cjs'],
+      sourcemap: true,
+      exports: 'named',
+      globals: {
+        vue: 'Vue',
+        react: 'React',
+        'react-dom': 'ReactDOM'
+      }
+    },
     external: [
       'vue',
-      'react', 
+      'react',
       'react-dom',
       '@ldesign/shared',
       '@ldesign/utils'
     ],
-    globals: {
-      'vue': 'Vue',
-      'react': 'React',
-      'react-dom': 'ReactDOM'
-    }
-  })
+    minify: !isDev,
+    clean: true
+  }
+
+  const builder = createBuilder(config, { autoDetect: true })
 
   try {
     const result = await builder.build()

@@ -40,7 +40,6 @@ export class PdfViewer implements IPdfViewer {
 
     // 设置默认配置
     this.config = {
-      container: config.container,
       initialScale: 1,
       initialPage: 1,
       zoomMode: 'fit-width',
@@ -55,6 +54,7 @@ export class PdfViewer implements IPdfViewer {
       customStyles: {},
       locale: 'zh-CN',
       ...config,
+      container: config.container,
     }
 
     // 初始化状态
@@ -405,6 +405,16 @@ export class PdfViewer implements IPdfViewer {
     listener: import('./types').PdfViewerEvents[K]
   ): void {
     this.eventManager.off(event, listener)
+  }
+
+  /**
+   * 添加一次性事件监听器
+   */
+  once<K extends keyof import('./types').PdfViewerEvents>(
+    event: K,
+    listener: import('./types').PdfViewerEvents[K]
+  ): void {
+    this.eventManager.once(event, listener as any)
   }
 
   /**

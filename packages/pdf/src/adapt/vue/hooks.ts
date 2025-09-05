@@ -123,39 +123,39 @@ export function usePdfViewer(
     const pdfViewer = markRaw(new PdfViewer(config))
 
     // 绑定事件
-    pdfViewer.on('documentLoaded', (info) => {
+    pdfViewer.on('documentLoaded', (info: PdfDocumentInfo) => {
       documentInfo.value = info
       state.value = pdfViewer.getState()
       isLoading.value = false
       error.value = null
     })
 
-    pdfViewer.on('pageChanged', (pageNumber, pageInfo) => {
+    pdfViewer.on('pageChanged', (pageNumber: number, pageInfo: PdfPageInfo) => {
       state.value = pdfViewer.getState()
     })
 
-    pdfViewer.on('zoomChanged', (scale, zoomMode) => {
+    pdfViewer.on('zoomChanged', (scale: number, zoomMode: ZoomMode) => {
       state.value = pdfViewer.getState()
     })
 
-    pdfViewer.on('rotationChanged', (rotation) => {
+    pdfViewer.on('rotationChanged', (rotation: RotationAngle) => {
       state.value = pdfViewer.getState()
     })
 
-    pdfViewer.on('searchResult', (results) => {
+    pdfViewer.on('searchResult', (results: SearchResult[]) => {
       state.value = pdfViewer.getState()
     })
 
-    pdfViewer.on('error', (err) => {
+    pdfViewer.on('error', (err: Error) => {
       error.value = err
       isLoading.value = false
     })
 
-    pdfViewer.on('loadProgress', (progress) => {
+    pdfViewer.on('loadProgress', (progress: number) => {
       // 可以添加加载进度处理
     })
 
-    pdfViewer.on('renderComplete', (pageNumber) => {
+    pdfViewer.on('renderComplete', (pageNumber: number) => {
       state.value = pdfViewer.getState()
     })
 

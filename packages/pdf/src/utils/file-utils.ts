@@ -79,7 +79,7 @@ export function arrayBufferToUint8Array(buffer: ArrayBuffer): Uint8Array {
 /**
  * 检查ArrayBuffer是否为PDF格式
  */
-export function isPdfArrayBuffer(buffer: ArrayBuffer): boolean {
+export function isPdfArrayBuffer(buffer: ArrayBufferLike): boolean {
   const uint8Array = new Uint8Array(buffer)
   
   // PDF文件以"%PDF-"开头
@@ -204,7 +204,10 @@ export async function validateAndNormalizePdfInput(input: PdfInput): Promise<{
  * 创建用于下载的Blob URL
  */
 export function createDownloadUrl(data: ArrayBuffer | Uint8Array, filename: string): string {
-  const blob = new Blob([data], { type: 'application/pdf' })
+  const buffer: ArrayBuffer = data instanceof Uint8Array
+    ? data.slice().buffer
+    : data
+  const blob = new Blob([buffer], { type: 'application/pdf' })
   const url = URL.createObjectURL(blob)
   
   // 创建下载链接
