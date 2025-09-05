@@ -1,3 +1,8 @@
+---
+title: 入门指南
+description: 通过 API 和 CLI 创建项目、启动开发服务器、构建与预览
+---
+
 # 快速开始
 
 ## 安装
@@ -47,7 +52,7 @@ await createProject('./my-vanilla-app', 'vanilla')
 // 启动开发服务器
 const server = await startDev('./my-vue-app', { 
   port: 3000,
-  host: 'localhost',
+  host: '127.0.0.1',
   open: true 
 })
 
@@ -141,7 +146,7 @@ async function advancedUsage() {
     launcher.configure({
       server: {
         port: 3000,
-        host: 'localhost'
+        host: '127.0.0.1'
       },
       build: {
         outDir: 'dist',

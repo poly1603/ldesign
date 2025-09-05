@@ -1,3 +1,8 @@
+---
+title: Vue 项目示例
+description: Vue 2/3 快速创建、开发与构建实践
+---
+
 # Vue 项目示例
 
 ## Vue 3 项目
@@ -99,7 +104,7 @@ async function manageVueProject() {
     launcher.configure({
       server: {
         port: 3000,
-        host: 'localhost'
+        host: '127.0.0.1'
       },
       build: {
         outDir: 'dist',

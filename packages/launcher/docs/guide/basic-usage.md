@@ -1,3 +1,8 @@
+---
+title: 基础用法
+description: 创建项目、启动/停止开发服务器、构建与预览的基础工作流
+---
+
 # 基础用法
 
 本章介绍 Vite Launcher 的基础用法，包括项目创建、开发服务器管理、构建等核心功能。
@@ -29,7 +34,7 @@ await launcher.create('./my-app', 'vue3', { force: true })
 // 启动开发服务器
 const server = await launcher.dev('./my-app', {
   port: 3000,
-  host: 'localhost',
+  host: '127.0.0.1',
   open: true
 })
 

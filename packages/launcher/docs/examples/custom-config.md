@@ -1,3 +1,8 @@
+---
+title: 自定义配置示例
+description: 开发/生产环境差异配置、插件/环境变量与配置合并范例
+---
+
 # 自定义配置示例
 
 ## 基础配置
@@ -17,7 +22,7 @@ async function developmentConfig() {
   launcher.configure({
     server: {
       port: 3000,
-      host: 'localhost',
+      host: '127.0.0.1',
       open: true,
       cors: true
     },
@@ -156,7 +161,7 @@ async function validateConfig() {
     const config = {
       server: {
         port: 3000,
-        host: 'localhost'
+        host: '127.0.0.1'
       },
       build: {
         outDir: 'dist'
@@ -188,7 +193,7 @@ async function mergeConfig() {
   const baseConfig = {
     server: {
       port: 3000,
-      host: 'localhost'
+      host: '127.0.0.1'
     }
   }
   

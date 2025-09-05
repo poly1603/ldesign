@@ -1,4 +1,11 @@
+---
+title: 配置选项
+description: 配置概览与示例，完整可用字段以“配置文件参考”为准
+---
+
 # 配置选项
+
+> 提示：本章为配置概览与示例，完整可用字段和类型以「配置文件参考」为准；请参见 [配置文件参考](./config-reference.md)。
 
 本章详细介绍 LDesign Launcher 的所有配置选项，包括最新的 TypeScript 配置文件支持和全面的功能配置。
 
@@ -6,9 +13,9 @@
 
 LDesign Launcher 支持多种配置文件格式：
 
-- `ldesign.config.ts` (推荐) - TypeScript 配置文件，提供完整的类型支持
-- `ldesign.config.mjs` - ES 模块配置文件
-- `ldesign.config.js` - CommonJS 配置文件
+- `launcher.config.ts` (推荐) - TypeScript 配置文件，提供完整的类型支持
+- `launcher.config.mjs` - ES 模块配置文件
+- `launcher.config.js` - CommonJS 配置文件
 
 ### TypeScript 配置文件示例
 
@@ -21,7 +28,7 @@ export default defineConfig({
 
   server: {
     port: 3000,
-    host: 'localhost',
+    host: '127.0.0.1',
     open: true,
   },
 
@@ -55,7 +62,7 @@ interface ProjectConfig {
 interface ServerConfig {
   /** 端口号，默认 3000 */
   port?: number
-  /** 主机地址，默认 'localhost' */
+/** 主机地址，默认 '127.0.0.1'（若需对外访问使用 '0.0.0.0'） */
   host?: string
   /** 是否自动打开浏览器 */
   open?: boolean | string
@@ -557,7 +564,7 @@ export default defineConfig({
 
   server: {
     port: 3000,
-    host: 'localhost',
+host: '127.0.0.1'
     open: true,
   },
 
@@ -622,11 +629,11 @@ import { defineConfig } from '@ldesign/launcher'
 
 export default defineConfig({
   projectName: 'React Example',
-  framework: 'react',
+framework: 'react',
 
   server: {
     port: 3000,
-    host: 'localhost',
+    host: '127.0.0.1',
     open: true,
   },
 
@@ -693,11 +700,11 @@ import { defineConfig } from '@ldesign/launcher'
 
 export default defineConfig({
   projectName: 'Lit Example',
-  framework: 'lit',
+framework: 'lit',
 
   server: {
     port: 3000,
-    host: 'localhost',
+    host: '127.0.0.1',
     open: true,
   },
 
@@ -752,11 +759,11 @@ import { defineConfig } from '@ldesign/launcher'
 
 export default defineConfig({
   projectName: 'Vanilla Example',
-  framework: 'vanilla',
+framework: 'vanilla',
 
   server: {
     port: 3000,
-    host: 'localhost',
+    host: '127.0.0.1',
     open: true,
   },
 
@@ -846,7 +853,7 @@ LDesign Launcher 支持通过环境变量进行配置，这对于 CI/CD 和不�
 LDESIGN_LOG_LEVEL=info
 LDESIGN_MODE=development
 LDESIGN_PORT=3000
-LDESIGN_HOST=localhost
+LDESIGN_HOST=127.0.0.1
 LDESIGN_OPEN=true
 LDESIGN_HTTPS=false
 ```
@@ -878,17 +885,17 @@ LDesign Launcher 按以下优先级加载配置：
 
 1. **命令行参数** - 最高优先级
 2. **环境变量** - 覆盖配置文件
-3. **配置文件** - `ldesign.config.ts/js/mjs`
+3. **配置文件** - `launcher.config.ts/js/mjs`
 4. **默认值** - 最低优先级
 
 ### 示例
 
 ```bash
 # 命令行参数会覆盖配置文件中的设置
-ldesign dev --port 4000 --host 0.0.0.0
+launcher dev --port 4000 --host 0.0.0.0
 
 # 环境变量会覆盖配置文件，但被命令行参数覆盖
-LDESIGN_PORT=3000 ldesign dev --host 0.0.0.0
+LDESIGN_PORT=3000 launcher dev --host 0.0.0.0
 ```
 
 ## 配置验证
@@ -918,10 +925,10 @@ export default config
 为不同环境创建不同的配置文件：
 
 ```
-├── ldesign.config.ts          # 基础配置
-├── ldesign.config.dev.ts      # 开发环境配置
-├── ldesign.config.prod.ts     # 生产环境配置
-└── ldesign.config.test.ts     # 测试环境配置
+├── launcher.config.ts          # 基础配置
+├── launcher.config.dev.ts      # 开发环境配置
+├── launcher.config.prod.ts     # 生产环境配置
+└── launcher.config.test.ts     # 测试环境配置
 ```
 
 ### 2. 配置组合
@@ -930,7 +937,7 @@ export default config
 
 ```typescript
 import { defineConfig } from '@ldesign/launcher'
-import { baseConfig } from './ldesign.config.base'
+import { baseConfig } from './launcher.config.base'
 
 export default defineConfig({
   ...baseConfig,

@@ -1,3 +1,8 @@
+---
+title: 高级用法
+description: 深度配置、条件插件、性能优化、并行/批量构建与错误重试
+---
+
 # 高级用法
 
 本章介绍 Vite Launcher 的高级用法，包括自定义配置、插件管理、性能优化等高级功能。
@@ -19,7 +24,7 @@ const launcher = new ViteLauncher({
 launcher.configure({
   server: {
     port: 3000,
-    host: 'localhost',
+    host: '127.0.0.1',
     https: false,
     cors: true,
     open: true

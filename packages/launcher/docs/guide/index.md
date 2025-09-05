@@ -1,3 +1,8 @@
+---
+title: 介绍
+description: 了解 @ldesign/launcher 的定位、特性与典型用法概览
+---
+
 # 介绍
 
 @ldesign/launcher 是一个基于 Vite JavaScript API 的前端项目启动器，提供统一的开发服务器、构建工具和预览服务。
@@ -38,10 +43,16 @@ await launcher.preview()
 
 支持灵活的配置管理：
 
-- **多种配置格式** - 支持 JS、TS、JSON 等格式
-- **配置验证** - 自动验证配置的正确性
-- **配置合并** - 智能合并多个配置源
-- **热重载** - 配置变更时自动重启
+- 多种配置格式：支持 JS、TS、JSON 等
+- 配置验证：自动验证配置的正确性
+- 配置合并：智能合并多个配置源
+- 热重载：配置变更时自动重启
+
+```ts
+// launcher.config.ts
+import { defineConfig } from '@ldesign/launcher'
+
+export default defineConfig({
   server: { port: 3000 },
   build: { outDir: 'dist' }
 })
@@ -83,7 +94,7 @@ await createProject('./react-app', 'react', { template: 'typescript' })
 ```typescript
 const server = await startDev('./my-app', {
   port: 3000,
-  host: 'localhost',
+  host: '127.0.0.1',
   open: true
 })
 
@@ -137,4 +148,7 @@ class MyTool {
 - [快速开始](./getting-started.md) - 了解如何安装和使用
 - [基础用法](./basic-usage.md) - 学习基本的使用方法
 - [高级用法](./advanced-usage.md) - 探索高级功能和最佳实践
+- [SSR 指南](./ssr.md) - 使用 SSR 提升首屏与 SEO
+- [库模式](./library-mode.md) - 构建可复用的组件库或工具库
+- [性能优化](./performance.md) - 冷启动/HMR/拆包与体积分析
 - [API 参考](../api/vite-launcher.md) - 查看完整的 API 文档

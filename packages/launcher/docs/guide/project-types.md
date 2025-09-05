@@ -1,3 +1,8 @@
+---
+title: 项目类型
+description: 支持的项目类型概览与典型项目结构、快速创建示例
+---
+
 # 项目类型
 
 Vite Launcher 支持多种前端框架和项目类型，本章详细介绍每种类型的特性和配置。
@@ -51,7 +56,7 @@ my-vue3-app/
 ├── public/
 ├── index.html
 ├── package.json
-└── vite.config.js
+└── launcher.config.ts
 ```
 
 ## Vue 2 项目
@@ -80,7 +85,7 @@ my-vue2-app/
 ├── public/
 ├── index.html
 ├── package.json
-└── vite.config.js
+└── launcher.config.ts
 ```
 
 ## React 项目
@@ -115,7 +120,7 @@ my-react-app/
 ├── public/
 ├── index.html
 ├── package.json
-└── vite.config.js
+└── launcher.config.ts
 ```
 
 ## Next.js 项目
@@ -174,7 +179,7 @@ my-vanilla-app/
 ├── public/
 ├── index.html
 ├── package.json
-└── vite.config.js
+└── launcher.config.ts
 ```
 
 ## TypeScript 项目
@@ -204,7 +209,7 @@ my-ts-app/
 ├── index.html
 ├── package.json
 ├── tsconfig.json
-└── vite.config.ts
+└── launcher.config.ts
 ```
 
 ## Lit 项目
@@ -232,7 +237,7 @@ my-lit-app/
 ├── public/
 ├── index.html
 ├── package.json
-└── vite.config.js
+└── launcher.config.ts
 ```
 
 ## Svelte 项目
@@ -261,7 +266,7 @@ my-svelte-app/
 ├── public/
 ├── index.html
 ├── package.json
-└── vite.config.js
+└── launcher.config.ts
 ```
 
 ## Angular 项目
@@ -291,7 +296,7 @@ my-angular-app/
 ├── index.html
 ├── package.json
 ├── angular.json
-└── vite.config.js
+└── launcher.config.ts
 ```
 
 ## 项目类型检测

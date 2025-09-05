@@ -1,3 +1,8 @@
+---
+title: React 项目示例
+description: React/Next.js 快速创建、开发与构建实践
+---
+
 # React 项目示例
 
 ## React 项目
@@ -99,7 +104,7 @@ async function manageReactProject() {
     launcher.configure({
       server: {
         port: 3000,
-        host: 'localhost'
+        host: '127.0.0.1'
       },
       build: {
         outDir: 'dist',

@@ -1,3 +1,8 @@
+---
+title: 快速开始
+description: 5 分钟上手 @ldesign/launcher，从安装到运行的最短路径
+---
+
 # 快速开始
 
 在 5 分钟内快速上手 @ldesign/launcher，开始您的前端开发之旅！
@@ -68,7 +73,7 @@ launcher dev
 ```
 ℹ️  检测到 Vue 3 项目
 ℹ️  智能插件加载完成 {"count":1}
-ℹ️  开发服务器启动成功 {"url":"http://localhost:3000/","duration":207}
+ℹ️  开发服务器启动成功 {"url":"http://127.0.0.1:3000/","duration":207}
 ```
 
 ## 📝 创建配置文件

@@ -1,3 +1,8 @@
+---
+title: 配置文件参考
+description: @ldesign/launcher 的配置项详解、示例与速查表（与 Vite 兼容）
+---
+
 # 配置文件参考
 
 @ldesign/launcher 提供了灵活而强大的配置系统，支持 TypeScript/JavaScript 配置文件、预设继承、环境变量等高级特性。
@@ -616,7 +621,7 @@ interface PreviewOptions {
 ```typescript
 export default defineConfig({
   preview: {
-    host: 'localhost',
+    host: '127.0.0.1',
     port: 4173,
     open: true,
     https: false,
@@ -1090,7 +1095,7 @@ export default defineConfig(async ({ mode }) => {
 | `launcher.extends` | `string \| string[]` | `undefined` | 配置继承 |
 | `launcher.env` | `EnvironmentConfig` | `{}` | 环境变量配置 |
 | `server.port` | `number` | `3000` | 开发服务器端口 |
-| `server.host` | `string` | `localhost` | 开发服务器主机 |
+| `server.host` | `string` | `127.0.0.1` | 开发服务器主机 |
 | `build.outDir` | `string` | `dist` | 构建输出目录 |
 | `build.sourcemap` | `boolean` | `false` | 生成源码映射 |
 

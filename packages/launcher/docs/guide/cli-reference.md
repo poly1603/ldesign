@@ -1,3 +1,8 @@
+---
+title: 命令行参考
+description: launcher CLI 的命令、选项、环境变量、故障排除与最佳实践
+---
+
 # 命令行参考
 
 @ldesign/launcher 提供了强大而直观的命令行接口，支持开发、构建、预览等完整的前端开发流程。
@@ -6,12 +11,12 @@
 
 | 命令 | 描述 | 快捷键 |
 |------|------|--------|
-| `dev` | 启动开发服务器 | `d` |
-| `build` | 构建生产版本 | `b` |
-| `preview` | 预览构建结果 | `p` |
-| `config` | 配置管理 | `c` |
-| `help` | 显示帮助信息 | `h` |
-| `version` | 显示版本信息 | `v` |
+| dev | 启动开发服务器 | d |
+| build | 构建生产版本 | b |
+| preview | 预览构建结果 | p |
+| config | 配置管理 | c |
+| help | 显示帮助信息 | h |
+| version | 显示版本信息 | v |
 
 ## 🚀 开发服务器 (`dev`)
 
@@ -27,14 +32,14 @@ launcher dev [options]
 
 | 参数 | 短参数 | 类型 | 默认值 | 描述 |
 |------|--------|------|--------|------|
-| `--port` | `-p` | `number` | `3000` | 指定服务器端口 |
-| `--host` | `-H` | `string` | `localhost` | 指定主机地址 |
-| `--open` | `-o` | `boolean \| string` | `false` | 自动打开浏览器 |
-| `--https` | | `boolean` | `false` | 启用 HTTPS |
-| `--config` | `-c` | `string` | | 指定配置文件路径 |
-| `--mode` | `-m` | `string` | `development` | 设置运行模式 |
-| `--debug` | `-d` | `boolean` | `false` | 启用调试模式 |
-| `--silent` | `-s` | `boolean` | `false` | 静默模式 |
+| --port | -p | number | 3000 | 指定服务器端口 |
+| --host | -H | string | 127.0.0.1 | 指定主机地址 |
+| --open | -o | boolean | false | 自动打开浏览器 |
+| --https |  | boolean | false | 启用 HTTPS |
+| --config | -c | string |  | 指定配置文件路径 |
+| --mode | -m | string | development | 设置运行模式 |
+| --debug | -d | boolean | false | 启用调试模式 |
+| --silent | -s | boolean | false | 静默模式 |
 
 ### 使用示例
 
@@ -104,16 +109,16 @@ launcher build [options]
 
 | 参数 | 短参数 | 类型 | 默认值 | 描述 |
 |------|--------|------|--------|------|
-| `--outDir` | `-o` | `string` | `dist` | 指定输出目录 |
-| `--mode` | `-m` | `string` | `production` | 设置构建模式 |
-| `--target` | `-t` | `string` | `modules` | 构建目标 |
-| `--sourcemap` | | `boolean` | `false` | 生成 source map |
-| `--minify` | | `boolean \| string` | `true` | 代码压缩 |
-| `--watch` | `-w` | `boolean` | `false` | 监听模式 |
-| `--emptyOutDir` | | `boolean` | `true` | 清空输出目录 |
-| `--config` | `-c` | `string` | | 指定配置文件路径 |
-| `--debug` | `-d` | `boolean` | `false` | 启用调试模式 |
-| `--silent` | `-s` | `boolean` | `false` | 静默模式 |
+| --outDir | -o | string | dist | 指定输出目录 |
+| --mode | -m | string | production | 设置构建模式 |
+| --target | -t | string | modules | 构建目标 |
+| --sourcemap |  | boolean | false | 生成 source map |
+| --minify |  | boolean | true | 代码压缩 |
+| --watch | -w | boolean | false | 监听模式 |
+| --emptyOutDir |  | boolean | true | 清空输出目录 |
+| --config | -c | string |  | 指定配置文件路径 |
+| --debug | -d | boolean | false | 启用调试模式 |
+| --silent | -s | boolean | false | 静默模式 |
 
 ### 使用示例
 
@@ -187,14 +192,14 @@ launcher preview [options]
 
 | 参数 | 短参数 | 类型 | 默认值 | 描述 |
 |------|--------|------|--------|------|
-| `--port` | `-p` | `number` | `4173` | 指定服务器端口 |
-| `--host` | `-H` | `string` | `localhost` | 指定主机地址 |
-| `--open` | `-o` | `boolean \| string` | `false` | 自动打开浏览器 |
-| `--https` | | `boolean` | `false` | 启用 HTTPS |
-| `--outDir` | | `string` | `dist` | 指定预览目录 |
-| `--config` | `-c` | `string` | | 指定配置文件路径 |
-| `--debug` | `-d` | `boolean` | `false` | 启用调试模式 |
-| `--silent` | `-s` | `boolean` | `false` | 静默模式 |
+| --port | -p | number | 4173 | 指定服务器端口 |
+| --host | -H | string | 127.0.0.1 | 指定主机地址 |
+| --open | -o | boolean | false | 自动打开浏览器 |
+| --https |  | boolean | false | 启用 HTTPS |
+| --outDir |  | string | dist | 指定预览目录 |
+| --config | -c | string |  | 指定配置文件路径 |
+| --debug | -d | boolean | false | 启用调试模式 |
+| --silent | -s | boolean | false | 静默模式 |
 
 ### 使用示例
 
