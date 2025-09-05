@@ -181,9 +181,9 @@ function mergeOptions(options: I18nEnginePluginOptions): I18nEnginePluginOptions
       ...userOptions,
       // 深度合并缓存配置
       cache: {
-        ...presetConfig.cache,
-        ...userOptions.cache
-      },
+        ...(presetConfig.cache as any),
+        ...(userOptions.cache as any)
+      } as Required<I18nEnginePluginOptions['cache']>,
       // 深度合并错误处理配置
       errorHandling: {
         ...presetConfig.errorHandling,
@@ -316,17 +316,17 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
                 onLanguageChanged(newLocale)
               }
             },
-            onLoadError: (error) => {
-              engine.logger.error('I18n load error:', error)
+            onLoadError: (_locale, err) => {
+              engine.logger.error('I18n load error:', err)
 
               // 触发引擎事件
               if (engine.events) {
-                engine.events.emit('i18n:loadError', error)
+                engine.events.emit('i18n:loadError', err)
               }
 
               // 调用用户回调
               if (onLoadError) {
-                onLoadError(error)
+                onLoadError(err as Error)
               }
             }
           })
@@ -366,7 +366,13 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
             exists: pluginState.i18n.exists.bind(pluginState.i18n),
             changeLanguage: pluginState.i18n.changeLanguage.bind(pluginState.i18n),
             getCurrentLanguage: pluginState.i18n.getCurrentLanguage.bind(pluginState.i18n),
-            getAvailableLanguages: pluginState.i18n.getAvailableLanguages.bind(pluginState.i18n),
+            getAvailableLanguages: () => {
+              // 返回语言代码数组，而不是 LanguageInfo 对象数组
+              const languages = pluginState.i18n.getAvailableLanguages()
+              return Array.isArray(languages) ? languages.map(lang =>
+                typeof lang === 'string' ? lang : lang.code
+              ) : []
+            },
             setLocaleMessage: pluginState.i18n.setLocaleMessage?.bind(pluginState.i18n),
             getLocaleMessage: pluginState.i18n.getLocaleMessage?.bind(pluginState.i18n),
             getI18n: () => pluginState.i18n // 返回原始 I18n 实例
@@ -377,7 +383,8 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
           // 注册 I18n 状态到 engine 状态管理
           if (engine.state) {
             engine.state.set('i18n:currentLocale', pluginState.i18n.getCurrentLanguage())
-            engine.state.set('i18n:availableLocales', pluginState.i18n.getAvailableLanguages())
+            // 使用适配器的方法获取语言代码数组
+            engine.state.set('i18n:availableLocales', i18nAdapter.getAvailableLanguages())
             engine.state.set('i18n:fallbackLocale', fallbackLocale)
           }
 

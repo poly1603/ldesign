@@ -201,6 +201,11 @@ export class I18n implements I18nInstance {
    */
   private isInitialized = false
 
+  /**
+   * 缓存的可用语言列表
+   */
+  private cachedAvailableLanguages?: LanguageInfo[]
+
   // ==================== 性能优化 ====================
 
   /**
@@ -567,7 +572,19 @@ export class I18n implements I18nInstance {
       // 2.2 自动检测浏览器语言（仅在没有存储的语言时）
       if (this.options.autoDetect && !this.storage.getLanguage()) {
         const detectedLanguages = this.detector.detect()
-        const availableLocales = this.getAvailableLocales()
+
+        // 兼容同步/异步的 getAvailableLocales 实现
+        let availableLocales: string[] = []
+        try {
+          const localesResult = (this.loader as any)?.getAvailableLocales?.()
+          if (localesResult instanceof Promise) {
+            availableLocales = await localesResult
+          } else if (Array.isArray(localesResult)) {
+            availableLocales = localesResult
+          }
+        } catch (e) {
+          // 忽略，保持空数组
+        }
 
         // 遍历检测到的语言，找到第一个可用的
         for (const detected of detectedLanguages) {
@@ -861,12 +878,42 @@ export class I18n implements I18nInstance {
    * @returns 语言信息数组
    */
   getAvailableLanguages(): LanguageInfo[] {
+    // 如果有缓存的语言列表，直接使用
+    if (this.cachedAvailableLanguages) {
+      return this.cachedAvailableLanguages
+    }
+
     const loaderWithMethods = this.loader as Loader & {
-      getAvailableLocales?: () => string[]
+      getAvailableLocales?: () => string[] | Promise<string[]>
       getLoadedPackage?: (_locale: string) => LanguagePackage | undefined
       getRegisteredPackage?: (_locale: string) => LanguagePackage | undefined
     }
-    const availableLocales = loaderWithMethods.getAvailableLocales?.() || []
+
+    let availableLocales: string[] = []
+
+    try {
+      const localesResult = loaderWithMethods.getAvailableLocales?.()
+
+      // 处理同步和异步结果
+      if (localesResult instanceof Promise) {
+        // 如果是 Promise，异步更新缓存
+        localesResult.then(locales => {
+          this.updateCachedAvailableLanguages(locales)
+        }).catch(error => {
+          console.error('[I18n] Failed to load available locales:', error)
+        })
+        return this.cachedAvailableLanguages || []
+      } else if (Array.isArray(localesResult)) {
+        availableLocales = localesResult
+      } else if (localesResult) {
+        console.warn('[I18n] getAvailableLanguages: Loader returned non-array result:', localesResult)
+        return this.cachedAvailableLanguages || []
+      }
+    } catch (error) {
+      console.error('[I18n] getAvailableLanguages: Error getting locales from loader:', error)
+      return this.cachedAvailableLanguages || []
+    }
+
     const languages: LanguageInfo[] = []
 
     for (const locale of availableLocales) {
@@ -881,7 +928,36 @@ export class I18n implements I18nInstance {
       }
     }
 
+    // 缓存结果
+    this.cachedAvailableLanguages = languages
     return languages
+  }
+
+
+  /**
+   * 异步更新缓存的可用语言列表
+   * @param locales 语言代码数组
+   */
+  private updateCachedAvailableLanguages(locales: string[]): void {
+    try {
+      const loaderWithMethods = this.loader as Loader & {
+        getLoadedPackage?: (_locale: string) => LanguagePackage | undefined
+        getRegisteredPackage?: (_locale: string) => LanguagePackage | undefined
+      }
+      const languages: LanguageInfo[] = []
+      for (const locale of locales) {
+        let packageData = loaderWithMethods.getLoadedPackage?.(locale)
+        if (!packageData && loaderWithMethods.getRegisteredPackage) {
+          packageData = loaderWithMethods.getRegisteredPackage(locale)
+        }
+        if (packageData) {
+          languages.push(packageData.info)
+        }
+      }
+      this.cachedAvailableLanguages = languages
+    } catch (error) {
+      console.error('[I18n] Failed to update cached available languages:', error)
+    }
   }
 
   /**
@@ -891,7 +967,6 @@ export class I18n implements I18nInstance {
   getCurrentLanguage(): string {
     return this.currentLocale
   }
-
   /**
    * 预加载语言
    * @param locale 语言代码
@@ -1512,12 +1587,7 @@ export class I18n implements I18nInstance {
   /**
    * 获取当前配置
    */
-  getConfig(): Required<
-    Omit<I18nOptions, 'onLanguageChanged' | 'onLoadError'>
-  > & {
-    onLanguageChanged?: (_locale: string) => void
-    onLoadError?: (_locale: string, _error: Error) => void
-  } {
+  getConfig(): I18nOptions {
     return { ...this.options }
   }
 

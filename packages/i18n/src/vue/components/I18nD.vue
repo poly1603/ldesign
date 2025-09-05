@@ -25,10 +25,8 @@ import type { I18nInjectionKey } from '../types'
  */
 type DateFormat = 'full' | 'long' | 'medium' | 'short' | 'relative'
 
-/**
- * 组件属性定义
- */
-interface Props {
+// 使用内联类型定义以避免私有 Props 名称泄漏
+const props = withDefaults(defineProps<{
   /** 要格式化的日期 */
   value: Date | string | number
   /** 格式化类型 */
@@ -39,9 +37,7 @@ interface Props {
   tag?: string
   /** 指定语言（可选） */
   locale?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+}>(), {
   format: 'medium',
   tag: 'span'
 })

@@ -70,8 +70,8 @@ export {
   createI18nPlugin,
   useI18n,
   I18nInjectionKey,
-  type VueI18n
 } from './plugin'
+export type { VueI18n } from './types'
 
 // 导出组件
 export {
@@ -118,8 +118,7 @@ export type {
 
 export type {
   I18nOptions,
-  LanguagePackage,
-  TranslationMessages
+  LanguagePackage
 } from '../types'
 
 // 导出 Vue 特定类型
@@ -159,6 +158,10 @@ export type {
  * app.mount('#app')
  * ```
  */
+import { createI18nPlugin } from './plugin'
+import { installComponents } from './components/index'
+import { installDirectives } from './directives'
+
 export function installI18n(app: any, options: any) {
   // 安装插件
   app.use(createI18nPlugin(options))

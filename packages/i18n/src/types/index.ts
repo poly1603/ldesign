@@ -22,13 +22,6 @@ export type {
 
   // 加载器相关
   Loader,
-  // LoaderOptions, // 从 loader.ts 导出
-  // LoaderStats, // 从 loader.ts 导出
-  // LoadingState, // 从 loader.ts 导出
-  // LoadPriority, // 从 loader.ts 导出
-  // LazyLoadConfig, // 从 loader.ts 导出
-  // OnDemandConfig, // 从 loader.ts 导出
-  // LoaderCacheConfig, // 从 loader.ts 导出
 
   // 存储相关
   Storage,
@@ -36,8 +29,6 @@ export type {
 
   // 检测器相关
   Detector,
-  DetectorType,
-  DetectorOptions,
 
   // 缓存相关
   LRUCache,
@@ -63,62 +54,10 @@ export type {
 
   // 工具类型
   NestedObject,
-  DeepPartial,
-  RequiredKeys,
-  OptionalKeys,
 } from '../core/types'
 
-// ==================== 重新导出 Vue 类型 ====================
-
-// 从 Vue 模块导出增强类型
-export type {
-  // 增强的 I18n 实例
-  EnhancedI18nInstance,
-
-  // 组合式 API 返回类型
-  UseI18nReturn,
-  UseAsyncTranslationReturn,
-  UseFormattedTranslationReturn,
-  UseTranslationCacheReturn,
-  UseTranslationHistoryReturn,
-  UseTranslationValidationReturn,
-  UseTranslationOptions,
-
-  // 高级翻译类型
-  ReactiveTranslationFunction,
-  BatchTranslationFunction,
-  ConditionalTranslation,
-  PluralTranslation,
-  AsyncTranslation,
-  TranslationFunctionOptions,
-
-  // 开发工具类型
-  LanguageSwitcher,
-  TranslationValidator,
-  PerformanceMonitor,
-  Debugger,
-  DebugLevel,
-  DebugMessage,
-  TranslationCoverage,
-
-  // 组件属性类型
-  TranslationTextProps,
-  LanguageSwitcherProps,
-
-  // 插件配置类型
-  I18nPluginConfig,
-  DevelopmentConfig,
-  SSRConfig,
-
-  // 类型工具
-  TranslationKey,
-  DeepKeyPaths,
-  DeepKeyValue,
-  ExtractParams,
-  Prettify,
-  PickRequired,
-  PickOptional,
-} from '../vue/types/enhanced'
+// ==================== 重新导出 Vue 类型（占位） ====================
+// 注意：如需导出 Vue 专属的增强类型，请从 './vue/types' 明确导出现有类型。当前不导出不存在的增强类型文件。
 
 // ==================== 工具类型定义 ====================
 
@@ -305,28 +244,4 @@ export type Record<K extends keyof any, T> = {
   [P in K]: T
 }
 
-// ==================== 导出所有类型 ====================
-
-/**
- * 所有可用的类型定义
- * 
- * 这个接口包含了库中所有可用的类型，便于 IDE 自动补全和类型检查
- */
-export interface AllTypes {
-  // 核心类型
-  I18nInstance: I18nInstance
-  I18nOptions: I18nOptions
-  LanguageInfo: LanguageInfo
-  LanguagePackage: LanguagePackage
-  TranslationParams: TranslationParams
-  TranslationOptions: TranslationOptions
-
-  // Vue 类型
-  UseI18nReturn: UseI18nReturn
-  EnhancedI18nInstance: EnhancedI18nInstance
-
-  // 工具类型
-  DeepReadonly: DeepReadonly<any>
-  DeepOptional: DeepOptional<any>
-  Prettify: Prettify<any>
-}
+// ==================== 结束 ====================

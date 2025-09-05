@@ -1,0 +1,67 @@
+import type { DateTimeTranslations } from '../types'
+
+const datetime: DateTimeTranslations = {
+  year: 'année',
+  years: 'années',
+  month: 'mois',
+  months: 'mois',
+  week: 'semaine',
+  weeks: 'semaines',
+  day: 'jour',
+  days: 'jours',
+  hour: 'heure',
+  hours: 'heures',
+  minute: 'minute',
+  minutes: 'minutes',
+  second: 'seconde',
+  seconds: 'secondes',
+  millisecond: 'milliseconde',
+  milliseconds: 'millisecondes',
+
+  ago: 'il y a',
+  later: 'plus tard',
+  justNow: 'à l’instant',
+  soon: 'bientôt',
+
+  monday: 'lundi',
+  tuesday: 'mardi',
+  wednesday: 'mercredi',
+  thursday: 'jeudi',
+  friday: 'vendredi',
+  saturday: 'samedi',
+  sunday: 'dimanche',
+
+  january: 'janvier',
+  february: 'février',
+  march: 'mars',
+  april: 'avril',
+  may: 'mai',
+  june: 'juin',
+  july: 'juillet',
+  august: 'août',
+  september: 'septembre',
+  october: 'octobre',
+  november: 'novembre',
+  december: 'décembre',
+
+  morning: 'matin',
+  noon: 'midi',
+  afternoon: 'après-midi',
+  evening: 'soir',
+  night: 'nuit',
+  midnight: 'minuit',
+
+  dateFormat: 'Format de date',
+  timeFormat: 'Format de l’heure',
+  dateTimeFormat: 'Format date et heure',
+
+  selectDate: 'Sélectionner la date',
+  selectTime: 'Sélectionner l’heure',
+  selectDateTime: 'Sélectionner date et heure',
+  startDate: 'Date de début',
+  endDate: 'Date de fin',
+  startTime: 'Heure de début',
+  endTime: 'Heure de fin',
+}
+
+export default datetime

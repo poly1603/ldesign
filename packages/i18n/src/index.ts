@@ -28,6 +28,53 @@ export {
 export { createDetector } from './core/detector'
 export { createStorage } from './core/storage'
 
+// 内置翻译加载器
+export { BuiltInLoader, createBuiltInLoader } from './core/built-in-loader'
+export type { BuiltInLoaderOptions } from './core/built-in-loader'
+
+// 翻译合并工具
+export {
+  deepMerge,
+  mergeTranslations,
+  mergeLanguagePackages,
+  MergeStrategy,
+  flattenTranslations,
+  unflattenTranslations,
+  validateCompleteness,
+  getTranslationStats,
+  extractDifferences,
+  mergeMultiple
+} from './core/merger'
+export type { MergeOptions } from './core/merger'
+
+// 内置翻译
+export {
+  builtInTranslations,
+  getBuiltInTranslation,
+  hasBuiltInTranslation,
+  getBuiltInLocales,
+  getBuiltInLanguageInfos,
+  zhCN,
+  en,
+  ja,
+  ko,
+  es,
+  fr,
+  de,
+  ru
+} from './locales'
+export type {
+  BuiltInTranslations,
+  BuiltInLanguagePackage,
+  CommonTranslations,
+  ValidationTranslations,
+  DateTimeTranslations,
+  ErrorTranslations,
+  NotificationTranslations,
+  UITranslations,
+  BusinessTranslations
+} from './locales/types'
+
 // 核心类型定义
 export type {
   // 基础类型
@@ -228,9 +275,6 @@ export {
   createI18nEnginePlugin
 } from './vue/engine-plugin'
 
-export type {
-  I18nEnginePluginOptions
-} from './vue/engine-plugin'
 
 // ==================== 默认导出 ====================
 

@@ -22,26 +22,22 @@
 
 <script setup lang="ts">
 import { computed, inject, provide } from 'vue'
-import type { I18nInjectionKey } from '../types'
+import { I18nInjectionKey } from '../plugin'
 
-/**
- * 组件属性定义
- */
-interface Props {
+// 使用内联类型定义以避免私有 Props 名称泄漏
+const props = withDefaults(defineProps<{
   /** 命名空间前缀 */
   namespace?: string
   /** 是否自动添加命名空间前缀 */
   autoPrefix?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
+}>(), {
   autoPrefix: true
 })
 
 /**
  * 注入 I18n 实例
  */
-const i18n = inject<I18nInjectionKey>('i18n')
+const i18n = inject(I18nInjectionKey)
 if (!i18n) {
   throw new Error('TranslationProvider 组件必须在安装了 I18n 插件的 Vue 应用中使用')
 }
@@ -68,7 +64,7 @@ const scopedTe = (key: string, locale?: string) => {
   const fullKey = props.namespace && props.autoPrefix 
     ? `${props.namespace}.${key}` 
     : key
-  return i18n.exists(fullKey, locale)
+  return i18n.te(fullKey, locale)
 }
 
 /**

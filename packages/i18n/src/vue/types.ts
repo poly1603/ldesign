@@ -19,6 +19,8 @@ export const I18N_INJECTION_KEY: InjectionKey<I18nInjectionKey> = Symbol('i18n')
  * Vue I18n 实例接口
  */
 export interface VueI18n {
+  /** 核心 I18n 实例（用于高级用法） */
+  global: any
   /** 当前语言 */
   locale: string
   /** 可用语言列表 */
@@ -27,7 +29,7 @@ export interface VueI18n {
   t: (key: string, params?: Record<string, unknown>) => string
   /** 键存在检查函数 */
   te: (key: string, locale?: string) => boolean
-  /** 设置语言 */
+  /** 设置语言（别名） */
   setLocale: (locale: string) => Promise<void>
   /** 设置语言包 */
   setLocaleMessage: (locale: string, message: Record<string, unknown>) => void
@@ -37,6 +39,10 @@ export interface VueI18n {
   getCurrentLanguage: () => string
   /** 获取可用语言 */
   getAvailableLanguages: () => string[]
+  /** 切换语言（与 setLocale 等效） */
+  changeLanguage?: (locale: string) => Promise<void>
+  /** 检查键是否存在（别名） */
+  exists?: (key: string, locale?: string) => boolean
 }
 
 /**

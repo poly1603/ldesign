@@ -17,12 +17,10 @@
 
 <script setup lang="ts">
 import { computed, inject } from 'vue'
-import type { I18nInjectionKey } from '../types'
+import { I18nInjectionKey } from '../plugin'
 
-/**
- * 组件属性定义
- */
-interface Props {
+// 使用内联类型定义以避免私有 Props 名称泄漏
+const props = withDefaults(defineProps<{
   /** 翻译键路径 */
   keypath: string
   /** 插值参数 */
@@ -33,9 +31,7 @@ interface Props {
   locale?: string
   /** 是否启用 HTML 渲染 */
   html?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
+}>(), {
   tag: 'span',
   html: false
 })
@@ -43,7 +39,7 @@ const props = withDefaults(defineProps<Props>(), {
 /**
  * 注入 I18n 实例
  */
-const i18n = inject<I18nInjectionKey>('i18n')
+const i18n = inject(I18nInjectionKey)
 if (!i18n) {
   throw new Error('I18nT 组件必须在安装了 I18n 插件的 Vue 应用中使用')
 }

@@ -1,0 +1,67 @@
+import type { DateTimeTranslations } from '../types'
+
+const datetime: DateTimeTranslations = {
+  year: 'Jahr',
+  years: 'Jahre',
+  month: 'Monat',
+  months: 'Monate',
+  week: 'Woche',
+  weeks: 'Wochen',
+  day: 'Tag',
+  days: 'Tage',
+  hour: 'Stunde',
+  hours: 'Stunden',
+  minute: 'Minute',
+  minutes: 'Minuten',
+  second: 'Sekunde',
+  seconds: 'Sekunden',
+  millisecond: 'Millisekunde',
+  milliseconds: 'Millisekunden',
+
+  ago: 'vor',
+  later: 'später',
+  justNow: 'gerade eben',
+  soon: 'bald',
+
+  monday: 'Montag',
+  tuesday: 'Dienstag',
+  wednesday: 'Mittwoch',
+  thursday: 'Donnerstag',
+  friday: 'Freitag',
+  saturday: 'Samstag',
+  sunday: 'Sonntag',
+
+  january: 'Januar',
+  february: 'Februar',
+  march: 'März',
+  april: 'April',
+  may: 'Mai',
+  june: 'Juni',
+  july: 'Juli',
+  august: 'August',
+  september: 'September',
+  october: 'Oktober',
+  november: 'November',
+  december: 'Dezember',
+
+  morning: 'Morgen',
+  noon: 'Mittag',
+  afternoon: 'Nachmittag',
+  evening: 'Abend',
+  night: 'Nacht',
+  midnight: 'Mitternacht',
+
+  dateFormat: 'Datumsformat',
+  timeFormat: 'Uhrzeitformat',
+  dateTimeFormat: 'Datum-Uhrzeit-Format',
+
+  selectDate: 'Datum auswählen',
+  selectTime: 'Uhrzeit auswählen',
+  selectDateTime: 'Datum und Uhrzeit auswählen',
+  startDate: 'Startdatum',
+  endDate: 'Enddatum',
+  startTime: 'Startzeit',
+  endTime: 'Endzeit',
+}
+
+export default datetime

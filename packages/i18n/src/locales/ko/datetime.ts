@@ -1,0 +1,67 @@
+import type { DateTimeTranslations } from '../types'
+
+const datetime: DateTimeTranslations = {
+  year: '년',
+  years: '년',
+  month: '월',
+  months: '개월',
+  week: '주',
+  weeks: '주',
+  day: '일',
+  days: '일',
+  hour: '시간',
+  hours: '시간',
+  minute: '분',
+  minutes: '분',
+  second: '초',
+  seconds: '초',
+  millisecond: '밀리초',
+  milliseconds: '밀리초',
+
+  ago: '전',
+  later: '후',
+  justNow: '방금',
+  soon: '곧',
+
+  monday: '월요일',
+  tuesday: '화요일',
+  wednesday: '수요일',
+  thursday: '목요일',
+  friday: '금요일',
+  saturday: '토요일',
+  sunday: '일요일',
+
+  january: '1월',
+  february: '2월',
+  march: '3월',
+  april: '4월',
+  may: '5월',
+  june: '6월',
+  july: '7월',
+  august: '8월',
+  september: '9월',
+  october: '10월',
+  november: '11월',
+  december: '12월',
+
+  morning: '오전',
+  noon: '정오',
+  afternoon: '오후',
+  evening: '저녁',
+  night: '밤',
+  midnight: '자정',
+
+  dateFormat: '날짜 형식',
+  timeFormat: '시간 형식',
+  dateTimeFormat: '날짜 시간 형식',
+
+  selectDate: '날짜 선택',
+  selectTime: '시간 선택',
+  selectDateTime: '날짜 시간 선택',
+  startDate: '시작 날짜',
+  endDate: '종료 날짜',
+  startTime: '시작 시간',
+  endTime: '종료 시간',
+}
+
+export default datetime

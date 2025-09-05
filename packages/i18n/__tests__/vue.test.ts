@@ -15,26 +15,30 @@ import {
   installI18n
 } from '../src/vue'
 
-// Mock Vue 相关功能
-const mockInject = vi.fn()
-const mockReactive = vi.fn((obj) => obj)
-const mockComputed = vi.fn((fn) => ({ value: fn() }))
-const mockRef = vi.fn((val) => ({ value: val }))
-const mockWatch = vi.fn()
-const mockH = vi.fn((tag, props, children) => ({ tag, props, children }))
-const mockDefineComponent = vi.fn((options) => options)
+// Mock Vue 相关功能（使用 hoisted 避免顶层初始化顺序问题）
+const hoisted = vi.hoisted(() => ({
+  mockInject: vi.fn(),
+  mockReactive: vi.fn((obj: any) => obj),
+  mockComputed: vi.fn((fn: any) => ({ value: fn() })),
+  mockRef: vi.fn((val: any) => ({ value: val })),
+  mockWatch: vi.fn(),
+  mockH: vi.fn((tag: any, props: any, children: any) => ({ tag, props, children })),
+  mockDefineComponent: vi.fn((options: any) => options)
+}))
+
+const { mockInject, mockReactive, mockComputed, mockRef, mockWatch, mockH, mockDefineComponent } = hoisted as any
 
 vi.mock('vue', async () => {
-  const actual = await vi.importActual('vue')
+  const actual: any = await vi.importActual('vue')
   return {
     ...actual,
-    inject: mockInject,
-    reactive: mockReactive,
-    computed: mockComputed,
-    ref: mockRef,
-    watch: mockWatch,
-    h: mockH,
-    defineComponent: mockDefineComponent
+    inject: (hoisted as any).mockInject,
+    reactive: (hoisted as any).mockReactive,
+    computed: (hoisted as any).mockComputed,
+    ref: (hoisted as any).mockRef,
+    watch: (hoisted as any).mockWatch,
+    h: (hoisted as any).mockH,
+    defineComponent: (hoisted as any).mockDefineComponent
   }
 })
 

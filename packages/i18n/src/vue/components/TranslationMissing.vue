@@ -37,10 +37,8 @@
 import { computed, inject } from 'vue'
 import type { I18nInjectionKey } from '../types'
 
-/**
- * 组件属性定义
- */
-interface Props {
+// 使用内联类型定义以避免私有 Props 名称泄漏
+const props = withDefaults(defineProps<{
   /** 缺失的翻译键 */
   keypath: string
   /** 降级显示文本 */
@@ -49,21 +47,15 @@ interface Props {
   showReportButton?: boolean
   /** 强制开发模式显示 */
   forceDev?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
+}>(), {
   showReportButton: true,
   forceDev: false
 })
 
-/**
- * 组件事件定义
- */
-interface Emits {
+// 使用内联类型定义以避免私有 Emits 名称泄漏
+const emit = defineEmits<{
   (e: 'report', keypath: string): void
-}
-
-const emit = defineEmits<Emits>()
+}>()
 
 /**
  * 注入 I18n 实例

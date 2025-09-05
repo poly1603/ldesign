@@ -10,6 +10,8 @@
 
 import { I18n } from './i18n'
 import type { I18nInstance, I18nOptions } from './types'
+import { BuiltInLoader, type BuiltInLoaderOptions } from './built-in-loader'
+import type { MergeOptions } from './merger'
 
 /**
  * 简化的 I18n 配置选项
@@ -49,6 +51,18 @@ export interface CreateI18nOptions extends Omit<I18nOptions, 'defaultLocale'> {
   strict?: boolean
   /** 转义参数值 */
   escapeParameterHtml?: boolean
+  
+  // 新增内置翻译相关选项
+  /** 是否使用内置翻译 */
+  useBuiltIn?: boolean
+  /** 是否优先使用内置翻译 */
+  preferBuiltIn?: boolean
+  /** 降级到内置翻译 */
+  fallbackToBuiltIn?: boolean
+  /** 内置翻译的命名空间 */
+  builtInNamespace?: string
+  /** 合并选项 */
+  mergeOptions?: MergeOptions
 }
 
 /**
@@ -96,6 +110,24 @@ export interface CreateI18nOptions extends Omit<I18nOptions, 'defaultLocale'> {
  * ```
  */
 export function createI18n(options: CreateI18nOptions): I18nInstance {
+  // 创建加载器
+  let loader = options.customLoader
+  
+  // 如果没有自定义加载器，或者需要使用内置翻译，创建内置加载器
+  if (!loader || options.useBuiltIn !== false) {
+    const builtInLoaderOptions: BuiltInLoaderOptions = {
+      userMessages: options.messages,
+      customLoader: loader,
+      useBuiltIn: options.useBuiltIn !== false,
+      preferBuiltIn: options.preferBuiltIn,
+      fallbackToBuiltIn: options.fallbackToBuiltIn !== false,
+      builtInNamespace: options.builtInNamespace,
+      mergeOptions: options.mergeOptions
+    }
+    
+    loader = new BuiltInLoader(builtInLoaderOptions)
+  }
+  
   // 转换配置格式
   const i18nOptions: I18nOptions = {
     defaultLocale: options.locale,
@@ -113,7 +145,7 @@ export function createI18n(options: CreateI18nOptions): I18nInstance {
       cleanupInterval: 5 * 60 * 1000,
       memoryPressureThreshold: 0.8,
     },
-    messages: options.messages, // 传递 messages 选项
+    customLoader: loader, // 使用加载器
     onLanguageChanged: options.onLanguageChanged,
     onLoadError: options.onLoadError,
   }

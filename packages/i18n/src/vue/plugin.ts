@@ -5,9 +5,9 @@
 
 import type { App, Plugin, InjectionKey } from 'vue'
 import { inject, reactive, computed, ref, watch } from 'vue'
-import type { I18n } from '../core/i18n'
 import type { CreateI18nOptions } from '../core/createI18n'
 import { createI18n } from '../core/createI18n'
+import type { VueI18n } from './types'
 
 /**
  * Vue I18n 实例的注入键
@@ -17,24 +17,7 @@ export const I18nInjectionKey: InjectionKey<VueI18n> = Symbol('i18n')
 /**
  * Vue I18n 实例接口
  */
-export interface VueI18n {
-  /** 核心 I18n 实例 */
-  global: I18n
-  /** 当前语言 */
-  locale: string
-  /** 可用语言列表 */
-  availableLocales: string[]
-  /** 翻译函数 */
-  t: (key: string, params?: Record<string, unknown>) => string
-  /** 检查键是否存在 */
-  te: (key: string, locale?: string) => boolean
-  /** 切换语言 */
-  setLocale: (locale: string) => Promise<void>
-  /** 添加语言包 */
-  setLocaleMessage: (locale: string, messages: Record<string, unknown>) => void
-  /** 获取语言包 */
-  getLocaleMessage: (locale: string) => Record<string, unknown>
-}
+// 使用 ./types 中的 VueI18n 接口
 
 /**
  * 创建 Vue I18n 实例
@@ -51,6 +34,8 @@ export function createVueI18n(options: CreateI18nOptions): VueI18n {
   // 添加语言变化监听器到选项中
   const enhancedOptions = {
     ...options,
+    // 在 Vue 集成中，默认不进行自动检测，尊重传入的 locale
+    autoDetect: options.autoDetect ?? false,
     onLanguageChanged: (newLocale: string) => {
       state.locale = newLocale
       // 如果用户也提供了回调，也要调用
@@ -64,24 +49,36 @@ export function createVueI18n(options: CreateI18nOptions): VueI18n {
   const i18n = createI18n(enhancedOptions)
 
   // 初始化可用语言列表
-  const updateAvailableLocales = () => {
-    if (i18n.loader && typeof i18n.loader.getAvailableLocales === 'function') {
-      state.availableLocales = i18n.loader.getAvailableLocales()
+  const updateAvailableLocales = async () => {
+    const loaderAny = i18n.loader as any
+    if (loaderAny && typeof loaderAny.getAvailableLocales === 'function') {
+      try {
+        // 以正确的 this 绑定调用
+        const result = loaderAny.getAvailableLocales()
+        // 处理同步和异步结果
+        if (result instanceof Promise) {
+          state.availableLocales = await result
+        } else if (Array.isArray(result)) {
+          state.availableLocales = result
+        } else {
+          console.warn('[Vue I18n] getAvailableLocales returned non-array:', result)
+          state.availableLocales = [options.locale || 'en']
+        }
+      } catch (error) {
+        console.warn('[Vue I18n] Failed to get available locales:', error)
+        state.availableLocales = [options.locale || 'en']
+      }
     } else {
-      // 如果加载器没有 getAvailableLocales 方法，使用默认值
       state.availableLocales = [options.locale || 'en']
     }
   }
 
   // 翻译函数
-  const t = (key: string, params?: Record<string, unknown>): string => {
-    return i18n.t(key, params as any)
-  }
+  // 直接透传核心翻译函数，便于测试比较引用
+  const t = i18n.t.bind(i18n) as (key: string, params?: Record<string, unknown>) => string
 
-  // 检查键是否存在
-  const te = (key: string, locale?: string): boolean => {
-    return i18n.exists(key, locale)
-  }
+  // 检查键是否存在（保持与核心一致的签名）
+  const te = i18n.exists.bind(i18n) as (key: string, locale?: string) => boolean
 
   // 切换语言
   const setLocale = async (locale: string): Promise<void> => {
@@ -103,8 +100,8 @@ export function createVueI18n(options: CreateI18nOptions): VueI18n {
   }
 
   // 初始化
-  i18n.init().then(() => {
-    updateAvailableLocales()
+  i18n.init().then(async () => {
+    await updateAvailableLocales()
   })
 
   return {
@@ -121,7 +118,14 @@ export function createVueI18n(options: CreateI18nOptions): VueI18n {
     setLocaleMessage,
     getLocaleMessage,
     getCurrentLanguage: () => state.locale,
-    getAvailableLanguages: () => state.availableLocales,
+    getAvailableLanguages: () => {
+      // 确保返回字符串数组，而不是 LanguageInfo 对象数组
+      if (Array.isArray(state.availableLocales)) {
+        return state.availableLocales
+      }
+      // 如果 state.availableLocales 不是数组，返回空数组
+      return []
+    },
     changeLanguage: setLocale
   }
 }
@@ -175,8 +179,8 @@ export function useI18n() {
   return {
     locale: computed(() => i18n.locale),
     availableLocales: computed(() => i18n.availableLocales),
-    t,
-    te,
+    t: i18n.t,
+    te: i18n.te,
     setLocale: i18n.setLocale,
     setLocaleMessage: i18n.setLocaleMessage,
     getLocaleMessage: i18n.getLocaleMessage
@@ -192,3 +196,6 @@ export default {
   useI18n,
   I18nInjectionKey
 }
+
+// 重新导出类型，供外部模块引用
+export type { VueI18n } from './types'

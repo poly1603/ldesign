@@ -1,0 +1,90 @@
+import type { CommonTranslations } from '../types'
+
+const common: CommonTranslations = {
+  ok: 'OK',
+  confirm: 'Bestätigen',
+  cancel: 'Abbrechen',
+  yes: 'Ja',
+  no: 'Nein',
+
+  save: 'Speichern',
+  delete: 'Löschen',
+  edit: 'Bearbeiten',
+  create: 'Erstellen',
+  update: 'Aktualisieren',
+  add: 'Hinzufügen',
+  remove: 'Entfernen',
+  submit: 'Senden',
+  reset: 'Zurücksetzen',
+  clear: 'Leeren',
+  close: 'Schließen',
+  open: 'Öffnen',
+
+  search: 'Suchen',
+  filter: 'Filtern',
+  sort: 'Sortieren',
+
+  back: 'Zurück',
+  next: 'Weiter',
+  previous: 'Vorherige',
+  first: 'Erste',
+  last: 'Letzte',
+  home: 'Startseite',
+
+  loading: 'Wird geladen...',
+  processing: 'Verarbeitung...',
+  waiting: 'Bitte warten...',
+  done: 'Fertig',
+  success: 'Erfolg',
+  error: 'Fehler',
+  warning: 'Warnung',
+  info: 'Info',
+  help: 'Hilfe',
+  more: 'Mehr',
+  less: 'Weniger',
+  all: 'Alle',
+  none: 'Keine',
+  select: 'Auswählen',
+  selectAll: 'Alle auswählen',
+  unselectAll: 'Alle abwählen',
+
+  copy: 'Kopieren',
+  paste: 'Einfügen',
+  cut: 'Ausschneiden',
+
+  upload: 'Hochladen',
+  download: 'Herunterladen',
+  export: 'Exportieren',
+  import: 'Importieren',
+  print: 'Drucken',
+
+  empty: 'Leer',
+  noData: 'Keine Daten',
+  noResults: 'Keine Ergebnisse',
+
+  page: 'Seite',
+  pageSize: 'Seitengröße',
+  total: 'Gesamt',
+  totalPages: 'Gesamtseiten',
+  currentPage: 'Aktuelle Seite',
+
+  true: 'Wahr',
+  false: 'Falsch',
+  enabled: 'Aktiviert',
+  disabled: 'Deaktiviert',
+  on: 'Ein',
+  off: 'Aus',
+  active: 'Aktiv',
+  inactive: 'Inaktiv',
+
+  today: 'Heute',
+  yesterday: 'Gestern',
+  tomorrow: 'Morgen',
+  now: 'Jetzt',
+
+  operationSuccess: 'Vorgang erfolgreich',
+  operationFailed: 'Vorgang fehlgeschlagen',
+  operationCanceled: 'Vorgang abgebrochen',
+}
+
+export default common

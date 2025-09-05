@@ -25,10 +25,8 @@ import { formatCurrency } from '../../utils/formatters'
  */
 type NumberFormat = 'number' | 'currency' | 'percent' | 'decimal'
 
-/**
- * 组件属性定义
- */
-interface Props {
+// 使用内联类型定义以避免私有 Props 名称泄漏
+const props = withDefaults(defineProps<{
   /** 要格式化的数值 */
   value: number
   /** 格式化类型 */
@@ -43,9 +41,7 @@ interface Props {
   tag?: string
   /** 指定语言（可选） */
   locale?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+}>(), {
   format: 'number',
   tag: 'span',
   currency: 'USD',

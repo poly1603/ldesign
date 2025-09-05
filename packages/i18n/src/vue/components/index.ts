@@ -12,13 +12,7 @@ import LanguageSwitcher from './LanguageSwitcher.vue'
 import TranslationProvider from './TranslationProvider.vue'
 import TranslationMissing from './TranslationMissing.vue'
 
-// 组件类型定义
-export type { default as I18nTComponent } from './I18nT.vue'
-export type { default as I18nNComponent } from './I18nN.vue'
-export type { default as I18nDComponent } from './I18nD.vue'
-export type { default as LanguageSwitcherComponent } from './LanguageSwitcher.vue'
-export type { default as TranslationProviderComponent } from './TranslationProvider.vue'
-export type { default as TranslationMissingComponent } from './TranslationMissing.vue'
+// 注意：不再重新导出 .vue 组件的类型，以避免私有 Props 类型泄漏导致的 TS 声明错误
 
 /**
  * 所有组件的映射

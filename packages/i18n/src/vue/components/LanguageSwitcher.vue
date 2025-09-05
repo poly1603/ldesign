@@ -109,29 +109,16 @@
 
 <script setup lang="ts">
 import { computed, inject, ref } from 'vue'
-import type { I18nInjectionKey } from '../types'
 import { I18nInjectionKey as InjectionKey } from '../plugin'
 import { Globe, Languages, Loader2 } from 'lucide-vue-next'
-
-/**
- * 语言信息接口
- */
-interface LanguageInfo {
-  code: string
-  name: string
-  flag: string
-  nativeName?: string
-}
 
 /**
  * 切换器类型
  */
 type SwitcherType = 'dropdown' | 'tabs' | 'buttons' | 'links'
 
-/**
- * 组件属性定义
- */
-interface Props {
+// 使用内联类型定义以避免私有 Props 名称泄漏
+const props = withDefaults(defineProps<{
   /** 切换器类型 */
   type?: SwitcherType
   /** 是否显示国旗 */
@@ -143,10 +130,8 @@ interface Props {
   /** 自定义加载文本 */
   loadingText?: string
   /** 自定义语言列表 */
-  languages?: LanguageInfo[]
-}
-
-const props = withDefaults(defineProps<Props>(), {
+  languages?: Array<{ code: string; name: string; flag: string; nativeName?: string }>
+}>(), {
   type: 'dropdown',
   showFlag: false,
   useIcons: true,
@@ -154,21 +139,17 @@ const props = withDefaults(defineProps<Props>(), {
   loadingText: '切换中...'
 })
 
-/**
- * 组件事件定义
- */
-interface Emits {
+// 使用内联类型定义以避免私有 Emits 名称泄漏
+const emit = defineEmits<{
   (e: 'change', locale: string): void
   (e: 'before-change', locale: string): void
   (e: 'after-change', locale: string): void
-}
-
-const emit = defineEmits<Emits>()
+}>()
 
 /**
  * 注入 I18n 实例
  */
-const i18n = inject(InjectionKey)
+const i18n = inject(InjectionKey)!
 if (!i18n) {
   throw new Error('LanguageSwitcher 组件必须在安装了 I18n 插件的 Vue 应用中使用')
 }
@@ -186,7 +167,7 @@ const currentLocale = computed(() => i18n.getCurrentLanguage())
 /**
  * 默认语言信息映射
  */
-const defaultLanguageMap: Record<string, LanguageInfo> = {
+const defaultLanguageMap: Record<string, { code: string; name: string; flag: string; nativeName?: string }> = {
   'zh-CN': { code: 'zh-CN', name: '简体中文', flag: '🇨🇳', nativeName: '简体中文' },
   'zh-TW': { code: 'zh-TW', name: '繁體中文', flag: '🇹🇼', nativeName: '繁體中文' },
   'en': { code: 'en', name: 'English', flag: '🇺🇸', nativeName: 'English' },
@@ -216,7 +197,13 @@ const availableLanguages = computed(() => {
 
   // 从 I18n 核心获取可用语言
   const availableCodes = i18n.getAvailableLanguages()
-  
+
+  // 确保 availableCodes 是数组
+  if (!Array.isArray(availableCodes)) {
+    console.warn('getAvailableLanguages() 返回的不是数组:', availableCodes)
+    return []
+  }
+
   return availableCodes.map(code => {
     return defaultLanguageMap[code] || {
       code,
@@ -241,7 +228,8 @@ const switchLanguage = async (locale: string) => {
     emit('before-change', locale)
     
     // 执行语言切换
-    await i18n.changeLanguage(locale)
+    const changer = (i18n as any).changeLanguage ?? i18n.setLocale
+    await changer(locale)
     
     // 触发切换事件
     emit('change', locale)
