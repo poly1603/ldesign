@@ -1,6 +1,6 @@
 import type { ComputedRef } from 'vue'
 import type { CacheStats, SetOptions, UseCacheOptions } from '../types'
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, onUnmounted, ref } from 'vue'
 import { CacheManager } from '../core/cache-manager'
 
 /**

@@ -2,9 +2,10 @@
   "extends": "../../tools/configs/build/tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "rootDir": ".",
     "paths": {
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*", "examples/**/*", "__tests__/**/*", "e2e/**/*"]
+  "include": ["src/**/*"]
 }

@@ -235,7 +235,7 @@ export class EventEmitter<T = unknown> {
    * console.log(`总事件数: ${stats.eventCount}, 总监听器数: ${stats.listenerCount}`)
    * ```
    */
-  getStats(): { eventCount: number; listenerCount: number; events: Record<string, number> } {
+  getStats(): { eventCount: number, listenerCount: number, events: Record<string, number> } {
     const events: Record<string, number> = {}
     let totalListeners = 0
 

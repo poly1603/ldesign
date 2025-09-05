@@ -191,7 +191,8 @@ export class SecurityManager {
         try {
           const decrypted = await this.decrypt(storedData)
           return decrypted === originalData
-        } catch (error) {
+        }
+        catch (error) {
           // 解密失败可能意味着数据被篡改或使用了错误的密钥
           console.warn('Decryption failed during integrity verification:', error instanceof Error ? error.message : 'Unknown error')
           return false

@@ -55,8 +55,8 @@ export class Validator {
       throw new ValidationError('Cache key is too long (maximum 250 characters)', 'key')
     }
 
-    // 检查是否包含非法字符
-    if (/[\x00-\x1f\x7f]/.test(key)) {
+    // 检查是否包含控制字符（使用 Unicode 属性）
+    if (/\p{Cc}/u.test(key)) {
       throw new ValidationError('Cache key contains invalid control characters', 'key')
     }
   }
@@ -75,11 +75,13 @@ export class Validator {
     // 检查是否可序列化
     try {
       JSON.stringify(value)
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error && error.message.includes('circular')) {
         // 循环引用会在序列化时处理，这里只是警告
         console.warn('Cache value contains circular references, will be simplified during serialization')
-      } else {
+      }
+      else {
         throw new ValidationError('Cache value is not serializable', 'value')
       }
     }
@@ -130,7 +132,7 @@ export class Validator {
       if (typeof engine !== 'string' || !validEngines.includes(engine as StorageEngine)) {
         throw new ValidationError(
           `Invalid storage engine. Must be one of: ${validEngines.join(', ')}`,
-          'engine'
+          'engine',
         )
       }
     }
@@ -222,41 +224,41 @@ export class Validator {
     nonEmptyString: {
       validate: (value: unknown): value is string => 
         typeof value === 'string' && value.trim().length > 0,
-      message: 'Value must be a non-empty string'
+      message: 'Value must be a non-empty string',
     },
 
     /** 正整数 */
     positiveInteger: {
       validate: (value: unknown): value is number => 
         typeof value === 'number' && Number.isInteger(value) && value > 0,
-      message: 'Value must be a positive integer'
+      message: 'Value must be a positive integer',
     },
 
     /** 非负数 */
     nonNegativeNumber: {
       validate: (value: unknown): value is number => 
         typeof value === 'number' && Number.isFinite(value) && value >= 0,
-      message: 'Value must be a non-negative number'
+      message: 'Value must be a non-negative number',
     },
 
     /** 布尔值 */
     boolean: {
       validate: (value: unknown): value is boolean => typeof value === 'boolean',
-      message: 'Value must be a boolean'
+      message: 'Value must be a boolean',
     },
 
     /** 对象 */
     object: {
       validate: (value: unknown): value is object => 
         typeof value === 'object' && value !== null,
-      message: 'Value must be an object'
+      message: 'Value must be an object',
     },
 
     /** 数组 */
     array: {
       validate: (value: unknown): value is unknown[] => Array.isArray(value),
-      message: 'Value must be an array'
-    }
+      message: 'Value must be an array',
+    },
   }
 
   /**

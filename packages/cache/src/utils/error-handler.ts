@@ -59,18 +59,19 @@ export class ErrorHandler {
    */
   static async safeAsync<T>(
     operation: () => Promise<T>,
-    options: ErrorHandlerOptions = {}
+    options: ErrorHandlerOptions = {},
   ): Promise<AsyncResult<T>> {
     const {
       logError = true,
       logPrefix = '[ErrorHandler]',
-      errorTransform = (err) => err instanceof Error ? err : new Error(String(err))
+      errorTransform = err => (err instanceof Error ? err : new Error(String(err))),
     } = options
 
     try {
       const data = await operation()
       return { success: true, data }
-    } catch (error) {
+    }
+    catch (error) {
       const transformedError = errorTransform(error)
       
       if (logError) {
@@ -90,19 +91,20 @@ export class ErrorHandler {
    */
   static safeSync<T>(
     operation: () => T,
-    options: ErrorHandlerOptions = {}
+    options: ErrorHandlerOptions = {},
   ): T | undefined {
     const {
       logError = true,
       logPrefix = '[ErrorHandler]',
       defaultValue,
       rethrow = false,
-      errorTransform = (err) => err instanceof Error ? err : new Error(String(err))
+      errorTransform = err => (err instanceof Error ? err : new Error(String(err))),
     } = options
 
     try {
       return operation()
-    } catch (error) {
+    }
+    catch (error) {
       const transformedError = errorTransform(error)
       
       if (logError) {
@@ -130,7 +132,7 @@ export class ErrorHandler {
     operation: () => Promise<T>,
     maxRetries: number = 3,
     delay: number = 1000,
-    options: ErrorHandlerOptions = {}
+    options: ErrorHandlerOptions = {},
   ): Promise<AsyncResult<T>> {
     const { logPrefix = '[ErrorHandler]' } = options
     
@@ -181,7 +183,7 @@ export class ErrorHandler {
       return false
     }
 
-    return patterns.some(pattern => {
+    return patterns.some((pattern) => {
       if (typeof pattern === 'string') {
         return error.message.includes(pattern)
       }
@@ -199,14 +201,14 @@ export class ErrorHandler {
     return function <T extends (...args: any[]) => any>(
       target: any,
       propertyKey: string,
-      descriptor: TypedPropertyDescriptor<T>
+      descriptor: TypedPropertyDescriptor<T>,
     ) {
       const originalMethod = descriptor.value!
 
-      descriptor.value = async function (...args: any[]) {
+      descriptor.value = async function (this: unknown, ...args: any[]) {
         const result = await ErrorHandler.safeAsync(
           () => originalMethod.apply(this, args),
-          options
+          options,
         )
 
         if (result.success) {
@@ -241,8 +243,9 @@ export class ErrorHandler {
  * }
  * ```
  */
-export const handleErrors = (options: ErrorHandlerOptions = {}) => 
-  ErrorHandler.createDecorator(options)
+export function handleErrors(options: ErrorHandlerOptions = {}) {
+  return ErrorHandler.createDecorator(options)
+}
 
 /**
  * 快捷的错误处理函数

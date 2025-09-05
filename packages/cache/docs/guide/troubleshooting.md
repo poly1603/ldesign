@@ -448,6 +448,20 @@ class PerformanceAnalyzer {
 
 ## 🔧 配置问题
 
+### Windows 终端显示“终止批处理操作吗 (Y/N)?”
+
+在 Windows PowerShell/CMD 环境下，某些终端会在长输出或工具结束时给出交互式提示“终止批处理操作吗 (Y/N)?”。这通常不是测试失败引起的，而是终端/批处理行为所致。
+
+解决建议：
+
+- 使用本地 Vitest 配置并指定安静 reporter 运行（本包已内置）：
+  - pnpm test:run（等价于 vitest run -c vitest.local.config.ts --reporter=basic --silent）
+- 明确关闭 watch/交互：
+  - vitest run -c vitest.local.config.ts --reporter=basic --silent
+- 在 CI 环境下使用 vitest.config.ci.ts，不会出现该提示。
+
+如果只是看到该提示但测试用例均通过，可以忽略这一交互提示。若你希望严格保证 0 退出码，可在外层脚本中根据输出和 $LASTEXITCODE 定制退出逻辑，或使用 Node 包装器脚本执行 Vitest 并归一化退出码。
+
 ### 1. 引擎配置错误
 
 ```typescript

@@ -163,9 +163,10 @@ export class StorageStrategy {
    * 性能优化：避免完整序列化，使用启发式方法
    */
   private estimateObjectSize(obj: any): number {
-    if (obj === null || obj === undefined) return 0
+    if (obj === null || obj === undefined) {
+      return 0
+    }
 
-    let size = 0
     const visited = new WeakSet()
 
     const estimate = (value: any, depth = 0): number => {
@@ -186,7 +187,9 @@ export class StorageStrategy {
         case 'boolean':
           return 1
         case 'object':
-          if (value === null) return 0
+          if (value === null) {
+            return 0
+          }
           if (Array.isArray(value)) {
             return value.reduce((acc, item) => acc + estimate(item, depth + 1), 0)
           }
@@ -265,7 +268,7 @@ export class StorageStrategy {
    *
    * 用于性能监控
    */
-  getCacheStats(): { hits: number; misses: number; hitRate: number; cacheSize: number } {
+  getCacheStats(): { hits: number, misses: number, hitRate: number, cacheSize: number } {
     const total = this.cacheHits + this.cacheMisses
     return {
       hits: this.cacheHits,

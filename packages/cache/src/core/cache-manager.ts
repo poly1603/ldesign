@@ -219,7 +219,8 @@ export class CacheManager implements ICacheManager {
 
       try {
         serialized = JSON.stringify(value)
-      } catch (error) {
+      }
+      catch (error) {
         if (error instanceof Error && error.message.includes('circular')) {
           // 处理循环引用：创建一个简化的版本
           const simplifiedValue = this.removeCircularReferences(value)
@@ -227,7 +228,8 @@ export class CacheManager implements ICacheManager {
 
           // 记录警告但不阻止操作
           console.warn('Circular reference detected in cache value, using simplified version:', error.message)
-        } else {
+        }
+        else {
           throw new Error(`JSON serialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
       }
@@ -236,13 +238,15 @@ export class CacheManager implements ICacheManager {
       if (options?.encrypt || this.options.security?.encryption?.enabled) {
         try {
           serialized = await this.security.encrypt(serialized)
-        } catch (error) {
+        }
+        catch (error) {
           throw new Error(`Encryption failed during serialization: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
       }
 
       return serialized
-    } catch (error) {
+    }
+    catch (error) {
       // 发出错误事件
       this.emitEvent('error', 'serialization', 'memory', value, error as Error)
       throw error
@@ -275,7 +279,8 @@ export class CacheManager implements ICacheManager {
       if (encrypted) {
         try {
           deserialized = await this.security.decrypt(deserialized)
-        } catch (error) {
+        }
+        catch (error) {
           throw new Error(`Decryption failed during deserialization: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
       }
@@ -283,10 +288,12 @@ export class CacheManager implements ICacheManager {
       // JSON 解析
       try {
         return JSON.parse(deserialized)
-      } catch (error) {
+      }
+      catch (error) {
         throw new Error(`JSON parsing failed during deserialization: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
-    } catch (error) {
+    }
+    catch (error) {
       // 发出错误事件
       this.emitEvent('error', 'deserialization', 'memory', data, error as Error)
       throw error

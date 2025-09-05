@@ -5,6 +5,9 @@ import { CacheManager } from './core/cache-manager'
 import { StorageEngineFactory } from './engines/factory'
 
 export { CacheManager } from './core/cache-manager'
+// Engine 插件（按字母序应在 strategies 前）
+export { createCacheEnginePlugin } from './engine/plugin'
+export type { CacheEnginePluginOptions } from './engine/plugin'
 export { BaseStorageEngine } from './engines/base-engine'
 
 export { CookieEngine } from './engines/cookie-engine'
@@ -44,10 +47,6 @@ export const defaultCache = (() => {
   }
   return _defaultCache
 })()
-
-// Engine 插件
-export { createCacheEnginePlugin } from './engine/plugin'
-export type { CacheEnginePluginOptions } from './engine/plugin'
 
 // 默认导出
 export default {

@@ -33,8 +33,8 @@
   "types": "dist/index.d.ts",
   "browser": "dist/index.min.js",
   "files": [
-    "README.md",
     "CHANGELOG.md",
+    "README.md",
     "dist"
   ],
   "scripts": {
@@ -45,10 +45,10 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "lint:ci": "eslint . --config .eslintrc.ci.json",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test": "vitest -c vitest.local.config.ts",
+    "test:ui": "vitest -c vitest.local.config.ts --ui",
+    "test:run": "vitest run -c vitest.local.config.ts --reporter=basic --silent",
+    "test:coverage": "vitest run -c vitest.local.config.ts --coverage",
     "test:ci": "vitest run --config vitest.config.ci.ts",
     "test:performance": "node scripts/performance-test.js",
     "test:benchmark": "node scripts/benchmark.js",

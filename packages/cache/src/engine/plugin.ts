@@ -9,10 +9,8 @@ import type { CacheOptions } from '../types'
 import { CacheManager } from '../core/cache-manager'
 import { StorageEngineFactory } from '../engines/factory'
 import {
+  CACHE_MANAGER_KEY,
   CacheProvider,
-  provideCacheManager,
-  useCacheManager,
-  CACHE_MANAGER_KEY
 } from '../vue/cache-provider'
 
 /**
@@ -56,10 +54,14 @@ const defaultConfig: Partial<CacheEnginePluginOptions> = {
   debug: false,
   cacheConfig: {
     defaultEngine: 'localStorage',
-    enableEncryption: false,
-    enableCompression: false,
-    maxSize: 10 * 1024 * 1024, // 10MB
-    ttl: 24 * 60 * 60 * 1000, // 24小时
+    defaultTTL: 24 * 60 * 60 * 1000, // 24小时
+    security: {
+      encryption: { enabled: false },
+      obfuscation: { enabled: false },
+    },
+    engines: {
+      memory: { maxSize: 10 * 1024 * 1024 }, // 10MB
+    },
   },
 }
 
@@ -76,11 +78,11 @@ function createGlobalCacheInstance(options?: CacheEnginePluginOptions) {
     // 便捷方法
     get: cacheManager.get.bind(cacheManager),
     set: cacheManager.set.bind(cacheManager),
-    delete: cacheManager.delete.bind(cacheManager),
+    delete: cacheManager.remove.bind(cacheManager),
     clear: cacheManager.clear.bind(cacheManager),
     has: cacheManager.has.bind(cacheManager),
     keys: cacheManager.keys.bind(cacheManager),
-    size: cacheManager.size.bind(cacheManager),
+    size: async () => (await cacheManager.getStats()).totalItems,
 
     // 工厂方法
     factory: StorageEngineFactory,
@@ -124,7 +126,6 @@ export function createCacheEnginePlugin(
   const {
     name = 'cache',
     version = '1.0.0',
-    description = 'LDesign Cache Engine Plugin',
     dependencies = [],
     autoInstall = true,
     enablePerformanceMonitoring = false,
@@ -132,7 +133,7 @@ export function createCacheEnginePlugin(
   } = config
 
   if (debug) {
-    console.log('[Cache Plugin] createCacheEnginePlugin called with options:', options)
+    console.warn('[Cache Plugin] createCacheEnginePlugin called with options:', options)
   }
 
   return {
@@ -140,17 +141,17 @@ export function createCacheEnginePlugin(
     version,
     dependencies,
 
-    async install(context) {
+    async install(context: any) {
       try {
         if (debug) {
-          console.log('[Cache Plugin] install method called with context:', context)
+          console.warn('[Cache Plugin] install method called with context:', context)
         }
 
         // 从上下文中获取引擎实例
         const engine = context.engine || context
 
         if (debug) {
-          console.log('[Cache Plugin] engine instance:', !!engine)
+          console.warn('[Cache Plugin] engine instance:', !!engine)
         }
 
         // 定义实际的安装逻辑
@@ -197,15 +198,15 @@ export function createCacheEnginePlugin(
             vueApp.component('CacheProvider', CacheProvider)
 
             if (debug) {
-              console.log('[Cache Plugin] Vue integration installed successfully')
+              console.warn('[Cache Plugin] Vue integration installed successfully')
             }
-          } else {
+          }
+          else {
             // 如果不自动安装，则手动注册全局提供者
             vueApp.provide('cache', globalCache)
             vueApp.provide('cacheConfig', config.cacheConfig)
             vueApp.provide('cacheManager', globalCache.manager)
           }
-
           // 性能监控
           if (enablePerformanceMonitoring) {
             engine.logger?.info('[Cache Plugin] Performance monitoring enabled')
@@ -220,7 +221,7 @@ export function createCacheEnginePlugin(
           })
 
           if (debug) {
-            console.log('[Cache Plugin] Installation completed successfully')
+            console.warn('[Cache Plugin] Installation completed successfully')
           }
         }
 
@@ -233,11 +234,13 @@ export function createCacheEnginePlugin(
             engine.logger?.info(`[Cache Plugin] app:created event received, installing now`)
             await performInstall()
           })
-        } else {
+        }
+        else {
           // 如果 Vue 应用已经存在，直接安装
           await performInstall()
         }
-      } catch (error) {
+      }
+      catch (error) {
         const errorMessage = `Failed to install ${name} plugin: ${error instanceof Error ? error.message : String(error)}`
 
         if (debug) {
@@ -252,10 +255,10 @@ export function createCacheEnginePlugin(
       }
     },
 
-    async uninstall(context) {
+    async uninstall(context: any) {
       try {
         if (debug) {
-          console.log('[Cache Plugin] uninstall method called')
+          console.warn('[Cache Plugin] uninstall method called')
         }
 
         // 从上下文中获取引擎实例
@@ -271,9 +274,10 @@ export function createCacheEnginePlugin(
         engine.logger?.info(`${name} plugin uninstalled successfully`)
 
         if (debug) {
-          console.log('[Cache Plugin] Uninstallation completed successfully')
+          console.warn('[Cache Plugin] Uninstallation completed successfully')
         }
-      } catch (error) {
+      }
+      catch (error) {
         const errorMessage = `Failed to uninstall ${name} plugin: ${error instanceof Error ? error.message : String(error)}`
 
         if (debug) {
