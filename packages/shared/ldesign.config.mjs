@@ -10,7 +10,7 @@ export default defineConfig({
   formats: ['esm', 'cjs', 'umd'],
 
   // 生成类型声明文件
-  dts: false,
+  dts: true,
 
   // 生产环境压缩代码
   minify: true,
