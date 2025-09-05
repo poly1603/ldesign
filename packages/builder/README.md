@@ -1,451 +1,682 @@
 # @ldesign/builder
 
-🚀 **强大的前端库打包工具** - 一个基于 Rollup 的智能打包解决方案，支持多种前端库类型的零配置构建。
+基于 rollup/rolldown 的通用库打包工具，支持多种前端库类型的打包和双打包核心的灵活切换。
 
-🚀 **智能化前端库打包工具** - 基于 Rollup 的现代化构建解决方案
+## ✨ 特性
 
-一个专为现代前端开发设计的智能打包工具，能够自动检测项目类型、智能配置构建选项，让你专注于代码而非配置！
+- 🚀 **双打包核心支持** - 支持 Rollup 和 Rolldown，可灵活切换
+- 📦 **多格式输出** - 自动输出 ESM (es/)、CJS (lib/)、UMD (dist/) 三种格式
+- 🎯 **多入口构建** - 默认将 src/ 下所有源文件作为入口，保留模块结构
+- 📝 **TypeScript 优先** - 完整的 TypeScript 支持，自动分发 .d.ts 到各格式目录
+- ⚡ **智能配置** - 基于项目类型自动生成最佳配置，零配置可用
+- 🔧 **灵活配置** - 支持多种配置文件格式和环境特定配置
+- 📊 **性能监控** - 内置性能分析和优化建议
+- 🎯 **插件系统** - 丰富的插件生态和自定义插件支持
+- 🛠️ **CLI 工具** - 完整的命令行工具支持，包含批量构建示例项目
+- 📁 **批量构建** - 支持一键构建所有示例项目
 
-## ✨ 核心特性
-
-### 🧠 智能项目检测
-- **自动识别项目类型**：Vue、React、TypeScript、JavaScript 等
-- **智能文件分析**：自动检测 .ts、.tsx、.vue、.jsx、.css、.less、.scss 等文件
-- **依赖关系分析**：构建完整的项目依赖图谱
-
-### 🔧 现代插件系统
-- **Vue 完美支持**：使用 `unplugin-vue` 处理 Vue 单文件组件
-- **Vue JSX 支持**：使用 `unplugin-vue-jsx` 处理 Vue JSX 语法
-- **TypeScript 原生支持**：完整的 TS 编译和类型生成
-- **样式预处理器**：支持 CSS、Less、Sass、Stylus 等
-
-### 📦 多格式输出
-- **ESM 格式**：现代 ES 模块，保持目录结构
-- **CJS 格式**：CommonJS 兼容，Node.js 友好
-- **UMD 格式**：通用模块，浏览器直接可用
-- **类型声明**：自动生成 TypeScript 声明文件
-
-### 🎯 编程式 API
-- **零配置体验**：开箱即用，无需复杂配置
-- **类型安全**：完整的 TypeScript 类型定义
-- **简洁优雅**：直观的 API 设计
-
-## 🚀 安装
+## 📦 安装
 
 ```bash
-# 使用 pnpm（推荐）
-pnpm add @ldesign/builder
-
 # 使用 npm
-npm install @ldesign/builder
+npm install @ldesign/builder --save-dev
+
+# 使用 pnpm
+pnpm add @ldesign/builder -D
 
 # 使用 yarn
-yarn add @ldesign/builder
+yarn add @ldesign/builder --dev
 ```
 
 ## 🚀 快速开始
 
 ### 基础使用
 
-```typescript
+```javascript
 import { build } from '@ldesign/builder'
 
-// 最简单的使用方式 - 零配置！
+// 零配置构建 - 自动多入口，输出到 es/lib/dist
+await build()
+
+// 或指定入口
 await build({
-  input: 'src/index.ts',
-  outDir: 'dist'
-})
-
-// 系统会自动：
-// ✅ 检测项目类型
-// ✅ 配置相应插件
-// ✅ 生成多种格式
-// ✅ 创建类型声明
-```
-
-### Vue 组件库
-
-```typescript
-import { build, defineConfig } from '@ldesign/builder'
-
-const config = defineConfig({
-  input: 'src/index.ts',
-  outDir: 'dist',
-  formats: ['esm', 'cjs', 'umd'],
-  dts: true,
-  external: ['vue'],
-  globals: { vue: 'Vue' },
-  name: 'MyVueLibrary'
-})
-
-await build(config)
-```
-
-### React 组件库
-
-```typescript
-await build({
-  input: 'src/index.tsx',
-  outDir: 'dist',
-  formats: ['esm', 'cjs'],
-  dts: true,
-  external: ['react', 'react-dom'],
-  globals: {
-    react: 'React',
-    'react-dom': 'ReactDOM'
-  }
+  input: 'src/index.ts'
 })
 ```
 
-### TypeScript 工具库
+### 使用配置文件
 
-```typescript
-await build({
-  input: 'src/index.ts',
-  outDir: 'dist',
-  formats: ['esm', 'cjs'],
-  dts: true,
-  minify: true
-})
-```
-
-## 配置文件
-
-在项目根目录创建 `ldesign.config.ts` 或 `ldesign.config.js`：
+创建 `builder.config.ts`：
 
 ```typescript
 import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
-  // 入口文件
   input: 'src/index.ts',
-  
-  // 输出配置
-  output: {
-    dir: 'dist',
-    format: ['es', 'cjs', 'umd'],
-    name: 'MyLibrary'
-  },
-  
-  // 生成类型声明文件
+  outDir: 'dist',
+  formats: ['esm', 'cjs'],
   dts: true,
-  
-  // 外部依赖
-  external: ['vue', 'react'],
-  
-  // 插件配置
-  plugins: {
-    typescript: {
-      target: 'es2020'
-    },
-    terser: {
-      compress: {
-        drop_console: true
-      }
-    }
-  },
-  
-  // 构建模式
-  mode: 'production'
+  sourcemap: true,
+  clean: true
 })
 ```
 
-## API 使用
-
-### 编程式 API
+### 使用预设配置
 
 ```typescript
-import { build, watch, analyze, createBuilder } from '@ldesign/builder'
+import { presets } from '@ldesign/builder'
 
-// 构建项目
-const result = await build({
+// 库开发预设
+export default presets.library({
   input: 'src/index.ts',
-  output: {
-    dir: 'dist',
-    format: ['es', 'cjs']
-  },
-  dts: true
+  external: ['vue', 'react']
 })
 
-// 监听模式
-await watch({
+// Vue 组件库预设
+export default presets.vue({
   input: 'src/index.ts',
+  name: 'MyVueLib'
+})
+
+// React 组件库预设
+export default presets.react({
+  input: 'src/index.tsx',
+  name: 'MyReactLib'
+})
+```
+
+### 高级多入口配置
+
+```typescript
+import { defineConfig } from '@ldesign/builder'
+
+export default defineConfig({
+  // 通配符入口配置，支持多种文件类型
+  input: [
+    'src/**/*.ts',
+    'src/**/*.vue',
+    'src/**/*.less',
+    'src/**/*.tsx'
+  ]
+})
+```
+
+### 批量构建示例项目
+
+```bash
+# 构建所有示例项目
+ldesign-builder examples
+
+# 仅构建包含特定关键字的示例
+ldesign-builder examples --filter typescript
+
+# 并发构建（默认串行）
+ldesign-builder examples --concurrency 3
+
+# 指定示例根目录
+ldesign-builder examples --root my-examples
+```
+
+### 输出目录结构
+
+默认情况下，构建会产生以下目录结构：
+
+```
+project/
+├── es/           # ESM 格式，保留模块结构
+│   ├── index.js
+│   ├── index.d.ts
+│   └── utils/
+│       ├── helper.js
+│       └── helper.d.ts
+├── lib/          # CJS 格式，保留模块结构
+│   ├── index.cjs
+│   ├── index.d.ts
+│   └── utils/
+│       ├── helper.cjs
+│       └── helper.d.ts
+└── dist/         # UMD 格式，单文件
+    └── index.umd.js
+```
+
+  // 新的多输出配置格式
   output: {
-    dir: 'dist',
-    format: ['es']
+    // UMD 格式 - 用于浏览器直接引用
+    umd: {
+      dir: 'dist',
+      format: 'umd',
+      name: 'MyLibrary',
+      sourcemap: true,
+      minify: true
+    },
+
+    // ESM 格式 - 保持目录结构，生成类型声明
+    esm: {
+      dir: 'es',
+      format: 'esm',
+      preserveStructure: true,
+      sourcemap: true,
+      dts: true
+    },
+
+    // CJS 格式 - 保持目录结构，生成类型声明
+    cjs: {
+      dir: 'lib',
+      format: 'cjs',
+      preserveStructure: true,
+      sourcemap: true,
+      dts: true
+    }
+  },
+
+  mode: 'production',
+  clean: true,
+  external: ['vue', 'react']
+})
+```
+
+## 📖 API 文档
+
+### build(options)
+
+执行构建任务。
+
+```typescript
+import { build } from '@ldesign/builder'
+
+const result = await build({
+  input: 'src/index.ts',
+  outDir: 'dist',
+  formats: ['esm', 'cjs', 'umd'],
+  mode: 'production',
+  dts: true,
+  sourcemap: true,
+  minify: true,
+  clean: true,
+  external: ['vue', 'react'],
+  globals: {
+    vue: 'Vue',
+    react: 'React'
   }
 })
 
-// 项目分析
-const analysis = await analyze('./src')
-console.log(analysis)
-
-// 创建自定义构建器
-const { builder, typeGenerator } = await createBuilder({
-  input: 'src/index.ts',
-  output: { dir: 'dist' }
-})
-
-const buildResult = await builder.build()
+console.log(result.success) // true/false
+console.log(result.outputs) // 输出文件信息
+console.log(result.duration) // 构建耗时
 ```
 
-### 核心类使用
+### watch(options)
+
+启动监听模式。
 
 ```typescript
-import {
-  ProjectScanner,
-  PluginConfigurator,
-  RollupBuilder,
-  TypeGenerator,
-  Logger
-} from '@ldesign/builder'
+import { watch } from '@ldesign/builder'
 
-// 项目扫描
-const scanner = new ProjectScanner('./src')
-const scanResult = await scanner.scan()
-
-// 插件配置
-const configurator = new PluginConfigurator()
-const plugins = await configurator.configure(scanResult, options)
-
-// Rollup 构建
-const builder = new RollupBuilder(options)
-const result = await builder.build()
-
-// 类型生成
-const typeGen = new TypeGenerator()
-await typeGen.generate({
+const { watcher, stop } = await watch({
   input: 'src/index.ts',
-  output: 'dist/index.d.ts'
+  outDir: 'dist',
+  formats: ['esm'],
+  buildOnStart: true,
+  debounce: 100
+})
+
+// 停止监听
+await stop()
+```
+
+### analyze(rootDir, options)
+
+分析项目结构。
+
+```typescript
+import { analyze } from '@ldesign/builder'
+
+const result = await analyze('./src', {
+  includePatterns: ['**/*.{ts,tsx,js,jsx,vue}'],
+  ignorePatterns: ['node_modules/**']
+})
+
+console.log(result.projectType) // 'vue' | 'react' | 'typescript' | 'javascript'
+console.log(result.stats) // 统计信息
+console.log(result.recommendations) // 构建建议
+```
+
+### init(options)
+
+初始化项目模板。
+
+```typescript
+import { init } from '@ldesign/builder'
+
+await init({
+  template: 'vue', // 'vanilla' | 'vue' | 'react' | 'typescript' | 'library'
+  typescript: true,
+  output: './my-project',
+  name: 'my-awesome-lib'
 })
 ```
 
-## 命令行选项
+## ⚙️ 配置选项
 
-### build 命令
+### BuildOptions
 
-```bash
-ldesign build [input] [options]
+```typescript
+interface BuildOptions {
+  // 入口文件
+  input: string | Record<string, string>
 
-选项:
-  -o, --output <dir>           输出目录 (默认: dist)
-  -f, --format <formats>       输出格式 (es,cjs,umd,iife)
-  -n, --name <name>           UMD/IIFE 全局变量名
-  --dts [type]                生成类型声明文件 (bundled|separate)
-  --external <deps>           外部依赖列表
-  --mode <mode>               构建模式 (development|production)
-  -c, --config <file>         配置文件路径
-  --minify                    压缩输出
-  --sourcemap                 生成 sourcemap
-  -v, --verbose               详细日志
-  -s, --silent                静默模式
+  // 输出目录
+  outDir?: string
+
+  // 输出格式
+  formats?: ('esm' | 'cjs' | 'umd' | 'iife')[]
+
+  // 构建模式
+  mode?: 'development' | 'production'
+
+  // 生成类型声明文件
+  dts?: boolean | DtsOptions
+
+  // 生成 sourcemap
+  sourcemap?: boolean
+
+  // 压缩代码
+  minify?: boolean
+
+  // 清理输出目录
+  clean?: boolean
+
+  // 外部依赖
+  external?: string[] | ((id: string) => boolean)
+
+  // 全局变量映射（UMD 格式）
+  globals?: Record<string, string>
+
+  // UMD 包名
+  name?: string
+
+  // 自定义 Rollup 配置
+  rollupOptions?: Partial<RollupOptions>
+
+  // 自定义插件
+  plugins?: RollupPlugin[]
+}
 ```
 
-### watch 命令
+## � 高级功能
 
-```bash
-ldesign watch [input] [options]
+### 通配符入口配置
 
-选项:
-  -o, --output <dir>           输出目录
-  -f, --format <formats>       输出格式
-  --debounce <ms>             防抖延迟 (默认: 100ms)
-  --ignore <patterns>         忽略文件模式
-  -c, --config <file>         配置文件路径
-  -v, --verbose               详细日志
+支持使用通配符模式自动匹配多个入口文件：
+
+```typescript
+export default defineConfig({
+  // 单个通配符模式
+  input: 'src/**/*.ts',
+
+  // 多个通配符模式
+  input: [
+    'src/**/*.ts',
+    'src/**/*.vue',
+    'src/**/*.tsx'
+  ],
+
+  // 混合配置
+  input: [
+    'src/index.ts',        // 具体文件
+    'src/components/**/*.vue', // 通配符
+    'src/utils/**/*.ts'    // 通配符
+  ]
+})
 ```
 
-### init 命令
+### 多输出目录配置
 
-```bash
-ldesign init [options]
+按格式分别配置输出目录，替代简单的 `outDir` 配置：
 
-选项:
-  -t, --template <type>       项目模板 (vanilla|vue|react)
-  --typescript                使用 TypeScript
-  -o, --output <dir>          输出目录
-  -f, --force                 强制覆盖现有文件
+```typescript
+export default defineConfig({
+  input: 'src/**/*.ts',
+
+  output: {
+    // UMD 格式输出到 dist/ 目录
+    umd: {
+      dir: 'dist',
+      format: 'umd',
+      name: 'MyLibrary',
+      minify: true
+    },
+
+    // ESM 格式输出到 es/ 目录
+    esm: {
+      dir: 'es',
+      format: 'esm',
+      preserveStructure: true,
+      dts: true
+    },
+
+    // CJS 格式输出到 lib/ 目录
+    cjs: {
+      dir: 'lib',
+      format: 'cjs',
+      preserveStructure: true,
+      dts: true
+    }
+  }
+})
 ```
 
-### analyze 命令
+### 目录结构保持
 
-```bash
-ldesign analyze [input] [options]
+使用 `preserveStructure: true` 保持源文件的目录层级：
 
-选项:
-  --depth <number>            扫描深度
-  --include <patterns>        包含文件模式
-  --exclude <patterns>        排除文件模式
-  -v, --verbose               详细输出
+```typescript
+// 源文件结构
+src/
+├── index.ts
+├── components/
+│   ├── Button.ts
+│   └── Input.ts
+└── utils/
+    └── helpers.ts
+
+// 构建后结构（preserveStructure: true）
+es/
+├── index.js
+├── index.d.ts
+├── components/
+│   ├── Button.js
+│   ├── Button.d.ts
+│   ├── Input.js
+│   └── Input.d.ts
+└── utils/
+    ├── helpers.js
+    └── helpers.d.ts
 ```
 
-## 支持的文件类型
+### 向后兼容性
 
-- **JavaScript**: `.js`, `.mjs`, `.cjs`
-- **TypeScript**: `.ts`, `.tsx`
-- **Vue**: `.vue`
-- **React**: `.jsx`, `.tsx`
-- **Svelte**: `.svelte`
-- **样式**: `.css`, `.scss`, `.sass`, `.less`, `.styl`
-- **资源**: `.png`, `.jpg`, `.svg`, `.woff`, `.woff2`
+新功能完全向后兼容，现有配置无需修改：
 
-## 插件系统
+```typescript
+// 旧配置格式（仍然支持）
+export default defineConfig({
+  input: 'src/index.ts',
+  outDir: 'dist',
+  formats: ['esm', 'cjs', 'umd'],
+  dts: true
+})
 
-内置插件自动配置，支持：
+// 新配置格式（推荐）
+export default defineConfig({
+  input: 'src/index.ts',
+  output: {
+    umd: { dir: 'dist', format: 'umd' },
+    esm: { dir: 'es', format: 'esm', dts: true },
+    cjs: { dir: 'lib', format: 'cjs', dts: true }
+  }
+})
+```
 
-- **语言插件**: TypeScript, Babel, Esbuild
-- **框架插件**: Vue, React, Svelte
-- **样式插件**: PostCSS, Sass, Less, Stylus
-- **优化插件**: Terser, Replace, Strip
-- **开发插件**: Serve, Livereload
+## �🎯 预设配置
+
+### library - 库开发预设
+
+适用于 npm 包开发，输出 ESM + CJS 格式。
+
+```typescript
+export default presets.library({
+  input: 'src/index.ts',
+  external: ['lodash', 'axios']
+})
+```
+
+### vue - Vue 组件库预设
+
+适用于 Vue 3 组件库，支持 SFC 和 TypeScript。
+
+```typescript
+export default presets.vue({
+  input: 'src/index.ts',
+  name: 'MyVueComponents'
+})
+```
+
+### react - React 组件库预设
+
+适用于 React 组件库，支持 JSX/TSX。
+
+```typescript
+export default presets.react({
+  input: 'src/index.tsx',
+  name: 'MyReactComponents'
+})
+```
+
+### node - Node.js 库预设
+
+适用于 Node.js 库，自动排除内置模块。
+
+```typescript
+export default presets.node({
+  input: 'src/index.ts'
+})
+```
+
+### browser - 浏览器库预设
+
+适用于浏览器库，输出 ESM + UMD 格式。
+
+```typescript
+export default presets.browser({
+  input: 'src/index.ts',
+  name: 'MyBrowserLib'
+})
+```
+
+### multiEntry - 多入口组件库预设
+
+适用于多入口组件库，使用新的配置格式。
+
+```typescript
+export default presets.multiEntry({
+  name: 'MyComponentLib',
+  external: ['vue', 'react']
+})
+```
+
+### modern - 现代化组件库预设
+
+适用于现代化组件库，保持目录结构。
+
+```typescript
+export default presets.modern({
+  external: ['vue', 'react', 'lodash']
+})
+```
+
+## 🔧 插件系统
+
+构建工具内置了丰富的插件支持：
+
+- **TypeScript** - 使用 esbuild 或官方插件编译 TypeScript
+- **Vue** - 支持 Vue 3 单文件组件
+- **React** - 支持 JSX/TSX 转换
+- **样式处理** - 支持 CSS、Less、Sass、Stylus
+- **代码压缩** - 使用 Terser 压缩代码
+- **模块解析** - 智能解析 Node.js 模块
+- **环境变量** - 替换环境变量
 
 ### 自定义插件
 
 ```typescript
+import { defineConfig } from '@ldesign/builder'
+import myCustomPlugin from './my-plugin'
+
 export default defineConfig({
-  plugins: {
-    // 覆盖内置插件配置
-    typescript: {
-      target: 'es2020',
-      declaration: true
-    },
-    
-    // 添加自定义插件
-    custom: [
-      myCustomPlugin(),
-      anotherPlugin({
-        option: 'value'
-      })
-    ]
+  input: 'src/index.ts',
+  plugins: [
+    myCustomPlugin({
+      // 插件选项
+    })
+  ]
+})
+```
+
+## 📊 项目分析
+
+使用 `analyze` 命令分析项目结构：
+
+```bash
+npx @ldesign/builder analyze
+```
+
+分析结果包括：
+
+- 📋 项目基本信息
+- 📁 文件类型统计
+- 💡 构建建议
+- ⚠️ 潜在问题
+
+## 🔍 监听模式
+
+启动监听模式进行开发：
+
+```bash
+npx @ldesign/builder build --watch
+```
+
+或使用 API：
+
+```typescript
+import { watch } from '@ldesign/builder'
+
+const { watcher, stop, getState } = await watch({
+  input: 'src/index.ts',
+  outDir: 'dist',
+  buildOnStart: true
+})
+
+// 获取监听状态
+const state = getState()
+console.log(state.buildCount) // 构建次数
+console.log(state.errorCount) // 错误次数
+```
+
+## 🎨 样式处理
+
+自动检测和处理样式文件：
+
+```typescript
+// 支持的样式文件
+import './styles/index.css'
+import './styles/theme.less'
+import './styles/components.scss'
+import './styles/utils.styl'
+```
+
+样式处理特性：
+
+- ✅ 自动添加浏览器前缀
+- ✅ 样式压缩和优化
+- ✅ 样式提取到单独文件
+- ✅ 支持 CSS Modules
+- ✅ PostCSS 插件支持
+
+## 🚀 性能优化
+
+- **增量构建** - 只重新构建变化的文件
+- **并行处理** - 多格式并行构建
+- **Tree Shaking** - 自动移除未使用的代码
+- **代码分割** - 支持动态导入和代码分割
+- **缓存优化** - 智能缓存提升构建速度
+
+## 🔗 集成示例
+
+### 与 package.json 集成
+
+```json
+{
+  "scripts": {
+    "build": "ldesign-builder build",
+    "build:watch": "ldesign-builder build --watch",
+    "dev": "ldesign-builder build --mode development --watch",
+    "analyze": "ldesign-builder analyze"
   }
-})
+}
 ```
 
-## 项目模板
+## 🤝 贡献
 
-### Vanilla JavaScript/TypeScript
+欢迎贡献代码！
 
+## 🎯 示例项目
+
+我们提供了多个示例项目来演示不同场景的使用：
+
+### Vue 3 组件库示例
 ```bash
-ldesign init --template vanilla
-ldesign init --template vanilla --typescript
+cd packages/builder/examples/vue3-component
+pnpm install
+node build.js
 ```
 
-### Vue 组件库
+特性：
+- Vue 3 单文件组件
+- Less 样式预处理
+- TypeScript 支持
+- 组件导出
 
+### React 组件库示例
 ```bash
-ldesign init --template vue
-ldesign init --template vue --typescript
+cd packages/builder/examples/react-component
+pnpm install
+node build.js
 ```
 
-### React 组件库
+特性：
+- React TSX 组件
+- Less 样式文件
+- TypeScript 类型定义
+- Hook 使用示例
 
+### TypeScript 库示例
 ```bash
-ldesign init --template react
-ldesign init --template react --typescript
+cd packages/builder/examples/typescript-lib
+pnpm install
+node build.js
 ```
 
-## 最佳实践
+特性：
+- 纯 TypeScript 代码
+- 复杂类型定义
+- 工具类和常量
+- 完整的类型声明
 
-### 1. 库开发
+## 🔧 自动检测功能
 
-```typescript
-export default defineConfig({
-  input: 'src/index.ts',
-  output: {
-    dir: 'dist',
-    format: ['es', 'cjs']
-  },
-  dts: 'bundled',
-  external: ['vue', 'react'], // 不打包框架依赖
-  mode: 'production'
-})
-```
+@ldesign/builder 会自动检测项目类型和配置：
 
-### 2. 组件库开发
+- **Vue 版本检测** - 自动识别 Vue 2 或 Vue 3 项目
+- **框架检测** - 根据文件类型自动配置相应插件
+- **样式处理** - 自动处理 Less、Sass、CSS 文件
+- **TypeScript 支持** - 自动配置 TypeScript 编译
 
-```typescript
-export default defineConfig({
-  input: {
-    index: 'src/index.ts',
-    button: 'src/components/button/index.ts',
-    input: 'src/components/input/index.ts'
-  },
-  output: {
-    dir: 'dist',
-    format: ['es']
-  },
-  dts: 'separate', // 每个组件单独的类型文件
-  preserveModules: true // 保持模块结构
-})
-```
+## 📚 技术栈
 
-### 3. 工具库开发
+- **构建引擎**: Rollup
+- **Vue 支持**: unplugin-vue, @vitejs/plugin-vue2
+- **React 支持**: @vitejs/plugin-react
+- **样式处理**: rollup-plugin-postcss, rollup-plugin-less
+- **TypeScript**: @rollup/plugin-typescript
 
-```typescript
-export default defineConfig({
-  input: 'src/index.ts',
-  output: {
-    dir: 'dist',
-    format: ['es', 'cjs', 'umd'],
-    name: 'MyUtils'
-  },
-  dts: true,
-  minify: true,
-  sourcemap: true
-})
-```
+## 📄 许可证
 
-## 故障排除
+MIT License
 
-### 常见问题
+## 🔗 相关链接
 
-1. **构建失败**
-   - 检查入口文件是否存在
-   - 确认依赖是否正确安装
-   - 查看详细错误日志：`ldesign build -v`
-
-2. **类型生成失败**
-   - 确认 TypeScript 配置正确
-   - 检查 `tsconfig.json` 文件
-   - 使用 `--verbose` 查看详细信息
-
-3. **插件配置问题**
-   - 查看项目分析结果：`ldesign analyze -v`
-   - 检查插件依赖是否安装
-   - 自定义插件配置
-
-### 调试模式
-
-```bash
-# 启用详细日志
-ldesign build --verbose
-
-# 启用调试日志
-DEBUG=ldesign:* ldesign build
-
-# 分析项目结构
-ldesign analyze --verbose
-```
-
-## 更新日志
-
-查看 [CHANGELOG.md](./CHANGELOG.md) 了解版本更新信息。
-
-## 贡献指南
-
-1. Fork 项目
-2. 创建特性分支：`git checkout -b feature/new-feature`
-3. 提交更改：`git commit -am 'Add new feature'`
-4. 推送分支：`git push origin feature/new-feature`
-5. 提交 Pull Request
-
-## 许可证
-
-MIT License - 查看 [LICENSE](./LICENSE) 文件了解详情。
-
-## 相关链接
-
-- [官方文档](https://ldesign.dev/builder)
-- [GitHub 仓库](https://github.com/ldesign/builder)
-- [问题反馈](https://github.com/ldesign/builder/issues)
-- [讨论区](https://github.com/ldesign/builder/discussions)
+- [Rollup 官方文档](https://rollupjs.org/)
+- [TypeScript 官方文档](https://www.typescriptlang.org/)
+- [Vue 官方文档](https://vuejs.org/)
+- [React 官方文档](https://reactjs.org/)

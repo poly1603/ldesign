@@ -1,0 +1,49 @@
+{
+  "name": "@example/mixed-library",
+  "version": "1.0.0",
+  "description": "混合类型库示例 - 展示如何构建包含多种文件类型的库",
+  "keywords": ["mixed", "typescript", "css", "utils", "components", "ldesign"],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "main": "lib/index.cjs",
+  "module": "es/index.js",
+  "types": "es/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs",
+      "types": "./es/index.d.ts"
+    },
+    "./style": "./es/index.css",
+    "./utils": {
+      "import": "./es/utils/index.js",
+      "require": "./lib/utils/index.cjs",
+      "types": "./es/utils/index.d.ts"
+    },
+    "./components": {
+      "import": "./es/components/index.js",
+      "require": "./lib/components/index.cjs",
+      "types": "./es/components/index.d.ts"
+    }
+  },
+  "files": [
+    "es",
+    "lib",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "ldesign-builder build",
+    "dev": "ldesign-builder watch",
+    "clean": "ldesign-builder clean",
+    "analyze": "ldesign-builder analyze",
+    "test": "echo \"No tests yet\""
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "less": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

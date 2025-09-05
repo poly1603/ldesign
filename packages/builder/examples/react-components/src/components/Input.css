@@ -1,0 +1,164 @@
+/* Input 组件样式 */
+.ld-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ld-input-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ld-color-text, #333);
+  cursor: pointer;
+}
+
+.ld-input-required {
+  color: var(--ld-color-danger, #ff4d4f);
+  margin-left: 2px;
+}
+
+.ld-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ld-input {
+  width: 100%;
+  border: 1px solid var(--ld-color-border, #d9d9d9);
+  border-radius: var(--ld-border-radius, 6px);
+  background-color: var(--ld-color-bg, #fff);
+  color: var(--ld-color-text, #333);
+  transition: all 0.2s ease;
+  outline: none;
+  font-family: inherit;
+}
+
+.ld-input:focus {
+  border-color: var(--ld-color-primary, #722ed1);
+  box-shadow: 0 0 0 2px rgba(114, 46, 209, 0.1);
+}
+
+.ld-input::placeholder {
+  color: var(--ld-color-text-placeholder, #999);
+}
+
+/* 尺寸样式 */
+.ld-input--small {
+  padding: 4px 8px;
+  font-size: 12px;
+  height: 28px;
+}
+
+.ld-input--medium {
+  padding: 8px 12px;
+  font-size: 14px;
+  height: 36px;
+}
+
+.ld-input--large {
+  padding: 12px 16px;
+  font-size: 16px;
+  height: 44px;
+}
+
+/* 状态样式 */
+.ld-input--focused {
+  border-color: var(--ld-color-primary, #722ed1);
+  box-shadow: 0 0 0 2px rgba(114, 46, 209, 0.1);
+}
+
+.ld-input--disabled {
+  background-color: var(--ld-color-bg-disabled, #f5f5f5);
+  color: var(--ld-color-text-disabled, #999);
+  cursor: not-allowed;
+}
+
+.ld-input--readonly {
+  background-color: var(--ld-color-bg-readonly, #fafafa);
+  cursor: default;
+}
+
+.ld-input--error {
+  border-color: var(--ld-color-danger, #ff4d4f);
+}
+
+.ld-input--error:focus {
+  border-color: var(--ld-color-danger, #ff4d4f);
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.1);
+}
+
+/* 前缀和后缀 */
+.ld-input--has-prefix {
+  padding-left: 32px;
+}
+
+.ld-input--has-suffix {
+  padding-right: 32px;
+}
+
+.ld-input-prefix,
+.ld-input-suffix {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ld-color-text-secondary, #999);
+  pointer-events: none;
+}
+
+.ld-input-prefix {
+  left: 8px;
+}
+
+.ld-input-suffix {
+  right: 8px;
+  pointer-events: auto;
+}
+
+.ld-input-suffix-icon {
+  pointer-events: none;
+}
+
+/* 清空和密码切换按钮 */
+.ld-input-clear,
+.ld-input-password {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: none;
+  color: var(--ld-color-text-secondary, #999);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  transition: color 0.2s ease;
+  padding: 0;
+}
+
+.ld-input-clear:hover,
+.ld-input-password:hover {
+  color: var(--ld-color-text, #666);
+}
+
+.ld-input-clear {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* 错误和帮助文本 */
+.ld-input-error {
+  font-size: 12px;
+  color: var(--ld-color-danger, #ff4d4f);
+  margin-top: 2px;
+}
+
+.ld-input-help {
+  font-size: 12px;
+  color: var(--ld-color-text-secondary, #999);
+  margin-top: 2px;
+}

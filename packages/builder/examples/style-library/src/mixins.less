@@ -1,0 +1,291 @@
+/**
+ * 通用 Mixins
+ * 
+ * 提供常用的样式混入，提高开发效率和代码复用性
+ */
+
+@import './variables.less';
+
+// ============= 布局 Mixins =============
+
+// 清除浮动
+.clearfix() {
+  &::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+// 居中对齐
+.center-block() {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+// Flexbox 居中
+.flex-center() {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// 绝对定位居中
+.absolute-center() {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+// ============= 文本 Mixins =============
+
+// 文本省略
+.text-ellipsis() {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+// 多行文本省略
+.text-ellipsis-multiline(@lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: @lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// 文本选择禁用
+.user-select-none() {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+// ============= 按钮 Mixins =============
+
+// 按钮基础样式
+.btn-base() {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: @border-width-base solid transparent;
+  border-radius: @border-radius-base;
+  font-weight: @font-weight-medium;
+  cursor: pointer;
+  transition: all @transition-base @ease-out;
+  outline: none;
+  text-decoration: none;
+  .user-select-none();
+  white-space: nowrap;
+  vertical-align: middle;
+
+  &:focus {
+    box-shadow: @shadow-focus;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// 按钮尺寸
+.btn-size(@height, @padding, @font-size) {
+  height: @height;
+  padding: 0 @padding;
+  font-size: @font-size;
+}
+
+// 按钮变体
+.btn-variant(@bg-color, @border-color: @bg-color, @text-color: #fff) {
+  background-color: @bg-color;
+  border-color: @border-color;
+  color: @text-color;
+
+  &:hover:not(:disabled) {
+    background-color: darken(@bg-color, 8%);
+    border-color: darken(@border-color, 8%);
+  }
+
+  &:active:not(:disabled) {
+    background-color: darken(@bg-color, 12%);
+    border-color: darken(@border-color, 12%);
+  }
+}
+
+// ============= 输入框 Mixins =============
+
+// 输入框基础样式
+.input-base() {
+  width: 100%;
+  border: @border-width-base solid @border-color;
+  border-radius: @border-radius-base;
+  background-color: @bg-color;
+  color: @text-color;
+  transition: all @transition-base @ease-out;
+  outline: none;
+
+  &:focus {
+    border-color: @primary-color;
+    box-shadow: @shadow-focus;
+  }
+
+  &::placeholder {
+    color: @text-color-tertiary;
+  }
+
+  &:disabled {
+    background-color: @bg-color-disabled;
+    color: @text-color-disabled;
+    cursor: not-allowed;
+  }
+}
+
+// 输入框尺寸
+.input-size(@height, @padding, @font-size) {
+  height: @height;
+  padding: 0 @padding;
+  font-size: @font-size;
+}
+
+// ============= 卡片 Mixins =============
+
+// 卡片基础样式
+.card-base() {
+  background-color: @bg-color;
+  border-radius: @border-radius-base;
+  overflow: hidden;
+  transition: all @transition-base @ease-out;
+}
+
+// 卡片阴影
+.card-shadow(@level: base) when (@level = sm) {
+  box-shadow: @shadow-sm;
+}
+
+.card-shadow(@level: base) when (@level = base) {
+  box-shadow: @shadow-base;
+}
+
+.card-shadow(@level: base) when (@level = lg) {
+  box-shadow: @shadow-lg;
+}
+
+// ============= 响应式 Mixins =============
+
+// 媒体查询
+.media-xs(@rules) {
+  @media (max-width: @screen-xs) {
+    @rules();
+  }
+}
+
+.media-sm(@rules) {
+  @media (min-width: @screen-sm) {
+    @rules();
+  }
+}
+
+.media-md(@rules) {
+  @media (min-width: @screen-md) {
+    @rules();
+  }
+}
+
+.media-lg(@rules) {
+  @media (min-width: @screen-lg) {
+    @rules();
+  }
+}
+
+.media-xl(@rules) {
+  @media (min-width: @screen-xl) {
+    @rules();
+  }
+}
+
+// ============= 动画 Mixins =============
+
+// 淡入动画
+.fade-in(@duration: @transition-base) {
+  animation: fade-in @duration @ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// 滑入动画
+.slide-in-up(@duration: @transition-base) {
+  animation: slide-in-up @duration @ease-out;
+}
+
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 缩放动画
+.scale-in(@duration: @transition-base) {
+  animation: scale-in @duration @ease-out;
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// ============= 工具 Mixins =============
+
+// 隐藏元素（保持可访问性）
+.sr-only() {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// 重置按钮样式
+.btn-reset() {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+// 重置列表样式
+.list-reset() {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}

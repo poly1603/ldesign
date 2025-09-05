@@ -10,16 +10,19 @@ export default defineConfig({
   test: {
     // 测试环境
     environment: 'node',
-    
+
     // 全局设置
     globals: true,
-    
+
+    // 测试设置文件
+    setupFiles: ['./src/__tests__/setup.ts'],
+
     // 测试文件匹配模式
     include: [
       'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
       '__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'
     ],
-    
+
     // 排除的文件
     exclude: [
       'node_modules',
@@ -28,7 +31,7 @@ export default defineConfig({
       '.git',
       '.cache'
     ],
-    
+
     // 覆盖率配置
     coverage: {
       enabled: true,
@@ -49,16 +52,16 @@ export default defineConfig({
         statements: 80
       }
     },
-    
+
     // 超时设置
     testTimeout: 30000,
-    
+
     // 并发设置
     threads: true,
     maxThreads: 4,
     minThreads: 1
   },
-  
+
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),

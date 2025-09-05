@@ -1,0 +1,251 @@
+/**
+ * 输入框组件样式
+ */
+
+@import '../variables.less';
+@import '../mixins.less';
+
+// 输入框包装器
+.ld-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: @spacing-xs;
+}
+
+// 输入框标签
+.ld-input-label {
+  font-size: @font-size-sm;
+  font-weight: @font-weight-medium;
+  color: @text-color;
+  cursor: pointer;
+
+  .ld-input-required {
+    color: @danger-color;
+    margin-left: 2px;
+  }
+}
+
+// 输入框容器
+.ld-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+// 输入框基础样式
+.ld-input {
+  .input-base();
+
+  // 默认尺寸
+  .input-size(@input-height-base, @padding-sm, @font-size-sm);
+
+  // 尺寸变体
+  &--small {
+    .input-size(@input-height-sm, @padding-xs, @font-size-xs);
+  }
+
+  &--large {
+    .input-size(@input-height-lg, @padding-base, @font-size-base);
+  }
+
+  // 状态变体
+  &--focused {
+    border-color: @primary-color;
+    box-shadow: @shadow-focus;
+  }
+
+  &--error {
+    border-color: @danger-color;
+
+    &:focus {
+      border-color: @danger-color;
+      box-shadow: @shadow-focus-danger;
+    }
+  }
+
+  &--disabled {
+    background-color: @bg-color-disabled;
+    color: @text-color-disabled;
+    cursor: not-allowed;
+  }
+
+  &--readonly {
+    background-color: @bg-color-light;
+    cursor: default;
+  }
+
+  // 带前缀/后缀的输入框
+  &--has-prefix {
+    padding-left: 32px;
+  }
+
+  &--has-suffix {
+    padding-right: 32px;
+  }
+}
+
+// 前缀和后缀
+.ld-input-prefix,
+.ld-input-suffix {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: @spacing-xs;
+  color: @text-color-tertiary;
+  pointer-events: none;
+}
+
+.ld-input-prefix {
+  left: @padding-sm;
+}
+
+.ld-input-suffix {
+  right: @padding-sm;
+  pointer-events: auto;
+}
+
+// 清空和密码切换按钮
+.ld-input-clear,
+.ld-input-password {
+  .btn-reset();
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: @text-color-tertiary;
+  font-size: @font-size-xs;
+  line-height: 1;
+  transition: color @transition-base @ease-out;
+
+  &:hover {
+    color: @text-color-secondary;
+  }
+}
+
+.ld-input-clear {
+  font-size: @font-size-sm;
+  font-weight: @font-weight-bold;
+}
+
+// 错误和帮助文本
+.ld-input-error {
+  font-size: @font-size-xs;
+  color: @danger-color;
+  margin-top: 2px;
+}
+
+.ld-input-help {
+  font-size: @font-size-xs;
+  color: @text-color-tertiary;
+  margin-top: 2px;
+}
+
+// 输入框组
+.ld-input-group {
+  display: flex;
+
+  .ld-input {
+    border-radius: 0;
+    margin-left: -@border-width-base;
+
+    &:first-child {
+      border-top-left-radius: @border-radius-base;
+      border-bottom-left-radius: @border-radius-base;
+      margin-left: 0;
+    }
+
+    &:last-child {
+      border-top-right-radius: @border-radius-base;
+      border-bottom-right-radius: @border-radius-base;
+    }
+
+    &:focus {
+      z-index: 1;
+      position: relative;
+    }
+  }
+
+  // 输入框组附加元素
+  .ld-input-group-addon {
+    display: flex;
+    align-items: center;
+    padding: 0 @padding-sm;
+    background-color: @bg-color-light;
+    border: @border-width-base solid @border-color;
+    color: @text-color-secondary;
+    font-size: @font-size-sm;
+    white-space: nowrap;
+
+    &:first-child {
+      border-top-left-radius: @border-radius-base;
+      border-bottom-left-radius: @border-radius-base;
+      border-right: 0;
+    }
+
+    &:last-child {
+      border-top-right-radius: @border-radius-base;
+      border-bottom-right-radius: @border-radius-base;
+      border-left: 0;
+    }
+  }
+}
+
+// 搜索输入框
+.ld-input-search {
+  .ld-input-container {
+    .ld-input {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+
+  .ld-input-search-button {
+    .btn-base();
+    .btn-variant(@primary-color);
+    height: @input-height-base;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    margin-left: -@border-width-base;
+
+    &:focus {
+      z-index: 1;
+      position: relative;
+    }
+  }
+
+  // 尺寸变体
+  &--small {
+    .ld-input-search-button {
+      height: @input-height-sm;
+      .btn-size(@input-height-sm, @padding-sm, @font-size-xs);
+    }
+  }
+
+  &--large {
+    .ld-input-search-button {
+      height: @input-height-lg;
+      .btn-size(@input-height-lg, @padding-base, @font-size-base);
+    }
+  }
+}
+
+// 文本域
+.ld-textarea {
+  .input-base();
+  min-height: 80px;
+  padding: @padding-sm;
+  resize: vertical;
+  line-height: @line-height-base;
+
+  &--no-resize {
+    resize: none;
+  }
+
+  &--auto-resize {
+    resize: none;
+    overflow: hidden;
+  }
+}

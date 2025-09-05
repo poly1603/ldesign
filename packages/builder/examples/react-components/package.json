@@ -1,0 +1,56 @@
+{
+  "name": "@example/react-components",
+  "version": "1.0.0",
+  "description": "React 组件库示例 - 展示如何构建 React 组件库",
+  "keywords": ["react", "components", "ui", "typescript", "ldesign"],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "main": "lib/index.cjs",
+  "module": "es/index.js",
+  "types": "es/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs",
+      "types": "./es/index.d.ts"
+    },
+    "./style": "./es/index.css",
+    "./components/Button": {
+      "import": "./es/components/Button.js",
+      "require": "./lib/components/Button.cjs",
+      "types": "./es/components/Button.d.ts"
+    },
+    "./components/Input": {
+      "import": "./es/components/Input.js",
+      "require": "./lib/components/Input.cjs",
+      "types": "./es/components/Input.d.ts"
+    }
+  },
+  "files": [
+    "es",
+    "lib",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "ldesign-builder build",
+    "dev": "ldesign-builder watch",
+    "clean": "ldesign-builder clean",
+    "analyze": "ldesign-builder analyze",
+    "test": "echo \"No tests yet\""
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

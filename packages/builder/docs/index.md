@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: "@ldesign/builder"
-  text: "智能化前端库打包工具"
-  tagline: "基于 Rollup 的零配置多格式输出，让构建变得简单高效"
+  text: "强大的库构建工具"
+  tagline: "支持 TypeScript、Vue、样式等多种项目类型，双引擎驱动，提供统一的构建体验"
   actions:
     - theme: brand
       text: 快速开始

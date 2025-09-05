@@ -1,0 +1,46 @@
+{
+  "name": "@example/typescript-utils",
+  "version": "1.0.0",
+  "description": "TypeScript 工具库示例 - 展示如何构建纯 TypeScript 函数库",
+  "keywords": [
+    "typescript",
+    "utils",
+    "library",
+    "ldesign"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "ldesign-builder build",
+    "dev": "ldesign-builder watch",
+    "clean": "ldesign-builder clean",
+    "analyze": "ldesign-builder analyze",
+    "test": "echo \"No tests yet\""
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.4",
+    "rollup": "^4.50.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "name": "@example/vue3-components",
+  "version": "1.0.0",
+  "description": "Vue 3 组件库示例 - 展示如何构建 Vue 3 组件库",
+  "keywords": [
+    "vue",
+    "vue3",
+    "components",
+    "ui",
+    "ldesign"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "main": "lib/index.cjs",
+  "module": "es/index.js",
+  "types": "es/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs",
+      "types": "./es/index.d.ts"
+    },
+    "./style": "./es/index.css",
+    "./components/Button": {
+      "import": "./es/components/Button.js",
+      "require": "./lib/components/Button.cjs",
+      "types": "./es/components/Button.d.ts"
+    },
+    "./components/Input": {
+      "import": "./es/components/Input.js",
+      "require": "./lib/components/Input.cjs",
+      "types": "./es/components/Input.d.ts"
+    },
+    "./components/Card": {
+      "import": "./es/components/Card.js",
+      "require": "./lib/components/Card.cjs",
+      "types": "./es/components/Card.d.ts"
+    }
+  },
+  "files": [
+    "es",
+    "lib",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "ldesign-builder build",
+    "dev": "ldesign-builder watch",
+    "clean": "ldesign-builder clean",
+    "analyze": "ldesign-builder analyze",
+    "test": "echo \"No tests yet\""
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.4",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/compiler-sfc": "^3.5.21",
+    "postcss": "^8.5.6",
+    "rollup-plugin-esbuild": "^6.1.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-vue": "^6.0.0",
+    "typescript": "^5.0.0",
+    "unplugin-vue": "^7.0.1",
+    "vue": "^3.4.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

@@ -1,75 +1,50 @@
 /**
- * @ldesign/builder - 强大的前端库打包工具
+ * @ldesign/builder - 主入口文件
+ * 
+ * 基于 rollup/rolldown 的通用库打包工具
+ * 支持多种前端库类型的打包和双打包核心的灵活切换
+ * 
+ * @author LDesign Team
+ * @version 1.0.0
  */
 
-// 主构建器
-export { LibraryBuilder } from './LibraryBuilder'
-export type { LibraryBuilderConfig, BuildResult } from './LibraryBuilder'
+// 核心类导出
+export { LibraryBuilder } from './core/LibraryBuilder'
+export { ConfigManager } from './core/ConfigManager'
+export { StrategyManager } from './core/StrategyManager'
+export { PluginManager } from './core/PluginManager'
+export { LibraryDetector } from './core/LibraryDetector'
+export { PerformanceMonitor } from './core/PerformanceMonitor'
 
-// 项目分析器
-export { ProjectAnalyzer, ProjectType } from './analyzer/ProjectAnalyzer'
-export type { 
-  ProjectAnalysis, 
-  FileStats, 
-  VueFileAnalysis 
-} from './analyzer/ProjectAnalyzer'
+// 适配器导出
+export { BundlerAdapterFactory } from './adapters/base/AdapterFactory'
+export { RollupAdapter } from './adapters/rollup/RollupAdapter'
+export { RolldownAdapter } from './adapters/rolldown/RolldownAdapter'
 
-// 预设系统
-export {
-  BasePreset,
-  PureLessPreset,
-  TsLibPreset,
-  Vue2ComponentPreset,
-  Vue3ComponentPreset,
-  PresetFactory
-} from './presets'
-export type { PresetConfig } from './presets'
+// 策略导出
+export { TypeScriptStrategy } from './strategies/typescript/TypeScriptStrategy'
+export { StyleStrategy } from './strategies/style/StyleStrategy'
+export { Vue2Strategy } from './strategies/vue2/Vue2Strategy'
+export { Vue3Strategy } from './strategies/vue3/Vue3Strategy'
+export { MixedStrategy } from './strategies/mixed/MixedStrategy'
 
-// 产物验证器
-export { ArtifactValidator } from './validator/ArtifactValidator'
-export type {
-  ValidatorConfig,
-  ValidationResult,
-  ValidationError,
-  ValidationWarning,
-  ArtifactStats
-} from './validator/ArtifactValidator'
+// 插件导出
+export * from './plugins'
 
-// 样式插件
-export { stylePlugin } from './plugins/style-plugin'
-export type { StylePluginOptions } from './plugins/style-plugin'
+// 类型定义导出
+export * from './types'
 
-// 快捷方法
-import { LibraryBuilder } from './LibraryBuilder'
-import { ProjectAnalyzer } from './analyzer/ProjectAnalyzer'
-import { ArtifactValidator } from './validator/ArtifactValidator'
-import type { LibraryBuilderConfig } from './LibraryBuilder'
-import type { ValidatorConfig } from './validator/ArtifactValidator'
+// 常量导出
+export * from './constants'
+
+// 工具函数导出
+export * from './utils'
+
+// 便捷函数
+export { defineConfig } from './utils/config'
+export { createBuilder } from './utils/factory'
 
 /**
- * 快速构建
+ * 默认导出 - LibraryBuilder 类
  */
-export async function build(config?: LibraryBuilderConfig) {
-  return LibraryBuilder.build(config)
-}
-
-/**
- * 分析项目
- */
-export async function analyze(rootDir?: string, srcDir = 'src') {
-  const analyzer = new ProjectAnalyzer(rootDir || process.cwd(), srcDir)
-  return analyzer.analyze()
-}
-
-/**
- * 验证产物
- */
-export async function validate(config: ValidatorConfig) {
-  const validator = new ArtifactValidator(config)
-  const result = await validator.validate()
-  console.log(validator.generateReport(result))
-  return result
-}
-
-// 默认导出
-export default LibraryBuilder
+export { LibraryBuilder as default } from './core/LibraryBuilder'
