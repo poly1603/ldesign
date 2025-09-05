@@ -3,6 +3,7 @@
  * 统一的弹窗管理系统
  */
 
+import type { Engine } from '../types/engine'
 import { BaseManager } from '../core/base-manager'
 
 export interface DialogOptions {
@@ -74,8 +75,8 @@ export class DialogManager extends BaseManager<DialogManagerConfig> {
   private zIndexCounter = 0
   private idCounter = 0
 
-  constructor(config: DialogManagerConfig = {}) {
-    super('DialogManager', {
+  constructor(config: DialogManagerConfig = {}, engine?: Engine) {
+    const defaults: DialogManagerConfig = {
       zIndexBase: 2000,
       zIndexStep: 10,
       defaultAnimation: 'fade',
@@ -83,8 +84,9 @@ export class DialogManager extends BaseManager<DialogManagerConfig> {
       maxDialogs: 10,
       escapeKeyClose: true,
       clickMaskClose: true,
-      ...config,
-    })
+    }
+    const merged: DialogManagerConfig = { ...defaults, ...config }
+    super('DialogManager', merged, engine)
   }
 
   /**
@@ -376,7 +378,7 @@ export class DialogManager extends BaseManager<DialogManagerConfig> {
       this.open({
         type: 'prompt',
         title: '输入',
-        content: content,
+        content,
         html: false,
         buttons: [
           {
@@ -775,7 +777,7 @@ export class DialogManager extends BaseManager<DialogManagerConfig> {
     instance.options.onOpen?.()
 
     // 强制浏览器重排，确保DOM元素完全渲染
-    container.offsetHeight
+    void container.offsetHeight
 
     // 执行进入动画
     if (animation !== 'none') {

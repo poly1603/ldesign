@@ -419,9 +419,7 @@ export class TooltipDirective extends DirectiveBase {
     ) as HTMLElement
     if (!arrowEl) return
 
-    const _theme = arrowEl.dataset.theme
     const borderColor = arrowEl.dataset.borderColor
-    const _backgroundColor = arrowEl.dataset.backgroundColor
 
     // 重置箭头样式
     Object.assign(arrowEl.style, {

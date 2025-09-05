@@ -109,7 +109,7 @@ export interface EventStatistics {
 }
 
 // 引擎事件映射类型
-export interface EngineEventMap {
+export interface EngineEventMap extends EventMap {
   'engine:start': { timestamp: number; config: Record<string, unknown> }
   'engine:stop': { timestamp: number; reason: string }
   'engine:error': { error: Error; context: string; timestamp: number }

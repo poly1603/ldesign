@@ -15,7 +15,6 @@ export class StateManagerImpl implements StateManager {
 
   private maxHistorySize = 100
   private batchUpdates = new Set<string>()
-  private batchTimeout: NodeJS.Timeout | null = null
 
   constructor(private logger?: Logger) {
     // logger参数保留用于未来扩展
@@ -258,25 +257,25 @@ export class StateManagerImpl implements StateManager {
     }
   }
 
-  // 批量更新优化
-  private batchUpdate(key: string, updateFn: () => void): void {
-    this.batchUpdates.add(key)
-
-    if (this.batchTimeout) {
-      clearTimeout(this.batchTimeout)
-    }
-
-    this.batchTimeout = setTimeout(() => {
-      const updates = Array.from(this.batchUpdates)
-      this.batchUpdates.clear()
-      this.batchTimeout = null
-
-      // 执行批量更新
-      updateFn()
-
-      this.logger?.debug('Batch state update completed', { keys: updates })
-    }, 0) // 下一个事件循环执行
-  }
+  // 批量更新优化（暂未使用，移除以通过严格类型检查）
+  // private batchUpdate(key: string, updateFn: () => void): void {
+  //   this.batchUpdates.add(key)
+  //
+  //   if (this.batchTimeout) {
+  //     clearTimeout(this.batchTimeout)
+  //   }
+  //
+  //   this.batchTimeout = setTimeout(() => {
+  //     const updates = Array.from(this.batchUpdates)
+  //     this.batchUpdates.clear()
+  //     this.batchTimeout = null
+  //
+  //     // 执行批量更新
+  //     updateFn()
+  //
+  //     this.logger?.debug('Batch state update completed', { keys: updates })
+  //   }, 0) // 下一个事件循环执行
+  // }
 
   // 获取变更历史
   getChangeHistory(

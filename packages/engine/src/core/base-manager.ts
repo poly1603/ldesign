@@ -3,7 +3,7 @@
  * 为所有管理器提供通用的基础功能
  */
 
-import type { Engine } from './engine'
+import type { Engine } from '../types/engine'
 
 /**
  * 基础管理器接口
@@ -17,30 +17,32 @@ export interface IBaseManager {
   /**
    * 初始化管理器
    */
-  initialize(): Promise<void> | void
+  initialize: () => Promise<void> | void
 
   /**
    * 销毁管理器
    */
-  destroy(): Promise<void> | void
+  destroy: () => Promise<void> | void
 
   /**
    * 获取管理器状态
    */
-  getStatus(): 'idle' | 'initializing' | 'ready' | 'error' | 'destroyed'
+  getStatus: () => 'idle' | 'initializing' | 'ready' | 'error' | 'destroyed'
 }
 
 /**
  * 基础管理器抽象类
  * 提供管理器的通用实现
  */
-export abstract class AbstractBaseManager implements IBaseManager {
+export abstract class AbstractBaseManager<T = any> implements IBaseManager {
   protected engine: Engine
   protected _status: 'idle' | 'initializing' | 'ready' | 'error' | 'destroyed' = 'idle'
   protected _initialized = false
+  protected config: T
 
-  constructor(engine: Engine, public readonly name: string) {
+  constructor(engine: Engine, public readonly name: string, config?: T) {
     this.engine = engine
+    this.config = config || ({} as T)
   }
 
   /**
@@ -154,13 +156,53 @@ export abstract class AbstractBaseManager implements IBaseManager {
  * 基础管理器类
  * 提供管理器的具体实现
  */
-export class BaseManager extends AbstractBaseManager {
+export class BaseManager<T = any> extends AbstractBaseManager<T> {
+  constructor(name: string, config?: T, engine?: Engine) {
+    super(engine!, name, config)
+  }
+
   protected async onInitialize(): Promise<void> {
     // 默认实现，子类可以重写
   }
 
   protected async onDestroy(): Promise<void> {
     // 默认实现，子类可以重写
+  }
+
+  /**
+   * 更新配置
+   */
+  updateConfig(newConfig: Partial<T>): void {
+    this.config = { ...this.config, ...newConfig }
+  }
+
+  /**
+   * 获取基础统计信息
+   */
+  getStats(): { name: string; status: ReturnType<IBaseManager['getStatus']>; initialized: boolean } {
+    return {
+      name: this.name,
+      status: this.getStatus(),
+      initialized: this.isInitialized,
+    }
+  }
+
+  /**
+   * 记录日志
+   */
+  protected log(level: 'info' | 'warn' | 'error', message: string, ...args: any[]): void {
+    if (this.engine?.logger) {
+      this.engine.logger[level](`[${this.name}] ${message}`, ...args)
+    } else {
+      console[level](`[${this.name}] ${message}`, ...args)
+    }
+  }
+
+  /**
+   * 记录错误
+   */
+  protected error(message: string, ...args: any[]): void {
+    this.log('error', message, ...args)
   }
 }
 

@@ -9,14 +9,33 @@ import { commonDirectives } from '../directives/directive-manager'
 import { EngineImpl } from './engine'
 
 /**
- * 创建Vue3应用引擎实例
+ * 创建 Vue3 应用引擎实例
  *
- * 🚀 这是引擎的核心创建函数，它会初始化所有必要的管理器和服务
+ * 🚀 这是引擎的核心创建函数，它会初始化所有必要的管理器和服务。
  *
- * @param options 引擎配置选项
- * @returns 配置完整的引擎实例
+ * 功能特性：
+ * - 📊 智能的管理器系统：自动管理依赖关系和初始化顺序
+ * - 🔌 插件架构：支持动态加载和热更新
+ * - 🚪 中间件支持：提供请求/响应处理管道
+ * - 📊 性能监控：实时监控应用性能和资源使用
+ * - 🔒 安全防护：内置 XSS、CSRF 等安全防护
+ * - 💾 智能缓存：多级缓存策略和自动失效
+ * - 🔔 通知系统：统一的通知和消息管理
+ *
+ * @param {CreateEngineOptions} options 引擎配置选项
+ * @param {Record<string, any>} [options.config] 基本配置项
+ * @param {Plugin[]} [options.plugins] 要注册的插件列表
+ * @param {Middleware[]} [options.middleware] 要注册的中间件列表
+ * @param {ConfigSchema} [options.configSchema] 自定义配置模式
+ * @param {boolean} [options.enableAutoSave] 是否启用配置自动保存
+ * @param {number} [options.autoSaveInterval] 自动保存间隔（毫秒）
+ * @param {Component} [options.rootComponent] 根组件（提供时会自动创建Vue应用）
+ * @param {string|Element} [options.mountElement] 挂载元素
+ * @param {boolean} [options.autoMount] 是否自动挂载
+ * @returns {Engine} 配置完整的引擎实例
  *
  * @example
+ * 基本使用：
  * ```typescript
  * const engine = createEngine({
  *   config: {
@@ -26,58 +45,84 @@ import { EngineImpl } from './engine'
  *       enableHotReload: true,
  *       enableDevTools: true
  *     }
- *   },
- *   plugins: [myPlugin],
- *   middleware: [loggingMiddleware]
+ *   }
+ * })
+ * ```
+ *
+ * @example
+ * 带插件和中间件：
+ * ```typescript
+ * const engine = createEngine({
+ *   config: { debug: true },
+ *   plugins: [routerPlugin, storePlugin],
+ *   middleware: [authMiddleware, loggingMiddleware]
+ * })
+ * ```
+ *
+ * @example
+ * 一步到位创建并挂载：
+ * ```typescript
+ * const engine = createEngine({
+ *   rootComponent: App,
+ *   mountElement: '#app',
+ *   autoMount: true,
+ *   config: { debug: true }
  * })
  * ```
  */
 export function createEngine(options: CreateEngineOptions = {}): Engine {
+  // 1. 解构配置参数，设置默认值
   const {
     config = {},
     plugins = [],
     middleware = [],
     configSchema,
     enableAutoSave = false,
-    autoSaveInterval = 30000,
+    autoSaveInterval = 30000, // 30秒自动保存一次
     rootComponent,
     mountElement,
     autoMount = false,
   } = options
 
-  // 创建引擎实例
+  // 2. 创建引擎核心实例，传入基础配置
   const engine = new EngineImpl(config)
 
-  // 设置自定义配置Schema
+  // 3. 配置高级特性
+  // 3.1 设置自定义配置模式，用于配置验证和类型检查
   if (configSchema) {
     engine.config.setSchema(configSchema as any)
   }
 
-  // 启用配置自动保存
+  // 3.2 启用配置自动保存功能，防止配置丢失
   if (enableAutoSave) {
     engine.config.enableAutoSave(autoSaveInterval)
   }
 
-  // 注册常用指令
+  // 4. 注册内置组件
+  // 4.1 注册常用的 Vue 指令（如 v-loading、v-copy 等）
   engine.directives.registerBatch(commonDirectives)
 
-  // 注册中间件
+  // 5. 注册中间件系统
+  // 中间件按顺序执行，可用于请求拦截、日志记录、认证检查等
   middleware.forEach(m => {
     engine.middleware.use(m)
   })
 
-  // 注册插件（异步）
+  // 6. 注册插件系统（异步处理）
+  // 使用 Promise.all 并行加载所有插件，提高初始化速度
   const pluginPromise = Promise.all(plugins.map(plugin => engine.use(plugin))).catch(error => {
     engine.logger.error('Failed to register plugins', error)
+    // 不中断初始化流程，即使插件加载失败
   })
 
-  // 如果提供了根组件，自动创建Vue应用
+  // 7. 自动创建和挂载 Vue 应用（可选）
   if (rootComponent) {
+    // 7.1 创建 Vue 应用实例并安装引擎
     engine.createApp(rootComponent)
 
-    // 如果启用自动挂载且提供了挂载元素
+    // 7.2 如果需要自动挂载并且指定了挂载元素
     if (autoMount && mountElement) {
-      // 等待插件加载完成后再挂载
+      // 等待所有插件加载完成后再挂载，防止插件初始化失败
       pluginPromise.finally(() => {
         engine.mount(mountElement).catch(error => {
           engine.logger.error('Failed to auto-mount application', error)
@@ -86,6 +131,7 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
     }
   }
 
+  // 8. 返回完整配置的引擎实例
   return engine
 }
 

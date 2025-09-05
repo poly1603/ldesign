@@ -109,7 +109,13 @@ export interface LifecycleManager<T = any> {
   reset: () => void
 }
 
-// 生命周期管理器实现
+/**
+ * 生命周期管理器实现
+ *
+ * 负责注册、执行与统计各阶段生命周期钩子：
+ * - 钩子支持优先级、一次性执行（once）
+ * - 执行过程中收集历史与错误回调
+ */
 export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
   private hooks = new Map<string, HookInfo>()
   private phaseHooks = new Map<LifecyclePhase, Set<string>>()
@@ -129,6 +135,13 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
   }
 
   // 钩子注册
+  /**
+   * 注册生命周期钩子。
+   * @param phase 生命周期阶段
+   * @param hook 钩子函数
+   * @param priority 优先级，越大越先执行（默认0）
+   * @returns 钩子ID
+   */
   on(phase: LifecyclePhase, hook: LifecycleHook<T>, priority = 0): string {
     const id = this.generateHookId()
     const hookInfo: HookInfo = {
@@ -156,6 +169,9 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
     return id
   }
 
+  /**
+   * 注册一次性生命周期钩子（执行后自动移除）。
+   */
   once(phase: LifecyclePhase, hook: LifecycleHook<T>, priority = 0): string {
     const id = this.generateHookId()
     const hookInfo: HookInfo = {
@@ -183,6 +199,9 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
     return id
   }
 
+  /**
+   * 移除指定钩子。
+   */
   off(hookId: string): boolean {
     const hookInfo = this.hooks.get(hookId)
     if (!hookInfo) {
@@ -207,6 +226,10 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
     return true
   }
 
+  /**
+   * 批量移除钩子，可按阶段清空。
+   * @returns 被移除的钩子数量
+   */
   offAll(phase?: LifecyclePhase): number {
     let removedCount = 0
 
@@ -234,6 +257,9 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
   }
 
   // 钩子查询
+  /**
+   * 获取指定阶段的钩子（按优先级降序）。
+   */
   getHooks(phase: LifecyclePhase): HookInfo[] {
     const phaseHooks = this.phaseHooks.get(phase)
     if (!phaseHooks) {
@@ -248,6 +274,9 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
     return hooks
   }
 
+  /**
+   * 获取所有已注册钩子（按优先级降序）。
+   */
   getAllHooks(): HookInfo[] {
     return Array.from(this.hooks.values()).sort(
       (a, b) => b.priority - a.priority
@@ -259,6 +288,9 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
     return phaseHooks ? phaseHooks.size > 0 : false
   }
 
+  /**
+   * 获取钩子数量，可选按阶段统计。
+   */
   getHookCount(phase?: LifecyclePhase): number {
     if (phase) {
       const phaseHooks = this.phaseHooks.get(phase)
@@ -268,6 +300,10 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
   }
 
   // 生命周期执行
+  /**
+   * 异步执行指定阶段的所有钩子。
+   * @returns 生命周期事件（包含执行结果与耗时）
+   */
   async execute(
     phase: LifecyclePhase,
     engine: T,
@@ -601,8 +637,8 @@ export function createLifecycleManager<T = any>(
 // 生命周期装饰器
 export function LifecycleHookDecorator(phase: LifecyclePhase, priority = 0) {
   return function (
-    target: any,
-    propertyKey: string,
+    _target: any,
+    _propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
     const originalMethod = descriptor.value

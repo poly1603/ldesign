@@ -308,7 +308,6 @@ export class DragDirective extends DirectiveBase {
     el: HTMLElement,
     _event: MouseEvent
   ): { x: number; y: number } {
-    const _rect = el.getBoundingClientRect()
     const computedStyle = getComputedStyle(el)
 
     const left = Number.parseInt(computedStyle.left) || 0

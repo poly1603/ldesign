@@ -251,7 +251,6 @@ export function calculatePosition(
   index: number,
   gap: number
 ): { top?: string; bottom?: string; left: string; transform: string } {
-  const _viewport = getViewportSize()
   const elementRect = element.getBoundingClientRect()
 
   const result = {

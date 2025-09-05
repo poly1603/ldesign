@@ -184,7 +184,7 @@ export function createVueDirective(directive: DirectiveBase): Directive {
  * 指令工厂函数
  */
 export function defineDirective(
-  name: string,
+  _name: string,
   hooks: VueDirectiveHooks & {
     created?: (el: HTMLElement, binding: VueDirectiveBinding) => void
     beforeMount?: (el: HTMLElement, binding: VueDirectiveBinding) => void

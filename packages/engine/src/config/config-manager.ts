@@ -857,11 +857,6 @@ export class NamespacedConfigManager implements ConfigManager {
   namespace(name: string): ConfigManager {
     return this.parent.namespace(`${this.namespaceName}.${name}`)
   }
-
-  private getAllKeys(): string[] {
-    // 这里需要访问父级的私有方法，实际实现中可能需要调整
-    return []
-  }
 }
 
 // 工厂函数
@@ -912,8 +907,8 @@ export const defaultConfigSchema: ConfigSchema = {
     type: 'string',
     required: true,
     default: 'development',
-    validator: (value: string) =>
-      ['development', 'production', 'test'].includes(value),
+    validator: (value: unknown) =>
+      typeof value === 'string' && ['development', 'production', 'test'].includes(value),
     description: '运行环境',
   },
   debug: {

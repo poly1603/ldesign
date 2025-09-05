@@ -31,7 +31,7 @@ export * from './modules'
  * 创建现代化指令管理器实例
  * TODO: ModernDirectiveManager 文件缺失，暂时返回 null
  */
-export function createModernDirectiveManager(config?: any) {
+export function createModernDirectiveManager(_config?: any) {
   // return new ModernDirectiveManager(config)
   return null
 }

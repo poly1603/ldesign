@@ -2,7 +2,6 @@ import type {
   CacheManager,
   ConfigManager,
   DirectiveManager,
-  Engine,
   EngineConfig,
   EnvironmentManager,
   ErrorManager,
@@ -21,6 +20,7 @@ import type {
   StateManager,
   ThemeAdapter,
 } from '../types'
+import type { Engine } from '../types/engine'
 import { type App, type Component, createApp } from 'vue'
 import { createCacheManager } from '../cache/cache-manager'
 import {
@@ -130,14 +130,30 @@ export class EngineImpl implements Engine {
   /** 主题适配器 - 可选的主题切换接口 */
   theme?: ThemeAdapter
 
-  // 懒加载的管理器访问器
+  /**
+   * 懒加载缓存管理器访问器
+   *
+   * 使用懒加载模式来优化应用启动性能，只有在实际需要缓存功能时才初始化
+   * 缓存管理器。这种方式可以显著减少应用的初始化时间。
+   *
+   * @returns {CacheManager} 缓存管理器实例
+   *
+   * @example
+   * ```typescript
+   * // 第一次访问时会自动初始化
+   * const cache = engine.cache
+   * cache.set('key', 'value')
+   * ```
+   */
   get cache(): CacheManager {
     if (!this._cache) {
       const startTime = Date.now()
+      // 从配置中获取缓存设置，使用默认配置作为备用
       this._cache = createCacheManager(
         this.config.get('cache', {}) as any
       ) as any
       const initTime = Date.now() - startTime
+      // 在管理器注册表中标记为已初始化
       this.managerRegistry.markInitialized('cache')
       this.logger.debug('Cache manager initialized lazily', {
         initTime: `${initTime}ms`,
@@ -146,9 +162,21 @@ export class EngineImpl implements Engine {
     return this._cache!
   }
 
+  /**
+   * 懒加载性能管理器访问器
+   *
+   * 性能管理器用于监控和优化应用性能，包括：
+   * - 应用加载时间监控
+   * - 组件渲染性能监控
+   * - 内存使用情况监控
+   * - 网络请求性能监控
+   *
+   * @returns {PerformanceManager} 性能管理器实例
+   */
   get performance(): PerformanceManager {
     if (!this._performance) {
       const startTime = Date.now()
+      // 创建性能管理器并传入引擎实例作为上下文
       this._performance = createPerformanceManager(undefined, this) as any
       const initTime = Date.now() - startTime
       this.managerRegistry.markInitialized('performance')
@@ -159,9 +187,22 @@ export class EngineImpl implements Engine {
     return this._performance!
   }
 
+  /**
+   * 懒加载安全管理器访问器
+   *
+   * 安全管理器提供应用安全防护功能，包括：
+   * - XSS 攻击防护
+   * - CSRF 攻击防护
+   * - 内容安全策略 (CSP)
+   * - 输入验证和清理
+   * - 敏感操作权限检查
+   *
+   * @returns {SecurityManager} 安全管理器实例
+   */
   get security(): SecurityManager {
     if (!this._security) {
       const startTime = Date.now()
+      // 创建安全管理器并传入引擎实例作为上下文
       this._security = createSecurityManager(undefined, this) as any
       const initTime = Date.now() - startTime
       this.managerRegistry.markInitialized('security')
@@ -230,34 +271,58 @@ export class EngineImpl implements Engine {
     })
   }
 
+  /**
+   * 设置全局错误处理机制
+   *
+   * 这个方法设置了一个统一的错误处理系统，能够：
+   * 1. 捕获所有未处理的错误
+   * 2. 记录错误日志供调试使用
+   * 3. 发送错误事件供其他模块监听
+   * 4. 在调试模式下显示用户友好的错误通知
+   *
+   * @private
+   */
   private setupErrorHandling(): void {
-    // 监听全局错误
+    // 注册全局错误监听器
     this.errors.onError(errorInfo => {
+      // 1. 记录详细的错误信息到日志系统
       this.logger.error('Global error captured', errorInfo)
 
-      // 发送错误事件
+      // 2. 发送错误事件，允许其他模块做相应处理
       this.events.emit('engine:error', errorInfo)
 
-      // 显示错误通知（仅在非生产环境）
+      // 3. 在开发环境下显示错误通知，帮助开发者快速发现问题
       if (this.config.get('debug', false)) {
         this.notifications.show({
           type: 'error',
           title: 'Error Captured',
           message: errorInfo.message,
-          duration: 5000,
+          duration: 5000, // 5秒后自动消失
         })
       }
     })
   }
 
+  /**
+   * 设置配置变化监听器
+   *
+   * 这个方法设置了响应式配置系统，当配置项发生变化时能够自动调整系统行为：
+   * 1. 调试模式开关自动调整日志级别
+   * 2. 日志级别变化时直接应用新设置
+   * 3. 功能开关变化时启用/禁用相应模块
+   * 4. 缓存配置变化时重新配置缓存系统
+   *
+   * @private
+   */
   private setupConfigWatchers(): void {
-    // 监听调试模式变化
+    // 1. 监听调试模式变化 - 自动调整日志级别
     this.config.watch('debug', (newValue: unknown) => {
+      // 调试模式开启时使用debug级别，关闭时使用info级别
       this.logger.setLevel(newValue ? 'debug' : 'info')
       this.logger.info('Debug mode changed', { debug: newValue })
     })
 
-    // 监听日志级别变化
+    // 2. 监听日志级别变化 - 直接应用新级别
     this.config.watch('logger.level', (newValue: unknown) => {
       this.logger.setLevel(newValue as any)
       this.logger.info('Log level changed', { level: newValue })

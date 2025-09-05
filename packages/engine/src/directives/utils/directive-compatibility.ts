@@ -5,13 +5,10 @@
 
 import type { Directive } from 'vue'
 import type {
-  EngineDirective,
-  VueDirectiveBinding,
-  VueDirectiveHooks,
-  EngineDirectiveHooks,
-  DirectiveType,
-  DirectiveCompatibilityChecker,
   DirectiveAdapterFactory,
+  DirectiveCompatibilityChecker,
+  DirectiveType,
+  EngineDirective,
 } from '../../types/directive'
 
 /**
@@ -250,7 +247,7 @@ export function safeDirectiveCall<T extends any[]>(
 /**
  * 指令方法签名检查器
  */
-export function getMethodSignature(fn: Function): 'vue' | 'engine' | 'unknown' {
+export function getMethodSignature(fn: unknown): 'vue' | 'engine' | 'unknown' {
   if (typeof fn !== 'function') return 'unknown'
 
   // Vue 指令方法通常有 2 个参数 (el, binding)

@@ -18,10 +18,10 @@ import type { ErrorManager } from './error'
 import type { EventManager } from './event'
 import type { LifecycleManager } from './lifecycle'
 import type { Logger } from './logger'
-import type { MiddlewareManager } from './middleware'
+import type { Middleware, MiddlewareManager } from './middleware'
 import type { NotificationManager } from './notification'
 import type { PerformanceManager } from './performance'
-import type { PluginManager } from './plugin'
+import type { Plugin, PluginManager } from './plugin'
 import type { SecurityManager } from './security'
 import type { StateManager } from './state'
 
@@ -53,13 +53,13 @@ export interface Engine {
   isReady: () => boolean
   createApp: (rootComponent: Component) => App
   install: (app: App) => void
-  use: (plugin: any) => Promise<void>
-  mount: (selector: string | Element) => void
-  unmount: () => void
+  use: (plugin: Plugin) => Promise<void>
+  mount: (selector: string | Element) => Promise<void>
+  unmount: () => Promise<void>
   getApp: () => App | undefined
   isMounted: () => boolean
   getMountTarget: () => string | Element | undefined
-  destroy: () => void
+  destroy: () => Promise<void>
 
   // 扩展方法
   setRouter: (router: RouterAdapter) => void
@@ -80,8 +80,8 @@ export interface Engine {
 // 创建引擎的选项
 export interface CreateEngineOptions {
   config?: EnhancedEngineConfig
-  plugins?: any[]
-  middleware?: any[]
+  plugins?: Plugin[]
+  middleware?: Middleware[]
 
   // 配置选项
   configSchema?: Record<string, unknown>

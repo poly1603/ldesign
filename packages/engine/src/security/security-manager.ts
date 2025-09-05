@@ -250,7 +250,7 @@ class XSSProtector {
     })
   }
 
-  private isValidAttributeValue(attr: string, value: string): boolean {
+  private isValidAttributeValue(_attr: string, value: string): boolean {
     // 检查常见的危险属性值
     const dangerousPatterns = [
       /javascript\s*:/i,
@@ -266,17 +266,9 @@ class XSSProtector {
 // CSRF防护实现
 class CSRFProtector {
   private tokens = new Map<string, CSRFToken>()
-  private config: Required<SecurityConfig['csrf']>
 
-  constructor(config: SecurityConfig['csrf'] = {}) {
-    this.config = {
-      enabled: true,
-      tokenName: '_csrf_token',
-      headerName: 'X-CSRF-Token',
-      cookieName: 'csrf_token',
-      sameSite: 'strict',
-      ...config,
-    }
+  constructor(_config: SecurityConfig['csrf'] = {}) {
+    // 当前实现未使用CSRF配置，保留构造参数以兼容未来扩展
   }
 
   generateToken(): CSRFToken {

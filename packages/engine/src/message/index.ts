@@ -27,12 +27,17 @@ export {
 } from './utils'
 
 /**
- * 创建消息管理器实例
+ * 创建Message管理器实例
  */
 export function createMessageManager(
   config?: MessageManagerConfig
 ): MessageManager {
-  return new MessageManager(config)
+  const manager = new MessageManager(config)
+  // 懒加载初始化
+  if (typeof window !== 'undefined') {
+    manager.initialize().catch(console.error)
+  }
+  return manager
 }
 
 /**

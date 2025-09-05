@@ -3,6 +3,7 @@ import type {
   EventHandler,
   EventManager,
   Logger,
+  EventMap,
 } from '../types'
 
 interface EventListener {
@@ -11,40 +12,54 @@ interface EventListener {
   priority: number
 }
 
-export class EventManagerImpl implements EventManager<EngineEventMap> {
-  private events = new Map<string, EventListener[]>()
-  private maxListeners = 100
-
-  // 性能优化：缓存排序后的监听器
-  private sortedListenersCache = new Map<string, EventListener[]>()
-
-  // 性能优化：事件统计和监控
-  private eventStats = new Map<string, { count: number; lastEmit: number }>()
-
-  // 性能优化：批量处理队列
-  private eventQueue: Array<{ event: string; args: any[] }> = []
-  private processingQueue = false
-  private batchSize = 10
+export class EventManagerImpl<TEventMap extends EventMap = EventMap>
+  implements EventManager<TEventMap>
+{
+  private events: Map<string, EventListener[]> = new Map()
+  private maxListeners = 50
+  private sortedListenersCache: Map<string, EventListener[]> = new Map()
+  private eventStats: Map<string, { count: number; lastEmit: number }> =
+    new Map()
 
   constructor(private logger?: Logger) {
     // 定期清理统计数据，防止内存泄漏
     setInterval(() => this.cleanupStats(), 300000) // 5分钟清理一次
   }
 
-  on(event: any, handler: EventHandler, priority = 0): void {
-    this.addEventListener(event, handler, false, priority)
+  // 重载：类型安全事件 + 通用字符串事件
+  on<K extends keyof TEventMap>(
+    event: K,
+    handler: EventHandler<TEventMap[K]>
+  ): void
+  on<K extends keyof TEventMap>(
+    event: K,
+    handler: EventHandler<TEventMap[K]>,
+    priority: number
+  ): void
+  on(event: string, handler: EventHandler): void
+  on(event: string, handler: EventHandler, priority: number): void
+  on(event: any, handler: any, priority = 0): void {
+    this.addEventListener(String(event), handler as EventHandler, false, priority)
   }
 
-  off(event: any, handler?: EventHandler): void {
-    if (!this.events.has(event)) {
+  // 重载：类型安全事件 + 通用字符串事件
+  off<K extends keyof TEventMap>(
+    event: K,
+    handler?: EventHandler<TEventMap[K]>
+  ): void
+  off(event: string, handler?: EventHandler): void
+  off(event: any, handler?: any): void {
+    const key = String(event)
+    if (!this.events.has(key)) {
       return
     }
 
-    const listeners = this.events.get(event)!
+    const listeners = this.events.get(key)!
 
     if (!handler) {
       // 移除所有监听器
-      this.events.delete(event)
+      this.events.delete(key)
+      this.sortedListenersCache.delete(key)
       return
     }
 
@@ -53,27 +68,34 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
     if (index > -1) {
       listeners.splice(index, 1)
       if (listeners.length === 0) {
-        this.events.delete(event)
+        this.events.delete(key)
+        this.sortedListenersCache.delete(key)
+      } else {
+        this.sortedListenersCache.delete(key)
       }
     }
   }
 
+  // 重载：类型安全事件 + 通用字符串事件
+  emit<K extends keyof TEventMap>(event: K, data: TEventMap[K]): void
+  emit(event: string, ...args: unknown[]): void
   emit(event: any, ...args: any[]): void {
+    const key = String(event)
     // 更新事件统计
-    this.updateEventStats(event)
+    this.updateEventStats(key)
 
-    const listeners = this.events.get(event)
+    const listeners = this.events.get(key)
     if (!listeners || listeners.length === 0) {
       return
     }
 
     // 使用缓存的排序后的监听器，提高性能
-    let listenersToExecute = this.sortedListenersCache.get(event)
+    let listenersToExecute = this.sortedListenersCache.get(key)
     if (!listenersToExecute) {
       listenersToExecute = [...listeners].sort(
         (a, b) => b.priority - a.priority
       )
-      this.sortedListenersCache.set(event, listenersToExecute)
+      this.sortedListenersCache.set(key, listenersToExecute)
     }
 
     // 性能优化：批量处理一次性监听器的移除
@@ -81,12 +103,12 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
 
     for (const listener of listenersToExecute) {
       try {
-        listener.handler(args[0])
+        listener.handler(args[0] as any)
       } catch (error) {
         if (this.logger) {
-          this.logger.error(`Error in event handler for "${event}":`, error)
+          this.logger.error(`Error in event handler for "${key}":`, error)
         } else {
-          console.error(`Error in event handler for "${event}":`, error)
+          console.error(`Error in event handler for "${key}":`, error)
         }
       }
 
@@ -98,12 +120,24 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
 
     // 批量移除一次性监听器，减少数组操作次数
     if (onceListenersToRemove.length > 0) {
-      this.batchRemoveListeners(event, onceListenersToRemove)
+      this.batchRemoveListeners(key, onceListenersToRemove)
     }
   }
 
-  once(event: any, handler: EventHandler, priority = 0): void {
-    this.addEventListener(event, handler, true, priority)
+  // 重载：类型安全事件 + 通用字符串事件
+  once<K extends keyof TEventMap>(
+    event: K,
+    handler: EventHandler<TEventMap[K]>
+  ): void
+  once<K extends keyof TEventMap>(
+    event: K,
+    handler: EventHandler<TEventMap[K]>,
+    priority: number
+  ): void
+  once(event: string, handler: EventHandler): void
+  once(event: string, handler: EventHandler, priority: number): void
+  once(event: any, handler: any, priority = 0): void {
+    this.addEventListener(String(event), handler as EventHandler, true, priority)
   }
 
   private addEventListener(
@@ -168,8 +202,10 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
   removeAllListeners(event?: string): void {
     if (event) {
       this.events.delete(event)
+      this.sortedListenersCache.delete(event)
     } else {
       this.events.clear()
+      this.sortedListenersCache.clear()
     }
   }
 
@@ -240,15 +276,14 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
   }
 
   /**
-   * 清理所有缓存和统计数据
+   * 清理所有资源
    */
   cleanup(): void {
+    this.events.clear()
     this.sortedListenersCache.clear()
     this.eventStats.clear()
-    this.eventQueue.length = 0
   }
 
-  // 在指定事件前添加一次性监听器
   prependOnceListener(
     event: string,
     handler: EventHandler,
@@ -257,34 +292,31 @@ export class EventManagerImpl implements EventManager<EngineEventMap> {
     this.addEventListener(event, handler, true, priority)
   }
 
-  // 创建事件命名空间
   namespace(ns: string): EventNamespace {
     return new EventNamespace(this, ns)
   }
 
-  // 获取事件统计信息
   getStats(): {
     totalEvents: number
     totalListeners: number
     events: Record<string, number>
   } {
-    const events: Record<string, number> = {}
+    const stats: Record<string, number> = {}
     let totalListeners = 0
 
-    for (const [event, listeners] of this.events) {
-      events[event] = listeners.length
+    for (const [event, listeners] of this.events.entries()) {
+      stats[event] = listeners.length
       totalListeners += listeners.length
     }
 
     return {
       totalEvents: this.events.size,
       totalListeners,
-      events,
+      events: stats,
     }
   }
 }
 
-// 事件命名空间类
 export class EventNamespace {
   constructor(
     private eventManager: EventManager,
@@ -312,43 +344,35 @@ export class EventNamespace {
   }
 }
 
-export function createEventManager(logger?: Logger): EventManager {
-  return new EventManagerImpl(logger)
+export function createEventManager(logger?: Logger): EventManager<EngineEventMap> {
+  return new EventManagerImpl<EngineEventMap>(logger)
 }
 
-// 预定义的事件常量
 export const ENGINE_EVENTS = {
-  // 引擎生命周期事件
+  CREATED: 'engine:created',
   INSTALLED: 'engine:installed',
   MOUNTED: 'engine:mounted',
   UNMOUNTED: 'engine:unmounted',
   DESTROYED: 'engine:destroy',
   ERROR: 'engine:error',
 
-  // 插件事件
   PLUGIN_REGISTERED: 'plugin:registered',
   PLUGIN_UNREGISTERED: 'plugin:unregistered',
   PLUGIN_ERROR: 'plugin:error',
 
-  // 中间件事件
   MIDDLEWARE_ADDED: 'middleware:added',
   MIDDLEWARE_REMOVED: 'middleware:removed',
   MIDDLEWARE_ERROR: 'middleware:error',
 
-  // 状态事件
   STATE_CHANGED: 'state:changed',
   STATE_CLEARED: 'state:cleared',
 
-  // 配置事件
   CONFIG_CHANGED: 'config:changed',
 
-  // 路由事件
   ROUTE_CHANGED: 'route:changed',
   ROUTE_ERROR: 'route:error',
 
-  // 主题事件
   THEME_CHANGED: 'theme:changed',
 
-  // 语言事件
   LOCALE_CHANGED: 'locale:changed',
 } as const

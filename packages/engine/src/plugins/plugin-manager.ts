@@ -1,5 +1,13 @@
 import type { Engine, Plugin, PluginManager } from '../types'
 
+/**
+ * 插件管理器实现
+ *
+ * 负责插件的注册、卸载、依赖验证、查询与统计等能力。
+ * - 维护插件注册表与加载顺序
+ * - 为每个插件提供上下文（engine/logger/config/events）
+ * - 提供依赖图与依赖校验缓存，避免重复计算
+ */
 export class PluginManagerImpl implements PluginManager {
   readonly name = 'PluginManager'
   readonly version = '1.0.0'
@@ -17,6 +25,12 @@ export class PluginManagerImpl implements PluginManager {
     this.engine = engine
   }
 
+  /**
+   * 注册并安装插件。
+   *
+   * 会校验依赖、写入注册表、清理缓存并调用插件的 install。
+   * @throws 当插件已注册或依赖缺失时抛出错误
+   */
   async register(plugin: Plugin): Promise<void> {
     if (this.plugins.has(plugin.name)) {
       throw new Error(`Plugin "${plugin.name}" is already registered`)
@@ -87,6 +101,12 @@ export class PluginManagerImpl implements PluginManager {
     }
   }
 
+  /**
+   * 卸载并注销插件。
+   *
+   * 会检查是否存在依赖该插件的其他插件，若存在则拒绝卸载。
+   * @throws 当插件未注册或存在依赖者时抛出错误
+   */
   async unregister(name: string): Promise<void> {
     const plugin = this.plugins.get(name)
     if (!plugin) {
@@ -157,6 +177,9 @@ export class PluginManagerImpl implements PluginManager {
     return this.plugins.has(name)
   }
 
+  /**
+   * 检查插件依赖满足情况（不修改状态）。
+   */
   checkDependencies(plugin: Plugin): {
     satisfied: boolean
     missing: string[]
@@ -181,6 +204,9 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   // 获取插件的依赖者（带缓存）
+  /**
+   * 获取依赖指定插件的插件列表（带缓存）。
+   */
   private getDependents(pluginName: string): string[] {
     if (this.dependentsCache.has(pluginName)) {
       return this.dependentsCache.get(pluginName)!
@@ -199,11 +225,17 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   // 获取插件加载顺序
+  /**
+   * 获取插件按注册顺序的名称列表。
+   */
   getLoadOrder(): string[] {
     return [...this.loadOrder]
   }
 
   // 获取插件依赖图（带缓存）
+  /**
+   * 获取当前插件依赖图（带缓存）。
+   */
   getDependencyGraph(): Record<string, string[]> {
     if (this.dependencyGraphCache) {
       return this.dependencyGraphCache
@@ -220,6 +252,9 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   // 验证插件依赖（带缓存）
+  /**
+   * 验证所有已注册插件的依赖是否完整（带缓存）。
+   */
   validateDependencies(): { valid: boolean; errors: string[] } {
     if (this.validationCache) {
       return this.validationCache
@@ -247,6 +282,9 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   // 获取插件统计信息
+  /**
+   * 获取插件统计信息快照。
+   */
   getStats(): {
     total: number
     loaded: string[]
@@ -270,6 +308,9 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   // 清除所有缓存
+  /**
+   * 清理所有内部缓存。
+   */
   private clearCaches(): void {
     this.dependencyGraphCache = undefined
     this.validationCache = undefined
@@ -277,6 +318,9 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   // 获取插件信息
+  /**
+   * 获取单个插件的元信息摘要。
+   */
   getInfo(name: string): any | undefined {
     const plugin = this.plugins.get(name)
     if (!plugin) return undefined
@@ -291,6 +335,9 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   // 获取所有插件信息
+  /**
+   * 获取所有已注册插件的元信息摘要列表。
+   */
   getAllInfo(): any[] {
     return Array.from(this.plugins.keys())
       .map(name => this.getInfo(name)!)
@@ -298,18 +345,27 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   // 获取插件状态
+  /**
+   * 获取插件状态（当前实现为简化版）。
+   */
   getStatus(name: string): any | undefined {
     if (!this.plugins.has(name)) return undefined
     return 'installed' // 简化实现
   }
 
   // 解析依赖
+  /**
+   * 解析插件依赖并按合适顺序返回（当前实现简化为原序）。
+   */
   resolveDependencies(plugins: Plugin[]): Plugin[] {
     // 简化实现，返回原数组
     return plugins
   }
 
   // 按关键词查找插件
+  /**
+   * 按关键字搜索插件（基于名称与描述）。
+   */
   findByKeyword(keyword: string): Plugin[] {
     return Array.from(this.plugins.values()).filter(
       plugin =>
@@ -318,6 +374,9 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   // 按作者查找插件
+  /**
+   * 按作者筛选插件（依赖插件公开 author 字段）。
+   */
   findByAuthor(author: string): Plugin[] {
     return Array.from(this.plugins.values()).filter(
       plugin => (plugin as any).author === author
@@ -325,6 +384,9 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   // 按依赖查找插件
+  /**
+   * 查找依赖了指定插件名称的插件。
+   */
   findByDependency(dependency: string): Plugin[] {
     return Array.from(this.plugins.values()).filter(plugin =>
       plugin.dependencies?.includes(dependency)

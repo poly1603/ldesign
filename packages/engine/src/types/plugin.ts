@@ -22,9 +22,9 @@ export interface PluginMetadata {
 // 插件上下文
 export interface PluginContext<_TEngine = Engine> {
   readonly engine: _TEngine
-  readonly logger: any
-  readonly config: any
-  readonly events: any
+  readonly logger: unknown
+  readonly config: unknown
+  readonly events: unknown
 }
 
 // 插件接口

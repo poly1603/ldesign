@@ -33,11 +33,11 @@ export interface ValidationResult {
 }
 
 // 通用快照接口
-export interface Snapshot<T = any> {
+export interface Snapshot<T = unknown> {
   timestamp: number
   data: T
   version: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 // 通用监听器接口
@@ -46,7 +46,7 @@ export type UnwatchFunction = () => void
 // 通用统计信息接口
 export interface Stats {
   timestamp: number
-  [key: string]: any
+  [key: string]: unknown
 }
 
 // 通用配置Schema
@@ -54,8 +54,8 @@ export interface ConfigSchema {
   [key: string]: {
     type: 'string' | 'number' | 'boolean' | 'object' | 'array'
     required?: boolean
-    default?: any
-    validator?: (value: any) => boolean
+    default?: unknown
+    validator?: (value: unknown) => boolean
     description?: string
     children?: ConfigSchema
   }
@@ -106,7 +106,7 @@ export interface BasePlugin {
 export interface RouterAdapter {
   readonly name: string
   readonly version: string
-  install: (engine: any) => void
+  install: (engine: unknown) => void
   navigate: (to: string, options?: Record<string, unknown>) => void
   push: (to: string, options?: Record<string, unknown>) => void
   replace: (to: string, options?: Record<string, unknown>) => void
@@ -124,7 +124,7 @@ export interface RouterAdapter {
 export interface StateAdapter {
   readonly name: string
   readonly version: string
-  install: (engine: any) => void
+  install: (engine: unknown) => void
   get: <T>(key: string, defaultValue?: T) => T
   set: <T>(key: string, value: T) => void
   delete: (key: string) => void
@@ -139,7 +139,7 @@ export interface StateAdapter {
 export interface I18nAdapter {
   readonly name: string
   readonly version: string
-  install: (engine: any) => void
+  install: (engine: unknown) => void
   t: (key: string, params?: Record<string, unknown>) => string
   setLocale: (locale: string) => void
   getLocale: () => string
@@ -152,7 +152,7 @@ export interface I18nAdapter {
 export interface ThemeAdapter {
   readonly name: string
   readonly version: string
-  install: (engine: any) => void
+  install: (engine: unknown) => void
   setTheme: (theme: string) => void
   getTheme: () => string
   getAvailableThemes: () => string[]
@@ -161,19 +161,19 @@ export interface ThemeAdapter {
 }
 
 // 通用事件处理器类型
-export type EventHandler<T = any> = (data: T) => void | Promise<void>
+export type EventHandler<T = unknown> = (data: T) => void | Promise<void>
 
 // 通用事件映射类型
 export interface EventMap {
-  [event: string]: any
+  [event: string]: unknown
 }
 
 // 通用状态变更处理器类型
-export type StateChangeHandler<T = any> = (newValue: T, oldValue: T) => void
+export type StateChangeHandler<T = unknown> = (newValue: T, oldValue: T) => void
 
 // 通用状态映射类型
 export interface StateMap {
-  [key: string]: any
+  [key: string]: unknown
 }
 
 // 状态路径类型
@@ -204,7 +204,7 @@ export interface ErrorInfo {
   stack?: string
   timestamp: number
   level: 'error' | 'warn' | 'info'
-  context?: Record<string, any>
+  context?: Record<string, unknown>
   component?: unknown
   info?: string
 }
@@ -214,8 +214,8 @@ export interface LogEntry {
   level: LogLevel
   message: string
   timestamp: number
-  data?: any
-  context?: Record<string, any>
+  data?: unknown
+  context?: Record<string, unknown>
 }
 
 // 日志级别类型
@@ -253,7 +253,7 @@ export interface PerformanceMetrics {
   duration: number
   memory?: number
   cpu?: number
-  [key: string]: any
+  [key: string]: unknown
 }
 
 // 注意：SecurityConfig 已在 config.ts 中定义，这里不再重复定义
@@ -264,5 +264,5 @@ export interface EnvironmentInfo {
   browser: { name: string; version: string }
   device: { type: string; isMobile: boolean }
   features: Record<string, boolean>
-  [key: string]: any
+  [key: string]: unknown
 }

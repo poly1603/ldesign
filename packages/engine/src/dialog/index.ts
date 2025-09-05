@@ -19,7 +19,12 @@ export * from './types'
 export function createDialogManager(
   config?: DialogManagerConfig
 ): DialogManager {
-  return new DialogManager(config)
+  const manager = new DialogManager(config)
+  // 懒加载初始化
+  if (typeof window !== 'undefined') {
+    manager.initialize().catch(console.error)
+  }
+  return manager
 }
 
 /**

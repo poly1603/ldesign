@@ -65,7 +65,7 @@ export interface LifecycleManager {
   get: (name: string) => LifecycleHook | undefined
   getAll: () => LifecycleHook[]
   getByPhase: (phase: LifecyclePhase) => LifecycleHook[]
-  execute: (phase: LifecyclePhase, context?: any) => Promise<void>
+  execute: (phase: LifecyclePhase, context?: unknown) => Promise<void>
   executeAll: () => Promise<void>
   getStatus: () => LifecycleStatus
   getCurrentPhase: () => LifecyclePhase

@@ -30,7 +30,7 @@ export interface NotificationManager {
   getMaxNotifications: () => number
   setDefaultDuration: (duration: number) => void
   getDefaultDuration: () => number
-  getStats: () => Record<string, any>
+  getStats: () => Record<string, unknown>
 }
 
 // 通知进度

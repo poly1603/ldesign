@@ -5,12 +5,12 @@
 
 // Vue 指令绑定类型
 export interface VueDirectiveBinding {
-  value: any
-  oldValue: any
+  value: unknown
+  oldValue: unknown
   arg?: string
   modifiers: Record<string, boolean>
-  instance: any
-  dir: any
+  instance: unknown
+  dir: unknown
 }
 
 // Vue 指令生命周期方法签名
@@ -97,8 +97,8 @@ export interface DirectiveLifecycle {
 
 // 指令管理器接口
 export interface DirectiveManager {
-  register: (name: string, directive: any) => void
-  registerBatch: (directives: Record<string, any>) => void
+  register: (name: string, directive: EngineDirective) => void
+  registerBatch: (directives: Record<string, EngineDirective>) => void
   unregister: (name: string) => void
   get: (name: string) => EngineDirective | undefined
   getAll: () => EngineDirective[]
@@ -194,17 +194,17 @@ export type DirectiveType = 'vue' | 'engine' | 'hybrid'
 
 // 指令兼容性检查器
 export interface DirectiveCompatibilityChecker {
-  checkType: (directive: any) => DirectiveType
-  isVueDirective: (directive: any) => boolean
-  isEngineDirective: (directive: any) => boolean
-  isHybridDirective: (directive: any) => boolean
-  convertToEngineDirective: (vueDirective: any) => EngineDirective
-  convertToVueDirective: (engineDirective: EngineDirective) => any
+  checkType: (directive: unknown) => DirectiveType
+  isVueDirective: (directive: unknown) => boolean
+  isEngineDirective: (directive: unknown) => boolean
+  isHybridDirective: (directive: unknown) => boolean
+  convertToEngineDirective: (vueDirective: unknown) => EngineDirective
+  convertToVueDirective: (engineDirective: EngineDirective) => unknown
 }
 
 // 指令适配器工厂
 export interface DirectiveAdapterFactory {
-  createVueAdapter: (engineDirective: EngineDirective) => any
-  createEngineAdapter: (vueDirective: any) => EngineDirective
-  createHybridAdapter: (directive: any) => EngineDirective
+  createVueAdapter: (engineDirective: EngineDirective) => unknown
+  createEngineAdapter: (vueDirective: unknown) => EngineDirective
+  createHybridAdapter: (directive: unknown) => EngineDirective
 }

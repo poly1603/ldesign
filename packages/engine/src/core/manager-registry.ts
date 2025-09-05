@@ -223,7 +223,7 @@ export class ManagerRegistry {
     for (const [name, status] of this.managers) {
       const color = status.lazy ? 'lightblue' : 'lightgreen'
       const style = status.initialized ? 'solid' : 'dashed'
-      graph += `  "${name}" [fillcolor=${color}, style=filled, style=${style}];\n`
+      graph += `  "${name}" [fillcolor=${color}, style="filled, ${style}"];\n`
     }
 
     graph += '\n'

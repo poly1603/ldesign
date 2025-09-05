@@ -42,11 +42,11 @@ export interface VueComponent {
   engineComputed?: Record<string, (...args: unknown[]) => unknown>
   engineWatch?: Record<string, (...args: unknown[]) => unknown>
   // 包含Vue组件的基本属性
-  setup?: (...args: any[]) => any
-  render?: (...args: any[]) => any
+  setup?: (...args: unknown[]) => unknown
+  render?: (...args: unknown[]) => unknown
   template?: string
-  props?: any
-  emits?: any
+  props?: unknown
+  emits?: unknown
 }
 
 // Vue指令接口
@@ -56,12 +56,12 @@ export interface VueDirective {
   engineConfig?: Record<string, unknown>
   engineMethods?: Record<string, (...args: unknown[]) => unknown>
   // 包含Vue指令的基本属性
-  beforeMount?: (...args: any[]) => any
-  mounted?: (...args: any[]) => any
-  beforeUpdate?: (...args: any[]) => any
-  updated?: (...args: any[]) => any
-  beforeUnmount?: (...args: any[]) => any
-  unmounted?: (...args: any[]) => any
+  beforeMount?: (...args: unknown[]) => unknown
+  mounted?: (...args: unknown[]) => unknown
+  beforeUpdate?: (...args: unknown[]) => unknown
+  updated?: (...args: unknown[]) => unknown
+  beforeUnmount?: (...args: unknown[]) => unknown
+  unmounted?: (...args: unknown[]) => unknown
 }
 
 // Vue混入接口
@@ -120,8 +120,8 @@ export interface VueLifecycleHooks {
     instance: Component | null,
     info: string
   ) => boolean | void
-  renderTracked?: (event: any) => void
-  renderTriggered?: (event: any) => void
+  renderTracked?: (event: unknown) => void
+  renderTriggered?: (event: unknown) => void
   activated?: () => void
   deactivated?: () => void
   serverPrefetch?: () => Promise<unknown>
@@ -141,12 +141,12 @@ export interface VueReactive {
 }
 
 // Vue引用类型
-export interface Ref<T = any> {
+export interface Ref<T = unknown> {
   value: T
 }
 
 // Vue计算引用类型
-export interface ComputedRef<T = any> extends Ref<T> {
+export interface ComputedRef<T = unknown> extends Ref<T> {
   readonly value: T
 }
 
@@ -155,8 +155,8 @@ export interface WatchOptions {
   immediate?: boolean
   deep?: boolean
   flush?: 'pre' | 'post' | 'sync'
-  onTrack?: (event: any) => void
-  onTrigger?: (event: any) => void
+  onTrack?: (event: unknown) => void
+  onTrigger?: (event: unknown) => void
 }
 
 // Vue停止句柄
@@ -184,10 +184,10 @@ export interface VueComponentConfig {
   name?: string
   engine?: Engine
   engineConfig?: EnhancedEngineConfig
-  props?: Record<string, any>
+  props?: Record<string, unknown>
   emits?: string[]
-  slots?: Record<string, any>
-  attrs?: Record<string, any>
+  slots?: Record<string, unknown>
+  attrs?: Record<string, unknown>
   listeners?: Record<string, (...args: unknown[]) => unknown>
   parent?: Component
   root?: Component
@@ -195,24 +195,24 @@ export interface VueComponentConfig {
   refs?: Record<string, Component | HTMLElement>
   el?: HTMLElement
   $el?: HTMLElement
-  $options?: Record<string, any>
+  $options?: Record<string, unknown>
   $parent?: Component
   $root?: Component
   $children?: Component[]
   $refs?: Record<string, Component | HTMLElement>
-  $attrs?: Record<string, any>
+  $attrs?: Record<string, unknown>
   $listeners?: Record<string, (...args: unknown[]) => unknown>
-  $slots?: Record<string, any>
-  $scopedSlots?: Record<string, any>
+  $slots?: Record<string, unknown>
+  $scopedSlots?: Record<string, unknown>
   $isServer?: boolean
-  $ssrContext?: any
-  $vnode?: any
+  $ssrContext?: unknown
+  $vnode?: unknown
   $nextTick?: (callback: () => void) => Promise<void>
   $forceUpdate?: () => void
   $destroy?: () => void
   $mount?: (el?: string | HTMLElement) => Component
-  $set?: (target: object | Array<any>, key: string | number, value: any) => void
-  $delete?: (target: object | Array<any>, key: string | number) => void
+  $set?: (target: object | Array<unknown>, key: string | number, value: unknown) => void
+  $delete?: (target: object | Array<unknown>, key: string | number) => void
   $watch?: (
     expOrFn: string | ((...args: unknown[]) => unknown),
     callback: (...args: unknown[]) => unknown,
@@ -227,7 +227,7 @@ export interface VueComponentConfig {
     event?: string,
     callback?: (...args: unknown[]) => unknown
   ) => Component
-  $emit?: (event: string, ...args: any[]) => Component
+  $emit?: (event: string, ...args: unknown[]) => Component
 }
 
 // Vue指令配置
@@ -255,8 +255,8 @@ export interface VueDirectiveConfig {
 // Vue指令绑定
 export interface DirectiveBinding {
   name: string
-  value: any
-  oldValue: any
+  value: unknown
+  oldValue: unknown
   expression: string
   arg: string
   modifiers: Record<string, boolean>
@@ -287,25 +287,25 @@ export interface VNode {
   isCloned?: boolean
   isOnce?: boolean
   asyncFactory?: (...args: unknown[]) => unknown
-  asyncMeta?: any
+  asyncMeta?: unknown
   isAsyncPlaceholder?: boolean
-  ssrContext?: any
+  ssrContext?: unknown
 }
 
 // Vue节点数据
 export interface VNodeData {
   key?: string | number
   slot?: string
-  scopedSlots?: Record<string, any>
+  scopedSlots?: Record<string, unknown>
   ref?: string
   tag?: string
   staticClass?: string
-  class?: any
-  staticStyle?: Record<string, any>
-  style?: any
-  props?: Record<string, any>
-  attrs?: Record<string, any>
-  domProps?: Record<string, any>
+  class?: unknown
+  staticStyle?: Record<string, unknown>
+  style?: unknown
+  props?: Record<string, unknown>
+  attrs?: Record<string, unknown>
+  domProps?: Record<string, unknown>
   hook?: Record<string, (...args: unknown[]) => unknown>
   on?: Record<
     string,
@@ -315,7 +315,7 @@ export interface VNodeData {
     string,
     ((...args: unknown[]) => unknown) | ((...args: unknown[]) => unknown)[]
   >
-  transition?: any
+  transition?: unknown
   show?: boolean
   inlineTemplate?: {
     render: (...args: unknown[]) => unknown
@@ -323,7 +323,7 @@ export interface VNodeData {
   }
   directives?: Array<{
     name: string
-    value: any
+    value: unknown
     arg: string
     modifiers: Record<string, boolean>
   }>
@@ -341,15 +341,15 @@ export interface ComponentOptions {
   provide?: Record<string | symbol, unknown> | ((...args: unknown[]) => unknown)
   inject?:
     | string[]
-    | Record<string, string | symbol | { from: string | symbol; default: any }>
+    | Record<string, string | symbol | { from: string | symbol; default: unknown }>
   model?: {
     prop?: string
     event?: string
   }
-  props?: Record<string, any>
-  data?: Record<string, any> | ((...args: unknown[]) => unknown)
-  computed?: Record<string, any>
-  watch?: Record<string, any>
+  props?: Record<string, unknown>
+  data?: Record<string, unknown> | ((...args: unknown[]) => unknown)
+  computed?: Record<string, unknown>
+  watch?: Record<string, unknown>
   methods?: Record<string, (...args: unknown[]) => unknown>
   template?: string
   render?: (...args: unknown[]) => unknown
@@ -370,7 +370,7 @@ export interface ComponentOptions {
   comments?: boolean
   delimiters?: [string, string]
   functional?: boolean
-  propsData?: Record<string, any>
+  propsData?: Record<string, unknown>
   el?: string | HTMLElement
   _compiled?: boolean
   _isDestroyed?: boolean
@@ -378,12 +378,12 @@ export interface ComponentOptions {
   _events?: Record<string, ((...args: unknown[]) => unknown)[]>
   _hasHookEvent?: boolean
   _provided?: Record<string | symbol, unknown>
-  _watchers?: any[]
-  _watcherOptions?: any
-  _watcherCallbacks?: any[]
-  _data?: Record<string, any>
-  _computedWatchers?: Record<string, any>
-  _scope?: any
+  _watchers?: unknown[]
+  _watcherOptions?: unknown
+  _watcherCallbacks?: unknown[]
+  _data?: Record<string, unknown>
+  _computedWatchers?: Record<string, unknown>
+  _scope?: unknown
   _c?: (...args: unknown[]) => unknown
   _o?: (...args: unknown[]) => unknown
   _n?: (...args: unknown[]) => unknown
@@ -408,8 +408,8 @@ export interface ComponentOptions {
 
 // Vue节点组件选项
 export interface VNodeComponentOptions {
-  Ctor: any
-  propsData?: Record<string, any>
+  Ctor: unknown
+  propsData?: Record<string, unknown>
   listeners?: Record<string, (...args: unknown[]) => unknown>
   tag?: string
   children?: VNode[]

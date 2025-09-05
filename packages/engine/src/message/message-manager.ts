@@ -3,6 +3,7 @@
  * 轻量级消息提示系统
  */
 
+import type { Engine } from '../types/engine'
 import { BaseManager } from '../core/base-manager'
 
 export interface MessageOptions {
@@ -45,16 +46,17 @@ export class MessageManager extends BaseManager<MessageManagerConfig> {
   private container?: HTMLElement
   private idCounter = 0
 
-  constructor(config: MessageManagerConfig = {}) {
-    super('MessageManager', {
+  constructor(config: MessageManagerConfig = {}, engine?: Engine) {
+    const defaults: MessageManagerConfig = {
       maxCount: 5,
       defaultDuration: 3000,
       defaultPosition: 'top',
       defaultOffset: 20,
       zIndex: 3000,
       gap: 16,
-      ...config,
-    })
+    }
+    const merged: MessageManagerConfig = { ...defaults, ...config }
+    super('MessageManager', merged, engine)
   }
 
   /**

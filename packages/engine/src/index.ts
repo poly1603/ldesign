@@ -37,7 +37,7 @@ export * from './constants'
 // 核心导出
 export { EngineImpl } from './core/engine'
 
-export { createApp, createAndMountApp, createEngine } from './core/factory'
+export { createAndMountApp, createApp, createEngine } from './core/factory'
 
 // Dialog弹窗系统导出
 export * from './dialog'
