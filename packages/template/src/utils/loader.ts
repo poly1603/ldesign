@@ -128,14 +128,17 @@ export class ComponentLoader {
   createAsyncComponent(metadata: TemplateMetadata): Component {
     const loader: AsyncComponentLoader = () => this.loadComponentWithRetry(metadata)
 
-    return defineAsyncComponent({
+    const options: any = {
       loader,
-      loadingComponent: this.options.loadingComponent || undefined,
-      errorComponent: this.options.errorComponent || undefined,
       delay: 200,
       timeout: this.options.timeout,
       suspensible: false,
-    })
+    }
+    if (this.options.loadingComponent)
+      options.loadingComponent = this.options.loadingComponent
+    if (this.options.errorComponent)
+      options.errorComponent = this.options.errorComponent
+    return defineAsyncComponent(options)
   }
 
   /**
@@ -194,13 +197,10 @@ export class ComponentLoader {
     try {
       // 优先使用 componentLoader 函数（用于内置模板）
       if (metadata.componentLoader) {
-        const module = await metadata.componentLoader()
-        const component = module.default || module
-
+        const component = await metadata.componentLoader()
         if (!component) {
-          throw new Error(`No default export found in component loader for ${metadata.name}`)
+          throw new Error(`No component returned by componentLoader for ${metadata.name}`)
         }
-
         return component
       }
 

@@ -81,8 +81,8 @@ export const defaultConfig: TemplateSystemConfig = {
   // 扫描器配置
   scanner: {
     maxDepth: getEnvValue('TEMPLATE_SCANNER_MAX_DEPTH', 5, parseNumberEnv),
-    includeExtensions: getEnvValue('TEMPLATE_SCANNER_EXTENSIONS', ['.vue', '.tsx', '.js', '.ts'], parseJsonEnv),
-    excludePatterns: getEnvValue('TEMPLATE_SCANNER_EXCLUDE', ['node_modules', '.git', 'dist', 'coverage'], parseJsonEnv),
+    includeExtensions: getEnvValue('TEMPLATE_SCANNER_EXTENSIONS', ['.vue', '.tsx', '.js', '.ts'], parseJsonEnv as (v: string) => string[]),
+    excludePatterns: getEnvValue('TEMPLATE_SCANNER_EXCLUDE', ['node_modules', '.git', 'dist', 'coverage'], parseJsonEnv as (v: string) => string[]),
     enableCache: getEnvValue('TEMPLATE_SCANNER_CACHE', true, parseBooleanEnv),
     watchMode: getEnvValue('TEMPLATE_SCANNER_WATCH', import.meta.env?.DEV ?? false, parseBooleanEnv),
     debounceDelay: getEnvValue('TEMPLATE_SCANNER_DEBOUNCE', 300, parseNumberEnv),
@@ -119,7 +119,7 @@ export const defaultConfig: TemplateSystemConfig = {
     enabled: getEnvValue('TEMPLATE_PRELOAD_ENABLED', true, parseBooleanEnv),
     mode: getEnvValue('TEMPLATE_PRELOAD_MODE', 'lazy' as const),
     limit: getEnvValue('TEMPLATE_PRELOAD_LIMIT', 5, parseNumberEnv),
-    priority: getEnvValue('TEMPLATE_PRELOAD_PRIORITY', [], parseJsonEnv),
+    priority: getEnvValue('TEMPLATE_PRELOAD_PRIORITY', [], parseJsonEnv as (v: string) => string[]),
     intersection: {
       rootMargin: getEnvValue('TEMPLATE_PRELOAD_ROOT_MARGIN', '50px'),
       threshold: getEnvValue('TEMPLATE_PRELOAD_THRESHOLD', 0.1, parseNumberEnv),
@@ -142,8 +142,8 @@ export const defaultConfig: TemplateSystemConfig = {
     configFile: getEnvValue('TEMPLATE_CONFIG_FILE', 'config.{js,ts}'),
     styleFile: getEnvValue('TEMPLATE_STYLE_FILE', 'style.{css,less,scss}'),
     previewFile: getEnvValue('TEMPLATE_PREVIEW_FILE', 'preview.{png,jpg,jpeg,webp}'),
-    allowedConfigExtensions: getEnvValue('TEMPLATE_CONFIG_EXTENSIONS', ['.js', '.ts'], parseJsonEnv),
-    allowedStyleExtensions: getEnvValue('TEMPLATE_STYLE_EXTENSIONS', ['.css', '.less', '.scss'], parseJsonEnv),
+    allowedConfigExtensions: getEnvValue('TEMPLATE_CONFIG_EXTENSIONS', ['.js', '.ts'], parseJsonEnv as (v: string) => string[]),
+    allowedStyleExtensions: getEnvValue('TEMPLATE_STYLE_EXTENSIONS', ['.css', '.less', '.scss'], parseJsonEnv as (v: string) => string[]),
   },
 
   // 性能优化配置

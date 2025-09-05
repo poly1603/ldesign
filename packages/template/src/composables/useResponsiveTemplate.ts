@@ -86,7 +86,7 @@ export function useResponsiveTemplate(options: UseResponsiveTemplateOptions): Us
     availableTemplates: templates,
     loading: templateLoading,
     error: templateError,
-    refresh: refreshTemplates,
+    refreshTemplates,
   } = useTemplate({
     category,
     autoDetectDevice: false, // 由当前 Hook 管理设备切换

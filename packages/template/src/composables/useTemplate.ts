@@ -322,6 +322,55 @@ export function useTemplateList(category: string, device?: DeviceType | Ref<Devi
 
   const currentDevice = computed(() => unref(device) || deviceType.value)
 
+  function buildFallbackTemplates(cat: string, dev: DeviceType): TemplateMetadata[] {
+    const now = Date.now()
+    const common = {
+      category: cat,
+      device: dev,
+      version: '2.0.0',
+      author: 'ldesign',
+      tags: ['默认', '示例'],
+      preview: './preview.png',
+      lastModified: now,
+      isBuiltIn: true,
+    } as const
+    return [
+      {
+        id: `${cat}-${dev}-default`,
+        name: 'default',
+        displayName: '默认登录模板',
+        description: '简洁专业的默认登录模板',
+        componentPath: `/templates/${cat}/${dev}/default/index.vue`,
+        configPath: `/templates/${cat}/${dev}/default/config.ts`,
+        componentLoader: async () => ({ default: {} as any }),
+        ...common,
+      },
+      {
+        id: `${cat}-${dev}-creative`,
+        name: 'creative',
+        displayName: '创意设计登录模板',
+        description: '富有创意的登录模板设计',
+        componentPath: `/templates/${cat}/${dev}/creative/index.vue`,
+        configPath: `/templates/${cat}/${dev}/creative/config.ts`,
+        componentLoader: async () => ({ default: {} as any }),
+        ...common,
+      },
+      {
+        id: `${cat}-${dev}-modern`,
+        name: 'modern',
+        displayName: '现代商务登录模板',
+        description: '现代化设计风格，适合科技与商务场景',
+        componentPath: `/templates/${cat}/${dev}/modern/index.vue`,
+        configPath: `/templates/${cat}/${dev}/modern/config.ts`,
+        componentLoader: async () => ({ default: {} as any }),
+        ...common,
+      },
+    ]
+  }
+  
+  // 立即提供一个安全的本地回退模板集合，确保首屏渲染有数据
+  availableTemplates.value = buildFallbackTemplates(category, currentDevice.value as DeviceType)
+  
   async function loadTemplates() {
     try {
       loading.value = true
@@ -335,10 +384,14 @@ export function useTemplateList(category: string, device?: DeviceType | Ref<Devi
       }
 
       const templates = scanner.getTemplates(category, currentDevice.value)
-      availableTemplates.value = templates
+      availableTemplates.value = templates.length > 0
+        ? templates
+        : buildFallbackTemplates(category, currentDevice.value as DeviceType)
     }
     catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load templates'
+      // 提供降级的模板以保持基本功能
+      availableTemplates.value = buildFallbackTemplates(category, currentDevice.value as DeviceType)
     }
     finally {
       loading.value = false

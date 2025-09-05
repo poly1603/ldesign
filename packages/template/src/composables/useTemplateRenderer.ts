@@ -71,7 +71,8 @@ export function useTemplateRenderer(options: UseTemplateRendererOptions = {}): U
           component = await template.componentLoader()
         }
         else {
-          component = await componentLoader.loadComponent(template.componentPath)
+          const result = await componentLoader.loadComponent(template)
+          component = result.component
         }
 
         // 缓存组件
@@ -138,7 +139,8 @@ export function useTemplateRenderer(options: UseTemplateRendererOptions = {}): U
         component = await template.componentLoader()
       }
       else {
-        component = await componentLoader.loadComponent(template.componentPath)
+        const result = await componentLoader.loadComponent(template)
+        component = result.component
       }
 
       // 缓存组件

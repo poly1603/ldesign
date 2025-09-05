@@ -267,4 +267,3 @@ export function debugConfig(config: TemplateSystemConfig) {
   console.log('🔍 Scanner Config:', config.scanner)
   console.groupEnd()
 }
-export type { TemplateSystemConfig }

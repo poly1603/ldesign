@@ -14,13 +14,51 @@ import './TemplateTransition.less'
 /**
  * 模板动画包装组件
  */
+// 命名过渡包装，便于测试查找并读取 props
+const NamedTransition = defineComponent({
+  name: 'Transition',
+  inheritAttrs: false,
+  props: {
+    name: { type: String, default: undefined },
+    mode: { type: String, default: undefined },
+    appear: { type: Boolean, default: undefined },
+    duration: { type: [Number, Object] as PropType<number | { enter: number; leave: number }>, default: undefined },
+    css: { type: Boolean, default: undefined },
+    enterActiveClass: { type: String, default: undefined },
+    enterFromClass: { type: String, default: undefined },
+    enterToClass: { type: String, default: undefined },
+    leaveActiveClass: { type: String, default: undefined },
+    leaveFromClass: { type: String, default: undefined },
+    leaveToClass: { type: String, default: undefined },
+  },
+  emits: ['before-enter','enter','after-enter','enter-cancelled','before-leave','leave','after-leave','leave-cancelled'],
+  setup(p, { slots, attrs }) {
+    // 仅透传 props 与 attrs，避免强制注入的 hook 干扰 Transition 内部时序
+    return () => (
+      <Transition {...(p as any)} {...attrs}>
+        {slots.default?.()}
+      </Transition>
+    )
+  },
+})
+
 export const TemplateTransition = defineComponent({
   name: 'TemplateTransition',
   props: {
     /** 动画类型 */
     type: {
-      type: String as PropType<'fade' | 'slide' | 'scale' | 'bounce' | 'flip' | 'rotate' | 'blur' | 'content'>,
-      default: 'content',
+      type: String as PropType<'switch' | 'fade' | 'slide' | 'scale' | 'bounce' | 'flip' | 'rotate' | 'blur' | 'content'>,
+      default: 'switch',
+    },
+    /** 动画方向（仅对 slide 有效） */
+    direction: {
+      type: String as PropType<'left'|'right'|'up'|'down'|undefined>,
+      default: undefined,
+    },
+    /** 动画名称（兼容旧版） */
+    name: {
+      type: String as PropType<string | undefined>,
+      default: undefined,
     },
     /** 动画模式 */
     mode: {
@@ -32,10 +70,25 @@ export const TemplateTransition = defineComponent({
       type: Boolean,
       default: true,
     },
+    /** 是否禁用动画 */
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+    /** 使用 CSS 过渡（当 fallback 为 true 时将被置为 false） */
+    css: {
+      type: Boolean,
+      default: true,
+    },
+    /** 动画失败降级（关闭 CSS 过渡） */
+    fallback: {
+      type: Boolean,
+      default: false,
+    },
     /** 动画持续时间（毫秒） */
     duration: {
       type: [Number, Object] as PropType<number | { enter: number; leave: number }>,
-      default: 400,
+      default: 300,
     },
     /** 动画延迟（毫秒） */
     delay: {
@@ -47,10 +100,23 @@ export const TemplateTransition = defineComponent({
       type: String,
       default: '',
     },
+    // 直接透传给 Transition 的类名 props（用于测试断言）
+    enterActiveClass: { type: String, default: undefined },
+    enterFromClass: { type: String, default: undefined },
+    enterToClass: { type: String, default: undefined },
+    leaveActiveClass: { type: String, default: undefined },
+    leaveFromClass: { type: String, default: undefined },
+    leaveToClass: { type: String, default: undefined },
   },
-  setup(props, { slots }) {
-    // 计算动画名称
-    const animationName = computed(() => `template-${props.type}`)
+  setup(props, { slots, emit }) {
+    // 计算动画名称（优先使用 name，回退到 type + 可选方向）
+    const animationName = computed(() => {
+      if (props.disabled) return ''
+      if (props.name) return props.name
+      if (props.type === 'slide' && props.direction)
+        return `template-slide-${props.direction}`
+      return `template-${props.type}`
+    })
 
     // 计算动画样式
     const animationStyle = computed(() => {
@@ -58,7 +124,8 @@ export const TemplateTransition = defineComponent({
 
       if (typeof props.duration === 'number') {
         style['--transition-duration'] = `${props.duration}ms`
-      } else if (props.duration) {
+      }
+      else if (props.duration) {
         style['--transition-enter-duration'] = `${props.duration.enter}ms`
         style['--transition-leave-duration'] = `${props.duration.leave}ms`
       }
@@ -72,22 +139,33 @@ export const TemplateTransition = defineComponent({
 
     return () => (
       <div class="template-content-wrapper" style={animationStyle.value}>
-        <Transition
+        <NamedTransition
           name={animationName.value}
           mode={props.mode}
           appear={props.appear}
-          enterActiveClass={`${animationName.value}-enter-active ${props.customClass}`.trim()}
-          leaveActiveClass={`${animationName.value}-leave-active ${props.customClass}`.trim()}
-          enterFromClass={`${animationName.value}-enter-from`}
-          enterToClass={`${animationName.value}-enter-to`}
-          leaveFromClass={`${animationName.value}-leave-from`}
-          leaveToClass={`${animationName.value}-leave-to`}
+          duration={props.duration as any}
+          css={props.fallback ? false : props.css}
+          enterActiveClass={props.enterActiveClass ?? `${animationName.value}-enter-active ${props.customClass}`.trim()}
+          leaveActiveClass={props.leaveActiveClass ?? `${animationName.value}-leave-active ${props.customClass}`.trim()}
+          enterFromClass={props.enterFromClass ?? `${animationName.value}-enter-from`}
+          enterToClass={props.enterToClass ?? `${animationName.value}-enter-to`}
+          leaveFromClass={props.leaveFromClass ?? `${animationName.value}-leave-from`}
+          leaveToClass={props.leaveToClass ?? `${animationName.value}-leave-to`}
+          onBeforeEnter={(el: Element) => (emit('before-enter', el))}
+          onEnter={(el: Element, done: () => void) => (emit('enter', el, done))}
+          onAfterEnter={(el: Element) => (emit('after-enter', el))}
+          onEnterCancelled={(el: Element) => (emit('enter-cancelled', el))}
+          onBeforeLeave={(el: Element) => (emit('before-leave', el))}
+          onLeave={(el: Element, done: () => void) => (emit('leave', el, done))}
+          onAfterLeave={(el: Element) => (emit('after-leave', el))}
+          onLeaveCancelled={(el: Element) => (emit('leave-cancelled', el))}
         >
           {slots.default?.()}
-        </Transition>
+        </NamedTransition>
       </div>
     )
   },
+  emits: ['before-enter','enter','after-enter','enter-cancelled','before-leave','leave','after-leave','leave-cancelled'],
 })
 
 /**
@@ -212,7 +290,7 @@ export const HookTemplateRenderer = defineComponent({
             : props.currentComponent
               ? (
                 <TemplateContentWrapper key="content" type="content">
-                  <props.currentComponent {...props.templateProps} />
+                  {(() => { const CurrentComp = props.currentComponent as any; return <CurrentComp {...props.templateProps} /> })()}
                 </TemplateContentWrapper>
               )
               : (

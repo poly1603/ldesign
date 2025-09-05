@@ -172,7 +172,7 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
   }, {
     onScanComplete: (result) => {
       if (config.enablePerformanceMonitor || config.devtools.enableLogger) {
-        console.log('[TemplatePlugin] Scan completed:', result.stats)
+        console.info('[TemplatePlugin] Scan completed:', result.stats)
       }
     },
     onScanError: (error) => {
@@ -239,9 +239,9 @@ function install(app: App, options: TemplatePluginOptions = {}): void {
   pluginState.installed = true
 
   if (config.enablePerformanceMonitor || config.devtools.enableLogger) {
-    console.log('[TemplatePlugin] Plugin installed successfully')
+    console.info('[TemplatePlugin] Plugin installed successfully')
     if (config.debug) {
-      console.log('配置信息:', config)
+      console.info('配置信息:', config)
     }
   }
 }
@@ -371,7 +371,7 @@ function setupPerformanceMonitor(config: TemplateSystemConfig): void {
   setInterval(() => {
     const stats = componentCache.getStats()
     if (stats.totalSize > 0 && config.devtools.enableLogger) {
-      console.log('[TemplatePlugin] Cache stats:', stats)
+      console.info('[TemplatePlugin] Cache stats:', stats)
     }
   }, config.performance.metricsInterval)
 
@@ -381,7 +381,7 @@ function setupPerformanceMonitor(config: TemplateSystemConfig): void {
       // @ts-ignore
       const memory = window.performance.memory
       if (memory && config.devtools.enableLogger) {
-        console.log('[TemplatePlugin] Memory usage:', {
+        console.info('[TemplatePlugin] Memory usage:', {
           used: `${Math.round(memory.usedJSHeapSize / 1024 / 1024)}MB`,
           total: `${Math.round(memory.totalJSHeapSize / 1024 / 1024)}MB`,
           limit: `${Math.round(memory.jsHeapSizeLimit / 1024 / 1024)}MB`,
@@ -393,7 +393,7 @@ function setupPerformanceMonitor(config: TemplateSystemConfig): void {
   // 监控扫描器性能
   if (pluginState.scanner && config.devtools.enableTimeline) {
     // 这里可以添加更详细的性能监控逻辑
-    console.log('[TemplatePlugin] Performance monitoring enabled')
+    console.info('[TemplatePlugin] Performance monitoring enabled')
   }
 }
 

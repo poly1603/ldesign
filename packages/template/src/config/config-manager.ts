@@ -20,6 +20,8 @@ export class TemplateConfigManager implements ConfigManager {
   private config: TemplateSystemConfig
   private listeners: Set<ConfigListener> = new Set()
   private watchStoppers: (() => void)[] = []
+  private simpleListeners: Set<(cfg: TemplateSystemConfig) => void> = new Set()
+  private watchersMap: Map<Function, () => void> = new Map()
 
   constructor(initialConfig?: Partial<TemplateSystemConfig>) {
     try {
@@ -49,6 +51,18 @@ export class TemplateConfigManager implements ConfigManager {
     )
 
     this.watchStoppers.push(stopWatcher)
+
+    // 同步触发给简化监听器
+    const stopSimple = watch(
+      () => this.config,
+      (newConfig) => {
+        this.simpleListeners.forEach(fn => {
+          try { fn(newConfig) } catch (e) { console.error('配置监听器执行错误:', e) }
+        })
+      },
+      { deep: true },
+    )
+    this.watchStoppers.push(stopSimple)
   }
 
   /**
@@ -233,6 +247,47 @@ export class TemplateConfigManager implements ConfigManager {
     // 返回取消监听的函数
     return () => {
       this.listeners.delete(listener)
+    }
+  }
+
+  // 兼容方法：添加简化监听器（仅回传新配置）
+  addListener(event: string, listener: (config: TemplateSystemConfig) => void): void {
+    if (event !== 'configChanged') return
+    this.simpleListeners.add(listener)
+  }
+
+  removeAllListeners(): void {
+    this.listeners.clear()
+    this.simpleListeners.clear()
+    this.watchersMap.forEach(stop => {
+      try { stop() } catch {}
+    })
+    this.watchersMap.clear()
+  }
+
+  set(key: string, value: unknown): void {
+    ;(this.config as any)[key] = value
+  }
+
+  getDefaultConfig(): TemplateSystemConfig {
+    return defaultConfig
+  }
+
+  watchConfig(callback: (config: TemplateSystemConfig) => void): () => void {
+    const stop = watch(
+      () => this.config,
+      (newConfig) => { callback(newConfig) },
+      { deep: true },
+    )
+    this.watchersMap.set(callback, stop)
+    return stop
+  }
+
+  unwatchConfig(callback: (config: TemplateSystemConfig) => void): void {
+    const stop = this.watchersMap.get(callback)
+    if (stop) {
+      try { stop() } catch {}
+      this.watchersMap.delete(callback)
     }
   }
 

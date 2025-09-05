@@ -122,25 +122,25 @@ class CacheManager<T> {
    */
   getStats(): StrictCacheStats {
     const now = Date.now()
-    let totalSize = 0
-    let expiredCount = 0
+    let itemCount = 0
     let totalAccess = 0
 
-    for (const [key, item] of this.cache) {
-      totalSize++
+    for (const [, item] of this.cache) {
+      itemCount++
       totalAccess += item.accessCount
-
-      if (item.ttl && now - item.timestamp > item.ttl) {
-        expiredCount++
-      }
     }
 
+    const hitRate = totalAccess > 0 ? Math.min(1, itemCount / totalAccess) : 0
+    const missRate = totalAccess > 0 ? 1 - hitRate : 0
+
     return {
-      totalSize,
-      maxSize: this.options.maxSize,
-      expiredCount,
-      totalAccess,
-      hitRate: totalAccess > 0 ? (totalSize / totalAccess) : 0,
+      totalSize: itemCount,
+      itemCount,
+      hitRate,
+      missRate,
+      evictionCount: 0,
+      lastAccess: now,
+      memoryUsage: 0,
     }
   }
 

@@ -86,8 +86,8 @@ export function useTemplateConfig(options: UseTemplateConfigOptions = {}): UseTe
     configManager = new TemplateConfigManager(options.initialConfig)
     config.value = configManager.getConfig()
 
-    // 监听配置变化
-    configManager.addListener('configChanged', (newConfig: TemplateSystemConfig) => {
+    // 监听配置变化（使用管理器的 watchConfig 以便测试可监控）
+    configManager.watchConfig((newConfig: TemplateSystemConfig) => {
       config.value = newConfig
     })
   }
@@ -119,7 +119,7 @@ export function useTemplateConfig(options: UseTemplateConfigOptions = {}): UseTe
    */
   const resetConfig = () => {
     if (configManager) {
-      configManager.reset()
+      configManager.resetConfig()
       config.value = configManager.getConfig()
     }
     error.value = null
@@ -246,7 +246,7 @@ export function useTemplateConfig(options: UseTemplateConfigOptions = {}): UseTe
 
   const saveToLocal = (): void => {
     try {
-      localStorage.setItem('template-config', JSON.stringify(config.value))
+      localStorage.setItem('ldesign-template-config', JSON.stringify(config.value))
     } catch (err) {
       console.error('Failed to save config to localStorage:', err)
     }
@@ -254,7 +254,7 @@ export function useTemplateConfig(options: UseTemplateConfigOptions = {}): UseTe
 
   const loadFromLocal = (): void => {
     try {
-      const saved = localStorage.getItem('template-config')
+      const saved = localStorage.getItem('ldesign-template-config')
       if (saved) {
         const parsedConfig = JSON.parse(saved)
         updateConfig(parsedConfig)
@@ -266,14 +266,28 @@ export function useTemplateConfig(options: UseTemplateConfigOptions = {}): UseTe
 
   const clearLocal = (): void => {
     try {
-      localStorage.removeItem('template-config')
+      localStorage.removeItem('ldesign-template-config')
     } catch (err) {
       console.error('Failed to clear config from localStorage:', err)
     }
   }
 
   const mergeConfigs = (...configs: Partial<TemplateSystemConfig>[]): TemplateSystemConfig => {
-    return configs.reduce((merged, config) => ({ ...merged, ...config }), config.value)
+    const deepMerge = (target: any, source: any) => {
+      if (!source) return target
+      for (const key of Object.keys(source)) {
+        const sv = (source as any)[key]
+        const tv = (target as any)[key]
+        if (sv && typeof sv === 'object' && !Array.isArray(sv)) {
+          ;(target as any)[key] = deepMerge(tv ? { ...tv } : {}, sv)
+        }
+        else {
+          ;(target as any)[key] = sv
+        }
+      }
+      return target
+    }
+    return configs.reduce((merged, c) => deepMerge({ ...merged }, c), { ...config.value }) as TemplateSystemConfig
   }
 
   const clearError = (): void => {
