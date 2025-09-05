@@ -2,19 +2,19 @@
  * 压缩工具函数
  */
 
+import type { CompressionAlgorithm, CompressionLevel } from '../types'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { pipeline } from 'node:stream/promises'
-import { 
-  createGzip, 
-  createGunzip, 
-  createDeflate, 
-  createInflate,
+import {
   createBrotliCompress,
   createBrotliDecompress,
-  constants as zlibConstants
+  createDeflate,
+  createGunzip,
+  createGzip,
+  createInflate,
+  constants as zlibConstants,
 } from 'node:zlib'
 import { FileSystem } from '../filesystem'
-import type { CompressionAlgorithm, CompressionLevel } from '../types'
 
 /**
  * 压缩工具类
@@ -26,13 +26,13 @@ export class CompressionUtils {
   static async compress(
     data: Buffer | string,
     algorithm: CompressionAlgorithm = 'gzip',
-    level: CompressionLevel = 6
+    level: CompressionLevel = 6,
   ): Promise<Buffer> {
     const input = Buffer.isBuffer(data) ? data : Buffer.from(data, 'utf8')
-    
+
     return new Promise((resolve, reject) => {
       const chunks: Buffer[] = []
-      
+
       let compressor
       switch (algorithm) {
         case 'gzip':
@@ -44,18 +44,18 @@ export class CompressionUtils {
         case 'brotli':
           compressor = createBrotliCompress({
             params: {
-              [zlibConstants.BROTLI_PARAM_QUALITY]: level
-            }
+              [zlibConstants.BROTLI_PARAM_QUALITY]: level,
+            },
           })
           break
         default:
           return reject(new Error(`Unsupported compression algorithm: ${algorithm}`))
       }
-      
-      compressor.on('data', (chunk) => chunks.push(chunk))
+
+      compressor.on('data', chunk => chunks.push(chunk))
       compressor.on('end', () => resolve(Buffer.concat(chunks)))
       compressor.on('error', reject)
-      
+
       compressor.write(input)
       compressor.end()
     })
@@ -64,13 +64,10 @@ export class CompressionUtils {
   /**
    * 解压数据
    */
-  static async decompress(
-    data: Buffer,
-    algorithm: CompressionAlgorithm = 'gzip'
-  ): Promise<Buffer> {
+  static async decompress(data: Buffer, algorithm: CompressionAlgorithm = 'gzip'): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const chunks: Buffer[] = []
-      
+
       let decompressor
       switch (algorithm) {
         case 'gzip':
@@ -85,11 +82,11 @@ export class CompressionUtils {
         default:
           return reject(new Error(`Unsupported compression algorithm: ${algorithm}`))
       }
-      
-      decompressor.on('data', (chunk) => chunks.push(chunk))
+
+      decompressor.on('data', chunk => chunks.push(chunk))
       decompressor.on('end', () => resolve(Buffer.concat(chunks)))
       decompressor.on('error', reject)
-      
+
       decompressor.write(data)
       decompressor.end()
     })
@@ -102,11 +99,11 @@ export class CompressionUtils {
     inputPath: string,
     outputPath: string,
     algorithm: CompressionAlgorithm = 'gzip',
-    level: CompressionLevel = 6
+    level: CompressionLevel = 6,
   ): Promise<void> {
     const input = createReadStream(inputPath)
     const output = createWriteStream(outputPath)
-    
+
     let compressor
     switch (algorithm) {
       case 'gzip':
@@ -118,14 +115,14 @@ export class CompressionUtils {
       case 'brotli':
         compressor = createBrotliCompress({
           params: {
-            [zlibConstants.BROTLI_PARAM_QUALITY]: level
-          }
+            [zlibConstants.BROTLI_PARAM_QUALITY]: level,
+          },
         })
         break
       default:
         throw new Error(`Unsupported compression algorithm: ${algorithm}`)
     }
-    
+
     await pipeline(input, compressor, output)
   }
 
@@ -135,11 +132,11 @@ export class CompressionUtils {
   static async decompressFile(
     inputPath: string,
     outputPath: string,
-    algorithm: CompressionAlgorithm = 'gzip'
+    algorithm: CompressionAlgorithm = 'gzip',
   ): Promise<void> {
     const input = createReadStream(inputPath)
     const output = createWriteStream(outputPath)
-    
+
     let decompressor
     switch (algorithm) {
       case 'gzip':
@@ -154,7 +151,7 @@ export class CompressionUtils {
       default:
         throw new Error(`Unsupported compression algorithm: ${algorithm}`)
     }
-    
+
     await pipeline(input, decompressor, output)
   }
 
@@ -162,7 +159,8 @@ export class CompressionUtils {
    * 计算压缩比
    */
   static calculateCompressionRatio(originalSize: number, compressedSize: number): number {
-    if (originalSize === 0) return 0
+    if (originalSize === 0)
+      return 0
     return ((originalSize - compressedSize) / originalSize) * 100
   }
 
@@ -171,41 +169,42 @@ export class CompressionUtils {
    */
   static async getBestCompressionAlgorithm(
     data: Buffer,
-    algorithms: CompressionAlgorithm[] = ['gzip', 'deflate', 'brotli']
+    algorithms: CompressionAlgorithm[] = ['gzip', 'deflate', 'brotli'],
   ): Promise<{
-    algorithm: CompressionAlgorithm
-    compressedSize: number
-    compressionRatio: number
-    compressionTime: number
-  }> {
+      algorithm: CompressionAlgorithm
+      compressedSize: number
+      compressionRatio: number
+      compressionTime: number
+    }> {
     const results = []
-    
+
     for (const algorithm of algorithms) {
       const startTime = Date.now()
       try {
         const compressed = await this.compress(data, algorithm)
         const compressionTime = Date.now() - startTime
         const compressionRatio = this.calculateCompressionRatio(data.length, compressed.length)
-        
+
         results.push({
           algorithm,
           compressedSize: compressed.length,
           compressionRatio,
-          compressionTime
+          compressionTime,
         })
-      } catch (error) {
+      }
+      catch (error) {
         // 跳过不支持的算法
         continue
       }
     }
-    
+
     if (results.length === 0) {
       throw new Error('No supported compression algorithms found')
     }
-    
+
     // 选择压缩比最高的算法
-    return results.reduce((best, current) => 
-      current.compressionRatio > best.compressionRatio ? current : best
+    return results.reduce((best, current) =>
+      current.compressionRatio > best.compressionRatio ? current : best,
     )
   }
 
@@ -213,42 +212,44 @@ export class CompressionUtils {
    * 批量压缩文件
    */
   static async compressFiles(
-    files: Array<{ input: string; output: string }>,
+    files: Array<{ input: string, output: string }>,
     algorithm: CompressionAlgorithm = 'gzip',
     level: CompressionLevel = 6,
-    concurrency: number = 4
-  ): Promise<Array<{ input: string; output: string; success: boolean; error?: string }>> {
-    const results: Array<{ input: string; output: string; success: boolean; error?: string }> = []
+    concurrency: number = 4,
+  ): Promise<Array<{ input: string, output: string, success: boolean, error?: string }>> {
+    const results: Array<{ input: string, output: string, success: boolean, error?: string }> = []
     const semaphore = new Array(concurrency).fill(null)
-    
-    const processFile = async (file: { input: string; output: string }) => {
+
+    const processFile = async (file: { input: string, output: string }) => {
       try {
         await this.compressFile(file.input, file.output, algorithm, level)
         return { ...file, success: true }
-      } catch (error) {
-        return { 
-          ...file, 
-          success: false, 
-          error: error instanceof Error ? error.message : String(error)
+      }
+      catch (error) {
+        return {
+          ...file,
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
         }
       }
     }
-    
+
     const promises = files.map(async (file, index) => {
       // 等待信号量
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         const check = () => {
           const available = semaphore.findIndex(slot => slot === null)
           if (available !== -1) {
             semaphore[available] = index
             resolve(available)
-          } else {
+          }
+          else {
             setTimeout(check, 10)
           }
         }
         check()
       })
-      
+
       try {
         const result = await processFile(file)
         // 释放信号量
@@ -257,7 +258,8 @@ export class CompressionUtils {
           semaphore[slotIndex] = null
         }
         return result
-      } catch (error) {
+      }
+      catch (error) {
         // 释放信号量
         const slotIndex = semaphore.indexOf(index)
         if (slotIndex !== -1) {
@@ -266,7 +268,7 @@ export class CompressionUtils {
         throw error
       }
     })
-    
+
     return Promise.all(promises)
   }
 
@@ -276,38 +278,41 @@ export class CompressionUtils {
   static async detectCompressionType(filePath: string): Promise<CompressionAlgorithm | null> {
     const buffer = Buffer.alloc(10)
     const file = await FileSystem.readFile(filePath)
-    
-    if (file.length < 10) return null
-    
+
+    if (file.length < 10)
+      return null
+
     // Copy first 10 bytes to buffer for magic number detection
     if (Buffer.isBuffer(file)) {
       file.copy(buffer, 0, 0, 10)
-    } else {
+    }
+    else {
       Buffer.from(file).copy(buffer, 0, 0, 10)
     }
-    
+
     // GZIP 魔数: 1f 8b
-    if (buffer[0] === 0x1f && buffer[1] === 0x8b) {
+    if (buffer[0] === 0x1F && buffer[1] === 0x8B) {
       return 'gzip'
     }
-    
+
     // DEFLATE 通常没有固定魔数，但可以通过 zlib 头部检测
     if (buffer[0] === 0x78) {
       const check = buffer[1]
-      if (check !== undefined && ((check & 0x9c) === 0x9c || (check & 0xda) === 0xda)) {
+      if (check !== undefined && ((check & 0x9C) === 0x9C || (check & 0xDA) === 0xDA)) {
         return 'deflate'
       }
     }
-    
+
     // Brotli 没有标准魔数，但可以尝试解压来检测
     try {
       const testData = Buffer.isBuffer(file) ? file.slice(0, 100) : Buffer.from(file).slice(0, 100)
       await this.decompress(testData, 'brotli')
       return 'brotli'
-    } catch {
+    }
+    catch {
       // 不是 Brotli 格式
     }
-    
+
     return null
   }
 
@@ -322,14 +327,14 @@ export class CompressionUtils {
   }> {
     const stats = await FileSystem.stat(filePath)
     const algorithm = await this.detectCompressionType(filePath)
-    
+
     const info = {
       algorithm,
       compressedSize: stats.size,
       originalSize: undefined as number | undefined,
-      compressionRatio: undefined as number | undefined
+      compressionRatio: undefined as number | undefined,
     }
-    
+
     if (algorithm) {
       try {
         const compressed = await FileSystem.readFile(filePath)
@@ -337,14 +342,15 @@ export class CompressionUtils {
         const decompressed = await this.decompress(compressedBuffer, algorithm)
         info.originalSize = decompressed.length
         info.compressionRatio = this.calculateCompressionRatio(
-          decompressed.length, 
-          compressedBuffer.length
+          decompressed.length,
+          compressedBuffer.length,
         )
-      } catch {
+      }
+      catch {
         // 无法解压，可能文件损坏
       }
     }
-    
+
     return info
   }
 
@@ -353,18 +359,20 @@ export class CompressionUtils {
    */
   static async validateCompressedFile(
     filePath: string,
-    algorithm?: CompressionAlgorithm
+    algorithm?: CompressionAlgorithm,
   ): Promise<boolean> {
     try {
-      const detectedAlgorithm = algorithm || await this.detectCompressionType(filePath)
-      if (!detectedAlgorithm) return false
-      
+      const detectedAlgorithm = algorithm || (await this.detectCompressionType(filePath))
+      if (!detectedAlgorithm)
+        return false
+
       const compressed = await FileSystem.readFile(filePath)
       const compressedBuffer = Buffer.isBuffer(compressed) ? compressed : Buffer.from(compressed)
       await this.decompress(compressedBuffer, detectedAlgorithm)
-      
+
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }

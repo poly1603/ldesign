@@ -102,24 +102,20 @@ console.log('文件比较:', comparison)
 
 ```typescript
 // 批量复制文件
-const copied = await FileUtils.copyFiles(
-  ['./src/file1.txt', './src/file2.txt'],
-  './dest/',
-  {
-    overwrite: true,
-    preserveTimestamps: true,
-    onProgress: (copied, total) => {
-      console.log(`进度: ${copied}/${total}`)
-    }
-  }
-)
+const copied = await FileUtils.copyFiles(['./src/file1.txt', './src/file2.txt'], './dest/', {
+  overwrite: true,
+  preserveTimestamps: true,
+  onProgress: (copied, total) => {
+    console.log(`进度: ${copied}/${total}`)
+  },
+})
 
 // 搜索文件
 const files = await FileUtils.searchFiles('./src', {
   pattern: /\.ts$/,
   extensions: ['.ts', '.js'],
   maxDepth: 3,
-  includeDirectories: false
+  includeDirectories: false,
 })
 
 // 批量重命名
@@ -182,7 +178,7 @@ console.log('响应数据:', response.data)
 // POST 请求
 const postResponse = await HttpUtils.post('https://api.example.com/users', {
   name: 'John Doe',
-  email: 'john@example.com'
+  email: 'john@example.com',
 })
 
 // 其他 HTTP 方法
@@ -201,7 +197,7 @@ const response = await HttpUtils.get('https://api.example.com/data', {
   retryDelay: 1000,
   cache: true,
   cacheTTL: 300000, // 5 minutes
-  validateStatus: (status) => status < 500
+  validateStatus: status => status < 500,
 })
 ```
 
@@ -212,7 +208,7 @@ const response = await HttpUtils.get('https://api.example.com/data', {
 const requests = [
   { url: 'https://api.example.com/users/1' },
   { url: 'https://api.example.com/users/2' },
-  { url: 'https://api.example.com/users/3' }
+  { url: 'https://api.example.com/users/3' },
 ]
 
 const results = await HttpUtils.batchRequest(requests, 2) // 并发数为 2
@@ -222,15 +218,11 @@ const results = await HttpUtils.batchRequest(requests, 2) // 并发数为 2
 
 ```typescript
 // 下载文件
-await HttpUtils.downloadFile(
-  'https://example.com/file.zip',
-  './downloads/file.zip',
-  {
-    onProgress: (downloaded, total) => {
-      console.log(`下载进度: ${(downloaded / total * 100).toFixed(2)}%`)
-    }
-  }
-)
+await HttpUtils.downloadFile('https://example.com/file.zip', './downloads/file.zip', {
+  onProgress: (downloaded, total) => {
+    console.log(`下载进度: ${((downloaded / total) * 100).toFixed(2)}%`)
+  },
+})
 
 // 上传文件
 const uploadResponse = await HttpUtils.uploadFile(
@@ -266,8 +258,8 @@ HttpUtils.setDefaultOptions({
   timeout: 15000,
   retries: 5,
   headers: {
-    'User-Agent': 'MyApp/1.0.0'
-  }
+    'User-Agent': 'MyApp/1.0.0',
+  },
 })
 ```
 
@@ -282,7 +274,7 @@ async function monitorSystem() {
   const info = SystemUtils.getSystemInfo()
   const cpuUsage = await SystemUtils.getCpuUsage()
   const diskUsage = await SystemUtils.getDiskUsage('/')
-  
+
   console.log(`
 系统监控报告:
 - 平台: ${info.platform} ${info.arch}
@@ -305,18 +297,18 @@ import { FileUtils } from '@ldesign/kit/utils'
 async function syncDirectories(source: string, target: string) {
   // 搜索源目录中的所有文件
   const sourceFiles = await FileUtils.searchFiles(source, {
-    maxDepth: 10
+    maxDepth: 10,
   })
-  
+
   // 复制文件到目标目录
   const copied = await FileUtils.copyFiles(sourceFiles, target, {
     overwrite: true,
     preserveTimestamps: true,
     onProgress: (copied, total) => {
       console.log(`同步进度: ${copied}/${total}`)
-    }
+    },
   })
-  
+
   console.log(`同步完成，复制了 ${copied.length} 个文件`)
 }
 ```
@@ -328,37 +320,33 @@ import { HttpUtils } from '@ldesign/kit/utils'
 
 class ApiClient {
   private baseURL: string
-  
+
   constructor(baseURL: string) {
     this.baseURL = baseURL
-    
+
     // 设置默认选项
     HttpUtils.setDefaultOptions({
       timeout: 10000,
       retries: 3,
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
   }
-  
+
   async getUsers() {
     return HttpUtils.get(`${this.baseURL}/users`, {
       cache: true,
-      cacheTTL: 300000 // 5 minutes
+      cacheTTL: 300000, // 5 minutes
     })
   }
-  
+
   async createUser(userData: any) {
     return HttpUtils.post(`${this.baseURL}/users`, userData)
   }
-  
+
   async uploadAvatar(userId: string, filePath: string) {
-    return HttpUtils.uploadFile(
-      `${this.baseURL}/users/${userId}/avatar`,
-      filePath,
-      'avatar'
-    )
+    return HttpUtils.uploadFile(`${this.baseURL}/users/${userId}/avatar`, filePath, 'avatar')
   }
 }
 ```
@@ -388,14 +376,12 @@ try {
 // 使用缓存减少重复请求
 const cachedResponse = await HttpUtils.get(url, {
   cache: true,
-  cacheTTL: 600000 // 10 minutes
+  cacheTTL: 600000, // 10 minutes
 })
 
 // 批量处理文件操作
 const files = await FileUtils.searchFiles('./src')
-const results = await Promise.all(
-  files.map(file => FileUtils.getFileInfo(file))
-)
+const results = await Promise.all(files.map(file => FileUtils.getFileInfo(file)))
 ```
 
 ### 3. 资源清理

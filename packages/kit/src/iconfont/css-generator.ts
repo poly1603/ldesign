@@ -3,11 +3,11 @@
  * 负责生成 IconFont 的 CSS/SCSS/Less 样式文件
  */
 
+import type { IconFontOptions, SvgIcon } from './svg-to-iconfont'
 import { EventEmitter } from 'node:events'
 import { promises as fs } from 'node:fs'
-import { resolve, basename } from 'node:path'
+import { basename, resolve } from 'node:path'
 import { FileSystem } from '../filesystem'
-import type { SvgIcon, IconFontOptions } from './svg-to-iconfont'
 
 /**
  * CSS 生成结果
@@ -63,8 +63,8 @@ export class CssGenerator extends EventEmitter {
         generatedFiles.push(stylusResult.filePath)
         this.emit('cssGenerated', stylusResult)
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('error', error)
       throw error
     }
@@ -75,7 +75,10 @@ export class CssGenerator extends EventEmitter {
   /**
    * 生成基础 CSS
    */
-  private async generateBaseCss(icons: SvgIcon[], fontFiles: string[]): Promise<CssGenerationResult> {
+  private async generateBaseCss(
+    icons: SvgIcon[],
+    fontFiles: string[],
+  ): Promise<CssGenerationResult> {
     const content = this.buildCssContent(icons, fontFiles)
     const fileName = `${this.options.fontName}.css`
     const filePath = resolve(this.options.outputDir, fileName)
@@ -86,7 +89,7 @@ export class CssGenerator extends EventEmitter {
       type: 'css',
       filePath,
       content,
-      size: Buffer.byteLength(content, 'utf8')
+      size: Buffer.byteLength(content, 'utf8'),
     }
   }
 
@@ -104,7 +107,7 @@ export class CssGenerator extends EventEmitter {
       type: 'scss',
       filePath,
       content,
-      size: Buffer.byteLength(content, 'utf8')
+      size: Buffer.byteLength(content, 'utf8'),
     }
   }
 
@@ -122,14 +125,17 @@ export class CssGenerator extends EventEmitter {
       type: 'less',
       filePath,
       content,
-      size: Buffer.byteLength(content, 'utf8')
+      size: Buffer.byteLength(content, 'utf8'),
     }
   }
 
   /**
    * 生成 Stylus
    */
-  private async generateStylus(icons: SvgIcon[], fontFiles: string[]): Promise<CssGenerationResult> {
+  private async generateStylus(
+    icons: SvgIcon[],
+    fontFiles: string[],
+  ): Promise<CssGenerationResult> {
     const content = this.buildStylusContent(icons, fontFiles)
     const fileName = `${this.options.fontName}.styl`
     const filePath = resolve(this.options.outputDir, fileName)
@@ -140,7 +146,7 @@ export class CssGenerator extends EventEmitter {
       type: 'stylus',
       filePath,
       content,
-      size: Buffer.byteLength(content, 'utf8')
+      size: Buffer.byteLength(content, 'utf8'),
     }
   }
 
@@ -208,11 +214,13 @@ export class CssGenerator extends EventEmitter {
    * 构建字体声明
    */
   private buildFontFace(fontFiles: string[]): string {
-    const fontUrls = fontFiles.map(file => {
-      const fileName = basename(file)
-      const format = this.getFontFormat(fileName)
-      return `url('./${fileName}') format('${format}')`
-    }).join(',\n    ')
+    const fontUrls = fontFiles
+      .map((file) => {
+        const fileName = basename(file)
+        const format = this.getFontFormat(fileName)
+        return `url('./${fileName}') format('${format}')`
+      })
+      .join(',\n    ')
 
     return `@font-face {
   font-family: '${this.options.fontFamily}';
@@ -244,14 +252,16 @@ export class CssGenerator extends EventEmitter {
    * 构建图标类
    */
   private buildIconClasses(icons: SvgIcon[]): string {
-    return icons.map(icon => {
-      const className = `${this.options.cssOptions.classPrefix}${icon.name}`
-      const unicode = `\\${icon.unicode.charCodeAt(0).toString(16)}`
-      
-      return `${this.options.cssOptions.baseSelector}.${className}:before {
+    return icons
+      .map((icon) => {
+        const className = `${this.options.cssOptions.classPrefix}${icon.name}`
+        const unicode = `\\${icon.unicode.charCodeAt(0).toString(16)}`
+
+        return `${this.options.cssOptions.baseSelector}.${className}:before {
   content: "${unicode}";
 }`
-    }).join('\n\n')
+      })
+      .join('\n\n')
   }
 
   /**
@@ -282,11 +292,13 @@ ${this.options.fontName}-prefix = '${this.options.cssOptions.classPrefix}'`
    * 构建 Stylus 字体声明
    */
   private buildStylusFontFace(fontFiles: string[]): string {
-    const fontUrls = fontFiles.map(file => {
-      const fileName = basename(file)
-      const format = this.getFontFormat(fileName)
-      return `url('./${fileName}') format('${format}')`
-    }).join(',\n    ')
+    const fontUrls = fontFiles
+      .map((file) => {
+        const fileName = basename(file)
+        const format = this.getFontFormat(fileName)
+        return `url('./${fileName}') format('${format}')`
+      })
+      .join(',\n    ')
 
     return `@font-face
   font-family: ${this.options.fontName}-font-family
@@ -316,27 +328,31 @@ ${this.options.fontName}-prefix = '${this.options.cssOptions.classPrefix}'`
    * 构建 Stylus 图标类
    */
   private buildStylusIconClasses(icons: SvgIcon[]): string {
-    return icons.map(icon => {
-      const className = `${this.options.cssOptions.classPrefix}${icon.name}`
-      const unicode = `\\${icon.unicode.charCodeAt(0).toString(16)}`
-      
-      return `${this.options.cssOptions.baseSelector.replace('.', '')}.${className}:before
+    return icons
+      .map((icon) => {
+        const className = `${this.options.cssOptions.classPrefix}${icon.name}`
+        const unicode = `\\${icon.unicode.charCodeAt(0).toString(16)}`
+
+        return `${this.options.cssOptions.baseSelector.replace('.', '')}.${className}:before
   content: "${unicode}"`
-    }).join('\n\n')
+      })
+      .join('\n\n')
   }
 
   /**
    * 构建预览 HTML
    */
   private buildPreviewHtml(icons: SvgIcon[]): string {
-    const iconItems = icons.map(icon => {
-      const className = `${this.options.cssOptions.classPrefix}${icon.name}`
-      return `    <div class="icon-item">
+    const iconItems = icons
+      .map((icon) => {
+        const className = `${this.options.cssOptions.classPrefix}${icon.name}`
+        return `    <div class="icon-item">
       <i class="${this.options.className} ${className}"></i>
       <span class="icon-name">${icon.name}</span>
       <span class="icon-unicode">\\${icon.unicode.charCodeAt(0).toString(16)}</span>
     </div>`
-    }).join('\n')
+      })
+      .join('\n')
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -372,14 +388,20 @@ ${iconItems}
    */
   private getFontFormat(fileName: string): string {
     const ext = fileName.split('.').pop()?.toLowerCase()
-    
+
     switch (ext) {
-      case 'woff2': return 'woff2'
-      case 'woff': return 'woff'
-      case 'ttf': return 'truetype'
-      case 'eot': return 'embedded-opentype'
-      case 'svg': return 'svg'
-      default: return 'truetype'
+      case 'woff2':
+        return 'woff2'
+      case 'woff':
+        return 'woff'
+      case 'ttf':
+        return 'truetype'
+      case 'eot':
+        return 'embedded-opentype'
+      case 'svg':
+        return 'svg'
+      default:
+        return 'truetype'
     }
   }
 

@@ -3,9 +3,9 @@
  * 提供文件和目录变更监听功能
  */
 
-import { watch } from 'node:fs'
 import type { FSWatcher } from 'node:fs'
 import { EventEmitter } from 'node:events'
+import { watch } from 'node:fs'
 import { join } from 'node:path'
 import { glob } from 'glob'
 import { FileSystemError } from '../types'
@@ -30,7 +30,7 @@ export class FileWatcher extends EventEmitter {
       debounceDelay: 100,
       ignoreInitial: true,
       followSymlinks: false,
-      ...options
+      ...options,
     }
   }
 
@@ -42,7 +42,7 @@ export class FileWatcher extends EventEmitter {
   async watch(path: string, patterns?: string[]): Promise<void> {
     try {
       const resolvedPath = PathUtils.resolve(path)
-      
+
       if (this.watchedPaths.has(resolvedPath)) {
         return // 已经在监听
       }
@@ -53,18 +53,20 @@ export class FileWatcher extends EventEmitter {
       }
 
       const isDirectory = await FileSystem.isDirectory(resolvedPath)
-      
+
       if (patterns && patterns.length > 0) {
         // 使用模式匹配监听
         await this.watchWithPatterns(resolvedPath, patterns)
-      } else {
+      }
+      else {
         // 直接监听路径
         await this.watchPath(resolvedPath, isDirectory)
       }
 
       this.watchedPaths.add(resolvedPath)
       this.emit('ready', resolvedPath)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to watch path: ${path}`, path, error as Error)
     }
   }
@@ -74,15 +76,15 @@ export class FileWatcher extends EventEmitter {
    */
   private async watchWithPatterns(basePath: string, patterns: string[]): Promise<void> {
     const matchedFiles = new Set<string>()
-    
+
     // 找到所有匹配的文件
     for (const pattern of patterns) {
       const fullPattern = PathUtils.join(basePath, pattern)
-      const files = await glob(fullPattern, { 
+      const files = await glob(fullPattern, {
         nodir: true,
-        follow: this.options.followSymlinks 
+        follow: this.options.followSymlinks,
       })
-      
+
       for (const file of files) {
         matchedFiles.add(file)
       }
@@ -103,13 +105,17 @@ export class FileWatcher extends EventEmitter {
    * 监听单个路径
    */
   private async watchPath(path: string, isDirectory: boolean): Promise<void> {
-    const watcher = watch(path, {
-      recursive: this.options.recursive && isDirectory,
-      persistent: this.options.persistent,
-      encoding: this.options.encoding
-    }, (eventType, filename) => {
-      this.handleFileChange(path, eventType, filename, isDirectory)
-    })
+    const watcher = watch(
+      path,
+      {
+        recursive: this.options.recursive && isDirectory,
+        persistent: this.options.persistent,
+        encoding: this.options.encoding,
+      },
+      (eventType, filename) => {
+        this.handleFileChange(path, eventType, filename, isDirectory)
+      },
+    )
 
     watcher.on('error', (error) => {
       this.emit('error', new FileSystemError(`Watcher error for ${path}`, path, error))
@@ -125,9 +131,10 @@ export class FileWatcher extends EventEmitter {
     watchedPath: string,
     eventType: string,
     filename: string | null,
-    isDirectory: boolean
+    isDirectory: boolean,
   ): void {
-    if (!filename) return
+    if (!filename)
+      return
 
     const fullPath = isDirectory ? join(watchedPath, filename) : watchedPath
     const normalizedPath = PathUtils.normalize(fullPath)
@@ -145,7 +152,8 @@ export class FileWatcher extends EventEmitter {
       }, this.options.debounceDelay)
 
       this.debounceTimers.set(normalizedPath, timer)
-    } else {
+    }
+    else {
       this.processFileChange(normalizedPath, eventType)
     }
   }
@@ -156,34 +164,39 @@ export class FileWatcher extends EventEmitter {
   private async processFileChange(filePath: string, eventType: string): Promise<void> {
     try {
       const exists = await FileSystem.exists(filePath)
-      
+
       if (exists) {
         const isDirectory = await FileSystem.isDirectory(filePath)
         const stats = await FileSystem.getInfo(filePath)
-        
+
         const changeEvent: FileChangeEvent = {
           type: eventType === 'rename' ? (exists ? 'add' : 'unlink') : 'change',
           path: filePath,
           stats,
-          isDirectory
+          isDirectory,
         }
 
         this.emit('change', changeEvent)
         this.emit(changeEvent.type, filePath, stats)
-      } else {
+      }
+      else {
         // 文件被删除
         const changeEvent: FileChangeEvent = {
           type: 'unlink',
           path: filePath,
           stats: null,
-          isDirectory: false
+          isDirectory: false,
         }
 
         this.emit('change', changeEvent)
         this.emit('unlink', filePath)
       }
-    } catch (error) {
-      this.emit('error', new FileSystemError(`Error processing change for ${filePath}`, filePath, error as Error))
+    }
+    catch (error) {
+      this.emit(
+        'error',
+        new FileSystemError(`Error processing change for ${filePath}`, filePath, error as Error),
+      )
     }
   }
 
@@ -194,19 +207,19 @@ export class FileWatcher extends EventEmitter {
   async unwatch(path: string): Promise<void> {
     const resolvedPath = PathUtils.resolve(path)
     const watcher = this.watchers.get(resolvedPath)
-    
+
     if (watcher) {
       watcher.close()
       this.watchers.delete(resolvedPath)
       this.watchedPaths.delete(resolvedPath)
-      
+
       // 清理防抖定时器
       const timer = this.debounceTimers.get(resolvedPath)
       if (timer) {
         clearTimeout(timer)
         this.debounceTimers.delete(resolvedPath)
       }
-      
+
       this.emit('unwatch', resolvedPath)
     }
   }
@@ -255,10 +268,11 @@ export class FileWatcher extends EventEmitter {
       return false
     }
 
-    return this.options.ignored.some(pattern => {
+    return this.options.ignored.some((pattern) => {
       if (typeof pattern === 'string') {
         return PathUtils.match(path, pattern)
-      } else if (pattern instanceof RegExp) {
+      }
+      else if (pattern instanceof RegExp) {
         return pattern.test(path)
       }
       return false
@@ -282,7 +296,7 @@ export class FileWatcher extends EventEmitter {
   static async watchFile(
     filePath: string,
     callback: (event: FileChangeEvent) => void,
-    options: WatcherOptions = {}
+    options: WatcherOptions = {},
   ): Promise<FileWatcher> {
     const watcher = new FileWatcher(options)
     watcher.on('change', callback)
@@ -299,7 +313,7 @@ export class FileWatcher extends EventEmitter {
   static async watchDirectory(
     dirPath: string,
     callback: (event: FileChangeEvent) => void,
-    options: WatcherOptions = {}
+    options: WatcherOptions = {},
   ): Promise<FileWatcher> {
     const watcher = new FileWatcher({ recursive: true, ...options })
     watcher.on('change', callback)
@@ -316,15 +330,15 @@ export class FileWatcher extends EventEmitter {
   static async watchMultiple(
     paths: string[],
     callback: (event: FileChangeEvent) => void,
-    options: WatcherOptions = {}
+    options: WatcherOptions = {},
   ): Promise<FileWatcher> {
     const watcher = new FileWatcher(options)
     watcher.on('change', callback)
-    
+
     for (const path of paths) {
       await watcher.watch(path)
     }
-    
+
     return watcher
   }
 
@@ -340,7 +354,8 @@ export class FileWatcher extends EventEmitter {
 
       const cleanup = () => {
         watcher.unwatchAll()
-        if (timeoutId) clearTimeout(timeoutId)
+        if (timeoutId)
+          clearTimeout(timeoutId)
       }
 
       watcher.on('change', (event) => {

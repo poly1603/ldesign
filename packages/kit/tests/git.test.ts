@@ -2,23 +2,23 @@
  * Git 模块测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { GitManager, GitUtils } from '../src/git'
+import { join } from 'node:path'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { FileSystem } from '../src/filesystem'
+import { GitManager, GitUtils } from '../src/git'
 
 // Mock exec 函数
 vi.mock('node:child_process', () => ({
-  exec: vi.fn()
+  exec: vi.fn(),
 }))
 
-describe('GitManager', () => {
+describe('gitManager', () => {
   let testDir: string
   let git: GitManager
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), 'ldesign-git-test-' + Date.now())
+    testDir = join(tmpdir(), `ldesign-git-test-${Date.now()}`)
     await FileSystem.createDir(testDir)
     git = new GitManager(testDir)
   })
@@ -106,7 +106,8 @@ describe('GitManager', () => {
       const { exec } = await import('node:child_process')
       vi.mocked(exec).mockImplementation((command, options, callback) => {
         if (typeof callback === 'function') {
-          const mockOutput = 'abc1234|John Doe|john@example.com|2023-12-25 10:30:00 +0800|Initial commit'
+          const mockOutput =
+            'abc1234|John Doe|john@example.com|2023-12-25 10:30:00 +0800|Initial commit'
           callback(null, { stdout: mockOutput, stderr: '' } as any)
         }
         return {} as any
@@ -202,7 +203,9 @@ describe('GitManager', () => {
         return {} as any
       })
 
-      await expect(git.addRemote('upstream', 'https://github.com/user/repo.git')).resolves.not.toThrow()
+      await expect(
+        git.addRemote('upstream', 'https://github.com/user/repo.git')
+      ).resolves.not.toThrow()
     })
 
     it('应该能够推送到远程仓库', async () => {
@@ -244,7 +247,7 @@ describe('GitManager', () => {
       const config = await git.getConfig()
       expect(config).toEqual({
         'user.name': 'John Doe',
-        'user.email': 'john@example.com'
+        'user.email': 'john@example.com',
       })
     })
 
@@ -262,11 +265,11 @@ describe('GitManager', () => {
   })
 })
 
-describe('GitUtils', () => {
+describe('gitUtils', () => {
   describe('工具函数', () => {
     it('应该能够查找仓库根目录', async () => {
       // Mock FileSystem.exists
-      vi.spyOn(FileSystem, 'exists').mockImplementation(async (path) => {
+      vi.spyOn(FileSystem, 'exists').mockImplementation(async path => {
         return path.includes('.git')
       })
 

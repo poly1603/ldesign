@@ -2,15 +2,15 @@
  * 性能监控器
  */
 
-import { performance, PerformanceObserver } from 'node:perf_hooks'
-import { memoryUsage, cpuUsage } from 'node:process'
-import type { 
-  PerformanceMetrics,
+import type {
   BenchmarkResult,
-  MemorySnapshot,
   CPUSnapshot,
-  PerformanceConfig
+  MemorySnapshot,
+  PerformanceConfig,
+  PerformanceMetrics,
 } from '../types'
+import { performance, PerformanceObserver } from 'node:perf_hooks'
+import { cpuUsage, memoryUsage } from 'node:process'
 
 /**
  * 性能监控器
@@ -28,7 +28,7 @@ export class PerformanceMonitor {
       enableMemory: config.enableMemory ?? true,
       enableCPU: config.enableCPU ?? true,
       sampleInterval: config.sampleInterval ?? 1000,
-      ...config
+      ...config,
     }
 
     this.setupObserver()
@@ -53,17 +53,17 @@ export class PerformanceMonitor {
 
     const endTime = performance.now()
     const duration = endTime - startTime
-    
+
     performance.mark(`${name}-end`)
     performance.measure(name, `${name}-start`, `${name}-end`)
-    
+
     this.timers.delete(name)
     this.recordMetric({
       name,
       type: 'timer',
       value: duration,
       timestamp: new Date(),
-      unit: 'ms'
+      unit: 'ms',
     })
 
     return duration
@@ -74,15 +74,16 @@ export class PerformanceMonitor {
    */
   async measureFunction<T>(
     name: string,
-    fn: () => T | Promise<T>
-  ): Promise<{ result: T; duration: number }> {
+    fn: () => T | Promise<T>,
+  ): Promise<{ result: T, duration: number }> {
     this.startTimer(name)
-    
+
     try {
       const result = await fn()
       const duration = this.endTimer(name)
       return { result, duration }
-    } catch (error) {
+    }
+    catch (error) {
       this.endTimer(name)
       throw error
     }
@@ -93,15 +94,16 @@ export class PerformanceMonitor {
    */
   async measureAsync<T>(
     name: string,
-    promise: Promise<T>
-  ): Promise<{ result: T; duration: number }> {
+    promise: Promise<T>,
+  ): Promise<{ result: T, duration: number }> {
     this.startTimer(name)
-    
+
     try {
       const result = await promise
       const duration = this.endTimer(name)
       return { result, duration }
-    } catch (error) {
+    }
+    catch (error) {
       this.endTimer(name)
       throw error
     }
@@ -129,14 +131,14 @@ export class PerformanceMonitor {
    */
   getMemorySnapshot(): MemorySnapshot {
     const memory = memoryUsage()
-    
+
     return {
       rss: memory.rss,
       heapTotal: memory.heapTotal,
       heapUsed: memory.heapUsed,
       external: memory.external,
       arrayBuffers: memory.arrayBuffers,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
   }
 
@@ -145,11 +147,11 @@ export class PerformanceMonitor {
    */
   getCPUSnapshot(): CPUSnapshot {
     const cpu = cpuUsage()
-    
+
     return {
       user: cpu.user,
       system: cpu.system,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
   }
 
@@ -166,7 +168,7 @@ export class PerformanceMonitor {
             type: 'memory',
             value: memory.heapUsed,
             timestamp: memory.timestamp,
-            unit: 'bytes'
+            unit: 'bytes',
           })
         }
 
@@ -177,7 +179,7 @@ export class PerformanceMonitor {
             type: 'cpu',
             value: cpu.user,
             timestamp: cpu.timestamp,
-            unit: 'microseconds'
+            unit: 'microseconds',
           })
         }
       }, this.config.sampleInterval)
@@ -211,13 +213,9 @@ export class PerformanceMonitor {
       iterations?: number
       warmup?: number
       timeout?: number
-    } = {}
+    } = {},
   ): Promise<BenchmarkResult> {
-    const {
-      iterations = 1000,
-      warmup = 100,
-      timeout = 30000
-    } = options
+    const { iterations = 1000, warmup = 100, timeout = 30000 } = options
 
     const results: number[] = []
     const startTime = Date.now()
@@ -225,7 +223,7 @@ export class PerformanceMonitor {
     // 预热
     for (let i = 0; i < warmup; i++) {
       await fn()
-      
+
       if (Date.now() - startTime > timeout) {
         throw new Error('Benchmark timeout during warmup')
       }
@@ -236,9 +234,9 @@ export class PerformanceMonitor {
       const start = performance.now()
       await fn()
       const end = performance.now()
-      
+
       results.push(end - start)
-      
+
       if (Date.now() - startTime > timeout) {
         throw new Error('Benchmark timeout')
       }
@@ -247,7 +245,7 @@ export class PerformanceMonitor {
     // 计算统计信息
     const sorted = results.sort((a, b) => a - b)
     const sum = results.reduce((a, b) => a + b, 0)
-    
+
     return {
       name,
       iterations: results.length,
@@ -260,7 +258,7 @@ export class PerformanceMonitor {
       p99Time: sorted[Math.floor(sorted.length * 0.99)],
       standardDeviation: this.calculateStandardDeviation(results),
       opsPerSecond: 1000 / (sum / results.length),
-      timestamp: new Date()
+      timestamp: new Date(),
     }
   }
 
@@ -269,13 +267,13 @@ export class PerformanceMonitor {
    */
   compareBenchmarks(
     baseline: BenchmarkResult,
-    current: BenchmarkResult
+    current: BenchmarkResult,
   ): {
-    improvement: number
-    regression: boolean
-    significant: boolean
-    details: Record<string, number>
-  } {
+      improvement: number
+      regression: boolean
+      significant: boolean
+      details: Record<string, number>
+    } {
     const improvement = (baseline.averageTime - current.averageTime) / baseline.averageTime
     const regression = improvement < 0
     const significant = Math.abs(improvement) > 0.05 // 5% 阈值
@@ -288,18 +286,18 @@ export class PerformanceMonitor {
         averageTimeChange: improvement,
         minTimeChange: (baseline.minTime - current.minTime) / baseline.minTime,
         maxTimeChange: (baseline.maxTime - current.maxTime) / baseline.maxTime,
-        opsPerSecondChange: (current.opsPerSecond - baseline.opsPerSecond) / baseline.opsPerSecond
-      }
+        opsPerSecondChange: (current.opsPerSecond - baseline.opsPerSecond) / baseline.opsPerSecond,
+      },
     }
   }
 
   /**
    * 获取性能报告
    */
-  getReport(timeRange?: { start: Date; end: Date }): {
+  getReport(timeRange?: { start: Date, end: Date }): {
     summary: {
       totalMetrics: number
-      timeRange: { start: Date; end: Date }
+      timeRange: { start: Date, end: Date }
       averageMemory: number
       peakMemory: number
       averageCPU: number
@@ -319,7 +317,7 @@ export class PerformanceMonitor {
 
     if (timeRange) {
       filteredMetrics = this.metrics.filter(
-        m => m.timestamp >= timeRange.start && m.timestamp <= timeRange.end
+        m => m.timestamp >= timeRange.start && m.timestamp <= timeRange.end,
       )
     }
 
@@ -329,7 +327,7 @@ export class PerformanceMonitor {
 
     // 计算定时器统计
     const timerStats = new Map<string, number[]>()
-    timerMetrics.forEach(m => {
+    timerMetrics.forEach((m) => {
       if (!timerStats.has(m.name)) {
         timerStats.set(m.name, [])
       }
@@ -342,7 +340,7 @@ export class PerformanceMonitor {
       totalTime: times.reduce((a, b) => a + b, 0),
       averageTime: times.reduce((a, b) => a + b, 0) / times.length,
       minTime: Math.min(...times),
-      maxTime: Math.max(...times)
+      maxTime: Math.max(...times),
     }))
 
     return {
@@ -350,17 +348,17 @@ export class PerformanceMonitor {
         totalMetrics: filteredMetrics.length,
         timeRange: timeRange || {
           start: filteredMetrics[0]?.timestamp || new Date(),
-          end: filteredMetrics[filteredMetrics.length - 1]?.timestamp || new Date()
+          end: filteredMetrics[filteredMetrics.length - 1]?.timestamp || new Date(),
         },
-        averageMemory: memoryMetrics.length > 0 
-          ? memoryMetrics.reduce((sum, m) => sum + m.value, 0) / memoryMetrics.length 
-          : 0,
-        peakMemory: memoryMetrics.length > 0 
-          ? Math.max(...memoryMetrics.map(m => m.value)) 
-          : 0,
-        averageCPU: cpuMetrics.length > 0 
-          ? cpuMetrics.reduce((sum, m) => sum + m.value, 0) / cpuMetrics.length 
-          : 0
+        averageMemory:
+          memoryMetrics.length > 0
+            ? memoryMetrics.reduce((sum, m) => sum + m.value, 0) / memoryMetrics.length
+            : 0,
+        peakMemory: memoryMetrics.length > 0 ? Math.max(...memoryMetrics.map(m => m.value)) : 0,
+        averageCPU:
+          cpuMetrics.length > 0
+            ? cpuMetrics.reduce((sum, m) => sum + m.value, 0) / cpuMetrics.length
+            : 0,
       },
       timers,
       memory: memoryMetrics.map(m => ({
@@ -369,13 +367,13 @@ export class PerformanceMonitor {
         heapUsed: m.value,
         external: 0,
         arrayBuffers: 0,
-        timestamp: m.timestamp
+        timestamp: m.timestamp,
       })),
       cpu: cpuMetrics.map(m => ({
         user: m.value,
         system: 0,
-        timestamp: m.timestamp
-      }))
+        timestamp: m.timestamp,
+      })),
     }
   }
 
@@ -392,7 +390,7 @@ export class PerformanceMonitor {
    */
   private recordMetric(metric: PerformanceMetrics): void {
     this.metrics.push(metric)
-    
+
     // 限制指标数量
     if (this.metrics.length > this.config.maxMetrics) {
       this.metrics = this.metrics.slice(-this.config.maxMetrics)
@@ -406,14 +404,14 @@ export class PerformanceMonitor {
     if (typeof PerformanceObserver !== 'undefined') {
       this.observer = new PerformanceObserver((list) => {
         const entries = list.getEntries()
-        entries.forEach(entry => {
+        entries.forEach((entry) => {
           if (entry.entryType === 'measure') {
             this.recordMetric({
               name: entry.name,
               type: 'measure',
               value: entry.duration,
               timestamp: new Date(),
-              unit: 'ms'
+              unit: 'ms',
             })
           }
         })
@@ -428,7 +426,7 @@ export class PerformanceMonitor {
    */
   private calculateStandardDeviation(values: number[]): number {
     const mean = values.reduce((a, b) => a + b, 0) / values.length
-    const squaredDiffs = values.map(value => Math.pow(value - mean, 2))
+    const squaredDiffs = values.map(value => (value - mean) ** 2)
     const avgSquaredDiff = squaredDiffs.reduce((a, b) => a + b, 0) / values.length
     return Math.sqrt(avgSquaredDiff)
   }

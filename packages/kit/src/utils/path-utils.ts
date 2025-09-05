@@ -3,8 +3,20 @@
  * 提供跨平台路径操作、解析、标准化等功能
  */
 
-import { resolve, relative, join, dirname, basename, extname, parse, format, isAbsolute, normalize, sep, posix, win32 } from 'node:path'
 import { homedir, tmpdir } from 'node:os'
+import {
+  basename,
+  dirname,
+  extname,
+  format,
+  isAbsolute,
+  join,
+  normalize,
+  parse,
+  relative,
+  resolve,
+  sep,
+} from 'node:path'
 
 /**
  * 路径处理工具
@@ -85,7 +97,7 @@ export class PathUtils {
     return {
       ...parsed,
       dir: PathUtils.normalize(parsed.dir),
-      root: PathUtils.normalize(parsed.root)
+      root: PathUtils.normalize(parsed.root),
     }
   }
 
@@ -181,13 +193,16 @@ export class PathUtils {
    * @returns 公共祖先路径
    */
   static getCommonAncestor(...paths: string[]): string {
-    if (paths.length === 0) return ''
-    if (paths.length === 1) return PathUtils.dirname(paths[0])
+    if (paths.length === 0)
+      return ''
+    if (paths.length === 1)
+      return PathUtils.dirname(paths[0])
 
     const normalizedPaths = paths.map(p => PathUtils.normalize(p))
     const segments = normalizedPaths.map(p => p.split('/').filter(Boolean))
-    
-    if (segments.length === 0) return ''
+
+    if (segments.length === 0)
+      return ''
 
     const minLength = Math.min(...segments.map(s => s.length))
     const commonSegments: string[] = []
@@ -196,12 +211,13 @@ export class PathUtils {
       const segment = segments[0][i]
       if (segments.every(s => s[i] === segment)) {
         commonSegments.push(segment)
-      } else {
+      }
+      else {
         break
       }
     }
 
-    return commonSegments.length > 0 ? '/' + commonSegments.join('/') : '/'
+    return commonSegments.length > 0 ? `/${commonSegments.join('/')}` : '/'
   }
 
   /**
@@ -214,7 +230,7 @@ export class PathUtils {
     const absoluteFile = PathUtils.toAbsolute(filePath)
     const absoluteDir = PathUtils.toAbsolute(dirPath)
     const relativePath = PathUtils.relative(absoluteDir, absoluteFile)
-    
+
     return !relativePath.startsWith('../') && relativePath !== '..'
   }
 
@@ -240,7 +256,7 @@ export class PathUtils {
     return PathUtils.format({
       ...parsed,
       base: undefined,
-      ext
+      ext,
     })
   }
 
@@ -255,7 +271,7 @@ export class PathUtils {
     return PathUtils.format({
       ...parsed,
       base: undefined,
-      name: parsed.name + suffix
+      name: parsed.name + suffix,
     })
   }
 
@@ -272,7 +288,8 @@ export class PathUtils {
     while (current !== '/' && current !== '.') {
       parents.push(current)
       const parent = PathUtils.dirname(current)
-      if (parent === current) break
+      if (parent === current)
+        break
       current = parent
     }
 
@@ -336,7 +353,7 @@ export class PathUtils {
    * @returns 平台特定路径
    */
   static toPlatform(filePath: string): string {
-    return process.platform === 'win32' 
+    return process.platform === 'win32'
       ? PathUtils.toWindows(filePath)
       : PathUtils.toPosix(filePath)
   }
@@ -348,16 +365,18 @@ export class PathUtils {
    */
   static isValidFileName(fileName: string): boolean {
     // Windows 禁用字符
-    const invalidChars = /[<>:"|?*\x00-\x1f]/
+    const invalidChars = /[<>:"|?*\x00-\x1F]/
     // Windows 保留名称
     const reservedNames = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i
-    
-    return !invalidChars.test(fileName) && 
-           !reservedNames.test(fileName) &&
-           fileName.length > 0 &&
-           fileName.length <= 255 &&
-           !fileName.endsWith('.') &&
-           !fileName.endsWith(' ')
+
+    return (
+      !invalidChars.test(fileName)
+      && !reservedNames.test(fileName)
+      && fileName.length > 0
+      && fileName.length <= 255
+      && !fileName.endsWith('.')
+      && !fileName.endsWith(' ')
+    )
   }
 
   /**
@@ -368,7 +387,7 @@ export class PathUtils {
    */
   static sanitizeFileName(fileName: string, replacement = '_'): string {
     return fileName
-      .replace(/[<>:"|?*\x00-\x1f]/g, replacement)
+      .replace(/[<>:"|?*\x00-\x1F]/g, replacement)
       .replace(/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i, `${replacement}$1`)
       .replace(/[. ]+$/, '')
       .slice(0, 255)
@@ -382,7 +401,7 @@ export class PathUtils {
    */
   static async generateUniquePath(
     filePath: string,
-    exists: (path: string) => Promise<boolean> | boolean
+    exists: (path: string) => Promise<boolean> | boolean,
   ): Promise<string> {
     if (!(await exists(filePath))) {
       return filePath
@@ -395,7 +414,7 @@ export class PathUtils {
       const newPath = PathUtils.format({
         ...parsed,
         base: undefined,
-        name: `${parsed.name} (${counter})`
+        name: `${parsed.name} (${counter})`,
       })
 
       if (!(await exists(newPath))) {

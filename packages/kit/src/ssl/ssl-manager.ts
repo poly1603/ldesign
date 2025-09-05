@@ -2,17 +2,10 @@
  * SSL 证书管理器
  */
 
+import type { CertificateInfo, CertificateRequest, KeyPair, SSLConfig, SSLOptions } from '../types'
 import { createHash, randomBytes } from 'node:crypto'
-import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { FileSystem } from '../filesystem'
-import type { 
-  SSLOptions,
-  CertificateInfo,
-  CertificateRequest,
-  KeyPair,
-  SSLConfig
-} from '../types'
 
 /**
  * SSL 管理器
@@ -31,7 +24,7 @@ export class SSLManager {
       validityDays: options.validityDays || 365,
       keySize: options.keySize || 2048,
       algorithm: options.algorithm || 'rsa',
-      hashAlgorithm: options.hashAlgorithm || 'sha256'
+      hashAlgorithm: options.hashAlgorithm || 'sha256',
     }
   }
 
@@ -40,24 +33,24 @@ export class SSLManager {
    */
   async generateKeyPair(): Promise<KeyPair> {
     const { generateKeyPairSync } = await import('node:crypto')
-    
+
     const { publicKey, privateKey } = generateKeyPairSync(this.options.algorithm as any, {
       modulusLength: this.options.keySize,
       publicKeyEncoding: {
         type: 'spki',
-        format: 'pem'
+        format: 'pem',
       },
       privateKeyEncoding: {
         type: 'pkcs8',
-        format: 'pem'
-      }
+        format: 'pem',
+      },
     })
 
     return {
       publicKey,
       privateKey,
       algorithm: this.options.algorithm,
-      keySize: this.options.keySize
+      keySize: this.options.keySize,
     }
   }
 
@@ -66,19 +59,19 @@ export class SSLManager {
    */
   async createCertificateRequest(
     keyPair: KeyPair,
-    subject: CertificateRequest['subject']
+    subject: CertificateRequest['subject'],
   ): Promise<string> {
     // 简化的 CSR 生成实现
     // 实际项目中应该使用专业的加密库如 node-forge
     const subjectString = this.formatSubject(subject)
     const timestamp = Date.now()
-    
+
     // 创建 CSR 的基本结构
     const csrData = {
       subject: subjectString,
       publicKey: keyPair.publicKey,
       timestamp,
-      algorithm: keyPair.algorithm
+      algorithm: keyPair.algorithm,
     }
 
     // 简化的 PEM 格式 CSR
@@ -86,7 +79,7 @@ export class SSLManager {
     return [
       '-----BEGIN CERTIFICATE REQUEST-----',
       csrContent.match(/.{1,64}/g)?.join('\n') || csrContent,
-      '-----END CERTIFICATE REQUEST-----'
+      '-----END CERTIFICATE REQUEST-----',
     ].join('\n')
   }
 
@@ -99,7 +92,7 @@ export class SSLManager {
     options: {
       validityDays?: number
       extensions?: string[]
-    } = {}
+    } = {},
   ): Promise<string> {
     const validityDays = options.validityDays ?? this.options.validityDays
     const now = new Date()
@@ -117,16 +110,16 @@ export class SSLManager {
       notAfter: notAfter.toISOString(),
       publicKey: keyPair.publicKey,
       algorithm: this.options.hashAlgorithm,
-      extensions: options.extensions || []
+      extensions: options.extensions || [],
     }
 
     // 创建证书签名
     const certContent = this.signCertificate(certData, keyPair.privateKey)
-    
+
     return [
       '-----BEGIN CERTIFICATE-----',
       certContent.match(/.{1,64}/g)?.join('\n') || certContent,
-      '-----END CERTIFICATE-----'
+      '-----END CERTIFICATE-----',
     ].join('\n')
   }
 
@@ -139,10 +132,10 @@ export class SSLManager {
     errors: string[]
   }> {
     const errors: string[] = []
-    
+
     try {
       const certInfo = this.parseCertificate(certificate)
-      
+
       // 检查证书格式
       if (!certificate.includes('-----BEGIN CERTIFICATE-----')) {
         errors.push('Invalid certificate format')
@@ -153,7 +146,7 @@ export class SSLManager {
       if (certInfo.notBefore && new Date(certInfo.notBefore) > now) {
         errors.push('Certificate not yet valid')
       }
-      
+
       if (certInfo.notAfter && new Date(certInfo.notAfter) < now) {
         errors.push('Certificate has expired')
       }
@@ -161,13 +154,14 @@ export class SSLManager {
       return {
         valid: errors.length === 0,
         info: certInfo,
-        errors
+        errors,
       }
-    } catch (error) {
+    }
+    catch (error) {
       errors.push(`Certificate parsing error: ${(error as Error).message}`)
       return {
         valid: false,
-        errors
+        errors,
       }
     }
   }
@@ -183,10 +177,10 @@ export class SSLManager {
         .replace('-----BEGIN CERTIFICATE-----', '')
         .replace('-----END CERTIFICATE-----', '')
         .replace(/\n/g, '')
-      
+
       const decoded = Buffer.from(content, 'base64').toString()
       const certData = JSON.parse(decoded)
-      
+
       return {
         subject: this.parseSubject(certData.subject),
         issuer: this.parseSubject(certData.issuer),
@@ -195,9 +189,10 @@ export class SSLManager {
         notAfter: certData.notAfter,
         algorithm: certData.algorithm,
         publicKey: certData.publicKey,
-        extensions: certData.extensions || []
+        extensions: certData.extensions || [],
       }
-    } catch {
+    }
+    catch {
       throw new Error('Invalid certificate format')
     }
   }
@@ -209,32 +204,35 @@ export class SSLManager {
     certificate: string,
     privateKey: string,
     outputDir: string,
-    filename = 'certificate'
+    filename = 'certificate',
   ): Promise<{
-    certPath: string
-    keyPath: string
-  }> {
+      certPath: string
+      keyPath: string
+    }> {
     await FileSystem.createDir(outputDir, true)
-    
+
     const certPath = join(outputDir, `${filename}.crt`)
     const keyPath = join(outputDir, `${filename}.key`)
-    
+
     await FileSystem.writeFile(certPath, certificate)
     await FileSystem.writeFile(keyPath, privateKey)
-    
+
     return { certPath, keyPath }
   }
 
   /**
    * 从文件加载证书和密钥
    */
-  async loadCertificateFiles(certPath: string, keyPath: string): Promise<{
-    certificate: string
-    privateKey: string
-  }> {
+  async loadCertificateFiles(
+    certPath: string,
+    keyPath: string,
+  ): Promise<{
+      certificate: string
+      privateKey: string
+    }> {
     const certificate = await FileSystem.readFile(certPath)
     const privateKey = await FileSystem.readFile(keyPath)
-    
+
     return { certificate, privateKey }
   }
 
@@ -249,17 +247,17 @@ export class SSLManager {
       ca?: string[]
       requestCert?: boolean
       rejectUnauthorized?: boolean
-    } = {}
+    } = {},
   ): Promise<SSLConfig> {
     const { certificate, privateKey } = await this.loadCertificateFiles(certPath, keyPath)
-    
+
     return {
       cert: certificate,
       key: privateKey,
       passphrase: options.passphrase,
       ca: options.ca,
       requestCert: options.requestCert ?? false,
-      rejectUnauthorized: options.rejectUnauthorized ?? true
+      rejectUnauthorized: options.rejectUnauthorized ?? true,
     }
   }
 
@@ -271,7 +269,7 @@ export class SSLManager {
     errors: string[]
   }> {
     const errors: string[] = []
-    
+
     if (certificates.length === 0) {
       errors.push('Empty certificate chain')
       return { valid: false, errors }
@@ -289,7 +287,7 @@ export class SSLManager {
     for (let i = 0; i < certificates.length - 1; i++) {
       const current = this.parseCertificate(certificates[i])
       const next = this.parseCertificate(certificates[i + 1])
-      
+
       if (current.issuer !== next.subject) {
         errors.push(`Certificate chain break between certificate ${i + 1} and ${i + 2}`)
       }
@@ -297,7 +295,7 @@ export class SSLManager {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     }
   }
 
@@ -309,31 +307,36 @@ export class SSLManager {
       .replace('-----BEGIN CERTIFICATE-----', '')
       .replace('-----END CERTIFICATE-----', '')
       .replace(/\n/g, '')
-    
+
     const hash = createHash(algorithm)
     hash.update(Buffer.from(content, 'base64'))
-    
+
     return hash.digest('hex').toUpperCase().match(/.{2}/g)?.join(':') || ''
   }
 
   /**
    * 检查证书是否即将过期
    */
-  checkCertificateExpiry(certificate: string, warningDays = 30): {
-    isExpiring: boolean
-    daysUntilExpiry: number
-    expired: boolean
-  } {
+  checkCertificateExpiry(
+    certificate: string,
+    warningDays = 30,
+  ): {
+      isExpiring: boolean
+      daysUntilExpiry: number
+      expired: boolean
+    } {
     const certInfo = this.parseCertificate(certificate)
     const now = new Date()
     const expiryDate = new Date(certInfo.notAfter)
-    
-    const daysUntilExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-    
+
+    const daysUntilExpiry = Math.ceil(
+      (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+    )
+
     return {
       isExpiring: daysUntilExpiry <= warningDays && daysUntilExpiry > 0,
       daysUntilExpiry,
-      expired: daysUntilExpiry <= 0
+      expired: daysUntilExpiry <= 0,
     }
   }
 
@@ -342,15 +345,22 @@ export class SSLManager {
    */
   private formatSubject(subject: CertificateRequest['subject']): string {
     const parts: string[] = []
-    
-    if (subject.commonName) parts.push(`CN=${subject.commonName}`)
-    if (subject.organization) parts.push(`O=${subject.organization}`)
-    if (subject.organizationalUnit) parts.push(`OU=${subject.organizationalUnit}`)
-    if (subject.locality) parts.push(`L=${subject.locality}`)
-    if (subject.state) parts.push(`ST=${subject.state}`)
-    if (subject.country) parts.push(`C=${subject.country}`)
-    if (subject.emailAddress) parts.push(`emailAddress=${subject.emailAddress}`)
-    
+
+    if (subject.commonName)
+      parts.push(`CN=${subject.commonName}`)
+    if (subject.organization)
+      parts.push(`O=${subject.organization}`)
+    if (subject.organizationalUnit)
+      parts.push(`OU=${subject.organizationalUnit}`)
+    if (subject.locality)
+      parts.push(`L=${subject.locality}`)
+    if (subject.state)
+      parts.push(`ST=${subject.state}`)
+    if (subject.country)
+      parts.push(`C=${subject.country}`)
+    if (subject.emailAddress)
+      parts.push(`emailAddress=${subject.emailAddress}`)
+
     return parts.join(', ')
   }
 
@@ -359,10 +369,10 @@ export class SSLManager {
    */
   private parseSubject(subjectString: string): CertificateRequest['subject'] {
     const subject: CertificateRequest['subject'] = {
-      commonName: 'localhost' // default value
+      commonName: 'localhost', // default value
     }
     const parts = subjectString.split(', ')
-    
+
     for (const part of parts) {
       const [key, value] = part.split('=', 2)
       switch (key) {
@@ -389,7 +399,7 @@ export class SSLManager {
           break
       }
     }
-    
+
     return subject
   }
 

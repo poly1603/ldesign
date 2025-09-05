@@ -3,12 +3,12 @@
  * 提供统一的文件系统操作接口
  */
 
-import { promises as fs, constants, Stats } from 'node:fs'
-import { join, dirname, basename, extname } from 'node:path'
-import { createReadStream, createWriteStream } from 'node:fs'
-import { pipeline } from 'node:stream/promises'
+import type { Stats } from 'node:fs'
+import type { FileInfo } from '../types'
+import { constants, createReadStream, createWriteStream, promises as fs } from 'node:fs'
 import { tmpdir } from 'node:os'
-import type { FileInfo, ScanOptions } from '../types'
+import { basename, dirname, extname, join } from 'node:path'
+import { pipeline } from 'node:stream/promises'
 import { FileSystemError } from '../types'
 import { PathUtils, RandomUtils } from '../utils'
 
@@ -25,7 +25,8 @@ export class FileSystem {
     try {
       await fs.access(path, constants.F_OK)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -39,7 +40,8 @@ export class FileSystem {
     try {
       const stat = await fs.stat(path)
       return stat.isFile()
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -53,7 +55,8 @@ export class FileSystem {
     try {
       const stat = await fs.stat(path)
       return stat.isDirectory()
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -67,7 +70,8 @@ export class FileSystem {
     try {
       const stat = await fs.lstat(path)
       return stat.isSymbolicLink()
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -87,9 +91,10 @@ export class FileSystem {
         size: stat.size,
         mtime: stat.mtime,
         isDirectory: stat.isDirectory(),
-        isFile: stat.isFile()
+        isFile: stat.isFile(),
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to get file info: ${path}`, path, error as Error)
     }
   }
@@ -103,7 +108,8 @@ export class FileSystem {
     try {
       const stat = await fs.stat(path)
       return stat.size
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to get file size: ${path}`, path, error as Error)
     }
   }
@@ -117,7 +123,8 @@ export class FileSystem {
     try {
       const stat = await fs.stat(path)
       return stat.mtime
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to get file mtime: ${path}`, path, error as Error)
     }
   }
@@ -131,7 +138,8 @@ export class FileSystem {
   static async readFile(path: string, encoding: BufferEncoding = 'utf8'): Promise<string> {
     try {
       return await fs.readFile(path, encoding)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to read file: ${path}`, path, error as Error)
     }
   }
@@ -144,7 +152,8 @@ export class FileSystem {
   static async readBuffer(path: string): Promise<Buffer> {
     try {
       return await fs.readFile(path)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to read file as buffer: ${path}`, path, error as Error)
     }
   }
@@ -158,12 +167,13 @@ export class FileSystem {
   static async writeFile(
     path: string,
     content: string | Buffer,
-    encoding: BufferEncoding = 'utf8'
+    encoding: BufferEncoding = 'utf8',
   ): Promise<void> {
     try {
       await FileSystem.ensureDir(dirname(path))
       await fs.writeFile(path, content, encoding)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to write file: ${path}`, path, error as Error)
     }
   }
@@ -177,12 +187,13 @@ export class FileSystem {
   static async appendFile(
     path: string,
     content: string | Buffer,
-    encoding: BufferEncoding = 'utf8'
+    encoding: BufferEncoding = 'utf8',
   ): Promise<void> {
     try {
       await FileSystem.ensureDir(dirname(path))
       await fs.appendFile(path, content, encoding)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to append file: ${path}`, path, error as Error)
     }
   }
@@ -196,13 +207,14 @@ export class FileSystem {
   static async copyFile(src: string, dest: string, overwrite = true): Promise<void> {
     try {
       await FileSystem.ensureDir(dirname(dest))
-      
-      if (!overwrite && await FileSystem.exists(dest)) {
+
+      if (!overwrite && (await FileSystem.exists(dest))) {
         throw new Error(`Destination file already exists: ${dest}`)
       }
 
       await fs.copyFile(src, dest)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to copy file: ${src} -> ${dest}`, src, error as Error)
     }
   }
@@ -216,7 +228,8 @@ export class FileSystem {
     try {
       await FileSystem.ensureDir(dirname(dest))
       await fs.rename(src, dest)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to move file: ${src} -> ${dest}`, src, error as Error)
     }
   }
@@ -228,7 +241,8 @@ export class FileSystem {
   static async removeFile(path: string): Promise<void> {
     try {
       await fs.unlink(path)
-    } catch (error) {
+    }
+    catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
         throw new FileSystemError(`Failed to remove file: ${path}`, path, error as Error)
       }
@@ -243,7 +257,8 @@ export class FileSystem {
   static async createDir(path: string, recursive = true): Promise<void> {
     try {
       await fs.mkdir(path, { recursive })
-    } catch (error) {
+    }
+    catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
         throw new FileSystemError(`Failed to create directory: ${path}`, path, error as Error)
       }
@@ -269,7 +284,7 @@ export class FileSystem {
       if (withFileTypes) {
         const entries = await fs.readdir(path, { withFileTypes: true })
         const results: FileInfo[] = []
-        
+
         for (const entry of entries) {
           const fullPath = join(path, entry.name)
           const stat = await fs.stat(fullPath)
@@ -280,15 +295,17 @@ export class FileSystem {
             size: stat.size,
             mtime: stat.mtime,
             isDirectory: entry.isDirectory(),
-            isFile: entry.isFile()
+            isFile: entry.isFile(),
           })
         }
-        
+
         return results
-      } else {
+      }
+      else {
         return await fs.readdir(path)
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to read directory: ${path}`, path, error as Error)
     }
   }
@@ -301,7 +318,8 @@ export class FileSystem {
   static async removeDir(path: string, recursive = true): Promise<void> {
     try {
       await fs.rm(path, { recursive, force: true })
-    } catch (error) {
+    }
+    catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
         throw new FileSystemError(`Failed to remove directory: ${path}`, path, error as Error)
       }
@@ -325,11 +343,13 @@ export class FileSystem {
 
         if (entry.isDirectory()) {
           await FileSystem.copyDir(srcPath, destPath, overwrite)
-        } else {
+        }
+        else {
           await FileSystem.copyFile(srcPath, destPath, overwrite)
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to copy directory: ${src} -> ${dest}`, src, error as Error)
     }
   }
@@ -343,7 +363,8 @@ export class FileSystem {
     try {
       await FileSystem.ensureDir(dirname(dest))
       await fs.rename(src, dest)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to move directory: ${src} -> ${dest}`, src, error as Error)
     }
   }
@@ -357,13 +378,18 @@ export class FileSystem {
   static async createSymlink(
     target: string,
     path: string,
-    type: 'file' | 'dir' | 'junction' = 'file'
+    type: 'file' | 'dir' | 'junction' = 'file',
   ): Promise<void> {
     try {
       await FileSystem.ensureDir(dirname(path))
       await fs.symlink(target, path, type)
-    } catch (error) {
-      throw new FileSystemError(`Failed to create symlink: ${target} -> ${path}`, path, error as Error)
+    }
+    catch (error) {
+      throw new FileSystemError(
+        `Failed to create symlink: ${target} -> ${path}`,
+        path,
+        error as Error,
+      )
     }
   }
 
@@ -375,7 +401,8 @@ export class FileSystem {
   static async readSymlink(path: string): Promise<string> {
     try {
       return await fs.readlink(path)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to read symlink: ${path}`, path, error as Error)
     }
   }
@@ -388,7 +415,8 @@ export class FileSystem {
   static async chmod(path: string, mode: string | number): Promise<void> {
     try {
       await fs.chmod(path, mode)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to change permissions: ${path}`, path, error as Error)
     }
   }
@@ -402,7 +430,8 @@ export class FileSystem {
   static async chown(path: string, uid: number, gid: number): Promise<void> {
     try {
       await fs.chown(path, uid, gid)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to change ownership: ${path}`, path, error as Error)
     }
   }
@@ -438,7 +467,8 @@ export class FileSystem {
       const readStream = FileSystem.createReadStream(src)
       const writeStream = FileSystem.createWriteStream(dest)
       await pipeline(readStream, writeStream)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to stream copy: ${src} -> ${dest}`, src, error as Error)
     }
   }
@@ -451,7 +481,8 @@ export class FileSystem {
   static async stat(path: string): Promise<Stats> {
     try {
       return await fs.stat(path)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to get file stats: ${path}`, path, error as Error)
     }
   }
@@ -492,13 +523,15 @@ export class FileSystem {
   static async copy(src: string, dest: string, overwrite = true): Promise<void> {
     try {
       const srcStat = await fs.stat(src)
-      
+
       if (srcStat.isDirectory()) {
         await FileSystem.copyDir(src, dest, overwrite)
-      } else {
+      }
+      else {
         await FileSystem.copyFile(src, dest, overwrite)
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to copy: ${src} -> ${dest}`, src, error as Error)
     }
   }
@@ -511,13 +544,15 @@ export class FileSystem {
   static async move(src: string, dest: string): Promise<void> {
     try {
       const srcStat = await fs.stat(src)
-      
+
       if (srcStat.isDirectory()) {
         await FileSystem.moveDir(src, dest)
-      } else {
+      }
+      else {
         await FileSystem.moveFile(src, dest)
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to move: ${src} -> ${dest}`, src, error as Error)
     }
   }
@@ -539,10 +574,12 @@ export class FileSystem {
       const stat = await fs.stat(path)
       if (stat.isDirectory()) {
         await FileSystem.removeDir(path)
-      } else {
+      }
+      else {
         await FileSystem.removeFile(path)
       }
-    } catch (error) {
+    }
+    catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
         throw new FileSystemError(`Failed to remove: ${path}`, path, error as Error)
       }
@@ -559,7 +596,8 @@ export class FileSystem {
       const tempPath = join(tmpdir(), prefix + RandomUtils.generateId(8))
       await FileSystem.createDir(tempPath)
       return tempPath
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to create temp directory`, '', error as Error)
     }
   }
@@ -573,7 +611,8 @@ export class FileSystem {
   static async setTimestamps(path: string, atime: Date, mtime: Date): Promise<void> {
     try {
       await fs.utimes(path, atime, mtime)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to set timestamps: ${path}`, path, error as Error)
     }
   }

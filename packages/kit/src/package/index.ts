@@ -2,17 +2,17 @@
  * Package 模块导出
  */
 
-export { PackageManager } from './package-manager'
-export { PackageUtils } from './package-utils'
-
 // 类型导出
 export type {
-  PackageManagerOptions,
-  PackageInfo,
-  PackageJsonData,
+  DependencyAnalysis,
   DependencyInfo,
   InstallOptions,
+  PackageInfo,
+  PackageJsonData,
+  PackageManagerOptions,
   PackageManagerType,
-  DependencyAnalysis,
-  SecurityAudit
+  SecurityAudit,
 } from '../types'
+export { PackageManager } from './package-manager'
+
+export { PackageUtils } from './package-utils'

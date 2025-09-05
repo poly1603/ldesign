@@ -13,7 +13,7 @@ import { SvgToIconFont } from '@ldesign/kit/iconfont'
 const converter = new SvgToIconFont({
   fontName: 'MyIcons',
   outputDir: './dist/fonts',
-  formats: ['ttf', 'woff', 'woff2', 'eot', 'svg']
+  formats: ['ttf', 'woff', 'woff2', 'eot', 'svg'],
 })
 
 // 从目录转换 SVG 文件
@@ -32,11 +32,7 @@ console.log('转换完成:', result)
 ### 从文件列表转换
 
 ```typescript
-const svgFiles = [
-  './icons/home.svg',
-  './icons/user.svg',
-  './icons/settings.svg'
-]
+const svgFiles = ['./icons/home.svg', './icons/user.svg', './icons/settings.svg']
 
 const result = await converter.convertFromFiles(svgFiles)
 ```
@@ -49,33 +45,33 @@ const result = await converter.convertFromFiles(svgFiles)
 const converter = new SvgToIconFont({
   // 字体名称（必需）
   fontName: 'MyIcons',
-  
+
   // 字体族名称（可选，默认使用 fontName）
   fontFamily: 'My Icon Font',
-  
+
   // CSS 类名（可选，默认使用 fontName 小写）
   className: 'my-icon',
-  
+
   // CSS 前缀（可选，默认 'icon-'）
   cssPrefix: 'icon-',
-  
+
   // 输出目录（必需）
   outputDir: './dist/fonts',
-  
+
   // 生成的字体格式
   formats: ['ttf', 'woff', 'woff2', 'eot', 'svg'],
-  
+
   // 起始 Unicode 码点
-  startUnicode: 0xE001,
-  
+  startUnicode: 0xe001,
+
   // 是否标准化 SVG
   normalize: true,
-  
+
   // 字体高度
   fontHeight: 1000,
-  
+
   // 字体下降值
-  descent: 200
+  descent: 200,
 })
 ```
 
@@ -85,7 +81,7 @@ const converter = new SvgToIconFont({
 const converter = new SvgToIconFont({
   fontName: 'MyIcons',
   outputDir: './dist/fonts',
-  
+
   // 字体元数据
   metadata: {
     title: 'My Icon Font',
@@ -93,8 +89,8 @@ const converter = new SvgToIconFont({
     url: 'https://myapp.com',
     author: 'My Name',
     license: 'MIT',
-    version: '1.0.0'
-  }
+    version: '1.0.0',
+  },
 })
 ```
 
@@ -104,24 +100,24 @@ const converter = new SvgToIconFont({
 const converter = new SvgToIconFont({
   fontName: 'MyIcons',
   outputDir: './dist/fonts',
-  
+
   // CSS 生成选项
   cssOptions: {
     // 是否生成 SCSS 文件
     generateScss: true,
-    
+
     // 是否生成 Less 文件
     generateLess: true,
-    
+
     // 是否生成 Stylus 文件
     generateStylus: true,
-    
+
     // 基础选择器
     baseSelector: '.my-icon',
-    
+
     // 类前缀
-    classPrefix: 'icon-'
-  }
+    classPrefix: 'icon-',
+  },
 })
 ```
 
@@ -147,11 +143,12 @@ const converter = new SvgToIconFont({
 @font-face {
   font-family: 'MyIcons';
   src: url('./MyIcons.eot');
-  src: url('./MyIcons.eot?#iefix') format('embedded-opentype'),
-       url('./MyIcons.woff2') format('woff2'),
-       url('./MyIcons.woff') format('woff'),
-       url('./MyIcons.ttf') format('truetype'),
-       url('./MyIcons.svg#MyIcons') format('svg');
+  src:
+    url('./MyIcons.eot?#iefix') format('embedded-opentype'),
+    url('./MyIcons.woff2') format('woff2'),
+    url('./MyIcons.woff') format('woff'),
+    url('./MyIcons.ttf') format('truetype'),
+    url('./MyIcons.svg#MyIcons') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -170,11 +167,11 @@ const converter = new SvgToIconFont({
 }
 
 .my-icon.icon-home:before {
-  content: "\e001";
+  content: '\e001';
 }
 
 .my-icon.icon-user:before {
-  content: "\e002";
+  content: '\e002';
 }
 ```
 
@@ -195,7 +192,7 @@ $MyIcons-prefix: 'icon-';
 }
 
 .my-icon.#{$MyIcons-prefix}home:before {
-  content: "\e001";
+  content: '\e001';
 }
 ```
 
@@ -215,27 +212,27 @@ console.log('预览文件:', previewPath)
 
 ```typescript
 // 监听转换过程
-converter.on('conversionStarted', (data) => {
+converter.on('conversionStarted', data => {
   console.log('开始转换:', data)
 })
 
-converter.on('svgFilesScanned', (data) => {
+converter.on('svgFilesScanned', data => {
   console.log(`扫描到 ${data.count} 个 SVG 文件`)
 })
 
-converter.on('iconsLoaded', (data) => {
+converter.on('iconsLoaded', data => {
   console.log(`加载了 ${data.count} 个图标`)
 })
 
-converter.on('fontsGenerated', (data) => {
+converter.on('fontsGenerated', data => {
   console.log('字体文件生成完成:', data.files)
 })
 
-converter.on('cssGenerated', (data) => {
+converter.on('cssGenerated', data => {
   console.log('CSS 文件生成完成:', data.files)
 })
 
-converter.on('conversionCompleted', (result) => {
+converter.on('conversionCompleted', result => {
   console.log('转换完成，耗时:', result.duration, 'ms')
 })
 ```
@@ -281,6 +278,7 @@ icons/
 ```
 
 **SVG 文件要求：**
+
 - 使用单色图标（避免复杂的颜色和渐变）
 - 设置合适的 viewBox
 - 使用 `currentColor` 作为填充色
@@ -298,9 +296,9 @@ icons/
 ```typescript
 // 使用一致的命名规范
 const converter = new SvgToIconFont({
-  fontName: 'AppIcons',        // PascalCase
-  className: 'app-icon',       // kebab-case
-  cssPrefix: 'icon-',          // 统一前缀
+  fontName: 'AppIcons', // PascalCase
+  className: 'app-icon', // kebab-case
+  cssPrefix: 'icon-', // 统一前缀
 })
 ```
 
@@ -315,8 +313,8 @@ const converter = new SvgToIconFont({
   outputDir: './dist/fonts',
   metadata: {
     version: packageJson.version,
-    description: 'Application icon font'
-  }
+    description: 'Application icon font',
+  },
 })
 ```
 
@@ -330,19 +328,19 @@ module.exports = {
   // ... 其他配置
   plugins: [
     {
-      apply: (compiler) => {
+      apply: compiler => {
         compiler.hooks.beforeCompile.tapAsync('IconFontPlugin', async (params, callback) => {
           const converter = new SvgToIconFont({
             fontName: 'AppIcons',
-            outputDir: './dist/fonts'
+            outputDir: './dist/fonts',
           })
-          
+
           await converter.convertFromDirectory('./src/icons')
           callback()
         })
-      }
-    }
-  ]
+      },
+    },
+  ],
 }
 ```
 
@@ -351,6 +349,7 @@ module.exports = {
 ### 常见问题
 
 1. **SVG 文件无法转换**
+
    ```typescript
    // 检查 SVG 文件格式
    const validation = generator.validateSvgContent(svgContent)
@@ -358,6 +357,7 @@ module.exports = {
    ```
 
 2. **字体文件生成失败**
+
    ```typescript
    // 检查输出目录权限
    await fs.access(outputDir, fs.constants.W_OK)

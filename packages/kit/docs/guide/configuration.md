@@ -37,29 +37,29 @@ export default defineConfig({
   cache: {
     defaultTTL: 3600,
     maxSize: 1000,
-    strategy: 'lru'
+    strategy: 'lru',
   },
   filesystem: {
     tempDir: './temp',
     watchOptions: {
       ignored: /node_modules/,
-      persistent: true
-    }
+      persistent: true,
+    },
   },
   validation: {
     stopOnFirstError: false,
-    locale: 'zh-CN'
+    locale: 'zh-CN',
   },
   performance: {
     enabled: true,
     sampleRate: 0.1,
-    maxMetrics: 1000
+    maxMetrics: 1000,
   },
   notification: {
     appName: 'My Application',
     sound: true,
-    timeout: 5000
-  }
+    timeout: 5000,
+  },
 })
 ```
 
@@ -73,26 +73,27 @@ import { CacheManager } from '@ldesign/kit'
 // 内存缓存配置
 const memoryCache = CacheManager.create({
   type: 'memory',
-  defaultTTL: 3600,        // 默认过期时间（秒）
-  maxSize: 1000,           // 最大缓存项数
-  strategy: 'lru',         // 驱逐策略：lru, fifo, lfu
-  checkPeriod: 600,        // 过期检查间隔（秒）
-  enableEvents: true,      // 启用事件
-  serialize: true          // 序列化存储
+  defaultTTL: 3600, // 默认过期时间（秒）
+  maxSize: 1000, // 最大缓存项数
+  strategy: 'lru', // 驱逐策略：lru, fifo, lfu
+  checkPeriod: 600, // 过期检查间隔（秒）
+  enableEvents: true, // 启用事件
+  serialize: true, // 序列化存储
 })
 
 // 文件缓存配置
 const fileCache = CacheManager.create({
   type: 'file',
-  cacheDir: './cache',     // 缓存目录
-  defaultTTL: 86400,       // 24小时
-  maxSize: 100,            // 最大文件数
-  compression: true,       // 启用压缩
-  encryption: {            // 加密配置
+  cacheDir: './cache', // 缓存目录
+  defaultTTL: 86400, // 24小时
+  maxSize: 100, // 最大文件数
+  compression: true, // 启用压缩
+  encryption: {
+    // 加密配置
     enabled: true,
     algorithm: 'aes-256-gcm',
-    key: process.env.CACHE_ENCRYPTION_KEY
-  }
+    key: process.env.CACHE_ENCRYPTION_KEY,
+  },
 })
 ```
 
@@ -103,31 +104,33 @@ import { FileSystem } from '@ldesign/kit'
 
 // 文件监听配置
 const watcher = FileSystem.createWatcher('./src', {
-  recursive: true,         // 递归监听
-  ignored: [              // 忽略的文件/目录
+  recursive: true, // 递归监听
+  ignored: [
+    // 忽略的文件/目录
     /node_modules/,
     /\.git/,
-    /dist/
+    /dist/,
   ],
-  persistent: true,        // 持久监听
-  followSymlinks: false,   // 不跟随符号链接
-  depth: 10,              // 最大深度
-  awaitWriteFinish: {     // 等待写入完成
+  persistent: true, // 持久监听
+  followSymlinks: false, // 不跟随符号链接
+  depth: 10, // 最大深度
+  awaitWriteFinish: {
+    // 等待写入完成
     stabilityThreshold: 2000,
-    pollInterval: 100
-  }
+    pollInterval: 100,
+  },
 })
 
 // 文件操作配置
 FileSystem.configure({
   defaultEncoding: 'utf8',
   tempDir: './temp',
-  backupOnWrite: true,     // 写入前备份
-  atomicWrites: true,      // 原子写入
+  backupOnWrite: true, // 写入前备份
+  atomicWrites: true, // 原子写入
   permissions: {
     file: 0o644,
-    directory: 0o755
-  }
+    directory: 0o755,
+  },
 })
 ```
 
@@ -137,22 +140,25 @@ FileSystem.configure({
 import { Validator } from '@ldesign/kit'
 
 const validator = Validator.create({
-  stopOnFirstError: false,  // 不在第一个错误时停止
-  locale: 'zh-CN',         // 错误消息语言
-  customMessages: {        // 自定义错误消息
+  stopOnFirstError: false, // 不在第一个错误时停止
+  locale: 'zh-CN', // 错误消息语言
+  customMessages: {
+    // 自定义错误消息
     required: '{{field}} 是必填项',
     email: '{{field}} 格式不正确',
-    minLength: '{{field}} 至少需要 {{min}} 个字符'
+    minLength: '{{field}} 至少需要 {{min}} 个字符',
   },
-  fieldNameMap: {          // 字段名映射
+  fieldNameMap: {
+    // 字段名映射
     email: '邮箱地址',
     password: '密码',
-    confirmPassword: '确认密码'
+    confirmPassword: '确认密码',
   },
-  async: {                 // 异步验证配置
-    timeout: 5000,         // 超时时间
-    concurrent: 3          // 并发数
-  }
+  async: {
+    // 异步验证配置
+    timeout: 5000, // 超时时间
+    concurrent: 3, // 并发数
+  },
 })
 ```
 
@@ -164,26 +170,27 @@ import { GitManager } from '@ldesign/kit'
 const git = new GitManager('./my-repo', {
   author: {
     name: 'Your Name',
-    email: 'your.email@example.com'
+    email: 'your.email@example.com',
   },
   remote: {
     name: 'origin',
-    url: 'https://github.com/user/repo.git'
+    url: 'https://github.com/user/repo.git',
   },
-  hooks: {                 // Git hooks
+  hooks: {
+    // Git hooks
     preCommit: async () => {
       console.log('运行预提交检查...')
       // 运行测试、代码检查等
     },
     postCommit: async () => {
       console.log('提交完成')
-    }
+    },
   },
   options: {
-    gpgSign: false,        // GPG 签名
-    verbose: true,         // 详细输出
-    timeout: 30000         // 操作超时
-  }
+    gpgSign: false, // GPG 签名
+    verbose: true, // 详细输出
+    timeout: 30000, // 操作超时
+  },
 })
 ```
 
@@ -193,23 +200,20 @@ const git = new GitManager('./my-repo', {
 import { SSLManager } from '@ldesign/kit'
 
 const sslManager = new SSLManager({
-  keySize: 2048,           // 密钥长度
-  algorithm: 'rsa',        // 算法类型
-  validityDays: 365,       // 有效期（天）
-  country: 'CN',           // 国家
-  state: 'Beijing',        // 省份
-  city: 'Beijing',         // 城市
-  organization: 'My Org',  // 组织
-  unit: 'IT Department',   // 部门
-  extensions: {            // 扩展
-    subjectAltName: [
-      'DNS:localhost',
-      'DNS:*.example.com',
-      'IP:127.0.0.1'
-    ],
+  keySize: 2048, // 密钥长度
+  algorithm: 'rsa', // 算法类型
+  validityDays: 365, // 有效期（天）
+  country: 'CN', // 国家
+  state: 'Beijing', // 省份
+  city: 'Beijing', // 城市
+  organization: 'My Org', // 组织
+  unit: 'IT Department', // 部门
+  extensions: {
+    // 扩展
+    subjectAltName: ['DNS:localhost', 'DNS:*.example.com', 'IP:127.0.0.1'],
     keyUsage: ['digitalSignature', 'keyEncipherment'],
-    extKeyUsage: ['serverAuth', 'clientAuth']
-  }
+    extKeyUsage: ['serverAuth', 'clientAuth'],
+  },
 })
 ```
 
@@ -225,28 +229,30 @@ const cli = new CLIManager({
   usage: 'my-tool <command> [options]',
   helpOption: '-h, --help',
   versionOption: '-v, --version',
-  colors: true,            // 启用颜色
-  suggestions: true,       // 启用命令建议
-  globalOptions: [         // 全局选项
+  colors: true, // 启用颜色
+  suggestions: true, // 启用命令建议
+  globalOptions: [
+    // 全局选项
     {
       name: 'verbose',
       description: '详细输出',
       type: 'boolean',
-      alias: 'v'
+      alias: 'v',
     },
     {
       name: 'config',
       description: '配置文件路径',
       type: 'string',
-      alias: 'c'
-    }
+      alias: 'c',
+    },
   ],
-  middleware: [            // 中间件
+  middleware: [
+    // 中间件
     async (ctx, next) => {
       console.log(`执行命令: ${ctx.command}`)
       await next()
-    }
-  ]
+    },
+  ],
 })
 ```
 
@@ -256,23 +262,25 @@ const cli = new CLIManager({
 import { PerformanceMonitor } from '@ldesign/kit'
 
 const monitor = PerformanceMonitor.create({
-  enabled: true,           // 启用监控
-  sampleRate: 0.1,        // 采样率
-  maxMetrics: 1000,       // 最大指标数
-  enableMemory: true,     // 启用内存监控
-  enableCPU: true,        // 启用 CPU 监控
-  enableGC: true,         // 启用 GC 监控
-  flushInterval: 60000,   // 刷新间隔（毫秒）
-  storage: {              // 存储配置
+  enabled: true, // 启用监控
+  sampleRate: 0.1, // 采样率
+  maxMetrics: 1000, // 最大指标数
+  enableMemory: true, // 启用内存监控
+  enableCPU: true, // 启用 CPU 监控
+  enableGC: true, // 启用 GC 监控
+  flushInterval: 60000, // 刷新间隔（毫秒）
+  storage: {
+    // 存储配置
     type: 'file',
     path: './performance.log',
-    format: 'json'
+    format: 'json',
   },
-  alerts: {               // 告警配置
+  alerts: {
+    // 告警配置
     memoryThreshold: 0.8, // 内存使用率阈值
-    cpuThreshold: 0.9,    // CPU 使用率阈值
-    responseTimeThreshold: 1000 // 响应时间阈值（毫秒）
-  }
+    cpuThreshold: 0.9, // CPU 使用率阈值
+    responseTimeThreshold: 1000, // 响应时间阈值（毫秒）
+  },
 })
 ```
 
@@ -283,40 +291,42 @@ import { NotificationManager } from '@ldesign/kit'
 
 const notificationManager = NotificationManager.create({
   appName: 'My Application',
-  appIcon: './icon.png',   // 应用图标
-  sound: true,             // 启用声音
-  timeout: 5000,           // 超时时间（毫秒）
-  position: 'topRight',    // 位置
-  maxNotifications: 5,     // 最大通知数
-  template: {              // 模板配置
+  appIcon: './icon.png', // 应用图标
+  sound: true, // 启用声音
+  timeout: 5000, // 超时时间（毫秒）
+  position: 'topRight', // 位置
+  maxNotifications: 5, // 最大通知数
+  template: {
+    // 模板配置
     success: {
       icon: '✅',
-      color: '#4CAF50'
+      color: '#4CAF50',
     },
     error: {
       icon: '❌',
-      color: '#F44336'
+      color: '#F44336',
     },
     warning: {
       icon: '⚠️',
-      color: '#FF9800'
+      color: '#FF9800',
     },
     info: {
       icon: 'ℹ️',
-      color: '#2196F3'
-    }
+      color: '#2196F3',
+    },
   },
-  platforms: {            // 平台特定配置
+  platforms: {
+    // 平台特定配置
     windows: {
-      toastActivatorCLSID: '{...}'
+      toastActivatorCLSID: '{...}',
     },
     macos: {
-      bundleId: 'com.example.myapp'
+      bundleId: 'com.example.myapp',
     },
     linux: {
-      urgency: 'normal'
-    }
-  }
+      urgency: 'normal',
+    },
+  },
 })
 ```
 
@@ -331,25 +341,25 @@ export default {
   global: {
     tempDir: './temp',
     logLevel: 'info',
-    locale: 'zh-CN'
+    locale: 'zh-CN',
   },
-  
+
   // 缓存配置
   cache: {
     memory: {
       defaultTTL: 3600,
       maxSize: 1000,
-      strategy: 'lru'
+      strategy: 'lru',
     },
     file: {
       cacheDir: './cache',
       compression: true,
       encryption: {
-        enabled: false
-      }
-    }
+        enabled: false,
+      },
+    },
   },
-  
+
   // 文件系统配置
   filesystem: {
     defaultEncoding: 'utf8',
@@ -357,36 +367,36 @@ export default {
     atomicWrites: true,
     watch: {
       ignored: [/node_modules/, /\.git/],
-      persistent: true
-    }
+      persistent: true,
+    },
   },
-  
+
   // 验证配置
   validation: {
     stopOnFirstError: false,
     locale: 'zh-CN',
     async: {
       timeout: 5000,
-      concurrent: 3
-    }
+      concurrent: 3,
+    },
   },
-  
+
   // 性能监控配置
   performance: {
     enabled: process.env.NODE_ENV === 'production',
     sampleRate: 0.1,
     storage: {
       type: 'file',
-      path: './logs/performance.log'
-    }
+      path: './logs/performance.log',
+    },
   },
-  
+
   // 通知配置
   notification: {
     appName: process.env.APP_NAME || 'My App',
     sound: true,
-    timeout: 5000
-  }
+    timeout: 5000,
+  },
 }
 ```
 
@@ -397,16 +407,16 @@ export default {
 export default {
   cache: {
     memory: {
-      defaultTTL: 300,  // 开发环境短缓存
-      maxSize: 100
-    }
+      defaultTTL: 300, // 开发环境短缓存
+      maxSize: 100,
+    },
   },
   performance: {
-    enabled: false      // 开发环境禁用性能监控
+    enabled: false, // 开发环境禁用性能监控
   },
   validation: {
-    stopOnFirstError: true  // 开发环境快速失败
-  }
+    stopOnFirstError: true, // 开发环境快速失败
+  },
 }
 
 // config/production.ts
@@ -414,18 +424,18 @@ export default {
   cache: {
     memory: {
       defaultTTL: 3600,
-      maxSize: 10000
+      maxSize: 10000,
     },
     file: {
       encryption: {
-        enabled: true   // 生产环境启用加密
-      }
-    }
+        enabled: true, // 生产环境启用加密
+      },
+    },
   },
   performance: {
     enabled: true,
-    sampleRate: 0.01    // 生产环境低采样率
-  }
+    sampleRate: 0.01, // 生产环境低采样率
+  },
 }
 ```
 
@@ -441,10 +451,7 @@ const config = await loadConfig()
 const config = await loadConfig('./my-config.ts')
 
 // 合并多个配置
-const config = await loadConfig([
-  './base.config.ts',
-  `./env/${process.env.NODE_ENV}.config.ts`
-])
+const config = await loadConfig(['./base.config.ts', `./env/${process.env.NODE_ENV}.config.ts`])
 ```
 
 ## 运行时配置更新

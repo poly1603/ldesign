@@ -6,10 +6,14 @@ declare module 'figlet' {
     width?: number
     whitespaceBreak?: boolean
   }
-  
+
   function figlet(text: string, callback: (err: Error | null, data: string) => void): void
-  function figlet(text: string, options: FigletOptions, callback: (err: Error | null, data: string) => void): void
+  function figlet(
+    text: string,
+    options: FigletOptions,
+    callback: (err: Error | null, data: string) => void
+  ): void
   function figlet(text: string, options?: FigletOptions): string
-  
+
   export = figlet
 }

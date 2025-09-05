@@ -2,10 +2,8 @@
  * SSL 工具函数
  */
 
-import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import type { SSLValidationResult } from '../types'
 import { SSLManager } from './ssl-manager'
-import type { CertificateInfo, SSLValidationResult } from '../types'
 
 /**
  * SSL 工具类
@@ -20,26 +18,26 @@ export class SSLUtils {
     validityDays?: number
     keySize?: number
   }): Promise<{
-    certificate: string
-    privateKey: string
-    publicKey: string
-  }> {
+      certificate: string
+      privateKey: string
+      publicKey: string
+    }> {
     const sslManager = new SSLManager({
       commonName: 'localhost',
       keySize: options.keySize || 2048,
-      validityDays: options.validityDays || 365
+      validityDays: options.validityDays || 365,
     })
 
     const keyPair = await sslManager.generateKeyPair()
     const certificate = await sslManager.generateSelfSignedCertificate(keyPair, {
       commonName: options.commonName,
-      organization: options.organization || 'Self-Signed'
+      organization: options.organization || 'Self-Signed',
     })
 
     return {
       certificate,
       privateKey: keyPair.privateKey,
-      publicKey: keyPair.publicKey
+      publicKey: keyPair.publicKey,
     }
   }
 
@@ -50,23 +48,22 @@ export class SSLUtils {
     try {
       const sslManager = new SSLManager()
       const certInfo = sslManager.parseCertificate(certificate)
-      
+
       // 检查 CN
       if (certInfo.subject.commonName === domain) {
         return true
       }
 
       // 检查 SAN (Subject Alternative Names)
-      const sanExtension = certInfo.extensions.find(ext => 
-        typeof ext === 'string' && ext.includes('DNS:')
+      const sanExtension = certInfo.extensions.find(
+        ext => typeof ext === 'string' && ext.includes('DNS:'),
       )
-      
+
       if (sanExtension && typeof sanExtension === 'string') {
-        const domains = sanExtension.match(/DNS:([^,\s]+)/g)?.map(match => 
-          match.replace('DNS:', '')
-        ) || []
-        
-        return domains.some(sanDomain => {
+        const domains
+          = sanExtension.match(/DNS:([^,\s]+)/g)?.map(match => match.replace('DNS:', '')) || []
+
+        return domains.some((sanDomain) => {
           // 支持通配符匹配
           if (sanDomain.startsWith('*.')) {
             const baseDomain = sanDomain.substring(2)
@@ -77,7 +74,8 @@ export class SSLUtils {
       }
 
       return false
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -103,7 +101,8 @@ export class SSLUtils {
         issues.push('使用了不安全的 MD5 哈希算法')
         score -= 40
         recommendations.push('升级到 SHA-256 或更强的哈希算法')
-      } else if (certInfo.algorithm === 'sha1') {
+      }
+      else if (certInfo.algorithm === 'sha1') {
         issues.push('使用了较弱的 SHA-1 哈希算法')
         score -= 20
         recommendations.push('升级到 SHA-256 或更强的哈希算法')
@@ -115,7 +114,8 @@ export class SSLUtils {
         issues.push(`密钥长度过短 (${keyLength} bits)`)
         score -= 30
         recommendations.push('使用至少 2048 位的 RSA 密钥')
-      } else if (keyLength < 3072) {
+      }
+      else if (keyLength < 3072) {
         issues.push(`密钥长度较弱 (${keyLength} bits)`)
         score -= 10
         recommendations.push('考虑使用 3072 位或更长的密钥')
@@ -125,8 +125,9 @@ export class SSLUtils {
       const now = new Date()
       const notAfter = new Date(certInfo.notAfter)
       const validityDays = Math.ceil((notAfter.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-      
-      if (validityDays > 825) { // 超过约 2.25 年
+
+      if (validityDays > 825) {
+        // 超过约 2.25 年
         issues.push('证书有效期过长')
         score -= 10
         recommendations.push('使用较短的证书有效期（建议不超过 1 年）')
@@ -143,8 +144,8 @@ export class SSLUtils {
         score -= 5
         recommendations.push('添加组织信息以提高证书可信度')
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       issues.push('证书解析失败')
       score = 0
     }
@@ -152,17 +153,20 @@ export class SSLUtils {
     return {
       score: Math.max(0, score),
       issues,
-      recommendations
+      recommendations,
     }
   }
 
   /**
    * 比较两个证书
    */
-  static compareCertificates(cert1: string, cert2: string): {
-    identical: boolean
-    differences: string[]
-  } {
+  static compareCertificates(
+    cert1: string,
+    cert2: string,
+  ): {
+      identical: boolean
+      differences: string[]
+    } {
     const differences: string[] = []
 
     try {
@@ -199,14 +203,14 @@ export class SSLUtils {
       if (info1.algorithm !== info2.algorithm) {
         differences.push('签名算法不同')
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       differences.push('证书解析失败')
     }
 
     return {
       identical: differences.length === 0,
-      differences
+      differences,
     }
   }
 
@@ -234,9 +238,10 @@ export class SSLUtils {
         validFrom: certInfo.notBefore,
         validTo: certInfo.notAfter,
         algorithm: certInfo.algorithm,
-        keyLength: this.estimateKeyLength(certInfo.publicKey)
+        keyLength: this.estimateKeyLength(certInfo.publicKey),
       }
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -252,7 +257,7 @@ export class SSLUtils {
       return {
         valid: false,
         errors: ['证书链为空'],
-        warnings: []
+        warnings: [],
       }
     }
 
@@ -271,11 +276,12 @@ export class SSLUtils {
       try {
         const current = sslManager.parseCertificate(certificates[i])
         const next = sslManager.parseCertificate(certificates[i + 1])
-        
+
         if (this.formatSubjectString(current.issuer) !== this.formatSubjectString(next.subject)) {
           errors.push(`证书链在第 ${i + 1} 和第 ${i + 2} 个证书之间断裂`)
         }
-      } catch (error) {
+      }
+      catch (error) {
         errors.push(`证书链验证失败: ${(error as Error).message}`)
       }
     }
@@ -284,10 +290,13 @@ export class SSLUtils {
     if (certificates.length > 1) {
       try {
         const rootCert = sslManager.parseCertificate(certificates[certificates.length - 1])
-        if (this.formatSubjectString(rootCert.subject) !== this.formatSubjectString(rootCert.issuer)) {
+        if (
+          this.formatSubjectString(rootCert.subject) !== this.formatSubjectString(rootCert.issuer)
+        ) {
           warnings.push('最后一个证书不是自签名的根证书')
         }
-      } catch {
+      }
+      catch {
         warnings.push('无法验证根证书')
       }
     }
@@ -295,7 +304,7 @@ export class SSLUtils {
     return {
       valid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     }
   }
 
@@ -306,9 +315,12 @@ export class SSLUtils {
     try {
       const sslManager = new SSLManager()
       const certInfo = sslManager.parseCertificate(certificate)
-      
-      return this.formatSubjectString(certInfo.subject) === this.formatSubjectString(certInfo.issuer)
-    } catch {
+
+      return (
+        this.formatSubjectString(certInfo.subject) === this.formatSubjectString(certInfo.issuer)
+      )
+    }
+    catch {
       return false
     }
   }
@@ -328,21 +340,21 @@ export class SSLUtils {
       }
 
       // 添加 SAN 域名
-      const sanExtension = certInfo.extensions.find(ext => 
-        typeof ext === 'string' && ext.includes('DNS:')
+      const sanExtension = certInfo.extensions.find(
+        ext => typeof ext === 'string' && ext.includes('DNS:'),
       )
-      
+
       if (sanExtension && typeof sanExtension === 'string') {
-        const sanDomains = sanExtension.match(/DNS:([^,\s]+)/g)?.map(match => 
-          match.replace('DNS:', '')
-        ) || []
-        
+        const sanDomains
+          = sanExtension.match(/DNS:([^,\s]+)/g)?.map(match => match.replace('DNS:', '')) || []
+
         domains.push(...sanDomains)
       }
 
       // 去重并返回
       return [...new Set(domains)]
-    } catch {
+    }
+    catch {
       return []
     }
   }
@@ -359,11 +371,14 @@ export class SSLUtils {
       .replace(/\n/g, '')
 
     const keyBytes = Buffer.from(keyContent, 'base64').length
-    
+
     // 粗略估算（实际应该解析 ASN.1）
-    if (keyBytes < 200) return 1024
-    if (keyBytes < 400) return 2048
-    if (keyBytes < 600) return 3072
+    if (keyBytes < 200)
+      return 1024
+    if (keyBytes < 400)
+      return 2048
+    if (keyBytes < 600)
+      return 3072
     return 4096
   }
 
@@ -372,15 +387,22 @@ export class SSLUtils {
    */
   private static formatSubjectString(subject: any): string {
     const parts: string[] = []
-    
-    if (subject.commonName) parts.push(`CN=${subject.commonName}`)
-    if (subject.organization) parts.push(`O=${subject.organization}`)
-    if (subject.organizationalUnit) parts.push(`OU=${subject.organizationalUnit}`)
-    if (subject.locality) parts.push(`L=${subject.locality}`)
-    if (subject.state) parts.push(`ST=${subject.state}`)
-    if (subject.country) parts.push(`C=${subject.country}`)
-    if (subject.emailAddress) parts.push(`emailAddress=${subject.emailAddress}`)
-    
+
+    if (subject.commonName)
+      parts.push(`CN=${subject.commonName}`)
+    if (subject.organization)
+      parts.push(`O=${subject.organization}`)
+    if (subject.organizationalUnit)
+      parts.push(`OU=${subject.organizationalUnit}`)
+    if (subject.locality)
+      parts.push(`L=${subject.locality}`)
+    if (subject.state)
+      parts.push(`ST=${subject.state}`)
+    if (subject.country)
+      parts.push(`C=${subject.country}`)
+    if (subject.emailAddress)
+      parts.push(`emailAddress=${subject.emailAddress}`)
+
     return parts.join(', ')
   }
 }

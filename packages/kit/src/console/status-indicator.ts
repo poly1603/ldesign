@@ -10,7 +10,15 @@ import { ConsoleTheme } from './console-theme'
 /**
  * 状态类型
  */
-export type StatusType = 'success' | 'error' | 'warning' | 'info' | 'loading' | 'pending' | 'skipped' | 'custom'
+export type StatusType =
+  | 'success'
+  | 'error'
+  | 'warning'
+  | 'info'
+  | 'loading'
+  | 'pending'
+  | 'skipped'
+  | 'custom'
 
 /**
  * 状态指示器选项
@@ -69,14 +77,14 @@ export class StatusIndicator extends EventEmitter {
     loading: 0,
     pending: 0,
     skipped: 0,
-    custom: 0
+    custom: 0,
   }
 
   constructor(options: StatusIndicatorOptions = {}) {
     super()
-    
+
     this.theme = ConsoleTheme.create(options.theme)
-    
+
     this.options = {
       theme: options.theme || 'default',
       showTimestamp: options.showTimestamp !== false,
@@ -86,7 +94,7 @@ export class StatusIndicator extends EventEmitter {
       suffix: options.suffix || '',
       stream: options.stream || process.stdout,
       customSymbols: options.customSymbols || {},
-      customColors: options.customColors || {}
+      customColors: options.customColors || {},
     }
   }
 
@@ -142,12 +150,7 @@ export class StatusIndicator extends EventEmitter {
   /**
    * 显示自定义状态
    */
-  custom(
-    message: string,
-    symbol: string,
-    color: string,
-    metadata?: Record<string, any>
-  ): void {
+  custom(message: string, symbol: string, color: string, metadata?: Record<string, any>): void {
     this.options.customSymbols.custom = symbol
     this.options.customColors.custom = color
     this.show('custom', message, metadata)
@@ -162,14 +165,14 @@ export class StatusIndicator extends EventEmitter {
       type,
       message,
       timestamp,
-      metadata
+      metadata,
     }
 
     this.messages.push(statusMessage)
     this.updateStats(type)
 
     const formattedMessage = this.formatMessage(statusMessage)
-    this.options.stream.write(formattedMessage + '\n')
+    this.options.stream.write(`${formattedMessage}\n`)
 
     this.emit('status', statusMessage)
     this.emit(type, statusMessage)
@@ -178,8 +181,10 @@ export class StatusIndicator extends EventEmitter {
   /**
    * 显示多个状态
    */
-  showMultiple(statuses: Array<{ type: StatusType; message: string; metadata?: Record<string, any> }>): void {
-    statuses.forEach(status => {
+  showMultiple(
+    statuses: Array<{ type: StatusType, message: string, metadata?: Record<string, any> }>,
+  ): void {
+    statuses.forEach((status) => {
       this.show(status.type, status.message, status.metadata)
     })
   }
@@ -189,13 +194,13 @@ export class StatusIndicator extends EventEmitter {
    */
   showList(
     title: string,
-    items: Array<{ message: string; type?: StatusType; metadata?: Record<string, any> }>
+    items: Array<{ message: string, type?: StatusType, metadata?: Record<string, any> }>,
   ): void {
     this.info(title)
-    
-    items.forEach(item => {
+
+    items.forEach((item) => {
       const type = item.type || 'info'
-      const indentedMessage = '  ' + item.message
+      const indentedMessage = `  ${item.message}`
       this.show(type, indentedMessage, item.metadata)
     })
   }
@@ -203,29 +208,24 @@ export class StatusIndicator extends EventEmitter {
   /**
    * 显示状态表格
    */
-  showTable(
-    headers: string[],
-    rows: Array<Array<{ value: string; type?: StatusType }>>
-  ): void {
+  showTable(headers: string[], rows: Array<Array<{ value: string, type?: StatusType }>>): void {
     // 计算列宽
     const columnWidths = headers.map((header, index) => {
       const maxContentWidth = Math.max(
         header.length,
-        ...rows.map(row => row[index]?.value?.length || 0)
+        ...rows.map(row => row[index]?.value?.length || 0),
       )
       return Math.max(maxContentWidth, 10)
     })
 
     // 显示表头
-    const headerRow = headers
-      .map((header, index) => header.padEnd(columnWidths[index]))
-      .join(' | ')
-    
+    const headerRow = headers.map((header, index) => header.padEnd(columnWidths[index])).join(' | ')
+
     this.info(headerRow)
     this.info('-'.repeat(headerRow.length))
 
     // 显示数据行
-    rows.forEach(row => {
+    rows.forEach((row) => {
       const formattedRow = row
         .map((cell, index) => {
           const value = cell.value.padEnd(columnWidths[index])
@@ -233,8 +233,8 @@ export class StatusIndicator extends EventEmitter {
           return this.colorizeText(value, type)
         })
         .join(' | ')
-      
-      this.options.stream.write(formattedRow + '\n')
+
+      this.options.stream.write(`${formattedRow}\n`)
     })
   }
 
@@ -245,7 +245,7 @@ export class StatusIndicator extends EventEmitter {
     const percentage = Math.round((current / total) * 100)
     const progressBar = this.theme.createProgressBar(current, total, 20)
     const progressMessage = `${message} ${progressBar} ${percentage}% (${current}/${total})`
-    
+
     this.info(progressMessage)
   }
 
@@ -254,15 +254,15 @@ export class StatusIndicator extends EventEmitter {
    */
   showGroup(
     title: string,
-    statuses: Array<{ type: StatusType; message: string; metadata?: Record<string, any> }>
+    statuses: Array<{ type: StatusType, message: string, metadata?: Record<string, any> }>,
   ): void {
     this.info(this.theme.createTitle(title, 2))
-    
-    statuses.forEach(status => {
-      const indentedMessage = '  ' + status.message
+
+    statuses.forEach((status) => {
+      const indentedMessage = `  ${status.message}`
       this.show(status.type, indentedMessage, status.metadata)
     })
-    
+
     this.info('')
   }
 
@@ -276,7 +276,7 @@ export class StatusIndicator extends EventEmitter {
     this.info('')
 
     const stats = this.getStats()
-    
+
     if (stats.success > 0) {
       this.success(`成功: ${stats.success}`)
     }
@@ -354,15 +354,18 @@ export class StatusIndicator extends EventEmitter {
    */
   export(format: 'json' | 'text' = 'json'): string {
     if (format === 'json') {
-      return JSON.stringify({
-        messages: this.messages,
-        stats: this.stats,
-        timestamp: new Date()
-      }, null, 2)
-    } else {
-      return this.messages
-        .map(msg => this.formatMessage(msg, false))
-        .join('\n')
+      return JSON.stringify(
+        {
+          messages: this.messages,
+          stats: this.stats,
+          timestamp: new Date(),
+        },
+        null,
+        2,
+      )
+    }
+    else {
+      return this.messages.map(msg => this.formatMessage(msg, false)).join('\n')
     }
   }
 
@@ -372,7 +375,7 @@ export class StatusIndicator extends EventEmitter {
     const symbol = this.getSymbol(message.type)
     const coloredSymbol = useColors ? this.colorizeSymbol(symbol, message.type) : symbol
     const indent = ' '.repeat(this.options.indent)
-    
+
     let formatted = `${indent}${this.options.prefix}${coloredSymbol} ${message.message}${this.options.suffix}`
 
     if (this.options.showTimestamp && message.timestamp) {
@@ -393,15 +396,24 @@ export class StatusIndicator extends EventEmitter {
     }
 
     switch (type) {
-      case 'success': return this.theme.symbol('success')
-      case 'error': return this.theme.symbol('error')
-      case 'warning': return this.theme.symbol('warning')
-      case 'info': return this.theme.symbol('info')
-      case 'loading': return this.theme.symbol('loading')
-      case 'pending': return '⏳'
-      case 'skipped': return '⏭'
-      case 'custom': return '●'
-      default: return '•'
+      case 'success':
+        return this.theme.symbol('success')
+      case 'error':
+        return this.theme.symbol('error')
+      case 'warning':
+        return this.theme.symbol('warning')
+      case 'info':
+        return this.theme.symbol('info')
+      case 'loading':
+        return this.theme.symbol('loading')
+      case 'pending':
+        return '⏳'
+      case 'skipped':
+        return '⏭'
+      case 'custom':
+        return '●'
+      default:
+        return '•'
     }
   }
 
@@ -411,15 +423,24 @@ export class StatusIndicator extends EventEmitter {
     }
 
     switch (type) {
-      case 'success': return this.theme.color('success')(symbol)
-      case 'error': return this.theme.color('error')(symbol)
-      case 'warning': return this.theme.color('warning')(symbol)
-      case 'info': return this.theme.color('info')(symbol)
-      case 'loading': return this.theme.color('primary')(symbol)
-      case 'pending': return this.theme.color('secondary')(symbol)
-      case 'skipped': return this.theme.color('muted')(symbol)
-      case 'custom': return this.theme.color('primary')(symbol)
-      default: return this.theme.color('text')(symbol)
+      case 'success':
+        return this.theme.color('success')(symbol)
+      case 'error':
+        return this.theme.color('error')(symbol)
+      case 'warning':
+        return this.theme.color('warning')(symbol)
+      case 'info':
+        return this.theme.color('info')(symbol)
+      case 'loading':
+        return this.theme.color('primary')(symbol)
+      case 'pending':
+        return this.theme.color('secondary')(symbol)
+      case 'skipped':
+        return this.theme.color('muted')(symbol)
+      case 'custom':
+        return this.theme.color('primary')(symbol)
+      default:
+        return this.theme.color('text')(symbol)
     }
   }
 
@@ -429,11 +450,16 @@ export class StatusIndicator extends EventEmitter {
     }
 
     switch (type) {
-      case 'success': return this.theme.color('success')(text)
-      case 'error': return this.theme.color('error')(text)
-      case 'warning': return this.theme.color('warning')(text)
-      case 'info': return this.theme.color('info')(text)
-      default: return text
+      case 'success':
+        return this.theme.color('success')(text)
+      case 'error':
+        return this.theme.color('error')(text)
+      case 'warning':
+        return this.theme.color('warning')(text)
+      case 'info':
+        return this.theme.color('info')(text)
+      default:
+        return text
     }
   }
 
@@ -452,7 +478,7 @@ export class StatusIndicator extends EventEmitter {
       loading: 0,
       pending: 0,
       skipped: 0,
-      custom: 0
+      custom: 0,
     }
   }
 
@@ -469,7 +495,7 @@ export class StatusIndicator extends EventEmitter {
   static createSimple(): StatusIndicator {
     return new StatusIndicator({
       showTimestamp: false,
-      showDuration: false
+      showDuration: false,
     })
   }
 
@@ -479,7 +505,7 @@ export class StatusIndicator extends EventEmitter {
   static createDetailed(): StatusIndicator {
     return new StatusIndicator({
       showTimestamp: true,
-      showDuration: true
+      showDuration: true,
     })
   }
 }

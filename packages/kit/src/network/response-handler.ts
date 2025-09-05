@@ -64,7 +64,7 @@ export class ResponseHandler<T = any> {
    */
   contentLength(): number | undefined {
     const length = this.header('content-length')
-    return length ? parseInt(length, 10) : undefined
+    return length ? Number.parseInt(length, 10) : undefined
   }
 
   /**
@@ -184,8 +184,13 @@ export class ResponseHandler<T = any> {
     if (typeof this.response.data === 'string') {
       try {
         return JSON.parse(this.response.data)
-      } catch (error) {
-        throw new NetworkError('Failed to parse JSON response', this.response.config.url, error as Error)
+      }
+      catch (error) {
+        throw new NetworkError(
+          'Failed to parse JSON response',
+          this.response.config.url,
+          error as Error,
+        )
       }
     }
     return this.response.data as U
@@ -198,11 +203,11 @@ export class ResponseHandler<T = any> {
     if (typeof this.response.data === 'string') {
       return this.response.data
     }
-    
+
     if (typeof this.response.data === 'object') {
       return JSON.stringify(this.response.data)
     }
-    
+
     return String(this.response.data)
   }
 
@@ -221,7 +226,7 @@ export class ResponseHandler<T = any> {
     const transformedData = transformer(this.response.data)
     const transformedResponse: HttpResponse<U> = {
       ...this.response,
-      data: transformedData
+      data: transformedData,
     }
     return new ResponseHandler(transformedResponse)
   }
@@ -242,7 +247,10 @@ export class ResponseHandler<T = any> {
    * @param condition 条件函数
    * @param handler 处理函数
    */
-  when(condition: (response: HttpResponse<T>) => boolean, handler: (data: T) => T): ResponseHandler<T> {
+  when(
+    condition: (response: HttpResponse<T>) => boolean,
+    handler: (data: T) => T,
+  ): ResponseHandler<T> {
     if (condition(this.response)) {
       const transformedData = handler(this.response.data)
       this.response = { ...this.response, data: transformedData }
@@ -258,13 +266,14 @@ export class ResponseHandler<T = any> {
     if (this.isError()) {
       const error = new NetworkError(
         `HTTP ${this.response.status}: ${this.response.statusText}`,
-        this.response.config.url
+        this.response.config.url,
       )
-      
+
       try {
         const handledData = handler(error)
         this.response = { ...this.response, data: handledData }
-      } catch (handlerError) {
+      }
+      catch (handlerError) {
         throw handlerError
       }
     }
@@ -298,15 +307,16 @@ export class ResponseHandler<T = any> {
   pluck(path: string): any {
     const keys = path.split('.')
     let current = this.response.data as any
-    
+
     for (const key of keys) {
       if (current && typeof current === 'object' && key in current) {
         current = current[key]
-      } else {
+      }
+      else {
         return undefined
       }
     }
-    
+
     return current
   }
 
@@ -323,29 +333,29 @@ export class ResponseHandler<T = any> {
    */
   pagination(): PaginationInfo | null {
     const data = this.response.data as any
-    
+
     if (data && typeof data === 'object') {
       // 常见的分页字段
       const pageFields = ['page', 'currentPage', 'pageNumber']
       const sizeFields = ['size', 'pageSize', 'limit', 'perPage']
       const totalFields = ['total', 'totalCount', 'totalItems']
       const pagesFields = ['pages', 'totalPages', 'pageCount']
-      
+
       const page = pageFields.find(field => field in data)?.[0]
       const size = sizeFields.find(field => field in data)?.[0]
       const total = totalFields.find(field => field in data)?.[0]
       const pages = pagesFields.find(field => field in data)?.[0]
-      
+
       if (page !== undefined || size !== undefined || total !== undefined) {
         return {
           page: page || 1,
           size: size || 10,
           total: total || 0,
-          pages: pages || Math.ceil((total || 0) / (size || 10))
+          pages: pages || Math.ceil((total || 0) / (size || 10)),
         }
       }
     }
-    
+
     return null
   }
 
@@ -356,15 +366,15 @@ export class ResponseHandler<T = any> {
     if (!this.isError()) {
       return null
     }
-    
+
     const data = this.response.data as any
-    
+
     return {
       status: this.response.status,
       statusText: this.response.statusText,
       message: data?.message || data?.error || this.response.statusText,
       code: data?.code || data?.errorCode,
-      details: data?.details || data?.errors
+      details: data?.details || data?.errors,
     }
   }
 
@@ -383,9 +393,9 @@ export class ResponseHandler<T = any> {
    */
   static batch<T, U>(
     responses: HttpResponse<T>[],
-    handler: (handler: ResponseHandler<T>) => U
+    handler: (handler: ResponseHandler<T>) => U,
   ): U[] {
-    return responses.map(response => {
+    return responses.map((response) => {
       const responseHandler = new ResponseHandler(response)
       return handler(responseHandler)
     })
@@ -396,10 +406,7 @@ export class ResponseHandler<T = any> {
    * @param responses 响应数组
    * @param merger 合并函数
    */
-  static merge<T, U>(
-    responses: HttpResponse<T>[],
-    merger: (data: T[]) => U
-  ): U {
+  static merge<T, U>(responses: HttpResponse<T>[], merger: (data: T[]) => U): U {
     const data = responses.map(response => response.data)
     return merger(data)
   }

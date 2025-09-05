@@ -1,22 +1,21 @@
 /**
  * 项目类型检测器测试
- * 
+ *
  * 测试项目类型检测、框架识别、配置文件扫描等功能
- * 
+ *
  * @author LDesign Team
  * @version 1.0.0
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { resolve } from 'node:path'
 import { existsSync, readFileSync } from 'node:fs'
-import { 
-  ProjectDetector, 
-  createProjectDetector, 
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  BuildTool,
+  createProjectDetector,
   detectProjectType,
-  ProjectType,
   PackageManager,
-  BuildTool
+  ProjectDetector,
+  ProjectType,
 } from '../../src/project/project-detector'
 
 // 模拟文件系统
@@ -26,7 +25,7 @@ vi.mock('glob')
 const mockExistsSync = vi.mocked(existsSync)
 const mockReadFileSync = vi.mocked(readFileSync)
 
-describe('ProjectDetector', () => {
+describe('projectDetector', () => {
   let detector: ProjectDetector
 
   beforeEach(() => {
@@ -48,22 +47,22 @@ describe('ProjectDetector', () => {
     it('应该使用自定义选项创建检测器', () => {
       const customDetector = new ProjectDetector({
         projectRoot: '/custom/path',
-        deepAnalyzeDependencies: false
+        deepAnalyzeDependencies: false,
       })
       expect(customDetector).toBeInstanceOf(ProjectDetector)
     })
   })
 
-  describe('Vue.js 项目检测', () => {
+  describe('vue.js 项目检测', () => {
     it('应该检测到 Vue 3.x 项目', async () => {
       // 模拟 package.json
       const mockPackageJson = {
         dependencies: {
-          vue: '^3.3.0'
+          vue: '^3.3.0',
         },
         devDependencies: {
-          '@vitejs/plugin-vue': '^4.0.0'
-        }
+          '@vitejs/plugin-vue': '^4.0.0',
+        },
       }
 
       mockExistsSync.mockImplementation((path: string) => {
@@ -91,11 +90,11 @@ describe('ProjectDetector', () => {
     it('应该检测到 Vue 2.x 项目', async () => {
       const mockPackageJson = {
         dependencies: {
-          vue: '^2.6.14'
+          vue: '^2.6.14',
         },
         devDependencies: {
-          'vue-template-compiler': '^2.6.14'
-        }
+          'vue-template-compiler': '^2.6.14',
+        },
       }
 
       mockExistsSync.mockImplementation((path: string) => {
@@ -118,8 +117,8 @@ describe('ProjectDetector', () => {
       const mockPackageJson = {
         dependencies: {
           nuxt: '^3.8.0',
-          vue: '^3.3.0'
-        }
+          vue: '^3.3.0',
+        },
       }
 
       mockExistsSync.mockImplementation((path: string) => {
@@ -136,16 +135,16 @@ describe('ProjectDetector', () => {
     })
   })
 
-  describe('React 项目检测', () => {
+  describe('react 项目检测', () => {
     it('应该检测到 React 项目', async () => {
       const mockPackageJson = {
         dependencies: {
           react: '^18.0.0',
-          'react-dom': '^18.0.0'
+          'react-dom': '^18.0.0',
         },
         devDependencies: {
-          '@types/react': '^18.0.0'
-        }
+          '@types/react': '^18.0.0',
+        },
       }
 
       mockExistsSync.mockReturnValue(true)
@@ -163,8 +162,8 @@ describe('ProjectDetector', () => {
         dependencies: {
           next: '^14.0.0',
           react: '^18.0.0',
-          'react-dom': '^18.0.0'
-        }
+          'react-dom': '^18.0.0',
+        },
       }
 
       mockExistsSync.mockReturnValue(true)
@@ -178,16 +177,16 @@ describe('ProjectDetector', () => {
     })
   })
 
-  describe('Angular 项目检测', () => {
+  describe('angular 项目检测', () => {
     it('应该检测到 Angular 项目', async () => {
       const mockPackageJson = {
         dependencies: {
           '@angular/core': '^17.0.0',
-          '@angular/common': '^17.0.0'
+          '@angular/common': '^17.0.0',
         },
         devDependencies: {
-          '@angular/cli': '^17.0.0'
-        }
+          '@angular/cli': '^17.0.0',
+        },
       }
 
       mockExistsSync.mockImplementation((path: string) => {
@@ -206,12 +205,12 @@ describe('ProjectDetector', () => {
     })
   })
 
-  describe('TypeScript 检测', () => {
+  describe('typeScript 检测', () => {
     it('应该检测到 TypeScript 支持（通过 tsconfig.json）', async () => {
       const mockPackageJson = {
         dependencies: {
-          react: '^18.0.0'
-        }
+          react: '^18.0.0',
+        },
       }
 
       mockExistsSync.mockImplementation((path: string) => {
@@ -230,12 +229,12 @@ describe('ProjectDetector', () => {
     it('应该检测到 TypeScript 支持（通过依赖）', async () => {
       const mockPackageJson = {
         dependencies: {
-          react: '^18.0.0'
+          react: '^18.0.0',
         },
         devDependencies: {
           typescript: '^5.0.0',
-          '@types/node': '^20.0.0'
-        }
+          '@types/node': '^20.0.0',
+        },
       }
 
       mockExistsSync.mockImplementation((path: string) => {
@@ -297,8 +296,8 @@ describe('ProjectDetector', () => {
       const mockPackageJson = {
         devDependencies: {
           vite: '^5.0.0',
-          '@vitejs/plugin-vue': '^4.0.0'
-        }
+          '@vitejs/plugin-vue': '^4.0.0',
+        },
       }
 
       mockExistsSync.mockImplementation((path: string) => {
@@ -318,8 +317,8 @@ describe('ProjectDetector', () => {
       const mockPackageJson = {
         devDependencies: {
           webpack: '^5.0.0',
-          'webpack-cli': '^5.0.0'
-        }
+          'webpack-cli': '^5.0.0',
+        },
       }
 
       mockExistsSync.mockImplementation((path: string) => {
@@ -373,17 +372,17 @@ describe('ProjectDetector', () => {
             weight: 100,
             conditions: [
               { type: 'dependency', target: 'electron', mode: 'exists' },
-              { type: 'dependency', target: 'vue', mode: 'exists' }
-            ]
-          }
-        ]
+              { type: 'dependency', target: 'vue', mode: 'exists' },
+            ],
+          },
+        ],
       })
 
       const mockPackageJson = {
         dependencies: {
           vue: '^3.0.0',
-          electron: '^28.0.0'
-        }
+          electron: '^28.0.0',
+        },
       }
 
       mockExistsSync.mockReturnValue(true)
@@ -424,9 +423,11 @@ describe('工厂函数', () => {
 
   it('detectProjectType 应该执行快速检测', async () => {
     mockExistsSync.mockReturnValue(true)
-    mockReadFileSync.mockReturnValue(JSON.stringify({
-      dependencies: { vue: '^3.0.0' }
-    }))
+    mockReadFileSync.mockReturnValue(
+      JSON.stringify({
+        dependencies: { vue: '^3.0.0' },
+      })
+    )
 
     const result = await detectProjectType()
 

@@ -40,7 +40,7 @@ console.log(`版本: ${result.frameworkVersion}`)
 // 创建检测器实例进行详细分析
 const detector = new ProjectDetector({
   projectRoot: '/path/to/project',
-  deepAnalyzeDependencies: true
+  deepAnalyzeDependencies: true,
 })
 
 const projectInfo = await detector.detectProject()
@@ -62,7 +62,7 @@ console.log(`安全漏洞: ${analysis.vulnerabilities.length}`)
 const analyzer = new DependencyAnalyzer({
   checkVulnerabilities: true,
   analyzeSizes: true,
-  checkLicenses: true
+  checkLicenses: true,
 })
 
 const fullAnalysis = await analyzer.analyzeDependencies()
@@ -174,12 +174,12 @@ constructor(projectRoot?: string)
 
 ```typescript
 interface ProjectAnalysisOptions {
-  projectRoot?: string                    // 项目根目录
-  deepAnalyzeDependencies?: boolean       // 是否深度分析依赖
-  detectConfigFiles?: boolean             // 是否检测配置文件
-  analyzeScripts?: boolean                // 是否分析脚本命令
-  detectDevTools?: boolean                // 是否检测开发工具
-  customDetectionRules?: DetectionRule[]  // 自定义检测规则
+  projectRoot?: string // 项目根目录
+  deepAnalyzeDependencies?: boolean // 是否深度分析依赖
+  detectConfigFiles?: boolean // 是否检测配置文件
+  analyzeScripts?: boolean // 是否分析脚本命令
+  detectDevTools?: boolean // 是否检测开发工具
+  customDetectionRules?: DetectionRule[] // 自定义检测规则
 }
 ```
 
@@ -187,13 +187,13 @@ interface ProjectAnalysisOptions {
 
 ```typescript
 interface DependencyAnalysisOptions {
-  projectRoot?: string           // 项目根目录
-  includeDev?: boolean          // 是否包含开发依赖
+  projectRoot?: string // 项目根目录
+  includeDev?: boolean // 是否包含开发依赖
   checkVulnerabilities?: boolean // 是否检查安全漏洞
-  analyzeSizes?: boolean        // 是否分析依赖大小
-  checkLicenses?: boolean       // 是否检查许可证
-  checkOutdated?: boolean       // 是否检查过时依赖
-  timeout?: number              // 网络超时时间
+  analyzeSizes?: boolean // 是否分析依赖大小
+  checkLicenses?: boolean // 是否检查许可证
+  checkOutdated?: boolean // 是否检查过时依赖
+  timeout?: number // 网络超时时间
 }
 ```
 
@@ -202,54 +202,54 @@ interface DependencyAnalysisOptions {
 ### 完整的项目分析
 
 ```typescript
-import { 
-  ProjectDetector, 
-  DependencyAnalyzer, 
-  BuildToolDetector, 
-  PackageManagerDetector 
+import {
+  ProjectDetector,
+  DependencyAnalyzer,
+  BuildToolDetector,
+  PackageManagerDetector,
 } from '@ldesign/kit/project'
 
 async function analyzeProject(projectPath: string) {
   // 1. 检测项目类型
   const projectDetector = new ProjectDetector({ projectRoot: projectPath })
   const projectInfo = await projectDetector.detectProject()
-  
+
   console.log('=== 项目信息 ===')
   console.log(`类型: ${projectInfo.projectType}`)
   console.log(`框架: ${projectInfo.framework} ${projectInfo.frameworkVersion}`)
   console.log(`TypeScript: ${projectInfo.hasTypeScript ? '是' : '否'}`)
   console.log(`置信度: ${projectInfo.confidence}%`)
-  
+
   // 2. 分析依赖
   const depAnalyzer = new DependencyAnalyzer({ projectRoot: projectPath })
   const depAnalysis = await depAnalyzer.analyzeDependencies()
-  
+
   console.log('\\n=== 依赖分析 ===')
   console.log(`总依赖数: ${depAnalysis.dependencies.length}`)
   console.log(`过时依赖: ${depAnalysis.outdatedDependencies.length}`)
   console.log(`安全漏洞: ${depAnalysis.vulnerabilities.length}`)
-  
+
   // 3. 检测构建工具
   const buildDetector = new BuildToolDetector(projectPath)
   const buildInfo = await buildDetector.detectBuildTools()
-  
+
   console.log('\\n=== 构建工具 ===')
   console.log(`主要工具: ${buildInfo.primaryTool.tool}`)
   console.log(`所有工具: ${buildInfo.allTools.map(t => t.tool).join(', ')}`)
-  
+
   // 4. 检测包管理器
   const pmDetector = new PackageManagerDetector(projectPath)
   const pmInfo = await pmDetector.detectPackageManager()
-  
+
   console.log('\\n=== 包管理器 ===')
   console.log(`当前: ${pmInfo.activeManager.type}`)
   console.log(`推荐: ${pmInfo.recommendedManager?.type || '无'}`)
-  
+
   return {
     project: projectInfo,
     dependencies: depAnalysis,
     buildTools: buildInfo,
-    packageManager: pmInfo
+    packageManager: pmInfo,
   }
 }
 
@@ -273,10 +273,10 @@ const detector = new ProjectDetector({
       conditions: [
         { type: 'dependency', target: 'vue', mode: 'exists' },
         { type: 'dependency', target: 'electron', mode: 'exists' },
-        { type: 'file', target: 'electron.js', mode: 'exists' }
-      ]
-    }
-  ]
+        { type: 'file', target: 'electron.js', mode: 'exists' },
+      ],
+    },
+  ],
 })
 
 const result = await detector.detectProject()
@@ -284,39 +284,39 @@ const result = await detector.detectProject()
 
 ## 🔍 支持的项目类型
 
-| 项目类型 | 描述 | 检测特征 |
-|---------|------|---------|
-| Vue 2.x | Vue.js 2.x 项目 | vue@^2.x, vue-template-compiler |
-| Vue 3.x | Vue.js 3.x 项目 | vue@^3.x, @vue/compiler-sfc |
-| React | React 项目 | react, react-dom |
-| Next.js | Next.js 全栈框架 | next |
-| Nuxt.js | Nuxt.js 全栈框架 | nuxt, @nuxt/kit |
-| Angular | Angular 框架 | @angular/core, @angular/cli |
-| Svelte | Svelte 框架 | svelte, @sveltejs/kit |
-| Node.js | 纯 Node.js 项目 | express, koa, fastify |
-| TypeScript | TypeScript 项目 | typescript, tsconfig.json |
-| Electron | 桌面应用 | electron |
-| Tauri | Rust + Web 桌面应用 | @tauri-apps/cli |
+| 项目类型   | 描述                | 检测特征                        |
+| ---------- | ------------------- | ------------------------------- |
+| Vue 2.x    | Vue.js 2.x 项目     | vue@^2.x, vue-template-compiler |
+| Vue 3.x    | Vue.js 3.x 项目     | vue@^3.x, @vue/compiler-sfc     |
+| React      | React 项目          | react, react-dom                |
+| Next.js    | Next.js 全栈框架    | next                            |
+| Nuxt.js    | Nuxt.js 全栈框架    | nuxt, @nuxt/kit                 |
+| Angular    | Angular 框架        | @angular/core, @angular/cli     |
+| Svelte     | Svelte 框架         | svelte, @sveltejs/kit           |
+| Node.js    | 纯 Node.js 项目     | express, koa, fastify           |
+| TypeScript | TypeScript 项目     | typescript, tsconfig.json       |
+| Electron   | 桌面应用            | electron                        |
+| Tauri      | Rust + Web 桌面应用 | @tauri-apps/cli                 |
 
 ## 🛠️ 支持的构建工具
 
-| 构建工具 | 描述 | 特性 |
-|---------|------|-----|
-| Vite | 现代前端构建工具 | 快速热重载、TypeScript、插件生态 |
-| Webpack | 传统打包工具 | 功能强大、配置复杂、生态丰富 |
-| Rollup | 库打包优选 | 树摇优化、ES模块、体积小 |
-| esbuild | 极速构建工具 | 构建速度极快、Go编写 |
-| tsup | TypeScript 库构建 | 基于 esbuild、配置简单 |
-| Parcel | 零配置打包工具 | 开箱即用、自动优化 |
+| 构建工具 | 描述              | 特性                             |
+| -------- | ----------------- | -------------------------------- |
+| Vite     | 现代前端构建工具  | 快速热重载、TypeScript、插件生态 |
+| Webpack  | 传统打包工具      | 功能强大、配置复杂、生态丰富     |
+| Rollup   | 库打包优选        | 树摇优化、ES模块、体积小         |
+| esbuild  | 极速构建工具      | 构建速度极快、Go编写             |
+| tsup     | TypeScript 库构建 | 基于 esbuild、配置简单           |
+| Parcel   | 零配置打包工具    | 开箱即用、自动优化               |
 
 ## 📋 支持的包管理器
 
-| 包管理器 | 特性 | 性能 |
-|---------|------|------|
-| npm | 标准包管理器 | 稳定可靠、生态完整 |
-| yarn | 增强包管理器 | 缓存优化、工作空间支持 |
-| pnpm | 高效包管理器 | 磁盘节省、安装快速 |
-| bun | 现代运行时 | 极速安装、内置打包 |
+| 包管理器 | 特性         | 性能                   |
+| -------- | ------------ | ---------------------- |
+| npm      | 标准包管理器 | 稳定可靠、生态完整     |
+| yarn     | 增强包管理器 | 缓存优化、工作空间支持 |
+| pnpm     | 高效包管理器 | 磁盘节省、安装快速     |
+| bun      | 现代运行时   | 极速安装、内置打包     |
 
 ## 🧪 错误处理
 
@@ -358,15 +358,15 @@ import { ProjectDetector } from '@ldesign/kit/project'
 
 async function analyzeMultipleProjects(projectPaths: string[]) {
   const results = await Promise.all(
-    projectPaths.map(async (path) => {
+    projectPaths.map(async path => {
       const detector = new ProjectDetector({ projectRoot: path })
       return {
         path,
-        result: await detector.detectProject()
+        result: await detector.detectProject(),
       }
     })
   )
-  
+
   return results
 }
 ```
@@ -392,11 +392,7 @@ async function analyzeMultipleProjects(projectPaths: string[]) {
     "build": "vite build"
   },
   "confidence": 95,
-  "details": [
-    "检测到 Vue.js 依赖: ^3.3.0",
-    "版本号指向 Vue 3.x",
-    "检测到 Vite 构建工具"
-  ]
+  "details": ["检测到 Vue.js 依赖: ^3.3.0", "版本号指向 Vue 3.x", "检测到 Vite 构建工具"]
 }
 ```
 

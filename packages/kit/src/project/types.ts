@@ -1,8 +1,8 @@
 /**
  * 项目管理模块类型定义
- * 
+ *
  * 定义了项目类型检测、依赖分析、构建工具等相关的类型接口
- * 
+ *
  * @author LDesign Team
  * @version 1.0.0
  */
@@ -43,7 +43,7 @@ export enum ProjectType {
   /** 静态网站 */
   STATIC = 'static',
   /** 未知类型 */
-  UNKNOWN = 'unknown'
+  UNKNOWN = 'unknown',
 }
 
 /**
@@ -60,7 +60,7 @@ export enum PackageManager {
   /** bun 包管理器 */
   BUN = 'bun',
   /** 未知包管理器 */
-  UNKNOWN = 'unknown'
+  UNKNOWN = 'unknown',
 }
 
 /**
@@ -85,7 +85,7 @@ export enum BuildTool {
   /** unbuild 构建工具 */
   UNBUILD = 'unbuild',
   /** 未知构建工具 */
-  UNKNOWN = 'unknown'
+  UNKNOWN = 'unknown',
 }
 
 /**

@@ -74,7 +74,7 @@ export const THEMES: Record<string, ThemeConfig> = {
       info: '#3498db',
       muted: '#7f8c8d',
       background: '#000000',
-      text: '#ffffff'
+      text: '#ffffff',
     },
     symbols: {
       success: '✓',
@@ -90,18 +90,18 @@ export const THEMES: Record<string, ThemeConfig> = {
       cross: '✗',
       star: '★',
       heart: '♥',
-      diamond: '♦'
+      diamond: '♦',
     },
     progressBar: {
       width: 40,
       showPercentage: true,
       showEta: true,
-      format: '{bar} {percentage}% | ETA: {eta}s | {value}/{total}'
+      format: '{bar} {percentage}% | ETA: {eta}s | {value}/{total}',
     },
     spinner: {
       interval: 80,
-      frames: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
-    }
+      frames: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'],
+    },
   },
 
   minimal: {
@@ -115,7 +115,7 @@ export const THEMES: Record<string, ThemeConfig> = {
       info: '#00ffff',
       muted: '#888888',
       background: '#000000',
-      text: '#ffffff'
+      text: '#ffffff',
     },
     symbols: {
       success: '+',
@@ -131,18 +131,18 @@ export const THEMES: Record<string, ThemeConfig> = {
       cross: 'x',
       star: '*',
       heart: '<3',
-      diamond: '<>'
+      diamond: '<>',
     },
     progressBar: {
       width: 30,
       showPercentage: true,
       showEta: false,
-      format: '{bar} {percentage}%'
+      format: '{bar} {percentage}%',
     },
     spinner: {
       interval: 200,
-      frames: ['.', '..', '...', '....']
-    }
+      frames: ['.', '..', '...', '....'],
+    },
   },
 
   colorful: {
@@ -156,7 +156,7 @@ export const THEMES: Record<string, ThemeConfig> = {
       info: '#74c0fc',
       muted: '#adb5bd',
       background: '#212529',
-      text: '#f8f9fa'
+      text: '#f8f9fa',
     },
     symbols: {
       success: '🎉',
@@ -172,19 +172,19 @@ export const THEMES: Record<string, ThemeConfig> = {
       cross: '❌',
       star: '⭐',
       heart: '❤️',
-      diamond: '💎'
+      diamond: '💎',
     },
     progressBar: {
       width: 50,
       showPercentage: true,
       showEta: true,
-      format: '{bar} {percentage}% | {value}/{total} | ETA: {eta}s'
+      format: '{bar} {percentage}% | {value}/{total} | ETA: {eta}s',
     },
     spinner: {
       interval: 100,
-      frames: ['🌍', '🌎', '🌏']
-    }
-  }
+      frames: ['🌍', '🌎', '🌏'],
+    },
+  },
 }
 
 /**
@@ -228,10 +228,7 @@ export class ConsoleTheme {
    * 获取可用主题列表
    */
   getAvailableThemes(): string[] {
-    return [
-      ...Object.keys(THEMES),
-      ...Array.from(this.customThemes.keys())
-    ]
+    return [...Object.keys(THEMES), ...Array.from(this.customThemes.keys())]
   }
 
   /**
@@ -325,7 +322,7 @@ export class ConsoleTheme {
       showEta?: boolean
       eta?: number
       customFormat?: string
-    } = {}
+    } = {},
   ): string {
     const config = this.currentTheme.progressBar
     const width = options.width || config.width
@@ -349,9 +346,7 @@ export class ConsoleTheme {
    * 获取加载动画帧
    */
   getSpinnerFrames(): string[] {
-    return this.currentTheme.spinner.frames.map(frame => 
-      this.color('primary')(frame)
-    )
+    return this.currentTheme.spinner.frames.map(frame => this.color('primary')(frame))
   }
 
   /**
@@ -402,7 +397,7 @@ export class ConsoleTheme {
   createBadge(text: string, type: 'success' | 'error' | 'warning' | 'info' = 'info'): string {
     const bgColor = this.currentTheme.colors[type]
     const textColor = this.currentTheme.colors.text
-    
+
     return chalk.bgHex(bgColor).hex(textColor)(` ${text} `)
   }
 
@@ -419,10 +414,10 @@ export class ConsoleTheme {
   static createCustomTheme(
     name: string,
     baseTheme: string = 'default',
-    overrides: Partial<ThemeConfig> = {}
+    overrides: Partial<ThemeConfig> = {},
   ): ThemeConfig {
     const base = THEMES[baseTheme as keyof typeof THEMES] || THEMES.default
-    
+
     return {
       ...base,
       ...overrides,
@@ -430,7 +425,7 @@ export class ConsoleTheme {
       colors: { ...base.colors, ...overrides.colors },
       symbols: { ...base.symbols, ...overrides.symbols },
       progressBar: { ...base.progressBar, ...overrides.progressBar },
-      spinner: { ...base.spinner, ...overrides.spinner }
+      spinner: { ...base.spinner, ...overrides.spinner },
     }
   }
 }

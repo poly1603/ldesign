@@ -2,23 +2,23 @@
  * Package 模块测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { PackageManager, PackageUtils } from '../src/package'
+import { join } from 'node:path'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { FileSystem } from '../src/filesystem'
+import { PackageManager, PackageUtils } from '../src/package'
 
 // Mock exec 函数
 vi.mock('node:child_process', () => ({
-  exec: vi.fn()
+  exec: vi.fn(),
 }))
 
-describe('PackageManager', () => {
+describe('packageManager', () => {
   let testDir: string
   let packageManager: PackageManager
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), 'ldesign-package-test-' + Date.now())
+    testDir = join(tmpdir(), `ldesign-package-test-${Date.now()}`)
     await FileSystem.createDir(testDir)
     packageManager = new PackageManager(testDir)
   })
@@ -37,8 +37,8 @@ describe('PackageManager', () => {
         name: 'test-package',
         version: '1.0.0',
         dependencies: {
-          'lodash': '^4.17.21'
-        }
+          lodash: '^4.17.21',
+        },
       }
 
       await FileSystem.writeFile(
@@ -56,7 +56,7 @@ describe('PackageManager', () => {
       const packageData = {
         name: 'new-package',
         version: '2.0.0',
-        description: 'A test package'
+        description: 'A test package',
       }
 
       await packageManager.writePackageJson(packageData)
@@ -71,7 +71,7 @@ describe('PackageManager', () => {
     it('应该能够更新 package.json', async () => {
       const initialPackage = {
         name: 'test-package',
-        version: '1.0.0'
+        version: '1.0.0',
       }
 
       await FileSystem.writeFile(
@@ -81,7 +81,7 @@ describe('PackageManager', () => {
 
       await packageManager.updatePackageJson({
         version: '1.1.0',
-        description: 'Updated package'
+        description: 'Updated package',
       })
 
       const pkg = await packageManager.readPackageJson()
@@ -97,7 +97,7 @@ describe('PackageManager', () => {
         name: 'test-package',
         version: '1.0.0',
         dependencies: {},
-        devDependencies: {}
+        devDependencies: {},
       }
 
       await FileSystem.writeFile(
@@ -123,7 +123,7 @@ describe('PackageManager', () => {
     it('应该能够移除依赖', async () => {
       // 先添加依赖
       await packageManager.addDependency('lodash', '^4.17.21')
-      
+
       // 再移除依赖
       await packageManager.removeDependency('lodash')
 
@@ -139,10 +139,10 @@ describe('PackageManager', () => {
       const deps = await packageManager.getDependencies()
       expect(deps.dependencies).toEqual({
         lodash: '^4.17.21',
-        axios: '^1.0.0'
+        axios: '^1.0.0',
       })
       expect(deps.devDependencies).toEqual({
-        typescript: '^5.0.0'
+        typescript: '^5.0.0',
       })
     })
   })
@@ -154,8 +154,8 @@ describe('PackageManager', () => {
         version: '1.0.0',
         scripts: {
           test: 'vitest',
-          build: 'rollup -c'
-        }
+          build: 'rollup -c',
+        },
       }
 
       await FileSystem.writeFile(
@@ -168,7 +168,7 @@ describe('PackageManager', () => {
       const scripts = await packageManager.getScripts()
       expect(scripts).toEqual({
         test: 'vitest',
-        build: 'rollup -c'
+        build: 'rollup -c',
       })
     })
 
@@ -243,7 +243,7 @@ describe('PackageManager', () => {
     beforeEach(async () => {
       const mockPackageJson = {
         name: 'test-package',
-        version: '1.0.0'
+        version: '1.0.0',
       }
 
       await FileSystem.writeFile(
@@ -282,25 +282,25 @@ describe('PackageManager', () => {
   })
 })
 
-describe('PackageUtils', () => {
+describe('packageUtils', () => {
   describe('工具函数', () => {
     it('应该能够解析包名', () => {
       expect(PackageUtils.parsePackageName('lodash')).toEqual({
         name: 'lodash',
         scope: undefined,
-        version: undefined
+        version: undefined,
       })
 
       expect(PackageUtils.parsePackageName('@types/node')).toEqual({
         name: '@types/node',
         scope: '@types',
-        version: undefined
+        version: undefined,
       })
 
       expect(PackageUtils.parsePackageName('lodash@4.17.21')).toEqual({
         name: 'lodash',
         scope: undefined,
-        version: '4.17.21'
+        version: '4.17.21',
       })
     })
 
@@ -324,7 +324,7 @@ describe('PackageUtils', () => {
 
     it('应该能够查找包管理器', async () => {
       // Mock FileSystem.exists
-      vi.spyOn(FileSystem, 'exists').mockImplementation(async (path) => {
+      vi.spyOn(FileSystem, 'exists').mockImplementation(async path => {
         return path.includes('package-lock.json')
       })
 
@@ -339,7 +339,7 @@ describe('PackageUtils', () => {
           const mockInfo = JSON.stringify({
             name: 'lodash',
             version: '4.17.21',
-            description: 'A modern JavaScript utility library'
+            description: 'A modern JavaScript utility library',
           })
           callback(null, { stdout: mockInfo, stderr: '' } as any)
         }

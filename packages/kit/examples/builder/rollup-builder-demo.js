@@ -3,8 +3,11 @@
  * 展示如何使用 RollupBuilder 进行各种打包场景
  */
 
-import { RollupBuilder, createRollupBuilder, createRollupBuilderWithPreset } from '../../dist/builder/index.js'
-import { resolve } from 'path'
+import {
+  createRollupBuilder,
+  createRollupBuilderWithPreset,
+  RollupBuilder,
+} from '../../dist/builder/index.js'
 
 /**
  * 基础打包示例
@@ -18,16 +21,16 @@ async function basicBuildExample() {
     output: {
       file: 'dist/bundle.js',
       format: 'es',
-      sourcemap: true
+      sourcemap: true,
     },
     external: ['lodash'],
-    plugins: []
+    plugins: [],
   })
 
   try {
     const result = await builder.build()
     console.log('打包结果:', result)
-    
+
     if (result.success) {
       console.log('✅ 打包成功!')
       result.outputs.forEach(output => {
@@ -59,28 +62,28 @@ async function multipleOutputExample() {
       {
         file: 'dist/index.js',
         format: 'es',
-        sourcemap: true
+        sourcemap: true,
       },
       {
         file: 'dist/index.cjs',
         format: 'cjs',
         sourcemap: true,
-        exports: 'named'
+        exports: 'named',
       },
       {
         file: 'dist/index.umd.js',
         format: 'umd',
         name: 'MyLibrary',
-        sourcemap: true
-      }
+        sourcemap: true,
+      },
     ],
-    external: ['react', 'react-dom']
+    external: ['react', 'react-dom'],
   })
 
   try {
     console.log('打包多种格式...')
     const result = await builder.build()
-    
+
     if (result.success) {
       console.log('✅ 多格式打包成功!')
       result.outputs.forEach(output => {
@@ -110,22 +113,22 @@ async function multipleEntryExample() {
     input: {
       main: 'src/index.ts',
       utils: 'src/utils/index.ts',
-      components: 'src/components/index.ts'
+      components: 'src/components/index.ts',
     },
     output: {
       dir: 'dist',
       format: 'es',
       sourcemap: true,
       entryFileNames: '[name].js',
-      chunkFileNames: 'chunks/[name]-[hash].js'
+      chunkFileNames: 'chunks/[name]-[hash].js',
     },
-    external: ['react', 'vue']
+    external: ['react', 'vue'],
   })
 
   try {
     console.log('打包多个入口...')
     const result = await builder.build()
-    
+
     if (result.success) {
       console.log('✅ 多入口打包成功!')
       result.outputs.forEach(output => {
@@ -155,15 +158,15 @@ async function buildMultipleFormatsExample() {
     input: 'src/index.ts',
     output: {
       dir: 'dist',
-      sourcemap: true
+      sourcemap: true,
     },
-    external: ['lodash']
+    external: ['lodash'],
   })
 
   try {
     console.log('使用 buildMultiple 方法构建多种格式...')
     const results = await builder.buildMultiple(['es', 'cjs', 'umd'])
-    
+
     console.log(`✅ 构建了 ${results.length} 种格式:`)
     results.forEach((result, index) => {
       const formats = ['es', 'cjs', 'umd']
@@ -198,13 +201,13 @@ async function watchModeExample() {
     output: {
       file: 'dist/watch-bundle.js',
       format: 'es',
-      sourcemap: true
+      sourcemap: true,
     },
     watch: {
       include: 'src/**',
       exclude: 'node_modules/**',
-      clearScreen: true
-    }
+      clearScreen: true,
+    },
   })
 
   // 监听构建事件
@@ -228,14 +231,13 @@ async function watchModeExample() {
     console.log('启动监听模式...')
     // 注意：watch() 会持续运行，这里只是演示
     const watchPromise = builder.watch()
-    
+
     // 模拟运行一段时间后停止
     setTimeout(async () => {
       console.log('停止监听模式...')
       await builder.destroy()
       console.log('✅ 监听模式已停止')
     }, 5000)
-    
   } catch (error) {
     console.error('监听模式异常:', error.message)
     await builder.destroy()
@@ -252,7 +254,7 @@ async function presetExample() {
   // 使用 Rollup 库预设
   console.log('使用 Rollup 库预设...')
   const libBuilder = createRollupBuilderWithPreset('rollup-library', {
-    input: 'src/my-lib.ts'
+    input: 'src/my-lib.ts',
   })
 
   console.log('库构建器配置:', JSON.stringify(libBuilder.getConfig(), null, 2))
@@ -262,8 +264,8 @@ async function presetExample() {
   console.log('\n使用 UMD 库预设...')
   const umdBuilder = createRollupBuilderWithPreset('umd-library', {
     output: {
-      name: 'MyCustomLibrary'
-    }
+      name: 'MyCustomLibrary',
+    },
   })
 
   console.log('UMD 构建器配置:', JSON.stringify(umdBuilder.getConfig(), null, 2))
@@ -281,8 +283,8 @@ async function pluginExample() {
     input: 'src/index.ts',
     output: {
       file: 'dist/bundle.js',
-      format: 'es'
-    }
+      format: 'es',
+    },
   })
 
   // 添加插件
@@ -290,7 +292,7 @@ async function pluginExample() {
     name: 'mock-plugin',
     buildStart() {
       console.log('Mock plugin buildStart')
-    }
+    },
   }
 
   builder.addPlugin(mockPlugin)
@@ -321,8 +323,8 @@ async function configManagementExample() {
     input: 'src/index.ts',
     output: {
       file: 'dist/bundle.js',
-      format: 'es'
-    }
+      format: 'es',
+    },
   })
 
   // 获取当前配置
@@ -333,7 +335,7 @@ async function configManagementExample() {
   // 更新配置
   builder.setConfig({
     external: ['lodash', 'moment'],
-    minify: true
+    minify: true,
   })
 
   console.log('\n更新后配置:')
@@ -359,13 +361,13 @@ async function factoryExample() {
     input: 'src/app.ts',
     output: {
       file: 'dist/app.js',
-      format: 'es'
-    }
+      format: 'es',
+    },
   })
 
   console.log('构建器1配置:', {
     input: builder1.getConfig().input,
-    output: builder1.getConfig().output.file
+    output: builder1.getConfig().output.file,
   })
 
   // 创建另一个构建器
@@ -373,13 +375,13 @@ async function factoryExample() {
     input: ['src/main.ts', 'src/worker.ts'],
     output: {
       dir: 'dist',
-      format: 'cjs'
-    }
+      format: 'cjs',
+    },
   })
 
   console.log('构建器2配置:', {
     input: builder2.getConfig().input,
-    output: builder2.getConfig().output.dir
+    output: builder2.getConfig().output.dir,
   })
 
   await builder1.destroy()
@@ -391,12 +393,12 @@ async function factoryExample() {
  */
 function formatFileSize(bytes) {
   if (bytes === 0) return '0 B'
-  
+
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+
+  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
 }
 
 /**
@@ -415,10 +417,10 @@ async function runAllExamples() {
     await pluginExample()
     await configManagementExample()
     await factoryExample()
-    
+
     // 注意：监听模式会持续运行，在演示环境中可能需要注释掉
     // await watchModeExample()
-    
+
     console.log('\n🎊 所有示例演示完成!')
   } catch (error) {
     console.error('示例运行失败:', error)
@@ -432,13 +434,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
 export {
   basicBuildExample,
-  multipleOutputExample,
-  multipleEntryExample,
   buildMultipleFormatsExample,
-  watchModeExample,
-  presetExample,
-  pluginExample,
   configManagementExample,
   factoryExample,
-  runAllExamples
+  multipleEntryExample,
+  multipleOutputExample,
+  pluginExample,
+  presetExample,
+  runAllExamples,
+  watchModeExample,
 }

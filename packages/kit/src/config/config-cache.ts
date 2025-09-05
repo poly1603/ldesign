@@ -3,9 +3,8 @@
  * 提供配置缓存、智能重载和变更追踪功能
  */
 
-import { EventEmitter } from 'node:events'
 import { createHash } from 'node:crypto'
-import type { ConfigValue } from '../types'
+import { EventEmitter } from 'node:events'
 
 /**
  * 配置缓存选项
@@ -57,7 +56,7 @@ export class ConfigCache extends EventEmitter {
 
   constructor(options: ConfigCacheOptions = {}) {
     super()
-    
+
     this.options = {
       maxSize: options.maxSize || 1000,
       ttl: options.ttl || 3600000, // 1 hour
@@ -65,19 +64,23 @@ export class ConfigCache extends EventEmitter {
       enableEncryption: options.enableEncryption !== false,
       encryptionKey: options.encryptionKey || '',
       enableVersioning: options.enableVersioning !== false,
-      maxVersions: options.maxVersions || 10
+      maxVersions: options.maxVersions || 10,
     }
   }
 
   /**
    * 设置配置值
    */
-  set(key: string, value: any, options: {
-    ttl?: number
-    dependencies?: string[]
-    metadata?: Record<string, any>
-    source?: string
-  } = {}): void {
+  set(
+    key: string,
+    value: any,
+    options: {
+      ttl?: number
+      dependencies?: string[]
+      metadata?: Record<string, any>
+      source?: string
+    } = {},
+  ): void {
     const hash = this.generateHash(value)
     const timestamp = Date.now()
     const version = ++this.currentVersion
@@ -98,7 +101,7 @@ export class ConfigCache extends EventEmitter {
       ttl: options.ttl || this.options.ttl,
       version,
       dependencies: options.dependencies || [],
-      metadata: options.metadata || {}
+      metadata: options.metadata || {},
     }
 
     // 保存到缓存
@@ -119,7 +122,7 @@ export class ConfigCache extends EventEmitter {
       newValue: value,
       timestamp,
       type: existing ? 'modified' : 'added',
-      source: options.source || 'unknown'
+      source: options.source || 'unknown',
     }
 
     this.emit('changed', change)
@@ -134,7 +137,7 @@ export class ConfigCache extends EventEmitter {
    */
   get<T = any>(key: string): T | undefined {
     const entry = this.cache.get(key)
-    
+
     if (!entry) {
       this.emit('miss', key)
       return undefined
@@ -178,7 +181,7 @@ export class ConfigCache extends EventEmitter {
       newValue: undefined,
       timestamp: Date.now(),
       type: 'deleted',
-      source: 'manual'
+      source: 'manual',
     }
 
     this.emit('changed', change)
@@ -213,14 +216,14 @@ export class ConfigCache extends EventEmitter {
   } {
     const entries = Array.from(this.cache.values())
     const timestamps = entries.map(e => e.timestamp)
-    
+
     return {
       size: this.cache.size,
       maxSize: this.options.maxSize,
       hitRate: this.calculateHitRate(),
       memoryUsage: this.calculateMemoryUsage(),
       oldestEntry: Math.min(...timestamps),
-      newestEntry: Math.max(...timestamps)
+      newestEntry: Math.max(...timestamps),
     }
   }
 
@@ -237,14 +240,14 @@ export class ConfigCache extends EventEmitter {
       // 只有当值真正发生变化时才更新
       if (!oldEntry || oldEntry.hash !== newHash) {
         this.set(key, newValue, { source })
-        
+
         configChanges.push({
           path: key,
           oldValue: oldEntry?.value,
           newValue,
           timestamp: Date.now(),
           type: oldEntry ? 'modified' : 'added',
-          source
+          source,
         })
       }
     }
@@ -270,13 +273,13 @@ export class ConfigCache extends EventEmitter {
    */
   getDependents(key: string): string[] {
     const dependents: string[] = []
-    
+
     for (const [configKey, deps] of this.dependencies.entries()) {
       if (deps.has(key)) {
         dependents.push(configKey)
       }
     }
-    
+
     return dependents
   }
 
@@ -363,7 +366,7 @@ export class ConfigCache extends EventEmitter {
     if (this.cache.size > this.options.maxSize) {
       const entries = Array.from(this.cache.entries())
       entries.sort((a, b) => a[1].timestamp - b[1].timestamp)
-      
+
       const toDelete = entries.slice(0, entries.length - this.options.maxSize)
       for (const [key] of toDelete) {
         this.delete(key)

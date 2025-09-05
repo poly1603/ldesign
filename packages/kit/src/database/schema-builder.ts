@@ -4,7 +4,6 @@
  */
 
 import type { DatabaseConnection } from '../types'
-import { DatabaseError } from '../types'
 
 /**
  * 数据库模式构建器类
@@ -29,7 +28,7 @@ export class SchemaBuilder {
   async createTable(tableName: string, callback: (table: TableBuilder) => void): Promise<void> {
     const tableBuilder = new TableBuilder()
     callback(tableBuilder)
-    
+
     const sql = this.buildCreateTableSQL(tableName, tableBuilder)
     await this.connection.query(sql)
   }
@@ -42,7 +41,7 @@ export class SchemaBuilder {
   async alterTable(tableName: string, callback: (table: AlterTableBuilder) => void): Promise<void> {
     const alterBuilder = new AlterTableBuilder()
     callback(alterBuilder)
-    
+
     const sqls = this.buildAlterTableSQL(tableName, alterBuilder)
     for (const sql of sqls) {
       await this.connection.query(sql)
@@ -67,7 +66,8 @@ export class SchemaBuilder {
     try {
       await this.connection.query(`SELECT 1 FROM ${tableName} LIMIT 1`)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -82,7 +82,7 @@ export class SchemaBuilder {
       name: tableName,
       columns: [],
       indexes: [],
-      foreignKeys: []
+      foreignKeys: [],
     }
   }
 
@@ -93,28 +93,30 @@ export class SchemaBuilder {
     const columns = tableBuilder.getColumns()
     const indexes = tableBuilder.getIndexes()
     const foreignKeys = tableBuilder.getForeignKeys()
-    
+
     let sql = `CREATE TABLE ${tableName} (\n`
-    
+
     // 列定义
     const columnDefs = columns.map(col => this.buildColumnDefinition(col))
     sql += columnDefs.join(',\n')
-    
+
     // 主键
     const primaryKeys = columns.filter(col => col.primary).map(col => col.name)
     if (primaryKeys.length > 0) {
       sql += `,\n  PRIMARY KEY (${primaryKeys.join(', ')})`
     }
-    
+
     // 外键
     for (const fk of foreignKeys) {
       sql += `,\n  FOREIGN KEY (${fk.column}) REFERENCES ${fk.references.table}(${fk.references.column})`
-      if (fk.onDelete) sql += ` ON DELETE ${fk.onDelete}`
-      if (fk.onUpdate) sql += ` ON UPDATE ${fk.onUpdate}`
+      if (fk.onDelete)
+        sql += ` ON DELETE ${fk.onDelete}`
+      if (fk.onUpdate)
+        sql += ` ON UPDATE ${fk.onUpdate}`
     }
-    
+
     sql += '\n)'
-    
+
     return sql
   }
 
@@ -124,7 +126,7 @@ export class SchemaBuilder {
   private buildAlterTableSQL(tableName: string, alterBuilder: AlterTableBuilder): string[] {
     const operations = alterBuilder.getOperations()
     const sqls: string[] = []
-    
+
     for (const op of operations) {
       switch (op.type) {
         case 'addColumn':
@@ -134,7 +136,9 @@ export class SchemaBuilder {
           sqls.push(`ALTER TABLE ${tableName} DROP COLUMN ${op.columnName}`)
           break
         case 'modifyColumn':
-          sqls.push(`ALTER TABLE ${tableName} MODIFY COLUMN ${this.buildColumnDefinition(op.column!)}`)
+          sqls.push(
+            `ALTER TABLE ${tableName} MODIFY COLUMN ${this.buildColumnDefinition(op.column!)}`,
+          )
           break
         case 'renameColumn':
           sqls.push(`ALTER TABLE ${tableName} RENAME COLUMN ${op.oldName} TO ${op.newName}`)
@@ -147,7 +151,7 @@ export class SchemaBuilder {
           break
       }
     }
-    
+
     return sqls
   }
 
@@ -156,39 +160,40 @@ export class SchemaBuilder {
    */
   private buildColumnDefinition(column: ColumnDefinition): string {
     let def = `  ${column.name} ${column.type}`
-    
+
     if (column.length) {
       def += `(${column.length})`
     }
-    
+
     if (column.unsigned) {
       def += ' UNSIGNED'
     }
-    
+
     if (!column.nullable) {
       def += ' NOT NULL'
     }
-    
+
     if (column.defaultValue !== undefined) {
       if (typeof column.defaultValue === 'string') {
         def += ` DEFAULT '${column.defaultValue}'`
-      } else {
+      }
+      else {
         def += ` DEFAULT ${column.defaultValue}`
       }
     }
-    
+
     if (column.autoIncrement) {
       def += ' AUTO_INCREMENT'
     }
-    
+
     if (column.unique) {
       def += ' UNIQUE'
     }
-    
+
     if (column.comment) {
       def += ` COMMENT '${column.comment}'`
     }
-    
+
     return def
   }
 
@@ -351,9 +356,9 @@ export class TableBuilder {
       nullable: true,
       primary: false,
       unique: false,
-      autoIncrement: false
+      autoIncrement: false,
     }
-    
+
     this.columns.push(column)
     return new ColumnBuilder(column)
   }
@@ -366,7 +371,7 @@ export class TableBuilder {
     this.indexes.push({
       name: indexName,
       columns,
-      unique: false
+      unique: false,
     })
   }
 
@@ -378,7 +383,7 @@ export class TableBuilder {
     this.indexes.push({
       name: indexName,
       columns,
-      unique: true
+      unique: true,
     })
   }
 
@@ -388,9 +393,9 @@ export class TableBuilder {
   foreign(column: string): ForeignKeyBuilder {
     const foreignKey: ForeignKeyDefinition = {
       column,
-      references: { table: '', column: '' }
+      references: { table: '', column: '' },
     }
-    
+
     this.foreignKeys.push(foreignKey)
     return new ForeignKeyBuilder(foreignKey)
   }
@@ -553,7 +558,15 @@ export class AlterTableBuilder {
   addColumn(name: string, type: string, options?: Partial<ColumnDefinition>): void {
     this.operations.push({
       type: 'addColumn',
-      column: { name, type, nullable: true, primary: false, unique: false, autoIncrement: false, ...options }
+      column: {
+        name,
+        type,
+        nullable: true,
+        primary: false,
+        unique: false,
+        autoIncrement: false,
+        ...options,
+      },
     })
   }
 
@@ -563,7 +576,7 @@ export class AlterTableBuilder {
   dropColumn(name: string): void {
     this.operations.push({
       type: 'dropColumn',
-      columnName: name
+      columnName: name,
     })
   }
 
@@ -573,7 +586,15 @@ export class AlterTableBuilder {
   modifyColumn(name: string, type: string, options?: Partial<ColumnDefinition>): void {
     this.operations.push({
       type: 'modifyColumn',
-      column: { name, type, nullable: true, primary: false, unique: false, autoIncrement: false, ...options }
+      column: {
+        name,
+        type,
+        nullable: true,
+        primary: false,
+        unique: false,
+        autoIncrement: false,
+        ...options,
+      },
     })
   }
 
@@ -584,7 +605,7 @@ export class AlterTableBuilder {
     this.operations.push({
       type: 'renameColumn',
       oldName,
-      newName
+      newName,
     })
   }
 
@@ -595,7 +616,7 @@ export class AlterTableBuilder {
     const indexName = name || `idx_${Array.isArray(columns) ? columns.join('_') : columns}`
     this.operations.push({
       type: 'addIndex',
-      index: { name: indexName, columns, unique }
+      index: { name: indexName, columns, unique },
     })
   }
 
@@ -605,7 +626,7 @@ export class AlterTableBuilder {
   dropIndex(name: string): void {
     this.operations.push({
       type: 'dropIndex',
-      indexName: name
+      indexName: name,
     })
   }
 

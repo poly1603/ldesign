@@ -3,7 +3,7 @@
  * 提供链式API构建SQL查询
  */
 
-import type { QueryResult, DatabaseConnection } from '../types'
+import type { DatabaseConnection, QueryResult } from '../types'
 import { DatabaseError } from '../types'
 
 /**
@@ -56,7 +56,11 @@ export class QueryBuilder {
   where(field: string, operator: string, value: any): QueryBuilder
   where(field: string, value: any): QueryBuilder
   where(conditions: Record<string, any>): QueryBuilder
-  where(field: string | Record<string, any>, operatorOrValue?: string | any, value?: any): QueryBuilder {
+  where(
+    field: string | Record<string, any>,
+    operatorOrValue?: string | any,
+    value?: any,
+  ): QueryBuilder {
     if (typeof field === 'object') {
       // 对象形式的条件
       for (const [key, val] of Object.entries(field)) {
@@ -64,24 +68,26 @@ export class QueryBuilder {
           field: key,
           operator: '=',
           value: val,
-          logic: 'AND'
+          logic: 'AND',
         })
       }
-    } else if (arguments.length === 2) {
+    }
+    else if (arguments.length === 2) {
       // field, value 形式
       this.whereConditions.push({
         field,
         operator: '=',
         value: operatorOrValue,
-        logic: 'AND'
+        logic: 'AND',
       })
-    } else {
+    }
+    else {
       // field, operator, value 形式
       this.whereConditions.push({
         field,
         operator: operatorOrValue,
         value,
-        logic: 'AND'
+        logic: 'AND',
       })
     }
     return this
@@ -101,14 +107,15 @@ export class QueryBuilder {
         field,
         operator: '=',
         value: operatorOrValue,
-        logic: 'OR'
+        logic: 'OR',
       })
-    } else {
+    }
+    else {
       this.whereConditions.push({
         field,
         operator: operatorOrValue,
         value,
-        logic: 'OR'
+        logic: 'OR',
       })
     }
     return this
@@ -124,7 +131,7 @@ export class QueryBuilder {
       field,
       operator: 'IN',
       value: values,
-      logic: 'AND'
+      logic: 'AND',
     })
     return this
   }
@@ -139,7 +146,7 @@ export class QueryBuilder {
       field,
       operator: 'NOT IN',
       value: values,
-      logic: 'AND'
+      logic: 'AND',
     })
     return this
   }
@@ -153,7 +160,7 @@ export class QueryBuilder {
       field,
       operator: 'IS NULL',
       value: null,
-      logic: 'AND'
+      logic: 'AND',
     })
     return this
   }
@@ -167,7 +174,7 @@ export class QueryBuilder {
       field,
       operator: 'IS NOT NULL',
       value: null,
-      logic: 'AND'
+      logic: 'AND',
     })
     return this
   }
@@ -182,7 +189,7 @@ export class QueryBuilder {
       field,
       operator: 'LIKE',
       value: pattern,
-      logic: 'AND'
+      logic: 'AND',
     })
     return this
   }
@@ -198,7 +205,7 @@ export class QueryBuilder {
       field,
       operator: 'BETWEEN',
       value: [min, max],
-      logic: 'AND'
+      logic: 'AND',
     })
     return this
   }
@@ -220,15 +227,16 @@ export class QueryBuilder {
         table,
         first,
         operator: '=',
-        second: operatorOrSecond
+        second: operatorOrSecond,
       })
-    } else {
+    }
+    else {
       this.joinClauses.push({
         type: joinType,
         table,
         first,
         operator: operatorOrSecond,
-        second: second!
+        second: second!,
       })
     }
     return this
@@ -247,15 +255,16 @@ export class QueryBuilder {
         table,
         first,
         operator: '=',
-        second: operatorOrSecond
+        second: operatorOrSecond,
       })
-    } else {
+    }
+    else {
       this.joinClauses.push({
         type: joinType,
         table,
         first,
         operator: operatorOrSecond,
-        second: second!
+        second: second!,
       })
     }
     return this
@@ -274,15 +283,16 @@ export class QueryBuilder {
         table,
         first,
         operator: '=',
-        second: operatorOrSecond
+        second: operatorOrSecond,
       })
-    } else {
+    }
+    else {
       this.joinClauses.push({
         type: joinType,
         table,
         first,
         operator: operatorOrSecond,
-        second: second!
+        second: second!,
       })
     }
     return this
@@ -318,7 +328,7 @@ export class QueryBuilder {
       field,
       operator,
       value,
-      logic: 'AND'
+      logic: 'AND',
     })
     return this
   }
@@ -383,7 +393,7 @@ export class QueryBuilder {
   /**
    * 构建SQL语句
    */
-  toSQL(): { sql: string; params: any[] } {
+  toSQL(): { sql: string, params: any[] } {
     const params: any[] = []
     let sql = ''
 
@@ -420,7 +430,7 @@ export class QueryBuilder {
 
     // WHERE
     if (this.whereConditions.length > 0) {
-      sql += ' WHERE ' + this.buildWhereClause(this.whereConditions, params)
+      sql += ` WHERE ${this.buildWhereClause(this.whereConditions, params)}`
     }
 
     // GROUP BY
@@ -430,7 +440,7 @@ export class QueryBuilder {
 
     // HAVING
     if (this.havingConditions.length > 0) {
-      sql += ' HAVING ' + this.buildWhereClause(this.havingConditions, params)
+      sql += ` HAVING ${this.buildWhereClause(this.havingConditions, params)}`
     }
 
     // ORDER BY
@@ -473,7 +483,8 @@ export class QueryBuilder {
       }
 
       return `INSERT INTO ${this.tableName} (${fields.join(', ')}) VALUES ${valuesClauses}`
-    } else {
+    }
+    else {
       // 单行插入
       const fields = Object.keys(this.insertData)
       const placeholders = fields.map(() => '?').join(', ')
@@ -500,7 +511,7 @@ export class QueryBuilder {
     let sql = `UPDATE ${this.tableName} SET ${setClauses}`
 
     if (this.whereConditions.length > 0) {
-      sql += ' WHERE ' + this.buildWhereClause(this.whereConditions, params)
+      sql += ` WHERE ${this.buildWhereClause(this.whereConditions, params)}`
     }
 
     return sql
@@ -513,7 +524,7 @@ export class QueryBuilder {
     let sql = `DELETE FROM ${this.tableName}`
 
     if (this.whereConditions.length > 0) {
-      sql += ' WHERE ' + this.buildWhereClause(this.whereConditions, params)
+      sql += ` WHERE ${this.buildWhereClause(this.whereConditions, params)}`
     }
 
     return sql
@@ -527,8 +538,9 @@ export class QueryBuilder {
 
     for (let i = 0; i < conditions.length; i++) {
       const condition = conditions[i]
-      if (!condition) continue
-      
+      if (!condition)
+        continue
+
       let clause = ''
 
       if (i > 0) {
@@ -539,12 +551,15 @@ export class QueryBuilder {
         const placeholders = condition.value.map(() => '?').join(', ')
         clause += `${condition.field} ${condition.operator} (${placeholders})`
         params.push(...condition.value)
-      } else if (condition.operator === 'IS NULL' || condition.operator === 'IS NOT NULL') {
+      }
+      else if (condition.operator === 'IS NULL' || condition.operator === 'IS NOT NULL') {
         clause += `${condition.field} ${condition.operator}`
-      } else if (condition.operator === 'BETWEEN') {
+      }
+      else if (condition.operator === 'BETWEEN') {
         clause += `${condition.field} BETWEEN ? AND ?`
         params.push(condition.value[0], condition.value[1])
-      } else {
+      }
+      else {
         clause += `${condition.field} ${condition.operator} ?`
         params.push(condition.value)
       }
@@ -590,7 +605,7 @@ export class QueryBuilder {
   async count(field = '*'): Promise<number> {
     this.select(`COUNT(${field}) as count`)
     const result = await this.first()
-    return result ? parseInt(result.count) : 0
+    return result ? Number.parseInt(result.count) : 0
   }
 
   /**

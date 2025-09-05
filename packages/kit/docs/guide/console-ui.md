@@ -48,7 +48,7 @@ const custom = ProgressBar.create({
   format: '{bar} {percentage}% | {value}/{total} | ETA: {eta}s',
   theme: 'colorful',
   showEta: true,
-  showRate: true
+  showRate: true,
 })
 ```
 
@@ -90,11 +90,7 @@ const circle = LoadingSpinner.createCircle('请稍候...')
 const arrow = LoadingSpinner.createArrow('处理中...')
 
 // 自定义动画
-const custom = LoadingSpinner.createCustom(
-  ['🌍', '🌎', '🌏'],
-  200,
-  '地球转动中...'
-)
+const custom = LoadingSpinner.createCustom(['🌍', '🌎', '🌏'], 200, '地球转动中...')
 
 // 主题化动画
 const themed = LoadingSpinner.createThemed('colorful', '彩色加载中...')
@@ -107,7 +103,7 @@ const multiStage = LoadingSpinner.createMultiStage([
   { text: '初始化...', duration: 1000 },
   { text: '加载配置...', duration: 2000 },
   { text: '连接服务器...', duration: 1500 },
-  { text: '完成设置...', duration: 500 }
+  { text: '完成设置...', duration: 500 },
 ])
 
 multiStage.start()
@@ -142,7 +138,7 @@ status.custom('自定义消息', '🎉', '#ff6b6b')
 status.showList('任务列表', [
   { message: '任务1', type: 'success' },
   { message: '任务2', type: 'error' },
-  { message: '任务3', type: 'warning' }
+  { message: '任务3', type: 'warning' },
 ])
 
 // 显示状态表格
@@ -152,13 +148,13 @@ status.showTable(
     [
       { value: '编译', type: 'info' },
       { value: '成功', type: 'success' },
-      { value: '2.3s', type: 'info' }
+      { value: '2.3s', type: 'info' },
     ],
     [
       { value: '测试', type: 'info' },
       { value: '失败', type: 'error' },
-      { value: '1.8s', type: 'info' }
-    ]
+      { value: '1.8s', type: 'info' },
+    ],
   ]
 )
 
@@ -169,7 +165,7 @@ status.showProgress(75, 100, '构建进度')
 status.showGroup('构建任务', [
   { type: 'success', message: '编译完成' },
   { type: 'success', message: '打包完成' },
-  { type: 'error', message: '测试失败' }
+  { type: 'error', message: '测试失败' },
 ])
 
 // 显示摘要
@@ -186,7 +182,7 @@ import { MultiProgress } from '@ldesign/kit/console'
 const multiProgress = MultiProgress.create({
   showOverall: true,
   showIndividual: true,
-  showStatus: true
+  showStatus: true,
 })
 
 // 启动多任务进度
@@ -196,13 +192,13 @@ multiProgress.start()
 multiProgress.addTask({
   id: 'task1',
   name: '下载文件1',
-  total: 100
+  total: 100,
 })
 
 multiProgress.addTask({
   id: 'task2',
   name: '下载文件2',
-  total: 200
+  total: 200,
 })
 
 // 启动任务
@@ -273,16 +269,19 @@ console.log(theme.info('信息消息'))
 ### 预定义主题
 
 #### Default 主题
+
 - 标准的控制台样式
 - 支持完整的颜色和符号
 - 适合大多数使用场景
 
 #### Minimal 主题
+
 - 简化的样式
 - 使用基本的 ASCII 字符
 - 适合兼容性要求高的环境
 
 #### Colorful 主题
+
 - 丰富的颜色和 Emoji
 - 现代化的视觉效果
 - 适合现代终端环境
@@ -291,24 +290,20 @@ console.log(theme.info('信息消息'))
 
 ```typescript
 // 创建自定义主题
-const customTheme = ConsoleTheme.createCustomTheme(
-  'my-theme',
-  'default',
-  {
-    colors: {
-      primary: '#ff6b6b',
-      success: '#51cf66',
-      error: '#ff6b6b',
-      warning: '#ffd43b'
-    },
-    symbols: {
-      success: '✨',
-      error: '💥',
-      warning: '⚡',
-      info: '💡'
-    }
-  }
-)
+const customTheme = ConsoleTheme.createCustomTheme('my-theme', 'default', {
+  colors: {
+    primary: '#ff6b6b',
+    success: '#51cf66',
+    error: '#ff6b6b',
+    warning: '#ffd43b',
+  },
+  symbols: {
+    success: '✨',
+    error: '💥',
+    warning: '⚡',
+    info: '💡',
+  },
+})
 
 // 添加自定义主题
 theme.addTheme('my-theme', customTheme)
@@ -326,7 +321,7 @@ console.log(progressBar)
 const progressInfo = theme.formatProgress(75, 100, {
   showPercentage: true,
   showEta: true,
-  eta: 30
+  eta: 30,
 })
 console.log(progressInfo)
 
@@ -356,23 +351,22 @@ import { ProgressBar, StatusIndicator } from '@ldesign/kit/console'
 async function downloadFile(url: string, filename: string) {
   const status = StatusIndicator.create()
   const progressBar = ProgressBar.createDetailed(100)
-  
+
   status.info(`开始下载: ${filename}`)
   progressBar.start()
-  
+
   try {
     // 模拟下载过程
     for (let i = 0; i <= 100; i++) {
       progressBar.update(i, {
         filename,
-        speed: `${Math.random() * 10 + 1}MB/s`
+        speed: `${Math.random() * 10 + 1}MB/s`,
       })
       await new Promise(resolve => setTimeout(resolve, 50))
     }
-    
+
     progressBar.complete()
     status.success(`下载完成: ${filename}`)
-    
   } catch (error) {
     progressBar.stop()
     status.error(`下载失败: ${error.message}`)
@@ -388,32 +382,32 @@ import { MultiProgress, StatusIndicator } from '@ldesign/kit/console'
 async function buildProject() {
   const multiProgress = MultiProgress.createDetailed()
   const status = StatusIndicator.create()
-  
+
   status.info('开始构建项目...')
   multiProgress.start()
-  
+
   // 添加构建任务
   const tasks = [
     { id: 'compile', name: '编译 TypeScript', total: 50 },
     { id: 'bundle', name: '打包资源', total: 30 },
     { id: 'optimize', name: '优化代码', total: 20 },
-    { id: 'test', name: '运行测试', total: 40 }
+    { id: 'test', name: '运行测试', total: 40 },
   ]
-  
+
   tasks.forEach(task => multiProgress.addTask(task))
-  
+
   // 并行执行任务
-  const promises = tasks.map(async (task) => {
+  const promises = tasks.map(async task => {
     multiProgress.startTask(task.id)
-    
+
     for (let i = 0; i <= task.total; i++) {
       multiProgress.updateTask(task.id, i)
       await new Promise(resolve => setTimeout(resolve, 100))
     }
   })
-  
+
   await Promise.all(promises)
-  
+
   const overall = multiProgress.getOverallProgress()
   status.success(`构建完成！总耗时: ${Math.round(overall.duration / 1000)}s`)
 }
@@ -427,27 +421,27 @@ import { LoadingSpinner, StatusIndicator, ProgressBar } from '@ldesign/kit/conso
 async function installPackages(packages: string[]) {
   const status = StatusIndicator.create()
   const spinner = LoadingSpinner.createDots('检查依赖...')
-  
+
   // 检查阶段
   spinner.start()
   await new Promise(resolve => setTimeout(resolve, 2000))
   spinner.succeed('依赖检查完成')
-  
+
   // 安装阶段
   const progressBar = ProgressBar.createDetailed(packages.length)
   progressBar.start()
-  
+
   for (let i = 0; i < packages.length; i++) {
     const pkg = packages[i]
     status.loading(`安装 ${pkg}...`)
-    
+
     // 模拟安装过程
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     progressBar.update(i + 1)
     status.success(`${pkg} 安装完成`)
   }
-  
+
   progressBar.complete()
   status.showSummary('安装摘要')
 }
@@ -488,10 +482,13 @@ try {
   status.error(`操作失败: ${error.message}`)
   // 显示详细错误信息
   if (error.details) {
-    status.showList('错误详情', error.details.map(detail => ({
-      message: detail,
-      type: 'error'
-    })))
+    status.showList(
+      '错误详情',
+      error.details.map(detail => ({
+        message: detail,
+        type: 'error',
+      }))
+    )
   }
 }
 ```

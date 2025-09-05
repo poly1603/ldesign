@@ -3,10 +3,10 @@
  * 提供统一的缓存接口和多种缓存策略
  */
 
+import type { CacheOptions, CacheStats, CacheStore } from '../types'
 import { EventEmitter } from 'node:events'
-import type { CacheOptions, CacheStore, CacheStats, CacheEntry } from '../types'
-import { MemoryCache } from './memory-cache'
 import { FileCache } from './file-cache'
+import { MemoryCache } from './memory-cache'
 import { RedisCache } from './redis-cache'
 
 /**
@@ -19,7 +19,7 @@ export class CacheManager extends EventEmitter {
 
   constructor(options: CacheOptions = {}) {
     super()
-    
+
     this.options = {
       defaultTTL: options.defaultTTL || 3600, // 1小时
       maxSize: options.maxSize || 1000,
@@ -28,15 +28,18 @@ export class CacheManager extends EventEmitter {
       serialize: options.serialize !== false,
       compress: options.compress !== false,
       namespace: options.namespace || 'default',
-      ...options
+      ...options,
     }
 
     // 初始化默认内存缓存
-    this.addStore('memory', new MemoryCache({
-      maxSize: this.options.maxSize,
-      defaultTTL: this.options.defaultTTL,
-      strategy: this.options.strategy
-    }))
+    this.addStore(
+      'memory',
+      new MemoryCache({
+        maxSize: this.options.maxSize,
+        defaultTTL: this.options.defaultTTL,
+        strategy: this.options.strategy,
+      }),
+    )
   }
 
   /**
@@ -44,15 +47,15 @@ export class CacheManager extends EventEmitter {
    */
   addStore(name: string, store: CacheStore): void {
     this.stores.set(name, store)
-    
+
     // 监听存储事件
-    store.on('hit', (key) => this.emit('hit', { store: name, key }))
-    store.on('miss', (key) => this.emit('miss', { store: name, key }))
+    store.on('hit', key => this.emit('hit', { store: name, key }))
+    store.on('miss', key => this.emit('miss', { store: name, key }))
     store.on('set', (key, value) => this.emit('set', { store: name, key, value }))
-    store.on('delete', (key) => this.emit('delete', { store: name, key }))
+    store.on('delete', key => this.emit('delete', { store: name, key }))
     store.on('clear', () => this.emit('clear', { store: name }))
-    store.on('expired', (key) => this.emit('expired', { store: name, key }))
-    
+    store.on('expired', key => this.emit('expired', { store: name, key }))
+
     this.emit('storeAdded', { name, store })
   }
 
@@ -84,7 +87,8 @@ export class CacheManager extends EventEmitter {
     if (this.stores.has(name)) {
       this.defaultStore = name
       this.emit('defaultStoreChanged', name)
-    } else {
+    }
+    else {
       throw new Error(`Store '${name}' not found`)
     }
   }
@@ -113,7 +117,7 @@ export class CacheManager extends EventEmitter {
 
     const fullKey = this.buildKey(key)
     const cacheTTL = ttl || this.options.defaultTTL
-    
+
     await cacheStore.set(fullKey, value, cacheTTL)
   }
 
@@ -152,7 +156,8 @@ export class CacheManager extends EventEmitter {
       if (cacheStore) {
         await cacheStore.clear()
       }
-    } else {
+    }
+    else {
       // 清空所有存储
       for (const cacheStore of this.stores.values()) {
         await cacheStore.clear()
@@ -167,7 +172,7 @@ export class CacheManager extends EventEmitter {
     key: string,
     factory: () => Promise<T> | T,
     ttl?: number,
-    store?: string
+    store?: string,
   ): Promise<T> {
     // 先尝试获取缓存
     const cached = await this.get<T>(key, store)
@@ -177,10 +182,10 @@ export class CacheManager extends EventEmitter {
 
     // 缓存不存在，执行工厂函数
     const value = await factory()
-    
+
     // 设置缓存
     await this.set(key, value, ttl, store)
-    
+
     return value
   }
 
@@ -205,7 +210,8 @@ export class CacheManager extends EventEmitter {
           results.set(originalKey, value)
         }
       }
-    } else {
+    }
+    else {
       // 逐个获取
       for (let i = 0; i < keys.length; i++) {
         const value = await cacheStore.get<T>(fullKeys[i])
@@ -237,7 +243,8 @@ export class CacheManager extends EventEmitter {
     if (cacheStore.mset) {
       // 如果存储支持批量设置
       await cacheStore.mset(fullEntries, cacheTTL)
-    } else {
+    }
+    else {
       // 逐个设置
       for (const [fullKey, value] of fullEntries) {
         await cacheStore.set(fullKey, value, cacheTTL)
@@ -259,7 +266,8 @@ export class CacheManager extends EventEmitter {
     if (cacheStore.mdel) {
       // 如果存储支持批量删除
       return await cacheStore.mdel(fullKeys)
-    } else {
+    }
+    else {
       // 逐个删除
       let deleted = 0
       for (const fullKey of fullKeys) {
@@ -286,7 +294,7 @@ export class CacheManager extends EventEmitter {
 
     const fullPattern = pattern ? this.buildKey(pattern) : undefined
     const fullKeys = await cacheStore.keys(fullPattern)
-    
+
     return fullKeys.map(key => this.extractKey(key)).filter(Boolean) as string[]
   }
 
@@ -300,7 +308,8 @@ export class CacheManager extends EventEmitter {
         throw new Error(`Store '${store}' not found`)
       }
       return await cacheStore.getStats()
-    } else {
+    }
+    else {
       // 合并所有存储的统计信息
       const allStats: CacheStats[] = []
       for (const cacheStore of this.stores.values()) {
@@ -321,10 +330,11 @@ export class CacheManager extends EventEmitter {
     }
 
     const fullKey = this.buildKey(key)
-    
+
     if (cacheStore.expire) {
       return await cacheStore.expire(fullKey, ttl)
-    } else {
+    }
+    else {
       // 如果不支持expire，尝试重新设置
       const value = await cacheStore.get(fullKey)
       if (value !== undefined) {
@@ -345,10 +355,11 @@ export class CacheManager extends EventEmitter {
     }
 
     const fullKey = this.buildKey(key)
-    
+
     if (cacheStore.ttl) {
       return await cacheStore.ttl(fullKey)
-    } else {
+    }
+    else {
       return -1 // 不支持TTL查询
     }
   }
@@ -375,19 +386,22 @@ export class CacheManager extends EventEmitter {
    * 合并统计信息
    */
   private mergeStats(statsList: CacheStats[]): CacheStats {
-    return statsList.reduce((merged, stats) => ({
-      hits: merged.hits + stats.hits,
-      misses: merged.misses + stats.misses,
-      keys: merged.keys + stats.keys,
-      size: merged.size + stats.size,
-      memory: merged.memory + stats.memory
-    }), {
-      hits: 0,
-      misses: 0,
-      keys: 0,
-      size: 0,
-      memory: 0
-    })
+    return statsList.reduce(
+      (merged, stats) => ({
+        hits: merged.hits + stats.hits,
+        misses: merged.misses + stats.misses,
+        keys: merged.keys + stats.keys,
+        size: merged.size + stats.size,
+        memory: merged.memory + stats.memory,
+      }),
+      {
+        hits: 0,
+        misses: 0,
+        keys: 0,
+        size: 0,
+        memory: 0,
+      },
+    )
   }
 
   /**
@@ -407,7 +421,7 @@ export class CacheManager extends EventEmitter {
       }
       store.removeAllListeners()
     }
-    
+
     this.stores.clear()
     this.removeAllListeners()
     this.emit('destroyed')

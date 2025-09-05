@@ -3,8 +3,8 @@
  * 提供事件持久化和回放功能
  */
 
+import type { EventQuery, EventRecord, EventStoreOptions } from '../types'
 import { EventEmitter } from 'node:events'
-import type { EventRecord, EventStoreOptions, EventQuery } from '../types'
 
 /**
  * 事件存储类
@@ -16,7 +16,7 @@ export class EventStore extends EventEmitter {
 
   constructor(options: EventStoreOptions = {}) {
     super()
-    
+
     this.options = {
       maxEvents: options.maxEvents || 10000,
       enableSnapshots: options.enableSnapshots !== false,
@@ -25,7 +25,7 @@ export class EventStore extends EventEmitter {
       enableEncryption: options.enableEncryption !== false,
       encryptionKey: options.encryptionKey || '',
       persistToDisk: options.persistToDisk !== false,
-      storageDir: options.storageDir || './events'
+      storageDir: options.storageDir || './events',
     }
   }
 
@@ -40,10 +40,10 @@ export class EventStore extends EventEmitter {
       metadata: {
         ...metadata,
         timestamp: new Date(),
-        version: 1
+        version: 1,
       },
       timestamp: new Date(),
-      sequence: this.events.length + 1
+      sequence: this.events.length + 1,
     }
 
     // 应用压缩
@@ -66,8 +66,7 @@ export class EventStore extends EventEmitter {
     }
 
     // 检查是否需要创建快照
-    if (this.options.enableSnapshots && 
-        this.events.length % this.options.snapshotInterval === 0) {
+    if (this.options.enableSnapshots && this.events.length % this.options.snapshotInterval === 0) {
       this.createSnapshot()
     }
 
@@ -90,7 +89,8 @@ export class EventStore extends EventEmitter {
     if (query.event) {
       if (Array.isArray(query.event)) {
         results = results.filter(record => query.event!.includes(record.event))
-      } else {
+      }
+      else {
         results = results.filter(record => record.event === query.event)
       }
     }
@@ -113,9 +113,9 @@ export class EventStore extends EventEmitter {
 
     // 按元数据过滤
     if (query.metadata) {
-      results = results.filter(record => {
-        return Object.entries(query.metadata!).every(([key, value]) => 
-          record.metadata[key] === value
+      results = results.filter((record) => {
+        return Object.entries(query.metadata!).every(
+          ([key, value]) => record.metadata[key] === value,
         )
       })
     }
@@ -126,10 +126,11 @@ export class EventStore extends EventEmitter {
       results.sort((a, b) => {
         const aValue = this.getFieldValue(a, field)
         const bValue = this.getFieldValue(b, field)
-        
+
         if (direction === 'asc') {
           return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
-        } else {
+        }
+        else {
           return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
         }
       })
@@ -156,9 +157,7 @@ export class EventStore extends EventEmitter {
    * 获取最新事件
    */
   getLatestEvents(count: number = 10): EventRecord[] {
-    return this.events
-      .slice(-count)
-      .map(record => this.deserializeEvent(record))
+    return this.events.slice(-count).map(record => this.deserializeEvent(record))
   }
 
   /**
@@ -166,7 +165,7 @@ export class EventStore extends EventEmitter {
    */
   replay(query: EventQuery = {}, handler?: (event: EventRecord) => void): EventRecord[] {
     const events = this.query(query)
-    
+
     for (const event of events) {
       if (handler) {
         handler(event)
@@ -187,7 +186,7 @@ export class EventStore extends EventEmitter {
       timestamp: new Date(),
       eventCount: this.events.length,
       lastSequence: this.events.length > 0 ? this.events[this.events.length - 1].sequence : 0,
-      events: [...this.events]
+      events: [...this.events],
     }
 
     this.snapshots.set(snapshotName, snapshot)
@@ -252,7 +251,7 @@ export class EventStore extends EventEmitter {
 
     for (const event of this.events) {
       eventTypes[event.event] = (eventTypes[event.event] || 0) + 1
-      
+
       if (!oldestEvent || event.timestamp < oldestEvent) {
         oldestEvent = event.timestamp
       }
@@ -267,7 +266,7 @@ export class EventStore extends EventEmitter {
       oldestEvent,
       newestEvent,
       snapshotCount: this.snapshots.size,
-      storageSize: this.calculateStorageSize()
+      storageSize: this.calculateStorageSize(),
     }
   }
 
@@ -277,7 +276,8 @@ export class EventStore extends EventEmitter {
   export(format: 'json' | 'csv' = 'json'): string {
     if (format === 'json') {
       return JSON.stringify(this.events, null, 2)
-    } else {
+    }
+    else {
       // CSV格式
       const headers = ['id', 'event', 'data', 'timestamp', 'sequence']
       const rows = this.events.map(event => [
@@ -285,9 +285,9 @@ export class EventStore extends EventEmitter {
         event.event,
         JSON.stringify(event.data),
         event.timestamp.toISOString(),
-        event.sequence.toString()
+        event.sequence.toString(),
       ])
-      
+
       return [headers, ...rows].map(row => row.join(',')).join('\n')
     }
   }
@@ -300,11 +300,12 @@ export class EventStore extends EventEmitter {
 
     if (format === 'json') {
       importedEvents = JSON.parse(data)
-    } else {
+    }
+    else {
       // CSV格式解析
       const lines = data.split('\n')
       const headers = lines[0].split(',')
-      
+
       for (let i = 1; i < lines.length; i++) {
         const values = lines[i].split(',')
         if (values.length === headers.length) {
@@ -314,7 +315,7 @@ export class EventStore extends EventEmitter {
             data: JSON.parse(values[2]),
             metadata: {},
             timestamp: new Date(values[3]),
-            sequence: parseInt(values[4])
+            sequence: Number.parseInt(values[4]),
           })
         }
       }
@@ -355,7 +356,8 @@ export class EventStore extends EventEmitter {
     if (typeof data === 'string') {
       try {
         return JSON.parse(data)
-      } catch {
+      }
+      catch {
         return data
       }
     }
@@ -367,13 +369,15 @@ export class EventStore extends EventEmitter {
    */
   private encrypt(data: any): any {
     // 简单的加密实现，实际应用中应使用更安全的加密算法
-    if (!this.options.encryptionKey) return data
-    
+    if (!this.options.encryptionKey)
+      return data
+
     const dataStr = JSON.stringify(data)
     let encrypted = ''
     for (let i = 0; i < dataStr.length; i++) {
       encrypted += String.fromCharCode(
-        dataStr.charCodeAt(i) ^ this.options.encryptionKey.charCodeAt(i % this.options.encryptionKey.length)
+        dataStr.charCodeAt(i)
+        ^ this.options.encryptionKey.charCodeAt(i % this.options.encryptionKey.length),
       )
     }
     return encrypted
@@ -383,18 +387,21 @@ export class EventStore extends EventEmitter {
    * 解密数据
    */
   private decrypt(data: any): any {
-    if (!this.options.encryptionKey || typeof data !== 'string') return data
-    
+    if (!this.options.encryptionKey || typeof data !== 'string')
+      return data
+
     let decrypted = ''
     for (let i = 0; i < data.length; i++) {
       decrypted += String.fromCharCode(
-        data.charCodeAt(i) ^ this.options.encryptionKey.charCodeAt(i % this.options.encryptionKey.length)
+        data.charCodeAt(i)
+        ^ this.options.encryptionKey.charCodeAt(i % this.options.encryptionKey.length),
       )
     }
-    
+
     try {
       return JSON.parse(decrypted)
-    } catch {
+    }
+    catch {
       return decrypted
     }
   }
@@ -438,11 +445,13 @@ export class EventStore extends EventEmitter {
    * 验证事件
    */
   private validateEvent(event: any): event is EventRecord {
-    return event &&
-           typeof event.id === 'string' &&
-           typeof event.event === 'string' &&
-           event.timestamp instanceof Date &&
-           typeof event.sequence === 'number'
+    return (
+      event
+      && typeof event.id === 'string'
+      && typeof event.event === 'string'
+      && event.timestamp instanceof Date
+      && typeof event.sequence === 'number'
+    )
   }
 
   /**
@@ -458,7 +467,10 @@ export class EventStore extends EventEmitter {
    * 计算存储大小
    */
   private calculateStorageSize(): number {
-    return JSON.stringify(this.events).length + JSON.stringify(Array.from(this.snapshots.values())).length
+    return (
+      JSON.stringify(this.events).length
+      + JSON.stringify(Array.from(this.snapshots.values())).length
+    )
   }
 
   /**

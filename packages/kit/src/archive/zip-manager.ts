@@ -2,20 +2,20 @@
  * ZIP 压缩包管理器
  */
 
+import type {
+  ArchiveEntry,
+  ArchiveProgress,
+  ArchiveStats,
+  CompressionOptions,
+  ExtractionOptions,
+  ZipOptions,
+} from '../types'
 import { EventEmitter } from 'node:events'
 import { createWriteStream } from 'node:fs'
 import { pipeline } from 'node:stream/promises'
 import archiver from 'archiver'
 import * as yauzl from 'yauzl'
 import { FileSystem } from '../filesystem'
-import type { 
-  ZipOptions,
-  ArchiveEntry,
-  ArchiveProgress,
-  ArchiveStats,
-  CompressionOptions,
-  ExtractionOptions
-} from '../types'
 
 /**
  * ZIP 管理器
@@ -25,7 +25,7 @@ export class ZipManager extends EventEmitter {
 
   constructor(options: ZipOptions = {}) {
     super()
-    
+
     this.options = {
       compressionLevel: options.compressionLevel ?? 6,
       preservePermissions: options.preservePermissions ?? true,
@@ -35,7 +35,7 @@ export class ZipManager extends EventEmitter {
       maxFileSize: options.maxFileSize ?? 100 * 1024 * 1024, // 100MB
       password: options.password ?? '',
       comment: options.comment ?? '',
-      ...options
+      ...options,
     }
   }
 
@@ -45,7 +45,7 @@ export class ZipManager extends EventEmitter {
   async create(
     sources: string | string[],
     outputPath: string,
-    options: CompressionOptions = {}
+    options: CompressionOptions = {},
   ): Promise<ArchiveStats> {
     const sourceList = Array.isArray(sources) ? sources : [sources]
     const mergedOptions = { ...this.options, ...options }
@@ -54,29 +54,29 @@ export class ZipManager extends EventEmitter {
       const output = createWriteStream(outputPath)
       const archive = archiver('zip', {
         zlib: { level: mergedOptions.compressionLevel },
-        comment: mergedOptions.comment
+        comment: mergedOptions.comment,
       })
 
-      let stats: ArchiveStats = {
+      const stats: ArchiveStats = {
         totalFiles: 0,
         totalSize: 0,
         compressedSize: 0,
         compressionRatio: 0,
         startTime: new Date(),
         endTime: new Date(),
-        duration: 0
+        duration: 0,
       }
 
       // 监听事件
       archive.on('entry', (entry) => {
         stats.totalFiles++
         stats.totalSize += entry.stats?.size || 0
-        
+
         this.emit('entry', {
           name: entry.name,
           size: entry.stats?.size || 0,
           type: entry.stats?.isDirectory() ? 'directory' : 'file',
-          lastModified: entry.stats?.mtime
+          lastModified: entry.stats?.mtime,
         } as ArchiveEntry)
       })
 
@@ -86,11 +86,12 @@ export class ZipManager extends EventEmitter {
           totalFiles: progress.entries.total,
           processedBytes: progress.fs.processedBytes,
           totalBytes: progress.fs.totalBytes,
-          percentage: progress.fs.totalBytes > 0 
-            ? (progress.fs.processedBytes / progress.fs.totalBytes) * 100 
-            : 0
+          percentage:
+            progress.fs.totalBytes > 0
+              ? (progress.fs.processedBytes / progress.fs.totalBytes) * 100
+              : 0,
         }
-        
+
         this.emit('progress', progressInfo)
       })
 
@@ -104,9 +105,8 @@ export class ZipManager extends EventEmitter {
         stats.endTime = new Date()
         stats.duration = stats.endTime.getTime() - stats.startTime.getTime()
         stats.compressedSize = archive.pointer()
-        stats.compressionRatio = stats.totalSize > 0 
-          ? (1 - stats.compressedSize / stats.totalSize) * 100 
-          : 0
+        stats.compressionRatio
+          = stats.totalSize > 0 ? (1 - stats.compressedSize / stats.totalSize) * 100 : 0
 
         this.emit('complete', stats)
         resolve(stats)
@@ -133,23 +133,25 @@ export class ZipManager extends EventEmitter {
   async extract(
     archivePath: string,
     outputDir: string,
-    options: ExtractionOptions = {}
+    options: ExtractionOptions = {},
   ): Promise<ArchiveStats> {
     const mergedOptions = { ...this.options, ...options }
 
     return new Promise((resolve, reject) => {
       yauzl.open(archivePath, { lazyEntries: true }, async (err, zipfile) => {
-        if (err) return reject(err)
-        if (!zipfile) return reject(new Error('Failed to open ZIP file'))
+        if (err)
+          return reject(err)
+        if (!zipfile)
+          return reject(new Error('Failed to open ZIP file'))
 
-        let stats: ArchiveStats = {
+        const stats: ArchiveStats = {
           totalFiles: 0,
           totalSize: 0,
           compressedSize: 0,
           compressionRatio: 0,
           startTime: new Date(),
           endTime: new Date(),
-          duration: 0
+          duration: 0,
         }
 
         // 确保输出目录存在
@@ -176,18 +178,21 @@ export class ZipManager extends EventEmitter {
             name: entry.fileName,
             size: entry.uncompressedSize,
             type: entry.fileName.endsWith('/') ? 'directory' : 'file',
-            lastModified: entry.getLastModDate()
+            lastModified: entry.getLastModDate(),
           } as ArchiveEntry)
 
           if (entry.fileName.endsWith('/')) {
             // 目录
             await FileSystem.ensureDir(entryPath)
             zipfile.readEntry()
-          } else {
+          }
+          else {
             // 文件
             zipfile.openReadStream(entry, async (err, readStream) => {
-              if (err) return reject(err)
-              if (!readStream) return reject(new Error('Failed to open read stream'))
+              if (err)
+                return reject(err)
+              if (!readStream)
+                return reject(new Error('Failed to open read stream'))
 
               try {
                 await FileSystem.ensureDir(FileSystem.dirname(entryPath))
@@ -201,7 +206,8 @@ export class ZipManager extends EventEmitter {
                 }
 
                 zipfile.readEntry()
-              } catch (error) {
+              }
+              catch (error) {
                 reject(error)
               }
             })
@@ -211,9 +217,8 @@ export class ZipManager extends EventEmitter {
         zipfile.on('end', () => {
           stats.endTime = new Date()
           stats.duration = stats.endTime.getTime() - stats.startTime.getTime()
-          stats.compressionRatio = stats.totalSize > 0 
-            ? (1 - stats.compressedSize / stats.totalSize) * 100 
-            : 0
+          stats.compressionRatio
+            = stats.totalSize > 0 ? (1 - stats.compressedSize / stats.totalSize) * 100 : 0
 
           this.emit('complete', stats)
           resolve(stats)
@@ -230,8 +235,10 @@ export class ZipManager extends EventEmitter {
   async list(archivePath: string): Promise<ArchiveEntry[]> {
     return new Promise((resolve, reject) => {
       yauzl.open(archivePath, { lazyEntries: true }, (err, zipfile) => {
-        if (err) return reject(err)
-        if (!zipfile) return reject(new Error('Failed to open ZIP file'))
+        if (err)
+          return reject(err)
+        if (!zipfile)
+          return reject(new Error('Failed to open ZIP file'))
 
         const entries: ArchiveEntry[] = []
 
@@ -244,7 +251,7 @@ export class ZipManager extends EventEmitter {
             type: entry.fileName.endsWith('/') ? 'directory' : 'file',
             compressedSize: entry.compressedSize,
             lastModified: entry.getLastModDate(),
-            crc32: entry.crc32
+            crc32: entry.crc32,
           })
 
           zipfile.readEntry()
@@ -262,7 +269,7 @@ export class ZipManager extends EventEmitter {
   async addFiles(
     archivePath: string,
     files: string | string[],
-    options: CompressionOptions = {}
+    options: CompressionOptions = {},
   ): Promise<void> {
     const fileList = Array.isArray(files) ? files : [files]
     const tempPath = `${archivePath}.tmp`
@@ -285,7 +292,8 @@ export class ZipManager extends EventEmitter {
 
       // 替换原文件
       await FileSystem.move(tempPath, archivePath)
-    } finally {
+    }
+    finally {
       // 清理临时目录
       await FileSystem.removeDir(tempDir)
     }
@@ -294,10 +302,7 @@ export class ZipManager extends EventEmitter {
   /**
    * 从 ZIP 中移除文件
    */
-  async removeFiles(
-    archivePath: string,
-    filesToRemove: string | string[]
-  ): Promise<void> {
+  async removeFiles(archivePath: string, filesToRemove: string | string[]): Promise<void> {
     const removeList = Array.isArray(filesToRemove) ? filesToRemove : [filesToRemove]
     const tempPath = `${archivePath}.tmp`
     const tempDir = await FileSystem.createTempDir()
@@ -319,7 +324,8 @@ export class ZipManager extends EventEmitter {
 
       // 替换原文件
       await FileSystem.move(tempPath, archivePath)
-    } finally {
+    }
+    finally {
       // 清理临时目录
       await FileSystem.removeDir(tempDir)
     }
@@ -332,7 +338,8 @@ export class ZipManager extends EventEmitter {
     try {
       await this.list(archivePath)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -356,7 +363,7 @@ export class ZipManager extends EventEmitter {
       entries,
       totalSize,
       compressedSize,
-      comment: this.options.comment
+      comment: this.options.comment,
     }
   }
 
@@ -366,12 +373,12 @@ export class ZipManager extends EventEmitter {
   private async addSourcesToArchive(
     archive: archiver.Archiver,
     sources: string[],
-    options: Required<ZipOptions>
+    options: Required<ZipOptions>,
   ): Promise<void> {
     for (const source of sources) {
       if (await FileSystem.exists(source)) {
         const stat = await FileSystem.stat(source)
-        
+
         if (stat.isDirectory()) {
           archive.directory(source, false, (entry) => {
             if (options.ignoreHidden && entry.name.startsWith('.')) {
@@ -379,7 +386,8 @@ export class ZipManager extends EventEmitter {
             }
             return entry
           })
-        } else {
+        }
+        else {
           if (options.ignoreHidden && FileSystem.basename(source).startsWith('.')) {
             continue
           }

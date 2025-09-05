@@ -3,15 +3,15 @@
  * 提供HTTP服务器功能，支持中间件、路由、静态文件服务等
  */
 
-import { createServer, IncomingMessage, ServerResponse, Server } from 'node:http'
-import { createServer as createHttpsServer } from 'node:https'
+import type { IncomingMessage, Server, ServerResponse } from 'node:http'
+import type { HttpContext, HttpServerOptions, Middleware, RouteHandler } from '../types'
 import { EventEmitter } from 'node:events'
-import { parse } from 'node:url'
-import { join, extname } from 'node:path'
 import { createReadStream, existsSync, statSync } from 'node:fs'
-import type { HttpServerOptions, RouteHandler, Middleware, HttpContext } from '../types'
+import { createServer } from 'node:http'
+import { createServer as createHttpsServer } from 'node:https'
+import { extname, join } from 'node:path'
+import { parse } from 'node:url'
 import { NetworkError } from '../types'
-import { PathUtils } from '../utils'
 
 /**
  * HTTP服务器类
@@ -25,7 +25,7 @@ export class HttpServer extends EventEmitter {
 
   constructor(options: HttpServerOptions = {}) {
     super()
-    
+
     this.options = {
       port: 3000,
       host: 'localhost',
@@ -36,7 +36,7 @@ export class HttpServer extends EventEmitter {
       maxBodySize: 1024 * 1024, // 1MB
       timeout: 30000,
       keepAliveTimeout: 5000,
-      ...options
+      ...options,
     }
 
     this.initializeRoutes()
@@ -62,7 +62,7 @@ export class HttpServer extends EventEmitter {
 
     return new Promise((resolve, reject) => {
       try {
-        this.server = this.options.https 
+        this.server = this.options.https
           ? createHttpsServer(this.options.httpsOptions || {}, this.handleRequest.bind(this))
           : createServer(this.handleRequest.bind(this))
 
@@ -89,8 +89,8 @@ export class HttpServer extends EventEmitter {
         })
 
         this.server.listen(this.options.port, this.options.host)
-
-      } catch (error) {
+      }
+      catch (error) {
         reject(error)
       }
     })
@@ -108,7 +108,8 @@ export class HttpServer extends EventEmitter {
       this.server!.close((error) => {
         if (error) {
           reject(error)
-        } else {
+        }
+        else {
           this.server = null
           resolve()
         }
@@ -121,11 +122,11 @@ export class HttpServer extends EventEmitter {
    */
   private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const startTime = Date.now()
-    
+
     try {
       // 创建上下文
       const context = await this.createContext(req, res)
-      
+
       this.emit('request', context)
 
       // 应用CORS
@@ -135,7 +136,7 @@ export class HttpServer extends EventEmitter {
 
       // 执行中间件和路由处理
       await this.executeMiddlewares(context)
-      
+
       if (!context.response.headersSent) {
         await this.executeRoute(context)
       }
@@ -147,8 +148,8 @@ export class HttpServer extends EventEmitter {
 
       const duration = Date.now() - startTime
       this.emit('response', { context, duration })
-
-    } catch (error) {
+    }
+    catch (error) {
       this.handleError(error as Error, req, res)
     }
   }
@@ -158,7 +159,7 @@ export class HttpServer extends EventEmitter {
    */
   private async createContext(req: IncomingMessage, res: ServerResponse): Promise<HttpContext> {
     const url = parse(req.url || '', true)
-    
+
     // 解析请求体
     let body: any = null
     if (this.options.bodyParser && req.method !== 'GET' && req.method !== 'HEAD') {
@@ -175,7 +176,7 @@ export class HttpServer extends EventEmitter {
         body,
         params: {},
         ip: req.socket.remoteAddress || '',
-        userAgent: req.headers['user-agent'] || ''
+        userAgent: req.headers['user-agent'] || '',
       },
       response: {
         status: (code: number) => {
@@ -196,7 +197,8 @@ export class HttpServer extends EventEmitter {
           if (typeof data === 'object') {
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify(data))
-          } else {
+          }
+          else {
             res.end(String(data))
           }
         },
@@ -212,14 +214,14 @@ export class HttpServer extends EventEmitter {
           res.setHeader('Location', url)
           res.end()
         },
-        headersSent: false
+        headersSent: false,
       },
-      state: {}
+      state: {},
     }
 
     // 更新headersSent状态
     Object.defineProperty(context.response, 'headersSent', {
-      get: () => res.headersSent
+      get: () => res.headersSent,
     })
 
     return context
@@ -245,20 +247,23 @@ export class HttpServer extends EventEmitter {
       req.on('end', () => {
         try {
           const contentType = req.headers['content-type'] || ''
-          
+
           if (contentType.includes('application/json')) {
             resolve(JSON.parse(body))
-          } else if (contentType.includes('application/x-www-form-urlencoded')) {
+          }
+          else if (contentType.includes('application/x-www-form-urlencoded')) {
             const params = new URLSearchParams(body)
             const result: Record<string, any> = {}
             for (const [key, value] of params) {
               result[key] = value
             }
             resolve(result)
-          } else {
+          }
+          else {
             resolve(body)
           }
-        } catch (error) {
+        }
+        catch (error) {
           reject(error)
         }
       })
@@ -272,11 +277,17 @@ export class HttpServer extends EventEmitter {
    */
   private applyCors(context: HttpContext): void {
     const corsOptions = typeof this.options.cors === 'object' ? this.options.cors : {}
-    
+
     context.response.header('Access-Control-Allow-Origin', corsOptions.origin || '*')
-    context.response.header('Access-Control-Allow-Methods', corsOptions.methods || 'GET,HEAD,PUT,PATCH,POST,DELETE')
-    context.response.header('Access-Control-Allow-Headers', corsOptions.headers || 'Content-Type,Authorization')
-    
+    context.response.header(
+      'Access-Control-Allow-Methods',
+      corsOptions.methods || 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    )
+    context.response.header(
+      'Access-Control-Allow-Headers',
+      corsOptions.headers || 'Content-Type,Authorization',
+    )
+
     if (corsOptions.credentials) {
       context.response.header('Access-Control-Allow-Credentials', 'true')
     }
@@ -293,13 +304,13 @@ export class HttpServer extends EventEmitter {
   private async executeMiddlewares(context: HttpContext): Promise<void> {
     for (const middleware of this.middlewares) {
       let nextCalled = false
-      
+
       const next = () => {
         nextCalled = true
       }
 
       await middleware(context, next)
-      
+
       if (!nextCalled || context.response.headersSent) {
         break
       }
@@ -357,7 +368,8 @@ export class HttpServer extends EventEmitter {
         // 参数匹配
         const paramName = patternPart.slice(1)
         params[paramName] = pathPart
-      } else if (patternPart !== pathPart) {
+      }
+      else if (patternPart !== pathPart) {
         // 字面量不匹配
         return null
       }
@@ -374,13 +386,13 @@ export class HttpServer extends EventEmitter {
       if (path.startsWith(prefix)) {
         const relativePath = path.slice(prefix.length)
         const filePath = join(dir, relativePath)
-        
+
         if (existsSync(filePath) && statSync(filePath).isFile()) {
           return filePath
         }
       }
     }
-    
+
     return null
   }
 
@@ -413,7 +425,7 @@ export class HttpServer extends EventEmitter {
       '.jpeg': 'image/jpeg',
       '.gif': 'image/gif',
       '.svg': 'image/svg+xml',
-      '.ico': 'image/x-icon'
+      '.ico': 'image/x-icon',
     }
 
     const contentType = mimeTypes[ext] || 'application/octet-stream'
@@ -423,7 +435,7 @@ export class HttpServer extends EventEmitter {
     // 流式传输文件
     const stream = createReadStream(filePath)
     stream.pipe(res)
-    
+
     stream.on('error', () => {
       res.statusCode = 500
       res.end('Internal Server Error')
@@ -435,14 +447,16 @@ export class HttpServer extends EventEmitter {
    */
   private handleError(error: Error, req: IncomingMessage, res: ServerResponse): void {
     this.emit('error', error)
-    
+
     if (!res.headersSent) {
       res.statusCode = 500
       res.setHeader('Content-Type', 'application/json')
-      res.end(JSON.stringify({
-        error: 'Internal Server Error',
-        message: error.message
-      }))
+      res.end(
+        JSON.stringify({
+          error: 'Internal Server Error',
+          message: error.message,
+        }),
+      )
     }
   }
 
@@ -511,7 +525,7 @@ export class HttpServer extends EventEmitter {
   /**
    * 获取服务器地址
    */
-  getAddress(): { port: number; host: string; protocol: string } | null {
+  getAddress(): { port: number, host: string, protocol: string } | null {
     if (!this.server || !this.server.listening) {
       return null
     }
@@ -524,7 +538,7 @@ export class HttpServer extends EventEmitter {
     return {
       port: address?.port || this.options.port,
       host: address?.address || this.options.host,
-      protocol: this.options.https ? 'https' : 'http'
+      protocol: this.options.https ? 'https' : 'http',
     }
   }
 

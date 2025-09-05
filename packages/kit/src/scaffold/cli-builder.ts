@@ -3,12 +3,12 @@
  * 基于 CAC 的命令行接口构建器
  */
 
+import type { Logger } from '../logger'
+import type { ScaffoldManager } from './scaffold-manager'
 import { CAC } from 'cac'
 import chalk from 'chalk'
 import figlet from 'figlet'
-import { ScaffoldManager } from './scaffold-manager'
 import { InquirerManager } from '../inquirer'
-import type { Logger } from '../logger'
 
 /**
  * CLI 构建器选项
@@ -52,12 +52,12 @@ export class CliBuilder {
 
     this.cli = new CAC(options.name)
     this.cli.version(options.version)
-    
+
     if (options.description) {
-      this.cli.help(sections => {
+      this.cli.help((sections) => {
         sections.unshift({
           title: '',
-          body: chalk.cyan(options.description)
+          body: chalk.cyan(options.description),
         })
       })
     }
@@ -116,26 +116,19 @@ export class CliBuilder {
       .action(this.handleConfigCommand.bind(this))
 
     // 信息命令
-    this.cli
-      .command('info', '显示系统信息')
-      .action(this.handleInfoCommand.bind(this))
+    this.cli.command('info', '显示系统信息').action(this.handleInfoCommand.bind(this))
 
     // 初始化命令
-    this.cli
-      .command('init', '初始化脚手架')
-      .action(this.handleInitCommand.bind(this))
+    this.cli.command('init', '初始化脚手架').action(this.handleInitCommand.bind(this))
   }
 
   /**
    * 处理创建项目命令
    */
-  private async handleCreateCommand(
-    projectName: string,
-    options: CommandOptions
-  ): Promise<void> {
+  private async handleCreateCommand(projectName: string, options: CommandOptions): Promise<void> {
     try {
       await this.showBanner()
-      
+
       this.logger?.info(`开始创建项目: ${projectName}`)
 
       // 如果是交互式模式，收集用户输入
@@ -145,10 +138,10 @@ export class CliBuilder {
       }
 
       // 解析插件列表
-      const plugins = options.plugins 
-        ? (typeof options.plugins === 'string' 
-            ? options.plugins.split(',').map(p => p.trim())
-            : options.plugins)
+      const plugins = options.plugins
+        ? typeof options.plugins === 'string'
+          ? options.plugins.split(',').map(p => p.trim())
+          : options.plugins
         : []
 
       // 创建项目
@@ -160,7 +153,7 @@ export class CliBuilder {
         variables: options.variables,
         plugins,
         interactive: options.interactive,
-        overwrite: options.overwrite
+        overwrite: options.overwrite,
       })
 
       if (result.success) {
@@ -179,15 +172,16 @@ export class CliBuilder {
         console.log(chalk.white(`  cd ${projectName}`))
         console.log(chalk.white('  npm install'))
         console.log(chalk.white('  npm run dev'))
-      } else {
+      }
+      else {
         console.log(chalk.red('\n❌ 项目创建失败'))
-        result.errors.forEach(error => {
+        result.errors.forEach((error) => {
           console.log(chalk.red(`   ${error.message}`))
         })
         process.exit(1)
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       console.log(chalk.red('\n❌ 创建项目时发生错误:'))
       console.log(chalk.red(`   ${(error as Error).message}`))
       process.exit(1)
@@ -197,10 +191,7 @@ export class CliBuilder {
   /**
    * 处理列表命令
    */
-  private async handleListCommand(
-    type?: string,
-    options?: { detailed?: boolean }
-  ): Promise<void> {
+  private async handleListCommand(type?: string, options?: { detailed?: boolean }): Promise<void> {
     try {
       const listType = type || 'templates'
 
@@ -218,8 +209,8 @@ export class CliBuilder {
           console.log(chalk.red(`未知类型: ${listType}`))
           console.log(chalk.yellow('可用类型: templates, plugins, environments'))
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       console.log(chalk.red(`列表获取失败: ${(error as Error).message}`))
     }
   }
@@ -229,29 +220,32 @@ export class CliBuilder {
    */
   private async handleEnvCommand(
     action?: string,
-    options?: { set?: string; list?: boolean; current?: boolean }
+    options?: { set?: string, list?: boolean, current?: boolean },
   ): Promise<void> {
     try {
       if (options?.set) {
         await this.scaffoldManager.setEnvironment(options.set)
         console.log(chalk.green(`✅ 环境已设置为: ${options.set}`))
-      } else if (options?.list || action === 'list') {
+      }
+      else if (options?.list || action === 'list') {
         const environments = this.scaffoldManager.getEnvironments()
         const current = this.scaffoldManager.getCurrentEnvironment()
-        
+
         console.log(chalk.cyan('\n📋 可用环境:'))
-        environments.forEach(env => {
+        environments.forEach((env) => {
           const marker = env === current ? chalk.green('●') : chalk.gray('○')
           console.log(`  ${marker} ${env}${env === current ? chalk.green(' (当前)') : ''}`)
         })
-      } else if (options?.current || action === 'current') {
+      }
+      else if (options?.current || action === 'current') {
         const current = this.scaffoldManager.getCurrentEnvironment()
         console.log(chalk.cyan(`当前环境: ${current}`))
-      } else {
+      }
+      else {
         console.log(chalk.yellow('请指定环境操作: list, current 或使用 --set <env>'))
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       console.log(chalk.red(`环境操作失败: ${(error as Error).message}`))
     }
   }
@@ -261,7 +255,7 @@ export class CliBuilder {
    */
   private async handlePluginCommand(
     action: string,
-    options?: { name?: string; path?: string }
+    options?: { name?: string, path?: string },
   ): Promise<void> {
     try {
       switch (action) {
@@ -280,8 +274,8 @@ export class CliBuilder {
           console.log(chalk.red(`未知插件操作: ${action}`))
           console.log(chalk.yellow('可用操作: list, install'))
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       console.log(chalk.red(`插件操作失败: ${(error as Error).message}`))
     }
   }
@@ -291,7 +285,7 @@ export class CliBuilder {
    */
   private async handleTemplateCommand(
     action: string,
-    options?: { name?: string; source?: string }
+    options?: { name?: string, source?: string },
   ): Promise<void> {
     try {
       switch (action) {
@@ -310,8 +304,8 @@ export class CliBuilder {
           console.log(chalk.red(`未知模板操作: ${action}`))
           console.log(chalk.yellow('可用操作: list, create'))
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       console.log(chalk.red(`模板操作失败: ${(error as Error).message}`))
     }
   }
@@ -321,20 +315,24 @@ export class CliBuilder {
    */
   private async handleConfigCommand(
     action?: string,
-    options?: { key?: string; value?: string }
+    options?: { key?: string, value?: string },
   ): Promise<void> {
     try {
       if (action === 'get' && options?.key) {
         const value = this.scaffoldManager.getConfig(options.key)
         console.log(chalk.cyan(`${options.key}: ${JSON.stringify(value)}`))
-      } else if (action === 'set' && options?.key && options?.value) {
+      }
+      else if (action === 'set' && options?.key && options?.value) {
         await this.scaffoldManager.setConfig(options.key, options.value)
         console.log(chalk.green(`✅ 配置已设置: ${options.key} = ${options.value}`))
-      } else {
-        console.log(chalk.yellow('请指定配置操作: get --key <key> 或 set --key <key> --value <value>'))
       }
-
-    } catch (error) {
+      else {
+        console.log(
+          chalk.yellow('请指定配置操作: get --key <key> 或 set --key <key> --value <value>'),
+        )
+      }
+    }
+    catch (error) {
       console.log(chalk.red(`配置操作失败: ${(error as Error).message}`))
     }
   }
@@ -348,7 +346,7 @@ export class CliBuilder {
       console.log(chalk.white(`  脚手架名称: ${this.options.name}`))
       console.log(chalk.white(`  版本: ${this.options.version}`))
       console.log(chalk.white(`  当前环境: ${this.scaffoldManager.getCurrentEnvironment()}`))
-      
+
       const templates = await this.scaffoldManager.getTemplates()
       const plugins = await this.scaffoldManager.getPlugins()
       const environments = this.scaffoldManager.getEnvironments()
@@ -356,8 +354,8 @@ export class CliBuilder {
       console.log(chalk.white(`  可用模板: ${templates.length}`))
       console.log(chalk.white(`  可用插件: ${plugins.length}`))
       console.log(chalk.white(`  可用环境: ${environments.length}`))
-
-    } catch (error) {
+    }
+    catch (error) {
       console.log(chalk.red(`获取信息失败: ${(error as Error).message}`))
     }
   }
@@ -369,8 +367,8 @@ export class CliBuilder {
     try {
       await this.scaffoldManager.initialize()
       console.log(chalk.green('✅ 脚手架初始化完成'))
-
-    } catch (error) {
+    }
+    catch (error) {
       console.log(chalk.red(`初始化失败: ${(error as Error).message}`))
     }
   }
@@ -395,7 +393,7 @@ export class CliBuilder {
    */
   private async collectCreateOptions(
     projectName: string,
-    options: CommandOptions
+    options: CommandOptions,
   ): Promise<Partial<CommandOptions>> {
     const answers: Partial<CommandOptions> = {}
 
@@ -408,7 +406,7 @@ export class CliBuilder {
 
       answers.template = await this.inquirer.select({
         message: '请选择项目模板:',
-        choices: templates.map(t => ({ name: t, value: t }))
+        choices: templates.map(t => ({ name: t, value: t })),
       })
     }
 
@@ -418,7 +416,7 @@ export class CliBuilder {
       answers.environment = await this.inquirer.select({
         message: '请选择环境:',
         choices: environments.map(e => ({ name: e, value: e })),
-        default: this.scaffoldManager.getCurrentEnvironment()
+        default: this.scaffoldManager.getCurrentEnvironment(),
       })
     }
 
@@ -430,14 +428,14 @@ export class CliBuilder {
    */
   private async listTemplates(detailed?: boolean): Promise<void> {
     const templates = await this.scaffoldManager.getTemplates()
-    
+
     if (templates.length === 0) {
       console.log(chalk.yellow('没有可用的模板'))
       return
     }
 
     console.log(chalk.cyan('\n📋 可用模板:'))
-    templates.forEach(template => {
+    templates.forEach((template) => {
       console.log(`  ${chalk.green('●')} ${template}`)
     })
   }
@@ -447,14 +445,14 @@ export class CliBuilder {
    */
   private async listPlugins(detailed?: boolean): Promise<void> {
     const plugins = await this.scaffoldManager.getPlugins()
-    
+
     if (plugins.length === 0) {
       console.log(chalk.yellow('没有可用的插件'))
       return
     }
 
     console.log(chalk.cyan('\n🔌 可用插件:'))
-    plugins.forEach(plugin => {
+    plugins.forEach((plugin) => {
       console.log(`  ${chalk.green('●')} ${plugin}`)
     })
   }
@@ -465,9 +463,9 @@ export class CliBuilder {
   private async listEnvironments(detailed?: boolean): Promise<void> {
     const environments = this.scaffoldManager.getEnvironments()
     const current = this.scaffoldManager.getCurrentEnvironment()
-    
+
     console.log(chalk.cyan('\n🌍 可用环境:'))
-    environments.forEach(env => {
+    environments.forEach((env) => {
       const marker = env === current ? chalk.green('●') : chalk.gray('○')
       console.log(`  ${marker} ${env}${env === current ? chalk.green(' (当前)') : ''}`)
     })

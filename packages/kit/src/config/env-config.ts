@@ -3,7 +3,6 @@
  * 提供环境变量加载和转换功能
  */
 
-
 /**
  * 环境变量配置选项
  */
@@ -31,7 +30,7 @@ export class EnvConfig {
       parseValues: options.parseValues !== false,
       allowList: options.allowList || [],
       denyList: options.denyList || [],
-      transform: options.transform || ((key, value) => value)
+      transform: options.transform || ((key, value) => value),
     }
   }
 
@@ -43,23 +42,26 @@ export class EnvConfig {
     const env = process.env
 
     for (const [key, value] of Object.entries(env)) {
-      if (value === undefined) continue
+      if (value === undefined)
+        continue
 
       // 检查前缀
-      if (!this.matchesPrefix(key)) continue
+      if (!this.matchesPrefix(key))
+        continue
 
       // 检查允许/拒绝列表
-      if (!this.isAllowed(key)) continue
+      if (!this.isAllowed(key))
+        continue
 
       // 移除前缀并转换键名
       const configKey = this.transformKey(key)
-      
+
       // 解析值
       const parsedValue = this.parseValue(value)
-      
+
       // 应用自定义转换
       const transformedValue = this.options.transform(configKey, parsedValue)
-      
+
       // 设置嵌套配置
       this.setNestedValue(config, configKey, transformedValue)
     }
@@ -71,16 +73,15 @@ export class EnvConfig {
    * 检查键是否匹配前缀
    */
   private matchesPrefix(key: string): boolean {
-    if (!this.options.prefix) return true
-    
-    const prefix = this.options.caseSensitive 
-      ? this.options.prefix 
+    if (!this.options.prefix)
+      return true
+
+    const prefix = this.options.caseSensitive
+      ? this.options.prefix
       : this.options.prefix.toUpperCase()
-    
-    const keyToCheck = this.options.caseSensitive 
-      ? key 
-      : key.toUpperCase()
-    
+
+    const keyToCheck = this.options.caseSensitive ? key : key.toUpperCase()
+
     return keyToCheck.startsWith(prefix + this.options.separator)
   }
 
@@ -91,10 +92,10 @@ export class EnvConfig {
     // 检查拒绝列表
     if (this.options.denyList.length > 0) {
       const keyToCheck = this.options.caseSensitive ? key : key.toLowerCase()
-      const denyList = this.options.caseSensitive 
-        ? this.options.denyList 
+      const denyList = this.options.caseSensitive
+        ? this.options.denyList
         : this.options.denyList.map(k => k.toLowerCase())
-      
+
       if (denyList.some(denied => keyToCheck.includes(denied))) {
         return false
       }
@@ -103,10 +104,10 @@ export class EnvConfig {
     // 检查允许列表
     if (this.options.allowList.length > 0) {
       const keyToCheck = this.options.caseSensitive ? key : key.toLowerCase()
-      const allowList = this.options.caseSensitive 
-        ? this.options.allowList 
+      const allowList = this.options.caseSensitive
+        ? this.options.allowList
         : this.options.allowList.map(k => k.toLowerCase())
-      
+
       return allowList.some(allowed => keyToCheck.includes(allowed))
     }
 
@@ -120,13 +121,13 @@ export class EnvConfig {
     // 移除前缀
     let configKey = key
     if (this.options.prefix) {
-      const prefix = this.options.caseSensitive 
-        ? this.options.prefix 
+      const prefix = this.options.caseSensitive
+        ? this.options.prefix
         : this.options.prefix.toUpperCase()
-      
+
       const keyToProcess = this.options.caseSensitive ? key : key.toUpperCase()
       const prefixWithSeparator = prefix + this.options.separator
-      
+
       if (keyToProcess.startsWith(prefixWithSeparator)) {
         configKey = key.slice(prefixWithSeparator.length)
       }
@@ -134,7 +135,7 @@ export class EnvConfig {
 
     // 转换分隔符为点号（用于嵌套配置）
     configKey = configKey.replace(new RegExp(this.options.separator, 'g'), '.')
-    
+
     // 转换为小写（如果不区分大小写）
     if (!this.options.caseSensitive) {
       configKey = configKey.toLowerCase()
@@ -152,37 +153,44 @@ export class EnvConfig {
     }
 
     // 布尔值
-    if (value.toLowerCase() === 'true') return true
-    if (value.toLowerCase() === 'false') return false
+    if (value.toLowerCase() === 'true')
+      return true
+    if (value.toLowerCase() === 'false')
+      return false
 
     // null 和 undefined
-    if (value.toLowerCase() === 'null') return null
-    if (value.toLowerCase() === 'undefined') return undefined
+    if (value.toLowerCase() === 'null')
+      return null
+    if (value.toLowerCase() === 'undefined')
+      return undefined
 
     // 数字
     if (/^\d+$/.test(value)) {
-      const num = parseInt(value, 10)
+      const num = Number.parseInt(value, 10)
       return Number.isSafeInteger(num) ? num : value
     }
 
     if (/^\d+\.\d+$/.test(value)) {
-      const num = parseFloat(value)
+      const num = Number.parseFloat(value)
       return Number.isFinite(num) ? num : value
     }
 
     // JSON 数组或对象
-    if ((value.startsWith('[') && value.endsWith(']')) ||
-        (value.startsWith('{') && value.endsWith('}'))) {
+    if (
+      (value.startsWith('[') && value.endsWith(']'))
+      || (value.startsWith('{') && value.endsWith('}'))
+    ) {
       try {
         return JSON.parse(value)
-      } catch {
+      }
+      catch {
         return value
       }
     }
 
     // 逗号分隔的数组
     if (value.includes(',')) {
-      return value.split(',').map(item => {
+      return value.split(',').map((item) => {
         const trimmed = item.trim()
         return this.parseValue(trimmed)
       })
@@ -200,7 +208,8 @@ export class EnvConfig {
 
     for (let i = 0; i < keys.length - 1; i++) {
       const k = keys[i]
-      if (!k) continue
+      if (!k)
+        continue
       if (!(k in current) || typeof current[k] !== 'object' || current[k] === null) {
         current[k] = {}
       }
@@ -219,11 +228,11 @@ export class EnvConfig {
   get(key: string, defaultValue?: any): any {
     const envKey = this.buildEnvKey(key)
     const value = process.env[envKey]
-    
+
     if (value === undefined) {
       return defaultValue
     }
-    
+
     return this.options.parseValues ? this.parseValue(value) : value
   }
 
@@ -261,17 +270,17 @@ export class EnvConfig {
   private buildEnvKey(key: string): string {
     // 将点号转换为分隔符
     const transformedKey = key.replace(/\./g, this.options.separator)
-    
+
     // 添加前缀
-    let envKey = this.options.prefix 
+    let envKey = this.options.prefix
       ? `${this.options.prefix}${this.options.separator}${transformedKey}`
       : transformedKey
-    
+
     // 转换大小写
     if (!this.options.caseSensitive) {
       envKey = envKey.toUpperCase()
     }
-    
+
     return envKey
   }
 
@@ -315,10 +324,11 @@ export class EnvConfig {
   setFromObject(config: Record<string, any>, prefix = ''): void {
     for (const [key, value] of Object.entries(config)) {
       const fullKey = prefix ? `${prefix}.${key}` : key
-      
+
       if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
         this.setFromObject(value, fullKey)
-      } else {
+      }
+      else {
         this.set(fullKey, value)
       }
     }
@@ -330,16 +340,17 @@ export class EnvConfig {
   exportToEnv(): string {
     const envVars = this.getAll()
     let content = ''
-    
+
     for (const [key, value] of Object.entries(envVars)) {
       // 如果值包含空格或特殊字符，添加引号
       if (typeof value === 'string' && (/\s/.test(value) || /[#"'\\]/.test(value))) {
         content += `${key}="${value.replace(/"/g, '\\"')}"\n`
-      } else {
+      }
+      else {
         content += `${key}=${value}\n`
       }
     }
-    
+
     return content
   }
 
@@ -348,26 +359,28 @@ export class EnvConfig {
    */
   loadFromEnv(content: string): void {
     const lines = content.split('\n')
-    
+
     for (const line of lines) {
       const trimmed = line.trim()
-      
+
       // 跳过空行和注释
       if (!trimmed || trimmed.startsWith('#')) {
         continue
       }
-      
+
       const equalIndex = trimmed.indexOf('=')
       if (equalIndex > 0) {
         const key = trimmed.slice(0, equalIndex).trim()
         let value = trimmed.slice(equalIndex + 1).trim()
-        
+
         // 移除引号
-        if ((value.startsWith('"') && value.endsWith('"')) ||
-            (value.startsWith("'") && value.endsWith("'"))) {
+        if (
+          (value.startsWith('"') && value.endsWith('"'))
+          || (value.startsWith('\'') && value.endsWith('\''))
+        ) {
           value = value.slice(1, -1).replace(/\\"/g, '"')
         }
-        
+
         process.env[key] = value
       }
     }

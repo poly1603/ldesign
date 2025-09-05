@@ -27,7 +27,7 @@ import { ViteBuilder, RollupBuilder } from '@ldesign/kit'
 // 创建 Vite 构建器
 const viteBuilder = new ViteBuilder({
   entry: 'src/index.ts',
-  outDir: 'dist'
+  outDir: 'dist',
 })
 
 // 构建项目
@@ -39,8 +39,8 @@ const rollupBuilder = new RollupBuilder({
   input: 'src/index.ts',
   output: {
     file: 'dist/bundle.js',
-    format: 'es'
-  }
+    format: 'es',
+  },
 })
 
 // 执行打包
@@ -56,37 +56,37 @@ console.log('打包结果:', rollupResult)
 const builder = new ViteBuilder({
   // 项目根目录
   root: process.cwd(),
-  
+
   // 入口文件
   entry: 'src/index.ts',
-  
+
   // 输出目录
   outDir: 'dist',
-  
+
   // 构建环境
   env: 'production',
-  
+
   // 是否生成源码映射
   sourcemap: true,
-  
+
   // 是否压缩代码
   minify: true,
-  
+
   // 目标环境
   target: 'es2015',
-  
+
   // 外部依赖
   external: ['react', 'react-dom'],
-  
+
   // 全局变量定义
   define: {
-    __VERSION__: JSON.stringify('1.0.0')
+    __VERSION__: JSON.stringify('1.0.0'),
   },
-  
+
   // 路径别名
   alias: {
-    '@': 'src'
-  }
+    '@': 'src',
+  },
 })
 ```
 
@@ -103,9 +103,9 @@ const builder = new ViteBuilder({
     cors: true,
     hmr: true,
     proxy: {
-      '/api': 'http://localhost:8080'
-    }
-  }
+      '/api': 'http://localhost:8080',
+    },
+  },
 })
 
 // 启动开发服务器
@@ -128,12 +128,12 @@ const libBuilder = new ViteBuilder({
       const formatMap = {
         es: `${entryName}.js`,
         cjs: `${entryName}.cjs`,
-        umd: `${entryName}.umd.js`
+        umd: `${entryName}.umd.js`,
       }
       return formatMap[format]
-    }
+    },
   },
-  external: ['react', 'react-dom']
+  external: ['react', 'react-dom'],
 })
 
 // 构建库
@@ -148,8 +148,8 @@ const builder = new ViteBuilder({
   preview: {
     port: 4173,
     host: true,
-    open: false
-  }
+    open: false,
+  },
 })
 
 // 先构建项目
@@ -168,21 +168,21 @@ console.log(`预览服务器: ${previewServer.url}`)
 const builder = new RollupBuilder({
   // 入口文件
   input: 'src/index.ts',
-  
+
   // 输出配置
   output: {
     file: 'dist/bundle.js',
     format: 'es',
-    sourcemap: true
+    sourcemap: true,
   },
-  
+
   // 外部依赖
   external: ['lodash'],
-  
+
   // 插件
   plugins: [
     // 你的插件
-  ]
+  ],
 })
 ```
 
@@ -195,21 +195,21 @@ const builder = new RollupBuilder({
     {
       file: 'dist/index.js',
       format: 'es',
-      sourcemap: true
+      sourcemap: true,
     },
     {
       file: 'dist/index.cjs',
       format: 'cjs',
       sourcemap: true,
-      exports: 'named'
+      exports: 'named',
     },
     {
       file: 'dist/index.umd.js',
       format: 'umd',
       name: 'MyLibrary',
-      sourcemap: true
-    }
-  ]
+      sourcemap: true,
+    },
+  ],
 })
 
 // 构建所有格式
@@ -223,14 +223,14 @@ const builder = new RollupBuilder({
   input: {
     main: 'src/index.ts',
     utils: 'src/utils/index.ts',
-    components: 'src/components/index.ts'
+    components: 'src/components/index.ts',
   },
   output: {
     dir: 'dist',
     format: 'es',
     entryFileNames: '[name].js',
-    chunkFileNames: 'chunks/[name]-[hash].js'
-  }
+    chunkFileNames: 'chunks/[name]-[hash].js',
+  },
 })
 ```
 
@@ -241,8 +241,8 @@ const builder = new RollupBuilder({
   input: 'src/index.ts',
   output: {
     dir: 'dist',
-    sourcemap: true
-  }
+    sourcemap: true,
+  },
 })
 
 // 构建多种格式
@@ -262,7 +262,7 @@ import { createViteBuilderWithPreset, createRollupBuilderWithPreset } from '@lde
 
 // Vue 应用
 const vueBuilder = createViteBuilderWithPreset('vue-app', {
-  server: { port: 8080 }
+  server: { port: 8080 },
 })
 
 // React 应用
@@ -270,7 +270,7 @@ const reactBuilder = createViteBuilderWithPreset('react-app')
 
 // 库开发
 const libBuilder = createViteBuilderWithPreset('library', {
-  lib: { name: 'MyCustomLibrary' }
+  lib: { name: 'MyCustomLibrary' },
 })
 
 // TypeScript 库
@@ -284,7 +284,7 @@ const rollupLibBuilder = createRollupBuilderWithPreset('rollup-library')
 
 // UMD 库
 const umdBuilder = createRollupBuilderWithPreset('umd-library', {
-  output: { name: 'MyUMDLibrary' }
+  output: { name: 'MyUMDLibrary' },
 })
 ```
 
@@ -302,9 +302,9 @@ BuilderFactory.registerPreset({
     outDir: 'build',
     server: {
       port: 9000,
-      open: true
-    }
-  }
+      open: true,
+    },
+  },
 })
 
 // 使用自定义预设
@@ -349,9 +349,7 @@ if (!validation.valid) {
 
 ```typescript
 // 检查依赖是否已安装
-const depCheck = BuilderUtils.checkDependencies('./my-project', [
-  'react', 'vue', 'typescript'
-])
+const depCheck = BuilderUtils.checkDependencies('./my-project', ['react', 'vue', 'typescript'])
 
 console.log('已安装:', depCheck.installed)
 console.log('缺失:', depCheck.missing)
@@ -363,7 +361,7 @@ console.log('缺失:', depCheck.missing)
 // 生成输出文件名
 const fileName = BuilderUtils.generateFileName('es', 'index', {
   minify: true,
-  hash: true
+  hash: true,
 })
 console.log(fileName) // 'index.min.[hash].js'
 ```
@@ -423,7 +421,7 @@ builder.on('server:start', ({ server }) => {
 ```typescript
 const builder = new ViteBuilder({
   entry: 'src/index.ts',
-  outDir: 'dist'
+  outDir: 'dist',
 })
 
 // 启动监听模式
@@ -439,8 +437,8 @@ const builder = new RollupBuilder({
   watch: {
     include: 'src/**',
     exclude: 'node_modules/**',
-    clearScreen: true
-  }
+    clearScreen: true,
+  },
 })
 
 // 启动监听模式
@@ -457,7 +455,7 @@ const myPlugin = {
   name: 'my-plugin',
   setup() {
     // 插件逻辑
-  }
+  },
 }
 
 builder.addPlugin(myPlugin)
@@ -519,11 +517,12 @@ builder.on('build:end', ({ result }) => {
   performanceData.push({
     duration: result.duration,
     outputCount: result.outputs.length,
-    totalSize: result.outputs.reduce((sum, output) => sum + output.size, 0)
+    totalSize: result.outputs.reduce((sum, output) => sum + output.size, 0),
   })
-  
+
   // 分析性能数据
-  const avgDuration = performanceData.reduce((sum, data) => sum + data.duration, 0) / performanceData.length
+  const avgDuration =
+    performanceData.reduce((sum, data) => sum + data.duration, 0) / performanceData.length
   console.log(`平均构建时间: ${Math.round(avgDuration)}ms`)
 })
 ```

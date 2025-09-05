@@ -4,7 +4,7 @@
 
 import { StringUtils } from '../../src/utils/string-utils'
 
-describe('StringUtils', () => {
+describe('stringUtils', () => {
   describe('camelCase', () => {
     it('应该将连字符分隔的字符串转换为驼峰命名', () => {
       expect(StringUtils.camelCase('hello-world')).toBe('helloWorld')
@@ -232,8 +232,9 @@ describe('StringUtils', () => {
 
   describe('escapeHtml', () => {
     it('应该转义HTML特殊字符', () => {
-      expect(StringUtils.escapeHtml('<div>Hello & "World"</div>'))
-        .toBe('&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;')
+      expect(StringUtils.escapeHtml('<div>Hello & "World"</div>')).toBe(
+        '&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;'
+      )
     })
 
     it('应该处理单引号', () => {
@@ -243,8 +244,9 @@ describe('StringUtils', () => {
 
   describe('unescapeHtml', () => {
     it('应该反转义HTML特殊字符', () => {
-      expect(StringUtils.unescapeHtml('&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;'))
-        .toBe('<div>Hello & "World"</div>')
+      expect(StringUtils.unescapeHtml('&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;')).toBe(
+        '<div>Hello & "World"</div>'
+      )
     })
   })
 

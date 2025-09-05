@@ -176,13 +176,13 @@ const Kit = require('@ldesign/kit')
 
 ```typescript
 // 浏览器兼容的模块
-import { 
-  StringUtils, 
-  NumberUtils, 
-  DateUtils, 
-  ObjectUtils, 
+import {
+  StringUtils,
+  NumberUtils,
+  DateUtils,
+  ObjectUtils,
   ArrayUtils,
-  ValidationUtils 
+  ValidationUtils,
 } from '@ldesign/kit'
 ```
 
@@ -195,11 +195,11 @@ import {
 module.exports = {
   resolve: {
     fallback: {
-      "fs": false,
-      "path": require.resolve("path-browserify"),
-      "crypto": require.resolve("crypto-browserify")
-    }
-  }
+      fs: false,
+      path: require.resolve('path-browserify'),
+      crypto: require.resolve('crypto-browserify'),
+    },
+  },
 }
 ```
 
@@ -213,11 +213,11 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   define: {
-    global: 'globalThis'
+    global: 'globalThis',
   },
   optimizeDeps: {
-    include: ['@ldesign/kit']
-  }
+    include: ['@ldesign/kit'],
+  },
 })
 ```
 
@@ -250,7 +250,7 @@ npm install -D typescript@latest
 ```json
 // package.json
 {
-  "type": "module"  // 使用 ES 模块
+  "type": "module" // 使用 ES 模块
 }
 ```
 
@@ -259,7 +259,7 @@ npm install -D typescript@latest
 ```json
 // package.json
 {
-  "type": "commonjs"  // 使用 CommonJS
+  "type": "commonjs" // 使用 CommonJS
 }
 ```
 

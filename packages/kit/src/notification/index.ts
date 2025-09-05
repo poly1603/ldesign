@@ -2,14 +2,14 @@
  * Notification 模块导出
  */
 
-export { NotificationManager } from './notification-manager'
-export { NotificationUtils } from './notification-utils'
-
 // 类型导出
 export type {
-  NotificationOptions,
+  NotificationAction,
   NotificationConfig,
   NotificationHistory,
-  NotificationAction,
-  SystemTrayOptions
+  NotificationOptions,
+  SystemTrayOptions,
 } from '../types'
+export { NotificationManager } from './notification-manager'
+
+export { NotificationUtils } from './notification-utils'

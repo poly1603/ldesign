@@ -13,7 +13,7 @@ export class ValidationUtils {
    * @returns 是否有效
    */
   static isEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/
     return emailRegex.test(email)
   }
 
@@ -26,7 +26,8 @@ export class ValidationUtils {
     try {
       new URL(url)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -37,7 +38,8 @@ export class ValidationUtils {
    * @returns 是否有效
    */
   static isIPv4(ip: string): boolean {
-    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+    const ipv4Regex
+      = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})$/
     return ipv4Regex.test(ip)
   }
 
@@ -47,7 +49,7 @@ export class ValidationUtils {
    * @returns 是否有效
    */
   static isIPv6(ip: string): boolean {
-    const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^::1$|^::$/
+    const ipv6Regex = /^(?:[0-9a-f]{1,4}:){7}[0-9a-f]{1,4}$|^::1$|^::$/i
     return ipv6Regex.test(ip)
   }
 
@@ -66,7 +68,7 @@ export class ValidationUtils {
    * @returns 是否有效
    */
   static isPort(port: number | string): boolean {
-    const portNum = typeof port === 'string' ? parseInt(port, 10) : port
+    const portNum = typeof port === 'string' ? Number.parseInt(port, 10) : port
     return Number.isInteger(portNum) && portNum >= 1 && portNum <= 65535
   }
 
@@ -76,7 +78,7 @@ export class ValidationUtils {
    * @returns 是否有效
    */
   static isMacAddress(mac: string): boolean {
-    const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/
+    const macRegex = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/i
     return macRegex.test(mac)
   }
 
@@ -96,19 +98,19 @@ export class ValidationUtils {
    * @returns 是否有效
    */
   static isChineseIdCard(idCard: string): boolean {
-    if (!/^\d{17}[\dXx]$/.test(idCard)) {
+    if (!/^\d{17}[\dX]$/i.test(idCard)) {
       return false
     }
 
     // 校验码验证
     const weights = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2]
     const checkCodes = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2']
-    
+
     let sum = 0
     for (let i = 0; i < 17; i++) {
-      sum += parseInt(idCard[i]) * weights[i]
+      sum += Number.parseInt(idCard[i]) * weights[i]
     }
-    
+
     const checkCode = checkCodes[sum % 11]
     return idCard[17].toUpperCase() === checkCode
   }
@@ -121,7 +123,7 @@ export class ValidationUtils {
   static isCreditCard(cardNumber: string): boolean {
     // 移除空格和连字符
     const cleaned = cardNumber.replace(/[\s-]/g, '')
-    
+
     // 检查是否只包含数字
     if (!/^\d+$/.test(cleaned)) {
       return false
@@ -137,7 +139,7 @@ export class ValidationUtils {
     let isEven = false
 
     for (let i = cleaned.length - 1; i >= 0; i--) {
-      let digit = parseInt(cleaned[i])
+      let digit = Number.parseInt(cleaned[i])
 
       if (isEven) {
         digit *= 2
@@ -161,7 +163,10 @@ export class ValidationUtils {
    */
   static isUUID(uuid: string, version?: 1 | 2 | 3 | 4 | 5): boolean {
     const uuidRegex = version
-      ? new RegExp(`^[0-9a-f]{8}-[0-9a-f]{4}-${version}[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`, 'i')
+      ? new RegExp(
+        `^[0-9a-f]{8}-[0-9a-f]{4}-${version}[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`,
+        'i',
+      )
       : /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
     return uuidRegex.test(uuid)
@@ -176,7 +181,8 @@ export class ValidationUtils {
     try {
       JSON.parse(json)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -187,7 +193,7 @@ export class ValidationUtils {
    * @returns 是否有效
    */
   static isBase64(base64: string): boolean {
-    const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/
+    const base64Regex = /^[A-Z0-9+/]*={0,2}$/i
     return base64Regex.test(base64) && base64.length % 4 === 0
   }
 
@@ -197,7 +203,7 @@ export class ValidationUtils {
    * @returns 是否有效
    */
   static isHex(hex: string): boolean {
-    const hexRegex = /^[0-9a-fA-F]+$/
+    const hexRegex = /^[0-9a-f]+$/i
     return hexRegex.test(hex)
   }
 
@@ -207,7 +213,7 @@ export class ValidationUtils {
    * @returns 是否有效
    */
   static isHexColor(color: string): boolean {
-    const colorRegex = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/
+    const colorRegex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
     return colorRegex.test(color)
   }
 
@@ -219,12 +225,13 @@ export class ValidationUtils {
   static isRGBColor(color: string): boolean {
     const rgbRegex = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/
     const match = color.match(rgbRegex)
-    
-    if (!match) return false
-    
+
+    if (!match)
+      return false
+
     const [, r, g, b] = match
-    return [r, g, b].every(val => {
-      const num = parseInt(val)
+    return [r, g, b].every((val) => {
+      const num = Number.parseInt(val)
       return num >= 0 && num <= 255
     })
   }
@@ -235,18 +242,20 @@ export class ValidationUtils {
    * @returns 是否有效
    */
   static isRGBAColor(color: string): boolean {
-    const rgbaRegex = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0|1|0?\.\d+)\s*\)$/
+    const rgbaRegex
+      = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0|1|0?\.\d+)\s*\)$/
     const match = color.match(rgbaRegex)
-    
-    if (!match) return false
-    
+
+    if (!match)
+      return false
+
     const [, r, g, b, a] = match
-    const rgbValid = [r, g, b].every(val => {
-      const num = parseInt(val)
+    const rgbValid = [r, g, b].every((val) => {
+      const num = Number.parseInt(val)
       return num >= 0 && num <= 255
     })
-    
-    const alpha = parseFloat(a)
+
+    const alpha = Number.parseFloat(a)
     return rgbValid && alpha >= 0 && alpha <= 1
   }
 
@@ -256,19 +265,22 @@ export class ValidationUtils {
    * @param options 验证选项
    * @returns 验证结果
    */
-  static validatePassword(password: string, options: {
-    minLength?: number
-    maxLength?: number
-    requireUppercase?: boolean
-    requireLowercase?: boolean
-    requireNumbers?: boolean
-    requireSpecialChars?: boolean
-    specialChars?: string
-  } = {}): {
-    isValid: boolean
-    score: number
-    errors: string[]
-  } {
+  static validatePassword(
+    password: string,
+    options: {
+      minLength?: number
+      maxLength?: number
+      requireUppercase?: boolean
+      requireLowercase?: boolean
+      requireNumbers?: boolean
+      requireSpecialChars?: boolean
+      specialChars?: string
+    } = {},
+  ): {
+      isValid: boolean
+      score: number
+      errors: string[]
+    } {
     const {
       minLength = 8,
       maxLength = 128,
@@ -276,7 +288,7 @@ export class ValidationUtils {
       requireLowercase = true,
       requireNumbers = true,
       requireSpecialChars = true,
-      specialChars = '!@#$%^&*()_+-=[]{}|;:,.<>?'
+      specialChars = '!@#$%^&*()_+-=[]{}|;:,.<>?',
     } = options
 
     const errors: string[] = []
@@ -285,7 +297,8 @@ export class ValidationUtils {
     // 长度检查
     if (password.length < minLength) {
       errors.push(`密码长度至少需要 ${minLength} 个字符`)
-    } else {
+    }
+    else {
       score += 1
     }
 
@@ -296,21 +309,24 @@ export class ValidationUtils {
     // 大写字母
     if (requireUppercase && !/[A-Z]/.test(password)) {
       errors.push('密码必须包含大写字母')
-    } else if (/[A-Z]/.test(password)) {
+    }
+    else if (/[A-Z]/.test(password)) {
       score += 1
     }
 
     // 小写字母
     if (requireLowercase && !/[a-z]/.test(password)) {
       errors.push('密码必须包含小写字母')
-    } else if (/[a-z]/.test(password)) {
+    }
+    else if (/[a-z]/.test(password)) {
       score += 1
     }
 
     // 数字
     if (requireNumbers && !/\d/.test(password)) {
       errors.push('密码必须包含数字')
-    } else if (/\d/.test(password)) {
+    }
+    else if (/\d/.test(password)) {
       score += 1
     }
 
@@ -318,18 +334,21 @@ export class ValidationUtils {
     const specialCharRegex = new RegExp(`[${specialChars.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}]`)
     if (requireSpecialChars && !specialCharRegex.test(password)) {
       errors.push('密码必须包含特殊字符')
-    } else if (specialCharRegex.test(password)) {
+    }
+    else if (specialCharRegex.test(password)) {
       score += 1
     }
 
     // 额外分数
-    if (password.length >= 12) score += 1
-    if (/(.)\1{2,}/.test(password)) score -= 1 // 重复字符扣分
+    if (password.length >= 12)
+      score += 1
+    if (/(.)\1{2,}/.test(password))
+      score -= 1 // 重复字符扣分
 
     return {
       isValid: errors.length === 0,
       score: Math.max(0, Math.min(5, score)),
-      errors
+      errors,
     }
   }
 
@@ -341,8 +360,9 @@ export class ValidationUtils {
    */
   static isValidFileExtension(filename: string, allowedExtensions: string[]): boolean {
     const ext = filename.split('.').pop()?.toLowerCase()
-    if (!ext) return false
-    
+    if (!ext)
+      return false
+
     return allowedExtensions.map(e => e.toLowerCase()).includes(ext)
   }
 
@@ -353,7 +373,7 @@ export class ValidationUtils {
    * @returns 是否有效
    */
   static isValidMimeType(mimeType: string, allowedTypes: string[]): boolean {
-    return allowedTypes.some(type => {
+    return allowedTypes.some((type) => {
       if (type.endsWith('/*')) {
         const prefix = type.slice(0, -2)
         return mimeType.startsWith(prefix)
@@ -379,19 +399,22 @@ export class ValidationUtils {
       'YYYY-MM-DD': /^\d{4}-\d{2}-\d{2}$/,
       'DD/MM/YYYY': /^\d{2}\/\d{2}\/\d{4}$/,
       'MM/DD/YYYY': /^\d{2}\/\d{2}\/\d{4}$/,
-      'YYYY-MM-DD HH:mm:ss': /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/
+      'YYYY-MM-DD HH:mm:ss': /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
     }
 
     const regex = formats[format]
-    if (!regex) return false
+    if (!regex)
+      return false
 
-    if (!regex.test(dateString)) return false
+    if (!regex.test(dateString))
+      return false
 
     // 尝试解析日期
     try {
       const date = new Date(dateString)
       return !isNaN(date.getTime())
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -405,9 +428,7 @@ export class ValidationUtils {
    * @returns 是否有效
    */
   static isInRange(value: number, min: number, max: number, inclusive = true): boolean {
-    return inclusive 
-      ? value >= min && value <= max
-      : value > min && value < max
+    return inclusive ? value >= min && value <= max : value > min && value < max
   }
 
   /**
@@ -418,8 +439,10 @@ export class ValidationUtils {
    * @returns 是否有效
    */
   static isValidLength(str: string, min: number, max?: number): boolean {
-    if (str.length < min) return false
-    if (max !== undefined && str.length > max) return false
+    if (str.length < min)
+      return false
+    if (max !== undefined && str.length > max)
+      return false
     return true
   }
 
@@ -439,10 +462,14 @@ export class ValidationUtils {
    * @returns 是否为空
    */
   static isEmpty(value: any): boolean {
-    if (value === null || value === undefined) return true
-    if (typeof value === 'string') return value.trim().length === 0
-    if (Array.isArray(value)) return value.length === 0
-    if (typeof value === 'object') return Object.keys(value).length === 0
+    if (value === null || value === undefined)
+      return true
+    if (typeof value === 'string')
+      return value.trim().length === 0
+    if (Array.isArray(value))
+      return value.length === 0
+    if (typeof value === 'object')
+      return Object.keys(value).length === 0
     return false
   }
 

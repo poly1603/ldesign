@@ -50,7 +50,7 @@ export class ErrorHandler {
       logStackTrace: options.logStackTrace !== false,
       logErrorDetails: options.logErrorDetails !== false,
       errorFilter: options.errorFilter || (() => true),
-      onError: options.onError || (() => { })
+      onError: options.onError || (() => {}),
     } as Required<ErrorHandlerOptions>
 
     this.setupGlobalHandlers()
@@ -129,7 +129,7 @@ export class ErrorHandler {
         code: (error as any).code,
         timestamp: new Date(),
         context,
-        handled: true
+        handled: true,
       }
 
       // 添加到错误列表
@@ -140,8 +140,8 @@ export class ErrorHandler {
 
       // 调用自定义错误处理器
       this.options.onError(error, context)
-
-    } finally {
+    }
+    finally {
       this.isHandlingError = false
     }
   }
@@ -173,8 +173,8 @@ export class ErrorHandler {
       return
     }
 
-    let message = error.message
-    let data: any = {}
+    const message = error.message
+    const data: any = {}
 
     if (this.options.logErrorDetails) {
       data.name = error.name
@@ -206,7 +206,8 @@ export class ErrorHandler {
         }
 
         return result
-      } catch (error) {
+      }
+      catch (error) {
         this.handleError(error as Error, { ...context, function: fn.name, args })
         throw error
       }
@@ -220,7 +221,8 @@ export class ErrorHandler {
     return (async (...args: any[]) => {
       try {
         return await fn(...args)
-      } catch (error) {
+      }
+      catch (error) {
         this.handleError(error as Error, { ...context, function: fn.name, args })
         throw error
       }
@@ -233,7 +235,8 @@ export class ErrorHandler {
   safe<T>(fn: () => T, defaultValue?: T, context?: any): T | undefined {
     try {
       return fn()
-    } catch (error) {
+    }
+    catch (error) {
       this.handleError(error as Error, { ...context, function: fn.name })
       return defaultValue
     }
@@ -242,10 +245,15 @@ export class ErrorHandler {
   /**
    * 安全执行异步函数
    */
-  async safeAsync<T>(fn: () => Promise<T>, defaultValue?: T, context?: any): Promise<T | undefined> {
+  async safeAsync<T>(
+    fn: () => Promise<T>,
+    defaultValue?: T,
+    context?: any,
+  ): Promise<T | undefined> {
     try {
       return await fn()
-    } catch (error) {
+    }
+    catch (error) {
       this.handleError(error as Error, { ...context, function: fn.name })
       return defaultValue
     }
@@ -269,18 +277,14 @@ export class ErrorHandler {
    * 按类型过滤错误
    */
   getErrorsByType(type: string): ErrorInfo[] {
-    return this.errors.filter(error =>
-      error.context?.type === type || error.name === type
-    )
+    return this.errors.filter(error => error.context?.type === type || error.name === type)
   }
 
   /**
    * 按时间范围获取错误
    */
   getErrorsByTimeRange(start: Date, end: Date): ErrorInfo[] {
-    return this.errors.filter(error =>
-      error.timestamp >= start && error.timestamp <= end
-    )
+    return this.errors.filter(error => error.timestamp >= start && error.timestamp <= end)
   }
 
   /**
@@ -312,11 +316,13 @@ export class ErrorHandler {
       recent,
       byType,
       byName,
-      lastError: lastError ? {
-        message: lastError.message,
-        name: lastError.name,
-        timestamp: lastError.timestamp
-      } : undefined
+      lastError: lastError
+        ? {
+            message: lastError.message,
+            name: lastError.name,
+            timestamp: lastError.timestamp,
+          }
+        : undefined,
     }
   }
 
@@ -326,11 +332,15 @@ export class ErrorHandler {
   exportErrorReport(format: 'json' | 'csv' | 'txt' = 'json'): string {
     switch (format) {
       case 'json':
-        return JSON.stringify({
-          timestamp: new Date().toISOString(),
-          stats: this.getErrorStats(),
-          errors: this.errors
-        }, null, 2)
+        return JSON.stringify(
+          {
+            timestamp: new Date().toISOString(),
+            stats: this.getErrorStats(),
+            errors: this.errors,
+          },
+          null,
+          2,
+        )
 
       case 'csv': {
         const headers = ['timestamp', 'name', 'message', 'code', 'context']
@@ -339,14 +349,14 @@ export class ErrorHandler {
           error.name,
           `"${error.message.replace(/"/g, '""')}"`,
           error.code || '',
-          error.context ? `"${JSON.stringify(error.context).replace(/"/g, '""')}"` : ''
+          error.context ? `"${JSON.stringify(error.context).replace(/"/g, '""')}"` : '',
         ])
         return [headers.join(','), ...rows.map(row => row.join(','))].join('\n')
       }
 
       case 'txt':
         return this.errors
-          .map(error => {
+          .map((error) => {
             const timestamp = error.timestamp.toISOString()
             const context = error.context ? ` | Context: ${JSON.stringify(error.context)}` : ''
             const stack = error.stack ? `\nStack: ${error.stack}` : ''
@@ -401,7 +411,7 @@ export class ErrorHandler {
       captureExceptions: true,
       captureRejections: true,
       logStackTrace: true,
-      logErrorDetails: true
+      logErrorDetails: true,
     })
   }
 }

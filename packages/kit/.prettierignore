@@ -1,0 +1,19 @@
+# Ignore generated outputs and caches
+node_modules
+coverage
+dist
+.eslintcache
+.nyc_output
+.vitest
+.vscode
+
+# Build artifacts
+*.log
+*.tmp
+*.cache
+
+# Docs build caches
+.docs
+.vitepress/cache
+.vitepress/dist
+

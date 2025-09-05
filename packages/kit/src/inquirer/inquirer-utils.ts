@@ -2,8 +2,8 @@
  * 交互式询问工具函数
  */
 
+import type { ChoiceOption, InquirerValidationResult, Question } from '../types'
 import { InquirerManager } from './inquirer-manager'
-import type { Question, ChoiceOption, InquirerValidationResult } from '../types'
 
 /**
  * 交互式询问工具类
@@ -16,7 +16,8 @@ export class InquirerUtils {
     const inquirer = InquirerManager.create()
     try {
       return await inquirer.input({ message, default: defaultValue })
-    } finally {
+    }
+    finally {
       inquirer.close()
     }
   }
@@ -28,7 +29,8 @@ export class InquirerUtils {
     const inquirer = InquirerManager.create()
     try {
       return await inquirer.password({ message })
-    } finally {
+    }
+    finally {
       inquirer.close()
     }
   }
@@ -40,7 +42,8 @@ export class InquirerUtils {
     const inquirer = InquirerManager.create()
     try {
       return await inquirer.confirm({ message, default: defaultValue })
-    } finally {
+    }
+    finally {
       inquirer.close()
     }
   }
@@ -50,17 +53,16 @@ export class InquirerUtils {
    */
   static async select<T = string>(
     message: string,
-    choices: (string | ChoiceOption<T>)[]
+    choices: (string | ChoiceOption<T>)[],
   ): Promise<T> {
     const inquirer = InquirerManager.create()
     try {
       const normalizedChoices = choices.map(choice =>
-        typeof choice === 'string'
-          ? { name: choice, value: choice as T }
-          : choice
+        typeof choice === 'string' ? { name: choice, value: choice as T } : choice,
       )
       return await inquirer.select({ message, choices: normalizedChoices })
-    } finally {
+    }
+    finally {
       inquirer.close()
     }
   }
@@ -70,17 +72,16 @@ export class InquirerUtils {
    */
   static async multiSelect<T = string>(
     message: string,
-    choices: (string | ChoiceOption<T>)[]
+    choices: (string | ChoiceOption<T>)[],
   ): Promise<T[]> {
     const inquirer = InquirerManager.create()
     try {
       const normalizedChoices = choices.map(choice =>
-        typeof choice === 'string'
-          ? { name: choice, value: choice as T }
-          : choice
+        typeof choice === 'string' ? { name: choice, value: choice as T } : choice,
       )
       return await inquirer.multiSelect({ message, choices: normalizedChoices })
-    } finally {
+    }
+    finally {
       inquirer.close()
     }
   }
@@ -90,12 +91,13 @@ export class InquirerUtils {
    */
   static async number(
     message: string,
-    options: { min?: number; max?: number; default?: number } = {}
+    options: { min?: number, max?: number, default?: number } = {},
   ): Promise<number> {
     const inquirer = InquirerManager.create()
     try {
       return await inquirer.number({ message, ...options })
-    } finally {
+    }
+    finally {
       inquirer.close()
     }
   }
@@ -145,7 +147,7 @@ export class InquirerUtils {
      */
     email(message = '请输入有效的邮箱地址'): (value: string) => InquirerValidationResult {
       return (value: string) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        const emailRegex = /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/
         if (!emailRegex.test(value)) {
           return message
         }
@@ -161,7 +163,8 @@ export class InquirerUtils {
         try {
           new URL(value)
           return true
-        } catch {
+        }
+        catch {
           return message
         }
       }
@@ -182,7 +185,10 @@ export class InquirerUtils {
     /**
      * 正则表达式验证器
      */
-    pattern(regex: RegExp, message = '输入格式不正确'): (value: string) => InquirerValidationResult {
+    pattern(
+      regex: RegExp,
+      message = '输入格式不正确',
+    ): (value: string) => InquirerValidationResult {
       return (value: string) => {
         if (!regex.test(value)) {
           return message
@@ -197,14 +203,16 @@ export class InquirerUtils {
     custom(validator: (value: any) => boolean | string): (value: any) => InquirerValidationResult {
       return (value: any) => {
         const result = validator(value)
-        return result === true ? true : (typeof result === 'string' ? result : '验证失败')
+        return result === true ? true : typeof result === 'string' ? result : '验证失败'
       }
     },
 
     /**
      * 组合验证器
      */
-    combine(...validators: Array<(value: any) => InquirerValidationResult>): (value: any) => InquirerValidationResult {
+    combine(
+      ...validators: Array<(value: any) => InquirerValidationResult>
+    ): (value: any) => InquirerValidationResult {
       return (value: any) => {
         for (const validator of validators) {
           const result = validator(value)
@@ -214,7 +222,7 @@ export class InquirerUtils {
         }
         return true
       }
-    }
+    },
   }
 
   /**
@@ -231,7 +239,8 @@ export class InquirerUtils {
     const inquirer = InquirerManager.create()
     try {
       return await inquirer.askMany(questions)
-    } finally {
+    }
+    finally {
       inquirer.close()
     }
   }
@@ -241,7 +250,7 @@ export class InquirerUtils {
    */
   static async askConditional(
     condition: () => boolean | Promise<boolean>,
-    question: Question
+    question: Question,
   ): Promise<any> {
     const shouldAsk = await condition()
     if (!shouldAsk) {
@@ -251,7 +260,8 @@ export class InquirerUtils {
     const inquirer = InquirerManager.create()
     try {
       return await inquirer.ask(question)
-    } finally {
+    }
+    finally {
       inquirer.close()
     }
   }
@@ -261,7 +271,7 @@ export class InquirerUtils {
    */
   static async askLoop<T>(
     question: Question,
-    condition: (answer: T, answers: T[]) => boolean | Promise<boolean>
+    condition: (answer: T, answers: T[]) => boolean | Promise<boolean>,
   ): Promise<T[]> {
     const answers: T[] = []
     const inquirer = InquirerManager.create()
@@ -276,7 +286,8 @@ export class InquirerUtils {
           break
         }
       }
-    } finally {
+    }
+    finally {
       inquirer.close()
     }
 
@@ -310,7 +321,8 @@ export class InquirerUtils {
       }
 
       return answers
-    } finally {
+    }
+    finally {
       inquirer.close()
     }
   }

@@ -3,10 +3,10 @@
  * 提供高级文件操作功能
  */
 
-import { promises as fs } from 'node:fs'
-import { join, extname, basename, dirname } from 'node:path'
-import { glob } from 'glob'
 import type { FileInfo, ScanOptions } from '../types'
+import { promises as fs } from 'node:fs'
+import { basename, dirname, extname, join } from 'node:path'
+import { glob } from 'glob'
 import { FileSystemError } from '../types'
 import { PathUtils, StringUtils } from '../utils'
 import { FileSystem } from './file-system'
@@ -27,23 +27,21 @@ export class FileUtils {
       ignorePatterns = [],
       maxDepth = Infinity,
       followSymlinks = false,
-      extensions = []
+      extensions = [],
     } = options
 
     try {
       const results: FileInfo[] = []
-      
+
       // 构建 glob 模式
-      const patterns = includePatterns.map(pattern => 
-        PathUtils.join(dirPath, pattern)
-      )
+      const patterns = includePatterns.map(pattern => PathUtils.join(dirPath, pattern))
 
       for (const pattern of patterns) {
         const files = await glob(pattern, {
           ignore: ignorePatterns.map(ignore => PathUtils.join(dirPath, ignore)),
           maxDepth,
           follow: followSymlinks,
-          nodir: true
+          nodir: true,
         })
 
         for (const file of files) {
@@ -61,7 +59,8 @@ export class FileUtils {
       }
 
       return results
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to scan files in: ${dirPath}`, dirPath, error as Error)
     }
   }
@@ -77,10 +76,15 @@ export class FileUtils {
     try {
       const pattern = recursive ? `**/${fileName}` : fileName
       const fullPattern = PathUtils.join(dirPath, pattern)
-      
+
       return await glob(fullPattern, { nodir: true })
-    } catch (error) {
-      throw new FileSystemError(`Failed to find files: ${fileName} in ${dirPath}`, dirPath, error as Error)
+    }
+    catch (error) {
+      throw new FileSystemError(
+        `Failed to find files: ${fileName} in ${dirPath}`,
+        dirPath,
+        error as Error,
+      )
     }
   }
 
@@ -91,7 +95,7 @@ export class FileUtils {
    */
   static groupByExtension(files: string[]): Record<string, string[]> {
     const groups: Record<string, string[]> = {}
-    
+
     for (const file of files) {
       const ext = extname(file).toLowerCase() || '.none'
       if (!groups[ext]) {
@@ -99,7 +103,7 @@ export class FileUtils {
       }
       groups[ext].push(file)
     }
-    
+
     return groups
   }
 
@@ -111,21 +115,21 @@ export class FileUtils {
    */
   static async groupBySize(
     files: string[],
-    sizeRanges: Array<{ name: string; min: number; max: number }>
+    sizeRanges: Array<{ name: string, min: number, max: number }>,
   ): Promise<Record<string, string[]>> {
     const groups: Record<string, string[]> = {}
-    
+
     // 初始化分组
     for (const range of sizeRanges) {
       groups[range.name] = []
     }
-    groups['other'] = []
-    
+    groups.other = []
+
     for (const file of files) {
       try {
         const size = await FileSystem.getSize(file)
         let grouped = false
-        
+
         for (const range of sizeRanges) {
           if (size >= range.min && size <= range.max) {
             groups[range.name].push(file)
@@ -133,15 +137,16 @@ export class FileUtils {
             break
           }
         }
-        
+
         if (!grouped) {
-          groups['other'].push(file)
+          groups.other.push(file)
         }
-      } catch {
-        groups['other'].push(file)
+      }
+      catch {
+        groups.other.push(file)
       }
     }
-    
+
     return groups
   }
 
@@ -151,16 +156,19 @@ export class FileUtils {
    * @param recursive 是否递归查找
    * @returns 重复文件分组
    */
-  static async findDuplicates(dirPath: string, recursive = true): Promise<Record<string, string[]>> {
+  static async findDuplicates(
+    dirPath: string,
+    recursive = true,
+  ): Promise<Record<string, string[]>> {
     try {
       const { CryptoUtils } = await import('../utils/crypto-utils')
-      const files = await FileUtils.scanFiles(dirPath, { 
+      const files = await FileUtils.scanFiles(dirPath, {
         includePatterns: recursive ? ['**/*'] : ['*'],
-        maxDepth: recursive ? Infinity : 1
+        maxDepth: recursive ? Infinity : 1,
       })
-      
+
       const hashGroups: Record<string, string[]> = {}
-      
+
       for (const file of files) {
         if (file.isFile) {
           try {
@@ -169,12 +177,13 @@ export class FileUtils {
               hashGroups[hash] = []
             }
             hashGroups[hash].push(file.path)
-          } catch {
+          }
+          catch {
             // 忽略无法读取的文件
           }
         }
       }
-      
+
       // 只返回有重复的文件
       const duplicates: Record<string, string[]> = {}
       for (const [hash, paths] of Object.entries(hashGroups)) {
@@ -182,9 +191,10 @@ export class FileUtils {
           duplicates[hash] = paths
         }
       }
-      
+
       return duplicates
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to find duplicates in: ${dirPath}`, dirPath, error as Error)
     }
   }
@@ -199,20 +209,22 @@ export class FileUtils {
     try {
       let totalSize = 0
       const entries = await fs.readdir(dirPath, { withFileTypes: true })
-      
+
       for (const entry of entries) {
         const fullPath = join(dirPath, entry.name)
-        
+
         if (entry.isFile()) {
           const stat = await fs.stat(fullPath)
           totalSize += stat.size
-        } else if (entry.isDirectory() && recursive) {
+        }
+        else if (entry.isDirectory() && recursive) {
           totalSize += await FileUtils.getDirectorySize(fullPath, recursive)
         }
       }
-      
+
       return totalSize
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to get directory size: ${dirPath}`, dirPath, error as Error)
     }
   }
@@ -224,27 +236,29 @@ export class FileUtils {
    */
   static async emptyDirectory(dirPath: string, keepDir = true): Promise<void> {
     try {
-      if (!await FileSystem.exists(dirPath)) {
+      if (!(await FileSystem.exists(dirPath))) {
         return
       }
-      
+
       const entries = await fs.readdir(dirPath)
-      
+
       for (const entry of entries) {
         const fullPath = join(dirPath, entry)
         const stat = await fs.stat(fullPath)
-        
+
         if (stat.isDirectory()) {
           await FileSystem.removeDir(fullPath, true)
-        } else {
+        }
+        else {
           await FileSystem.removeFile(fullPath)
         }
       }
-      
+
       if (!keepDir) {
         await FileSystem.removeDir(dirPath, false)
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to empty directory: ${dirPath}`, dirPath, error as Error)
     }
   }
@@ -256,7 +270,7 @@ export class FileUtils {
    */
   static async batchRename(
     files: string[],
-    renameFunction: (fileName: string, index: number) => string
+    renameFunction: (fileName: string, index: number) => string,
   ): Promise<void> {
     try {
       for (let i = 0; i < files.length; i++) {
@@ -264,12 +278,13 @@ export class FileUtils {
         const oldName = basename(oldPath)
         const newName = renameFunction(oldName, i)
         const newPath = join(dirname(oldPath), newName)
-        
+
         if (oldPath !== newPath) {
           await FileSystem.moveFile(oldPath, newPath)
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError('Failed to batch rename files', '', error as Error)
     }
   }
@@ -285,9 +300,10 @@ export class FileUtils {
       const tempDir = await TempManager.createTempDir('deleted-files')
       const fileName = basename(filePath)
       const safePath = join(tempDir, `${fileName}.${Date.now()}`)
-      
+
       await FileSystem.moveFile(filePath, safePath)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to safely delete: ${filePath}`, filePath, error as Error)
     }
   }
@@ -306,43 +322,45 @@ export class FileUtils {
       caseSensitive?: boolean
       wholeWord?: boolean
       regex?: boolean
-    } = {}
-  ): Promise<Array<{ line: number; content: string; match: string }>> {
+    } = {},
+  ): Promise<Array<{ line: number, content: string, match: string }>> {
     try {
       const content = await FileSystem.readFile(filePath)
       const lines = content.split('\n')
-      const results: Array<{ line: number; content: string; match: string }> = []
-      
+      const results: Array<{ line: number, content: string, match: string }> = []
+
       const { caseSensitive = false, wholeWord = false, regex = false } = options
-      
+
       let pattern: RegExp
       if (regex) {
         const flags = caseSensitive ? 'g' : 'gi'
         pattern = new RegExp(searchText, flags)
-      } else {
+      }
+      else {
         const escapedText = StringUtils.escapeRegExp(searchText)
         const wordBoundary = wholeWord ? '\\b' : ''
         const flags = caseSensitive ? 'g' : 'gi'
         pattern = new RegExp(`${wordBoundary}${escapedText}${wordBoundary}`, flags)
       }
-      
+
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i]
         const matches = line.match(pattern)
-        
+
         if (matches) {
           for (const match of matches) {
             results.push({
               line: i + 1,
               content: line,
-              match
+              match,
             })
           }
         }
       }
-      
+
       return results
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to search in file: ${filePath}`, filePath, error as Error)
     }
   }
@@ -363,17 +381,17 @@ export class FileUtils {
       regex?: boolean
       filePatterns?: string[]
       recursive?: boolean
-    } = {}
-  ): Promise<Record<string, Array<{ line: number; content: string; match: string }>>> {
+    } = {},
+  ): Promise<Record<string, Array<{ line: number, content: string, match: string }>>> {
     try {
       const { filePatterns = ['**/*'], recursive = true } = options
       const files = await FileUtils.scanFiles(dirPath, {
         includePatterns: filePatterns,
-        maxDepth: recursive ? Infinity : 1
+        maxDepth: recursive ? Infinity : 1,
       })
-      
-      const results: Record<string, Array<{ line: number; content: string; match: string }>> = {}
-      
+
+      const results: Record<string, Array<{ line: number, content: string, match: string }>> = {}
+
       for (const file of files) {
         if (file.isFile) {
           try {
@@ -381,15 +399,21 @@ export class FileUtils {
             if (matches.length > 0) {
               results[file.path] = matches
             }
-          } catch {
+          }
+          catch {
             // 忽略无法搜索的文件（如二进制文件）
           }
         }
       }
-      
+
       return results
-    } catch (error) {
-      throw new FileSystemError(`Failed to search in directory: ${dirPath}`, dirPath, error as Error)
+    }
+    catch (error) {
+      throw new FileSystemError(
+        `Failed to search in directory: ${dirPath}`,
+        dirPath,
+        error as Error,
+      )
     }
   }
 
@@ -410,37 +434,39 @@ export class FileUtils {
       wholeWord?: boolean
       regex?: boolean
       backup?: boolean
-    } = {}
+    } = {},
   ): Promise<number> {
     try {
       const { caseSensitive = false, wholeWord = false, regex = false, backup = true } = options
-      
+
       // 创建备份
       if (backup) {
         const backupPath = `${filePath}.backup.${Date.now()}`
         await FileSystem.copyFile(filePath, backupPath)
       }
-      
+
       const content = await FileSystem.readFile(filePath)
-      
+
       let pattern: RegExp
       if (regex) {
         const flags = caseSensitive ? 'g' : 'gi'
         pattern = new RegExp(searchText, flags)
-      } else {
+      }
+      else {
         const escapedText = StringUtils.escapeRegExp(searchText)
         const wordBoundary = wholeWord ? '\\b' : ''
         const flags = caseSensitive ? 'g' : 'gi'
         pattern = new RegExp(`${wordBoundary}${escapedText}${wordBoundary}`, flags)
       }
-      
+
       const matches = content.match(pattern)
       const replacedContent = content.replace(pattern, replaceText)
-      
+
       await FileSystem.writeFile(filePath, replacedContent)
-      
+
       return matches ? matches.length : 0
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to replace in file: ${filePath}`, filePath, error as Error)
     }
   }
@@ -454,7 +480,7 @@ export class FileUtils {
     try {
       const buffer = await FileSystem.readBuffer(filePath)
       const firstBytes = buffer.slice(0, 4)
-      
+
       // 检查 BOM
       if (firstBytes[0] === 0xEF && firstBytes[1] === 0xBB && firstBytes[2] === 0xBF) {
         return 'utf8'
@@ -465,21 +491,33 @@ export class FileUtils {
       if (firstBytes[0] === 0xFE && firstBytes[1] === 0xFF) {
         return 'utf16be'
       }
-      if (firstBytes[0] === 0xFF && firstBytes[1] === 0xFE && firstBytes[2] === 0x00 && firstBytes[3] === 0x00) {
+      if (
+        firstBytes[0] === 0xFF
+        && firstBytes[1] === 0xFE
+        && firstBytes[2] === 0x00
+        && firstBytes[3] === 0x00
+      ) {
         return 'utf32le'
       }
-      if (firstBytes[0] === 0x00 && firstBytes[1] === 0x00 && firstBytes[2] === 0xFE && firstBytes[3] === 0xFF) {
+      if (
+        firstBytes[0] === 0x00
+        && firstBytes[1] === 0x00
+        && firstBytes[2] === 0xFE
+        && firstBytes[3] === 0xFF
+      ) {
         return 'utf32be'
       }
-      
+
       // 简单的 UTF-8 检测
       try {
         buffer.toString('utf8')
         return 'utf8'
-      } catch {
+      }
+      catch {
         return 'binary'
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to detect encoding: ${filePath}`, filePath, error as Error)
     }
   }
@@ -493,12 +531,13 @@ export class FileUtils {
   static async convertEncoding(
     filePath: string,
     fromEncoding: BufferEncoding,
-    toEncoding: BufferEncoding
+    toEncoding: BufferEncoding,
   ): Promise<void> {
     try {
       const content = await fs.readFile(filePath, fromEncoding)
       await fs.writeFile(filePath, content, toEncoding)
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to convert encoding: ${filePath}`, filePath, error as Error)
     }
   }

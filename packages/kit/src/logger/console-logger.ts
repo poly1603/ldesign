@@ -33,7 +33,7 @@ export class ConsoleLogger implements LogTransport {
       icons: true,
       output: process.stdout,
       errorOutput: process.stderr,
-      ...options
+      ...options,
     }
   }
 
@@ -43,8 +43,8 @@ export class ConsoleLogger implements LogTransport {
   async log(entry: LogEntry): Promise<void> {
     const formatted = this.formatEntry(entry)
     const output = entry.level === 'error' ? this.options.errorOutput : this.options.output
-    
-    output.write(formatted + '\n')
+
+    output.write(`${formatted}\n`)
   }
 
   /**
@@ -63,13 +63,13 @@ export class ConsoleLogger implements LogTransport {
     // 图标
     if (this.options.icons) {
       const icon = this.getIcon(entry.level, entry.type)
-      formatted += icon + ' '
+      formatted += `${icon} `
     }
 
     // 级别
     if (this.options.level) {
       const level = this.formatLevel(entry.level)
-      formatted += level + ' '
+      formatted += `${level} `
     }
 
     // 模块
@@ -104,7 +104,7 @@ export class ConsoleLogger implements LogTransport {
    */
   private formatLevel(level: string): string {
     const levelStr = `[${level.toUpperCase()}]`
-    
+
     if (!this.options.colors) {
       return levelStr
     }
@@ -113,7 +113,7 @@ export class ConsoleLogger implements LogTransport {
       debug: 'cyan',
       info: 'blue',
       warn: 'yellow',
-      error: 'red'
+      error: 'red',
     }
 
     return this.colorize(levelStr, colors[level] || 'white')
@@ -131,7 +131,7 @@ export class ConsoleLogger implements LogTransport {
       debug: '🔍',
       info: 'ℹ️',
       warn: '⚠️',
-      error: '❌'
+      error: '❌',
     }
 
     return icons[level] || 'ℹ️'
@@ -149,7 +149,7 @@ export class ConsoleLogger implements LogTransport {
       debug: 'white',
       info: 'white',
       warn: 'yellow',
-      error: 'red'
+      error: 'red',
     }
 
     return colors[level] || 'white'
@@ -159,21 +159,24 @@ export class ConsoleLogger implements LogTransport {
    * 格式化数据
    */
   private formatData(data: any): string {
-    if (data === null) return ' | null'
-    if (data === undefined) return ''
-    
+    if (data === null)
+      return ' | null'
+    if (data === undefined)
+      return ''
+
     if (typeof data === 'string') {
       return ` | ${data}`
     }
-    
+
     if (typeof data === 'object') {
       try {
         return ` | ${JSON.stringify(data)}`
-      } catch {
+      }
+      catch {
         return ` | [Object]`
       }
     }
-    
+
     return ` | ${String(data)}`
   }
 
@@ -182,18 +185,18 @@ export class ConsoleLogger implements LogTransport {
    */
   private colorize(text: string, color: string): string {
     const colors: Record<string, string> = {
-      black: '\x1b[30m',
-      red: '\x1b[31m',
-      green: '\x1b[32m',
-      yellow: '\x1b[33m',
-      blue: '\x1b[34m',
-      magenta: '\x1b[35m',
-      cyan: '\x1b[36m',
-      white: '\x1b[37m',
-      gray: '\x1b[90m',
-      bright: '\x1b[1m',
-      dim: '\x1b[2m',
-      reset: '\x1b[0m'
+      black: '\x1B[30m',
+      red: '\x1B[31m',
+      green: '\x1B[32m',
+      yellow: '\x1B[33m',
+      blue: '\x1B[34m',
+      magenta: '\x1B[35m',
+      cyan: '\x1B[36m',
+      white: '\x1B[37m',
+      gray: '\x1B[90m',
+      bright: '\x1B[1m',
+      dim: '\x1B[2m',
+      reset: '\x1B[0m',
     }
 
     const colorCode = colors[color] || colors.white
@@ -294,7 +297,7 @@ export class ConsoleLogger implements LogTransport {
     if (process.env.FORCE_COLOR) {
       return true
     }
-    
+
     if (process.env.NO_COLOR || process.env.NODE_DISABLE_COLORS) {
       return false
     }

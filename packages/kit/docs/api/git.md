@@ -36,14 +36,14 @@ const git = new GitManager('./my-project')
 const git = new GitManager('./my-project', {
   author: {
     name: 'Your Name',
-    email: 'your.email@example.com'
+    email: 'your.email@example.com',
   },
   remote: {
     name: 'origin',
-    url: 'https://github.com/user/repo.git'
+    url: 'https://github.com/user/repo.git',
   },
   gpgSign: false,
-  verbose: true
+  verbose: true,
 })
 ```
 
@@ -59,9 +59,9 @@ await git.init()
 
 // 使用选项
 await git.init({
-  bare: false,           // 是否为裸仓库
+  bare: false, // 是否为裸仓库
   template: './template', // 模板目录
-  initialBranch: 'main'  // 初始分支名
+  initialBranch: 'main', // 初始分支名
 })
 ```
 
@@ -78,10 +78,10 @@ await git.clone('https://github.com/user/repo.git', './local-repo')
 
 // 使用选项
 await git.clone('https://github.com/user/repo.git', './local-repo', {
-  depth: 1,              // 浅克隆
-  branch: 'develop',     // 指定分支
-  recursive: true,       // 递归克隆子模块
-  mirror: false          // 是否镜像
+  depth: 1, // 浅克隆
+  branch: 'develop', // 指定分支
+  recursive: true, // 递归克隆子模块
+  mirror: false, // 是否镜像
 })
 ```
 
@@ -117,11 +117,11 @@ const commitHash = await git.commit('feat: add new feature')
 const commitHash = await git.commit('fix: resolve bug', {
   author: {
     name: 'John Doe',
-    email: 'john@example.com'
+    email: 'john@example.com',
   },
-  amend: false,          // 是否修改上次提交
-  allowEmpty: false,     // 是否允许空提交
-  gpgSign: true         // 是否 GPG 签名
+  amend: false, // 是否修改上次提交
+  allowEmpty: false, // 是否允许空提交
+  gpgSign: true, // 是否 GPG 签名
 })
 ```
 
@@ -138,10 +138,10 @@ await git.push('origin', 'main')
 
 // 使用选项
 await git.push('origin', 'main', {
-  force: false,          // 是否强制推送
-  setUpstream: true,     // 是否设置上游分支
-  tags: false,           // 是否推送标签
-  followTags: true       // 是否跟随标签
+  force: false, // 是否强制推送
+  setUpstream: true, // 是否设置上游分支
+  tags: false, // 是否推送标签
+  followTags: true, // 是否跟随标签
 })
 ```
 
@@ -158,9 +158,9 @@ await git.pull('origin', 'main')
 
 // 使用选项
 await git.pull('origin', 'main', {
-  rebase: false,         // 是否使用 rebase
-  ff: 'only',           // 快进模式
-  strategy: 'recursive'  // 合并策略
+  rebase: false, // 是否使用 rebase
+  ff: 'only', // 快进模式
+  strategy: 'recursive', // 合并策略
 })
 ```
 
@@ -177,10 +177,10 @@ await git.fetch('origin')
 
 // 使用选项
 await git.fetch('origin', {
-  all: false,            // 是否获取所有远程
-  tags: true,            // 是否获取标签
-  prune: true,           // 是否清理已删除的远程分支
-  depth: 10              // 获取深度
+  all: false, // 是否获取所有远程
+  tags: true, // 是否获取标签
+  prune: true, // 是否清理已删除的远程分支
+  depth: 10, // 获取深度
 })
 ```
 
@@ -214,9 +214,9 @@ await git.checkout('feature/new-feature', { create: true })
 
 // 使用选项
 await git.checkout('develop', {
-  create: false,         // 是否创建新分支
-  force: false,          // 是否强制切换
-  track: true           // 是否跟踪远程分支
+  create: false, // 是否创建新分支
+  force: false, // 是否强制切换
+  track: true, // 是否跟踪远程分支
 })
 ```
 
@@ -247,9 +247,9 @@ const remoteBranches = await git.listBranches({ remote: true })
 const allBranches = await git.listBranches({ all: true })
 
 // 包含详细信息
-const detailedBranches = await git.listBranches({ 
+const detailedBranches = await git.listBranches({
   verbose: true,
-  merged: false  // 只显示未合并分支
+  merged: false, // 只显示未合并分支
 })
 ```
 
@@ -263,10 +263,10 @@ await git.merge('feature/new-feature')
 
 // 使用选项
 await git.merge('feature/new-feature', {
-  ff: 'only',           // 快进模式
-  squash: false,        // 是否压缩提交
+  ff: 'only', // 快进模式
+  squash: false, // 是否压缩提交
   strategy: 'recursive', // 合并策略
-  message: 'Merge feature branch'
+  message: 'Merge feature branch',
 })
 ```
 
@@ -349,17 +349,17 @@ const commits = await git.log({ maxCount: 10 })
 // 获取指定范围的提交
 const rangeCommits = await git.log({
   from: 'v1.0.0',
-  to: 'HEAD'
+  to: 'HEAD',
 })
 
 // 获取详细信息
 const detailedCommits = await git.log({
   maxCount: 5,
-  stat: true,           // 包含统计信息
-  patch: false,         // 包含补丁
-  author: 'John Doe',   // 按作者过滤
-  since: '2024-01-01',  // 时间范围
-  until: '2024-12-31'
+  stat: true, // 包含统计信息
+  patch: false, // 包含补丁
+  author: 'John Doe', // 按作者过滤
+  since: '2024-01-01', // 时间范围
+  until: '2024-12-31',
 })
 ```
 
@@ -377,12 +377,12 @@ const stagedDiff = await git.diff({ staged: true })
 // 两个提交之间差异
 const commitDiff = await git.diff({
   from: 'v1.0.0',
-  to: 'v1.1.0'
+  to: 'v1.1.0',
 })
 
 // 指定文件差异
 const fileDiff = await git.diff({
-  files: ['src/index.ts', 'package.json']
+  files: ['src/index.ts', 'package.json'],
 })
 ```
 
@@ -471,12 +471,14 @@ console.log('仓库根目录:', rootPath)
 解析提交消息。
 
 ```typescript
-const parsed = GitUtils.parseCommitMessage('feat(auth): add login functionality\n\nImplement OAuth2 login with Google')
+const parsed = GitUtils.parseCommitMessage(
+  'feat(auth): add login functionality\n\nImplement OAuth2 login with Google'
+)
 
-console.log('类型:', parsed.type)        // 'feat'
-console.log('范围:', parsed.scope)       // 'auth'
+console.log('类型:', parsed.type) // 'feat'
+console.log('范围:', parsed.scope) // 'auth'
 console.log('描述:', parsed.description) // 'add login functionality'
-console.log('正文:', parsed.body)        // 'Implement OAuth2 login with Google'
+console.log('正文:', parsed.body) // 'Implement OAuth2 login with Google'
 ```
 
 #### `generateChangelog(commits: CommitInfo[]): string`
@@ -529,7 +531,6 @@ class ReleaseManager {
       await this.git.pushTags('origin')
 
       console.log(`✅ 版本 v${newVersion} 发布成功`)
-
     } catch (error) {
       console.error('发布失败:', error.message)
       throw error
@@ -633,7 +634,6 @@ class CodeSyncTool {
       await this.git.push('origin', 'main')
 
       console.log('✅ 代码同步完成')
-
     } catch (error) {
       console.error('同步失败:', error.message)
     }
@@ -641,7 +641,7 @@ class CodeSyncTool {
 
   async backupBranches() {
     const branches = await this.git.listBranches()
-    
+
     for (const branch of branches) {
       if (branch.name !== 'main') {
         try {

@@ -123,14 +123,8 @@ npx tsc --init
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
 }
 ```
 
@@ -173,15 +167,15 @@ import { StringUtils, FileSystem, CacheManager } from '@ldesign/kit'
 
 async function main() {
   console.log('🚀 @ldesign/kit 项目启动')
-  
+
   // 测试字符串工具
   const slug = StringUtils.slugify('Hello World!')
   console.log('URL Slug:', slug)
-  
+
   // 测试文件系统
   const exists = await FileSystem.exists('./package.json')
   console.log('package.json 存在:', exists)
-  
+
   // 测试缓存
   const cache = CacheManager.create()
   await cache.set('test', 'Hello Cache!')
@@ -324,10 +318,7 @@ pnpm add -D eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin
 {
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
-  "extends": [
-    "eslint:recommended",
-    "@typescript-eslint/recommended"
-  ],
+  "extends": ["eslint:recommended", "@typescript-eslint/recommended"],
   "parserOptions": {
     "ecmaVersion": 2020,
     "sourceType": "module"

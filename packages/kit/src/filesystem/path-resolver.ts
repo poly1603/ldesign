@@ -3,9 +3,8 @@
  * 提供高级路径解析和处理功能
  */
 
-import { resolve, join, relative, dirname, basename } from 'node:path'
 import { homedir, tmpdir } from 'node:os'
-import { promises as fs } from 'node:fs'
+import { dirname, join, relative, resolve } from 'node:path'
 import { FileSystemError } from '../types'
 import { PathUtils } from '../utils'
 import { FileSystem } from './file-system'
@@ -31,7 +30,7 @@ export class PathResolver {
       if (variables[varName] !== undefined) {
         return variables[varName]
       }
-      
+
       // 尝试从环境变量获取
       const envValue = process.env[varName]
       if (envValue !== undefined) {
@@ -80,23 +79,23 @@ export class PathResolver {
    */
   static async findUp(fileName: string, startDir: string = process.cwd()): Promise<string | null> {
     let currentDir = resolve(startDir)
-    
+
     while (true) {
       const filePath = join(currentDir, fileName)
-      
+
       if (await FileSystem.exists(filePath)) {
         return filePath
       }
-      
+
       const parentDir = dirname(currentDir)
       if (parentDir === currentDir) {
         // 已到达根目录
         break
       }
-      
+
       currentDir = parentDir
     }
-    
+
     return null
   }
 
@@ -108,7 +107,7 @@ export class PathResolver {
    */
   static async findProjectRoot(
     startDir: string = process.cwd(),
-    indicators: string[] = ['package.json', '.git', 'pnpm-workspace.yaml', 'lerna.json']
+    indicators: string[] = ['package.json', '.git', 'pnpm-workspace.yaml', 'lerna.json'],
   ): Promise<string | null> {
     for (const indicator of indicators) {
       const found = await PathResolver.findUp(indicator, startDir)
@@ -116,7 +115,7 @@ export class PathResolver {
         return dirname(found)
       }
     }
-    
+
     return null
   }
 
@@ -127,23 +126,23 @@ export class PathResolver {
    */
   static findNodeModules(startDir: string = process.cwd()): string {
     let currentDir = resolve(startDir)
-    
+
     while (true) {
       const nodeModulesPath = join(currentDir, 'node_modules')
-      
+
       if (FileSystem.exists(nodeModulesPath)) {
         return nodeModulesPath
       }
-      
+
       const parentDir = dirname(currentDir)
       if (parentDir === currentDir) {
         // 已到达根目录，返回默认路径
         break
       }
-      
+
       currentDir = parentDir
     }
-    
+
     // 返回当前目录下的 node_modules（即使不存在）
     return join(process.cwd(), 'node_modules')
   }
@@ -154,36 +153,39 @@ export class PathResolver {
    * @param startDir 开始搜索的目录
    * @returns 模块路径
    */
-  static async resolveModule(moduleName: string, startDir: string = process.cwd()): Promise<string | null> {
+  static async resolveModule(
+    moduleName: string,
+    startDir: string = process.cwd(),
+  ): Promise<string | null> {
     // 如果是相对路径，直接解析
     if (moduleName.startsWith('./') || moduleName.startsWith('../')) {
       const resolved = resolve(startDir, moduleName)
-      return await FileSystem.exists(resolved) ? resolved : null
+      return (await FileSystem.exists(resolved)) ? resolved : null
     }
 
     // 如果是绝对路径，直接返回
     if (PathUtils.isAbsolute(moduleName)) {
-      return await FileSystem.exists(moduleName) ? moduleName : null
+      return (await FileSystem.exists(moduleName)) ? moduleName : null
     }
 
     // 搜索 node_modules
     let currentDir = resolve(startDir)
-    
+
     while (true) {
       const nodeModulesPath = join(currentDir, 'node_modules', moduleName)
-      
+
       if (await FileSystem.exists(nodeModulesPath)) {
         return nodeModulesPath
       }
-      
+
       const parentDir = dirname(currentDir)
       if (parentDir === currentDir) {
         break
       }
-      
+
       currentDir = parentDir
     }
-    
+
     return null
   }
 
@@ -196,13 +198,13 @@ export class PathResolver {
   static createRelativeMapping(basePath: string, paths: string[]): Record<string, string> {
     const mapping: Record<string, string> = {}
     const resolvedBase = resolve(basePath)
-    
+
     for (const path of paths) {
       const resolvedPath = resolve(path)
       const relativePath = relative(resolvedBase, resolvedPath)
       mapping[path] = PathUtils.normalize(relativePath)
     }
-    
+
     return mapping
   }
 
@@ -217,15 +219,15 @@ export class PathResolver {
     if (PathUtils.isAbsolute(pattern)) {
       return PathUtils.normalize(pattern)
     }
-    
+
     // 解析变量
     const resolvedPattern = PathResolver.resolvePath(pattern)
-    
+
     // 如果解析后是绝对路径，直接返回
     if (PathUtils.isAbsolute(resolvedPattern)) {
       return PathUtils.normalize(resolvedPattern)
     }
-    
+
     // 相对于基础路径
     return PathUtils.normalize(join(basePath, resolvedPattern))
   }
@@ -238,27 +240,27 @@ export class PathResolver {
    */
   static createAliasResolver(
     aliases: Record<string, string>,
-    basePath: string = process.cwd()
+    basePath: string = process.cwd(),
   ): (path: string) => string {
     const resolvedAliases: Record<string, string> = {}
-    
+
     // 预解析所有别名
     for (const [alias, target] of Object.entries(aliases)) {
       resolvedAliases[alias] = PathResolver.resolvePath(target, { BASE: basePath })
     }
-    
+
     return (path: string): string => {
       // 检查是否匹配任何别名
       for (const [alias, target] of Object.entries(resolvedAliases)) {
         if (path === alias) {
           return target
         }
-        
-        if (path.startsWith(alias + '/')) {
+
+        if (path.startsWith(`${alias}/`)) {
           return join(target, path.slice(alias.length + 1))
         }
       }
-      
+
       // 没有匹配的别名，按正常路径解析
       return PathResolver.resolvePath(path, { BASE: basePath })
     }
@@ -272,23 +274,23 @@ export class PathResolver {
   static getPathVariants(path: string): string[] {
     const variants: string[] = []
     const normalized = PathUtils.normalize(path)
-    
+
     variants.push(normalized)
-    
+
     // 添加不同的扩展名变体
     const extensions = ['.js', '.ts', '.json', '.mjs', '.cjs']
     const withoutExt = PathUtils.parse(normalized).name
     const dir = PathUtils.dirname(normalized)
-    
+
     for (const ext of extensions) {
       variants.push(join(dir, withoutExt + ext))
     }
-    
+
     // 如果是目录，添加 index 文件变体
     for (const ext of extensions) {
-      variants.push(join(normalized, 'index' + ext))
+      variants.push(join(normalized, `index${ext}`))
     }
-    
+
     return [...new Set(variants)] // 去重
   }
 
@@ -300,28 +302,23 @@ export class PathResolver {
    */
   static async resolveConfigFile(
     configName: string,
-    searchDirs: string[] = [process.cwd()]
+    searchDirs: string[] = [process.cwd()],
   ): Promise<string | null> {
     const extensions = ['.json', '.js', '.ts', '.mjs', '.cjs', '.yaml', '.yml']
-    const variants = [
-      configName,
-      `.${configName}`,
-      `${configName}.config`,
-      `.${configName}.config`
-    ]
-    
+    const variants = [configName, `.${configName}`, `${configName}.config`, `.${configName}.config`]
+
     for (const searchDir of searchDirs) {
       for (const variant of variants) {
         for (const ext of extensions) {
           const configPath = join(searchDir, variant + ext)
-          
+
           if (await FileSystem.exists(configPath)) {
             return configPath
           }
         }
       }
     }
-    
+
     return null
   }
 
@@ -334,15 +331,12 @@ export class PathResolver {
   static createSafePath(basePath: string, userPath: string): string {
     const resolvedBase = resolve(basePath)
     const resolvedUser = resolve(resolvedBase, userPath)
-    
+
     // 检查解析后的路径是否在基础路径内
     if (!PathUtils.isInside(resolvedUser, resolvedBase)) {
-      throw new FileSystemError(
-        `Path traversal detected: ${userPath}`,
-        userPath
-      )
+      throw new FileSystemError(`Path traversal detected: ${userPath}`, userPath)
     }
-    
+
     return PathUtils.normalize(resolvedUser)
   }
 
@@ -364,7 +358,7 @@ export class PathResolver {
   static getPathMetadata(path: string): PathMetadata {
     const resolved = PathResolver.resolvePath(path)
     const parsed = PathUtils.parse(resolved)
-    
+
     return {
       original: path,
       resolved,
@@ -372,7 +366,7 @@ export class PathResolver {
       isResolved: PathUtils.isAbsolute(resolved),
       depth: PathUtils.getDepth(resolved),
       segments: resolved.split('/').filter(Boolean),
-      ...parsed
+      ...parsed,
     }
   }
 }

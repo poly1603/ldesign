@@ -31,17 +31,18 @@ const monitor = PerformanceMonitor.create()
 
 // 自定义配置
 const monitor = PerformanceMonitor.create({
-  enabled: true,           // 启用监控
-  sampleRate: 0.1,        // 采样率
-  maxMetrics: 1000,       // 最大指标数
-  enableMemory: true,     // 启用内存监控
-  enableCPU: true,        // 启用 CPU 监控
-  enableGC: true,         // 启用 GC 监控
-  flushInterval: 60000,   // 刷新间隔（毫秒）
-  storage: {              // 存储配置
-    type: 'memory',       // memory | file | database
-    path: './performance.log'
-  }
+  enabled: true, // 启用监控
+  sampleRate: 0.1, // 采样率
+  maxMetrics: 1000, // 最大指标数
+  enableMemory: true, // 启用内存监控
+  enableCPU: true, // 启用 CPU 监控
+  enableGC: true, // 启用 GC 监控
+  flushInterval: 60000, // 刷新间隔（毫秒）
+  storage: {
+    // 存储配置
+    type: 'memory', // memory | file | database
+    path: './performance.log',
+  },
 })
 ```
 
@@ -110,14 +111,18 @@ const processedData = await monitor.time('data-processing', async () => {
 
 ```typescript
 // 基本基准测试
-const result = await monitor.benchmark('array-sort', () => {
-  const arr = Array.from({ length: 10000 }, () => Math.random())
-  return arr.sort()
-}, {
-  iterations: 100,        // 迭代次数
-  warmup: 10,            // 预热次数
-  timeout: 30000         // 超时时间
-})
+const result = await monitor.benchmark(
+  'array-sort',
+  () => {
+    const arr = Array.from({ length: 10000 }, () => Math.random())
+    return arr.sort()
+  },
+  {
+    iterations: 100, // 迭代次数
+    warmup: 10, // 预热次数
+    timeout: 30000, // 超时时间
+  }
+)
 
 console.log('基准测试结果:')
 console.log(`平均耗时: ${result.mean}ms`)
@@ -127,13 +132,21 @@ console.log(`标准差: ${result.stdDev}ms`)
 console.log(`每秒操作数: ${result.opsPerSecond}`)
 
 // 比较不同算法
-const quickSortResult = await monitor.benchmark('quick-sort', () => {
-  return quickSort(generateArray(1000))
-}, { iterations: 50 })
+const quickSortResult = await monitor.benchmark(
+  'quick-sort',
+  () => {
+    return quickSort(generateArray(1000))
+  },
+  { iterations: 50 }
+)
 
-const mergeSortResult = await monitor.benchmark('merge-sort', () => {
-  return mergeSort(generateArray(1000))
-}, { iterations: 50 })
+const mergeSortResult = await monitor.benchmark(
+  'merge-sort',
+  () => {
+    return mergeSort(generateArray(1000))
+  },
+  { iterations: 50 }
+)
 
 console.log(`快速排序: ${quickSortResult.mean}ms`)
 console.log(`归并排序: ${mergeSortResult.mean}ms`)
@@ -153,24 +166,22 @@ const comparison = await monitor.compareBenchmarks([
         sum += i
       }
       return sum
-    }
+    },
   },
   {
     name: 'reduce',
     fn: () => {
-      return Array.from({ length: 10000 }, (_, i) => i)
-        .reduce((sum, i) => sum + i, 0)
-    }
+      return Array.from({ length: 10000 }, (_, i) => i).reduce((sum, i) => sum + i, 0)
+    },
   },
   {
     name: 'forEach',
     fn: () => {
       let sum = 0
-      Array.from({ length: 10000 }, (_, i) => i)
-        .forEach(i => sum += i)
+      Array.from({ length: 10000 }, (_, i) => i).forEach(i => (sum += i))
       return sum
-    }
-  }
+    },
+  },
 ])
 
 console.log('性能比较结果:')
@@ -198,7 +209,7 @@ console.log(`外部内存: ${memoryUsage.external} bytes`)
 console.log(`数组缓冲区: ${memoryUsage.arrayBuffers} bytes`)
 
 // 格式化显示
-console.log(`堆使用率: ${(memoryUsage.heapUsed / memoryUsage.heapTotal * 100).toFixed(2)}%`)
+console.log(`堆使用率: ${((memoryUsage.heapUsed / memoryUsage.heapTotal) * 100).toFixed(2)}%`)
 ```
 
 #### `trackMemoryUsage(interval?: number): void`
@@ -285,19 +296,19 @@ monitor.stopCPUTracking()
 // 记录响应时间
 monitor.recordMetric('api.response_time', 150, {
   endpoint: '/api/users',
-  method: 'GET'
+  method: 'GET',
 })
 
 // 记录吞吐量
 monitor.recordMetric('api.throughput', 1000, {
   endpoint: '/api/data',
-  unit: 'requests_per_second'
+  unit: 'requests_per_second',
 })
 
 // 记录错误率
 monitor.recordMetric('api.error_rate', 0.02, {
   endpoint: '/api/upload',
-  unit: 'percentage'
+  unit: 'percentage',
 })
 ```
 
@@ -388,12 +399,15 @@ console.log(`每秒操作数: ${result.opsPerSecond}`)
 分析函数性能。
 
 ```typescript
-const profile = PerformanceUtils.profileFunction(() => {
-  return complexAlgorithm(largeDataSet)
-}, {
-  includeMemory: true,
-  includeCPU: true
-})
+const profile = PerformanceUtils.profileFunction(
+  () => {
+    return complexAlgorithm(largeDataSet)
+  },
+  {
+    includeMemory: true,
+    includeCPU: true,
+  }
+)
 
 console.log('性能分析结果:')
 console.log(`执行时间: ${profile.duration}ms`)
@@ -410,16 +424,16 @@ console.log(`返回值: ${profile.result}`)
 const comparison = PerformanceUtils.comparePerformance([
   {
     name: 'bubble-sort',
-    fn: () => bubbleSort([...testArray])
+    fn: () => bubbleSort([...testArray]),
   },
   {
     name: 'quick-sort',
-    fn: () => quickSort([...testArray])
+    fn: () => quickSort([...testArray]),
   },
   {
     name: 'native-sort',
-    fn: () => [...testArray].sort((a, b) => a - b)
-  }
+    fn: () => [...testArray].sort((a, b) => a - b),
+  },
 ])
 
 console.log('性能比较:')
@@ -438,32 +452,32 @@ class APIPerformanceMonitor {
   private monitor = PerformanceMonitor.create({
     enableMemory: true,
     enableCPU: true,
-    flushInterval: 30000
+    flushInterval: 30000,
   })
 
   async monitorAPIEndpoint(endpoint: string, handler: Function) {
     return async (req: any, res: any, next: any) => {
       const startTime = Date.now()
       const timerName = `api.${endpoint}.${req.method}`
-      
+
       this.monitor.startTimer(timerName)
 
       try {
         const result = await handler(req, res, next)
-        
+
         const duration = this.monitor.endTimer(timerName)
-        
+
         // 记录成功指标
         this.monitor.recordMetric('api.response_time', duration, {
           endpoint,
           method: req.method,
-          status: 'success'
+          status: 'success',
         })
 
         this.monitor.recordMetric('api.requests_total', 1, {
           endpoint,
           method: req.method,
-          status: 'success'
+          status: 'success',
         })
 
         // 检查性能阈值
@@ -472,21 +486,20 @@ class APIPerformanceMonitor {
         }
 
         return result
-
       } catch (error) {
         const duration = this.monitor.endTimer(timerName)
-        
+
         // 记录错误指标
         this.monitor.recordMetric('api.response_time', duration, {
           endpoint,
           method: req.method,
-          status: 'error'
+          status: 'error',
         })
 
         this.monitor.recordMetric('api.errors_total', 1, {
           endpoint,
           method: req.method,
-          error: error.name
+          error: error.name,
         })
 
         throw error
@@ -497,7 +510,7 @@ class APIPerformanceMonitor {
   async generatePerformanceReport() {
     const responseTimeMetrics = this.monitor.getMetrics('api.response_time')
     const errorMetrics = this.monitor.getMetrics('api.errors_total')
-    
+
     const endpointStats = new Map()
 
     // 分析响应时间
@@ -510,7 +523,7 @@ class APIPerformanceMonitor {
           endpoint,
           totalRequests: 0,
           totalErrors: 0,
-          responseTimes: []
+          responseTimes: [],
         })
       }
 
@@ -544,7 +557,7 @@ class APIPerformanceMonitor {
         avgResponseTime: mean,
         p95ResponseTime: p95,
         maxResponseTime: Math.max(...responseTimes),
-        minResponseTime: Math.min(...responseTimes)
+        minResponseTime: Math.min(...responseTimes),
       }
     })
 
@@ -574,14 +587,14 @@ class DatabaseQueryOptimizer {
         },
         {
           iterations: 10,
-          warmup: 2
+          warmup: 2,
         }
       )
 
       results.push({
         name: variant.name,
         description: variant.description,
-        ...benchmarkResult
+        ...benchmarkResult,
       })
     }
 
@@ -608,9 +621,9 @@ class DatabaseQueryOptimizer {
     }
 
     console.log(`发现 ${slowQueries.length} 个慢查询:`)
-    
+
     const queryStats = new Map()
-    
+
     slowQueries.forEach(metric => {
       const queryName = metric.name.split('.')[1]
       if (!queryStats.has(queryName)) {
@@ -619,7 +632,7 @@ class DatabaseQueryOptimizer {
           count: 0,
           totalTime: 0,
           maxTime: 0,
-          times: []
+          times: [],
         })
       }
 
@@ -634,7 +647,9 @@ class DatabaseQueryOptimizer {
       .sort((a, b) => b.totalTime - a.totalTime)
       .forEach(stats => {
         const avgTime = stats.totalTime / stats.count
-        console.log(`- ${stats.name}: 平均 ${avgTime.toFixed(2)}ms, 最大 ${stats.maxTime}ms, 次数 ${stats.count}`)
+        console.log(
+          `- ${stats.name}: 平均 ${avgTime.toFixed(2)}ms, 最大 ${stats.maxTime}ms, 次数 ${stats.count}`
+        )
       })
   }
 }
@@ -650,8 +665,10 @@ class FrontendPerformanceMonitor {
     if (typeof window === 'undefined') return
 
     window.addEventListener('load', () => {
-      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
-      
+      const navigation = performance.getEntriesByType(
+        'navigation'
+      )[0] as PerformanceNavigationTiming
+
       const metrics = {
         dns: navigation.domainLookupEnd - navigation.domainLookupStart,
         tcp: navigation.connectEnd - navigation.connectStart,
@@ -659,12 +676,12 @@ class FrontendPerformanceMonitor {
         response: navigation.responseEnd - navigation.responseStart,
         dom: navigation.domContentLoadedEventEnd - navigation.responseEnd,
         load: navigation.loadEventEnd - navigation.loadEventStart,
-        total: navigation.loadEventEnd - navigation.navigationStart
+        total: navigation.loadEventEnd - navigation.navigationStart,
       }
 
       Object.entries(metrics).forEach(([name, value]) => {
         this.monitor.recordMetric(`page.${name}`, value, {
-          url: window.location.pathname
+          url: window.location.pathname,
         })
       })
 
@@ -675,14 +692,14 @@ class FrontendPerformanceMonitor {
   monitorResourceLoading() {
     if (typeof window === 'undefined') return
 
-    const observer = new PerformanceObserver((list) => {
-      list.getEntries().forEach((entry) => {
+    const observer = new PerformanceObserver(list => {
+      list.getEntries().forEach(entry => {
         if (entry.entryType === 'resource') {
           const resource = entry as PerformanceResourceTiming
-          
+
           this.monitor.recordMetric('resource.load_time', resource.duration, {
             type: this.getResourceType(resource.name),
-            url: resource.name
+            url: resource.name,
           })
 
           if (resource.duration > 1000) {

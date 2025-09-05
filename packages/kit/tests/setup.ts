@@ -15,19 +15,22 @@ process.env.LOG_LEVEL = 'error'
 global.testUtils = {
   // 创建临时目录
   createTempDir: () => {
-    const os = require('os')
-    const path = require('path')
-    const fs = require('fs')
-    
-    const tempDir = path.join(os.tmpdir(), `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
+    const fs = require('node:fs')
+    const os = require('node:os')
+    const path = require('node:path')
+
+    const tempDir = path.join(
+      os.tmpdir(),
+      `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    )
     fs.mkdirSync(tempDir, { recursive: true })
-    
+
     return tempDir
   },
 
   // 清理临时目录
   cleanupTempDir: (dir: string) => {
-    const fs = require('fs')
+    const fs = require('node:fs')
     if (fs.existsSync(dir)) {
       fs.rmSync(dir, { recursive: true, force: true })
     }
@@ -43,20 +46,20 @@ global.testUtils = {
         id: Math.floor(Math.random() * 1000),
         name: `User ${Math.floor(Math.random() * 100)}`,
         email: `user${Math.floor(Math.random() * 100)}@example.com`,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       },
       product: {
         id: Math.floor(Math.random() * 1000),
         name: `Product ${Math.floor(Math.random() * 100)}`,
         price: Math.floor(Math.random() * 1000),
-        category: 'electronics'
+        category: 'electronics',
       },
       order: {
         id: Math.floor(Math.random() * 1000),
         userId: Math.floor(Math.random() * 100),
         total: Math.floor(Math.random() * 1000),
-        status: 'pending'
-      }
+        status: 'pending',
+      },
     }
 
     if (count === 1) {
@@ -65,9 +68,9 @@ global.testUtils = {
 
     return Array.from({ length: count }, () => ({
       ...mockData[type],
-      id: Math.floor(Math.random() * 1000)
+      id: Math.floor(Math.random() * 1000),
     }))
-  }
+  },
 }
 
 // 声明全局类型
@@ -98,6 +101,6 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason)
 })
 
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', error => {
   console.error('Uncaught Exception:', error)
 })

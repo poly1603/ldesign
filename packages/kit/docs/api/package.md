@@ -34,10 +34,10 @@ const pkg = new PackageManager('./my-project')
 
 // 使用配置选项
 const pkg = new PackageManager('./my-project', {
-  packageManager: 'npm',    // npm | yarn | pnpm
+  packageManager: 'npm', // npm | yarn | pnpm
   registry: 'https://registry.npmjs.org/',
   timeout: 30000,
-  verbose: true
+  verbose: true,
 })
 ```
 
@@ -77,7 +77,7 @@ await pkg.updatePackageJson({
   version: '1.2.0',
   keywords: ['typescript', 'nodejs', 'utility'],
   author: 'Your Name <your.email@example.com>',
-  license: 'MIT'
+  license: 'MIT',
 })
 ```
 
@@ -258,7 +258,7 @@ const results = await pkg.searchPackages('typescript utility', {
   limit: 10,
   quality: 0.8,
   popularity: 0.1,
-  maintenance: 0.1
+  maintenance: 0.1,
 })
 
 results.forEach(result => {
@@ -295,7 +295,7 @@ await pkg.publish()
 await pkg.publish({
   registry: 'https://npm.company.com/',
   tag: 'beta',
-  access: 'public'
+  access: 'public',
 })
 ```
 
@@ -322,8 +322,8 @@ await pkg.unpublish()
 验证包名是否有效。
 
 ```typescript
-console.log(PackageUtils.isValidPackageName('my-package'))     // true
-console.log(PackageUtils.isValidPackageName('My Package'))     // false
+console.log(PackageUtils.isValidPackageName('my-package')) // true
+console.log(PackageUtils.isValidPackageName('My Package')) // false
 console.log(PackageUtils.isValidPackageName('@scope/package')) // true
 ```
 
@@ -332,9 +332,9 @@ console.log(PackageUtils.isValidPackageName('@scope/package')) // true
 验证版本号是否有效。
 
 ```typescript
-console.log(PackageUtils.isValidVersion('1.0.0'))        // true
-console.log(PackageUtils.isValidVersion('1.0.0-alpha'))  // true
-console.log(PackageUtils.isValidVersion('invalid'))      // false
+console.log(PackageUtils.isValidVersion('1.0.0')) // true
+console.log(PackageUtils.isValidVersion('1.0.0-alpha')) // true
+console.log(PackageUtils.isValidVersion('invalid')) // false
 ```
 
 #### `compareVersions(version1: string, version2: string): number`
@@ -342,9 +342,9 @@ console.log(PackageUtils.isValidVersion('invalid'))      // false
 比较版本号。
 
 ```typescript
-console.log(PackageUtils.compareVersions('1.0.0', '1.0.1'))  // -1
-console.log(PackageUtils.compareVersions('1.1.0', '1.0.0'))  // 1
-console.log(PackageUtils.compareVersions('1.0.0', '1.0.0'))  // 0
+console.log(PackageUtils.compareVersions('1.0.0', '1.0.1')) // -1
+console.log(PackageUtils.compareVersions('1.1.0', '1.0.0')) // 1
+console.log(PackageUtils.compareVersions('1.0.0', '1.0.0')) // 0
 ```
 
 #### `parsePackageName(name: string): ParsedPackageName`
@@ -353,8 +353,8 @@ console.log(PackageUtils.compareVersions('1.0.0', '1.0.0'))  // 0
 
 ```typescript
 const parsed = PackageUtils.parsePackageName('@scope/package-name')
-console.log('作用域:', parsed.scope)  // 'scope'
-console.log('名称:', parsed.name)    // 'package-name'
+console.log('作用域:', parsed.scope) // 'scope'
+console.log('名称:', parsed.name) // 'package-name'
 console.log('完整名称:', parsed.fullName) // '@scope/package-name'
 ```
 
@@ -369,7 +369,7 @@ const packageJson = PackageUtils.generatePackageJson({
   description: 'An awesome package',
   author: 'Your Name',
   license: 'MIT',
-  type: 'library'
+  type: 'library',
 })
 ```
 
@@ -389,7 +389,7 @@ class ProjectInitializer {
       description: options.description,
       author: options.author,
       license: options.license || 'MIT',
-      type: options.type || 'library'
+      type: options.type || 'library',
     })
 
     await this.pkg.writePackageJson(packageJson)
@@ -484,11 +484,11 @@ class DependencyManager {
 
   async cleanupDependencies() {
     console.log('🧹 清理未使用的依赖...')
-    
+
     const packageJson = await this.pkg.readPackageJson()
     const allDeps = {
       ...packageJson.dependencies,
-      ...packageJson.devDependencies
+      ...packageJson.devDependencies,
     }
 
     const unusedDeps = await this.findUnusedDependencies(Object.keys(allDeps))
@@ -512,10 +512,10 @@ class DependencyManager {
 
   async securityAudit() {
     console.log('🔒 执行安全审计...')
-    
+
     // 这里可以集成 npm audit 或其他安全工具
     // 实际实现会调用相应的安全检查工具
-    
+
     console.log('✅ 安全审计完成')
   }
 
@@ -592,7 +592,6 @@ class PublishManager {
       await this.pushToGit()
 
       console.log(`✅ 版本 ${newVersion} 发布成功!`)
-
     } catch (error) {
       console.error('❌ 发布失败:', error.message)
       throw error
@@ -605,7 +604,7 @@ class PublishManager {
 
     await this.pkg.publish({
       tag: 'beta',
-      access: 'public'
+      access: 'public',
     })
 
     console.log(`✅ Beta 版本 ${betaVersion} 发布成功`)
@@ -677,7 +676,11 @@ interface PackageInfo {
 }
 
 type VersionBumpType = 'major' | 'minor' | 'patch' | 'prerelease'
-type DependencyType = 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies'
+type DependencyType =
+  | 'dependencies'
+  | 'devDependencies'
+  | 'peerDependencies'
+  | 'optionalDependencies'
 ```
 
 ## 错误处理

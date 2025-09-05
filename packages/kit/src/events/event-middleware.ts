@@ -57,15 +57,15 @@ export class EventMiddleware {
         priority: options.priority || 0,
         name: options.name || `middleware_${this.middleware.length}`,
         enabled: options.enabled !== false,
-        tags: options.tags || []
+        tags: options.tags || [],
       },
       createdAt: new Date(),
       callCount: 0,
-      totalExecutionTime: 0
+      totalExecutionTime: 0,
     }
 
     this.middleware.push(middlewareInfo)
-    
+
     // 按优先级排序（高优先级先执行）
     this.middleware.sort((a, b) => b.options.priority - a.options.priority)
 
@@ -76,10 +76,10 @@ export class EventMiddleware {
    * 移除中间件
    */
   remove(middleware: MiddlewareFunction | string): boolean {
-    const index = this.middleware.findIndex(info => 
-      typeof middleware === 'string' 
+    const index = this.middleware.findIndex(info =>
+      typeof middleware === 'string'
         ? info.options.name === middleware
-        : info.middleware === middleware
+        : info.middleware === middleware,
     )
 
     if (index !== -1) {
@@ -118,7 +118,7 @@ export class EventMiddleware {
    */
   async execute(event: string, args: any[], finalHandler?: EventListener): Promise<void> {
     const enabledMiddleware = this.middleware.filter(info => info.options.enabled)
-    
+
     if (enabledMiddleware.length === 0) {
       if (finalHandler) {
         await finalHandler(...args)
@@ -146,10 +146,12 @@ export class EventMiddleware {
           if (this.enableStats && startTime > 0) {
             middlewareInfo.totalExecutionTime += Date.now() - startTime
           }
-        } catch (error) {
+        }
+        catch (error) {
           throw error
         }
-      } else if (finalHandler) {
+      }
+      else if (finalHandler) {
         // 所有中间件执行完毕，执行最终处理器
         await finalHandler(...args)
       }
@@ -169,18 +171,21 @@ export class EventMiddleware {
    * 获取中间件统计信息
    */
   getStats(): Record<string, any> {
-    return this.middleware.reduce((stats, info) => {
-      stats[info.options.name] = {
-        callCount: info.callCount,
-        lastCalledAt: info.lastCalledAt,
-        totalExecutionTime: info.totalExecutionTime,
-        averageExecutionTime: info.callCount > 0 ? info.totalExecutionTime / info.callCount : 0,
-        enabled: info.options.enabled,
-        priority: info.options.priority,
-        tags: info.options.tags
-      }
-      return stats
-    }, {} as Record<string, any>)
+    return this.middleware.reduce(
+      (stats, info) => {
+        stats[info.options.name] = {
+          callCount: info.callCount,
+          lastCalledAt: info.lastCalledAt,
+          totalExecutionTime: info.totalExecutionTime,
+          averageExecutionTime: info.callCount > 0 ? info.totalExecutionTime / info.callCount : 0,
+          enabled: info.options.enabled,
+          priority: info.options.priority,
+          tags: info.options.tags,
+        }
+        return stats
+      },
+      {} as Record<string, any>,
+    )
   }
 
   /**
@@ -267,15 +272,17 @@ export class BuiltinMiddleware {
   /**
    * 日志中间件
    */
-  static logger(options: {
-    logLevel?: 'debug' | 'info' | 'warn' | 'error'
-    includeArgs?: boolean
-    prefix?: string
-  } = {}): MiddlewareFunction {
+  static logger(
+    options: {
+      logLevel?: 'debug' | 'info' | 'warn' | 'error'
+      includeArgs?: boolean
+      prefix?: string
+    } = {},
+  ): MiddlewareFunction {
     const { logLevel = 'info', includeArgs = false, prefix = '[Event]' } = options
 
     return (event: string, args: any[], next: () => void) => {
-      const message = includeArgs 
+      const message = includeArgs
         ? `${prefix} ${event} with args: ${JSON.stringify(args)}`
         : `${prefix} ${event}`
 
@@ -287,10 +294,12 @@ export class BuiltinMiddleware {
   /**
    * 性能监控中间件
    */
-  static performance(options: {
-    threshold?: number
-    onSlowEvent?: (event: string, duration: number) => void
-  } = {}): MiddlewareFunction {
+  static performance(
+    options: {
+      threshold?: number
+      onSlowEvent?: (event: string, duration: number) => void
+    } = {},
+  ): MiddlewareFunction {
     const { threshold = 100, onSlowEvent } = options
 
     return async (event: string, args: any[], next: () => void) => {
@@ -307,16 +316,19 @@ export class BuiltinMiddleware {
   /**
    * 错误处理中间件
    */
-  static errorHandler(options: {
-    onError?: (error: Error, event: string, args: any[]) => void
-    rethrow?: boolean
-  } = {}): MiddlewareFunction {
+  static errorHandler(
+    options: {
+      onError?: (error: Error, event: string, args: any[]) => void
+      rethrow?: boolean
+    } = {},
+  ): MiddlewareFunction {
     const { onError, rethrow = true } = options
 
     return async (event: string, args: any[], next: () => void) => {
       try {
         await next()
-      } catch (error) {
+      }
+      catch (error) {
         if (onError) {
           onError(error as Error, event, args)
         }
@@ -331,13 +343,15 @@ export class BuiltinMiddleware {
   /**
    * 限流中间件
    */
-  static rateLimit(options: {
-    maxEvents?: number
-    windowMs?: number
-    onLimitExceeded?: (event: string) => void
-  } = {}): MiddlewareFunction {
+  static rateLimit(
+    options: {
+      maxEvents?: number
+      windowMs?: number
+      onLimitExceeded?: (event: string) => void
+    } = {},
+  ): MiddlewareFunction {
     const { maxEvents = 100, windowMs = 60000, onLimitExceeded } = options
-    const eventCounts = new Map<string, { count: number; resetTime: number }>()
+    const eventCounts = new Map<string, { count: number, resetTime: number }>()
 
     return (event: string, args: any[], next: () => void) => {
       const now = Date.now()
@@ -376,7 +390,9 @@ export class BuiltinMiddleware {
   /**
    * 事件转换中间件
    */
-  static transform(transformer: (event: string, args: any[]) => { event: string; args: any[] }): MiddlewareFunction {
+  static transform(
+    transformer: (event: string, args: any[]) => { event: string, args: any[] },
+  ): MiddlewareFunction {
     return (event: string, args: any[], next: () => void) => {
       const transformed = transformer(event, args)
       // 注意：这里需要修改原始参数，因为中间件链是引用传递
@@ -388,13 +404,19 @@ export class BuiltinMiddleware {
   /**
    * 缓存中间件
    */
-  static cache(options: {
-    ttl?: number
-    maxSize?: number
-    keyGenerator?: (event: string, args: any[]) => string
-  } = {}): MiddlewareFunction {
-    const { ttl = 60000, maxSize = 1000, keyGenerator = (event, args) => `${event}:${JSON.stringify(args)}` } = options
-    const cache = new Map<string, { value: any; expiry: number }>()
+  static cache(
+    options: {
+      ttl?: number
+      maxSize?: number
+      keyGenerator?: (event: string, args: any[]) => string
+    } = {},
+  ): MiddlewareFunction {
+    const {
+      ttl = 60000,
+      maxSize = 1000,
+      keyGenerator = (event, args) => `${event}:${JSON.stringify(args)}`,
+    } = options
+    const cache = new Map<string, { value: any, expiry: number }>()
 
     return async (event: string, args: any[], next: () => void) => {
       const key = keyGenerator(event, args)
@@ -416,10 +438,10 @@ export class BuiltinMiddleware {
       }
 
       const result = await next()
-      
+
       // 缓存结果
       cache.set(key, { value: result, expiry: Date.now() + ttl })
-      
+
       return result
     }
   }

@@ -3,9 +3,14 @@
  * 提供专门的表单数据验证功能
  */
 
+import type {
+  FieldValidationResult,
+  FormValidationResult,
+  FormValidationRule,
+  FormValidatorOptions,
+} from '../types'
 import { EventEmitter } from 'node:events'
 import { Validator } from './validator'
-import type { FormValidationRule, FormValidationResult, FormValidatorOptions, FieldValidationResult } from '../types'
 
 /**
  * 表单验证器类
@@ -18,7 +23,7 @@ export class FormValidator extends EventEmitter {
 
   constructor(options: FormValidatorOptions = {}) {
     super()
-    
+
     this.options = {
       validateOnChange: options.validateOnChange !== false,
       validateOnBlur: options.validateOnBlur !== false,
@@ -27,11 +32,11 @@ export class FormValidator extends EventEmitter {
       stopOnFirstError: options.stopOnFirstError !== false,
       enableRealTimeValidation: options.enableRealTimeValidation !== false,
       debounceTime: options.debounceTime || 300,
-      enableCrossFieldValidation: options.enableCrossFieldValidation !== false
+      enableCrossFieldValidation: options.enableCrossFieldValidation !== false,
     }
 
     this.validator = new Validator({
-      stopOnFirstError: this.options.stopOnFirstError
+      stopOnFirstError: this.options.stopOnFirstError,
     })
   }
 
@@ -42,7 +47,7 @@ export class FormValidator extends EventEmitter {
     if (!this.fieldRules.has(fieldName)) {
       this.fieldRules.set(fieldName, [])
     }
-    
+
     this.fieldRules.get(fieldName)!.push(rule)
     this.emit('fieldRuleAdded', { fieldName, rule })
     return this
@@ -55,7 +60,8 @@ export class FormValidator extends EventEmitter {
     for (const [fieldName, rule] of Object.entries(rules)) {
       if (Array.isArray(rule)) {
         rule.forEach(r => this.addFieldRule(fieldName, r))
-      } else {
+      }
+      else {
         this.addFieldRule(fieldName, rule)
       }
     }
@@ -81,7 +87,7 @@ export class FormValidator extends EventEmitter {
       warnings: {},
       fieldResults: {},
       crossFieldErrors: [],
-      data: { ...formData }
+      data: { ...formData },
     }
 
     this.emit('formValidationStart', formData)
@@ -122,8 +128,8 @@ export class FormValidator extends EventEmitter {
 
       this.emit('formValidationEnd', result)
       return result
-
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('formValidationError', error)
       throw error
     }
@@ -132,26 +138,30 @@ export class FormValidator extends EventEmitter {
   /**
    * 验证单个字段
    */
-  async validateField(fieldName: string, value: any, formData: Record<string, any> = {}): Promise<FieldValidationResult> {
+  async validateField(
+    fieldName: string,
+    value: any,
+    formData: Record<string, any> = {},
+  ): Promise<FieldValidationResult> {
     const result: FieldValidationResult = {
       valid: true,
       errors: [],
       warnings: [],
-      transformedValue: value
+      transformedValue: value,
     }
 
     const rules = this.fieldRules.get(fieldName) || []
-    
+
     this.emit('fieldValidationStart', { fieldName, value, formData })
 
     for (const rule of rules) {
       try {
         const ruleResult = await this.executeFieldRule(rule, value, fieldName, formData)
-        
+
         if (!ruleResult.valid) {
           result.valid = false
           result.errors.push(...ruleResult.errors)
-          
+
           if (this.options.stopOnFirstError) {
             break
           }
@@ -166,14 +176,14 @@ export class FormValidator extends EventEmitter {
           result.transformedValue = ruleResult.transformedValue
           value = ruleResult.transformedValue // 为下一个规则更新值
         }
-
-      } catch (error) {
+      }
+      catch (error) {
         result.valid = false
         result.errors.push({
           field: fieldName,
           message: `Rule execution error: ${error}`,
           code: 'RULE_ERROR',
-          value
+          value,
         })
 
         if (this.options.stopOnFirstError) {
@@ -189,24 +199,26 @@ export class FormValidator extends EventEmitter {
   /**
    * 跨字段验证
    */
-  private async validateCrossFields(formData: Record<string, any>): Promise<{ valid: boolean; errors: any[] }> {
+  private async validateCrossFields(
+    formData: Record<string, any>,
+  ): Promise<{ valid: boolean, errors: any[] }> {
     const result = { valid: true, errors: [] as any[] }
 
     for (const rule of this.crossFieldRules) {
       try {
         const ruleResult = await this.executeCrossFieldRule(rule, formData)
-        
+
         if (!ruleResult.valid) {
           result.valid = false
           result.errors.push(...ruleResult.errors)
         }
-
-      } catch (error) {
+      }
+      catch (error) {
         result.valid = false
         result.errors.push({
           message: `Cross-field rule execution error: ${error}`,
           code: 'CROSS_FIELD_ERROR',
-          fields: rule.fields || []
+          fields: rule.fields || [],
         })
       }
     }
@@ -221,13 +233,13 @@ export class FormValidator extends EventEmitter {
     rule: FormValidationRule,
     value: any,
     fieldName: string,
-    formData: Record<string, any>
+    formData: Record<string, any>,
   ): Promise<FieldValidationResult> {
     const result: FieldValidationResult = {
       valid: true,
       errors: [],
       warnings: [],
-      transformedValue: value
+      transformedValue: value,
     }
 
     // 检查条件
@@ -238,7 +250,7 @@ export class FormValidator extends EventEmitter {
     // 执行验证
     if (rule.validator) {
       const validationResult = await rule.validator(value, formData, fieldName)
-      
+
       if (typeof validationResult === 'boolean') {
         if (!validationResult) {
           result.valid = false
@@ -246,17 +258,18 @@ export class FormValidator extends EventEmitter {
             field: fieldName,
             message: this.getFieldErrorMessage(rule, fieldName, value),
             code: rule.code || 'VALIDATION_ERROR',
-            value
+            value,
           })
         }
-      } else if (validationResult && typeof validationResult === 'object') {
+      }
+      else if (validationResult && typeof validationResult === 'object') {
         if (!validationResult.valid) {
           result.valid = false
           result.errors.push({
             field: fieldName,
             message: validationResult.message || this.getFieldErrorMessage(rule, fieldName, value),
             code: validationResult.code || rule.code || 'VALIDATION_ERROR',
-            value
+            value,
           })
         }
 
@@ -269,7 +282,7 @@ export class FormValidator extends EventEmitter {
             field: fieldName,
             message: validationResult.warning,
             code: 'WARNING',
-            value
+            value,
           })
         }
       }
@@ -279,13 +292,14 @@ export class FormValidator extends EventEmitter {
     if (rule.transformer && result.valid) {
       try {
         result.transformedValue = rule.transformer(result.transformedValue, formData, fieldName)
-      } catch (error) {
+      }
+      catch (error) {
         result.valid = false
         result.errors.push({
           field: fieldName,
           message: `Transformation error: ${error}`,
           code: 'TRANSFORM_ERROR',
-          value
+          value,
         })
       }
     }
@@ -298,29 +312,30 @@ export class FormValidator extends EventEmitter {
    */
   private async executeCrossFieldRule(
     rule: FormValidationRule,
-    formData: Record<string, any>
-  ): Promise<{ valid: boolean; errors: any[] }> {
+    formData: Record<string, any>,
+  ): Promise<{ valid: boolean, errors: any[] }> {
     const result = { valid: true, errors: [] as any[] }
 
     if (rule.validator) {
       const validationResult = await rule.validator(formData, formData, '')
-      
+
       if (typeof validationResult === 'boolean') {
         if (!validationResult) {
           result.valid = false
           result.errors.push({
             message: rule.message || 'Cross-field validation failed',
             code: rule.code || 'CROSS_FIELD_ERROR',
-            fields: rule.fields || []
+            fields: rule.fields || [],
           })
         }
-      } else if (validationResult && typeof validationResult === 'object') {
+      }
+      else if (validationResult && typeof validationResult === 'object') {
         if (!validationResult.valid) {
           result.valid = false
           result.errors.push({
             message: validationResult.message || rule.message || 'Cross-field validation failed',
             code: validationResult.code || rule.code || 'CROSS_FIELD_ERROR',
-            fields: rule.fields || []
+            fields: rule.fields || [],
           })
         }
       }
@@ -346,13 +361,17 @@ export class FormValidator extends EventEmitter {
   /**
    * 实时验证字段
    */
-  async validateFieldRealTime(fieldName: string, value: any, formData: Record<string, any> = {}): Promise<FieldValidationResult> {
+  async validateFieldRealTime(
+    fieldName: string,
+    value: any,
+    formData: Record<string, any> = {},
+  ): Promise<FieldValidationResult> {
     if (!this.options.enableRealTimeValidation) {
       return {
         valid: true,
         errors: [],
         warnings: [],
-        transformedValue: value
+        transformedValue: value,
       }
     }
 
@@ -385,7 +404,8 @@ export class FormValidator extends EventEmitter {
    */
   removeFieldRule(fieldName: string, rule?: FormValidationRule): this {
     const rules = this.fieldRules.get(fieldName)
-    if (!rules) return this
+    if (!rules)
+      return this
 
     if (rule) {
       const index = rules.indexOf(rule)
@@ -393,7 +413,8 @@ export class FormValidator extends EventEmitter {
         rules.splice(index, 1)
         this.emit('fieldRuleRemoved', { fieldName, rule })
       }
-    } else {
+    }
+    else {
       this.fieldRules.delete(fieldName)
       this.emit('fieldRulesCleared', fieldName)
     }
@@ -452,7 +473,7 @@ export class FormValidator extends EventEmitter {
   static createWithRules(
     fieldRules: Record<string, FormValidationRule | FormValidationRule[]>,
     crossFieldRules: FormValidationRule[] = [],
-    options?: FormValidatorOptions
+    options?: FormValidatorOptions,
   ): FormValidator {
     const validator = new FormValidator(options)
     validator.addFieldRules(fieldRules)

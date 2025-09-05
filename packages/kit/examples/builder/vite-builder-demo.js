@@ -3,8 +3,11 @@
  * 展示如何使用 ViteBuilder 进行各种构建场景
  */
 
-import { ViteBuilder, createViteBuilder, createViteBuilderWithPreset } from '../../dist/builder/index.js'
-import { resolve } from 'path'
+import {
+  createViteBuilder,
+  createViteBuilderWithPreset,
+  ViteBuilder,
+} from '../../dist/builder/index.js'
 
 /**
  * 基础构建示例
@@ -18,13 +21,13 @@ async function basicBuildExample() {
     entry: 'src/index.ts',
     outDir: 'dist',
     sourcemap: true,
-    minify: true
+    minify: true,
   })
 
   try {
     const result = await builder.build()
     console.log('构建结果:', result)
-    
+
     if (result.success) {
       console.log('✅ 构建成功!')
       result.outputs.forEach(output => {
@@ -57,19 +60,19 @@ async function devServerExample() {
       host: true,
       open: true,
       cors: true,
-      hmr: true
-    }
+      hmr: true,
+    },
   })
 
   try {
     console.log('启动开发服务器...')
     const server = await builder.dev()
-    
+
     console.log(`✅ 开发服务器已启动!`)
     console.log(`  🌐 URL: ${server.url}`)
     console.log(`  📡 端口: ${server.port}`)
     console.log(`  🔒 HTTPS: ${server.https ? '是' : '否'}`)
-    
+
     // 模拟运行一段时间后关闭
     setTimeout(async () => {
       console.log('关闭开发服务器...')
@@ -77,7 +80,6 @@ async function devServerExample() {
       await builder.destroy()
       console.log('✅ 开发服务器已关闭')
     }, 3000)
-    
   } catch (error) {
     console.error('启动开发服务器失败:', error.message)
     await builder.destroy()
@@ -100,20 +102,20 @@ async function libraryBuildExample() {
         const formatMap = {
           es: `${entryName}.js`,
           cjs: `${entryName}.cjs`,
-          umd: `${entryName}.umd.js`
+          umd: `${entryName}.umd.js`,
         }
         return formatMap[format] || `${entryName}.${format}.js`
-      }
+      },
     },
     outDir: 'lib',
     sourcemap: true,
-    external: ['react', 'react-dom']
+    external: ['react', 'react-dom'],
   })
 
   try {
     console.log('构建库文件...')
     const result = await builder.buildLib()
-    
+
     if (result.success) {
       console.log('✅ 库构建成功!')
       result.outputs.forEach(output => {
@@ -144,15 +146,15 @@ async function previewServerExample() {
     preview: {
       port: 4173,
       host: true,
-      open: false
-    }
+      open: false,
+    },
   })
 
   try {
     // 先构建项目
     console.log('构建项目...')
     const buildResult = await builder.build()
-    
+
     if (!buildResult.success) {
       console.log('❌ 构建失败，无法启动预览服务器')
       return
@@ -160,11 +162,11 @@ async function previewServerExample() {
 
     console.log('启动预览服务器...')
     const server = await builder.preview()
-    
+
     console.log(`✅ 预览服务器已启动!`)
     console.log(`  🌐 URL: ${server.url}`)
     console.log(`  📡 端口: ${server.port}`)
-    
+
     // 模拟运行一段时间后关闭
     setTimeout(async () => {
       console.log('关闭预览服务器...')
@@ -172,7 +174,6 @@ async function previewServerExample() {
       await builder.destroy()
       console.log('✅ 预览服务器已关闭')
     }, 3000)
-    
   } catch (error) {
     console.error('预览服务器异常:', error.message)
     await builder.destroy()
@@ -190,8 +191,8 @@ async function presetExample() {
   console.log('使用 Vue 应用预设...')
   const vueBuilder = createViteBuilderWithPreset('vue-app', {
     server: {
-      port: 8080
-    }
+      port: 8080,
+    },
   })
 
   console.log('Vue 构建器配置:', JSON.stringify(vueBuilder.getConfig(), null, 2))
@@ -201,8 +202,8 @@ async function presetExample() {
   console.log('\n使用库开发预设...')
   const libBuilder = createViteBuilderWithPreset('library', {
     lib: {
-      name: 'MyCustomLibrary'
-    }
+      name: 'MyCustomLibrary',
+    },
   })
 
   console.log('库构建器配置:', JSON.stringify(libBuilder.getConfig(), null, 2))
@@ -219,7 +220,7 @@ async function watchModeExample() {
   const builder = new ViteBuilder({
     entry: 'src/index.ts',
     outDir: 'dist-watch',
-    sourcemap: true
+    sourcemap: true,
   })
 
   // 监听构建事件
@@ -243,14 +244,13 @@ async function watchModeExample() {
     console.log('启动监听模式...')
     // 注意：watch() 会持续运行，这里只是演示
     const watchPromise = builder.watch()
-    
+
     // 模拟运行一段时间后停止
     setTimeout(async () => {
       console.log('停止监听模式...')
       await builder.destroy()
       console.log('✅ 监听模式已停止')
     }, 5000)
-    
   } catch (error) {
     console.error('监听模式异常:', error.message)
     await builder.destroy()
@@ -266,7 +266,7 @@ async function pluginExample() {
 
   const builder = new ViteBuilder({
     entry: 'src/index.ts',
-    outDir: 'dist'
+    outDir: 'dist',
   })
 
   // 添加插件
@@ -274,7 +274,7 @@ async function pluginExample() {
     name: 'mock-plugin',
     setup() {
       console.log('Mock plugin setup')
-    }
+    },
   }
 
   builder.addPlugin(mockPlugin)
@@ -304,19 +304,19 @@ async function factoryExample() {
   // 使用工厂函数创建构建器
   const builder1 = createViteBuilder({
     entry: 'src/app.ts',
-    outDir: 'dist-app'
+    outDir: 'dist-app',
   })
 
   console.log('构建器1配置:', {
     entry: builder1.getConfig().entry,
-    outDir: builder1.getConfig().outDir
+    outDir: builder1.getConfig().outDir,
   })
 
   // 使用默认配置
   const builder2 = createViteBuilder()
   console.log('构建器2配置:', {
     entry: builder2.getConfig().entry,
-    outDir: builder2.getConfig().outDir
+    outDir: builder2.getConfig().outDir,
   })
 
   await builder1.destroy()
@@ -328,12 +328,12 @@ async function factoryExample() {
  */
 function formatFileSize(bytes) {
   if (bytes === 0) return '0 B'
-  
+
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+
+  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
 }
 
 /**
@@ -348,13 +348,13 @@ async function runAllExamples() {
     await presetExample()
     await pluginExample()
     await factoryExample()
-    
+
     // 注意：以下示例会启动服务器，在演示环境中可能需要注释掉
     // await devServerExample()
     // await libraryBuildExample()
     // await previewServerExample()
     // await watchModeExample()
-    
+
     console.log('\n🎊 所有示例演示完成!')
   } catch (error) {
     console.error('示例运行失败:', error)
@@ -369,11 +369,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 export {
   basicBuildExample,
   devServerExample,
-  libraryBuildExample,
-  previewServerExample,
-  presetExample,
-  watchModeExample,
-  pluginExample,
   factoryExample,
-  runAllExamples
+  libraryBuildExample,
+  pluginExample,
+  presetExample,
+  previewServerExample,
+  runAllExamples,
+  watchModeExample,
 }

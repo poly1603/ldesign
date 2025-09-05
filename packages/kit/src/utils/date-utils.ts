@@ -16,7 +16,7 @@ export class DateUtils {
   static format(date: Date | number | string, format = 'YYYY-MM-DD HH:mm:ss'): string {
     const d = new Date(date)
     if (isNaN(d.getTime())) {
-      throw new Error('Invalid date')
+      throw new TypeError('Invalid date')
     }
 
     const tokens: Record<string, () => string> = {
@@ -33,13 +33,12 @@ export class DateUtils {
       ss: () => d.getSeconds().toString().padStart(2, '0'),
       s: () => d.getSeconds().toString(),
       SSS: () => d.getMilliseconds().toString().padStart(3, '0'),
-      A: () => d.getHours() >= 12 ? 'PM' : 'AM',
-      a: () => d.getHours() >= 12 ? 'pm' : 'am'
+      A: () => (d.getHours() >= 12 ? 'PM' : 'AM'),
+      a: () => (d.getHours() >= 12 ? 'pm' : 'am'),
     }
 
-    return format.replace(/YYYY|YY|MM|M|DD|D|HH|H|mm|m|ss|s|SSS|A|a/g, match => 
-      tokens[match] ? tokens[match]() : match
-    )
+    return format.replace(/YYYY|YY|MM|M|DD|D|HH|H|mm|m|ss|[sAa]|SSS/g, match =>
+      tokens[match] ? tokens[match]() : match)
   }
 
   /**
@@ -59,7 +58,7 @@ export class DateUtils {
       'YYYY/MM/DD': /^(\d{4})\/(\d{2})\/(\d{2})$/,
       'DD/MM/YYYY': /^(\d{2})\/(\d{2})\/(\d{4})$/,
       'MM/DD/YYYY': /^(\d{2})\/(\d{2})\/(\d{4})$/,
-      'YYYY-MM-DD HH:mm:ss': /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/
+      'YYYY-MM-DD HH:mm:ss': /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/,
     }
 
     const pattern = patterns[format]
@@ -73,23 +72,35 @@ export class DateUtils {
     }
 
     const [, ...groups] = match
-    
+
     switch (format) {
       case 'YYYY-MM-DD':
       case 'YYYY/MM/DD':
-        return new Date(parseInt(groups[0]), parseInt(groups[1]) - 1, parseInt(groups[2]))
+        return new Date(
+          Number.parseInt(groups[0]),
+          Number.parseInt(groups[1]) - 1,
+          Number.parseInt(groups[2]),
+        )
       case 'DD/MM/YYYY':
-        return new Date(parseInt(groups[2]), parseInt(groups[1]) - 1, parseInt(groups[0]))
+        return new Date(
+          Number.parseInt(groups[2]),
+          Number.parseInt(groups[1]) - 1,
+          Number.parseInt(groups[0]),
+        )
       case 'MM/DD/YYYY':
-        return new Date(parseInt(groups[2]), parseInt(groups[0]) - 1, parseInt(groups[1]))
+        return new Date(
+          Number.parseInt(groups[2]),
+          Number.parseInt(groups[0]) - 1,
+          Number.parseInt(groups[1]),
+        )
       case 'YYYY-MM-DD HH:mm:ss':
         return new Date(
-          parseInt(groups[0]),
-          parseInt(groups[1]) - 1,
-          parseInt(groups[2]),
-          parseInt(groups[3]),
-          parseInt(groups[4]),
-          parseInt(groups[5])
+          Number.parseInt(groups[0]),
+          Number.parseInt(groups[1]) - 1,
+          Number.parseInt(groups[2]),
+          Number.parseInt(groups[3]),
+          Number.parseInt(groups[4]),
+          Number.parseInt(groups[5]),
         )
       default:
         return new Date(dateString)
@@ -201,7 +212,7 @@ export class DateUtils {
   static add(
     date: Date,
     amount: number,
-    unit: 'milliseconds' | 'seconds' | 'minutes' | 'hours' | 'days' | 'weeks' | 'months' | 'years'
+    unit: 'milliseconds' | 'seconds' | 'minutes' | 'hours' | 'days' | 'weeks' | 'months' | 'years',
   ): Date {
     const result = new Date(date)
 
@@ -245,7 +256,7 @@ export class DateUtils {
   static subtract(
     date: Date,
     amount: number,
-    unit: 'milliseconds' | 'seconds' | 'minutes' | 'hours' | 'days' | 'weeks' | 'months' | 'years'
+    unit: 'milliseconds' | 'seconds' | 'minutes' | 'hours' | 'days' | 'weeks' | 'months' | 'years',
   ): Date {
     return DateUtils.add(date, -amount, unit)
   }
@@ -260,7 +271,15 @@ export class DateUtils {
   static diff(
     date1: Date,
     date2: Date,
-    unit: 'milliseconds' | 'seconds' | 'minutes' | 'hours' | 'days' | 'weeks' | 'months' | 'years' = 'milliseconds'
+    unit:
+      | 'milliseconds'
+      | 'seconds'
+      | 'minutes'
+      | 'hours'
+      | 'days'
+      | 'weeks'
+      | 'months'
+      | 'years' = 'milliseconds',
   ): number {
     const diffMs = date1.getTime() - date2.getTime()
 
@@ -278,8 +297,9 @@ export class DateUtils {
       case 'weeks':
         return Math.floor(diffMs / (1000 * 60 * 60 * 24 * 7))
       case 'months':
-        return (date1.getFullYear() - date2.getFullYear()) * 12 + 
-               (date1.getMonth() - date2.getMonth())
+        return (
+          (date1.getFullYear() - date2.getFullYear()) * 12 + (date1.getMonth() - date2.getMonth())
+        )
       case 'years':
         return date1.getFullYear() - date2.getFullYear()
       default:
@@ -294,9 +314,11 @@ export class DateUtils {
    * @returns 是否为同一天
    */
   static isSameDay(date1: Date, date2: Date): boolean {
-    return date1.getFullYear() === date2.getFullYear() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getDate() === date2.getDate()
+    return (
+      date1.getFullYear() === date2.getFullYear()
+      && date1.getMonth() === date2.getMonth()
+      && date1.getDate() === date2.getDate()
+    )
   }
 
   /**
@@ -334,7 +356,7 @@ export class DateUtils {
    * @returns 是否为闰年
    */
   static isLeapYear(year: number): boolean {
-    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0)
+    return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0
   }
 
   /**
@@ -365,16 +387,14 @@ export class DateUtils {
       { name: 'day', ms: 1000 * 60 * 60 * 24 },
       { name: 'hour', ms: 1000 * 60 * 60 },
       { name: 'minute', ms: 1000 * 60 },
-      { name: 'second', ms: 1000 }
+      { name: 'second', ms: 1000 },
     ]
 
     for (const unit of units) {
       const count = Math.floor(absDiffMs / unit.ms)
       if (count >= 1) {
         const suffix = count === 1 ? '' : 's'
-        return isPast 
-          ? `${count} ${unit.name}${suffix} ago`
-          : `in ${count} ${unit.name}${suffix}`
+        return isPast ? `${count} ${unit.name}${suffix} ago` : `in ${count} ${unit.name}${suffix}`
       }
     }
 
@@ -391,7 +411,7 @@ export class DateUtils {
       { name: 'd', ms: 1000 * 60 * 60 * 24 },
       { name: 'h', ms: 1000 * 60 * 60 },
       { name: 'm', ms: 1000 * 60 },
-      { name: 's', ms: 1000 }
+      { name: 's', ms: 1000 },
     ]
 
     const parts: string[] = []

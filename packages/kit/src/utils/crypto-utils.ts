@@ -3,7 +3,7 @@
  * 提供哈希、加密、解密等功能
  */
 
-import { createHash, createHmac, randomBytes, createCipher, createDecipher, pbkdf2Sync, scryptSync } from 'node:crypto'
+import { createHash, createHmac, pbkdf2Sync, randomBytes, scryptSync } from 'node:crypto'
 
 /**
  * 加密工具
@@ -56,7 +56,11 @@ export class CryptoUtils {
    * @param encoding 编码格式
    * @returns 哈希值
    */
-  static hash(data: string | Buffer, algorithm: 'md5' | 'sha1' | 'sha256' | 'sha512' = 'sha256', encoding: 'hex' | 'base64' = 'hex'): string {
+  static hash(
+    data: string | Buffer,
+    algorithm: 'md5' | 'sha1' | 'sha256' | 'sha512' = 'sha256',
+    encoding: 'hex' | 'base64' = 'hex',
+  ): string {
     return createHash(algorithm).update(data).digest(encoding)
   }
 
@@ -72,7 +76,7 @@ export class CryptoUtils {
     algorithm: 'md5' | 'sha1' | 'sha256' | 'sha512',
     key: string | Buffer,
     data: string | Buffer,
-    encoding: 'hex' | 'base64' = 'hex'
+    encoding: 'hex' | 'base64' = 'hex',
   ): string {
     return createHmac(algorithm, key).update(data).digest(encoding)
   }
@@ -84,7 +88,11 @@ export class CryptoUtils {
    * @param encoding 编码格式
    * @returns HMAC值
    */
-  static hmacSha256(key: string | Buffer, data: string | Buffer, encoding: 'hex' | 'base64' = 'hex'): string {
+  static hmacSha256(
+    key: string | Buffer,
+    data: string | Buffer,
+    encoding: 'hex' | 'base64' = 'hex',
+  ): string {
     return CryptoUtils.hmac('sha256', key, data, encoding)
   }
 
@@ -105,7 +113,7 @@ export class CryptoUtils {
    */
   static randomString(
     length: number,
-    charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
   ): string {
     const bytes = CryptoUtils.randomBytes(length)
     let result = ''
@@ -123,7 +131,9 @@ export class CryptoUtils {
    * @returns 十六进制字符串
    */
   static randomHex(length: number): string {
-    return CryptoUtils.randomBytes(Math.ceil(length / 2)).toString('hex').slice(0, length)
+    return CryptoUtils.randomBytes(Math.ceil(length / 2))
+      .toString('hex')
+      .slice(0, length)
   }
 
   /**
@@ -152,10 +162,7 @@ export class CryptoUtils {
    * @returns URL安全的Base64字符串
    */
   static base64UrlEncode(data: string | Buffer): string {
-    return CryptoUtils.base64Encode(data)
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '')
+    return CryptoUtils.base64Encode(data).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
   }
 
   /**
@@ -166,10 +173,8 @@ export class CryptoUtils {
    */
   static base64UrlDecode(base64Url: string, encoding: BufferEncoding = 'utf8'): string {
     // 添加填充
-    const padding = '='.repeat((4 - base64Url.length % 4) % 4)
-    const base64 = base64Url
-      .replace(/-/g, '+')
-      .replace(/_/g, '/') + padding
+    const padding = '='.repeat((4 - (base64Url.length % 4)) % 4)
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/') + padding
 
     return CryptoUtils.base64Decode(base64, encoding)
   }
@@ -226,7 +231,7 @@ export class CryptoUtils {
     salt: string | Buffer,
     iterations: number,
     keyLength: number,
-    digest: 'sha1' | 'sha256' | 'sha512' = 'sha256'
+    digest: 'sha1' | 'sha256' | 'sha512' = 'sha256',
   ): Buffer {
     return pbkdf2Sync(password, salt, iterations, keyLength, digest)
   }
@@ -248,20 +253,15 @@ export class CryptoUtils {
       blockSize?: number
       parallelization?: number
       maxmem?: number
-    } = {}
+    } = {},
   ): Buffer {
-    const {
-      cost = 16384,
-      blockSize = 8,
-      parallelization = 1,
-      maxmem = 32 * 1024 * 1024
-    } = options
+    const { cost = 16384, blockSize = 8, parallelization = 1, maxmem = 32 * 1024 * 1024 } = options
 
     return scryptSync(password, salt, keyLength, {
       cost,
       blockSize,
       parallelization,
-      maxmem
+      maxmem,
     })
   }
 
@@ -275,14 +275,14 @@ export class CryptoUtils {
   static hashPassword(
     password: string,
     salt?: string,
-    iterations = 100000
-  ): { hash: string; salt: string } {
+    iterations = 100000,
+  ): { hash: string, salt: string } {
     const saltBuffer = salt ? Buffer.from(salt, 'hex') : CryptoUtils.randomBytes(32)
     const hashBuffer = CryptoUtils.pbkdf2(password, saltBuffer, iterations, 64, 'sha256')
 
     return {
       hash: hashBuffer.toString('hex'),
-      salt: saltBuffer.toString('hex')
+      salt: saltBuffer.toString('hex'),
     }
   }
 
@@ -298,7 +298,7 @@ export class CryptoUtils {
     password: string,
     hash: string,
     salt: string,
-    iterations = 100000
+    iterations = 100000,
   ): boolean {
     const { hash: computedHash } = CryptoUtils.hashPassword(password, salt, iterations)
     return computedHash === hash
@@ -331,8 +331,8 @@ export class CryptoUtils {
     const bytes = CryptoUtils.randomBytes(16)
 
     // 设置版本号 (4) 和变体位
-    bytes[6] = (bytes[6] & 0x0f) | 0x40
-    bytes[8] = (bytes[8] & 0x3f) | 0x80
+    bytes[6] = (bytes[6] & 0x0F) | 0x40
+    bytes[8] = (bytes[8] & 0x3F) | 0x80
 
     const hex = bytes.toString('hex')
     return [
@@ -340,7 +340,7 @@ export class CryptoUtils {
       hex.slice(8, 12),
       hex.slice(12, 16),
       hex.slice(16, 20),
-      hex.slice(20, 32)
+      hex.slice(20, 32),
     ].join('-')
   }
 
@@ -370,7 +370,7 @@ export class CryptoUtils {
   static async fileHash(
     filePath: string,
     algorithm: 'md5' | 'sha1' | 'sha256' | 'sha512' = 'sha256',
-    encoding: 'hex' | 'base64' = 'hex'
+    encoding: 'hex' | 'base64' = 'hex',
   ): Promise<string> {
     const fs = await import('node:fs')
     const stream = fs.createReadStream(filePath)
@@ -397,7 +397,7 @@ export class CryptoUtils {
     const tokenPayload = {
       ...payload,
       iat: now,
-      ...(expiresIn && { exp: now + expiresIn })
+      ...(expiresIn && { exp: now + expiresIn }),
     }
 
     const encodedHeader = CryptoUtils.base64UrlEncode(JSON.stringify(header))
@@ -414,11 +414,14 @@ export class CryptoUtils {
    * @param secret 密钥
    * @returns 验证结果
    */
-  static verifyToken(token: string, secret: string): {
-    valid: boolean
-    payload?: Record<string, any>
-    error?: string
-  } {
+  static verifyToken(
+    token: string,
+    secret: string,
+  ): {
+      valid: boolean
+      payload?: Record<string, any>
+      error?: string
+    } {
     try {
       const [encodedHeader, encodedPayload, encodedSignature] = token.split('.')
 
@@ -427,7 +430,11 @@ export class CryptoUtils {
       }
 
       // 验证签名
-      const expectedSignature = CryptoUtils.hmacSha256(secret, `${encodedHeader}.${encodedPayload}`, 'base64')
+      const expectedSignature = CryptoUtils.hmacSha256(
+        secret,
+        `${encodedHeader}.${encodedPayload}`,
+        'base64',
+      )
       const expectedEncodedSignature = CryptoUtils.base64UrlEncode(expectedSignature)
 
       if (!CryptoUtils.timingSafeEqual(encodedSignature, expectedEncodedSignature)) {
@@ -443,7 +450,8 @@ export class CryptoUtils {
       }
 
       return { valid: true, payload }
-    } catch (error) {
+    }
+    catch (error) {
       return { valid: false, error: 'Token parsing failed' }
     }
   }

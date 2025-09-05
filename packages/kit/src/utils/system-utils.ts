@@ -3,9 +3,19 @@
  * 提供系统信息获取、环境检测等功能
  */
 
-import { platform, arch, cpus, totalmem, freemem, uptime, hostname, userInfo, networkInterfaces } from 'node:os'
 import { execSync } from 'node:child_process'
 import { promises as fs } from 'node:fs'
+import {
+  arch,
+  cpus,
+  freemem,
+  hostname,
+  networkInterfaces,
+  platform,
+  totalmem,
+  uptime,
+  userInfo,
+} from 'node:os'
 
 /**
  * 系统信息接口
@@ -73,7 +83,7 @@ export class SystemUtils {
     const cpuInfo = cpus()[0]
     const userDetails = userInfo()
     const networks = networkInterfaces()
-    
+
     const networkList: NetworkInterface[] = []
     for (const [name, interfaces] of Object.entries(networks)) {
       if (interfaces) {
@@ -83,7 +93,7 @@ export class SystemUtils {
             family: iface.family,
             address: iface.address,
             internal: iface.internal,
-            mac: iface.mac
+            mac: iface.mac,
           })
         }
       }
@@ -102,24 +112,24 @@ export class SystemUtils {
         total: totalMem,
         free: freeMem,
         used: usedMem,
-        percentage: (usedMem / totalMem) * 100
+        percentage: (usedMem / totalMem) * 100,
       },
       cpu: {
         model: cpuInfo.model,
         cores: cpus().length,
-        speed: cpuInfo.speed
+        speed: cpuInfo.speed,
       },
       user: {
         username: userDetails.username,
         homedir: userDetails.homedir,
-        shell: userDetails.shell
+        shell: userDetails.shell,
       },
       network: networkList,
       node: {
         version: process.version,
         platform: process.platform,
-        arch: process.arch
-      }
+        arch: process.arch,
+      },
     }
   }
 
@@ -127,7 +137,7 @@ export class SystemUtils {
    * 获取内存使用情况
    */
   static getMemoryUsage(): {
-    system: { total: number; free: number; used: number; percentage: number }
+    system: { total: number, free: number, used: number, percentage: number }
     process: NodeJS.MemoryUsage
   } {
     const total = totalmem()
@@ -139,9 +149,9 @@ export class SystemUtils {
         total,
         free,
         used,
-        percentage: (used / total) * 100
+        percentage: (used / total) * 100,
       },
-      process: process.memoryUsage()
+      process: process.memoryUsage(),
     }
   }
 
@@ -150,15 +160,15 @@ export class SystemUtils {
    */
   static async getCpuUsage(): Promise<number> {
     const startUsage = process.cpuUsage()
-    
+
     // 等待一段时间来计算使用率
     await new Promise(resolve => setTimeout(resolve, 100))
-    
+
     const endUsage = process.cpuUsage(startUsage)
     const totalUsage = endUsage.user + endUsage.system
-    
+
     // 转换为百分比
-    return (totalUsage / 100000) // 100ms = 100,000 microseconds
+    return totalUsage / 100000 // 100ms = 100,000 microseconds
   }
 
   /**
@@ -169,51 +179,56 @@ export class SystemUtils {
       if (platform() === 'win32') {
         // Windows 系统
         const drive = path.charAt(0).toUpperCase()
-        const output = execSync(`wmic logicaldisk where caption="${drive}:" get size,freespace,caption /format:csv`, { encoding: 'utf8' })
+        const output = execSync(
+          `wmic logicaldisk where caption="${drive}:" get size,freespace,caption /format:csv`,
+          { encoding: 'utf8' },
+        )
         const lines = output.split('\n').filter(line => line.includes(drive))
-        
+
         if (lines.length > 0) {
           const parts = lines[0].split(',')
-          const size = parseInt(parts[2]) || 0
-          const free = parseInt(parts[1]) || 0
+          const size = Number.parseInt(parts[2]) || 0
+          const free = Number.parseInt(parts[1]) || 0
           const used = size - free
-          
+
           return {
             filesystem: `${drive}:`,
             size,
             used,
             available: free,
             percentage: size > 0 ? (used / size) * 100 : 0,
-            mountpoint: `${drive}:`
+            mountpoint: `${drive}:`,
           }
         }
-      } else {
+      }
+      else {
         // Unix-like 系统
         const output = execSync(`df -B1 "${path}"`, { encoding: 'utf8' })
         const lines = output.split('\n')
-        
+
         if (lines.length > 1) {
           const parts = lines[1].split(/\s+/)
           const filesystem = parts[0]
-          const size = parseInt(parts[1]) || 0
-          const used = parseInt(parts[2]) || 0
-          const available = parseInt(parts[3]) || 0
+          const size = Number.parseInt(parts[1]) || 0
+          const used = Number.parseInt(parts[2]) || 0
+          const available = Number.parseInt(parts[3]) || 0
           const mountpoint = parts[5] || path
-          
+
           return {
             filesystem,
             size,
             used,
             available,
             percentage: size > 0 ? (used / size) * 100 : 0,
-            mountpoint
+            mountpoint,
           }
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       // 忽略错误，返回 null
     }
-    
+
     return null
   }
 
@@ -225,12 +240,14 @@ export class SystemUtils {
       // 检查 /.dockerenv 文件
       await fs.access('/.dockerenv')
       return true
-    } catch {
+    }
+    catch {
       try {
         // 检查 /proc/1/cgroup
         const cgroup = await fs.readFile('/proc/1/cgroup', 'utf8')
         return cgroup.includes('docker') || cgroup.includes('containerd')
-      } catch {
+      }
+      catch {
         return false
       }
     }
@@ -241,14 +258,14 @@ export class SystemUtils {
    */
   static isCI(): boolean {
     return !!(
-      process.env.CI ||
-      process.env.CONTINUOUS_INTEGRATION ||
-      process.env.BUILD_NUMBER ||
-      process.env.GITHUB_ACTIONS ||
-      process.env.GITLAB_CI ||
-      process.env.CIRCLECI ||
-      process.env.TRAVIS ||
-      process.env.JENKINS_URL
+      process.env.CI
+      || process.env.CONTINUOUS_INTEGRATION
+      || process.env.BUILD_NUMBER
+      || process.env.GITHUB_ACTIONS
+      || process.env.GITLAB_CI
+      || process.env.CIRCLECI
+      || process.env.TRAVIS
+      || process.env.JENKINS_URL
     )
   }
 
@@ -257,7 +274,7 @@ export class SystemUtils {
    */
   static getEnvironment(): 'development' | 'production' | 'test' | 'staging' | 'unknown' {
     const env = process.env.NODE_ENV?.toLowerCase()
-    
+
     switch (env) {
       case 'development':
       case 'dev':
@@ -283,11 +300,11 @@ export class SystemUtils {
     return new Promise((resolve) => {
       const net = require('node:net')
       const server = net.createServer()
-      
+
       server.listen(port, host, () => {
         server.close(() => resolve(true))
       })
-      
+
       server.on('error', () => resolve(false))
     })
   }
@@ -327,7 +344,7 @@ export class SystemUtils {
       argv: process.argv,
       execPath: process.execPath,
       cwd: process.cwd(),
-      uptime: process.uptime()
+      uptime: process.uptime(),
     }
   }
 
@@ -335,7 +352,8 @@ export class SystemUtils {
    * 格式化字节大小
    */
   static formatBytes(bytes: number, decimals = 2): string {
-    if (bytes === 0) return '0 Bytes'
+    if (bytes === 0)
+      return '0 Bytes'
 
     const k = 1024
     const dm = decimals < 0 ? 0 : decimals
@@ -343,7 +361,7 @@ export class SystemUtils {
 
     const i = Math.floor(Math.log(bytes) / Math.log(k))
 
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
+    return `${Number.parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`
   }
 
   /**
@@ -356,10 +374,14 @@ export class SystemUtils {
     const secs = Math.floor(seconds % 60)
 
     const parts: string[] = []
-    if (days > 0) parts.push(`${days}d`)
-    if (hours > 0) parts.push(`${hours}h`)
-    if (minutes > 0) parts.push(`${minutes}m`)
-    if (secs > 0) parts.push(`${secs}s`)
+    if (days > 0)
+      parts.push(`${days}d`)
+    if (hours > 0)
+      parts.push(`${hours}h`)
+    if (minutes > 0)
+      parts.push(`${minutes}m`)
+    if (secs > 0)
+      parts.push(`${secs}s`)
 
     return parts.join(' ') || '0s'
   }

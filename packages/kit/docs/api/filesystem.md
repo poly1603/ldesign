@@ -55,7 +55,7 @@ await FileSystem.writeFile('./image.png', buffer)
 await FileSystem.writeFile('./config.json', content, {
   encoding: 'utf8',
   mode: 0o644,
-  backup: true  // 写入前备份原文件
+  backup: true, // 写入前备份原文件
 })
 ```
 
@@ -81,11 +81,12 @@ await FileSystem.copy('./src', './backup')
 
 // 使用选项
 await FileSystem.copy('./src', './dist', {
-  overwrite: true,      // 覆盖已存在的文件
-  preserveTimestamps: true,  // 保持时间戳
-  filter: (src, dest) => {   // 过滤函数
+  overwrite: true, // 覆盖已存在的文件
+  preserveTimestamps: true, // 保持时间戳
+  filter: (src, dest) => {
+    // 过滤函数
     return !src.includes('node_modules')
-  }
+  },
 })
 ```
 
@@ -104,7 +105,7 @@ await FileSystem.move('./old-dir', './new-dir')
 
 ```typescript
 await FileSystem.remove('./temp.txt')
-await FileSystem.remove('./temp-dir')  // 递归删除目录
+await FileSystem.remove('./temp-dir') // 递归删除目录
 ```
 
 #### `exists(path: string): Promise<boolean>`
@@ -154,19 +155,19 @@ await FileSystem.ensureDir('./uploads/images/thumbnails')
 const files = await FileSystem.readDir('./src')
 
 // 递归读取
-const allFiles = await FileSystem.readDir('./src', { 
-  recursive: true 
+const allFiles = await FileSystem.readDir('./src', {
+  recursive: true,
 })
 
 // 使用过滤器
 const jsFiles = await FileSystem.readDir('./src', {
   recursive: true,
-  filter: (file) => file.endsWith('.js')
+  filter: file => file.endsWith('.js'),
 })
 
 // 包含详细信息
 const filesWithStats = await FileSystem.readDir('./src', {
-  withFileTypes: true
+  withFileTypes: true,
 })
 ```
 
@@ -195,8 +196,8 @@ await FileSystem.removeDir('./temp-files')
 修改文件或目录权限。
 
 ```typescript
-await FileSystem.chmod('./script.sh', 0o755)  // 可执行权限
-await FileSystem.chmod('./config.json', 0o644)  // 只读权限
+await FileSystem.chmod('./script.sh', 0o755) // 可执行权限
+await FileSystem.chmod('./config.json', 0o644) // 只读权限
 ```
 
 #### `chown(path: string, uid: number, gid: number): Promise<void>`
@@ -288,15 +289,16 @@ const ext = FileSystem.extname('/home/user/documents/file.txt')
 
 ```typescript
 const watcher = FileWatcher.create('./src', {
-  recursive: true,          // 递归监听
-  ignored: /node_modules/,  // 忽略模式
-  persistent: true,         // 持久监听
-  followSymlinks: false,    // 不跟随符号链接
-  depth: 10,               // 最大深度
-  awaitWriteFinish: {      // 等待写入完成
+  recursive: true, // 递归监听
+  ignored: /node_modules/, // 忽略模式
+  persistent: true, // 持久监听
+  followSymlinks: false, // 不跟随符号链接
+  depth: 10, // 最大深度
+  awaitWriteFinish: {
+    // 等待写入完成
     stabilityThreshold: 2000,
-    pollInterval: 100
-  }
+    pollInterval: 100,
+  },
 })
 ```
 
@@ -319,7 +321,7 @@ watcher.on('add', (path, stats) => {
 })
 
 // 文件删除
-watcher.on('unlink', (path) => {
+watcher.on('unlink', path => {
   console.log(`文件删除: ${path}`)
 })
 
@@ -329,12 +331,12 @@ watcher.on('addDir', (path, stats) => {
 })
 
 // 目录删除
-watcher.on('unlinkDir', (path) => {
+watcher.on('unlinkDir', path => {
   console.log(`目录删除: ${path}`)
 })
 
 // 错误处理
-watcher.on('error', (error) => {
+watcher.on('error', error => {
   console.error('监听错误:', error)
 })
 
@@ -388,11 +390,11 @@ console.log('监听的路径:', watched)
 class ConfigManager {
   private configPath: string
   private watcher?: FileWatcher
-  
+
   constructor(configPath: string) {
     this.configPath = configPath
   }
-  
+
   async load() {
     if (await FileSystem.exists(this.configPath)) {
       const content = await FileSystem.readFile(this.configPath)
@@ -400,12 +402,12 @@ class ConfigManager {
     }
     return {}
   }
-  
+
   async save(config: any) {
     await FileSystem.ensureDir(FileSystem.dirname(this.configPath))
     await FileSystem.writeFile(this.configPath, JSON.stringify(config, null, 2))
   }
-  
+
   watch(callback: (config: any) => void) {
     this.watcher = FileWatcher.create(this.configPath)
     this.watcher.on('change', async () => {
@@ -413,7 +415,7 @@ class ConfigManager {
       callback(config)
     })
   }
-  
+
   async close() {
     if (this.watcher) {
       await this.watcher.close()
@@ -428,10 +430,10 @@ class ConfigManager {
 class BackupManager {
   async backup(sourcePath: string, backupDir: string) {
     await FileSystem.ensureDir(backupDir)
-    
+
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
     const stats = await FileSystem.stat(sourcePath)
-    
+
     if (stats.isFile()) {
       const filename = FileSystem.basename(sourcePath)
       const backupPath = FileSystem.join(backupDir, `${timestamp}-${filename}`)
@@ -442,21 +444,23 @@ class BackupManager {
       await FileSystem.copy(sourcePath, backupPath)
     }
   }
-  
+
   async restore(backupPath: string, targetPath: string) {
     await FileSystem.copy(backupPath, targetPath, { overwrite: true })
   }
-  
+
   async listBackups(backupDir: string) {
     const files = await FileSystem.readDir(backupDir)
-    return files.map(file => {
-      const timestamp = file.split('-')[0]
-      return {
-        file,
-        timestamp: new Date(timestamp.replace(/-/g, ':')),
-        path: FileSystem.join(backupDir, file)
-      }
-    }).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+    return files
+      .map(file => {
+        const timestamp = file.split('-')[0]
+        return {
+          file,
+          timestamp: new Date(timestamp.replace(/-/g, ':')),
+          path: FileSystem.join(backupDir, file),
+        }
+      })
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
   }
 }
 ```
@@ -468,19 +472,19 @@ class LogManager {
   private logPath: string
   private maxSize: number
   private maxFiles: number
-  
+
   constructor(logPath: string, maxSize = 10 * 1024 * 1024, maxFiles = 5) {
     this.logPath = logPath
     this.maxSize = maxSize
     this.maxFiles = maxFiles
   }
-  
+
   async log(message: string) {
     const timestamp = new Date().toISOString()
     const logEntry = `[${timestamp}] ${message}\n`
-    
+
     await FileSystem.ensureDir(FileSystem.dirname(this.logPath))
-    
+
     // 检查文件大小
     if (await FileSystem.exists(this.logPath)) {
       const stats = await FileSystem.stat(this.logPath)
@@ -488,16 +492,16 @@ class LogManager {
         await this.rotateLog()
       }
     }
-    
+
     await FileSystem.appendFile(this.logPath, logEntry)
   }
-  
+
   private async rotateLog() {
     // 轮转日志文件
     for (let i = this.maxFiles - 1; i > 0; i--) {
       const oldPath = `${this.logPath}.${i}`
       const newPath = `${this.logPath}.${i + 1}`
-      
+
       if (await FileSystem.exists(oldPath)) {
         if (i === this.maxFiles - 1) {
           await FileSystem.remove(oldPath)
@@ -506,7 +510,7 @@ class LogManager {
         }
       }
     }
-    
+
     if (await FileSystem.exists(this.logPath)) {
       await FileSystem.move(this.logPath, `${this.logPath}.1`)
     }

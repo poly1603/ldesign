@@ -1,7 +1,19 @@
 {
   "name": "@ldesign/kit",
+  "type": "module",
   "version": "1.0.0",
   "description": "Node.js 开发工具库 - 提供文件系统、网络、压缩、Git、NPM、SSL、进程管理、日志、配置等常用工具",
+  "author": "LDesign Team",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/kit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/ldesign.git",
+    "directory": "packages/kit"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign/ldesign/issues"
+  },
   "keywords": [
     "nodejs",
     "toolkit",
@@ -21,138 +33,127 @@
     "performance",
     "database"
   ],
-  "author": "LDesign Team",
-  "license": "MIT",
-  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/kit",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign/ldesign.git",
-    "directory": "packages/kit"
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./filesystem": {
+      "types": "./dist/filesystem/index.d.ts",
+      "import": "./dist/filesystem/index.js",
+      "require": "./dist/filesystem/index.cjs"
+    },
+    "./network": {
+      "types": "./dist/network/index.d.ts",
+      "import": "./dist/network/index.js",
+      "require": "./dist/network/index.cjs"
+    },
+    "./archive": {
+      "types": "./dist/archive/index.d.ts",
+      "import": "./dist/archive/index.js",
+      "require": "./dist/archive/index.cjs"
+    },
+    "./git": {
+      "types": "./dist/git/index.d.ts",
+      "import": "./dist/git/index.js",
+      "require": "./dist/git/index.cjs"
+    },
+    "./package": {
+      "types": "./dist/package/index.d.ts",
+      "import": "./dist/package/index.js",
+      "require": "./dist/package/index.cjs"
+    },
+    "./ssl": {
+      "types": "./dist/ssl/index.d.ts",
+      "import": "./dist/ssl/index.js",
+      "require": "./dist/ssl/index.cjs"
+    },
+    "./process": {
+      "types": "./dist/process/index.d.ts",
+      "import": "./dist/process/index.js",
+      "require": "./dist/process/index.cjs"
+    },
+    "./logger": {
+      "types": "./dist/logger/index.d.ts",
+      "import": "./dist/logger/index.js",
+      "require": "./dist/logger/index.cjs"
+    },
+    "./config": {
+      "types": "./dist/config/index.d.ts",
+      "import": "./dist/config/index.js",
+      "require": "./dist/config/index.cjs"
+    },
+    "./cli": {
+      "types": "./dist/cli/index.d.ts",
+      "import": "./dist/cli/index.js",
+      "require": "./dist/cli/index.cjs"
+    },
+    "./inquirer": {
+      "types": "./dist/inquirer/index.d.ts",
+      "import": "./dist/inquirer/index.js",
+      "require": "./dist/inquirer/index.cjs"
+    },
+    "./notification": {
+      "types": "./dist/notification/index.d.ts",
+      "import": "./dist/notification/index.js",
+      "require": "./dist/notification/index.cjs"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js",
+      "require": "./dist/utils/index.cjs"
+    },
+    "./performance": {
+      "types": "./dist/performance/index.d.ts",
+      "import": "./dist/performance/index.js",
+      "require": "./dist/performance/index.cjs"
+    },
+    "./database": {
+      "types": "./dist/database/index.d.ts",
+      "import": "./dist/database/index.js",
+      "require": "./dist/database/index.cjs"
+    },
+    "./scaffold": {
+      "types": "./dist/scaffold/index.d.ts",
+      "import": "./dist/scaffold/index.js",
+      "require": "./dist/scaffold/index.cjs"
+    },
+    "./console": {
+      "types": "./dist/console/index.d.ts",
+      "import": "./dist/console/index.js",
+      "require": "./dist/console/index.cjs"
+    },
+    "./builder": {
+      "types": "./dist/builder/index.d.ts",
+      "import": "./dist/builder/index.js",
+      "require": "./dist/builder/index.cjs"
+    },
+    "./project": {
+      "types": "./dist/project/index.d.ts",
+      "import": "./dist/project/index.js",
+      "require": "./dist/project/index.cjs"
+    }
   },
-  "bugs": {
-    "url": "https://github.com/ldesign/ldesign/issues"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  },
-  "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
-    },
-    "./filesystem": {
-      "import": "./dist/filesystem/index.js",
-      "require": "./dist/filesystem/index.cjs",
-      "types": "./dist/filesystem/index.d.ts"
-    },
-    "./network": {
-      "import": "./dist/network/index.js",
-      "require": "./dist/network/index.cjs",
-      "types": "./dist/network/index.d.ts"
-    },
-    "./archive": {
-      "import": "./dist/archive/index.js",
-      "require": "./dist/archive/index.cjs",
-      "types": "./dist/archive/index.d.ts"
-    },
-    "./git": {
-      "import": "./dist/git/index.js",
-      "require": "./dist/git/index.cjs",
-      "types": "./dist/git/index.d.ts"
-    },
-    "./package": {
-      "import": "./dist/package/index.js",
-      "require": "./dist/package/index.cjs",
-      "types": "./dist/package/index.d.ts"
-    },
-    "./ssl": {
-      "import": "./dist/ssl/index.js",
-      "require": "./dist/ssl/index.cjs",
-      "types": "./dist/ssl/index.d.ts"
-    },
-    "./process": {
-      "import": "./dist/process/index.js",
-      "require": "./dist/process/index.cjs",
-      "types": "./dist/process/index.d.ts"
-    },
-    "./logger": {
-      "import": "./dist/logger/index.js",
-      "require": "./dist/logger/index.cjs",
-      "types": "./dist/logger/index.d.ts"
-    },
-    "./config": {
-      "import": "./dist/config/index.js",
-      "require": "./dist/config/index.cjs",
-      "types": "./dist/config/index.d.ts"
-    },
-    "./cli": {
-      "import": "./dist/cli/index.js",
-      "require": "./dist/cli/index.cjs",
-      "types": "./dist/cli/index.d.ts"
-    },
-    "./inquirer": {
-      "import": "./dist/inquirer/index.js",
-      "require": "./dist/inquirer/index.cjs",
-      "types": "./dist/inquirer/index.d.ts"
-    },
-    "./notification": {
-      "import": "./dist/notification/index.js",
-      "require": "./dist/notification/index.cjs",
-      "types": "./dist/notification/index.d.ts"
-    },
-    "./utils": {
-      "import": "./dist/utils/index.js",
-      "require": "./dist/utils/index.cjs",
-      "types": "./dist/utils/index.d.ts"
-    },
-    "./performance": {
-      "import": "./dist/performance/index.js",
-      "require": "./dist/performance/index.cjs",
-      "types": "./dist/performance/index.d.ts"
-    },
-    "./database": {
-      "import": "./dist/database/index.js",
-      "require": "./dist/database/index.cjs",
-      "types": "./dist/database/index.d.ts"
-    },
-    "./scaffold": {
-      "import": "./dist/scaffold/index.js",
-      "require": "./dist/scaffold/index.cjs",
-      "types": "./dist/scaffold/index.d.ts"
-    },
-    "./console": {
-      "import": "./dist/console/index.js",
-      "require": "./dist/console/index.cjs",
-      "types": "./dist/console/index.d.ts"
-    },
-    "./builder": {
-      "import": "./dist/builder/index.js",
-      "require": "./dist/builder/index.cjs",
-      "types": "./dist/builder/index.d.ts"
-    },
-    "./project": {
-      "import": "./dist/project/index.js",
-      "require": "./dist/project/index.cjs",
-      "types": "./dist/project/index.d.ts"
-    }
-  },
   "files": [
-    "dist",
+    "CHANGELOG.md",
     "README.md",
-    "CHANGELOG.md"
+    "dist"
   ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "build": "pnpm clean && tsup",
     "build:watch": "tsup --watch",
     "dev": "tsup --watch",
     "type-check": "tsc --noEmit",
-    "lint": "eslint . --fix",
-    "lint:check": "eslint .",
+    "lint": "eslint --config ../../eslint.config.js \"src/**/*.{ts,tsx,js,jsx}\" \"tests/**/*.{ts,tsx,js,jsx}\" --fix",
+    "lint:check": "eslint --config ../../eslint.config.js \"src/**/*.{ts,tsx,js,jsx}\" \"tests/**/*.{ts,tsx,js,jsx}\"",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:run": "vitest run",
@@ -174,13 +175,23 @@
     "demo:rollup-builder": "node examples/builder/rollup-builder-demo.js",
     "demo:builder-comprehensive": "node examples/builder/comprehensive-demo.js"
   },
+  "peerDependencies": {
+    "typescript": ">=4.5.0"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  },
   "dependencies": {
+    "@ldesign/builder": "workspace:*",
     "archiver": "^6.0.1",
     "cac": "^6.7.14",
     "chalk": "^5.3.0",
     "chalk-animation": "^2.0.3",
     "cli-progress": "^3.12.0",
     "figlet": "^1.8.2",
+    "form-data": "^4.0.4",
     "glob": "^10.3.10",
     "jiti": "^1.21.0",
     "json5": "^2.2.3",
@@ -191,6 +202,7 @@
     "simple-git": "^3.20.0",
     "svg2ttf": "^6.0.3",
     "svgicons2svgfont": "^15.0.1",
+    "tar": "^7.4.3",
     "ttf2eot": "^3.1.0",
     "ttf2woff": "^3.0.0",
     "ttf2woff2": "^8.0.0",
@@ -225,16 +237,7 @@
     "vitepress": "^1.6.4",
     "vitest": "^1.6.1"
   },
-  "peerDependencies": {
-    "typescript": ">=4.5.0"
-  },
-  "peerDependenciesMeta": {
-    "typescript": {
-      "optional": true
-    }
-  },
   "publishConfig": {
     "access": "public"
-  },
-  "sideEffects": false
+  }
 }

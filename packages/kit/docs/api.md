@@ -36,11 +36,13 @@ import { FileSystem } from '@ldesign/kit/filesystem'
 写入文件内容。
 
 **参数：**
+
 - `filePath` - 文件路径
 - `content` - 文件内容
 - `options` - 写入选项
 
 **示例：**
+
 ```typescript
 await FileSystem.writeFile('example.txt', 'Hello, World!')
 await FileSystem.writeFile('data.json', JSON.stringify(data), { encoding: 'utf8' })
@@ -51,12 +53,14 @@ await FileSystem.writeFile('data.json', JSON.stringify(data), { encoding: 'utf8'
 读取文件内容。
 
 **参数：**
+
 - `filePath` - 文件路径
 - `options` - 读取选项
 
 **返回：** 文件内容字符串
 
 **示例：**
+
 ```typescript
 const content = await FileSystem.readFile('example.txt')
 const data = JSON.parse(await FileSystem.readFile('data.json'))
@@ -67,11 +71,13 @@ const data = JSON.parse(await FileSystem.readFile('data.json'))
 检查文件或目录是否存在。
 
 **参数：**
+
 - `path` - 文件或目录路径
 
 **返回：** 是否存在
 
 **示例：**
+
 ```typescript
 if (await FileSystem.exists('config.json')) {
   // 文件存在
@@ -85,10 +91,12 @@ if (await FileSystem.exists('config.json')) {
 创建目录。
 
 **参数：**
+
 - `dirPath` - 目录路径
 - `recursive` - 是否递归创建父目录
 
 **示例：**
+
 ```typescript
 await FileSystem.createDir('uploads')
 await FileSystem.createDir('deep/nested/directory', true)
@@ -99,12 +107,14 @@ await FileSystem.createDir('deep/nested/directory', true)
 读取目录内容。
 
 **参数：**
+
 - `dirPath` - 目录路径
 - `options` - 读取选项
 
 **返回：** 文件名数组或文件信息数组
 
 **示例：**
+
 ```typescript
 const files = await FileSystem.readDir('uploads')
 const fileInfos = await FileSystem.readDir('uploads', { withFileTypes: true })
@@ -121,7 +131,7 @@ import { CacheManager } from '@ldesign/kit'
 
 const cache = new CacheManager({
   maxSize: 1000,
-  ttl: 60000
+  ttl: 60000,
 })
 ```
 
@@ -134,6 +144,7 @@ const cache = new CacheManager({
 创建缓存管理器实例。
 
 **参数：**
+
 - `options.maxSize` - 最大缓存项数量，默认 1000
 - `options.ttl` - 默认过期时间（毫秒），默认无限制
 
@@ -144,11 +155,13 @@ const cache = new CacheManager({
 设置缓存项。
 
 **参数：**
+
 - `key` - 缓存键
 - `value` - 缓存值
 - `ttl` - 过期时间（毫秒），可选
 
 **示例：**
+
 ```typescript
 cache.set('user:123', userData)
 cache.set('temp:data', tempData, 30000) // 30秒后过期
@@ -159,11 +172,13 @@ cache.set('temp:data', tempData, 30000) // 30秒后过期
 获取缓存项。
 
 **参数：**
+
 - `key` - 缓存键
 
 **返回：** 缓存值，不存在或已过期返回 undefined
 
 **示例：**
+
 ```typescript
 const userData = cache.get('user:123')
 if (userData) {
@@ -184,6 +199,7 @@ if (userData) {
 转换为驼峰命名。
 
 **示例：**
+
 ```typescript
 StringUtils.toCamelCase('hello-world') // 'helloWorld'
 StringUtils.toCamelCase('hello_world') // 'helloWorld'
@@ -194,6 +210,7 @@ StringUtils.toCamelCase('hello_world') // 'helloWorld'
 转换为短横线命名。
 
 **示例：**
+
 ```typescript
 StringUtils.toKebabCase('helloWorld') // 'hello-world'
 StringUtils.toKebabCase('HelloWorld') // 'hello-world'
@@ -204,6 +221,7 @@ StringUtils.toKebabCase('HelloWorld') // 'hello-world'
 验证邮箱格式。
 
 **示例：**
+
 ```typescript
 StringUtils.isEmail('test@example.com') // true
 StringUtils.isEmail('invalid-email') // false
@@ -218,6 +236,7 @@ StringUtils.isEmail('invalid-email') // false
 格式化数字，添加千分位分隔符。
 
 **示例：**
+
 ```typescript
 NumberUtils.format(1234.567, 2) // '1,234.57'
 NumberUtils.format(1000) // '1,000'
@@ -228,6 +247,7 @@ NumberUtils.format(1000) // '1,000'
 格式化字节大小。
 
 **示例：**
+
 ```typescript
 NumberUtils.formatBytes(1024) // '1.00 KB'
 NumberUtils.formatBytes(1048576) // '1.00 MB'
@@ -242,6 +262,7 @@ NumberUtils.formatBytes(1048576) // '1.00 MB'
 数组去重。
 
 **示例：**
+
 ```typescript
 ArrayUtils.unique([1, 2, 2, 3, 3, 3]) // [1, 2, 3]
 ArrayUtils.unique(['a', 'b', 'a', 'c']) // ['a', 'b', 'c']
@@ -252,6 +273,7 @@ ArrayUtils.unique(['a', 'b', 'a', 'c']) // ['a', 'b', 'c']
 数组分块。
 
 **示例：**
+
 ```typescript
 ArrayUtils.chunk([1, 2, 3, 4, 5], 2) // [[1, 2], [3, 4], [5]]
 ```
@@ -265,6 +287,7 @@ ArrayUtils.chunk([1, 2, 3, 4, 5], 2) // [[1, 2], [3, 4], [5]]
 深度克隆对象。
 
 **示例：**
+
 ```typescript
 const cloned = ObjectUtils.deepClone(originalObject)
 ```
@@ -274,6 +297,7 @@ const cloned = ObjectUtils.deepClone(originalObject)
 获取对象嵌套属性值。
 
 **示例：**
+
 ```typescript
 ObjectUtils.get(obj, 'user.profile.name', 'Unknown')
 ```
@@ -299,6 +323,7 @@ const git = new GitManager('/path/to/repo')
 创建 Git 管理器实例。
 
 **参数：**
+
 - `cwd` - 工作目录，默认当前目录
 - `options` - Git 选项
 
@@ -363,7 +388,7 @@ import { CLIApp, OutputFormatter } from '@ldesign/kit/cli'
 
 const app = new CLIApp({
   name: 'my-cli',
-  version: '1.0.0'
+  version: '1.0.0',
 })
 ```
 
@@ -376,6 +401,7 @@ const app = new CLIApp({
 添加命令。
 
 **参数：**
+
 - `options.name` - 命令名称
 - `options.description` - 命令描述
 - `options.action` - 命令处理函数
@@ -511,7 +537,7 @@ import { SSLManager, SSLUtils } from '@ldesign/kit'
 
 const sslManager = new SSLManager({
   keySize: 2048,
-  validityDays: 365
+  validityDays: 365,
 })
 ```
 
@@ -625,7 +651,7 @@ const inquirer = InquirerManager.create()
 import { NotificationManager, NotificationUtils } from '@ldesign/kit'
 
 const notificationManager = NotificationManager.create({
-  appName: 'My App'
+  appName: 'My App',
 })
 ```
 

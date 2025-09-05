@@ -2,17 +2,17 @@
  * BuilderFactory 单元测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { BuilderFactory, BuiltinPresets } from '../../src/builder/builder-factory'
-import { ViteBuilder } from '../../src/builder/vite-builder'
-import { RollupBuilder } from '../../src/builder/rollup-builder'
 import type { PresetConfig } from '../../src/builder/types'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { BuilderFactory, BuiltinPresets } from '../../src/builder/builder-factory'
+import { RollupBuilder } from '../../src/builder/rollup-builder'
+import { ViteBuilder } from '../../src/builder/vite-builder'
 
 // Mock 构建器类
 vi.mock('../../src/builder/vite-builder')
 vi.mock('../../src/builder/rollup-builder')
 
-describe('BuilderFactory', () => {
+describe('builderFactory', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // 清除所有预设
@@ -29,7 +29,7 @@ describe('BuilderFactory', () => {
     it('应该能够创建 ViteBuilder', () => {
       const config = { entry: 'src/index.ts' }
       const builder = BuilderFactory.createViteBuilder(config)
-      
+
       expect(ViteBuilder).toHaveBeenCalledWith(config)
       expect(builder).toBeInstanceOf(ViteBuilder)
     })
@@ -37,17 +37,17 @@ describe('BuilderFactory', () => {
     it('应该能够创建 RollupBuilder', () => {
       const config = {
         input: 'src/index.ts',
-        output: { file: 'dist/index.js', format: 'es' as const }
+        output: { file: 'dist/index.js', format: 'es' as const },
       }
       const builder = BuilderFactory.createRollupBuilder(config)
-      
+
       expect(RollupBuilder).toHaveBeenCalledWith(config)
       expect(builder).toBeInstanceOf(RollupBuilder)
     })
 
     it('应该能够使用默认配置创建 ViteBuilder', () => {
       const builder = BuilderFactory.createViteBuilder()
-      
+
       expect(ViteBuilder).toHaveBeenCalledWith({})
       expect(builder).toBeInstanceOf(ViteBuilder)
     })
@@ -60,12 +60,12 @@ describe('BuilderFactory', () => {
         description: '测试预设',
         config: {
           entry: 'src/test.ts',
-          outDir: 'test-dist'
-        }
+          outDir: 'test-dist',
+        },
       }
-      
+
       BuilderFactory.registerPreset(preset)
-      
+
       const retrievedPreset = BuilderFactory.getPreset('test-preset')
       expect(retrievedPreset).toEqual(preset)
     })
@@ -91,7 +91,7 @@ describe('BuilderFactory', () => {
 
     it('应该能够移除预设', () => {
       BuilderFactory.removePreset('vue-app')
-      
+
       expect(() => {
         BuilderFactory.getPreset('vue-app')
       }).toThrow('Preset "vue-app" not found')
@@ -101,11 +101,11 @@ describe('BuilderFactory', () => {
   describe('使用预设创建构建器', () => {
     it('应该能够使用预设创建 ViteBuilder', () => {
       const builder = BuilderFactory.createViteBuilderWithPreset('vue-app')
-      
+
       expect(ViteBuilder).toHaveBeenCalledWith(
         expect.objectContaining({
           entry: 'src/main.ts',
-          outDir: 'dist'
+          outDir: 'dist',
         })
       )
       expect(builder).toBeInstanceOf(ViteBuilder)
@@ -113,14 +113,14 @@ describe('BuilderFactory', () => {
 
     it('应该能够使用预设创建 RollupBuilder', () => {
       const builder = BuilderFactory.createRollupBuilderWithPreset('rollup-library')
-      
+
       expect(RollupBuilder).toHaveBeenCalledWith(
         expect.objectContaining({
           input: 'src/index.ts',
           output: expect.arrayContaining([
             expect.objectContaining({ format: 'es' }),
-            expect.objectContaining({ format: 'cjs' })
-          ])
+            expect.objectContaining({ format: 'cjs' }),
+          ]),
         })
       )
       expect(builder).toBeInstanceOf(RollupBuilder)
@@ -129,15 +129,15 @@ describe('BuilderFactory', () => {
     it('应该能够覆盖预设配置', () => {
       const overrides = {
         entry: 'src/custom.ts',
-        outDir: 'custom-dist'
+        outDir: 'custom-dist',
       }
-      
+
       const builder = BuilderFactory.createViteBuilderWithPreset('vue-app', overrides)
-      
+
       expect(ViteBuilder).toHaveBeenCalledWith(
         expect.objectContaining({
           entry: 'src/custom.ts',
-          outDir: 'custom-dist'
+          outDir: 'custom-dist',
         })
       )
     })
@@ -145,18 +145,18 @@ describe('BuilderFactory', () => {
     it('应该正确合并嵌套配置', () => {
       const overrides = {
         server: {
-          port: 8080
-        }
+          port: 8080,
+        },
       }
-      
+
       const builder = BuilderFactory.createViteBuilderWithPreset('vue-app', overrides)
-      
+
       expect(ViteBuilder).toHaveBeenCalledWith(
         expect.objectContaining({
           server: expect.objectContaining({
             port: 8080,
-            open: true // 来自预设的默认值
-          })
+            open: true, // 来自预设的默认值
+          }),
         })
       )
     })
@@ -168,7 +168,7 @@ describe('BuilderFactory', () => {
       expect(preset.name).toBe('vue-app')
       expect(preset.config).toMatchObject({
         entry: 'src/main.ts',
-        outDir: 'dist'
+        outDir: 'dist',
       })
     })
 
@@ -177,7 +177,7 @@ describe('BuilderFactory', () => {
       expect(preset.name).toBe('react-app')
       expect(preset.config).toMatchObject({
         entry: 'src/index.tsx',
-        outDir: 'build'
+        outDir: 'build',
       })
     })
 
@@ -187,8 +187,8 @@ describe('BuilderFactory', () => {
       expect(preset.config).toMatchObject({
         lib: {
           entry: 'src/index.ts',
-          formats: ['es', 'cjs']
-        }
+          formats: ['es', 'cjs'],
+        },
       })
     })
 
@@ -198,9 +198,9 @@ describe('BuilderFactory', () => {
       expect(preset.config).toMatchObject({
         lib: {
           entry: 'src/index.ts',
-          formats: ['es', 'cjs']
+          formats: ['es', 'cjs'],
         },
-        sourcemap: true
+        sourcemap: true,
       })
     })
 
@@ -210,7 +210,7 @@ describe('BuilderFactory', () => {
       expect(preset.config).toMatchObject({
         entry: 'src/index.ts',
         target: 'node16',
-        external: ['node:*']
+        external: ['node:*'],
       })
     })
 
@@ -221,8 +221,8 @@ describe('BuilderFactory', () => {
         input: 'src/index.ts',
         output: expect.arrayContaining([
           expect.objectContaining({ format: 'es' }),
-          expect.objectContaining({ format: 'cjs' })
-        ])
+          expect.objectContaining({ format: 'cjs' }),
+        ]),
       })
     })
 
@@ -233,8 +233,8 @@ describe('BuilderFactory', () => {
         input: 'src/index.ts',
         output: expect.objectContaining({
           format: 'umd',
-          name: 'MyLibrary'
-        })
+          name: 'MyLibrary',
+        }),
       })
     })
   })
@@ -245,22 +245,22 @@ describe('BuilderFactory', () => {
         name: 'test',
         config: {
           entry: 'src/index.ts',
-          outDir: 'dist'
-        }
+          outDir: 'dist',
+        },
       }
-      
+
       BuilderFactory.registerPreset(preset)
-      
+
       const builder = BuilderFactory.createViteBuilderWithPreset('test', {
         outDir: 'build',
-        minify: false
+        minify: false,
       })
-      
+
       expect(ViteBuilder).toHaveBeenCalledWith(
         expect.objectContaining({
           entry: 'src/index.ts',
           outDir: 'build',
-          minify: false
+          minify: false,
         })
       )
     })
@@ -269,19 +269,19 @@ describe('BuilderFactory', () => {
       const preset: PresetConfig = {
         name: 'test-array',
         config: {
-          external: ['react', 'react-dom']
-        }
+          external: ['react', 'react-dom'],
+        },
       }
-      
+
       BuilderFactory.registerPreset(preset)
-      
+
       const builder = BuilderFactory.createViteBuilderWithPreset('test-array', {
-        external: ['lodash']
+        external: ['lodash'],
       })
-      
+
       expect(ViteBuilder).toHaveBeenCalledWith(
         expect.objectContaining({
-          external: ['lodash'] // 数组应该被完全替换
+          external: ['lodash'], // 数组应该被完全替换
         })
       )
     })
@@ -291,22 +291,22 @@ describe('BuilderFactory', () => {
         name: 'test-undefined',
         config: {
           entry: 'src/index.ts',
-          minify: true
-        }
+          minify: true,
+        },
       }
-      
+
       BuilderFactory.registerPreset(preset)
-      
+
       const builder = BuilderFactory.createViteBuilderWithPreset('test-undefined', {
         outDir: 'build',
-        minify: undefined
+        minify: undefined,
       })
-      
+
       expect(ViteBuilder).toHaveBeenCalledWith(
         expect.objectContaining({
           entry: 'src/index.ts',
           outDir: 'build',
-          minify: true // undefined 值不应该覆盖预设值
+          minify: true, // undefined 值不应该覆盖预设值
         })
       )
     })

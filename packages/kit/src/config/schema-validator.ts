@@ -3,8 +3,8 @@
  * 提供基于 JSON Schema 的配置验证功能
  */
 
-import { EventEmitter } from 'node:events'
 import type { ConfigSchema, SchemaValidationError } from '../types'
+import { EventEmitter } from 'node:events'
 
 /**
  * 模式验证器选项
@@ -36,13 +36,13 @@ export class SchemaValidator extends EventEmitter {
 
   constructor(options: SchemaValidatorOptions = {}) {
     super()
-    
+
     this.options = {
       strict: options.strict !== false,
       allowAdditionalProperties: options.allowAdditionalProperties !== false,
       coerceTypes: options.coerceTypes !== false,
       removeAdditional: options.removeAdditional !== false,
-      useDefaults: options.useDefaults !== false
+      useDefaults: options.useDefaults !== false,
     }
   }
 
@@ -70,19 +70,21 @@ export class SchemaValidator extends EventEmitter {
     }
 
     this.errors = []
-    
+
     try {
       const result = this.validateValue(data, this.schema, '')
-      
+
       if (result.valid) {
         this.emit('validated', result.data || data)
         return true
-      } else {
+      }
+      else {
         this.errors = result.errors
         this.emit('validationError', this.errors)
         return false
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('error', error)
       throw error
     }
@@ -107,20 +109,22 @@ export class SchemaValidator extends EventEmitter {
         const coerced = this.coerceType(processedValue, schema.type)
         if (coerced.success) {
           processedValue = coerced.value
-        } else {
+        }
+        else {
           errors.push({
             path,
             message: `Expected type ${schema.type}, got ${typeof processedValue}`,
             value: processedValue,
-            schema
+            schema,
           })
         }
-      } else {
+      }
+      else {
         errors.push({
           path,
           message: `Expected type ${schema.type}, got ${typeof processedValue}`,
           value: processedValue,
-          schema
+          schema,
         })
       }
     }
@@ -131,7 +135,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: `Field is required`,
         value: processedValue,
-        schema
+        schema,
       })
     }
 
@@ -141,7 +145,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: `Value must be one of: ${schema.enum.join(', ')}`,
         value: processedValue,
-        schema
+        schema,
       })
     }
 
@@ -152,16 +156,16 @@ export class SchemaValidator extends EventEmitter {
           path,
           message: `Value must be >= ${schema.minimum}`,
           value: processedValue,
-          schema
+          schema,
         })
       }
-      
+
       if (schema.maximum !== undefined && processedValue > schema.maximum) {
         errors.push({
           path,
           message: `Value must be <= ${schema.maximum}`,
           value: processedValue,
-          schema
+          schema,
         })
       }
     }
@@ -173,25 +177,25 @@ export class SchemaValidator extends EventEmitter {
           path,
           message: `String must be at least ${schema.minLength} characters`,
           value: processedValue,
-          schema
+          schema,
         })
       }
-      
+
       if (schema.maxLength !== undefined && processedValue.length > schema.maxLength) {
         errors.push({
           path,
           message: `String must be at most ${schema.maxLength} characters`,
           value: processedValue,
-          schema
+          schema,
         })
       }
-      
+
       if (schema.pattern && !new RegExp(schema.pattern).test(processedValue)) {
         errors.push({
           path,
           message: `String does not match pattern: ${schema.pattern}`,
           value: processedValue,
-          schema
+          schema,
         })
       }
     }
@@ -203,28 +207,24 @@ export class SchemaValidator extends EventEmitter {
           path,
           message: `Array must have at least ${schema.minItems} items`,
           value: processedValue,
-          schema
+          schema,
         })
       }
-      
+
       if (schema.maxItems !== undefined && processedValue.length > schema.maxItems) {
         errors.push({
           path,
           message: `Array must have at most ${schema.maxItems} items`,
           value: processedValue,
-          schema
+          schema,
         })
       }
-      
+
       // 验证数组项
       if (schema.items) {
         const validatedItems: any[] = []
         for (let i = 0; i < processedValue.length; i++) {
-          const itemResult = this.validateValue(
-            processedValue[i], 
-            schema.items, 
-            `${path}[${i}]`
-          )
+          const itemResult = this.validateValue(processedValue[i], schema.items, `${path}[${i}]`)
           errors.push(...itemResult.errors)
           validatedItems.push(itemResult.data || processedValue[i])
         }
@@ -233,26 +233,28 @@ export class SchemaValidator extends EventEmitter {
     }
 
     // 对象验证
-    if (typeof processedValue === 'object' && processedValue !== null && !Array.isArray(processedValue) && schema.type === 'object') {
+    if (
+      typeof processedValue === 'object'
+      && processedValue !== null
+      && !Array.isArray(processedValue)
+      && schema.type === 'object'
+    ) {
       const validatedObject: Record<string, any> = {}
-      
+
       // 验证已定义的属性
       if (schema.properties) {
         for (const [key, propSchema] of Object.entries(schema.properties)) {
           const propPath = path ? `${path}.${key}` : key
-          const propResult = this.validateValue(
-            processedValue[key], 
-            propSchema, 
-            propPath
-          )
+          const propResult = this.validateValue(processedValue[key], propSchema, propPath)
           errors.push(...propResult.errors)
-          
+
           if (propResult.data !== undefined || processedValue[key] !== undefined) {
-            validatedObject[key] = propResult.data !== undefined ? propResult.data : processedValue[key]
+            validatedObject[key]
+              = propResult.data !== undefined ? propResult.data : processedValue[key]
           }
         }
       }
-      
+
       // 处理额外属性
       for (const [key, value] of Object.entries(processedValue)) {
         if (!schema.properties || !(key in schema.properties)) {
@@ -260,17 +262,18 @@ export class SchemaValidator extends EventEmitter {
             if (!this.options.removeAdditional) {
               validatedObject[key] = value
             }
-          } else if (this.options.strict) {
+          }
+          else if (this.options.strict) {
             errors.push({
               path: path ? `${path}.${key}` : key,
               message: `Additional property '${key}' is not allowed`,
               value,
-              schema
+              schema,
             })
           }
         }
       }
-      
+
       processedValue = validatedObject
     }
 
@@ -283,15 +286,16 @@ export class SchemaValidator extends EventEmitter {
             path,
             message: typeof customResult === 'string' ? customResult : 'Custom validation failed',
             value: processedValue,
-            schema
+            schema,
           })
         }
-      } catch (error) {
+      }
+      catch (error) {
         errors.push({
           path,
           message: `Custom validation error: ${error}`,
           value: processedValue,
-          schema
+          schema,
         })
       }
     }
@@ -299,7 +303,7 @@ export class SchemaValidator extends EventEmitter {
     return {
       valid: errors.length === 0,
       errors,
-      data: processedValue
+      data: processedValue,
     }
   }
 
@@ -308,8 +312,8 @@ export class SchemaValidator extends EventEmitter {
    */
   private validateType(value: any, type: string | string[]): boolean {
     const types = Array.isArray(type) ? type : [type]
-    
-    return types.some(t => {
+
+    return types.some((t) => {
       switch (t) {
         case 'string':
           return typeof value === 'string'
@@ -334,37 +338,40 @@ export class SchemaValidator extends EventEmitter {
   /**
    * 类型转换
    */
-  private coerceType(value: any, type: string | string[]): { success: boolean; value?: any } {
+  private coerceType(value: any, type: string | string[]): { success: boolean, value?: any } {
     const targetType = Array.isArray(type) ? type[0] : type
-    
+
     try {
       switch (targetType) {
         case 'string':
           return { success: true, value: String(value) }
-        
+
         case 'number':
           const num = Number(value)
           return { success: !isNaN(num), value: num }
-        
+
         case 'integer':
-          const int = parseInt(String(value), 10)
+          const int = Number.parseInt(String(value), 10)
           return { success: !isNaN(int), value: int }
-        
+
         case 'boolean':
           if (typeof value === 'string') {
             const lower = value.toLowerCase()
-            if (lower === 'true' || lower === '1') return { success: true, value: true }
-            if (lower === 'false' || lower === '0') return { success: true, value: false }
+            if (lower === 'true' || lower === '1')
+              return { success: true, value: true }
+            if (lower === 'false' || lower === '0')
+              return { success: true, value: false }
           }
           return { success: true, value: Boolean(value) }
-        
+
         case 'array':
           return { success: true, value: Array.isArray(value) ? value : [value] }
-        
+
         default:
           return { success: false }
       }
-    } catch {
+    }
+    catch {
       return { success: false }
     }
   }
@@ -404,8 +411,8 @@ export class SchemaValidator extends EventEmitter {
             version: { type: 'string', required: true },
             port: { type: 'number', minimum: 1, maximum: 65535, default: 3000 },
             host: { type: 'string', default: 'localhost' },
-            debug: { type: 'boolean', default: false }
-          }
+            debug: { type: 'boolean', default: false },
+          },
         },
         database: {
           type: 'object',
@@ -414,10 +421,10 @@ export class SchemaValidator extends EventEmitter {
             port: { type: 'number', minimum: 1, maximum: 65535 },
             name: { type: 'string', required: true },
             username: { type: 'string', required: true },
-            password: { type: 'string', required: true }
-          }
-        }
-      }
+            password: { type: 'string', required: true },
+          },
+        },
+      },
     }
   }
 
@@ -438,7 +445,7 @@ export class SchemaValidator extends EventEmitter {
     return {
       valid,
       errors: validator.getErrors(),
-      data
+      data,
     }
   }
 }

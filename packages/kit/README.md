@@ -49,7 +49,7 @@ import {
   StatusIndicator,
   ViteBuilder,
   RollupBuilder,
-  BuilderFactory
+  BuilderFactory,
 } from '@ldesign/kit'
 
 // 字符串工具
@@ -73,7 +73,7 @@ validator.addRule('age', ValidationRules.range(18, 100))
 
 const result = await validator.validate({
   email: 'john@example.com',
-  age: 25
+  age: 25,
 })
 
 // Git 操作
@@ -90,7 +90,7 @@ await packageManager.runScript('build')
 // SSL 证书
 const cert = await SSLUtils.generateQuickCertificate({
   commonName: 'localhost',
-  organization: 'My Company'
+  organization: 'My Company',
 })
 
 // 系统通知
@@ -171,10 +171,10 @@ const canWrite = await FileSystem.canWrite('./file.txt')
 
 // 文件监听
 const watcher = FileWatcher.create('./src')
-watcher.on('change', (path) => {
+watcher.on('change', path => {
   console.log(`文件变更: ${path}`)
 })
-watcher.on('add', (path) => {
+watcher.on('add', path => {
   console.log(`文件添加: ${path}`)
 })
 ```
@@ -189,7 +189,7 @@ import { CacheManager, MemoryCache, FileCache } from '@ldesign/kit'
 // 内存缓存
 const memoryCache = MemoryCache.create({
   maxSize: 1000,
-  ttl: 3600 // 默认1小时过期
+  ttl: 3600, // 默认1小时过期
 })
 
 await memoryCache.set('user:123', { name: 'John', age: 30 })
@@ -198,7 +198,7 @@ const user = await memoryCache.get('user:123')
 // 文件缓存
 const fileCache = FileCache.create({
   cacheDir: './cache',
-  maxSize: 100 * 1024 * 1024 // 100MB
+  maxSize: 100 * 1024 * 1024, // 100MB
 })
 
 // 缓存管理器
@@ -211,14 +211,18 @@ await cache.set('expensive:data', computedData, 7200) // 2小时过期
 const data = await cache.get('expensive:data')
 
 // 缓存穿透保护
-const result = await cache.getOrSet('user:profile:123', async () => {
-  return await fetchUserProfile(123)
-}, 1800) // 30分钟缓存
+const result = await cache.getOrSet(
+  'user:profile:123',
+  async () => {
+    return await fetchUserProfile(123)
+  },
+  1800
+) // 30分钟缓存
 
 // 批量操作
 await cache.setMany({
-  'key1': 'value1',
-  'key2': 'value2'
+  key1: 'value1',
+  key2: 'value2',
 })
 const values = await cache.getMany(['key1', 'key2'])
 ```
@@ -233,19 +237,22 @@ import { Validator, ValidationRules, FormValidator } from '@ldesign/kit'
 // 基础验证
 const validator = Validator.create()
 validator.addRule('email', ValidationRules.email())
-validator.addRule('password', ValidationRules.password({
-  minLength: 8,
-  requireUppercase: true,
-  requireNumbers: true
-}))
+validator.addRule(
+  'password',
+  ValidationRules.password({
+    minLength: 8,
+    requireUppercase: true,
+    requireNumbers: true,
+  })
+)
 
 const result = await validator.validate({
   email: 'user@example.com',
-  password: 'SecurePass123'
+  password: 'SecurePass123',
 })
 
 // 自定义验证规则
-validator.addRule('username', (value) => {
+validator.addRule('username', value => {
   if (value.length < 3) return '用户名至少3个字符'
   if (!/^[a-zA-Z0-9_]+$/.test(value)) return '用户名只能包含字母、数字和下划线'
   return true
@@ -260,7 +267,7 @@ formValidator.addFieldRule('confirmPassword', ValidationRules.confirmPassword('p
 const formResult = await formValidator.validateForm({
   email: 'user@example.com',
   password: 'password123',
-  confirmPassword: 'password123'
+  confirmPassword: 'password123',
 })
 ```
 
@@ -323,7 +330,7 @@ const packageManager = new PackageManager('./my-project')
 const pkg = await packageManager.readPackageJson()
 await packageManager.updatePackageJson({
   version: '1.1.0',
-  description: '更新的描述'
+  description: '更新的描述',
 })
 
 // 依赖管理
@@ -361,7 +368,7 @@ import { SSLManager, SSLUtils } from '@ldesign/kit'
 // SSL 管理
 const sslManager = new SSLManager({
   keySize: 2048,
-  validityDays: 365
+  validityDays: 365,
 })
 
 // 生成密钥对
@@ -372,8 +379,8 @@ const certificate = await sslManager.generateSelfSignedCertificate(keyPair, {
   subject: {
     commonName: 'localhost',
     organization: 'My Company',
-    country: 'US'
-  }
+    country: 'US',
+  },
 })
 
 // 验证证书
@@ -383,7 +390,7 @@ console.log('证书有效:', validation.valid)
 // 快速生成证书
 const quickCert = await SSLUtils.generateQuickCertificate({
   commonName: 'example.com',
-  organization: 'Example Corp'
+  organization: 'Example Corp',
 })
 
 // 证书分析
@@ -406,7 +413,7 @@ import { CLIManager, OutputFormatter, ProgressBar, Table } from '@ldesign/kit'
 const cli = new CLIManager({
   name: 'my-app',
   version: '1.0.0',
-  description: '我的命令行应用'
+  description: '我的命令行应用',
 })
 
 // 添加命令
@@ -414,14 +421,14 @@ cli.addCommand('build', {
   description: '构建项目',
   options: [
     { name: 'env', description: '环境', type: 'string', default: 'production' },
-    { name: 'watch', description: '监听模式', type: 'boolean' }
+    { name: 'watch', description: '监听模式', type: 'boolean' },
   ],
-  action: async (options) => {
+  action: async options => {
     console.log(`构建环境: ${options.env}`)
     if (options.watch) {
       console.log('启用监听模式')
     }
-  }
+  },
 })
 
 // 输出格式化
@@ -434,7 +441,7 @@ formatter.info('提示信息')
 // 进度条
 const progress = ProgressBar.create({
   total: 100,
-  format: '进度 [{bar}] {percentage}% | {value}/{total}'
+  format: '进度 [{bar}] {percentage}% | {value}/{total}',
 })
 
 for (let i = 0; i <= 100; i++) {
@@ -445,7 +452,7 @@ for (let i = 0; i <= 100; i++) {
 // 表格显示
 const table = Table.create({
   head: ['ID', '名称', '状态', '创建时间'],
-  colWidths: [10, 20, 10, 20]
+  colWidths: [10, 20, 10, 20],
 })
 
 table.push(['1', 'John Doe', '活跃', '2024-01-01'])
@@ -466,19 +473,19 @@ const inquirer = InquirerManager.create()
 // 文本输入
 const name = await inquirer.input({
   message: '请输入您的姓名:',
-  validate: (input) => input.length > 0 ? true : '姓名不能为空'
+  validate: input => (input.length > 0 ? true : '姓名不能为空'),
 })
 
 // 密码输入
 const password = await inquirer.password({
   message: '请输入密码:',
-  mask: '*'
+  mask: '*',
 })
 
 // 确认询问
 const confirmed = await inquirer.confirm({
   message: '确定要继续吗?',
-  default: true
+  default: true,
 })
 
 // 单选列表
@@ -487,8 +494,8 @@ const framework = await inquirer.select({
   choices: [
     { name: 'React', value: 'react' },
     { name: 'Vue', value: 'vue' },
-    { name: 'Angular', value: 'angular' }
-  ]
+    { name: 'Angular', value: 'angular' },
+  ],
 })
 
 // 多选列表
@@ -497,8 +504,8 @@ const features = await inquirer.multiSelect({
   choices: [
     { name: 'TypeScript', value: 'typescript' },
     { name: 'ESLint', value: 'eslint' },
-    { name: 'Prettier', value: 'prettier' }
-  ]
+    { name: 'Prettier', value: 'prettier' },
+  ],
 })
 
 // 快速工具函数
@@ -516,14 +523,14 @@ import { NotificationManager, NotificationUtils } from '@ldesign/kit'
 // 通知管理器
 const notificationManager = NotificationManager.create({
   appName: 'My App',
-  sound: true
+  sound: true,
 })
 
 // 发送通知
 await notificationManager.notify({
   title: '任务完成',
   message: '所有文件已成功处理',
-  type: 'success'
+  type: 'success',
 })
 
 // 快速通知
@@ -550,7 +557,7 @@ if (permission !== 'granted') {
 await NotificationUtils.notifyBatch([
   { title: '任务1', message: '已完成' },
   { title: '任务2', message: '已完成' },
-  { title: '任务3', message: '已完成' }
+  { title: '任务3', message: '已完成' },
 ])
 ```
 
@@ -565,7 +572,7 @@ import { PerformanceMonitor, PerformanceUtils } from '@ldesign/kit'
 const monitor = PerformanceMonitor.create({
   maxMetrics: 1000,
   enableMemory: true,
-  enableCPU: true
+  enableCPU: true,
 })
 
 // 计时器
@@ -580,10 +587,14 @@ const { result, duration: funcDuration } = await monitor.measureFunction('expens
 })
 
 // 基准测试
-const benchmark = await monitor.benchmark('array-sort', () => {
-  const arr = Array.from({ length: 10000 }, () => Math.random())
-  return arr.sort()
-}, { iterations: 100 })
+const benchmark = await monitor.benchmark(
+  'array-sort',
+  () => {
+    const arr = Array.from({ length: 10000 }, () => Math.random())
+    return arr.sort()
+  },
+  { iterations: 100 }
+)
 
 console.log(`平均耗时: ${benchmark.averageTime}ms`)
 console.log(`每秒操作数: ${benchmark.opsPerSecond}`)
@@ -602,10 +613,13 @@ const memoryAnalysis = PerformanceUtils.analyzeMemoryUsage()
 console.log(`内存使用: ${memoryAnalysis.formatted.heapUsed}`)
 
 // 函数性能比较
-const comparison = await PerformanceUtils.compareFunctions([
-  { name: 'method1', fn: method1 },
-  { name: 'method2', fn: method2 }
-], 1000)
+const comparison = await PerformanceUtils.compareFunctions(
+  [
+    { name: 'method1', fn: method1 },
+    { name: 'method2', fn: method2 },
+  ],
+  1000
+)
 
 comparison.forEach((result, index) => {
   console.log(`排名 ${result.rank}: ${result.name} - ${result.averageTime}ms`)
@@ -623,7 +637,7 @@ const scaffold = new ScaffoldManager({
   version: '1.0.0',
   description: '我的项目脚手架',
   environments: ['development', 'production', 'staging'],
-  defaultEnvironment: 'development'
+  defaultEnvironment: 'development',
 })
 
 // 初始化脚手架
@@ -634,7 +648,7 @@ const result = await scaffold.createProject({
   name: 'my-project',
   template: 'vue-app',
   environment: 'development',
-  interactive: true
+  interactive: true,
 })
 
 // 创建 CLI 工具
@@ -642,7 +656,7 @@ const cli = new CliBuilder({
   name: 'my-cli',
   version: '1.0.0',
   description: '我的 CLI 工具',
-  scaffoldManager: scaffold
+  scaffoldManager: scaffold,
 })
 
 // 解析命令行参数
@@ -657,7 +671,7 @@ import {
   LoadingSpinner,
   StatusIndicator,
   MultiProgress,
-  ConsoleTheme
+  ConsoleTheme,
 } from '@ldesign/kit'
 
 // 进度条
@@ -706,7 +720,7 @@ import {
   createViteBuilder,
   createRollupBuilder,
   createViteBuilderWithPreset,
-  createRollupBuilderWithPreset
+  createRollupBuilderWithPreset,
 } from '@ldesign/kit'
 
 // Vite 构建器
@@ -715,8 +729,8 @@ const viteBuilder = new ViteBuilder({
   outDir: 'dist',
   server: {
     port: 3000,
-    open: true
-  }
+    open: true,
+  },
 })
 
 // 构建项目
@@ -732,8 +746,8 @@ const libBuilder = new ViteBuilder({
   lib: {
     entry: 'src/index.ts',
     name: 'MyLibrary',
-    formats: ['es', 'cjs', 'umd']
-  }
+    formats: ['es', 'cjs', 'umd'],
+  },
 })
 await libBuilder.buildLib()
 
@@ -743,8 +757,8 @@ const rollupBuilder = new RollupBuilder({
   output: [
     { file: 'dist/index.js', format: 'es' },
     { file: 'dist/index.cjs', format: 'cjs' },
-    { file: 'dist/index.umd.js', format: 'umd', name: 'MyLib' }
-  ]
+    { file: 'dist/index.umd.js', format: 'umd', name: 'MyLib' },
+  ],
 })
 
 // 构建多种格式
@@ -755,21 +769,21 @@ results.forEach((result, index) => {
 
 // 使用预设创建构建器
 const vueBuilder = createViteBuilderWithPreset('vue-app', {
-  server: { port: 8080 }
+  server: { port: 8080 },
 })
 
 const libBuilder2 = createRollupBuilderWithPreset('rollup-library', {
-  input: 'src/my-lib.ts'
+  input: 'src/my-lib.ts',
 })
 
 // 工厂方法
 const builder1 = BuilderFactory.createViteBuilder({
-  entry: 'src/app.ts'
+  entry: 'src/app.ts',
 })
 
 const builder2 = BuilderFactory.createRollupBuilder({
   input: 'src/lib.ts',
-  output: { file: 'dist/lib.js', format: 'es' }
+  output: { file: 'dist/lib.js', format: 'es' },
 })
 
 // 监听构建事件

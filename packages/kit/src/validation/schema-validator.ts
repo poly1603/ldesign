@@ -3,8 +3,8 @@
  * 提供基于JSON Schema的数据验证
  */
 
+import type { SchemaValidationResult, SchemaValidatorOptions, ValidationSchema } from '../types'
 import { EventEmitter } from 'node:events'
-import type { ValidationSchema, SchemaValidationResult, SchemaValidatorOptions } from '../types'
 
 /**
  * 模式验证器类
@@ -15,7 +15,7 @@ export class SchemaValidator extends EventEmitter {
 
   constructor(options: SchemaValidatorOptions = {}) {
     super()
-    
+
     this.options = {
       strict: options.strict !== false,
       allowAdditionalProperties: options.allowAdditionalProperties !== false,
@@ -23,7 +23,7 @@ export class SchemaValidator extends EventEmitter {
       useDefaults: options.useDefaults !== false,
       coerceTypes: options.coerceTypes !== false,
       validateFormats: options.validateFormats !== false,
-      enableCustomKeywords: options.enableCustomKeywords !== false
+      enableCustomKeywords: options.enableCustomKeywords !== false,
     }
   }
 
@@ -74,26 +74,26 @@ export class SchemaValidator extends EventEmitter {
       valid: true,
       errors: [],
       warnings: [],
-      data: this.options.removeAdditionalProperties ? {} : { ...data }
+      data: this.options.removeAdditionalProperties ? {} : { ...data },
     }
 
     try {
       this.emit('validationStart', { data, schema })
-      
+
       // 验证根级别
       this.validateValue(data, schema, '', result)
-      
+
       this.emit('validationEnd', result)
       return result
-
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('validationError', error)
       result.valid = false
       result.errors.push({
         path: '',
         message: `Validation error: ${error}`,
         code: 'VALIDATION_ERROR',
-        value: data
+        value: data,
       })
       return result
     }
@@ -106,7 +106,7 @@ export class SchemaValidator extends EventEmitter {
     value: any,
     schema: ValidationSchema,
     path: string,
-    result: SchemaValidationResult
+    result: SchemaValidationResult,
   ): void {
     // 类型验证
     if (schema.type && !this.validateType(value, schema.type)) {
@@ -115,23 +115,25 @@ export class SchemaValidator extends EventEmitter {
         if (coerced.success) {
           value = coerced.value
           this.setValueAtPath(result.data, path, value)
-        } else {
+        }
+        else {
           result.valid = false
           result.errors.push({
             path,
             message: `Expected type ${schema.type}, got ${typeof value}`,
             code: 'TYPE_MISMATCH',
-            value
+            value,
           })
           return
         }
-      } else {
+      }
+      else {
         result.valid = false
         result.errors.push({
           path,
           message: `Expected type ${schema.type}, got ${typeof value}`,
           code: 'TYPE_MISMATCH',
-          value
+          value,
         })
         return
       }
@@ -144,7 +146,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: `Value must be one of: ${schema.enum.join(', ')}`,
         code: 'ENUM_MISMATCH',
-        value
+        value,
       })
       return
     }
@@ -156,7 +158,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: `Value must be: ${schema.const}`,
         code: 'CONST_MISMATCH',
-        value
+        value,
       })
       return
     }
@@ -190,7 +192,7 @@ export class SchemaValidator extends EventEmitter {
           path,
           message: customResult.message || 'Custom validation failed',
           code: customResult.code || 'CUSTOM_VALIDATION_ERROR',
-          value
+          value,
         })
       }
     }
@@ -203,7 +205,7 @@ export class SchemaValidator extends EventEmitter {
     value: string,
     schema: ValidationSchema,
     path: string,
-    result: SchemaValidationResult
+    result: SchemaValidationResult,
   ): void {
     // 长度验证
     if (schema.minLength !== undefined && value.length < schema.minLength) {
@@ -212,7 +214,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: `String length must be at least ${schema.minLength}`,
         code: 'MIN_LENGTH',
-        value
+        value,
       })
     }
 
@@ -222,7 +224,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: `String length must be at most ${schema.maxLength}`,
         code: 'MAX_LENGTH',
-        value
+        value,
       })
     }
 
@@ -235,7 +237,7 @@ export class SchemaValidator extends EventEmitter {
           path,
           message: `String does not match pattern: ${schema.pattern}`,
           code: 'PATTERN_MISMATCH',
-          value
+          value,
         })
       }
     }
@@ -248,7 +250,7 @@ export class SchemaValidator extends EventEmitter {
           path,
           message: `String does not match format: ${schema.format}`,
           code: 'FORMAT_MISMATCH',
-          value
+          value,
         })
       }
     }
@@ -261,7 +263,7 @@ export class SchemaValidator extends EventEmitter {
     value: number,
     schema: ValidationSchema,
     path: string,
-    result: SchemaValidationResult
+    result: SchemaValidationResult,
   ): void {
     // 最小值验证
     if (schema.minimum !== undefined && value < schema.minimum) {
@@ -270,7 +272,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: `Number must be at least ${schema.minimum}`,
         code: 'MINIMUM',
-        value
+        value,
       })
     }
 
@@ -281,7 +283,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: `Number must be at most ${schema.maximum}`,
         code: 'MAXIMUM',
-        value
+        value,
       })
     }
 
@@ -292,7 +294,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: `Number must be greater than ${schema.exclusiveMinimum}`,
         code: 'EXCLUSIVE_MINIMUM',
-        value
+        value,
       })
     }
 
@@ -303,7 +305,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: `Number must be less than ${schema.exclusiveMaximum}`,
         code: 'EXCLUSIVE_MAXIMUM',
-        value
+        value,
       })
     }
 
@@ -314,7 +316,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: `Number must be a multiple of ${schema.multipleOf}`,
         code: 'MULTIPLE_OF',
-        value
+        value,
       })
     }
 
@@ -325,7 +327,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: 'Value must be an integer',
         code: 'NOT_INTEGER',
-        value
+        value,
       })
     }
   }
@@ -337,7 +339,7 @@ export class SchemaValidator extends EventEmitter {
     value: any[],
     schema: ValidationSchema,
     path: string,
-    result: SchemaValidationResult
+    result: SchemaValidationResult,
   ): void {
     // 长度验证
     if (schema.minItems !== undefined && value.length < schema.minItems) {
@@ -346,7 +348,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: `Array must have at least ${schema.minItems} items`,
         code: 'MIN_ITEMS',
-        value
+        value,
       })
     }
 
@@ -356,7 +358,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: `Array must have at most ${schema.maxItems} items`,
         code: 'MAX_ITEMS',
-        value
+        value,
       })
     }
 
@@ -371,7 +373,7 @@ export class SchemaValidator extends EventEmitter {
             path: `${path}[${i}]`,
             message: 'Array items must be unique',
             code: 'UNIQUE_ITEMS',
-            value: value[i]
+            value: value[i],
           })
         }
         seen.add(item)
@@ -393,7 +395,7 @@ export class SchemaValidator extends EventEmitter {
     value: Record<string, any>,
     schema: ValidationSchema,
     path: string,
-    result: SchemaValidationResult
+    result: SchemaValidationResult,
   ): void {
     // 必需属性验证
     if (schema.required) {
@@ -404,7 +406,7 @@ export class SchemaValidator extends EventEmitter {
             path: path ? `${path}.${prop}` : prop,
             message: `Required property '${prop}' is missing`,
             code: 'REQUIRED_PROPERTY',
-            value: undefined
+            value: undefined,
           })
         }
       }
@@ -416,7 +418,8 @@ export class SchemaValidator extends EventEmitter {
         const propPath = path ? `${path}.${prop}` : prop
         if (prop in value) {
           this.validateValue(value[prop], propSchema, propPath, result)
-        } else if (propSchema.default !== undefined && this.options.useDefaults) {
+        }
+        else if (propSchema.default !== undefined && this.options.useDefaults) {
           // 应用默认值
           value[prop] = propSchema.default
           this.setValueAtPath(result.data, propPath, propSchema.default)
@@ -434,7 +437,7 @@ export class SchemaValidator extends EventEmitter {
             path: path ? `${path}.${prop}` : prop,
             message: `Additional property '${prop}' is not allowed`,
             code: 'ADDITIONAL_PROPERTY',
-            value: value[prop]
+            value: value[prop],
           })
         }
       }
@@ -447,7 +450,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: `Object must have at least ${schema.minProperties} properties`,
         code: 'MIN_PROPERTIES',
-        value
+        value,
       })
     }
 
@@ -457,7 +460,7 @@ export class SchemaValidator extends EventEmitter {
         path,
         message: `Object must have at most ${schema.maxProperties} properties`,
         code: 'MAX_PROPERTIES',
-        value
+        value,
       })
     }
   }
@@ -489,7 +492,7 @@ export class SchemaValidator extends EventEmitter {
   /**
    * 类型强制转换
    */
-  private coerceType(value: any, type: string): { success: boolean; value: any } {
+  private coerceType(value: any, type: string): { success: boolean, value: any } {
     try {
       switch (type) {
         case 'string':
@@ -498,19 +501,22 @@ export class SchemaValidator extends EventEmitter {
           const num = Number(value)
           return { success: !isNaN(num), value: num }
         case 'integer':
-          const int = parseInt(String(value), 10)
+          const int = Number.parseInt(String(value), 10)
           return { success: !isNaN(int), value: int }
         case 'boolean':
           if (typeof value === 'string') {
             const lower = value.toLowerCase()
-            if (lower === 'true' || lower === '1') return { success: true, value: true }
-            if (lower === 'false' || lower === '0') return { success: true, value: false }
+            if (lower === 'true' || lower === '1')
+              return { success: true, value: true }
+            if (lower === 'false' || lower === '0')
+              return { success: true, value: false }
           }
           return { success: false, value }
         default:
           return { success: false, value }
       }
-    } catch {
+    }
+    catch {
       return { success: false, value }
     }
   }
@@ -520,14 +526,14 @@ export class SchemaValidator extends EventEmitter {
    */
   private validateFormat(value: string, format: string): boolean {
     const formats: Record<string, RegExp> = {
-      email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-      uri: /^https?:\/\/.+/,
-      date: /^\d{4}-\d{2}-\d{2}$/,
-      time: /^\d{2}:\d{2}:\d{2}$/,
+      'email': /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/,
+      'uri': /^https?:\/\/.+/,
+      'date': /^\d{4}-\d{2}-\d{2}$/,
+      'time': /^\d{2}:\d{2}:\d{2}$/,
       'date-time': /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/,
-      uuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-      ipv4: /^(\d{1,3}\.){3}\d{1,3}$/,
-      ipv6: /^([0-9a-f]{1,4}:){7}[0-9a-f]{1,4}$/i
+      'uuid': /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      'ipv4': /^(\d{1,3}\.){3}\d{1,3}$/,
+      'ipv6': /^([0-9a-f]{1,4}:){7}[0-9a-f]{1,4}$/i,
     }
 
     const regex = formats[format]

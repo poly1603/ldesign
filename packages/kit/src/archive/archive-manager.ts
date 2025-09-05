@@ -2,21 +2,21 @@
  * 压缩解压管理器
  */
 
+import type {
+  ArchiveEntry,
+  ArchiveOptions,
+  ArchiveProgress,
+  ArchiveStats,
+  CompressionOptions,
+  ExtractionOptions,
+} from '../types'
 import { EventEmitter } from 'node:events'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { pipeline } from 'node:stream/promises'
-import { createGzip, createGunzip } from 'node:zlib'
+import { createGunzip, createGzip } from 'node:zlib'
 import archiver from 'archiver'
 import * as yauzl from 'yauzl'
 import { FileSystem } from '../filesystem'
-import type { 
-  ArchiveOptions, 
-  CompressionOptions, 
-  ExtractionOptions,
-  ArchiveEntry,
-  ArchiveProgress,
-  ArchiveStats
-} from '../types'
 
 /**
  * 压缩解压管理器
@@ -26,7 +26,7 @@ export class ArchiveManager extends EventEmitter {
 
   constructor(options: ArchiveOptions = {}) {
     super()
-    
+
     this.options = {
       compressionLevel: options.compressionLevel ?? 6,
       preservePermissions: options.preservePermissions ?? true,
@@ -35,7 +35,7 @@ export class ArchiveManager extends EventEmitter {
       ignoreHidden: options.ignoreHidden ?? false,
       maxFileSize: options.maxFileSize ?? 100 * 1024 * 1024, // 100MB
       password: options.password ?? '',
-      ...options
+      ...options,
     }
   }
 
@@ -45,7 +45,7 @@ export class ArchiveManager extends EventEmitter {
   async createZip(
     sources: string | string[],
     outputPath: string,
-    options: CompressionOptions = {}
+    options: CompressionOptions = {},
   ): Promise<ArchiveStats> {
     const sourceList = Array.isArray(sources) ? sources : [sources]
     const mergedOptions = { ...this.options, ...options }
@@ -54,28 +54,28 @@ export class ArchiveManager extends EventEmitter {
       try {
         const output = createWriteStream(outputPath)
         const archive = archiver('zip', {
-          zlib: { level: mergedOptions.compressionLevel }
+          zlib: { level: mergedOptions.compressionLevel },
         })
 
-        let stats: ArchiveStats = {
+        const stats: ArchiveStats = {
           totalFiles: 0,
           totalSize: 0,
           compressedSize: 0,
           compressionRatio: 0,
           startTime: new Date(),
           endTime: new Date(),
-          duration: 0
+          duration: 0,
         }
 
         // 监听事件
         archive.on('entry', (entry) => {
           stats.totalFiles++
           stats.totalSize += entry.stats?.size || 0
-          
+
           this.emit('entry', {
             name: entry.name,
             size: entry.stats?.size || 0,
-            type: entry.stats?.isDirectory() ? 'directory' : 'file'
+            type: entry.stats?.isDirectory() ? 'directory' : 'file',
           } as ArchiveEntry)
         })
 
@@ -85,9 +85,9 @@ export class ArchiveManager extends EventEmitter {
             totalFiles: progress.entries.total,
             processedBytes: progress.fs.processedBytes,
             totalBytes: progress.fs.totalBytes,
-            percentage: (progress.fs.processedBytes / progress.fs.totalBytes) * 100
+            percentage: (progress.fs.processedBytes / progress.fs.totalBytes) * 100,
           }
-          
+
           this.emit('progress', progressInfo)
         })
 
@@ -97,9 +97,8 @@ export class ArchiveManager extends EventEmitter {
           stats.endTime = new Date()
           stats.duration = stats.endTime.getTime() - stats.startTime.getTime()
           stats.compressedSize = archive.pointer()
-          stats.compressionRatio = stats.totalSize > 0 
-            ? (1 - stats.compressedSize / stats.totalSize) * 100 
-            : 0
+          stats.compressionRatio
+            = stats.totalSize > 0 ? (1 - stats.compressedSize / stats.totalSize) * 100 : 0
 
           this.emit('complete', stats)
           resolve(stats)
@@ -112,10 +111,11 @@ export class ArchiveManager extends EventEmitter {
         for (const source of sourceList) {
           if (await FileSystem.exists(source)) {
             const stat = await FileSystem.stat(source)
-            
+
             if (stat.isDirectory()) {
               archive.directory(source, false)
-            } else {
+            }
+            else {
               archive.file(source, { name: source })
             }
           }
@@ -123,7 +123,8 @@ export class ArchiveManager extends EventEmitter {
 
         // 完成压缩
         archive.finalize()
-      } catch (error) {
+      }
+      catch (error) {
         reject(error)
       }
     })
@@ -135,7 +136,7 @@ export class ArchiveManager extends EventEmitter {
   async createTar(
     sources: string | string[],
     outputPath: string,
-    options: CompressionOptions = {}
+    options: CompressionOptions = {},
   ): Promise<ArchiveStats> {
     const sourceList = Array.isArray(sources) ? sources : [sources]
     const mergedOptions = { ...this.options, ...options }
@@ -146,29 +147,29 @@ export class ArchiveManager extends EventEmitter {
         const archive = archiver('tar', {
           gzip: mergedOptions.gzip,
           gzipOptions: {
-            level: mergedOptions.compressionLevel
-          }
+            level: mergedOptions.compressionLevel,
+          },
         })
 
-        let stats: ArchiveStats = {
+        const stats: ArchiveStats = {
           totalFiles: 0,
           totalSize: 0,
           compressedSize: 0,
           compressionRatio: 0,
           startTime: new Date(),
           endTime: new Date(),
-          duration: 0
+          duration: 0,
         }
 
         // 监听事件
         archive.on('entry', (entry) => {
           stats.totalFiles++
           stats.totalSize += entry.stats?.size || 0
-          
+
           this.emit('entry', {
             name: entry.name,
             size: entry.stats?.size || 0,
-            type: entry.stats?.isDirectory() ? 'directory' : 'file'
+            type: entry.stats?.isDirectory() ? 'directory' : 'file',
           } as ArchiveEntry)
         })
 
@@ -178,9 +179,8 @@ export class ArchiveManager extends EventEmitter {
           stats.endTime = new Date()
           stats.duration = stats.endTime.getTime() - stats.startTime.getTime()
           stats.compressedSize = archive.pointer()
-          stats.compressionRatio = stats.totalSize > 0 
-            ? (1 - stats.compressedSize / stats.totalSize) * 100 
-            : 0
+          stats.compressionRatio
+            = stats.totalSize > 0 ? (1 - stats.compressedSize / stats.totalSize) * 100 : 0
 
           resolve(stats)
         })
@@ -192,10 +192,11 @@ export class ArchiveManager extends EventEmitter {
         for (const source of sourceList) {
           if (await FileSystem.exists(source)) {
             const stat = await FileSystem.stat(source)
-            
+
             if (stat.isDirectory()) {
               archive.directory(source, false)
-            } else {
+            }
+            else {
               archive.file(source, { name: source })
             }
           }
@@ -203,7 +204,8 @@ export class ArchiveManager extends EventEmitter {
 
         // 完成压缩
         archive.finalize()
-      } catch (error) {
+      }
+      catch (error) {
         reject(error)
       }
     })
@@ -215,24 +217,26 @@ export class ArchiveManager extends EventEmitter {
   async extractZip(
     archivePath: string,
     outputDir: string,
-    options: ExtractionOptions = {}
+    options: ExtractionOptions = {},
   ): Promise<ArchiveStats> {
     // Remove unused variable
     // const mergedOptions = { ...this.options, ...options }
 
     return new Promise((resolve, reject) => {
       yauzl.open(archivePath, { lazyEntries: true }, async (err, zipfile) => {
-        if (err) return reject(err)
-        if (!zipfile) return reject(new Error('Failed to open ZIP file'))
+        if (err)
+          return reject(err)
+        if (!zipfile)
+          return reject(new Error('Failed to open ZIP file'))
 
-        let stats: ArchiveStats = {
+        const stats: ArchiveStats = {
           totalFiles: 0,
           totalSize: 0,
           compressedSize: 0,
           compressionRatio: 0,
           startTime: new Date(),
           endTime: new Date(),
-          duration: 0
+          duration: 0,
         }
 
         // 确保输出目录存在
@@ -251,25 +255,29 @@ export class ArchiveManager extends EventEmitter {
           this.emit('entry', {
             name: entry.fileName,
             size: entry.uncompressedSize,
-            type: entry.fileName.endsWith('/') ? 'directory' : 'file'
+            type: entry.fileName.endsWith('/') ? 'directory' : 'file',
           } as ArchiveEntry)
 
           if (entry.fileName.endsWith('/')) {
             // 目录
             await FileSystem.ensureDir(entryPath)
             zipfile.readEntry()
-          } else {
+          }
+          else {
             // 文件
             zipfile.openReadStream(entry, async (err, readStream) => {
-              if (err) return reject(err)
-              if (!readStream) return reject(new Error('Failed to open read stream'))
+              if (err)
+                return reject(err)
+              if (!readStream)
+                return reject(new Error('Failed to open read stream'))
 
               try {
                 await FileSystem.ensureDir(FileSystem.dirname(entryPath))
                 const writeStream = createWriteStream(entryPath)
                 await pipeline(readStream, writeStream)
                 zipfile.readEntry()
-              } catch (error) {
+              }
+              catch (error) {
                 reject(error)
               }
             })
@@ -279,9 +287,8 @@ export class ArchiveManager extends EventEmitter {
         zipfile.on('end', () => {
           stats.endTime = new Date()
           stats.duration = stats.endTime.getTime() - stats.startTime.getTime()
-          stats.compressionRatio = stats.totalSize > 0 
-            ? (1 - stats.compressedSize / stats.totalSize) * 100 
-            : 0
+          stats.compressionRatio
+            = stats.totalSize > 0 ? (1 - stats.compressedSize / stats.totalSize) * 100 : 0
 
           this.emit('complete', stats)
           resolve(stats)
@@ -298,10 +305,10 @@ export class ArchiveManager extends EventEmitter {
   async compressFile(
     inputPath: string,
     outputPath: string,
-    options: CompressionOptions = {}
+    options: CompressionOptions = {},
   ): Promise<void> {
     const mergedOptions = { ...this.options, ...options }
-    
+
     const input = createReadStream(inputPath)
     const output = createWriteStream(outputPath)
     const gzip = createGzip({ level: mergedOptions.compressionLevel })
@@ -312,10 +319,7 @@ export class ArchiveManager extends EventEmitter {
   /**
    * 解压单个文件 (GZIP)
    */
-  async decompressFile(
-    inputPath: string,
-    outputPath: string
-  ): Promise<void> {
+  async decompressFile(inputPath: string, outputPath: string): Promise<void> {
     const input = createReadStream(inputPath)
     const output = createWriteStream(outputPath)
     const gunzip = createGunzip()
@@ -333,11 +337,11 @@ export class ArchiveManager extends EventEmitter {
     compressedSize: number
   }> {
     const ext = archivePath.toLowerCase().split('.').pop()
-    
+
     if (ext === 'zip') {
       return this.getZipInfo(archivePath)
     }
-    
+
     throw new Error(`Unsupported archive format: ${ext}`)
   }
 
@@ -352,8 +356,10 @@ export class ArchiveManager extends EventEmitter {
   }> {
     return new Promise((resolve, reject) => {
       yauzl.open(archivePath, { lazyEntries: true }, (err, zipfile) => {
-        if (err) return reject(err)
-        if (!zipfile) return reject(new Error('Failed to open ZIP file'))
+        if (err)
+          return reject(err)
+        if (!zipfile)
+          return reject(new Error('Failed to open ZIP file'))
 
         const entries: ArchiveEntry[] = []
         let totalSize = 0
@@ -367,7 +373,7 @@ export class ArchiveManager extends EventEmitter {
             size: entry.uncompressedSize,
             type: entry.fileName.endsWith('/') ? 'directory' : 'file',
             compressedSize: entry.compressedSize,
-            lastModified: entry.getLastModDate()
+            lastModified: entry.getLastModDate(),
           }
 
           entries.push(archiveEntry)
@@ -382,7 +388,7 @@ export class ArchiveManager extends EventEmitter {
             type: 'zip',
             entries,
             totalSize,
-            compressedSize
+            compressedSize,
           })
         })
 

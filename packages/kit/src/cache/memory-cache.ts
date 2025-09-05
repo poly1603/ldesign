@@ -3,8 +3,8 @@
  * 提供基于内存的高性能缓存实现
  */
 
+import type { CacheEntry, CacheStats, CacheStore, EvictionStrategy } from '../types'
 import { EventEmitter } from 'node:events'
-import type { CacheStore, CacheStats, CacheEntry, EvictionStrategy } from '../types'
 
 /**
  * 内存缓存选项
@@ -36,19 +36,20 @@ export class MemoryCache extends EventEmitter implements CacheStore {
     misses: 0,
     sets: 0,
     deletes: 0,
-    evictions: 0
+    evictions: 0,
   }
+
   private cleanupTimer?: NodeJS.Timeout
 
   constructor(options: MemoryCacheOptions = {}) {
     super()
-    
+
     this.options = {
       maxSize: options.maxSize || 1000,
       defaultTTL: options.defaultTTL || 3600,
       strategy: options.strategy || 'lru',
       checkInterval: options.checkInterval || 60000, // 1分钟
-      maxMemory: options.maxMemory || 100 * 1024 * 1024 // 100MB
+      maxMemory: options.maxMemory || 100 * 1024 * 1024, // 100MB
     }
 
     // 启动定期清理
@@ -60,7 +61,7 @@ export class MemoryCache extends EventEmitter implements CacheStore {
    */
   async get<T = any>(key: string): Promise<T | undefined> {
     const entry = this.cache.get(key)
-    
+
     if (!entry) {
       this.stats.misses++
       this.emit('miss', key)
@@ -90,14 +91,14 @@ export class MemoryCache extends EventEmitter implements CacheStore {
    */
   async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
     const now = Date.now()
-    const expiresAt = ttl ? now + (ttl * 1000) : undefined
+    const expiresAt = ttl ? now + ttl * 1000 : undefined
 
     const entry: MemoryCacheEntry<T> = {
       value,
       expiresAt,
       createdAt: now,
       accessTime: now,
-      accessCount: 1
+      accessCount: 1,
     }
 
     // 检查是否需要驱逐
@@ -118,7 +119,7 @@ export class MemoryCache extends EventEmitter implements CacheStore {
    */
   async has(key: string): Promise<boolean> {
     const entry = this.cache.get(key)
-    
+
     if (!entry) {
       return false
     }
@@ -158,14 +159,14 @@ export class MemoryCache extends EventEmitter implements CacheStore {
    */
   async mget<T = any>(keys: string[]): Promise<Map<string, T>> {
     const results = new Map<string, T>()
-    
+
     for (const key of keys) {
       const value = await this.get<T>(key)
       if (value !== undefined) {
         results.set(key, value)
       }
     }
-    
+
     return results
   }
 
@@ -196,7 +197,7 @@ export class MemoryCache extends EventEmitter implements CacheStore {
    */
   async keys(pattern?: string): Promise<string[]> {
     const allKeys = Array.from(this.cache.keys())
-    
+
     if (!pattern) {
       return allKeys
     }
@@ -215,7 +216,7 @@ export class MemoryCache extends EventEmitter implements CacheStore {
       return false
     }
 
-    entry.expiresAt = Date.now() + (ttl * 1000)
+    entry.expiresAt = Date.now() + ttl * 1000
     return true
   }
 
@@ -237,7 +238,7 @@ export class MemoryCache extends EventEmitter implements CacheStore {
    */
   async getStats(): Promise<CacheStats> {
     const memoryUsage = this.calculateMemoryUsage()
-    
+
     return {
       hits: this.stats.hits,
       misses: this.stats.misses,
@@ -247,7 +248,7 @@ export class MemoryCache extends EventEmitter implements CacheStore {
       hitRate: this.stats.hits / (this.stats.hits + this.stats.misses) || 0,
       sets: this.stats.sets,
       deletes: this.stats.deletes,
-      evictions: this.stats.evictions
+      evictions: this.stats.evictions,
     }
   }
 
@@ -262,7 +263,8 @@ export class MemoryCache extends EventEmitter implements CacheStore {
    * 驱逐策略
    */
   private evict(): void {
-    if (this.cache.size === 0) return
+    if (this.cache.size === 0)
+      return
 
     let keyToEvict: string | undefined
 
@@ -386,7 +388,7 @@ export class MemoryCache extends EventEmitter implements CacheStore {
    */
   private checkMemoryUsage(): void {
     const memoryUsage = this.calculateMemoryUsage()
-    
+
     if (memoryUsage > this.options.maxMemory) {
       // 驱逐一些条目以释放内存
       const targetSize = Math.floor(this.cache.size * 0.8)
@@ -402,14 +404,14 @@ export class MemoryCache extends EventEmitter implements CacheStore {
    */
   private calculateMemoryUsage(): number {
     let totalSize = 0
-    
+
     for (const [key, entry] of this.cache) {
       // 估算键和值的内存占用
       totalSize += key.length * 2 // 字符串按UTF-16计算
       totalSize += this.estimateValueSize(entry.value)
       totalSize += 64 // 条目元数据的估算大小
     }
-    
+
     return totalSize
   }
 
@@ -420,27 +422,28 @@ export class MemoryCache extends EventEmitter implements CacheStore {
     if (value === null || value === undefined) {
       return 8
     }
-    
+
     if (typeof value === 'string') {
       return value.length * 2
     }
-    
+
     if (typeof value === 'number') {
       return 8
     }
-    
+
     if (typeof value === 'boolean') {
       return 4
     }
-    
+
     if (typeof value === 'object') {
       try {
         return JSON.stringify(value).length * 2
-      } catch {
+      }
+      catch {
         return 1024 // 默认估算
       }
     }
-    
+
     return 64 // 默认估算
   }
 
@@ -453,7 +456,7 @@ export class MemoryCache extends EventEmitter implements CacheStore {
       misses: 0,
       sets: 0,
       deletes: 0,
-      evictions: 0
+      evictions: 0,
     }
   }
 
@@ -465,7 +468,7 @@ export class MemoryCache extends EventEmitter implements CacheStore {
       clearInterval(this.cleanupTimer)
       this.cleanupTimer = undefined
     }
-    
+
     await this.clear()
     this.removeAllListeners()
   }

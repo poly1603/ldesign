@@ -3,8 +3,8 @@
  * 提供复杂的业务规则验证和执行
  */
 
+import type { BusinessRule, RuleContext, RuleEngineOptions, RuleResult } from '../types'
 import { EventEmitter } from 'node:events'
-import type { BusinessRule, RuleContext, RuleResult, RuleEngineOptions } from '../types'
 
 /**
  * 规则引擎类
@@ -16,14 +16,14 @@ export class RuleEngine extends EventEmitter {
 
   constructor(options: RuleEngineOptions = {}) {
     super()
-    
+
     this.options = {
       enableAsync: options.enableAsync !== false,
       enableCaching: options.enableCaching !== false,
       enableProfiling: options.enableProfiling !== false,
       maxExecutionTime: options.maxExecutionTime || 5000,
       enableParallelExecution: options.enableParallelExecution !== false,
-      stopOnFirstFailure: options.stopOnFirstFailure !== false
+      stopOnFirstFailure: options.stopOnFirstFailure !== false,
     }
   }
 
@@ -87,21 +87,21 @@ export class RuleEngine extends EventEmitter {
 
     try {
       // 检查前置条件
-      if (rule.condition && !await this.evaluateCondition(rule.condition, context)) {
+      if (rule.condition && !(await this.evaluateCondition(rule.condition, context))) {
         return {
           ruleId,
           success: true,
           skipped: true,
           message: 'Rule condition not met',
-          executionTime: Date.now() - startTime
+          executionTime: Date.now() - startTime,
         }
       }
 
       // 执行规则
       const result = await this.executeRuleLogic(rule, context)
-      
+
       const executionTime = Date.now() - startTime
-      
+
       // 检查执行时间
       if (executionTime > this.options.maxExecutionTime) {
         this.emit('ruleTimeout', { ruleId, executionTime })
@@ -113,20 +113,20 @@ export class RuleEngine extends EventEmitter {
         message: result.message,
         data: result.data,
         executionTime,
-        metadata: result.metadata
+        metadata: result.metadata,
       }
 
       this.emit('ruleExecutionEnd', finalResult)
       return finalResult
-
-    } catch (error) {
+    }
+    catch (error) {
       const executionTime = Date.now() - startTime
       const errorResult: RuleResult = {
         ruleId,
         success: false,
         message: `Rule execution failed: ${error}`,
         error: error as Error,
-        executionTime
+        executionTime,
       }
 
       this.emit('ruleExecutionError', errorResult)
@@ -150,8 +150,9 @@ export class RuleEngine extends EventEmitter {
     if (this.options.enableParallelExecution) {
       // 并行执行
       const promises = ruleIds.map(ruleId => this.executeRule(ruleId, context))
-      results.push(...await Promise.all(promises))
-    } else {
+      results.push(...(await Promise.all(promises)))
+    }
+    else {
       // 串行执行
       for (const ruleId of ruleIds) {
         const result = await this.executeRule(ruleId, context)
@@ -190,9 +191,9 @@ export class RuleEngine extends EventEmitter {
   /**
    * 验证规则依赖
    */
-  validateDependencies(): { valid: boolean; errors: string[] } {
+  validateDependencies(): { valid: boolean, errors: string[] } {
     const errors: string[] = []
-    
+
     for (const [ruleId, rule] of this.rules) {
       if (rule.dependencies) {
         for (const depId of rule.dependencies) {
@@ -205,7 +206,7 @@ export class RuleEngine extends EventEmitter {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     }
   }
 
@@ -219,13 +220,14 @@ export class RuleEngine extends EventEmitter {
     const order: string[] = []
 
     const visit = (ruleId: string): void => {
-      if (visited.has(ruleId)) return
+      if (visited.has(ruleId))
+        return
       if (visiting.has(ruleId)) {
         throw new Error(`Circular dependency detected involving rule: ${ruleId}`)
       }
 
       visiting.add(ruleId)
-      
+
       const rule = this.rules.get(ruleId)
       if (rule && rule.dependencies) {
         for (const depId of rule.dependencies) {
@@ -253,7 +255,8 @@ export class RuleEngine extends EventEmitter {
   private async executeRuleLogic(rule: BusinessRule, context: RuleContext): Promise<RuleResult> {
     if (this.options.enableAsync && rule.async) {
       return await rule.execute(context)
-    } else {
+    }
+    else {
       return rule.execute(context)
     }
   }
@@ -265,7 +268,8 @@ export class RuleEngine extends EventEmitter {
     try {
       const result = condition(context)
       return result instanceof Promise ? await result : result
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('conditionEvaluationError', { condition, context, error })
       return false
     }
@@ -286,7 +290,7 @@ export class RuleEngine extends EventEmitter {
       totalRules: this.rules.size,
       ruleGroups: this.ruleGroups.size,
       averageExecutionTime: 0,
-      successRate: 0
+      successRate: 0,
     }
   }
 
@@ -306,13 +310,13 @@ export class RuleEngine extends EventEmitter {
 
     const groupsData = Array.from(this.ruleGroups.entries()).map(([name, ruleIds]) => ({
       name,
-      ruleIds
+      ruleIds,
     }))
 
     return {
       rules: rulesData,
       groups: groupsData,
-      options: this.options
+      options: this.options,
     }
   }
 
@@ -460,7 +464,7 @@ export class RuleBuilder {
       dependencies: this.rule.dependencies || [],
       condition: this.rule.condition,
       execute: this.rule.execute,
-      async: this.rule.async || false
+      async: this.rule.async || false,
     }
   }
 

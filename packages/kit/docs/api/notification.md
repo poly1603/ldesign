@@ -33,12 +33,12 @@ const notificationManager = NotificationManager.create()
 const notificationManager = NotificationManager.create({
   appName: 'My Application',
   appIcon: './assets/icon.png',
-  sound: true,             // 启用声音
-  timeout: 5000,           // 超时时间（毫秒）
-  position: 'topRight',    // 位置
-  maxNotifications: 5,     // 最大通知数
-  silent: false,           // 静默模式
-  urgency: 'normal'        // 紧急程度
+  sound: true, // 启用声音
+  timeout: 5000, // 超时时间（毫秒）
+  position: 'topRight', // 位置
+  maxNotifications: 5, // 最大通知数
+  silent: false, // 静默模式
+  urgency: 'normal', // 紧急程度
 })
 ```
 
@@ -52,14 +52,14 @@ const notificationManager = NotificationManager.create({
 // 基本通知
 const notificationId = await notificationManager.notify({
   title: '新消息',
-  message: '您有一条新的消息'
+  message: '您有一条新的消息',
 })
 
 // 带图标的通知
 await notificationManager.notify({
   title: '文件下载完成',
   message: 'document.pdf 已下载到桌面',
-  icon: './assets/download-icon.png'
+  icon: './assets/download-icon.png',
 })
 
 // 带操作按钮的通知
@@ -68,8 +68,8 @@ await notificationManager.notify({
   message: '团队会议将在5分钟后开始',
   actions: [
     { type: 'button', text: '加入会议', action: 'join-meeting' },
-    { type: 'button', text: '稍后提醒', action: 'snooze' }
-  ]
+    { type: 'button', text: '稍后提醒', action: 'snooze' },
+  ],
 })
 
 // 带自定义数据的通知
@@ -78,8 +78,8 @@ await notificationManager.notify({
   message: '数据备份已完成',
   data: {
     taskId: 'backup-001',
-    completedAt: new Date().toISOString()
-  }
+    completedAt: new Date().toISOString(),
+  },
 })
 ```
 
@@ -94,9 +94,7 @@ await notificationManager.success('操作成功', '文件已保存')
 
 await notificationManager.success('部署完成', '应用已成功部署到生产环境', {
   timeout: 10000,
-  actions: [
-    { type: 'button', text: '查看应用', action: 'open-app' }
-  ]
+  actions: [{ type: 'button', text: '查看应用', action: 'open-app' }],
 })
 ```
 
@@ -111,8 +109,8 @@ await notificationManager.error('构建失败', '编译过程中发现错误', {
   timeout: 0, // 不自动消失
   actions: [
     { type: 'button', text: '查看日志', action: 'view-logs' },
-    { type: 'button', text: '重试', action: 'retry-build' }
-  ]
+    { type: 'button', text: '重试', action: 'retry-build' },
+  ],
 })
 ```
 
@@ -124,9 +122,7 @@ await notificationManager.error('构建失败', '编译过程中发现错误', {
 await notificationManager.warning('磁盘空间不足', '剩余空间少于1GB')
 
 await notificationManager.warning('证书即将过期', 'SSL证书将在7天后过期', {
-  actions: [
-    { type: 'button', text: '续期证书', action: 'renew-cert' }
-  ]
+  actions: [{ type: 'button', text: '续期证书', action: 'renew-cert' }],
 })
 ```
 
@@ -138,7 +134,7 @@ await notificationManager.warning('证书即将过期', 'SSL证书将在7天后�
 await notificationManager.info('系统更新', '新版本可用')
 
 await notificationManager.info('备份提醒', '建议定期备份重要数据', {
-  timeout: 8000
+  timeout: 8000,
 })
 ```
 
@@ -154,14 +150,14 @@ const progressNotification = notificationManager.progress({
   title: '文件上传',
   message: '正在上传文件...',
   progress: 0,
-  total: 100
+  total: 100,
 })
 
 // 更新进度
 for (let i = 0; i <= 100; i += 10) {
   await progressNotification.update({
     progress: i,
-    message: `上传进度 ${i}%`
+    message: `上传进度 ${i}%`,
   })
   await new Promise(resolve => setTimeout(resolve, 500))
 }
@@ -169,7 +165,7 @@ for (let i = 0; i <= 100; i += 10) {
 // 完成进度
 await progressNotification.complete({
   title: '上传完成',
-  message: '文件上传成功'
+  message: '文件上传成功',
 })
 ```
 
@@ -182,7 +178,7 @@ await progressNotification.complete({
 ```typescript
 const id = await notificationManager.notify({
   title: '临时通知',
-  message: '这条通知将在3秒后关闭'
+  message: '这条通知将在3秒后关闭',
 })
 
 setTimeout(async () => {
@@ -231,7 +227,7 @@ notificationManager.on('close', (notificationId, reason) => {
 // 操作按钮点击事件
 notificationManager.on('action', (notificationId, actionId, data) => {
   console.log(`操作执行: ${actionId}`)
-  
+
   switch (actionId) {
     case 'join-meeting':
       // 打开会议链接
@@ -246,12 +242,12 @@ notificationManager.on('action', (notificationId, actionId, data) => {
 })
 
 // 通知显示事件
-notificationManager.on('show', (notificationId) => {
+notificationManager.on('show', notificationId => {
   console.log(`通知显示: ${notificationId}`)
 })
 
 // 通知错误事件
-notificationManager.on('error', (error) => {
+notificationManager.on('error', error => {
   console.error('通知错误:', error)
 })
 ```
@@ -305,7 +301,7 @@ await NotificationUtils.notify('快速通知', '这是一个快速通知')
 
 await NotificationUtils.notify('文件保存', '文档已保存', {
   icon: './save-icon.png',
-  timeout: 3000
+  timeout: 3000,
 })
 ```
 
@@ -353,7 +349,7 @@ await NotificationUtils.info('新版本可用', '点击更新到最新版本')
 class TaskMonitor {
   private notificationManager = NotificationManager.create({
     appName: 'Task Monitor',
-    appIcon: './assets/monitor-icon.png'
+    appIcon: './assets/monitor-icon.png',
   })
 
   async monitorTask(taskId: string) {
@@ -365,54 +361,53 @@ class TaskMonitor {
       title: '任务执行中',
       message: `正在执行任务 ${taskId}...`,
       progress: 0,
-      total: 100
+      total: 100,
     })
 
     try {
       // 模拟任务执行
       for (let progress = 0; progress <= 100; progress += 10) {
         await this.simulateTaskProgress(progress)
-        
+
         await progressNotification.update({
           progress,
-          message: `任务进度 ${progress}%`
+          message: `任务进度 ${progress}%`,
         })
       }
 
       // 任务完成通知
       await progressNotification.complete({
         title: '任务完成',
-        message: `任务 ${taskId} 已成功完成`
+        message: `任务 ${taskId} 已成功完成`,
       })
 
       await this.notificationManager.success('任务成功', `任务 ${taskId} 执行成功`, {
         actions: [
           { type: 'button', text: '查看结果', action: 'view-result' },
-          { type: 'button', text: '下载报告', action: 'download-report' }
+          { type: 'button', text: '下载报告', action: 'download-report' },
         ],
-        data: { taskId, completedAt: new Date().toISOString() }
+        data: { taskId, completedAt: new Date().toISOString() },
       })
-
     } catch (error) {
       // 任务失败通知
       await progressNotification.fail({
         title: '任务失败',
-        message: `任务 ${taskId} 执行失败`
+        message: `任务 ${taskId} 执行失败`,
       })
 
       await this.notificationManager.error('任务失败', error.message, {
         actions: [
           { type: 'button', text: '查看错误', action: 'view-error' },
-          { type: 'button', text: '重试', action: 'retry-task' }
+          { type: 'button', text: '重试', action: 'retry-task' },
         ],
-        data: { taskId, error: error.message }
+        data: { taskId, error: error.message },
       })
     }
   }
 
   private async simulateTaskProgress(progress: number) {
     await new Promise(resolve => setTimeout(resolve, 500))
-    
+
     // 模拟可能的错误
     if (progress === 70 && Math.random() < 0.3) {
       throw new Error('模拟任务执行错误')
@@ -447,7 +442,7 @@ class TaskMonitor {
 class SystemMonitor {
   private notificationManager = NotificationManager.create({
     appName: 'System Monitor',
-    sound: true
+    sound: true,
   })
 
   private lastNotifications = new Map<string, number>()
@@ -465,8 +460,9 @@ class SystemMonitor {
 
     // 检查 CPU 使用率
     if (metrics.cpu > 90) {
-      await this.sendThrottledNotification('high-cpu', 
-        'CPU 使用率过高', 
+      await this.sendThrottledNotification(
+        'high-cpu',
+        'CPU 使用率过高',
         `当前 CPU 使用率: ${metrics.cpu}%`,
         'warning'
       )
@@ -474,7 +470,8 @@ class SystemMonitor {
 
     // 检查内存使用率
     if (metrics.memory > 85) {
-      await this.sendThrottledNotification('high-memory',
+      await this.sendThrottledNotification(
+        'high-memory',
         '内存使用率过高',
         `当前内存使用率: ${metrics.memory}%`,
         'warning'
@@ -483,7 +480,8 @@ class SystemMonitor {
 
     // 检查磁盘空间
     if (metrics.disk > 95) {
-      await this.sendThrottledNotification('low-disk',
+      await this.sendThrottledNotification(
+        'low-disk',
         '磁盘空间不足',
         `剩余磁盘空间: ${100 - metrics.disk}%`,
         'error'
@@ -492,7 +490,8 @@ class SystemMonitor {
 
     // 检查网络连接
     if (!metrics.networkConnected) {
-      await this.sendThrottledNotification('network-down',
+      await this.sendThrottledNotification(
+        'network-down',
         '网络连接断开',
         '请检查网络连接',
         'error'
@@ -502,7 +501,8 @@ class SystemMonitor {
     // 检查服务状态
     for (const service of metrics.services) {
       if (!service.running) {
-        await this.sendThrottledNotification(`service-${service.name}`,
+        await this.sendThrottledNotification(
+          `service-${service.name}`,
           '服务停止',
           `服务 ${service.name} 已停止运行`,
           'error'
@@ -512,9 +512,9 @@ class SystemMonitor {
   }
 
   private async sendThrottledNotification(
-    key: string, 
-    title: string, 
-    message: string, 
+    key: string,
+    title: string,
+    message: string,
     type: 'info' | 'warning' | 'error'
   ) {
     const now = Date.now()
@@ -559,8 +559,8 @@ class SystemMonitor {
       services: [
         { name: 'web-server', running: Math.random() > 0.05 },
         { name: 'database', running: Math.random() > 0.02 },
-        { name: 'cache', running: Math.random() > 0.03 }
-      ]
+        { name: 'cache', running: Math.random() > 0.03 },
+      ],
     }
   }
 }
@@ -572,7 +572,7 @@ class SystemMonitor {
 class BuildNotificationSystem {
   private notificationManager = NotificationManager.create({
     appName: 'Build System',
-    appIcon: './assets/build-icon.png'
+    appIcon: './assets/build-icon.png',
   })
 
   async notifyBuildStart(projectName: string, branch: string) {
@@ -585,36 +585,39 @@ class BuildNotificationSystem {
   }
 
   async notifyBuildSuccess(projectName: string, branch: string, duration: number) {
-    await this.notificationManager.success('构建成功', 
-      `项目 ${projectName} (${branch}) 构建成功，耗时 ${duration}s`, {
-      actions: [
-        { type: 'button', text: '查看构建', action: 'view-build' },
-        { type: 'button', text: '部署', action: 'deploy' }
-      ],
-      data: { projectName, branch, duration }
-    })
+    await this.notificationManager.success(
+      '构建成功',
+      `项目 ${projectName} (${branch}) 构建成功，耗时 ${duration}s`,
+      {
+        actions: [
+          { type: 'button', text: '查看构建', action: 'view-build' },
+          { type: 'button', text: '部署', action: 'deploy' },
+        ],
+        data: { projectName, branch, duration },
+      }
+    )
   }
 
   async notifyBuildFailure(projectName: string, branch: string, error: string) {
-    await this.notificationManager.error('构建失败',
-      `项目 ${projectName} (${branch}) 构建失败`, {
+    await this.notificationManager.error('构建失败', `项目 ${projectName} (${branch}) 构建失败`, {
       timeout: 0, // 不自动消失
       actions: [
         { type: 'button', text: '查看日志', action: 'view-logs' },
-        { type: 'button', text: '重新构建', action: 'rebuild' }
+        { type: 'button', text: '重新构建', action: 'rebuild' },
       ],
-      data: { projectName, branch, error }
+      data: { projectName, branch, error },
     })
   }
 
   async notifyDeploymentSuccess(projectName: string, environment: string) {
-    await this.notificationManager.success('部署成功',
-      `项目 ${projectName} 已成功部署到 ${environment}`, {
-      actions: [
-        { type: 'button', text: '访问应用', action: 'open-app' }
-      ],
-      data: { projectName, environment }
-    })
+    await this.notificationManager.success(
+      '部署成功',
+      `项目 ${projectName} 已成功部署到 ${environment}`,
+      {
+        actions: [{ type: 'button', text: '访问应用', action: 'open-app' }],
+        data: { projectName, environment },
+      }
+    )
   }
 
   setupEventHandlers() {
@@ -696,16 +699,19 @@ type NotificationPermission = 'granted' | 'denied' | 'default'
 ## 平台兼容性
 
 ### Windows
+
 - 使用 Windows Toast 通知
 - 支持操作按钮和进度显示
 - 集成系统通知中心
 
 ### macOS
+
 - 使用 macOS 通知中心
 - 支持横幅和警告样式
 - 集成 Dock 徽章
 
 ### Linux
+
 - 使用 libnotify (notify-send)
 - 支持桌面环境集成
 - 兼容 GNOME、KDE 等

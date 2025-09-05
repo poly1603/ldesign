@@ -2,18 +2,18 @@
  * NPM 包管理器
  */
 
-import { exec } from 'node:child_process'
-import { promisify } from 'node:util'
-import { join } from 'node:path'
-import { FileSystem } from '../filesystem'
 import type {
-  PackageManagerOptions,
-  PackageInfo,
-  PackageJsonData,
   DependencyInfo,
   InstallOptions,
-  PackageManagerType
+  PackageInfo,
+  PackageJsonData,
+  PackageManagerOptions,
+  PackageManagerType,
 } from '../types'
+import { exec } from 'node:child_process'
+import { join } from 'node:path'
+import { promisify } from 'node:util'
+import { FileSystem } from '../filesystem'
 
 const execAsync = promisify(exec)
 
@@ -32,7 +32,7 @@ export class PackageManager {
       encoding: options.encoding || 'utf8',
       maxBuffer: options.maxBuffer || 1024 * 1024 * 10, // 10MB
       registry: options.registry || 'https://registry.npmjs.org/',
-      packageManager: options.packageManager || 'npm'
+      packageManager: options.packageManager || 'npm',
     }
     this.packageManager = options.packageManager ?? 'npm'
   }
@@ -46,10 +46,11 @@ export class PackageManager {
         cwd: this.cwd,
         timeout: this.options.timeout,
         encoding: this.options.encoding,
-        maxBuffer: this.options.maxBuffer
+        maxBuffer: this.options.maxBuffer,
       })
       return stdout.trim()
-    } catch (error: any) {
+    }
+    catch (error: any) {
       throw new Error(`Package manager command failed: ${error.message}`)
     }
   }
@@ -61,7 +62,7 @@ export class PackageManager {
     const lockFiles = {
       'package-lock.json': 'npm' as const,
       'yarn.lock': 'yarn' as const,
-      'pnpm-lock.yaml': 'pnpm' as const
+      'pnpm-lock.yaml': 'pnpm' as const,
     }
 
     for (const [lockFile, manager] of Object.entries(lockFiles)) {
@@ -80,7 +81,7 @@ export class PackageManager {
   async readPackageJson(): Promise<PackageJsonData> {
     const packagePath = join(this.cwd, 'package.json')
 
-    if (!await FileSystem.exists(packagePath)) {
+    if (!(await FileSystem.exists(packagePath))) {
       throw new Error('package.json not found')
     }
 
@@ -167,7 +168,8 @@ export class PackageManager {
     try {
       const info = JSON.parse(output)
       return this.normalizePackageInfo(info)
-    } catch {
+    }
+    catch {
       throw new Error(`Failed to parse package info for ${packageName}`)
     }
   }
@@ -181,10 +183,9 @@ export class PackageManager {
 
     try {
       const results = JSON.parse(output)
-      return Array.isArray(results)
-        ? results.map(info => this.normalizePackageInfo(info))
-        : []
-    } catch {
+      return Array.isArray(results) ? results.map(info => this.normalizePackageInfo(info)) : []
+    }
+    catch {
       return []
     }
   }
@@ -192,10 +193,12 @@ export class PackageManager {
   /**
    * 获取已安装的依赖
    */
-  async getInstalledPackages(options: {
-    depth?: number
-    global?: boolean
-  } = {}): Promise<DependencyInfo[]> {
+  async getInstalledPackages(
+    options: {
+      depth?: number
+      global?: boolean
+    } = {},
+  ): Promise<DependencyInfo[]> {
     let command = this.getListCommand()
 
     if (options.depth !== undefined) {
@@ -211,7 +214,8 @@ export class PackageManager {
     try {
       const data = JSON.parse(output)
       return this.normalizeDependencyList(data)
-    } catch {
+    }
+    catch {
       return []
     }
   }
@@ -219,12 +223,14 @@ export class PackageManager {
   /**
    * 检查过时的依赖
    */
-  async getOutdatedPackages(): Promise<Array<{
-    name: string
-    current: string
-    wanted: string
-    latest: string
-  }>> {
+  async getOutdatedPackages(): Promise<
+    Array<{
+      name: string
+      current: string
+      wanted: string
+      latest: string
+    }>
+  > {
     const command = this.getOutdatedCommand()
 
     try {
@@ -235,9 +241,10 @@ export class PackageManager {
         name,
         current: info.current,
         wanted: info.wanted,
-        latest: info.latest
+        latest: info.latest,
       }))
-    } catch {
+    }
+    catch {
       return []
     }
   }
@@ -495,7 +502,7 @@ export class PackageManager {
       keywords: info.keywords || [],
       dependencies: info.dependencies || {},
       devDependencies: info.devDependencies || {},
-      peerDependencies: info.peerDependencies || {}
+      peerDependencies: info.peerDependencies || {},
     }
   }
 
@@ -511,7 +518,7 @@ export class PackageManager {
           name,
           version: (info as any).version,
           resolved: (info as any).resolved,
-          dependencies: (info as any).dependencies || {}
+          dependencies: (info as any).dependencies || {},
         })
       }
     }

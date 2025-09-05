@@ -4,10 +4,10 @@
  */
 
 import { promises as fs } from 'node:fs'
-import { join } from 'node:path'
 import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { FileSystemError } from '../types'
-import { PathUtils, RandomUtils } from '../utils'
+import { RandomUtils } from '../utils'
 import { FileSystem } from './file-system'
 
 /**
@@ -16,7 +16,7 @@ import { FileSystem } from './file-system'
 export class TempManager {
   private static readonly instances: Map<string, TempManager> = new Map()
   private static readonly globalCleanupHandlers: Set<() => Promise<void>> = new Set()
-  
+
   private tempPaths: Set<string> = new Set()
   private cleanupHandlers: Set<() => Promise<void>> = new Set()
   private autoCleanup: boolean
@@ -40,12 +40,7 @@ export class TempManager {
    */
   async createTempFile(options: TempFileOptions = {}): Promise<string> {
     try {
-      const {
-        suffix = '',
-        content = '',
-        encoding = 'utf8',
-        mode = 0o644
-      } = options
+      const { suffix = '', content = '', encoding = 'utf8', mode = 0o644 } = options
 
       const fileName = this.generateTempName('file', suffix)
       const tempPath = join(this.baseTempDir, fileName)
@@ -55,7 +50,8 @@ export class TempManager {
 
       this.tempPaths.add(tempPath)
       return tempPath
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError('Failed to create temp file', '', error as Error)
     }
   }
@@ -67,10 +63,7 @@ export class TempManager {
    */
   async createTempDir(options: TempDirOptions = {}): Promise<string> {
     try {
-      const {
-        suffix = '',
-        mode = 0o755
-      } = options
+      const { suffix = '', mode = 0o755 } = options
 
       const dirName = this.generateTempName('dir', suffix)
       const tempPath = join(this.baseTempDir, dirName)
@@ -80,7 +73,8 @@ export class TempManager {
 
       this.tempPaths.add(tempPath)
       return tempPath
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError('Failed to create temp directory', '', error as Error)
     }
   }
@@ -93,10 +87,7 @@ export class TempManager {
    */
   async createTempSymlink(target: string, options: TempSymlinkOptions = {}): Promise<string> {
     try {
-      const {
-        suffix = '',
-        type = 'file'
-      } = options
+      const { suffix = '', type = 'file' } = options
 
       const linkName = this.generateTempName('link', suffix)
       const tempPath = join(this.baseTempDir, linkName)
@@ -105,7 +96,8 @@ export class TempManager {
 
       this.tempPaths.add(tempPath)
       return tempPath
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError('Failed to create temp symlink', '', error as Error)
     }
   }
@@ -118,13 +110,14 @@ export class TempManager {
    */
   async createWorkspace(
     structure: WorkspaceStructure,
-    options: TempDirOptions = {}
+    options: TempDirOptions = {},
   ): Promise<string> {
     try {
       const workspaceDir = await this.createTempDir(options)
       await this.createWorkspaceStructure(workspaceDir, structure)
       return workspaceDir
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError('Failed to create temp workspace', '', error as Error)
     }
   }
@@ -134,7 +127,7 @@ export class TempManager {
    */
   private async createWorkspaceStructure(
     basePath: string,
-    structure: WorkspaceStructure
+    structure: WorkspaceStructure,
   ): Promise<void> {
     for (const [name, content] of Object.entries(structure)) {
       const fullPath = join(basePath, name)
@@ -142,10 +135,12 @@ export class TempManager {
       if (typeof content === 'string') {
         // 文件内容
         await FileSystem.writeFile(fullPath, content)
-      } else if (content === null) {
+      }
+      else if (content === null) {
         // 空文件
         await FileSystem.writeFile(fullPath, '')
-      } else if (typeof content === 'object') {
+      }
+      else if (typeof content === 'object') {
         // 子目录
         await FileSystem.createDir(fullPath)
         await this.createWorkspaceStructure(fullPath, content)
@@ -160,11 +155,11 @@ export class TempManager {
     const timestamp = Date.now()
     const random = RandomUtils.alphanumeric(8)
     const parts = [this.prefix, type, timestamp, random]
-    
+
     if (suffix) {
       parts.push(suffix)
     }
-    
+
     return parts.join('-')
   }
 
@@ -195,13 +190,15 @@ export class TempManager {
           const isDirectory = await FileSystem.isDirectory(path)
           if (isDirectory) {
             await FileSystem.removeDir(path, true)
-          } else {
+          }
+          else {
             await FileSystem.removeFile(path)
           }
         }
         this.tempPaths.delete(path)
       }
-    } catch (error) {
+    }
+    catch (error) {
       // 忽略清理错误，但可以记录日志
       console.warn(`Failed to cleanup temp path: ${path}`, error)
     }
@@ -215,7 +212,8 @@ export class TempManager {
     for (const handler of this.cleanupHandlers) {
       try {
         await handler()
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Cleanup handler failed:', error)
       }
     }
@@ -245,7 +243,7 @@ export class TempManager {
    */
   private setupCleanupHandlers(): void {
     const cleanup = () => {
-      this.cleanupAll().catch(error => {
+      this.cleanupAll().catch((error) => {
         console.warn('Auto cleanup failed:', error)
       })
     }
@@ -308,7 +306,7 @@ export class TempManager {
    */
   static async createWorkspace(
     structure: WorkspaceStructure,
-    options?: TempDirOptions
+    options?: TempDirOptions,
   ): Promise<string> {
     return TempManager.getDefault().createWorkspace(structure, options)
   }
@@ -320,14 +318,15 @@ export class TempManager {
    */
   static async withTempDir<T>(
     fn: (tempDir: string) => Promise<T>,
-    options?: TempDirOptions
+    options?: TempDirOptions,
   ): Promise<T> {
     const manager = TempManager.getDefault()
     const tempDir = await manager.createTempDir(options)
-    
+
     try {
       return await fn(tempDir)
-    } finally {
+    }
+    finally {
       await manager.cleanup(tempDir)
     }
   }
@@ -339,14 +338,15 @@ export class TempManager {
    */
   static async withTempFile<T>(
     fn: (tempFile: string) => Promise<T>,
-    options?: TempFileOptions
+    options?: TempFileOptions,
   ): Promise<T> {
     const manager = TempManager.getDefault()
     const tempFile = await manager.createTempFile(options)
-    
+
     try {
       return await fn(tempFile)
-    } finally {
+    }
+    finally {
       await manager.cleanup(tempFile)
     }
   }
@@ -358,7 +358,8 @@ export class TempManager {
     for (const handler of TempManager.globalCleanupHandlers) {
       try {
         await handler()
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Global cleanup handler failed:', error)
       }
     }
@@ -371,7 +372,7 @@ export class TempManager {
    */
   static async cleanupOldTempFiles(
     maxAge: number = 24 * 60 * 60 * 1000, // 24小时
-    baseTempDir: string = tmpdir()
+    baseTempDir: string = tmpdir(),
   ): Promise<number> {
     try {
       let cleanedCount = 0
@@ -388,19 +389,22 @@ export class TempManager {
             if (age > maxAge) {
               if (entry.isDirectory()) {
                 await FileSystem.removeDir(fullPath, true)
-              } else {
+              }
+              else {
                 await FileSystem.removeFile(fullPath)
               }
               cleanedCount++
             }
-          } catch {
+          }
+          catch {
             // 忽略无法访问的文件
           }
         }
       }
 
       return cleanedCount
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError('Failed to cleanup old temp files', baseTempDir, error as Error)
     }
   }

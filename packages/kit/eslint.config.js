@@ -11,7 +11,7 @@ export default [
       parserOptions: {
         ecmaVersion: 2022,
         sourceType: 'module',
-        project: './tsconfig.json'
+        project: './tsconfig.json',
       },
       globals: {
         console: 'readonly',
@@ -20,11 +20,11 @@ export default [
         __dirname: 'readonly',
         __filename: 'readonly',
         global: 'readonly',
-        NodeJS: 'readonly'
-      }
+        NodeJS: 'readonly',
+      },
     },
     plugins: {
-      '@typescript-eslint': typescript
+      '@typescript-eslint': typescript,
     },
     rules: {
       // TypeScript 规则
@@ -35,7 +35,7 @@ export default [
       '@typescript-eslint/no-non-null-assertion': 'warn',
       '@typescript-eslint/prefer-const': 'error',
       '@typescript-eslint/no-var-requires': 'error',
-      
+
       // 通用规则
       'no-console': 'off',
       'no-debugger': 'error',
@@ -48,9 +48,9 @@ export default [
       'template-curly-spacing': 'error',
       'arrow-spacing': 'error',
       'comma-dangle': ['error', 'always-multiline'],
-      'quotes': ['error', 'single', { avoidEscape: true }],
-      'semi': ['error', 'never'],
-      'indent': ['error', 2],
+      quotes: ['error', 'single', { avoidEscape: true }],
+      semi: ['error', 'never'],
+      indent: ['error', 2],
       'linebreak-style': ['error', 'unix'],
       'eol-last': 'error',
       'no-trailing-spaces': 'error',
@@ -59,33 +59,27 @@ export default [
       'space-infix-ops': 'error',
       'comma-spacing': 'error',
       'brace-style': ['error', '1tbs', { allowSingleLine: true }],
-      'curly': ['error', 'multi-line'],
+      curly: ['error', 'multi-line'],
       'handle-callback-err': 'error',
       'no-multiple-empty-lines': ['error', { max: 1 }],
-      'operator-linebreak': ['error', 'before']
-    }
+      'operator-linebreak': ['error', 'before'],
+    },
   },
   {
     files: ['**/*.test.{ts,js}', '**/*.spec.{ts,js}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
-      'no-console': 'off'
-    }
+      'no-console': 'off',
+    },
   },
   {
     files: ['scripts/**/*.{ts,js}', 'tools/**/*.{ts,js}'],
     rules: {
       'no-console': 'off',
-      '@typescript-eslint/no-var-requires': 'off'
-    }
+      '@typescript-eslint/no-var-requires': 'off',
+    },
   },
   {
-    ignores: [
-      'node_modules/**',
-      'dist/**',
-      'coverage/**',
-      '*.d.ts',
-      'examples/**/*.js'
-    ]
-  }
+    ignores: ['node_modules/**', 'dist/**', 'coverage/**', '*.d.ts', 'examples/**/*.js'],
+  },
 ]

@@ -31,18 +31,20 @@ const validator = Validator.create()
 
 // 自定义配置
 const validator = Validator.create({
-  stopOnFirstError: false,  // 不在第一个错误时停止
-  locale: 'zh-CN',         // 错误消息语言
-  customMessages: {        // 自定义错误消息
+  stopOnFirstError: false, // 不在第一个错误时停止
+  locale: 'zh-CN', // 错误消息语言
+  customMessages: {
+    // 自定义错误消息
     required: '{{field}} 是必填项',
     email: '{{field}} 格式不正确',
-    minLength: '{{field}} 至少需要 {{min}} 个字符'
+    minLength: '{{field}} 至少需要 {{min}} 个字符',
   },
-  fieldNameMap: {          // 字段名映射
+  fieldNameMap: {
+    // 字段名映射
     email: '邮箱地址',
     password: '密码',
-    confirmPassword: '确认密码'
-  }
+    confirmPassword: '确认密码',
+  },
 })
 ```
 
@@ -60,10 +62,10 @@ validator.addRule('email', ValidationRules.email())
 // 密码规则
 validator.addRule('password', ValidationRules.required())
 validator.addRule('password', ValidationRules.minLength(8))
-validator.addRule('password', ValidationRules.pattern(
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-  '密码必须包含大小写字母和数字'
-))
+validator.addRule(
+  'password',
+  ValidationRules.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, '密码必须包含大小写字母和数字')
+)
 
 // 自定义规则
 validator.addRule('confirmPassword', (value, data) => {
@@ -82,7 +84,7 @@ const userData = {
   email: 'user@example.com',
   password: 'SecurePass123',
   confirmPassword: 'SecurePass123',
-  age: 25
+  age: 25,
 }
 
 const result = await validator.validate(userData)
@@ -109,7 +111,7 @@ if (!emailResult.valid) {
 
 // 带上下文验证
 const passwordResult = await validator.validateField('confirmPassword', 'password123', {
-  password: 'password123'
+  password: 'password123',
 })
 ```
 
@@ -171,16 +173,16 @@ validator.addRule('zipCode', ValidationRules.length(6, '邮政编码必须是6�
 
 ```typescript
 // 手机号验证
-validator.addRule('phone', ValidationRules.pattern(
-  /^1[3-9]\d{9}$/,
-  '请输入有效的手机号'
-))
+validator.addRule('phone', ValidationRules.pattern(/^1[3-9]\d{9}$/, '请输入有效的手机号'))
 
 // 身份证号验证
-validator.addRule('idCard', ValidationRules.pattern(
-  /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/,
-  '请输入有效的身份证号'
-))
+validator.addRule(
+  'idCard',
+  ValidationRules.pattern(
+    /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/,
+    '请输入有效的身份证号'
+  )
+)
 ```
 
 ### 格式验证
@@ -350,18 +352,24 @@ validator.addRule('document', ValidationRules.fileType(['pdf', 'doc', 'docx']))
 
 ```typescript
 // 同步自定义规则
-validator.addRule('username', ValidationRules.custom((value) => {
-  if (reservedUsernames.includes(value)) {
-    return '用户名已被保留'
-  }
-  return true
-}))
+validator.addRule(
+  'username',
+  ValidationRules.custom(value => {
+    if (reservedUsernames.includes(value)) {
+      return '用户名已被保留'
+    }
+    return true
+  })
+)
 
 // 异步自定义规则
-validator.addRule('email', ValidationRules.custom(async (value) => {
-  const exists = await checkEmailExists(value)
-  return exists ? '邮箱已被注册' : true
-}))
+validator.addRule(
+  'email',
+  ValidationRules.custom(async value => {
+    const exists = await checkEmailExists(value)
+    return exists ? '邮箱已被注册' : true
+  })
+)
 ```
 
 ## FormValidator
@@ -372,9 +380,9 @@ validator.addRule('email', ValidationRules.custom(async (value) => {
 
 ```typescript
 const formValidator = FormValidator.create({
-  validateOnChange: true,   // 字段变化时验证
-  validateOnBlur: true,     // 失去焦点时验证
-  showFirstErrorOnly: false // 显示所有错误
+  validateOnChange: true, // 字段变化时验证
+  validateOnBlur: true, // 失去焦点时验证
+  showFirstErrorOnly: false, // 显示所有错误
 })
 ```
 
@@ -388,9 +396,12 @@ const formValidator = FormValidator.create({
 formValidator.addFieldRule('email', ValidationRules.required())
 formValidator.addFieldRule('email', ValidationRules.email())
 formValidator.addFieldRule('password', ValidationRules.minLength(8))
-formValidator.addFieldRule('confirmPassword', ValidationRules.custom((value, data) => {
-  return value === data.password ? true : '两次密码输入不一致'
-}))
+formValidator.addFieldRule(
+  'confirmPassword',
+  ValidationRules.custom((value, data) => {
+    return value === data.password ? true : '两次密码输入不一致'
+  })
+)
 ```
 
 #### `validateForm(data: any): Promise<FormValidationResult>`
@@ -401,7 +412,7 @@ formValidator.addFieldRule('confirmPassword', ValidationRules.custom((value, dat
 const formData = {
   email: 'user@example.com',
   password: 'password123',
-  confirmPassword: 'password123'
+  confirmPassword: 'password123',
 }
 
 const result = await formValidator.validateForm(formData)
@@ -430,8 +441,8 @@ class UserRegistrationValidator {
       password: '密码',
       confirmPassword: '确认密码',
       age: '年龄',
-      phone: '手机号'
-    }
+      phone: '手机号',
+    },
   })
 
   constructor() {
@@ -443,26 +454,29 @@ class UserRegistrationValidator {
     this.validator.addRule('username', ValidationRules.required())
     this.validator.addRule('username', ValidationRules.minLength(3))
     this.validator.addRule('username', ValidationRules.maxLength(20))
-    this.validator.addRule('username', ValidationRules.pattern(
-      /^[a-zA-Z0-9_]+$/,
-      '用户名只能包含字母、数字和下划线'
-    ))
+    this.validator.addRule(
+      'username',
+      ValidationRules.pattern(/^[a-zA-Z0-9_]+$/, '用户名只能包含字母、数字和下划线')
+    )
 
     // 邮箱验证
     this.validator.addRule('email', ValidationRules.required())
     this.validator.addRule('email', ValidationRules.email())
-    this.validator.addRule('email', ValidationRules.custom(async (email) => {
-      const exists = await this.checkEmailExists(email)
-      return exists ? '邮箱已被注册' : true
-    }))
+    this.validator.addRule(
+      'email',
+      ValidationRules.custom(async email => {
+        const exists = await this.checkEmailExists(email)
+        return exists ? '邮箱已被注册' : true
+      })
+    )
 
     // 密码验证
     this.validator.addRule('password', ValidationRules.required())
     this.validator.addRule('password', ValidationRules.minLength(8))
-    this.validator.addRule('password', ValidationRules.pattern(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      '密码必须包含大小写字母和数字'
-    ))
+    this.validator.addRule(
+      'password',
+      ValidationRules.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, '密码必须包含大小写字母和数字')
+    )
 
     // 确认密码
     this.validator.addRule('confirmPassword', ValidationRules.required())
@@ -477,10 +491,7 @@ class UserRegistrationValidator {
 
     // 手机号验证
     this.validator.addRule('phone', ValidationRules.required())
-    this.validator.addRule('phone', ValidationRules.pattern(
-      /^1[3-9]\d{9}$/,
-      '请输入有效的手机号'
-    ))
+    this.validator.addRule('phone', ValidationRules.pattern(/^1[3-9]\d{9}$/, '请输入有效的手机号'))
   }
 
   async validate(userData: any) {
@@ -534,23 +545,32 @@ class DynamicFormValidator {
           break
         case 'string':
           if (fieldConfig.minLength) {
-            this.formValidator.addFieldRule(fieldName, ValidationRules.minLength(fieldConfig.minLength))
+            this.formValidator.addFieldRule(
+              fieldName,
+              ValidationRules.minLength(fieldConfig.minLength)
+            )
           }
           if (fieldConfig.maxLength) {
-            this.formValidator.addFieldRule(fieldName, ValidationRules.maxLength(fieldConfig.maxLength))
+            this.formValidator.addFieldRule(
+              fieldName,
+              ValidationRules.maxLength(fieldConfig.maxLength)
+            )
           }
           if (fieldConfig.pattern) {
-            this.formValidator.addFieldRule(fieldName, ValidationRules.pattern(
-              new RegExp(fieldConfig.pattern),
-              fieldConfig.patternMessage
-            ))
+            this.formValidator.addFieldRule(
+              fieldName,
+              ValidationRules.pattern(new RegExp(fieldConfig.pattern), fieldConfig.patternMessage)
+            )
           }
           break
       }
 
       // 自定义验证规则
       if (fieldConfig.customValidator) {
-        this.formValidator.addFieldRule(fieldName, ValidationRules.custom(fieldConfig.customValidator))
+        this.formValidator.addFieldRule(
+          fieldName,
+          ValidationRules.custom(fieldConfig.customValidator)
+        )
       }
     })
   }
@@ -568,23 +588,23 @@ dynamicValidator.setSchema({
       type: 'string',
       required: true,
       minLength: 2,
-      maxLength: 50
+      maxLength: 50,
     },
     email: {
       type: 'email',
-      required: true
+      required: true,
     },
     age: {
       type: 'number',
       required: true,
       min: 18,
-      max: 120
+      max: 120,
     },
     website: {
       type: 'url',
-      required: false
-    }
-  }
+      required: false,
+    },
+  },
 })
 ```
 

@@ -66,9 +66,9 @@ export class ProgressBar extends EventEmitter {
 
   constructor(options: ProgressBarOptions) {
     super()
-    
+
     this.theme = ConsoleTheme.create(options.theme)
-    
+
     this.options = {
       total: options.total,
       current: options.current || 0,
@@ -94,7 +94,7 @@ export class ProgressBar extends EventEmitter {
       autopadding: options.autopadding !== false,
       autopaddingChar: options.autopaddingChar || ' ',
       emptyOnZero: options.emptyOnZero !== false,
-      forceRedraw: options.forceRedraw !== false
+      forceRedraw: options.forceRedraw !== false,
     }
   }
 
@@ -126,7 +126,7 @@ export class ProgressBar extends EventEmitter {
       autopadding: this.options.autopadding,
       autopaddingChar: this.options.autopaddingChar,
       emptyOnZero: this.options.emptyOnZero,
-      forceRedraw: this.options.forceRedraw
+      forceRedraw: this.options.forceRedraw,
     })
 
     this.bar.start(startTotal, startCurrent)
@@ -331,7 +331,7 @@ export class ProgressBar extends EventEmitter {
       format: '{bar} {percentage}%',
       showEta: false,
       showValue: false,
-      ...options
+      ...options,
     })
   }
 
@@ -346,7 +346,7 @@ export class ProgressBar extends EventEmitter {
       showEta: true,
       showValue: true,
       showRate: true,
-      ...options
+      ...options,
     })
   }
 
@@ -359,7 +359,7 @@ export class ProgressBar extends EventEmitter {
       format: '{percentage}% [{bar}]',
       showEta: false,
       showValue: false,
-      ...options
+      ...options,
     })
   }
 
@@ -371,7 +371,7 @@ export class ProgressBar extends EventEmitter {
       total,
       format: 'Step {value}/{total} [{bar}] {percentage}%',
       showEta: false,
-      ...options
+      ...options,
     })
   }
 

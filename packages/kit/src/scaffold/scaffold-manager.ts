@@ -4,14 +4,14 @@
  */
 
 import { EventEmitter } from 'node:events'
-import { resolve, join } from 'node:path'
-import { ConfigManager, ConfigCache, ConfigHotReload } from '../config'
+import { join, resolve } from 'node:path'
+import { ConfigCache, ConfigHotReload, ConfigManager } from '../config'
 import { FileSystem } from '../filesystem'
-import { Logger } from '../logger'
 import { InquirerManager } from '../inquirer'
-import { TemplateManager } from './template-manager'
-import { PluginManager } from './plugin-manager'
+import { Logger } from '../logger'
 import { EnvironmentManager } from './environment-manager'
+import { PluginManager } from './plugin-manager'
+import { TemplateManager } from './template-manager'
 
 /**
  * 脚手架配置选项
@@ -76,7 +76,7 @@ export class ScaffoldManager extends EventEmitter {
 
   constructor(options: ScaffoldOptions) {
     super()
-    
+
     this.options = {
       name: options.name,
       version: options.version || '1.0.0',
@@ -89,7 +89,7 @@ export class ScaffoldManager extends EventEmitter {
       defaultEnvironment: options.defaultEnvironment || 'development',
       enableHotReload: options.enableHotReload !== false,
       enableCache: options.enableCache !== false,
-      logLevel: options.logLevel || 'info'
+      logLevel: options.logLevel || 'info',
     }
 
     // 初始化组件
@@ -97,35 +97,35 @@ export class ScaffoldManager extends EventEmitter {
     this.logger.setLevel(this.options.logLevel)
 
     this.inquirer = new InquirerManager()
-    
+
     this.configManager = new ConfigManager({
       configFile: 'scaffold.config.json5',
       configDir: resolve(this.options.workingDir, this.options.configDir),
-      envPrefix: `${this.options.name.toUpperCase()}_SCAFFOLD`
+      envPrefix: `${this.options.name.toUpperCase()}_SCAFFOLD`,
     })
 
     if (this.options.enableCache) {
       this.configCache = new ConfigCache({
         maxSize: 1000,
         ttl: 3600000, // 1 hour
-        enableVersioning: true
+        enableVersioning: true,
       })
     }
 
     this.templateManager = new TemplateManager({
       templatesDir: resolve(this.options.workingDir, this.options.templatesDir),
-      logger: this.logger
+      logger: this.logger,
     })
 
     this.pluginManager = new PluginManager({
       pluginsDir: resolve(this.options.workingDir, this.options.pluginsDir),
-      logger: this.logger
+      logger: this.logger,
     })
 
     this.environmentManager = new EnvironmentManager({
       environments: this.options.environments,
       defaultEnvironment: this.options.defaultEnvironment,
-      logger: this.logger
+      logger: this.logger,
     })
 
     this.setupEventListeners()
@@ -163,8 +163,8 @@ export class ScaffoldManager extends EventEmitter {
       this.initialized = true
       this.emit('initialized')
       this.logger.info('脚手架系统初始化完成')
-
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('error', error)
       throw error
     }
@@ -187,7 +187,7 @@ export class ScaffoldManager extends EventEmitter {
       files: [],
       plugins: options.plugins || [],
       duration: 0,
-      errors: []
+      errors: [],
     }
 
     try {
@@ -210,12 +210,13 @@ export class ScaffoldManager extends EventEmitter {
           if (options.interactive) {
             const shouldOverwrite = await this.inquirer.confirm({
               message: `目录 ${targetDir} 已存在，是否覆盖？`,
-              default: false
+              default: false,
             })
             if (!shouldOverwrite) {
               throw new Error('用户取消创建')
             }
-          } else {
+          }
+          else {
             throw new Error(`目录已存在: ${targetDir}`)
           }
         }
@@ -235,15 +236,11 @@ export class ScaffoldManager extends EventEmitter {
       await this.environmentManager.setEnvironment(result.environment)
 
       // 渲染模板
-      result.files = await this.templateManager.renderTemplate(
-        options.template,
-        targetDir,
-        {
-          ...variables,
-          projectName: options.name,
-          environment: result.environment
-        }
-      )
+      result.files = await this.templateManager.renderTemplate(options.template, targetDir, {
+        ...variables,
+        projectName: options.name,
+        environment: result.environment,
+      })
 
       // 安装插件
       if (result.plugins.length > 0) {
@@ -254,13 +251,13 @@ export class ScaffoldManager extends EventEmitter {
       await this.executeHooks('afterCreate', {
         projectPath: targetDir,
         template: options.template,
-        variables
+        variables,
       })
 
       result.success = true
       this.logger.info(`项目创建成功: ${targetDir}`)
-
-    } catch (error) {
+    }
+    catch (error) {
       result.errors.push(error as Error)
       this.logger.error('项目创建失败:', error)
       this.emit('projectCreateError', error)
@@ -334,10 +331,10 @@ export class ScaffoldManager extends EventEmitter {
     if (this.hotReload) {
       await this.hotReload.disable()
     }
-    
+
     await this.templateManager.destroy()
     await this.pluginManager.destroy()
-    
+
     this.initialized = false
     this.emit('destroyed')
   }
@@ -362,7 +359,7 @@ export class ScaffoldManager extends EventEmitter {
     const dirs = [
       resolve(this.options.workingDir, this.options.configDir),
       resolve(this.options.workingDir, this.options.templatesDir),
-      resolve(this.options.workingDir, this.options.pluginsDir)
+      resolve(this.options.workingDir, this.options.pluginsDir),
     ]
 
     for (const dir of dirs) {
@@ -372,16 +369,16 @@ export class ScaffoldManager extends EventEmitter {
 
   private async collectVariables(
     template: any,
-    existingVariables: Record<string, any>
+    existingVariables: Record<string, any>,
   ): Promise<Record<string, any>> {
     const variables = { ...existingVariables }
-    
+
     if (template.variables) {
       for (const [key, config] of Object.entries(template.variables)) {
         if (!(key in variables)) {
           const value = await this.inquirer.input({
             message: (config as any).message || `请输入 ${key}:`,
-            default: (config as any).default
+            default: (config as any).default,
           })
           variables[key] = value
         }
@@ -394,7 +391,7 @@ export class ScaffoldManager extends EventEmitter {
   private async executeHooks(hookName: string, context: any): Promise<void> {
     // 执行插件钩子
     await this.pluginManager.executeHook(hookName, context)
-    
+
     // 执行自定义钩子
     this.emit(hookName, context)
   }

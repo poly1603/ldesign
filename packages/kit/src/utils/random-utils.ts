@@ -154,7 +154,7 @@ export class RandomUtils {
    */
   static string(
     length: number,
-    charset: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    charset: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
   ): string {
     if (length < 0) {
       throw new Error('length must be non-negative')
@@ -179,9 +179,11 @@ export class RandomUtils {
    */
   static letters(length: number, uppercase: boolean = true, lowercase: boolean = true): string {
     let charset = ''
-    if (uppercase) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    if (lowercase) charset += 'abcdefghijklmnopqrstuvwxyz'
-    
+    if (uppercase)
+      charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    if (lowercase)
+      charset += 'abcdefghijklmnopqrstuvwxyz'
+
     if (charset.length === 0) {
       throw new Error('At least one of uppercase or lowercase must be true')
     }
@@ -213,7 +215,10 @@ export class RandomUtils {
    * @returns 随机字母数字字符串
    */
   static alphanumeric(length: number): string {
-    return RandomUtils.string(length, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
+    return RandomUtils.string(
+      length,
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+    )
   }
 
   /**
@@ -234,9 +239,9 @@ export class RandomUtils {
     return [
       hex.slice(0, 8),
       hex.slice(8, 12),
-      '4' + hex.slice(13, 16),
+      `4${hex.slice(13, 16)}`,
       ['8', '9', 'a', 'b'][RandomUtils.int(0, 3)] + hex.slice(17, 20),
-      hex.slice(20, 32)
+      hex.slice(20, 32),
     ].join('-')
   }
 
@@ -245,18 +250,18 @@ export class RandomUtils {
    * @returns 随机颜色
    */
   static color(): string {
-    return '#' + RandomUtils.hex(6)
+    return `#${RandomUtils.hex(6)}`
   }
 
   /**
    * 生成随机RGB颜色
    * @returns RGB颜色对象
    */
-  static rgb(): { r: number; g: number; b: number } {
+  static rgb(): { r: number, g: number, b: number } {
     return {
       r: RandomUtils.int(0, 255),
       g: RandomUtils.int(0, 255),
-      b: RandomUtils.int(0, 255)
+      b: RandomUtils.int(0, 255),
     }
   }
 
@@ -264,11 +269,11 @@ export class RandomUtils {
    * 生成随机HSL颜色
    * @returns HSL颜色对象
    */
-  static hsl(): { h: number; s: number; l: number } {
+  static hsl(): { h: number, s: number, l: number } {
     return {
       h: RandomUtils.int(0, 360),
       s: RandomUtils.int(0, 100),
-      l: RandomUtils.int(0, 100)
+      l: RandomUtils.int(0, 100),
     }
   }
 
@@ -294,7 +299,7 @@ export class RandomUtils {
       RandomUtils.int(1, 255),
       RandomUtils.int(0, 255),
       RandomUtils.int(0, 255),
-      RandomUtils.int(1, 254)
+      RandomUtils.int(1, 254),
     ].join('.')
   }
 
@@ -329,7 +334,7 @@ export class RandomUtils {
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15',
-      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
     ]
     return RandomUtils.choice(browsers)
   }
@@ -347,7 +352,7 @@ export class RandomUtils {
 
     const range = max - min + 1
     const bytesNeeded = Math.ceil(Math.log2(range) / 8)
-    const maxValue = Math.pow(256, bytesNeeded)
+    const maxValue = 256 ** bytesNeeded
     const threshold = maxValue - (maxValue % range)
 
     let randomValue: number
@@ -370,7 +375,7 @@ export class RandomUtils {
    */
   static secureString(
     length: number,
-    charset: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    charset: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
   ): string {
     if (length < 0) {
       throw new Error('length must be non-negative')
@@ -392,26 +397,33 @@ export class RandomUtils {
    * @param options 选项
    * @returns 随机密码
    */
-  static password(length: number = 12, options: {
-    uppercase?: boolean
-    lowercase?: boolean
-    numbers?: boolean
-    symbols?: boolean
-    excludeSimilar?: boolean
-  } = {}): string {
+  static password(
+    length: number = 12,
+    options: {
+      uppercase?: boolean
+      lowercase?: boolean
+      numbers?: boolean
+      symbols?: boolean
+      excludeSimilar?: boolean
+    } = {},
+  ): string {
     const {
       uppercase = true,
       lowercase = true,
       numbers = true,
       symbols = false,
-      excludeSimilar = false
+      excludeSimilar = false,
     } = options
 
     let charset = ''
-    if (uppercase) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    if (lowercase) charset += 'abcdefghijklmnopqrstuvwxyz'
-    if (numbers) charset += '0123456789'
-    if (symbols) charset += '!@#$%^&*()_+-=[]{}|;:,.<>?'
+    if (uppercase)
+      charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    if (lowercase)
+      charset += 'abcdefghijklmnopqrstuvwxyz'
+    if (numbers)
+      charset += '0123456789'
+    if (symbols)
+      charset += '!@#$%^&*()_+-=[]{}|;:,.<>?'
 
     if (excludeSimilar) {
       charset = charset.replace(/[0O1lI]/g, '')
@@ -442,10 +454,10 @@ export class RandomUtils {
     // 这里提供一个简单的线性同余生成器作为替代
     let currentSeed = seed
     const originalRandom = Math.random
-    
+
     Math.random = () => {
-      currentSeed = (currentSeed * 1664525 + 1013904223) % Math.pow(2, 32)
-      return currentSeed / Math.pow(2, 32)
+      currentSeed = (currentSeed * 1664525 + 1013904223) % 2 ** 32
+      return currentSeed / 2 ** 32
     }
 
     // 提供恢复原始随机函数的方法

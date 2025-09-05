@@ -5,10 +5,9 @@
 
 import { EventEmitter } from 'node:events'
 import { promises as fs } from 'node:fs'
-import { resolve, dirname, basename, extname } from 'node:path'
-import { FileSystem } from '../filesystem'
-import { IconFontGenerator } from './iconfont-generator'
+import { basename, extname, resolve } from 'node:path'
 import { CssGenerator } from './css-generator'
+import { IconFontGenerator } from './iconfont-generator'
 
 /**
  * SVG 图标信息
@@ -75,7 +74,7 @@ export class SvgToIconFont extends EventEmitter {
 
   constructor(options: IconFontOptions) {
     super()
-    
+
     this.options = {
       fontName: options.fontName,
       fontFamily: options.fontFamily || options.fontName,
@@ -92,9 +91,11 @@ export class SvgToIconFont extends EventEmitter {
         generateScss: options.cssOptions?.generateScss !== false,
         generateLess: options.cssOptions?.generateLess !== false,
         generateStylus: options.cssOptions?.generateStylus !== false,
-        baseSelector: options.cssOptions?.baseSelector || `.${options.className || options.fontName.toLowerCase()}`,
-        classPrefix: options.cssOptions?.classPrefix || options.cssPrefix || 'icon-'
-      }
+        baseSelector:
+          options.cssOptions?.baseSelector
+          || `.${options.className || options.fontName.toLowerCase()}`,
+        classPrefix: options.cssOptions?.classPrefix || options.cssPrefix || 'icon-',
+      },
     }
 
     this.generator = new IconFontGenerator(this.options)
@@ -115,7 +116,7 @@ export class SvgToIconFont extends EventEmitter {
       icons: [],
       errors: [],
       duration: 0,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     try {
@@ -138,8 +139,8 @@ export class SvgToIconFont extends EventEmitter {
       this.emit('cssGenerated', { files: result.cssFiles })
 
       result.success = true
-
-    } catch (error) {
+    }
+    catch (error) {
       result.errors.push(error as Error)
       this.emit('conversionError', error)
     }
@@ -162,7 +163,7 @@ export class SvgToIconFont extends EventEmitter {
       icons: [],
       errors: [],
       duration: 0,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     try {
@@ -181,8 +182,8 @@ export class SvgToIconFont extends EventEmitter {
       this.emit('cssGenerated', { files: result.cssFiles })
 
       result.success = true
-
-    } catch (error) {
+    }
+    catch (error) {
       result.errors.push(error as Error)
       this.emit('conversionError', error)
     }
@@ -205,7 +206,7 @@ export class SvgToIconFont extends EventEmitter {
       name,
       path: iconPath,
       content,
-      unicode
+      unicode,
     }
 
     this.emit('iconAdded', icon)
@@ -265,16 +266,17 @@ export class SvgToIconFont extends EventEmitter {
 
   private async scanSvgFiles(dir: string): Promise<string[]> {
     const files: string[] = []
-    
+
     const scan = async (currentDir: string): Promise<void> => {
       const entries = await fs.readdir(currentDir, { withFileTypes: true })
-      
+
       for (const entry of entries) {
         const fullPath = resolve(currentDir, entry.name)
-        
+
         if (entry.isDirectory()) {
           await scan(fullPath)
-        } else if (entry.isFile() && extname(entry.name).toLowerCase() === '.svg') {
+        }
+        else if (entry.isFile() && extname(entry.name).toLowerCase() === '.svg') {
           files.push(fullPath)
         }
       }
@@ -298,10 +300,10 @@ export class SvgToIconFont extends EventEmitter {
           name,
           path: filePath,
           content,
-          unicode
+          unicode,
         })
-
-      } catch (error) {
+      }
+      catch (error) {
         this.emit('iconLoadError', { file: filePath, error })
       }
     }

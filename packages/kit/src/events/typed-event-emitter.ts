@@ -29,7 +29,7 @@ export class TypedEventEmitter<TEventMap extends EventMap> extends EventEmitter 
       priority?: number
       namespace?: string
       tags?: string[]
-    }
+    },
   ): this {
     return super.on(event as string, listener as any, options)
   }
@@ -44,7 +44,7 @@ export class TypedEventEmitter<TEventMap extends EventMap> extends EventEmitter 
       priority?: number
       namespace?: string
       tags?: string[]
-    }
+    },
   ): this {
     return super.once(event as string, listener as any, options)
   }
@@ -54,7 +54,7 @@ export class TypedEventEmitter<TEventMap extends EventMap> extends EventEmitter 
    */
   override off<K extends keyof TEventMap>(
     event: K,
-    listener?: TypedEventListener<TEventMap[K]>
+    listener?: TypedEventListener<TEventMap[K]>,
   ): this {
     return super.off(event as string, listener as any)
   }
@@ -69,7 +69,10 @@ export class TypedEventEmitter<TEventMap extends EventMap> extends EventEmitter 
   /**
    * 异步发射类型安全的事件
    */
-  override async emitAsync<K extends keyof TEventMap>(event: K, ...args: TEventMap[K]): Promise<any[]> {
+  override async emitAsync<K extends keyof TEventMap>(
+    event: K,
+    ...args: TEventMap[K]
+  ): Promise<any[]> {
     return super.emitAsync(event as string, ...args)
   }
 
@@ -121,7 +124,7 @@ export class EventEmitterBuilder<TEventMap extends EventMap = {}> {
   addEvent<K extends string, T extends any[]>(
     event: K,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _args: T
+    _args: T,
   ): EventEmitterBuilder<TEventMap & Record<K, T>> {
     return this as any
   }
@@ -170,8 +173,8 @@ export interface CommonEvents {
  * HTTP事件类型
  */
 export interface HttpEvents {
-  request: [any] // request object
-  response: [any] // response object
+  'request': [any] // request object
+  'response': [any] // response object
   'request:start': [string] // url
   'request:end': [string, number] // url, status
   'request:error': [string, Error] // url, error
@@ -240,7 +243,14 @@ export interface AppEvents extends CommonEvents {
 /**
  * 组合事件类型
  */
-export interface AllEvents extends CommonEvents, HttpEvents, DatabaseEvents, FileSystemEvents, CacheEvents, UserEvents, AppEvents {
+export interface AllEvents
+  extends CommonEvents,
+  HttpEvents,
+  DatabaseEvents,
+  FileSystemEvents,
+  CacheEvents,
+  UserEvents,
+  AppEvents {
   [event: string]: any[]
 }
 
@@ -248,7 +258,7 @@ export interface AllEvents extends CommonEvents, HttpEvents, DatabaseEvents, Fil
  * 创建类型安全的事件发射器
  */
 export function createTypedEventEmitter<TEventMap extends EventMap>(
-  options?: any
+  options?: any,
 ): TypedEventEmitter<TEventMap> {
   return new TypedEventEmitter<TEventMap>(options)
 }
@@ -284,12 +294,17 @@ export namespace EventTypes {
   /**
    * 提取事件监听器类型
    */
-  export type EventListener<TEventMap extends EventMap, K extends keyof TEventMap> = TypedEventListener<TEventMap[K]>
+  export type EventListener<
+    TEventMap extends EventMap,
+    K extends keyof TEventMap,
+  > = TypedEventListener<TEventMap[K]>
 
   /**
    * 检查事件是否存在
    */
-  export type HasEvent<TEventMap extends EventMap, K extends string> = K extends keyof TEventMap ? true : false
+  export type HasEvent<TEventMap extends EventMap, K extends string> = K extends keyof TEventMap
+    ? true
+    : false
 
   /**
    * 合并事件映射
@@ -299,12 +314,18 @@ export namespace EventTypes {
   /**
    * 过滤事件映射
    */
-  export type FilterEventMap<TEventMap extends EventMap, K extends keyof TEventMap> = Pick<TEventMap, K>
+  export type FilterEventMap<TEventMap extends EventMap, K extends keyof TEventMap> = Pick<
+    TEventMap,
+    K
+  >
 
   /**
    * 排除事件映射
    */
-  export type OmitEventMap<TEventMap extends EventMap, K extends keyof TEventMap> = Omit<TEventMap, K>
+  export type OmitEventMap<TEventMap extends EventMap, K extends keyof TEventMap> = Omit<
+    TEventMap,
+    K
+  >
 }
 
 /**
@@ -317,7 +338,7 @@ export function EventHandler<TEventMap extends EventMap, K extends keyof TEventM
     namespace?: string
     tags?: string[]
     once?: boolean
-  }
+  },
 ) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value
@@ -328,7 +349,8 @@ export function EventHandler<TEventMap extends EventMap, K extends keyof TEventM
         const listener = originalMethod.bind(this)
         if (options?.once) {
           emitter.once(event, listener, options)
-        } else {
+        }
+        else {
           emitter.on(event, listener, options)
         }
       }
@@ -347,11 +369,11 @@ export function AutoBind<TEventMap extends EventMap>(eventMap: TEventMap) {
     return class extends constructor {
       constructor(...args: any[]) {
         super(...args)
-        
+
         // 自动绑定事件处理方法
         const prototype = Object.getPrototypeOf(this)
         const methodNames = Object.getOwnPropertyNames(prototype)
-        
+
         for (const methodName of methodNames) {
           if (methodName.startsWith('on') && typeof (this as any)[methodName] === 'function') {
             const eventName = methodName.slice(2).toLowerCase()

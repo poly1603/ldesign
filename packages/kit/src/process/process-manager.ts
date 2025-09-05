@@ -3,12 +3,12 @@
  * 提供进程创建、监控和管理功能
  */
 
-import { spawn, exec, fork, ChildProcess, SpawnOptions, ExecOptions } from 'node:child_process'
+import type { ChildProcess, ExecOptions, SpawnOptions } from 'node:child_process'
+import type { ExecResult, ExecOptions as KitExecOptions } from '../types'
+import { exec, fork, spawn } from 'node:child_process'
 import { EventEmitter } from 'node:events'
 import { promisify } from 'node:util'
-import type { ExecOptions as KitExecOptions, ExecResult } from '../types'
 import { ProcessError } from '../types'
-import { AsyncUtils } from '../utils'
 
 const execAsync = promisify(exec)
 
@@ -32,7 +32,7 @@ export class ProcessManager extends EventEmitter {
       timeout = 30000,
       encoding = 'utf8',
       shell = true,
-      silent = false
+      silent = false,
     } = options
 
     try {
@@ -42,7 +42,7 @@ export class ProcessManager extends EventEmitter {
         timeout,
         encoding,
         shell,
-        maxBuffer: 1024 * 1024 * 10 // 10MB
+        maxBuffer: 1024 * 1024 * 10, // 10MB
       }
 
       if (!silent) {
@@ -58,7 +58,7 @@ export class ProcessManager extends EventEmitter {
         stderr: stderr.toString(),
         exitCode: 0,
         killed: false,
-        timedOut: false
+        timedOut: false,
       }
 
       if (!silent) {
@@ -66,31 +66,25 @@ export class ProcessManager extends EventEmitter {
       }
 
       return result
-    } catch (error: any) {
+    }
+    catch (error: any) {
       const result: ExecResult = {
         stdout: error.stdout?.toString() || '',
         stderr: error.stderr?.toString() || '',
         exitCode: error.code || 1,
         signal: error.signal,
         killed: error.killed || false,
-        timedOut: error.code === 'ETIMEDOUT'
+        timedOut: error.code === 'ETIMEDOUT',
       }
 
       if (!silent) {
-        this.emit('error', new ProcessError(
-          `Command failed: ${command}`,
-          command,
-          result.exitCode,
-          error
-        ))
+        this.emit(
+          'error',
+          new ProcessError(`Command failed: ${command}`, command, result.exitCode, error),
+        )
       }
 
-      throw new ProcessError(
-        `Command failed: ${command}`,
-        command,
-        result.exitCode,
-        error
-      )
+      throw new ProcessError(`Command failed: ${command}`, command, result.exitCode, error)
     }
   }
 
@@ -103,23 +97,23 @@ export class ProcessManager extends EventEmitter {
    */
   spawn(command: string, args: string[] = [], options: SpawnOptions = {}): string {
     const processId = `proc_${this.nextId++}`
-    
+
     const spawnOptions: SpawnOptions = {
       cwd: process.cwd(),
       env: process.env,
       stdio: 'pipe',
-      ...options
+      ...options,
     }
 
     const childProcess = spawn(command, args, spawnOptions)
-    
+
     const managedProcess: ManagedProcess = {
       id: processId,
       command,
       args,
       process: childProcess,
       startTime: new Date(),
-      status: 'running'
+      status: 'running',
     }
 
     this.processes.set(processId, managedProcess)
@@ -141,22 +135,22 @@ export class ProcessManager extends EventEmitter {
    */
   fork(modulePath: string, args: string[] = [], options: any = {}): string {
     const processId = `fork_${this.nextId++}`
-    
+
     const forkOptions = {
       cwd: process.cwd(),
       env: process.env,
-      ...options
+      ...options,
     }
 
     const childProcess = fork(modulePath, args, forkOptions)
-    
+
     const managedProcess: ManagedProcess = {
       id: processId,
       command: modulePath,
       args,
       process: childProcess,
       startTime: new Date(),
-      status: 'running'
+      status: 'running',
     }
 
     this.processes.set(processId, managedProcess)
@@ -183,7 +177,7 @@ export class ProcessManager extends EventEmitter {
         processId: id,
         exitCode: code,
         signal,
-        duration: managedProcess.endTime.getTime() - managedProcess.startTime.getTime()
+        duration: managedProcess.endTime.getTime() - managedProcess.startTime.getTime(),
       })
     })
 
@@ -197,8 +191,8 @@ export class ProcessManager extends EventEmitter {
           `Process error: ${managedProcess.command}`,
           managedProcess.command,
           undefined,
-          error
-        )
+          error,
+        ),
       })
     })
 
@@ -325,9 +319,9 @@ export class ProcessManager extends EventEmitter {
         processId,
         exitCode: managedProcess.exitCode,
         signal: managedProcess.signal,
-        duration: managedProcess.endTime 
+        duration: managedProcess.endTime
           ? managedProcess.endTime.getTime() - managedProcess.startTime.getTime()
-          : 0
+          : 0,
       }
     }
 
@@ -336,7 +330,8 @@ export class ProcessManager extends EventEmitter {
 
       const onExit = (info: ProcessExitInfo) => {
         if (info.processId === processId) {
-          if (timeoutId) clearTimeout(timeoutId)
+          if (timeoutId)
+            clearTimeout(timeoutId)
           this.off('exit', onExit)
           resolve(info)
         }
@@ -369,17 +364,17 @@ export class ProcessManager extends EventEmitter {
    */
   async killAll(signal: NodeJS.Signals = 'SIGTERM'): Promise<void> {
     const runningProcesses = this.getRunningProcesses()
-    
+
     for (const process of runningProcesses) {
       this.kill(process.id, signal)
     }
 
     // 等待所有进程结束
-    const waitPromises = runningProcesses.map(p => 
+    const waitPromises = runningProcesses.map(p =>
       this.waitForExit(p.id, 5000).catch(() => {
         // 如果超时，强制终止
         this.forceKill(p.id)
-      })
+      }),
     )
 
     await Promise.all(waitPromises)
@@ -390,13 +385,13 @@ export class ProcessManager extends EventEmitter {
    */
   getStats(): ProcessStats {
     const processes = this.getAllProcesses()
-    
+
     return {
       total: processes.length,
       running: processes.filter(p => p.status === 'running').length,
       exited: processes.filter(p => p.status === 'exited').length,
       killed: processes.filter(p => p.status === 'killed').length,
-      error: processes.filter(p => p.status === 'error').length
+      error: processes.filter(p => p.status === 'error').length,
     }
   }
 }

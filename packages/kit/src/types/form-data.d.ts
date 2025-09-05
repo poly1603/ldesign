@@ -1,6 +1,6 @@
 declare module 'form-data' {
   import { Readable } from 'stream'
-  
+
   class FormData {
     constructor()
     append(field: string, value: any, options?: any): void
@@ -10,6 +10,6 @@ declare module 'form-data' {
     hasKnownLength(): boolean
     pipe(destination: any): any
   }
-  
+
   export = FormData
 }

@@ -3,10 +3,9 @@
  * 提供数据库连接的池化管理功能
  */
 
-import { EventEmitter } from 'node:events'
 import type { DatabaseConnection } from '../types'
+import { EventEmitter } from 'node:events'
 import { DatabaseError } from '../types'
-import { AsyncUtils } from '../utils'
 
 /**
  * 连接池类
@@ -18,6 +17,7 @@ export class ConnectionPool extends EventEmitter {
     reject: (error: Error) => void
     timeout: NodeJS.Timeout
   }> = []
+
   private options: Required<ConnectionPoolOptions>
   private isDestroyed = false
 
@@ -33,7 +33,7 @@ export class ConnectionPool extends EventEmitter {
       idleTimeoutMillis: 300000,
       reapIntervalMillis: 1000,
       createRetryIntervalMillis: 200,
-      ...options
+      ...options,
     }
 
     this.startReaper()
@@ -62,7 +62,8 @@ export class ConnectionPool extends EventEmitter {
         const connection = await this.createConnection()
         this.emit('acquire', connection)
         return connection
-      } catch (error) {
+      }
+      catch (error) {
         this.emit('createError', error)
         throw error
       }
@@ -110,7 +111,8 @@ export class ConnectionPool extends EventEmitter {
     try {
       await connection.connection.disconnect()
       this.emit('destroy', connection)
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('destroyError', { connection, error })
     }
   }
@@ -149,15 +151,15 @@ export class ConnectionPool extends EventEmitter {
         connection,
         inUse: true,
         created: new Date(),
-        lastUsed: new Date()
+        lastUsed: new Date(),
       }
 
       this.connections.push(pooledConnection)
       this.emit('create', pooledConnection)
 
       return pooledConnection
-
-    } catch (error) {
+    }
+    catch (error) {
       throw new DatabaseError(`Failed to create connection: ${connectionId}`, error as Error)
     }
   }
@@ -199,14 +201,15 @@ export class ConnectionPool extends EventEmitter {
    */
   private reapIdleConnections(): void {
     const now = Date.now()
-    const idleConnections = this.connections.filter(conn =>
-      !conn.inUse &&
-      (now - conn.lastUsed.getTime()) > this.options.idleTimeoutMillis &&
-      this.connections.length > this.options.min
+    const idleConnections = this.connections.filter(
+      conn =>
+        !conn.inUse
+        && now - conn.lastUsed.getTime() > this.options.idleTimeoutMillis
+        && this.connections.length > this.options.min,
     )
 
     for (const connection of idleConnections) {
-      this.destroy(connection).catch(error => {
+      this.destroy(connection).catch((error) => {
         this.emit('reapError', { connection, error })
       })
     }
@@ -220,7 +223,7 @@ export class ConnectionPool extends EventEmitter {
     const neededConnections = this.options.min - availableConnections
 
     for (let i = 0; i < neededConnections && this.connections.length < this.options.max; i++) {
-      this.createConnection().catch(error => {
+      this.createConnection().catch((error) => {
         this.emit('ensureMinError', error)
       })
     }
@@ -248,7 +251,7 @@ export class ConnectionPool extends EventEmitter {
       idleConnections,
       waitingRequests,
       minConnections: this.options.min,
-      maxConnections: this.options.max
+      maxConnections: this.options.max,
     }
   }
 
@@ -264,19 +267,20 @@ export class ConnectionPool extends EventEmitter {
       try {
         await pooledConnection.connection.query('SELECT 1')
         healthyConnections.push(pooledConnection.id)
-      } catch {
+      }
+      catch {
         unhealthyConnections.push(pooledConnection.id)
       }
     }
 
-    const isHealthy = unhealthyConnections.length === 0 &&
-      stats.totalConnections >= this.options.min
+    const isHealthy
+      = unhealthyConnections.length === 0 && stats.totalConnections >= this.options.min
 
     return {
       isHealthy,
       stats,
       healthyConnections,
-      unhealthyConnections
+      unhealthyConnections,
     }
   }
 
@@ -288,7 +292,8 @@ export class ConnectionPool extends EventEmitter {
 
     try {
       return await operation(pooledConnection.connection)
-    } finally {
+    }
+    finally {
       this.release(pooledConnection)
     }
   }

@@ -2,11 +2,11 @@
  * Logger 测试
  */
 
-import { Logger } from '../../src/logger/logger'
 import { promises as fs } from 'node:fs'
 import { join } from 'node:path'
+import { Logger } from '../../src/logger/logger'
 
-describe('Logger', () => {
+describe('logger', () => {
   let tempDir: string
   let logger: Logger
 
@@ -26,17 +26,17 @@ describe('Logger', () => {
       logger = Logger.create({
         level: 'debug',
         transports: [
-          { type: 'console', silent: true } // 静默控制台输出以避免测试噪音
-        ]
+          { type: 'console', silent: true }, // 静默控制台输出以避免测试噪音
+        ],
       })
     })
 
     it('应该记录不同级别的日志', () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
-      
+
       logger = Logger.create({
         level: 'debug',
-        transports: [{ type: 'console' }]
+        transports: [{ type: 'console' }],
       })
 
       logger.debug('Debug message')
@@ -50,16 +50,16 @@ describe('Logger', () => {
 
     it('应该根据日志级别过滤消息', () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
-      
+
       logger = Logger.create({
         level: 'warn',
-        transports: [{ type: 'console' }]
+        transports: [{ type: 'console' }],
       })
 
       logger.debug('Debug message') // 不应该输出
-      logger.info('Info message')   // 不应该输出
+      logger.info('Info message') // 不应该输出
       logger.warn('Warning message') // 应该输出
-      logger.error('Error message')  // 应该输出
+      logger.error('Error message') // 应该输出
 
       expect(consoleSpy).toHaveBeenCalledTimes(2)
       consoleSpy.mockRestore()
@@ -67,15 +67,15 @@ describe('Logger', () => {
 
     it('应该支持结构化日志', () => {
       const messages: any[] = []
-      
-      logger.on('log', (entry) => {
+
+      logger.on('log', entry => {
         messages.push(entry)
       })
 
-      logger.info('User action', { 
-        userId: 123, 
+      logger.info('User action', {
+        userId: 123,
         action: 'login',
-        ip: '192.168.1.1'
+        ip: '192.168.1.1',
       })
 
       expect(messages).toHaveLength(1)
@@ -87,8 +87,8 @@ describe('Logger', () => {
 
     it('应该包含时间戳和级别', () => {
       const messages: any[] = []
-      
-      logger.on('log', (entry) => {
+
+      logger.on('log', entry => {
         messages.push(entry)
       })
 
@@ -102,16 +102,14 @@ describe('Logger', () => {
   describe('文件传输', () => {
     it('应该写入文件', async () => {
       const logFile = join(tempDir, 'app.log')
-      
+
       logger = Logger.create({
         level: 'info',
-        transports: [
-          { type: 'file', filename: logFile }
-        ]
+        transports: [{ type: 'file', filename: logFile }],
       })
 
       logger.info('Test message')
-      
+
       // 等待文件写入
       await global.testUtils.sleep(100)
 
@@ -122,17 +120,17 @@ describe('Logger', () => {
 
     it('应该支持日志轮转', async () => {
       const logFile = join(tempDir, 'app.log')
-      
+
       logger = Logger.create({
         level: 'info',
         transports: [
-          { 
-            type: 'rotating-file', 
+          {
+            type: 'rotating-file',
             filename: logFile,
             maxSize: 100, // 100 bytes
-            maxFiles: 3
-          }
-        ]
+            maxFiles: 3,
+          },
+        ],
       })
 
       // 写入足够的日志以触发轮转
@@ -144,41 +142,44 @@ describe('Logger', () => {
       // 检查是否创建了轮转文件
       const files = await fs.readdir(tempDir)
       const logFiles = files.filter(f => f.startsWith('app.log'))
-      
+
       expect(logFiles.length).toBeGreaterThan(1)
     })
 
     it('应该创建目录如果不存在', async () => {
       const logFile = join(tempDir, 'logs', 'nested', 'app.log')
-      
+
       logger = Logger.create({
         level: 'info',
-        transports: [
-          { type: 'file', filename: logFile }
-        ]
+        transports: [{ type: 'file', filename: logFile }],
       })
 
       logger.info('Test message')
-      
+
       await global.testUtils.sleep(100)
 
-      expect(await fs.access(logFile).then(() => true).catch(() => false)).toBe(true)
+      expect(
+        await fs
+          .access(logFile)
+          .then(() => true)
+          .catch(() => false)
+      ).toBe(true)
     })
   })
 
   describe('格式化', () => {
     it('应该支持JSON格式', () => {
       const messages: string[] = []
-      
+
       logger = Logger.create({
         level: 'info',
         format: 'json',
         transports: [
-          { 
+          {
             type: 'custom',
-            write: (message) => messages.push(message)
-          }
-        ]
+            write: message => messages.push(message),
+          },
+        ],
       })
 
       logger.info('Test message', { key: 'value' })
@@ -191,16 +192,16 @@ describe('Logger', () => {
 
     it('应该支持文本格式', () => {
       const messages: string[] = []
-      
+
       logger = Logger.create({
         level: 'info',
         format: 'text',
         transports: [
-          { 
+          {
             type: 'custom',
-            write: (message) => messages.push(message)
-          }
-        ]
+            write: message => messages.push(message),
+          },
+        ],
       })
 
       logger.info('Test message')
@@ -210,16 +211,16 @@ describe('Logger', () => {
 
     it('应该支持自定义格式化器', () => {
       const messages: string[] = []
-      
+
       logger = Logger.create({
         level: 'info',
-        formatter: (entry) => `[${entry.level.toUpperCase()}] ${entry.message}`,
+        formatter: entry => `[${entry.level.toUpperCase()}] ${entry.message}`,
         transports: [
-          { 
+          {
             type: 'custom',
-            write: (message) => messages.push(message)
-          }
-        ]
+            write: message => messages.push(message),
+          },
+        ],
       })
 
       logger.info('Test message')
@@ -233,19 +234,19 @@ describe('Logger', () => {
       const consoleMessages: string[] = []
       const fileMessages: string[] = []
       const logFile = join(tempDir, 'app.log')
-      
+
       logger = Logger.create({
         level: 'info',
         transports: [
-          { 
+          {
             type: 'custom',
-            write: (message) => consoleMessages.push(message)
+            write: message => consoleMessages.push(message),
           },
-          { 
+          {
             type: 'custom',
-            write: (message) => fileMessages.push(message)
-          }
-        ]
+            write: message => fileMessages.push(message),
+          },
+        ],
       })
 
       logger.info('Test message')
@@ -259,21 +260,21 @@ describe('Logger', () => {
     it('应该支持不同传输的不同级别', () => {
       const debugMessages: string[] = []
       const errorMessages: string[] = []
-      
+
       logger = Logger.create({
         level: 'debug',
         transports: [
-          { 
+          {
             type: 'custom',
             level: 'debug',
-            write: (message) => debugMessages.push(message)
+            write: message => debugMessages.push(message),
           },
-          { 
+          {
             type: 'custom',
             level: 'error',
-            write: (message) => errorMessages.push(message)
-          }
-        ]
+            write: message => errorMessages.push(message),
+          },
+        ],
       })
 
       logger.debug('Debug message')
@@ -289,17 +290,15 @@ describe('Logger', () => {
     beforeEach(() => {
       logger = Logger.create({
         level: 'info',
-        transports: [
-          { type: 'console', silent: true }
-        ]
+        transports: [{ type: 'console', silent: true }],
       })
     })
 
     it('应该创建子日志器', () => {
       const child = logger.child({ module: 'auth' })
-      
+
       const messages: any[] = []
-      child.on('log', (entry) => {
+      child.on('log', entry => {
         messages.push(entry)
       })
 
@@ -310,16 +309,16 @@ describe('Logger', () => {
 
     it('应该继承父日志器的配置', () => {
       const child = logger.child({ service: 'api' })
-      
+
       expect(child.getLevel()).toBe(logger.getLevel())
     })
 
     it('应该支持嵌套子日志器', () => {
       const child = logger.child({ module: 'auth' })
       const grandchild = child.child({ action: 'login' })
-      
+
       const messages: any[] = []
-      grandchild.on('log', (entry) => {
+      grandchild.on('log', entry => {
         messages.push(entry)
       })
 
@@ -333,17 +332,17 @@ describe('Logger', () => {
   describe('错误处理', () => {
     it('应该处理传输错误', () => {
       const errorSpy = jest.fn()
-      
+
       logger = Logger.create({
         level: 'info',
         transports: [
-          { 
+          {
             type: 'custom',
             write: () => {
               throw new Error('Transport error')
-            }
-          }
-        ]
+            },
+          },
+        ],
       })
 
       logger.on('error', errorSpy)
@@ -355,21 +354,21 @@ describe('Logger', () => {
     it('应该继续工作即使某个传输失败', () => {
       const successMessages: string[] = []
       const errorSpy = jest.fn()
-      
+
       logger = Logger.create({
         level: 'info',
         transports: [
-          { 
+          {
             type: 'custom',
             write: () => {
               throw new Error('Transport error')
-            }
+            },
           },
-          { 
+          {
             type: 'custom',
-            write: (message) => successMessages.push(message)
-          }
-        ]
+            write: message => successMessages.push(message),
+          },
+        ],
       })
 
       logger.on('error', errorSpy)
@@ -383,19 +382,19 @@ describe('Logger', () => {
   describe('性能', () => {
     it('应该支持异步日志记录', async () => {
       const messages: string[] = []
-      
+
       logger = Logger.create({
         level: 'info',
         async: true,
         transports: [
-          { 
+          {
             type: 'custom',
-            write: async (message) => {
+            write: async message => {
               await global.testUtils.sleep(10)
               messages.push(message)
-            }
-          }
-        ]
+            },
+          },
+        ],
       })
 
       logger.info('Message 1')
@@ -412,17 +411,17 @@ describe('Logger', () => {
 
     it('应该支持批量写入', async () => {
       const batches: string[][] = []
-      
+
       logger = Logger.create({
         level: 'info',
         batchSize: 3,
         batchTimeout: 100,
         transports: [
-          { 
+          {
             type: 'custom',
-            writeBatch: (messages) => batches.push([...messages])
-          }
-        ]
+            writeBatch: messages => batches.push([...messages]),
+          },
+        ],
       })
 
       logger.info('Message 1')
@@ -440,9 +439,7 @@ describe('Logger', () => {
     it('应该动态更改日志级别', () => {
       logger = Logger.create({
         level: 'info',
-        transports: [
-          { type: 'console', silent: true }
-        ]
+        transports: [{ type: 'console', silent: true }],
       })
 
       expect(logger.getLevel()).toBe('info')
@@ -454,12 +451,12 @@ describe('Logger', () => {
     it('应该添加和移除传输', () => {
       logger = Logger.create({
         level: 'info',
-        transports: []
+        transports: [],
       })
 
-      const transport = { 
+      const transport = {
         type: 'custom' as const,
-        write: () => {}
+        write: () => {},
       }
 
       logger.addTransport(transport)
@@ -473,7 +470,7 @@ describe('Logger', () => {
   describe('静态方法', () => {
     it('应该创建默认日志器', () => {
       const defaultLogger = Logger.getDefault()
-      
+
       expect(defaultLogger).toBeInstanceOf(Logger)
       expect(Logger.getDefault()).toBe(defaultLogger) // 应该返回同一个实例
     })
@@ -481,7 +478,7 @@ describe('Logger', () => {
     it('应该创建带配置的日志器', () => {
       const customLogger = Logger.create({
         level: 'warn',
-        format: 'json'
+        format: 'json',
       })
 
       expect(customLogger.getLevel()).toBe('warn')
@@ -491,23 +488,21 @@ describe('Logger', () => {
   describe('清理', () => {
     it('应该正确销毁日志器', async () => {
       const logFile = join(tempDir, 'app.log')
-      
+
       logger = Logger.create({
         level: 'info',
-        transports: [
-          { type: 'file', filename: logFile }
-        ]
+        transports: [{ type: 'file', filename: logFile }],
       })
 
       logger.info('Before destroy')
-      
+
       await logger.destroy()
-      
+
       // 销毁后不应该再写入
       logger.info('After destroy')
-      
+
       await global.testUtils.sleep(100)
-      
+
       const content = await fs.readFile(logFile, 'utf8')
       expect(content).toContain('Before destroy')
       expect(content).not.toContain('After destroy')

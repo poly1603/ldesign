@@ -3,10 +3,10 @@
  * 提供进程相关的实用工具函数
  */
 
-import { exec, spawn } from 'node:child_process'
-import { promisify } from 'node:util'
+import type { ExecResult, ExecOptions as KitExecOptions } from '../types'
+import { exec } from 'node:child_process'
 import { platform } from 'node:os'
-import type { ExecOptions as KitExecOptions, ExecResult } from '../types'
+import { promisify } from 'node:util'
 import { ProcessError } from '../types'
 
 const execAsync = promisify(exec)
@@ -22,13 +22,12 @@ export class ProcessUtils {
    */
   static async isCommandAvailable(command: string): Promise<boolean> {
     try {
-      const checkCommand = platform() === 'win32' 
-        ? `where ${command}`
-        : `which ${command}`
-      
+      const checkCommand = platform() === 'win32' ? `where ${command}` : `which ${command}`
+
       await execAsync(checkCommand)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -40,13 +39,12 @@ export class ProcessUtils {
    */
   static async getCommandPath(command: string): Promise<string | null> {
     try {
-      const checkCommand = platform() === 'win32' 
-        ? `where ${command}`
-        : `which ${command}`
-      
+      const checkCommand = platform() === 'win32' ? `where ${command}` : `which ${command}`
+
       const { stdout } = await execAsync(checkCommand)
       return stdout.trim().split('\n')[0] || null
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -60,7 +58,7 @@ export class ProcessUtils {
     const managers = [
       { name: 'pnpm', lockFile: 'pnpm-lock.yaml' },
       { name: 'yarn', lockFile: 'yarn.lock' },
-      { name: 'npm', lockFile: 'package-lock.json' }
+      { name: 'npm', lockFile: 'package-lock.json' },
     ]
 
     // 检查锁文件
@@ -74,7 +72,8 @@ export class ProcessUtils {
             return manager.name
           }
         }
-      } catch {
+      }
+      catch {
         // 继续检查下一个
       }
     }
@@ -104,7 +103,7 @@ export class ProcessUtils {
         exec: 'npx',
         list: 'npm list',
         outdated: 'npm outdated',
-        update: 'npm update'
+        update: 'npm update',
       },
       yarn: {
         install: 'yarn install',
@@ -114,7 +113,7 @@ export class ProcessUtils {
         exec: 'yarn dlx',
         list: 'yarn list',
         outdated: 'yarn outdated',
-        update: 'yarn upgrade'
+        update: 'yarn upgrade',
       },
       pnpm: {
         install: 'pnpm install',
@@ -124,8 +123,8 @@ export class ProcessUtils {
         exec: 'pnpm dlx',
         list: 'pnpm list',
         outdated: 'pnpm outdated',
-        update: 'pnpm update'
-      }
+        update: 'pnpm update',
+      },
     }
 
     return commands[packageManager] || commands.npm
@@ -141,24 +140,24 @@ export class ProcessUtils {
   static async runPackageManagerCommand(
     action: keyof PackageManagerCommands,
     args: string[] = [],
-    options: KitExecOptions = {}
+    options: KitExecOptions = {},
   ): Promise<ExecResult> {
     const packageManager = await ProcessUtils.detectPackageManager(options.cwd)
     const commands = ProcessUtils.getPackageManagerCommands(packageManager)
     const baseCommand = commands[action]
-    
+
     if (!baseCommand) {
       throw new ProcessError(`Unsupported action: ${action}`, '', undefined)
     }
 
     const fullCommand = `${baseCommand} ${args.join(' ')}`.trim()
-    
+
     try {
       const { stdout, stderr } = await execAsync(fullCommand, {
         cwd: options.cwd || process.cwd(),
         env: options.env || process.env,
         timeout: options.timeout || 300000, // 5分钟默认超时
-        encoding: options.encoding || 'utf8'
+        encoding: options.encoding || 'utf8',
       })
 
       return {
@@ -166,14 +165,15 @@ export class ProcessUtils {
         stderr: stderr.toString(),
         exitCode: 0,
         killed: false,
-        timedOut: false
+        timedOut: false,
       }
-    } catch (error: any) {
+    }
+    catch (error: any) {
       throw new ProcessError(
         `Package manager command failed: ${fullCommand}`,
         fullCommand,
         error.code,
-        error
+        error,
       )
     }
   }
@@ -186,12 +186,12 @@ export class ProcessUtils {
   static async getProcessInfo(pid: number): Promise<ProcessInfo | null> {
     try {
       const isWindows = platform() === 'win32'
-      const command = isWindows 
+      const command = isWindows
         ? `tasklist /FI "PID eq ${pid}" /FO CSV /NH`
         : `ps -p ${pid} -o pid,ppid,command --no-headers`
 
       const { stdout } = await execAsync(command)
-      
+
       if (!stdout.trim()) {
         return null
       }
@@ -202,24 +202,26 @@ export class ProcessUtils {
           return {
             pid,
             name: parts[0].replace(/"/g, ''),
-            memory: parseInt(parts[4].replace(/[",\s]/g, '')) * 1024, // KB to bytes
-            command: parts[0].replace(/"/g, '')
+            memory: Number.parseInt(parts[4].replace(/[",\s]/g, '')) * 1024, // KB to bytes
+            command: parts[0].replace(/"/g, ''),
           }
         }
-      } else {
+      }
+      else {
         const parts = stdout.trim().split(/\s+/)
         if (parts.length >= 3) {
           return {
             pid,
-            ppid: parseInt(parts[1]),
+            ppid: Number.parseInt(parts[1]),
             command: parts.slice(2).join(' '),
-            name: parts[2]
+            name: parts[2],
           }
         }
       }
 
       return null
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -231,28 +233,31 @@ export class ProcessUtils {
    */
   static async killProcessTree(pid: number, signal: NodeJS.Signals = 'SIGTERM'): Promise<void> {
     const isWindows = platform() === 'win32'
-    
+
     try {
       if (isWindows) {
         // Windows: 使用 taskkill 终止进程树
         await execAsync(`taskkill /PID ${pid} /T /F`)
-      } else {
+      }
+      else {
         // Unix: 获取子进程并递归终止
         const children = await ProcessUtils.getChildProcesses(pid)
-        
+
         // 先终止子进程
         for (const childPid of children) {
           await ProcessUtils.killProcessTree(childPid, signal)
         }
-        
+
         // 最后终止父进程
         try {
           process.kill(pid, signal)
-        } catch {
+        }
+        catch {
           // 进程可能已经不存在
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new ProcessError(`Failed to kill process tree: ${pid}`, '', undefined, error as Error)
     }
   }
@@ -270,23 +275,25 @@ export class ProcessUtils {
         : `pgrep -P ${pid}`
 
       const { stdout } = await execAsync(command)
-      
+
       if (isWindows) {
         return stdout
           .split('\n')
           .slice(1) // 跳过标题行
           .map(line => line.split(',')[1])
           .filter(pid => pid && pid.trim())
-          .map(pid => parseInt(pid.trim()))
+          .map(pid => Number.parseInt(pid.trim()))
           .filter(pid => !isNaN(pid))
-      } else {
+      }
+      else {
         return stdout
           .split('\n')
           .filter(line => line.trim())
-          .map(pid => parseInt(pid.trim()))
+          .map(pid => Number.parseInt(pid.trim()))
           .filter(pid => !isNaN(pid))
       }
-    } catch {
+    }
+    catch {
       return []
     }
   }
@@ -300,7 +307,8 @@ export class ProcessUtils {
     try {
       process.kill(pid, 0) // 发送信号0检查进程是否存在
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -311,21 +319,17 @@ export class ProcessUtils {
    * @param timeout 超时时间
    * @param interval 检查间隔
    */
-  static async waitForProcessExit(
-    pid: number, 
-    timeout = 30000, 
-    interval = 1000
-  ): Promise<void> {
+  static async waitForProcessExit(pid: number, timeout = 30000, interval = 1000): Promise<void> {
     const startTime = Date.now()
-    
+
     while (Date.now() - startTime < timeout) {
-      if (!await ProcessUtils.isProcessRunning(pid)) {
+      if (!(await ProcessUtils.isProcessRunning(pid))) {
         return
       }
-      
+
       await new Promise(resolve => setTimeout(resolve, interval))
     }
-    
+
     throw new ProcessError(`Timeout waiting for process ${pid} to exit`, '', undefined)
   }
 
@@ -336,45 +340,46 @@ export class ProcessUtils {
   static async getProcessList(): Promise<ProcessInfo[]> {
     try {
       const isWindows = platform() === 'win32'
-      const command = isWindows
-        ? 'tasklist /FO CSV /NH'
-        : 'ps aux --no-headers'
+      const command = isWindows ? 'tasklist /FO CSV /NH' : 'ps aux --no-headers'
 
       const { stdout } = await execAsync(command)
       const processes: ProcessInfo[] = []
 
       const lines = stdout.trim().split('\n')
-      
+
       for (const line of lines) {
-        if (!line.trim()) continue
+        if (!line.trim())
+          continue
 
         if (isWindows) {
           const parts = line.split(',')
           if (parts.length >= 5) {
             processes.push({
-              pid: parseInt(parts[1].replace(/"/g, '')),
+              pid: Number.parseInt(parts[1].replace(/"/g, '')),
               name: parts[0].replace(/"/g, ''),
-              memory: parseInt(parts[4].replace(/[",\s]/g, '')) * 1024,
-              command: parts[0].replace(/"/g, '')
+              memory: Number.parseInt(parts[4].replace(/[",\s]/g, '')) * 1024,
+              command: parts[0].replace(/"/g, ''),
             })
           }
-        } else {
+        }
+        else {
           const parts = line.trim().split(/\s+/)
           if (parts.length >= 11) {
             processes.push({
-              pid: parseInt(parts[1]),
-              ppid: parseInt(parts[2]),
+              pid: Number.parseInt(parts[1]),
+              ppid: Number.parseInt(parts[2]),
               name: parts[10],
               command: parts.slice(10).join(' '),
-              memory: parseInt(parts[5]) * 1024, // KB to bytes
-              cpu: parseFloat(parts[2])
+              memory: Number.parseInt(parts[5]) * 1024, // KB to bytes
+              cpu: Number.parseFloat(parts[2]),
             })
           }
         }
       }
 
       return processes
-    } catch (error) {
+    }
+    catch (error) {
       throw new ProcessError('Failed to get process list', '', undefined, error as Error)
     }
   }
@@ -386,9 +391,10 @@ export class ProcessUtils {
    */
   static async findProcesses(name: string): Promise<ProcessInfo[]> {
     const processes = await ProcessUtils.getProcessList()
-    return processes.filter(p => 
-      p.name.toLowerCase().includes(name.toLowerCase()) ||
-      p.command.toLowerCase().includes(name.toLowerCase())
+    return processes.filter(
+      p =>
+        p.name.toLowerCase().includes(name.toLowerCase())
+        || p.command.toLowerCase().includes(name.toLowerCase()),
     )
   }
 
@@ -402,7 +408,7 @@ export class ProcessUtils {
       name: process.title,
       command: process.argv.join(' '),
       memory: process.memoryUsage().rss,
-      cpu: process.cpuUsage().user / 1000000 // 转换为秒
+      cpu: process.cpuUsage().user / 1000000, // 转换为秒
     }
   }
 

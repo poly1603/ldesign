@@ -1,14 +1,14 @@
 /**
  * 构建工具检测器
- * 
+ *
  * 用于检测和分析项目使用的构建工具配置
  * 支持 Vite、Webpack、Rollup、esbuild、tsup 等主流构建工具
- * 
+ *
  * @author LDesign Team
  * @version 1.0.0
  */
 
-import { readFileSync, existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { glob } from 'glob'
 import { BuildTool } from './types'
@@ -60,7 +60,7 @@ export enum BuildToolFeature {
   /** 模块联邦 */
   MODULE_FEDERATION = 'module-federation',
   /** PWA 支持 */
-  PWA = 'pwa'
+  PWA = 'pwa',
 }
 
 /**
@@ -139,7 +139,7 @@ export class BuildToolDetector {
   /**
    * 检测项目的构建工具
    * 主入口方法，返回完整的构建工具检测结果
-   * 
+   *
    * @returns 构建工具检测结果
    */
   async detectBuildTools(): Promise<BuildToolDetectionResult> {
@@ -154,14 +154,14 @@ export class BuildToolDetector {
       allTools,
       configSummary,
       performanceAnalysis,
-      recommendations
+      recommendations,
     }
   }
 
   /**
    * 扫描所有构建工具
    * 检测项目中使用的所有构建工具
-   * 
+   *
    * @returns 构建工具信息列表
    */
   private async scanForBuildTools(): Promise<BuildToolInfo[]> {
@@ -179,8 +179,8 @@ export class BuildToolDetector {
           BuildToolFeature.HOT_RELOAD,
           BuildToolFeature.TYPESCRIPT,
           BuildToolFeature.DEV_SERVER,
-          BuildToolFeature.TREE_SHAKING
-        ]
+          BuildToolFeature.TREE_SHAKING,
+        ],
       },
       {
         tool: BuildTool.WEBPACK,
@@ -191,8 +191,8 @@ export class BuildToolDetector {
           BuildToolFeature.HOT_RELOAD,
           BuildToolFeature.CODE_SPLITTING,
           BuildToolFeature.MODULE_FEDERATION,
-          BuildToolFeature.PRODUCTION_OPTIMIZATION
-        ]
+          BuildToolFeature.PRODUCTION_OPTIMIZATION,
+        ],
       },
       {
         tool: BuildTool.ROLLUP,
@@ -202,28 +202,22 @@ export class BuildToolDetector {
         features: [
           BuildToolFeature.TREE_SHAKING,
           BuildToolFeature.TYPESCRIPT,
-          BuildToolFeature.CODE_SPLITTING
-        ]
+          BuildToolFeature.CODE_SPLITTING,
+        ],
       },
       {
         tool: BuildTool.ESBUILD,
         dependencies: ['esbuild'],
         configFiles: ['esbuild.config.js', 'esbuild.config.ts'],
         scripts: ['build'],
-        features: [
-          BuildToolFeature.TYPESCRIPT,
-          BuildToolFeature.TREE_SHAKING
-        ]
+        features: [BuildToolFeature.TYPESCRIPT, BuildToolFeature.TREE_SHAKING],
       },
       {
         tool: BuildTool.TSUP,
         dependencies: ['tsup'],
         configFiles: ['tsup.config.ts', 'tsup.config.js'],
         scripts: ['build', 'dev'],
-        features: [
-          BuildToolFeature.TYPESCRIPT,
-          BuildToolFeature.TREE_SHAKING
-        ]
+        features: [BuildToolFeature.TYPESCRIPT, BuildToolFeature.TREE_SHAKING],
       },
       {
         tool: BuildTool.PARCEL,
@@ -233,9 +227,9 @@ export class BuildToolDetector {
         features: [
           BuildToolFeature.HOT_RELOAD,
           BuildToolFeature.TYPESCRIPT,
-          BuildToolFeature.ASSETS_HANDLING
-        ]
-      }
+          BuildToolFeature.ASSETS_HANDLING,
+        ],
+      },
     ]
 
     // 检测每个构建工具
@@ -251,7 +245,7 @@ export class BuildToolDetector {
 
   /**
    * 检测特定构建工具
-   * 
+   *
    * @param config 工具配置
    * @param packageJson package.json 内容
    * @returns 构建工具信息
@@ -264,16 +258,16 @@ export class BuildToolDetector {
       scripts: string[]
       features: BuildToolFeature[]
     },
-    packageJson: any
+    packageJson: any,
   ): Promise<BuildToolInfo> {
     const allDeps = {
       ...packageJson?.dependencies,
-      ...packageJson?.devDependencies
+      ...packageJson?.devDependencies,
     }
 
     // 检查是否安装了相关依赖
     const isInstalled = config.dependencies.some(dep => dep in allDeps)
-    
+
     // 获取版本信息
     let version: string | undefined
     for (const dep of config.dependencies) {
@@ -289,14 +283,15 @@ export class BuildToolDetector {
       try {
         const matches = glob.sync(pattern, { cwd: this.projectRoot })
         configFiles.push(...matches)
-      } catch {
+      }
+      catch {
         // 忽略 glob 错误
       }
     }
 
     // 检查相关插件
-    const plugins = Object.keys(allDeps).filter(dep => 
-      dep.includes(config.tool) && dep.includes('plugin')
+    const plugins = Object.keys(allDeps).filter(
+      dep => dep.includes(config.tool) && dep.includes('plugin'),
     )
 
     // 检查构建脚本
@@ -311,14 +306,14 @@ export class BuildToolDetector {
       isPrimary: false, // 将在后续确定
       plugins,
       buildScripts,
-      features: config.features
+      features: config.features,
     }
   }
 
   /**
    * 确定主要构建工具
    * 基于安装情况和配置复杂度确定主要的构建工具
-   * 
+   *
    * @param tools 所有检测到的构建工具
    * @returns 主要构建工具
    */
@@ -331,14 +326,14 @@ export class BuildToolDetector {
         isPrimary: true,
         plugins: [],
         buildScripts: [],
-        features: []
+        features: [],
       }
     }
 
     // 计算每个工具的分数
     const scoredTools = tools.map(tool => ({
       tool,
-      score: this.calculateToolScore(tool)
+      score: this.calculateToolScore(tool),
     }))
 
     // 按分数排序，选择分数最高的作为主要工具
@@ -351,7 +346,7 @@ export class BuildToolDetector {
   /**
    * 计算构建工具分数
    * 基于多个因素评估构建工具的重要性
-   * 
+   *
    * @param tool 构建工具信息
    * @returns 分数
    */
@@ -359,7 +354,8 @@ export class BuildToolDetector {
     let score = 0
 
     // 基础分数：是否安装
-    if (tool.isInstalled) score += 40
+    if (tool.isInstalled)
+      score += 40
 
     // 配置文件数量
     score += tool.configFiles.length * 15
@@ -388,13 +384,13 @@ export class BuildToolDetector {
 
   /**
    * 分析构建配置摘要
-   * 
+   *
    * @param tools 构建工具列表
    * @returns 构建配置摘要
    */
   private async analyzeConfigSummary(tools: BuildToolInfo[]): Promise<BuildConfigSummary> {
     const primaryTool = tools.find(t => t.isPrimary) || tools[0]
-    
+
     if (!primaryTool) {
       return {
         entryPoints: [],
@@ -403,12 +399,12 @@ export class BuildToolDetector {
         environments: ['development', 'production'],
         pluginCount: 0,
         hasCodeSplitting: false,
-        hasOptimization: false
+        hasOptimization: false,
       }
     }
 
     const config = await this.parseToolConfig(primaryTool)
-    
+
     return {
       entryPoints: config.entryPoints || ['src/index.ts', 'src/main.ts', 'src/app.ts'],
       outputDir: config.outputDir || 'dist',
@@ -416,14 +412,14 @@ export class BuildToolDetector {
       environments: config.environments || ['development', 'production'],
       pluginCount: primaryTool.plugins.length,
       hasCodeSplitting: config.hasCodeSplitting || false,
-      hasOptimization: config.hasOptimization || false
+      hasOptimization: config.hasOptimization || false,
     }
   }
 
   /**
    * 解析构建工具配置
    * 读取并解析构建工具的配置文件
-   * 
+   *
    * @param tool 构建工具信息
    * @returns 解析后的配置
    */
@@ -439,11 +435,13 @@ export class BuildToolDetector {
       if (configFile.endsWith('.json')) {
         const content = readFileSync(configPath, 'utf-8')
         return JSON.parse(content)
-      } else if (configFile.endsWith('.js') || configFile.endsWith('.ts')) {
+      }
+      else if (configFile.endsWith('.js') || configFile.endsWith('.ts')) {
         // 对于 JS/TS 配置文件，我们只能做静态分析
         return this.staticAnalyzeJSConfig(configPath)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`无法解析配置文件 ${configFile}:`, error)
     }
 
@@ -452,52 +450,57 @@ export class BuildToolDetector {
 
   /**
    * 静态分析 JavaScript/TypeScript 配置文件
-   * 
+   *
    * @param configPath 配置文件路径
    * @returns 分析结果
    */
   private staticAnalyzeJSConfig(configPath: string): any {
     try {
       const content = readFileSync(configPath, 'utf-8')
-      
+
       const config: any = {
         hasCodeSplitting: content.includes('splitChunks') || content.includes('manualChunks'),
         hasOptimization: content.includes('optimization') || content.includes('minify'),
         entryPoints: this.extractEntryPoints(content),
-        outputDir: this.extractOutputDir(content)
+        outputDir: this.extractOutputDir(content),
       }
 
       return config
-    } catch {
+    }
+    catch {
       return {}
     }
   }
 
   /**
    * 从配置内容中提取入口点
-   * 
+   *
    * @param content 配置文件内容
    * @returns 入口点列表
    */
   private extractEntryPoints(content: string): string[] {
-    const entryMatches = content.match(/entry[:\\s]*[\"']([^\"']+)[\"']/g)
+    const entryMatches = content.match(/entry[:\\s]*["']([^"']+)["']/g)
     if (entryMatches) {
-      return entryMatches.map(match => {
-        const result = match.match(/[\"']([^\"']+)[\"']/)
-        return result ? result[1] : ''
-      }).filter(Boolean)
+      return entryMatches
+        .map((match) => {
+          const result = match.match(/["']([^"']+)["']/)
+          return result ? result[1] : ''
+        })
+        .filter(Boolean)
     }
     return []
   }
 
   /**
    * 从配置内容中提取输出目录
-   * 
+   *
    * @param content 配置文件内容
    * @returns 输出目录
    */
   private extractOutputDir(content: string): string {
-    const outputMatches = content.match(/output[:\\s]*[\"']([^\"']+)[\"']|outDir[:\\s]*[\"']([^\"']+)[\"']/)
+    const outputMatches = content.match(
+      /output[:\\s]*["']([^"']+)["']|outDir[:\\s]*["']([^"']+)["']/,
+    )
     if (outputMatches) {
       return outputMatches[1] || outputMatches[2] || 'dist'
     }
@@ -506,18 +509,29 @@ export class BuildToolDetector {
 
   /**
    * 获取构建工具支持的文件扩展名
-   * 
+   *
    * @param tool 构建工具信息
    * @returns 支持的扩展名列表
    */
   private getSupportedExtensions(tool: BuildToolInfo): string[] {
     const baseExtensions = ['.js', '.ts', '.json']
-    
+
     switch (tool.tool) {
       case BuildTool.VITE:
         return [...baseExtensions, '.vue', '.jsx', '.tsx', '.css', '.scss', '.less', '.svg', '.png']
       case BuildTool.WEBPACK:
-        return [...baseExtensions, '.jsx', '.tsx', '.vue', '.css', '.scss', '.less', '.png', '.jpg', '.svg']
+        return [
+          ...baseExtensions,
+          '.jsx',
+          '.tsx',
+          '.vue',
+          '.css',
+          '.scss',
+          '.less',
+          '.png',
+          '.jpg',
+          '.svg',
+        ]
       case BuildTool.ROLLUP:
         return [...baseExtensions, '.jsx', '.tsx', '.css']
       default:
@@ -528,7 +542,7 @@ export class BuildToolDetector {
   /**
    * 分析构建工具性能
    * 评估构建工具的性能特征
-   * 
+   *
    * @param tool 构建工具信息
    * @returns 性能分析结果
    */
@@ -540,7 +554,7 @@ export class BuildToolDetector {
           devExperienceScore: 9,
           productionQualityScore: 8,
           learningCurve: 'easy',
-          ecosystemSupport: 'excellent'
+          ecosystemSupport: 'excellent',
         }
       case BuildTool.ESBUILD:
         return {
@@ -548,7 +562,7 @@ export class BuildToolDetector {
           devExperienceScore: 7,
           productionQualityScore: 7,
           learningCurve: 'medium',
-          ecosystemSupport: 'good'
+          ecosystemSupport: 'good',
         }
       case BuildTool.WEBPACK:
         return {
@@ -556,7 +570,7 @@ export class BuildToolDetector {
           devExperienceScore: 7,
           productionQualityScore: 9,
           learningCurve: 'hard',
-          ecosystemSupport: 'excellent'
+          ecosystemSupport: 'excellent',
         }
       case BuildTool.ROLLUP:
         return {
@@ -564,7 +578,7 @@ export class BuildToolDetector {
           devExperienceScore: 6,
           productionQualityScore: 8,
           learningCurve: 'medium',
-          ecosystemSupport: 'good'
+          ecosystemSupport: 'good',
         }
       case BuildTool.TSUP:
         return {
@@ -572,7 +586,7 @@ export class BuildToolDetector {
           devExperienceScore: 8,
           productionQualityScore: 8,
           learningCurve: 'easy',
-          ecosystemSupport: 'good'
+          ecosystemSupport: 'good',
         }
       default:
         return {
@@ -580,7 +594,7 @@ export class BuildToolDetector {
           devExperienceScore: 5,
           productionQualityScore: 5,
           learningCurve: 'medium',
-          ecosystemSupport: 'limited'
+          ecosystemSupport: 'limited',
         }
     }
   }
@@ -588,7 +602,7 @@ export class BuildToolDetector {
   /**
    * 生成优化建议
    * 基于检测结果生成构建优化建议
-   * 
+   *
    * @param tools 构建工具列表
    * @returns 建议列表
    */
@@ -602,7 +616,8 @@ export class BuildToolDetector {
     }
 
     const primaryTool = tools.find(t => t.isPrimary)
-    if (!primaryTool) return recommendations
+    if (!primaryTool)
+      return recommendations
 
     // 基于主要工具生成建议
     switch (primaryTool.tool) {
@@ -612,17 +627,17 @@ export class BuildToolDetector {
           recommendations.push('可以添加更多 Webpack 插件来优化构建')
         }
         break
-      
+
       case BuildTool.VITE:
         if (!primaryTool.features.includes(BuildToolFeature.PWA)) {
           recommendations.push('考虑添加 PWA 插件以支持离线访问')
         }
         break
-      
+
       case BuildTool.ROLLUP:
         recommendations.push('Rollup 适合库开发，如果是应用开发建议考虑 Vite')
         break
-      
+
       default:
         recommendations.push('建议使用更现代的构建工具如 Vite 或 esbuild')
     }
@@ -641,7 +656,7 @@ export class BuildToolDetector {
 
   /**
    * 读取 package.json 文件
-   * 
+   *
    * @returns package.json 内容或 null
    */
   private getPackageJson(): any {
@@ -658,7 +673,8 @@ export class BuildToolDetector {
       const content = readFileSync(packageJsonPath, 'utf-8')
       this.packageJsonCache = JSON.parse(content)
       return this.packageJsonCache
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('无法解析 package.json:', error)
       return null
     }
@@ -667,7 +683,7 @@ export class BuildToolDetector {
   /**
    * 生成构建工具报告
    * 创建可读的构建工具检测报告
-   * 
+   *
    * @param result 检测结果
    * @returns 报告字符串
    */
@@ -733,7 +749,7 @@ export class BuildToolDetector {
 /**
  * 创建构建工具检测器实例
  * 工厂函数，用于创建构建工具检测器
- * 
+ *
  * @param projectRoot 项目根目录
  * @returns 构建工具检测器实例
  */
@@ -744,7 +760,7 @@ export function createBuildToolDetector(projectRoot?: string): BuildToolDetector
 /**
  * 快速检测构建工具
  * 便捷函数，直接返回构建工具检测结果
- * 
+ *
  * @param projectPath 项目路径，默认为当前目录
  * @returns 构建工具检测结果
  */

@@ -3,13 +3,12 @@
  * 提供守护进程的创建、管理和监控功能
  */
 
+import { spawn } from 'node:child_process'
 import { EventEmitter } from 'node:events'
-import { spawn, ChildProcess } from 'node:child_process'
-import { writeFile, readFile, unlink, chmod } from 'node:fs/promises'
-import { join, dirname } from 'node:path'
-import { tmpdir, platform } from 'node:os'
+import { chmod, readFile, unlink, writeFile } from 'node:fs/promises'
+import { platform, tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { ProcessError } from '../types'
-import { PathUtils } from '../utils'
 import { ProcessUtils } from './process-utils'
 
 /**
@@ -26,7 +25,7 @@ export class DaemonManager extends EventEmitter {
     this.configDir = options.configDir || join(tmpdir(), 'ldesign-daemons', 'config')
     this.pidDir = options.pidDir || join(tmpdir(), 'ldesign-daemons', 'pids')
     this.logDir = options.logDir || join(tmpdir(), 'ldesign-daemons', 'logs')
-    
+
     this.ensureDirectories()
   }
 
@@ -39,8 +38,12 @@ export class DaemonManager extends EventEmitter {
       await FileSystem.ensureDir(this.configDir)
       await FileSystem.ensureDir(this.pidDir)
       await FileSystem.ensureDir(this.logDir)
-    } catch (error) {
-      this.emit('error', new ProcessError('Failed to create daemon directories', '', undefined, error as Error))
+    }
+    catch (error) {
+      this.emit(
+        'error',
+        new ProcessError('Failed to create daemon directories', '', undefined, error as Error),
+      )
     }
   }
 
@@ -63,20 +66,20 @@ export class DaemonManager extends EventEmitter {
         restartDelay: 5000,
         stopTimeout: 30000,
         killTimeout: 10000,
-        ...config
+        ...config,
       },
       status: 'stopped',
       pid: null,
       startTime: null,
       restartCount: 0,
-      lastRestart: null
+      lastRestart: null,
     }
 
     this.daemons.set(name, daemon)
-    
+
     // 保存配置到文件
     await this.saveConfig(daemon)
-    
+
     this.emit('created', { name, config: daemon.config })
   }
 
@@ -100,13 +103,13 @@ export class DaemonManager extends EventEmitter {
 
       // 创建启动脚本
       const scriptPath = await this.createStartScript(daemon)
-      
+
       // 启动守护进程
       const process = spawn(scriptPath, [], {
         detached: true,
         stdio: 'ignore',
         cwd: daemon.config.cwd || process.cwd(),
-        env: { ...process.env, ...daemon.config.env }
+        env: { ...process.env, ...daemon.config.env },
       })
 
       // 分离进程
@@ -123,15 +126,18 @@ export class DaemonManager extends EventEmitter {
 
       // 验证进程是否真正启动
       setTimeout(async () => {
-        if (daemon.pid && !await ProcessUtils.isProcessRunning(daemon.pid)) {
+        if (daemon.pid && !(await ProcessUtils.isProcessRunning(daemon.pid))) {
           daemon.status = 'failed'
           this.emit('failed', { name, reason: 'Process died immediately after start' })
         }
       }, 1000)
-
-    } catch (error) {
+    }
+    catch (error) {
       daemon.status = 'failed'
-      this.emit('error', new ProcessError(`Failed to start daemon: ${name}`, '', undefined, error as Error))
+      this.emit(
+        'error',
+        new ProcessError(`Failed to start daemon: ${name}`, '', undefined, error as Error),
+      )
       throw error
     }
   }
@@ -158,14 +164,16 @@ export class DaemonManager extends EventEmitter {
       if (force) {
         // 强制终止
         await ProcessUtils.killProcessTree(daemon.pid, 'SIGKILL')
-      } else {
+      }
+      else {
         // 优雅停止
         try {
           await ProcessUtils.killProcessTree(daemon.pid, 'SIGTERM')
-          
+
           // 等待进程停止
           await ProcessUtils.waitForProcessExit(daemon.pid, daemon.config.stopTimeout)
-        } catch {
+        }
+        catch {
           // 如果优雅停止失败，强制终止
           await ProcessUtils.killProcessTree(daemon.pid, 'SIGKILL')
           await ProcessUtils.waitForProcessExit(daemon.pid, daemon.config.killTimeout)
@@ -174,14 +182,17 @@ export class DaemonManager extends EventEmitter {
 
       daemon.status = 'stopped'
       daemon.pid = null
-      
+
       // 清理 PID 文件
       await this.removePidFile(name)
 
       this.emit('stopped', { name, force })
-
-    } catch (error) {
-      this.emit('error', new ProcessError(`Failed to stop daemon: ${name}`, '', undefined, error as Error))
+    }
+    catch (error) {
+      this.emit(
+        'error',
+        new ProcessError(`Failed to stop daemon: ${name}`, '', undefined, error as Error),
+      )
       throw error
     }
   }
@@ -204,7 +215,7 @@ export class DaemonManager extends EventEmitter {
 
     daemon.restartCount++
     daemon.lastRestart = new Date()
-    
+
     await this.start(name)
   }
 
@@ -235,7 +246,7 @@ export class DaemonManager extends EventEmitter {
       startTime: daemon.startTime,
       restartCount: daemon.restartCount,
       lastRestart: daemon.lastRestart,
-      uptime: daemon.startTime ? Date.now() - daemon.startTime.getTime() : 0
+      uptime: daemon.startTime ? Date.now() - daemon.startTime.getTime() : 0,
     }
   }
 
@@ -244,14 +255,14 @@ export class DaemonManager extends EventEmitter {
    */
   async getAllStatus(): Promise<DaemonStatus[]> {
     const statuses: DaemonStatus[] = []
-    
+
     for (const name of this.daemons.keys()) {
       const status = await this.getStatus(name)
       if (status) {
         statuses.push(status)
       }
     }
-    
+
     return statuses
   }
 
@@ -284,12 +295,15 @@ export class DaemonManager extends EventEmitter {
   async startAll(): Promise<void> {
     const promises = Array.from(this.daemons.entries())
       .filter(([_, daemon]) => daemon.config.autoStart)
-      .map(([name]) => 
-        this.start(name).catch(error => {
-          this.emit('error', new ProcessError(`Failed to start daemon ${name}`, '', undefined, error))
-        })
+      .map(([name]) =>
+        this.start(name).catch((error) => {
+          this.emit(
+            'error',
+            new ProcessError(`Failed to start daemon ${name}`, '', undefined, error),
+          )
+        }),
       )
-    
+
     await Promise.all(promises)
   }
 
@@ -298,12 +312,12 @@ export class DaemonManager extends EventEmitter {
    * @param force 是否强制停止
    */
   async stopAll(force = false): Promise<void> {
-    const promises = Array.from(this.daemons.keys()).map(name => 
-      this.stop(name, force).catch(error => {
+    const promises = Array.from(this.daemons.keys()).map(name =>
+      this.stop(name, force).catch((error) => {
         this.emit('error', new ProcessError(`Failed to stop daemon ${name}`, '', undefined, error))
-      })
+      }),
     )
-    
+
     await Promise.all(promises)
   }
 
@@ -313,26 +327,37 @@ export class DaemonManager extends EventEmitter {
   async loadFromConfig(): Promise<void> {
     try {
       const { FileSystem } = await import('../filesystem')
-      const configFiles = await FileSystem.readDir(this.configDir) as string[]
-      
+      const configFiles = (await FileSystem.readDir(this.configDir)) as string[]
+
       for (const configFile of configFiles) {
-        if (!configFile.endsWith('.json')) continue
-        
+        if (!configFile.endsWith('.json'))
+          continue
+
         const name = configFile.replace('.json', '')
         const configPath = join(this.configDir, configFile)
-        
+
         try {
           const configContent = await readFile(configPath, 'utf8')
           const config = JSON.parse(configContent)
-          
+
           if (!this.daemons.has(name)) {
             await this.create(name, config)
           }
-        } catch (error) {
-          this.emit('error', new ProcessError(`Failed to load config for daemon ${name}`, '', undefined, error as Error))
+        }
+        catch (error) {
+          this.emit(
+            'error',
+            new ProcessError(
+              `Failed to load config for daemon ${name}`,
+              '',
+              undefined,
+              error as Error,
+            ),
+          )
         }
       }
-    } catch {
+    }
+    catch {
       // 忽略加载错误
     }
   }
@@ -343,33 +368,38 @@ export class DaemonManager extends EventEmitter {
   async recoverFromPidFiles(): Promise<void> {
     try {
       const { FileSystem } = await import('../filesystem')
-      const pidFiles = await FileSystem.readDir(this.pidDir) as string[]
-      
+      const pidFiles = (await FileSystem.readDir(this.pidDir)) as string[]
+
       for (const pidFile of pidFiles) {
-        if (!pidFile.endsWith('.pid')) continue
-        
+        if (!pidFile.endsWith('.pid'))
+          continue
+
         const name = pidFile.replace('.pid', '')
         const daemon = this.daemons.get(name)
-        
-        if (!daemon) continue
-        
+
+        if (!daemon)
+          continue
+
         try {
           const pidContent = await readFile(join(this.pidDir, pidFile), 'utf8')
-          const pid = parseInt(pidContent.trim())
-          
+          const pid = Number.parseInt(pidContent.trim())
+
           if (await ProcessUtils.isProcessRunning(pid)) {
             daemon.status = 'running'
             daemon.pid = pid
             daemon.startTime = new Date() // 无法恢复确切的启动时间
             this.emit('recovered', { name, pid })
-          } else {
+          }
+          else {
             await this.removePidFile(name)
           }
-        } catch {
+        }
+        catch {
           await this.removePidFile(name)
         }
       }
-    } catch {
+    }
+    catch {
       // 忽略恢复错误
     }
   }
@@ -381,19 +411,20 @@ export class DaemonManager extends EventEmitter {
     const isWindows = platform() === 'win32'
     const scriptExt = isWindows ? '.bat' : '.sh'
     const scriptPath = join(this.configDir, `${daemon.name}${scriptExt}`)
-    
+
     const logFile = join(this.logDir, `${daemon.name}.log`)
     const pidFile = join(this.pidDir, `${daemon.name}.pid`)
-    
+
     let scriptContent: string
-    
+
     if (isWindows) {
       scriptContent = `@echo off
 cd /d "${daemon.config.cwd || process.cwd()}"
 echo %date% %time% Starting daemon ${daemon.name} >> "${logFile}"
 ${daemon.config.command} ${(daemon.config.args || []).join(' ')} >> "${logFile}" 2>&1
 `
-    } else {
+    }
+    else {
       scriptContent = `#!/bin/bash
 cd "${daemon.config.cwd || process.cwd()}"
 echo "$(date) Starting daemon ${daemon.name}" >> "${logFile}"
@@ -401,13 +432,13 @@ exec ${daemon.config.command} ${(daemon.config.args || []).join(' ')} >> "${logF
 echo $! > "${pidFile}"
 `
     }
-    
+
     await writeFile(scriptPath, scriptContent)
-    
+
     if (!isWindows) {
       await chmod(scriptPath, 0o755)
     }
-    
+
     return scriptPath
   }
 
@@ -426,7 +457,8 @@ echo $! > "${pidFile}"
     const configPath = join(this.configDir, `${name}.json`)
     try {
       await unlink(configPath)
-    } catch {
+    }
+    catch {
       // 忽略文件不存在的错误
     }
   }
@@ -438,10 +470,11 @@ echo $! > "${pidFile}"
     const isWindows = platform() === 'win32'
     const scriptExt = isWindows ? '.bat' : '.sh'
     const scriptPath = join(this.configDir, `${name}${scriptExt}`)
-    
+
     try {
       await unlink(scriptPath)
-    } catch {
+    }
+    catch {
       // 忽略文件不存在的错误
     }
   }
@@ -461,7 +494,8 @@ echo $! > "${pidFile}"
     const pidFile = join(this.pidDir, `${name}.pid`)
     try {
       await unlink(pidFile)
-    } catch {
+    }
+    catch {
       // 忽略文件不存在的错误
     }
   }

@@ -3,15 +3,13 @@
  * 展示如何在实际项目中使用 ViteBuilder 和 RollupBuilder
  */
 
-import { 
-  ViteBuilder, 
-  RollupBuilder, 
-  BuilderFactory,
+import {
   BuilderUtils,
+  createRollupBuilderWithPreset,
   createViteBuilderWithPreset,
-  createRollupBuilderWithPreset
+  RollupBuilder,
+  ViteBuilder,
 } from '../../dist/builder/index.js'
-import { resolve } from 'path'
 
 /**
  * 项目类型检测和推荐配置示例
@@ -21,7 +19,7 @@ async function projectDetectionExample() {
   console.log('====================')
 
   const projectPath = process.cwd()
-  
+
   // 检测项目类型
   const projectType = BuilderUtils.detectProjectType(projectPath)
   console.log(`项目类型: ${projectType}`)
@@ -53,9 +51,9 @@ async function dependencyCheckExample() {
 
   const projectPath = process.cwd()
   const requiredDeps = ['vite', 'rollup', 'typescript', 'react', 'vue']
-  
+
   const depCheck = BuilderUtils.checkDependencies(projectPath, requiredDeps)
-  
+
   console.log('依赖检查结果:')
   console.log(`  ✅ 已安装: ${depCheck.installed.join(', ') || '无'}`)
   console.log(`  ❌ 缺失: ${depCheck.missing.join(', ') || '无'}`)
@@ -75,8 +73,8 @@ async function multiProjectBuildExample() {
       config: {
         entry: 'src/main.ts',
         outDir: 'dist/web',
-        server: { port: 3000 }
-      }
+        server: { port: 3000 },
+      },
     },
     {
       name: 'Library',
@@ -85,9 +83,9 @@ async function multiProjectBuildExample() {
         input: 'src/lib/index.ts',
         output: [
           { file: 'dist/lib/index.js', format: 'es' },
-          { file: 'dist/lib/index.cjs', format: 'cjs' }
-        ]
-      }
+          { file: 'dist/lib/index.cjs', format: 'cjs' },
+        ],
+      },
     },
     {
       name: 'Node App',
@@ -95,9 +93,9 @@ async function multiProjectBuildExample() {
       config: {
         entry: 'src/server.ts',
         outDir: 'dist/server',
-        target: 'node16'
-      }
-    }
+        target: 'node16',
+      },
+    },
   ]
 
   const builders = []
@@ -121,7 +119,9 @@ async function multiProjectBuildExample() {
       try {
         console.log(`🔄 构建 ${name}...`)
         const result = await builder.build()
-        console.log(`${result.success ? '✅' : '❌'} ${name} 构建${result.success ? '成功' : '失败'}`)
+        console.log(
+          `${result.success ? '✅' : '❌'} ${name} 构建${result.success ? '成功' : '失败'}`
+        )
         return { name, result }
       } catch (error) {
         console.log(`❌ ${name} 构建异常: ${error.message}`)
@@ -130,7 +130,7 @@ async function multiProjectBuildExample() {
     })
 
     const buildResults = await Promise.all(buildPromises)
-    
+
     // 汇总结果
     console.log('\n📊 构建结果汇总:')
     buildResults.forEach(({ name, result }) => {
@@ -145,7 +145,6 @@ async function multiProjectBuildExample() {
         console.log(`  ❌ ${name}: 失败`)
       }
     })
-
   } finally {
     // 清理所有构建器
     await Promise.all(builders.map(({ builder }) => builder.destroy()))
@@ -165,8 +164,8 @@ async function buildPipelineExample() {
     input: 'src/lib/index.ts',
     output: [
       { file: 'dist/lib/index.js', format: 'es' },
-      { file: 'dist/lib/index.cjs', format: 'cjs' }
-    ]
+      { file: 'dist/lib/index.cjs', format: 'cjs' },
+    ],
   })
 
   try {
@@ -182,7 +181,7 @@ async function buildPipelineExample() {
     const appBuilder = createViteBuilderWithPreset('vue-app', {
       entry: 'src/app/main.ts',
       outDir: 'dist/app',
-      external: ['./lib'] // 外部化库依赖
+      external: ['./lib'], // 外部化库依赖
     })
 
     const appResult = await appBuilder.build()
@@ -194,9 +193,11 @@ async function buildPipelineExample() {
 
     // 第三步：生成构建报告
     console.log('\n步骤 3: 生成构建报告...')
-    const totalSize = [...libResult.outputs, ...appResult.outputs]
-      .reduce((sum, output) => sum + output.size, 0)
-    
+    const totalSize = [...libResult.outputs, ...appResult.outputs].reduce(
+      (sum, output) => sum + output.size,
+      0
+    )
+
     const report = {
       timestamp: new Date().toISOString(),
       totalFiles: libResult.outputs.length + appResult.outputs.length,
@@ -205,14 +206,14 @@ async function buildPipelineExample() {
         files: libResult.outputs.length,
         size: BuilderUtils.formatFileSize(
           libResult.outputs.reduce((sum, output) => sum + output.size, 0)
-        )
+        ),
       },
       application: {
         files: appResult.outputs.length,
         size: BuilderUtils.formatFileSize(
           appResult.outputs.reduce((sum, output) => sum + output.size, 0)
-        )
-      }
+        ),
+      },
     }
 
     console.log('📊 构建报告:')
@@ -232,21 +233,21 @@ async function environmentSpecificBuildExample() {
   console.log('====================')
 
   const environments = ['development', 'staging', 'production']
-  
+
   for (const env of environments) {
     console.log(`\n构建 ${env} 环境...`)
-    
+
     const builder = new ViteBuilder({
       entry: 'src/index.ts',
       outDir: `dist/${env}`,
-      env: env,
+      env,
       minify: env === 'production',
       sourcemap: env !== 'production',
       define: {
         __ENV__: JSON.stringify(env),
         __DEV__: env === 'development',
-        __PROD__: env === 'production'
-      }
+        __PROD__: env === 'production',
+      },
     })
 
     try {
@@ -276,14 +277,14 @@ async function performanceMonitoringExample() {
 
   const builder = new ViteBuilder({
     entry: 'src/index.ts',
-    outDir: 'dist/perf-test'
+    outDir: 'dist/perf-test',
   })
 
   // 监控构建性能
   const performanceData = {
     builds: [],
     totalTime: 0,
-    averageTime: 0
+    averageTime: 0,
   }
 
   builder.on('build:start', ({ mode }) => {
@@ -295,12 +296,12 @@ async function performanceMonitoringExample() {
       duration: result.duration,
       success: result.success,
       outputCount: result.outputs.length,
-      totalSize: result.outputs.reduce((sum, output) => sum + output.size, 0)
+      totalSize: result.outputs.reduce((sum, output) => sum + output.size, 0),
     })
-    
+
     performanceData.totalTime += result.duration
     performanceData.averageTime = performanceData.totalTime / performanceData.builds.length
-    
+
     console.log(`${result.success ? '✅' : '❌'} 构建完成 (${result.duration}ms)`)
   })
 
@@ -318,7 +319,6 @@ async function performanceMonitoringExample() {
     console.log(`  平均耗时: ${Math.round(performanceData.averageTime)}ms`)
     console.log(`  最快构建: ${Math.min(...performanceData.builds.map(b => b.duration))}ms`)
     console.log(`  最慢构建: ${Math.max(...performanceData.builds.map(b => b.duration))}ms`)
-
   } finally {
     await builder.destroy()
   }
@@ -334,7 +334,7 @@ async function errorHandlingExample() {
   // 创建一个会失败的构建配置
   const builder = new ViteBuilder({
     entry: 'src/nonexistent.ts', // 不存在的文件
-    outDir: 'dist/error-test'
+    outDir: 'dist/error-test',
   })
 
   builder.on('build:error', ({ error }) => {
@@ -344,18 +344,18 @@ async function errorHandlingExample() {
   try {
     console.log('尝试构建不存在的入口文件...')
     const result = await builder.build()
-    
+
     if (!result.success) {
       console.log('❌ 构建失败，尝试恢复...')
-      
+
       // 修复配置
       builder.setConfig({
-        entry: 'src/index.ts' // 修正为存在的文件
+        entry: 'src/index.ts', // 修正为存在的文件
       })
-      
+
       console.log('使用修正后的配置重新构建...')
       const retryResult = await builder.build()
-      
+
       if (retryResult.success) {
         console.log('✅ 恢复构建成功!')
       } else {
@@ -384,7 +384,7 @@ async function runAllExamples() {
     await environmentSpecificBuildExample()
     await performanceMonitoringExample()
     await errorHandlingExample()
-    
+
     console.log('\n🎊 所有综合示例演示完成!')
   } catch (error) {
     console.error('综合示例运行失败:', error)
@@ -397,12 +397,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 }
 
 export {
-  projectDetectionExample,
-  dependencyCheckExample,
-  multiProjectBuildExample,
   buildPipelineExample,
+  dependencyCheckExample,
   environmentSpecificBuildExample,
-  performanceMonitoringExample,
   errorHandlingExample,
-  runAllExamples
+  multiProjectBuildExample,
+  performanceMonitoringExample,
+  projectDetectionExample,
+  runAllExamples,
 }

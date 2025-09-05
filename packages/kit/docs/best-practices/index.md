@@ -26,10 +26,10 @@ class UserService {
 
     // 业务逻辑
     const user = await this.processUserCreation(userData)
-    
+
     // 缓存结果
     await this.cache.set(`user:${user.id}`, user, 3600)
-    
+
     this.logger.info(`用户创建成功: ${user.id}`)
     return user
   }
@@ -71,7 +71,7 @@ class ErrorHandler {
     } else {
       console.error('未知错误:', error.message)
     }
-    
+
     process.exit(1)
   }
 }
@@ -120,13 +120,13 @@ class ConfigManager {
   async load(): Promise<AppConfig> {
     // 加载基础配置
     const baseConfig = await this.loadFromFile('./config/default.json')
-    
+
     // 环境特定配置
     const envConfig = await this.loadFromFile(`./config/${process.env.NODE_ENV}.json`)
-    
+
     // 环境变量覆盖
     const envOverrides = this.loadFromEnv()
-    
+
     this.config = ObjectUtils.deepMerge(baseConfig, envConfig, envOverrides)
     return this.config
   }
@@ -148,7 +148,7 @@ class ConfigManager {
 const cacheKeys = {
   user: (id: string) => `user:profile:${id}`,
   userPosts: (userId: string, page: number) => `user:${userId}:posts:page:${page}`,
-  apiResponse: (endpoint: string, params: string) => `api:${endpoint}:${params}`
+  apiResponse: (endpoint: string, params: string) => `api:${endpoint}:${params}`,
 }
 
 // ❌ 避免的做法 - 无意义的键名
@@ -163,11 +163,11 @@ cache.set('data', someData)
 class UserService {
   async updateUser(id: string, updates: Partial<User>): Promise<User> {
     const user = await this.repository.update(id, updates)
-    
+
     // 清理相关缓存
     await this.cache.delete(`user:profile:${id}`)
     await this.cache.delete(`user:${id}:posts:*`) // 支持模式匹配
-    
+
     return user
   }
 }
@@ -196,10 +196,10 @@ class UserValidationRules {
     return [
       ValidationRules.required('邮箱不能为空'),
       ValidationRules.email('邮箱格式不正确'),
-      ValidationRules.custom(async (email) => {
+      ValidationRules.custom(async email => {
         const exists = await UserService.emailExists(email)
         return exists ? '邮箱已被注册' : true
-      })
+      }),
     ]
   }
 
@@ -207,10 +207,7 @@ class UserValidationRules {
     return [
       ValidationRules.required('密码不能为空'),
       ValidationRules.minLength(8, '密码至少8位'),
-      ValidationRules.pattern(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        '密码必须包含大小写字母和数字'
-      )
+      ValidationRules.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, '密码必须包含大小写字母和数字'),
     ]
   }
 }
@@ -255,19 +252,19 @@ class UserController {
 async function saveConfigSafely(config: any, path: string) {
   const tempPath = `${path}.tmp`
   const backupPath = `${path}.backup`
-  
+
   try {
     // 备份原文件
     if (await FileSystem.exists(path)) {
       await FileSystem.copy(path, backupPath)
     }
-    
+
     // 写入临时文件
     await FileSystem.writeFile(tempPath, JSON.stringify(config, null, 2))
-    
+
     // 原子替换
     await FileSystem.move(tempPath, path)
-    
+
     // 清理备份
     if (await FileSystem.exists(backupPath)) {
       await FileSystem.remove(backupPath)
@@ -322,13 +319,13 @@ class APIService {
   async fetchData(endpoint: string): Promise<any> {
     return this.monitor.time(`api.${endpoint}`, async () => {
       const response = await fetch(endpoint)
-      
+
       // 记录响应时间指标
       this.monitor.recordMetric('api.response_time', response.time, {
         endpoint,
-        status: response.status.toString()
+        status: response.status.toString(),
       })
-      
+
       return response.json()
     })
   }
@@ -361,7 +358,7 @@ class EventProcessor {
   cleanup() {
     // 清理事件监听器
     this.listeners.clear()
-    
+
     // 清理定时器
     for (const timer of this.timers) {
       clearTimeout(timer)
@@ -401,10 +398,10 @@ class DIContainer {
 const container = new DIContainer()
 container.register('cache', () => CacheManager.create())
 container.register('validator', () => Validator.create())
-container.register('userService', () => new UserService(
-  container.get('cache'),
-  container.get('validator')
-))
+container.register(
+  'userService',
+  () => new UserService(container.get('cache'), container.get('validator'))
+)
 ```
 
 ### 2. 中间件模式
@@ -456,11 +453,11 @@ describe('UserService', () => {
     mockCache = {
       get: jest.fn(),
       set: jest.fn(),
-      delete: jest.fn()
+      delete: jest.fn(),
     } as any
 
     mockValidator = {
-      validate: jest.fn()
+      validate: jest.fn(),
     } as any
 
     userService = new UserService(mockCache, mockValidator)
@@ -476,11 +473,7 @@ describe('UserService', () => {
 
     // Assert
     expect(mockValidator.validate).toHaveBeenCalledWith(userData)
-    expect(mockCache.set).toHaveBeenCalledWith(
-      `user:${user.id}`,
-      user,
-      3600
-    )
+    expect(mockCache.set).toHaveBeenCalledWith(`user:${user.id}`, user, 3600)
   })
 })
 ```
@@ -496,7 +489,7 @@ describe('API Integration', () => {
   beforeAll(async () => {
     // 使用测试配置
     process.env.NODE_ENV = 'test'
-    
+
     testCache = CacheManager.create({ type: 'memory' })
     app = createApp({ cache: testCache })
   })
@@ -510,14 +503,14 @@ describe('API Integration', () => {
       .post('/api/users')
       .send({
         email: 'test@example.com',
-        name: 'Test User'
+        name: 'Test User',
       })
       .expect(201)
 
     expect(response.body).toMatchObject({
       id: expect.any(String),
       email: 'test@example.com',
-      name: 'Test User'
+      name: 'Test User',
     })
   })
 })
@@ -554,7 +547,7 @@ class HealthChecker {
     return {
       healthy: allHealthy,
       checks: Object.fromEntries(results),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
   }
 }
@@ -585,7 +578,7 @@ class Application {
 
   async start(): Promise<void> {
     this.server = app.listen(port)
-    
+
     // 注册信号处理
     process.on('SIGTERM', this.gracefulShutdown.bind(this))
     process.on('SIGINT', this.gracefulShutdown.bind(this))

@@ -1,16 +1,16 @@
 /**
  * 包管理器检测器
- * 
+ *
  * 用于检测和分析项目使用的包管理器
  * 支持 npm、yarn、pnpm、bun 等主流包管理器
- * 
+ *
  * @author LDesign Team
  * @version 1.0.0
  */
 
-import { readFileSync, existsSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { spawn } from 'node:child_process'
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { PackageManager } from './types'
 
 /**
@@ -33,7 +33,7 @@ export enum PackageManagerFeature {
   /** 离线模式 */
   OFFLINE_MODE = 'offline-mode',
   /** 并行安装 */
-  PARALLEL_INSTALLATION = 'parallel-installation'
+  PARALLEL_INSTALLATION = 'parallel-installation',
 }
 
 /**
@@ -112,7 +112,7 @@ export class PackageManagerDetector {
   /**
    * 检测包管理器
    * 主入口方法，返回完整的包管理器检测结果
-   * 
+   *
    * @returns 包管理器检测结果
    */
   async detectPackageManager(): Promise<PackageManagerDetectionResult> {
@@ -127,14 +127,14 @@ export class PackageManagerDetector {
       allManagers,
       recommendedManager,
       migrationAdvice,
-      optimizationTips
+      optimizationTips,
     }
   }
 
   /**
    * 扫描所有包管理器
    * 检测系统中安装的所有包管理器
-   * 
+   *
    * @returns 包管理器信息列表
    */
   private async scanForPackageManagers(): Promise<PackageManagerInfo[]> {
@@ -150,15 +150,15 @@ export class PackageManagerDetector {
         features: [
           PackageManagerFeature.WORKSPACE,
           PackageManagerFeature.SECURITY_AUDIT,
-          PackageManagerFeature.OFFLINE_MODE
+          PackageManagerFeature.OFFLINE_MODE,
         ],
         performance: {
           installSpeed: 'medium' as const,
           diskEfficiency: 'average' as const,
           memoryUsage: 'medium' as const,
           networkEfficiency: 'good' as const,
-          cacheEffectiveness: 'good' as const
-        }
+          cacheEffectiveness: 'good' as const,
+        },
       },
       {
         type: PackageManager.YARN,
@@ -169,15 +169,15 @@ export class PackageManagerDetector {
           PackageManagerFeature.WORKSPACE,
           PackageManagerFeature.CACHING,
           PackageManagerFeature.ZERO_INSTALL,
-          PackageManagerFeature.DEPENDENCY_DEDUPLICATION
+          PackageManagerFeature.DEPENDENCY_DEDUPLICATION,
         ],
         performance: {
           installSpeed: 'fast' as const,
           diskEfficiency: 'good' as const,
           memoryUsage: 'medium' as const,
           networkEfficiency: 'excellent' as const,
-          cacheEffectiveness: 'excellent' as const
-        }
+          cacheEffectiveness: 'excellent' as const,
+        },
       },
       {
         type: PackageManager.PNPM,
@@ -189,15 +189,15 @@ export class PackageManagerDetector {
           PackageManagerFeature.CACHING,
           PackageManagerFeature.SYMLINK_OPTIMIZATION,
           PackageManagerFeature.DEPENDENCY_DEDUPLICATION,
-          PackageManagerFeature.PARALLEL_INSTALLATION
+          PackageManagerFeature.PARALLEL_INSTALLATION,
         ],
         performance: {
           installSpeed: 'fast' as const,
           diskEfficiency: 'excellent' as const,
           memoryUsage: 'low' as const,
           networkEfficiency: 'excellent' as const,
-          cacheEffectiveness: 'excellent' as const
-        }
+          cacheEffectiveness: 'excellent' as const,
+        },
       },
       {
         type: PackageManager.BUN,
@@ -207,16 +207,16 @@ export class PackageManagerDetector {
         features: [
           PackageManagerFeature.WORKSPACE,
           PackageManagerFeature.CACHING,
-          PackageManagerFeature.PARALLEL_INSTALLATION
+          PackageManagerFeature.PARALLEL_INSTALLATION,
         ],
         performance: {
           installSpeed: 'fast' as const,
           diskEfficiency: 'good' as const,
           memoryUsage: 'low' as const,
           networkEfficiency: 'excellent' as const,
-          cacheEffectiveness: 'good' as const
-        }
-      }
+          cacheEffectiveness: 'good' as const,
+        },
+      },
     ]
 
     // 检测每个包管理器
@@ -230,7 +230,7 @@ export class PackageManagerDetector {
 
   /**
    * 检测特定包管理器
-   * 
+   *
    * @param config 包管理器配置
    * @returns 包管理器信息
    */
@@ -247,8 +247,8 @@ export class PackageManagerDetector {
     const hasLockFile = existsSync(lockFilePath)
 
     // 检查配置文件
-    const existingConfigFiles = config.configFiles.filter(file => 
-      existsSync(resolve(this.projectRoot, file))
+    const existingConfigFiles = config.configFiles.filter(file =>
+      existsSync(resolve(this.projectRoot, file)),
     )
 
     // 检查是否已安装
@@ -266,14 +266,14 @@ export class PackageManagerDetector {
       isInstalled,
       isActive,
       features: config.features,
-      performance: config.performance
+      performance: config.performance,
     }
   }
 
   /**
    * 获取包管理器版本
    * 通过命令行检查包管理器版本
-   * 
+   *
    * @param command 包管理器命令
    * @returns 版本号或 null
    */
@@ -281,14 +281,15 @@ export class PackageManagerDetector {
     try {
       const version = await this.runCommand(command, ['--version'])
       return version.trim()
-    } catch {
+    }
+    catch {
       return null
     }
   }
 
   /**
    * 运行命令并获取输出
-   * 
+   *
    * @param command 命令名
    * @param args 命令参数
    * @returns 命令输出
@@ -297,7 +298,7 @@ export class PackageManagerDetector {
     return new Promise((resolve, reject) => {
       const child = spawn(command, args, {
         stdio: ['ignore', 'pipe', 'pipe'],
-        shell: true
+        shell: true,
       })
 
       let stdout = ''
@@ -314,7 +315,8 @@ export class PackageManagerDetector {
       child.on('close', (code) => {
         if (code === 0) {
           resolve(stdout)
-        } else {
+        }
+        else {
           reject(new Error(stderr || stdout))
         }
       })
@@ -328,7 +330,7 @@ export class PackageManagerDetector {
   /**
    * 确定活跃的包管理器
    * 基于锁文件和使用情况确定当前活跃的包管理器
-   * 
+   *
    * @param managers 所有包管理器信息
    * @returns 活跃的包管理器
    */
@@ -342,9 +344,9 @@ export class PackageManagerDetector {
     // 如果有多个锁文件，按优先级选择
     const priorityOrder = [
       PackageManager.PNPM,
-      PackageManager.YARN, 
+      PackageManager.YARN,
       PackageManager.BUN,
-      PackageManager.NPM
+      PackageManager.NPM,
     ]
 
     for (const type of priorityOrder) {
@@ -362,26 +364,28 @@ export class PackageManagerDetector {
 
     // 默认返回 npm
     const npmManager = managers.find(m => m.type === PackageManager.NPM)
-    return npmManager ? { ...npmManager, isActive: true } : {
-      type: PackageManager.NPM,
-      configFiles: [],
-      isInstalled: false,
-      isActive: true,
-      features: [],
-      performance: {
-        installSpeed: 'medium',
-        diskEfficiency: 'average',
-        memoryUsage: 'medium',
-        networkEfficiency: 'good',
-        cacheEffectiveness: 'good'
-      }
-    }
+    return npmManager
+      ? { ...npmManager, isActive: true }
+      : {
+          type: PackageManager.NPM,
+          configFiles: [],
+          isInstalled: false,
+          isActive: true,
+          features: [],
+          performance: {
+            installSpeed: 'medium',
+            diskEfficiency: 'average',
+            memoryUsage: 'medium',
+            networkEfficiency: 'good',
+            cacheEffectiveness: 'good',
+          },
+        }
   }
 
   /**
    * 获取推荐的包管理器
    * 基于项目特征和性能要求推荐最适合的包管理器
-   * 
+   *
    * @param managers 所有包管理器信息
    * @returns 推荐的包管理器
    */
@@ -397,70 +401,80 @@ export class PackageManagerDetector {
     }
 
     // 默认推荐 pnpm（性能最好）
-    return managers.find(m => m.type === PackageManager.PNPM && m.isInstalled) ||
-           managers.find(m => m.type === PackageManager.YARN && m.isInstalled)
+    return (
+      managers.find(m => m.type === PackageManager.PNPM && m.isInstalled)
+      || managers.find(m => m.type === PackageManager.YARN && m.isInstalled)
+    )
   }
 
   /**
    * 检查是否为大型项目
-   * 
+   *
    * @returns 是否为大型项目
    */
   private isLargeProject(): boolean {
     try {
-      const packageJson = JSON.parse(readFileSync(resolve(this.projectRoot, 'package.json'), 'utf-8'))
+      const packageJson = JSON.parse(
+        readFileSync(resolve(this.projectRoot, 'package.json'), 'utf-8'),
+      )
       const depCount = Object.keys({
         ...packageJson.dependencies,
-        ...packageJson.devDependencies
+        ...packageJson.devDependencies,
       }).length
       return depCount > 50
-    } catch {
+    }
+    catch {
       return false
     }
   }
 
   /**
    * 检查是否为 monorepo
-   * 
+   *
    * @returns 是否为 monorepo
    */
   private isMonorepo(): boolean {
-    const monorepoFiles = [
-      'lerna.json',
-      'rush.json',
-      'pnpm-workspace.yaml',
-      'workspaces'
-    ]
+    const monorepoFiles = ['lerna.json', 'rush.json', 'pnpm-workspace.yaml', 'workspaces']
 
-    return monorepoFiles.some(file => existsSync(resolve(this.projectRoot, file))) ||
-           this.hasWorkspacesInPackageJson()
+    return (
+      monorepoFiles.some(file => existsSync(resolve(this.projectRoot, file)))
+      || this.hasWorkspacesInPackageJson()
+    )
   }
 
   /**
    * 检查 package.json 中是否定义了工作空间
-   * 
+   *
    * @returns 是否定义了工作空间
    */
   private hasWorkspacesInPackageJson(): boolean {
     try {
-      const packageJson = JSON.parse(readFileSync(resolve(this.projectRoot, 'package.json'), 'utf-8'))
+      const packageJson = JSON.parse(
+        readFileSync(resolve(this.projectRoot, 'package.json'), 'utf-8'),
+      )
       return Boolean(packageJson.workspaces)
-    } catch {
+    }
+    catch {
       return false
     }
   }
 
   /**
    * 检查是否需要现代特性
-   * 
+   *
    * @returns 是否需要现代特性
    */
   private needsModernFeatures(): boolean {
     try {
-      const packageJson = JSON.parse(readFileSync(resolve(this.projectRoot, 'package.json'), 'utf-8'))
+      const packageJson = JSON.parse(
+        readFileSync(resolve(this.projectRoot, 'package.json'), 'utf-8'),
+      )
       const modernDeps = ['vite', 'esbuild', 'typescript', '@types/node']
-      return modernDeps.some(dep => dep in packageJson.dependencies || dep in packageJson.devDependencies)
-    } catch {
+      return modernDeps.some(
+        dep => dep in packageJson.dependencies || dep in packageJson.devDependencies,
+      )
+    }
+    catch {
       return false
     }
   }
@@ -468,12 +482,15 @@ export class PackageManagerDetector {
   /**
    * 生成迁移建议
    * 基于当前和推荐的包管理器生成迁移建议
-   * 
+   *
    * @param current 当前包管理器
    * @param recommended 推荐包管理器
    * @returns 迁移建议列表
    */
-  private generateMigrationAdvice(current: PackageManagerInfo, recommended?: PackageManagerInfo): string[] {
+  private generateMigrationAdvice(
+    current: PackageManagerInfo,
+    recommended?: PackageManagerInfo,
+  ): string[] {
     const advice: string[] = []
 
     if (!recommended || current.type === recommended.type) {
@@ -515,7 +532,7 @@ export class PackageManagerDetector {
 
   /**
    * 获取迁移原因
-   * 
+   *
    * @param current 当前包管理器
    * @param recommended 推荐包管理器
    * @returns 迁移原因
@@ -523,11 +540,17 @@ export class PackageManagerDetector {
   private getMigrationReason(current: PackageManagerInfo, recommended: PackageManagerInfo): string {
     const reasons: string[] = []
 
-    if (recommended.performance.installSpeed === 'fast' && current.performance.installSpeed !== 'fast') {
+    if (
+      recommended.performance.installSpeed === 'fast'
+      && current.performance.installSpeed !== 'fast'
+    ) {
       reasons.push('更快的安装速度')
     }
 
-    if (recommended.performance.diskEfficiency === 'excellent' && current.performance.diskEfficiency !== 'excellent') {
+    if (
+      recommended.performance.diskEfficiency === 'excellent'
+      && current.performance.diskEfficiency !== 'excellent'
+    ) {
       reasons.push('更好的磁盘空间利用率')
     }
 
@@ -545,7 +568,7 @@ export class PackageManagerDetector {
   /**
    * 生成优化建议
    * 基于当前包管理器生成配置优化建议
-   * 
+   *
    * @param manager 包管理器信息
    * @returns 优化建议列表
    */
@@ -589,7 +612,7 @@ export class PackageManagerDetector {
   /**
    * 生成包管理器报告
    * 创建可读的包管理器检测报告
-   * 
+   *
    * @param result 检测结果
    * @returns 报告字符串
    */
@@ -654,7 +677,7 @@ export class PackageManagerDetector {
 /**
  * 创建包管理器检测器实例
  * 工厂函数，用于创建包管理器检测器
- * 
+ *
  * @param projectRoot 项目根目录
  * @returns 包管理器检测器实例
  */
@@ -665,11 +688,13 @@ export function createPackageManagerDetector(projectRoot?: string): PackageManag
 /**
  * 快速检测包管理器
  * 便捷函数，直接返回包管理器检测结果
- * 
+ *
  * @param projectPath 项目路径，默认为当前目录
  * @returns 包管理器检测结果
  */
-export async function detectPackageManager(projectPath?: string): Promise<PackageManagerDetectionResult> {
+export async function detectPackageManager(
+  projectPath?: string,
+): Promise<PackageManagerDetectionResult> {
   const detector = new PackageManagerDetector(projectPath)
   return detector.detectPackageManager()
 }

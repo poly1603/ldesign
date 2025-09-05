@@ -37,13 +37,11 @@ export class AsyncUtils {
   static timeout<T>(
     promise: Promise<T>,
     ms: number,
-    errorMessage = `操作超时 (${ms}ms)`
+    errorMessage = `操作超时 (${ms}ms)`,
   ): Promise<T> {
     return Promise.race([
       promise,
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error(errorMessage)), ms)
-      )
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error(errorMessage)), ms)),
     ])
   }
 
@@ -53,17 +51,14 @@ export class AsyncUtils {
    * @param options 重试选项
    * @returns Promise
    */
-  static async retry<T>(
-    fn: () => Promise<T>,
-    options: RetryOptions = {}
-  ): Promise<T> {
+  static async retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
     const {
       maxAttempts = 3,
       delay = 1000,
       backoff = false,
       factor = 2,
       maxDelay = 30000,
-      onRetry
+      onRetry,
     } = options
 
     let lastError: Error
@@ -72,7 +67,8 @@ export class AsyncUtils {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         return await fn()
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error as Error
 
         if (attempt === maxAttempts) {
@@ -100,15 +96,12 @@ export class AsyncUtils {
    * @param concurrency 并发数
    * @returns Promise 数组
    */
-  static async parallel<T>(
-    tasks: (() => Promise<T>)[],
-    concurrency = Infinity
-  ): Promise<T[]> {
+  static async parallel<T>(tasks: (() => Promise<T>)[], concurrency = Infinity): Promise<T[]> {
     if (concurrency >= tasks.length) {
       return Promise.all(tasks.map(task => task()))
     }
 
-    const results: T[] = new Array(tasks.length)
+    const results: T[] = Array.from({ length: tasks.length })
     const executing: Promise<void>[] = []
     let index = 0
 
@@ -125,7 +118,7 @@ export class AsyncUtils {
         await Promise.race(executing)
         executing.splice(
           executing.findIndex(p => p === promise),
-          1
+          1,
         )
       }
     }
@@ -153,10 +146,7 @@ export class AsyncUtils {
    * @param initialValue 初始值
    * @returns 最终结果
    */
-  static async waterfall<T>(
-    tasks: ((value: T) => Promise<T>)[],
-    initialValue: T
-  ): Promise<T> {
+  static async waterfall<T>(tasks: ((value: T) => Promise<T>)[], initialValue: T): Promise<T> {
     let result = initialValue
     for (const task of tasks) {
       result = await task(result)
@@ -174,7 +164,7 @@ export class AsyncUtils {
   static async mapLimit<T, R>(
     items: T[],
     fn: (item: T, index: number) => Promise<R>,
-    concurrency = 5
+    concurrency = 5,
   ): Promise<R[]> {
     const tasks = items.map((item, index) => () => fn(item, index))
     return AsyncUtils.parallel(tasks, concurrency)
@@ -190,7 +180,7 @@ export class AsyncUtils {
   static async filterLimit<T>(
     items: T[],
     fn: (item: T, index: number) => Promise<boolean>,
-    concurrency = 5
+    concurrency = 5,
   ): Promise<T[]> {
     const results = await AsyncUtils.mapLimit(items, fn, concurrency)
     return items.filter((_, index) => results[index])
@@ -204,7 +194,7 @@ export class AsyncUtils {
    */
   static async find<T>(
     items: T[],
-    fn: (item: T, index: number) => Promise<boolean>
+    fn: (item: T, index: number) => Promise<boolean>,
   ): Promise<T | undefined> {
     for (let i = 0; i < items.length; i++) {
       if (await fn(items[i], i)) {
@@ -222,7 +212,7 @@ export class AsyncUtils {
    */
   static async every<T>(
     items: T[],
-    fn: (item: T, index: number) => Promise<boolean>
+    fn: (item: T, index: number) => Promise<boolean>,
   ): Promise<boolean> {
     for (let i = 0; i < items.length; i++) {
       if (!(await fn(items[i], i))) {
@@ -240,7 +230,7 @@ export class AsyncUtils {
    */
   static async some<T>(
     items: T[],
-    fn: (item: T, index: number) => Promise<boolean>
+    fn: (item: T, index: number) => Promise<boolean>,
   ): Promise<boolean> {
     for (let i = 0; i < items.length; i++) {
       if (await fn(items[i], i)) {
@@ -260,7 +250,7 @@ export class AsyncUtils {
   static async reduce<T, R>(
     items: T[],
     fn: (accumulator: R, current: T, index: number) => Promise<R>,
-    initialValue: R
+    initialValue: R,
   ): Promise<R> {
     let accumulator = initialValue
     for (let i = 0; i < items.length; i++) {
@@ -279,8 +269,8 @@ export class AsyncUtils {
       resolve: (value: T | PromiseLike<T>) => void,
       reject: (reason?: any) => void,
       isCancelled: () => boolean
-    ) => void
-  ): { promise: Promise<T>; cancel: () => void } {
+    ) => void,
+  ): { promise: Promise<T>, cancel: () => void } {
     let cancelled = false
     let cancel: () => void
 
@@ -304,7 +294,7 @@ export class AsyncUtils {
    */
   static debounce<T extends (...args: any[]) => any>(
     fn: T,
-    delay: number
+    delay: number,
   ): (...args: Parameters<T>) => Promise<ReturnType<T>> {
     let timeoutId: NodeJS.Timeout | null = null
     let resolvePromise: ((value: ReturnType<T>) => void) | null = null
@@ -323,7 +313,8 @@ export class AsyncUtils {
           try {
             const result = await fn(...args)
             resolvePromise?.(result)
-          } catch (error) {
+          }
+          catch (error) {
             rejectPromise?.(error)
           }
         }, delay)
@@ -339,7 +330,7 @@ export class AsyncUtils {
    */
   static throttle<T extends (...args: any[]) => any>(
     fn: T,
-    interval: number
+    interval: number,
   ): (...args: Parameters<T>) => Promise<ReturnType<T> | undefined> {
     let lastCall = 0
     let timeoutId: NodeJS.Timeout | null = null
@@ -352,7 +343,8 @@ export class AsyncUtils {
         if (timeSinceLastCall >= interval) {
           lastCall = now
           resolve(fn(...args))
-        } else {
+        }
+        else {
           if (timeoutId) {
             clearTimeout(timeoutId)
           }
@@ -386,7 +378,8 @@ export class AsyncUtils {
                 next()
               }
             })
-          } else {
+          }
+          else {
             queue.push(() => {
               locked = true
               resolve(() => {
@@ -407,7 +400,7 @@ export class AsyncUtils {
 
       get queueLength(): number {
         return queue.length
-      }
+      },
     }
   }
 
@@ -432,7 +425,8 @@ export class AsyncUtils {
                 next()
               }
             })
-          } else {
+          }
+          else {
             queue.push(() => {
               available--
               resolve(() => {
@@ -453,7 +447,7 @@ export class AsyncUtils {
 
       get queueLength(): number {
         return queue.length
-      }
+      },
     }
   }
 }

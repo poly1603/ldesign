@@ -2,9 +2,9 @@
  * 性能监控工具函数
  */
 
+import type { BenchmarkResult } from '../types'
 import { performance } from 'node:perf_hooks'
 import { PerformanceMonitor } from './performance-monitor'
-import type { BenchmarkResult, PerformanceMetrics } from '../types'
 
 /**
  * 性能工具类
@@ -29,7 +29,7 @@ export class PerformanceUtils {
     const start = performance.now()
     const result = fn()
     const end = performance.now()
-    
+
     console.log(`${name}: ${(end - start).toFixed(2)}ms`)
     return result
   }
@@ -41,7 +41,7 @@ export class PerformanceUtils {
     const start = performance.now()
     const result = await fn()
     const end = performance.now()
-    
+
     console.log(`${name}: ${(end - start).toFixed(2)}ms`)
     return result
   }
@@ -84,7 +84,7 @@ export class PerformanceUtils {
   static async quickBenchmark(
     name: string,
     fn: () => void | Promise<void>,
-    iterations = 1000
+    iterations = 1000,
   ): Promise<BenchmarkResult> {
     const monitor = this.getDefaultMonitor()
     return monitor.benchmark(name, fn, { iterations })
@@ -94,21 +94,21 @@ export class PerformanceUtils {
    * 比较函数性能
    */
   static async compareFunctions<T>(
-    functions: Array<{ name: string; fn: () => T | Promise<T> }>,
-    iterations = 1000
+    functions: Array<{ name: string, fn: () => T | Promise<T> }>,
+    iterations = 1000,
   ): Promise<Array<BenchmarkResult & { rank: number }>> {
     const results: BenchmarkResult[] = []
-    
+
     for (const { name, fn } of functions) {
       const result = await this.quickBenchmark(name, fn, iterations)
       results.push(result)
     }
-    
+
     // 按平均时间排序
     const sorted = results
       .sort((a, b) => a.averageTime - b.averageTime)
       .map((result, index) => ({ ...result, rank: index + 1 }))
-    
+
     return sorted
   }
 
@@ -126,7 +126,7 @@ export class PerformanceUtils {
     }
   } {
     const memory = process.memoryUsage()
-    
+
     return {
       current: memory,
       formatted: {
@@ -134,8 +134,8 @@ export class PerformanceUtils {
         heapTotal: this.formatBytes(memory.heapTotal),
         heapUsed: this.formatBytes(memory.heapUsed),
         external: this.formatBytes(memory.external),
-        heapUsagePercent: Math.round((memory.heapUsed / memory.heapTotal) * 100)
-      }
+        heapUsagePercent: Math.round((memory.heapUsed / memory.heapTotal) * 100),
+      },
     }
   }
 
@@ -151,18 +151,18 @@ export class PerformanceUtils {
     }
   } {
     const current = process.cpuUsage(previousUsage)
-    
-    let percentage: { user: number; system: number; total: number } | undefined
-    
+
+    let percentage: { user: number, system: number, total: number } | undefined
+
     if (previousUsage) {
       const totalTime = current.user + current.system
       percentage = {
         user: (current.user / totalTime) * 100,
         system: (current.system / totalTime) * 100,
-        total: totalTime / 1000 // 转换为毫秒
+        total: totalTime / 1000, // 转换为毫秒
       }
     }
-    
+
     return { current, percentage }
   }
 
@@ -179,12 +179,12 @@ export class PerformanceUtils {
     return new Promise((resolve) => {
       const { monitorEventLoopDelay } = require('node:perf_hooks')
       const histogram = monitorEventLoopDelay({ resolution: 20 })
-      
+
       histogram.enable()
-      
+
       setTimeout(() => {
         histogram.disable()
-        
+
         resolve({
           min: histogram.min,
           max: histogram.max,
@@ -194,8 +194,8 @@ export class PerformanceUtils {
             p50: histogram.percentile(50),
             p90: histogram.percentile(90),
             p95: histogram.percentile(95),
-            p99: histogram.percentile(99)
-          }
+            p99: histogram.percentile(99),
+          },
         })
       }, duration)
     })
@@ -218,9 +218,9 @@ export class PerformanceUtils {
       duration: number
       timestamp: Date
     }> = []
-    
+
     let observer: any = null
-    
+
     return {
       start: () => {
         try {
@@ -232,26 +232,27 @@ export class PerformanceUtils {
                 gcStats.push({
                   type: this.getGCType(entry.kind),
                   duration: entry.duration,
-                  timestamp: new Date()
+                  timestamp: new Date(),
                 })
               }
             })
           })
-          
+
           observer.observe({ entryTypes: ['gc'] })
-        } catch (error) {
+        }
+        catch (error) {
           console.warn('GC monitoring not available:', error)
         }
       },
-      
+
       stop: () => {
         if (observer) {
           observer.disconnect()
           observer = null
         }
       },
-      
-      getStats: () => [...gcStats]
+
+      getStats: () => [...gcStats],
     }
   }
 
@@ -261,55 +262,58 @@ export class PerformanceUtils {
   static createProfiler() {
     const timers = new Map<string, number>()
     const results = new Map<string, number[]>()
-    
+
     return {
       start: (name: string) => {
         timers.set(name, performance.now())
       },
-      
+
       end: (name: string) => {
         const startTime = timers.get(name)
         if (!startTime) {
           throw new Error(`Timer "${name}" not found`)
         }
-        
+
         const duration = performance.now() - startTime
         timers.delete(name)
-        
+
         if (!results.has(name)) {
           results.set(name, [])
         }
         results.get(name)!.push(duration)
-        
+
         return duration
       },
-      
+
       getResults: () => {
-        const summary = new Map<string, {
-          count: number
-          total: number
-          average: number
-          min: number
-          max: number
-        }>()
-        
+        const summary = new Map<
+          string,
+          {
+            count: number
+            total: number
+            average: number
+            min: number
+            max: number
+          }
+        >()
+
         for (const [name, times] of results) {
           summary.set(name, {
             count: times.length,
             total: times.reduce((a, b) => a + b, 0),
             average: times.reduce((a, b) => a + b, 0) / times.length,
             min: Math.min(...times),
-            max: Math.max(...times)
+            max: Math.max(...times),
           })
         }
-        
+
         return Object.fromEntries(summary)
       },
-      
+
       reset: () => {
         timers.clear()
         results.clear()
-      }
+      },
     }
   }
 
@@ -322,64 +326,66 @@ export class PerformanceUtils {
       memory: NodeJS.MemoryUsage
       cpu: NodeJS.CpuUsage
     }> = []
-    
+
     let monitoring = false
     let intervalId: NodeJS.Timeout | null = null
     let lastCpuUsage = process.cpuUsage()
-    
+
     return {
       start: () => {
-        if (monitoring) return
-        
+        if (monitoring)
+          return
+
         monitoring = true
         intervalId = setInterval(() => {
           const currentCpuUsage = process.cpuUsage(lastCpuUsage)
-          
+
           samples.push({
             timestamp: new Date(),
             memory: process.memoryUsage(),
-            cpu: currentCpuUsage
+            cpu: currentCpuUsage,
           })
-          
+
           lastCpuUsage = process.cpuUsage()
         }, interval)
       },
-      
+
       stop: () => {
-        if (!monitoring) return
-        
+        if (!monitoring)
+          return
+
         monitoring = false
         if (intervalId) {
           clearInterval(intervalId)
           intervalId = null
         }
       },
-      
+
       getSamples: () => [...samples],
-      
+
       getStats: () => {
         if (samples.length === 0) {
           return null
         }
-        
+
         const memoryStats = {
           rss: this.calculateStats(samples.map(s => s.memory.rss)),
           heapTotal: this.calculateStats(samples.map(s => s.memory.heapTotal)),
           heapUsed: this.calculateStats(samples.map(s => s.memory.heapUsed)),
-          external: this.calculateStats(samples.map(s => s.memory.external))
+          external: this.calculateStats(samples.map(s => s.memory.external)),
         }
-        
+
         const cpuStats = {
           user: this.calculateStats(samples.map(s => s.cpu.user)),
-          system: this.calculateStats(samples.map(s => s.cpu.system))
+          system: this.calculateStats(samples.map(s => s.cpu.system)),
         }
-        
+
         return { memory: memoryStats, cpu: cpuStats }
       },
-      
+
       reset: () => {
         samples.length = 0
-      }
+      },
     }
   }
 
@@ -390,12 +396,12 @@ export class PerformanceUtils {
     const units = ['B', 'KB', 'MB', 'GB', 'TB']
     let size = bytes
     let unitIndex = 0
-    
+
     while (size >= 1024 && unitIndex < units.length - 1) {
       size /= 1024
       unitIndex++
     }
-    
+
     return `${size.toFixed(2)} ${units[unitIndex]}`
   }
 
@@ -408,7 +414,7 @@ export class PerformanceUtils {
       2: 'Mark-Sweep-Compact',
       4: 'Incremental Marking',
       8: 'Weak Callbacks',
-      15: 'All'
+      15: 'All',
     }
     return types[kind as keyof typeof types] || 'Unknown'
   }
@@ -420,15 +426,15 @@ export class PerformanceUtils {
     if (values.length === 0) {
       return { min: 0, max: 0, avg: 0, total: 0 }
     }
-    
+
     const sorted = values.sort((a, b) => a - b)
     const total = values.reduce((a, b) => a + b, 0)
-    
+
     return {
       min: sorted[0],
       max: sorted[sorted.length - 1],
       avg: total / values.length,
-      total
+      total,
     }
   }
 }

@@ -3,8 +3,8 @@
  * 提供缓存存储的抽象接口和通用功能
  */
 
+import type { CacheStats, CacheStore } from '../types'
 import { EventEmitter } from 'node:events'
-import type { CacheStore, CacheStats } from '../types'
 
 /**
  * 抽象缓存存储类
@@ -16,7 +16,7 @@ export abstract class AbstractCacheStore extends EventEmitter implements CacheSt
     sets: 0,
     deletes: 0,
     evictions: 0,
-    errors: 0
+    errors: 0,
   }
 
   /**
@@ -54,14 +54,14 @@ export abstract class AbstractCacheStore extends EventEmitter implements CacheSt
    */
   async mget<T = any>(keys: string[]): Promise<Map<string, T>> {
     const results = new Map<string, T>()
-    
+
     for (const key of keys) {
       const value = await this.get<T>(key)
       if (value !== undefined) {
         results.set(key, value)
       }
     }
-    
+
     return results
   }
 
@@ -173,7 +173,7 @@ export abstract class AbstractCacheStore extends EventEmitter implements CacheSt
       sets: 0,
       deletes: 0,
       evictions: 0,
-      errors: 0
+      errors: 0,
     }
   }
 }
@@ -185,14 +185,14 @@ export abstract class AbstractCacheStore extends EventEmitter implements CacheSt
 export class CacheStoreDecorator extends AbstractCacheStore {
   constructor(protected store: CacheStore) {
     super()
-    
+
     // 转发事件
-    this.store.on('hit', (key) => this.emit('hit', key))
-    this.store.on('miss', (key) => this.emit('miss', key))
+    this.store.on('hit', key => this.emit('hit', key))
+    this.store.on('miss', key => this.emit('miss', key))
     this.store.on('set', (key, value) => this.emit('set', key, value))
-    this.store.on('delete', (key) => this.emit('delete', key))
+    this.store.on('delete', key => this.emit('delete', key))
     this.store.on('clear', () => this.emit('clear'))
-    this.store.on('error', (error) => this.emit('error', error))
+    this.store.on('error', error => this.emit('error', error))
   }
 
   async get<T = any>(key: string): Promise<T | undefined> {
@@ -273,50 +273,55 @@ export class CacheStoreDecorator extends AbstractCacheStore {
  * 带压缩的缓存存储装饰器
  */
 export class CompressedCacheStore extends CacheStoreDecorator {
-  constructor(store: CacheStore, private compressionThreshold = 1024) {
+  constructor(
+    store: CacheStore,
+    private compressionThreshold = 1024,
+  ) {
     super(store)
   }
 
   override async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
     let processedValue = value
-    
+
     // 如果值是字符串且超过阈值，进行压缩
     if (typeof value === 'string' && value.length > this.compressionThreshold) {
       try {
         const { gzip } = await import('node:zlib')
         const { promisify } = await import('node:util')
         const gzipAsync = promisify(gzip)
-        
+
         const compressed = await gzipAsync(Buffer.from(value, 'utf8'))
         processedValue = `__compressed__${compressed.toString('base64')}` as T
-      } catch (error) {
+      }
+      catch (error) {
         this.recordError(error as Error)
       }
     }
-    
+
     return await this.store.set(key, processedValue, ttl)
   }
 
   override async get<T = any>(key: string): Promise<T | undefined> {
     const value = await this.store.get<T>(key)
-    
+
     if (typeof value === 'string' && value.startsWith('__compressed__')) {
       try {
         const { gunzip } = await import('node:zlib')
         const { promisify } = await import('node:util')
         const gunzipAsync = promisify(gunzip)
-        
+
         const compressedData = value.slice('__compressed__'.length)
         const buffer = Buffer.from(compressedData, 'base64')
         const decompressed = await gunzipAsync(buffer)
-        
+
         return decompressed.toString('utf8') as T
-      } catch (error) {
+      }
+      catch (error) {
         this.recordError(error as Error)
         return value
       }
     }
-    
+
     return value
   }
 }
@@ -331,27 +336,29 @@ export class SerializedCacheStore extends CacheStoreDecorator {
 
   override async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
     let serializedValue: string
-    
+
     try {
       serializedValue = JSON.stringify(value)
-    } catch (error) {
+    }
+    catch (error) {
       this.recordError(error as Error)
       throw new Error(`Failed to serialize value for key '${key}': ${error}`)
     }
-    
+
     return await this.store.set(key, serializedValue, ttl)
   }
 
   override async get<T = any>(key: string): Promise<T | undefined> {
     const value = await this.store.get<string>(key)
-    
+
     if (value === undefined) {
       return undefined
     }
-    
+
     try {
       return JSON.parse(value) as T
-    } catch (error) {
+    }
+    catch (error) {
       this.recordError(error as Error)
       // 如果反序列化失败，返回原始值
       return value as T
@@ -363,7 +370,10 @@ export class SerializedCacheStore extends CacheStoreDecorator {
  * 带命名空间的缓存存储装饰器
  */
 export class NamespacedCacheStore extends CacheStoreDecorator {
-  constructor(store: CacheStore, private namespace: string) {
+  constructor(
+    store: CacheStore,
+    private namespace: string,
+  ) {
     super(store)
   }
 
@@ -395,13 +405,13 @@ export class NamespacedCacheStore extends CacheStoreDecorator {
   override async mget<T = any>(keys: string[]): Promise<Map<string, T>> {
     const namespacedKeys = keys.map(key => this.addNamespace(key))
     const results = await super.mget<T>(namespacedKeys)
-    
+
     const finalResults = new Map<string, T>()
     for (const [namespacedKey, value] of results) {
       const originalKey = this.removeNamespace(namespacedKey)
       finalResults.set(originalKey, value)
     }
-    
+
     return finalResults
   }
 
@@ -410,7 +420,7 @@ export class NamespacedCacheStore extends CacheStoreDecorator {
     for (const [key, value] of entries) {
       namespacedEntries.set(this.addNamespace(key), value)
     }
-    
+
     return await super.mset(namespacedEntries, ttl)
   }
 
@@ -422,7 +432,7 @@ export class NamespacedCacheStore extends CacheStoreDecorator {
   override async keys(pattern?: string): Promise<string[]> {
     const namespacedPattern = pattern ? this.addNamespace(pattern) : `${this.namespace}:*`
     const namespacedKeys = await super.keys(namespacedPattern)
-    
+
     return namespacedKeys.map(key => this.removeNamespace(key))
   }
 

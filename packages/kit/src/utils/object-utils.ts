@@ -65,15 +65,18 @@ export class ObjectUtils {
    * @returns 合并后的对象
    */
   static deepMerge<T extends Record<string, any>>(target: T, ...sources: any[]): T {
-    if (!sources.length) return target
+    if (!sources.length)
+      return target
     const source = sources.shift()
 
     if (ObjectUtils.isObject(target) && ObjectUtils.isObject(source)) {
       for (const key in source) {
         if (ObjectUtils.isObject(source[key])) {
-          if (!target[key]) Object.assign(target, { [key]: {} })
+          if (!target[key])
+            Object.assign(target, { [key]: {} })
           ObjectUtils.deepMerge(target[key] as Record<string, any>, source[key])
-        } else {
+        }
+        else {
           Object.assign(target, { [key]: source[key] })
         }
       }
@@ -117,11 +120,7 @@ export class ObjectUtils {
    * @param defaultValue 默认值
    * @returns 路径对应的值
    */
-  static get<T = any>(
-    obj: Record<string, any>,
-    path: string | string[],
-    defaultValue?: T
-  ): T {
+  static get<T = any>(obj: Record<string, any>, path: string | string[], defaultValue?: T): T {
     const keys = Array.isArray(path) ? path : path.split('.')
     let result = obj
 
@@ -142,11 +141,7 @@ export class ObjectUtils {
    * @param value 要设置的值
    * @returns 修改后的对象
    */
-  static set<T extends Record<string, any>>(
-    obj: T,
-    path: string | string[],
-    value: any
-  ): T {
+  static set<T extends Record<string, any>>(obj: T, path: string | string[], value: any): T {
     const keys = Array.isArray(path) ? path : path.split('.')
     let current = obj
 
@@ -188,10 +183,7 @@ export class ObjectUtils {
    * @param path 路径
    * @returns 是否删除成功
    */
-  static unset<T extends Record<string, any>>(
-    obj: T,
-    path: string | string[]
-  ): boolean {
+  static unset<T extends Record<string, any>>(obj: T, path: string | string[]): boolean {
     const keys = Array.isArray(path) ? path : path.split('.')
     let current = obj
 
@@ -224,10 +216,11 @@ export class ObjectUtils {
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
         const currentPath = prefix ? `${prefix}.${key}` : key
-        
+
         if (ObjectUtils.isObject(obj[key])) {
           result.push(...ObjectUtils.paths(obj[key], currentPath))
-        } else {
+        }
+        else {
           result.push(currentPath)
         }
       }
@@ -242,20 +235,18 @@ export class ObjectUtils {
    * @param separator 分隔符
    * @returns 扁平化后的对象
    */
-  static flatten(
-    obj: Record<string, any>,
-    separator = '.'
-  ): Record<string, any> {
+  static flatten(obj: Record<string, any>, separator = '.'): Record<string, any> {
     const result: Record<string, any> = {}
 
     function flattenRecursive(current: any, prefix = '') {
       for (const key in current) {
         if (current.hasOwnProperty(key)) {
           const newKey = prefix ? `${prefix}${separator}${key}` : key
-          
+
           if (ObjectUtils.isObject(current[key])) {
             flattenRecursive(current[key], newKey)
-          } else {
+          }
+          else {
             result[newKey] = current[key]
           }
         }
@@ -272,10 +263,7 @@ export class ObjectUtils {
    * @param separator 分隔符
    * @returns 反扁平化后的对象
    */
-  static unflatten(
-    obj: Record<string, any>,
-    separator = '.'
-  ): Record<string, any> {
+  static unflatten(obj: Record<string, any>, separator = '.'): Record<string, any> {
     const result: Record<string, any> = {}
 
     for (const key in obj) {
@@ -293,12 +281,9 @@ export class ObjectUtils {
    * @param keys 要选择的键
    * @returns 新对象
    */
-  static pick<T extends Record<string, any>, K extends keyof T>(
-    obj: T,
-    keys: K[]
-  ): Pick<T, K> {
+  static pick<T extends Record<string, any>, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
     const result = {} as Pick<T, K>
-    
+
     for (const key of keys) {
       if (key in obj) {
         result[key] = obj[key]
@@ -314,12 +299,9 @@ export class ObjectUtils {
    * @param keys 要排除的键
    * @returns 新对象
    */
-  static omit<T extends Record<string, any>, K extends keyof T>(
-    obj: T,
-    keys: K[]
-  ): Omit<T, K> {
+  static omit<T extends Record<string, any>, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
     const result = { ...obj } as Omit<T, K>
-    
+
     for (const key of keys) {
       delete (result as any)[key]
     }
@@ -335,7 +317,7 @@ export class ObjectUtils {
    */
   static mapKeys<T extends Record<string, any>>(
     obj: T,
-    transformer: (key: string, value: any) => string
+    transformer: (key: string, value: any) => string,
   ): Record<string, any> {
     const result: Record<string, any> = {}
 
@@ -357,7 +339,7 @@ export class ObjectUtils {
    */
   static mapValues<T extends Record<string, any>, R>(
     obj: T,
-    transformer: (value: any, key: string) => R
+    transformer: (value: any, key: string) => R,
   ): Record<keyof T, R> {
     const result = {} as Record<keyof T, R>
 
@@ -395,7 +377,7 @@ export class ObjectUtils {
    */
   static filter<T extends Record<string, any>>(
     obj: T,
-    predicate: (value: any, key: string) => boolean
+    predicate: (value: any, key: string) => boolean,
   ): Partial<T> {
     const result: Partial<T> = {}
 
@@ -415,10 +397,13 @@ export class ObjectUtils {
    * @returns 是否相等
    */
   static isEqual(obj1: any, obj2: any): boolean {
-    if (obj1 === obj2) return true
+    if (obj1 === obj2)
+      return true
 
-    if (obj1 === null || obj2 === null) return false
-    if (typeof obj1 !== typeof obj2) return false
+    if (obj1 === null || obj2 === null)
+      return false
+    if (typeof obj1 !== typeof obj2)
+      return false
 
     if (obj1 instanceof Date && obj2 instanceof Date) {
       return obj1.getTime() === obj2.getTime()
@@ -429,7 +414,8 @@ export class ObjectUtils {
     }
 
     if (Array.isArray(obj1) && Array.isArray(obj2)) {
-      if (obj1.length !== obj2.length) return false
+      if (obj1.length !== obj2.length)
+        return false
       return obj1.every((item, index) => ObjectUtils.isEqual(item, obj2[index]))
     }
 
@@ -437,11 +423,10 @@ export class ObjectUtils {
       const keys1 = Object.keys(obj1)
       const keys2 = Object.keys(obj2)
 
-      if (keys1.length !== keys2.length) return false
+      if (keys1.length !== keys2.length)
+        return false
 
-      return keys1.every(key => 
-        keys2.includes(key) && ObjectUtils.isEqual(obj1[key], obj2[key])
-      )
+      return keys1.every(key => keys2.includes(key) && ObjectUtils.isEqual(obj1[key], obj2[key]))
     }
 
     return false

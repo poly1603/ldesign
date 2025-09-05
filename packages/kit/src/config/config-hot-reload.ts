@@ -3,11 +3,10 @@
  * 提供智能的配置热重载功能，支持依赖追踪和增量更新
  */
 
+import type { ConfigCache, ConfigChange } from './config-cache'
+import type { ConfigLoader } from './config-loader'
 import { EventEmitter } from 'node:events'
-import { ConfigCache, type ConfigChange } from './config-cache'
 import { ConfigWatcher, type ConfigWatcherOptions } from './config-watcher'
-import { ConfigLoader } from './config-loader'
-import type { ConfigValue } from '../types'
 
 /**
  * 热重载选项
@@ -47,13 +46,9 @@ export class ConfigHotReload extends EventEmitter {
   private reloadCount = 0
   private lastReload?: ReloadResult
 
-  constructor(
-    cache: ConfigCache,
-    loader: ConfigLoader,
-    options: HotReloadOptions = {}
-  ) {
+  constructor(cache: ConfigCache, loader: ConfigLoader, options: HotReloadOptions = {}) {
     super()
-    
+
     this.cache = cache
     this.loader = loader
     this.options = {
@@ -64,7 +59,7 @@ export class ConfigHotReload extends EventEmitter {
       enableDependencyTracking: options.enableDependencyTracking !== false,
       enableIncrementalUpdate: options.enableIncrementalUpdate !== false,
       enableRollback: options.enableRollback !== false,
-      watcherOptions: options.watcherOptions || {}
+      watcherOptions: options.watcherOptions || {},
     }
 
     this.setupEventListeners()
@@ -84,7 +79,7 @@ export class ConfigHotReload extends EventEmitter {
         configFile,
         configDir,
         debounceMs: this.options.debounceMs,
-        ...this.options.watcherOptions
+        ...this.options.watcherOptions,
       })
 
       // 设置监听器事件
@@ -93,11 +88,11 @@ export class ConfigHotReload extends EventEmitter {
 
       // 启动监听
       await this.watcher.start()
-      
+
       this.isEnabled = true
       this.emit('enabled')
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('error', error)
       throw error
     }
@@ -131,7 +126,7 @@ export class ConfigHotReload extends EventEmitter {
       errors: [],
       duration: 0,
       timestamp: startTime,
-      source
+      source,
     }
 
     try {
@@ -139,11 +134,12 @@ export class ConfigHotReload extends EventEmitter {
 
       // 加载新配置
       const newConfig = await this.loadConfiguration()
-      
+
       // 执行智能重载
       if (this.options.enableIncrementalUpdate) {
         result.changes = this.cache.smartReload(newConfig, source)
-      } else {
+      }
+      else {
         result.changes = this.fullReload(newConfig, source)
       }
 
@@ -154,11 +150,11 @@ export class ConfigHotReload extends EventEmitter {
 
       result.success = true
       this.reloadCount++
-      
-    } catch (error) {
+    }
+    catch (error) {
       result.errors.push(error as Error)
       this.emit('reloadError', error)
-      
+
       // 尝试回滚
       if (this.options.enableRollback && this.lastReload?.success) {
         await this.rollback()
@@ -183,24 +179,26 @@ export class ConfigHotReload extends EventEmitter {
     try {
       // 这里需要实现回滚逻辑
       this.emit('rollbackStarted')
-      
+
       // 回滚每个变更
       for (const change of this.lastReload.changes) {
         if (change.type === 'modified' || change.type === 'added') {
           if (change.oldValue !== undefined) {
             this.cache.set(change.path, change.oldValue, { source: 'rollback' })
-          } else {
+          }
+          else {
             this.cache.delete(change.path)
           }
-        } else if (change.type === 'deleted') {
+        }
+        else if (change.type === 'deleted') {
           this.cache.set(change.path, change.oldValue, { source: 'rollback' })
         }
       }
 
       this.emit('rollbackCompleted')
       return true
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('rollbackError', error)
       return false
     }
@@ -219,7 +217,7 @@ export class ConfigHotReload extends EventEmitter {
       enabled: this.isEnabled,
       reloadCount: this.reloadCount,
       lastReload: this.lastReload,
-      watcherStats: this.watcher?.getStats()
+      watcherStats: this.watcher?.getStats(),
     }
   }
 
@@ -228,11 +226,11 @@ export class ConfigHotReload extends EventEmitter {
    */
   updateOptions(options: Partial<HotReloadOptions>): void {
     this.options = { ...this.options, ...options } as Required<HotReloadOptions>
-    
+
     if (this.watcher && options.watcherOptions) {
       this.watcher.updateOptions(options.watcherOptions)
     }
-    
+
     this.emit('optionsUpdated', this.options)
   }
 
@@ -264,14 +262,15 @@ export class ConfigHotReload extends EventEmitter {
     })
   }
 
-  private async handleFileChange(event: { filePath: string; eventType: string }): Promise<void> {
+  private async handleFileChange(event: { filePath: string, eventType: string }): Promise<void> {
     if (!this.isEnabled) {
       return
     }
 
     try {
       await this.reload('fileChange')
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('error', error)
     }
   }
@@ -288,10 +287,10 @@ export class ConfigHotReload extends EventEmitter {
 
   private fullReload(newConfig: Record<string, any>, source: string): ConfigChange[] {
     const changes: ConfigChange[] = []
-    
+
     // 清空现有配置
     this.cache.clear()
-    
+
     // 重新加载所有配置
     for (const [key, value] of Object.entries(newConfig)) {
       this.cache.set(key, value, { source })
@@ -301,10 +300,10 @@ export class ConfigHotReload extends EventEmitter {
         newValue: value,
         timestamp: Date.now(),
         type: 'added',
-        source
+        source,
       })
     }
-    
+
     return changes
   }
 
@@ -312,13 +311,13 @@ export class ConfigHotReload extends EventEmitter {
     // 更新依赖的配置项
     for (const change of changes) {
       const dependents = this.cache.getDependents(change.path)
-      
+
       for (const dependent of dependents) {
         // 重新计算依赖项的值
-        this.emit('dependencyUpdated', { 
-          dependent, 
+        this.emit('dependencyUpdated', {
+          dependent,
           dependency: change.path,
-          change 
+          change,
         })
       }
     }
@@ -330,7 +329,7 @@ export class ConfigHotReload extends EventEmitter {
   static create(
     cache: ConfigCache,
     loader: ConfigLoader,
-    options?: HotReloadOptions
+    options?: HotReloadOptions,
   ): ConfigHotReload {
     return new ConfigHotReload(cache, loader, options)
   }

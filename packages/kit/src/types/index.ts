@@ -256,7 +256,11 @@ export class KitError extends Error {
 
 // 文件系统错误
 export class FileSystemError extends KitError {
-  constructor(message: string, public path?: string, cause?: Error) {
+  constructor(
+    message: string,
+    public path?: string,
+    cause?: Error
+  ) {
     super(message, 'FILESYSTEM_ERROR', cause)
     this.name = 'FileSystemError'
   }
@@ -264,7 +268,11 @@ export class FileSystemError extends KitError {
 
 // 网络错误
 export class NetworkError extends KitError {
-  constructor(message: string, public url?: string, cause?: Error) {
+  constructor(
+    message: string,
+    public url?: string,
+    cause?: Error
+  ) {
     super(message, 'NETWORK_ERROR', cause)
     this.name = 'NetworkError'
   }
@@ -284,10 +292,7 @@ export class ProcessError extends KitError {
 }
 
 export class DatabaseError extends KitError {
-  constructor(
-    message: string,
-    cause?: Error
-  ) {
+  constructor(message: string, cause?: Error) {
     super(message, 'DATABASE_ERROR', cause)
     this.name = 'DatabaseError'
   }
@@ -413,7 +418,11 @@ export interface RetryOptions {
 
 // 配置错误
 export class ConfigError extends KitError {
-  constructor(message: string, public configPath?: string, cause?: Error) {
+  constructor(
+    message: string,
+    public configPath?: string,
+    cause?: Error
+  ) {
     super(message, 'CONFIG_ERROR', cause)
     this.name = 'ConfigError'
   }
@@ -467,7 +476,14 @@ export interface ConfigOptions {
   mergeArrays?: boolean
 }
 
-export type ConfigValue = string | number | boolean | null | undefined | ConfigValue[] | { [key: string]: ConfigValue }
+export type ConfigValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | ConfigValue[]
+  | { [key: string]: ConfigValue }
 
 export interface ConfigSchema {
   type?: string | string[]
@@ -611,7 +627,11 @@ export interface ValidationRule {
   code?: string
   message?: string | ((field: string, value: any) => string)
   defaultMessage?: string
-  validator: (value: any, data?: any, context?: any) => boolean | Promise<boolean> | ValidationRuleResult
+  validator: (
+    value: any,
+    data?: any,
+    context?: any
+  ) => boolean | Promise<boolean> | ValidationRuleResult
   transformer?: (value: any, data?: any, context?: any) => any
   condition?: (value: any, data?: any, context?: any) => boolean
   async?: boolean
@@ -716,7 +736,11 @@ export interface ValidationSchema {
   properties?: Record<string, ValidationSchema>
   additionalProperties?: boolean | ValidationSchema
   default?: any
-  custom?: (value: any, schema: ValidationSchema, path: string) => { valid: boolean; message?: string; code?: string }
+  custom?: (
+    value: any,
+    schema: ValidationSchema,
+    path: string
+  ) => { valid: boolean; message?: string; code?: string }
 }
 
 export interface SchemaValidationResult {
@@ -749,7 +773,11 @@ export interface SchemaValidatorOptions {
 export interface FormValidationRule {
   code?: string
   message?: string | ((field: string, value: any) => string)
-  validator?: (value: any, formData: any, field: string) => boolean | Promise<boolean> | ValidationRuleResult
+  validator?: (
+    value: any,
+    formData: any,
+    field: string
+  ) => boolean | Promise<boolean> | ValidationRuleResult
   transformer?: (value: any, formData: any, field: string) => any
   condition?: (value: any, formData: any, field: string) => boolean
   fields?: string[]
@@ -847,7 +875,15 @@ export interface GitRepositoryInfo {
 }
 
 export interface GitFileStatus {
-  status: 'unmodified' | 'modified' | 'added' | 'deleted' | 'renamed' | 'copied' | 'untracked' | 'conflicted'
+  status:
+    | 'unmodified'
+    | 'modified'
+    | 'added'
+    | 'deleted'
+    | 'renamed'
+    | 'copied'
+    | 'untracked'
+    | 'conflicted'
   staged: boolean
 }
 
@@ -1019,7 +1055,6 @@ export interface OutputFormatterOptions {
   maxWidth?: number
 }
 
-
 export interface KeyPair {
   publicKey: string
   privateKey: string
@@ -1108,7 +1143,6 @@ export interface Question {
 export interface Answer {
   [key: string]: any
 }
-
 
 export interface NotificationConfig {
   appName?: string

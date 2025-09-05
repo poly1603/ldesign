@@ -3,7 +3,7 @@
  * 提供常用的验证规则集合
  */
 
-import type { ValidationRule, FormValidationRule } from '../types'
+import type { FormValidationRule, ValidationRule } from '../types'
 import { ValidationUtils } from '../utils'
 
 /**
@@ -18,11 +18,14 @@ export class ValidationRules {
       code: 'REQUIRED',
       message: message || '此字段为必填项',
       validator: (value: any) => {
-        if (value === null || value === undefined) return false
-        if (typeof value === 'string') return value.trim().length > 0
-        if (Array.isArray(value)) return value.length > 0
+        if (value === null || value === undefined)
+          return false
+        if (typeof value === 'string')
+          return value.trim().length > 0
+        if (Array.isArray(value))
+          return value.length > 0
         return true
-      }
+      },
     }
   }
 
@@ -34,12 +37,15 @@ export class ValidationRules {
       code: 'LENGTH',
       message: message || `长度必须在 ${min || 0} 到 ${max || '∞'} 之间`,
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
+        if (typeof value !== 'string')
+          return false
         const len = value.length
-        if (min !== undefined && len < min) return false
-        if (max !== undefined && len > max) return false
+        if (min !== undefined && len < min)
+          return false
+        if (max !== undefined && len > max)
+          return false
         return true
-      }
+      },
     }
   }
 
@@ -51,9 +57,10 @@ export class ValidationRules {
       code: 'MIN_LENGTH',
       message: message || `最小长度为 ${min}`,
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
+        if (typeof value !== 'string')
+          return false
         return value.length >= min
-      }
+      },
     }
   }
 
@@ -65,9 +72,10 @@ export class ValidationRules {
       code: 'MAX_LENGTH',
       message: message || `最大长度为 ${max}`,
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
+        if (typeof value !== 'string')
+          return false
         return value.length <= max
-      }
+      },
     }
   }
 
@@ -80,11 +88,14 @@ export class ValidationRules {
       message: message || `数值必须在 ${min || '-∞'} 到 ${max || '∞'} 之间`,
       validator: (value: any) => {
         const num = Number(value)
-        if (isNaN(num)) return false
-        if (min !== undefined && num < min) return false
-        if (max !== undefined && num > max) return false
+        if (isNaN(num))
+          return false
+        if (min !== undefined && num < min)
+          return false
+        if (max !== undefined && num > max)
+          return false
         return true
-      }
+      },
     }
   }
 
@@ -98,7 +109,7 @@ export class ValidationRules {
       validator: (value: any) => {
         const num = Number(value)
         return !isNaN(num) && num >= min
-      }
+      },
     }
   }
 
@@ -112,7 +123,7 @@ export class ValidationRules {
       validator: (value: any) => {
         const num = Number(value)
         return !isNaN(num) && num <= max
-      }
+      },
     }
   }
 
@@ -124,9 +135,10 @@ export class ValidationRules {
       code: 'PATTERN',
       message: message || '格式不正确',
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
+        if (typeof value !== 'string')
+          return false
         return regex.test(value)
-      }
+      },
     }
   }
 
@@ -138,9 +150,10 @@ export class ValidationRules {
       code: 'EMAIL',
       message: message || '请输入有效的邮箱地址',
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
+        if (typeof value !== 'string')
+          return false
         return ValidationUtils.isEmail(value)
-      }
+      },
     }
   }
 
@@ -152,9 +165,10 @@ export class ValidationRules {
       code: 'URL',
       message: message || '请输入有效的URL',
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
+        if (typeof value !== 'string')
+          return false
         return ValidationUtils.isUrl(value)
-      }
+      },
     }
   }
 
@@ -166,9 +180,10 @@ export class ValidationRules {
       code: 'PHONE',
       message: message || '请输入有效的手机号',
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
+        if (typeof value !== 'string')
+          return false
         return ValidationUtils.isPhone(value)
-      }
+      },
     }
   }
 
@@ -180,9 +195,10 @@ export class ValidationRules {
       code: 'ID_CARD',
       message: message || '请输入有效的身份证号',
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
+        if (typeof value !== 'string')
+          return false
         return ValidationUtils.isIdCard(value)
-      }
+      },
     }
   }
 
@@ -195,7 +211,7 @@ export class ValidationRules {
       message: message || '请输入数字',
       validator: (value: any) => {
         return !isNaN(Number(value))
-      }
+      },
     }
   }
 
@@ -209,7 +225,7 @@ export class ValidationRules {
       validator: (value: any) => {
         const num = Number(value)
         return !isNaN(num) && Number.isInteger(num)
-      }
+      },
     }
   }
 
@@ -221,9 +237,10 @@ export class ValidationRules {
       code: 'ALPHA',
       message: message || '只能包含字母',
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
-        return /^[a-zA-Z]+$/.test(value)
-      }
+        if (typeof value !== 'string')
+          return false
+        return /^[a-z]+$/i.test(value)
+      },
     }
   }
 
@@ -235,9 +252,10 @@ export class ValidationRules {
       code: 'ALPHA_NUMERIC',
       message: message || '只能包含字母和数字',
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
-        return /^[a-zA-Z0-9]+$/.test(value)
-      }
+        if (typeof value !== 'string')
+          return false
+        return /^[a-z0-9]+$/i.test(value)
+      },
     }
   }
 
@@ -249,10 +267,11 @@ export class ValidationRules {
       code: 'DATE',
       message: message || '请输入有效的日期',
       validator: (value: any) => {
-        if (!value) return false
+        if (!value)
+          return false
         const date = new Date(value)
         return !isNaN(date.getTime())
-      }
+      },
     }
   }
 
@@ -264,9 +283,10 @@ export class ValidationRules {
       code: 'TIME',
       message: message || '请输入有效的时间格式 (HH:MM)',
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
-        return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value)
-      }
+        if (typeof value !== 'string')
+          return false
+        return /^([01]?\d|2[0-3]):[0-5]\d$/.test(value)
+      },
     }
   }
 
@@ -278,10 +298,11 @@ export class ValidationRules {
       code: 'DATETIME',
       message: message || '请输入有效的日期时间',
       validator: (value: any) => {
-        if (!value) return false
+        if (!value)
+          return false
         const date = new Date(value)
         return !isNaN(date.getTime())
-      }
+      },
     }
   }
 
@@ -294,7 +315,7 @@ export class ValidationRules {
       message: message || `值必须是以下之一: ${values.join(', ')}`,
       validator: (value: any) => {
         return values.includes(value)
-      }
+      },
     }
   }
 
@@ -307,7 +328,7 @@ export class ValidationRules {
       message: message || '必须是数组',
       validator: (value: any) => {
         return Array.isArray(value)
-      }
+      },
     }
   }
 
@@ -320,7 +341,7 @@ export class ValidationRules {
       message: message || '必须是对象',
       validator: (value: any) => {
         return typeof value === 'object' && value !== null && !Array.isArray(value)
-      }
+      },
     }
   }
 
@@ -333,7 +354,7 @@ export class ValidationRules {
       message: message || '必须是布尔值',
       validator: (value: any) => {
         return typeof value === 'boolean'
-      }
+      },
     }
   }
 
@@ -343,12 +364,12 @@ export class ValidationRules {
   static custom(
     validator: (value: any, data?: any, context?: any) => boolean | Promise<boolean>,
     message?: string,
-    code?: string
+    code?: string,
   ): ValidationRule {
     return {
       code: code || 'CUSTOM',
       message: message || '验证失败',
-      validator
+      validator,
     }
   }
 
@@ -357,48 +378,56 @@ export class ValidationRules {
    */
   static when(
     condition: (value: any, data?: any, context?: any) => boolean,
-    rule: ValidationRule
+    rule: ValidationRule,
   ): ValidationRule {
     return {
       ...rule,
-      condition
+      condition,
     }
   }
 
   /**
    * 密码强度验证
    */
-  static password(options: {
-    minLength?: number
-    requireUppercase?: boolean
-    requireLowercase?: boolean
-    requireNumbers?: boolean
-    requireSpecialChars?: boolean
-    message?: string
-  } = {}): ValidationRule {
+  static password(
+    options: {
+      minLength?: number
+      requireUppercase?: boolean
+      requireLowercase?: boolean
+      requireNumbers?: boolean
+      requireSpecialChars?: boolean
+      message?: string
+    } = {},
+  ): ValidationRule {
     const {
       minLength = 8,
       requireUppercase = true,
       requireLowercase = true,
       requireNumbers = true,
       requireSpecialChars = true,
-      message = '密码强度不够'
+      message = '密码强度不够',
     } = options
 
     return {
       code: 'PASSWORD',
       message,
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
+        if (typeof value !== 'string')
+          return false
 
-        if (value.length < minLength) return false
-        if (requireUppercase && !/[A-Z]/.test(value)) return false
-        if (requireLowercase && !/[a-z]/.test(value)) return false
-        if (requireNumbers && !/\d/.test(value)) return false
-        if (requireSpecialChars && !/[!@#$%^&*(),.?":{}|<>]/.test(value)) return false
+        if (value.length < minLength)
+          return false
+        if (requireUppercase && !/[A-Z]/.test(value))
+          return false
+        if (requireLowercase && !/[a-z]/.test(value))
+          return false
+        if (requireNumbers && !/\d/.test(value))
+          return false
+        if (requireSpecialChars && !/[!@#$%^&*(),.?":{}|<>]/.test(value))
+          return false
 
         return true
-      }
+      },
     }
   }
 
@@ -412,7 +441,7 @@ export class ValidationRules {
       fields: [passwordField],
       validator: (value: any, formData: any) => {
         return value === formData[passwordField]
-      }
+      },
     }
   }
 
@@ -424,10 +453,11 @@ export class ValidationRules {
       code: 'FILE_TYPE',
       message: message || `只允许以下文件类型: ${allowedTypes.join(', ')}`,
       validator: (value: any) => {
-        if (!value || !value.name) return false
+        if (!value || !value.name)
+          return false
         const extension = value.name.split('.').pop()?.toLowerCase()
         return allowedTypes.includes(extension || '')
-      }
+      },
     }
   }
 
@@ -439,9 +469,10 @@ export class ValidationRules {
       code: 'FILE_SIZE',
       message: message || `文件大小不能超过 ${maxSize} 字节`,
       validator: (value: any) => {
-        if (!value || !value.size) return false
+        if (!value || !value.size)
+          return false
         return value.size <= maxSize
-      }
+      },
     }
   }
 
@@ -453,9 +484,10 @@ export class ValidationRules {
       code: 'CREDIT_CARD',
       message: message || '请输入有效的信用卡号',
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
+        if (typeof value !== 'string')
+          return false
         return ValidationUtils.isCreditCard(value)
-      }
+      },
     }
   }
 
@@ -467,11 +499,14 @@ export class ValidationRules {
       code: 'IP',
       message: message || '请输入有效的IP地址',
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
-        if (version === 'v4') return ValidationUtils.isIPv4(value)
-        if (version === 'v6') return ValidationUtils.isIPv6(value)
+        if (typeof value !== 'string')
+          return false
+        if (version === 'v4')
+          return ValidationUtils.isIPv4(value)
+        if (version === 'v6')
+          return ValidationUtils.isIPv6(value)
         return ValidationUtils.isIPv4(value) || ValidationUtils.isIPv6(value)
-      }
+      },
     }
   }
 
@@ -483,9 +518,10 @@ export class ValidationRules {
       code: 'MAC',
       message: message || '请输入有效的MAC地址',
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
-        return /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/.test(value)
-      }
+        if (typeof value !== 'string')
+          return false
+        return /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/i.test(value)
+      },
     }
   }
 
@@ -497,21 +533,24 @@ export class ValidationRules {
       code: 'UUID',
       message: message || '请输入有效的UUID',
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
+        if (typeof value !== 'string')
+          return false
         const patterns = {
           1: /^[0-9a-f]{8}-[0-9a-f]{4}-1[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
           2: /^[0-9a-f]{8}-[0-9a-f]{4}-2[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
           3: /^[0-9a-f]{8}-[0-9a-f]{4}-3[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
           4: /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-          5: /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+          5: /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
         }
 
         if (version && patterns[version as keyof typeof patterns]) {
           return patterns[version as keyof typeof patterns].test(value)
         }
 
-        return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
-      }
+        return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          value,
+        )
+      },
     }
   }
 
@@ -523,9 +562,10 @@ export class ValidationRules {
       code: 'COLOR',
       message: message || '请输入有效的颜色值',
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
-        return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(value)
-      }
+        if (typeof value !== 'string')
+          return false
+        return /^#([A-F0-9]{6}|[A-F0-9]{3})$/i.test(value)
+      },
     }
   }
 
@@ -537,13 +577,15 @@ export class ValidationRules {
       code: 'BASE64',
       message: message || '请输入有效的Base64编码',
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
+        if (typeof value !== 'string')
+          return false
         try {
           return btoa(atob(value)) === value
-        } catch {
+        }
+        catch {
           return false
         }
-      }
+      },
     }
   }
 
@@ -555,14 +597,16 @@ export class ValidationRules {
       code: 'JSON',
       message: message || '请输入有效的JSON格式',
       validator: (value: any) => {
-        if (typeof value !== 'string') return false
+        if (typeof value !== 'string')
+          return false
         try {
           JSON.parse(value)
           return true
-        } catch {
+        }
+        catch {
           return false
         }
-      }
+      },
     }
   }
 
@@ -576,10 +620,11 @@ export class ValidationRules {
       validator: async (value: any, data?: any, context?: any) => {
         for (const rule of rules) {
           const result = await rule.validator(value, data, context)
-          if (!result) return false
+          if (!result)
+            return false
         }
         return true
-      }
+      },
     }
   }
 
@@ -593,10 +638,11 @@ export class ValidationRules {
       validator: async (value: any, data?: any, context?: any) => {
         for (const rule of rules) {
           const result = await rule.validator(value, data, context)
-          if (result) return true
+          if (result)
+            return true
         }
         return false
-      }
+      },
     }
   }
 }

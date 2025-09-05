@@ -3,8 +3,8 @@
  * 提供基于Redis的分布式缓存实现
  */
 
+import type { CacheStats, CacheStore } from '../types'
 import { EventEmitter } from 'node:events'
-import type { CacheStore, CacheStats } from '../types'
 
 /**
  * Redis缓存选项
@@ -26,20 +26,20 @@ export interface RedisCacheOptions {
  * Redis客户端接口（兼容多种Redis库）
  */
 export interface RedisClient {
-  get(key: string): Promise<string | null>
-  set(key: string, value: string, mode?: string, duration?: number): Promise<string | null>
-  setex(key: string, seconds: number, value: string): Promise<string>
-  del(...keys: string[]): Promise<number>
-  exists(...keys: string[]): Promise<number>
-  keys(pattern: string): Promise<string[]>
-  ttl(key: string): Promise<number>
-  expire(key: string, seconds: number): Promise<number>
-  flushdb(): Promise<string>
-  mget(...keys: string[]): Promise<(string | null)[]>
-  mset(...keyValues: string[]): Promise<string>
-  quit(): Promise<string>
-  on(event: string, listener: (...args: any[]) => void): void
-  off(event: string, listener: (...args: any[]) => void): void
+  get: (key: string) => Promise<string | null>
+  set: (key: string, value: string, mode?: string, duration?: number) => Promise<string | null>
+  setex: (key: string, seconds: number, value: string) => Promise<string>
+  del: (...keys: string[]) => Promise<number>
+  exists: (...keys: string[]) => Promise<number>
+  keys: (pattern: string) => Promise<string[]>
+  ttl: (key: string) => Promise<number>
+  expire: (key: string, seconds: number) => Promise<number>
+  flushdb: () => Promise<string>
+  mget: (...keys: string[]) => Promise<(string | null)[]>
+  mset: (...keyValues: string[]) => Promise<string>
+  quit: () => Promise<string>
+  on: (event: string, listener: (...args: any[]) => void) => void
+  off: (event: string, listener: (...args: any[]) => void) => void
 }
 
 /**
@@ -53,13 +53,14 @@ export class RedisCache extends EventEmitter implements CacheStore {
     misses: 0,
     sets: 0,
     deletes: 0,
-    errors: 0
+    errors: 0,
   }
+
   private connected = false
 
   constructor(options: RedisCacheOptions = {}) {
     super()
-    
+
     this.options = {
       host: options.host || 'localhost',
       port: options.port || 6379,
@@ -70,7 +71,7 @@ export class RedisCache extends EventEmitter implements CacheStore {
       lazyConnect: options.lazyConnect !== false,
       retryDelayOnFailover: options.retryDelayOnFailover || 100,
       maxRetriesPerRequest: options.maxRetriesPerRequest || 3,
-      family: options.family || 4
+      family: options.family || 4,
     }
 
     if (!this.options.lazyConnect) {
@@ -90,10 +91,12 @@ export class RedisCache extends EventEmitter implements CacheStore {
       // 这里需要根据实际使用的Redis库来创建客户端
       // 例如：ioredis, redis, node_redis等
       // 为了避免依赖，这里提供一个抽象实现
-      
-      throw new Error('Redis client not configured. Please install and configure a Redis client (ioredis, redis, etc.)')
-      
-    } catch (error) {
+
+      throw new Error(
+        'Redis client not configured. Please install and configure a Redis client (ioredis, redis, etc.)',
+      )
+    }
+    catch (error) {
       this.stats.errors++
       this.emit('error', error)
       throw error
@@ -122,14 +125,14 @@ export class RedisCache extends EventEmitter implements CacheStore {
   async get<T = any>(key: string): Promise<T | undefined> {
     try {
       await this.ensureConnection()
-      
+
       if (!this.client) {
         throw new Error('Redis client not available')
       }
 
       const fullKey = this.buildKey(key)
       const value = await this.client.get(fullKey)
-      
+
       if (value === null) {
         this.stats.misses++
         this.emit('miss', key)
@@ -138,14 +141,15 @@ export class RedisCache extends EventEmitter implements CacheStore {
 
       this.stats.hits++
       this.emit('hit', key)
-      
+
       try {
         return JSON.parse(value) as T
-      } catch {
+      }
+      catch {
         return value as T
       }
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.stats.errors++
       this.emit('error', error)
       return undefined
@@ -158,24 +162,25 @@ export class RedisCache extends EventEmitter implements CacheStore {
   async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
     try {
       await this.ensureConnection()
-      
+
       if (!this.client) {
         throw new Error('Redis client not available')
       }
 
       const fullKey = this.buildKey(key)
       const serializedValue = typeof value === 'string' ? value : JSON.stringify(value)
-      
+
       if (ttl && ttl > 0) {
         await this.client.setex(fullKey, ttl, serializedValue)
-      } else {
+      }
+      else {
         await this.client.set(fullKey, serializedValue)
       }
-      
+
       this.stats.sets++
       this.emit('set', key, value)
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.stats.errors++
       this.emit('error', error)
       throw error
@@ -188,7 +193,7 @@ export class RedisCache extends EventEmitter implements CacheStore {
   async has(key: string): Promise<boolean> {
     try {
       await this.ensureConnection()
-      
+
       if (!this.client) {
         throw new Error('Redis client not available')
       }
@@ -196,8 +201,8 @@ export class RedisCache extends EventEmitter implements CacheStore {
       const fullKey = this.buildKey(key)
       const exists = await this.client.exists(fullKey)
       return exists > 0
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.stats.errors++
       this.emit('error', error)
       return false
@@ -210,23 +215,23 @@ export class RedisCache extends EventEmitter implements CacheStore {
   async delete(key: string): Promise<boolean> {
     try {
       await this.ensureConnection()
-      
+
       if (!this.client) {
         throw new Error('Redis client not available')
       }
 
       const fullKey = this.buildKey(key)
       const deleted = await this.client.del(fullKey)
-      
+
       if (deleted > 0) {
         this.stats.deletes++
         this.emit('delete', key)
         return true
       }
-      
+
       return false
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.stats.errors++
       this.emit('error', error)
       return false
@@ -239,15 +244,15 @@ export class RedisCache extends EventEmitter implements CacheStore {
   async clear(): Promise<void> {
     try {
       await this.ensureConnection()
-      
+
       if (!this.client) {
         throw new Error('Redis client not available')
       }
 
       await this.client.flushdb()
       this.emit('clear')
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.stats.errors++
       this.emit('error', error)
       throw error
@@ -260,30 +265,31 @@ export class RedisCache extends EventEmitter implements CacheStore {
   async mget<T = any>(keys: string[]): Promise<Map<string, T>> {
     try {
       await this.ensureConnection()
-      
+
       if (!this.client) {
         throw new Error('Redis client not available')
       }
 
       const fullKeys = keys.map(key => this.buildKey(key))
       const values = await this.client.mget(...fullKeys)
-      
+
       const results = new Map<string, T>()
-      
+
       for (let i = 0; i < keys.length; i++) {
         const value = values[i]
         if (value !== null) {
           try {
             results.set(keys[i], JSON.parse(value) as T)
-          } catch {
+          }
+          catch {
             results.set(keys[i], value as T)
           }
         }
       }
-      
+
       return results
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.stats.errors++
       this.emit('error', error)
       return new Map()
@@ -296,21 +302,21 @@ export class RedisCache extends EventEmitter implements CacheStore {
   async mset<T = any>(entries: Map<string, T>, ttl?: number): Promise<void> {
     try {
       await this.ensureConnection()
-      
+
       if (!this.client) {
         throw new Error('Redis client not available')
       }
 
       const keyValues: string[] = []
-      
+
       for (const [key, value] of entries) {
         const fullKey = this.buildKey(key)
         const serializedValue = typeof value === 'string' ? value : JSON.stringify(value)
         keyValues.push(fullKey, serializedValue)
       }
-      
+
       await this.client.mset(...keyValues)
-      
+
       // 如果有TTL，需要逐个设置过期时间
       if (ttl && ttl > 0) {
         for (const key of entries.keys()) {
@@ -318,8 +324,8 @@ export class RedisCache extends EventEmitter implements CacheStore {
           await this.client.expire(fullKey, ttl)
         }
       }
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.stats.errors++
       this.emit('error', error)
       throw error
@@ -332,18 +338,18 @@ export class RedisCache extends EventEmitter implements CacheStore {
   async mdel(keys: string[]): Promise<number> {
     try {
       await this.ensureConnection()
-      
+
       if (!this.client) {
         throw new Error('Redis client not available')
       }
 
       const fullKeys = keys.map(key => this.buildKey(key))
       const deleted = await this.client.del(...fullKeys)
-      
+
       this.stats.deletes += deleted
       return deleted
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.stats.errors++
       this.emit('error', error)
       return 0
@@ -356,21 +362,21 @@ export class RedisCache extends EventEmitter implements CacheStore {
   async keys(pattern?: string): Promise<string[]> {
     try {
       await this.ensureConnection()
-      
+
       if (!this.client) {
         throw new Error('Redis client not available')
       }
 
-      const searchPattern = pattern 
+      const searchPattern = pattern
         ? `${this.options.keyPrefix}${pattern}`
         : `${this.options.keyPrefix}*`
-      
+
       const fullKeys = await this.client.keys(searchPattern)
-      
+
       // 移除前缀
       return fullKeys.map(key => key.slice(this.options.keyPrefix.length))
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.stats.errors++
       this.emit('error', error)
       return []
@@ -383,7 +389,7 @@ export class RedisCache extends EventEmitter implements CacheStore {
   async expire(key: string, ttl: number): Promise<boolean> {
     try {
       await this.ensureConnection()
-      
+
       if (!this.client) {
         throw new Error('Redis client not available')
       }
@@ -391,8 +397,8 @@ export class RedisCache extends EventEmitter implements CacheStore {
       const fullKey = this.buildKey(key)
       const result = await this.client.expire(fullKey, ttl)
       return result > 0
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.stats.errors++
       this.emit('error', error)
       return false
@@ -405,15 +411,15 @@ export class RedisCache extends EventEmitter implements CacheStore {
   async ttl(key: string): Promise<number> {
     try {
       await this.ensureConnection()
-      
+
       if (!this.client) {
         throw new Error('Redis client not available')
       }
 
       const fullKey = this.buildKey(key)
       return await this.client.ttl(fullKey)
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.stats.errors++
       this.emit('error', error)
       return -2
@@ -425,7 +431,7 @@ export class RedisCache extends EventEmitter implements CacheStore {
    */
   async getStats(): Promise<CacheStats> {
     const keyCount = (await this.keys()).length
-    
+
     return {
       hits: this.stats.hits,
       misses: this.stats.misses,
@@ -435,7 +441,7 @@ export class RedisCache extends EventEmitter implements CacheStore {
       hitRate: this.stats.hits / (this.stats.hits + this.stats.misses) || 0,
       sets: this.stats.sets,
       deletes: this.stats.deletes,
-      errors: this.stats.errors
+      errors: this.stats.errors,
     }
   }
 
@@ -446,10 +452,11 @@ export class RedisCache extends EventEmitter implements CacheStore {
     if (this.client) {
       try {
         await this.client.quit()
-      } catch (error) {
+      }
+      catch (error) {
         this.emit('error', error)
       }
-      
+
       this.client = undefined
       this.connected = false
       this.emit('disconnected')

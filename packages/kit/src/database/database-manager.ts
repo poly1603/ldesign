@@ -3,8 +3,8 @@
  * 提供数据库连接管理和基础操作功能
  */
 
-import { EventEmitter } from 'node:events'
 import type { DatabaseConfig, DatabaseConnection, QueryResult } from '../types'
+import { EventEmitter } from 'node:events'
 import { DatabaseError } from '../types'
 import { AsyncUtils } from '../utils'
 
@@ -30,13 +30,14 @@ export class DatabaseManager extends EventEmitter {
     try {
       const connection = await this.createConnection(connectionConfig)
       this.connections.set(name, connection)
-      
+
       if (!this.defaultConnection) {
         this.defaultConnection = name
       }
-      
+
       this.emit('connectionAdded', { name, config: connectionConfig })
-    } catch (error) {
+    }
+    catch (error) {
       throw new DatabaseError(`Failed to add connection: ${name}`, error as Error)
     }
   }
@@ -46,7 +47,7 @@ export class DatabaseManager extends EventEmitter {
    */
   private async createConnection(config: ConnectionConfig): Promise<DatabaseConnection> {
     const { type, host, port, database, username, password, options = {} } = config
-    
+
     // 这里是一个简化的实现，实际应该根据数据库类型创建相应的连接
     const connection: DatabaseConnection = {
       type,
@@ -56,58 +57,58 @@ export class DatabaseManager extends EventEmitter {
       username,
       connected: false,
       lastActivity: new Date(),
-      
+
       async connect() {
         // 模拟连接逻辑
         await AsyncUtils.delay(100)
         this.connected = true
         this.lastActivity = new Date()
       },
-      
+
       async disconnect() {
         this.connected = false
       },
-      
+
       async query(sql: string, params?: any[]): Promise<QueryResult> {
         if (!this.connected) {
           throw new DatabaseError('Connection not established')
         }
-        
+
         this.lastActivity = new Date()
-        
+
         // 模拟查询执行
         await AsyncUtils.delay(10)
-        
+
         return {
           rows: [],
           rowCount: 0,
           fields: [],
-          duration: 10
+          duration: 10,
         }
       },
-      
+
       async beginTransaction() {
         if (!this.connected) {
           throw new DatabaseError('Connection not established')
         }
         return this.query('BEGIN')
       },
-      
+
       async commit() {
         if (!this.connected) {
           throw new DatabaseError('Connection not established')
         }
         return this.query('COMMIT')
       },
-      
+
       async rollback() {
         if (!this.connected) {
           throw new DatabaseError('Connection not established')
         }
         return this.query('ROLLBACK')
-      }
+      },
     }
-    
+
     await connection.connect()
     return connection
   }
@@ -121,12 +122,12 @@ export class DatabaseManager extends EventEmitter {
     if (!connectionName) {
       throw new DatabaseError('No default connection available')
     }
-    
+
     const connection = this.connections.get(connectionName)
     if (!connection) {
       throw new DatabaseError(`Connection not found: ${connectionName}`)
     }
-    
+
     return connection
   }
 
@@ -139,11 +140,11 @@ export class DatabaseManager extends EventEmitter {
     if (connection) {
       await connection.disconnect()
       this.connections.delete(name)
-      
+
       if (this.defaultConnection === name) {
         this.defaultConnection = this.connections.keys().next().value || null
       }
-      
+
       this.emit('connectionRemoved', { name })
     }
   }
@@ -156,18 +157,18 @@ export class DatabaseManager extends EventEmitter {
    */
   async query(sql: string, params?: any[], connectionName?: string): Promise<QueryResult> {
     const connection = this.getConnection(connectionName)
-    
+
     try {
       this.emit('queryStart', { sql, params, connection: connectionName })
       const startTime = Date.now()
-      
+
       const result = await connection.query(sql, params)
       const duration = Date.now() - startTime
-      
+
       this.emit('queryEnd', { sql, params, result, duration, connection: connectionName })
       return { ...result, duration }
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('queryError', { sql, params, error, connection: connectionName })
       throw new DatabaseError(`Query failed: ${sql}`, error as Error)
     }
@@ -180,22 +181,22 @@ export class DatabaseManager extends EventEmitter {
    */
   async transaction<T>(
     callback: (connection: DatabaseConnection) => Promise<T>,
-    connectionName?: string
+    connectionName?: string,
   ): Promise<T> {
     const connection = this.getConnection(connectionName)
-    
+
     try {
       await connection.beginTransaction()
       this.emit('transactionStart', { connection: connectionName })
-      
+
       const result = await callback(connection)
-      
+
       await connection.commit()
       this.emit('transactionCommit', { connection: connectionName })
-      
+
       return result
-      
-    } catch (error) {
+    }
+    catch (error) {
       await connection.rollback()
       this.emit('transactionRollback', { connection: connectionName, error })
       throw error
@@ -209,12 +210,12 @@ export class DatabaseManager extends EventEmitter {
    */
   async batch(queries: BatchQuery[], connectionName?: string): Promise<QueryResult[]> {
     const results: QueryResult[] = []
-    
+
     for (const query of queries) {
       const result = await this.query(query.sql, query.params, connectionName)
       results.push(result)
     }
-    
+
     return results
   }
 
@@ -226,12 +227,12 @@ export class DatabaseManager extends EventEmitter {
   async batchTransaction(queries: BatchQuery[], connectionName?: string): Promise<QueryResult[]> {
     return this.transaction(async (connection) => {
       const results: QueryResult[] = []
-      
+
       for (const query of queries) {
         const result = await connection.query(query.sql, query.params)
         results.push(result)
       }
-      
+
       return results
     }, connectionName)
   }
@@ -244,7 +245,8 @@ export class DatabaseManager extends EventEmitter {
     try {
       await this.query('SELECT 1', [], connectionName)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -255,7 +257,7 @@ export class DatabaseManager extends EventEmitter {
    */
   getConnectionStatus(connectionName?: string): ConnectionStatus {
     const connection = this.getConnection(connectionName)
-    
+
     return {
       name: connectionName || this.defaultConnection || '',
       connected: connection.connected,
@@ -263,7 +265,7 @@ export class DatabaseManager extends EventEmitter {
       host: connection.host,
       port: connection.port,
       database: connection.database,
-      lastActivity: connection.lastActivity
+      lastActivity: connection.lastActivity,
     }
   }
 
@@ -272,11 +274,11 @@ export class DatabaseManager extends EventEmitter {
    */
   getAllConnectionStatus(): ConnectionStatus[] {
     const statuses: ConnectionStatus[] = []
-    
+
     for (const [name] of this.connections) {
       statuses.push(this.getConnectionStatus(name))
     }
-    
+
     return statuses
   }
 
@@ -288,11 +290,12 @@ export class DatabaseManager extends EventEmitter {
       try {
         await connection.disconnect()
         this.emit('connectionClosed', { name })
-      } catch (error) {
+      }
+      catch (error) {
         this.emit('connectionError', { name, error })
       }
     })
-    
+
     await Promise.all(promises)
     this.connections.clear()
     this.defaultConnection = null
@@ -303,40 +306,41 @@ export class DatabaseManager extends EventEmitter {
    */
   async healthCheck(): Promise<HealthCheckResult> {
     const results: ConnectionHealthCheck[] = []
-    
+
     for (const [name] of this.connections) {
       const startTime = Date.now()
       let status: 'healthy' | 'unhealthy' = 'unhealthy'
       let error: string | undefined
-      
+
       try {
         const isConnected = await this.testConnection(name)
         status = isConnected ? 'healthy' : 'unhealthy'
-      } catch (err) {
+      }
+      catch (err) {
         error = (err as Error).message
       }
-      
+
       const duration = Date.now() - startTime
-      
+
       results.push({
         name,
         status,
         duration,
-        error
+        error,
       })
     }
-    
+
     const healthyCount = results.filter(r => r.status === 'healthy').length
     const totalCount = results.length
-    
+
     return {
       overall: healthyCount === totalCount ? 'healthy' : 'unhealthy',
       connections: results,
       summary: {
         total: totalCount,
         healthy: healthyCount,
-        unhealthy: totalCount - healthyCount
-      }
+        unhealthy: totalCount - healthyCount,
+      },
     }
   }
 
@@ -346,7 +350,7 @@ export class DatabaseManager extends EventEmitter {
   getStats(): DatabaseStats {
     const connections = this.getAllConnectionStatus()
     const connectedCount = connections.filter(c => c.connected).length
-    
+
     return {
       totalConnections: connections.length,
       connectedConnections: connectedCount,
@@ -356,8 +360,8 @@ export class DatabaseManager extends EventEmitter {
         name: c.name,
         type: c.type,
         connected: c.connected,
-        lastActivity: c.lastActivity
-      }))
+        lastActivity: c.lastActivity,
+      })),
     }
   }
 

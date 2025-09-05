@@ -3,9 +3,10 @@
  * 提供高级命令执行和管理功能
  */
 
+import type { ChildProcess } from 'node:child_process'
+import type { ExecResult, ExecOptions as KitExecOptions } from '../types'
+import { spawn } from 'node:child_process'
 import { EventEmitter } from 'node:events'
-import { spawn, ChildProcess } from 'node:child_process'
-import type { ExecOptions as KitExecOptions, ExecResult } from '../types'
 import { ProcessError } from '../types'
 import { AsyncUtils } from '../utils'
 
@@ -35,7 +36,7 @@ export class CommandRunner extends EventEmitter {
       onProgress,
       retries = 0,
       retryDelay = 1000,
-      killSignal = 'SIGTERM'
+      killSignal = 'SIGTERM',
     } = options
 
     const commandId = this.generateCommandId()
@@ -49,21 +50,17 @@ export class CommandRunner extends EventEmitter {
 
     while (attempt <= retries) {
       try {
-        const result = await this.executeCommand(
-          commandId,
-          command,
-          {
-            cwd,
-            env,
-            timeout,
-            shell,
-            stdio,
-            onStdout,
-            onStderr,
-            onProgress,
-            killSignal
-          }
-        )
+        const result = await this.executeCommand(commandId, command, {
+          cwd,
+          env,
+          timeout,
+          shell,
+          stdio,
+          onStdout,
+          onStderr,
+          onProgress,
+          killSignal,
+        })
 
         // 记录成功执行
         const duration = Date.now() - startTime
@@ -75,13 +72,13 @@ export class CommandRunner extends EventEmitter {
           duration,
           exitCode: result.exitCode,
           success: result.exitCode === 0,
-          attempt: attempt + 1
+          attempt: attempt + 1,
         })
 
         this.emit('success', { commandId, command, result, duration, attempt: attempt + 1 })
         return result
-
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error as Error
         attempt++
 
@@ -102,8 +99,8 @@ export class CommandRunner extends EventEmitter {
       duration,
       exitCode: -1,
       success: false,
-      attempt: attempt,
-      error: lastError?.message
+      attempt,
+      error: lastError?.message,
     })
 
     this.emit('error', { commandId, command, error: lastError, attempts: attempt })
@@ -116,7 +113,7 @@ export class CommandRunner extends EventEmitter {
   private async executeCommand(
     commandId: string,
     command: string,
-    options: InternalCommandOptions
+    options: InternalCommandOptions,
   ): Promise<ExecResult> {
     return new Promise((resolve, reject) => {
       const args = options.shell ? ['/c', command] : command.split(' ')
@@ -126,7 +123,7 @@ export class CommandRunner extends EventEmitter {
         cwd: options.cwd,
         env: options.env,
         stdio: options.stdio,
-        shell: !options.shell
+        shell: !options.shell,
       })
 
       const runningCommand: RunningCommand = {
@@ -135,7 +132,7 @@ export class CommandRunner extends EventEmitter {
         process: childProcess,
         startTime: new Date(),
         stdout: '',
-        stderr: ''
+        stderr: '',
       }
 
       this.runningCommands.set(commandId, runningCommand)
@@ -155,11 +152,11 @@ export class CommandRunner extends EventEmitter {
         childProcess.stdout.on('data', (data) => {
           const output = data.toString()
           runningCommand.stdout += output
-          
+
           if (options.onStdout) {
             options.onStdout(output)
           }
-          
+
           this.emit('stdout', { commandId, data: output })
         })
       }
@@ -169,19 +166,20 @@ export class CommandRunner extends EventEmitter {
         childProcess.stderr.on('data', (data) => {
           const output = data.toString()
           runningCommand.stderr += output
-          
+
           if (options.onStderr) {
             options.onStderr(output)
           }
-          
+
           this.emit('stderr', { commandId, data: output })
         })
       }
 
       // 处理进程退出
       childProcess.on('exit', (code, signal) => {
-        if (timeoutId) clearTimeout(timeoutId)
-        
+        if (timeoutId)
+          clearTimeout(timeoutId)
+
         runningCommand.endTime = new Date()
         runningCommand.exitCode = code
         runningCommand.signal = signal
@@ -192,25 +190,29 @@ export class CommandRunner extends EventEmitter {
           exitCode: code || 0,
           signal,
           killed: signal !== null,
-          timedOut: false
+          timedOut: false,
         }
 
         this.runningCommands.delete(commandId)
 
         if (code === 0) {
           resolve(result)
-        } else {
-          reject(new ProcessError(
-            `Command failed with exit code ${code}: ${command}`,
-            command,
-            code || undefined
-          ))
+        }
+        else {
+          reject(
+            new ProcessError(
+              `Command failed with exit code ${code}: ${command}`,
+              command,
+              code || undefined,
+            ),
+          )
         }
       })
 
       // 处理进程错误
       childProcess.on('error', (error) => {
-        if (timeoutId) clearTimeout(timeoutId)
+        if (timeoutId)
+          clearTimeout(timeoutId)
         this.runningCommands.delete(commandId)
         reject(new ProcessError(`Command error: ${command}`, command, undefined, error))
       })
@@ -225,17 +227,17 @@ export class CommandRunner extends EventEmitter {
    */
   async runSeries(commands: string[], options: CommandRunOptions = {}): Promise<ExecResult[]> {
     const results: ExecResult[] = []
-    
+
     for (const command of commands) {
       const result = await this.run(command, options)
       results.push(result)
-      
+
       // 如果命令失败且没有设置继续执行，则停止
       if (result.exitCode !== 0 && !options.continueOnError) {
         break
       }
     }
-    
+
     return results
   }
 
@@ -284,7 +286,8 @@ export class CommandRunner extends EventEmitter {
     try {
       runningCommand.process.kill(signal)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -329,9 +332,8 @@ export class CommandRunner extends EventEmitter {
     const total = this.commandHistory.length
     const successful = this.commandHistory.filter(entry => entry.success).length
     const failed = total - successful
-    const avgDuration = total > 0 
-      ? this.commandHistory.reduce((sum, entry) => sum + entry.duration, 0) / total
-      : 0
+    const avgDuration
+      = total > 0 ? this.commandHistory.reduce((sum, entry) => sum + entry.duration, 0) / total : 0
 
     return {
       total,
@@ -339,7 +341,7 @@ export class CommandRunner extends EventEmitter {
       failed,
       running: this.runningCommands.size,
       avgDuration,
-      successRate: total > 0 ? (successful / total) * 100 : 0
+      successRate: total > 0 ? (successful / total) * 100 : 0,
     }
   }
 
@@ -355,7 +357,7 @@ export class CommandRunner extends EventEmitter {
    */
   private addToHistory(entry: CommandHistoryEntry): void {
     this.commandHistory.push(entry)
-    
+
     // 限制历史记录大小
     if (this.commandHistory.length > this.maxHistorySize) {
       this.commandHistory = this.commandHistory.slice(-this.maxHistorySize)
@@ -368,11 +370,11 @@ export class CommandRunner extends EventEmitter {
    */
   static create(options: CommandRunnerOptions = {}): CommandRunner {
     const runner = new CommandRunner()
-    
+
     if (options.maxHistorySize) {
       runner.maxHistorySize = options.maxHistorySize
     }
-    
+
     return runner
   }
 
@@ -394,10 +396,11 @@ export class CommandRunner extends EventEmitter {
     try {
       const result = await CommandRunner.exec(
         process.platform === 'win32' ? `where ${command}` : `which ${command}`,
-        { timeout: 5000 }
+        { timeout: 5000 },
       )
       return result.stdout.trim() || null
-    } catch {
+    }
+    catch {
       return null
     }
   }

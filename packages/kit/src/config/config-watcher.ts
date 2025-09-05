@@ -3,10 +3,10 @@
  * 监听配置文件变化并触发重新加载
  */
 
+import type { FSWatcher } from 'node:fs'
 import { EventEmitter } from 'node:events'
 import { watch } from 'node:fs'
-import type { FSWatcher } from 'node:fs'
-import { resolve, dirname } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { FileSystem } from '../filesystem'
 
 /**
@@ -33,7 +33,7 @@ export class ConfigWatcher extends EventEmitter {
 
   constructor(options: ConfigWatcherOptions) {
     super()
-    
+
     this.options = {
       configFile: options.configFile,
       configDir: options.configDir || process.cwd(),
@@ -44,8 +44,8 @@ export class ConfigWatcher extends EventEmitter {
         /node_modules/,
         /\.git/,
         /\.DS_Store/,
-        /Thumbs\.db/
-      ]
+        /Thumbs\.db/,
+      ],
     }
   }
 
@@ -60,14 +60,14 @@ export class ConfigWatcher extends EventEmitter {
     try {
       // 监听主配置文件
       await this.watchConfigFile()
-      
+
       // 监听额外目录
       await this.watchDirectories()
-      
+
       this.isWatching = true
       this.emit('started')
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('error', error)
       throw error
     }
@@ -103,7 +103,7 @@ export class ConfigWatcher extends EventEmitter {
    */
   private async watchConfigFile(): Promise<void> {
     const configPath = resolve(this.options.configDir, this.options.configFile)
-    
+
     // 检查文件是否存在
     if (!(await FileSystem.exists(configPath))) {
       this.emit('warning', `Configuration file not found: ${configPath}`)
@@ -135,7 +135,7 @@ export class ConfigWatcher extends EventEmitter {
   private async watchDirectories(): Promise<void> {
     const dirsToWatch = [
       dirname(resolve(this.options.configDir, this.options.configFile)),
-      ...this.options.watchDirs.map(dir => resolve(this.options.configDir, dir))
+      ...this.options.watchDirs.map(dir => resolve(this.options.configDir, dir)),
     ]
 
     for (const dir of dirsToWatch) {
@@ -152,7 +152,7 @@ export class ConfigWatcher extends EventEmitter {
     const watcher = watch(dirPath, { recursive: this.options.recursive }, (eventType, filename) => {
       if (filename) {
         const fullPath = resolve(dirPath, filename)
-        
+
         // 检查是否应该忽略
         if (this.shouldIgnore(fullPath)) {
           return
@@ -186,7 +186,8 @@ export class ConfigWatcher extends EventEmitter {
           this.emit('changed', { filePath, eventType })
           this.emit('fileChanged', filePath)
         }
-      } catch (error) {
+      }
+      catch (error) {
         this.emit('error', error)
       }
     }, this.options.debounceMs)
@@ -213,7 +214,8 @@ export class ConfigWatcher extends EventEmitter {
       }
 
       return false
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -251,13 +253,13 @@ export class ConfigWatcher extends EventEmitter {
    */
   async addWatchDirectory(dirPath: string): Promise<void> {
     const fullPath = resolve(this.options.configDir, dirPath)
-    
+
     if (!(await FileSystem.exists(fullPath))) {
       throw new Error(`Directory not found: ${fullPath}`)
     }
 
     this.options.watchDirs.push(dirPath)
-    
+
     if (this.isWatching) {
       await this.watchDirectory(fullPath)
     }
@@ -310,7 +312,7 @@ export class ConfigWatcher extends EventEmitter {
    */
   async checkForChanges(): Promise<void> {
     const configPath = resolve(this.options.configDir, this.options.configFile)
-    
+
     if (await this.hasFileChanged(configPath)) {
       this.emit('changed', { filePath: configPath, eventType: 'manual' })
     }
@@ -326,7 +328,7 @@ export class ConfigWatcher extends EventEmitter {
       watchedFiles: Array.from(this.lastModified.keys()),
       watchedDirectories: this.options.watchDirs,
       ignorePatterns: this.options.ignorePatterns.map(p => p.source),
-      debounceMs: this.options.debounceMs
+      debounceMs: this.options.debounceMs,
     }
   }
 
@@ -356,7 +358,7 @@ export class ConfigWatcher extends EventEmitter {
       debounceMs: 300,
       recursive: false,
       watchDirs: [],
-      ignorePatterns: [/node_modules/, /\.git/]
+      ignorePatterns: [/node_modules/, /\.git/],
     })
   }
 }

@@ -3,12 +3,12 @@
  * 提供数据库迁移的创建、执行和回滚功能
  */
 
-import { promises as fs } from 'node:fs'
-import { join, basename } from 'node:path'
-import { EventEmitter } from 'node:events'
 import type { DatabaseConnection } from '../types'
-import { DatabaseError } from '../types'
+import { EventEmitter } from 'node:events'
+import { promises as fs } from 'node:fs'
+import { join } from 'node:path'
 import { FileSystem } from '../filesystem'
+import { DatabaseError } from '../types'
 import { SchemaBuilder } from './schema-builder'
 
 /**
@@ -31,7 +31,7 @@ export class MigrationManager extends EventEmitter {
    */
   async initialize(): Promise<void> {
     const schema = new SchemaBuilder(this.connection)
-    
+
     const hasTable = await schema.hasTable(this.migrationsTable)
     if (!hasTable) {
       await schema.createTable(this.migrationsTable, (table) => {
@@ -50,14 +50,17 @@ export class MigrationManager extends EventEmitter {
    */
   async create(name: string, template: 'create' | 'alter' = 'create'): Promise<string> {
     await FileSystem.ensureDir(this.migrationsPath)
-    
-    const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14)
+
+    const timestamp = new Date()
+      .toISOString()
+      .replace(/[-:T.]/g, '')
+      .slice(0, 14)
     const fileName = `${timestamp}_${name}.ts`
     const filePath = join(this.migrationsPath, fileName)
-    
+
     const content = this.generateMigrationTemplate(name, template)
     await fs.writeFile(filePath, content)
-    
+
     this.emit('migrationCreated', { name, fileName, path: filePath })
     return filePath
   }
@@ -67,7 +70,7 @@ export class MigrationManager extends EventEmitter {
    */
   private generateMigrationTemplate(name: string, template: string): string {
     const className = this.toPascalCase(name)
-    
+
     if (template === 'create') {
       return `import { SchemaBuilder, TableBuilder } from '@ldesign/kit'
 
@@ -90,7 +93,8 @@ export class ${className} {
   }
 }
 `
-    } else {
+    }
+    else {
       return `import { SchemaBuilder, AlterTableBuilder } from '@ldesign/kit'
 
 export class ${className} {
@@ -122,7 +126,7 @@ export class ${className} {
   async getPendingMigrations(): Promise<string[]> {
     const allMigrations = await this.getAllMigrations()
     const executedMigrations = await this.getExecutedMigrations()
-    
+
     return allMigrations.filter(migration => !executedMigrations.includes(migration))
   }
 
@@ -132,10 +136,9 @@ export class ${className} {
   private async getAllMigrations(): Promise<string[]> {
     try {
       const files = await fs.readdir(this.migrationsPath)
-      return files
-        .filter(file => file.endsWith('.ts') || file.endsWith('.js'))
-        .sort()
-    } catch {
+      return files.filter(file => file.endsWith('.ts') || file.endsWith('.js')).sort()
+    }
+    catch {
       return []
     }
   }
@@ -146,10 +149,11 @@ export class ${className} {
   private async getExecutedMigrations(): Promise<string[]> {
     try {
       const result = await this.connection.query(
-        `SELECT migration FROM ${this.migrationsTable} ORDER BY batch, id`
+        `SELECT migration FROM ${this.migrationsTable} ORDER BY batch, id`,
       )
       return result.rows.map(row => row.migration)
-    } catch {
+    }
+    catch {
       return []
     }
   }
@@ -160,10 +164,10 @@ export class ${className} {
    */
   async migrate(steps?: number): Promise<MigrationResult[]> {
     await this.initialize()
-    
+
     const pendingMigrations = await this.getPendingMigrations()
     const migrationsToRun = steps ? pendingMigrations.slice(0, steps) : pendingMigrations
-    
+
     if (migrationsToRun.length === 0) {
       this.emit('noMigrations')
       return []
@@ -175,37 +179,37 @@ export class ${className} {
 
     for (const migrationFile of migrationsToRun) {
       const startTime = Date.now()
-      
+
       try {
         this.emit('migrationStart', { migration: migrationFile })
-        
+
         const migration = await this.loadMigration(migrationFile)
         await migration.up(schema)
-        
+
         await this.recordMigration(migrationFile, batch)
-        
+
         const duration = Date.now() - startTime
         const result: MigrationResult = {
           migration: migrationFile,
           status: 'success',
-          duration
+          duration,
         }
-        
+
         results.push(result)
         this.emit('migrationComplete', result)
-        
-      } catch (error) {
+      }
+      catch (error) {
         const duration = Date.now() - startTime
         const result: MigrationResult = {
           migration: migrationFile,
           status: 'failed',
           duration,
-          error: (error as Error).message
+          error: (error as Error).message,
         }
-        
+
         results.push(result)
         this.emit('migrationFailed', result)
-        
+
         // 停止执行后续迁移
         break
       }
@@ -220,7 +224,7 @@ export class ${className} {
    */
   async rollback(steps = 1): Promise<MigrationResult[]> {
     const migrationsToRollback = await this.getMigrationsToRollback(steps)
-    
+
     if (migrationsToRollback.length === 0) {
       this.emit('noRollbacks')
       return []
@@ -232,37 +236,37 @@ export class ${className} {
     // 按相反顺序回滚
     for (const migrationFile of migrationsToRollback.reverse()) {
       const startTime = Date.now()
-      
+
       try {
         this.emit('rollbackStart', { migration: migrationFile })
-        
+
         const migration = await this.loadMigration(migrationFile)
         await migration.down(schema)
-        
+
         await this.removeMigrationRecord(migrationFile)
-        
+
         const duration = Date.now() - startTime
         const result: MigrationResult = {
           migration: migrationFile,
           status: 'success',
-          duration
+          duration,
         }
-        
+
         results.push(result)
         this.emit('rollbackComplete', result)
-        
-      } catch (error) {
+      }
+      catch (error) {
         const duration = Date.now() - startTime
         const result: MigrationResult = {
           migration: migrationFile,
           status: 'failed',
           duration,
-          error: (error as Error).message
+          error: (error as Error).message,
         }
-        
+
         results.push(result)
         this.emit('rollbackFailed', result)
-        
+
         // 停止执行后续回滚
         break
       }
@@ -275,15 +279,17 @@ export class ${className} {
    * 获取需要回滚的迁移
    */
   private async getMigrationsToRollback(steps: number): Promise<string[]> {
-    if (steps === 0) return []
-    
+    if (steps === 0)
+      return []
+
     try {
       const result = await this.connection.query(
         `SELECT migration FROM ${this.migrationsTable} ORDER BY batch DESC, id DESC LIMIT ?`,
-        [steps]
+        [steps],
       )
       return result.rows.map(row => row.migration)
-    } catch {
+    }
+    catch {
       return []
     }
   }
@@ -299,13 +305,13 @@ export class ${className} {
   /**
    * 刷新迁移（重置后重新执行）
    */
-  async refresh(): Promise<{ rollback: MigrationResult[]; migrate: MigrationResult[] }> {
+  async refresh(): Promise<{ rollback: MigrationResult[], migrate: MigrationResult[] }> {
     const rollbackResults = await this.reset()
     const migrateResults = await this.migrate()
-    
+
     return {
       rollback: rollbackResults,
-      migrate: migrateResults
+      migrate: migrateResults,
     }
   }
 
@@ -315,10 +321,10 @@ export class ${className} {
   async status(): Promise<MigrationStatus[]> {
     const allMigrations = await this.getAllMigrations()
     const executedMigrations = await this.getExecutedMigrations()
-    
+
     return allMigrations.map(migration => ({
       migration,
-      status: executedMigrations.includes(migration) ? 'executed' : 'pending'
+      status: executedMigrations.includes(migration) ? 'executed' : 'pending',
     }))
   }
 
@@ -327,13 +333,14 @@ export class ${className} {
    */
   private async loadMigration(fileName: string): Promise<Migration> {
     const filePath = join(this.migrationsPath, fileName)
-    
+
     try {
       // 动态导入迁移文件
       const module = await import(filePath)
       const MigrationClass = module.default || Object.values(module)[0]
       return new MigrationClass()
-    } catch (error) {
+    }
+    catch (error) {
       throw new DatabaseError(`Failed to load migration: ${fileName}`, error as Error)
     }
   }
@@ -344,7 +351,7 @@ export class ${className} {
   private async recordMigration(migration: string, batch: number): Promise<void> {
     await this.connection.query(
       `INSERT INTO ${this.migrationsTable} (migration, batch, created_at, updated_at) VALUES (?, ?, NOW(), NOW())`,
-      [migration, batch]
+      [migration, batch],
     )
   }
 
@@ -352,10 +359,9 @@ export class ${className} {
    * 删除迁移记录
    */
   private async removeMigrationRecord(migration: string): Promise<void> {
-    await this.connection.query(
-      `DELETE FROM ${this.migrationsTable} WHERE migration = ?`,
-      [migration]
-    )
+    await this.connection.query(`DELETE FROM ${this.migrationsTable} WHERE migration = ?`, [
+      migration,
+    ])
   }
 
   /**
@@ -364,11 +370,12 @@ export class ${className} {
   private async getNextBatchNumber(): Promise<number> {
     try {
       const result = await this.connection.query(
-        `SELECT MAX(batch) as max_batch FROM ${this.migrationsTable}`
+        `SELECT MAX(batch) as max_batch FROM ${this.migrationsTable}`,
       )
       const maxBatch = result.rows[0]?.max_batch || 0
       return maxBatch + 1
-    } catch {
+    }
+    catch {
       return 1
     }
   }
@@ -409,8 +416,8 @@ interface MigrationOptions {
 }
 
 interface Migration {
-  up(schema: SchemaBuilder): Promise<void>
-  down(schema: SchemaBuilder): Promise<void>
+  up: (schema: SchemaBuilder) => Promise<void>
+  down: (schema: SchemaBuilder) => Promise<void>
 }
 
 interface MigrationResult {

@@ -3,12 +3,11 @@
  * 支持多种格式的配置文件加载和保存
  */
 
-import { promises as fs } from 'node:fs'
-import { join, extname, resolve } from 'node:path'
 import { EventEmitter } from 'node:events'
-import { FileSystem } from '../filesystem'
+import { promises as fs } from 'node:fs'
+import { extname, resolve } from 'node:path'
 import * as JSON5 from 'json5'
-import { StringUtils } from '../utils'
+import { FileSystem } from '../filesystem'
 
 /**
  * 配置加载器选项
@@ -28,12 +27,12 @@ export class ConfigLoader extends EventEmitter {
 
   constructor(options: ConfigLoaderOptions = {}) {
     super()
-    
+
     this.options = {
       configDir: options.configDir || process.cwd(),
       caseSensitive: options.caseSensitive !== false,
       encoding: options.encoding || 'utf8',
-      allowMissingFiles: options.allowMissingFiles !== false
+      allowMissingFiles: options.allowMissingFiles !== false,
     }
   }
 
@@ -42,7 +41,7 @@ export class ConfigLoader extends EventEmitter {
    */
   async load(configFile: string): Promise<Record<string, any>> {
     const filePath = this.resolveConfigPath(configFile)
-    
+
     try {
       // 检查文件是否存在
       if (!(await FileSystem.exists(filePath))) {
@@ -55,14 +54,14 @@ export class ConfigLoader extends EventEmitter {
 
       // 读取文件内容
       const content = await fs.readFile(filePath, this.options.encoding)
-      
+
       // 根据文件扩展名解析内容
       const config = await this.parseContent(content, filePath)
-      
+
       this.emit('loaded', { file: filePath, config })
       return config
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('error', { file: filePath, error })
       throw error
     }
@@ -72,10 +71,8 @@ export class ConfigLoader extends EventEmitter {
    * 加载多个配置文件
    */
   async loadMultiple(configFiles: string[]): Promise<Record<string, any>> {
-    const configs = await Promise.all(
-      configFiles.map(file => this.load(file))
-    )
-    
+    const configs = await Promise.all(configFiles.map(file => this.load(file)))
+
     // 合并所有配置
     return configs.reduce((merged, config) => {
       return { ...merged, ...config }
@@ -87,20 +84,20 @@ export class ConfigLoader extends EventEmitter {
    */
   async save(configFile: string, config: Record<string, any>): Promise<void> {
     const filePath = this.resolveConfigPath(configFile)
-    
+
     try {
       // 确保目录存在
-      await FileSystem.ensureDir(require('path').dirname(filePath))
-      
+      await FileSystem.ensureDir(require('node:path').dirname(filePath))
+
       // 根据文件扩展名序列化内容
       const content = this.serializeContent(config, filePath)
-      
+
       // 写入文件
       await fs.writeFile(filePath, content, this.options.encoding)
-      
+
       this.emit('saved', { file: filePath, config })
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('error', { file: filePath, error })
       throw error
     }
@@ -111,7 +108,7 @@ export class ConfigLoader extends EventEmitter {
    */
   private async parseContent(content: string, filePath: string): Promise<Record<string, any>> {
     const ext = extname(filePath).toLowerCase()
-    
+
     switch (ext) {
       case '.json':
         return this.parseJSON(content)
@@ -150,7 +147,8 @@ export class ConfigLoader extends EventEmitter {
         // 尝试作为 JSON 解析
         try {
           return this.parseJSON(content)
-        } catch {
+        }
+        catch {
           throw new Error(`Unsupported configuration file format: ${ext}`)
         }
     }
@@ -161,24 +159,24 @@ export class ConfigLoader extends EventEmitter {
    */
   private serializeContent(config: Record<string, any>, filePath: string): string {
     const ext = extname(filePath).toLowerCase()
-    
+
     switch (ext) {
       case '.json':
         return JSON.stringify(config, null, 2)
-      
+
       case '.yaml':
       case '.yml':
         return this.serializeYAML(config)
-      
+
       case '.toml':
         return this.serializeTOML(config)
-      
+
       case '.ini':
         return this.serializeINI(config)
-      
+
       case '.env':
         return this.serializeEnv(config)
-      
+
       default:
         return JSON.stringify(config, null, 2)
     }
@@ -190,7 +188,8 @@ export class ConfigLoader extends EventEmitter {
   private parseJSON(content: string): Record<string, any> {
     try {
       return JSON.parse(content)
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Invalid JSON format: ${error}`)
     }
   }
@@ -201,8 +200,11 @@ export class ConfigLoader extends EventEmitter {
   private parseJSON5(content: string): Record<string, any> {
     try {
       return JSON5.parse(content)
-    } catch (error) {
-      throw new Error(`Invalid JSON5 format: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+    catch (error) {
+      throw new Error(
+        `Invalid JSON5 format: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
     }
   }
 
@@ -214,7 +216,8 @@ export class ConfigLoader extends EventEmitter {
       // 这里应该使用 yaml 库，但为了避免依赖，我们提供一个基础实现
       // 在实际使用中，建议安装 js-yaml 库
       throw new Error('YAML parsing requires js-yaml library. Please install it.')
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Invalid YAML format: ${error}`)
     }
   }
@@ -227,7 +230,8 @@ export class ConfigLoader extends EventEmitter {
       // 这里应该使用 toml 库，但为了避免依赖，我们提供一个基础实现
       // 在实际使用中，建议安装 @iarna/toml 库
       throw new Error('TOML parsing requires @iarna/toml library. Please install it.')
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Invalid TOML format: ${error}`)
     }
   }
@@ -240,7 +244,8 @@ export class ConfigLoader extends EventEmitter {
       // 动态导入 JavaScript 配置文件
       const module = await import(filePath)
       return module.default || module
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to load JavaScript config: ${error}`)
     }
   }
@@ -253,7 +258,8 @@ export class ConfigLoader extends EventEmitter {
       // 这里需要 TypeScript 编译支持
       // 在实际使用中，可能需要使用 ts-node 或预编译
       throw new Error('TypeScript config loading requires ts-node or pre-compilation')
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to load TypeScript config: ${error}`)
     }
   }
@@ -264,17 +270,17 @@ export class ConfigLoader extends EventEmitter {
   private parseINI(content: string): Record<string, any> {
     const config: Record<string, any> = {}
     let currentSection = ''
-    
+
     const lines = content.split('\n')
-    
+
     for (const line of lines) {
       const trimmed = line.trim()
-      
+
       // 跳过空行和注释
       if (!trimmed || trimmed.startsWith(';') || trimmed.startsWith('#')) {
         continue
       }
-      
+
       // 处理节
       if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
         currentSection = trimmed.slice(1, -1)
@@ -283,21 +289,22 @@ export class ConfigLoader extends EventEmitter {
         }
         continue
       }
-      
+
       // 处理键值对
       const equalIndex = trimmed.indexOf('=')
       if (equalIndex > 0) {
         const key = trimmed.slice(0, equalIndex).trim()
         const value = trimmed.slice(equalIndex + 1).trim()
-        
+
         if (currentSection) {
           config[currentSection][key] = this.parseValue(value)
-        } else {
+        }
+        else {
           config[key] = this.parseValue(value)
         }
       }
     }
-    
+
     return config
   }
 
@@ -307,30 +314,32 @@ export class ConfigLoader extends EventEmitter {
   private parseEnv(content: string): Record<string, any> {
     const config: Record<string, any> = {}
     const lines = content.split('\n')
-    
+
     for (const line of lines) {
       const trimmed = line.trim()
-      
+
       // 跳过空行和注释
       if (!trimmed || trimmed.startsWith('#')) {
         continue
       }
-      
+
       const equalIndex = trimmed.indexOf('=')
       if (equalIndex > 0) {
         const key = trimmed.slice(0, equalIndex).trim()
         let value = trimmed.slice(equalIndex + 1).trim()
-        
+
         // 移除引号
-        if ((value.startsWith('"') && value.endsWith('"')) ||
-            (value.startsWith("'") && value.endsWith("'"))) {
+        if (
+          (value.startsWith('"') && value.endsWith('"'))
+          || (value.startsWith('\'') && value.endsWith('\''))
+        ) {
           value = value.slice(1, -1)
         }
-        
+
         config[key] = value
       }
     }
-    
+
     return config
   }
 
@@ -339,19 +348,25 @@ export class ConfigLoader extends EventEmitter {
    */
   private parseValue(value: string): any {
     // 移除引号
-    if ((value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'"))) {
+    if (
+      (value.startsWith('"') && value.endsWith('"'))
+      || (value.startsWith('\'') && value.endsWith('\''))
+    ) {
       return value.slice(1, -1)
     }
-    
+
     // 布尔值
-    if (value.toLowerCase() === 'true') return true
-    if (value.toLowerCase() === 'false') return false
-    
+    if (value.toLowerCase() === 'true')
+      return true
+    if (value.toLowerCase() === 'false')
+      return false
+
     // 数字
-    if (/^\d+$/.test(value)) return parseInt(value, 10)
-    if (/^\d+\.\d+$/.test(value)) return parseFloat(value)
-    
+    if (/^\d+$/.test(value))
+      return Number.parseInt(value, 10)
+    if (/^\d+\.\d+$/.test(value))
+      return Number.parseFloat(value)
+
     return value
   }
 
@@ -378,7 +393,7 @@ export class ConfigLoader extends EventEmitter {
    */
   private serializeINI(config: Record<string, any>): string {
     let content = ''
-    
+
     for (const [key, value] of Object.entries(config)) {
       if (typeof value === 'object' && value !== null) {
         content += `[${key}]\n`
@@ -386,11 +401,12 @@ export class ConfigLoader extends EventEmitter {
           content += `${subKey}=${subValue}\n`
         }
         content += '\n'
-      } else {
+      }
+      else {
         content += `${key}=${value}\n`
       }
     }
-    
+
     return content
   }
 
@@ -399,15 +415,16 @@ export class ConfigLoader extends EventEmitter {
    */
   private serializeEnv(config: Record<string, any>): string {
     let content = ''
-    
+
     for (const [key, value] of Object.entries(config)) {
       if (typeof value === 'string' && value.includes(' ')) {
         content += `${key}="${value}"\n`
-      } else {
+      }
+      else {
         content += `${key}=${value}\n`
       }
     }
-    
+
     return content
   }
 
@@ -415,17 +432,20 @@ export class ConfigLoader extends EventEmitter {
    * 解析配置文件路径
    */
   private resolveConfigPath(configFile: string): string {
-    if (require('path').isAbsolute(configFile)) {
+    if (require('node:path').isAbsolute(configFile)) {
       return configFile
     }
-    
+
     return resolve(this.options.configDir, configFile)
   }
 
   /**
    * 导出配置
    */
-  export(config: Record<string, any>, format: 'json' | 'json5' | 'yaml' | 'toml' | 'ini' | 'env'): string {
+  export(
+    config: Record<string, any>,
+    format: 'json' | 'json5' | 'yaml' | 'toml' | 'ini' | 'env',
+  ): string {
     switch (format) {
       case 'json':
         return JSON.stringify(config, null, 2)
@@ -447,7 +467,10 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 导入配置
    */
-  import(data: string, format: 'json' | 'json5' | 'yaml' | 'toml' | 'ini' | 'env'): Record<string, any> {
+  import(
+    data: string,
+    format: 'json' | 'json5' | 'yaml' | 'toml' | 'ini' | 'env',
+  ): Record<string, any> {
     switch (format) {
       case 'json':
         return this.parseJSON(data)

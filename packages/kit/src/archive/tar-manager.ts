@@ -2,19 +2,19 @@
  * TAR 压缩包管理器
  */
 
+import type {
+  ArchiveEntry,
+  ArchiveProgress,
+  ArchiveStats,
+  CompressionOptions,
+  ExtractionOptions,
+  TarOptions,
+} from '../types'
 import { EventEmitter } from 'node:events'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { pipeline } from 'node:stream/promises'
 import * as tar from 'tar'
 import { FileSystem } from '../filesystem'
-import type { 
-  TarOptions,
-  ArchiveEntry,
-  ArchiveProgress,
-  ArchiveStats,
-  CompressionOptions,
-  ExtractionOptions
-} from '../types'
 
 /**
  * TAR 管理器
@@ -24,7 +24,7 @@ export class TarManager extends EventEmitter {
 
   constructor(options: TarOptions = {}) {
     super()
-    
+
     this.options = {
       gzip: options.gzip ?? false,
       compressionLevel: options.compressionLevel ?? 6,
@@ -34,7 +34,7 @@ export class TarManager extends EventEmitter {
       ignoreHidden: options.ignoreHidden ?? false,
       maxFileSize: options.maxFileSize ?? 100 * 1024 * 1024, // 100MB
       password: options.password ?? '',
-      ...options
+      ...options,
     }
   }
 
@@ -44,7 +44,7 @@ export class TarManager extends EventEmitter {
   async create(
     sources: string | string[],
     outputPath: string,
-    options: CompressionOptions = {}
+    options: CompressionOptions = {},
   ): Promise<ArchiveStats> {
     const sourceList = Array.isArray(sources) ? sources : [sources]
     const mergedOptions = { ...this.options, ...options }
@@ -56,7 +56,7 @@ export class TarManager extends EventEmitter {
       compressionRatio: 0,
       startTime: new Date(),
       endTime: new Date(),
-      duration: 0
+      duration: 0,
     }
 
     // 准备文件列表
@@ -67,7 +67,8 @@ export class TarManager extends EventEmitter {
         if (sourceStat.isDirectory()) {
           const dirFiles = await this.getDirectoryFiles(source, mergedOptions)
           files.push(...dirFiles)
-        } else {
+        }
+        else {
           files.push(source)
         }
       }
@@ -76,18 +77,21 @@ export class TarManager extends EventEmitter {
     stats.totalFiles = files.length
 
     // 创建 TAR 流
-    const tarStream = tar.create({
-      gzip: mergedOptions.gzip,
-      level: mergedOptions.gzip ? mergedOptions.compressionLevel : undefined,
-      preservePaths: false,
-      follow: mergedOptions.followSymlinks,
-      filter: (path) => {
-        if (mergedOptions.ignoreHidden && path.split('/').some(part => part.startsWith('.'))) {
-          return false
-        }
-        return true
-      }
-    }, files)
+    const tarStream = tar.create(
+      {
+        gzip: mergedOptions.gzip,
+        level: mergedOptions.gzip ? mergedOptions.compressionLevel : undefined,
+        preservePaths: false,
+        follow: mergedOptions.followSymlinks,
+        filter: (path) => {
+          if (mergedOptions.ignoreHidden && path.split('/').some(part => part.startsWith('.'))) {
+            return false
+          }
+          return true
+        },
+      },
+      files,
+    )
 
     // 监听事件
     tarStream.on('entry', (entry) => {
@@ -95,7 +99,7 @@ export class TarManager extends EventEmitter {
         name: entry.path,
         size: entry.size || 0,
         type: entry.type === 'Directory' ? 'directory' : 'file',
-        lastModified: entry.mtime
+        lastModified: entry.mtime,
       }
 
       stats.totalSize += archiveEntry.size
@@ -106,9 +110,9 @@ export class TarManager extends EventEmitter {
         totalFiles: files.length,
         processedBytes: stats.totalSize,
         totalBytes: stats.totalSize,
-        percentage: (stats.totalFiles / files.length) * 100
+        percentage: (stats.totalFiles / files.length) * 100,
       }
-      
+
       this.emit('progress', progress)
     })
 
@@ -121,9 +125,8 @@ export class TarManager extends EventEmitter {
     stats.compressedSize = outputStats.size
     stats.endTime = new Date()
     stats.duration = stats.endTime.getTime() - stats.startTime.getTime()
-    stats.compressionRatio = stats.totalSize > 0 
-      ? (1 - stats.compressedSize / stats.totalSize) * 100 
-      : 0
+    stats.compressionRatio
+      = stats.totalSize > 0 ? (1 - stats.compressedSize / stats.totalSize) * 100 : 0
 
     this.emit('complete', stats)
     return stats
@@ -135,7 +138,7 @@ export class TarManager extends EventEmitter {
   async extract(
     archivePath: string,
     outputDir: string,
-    options: ExtractionOptions = {}
+    options: ExtractionOptions = {},
   ): Promise<ArchiveStats> {
     const mergedOptions = { ...this.options, ...options }
 
@@ -146,7 +149,7 @@ export class TarManager extends EventEmitter {
       compressionRatio: 0,
       startTime: new Date(),
       endTime: new Date(),
-      duration: 0
+      duration: 0,
     }
 
     // 确保输出目录存在
@@ -165,7 +168,7 @@ export class TarManager extends EventEmitter {
           return false
         }
         return true
-      }
+      },
     })
 
     // 监听事件
@@ -177,7 +180,7 @@ export class TarManager extends EventEmitter {
         name: entry.path,
         size: entry.size || 0,
         type: entry.type === 'Directory' ? 'directory' : 'file',
-        lastModified: entry.mtime
+        lastModified: entry.mtime,
       }
 
       this.emit('entry', archiveEntry)
@@ -187,9 +190,9 @@ export class TarManager extends EventEmitter {
         totalFiles: stats.totalFiles, // 无法预知总数
         processedBytes: stats.totalSize,
         totalBytes: stats.totalSize,
-        percentage: 0 // 无法计算准确百分比
+        percentage: 0, // 无法计算准确百分比
       }
-      
+
       this.emit('progress', progress)
     })
 
@@ -200,9 +203,8 @@ export class TarManager extends EventEmitter {
     // 计算最终统计
     stats.endTime = new Date()
     stats.duration = stats.endTime.getTime() - stats.startTime.getTime()
-    stats.compressionRatio = stats.totalSize > 0 
-      ? (1 - stats.compressedSize / stats.totalSize) * 100 
-      : 0
+    stats.compressionRatio
+      = stats.totalSize > 0 ? (1 - stats.compressedSize / stats.totalSize) * 100 : 0
 
     this.emit('complete', stats)
     return stats
@@ -221,9 +223,9 @@ export class TarManager extends EventEmitter {
           name: entry.path,
           size: entry.size || 0,
           type: entry.type === 'Directory' ? 'directory' : 'file',
-          lastModified: entry.mtime ? new Date(entry.mtime) : undefined
+          lastModified: entry.mtime ? new Date(entry.mtime) : undefined,
         })
-      }
+      },
     })
 
     await listStream
@@ -236,7 +238,7 @@ export class TarManager extends EventEmitter {
   async addFiles(
     archivePath: string,
     files: string | string[],
-    options: CompressionOptions = {}
+    options: CompressionOptions = {},
   ): Promise<void> {
     const fileList = Array.isArray(files) ? files : [files]
     const mergedOptions = { ...this.options, ...options }
@@ -261,10 +263,7 @@ export class TarManager extends EventEmitter {
   /**
    * 从 TAR 中移除文件
    */
-  async removeFiles(
-    archivePath: string,
-    filesToRemove: string | string[]
-  ): Promise<void> {
+  async removeFiles(archivePath: string, filesToRemove: string | string[]): Promise<void> {
     const removeList = Array.isArray(filesToRemove) ? filesToRemove : [filesToRemove]
     const tempPath = `${archivePath}.tmp`
 
@@ -286,22 +285,25 @@ export class TarManager extends EventEmitter {
    */
   private async getDirectoryFiles(
     dirPath: string,
-    options: Required<TarOptions>
+    options: Required<TarOptions>,
   ): Promise<string[]> {
     const files: string[] = []
-    
+
     const entries = await FileSystem.readDir(dirPath)
-    
+
     for (const entry of entries) {
-      if (options.ignoreHidden && (typeof entry === 'string' ? entry.startsWith('.') : entry.name.startsWith('.'))) {
+      if (
+        options.ignoreHidden
+        && (typeof entry === 'string' ? entry.startsWith('.') : entry.name.startsWith('.'))
+      ) {
         continue
       }
-      
+
       if (typeof entry === 'object' && entry.isFile) {
         files.push(entry.path)
       }
     }
-    
+
     return files
   }
 
@@ -312,7 +314,8 @@ export class TarManager extends EventEmitter {
     try {
       await this.list(archivePath)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -329,21 +332,21 @@ export class TarManager extends EventEmitter {
   }> {
     const entries = await this.list(archivePath)
     const stats = await FileSystem.stat(archivePath)
-    
+
     const totalSize = entries.reduce((sum, entry) => sum + entry.size, 0)
-    
+
     // 检测是否为 gzipped
     const buffer = Buffer.alloc(2)
     const file = await FileSystem.readFile(archivePath)
     Buffer.from(file).copy(buffer, 0, 0, 2)
-    const isGzipped = buffer[0] === 0x1f && buffer[1] === 0x8b
+    const isGzipped = buffer[0] === 0x1F && buffer[1] === 0x8B
 
     return {
       type: 'tar',
       entries,
       totalSize,
       compressedSize: stats.size,
-      isGzipped
+      isGzipped,
     }
   }
 

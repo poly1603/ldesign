@@ -4,7 +4,6 @@
  */
 
 import { EventEmitter } from 'node:events'
-import { ValidationUtils } from '../utils'
 
 /**
  * 验证规则
@@ -51,12 +50,12 @@ export class ConfigValidator extends EventEmitter {
 
   constructor(options: ConfigValidatorOptions = {}) {
     super()
-    
+
     this.options = {
       strict: options.strict !== false,
       allowUnknown: options.allowUnknown !== false,
       removeUnknown: options.removeUnknown !== false,
-      coerceTypes: options.coerceTypes !== false
+      coerceTypes: options.coerceTypes !== false,
     }
   }
 
@@ -107,25 +106,26 @@ export class ConfigValidator extends EventEmitter {
    */
   validate(config: Record<string, any>): boolean {
     this.errors = []
-    
+
     // 验证已定义的规则
     for (const [path, rule] of this.rules) {
       this.validatePath(config, path, rule)
     }
-    
+
     // 检查未知字段
     if (!this.options.allowUnknown) {
       this.checkUnknownFields(config)
     }
-    
+
     const isValid = this.errors.length === 0
-    
+
     if (isValid) {
       this.emit('validated', config)
-    } else {
+    }
+    else {
       this.emit('error', this.errors)
     }
-    
+
     return isValid
   }
 
@@ -135,24 +135,24 @@ export class ConfigValidator extends EventEmitter {
   private validatePath(config: Record<string, any>, path: string, rule: ValidationRule): void {
     const value = this.getValue(config, path)
     const exists = this.hasValue(config, path)
-    
+
     // 检查必填字段
     if (rule.required && !exists) {
       this.addError(path, rule.message || `Field '${path}' is required`, value, rule)
       return
     }
-    
+
     // 如果字段不存在且有默认值，设置默认值
     if (!exists && rule.default !== undefined) {
       this.setValue(config, path, rule.default)
       return
     }
-    
+
     // 如果字段不存在且不是必填，跳过验证
     if (!exists) {
       return
     }
-    
+
     // 类型验证
     if (rule.type && !this.validateType(value, rule.type)) {
       // 尝试类型转换
@@ -163,41 +163,68 @@ export class ConfigValidator extends EventEmitter {
           return
         }
       }
-      
-      this.addError(path, rule.message || `Field '${path}' must be of type ${rule.type}`, value, rule)
+
+      this.addError(
+        path,
+        rule.message || `Field '${path}' must be of type ${rule.type}`,
+        value,
+        rule,
+      )
       return
     }
-    
+
     // 枚举验证
     if (rule.enum && !rule.enum.includes(value)) {
-      this.addError(path, rule.message || `Field '${path}' must be one of: ${rule.enum.join(', ')}`, value, rule)
+      this.addError(
+        path,
+        rule.message || `Field '${path}' must be one of: ${rule.enum.join(', ')}`,
+        value,
+        rule,
+      )
       return
     }
-    
+
     // 范围验证
     if (rule.min !== undefined && this.isComparable(value) && value < rule.min) {
-      this.addError(path, rule.message || `Field '${path}' must be at least ${rule.min}`, value, rule)
+      this.addError(
+        path,
+        rule.message || `Field '${path}' must be at least ${rule.min}`,
+        value,
+        rule,
+      )
       return
     }
-    
+
     if (rule.max !== undefined && this.isComparable(value) && value > rule.max) {
-      this.addError(path, rule.message || `Field '${path}' must be at most ${rule.max}`, value, rule)
+      this.addError(
+        path,
+        rule.message || `Field '${path}' must be at most ${rule.max}`,
+        value,
+        rule,
+      )
       return
     }
-    
+
     // 正则表达式验证
     if (rule.pattern && typeof value === 'string' && !rule.pattern.test(value)) {
-      this.addError(path, rule.message || `Field '${path}' does not match required pattern`, value, rule)
+      this.addError(
+        path,
+        rule.message || `Field '${path}' does not match required pattern`,
+        value,
+        rule,
+      )
       return
     }
-    
+
     // 自定义验证
     if (rule.custom) {
       const result = rule.custom(value)
       if (result !== true) {
-        const message = typeof result === 'string' ? result : (rule.message || `Field '${path}' failed custom validation`)
+        const message
+          = typeof result === 'string'
+            ? result
+            : rule.message || `Field '${path}' failed custom validation`
         this.addError(path, message, value, rule)
-        return
       }
     }
   }
@@ -238,8 +265,10 @@ export class ConfigValidator extends EventEmitter {
         case 'boolean':
           if (typeof value === 'string') {
             const lower = value.toLowerCase()
-            if (lower === 'true' || lower === '1') return true
-            if (lower === 'false' || lower === '0') return false
+            if (lower === 'true' || lower === '1')
+              return true
+            if (lower === 'false' || lower === '0')
+              return false
           }
           return Boolean(value)
         case 'array':
@@ -247,7 +276,8 @@ export class ConfigValidator extends EventEmitter {
         default:
           return undefined
       }
-    } catch {
+    }
+    catch {
       return undefined
     }
   }
@@ -265,14 +295,16 @@ export class ConfigValidator extends EventEmitter {
   private checkUnknownFields(config: Record<string, any>, prefix = ''): void {
     for (const [key, value] of Object.entries(config)) {
       const path = prefix ? `${prefix}.${key}` : key
-      
+
       if (!this.rules.has(path)) {
         if (this.options.removeUnknown) {
           delete config[key]
-        } else if (this.options.strict) {
+        }
+        else if (this.options.strict) {
           this.addError(path, `Unknown field '${path}'`, value, {})
         }
-      } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      }
+      else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
         this.checkUnknownFields(value, path)
       }
     }
@@ -284,14 +316,14 @@ export class ConfigValidator extends EventEmitter {
   private getValue(obj: Record<string, any>, path: string): any {
     const keys = path.split('.')
     let current = obj
-    
+
     for (const key of keys) {
       if (current === null || current === undefined || !(key in current)) {
         return undefined
       }
       current = current[key]
     }
-    
+
     return current
   }
 
@@ -301,14 +333,14 @@ export class ConfigValidator extends EventEmitter {
   private hasValue(obj: Record<string, any>, path: string): boolean {
     const keys = path.split('.')
     let current = obj
-    
+
     for (const key of keys) {
       if (current === null || current === undefined || !(key in current)) {
         return false
       }
       current = current[key]
     }
-    
+
     return true
   }
 
@@ -318,16 +350,17 @@ export class ConfigValidator extends EventEmitter {
   private setValue(obj: Record<string, any>, path: string, value: any): void {
     const keys = path.split('.')
     let current = obj
-    
+
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i]
-      if (!key) continue
+      if (!key)
+        continue
       if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
         current[key] = {}
       }
       current = current[key]
     }
-    
+
     const lastKey = keys[keys.length - 1]
     if (lastKey) {
       current[lastKey] = value
@@ -368,19 +401,19 @@ export class ConfigValidator extends EventEmitter {
   getStats(): ValidationStats {
     const errorsByPath: Record<string, number> = {}
     const errorsByType: Record<string, number> = {}
-    
+
     for (const error of this.errors) {
       errorsByPath[error.path] = (errorsByPath[error.path] || 0) + 1
       const type = error.rule.type || 'unknown'
       errorsByType[type] = (errorsByType[type] || 0) + 1
     }
-    
+
     return {
       totalRules: this.rules.size,
       totalErrors: this.errors.length,
       errorsByPath,
       errorsByType,
-      isValid: this.errors.length === 0
+      isValid: this.errors.length === 0,
     }
   }
 
@@ -393,48 +426,48 @@ export class ConfigValidator extends EventEmitter {
         type: 'string',
         required: true,
         min: 1,
-        max: 100
+        max: 100,
       },
       'app.version': {
         type: 'string',
         required: true,
-        pattern: /^\d+\.\d+\.\d+$/
+        pattern: /^\d+\.\d+\.\d+$/,
       },
       'app.port': {
         type: 'number',
         required: true,
         min: 1,
-        max: 65535
+        max: 65535,
       },
       'app.host': {
         type: 'string',
-        default: 'localhost'
+        default: 'localhost',
       },
       'app.debug': {
         type: 'boolean',
-        default: false
+        default: false,
       },
       'database.host': {
         type: 'string',
-        required: true
+        required: true,
       },
       'database.port': {
         type: 'number',
         min: 1,
-        max: 65535
+        max: 65535,
       },
       'database.name': {
         type: 'string',
-        required: true
+        required: true,
       },
       'database.username': {
         type: 'string',
-        required: true
+        required: true,
       },
       'database.password': {
         type: 'string',
-        required: true
-      }
+        required: true,
+      },
     }
   }
 

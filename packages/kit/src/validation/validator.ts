@@ -3,8 +3,13 @@
  * 提供灵活的数据验证功能
  */
 
+import type {
+  ValidationContext,
+  ValidationResult,
+  ValidationRule,
+  ValidatorOptions,
+} from '../types'
 import { EventEmitter } from 'node:events'
-import type { ValidationRule, ValidationResult, ValidationContext, ValidatorOptions } from '../types'
 
 /**
  * 验证器类
@@ -15,14 +20,14 @@ export class Validator extends EventEmitter {
 
   constructor(options: ValidatorOptions = {}) {
     super()
-    
+
     this.options = {
       stopOnFirstError: options.stopOnFirstError !== false,
       allowUnknownFields: options.allowUnknownFields !== false,
       stripUnknownFields: options.stripUnknownFields !== false,
       enableAsync: options.enableAsync !== false,
       enableCustomMessages: options.enableCustomMessages !== false,
-      locale: options.locale || 'zh-CN'
+      locale: options.locale || 'zh-CN',
     }
   }
 
@@ -33,7 +38,7 @@ export class Validator extends EventEmitter {
     if (!this.rules.has(field)) {
       this.rules.set(field, [])
     }
-    
+
     this.rules.get(field)!.push(rule)
     this.emit('ruleAdded', { field, rule })
     return this
@@ -46,7 +51,8 @@ export class Validator extends EventEmitter {
     for (const [field, rule] of Object.entries(rules)) {
       if (Array.isArray(rule)) {
         rule.forEach(r => this.addRule(field, r))
-      } else {
+      }
+      else {
         this.addRule(field, rule)
       }
     }
@@ -58,7 +64,8 @@ export class Validator extends EventEmitter {
    */
   removeRule(field: string, rule?: ValidationRule): this {
     const fieldRules = this.rules.get(field)
-    if (!fieldRules) return this
+    if (!fieldRules)
+      return this
 
     if (rule) {
       const index = fieldRules.indexOf(rule)
@@ -66,7 +73,8 @@ export class Validator extends EventEmitter {
         fieldRules.splice(index, 1)
         this.emit('ruleRemoved', { field, rule })
       }
-    } else {
+    }
+    else {
       this.rules.delete(field)
       this.emit('fieldRulesRemoved', field)
     }
@@ -82,14 +90,14 @@ export class Validator extends EventEmitter {
       valid: true,
       errors: [],
       warnings: [],
-      data: this.options.stripUnknownFields ? {} : { ...data }
+      data: this.options.stripUnknownFields ? {} : { ...data },
     }
 
     const validationContext: ValidationContext = {
       ...context,
       validator: this,
       options: this.options,
-      originalData: data
+      originalData: data,
     }
 
     this.emit('validationStart', { data, context: validationContext })
@@ -98,11 +106,11 @@ export class Validator extends EventEmitter {
       // 验证已定义字段
       for (const [field, rules] of this.rules) {
         const fieldResult = await this.validateField(field, data, rules, validationContext)
-        
+
         if (!fieldResult.valid) {
           result.valid = false
           result.errors.push(...fieldResult.errors)
-          
+
           if (this.options.stopOnFirstError) {
             break
           }
@@ -127,15 +135,15 @@ export class Validator extends EventEmitter {
             field,
             message: `Unknown field: ${field}`,
             code: 'UNKNOWN_FIELD',
-            value: this.getNestedValue(data, field)
+            value: this.getNestedValue(data, field),
           })
         }
       }
 
       this.emit('validationEnd', { result, data, context: validationContext })
       return result
-
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('validationError', error)
       throw error
     }
@@ -145,16 +153,16 @@ export class Validator extends EventEmitter {
    * 验证单个字段
    */
   async validateField(
-    field: string, 
-    data: any, 
-    rules: ValidationRule[], 
-    context: ValidationContext
+    field: string,
+    data: any,
+    rules: ValidationRule[],
+    context: ValidationContext,
   ): Promise<ValidationResult> {
     const result: ValidationResult = {
       valid: true,
       errors: [],
       warnings: [],
-      transformedValue: undefined
+      transformedValue: undefined,
     }
 
     const value = this.getNestedValue(data, field)
@@ -163,11 +171,11 @@ export class Validator extends EventEmitter {
     for (const rule of rules) {
       try {
         const ruleResult = await this.executeRule(rule, currentValue, field, data, context)
-        
+
         if (!ruleResult.valid) {
           result.valid = false
           result.errors.push(...ruleResult.errors)
-          
+
           if (this.options.stopOnFirstError) {
             break
           }
@@ -181,14 +189,14 @@ export class Validator extends EventEmitter {
         if (ruleResult.transformedValue !== undefined) {
           currentValue = ruleResult.transformedValue
         }
-
-      } catch (error) {
+      }
+      catch (error) {
         result.valid = false
         result.errors.push({
           field,
           message: `Rule execution error: ${error}`,
           code: 'RULE_ERROR',
-          value: currentValue
+          value: currentValue,
         })
 
         if (this.options.stopOnFirstError) {
@@ -209,13 +217,13 @@ export class Validator extends EventEmitter {
     value: any,
     field: string,
     data: any,
-    context: ValidationContext
+    context: ValidationContext,
   ): Promise<ValidationResult> {
     const result: ValidationResult = {
       valid: true,
       errors: [],
       warnings: [],
-      transformedValue: value
+      transformedValue: value,
     }
 
     // 检查条件
@@ -225,9 +233,10 @@ export class Validator extends EventEmitter {
 
     // 执行验证函数
     if (rule.validator) {
-      const validationResult = this.options.enableAsync && rule.async
-        ? await rule.validator(value, data, context)
-        : rule.validator(value, data, context)
+      const validationResult
+        = this.options.enableAsync && rule.async
+          ? await rule.validator(value, data, context)
+          : rule.validator(value, data, context)
 
       if (typeof validationResult === 'boolean') {
         if (!validationResult) {
@@ -236,17 +245,18 @@ export class Validator extends EventEmitter {
             field,
             message: this.getErrorMessage(rule, field, value),
             code: rule.code || 'VALIDATION_ERROR',
-            value
+            value,
           })
         }
-      } else if (validationResult && typeof validationResult === 'object') {
+      }
+      else if (validationResult && typeof validationResult === 'object') {
         if (!validationResult.valid) {
           result.valid = false
           result.errors.push({
             field,
             message: validationResult.message || this.getErrorMessage(rule, field, value),
             code: validationResult.code || rule.code || 'VALIDATION_ERROR',
-            value
+            value,
           })
         }
 
@@ -259,7 +269,7 @@ export class Validator extends EventEmitter {
             field,
             message: validationResult.warning,
             code: 'WARNING',
-            value
+            value,
           })
         }
       }
@@ -269,13 +279,14 @@ export class Validator extends EventEmitter {
     if (rule.transformer && result.valid) {
       try {
         result.transformedValue = rule.transformer(result.transformedValue, data, context)
-      } catch (error) {
+      }
+      catch (error) {
         result.valid = false
         result.errors.push({
           field,
           message: `Transformation error: ${error}`,
           code: 'TRANSFORM_ERROR',
-          value
+          value,
         })
       }
     }
@@ -312,14 +323,14 @@ export class Validator extends EventEmitter {
   private setNestedValue(obj: any, path: string, value: any): void {
     const keys = path.split('.')
     const lastKey = keys.pop()!
-    
+
     const target = keys.reduce((current, key) => {
       if (!current[key] || typeof current[key] !== 'object') {
         current[key] = {}
       }
       return current[key]
     }, obj)
-    
+
     target[lastKey] = value
   }
 
@@ -328,20 +339,20 @@ export class Validator extends EventEmitter {
    */
   private findUnknownFields(data: any, prefix = ''): string[] {
     const unknownFields: string[] = []
-    
+
     if (!data || typeof data !== 'object') {
       return unknownFields
     }
 
     for (const key in data) {
       const fullPath = prefix ? `${prefix}.${key}` : key
-      
+
       if (!this.rules.has(fullPath)) {
         // 检查是否有父级规则
-        const hasParentRule = Array.from(this.rules.keys()).some(ruleKey => 
-          fullPath.startsWith(ruleKey + '.')
+        const hasParentRule = Array.from(this.rules.keys()).some(ruleKey =>
+          fullPath.startsWith(`${ruleKey}.`),
         )
-        
+
         if (!hasParentRule) {
           unknownFields.push(fullPath)
         }
@@ -394,11 +405,11 @@ export class Validator extends EventEmitter {
    */
   clone(): Validator {
     const cloned = new Validator(this.options)
-    
+
     for (const [field, rules] of this.rules) {
       cloned.rules.set(field, [...rules])
     }
-    
+
     return cloned
   }
 
@@ -424,7 +435,10 @@ export class Validator extends EventEmitter {
   /**
    * 创建带规则的验证器
    */
-  static createWithRules(rules: Record<string, ValidationRule | ValidationRule[]>, options?: ValidatorOptions): Validator {
+  static createWithRules(
+    rules: Record<string, ValidationRule | ValidationRule[]>,
+    options?: ValidatorOptions,
+  ): Validator {
     const validator = new Validator(options)
     validator.addRules(rules)
     return validator

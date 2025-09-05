@@ -2,19 +2,19 @@
  * Git 模块导出
  */
 
-export { GitManager } from './git-manager'
-export { GitUtils } from './git-utils'
-
 // 类型导出
 export type {
-  GitOptions,
-  GitStatus,
-  GitCommit,
   GitBranch,
-  GitRemote,
-  GitTag,
-  GitDiff,
+  GitCommit,
   GitConfig,
+  GitDiff,
+  GitFileStatus,
+  GitOptions,
+  GitRemote,
   GitRepositoryInfo,
-  GitFileStatus
+  GitStatus,
+  GitTag,
 } from '../types'
+export { GitManager } from './git-manager'
+
+export { GitUtils } from './git-utils'

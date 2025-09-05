@@ -3,13 +3,14 @@
  * 提供服务的启动、停止、重启和监控功能
  */
 
+import type { ChildProcess } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { EventEmitter } from 'node:events'
-import { spawn, ChildProcess } from 'node:child_process'
-import { writeFile, readFile, unlink } from 'node:fs/promises'
-import { join } from 'node:path'
+import { readFile, unlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { ProcessError } from '../types'
-import { AsyncUtils, PathUtils } from '../utils'
+import { AsyncUtils } from '../utils'
 import { ProcessUtils } from './process-utils'
 
 /**
@@ -24,7 +25,7 @@ export class ServiceManager extends EventEmitter {
     super()
     this.pidDir = options.pidDir || join(tmpdir(), 'ldesign-services', 'pids')
     this.logDir = options.logDir || join(tmpdir(), 'ldesign-services', 'logs')
-    
+
     this.ensureDirectories()
   }
 
@@ -36,8 +37,12 @@ export class ServiceManager extends EventEmitter {
       const { FileSystem } = await import('../filesystem')
       await FileSystem.ensureDir(this.pidDir)
       await FileSystem.ensureDir(this.logDir)
-    } catch (error) {
-      this.emit('error', new ProcessError('Failed to create service directories', '', undefined, error as Error))
+    }
+    catch (error) {
+      this.emit(
+        'error',
+        new ProcessError('Failed to create service directories', '', undefined, error as Error),
+      )
     }
   }
 
@@ -59,14 +64,14 @@ export class ServiceManager extends EventEmitter {
         restartDelay: 1000,
         healthCheckInterval: 30000,
         gracefulShutdownTimeout: 10000,
-        ...config
+        ...config,
       },
       status: 'stopped',
       restartCount: 0,
       startTime: null,
       lastRestart: null,
       process: null,
-      healthCheckTimer: null
+      healthCheckTimer: null,
     }
 
     this.services.set(name, service)
@@ -96,7 +101,7 @@ export class ServiceManager extends EventEmitter {
         cwd: service.config.cwd || process.cwd(),
         env: { ...process.env, ...service.config.env },
         stdio: service.config.stdio || 'pipe',
-        detached: service.config.detached || false
+        detached: service.config.detached || false,
       })
 
       service.process = childProcess
@@ -115,11 +120,14 @@ export class ServiceManager extends EventEmitter {
       }
 
       this.emit('started', { name, pid: childProcess.pid })
-
-    } catch (error) {
+    }
+    catch (error) {
       service.status = 'error'
       service.error = error as Error
-      this.emit('error', new ProcessError(`Failed to start service: ${name}`, '', undefined, error as Error))
+      this.emit(
+        'error',
+        new ProcessError(`Failed to start service: ${name}`, '', undefined, error as Error),
+      )
       throw error
     }
   }
@@ -149,16 +157,17 @@ export class ServiceManager extends EventEmitter {
       if (force) {
         // 强制终止
         service.process.kill('SIGKILL')
-      } else {
+      }
+      else {
         // 优雅停止
         service.process.kill('SIGTERM')
-        
+
         // 等待优雅停止超时
         const timeout = service.config.gracefulShutdownTimeout
         await AsyncUtils.timeout(
           this.waitForProcessExit(service.process),
           timeout,
-          `Service ${name} did not stop gracefully within ${timeout}ms`
+          `Service ${name} did not stop gracefully within ${timeout}ms`,
         ).catch(() => {
           // 超时后强制终止
           if (service.process && !service.process.killed) {
@@ -171,9 +180,12 @@ export class ServiceManager extends EventEmitter {
       await this.removePidFile(name)
 
       this.emit('stopped', { name, force })
-
-    } catch (error) {
-      this.emit('error', new ProcessError(`Failed to stop service: ${name}`, '', undefined, error as Error))
+    }
+    catch (error) {
+      this.emit(
+        'error',
+        new ProcessError(`Failed to stop service: ${name}`, '', undefined, error as Error),
+      )
       throw error
     }
   }
@@ -196,10 +208,10 @@ export class ServiceManager extends EventEmitter {
 
     // 等待一段时间后重启
     await AsyncUtils.delay(service.config.restartDelay)
-    
+
     service.restartCount++
     service.lastRestart = new Date()
-    
+
     await this.start(name)
   }
 
@@ -221,7 +233,7 @@ export class ServiceManager extends EventEmitter {
       restartCount: service.restartCount,
       lastRestart: service.lastRestart,
       uptime: service.startTime ? Date.now() - service.startTime.getTime() : 0,
-      error: service.error?.message
+      error: service.error?.message,
     }
   }
 
@@ -229,19 +241,24 @@ export class ServiceManager extends EventEmitter {
    * 获取所有服务状态
    */
   getAllStatus(): ServiceStatus[] {
-    return Array.from(this.services.keys()).map(name => this.getStatus(name)!).filter(Boolean)
+    return Array.from(this.services.keys())
+      .map(name => this.getStatus(name)!)
+      .filter(Boolean)
   }
 
   /**
    * 启动所有服务
    */
   async startAll(): Promise<void> {
-    const promises = Array.from(this.services.keys()).map(name => 
-      this.start(name).catch(error => {
-        this.emit('error', new ProcessError(`Failed to start service ${name}`, '', undefined, error))
-      })
+    const promises = Array.from(this.services.keys()).map(name =>
+      this.start(name).catch((error) => {
+        this.emit(
+          'error',
+          new ProcessError(`Failed to start service ${name}`, '', undefined, error),
+        )
+      }),
     )
-    
+
     await Promise.all(promises)
   }
 
@@ -250,12 +267,12 @@ export class ServiceManager extends EventEmitter {
    * @param force 是否强制停止
    */
   async stopAll(force = false): Promise<void> {
-    const promises = Array.from(this.services.keys()).map(name => 
-      this.stop(name, force).catch(error => {
+    const promises = Array.from(this.services.keys()).map(name =>
+      this.stop(name, force).catch((error) => {
         this.emit('error', new ProcessError(`Failed to stop service ${name}`, '', undefined, error))
-      })
+      }),
     )
-    
+
     await Promise.all(promises)
   }
 
@@ -275,7 +292,7 @@ export class ServiceManager extends EventEmitter {
 
     this.stopHealthCheck(service)
     this.services.delete(name)
-    
+
     this.emit('unregistered', { name })
   }
 
@@ -283,34 +300,42 @@ export class ServiceManager extends EventEmitter {
    * 设置进程事件监听
    */
   private setupProcessListeners(service: ManagedService): void {
-    if (!service.process) return
+    if (!service.process)
+      return
 
     service.process.on('exit', async (code, signal) => {
       service.status = code === 0 ? 'stopped' : 'crashed'
       service.process = null
-      
+
       this.stopHealthCheck(service)
       await this.removePidFile(service.name)
 
-      this.emit('exit', { 
-        name: service.name, 
-        exitCode: code, 
+      this.emit('exit', {
+        name: service.name,
+        exitCode: code,
         signal,
-        crashed: code !== 0
+        crashed: code !== 0,
       })
 
       // 自动重启逻辑
-      if (service.config.autoRestart && code !== 0 && service.restartCount < service.config.maxRestarts) {
+      if (
+        service.config.autoRestart
+        && code !== 0
+        && service.restartCount < service.config.maxRestarts
+      ) {
         this.emit('autoRestart', { name: service.name, attempt: service.restartCount + 1 })
-        
+
         setTimeout(() => {
-          this.restart(service.name).catch(error => {
-            this.emit('error', new ProcessError(
-              `Auto restart failed for service: ${service.name}`,
-              '',
-              undefined,
-              error
-            ))
+          this.restart(service.name).catch((error) => {
+            this.emit(
+              'error',
+              new ProcessError(
+                `Auto restart failed for service: ${service.name}`,
+                '',
+                undefined,
+                error,
+              ),
+            )
           })
         }, service.config.restartDelay)
       }
@@ -349,12 +374,13 @@ export class ServiceManager extends EventEmitter {
         const isHealthy = await service.config.healthCheck!()
         if (!isHealthy) {
           this.emit('unhealthy', { name: service.name })
-          
+
           if (service.config.autoRestart) {
             await this.restart(service.name)
           }
         }
-      } catch (error) {
+      }
+      catch (error) {
         this.emit('healthCheckError', { name: service.name, error })
       }
     }, service.config.healthCheckInterval)
@@ -394,7 +420,8 @@ export class ServiceManager extends EventEmitter {
     const pidFile = join(this.pidDir, `${name}.pid`)
     try {
       await unlink(pidFile)
-    } catch {
+    }
+    catch {
       // 忽略文件不存在的错误
     }
   }
@@ -402,17 +429,23 @@ export class ServiceManager extends EventEmitter {
   /**
    * 写入日志
    */
-  private async writeLog(serviceName: string, type: 'stdout' | 'stderr', data: string): Promise<void> {
-    if (!this.logDir) return
+  private async writeLog(
+    serviceName: string,
+    type: 'stdout' | 'stderr',
+    data: string,
+  ): Promise<void> {
+    if (!this.logDir)
+      return
 
     try {
       const logFile = join(this.logDir, `${serviceName}.log`)
       const timestamp = new Date().toISOString()
       const logEntry = `[${timestamp}] [${type.toUpperCase()}] ${data}`
-      
+
       const { FileSystem } = await import('../filesystem')
       await FileSystem.appendFile(logFile, logEntry)
-    } catch {
+    }
+    catch {
       // 忽略日志写入错误
     }
   }
@@ -424,32 +457,37 @@ export class ServiceManager extends EventEmitter {
     try {
       const { FileSystem } = await import('../filesystem')
       const pidFiles = await FileSystem.readDir(this.pidDir)
-      
+
       for (const pidFile of pidFiles as string[]) {
-        if (!pidFile.endsWith('.pid')) continue
-        
+        if (!pidFile.endsWith('.pid'))
+          continue
+
         const serviceName = pidFile.replace('.pid', '')
         const service = this.services.get(serviceName)
-        
-        if (!service) continue
-        
+
+        if (!service)
+          continue
+
         try {
           const pidContent = await readFile(join(this.pidDir, pidFile), 'utf8')
-          const pid = parseInt(pidContent.trim())
-          
+          const pid = Number.parseInt(pidContent.trim())
+
           if (await ProcessUtils.isProcessRunning(pid)) {
             service.status = 'running'
             service.startTime = new Date() // 无法恢复确切的启动时间
             // 注意：无法恢复 ChildProcess 对象，所以某些功能可能受限
             this.emit('recovered', { name: serviceName, pid })
-          } else {
+          }
+          else {
             await this.removePidFile(serviceName)
           }
-        } catch {
+        }
+        catch {
           await this.removePidFile(serviceName)
         }
       }
-    } catch {
+    }
+    catch {
       // 忽略恢复错误
     }
   }

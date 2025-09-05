@@ -33,9 +33,9 @@ const cli = new CLIManager({
   usage: 'my-tool <command> [options]',
   helpOption: '-h, --help',
   versionOption: '-v, --version',
-  colors: true,            // 启用颜色
-  suggestions: true,       // 启用命令建议
-  exitOnError: true        // 错误时退出
+  colors: true, // 启用颜色
+  suggestions: true, // 启用命令建议
+  exitOnError: true, // 错误时退出
 })
 ```
 
@@ -49,10 +49,10 @@ const cli = new CLIManager({
 // 基本命令
 cli.addCommand('build', {
   description: '构建项目',
-  action: async (options) => {
+  action: async options => {
     console.log('开始构建项目...')
     // 构建逻辑
-  }
+  },
 })
 
 // 带选项的命令
@@ -64,42 +64,42 @@ cli.addCommand('deploy', {
       description: '部署环境',
       type: 'string',
       required: true,
-      choices: ['dev', 'staging', 'production']
+      choices: ['dev', 'staging', 'production'],
     },
     {
       name: 'force',
       description: '强制部署',
       type: 'boolean',
-      alias: 'f'
+      alias: 'f',
     },
     {
       name: 'config',
       description: '配置文件路径',
       type: 'string',
-      default: './deploy.config.js'
-    }
+      default: './deploy.config.js',
+    },
   ],
-  action: async (options) => {
+  action: async options => {
     console.log(`部署到 ${options.env} 环境`)
     if (options.force) {
       console.log('强制部署模式')
     }
-  }
+  },
 })
 
 // 子命令
 cli.addCommand('db:migrate', {
   description: '数据库迁移',
-  action: async (options) => {
+  action: async options => {
     console.log('执行数据库迁移...')
-  }
+  },
 })
 
 cli.addCommand('db:seed', {
   description: '数据库填充',
-  action: async (options) => {
+  action: async options => {
     console.log('填充数据库数据...')
-  }
+  },
 })
 ```
 
@@ -112,7 +112,7 @@ cli.addGlobalOption({
   name: 'verbose',
   description: '详细输出',
   type: 'boolean',
-  alias: 'v'
+  alias: 'v',
 })
 
 cli.addGlobalOption({
@@ -120,7 +120,7 @@ cli.addGlobalOption({
   description: '配置文件路径',
   type: 'string',
   alias: 'c',
-  default: './config.json'
+  default: './config.json',
 })
 ```
 
@@ -135,9 +135,9 @@ cli.addGlobalOption({
 cli.use(async (ctx, next) => {
   console.log(`执行命令: ${ctx.command}`)
   const startTime = Date.now()
-  
+
   await next()
-  
+
   const duration = Date.now() - startTime
   console.log(`命令执行完成，耗时: ${duration}ms`)
 })
@@ -200,10 +200,10 @@ console.log('参数:', parsed.args)
 
 ```typescript
 const formatter = OutputFormatter.create({
-  colors: true,           // 启用颜色
-  icons: true,           // 启用图标
-  timestamp: false,      // 显示时间戳
-  prefix: '[MyTool]'     // 输出前缀
+  colors: true, // 启用颜色
+  icons: true, // 启用图标
+  timestamp: false, // 显示时间戳
+  prefix: '[MyTool]', // 输出前缀
 })
 ```
 
@@ -282,20 +282,12 @@ formatter.section('📦 安装依赖')
 列表输出。
 
 ```typescript
-formatter.list([
-  '检查环境',
-  '安装依赖',
-  '运行测试',
-  '构建项目'
-])
+formatter.list(['检查环境', '安装依赖', '运行测试', '构建项目'])
 
 // 带图标的列表
-formatter.list([
-  '✅ 环境检查完成',
-  '📦 依赖安装完成',
-  '🧪 测试通过',
-  '🔨 构建完成'
-], { bullet: '•' })
+formatter.list(['✅ 环境检查完成', '📦 依赖安装完成', '🧪 测试通过', '🔨 构建完成'], {
+  bullet: '•',
+})
 ```
 
 #### `table(data: any[], options?: TableOptions): void`
@@ -306,12 +298,12 @@ formatter.list([
 const data = [
   { name: 'React', version: '18.2.0', size: '42.2 KB' },
   { name: 'Vue', version: '3.3.4', size: '34.1 KB' },
-  { name: 'Angular', version: '16.1.0', size: '130 KB' }
+  { name: 'Angular', version: '16.1.0', size: '130 KB' },
 ]
 
 formatter.table(data, {
   headers: ['框架', '版本', '大小'],
-  align: ['left', 'center', 'right']
+  align: ['left', 'center', 'right'],
 })
 ```
 
@@ -344,7 +336,7 @@ setTimeout(() => {
 const progress = formatter.progressBar({
   total: 100,
   format: '进度 [{bar}] {percentage}% | {value}/{total} | ETA: {eta}s',
-  width: 40
+  width: 40,
 })
 
 // 更新进度
@@ -371,7 +363,7 @@ const progress = ProgressBar.create({
   format: '下载 [{bar}] {percentage}% | {value}/{total} | 速度: {rate}/s | ETA: {eta}s',
   complete: '█',
   incomplete: '░',
-  renderThrottle: 16
+  renderThrottle: 16,
 })
 ```
 
@@ -396,7 +388,7 @@ progress.update(50)
 // 带额外数据
 progress.update(75, {
   filename: 'package.json',
-  speed: '1.2 MB/s'
+  speed: '1.2 MB/s',
 })
 ```
 
@@ -405,8 +397,8 @@ progress.update(75, {
 递增进度。
 
 ```typescript
-progress.increment()     // 增加 1
-progress.increment(5)    // 增加 5
+progress.increment() // 增加 1
+progress.increment(5) // 增加 5
 ```
 
 #### `stop(): void`
@@ -430,9 +422,9 @@ progress.stop()
 ```typescript
 const spinner = Spinner.create({
   text: '正在处理...',
-  spinner: 'dots',        // 动画类型
-  color: 'cyan',          // 颜色
-  hideCursor: true        // 隐藏光标
+  spinner: 'dots', // 动画类型
+  color: 'cyan', // 颜色
+  hideCursor: true, // 隐藏光标
 })
 ```
 
@@ -496,7 +488,7 @@ class FileProcessorCLI {
   private cli = new CLIManager({
     name: 'file-processor',
     version: '1.0.0',
-    description: '文件处理工具'
+    description: '文件处理工具',
   })
 
   private formatter = OutputFormatter.create({ colors: true })
@@ -516,31 +508,31 @@ class FileProcessorCLI {
           description: '输入目录',
           type: 'string',
           required: true,
-          alias: 'i'
+          alias: 'i',
         },
         {
           name: 'output',
           description: '输出目录',
           type: 'string',
           required: true,
-          alias: 'o'
+          alias: 'o',
         },
         {
           name: 'quality',
           description: '压缩质量 (1-100)',
           type: 'number',
-          default: 80
+          default: 80,
         },
         {
           name: 'recursive',
           description: '递归处理子目录',
           type: 'boolean',
-          alias: 'r'
-        }
+          alias: 'r',
+        },
       ],
-      action: async (options) => {
+      action: async options => {
         await this.compressImages(options)
-      }
+      },
     })
 
     // 转换命令
@@ -551,19 +543,19 @@ class FileProcessorCLI {
           name: 'input',
           description: '输入文件或目录',
           type: 'string',
-          required: true
+          required: true,
         },
         {
           name: 'format',
           description: '目标格式',
           type: 'string',
           required: true,
-          choices: ['jpg', 'png', 'webp', 'gif']
-        }
+          choices: ['jpg', 'png', 'webp', 'gif'],
+        },
       ],
-      action: async (options) => {
+      action: async options => {
         await this.convertImages(options)
-      }
+      },
     })
 
     // 信息命令
@@ -574,12 +566,12 @@ class FileProcessorCLI {
           name: 'file',
           description: '图片文件路径',
           type: 'string',
-          required: true
-        }
+          required: true,
+        },
       ],
-      action: async (options) => {
+      action: async options => {
         await this.showImageInfo(options)
-      }
+      },
     })
   }
 
@@ -592,7 +584,7 @@ class FileProcessorCLI {
 
     // 验证中间件
     this.cli.use(async (ctx, next) => {
-      if (ctx.options.input && !await FileSystem.exists(ctx.options.input)) {
+      if (ctx.options.input && !(await FileSystem.exists(ctx.options.input))) {
         this.formatter.error(`输入路径不存在: ${ctx.options.input}`)
         return
       }
@@ -604,7 +596,7 @@ class FileProcessorCLI {
     this.formatter.title('图片压缩')
 
     const files = await this.getImageFiles(options.input, options.recursive)
-    
+
     if (files.length === 0) {
       this.formatter.warning('没有找到图片文件')
       return
@@ -618,7 +610,7 @@ class FileProcessorCLI {
     // 创建进度条
     const progress = ProgressBar.create({
       total: files.length,
-      format: '压缩进度 [{bar}] {percentage}% | {value}/{total} 文件 | ETA: {eta}s'
+      format: '压缩进度 [{bar}] {percentage}% | {value}/{total} 文件 | ETA: {eta}s',
     })
 
     progress.start()
@@ -642,7 +634,7 @@ class FileProcessorCLI {
 
     const spinner = Spinner.create({
       text: '正在转换图片格式...',
-      spinner: 'dots'
+      spinner: 'dots',
     })
 
     spinner.start()
@@ -669,11 +661,10 @@ class FileProcessorCLI {
         { 属性: '图片尺寸', 值: `${imageInfo.width} x ${imageInfo.height}` },
         { 属性: '图片格式', 值: imageInfo.format },
         { 属性: '颜色深度', 值: `${imageInfo.depth} bit` },
-        { 属性: '修改时间', 值: stats.mtime.toLocaleString() }
+        { 属性: '修改时间', 值: stats.mtime.toLocaleString() },
       ]
 
       this.formatter.table(data)
-
     } catch (error) {
       this.formatter.error(`获取图片信息失败: ${error.message}`)
     }
@@ -682,9 +673,7 @@ class FileProcessorCLI {
   private async getImageFiles(dir: string, recursive: boolean): Promise<string[]> {
     const extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
     const files = await FileSystem.readDir(dir, { recursive })
-    return files.filter(file => 
-      extensions.some(ext => file.toLowerCase().endsWith(ext))
-    )
+    return files.filter(file => extensions.some(ext => file.toLowerCase().endsWith(ext)))
   }
 
   private async compressImage(input: string, outputDir: string, quality: number) {
@@ -700,7 +689,7 @@ class FileProcessorCLI {
       width: 1920,
       height: 1080,
       format: 'JPEG',
-      depth: 24
+      depth: 24,
     }
   }
 
@@ -734,7 +723,7 @@ class ProjectManagerCLI {
   private cli = new CLIManager({
     name: 'pm',
     version: '2.0.0',
-    description: '项目管理工具'
+    description: '项目管理工具',
   })
 
   private formatter = OutputFormatter.create({ colors: true })
@@ -752,25 +741,25 @@ class ProjectManagerCLI {
           name: 'name',
           description: '项目名称',
           type: 'string',
-          required: true
+          required: true,
         },
         {
           name: 'template',
           description: '项目模板',
           type: 'string',
           choices: ['react', 'vue', 'node', 'express'],
-          default: 'node'
+          default: 'node',
         },
         {
           name: 'typescript',
           description: '使用 TypeScript',
           type: 'boolean',
-          default: true
-        }
+          default: true,
+        },
       ],
-      action: async (options) => {
+      action: async options => {
         await this.initProject(options)
-      }
+      },
     })
 
     // 构建项目
@@ -782,18 +771,18 @@ class ProjectManagerCLI {
           description: '构建环境',
           type: 'string',
           choices: ['development', 'production'],
-          default: 'production'
+          default: 'production',
         },
         {
           name: 'watch',
           description: '监听模式',
           type: 'boolean',
-          alias: 'w'
-        }
+          alias: 'w',
+        },
       ],
-      action: async (options) => {
+      action: async options => {
         await this.buildProject(options)
-      }
+      },
     })
 
     // 部署项目
@@ -805,17 +794,17 @@ class ProjectManagerCLI {
           description: '部署目标',
           type: 'string',
           required: true,
-          choices: ['staging', 'production']
+          choices: ['staging', 'production'],
         },
         {
           name: 'force',
           description: '强制部署',
-          type: 'boolean'
-        }
+          type: 'boolean',
+        },
       ],
-      action: async (options) => {
+      action: async options => {
         await this.deployProject(options)
-      }
+      },
     })
   }
 
@@ -827,7 +816,7 @@ class ProjectManagerCLI {
       '初始化 package.json',
       '安装依赖',
       '创建项目结构',
-      '配置开发环境'
+      '配置开发环境',
     ]
 
     for (let i = 0; i < steps.length; i++) {
@@ -841,13 +830,9 @@ class ProjectManagerCLI {
     }
 
     this.formatter.success(`✅ 项目 ${options.name} 初始化完成`)
-    
+
     this.formatter.section('下一步')
-    this.formatter.list([
-      `cd ${options.name}`,
-      'pm build',
-      'pm deploy staging'
-    ])
+    this.formatter.list([`cd ${options.name}`, 'pm build', 'pm deploy staging'])
   }
 
   private async buildProject(options: any) {
@@ -855,7 +840,7 @@ class ProjectManagerCLI {
 
     const progress = ProgressBar.create({
       total: 100,
-      format: '构建进度 [{bar}] {percentage}% | {stage}'
+      format: '构建进度 [{bar}] {percentage}% | {stage}',
     })
 
     const stages = [
@@ -863,7 +848,7 @@ class ProjectManagerCLI {
       { name: '编译 TypeScript', duration: 2000 },
       { name: '打包资源', duration: 3000 },
       { name: '优化代码', duration: 1500 },
-      { name: '生成 Source Map', duration: 800 }
+      { name: '生成 Source Map', duration: 800 },
     ]
 
     progress.start()
@@ -892,13 +877,7 @@ class ProjectManagerCLI {
       // 这里可以添加确认逻辑
     }
 
-    const deploySteps = [
-      '检查部署权限',
-      '上传文件',
-      '更新配置',
-      '重启服务',
-      '健康检查'
-    ]
+    const deploySteps = ['检查部署权限', '上传文件', '更新配置', '重启服务', '健康检查']
 
     for (const step of deploySteps) {
       const spinner = Spinner.create({ text: step })

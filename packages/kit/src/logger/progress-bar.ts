@@ -44,7 +44,7 @@ export class ProgressBar {
       showSpeed: options.showSpeed !== false,
       showCurrent: options.showCurrent !== false,
       clear: options.clear !== false,
-      stream: options.stream || process.stdout
+      stream: options.stream || process.stdout,
     }
 
     this.startTime = Date.now()
@@ -57,7 +57,8 @@ export class ProgressBar {
   update(current?: number, message?: string): void {
     if (current !== undefined) {
       this.current = Math.min(current, this.options.total)
-    } else {
+    }
+    else {
       this.current = Math.min(this.current + 1, this.options.total)
     }
 
@@ -92,24 +93,25 @@ export class ProgressBar {
    */
   private render(): void {
     const now = Date.now()
-    
+
     // 限制更新频率（每100ms更新一次）
     if (now - this.lastUpdate < 100 && this.current < this.options.total) {
       return
     }
-    
+
     this.lastUpdate = now
 
     const percentage = Math.round((this.current / this.options.total) * 100)
     const elapsed = now - this.startTime
     const rate = this.current / (elapsed / 1000)
-    const eta = this.current > 0 ? (elapsed / this.current) * (this.options.total - this.current) : 0
+    const eta
+      = this.current > 0 ? (elapsed / this.current) * (this.options.total - this.current) : 0
 
-    let line = '\r' + this.options.message + ' '
+    let line = `\r${this.options.message} `
 
     // 进度条
     const progressBar = this.createProgressBar(percentage)
-    line += progressBar + ' '
+    line += `${progressBar} `
 
     // 百分比
     if (this.options.showPercentage) {
@@ -146,10 +148,9 @@ export class ProgressBar {
     const completed = Math.round((percentage / 100) * this.options.width)
     const remaining = this.options.width - completed
 
-    return '[' +
-      this.options.complete.repeat(completed) +
-      this.options.incomplete.repeat(remaining) +
-      ']'
+    return `[${this.options.complete.repeat(completed)}${this.options.incomplete.repeat(
+      remaining,
+    )}]`
   }
 
   /**
@@ -167,7 +168,7 @@ export class ProgressBar {
 
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = Math.floor(seconds % 60)
-    
+
     if (minutes < 60) {
       return `${minutes}m ${remainingSeconds}s`
     }
@@ -184,11 +185,11 @@ export class ProgressBar {
     if (rate < 1) {
       return `${(rate * 1000).toFixed(0)}/s`
     }
-    
+
     if (rate < 1000) {
       return `${rate.toFixed(1)}/s`
     }
-    
+
     return `${(rate / 1000).toFixed(1)}k/s`
   }
 
@@ -197,17 +198,19 @@ export class ProgressBar {
    */
   private complete(): void {
     if (this.options.clear) {
-      this.options.stream.write('\r' + ' '.repeat(80) + '\r')
-    } else {
+      this.options.stream.write(`\r${' '.repeat(80)}\r`)
+    }
+    else {
       this.options.stream.write('\n')
     }
 
     const elapsed = Date.now() - this.startTime
     const message = `${this.options.message} completed in ${this.formatTime(elapsed)}`
-    
+
     if (this.logger) {
       this.logger.success(message)
-    } else {
+    }
+    else {
       console.log(`✅ ${message}`)
     }
   }
@@ -217,15 +220,17 @@ export class ProgressBar {
    */
   stop(message?: string): void {
     if (this.options.clear) {
-      this.options.stream.write('\r' + ' '.repeat(80) + '\r')
-    } else {
+      this.options.stream.write(`\r${' '.repeat(80)}\r`)
+    }
+    else {
       this.options.stream.write('\n')
     }
 
     if (message) {
       if (this.logger) {
         this.logger.info(message)
-      } else {
+      }
+      else {
         console.log(message)
       }
     }
@@ -235,14 +240,15 @@ export class ProgressBar {
    * 中断进度条
    */
   interrupt(message: string): void {
-    this.options.stream.write('\r' + ' '.repeat(80) + '\r')
-    
+    this.options.stream.write(`\r${' '.repeat(80)}\r`)
+
     if (this.logger) {
       this.logger.warn(message)
-    } else {
+    }
+    else {
       console.log(`⚠️  ${message}`)
     }
-    
+
     this.render()
   }
 
@@ -278,7 +284,8 @@ export class ProgressBar {
    * 获取预计剩余时间
    */
   getETA(): number {
-    if (this.current === 0) return 0
+    if (this.current === 0)
+      return 0
     const elapsed = this.getElapsed()
     return (elapsed / this.current) * (this.options.total - this.current)
   }
@@ -346,7 +353,7 @@ export class ProgressBar {
       showPercentage: true,
       showETA: true,
       showSpeed: true,
-      showCurrent: true
+      showCurrent: true,
     })
   }
 }

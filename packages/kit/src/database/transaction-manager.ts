@@ -3,8 +3,8 @@
  * 提供数据库事务的管理和嵌套事务支持
  */
 
-import { EventEmitter } from 'node:events'
 import type { DatabaseConnection, QueryResult } from '../types'
+import { EventEmitter } from 'node:events'
 import { DatabaseError } from '../types'
 
 /**
@@ -32,24 +32,25 @@ export class TransactionManager extends EventEmitter {
       savePoint: isNested ? `sp_${++this.savePointCounter}` : null,
       status: 'active',
       startTime: new Date(),
-      options
+      options,
     }
 
     try {
       if (isNested) {
         // 嵌套事务使用保存点
         await this.connection.query(`SAVEPOINT ${transaction.savePoint}`)
-      } else {
+      }
+      else {
         // 顶级事务
         await this.connection.beginTransaction()
       }
 
       this.transactionStack.push(transaction)
       this.emit('transactionBegin', transaction)
-      
-      return transaction
 
-    } catch (error) {
+      return transaction
+    }
+    catch (error) {
       transaction.status = 'failed'
       this.emit('transactionError', { transaction, error })
       throw new DatabaseError('Failed to begin transaction', error as Error)
@@ -74,18 +75,19 @@ export class TransactionManager extends EventEmitter {
       if (transaction.savePoint) {
         // 嵌套事务：释放保存点
         await this.connection.query(`RELEASE SAVEPOINT ${transaction.savePoint}`)
-      } else {
+      }
+      else {
         // 顶级事务：提交
         await this.connection.commit()
       }
 
       transaction.status = 'committed'
       transaction.endTime = new Date()
-      
+
       this.removeTransaction(transaction.id)
       this.emit('transactionCommit', transaction)
-
-    } catch (error) {
+    }
+    catch (error) {
       transaction.status = 'failed'
       this.emit('transactionError', { transaction, error })
       throw new DatabaseError('Failed to commit transaction', error as Error)
@@ -110,18 +112,19 @@ export class TransactionManager extends EventEmitter {
       if (transaction.savePoint) {
         // 嵌套事务：回滚到保存点
         await this.connection.query(`ROLLBACK TO SAVEPOINT ${transaction.savePoint}`)
-      } else {
+      }
+      else {
         // 顶级事务：回滚
         await this.connection.rollback()
       }
 
       transaction.status = 'rolled_back'
       transaction.endTime = new Date()
-      
+
       this.removeTransaction(transaction.id)
       this.emit('transactionRollback', transaction)
-
-    } catch (error) {
+    }
+    catch (error) {
       transaction.status = 'failed'
       this.emit('transactionError', { transaction, error })
       throw new DatabaseError('Failed to rollback transaction', error as Error)
@@ -135,16 +138,16 @@ export class TransactionManager extends EventEmitter {
    */
   async execute<T>(
     callback: (transaction: Transaction) => Promise<T>,
-    options: TransactionOptions = {}
+    options: TransactionOptions = {},
   ): Promise<T> {
     const transaction = await this.begin(options)
-    
+
     try {
       const result = await callback(transaction)
       await this.commit(transaction.id)
       return result
-      
-    } catch (error) {
+    }
+    catch (error) {
       await this.rollback(transaction.id)
       throw error
     }
@@ -163,15 +166,17 @@ export class TransactionManager extends EventEmitter {
     }
 
     if (transaction.status !== 'active') {
-      throw new DatabaseError(`Cannot execute query in transaction with status: ${transaction.status}`)
+      throw new DatabaseError(
+        `Cannot execute query in transaction with status: ${transaction.status}`,
+      )
     }
 
     try {
       const result = await this.connection.query(sql, params)
       this.emit('transactionQuery', { transaction, sql, params, result })
       return result
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('transactionQueryError', { transaction, sql, params, error })
       throw error
     }
@@ -210,11 +215,12 @@ export class TransactionManager extends EventEmitter {
    */
   async rollbackAll(): Promise<void> {
     const transactions = [...this.transactionStack].reverse()
-    
+
     for (const transaction of transactions) {
       try {
         await this.rollback(transaction.id)
-      } catch (error) {
+      }
+      catch (error) {
         this.emit('rollbackAllError', { transaction, error })
       }
     }
@@ -230,13 +236,13 @@ export class TransactionManager extends EventEmitter {
     }
 
     const savepointName = name || `sp_${++this.savePointCounter}`
-    
+
     try {
       await this.connection.query(`SAVEPOINT ${savepointName}`)
       this.emit('savepointCreated', { name: savepointName })
       return savepointName
-      
-    } catch (error) {
+    }
+    catch (error) {
       throw new DatabaseError(`Failed to create savepoint: ${savepointName}`, error as Error)
     }
   }
@@ -253,8 +259,8 @@ export class TransactionManager extends EventEmitter {
     try {
       await this.connection.query(`ROLLBACK TO SAVEPOINT ${name}`)
       this.emit('savepointRollback', { name })
-      
-    } catch (error) {
+    }
+    catch (error) {
       throw new DatabaseError(`Failed to rollback to savepoint: ${name}`, error as Error)
     }
   }
@@ -271,8 +277,8 @@ export class TransactionManager extends EventEmitter {
     try {
       await this.connection.query(`RELEASE SAVEPOINT ${name}`)
       this.emit('savepointReleased', { name })
-      
-    } catch (error) {
+    }
+    catch (error) {
       throw new DatabaseError(`Failed to release savepoint: ${name}`, error as Error)
     }
   }
@@ -285,8 +291,8 @@ export class TransactionManager extends EventEmitter {
     try {
       await this.connection.query(`SET TRANSACTION ISOLATION LEVEL ${level}`)
       this.emit('isolationLevelSet', { level })
-      
-    } catch (error) {
+    }
+    catch (error) {
       throw new DatabaseError(`Failed to set isolation level: ${level}`, error as Error)
     }
   }
@@ -296,7 +302,7 @@ export class TransactionManager extends EventEmitter {
    */
   getStats(): TransactionStats {
     const activeTransactions = this.getActiveTransactions()
-    
+
     return {
       activeTransactions: activeTransactions.length,
       totalTransactions: this.transactionStack.length,
@@ -307,8 +313,8 @@ export class TransactionManager extends EventEmitter {
         level: t.level,
         status: t.status,
         startTime: t.startTime,
-        duration: Date.now() - t.startTime.getTime()
-      }))
+        duration: Date.now() - t.startTime.getTime(),
+      })),
     }
   }
 
@@ -319,7 +325,7 @@ export class TransactionManager extends EventEmitter {
     if (!transactionId) {
       return this.getCurrentTransaction()
     }
-    
+
     return this.transactionStack.find(t => t.id === transactionId) || null
   }
 
@@ -366,7 +372,7 @@ export class SimpleTransaction {
     if (this.isActive) {
       throw new DatabaseError('Transaction already active')
     }
-    
+
     await this.connection.beginTransaction()
     this.isActive = true
   }
@@ -378,7 +384,7 @@ export class SimpleTransaction {
     if (!this.isActive) {
       throw new DatabaseError('No active transaction')
     }
-    
+
     await this.connection.commit()
     this.isActive = false
   }
@@ -390,7 +396,7 @@ export class SimpleTransaction {
     if (!this.isActive) {
       throw new DatabaseError('No active transaction')
     }
-    
+
     await this.connection.rollback()
     this.isActive = false
   }
@@ -402,7 +408,7 @@ export class SimpleTransaction {
     if (!this.isActive) {
       throw new DatabaseError('No active transaction')
     }
-    
+
     return this.connection.query(sql, params)
   }
 
@@ -411,13 +417,13 @@ export class SimpleTransaction {
    */
   async execute<T>(callback: (transaction: SimpleTransaction) => Promise<T>): Promise<T> {
     await this.begin()
-    
+
     try {
       const result = await callback(this)
       await this.commit()
       return result
-      
-    } catch (error) {
+    }
+    catch (error) {
       await this.rollback()
       throw error
     }
@@ -462,8 +468,4 @@ interface TransactionStats {
   }>
 }
 
-type IsolationLevel = 
-  | 'READ UNCOMMITTED'
-  | 'READ COMMITTED'
-  | 'REPEATABLE READ'
-  | 'SERIALIZABLE'
+type IsolationLevel = 'READ UNCOMMITTED' | 'READ COMMITTED' | 'REPEATABLE READ' | 'SERIALIZABLE'

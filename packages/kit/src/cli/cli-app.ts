@@ -2,17 +2,17 @@
  * CLI 应用程序
  */
 
+import type {
+  CLIAppOptions,
+  CLIContext,
+  CommandOptions,
+  OptionDefinition,
+  ParsedArgs,
+} from '../types'
 import { EventEmitter } from 'node:events'
 import { CommandParser } from './command-parser'
-import { PromptManager } from './prompt-manager'
 import { OutputFormatter } from './output-formatter'
-import type { 
-  CommandOptions, 
-  OptionDefinition, 
-  ParsedArgs,
-  CLIAppOptions,
-  CLIContext
-} from '../types'
+import { PromptManager } from './prompt-manager'
 
 /**
  * CLI 应用程序类
@@ -35,22 +35,22 @@ export class CLIApp extends EventEmitter {
       exitOnSuccess: options.exitOnSuccess ?? false,
       colors: options.colors ?? true,
       interactive: options.interactive ?? true,
-      ...options
+      ...options,
     }
 
     this.parser = new CommandParser({
       version: this.options.version,
       description: this.options.description,
       allowUnknownOptions: false,
-      caseSensitive: false
+      caseSensitive: false,
     })
 
     this.promptManager = new PromptManager({
-      enabled: this.options.interactive
+      enabled: this.options.interactive,
     })
 
     this.formatter = new OutputFormatter({
-      colors: this.options.colors
+      colors: this.options.colors,
     })
 
     this.setupDefaultCommands()
@@ -68,14 +68,14 @@ export class CLIApp extends EventEmitter {
         {
           name: 'command',
           description: '显示特定命令的帮助',
-          type: 'string'
-        }
+          type: 'string',
+        },
       ],
       action: async (args) => {
         const commandName = args.options.command as string
         const help = this.parser.generateHelp(commandName)
         this.formatter.info(help)
-      }
+      },
     })
   }
 
@@ -114,13 +114,15 @@ export class CLIApp extends EventEmitter {
       if (parsed.options.help) {
         const help = this.parser.generateHelp(parsed.command || undefined)
         this.formatter.info(help)
-        if (this.options.exitOnSuccess) process.exit(0)
+        if (this.options.exitOnSuccess)
+          process.exit(0)
         return
       }
 
       if (parsed.options.version) {
         this.formatter.info(`${this.options.name} v${this.options.version}`)
-        if (this.options.exitOnSuccess) process.exit(0)
+        if (this.options.exitOnSuccess)
+          process.exit(0)
         return
       }
 
@@ -130,7 +132,8 @@ export class CLIApp extends EventEmitter {
       if (this.options.exitOnSuccess) {
         process.exit(0)
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.handleError(error as Error)
     }
   }
@@ -158,7 +161,7 @@ export class CLIApp extends EventEmitter {
       options: parsed.options,
       app: this,
       formatter: this.formatter,
-      prompt: this.promptManager
+      prompt: this.promptManager,
     }
 
     // 执行中间件链
@@ -172,7 +175,7 @@ export class CLIApp extends EventEmitter {
    */
   private async executeMiddlewares(
     context: CLIContext,
-    finalHandler: () => Promise<void>
+    finalHandler: () => Promise<void>,
   ): Promise<void> {
     let index = 0
 
@@ -255,14 +258,20 @@ export class CLIApp extends EventEmitter {
   /**
    * 选择选项
    */
-  async select<T = string>(message: string, choices: Array<{ title: string; value: T }>): Promise<T> {
+  async select<T = string>(
+    message: string,
+    choices: Array<{ title: string, value: T }>,
+  ): Promise<T> {
     return this.promptManager.select(message, choices)
   }
 
   /**
    * 多选
    */
-  async multiselect<T = string>(message: string, choices: Array<{ title: string; value: T }>): Promise<T[]> {
+  async multiselect<T = string>(
+    message: string,
+    choices: Array<{ title: string, value: T }>,
+  ): Promise<T[]> {
     return this.promptManager.multiselect(message, choices)
   }
 
@@ -339,11 +348,11 @@ export class CLIApp extends EventEmitter {
   /**
    * 获取应用信息
    */
-  getInfo(): { name: string; version: string; description: string } {
+  getInfo(): { name: string, version: string, description: string } {
     return {
       name: this.options.name,
       version: this.options.version,
-      description: this.options.description
+      description: this.options.description,
     }
   }
 

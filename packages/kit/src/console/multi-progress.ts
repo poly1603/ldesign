@@ -5,10 +5,8 @@
 
 import { EventEmitter } from 'node:events'
 import * as cliProgress from 'cli-progress'
-import { ProgressBar } from './progress-bar'
-import { LoadingSpinner } from './loading-spinner'
-import { StatusIndicator } from './status-indicator'
 import { ConsoleTheme } from './console-theme'
+import { StatusIndicator } from './status-indicator'
 
 /**
  * 任务状态
@@ -93,10 +91,10 @@ export class MultiProgress extends EventEmitter {
 
   constructor(options: MultiProgressOptions = {}) {
     super()
-    
+
     this.theme = ConsoleTheme.create(options.theme)
     this.statusIndicator = StatusIndicator.create({ theme: options.theme })
-    
+
     this.options = {
       theme: options.theme || 'default',
       showOverall: options.showOverall !== false,
@@ -107,7 +105,7 @@ export class MultiProgress extends EventEmitter {
       format: options.format || '{name} [{bar}] {percentage}% | {value}/{total} | ETA: {eta}s',
       stream: options.stream || process.stdout,
       maxConcurrent: options.maxConcurrent || 5,
-      autoStart: options.autoStart !== false
+      autoStart: options.autoStart !== false,
     }
 
     this.maxConcurrent = this.options.maxConcurrent
@@ -129,13 +127,13 @@ export class MultiProgress extends EventEmitter {
       hideCursor: true,
       barCompleteChar: '█',
       barIncompleteChar: '░',
-      fps: 10
+      fps: 10,
     })
 
     // 创建整体进度条
     if (this.options.showOverall) {
       this.overallBar = this.multiBar.create(this.tasks.size, 0, {
-        name: '总体进度'
+        name: '总体进度',
       })
     }
 
@@ -156,7 +154,7 @@ export class MultiProgress extends EventEmitter {
       total: config.total || 100,
       percentage: 0,
       status: config.status || 'pending',
-      metadata: config.metadata
+      metadata: config.metadata,
     }
 
     this.tasks.set(config.id, task)
@@ -165,7 +163,7 @@ export class MultiProgress extends EventEmitter {
     if (this.isActive && this.multiBar && this.options.showIndividual) {
       const bar = this.multiBar.create(task.total, task.current, {
         name: task.name,
-        id: task.id
+        id: task.id,
       })
       this.taskBars.set(config.id, bar)
     }
@@ -222,10 +220,15 @@ export class MultiProgress extends EventEmitter {
     task.startTime = Date.now()
 
     // 创建进度条（如果还没有）
-    if (this.isActive && this.multiBar && this.options.showIndividual && !this.taskBars.has(taskId)) {
+    if (
+      this.isActive
+      && this.multiBar
+      && this.options.showIndividual
+      && !this.taskBars.has(taskId)
+    ) {
       const bar = this.multiBar.create(task.total, task.current, {
         name: task.name,
-        id: task.id
+        id: task.id,
       })
       this.taskBars.set(taskId, bar)
     }
@@ -268,7 +271,7 @@ export class MultiProgress extends EventEmitter {
         name: task.name,
         id: task.id,
         eta: Math.round(task.eta || 0),
-        rate: Math.round(task.rate || 0)
+        rate: Math.round(task.rate || 0),
       })
     }
 
@@ -409,7 +412,7 @@ export class MultiProgress extends EventEmitter {
       pendingTasks,
       percentage: tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0,
       startTime: this.startTime,
-      duration: Date.now() - this.startTime
+      duration: Date.now() - this.startTime,
     }
   }
 
@@ -477,8 +480,12 @@ export class MultiProgress extends EventEmitter {
 
   private isAllTasksCompleted(): boolean {
     const tasks = Array.from(this.tasks.values())
-    return tasks.length > 0 && tasks.every(task => 
-      task.status === 'completed' || task.status === 'failed' || task.status === 'cancelled'
+    return (
+      tasks.length > 0
+      && tasks.every(
+        task =>
+          task.status === 'completed' || task.status === 'failed' || task.status === 'cancelled',
+      )
     )
   }
 
@@ -496,7 +503,7 @@ export class MultiProgress extends EventEmitter {
     return new MultiProgress({
       showOverall: true,
       showIndividual: true,
-      showStatus: false
+      showStatus: false,
     })
   }
 
@@ -507,7 +514,7 @@ export class MultiProgress extends EventEmitter {
     return new MultiProgress({
       showOverall: true,
       showIndividual: true,
-      showStatus: true
+      showStatus: true,
     })
   }
 }

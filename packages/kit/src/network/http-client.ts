@@ -3,15 +3,14 @@
  * 提供HTTP请求功能，支持拦截器、重试、缓存等
  */
 
-import { EventEmitter } from 'node:events'
-import type { 
-  HttpClientOptions, 
-  HttpRequest, 
-  HttpResponse, 
-  RequestInterceptor, 
+import type {
+  HttpClientOptions,
+  HttpRequest,
+  HttpResponse,
+  RequestInterceptor,
   ResponseInterceptor,
-  RetryOptions 
 } from '../types'
+import { EventEmitter } from 'node:events'
 import { NetworkError } from '../types'
 import { AsyncUtils } from '../utils'
 
@@ -26,20 +25,20 @@ export class HttpClient extends EventEmitter {
 
   constructor(options: HttpClientOptions = {}) {
     super()
-    
+
     this.options = {
       baseURL: '',
       timeout: 30000,
       headers: {},
       followRedirects: true,
       maxRedirects: 5,
-      validateStatus: (status) => status >= 200 && status < 300,
+      validateStatus: status => status >= 200 && status < 300,
       retries: 0,
       retryDelay: 1000,
-      retryCondition: (error) => error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT',
+      retryCondition: error => error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT',
       cache: false,
       cacheMaxAge: 300000, // 5分钟
-      ...options
+      ...options,
     }
   }
 
@@ -60,7 +59,11 @@ export class HttpClient extends EventEmitter {
    * @param config 配置
    * @returns 响应
    */
-  async post<T = any>(url: string, data?: any, config: Partial<HttpRequest> = {}): Promise<HttpResponse<T>> {
+  async post<T = any>(
+    url: string,
+    data?: any,
+    config: Partial<HttpRequest> = {},
+  ): Promise<HttpResponse<T>> {
     return this.request<T>({ ...config, method: 'POST', url, data })
   }
 
@@ -71,7 +74,11 @@ export class HttpClient extends EventEmitter {
    * @param config 配置
    * @returns 响应
    */
-  async put<T = any>(url: string, data?: any, config: Partial<HttpRequest> = {}): Promise<HttpResponse<T>> {
+  async put<T = any>(
+    url: string,
+    data?: any,
+    config: Partial<HttpRequest> = {},
+  ): Promise<HttpResponse<T>> {
     return this.request<T>({ ...config, method: 'PUT', url, data })
   }
 
@@ -82,7 +89,11 @@ export class HttpClient extends EventEmitter {
    * @param config 配置
    * @returns 响应
    */
-  async patch<T = any>(url: string, data?: any, config: Partial<HttpRequest> = {}): Promise<HttpResponse<T>> {
+  async patch<T = any>(
+    url: string,
+    data?: any,
+    config: Partial<HttpRequest> = {},
+  ): Promise<HttpResponse<T>> {
     return this.request<T>({ ...config, method: 'PATCH', url, data })
   }
 
@@ -123,7 +134,7 @@ export class HttpClient extends EventEmitter {
    */
   async request<T = any>(config: Partial<HttpRequest>): Promise<HttpResponse<T>> {
     const requestConfig = this.mergeConfig(config)
-    
+
     // 检查缓存
     if (this.options.cache && requestConfig.method === 'GET') {
       const cached = this.getFromCache(requestConfig)
@@ -148,7 +159,7 @@ export class HttpClient extends EventEmitter {
     while (attempt < maxAttempts) {
       try {
         const response = await this.executeRequest<T>(processedConfig)
-        
+
         // 应用响应拦截器
         let processedResponse = response
         for (const interceptor of this.responseInterceptors) {
@@ -160,7 +171,7 @@ export class HttpClient extends EventEmitter {
           throw new NetworkError(
             `Request failed with status ${processedResponse.status}`,
             processedConfig,
-            processedResponse
+            processedResponse,
           )
         }
 
@@ -171,15 +182,16 @@ export class HttpClient extends EventEmitter {
 
         this.emit('response', processedResponse)
         return processedResponse
-
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error as Error
         attempt++
 
         if (attempt < maxAttempts && this.shouldRetry(lastError)) {
           this.emit('retry', { attempt, error: lastError, config: processedConfig })
           await AsyncUtils.delay(this.options.retryDelay * attempt)
-        } else {
+        }
+        else {
           break
         }
       }
@@ -194,7 +206,7 @@ export class HttpClient extends EventEmitter {
    */
   private async executeRequest<T>(config: HttpRequest): Promise<HttpResponse<T>> {
     const url = new URL(config.url, this.options.baseURL)
-    
+
     // 添加查询参数
     if (config.params) {
       for (const [key, value] of Object.entries(config.params)) {
@@ -206,11 +218,11 @@ export class HttpClient extends EventEmitter {
       method: config.method,
       headers: config.headers,
       body: this.prepareBody(config.data, config.headers),
-      signal: AbortSignal.timeout(config.timeout || this.options.timeout)
+      signal: AbortSignal.timeout(config.timeout || this.options.timeout),
     }
 
     const startTime = Date.now()
-    
+
     try {
       const response = await fetch(url.toString(), requestOptions)
       const duration = Date.now() - startTime
@@ -224,16 +236,16 @@ export class HttpClient extends EventEmitter {
         headers: Object.fromEntries(response.headers.entries()),
         config,
         duration,
-        url: response.url
+        url: response.url,
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       const duration = Date.now() - startTime
-      
+
       if (error instanceof Error && error.name === 'AbortError') {
         throw new NetworkError('Request timeout', config.url, error)
       }
-      
+
       throw new NetworkError('Request failed', config.url, error as Error)
     }
   }
@@ -241,8 +253,12 @@ export class HttpClient extends EventEmitter {
   /**
    * 准备请求体
    */
-  private prepareBody(data: any, headers: Record<string, string>): string | FormData | URLSearchParams | null {
-    if (!data) return null
+  private prepareBody(
+    data: any,
+    headers: Record<string, string>,
+  ): string | FormData | URLSearchParams | null {
+    if (!data)
+      return null
 
     const contentType = headers['content-type'] || headers['Content-Type']
 
@@ -291,9 +307,11 @@ export class HttpClient extends EventEmitter {
         // 自动检测内容类型
         if (contentType.includes('application/json')) {
           return response.json()
-        } else if (contentType.includes('text/')) {
+        }
+        else if (contentType.includes('text/')) {
           return response.text() as T
-        } else {
+        }
+        else {
           return response.blob() as T
         }
     }
@@ -308,7 +326,7 @@ export class HttpClient extends EventEmitter {
       url: '',
       headers: { ...this.options.headers, ...config.headers },
       timeout: config.timeout || this.options.timeout,
-      ...config
+      ...config,
     }
   }
 
@@ -325,15 +343,15 @@ export class HttpClient extends EventEmitter {
   private getFromCache<T>(config: HttpRequest): HttpResponse<T> | null {
     const key = this.getCacheKey(config)
     const entry = this.cache.get(key)
-    
+
     if (entry && Date.now() - entry.timestamp < this.options.cacheMaxAge) {
       return entry.response as HttpResponse<T>
     }
-    
+
     if (entry) {
       this.cache.delete(key)
     }
-    
+
     return null
   }
 
@@ -344,7 +362,7 @@ export class HttpClient extends EventEmitter {
     const key = this.getCacheKey(config)
     this.cache.set(key, {
       response,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
@@ -353,13 +371,13 @@ export class HttpClient extends EventEmitter {
    */
   private getCacheKey(config: HttpRequest): string {
     const url = new URL(config.url, this.options.baseURL)
-    
+
     if (config.params) {
       for (const [key, value] of Object.entries(config.params)) {
         url.searchParams.append(key, String(value))
       }
     }
-    
+
     return `${config.method}:${url.toString()}`
   }
 
@@ -419,7 +437,8 @@ export class HttpClient extends EventEmitter {
     for (const entry of this.cache.values()) {
       if (now - entry.timestamp < this.options.cacheMaxAge) {
         validEntries++
-      } else {
+      }
+      else {
         expiredEntries++
       }
     }
@@ -427,7 +446,7 @@ export class HttpClient extends EventEmitter {
     return {
       total: this.cache.size,
       valid: validEntries,
-      expired: expiredEntries
+      expired: expiredEntries,
     }
   }
 

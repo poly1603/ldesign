@@ -2,12 +2,7 @@
  * 命令行参数解析器
  */
 
-import type { 
-  CommandOptions, 
-  OptionDefinition, 
-  ParsedArgs,
-  ParserOptions 
-} from '../types'
+import type { CommandOptions, OptionDefinition, ParsedArgs, ParserOptions } from '../types'
 
 /**
  * 命令行参数解析器
@@ -26,7 +21,7 @@ export class CommandParser {
       versionOption: options.versionOption ?? true,
       version: options.version ?? '1.0.0',
       description: options.description ?? '',
-      ...options
+      ...options,
     }
 
     if (this.options.helpOption) {
@@ -34,7 +29,7 @@ export class CommandParser {
         name: 'help',
         alias: 'h',
         description: '显示帮助信息',
-        type: 'boolean'
+        type: 'boolean',
       })
     }
 
@@ -43,7 +38,7 @@ export class CommandParser {
         name: 'version',
         alias: 'v',
         description: '显示版本信息',
-        type: 'boolean'
+        type: 'boolean',
       })
     }
   }
@@ -70,7 +65,7 @@ export class CommandParser {
       command: null,
       options: {},
       args: [],
-      unknown: []
+      unknown: [],
     }
 
     let i = 0
@@ -80,7 +75,7 @@ export class CommandParser {
     if (args.length > 0 && args[0] && !args[0].startsWith('-')) {
       const commandName = args[0]
       currentCommand = this.commands.get(commandName) || null
-      
+
       if (currentCommand) {
         result.command = commandName
         i = 1
@@ -88,10 +83,7 @@ export class CommandParser {
     }
 
     // 获取可用选项
-    const availableOptions = [
-      ...this.globalOptions,
-      ...(currentCommand?.options || [])
-    ]
+    const availableOptions = [...this.globalOptions, ...(currentCommand?.options || [])]
 
     // 解析选项和参数
     while (i < args.length) {
@@ -106,30 +98,35 @@ export class CommandParser {
         const [name, value] = arg.slice(2).split('=', 2)
         if (!name) {
           this.handleUnknownOption(result, arg)
-        } else {
+        }
+        else {
           const option = this.findOption(availableOptions, name)
 
           if (option) {
             const parsedValue = this.parseOptionValue(option, value, args, i)
             result.options[option.name] = parsedValue.value
             i += parsedValue.consumed
-          } else {
+          }
+          else {
             this.handleUnknownOption(result, arg)
           }
         }
-      } else if (arg.startsWith('-') && arg.length > 1) {
+      }
+      else if (arg.startsWith('-') && arg.length > 1) {
         // 短选项
         const flags = arg.slice(1)
-        
+
         for (let j = 0; j < flags.length; j++) {
           const flag = flags[j]
-          if (!flag) continue
+          if (!flag)
+            continue
           const option = this.findOptionByAlias(availableOptions, flag)
 
           if (option) {
             if (option.type === 'boolean') {
               result.options[option.name] = true
-            } else {
+            }
+            else {
               // 非布尔选项需要值
               let value: string | undefined
 
@@ -139,7 +136,8 @@ export class CommandParser {
                   value = args[i + 1]
                   i++
                 }
-              } else {
+              }
+              else {
                 // 中间的标志，从剩余字符获取值
                 value = flags.slice(j + 1)
                 j = flags.length // 结束循环
@@ -148,11 +146,13 @@ export class CommandParser {
               const parsedValue = this.parseOptionValue(option, value)
               result.options[option.name] = parsedValue.value
             }
-          } else {
+          }
+          else {
             this.handleUnknownOption(result, `-${flag}`)
           }
         }
-      } else {
+      }
+      else {
         // 位置参数
         result.args.push(arg)
       }
@@ -174,8 +174,8 @@ export class CommandParser {
    */
   private findOption(options: OptionDefinition[], name: string): OptionDefinition | undefined {
     const searchName = this.options.caseSensitive ? name : name.toLowerCase()
-    
-    return options.find(opt => {
+
+    return options.find((opt) => {
       const optName = this.options.caseSensitive ? opt.name : opt.name.toLowerCase()
       return optName === searchName
     })
@@ -184,11 +184,15 @@ export class CommandParser {
   /**
    * 通过别名查找选项
    */
-  private findOptionByAlias(options: OptionDefinition[], alias: string): OptionDefinition | undefined {
+  private findOptionByAlias(
+    options: OptionDefinition[],
+    alias: string,
+  ): OptionDefinition | undefined {
     const searchAlias = this.options.caseSensitive ? alias : alias.toLowerCase()
-    
-    return options.find(opt => {
-      if (!opt.alias) return false
+
+    return options.find((opt) => {
+      if (!opt.alias)
+        return false
       const optAlias = this.options.caseSensitive ? opt.alias : opt.alias.toLowerCase()
       return optAlias === searchAlias
     })
@@ -201,8 +205,8 @@ export class CommandParser {
     option: OptionDefinition,
     value: string | undefined,
     args?: string[],
-    index?: number
-  ): { value: any; consumed: number } {
+    index?: number,
+  ): { value: any, consumed: number } {
     let consumed = 1
 
     if (option.type === 'boolean') {
@@ -210,12 +214,20 @@ export class CommandParser {
     }
 
     if (value === undefined) {
-      if (args && index !== undefined && index + 1 < args.length && args[index + 1] && !args[index + 1].startsWith('-')) {
+      if (
+        args
+        && index !== undefined
+        && index + 1 < args.length
+        && args[index + 1]
+        && !args[index + 1].startsWith('-')
+      ) {
         value = args[index + 1]
         consumed = 2
-      } else if (option.required) {
+      }
+      else if (option.required) {
         throw new Error(`选项 --${option.name} 需要一个值`)
-      } else {
+      }
+      else {
         return { value: option.default, consumed }
       }
     }
@@ -224,7 +236,7 @@ export class CommandParser {
       case 'number':
         const num = Number(value)
         if (isNaN(num)) {
-          throw new Error(`选项 --${option.name} 需要一个数字值，得到: ${value}`)
+          throw new TypeError(`选项 --${option.name} 需要一个数字值，得到: ${value}`)
         }
         return { value: num, consumed }
 
@@ -243,9 +255,11 @@ export class CommandParser {
   private handleUnknownOption(result: ParsedArgs, option: string): void {
     if (this.options.allowUnknownOptions) {
       result.unknown.push(option)
-    } else if (this.options.stopAtFirstUnknown) {
+    }
+    else if (this.options.stopAtFirstUnknown) {
       throw new Error(`未知选项: ${option}`)
-    } else {
+    }
+    else {
       result.unknown.push(option)
     }
   }
@@ -301,7 +315,7 @@ export class CommandParser {
     if (this.commands.size > 0) {
       lines.push('可用命令:')
       const maxNameLength = Math.max(...Array.from(this.commands.keys()).map(name => name.length))
-      
+
       for (const [name, command] of this.commands) {
         const padding = ' '.repeat(maxNameLength - name.length + 2)
         lines.push(`  ${name}${padding}${command.description}`)
@@ -361,11 +375,11 @@ export class CommandParser {
   private formatOptions(options: OptionDefinition[]): string {
     const lines: string[] = []
     const maxLength = Math.max(
-      ...options.map(opt => {
+      ...options.map((opt) => {
         const name = `--${opt.name}`
         const alias = opt.alias ? `, -${opt.alias}` : ''
         return (name + alias).length
-      })
+      }),
     )
 
     for (const option of options) {
@@ -373,7 +387,7 @@ export class CommandParser {
       const alias = option.alias ? `, -${option.alias}` : ''
       const nameStr = name + alias
       const padding = ' '.repeat(maxLength - nameStr.length + 2)
-      
+
       let description = option.description
       if (option.required) {
         description += ' (必需)'

@@ -2,17 +2,17 @@
  * RollupBuilder 单元测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { RollupBuilder } from '../../src/builder/rollup-builder'
 import type { RollupBuilderConfig } from '../../src/builder/types'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { RollupBuilder } from '../../src/builder/rollup-builder'
 
 // Mock Rollup API
 vi.mock('rollup', () => ({
   rollup: vi.fn(),
-  watch: vi.fn()
+  watch: vi.fn(),
 }))
 
-describe('RollupBuilder', () => {
+describe('rollupBuilder', () => {
   let builder: RollupBuilder
   let mockConfig: RollupBuilderConfig
 
@@ -21,9 +21,9 @@ describe('RollupBuilder', () => {
       input: 'src/index.ts',
       output: {
         file: 'dist/index.js',
-        format: 'es'
+        format: 'es',
       },
-      env: 'development'
+      env: 'development',
     }
     builder = new RollupBuilder(mockConfig)
   })
@@ -39,7 +39,7 @@ describe('RollupBuilder', () => {
       expect(config.input).toBe('src/index.ts')
       expect(config.output).toEqual({
         file: 'dist/index.js',
-        format: 'es'
+        format: 'es',
       })
       expect(config.env).toBe('development')
     })
@@ -47,15 +47,15 @@ describe('RollupBuilder', () => {
     it('应该使用默认配置', () => {
       const defaultBuilder = new RollupBuilder({
         input: 'src/index.ts',
-        output: { file: 'dist/index.js', format: 'es' }
+        output: { file: 'dist/index.js', format: 'es' },
       })
       const config = defaultBuilder.getConfig()
-      
+
       expect(config.env).toBe('production')
       expect(config.sourcemap).toBe(true)
       expect(config.minify).toBe(true)
       expect(config.cleanOutDir).toBe(true)
-      
+
       defaultBuilder.destroy()
     })
 
@@ -64,14 +64,14 @@ describe('RollupBuilder', () => {
         input: 'src/index.ts',
         output: [
           { file: 'dist/index.js', format: 'es' },
-          { file: 'dist/index.cjs', format: 'cjs' }
-        ]
+          { file: 'dist/index.cjs', format: 'cjs' },
+        ],
       })
-      
+
       const config = multiOutputBuilder.getConfig()
       expect(Array.isArray(config.output)).toBe(true)
       expect(config.output).toHaveLength(2)
-      
+
       multiOutputBuilder.destroy()
     })
   })
@@ -85,9 +85,9 @@ describe('RollupBuilder', () => {
     it('应该能够设置配置', () => {
       builder.setConfig({
         external: ['lodash'],
-        minify: false
+        minify: false,
       })
-      
+
       const config = builder.getConfig()
       expect(config.external).toEqual(['lodash'])
       expect(config.minify).toBe(false)
@@ -104,7 +104,7 @@ describe('RollupBuilder', () => {
     it('应该能够添加插件', () => {
       const mockPlugin = { name: 'test-plugin' }
       builder.addPlugin(mockPlugin)
-      
+
       const config = builder.getConfig()
       expect(config.plugins).toContain(mockPlugin)
     })
@@ -113,7 +113,7 @@ describe('RollupBuilder', () => {
       const mockPlugin = { name: 'test-plugin' }
       builder.addPlugin(mockPlugin)
       builder.removePlugin('test-plugin')
-      
+
       const config = builder.getConfig()
       expect(config.plugins).not.toContain(mockPlugin)
     })
@@ -128,17 +128,17 @@ describe('RollupBuilder', () => {
             {
               fileName: 'index.js',
               code: 'console.log("test")',
-              format: 'es'
-            }
-          ]
+              format: 'es',
+            },
+          ],
         }),
-        close: vi.fn()
+        close: vi.fn(),
       }
-      
+
       vi.mocked(rollup).mockResolvedValue(mockBundle as any)
-      
+
       const result = await builder.build()
-      
+
       expect(result.success).toBe(true)
       expect(result.outputs).toHaveLength(1)
       expect(result.outputs[0].fileName).toBe('index.js')
@@ -149,11 +149,11 @@ describe('RollupBuilder', () => {
     it('应该处理构建错误', async () => {
       const { rollup } = await import('rollup')
       const mockError = new Error('Build failed')
-      
+
       vi.mocked(rollup).mockRejectedValue(mockError)
-      
+
       const result = await builder.build()
-      
+
       expect(result.success).toBe(false)
       expect(result.errors).toContain('Build failed')
     })
@@ -163,8 +163,8 @@ describe('RollupBuilder', () => {
         input: 'src/index.ts',
         output: [
           { file: 'dist/index.js', format: 'es' },
-          { file: 'dist/index.cjs', format: 'cjs' }
-        ]
+          { file: 'dist/index.cjs', format: 'cjs' },
+        ],
       })
 
       const { rollup } = await import('rollup')
@@ -174,20 +174,20 @@ describe('RollupBuilder', () => {
             {
               fileName: 'index.js',
               code: 'console.log("test")',
-              format: 'es'
-            }
-          ]
+              format: 'es',
+            },
+          ],
         }),
-        close: vi.fn()
+        close: vi.fn(),
       }
-      
+
       vi.mocked(rollup).mockResolvedValue(mockBundle as any)
-      
+
       const result = await multiOutputBuilder.build()
-      
+
       expect(result.success).toBe(true)
       expect(mockBundle.write).toHaveBeenCalledTimes(2)
-      
+
       multiOutputBuilder.destroy()
     })
   })
@@ -201,17 +201,17 @@ describe('RollupBuilder', () => {
             {
               fileName: 'index.js',
               code: 'console.log("test")',
-              format: 'es'
-            }
-          ]
+              format: 'es',
+            },
+          ],
         }),
-        close: vi.fn()
+        close: vi.fn(),
       }
-      
+
       vi.mocked(rollup).mockResolvedValue(mockBundle as any)
-      
+
       const results = await builder.buildMultiple(['es', 'cjs', 'umd'])
-      
+
       expect(results).toHaveLength(3)
       expect(results.every(r => r.success)).toBe(true)
     })
@@ -219,9 +219,9 @@ describe('RollupBuilder', () => {
     it('应该处理多格式构建中的错误', async () => {
       const { rollup } = await import('rollup')
       vi.mocked(rollup).mockRejectedValue(new Error('Build failed'))
-      
+
       const results = await builder.buildMultiple(['es', 'cjs'])
-      
+
       expect(results).toHaveLength(2)
       expect(results.every(r => !r.success)).toBe(true)
       expect(results.every(r => r.errors?.includes('Build failed'))).toBe(true)
@@ -233,20 +233,22 @@ describe('RollupBuilder', () => {
       const { watch } = await import('rollup')
       const mockWatcher = {
         on: vi.fn(),
-        close: vi.fn()
+        close: vi.fn(),
       }
-      
+
       vi.mocked(watch).mockReturnValue(mockWatcher as any)
-      
+
       // 启动监听模式（不等待完成，因为它是持续运行的）
       const watchPromise = builder.watch()
-      
+
       // 等待一小段时间让 watch 开始
       await new Promise(resolve => setTimeout(resolve, 10))
-      
-      expect(watch).toHaveBeenCalledWith(expect.objectContaining({
-        input: 'src/index.ts'
-      }))
+
+      expect(watch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          input: 'src/index.ts',
+        })
+      )
       expect(mockWatcher.on).toHaveBeenCalled()
     })
 
@@ -254,34 +256,34 @@ describe('RollupBuilder', () => {
       const { watch } = await import('rollup')
       const mockWatcher = {
         on: vi.fn(),
-        close: vi.fn()
+        close: vi.fn(),
       }
-      
+
       vi.mocked(watch).mockReturnValue(mockWatcher as any)
-      
+
       const startHandler = vi.fn()
       const endHandler = vi.fn()
       const errorHandler = vi.fn()
-      
+
       builder.on('build:start', startHandler)
       builder.on('build:end', endHandler)
       builder.on('build:error', errorHandler)
-      
+
       builder.watch()
-      
+
       // 模拟事件触发
       const eventHandler = mockWatcher.on.mock.calls[0][1]
-      
+
       // 模拟 START 事件
       eventHandler({ code: 'START' })
       expect(startHandler).toHaveBeenCalled()
-      
+
       // 模拟 BUNDLE_END 事件
       const mockResult = { close: vi.fn() }
       eventHandler({ code: 'BUNDLE_END', result: mockResult, duration: 100 })
       expect(endHandler).toHaveBeenCalled()
       expect(mockResult.close).toHaveBeenCalled()
-      
+
       // 模拟 ERROR 事件
       const mockError = new Error('Watch error')
       eventHandler({ code: 'ERROR', error: mockError })
@@ -294,18 +296,18 @@ describe('RollupBuilder', () => {
       const { rollup } = await import('rollup')
       const mockBundle = {
         write: vi.fn().mockResolvedValue({ output: [] }),
-        close: vi.fn()
+        close: vi.fn(),
       }
       vi.mocked(rollup).mockResolvedValue(mockBundle as any)
-      
+
       const startHandler = vi.fn()
       builder.on('build:start', startHandler)
-      
+
       await builder.build()
-      
+
       expect(startHandler).toHaveBeenCalledWith({
         mode: 'build',
-        config: expect.any(Object)
+        config: expect.any(Object),
       })
     })
 
@@ -313,19 +315,19 @@ describe('RollupBuilder', () => {
       const { rollup } = await import('rollup')
       const mockBundle = {
         write: vi.fn().mockResolvedValue({ output: [] }),
-        close: vi.fn()
+        close: vi.fn(),
       }
       vi.mocked(rollup).mockResolvedValue(mockBundle as any)
-      
+
       const endHandler = vi.fn()
       builder.on('build:end', endHandler)
-      
+
       await builder.build()
-      
+
       expect(endHandler).toHaveBeenCalledWith({
         result: expect.objectContaining({
-          success: true
-        })
+          success: true,
+        }),
       })
     })
 
@@ -333,14 +335,14 @@ describe('RollupBuilder', () => {
       const { rollup } = await import('rollup')
       const mockError = new Error('Build failed')
       vi.mocked(rollup).mockRejectedValue(mockError)
-      
+
       const errorHandler = vi.fn()
       builder.on('build:error', errorHandler)
-      
+
       await builder.build()
-      
+
       expect(errorHandler).toHaveBeenCalledWith({
-        error: mockError
+        error: mockError,
       })
     })
   })
@@ -348,25 +350,23 @@ describe('RollupBuilder', () => {
   describe('销毁功能', () => {
     it('应该能够正确销毁', async () => {
       await builder.destroy()
-      
+
       // 销毁后应该无法执行操作
-      await expect(builder.build()).rejects.toThrow(
-        'RollupBuilder has been destroyed'
-      )
+      await expect(builder.build()).rejects.toThrow('RollupBuilder has been destroyed')
     })
 
     it('应该在销毁时关闭监听器', async () => {
       const { watch } = await import('rollup')
       const mockWatcher = {
         on: vi.fn(),
-        close: vi.fn()
+        close: vi.fn(),
       }
-      
+
       vi.mocked(watch).mockReturnValue(mockWatcher as any)
-      
+
       builder.watch()
       await builder.destroy()
-      
+
       expect(mockWatcher.close).toHaveBeenCalled()
     })
   })

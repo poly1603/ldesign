@@ -2,8 +2,8 @@
  * 交互式提示管理器
  */
 
+import type { PromptManagerOptions, PromptOptions } from '../types'
 import { createInterface } from 'node:readline'
-import type { PromptOptions, PromptManagerOptions } from '../types'
 
 /**
  * 提示管理器
@@ -17,13 +17,13 @@ export class PromptManager {
       enabled: options.enabled ?? true,
       input: options.input ?? process.stdin,
       output: options.output ?? process.stdout,
-      ...options
+      ...options,
     }
 
     if (this.options.enabled) {
       this.readline = createInterface({
         input: this.options.input,
-        output: this.options.output
+        output: this.options.output,
       })
     }
   }
@@ -39,22 +39,22 @@ export class PromptManager {
     switch (options.type) {
       case 'text':
         return this.input(options.message, options.initial) as Promise<T>
-      
+
       case 'password':
         return this.password(options.message) as Promise<T>
-      
+
       case 'confirm':
         return this.confirm(options.message, options.initial) as Promise<T>
-      
+
       case 'select':
         return this.select(options.message, options.choices || []) as Promise<T>
-      
+
       case 'multiselect':
         return this.multiselect(options.message, options.choices || []) as Promise<T>
-      
+
       case 'number':
         return this.number(options.message, options.initial) as Promise<T>
-      
+
       default:
         throw new Error(`不支持的提示类型: ${options.type}`)
     }
@@ -70,7 +70,7 @@ export class PromptManager {
 
     return new Promise((resolve) => {
       const prompt = defaultValue ? `${message} (${defaultValue}): ` : `${message}: `
-      
+
       this.readline.question(prompt, (answer: string) => {
         resolve(answer.trim() || defaultValue || '')
       })
@@ -87,57 +87,57 @@ export class PromptManager {
 
     return new Promise((resolve) => {
       const prompt = `${message}: `
-      
+
       // 隐藏输入
       const stdin = process.stdin
       const originalMode = (stdin as any).isTTY ? (stdin as any).setRawMode : null
-      
+
       if (originalMode) {
-        (stdin as any).setRawMode(true)
+        ;(stdin as any).setRawMode(true)
       }
 
       process.stdout.write(prompt)
-      
+
       let password = ''
-      
+
       const onData = (char: Buffer) => {
         const str = char.toString()
-        
+
         switch (str) {
           case '\n':
           case '\r':
           case '\u0004': // Ctrl+D
             if (originalMode) {
-              (stdin as any).setRawMode(false)
+              ;(stdin as any).setRawMode(false)
             }
             stdin.removeListener('data', onData)
             process.stdout.write('\n')
             resolve(password)
             break
-          
+
           case '\u0003': // Ctrl+C
             if (originalMode) {
-              (stdin as any).setRawMode(false)
+              ;(stdin as any).setRawMode(false)
             }
             stdin.removeListener('data', onData)
             process.stdout.write('\n')
             process.exit(1)
             break
-          
-          case '\u007f': // Backspace
+
+          case '\u007F': // Backspace
             if (password.length > 0) {
               password = password.slice(0, -1)
               process.stdout.write('\b \b')
             }
             break
-          
+
           default:
             password += str
             process.stdout.write('*')
             break
         }
       }
-      
+
       stdin.on('data', onData)
     })
   }
@@ -152,11 +152,11 @@ export class PromptManager {
 
     const defaultText = defaultValue ? 'Y/n' : 'y/N'
     const answer = await this.input(`${message} (${defaultText})`)
-    
+
     if (!answer) {
       return defaultValue
     }
-    
+
     return /^y(es)?$/i.test(answer)
   }
 
@@ -164,8 +164,8 @@ export class PromptManager {
    * 选择提示
    */
   async select<T = string>(
-    message: string, 
-    choices: Array<{ title: string; value: T; description?: string }>
+    message: string,
+    choices: Array<{ title: string, value: T, description?: string }>,
   ): Promise<T> {
     if (!this.options.enabled) {
       if (choices[0]?.value !== undefined) {
@@ -182,12 +182,12 @@ export class PromptManager {
 
     while (true) {
       const answer = await this.input('请选择 (输入数字)')
-      const index = parseInt(answer) - 1
-      
+      const index = Number.parseInt(answer) - 1
+
       if (index >= 0 && index < choices.length && choices[index]) {
         return choices[index].value
       }
-      
+
       console.log('无效选择，请重试')
     }
   }
@@ -197,7 +197,7 @@ export class PromptManager {
    */
   async multiselect<T = string>(
     message: string,
-    choices: Array<{ title: string; value: T; description?: string }>
+    choices: Array<{ title: string, value: T, description?: string }>,
   ): Promise<T[]> {
     if (!this.options.enabled) {
       return []
@@ -205,7 +205,7 @@ export class PromptManager {
 
     console.log(message)
     console.log('(使用空格分隔多个选择，例如: 1 3 5)')
-    
+
     choices.forEach((choice, index) => {
       const description = choice.description ? ` - ${choice.description}` : ''
       console.log(`  ${index + 1}. ${choice.title}${description}`)
@@ -213,18 +213,22 @@ export class PromptManager {
 
     while (true) {
       const answer = await this.input('请选择 (输入数字，空格分隔)')
-      const indices = answer.split(/\s+/)
-        .map(s => parseInt(s.trim()) - 1)
+      const indices = answer
+        .split(/\s+/)
+        .map(s => Number.parseInt(s.trim()) - 1)
         .filter(i => i >= 0 && i < choices.length)
-      
+
       if (indices.length > 0) {
-        return indices.map(i => choices[i]).filter(choice => choice).map(choice => choice.value)
+        return indices
+          .map(i => choices[i])
+          .filter(choice => choice)
+          .map(choice => choice.value)
       }
-      
+
       if (answer.trim() === '') {
         return []
       }
-      
+
       console.log('无效选择，请重试')
     }
   }
@@ -240,11 +244,11 @@ export class PromptManager {
     while (true) {
       const answer = await this.input(message, defaultValue?.toString())
       const num = Number(answer)
-      
+
       if (!isNaN(num)) {
         return num
       }
-      
+
       console.log('请输入有效的数字')
     }
   }
@@ -252,11 +256,7 @@ export class PromptManager {
   /**
    * 自动完成输入
    */
-  async autocomplete(
-    message: string,
-    choices: string[],
-    defaultValue?: string
-  ): Promise<string> {
+  async autocomplete(message: string, choices: string[], defaultValue?: string): Promise<string> {
     if (!this.options.enabled) {
       return defaultValue || choices[0] || ''
     }
@@ -264,26 +264,26 @@ export class PromptManager {
     // 简化版自动完成，实际实现可能需要更复杂的逻辑
     console.log(message)
     console.log('可选项:', choices.join(', '))
-    
+
     while (true) {
       const answer = await this.input('请输入', defaultValue)
-      
+
       // 精确匹配
       if (choices.includes(answer)) {
         return answer
       }
-      
+
       // 模糊匹配
-      const matches = choices.filter(choice => 
-        choice.toLowerCase().includes(answer.toLowerCase())
-      )
-      
+      const matches = choices.filter(choice => choice.toLowerCase().includes(answer.toLowerCase()))
+
       if (matches.length === 1 && matches[0]) {
         return matches[0]
-      } else if (matches.length > 1) {
+      }
+      else if (matches.length > 1) {
         console.log('多个匹配项:', matches.join(', '))
         console.log('请输入更具体的内容')
-      } else {
+      }
+      else {
         console.log('没有匹配项，请重试')
       }
     }
@@ -294,8 +294,8 @@ export class PromptManager {
    */
   async searchableSelect<T = string>(
     message: string,
-    choices: Array<{ title: string; value: T; description?: string }>,
-    searchPlaceholder = '搜索...'
+    choices: Array<{ title: string, value: T, description?: string }>,
+    searchPlaceholder = '搜索...',
   ): Promise<T> {
     if (!this.options.enabled) {
       if (choices[0]?.value !== undefined) {
@@ -306,7 +306,7 @@ export class PromptManager {
 
     console.log(message)
     console.log(`输入关键词搜索，或直接输入数字选择`)
-    
+
     while (true) {
       // 显示当前选项
       choices.forEach((choice, index) => {
@@ -315,25 +315,28 @@ export class PromptManager {
       })
 
       const answer = await this.input(searchPlaceholder)
-      
+
       // 尝试数字选择
-      const index = parseInt(answer) - 1
+      const index = Number.parseInt(answer) - 1
       if (index >= 0 && index < choices.length && choices[index]) {
         return choices[index].value
       }
-      
+
       // 搜索过滤
-      const filtered = choices.filter(choice =>
-        choice.title.toLowerCase().includes(answer.toLowerCase()) ||
-        (choice.description && choice.description.toLowerCase().includes(answer.toLowerCase()))
+      const filtered = choices.filter(
+        choice =>
+          choice.title.toLowerCase().includes(answer.toLowerCase())
+          || (choice.description && choice.description.toLowerCase().includes(answer.toLowerCase())),
       )
-      
+
       if (filtered.length === 0) {
         console.log('没有找到匹配项，请重试')
         continue
-      } else if (filtered.length === 1 && filtered[0]) {
+      }
+      else if (filtered.length === 1 && filtered[0]) {
         return filtered[0].value
-      } else {
+      }
+      else {
         console.log(`找到 ${filtered.length} 个匹配项:`)
         choices = filtered
       }

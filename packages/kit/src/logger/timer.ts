@@ -42,7 +42,7 @@ export class Timer {
       label,
       autoLog: options.autoLog !== false,
       precision: options.precision || 2,
-      unit: options.unit || 'auto'
+      unit: options.unit || 'auto',
     }
     this.logger = logger
     this.startTime = this.getHighResTime()
@@ -75,13 +75,14 @@ export class Timer {
   end(log = this.options.autoLog): TimerResult {
     this.endTime = this.getHighResTime()
     const result = this.getResult()
-    
+
     if (log && this.logger) {
       this.logger.info(`${this.label}: ${result.formatted}`)
-    } else if (log) {
+    }
+    else if (log) {
       console.log(`⏱️  ${this.label}: ${result.formatted}`)
     }
-    
+
     return result
   }
 
@@ -127,32 +128,32 @@ export class Timer {
   getResult(): TimerResult {
     const duration = this.getElapsed()
     const { unit, formatted } = this.formatDuration(duration)
-    
+
     return {
       label: this.label,
       duration,
       unit,
-      formatted
+      formatted,
     }
   }
 
   /**
    * 格式化持续时间
    */
-  private formatDuration(ms: number): { unit: string; formatted: string } {
+  private formatDuration(ms: number): { unit: string, formatted: string } {
     const precision = this.options.precision
 
     if (this.options.unit === 'ms') {
       return {
         unit: 'ms',
-        formatted: `${ms.toFixed(precision)}ms`
+        formatted: `${ms.toFixed(precision)}ms`,
       }
     }
 
     if (this.options.unit === 's') {
       return {
         unit: 's',
-        formatted: `${(ms / 1000).toFixed(precision)}s`
+        formatted: `${(ms / 1000).toFixed(precision)}s`,
       }
     }
 
@@ -160,14 +161,14 @@ export class Timer {
     if (ms < 1000) {
       return {
         unit: 'ms',
-        formatted: `${ms.toFixed(precision)}ms`
+        formatted: `${ms.toFixed(precision)}ms`,
       }
     }
 
     if (ms < 60000) {
       return {
         unit: 's',
-        formatted: `${(ms / 1000).toFixed(precision)}s`
+        formatted: `${(ms / 1000).toFixed(precision)}s`,
       }
     }
 
@@ -176,7 +177,7 @@ export class Timer {
       const seconds = ((ms % 60000) / 1000).toFixed(precision)
       return {
         unit: 'm',
-        formatted: `${minutes}m ${seconds}s`
+        formatted: `${minutes}m ${seconds}s`,
       }
     }
 
@@ -185,7 +186,7 @@ export class Timer {
     const seconds = ((ms % 60000) / 1000).toFixed(precision)
     return {
       unit: 'h',
-      formatted: `${hours}h ${minutes}m ${seconds}s`
+      formatted: `${hours}h ${minutes}m ${seconds}s`,
     }
   }
 
@@ -234,15 +235,16 @@ export class Timer {
   static async measure<T>(
     fn: () => T | Promise<T>,
     label?: string,
-    logger?: Logger
-  ): Promise<{ result: T; timer: TimerResult }> {
+    logger?: Logger,
+  ): Promise<{ result: T, timer: TimerResult }> {
     const timer = new Timer(label || 'Function execution', { autoLog: false }, logger)
-    
+
     try {
       const result = await fn()
       const timerResult = timer.end(true)
       return { result, timer: timerResult }
-    } catch (error) {
+    }
+    catch (error) {
       timer.end(false)
       if (logger) {
         logger.error(`${timer.getLabel()} failed: ${error}`)
@@ -257,15 +259,16 @@ export class Timer {
   static measureSync<T>(
     fn: () => T,
     label?: string,
-    logger?: Logger
-  ): { result: T; timer: TimerResult } {
+    logger?: Logger,
+  ): { result: T, timer: TimerResult } {
     const timer = new Timer(label || 'Function execution', { autoLog: false }, logger)
-    
+
     try {
       const result = fn()
       const timerResult = timer.end(true)
       return { result, timer: timerResult }
-    } catch (error) {
+    }
+    catch (error) {
       timer.end(false)
       if (logger) {
         logger.error(`${timer.getLabel()} failed: ${error}`)
@@ -281,10 +284,14 @@ export class Timer {
     fn: () => any | Promise<any>,
     iterations = 1000,
     label?: string,
-    logger?: Logger
+    logger?: Logger,
   ): Promise<BenchmarkResult> {
     const results: number[] = []
-    const overallTimer = new Timer(`${label || 'Benchmark'} (${iterations} iterations)`, { autoLog: false }, logger)
+    const overallTimer = new Timer(
+      `${label || 'Benchmark'} (${iterations} iterations)`,
+      { autoLog: false },
+      logger,
+    )
 
     for (let i = 0; i < iterations; i++) {
       const timer = new Timer('', { autoLog: false })
@@ -294,7 +301,7 @@ export class Timer {
     }
 
     const overallResult = overallTimer.end(true)
-    
+
     const min = Math.min(...results)
     const max = Math.max(...results)
     const avg = results.reduce((sum, time) => sum + time, 0) / results.length
@@ -307,17 +314,25 @@ export class Timer {
       max,
       avg,
       median,
-      results
+      results,
     }
 
     if (logger) {
       logger.info(`Benchmark results for ${label || 'function'}:`)
       logger.info(`  Iterations: ${iterations}`)
       logger.info(`  Total time: ${overallResult.formatted}`)
-      logger.info(`  Average: ${Timer.prototype.formatDuration.call({ options: { precision: 2, unit: 'auto' } }, avg).formatted}`)
-      logger.info(`  Min: ${Timer.prototype.formatDuration.call({ options: { precision: 2, unit: 'auto' } }, min).formatted}`)
-      logger.info(`  Max: ${Timer.prototype.formatDuration.call({ options: { precision: 2, unit: 'auto' } }, max).formatted}`)
-      logger.info(`  Median: ${Timer.prototype.formatDuration.call({ options: { precision: 2, unit: 'auto' } }, median).formatted}`)
+      logger.info(
+        `  Average: ${Timer.prototype.formatDuration.call({ options: { precision: 2, unit: 'auto' } }, avg).formatted}`,
+      )
+      logger.info(
+        `  Min: ${Timer.prototype.formatDuration.call({ options: { precision: 2, unit: 'auto' } }, min).formatted}`,
+      )
+      logger.info(
+        `  Max: ${Timer.prototype.formatDuration.call({ options: { precision: 2, unit: 'auto' } }, max).formatted}`,
+      )
+      logger.info(
+        `  Median: ${Timer.prototype.formatDuration.call({ options: { precision: 2, unit: 'auto' } }, median).formatted}`,
+      )
     }
 
     return benchmarkResult

@@ -3,8 +3,9 @@
  * 提供高级 HTTP 请求功能、重试机制、缓存等
  */
 
+import type { RequestInit, Response } from 'node-fetch'
 import { EventEmitter } from 'node:events'
-import fetch, { RequestInit, Response } from 'node-fetch'
+import fetch from 'node-fetch'
 
 /**
  * HTTP 请求选项
@@ -54,7 +55,7 @@ export class HttpUtils extends EventEmitter {
     retries: 3,
     retryDelay: 1000,
     cacheTTL: 300000, // 5 minutes
-    validateStatus: (status) => status >= 200 && status < 300
+    validateStatus: status => status >= 200 && status < 300,
   }
 
   /**
@@ -62,7 +63,7 @@ export class HttpUtils extends EventEmitter {
    */
   static async get<T = any>(
     url: string,
-    options: HttpRequestOptions = {}
+    options: HttpRequestOptions = {},
   ): Promise<HttpResponse<T>> {
     return this.request<T>(url, { ...options, method: 'GET' })
   }
@@ -73,7 +74,7 @@ export class HttpUtils extends EventEmitter {
   static async post<T = any>(
     url: string,
     data?: any,
-    options: HttpRequestOptions = {}
+    options: HttpRequestOptions = {},
   ): Promise<HttpResponse<T>> {
     return this.request<T>(url, {
       ...options,
@@ -81,8 +82,8 @@ export class HttpUtils extends EventEmitter {
       body: data ? JSON.stringify(data) : undefined,
       headers: {
         'Content-Type': 'application/json',
-        ...options.headers
-      }
+        ...options.headers,
+      },
     })
   }
 
@@ -92,7 +93,7 @@ export class HttpUtils extends EventEmitter {
   static async put<T = any>(
     url: string,
     data?: any,
-    options: HttpRequestOptions = {}
+    options: HttpRequestOptions = {},
   ): Promise<HttpResponse<T>> {
     return this.request<T>(url, {
       ...options,
@@ -100,8 +101,8 @@ export class HttpUtils extends EventEmitter {
       body: data ? JSON.stringify(data) : undefined,
       headers: {
         'Content-Type': 'application/json',
-        ...options.headers
-      }
+        ...options.headers,
+      },
     })
   }
 
@@ -110,7 +111,7 @@ export class HttpUtils extends EventEmitter {
    */
   static async delete<T = any>(
     url: string,
-    options: HttpRequestOptions = {}
+    options: HttpRequestOptions = {},
   ): Promise<HttpResponse<T>> {
     return this.request<T>(url, { ...options, method: 'DELETE' })
   }
@@ -121,7 +122,7 @@ export class HttpUtils extends EventEmitter {
   static async patch<T = any>(
     url: string,
     data?: any,
-    options: HttpRequestOptions = {}
+    options: HttpRequestOptions = {},
   ): Promise<HttpResponse<T>> {
     return this.request<T>(url, {
       ...options,
@@ -129,8 +130,8 @@ export class HttpUtils extends EventEmitter {
       body: data ? JSON.stringify(data) : undefined,
       headers: {
         'Content-Type': 'application/json',
-        ...options.headers
-      }
+        ...options.headers,
+      },
     })
   }
 
@@ -139,11 +140,11 @@ export class HttpUtils extends EventEmitter {
    */
   static async request<T = any>(
     url: string,
-    options: HttpRequestOptions = {}
+    options: HttpRequestOptions = {},
   ): Promise<HttpResponse<T>> {
     const mergedOptions = { ...this.defaultOptions, ...options }
     const cacheKey = options.cacheKey || this.generateCacheKey(url, options)
-    
+
     // 检查缓存
     if (mergedOptions.cache && mergedOptions.method === 'GET') {
       const cached = this.getFromCache(cacheKey)
@@ -155,7 +156,7 @@ export class HttpUtils extends EventEmitter {
           headers: cached.headers,
           url,
           cached: true,
-          duration: 0
+          duration: 0,
         }
       }
     }
@@ -170,7 +171,7 @@ export class HttpUtils extends EventEmitter {
 
         const response = await fetch(url, {
           ...mergedOptions,
-          signal: controller.signal
+          signal: controller.signal,
         })
 
         clearTimeout(timeoutId)
@@ -184,11 +185,13 @@ export class HttpUtils extends EventEmitter {
         let data: T
 
         if (contentType.includes('application/json')) {
-          data = await response.json() as T
-        } else if (contentType.includes('text/')) {
-          data = await response.text() as T
-        } else {
-          data = await response.arrayBuffer() as T
+          data = (await response.json()) as T
+        }
+        else if (contentType.includes('text/')) {
+          data = (await response.text()) as T
+        }
+        else {
+          data = (await response.arrayBuffer()) as T
         }
 
         const headers: Record<string, string> = {}
@@ -202,7 +205,7 @@ export class HttpUtils extends EventEmitter {
           statusText: response.statusText,
           headers,
           url: response.url,
-          duration: Date.now() - startTime
+          duration: Date.now() - startTime,
         }
 
         // 缓存成功的 GET 请求
@@ -211,18 +214,18 @@ export class HttpUtils extends EventEmitter {
             data,
             timestamp: Date.now(),
             ttl: mergedOptions.cacheTTL || this.defaultOptions.cacheTTL!,
-            headers
+            headers,
           })
         }
 
         return result
-
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error
 
         // 检查是否应该重试
         if (attempt < (mergedOptions.retries || 0)) {
-          const shouldRetry = mergedOptions.retryCondition 
+          const shouldRetry = mergedOptions.retryCondition
             ? mergedOptions.retryCondition(error)
             : this.defaultRetryCondition(error)
 
@@ -243,25 +246,26 @@ export class HttpUtils extends EventEmitter {
    * 批量请求
    */
   static async batchRequest<T = any>(
-    requests: Array<{ url: string; options?: HttpRequestOptions }>,
-    concurrency = 5
+    requests: Array<{ url: string, options?: HttpRequestOptions }>,
+    concurrency = 5,
   ): Promise<Array<HttpResponse<T> | Error>> {
     const results: Array<HttpResponse<T> | Error> = []
-    
+
     for (let i = 0; i < requests.length; i += concurrency) {
       const batch = requests.slice(i, i + concurrency)
       const batchPromises = batch.map(async ({ url, options }) => {
         try {
           return await this.request<T>(url, options)
-        } catch (error) {
+        }
+        catch (error) {
           return error as Error
         }
       })
-      
+
       const batchResults = await Promise.all(batchPromises)
       results.push(...batchResults)
     }
-    
+
     return results
   }
 
@@ -271,41 +275,43 @@ export class HttpUtils extends EventEmitter {
   static async downloadFile(
     url: string,
     filePath: string,
-    options: HttpRequestOptions = {}
+    options: HttpRequestOptions = {},
   ): Promise<void> {
     const fs = await import('node:fs')
     const path = await import('node:path')
-    
+
     // 确保目录存在
     await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
-    
+
     const response = await fetch(url, options)
-    
+
     if (!response.ok) {
       throw new Error(`HTTP Error: ${response.status} ${response.statusText}`)
     }
-    
+
     const fileStream = fs.createWriteStream(filePath)
-    
+
     if (response.body) {
       const reader = response.body.getReader()
-      const contentLength = parseInt(response.headers.get('content-length') || '0')
+      const contentLength = Number.parseInt(response.headers.get('content-length') || '0')
       let downloaded = 0
-      
+
       try {
         while (true) {
           const { done, value } = await reader.read()
-          
-          if (done) break
-          
+
+          if (done)
+            break
+
           downloaded += value.length
           fileStream.write(value)
-          
+
           if (options.onProgress && contentLength > 0) {
             options.onProgress(downloaded, contentLength)
           }
         }
-      } finally {
+      }
+      finally {
         fileStream.end()
       }
     }
@@ -318,22 +324,22 @@ export class HttpUtils extends EventEmitter {
     url: string,
     filePath: string,
     fieldName = 'file',
-    options: HttpRequestOptions = {}
+    options: HttpRequestOptions = {},
   ): Promise<HttpResponse> {
     const fs = await import('node:fs')
     const FormData = (await import('form-data')).default
-    
+
     const form = new FormData()
     form.append(fieldName, fs.createReadStream(filePath))
-    
+
     return this.request(url, {
       ...options,
       method: 'POST',
       body: form as any,
       headers: {
         ...form.getHeaders(),
-        ...options.headers
-      }
+        ...options.headers,
+      },
     })
   }
 
@@ -345,10 +351,11 @@ export class HttpUtils extends EventEmitter {
       const response = await this.request(url, {
         method: 'HEAD',
         timeout,
-        retries: 0
+        retries: 0,
       })
       return response.status >= 200 && response.status < 400
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -361,7 +368,8 @@ export class HttpUtils extends EventEmitter {
     try {
       await this.request(url, { method: 'HEAD', retries: 0 })
       return Date.now() - startTime
-    } catch {
+    }
+    catch {
       return -1
     }
   }
@@ -376,7 +384,8 @@ export class HttpUtils extends EventEmitter {
           this.cache.delete(key)
         }
       }
-    } else {
+    }
+    else {
       this.cache.clear()
     }
   }
@@ -404,7 +413,8 @@ export class HttpUtils extends EventEmitter {
 
   private static getFromCache(key: string): CacheEntry | null {
     const entry = this.cache.get(key)
-    if (!entry) return null
+    if (!entry)
+      return null
 
     if (Date.now() - entry.timestamp > entry.ttl) {
       this.cache.delete(key)
@@ -420,11 +430,13 @@ export class HttpUtils extends EventEmitter {
 
   private static defaultRetryCondition(error: any): boolean {
     // 重试网络错误和 5xx 错误
-    return error.code === 'ECONNRESET' ||
-           error.code === 'ENOTFOUND' ||
-           error.code === 'ECONNREFUSED' ||
-           error.code === 'ETIMEDOUT' ||
-           (error.status >= 500 && error.status < 600)
+    return (
+      error.code === 'ECONNRESET'
+      || error.code === 'ENOTFOUND'
+      || error.code === 'ECONNREFUSED'
+      || error.code === 'ETIMEDOUT'
+      || (error.status >= 500 && error.status < 600)
+    )
   }
 
   private static delay(ms: number): Promise<void> {

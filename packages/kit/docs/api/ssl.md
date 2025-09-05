@@ -31,14 +31,14 @@ const sslManager = new SSLManager()
 
 // 自定义配置
 const sslManager = new SSLManager({
-  keySize: 2048,           // 密钥长度
-  algorithm: 'rsa',        // 算法类型
-  validityDays: 365,       // 有效期（天）
-  country: 'CN',           // 国家
-  state: 'Beijing',        // 省份
-  city: 'Beijing',         // 城市
-  organization: 'My Org',  // 组织
-  unit: 'IT Department'    // 部门
+  keySize: 2048, // 密钥长度
+  algorithm: 'rsa', // 算法类型
+  validityDays: 365, // 有效期（天）
+  country: 'CN', // 国家
+  state: 'Beijing', // 省份
+  city: 'Beijing', // 城市
+  organization: 'My Org', // 组织
+  unit: 'IT Department', // 部门
 })
 ```
 
@@ -80,15 +80,10 @@ const certificate = await sslManager.generateSelfSignedCertificate(keyPair, {
   city: 'Beijing',
   validityDays: 365,
   extensions: {
-    subjectAltName: [
-      'DNS:localhost',
-      'DNS:*.example.com',
-      'IP:127.0.0.1',
-      'IP:::1'
-    ],
+    subjectAltName: ['DNS:localhost', 'DNS:*.example.com', 'IP:127.0.0.1', 'IP:::1'],
     keyUsage: ['digitalSignature', 'keyEncipherment'],
-    extKeyUsage: ['serverAuth', 'clientAuth']
-  }
+    extKeyUsage: ['serverAuth', 'clientAuth'],
+  },
 })
 
 console.log('自签名证书:', certificate)
@@ -109,12 +104,8 @@ const csr = await sslManager.generateCSR(keyPair, {
   state: 'California',
   city: 'San Francisco',
   extensions: {
-    subjectAltName: [
-      'DNS:www.example.com',
-      'DNS:example.com',
-      'DNS:api.example.com'
-    ]
-  }
+    subjectAltName: ['DNS:www.example.com', 'DNS:example.com', 'DNS:api.example.com'],
+  },
 })
 
 console.log('证书签名请求:', csr)
@@ -131,8 +122,8 @@ const signedCert = await sslManager.signCertificate(csr, caCertificate, caPrivat
   extensions: {
     basicConstraints: { ca: false },
     keyUsage: ['digitalSignature', 'keyEncipherment'],
-    extKeyUsage: ['serverAuth']
-  }
+    extKeyUsage: ['serverAuth'],
+  },
 })
 
 console.log('已签名证书:', signedCert)
@@ -149,7 +140,7 @@ const validationResult = await sslManager.verifyCertificate(certificate, {
   checkExpiry: true,
   checkChain: true,
   trustedCAs: [caCertificate],
-  hostname: 'www.example.com'
+  hostname: 'www.example.com',
 })
 
 if (validationResult.valid) {
@@ -170,7 +161,7 @@ if (validationResult.valid) {
 const chainResult = await sslManager.verifyCertificateChain([
   leafCertificate,
   intermediateCertificate,
-  rootCertificate
+  rootCertificate,
 ])
 
 if (chainResult.valid) {
@@ -243,7 +234,7 @@ const certBundle = await SSLUtils.generateQuickCertificate({
   organization: 'Development',
   validityDays: 365,
   keySize: 2048,
-  algorithm: 'rsa'
+  algorithm: 'rsa',
 })
 
 console.log('私钥:', certBundle.privateKey)
@@ -259,7 +250,7 @@ console.log('公钥:', certBundle.publicKey)
 const devCert = await SSLUtils.generateDevelopmentCertificate([
   'localhost',
   '127.0.0.1',
-  '*.local.dev'
+  '*.local.dev',
 ])
 
 // 保存证书文件
@@ -301,11 +292,11 @@ console.log('即将过期:', expiryInfo.expiringSoon) // 30天内
 ```typescript
 const strength = SSLUtils.analyzeCertificateStrength(certificate)
 
-console.log('整体评级:', strength.overall)        // A+, A, B, C, D, F
-console.log('密钥强度:', strength.keyStrength)    // 密钥长度评分
+console.log('整体评级:', strength.overall) // A+, A, B, C, D, F
+console.log('密钥强度:', strength.keyStrength) // 密钥长度评分
 console.log('算法强度:', strength.algorithmStrength) // 算法安全性评分
-console.log('配置评分:', strength.configScore)    // 配置安全性评分
-console.log('建议:', strength.recommendations)    // 改进建议
+console.log('配置评分:', strength.configScore) // 配置安全性评分
+console.log('建议:', strength.recommendations) // 改进建议
 ```
 
 ### 证书链工具
@@ -318,7 +309,7 @@ console.log('建议:', strength.recommendations)    // 改进建议
 const orderedChain = SSLUtils.buildCertificateChain([
   rootCertificate,
   leafCertificate,
-  intermediateCertificate
+  intermediateCertificate,
 ])
 
 console.log('正确的证书链顺序:', orderedChain)
@@ -329,10 +320,7 @@ console.log('正确的证书链顺序:', orderedChain)
 查找缺失的中间证书。
 
 ```typescript
-const missingCerts = await SSLUtils.findMissingIntermediates(
-  leafCertificate,
-  [rootCertificate]
-)
+const missingCerts = await SSLUtils.findMissingIntermediates(leafCertificate, [rootCertificate])
 
 console.log('缺失的中间证书:', missingCerts)
 ```
@@ -352,7 +340,7 @@ class HTTPSDevServer {
       'localhost',
       '127.0.0.1',
       '*.local.dev',
-      'dev.myapp.com'
+      'dev.myapp.com',
     ])
 
     // 保存证书文件
@@ -361,7 +349,7 @@ class HTTPSDevServer {
     await FileSystem.writeFile('./certs/dev-key.pem', certBundle.privateKey)
 
     console.log('✅ 开发证书已生成并保存到 ./certs/')
-    
+
     return certBundle
   }
 
@@ -370,17 +358,20 @@ class HTTPSDevServer {
 
     const https = require('https')
     const express = require('express')
-    
+
     const app = express()
-    
+
     app.get('/', (req, res) => {
       res.json({ message: 'HTTPS 开发服务器运行中', secure: true })
     })
 
-    const server = https.createServer({
-      cert: certBundle.certificate,
-      key: certBundle.privateKey
-    }, app)
+    const server = https.createServer(
+      {
+        cert: certBundle.certificate,
+        key: certBundle.privateKey,
+      },
+      app
+    )
 
     server.listen(3443, () => {
       console.log('🚀 HTTPS 开发服务器启动在 https://localhost:3443')
@@ -420,7 +411,7 @@ class CertificateMonitor {
     console.log(`   主题: ${certInfo.subject.commonName}`)
     console.log(`   颁发者: ${certInfo.issuer.commonName}`)
     console.log(`   有效期: ${certInfo.validFrom} - ${certInfo.validTo}`)
-    
+
     if (expiryInfo.expired) {
       console.log(`   ❌ 状态: 已过期`)
     } else if (expiryInfo.expiringSoon) {
@@ -460,7 +451,7 @@ class CertificateMonitor {
           expiringCerts.push({
             path: certPath,
             daysRemaining: expiryInfo.daysRemaining,
-            expiryDate: expiryInfo.expiryDate
+            expiryDate: expiryInfo.expiryDate,
           })
         }
       } catch (error) {
@@ -534,7 +525,7 @@ class CertificateRenewal {
       commonName: config.commonName,
       organization: config.organization,
       validityDays: config.validityDays || 365,
-      extensions: config.extensions
+      extensions: config.extensions,
     })
 
     // 备份旧证书

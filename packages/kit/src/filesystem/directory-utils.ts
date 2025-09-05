@@ -4,8 +4,7 @@
  */
 
 import { promises as fs } from 'node:fs'
-import { join, relative, basename } from 'node:path'
-import type { FileInfo } from '../types'
+import { basename, join } from 'node:path'
 import { FileSystemError } from '../types'
 import { PathUtils } from '../utils'
 import { FileSystem } from './file-system'
@@ -20,10 +19,7 @@ export class DirectoryUtils {
    * @param maxDepth 最大深度
    * @returns 目录树
    */
-  static async getDirectoryTree(
-    dirPath: string,
-    maxDepth = Infinity
-  ): Promise<DirectoryTree> {
+  static async getDirectoryTree(dirPath: string, maxDepth = Infinity): Promise<DirectoryTree> {
     try {
       const stat = await fs.stat(dirPath)
       const tree: DirectoryTree = {
@@ -32,12 +28,12 @@ export class DirectoryUtils {
         type: stat.isDirectory() ? 'directory' : 'file',
         size: stat.size,
         mtime: stat.mtime,
-        children: []
+        children: [],
       }
 
       if (stat.isDirectory() && maxDepth > 0) {
         const entries = await fs.readdir(dirPath, { withFileTypes: true })
-        
+
         for (const entry of entries) {
           const childPath = join(dirPath, entry.name)
           const childTree = await DirectoryUtils.getDirectoryTree(childPath, maxDepth - 1)
@@ -54,7 +50,8 @@ export class DirectoryUtils {
       }
 
       return tree
-    } catch (error) {
+    }
+    catch (error) {
       throw new FileSystemError(`Failed to get directory tree: ${dirPath}`, dirPath, error as Error)
     }
   }
@@ -69,21 +66,26 @@ export class DirectoryUtils {
     try {
       const [tree1, tree2] = await Promise.all([
         DirectoryUtils.getDirectoryTree(dir1),
-        DirectoryUtils.getDirectoryTree(dir2)
+        DirectoryUtils.getDirectoryTree(dir2),
       ])
 
       const comparison: DirectoryComparison = {
         onlyInFirst: [],
         onlyInSecond: [],
         different: [],
-        same: []
+        same: [],
       }
 
       await DirectoryUtils.compareTreeNodes(tree1, tree2, '', comparison)
-      
+
       return comparison
-    } catch (error) {
-      throw new FileSystemError(`Failed to compare directories: ${dir1} vs ${dir2}`, dir1, error as Error)
+    }
+    catch (error) {
+      throw new FileSystemError(
+        `Failed to compare directories: ${dir1} vs ${dir2}`,
+        dir1,
+        error as Error,
+      )
     }
   }
 
@@ -94,7 +96,7 @@ export class DirectoryUtils {
     node1: DirectoryTree,
     node2: DirectoryTree,
     relativePath: string,
-    comparison: DirectoryComparison
+    comparison: DirectoryComparison,
   ): Promise<void> {
     const currentPath = relativePath ? join(relativePath, node1.name) : node1.name
 
@@ -102,7 +104,8 @@ export class DirectoryUtils {
       // 比较文件
       if (node1.size !== node2.size || node1.mtime.getTime() !== node2.mtime.getTime()) {
         comparison.different.push(currentPath)
-      } else {
+      }
+      else {
         comparison.same.push(currentPath)
       }
       return
@@ -150,7 +153,7 @@ export class DirectoryUtils {
       deleteExtra?: boolean
       overwriteNewer?: boolean
       dryRun?: boolean
-    } = {}
+    } = {},
   ): Promise<SyncResult> {
     try {
       const { deleteExtra = false, overwriteNewer = false, dryRun = false } = options
@@ -158,7 +161,7 @@ export class DirectoryUtils {
         copied: [],
         updated: [],
         deleted: [],
-        skipped: []
+        skipped: [],
       }
 
       const comparison = await DirectoryUtils.compareDirectories(sourceDir, targetDir)
@@ -167,11 +170,12 @@ export class DirectoryUtils {
       for (const relativePath of comparison.onlyInFirst) {
         const sourcePath = join(sourceDir, relativePath)
         const targetPath = join(targetDir, relativePath)
-        
+
         if (!dryRun) {
           if (await FileSystem.isDirectory(sourcePath)) {
             await FileSystem.createDir(targetPath)
-          } else {
+          }
+          else {
             await FileSystem.copyFile(sourcePath, targetPath)
           }
         }
@@ -182,11 +186,12 @@ export class DirectoryUtils {
       if (deleteExtra) {
         for (const relativePath of comparison.onlyInSecond) {
           const targetPath = join(targetDir, relativePath)
-          
+
           if (!dryRun) {
             if (await FileSystem.isDirectory(targetPath)) {
               await FileSystem.removeDir(targetPath)
-            } else {
+            }
+            else {
               await FileSystem.removeFile(targetPath)
             }
           }
@@ -198,11 +203,11 @@ export class DirectoryUtils {
       for (const relativePath of comparison.different) {
         const sourcePath = join(sourceDir, relativePath)
         const targetPath = join(targetDir, relativePath)
-        
+
         if (await FileSystem.isFile(sourcePath)) {
           const [sourceStat, targetStat] = await Promise.all([
             fs.stat(sourcePath),
-            fs.stat(targetPath)
+            fs.stat(targetPath),
           ])
 
           if (overwriteNewer || sourceStat.mtime > targetStat.mtime) {
@@ -210,15 +215,21 @@ export class DirectoryUtils {
               await FileSystem.copyFile(sourcePath, targetPath)
             }
             result.updated.push(relativePath)
-          } else {
+          }
+          else {
             result.skipped.push(relativePath)
           }
         }
       }
 
       return result
-    } catch (error) {
-      throw new FileSystemError(`Failed to sync directories: ${sourceDir} -> ${targetDir}`, sourceDir, error as Error)
+    }
+    catch (error) {
+      throw new FileSystemError(
+        `Failed to sync directories: ${sourceDir} -> ${targetDir}`,
+        sourceDir,
+        error as Error,
+      )
     }
   }
 
@@ -237,16 +248,23 @@ export class DirectoryUtils {
         if (typeof content === 'string') {
           // 文件内容
           await FileSystem.writeFile(fullPath, content)
-        } else if (content === null) {
+        }
+        else if (content === null) {
           // 空文件
           await FileSystem.writeFile(fullPath, '')
-        } else {
+        }
+        else {
           // 子目录
           await DirectoryUtils.createStructure(fullPath, content)
         }
       }
-    } catch (error) {
-      throw new FileSystemError(`Failed to create directory structure: ${basePath}`, basePath, error as Error)
+    }
+    catch (error) {
+      throw new FileSystemError(
+        `Failed to create directory structure: ${basePath}`,
+        basePath,
+        error as Error,
+      )
     }
   }
 
@@ -264,14 +282,19 @@ export class DirectoryUtils {
         filesByExtension: {},
         largestFile: { path: '', size: 0 },
         oldestFile: { path: '', mtime: new Date() },
-        newestFile: { path: '', mtime: new Date(0) }
+        newestFile: { path: '', mtime: new Date(0) },
       }
 
       await DirectoryUtils.collectStats(dirPath, stats)
 
       return stats
-    } catch (error) {
-      throw new FileSystemError(`Failed to get directory stats: ${dirPath}`, dirPath, error as Error)
+    }
+    catch (error) {
+      throw new FileSystemError(
+        `Failed to get directory stats: ${dirPath}`,
+        dirPath,
+        error as Error,
+      )
     }
   }
 
@@ -287,9 +310,10 @@ export class DirectoryUtils {
       if (entry.isDirectory()) {
         stats.totalDirectories++
         await DirectoryUtils.collectStats(fullPath, stats)
-      } else if (entry.isFile()) {
+      }
+      else if (entry.isFile()) {
         stats.totalFiles++
-        
+
         const stat = await fs.stat(fullPath)
         stats.totalSize += stat.size
 
@@ -344,8 +368,13 @@ export class DirectoryUtils {
       }
 
       return deletedCount
-    } catch (error) {
-      throw new FileSystemError(`Failed to clean empty directories: ${dirPath}`, dirPath, error as Error)
+    }
+    catch (error) {
+      throw new FileSystemError(
+        `Failed to clean empty directories: ${dirPath}`,
+        dirPath,
+        error as Error,
+      )
     }
   }
 
@@ -357,10 +386,10 @@ export class DirectoryUtils {
    */
   static async getDirectorySizeDistribution(
     dirPath: string,
-    maxDepth = 2
-  ): Promise<Array<{ path: string; size: number; percentage: number }>> {
+    maxDepth = 2,
+  ): Promise<Array<{ path: string, size: number, percentage: number }>> {
     try {
-      const distribution: Array<{ path: string; size: number }> = []
+      const distribution: Array<{ path: string, size: number }> = []
       await DirectoryUtils.collectSizeDistribution(dirPath, '', maxDepth, distribution)
 
       // 计算总大小
@@ -370,11 +399,16 @@ export class DirectoryUtils {
       return distribution
         .map(item => ({
           ...item,
-          percentage: totalSize > 0 ? (item.size / totalSize) * 100 : 0
+          percentage: totalSize > 0 ? (item.size / totalSize) * 100 : 0,
         }))
         .sort((a, b) => b.size - a.size)
-    } catch (error) {
-      throw new FileSystemError(`Failed to get directory size distribution: ${dirPath}`, dirPath, error as Error)
+    }
+    catch (error) {
+      throw new FileSystemError(
+        `Failed to get directory size distribution: ${dirPath}`,
+        dirPath,
+        error as Error,
+      )
     }
   }
 
@@ -385,7 +419,7 @@ export class DirectoryUtils {
     dirPath: string,
     relativePath: string,
     maxDepth: number,
-    distribution: Array<{ path: string; size: number }>
+    distribution: Array<{ path: string, size: number }>,
   ): Promise<number> {
     let totalSize = 0
     const entries = await fs.readdir(dirPath, { withFileTypes: true })
@@ -397,13 +431,14 @@ export class DirectoryUtils {
       if (entry.isFile()) {
         const stat = await fs.stat(fullPath)
         totalSize += stat.size
-      } else if (entry.isDirectory()) {
+      }
+      else if (entry.isDirectory()) {
         if (maxDepth > 0) {
           const subDirSize = await DirectoryUtils.collectSizeDistribution(
             fullPath,
             entryRelativePath,
             maxDepth - 1,
-            distribution
+            distribution,
           )
           totalSize += subDirSize
         }
@@ -451,7 +486,7 @@ interface DirectoryStats {
   totalDirectories: number
   totalSize: number
   filesByExtension: Record<string, number>
-  largestFile: { path: string; size: number }
-  oldestFile: { path: string; mtime: Date }
-  newestFile: { path: string; mtime: Date }
+  largestFile: { path: string, size: number }
+  oldestFile: { path: string, mtime: Date }
+  newestFile: { path: string, mtime: Date }
 }

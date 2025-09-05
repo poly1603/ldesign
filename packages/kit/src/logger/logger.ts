@@ -3,8 +3,8 @@
  * 提供基础的日志记录功能
  */
 
+import type { LogEntry, LogFormatter, LoggerOptions, LogLevel, LogTransport } from '../types'
 import { EventEmitter } from 'node:events'
-import type { LogLevel, LogEntry, LoggerOptions, LogTransport, LogFormatter } from '../types'
 import { ConsoleLogger } from './console-logger'
 
 /**
@@ -33,15 +33,17 @@ export class Logger extends EventEmitter {
       maxSize: 10 * 1024 * 1024, // 10MB
       maxLogs: 1000,
       silent: false,
-      ...options
+      ...options,
     } as Required<LoggerOptions>
 
     // 默认添加控制台传输器
     if (!this.options.silent) {
-      this.addTransport(new ConsoleLogger({
-        colors: this.options.colors,
-        timestamp: this.options.timestamp
-      }))
+      this.addTransport(
+        new ConsoleLogger({
+          colors: this.options.colors,
+          timestamp: this.options.timestamp,
+        }),
+      )
     }
 
     // 注册实例
@@ -198,7 +200,7 @@ export class Logger extends EventEmitter {
       timestamp: new Date(),
       data,
       module: this.options.module,
-      type
+      type,
     }
 
     // 添加到内存日志
@@ -219,7 +221,7 @@ export class Logger extends EventEmitter {
       debug: 0,
       info: 1,
       warn: 2,
-      error: 3
+      error: 3,
     }
 
     const currentLevel = this.options.level
@@ -245,7 +247,8 @@ export class Logger extends EventEmitter {
     const promises = this.transports.map(async (transport) => {
       try {
         await transport.log(entry)
-      } catch (error) {
+      }
+      catch (error) {
         this.emit('transportError', { transport, error, entry })
       }
     })
@@ -286,9 +289,7 @@ export class Logger extends EventEmitter {
    * 按时间范围获取日志
    */
   getLogsByTimeRange(start: Date, end: Date): LogEntry[] {
-    return this.logs.filter(entry =>
-      entry.timestamp >= start && entry.timestamp <= end
-    )
+    return this.logs.filter(entry => entry.timestamp >= start && entry.timestamp <= end)
   }
 
   /**
@@ -306,14 +307,14 @@ export class Logger extends EventEmitter {
           log.level,
           log.module || '',
           `"${log.message.replace(/"/g, '""')}"`,
-          log.data ? `"${JSON.stringify(log.data).replace(/"/g, '""')}"` : ''
+          log.data ? `"${JSON.stringify(log.data).replace(/"/g, '""')}"` : '',
         ])
         return [headers.join(','), ...rows.map(row => row.join(','))].join('\n')
       }
 
       case 'txt':
         return this.logs
-          .map(log => {
+          .map((log) => {
             const timestamp = log.timestamp.toISOString()
             const module = log.module ? `[${log.module}]` : ''
             const dataStr = log.data ? ` | Data: ${JSON.stringify(log.data)}` : ''
@@ -334,7 +335,7 @@ export class Logger extends EventEmitter {
     const childOptions = {
       ...this.options,
       ...options,
-      module: childName
+      module: childName,
     }
 
     return new Logger(childName, childOptions)

@@ -3,8 +3,8 @@
  * 提供全局事件发布订阅机制
  */
 
+import type { EventBusOptions, EventFilter, EventListener } from '../types'
 import { EventEmitter } from './event-emitter'
-import type { EventListener, EventBusOptions, EventFilter } from '../types'
 
 /**
  * 事件总线类
@@ -24,12 +24,12 @@ export class EventBus {
       enableFilters: options.enableFilters !== false,
       enableMiddleware: options.enableMiddleware !== false,
       maxListeners: options.maxListeners || 100,
-      enableStats: options.enableStats !== false
+      enableStats: options.enableStats !== false,
     }
 
     this.emitter = new EventEmitter({
       maxListeners: this.options.maxListeners,
-      enableStats: this.options.enableStats
+      enableStats: this.options.enableStats,
     })
 
     // 创建默认频道
@@ -49,15 +49,19 @@ export class EventBus {
   /**
    * 订阅事件
    */
-  on(event: string, listener: EventListener, options: {
-    channel?: string
-    priority?: number
-    namespace?: string
-    tags?: string[]
-    filter?: EventFilter
-  } = {}): this {
+  on(
+    event: string,
+    listener: EventListener,
+    options: {
+      channel?: string
+      priority?: number
+      namespace?: string
+      tags?: string[]
+      filter?: EventFilter
+    } = {},
+  ): this {
     const channel = this.getOrCreateChannel(options.channel || 'default')
-    
+
     // 添加过滤器
     if (options.filter && this.options.enableFilters) {
       this.addFilter(event, options.filter)
@@ -66,7 +70,7 @@ export class EventBus {
     channel.on(event, listener, {
       priority: options.priority,
       namespace: options.namespace,
-      tags: options.tags
+      tags: options.tags,
     })
 
     return this
@@ -75,15 +79,19 @@ export class EventBus {
   /**
    * 订阅一次性事件
    */
-  once(event: string, listener: EventListener, options: {
-    channel?: string
-    priority?: number
-    namespace?: string
-    tags?: string[]
-    filter?: EventFilter
-  } = {}): this {
+  once(
+    event: string,
+    listener: EventListener,
+    options: {
+      channel?: string
+      priority?: number
+      namespace?: string
+      tags?: string[]
+      filter?: EventFilter
+    } = {},
+  ): this {
     const channel = this.getOrCreateChannel(options.channel || 'default')
-    
+
     // 添加过滤器
     if (options.filter && this.options.enableFilters) {
       this.addFilter(event, options.filter)
@@ -92,7 +100,7 @@ export class EventBus {
     channel.once(event, listener, {
       priority: options.priority,
       namespace: options.namespace,
-      tags: options.tags
+      tags: options.tags,
     })
 
     return this
@@ -186,7 +194,7 @@ export class EventBus {
 
     const channel = new EventEmitter({
       maxListeners: this.options.maxListeners,
-      enableStats: this.options.enableStats
+      enableStats: this.options.enableStats,
     })
 
     this.channels.set(name, channel)
@@ -272,7 +280,8 @@ export class EventBus {
   removeFilter(event: string, filter?: EventFilter): this {
     if (!filter) {
       this.filters.delete(event)
-    } else {
+    }
+    else {
       const filters = this.filters.get(event)
       if (filters) {
         const index = filters.indexOf(filter)
@@ -306,7 +315,8 @@ export class EventBus {
       if (index < this.middleware.length) {
         const middleware = this.middleware[index++]
         middleware(event, args, next)
-      } else {
+      }
+      else {
         // 所有中间件都执行完毕，发射事件
         emitter.emit(event, ...args)
       }
@@ -321,10 +331,10 @@ export class EventBus {
    */
   private emitWildcardEvents(emitter: EventEmitter, event: string, args: any[]): void {
     const parts = event.split('.')
-    
+
     // 发射父级通配符事件
     for (let i = parts.length - 1; i > 0; i--) {
-      const wildcardEvent = parts.slice(0, i).join('.') + '.*'
+      const wildcardEvent = `${parts.slice(0, i).join('.')}.*`
       emitter.emit(wildcardEvent, event, ...args)
     }
 
@@ -341,7 +351,8 @@ export class EventBus {
       if (channelEmitter) {
         channelEmitter.removeListenersByNamespace(namespace)
       }
-    } else {
+    }
+    else {
       for (const channelEmitter of this.channels.values()) {
         channelEmitter.removeListenersByNamespace(namespace)
       }
@@ -358,7 +369,8 @@ export class EventBus {
       if (channelEmitter) {
         channelEmitter.removeListenersByTag(tag)
       }
-    } else {
+    }
+    else {
       for (const channelEmitter of this.channels.values()) {
         channelEmitter.removeListenersByTag(tag)
       }
@@ -402,7 +414,8 @@ export class EventBus {
       if (channelEmitter) {
         channelEmitter.resetStats()
       }
-    } else {
+    }
+    else {
       for (const channelEmitter of this.channels.values()) {
         channelEmitter.resetStats()
       }
@@ -419,7 +432,8 @@ export class EventBus {
       if (channelEmitter) {
         channelEmitter.removeAllListeners()
       }
-    } else {
+    }
+    else {
       for (const channelEmitter of this.channels.values()) {
         channelEmitter.removeAllListeners()
       }

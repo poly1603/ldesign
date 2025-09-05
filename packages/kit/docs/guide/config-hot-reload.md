@@ -16,12 +16,12 @@ const cache = new ConfigCache({
   maxSize: 1000,
   ttl: 3600000, // 1 hour
   enableVersioning: true,
-  maxVersions: 10
+  maxVersions: 10,
 })
 
 // 设置配置
 cache.set('database.host', 'localhost', {
-  dependencies: ['database.port', 'database.name']
+  dependencies: ['database.port', 'database.name'],
 })
 
 // 获取配置
@@ -30,11 +30,11 @@ const host = cache.get('database.host')
 // 智能重载
 const changes = cache.smartReload({
   'database.host': 'new-host',
-  'database.port': 5432
+  'database.port': 5432,
 })
 
 // 监听变更
-cache.on('changed', (change) => {
+cache.on('changed', change => {
   console.log(`配置 ${change.path} 已更新`)
 })
 ```
@@ -55,14 +55,14 @@ const hotReload = new ConfigHotReload(cache, loader, {
   debounceMs: 500,
   enableDependencyTracking: true,
   enableIncrementalUpdate: true,
-  enableRollback: true
+  enableRollback: true,
 })
 
 // 启用热重载
 await hotReload.enable('config.json', './config')
 
 // 监听重载事件
-hotReload.on('reloadCompleted', (result) => {
+hotReload.on('reloadCompleted', result => {
   console.log(`重载完成，变更了 ${result.changes.length} 个配置项`)
 })
 
@@ -75,20 +75,24 @@ const result = await hotReload.reload('manual')
 扩展的配置系统现在支持更多文件格式：
 
 ### JavaScript 系列
+
 - `.js` - CommonJS 模块
 - `.mjs` - ES 模块
 - `.cjs` - CommonJS 模块（显式）
 
 ### TypeScript 系列
+
 - `.ts` - TypeScript 文件
 - `.mts` - TypeScript ES 模块
 - `.cts` - TypeScript CommonJS 模块
 
 ### JSON 系列
+
 - `.json` - 标准 JSON
 - `.json5` - JSON5 格式（支持注释和更灵活的语法）
 
 ### 环境配置
+
 - `.env` - 环境变量文件
 - `.env.local` - 本地环境变量
 - `.env.development` - 开发环境变量
@@ -96,6 +100,7 @@ const result = await hotReload.reload('manual')
 - `.env.test` - 测试环境变量
 
 ### 其他格式
+
 - `.yaml` / `.yml` - YAML 格式
 - `.toml` - TOML 格式
 
@@ -108,19 +113,19 @@ const result = await hotReload.reload('manual')
 {
   // 数据库配置
   database: {
-    host: "localhost",
+    host: 'localhost',
     port: 5432,
-    name: "myapp",
+    name: 'myapp',
     // 支持注释
-    ssl: true
+    ssl: true,
   },
-  
+
   // 应用配置
   app: {
-    name: "My Application",
-    version: "1.0.0",
+    name: 'My Application',
+    version: '1.0.0',
     debug: true, // 尾随逗号
-  }
+  },
 }
 ```
 
@@ -132,14 +137,14 @@ export default {
   database: {
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT || '5432'),
-    name: process.env.DB_NAME || 'myapp'
+    name: process.env.DB_NAME || 'myapp',
   },
-  
+
   app: {
     name: 'My Application',
     version: '1.0.0',
-    debug: process.env.NODE_ENV === 'development'
-  }
+    debug: process.env.NODE_ENV === 'development',
+  },
 }
 ```
 
@@ -150,7 +155,7 @@ export default {
 ```typescript
 // 设置配置依赖关系
 cache.set('redis.url', 'redis://localhost:6379', {
-  dependencies: ['redis.host', 'redis.port']
+  dependencies: ['redis.host', 'redis.port'],
 })
 
 // 当依赖项变更时，会自动更新相关配置
@@ -164,7 +169,7 @@ cache.set('redis.host', 'new-host')
 // 启用版本管理
 const cache = new ConfigCache({
   enableVersioning: true,
-  maxVersions: 10
+  maxVersions: 10,
 })
 
 // 获取版本历史
@@ -178,12 +183,12 @@ cache.rollbackToVersion('database.host', 5)
 
 ```typescript
 // 监听特定配置的变更
-cache.on('changed:database.host', (change) => {
+cache.on('changed:database.host', change => {
   console.log('数据库主机已更改:', change.newValue)
 })
 
 // 监听批量变更
-cache.on('batchChanged', (changes) => {
+cache.on('batchChanged', changes => {
   console.log(`批量更新了 ${changes.length} 个配置项`)
 })
 ```
@@ -223,9 +228,9 @@ validator.setSchema({
     type: 'object',
     properties: {
       host: { type: 'string', required: true },
-      port: { type: 'number', minimum: 1, maximum: 65535 }
-    }
-  }
+      port: { type: 'number', minimum: 1, maximum: 65535 },
+    },
+  },
 })
 
 // 验证配置
@@ -248,7 +253,7 @@ const cache = new ConfigCache({
 const cache = new ConfigCache({
   enableCompression: true,
   enableEncryption: true,
-  encryptionKey: process.env.CONFIG_ENCRYPTION_KEY
+  encryptionKey: process.env.CONFIG_ENCRYPTION_KEY,
 })
 ```
 
@@ -257,6 +262,7 @@ const cache = new ConfigCache({
 ### 常见问题
 
 1. **配置文件格式错误**
+
    ```typescript
    // 检查配置文件语法
    try {
@@ -267,6 +273,7 @@ const cache = new ConfigCache({
    ```
 
 2. **热重载不工作**
+
    ```typescript
    // 检查文件监听状态
    const stats = hotReload.getStats()
@@ -274,10 +281,11 @@ const cache = new ConfigCache({
    ```
 
 3. **配置缓存过期**
+
    ```typescript
    // 手动清理过期缓存
    cache.cleanup()
-   
+
    // 或者调整 TTL
    cache.updateOptions({ ttl: 600000 }) // 10 minutes
    ```
@@ -287,7 +295,7 @@ const cache = new ConfigCache({
 ```typescript
 // 启用详细日志
 const hotReload = new ConfigHotReload(cache, loader, {
-  debug: true
+  debug: true,
 })
 
 // 监听所有事件

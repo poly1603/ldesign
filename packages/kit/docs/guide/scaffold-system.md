@@ -23,7 +23,7 @@ const scaffold = new ScaffoldManager({
   environments: ['development', 'production', 'staging', 'test'],
   defaultEnvironment: 'development',
   enableHotReload: true,
-  enableCache: true
+  enableCache: true,
 })
 
 // 初始化脚手架
@@ -35,7 +35,7 @@ const result = await scaffold.createProject({
   template: 'vue-app',
   environment: 'development',
   interactive: true,
-  overwrite: false
+  overwrite: false,
 })
 
 console.log('项目创建结果:', result)
@@ -50,7 +50,7 @@ import { TemplateManager } from '@ldesign/kit/scaffold'
 
 const templateManager = new TemplateManager({
   templatesDir: './templates',
-  logger: console
+  logger: console,
 })
 
 await templateManager.initialize()
@@ -60,15 +60,11 @@ const templates = templateManager.getTemplateNames()
 console.log('可用模板:', templates)
 
 // 渲染模板
-const files = await templateManager.renderTemplate(
-  'vue-app',
-  './output',
-  {
-    projectName: 'my-vue-app',
-    author: 'John Doe',
-    description: 'A Vue.js application'
-  }
-)
+const files = await templateManager.renderTemplate('vue-app', './output', {
+  projectName: 'my-vue-app',
+  author: 'John Doe',
+  description: 'A Vue.js application',
+})
 
 console.log('生成的文件:', files)
 ```
@@ -82,7 +78,7 @@ import { PluginManager } from '@ldesign/kit/scaffold'
 
 const pluginManager = new PluginManager({
   pluginsDir: './plugins',
-  logger: console
+  logger: console,
 })
 
 await pluginManager.initialize()
@@ -105,7 +101,7 @@ import { EnvironmentManager } from '@ldesign/kit/scaffold'
 const envManager = new EnvironmentManager({
   environments: ['development', 'production', 'staging', 'test'],
   defaultEnvironment: 'development',
-  logger: console
+  logger: console,
 })
 
 await envManager.initialize()
@@ -131,7 +127,7 @@ import { CliBuilder, ScaffoldManager } from '@ldesign/kit/scaffold'
 // 创建脚手架管理器
 const scaffold = new ScaffoldManager({
   name: 'my-cli',
-  version: '1.0.0'
+  version: '1.0.0',
 })
 
 // 创建 CLI 构建器
@@ -139,7 +135,7 @@ const cli = new CliBuilder({
   name: 'my-cli',
   version: '1.0.0',
   description: '我的项目脚手架工具',
-  scaffoldManager: scaffold
+  scaffoldManager: scaffold,
 })
 
 // 解析命令行参数
@@ -151,6 +147,7 @@ cli.parse()
 CLI 构建器提供了以下内置命令：
 
 #### 创建项目
+
 ```bash
 # 交互式创建项目
 my-cli create my-project
@@ -169,6 +166,7 @@ my-cli create my-project -p eslint,prettier,husky
 ```
 
 #### 列出资源
+
 ```bash
 # 列出所有模板
 my-cli list templates
@@ -184,6 +182,7 @@ my-cli list templates -d
 ```
 
 #### 环境管理
+
 ```bash
 # 显示当前环境
 my-cli env current
@@ -196,6 +195,7 @@ my-cli env -s production
 ```
 
 #### 插件管理
+
 ```bash
 # 列出插件
 my-cli plugin list
@@ -205,6 +205,7 @@ my-cli plugin install -n eslint-config -p ./my-project
 ```
 
 #### 配置管理
+
 ```bash
 # 获取配置
 my-cli config get -k database.host
@@ -350,17 +351,17 @@ module.exports = {
   async install(context) {
     const { projectPath, logger, fileSystem } = context
     logger?.info('安装 ESLint 配置...')
-    
+
     // 创建 .eslintrc.js
     const eslintConfig = {
       extends: ['@typescript-eslint/recommended'],
       parser: '@typescript-eslint/parser',
       rules: {
         'no-console': 'warn',
-        'no-unused-vars': 'error'
-      }
+        'no-unused-vars': 'error',
+      },
     }
-    
+
     await fileSystem.writeFile(
       `${projectPath}/.eslintrc.js`,
       `module.exports = ${JSON.stringify(eslintConfig, null, 2)}`
@@ -370,7 +371,7 @@ module.exports = {
   async afterCreate(context) {
     const { projectPath, logger } = context
     logger?.info('ESLint 配置已应用')
-  }
+  },
 }
 ```
 
@@ -391,8 +392,8 @@ envManager.setEnvironmentConfig('staging', {
   name: 'staging',
   extends: 'production',
   variables: {
-    DEBUG: true
-  }
+    DEBUG: true,
+  },
 })
 ```
 
@@ -454,6 +455,7 @@ my-cli/
 ### 常见问题
 
 1. **模板渲染失败**
+
    ```typescript
    // 检查模板语法
    const validation = templateManager.validateTemplate('vue-app')
@@ -461,6 +463,7 @@ my-cli/
    ```
 
 2. **插件安装失败**
+
    ```typescript
    // 检查插件配置
    const plugin = pluginManager.getPlugin('eslint-config')
@@ -480,7 +483,7 @@ my-cli/
 // 启用详细日志
 const scaffold = new ScaffoldManager({
   name: 'my-cli',
-  logLevel: 'debug'
+  logLevel: 'debug',
 })
 
 // 监听所有事件

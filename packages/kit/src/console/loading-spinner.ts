@@ -3,9 +3,9 @@
  * 提供多种样式的加载动画效果
  */
 
+import type { Ora } from 'ora'
 import { EventEmitter } from 'node:events'
 import ora from 'ora'
-import type { Ora } from 'ora'
 import { ConsoleTheme } from './console-theme'
 
 /**
@@ -38,13 +38,61 @@ export interface SpinnerConfig {
 /**
  * 预定义动画类型
  */
-export type SpinnerType = 
-  | 'dots' | 'dots2' | 'dots3' | 'dots4' | 'dots5' | 'dots6' | 'dots7' | 'dots8' | 'dots9' | 'dots10' | 'dots11' | 'dots12'
-  | 'line' | 'line2' | 'pipe' | 'simpleDots' | 'simpleDotsScrolling' | 'star' | 'star2' | 'flip' | 'hamburger'
-  | 'growVertical' | 'growHorizontal' | 'balloon' | 'balloon2' | 'noise' | 'bounce' | 'boxBounce' | 'boxBounce2'
-  | 'triangle' | 'arc' | 'circle' | 'squareCorners' | 'circleQuarters' | 'circleHalves' | 'squish' | 'toggle'
-  | 'toggle2' | 'toggle3' | 'toggle4' | 'toggle5' | 'toggle6' | 'toggle7' | 'toggle8' | 'toggle9' | 'toggle10'
-  | 'toggle11' | 'toggle12' | 'toggle13' | 'arrow' | 'arrow2' | 'arrow3' | 'bouncingBar' | 'bouncingBall'
+export type SpinnerType =
+  | 'dots'
+  | 'dots2'
+  | 'dots3'
+  | 'dots4'
+  | 'dots5'
+  | 'dots6'
+  | 'dots7'
+  | 'dots8'
+  | 'dots9'
+  | 'dots10'
+  | 'dots11'
+  | 'dots12'
+  | 'line'
+  | 'line2'
+  | 'pipe'
+  | 'simpleDots'
+  | 'simpleDotsScrolling'
+  | 'star'
+  | 'star2'
+  | 'flip'
+  | 'hamburger'
+  | 'growVertical'
+  | 'growHorizontal'
+  | 'balloon'
+  | 'balloon2'
+  | 'noise'
+  | 'bounce'
+  | 'boxBounce'
+  | 'boxBounce2'
+  | 'triangle'
+  | 'arc'
+  | 'circle'
+  | 'squareCorners'
+  | 'circleQuarters'
+  | 'circleHalves'
+  | 'squish'
+  | 'toggle'
+  | 'toggle2'
+  | 'toggle3'
+  | 'toggle4'
+  | 'toggle5'
+  | 'toggle6'
+  | 'toggle7'
+  | 'toggle8'
+  | 'toggle9'
+  | 'toggle10'
+  | 'toggle11'
+  | 'toggle12'
+  | 'toggle13'
+  | 'arrow'
+  | 'arrow2'
+  | 'arrow3'
+  | 'bouncingBar'
+  | 'bouncingBall'
 
 /**
  * 加载状态
@@ -63,7 +111,7 @@ export class LoadingSpinner extends EventEmitter {
 
   constructor(options: LoadingSpinnerOptions = {}) {
     super()
-    
+
     this.theme = ConsoleTheme.create(options.theme)
     this.options = {
       text: options.text || 'Loading...',
@@ -78,7 +126,7 @@ export class LoadingSpinner extends EventEmitter {
       isSilent: options.isSilent !== false,
       discardStdin: options.discardStdin !== false,
       prefixText: options.prefixText,
-      suffixText: options.suffixText
+      suffixText: options.suffixText,
     }
   }
 
@@ -99,7 +147,7 @@ export class LoadingSpinner extends EventEmitter {
       stream: this.options.stream,
       isEnabled: this.options.isEnabled,
       isSilent: this.options.isSilent,
-      discardStdin: this.options.discardStdin
+      discardStdin: this.options.discardStdin,
     }
 
     if (this.options.interval) {
@@ -298,71 +346,89 @@ export class LoadingSpinner extends EventEmitter {
   /**
    * 创建简单加载动画
    */
-  static createSimple(text = 'Loading...', options: Partial<LoadingSpinnerOptions> = {}): LoadingSpinner {
+  static createSimple(
+    text = 'Loading...',
+    options: Partial<LoadingSpinnerOptions> = {},
+  ): LoadingSpinner {
     return new LoadingSpinner({
       text,
       spinner: 'dots',
-      ...options
+      ...options,
     })
   }
 
   /**
    * 创建点状加载动画
    */
-  static createDots(text = 'Processing...', options: Partial<LoadingSpinnerOptions> = {}): LoadingSpinner {
+  static createDots(
+    text = 'Processing...',
+    options: Partial<LoadingSpinnerOptions> = {},
+  ): LoadingSpinner {
     return new LoadingSpinner({
       text,
       spinner: 'dots',
       color: 'cyan',
-      ...options
+      ...options,
     })
   }
 
   /**
    * 创建线条加载动画
    */
-  static createLine(text = 'Working...', options: Partial<LoadingSpinnerOptions> = {}): LoadingSpinner {
+  static createLine(
+    text = 'Working...',
+    options: Partial<LoadingSpinnerOptions> = {},
+  ): LoadingSpinner {
     return new LoadingSpinner({
       text,
       spinner: 'line',
       color: 'yellow',
-      ...options
+      ...options,
     })
   }
 
   /**
    * 创建弹跳加载动画
    */
-  static createBounce(text = 'Loading...', options: Partial<LoadingSpinnerOptions> = {}): LoadingSpinner {
+  static createBounce(
+    text = 'Loading...',
+    options: Partial<LoadingSpinnerOptions> = {},
+  ): LoadingSpinner {
     return new LoadingSpinner({
       text,
       spinner: 'bounce',
       color: 'green',
-      ...options
+      ...options,
     })
   }
 
   /**
    * 创建圆形加载动画
    */
-  static createCircle(text = 'Please wait...', options: Partial<LoadingSpinnerOptions> = {}): LoadingSpinner {
+  static createCircle(
+    text = 'Please wait...',
+    options: Partial<LoadingSpinnerOptions> = {},
+  ): LoadingSpinner {
     return new LoadingSpinner({
       text,
       spinner: 'circle',
       color: 'blue',
-      ...options
+      ...options,
     })
   }
 
   /**
    * 创建箭头加载动画
    */
-  static createArrow(text = 'Processing...', options: Partial<LoadingSpinnerOptions> = {}): LoadingSpinner {
+  static createArrow(
+    text = 'Processing...',
+    options: Partial<LoadingSpinnerOptions> = {},
+  ): LoadingSpinner {
     return new LoadingSpinner({
       text,
       spinner: 'arrow3',
       color: 'magenta',
-      ...options
+      ...options,
     })
   }
 
@@ -373,12 +439,12 @@ export class LoadingSpinner extends EventEmitter {
     frames: string[],
     interval: number,
     text = 'Loading...',
-    options: Partial<LoadingSpinnerOptions> = {}
+    options: Partial<LoadingSpinnerOptions> = {},
   ): LoadingSpinner {
     return new LoadingSpinner({
       text,
       spinner: { frames, interval },
-      ...options
+      ...options,
     })
   }
 
@@ -388,19 +454,19 @@ export class LoadingSpinner extends EventEmitter {
   static createThemed(
     themeName: string,
     text = 'Loading...',
-    options: Partial<LoadingSpinnerOptions> = {}
+    options: Partial<LoadingSpinnerOptions> = {},
   ): LoadingSpinner {
     const theme = ConsoleTheme.create(themeName)
     const themeConfig = theme.getCurrentTheme()
-    
+
     return new LoadingSpinner({
       text,
       spinner: {
         frames: themeConfig.spinner.frames,
-        interval: themeConfig.spinner.interval
+        interval: themeConfig.spinner.interval,
       },
       theme: themeName,
-      ...options
+      ...options,
     })
   }
 
@@ -408,8 +474,8 @@ export class LoadingSpinner extends EventEmitter {
    * 创建多阶段加载动画
    */
   static createMultiStage(
-    stages: Array<{ text: string; duration?: number }>,
-    options: Partial<LoadingSpinnerOptions> = {}
+    stages: Array<{ text: string, duration?: number }>,
+    options: Partial<LoadingSpinnerOptions> = {},
   ): LoadingSpinner {
     const spinner = new LoadingSpinner(options)
     let currentStage = 0
@@ -418,7 +484,7 @@ export class LoadingSpinner extends EventEmitter {
       if (currentStage < stages.length) {
         const stage = stages[currentStage]
         spinner.updateText(stage.text)
-        
+
         if (stage.duration) {
           setTimeout(() => {
             currentStage++

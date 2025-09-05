@@ -45,12 +45,12 @@ class ProjectManagerCLI {
     this.formatter = OutputFormatter.create({ colors: true })
     this.logger = new Logger(this.formatter)
     this.config = new ConfigManager()
-    
+
     this.cli = new CLIManager({
       name: 'pm',
       version: '1.0.0',
       description: '项目管理命令行工具',
-      usage: 'pm <command> [options]'
+      usage: 'pm <command> [options]',
     })
 
     this.setupGlobalOptions()
@@ -63,7 +63,7 @@ class ProjectManagerCLI {
       name: 'verbose',
       description: '详细输出',
       type: 'boolean',
-      alias: 'v'
+      alias: 'v',
     })
 
     this.cli.addGlobalOption({
@@ -71,13 +71,13 @@ class ProjectManagerCLI {
       description: '配置文件路径',
       type: 'string',
       alias: 'c',
-      default: './pm.config.json'
+      default: './pm.config.json',
     })
 
     this.cli.addGlobalOption({
       name: 'dry-run',
       description: '预览模式，不执行实际操作',
-      type: 'boolean'
+      type: 'boolean',
     })
   }
 
@@ -90,32 +90,32 @@ class ProjectManagerCLI {
           name: 'name',
           description: '项目名称',
           type: 'string',
-          required: true
+          required: true,
         },
         {
           name: 'template',
           description: '项目模板',
           type: 'string',
           choices: ['react', 'vue', 'node', 'express'],
-          default: 'node'
+          default: 'node',
         },
         {
           name: 'typescript',
           description: '使用 TypeScript',
           type: 'boolean',
-          default: true
+          default: true,
         },
         {
           name: 'git',
           description: '初始化 Git 仓库',
           type: 'boolean',
-          default: true
-        }
+          default: true,
+        },
       ],
       action: async (options, args) => {
         const initCommand = new InitCommand(this.formatter, this.logger, this.config)
         await initCommand.execute(options, args)
-      }
+      },
     })
 
     // 构建项目命令
@@ -127,25 +127,25 @@ class ProjectManagerCLI {
           description: '构建环境',
           type: 'string',
           choices: ['development', 'staging', 'production'],
-          default: 'production'
+          default: 'production',
         },
         {
           name: 'watch',
           description: '监听模式',
           type: 'boolean',
-          alias: 'w'
+          alias: 'w',
         },
         {
           name: 'clean',
           description: '清理输出目录',
           type: 'boolean',
-          default: true
-        }
+          default: true,
+        },
       ],
       action: async (options, args) => {
         const buildCommand = new BuildCommand(this.formatter, this.logger, this.config)
         await buildCommand.execute(options, args)
-      }
+      },
     })
 
     // 部署项目命令
@@ -157,23 +157,23 @@ class ProjectManagerCLI {
           description: '部署目标',
           type: 'string',
           required: true,
-          choices: ['staging', 'production']
+          choices: ['staging', 'production'],
         },
         {
           name: 'force',
           description: '强制部署',
-          type: 'boolean'
+          type: 'boolean',
         },
         {
           name: 'rollback',
           description: '回滚到指定版本',
-          type: 'string'
-        }
+          type: 'string',
+        },
       ],
       action: async (options, args) => {
         const deployCommand = new DeployCommand(this.formatter, this.logger, this.config)
         await deployCommand.execute(options, args)
-      }
+      },
     })
 
     // 状态查看命令
@@ -184,18 +184,18 @@ class ProjectManagerCLI {
           name: 'detailed',
           description: '显示详细信息',
           type: 'boolean',
-          alias: 'd'
+          alias: 'd',
         },
         {
           name: 'json',
           description: '以 JSON 格式输出',
-          type: 'boolean'
-        }
+          type: 'boolean',
+        },
       ],
       action: async (options, args) => {
         const statusCommand = new StatusCommand(this.formatter, this.logger, this.config)
         await statusCommand.execute(options, args)
-      }
+      },
     })
   }
 
@@ -213,10 +213,10 @@ class ProjectManagerCLI {
       if (ctx.options.verbose) {
         this.logger.setLevel('debug')
       }
-      
+
       this.logger.info(`执行命令: ${ctx.command}`)
       const startTime = Date.now()
-      
+
       try {
         await next()
         const duration = Date.now() - startTime
@@ -256,7 +256,13 @@ app.run()
 
 ```typescript
 // src/commands/init.ts
-import { OutputFormatter, InquirerManager, FileSystem, GitManager, PackageManager } from '@ldesign/kit'
+import {
+  OutputFormatter,
+  InquirerManager,
+  FileSystem,
+  GitManager,
+  PackageManager,
+} from '@ldesign/kit'
 import { Logger } from '../utils/logger'
 import { ConfigManager } from '../utils/config'
 import { ProjectConfig } from '../types'
@@ -297,7 +303,6 @@ export class InitCommand {
 
       this.formatter.success(`✅ 项目 ${options.name} 初始化完成`)
       this.showNextSteps(options.name)
-
     } catch (error) {
       this.logger.error('项目初始化失败:', error.message)
       throw error
@@ -320,10 +325,10 @@ export class InitCommand {
 
   private async createProjectDirectory(name: string): Promise<string> {
     const projectPath = `./${name}`
-    
+
     this.logger.info(`创建项目目录: ${projectPath}`)
     await FileSystem.ensureDir(projectPath)
-    
+
     return projectPath
   }
 
@@ -332,7 +337,7 @@ export class InitCommand {
 
     // 如果是交互模式，询问更多配置
     let additionalConfig = {}
-    
+
     if (!options.template) {
       const template = await inquirer.select({
         message: '选择项目模板:',
@@ -340,8 +345,8 @@ export class InitCommand {
           { name: 'React 应用', value: 'react' },
           { name: 'Vue 应用', value: 'vue' },
           { name: 'Node.js 库', value: 'node' },
-          { name: 'Express 服务器', value: 'express' }
-        ]
+          { name: 'Express 服务器', value: 'express' },
+        ],
       })
       options.template = template
     }
@@ -354,8 +359,8 @@ export class InitCommand {
         { name: 'Prettier', value: 'prettier', checked: true },
         { name: 'Jest', value: 'jest' },
         { name: 'Husky', value: 'husky' },
-        { name: 'Docker', value: 'docker' }
-      ]
+        { name: 'Docker', value: 'docker' },
+      ],
     })
 
     return {
@@ -363,7 +368,7 @@ export class InitCommand {
       template: options.template,
       typescript: options.typescript,
       features,
-      ...additionalConfig
+      ...additionalConfig,
     }
   }
 
@@ -371,7 +376,7 @@ export class InitCommand {
     this.logger.info('创建项目结构...')
 
     const directories = this.getDirectoriesForTemplate(config.template)
-    
+
     for (const dir of directories) {
       await FileSystem.ensureDir(`${projectPath}/${dir}`)
     }
@@ -382,7 +387,7 @@ export class InitCommand {
 
   private getDirectoriesForTemplate(template: string): string[] {
     const commonDirs = ['src', 'tests', 'docs']
-    
+
     switch (template) {
       case 'react':
         return [...commonDirs, 'public', 'src/components', 'src/hooks', 'src/utils']
@@ -413,15 +418,18 @@ export class InitCommand {
     // 创建 ESLint 配置
     if (config.features.includes('eslint')) {
       const eslintConfig = this.generateEslintConfig(config)
-      await FileSystem.writeFile(`${projectPath}/.eslintrc.json`, JSON.stringify(eslintConfig, null, 2))
+      await FileSystem.writeFile(
+        `${projectPath}/.eslintrc.json`,
+        JSON.stringify(eslintConfig, null, 2)
+      )
     }
   }
 
   private async initializePackageManager(projectPath: string, config: ProjectConfig) {
     this.logger.info('初始化包管理...')
-    
+
     const packageManager = new PackageManager(projectPath)
-    
+
     const packageJson = {
       name: config.name,
       version: '1.0.0',
@@ -430,7 +438,7 @@ export class InitCommand {
       scripts: this.generateScripts(config),
       keywords: [],
       author: '',
-      license: 'MIT'
+      license: 'MIT',
     }
 
     await packageManager.writePackageJson(packageJson)
@@ -438,10 +446,10 @@ export class InitCommand {
 
   private async initializeGitRepository(projectPath: string) {
     this.logger.info('初始化 Git 仓库...')
-    
+
     const git = new GitManager(projectPath)
     await git.init()
-    
+
     // 创建初始提交
     await git.add('.')
     await git.commit('Initial commit')
@@ -449,16 +457,16 @@ export class InitCommand {
 
   private async installDependencies(projectPath: string, config: ProjectConfig) {
     this.logger.info('安装依赖...')
-    
+
     const packageManager = new PackageManager(projectPath)
-    
+
     // 根据模板和功能安装依赖
     const dependencies = this.getDependenciesForConfig(config)
-    
+
     for (const dep of dependencies.production) {
       await packageManager.addDependency(dep)
     }
-    
+
     for (const dep of dependencies.development) {
       await packageManager.addDependency(dep, undefined, { dev: true })
     }
@@ -467,7 +475,7 @@ export class InitCommand {
   private getDependenciesForConfig(config: ProjectConfig) {
     const deps = {
       production: [] as string[],
-      development: [] as string[]
+      development: [] as string[],
     }
 
     // 基础依赖
@@ -618,11 +626,7 @@ coverage/
 
   private showNextSteps(projectName: string) {
     this.formatter.section('下一步')
-    this.formatter.list([
-      `cd ${projectName}`,
-      'npm run dev',
-      '开始开发你的项目！'
-    ])
+    this.formatter.list([`cd ${projectName}`, 'npm run dev', '开始开发你的项目！'])
   }
 }
 ```

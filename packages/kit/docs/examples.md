@@ -23,14 +23,14 @@ import { FileSystem, StringUtils } from '@ldesign/kit'
 
 async function processMarkdownFiles() {
   // 读取所有 markdown 文件
-  const files = await FileSystem.readDir('./docs', { 
+  const files = await FileSystem.readDir('./docs', {
     recursive: true,
-    filter: (file) => file.endsWith('.md')
+    filter: file => file.endsWith('.md'),
   })
 
   for (const file of files) {
     const content = await FileSystem.readFile(file)
-    
+
     // 处理文件内容
     const processedContent = content
       .split('\n')
@@ -59,21 +59,21 @@ import { FileWatcher, FileSystem } from '@ldesign/kit'
 function setupFileWatcher() {
   const watcher = FileWatcher.create('./src', {
     recursive: true,
-    ignored: /node_modules/
+    ignored: /node_modules/,
   })
 
-  watcher.on('change', async (filePath) => {
+  watcher.on('change', async filePath => {
     console.log(`文件变更: ${filePath}`)
-    
+
     if (filePath.endsWith('.ts')) {
       // TypeScript 文件变更，触发编译
       await compileTypeScript(filePath)
     }
   })
 
-  watcher.on('add', async (filePath) => {
+  watcher.on('add', async filePath => {
     console.log(`新文件: ${filePath}`)
-    
+
     if (filePath.endsWith('.md')) {
       // 新增 markdown 文件，生成目录
       await updateTableOfContents()
@@ -92,12 +92,12 @@ import { CacheManager } from '@ldesign/kit'
 class APIService {
   private cache = CacheManager.create({
     defaultTTL: 300, // 5分钟
-    maxSize: 1000
+    maxSize: 1000,
   })
 
   async getUserProfile(userId: string) {
     const cacheKey = `user:profile:${userId}`
-    
+
     // 尝试从缓存获取
     const cached = await this.cache.get(cacheKey)
     if (cached) {
@@ -106,18 +106,22 @@ class APIService {
 
     // 缓存未命中，从 API 获取
     const profile = await this.fetchUserFromAPI(userId)
-    
+
     // 存入缓存
     await this.cache.set(cacheKey, profile, 600) // 10分钟缓存
-    
+
     return profile
   }
 
   async getExpensiveData(key: string) {
-    return this.cache.getOrSet(`expensive:${key}`, async () => {
-      // 这个函数只在缓存未命中时执行
-      return await this.computeExpensiveData(key)
-    }, 3600) // 1小时缓存
+    return this.cache.getOrSet(
+      `expensive:${key}`,
+      async () => {
+        // 这个函数只在缓存未命中时执行
+        return await this.computeExpensiveData(key)
+      },
+      3600
+    ) // 1小时缓存
   }
 
   private async fetchUserFromAPI(userId: string) {
@@ -152,10 +156,10 @@ class UserRegistrationValidator {
     // 用户名验证
     this.validator.addRule('username', ValidationRules.required('用户名不能为空'))
     this.validator.addRule('username', ValidationRules.minLength(3, '用户名至少3个字符'))
-    this.validator.addRule('username', ValidationRules.pattern(
-      /^[a-zA-Z0-9_]+$/, 
-      '用户名只能包含字母、数字和下划线'
-    ))
+    this.validator.addRule(
+      'username',
+      ValidationRules.pattern(/^[a-zA-Z0-9_]+$/, '用户名只能包含字母、数字和下划线')
+    )
 
     // 邮箱验证
     this.validator.addRule('email', ValidationRules.required('邮箱不能为空'))
@@ -164,10 +168,10 @@ class UserRegistrationValidator {
     // 密码验证
     this.validator.addRule('password', ValidationRules.required('密码不能为空'))
     this.validator.addRule('password', ValidationRules.minLength(8, '密码至少8个字符'))
-    this.validator.addRule('password', ValidationRules.pattern(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      '密码必须包含大小写字母和数字'
-    ))
+    this.validator.addRule(
+      'password',
+      ValidationRules.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, '密码必须包含大小写字母和数字')
+    )
 
     // 确认密码验证
     this.validator.addRule('confirmPassword', ValidationRules.required('请确认密码'))
@@ -182,7 +186,7 @@ class UserRegistrationValidator {
 
   async validateRegistration(userData: any) {
     const result = await this.validator.validate(userData)
-    
+
     if (!result.valid) {
       throw new Error(`验证失败: ${result.errors.join(', ')}`)
     }
@@ -194,13 +198,13 @@ class UserRegistrationValidator {
 // 使用示例
 async function handleUserRegistration() {
   const validator = new UserRegistrationValidator()
-  
+
   const userData = {
     username: 'john_doe',
     email: 'john@example.com',
     password: 'SecurePass123',
     confirmPassword: 'SecurePass123',
-    age: 25
+    age: 25,
   }
 
   try {
@@ -260,13 +264,9 @@ class ReleaseManager {
       await this.packageManager.publish()
 
       // 10. 发送通知
-      await NotificationUtils.success(
-        '发布成功',
-        `版本 v${newVersion} 已成功发布`
-      )
+      await NotificationUtils.success('发布成功', `版本 v${newVersion} 已成功发布`)
 
       console.log(`✅ 版本 v${newVersion} 发布成功`)
-
     } catch (error) {
       await NotificationUtils.error('发布失败', error.message)
       throw error
@@ -289,7 +289,7 @@ class ProjectScaffold {
     const projectType = await InquirerUtils.select('项目类型:', [
       { name: 'Web 应用', value: 'web' },
       { name: 'Node.js 库', value: 'library' },
-      { name: 'CLI 工具', value: 'cli' }
+      { name: 'CLI 工具', value: 'cli' },
     ])
 
     const features = await InquirerUtils.multiSelect('选择功能:', [
@@ -297,7 +297,7 @@ class ProjectScaffold {
       { name: 'ESLint', value: 'eslint' },
       { name: 'Prettier', value: 'prettier' },
       { name: 'Jest', value: 'jest' },
-      { name: 'Husky', value: 'husky' }
+      { name: 'Husky', value: 'husky' },
     ])
 
     // 2. 创建项目目录
@@ -311,7 +311,7 @@ class ProjectScaffold {
       version: '1.0.0',
       description: '',
       main: projectType === 'library' ? 'dist/index.js' : undefined,
-      bin: projectType === 'cli' ? { [projectName]: 'bin/cli.js' } : undefined
+      bin: projectType === 'cli' ? { [projectName]: 'bin/cli.js' } : undefined,
     })
 
     // 4. 安装依赖
@@ -347,7 +347,7 @@ class ProjectScaffold {
   private async createProjectFiles(projectPath: string, type: string, features: string[]) {
     // 创建基本目录结构
     await FileSystem.ensureDir(`${projectPath}/src`)
-    
+
     if (type === 'web') {
       await FileSystem.ensureDir(`${projectPath}/public`)
     }
@@ -360,7 +360,7 @@ class ProjectScaffold {
     const entryFile = features.includes('typescript') ? 'src/index.ts' : 'src/index.js'
     await FileSystem.writeFile(
       `${projectPath}/${entryFile}`,
-      type === 'cli' 
+      type === 'cli'
         ? '#!/usr/bin/env node\n\nconsole.log("Hello CLI!")\n'
         : 'console.log("Hello World!")\n'
     )
@@ -369,18 +369,22 @@ class ProjectScaffold {
     if (features.includes('typescript')) {
       await FileSystem.writeFile(
         `${projectPath}/tsconfig.json`,
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2020',
-            module: 'commonjs',
-            outDir: './dist',
-            rootDir: './src',
-            strict: true,
-            esModuleInterop: true
+        JSON.stringify(
+          {
+            compilerOptions: {
+              target: 'ES2020',
+              module: 'commonjs',
+              outDir: './dist',
+              rootDir: './src',
+              strict: true,
+              esModuleInterop: true,
+            },
+            include: ['src/**/*'],
+            exclude: ['node_modules', 'dist'],
           },
-          include: ['src/**/*'],
-          exclude: ['node_modules', 'dist']
-        }, null, 2)
+          null,
+          2
+        )
       )
     }
   }
@@ -423,7 +427,7 @@ class HTTPSDevServer {
     const cert = await SSLUtils.generateQuickCertificate({
       commonName: 'localhost',
       organization: 'Development',
-      validityDays: 365
+      validityDays: 365,
     })
 
     // 2. 保存证书文件
@@ -433,16 +437,19 @@ class HTTPSDevServer {
 
     // 3. 创建 Express 应用
     const app = express()
-    
+
     app.get('/', (req, res) => {
       res.json({ message: 'HTTPS 开发服务器运行中' })
     })
 
     // 4. 创建 HTTPS 服务器
-    const server = https.createServer({
-      cert: cert.certificate,
-      key: cert.privateKey
-    }, app)
+    const server = https.createServer(
+      {
+        cert: cert.certificate,
+        key: cert.privateKey,
+      },
+      app
+    )
 
     // 5. 启动服务器
     server.listen(3443, () => {
@@ -467,7 +474,7 @@ class FileProcessorCLI {
   private cli = new CLIManager({
     name: 'file-processor',
     version: '1.0.0',
-    description: '文件处理工具'
+    description: '文件处理工具',
   })
 
   private formatter = OutputFormatter.create({ colors: true })
@@ -483,11 +490,11 @@ class FileProcessorCLI {
       options: [
         { name: 'input', description: '输入目录', type: 'string', required: true },
         { name: 'output', description: '输出目录', type: 'string', required: true },
-        { name: 'quality', description: '压缩质量 (1-100)', type: 'number', default: 80 }
+        { name: 'quality', description: '压缩质量 (1-100)', type: 'number', default: 80 },
       ],
-      action: async (options) => {
+      action: async options => {
         await this.compressImages(options.input, options.output, options.quality)
-      }
+      },
     })
 
     // 清理命令
@@ -495,11 +502,11 @@ class FileProcessorCLI {
       description: '清理临时文件',
       options: [
         { name: 'path', description: '清理路径', type: 'string', default: '.' },
-        { name: 'dry-run', description: '预览模式', type: 'boolean' }
+        { name: 'dry-run', description: '预览模式', type: 'boolean' },
       ],
-      action: async (options) => {
+      action: async options => {
         await this.cleanTempFiles(options.path, options['dry-run'])
-      }
+      },
     })
   }
 
@@ -510,7 +517,7 @@ class FileProcessorCLI {
       // 获取所有图片文件
       const files = await FileSystem.readDir(inputDir, {
         recursive: true,
-        filter: (file) => /\.(jpg|jpeg|png|webp)$/i.test(file)
+        filter: file => /\.(jpg|jpeg|png|webp)$/i.test(file),
       })
 
       if (files.length === 0) {
@@ -524,7 +531,7 @@ class FileProcessorCLI {
       // 创建进度条
       const progress = ProgressBar.create({
         total: files.length,
-        format: '压缩进度 [{bar}] {percentage}% | {value}/{total} 文件'
+        format: '压缩进度 [{bar}] {percentage}% | {value}/{total} 文件',
       })
 
       // 处理每个文件
@@ -535,7 +542,6 @@ class FileProcessorCLI {
       }
 
       this.formatter.success(`✅ 成功压缩 ${files.length} 个文件`)
-
     } catch (error) {
       this.formatter.error(`压缩失败: ${error.message}`)
       process.exit(1)
@@ -548,7 +554,7 @@ class FileProcessorCLI {
       '**/*.temp',
       '**/node_modules/.cache/**',
       '**/.DS_Store',
-      '**/Thumbs.db'
+      '**/Thumbs.db',
     ]
 
     this.formatter.info(`${dryRun ? '预览' : '清理'}临时文件: ${path}`)
@@ -558,7 +564,7 @@ class FileProcessorCLI {
 
     for (const pattern of tempPatterns) {
       const files = await this.findFilesByPattern(path, pattern)
-      
+
       for (const file of files) {
         const stats = await FileSystem.stat(file)
         totalSize += stats.size
@@ -574,7 +580,9 @@ class FileProcessorCLI {
     }
 
     const action = dryRun ? '将清理' : '已清理'
-    this.formatter.success(`${action} ${fileCount} 个文件，释放 ${this.formatBytes(totalSize)} 空间`)
+    this.formatter.success(
+      `${action} ${fileCount} 个文件，释放 ${this.formatBytes(totalSize)} 空间`
+    )
   }
 
   private async compressImage(inputFile: string, outputDir: string, quality: number) {

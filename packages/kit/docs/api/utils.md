@@ -6,7 +6,14 @@ Utils 模块提供了一系列常用的工具函数，包括字符串、数字�
 
 ```typescript
 // 完整导入
-import { StringUtils, NumberUtils, DateUtils, ObjectUtils, ArrayUtils, ValidationUtils } from '@ldesign/kit'
+import {
+  StringUtils,
+  NumberUtils,
+  DateUtils,
+  ObjectUtils,
+  ArrayUtils,
+  ValidationUtils,
+} from '@ldesign/kit'
 
 // 按需导入
 import { StringUtils } from '@ldesign/kit/utils'
@@ -26,10 +33,10 @@ import { StringUtils } from '@ldesign/kit'
 将字符串转换为驼峰命名格式。
 
 ```typescript
-StringUtils.camelCase('hello-world')     // 'helloWorld'
-StringUtils.camelCase('hello_world')     // 'helloWorld'
-StringUtils.camelCase('Hello World')     // 'helloWorld'
-StringUtils.camelCase('HELLO-WORLD')     // 'helloWorld'
+StringUtils.camelCase('hello-world') // 'helloWorld'
+StringUtils.camelCase('hello_world') // 'helloWorld'
+StringUtils.camelCase('Hello World') // 'helloWorld'
+StringUtils.camelCase('HELLO-WORLD') // 'helloWorld'
 ```
 
 #### `kebabCase(str: string): string`
@@ -37,9 +44,9 @@ StringUtils.camelCase('HELLO-WORLD')     // 'helloWorld'
 将字符串转换为短横线命名格式。
 
 ```typescript
-StringUtils.kebabCase('helloWorld')      // 'hello-world'
-StringUtils.kebabCase('HelloWorld')      // 'hello-world'
-StringUtils.kebabCase('hello_world')     // 'hello-world'
+StringUtils.kebabCase('helloWorld') // 'hello-world'
+StringUtils.kebabCase('HelloWorld') // 'hello-world'
+StringUtils.kebabCase('hello_world') // 'hello-world'
 ```
 
 #### `snakeCase(str: string): string`
@@ -47,9 +54,9 @@ StringUtils.kebabCase('hello_world')     // 'hello-world'
 将字符串转换为下划线命名格式。
 
 ```typescript
-StringUtils.snakeCase('helloWorld')      // 'hello_world'
-StringUtils.snakeCase('HelloWorld')      // 'hello_world'
-StringUtils.snakeCase('hello-world')     // 'hello_world'
+StringUtils.snakeCase('helloWorld') // 'hello_world'
+StringUtils.snakeCase('HelloWorld') // 'hello_world'
+StringUtils.snakeCase('hello-world') // 'hello_world'
 ```
 
 #### `pascalCase(str: string): string`
@@ -57,9 +64,9 @@ StringUtils.snakeCase('hello-world')     // 'hello_world'
 将字符串转换为帕斯卡命名格式。
 
 ```typescript
-StringUtils.pascalCase('hello-world')    // 'HelloWorld'
-StringUtils.pascalCase('hello_world')    // 'HelloWorld'
-StringUtils.pascalCase('helloWorld')     // 'HelloWorld'
+StringUtils.pascalCase('hello-world') // 'HelloWorld'
+StringUtils.pascalCase('hello_world') // 'HelloWorld'
+StringUtils.pascalCase('helloWorld') // 'HelloWorld'
 ```
 
 #### `slugify(str: string, options?: SlugifyOptions): string`
@@ -67,15 +74,15 @@ StringUtils.pascalCase('helloWorld')     // 'HelloWorld'
 将字符串转换为 URL 友好的格式。
 
 ```typescript
-StringUtils.slugify('Hello World!')      // 'hello-world'
-StringUtils.slugify('中文测试')           // 'zhong-wen-ce-shi'
-StringUtils.slugify('Hello@World#123')   // 'hello-world-123'
+StringUtils.slugify('Hello World!') // 'hello-world'
+StringUtils.slugify('中文测试') // 'zhong-wen-ce-shi'
+StringUtils.slugify('Hello@World#123') // 'hello-world-123'
 
 // 自定义选项
 StringUtils.slugify('Hello World!', {
-  separator: '_',                        // 'hello_world'
-  lowercase: false,                      // 'Hello_World'
-  trim: true
+  separator: '_', // 'hello_world'
+  lowercase: false, // 'Hello_World'
+  trim: true,
 })
 ```
 
@@ -84,10 +91,10 @@ StringUtils.slugify('Hello World!', {
 截断字符串到指定长度。
 
 ```typescript
-StringUtils.truncate('很长的文本内容', 10)           // '很长的文本内容...'
-StringUtils.truncate('Long text content', 10)      // 'Long text...'
-StringUtils.truncate('Short', 10)                  // 'Short'
-StringUtils.truncate('Long text', 5, '***')        // 'Long***'
+StringUtils.truncate('很长的文本内容', 10) // '很长的文本内容...'
+StringUtils.truncate('Long text content', 10) // 'Long text...'
+StringUtils.truncate('Short', 10) // 'Short'
+StringUtils.truncate('Long text', 5, '***') // 'Long***'
 ```
 
 #### `capitalize(str: string): string`
@@ -95,9 +102,9 @@ StringUtils.truncate('Long text', 5, '***')        // 'Long***'
 将字符串首字母大写。
 
 ```typescript
-StringUtils.capitalize('hello world')    // 'Hello World'
-StringUtils.capitalize('HELLO WORLD')    // 'Hello World'
-StringUtils.capitalize('hello')          // 'Hello'
+StringUtils.capitalize('hello world') // 'Hello World'
+StringUtils.capitalize('HELLO WORLD') // 'Hello World'
+StringUtils.capitalize('hello') // 'Hello'
 ```
 
 #### `template(template: string, data: Record<string, any>): string`
@@ -108,14 +115,14 @@ StringUtils.capitalize('hello')          // 'Hello'
 const template = 'Hello {{name}}, welcome to {{app}}!'
 StringUtils.template(template, {
   name: 'John',
-  app: 'MyApp'
+  app: 'MyApp',
 })
 // 'Hello John, welcome to MyApp!'
 
 // 支持嵌套属性
 const template = 'User: {{user.name}} ({{user.email}})'
 StringUtils.template(template, {
-  user: { name: 'John', email: 'john@example.com' }
+  user: { name: 'John', email: 'john@example.com' },
 })
 // 'User: John (john@example.com)'
 ```
@@ -149,9 +156,9 @@ StringUtils.unescape('&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;')
 格式化货币显示。
 
 ```typescript
-NumberUtils.formatCurrency(1234.56)                    // '$1,234.56'
-NumberUtils.formatCurrency(1234.56, 'EUR')            // '€1,234.56'
-NumberUtils.formatCurrency(1234.56, 'CNY', 'zh-CN')   // '¥1,234.56'
+NumberUtils.formatCurrency(1234.56) // '$1,234.56'
+NumberUtils.formatCurrency(1234.56, 'EUR') // '€1,234.56'
+NumberUtils.formatCurrency(1234.56, 'CNY', 'zh-CN') // '¥1,234.56'
 ```
 
 #### `formatNumber(num: number, options?: NumberFormatOptions): string`
@@ -159,11 +166,11 @@ NumberUtils.formatCurrency(1234.56, 'CNY', 'zh-CN')   // '¥1,234.56'
 格式化数字显示。
 
 ```typescript
-NumberUtils.formatNumber(1234567.89)                   // '1,234,567.89'
+NumberUtils.formatNumber(1234567.89) // '1,234,567.89'
 NumberUtils.formatNumber(1234567.89, {
   minimumFractionDigits: 2,
-  maximumFractionDigits: 2
-})                                                      // '1,234,567.89'
+  maximumFractionDigits: 2,
+}) // '1,234,567.89'
 ```
 
 #### `clamp(value: number, min: number, max: number): number`
@@ -171,9 +178,9 @@ NumberUtils.formatNumber(1234567.89, {
 将数值限制在指定范围内。
 
 ```typescript
-NumberUtils.clamp(15, 0, 10)     // 10
-NumberUtils.clamp(-5, 0, 10)     // 0
-NumberUtils.clamp(5, 0, 10)      // 5
+NumberUtils.clamp(15, 0, 10) // 10
+NumberUtils.clamp(-5, 0, 10) // 0
+NumberUtils.clamp(5, 0, 10) // 5
 ```
 
 #### `random(min: number, max: number): number`
@@ -181,8 +188,8 @@ NumberUtils.clamp(5, 0, 10)      // 5
 生成指定范围内的随机数。
 
 ```typescript
-NumberUtils.random(1, 100)       // 随机数 1-100
-NumberUtils.random(0, 1)         // 随机数 0-1
+NumberUtils.random(1, 100) // 随机数 1-100
+NumberUtils.random(0, 1) // 随机数 0-1
 ```
 
 #### `randomInt(min: number, max: number): number`
@@ -190,8 +197,8 @@ NumberUtils.random(0, 1)         // 随机数 0-1
 生成指定范围内的随机整数。
 
 ```typescript
-NumberUtils.randomInt(1, 10)     // 随机整数 1-10
-NumberUtils.randomInt(0, 100)    // 随机整数 0-100
+NumberUtils.randomInt(1, 10) // 随机整数 1-10
+NumberUtils.randomInt(0, 100) // 随机整数 0-100
 ```
 
 #### `round(value: number, precision: number): number`
@@ -199,9 +206,9 @@ NumberUtils.randomInt(0, 100)    // 随机整数 0-100
 四舍五入到指定精度。
 
 ```typescript
-NumberUtils.round(3.14159, 2)    // 3.14
-NumberUtils.round(3.14159, 0)    // 3
-NumberUtils.round(123.456, -1)   // 120
+NumberUtils.round(3.14159, 2) // 3.14
+NumberUtils.round(3.14159, 0) // 3
+NumberUtils.round(123.456, -1) // 120
 ```
 
 #### `percentage(value: number, total: number, precision?: number): string`
@@ -209,9 +216,9 @@ NumberUtils.round(123.456, -1)   // 120
 计算百分比。
 
 ```typescript
-NumberUtils.percentage(25, 100)     // '25%'
-NumberUtils.percentage(1, 3, 2)     // '33.33%'
-NumberUtils.percentage(2, 3, 1)     // '66.7%'
+NumberUtils.percentage(25, 100) // '25%'
+NumberUtils.percentage(1, 3, 2) // '33.33%'
+NumberUtils.percentage(2, 3, 1) // '66.7%'
 ```
 
 ## DateUtils
@@ -227,10 +234,10 @@ NumberUtils.percentage(2, 3, 1)     // '66.7%'
 ```typescript
 const date = new Date('2024-01-15 14:30:00')
 
-DateUtils.format(date, 'YYYY-MM-DD')           // '2024-01-15'
-DateUtils.format(date, 'YYYY年MM月DD日')        // '2024年01月15日'
-DateUtils.format(date, 'HH:mm:ss')             // '14:30:00'
-DateUtils.format(date, 'YYYY-MM-DD HH:mm:ss')  // '2024-01-15 14:30:00'
+DateUtils.format(date, 'YYYY-MM-DD') // '2024-01-15'
+DateUtils.format(date, 'YYYY年MM月DD日') // '2024年01月15日'
+DateUtils.format(date, 'HH:mm:ss') // '14:30:00'
+DateUtils.format(date, 'YYYY-MM-DD HH:mm:ss') // '2024-01-15 14:30:00'
 ```
 
 #### `addDays(date: Date, days: number): Date`
@@ -239,8 +246,8 @@ DateUtils.format(date, 'YYYY-MM-DD HH:mm:ss')  // '2024-01-15 14:30:00'
 
 ```typescript
 const date = new Date('2024-01-15')
-DateUtils.addDays(date, 7)      // 2024-01-22
-DateUtils.addDays(date, -3)     // 2024-01-12
+DateUtils.addDays(date, 7) // 2024-01-22
+DateUtils.addDays(date, -3) // 2024-01-12
 ```
 
 #### `addMonths(date: Date, months: number): Date`
@@ -249,8 +256,8 @@ DateUtils.addDays(date, -3)     // 2024-01-12
 
 ```typescript
 const date = new Date('2024-01-15')
-DateUtils.addMonths(date, 2)    // 2024-03-15
-DateUtils.addMonths(date, -1)   // 2023-12-15
+DateUtils.addMonths(date, 2) // 2024-03-15
+DateUtils.addMonths(date, -1) // 2023-12-15
 ```
 
 #### `addYears(date: Date, years: number): Date`
@@ -259,8 +266,8 @@ DateUtils.addMonths(date, -1)   // 2023-12-15
 
 ```typescript
 const date = new Date('2024-01-15')
-DateUtils.addYears(date, 1)     // 2025-01-15
-DateUtils.addYears(date, -2)    // 2022-01-15
+DateUtils.addYears(date, 1) // 2025-01-15
+DateUtils.addYears(date, -2) // 2022-01-15
 ```
 
 #### `isWeekend(date: Date): boolean`
@@ -268,8 +275,8 @@ DateUtils.addYears(date, -2)    // 2022-01-15
 检查是否为周末。
 
 ```typescript
-DateUtils.isWeekend(new Date('2024-01-13'))  // true (Saturday)
-DateUtils.isWeekend(new Date('2024-01-15'))  // false (Monday)
+DateUtils.isWeekend(new Date('2024-01-13')) // true (Saturday)
+DateUtils.isWeekend(new Date('2024-01-15')) // false (Monday)
 ```
 
 #### `diffInDays(date1: Date, date2: Date): number`
@@ -279,8 +286,8 @@ DateUtils.isWeekend(new Date('2024-01-15'))  // false (Monday)
 ```typescript
 const date1 = new Date('2024-01-01')
 const date2 = new Date('2024-01-08')
-DateUtils.diffInDays(date1, date2)  // 7
-DateUtils.diffInDays(date2, date1)  // -7
+DateUtils.diffInDays(date1, date2) // 7
+DateUtils.diffInDays(date2, date1) // -7
 ```
 
 #### `startOfDay(date: Date): Date`
@@ -289,7 +296,7 @@ DateUtils.diffInDays(date2, date1)  // -7
 
 ```typescript
 const date = new Date('2024-01-15 14:30:00')
-DateUtils.startOfDay(date)  // 2024-01-15 00:00:00
+DateUtils.startOfDay(date) // 2024-01-15 00:00:00
 ```
 
 #### `endOfDay(date: Date): Date`
@@ -298,7 +305,7 @@ DateUtils.startOfDay(date)  // 2024-01-15 00:00:00
 
 ```typescript
 const date = new Date('2024-01-15 14:30:00')
-DateUtils.endOfDay(date)    // 2024-01-15 23:59:59
+DateUtils.endOfDay(date) // 2024-01-15 23:59:59
 ```
 
 ## ObjectUtils
@@ -324,8 +331,8 @@ const result = ObjectUtils.deepMerge(obj1, obj2)
 
 ```typescript
 const obj = { user: { profile: { name: 'John' } } }
-ObjectUtils.get(obj, 'user.profile.name')           // 'John'
-ObjectUtils.get(obj, 'user.profile.age', 25)        // 25
+ObjectUtils.get(obj, 'user.profile.name') // 'John'
+ObjectUtils.get(obj, 'user.profile.age', 25) // 25
 ObjectUtils.get(obj, 'user.settings.theme', 'dark') // 'dark'
 ```
 
@@ -381,8 +388,8 @@ cloned.b.c = 3
 数组去重。
 
 ```typescript
-ArrayUtils.unique([1, 2, 2, 3, 3, 4])           // [1, 2, 3, 4]
-ArrayUtils.unique(['a', 'b', 'b', 'c'])         // ['a', 'b', 'c']
+ArrayUtils.unique([1, 2, 2, 3, 3, 4]) // [1, 2, 3, 4]
+ArrayUtils.unique(['a', 'b', 'b', 'c']) // ['a', 'b', 'c']
 ```
 
 #### `chunk<T>(array: T[], size: number): T[][]`
@@ -390,8 +397,8 @@ ArrayUtils.unique(['a', 'b', 'b', 'c'])         // ['a', 'b', 'c']
 将数组分块。
 
 ```typescript
-ArrayUtils.chunk([1, 2, 3, 4, 5], 2)            // [[1, 2], [3, 4], [5]]
-ArrayUtils.chunk(['a', 'b', 'c', 'd'], 3)       // [['a', 'b', 'c'], ['d']]
+ArrayUtils.chunk([1, 2, 3, 4, 5], 2) // [[1, 2], [3, 4], [5]]
+ArrayUtils.chunk(['a', 'b', 'c', 'd'], 3) // [['a', 'b', 'c'], ['d']]
 ```
 
 #### `groupBy<T>(array: T[], key: string): Record<string, T[]>`
@@ -402,7 +409,7 @@ ArrayUtils.chunk(['a', 'b', 'c', 'd'], 3)       // [['a', 'b', 'c'], ['d']]
 const users = [
   { name: 'John', role: 'admin' },
   { name: 'Jane', role: 'user' },
-  { name: 'Bob', role: 'admin' }
+  { name: 'Bob', role: 'admin' },
 ]
 ArrayUtils.groupBy(users, 'role')
 // { admin: [{ name: 'John', role: 'admin' }, { name: 'Bob', role: 'admin' }], user: [{ name: 'Jane', role: 'user' }] }
@@ -413,7 +420,7 @@ ArrayUtils.groupBy(users, 'role')
 随机打乱数组。
 
 ```typescript
-ArrayUtils.shuffle([1, 2, 3, 4, 5])             // [3, 1, 5, 2, 4] (随机顺序)
+ArrayUtils.shuffle([1, 2, 3, 4, 5]) // [3, 1, 5, 2, 4] (随机顺序)
 ```
 
 #### `sample<T>(array: T[], count?: number): T | T[]`
@@ -421,8 +428,8 @@ ArrayUtils.shuffle([1, 2, 3, 4, 5])             // [3, 1, 5, 2, 4] (随机顺序
 随机采样。
 
 ```typescript
-ArrayUtils.sample([1, 2, 3, 4, 5])              // 3 (随机一个元素)
-ArrayUtils.sample([1, 2, 3, 4, 5], 3)           // [2, 4, 1] (随机三个元素)
+ArrayUtils.sample([1, 2, 3, 4, 5]) // 3 (随机一个元素)
+ArrayUtils.sample([1, 2, 3, 4, 5], 3) // [2, 4, 1] (随机三个元素)
 ```
 
 ## ValidationUtils
@@ -436,8 +443,8 @@ ArrayUtils.sample([1, 2, 3, 4, 5], 3)           // [2, 4, 1] (随机三个元素
 验证邮箱格式。
 
 ```typescript
-ValidationUtils.isEmail('user@example.com')     // true
-ValidationUtils.isEmail('invalid-email')        // false
+ValidationUtils.isEmail('user@example.com') // true
+ValidationUtils.isEmail('invalid-email') // false
 ```
 
 #### `isUrl(url: string): boolean`
@@ -445,8 +452,8 @@ ValidationUtils.isEmail('invalid-email')        // false
 验证 URL 格式。
 
 ```typescript
-ValidationUtils.isUrl('https://example.com')    // true
-ValidationUtils.isUrl('invalid-url')            // false
+ValidationUtils.isUrl('https://example.com') // true
+ValidationUtils.isUrl('invalid-url') // false
 ```
 
 #### `isPhoneNumber(phone: string, region?: string): boolean`
@@ -454,7 +461,7 @@ ValidationUtils.isUrl('invalid-url')            // false
 验证手机号格式。
 
 ```typescript
-ValidationUtils.isPhoneNumber('13800138000', 'CN')     // true
+ValidationUtils.isPhoneNumber('13800138000', 'CN') // true
 ValidationUtils.isPhoneNumber('+1-555-123-4567', 'US') // true
 ```
 
@@ -463,8 +470,8 @@ ValidationUtils.isPhoneNumber('+1-555-123-4567', 'US') // true
 验证 IP 地址格式。
 
 ```typescript
-ValidationUtils.isIPAddress('192.168.1.1')      // true
-ValidationUtils.isIPAddress('invalid-ip')       // false
+ValidationUtils.isIPAddress('192.168.1.1') // true
+ValidationUtils.isIPAddress('invalid-ip') // false
 ```
 
 #### `isCreditCard(card: string): boolean`
@@ -473,7 +480,7 @@ ValidationUtils.isIPAddress('invalid-ip')       // false
 
 ```typescript
 ValidationUtils.isCreditCard('4111111111111111') // true
-ValidationUtils.isCreditCard('1234567890')       // false
+ValidationUtils.isCreditCard('1234567890') // false
 ```
 
 ## 类型定义

@@ -4,16 +4,22 @@
  */
 
 export * from './cache-manager'
-export * from './memory-cache'
-export * from './file-cache'
-export * from './redis-cache'
-export * from './cache-store'
-export * from './cache-serializer'
-
 // 重新导出主要类
 export { CacheManager } from './cache-manager'
-export { MemoryCache } from './memory-cache'
-export { FileCache } from './file-cache'
-export { RedisCache } from './redis-cache'
-export { AbstractCacheStore, CacheStoreDecorator, CompressedCacheStore, SerializedCacheStore, NamespacedCacheStore } from './cache-store'
+export * from './cache-serializer'
 export { CacheSerializer } from './cache-serializer'
+export * from './cache-store'
+export {
+  AbstractCacheStore,
+  CacheStoreDecorator,
+  CompressedCacheStore,
+  NamespacedCacheStore,
+  SerializedCacheStore,
+} from './cache-store'
+
+export * from './file-cache'
+export { FileCache } from './file-cache'
+export * from './memory-cache'
+export { MemoryCache } from './memory-cache'
+export * from './redis-cache'
+export { RedisCache } from './redis-cache'

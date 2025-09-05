@@ -2,19 +2,19 @@
  * ViteBuilder 单元测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { ViteBuilder } from '../../src/builder/vite-builder'
 import type { ViteBuilderConfig } from '../../src/builder/types'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { ViteBuilder } from '../../src/builder/vite-builder'
 
 // Mock Vite API
 vi.mock('vite', () => ({
   build: vi.fn(),
   createServer: vi.fn(),
   preview: vi.fn(),
-  resolveConfig: vi.fn()
+  resolveConfig: vi.fn(),
 }))
 
-describe('ViteBuilder', () => {
+describe('viteBuilder', () => {
   let builder: ViteBuilder
   let mockConfig: ViteBuilderConfig
 
@@ -23,7 +23,7 @@ describe('ViteBuilder', () => {
       root: '/test/project',
       entry: 'src/index.ts',
       outDir: 'dist',
-      env: 'development'
+      env: 'development',
     }
     builder = new ViteBuilder(mockConfig)
   })
@@ -45,12 +45,12 @@ describe('ViteBuilder', () => {
     it('应该使用默认配置', () => {
       const defaultBuilder = new ViteBuilder()
       const config = defaultBuilder.getConfig()
-      
+
       expect(config.env).toBe('production')
       expect(config.sourcemap).toBe(true)
       expect(config.minify).toBe(true)
       expect(config.cleanOutDir).toBe(true)
-      
+
       defaultBuilder.destroy()
     })
 
@@ -58,15 +58,15 @@ describe('ViteBuilder', () => {
       const builderWithServer = new ViteBuilder({
         server: {
           port: 8080,
-          host: 'localhost'
-        }
+          host: 'localhost',
+        },
       })
-      
+
       const config = builderWithServer.getConfig()
       expect(config.server?.port).toBe(8080)
       expect(config.server?.host).toBe('localhost')
       expect(config.server?.cors).toBe(true) // 默认值
-      
+
       builderWithServer.destroy()
     })
   })
@@ -80,9 +80,9 @@ describe('ViteBuilder', () => {
     it('应该能够设置配置', () => {
       builder.setConfig({
         outDir: 'build',
-        minify: false
+        minify: false,
       })
-      
+
       const config = builder.getConfig()
       expect(config.outDir).toBe('build')
       expect(config.minify).toBe(false)
@@ -99,7 +99,7 @@ describe('ViteBuilder', () => {
     it('应该能够添加插件', () => {
       const mockPlugin = { name: 'test-plugin' }
       builder.addPlugin(mockPlugin)
-      
+
       const config = builder.getConfig()
       expect(config.plugins).toContain(mockPlugin)
     })
@@ -108,7 +108,7 @@ describe('ViteBuilder', () => {
       const mockPlugin = { name: 'test-plugin' }
       builder.addPlugin(mockPlugin)
       builder.removePlugin('test-plugin')
-      
+
       const config = builder.getConfig()
       expect(config.plugins).not.toContain(mockPlugin)
     })
@@ -122,31 +122,33 @@ describe('ViteBuilder', () => {
           {
             fileName: 'index.js',
             code: 'console.log("test")',
-            format: 'es'
-          }
-        ]
+            format: 'es',
+          },
+        ],
       }
-      
+
       vi.mocked(build).mockResolvedValue(mockBuildResult)
-      
+
       const result = await builder.build()
-      
+
       expect(result.success).toBe(true)
       expect(result.outputs).toHaveLength(1)
       expect(result.outputs[0].fileName).toBe('index.js')
-      expect(build).toHaveBeenCalledWith(expect.objectContaining({
-        root: '/test/project'
-      }))
+      expect(build).toHaveBeenCalledWith(
+        expect.objectContaining({
+          root: '/test/project',
+        })
+      )
     })
 
     it('应该处理构建错误', async () => {
       const { build } = await import('vite')
       const mockError = new Error('Build failed')
-      
+
       vi.mocked(build).mockRejectedValue(mockError)
-      
+
       const result = await builder.build()
-      
+
       expect(result.success).toBe(false)
       expect(result.errors).toContain('Build failed')
     })
@@ -156,16 +158,16 @@ describe('ViteBuilder', () => {
         lib: {
           entry: 'src/index.ts',
           name: 'MyLib',
-          formats: ['es', 'cjs']
-        }
+          formats: ['es', 'cjs'],
+        },
       })
-      
+
       const { build } = await import('vite')
       vi.mocked(build).mockResolvedValue({ output: [] })
-      
+
       const result = await libBuilder.buildLib()
       expect(result.success).toBe(true)
-      
+
       libBuilder.destroy()
     })
 
@@ -186,15 +188,15 @@ describe('ViteBuilder', () => {
           server: {
             port: 3000,
             host: true,
-            https: false
-          }
-        }
+            https: false,
+          },
+        },
       }
-      
+
       vi.mocked(createServer).mockResolvedValue(mockServer as any)
-      
+
       const result = await builder.dev()
-      
+
       expect(result.url).toBe('http://localhost:3000')
       expect(result.port).toBe(3000)
       expect(result.https).toBe(false)
@@ -210,16 +212,16 @@ describe('ViteBuilder', () => {
           server: {
             port: 3000,
             host: true,
-            https: false
-          }
-        }
+            https: false,
+          },
+        },
       }
-      
+
       vi.mocked(createServer).mockResolvedValue(mockServer as any)
-      
+
       const result = await builder.dev()
       await result.close()
-      
+
       expect(mockServer.close).toHaveBeenCalled()
     })
   })
@@ -233,15 +235,15 @@ describe('ViteBuilder', () => {
           preview: {
             port: 4173,
             host: true,
-            https: false
-          }
-        }
+            https: false,
+          },
+        },
       }
-      
+
       vi.mocked(preview).mockResolvedValue(mockPreviewServer as any)
-      
+
       const result = await builder.preview()
-      
+
       expect(result.url).toBe('http://localhost:4173')
       expect(result.port).toBe(4173)
       expect(result.https).toBe(false)
@@ -252,18 +254,20 @@ describe('ViteBuilder', () => {
     it('应该能够启动监听模式', async () => {
       const { build } = await import('vite')
       vi.mocked(build).mockResolvedValue({ output: [] })
-      
+
       // 由于 watch 是一个持续运行的过程，我们只测试它是否正确调用了 build
       const watchPromise = builder.watch()
-      
+
       // 等待一小段时间让 watch 开始
       await new Promise(resolve => setTimeout(resolve, 10))
-      
-      expect(build).toHaveBeenCalledWith(expect.objectContaining({
-        build: expect.objectContaining({
-          watch: {}
+
+      expect(build).toHaveBeenCalledWith(
+        expect.objectContaining({
+          build: expect.objectContaining({
+            watch: {},
+          }),
         })
-      }))
+      )
     })
   })
 
@@ -271,31 +275,31 @@ describe('ViteBuilder', () => {
     it('应该触发构建开始事件', async () => {
       const { build } = await import('vite')
       vi.mocked(build).mockResolvedValue({ output: [] })
-      
+
       const startHandler = vi.fn()
       builder.on('build:start', startHandler)
-      
+
       await builder.build()
-      
+
       expect(startHandler).toHaveBeenCalledWith({
         mode: 'build',
-        config: expect.any(Object)
+        config: expect.any(Object),
       })
     })
 
     it('应该触发构建完成事件', async () => {
       const { build } = await import('vite')
       vi.mocked(build).mockResolvedValue({ output: [] })
-      
+
       const endHandler = vi.fn()
       builder.on('build:end', endHandler)
-      
+
       await builder.build()
-      
+
       expect(endHandler).toHaveBeenCalledWith({
         result: expect.objectContaining({
-          success: true
-        })
+          success: true,
+        }),
       })
     })
 
@@ -303,14 +307,14 @@ describe('ViteBuilder', () => {
       const { build } = await import('vite')
       const mockError = new Error('Build failed')
       vi.mocked(build).mockRejectedValue(mockError)
-      
+
       const errorHandler = vi.fn()
       builder.on('build:error', errorHandler)
-      
+
       await builder.build()
-      
+
       expect(errorHandler).toHaveBeenCalledWith({
-        error: mockError
+        error: mockError,
       })
     })
   })
@@ -318,11 +322,9 @@ describe('ViteBuilder', () => {
   describe('销毁功能', () => {
     it('应该能够正确销毁', async () => {
       await builder.destroy()
-      
+
       // 销毁后应该无法执行操作
-      await expect(builder.build()).rejects.toThrow(
-        'ViteBuilder has been destroyed'
-      )
+      await expect(builder.build()).rejects.toThrow('ViteBuilder has been destroyed')
     })
 
     it('应该在销毁时关闭服务器', async () => {
@@ -334,16 +336,16 @@ describe('ViteBuilder', () => {
           server: {
             port: 3000,
             host: true,
-            https: false
-          }
-        }
+            https: false,
+          },
+        },
       }
-      
+
       vi.mocked(createServer).mockResolvedValue(mockServer as any)
-      
+
       await builder.dev()
       await builder.destroy()
-      
+
       expect(mockServer.close).toHaveBeenCalled()
     })
   })

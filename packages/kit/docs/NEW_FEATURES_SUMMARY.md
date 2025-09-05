@@ -71,7 +71,7 @@ const scaffold = new ScaffoldManager({
   name: 'my-cli',
   version: '1.0.0',
   environments: ['development', 'production'],
-  defaultEnvironment: 'development'
+  defaultEnvironment: 'development',
 })
 
 // 初始化
@@ -81,14 +81,14 @@ await scaffold.initialize()
 const result = await scaffold.createProject({
   name: 'my-project',
   template: 'vue-app',
-  environment: 'development'
+  environment: 'development',
 })
 
 // 创建 CLI 工具
 const cli = new CliBuilder({
   name: 'my-cli',
   version: '1.0.0',
-  scaffoldManager: scaffold
+  scaffoldManager: scaffold,
 })
 
 cli.parse()
@@ -97,12 +97,7 @@ cli.parse()
 ### 控制台 UI 组件使用
 
 ```typescript
-import { 
-  ProgressBar, 
-  LoadingSpinner, 
-  StatusIndicator,
-  MultiProgress 
-} from '@ldesign/kit/console'
+import { ProgressBar, LoadingSpinner, StatusIndicator, MultiProgress } from '@ldesign/kit/console'
 
 // 进度条
 const progressBar = ProgressBar.createDetailed(100)
@@ -180,20 +175,16 @@ multiProgress.updateTask('task1', 50)
 ```typescript
 import { ConsoleTheme } from '@ldesign/kit/console'
 
-const customTheme = ConsoleTheme.createCustomTheme(
-  'my-theme',
-  'default',
-  {
-    colors: {
-      primary: '#ff6b6b',
-      success: '#51cf66'
-    },
-    symbols: {
-      success: '✨',
-      error: '💥'
-    }
-  }
-)
+const customTheme = ConsoleTheme.createCustomTheme('my-theme', 'default', {
+  colors: {
+    primary: '#ff6b6b',
+    success: '#51cf66',
+  },
+  symbols: {
+    success: '✨',
+    error: '💥',
+  },
+})
 ```
 
 ## 📊 性能特性

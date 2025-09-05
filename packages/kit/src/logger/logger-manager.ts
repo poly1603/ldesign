@@ -3,12 +3,12 @@
  * 提供全局日志管理和配置功能
  */
 
+import type { LogEntry, LoggerOptions, LogLevel, LogTransport } from '../types'
 import { EventEmitter } from 'node:events'
-import type { LogLevel, LogEntry, LoggerOptions, LogTransport } from '../types'
-import { Logger } from './logger'
 import { ConsoleLogger } from './console-logger'
-import { FileLogger } from './file-logger'
 import { ErrorHandler } from './error-handler'
+import { FileLogger } from './file-logger'
+import { Logger } from './logger'
 
 /**
  * 日志管理器选项
@@ -34,13 +34,13 @@ export class LoggerManager extends EventEmitter {
 
   constructor(options: LoggerManagerOptions = {}) {
     super()
-    
+
     this.options = {
       level: options.level || 'info',
       defaultTransports: options.defaultTransports || [],
       errorHandler: options.errorHandler !== false,
       globalLogger: options.globalLogger !== false,
-      loggerOptions: options.loggerOptions || {}
+      loggerOptions: options.loggerOptions || {},
     }
 
     this.globalLevel = this.options.level
@@ -48,7 +48,8 @@ export class LoggerManager extends EventEmitter {
     // 设置默认传输器
     if (this.options.defaultTransports.length === 0) {
       this.defaultTransports.push(new ConsoleLogger())
-    } else {
+    }
+    else {
       this.defaultTransports = [...this.options.defaultTransports]
     }
 
@@ -56,7 +57,7 @@ export class LoggerManager extends EventEmitter {
     if (this.options.globalLogger) {
       this.globalLogger = this.createLogger('global', {
         level: this.globalLevel,
-        ...this.options.loggerOptions
+        ...this.options.loggerOptions,
       })
     }
 
@@ -77,7 +78,7 @@ export class LoggerManager extends EventEmitter {
     const loggerOptions: LoggerOptions = {
       level: this.globalLevel,
       ...this.options.loggerOptions,
-      ...options
+      ...options,
     }
 
     const logger = new Logger(name, loggerOptions)
@@ -149,7 +150,7 @@ export class LoggerManager extends EventEmitter {
    */
   setGlobalLevel(level: LogLevel): void {
     this.globalLevel = level
-    
+
     // 更新所有日志器的级别
     for (const logger of this.loggers.values()) {
       logger.setLevel(level)
@@ -170,7 +171,7 @@ export class LoggerManager extends EventEmitter {
    */
   addDefaultTransport(transport: LogTransport): void {
     this.defaultTransports.push(transport)
-    
+
     // 为所有现有日志器添加传输器
     for (const logger of this.loggers.values()) {
       logger.addTransport(transport)
@@ -186,7 +187,7 @@ export class LoggerManager extends EventEmitter {
     const index = this.defaultTransports.indexOf(transport)
     if (index !== -1) {
       this.defaultTransports.splice(index, 1)
-      
+
       // 从所有日志器中移除传输器
       for (const logger of this.loggers.values()) {
         logger.removeTransport(transport)
@@ -206,48 +207,52 @@ export class LoggerManager extends EventEmitter {
   /**
    * 配置控制台日志
    */
-  configureConsole(options: {
-    enabled?: boolean
-    colors?: boolean
-    timestamp?: boolean
-    level?: LogLevel
-  } = {}): void {
+  configureConsole(
+    options: {
+      enabled?: boolean
+      colors?: boolean
+      timestamp?: boolean
+      level?: LogLevel
+    } = {},
+  ): void {
     // 移除现有的控制台传输器
     this.defaultTransports = this.defaultTransports.filter(
-      transport => !(transport instanceof ConsoleLogger)
+      transport => !(transport instanceof ConsoleLogger),
     )
 
     if (options.enabled !== false) {
       const consoleLogger = new ConsoleLogger({
         colors: options.colors,
-        timestamp: options.timestamp
+        timestamp: options.timestamp,
       })
-      
+
       this.addDefaultTransport(consoleLogger)
     }
 
     // 更新所有日志器
     for (const logger of this.loggers.values()) {
-      const transports = logger.getTransports().filter(
-        transport => !(transport instanceof ConsoleLogger)
-      )
-      
+      const transports = logger
+        .getTransports()
+        .filter(transport => !(transport instanceof ConsoleLogger))
+
       // 清除所有传输器
       for (const transport of logger.getTransports()) {
         logger.removeTransport(transport)
       }
-      
+
       // 重新添加非控制台传输器
       for (const transport of transports) {
         logger.addTransport(transport)
       }
-      
+
       // 添加新的控制台传输器
       if (options.enabled !== false) {
-        logger.addTransport(new ConsoleLogger({
-          colors: options.colors,
-          timestamp: options.timestamp
-        }))
+        logger.addTransport(
+          new ConsoleLogger({
+            colors: options.colors,
+            timestamp: options.timestamp,
+          }),
+        )
       }
     }
   }
@@ -255,25 +260,27 @@ export class LoggerManager extends EventEmitter {
   /**
    * 配置文件日志
    */
-  configureFile(options: {
-    enabled?: boolean
-    filename?: string
-    maxSize?: number
-    maxFiles?: number
-    level?: LogLevel
-  } = {}): void {
+  configureFile(
+    options: {
+      enabled?: boolean
+      filename?: string
+      maxSize?: number
+      maxFiles?: number
+      level?: LogLevel
+    } = {},
+  ): void {
     // 移除现有的文件传输器
     this.defaultTransports = this.defaultTransports.filter(
-      transport => !(transport instanceof FileLogger)
+      transport => !(transport instanceof FileLogger),
     )
 
     if (options.enabled !== false && options.filename) {
       const fileLogger = new FileLogger({
         filename: options.filename,
         maxSize: options.maxSize,
-        maxFiles: options.maxFiles
+        maxFiles: options.maxFiles,
       })
-      
+
       this.addDefaultTransport(fileLogger)
     }
   }
@@ -283,11 +290,11 @@ export class LoggerManager extends EventEmitter {
    */
   getAllLogs(): LogEntry[] {
     const allLogs: LogEntry[] = []
-    
+
     for (const logger of this.loggers.values()) {
       allLogs.push(...logger.getLogs())
     }
-    
+
     // 按时间戳排序
     return allLogs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
   }
@@ -303,9 +310,7 @@ export class LoggerManager extends EventEmitter {
    * 按时间范围获取所有日志
    */
   getAllLogsByTimeRange(start: Date, end: Date): LogEntry[] {
-    return this.getAllLogs().filter(entry => 
-      entry.timestamp >= start && entry.timestamp <= end
-    )
+    return this.getAllLogs().filter(entry => entry.timestamp >= start && entry.timestamp <= end)
   }
 
   /**
@@ -323,16 +328,20 @@ export class LoggerManager extends EventEmitter {
    */
   exportAllLogs(format: 'json' | 'csv' | 'txt' = 'json'): string {
     const logs = this.getAllLogs()
-    
+
     switch (format) {
       case 'json':
-        return JSON.stringify({
-          timestamp: new Date().toISOString(),
-          totalLogs: logs.length,
-          loggers: Array.from(this.loggers.keys()),
-          logs
-        }, null, 2)
-      
+        return JSON.stringify(
+          {
+            timestamp: new Date().toISOString(),
+            totalLogs: logs.length,
+            loggers: Array.from(this.loggers.keys()),
+            logs,
+          },
+          null,
+          2,
+        )
+
       case 'csv': {
         const headers = ['timestamp', 'logger', 'level', 'module', 'message', 'data']
         const rows = logs.map(log => [
@@ -341,14 +350,14 @@ export class LoggerManager extends EventEmitter {
           log.level,
           log.module || '',
           `"${log.message.replace(/"/g, '""')}"`,
-          log.data ? `"${JSON.stringify(log.data).replace(/"/g, '""')}"` : ''
+          log.data ? `"${JSON.stringify(log.data).replace(/"/g, '""')}"` : '',
         ])
         return [headers.join(','), ...rows.map(row => row.join(','))].join('\n')
       }
-      
+
       case 'txt':
         return logs
-          .map(log => {
+          .map((log) => {
             const timestamp = log.timestamp.toISOString()
             const logger = this.findLoggerName(log) || 'unknown'
             const module = log.module ? `[${log.module}]` : ''
@@ -356,7 +365,7 @@ export class LoggerManager extends EventEmitter {
             return `[${timestamp}] [${logger}] ${module} [${log.level.toUpperCase()}] ${log.message}${dataStr}`
           })
           .join('\n')
-      
+
       default:
         throw new Error(`Unsupported export format: ${format}`)
     }
@@ -384,7 +393,7 @@ export class LoggerManager extends EventEmitter {
       debug: 0,
       info: 0,
       warn: 0,
-      error: 0
+      error: 0,
     }
 
     for (const log of this.getAllLogs()) {
@@ -395,7 +404,7 @@ export class LoggerManager extends EventEmitter {
       name,
       logCount: logger.getLogs().length,
       level: logger.getLevel(),
-      transportCount: logger.getTransports().length
+      transportCount: logger.getTransports().length,
     }))
 
     return {
@@ -404,7 +413,7 @@ export class LoggerManager extends EventEmitter {
       logsByLevel,
       defaultTransportCount: this.defaultTransports.length,
       globalLevel: this.globalLevel,
-      loggerStats
+      loggerStats,
     }
   }
 
@@ -443,7 +452,7 @@ export class LoggerManager extends EventEmitter {
     return new LoggerManager({
       level: 'info',
       errorHandler: true,
-      globalLogger: true
+      globalLogger: true,
     })
   }
 }

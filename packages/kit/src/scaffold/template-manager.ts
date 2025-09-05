@@ -3,12 +3,12 @@
  * 负责模板的加载、渲染和管理
  */
 
+import type { Logger } from '../logger'
 import { EventEmitter } from 'node:events'
 import { promises as fs } from 'node:fs'
-import { resolve, join, dirname, basename, extname } from 'node:path'
+import { dirname, extname, join } from 'node:path'
 import { FileSystem } from '../filesystem'
 import { StringUtils } from '../utils'
-import type { Logger } from '../logger'
 
 /**
  * 模板配置
@@ -34,7 +34,7 @@ export interface TemplateVariable {
   type: 'string' | 'number' | 'boolean' | 'select' | 'multiselect'
   message: string
   default?: any
-  choices?: Array<{ name: string; value: any }>
+  choices?: Array<{ name: string, value: any }>
   validate?: (value: any) => boolean | string
 }
 
@@ -96,7 +96,8 @@ export class TemplateManager extends EventEmitter {
     try {
       await this.loadTemplates()
       this.logger?.info(`加载了 ${this.templates.size} 个模板`)
-    } catch (error) {
+    }
+    catch (error) {
       this.logger?.error('模板管理器初始化失败:', error)
       throw error
     }
@@ -106,13 +107,13 @@ export class TemplateManager extends EventEmitter {
    * 加载所有模板
    */
   async loadTemplates(): Promise<void> {
-    if (!await FileSystem.exists(this.options.templatesDir)) {
+    if (!(await FileSystem.exists(this.options.templatesDir))) {
       await FileSystem.ensureDir(this.options.templatesDir)
       return
     }
 
     const entries = await fs.readdir(this.options.templatesDir, { withFileTypes: true })
-    
+
     for (const entry of entries) {
       if (entry.isDirectory()) {
         try {
@@ -120,7 +121,8 @@ export class TemplateManager extends EventEmitter {
           if (template) {
             this.templates.set(entry.name, template)
           }
-        } catch (error) {
+        }
+        catch (error) {
           this.logger?.warn(`加载模板失败: ${entry.name}`, error)
         }
       }
@@ -134,21 +136,22 @@ export class TemplateManager extends EventEmitter {
     const templateDir = join(this.options.templatesDir, name)
     const configPath = join(templateDir, 'template.json')
 
-    if (!await FileSystem.exists(configPath)) {
+    if (!(await FileSystem.exists(configPath))) {
       return null
     }
 
     try {
       const configContent = await fs.readFile(configPath, 'utf8')
       const config = JSON.parse(configContent) as TemplateConfig
-      
+
       // 验证模板配置
       if (!config.name || !config.version) {
         throw new Error('模板配置缺少必要字段')
       }
 
       return config
-    } catch (error) {
+    }
+    catch (error) {
       this.logger?.error(`解析模板配置失败: ${name}`, error)
       return null
     }
@@ -174,7 +177,7 @@ export class TemplateManager extends EventEmitter {
   async renderTemplate(
     templateName: string,
     targetDir: string,
-    variables: Record<string, any> = {}
+    variables: Record<string, any> = {},
   ): Promise<string[]> {
     const template = this.templates.get(templateName)
     if (!template) {
@@ -197,16 +200,12 @@ export class TemplateManager extends EventEmitter {
         // 使用配置中的文件列表
         for (const fileConfig of template.files) {
           if (this.shouldIncludeFile(fileConfig, variables)) {
-            const rendered = await this.renderFile(
-              templateDir,
-              targetDir,
-              fileConfig,
-              variables
-            )
+            const rendered = await this.renderFile(templateDir, targetDir, fileConfig, variables)
             renderedFiles.push(...rendered)
           }
         }
-      } else {
+      }
+      else {
         // 渲染整个模板目录
         const rendered = await this.renderDirectory(templateDir, targetDir, variables)
         renderedFiles.push(...rendered)
@@ -217,15 +216,15 @@ export class TemplateManager extends EventEmitter {
         await this.executeHooks(template.hooks.afterRender, targetDir, variables)
       }
 
-      this.emit('renderCompleted', { 
-        template: templateName, 
-        targetDir, 
-        files: renderedFiles 
+      this.emit('renderCompleted', {
+        template: templateName,
+        targetDir,
+        files: renderedFiles,
       })
 
       return renderedFiles
-
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('renderError', error)
       throw error
     }
@@ -237,10 +236,10 @@ export class TemplateManager extends EventEmitter {
   async createTemplate(
     name: string,
     config: Partial<TemplateConfig>,
-    sourceDir?: string
+    sourceDir?: string,
   ): Promise<void> {
     const templateDir = join(this.options.templatesDir, name)
-    
+
     if (await FileSystem.exists(templateDir)) {
       throw new Error(`模板已存在: ${name}`)
     }
@@ -259,17 +258,17 @@ export class TemplateManager extends EventEmitter {
       files: config.files,
       hooks: config.hooks,
       dependencies: config.dependencies,
-      devDependencies: config.devDependencies
+      devDependencies: config.devDependencies,
     }
 
     await fs.writeFile(
       join(templateDir, 'template.json'),
       JSON.stringify(templateConfig, null, 2),
-      'utf8'
+      'utf8',
     )
 
     // 复制源文件
-    if (sourceDir && await FileSystem.exists(sourceDir)) {
+    if (sourceDir && (await FileSystem.exists(sourceDir))) {
       await this.copyTemplateFiles(sourceDir, templateDir)
     }
 
@@ -287,8 +286,8 @@ export class TemplateManager extends EventEmitter {
    */
   async deleteTemplate(name: string): Promise<void> {
     const templateDir = join(this.options.templatesDir, name)
-    
-    if (!await FileSystem.exists(templateDir)) {
+
+    if (!(await FileSystem.exists(templateDir))) {
       throw new Error(`模板不存在: ${name}`)
     }
 
@@ -308,10 +307,7 @@ export class TemplateManager extends EventEmitter {
 
   // 私有方法
 
-  private shouldIncludeFile(
-    fileConfig: TemplateFile,
-    variables: Record<string, any>
-  ): boolean {
+  private shouldIncludeFile(fileConfig: TemplateFile, variables: Record<string, any>): boolean {
     if (!fileConfig.condition) {
       return true
     }
@@ -319,19 +315,17 @@ export class TemplateManager extends EventEmitter {
     try {
       // 简单的条件评估
       return this.evaluateCondition(fileConfig.condition, variables)
-    } catch {
+    }
+    catch {
       return true
     }
   }
 
-  private evaluateCondition(
-    condition: string,
-    variables: Record<string, any>
-  ): boolean {
+  private evaluateCondition(condition: string, variables: Record<string, any>): boolean {
     // 简单的条件评估实现
     // 支持基本的变量检查，如 "framework === 'vue'"
     const cleanCondition = condition.replace(/\s+/g, ' ').trim()
-    
+
     // 替换变量
     let evaluatedCondition = cleanCondition
     for (const [key, value] of Object.entries(variables)) {
@@ -342,8 +336,9 @@ export class TemplateManager extends EventEmitter {
 
     // 简单的表达式评估（仅支持基本比较）
     try {
-      return Function(`"use strict"; return (${evaluatedCondition})`)()
-    } catch {
+      return new Function(`"use strict"; return (${evaluatedCondition})`)()
+    }
+    catch {
       return true
     }
   }
@@ -352,12 +347,12 @@ export class TemplateManager extends EventEmitter {
     templateDir: string,
     targetDir: string,
     fileConfig: TemplateFile,
-    variables: Record<string, any>
+    variables: Record<string, any>,
   ): Promise<string[]> {
     const sourcePath = join(templateDir, fileConfig.source)
     const targetPath = join(targetDir, this.renderString(fileConfig.target, variables))
 
-    if (!await FileSystem.exists(sourcePath)) {
+    if (!(await FileSystem.exists(sourcePath))) {
       this.logger?.warn(`模板文件不存在: ${sourcePath}`)
       return []
     }
@@ -369,7 +364,8 @@ export class TemplateManager extends EventEmitter {
       const content = await fs.readFile(sourcePath, 'utf8')
       const renderedContent = this.renderString(content, variables)
       await fs.writeFile(targetPath, renderedContent, 'utf8')
-    } else {
+    }
+    else {
       // 直接复制文件
       await FileSystem.copy(sourcePath, targetPath)
     }
@@ -380,14 +376,14 @@ export class TemplateManager extends EventEmitter {
   private async renderDirectory(
     templateDir: string,
     targetDir: string,
-    variables: Record<string, any>
+    variables: Record<string, any>,
   ): Promise<string[]> {
     const renderedFiles: string[] = []
     const entries = await fs.readdir(templateDir, { withFileTypes: true })
 
     for (const entry of entries) {
       const sourcePath = join(templateDir, entry.name)
-      
+
       // 跳过模板配置文件
       if (entry.name === 'template.json') {
         continue
@@ -397,10 +393,11 @@ export class TemplateManager extends EventEmitter {
         const subRendered = await this.renderDirectory(
           sourcePath,
           join(targetDir, entry.name),
-          variables
+          variables,
         )
         renderedFiles.push(...subRendered)
-      } else {
+      }
+      else {
         const targetPath = join(targetDir, entry.name)
         await FileSystem.ensureDir(dirname(targetPath))
 
@@ -408,7 +405,8 @@ export class TemplateManager extends EventEmitter {
           const content = await fs.readFile(sourcePath, 'utf8')
           const renderedContent = this.renderString(content, variables)
           await fs.writeFile(targetPath, renderedContent, 'utf8')
-        } else {
+        }
+        else {
           await FileSystem.copy(sourcePath, targetPath)
         }
 
@@ -424,7 +422,19 @@ export class TemplateManager extends EventEmitter {
   }
 
   private isTemplateFile(filePath: string): boolean {
-    const templateExtensions = ['.js', '.ts', '.json', '.md', '.txt', '.html', '.css', '.scss', '.vue', '.jsx', '.tsx']
+    const templateExtensions = [
+      '.js',
+      '.ts',
+      '.json',
+      '.md',
+      '.txt',
+      '.html',
+      '.css',
+      '.scss',
+      '.vue',
+      '.jsx',
+      '.tsx',
+    ]
     const ext = extname(filePath).toLowerCase()
     return templateExtensions.includes(ext)
   }
@@ -439,7 +449,8 @@ export class TemplateManager extends EventEmitter {
       if (entry.isDirectory()) {
         await FileSystem.ensureDir(targetPath)
         await this.copyTemplateFiles(sourcePath, targetPath)
-      } else {
+      }
+      else {
         await FileSystem.copy(sourcePath, targetPath)
       }
     }
@@ -448,14 +459,15 @@ export class TemplateManager extends EventEmitter {
   private async executeHooks(
     hooks: string[],
     workingDir: string,
-    variables: Record<string, any>
+    variables: Record<string, any>,
   ): Promise<void> {
     for (const hook of hooks) {
       try {
         // 这里可以实现钩子执行逻辑
         // 例如执行 shell 命令或 JavaScript 函数
         this.logger?.debug(`执行钩子: ${hook}`)
-      } catch (error) {
+      }
+      catch (error) {
         this.logger?.warn(`钩子执行失败: ${hook}`, error)
       }
     }

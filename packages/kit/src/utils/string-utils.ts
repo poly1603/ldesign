@@ -14,9 +14,8 @@ export class StringUtils {
    */
   static toCamelCase(str: string): string {
     return str
-      .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => 
-        index === 0 ? word.toLowerCase() : word.toUpperCase()
-      )
+      .replace(/^\w|[A-Z]|\b\w/g, (word, index) =>
+        index === 0 ? word.toLowerCase() : word.toUpperCase())
       .replace(/\s+/g, '')
       .replace(/[-_]/g, '')
   }
@@ -28,7 +27,7 @@ export class StringUtils {
    */
   static toPascalCase(str: string): string {
     return str
-      .replace(/(?:^\w|[A-Z]|\b\w)/g, word => word.toUpperCase())
+      .replace(/^\w|[A-Z]|\b\w/g, word => word.toUpperCase())
       .replace(/\s+/g, '')
       .replace(/[-_]/g, '')
   }
@@ -72,7 +71,8 @@ export class StringUtils {
    * @returns 首字母大写的字符串
    */
   static capitalize(str: string): string {
-    if (!str) return str
+    if (!str)
+      return str
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
   }
 
@@ -82,7 +82,8 @@ export class StringUtils {
    * @returns 首字母小写的字符串
    */
   static uncapitalize(str: string): string {
-    if (!str) return str
+    if (!str)
+      return str
     return str.charAt(0).toLowerCase() + str.slice(1)
   }
 
@@ -92,9 +93,7 @@ export class StringUtils {
    * @returns 标题格式的字符串
    */
   static toTitleCase(str: string): string {
-    return str.replace(/\w\S*/g, txt => 
-      txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-    )
+    return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())
   }
 
   /**
@@ -104,8 +103,9 @@ export class StringUtils {
    * @returns 处理后的字符串
    */
   static trim(str: string, chars?: string): string {
-    if (!chars) return str.trim()
-    
+    if (!chars)
+      return str.trim()
+
     const pattern = new RegExp(`^[${chars}]+|[${chars}]+$`, 'g')
     return str.replace(pattern, '')
   }
@@ -117,8 +117,9 @@ export class StringUtils {
    * @returns 处理后的字符串
    */
   static trimStart(str: string, chars?: string): string {
-    if (!chars) return str.trimStart()
-    
+    if (!chars)
+      return str.trimStart()
+
     const pattern = new RegExp(`^[${chars}]+`, 'g')
     return str.replace(pattern, '')
   }
@@ -130,8 +131,9 @@ export class StringUtils {
    * @returns 处理后的字符串
    */
   static trimEnd(str: string, chars?: string): string {
-    if (!chars) return str.trimEnd()
-    
+    if (!chars)
+      return str.trimEnd()
+
     const pattern = new RegExp(`[${chars}]+$`, 'g')
     return str.replace(pattern, '')
   }
@@ -148,12 +150,13 @@ export class StringUtils {
     str: string,
     length: number,
     fillString = ' ',
-    direction: 'start' | 'end' | 'both' = 'both'
+    direction: 'start' | 'end' | 'both' = 'both',
   ): string {
-    if (str.length >= length) return str
+    if (str.length >= length)
+      return str
 
     const fillLength = length - str.length
-    
+
     switch (direction) {
       case 'start':
         return str.padStart(length, fillString)
@@ -162,8 +165,7 @@ export class StringUtils {
       case 'both':
         const leftPad = Math.floor(fillLength / 2)
         const rightPad = fillLength - leftPad
-        return str.padStart(str.length + leftPad, fillString)
-                  .padEnd(length, fillString)
+        return str.padStart(str.length + leftPad, fillString).padEnd(length, fillString)
       default:
         return str
     }
@@ -177,7 +179,8 @@ export class StringUtils {
    * @returns 截断后的字符串
    */
   static truncate(str: string, length: number, suffix = '...'): string {
-    if (str.length <= length) return str
+    if (str.length <= length)
+      return str
     return str.slice(0, length - suffix.length) + suffix
   }
 
@@ -232,11 +235,11 @@ export class StringUtils {
       prefix?: string
       suffix?: string
       fallback?: string
-    } = {}
+    } = {},
   ): string {
     const { prefix = '{{', suffix = '}}', fallback = '' } = options
     const pattern = new RegExp(`${prefix}\\s*([^${suffix}]+)\\s*${suffix}`, 'g')
-    
+
     return template.replace(pattern, (match, key) => {
       const value = StringUtils.get(data, key.trim())
       return value !== undefined ? String(value) : fallback
@@ -265,7 +268,8 @@ export class StringUtils {
         // 简单的表达式求值（仅支持属性访问）
         const value = StringUtils.get(data, expression.trim())
         return value !== undefined ? String(value) : match
-      } catch {
+      }
+      catch {
         return match
       }
     })
@@ -278,12 +282,13 @@ export class StringUtils {
    * @returns 分割后的数组
    */
   static split(str: string, separators: string[]): string[] {
-    if (separators.length === 0) return [str]
-    
-    const pattern = new RegExp(`[${separators.map(s => 
-      s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    ).join('')}]`)
-    
+    if (separators.length === 0)
+      return [str]
+
+    const pattern = new RegExp(
+      `[${separators.map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('')}]`,
+    )
+
     return str.split(pattern).filter(Boolean)
   }
 
@@ -306,8 +311,9 @@ export class StringUtils {
    * @returns 编辑距离
    */
   static levenshteinDistance(str1: string, str2: string): number {
-    const matrix = Array(str2.length + 1).fill(null)
-      .map(() => Array(str1.length + 1).fill(null))
+    const matrix = Array.from({ length: str2.length + 1 })
+      .fill(null)
+      .map(() => Array.from({ length: str1.length + 1 }).fill(null))
 
     for (let i = 0; i <= str1.length; i++) {
       matrix[0][i] = i
@@ -321,9 +327,9 @@ export class StringUtils {
       for (let i = 1; i <= str1.length; i++) {
         const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1
         matrix[j][i] = Math.min(
-          matrix[j][i - 1] + 1,     // deletion
-          matrix[j - 1][i] + 1,     // insertion
-          matrix[j - 1][i - 1] + indicator // substitution
+          matrix[j][i - 1] + 1, // deletion
+          matrix[j - 1][i] + 1, // insertion
+          matrix[j - 1][i - 1] + indicator, // substitution
         )
       }
     }
@@ -338,14 +344,15 @@ export class StringUtils {
    */
   static hash(str: string): number {
     let hash = 0
-    if (str.length === 0) return hash
-    
+    if (str.length === 0)
+      return hash
+
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32bit integer
     }
-    
+
     return hash
   }
 
@@ -360,9 +367,9 @@ export class StringUtils {
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
-      "'": '&#39;'
+      '\'': '&#39;',
     }
-    
+
     return str.replace(/[&<>"']/g, match => htmlEscapes[match])
   }
 
@@ -377,9 +384,9 @@ export class StringUtils {
       '&lt;': '<',
       '&gt;': '>',
       '&quot;': '"',
-      '&#39;': "'"
+      '&#39;': '\'',
     }
-    
+
     return str.replace(/&(?:amp|lt|gt|quot|#39);/g, match => htmlUnescapes[match])
   }
 
@@ -400,7 +407,7 @@ export class StringUtils {
    */
   static random(
     length: number,
-    charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
   ): string {
     let result = ''
     for (let i = 0; i < length; i++) {
@@ -429,7 +436,7 @@ export class StringUtils {
   static convertEncoding(
     str: string,
     fromEncoding: BufferEncoding,
-    toEncoding: BufferEncoding
+    toEncoding: BufferEncoding,
   ): string {
     const buffer = Buffer.from(str, fromEncoding)
     return buffer.toString(toEncoding)

@@ -3,8 +3,8 @@
  * 负责多环境配置的管理和切换
  */
 
-import { EventEmitter } from 'node:events'
 import type { Logger } from '../logger'
+import { EventEmitter } from 'node:events'
 
 /**
  * 环境配置
@@ -49,9 +49,10 @@ export class EnvironmentManager extends EventEmitter {
     try {
       // 初始化默认环境配置
       this.initializeDefaultEnvironments()
-      
+
       this.logger?.info(`环境管理器初始化完成，当前环境: ${this.currentEnvironment}`)
-    } catch (error) {
+    }
+    catch (error) {
       this.logger?.error('环境管理器初始化失败:', error)
       throw error
     }
@@ -80,7 +81,7 @@ export class EnvironmentManager extends EventEmitter {
 
     this.emit('environmentChanged', {
       from: oldEnvironment,
-      to: environment
+      to: environment,
     })
 
     this.logger?.info(`环境已切换: ${oldEnvironment} -> ${environment}`)
@@ -125,7 +126,7 @@ export class EnvironmentManager extends EventEmitter {
   getEnvironmentVariables(environment?: string): Record<string, any> {
     const env = environment || this.currentEnvironment
     const config = this.getEnvironmentConfig(env)
-    
+
     if (!config) {
       return {}
     }
@@ -146,15 +147,11 @@ export class EnvironmentManager extends EventEmitter {
   /**
    * 设置环境变量
    */
-  setEnvironmentVariable(
-    key: string,
-    value: any,
-    environment?: string
-  ): void {
+  setEnvironmentVariable(key: string, value: any, environment?: string): void {
     const env = environment || this.currentEnvironment
     const config = this.getEnvironmentConfig(env) || {
       name: env,
-      variables: {}
+      variables: {},
     }
 
     if (!config.variables) {
@@ -168,10 +165,7 @@ export class EnvironmentManager extends EventEmitter {
   /**
    * 删除环境变量
    */
-  deleteEnvironmentVariable(
-    key: string,
-    environment?: string
-  ): void {
+  deleteEnvironmentVariable(key: string, environment?: string): void {
     const env = environment || this.currentEnvironment
     const config = this.getEnvironmentConfig(env)
 
@@ -191,10 +185,7 @@ export class EnvironmentManager extends EventEmitter {
   /**
    * 添加新环境
    */
-  addEnvironment(
-    environment: string,
-    config?: Partial<EnvironmentConfig>
-  ): void {
+  addEnvironment(environment: string, config?: Partial<EnvironmentConfig>): void {
     if (this.hasEnvironment(environment)) {
       throw new Error(`环境已存在: ${environment}`)
     }
@@ -206,7 +197,7 @@ export class EnvironmentManager extends EventEmitter {
       description: config?.description,
       variables: config?.variables || {},
       extends: config?.extends,
-      active: config?.active !== false
+      active: config?.active !== false,
     }
 
     this.setEnvironmentConfig(environment, environmentConfig)
@@ -240,7 +231,7 @@ export class EnvironmentManager extends EventEmitter {
   cloneEnvironment(
     sourceEnvironment: string,
     targetEnvironment: string,
-    overrides?: Partial<EnvironmentConfig>
+    overrides?: Partial<EnvironmentConfig>,
   ): void {
     if (!this.hasEnvironment(sourceEnvironment)) {
       throw new Error(`源环境不存在: ${sourceEnvironment}`)
@@ -258,7 +249,7 @@ export class EnvironmentManager extends EventEmitter {
     const targetConfig: EnvironmentConfig = {
       ...sourceConfig,
       name: targetEnvironment,
-      ...overrides
+      ...overrides,
     }
 
     this.addEnvironment(targetEnvironment, targetConfig)
@@ -277,7 +268,7 @@ export class EnvironmentManager extends EventEmitter {
       total: this.options.environments.length,
       current: this.currentEnvironment,
       available: this.getAvailableEnvironments(),
-      configured: Array.from(this.environmentConfigs.keys())
+      configured: Array.from(this.environmentConfigs.keys()),
     }
   }
 
@@ -305,7 +296,7 @@ export class EnvironmentManager extends EventEmitter {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     }
   }
 
@@ -333,7 +324,8 @@ export class EnvironmentManager extends EventEmitter {
     for (const [environment, config] of Object.entries(configs)) {
       if (this.hasEnvironment(environment)) {
         this.setEnvironmentConfig(environment, config)
-      } else {
+      }
+      else {
         this.addEnvironment(environment, config)
       }
     }
@@ -351,8 +343,8 @@ export class EnvironmentManager extends EventEmitter {
         variables: {
           NODE_ENV: 'development',
           DEBUG: true,
-          API_URL: 'http://localhost:3000/api'
-        }
+          API_URL: 'http://localhost:3000/api',
+        },
       },
       production: {
         name: 'production',
@@ -360,8 +352,8 @@ export class EnvironmentManager extends EventEmitter {
         variables: {
           NODE_ENV: 'production',
           DEBUG: false,
-          API_URL: 'https://api.example.com'
-        }
+          API_URL: 'https://api.example.com',
+        },
       },
       staging: {
         name: 'staging',
@@ -369,8 +361,8 @@ export class EnvironmentManager extends EventEmitter {
         variables: {
           NODE_ENV: 'staging',
           DEBUG: false,
-          API_URL: 'https://staging-api.example.com'
-        }
+          API_URL: 'https://staging-api.example.com',
+        },
       },
       test: {
         name: 'test',
@@ -378,9 +370,9 @@ export class EnvironmentManager extends EventEmitter {
         variables: {
           NODE_ENV: 'test',
           DEBUG: true,
-          API_URL: 'http://localhost:3001/api'
-        }
-      }
+          API_URL: 'http://localhost:3001/api',
+        },
+      },
     }
 
     for (const environment of this.options.environments) {
@@ -393,7 +385,7 @@ export class EnvironmentManager extends EventEmitter {
   private hasCircularInheritance(
     environment: string,
     parentEnvironment: string,
-    visited = new Set<string>()
+    visited = new Set<string>(),
   ): boolean {
     if (visited.has(parentEnvironment)) {
       return true

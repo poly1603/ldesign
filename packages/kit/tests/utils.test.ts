@@ -2,18 +2,18 @@
  * Utils 模块测试
  */
 
-import { describe, it, expect } from 'vitest'
-import { 
-  StringUtils, 
-  NumberUtils, 
-  ArrayUtils, 
-  ObjectUtils,
+import { describe, expect, it } from 'vitest'
+import {
+  ArrayUtils,
   DateUtils,
+  NumberUtils,
+  ObjectUtils,
+  RandomUtils,
+  StringUtils,
   ValidationUtils,
-  RandomUtils
 } from '../src/utils'
 
-describe('StringUtils', () => {
+describe('stringUtils', () => {
   describe('基本操作', () => {
     it('应该能够转换为驼峰命名', () => {
       expect(StringUtils.toCamelCase('hello-world')).toBe('helloWorld')
@@ -67,18 +67,20 @@ describe('StringUtils', () => {
     })
 
     it('应该能够转义HTML', () => {
-      expect(StringUtils.escapeHtml('<div>Hello & "World"</div>'))
-        .toBe('&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;')
+      expect(StringUtils.escapeHtml('<div>Hello & "World"</div>')).toBe(
+        '&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;'
+      )
     })
 
     it('应该能够反转义HTML', () => {
-      expect(StringUtils.unescapeHtml('&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;'))
-        .toBe('<div>Hello & "World"</div>')
+      expect(StringUtils.unescapeHtml('&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;')).toBe(
+        '<div>Hello & "World"</div>'
+      )
     })
   })
 })
 
-describe('NumberUtils', () => {
+describe('numberUtils', () => {
   describe('数字格式化', () => {
     it('应该能够格式化数字', () => {
       expect(NumberUtils.format(1234.567, 2)).toBe('1,234.57')
@@ -136,7 +138,7 @@ describe('NumberUtils', () => {
   })
 })
 
-describe('ArrayUtils', () => {
+describe('arrayUtils', () => {
   describe('数组操作', () => {
     it('应该能够去重', () => {
       expect(ArrayUtils.unique([1, 2, 2, 3, 3, 3])).toEqual([1, 2, 3])
@@ -146,14 +148,17 @@ describe('ArrayUtils', () => {
     it('应该能够打乱数组', () => {
       const arr = [1, 2, 3, 4, 5]
       const shuffled = ArrayUtils.shuffle([...arr])
-      
+
       expect(shuffled).toHaveLength(arr.length)
       expect(shuffled.sort()).toEqual(arr.sort())
     })
 
     it('应该能够分块', () => {
       expect(ArrayUtils.chunk([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]])
-      expect(ArrayUtils.chunk([1, 2, 3, 4], 2)).toEqual([[1, 2], [3, 4]])
+      expect(ArrayUtils.chunk([1, 2, 3, 4], 2)).toEqual([
+        [1, 2],
+        [3, 4],
+      ])
     })
 
     it('应该能够扁平化', () => {
@@ -176,12 +181,12 @@ describe('ArrayUtils', () => {
   })
 })
 
-describe('ObjectUtils', () => {
+describe('objectUtils', () => {
   describe('对象操作', () => {
     it('应该能够深度克隆', () => {
       const obj = { a: 1, b: { c: 2 } }
       const cloned = ObjectUtils.deepClone(obj)
-      
+
       expect(cloned).toEqual(obj)
       expect(cloned).not.toBe(obj)
       expect(cloned.b).not.toBe(obj.b)
@@ -190,17 +195,17 @@ describe('ObjectUtils', () => {
     it('应该能够深度合并', () => {
       const obj1 = { a: 1, b: { c: 2 } }
       const obj2 = { b: { d: 3 }, e: 4 }
-      
+
       expect(ObjectUtils.deepMerge(obj1, obj2)).toEqual({
         a: 1,
         b: { c: 2, d: 3 },
-        e: 4
+        e: 4,
       })
     })
 
     it('应该能够获取嵌套值', () => {
       const obj = { a: { b: { c: 'value' } } }
-      
+
       expect(ObjectUtils.get(obj, 'a.b.c')).toBe('value')
       expect(ObjectUtils.get(obj, 'a.b.d', 'default')).toBe('default')
     })
@@ -208,7 +213,7 @@ describe('ObjectUtils', () => {
     it('应该能够设置嵌套值', () => {
       const obj = {}
       ObjectUtils.set(obj, 'a.b.c', 'value')
-      
+
       expect(obj).toEqual({ a: { b: { c: 'value' } } })
     })
   })
@@ -227,18 +232,18 @@ describe('ObjectUtils', () => {
   })
 })
 
-describe('DateUtils', () => {
+describe('dateUtils', () => {
   describe('日期格式化', () => {
     it('应该能够格式化日期', () => {
       const date = new Date('2023-12-25T10:30:00')
-      
+
       expect(DateUtils.format(date, 'YYYY-MM-DD')).toBe('2023-12-25')
       expect(DateUtils.format(date, 'HH:mm:ss')).toBe('10:30:00')
     })
 
     it('应该能够解析日期字符串', () => {
       const date = DateUtils.parse('2023-12-25', 'YYYY-MM-DD')
-      
+
       expect(date.getFullYear()).toBe(2023)
       expect(date.getMonth()).toBe(11) // 0-based
       expect(date.getDate()).toBe(25)
@@ -249,20 +254,20 @@ describe('DateUtils', () => {
     it('应该能够添加时间', () => {
       const date = new Date('2023-12-25')
       const result = DateUtils.add(date, 1, 'day')
-      
+
       expect(result.getDate()).toBe(26)
     })
 
     it('应该能够计算时间差', () => {
       const date1 = new Date('2023-12-25')
       const date2 = new Date('2023-12-26')
-      
+
       expect(DateUtils.diff(date2, date1, 'day')).toBe(1)
     })
   })
 })
 
-describe('ValidationUtils', () => {
+describe('validationUtils', () => {
   describe('基本验证', () => {
     it('应该能够验证邮箱', () => {
       expect(ValidationUtils.isEmail('test@example.com')).toBe(true)
@@ -286,7 +291,7 @@ describe('ValidationUtils', () => {
   })
 })
 
-describe('RandomUtils', () => {
+describe('randomUtils', () => {
   describe('随机生成', () => {
     it('应该能够生成随机整数', () => {
       const num = RandomUtils.int(1, 10)
@@ -304,7 +309,7 @@ describe('RandomUtils', () => {
     it('应该能够生成随机字符串', () => {
       const str = RandomUtils.string(10)
       expect(str).toHaveLength(10)
-      expect(/^[a-zA-Z0-9]+$/.test(str)).toBe(true)
+      expect(/^[a-z0-9]+$/i.test(str)).toBe(true)
     })
 
     it('应该能够从数组中随机选择', () => {

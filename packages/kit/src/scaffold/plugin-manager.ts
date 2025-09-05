@@ -3,11 +3,11 @@
  * 负责插件的加载、管理和执行
  */
 
+import type { Logger } from '../logger'
 import { EventEmitter } from 'node:events'
 import { promises as fs } from 'node:fs'
-import { resolve, join } from 'node:path'
+import { join } from 'node:path'
 import { FileSystem } from '../filesystem'
-import type { Logger } from '../logger'
 
 /**
  * 插件配置
@@ -31,12 +31,12 @@ export interface PluginConfig {
 export interface Plugin {
   name: string
   version: string
-  install?(context: PluginContext): Promise<void> | void
-  uninstall?(context: PluginContext): Promise<void> | void
-  beforeCreate?(context: PluginContext): Promise<void> | void
-  afterCreate?(context: PluginContext): Promise<void> | void
-  beforeRender?(context: PluginContext): Promise<void> | void
-  afterRender?(context: PluginContext): Promise<void> | void
+  install?: (context: PluginContext) => Promise<void> | void
+  uninstall?: (context: PluginContext) => Promise<void> | void
+  beforeCreate?: (context: PluginContext) => Promise<void> | void
+  afterCreate?: (context: PluginContext) => Promise<void> | void
+  beforeRender?: (context: PluginContext) => Promise<void> | void
+  afterRender?: (context: PluginContext) => Promise<void> | void
   [hookName: string]: any
 }
 
@@ -82,7 +82,8 @@ export class PluginManager extends EventEmitter {
     try {
       await this.loadPlugins()
       this.logger?.info(`加载了 ${this.plugins.size} 个插件`)
-    } catch (error) {
+    }
+    catch (error) {
       this.logger?.error('插件管理器初始化失败:', error)
       throw error
     }
@@ -92,18 +93,19 @@ export class PluginManager extends EventEmitter {
    * 加载所有插件
    */
   async loadPlugins(): Promise<void> {
-    if (!await FileSystem.exists(this.options.pluginsDir)) {
+    if (!(await FileSystem.exists(this.options.pluginsDir))) {
       await FileSystem.ensureDir(this.options.pluginsDir)
       return
     }
 
     const entries = await fs.readdir(this.options.pluginsDir, { withFileTypes: true })
-    
+
     for (const entry of entries) {
       if (entry.isDirectory()) {
         try {
           await this.loadPlugin(entry.name)
-        } catch (error) {
+        }
+        catch (error) {
           this.logger?.warn(`加载插件失败: ${entry.name}`, error)
         }
       }
@@ -117,7 +119,7 @@ export class PluginManager extends EventEmitter {
     const pluginDir = join(this.options.pluginsDir, name)
     const configPath = join(pluginDir, 'plugin.json')
 
-    if (!await FileSystem.exists(configPath)) {
+    if (!(await FileSystem.exists(configPath))) {
       throw new Error(`插件配置文件不存在: ${configPath}`)
     }
 
@@ -133,7 +135,7 @@ export class PluginManager extends EventEmitter {
 
       // 加载插件主文件
       const mainPath = join(pluginDir, config.main)
-      if (!await FileSystem.exists(mainPath)) {
+      if (!(await FileSystem.exists(mainPath))) {
         throw new Error(`插件主文件不存在: ${mainPath}`)
       }
 
@@ -151,8 +153,8 @@ export class PluginManager extends EventEmitter {
 
       this.emit('pluginLoaded', { name, config, plugin })
       this.logger?.debug(`插件加载成功: ${name}`)
-
-    } catch (error) {
+    }
+    catch (error) {
       this.logger?.error(`加载插件失败: ${name}`, error)
       throw error
     }
@@ -206,7 +208,7 @@ export class PluginManager extends EventEmitter {
         projectPath,
         options: config.options,
         logger: this.logger,
-        fileSystem: FileSystem
+        fileSystem: FileSystem,
       }
 
       // 执行插件安装
@@ -216,8 +218,8 @@ export class PluginManager extends EventEmitter {
 
       this.emit('pluginInstallCompleted', { pluginName, projectPath })
       this.logger?.info(`插件安装成功: ${pluginName}`)
-
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('pluginInstallError', { pluginName, projectPath, error })
       this.logger?.error(`插件安装失败: ${pluginName}`, error)
       throw error
@@ -242,7 +244,7 @@ export class PluginManager extends EventEmitter {
         projectPath,
         options: config.options,
         logger: this.logger,
-        fileSystem: FileSystem
+        fileSystem: FileSystem,
       }
 
       // 执行插件卸载
@@ -252,8 +254,8 @@ export class PluginManager extends EventEmitter {
 
       this.emit('pluginUninstallCompleted', { pluginName, projectPath })
       this.logger?.info(`插件卸载成功: ${pluginName}`)
-
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('pluginUninstallError', { pluginName, projectPath, error })
       this.logger?.error(`插件卸载失败: ${pluginName}`, error)
       throw error
@@ -263,12 +265,9 @@ export class PluginManager extends EventEmitter {
   /**
    * 执行插件钩子
    */
-  async executeHook(
-    hookName: string,
-    context: Partial<PluginContext>
-  ): Promise<void> {
+  async executeHook(hookName: string, context: Partial<PluginContext>): Promise<void> {
     const plugins = Array.from(this.plugins.values())
-    
+
     for (const plugin of plugins) {
       if (typeof plugin[hookName] === 'function') {
         try {
@@ -278,13 +277,13 @@ export class PluginManager extends EventEmitter {
             variables: context.variables,
             options: context.options,
             logger: this.logger,
-            fileSystem: FileSystem
+            fileSystem: FileSystem,
           }
 
           await plugin[hookName](fullContext)
           this.logger?.debug(`插件钩子执行成功: ${plugin.name}.${hookName}`)
-
-        } catch (error) {
+        }
+        catch (error) {
           this.logger?.error(`插件钩子执行失败: ${plugin.name}.${hookName}`, error)
           this.emit('hookError', { plugin: plugin.name, hook: hookName, error })
         }
@@ -298,10 +297,10 @@ export class PluginManager extends EventEmitter {
   async createPlugin(
     name: string,
     config: Partial<PluginConfig>,
-    template?: string
+    template?: string,
   ): Promise<void> {
     const pluginDir = join(this.options.pluginsDir, name)
-    
+
     if (await FileSystem.exists(pluginDir)) {
       throw new Error(`插件已存在: ${name}`)
     }
@@ -319,22 +318,18 @@ export class PluginManager extends EventEmitter {
       hooks: config.hooks,
       dependencies: config.dependencies,
       peerDependencies: config.peerDependencies,
-      options: config.options
+      options: config.options,
     }
 
     await fs.writeFile(
       join(pluginDir, 'plugin.json'),
       JSON.stringify(pluginConfig, null, 2),
-      'utf8'
+      'utf8',
     )
 
     // 创建插件主文件
     const mainContent = template || this.getDefaultPluginTemplate(name)
-    await fs.writeFile(
-      join(pluginDir, pluginConfig.main),
-      mainContent,
-      'utf8'
-    )
+    await fs.writeFile(join(pluginDir, pluginConfig.main), mainContent, 'utf8')
 
     this.emit('pluginCreated', { name, config: pluginConfig })
   }
@@ -344,8 +339,8 @@ export class PluginManager extends EventEmitter {
    */
   async deletePlugin(name: string): Promise<void> {
     const pluginDir = join(this.options.pluginsDir, name)
-    
-    if (!await FileSystem.exists(pluginDir)) {
+
+    if (!(await FileSystem.exists(pluginDir))) {
       throw new Error(`插件不存在: ${name}`)
     }
 

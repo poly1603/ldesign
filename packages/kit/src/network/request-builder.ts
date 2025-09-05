@@ -12,7 +12,7 @@ export class RequestBuilder {
   private request: Partial<HttpRequest> = {
     method: 'GET',
     headers: {},
-    params: {}
+    params: {},
   }
 
   /**
@@ -115,7 +115,7 @@ export class RequestBuilder {
    * 设置认证信息
    */
   auth(token: string, type = 'Bearer'): RequestBuilder {
-    this.header('Authorization', type + ' ' + token)
+    this.header('Authorization', `${type} ${token}`)
     return this
   }
 
@@ -123,8 +123,8 @@ export class RequestBuilder {
    * 设置基本认证
    */
   basicAuth(username: string, password: string): RequestBuilder {
-    const credentials = Buffer.from(username + ':' + password).toString('base64')
-    this.header('Authorization', 'Basic ' + credentials)
+    const credentials = Buffer.from(`${username}:${password}`).toString('base64')
+    this.header('Authorization', `Basic ${credentials}`)
     return this
   }
 
@@ -172,7 +172,7 @@ export class RequestBuilder {
     return {
       method: 'GET',
       headers: {},
-      ...this.request
+      ...this.request,
     } as HttpRequest
   }
 
@@ -183,7 +183,7 @@ export class RequestBuilder {
     this.request = {
       method: 'GET',
       headers: {},
-      params: {}
+      params: {},
     }
     return this
   }

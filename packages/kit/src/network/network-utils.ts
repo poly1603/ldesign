@@ -3,10 +3,10 @@
  * 提供网络相关的实用工具函数
  */
 
-import { promisify } from 'node:util'
+import { exec } from 'node:child_process'
 import { lookup } from 'node:dns'
 import { networkInterfaces, platform } from 'node:os'
-import { exec } from 'node:child_process'
+import { promisify } from 'node:util'
 import { NetworkError } from '../types'
 
 const execAsync = promisify(exec)
@@ -26,11 +26,11 @@ export class NetworkUtils {
     return new Promise((resolve) => {
       const { createServer } = require('node:net')
       const server = createServer()
-      
+
       server.listen(port, host, () => {
         server.close(() => resolve(true))
       })
-      
+
       server.on('error', () => resolve(false))
     })
   }
@@ -45,15 +45,19 @@ export class NetworkUtils {
   static async findAvailablePort(
     startPort = 3000,
     endPort = 65535,
-    host = 'localhost'
+    host = 'localhost',
   ): Promise<number> {
     for (let port = startPort; port <= endPort; port++) {
       if (await NetworkUtils.isPortAvailable(port, host)) {
         return port
       }
     }
-    
-    throw new NetworkError(`No available port found between ${startPort} and ${endPort}`, undefined, undefined)
+
+    throw new NetworkError(
+      `No available port found between ${startPort} and ${endPort}`,
+      undefined,
+      undefined,
+    )
   }
 
   /**
@@ -65,13 +69,14 @@ export class NetworkUtils {
   static async isHostReachable(host: string, timeout = 5000): Promise<boolean> {
     try {
       const isWindows = platform() === 'win32'
-      const command = isWindows 
+      const command = isWindows
         ? `ping -n 1 -w ${timeout} ${host}`
         : `ping -c 1 -W ${Math.ceil(timeout / 1000)} ${host}`
-      
+
       await execAsync(command)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -84,17 +89,18 @@ export class NetworkUtils {
   static getLocalIPs(family: 4 | 6 = 4): string[] {
     const interfaces = networkInterfaces()
     const ips: string[] = []
-    
+
     for (const interfaceInfo of Object.values(interfaces)) {
-      if (!interfaceInfo) continue
-      
+      if (!interfaceInfo)
+        continue
+
       for (const info of interfaceInfo) {
         if (!info.internal && info.family === `IPv${family}`) {
           ips.push(info.address)
         }
       }
     }
-    
+
     return ips
   }
 
@@ -107,24 +113,25 @@ export class NetworkUtils {
       'https://api.ipify.org',
       'https://ipinfo.io/ip',
       'https://icanhazip.com',
-      'https://ident.me'
+      'https://ident.me',
     ]
-    
+
     for (const service of services) {
       try {
-        const response = await fetch(service, { 
-          signal: AbortSignal.timeout(5000) 
+        const response = await fetch(service, {
+          signal: AbortSignal.timeout(5000),
         })
         const ip = (await response.text()).trim()
-        
+
         if (NetworkUtils.isValidIP(ip)) {
           return ip
         }
-      } catch {
+      }
+      catch {
         continue
       }
     }
-    
+
     throw new NetworkError('Failed to get public IP address', undefined, undefined)
   }
 
@@ -138,7 +145,8 @@ export class NetworkUtils {
     try {
       const result = await dnsLookup(hostname, { family })
       return result.address
-    } catch (error) {
+    }
+    catch (error) {
       throw new NetworkError(`Failed to resolve hostname: ${hostname}`, undefined, error as Error)
     }
   }
@@ -153,7 +161,8 @@ export class NetworkUtils {
       const { reverse } = require('node:dns')
       const reverseAsync = promisify(reverse)
       return await reverseAsync(ip)
-    } catch (error) {
+    }
+    catch (error) {
       throw new NetworkError(`Failed to reverse resolve IP: ${ip}`, undefined, error as Error)
     }
   }
@@ -165,14 +174,17 @@ export class NetworkUtils {
    * @returns 是否有效
    */
   static isValidIP(ip: string, version?: 4 | 6): boolean {
-    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
-    const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^::1$|^::$/
-    
+    const ipv4Regex
+      = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})$/
+    const ipv6Regex = /^(?:[0-9a-f]{1,4}:){7}[0-9a-f]{1,4}$|^::1$|^::$/i
+
     if (version === 4) {
       return ipv4Regex.test(ip)
-    } else if (version === 6) {
+    }
+    else if (version === 6) {
       return ipv6Regex.test(ip)
-    } else {
+    }
+    else {
       return ipv4Regex.test(ip) || ipv6Regex.test(ip)
     }
   }
@@ -195,7 +207,8 @@ export class NetworkUtils {
     try {
       new URL(url)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -211,14 +224,15 @@ export class NetworkUtils {
       return {
         protocol: parsed.protocol,
         hostname: parsed.hostname,
-        port: parsed.port ? parseInt(parsed.port) : undefined,
+        port: parsed.port ? Number.parseInt(parsed.port) : undefined,
         pathname: parsed.pathname,
         search: parsed.search,
         hash: parsed.hash,
         origin: parsed.origin,
-        href: parsed.href
+        href: parsed.href,
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new NetworkError(`Invalid URL: ${url}`, undefined, error as Error)
     }
   }
@@ -233,7 +247,7 @@ export class NetworkUtils {
   static buildURL(base: string, path?: string, params?: Record<string, any>): string {
     try {
       const url = new URL(path || '', base)
-      
+
       if (params) {
         for (const [key, value] of Object.entries(params)) {
           if (value !== undefined && value !== null) {
@@ -241,9 +255,10 @@ export class NetworkUtils {
           }
         }
       }
-      
+
       return url.toString()
-    } catch (error) {
+    }
+    catch (error) {
       throw new NetworkError(`Failed to build URL: ${base}`, undefined, error as Error)
     }
   }
@@ -255,10 +270,11 @@ export class NetworkUtils {
   static getNetworkInterfaces(): NetworkInterfaceInfo[] {
     const interfaces = networkInterfaces()
     const result: NetworkInterfaceInfo[] = []
-    
+
     for (const [name, interfaceInfo] of Object.entries(interfaces)) {
-      if (!interfaceInfo) continue
-      
+      if (!interfaceInfo)
+        continue
+
       for (const info of interfaceInfo) {
         result.push({
           name,
@@ -267,11 +283,11 @@ export class NetworkUtils {
           family: info.family as 'IPv4' | 'IPv6',
           mac: info.mac,
           internal: info.internal,
-          cidr: info.cidr || undefined
+          cidr: info.cidr || undefined,
         })
       }
     }
-    
+
     return result
   }
 
@@ -283,29 +299,30 @@ export class NetworkUtils {
    */
   static async measureLatency(host: string, count = 4): Promise<LatencyStats> {
     const latencies: number[] = []
-    
+
     for (let i = 0; i < count; i++) {
       const startTime = Date.now()
-      
+
       try {
         const isReachable = await NetworkUtils.isHostReachable(host, 5000)
         if (isReachable) {
           latencies.push(Date.now() - startTime)
         }
-      } catch {
+      }
+      catch {
         // 忽略失败的测试
       }
     }
-    
+
     if (latencies.length === 0) {
       throw new NetworkError(`Host unreachable: ${host}`, undefined, undefined)
     }
-    
+
     const min = Math.min(...latencies)
     const max = Math.max(...latencies)
     const avg = latencies.reduce((sum, lat) => sum + lat, 0) / latencies.length
     const loss = ((count - latencies.length) / count) * 100
-    
+
     return { min, max, avg, loss, count: latencies.length }
   }
 
@@ -315,13 +332,13 @@ export class NetworkUtils {
    */
   static async isOnline(): Promise<boolean> {
     const testHosts = ['8.8.8.8', '1.1.1.1', 'google.com']
-    
+
     for (const host of testHosts) {
       if (await NetworkUtils.isHostReachable(host, 3000)) {
         return true
       }
     }
-    
+
     return false
   }
 
@@ -332,7 +349,7 @@ export class NetworkUtils {
    */
   static getMacAddress(interfaceName?: string): string | null {
     const interfaces = networkInterfaces()
-    
+
     if (interfaceName) {
       const interfaceInfo = interfaces[interfaceName]
       if (interfaceInfo && interfaceInfo.length > 0) {
@@ -340,18 +357,19 @@ export class NetworkUtils {
       }
       return null
     }
-    
+
     // 返回第一个非内部接口的MAC地址
     for (const interfaceInfo of Object.values(interfaces)) {
-      if (!interfaceInfo) continue
-      
+      if (!interfaceInfo)
+        continue
+
       for (const info of interfaceInfo) {
         if (!info.internal && info.mac !== '00:00:00:00:00:00') {
           return info.mac
         }
       }
     }
-    
+
     return null
   }
 
@@ -362,43 +380,39 @@ export class NetworkUtils {
    * @param timeout 超时时间
    * @returns 开放的端口
    */
-  static async scanPorts(
-    host: string,
-    ports: number[],
-    timeout = 3000
-  ): Promise<number[]> {
+  static async scanPorts(host: string, ports: number[], timeout = 3000): Promise<number[]> {
     const openPorts: number[] = []
-    
+
     const scanPromises = ports.map(async (port) => {
       const { createConnection } = require('node:net')
-      
+
       return new Promise<boolean>((resolve) => {
         const socket = createConnection({ port, host, timeout })
-        
+
         socket.on('connect', () => {
           socket.destroy()
           resolve(true)
         })
-        
+
         socket.on('timeout', () => {
           socket.destroy()
           resolve(false)
         })
-        
+
         socket.on('error', () => {
           resolve(false)
         })
       })
     })
-    
+
     const results = await Promise.all(scanPromises)
-    
+
     for (let i = 0; i < ports.length; i++) {
       if (results[i]) {
         openPorts.push(ports[i])
       }
     }
-    
+
     return openPorts
   }
 
@@ -411,34 +425,35 @@ export class NetworkUtils {
   static async measureDownloadSpeed(url: string, duration = 10000): Promise<number> {
     const startTime = Date.now()
     let totalBytes = 0
-    
+
     try {
       const response = await fetch(url, {
-        signal: AbortSignal.timeout(duration)
+        signal: AbortSignal.timeout(duration),
       })
-      
+
       if (!response.body) {
         throw new Error('No response body')
       }
-      
+
       const reader = response.body.getReader()
-      
+
       while (Date.now() - startTime < duration) {
         const { done, value } = await reader.read()
-        
-        if (done) break
-        
+
+        if (done)
+          break
+
         totalBytes += value?.length || 0
       }
-      
+
       reader.cancel()
-      
-    } catch (error) {
+    }
+    catch (error) {
       if ((error as Error).name !== 'AbortError') {
         throw error
       }
     }
-    
+
     const actualDuration = (Date.now() - startTime) / 1000
     return totalBytes / actualDuration
   }
@@ -450,13 +465,14 @@ export class NetworkUtils {
    * @returns 格式化后的字符串
    */
   static formatBytes(bytes: number, decimals = 2): string {
-    if (bytes === 0) return '0 B'
-    
+    if (bytes === 0)
+      return '0 B'
+
     const k = 1024
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(decimals))} ${sizes[i]}`
+
+    return `${Number.parseFloat((bytes / k ** i).toFixed(decimals))} ${sizes[i]}`
   }
 
   /**

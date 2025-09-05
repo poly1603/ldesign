@@ -82,10 +82,10 @@ describe('ModuleName', () => {
     it('应该执行预期行为', () => {
       // 准备
       const input = 'test-input'
-      
+
       // 执行
       const result = instance.method(input)
-      
+
       // 断言
       expect(result).toBe('expected-output')
     })
@@ -119,18 +119,18 @@ describe('模拟测试', () => {
   it('应该模拟依赖', () => {
     const mockDependency = jest.fn().mockReturnValue('mocked-value')
     const instance = new ClassWithDependency(mockDependency)
-    
+
     const result = instance.usesDependency()
-    
+
     expect(mockDependency).toHaveBeenCalledWith('expected-arg')
     expect(result).toBe('mocked-value')
   })
 
   it('应该监视方法调用', () => {
     const spy = jest.spyOn(console, 'log').mockImplementation()
-    
+
     functionThatLogs('test message')
-    
+
     expect(spy).toHaveBeenCalledWith('test message')
     spy.mockRestore()
   })
@@ -153,9 +153,9 @@ describe('文件操作', () => {
 
   it('应该创建文件', async () => {
     const filePath = join(tempDir, 'test.txt')
-    
+
     await FileSystem.writeFile(filePath, 'test content')
-    
+
     expect(await FileSystem.exists(filePath)).toBe(true)
   })
 })
@@ -168,18 +168,18 @@ describe('事件处理', () => {
   it('应该发出事件', () => {
     const emitter = new EventEmitter()
     const listener = jest.fn()
-    
+
     emitter.on('test', listener)
     emitter.emit('test', 'data')
-    
+
     expect(listener).toHaveBeenCalledWith('data')
   })
 
   it('应该等待事件', async () => {
     const emitter = new EventEmitter()
-    
+
     setTimeout(() => emitter.emit('delayed', 'result'), 50)
-    
+
     const result = await emitter.waitFor('delayed')
     expect(result).toEqual(['result'])
   })
@@ -278,26 +278,26 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [16, 18, 20]
-    
+
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run tests
         run: npm run test:run
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
@@ -370,10 +370,10 @@ it('应该计算正确的总和', () => {
   const calculator = new Calculator()
   const a = 5
   const b = 3
-  
+
   // Act - 执行
   const result = calculator.add(a, b)
-  
+
   // Assert - 断言
   expect(result).toBe(8)
 })
@@ -391,7 +391,7 @@ it('应该计算正确的总和', () => {
 // 模拟整个模块
 jest.mock('fs', () => ({
   readFile: jest.fn(),
-  writeFile: jest.fn()
+  writeFile: jest.fn(),
 }))
 
 // 模拟特定函数
@@ -402,6 +402,7 @@ jest.mock('fs', () => ({ readFile: mockReadFile }))
 ### 5. 测试边界情况
 
 确保测试覆盖：
+
 - 正常情况
 - 边界值（空值、最大值、最小值）
 - 错误情况
@@ -412,6 +413,7 @@ jest.mock('fs', () => ({ readFile: mockReadFile }))
 ### 常见问题
 
 1. **测试超时**
+
    ```typescript
    // 增加超时时间
    it('长时间运行的测试', async () => {
@@ -420,6 +422,7 @@ jest.mock('fs', () => ({ readFile: mockReadFile }))
    ```
 
 2. **异步测试未等待**
+
    ```typescript
    // ❌ 错误
    it('异步测试', () => {
@@ -427,7 +430,7 @@ jest.mock('fs', () => ({ readFile: mockReadFile }))
        expect(result).toBe('expected')
      })
    })
-   
+
    // ✅ 正确
    it('异步测试', async () => {
      const result = await asyncFunction()
@@ -436,6 +439,7 @@ jest.mock('fs', () => ({ readFile: mockReadFile }))
    ```
 
 3. **模拟未正确重置**
+
    ```typescript
    afterEach(() => {
      jest.clearAllMocks()

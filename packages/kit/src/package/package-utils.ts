@@ -2,10 +2,10 @@
  * 包管理工具函数
  */
 
+import type { DependencyAnalysis, PackageJsonData } from '../types'
 import { join } from 'node:path'
 import { FileSystem } from '../filesystem'
 import { PackageManager } from './package-manager'
-import type { PackageJsonData, DependencyAnalysis, SecurityAudit } from '../types'
 
 /**
  * 包工具类
@@ -45,7 +45,8 @@ export class PackageUtils {
    */
   static isValidVersion(version: string): boolean {
     // 简化的 semver 验证
-    const versionRegex = /^\d+\.\d+\.\d+(?:-[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*)?(?:\+[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*)?$/
+    const versionRegex
+      = /^\d+\.\d+\.\d+(?:-[a-z0-9-]+(?:\.[a-z0-9-]+)*)?(?:\+[a-z0-9-]+(?:\.[a-z0-9-]+)*)?$/i
     return versionRegex.test(version)
   }
 
@@ -62,8 +63,10 @@ export class PackageUtils {
       const v1Part = v1Parts[i] || 0
       const v2Part = v2Parts[i] || 0
 
-      if (v1Part > v2Part) return 1
-      if (v1Part < v2Part) return -1
+      if (v1Part > v2Part)
+        return 1
+      if (v1Part < v2Part)
+        return -1
     }
 
     return 0
@@ -91,7 +94,7 @@ export class PackageUtils {
       return {
         operator: '=',
         version: exactMatch[1],
-        isExact: true
+        isExact: true,
       }
     }
 
@@ -100,14 +103,14 @@ export class PackageUtils {
       return {
         operator: rangeMatch[1] || '=',
         version: rangeMatch[2],
-        isExact: false
+        isExact: false,
       }
     }
 
     return {
       operator: '=',
       version: range,
-      isExact: false
+      isExact: false,
     }
   }
 
@@ -131,19 +134,22 @@ export class PackageUtils {
       description: options.description || '',
       main: options.main || 'index.js',
       scripts: options.scripts || {
-        test: 'echo "Error: no test specified" && exit 1'
+        test: 'echo "Error: no test specified" && exit 1',
       },
       author: options.author || '',
       license: options.license || 'ISC',
       dependencies: options.dependencies || {},
-      devDependencies: options.devDependencies || {}
+      devDependencies: options.devDependencies || {},
     }
   }
 
   /**
    * 合并 package.json
    */
-  static mergePackageJson(base: PackageJsonData, updates: Partial<PackageJsonData>): PackageJsonData {
+  static mergePackageJson(
+    base: PackageJsonData,
+    updates: Partial<PackageJsonData>,
+  ): PackageJsonData {
     const merged = { ...base, ...updates }
 
     // 合并依赖
@@ -182,7 +188,7 @@ export class PackageUtils {
       outdated: [],
       duplicates: [],
       unused: [],
-      security: []
+      security: [],
     }
 
     // 统计依赖数量
@@ -195,7 +201,8 @@ export class PackageUtils {
     // 检查过时的依赖
     try {
       analysis.outdated = await packageManager.getOutdatedPackages()
-    } catch {
+    }
+    catch {
       // 忽略错误
     }
 
@@ -222,7 +229,7 @@ export class PackageUtils {
 
     const allDeps = {
       ...packageJson.dependencies,
-      ...packageJson.devDependencies
+      ...packageJson.devDependencies,
     }
 
     const peerDeps = packageJson.peerDependencies || {}
@@ -236,15 +243,18 @@ export class PackageUtils {
           if (existing) {
             existing.conflicts.push({
               type: 'peer',
-              message: `Peer dependency version ${peerVersion} conflicts with installed version ${installedVersion}`
+              message: `Peer dependency version ${peerVersion} conflicts with installed version ${installedVersion}`,
             })
-          } else {
+          }
+          else {
             conflicts.push({
               package: peerPkg,
-              conflicts: [{
-                type: 'peer',
-                message: `Peer dependency version ${peerVersion} conflicts with installed version ${installedVersion}`
-              }]
+              conflicts: [
+                {
+                  type: 'peer',
+                  message: `Peer dependency version ${peerVersion} conflicts with installed version ${installedVersion}`,
+                },
+              ],
             })
           }
         }
@@ -257,7 +267,10 @@ export class PackageUtils {
   /**
    * 获取包大小信息
    */
-  static async getPackageSize(packageName: string, version?: string): Promise<{
+  static async getPackageSize(
+    packageName: string,
+    version?: string,
+  ): Promise<{
     name: string
     version: string
     size: number
@@ -272,9 +285,10 @@ export class PackageUtils {
         version: version || 'latest',
         size: 0,
         gzipSize: 0,
-        files: 0
+        files: 0,
       }
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -296,7 +310,8 @@ export class PackageUtils {
     for (const license of licenses) {
       if (incompatibleLicenses.includes(license)) {
         conflicts.push(license)
-      } else if (warningLicenses.includes(license)) {
+      }
+      else if (warningLicenses.includes(license)) {
         warnings.push(license)
       }
     }
@@ -304,7 +319,7 @@ export class PackageUtils {
     return {
       compatible: conflicts.length === 0,
       conflicts,
-      warnings
+      warnings,
     }
   }
 
@@ -320,19 +335,20 @@ export class PackageUtils {
       const tree = {
         name: 'root',
         version: '1.0.0',
-        dependencies: {}
+        dependencies: {},
       }
 
       for (const dep of installed) {
         tree.dependencies[dep.name] = {
           version: dep.version,
           resolved: dep.resolved,
-          dependencies: dep.dependencies
+          dependencies: dep.dependencies,
         }
       }
 
       return tree
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -376,7 +392,7 @@ export class PackageUtils {
         issues.push({
           type: 'error',
           message: 'Package name is missing',
-          fix: 'Add a name field to package.json'
+          fix: 'Add a name field to package.json',
         })
         score -= 20
       }
@@ -385,7 +401,7 @@ export class PackageUtils {
         issues.push({
           type: 'error',
           message: 'Package version is missing',
-          fix: 'Add a version field to package.json'
+          fix: 'Add a version field to package.json',
         })
         score -= 15
       }
@@ -394,7 +410,7 @@ export class PackageUtils {
         issues.push({
           type: 'warning',
           message: 'Package description is missing',
-          fix: 'Add a description field to package.json'
+          fix: 'Add a description field to package.json',
         })
         score -= 5
       }
@@ -403,7 +419,7 @@ export class PackageUtils {
         issues.push({
           type: 'warning',
           message: 'Package license is missing',
-          fix: 'Add a license field to package.json'
+          fix: 'Add a license field to package.json',
         })
         score -= 5
       }
@@ -414,32 +430,35 @@ export class PackageUtils {
         issues.push({
           type: 'warning',
           message: `${outdated.length} outdated dependencies found`,
-          fix: 'Run package manager update command'
+          fix: 'Run package manager update command',
         })
         score -= Math.min(outdated.length * 2, 20)
       }
 
       // 检查安全漏洞（简化实现）
       // 实际应该集成 npm audit 或类似工具
-
-    } catch (error) {
+    }
+    catch (error) {
       issues.push({
         type: 'error',
-        message: `Failed to analyze project: ${(error as Error).message}`
+        message: `Failed to analyze project: ${(error as Error).message}`,
       })
       score = 0
     }
 
     return {
       score: Math.max(0, score),
-      issues
+      issues,
     }
   }
 
   /**
    * 获取包的下载统计
    */
-  static async getDownloadStats(packageName: string, period = 'last-month'): Promise<{
+  static async getDownloadStats(
+    packageName: string,
+    period = 'last-month',
+  ): Promise<{
     downloads: number
     period: string
   } | null> {
@@ -448,9 +467,10 @@ export class PackageUtils {
       // 简化实现，返回模拟数据
       return {
         downloads: 0,
-        period
+        period,
       }
-    } catch {
+    }
+    catch {
       return null
     }
   }

@@ -2,7 +2,7 @@
  * Performance 模块测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { PerformanceMonitor, PerformanceUtils } from '../src/performance'
 
 // Mock performance hooks
@@ -10,25 +10,25 @@ vi.mock('node:perf_hooks', () => ({
   performance: {
     now: vi.fn(),
     mark: vi.fn(),
-    measure: vi.fn()
+    measure: vi.fn(),
   },
-  PerformanceObserver: vi.fn()
+  PerformanceObserver: vi.fn(),
 }))
 
 // Mock process
 vi.mock('node:process', () => ({
   memoryUsage: vi.fn(),
-  cpuUsage: vi.fn()
+  cpuUsage: vi.fn(),
 }))
 
-describe('PerformanceMonitor', () => {
+describe('performanceMonitor', () => {
   let monitor: PerformanceMonitor
 
   beforeEach(() => {
     monitor = new PerformanceMonitor({
       maxMetrics: 100,
       enableMemory: true,
-      enableCPU: true
+      enableCPU: true,
     })
     vi.clearAllMocks()
   })
@@ -52,7 +52,11 @@ describe('PerformanceMonitor', () => {
       expect(duration).toBe(100)
       expect(performance.mark).toHaveBeenCalledWith('test-timer-start')
       expect(performance.mark).toHaveBeenCalledWith('test-timer-end')
-      expect(performance.measure).toHaveBeenCalledWith('test-timer', 'test-timer-start', 'test-timer-end')
+      expect(performance.measure).toHaveBeenCalledWith(
+        'test-timer',
+        'test-timer-start',
+        'test-timer-end'
+      )
     })
 
     it('应该在计时器不存在时抛出错误', () => {
@@ -100,8 +104,10 @@ describe('PerformanceMonitor', () => {
 
       const errorFunction = vi.fn().mockRejectedValue(new Error('Test error'))
 
-      await expect(monitor.measureFunction('error-func', errorFunction)).rejects.toThrow('Test error')
-      
+      await expect(monitor.measureFunction('error-func', errorFunction)).rejects.toThrow(
+        'Test error'
+      )
+
       // 验证计时器已被清理
       expect(() => monitor.endTimer('error-func')).toThrow()
     })
@@ -115,7 +121,7 @@ describe('PerformanceMonitor', () => {
         heapTotal: 50 * 1024 * 1024,
         heapUsed: 30 * 1024 * 1024,
         external: 5 * 1024 * 1024,
-        arrayBuffers: 2 * 1024 * 1024
+        arrayBuffers: 2 * 1024 * 1024,
       })
 
       const snapshot = monitor.getMemorySnapshot()
@@ -126,12 +132,12 @@ describe('PerformanceMonitor', () => {
     })
   })
 
-  describe('CPU 监控', () => {
+  describe('cPU 监控', () => {
     it('应该能够获取 CPU 快照', async () => {
       const { cpuUsage } = await import('node:process')
       vi.mocked(cpuUsage).mockReturnValue({
         user: 1000000, // 1 秒
-        system: 500000 // 0.5 秒
+        system: 500000, // 0.5 秒
       })
 
       const snapshot = monitor.getCPUSnapshot()
@@ -154,7 +160,7 @@ describe('PerformanceMonitor', () => {
       const testFunction = vi.fn()
       const result = await monitor.benchmark('test-benchmark', testFunction, {
         iterations: 5,
-        warmup: 2
+        warmup: 2,
       })
 
       expect(result.name).toBe('test-benchmark')
@@ -171,11 +177,13 @@ describe('PerformanceMonitor', () => {
       vi.mocked(performance.now).mockImplementation(() => Date.now())
 
       const slowFunction = () => new Promise(resolve => setTimeout(resolve, 100))
-      
-      await expect(monitor.benchmark('timeout-test', slowFunction, {
-        iterations: 1,
-        timeout: 50
-      })).rejects.toThrow('Benchmark timeout')
+
+      await expect(
+        monitor.benchmark('timeout-test', slowFunction, {
+          iterations: 1,
+          timeout: 50,
+        })
+      ).rejects.toThrow('Benchmark timeout')
     })
   })
 
@@ -193,13 +201,13 @@ describe('PerformanceMonitor', () => {
         p99Time: 1.95,
         standardDeviation: 0.3,
         opsPerSecond: 1000,
-        timestamp: new Date()
+        timestamp: new Date(),
       }
 
       const current = {
         ...baseline,
         averageTime: 0.8, // 20% 改进
-        opsPerSecond: 1250
+        opsPerSecond: 1250,
       }
 
       const comparison = monitor.compareBenchmarks(baseline, current)
@@ -236,7 +244,7 @@ describe('PerformanceMonitor', () => {
 
       const report = monitor.getReport({
         start: oneHourAgo,
-        end: now
+        end: now,
       })
 
       expect(report.summary.timeRange.start).toEqual(oneHourAgo)
@@ -263,7 +271,7 @@ describe('PerformanceMonitor', () => {
   })
 })
 
-describe('PerformanceUtils', () => {
+describe('performanceUtils', () => {
   describe('快速计时', () => {
     it('应该能够快速计时同步函数', async () => {
       const { performance } = await import('node:perf_hooks')
@@ -280,7 +288,7 @@ describe('PerformanceUtils', () => {
 
       expect(result).toBe('result')
       expect(consoleSpy).toHaveBeenCalledWith('test-func: 25.00ms')
-      
+
       consoleSpy.mockRestore()
     })
 
@@ -299,7 +307,7 @@ describe('PerformanceUtils', () => {
 
       expect(result).toBe('async-result')
       expect(consoleSpy).toHaveBeenCalledWith('async-func: 40.00ms')
-      
+
       consoleSpy.mockRestore()
     })
   })
@@ -311,13 +319,13 @@ describe('PerformanceUtils', () => {
         heapTotal: 50 * 1024 * 1024,
         heapUsed: 30 * 1024 * 1024,
         external: 5 * 1024 * 1024,
-        arrayBuffers: 2 * 1024 * 1024
+        arrayBuffers: 2 * 1024 * 1024,
       })
 
       // Mock process.memoryUsage
       Object.defineProperty(process, 'memoryUsage', {
         value: mockMemoryUsage,
-        configurable: true
+        configurable: true,
       })
 
       const analysis = PerformanceUtils.analyzeMemoryUsage()
@@ -328,17 +336,17 @@ describe('PerformanceUtils', () => {
     })
   })
 
-  describe('CPU 分析', () => {
+  describe('cPU 分析', () => {
     it('应该能够分析 CPU 使用', () => {
       const mockCpuUsage = vi.fn().mockReturnValue({
         user: 1000000, // 1 秒
-        system: 500000 // 0.5 秒
+        system: 500000, // 0.5 秒
       })
 
       // Mock process.cpuUsage
       Object.defineProperty(process, 'cpuUsage', {
         value: mockCpuUsage,
-        configurable: true
+        configurable: true,
       })
 
       const analysis = PerformanceUtils.analyzeCPUUsage()
@@ -349,13 +357,14 @@ describe('PerformanceUtils', () => {
     })
 
     it('应该能够计算 CPU 使用百分比', () => {
-      const mockCpuUsage = vi.fn()
+      const mockCpuUsage = vi
+        .fn()
         .mockReturnValueOnce({ user: 500000, system: 250000 })
         .mockReturnValueOnce({ user: 1000000, system: 500000 })
 
       Object.defineProperty(process, 'cpuUsage', {
         value: mockCpuUsage,
-        configurable: true
+        configurable: true,
       })
 
       const previousUsage = { user: 500000, system: 250000 }
@@ -376,7 +385,7 @@ describe('PerformanceUtils', () => {
         averageTime: 1.5,
         minTime: 1.0,
         maxTime: 2.0,
-        opsPerSecond: 666.67
+        opsPerSecond: 666.67,
       })
 
       vi.spyOn(PerformanceMonitor.prototype, 'benchmark').mockImplementation(mockBenchmark)
@@ -392,7 +401,8 @@ describe('PerformanceUtils', () => {
 
   describe('函数性能比较', () => {
     it('应该能够比较多个函数的性能', async () => {
-      const mockBenchmark = vi.fn()
+      const mockBenchmark = vi
+        .fn()
         .mockResolvedValueOnce({
           name: 'func1',
           averageTime: 2.0,
@@ -405,7 +415,7 @@ describe('PerformanceUtils', () => {
           p99Time: 2.95,
           standardDeviation: 0.3,
           opsPerSecond: 500,
-          timestamp: new Date()
+          timestamp: new Date(),
         })
         .mockResolvedValueOnce({
           name: 'func2',
@@ -419,14 +429,14 @@ describe('PerformanceUtils', () => {
           p99Time: 1.48,
           standardDeviation: 0.15,
           opsPerSecond: 1000,
-          timestamp: new Date()
+          timestamp: new Date(),
         })
 
       vi.spyOn(PerformanceUtils, 'quickBenchmark').mockImplementation(mockBenchmark)
 
       const functions = [
         { name: 'func1', fn: () => {} },
-        { name: 'func2', fn: () => {} }
+        { name: 'func2', fn: () => {} },
       ]
 
       const results = await PerformanceUtils.compareFunctions(functions, 1000)

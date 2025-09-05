@@ -3,17 +3,17 @@
  * 负责将 SVG 图标转换为各种字体格式
  */
 
+import type { IconFontOptions, SvgIcon } from './svg-to-iconfont'
 import { EventEmitter } from 'node:events'
 import { promises as fs } from 'node:fs'
 import { resolve } from 'node:path'
 import { Readable } from 'node:stream'
-import * as SVGIcons2SVGFont from 'svgicons2svgfont'
 import svg2ttf from 'svg2ttf'
+import * as SVGIcons2SVGFont from 'svgicons2svgfont'
 import ttf2eot from 'ttf2eot'
 import ttf2woff from 'ttf2woff'
 import ttf2woff2 from 'ttf2woff2'
 import { FileSystem } from '../filesystem'
-import type { SvgIcon, IconFontOptions } from './svg-to-iconfont'
 
 /**
  * 字体生成结果
@@ -60,8 +60,8 @@ export class IconFontGenerator extends EventEmitter {
           this.emit('fontGenerated', result)
         }
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('error', error)
       throw error
     }
@@ -79,7 +79,7 @@ export class IconFontGenerator extends EventEmitter {
         fontHeight: this.options.fontHeight,
         descent: this.options.descent,
         normalize: this.options.normalize,
-        metadata: this.options.metadata
+        metadata: this.options.metadata,
       })
 
       const chunks: Buffer[] = []
@@ -100,11 +100,11 @@ export class IconFontGenerator extends EventEmitter {
         glyph.push(icon.content)
         glyph.push(null)
 
-          // 设置字形属性
-          ; (glyph as any).metadata = {
-            unicode: [icon.unicode],
-            name: icon.name
-          }
+        // 设置字形属性
+        ;(glyph as any).metadata = {
+          unicode: [icon.unicode],
+          name: icon.name,
+        }
 
         fontStream.write(glyph)
       })
@@ -121,7 +121,7 @@ export class IconFontGenerator extends EventEmitter {
       ts: Date.now(),
       description: this.options.metadata.description || '',
       url: this.options.metadata.url || '',
-      version: this.options.metadata.version || '1.0.0'
+      version: this.options.metadata.version || '1.0.0',
     })
 
     return Buffer.from(ttf.buffer)
@@ -133,7 +133,7 @@ export class IconFontGenerator extends EventEmitter {
   private async generateFontFormat(
     format: string,
     svgBuffer: Buffer,
-    ttfBuffer: Buffer
+    ttfBuffer: Buffer,
   ): Promise<FontGenerationResult | null> {
     let buffer: Buffer
     let fileName: string
@@ -176,7 +176,7 @@ export class IconFontGenerator extends EventEmitter {
       format,
       filePath,
       buffer,
-      size: buffer.length
+      size: buffer.length,
     }
   }
 
@@ -201,7 +201,7 @@ export class IconFontGenerator extends EventEmitter {
 
     return {
       format,
-      size: stats.size
+      size: stats.size,
     }
   }
 
@@ -216,7 +216,7 @@ export class IconFontGenerator extends EventEmitter {
     const result = {
       valid: true,
       errors: [] as string[],
-      warnings: [] as string[]
+      warnings: [] as string[],
     }
 
     // 基本 SVG 格式检查
@@ -231,13 +231,14 @@ export class IconFontGenerator extends EventEmitter {
     }
 
     // 检查是否包含路径或形状
-    const hasPath = content.includes('<path') ||
-      content.includes('<circle') ||
-      content.includes('<rect') ||
-      content.includes('<polygon') ||
-      content.includes('<polyline') ||
-      content.includes('<ellipse') ||
-      content.includes('<line')
+    const hasPath
+      = content.includes('<path')
+        || content.includes('<circle')
+        || content.includes('<rect')
+        || content.includes('<polygon')
+        || content.includes('<polyline')
+        || content.includes('<ellipse')
+        || content.includes('<line')
 
     if (!hasPath) {
       result.warnings.push('SVG does not contain any visible shapes')
@@ -245,7 +246,9 @@ export class IconFontGenerator extends EventEmitter {
 
     // 检查是否有填充色
     if (content.includes('fill=') && !content.includes('fill="currentColor"')) {
-      result.warnings.push('SVG contains fill colors, consider using currentColor for better icon font compatibility')
+      result.warnings.push(
+        'SVG contains fill colors, consider using currentColor for better icon font compatibility',
+      )
     }
 
     return result
@@ -263,16 +266,9 @@ export class IconFontGenerator extends EventEmitter {
       .trim()
 
     // 移除不必要的属性
-    const unnecessaryAttrs = [
-      'id=',
-      'class=',
-      'style=',
-      'xmlns:',
-      'xml:',
-      'data-'
-    ]
+    const unnecessaryAttrs = ['id=', 'class=', 'style=', 'xmlns:', 'xml:', 'data-']
 
-    unnecessaryAttrs.forEach(attr => {
+    unnecessaryAttrs.forEach((attr) => {
       const regex = new RegExp(`\\s${attr}[^\\s>]*`, 'g')
       optimized = optimized.replace(regex, '')
     })
@@ -293,7 +289,7 @@ export class IconFontGenerator extends EventEmitter {
     }
   } {
     return {
-      supportedFormats: ['svg', 'ttf', 'eot', 'woff', 'woff2']
+      supportedFormats: ['svg', 'ttf', 'eot', 'woff', 'woff2'],
     }
   }
 

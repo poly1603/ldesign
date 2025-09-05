@@ -31,21 +31,21 @@ const cache = CacheManager.create()
 
 // 自定义配置
 const cache = CacheManager.create({
-  type: 'memory',           // 缓存类型：memory | file
-  defaultTTL: 3600,        // 默认过期时间（秒）
-  maxSize: 1000,           // 最大缓存项数
-  strategy: 'lru',         // 驱逐策略：lru | fifo | lfu
-  checkPeriod: 600,        // 过期检查间隔（秒）
-  enableEvents: true       // 启用事件
+  type: 'memory', // 缓存类型：memory | file
+  defaultTTL: 3600, // 默认过期时间（秒）
+  maxSize: 1000, // 最大缓存项数
+  strategy: 'lru', // 驱逐策略：lru | fifo | lfu
+  checkPeriod: 600, // 过期检查间隔（秒）
+  enableEvents: true, // 启用事件
 })
 
 // 文件缓存
 const fileCache = CacheManager.create({
   type: 'file',
-  cacheDir: './cache',     // 缓存目录
-  defaultTTL: 86400,       // 24小时
-  maxSize: 100,            // 最大文件数
-  compression: true        // 启用压缩
+  cacheDir: './cache', // 缓存目录
+  defaultTTL: 86400, // 24小时
+  maxSize: 100, // 最大文件数
+  compression: true, // 启用压缩
 })
 ```
 
@@ -63,10 +63,14 @@ await cache.set('user:123', userData)
 await cache.set('session:abc', sessionData, 1800) // 30分钟
 
 // 设置复杂对象
-await cache.set('config', {
-  database: { host: 'localhost', port: 5432 },
-  redis: { host: 'localhost', port: 6379 }
-}, 3600)
+await cache.set(
+  'config',
+  {
+    database: { host: 'localhost', port: 5432 },
+    redis: { host: 'localhost', port: 6379 },
+  },
+  3600
+)
 ```
 
 #### `get<T>(key: string): Promise<T | null>`
@@ -123,16 +127,24 @@ console.log('缓存已清空')
 
 ```typescript
 // 获取用户数据，如果不存在则从数据库加载
-const user = await cache.getOrSet('user:123', async () => {
-  console.log('从数据库加载用户')
-  return await database.getUser(123)
-}, 3600)
+const user = await cache.getOrSet(
+  'user:123',
+  async () => {
+    console.log('从数据库加载用户')
+    return await database.getUser(123)
+  },
+  3600
+)
 
 // 获取 API 数据
-const apiData = await cache.getOrSet('api:weather', async () => {
-  const response = await fetch('https://api.weather.com/current')
-  return response.json()
-}, 300) // 5分钟缓存
+const apiData = await cache.getOrSet(
+  'api:weather',
+  async () => {
+    const response = await fetch('https://api.weather.com/current')
+    return response.json()
+  },
+  300
+) // 5分钟缓存
 ```
 
 #### `mget(keys: string[]): Promise<Array<any | null>>`
@@ -158,7 +170,7 @@ users.forEach((user, index) => {
 await cache.mset([
   ['user:123', userData1, 3600],
   ['user:456', userData2, 3600],
-  ['config', configData, 7200]
+  ['config', configData, 7200],
 ])
 ```
 
@@ -210,12 +222,12 @@ console.log('过期缓存已清理')
 
 ```typescript
 // 缓存命中
-cache.on('hit', (key) => {
+cache.on('hit', key => {
   console.log(`缓存命中: ${key}`)
 })
 
 // 缓存未命中
-cache.on('miss', (key) => {
+cache.on('miss', key => {
   console.log(`缓存未命中: ${key}`)
 })
 
@@ -225,7 +237,7 @@ cache.on('set', (key, value, ttl) => {
 })
 
 // 缓存删除
-cache.on('del', (key) => {
+cache.on('del', key => {
   console.log(`缓存删除: ${key}`)
 })
 
@@ -276,11 +288,11 @@ console.log('统计信息已重置')
 
 ```typescript
 const memoryCache = new MemoryCache({
-  maxSize: 1000,           // 最大缓存项数
-  defaultTTL: 3600,        // 默认过期时间
-  strategy: 'lru',         // 驱逐策略
-  checkPeriod: 600,        // 过期检查间隔
-  serialize: false         // 是否序列化存储
+  maxSize: 1000, // 最大缓存项数
+  defaultTTL: 3600, // 默认过期时间
+  strategy: 'lru', // 驱逐策略
+  checkPeriod: 600, // 过期检查间隔
+  serialize: false, // 是否序列化存储
 })
 ```
 
@@ -293,7 +305,7 @@ const memoryCache = new MemoryCache({
 ```typescript
 const lruCache = new MemoryCache({
   strategy: 'lru',
-  maxSize: 100
+  maxSize: 100,
 })
 ```
 
@@ -304,7 +316,7 @@ const lruCache = new MemoryCache({
 ```typescript
 const fifoCache = new MemoryCache({
   strategy: 'fifo',
-  maxSize: 100
+  maxSize: 100,
 })
 ```
 
@@ -315,7 +327,7 @@ const fifoCache = new MemoryCache({
 ```typescript
 const lfuCache = new MemoryCache({
   strategy: 'lfu',
-  maxSize: 100
+  maxSize: 100,
 })
 ```
 
@@ -327,15 +339,16 @@ const lfuCache = new MemoryCache({
 
 ```typescript
 const fileCache = new FileCache({
-  cacheDir: './cache',     // 缓存目录
-  maxSize: 100,            // 最大文件数
-  defaultTTL: 86400,       // 默认过期时间
-  compression: true,       // 启用压缩
-  encryption: {            // 加密配置
+  cacheDir: './cache', // 缓存目录
+  maxSize: 100, // 最大文件数
+  defaultTTL: 86400, // 默认过期时间
+  compression: true, // 启用压缩
+  encryption: {
+    // 加密配置
     enabled: true,
     algorithm: 'aes-256-gcm',
-    key: process.env.CACHE_ENCRYPTION_KEY
-  }
+    key: process.env.CACHE_ENCRYPTION_KEY,
+  },
 })
 ```
 
@@ -346,7 +359,7 @@ const fileCache = new FileCache({
 const compressedCache = new FileCache({
   cacheDir: './cache',
   compression: true,
-  compressionLevel: 6      // 压缩级别 1-9
+  compressionLevel: 6, // 压缩级别 1-9
 })
 
 // 启用加密
@@ -355,8 +368,8 @@ const encryptedCache = new FileCache({
   encryption: {
     enabled: true,
     algorithm: 'aes-256-gcm',
-    key: 'your-secret-key'
-  }
+    key: 'your-secret-key',
+  },
 })
 ```
 
@@ -367,33 +380,41 @@ const encryptedCache = new FileCache({
 ```typescript
 class APIService {
   private cache = CacheManager.create({
-    defaultTTL: 300,  // 5分钟
-    maxSize: 1000
+    defaultTTL: 300, // 5分钟
+    maxSize: 1000,
   })
 
   async getUserProfile(userId: string) {
     const cacheKey = `user:profile:${userId}`
-    
-    return this.cache.getOrSet(cacheKey, async () => {
-      console.log(`从 API 获取用户 ${userId} 的资料`)
-      const response = await fetch(`/api/users/${userId}`)
-      return response.json()
-    }, 600) // 10分钟缓存
+
+    return this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        console.log(`从 API 获取用户 ${userId} 的资料`)
+        const response = await fetch(`/api/users/${userId}`)
+        return response.json()
+      },
+      600
+    ) // 10分钟缓存
   }
 
   async searchUsers(query: string) {
     const cacheKey = `search:users:${query}`
-    
-    return this.cache.getOrSet(cacheKey, async () => {
-      console.log(`搜索用户: ${query}`)
-      const response = await fetch(`/api/users/search?q=${query}`)
-      return response.json()
-    }, 180) // 3分钟缓存
+
+    return this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        console.log(`搜索用户: ${query}`)
+        const response = await fetch(`/api/users/search?q=${query}`)
+        return response.json()
+      },
+      180
+    ) // 3分钟缓存
   }
 
   async invalidateUser(userId: string) {
     await this.cache.delete(`user:profile:${userId}`)
-    
+
     // 清理相关的搜索缓存
     const searchKeys = await this.cache.keys('search:users:*')
     await this.cache.mdel(searchKeys)
@@ -409,12 +430,12 @@ class DatabaseService {
     type: 'file',
     cacheDir: './db-cache',
     defaultTTL: 3600,
-    compression: true
+    compression: true,
   })
 
   async getUser(id: number) {
     const cacheKey = `db:user:${id}`
-    
+
     return this.cache.getOrSet(cacheKey, async () => {
       console.log(`从数据库查询用户 ${id}`)
       return await this.db.query('SELECT * FROM users WHERE id = ?', [id])
@@ -423,19 +444,23 @@ class DatabaseService {
 
   async getUsersByRole(role: string) {
     const cacheKey = `db:users:role:${role}`
-    
-    return this.cache.getOrSet(cacheKey, async () => {
-      console.log(`查询角色为 ${role} 的用户`)
-      return await this.db.query('SELECT * FROM users WHERE role = ?', [role])
-    }, 1800) // 30分钟缓存
+
+    return this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        console.log(`查询角色为 ${role} 的用户`)
+        return await this.db.query('SELECT * FROM users WHERE role = ?', [role])
+      },
+      1800
+    ) // 30分钟缓存
   }
 
   async updateUser(id: number, data: any) {
     await this.db.query('UPDATE users SET ? WHERE id = ?', [data, id])
-    
+
     // 清理相关缓存
     await this.cache.delete(`db:user:${id}`)
-    
+
     // 如果角色发生变化，清理角色缓存
     if (data.role) {
       const roleKeys = await this.cache.keys('db:users:role:*')
@@ -450,31 +475,35 @@ class DatabaseService {
 ```typescript
 class ComputationService {
   private cache = CacheManager.create({
-    defaultTTL: 7200,  // 2小时
-    maxSize: 500
+    defaultTTL: 7200, // 2小时
+    maxSize: 500,
   })
 
   async fibonacci(n: number): Promise<number> {
     if (n <= 1) return n
-    
+
     const cacheKey = `fib:${n}`
-    
+
     return this.cache.getOrSet(cacheKey, async () => {
       console.log(`计算斐波那契数列第 ${n} 项`)
-      const result = await this.fibonacci(n - 1) + await this.fibonacci(n - 2)
+      const result = (await this.fibonacci(n - 1)) + (await this.fibonacci(n - 2))
       return result
     })
   }
 
   async expensiveCalculation(params: any): Promise<any> {
     const cacheKey = `calc:${JSON.stringify(params)}`
-    
-    return this.cache.getOrSet(cacheKey, async () => {
-      console.log('执行复杂计算...')
-      // 模拟耗时计算
-      await new Promise(resolve => setTimeout(resolve, 5000))
-      return { result: Math.random() * 1000 }
-    }, 3600)
+
+    return this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        console.log('执行复杂计算...')
+        // 模拟耗时计算
+        await new Promise(resolve => setTimeout(resolve, 5000))
+        return { result: Math.random() * 1000 }
+      },
+      3600
+    )
   }
 }
 ```
@@ -486,14 +515,14 @@ class MultiLevelCache {
   private l1Cache = CacheManager.create({
     type: 'memory',
     maxSize: 100,
-    defaultTTL: 300  // 5分钟
+    defaultTTL: 300, // 5分钟
   })
 
   private l2Cache = CacheManager.create({
     type: 'file',
     cacheDir: './l2-cache',
     maxSize: 1000,
-    defaultTTL: 3600  // 1小时
+    defaultTTL: 3600, // 1小时
   })
 
   async get<T>(key: string): Promise<T | null> {
@@ -518,15 +547,12 @@ class MultiLevelCache {
     // 同时设置两级缓存
     await Promise.all([
       this.l1Cache.set(key, value, Math.min(ttl || 300, 300)),
-      this.l2Cache.set(key, value, ttl)
+      this.l2Cache.set(key, value, ttl),
     ])
   }
 
   async delete(key: string): Promise<void> {
-    await Promise.all([
-      this.l1Cache.delete(key),
-      this.l2Cache.delete(key)
-    ])
+    await Promise.all([this.l1Cache.delete(key), this.l2Cache.delete(key)])
   }
 }
 ```

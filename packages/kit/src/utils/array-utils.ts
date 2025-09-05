@@ -24,7 +24,7 @@ export class ArrayUtils {
    */
   static uniqueBy<T, K>(array: T[], keyFn: (item: T) => K): T[] {
     const seen = new Set<K>()
-    return array.filter(item => {
+    return array.filter((item) => {
       const key = keyFn(item)
       if (seen.has(key)) {
         return false
@@ -40,10 +40,7 @@ export class ArrayUtils {
    * @param keyFn 分组键函数
    * @returns 分组后的对象
    */
-  static groupBy<T, K extends string | number>(
-    array: T[],
-    keyFn: (item: T) => K
-  ): Record<K, T[]> {
+  static groupBy<T, K extends string | number>(array: T[], keyFn: (item: T) => K): Record<K, T[]> {
     const result = {} as Record<K, T[]>
 
     for (const item of array) {
@@ -90,7 +87,8 @@ export class ArrayUtils {
     for (const item of array) {
       if (Array.isArray(item) && depth > 0) {
         result.push(...ArrayUtils.flatten(item, depth - 1))
-      } else {
+      }
+      else {
         result.push(item as T)
       }
     }
@@ -107,7 +105,8 @@ export class ArrayUtils {
     for (const item of array) {
       if (Array.isArray(item)) {
         result.push(...ArrayUtils.flattenDeep(item))
-      } else {
+      }
+      else {
         result.push(item)
       }
     }
@@ -120,12 +119,12 @@ export class ArrayUtils {
    * @returns 交集数组
    */
   static intersection<T>(...arrays: T[][]): T[] {
-    if (arrays.length === 0) return []
-    if (arrays.length === 1) return arrays[0]
+    if (arrays.length === 0)
+      return []
+    if (arrays.length === 1)
+      return arrays[0]
 
-    return arrays.reduce((acc, array) =>
-      acc.filter(item => array.includes(item))
-    )
+    return arrays.reduce((acc, array) => acc.filter(item => array.includes(item)))
   }
 
   /**
@@ -154,17 +153,15 @@ export class ArrayUtils {
    * @param order 排序顺序
    * @returns 排序后的数组
    */
-  static sortBy<T>(
-    array: T[],
-    keyFn: (item: T) => any,
-    order: 'asc' | 'desc' = 'asc'
-  ): T[] {
+  static sortBy<T>(array: T[], keyFn: (item: T) => any, order: 'asc' | 'desc' = 'asc'): T[] {
     return [...array].sort((a, b) => {
       const aKey = keyFn(a)
       const bKey = keyFn(b)
-      
-      if (aKey < bKey) return order === 'asc' ? -1 : 1
-      if (aKey > bKey) return order === 'asc' ? 1 : -1
+
+      if (aKey < bKey)
+        return order === 'asc' ? -1 : 1
+      if (aKey > bKey)
+        return order === 'asc' ? 1 : -1
       return 0
     })
   }
@@ -219,7 +216,7 @@ export class ArrayUtils {
       total,
       totalPages,
       hasNext: page < totalPages,
-      hasPrev: page > 1
+      hasPrev: page > 1,
     }
   }
 
@@ -231,7 +228,7 @@ export class ArrayUtils {
    */
   static countBy<T>(
     array: T[],
-    keyFn: (item: T) => string | number
+    keyFn: (item: T) => string | number,
   ): Record<string | number, number> {
     const result: Record<string | number, number> = {}
 
@@ -249,8 +246,9 @@ export class ArrayUtils {
    * @returns 压缩后的数组
    */
   static zip<T>(...arrays: T[][]): T[][] {
-    if (arrays.length === 0) return []
-    
+    if (arrays.length === 0)
+      return []
+
     const maxLength = Math.max(...arrays.map(arr => arr.length))
     const result: T[][] = []
 
@@ -267,8 +265,9 @@ export class ArrayUtils {
    * @returns 解压缩后的数组
    */
   static unzip<T>(array: T[][]): T[][] {
-    if (array.length === 0) return []
-    
+    if (array.length === 0)
+      return []
+
     const maxLength = Math.max(...array.map(arr => arr.length))
     const result: T[][] = []
 
@@ -335,7 +334,8 @@ export class ArrayUtils {
    * @returns 平均值
    */
   static average<T>(array: T[], keyFn?: (item: T) => number): number {
-    if (array.length === 0) return 0
+    if (array.length === 0)
+      return 0
     return ArrayUtils.sum(array, keyFn) / array.length
   }
 
@@ -346,15 +346,14 @@ export class ArrayUtils {
    * @returns 最大值
    */
   static max<T>(array: T[], keyFn?: (item: T) => number): T | undefined {
-    if (array.length === 0) return undefined
-    
+    if (array.length === 0)
+      return undefined
+
     if (keyFn) {
-      return array.reduce((max, item) => 
-        keyFn(item) > keyFn(max) ? item : max
-      )
+      return array.reduce((max, item) => (keyFn(item) > keyFn(max) ? item : max))
     }
-    
-    return array.reduce((max, item) => item > max ? item : max)
+
+    return array.reduce((max, item) => (item > max ? item : max))
   }
 
   /**
@@ -364,14 +363,13 @@ export class ArrayUtils {
    * @returns 最小值
    */
   static min<T>(array: T[], keyFn?: (item: T) => number): T | undefined {
-    if (array.length === 0) return undefined
-    
+    if (array.length === 0)
+      return undefined
+
     if (keyFn) {
-      return array.reduce((min, item) => 
-        keyFn(item) < keyFn(min) ? item : min
-      )
+      return array.reduce((min, item) => (keyFn(item) < keyFn(min) ? item : min))
     }
-    
-    return array.reduce((min, item) => item < min ? item : min)
+
+    return array.reduce((min, item) => (item < min ? item : min))
   }
 }

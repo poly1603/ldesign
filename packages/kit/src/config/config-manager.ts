@@ -3,14 +3,14 @@
  * 提供配置加载、合并、验证、监听等核心功能
  */
 
-import { EventEmitter } from 'node:events'
 import type { ConfigOptions, ConfigSchema, ConfigValue } from '../types'
+import { EventEmitter } from 'node:events'
+import { ObjectUtils } from '../utils'
 import { ConfigLoader } from './config-loader'
 import { ConfigValidator } from './config-validator'
 import { ConfigWatcher } from './config-watcher'
 import { EnvConfig } from './env-config'
 import { SchemaValidator } from './schema-validator'
-import { ObjectUtils } from '../utils'
 
 /**
  * 配置管理器类
@@ -28,7 +28,7 @@ export class ConfigManager extends EventEmitter {
 
   constructor(options: ConfigOptions = {}) {
     super()
-    
+
     this.options = {
       cwd: options.cwd ?? process.cwd(),
       configFile: options.configFile ?? 'config.json',
@@ -44,23 +44,23 @@ export class ConfigManager extends EventEmitter {
       caseSensitive: options.caseSensitive ?? true,
       freezeConfig: options.freezeConfig ?? true,
       validateOnLoad: options.validateOnLoad ?? true,
-      mergeArrays: options.mergeArrays ?? true
+      mergeArrays: options.mergeArrays ?? true,
     }
 
     this.loader = new ConfigLoader({
       configDir: this.options.configDir,
-      caseSensitive: this.options.caseSensitive
+      caseSensitive: this.options.caseSensitive,
     })
 
     this.validator = new ConfigValidator({
       strict: this.options.strict,
-      allowUnknown: this.options.allowUnknown
+      allowUnknown: this.options.allowUnknown,
     })
 
     this.envConfig = new EnvConfig({
       prefix: this.options.envPrefix,
       separator: this.options.envSeparator,
-      caseSensitive: this.options.caseSensitive
+      caseSensitive: this.options.caseSensitive,
     })
 
     this.schemaValidator = new SchemaValidator()
@@ -95,35 +95,35 @@ export class ConfigManager extends EventEmitter {
    */
   async load(configFile?: string): Promise<void> {
     const file = configFile || this.options.configFile
-    
+
     try {
       // 加载文件配置
       const fileConfig = await this.loader.load(file)
-      
+
       // 加载环境变量配置
       const envConfig = this.envConfig.load()
-      
+
       // 合并配置
       this.config = this.mergeConfigs(fileConfig, envConfig)
-      
+
       // 验证配置
       if (this.options.validateOnLoad && this.schema) {
         await this.validate()
       }
-      
+
       // 冻结配置
       if (this.options.freezeConfig) {
         this.freeze()
       }
-      
+
       // 启动监听
       if (this.options.watch) {
         await this.startWatching(file)
       }
-      
+
       this.emit('loaded', this.config)
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('error', error)
       throw error
     }
@@ -135,7 +135,7 @@ export class ConfigManager extends EventEmitter {
   private mergeConfigs(...configs: Record<string, any>[]): Record<string, any> {
     return configs.reduce((merged, config) => {
       return ObjectUtils.deepMerge(merged, config, {
-        mergeArrays: this.options.mergeArrays
+        mergeArrays: this.options.mergeArrays,
       })
     }, {})
   }
@@ -166,17 +166,17 @@ export class ConfigManager extends EventEmitter {
 
     try {
       const isValid = await this.schemaValidator.validate(this.config)
-      
+
       if (!isValid) {
         const errors = this.schemaValidator.getErrors()
         this.emit('validationError', errors)
         return false
       }
-      
+
       this.emit('validated', this.config)
       return true
-      
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('validationError', error)
       throw error
     }
@@ -199,7 +199,7 @@ export class ConfigManager extends EventEmitter {
 
     const oldValue = this.get(key)
     ObjectUtils.set(this.config, key, value)
-    
+
     this.emit('changed', { key, oldValue, newValue: value })
     this.emit(`changed:${key}`, { oldValue, newValue: value })
   }
@@ -225,10 +225,10 @@ export class ConfigManager extends EventEmitter {
 
     const oldValue = this.get(key)
     ObjectUtils.unset(this.config, key)
-    
+
     this.emit('deleted', { key, oldValue })
     this.emit(`deleted:${key}`, { oldValue })
-    
+
     return true
   }
 
@@ -249,7 +249,7 @@ export class ConfigManager extends EventEmitter {
 
     const oldConfig = this.getAll()
     this.config = this.mergeConfigs(this.config, config)
-    
+
     this.emit('bulkChanged', { oldConfig, newConfig: this.getAll() })
   }
 
@@ -263,7 +263,7 @@ export class ConfigManager extends EventEmitter {
 
     const oldConfig = this.getAll()
     this.config = {}
-    
+
     this.emit('reset', { oldConfig })
   }
 
@@ -301,13 +301,14 @@ export class ConfigManager extends EventEmitter {
 
     this.watcher = new ConfigWatcher({
       configFile,
-      configDir: this.options.configDir
+      configDir: this.options.configDir,
     })
 
     this.watcher.on('changed', async () => {
       try {
         await this.reload()
-      } catch (error) {
+      }
+      catch (error) {
         this.emit('reloadError', error)
       }
     })
@@ -320,11 +321,12 @@ export class ConfigManager extends EventEmitter {
    */
   async reload(): Promise<void> {
     const oldConfig = this.getAll()
-    
+
     try {
       await this.load()
       this.emit('reloaded', { oldConfig, newConfig: this.getAll() })
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('reloadError', error)
       throw error
     }
@@ -335,11 +337,12 @@ export class ConfigManager extends EventEmitter {
    */
   async save(configFile?: string): Promise<void> {
     const file = configFile || this.options.configFile
-    
+
     try {
       await this.loader.save(file, this.config)
       this.emit('saved', { file, config: this.config })
-    } catch (error) {
+    }
+    catch (error) {
       this.emit('saveError', error)
       throw error
     }
@@ -370,14 +373,14 @@ export class ConfigManager extends EventEmitter {
   getStats(): ConfigStats {
     const flatConfig = ObjectUtils.flatten(this.config)
     const keys = Object.keys(flatConfig)
-    
+
     return {
       totalKeys: keys.length,
       frozenState: this.frozen,
       hasSchema: !!this.schema,
       watchEnabled: !!this.watcher,
       configSize: JSON.stringify(this.config).length,
-      lastModified: new Date()
+      lastModified: new Date(),
     }
   }
 
@@ -393,7 +396,7 @@ export class ConfigManager extends EventEmitter {
     this.config = {}
     this.schema = undefined
     this.removeAllListeners()
-    
+
     this.emit('destroyed')
   }
 

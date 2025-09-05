@@ -12,13 +12,13 @@ import { StringUtils } from '@ldesign/kit'
 // API 字段名转换
 function convertApiFields(apiData: any) {
   const convertedData = {}
-  
+
   Object.entries(apiData).forEach(([key, value]) => {
     // 将 snake_case 转换为 camelCase
     const camelKey = StringUtils.camelCase(key)
     convertedData[camelKey] = value
   })
-  
+
   return convertedData
 }
 
@@ -28,7 +28,7 @@ const apiResponse = {
   first_name: 'John',
   last_name: 'Doe',
   email_address: 'john@example.com',
-  created_at: '2024-01-01T00:00:00Z'
+  created_at: '2024-01-01T00:00:00Z',
 }
 
 const frontendData = convertApiFields(apiResponse)
@@ -52,27 +52,27 @@ class FileNameProcessor {
   static generateSafeFileName(originalName: string): string {
     // 移除特殊字符，转换为 kebab-case
     const safeName = StringUtils.kebabCase(originalName)
-    
+
     // 添加时间戳避免冲突
     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-')
-    
+
     return `${safeName}-${timestamp}`
   }
-  
+
   // 批量重命名文件
   static batchRename(fileNames: string[]): Record<string, string> {
     const renameMap = {}
-    
+
     fileNames.forEach(fileName => {
       const baseName = fileName.split('.')[0]
       const extension = fileName.split('.').pop()
-      
+
       const newBaseName = StringUtils.kebabCase(baseName)
       const newFileName = `${newBaseName}.${extension}`
-      
+
       renameMap[fileName] = newFileName
     })
-    
+
     return renameMap
   }
 }
@@ -81,7 +81,7 @@ class FileNameProcessor {
 const originalFiles = [
   'My Important Document.pdf',
   'Project Screenshots (Final).zip',
-  'Meeting Notes - 2024.docx'
+  'Meeting Notes - 2024.docx',
 ]
 
 const renameMap = FileNameProcessor.batchRename(originalFiles)
@@ -102,14 +102,17 @@ import { StringUtils } from '@ldesign/kit'
 
 class SEOHelper {
   // 生成 SEO 友好的 URL slug
-  static generateSlug(title: string, options?: {
-    maxLength?: number
-    separator?: string
-  }): string {
+  static generateSlug(
+    title: string,
+    options?: {
+      maxLength?: number
+      separator?: string
+    }
+  ): string {
     const { maxLength = 60, separator = '-' } = options || {}
-    
+
     let slug = StringUtils.slugify(title, { separator })
-    
+
     // 限制长度
     if (slug.length > maxLength) {
       slug = StringUtils.truncate(slug, maxLength, '')
@@ -119,22 +122,22 @@ class SEOHelper {
         slug = slug.substring(0, lastSeparator)
       }
     }
-    
+
     return slug
   }
-  
+
   // 生成面包屑导航
-  static generateBreadcrumbs(path: string): Array<{name: string, slug: string}> {
+  static generateBreadcrumbs(path: string): Array<{ name: string; slug: string }> {
     const segments = path.split('/').filter(Boolean)
     const breadcrumbs = []
-    
+
     segments.forEach((segment, index) => {
       const name = StringUtils.capitalize(segment.replace(/-/g, ' '))
       const slug = segments.slice(0, index + 1).join('/')
-      
+
       breadcrumbs.push({ name, slug })
     })
-    
+
     return breadcrumbs
   }
 }
@@ -163,24 +166,27 @@ import { StringUtils } from '@ldesign/kit'
 
 class EmailTemplateEngine {
   private templates = new Map<string, string>()
-  
+
   // 注册模板
   registerTemplate(name: string, template: string): void {
     this.templates.set(name, template)
   }
-  
+
   // 渲染模板
   render(templateName: string, data: Record<string, any>): string {
     const template = this.templates.get(templateName)
     if (!template) {
       throw new Error(`模板 ${templateName} 不存在`)
     }
-    
+
     return StringUtils.template(template, data)
   }
-  
+
   // 批量发送邮件
-  async batchRender(templateName: string, recipients: Array<Record<string, any>>): Promise<string[]> {
+  async batchRender(
+    templateName: string,
+    recipients: Array<Record<string, any>>
+  ): Promise<string[]> {
     return recipients.map(recipient => this.render(templateName, recipient))
   }
 }
@@ -189,7 +195,9 @@ class EmailTemplateEngine {
 const emailEngine = new EmailTemplateEngine()
 
 // 注册欢迎邮件模板
-emailEngine.registerTemplate('welcome', `
+emailEngine.registerTemplate(
+  'welcome',
+  `
 亲爱的 {{user.name}}，
 
 欢迎加入 {{app.name}}！
@@ -205,7 +213,8 @@ emailEngine.registerTemplate('welcome', `
 祝您使用愉快！
 
 {{app.name}} 团队
-`)
+`
+)
 
 // 渲染邮件
 const welcomeEmail = emailEngine.render('welcome', {
@@ -214,12 +223,12 @@ const welcomeEmail = emailEngine.render('welcome', {
     username: 'zhangsan',
     email: 'zhangsan@example.com',
     createdAt: '2024-01-01 10:00:00',
-    activationToken: 'abc123xyz'
+    activationToken: 'abc123xyz',
   },
   app: {
     name: 'MyApp',
-    baseUrl: 'https://myapp.com'
-  }
+    baseUrl: 'https://myapp.com',
+  },
 })
 
 console.log(welcomeEmail)
@@ -232,49 +241,55 @@ import { StringUtils } from '@ldesign/kit'
 
 class CodeGenerator {
   // 生成 TypeScript 接口
-  static generateInterface(name: string, fields: Array<{
-    name: string
-    type: string
-    optional?: boolean
-    description?: string
-  }>): string {
+  static generateInterface(
+    name: string,
+    fields: Array<{
+      name: string
+      type: string
+      optional?: boolean
+      description?: string
+    }>
+  ): string {
     const interfaceName = StringUtils.pascalCase(name)
-    
+
     let code = `interface ${interfaceName} {\n`
-    
+
     fields.forEach(field => {
       if (field.description) {
         code += `  /** ${field.description} */\n`
       }
-      
+
       const fieldName = StringUtils.camelCase(field.name)
       const optional = field.optional ? '?' : ''
       code += `  ${fieldName}${optional}: ${field.type}\n`
     })
-    
+
     code += '}'
-    
+
     return code
   }
-  
+
   // 生成 API 客户端方法
   static generateApiMethod(endpoint: string, method: string, params?: string[]): string {
     const methodName = StringUtils.camelCase(`${method}_${endpoint.replace(/[\/{}]/g, '_')}`)
     const paramList = params ? params.join(', ') : ''
-    
-    return StringUtils.template(`
+
+    return StringUtils.template(
+      `
 async {{methodName}}({{paramList}}) {
   const response = await this.request('{{method}}', '{{endpoint}}', {
     {{#if params}}params: { {{paramList}} }{{/if}}
   })
   return response.data
-}`, {
-      methodName,
-      method: method.toUpperCase(),
-      endpoint,
-      paramList,
-      params: params && params.length > 0
-    })
+}`,
+      {
+        methodName,
+        method: method.toUpperCase(),
+        endpoint,
+        paramList,
+        params: params && params.length > 0,
+      }
+    )
   }
 }
 
@@ -284,7 +299,7 @@ const userInterface = CodeGenerator.generateInterface('user', [
   { name: 'username', type: 'string', description: '用户名' },
   { name: 'email', type: 'string', description: '邮箱地址' },
   { name: 'avatar', type: 'string', optional: true, description: '头像URL' },
-  { name: 'created_at', type: 'Date', description: '创建时间' }
+  { name: 'created_at', type: 'Date', description: '创建时间' },
 ])
 
 console.log(userInterface)
@@ -314,13 +329,13 @@ class ContentProcessor {
   static generateSummary(content: string, maxLength: number = 200): string {
     // 移除 HTML 标签
     const plainText = content.replace(/<[^>]*>/g, '')
-    
+
     // 生成摘要
     const summary = StringUtils.truncate(plainText, maxLength)
-    
+
     return summary
   }
-  
+
   // 提取关键词
   static extractKeywords(content: string, count: number = 10): string[] {
     const words = content
@@ -328,25 +343,25 @@ class ContentProcessor {
       .replace(/[^\w\s]/g, '')
       .split(/\s+/)
       .filter(word => word.length > 3)
-    
+
     // 统计词频
     const wordCount = new Map<string, number>()
     words.forEach(word => {
       wordCount.set(word, (wordCount.get(word) || 0) + 1)
     })
-    
+
     // 按频率排序并返回前 N 个
     return Array.from(wordCount.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, count)
       .map(([word]) => word)
   }
-  
+
   // 生成阅读时间估算
   static estimateReadingTime(content: string, wordsPerMinute: number = 200): string {
     const wordCount = content.split(/\s+/).length
     const minutes = Math.ceil(wordCount / wordsPerMinute)
-    
+
     if (minutes < 1) {
       return '不到 1 分钟'
     } else if (minutes === 1) {
@@ -385,53 +400,53 @@ class StringValidator {
   static sanitizeInput(input: string): string {
     return StringUtils.escape(input.trim())
   }
-  
+
   // 验证和格式化手机号
   static formatPhoneNumber(phone: string, countryCode: string = 'CN'): string | null {
     const cleaned = phone.replace(/\D/g, '')
-    
+
     if (countryCode === 'CN' && cleaned.length === 11) {
       return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}-${cleaned.slice(7)}`
     }
-    
+
     return null
   }
-  
+
   // 生成随机字符串
   static generateRandomString(length: number, charset?: string): string {
     const defaultCharset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     const chars = charset || defaultCharset
-    
+
     let result = ''
     for (let i = 0; i < length; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length))
     }
-    
+
     return result
   }
-  
+
   // 检查字符串相似度
   static calculateSimilarity(str1: string, str2: string): number {
     const longer = str1.length > str2.length ? str1 : str2
     const shorter = str1.length > str2.length ? str2 : str1
-    
+
     if (longer.length === 0) return 1.0
-    
+
     const editDistance = this.levenshteinDistance(longer, shorter)
     return (longer.length - editDistance) / longer.length
   }
-  
+
   private static levenshteinDistance(str1: string, str2: string): number {
     const matrix = []
-    
+
     for (let i = 0; i <= str2.length; i++) {
       matrix[i] = [i]
     }
-    
+
     for (let j = 0; j <= str1.length; j++) {
       matrix[0][j] = j
     }
-    
+
     for (let i = 1; i <= str2.length; i++) {
       for (let j = 1; j <= str1.length; j++) {
         if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
@@ -445,7 +460,7 @@ class StringValidator {
         }
       }
     }
-    
+
     return matrix[str2.length][str1.length]
   }
 }

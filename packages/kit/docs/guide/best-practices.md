@@ -95,13 +95,13 @@ class AppConfig {
   private constructor() {
     this.cache = new ConfigCache({
       maxSize: 1000,
-      ttl: 300000 // 5 minutes
+      ttl: 300000, // 5 minutes
     })
 
     this.configManager = new ConfigManager({
       configFile: `${process.env.NODE_ENV || 'development'}.json5`,
       configDir: './config',
-      envPrefix: 'MYAPP'
+      envPrefix: 'MYAPP',
     })
 
     this.hotReload = new ConfigHotReload(this.cache, this.configManager.loader)
@@ -143,17 +143,17 @@ class ErrorHandler {
     if (error instanceof FileSystemError) {
       console.error(`文件系统错误: ${error.message}`, {
         path: error.path,
-        code: error.code
+        code: error.code,
       })
     } else if (error instanceof NetworkError) {
       console.error(`网络错误: ${error.message}`, {
         url: error.url,
-        code: error.code
+        code: error.code,
       })
     } else if (error instanceof KitError) {
       console.error(`Kit 错误: ${error.message}`, {
         code: error.code,
-        cause: error.cause
+        cause: error.cause,
       })
     } else {
       console.error('未知错误:', error.message)
@@ -175,17 +175,14 @@ try {
 import { AsyncUtils } from '@ldesign/kit/utils'
 
 // 带重试的操作
-async function reliableOperation<T>(
-  operation: () => Promise<T>,
-  maxRetries = 3
-): Promise<T> {
+async function reliableOperation<T>(operation: () => Promise<T>, maxRetries = 3): Promise<T> {
   return AsyncUtils.retry(operation, {
     maxAttempts: maxRetries,
     delay: 1000,
     backoff: true,
     onRetry: (error, attempt) => {
       console.log(`操作失败，第 ${attempt} 次重试:`, error.message)
-    }
+    },
   })
 }
 
@@ -205,23 +202,23 @@ import { CacheManager } from '@ldesign/kit'
 class DataService {
   private cache = CacheManager.create({
     defaultTTL: 300000, // 5 minutes
-    maxSize: 1000
+    maxSize: 1000,
   })
 
   async getUserData(userId: string): Promise<UserData> {
     const cacheKey = `user:${userId}`
-    
+
     // 尝试从缓存获取
     let userData = await this.cache.get(cacheKey)
-    
+
     if (!userData) {
       // 缓存未命中，从数据库获取
       userData = await this.fetchUserFromDatabase(userId)
-      
+
       // 存入缓存
       await this.cache.set(cacheKey, userData)
     }
-    
+
     return userData
   }
 
@@ -241,7 +238,7 @@ import { FileUtils, HttpUtils } from '@ldesign/kit/utils'
 async function processFiles(filePaths: string[]): Promise<void> {
   // 使用 Promise.all 并发处理
   const results = await Promise.all(
-    filePaths.map(async (filePath) => {
+    filePaths.map(async filePath => {
       try {
         return await FileUtils.getFileInfo(filePath)
       } catch (error) {
@@ -367,11 +364,11 @@ describe('Configuration Integration', () => {
   it('should load and hot reload configuration', async () => {
     const configManager = new ConfigManager({
       configFile: 'test-config.json5',
-      configDir: './test-config'
+      configDir: './test-config',
     })
 
     await configManager.load()
-    
+
     const initialValue = configManager.get('test.value')
     expect(initialValue).toBe('initial')
 
@@ -399,20 +396,20 @@ describe('Configuration Integration', () => {
 const productionConfig = {
   // 禁用调试功能
   debug: false,
-  
+
   // 优化缓存设置
   cache: {
     ttl: 3600000, // 1 hour
-    maxSize: 10000
+    maxSize: 10000,
   },
-  
+
   // 启用压缩
   compression: true,
-  
+
   // 配置日志级别
   logging: {
-    level: 'error'
-  }
+    level: 'error',
+  },
 }
 ```
 
@@ -434,7 +431,7 @@ class HealthMonitor {
       memory: memoryUsage.system.percentage,
       cpu: cpuUsage,
       uptime: systemInfo.uptime,
-      healthy: memoryUsage.system.percentage < 80 && cpuUsage < 80
+      healthy: memoryUsage.system.percentage < 80 && cpuUsage < 80,
     }
 
     if (!status.healthy) {
@@ -480,12 +477,12 @@ import { PathUtils } from '@ldesign/kit/utils'
 function safeFilePath(userPath: string, baseDir: string): string {
   const normalizedPath = PathUtils.normalize(userPath)
   const resolvedPath = PathUtils.resolve(baseDir, normalizedPath)
-  
+
   // 确保路径在基础目录内
   if (!resolvedPath.startsWith(PathUtils.resolve(baseDir))) {
     throw new Error('Invalid file path')
   }
-  
+
   return resolvedPath
 }
 ```

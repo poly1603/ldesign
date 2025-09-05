@@ -3,15 +3,15 @@
  * 测试多个模块之间的协作
  */
 
-import { 
-  Logger, 
-  CacheManager, 
-  MemoryCache, 
-  EventBus, 
-  Validator, 
-  ValidationRules,
+import {
+  CacheManager,
+  ConfigManager,
+  EventBus,
   FileSystem,
-  ConfigManager
+  Logger,
+  MemoryCache,
+  ValidationRules,
+  Validator,
 } from '../../src'
 
 describe('全栈集成测试', () => {
@@ -23,13 +23,11 @@ describe('全栈集成测试', () => {
 
   beforeEach(() => {
     tempDir = global.testUtils.createTempDir()
-    
+
     // 设置日志器
     logger = Logger.create({
       level: 'info',
-      transports: [
-        { type: 'console', silent: true }
-      ]
+      transports: [{ type: 'console', silent: true }],
     })
 
     // 设置缓存
@@ -45,7 +43,7 @@ describe('全栈集成测试', () => {
       id: ValidationRules.required(),
       name: ValidationRules.required(),
       email: ValidationRules.email(),
-      age: ValidationRules.range(0, 120)
+      age: ValidationRules.range(0, 120),
     })
   })
 
@@ -81,14 +79,16 @@ describe('全栈集成测试', () => {
         const validationResult = await this.validator.validate(userData)
         if (!validationResult.valid) {
           this.logger.error('User validation failed', { errors: validationResult.errors })
-          throw new Error(`Validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`)
+          throw new Error(
+            `Validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`
+          )
         }
 
         // 创建用户
         const user: User = {
           id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           ...validationResult.data,
-          createdAt: new Date()
+          createdAt: new Date(),
         }
 
         // 缓存用户
@@ -115,12 +115,15 @@ describe('全栈集成测试', () => {
 
         this.logger.debug('User not found in cache', { userId: id })
         this.eventBus.emit('user:cache_miss', { userId: id })
-        
+
         // 在真实应用中，这里会从数据库获取
         return null
       }
 
-      async updateUser(id: string, updates: Partial<Omit<User, 'id' | 'createdAt'>>): Promise<User | null> {
+      async updateUser(
+        id: string,
+        updates: Partial<Omit<User, 'id' | 'createdAt'>>
+      ): Promise<User | null> {
         this.logger.info('Updating user', { userId: id, updates })
 
         const user = await this.getUser(id)
@@ -133,13 +136,15 @@ describe('全栈集成测试', () => {
         const validationResult = await this.validator.validate({ ...user, ...updates })
         if (!validationResult.valid) {
           this.logger.error('User update validation failed', { errors: validationResult.errors })
-          throw new Error(`Validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`)
+          throw new Error(
+            `Validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`
+          )
         }
 
         // 更新用户
         const updatedUser: User = {
           ...user,
-          ...validationResult.data
+          ...validationResult.data,
         }
 
         // 更新缓存
@@ -184,7 +189,7 @@ describe('全栈集成测试', () => {
       const userData = {
         name: 'John Doe',
         email: 'john@example.com',
-        age: 30
+        age: 30,
       }
 
       // 创建用户
@@ -219,7 +224,7 @@ describe('全栈集成测试', () => {
       const invalidUserData = {
         name: '', // 空名称
         email: 'invalid-email', // 无效邮箱
-        age: 150 // 超出范围的年龄
+        age: 150, // 超出范围的年龄
       }
 
       await expect(userService.createUser(invalidUserData)).rejects.toThrow('Validation failed')
@@ -228,15 +233,15 @@ describe('全栈集成测试', () => {
     it('应该发布正确的事件', async () => {
       const events: Array<{ event: string; data: any }> = []
 
-      eventBus.on('user:created', (data) => events.push({ event: 'user:created', data }))
-      eventBus.on('user:cache_hit', (data) => events.push({ event: 'user:cache_hit', data }))
-      eventBus.on('user:updated', (data) => events.push({ event: 'user:updated', data }))
-      eventBus.on('user:deleted', (data) => events.push({ event: 'user:deleted', data }))
+      eventBus.on('user:created', data => events.push({ event: 'user:created', data }))
+      eventBus.on('user:cache_hit', data => events.push({ event: 'user:cache_hit', data }))
+      eventBus.on('user:updated', data => events.push({ event: 'user:updated', data }))
+      eventBus.on('user:deleted', data => events.push({ event: 'user:deleted', data }))
 
       const userData = {
         name: 'John Doe',
         email: 'john@example.com',
-        age: 30
+        age: 30,
       }
 
       // 创建用户
@@ -264,20 +269,20 @@ describe('全栈集成测试', () => {
       const config = {
         app: {
           name: 'Test App',
-          version: '1.0.0'
+          version: '1.0.0',
         },
         logger: {
           level: 'debug',
-          format: 'json'
+          format: 'json',
         },
         cache: {
           maxSize: 500,
-          defaultTTL: 1800
+          defaultTTL: 1800,
         },
         validation: {
           stopOnFirstError: true,
-          allowUnknownFields: false
-        }
+          allowUnknownFields: false,
+        },
       }
 
       await FileSystem.writeFile(configFile, config, 'json')
@@ -290,17 +295,17 @@ describe('全栈集成测试', () => {
             type: 'object',
             properties: {
               name: { type: 'string', required: true },
-              version: { type: 'string', required: true }
-            }
+              version: { type: 'string', required: true },
+            },
           },
           logger: {
             type: 'object',
             properties: {
               level: { type: 'string', default: 'info' },
-              format: { type: 'string', default: 'text' }
-            }
-          }
-        }
+              format: { type: 'string', default: 'text' },
+            },
+          },
+        },
       })
 
       await configManager.load()
@@ -309,18 +314,21 @@ describe('全栈集成测试', () => {
       const appLogger = Logger.create({
         level: configManager.get('logger.level') as any,
         format: configManager.get('logger.format') as any,
-        transports: [{ type: 'console', silent: true }]
+        transports: [{ type: 'console', silent: true }],
       })
 
       const appCache = CacheManager.create()
-      appCache.addStore('memory', MemoryCache.create({
-        maxSize: configManager.get('cache.maxSize'),
-        defaultTTL: configManager.get('cache.defaultTTL')
-      }))
+      appCache.addStore(
+        'memory',
+        MemoryCache.create({
+          maxSize: configManager.get('cache.maxSize'),
+          defaultTTL: configManager.get('cache.defaultTTL'),
+        })
+      )
 
       const appValidator = Validator.create({
         stopOnFirstError: configManager.get('validation.stopOnFirstError'),
-        allowUnknownFields: configManager.get('validation.allowUnknownFields')
+        allowUnknownFields: configManager.get('validation.allowUnknownFields'),
       })
 
       // 验证组件配置
@@ -331,7 +339,7 @@ describe('全栈集成测试', () => {
       // 测试组件功能
       appLogger.info('Application initialized', {
         name: configManager.get('app.name'),
-        version: configManager.get('app.version')
+        version: configManager.get('app.version'),
       })
 
       await appCache.set('test-key', 'test-value')
@@ -353,15 +361,23 @@ describe('全栈集成测试', () => {
       const errors: Error[] = []
 
       // 设置错误监听
-      logger.on('error', (error) => errors.push(error))
-      eventBus.on('error', (error) => errors.push(error))
+      logger.on('error', error => errors.push(error))
+      eventBus.on('error', error => errors.push(error))
 
       // 模拟缓存故障
       const faultyCache = {
-        async get() { throw new Error('Cache read error') },
-        async set() { throw new Error('Cache write error') },
-        async delete() { throw new Error('Cache delete error') },
-        async clear() { throw new Error('Cache clear error') }
+        async get() {
+          throw new Error('Cache read error')
+        },
+        async set() {
+          throw new Error('Cache write error')
+        },
+        async delete() {
+          throw new Error('Cache delete error')
+        },
+        async clear() {
+          throw new Error('Cache clear error')
+        },
       }
 
       // 应用应该继续工作即使缓存失败
@@ -378,7 +394,9 @@ describe('全栈集成测试', () => {
 
       // 事件系统应该继续工作
       let eventReceived = false
-      eventBus.on('test-event', () => { eventReceived = true })
+      eventBus.on('test-event', () => {
+        eventReceived = true
+      })
       eventBus.emit('test-event')
       expect(eventReceived).toBe(true)
 
@@ -406,7 +424,7 @@ describe('全栈集成测试', () => {
       }
 
       const results = await Promise.all(retrievePromises)
-      
+
       for (let i = 0; i < operations; i++) {
         expect(results[i]).toBe(`value-${i}`)
       }
@@ -416,7 +434,9 @@ describe('全栈集成测试', () => {
       const eventCount = 1000
       let receivedCount = 0
 
-      eventBus.on('bulk-test', () => { receivedCount++ })
+      eventBus.on('bulk-test', () => {
+        receivedCount++
+      })
 
       for (let i = 0; i < eventCount; i++) {
         eventBus.emit('bulk-test', i)

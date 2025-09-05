@@ -3,8 +3,8 @@
  * 提供比Node.js原生EventEmitter更强大的功能
  */
 
-import { EventEmitter as NodeEventEmitter } from 'node:events'
 import type { EventListener, EventOptions, EventStats } from '../types'
+import { EventEmitter as NodeEventEmitter } from 'node:events'
 
 /**
  * 事件监听器信息
@@ -32,10 +32,10 @@ export class EventEmitter extends NodeEventEmitter {
 
   constructor(options: EventOptions = {}) {
     super()
-    
+
     this.maxListenersPerEvent = options.maxListeners || 100
     this.enableStats = options.enableStats !== false
-    
+
     // 设置Node.js EventEmitter的最大监听器数量
     this.setMaxListeners(this.maxListenersPerEvent)
   }
@@ -43,41 +43,53 @@ export class EventEmitter extends NodeEventEmitter {
   /**
    * 添加事件监听器
    */
-  override on(event: string, listener: EventListener, options: {
-    priority?: number
-    namespace?: string
-    tags?: string[]
-    once?: boolean
-  } = {}): this {
+  override on(
+    event: string,
+    listener: EventListener,
+    options: {
+      priority?: number
+      namespace?: string
+      tags?: string[]
+      once?: boolean
+    } = {},
+  ): this {
     return this.addListenerWithOptions(event, listener, {
       ...options,
-      once: false
+      once: false,
     })
   }
 
   /**
    * 添加一次性事件监听器
    */
-  override once(event: string, listener: EventListener, options: {
-    priority?: number
-    namespace?: string
-    tags?: string[]
-  } = {}): this {
+  override once(
+    event: string,
+    listener: EventListener,
+    options: {
+      priority?: number
+      namespace?: string
+      tags?: string[]
+    } = {},
+  ): this {
     return this.addListenerWithOptions(event, listener, {
       ...options,
-      once: true
+      once: true,
     })
   }
 
   /**
    * 添加监听器（内部方法）
    */
-  private addListenerWithOptions(event: string, listener: EventListener, options: {
-    priority?: number
-    namespace?: string
-    tags?: string[]
-    once?: boolean
-  }): this {
+  private addListenerWithOptions(
+    event: string,
+    listener: EventListener,
+    options: {
+      priority?: number
+      namespace?: string
+      tags?: string[]
+      once?: boolean
+    },
+  ): this {
     const listenerInfo: ListenerInfo = {
       listener,
       once: options.once || false,
@@ -85,17 +97,17 @@ export class EventEmitter extends NodeEventEmitter {
       namespace: options.namespace,
       tags: options.tags || [],
       createdAt: new Date(),
-      callCount: 0
+      callCount: 0,
     }
 
     // 添加到内部监听器列表
     if (!this.listenerInfos.has(event)) {
       this.listenerInfos.set(event, [])
     }
-    
+
     const eventListeners = this.listenerInfos.get(event)!
     eventListeners.push(listenerInfo)
-    
+
     // 按优先级排序（高优先级先执行）
     eventListeners.sort((a, b) => b.priority - a.priority)
 
@@ -111,7 +123,7 @@ export class EventEmitter extends NodeEventEmitter {
         listenerCount: 0,
         lastEmittedAt: undefined,
         averageExecutionTime: 0,
-        totalExecutionTime: 0
+        totalExecutionTime: 0,
       })
     }
 
@@ -124,7 +136,8 @@ export class EventEmitter extends NodeEventEmitter {
     // 添加到Node.js EventEmitter
     if (options.once) {
       super.once(event, listener)
-    } else {
+    }
+    else {
       super.on(event, listener)
     }
 
@@ -144,7 +157,7 @@ export class EventEmitter extends NodeEventEmitter {
       const index = eventListeners.findIndex(info => info.listener === listener)
       if (index !== -1) {
         eventListeners.splice(index, 1)
-        
+
         // 更新统计信息
         if (this.enableStats) {
           const stats = this.stats.get(event)!
@@ -169,7 +182,8 @@ export class EventEmitter extends NodeEventEmitter {
           stats.listenerCount = 0
         }
       }
-    } else {
+    }
+    else {
       this.listenerInfos.clear()
       if (this.enableStats) {
         for (const stats of this.stats.values()) {
@@ -187,7 +201,7 @@ export class EventEmitter extends NodeEventEmitter {
    */
   override emit(event: string, ...args: any[]): boolean {
     const startTime = this.enableStats ? Date.now() : 0
-    
+
     // 更新统计信息
     if (this.enableStats) {
       const stats = this.stats.get(event)
@@ -231,7 +245,7 @@ export class EventEmitter extends NodeEventEmitter {
     }
 
     const startTime = this.enableStats ? Date.now() : 0
-    
+
     // 更新统计信息
     if (this.enableStats) {
       const stats = this.stats.get(event)
@@ -242,20 +256,21 @@ export class EventEmitter extends NodeEventEmitter {
     }
 
     const results: any[] = []
-    
+
     for (const listenerInfo of eventListeners) {
       try {
         listenerInfo.callCount++
         listenerInfo.lastCalledAt = new Date()
-        
+
         const result = await listenerInfo.listener(...args)
         results.push(result)
-        
+
         // 如果是一次性监听器，移除它
         if (listenerInfo.once) {
           this.off(event, listenerInfo.listener)
         }
-      } catch (error) {
+      }
+      catch (error) {
         this.emit('error', error)
       }
     }
@@ -278,11 +293,13 @@ export class EventEmitter extends NodeEventEmitter {
    */
   removeListenersByNamespace(namespace: string): this {
     for (const [event, eventListeners] of this.listenerInfos) {
-      const filteredListeners = eventListeners.filter((info: ListenerInfo) => info.namespace !== namespace)
-      
+      const filteredListeners = eventListeners.filter(
+        (info: ListenerInfo) => info.namespace !== namespace,
+      )
+
       if (filteredListeners.length !== eventListeners.length) {
         this.listenerInfos.set(event, filteredListeners)
-        
+
         // 更新统计信息
         if (this.enableStats) {
           const stats = this.stats.get(event)
@@ -290,13 +307,14 @@ export class EventEmitter extends NodeEventEmitter {
             stats.listenerCount = filteredListeners.length
           }
         }
-        
+
         // 重新注册到Node.js EventEmitter
         super.removeAllListeners(event)
         for (const info of filteredListeners) {
           if (info.once) {
             super.once(event, info.listener)
-          } else {
+          }
+          else {
             super.on(event, info.listener)
           }
         }
@@ -312,11 +330,13 @@ export class EventEmitter extends NodeEventEmitter {
    */
   removeListenersByTag(tag: string): this {
     for (const [event, eventListeners] of this.listenerInfos) {
-      const filteredListeners = eventListeners.filter((info: ListenerInfo) => !info.tags.includes(tag))
-      
+      const filteredListeners = eventListeners.filter(
+        (info: ListenerInfo) => !info.tags.includes(tag),
+      )
+
       if (filteredListeners.length !== eventListeners.length) {
         this.listenerInfos.set(event, filteredListeners)
-        
+
         // 更新统计信息
         if (this.enableStats) {
           const stats = this.stats.get(event)
@@ -324,13 +344,14 @@ export class EventEmitter extends NodeEventEmitter {
             stats.listenerCount = filteredListeners.length
           }
         }
-        
+
         // 重新注册到Node.js EventEmitter
         super.removeAllListeners(event)
         for (const info of filteredListeners) {
           if (info.once) {
             super.once(event, info.listener)
-          } else {
+          }
+          else {
             super.on(event, info.listener)
           }
         }
@@ -376,7 +397,8 @@ export class EventEmitter extends NodeEventEmitter {
         stats.averageExecutionTime = 0
         stats.totalExecutionTime = 0
       }
-    } else {
+    }
+    else {
       for (const stats of this.stats.values()) {
         stats.emitCount = 0
         stats.lastEmittedAt = undefined
@@ -409,7 +431,7 @@ export class EventEmitter extends NodeEventEmitter {
     if (event) {
       return this.listenerInfos.get(event)?.length || 0
     }
-    
+
     let total = 0
     for (const listeners of this.listenerInfos.values()) {
       total += listeners.length

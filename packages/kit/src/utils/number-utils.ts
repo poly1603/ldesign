@@ -13,21 +13,24 @@ export class NumberUtils {
    * @param options 格式化选项
    * @returns 格式化后的字符串
    */
-  static format(num: number, options: {
-    locale?: string
-    style?: 'decimal' | 'currency' | 'percent'
-    currency?: string
-    minimumFractionDigits?: number
-    maximumFractionDigits?: number
-    useGrouping?: boolean
-  } = {}): string {
+  static format(
+    num: number,
+    options: {
+      locale?: string
+      style?: 'decimal' | 'currency' | 'percent'
+      currency?: string
+      minimumFractionDigits?: number
+      maximumFractionDigits?: number
+      useGrouping?: boolean
+    } = {},
+  ): string {
     const {
       locale = 'en-US',
       style = 'decimal',
       currency = 'USD',
       minimumFractionDigits,
       maximumFractionDigits,
-      useGrouping = true
+      useGrouping = true,
     } = options
 
     return new Intl.NumberFormat(locale, {
@@ -35,7 +38,7 @@ export class NumberUtils {
       currency: style === 'currency' ? currency : undefined,
       minimumFractionDigits,
       maximumFractionDigits,
-      useGrouping
+      useGrouping,
     }).format(num)
   }
 
@@ -47,15 +50,16 @@ export class NumberUtils {
    * @returns 格式化后的字符串
    */
   static formatBytes(bytes: number, decimals = 2, binary = false): string {
-    if (bytes === 0) return '0 B'
+    if (bytes === 0)
+      return '0 B'
 
     const k = binary ? 1024 : 1000
-    const sizes = binary 
+    const sizes = binary
       ? ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
       : ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
 
     const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k))
-    const size = bytes / Math.pow(k, i)
+    const size = bytes / k ** i
 
     return `${size.toFixed(decimals)} ${sizes[i]}`
   }
@@ -72,18 +76,26 @@ export class NumberUtils {
     }
 
     const [, numStr, unit] = match
-    const num = parseFloat(numStr)
-    
+    const num = Number.parseFloat(numStr)
+
     const units: Record<string, number> = {
-      'B': 1,
-      'KB': 1000, 'KiB': 1024,
-      'MB': 1000 ** 2, 'MiB': 1024 ** 2,
-      'GB': 1000 ** 3, 'GiB': 1024 ** 3,
-      'TB': 1000 ** 4, 'TiB': 1024 ** 4,
-      'PB': 1000 ** 5, 'PiB': 1024 ** 5,
-      'EB': 1000 ** 6, 'EiB': 1024 ** 6,
-      'ZB': 1000 ** 7, 'ZiB': 1024 ** 7,
-      'YB': 1000 ** 8, 'YiB': 1024 ** 8
+      B: 1,
+      KB: 1000,
+      KiB: 1024,
+      MB: 1000 ** 2,
+      MiB: 1024 ** 2,
+      GB: 1000 ** 3,
+      GiB: 1024 ** 3,
+      TB: 1000 ** 4,
+      TiB: 1024 ** 4,
+      PB: 1000 ** 5,
+      PiB: 1024 ** 5,
+      EB: 1000 ** 6,
+      EiB: 1024 ** 6,
+      ZB: 1000 ** 7,
+      ZiB: 1024 ** 7,
+      YB: 1000 ** 8,
+      YiB: 1024 ** 8,
     }
 
     const multiplier = units[unit.toUpperCase()] || 1
@@ -120,7 +132,8 @@ export class NumberUtils {
    * @returns 插值参数
    */
   static inverseLerp(start: number, end: number, value: number): number {
-    if (start === end) return 0
+    if (start === end)
+      return 0
     return NumberUtils.clamp((value - start) / (end - start), 0, 1)
   }
 
@@ -133,13 +146,7 @@ export class NumberUtils {
    * @param outMax 输出最大值
    * @returns 映射后的值
    */
-  static map(
-    value: number,
-    inMin: number,
-    inMax: number,
-    outMin: number,
-    outMax: number
-  ): number {
+  static map(value: number, inMin: number, inMax: number, outMin: number, outMax: number): number {
     const t = NumberUtils.inverseLerp(inMin, inMax, value)
     return NumberUtils.lerp(outMin, outMax, t)
   }
@@ -151,7 +158,7 @@ export class NumberUtils {
    * @returns 四舍五入后的数字
    */
   static round(num: number, decimals = 0): number {
-    const factor = Math.pow(10, decimals)
+    const factor = 10 ** decimals
     return Math.round(num * factor) / factor
   }
 
@@ -162,7 +169,7 @@ export class NumberUtils {
    * @returns 向上取整后的数字
    */
   static ceil(num: number, decimals = 0): number {
-    const factor = Math.pow(10, decimals)
+    const factor = 10 ** decimals
     return Math.ceil(num * factor) / factor
   }
 
@@ -173,7 +180,7 @@ export class NumberUtils {
    * @returns 向下取整后的数字
    */
   static floor(num: number, decimals = 0): number {
-    const factor = Math.pow(10, decimals)
+    const factor = 10 ** decimals
     return Math.floor(num * factor) / factor
   }
 
@@ -249,9 +256,7 @@ export class NumberUtils {
    * @returns 是否在范围内
    */
   static inRange(num: number, min: number, max: number, inclusive = true): boolean {
-    return inclusive 
-      ? num >= min && num <= max
-      : num > min && num < max
+    return inclusive ? num >= min && num <= max : num > min && num < max
   }
 
   /**
@@ -282,7 +287,8 @@ export class NumberUtils {
    * @returns 百分比
    */
   static percentage(value: number, total: number, decimals = 2): number {
-    if (total === 0) return 0
+    if (total === 0)
+      return 0
     return NumberUtils.round((value / total) * 100, decimals)
   }
 
@@ -292,7 +298,8 @@ export class NumberUtils {
    * @returns 平均值
    */
   static average(numbers: number[]): number {
-    if (numbers.length === 0) return 0
+    if (numbers.length === 0)
+      return 0
     return numbers.reduce((sum, num) => sum + num, 0) / numbers.length
   }
 
@@ -302,14 +309,13 @@ export class NumberUtils {
    * @returns 中位数
    */
   static median(numbers: number[]): number {
-    if (numbers.length === 0) return 0
-    
+    if (numbers.length === 0)
+      return 0
+
     const sorted = [...numbers].sort((a, b) => a - b)
     const mid = Math.floor(sorted.length / 2)
-    
-    return sorted.length % 2 === 0
-      ? (sorted[mid - 1] + sorted[mid]) / 2
-      : sorted[mid]
+
+    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
   }
 
   /**
@@ -318,16 +324,17 @@ export class NumberUtils {
    * @returns 众数数组
    */
   static mode(numbers: number[]): number[] {
-    if (numbers.length === 0) return []
-    
+    if (numbers.length === 0)
+      return []
+
     const frequency: Record<number, number> = {}
     let maxFreq = 0
-    
+
     for (const num of numbers) {
       frequency[num] = (frequency[num] || 0) + 1
       maxFreq = Math.max(maxFreq, frequency[num])
     }
-    
+
     return Object.keys(frequency)
       .filter(key => frequency[Number(key)] === maxFreq)
       .map(Number)
@@ -339,12 +346,13 @@ export class NumberUtils {
    * @returns 标准差
    */
   static standardDeviation(numbers: number[]): number {
-    if (numbers.length === 0) return 0
-    
+    if (numbers.length === 0)
+      return 0
+
     const avg = NumberUtils.average(numbers)
-    const squaredDiffs = numbers.map(num => Math.pow(num - avg, 2))
+    const squaredDiffs = numbers.map(num => (num - avg) ** 2)
     const avgSquaredDiff = NumberUtils.average(squaredDiffs)
-    
+
     return Math.sqrt(avgSquaredDiff)
   }
 
@@ -367,13 +375,13 @@ export class NumberUtils {
   static gcd(a: number, b: number): number {
     a = Math.abs(Math.floor(a))
     b = Math.abs(Math.floor(b))
-    
+
     while (b !== 0) {
       const temp = b
       b = a % b
       a = temp
     }
-    
+
     return a
   }
 
@@ -393,14 +401,18 @@ export class NumberUtils {
    * @returns 是否为质数
    */
   static isPrime(num: number): boolean {
-    if (!NumberUtils.isInteger(num) || num < 2) return false
-    if (num === 2) return true
-    if (num % 2 === 0) return false
-    
+    if (!NumberUtils.isInteger(num) || num < 2)
+      return false
+    if (num === 2)
+      return true
+    if (num % 2 === 0)
+      return false
+
     for (let i = 3; i <= Math.sqrt(num); i += 2) {
-      if (num % i === 0) return false
+      if (num % i === 0)
+        return false
     }
-    
+
     return true
   }
 
@@ -413,14 +425,15 @@ export class NumberUtils {
     if (!NumberUtils.isInteger(num) || num < 0) {
       throw new Error('Factorial is only defined for non-negative integers')
     }
-    
-    if (num === 0 || num === 1) return 1
-    
+
+    if (num === 0 || num === 1)
+      return 1
+
     let result = 1
     for (let i = 2; i <= num; i++) {
       result *= i
     }
-    
+
     return result
   }
 
@@ -433,16 +446,18 @@ export class NumberUtils {
     if (!NumberUtils.isInteger(n) || n < 0) {
       throw new Error('Fibonacci is only defined for non-negative integers')
     }
-    
-    if (n <= 1) return n
-    
-    let a = 0, b = 1
+
+    if (n <= 1)
+      return n
+
+    let a = 0
+    let b = 1
     for (let i = 2; i <= n; i++) {
       const temp = a + b
       a = b
       b = temp
     }
-    
+
     return b
   }
 
@@ -456,7 +471,7 @@ export class NumberUtils {
     if (!NumberUtils.isInteger(base) || base < 2 || base > 36) {
       throw new Error('Base must be an integer between 2 and 36')
     }
-    
+
     return Math.floor(num).toString(base)
   }
 
@@ -470,7 +485,7 @@ export class NumberUtils {
     if (!NumberUtils.isInteger(base) || base < 2 || base > 36) {
       throw new Error('Base must be an integer between 2 and 36')
     }
-    
-    return parseInt(str, base)
+
+    return Number.parseInt(str, base)
   }
 }

@@ -1,28 +1,26 @@
 /**
  * 项目类型检测器
- * 
+ *
  * 用于自动检测前端项目的类型、框架、构建工具等信息
  * 支持Vue2/3、React、Angular、Svelte等主流前端框架
- * 
+ *
  * @author LDesign Team
  * @version 1.0.0
  */
 
-import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs'
-import { resolve, join, extname } from 'node:path'
-import { glob } from 'glob'
-import { 
-  ProjectType, 
-  PackageManager, 
-  BuildTool,
-  ProjectDetectionResult, 
-  ProjectAnalysisOptions,
+import type {
   ConfigFile,
-  DetectionRule,
-  DetectionCondition,
   DependencyInfo,
-  ProjectStatistics
+  DetectionCondition,
+  DetectionRule,
+  ProjectAnalysisOptions,
+  ProjectDetectionResult,
+  ProjectStatistics,
 } from './types'
+import { existsSync, readFileSync, statSync } from 'node:fs'
+import { extname, resolve } from 'node:path'
+import { glob } from 'glob'
+import { BuildTool, PackageManager, ProjectType } from './types'
 
 /**
  * 项目检测器类
@@ -48,14 +46,14 @@ export class ProjectDetector {
       detectConfigFiles: options.detectConfigFiles ?? true,
       analyzeScripts: options.analyzeScripts ?? true,
       detectDevTools: options.detectDevTools ?? true,
-      customDetectionRules: options.customDetectionRules ?? []
+      customDetectionRules: options.customDetectionRules ?? [],
     }
   }
 
   /**
    * 检测项目类型
    * 主入口方法，返回完整的项目检测结果
-   * 
+   *
    * @returns 项目检测结果
    */
   async detectProject(): Promise<ProjectDetectionResult> {
@@ -64,10 +62,10 @@ export class ProjectDetector {
     const buildTools = this.detectBuildTools(packageJson)
     const hasTypeScript = this.detectTypeScript()
     const configFiles = this.detectConfigFiles()
-    
+
     // 检测项目类型
     const projectTypeResult = this.detectProjectType(packageJson, configFiles)
-    
+
     return {
       projectType: projectTypeResult.type,
       framework: projectTypeResult.framework,
@@ -81,13 +79,13 @@ export class ProjectDetector {
       devDependencies: Object.keys(packageJson?.devDependencies || {}),
       scripts: packageJson?.scripts || {},
       confidence: projectTypeResult.confidence,
-      details: projectTypeResult.details
+      details: projectTypeResult.details,
     }
   }
 
   /**
    * 读取并缓存 package.json 文件
-   * 
+   *
    * @returns package.json 内容或 null
    */
   private getPackageJson(): any {
@@ -104,7 +102,8 @@ export class ProjectDetector {
       const content = readFileSync(packageJsonPath, 'utf-8')
       this.packageJsonCache = JSON.parse(content)
       return this.packageJsonCache
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('无法解析 package.json:', error)
       return null
     }
@@ -113,7 +112,7 @@ export class ProjectDetector {
   /**
    * 检测包管理器类型
    * 根据锁文件和配置文件判断使用的包管理器
-   * 
+   *
    * @returns 包管理器类型
    */
   private detectPackageManager(): PackageManager {
@@ -121,7 +120,7 @@ export class ProjectDetector {
       { file: 'pnpm-lock.yaml', manager: PackageManager.PNPM },
       { file: 'yarn.lock', manager: PackageManager.YARN },
       { file: 'bun.lockb', manager: PackageManager.BUN },
-      { file: 'package-lock.json', manager: PackageManager.NPM }
+      { file: 'package-lock.json', manager: PackageManager.NPM },
     ]
 
     for (const { file, manager } of lockFiles) {
@@ -145,30 +144,34 @@ export class ProjectDetector {
   /**
    * 检测构建工具
    * 根据依赖和配置文件检测项目使用的构建工具
-   * 
+   *
    * @param packageJson package.json 内容
    * @returns 构建工具列表
    */
   private detectBuildTools(packageJson: any): BuildTool[] {
     const buildTools: BuildTool[] = []
-    
-    if (!packageJson) return buildTools
+
+    if (!packageJson)
+      return buildTools
 
     const allDeps = {
       ...packageJson.dependencies,
-      ...packageJson.devDependencies
+      ...packageJson.devDependencies,
     }
 
     // 检测构建工具依赖
     const toolDetection: Array<{ deps: string[], tool: BuildTool }> = [
       { deps: ['vite', '@vitejs/plugin-vue', '@vitejs/plugin-react'], tool: BuildTool.VITE },
       { deps: ['webpack', 'webpack-cli', '@webpack-cli/serve'], tool: BuildTool.WEBPACK },
-      { deps: ['rollup', '@rollup/plugin-typescript', '@rollup/plugin-node-resolve'], tool: BuildTool.ROLLUP },
+      {
+        deps: ['rollup', '@rollup/plugin-typescript', '@rollup/plugin-node-resolve'],
+        tool: BuildTool.ROLLUP,
+      },
       { deps: ['esbuild', 'esbuild-loader'], tool: BuildTool.ESBUILD },
       { deps: ['turbopack'], tool: BuildTool.TURBOPACK },
       { deps: ['parcel', '@parcel/core'], tool: BuildTool.PARCEL },
       { deps: ['tsup'], tool: BuildTool.TSUP },
-      { deps: ['unbuild'], tool: BuildTool.UNBUILD }
+      { deps: ['unbuild'], tool: BuildTool.UNBUILD },
     ]
 
     for (const { deps, tool } of toolDetection) {
@@ -182,7 +185,7 @@ export class ProjectDetector {
       { files: ['vite.config.ts', 'vite.config.js'], tool: BuildTool.VITE },
       { files: ['webpack.config.js', 'webpack.config.ts'], tool: BuildTool.WEBPACK },
       { files: ['rollup.config.js', 'rollup.config.ts'], tool: BuildTool.ROLLUP },
-      { files: ['tsup.config.ts', 'tsup.config.js'], tool: BuildTool.TSUP }
+      { files: ['tsup.config.ts', 'tsup.config.js'], tool: BuildTool.TSUP },
     ]
 
     for (const { files, tool } of configFiles) {
@@ -199,7 +202,7 @@ export class ProjectDetector {
   /**
    * 检测 TypeScript 支持
    * 检查项目是否使用 TypeScript
-   * 
+   *
    * @returns 是否支持 TypeScript
    */
   private detectTypeScript(): boolean {
@@ -213,9 +216,9 @@ export class ProjectDetector {
     if (packageJson) {
       const allDeps = {
         ...packageJson.dependencies,
-        ...packageJson.devDependencies
+        ...packageJson.devDependencies,
       }
-      
+
       if ('typescript' in allDeps || '@types/node' in allDeps) {
         return true
       }
@@ -223,13 +226,14 @@ export class ProjectDetector {
 
     // 检查 TypeScript 文件
     try {
-      const tsFiles = glob.sync('**/*.ts', { 
-        cwd: this.projectRoot, 
+      const tsFiles = glob.sync('**/*.ts', {
+        cwd: this.projectRoot,
         ignore: ['node_modules/**', 'dist/**', '**/*.d.ts'],
-        absolute: false 
+        absolute: false,
       })
       return tsFiles.length > 0
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -237,41 +241,57 @@ export class ProjectDetector {
   /**
    * 检测配置文件
    * 扫描项目中的各种配置文件
-   * 
+   *
    * @returns 配置文件列表
    */
   private detectConfigFiles(): ConfigFile[] {
     const configFilePatterns = [
       // TypeScript 配置
-      'tsconfig.json', 'tsconfig.*.json',
+      'tsconfig.json',
+      'tsconfig.*.json',
       // 构建工具配置
-      'vite.config.ts', 'vite.config.js',
-      'webpack.config.js', 'webpack.config.ts',
-      'rollup.config.js', 'rollup.config.ts',
-      'tsup.config.ts', 'tsup.config.js',
+      'vite.config.ts',
+      'vite.config.js',
+      'webpack.config.js',
+      'webpack.config.ts',
+      'rollup.config.js',
+      'rollup.config.ts',
+      'tsup.config.ts',
+      'tsup.config.js',
       // 代码质量工具
-      '.eslintrc.js', '.eslintrc.json', '.eslintrc.yaml', 'eslint.config.js',
-      '.prettierrc', '.prettierrc.json', '.prettierrc.yaml', 'prettier.config.js',
+      '.eslintrc.js',
+      '.eslintrc.json',
+      '.eslintrc.yaml',
+      'eslint.config.js',
+      '.prettierrc',
+      '.prettierrc.json',
+      '.prettierrc.yaml',
+      'prettier.config.js',
       // 测试配置
-      'vitest.config.ts', 'vitest.config.js',
-      'jest.config.js', 'jest.config.ts',
+      'vitest.config.ts',
+      'vitest.config.js',
+      'jest.config.js',
+      'jest.config.ts',
       'playwright.config.ts',
       // 其他配置
-      '.gitignore', '.npmignore', '.editorconfig',
-      'tailwind.config.js', 'tailwind.config.ts',
-      'postcss.config.js'
+      '.gitignore',
+      '.npmignore',
+      '.editorconfig',
+      'tailwind.config.js',
+      'tailwind.config.ts',
+      'postcss.config.js',
     ]
 
     const configFiles: ConfigFile[] = []
 
     for (const pattern of configFilePatterns) {
       try {
-        const files = glob.sync(pattern, { 
+        const files = glob.sync(pattern, {
           cwd: this.projectRoot,
           absolute: false,
-          dot: true
+          dot: true,
         })
-        
+
         for (const file of files) {
           const fullPath = resolve(this.projectRoot, file)
           if (existsSync(fullPath)) {
@@ -279,11 +299,12 @@ export class ProjectDetector {
               name: file,
               path: fullPath,
               type: this.getFileType(file),
-              exists: true
+              exists: true,
             })
           }
         }
-      } catch {
+      }
+      catch {
         // 忽略 glob 错误
       }
     }
@@ -294,38 +315,47 @@ export class ProjectDetector {
   /**
    * 获取文件类型
    * 根据文件扩展名确定文件类型
-   * 
+   *
    * @param filename 文件名
    * @returns 文件类型
    */
   private getFileType(filename: string): 'json' | 'js' | 'ts' | 'yaml' | 'toml' | 'other' {
     const ext = extname(filename).toLowerCase()
     switch (ext) {
-      case '.json': return 'json'
-      case '.js': return 'js'
-      case '.ts': return 'ts'
+      case '.json':
+        return 'json'
+      case '.js':
+        return 'js'
+      case '.ts':
+        return 'ts'
       case '.yaml':
-      case '.yml': return 'yaml'
-      case '.toml': return 'toml'
-      default: return 'other'
+      case '.yml':
+        return 'yaml'
+      case '.toml':
+        return 'toml'
+      default:
+        return 'other'
     }
   }
 
   /**
    * 检测项目类型
    * 基于多种检测规则确定项目类型
-   * 
+   *
    * @param packageJson package.json 内容
    * @param configFiles 配置文件列表
    * @returns 项目类型检测结果
    */
-  private detectProjectType(packageJson: any, configFiles: ConfigFile[]): {
-    type: ProjectType
-    framework?: string
-    version?: string
-    confidence: number
-    details: string[]
-  } {
+  private detectProjectType(
+    packageJson: any,
+    configFiles: ConfigFile[],
+  ): {
+      type: ProjectType
+      framework?: string
+      version?: string
+      confidence: number
+      details: string[]
+    } {
     const details: string[] = []
     let maxConfidence = 0
     let detectedType = ProjectType.UNKNOWN
@@ -339,7 +369,7 @@ export class ProjectDetector {
 
     const allDeps = {
       ...packageJson.dependencies,
-      ...packageJson.devDependencies
+      ...packageJson.devDependencies,
     }
 
     // Vue.js 检测
@@ -408,25 +438,28 @@ export class ProjectDetector {
       framework,
       version,
       confidence: maxConfidence,
-      details
+      details,
     }
   }
 
   /**
    * 检测 Vue.js 项目
    * 识别 Vue 2.x 和 Vue 3.x 项目
-   * 
+   *
    * @param dependencies 依赖列表
    * @param configFiles 配置文件列表
    * @returns Vue 项目检测结果
    */
-  private detectVueProject(dependencies: Record<string, string>, configFiles: ConfigFile[]): {
-    type: ProjectType
-    framework: string
-    version?: string
-    confidence: number
-    details: string[]
-  } {
+  private detectVueProject(
+    dependencies: Record<string, string>,
+    configFiles: ConfigFile[],
+  ): {
+      type: ProjectType
+      framework: string
+      version?: string
+      confidence: number
+      details: string[]
+    } {
     const details: string[] = []
     let confidence = 0
 
@@ -438,7 +471,7 @@ export class ProjectDetector {
         framework: 'Nuxt.js',
         version: dependencies.nuxt || dependencies['@nuxt/kit'],
         confidence: 95,
-        details
+        details,
       }
     }
 
@@ -451,17 +484,17 @@ export class ProjectDetector {
       if (vueVersion.startsWith('^3') || vueVersion.startsWith('3') || vueVersion.includes('3.')) {
         confidence += 20
         details.push('版本号指向 Vue 3.x')
-        
+
         if ('@vue/composition-api' in dependencies) {
           confidence -= 10 // 可能是 Vue 2 with composition API
         }
-        
+
         return {
           type: ProjectType.VUE3,
           framework: 'Vue.js',
           version: vueVersion,
           confidence,
-          details
+          details,
         }
       }
 
@@ -469,13 +502,13 @@ export class ProjectDetector {
       if (vueVersion.startsWith('^2') || vueVersion.startsWith('2') || vueVersion.includes('2.')) {
         confidence += 20
         details.push('版本号指向 Vue 2.x')
-        
+
         return {
           type: ProjectType.VUE2,
           framework: 'Vue.js',
           version: vueVersion,
           confidence,
-          details
+          details,
         }
       }
 
@@ -485,15 +518,15 @@ export class ProjectDetector {
         framework: 'Vue.js',
         version: vueVersion,
         confidence: confidence - 10,
-        details: [...details, '无法确定具体 Vue 版本，默认为 Vue 3']
+        details: [...details, '无法确定具体 Vue 版本，默认为 Vue 3'],
       }
     }
 
     // 检测 Vue CLI 或其他 Vue 相关配置
-    const vueConfigExists = configFiles.some(f => 
-      f.name === 'vue.config.js' || f.name === 'vue.config.ts'
+    const vueConfigExists = configFiles.some(
+      f => f.name === 'vue.config.js' || f.name === 'vue.config.ts',
     )
-    
+
     if (vueConfigExists) {
       confidence += 30
       details.push('检测到 Vue 配置文件')
@@ -508,25 +541,28 @@ export class ProjectDetector {
       type: ProjectType.UNKNOWN,
       framework: '',
       confidence: 0,
-      details: []
+      details: [],
     }
   }
 
   /**
    * 检测 React 项目
    * 识别 React、Next.js 等 React 生态项目
-   * 
+   *
    * @param dependencies 依赖列表
    * @param configFiles 配置文件列表
    * @returns React 项目检测结果
    */
-  private detectReactProject(dependencies: Record<string, string>, configFiles: ConfigFile[]): {
-    type: ProjectType
-    framework: string
-    version?: string
-    confidence: number
-    details: string[]
-  } {
+  private detectReactProject(
+    dependencies: Record<string, string>,
+    configFiles: ConfigFile[],
+  ): {
+      type: ProjectType
+      framework: string
+      version?: string
+      confidence: number
+      details: string[]
+    } {
     const details: string[] = []
     let confidence = 0
 
@@ -538,7 +574,7 @@ export class ProjectDetector {
         framework: 'Next.js',
         version: dependencies.next,
         confidence: 95,
-        details
+        details,
       }
     }
 
@@ -568,7 +604,7 @@ export class ProjectDetector {
         framework: 'React',
         version: reactVersion,
         confidence,
-        details
+        details,
       }
     }
 
@@ -576,25 +612,28 @@ export class ProjectDetector {
       type: ProjectType.UNKNOWN,
       framework: '',
       confidence: 0,
-      details: []
+      details: [],
     }
   }
 
   /**
    * 检测 Angular 项目
    * 识别 Angular 项目
-   * 
+   *
    * @param dependencies 依赖列表
    * @param configFiles 配置文件列表
    * @returns Angular 项目检测结果
    */
-  private detectAngularProject(dependencies: Record<string, string>, configFiles: ConfigFile[]): {
-    type: ProjectType
-    framework: string
-    version?: string
-    confidence: number
-    details: string[]
-  } {
+  private detectAngularProject(
+    dependencies: Record<string, string>,
+    configFiles: ConfigFile[],
+  ): {
+      type: ProjectType
+      framework: string
+      version?: string
+      confidence: number
+      details: string[]
+    } {
     const details: string[] = []
     let confidence = 0
 
@@ -618,7 +657,7 @@ export class ProjectDetector {
         framework: 'Angular',
         version: angularVersion,
         confidence,
-        details
+        details,
       }
     }
 
@@ -626,25 +665,28 @@ export class ProjectDetector {
       type: ProjectType.UNKNOWN,
       framework: '',
       confidence: 0,
-      details: []
+      details: [],
     }
   }
 
   /**
    * 检测 Svelte 项目
    * 识别 Svelte/SvelteKit 项目
-   * 
+   *
    * @param dependencies 依赖列表
    * @param configFiles 配置文件列表
    * @returns Svelte 项目检测结果
    */
-  private detectSvelteProject(dependencies: Record<string, string>, configFiles: ConfigFile[]): {
-    type: ProjectType
-    framework: string
-    version?: string
-    confidence: number
-    details: string[]
-  } {
+  private detectSvelteProject(
+    dependencies: Record<string, string>,
+    configFiles: ConfigFile[],
+  ): {
+      type: ProjectType
+      framework: string
+      version?: string
+      confidence: number
+      details: string[]
+    } {
     const details: string[] = []
     let confidence = 0
 
@@ -668,7 +710,7 @@ export class ProjectDetector {
         framework: 'Svelte',
         version: svelteVersion,
         confidence,
-        details
+        details,
       }
     }
 
@@ -676,24 +718,27 @@ export class ProjectDetector {
       type: ProjectType.UNKNOWN,
       framework: '',
       confidence: 0,
-      details: []
+      details: [],
     }
   }
 
   /**
    * 检测 Node.js 项目
    * 识别纯 Node.js 后端项目
-   * 
+   *
    * @param dependencies 依赖列表
    * @param packageJson package.json 内容
    * @returns Node.js 项目检测结果
    */
-  private detectNodeProject(dependencies: Record<string, string>, packageJson: any): {
-    type: ProjectType
-    framework?: string
-    confidence: number
-    details: string[]
-  } {
+  private detectNodeProject(
+    dependencies: Record<string, string>,
+    packageJson: any,
+  ): {
+      type: ProjectType
+      framework?: string
+      confidence: number
+      details: string[]
+    } {
     const details: string[] = []
     let confidence = 0
 
@@ -706,7 +751,7 @@ export class ProjectDetector {
     // 检测 Node.js 相关依赖
     const nodeFrameworks = ['express', 'koa', 'fastify', 'nest', '@nestjs/core', 'hapi']
     const hasNodeFramework = nodeFrameworks.some(fw => fw in dependencies)
-    
+
     if (hasNodeFramework) {
       confidence += 60
       details.push('检测到 Node.js 后端框架')
@@ -728,23 +773,23 @@ export class ProjectDetector {
     return {
       type: confidence >= 50 ? ProjectType.NODEJS : ProjectType.UNKNOWN,
       confidence,
-      details
+      details,
     }
   }
 
   /**
    * 评估自定义检测规则
    * 根据用户定义的规则进行项目类型检测
-   * 
+   *
    * @param rule 检测规则
    * @param packageJson package.json 内容
    * @param configFiles 配置文件列表
    * @returns 规则评估结果
    */
   private evaluateCustomRule(
-    rule: DetectionRule, 
-    packageJson: any, 
-    configFiles: ConfigFile[]
+    rule: DetectionRule,
+    packageJson: any,
+    configFiles: ConfigFile[],
   ): { confidence: number } {
     let matchedConditions = 0
 
@@ -760,7 +805,7 @@ export class ProjectDetector {
 
   /**
    * 评估单个检测条件
-   * 
+   *
    * @param condition 检测条件
    * @param packageJson package.json 内容
    * @param configFiles 配置文件列表
@@ -769,27 +814,27 @@ export class ProjectDetector {
   private evaluateCondition(
     condition: DetectionCondition,
     packageJson: any,
-    configFiles: ConfigFile[]
+    configFiles: ConfigFile[],
   ): boolean {
     switch (condition.type) {
       case 'file':
         return configFiles.some(f => f.name === condition.target)
-      
+
       case 'dependency':
         const allDeps = {
           ...packageJson?.dependencies,
-          ...packageJson?.devDependencies
+          ...packageJson?.devDependencies,
         }
         return condition.target in allDeps
-      
+
       case 'script':
         const scripts = packageJson?.scripts || {}
         return condition.target in scripts
-      
+
       case 'content':
         // 这里可以实现文件内容检测
         return false
-      
+
       default:
         return false
     }
@@ -798,46 +843,52 @@ export class ProjectDetector {
   /**
    * 获取项目统计信息
    * 收集项目的各种统计数据
-   * 
+   *
    * @returns 项目统计信息
    */
   async getProjectStatistics(): Promise<ProjectStatistics> {
     const packageJson = this.getPackageJson()
-    
+
     // 统计文件数量
     const allFiles = glob.sync('**/*', {
       cwd: this.projectRoot,
       ignore: ['node_modules/**', 'dist/**', '.git/**'],
-      nodir: true
+      nodir: true,
     })
 
-    const codeFiles = allFiles.filter(file => {
+    const codeFiles = allFiles.filter((file) => {
       const ext = extname(file)
-      return ['.js', '.ts', '.jsx', '.tsx', '.vue', '.svelte', '.css', '.scss', '.less'].includes(ext)
+      return ['.js', '.ts', '.jsx', '.tsx', '.vue', '.svelte', '.css', '.scss', '.less'].includes(
+        ext,
+      )
     })
 
-    const testFiles = allFiles.filter(file => 
-      file.includes('.test.') || file.includes('.spec.') || file.includes('__tests__')
+    const testFiles = allFiles.filter(
+      file => file.includes('.test.') || file.includes('.spec.') || file.includes('__tests__'),
     )
 
     // 计算代码行数
     let linesOfCode = 0
-    for (const file of codeFiles.slice(0, 100)) { // 限制检查的文件数量
+    for (const file of codeFiles.slice(0, 100)) {
+      // 限制检查的文件数量
       try {
         const content = readFileSync(resolve(this.projectRoot, file), 'utf-8')
         linesOfCode += content.split('\n').length
-      } catch {
+      }
+      catch {
         // 忽略读取错误
       }
     }
 
     // 计算项目大小
     let projectSize = 0
-    for (const file of allFiles.slice(0, 1000)) { // 限制检查的文件数量
+    for (const file of allFiles.slice(0, 1000)) {
+      // 限制检查的文件数量
       try {
         const stats = statSync(resolve(this.projectRoot, file))
         projectSize += stats.size
-      } catch {
+      }
+      catch {
         // 忽略错误
       }
     }
@@ -850,29 +901,30 @@ export class ProjectDetector {
       devDependencyCount: Object.keys(packageJson?.devDependencies || {}).length,
       configFileCount: this.detectConfigFiles().length,
       testFileCount: testFiles.length,
-      projectSize
+      projectSize,
     }
   }
 
   /**
    * 分析项目依赖
    * 获取依赖的详细信息
-   * 
+   *
    * @returns 依赖信息列表
    */
   async analyzeDependencies(): Promise<DependencyInfo[]> {
     const packageJson = this.getPackageJson()
-    if (!packageJson) return []
+    if (!packageJson)
+      return []
 
     const dependencies: DependencyInfo[] = []
-    
+
     // 分析生产依赖
     for (const [name, version] of Object.entries(packageJson.dependencies || {})) {
       dependencies.push({
         name,
         version: version as string,
         type: 'dependency',
-        isFrameworkCore: this.isFrameworkCore(name)
+        isFrameworkCore: this.isFrameworkCore(name),
       })
     }
 
@@ -882,7 +934,7 @@ export class ProjectDetector {
         name,
         version: version as string,
         type: 'devDependency',
-        isFrameworkCore: this.isFrameworkCore(name)
+        isFrameworkCore: this.isFrameworkCore(name),
       })
     }
 
@@ -891,15 +943,24 @@ export class ProjectDetector {
 
   /**
    * 判断是否为框架核心依赖
-   * 
+   *
    * @param dependencyName 依赖名称
    * @returns 是否为框架核心依赖
    */
   private isFrameworkCore(dependencyName: string): boolean {
     const coreFrameworks = [
-      'vue', 'react', '@angular/core', 'svelte',
-      'next', 'nuxt', '@nuxt/kit', '@sveltejs/kit',
-      'express', 'koa', 'fastify', '@nestjs/core'
+      'vue',
+      'react',
+      '@angular/core',
+      'svelte',
+      'next',
+      'nuxt',
+      '@nuxt/kit',
+      '@sveltejs/kit',
+      'express',
+      'koa',
+      'fastify',
+      '@nestjs/core',
     ]
     return coreFrameworks.includes(dependencyName)
   }
@@ -907,28 +968,29 @@ export class ProjectDetector {
   /**
    * 检测开发服务器配置
    * 分析项目的开发服务器设置
-   * 
+   *
    * @returns 开发服务器信息
    */
   detectDevServer(): any {
     const packageJson = this.getPackageJson()
     const scripts = packageJson?.scripts || {}
-    
+
     const devCommands = ['dev', 'serve', 'start:dev', 'development']
     const devCommand = devCommands.find(cmd => cmd in scripts)
-    
-    if (!devCommand) return null
+
+    if (!devCommand)
+      return null
 
     // 尝试解析端口和配置
     const command = scripts[devCommand]
     const portMatch = command.match(/--port[=\s]+(\d+)|(?:^|\s)(\d{4,5})(?:\s|$)/)
-    const port = portMatch ? parseInt(portMatch[1] || portMatch[2]) : 3000
+    const port = portMatch ? Number.parseInt(portMatch[1] || portMatch[2]) : 3000
 
     return {
       name: devCommand,
       port,
       startCommand: command,
-      isRunning: false
+      isRunning: false,
     }
   }
 }
@@ -936,7 +998,7 @@ export class ProjectDetector {
 /**
  * 创建项目检测器实例
  * 工厂函数，用于创建项目检测器
- * 
+ *
  * @param options 分析选项
  * @returns 项目检测器实例
  */
@@ -947,7 +1009,7 @@ export function createProjectDetector(options?: ProjectAnalysisOptions): Project
 /**
  * 快速检测项目类型
  * 便捷函数，直接返回项目类型检测结果
- * 
+ *
  * @param projectPath 项目路径，默认为当前目录
  * @returns 项目检测结果
  */
