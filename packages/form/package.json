@@ -1,8 +1,9 @@
 {
-  "name": "@lemonform/form",
+  "name": "@ldesign/form",
   "version": "1.0.0",
-  "description": "一个强大、灵活、易用的动态表单库，支持Vue 3，提供完整的表单解决方案",
+  "description": "LDesign 表单插件系统 - 框架无关的表单管理库，提供完整的表单状态管理、验证、数据绑定等功能，并内置 Vue 3 适配器",
   "keywords": [
+    "ldesign",
     "form",
     "dynamic-form",
     "vue",
@@ -12,18 +13,21 @@
     "layout",
     "responsive",
     "form-builder",
-    "form-engine"
+    "form-engine",
+    "framework-agnostic",
+    "composition-api",
+    "reactive"
   ],
-  "author": "LemonForm Team",
+  "author": "LDesign Team",
   "license": "MIT",
-  "homepage": "https://github.com/lemonform/form#readme",
+  "homepage": "https://github.com/ldesign/form#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lemonform/form.git",
+    "url": "https://github.com/ldesign/form.git",
     "directory": "packages/form"
   },
   "bugs": {
-    "url": "https://github.com/lemonform/form/issues"
+    "url": "https://github.com/ldesign/form/issues"
   },
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -33,7 +37,23 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    }
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js",
+      "require": "./dist/core/index.cjs"
+    },
+    "./vue": {
+      "types": "./dist/vue/index.d.ts",
+      "import": "./dist/vue/index.js",
+      "require": "./dist/vue/index.cjs"
+    },
+    "./legacy": {
+      "types": "./dist/legacy/index.d.ts",
+      "import": "./dist/legacy/index.js",
+      "require": "./dist/legacy/index.cjs"
+    },
+    "./styles": "./dist/styles/index.css"
   },
   "files": [
     "README.md",
@@ -42,7 +62,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/build.js",
+    "build": "ldesign-builder build",
     "build:lib": "vite build",
     "build:types": "vue-tsc --declaration --emitDeclarationOnly",
     "build:watch": "vite build --watch",
@@ -57,23 +77,33 @@
     "format": "prettier --write \"src/**/*.{ts,vue,js,json,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,vue,js,json,md}\"",
     "clean": "rimraf dist",
-    "prepublishOnly": "npm run clean && npm run build",
+    "prepublishOnly": "pnpm run clean && pnpm run build",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "build:dev": "node scripts/build.js --dev"
+    "example:dev": "vite dev/",
+    "example:build": "vite build dev/",
+    "legacy:test": "vitest run __tests__/legacy"
   },
   "peerDependencies": {
     "vue": "^3.3.0"
   },
+  "dependencies": {
+    "lodash-es": "^4.17.21"
+  },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
+    "@ldesign/launcher": "workspace:*",
+    "@ldesign/shared": "workspace:*",
+    "@types/lodash-es": "^4.17.12",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vue/eslint-config-typescript": "^12.0.0",
     "@vue/test-utils": "^2.4.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
     "eslint": "^8.0.0",
     "eslint-plugin-vue": "^9.0.0",
     "jsdom": "^22.0.0",

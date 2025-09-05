@@ -7,11 +7,16 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['./test/setup.ts'],
-    include: ['src/**/*.{test,spec}.{js,ts,vue}'],
+    setupFiles: ['__tests__/setup.ts'],
+    include: [
+      '__tests__/**/*.{test,spec}.{js,ts,tsx}',
+      'src/**/*.{test,spec}.{js,ts,tsx}'
+    ],
     exclude: [
       'node_modules',
       'dist',
+      'docs',
+      '_example',
       'coverage',
       '**/*.d.ts'
     ],
@@ -20,13 +25,22 @@ export default defineConfig({
       reporter: ['text', 'json', 'html'],
       exclude: [
         'node_modules/',
-        'test/',
+        '__tests__/',
         'dist/',
+        'docs/',
+        'dev/',
+        '_example/',
         '**/*.d.ts',
-        '**/*.test.ts',
-        '**/*.spec.ts',
-        '**/index.ts'
-      ]
+        '**/*.config.*'
+      ],
+      thresholds: {
+        global: {
+          branches: 90,
+          functions: 90,
+          lines: 90,
+          statements: 90
+        }
+      }
     },
     testTimeout: 10000,
     hookTimeout: 10000
@@ -34,6 +48,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      '@/core': resolve(__dirname, 'src/core'),
+      '@/vue': resolve(__dirname, 'src/vue'),
+      '@/types': resolve(__dirname, 'src/types'),
+      '@/utils': resolve(__dirname, 'src/utils'),
+      '@/validators': resolve(__dirname, 'src/validators'),
+      '@/legacy': resolve(__dirname, 'src/legacy')
     },
   },
 })

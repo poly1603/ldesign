@@ -1,0 +1,121 @@
+/**
+ * LDesign Form 样式变量
+ * 
+ * @description
+ * 定义表单组件的样式变量，使用 LDESIGN 设计系统的 CSS 变量
+ */
+
+// === 表单容器样式变量 ===
+@form-background: var(--ldesign-bg-color-container);
+@form-border-color: var(--ldesign-border-color);
+@form-border-radius: var(--ls-border-radius-base);
+@form-padding: var(--ls-padding-base);
+@form-margin: var(--ls-margin-base);
+
+// === 表单项样式变量 ===
+@form-item-margin-bottom: var(--ls-margin-sm);
+@form-item-label-color: var(--ldesign-text-color-primary);
+@form-item-label-font-size: var(--ls-font-size-sm);
+@form-item-label-font-weight: 500;
+@form-item-label-line-height: 1.5;
+
+// === 标签样式变量 ===
+@form-label-width: 120px;
+@form-label-padding: var(--ls-padding-xs);
+@form-label-align: right;
+@form-label-required-color: var(--ldesign-error-color);
+
+// === 字段样式变量 ===
+@form-field-background: var(--ldesign-bg-color-component);
+@form-field-border-color: var(--ldesign-border-color);
+@form-field-border-color-hover: var(--ldesign-border-color-hover);
+@form-field-border-color-focus: var(--ldesign-border-color-focus);
+@form-field-border-radius: var(--ls-border-radius-sm);
+@form-field-padding: var(--ls-padding-sm);
+@form-field-font-size: var(--ls-font-size-sm);
+@form-field-line-height: 1.5;
+@form-field-height-small: var(--ls-input-height-small);
+@form-field-height-medium: var(--ls-input-height-medium);
+@form-field-height-large: var(--ls-input-height-large);
+
+// === 验证样式变量 ===
+@form-error-color: var(--ldesign-error-color);
+@form-error-background: var(--ldesign-error-color-1);
+@form-error-border-color: var(--ldesign-error-color);
+@form-success-color: var(--ldesign-success-color);
+@form-success-background: var(--ldesign-success-color-1);
+@form-success-border-color: var(--ldesign-success-color);
+@form-warning-color: var(--ldesign-warning-color);
+@form-warning-background: var(--ldesign-warning-color-1);
+@form-warning-border-color: var(--ldesign-warning-color);
+
+// === 错误消息样式变量 ===
+@form-error-message-color: var(--ldesign-error-color);
+@form-error-message-font-size: var(--ls-font-size-xs);
+@form-error-message-line-height: 1.4;
+@form-error-message-margin-top: var(--ls-margin-xs);
+
+// === 按钮样式变量 ===
+@form-button-margin: var(--ls-margin-sm);
+@form-button-padding: var(--ls-padding-sm) var(--ls-padding-base);
+@form-button-border-radius: var(--ls-border-radius-base);
+@form-button-font-size: var(--ls-font-size-sm);
+@form-button-height-small: var(--ls-button-height-small);
+@form-button-height-medium: var(--ls-button-height-medium);
+@form-button-height-large: var(--ls-button-height-large);
+
+// === 栅格样式变量 ===
+@form-grid-gutter: var(--ls-spacing-base);
+@form-grid-column-gap: var(--ls-spacing-sm);
+@form-grid-row-gap: var(--ls-spacing-sm);
+
+// === 响应式断点 ===
+@form-breakpoint-xs: 480px;
+@form-breakpoint-sm: 768px;
+@form-breakpoint-md: 992px;
+@form-breakpoint-lg: 1200px;
+@form-breakpoint-xl: 1600px;
+
+// === 动画变量 ===
+@form-transition-duration: 0.3s;
+@form-transition-timing: ease-in-out;
+@form-animation-duration: 0.3s;
+
+// === 阴影变量 ===
+@form-shadow: var(--ldesign-shadow-1);
+@form-shadow-hover: var(--ldesign-shadow-2);
+@form-shadow-focus: var(--ldesign-shadow-3);
+
+// === 禁用状态变量 ===
+@form-disabled-color: var(--ldesign-text-color-disabled);
+@form-disabled-background: var(--ldesign-bg-color-component-disabled);
+@form-disabled-border-color: var(--ldesign-border-level-1-color);
+@form-disabled-opacity: 0.6;
+
+// === 只读状态变量 ===
+@form-readonly-background: var(--ldesign-bg-color-container);
+@form-readonly-border-color: var(--ldesign-border-level-1-color);
+@form-readonly-color: var(--ldesign-text-color-secondary);
+
+// === 加载状态变量 ===
+@form-loading-color: var(--ldesign-brand-color);
+@form-loading-background: var(--ldesign-brand-color-1);
+
+// === 尺寸变量 ===
+@form-size-small: {
+  font-size: var(--ls-font-size-xs);
+  padding: var(--ls-padding-xs);
+  height: var(--ls-input-height-small);
+};
+
+@form-size-medium: {
+  font-size: var(--ls-font-size-sm);
+  padding: var(--ls-padding-sm);
+  height: var(--ls-input-height-medium);
+};
+
+@form-size-large: {
+  font-size: var(--ls-font-size-base);
+  padding: var(--ls-padding-base);
+  height: var(--ls-input-height-large);
+};

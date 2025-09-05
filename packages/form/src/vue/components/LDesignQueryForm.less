@@ -1,0 +1,312 @@
+/**
+ * LDesignQueryForm 查询表单组件样式
+ * 
+ * @description
+ * 查询表单的专用样式，包含网格布局、展开收起动画、按钮组布局等
+ */
+
+.ldesign-query-form {
+  width: 100%;
+  
+  // === 基础布局 ===
+  &__form {
+    width: 100%;
+  }
+  
+  &__grid {
+    display: grid;
+    width: 100%;
+    transition: all 0.3s ease-in-out;
+    
+    // 网格列数变体
+    &--cols-1 { grid-template-columns: 1fr; }
+    &--cols-2 { grid-template-columns: repeat(2, 1fr); }
+    &--cols-3 { grid-template-columns: repeat(3, 1fr); }
+    &--cols-4 { grid-template-columns: repeat(4, 1fr); }
+    &--cols-5 { grid-template-columns: repeat(5, 1fr); }
+    &--cols-6 { grid-template-columns: repeat(6, 1fr); }
+  }
+  
+  // === 字段项样式 ===
+  &__field {
+    display: flex;
+    flex-direction: column;
+    min-width: 0; // 防止内容溢出
+    transition: all 0.3s ease-in-out;
+    
+    // 隐藏状态（收起时）
+    &--hidden {
+      opacity: 0;
+      height: 0;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+  }
+  
+  // === 按钮组样式 ===
+  &__actions {
+    display: flex;
+    align-items: flex-start;
+    min-height: var(--ls-input-height-medium);
+    
+    // 按钮组内容容器
+    &-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      gap: var(--ls-spacing-sm);
+    }
+    
+    // 主要操作按钮
+    &__primary-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--ls-spacing-sm);
+      flex-shrink: 0;
+    }
+    
+    // 展开/收起按钮
+    &__collapse-actions {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    
+    // 按钮组对齐方式
+    &--left .ldesign-query-form__actions-content {
+      justify-content: flex-start;
+    }
+    
+    &--center .ldesign-query-form__actions-content {
+      justify-content: center;
+    }
+    
+    &--right .ldesign-query-form__actions-content {
+      justify-content: flex-end;
+    }
+    
+    // 独占一行的按钮组
+    &--full-row {
+      grid-column: 1 / -1;
+      
+      .ldesign-query-form__actions-content {
+        justify-content: flex-start;
+        
+        .ldesign-query-form__collapse-actions {
+          margin-left: auto;
+        }
+      }
+    }
+  }
+  
+  // === 展开/收起图标 ===
+  &__collapse-icon {
+    margin-left: var(--ls-spacing-xs);
+    transition: transform 0.3s ease-in-out;
+    
+    &.is-expanded {
+      transform: rotate(180deg);
+    }
+  }
+  
+  // === 状态变体 ===
+  &--collapsed {
+    .ldesign-query-form__field--hidden {
+      display: none;
+    }
+  }
+  
+  &--expanded {
+    .ldesign-query-form__field--hidden {
+      display: flex;
+      opacity: 1;
+      height: auto;
+    }
+  }
+  
+  &--disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  
+  &--readonly {
+    .ldesign-query-form__actions {
+      .ldesign-btn:not(.ldesign-btn--text) {
+        display: none;
+      }
+    }
+  }
+  
+  // === 尺寸变体 ===
+  &--small {
+    .ldesign-query-form__grid {
+      gap: var(--ls-spacing-xs);
+    }
+    
+    .ldesign-query-form__actions-content {
+      gap: var(--ls-spacing-xs);
+    }
+  }
+  
+  &--medium {
+    .ldesign-query-form__grid {
+      gap: var(--ls-spacing-sm);
+    }
+    
+    .ldesign-query-form__actions-content {
+      gap: var(--ls-spacing-sm);
+    }
+  }
+  
+  &--large {
+    .ldesign-query-form__grid {
+      gap: var(--ls-spacing-base);
+    }
+    
+    .ldesign-query-form__actions-content {
+      gap: var(--ls-spacing-base);
+    }
+  }
+  
+  // === 布局变体 ===
+  &--horizontal {
+    .ldesign-form-item {
+      .ldesign-form-item__label {
+        text-align: right;
+        padding-right: var(--ls-spacing-sm);
+      }
+    }
+  }
+  
+  &--vertical {
+    .ldesign-form-item {
+      .ldesign-form-item__label {
+        margin-bottom: var(--ls-spacing-xs);
+      }
+    }
+  }
+  
+  &--inline {
+    .ldesign-query-form__grid {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+    
+    .ldesign-query-form__field {
+      flex: 0 0 auto;
+      margin-right: var(--ls-spacing-base);
+      margin-bottom: var(--ls-spacing-sm);
+    }
+    
+    .ldesign-query-form__actions {
+      flex: 0 0 auto;
+      margin-bottom: var(--ls-spacing-sm);
+    }
+  }
+}
+
+// === 响应式设计 ===
+@media (max-width: 1200px) {
+  .ldesign-query-form {
+    &__grid--cols-6 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    
+    &__grid--cols-5 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}
+
+@media (max-width: 992px) {
+  .ldesign-query-form {
+    &__grid--cols-6,
+    &__grid--cols-5,
+    &__grid--cols-4 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .ldesign-query-form {
+    &__grid--cols-6,
+    &__grid--cols-5,
+    &__grid--cols-4,
+    &__grid--cols-3 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    &__actions--full-row .ldesign-query-form__actions-content {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--ls-spacing-sm);
+      
+      .ldesign-query-form__primary-actions {
+        justify-content: center;
+      }
+      
+      .ldesign-query-form__collapse-actions {
+        margin-left: 0;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .ldesign-query-form {
+    &__grid {
+      grid-template-columns: 1fr !important;
+    }
+    
+    &--inline {
+      .ldesign-query-form__grid {
+        display: block;
+      }
+      
+      .ldesign-query-form__field {
+        margin-right: 0;
+        margin-bottom: var(--ls-spacing-base);
+      }
+    }
+  }
+}
+
+// === 动画效果 ===
+@keyframes ldesign-query-form-expand {
+  from {
+    opacity: 0;
+    height: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    height: auto;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ldesign-query-form-collapse {
+  from {
+    opacity: 1;
+    height: auto;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    height: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.ldesign-query-form--expanded .ldesign-query-form__field--hidden {
+  animation: ldesign-query-form-expand 0.3s ease-in-out;
+}
+
+.ldesign-query-form--collapsed .ldesign-query-form__field--hidden {
+  animation: ldesign-query-form-collapse 0.3s ease-in-out;
+}

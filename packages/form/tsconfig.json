@@ -8,12 +8,26 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@/core/*": ["src/core/*"],
+      "@/vue/*": ["src/vue/*"],
+      "@/types/*": ["src/types/*"],
+      "@/utils/*": ["src/utils/*"],
+      "@/validators/*": ["src/validators/*"],
+      "@/legacy/*": ["src/legacy/*"]
     },
     "resolveJsonModule": true,
     "types": ["node"],
     "allowJs": false,
     "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
     "declaration": true,
     "declarationMap": true,
     "noEmit": true,
@@ -24,6 +38,21 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.d.ts", "__tests__/**/*", "tests/**/*"],
-  "exclude": ["node_modules", "dist", "examples"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "src/**/*.d.ts",
+    "_example/**/*.ts",
+    "_example/**/*.vue",
+    "dev/**/*.ts",
+    "dev/**/*.vue",
+    "__tests__/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "docs/.vitepress/cache",
+    "examples"
+  ]
 }

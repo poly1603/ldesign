@@ -1,0 +1,31 @@
+{
+  "name": "@ldesign/form-vanilla-html-example",
+  "version": "1.0.0",
+  "description": "LDesign Form 原生 HTML 示例项目",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server . -p 3002 -o",
+    "start": "npm run dev",
+    "build": "echo 'No build step needed for vanilla HTML'",
+    "preview": "npx http-server . -p 4173 -o"
+  },
+  "keywords": [
+    "ldesign",
+    "form",
+    "vanilla",
+    "html",
+    "javascript",
+    "example"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "dependencies": {
+    "@ldesign/form": "workspace:*"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

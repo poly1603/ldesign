@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>动态字段示例 - LDesign Form</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* 动态字段特定样式 */
+    .form-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--ldesign-bg-color-component);
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-lg);
+      padding: var(--ls-spacing-xl);
+      box-shadow: var(--ldesign-shadow-1);
+    }
+
+    .form-section {
+      margin-bottom: var(--ls-spacing-xl);
+      padding: var(--ls-spacing-lg);
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-base);
+      background: var(--ldesign-bg-color-page);
+    }
+
+    .section-title {
+      font-size: var(--ls-font-size-lg);
+      font-weight: 600;
+      color: var(--ldesign-text-color-primary);
+      margin-bottom: var(--ls-spacing-base);
+      display: flex;
+      align-items: center;
+      gap: var(--ls-spacing-sm);
+    }
+
+    .section-icon {
+      font-size: 24px;
+    }
+
+    .dynamic-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--ls-spacing-base);
+    }
+
+    .dynamic-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--ls-spacing-sm);
+      padding: var(--ls-spacing-base);
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-base);
+      background: var(--ldesign-bg-color-component);
+    }
+
+    .dynamic-item-content {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--ls-spacing-sm);
+    }
+
+    .dynamic-item-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--ls-spacing-xs);
+    }
+
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-base);
+      background: var(--ldesign-bg-color-component);
+      color: var(--ldesign-text-color-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-icon:hover {
+      background: var(--ldesign-bg-color-container);
+      border-color: var(--ldesign-border-color-hover);
+    }
+
+    .btn-icon.danger {
+      color: var(--ldesign-error-color);
+      border-color: var(--ldesign-error-color);
+    }
+
+    .btn-icon.danger:hover {
+      background: var(--ldesign-error-color);
+      color: white;
+    }
+
+    .btn-add {
+      background: var(--ldesign-brand-color-6);
+      color: white;
+      border: none;
+      padding: var(--ls-spacing-sm) var(--ls-spacing-base);
+      border-radius: var(--ls-border-radius-base);
+      font-size: var(--ls-font-size-base);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: var(--ls-spacing-xs);
+    }
+
+    .btn-add:hover {
+      background: var(--ldesign-brand-color-7);
+    }
+
+    .form-field {
+      margin-bottom: var(--ls-spacing-sm);
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 500;
+      color: var(--ldesign-text-color-primary);
+      margin-bottom: var(--ls-spacing-xs);
+      font-size: var(--ls-font-size-sm);
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: var(--ls-spacing-xs) var(--ls-spacing-sm);
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-base);
+      font-size: var(--ls-font-size-sm);
+      transition: border-color 0.3s ease;
+    }
+
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--ldesign-border-color-focus);
+      box-shadow: 0 0 0 2px var(--ldesign-brand-color-2);
+    }
+
+    .form-error {
+      color: var(--ldesign-error-color);
+      font-size: var(--ls-font-size-xs);
+      margin-top: var(--ls-spacing-xs);
+      display: none;
+    }
+
+    .form-error.show {
+      display: block;
+    }
+
+    .data-preview {
+      background: var(--ldesign-bg-color-container);
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-base);
+      padding: var(--ls-spacing-base);
+      margin-top: var(--ls-spacing-lg);
+    }
+
+    .data-preview h3 {
+      margin-bottom: var(--ls-spacing-sm);
+      color: var(--ldesign-text-color-primary);
+    }
+
+    .data-preview pre {
+      background: var(--ldesign-bg-color-component);
+      border-radius: var(--ls-border-radius-sm);
+      padding: var(--ls-spacing-sm);
+      overflow-x: auto;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: var(--ls-font-size-xs);
+      line-height: 1.4;
+      color: var(--ldesign-text-color-primary);
+    }
+
+    .back-link {
+      display: inline-block;
+      color: var(--ldesign-brand-color-6);
+      text-decoration: none;
+      margin-bottom: var(--ls-spacing-lg);
+      font-weight: 500;
+    }
+
+    .back-link:hover {
+      color: var(--ldesign-brand-color-7);
+      text-decoration: underline;
+    }
+
+    .back-link::before {
+      content: '← ';
+    }
+
+    @media (max-width: 768px) {
+      .dynamic-item-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .dynamic-item {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .dynamic-item-actions {
+        flex-direction: row;
+        justify-content: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 返回链接 -->
+    <a href="index.html" class="back-link">返回首页</a>
+
+    <!-- 页面头部 -->
+    <header class="header">
+      <h1>动态字段示例</h1>
+      <p class="description">
+        展示如何动态添加、删除字段和管理数组字段
+      </p>
+    </header>
+
+    <!-- 表单容器 -->
+    <div class="form-container">
+      <form id="dynamicForm">
+        <!-- 基础信息 -->
+        <div class="form-section">
+          <div class="section-title">
+            <span class="section-icon">👤</span>
+            基础信息
+          </div>
+          
+          <div class="form-field">
+            <label for="name" class="form-label">姓名 *</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              class="form-input"
+              placeholder="请输入姓名"
+            />
+            <div class="form-error" id="name-error"></div>
+          </div>
+        </div>
+
+        <!-- 联系方式（动态数组） -->
+        <div class="form-section">
+          <div class="section-title">
+            <span class="section-icon">📞</span>
+            联系方式
+          </div>
+          
+          <div class="dynamic-list" id="contacts-list">
+            <!-- 动态联系方式项将在这里生成 -->
+          </div>
+          
+          <button type="button" class="btn-add" id="add-contact">
+            <span>+</span>
+            添加联系方式
+          </button>
+        </div>
+
+        <!-- 技能列表（动态数组） -->
+        <div class="form-section">
+          <div class="section-title">
+            <span class="section-icon">🎯</span>
+            技能列表
+          </div>
+          
+          <div class="dynamic-list" id="skills-list">
+            <!-- 动态技能项将在这里生成 -->
+          </div>
+          
+          <button type="button" class="btn-add" id="add-skill">
+            <span>+</span>
+            添加技能
+          </button>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            提交表单
+          </button>
+          <button type="button" class="btn btn-secondary" id="resetBtn">
+            重置表单
+          </button>
+        </div>
+      </form>
+
+      <!-- 数据预览 -->
+      <div class="data-preview">
+        <h3>实时数据预览</h3>
+        <pre id="data-preview"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/dynamic-fields.js"></script>
+</body>
+</html>

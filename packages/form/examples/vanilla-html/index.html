@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign Form - 原生 HTML 示例</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- 页面头部 -->
+    <header class="header">
+      <h1>LDesign Form</h1>
+      <p class="subtitle">原生 HTML 示例项目</p>
+      <p class="description">
+        展示如何在原生 HTML 和 JavaScript 环境中使用 LDesign Form 的核心 API
+      </p>
+    </header>
+
+    <!-- 示例导航 -->
+    <nav class="examples-nav">
+      <h2>示例列表</h2>
+      <div class="examples-grid">
+        <!-- 基础表单示例 -->
+        <div class="example-card">
+          <div class="example-icon">📝</div>
+          <h3>基础表单</h3>
+          <p>展示表单创建、字段注册和基础验证功能</p>
+          <div class="example-features">
+            <span class="feature-tag">表单创建</span>
+            <span class="feature-tag">字段管理</span>
+            <span class="feature-tag">基础验证</span>
+          </div>
+          <a href="basic-form.html" class="example-link">查看示例</a>
+        </div>
+
+        <!-- 查询表单示例 -->
+        <div class="example-card">
+          <div class="example-icon">🔍</div>
+          <h3>查询表单</h3>
+          <p>专门用于查询场景的表单组件，支持展开/收起、智能按钮布局和响应式设计</p>
+          <div class="example-features">
+            <span class="feature-tag">展开收起</span>
+            <span class="feature-tag">智能布局</span>
+            <span class="feature-tag">响应式</span>
+            <span class="feature-tag">查询优化</span>
+          </div>
+          <a href="query-form.html" class="example-link">查看示例</a>
+        </div>
+
+        <!-- 动态字段示例 -->
+        <div class="example-card">
+          <div class="example-icon">🔄</div>
+          <h3>动态字段</h3>
+          <p>展示如何动态添加、删除字段和数组字段管理</p>
+          <div class="example-features">
+            <span class="feature-tag">动态添加</span>
+            <span class="feature-tag">动态删除</span>
+            <span class="feature-tag">数组字段</span>
+          </div>
+          <a href="dynamic-fields.html" class="example-link">查看示例</a>
+        </div>
+
+        <!-- 验证示例 -->
+        <div class="example-card">
+          <div class="example-icon">✅</div>
+          <h3>验证功能</h3>
+          <p>展示内置验证器、自定义验证器和异步验证</p>
+          <div class="example-features">
+            <span class="feature-tag">内置验证器</span>
+            <span class="feature-tag">自定义验证</span>
+            <span class="feature-tag">异步验证</span>
+          </div>
+          <a href="validation.html" class="example-link">查看示例</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 快速开始 -->
+    <section class="quick-start">
+      <h2>快速开始</h2>
+      <div class="code-example">
+        <h3>1. 创建表单实例</h3>
+        <pre><code>import { createForm } from '@ldesign/form';
+
+const form = createForm({
+  initialValues: {
+    name: '',
+    email: ''
+  }
+});</code></pre>
+      </div>
+
+      <div class="code-example">
+        <h3>2. 注册字段</h3>
+        <pre><code>const nameField = form.registerField({
+  name: 'name',
+  rules: [
+    { required: true, message: '姓名是必填项' }
+  ]
+});</code></pre>
+      </div>
+
+      <div class="code-example">
+        <h3>3. 处理表单提交</h3>
+        <pre><code>form.onSubmit((event) => {
+  if (event.valid) {
+    console.log('表单数据:', event.data);
+  } else {
+    console.log('验证失败:', event.errors);
+  }
+});</code></pre>
+      </div>
+    </section>
+
+    <!-- 特性介绍 -->
+    <section class="features">
+      <h2>核心特性</h2>
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon">🎯</div>
+          <h3>框架无关</h3>
+          <p>核心 API 不依赖任何框架，可在任何 JavaScript 环境中使用</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔧</div>
+          <h3>灵活配置</h3>
+          <p>支持丰富的配置选项，满足各种表单需求</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">✨</div>
+          <h3>强大验证</h3>
+          <p>内置常用验证器，支持自定义验证规则和异步验证</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📊</div>
+          <h3>状态管理</h3>
+          <p>完整的表单和字段状态跟踪，实时反馈用户操作</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 页面底部 -->
+    <footer class="footer">
+      <p>&copy; 2024 LDesign Team. All rights reserved.</p>
+      <p>
+        <a href="https://github.com/ldesign/form" target="_blank">GitHub</a> |
+        <a href="https://ldesign.dev/form" target="_blank">文档</a> |
+        <a href="https://ldesign.dev" target="_blank">官网</a>
+      </p>
+    </footer>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>基础表单示例 - LDesign Form</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* 表单特定样式 */
+    .form-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: var(--ldesign-bg-color-component);
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-lg);
+      padding: var(--ls-spacing-xl);
+      box-shadow: var(--ldesign-shadow-1);
+    }
+
+    .form-field {
+      margin-bottom: var(--ls-spacing-lg);
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 500;
+      color: var(--ldesign-text-color-primary);
+      margin-bottom: var(--ls-spacing-xs);
+      font-size: var(--ls-font-size-base);
+    }
+
+    .form-label.required::after {
+      content: ' *';
+      color: var(--ldesign-error-color);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: var(--ls-spacing-sm);
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-base);
+      font-size: var(--ls-font-size-base);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--ldesign-border-color-focus);
+      box-shadow: 0 0 0 2px var(--ldesign-brand-color-2);
+    }
+
+    .form-input.error {
+      border-color: var(--ldesign-error-color);
+    }
+
+    .form-input.error:focus {
+      box-shadow: 0 0 0 2px rgba(229, 72, 72, 0.2);
+    }
+
+    .form-error {
+      color: var(--ldesign-error-color);
+      font-size: var(--ls-font-size-sm);
+      margin-top: var(--ls-spacing-xs);
+      display: none;
+    }
+
+    .form-error.show {
+      display: block;
+    }
+
+    .form-help {
+      color: var(--ldesign-text-color-secondary);
+      font-size: var(--ls-font-size-sm);
+      margin-top: var(--ls-spacing-xs);
+    }
+
+    .form-actions {
+      display: flex;
+      gap: var(--ls-spacing-sm);
+      margin-top: var(--ls-spacing-xl);
+    }
+
+    .btn {
+      padding: var(--ls-spacing-sm) var(--ls-spacing-lg);
+      border: 1px solid transparent;
+      border-radius: var(--ls-border-radius-base);
+      font-size: var(--ls-font-size-base);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: var(--ldesign-brand-color-6);
+      color: white;
+      border-color: var(--ldesign-brand-color-6);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--ldesign-brand-color-7);
+      border-color: var(--ldesign-brand-color-7);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: var(--ldesign-bg-color-component);
+      color: var(--ldesign-text-color-primary);
+      border-color: var(--ldesign-border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--ldesign-bg-color-container);
+      border-color: var(--ldesign-border-color-hover);
+    }
+
+    .form-status {
+      background: var(--ldesign-bg-color-container);
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-base);
+      padding: var(--ls-spacing-base);
+      margin-top: var(--ls-spacing-lg);
+    }
+
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--ls-spacing-xs);
+    }
+
+    .status-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .status-label {
+      font-weight: 500;
+      color: var(--ldesign-text-color-primary);
+    }
+
+    .status-value {
+      font-size: var(--ls-font-size-sm);
+      padding: 2px var(--ls-spacing-xs);
+      border-radius: var(--ls-border-radius-sm);
+    }
+
+    .status-value.valid {
+      background: var(--ldesign-success-color);
+      color: white;
+    }
+
+    .status-value.invalid {
+      background: var(--ldesign-error-color);
+      color: white;
+    }
+
+    .status-value.dirty {
+      background: var(--ldesign-warning-color);
+      color: white;
+    }
+
+    .status-value.pristine {
+      background: var(--ldesign-gray-color-3);
+      color: var(--ldesign-text-color-primary);
+    }
+
+    .back-link {
+      display: inline-block;
+      color: var(--ldesign-brand-color-6);
+      text-decoration: none;
+      margin-bottom: var(--ls-spacing-lg);
+      font-weight: 500;
+    }
+
+    .back-link:hover {
+      color: var(--ldesign-brand-color-7);
+      text-decoration: underline;
+    }
+
+    .back-link::before {
+      content: '← ';
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 返回链接 -->
+    <a href="index.html" class="back-link">返回首页</a>
+
+    <!-- 页面头部 -->
+    <header class="header">
+      <h1>基础表单示例</h1>
+      <p class="description">
+        展示如何使用 LDesign Form 的核心 API 创建和管理表单
+      </p>
+    </header>
+
+    <!-- 表单容器 -->
+    <div class="form-container">
+      <form id="basicForm">
+        <!-- 姓名字段 -->
+        <div class="form-field">
+          <label for="name" class="form-label required">姓名</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            class="form-input"
+            placeholder="请输入您的姓名"
+          />
+          <div class="form-error" id="name-error"></div>
+          <div class="form-help">请输入您的真实姓名</div>
+        </div>
+
+        <!-- 邮箱字段 -->
+        <div class="form-field">
+          <label for="email" class="form-label required">邮箱</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-input"
+            placeholder="请输入您的邮箱地址"
+          />
+          <div class="form-error" id="email-error"></div>
+          <div class="form-help">我们将使用此邮箱与您联系</div>
+        </div>
+
+        <!-- 年龄字段 -->
+        <div class="form-field">
+          <label for="age" class="form-label">年龄</label>
+          <input
+            type="number"
+            id="age"
+            name="age"
+            class="form-input"
+            placeholder="请输入您的年龄"
+            min="0"
+            max="120"
+          />
+          <div class="form-error" id="age-error"></div>
+          <div class="form-help">年龄为可选项</div>
+        </div>
+
+        <!-- 个人简介字段 -->
+        <div class="form-field">
+          <label for="bio" class="form-label">个人简介</label>
+          <textarea
+            id="bio"
+            name="bio"
+            class="form-input"
+            placeholder="请简单介绍一下自己"
+            rows="4"
+          ></textarea>
+          <div class="form-error" id="bio-error"></div>
+          <div class="form-help">最多500个字符</div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            提交表单
+          </button>
+          <button type="button" class="btn btn-secondary" id="resetBtn">
+            重置表单
+          </button>
+          <button type="button" class="btn btn-secondary" id="validateBtn">
+            验证表单
+          </button>
+        </div>
+      </form>
+
+      <!-- 表单状态显示 -->
+      <div class="form-status">
+        <h3>表单状态</h3>
+        <div class="status-item">
+          <span class="status-label">表单有效性:</span>
+          <span class="status-value" id="form-valid">未知</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">表单状态:</span>
+          <span class="status-value" id="form-dirty">未知</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">提交状态:</span>
+          <span class="status-value" id="form-submitted">未提交</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/basic-form.js"></script>
+</body>
+</html>
