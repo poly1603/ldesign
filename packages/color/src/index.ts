@@ -238,16 +238,20 @@ export {
 
 export type { IdleProcessorOptions } from './utils/idle-processor'
 
-// 导出 Vue 集成
+// 导出 Vue 集成（仅导出 composables，不导出 Vue 组件）
 export {
-  ColorPicker,
   createColorEnginePlugin,
   createColorPlugin,
-  DarkModeToggle,
-  ModeToggle,
-  ThemeSelector,
   useTheme,
 } from './vue'
+
+// Vue 组件需要单独构建，暂时注释掉
+// export {
+//   ColorPicker,
+//   DarkModeToggle,
+//   ModeToggle,
+//   ThemeSelector,
+// } from './vue'
 
 // 便捷的创建函数
 export function createThemeManager(
