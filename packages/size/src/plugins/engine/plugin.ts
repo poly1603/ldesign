@@ -29,8 +29,11 @@ async function createSizeManagerInstance(
 
   // 初始化尺寸管理器
   await sizeManager.init()
-  
-  console.log('[Size Plugin] Size manager created and initialized')
+
+  // 只在开发模式下输出日志
+  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+    console.info('[Size Plugin] Size manager created and initialized')
+  }
   return sizeManager
 }
 
@@ -70,7 +73,10 @@ export function createSizeEnginePlugin(
     ...sizeManagerOptions
   } = options
 
-  console.log('[Size Plugin] createSizeEnginePlugin called with options:', options)
+  // 只在开发模式下输出日志
+  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+    console.info('[Size Plugin] createSizeEnginePlugin called with options:', options)
+  }
 
   return {
     name,
@@ -127,7 +133,7 @@ export function createSizeEnginePlugin(
           const sizeAdapter: SizeAdapter = {
             install: (engine: any) => {
               console.log('[Size Plugin] sizeAdapter.install called')
-              
+
               // 安装 Vue 插件
               const vueApp = engine.getApp()
               if (vueApp) {
@@ -160,23 +166,32 @@ export function createSizeEnginePlugin(
             },
           }
 
-          console.log('[Size Plugin] sizeAdapter created:', {
-            'adapter': !!sizeAdapter,
-            'adapter.install': typeof sizeAdapter.install,
-          })
+          // 只在开发模式下输出调试日志
+          if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+            console.info('[Size Plugin] sizeAdapter created:', {
+              'adapter': !!sizeAdapter,
+              'adapter.install': typeof sizeAdapter.install,
+            })
+          }
 
           // 设置到引擎
           engine.size = sizeAdapter
-          console.log('[Size Plugin] sizeAdapter set to engine.size:', {
-            'adapter': !!sizeAdapter,
-            'adapter.install': typeof sizeAdapter.install,
-            'engine.size': !!engine.size,
-            'engine.size.install': typeof engine.size?.install
-          })
+
+          // 只在开发模式下输出调试日志
+          if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+            console.info('[Size Plugin] sizeAdapter set to engine.size:', {
+              'adapter': !!sizeAdapter,
+              'adapter.install': typeof sizeAdapter.install,
+              'engine.size': !!engine.size,
+              'engine.size.install': typeof engine.size?.install
+            })
+          }
 
           // 手动调用adapter.install，因为Engine的install方法已经执行过了
           if (typeof sizeAdapter.install === 'function') {
-            console.log('[Size Plugin] Manually calling adapter.install')
+            if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+              console.info('[Size Plugin] Manually calling adapter.install')
+            }
             sizeAdapter.install(engine)
           }
 
@@ -199,7 +214,12 @@ export function createSizeEnginePlugin(
 
         engine.logger.info(`${name} plugin registered, waiting for Vue app creation...`)
       } catch (error) {
-        console.error(`[Size Plugin] Installation failed:`, error)
+        // 使用engine.logger记录错误，如果不可用则使用console.error
+        if (context.engine?.logger) {
+          context.engine.logger.error(`[Size Plugin] Installation failed:`, error)
+        } else {
+          console.error(`[Size Plugin] Installation failed:`, error)
+        }
         throw error
       }
     },
