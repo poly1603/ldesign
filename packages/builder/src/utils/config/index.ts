@@ -3,6 +3,3 @@
  */
 
 export * from './config-loader'
-export * from './config-merger'
-export * from './config-validator'
-export * from './config-transformer'

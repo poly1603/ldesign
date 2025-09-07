@@ -1,0 +1,39 @@
+{
+  "timestamp": "2025-09-07T11:20:55.648Z",
+  "results": {
+    "rollup": {
+      "buildTime": 5865.666366666667,
+      "files": {
+        "index.js": 478772,
+        "index.cjs": 487478
+      },
+      "totalSize": 966250,
+      "runs": 3,
+      "allTimes": [
+        5769.7559,
+        6070.624800000001,
+        5756.618399999999
+      ]
+    },
+    "rolldown": {
+      "buildTime": 1116.2466666666671,
+      "files": {
+        "index.js": 391809,
+        "index.cjs": 397388
+      },
+      "totalSize": 789197,
+      "runs": 3,
+      "allTimes": [
+        1195.0368999999992,
+        1121.2940000000017,
+        1032.4091000000008
+      ]
+    }
+  },
+  "summary": {
+    "rollupScore": 0,
+    "rolldownScore": 2,
+    "buildTimeDiff": -4749.4197,
+    "sizeDiff": -177053
+  }
+}

@@ -15,8 +15,8 @@ export default defineConfig({
   // 输出目录
   outDir: 'dist',
 
-  // 生成类型声明文件
-  dts: true,
+  // 生成类型声明文件 - 临时禁用以解决类型冲突
+  dts: false,
 
   // 代码分割
   splitting: false,

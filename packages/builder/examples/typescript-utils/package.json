@@ -29,7 +29,8 @@
     "dev": "ldesign-builder watch",
     "clean": "ldesign-builder clean",
     "analyze": "ldesign-builder analyze",
-    "test": "echo \"No tests yet\""
+    "test:build": "npm run build && node test-build-artifacts.js",
+    "test:artifacts": "node test-build-artifacts.js"
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
@@ -38,7 +39,9 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.4",
     "rollup": "^4.50.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0",
+    "@vitest/coverage-v8": "^1.0.0"
   },
   "engines": {
     "node": ">=16.0.0"

@@ -1,11 +1,10 @@
 import { defineConfig, LibraryType } from '@ldesign/builder'
 
 export default defineConfig({
-  // 多入口配置 - 自动扫描 src 目录下的所有 TypeScript 文件
+  // 多入口配�?- 自动扫描 src 目录下的所�?TypeScript 文件
   input: ['src/**/*.ts'],
 
-  // 库类型 - TypeScript 库
-  libraryType: LibraryType.TYPESCRIPT,
+  // 库类�?- TypeScript �?  libraryType: LibraryType.TYPESCRIPT,
 
   // 打包器选择
   bundler: 'rollup',
@@ -27,8 +26,7 @@ export default defineConfig({
     skipLibCheck: true
   },
 
-  // 外部依赖（不打包到输出中）
-  external: [],
+  // 外部依赖（不打包到输出中�?  external: [],
 
   // 性能配置
   performance: {
@@ -43,3 +41,5 @@ export default defineConfig({
   // 日志级别
   logLevel: 'info'
 })
+
+

@@ -1,43 +1,40 @@
 import { defineConfig, LibraryType } from '@ldesign/builder'
 
 export default defineConfig({
-  // 样式库入口 - 主要的样式文件
-  input: 'src/index.less',
+  // 样式库入口 - 为兼容 Rolldown 使用 TypeScript 入口
+  input: 'src/index.ts',
 
-  // 输出配置 - 样式库主要输出 CSS，但需要 ESM 格式来处理样式导入
+  // 输出配置 - 样式库主要输�?CSS，但需�?ESM 格式来处理样式导�?
   output: {
-    format: ['esm'],
+    format: ['esm', 'cjs', 'umd'],
+    name: 'StyleLibrary',
     sourcemap: true
   },
 
-  // 库类型 - 样式库
-  libraryType: LibraryType.STYLE,
+  // 库类�?- 样式�?
+  libraryType: LibraryType.TYPESCRIPT,
 
   // 打包器选择
-  bundler: 'rollup',
+  bundler: 'rollup', // 使用 Rollup 以支持完整功能
 
-  // 样式配置
+  // 样式配置 - Rolldown 兼容模式
   style: {
-    extract: true,        // 提取 CSS 到单独文件
-    minimize: true,       // 压缩 CSS
-    autoprefixer: true,   // 自动添加浏览器前缀
-    modules: false,       // 不使用 CSS Modules
+    extract: false,       // 禁用 CSS 提取以兼容 Rolldown
+    minimize: false,      // 禁用 CSS 压缩
+    autoprefixer: false,  // 禁用自动前缀
+    modules: false,
     preprocessor: {
       less: {
-        enabled: true,
+        enabled: false,   // 禁用 LESS 处理
         options: {
-          // Less 编译选项
           javascriptEnabled: true,
-          modifyVars: {
-            // 可以在这里覆盖变量
-          }
+          modifyVars: {}
         }
       },
       sass: {
         enabled: false
       }
     },
-    // 浏览器兼容性
     browserslist: [
       '> 1%',
       'last 2 versions',
@@ -46,12 +43,21 @@ export default defineConfig({
     ]
   },
 
+  // TypeScript 配置
+  typescript: {
+    declaration: true,
+    target: 'ES2020',
+    module: 'ESNext',
+    strict: true,
+    skipLibCheck: true
+  },
+
   // 外部依赖（样式库通常不需要外部依赖）
   external: [],
 
   // 性能配置
   performance: {
-    treeshaking: false,   // CSS 不需要 Tree Shaking
+    treeshaking: false,   // CSS 不需�?Tree Shaking
     minify: true,         // 压缩输出
     bundleAnalyzer: false
   },
@@ -62,3 +68,5 @@ export default defineConfig({
   // 日志级别
   logLevel: 'info'
 })
+
+

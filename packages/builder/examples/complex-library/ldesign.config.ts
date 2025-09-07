@@ -1,10 +1,8 @@
 import { defineConfig, LibraryType } from '@ldesign/builder'
 
 export default defineConfig({
-  // 单入口配置
-  input: 'src/index.ts',
-  // 库类型 - TypeScript 库
-  libraryType: LibraryType.TYPESCRIPT,
+  // 单入口配�?  input: 'src/index.ts',
+  // 库类�?- TypeScript �?  libraryType: LibraryType.TYPESCRIPT,
 
   // 打包器选择
   bundler: 'rollup',
@@ -25,8 +23,7 @@ export default defineConfig({
     skipLibCheck: true
   },
 
-  // 外部依赖（不打包到输出中）
-  external: ['reflect-metadata'],
+  // 外部依赖（不打包到输出中�?  external: ['reflect-metadata'],
 
   // 性能配置
   performance: {
@@ -41,3 +38,5 @@ export default defineConfig({
   // 日志级别
   logLevel: 'info'
 })
+
+

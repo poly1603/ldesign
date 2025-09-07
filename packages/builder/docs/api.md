@@ -29,6 +29,7 @@ interface BuildResult {
   duration: number        // 构建耗时（毫秒）
   errors?: BuildError[]   // 错误信息
   warnings?: BuildError[] // 警告信息
+  validation?: ValidationResult // 打包后验证结果（如果启用）
 }
 ```
 
@@ -511,4 +512,114 @@ logger.success('构建成功')
 const timer = createTimer('构建时间')
 // ... 执行操作
 timer.end() // 输出耗时
+```
+
+## 打包后验证 API
+
+### PostBuildValidator
+
+打包后验证器类，用于验证构建产物的正确性。
+
+```typescript
+import { PostBuildValidator } from '@ldesign/builder'
+
+const validator = new PostBuildValidator({
+  enabled: true,
+  testFramework: 'vitest',
+  testPattern: ['**/*.test.ts'],
+  timeout: 60000,
+  failOnError: true
+})
+
+// 执行验证
+const result = await validator.validate(context)
+
+// 验证结果
+interface ValidationResult {
+  success: boolean              // 验证是否成功
+  duration: number             // 验证耗时
+  testResult: TestRunResult    // 测试运行结果
+  report: ValidationReport     // 验证报告
+  errors: ValidationError[]    // 错误信息
+  warnings: ValidationWarning[] // 警告信息
+  stats: ValidationStats       // 验证统计
+  timestamp: number            // 验证时间戳
+  validationId: string         // 验证ID
+}
+```
+
+### TestRunner
+
+测试运行器，负责执行测试用例。
+
+```typescript
+import { TestRunner } from '@ldesign/builder'
+
+const testRunner = new TestRunner()
+
+// 检测测试框架
+const framework = await testRunner.detectFramework('/project/path')
+
+// 运行测试
+const result = await testRunner.runTests(context)
+
+// 安装依赖
+await testRunner.installDependencies(context)
+```
+
+### ValidationReporter
+
+验证报告生成器，支持多种格式的报告输出。
+
+```typescript
+import { ValidationReporter } from '@ldesign/builder'
+
+const reporter = new ValidationReporter()
+
+// 生成报告
+const report = await reporter.generateReport(result, config)
+
+// 输出报告
+await reporter.outputReport(report, {
+  format: 'html',
+  outputPath: 'validation-report.html',
+  verbose: true
+})
+```
+
+### 配置接口
+
+```typescript
+// 打包后验证配置
+interface PostBuildValidationConfig {
+  enabled?: boolean
+  testFramework?: 'vitest' | 'jest' | 'mocha' | 'auto'
+  testPattern?: string | string[]
+  timeout?: number
+  failOnError?: boolean
+  environment?: ValidationEnvironmentConfig
+  reporting?: ValidationReportingConfig
+  hooks?: ValidationHooks
+  scope?: ValidationScopeConfig
+}
+
+// 验证环境配置
+interface ValidationEnvironmentConfig {
+  tempDir?: string
+  keepTempFiles?: boolean
+  env?: Record<string, string>
+  packageManager?: 'npm' | 'yarn' | 'pnpm' | 'auto'
+  installDependencies?: boolean
+  installTimeout?: number
+}
+
+// 验证报告配置
+interface ValidationReportingConfig {
+  format?: 'json' | 'html' | 'markdown' | 'console'
+  outputPath?: string
+  verbose?: boolean
+  logLevel?: 'debug' | 'info' | 'warn' | 'error'
+  includePerformance?: boolean
+  includeCoverage?: boolean
+}
 ```

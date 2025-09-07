@@ -542,11 +542,8 @@ export class RollupAdapter implements IBundlerAdapter {
    * 获取性能指标
    */
   getPerformanceMetrics(): PerformanceMetrics {
-    if (this.performanceMonitor && typeof this.performanceMonitor.getMetrics === 'function') {
-      return this.performanceMonitor.getMetrics()
-    }
-
-    // 返回默认指标
+    // 返回默认指标，因为 PerformanceMonitor 没有直接的 getMetrics 方法
+    // 性能指标应该通过 endBuild 方法获取
     return {
       buildTime: 0,
       memoryUsage: {

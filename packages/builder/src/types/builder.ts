@@ -7,6 +7,7 @@ import type { BuilderConfig } from './config'
 import type { OutputFile, BuildStats } from './output'
 import type { PerformanceMetrics } from './performance'
 import type { ValidationResult } from './common'
+import type { ValidationResult as PostBuildValidationResult } from '../types/validation'
 
 /**
  * 构建器状态枚举
@@ -56,25 +57,25 @@ export enum BuilderEvent {
 export interface BuilderOptions {
   /** 工作目录 */
   cwd?: string
-  
+
   /** 初始配置 */
   config?: BuilderConfig
-  
+
   /** 事件监听器 */
   listeners?: Partial<BuilderEventListeners>
-  
+
   /** 日志记录器 */
   logger?: any
-  
+
   /** 是否自动检测库类型 */
   autoDetect?: boolean
-  
+
   /** 是否启用缓存 */
   cache?: boolean
-  
+
   /** 缓存目录 */
   cacheDir?: string
-  
+
   /** 是否启用性能监控 */
   performance?: boolean
 }
@@ -212,39 +213,42 @@ export interface StatusChangeEventData {
 export interface BuildResult {
   /** 构建是否成功 */
   success: boolean
-  
+
   /** 输出文件列表 */
   outputs: OutputFile[]
-  
+
   /** 构建时间（毫秒） */
   duration: number
-  
+
   /** 构建统计 */
   stats: BuildStats
-  
+
   /** 性能指标 */
   performance: PerformanceMetrics
-  
+
   /** 警告信息 */
   warnings: Warning[]
-  
+
   /** 错误信息 */
   errors: Error[]
-  
+
   /** 构建 ID */
   buildId: string
-  
+
   /** 时间戳 */
   timestamp: number
-  
+
   /** 构建器名称 */
   bundler: string
-  
+
   /** 构建模式 */
   mode: string
-  
+
   /** 库类型 */
   libraryType?: string
+
+  /** 打包后验证结果 */
+  validation?: PostBuildValidationResult
 }
 
 /**
@@ -253,19 +257,19 @@ export interface BuildResult {
 export interface Warning {
   /** 警告代码 */
   code: string
-  
+
   /** 警告消息 */
   message: string
-  
+
   /** 相关文件 */
   file?: string
-  
+
   /** 行号 */
   line?: number
-  
+
   /** 列号 */
   column?: number
-  
+
   /** 建议 */
   suggestion?: string
 }
@@ -276,10 +280,10 @@ export interface Warning {
 export interface BuildWatcher extends EventEmitter {
   /** 关闭监听器 */
   close(): Promise<void>
-  
+
   /** 是否正在监听 */
   readonly watching: boolean
-  
+
   /** 监听的文件模式 */
   readonly patterns: string[]
 }
@@ -291,29 +295,29 @@ export interface ILibraryBuilder extends EventEmitter {
   // 构建管理
   build(config?: BuilderConfig): Promise<BuildResult>
   buildWatch(config?: BuilderConfig): Promise<BuildWatcher>
-  
+
   // 配置管理
   mergeConfig(base: BuilderConfig, override: BuilderConfig): BuilderConfig
   validateConfig(config: BuilderConfig): ValidationResult
   loadConfig(configPath?: string): Promise<BuilderConfig>
-  
+
   // 核心切换
   setBundler(bundler: 'rollup' | 'rolldown'): void
   getBundler(): 'rollup' | 'rolldown'
-  
+
   // 库类型管理
   setLibraryType(type: string): void
   detectLibraryType(projectPath: string): Promise<string>
-  
+
   // 状态管理
   getStatus(): BuilderStatus
   isBuilding(): boolean
   isWatching(): boolean
-  
+
   // 生命周期
   initialize(): Promise<void>
   dispose(): Promise<void>
-  
+
   // 统计信息
   getStats(): BuildStats | null
   getPerformanceMetrics(): PerformanceMetrics | null
@@ -325,31 +329,31 @@ export interface ILibraryBuilder extends EventEmitter {
 export interface BuildContext {
   /** 构建 ID */
   buildId: string
-  
+
   /** 开始时间 */
   startTime: number
-  
+
   /** 配置 */
   config: BuilderConfig
-  
+
   /** 工作目录 */
   cwd: string
-  
+
   /** 缓存目录 */
   cacheDir: string
-  
+
   /** 临时目录 */
   tempDir: string
-  
+
   /** 是否为监听模式 */
   watch: boolean
-  
+
   /** 环境变量 */
   env: Record<string, string>
-  
+
   /** 日志记录器 */
   logger: any
-  
+
   /** 性能监控器 */
   performanceMonitor: any
 }
@@ -360,19 +364,19 @@ export interface BuildContext {
 export interface BuildHooks {
   /** 构建前钩子 */
   beforeBuild?: (context: BuildContext) => Promise<void> | void
-  
+
   /** 构建后钩子 */
   afterBuild?: (context: BuildContext, result: BuildResult) => Promise<void> | void
-  
+
   /** 错误钩子 */
   onError?: (context: BuildContext, error: Error) => Promise<void> | void
-  
+
   /** 监听开始钩子 */
   onWatchStart?: (context: BuildContext) => Promise<void> | void
-  
+
   /** 文件变化钩子 */
   onFileChange?: (context: BuildContext, file: string, type: string) => Promise<void> | void
-  
+
   /** 监听结束钩子 */
   onWatchEnd?: (context: BuildContext) => Promise<void> | void
 }
@@ -383,16 +387,16 @@ export interface BuildHooks {
 export interface BuilderFactoryOptions {
   /** 默认打包器 */
   defaultBundler?: 'rollup' | 'rolldown'
-  
+
   /** 插件预设 */
   pluginPresets?: Record<string, any[]>
-  
+
   /** 配置预设 */
   configPresets?: Record<string, Partial<BuilderConfig>>
-  
+
   /** 是否启用自动检测 */
   autoDetection?: boolean
-  
+
   /** 缓存配置 */
   cache?: {
     enabled: boolean
@@ -407,19 +411,19 @@ export interface BuilderFactoryOptions {
 export interface BuilderInstanceInfo {
   /** 实例 ID */
   id: string
-  
+
   /** 创建时间 */
   createdAt: number
-  
+
   /** 最后使用时间 */
   lastUsedAt: number
-  
+
   /** 构建次数 */
   buildCount: number
-  
+
   /** 当前状态 */
   status: BuilderStatus
-  
+
   /** 配置摘要 */
   configSummary: {
     bundler: string

@@ -18,5 +18,7 @@ export * from './error-handler'
 
 // 其他工具函数
 export * from './format-utils'
+export * from './banner-generator'
+export * from './minify-processor'
 
 // 注意：detection.ts, performance.ts, validation.ts, cache.ts 暂时为空，不导出

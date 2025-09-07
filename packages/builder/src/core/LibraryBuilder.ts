@@ -18,11 +18,16 @@ import {
 import type { BuilderConfig } from '../types/config'
 import type { ValidationResult } from '../types/common'
 import type { LibraryType } from '../types/library'
+import type {
+  ValidationResult as PostBuildValidationResult,
+  ValidationContext
+} from '../types/validation'
 import { ConfigManager } from './ConfigManager'
 import { StrategyManager } from './StrategyManager'
 import { PluginManager } from './PluginManager'
 import { LibraryDetector } from './LibraryDetector'
 import { PerformanceMonitor } from './PerformanceMonitor'
+import { PostBuildValidator } from './PostBuildValidator'
 import { BundlerAdapterFactory } from '../adapters/base/AdapterFactory'
 import type { IBundlerAdapter } from '../types/adapter'
 import { Logger, createLogger } from '../utils/logger'
@@ -66,6 +71,9 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
 
   /** 库类型检测器 */
   private libraryDetector!: LibraryDetector
+
+  /** 打包后验证器 */
+  private postBuildValidator!: PostBuildValidator
 
   /** 当前构建统计 */
   private currentStats: any = null
@@ -132,6 +140,12 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
       // 执行构建
       const result = await this.bundlerAdapter.build(strategyConfig)
 
+      // 执行打包后验证（如果启用）
+      let validationResult: PostBuildValidationResult | undefined
+      if (mergedConfig.postBuildValidation?.enabled) {
+        validationResult = await this.runPostBuildValidation(mergedConfig, result, buildId)
+      }
+
       // 结束性能监控
       const metrics = this.performanceMonitor.endBuild(buildId)
 
@@ -148,7 +162,8 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
         timestamp: Date.now(),
         bundler: this.bundlerAdapter.name,
         mode: mergedConfig.mode || 'production',
-        libraryType
+        libraryType,
+        validation: validationResult
       }
 
       // 保存统计信息
@@ -362,6 +377,11 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
       await this.pluginManager.dispose()
     }
 
+    // 清理验证器
+    if (this.postBuildValidator) {
+      await this.postBuildValidator.dispose()
+    }
+
     // 移除所有事件监听器
     this.removeAllListeners()
 
@@ -423,6 +443,12 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
     // 初始化库类型检测器
     this.libraryDetector = new LibraryDetector({
       logger: this.logger
+    })
+
+    // 初始化打包后验证器
+    this.postBuildValidator = new PostBuildValidator({}, {
+      logger: this.logger,
+      errorHandler: this.errorHandler
     })
 
     // 初始化默认适配器
@@ -500,5 +526,80 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
       ErrorCode.BUILD_FAILED,
       '构建失败: 未知错误'
     )
+  }
+
+  /**
+   * 运行打包后验证
+   */
+  private async runPostBuildValidation(
+    config: BuilderConfig,
+    buildResult: any,
+    buildId: string
+  ): Promise<PostBuildValidationResult> {
+    this.logger.info('开始打包后验证...')
+
+    try {
+      // 创建验证上下文
+      const validationContext: ValidationContext = {
+        buildContext: {
+          buildId,
+          startTime: Date.now(),
+          config,
+          cwd: process.cwd(),
+          cacheDir: '.cache',
+          tempDir: '.temp',
+          watch: false,
+          env: process.env as Record<string, string>,
+          logger: this.logger,
+          performanceMonitor: this.performanceMonitor
+        },
+        buildResult: {
+          success: true,
+          outputs: buildResult.outputs,
+          duration: 0,
+          stats: buildResult.stats,
+          performance: this.currentMetrics || {} as any,
+          warnings: buildResult.warnings || [],
+          errors: [],
+          buildId,
+          timestamp: Date.now(),
+          bundler: this.bundlerAdapter.name,
+          mode: config.mode || 'production',
+          libraryType: config.libraryType
+        },
+        config: config.postBuildValidation || {},
+        tempDir: '',
+        startTime: Date.now(),
+        validationId: `validation-${buildId}`,
+        projectRoot: process.cwd(),
+        outputDir: config.output?.dir || 'dist'
+      }
+
+      // 更新验证器配置
+      if (config.postBuildValidation) {
+        this.postBuildValidator.setConfig(config.postBuildValidation)
+      }
+
+      // 执行验证
+      const validationResult = await this.postBuildValidator.validate(validationContext)
+
+      // 如果验证失败且配置为失败时停止构建
+      if (!validationResult.success && config.postBuildValidation?.failOnError) {
+        throw this.errorHandler.createError(
+          ErrorCode.BUILD_FAILED,
+          '打包后验证失败',
+          {
+            cause: new Error(`验证失败: ${validationResult.errors.length} 个错误`)
+          }
+        )
+      }
+
+      this.logger.success('打包后验证完成')
+      return validationResult
+
+    } catch (error) {
+      this.logger.error('打包后验证失败:', error)
+      throw error
+    }
   }
 }

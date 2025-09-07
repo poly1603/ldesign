@@ -15,6 +15,10 @@ export { StrategyManager } from './core/StrategyManager'
 export { PluginManager } from './core/PluginManager'
 export { LibraryDetector } from './core/LibraryDetector'
 export { PerformanceMonitor } from './core/PerformanceMonitor'
+export { PostBuildValidator } from './core/PostBuildValidator'
+export { TestRunner } from './core/TestRunner'
+export { ValidationReporter } from './core/ValidationReporter'
+export { TemporaryEnvironment } from './core/TemporaryEnvironment'
 
 // 适配器导出
 export { BundlerAdapterFactory } from './adapters/base/AdapterFactory'
@@ -43,6 +47,9 @@ export * from './utils'
 // 便捷函数
 export { defineConfig } from './utils/config'
 export { createBuilder } from './utils/factory'
+
+// 增强配置导出
+export * from './config/enhanced-config'
 
 /**
  * 默认导出 - LibraryBuilder 类

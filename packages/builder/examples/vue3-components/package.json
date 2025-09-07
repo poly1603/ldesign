@@ -14,6 +14,7 @@
   "main": "lib/index.cjs",
   "module": "es/index.js",
   "types": "es/index.d.ts",
+  "unpkg": "dist/index.umd.js",
   "exports": {
     ".": {
       "import": "./es/index.js",
@@ -40,6 +41,7 @@
   "files": [
     "es",
     "lib",
+    "dist",
     "README.md"
   ],
   "scripts": {
@@ -47,7 +49,8 @@
     "dev": "ldesign-builder watch",
     "clean": "ldesign-builder clean",
     "analyze": "ldesign-builder analyze",
-    "test": "echo \"No tests yet\""
+    "test:build": "npm run build && node test-build-artifacts.js",
+    "test:artifacts": "node test-build-artifacts.js"
   },
   "peerDependencies": {
     "vue": "^3.0.0"

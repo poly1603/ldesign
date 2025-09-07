@@ -11,7 +11,10 @@
   ],
   "author": "LDesign Team",
   "license": "MIT",
-  "main": "dist/index.css",
+  "main": "lib/index.cjs",
+  "module": "es/index.js",
+  "types": "es/index.d.ts",
+  "unpkg": "dist/index.umd.js",
   "style": "dist/index.css",
   "exports": {
     ".": "./dist/index.css",
@@ -20,6 +23,8 @@
     "./variables": "./dist/variables.css"
   },
   "files": [
+    "es",
+    "lib",
     "dist",
     "README.md"
   ],
@@ -28,7 +33,8 @@
     "dev": "ldesign-builder watch",
     "clean": "ldesign-builder clean",
     "analyze": "ldesign-builder analyze",
-    "test": "echo \"No tests yet\""
+    "test:build": "npm run build && node test-build-artifacts.js",
+    "test:artifacts": "node test-build-artifacts.js"
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",

@@ -4,6 +4,7 @@
 
 import type { BuilderConfig } from '../types/config'
 import type { LibraryBuildOptions } from '../types/library'
+import type { PostBuildValidationConfig } from '../types/validation'
 import { LibraryType } from '../types/library'
 
 /**
@@ -131,6 +132,41 @@ export const DEFAULT_BUILDER_CONFIG: Required<Omit<BuilderConfig, 'env' | 'libra
 
   // 调试配置
   debug: false,
+
+  // 打包后验证配置
+  postBuildValidation: {
+    enabled: false,
+    testFramework: 'auto',
+    testPattern: ['**/*.test.{js,ts}', '**/*.spec.{js,ts}'],
+    timeout: 60000,
+    failOnError: true,
+    environment: {
+      tempDir: '.validation-temp',
+      keepTempFiles: false,
+      env: {},
+      packageManager: 'auto',
+      installDependencies: true,
+      installTimeout: 300000
+    },
+    reporting: {
+      format: 'console',
+      outputPath: 'validation-report',
+      verbose: false,
+      logLevel: 'info',
+      includePerformance: true,
+      includeCoverage: false
+    },
+    hooks: {},
+    scope: {
+      formats: ['esm', 'cjs'],
+      fileTypes: ['js', 'ts', 'dts'],
+      exclude: ['**/*.d.ts', '**/node_modules/**'],
+      include: ['**/*'],
+      validateTypes: true,
+      validateStyles: false,
+      validateSourceMaps: false
+    }
+  } as PostBuildValidationConfig,
 
   // 环境配置
   env: {

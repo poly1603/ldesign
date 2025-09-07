@@ -18,3 +18,39 @@ export * from './bundler'
 export * from './output'
 export * from './performance'
 export * from './common'
+export * from './minify'
+
+// 导出验证相关类型，但排除冲突的 ValidationResult
+export type {
+  PostBuildValidationConfig,
+  ValidationEnvironmentConfig,
+  ValidationReportingConfig,
+  ValidationHooks,
+  ValidationScopeConfig,
+  ValidationContext,
+  TestRunResult,
+  TestError,
+  CoverageInfo,
+  CoverageMetric,
+  FileCoverageInfo,
+  TestPerformanceMetrics,
+  ValidationReport,
+  ValidationSummary,
+  ValidationDetails,
+  FileValidationResult,
+  FormatValidationResult,
+  TypeValidationResult,
+  StyleValidationResult,
+  TypeCheckResult,
+  TypeDiagnostic,
+  ValidationError,
+  ValidationWarning,
+  ValidationStats,
+  ValidationRecommendation,
+  IPostBuildValidator,
+  ITestRunner,
+  IValidationReporter
+} from './validation'
+
+// 重新导出 ValidationResult 为不同的名称以避免冲突
+export type { ValidationResult as PostBuildValidationResult } from './validation'

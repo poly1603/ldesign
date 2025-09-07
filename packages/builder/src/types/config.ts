@@ -23,6 +23,8 @@ import type {
 import type { OutputConfig } from './output'
 import type { PerformanceConfig } from './performance'
 import type { UnifiedPlugin } from './plugin'
+import type { PostBuildValidationConfig } from './validation'
+import type { MinifyOptions } from './minify'
 
 /**
  * 构建器主配置接口
@@ -55,8 +57,8 @@ export interface BuilderConfig {
   /** 插件配置 */
   plugins?: UnifiedPlugin[]
 
-  /** 是否压缩代码 */
-  minify?: boolean
+  /** 压缩配置 */
+  minify?: boolean | MinifyOptions
 
   /** UMD 构建配置 */
   umd?: UMDConfig
@@ -108,6 +110,9 @@ export interface BuilderConfig {
 
   /** 库构建选项 */
   library?: LibraryBuildOptions
+
+  /** 打包后验证配置 */
+  postBuildValidation?: PostBuildValidationConfig
 }
 
 /**

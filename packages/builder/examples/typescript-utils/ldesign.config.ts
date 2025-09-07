@@ -1,17 +1,16 @@
 import { defineConfig, LibraryType } from '@ldesign/builder'
 
 export default defineConfig({
-  // 单入口配置
-  input: 'src/index.ts',
+  // 单入口配�?  input: 'src/index.ts',
 
   // 输出配置
   output: {
     format: ['esm', 'cjs', 'umd'],
     sourcemap: true,
-    name: 'TypescriptUtils' // UMD格式需要全局变量名
+    name: 'TypescriptUtils' // UMD格式需要全局变量�?
   },
 
-  // 库类型 - TypeScript 工具库
+  // 库类�?- TypeScript 工具�?
   libraryType: LibraryType.TYPESCRIPT,
 
   // 打包器选择
@@ -27,7 +26,7 @@ export default defineConfig({
     skipLibCheck: true
   },
 
-  // 外部依赖（不打包到输出中）
+  // 外部依赖（不打包到输出中�?
   external: [],
 
   // 性能配置
@@ -41,5 +40,34 @@ export default defineConfig({
   clean: true,
 
   // 日志级别
-  logLevel: 'info'
+  logLevel: 'info',
+
+  // 打包后验证配�?  postBuildValidation: {
+  enabled: false, // 暂时禁用，先测试基本打包
+  testFramework: 'vitest',
+  testPattern: ['src/**/*.test.ts', 'src/**/*.spec.ts'],
+  timeout: 90000, // 增加超时时间，因为测试较�?    failOnError: true,
+
+  environment: {
+    tempDir: '.validation-temp',
+    keepTempFiles: false,
+    installDependencies: true,
+    packageManager: 'pnpm'
+  },
+
+  reporting: {
+    format: 'console',
+    verbose: true,
+    includePerformance: true,
+    includeCoverage: false
+  },
+
+  scope: {
+    formats: ['esm', 'cjs', 'umd'],
+    validateTypes: true,
+    validateStyles: false,
+    validateSourceMaps: true
+  }
 })
+
+

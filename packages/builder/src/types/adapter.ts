@@ -50,7 +50,7 @@ export interface UnifiedConfig {
 
   // 优化配置
   treeshake?: boolean | TreeshakeOptions
-  minify?: boolean | MinifyOptions
+  minify?: boolean | BaseMinifyOptions
 
   // 开发配置
   sourcemap?: boolean | 'inline' | 'hidden'
@@ -122,9 +122,9 @@ export interface TreeshakeOptions {
 }
 
 /**
- * 压缩选项
+ * 基础压缩选项（用于适配器）
  */
-export interface MinifyOptions {
+export interface BaseMinifyOptions {
   compress?: any
   mangle?: any
   format?: any
