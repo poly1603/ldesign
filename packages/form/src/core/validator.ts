@@ -110,7 +110,7 @@ export class ValidatorExecutorImpl implements ValidatorExecutor {
     context: ValidationContextExtended
   ): Promise<ValidationResultExtended> {
     const startTime = Date.now();
-    
+
     try {
       // 触发验证开始事件
       this.emitValidationStart(context);
@@ -219,7 +219,7 @@ export class ValidatorExecutorImpl implements ValidatorExecutor {
     });
 
     const batchResults = await Promise.all(promises);
-    
+
     batchResults.forEach(({ fieldName, results: fieldResults }) => {
       results[fieldName] = fieldResults;
     });
@@ -308,7 +308,21 @@ export class ValidatorFactoryImpl {
  * @returns 验证器注册表
  */
 export function createValidatorRegistry(): ValidatorRegistry {
-  return new ValidatorRegistryImpl();
+  const registry = new ValidatorRegistryImpl();
+
+  // 注册内置验证器
+  try {
+    const validatorsModule = require('../validators/index');
+    const builtinValidators = validatorsModule.builtinValidators || [];
+    builtinValidators.forEach((config: any) => {
+      registry.register(config.name, config);
+    });
+  } catch (error) {
+    // 如果无法加载内置验证器，继续使用空注册表
+    console.warn('Failed to load builtin validators:', error);
+  }
+
+  return registry;
 }
 
 /**

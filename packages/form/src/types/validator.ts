@@ -108,8 +108,18 @@ export interface LengthValidatorParams {
   min?: number;
   /** 最大长度 */
   max?: number;
+  /** 精确长度 */
+  exact?: number;
   /** 自定义错误消息 */
   message?: string;
+  /** 最小长度自定义错误消息 */
+  minMessage?: string;
+  /** 最大长度自定义错误消息 */
+  maxMessage?: string;
+  /** 范围验证自定义错误消息 */
+  rangeMessage?: string;
+  /** 精确长度自定义错误消息 */
+  exactMessage?: string;
 }
 
 /**
@@ -157,16 +167,16 @@ export interface CustomValidatorParams {
  */
 export interface ValidationRule extends BaseValidationRule {
   /** 验证器参数的联合类型 */
-  params?: 
-    | RequiredValidatorParams
-    | EmailValidatorParams
-    | UrlValidatorParams
-    | PatternValidatorParams
-    | LengthValidatorParams
-    | RangeValidatorParams
-    | NumberValidatorParams
-    | CustomValidatorParams
-    | Record<string, any>;
+  params?:
+  | RequiredValidatorParams
+  | EmailValidatorParams
+  | UrlValidatorParams
+  | PatternValidatorParams
+  | LengthValidatorParams
+  | RangeValidatorParams
+  | NumberValidatorParams
+  | CustomValidatorParams
+  | Record<string, any>;
 }
 
 /**

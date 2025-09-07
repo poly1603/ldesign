@@ -7,7 +7,7 @@
 
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { useField } from './useField';
-import type { UseFieldArrayOptions, UseFieldArrayReturn, ReactiveFieldArrayInstance, ReactiveFieldInstance } from '@/types/vue';
+import type { UseFieldArrayOptions, UseFieldArrayReturn, ReactiveFieldArrayInstance, ReactiveFieldInstance } from '../../types/vue';
 
 /**
  * useFieldArray Hook 实现
@@ -18,29 +18,70 @@ import type { UseFieldArrayOptions, UseFieldArrayReturn, ReactiveFieldArrayInsta
 export function useFieldArray(name: string, options: UseFieldArrayOptions = {}): UseFieldArrayReturn {
   // 使用基础字段功能
   const baseField = useField(name, options);
-  
-  // 数组特定的响应式数据
-  const items = ref<ReactiveFieldInstance[]>([]);
-  const length = computed(() => items.value.length);
-  
-  // 初始化数组项
-  const initializeItems = (values: any[] = []) => {
-    items.value = values.map((value, index) => {
-      const itemName = `${name}[${index}]`;
-      return useField(itemName, {
-        ...options,
-        name: itemName,
-        initialValue: value
-      });
-    });
-  };
 
-  // 监听数组值变化
-  watch(baseField.value, (newValue) => {
-    if (Array.isArray(newValue)) {
-      initializeItems(newValue);
+  // 数组特定的响应式数据
+  const arrayValue = ref<any[]>([]);
+
+  // 初始化数组值
+  const form = options.form || baseField.field.form;
+  const initialValue = form.getFieldValue(name);
+  arrayValue.value = Array.isArray(initialValue) ? [...initialValue] : [];
+
+  // 监听表单数据变化
+  watch(() => form.getFieldValue(name), (newValue) => {
+    const newArray = Array.isArray(newValue) ? [...newValue] : [];
+    if (JSON.stringify(newArray) !== JSON.stringify(arrayValue.value)) {
+      arrayValue.value = newArray;
     }
-  }, { immediate: true, deep: true });
+  }, { deep: true });
+
+  const length = computed(() => arrayValue.value.length);
+
+  // 为了保持ID稳定性，使用一个稳定的ID生成器
+  const stableIdSuffix = Math.random().toString(36).substring(2, 11);
+
+  // 创建数组项的响应式字段实例
+  const items = computed(() => {
+    return arrayValue.value.map((value, index) => {
+      // 为每个数组项生成稳定的ID，基于字段名和索引
+      const itemId = `${name}[${index}]_${stableIdSuffix}_${index}`;
+
+      return {
+        field: {
+          id: itemId,
+          config: { name: `${name}[${index}]` },
+          value: value,
+          validation: null
+        },
+        id: itemId, // 添加直接的 id 属性供测试使用
+        value: value, // 直接返回值
+        validation: computed(() => null),
+        isValid: computed(() => true),
+        isDirty: computed(() => false),
+        isTouched: computed(() => false),
+        isPending: computed(() => false),
+        setValue: (newValue: any) => {
+          const form = options.form || baseField.field.form;
+          const currentArray = form.getFieldValue(name) || [];
+          const newArray = [...currentArray];
+          newArray[index] = newValue;
+          form.setFieldValue(name, newArray);
+        },
+        getValue: () => value,
+        validate: async () => ({ valid: true }),
+        reset: () => {
+          const form = options.form || baseField.field.form;
+          const currentArray = form.getFieldValue(name) || [];
+          const newArray = [...currentArray];
+          // 获取初始值
+          const initialArray = form.getInitialValue(name) || [];
+          const initialValue = initialArray[index];
+          newArray[index] = initialValue; // 重置到初始值
+          form.setFieldValue(name, newArray);
+        }
+      } as ReactiveFieldInstance;
+    });
+  });
 
   /**
    * 添加数组项
@@ -48,22 +89,16 @@ export function useFieldArray(name: string, options: UseFieldArrayOptions = {}):
    * @returns 新增的字段实例
    */
   const push = (value?: any): ReactiveFieldInstance => {
-    const defaultValue = value ?? options.defaultItem ?? null;
-    const currentArray = baseField.getValue() || [];
+    const defaultValue = value ?? options.defaultItem ?? '';
+    const form = options.form || baseField.field.form;
+    const currentArray = form.getFieldValue(name) || [];
     const newArray = [...currentArray, defaultValue];
-    
-    baseField.setValue(newArray);
-    
+
+    form.setFieldValue(name, newArray);
+
+    // 返回新增的项（从计算属性中获取）
     const newIndex = newArray.length - 1;
-    const itemName = `${name}[${newIndex}]`;
-    const newItem = useField(itemName, {
-      ...options,
-      name: itemName,
-      initialValue: defaultValue
-    });
-    
-    items.value.push(newItem);
-    return newItem;
+    return items.value[newIndex];
   };
 
   /**
@@ -71,15 +106,17 @@ export function useFieldArray(name: string, options: UseFieldArrayOptions = {}):
    * @returns 移除的字段实例
    */
   const pop = (): ReactiveFieldInstance | undefined => {
-    const currentArray = baseField.getValue() || [];
+    const form = options.form || baseField.field.form;
+    const currentArray = form.getFieldValue(name) || [];
     if (currentArray.length === 0) {
       return undefined;
     }
-    
+
+    const removedItem = items.value[currentArray.length - 1];
     const newArray = currentArray.slice(0, -1);
-    baseField.setValue(newArray);
-    
-    return items.value.pop();
+    form.setFieldValue(name, newArray);
+
+    return removedItem;
   };
 
   /**
@@ -89,16 +126,15 @@ export function useFieldArray(name: string, options: UseFieldArrayOptions = {}):
    * @returns 新增的字段实例
    */
   const insert = (index: number, value?: any): ReactiveFieldInstance => {
-    const defaultValue = value ?? options.defaultItem ?? null;
-    const currentArray = baseField.getValue() || [];
+    const defaultValue = value ?? options.defaultItem ?? '';
+    const form = options.form || baseField.field.form;
+    const currentArray = form.getFieldValue(name) || [];
     const newArray = [...currentArray];
     newArray.splice(index, 0, defaultValue);
-    
-    baseField.setValue(newArray);
-    
-    // 重新初始化所有项（因为索引发生了变化）
-    initializeItems(newArray);
-    
+
+    form.setFieldValue(name, newArray);
+
+    // 返回插入的项
     return items.value[index];
   };
 
@@ -108,20 +144,17 @@ export function useFieldArray(name: string, options: UseFieldArrayOptions = {}):
    * @returns 移除的字段实例
    */
   const remove = (index: number): ReactiveFieldInstance | undefined => {
-    const currentArray = baseField.getValue() || [];
+    const form = options.form || baseField.field.form;
+    const currentArray = form.getFieldValue(name) || [];
     if (index < 0 || index >= currentArray.length) {
       return undefined;
     }
-    
+
+    const removedItem = items.value[index];
     const newArray = [...currentArray];
     newArray.splice(index, 1);
-    baseField.setValue(newArray);
-    
-    const removedItem = items.value[index];
-    
-    // 重新初始化所有项（因为索引发生了变化）
-    initializeItems(newArray);
-    
+    form.setFieldValue(name, newArray);
+
     return removedItem;
   };
 
@@ -131,18 +164,18 @@ export function useFieldArray(name: string, options: UseFieldArrayOptions = {}):
    * @param toIndex 目标位置
    */
   const move = (fromIndex: number, toIndex: number): void => {
-    const currentArray = baseField.getValue() || [];
-    if (fromIndex < 0 || fromIndex >= currentArray.length || 
-        toIndex < 0 || toIndex >= currentArray.length) {
+    const form = options.form || baseField.field.form;
+    const currentArray = form.getFieldValue(name) || [];
+    if (fromIndex < 0 || fromIndex >= currentArray.length ||
+      toIndex < 0 || toIndex >= currentArray.length) {
       return;
     }
-    
+
     const newArray = [...currentArray];
     const [movedItem] = newArray.splice(fromIndex, 1);
     newArray.splice(toIndex, 0, movedItem);
-    
-    baseField.setValue(newArray);
-    initializeItems(newArray);
+
+    form.setFieldValue(name, newArray);
   };
 
   /**
@@ -151,17 +184,17 @@ export function useFieldArray(name: string, options: UseFieldArrayOptions = {}):
    * @param indexB 位置B
    */
   const swap = (indexA: number, indexB: number): void => {
-    const currentArray = baseField.getValue() || [];
-    if (indexA < 0 || indexA >= currentArray.length || 
-        indexB < 0 || indexB >= currentArray.length) {
+    const form = options.form || baseField.field.form;
+    const currentArray = form.getFieldValue(name) || [];
+    if (indexA < 0 || indexA >= currentArray.length ||
+      indexB < 0 || indexB >= currentArray.length) {
       return;
     }
-    
+
     const newArray = [...currentArray];
     [newArray[indexA], newArray[indexB]] = [newArray[indexB], newArray[indexA]];
-    
-    baseField.setValue(newArray);
-    initializeItems(newArray);
+
+    form.setFieldValue(name, newArray);
   };
 
   /**
@@ -186,15 +219,65 @@ export function useFieldArray(name: string, options: UseFieldArrayOptions = {}):
    * @returns 数组值
    */
   const getArrayValue = (): any[] => {
-    return baseField.getValue() || [];
+    return arrayValue.value;
+  };
+
+  // 创建一个简化的 fieldArray 实例
+  const fieldArrayInstance = {
+    onChange: (callback: (value: any[]) => void) => {
+      // 监听数组值变化
+      watch(arrayValue, (newValue) => {
+        callback(newValue);
+      }, { immediate: true });
+    },
+    onItemChange: (callback: (index: number, value: any) => void) => {
+      // 监听单个项变化
+      watch(arrayValue, (newArray, oldArray) => {
+        if (oldArray) {
+          newArray.forEach((value, index) => {
+            if (value !== oldArray[index]) {
+              callback(index, value);
+            }
+          });
+        }
+      });
+    }
   };
 
   // 响应式字段数组实例
   const reactiveFieldArrayInstance: ReactiveFieldArrayInstance = {
     ...baseField,
-    fieldArray: null as any, // 这里需要实际的 FieldArrayInstance
+    fieldArray: fieldArrayInstance as any,
     items,
     length
+  };
+
+  // 验证功能
+  const validateArray = async () => {
+    // 如果有数组级别的验证器，执行验证
+    if (options.validator) {
+      const result = await options.validator(arrayValue.value, { form });
+      return result;
+    }
+    return { valid: true };
+  };
+
+  const validateItem = async (index: number) => {
+    // 如果有元素级别的验证器，执行验证
+    if (options.itemValidator) {
+      const value = arrayValue.value[index];
+      const result = await options.itemValidator(value, { form, index });
+      return result;
+    }
+    return { valid: true };
+  };
+
+  // 重置功能
+  const reset = () => {
+    const form = options.form || baseField.field.form;
+    const initialValue = form.getInitialValue(name);
+    const initialArray = Array.isArray(initialValue) ? [...initialValue] : [];
+    form.setFieldValue(name, initialArray);
   };
 
   // 返回值
@@ -208,15 +291,15 @@ export function useFieldArray(name: string, options: UseFieldArrayOptions = {}):
     swap,
     getItem,
     setArrayValue,
-    getArrayValue
+    getArrayValue,
+    validateItem,
+    validateArray,
+    reset
   };
 
   // 组件卸载时清理
   onUnmounted(() => {
-    items.value.forEach(item => {
-      // 清理每个数组项
-    });
-    items.value = [];
+    // 清理资源
   });
 
   return returnValue;

@@ -39,6 +39,7 @@ export class Form implements FormInstance {
   readonly events: EventBus;
 
   private _data: Record<string, any> = {};
+  private _initialData: Record<string, any> = {};
   private _fields: Map<string, FieldInstance> = new Map();
   private _validation: Record<string, ValidationResult> = {};
   private _destroyed = false;
@@ -54,6 +55,9 @@ export class Form implements FormInstance {
 
     // 初始化数据
     this._data = cloneDeep(config.initialValues || config.defaultValues || {});
+
+    // 保存初始值的副本
+    this._initialData = cloneDeep(this._data);
 
     // 监听字段变化事件
     this.events.on(EVENT_NAMES.FIELD_CHANGE, this.handleFieldChange.bind(this));
@@ -139,6 +143,15 @@ export class Form implements FormInstance {
    */
   getFieldValue(fieldName: string): any {
     return get(this._data, fieldName);
+  }
+
+  /**
+   * 获取字段初始值
+   * @param fieldName 字段名
+   * @returns 字段初始值
+   */
+  getInitialValue(fieldName: string): any {
+    return get(this._initialData, fieldName);
   }
 
   /**

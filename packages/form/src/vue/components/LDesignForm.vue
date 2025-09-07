@@ -19,7 +19,6 @@
 
 <script setup lang="ts">
 import { computed, watch, onMounted, type PropType } from 'vue';
-import { useForm } from '../hooks/useForm';
 import FormProvider from './FormProvider.vue';
 import type { LDesignFormProps, LDesignFormEmits, LDesignFormExpose } from './types';
 
@@ -38,11 +37,8 @@ const props = withDefaults(defineProps<LDesignFormProps>(), {
 const emit = defineEmits<LDesignFormEmits>();
 
 // === 表单实例 ===
-const form = useForm({
-  ...props.config,
-  initialValues: props.initialValues,
-  defaultValues: props.defaultValues
-});
+// 使用传入的表单实例
+const form = props.form;
 
 // === 计算属性 ===
 const formClasses = computed(() => [
@@ -52,68 +48,75 @@ const formClasses = computed(() => [
   {
     'ldesign-form--disabled': props.disabled,
     'ldesign-form--readonly': props.readonly,
-    'ldesign-form--dirty': form.isDirty.value,
-    'ldesign-form--valid': form.isValid.value,
-    'ldesign-form--invalid': !form.isValid.value,
-    'ldesign-form--pending': form.isPending.value,
-    'ldesign-form--submitted': form.isSubmitted.value
+    'ldesign-form--dirty': form?.isDirty?.value || false,
+    'ldesign-form--valid': form?.isValid?.value || false,
+    'ldesign-form--invalid': !(form?.isValid?.value || false),
+    'ldesign-form--pending': form?.isPending?.value || false,
+    'ldesign-form--submitted': form?.isSubmitted?.value || false
   }
 ]);
 
 // === 事件处理 ===
 const handleSubmit = async () => {
-  if (!props.validateOnSubmit) {
-    const data = form.getValues();
-    emit('submit', data, true);
-    return;
-  }
-
   try {
-    const result = await form.submit();
-    emit('submit', result.data, result.valid);
+    const result = await (form.form || form).submit({
+      validate: props.validateOnSubmit
+    });
+    emit('submit', result);
   } catch (error) {
     console.error('Form submission error:', error);
-    const data = form.getValues();
-    emit('submit', data, false);
+    const data = (form.form || form).getValues();
+    const result = {
+      data,
+      valid: false,
+      validation: {}
+    };
+    emit('submit', result);
   }
 };
 
 const handleReset = () => {
-  form.reset();
-  const data = form.getValues();
+  (form.form || form).reset();
+  const data = (form.form || form).getValues();
   emit('reset', data);
 };
 
 // === 监听表单变化 ===
-watch(
-  () => form.data.value,
-  (newData) => {
-    emit('update:modelValue', newData);
-  },
-  { deep: true }
-);
+if (form && form.data) {
+  watch(
+    () => form.data.value,
+    (newData) => {
+      emit('update:modelValue', newData);
+    },
+    { deep: true }
+  );
+}
 
 // 监听字段变化
-form.form.onChange((event) => {
-  emit('change', form.data.value, event.fieldName, event.value);
-});
+if (form && (form.form || form).onChange) {
+  (form.form || form).onChange((event) => {
+    emit('change', form.data?.value || {}, event.fieldName, event.value);
+  });
+}
 
 // 监听验证结果
-watch(
-  () => form.validation.value,
-  (validation) => {
-    emit('validate', validation);
-  },
-  { deep: true }
-);
+if (form && form.validation) {
+  watch(
+    () => form.validation.value,
+    (validation) => {
+      emit('validate', validation);
+    },
+    { deep: true }
+  );
+}
 
 // === 暴露的方法和属性 ===
 defineExpose<LDesignFormExpose>({
   form,
   submit: handleSubmit,
   reset: handleReset,
-  validate: form.validate,
-  clearValidation: form.clearValidation
+  validate: form?.validate || (() => Promise.resolve({ valid: true, errors: {} })),
+  clearValidation: form?.clearValidation || (() => {})
 });
 </script>
 

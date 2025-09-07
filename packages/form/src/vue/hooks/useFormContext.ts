@@ -16,7 +16,20 @@ import { useField } from './useField';
  * @returns 表单上下文
  */
 export function useFormContext(): UseFormContextReturn {
-  const formContext = inject<ReactiveFormInstance>(FORM_CONTEXT_KEY);
+  const formContext = inject<any>(FORM_CONTEXT_KEY);
+
+  // 如果没有表单上下文，返回null
+  if (!formContext) {
+    return null;
+  }
+
+  // formContext 本身就是一个 computed，需要通过 .value 访问
+  const context = formContext.value;
+
+  // 如果上下文为null，返回null
+  if (!context) {
+    return null;
+  }
 
   /**
    * 注册字段
@@ -24,11 +37,11 @@ export function useFormContext(): UseFormContextReturn {
    * @returns 响应式字段实例
    */
   const registerField = (config: FieldConfig): ReactiveFieldInstance => {
-    if (!formContext) {
+    if (!context || !context.form) {
       throw new Error('useFormContext must be used within a form context');
     }
-    
-    return useField(config.name, { ...config, form: formContext.form });
+
+    return useField(config.name, { ...config, form: context.form });
   };
 
   /**
@@ -36,11 +49,11 @@ export function useFormContext(): UseFormContextReturn {
    * @param fieldName 字段名
    */
   const unregisterField = (fieldName: string): void => {
-    if (!formContext) {
+    if (!context || !context.form) {
       throw new Error('useFormContext must be used within a form context');
     }
-    
-    formContext.form.unregisterField(fieldName);
+
+    context.form.unregisterField(fieldName);
   };
 
   /**
@@ -49,10 +62,10 @@ export function useFormContext(): UseFormContextReturn {
    * @returns 响应式字段实例
    */
   const getField = (fieldName: string): ReactiveFieldInstance | undefined => {
-    if (!formContext) {
+    if (!context || !context.form) {
       return undefined;
     }
-    
+
     // 这里需要从表单上下文中获取已注册的字段
     // 由于我们没有在 ReactiveFormInstance 中存储字段映射
     // 我们需要通过其他方式获取
@@ -60,7 +73,9 @@ export function useFormContext(): UseFormContextReturn {
   };
 
   return {
-    form: formContext,
+    form: context.form,
+    formId: context.formId,
+    formData: context.formData,
     registerField,
     unregisterField,
     getField

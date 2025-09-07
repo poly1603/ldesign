@@ -23,7 +23,7 @@ global.ResizeObserver = vi.fn(() => ({
 }))
 
 // 导入查询表单类（需要在设置环境后导入）
-const { DynamicQueryForm } = await import('../../examples/vanilla-html/js/dynamic-query-form.js')
+const { DynamicQueryForm } = await import('../../src/core/query-form.ts')
 
 describe('查询表单修复效果验证', () => {
   let container
@@ -72,8 +72,6 @@ describe('查询表单修复效果验证', () => {
         colCount: 4
       })
 
-      queryForm.render()
-
       // 收起状态下，应该只显示 1 行（最多 4 个字段，考虑到内联按钮组可能占用位置）
       const visibleFieldCount = queryForm.getVisibleFieldCount()
       expect(visibleFieldCount).toBeLessThanOrEqual(4)
@@ -90,8 +88,6 @@ describe('查询表单修复效果验证', () => {
         colCount: 4,
         actionPosition: 'inline'
       })
-
-      queryForm.render()
 
       // 3 个字段，4 列，最后一行有剩余位置，应该内联显示
       const visibleFieldCount = queryForm.getVisibleFieldCount()
@@ -110,7 +106,6 @@ describe('查询表单修复效果验证', () => {
 
       // 展开状态
       queryForm.collapsed = false
-      queryForm.render()
 
       // 8 个字段，4 列，最后一行有 0 个字段（8 % 4 = 0），按钮组应该独占一行
       const visibleFieldCount = queryForm.getVisibleFieldCount()
@@ -126,8 +121,6 @@ describe('查询表单修复效果验证', () => {
         colCount: 4,
         actionPosition: 'auto' // auto 模式
       })
-
-      queryForm.render()
 
       // 3 个字段，4 列，最后一行有剩余位置，auto 模式应该选择内联
       const visibleFieldCount = queryForm.getVisibleFieldCount()
@@ -150,8 +143,6 @@ describe('查询表单修复效果验证', () => {
         fields: mockFields,
         responsive: true // 启用响应式
       })
-
-      queryForm.render()
 
       // 应该创建 ResizeObserver 实例
       expect(mockResizeObserver).toHaveBeenCalled()
@@ -209,8 +200,6 @@ describe('查询表单修复效果验证', () => {
         container: '#queryForm',
         ...config
       })
-
-      queryForm.render()
 
       // 收起状态下的可见字段数量
       const collapsedVisibleCount = queryForm.getVisibleFieldCount()

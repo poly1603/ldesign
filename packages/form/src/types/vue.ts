@@ -158,6 +158,10 @@ export interface UseFieldArrayOptions extends UseFieldOptions {
   minItems?: number;
   /** 最大项数 */
   maxItems?: number;
+  /** 数组级别验证器 */
+  validator?: (value: any[], context: any) => Promise<{ valid: boolean; message?: string }>;
+  /** 元素级别验证器 */
+  itemValidator?: (value: any, context: any) => Promise<{ valid: boolean; message?: string }>;
 }
 
 /**
@@ -182,6 +186,12 @@ export interface UseFieldArrayReturn extends ReactiveFieldArrayInstance {
   setArrayValue: (values: any[]) => void;
   /** 获取数组值 */
   getArrayValue: () => any[];
+  /** 验证数组项 */
+  validateItem: (index: number) => Promise<{ valid: boolean; message?: string }>;
+  /** 验证整个数组 */
+  validateArray: () => Promise<{ valid: boolean; message?: string }>;
+  /** 重置数组到初始状态 */
+  reset: () => void;
 }
 
 /**
@@ -190,6 +200,10 @@ export interface UseFieldArrayReturn extends ReactiveFieldArrayInstance {
 export interface UseFormContextReturn {
   /** 表单实例 */
   form: ReactiveFormInstance | null;
+  /** 表单ID */
+  formId?: string;
+  /** 表单数据 */
+  formData?: any;
   /** 注册字段 */
   registerField: (config: FieldConfig) => ReactiveFieldInstance;
   /** 注销字段 */

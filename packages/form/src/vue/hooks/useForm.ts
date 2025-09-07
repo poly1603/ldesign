@@ -153,13 +153,18 @@ export function useForm(options: UseFormOptions = {}): UseFormReturn {
    * @param config 字段配置
    * @returns 响应式字段实例
    */
-  const registerField = (config: import('@/types/core').FieldConfig): ReactiveFieldInstance => {
+  const registerField = (config: import('../../types/core').FieldConfig): ReactiveFieldInstance => {
     // 检查字段是否已存在
     if (registeredFields.has(config.name)) {
       return registeredFields.get(config.name)!;
     }
 
-    const field = form.registerField(config);
+    // 检查表单中是否已存在该字段
+    let field = form.getField(config.name);
+    if (!field) {
+      field = form.registerField(config);
+    }
+
     const reactiveField = useField(config.name, { form });
     registeredFields.set(config.name, reactiveField);
     return reactiveField;

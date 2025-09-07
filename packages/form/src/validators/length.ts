@@ -9,7 +9,7 @@ import type { ValidatorFunction, ValidationResult, ValidationContext } from '../
 import type { LengthValidatorParams } from '../types/validator';
 
 /**
- * 获取值的长度
+ * 获取值的长度（正确处理 Unicode 字符）
  * @param value 待检查的值
  * @returns 长度
  */
@@ -18,7 +18,12 @@ function getLength(value: any): number {
     return 0;
   }
 
-  if (typeof value === 'string' || Array.isArray(value)) {
+  if (typeof value === 'string') {
+    // 使用 Array.from 或 [...string] 来正确计算 Unicode 字符数量
+    return [...value].length;
+  }
+
+  if (Array.isArray(value)) {
     return value.length;
   }
 
@@ -26,7 +31,7 @@ function getLength(value: any): number {
     return Object.keys(value).length;
   }
 
-  return String(value).length;
+  return [...String(value)].length;
 }
 
 /**
@@ -37,14 +42,14 @@ function getLength(value: any): number {
  */
 export const minLengthValidator: ValidatorFunction = (
   value: any,
-  context: ValidationContext
+  context?: ValidationContext
 ): ValidationResult => {
   // 如果值为空，则跳过验证（由 required 验证器处理）
   if (value === null || value === undefined || value === '') {
     return { valid: true };
   }
 
-  const params = context.params as LengthValidatorParams | undefined;
+  const params = context?.params as LengthValidatorParams | undefined;
   const minLength = params?.min;
 
   if (minLength === undefined) {
@@ -54,10 +59,13 @@ export const minLengthValidator: ValidatorFunction = (
   const length = getLength(value);
   const isValid = length >= minLength;
 
+  // 获取字段标识符用于错误消息
+  const fieldIdentifier = context?.fieldConfig?.label || context?.fieldName || 'Field';
+
   return {
     valid: isValid,
-    message: params?.message || `${context.fieldConfig.label || context.fieldName} must be at least ${minLength} characters`,
-    code: 'MIN_LENGTH'
+    message: isValid ? '' : (params?.message || `${fieldIdentifier} must be at least ${minLength} characters`),
+    code: isValid ? undefined : 'MIN_LENGTH'
   };
 };
 
@@ -69,14 +77,14 @@ export const minLengthValidator: ValidatorFunction = (
  */
 export const maxLengthValidator: ValidatorFunction = (
   value: any,
-  context: ValidationContext
+  context?: ValidationContext
 ): ValidationResult => {
   // 如果值为空，则跳过验证（由 required 验证器处理）
   if (value === null || value === undefined || value === '') {
     return { valid: true };
   }
 
-  const params = context.params as LengthValidatorParams | undefined;
+  const params = context?.params as LengthValidatorParams | undefined;
   const maxLength = params?.max;
 
   if (maxLength === undefined) {
@@ -86,10 +94,13 @@ export const maxLengthValidator: ValidatorFunction = (
   const length = getLength(value);
   const isValid = length <= maxLength;
 
+  // 获取字段标识符用于错误消息
+  const fieldIdentifier = context?.fieldConfig?.label || context?.fieldName || 'Field';
+
   return {
     valid: isValid,
-    message: params?.message || `${context.fieldConfig.label || context.fieldName} must be no more than ${maxLength} characters`,
-    code: 'MAX_LENGTH'
+    message: isValid ? '' : (params?.message || `${fieldIdentifier} must be no more than ${maxLength} characters`),
+    code: isValid ? undefined : 'MAX_LENGTH'
   };
 };
 
@@ -101,19 +112,29 @@ export const maxLengthValidator: ValidatorFunction = (
  */
 export const lengthValidator: ValidatorFunction = (
   value: any,
-  context: ValidationContext
+  context?: ValidationContext
 ): ValidationResult => {
   // 如果值为空，则跳过验证（由 required 验证器处理）
   if (value === null || value === undefined || value === '') {
-    return { valid: true };
+    return { valid: true, message: '' };
   }
 
-  const params = context.params as LengthValidatorParams | undefined;
+  const params = context?.params as LengthValidatorParams | undefined;
   const minLength = params?.min;
   const maxLength = params?.max;
+  const exactLength = params?.exact;
 
-  if (minLength === undefined && maxLength === undefined) {
-    throw new Error('At least one of min or max length parameter is required');
+  if (minLength === undefined && maxLength === undefined && exactLength === undefined) {
+    throw new Error('At least one of min, max, or exact length parameter is required');
+  }
+
+  // 检查值类型是否有效
+  if (typeof value !== 'string' && !Array.isArray(value)) {
+    return {
+      valid: false,
+      message: 'Value must be a string or array',
+      code: 'INVALID_TYPE'
+    };
   }
 
   const length = getLength(value);
@@ -121,14 +142,39 @@ export const lengthValidator: ValidatorFunction = (
   let message = '';
   let code = '';
 
-  if (minLength !== undefined && length < minLength) {
-    isValid = false;
-    message = `${context.fieldConfig.label || context.fieldName} must be at least ${minLength} characters`;
-    code = 'MIN_LENGTH';
-  } else if (maxLength !== undefined && length > maxLength) {
-    isValid = false;
-    message = `${context.fieldConfig.label || context.fieldName} must be no more than ${maxLength} characters`;
-    code = 'MAX_LENGTH';
+  // 确定单位（字符 vs 项目）
+  const unit = Array.isArray(value) ? 'items' : 'characters';
+
+  if (exactLength !== undefined) {
+    // 精确长度验证
+    if (length !== exactLength) {
+      isValid = false;
+      message = params?.exactMessage || `Length must be exactly ${exactLength} ${unit}`;
+      code = 'EXACT_LENGTH';
+    }
+  } else {
+    // 范围验证
+    if (minLength !== undefined && length < minLength) {
+      isValid = false;
+      if (minLength !== undefined && maxLength !== undefined) {
+        // 范围验证消息
+        message = params?.rangeMessage || `Length must be between ${minLength} and ${maxLength} ${unit}`;
+      } else {
+        // 最小长度消息
+        message = params?.minMessage || `Minimum length is ${minLength} ${unit}`;
+      }
+      code = 'MIN_LENGTH';
+    } else if (maxLength !== undefined && length > maxLength) {
+      isValid = false;
+      if (minLength !== undefined && maxLength !== undefined) {
+        // 范围验证消息
+        message = params?.rangeMessage || `Length must be between ${minLength} and ${maxLength} ${unit}`;
+      } else {
+        // 最大长度消息
+        message = params?.maxMessage || `Maximum length is ${maxLength} ${unit}`;
+      }
+      code = 'MAX_LENGTH';
+    }
   }
 
   if (!isValid && params?.message) {
@@ -137,7 +183,7 @@ export const lengthValidator: ValidatorFunction = (
 
   return {
     valid: isValid,
-    message: isValid ? undefined : message,
+    message: isValid ? '' : message,
     code: isValid ? undefined : code
   };
 };
@@ -149,8 +195,8 @@ export const lengthValidator: ValidatorFunction = (
  * @returns 验证器函数
  */
 export function minLength(min: number, message?: string): ValidatorFunction {
-  return (value: any, context: ValidationContext): ValidationResult => {
-    return minLengthValidator(value, { ...context, params: { min, message } });
+  return (value: any, context?: ValidationContext): ValidationResult => {
+    return minLengthValidator(value, context ? { ...context, params: { min, message } } : { params: { min, message } } as any);
   };
 }
 
@@ -161,8 +207,8 @@ export function minLength(min: number, message?: string): ValidatorFunction {
  * @returns 验证器函数
  */
 export function maxLength(max: number, message?: string): ValidatorFunction {
-  return (value: any, context: ValidationContext): ValidationResult => {
-    return maxLengthValidator(value, { ...context, params: { max, message } });
+  return (value: any, context?: ValidationContext): ValidationResult => {
+    return maxLengthValidator(value, context ? { ...context, params: { max, message } } : { params: { max, message } } as any);
   };
 }
 
@@ -172,8 +218,8 @@ export function maxLength(max: number, message?: string): ValidatorFunction {
  * @returns 验证器函数
  */
 export function length(params: LengthValidatorParams): ValidatorFunction {
-  return (value: any, context: ValidationContext): ValidationResult => {
-    return lengthValidator(value, { ...context, params });
+  return (value: any, context?: ValidationContext): ValidationResult => {
+    return lengthValidator(value, context ? { ...context, params } : { params } as any);
   };
 }
 

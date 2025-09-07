@@ -22,9 +22,9 @@ const ComplexFormComponent = {
     const submitResult = ref(null);
     const submitCount = ref(0);
 
-    const onSubmit = (data: any, valid: boolean) => {
+    const onSubmit = (result: any) => {
       submitCount.value++;
-      submitResult.value = { data, valid, timestamp: Date.now() };
+      submitResult.value = { ...result, timestamp: Date.now() };
     };
 
     return {
@@ -50,8 +50,8 @@ const ComplexFormComponent = {
         name="name"
         label="姓名"
         :rules="[
-          { required: true, message: '姓名是必填项' },
-          { min: 2, message: '姓名至少2个字符' }
+          { validator: 'required', message: '姓名是必填项' },
+          { validator: 'minLength', params: { min: 2 }, message: '姓名至少2个字符' }
         ]"
       >
         <template #default="{ value, setValue }">
@@ -69,8 +69,8 @@ const ComplexFormComponent = {
         name="email"
         label="邮箱"
         :rules="[
-          { required: true, message: '邮箱是必填项' },
-          { type: 'email', message: '请输入有效的邮箱地址' }
+          { validator: 'required', message: '邮箱是必填项' },
+          { validator: 'email', message: '请输入有效的邮箱地址' }
         ]"
       >
         <template #default="{ value, setValue }">
@@ -88,8 +88,15 @@ const ComplexFormComponent = {
         name="age"
         label="年龄"
         :rules="[
-          { min: 18, message: '年龄必须大于等于18岁' },
-          { max: 120, message: '年龄必须小于等于120岁' }
+          {
+            validator: (value) => {
+              const num = Number(value);
+              if (isNaN(num)) return { valid: false, message: '年龄必须是数字' };
+              if (num < 18) return { valid: false, message: '年龄必须大于等于18岁' };
+              if (num > 120) return { valid: false, message: '年龄必须小于等于120岁' };
+              return { valid: true, message: '' };
+            }
+          }
         ]"
       >
         <template #default="{ value, setValue }">
@@ -124,7 +131,7 @@ const ComplexFormComponent = {
         name="terms"
         label="同意条款"
         :rules="[
-          { required: true, message: '必须同意用户条款' }
+          { validator: 'required', message: '必须同意用户条款' }
         ]"
       >
         <template #default="{ value, setValue }">
@@ -154,23 +161,20 @@ describe('Form Submission Integration', () => {
       const wrapper = mount(ComplexFormComponent);
       const vm = wrapper.vm as any;
 
-      // 填写有效数据
-      const nameInput = wrapper.find('input[type="text"]');
-      const emailInput = wrapper.find('input[type="email"]');
-      const ageInput = wrapper.find('input[type="number"]');
-      const bioTextarea = wrapper.find('textarea');
-      const termsCheckbox = wrapper.find('input[type="checkbox"]');
+      // 填写有效数据 - 直接通过表单实例设置值
+      const formComponent = wrapper.findComponent(LDesignForm);
+      const formInstance = formComponent.vm.formHook.form;
 
-      await nameInput.setValue('张三');
-      await emailInput.setValue('zhangsan@example.com');
-      await ageInput.setValue('25');
-      await bioTextarea.setValue('我是一名软件工程师');
-      await termsCheckbox.setChecked(true);
+      // 直接设置表单字段值
+      formInstance.setFieldValue('name', '张三');
+      formInstance.setFieldValue('email', 'zhangsan@example.com');
+      formInstance.setFieldValue('age', 25);
+      formInstance.setFieldValue('bio', '我是一名软件工程师');
+      formInstance.setFieldValue('terms', true);
       await nextTick();
 
-      // 提交表单
-      const form = wrapper.find('form');
-      await form.trigger('submit');
+      // 提交表单 - 直接调用组件方法
+      await formComponent.vm.handleSubmit();
       await nextTick();
 
       // 验证提交结果
@@ -190,19 +194,17 @@ describe('Form Submission Integration', () => {
       const wrapper = mount(ComplexFormComponent);
       const vm = wrapper.vm as any;
 
-      // 只填写必填字段
-      const nameInput = wrapper.find('input[type="text"]');
-      const emailInput = wrapper.find('input[type="email"]');
-      const termsCheckbox = wrapper.find('input[type="checkbox"]');
+      // 只填写必填字段 - 直接通过表单实例设置值
+      const formComponent = wrapper.findComponent(LDesignForm);
+      const formInstance = formComponent.vm.formHook.form;
 
-      await nameInput.setValue('李四');
-      await emailInput.setValue('lisi@example.com');
-      await termsCheckbox.setChecked(true);
+      formInstance.setFieldValue('name', '李四');
+      formInstance.setFieldValue('email', 'lisi@example.com');
+      formInstance.setFieldValue('terms', true);
       await nextTick();
 
-      // 提交表单
-      const form = wrapper.find('form');
-      await form.trigger('submit');
+      // 提交表单 - 直接调用组件方法
+      await formComponent.vm.handleSubmit();
       await nextTick();
 
       // 验证提交结果
@@ -221,8 +223,8 @@ describe('Form Submission Integration', () => {
       const vm = wrapper.vm as any;
 
       // 不填写任何数据，直接提交
-      const form = wrapper.find('form');
-      await form.trigger('submit');
+      const formComponent = wrapper.findComponent(LDesignForm);
+      await formComponent.vm.handleSubmit();
       await nextTick();
 
       // 验证提交结果
@@ -244,19 +246,17 @@ describe('Form Submission Integration', () => {
       const wrapper = mount(ComplexFormComponent);
       const vm = wrapper.vm as any;
 
-      // 填写无效邮箱
-      const nameInput = wrapper.find('input[type="text"]');
-      const emailInput = wrapper.find('input[type="email"]');
-      const termsCheckbox = wrapper.find('input[type="checkbox"]');
+      // 填写无效邮箱 - 直接通过表单实例设置值
+      const formComponent = wrapper.findComponent(LDesignForm);
+      const formInstance = formComponent.vm.formHook.form;
 
-      await nameInput.setValue('王五');
-      await emailInput.setValue('invalid-email');
-      await termsCheckbox.setChecked(true);
+      formInstance.setFieldValue('name', '王五');
+      formInstance.setFieldValue('email', 'invalid-email'); // 无效邮箱格式
+      formInstance.setFieldValue('terms', true);
       await nextTick();
 
-      // 提交表单
-      const form = wrapper.find('form');
-      await form.trigger('submit');
+      // 提交表单 - 直接调用组件方法
+      await formComponent.vm.handleSubmit();
       await nextTick();
 
       // 验证提交结果

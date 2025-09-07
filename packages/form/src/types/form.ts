@@ -121,7 +121,7 @@ export interface FormInstance {
   readonly destroyed: boolean;
 
   // === 数据操作方法 ===
-  
+
   /**
    * 设置字段值
    * @param fieldName 字段名
@@ -136,6 +136,13 @@ export interface FormInstance {
    * @returns 字段值
    */
   getFieldValue(fieldName: string): any;
+
+  /**
+   * 获取字段初始值
+   * @param fieldName 字段名
+   * @returns 字段初始值
+   */
+  getInitialValue(fieldName: string): any;
 
   /**
    * 设置多个字段值

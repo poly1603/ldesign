@@ -29,7 +29,7 @@ describe('email validator', () => {
       it(`should validate ${emailAddress} as valid`, () => {
         const validator = email();
         const result = validator(emailAddress);
-        
+
         expect(result.valid).toBe(true);
         expect(result.message).toBe('');
       });
@@ -61,15 +61,14 @@ describe('email validator', () => {
       'email@domain@com',
       'email@domain..com',
       'email@.domain.com',
-      'email@domain.com.',
-      ''
+      'email@domain.com.'
     ];
 
     invalidEmails.forEach(emailAddress => {
       it(`should validate ${emailAddress || '(empty)'} as invalid`, () => {
         const validator = email();
         const result = validator(emailAddress);
-        
+
         expect(result.valid).toBe(false);
         expect(result.message).toBe('Please enter a valid email address');
       });
@@ -81,7 +80,7 @@ describe('email validator', () => {
       const customMessage = 'Custom email validation message';
       const validator = email(customMessage);
       const result = validator('invalid-email');
-      
+
       expect(result.valid).toBe(false);
       expect(result.message).toBe(customMessage);
     });
@@ -91,7 +90,7 @@ describe('email validator', () => {
     it('should return valid for null (optional field)', () => {
       const validator = email();
       const result = validator(null);
-      
+
       expect(result.valid).toBe(true);
       expect(result.message).toBe('');
     });
@@ -99,7 +98,7 @@ describe('email validator', () => {
     it('should return valid for undefined (optional field)', () => {
       const validator = email();
       const result = validator(undefined);
-      
+
       expect(result.valid).toBe(true);
       expect(result.message).toBe('');
     });
@@ -107,7 +106,7 @@ describe('email validator', () => {
     it('should return valid for empty string (optional field)', () => {
       const validator = email();
       const result = validator('');
-      
+
       expect(result.valid).toBe(true);
       expect(result.message).toBe('');
     });
@@ -115,7 +114,7 @@ describe('email validator', () => {
     it('should return invalid for number', () => {
       const validator = email();
       const result = validator(123);
-      
+
       expect(result.valid).toBe(false);
       expect(result.message).toBe('Please enter a valid email address');
     });
@@ -123,7 +122,7 @@ describe('email validator', () => {
     it('should return invalid for boolean', () => {
       const validator = email();
       const result = validator(true);
-      
+
       expect(result.valid).toBe(false);
       expect(result.message).toBe('Please enter a valid email address');
     });
@@ -131,7 +130,7 @@ describe('email validator', () => {
     it('should return invalid for object', () => {
       const validator = email();
       const result = validator({ email: 'test@example.com' });
-      
+
       expect(result.valid).toBe(false);
       expect(result.message).toBe('Please enter a valid email address');
     });
@@ -139,7 +138,7 @@ describe('email validator', () => {
     it('should return invalid for array', () => {
       const validator = email();
       const result = validator(['test@example.com']);
-      
+
       expect(result.valid).toBe(false);
       expect(result.message).toBe('Please enter a valid email address');
     });
@@ -151,7 +150,7 @@ describe('email validator', () => {
       const longEmail = `${longLocal}@example.com`;
       const validator = email();
       const result = validator(longEmail);
-      
+
       expect(result.valid).toBe(true);
     });
 
@@ -160,14 +159,14 @@ describe('email validator', () => {
       const longEmail = `${tooLongLocal}@example.com`;
       const validator = email();
       const result = validator(longEmail);
-      
+
       expect(result.valid).toBe(false);
     });
 
     it('should handle international domain names', () => {
       const validator = email();
       const result = validator('test@münchen.de');
-      
+
       // Note: This might be valid or invalid depending on the regex implementation
       // The test documents the current behavior
       expect(typeof result.valid).toBe('boolean');
@@ -176,7 +175,7 @@ describe('email validator', () => {
     it('should handle quoted local parts', () => {
       const validator = email();
       const result = validator('"test email"@example.com');
-      
+
       // Note: Quoted local parts are valid in RFC 5322 but often not supported
       // The test documents the current behavior
       expect(typeof result.valid).toBe('boolean');
@@ -187,21 +186,21 @@ describe('email validator', () => {
     it('should reject email with leading whitespace', () => {
       const validator = email();
       const result = validator(' test@example.com');
-      
+
       expect(result.valid).toBe(false);
     });
 
     it('should reject email with trailing whitespace', () => {
       const validator = email();
       const result = validator('test@example.com ');
-      
+
       expect(result.valid).toBe(false);
     });
 
     it('should reject email with internal whitespace', () => {
       const validator = email();
       const result = validator('test @example.com');
-      
+
       expect(result.valid).toBe(false);
     });
   });

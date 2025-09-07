@@ -166,7 +166,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onUnmounted, nextTick, type PropType } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted, nextTick, markRaw, type PropType } from 'vue'
 import { useForm } from '../hooks/useForm'
 import { useField } from '../hooks/useField'
 import FormProvider from './FormProvider.vue'
@@ -180,15 +180,15 @@ import type {
   LabelPosition
 } from './types'
 
-// === 默认断点配置 ===
-const DEFAULT_BREAKPOINTS: QueryFormBreakpoints = {
+// === 默认断点配置（使用 markRaw 优化，避免不必要的响应式） ===
+const DEFAULT_BREAKPOINTS: QueryFormBreakpoints = markRaw({
   xs: 1,   // < 576px
   sm: 2,   // >= 576px
   md: 3,   // >= 768px
   lg: 4,   // >= 992px
   xl: 5,   // >= 1200px
   xxl: 6   // >= 1400px
-}
+})
 
 // === Props 定义 ===
 const props = withDefaults(defineProps<LDesignQueryFormProps>(), {
@@ -385,69 +385,89 @@ const gridStyles = computed(() => ({
   gridTemplateColumns: `repeat(${computedColCount.value}, 1fr)`
 }))
 
-// 智能按钮组位置计算（需要在 visibleFields 之前计算，避免循环依赖）
-const shouldActionInline = computed(() => {
-  if (props.actionPosition === 'block') return false
-  if (props.actionPosition === 'inline') return true
-
-  // auto 模式：根据字段数量和布局自动决定
-  if (!props.fields?.length) return false
+// 布局计算结果（合并相关计算，避免重复计算）
+const layoutComputed = computed(() => {
+  const fields = props.fields
+  if (!fields?.length) {
+    return {
+      visibleFields: [],
+      shouldActionInline: false,
+      totalFields: 0,
+      maxVisibleFields: 0
+    }
+  }
 
   const colCount = computedColCount.value
-  let totalFields: number
+  const isCollapsed = collapsed.value
+  const actionPos = props.actionPosition
 
-  if (!collapsed.value) {
-    // 展开状态：显示所有字段
-    totalFields = props.fields.length
-  } else {
-    // 收起状态：计算默认显示的字段数量
-    let maxVisibleFields = props.defaultRowCount * colCount
-
+  // 计算最大可见字段数量
+  let maxVisibleFields: number
+  if (isCollapsed) {
+    maxVisibleFields = props.defaultRowCount * colCount
     // 收起状态下，如果按钮位置是内联模式，需要为按钮组预留最后一列的位置
-    if (props.actionPosition === 'inline') {
+    if (actionPos === 'inline') {
       maxVisibleFields = maxVisibleFields - 1
     }
-
-    totalFields = Math.min(props.fields.length, maxVisibleFields)
-  }
-
-  const lastRowFieldCount = totalFields % colCount
-
-  // 内联条件：
-  // 1. 收起状态：如果字段数量没有填满一行，按钮组可以内联显示
-  // 2. 展开状态：如果最后一行有剩余位置，按钮组占用剩余列数；如果最后一行被占满，按钮组另起一行
-  if (collapsed.value) {
-    // 收起状态：如果可见字段数量小于列数，说明最后一行有剩余位置可以放置按钮组
-    return totalFields < colCount
   } else {
-    // 展开状态：如果最后一行有剩余位置，内联显示；否则独占一行
-    return lastRowFieldCount > 0 && lastRowFieldCount < colCount
+    maxVisibleFields = fields.length
+  }
+
+  // 计算实际显示的字段数量
+  const totalFields = isCollapsed
+    ? Math.min(fields.length, Math.max(0, maxVisibleFields))
+    : fields.length
+
+  // 计算可见字段列表
+  const visibleFields = isCollapsed
+    ? fields.slice(0, totalFields)
+    : fields
+
+  // 计算按钮组是否应该内联显示
+  let shouldActionInline: boolean
+  if (actionPos === 'block') {
+    shouldActionInline = false
+  } else if (actionPos === 'inline') {
+    // inline 模式：优先内联，但如果最后一行没有剩余空间则独占一行
+    const lastRowFieldCount = totalFields % colCount
+
+    if (isCollapsed) {
+      // 收起状态：如果可见字段数量小于列数，说明最后一行有剩余位置可以放置按钮组
+      shouldActionInline = totalFields < colCount
+    } else {
+      // 展开状态：如果最后一行有剩余位置，内联显示；否则独占一行
+      shouldActionInline = lastRowFieldCount > 0 && lastRowFieldCount < colCount
+    }
+  } else {
+    // auto 模式：根据字段数量和布局自动决定
+    const lastRowFieldCount = totalFields % colCount
+
+    if (isCollapsed) {
+      // 收起状态：如果可见字段数量小于列数，说明最后一行有剩余位置可以放置按钮组
+      shouldActionInline = totalFields < colCount
+    } else {
+      // 展开状态：如果最后一行有剩余位置，内联显示；否则独占一行
+      shouldActionInline = lastRowFieldCount > 0 && lastRowFieldCount < colCount
+    }
+  }
+
+  return {
+    visibleFields,
+    shouldActionInline,
+    totalFields,
+    maxVisibleFields
   }
 })
 
-// 可见字段列表
-const visibleFields = computed(() => {
-  if (!props.fields) return []
+// 从布局计算结果中提取各个值（使用 shallowRef 避免深度响应式）
+const visibleFields = computed(() => layoutComputed.value.visibleFields)
+const shouldActionInline = computed(() => layoutComputed.value.shouldActionInline)
 
-  if (!collapsed.value) {
-    return props.fields
-  }
-
-  // 收起状态：计算默认显示的字段数量
-  const colCount = computedColCount.value
-  let maxVisibleFields = props.defaultRowCount * colCount
-
-  // 收起状态下，如果按钮位置是内联模式，需要为按钮组预留最后一列的位置
-  if (props.actionPosition === 'inline') {
-    maxVisibleFields = maxVisibleFields - 1
-  }
-
-  return props.fields.slice(0, Math.max(0, maxVisibleFields))
-})
-
-// 按钮组样式计算
+// 按钮组样式计算（优化版本，复用布局计算结果）
 const actionStyles = computed(() => {
-  if (!shouldActionInline.value) {
+  const { shouldActionInline: isInline, totalFields } = layoutComputed.value
+
+  if (!isInline) {
     return { gridColumn: '1 / -1' }
   }
 
@@ -458,16 +478,6 @@ const actionStyles = computed(() => {
     return { gridColumn: `${colCount} / -1` }
   } else {
     // 展开状态或auto模式：根据字段数量计算按钮组位置
-    let totalFields: number
-
-    if (collapsed.value) {
-      // 收起状态：使用可见字段数量
-      totalFields = visibleFields.value.length
-    } else {
-      // 展开状态：使用所有字段数量
-      totalFields = props.fields?.length || 0
-    }
-
     const lastRowFieldCount = totalFields % colCount
 
     if (lastRowFieldCount === 0) {
@@ -481,18 +491,11 @@ const actionStyles = computed(() => {
   }
 })
 
-// 是否显示展开/收起按钮
+// 是否显示展开/收起按钮（复用布局计算结果）
 const showCollapseButton = computed(() => {
   if (!props.showCollapseButton || !props.fields) return false
 
-  const colCount = computedColCount.value
-  let maxVisibleFields = props.defaultRowCount * colCount
-
-  // 如果按钮位置是内联模式，需要为按钮组预留最后一列的位置
-  if (props.actionPosition === 'inline') {
-    maxVisibleFields = maxVisibleFields - 1
-  }
-
+  const { maxVisibleFields } = layoutComputed.value
   return props.fields.length > maxVisibleFields
 })
 

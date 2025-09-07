@@ -448,7 +448,7 @@ export class DynamicQueryForm {
     this.actions.classList.add(`action-align-${this.options.actionAlign}`)
   }
 
-  private shouldActionInline(visibleFields: number): boolean {
+  public shouldActionInline(visibleFields: number): boolean {
     if (this.options.actionPosition === 'block') return false
     if (this.options.actionPosition === 'inline') return true
 

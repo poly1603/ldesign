@@ -74,7 +74,7 @@ export interface ValidationResult {
  */
 export type ValidatorFunction<T = any> = (
   value: T,
-  context: ValidationContext
+  context?: ValidationContext
 ) => ValidationResult | Promise<ValidationResult>;
 
 /**
@@ -218,7 +218,7 @@ export interface FormInstance {
   fields: Map<string, FieldInstance>;
   /** 验证结果 */
   validation: Record<string, ValidationResult>;
-  
+
   // 方法将在具体实现中定义
   [key: string]: any;
 }
@@ -237,7 +237,7 @@ export interface FieldInstance {
   validation: ValidationResult | null;
   /** 所属表单 */
   form: FormInstance;
-  
+
   // 方法将在具体实现中定义
   [key: string]: any;
 }

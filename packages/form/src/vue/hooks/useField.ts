@@ -8,6 +8,7 @@
 import { ref, computed, onUnmounted, watch, inject, type Ref, type ComputedRef } from 'vue';
 import type { FieldInstance, ValidationResult, FieldChangeEvent } from '../../types/core';
 import type { UseFieldOptions, UseFieldReturn, ReactiveFieldInstance, ReactiveFormInstance } from '../../types/vue';
+import { EVENT_NAMES } from '../../core/events';
 
 /**
  * 表单上下文注入键
@@ -23,7 +24,7 @@ export const FORM_CONTEXT_KEY = Symbol('form-context');
 export function useField(name: string, options: UseFieldOptions = {}): UseFieldReturn {
   // 获取表单实例
   const formContext = inject<ReactiveFormInstance>(FORM_CONTEXT_KEY);
-  const form = options.form || formContext?.form;
+  const form = options.form || formContext;
 
   if (!form) {
     throw new Error('useField must be used within a form context or provide a form instance');
@@ -39,32 +40,89 @@ export function useField(name: string, options: UseFieldOptions = {}): UseFieldR
   let field = form.getField(name);
   if (!field) {
     field = form.registerField(fieldConfig);
+  } else {
+    // 如果字段已存在，更新其配置（如果需要）
+    // 这里可以根据需要更新字段的验证规则等
+    if (fieldConfig.rules && fieldConfig.rules.length > 0) {
+      field.setRules(fieldConfig.rules);
+    }
   }
 
   // 响应式数据
   const value = ref(field.getValue());
   const validation = ref<ValidationResult | null>(field.validation);
 
+  // 响应式状态
+  const stateRef = ref(Array.from(field.state));
+  const isDirtyRef = ref(typeof field.isDirty === 'function' ? field.isDirty() : false);
+  const isTouchedRef = ref(typeof field.isTouched === 'function' ? field.isTouched() : false);
+  const isPendingRef = ref(typeof field.isPending === 'function' ? field.isPending() : false);
+
   // 计算属性
-  const state = computed(() => Array.from(field.state));
+  const state = computed(() => stateRef.value);
   const isValid = computed(() => {
     const result = validation.value;
     return result === null || result.valid;
   });
-  const isDirty = computed(() => field.isDirty());
-  const isTouched = computed(() => field.isTouched());
-  const isPending = computed(() => field.isPending());
+  const isDirty = computed(() => isDirtyRef.value);
+  const isTouched = computed(() => isTouchedRef.value);
+  const isPending = computed(() => isPendingRef.value);
 
   // 监听字段变化
-  field.onChange((event: FieldChangeEvent) => {
-    if (event.fieldName === name) {
-      value.value = event.value;
-    }
-  });
+  if (typeof field.onChange === 'function') {
+    field.onChange((event: FieldChangeEvent) => {
+      if (event.fieldName === name) {
+        value.value = event.value;
+      }
+    });
+  }
+
+  // 监听表单变化（用于响应通过表单直接设置的值变化）
+  if (form.events && typeof form.events.on === 'function') {
+    form.events.on(EVENT_NAMES.FORM_CHANGE, (event: any) => {
+      if (event.fieldName === name) {
+        value.value = event.value;
+      }
+    });
+  }
+
+  // 监听表单重置事件
+  if (form.events && typeof form.events.on === 'function') {
+    form.events.on(EVENT_NAMES.FORM_RESET, (event: any) => {
+      // 更新字段值和状态
+      value.value = field.getValue();
+      validation.value = field.validation;
+      stateRef.value = Array.from(field.state);
+      isDirtyRef.value = typeof field.isDirty === 'function' ? field.isDirty() : false;
+      isTouchedRef.value = typeof field.isTouched === 'function' ? field.isTouched() : false;
+      isPendingRef.value = typeof field.isPending === 'function' ? field.isPending() : false;
+    });
+  }
 
   // 监听验证结果变化
-  field.onValidate((result: ValidationResult) => {
-    validation.value = result;
+  if (typeof field.onValidate === 'function') {
+    field.onValidate((result: ValidationResult) => {
+      validation.value = result;
+    });
+  }
+
+  // 监听字段状态变化
+  if (form.events && typeof form.events.on === 'function') {
+    form.events.on(EVENT_NAMES.STATE_CHANGE, (event: any) => {
+      if (event.target === 'field' && event.id === field.id) {
+        // 更新所有状态
+        stateRef.value = Array.from(field.state);
+        isDirtyRef.value = typeof field.isDirty === 'function' ? field.isDirty() : false;
+        isTouchedRef.value = typeof field.isTouched === 'function' ? field.isTouched() : false;
+        isPendingRef.value = typeof field.isPending === 'function' ? field.isPending() : false;
+      }
+    });
+  }
+
+  // 监听字段状态变化（dirty状态通过值变化来更新）
+  watch(value, () => {
+    isDirtyRef.value = field.isDirty();
+    stateRef.value = Array.from(field.state);
   });
 
   // 监听值变化，同步到字段
@@ -107,6 +165,12 @@ export function useField(name: string, options: UseFieldOptions = {}): UseFieldR
   const reset = (resetValue?: any): void => {
     field.reset({ value: resetValue });
     value.value = field.getValue();
+    validation.value = field.validation;
+    // 更新状态
+    stateRef.value = Array.from(field.state);
+    isDirtyRef.value = typeof field.isDirty === 'function' ? field.isDirty() : false;
+    isTouchedRef.value = typeof field.isTouched === 'function' ? field.isTouched() : false;
+    isPendingRef.value = typeof field.isPending === 'function' ? field.isPending() : false;
   };
 
   /**

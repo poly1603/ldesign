@@ -41,11 +41,10 @@
       </div>
 
       <!-- 错误信息 -->
-      <div
-        v-if="errorMessage"
-        class="ldesign-form-item__error"
-      >
-        {{ errorMessage }}
+      <div class="ldesign-form-item__error">
+        <slot name="error" :error="errorMessage">
+          {{ errorMessage }}
+        </slot>
       </div>
 
       <!-- 帮助信息 -->
@@ -62,6 +61,7 @@
 <script setup lang="ts">
 import { computed, watch, onMounted, type PropType } from 'vue';
 import { useField } from '../hooks/useField';
+import { useFormContext } from '../hooks/useFormContext';
 import type { LDesignFormItemProps, LDesignFormItemEmits, LDesignFormItemExpose } from './types';
 
 // === Props 定义 ===
@@ -75,9 +75,20 @@ const props = withDefaults(defineProps<LDesignFormItemProps>(), {
 // === Emits 定义 ===
 const emit = defineEmits<LDesignFormItemEmits>();
 
+// === 获取表单上下文 ===
+const formContext = useFormContext();
+
 // === 字段实例 ===
+// 优先使用props中的form，如果没有则从上下文中获取
+const formInstance = props.form || formContext?.form;
+
+if (!formInstance) {
+  throw new Error('LDesignFormItem must be used within a form context or have a form prop');
+}
+
 const field = useField(props.name, {
   ...props.config,
+  form: formInstance,
   rules: props.rules,
   required: props.required
 });
@@ -86,9 +97,9 @@ const field = useField(props.name, {
 const fieldId = computed(() => `field-${props.name}-${Date.now()}`);
 
 const isRequired = computed(() => {
-  return props.required || 
+  return props.required ||
          (props.rules && props.rules.some((rule: any) => rule.required)) ||
-         field.field.config.required;
+         (field.field && field.field.config && field.field.config.required);
 });
 
 const formItemClasses = computed(() => [
@@ -104,13 +115,18 @@ const formItemClasses = computed(() => [
     'ldesign-form-item--warning': hasWarning.value,
     'ldesign-form-item--validating': field.isPending.value,
     'ldesign-form-item--dirty': field.isDirty.value,
-    'ldesign-form-item--touched': field.isTouched.value
+    'ldesign-form-item--touched': field.isTouched.value,
+    'ldesign-form-item--horizontal': props.layout === 'horizontal',
+    'ldesign-form-item--inline': props.layout === 'inline'
   }
 ]);
 
 const labelClasses = computed(() => [
   'ldesign-form-item__label',
-  `ldesign-form-item__label--${props.labelAlign}`
+  `ldesign-form-item__label--${props.labelAlign}`,
+  {
+    'ldesign-form-item__label--required': isRequired.value
+  }
 ]);
 
 const labelStyles = computed(() => {
@@ -192,9 +208,23 @@ watch(
   }
 );
 
+// 监听规则变化
+watch(
+  () => props.rules,
+  (newRules) => {
+    if (newRules && field.field.config) {
+      field.field.config.rules = newRules;
+      // 重新验证以应用新规则
+      field.validate();
+    }
+  },
+  { deep: true }
+);
+
 // === 暴露的方法和属性 ===
 defineExpose<LDesignFormItemExpose>({
   field,
+  fieldValue: field.value,
   validate: field.validate,
   clearValidation: field.clearValidation,
   reset: field.reset

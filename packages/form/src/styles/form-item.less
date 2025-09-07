@@ -1,0 +1,153 @@
+/**
+ * 表单项样式
+ */
+
+.ldesign-form-item {
+  margin-bottom: var(--ls-margin-base);
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  // 标签样式
+  &__label {
+    display: block;
+    margin-bottom: var(--ls-margin-xs);
+    color: var(--ldesign-text-color-primary);
+    font-size: var(--ls-font-size-sm);
+    font-weight: 500;
+    line-height: 1.5;
+
+    // 必填标记
+    &--required::before {
+      content: '*';
+      color: var(--ldesign-error-color);
+      margin-right: 4px;
+    }
+  }
+
+  // 控件容器
+  &__control {
+    position: relative;
+    
+    // 输入框样式
+    .ldesign-input {
+      width: 100%;
+    }
+  }
+
+  // 错误信息
+  &__error {
+    margin-top: var(--ls-margin-xs);
+    color: var(--ldesign-error-color);
+    font-size: var(--ls-font-size-xs);
+    line-height: 1.4;
+    min-height: 20px;
+  }
+
+  // 帮助信息
+  &__help {
+    margin-top: var(--ls-margin-xs);
+    color: var(--ldesign-text-color-secondary);
+    font-size: var(--ls-font-size-xs);
+    line-height: 1.4;
+  }
+
+  // 内联布局
+  &--inline {
+    display: inline-block;
+    margin-right: var(--ls-margin-base);
+    margin-bottom: var(--ls-margin-sm);
+    vertical-align: top;
+
+    .ldesign-form-item__label {
+      display: inline-block;
+      margin-right: var(--ls-margin-xs);
+      margin-bottom: 0;
+      vertical-align: middle;
+    }
+
+    .ldesign-form-item__control {
+      display: inline-block;
+      vertical-align: middle;
+    }
+  }
+
+  // 水平布局
+  &--horizontal {
+    display: flex;
+    align-items: flex-start;
+
+    .ldesign-form-item__label {
+      flex: 0 0 auto;
+      width: 120px;
+      margin-bottom: 0;
+      margin-right: var(--ls-margin-base);
+      text-align: right;
+      line-height: var(--ls-input-height-medium);
+    }
+
+    .ldesign-form-item__control {
+      flex: 1;
+    }
+  }
+
+  // 验证状态
+  &--validating {
+    .ldesign-form-item__control::after {
+      content: '';
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--ldesign-brand-color);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: ldesign-spin 1s linear infinite;
+    }
+  }
+
+  &--success {
+    .ldesign-input {
+      border-color: var(--ldesign-success-color);
+    }
+  }
+
+  &--error {
+    .ldesign-input {
+      border-color: var(--ldesign-error-color);
+    }
+  }
+
+  &--warning {
+    .ldesign-input {
+      border-color: var(--ldesign-warning-color);
+    }
+  }
+}
+
+// 旋转动画
+@keyframes ldesign-spin {
+  0% {
+    transform: translateY(-50%) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
+
+// 响应式布局
+@media (max-width: 768px) {
+  .ldesign-form-item--horizontal {
+    flex-direction: column;
+
+    .ldesign-form-item__label {
+      width: auto;
+      text-align: left;
+      margin-bottom: var(--ls-margin-xs);
+      margin-right: 0;
+    }
+  }
+}

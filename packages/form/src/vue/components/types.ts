@@ -5,11 +5,13 @@
  * 定义所有 Vue 组件的 Props 和 Emits 类型
  */
 
-import type { FormConfig, FieldConfig, ValidationResult } from '@/types/core';
-import type { ReactiveFormInstance, ReactiveFieldInstance } from '@/types/vue';
+import type { FormConfig, FieldConfig, ValidationResult, FormSubmitEvent } from '../../types/core';
+import type { ReactiveFormInstance, ReactiveFieldInstance } from '../../types/vue';
 
 // === LDesignForm 组件类型 ===
 export interface LDesignFormProps {
+  /** 表单实例 */
+  form?: any;
   /** 表单配置 */
   config?: FormConfig;
   /** 初始值 */
@@ -44,7 +46,7 @@ export interface LDesignFormEmits {
   /** 表单变化事件 */
   'change': [data: Record<string, any>, field: string, value: any];
   /** 表单提交事件 */
-  'submit': [data: Record<string, any>, valid: boolean];
+  'submit': [result: FormSubmitEvent];
   /** 表单重置事件 */
   'reset': [data: Record<string, any>];
   /** 表单验证事件 */
@@ -72,6 +74,8 @@ export interface LDesignFormItemProps {
   label?: string;
   /** 字段配置 */
   config?: Partial<FieldConfig>;
+  /** 表单实例 */
+  form?: any;
   /** 是否必填 */
   required?: boolean;
   /** 验证规则 */
@@ -92,6 +96,8 @@ export interface LDesignFormItemProps {
   labelAlign?: LabelAlign;
   /** 字段尺寸 */
   size?: 'small' | 'medium' | 'large';
+  /** 布局模式 */
+  layout?: 'horizontal' | 'inline' | 'vertical';
   /** 是否显示验证图标 */
   showValidationIcon?: boolean;
   /** 验证状态 */
@@ -110,6 +116,8 @@ export interface LDesignFormItemEmits {
 export interface LDesignFormItemExpose {
   /** 字段实例 */
   field: ReactiveFieldInstance;
+  /** 字段值 */
+  fieldValue: any;
   /** 验证字段 */
   validate: () => Promise<ValidationResult>;
   /** 清除验证 */
@@ -185,6 +193,8 @@ export interface FormProviderEmits {
 export interface FormProviderExpose {
   /** 表单实例 */
   form: ReactiveFormInstance;
+  /** 表单上下文 */
+  formContext: any;
 }
 
 // === 通用类型 ===

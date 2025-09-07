@@ -17,10 +17,7 @@ export { useFormContext, provideFormContext } from './hooks/useFormContext';
 export * from './hooks';
 
 // === Vue 组件 ===
-// export { default as LDesignForm } from './components/LDesignForm.vue';
-// export { default as LDesignFormItem } from './components/LDesignFormItem.vue';
-// export { default as FieldArray } from './components/FieldArray.vue';
-// export { default as FormProvider } from './components/FormProvider.vue';
+export * from './components';
 
 // === Vue 指令 ===
 // export { vModel } from './directives/vModel';
@@ -46,6 +43,11 @@ export function install(app: App): void {
 }
 
 // === 默认导出 ===
+import { useForm } from './hooks/useForm';
+import { useField } from './hooks/useField';
+import { useFieldArray } from './hooks/useFieldArray';
+import { useFormContext, provideFormContext } from './hooks/useFormContext';
+
 export default {
   install,
   useForm,

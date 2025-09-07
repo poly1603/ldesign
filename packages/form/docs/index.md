@@ -2,125 +2,181 @@
 layout: home
 
 hero:
-  name: "LemonForm"
-  text: "Vue 3 动态表单库"
-  tagline: 强大、灵活、易用的表单解决方案
+  name: "@ldesign/form"
+  text: "强大的表单管理库"
+  tagline: 类型安全、高性能、框架无关的表单解决方案
   image:
     src: /logo.svg
-    alt: LemonForm
+    alt: LDesign Form
   actions:
     - theme: brand
       text: 快速开始
       link: /guide/getting-started
+    - theme: alt
+      text: API 文档
+      link: /API
     - theme: alt
       text: 查看示例
       link: /examples/
 
 features:
   - icon: 🚀
-    title: 开箱即用
-    details: 零配置快速上手，内置常用字段类型，支持多种布局方式
+    title: 框架无关
+    details: 核心库不依赖任何框架，提供 Vue 3 适配器，支持其他框架扩展
+  - icon: 🎯
+    title: TypeScript 优先
+    details: 完整的类型定义，提供优秀的开发体验和类型安全保障
+  - icon: ✅
+    title: 强大验证系统
+    details: 内置丰富验证器，支持异步验证、自定义验证器和上下文感知验证
+  - icon: 🔄
+    title: 响应式数据绑定
+    details: 双向数据绑定，实时同步表单状态，支持深度监听和批量更新
   - icon: 🎨
-    title: 高度可定制
-    details: 支持自定义组件、样式和验证规则，满足各种业务需求
+    title: 灵活的组件系统
+    details: 支持 JSX/TSX 组件，可自定义表单控件和布局组件
   - icon: 📱
     title: 响应式布局
-    details: 自动适配不同屏幕尺寸，支持栅格布局和断点配置
-  - icon: ✅
-    title: 强大验证
-    details: 内置丰富验证规则，支持异步验证和自定义验证器
-  - icon: 🔄
-    title: 条件渲染
-    details: 支持字段间联动，动态显示/隐藏字段，实现复杂表单逻辑
-  - icon: 🎯
-    title: TypeScript
-    details: 完整的类型定义，提供优秀的开发体验和类型安全
+    details: 内置响应式查询表单，支持自适应列数和断点配置
   - icon: 🛠
-    title: 调试友好
-    details: 内置调试面板，实时查看表单状态，快速定位问题
+    title: 开发友好
+    details: 完整的测试覆盖，详细的错误信息，丰富的调试工具
   - icon: 📦
-    title: 轻量级
-    details: 核心包体积小，支持按需加载，不会增加项目负担
+    title: 高性能
+    details: 优化的渲染机制，内存泄漏防护，支持大规模表单应用
 ---
 
 ## 快速体验
 
+### 基础用法
+
 ```vue
 <template>
-  <DynamicForm
-    v-model="formData"
-    :config="formConfig"
-    @submit="handleSubmit"
-  />
+  <LDesignForm :form="form" @submit="handleSubmit">
+    <LDesignFormItem
+      name="username"
+      label="用户名"
+      :rules="[{ validator: required() }]"
+    >
+      <LDesignInput v-model="form.data.username" />
+    </LDesignFormItem>
+
+    <LDesignFormItem
+      name="email"
+      label="邮箱"
+      :rules="[{ validator: required() }, { validator: email() }]"
+    >
+      <LDesignInput v-model="form.data.email" type="email" />
+    </LDesignFormItem>
+
+    <LDesignFormItem>
+      <LDesignButton type="primary" html-type="submit">
+        提交
+      </LDesignButton>
+    </LDesignFormItem>
+  </LDesignForm>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { DynamicForm } from '@lemonform/form'
+import { useForm } from '@ldesign/form';
+import { required, email } from '@ldesign/form/validators';
+import {
+  LDesignForm,
+  LDesignFormItem,
+  LDesignInput,
+  LDesignButton
+} from '@ldesign/form/vue';
 
-const formData = ref({})
+const form = useForm({
+  initialValues: {
+    username: '',
+    email: ''
+  }
+});
 
-const formConfig = {
-  fields: [
-    {
-      type: 'input',
-      name: 'username',
-      label: '用户名',
-      component: 'input',
-      required: true,
-      rules: [
-        { type: 'required', message: '用户名不能为空' },
-        { type: 'minLength', value: 3, message: '用户名至少3个字符' }
-      ]
-    },
-    {
-      type: 'input',
-      name: 'email',
-      label: '邮箱',
-      component: 'input',
-      rules: [
-        { type: 'email', message: '请输入有效的邮箱地址' }
-      ]
-    },
-    {
-      type: 'actions',
-      buttons: [
-        { type: 'submit', text: '提交' }
-      ]
-    }
-  ]
-}
-
-const handleSubmit = (data: any) => {
-  console.log('表单提交:', data)
-}
+const handleSubmit = (result: any) => {
+  if (result.valid) {
+    console.log('提交成功:', result.data);
+  } else {
+    console.log('验证失败:', result.validation);
+  }
+};
 </script>
 ```
 
-## 为什么选择 LemonForm？
+### 纯 JavaScript 用法
 
-### 🎯 专为 Vue 3 设计
+```javascript
+import { createForm } from '@ldesign/form';
+import { required, email } from '@ldesign/form/validators';
 
-LemonForm 是专门为 Vue 3 生态系统设计的表单库，充分利用了 Composition API 的优势，提供了现代化的开发体验。
+// 创建表单实例
+const form = createForm({
+  initialValues: {
+    username: '',
+    email: ''
+  }
+});
 
-### 🔧 配置驱动
+// 添加验证规则
+form.getField('username').addRule({ validator: required() });
+form.getField('email').addRule({ validator: required() });
+form.getField('email').addRule({ validator: email() });
 
-通过简单的配置对象就能创建复杂的表单，无需编写大量的模板代码，大大提高开发效率。
+// 设置值并验证
+form.setFieldValue('username', 'john');
+form.setFieldValue('email', 'john@example.com');
+
+const result = await form.validate();
+if (result.valid) {
+  console.log('验证通过，可以提交');
+}
+```
+
+## 为什么选择 @ldesign/form？
+
+### 🎯 框架无关设计
+
+@ldesign/form 采用框架无关的核心设计，可以在任何 JavaScript 环境中使用，同时提供了 Vue 3 的完整适配器。
+
+### 🔧 类型安全
+
+完整的 TypeScript 支持，从表单配置到验证规则，都有严格的类型定义，减少运行时错误。
 
 ### 🎨 高度可扩展
 
-支持自定义字段组件、验证器、主题样式等，可以轻松适应各种业务场景。
+支持自定义验证器、组件、样式主题等，可以轻松适应各种复杂的业务场景。
 
-### 📱 移动优先
+### 📱 现代化架构
 
-内置响应式布局系统，自动适配不同设备，确保在各种屏幕尺寸下都有良好的用户体验。
+基于现代 JavaScript 特性构建，支持 ESM、Tree Shaking，优化的性能和内存管理。
 
-## 社区
+### 🧪 测试驱动
 
-- [GitHub](https://github.com/lemonform/form) - 源代码和问题反馈
-- [NPM](https://www.npmjs.com/package/@lemonform/form) - 包管理
-- [Discord](https://discord.gg/lemonform) - 社区讨论
+超过 94% 的测试覆盖率，包括单元测试、组件测试、性能测试和边界情况测试。
+
+## 核心特性
+
+- **表单管理**: 完整的表单状态管理，支持嵌套字段和字段数组
+- **验证系统**: 内置丰富的验证器，支持同步/异步验证和自定义验证器
+- **Vue 3 集成**: 完整的 Vue 3 Composition API 支持和组件库
+- **响应式布局**: 智能的响应式查询表单，自适应不同屏幕尺寸
+- **性能优化**: 优化的渲染机制，防止内存泄漏，支持大规模表单
+- **开发体验**: 详细的错误信息，完整的 TypeScript 支持，丰富的调试工具
+
+## 安装
+
+```bash
+# 使用 pnpm
+pnpm add @ldesign/form
+
+# 使用 npm
+npm install @ldesign/form
+
+# 使用 yarn
+yarn add @ldesign/form
+```
 
 ## 许可证
 
-[MIT License](https://github.com/lemonform/form/blob/main/LICENSE)
+[MIT License](https://github.com/ldesign/form/blob/main/LICENSE)

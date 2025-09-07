@@ -26,6 +26,10 @@ function isEmpty(value: any): boolean {
     return value.length === 0;
   }
 
+  if (value instanceof Date) {
+    return false; // Date 对象总是被认为是有值的
+  }
+
   if (typeof value === 'object') {
     return Object.keys(value).length === 0;
   }
@@ -41,9 +45,9 @@ function isEmpty(value: any): boolean {
  */
 export const requiredValidator: ValidatorFunction = (
   value: any,
-  context: ValidationContext
+  context?: ValidationContext
 ): ValidationResult => {
-  const params = context.params as RequiredValidatorParams | undefined;
+  const params = context?.params as RequiredValidatorParams | undefined;
   const required = params?.required ?? true;
 
   if (!required) {
@@ -52,21 +56,29 @@ export const requiredValidator: ValidatorFunction = (
 
   const isValueEmpty = isEmpty(value);
 
+  // 获取字段标识符用于错误消息
+  const fieldIdentifier = context?.fieldConfig?.label || context?.fieldName || 'Field';
+
   return {
     valid: !isValueEmpty,
-    message: params?.message || `${context.fieldConfig.label || context.fieldName} is required`,
-    code: 'REQUIRED'
+    message: isValueEmpty ? (params?.message || 'This field is required') : '',
+    code: isValueEmpty ? 'REQUIRED' : undefined
   };
 };
 
 /**
  * 创建必填验证器
- * @param params 验证器参数
+ * @param params 验证器参数或自定义消息
  * @returns 验证器函数
  */
-export function required(params: RequiredValidatorParams = {}): ValidatorFunction {
-  return (value: any, context: ValidationContext): ValidationResult => {
-    return requiredValidator(value, { ...context, params });
+export function required(params: RequiredValidatorParams | string = {}): ValidatorFunction {
+  // 如果传入的是字符串，则作为自定义消息
+  const validatorParams = typeof params === 'string'
+    ? { message: params }
+    : params;
+
+  return (value: any, context?: ValidationContext): ValidationResult => {
+    return requiredValidator(value, context ? { ...context, params: validatorParams } : { params: validatorParams } as any);
   };
 }
 
