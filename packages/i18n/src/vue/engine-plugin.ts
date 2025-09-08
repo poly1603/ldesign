@@ -5,11 +5,12 @@
  * 参考 template 和 router 的架构模式
  */
 
+import { computed, reactive } from 'vue'
 import type { I18nEnginePluginOptions, I18nPreset } from './types'
 import { createI18n } from '../core/createI18n'
 import { installComponents } from './components/index'
 import { installDirectives } from './directives'
-import { I18nInjectionKey, createVueI18n } from './plugin'
+import { I18nInjectionKey } from './plugin'
 
 /**
  * Engine 插件接口（临时定义，避免循环依赖）
@@ -211,6 +212,15 @@ const pluginState: I18nPluginState = {
 }
 
 /**
+ * Vue 响应式状态
+ * 用于确保语言切换时 Vue 组件能够正确响应
+ */
+const reactiveState = reactive({
+  currentLocale: 'zh-CN',
+  availableLocales: [] as string[]
+})
+
+/**
  * 创建 I18n Engine 插件
  * 
  * @param options I18n 配置选项
@@ -253,7 +263,11 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
     onLoadError,
     devtools,
     performance,
-    errorHandling
+    errorHandling,
+    // 新增：功能与语言过滤配置
+    features = { components: true, directives: true },
+    enabledLanguages,
+    disabledLanguages
   } = mergedOptions
 
   return {
@@ -301,6 +315,9 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
             preload,
             cache,
             onLanguageChanged: (newLocale) => {
+              // 更新 Vue 响应式状态 - 这是关键！
+              reactiveState.currentLocale = newLocale
+
               // 更新引擎状态
               if (engine.state) {
                 engine.state.set('i18n:currentLocale', newLocale)
@@ -334,28 +351,95 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
           // 初始化 I18n
           await pluginState.i18n.init()
 
-          // 创建 Vue I18n 适配器
-          const vueI18n = createVueI18n({
-            locale: mergedOptions.locale,
-            fallbackLocale: mergedOptions.fallbackLocale,
-            messages: mergedOptions.messages
-          })
+          // 初始化响应式状态
+          reactiveState.currentLocale = pluginState.i18n?.currentLocale || mergedOptions.locale
+
+          // 统一获取并过滤语言代码
+          const rawLanguages = pluginState.i18n?.getAvailableLanguages() || []
+          let codes = rawLanguages.map((lang: any) => (typeof lang === 'string' ? lang : lang.code)).filter(Boolean)
+
+          // 合并 messages 中的显式语言键，确保 UI 可以展示所有定义的语言
+          const messageKeys = messages ? Object.keys(messages as Record<string, unknown>) : []
+          codes = Array.from(new Set<string>([...codes, ...messageKeys]))
+
+          if (Array.isArray(enabledLanguages) && enabledLanguages.length) {
+            codes = codes.filter(code => enabledLanguages.includes(code))
+          }
+          if (Array.isArray(disabledLanguages) && disabledLanguages.length) {
+            codes = codes.filter(code => !disabledLanguages.includes(code))
+          }
+
+          if (codes.length > 0) {
+            reactiveState.availableLocales = codes
+          } else {
+            reactiveState.availableLocales = [mergedOptions.locale, mergedOptions.fallbackLocale].filter(Boolean) as string[]
+          }
+
+          // 直接提供已初始化的 I18n 实例到 Vue 应用
+          // 创建一个简单的 Vue I18n 适配器
+          const vueI18n = {
+            locale: computed(() => reactiveState.currentLocale), // 现在依赖响应式状态
+            availableLocales: computed(() => reactiveState.availableLocales), // 现在依赖响应式状态
+            t: (key: string, params?: Record<string, unknown>) => {
+              return pluginState.i18n?.t(key, params) || key
+            },
+            changeLanguage: async (locale: string) => {
+              if (pluginState.i18n) {
+                await pluginState.i18n.changeLanguage(locale)
+              }
+            },
+            hasKey: (key: string) => {
+              return pluginState.i18n?.hasKey(key) || false
+            },
+            getAvailableLanguages: () => {
+              const raw = pluginState.i18n?.getAvailableLanguages() || []
+              let codes = raw.map((lang: any) => (typeof lang === 'string' ? lang : lang.code)).filter(Boolean)
+
+              // 合并 messages 的语言键，避免未预加载导致的丢失
+              const messageKeys = messages ? Object.keys(messages as Record<string, unknown>) : []
+              codes = Array.from(new Set<string>([...codes, ...messageKeys]))
+
+              if (Array.isArray(enabledLanguages) && enabledLanguages.length) {
+                codes = codes.filter(code => enabledLanguages.includes(code))
+              }
+              if (Array.isArray(disabledLanguages) && disabledLanguages.length) {
+                codes = codes.filter(code => !disabledLanguages.includes(code))
+              }
+              return codes.length ? codes : [mergedOptions.locale, mergedOptions.fallbackLocale]
+            },
+            getCurrentLocale: () => {
+              return pluginState.i18n?.currentLocale || mergedOptions.locale
+            },
+            getCurrentLanguage: () => {
+              return pluginState.i18n?.getCurrentLanguage() || mergedOptions.locale
+            },
+            // 添加其他可能需要的方法
+            global: {
+              locale: computed(() => reactiveState.currentLocale), // 现在依赖响应式状态
+              t: (key: string, params?: Record<string, unknown>) => {
+                return pluginState.i18n?.t(key, params) || key
+              }
+            }
+          }
 
           // 提供 Vue I18n 实例到 Vue 应用
           vueApp.provide(I18nInjectionKey, vueI18n)
 
           // 设置全局属性
           if (vueApp.config && vueApp.config.globalProperties) {
-            vueApp.config.globalProperties.$i18n = pluginState.i18n
-            vueApp.config.globalProperties.$t = pluginState.i18n.t.bind(pluginState.i18n)
-            vueApp.config.globalProperties.$te = pluginState.i18n.exists.bind(pluginState.i18n)
+            vueApp.config.globalProperties.$i18n = vueI18n
+            vueApp.config.globalProperties.$t = vueI18n.t
+            vueApp.config.globalProperties.$te = vueI18n.hasKey
           }
 
-          // 安装组件
-          installComponents(vueApp)
+          // 安装组件/指令可按需启用
+          if (!features || features.components !== false) {
+            installComponents(vueApp)
+          }
 
-          // 安装指令
-          installDirectives(vueApp)
+          if (!features || features.directives !== false) {
+            installDirectives(vueApp)
+          }
 
           // 将 I18n 注册到 engine 上
           const i18nAdapter = {
@@ -369,9 +453,13 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
             getAvailableLanguages: () => {
               // 返回语言代码数组，而不是 LanguageInfo 对象数组
               const languages = pluginState.i18n.getAvailableLanguages()
-              return Array.isArray(languages) ? languages.map(lang =>
-                typeof lang === 'string' ? lang : lang.code
-              ) : []
+              if (Array.isArray(languages) && languages.length > 0) {
+                return languages.map(lang =>
+                  typeof lang === 'string' ? lang : lang.code
+                )
+              }
+              // 如果没有可用语言，返回默认语言
+              return [mergedOptions.locale, mergedOptions.fallbackLocale]
             },
             setLocaleMessage: pluginState.i18n.setLocaleMessage?.bind(pluginState.i18n),
             getLocaleMessage: pluginState.i18n.getLocaleMessage?.bind(pluginState.i18n),

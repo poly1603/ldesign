@@ -18,6 +18,9 @@
 - 📦 **多种格式** - 支持 ESM、CJS、UMD 多种模块格式
 - 🛠️ **丰富工具** - 插值、复数化、格式化、验证等完整工具链
 - ⚡ **Vue 集成** - 类似 vue-i18n 的 API，组合式 API、组件、指令全面支持
+- 🎛️ **语言选择** - 灵活配置启用的语言，支持过滤器和严格模式
+- 🔄 **内容扩展** - 动态扩展和修改翻译内容，支持多种扩展策略
+- 📋 **动态管理** - 运行时语言管理和配置，支持优先级和推荐机制
 
 ## 📦 安装
 
@@ -116,12 +119,89 @@ const { t, locale, setLocale } = useI18n()
 </script>
 ```
 
+### 🆕 高级功能（v2.0+）
+
+#### 语言选择配置
+
+```typescript
+import { createSelectiveI18n } from '@ldesign/i18n'
+
+// 只启用特定语言
+const i18n = createSelectiveI18n({
+  locale: 'zh-CN',
+  languageConfig: {
+    enabled: ['zh-CN', 'en', 'ja'], // 只启用这些语言
+    priority: {
+      'zh-CN': 100,
+      'en': 90,
+      'ja': 80
+    }
+  },
+  strictMode: true // 严格模式，只允许切换到启用的语言
+})
+```
+
+#### 翻译内容扩展
+
+```typescript
+import { createExtensibleI18n, ExtensionStrategy } from '@ldesign/i18n'
+
+// 扩展内置翻译
+const i18n = createExtensibleI18n({
+  locale: 'zh-CN',
+  globalExtensions: [
+    {
+      name: 'app-common',
+      translations: {
+        app: { name: 'My App', version: '1.0.0' }
+      }
+    }
+  ],
+  languageExtensions: {
+    'zh-CN': [
+      {
+        name: 'zh-custom',
+        strategy: ExtensionStrategy.MERGE,
+        translations: {
+          ui: { customButton: '自定义按钮' }
+        }
+      }
+    ]
+  }
+})
+```
+
+#### 完整配置功能
+
+```typescript
+import { createConfigurableI18n } from '@ldesign/i18n'
+
+// 整合所有新功能
+const i18n = createConfigurableI18n({
+  locale: 'zh-CN',
+  languageConfig: {
+    enabled: ['zh-CN', 'en'],
+    priority: { 'zh-CN': 100, 'en': 90 }
+  },
+  messages: {
+    'zh-CN': { hello: '你好' },
+    'en': { hello: 'Hello' }
+  },
+  globalExtensions: [
+    { name: 'app', translations: { app: { name: 'My App' } } }
+  ],
+  strictMode: true,
+  autoDetect: false
+})
+```
+
 ## 📚 文档
 
 - [快速开始](./docs/guide/getting-started.md)
 - [配置选项](./docs/guide/configuration.md)
 - [Vue 集成](./docs/vue/installation.md)
 - [API 参考](./docs/api/core.md)
+- [🆕 高级功能指南](./docs/advanced-features.md) - 语言选择配置、翻译内容扩展、动态管理
 - [示例](./docs/examples/vue.md)
 
 ## 🎯 核心功能

@@ -162,7 +162,7 @@ const loading = ref(false)
 /**
  * 当前语言
  */
-const currentLocale = computed(() => i18n.getCurrentLanguage())
+const currentLocale = computed(() => (i18n as any).locale?.value ?? i18n.getCurrentLanguage())
 
 /**
  * 默认语言信息映射

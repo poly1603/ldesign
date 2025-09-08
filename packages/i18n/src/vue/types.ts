@@ -2,7 +2,7 @@
  * Vue I18n 类型定义
  */
 
-import type { InjectionKey } from 'vue'
+import type { InjectionKey, ComputedRef } from 'vue'
 import type { I18n } from '../core/i18n'
 
 /**
@@ -22,9 +22,9 @@ export interface VueI18n {
   /** 核心 I18n 实例（用于高级用法） */
   global: any
   /** 当前语言 */
-  locale: string
+  locale: ComputedRef<string>
   /** 可用语言列表 */
-  availableLocales: string[]
+  availableLocales: ComputedRef<string[]>
   /** 翻译函数 */
   t: (key: string, params?: Record<string, unknown>) => string
   /** 键存在检查函数 */
@@ -99,12 +99,23 @@ export interface I18nEnginePluginOptions extends I18nPluginOptions {
     enableReporting?: boolean
     reportEndpoint?: string
   }
+  /** 功能模块开关 */
+  features?: {
+    /** 是否安装内置组件，默认 true */
+    components?: boolean
+    /** 是否安装内置指令，默认 true */
+    directives?: boolean
+  }
+  /** 仅启用的语言列表（白名单） */
+  enabledLanguages?: string[]
+  /** 禁用的语言列表（黑名单） */
+  disabledLanguages?: string[]
 }
 
 /**
  * I18n 预设类型
  */
-export type I18nPreset = 
+export type I18nPreset =
   | 'spa'        // 单页应用
   | 'mpa'        // 多页应用
   | 'mobile'     // 移动端应用
@@ -136,13 +147,13 @@ export interface UseI18nReturn {
 /**
  * 指令绑定值类型
  */
-export type DirectiveBinding = 
-  | string 
+export type DirectiveBinding =
+  | string
   | {
-      key: string
-      params?: Record<string, unknown>
-      locale?: string
-    }
+    key: string
+    params?: Record<string, unknown>
+    locale?: string
+  }
 
 /**
  * 语言信息接口

@@ -104,28 +104,21 @@ export function createVueI18n(options: CreateI18nOptions): VueI18n {
     await updateAvailableLocales()
   })
 
+  // 将基本状态暴露为 ComputedRef，确保外部可以通过 .value 订阅变更
+  const localeRef = computed(() => state.locale)
+  const availableLocalesRef = computed(() => state.availableLocales)
+
   return {
     global: i18n,
-    get locale() {
-      return state.locale
-    },
-    get availableLocales() {
-      return state.availableLocales
-    },
+    locale: localeRef,
+    availableLocales: availableLocalesRef,
     t,
     te,
     setLocale,
     setLocaleMessage,
     getLocaleMessage,
     getCurrentLanguage: () => state.locale,
-    getAvailableLanguages: () => {
-      // 确保返回字符串数组，而不是 LanguageInfo 对象数组
-      if (Array.isArray(state.availableLocales)) {
-        return state.availableLocales
-      }
-      // 如果 state.availableLocales 不是数组，返回空数组
-      return []
-    },
+    getAvailableLanguages: () => (Array.isArray(state.availableLocales) ? state.availableLocales : []),
     changeLanguage: setLocale
   }
 }
@@ -164,23 +157,23 @@ export function useI18n() {
 
   // 创建响应式的翻译函数
   const t = (key: string, params?: Record<string, unknown>): string => {
-    // 通过访问 locale 来触发响应式更新
-    i18n.locale
+    // 通过访问 locale.value 来触发响应式更新
+    i18n.locale.value
     return i18n.t(key, params)
   }
 
   // 创建响应式的键存在检查函数
   const te = (key: string, locale?: string): boolean => {
-    // 通过访问 locale 来触发响应式更新
-    i18n.locale
+    // 通过访问 locale.value 来触发响应式更新
+    i18n.locale.value
     return i18n.te(key, locale)
   }
 
   return {
-    locale: computed(() => i18n.locale),
-    availableLocales: computed(() => i18n.availableLocales),
-    t: i18n.t,
-    te: i18n.te,
+    locale: i18n.locale, // 直接返回 computed 属性
+    availableLocales: i18n.availableLocales, // 直接返回 computed 属性
+    t, // 使用响应式的 t 函数
+    te, // 使用响应式的 te 函数
     setLocale: i18n.setLocale,
     setLocaleMessage: i18n.setLocaleMessage,
     getLocaleMessage: i18n.getLocaleMessage

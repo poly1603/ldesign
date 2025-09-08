@@ -11,6 +11,7 @@ import type { Loader, LanguagePackage, NestedObject, LanguageInfo } from './type
 import { getBuiltInTranslation, hasBuiltInTranslation } from '../locales'
 import { mergeLanguagePackages, MergeStrategy, type MergeOptions } from './merger'
 import { I18nError, LanguageLoadError } from './errors'
+import { LanguageRegistry, type LanguageConfig, type LanguageFilter } from './language-config'
 
 /**
  * 内置加载器配置选项
@@ -30,6 +31,12 @@ export interface BuiltInLoaderOptions {
   fallbackToBuiltIn?: boolean
   /** 内置翻译的命名空间 */
   builtInNamespace?: string
+  /** 语言配置 - 新增 */
+  languageConfig?: LanguageConfig
+  /** 启用的语言过滤器 - 新增 */
+  enabledLanguages?: LanguageFilter
+  /** 是否严格模式（只加载启用的语言） - 新增 */
+  strictMode?: boolean
 }
 
 /**
@@ -46,6 +53,8 @@ export class BuiltInLoader implements Loader {
   private preferBuiltIn: boolean
   private fallbackToBuiltIn: boolean
   private builtInNamespace?: string
+  private languageRegistry: LanguageRegistry
+  private strictMode: boolean
 
   constructor(options: BuiltInLoaderOptions = {}) {
     this.userMessages = options.userMessages || {}
@@ -54,8 +63,17 @@ export class BuiltInLoader implements Loader {
     this.preferBuiltIn = options.preferBuiltIn || false
     this.fallbackToBuiltIn = options.fallbackToBuiltIn !== false
     this.builtInNamespace = options.builtInNamespace
+    this.strictMode = options.strictMode || false
 
+    // 初始化语言注册表
+    this.languageRegistry = new LanguageRegistry(options.languageConfig)
 
+    // 如果指定了启用的语言过滤器，更新注册表配置
+    if (options.enabledLanguages) {
+      this.languageRegistry.updateConfig({
+        enabled: options.enabledLanguages
+      })
+    }
 
     // 设置默认合并选项
     this.mergeOptions = {
@@ -69,6 +87,15 @@ export class BuiltInLoader implements Loader {
    * 加载语言包
    */
   async load(locale: string): Promise<LanguagePackage> {
+    // 检查语言是否启用（严格模式下）
+    if (this.strictMode && !this.languageRegistry.isLanguageEnabled(locale)) {
+      throw new I18nError(
+        `Language '${locale}' is not enabled in strict mode`,
+        'LANGUAGE_NOT_ENABLED',
+        { context: { locale, enabledLanguages: this.languageRegistry.getEnabledLanguages() } }
+      )
+    }
+
     // 检查缓存
     if (this.loadedPackages.has(locale)) {
       return this.loadedPackages.get(locale)!
@@ -77,8 +104,10 @@ export class BuiltInLoader implements Loader {
     let finalPackage: LanguagePackage | undefined
 
     try {
-      // 1. 加载内置翻译
-      const builtInPackage = this.useBuiltIn ? await this.loadBuiltIn(locale) : undefined
+      // 1. 加载内置翻译（考虑语言启用状态）
+      const builtInPackage = this.useBuiltIn && this.shouldLoadBuiltIn(locale)
+        ? await this.loadBuiltIn(locale)
+        : undefined
 
       // 2. 加载用户翻译
       const userPackage = await this.loadUser(locale)
@@ -392,6 +421,149 @@ export class BuiltInLoader implements Loader {
       }
     }
     return count
+  }
+
+  /**
+   * 检查是否应该加载内置翻译
+   *
+   * @param locale 语言代码
+   * @returns 是否应该加载
+   */
+  private shouldLoadBuiltIn(locale: string): boolean {
+    // 如果不是严格模式，总是尝试加载内置翻译
+    if (!this.strictMode) {
+      return true
+    }
+
+    // 严格模式下，只加载启用的语言
+    return this.languageRegistry.isLanguageEnabled(locale)
+  }
+
+  /**
+   * 获取启用的语言列表
+   *
+   * @returns 启用的语言列表
+   */
+  getEnabledLanguages(): string[] {
+    return this.languageRegistry.getEnabledLanguages()
+  }
+
+  /**
+   * 获取所有可用语言列表
+   *
+   * @returns 可用语言列表
+   */
+  getAvailableLanguages(): string[] {
+    return this.languageRegistry.getAvailableLanguages()
+  }
+
+  /**
+   * 检查语言是否启用
+   *
+   * @param locale 语言代码
+   * @returns 是否启用
+   */
+  isLanguageEnabled(locale: string): boolean {
+    return this.languageRegistry.isLanguageEnabled(locale)
+  }
+
+  /**
+   * 启用语言
+   *
+   * @param locale 语言代码
+   * @returns 是否成功启用
+   */
+  enableLanguage(locale: string): boolean {
+    const result = this.languageRegistry.enableLanguage(locale)
+    if (result) {
+      // 清除缓存，强制重新加载
+      this.loadedPackages.delete(locale)
+    }
+    return result
+  }
+
+  /**
+   * 禁用语言
+   *
+   * @param locale 语言代码
+   * @returns 是否成功禁用
+   */
+  disableLanguage(locale: string): boolean {
+    const result = this.languageRegistry.disableLanguage(locale)
+    if (result) {
+      // 清除缓存
+      this.loadedPackages.delete(locale)
+    }
+    return result
+  }
+
+  /**
+   * 批量启用语言
+   *
+   * @param locales 语言代码列表
+   * @returns 成功启用的语言列表
+   */
+  enableLanguages(locales: string[]): string[] {
+    const enabled: string[] = []
+    for (const locale of locales) {
+      if (this.enableLanguage(locale)) {
+        enabled.push(locale)
+      }
+    }
+    return enabled
+  }
+
+  /**
+   * 批量禁用语言
+   *
+   * @param locales 语言代码列表
+   * @returns 成功禁用的语言列表
+   */
+  disableLanguages(locales: string[]): string[] {
+    const disabled: string[] = []
+    for (const locale of locales) {
+      if (this.disableLanguage(locale)) {
+        disabled.push(locale)
+      }
+    }
+    return disabled
+  }
+
+  /**
+   * 过滤语言列表
+   *
+   * 根据当前配置过滤语言列表，只返回启用的语言
+   *
+   * @param locales 要过滤的语言列表
+   * @returns 过滤后的语言列表
+   */
+  filterLanguages(locales: string[]): string[] {
+    if (!this.strictMode) {
+      return locales
+    }
+
+    return locales.filter(locale => this.languageRegistry.isLanguageEnabled(locale))
+  }
+
+  /**
+   * 更新语言配置
+   *
+   * @param config 新的语言配置
+   */
+  updateLanguageConfig(config: LanguageConfig): void {
+    this.languageRegistry.updateConfig(config)
+
+    // 清除所有缓存，强制重新加载
+    this.loadedPackages.clear()
+  }
+
+  /**
+   * 获取语言注册表
+   *
+   * @returns 语言注册表实例
+   */
+  getLanguageRegistry(): LanguageRegistry {
+    return this.languageRegistry
   }
 }
 

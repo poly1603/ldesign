@@ -2,6 +2,7 @@ export default {
   // 基础配置
   root: process.cwd(),
   outDir: 'dist',
+  libraryType: 'vue3',
   
   // 输出格式：ESM、CJS、UMD
   formats: ['esm', 'cjs', 'umd'],

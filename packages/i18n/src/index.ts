@@ -128,6 +128,33 @@ export {
   type CreateI18nOptions
 } from './core/createI18n'
 
+// 新增：选择性和可扩展 I18n 创建函数
+export {
+  createSelectiveI18n,
+  createExtensibleI18n,
+  createConfigurableI18n,
+  type ConfigurableI18nOptions
+} from './core/selective-i18n'
+
+// 新增：语言配置功能
+export {
+  LanguageRegistry,
+  createLanguageRegistry,
+  type LanguageConfig,
+  type LanguageFilter,
+  type LanguageFilterConfig,
+  type SelectiveI18nOptions
+} from './core/language-config'
+
+// 新增：扩展加载器功能
+export {
+  ExtensionLoader,
+  createExtensionLoader,
+  ExtensionStrategy,
+  type TranslationExtension,
+  type ExtensionLoaderOptions
+} from './core/extension-loader'
+
 // ==================== 工具函数导出 ====================
 
 // 插值工具
