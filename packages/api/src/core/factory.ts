@@ -6,6 +6,7 @@
 import type { ApiEngine, ApiEngineConfig } from '../types'
 import process from 'node:process'
 import { ApiEngineImpl } from './ApiEngine'
+import { systemApiPlugin } from '../plugins/systemApi'
 
 /**
  * 创建 API 引擎实例
@@ -276,6 +277,30 @@ export async function createApiEngineWithPlugins(
     await engine.use(plugin)
   }
 
+  return engine
+}
+
+/**
+ * 创建包含系统 API 插件的引擎（便捷）
+ */
+export async function createSystemApiEngine(
+  baseURL: string,
+  options: Omit<ApiEngineConfig, 'http'> & { http?: Omit<ApiEngineConfig['http'], 'baseURL'> } = {},
+): Promise<ApiEngine> {
+  const engine = createApiEngineWithDefaults(baseURL, options)
+  await engine.use(systemApiPlugin)
+  return engine
+}
+
+/**
+ * 根据环境创建包含系统 API 插件的引擎（便捷）
+ */
+export async function createSystemApiEngineByEnv(
+  baseURL: string,
+  options: Omit<ApiEngineConfig, 'http'> & { http?: Omit<ApiEngineConfig['http'], 'baseURL'> } = {},
+): Promise<ApiEngine> {
+  const engine = createApiEngineByEnv(baseURL, options)
+  await engine.use(systemApiPlugin)
   return engine
 }
 

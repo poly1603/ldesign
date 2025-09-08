@@ -18,6 +18,7 @@ import { createHttpClient } from '@ldesign/http'
 import { CacheManager } from '../utils/CacheManager'
 import { DebounceManagerImpl } from '../utils/DebounceManager'
 import { DeduplicationManagerImpl } from '../utils/DeduplicationManager'
+import { version as libVersion } from '../version'
 
 /**
  * API 引擎实现类
@@ -50,7 +51,7 @@ export class ApiEngineImpl implements ApiEngine {
   constructor(config: ApiEngineConfig = {}) {
     this.config = {
       appName: 'LDesign API',
-      version: '1.0.0',
+      version: libVersion,
       debug: false,
       ...config,
       http: {
@@ -234,16 +235,60 @@ export class ApiEngineImpl implements ApiEngine {
         }
       }
 
-      // 创建执行函数
-      const executeRequest = async (): Promise<T> => {
+      // 组装中间件
+      const reqMiddlewares = [
+        ...(this.config.middlewares?.request || []),
+        ...(methodConfig.middlewares?.request || []),
+        ...(options.middlewares?.request || []),
+      ]
+      const resMiddlewares = [
+        ...(this.config.middlewares?.response || []),
+        ...(methodConfig.middlewares?.response || []),
+        ...(options.middlewares?.response || []),
+      ]
+      const errMiddlewares = [
+        ...(this.config.middlewares?.error || []),
+        ...(methodConfig.middlewares?.error || []),
+        ...(options.middlewares?.error || []),
+      ]
+
+      // 计算重试配置
+      const retryConfig = {
+        enabled: false,
+        retries: 0,
+        delay: 0,
+        backoff: 'fixed' as 'fixed' | 'exponential',
+        maxDelay: undefined as number | undefined,
+        retryOn: (error: unknown, _attempt: number) => true,
+        ...this.config.retry,
+        ...methodConfig.retry,
+        ...options.retry,
+      }
+
+      const ctx = { methodName, params, engine: this }
+
+      const performOnce = async (): Promise<T> => {
         // 生成请求配置
-        const requestConfig
+        const requestConfigRaw
           = typeof methodConfig.config === 'function'
             ? methodConfig.config(params)
             : methodConfig.config
 
+        // 规范化请求配置（解析函数型 headers/data/params）
+        let requestConfig = this.normalizeRequestConfig(requestConfigRaw, params)
+
+        // 请求中间件
+        for (const mw of reqMiddlewares) {
+          requestConfig = await Promise.resolve(mw(requestConfig, ctx))
+        }
+
         // 发送请求
-        const response = await this.httpClient.request(requestConfig)
+        let response = await this.httpClient.request(requestConfig)
+
+        // 响应中间件
+        for (const mw of resMiddlewares) {
+          response = await Promise.resolve(mw(response, { ...ctx, request: requestConfig }))
+        }
 
         // 数据转换
         let data = response.data
@@ -256,25 +301,92 @@ export class ApiEngineImpl implements ApiEngine {
           throw new Error(`Data validation failed for method "${methodName}"`)
         }
 
-        // 缓存结果
-        if (!options.skipCache && this.shouldUseCache(methodConfig, options)) {
-          const cacheConfig = {
-            ...this.config.cache,
-            ...methodConfig.cache,
-            ...options.cache,
-          }
-          this.cacheManager.set<T>(cacheKey, data, cacheConfig.ttl!)
-        }
-
-        // 成功回调
-        if (methodConfig.onSuccess) {
-          methodConfig.onSuccess(data)
-        }
-        if (options.onSuccess) {
-          options.onSuccess(data)
-        }
-
         return data
+      }
+
+      // 含重试的执行器
+      const executeWithRetry = async (): Promise<T> => {
+        let attempt = 0
+        while (true) {
+          try {
+            const data = await performOnce()
+
+            // 缓存结果
+            if (!options.skipCache && this.shouldUseCache(methodConfig, options)) {
+              const cacheConfig = {
+                ...this.config.cache,
+                ...methodConfig.cache,
+                ...options.cache,
+              }
+              this.cacheManager.set<T>(cacheKey, data, cacheConfig.ttl!)
+            }
+
+            // 成功回调
+            methodConfig.onSuccess?.(data)
+            options.onSuccess?.(data)
+
+            return data
+          }
+          catch (err) {
+            // 错误中间件尝试恢复
+            let recovered: any | undefined
+            for (const mw of errMiddlewares) {
+              const res = await Promise.resolve(mw(err, { ...ctx, attempt }))
+              if (res && typeof res === 'object' && 'data' in res) {
+                recovered = res
+                break
+              }
+            }
+
+            if (recovered) {
+              // 中间件已经构造了一个响应，走后续数据处理
+              let data: any = recovered.data
+              if (methodConfig.transform) {
+                data = methodConfig.transform(recovered)
+              }
+              if (methodConfig.validate && !methodConfig.validate(data)) {
+                throw new Error(`Data validation failed for method "${methodName}"`)
+              }
+
+              if (!options.skipCache && this.shouldUseCache(methodConfig, options)) {
+                const cacheConfig = {
+                  ...this.config.cache,
+                  ...methodConfig.cache,
+                  ...options.cache,
+                }
+                this.cacheManager.set<T>(cacheKey, data, cacheConfig.ttl!)
+              }
+
+              methodConfig.onSuccess?.(data)
+              options.onSuccess?.(data)
+              return data
+            }
+
+            // 决定是否重试
+            const canRetry = retryConfig.enabled && attempt < (retryConfig.retries || 0)
+              && (retryConfig.retryOn?.(err, attempt) ?? true)
+
+            if (!canRetry) {
+              // 调用错误回调
+              methodConfig.onError?.(err)
+              options.onError?.(err)
+              throw err
+            }
+
+            // 退避计算
+            const baseDelay = retryConfig.delay || 0
+            let delay = baseDelay
+            if (retryConfig.backoff === 'exponential') {
+              delay = baseDelay * Math.pow(2, attempt)
+              if (retryConfig.maxDelay) {
+                delay = Math.min(delay, retryConfig.maxDelay)
+              }
+            }
+
+            await new Promise(resolve => globalThis.setTimeout(resolve, delay))
+            attempt++
+          }
+        }
       }
 
       // 请求去重
@@ -288,7 +400,7 @@ export class ApiEngineImpl implements ApiEngine {
         )
         return await this.deduplicationManager.execute(
           deduplicationKey,
-          executeRequest,
+          executeWithRetry,
         )
       }
 
@@ -305,13 +417,13 @@ export class ApiEngineImpl implements ApiEngine {
         }
         return await this.debounceManager.execute(
           debounceKey,
-          executeRequest,
+          executeWithRetry,
           debounceConfig.delay!,
         )
       }
 
       // 直接执行
-      return await executeRequest()
+      return await executeWithRetry()
     }
     catch (error) {
       this.log(`Error calling method "${methodName}":`, error)
@@ -384,9 +496,23 @@ export class ApiEngineImpl implements ApiEngine {
       return
     }
 
-    this.cacheManager.clear()
+    // 优先调用管理器的销毁方法以清理定时器等资源
+    if (typeof (this.cacheManager as unknown as { destroy?: () => void }).destroy === 'function') {
+      ;(this.cacheManager as unknown as { destroy: () => void }).destroy()
+    }
+    else {
+      this.cacheManager.clear()
+    }
+
     this.debounceManager.clear()
-    this.deduplicationManager.clear()
+
+    if (typeof (this.deduplicationManager as unknown as { destroy?: () => void }).destroy === 'function') {
+      ;(this.deduplicationManager as unknown as { destroy: () => void }).destroy()
+    }
+    else {
+      this.deduplicationManager.clear()
+    }
+
     this.plugins.clear()
     this.methods.clear()
 
@@ -459,6 +585,54 @@ export class ApiEngineImpl implements ApiEngine {
     const globalEnabled = this.config.deduplication?.enabled ?? true
     const methodEnabled = methodConfig.deduplication?.enabled ?? true
     return globalEnabled && methodEnabled
+  }
+
+  /**
+   * 将可能包含函数值的请求配置规范化
+   */
+  private normalizeRequestConfig(config: any, params?: unknown): any {
+    const normalized = { ...config }
+
+    // 解析 data 为函数的情况
+    if (typeof normalized.data === 'function') {
+      try {
+        normalized.data = normalized.data.length > 0 ? normalized.data(params) : normalized.data()
+      }
+      catch {
+        // 保持原值以避免破坏调用
+      }
+    }
+
+    // 解析 params 为函数的情况
+    if (typeof normalized.params === 'function') {
+      try {
+        normalized.params = normalized.params.length > 0 ? normalized.params(params) : normalized.params()
+      }
+      catch {
+        // 忽略解析错误
+      }
+    }
+
+    // 解析 headers 中函数值
+    if (normalized.headers && typeof normalized.headers === 'object') {
+      const headers: Record<string, unknown> = { ...normalized.headers }
+      for (const key of Object.keys(headers)) {
+        const val = (headers as Record<string, unknown>)[key]
+        if (typeof val === 'function') {
+          try {
+            ;(headers as Record<string, unknown>)[key] = (val as (...args: unknown[]) => unknown).length > 0
+              ? (val as (p?: unknown) => unknown)(params)
+              : (val as () => unknown)()
+          }
+          catch {
+            // 解析失败则保留原值
+          }
+        }
+      }
+      normalized.headers = headers
+    }
+
+    return normalized
   }
 
   /**

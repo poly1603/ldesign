@@ -25,7 +25,7 @@ export class DeduplicationManagerImpl implements DeduplicationManager {
   private deduplicationItems = new Map<string, DeduplicationItem>()
 
   /** 清理定时器 */
-  private cleanupTimer: number | null = null
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null
 
   constructor() {
     // 启动清理定时器
@@ -202,7 +202,7 @@ export class DeduplicationManagerImpl implements DeduplicationManager {
    */
   private startCleanupTimer(): void {
     // 每分钟清理一次过期的去重项
-    this.cleanupTimer = window.setInterval(() => {
+    this.cleanupTimer = globalThis.setInterval(() => {
       this.cleanup()
     }, 60 * 1000)
   }

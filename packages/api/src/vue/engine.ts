@@ -9,6 +9,7 @@ import type { ApiVuePluginOptions } from './plugin'
 import process from 'node:process'
 import { createApiEngine } from '../core/factory'
 import { ApiVuePlugin } from './plugin'
+import { version as libVersion } from '../version'
 
 /**
  * API Engine 插件选项
@@ -61,7 +62,7 @@ export function createApiEnginePlugin(
 ): EnginePlugin {
   const {
     name = 'api',
-    version = '1.0.0',
+    version: pluginVersion = libVersion,
     clientConfig = {},
     globalInjection = true,
     globalPropertyName = '$api',
@@ -74,7 +75,7 @@ export function createApiEnginePlugin(
 
   return {
     name,
-    version,
+    version: pluginVersion,
     dependencies: [],
 
     async install(engine) {
@@ -153,7 +154,6 @@ export function createApiEnginePlugin(
  */
 export const defaultApiEnginePlugin = createApiEnginePlugin({
   name: 'api',
-  version: '1.0.0',
   clientConfig: {
     debug: false,
     http: {

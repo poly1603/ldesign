@@ -175,6 +175,7 @@ export class CacheManager {
     totalItems: 0,
     size: 0,
   }
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null
 
   constructor(config: CacheConfig) {
     this.config = {
@@ -383,7 +384,7 @@ export class CacheManager {
    */
   private startCleanupTimer(): void {
     // 每5分钟清理一次过期缓存
-    setInterval(
+    this.cleanupTimer = globalThis.setInterval(
       () => {
         this.cleanupExpiredItems()
       },
@@ -415,5 +416,15 @@ export class CacheManager {
     })
 
     this.updateStats()
+  }
+  /**
+   * 销毁缓存管理器，清理定时器
+   */
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = null
+    }
+    this.clear()
   }
 }

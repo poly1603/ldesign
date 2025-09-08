@@ -14,6 +14,8 @@ export {
   createSingletonApiEngine,
   createTestApiEngine,
   destroySingletonApiEngine,
+  createSystemApiEngine,
+  createSystemApiEngineByEnv,
 } from './core/factory'
 
 export {
@@ -26,4 +28,4 @@ export { SYSTEM_API_METHODS } from './types'
 export * from './vue/index'
 
 // 版本信息
-export const version = '1.0.0'
+export { version } from './version'

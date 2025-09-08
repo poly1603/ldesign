@@ -10,7 +10,7 @@ import type { DebounceManager } from '../types'
  */
 interface DebounceItem {
   /** 定时器ID */
-  timerId: number
+  timerId: ReturnType<typeof setTimeout>
   /** Promise resolve 函数 */
   resolve: (value: unknown) => void
   /** Promise reject 函数 */
@@ -40,8 +40,8 @@ export class DebounceManagerImpl implements DebounceManager {
       // 取消之前的防抖
       this.cancel(key)
 
-      // 创建新的防抖项
-      const timerId = window.setTimeout(async () => {
+// 创建新的防抖项
+      const timerId = globalThis.setTimeout(async () => {
         try {
           const result = await fn()
           resolve(result)

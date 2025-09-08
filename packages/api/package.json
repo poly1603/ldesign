@@ -29,22 +29,21 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
     }
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "browser": "dist/index.min.js",
+  "main": "lib/index.cjs",
+  "module": "es/index.js",
+  "types": "es/index.d.ts",
   "files": [
     "README.md",
     "CHANGELOG.md",
     "dist"
   ],
   "scripts": {
-    "build": "rollup -c",
+    "build": "ldesign-builder build -f esm,cjs",
     "build:watch": "ldesign-builder build --watch",
     "dev": "rollup -c -w",
     "type-check": "vue-tsc --noEmit",
@@ -66,7 +65,8 @@
     "deploy:beta": "tsx ../../tools/deploy/package-deployer.ts api --tag beta",
     "deploy:alpha": "tsx ../../tools/deploy/package-deployer.ts api --tag alpha",
     "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts api --dry-run",
-    "build:dev": "node scripts/build.js --dev"
+    "build:dev": "node scripts/build.js --dev",
+    "generate:registry": "tsx scripts/generate-typed-registry.ts typed-registry.config.json"
   },
   "peerDependencies": {
     "vue": "^3.3.0"

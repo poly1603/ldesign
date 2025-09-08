@@ -31,6 +31,10 @@ export {
   useApiCleanup,
   useBatchApiCall,
   useSystemApi,
+  useApiPolling,
+  usePaginatedApi,
+  useInfiniteApi,
+  useMutation,
 } from './composables'
 export type { ApiCallState, UseApiCallOptions } from './composables'
 
@@ -55,3 +59,5 @@ export {
 } from './plugin'
 
 export type { ApiVuePluginOptions } from './plugin'
+export { useIntersectionObserver } from './utils'
+export { vIntersect } from './directives'

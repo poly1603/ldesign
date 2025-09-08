@@ -28,6 +28,14 @@ export interface ApiEngineConfig {
   debounce?: DebounceConfig
   /** 请求去重配置 */
   deduplication?: DeduplicationConfig
+  /** 重试配置 */
+  retry?: RetryConfig
+  /** 中间件配置 */
+  middlewares?: {
+    request?: RequestMiddleware[]
+    response?: ResponseMiddleware[]
+    error?: ErrorMiddleware[]
+  }
 }
 
 /**
@@ -67,6 +75,70 @@ export interface DeduplicationConfig {
 }
 
 /**
+ * 重试配置
+ */
+export interface RetryConfig {
+  /** 是否启用重试 */
+  enabled?: boolean
+  /** 最大重试次数（不含首次） */
+  retries?: number
+  /** 初始延迟（毫秒） */
+  delay?: number
+  /** 退避策略 */
+  backoff?: 'fixed' | 'exponential'
+  /** 最大延迟（毫秒），用于限制指数退避 */
+  maxDelay?: number
+  /** 是否针对特定错误进行重试 */
+  retryOn?: (error: any, attempt: number) => boolean
+}
+
+/**
+ * 中间件上下文
+ */
+export interface BaseMiddlewareContext {
+  /** API 方法名称 */
+  methodName: string
+  /** 调用参数 */
+  params?: any
+  /** 引擎实例 */
+  engine: ApiEngine
+}
+
+export interface RequestContext extends BaseMiddlewareContext {}
+
+export interface ResponseContext extends BaseMiddlewareContext {
+  /** 原始请求配置（可选） */
+  request?: RequestConfig
+}
+
+export interface ErrorContext extends BaseMiddlewareContext {
+  /** 当前重试已尝试次数（从0开始） */
+  attempt?: number
+}
+
+/**
+ * 中间件函数类型
+ */
+export type RequestMiddleware = (
+  config: RequestConfig,
+  ctx: RequestContext,
+) => Promise<RequestConfig> | RequestConfig
+
+export type ResponseMiddleware = (
+  response: ResponseData,
+  ctx: ResponseContext,
+) => Promise<ResponseData> | ResponseData
+
+/**
+ * 错误中间件可以选择性返回一个“恢复用”的响应。
+ * 如果返回 ResponseData，则视为错误已恢复，后续流程按成功响应处理。
+ */
+export type ErrorMiddleware = (
+  error: any,
+  ctx: ErrorContext,
+) => Promise<void | ResponseData> | void | ResponseData
+
+/**
  * API 方法配置
  */
 export interface ApiMethodConfig {
@@ -88,6 +160,14 @@ export interface ApiMethodConfig {
   debounce?: Partial<DebounceConfig>
   /** 请求去重配置 */
   deduplication?: Partial<DeduplicationConfig>
+  /** 重试配置 */
+  retry?: Partial<RetryConfig>
+  /** 方法级中间件 */
+  middlewares?: {
+    request?: RequestMiddleware[]
+    response?: ResponseMiddleware[]
+    error?: ErrorMiddleware[]
+  }
 }
 
 /**
@@ -122,6 +202,14 @@ export interface ApiCallOptions {
   cache?: Partial<CacheConfig>
   /** 自定义防抖配置 */
   debounce?: Partial<DebounceConfig>
+  /** 自定义重试配置 */
+  retry?: Partial<RetryConfig>
+  /** 临时中间件（仅本次调用有效） */
+  middlewares?: {
+    request?: RequestMiddleware[]
+    response?: ResponseMiddleware[]
+    error?: ErrorMiddleware[]
+  }
   /** 成功回调 */
   onSuccess?: (data: any) => void
   /** 错误回调 */

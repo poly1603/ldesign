@@ -18,12 +18,15 @@ export {
   createSingletonApiEngine,
   createTestApiEngine,
   destroySingletonApiEngine,
+  createSystemApiEngine,
+  createSystemApiEngineByEnv,
 } from './core/factory'
 
 export {
   createCustomSystemApiPlugin,
   systemApiPlugin,
 } from './plugins/systemApi'
+export { createRestApiPlugin } from './plugins/rest'
 
 // 核心类型
 export type {
@@ -50,8 +53,12 @@ export type {
 // 系统 API 常量和方法
 export { SYSTEM_API_METHODS } from './types'
 
+// 认证中间件插件
+export { authMiddlewaresPlugin, createAuthMiddlewaresPlugin } from './plugins/auth'
+
 // 工具类
 export { CacheManager } from './utils/CacheManager'
+export { renameKeysShallow, renameKeysDeep } from './utils/object'
 
 /**
  * @ldesign/api 主入口文件
@@ -82,9 +89,17 @@ export {
   useApiCleanup,
   useBatchApiCall,
   useSystemApi,
+  useApiPolling,
+  usePaginatedApi,
+  useInfiniteApi,
+  useMutation,
 } from './vue/composables'
 
 export type { ApiCallState, UseApiCallOptions } from './vue/composables'
+
+// 类型辅助（可选的强类型注册表）
+export type { TypedApiEngine } from './types/typed'
+export { withTypedApi } from './types/typed'
 export {
   apiPlugin,
   createApiEnginePlugin,
@@ -104,8 +119,10 @@ export {
   installApiVuePlugin,
 } from './vue/plugin'
 export type { ApiVuePluginOptions } from './vue/plugin'
+export { useIntersectionObserver } from './vue/utils'
+export { vIntersect } from './vue/directives'
 
 /**
  * 版本信息
  */
-export const version = '1.0.0'
+export { version } from './version'

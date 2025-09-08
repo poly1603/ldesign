@@ -335,6 +335,31 @@ export const systemApiPlugin: ApiPlugin = {
   apis: systemApiMethods,
 
   install: (engine) => {
+    // 若检测到认证中间件已安装，则移除方法级 Authorization 头，避免与全局中间件重复
+    const authInstalled = Boolean((engine as unknown as { __auth_mw__?: unknown }).__auth_mw__)
+    if (authInstalled) {
+      const methodNames = [
+        SYSTEM_API_METHODS.GET_USER_INFO,
+        SYSTEM_API_METHODS.UPDATE_USER_INFO,
+        SYSTEM_API_METHODS.GET_MENUS,
+        SYSTEM_API_METHODS.GET_PERMISSIONS,
+        SYSTEM_API_METHODS.CHANGE_PASSWORD,
+      ]
+      for (const name of methodNames) {
+        const cfg = engine.methods.get(name)
+        if (!cfg) continue
+        const original = typeof cfg.config === 'function' ? cfg.config : () => cfg.config
+        const newCfg = (params?: unknown) => {
+          const rc = original(params)
+          // 创建浅拷贝并移除 Authorization 头
+          const headers = { ...(rc.headers || {}) }
+          if ('Authorization' in headers) delete (headers as Record<string, unknown>).Authorization
+          return { ...rc, headers }
+        }
+        engine.register(name, { ...cfg, config: newCfg })
+      }
+    }
+
     // 只在开发模式或debug模式下输出日志
     if (engine.config?.debug || (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development')) {
       console.info('[System API Plugin] 系统 API 插件已安装')

@@ -8,6 +8,16 @@
 
 ## ✨ 特性
 
+### 📚 快速导航（新增）
+- 安装与入门：docs/guide/installation.md
+- 中间件与重试：docs/guide/middlewares.md
+- 系统 API 指南：docs/guide/system-api.md
+- REST 插件与分页：docs/guide/rest.md
+- Vue 组合式指南：docs/guide/vue.md
+- 类型增强：withTypedApi（见 middlewares.md、rest.md 与 typed-registry.md）
+- 最佳实践：docs/guide/best-practices.md
+- 常见问题：docs/guide/faq.md
+
 🔌 **插件化架构** - 通过 `engine.use()` 方法轻松扩展和管理接口方法 🎯
 **内置系统接口** - 提供常用的系统接口，如登录、用户信息、菜单等 ⚡
 **性能优化** - 内置缓存、防抖、请求去重等性能优化机制 🌟
@@ -786,6 +796,30 @@ yarn add @ldesign/api
 ```
 
 ## 使用
+
+### 快速上手：中间件/重试/认证/轮询/类型增强（新增）
+
+```ts
+import { createApiEngine, authMiddlewaresPlugin, systemApiPlugin, withTypedApi } from '@ldesign/api'
+
+const api = createApiEngine({
+  retry: { enabled: true, retries: 2, delay: 200 },
+  middlewares: {
+    request: [(cfg) => { cfg.headers = { ...(cfg.headers||{}), 'X-App':'ldesign' }; return cfg }],
+    response: [(res) => { if (res.data?.data) res.data = res.data.data; return res }],
+  }
+})
+
+await api.use(authMiddlewaresPlugin)
+await api.use(systemApiPlugin)
+
+// 可选：类型增强（仅类型层，运行时零成本）
+type Registry = { getUserInfo: { id: string, username: string } }
+const typed = withTypedApi<Registry>(api)
+const u = await typed.call('getUserInfo')
+```
+
+更多见 docs/guide/middlewares.md 与 docs/guide/rest.md。
 
 ### 基础用法
 

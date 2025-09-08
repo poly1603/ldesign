@@ -11,7 +11,7 @@ import type {
   MenuItem,
   UserInfo,
 } from '../types'
-import { computed, getCurrentInstance, inject, onUnmounted, ref } from 'vue'
+import { computed, getCurrentInstance, inject, onUnmounted, ref, watch } from 'vue'
 import { SYSTEM_API_METHODS } from '../types'
 import { API_ENGINE_INJECTION_KEY } from './plugin'
 
@@ -35,6 +35,139 @@ export interface ApiCallState<T = unknown> {
   isSuccess: ComputedRef<boolean>
   /** 是否失败 */
   isError: ComputedRef<boolean>
+}
+
+/**
+ * 变更类钩子：useMutation
+ * - 封装创建/更新/删除等需要提交的操作
+ * - 支持 onMutate（可返回回滚函数）、onSuccess/onError/onFinally
+ */
+export function useMutation<TResult = unknown, TVars = unknown>(
+  methodName: string,
+  options: UseApiCallOptions & {
+    onMutate?: (variables: TVars) => void | (() => void)
+    onSuccess?: (data: TResult, variables: TVars) => void
+    onError?: (error: Error, variables: TVars, rollback?: () => void) => void
+    optimistic?: {
+      /** 直接应用变更，返回回滚函数 */
+      apply?: (variables: TVars) => void | (() => void)
+      /** 生成快照 */
+      snapshot?: () => unknown
+      /** 从快照还原 */
+      restore?: (snapshot: unknown) => void
+      /** 出错时是否回滚（默认 true） */
+      rollbackOnError?: boolean
+      /** 内置快照策略：'shallow' | 'deep'（当未提供 snapshot/restore 且提供 target 时生效） */
+      snapshotStrategy?: 'shallow' | 'deep'
+      /** 目标读写器（与 snapshotStrategy 配合使用） */
+      target?: { get: () => unknown; set: (v: unknown) => void }
+    }
+    /** 是否在进行中时拒绝新的 mutate 调用（默认 false） */
+    lockWhilePending?: boolean
+  } = {},
+) {
+  const api = useApi()
+  const data = ref<TResult | null>(null)
+  const loading = ref(false)
+  const error = ref<Error | null>(null)
+  const isFinished = computed(() => !loading.value)
+  const isSuccess = computed(() => !loading.value && !error.value && data.value !== null)
+  const isError = computed(() => !loading.value && error.value !== null)
+
+  let rollbackFn: (() => void) | undefined
+
+  const mutate = async (variables: TVars, callOptions?: UseApiCallOptions) => {
+    if (options.lockWhilePending && loading.value) {
+      return Promise.reject(new Error('Mutation is pending'))
+    }
+    loading.value = true
+    error.value = null
+    rollbackFn = undefined
+
+    try {
+      const rollbacks: Array<() => void> = []
+
+      // onMutate 回滚
+      const maybeRollback = options.onMutate?.(variables)
+      if (typeof maybeRollback === 'function') rollbacks.push(maybeRollback)
+
+      // snapshot/restore 回滚（显式）
+      if (options.optimistic?.snapshot && options.optimistic?.restore) {
+        const snap = options.optimistic.snapshot()
+        rollbacks.push(() => {
+          try { options.optimistic!.restore!(snap) } catch {}
+        })
+      }
+      // snapshotStrategy + target（内置）
+      else if (options.optimistic?.target && options.optimistic?.snapshotStrategy) {
+        const clone = (val: unknown) => {
+          if (options.optimistic!.snapshotStrategy === 'shallow') {
+            if (Array.isArray(val)) return (val as unknown[]).slice()
+            if (val && typeof val === 'object') return { ...(val as Record<string, unknown>) }
+            return val
+          }
+          // deep
+          try {
+            // @ts-ignore structuredClone may not exist in some env
+            if (typeof structuredClone === 'function') return structuredClone(val)
+          } catch {}
+          try {
+            return JSON.parse(JSON.stringify(val))
+          } catch {
+            return val
+          }
+        }
+        const snap = clone(options.optimistic.target.get())
+        rollbacks.push(() => {
+          try { options.optimistic!.target!.set(snap) } catch {}
+        })
+      }
+
+      // apply 回滚
+      const optimisticRollback = options.optimistic?.apply?.(variables)
+      if (typeof optimisticRollback === 'function') rollbacks.push(optimisticRollback)
+
+      if (rollbacks.length > 0) {
+        rollbackFn = () => {
+          // 逆序回滚
+          for (let i = rollbacks.length - 1; i >= 0; i--) {
+            try { rollbacks[i]() } catch {}
+          }
+        }
+      }
+
+      const result = await api.call<TResult>(methodName, variables as unknown as any, {
+        ...options,
+        ...callOptions,
+      })
+      data.value = result
+
+      options.onSuccess?.(result, variables)
+      return result
+    }
+    catch (err) {
+      const e = err instanceof Error ? err : new Error(String(err))
+      error.value = e
+      options.onError?.(e, variables, rollbackFn)
+      if (rollbackFn && (options.optimistic?.rollbackOnError ?? true)) {
+        try { rollbackFn() } catch {}
+      }
+      throw e
+    }
+    finally {
+      loading.value = false
+      options.onFinally?.()
+    }
+  }
+
+  const reset = () => {
+    data.value = null
+    loading.value = false
+    error.value = null
+    rollbackFn = undefined
+  }
+
+  return { data: data as Ref<TResult | null>, loading, error, isFinished, isSuccess, isError, mutate, reset }
 }
 
 /**
@@ -162,7 +295,8 @@ export function useApiCall<T = unknown>(
 
   // 立即执行
   if (options.immediate) {
-    execute()
+    // 避免未处理的 Promise 拒绝
+    execute().catch(() => {})
   }
 
   return {
@@ -174,6 +308,49 @@ export function useApiCall<T = unknown>(
     isFinished,
     isSuccess,
     isError,
+  }
+}
+
+/**
+ * 轮询式 API 调用钩子
+ * 定时按间隔调用某个 API 方法，适合状态刷新、心跳等场景
+ */
+export function useApiPolling<T = unknown>(
+  methodName: string,
+  options: UseApiCallOptions & { interval: number; params?: unknown; autoStart?: boolean } = { interval: 30000 },
+) {
+  const state = useApiCall<T>(methodName, { ...options, immediate: false })
+  let timer: ReturnType<typeof setInterval> | null = null
+
+  const start = () => {
+    if (timer) return
+    // 立即执行一次
+    state.execute(options.params, options).catch(() => {})
+    timer = globalThis.setInterval(() => {
+      state.execute(options.params, options).catch(() => {})
+    }, options.interval)
+  }
+
+  const stop = () => {
+    if (timer) {
+      clearInterval(timer)
+      timer = null
+    }
+  }
+
+  if (options.autoStart) {
+    start()
+  }
+
+  onUnmounted(() => {
+    stop()
+  })
+
+  return {
+    ...state,
+    start,
+    stop,
+    isActive: computed(() => timer !== null),
   }
 }
 
@@ -195,6 +372,96 @@ export function useApiCall<T = unknown>(
  * ])
  * ```
  */
+export function useInfiniteApi<T = unknown>(
+  methodName: string,
+  options: UseApiCallOptions & {
+    page?: number
+    pageSize?: number
+    extract?: (result: any) => { items: T[]; total: number }
+    query?: Record<string, unknown>
+    auto?: boolean
+    target?: Ref<Element | null>
+    root?: Element | null
+    rootMargin?: string
+    threshold?: number
+  } = {},
+) {
+  const page = ref(options.page ?? 1)
+  const pageSize = ref(options.pageSize ?? 10)
+  const total = ref(0)
+  const items = ref<T[]>([])
+
+  const extract = options.extract ?? ((res: any) => {
+    if (res && typeof res === 'object') {
+      if (Array.isArray(res.items) && typeof res.total === 'number') return { items: res.items as T[], total: res.total as number }
+      if (Array.isArray(res.list) && typeof res.total === 'number') return { items: res.list as T[], total: res.total as number }
+      if (Array.isArray(res.data) && typeof res.total === 'number') return { items: res.data as T[], total: res.total as number }
+    }
+    return { items: Array.isArray(res) ? res as T[] : [], total: 0 }
+  })
+
+  const { loading, error, execute } = useApiCall<{ items: T[]; total: number }>(methodName, { ...options, immediate: false })
+
+  const loadMore = async () => {
+    const params = { page: page.value, pageSize: pageSize.value, ...(options.query || {}) }
+    const res = await execute(params, options)
+    const { items: its, total: tot } = extract(res)
+    total.value = tot
+    items.value = items.value.concat(its)
+    page.value += 1
+    return its
+  }
+
+  const reset = () => {
+    page.value = options.page ?? 1
+    pageSize.value = options.pageSize ?? 10
+    total.value = 0
+    items.value = []
+  }
+
+  const hasMore = computed(() => items.value.length < total.value)
+
+  if (options.immediate) {
+    loadMore().catch(() => {})
+  }
+
+  let observer: IntersectionObserver | null = null
+  if (options.auto && options.target) {
+    const root = options.root ?? null
+    const rootMargin = options.rootMargin ?? '0px'
+    const threshold = options.threshold ?? 0
+
+    observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting && hasMore.value && !loading.value) {
+          loadMore().catch(() => {})
+        }
+      }
+    }, { root, rootMargin, threshold })
+
+    const stopWatch = () => {
+      const el = options.target!.value
+      if (el) observer!.observe(el)
+    }
+
+    // 初次尝试
+    stopWatch()
+
+    // 当目标变化时重新观察
+    const stop = watch(options.target, () => {
+      observer!.disconnect()
+      stopWatch()
+    })
+
+    onUnmounted(() => {
+      observer?.disconnect()
+      stop()
+    })
+  }
+
+  return { items: items as Ref<T[]>, total, page, pageSize, loading, error, loadMore, reset, hasMore }
+}
+
 export function useBatchApiCall<T = unknown>(
   calls: Array<{ methodName: string, params?: unknown, options?: ApiCallOptions }>,
   options: Omit<UseApiCallOptions, 'onSuccess' | 'onError'> & {
@@ -387,6 +654,89 @@ export function useSystemApi() {
      */
     getSystemConfig: (options: UseApiCallOptions = {}) =>
       useApiCall<unknown>(SYSTEM_API_METHODS.GET_SYSTEM_CONFIG, options),
+  }
+}
+
+/**
+ * 分页列表钩子：usePaginatedApi
+ * - 管理 page/pageSize/total/items 等状态
+ * - 内置翻页与修改 pageSize 操作
+ * - 通过 extract 适配不同返回结构
+ */
+export function usePaginatedApi<T = unknown>(
+  methodName: string,
+  options: UseApiCallOptions & {
+    /** 初始页码（从 1 开始） */
+    page?: number
+    /** 每页条数 */
+    pageSize?: number
+    /** 提取器，将接口返回值提取为 { items, total } */
+    extract?: (result: any) => { items: T[]; total: number }
+    /** 额外的查询参数（除 page/pageSize 外） */
+    query?: Record<string, unknown>
+  } = {},
+) {
+  const page = ref(options.page ?? 1)
+  const pageSize = ref(options.pageSize ?? 10)
+  const total = ref(0)
+  const items = ref<T[]>([])
+
+  const extract = options.extract ?? ((res: any) => {
+    if (res && typeof res === 'object') {
+      if (Array.isArray(res.items) && typeof res.total === 'number') return { items: res.items as T[], total: res.total as number }
+      if (Array.isArray(res.list) && typeof res.total === 'number') return { items: res.list as T[], total: res.total as number }
+      if (Array.isArray(res.data) && typeof res.total === 'number') return { items: res.data as T[], total: res.total as number }
+    }
+    return { items: Array.isArray(res) ? res as T[] : [], total: 0 }
+  })
+
+  const { loading, error, execute } = useApiCall<{ items: T[]; total: number }>(methodName, {
+    ...options,
+    immediate: false,
+    onSuccess: (res) => {
+      const { items: its, total: tot } = extract(res)
+      items.value = its
+      total.value = tot
+      options.onSuccess?.(res)
+    },
+    onError: (e) => options.onError?.(e),
+    onFinally: () => options.onFinally?.(),
+  })
+
+  const run = async () => {
+    const params = { page: page.value, pageSize: pageSize.value, ...(options.query || {}) }
+    // 忽略返回值，onSuccess 中处理
+    await execute(params, options)
+  }
+
+  const setPage = (p: number) => {
+    page.value = Math.max(1, p)
+    run().catch(() => {})
+  }
+  const setPageSize = (s: number) => {
+    pageSize.value = Math.max(1, s)
+    page.value = 1
+    run().catch(() => {})
+  }
+  const nextPage = () => setPage(page.value + 1)
+  const prevPage = () => setPage(Math.max(1, page.value - 1))
+
+  if (options.immediate) run().catch(() => {})
+
+  return {
+    page,
+    pageSize,
+    total,
+    items: items as unknown as Ref<T[]>,
+    loading,
+    error,
+    run,
+    setPage,
+    setPageSize,
+    nextPage,
+    prevPage,
+    isFinished: computed(() => !loading.value),
+    hasMore: computed(() => items.value.length < total.value),
   }
 }
 

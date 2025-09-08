@@ -1,0 +1,11 @@
+{
+  "outFile": "src/types/registry.generated.ts",
+  "baseImport": "../types",
+  "resolve": "simple",
+  "registry": {
+    "getUserInfo": "UserInfo",
+    "getMenus": "MenuItem[]",
+    "login": "LoginResult"
+  }
+}
+
