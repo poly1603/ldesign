@@ -243,6 +243,14 @@ export {
   createColorEnginePlugin,
   createColorPlugin,
   useTheme,
+  useThemeSelector,
+  useThemeToggle,
+  useSystemThemeSync,
+  ColorVuePlugin,
+  DarkModeToggle,
+  ModeToggle,
+  ThemeSelector,
+  ColorPicker,
 } from './vue'
 
 // Vue 组件需要单独构建，暂时注释掉

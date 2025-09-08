@@ -22,3 +22,8 @@ export {
 } from './plugin'
 // 导出类型
 export type { ColorPluginOptions } from './plugin'
+
+export { default as ColorPicker } from './components/ThemeSelector.vue'
+export { default as ModeToggle } from './components/DarkModeToggle.vue'
+export { default as ThemeSelector } from './components/ThemeSelector.vue'
+export { default as DarkModeToggle } from './components/DarkModeToggle.vue'
