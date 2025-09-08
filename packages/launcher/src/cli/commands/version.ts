@@ -11,6 +11,7 @@ import { Logger } from '../../utils/logger'
 import { FileSystem } from '../../utils/file-system'
 import { PathUtils } from '../../utils/path-utils'
 import type { CliCommandDefinition, CliContext } from '../../types'
+import os from 'node:os'
 
 /**
  * Version 命令类
@@ -133,7 +134,6 @@ export class VersionCommand implements CliCommandDefinition {
 
     try {
       // 获取系统信息
-      const os = require('os')
       versionInfo.system = {
         platform: process.platform,
         arch: process.arch,
@@ -216,7 +216,7 @@ export class VersionCommand implements CliCommandDefinition {
     // 环境信息
     logger.info(this.colorize('环境信息:', 'yellow'))
     logger.info(`  工作目录: ${this.colorize(process.cwd(), 'green')}`)
-    logger.info(`  用户目录: ${this.colorize(require('os').homedir(), 'green')}`)
+    logger.info(`  用户目录: ${this.colorize(os.homedir(), 'green')}`)
 
     if (process.env.NODE_ENV) {
       logger.info(`  NODE_ENV: ${this.colorize(process.env.NODE_ENV, 'green')}`)

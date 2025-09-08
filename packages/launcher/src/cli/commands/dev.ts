@@ -12,6 +12,7 @@ import { ViteLauncher } from '../../core/ViteLauncher'
 import type { CliCommandDefinition, CliContext } from '../../types'
 import { DEFAULT_PORT, DEFAULT_HOST } from '../../constants'
 import pc from 'picocolors'
+import { networkInterfaces } from 'node:os'
 
 /**
  * Dev 命令类
@@ -263,13 +264,12 @@ export class DevCommand implements CliCommandDefinition {
  * @returns 本地 IP 地址
  */
 function getLocalIP(): string {
-  const { networkInterfaces } = require('os')
   const interfaces = networkInterfaces()
 
   for (const name of Object.keys(interfaces)) {
     for (const iface of interfaces[name] || []) {
-      if (iface.family === 'IPv4' && !iface.internal) {
-        return iface.address
+      if ((iface as any).family === 'IPv4' && !(iface as any).internal) {
+        return (iface as any).address as string
       }
     }
   }

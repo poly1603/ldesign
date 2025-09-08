@@ -118,8 +118,8 @@ export function createCli(config?: Partial<CliConfig>) {
   ])
 
   /**
-   * 解析命令行参数
-   * 
+   * 解析命令行参数（基础解析，不处理别名与类型转换）
+   *
    * @param args - 命令行参数
    * @returns 解析结果
    */
@@ -145,7 +145,7 @@ export function createCli(config?: Partial<CliConfig>) {
           result.options[key] = true
         }
       } else if (arg.startsWith('-')) {
-        // 短选项
+        // 短选项（不支持打包为 -abc 的组合，保持简单）
         const key = arg.slice(1)
         if (i + 1 < args.length && !args[i + 1].startsWith('-')) {
           result.options[key] = args[++i]
@@ -168,6 +168,65 @@ export function createCli(config?: Partial<CliConfig>) {
     }
 
     return result
+  }
+
+  /**
+   * 规范化选项：处理别名映射与类型转换
+   */
+  function normalizeOptions(raw: Record<string, any>, command: CliCommand): Record<string, any> {
+    const normalized: Record<string, any> = {}
+
+    // 构建别名映射
+    const aliasToName = new Map<string, string>()
+    const typeMap = new Map<string, 'string' | 'number' | 'boolean' | 'array'>()
+
+    const addDefs = (defs: any[] | undefined) => {
+      if (!defs) return
+      for (const d of defs) {
+        if (!d || typeof d !== 'object') continue
+        if (d.alias) aliasToName.set(String(d.alias), d.name)
+        typeMap.set(d.name, d.type)
+      }
+    }
+
+    addDefs(mergedConfig.globalOptions)
+    const cmdDef = commands.get(command) as { options?: any[] } | undefined
+    if (cmdDef && Array.isArray(cmdDef.options)) addDefs(cmdDef.options)
+
+    // 应用别名映射
+    for (const [key, value] of Object.entries(raw)) {
+      const target = aliasToName.get(key) || key
+      normalized[target] = value
+    }
+
+    // 类型转换
+    for (const [name, type] of typeMap.entries()) {
+      if (normalized[name] === undefined) continue
+      const val = normalized[name]
+      switch (type) {
+        case 'number':
+          if (typeof val !== 'number') {
+            const n = Number(val)
+            if (!Number.isNaN(n)) normalized[name] = n
+          }
+          break
+        case 'boolean':
+          if (typeof val !== 'boolean') {
+            const s = String(val).toLowerCase()
+            if (['1', 'true', 'yes', 'y'].includes(s)) normalized[name] = true
+            else if (['0', 'false', 'no', 'n'].includes(s)) normalized[name] = false
+          }
+          break
+        case 'array':
+          if (!Array.isArray(val)) {
+            normalized[name] = String(val).split(',').map(s => s.trim()).filter(Boolean)
+          }
+          break
+        // string: 无需处理
+      }
+    }
+
+    return normalized
   }
 
   /**
@@ -218,28 +277,31 @@ export function createCli(config?: Partial<CliConfig>) {
    */
   async function run(argv: string[] = process.argv.slice(2)) {
     try {
-      // 解析参数
+      // 解析参数（基础）
       const parsed = parseArgs(argv)
+      // 选项规范化（别名映射 + 类型转换）
+      const normalizedOptions = normalizeOptions(parsed.options, parsed.command)
 
-      // 处理全局选项
-      if (parsed.options.help || parsed.command === 'help') {
-        const helpCommand = commands.get('help')!
-        const context = createContext(CliCommand.HELP, parsed.options, parsed.args)
-        await helpCommand.handler(context)
-        return
-      }
-
-      if (parsed.options.version || parsed.command === 'version') {
+      // 处理全局选项（支持 -h/-v 等别名）
+      // 先处理版本，再处理帮助，避免仅传 --version 时落入 help 分支
+      if (normalizedOptions.version || parsed.command === 'version') {
         const versionCommand = commands.get('version')!
-        const context = createContext(CliCommand.VERSION, parsed.options, parsed.args)
+        const context = createContext(CliCommand.VERSION, normalizedOptions, parsed.args)
         await versionCommand.handler(context)
         return
       }
 
+      if (normalizedOptions.help || parsed.command === 'help') {
+        const helpCommand = commands.get('help')!
+        const context = createContext(CliCommand.HELP, normalizedOptions, parsed.args)
+        await helpCommand.handler(context)
+        return
+      }
+
       // 设置日志级别
-      if (parsed.options.silent) {
+      if (normalizedOptions.silent) {
         logger.setLevel('silent')
-      } else if (parsed.options.debug) {
+      } else if (normalizedOptions.debug) {
         logger.setLevel('debug')
       }
 
@@ -251,8 +313,8 @@ export function createCli(config?: Partial<CliConfig>) {
         process.exit(1)
       }
 
-      // 创建上下文
-      const context = createContext(parsed.command, parsed.options, parsed.args)
+      // 创建上下文（使用规范化后的选项）
+      const context = createContext(parsed.command, normalizedOptions, parsed.args)
 
       // 验证命令
       if (commandHandler.validate) {
@@ -266,7 +328,7 @@ export function createCli(config?: Partial<CliConfig>) {
       // 执行命令
       logger.debug('执行命令', {
         command: parsed.command,
-        options: parsed.options,
+        options: normalizedOptions,
         args: parsed.args
       })
 

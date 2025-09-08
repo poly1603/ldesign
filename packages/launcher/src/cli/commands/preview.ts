@@ -11,6 +11,7 @@ import { Logger } from '../../utils/logger'
 import { FileSystem } from '../../utils/file-system'
 import { PathUtils } from '../../utils/path-utils'
 import { ViteLauncher } from '../../core/ViteLauncher'
+import { networkInterfaces } from 'node:os'
 import type { CliCommandDefinition, CliContext } from '../../types'
 import { DEFAULT_HOST, DEFAULT_OUT_DIR } from '../../constants'
 
@@ -279,13 +280,12 @@ export class PreviewCommand implements CliCommandDefinition {
  * @returns 本地 IP 地址
  */
 function getLocalIP(): string {
-  const { networkInterfaces } = require('os')
   const interfaces = networkInterfaces()
 
   for (const name of Object.keys(interfaces)) {
     for (const iface of interfaces[name] || []) {
-      if (iface.family === 'IPv4' && !iface.internal) {
-        return iface.address
+      if ((iface as any).family === 'IPv4' && !(iface as any).internal) {
+        return (iface as any).address as string
       }
     }
   }

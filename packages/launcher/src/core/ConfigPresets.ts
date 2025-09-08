@@ -651,8 +651,8 @@ export class ConfigPresetsManager {
     
     const presetConfig = preset.getConfig()
     
-    // 深度合并配置
-    return this.deepMergeConfigs(baseConfig, presetConfig)
+    // 深度合并配置：预设作为基础，用户配置覆盖预设
+    return this.deepMergeConfigs(presetConfig, baseConfig)
   }
   
   /**

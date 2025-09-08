@@ -33,18 +33,32 @@ process.on('unhandledRejection', (reason) => {
   process.exit(1)
 })
 
-// 动态导入 CLI 模块
+// 动态导入 CLI 模块（优先 ESM，其次 CJS），兼容默认导出与具名导出
 async function main() {
   try {
-    // 尝试导入编译后的 CLI 模块
-    const { createCli } = await import('../dist/cli/index.js')
-    
+    let mod
+    let createCli
+
+    try {
+      // 优先尝试 ESM 构建
+      mod = await import('../dist/cli/index.mjs')
+      createCli = mod.createCli || (typeof mod.default === 'function' ? mod.default : mod.default?.createCli)
+    } catch (_) {
+      // 回退到 CJS 构建
+      mod = await import('../dist/cli/index.js')
+      createCli = mod.createCli || (typeof mod.default === 'function' ? mod.default : mod.default?.createCli)
+    }
+
+    if (typeof createCli !== 'function') {
+      throw new Error('无法定位 createCli 导出')
+    }
+
     // 创建并运行 CLI
     const cli = createCli()
     await cli.run()
-    
+
   } catch (error) {
-    // 如果导入失败，可能是开发环境，尝试直接运行源码
+    // 如果导入失败，可能是开发环境，提示构建
     if (error.code === 'ERR_MODULE_NOT_FOUND') {
       console.error('❌ 找不到构建文件，请先运行构建命令:')
       console.error('  pnpm run build')
@@ -57,7 +71,7 @@ async function main() {
         console.error(error.stack)
       }
     }
-    
+
     process.exit(1)
   }
 }

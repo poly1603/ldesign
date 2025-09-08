@@ -166,6 +166,12 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     // 设置事件监听器
     this.setupEventListeners(options.listeners)
 
+    // 默认监听 error 事件，避免未监听时抛出异常
+    this.on('error', (err: any) => {
+      const error = err instanceof Error ? err : new Error(String(err))
+      this.handleError(error, '运行时错误')
+    })
+
     // 设置错误处理
     this.setupErrorHandling()
 
@@ -887,6 +893,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
    * 设置错误处理
    */
   private setupErrorHandling(): void {
+    // 测试环境下避免重复注册全局监听器导致的内存告警
+    if (process.env.NODE_ENV === 'test') return
+
     // 监听未捕获的异常
     process.on('uncaughtException', (error) => {
       this.handleError(error, '未捕获的异常')
