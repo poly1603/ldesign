@@ -132,6 +132,107 @@ export const LIBRARY_TYPE_PATTERNS = {
     weight: 0.95
   },
 
+  [LibraryType.SVELTE]: {
+    // Svelte 组件库检测模式
+    files: [
+      'src/**/*.svelte',
+      'lib/**/*.svelte',
+      'components/**/*.svelte'
+    ],
+    dependencies: [
+      'svelte'
+    ],
+    devDependencies: [
+      '@sveltejs/rollup-plugin-svelte'
+    ],
+    configs: [
+      'svelte.config.js',
+      'svelte.config.cjs'
+    ],
+    packageJsonFields: [
+      'svelte'
+    ],
+    weight: 0.95
+  },
+
+  [LibraryType.SOLID]: {
+    // Solid 组件库检测模式
+    files: [
+      'src/**/*.jsx',
+      'src/**/*.tsx'
+    ],
+    dependencies: [
+      'solid-js'
+    ],
+    devDependencies: [
+      'rollup-plugin-solid',
+      'vite-plugin-solid'
+    ],
+    configs: [
+      'vite.config.ts',
+      'vite.config.js'
+    ],
+    packageJsonFields: [],
+    weight: 0.9
+  },
+
+  [LibraryType.PREACT]: {
+    // Preact 组件库检测模式
+    files: [
+      'src/**/*.jsx',
+      'src/**/*.tsx'
+    ],
+    dependencies: [
+      'preact'
+    ],
+    devDependencies: [
+      '@preact/preset-vite'
+    ],
+    configs: [
+      'vite.config.ts',
+      'vite.config.js'
+    ],
+    packageJsonFields: [],
+    weight: 0.9
+  },
+
+  [LibraryType.LIT]: {
+    // Lit / Web Components 检测模式
+    files: [
+      'src/**/*.ts',
+      'src/**/*.js',
+      'src/**/*.css'
+    ],
+    dependencies: [
+      'lit'
+    ],
+    devDependencies: [],
+    configs: [],
+    packageJsonFields: [],
+    weight: 0.85
+  },
+
+  [LibraryType.ANGULAR]: {
+    // Angular 组件库检测模式（基础）
+    files: [
+      'projects/**/*.ts',
+      'src/**/*.ts'
+    ],
+    dependencies: [
+      '@angular/core',
+      '@angular/common'
+    ],
+    devDependencies: [
+      'ng-packagr'
+    ],
+    configs: [
+      'ng-package.json',
+      'angular.json'
+    ],
+    packageJsonFields: [],
+    weight: 0.8
+  },
+
   [LibraryType.MIXED]: {
     // 混合库检测模式（多种类型混合）
     files: [
@@ -153,6 +254,11 @@ export const LIBRARY_TYPE_DESCRIPTIONS = {
   [LibraryType.VUE2]: 'Vue2 组件库 - 基于 Vue 2.x 的组件库',
   [LibraryType.VUE3]: 'Vue3 组件库 - 基于 Vue 3.x 的组件库，支持 Composition API',
   [LibraryType.REACT]: 'React 组件库 - 基于 React 18+ 的组件库，支持 JSX/TSX 与 Hooks',
+  [LibraryType.SVELTE]: 'Svelte 组件库 - 使用 Svelte 的库，零虚拟DOM，编译时优化',
+  [LibraryType.SOLID]: 'Solid 组件库 - 使用 SolidJS 的库，细粒度响应式，JSX 支持',
+  [LibraryType.PREACT]: 'Preact 组件库 - 小而快的 React 兼容库',
+  [LibraryType.LIT]: 'Lit/Web Components 组件库 - 标准 Web Components，面向浏览器原生',
+  [LibraryType.ANGULAR]: 'Angular 组件库（基础支持）- 建议使用 ng-packagr，但提供最小打包能力',
   [LibraryType.MIXED]: '混合库 - 包含多种类型文件的复合库'
 } as const
 
@@ -228,6 +334,51 @@ export const LIBRARY_TYPE_RECOMMENDED_CONFIG = {
     bundleless: false
   },
 
+  [LibraryType.SVELTE]: {
+    output: {
+      format: ['esm', 'cjs'],
+      sourcemap: true
+    },
+    external: ['svelte'],
+    bundleless: false
+  },
+
+  [LibraryType.SOLID]: {
+    output: {
+      format: ['esm', 'cjs'],
+      sourcemap: true
+    },
+    external: ['solid-js'],
+    bundleless: false
+  },
+
+  [LibraryType.PREACT]: {
+    output: {
+      format: ['esm', 'cjs'],
+      sourcemap: true
+    },
+    external: ['preact'],
+    bundleless: false
+  },
+
+  [LibraryType.LIT]: {
+    output: {
+      format: ['esm', 'cjs'],
+      sourcemap: true
+    },
+    external: ['lit'],
+    bundleless: false
+  },
+
+  [LibraryType.ANGULAR]: {
+    output: {
+      format: ['esm', 'cjs'],
+      sourcemap: true
+    },
+    external: ['@angular/core', '@angular/common'],
+    bundleless: false
+  },
+
   [LibraryType.MIXED]: {
     output: {
       format: ['esm', 'cjs'],
@@ -251,6 +402,11 @@ export const LIBRARY_TYPE_PRIORITY = {
   [LibraryType.VUE2]: 10,
   [LibraryType.VUE3]: 10,
   [LibraryType.REACT]: 10,
+  [LibraryType.SVELTE]: 9,
+  [LibraryType.SOLID]: 9,
+  [LibraryType.PREACT]: 9,
+  [LibraryType.LIT]: 8,
+  [LibraryType.ANGULAR]: 7,
   [LibraryType.STYLE]: 8,
   [LibraryType.TYPESCRIPT]: 6,
   [LibraryType.MIXED]: 2
@@ -298,6 +454,46 @@ export const LIBRARY_TYPE_COMPATIBILITY = {
     treeshaking: true,
     codeSplitting: true,
     bundleless: false
+  },
+
+  [LibraryType.SVELTE]: {
+    rollup: 'excellent',
+    rolldown: 'good',
+    treeshaking: true,
+    codeSplitting: true,
+    bundleless: false
+  },
+
+  [LibraryType.SOLID]: {
+    rollup: 'good',
+    rolldown: 'good',
+    treeshaking: true,
+    codeSplitting: true,
+    bundleless: false
+  },
+
+  [LibraryType.PREACT]: {
+    rollup: 'excellent',
+    rolldown: 'good',
+    treeshaking: true,
+    codeSplitting: true,
+    bundleless: false
+  },
+
+  [LibraryType.LIT]: {
+    rollup: 'excellent',
+    rolldown: 'good',
+    treeshaking: true,
+    codeSplitting: true,
+    bundleless: false
+  },
+
+  [LibraryType.ANGULAR]: {
+    rollup: 'fair',
+    rolldown: 'fair',
+    treeshaking: true,
+    codeSplitting: true,
+    bundleless: false
   }
 } as const
 
@@ -335,6 +531,37 @@ export const LIBRARY_TYPE_PLUGINS = {
     'typescript',
     'vue3',
     'postcss',
+    'dts'
+  ],
+
+  [LibraryType.SVELTE]: [
+    'svelte',
+    'postcss',
+    'dts'
+  ],
+
+  [LibraryType.SOLID]: [
+    'solid',
+    'typescript',
+    'postcss',
+    'dts'
+  ],
+
+  [LibraryType.PREACT]: [
+    'preact',
+    'typescript',
+    'postcss',
+    'dts'
+  ],
+
+  [LibraryType.LIT]: [
+    'typescript',
+    'postcss',
+    'dts'
+  ],
+
+  [LibraryType.ANGULAR]: [
+    'typescript',
     'dts'
   ]
 } as const
@@ -378,6 +605,12 @@ export const LIBRARY_TYPE_EXTENSIONS = {
   [LibraryType.STYLE]: ['.css', '.less', '.scss', '.sass', '.styl'],
   [LibraryType.VUE2]: ['.vue', '.ts', '.tsx', '.js', '.jsx'],
   [LibraryType.VUE3]: ['.vue', '.ts', '.tsx', '.js', '.jsx'],
+  [LibraryType.REACT]: ['.ts', '.tsx', '.js', '.jsx'],
+  [LibraryType.SVELTE]: ['.svelte', '.ts', '.js'],
+  [LibraryType.SOLID]: ['.ts', '.tsx', '.js', '.jsx'],
+  [LibraryType.PREACT]: ['.ts', '.tsx', '.js', '.jsx'],
+  [LibraryType.LIT]: ['.ts', '.js', '.css'],
+  [LibraryType.ANGULAR]: ['.ts', '.html', '.css', '.scss'],
   [LibraryType.MIXED]: ['.ts', '.tsx', '.vue', '.css', '.less', '.scss', '.sass']
 } as const
 
@@ -411,5 +644,11 @@ export const LIBRARY_TYPE_EXCLUDE_PATTERNS = {
 
   [LibraryType.VUE3]: [],
 
-  [LibraryType.MIXED]: []
+  [LibraryType.MIXED]: [],
+
+  [LibraryType.SVELTE]: [],
+  [LibraryType.SOLID]: [],
+  [LibraryType.PREACT]: [],
+  [LibraryType.LIT]: [],
+  [LibraryType.ANGULAR]: []
 } as const

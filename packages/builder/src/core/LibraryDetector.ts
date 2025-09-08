@@ -59,6 +59,11 @@ export class LibraryDetector {
         vue2: 0,
         vue3: 0,
         react: 0,
+        svelte: 0,
+        solid: 0,
+        preact: 0,
+        lit: 0,
+        angular: 0,
         mixed: 0
       }
 
@@ -68,6 +73,11 @@ export class LibraryDetector {
         vue2: [],
         vue3: [],
         react: [],
+        svelte: [],
+        solid: [],
+        preact: [],
+        lit: [],
+        angular: [],
         mixed: []
       }
 

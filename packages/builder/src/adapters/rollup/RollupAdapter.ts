@@ -268,6 +268,12 @@ export class RollupAdapter implements IBundlerAdapter {
       external: config.external
     }
 
+    // 注入 Acorn 插件以支持在转换前解析 TSX/JSX/TS 语法，避免早期解析错误
+    const acornPlugins = await this.getAcornPlugins()
+    if (acornPlugins.length > 0) {
+      rollupConfig.acorn = { ...(rollupConfig.acorn || {}), injectPlugins: acornPlugins }
+    }
+
     // 转换输出配置
     if (config.output) {
       const outputConfig = config.output
@@ -323,6 +329,8 @@ export class RollupAdapter implements IBundlerAdapter {
           if (formats.includes('umd') || (config as any).umd?.enabled) {
             umdConfig = await this.createUMDConfig(config)
           }
+          // 统一过滤 UMD/IIFE，让 UMD 独立通过 createUMDConfig 生成
+          formats = formats.filter(f => f !== 'umd' && f !== 'iife')
         }
 
         // 为多格式输出创建多个配置
@@ -333,7 +341,7 @@ export class RollupAdapter implements IBundlerAdapter {
           const isESM = format === 'esm'
           const isCJS = format === 'cjs'
 
-          const dir = isESM ? 'es' : isCJS ? 'lib' : 'dist'
+          const dir = isESM ? 'es' : isCJS ? 'cjs' : 'dist'
           const entryFileNames = isESM
             ? '[name].js'
             : isCJS
@@ -377,7 +385,7 @@ export class RollupAdapter implements IBundlerAdapter {
         const mapped = this.mapFormat(format)
         const isESM = format === 'esm'
         const isCJS = format === 'cjs'
-        const dir = isESM ? 'es' : isCJS ? 'lib' : 'dist'
+        const dir = isESM ? 'es' : isCJS ? 'cjs' : 'dist'
         const entryFileNames = isESM
           ? '[name].js'
           : isCJS
@@ -456,22 +464,36 @@ export class RollupAdapter implements IBundlerAdapter {
             // 重新创建TypeScript插件，设置正确的declarationDir
             const typescript = await import('@rollup/plugin-typescript')
 
-            // 获取原始的TypeScript选项
-            const originalPlugin = await plugin.plugin()
-            let originalOptions = {}
+            // 直接从插件包装对象读取原始选项（在策略中附加）
+            const originalOptions = (plugin as any).options || {}
 
-            // 尝试从原始插件中提取选项
-            if (originalPlugin && typeof originalPlugin === 'object') {
-              // 从插件的内部状态中获取选项（这是一个hack，但是必要的）
-              originalOptions = (originalPlugin as any).options || {}
-            }
+            // 清理不被 @rollup/plugin-typescript 支持的字段
+            const { tsconfigOverride: _ignored, compilerOptions: origCO = {}, ...rest } = originalOptions as any
 
-            // 创建新的TypeScript插件，覆盖declarationDir和outDir
+            // 创建新的TypeScript插件，保留 include/exclude 等选项，并覆盖声明目录
+            // 若指定的 tsconfig 不存在，则删除该字段，避免插件内部解析异常
+            try {
+              const pathMod = await import('path')
+              const fsMod = await import('fs')
+              if (typeof (rest as any).tsconfig === 'string') {
+                const tsconfigAbs = pathMod.resolve(process.cwd(), (rest as any).tsconfig)
+                if (!fsMod.existsSync(tsconfigAbs)) {
+                  delete (rest as any).tsconfig
+                }
+              }
+            } catch {}
+
             const newPlugin = typescript.default({
-              ...originalOptions,
-              declaration: true,
-              declarationDir: outputDir,
-              outDir: outputDir
+              ...rest,
+              compilerOptions: {
+                ...origCO,
+                declaration: true,
+                emitDeclarationOnly: true,
+                declarationDir: outputDir,
+                outDir: outputDir,
+                // 避免 @rollup/plugin-typescript 在缺少 tsconfig 时的根目录推断失败
+                rootDir: (origCO as any)?.rootDir ?? '.'
+              }
             })
 
             transformedPlugins.push(newPlugin)
@@ -581,6 +603,29 @@ export class RollupAdapter implements IBundlerAdapter {
         }
       }
     }
+  }
+
+  /**
+   * 尝试加载 Acorn 插件（JSX 与 TypeScript），以便 Rollup 在插件转换之前也能解析相应语法
+   */
+  private async getAcornPlugins(): Promise<any[]> {
+    const plugins: any[] = []
+    try {
+      const jsx = (await import('acorn-jsx')).default
+      // acorn-jsx 返回一个插件工厂函数
+      plugins.push(jsx())
+    } catch (e) {
+      // 忽略
+    }
+
+    try {
+      const ts = (await import('acorn-typescript')).default
+      plugins.push(ts())
+    } catch (e) {
+      // 忽略
+    }
+
+    return plugins
   }
 
   /**
@@ -754,7 +799,7 @@ export class RollupAdapter implements IBundlerAdapter {
     const outputConfig = config.output || {}
 
     // 确定 UMD 入口文件
-    let umdEntry = umdConfig.entry || 'src/index.ts'
+    let umdEntry = umdConfig.entry || (typeof config.input === 'string' ? config.input : 'src/index.ts')
 
     // 如果入口文件不存在，尝试其他常见的入口文件
     const fs = await import('fs')
@@ -801,6 +846,34 @@ export class RollupAdapter implements IBundlerAdapter {
     this.logger.info(`UMD Banner配置: ${JSON.stringify(bannerConfig)}`)
     this.logger.info(`解析后的Banner: ${banner}`)
 
+    // 默认 UMD 全局变量映射（用于常见外部库）
+    const defaultGlobals: Record<string, string> = {
+      react: 'React',
+      'react-dom': 'ReactDOM',
+      'react/jsx-runtime': 'jsxRuntime',
+      'react/jsx-dev-runtime': 'jsxDevRuntime',
+      vue: 'Vue',
+      'vue-demi': 'VueDemi',
+      '@angular/core': 'ngCore',
+      '@angular/common': 'ngCommon',
+      preact: 'Preact',
+'preact/hooks': 'preactHooks',
+      'preact/jsx-runtime': 'jsxRuntime',
+      'preact/jsx-dev-runtime': 'jsxDevRuntime',
+      'solid-js': 'Solid',
+'solid-js/web': 'SolidWeb',
+      'solid-js/jsx-runtime': 'jsxRuntime',
+      svelte: 'Svelte',
+      lit: 'Lit',
+      'lit-html': 'litHtml'
+    }
+
+    const mergedGlobals = {
+      ...defaultGlobals,
+      ...(outputConfig.globals || {}),
+      ...(umdConfig.globals || {})
+    }
+
     return {
       input: umdEntry,
       external: config.external,
@@ -810,7 +883,7 @@ export class RollupAdapter implements IBundlerAdapter {
         name: umdName,
         file: `dist/${umdConfig.fileName || 'index.umd.js'}`,
         sourcemap: outputConfig.sourcemap,
-        globals: { ...outputConfig.globals, ...umdConfig.globals },
+        globals: mergedGlobals,
         exports: 'auto',
         banner,
         footer,

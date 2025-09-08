@@ -15,88 +15,20 @@ import commonjs from '@rollup/plugin-commonjs'
 import json from '@rollup/plugin-json'
 import { dts } from 'rollup-plugin-dts'
 import { fileURLToPath } from 'url'
-import { dirname, resolve } from 'path'
+import { dirname, resolve, isAbsolute } from 'path'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// 外部依赖 - 不打包到最终产物中
-const external = [
-  // Node.js 内置模块
-  'node:path',
-  'node:fs',
-  'node:url',
-  'node:process',
-  'node:module',
-  'path',
-  'fs',
-  'url',
-  'process',
-  'module',
-  'os',
-  'util',
-  'events',
-  'stream',
-  'child_process',
-
-  // 第三方依赖
-  'rollup',
-  'rolldown',
-  'chalk',
-  'commander',
-  'ora',
-  'fast-glob',
-  'fs-extra',
-  'glob',
-  'gzip-size',
-  'pretty-bytes',
-  'tslib',
-  'typescript',
-  'jiti',
-  'rimraf',
-
-  // Rollup 插件
-  '@rollup/plugin-babel',
-  '@rollup/plugin-commonjs',
-  '@rollup/plugin-json',
-  '@rollup/plugin-node-resolve',
-  '@rollup/plugin-replace',
-  '@rollup/plugin-terser',
-  '@rollup/plugin-typescript',
-  '@rollup/plugin-alias',
-
-  // Vue 相关
-  '@vitejs/plugin-react',
-  '@vitejs/plugin-vue',
-  '@vitejs/plugin-vue-jsx',
-  '@vitejs/plugin-vue2',
-  '@vitejs/plugin-vue2-jsx',
-  '@vue/compiler-sfc',
-  'unplugin-vue',
-  'unplugin-vue-jsx',
-
-  // 样式处理插件
-  'rollup-plugin-dts',
-  'rollup-plugin-esbuild',
-  'rollup-plugin-filesize',
-  'rollup-plugin-less',
-  'rollup-plugin-livereload',
-  'rollup-plugin-postcss',
-  'rollup-plugin-sass',
-  'rollup-plugin-serve',
-  'rollup-plugin-stylus',
-  'rollup-plugin-vue',
-
-  // CSS 处理
-  'autoprefixer',
-  'clean-css',
-  'postcss',
-  'less',
-  'cssnano',
-
-  // 工作区依赖
-  '@ldesign/kit'
-]
+// 外部依赖 - 将所有裸模块（非相对/绝对路径）与虚拟模块标记为 external，避免打包三方依赖
+const external = (id) => {
+  if (id.startsWith('\0')) return true // Rollup 虚拟模块
+  if (id.includes('?commonjs-external')) return true // CommonJS 外部化虚拟模块
+  // Windows 与 POSIX 的绝对路径判断
+  const isAbs = isAbsolute(id) || /^[A-Za-z]:\\/.test(id) || id.startsWith('\\\\')
+  const isSource = id.startsWith('src/') || id.startsWith('src\\')
+  return !id.startsWith('.') && !isAbs && !isSource
+}
 
 // 基础插件配置
 const basePlugins = [
@@ -145,7 +77,8 @@ configs.push({
     file: 'dist/index.js',
     format: 'es',
     sourcemap: true,
-    exports: 'named'
+    exports: 'named',
+    inlineDynamicImports: true
   }
 })
 
@@ -161,7 +94,8 @@ configs.push({
     file: 'dist/index.cjs',
     format: 'cjs',
     sourcemap: true,
-    exports: 'named'
+    exports: 'named',
+    inlineDynamicImports: true
   }
 })
 
@@ -177,7 +111,8 @@ configs.push({
     file: 'dist/cli/index.js',
     format: 'es',
     sourcemap: true,
-    exports: 'named'
+    exports: 'named',
+    inlineDynamicImports: true
   }
 })
 
@@ -193,52 +128,13 @@ configs.push({
     file: 'dist/cli/index.cjs',
     format: 'cjs',
     sourcemap: true,
-    exports: 'named'
+    exports: 'named',
+    inlineDynamicImports: true
   }
 })
 
-// 类型声明文件配置 - 主入口
-configs.push({
-  input: 'src/index.ts',
-  external,
-  plugins: [dts()],
-  output: {
-    file: 'dist/index.d.ts',
-    format: 'es'
-  }
-})
 
-// 类型声明文件配置 - 主入口 CJS
-configs.push({
-  input: 'src/index.ts',
-  external,
-  plugins: [dts()],
-  output: {
-    file: 'dist/index.d.cts',
-    format: 'es'
-  }
-})
 
-// 类型声明文件配置 - CLI 入口
-configs.push({
-  input: 'src/cli/index.ts',
-  external,
-  plugins: [dts()],
-  output: {
-    file: 'dist/cli/index.d.ts',
-    format: 'es'
-  }
-})
 
-// 类型声明文件配置 - CLI 入口 CJS
-configs.push({
-  input: 'src/cli/index.ts',
-  external,
-  plugins: [dts()],
-  output: {
-    file: 'dist/cli/index.d.cts',
-    format: 'es'
-  }
-})
 
 export default defineConfig(configs)

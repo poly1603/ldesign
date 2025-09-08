@@ -92,6 +92,9 @@
   "dependencies": {
     "@ldesign/kit": "workspace:*",
     "@rollup/plugin-babel": "^6.0.4",
+    "babel-preset-solid": "^1.8.0",
+    "rollup-plugin-svelte": "^7.2.0",
+    "svelte": "^4.2.0",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
@@ -104,6 +107,8 @@
     "@vitejs/plugin-vue2": "^2.3.0",
     "@vitejs/plugin-vue2-jsx": "^1.0.0",
     "@vue/compiler-sfc": "^3.4.0",
+    "acorn-jsx": "^5.3.2",
+    "acorn-typescript": "^1.4.7",
     "autoprefixer": "^10.4.21",
     "chalk": "^5.6.0",
     "clean-css": "^5.3.0",

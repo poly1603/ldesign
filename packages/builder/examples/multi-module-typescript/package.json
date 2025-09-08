@@ -2,38 +2,38 @@
   "name": "@ldesign/example-multi-module-typescript",
   "version": "1.0.0",
   "description": "多模块 TypeScript 库示例",
-  "main": "lib/index.cjs",
+  "main": "cjs/index.cjs",
   "module": "es/index.js",
   "types": "es/index.d.ts",
   "exports": {
     ".": {
       "import": "./es/index.js",
-      "require": "./lib/index.cjs",
+      "require": "./cjs/index.cjs",
       "types": "./es/index.d.ts"
     },
     "./utils": {
       "import": "./es/utils/index.js",
-      "require": "./lib/utils/index.cjs",
+      "require": "./cjs/utils/index.cjs",
       "types": "./es/utils/index.d.ts"
     },
     "./components": {
       "import": "./es/components/index.js",
-      "require": "./lib/components/index.cjs",
+      "require": "./cjs/components/index.cjs",
       "types": "./es/components/index.d.ts"
     },
     "./types": {
       "import": "./es/types/index.js",
-      "require": "./lib/types/index.cjs",
+      "require": "./cjs/types/index.cjs",
       "types": "./es/types/index.d.ts"
     }
   },
   "files": [
     "es",
-    "lib"
+    "cjs"
   ],
   "scripts": {
     "build": "ldesign-builder build",
-    "clean": "rimraf es lib dist types"
+    "clean": "rimraf es cjs dist types"
   },
   "keywords": [
     "typescript",

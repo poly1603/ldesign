@@ -1,0 +1,11 @@
+'use strict';
+
+var hello_component = require('./components/hello.component.cjs');
+
+
+
+Object.defineProperty(exports, "HelloComponent", {
+	enumerable: true,
+	get: function () { return hello_component.HelloComponent; }
+});
+//# sourceMappingURL=public-api.cjs.map

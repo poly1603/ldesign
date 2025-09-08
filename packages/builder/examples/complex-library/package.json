@@ -2,35 +2,35 @@
   "name": "@ldesign/example-complex-library",
   "version": "1.0.0",
   "description": "复杂库项目示例 - 包含高级 TypeScript 特性",
-  "main": "lib/index.cjs",
+  "main": "cjs/index.cjs",
   "module": "es/index.js",
   "types": "es/index.d.ts",
   "unpkg": "dist/index.umd.js",
   "exports": {
     ".": {
       "import": "./es/index.js",
-      "require": "./lib/index.cjs",
+      "require": "./cjs/index.cjs",
       "types": "./es/index.d.ts"
     },
     "./core": {
       "import": "./es/core/index.js",
-      "require": "./lib/core/index.cjs",
+      "require": "./cjs/core/index.cjs",
       "types": "./es/core/index.d.ts"
     },
     "./decorators": {
       "import": "./es/decorators/index.js",
-      "require": "./lib/decorators/index.cjs",
+      "require": "./cjs/decorators/index.cjs",
       "types": "./es/decorators/index.d.ts"
     },
     "./services": {
       "import": "./es/services/index.js",
-      "require": "./lib/services/index.cjs",
+      "require": "./cjs/services/index.cjs",
       "types": "./es/services/index.d.ts"
     }
   },
   "files": [
     "es",
-    "lib",
+    "cjs",
     "dist"
   ],
   "scripts": {

@@ -30,6 +30,8 @@ yarn add @ldesign/builder --dev
 
 ## 🚀 快速开始
 
+提示：示例项目仅需安装 @ldesign/builder，无需额外安装各框架插件或类型包；构建时所需能力由构建器自身提供。
+
 ### 基础使用
 
 ```javascript
@@ -103,19 +105,28 @@ export default defineConfig({
 
 ### 批量构建示例项目
 
+示例项目仅需安装 @ldesign/builder，无需安装其他依赖（所有必须的打包插件由构建器在工作区内提供）。
+
 ```bash
-# 构建所有示例项目
-ldesign-builder examples
+# 构建仓库中的所有示例
+node bin/ldesign-builder.js examples
 
-# 仅构建包含特定关键字的示例
-ldesign-builder examples --filter typescript
+# 按关键字过滤（例如只构建 TypeScript 示例）
+node bin/ldesign-builder.js examples --filter typescript
 
-# 并发构建（默认串行）
-ldesign-builder examples --concurrency 3
+# 并发构建（默认 1）
+node bin/ldesign-builder.js examples --concurrency 3
 
 # 指定示例根目录
-ldesign-builder examples --root my-examples
+node bin/ldesign-builder.js examples --root examples
 ```
+
+支持的框架示例（零安装）：
+- Svelte: `node bin/ldesign-builder.js examples --filter svelte-components`
+- Solid: `node bin/ldesign-builder.js examples --filter solid-components`
+- Preact: `node bin/ldesign-builder.js examples --filter preact-components`
+- Lit/Web Components: `node bin/ldesign-builder.js examples --filter lit-components`
+- Angular（基础）: `node bin/ldesign-builder.js examples --filter angular-lib`
 
 ### 输出目录结构
 

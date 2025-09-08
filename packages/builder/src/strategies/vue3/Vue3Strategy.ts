@@ -221,21 +221,62 @@ export class Vue3Strategy implements ILibraryStrategy {
       const { default: VuePlugin } = await import('unplugin-vue/rollup')
       plugins.push(VuePlugin(this.getVueOptions(config)))
 
-      // 先用 TypeScript 插件处理纯 .ts 入口与模块（排除 Vue 虚拟模块）
+      // Vue TSX/JSX 支持
+      try {
+        const { default: VueJsx } = await import('unplugin-vue-jsx/rollup')
+        plugins.push(VueJsx())
+      } catch (e) {
+        // 如果未安装 JSX 插件，则跳过（仍然允许纯 Vue SFC 构建）
+      }
+      // 再用 TypeScript 插件处理纯 .ts 入口与模块（排除 Vue 虚拟模块与测试文件）
       const { default: tsPlugin } = await import('@rollup/plugin-typescript')
+      const tsOptions = {
+        // 作为 Rollup 过滤器，控制哪些文件交给 TS 插件处理
+        include: ['src/**/*.ts'],
+        exclude: [
+          '**/*.vue',
+          '**/*.vue?*',
+          '**/*.tsx',
+          '**/__tests__/**',
+          '**/*.test.ts',
+          '**/*.spec.ts',
+          'tests/**',
+          'e2e/**',
+          'node_modules/**'
+        ]
+      } as any
       plugins.push({
         name: 'typescript',
-        plugin: async () => tsPlugin({
-          ...this.getTypeScriptOptions(config),
-          include: ['src/**/*.ts', 'src/**/*.tsx'],
-          exclude: ['**/*.vue', '**/*.vue?*', 'node_modules/**'],
-          // 避免 @rollup/plugin-typescript 在缺失 rollup 顶层 sourcemap 时报错
-          sourceMap: config.output?.sourcemap !== false
-        } as any)
+        // 将原始选项附加到包装对象，便于适配器按格式重建插件时复用
+        options: tsOptions,
+        plugin: async () => tsPlugin(tsOptions)
       })
 
-      // 再用 Babel 去掉 TS 注解（特别是 Vue 虚拟模块）
+      // 先用 esbuild 去除 TS 语法并处理 TSX Loader（保留 JSX 交由 Vue JSX 插件处理）
+      const { default: esbuild } = await import('rollup-plugin-esbuild')
+      plugins.push(esbuild({
+        include: /\.(ts|tsx|js|jsx)(\?|$)/,
+        exclude: [/node_modules/],
+        target: 'es2020',
+        // 保留 JSX/TSX 以便后续由 Babel/vue-jsx 处理
+        jsx: 'preserve',
+        tsconfig: 'tsconfig.json',
+        loaders: {
+          '.ts': 'ts',
+          '.tsx': 'tsx'
+        },
+        minify: config.performance?.minify !== false,
+        sourceMap: config.output?.sourcemap !== false
+      }))
+
+      // 再用 Babel 去掉残余 TS 注解并转换 Vue JSX/TSX
       const { default: babel } = await import('@rollup/plugin-babel')
+      // 引入 Vue JSX 的 Babel 插件，确保 TSX 语法被正确转换
+      let vueJsxBabel: any = null
+      try {
+        vueJsxBabel = (await import('@vue/babel-plugin-jsx')).default
+      } catch {}
+
       plugins.push(babel({
         babelrc: false,
         configFile: false,
@@ -244,6 +285,7 @@ export class Vue3Strategy implements ILibraryStrategy {
         presets: [
           ['@babel/preset-typescript', { allowDeclareFields: true }]
         ],
+        plugins: vueJsxBabel ? [vueJsxBabel] : [],
         // 仅处理脚本相关文件与 vue 的 script 虚拟模块
         include: [
           /\.(ts|tsx|js|jsx)$/,
@@ -254,18 +296,6 @@ export class Vue3Strategy implements ILibraryStrategy {
           /\?vue&type=template/,
           /\.(css|less|scss|sass)$/
         ]
-      }))
-
-      // 再用 esbuild 做转译与最小化（兼容 Vue 虚拟模块）
-      const { default: esbuild } = await import('rollup-plugin-esbuild')
-      plugins.push(esbuild({
-        include: /\.(ts|tsx|js|jsx)(\?|$)/,
-        exclude: [/node_modules/],
-        target: 'es2020',
-        jsx: 'preserve',
-        tsconfig: 'tsconfig.json',
-        minify: config.performance?.minify !== false,
-        sourceMap: config.output?.sourcemap !== false
       }))
 
       // CommonJS 插件
@@ -359,7 +389,10 @@ export class Vue3Strategy implements ILibraryStrategy {
       extract: config.style?.extract !== false,
       minimize: config.style?.minimize !== false,
       sourceMap: config.output?.sourcemap !== false,
-      modules: config.style?.modules || false
+      modules: config.style?.modules || false,
+      // 支持 less/scss 等预处理器
+      use: ['less'],
+      extensions: ['.css', '.less', '.scss', '.sass']
     }
   }
 

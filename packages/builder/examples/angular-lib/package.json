@@ -1,0 +1,15 @@
+{
+  "name": "@examples/angular-lib",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "build": "ldesign-builder build"
+  },
+  "dependencies": {
+    "@angular/core": "^20.2.4"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*"
+  }
+}
+

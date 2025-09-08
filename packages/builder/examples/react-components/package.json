@@ -5,30 +5,30 @@
   "keywords": ["react", "components", "ui", "typescript", "ldesign"],
   "author": "LDesign Team",
   "license": "MIT",
-  "main": "lib/index.cjs",
+  "main": "cjs/index.cjs",
   "module": "es/index.js",
   "types": "es/index.d.ts",
   "exports": {
     ".": {
       "import": "./es/index.js",
-      "require": "./lib/index.cjs",
+      "require": "./cjs/index.cjs",
       "types": "./es/index.d.ts"
     },
     "./style": "./es/index.css",
     "./components/Button": {
       "import": "./es/components/Button.js",
-      "require": "./lib/components/Button.cjs",
+      "require": "./cjs/components/Button.cjs",
       "types": "./es/components/Button.d.ts"
     },
     "./components/Input": {
       "import": "./es/components/Input.js",
-      "require": "./lib/components/Input.cjs",
+      "require": "./cjs/components/Input.cjs",
       "types": "./es/components/Input.d.ts"
     }
   },
   "files": [
     "es",
-    "lib",
+    "cjs",
     "README.md"
   ],
   "scripts": {

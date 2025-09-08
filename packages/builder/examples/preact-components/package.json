@@ -1,0 +1,28 @@
+{
+  "name": "@examples/preact-components",
+  "private": true,
+  "version": "0.0.0",
+  "main": "cjs/index.cjs",
+  "module": "es/index.js",
+  "types": "es/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./es/index.js",
+      "require": "./cjs/index.cjs",
+      "types": "./es/index.d.ts"
+    }
+  },
+  "files": [
+    "es",
+    "cjs",
+    "dist"
+  ],
+  "scripts": {
+    "build": "ldesign-builder build"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "preact": "^10.20.0"
+  }
+}
+

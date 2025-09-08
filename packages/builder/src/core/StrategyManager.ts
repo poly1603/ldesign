@@ -23,7 +23,13 @@ import { ErrorCode } from '../constants/errors'
 import { TypeScriptStrategy } from '../strategies/typescript/TypeScriptStrategy'
 import { StyleStrategy } from '../strategies/style/StyleStrategy'
 import { Vue3Strategy } from '../strategies/vue3/Vue3Strategy'
+import { Vue2Strategy } from '../strategies/vue2/Vue2Strategy'
 import { ReactStrategy } from '../strategies/react/ReactStrategy'
+import { SvelteStrategy } from '../strategies/svelte/SvelteStrategy'
+import { SolidStrategy } from '../strategies/solid/SolidStrategy'
+import { PreactStrategy } from '../strategies/preact/PreactStrategy'
+import { LitStrategy } from '../strategies/lit/LitStrategy'
+import { AngularStrategy } from '../strategies/angular/AngularStrategy'
 import { MixedStrategy } from '../strategies/mixed/MixedStrategy'
 
 /**
@@ -190,17 +196,28 @@ export class StrategyManager {
     this.registerStrategy(new Vue3Strategy())
 
     // Vue2 策略
-    this.registerStrategy(new BaseStrategy(
-      'vue2',
-      [LibraryType.VUE2],
-      10
-    ))
+    this.registerStrategy(new Vue2Strategy())
 
     // 样式策略
     this.registerStrategy(new StyleStrategy())
 
     // React 策略
     this.registerStrategy(new ReactStrategy())
+
+    // Svelte 策略
+    this.registerStrategy(new SvelteStrategy())
+
+    // Solid 策略
+    this.registerStrategy(new SolidStrategy())
+
+    // Preact 策略
+    this.registerStrategy(new PreactStrategy())
+
+    // Lit / Web Components 策略
+    this.registerStrategy(new LitStrategy())
+
+    // Angular（基础）策略
+    this.registerStrategy(new AngularStrategy())
 
     // 混合策略
     this.registerStrategy(new MixedStrategy())

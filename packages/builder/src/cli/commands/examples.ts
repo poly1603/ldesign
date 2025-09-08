@@ -39,8 +39,8 @@ export const examplesCommand = new Command('examples')
 
     console.log(chalk.cyan(`即将构建 ${selected.length} 个示例项目...`))
 
-    // 使用绝对路径到 bin 文件
-    const binPath = join(__dirname, '../../../bin/ldesign-builder.js')
+    // 使用绝对路径到 bin 文件（dist/cli -> ../../bin）
+    const binPath = join(__dirname, '../../bin/ldesign-builder.js')
 
     const queue = [...selected]
     const running: Promise<void>[] = []

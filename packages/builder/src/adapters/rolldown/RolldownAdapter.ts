@@ -252,7 +252,7 @@ export class RolldownAdapter implements IBundlerAdapter {
         dir = 'es'
         fileName = '[name].js'
       } else if (isCJS) {
-        dir = 'lib'
+        dir = 'cjs'
         fileName = '[name].cjs'
       } else if (isUMD) {
         dir = 'dist'

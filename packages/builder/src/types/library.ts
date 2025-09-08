@@ -16,6 +16,16 @@ export enum LibraryType {
   VUE3 = 'vue3',
   /** React 组件库 */
   REACT = 'react',
+  /** Svelte 组件库 */
+  SVELTE = 'svelte',
+  /** Solid 组件库 */
+  SOLID = 'solid',
+  /** Preact 组件库 */
+  PREACT = 'preact',
+  /** Lit/Web Components 组件库 */
+  LIT = 'lit',
+  /** Angular 组件库（基础支持） */
+  ANGULAR = 'angular',
   /** 混合库 */
   MIXED = 'mixed'
 }

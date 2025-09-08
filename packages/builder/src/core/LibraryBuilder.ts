@@ -113,6 +113,11 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
       // 合并配置
       const mergedConfig = config ? this.mergeConfig(this.config, config) : this.config
 
+      // 根据配置切换打包核心（确保与 CLI/配置一致）
+      if (mergedConfig.bundler && mergedConfig.bundler !== this.bundlerAdapter.name) {
+        this.setBundler(mergedConfig.bundler)
+      }
+
       // 发出构建开始事件
       this.emit('build:start', {
         config: mergedConfig,
@@ -213,6 +218,11 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
 
       // 合并配置
       const mergedConfig = config ? this.mergeConfig(this.config, config) : this.config
+
+      // 根据配置切换打包核心（确保与 CLI/配置一致）
+      if (mergedConfig.bundler && mergedConfig.bundler !== this.bundlerAdapter.name) {
+        this.setBundler(mergedConfig.bundler)
+      }
 
       // 获取库类型（优先使用配置中指定的类型）
       let libraryType = mergedConfig.libraryType || await this.detectLibraryType(mergedConfig.input as string)

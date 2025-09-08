@@ -30,6 +30,12 @@ export { TypeScriptStrategy } from './strategies/typescript/TypeScriptStrategy'
 export { StyleStrategy } from './strategies/style/StyleStrategy'
 export { Vue2Strategy } from './strategies/vue2/Vue2Strategy'
 export { Vue3Strategy } from './strategies/vue3/Vue3Strategy'
+export { ReactStrategy } from './strategies/react/ReactStrategy'
+export { SvelteStrategy } from './strategies/svelte/SvelteStrategy'
+export { SolidStrategy } from './strategies/solid/SolidStrategy'
+export { PreactStrategy } from './strategies/preact/PreactStrategy'
+export { LitStrategy } from './strategies/lit/LitStrategy'
+export { AngularStrategy } from './strategies/angular/AngularStrategy'
 export { MixedStrategy } from './strategies/mixed/MixedStrategy'
 
 // 插件导出

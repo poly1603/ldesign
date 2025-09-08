@@ -2,7 +2,7 @@ import { defineConfig, LibraryType } from '@ldesign/builder'
 
 export default defineConfig({
   // 单入口配�?- 使用 src/index.ts 作为入口
-  input: 'src/index.ts',
+  input: ['src/**/*.ts'],
 
   libraryType: LibraryType.TYPESCRIPT,
   bundler: 'rolldown',

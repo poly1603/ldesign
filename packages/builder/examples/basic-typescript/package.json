@@ -2,20 +2,20 @@
   "name": "@ldesign/example-basic-typescript",
   "version": "1.0.0",
   "description": "基础 TypeScript 库示例",
-  "main": "lib/index.cjs",
+  "main": "cjs/index.cjs",
   "module": "es/index.js",
   "types": "es/index.d.ts",
   "unpkg": "dist/index.umd.js",
   "exports": {
     ".": {
       "import": "./es/index.js",
-      "require": "./lib/index.cjs",
+      "require": "./cjs/index.cjs",
       "types": "./es/index.d.ts"
     }
   },
   "files": [
     "es",
-    "lib",
+    "cjs",
     "dist"
   ],
   "scripts": {

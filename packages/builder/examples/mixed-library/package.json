@@ -5,31 +5,31 @@
   "keywords": ["mixed", "typescript", "css", "utils", "components", "ldesign"],
   "author": "LDesign Team",
   "license": "MIT",
-  "main": "lib/index.cjs",
+  "main": "cjs/index.cjs",
   "module": "es/index.js",
   "types": "es/index.d.ts",
   "unpkg": "dist/index.umd.js",
   "exports": {
     ".": {
       "import": "./es/index.js",
-      "require": "./lib/index.cjs",
+      "require": "./cjs/index.cjs",
       "types": "./es/index.d.ts"
     },
     "./style": "./es/index.css",
     "./utils": {
       "import": "./es/utils/index.js",
-      "require": "./lib/utils/index.cjs",
+      "require": "./cjs/utils/index.cjs",
       "types": "./es/utils/index.d.ts"
     },
     "./components": {
       "import": "./es/components/index.js",
-      "require": "./lib/components/index.cjs",
+      "require": "./cjs/components/index.cjs",
       "types": "./es/components/index.d.ts"
     }
   },
   "files": [
     "es",
-    "lib",
+    "cjs",
     "README.md"
   ],
   "scripts": {

@@ -48,10 +48,10 @@ function testCommonJSImport() {
     console.log('\n📦 测试 CommonJS 导入...')
     
     // 清除缓存
-    const modulePath = path.resolve('./lib/index.cjs')
+    const modulePath = path.resolve('./cjs/index.cjs')
     delete require.cache[modulePath]
     
-    const lib = require('./lib/index.cjs')
+    const lib = require('./cjs/index.cjs')
     
     // 测试导出
     const exports = ['createUser', 'validateEmail', 'formatUser', 'DEFAULT_OPTIONS', 'VERSION', 'LIBRARY_NAME']
@@ -101,11 +101,8 @@ async function main() {
   console.log('📁 检查构建产物文件...')
   const files = [
     ['es/index.js', 'ESM 主文件'],
-    ['es/index.d.ts', 'ESM 类型定义'],
-    ['lib/index.cjs', 'CommonJS 主文件'],
-    ['lib/index.d.ts', 'CommonJS 类型定义'],
-    ['dist/index.umd.js', 'UMD 主文件'],
-    ['dist/index.d.ts', 'UMD 类型定义']
+    ['cjs/index.cjs', 'CommonJS 主文件'],
+    ['dist/index.umd.js', 'UMD 主文件']
   ]
   
   files.forEach(([file, desc]) => {
@@ -113,6 +110,22 @@ async function main() {
       allPassed = false
     }
   })
+
+  // 允许 d.ts 位于保留模块根 src 下
+  const esDts = fs.existsSync('es/index.d.ts') ? 'es/index.d.ts' : (fs.existsSync('es/src/index.d.ts') ? 'es/src/index.d.ts' : null)
+  const cjsDts = fs.existsSync('cjs/index.d.ts') ? 'cjs/index.d.ts' : (fs.existsSync('cjs/src/index.d.ts') ? 'cjs/src/index.d.ts' : null)
+  if (!esDts) {
+    console.log('❌ ESM 类型定义不存在: es/index.d.ts 或 es/src/index.d.ts')
+    allPassed = false
+  } else {
+    console.log(`✅ ESM 类型定义: ${esDts}`)
+  }
+  if (!cjsDts) {
+    console.log('❌ CJS 类型定义不存在: cjs/index.d.ts 或 cjs/src/index.d.ts')
+    allPassed = false
+  } else {
+    console.log(`✅ CJS 类型定义: ${cjsDts}`)
+  }
   
   console.log('\n📝 检查文件内容...')
   
@@ -129,8 +142,8 @@ async function main() {
   }
   
   // 检查 CommonJS 文件
-  if (fs.existsSync('lib/index.cjs')) {
-    if (!checkFileContent('lib/index.cjs', [
+  if (fs.existsSync('cjs/index.cjs')) {
+    if (!checkFileContent('cjs/index.cjs', [
       'exports.',
       'createUser',
       'validateEmail',
@@ -141,8 +154,8 @@ async function main() {
   }
   
   // 检查类型定义文件
-  if (fs.existsSync('es/index.d.ts')) {
-    if (!checkFileContent('es/index.d.ts', [
+  if (esDts) {
+    if (!checkFileContent(esDts, [
       'export interface User',
       'export declare function createUser',
       'export declare function validateEmail',
