@@ -27,9 +27,17 @@ export class LogoProcessor {
     const logoSize = logoOptions.size || Math.min(canvas.width, canvas.height) * 0.2
     const margin = logoOptions.margin || 0
 
-    // 计算Logo位置（居中）
-    const x = (canvas.width - logoSize) / 2
-    const y = (canvas.height - logoSize) / 2
+    // 计算Logo位置
+    const position = this.calculateLogoPosition(
+      canvas.width,
+      canvas.height,
+      logoSize,
+      logoSize,
+      logoOptions.position || 'center',
+      logoOptions.offset,
+    )
+    const x = position.x
+    const y = position.y
 
     // 保存当前状态
     ctx.save()
@@ -70,13 +78,23 @@ export class LogoProcessor {
     svgElement: SVGElement,
     logoOptions: LogoOptions,
   ): Promise<void> {
-    const svgRect = svgElement.getBoundingClientRect()
-    const logoSize = logoOptions.size || Math.min(svgRect.width, svgRect.height) * 0.2
+    // 获取SVG尺寸，优先使用属性值
+    const width = Number(svgElement.getAttribute('width')) || 200
+    const height = Number(svgElement.getAttribute('height')) || 200
+    const logoSize = logoOptions.size || Math.min(width, height) * 0.2
     const margin = logoOptions.margin || 0
 
-    // 计算Logo位置（居中）
-    const x = (svgRect.width - logoSize) / 2
-    const y = (svgRect.height - logoSize) / 2
+    // 计算Logo位置
+    const position = this.calculateLogoPosition(
+      width,
+      height,
+      logoSize,
+      logoSize,
+      logoOptions.position || 'center',
+      logoOptions.offset,
+    )
+    const x = position.x
+    const y = position.y
 
     // 创建Logo组
     const logoGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g')
@@ -279,12 +297,45 @@ export class LogoProcessor {
   calculateLogoPosition(
     containerWidth: number,
     containerHeight: number,
-    logoSize: number,
+    logoWidth: number,
+    logoHeight: number,
+    position: 'center' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' = 'center',
+    offset?: { x: number, y: number },
   ): { x: number, y: number } {
-    return {
-      x: (containerWidth - logoSize) / 2,
-      y: (containerHeight - logoSize) / 2,
+    let x: number
+    let y: number
+
+    switch (position) {
+      case 'top-left':
+        x = 0
+        y = 0
+        break
+      case 'top-right':
+        x = containerWidth - logoWidth
+        y = 0
+        break
+      case 'bottom-left':
+        x = 0
+        y = containerHeight - logoHeight
+        break
+      case 'bottom-right':
+        x = containerWidth - logoWidth
+        y = containerHeight - logoHeight
+        break
+      case 'center':
+      default:
+        x = (containerWidth - logoWidth) / 2
+        y = (containerHeight - logoHeight) / 2
+        break
     }
+
+    // 应用偏移
+    if (offset) {
+      x += offset.x
+      y += offset.y
+    }
+
+    return { x, y }
   }
 
   /**
@@ -300,4 +351,11 @@ export class LogoProcessor {
   destroy(): void {
     this.clearCache()
   }
+}
+
+/**
+ * 创建Logo处理器实例
+ */
+export function createLogoProcessor(): LogoProcessor {
+  return new LogoProcessor()
 }

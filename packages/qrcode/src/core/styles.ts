@@ -279,13 +279,16 @@ export class StyleProcessor {
     svgElement: SVGElement,
     backgroundColor: ColorValue,
   ): void {
-    const rect = svgElement.getBoundingClientRect()
+    // 获取SVG尺寸，优先使用属性值
+    const width = svgElement.getAttribute('width') || '200'
+    const height = svgElement.getAttribute('height') || '200'
+
     const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
 
     background.setAttribute('x', '0')
     background.setAttribute('y', '0')
-    background.setAttribute('width', rect.width.toString())
-    background.setAttribute('height', rect.height.toString())
+    background.setAttribute('width', width)
+    background.setAttribute('height', height)
 
     if (typeof backgroundColor === 'string') {
       background.setAttribute('fill', backgroundColor)

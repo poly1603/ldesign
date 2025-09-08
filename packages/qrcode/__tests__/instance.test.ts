@@ -4,6 +4,27 @@ import { createQRCodeInstance, QRCodeInstanceImpl } from '../src/core/instance'
 
 // Mock QRCodeGenerator
 vi.mock('../src/core/generator', () => ({
+  QRCodeGenerator: vi.fn(() => ({
+    generate: vi.fn().mockResolvedValue({
+      success: true,
+      data: document.createElement('canvas'),
+      format: 'canvas',
+      metrics: {
+        operation: 'generate',
+        duration: 100,
+        timestamp: new Date(),
+      },
+    }),
+    updateOptions: vi.fn(),
+    getOptions: vi.fn().mockReturnValue({
+      data: 'test',
+      size: 200,
+      margin: 4,
+    }),
+    clearCache: vi.fn(),
+    getPerformanceMetrics: vi.fn().mockReturnValue([]),
+    destroy: vi.fn(),
+  })),
   createQRCodeGenerator: vi.fn(() => ({
     generate: vi.fn().mockResolvedValue({
       success: true,
@@ -22,6 +43,7 @@ vi.mock('../src/core/generator', () => ({
       margin: 4,
     }),
     clearCache: vi.fn(),
+    getPerformanceMetrics: vi.fn().mockReturnValue([]),
     destroy: vi.fn(),
   })),
 }))

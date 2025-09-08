@@ -36,9 +36,25 @@ export function isValidColor(color: string): boolean {
     return true
   }
 
-  // 检查RGB/RGBA
-  if (/^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(?:(,\s*[0-9.]+)\s*)?\)$/.test(color)) {
-    return true
+  // 检查RGB颜色
+  const rgbMatch = color.match(/^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/)
+  if (rgbMatch) {
+    const [, r, g, b] = rgbMatch
+    const red = parseInt(r, 10)
+    const green = parseInt(g, 10)
+    const blue = parseInt(b, 10)
+    return red >= 0 && red <= 255 && green >= 0 && green <= 255 && blue >= 0 && blue <= 255
+  }
+
+  // 检查RGBA颜色
+  const rgbaMatch = color.match(/^rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([0-9.]+)\s*\)$/)
+  if (rgbaMatch) {
+    const [, r, g, b, a] = rgbaMatch
+    const red = parseInt(r, 10)
+    const green = parseInt(g, 10)
+    const blue = parseInt(b, 10)
+    const alpha = parseFloat(a)
+    return red >= 0 && red <= 255 && green >= 0 && green <= 255 && blue >= 0 && blue <= 255 && alpha >= 0 && alpha <= 1
   }
 
   // 检查HSL/HSLA
@@ -102,6 +118,21 @@ export function validateQRCodeOptions(options: QRCodeOptions): ValidationResult 
     errors.push('errorCorrectionLevel must be one of: L, M, Q, H')
   }
 
+  // 验证颜色配置
+  if (options.color) {
+    if (options.color.foreground && typeof options.color.foreground === 'string') {
+      if (!isValidColor(options.color.foreground)) {
+        errors.push('color.foreground is not a valid color')
+      }
+    }
+
+    if (options.color.background && typeof options.color.background === 'string') {
+      if (!isValidColor(options.color.background)) {
+        errors.push('color.background is not a valid color')
+      }
+    }
+  }
+
   // 验证样式配置
   if (options.style) {
     if (options.style.backgroundColor && typeof options.style.backgroundColor === 'string') {
@@ -142,7 +173,17 @@ export function getDefaultOptions(): QRCodeOptions {
   return {
     data: '',
     size: 200,
+    margin: 4,
+    errorCorrectionLevel: 'M',
+    outputFormat: 'canvas',
     format: 'canvas',
+    color: {
+      foreground: '#000000',
+      background: '#FFFFFF',
+    },
+    performance: {
+      enableCache: true,
+    },
   }
 }
 
@@ -152,33 +193,37 @@ export function mergeOptions(base: QRCodeOptions, override: Partial<QRCodeOption
     ...base,
     ...override,
   }
+
+  // 深度合并color选项
+  if (base.color || override.color) {
+    merged.color = {
+      ...(base.color || {}),
+      ...(override.color || {}),
+    }
+  }
+
+  // 深度合并style选项
   if (base.style || override.style) {
     merged.style = {
       ...(base.style || {}),
       ...(override.style || {}),
     }
   }
+
+  // 深度合并logo选项
   if (base.logo || override.logo) {
     merged.logo = {
       ...(base.logo || {} as any),
       ...(override.logo || {} as any),
     } as any
   }
+
   return merged
 }
 
 // 计算实际尺寸
-export function calculateActualSize(options: QRCodeOptions): { width: number, height: number } {
-  const baseSize = options.size || DEFAULT_OPTIONS.size
-  const margin = options.margin || DEFAULT_OPTIONS.margin
-  const scale = options.scale || DEFAULT_OPTIONS.scale
-
-  const actualSize = (baseSize + margin * 2) * scale
-
-  return {
-    width: actualSize,
-    height: actualSize,
-  }
+export function calculateActualSize(size: number, margin: number): number {
+  return size + margin * 2
 }
 
 // 生成缓存键
@@ -196,12 +241,21 @@ export function generateCacheKey(options: QRCodeOptions): string {
     logo: options.logo,
   }
 
-  return btoa(JSON.stringify(keyData)).replace(/[+/=]/g, '')
+  // 使用简单的哈希算法生成缓存键
+  const jsonString = JSON.stringify(keyData)
+  let hash = 0
+  for (let i = 0; i < jsonString.length; i++) {
+    const char = jsonString.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // 转换为32位整数
+  }
+  return Math.abs(hash).toString(36)
 }
 
 // 性能监控器
 export class PerformanceMonitor {
   private metrics: PerformanceMetric[] = []
+  private activeOperations: Map<string, { operation: string, startTime: number }> = new Map()
   private maxMetrics = 100
 
   startOperation(operation: string): (cacheHit?: boolean, size?: number) => void {
@@ -225,7 +279,10 @@ export class PerformanceMonitor {
     }
   }
 
-  getMetrics(): PerformanceMetric[] {
+  getMetrics(operation?: string): PerformanceMetric[] {
+    if (operation) {
+      return this.metrics.filter(m => m.operation === operation)
+    }
     return [...this.metrics]
   }
 
@@ -250,8 +307,57 @@ export class PerformanceMonitor {
     return hits / cacheableMetrics.length
   }
 
+  /**
+   * 开始性能测量
+   */
+  start(operation: string): string {
+    const id = Math.random().toString(36).substr(2, 9)
+    this.activeOperations.set(id, {
+      operation,
+      startTime: performance.now(),
+    })
+    return id
+  }
+
+  /**
+   * 结束性能测量
+   */
+  end(id: string, cacheHit = false, size?: number): PerformanceMetric {
+    const activeOp = this.activeOperations.get(id)
+    if (!activeOp) {
+      throw new Error(`No active operation found for id: ${id}`)
+    }
+
+    const duration = performance.now() - activeOp.startTime
+    const metric: PerformanceMetric = {
+      operation: activeOp.operation,
+      duration,
+      timestamp: new Date(),
+      cacheHit,
+      size,
+    }
+
+    this.metrics.push(metric)
+    this.activeOperations.delete(id)
+
+    // 限制指标数量
+    if (this.metrics.length > this.maxMetrics) {
+      this.metrics.shift()
+    }
+
+    return metric
+  }
+
+  /**
+   * 按操作类型获取指标
+   */
+  getMetricsByOperation(operation: string): PerformanceMetric[] {
+    return this.metrics.filter(m => m.operation === operation)
+  }
+
   clear(): void {
     this.metrics = []
+    this.activeOperations.clear()
   }
 }
 

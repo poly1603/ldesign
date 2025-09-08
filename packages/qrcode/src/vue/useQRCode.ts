@@ -4,7 +4,7 @@ import type {
   QRCodeOptions,
   QRCodeResult,
 } from '../types'
-import { computed, onUnmounted, ref, type Ref } from 'vue'
+import { computed, getCurrentInstance, onUnmounted, ref, watchEffect, type Ref } from 'vue'
 import { QRCodeGenerator } from '../core/generator'
 import { createError, downloadFile } from '../utils'
 
@@ -63,7 +63,7 @@ export function useQRCode(initialOptions?: QRCodeOptions): UseQRCodeReturn {
     text?: string,
     newOptions?: QRCodeOptions,
   ): Promise<QRCodeResult> => {
-    const finalText = text || options.value.data || ''
+    const finalText = String(text || options.value.data || '')
     if (!finalText.trim()) {
       throw createError('Text cannot be empty', 'INVALID_TEXT')
     }
@@ -176,10 +176,13 @@ export function useQRCode(initialOptions?: QRCodeOptions): UseQRCodeReturn {
     generator.destroy()
   }
 
-  // 组件卸载时清理
-  onUnmounted(() => {
-    destroy()
-  })
+  // 只在组件上下文中注册卸载钩子
+  const instance = getCurrentInstance()
+  if (instance) {
+    onUnmounted(() => {
+      destroy()
+    })
+  }
 
   return {
     // 状态
@@ -205,6 +208,9 @@ export function useQRCode(initialOptions?: QRCodeOptions): UseQRCodeReturn {
     getCacheStats,
     reset,
     destroy,
+
+    // 生成器实例
+    generator,
   }
 }
 
@@ -249,8 +255,6 @@ export function useReactiveQRCode(
   const optionsRef = ref(options || { data: '', size: 200, format: 'canvas' })
 
   // 监听文本和选项变化
-  const { watchEffect } = require('vue')
-
   watchEffect(async () => {
     if (text.value.trim()) {
       try {

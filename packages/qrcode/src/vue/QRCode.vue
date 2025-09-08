@@ -18,8 +18,10 @@ import { useQRCode } from './useQRCode'
 
 // Props定义
 const props = withDefaults(defineProps<QRCodeProps>(), {
+  data: '',
   text: '',
   format: 'canvas',
+  size: 200,
   width: 200,
   height: undefined,
   errorCorrectionLevel: 'M',
@@ -45,9 +47,9 @@ const imageRef = ref<HTMLImageElement>()
 
 // 计算属性
 const qrCodeOptions = computed<QRCodeOptions>(() => ({
+  data: props.data || props.text || '',
   format: props.format,
-  width: props.width,
-  height: props.height || props.width,
+  size: props.size || props.width,
   errorCorrectionLevel: props.errorCorrectionLevel,
   margin: props.margin,
   logo: props.logo,
@@ -97,12 +99,13 @@ const svgHTML = computed(() => {
 
 // 方法
 async function generateQRCode() {
-  if (!props.text.trim()) {
+  const dataText = props.data || props.text || ''
+  if (!dataText.trim()) {
     return
   }
 
   try {
-    const qrResult = await generate(props.text, qrCodeOptions.value)
+    const qrResult = await generate(dataText, qrCodeOptions.value)
 
     // 渲染到DOM
     await nextTick()
@@ -160,22 +163,31 @@ async function handleDownload() {
   }
 }
 
+// 重新生成二维码
+async function regenerate() {
+  return await generateQRCode()
+}
+
 // 暴露方法给父组件
 defineExpose({
   generate: generateQRCode,
+  regenerate,
   download: handleDownload,
   clearCache,
   getMetrics,
   result,
   loading,
   error,
+  isLoading: loading,
+  generator,
 })
 
 // 监听器
 watch(
-  [() => props.text, qrCodeOptions],
+  [() => props.data || props.text, qrCodeOptions],
   () => {
-    if (props.autoGenerate && props.text.trim()) {
+    const dataText = props.data || props.text || ''
+    if (props.autoGenerate && dataText.trim()) {
       generateQRCode()
     }
   },
@@ -184,7 +196,8 @@ watch(
 
 // 生命周期
 onMounted(() => {
-  if (props.autoGenerate && props.text.trim()) {
+  const dataText = props.data || props.text || ''
+  if (props.autoGenerate && dataText.trim()) {
     generateQRCode()
   }
 })
@@ -197,7 +210,7 @@ onUnmounted(() => {
 <template>
   <div
     ref="containerRef"
-    class="l-qrcode" :class="[
+    class="qrcode-container l-qrcode" :class="[
       {
         'l-qrcode--loading': loading,
         'l-qrcode--error': !!error,
@@ -225,7 +238,7 @@ onUnmounted(() => {
     <div v-else class="l-qrcode__content">
       <!-- Canvas渲染 -->
       <canvas
-        v-if="format === 'canvas' && canvasElement"
+        v-if="props.format === 'canvas' && result"
         ref="canvasRef"
         :width="actualWidth"
         :height="actualHeight"
@@ -234,27 +247,27 @@ onUnmounted(() => {
 
       <!-- SVG渲染 -->
       <div
-        v-else-if="format === 'svg' && svgElement"
+        v-else-if="props.format === 'svg' && result"
         ref="svgRef"
-        class="l-qrcode__svg"
-        v-html="svgHTML"
+        class="l-qrcode__svg qrcode-svg"
+        v-html="result?.data"
       />
 
       <!-- Image渲染 -->
       <img
-        v-else-if="format === 'image' && imageElement"
+        v-else-if="props.format === 'image' && result"
         ref="imageRef"
-        :src="imageElement.src"
+        :src="result.data"
         :width="actualWidth"
         :height="actualHeight"
-        :alt="`QR Code: ${text}`"
+        :alt="`QR Code: ${props.data || props.text}`"
         class="l-qrcode__image"
       >
     </div>
 
     <!-- 下载按钮 -->
     <button
-      v-if="showDownloadButton && !loading && !error"
+      v-if="props.showDownloadButton && !loading && !error"
       class="l-qrcode__download-btn"
       type="button"
       @click="handleDownload"
@@ -262,7 +275,7 @@ onUnmounted(() => {
       <slot name="download-icon">
         📥
       </slot>
-      {{ downloadButtonText }}
+      {{ props.downloadButtonText }}
     </button>
   </div>
 </template>

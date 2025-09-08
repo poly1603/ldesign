@@ -7,14 +7,11 @@ import { useQRCode } from '../../src/vue/useQRCode'
 vi.mock('../../src/core/generator', () => ({
   QRCodeGenerator: vi.fn().mockImplementation(() => ({
     generate: vi.fn().mockResolvedValue({
-      success: true,
-      data: document.createElement('canvas'),
+      data: 'data:image/png;base64,test',
+      element: document.createElement('canvas'),
       format: 'canvas',
-      metrics: {
-        duration: 10,
-        timestamp: new Date(),
-        cacheHit: false,
-      },
+      size: 200,
+      timestamp: Date.now(),
     }),
     updateOptions: vi.fn(),
     clearCache: vi.fn(),
@@ -23,7 +20,7 @@ vi.mock('../../src/core/generator', () => ({
       size: 200,
       format: 'canvas',
     }),
-    getMetrics: vi.fn().mockReturnValue([]),
+    getPerformanceMetrics: vi.fn().mockReturnValue([]),
     destroy: vi.fn(),
   })),
 }))

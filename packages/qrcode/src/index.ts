@@ -1,69 +1,69 @@
 /**
- * LDesign QRCode - 主入口文件
- * 导出所有公共API
+ * LDesign QR Code Library
+ * 通用的Web端二维码生成库，支持多种前端框架
  */
 
-// 核心生成器
-export { createQRCodeGenerator, defaultGenerator, QRCodeGenerator } from './core/generator'
-
-export { LogoProcessor } from './core/logo'
+// 核心功能
+export { QRCodeGenerator } from './core/generator'
+export { LogoProcessor, createLogoProcessor } from './core/logo'
 export { StyleProcessor } from './core/styles'
-// 便捷函数
-export {
-  downloadQRCode,
-  generateQRCode,
-  generateQRCodeCanvas,
-  generateQRCodeImage,
-  generateQRCodeSVG,
-} from './helpers'
+export { createQRCodeInstance } from './core/instance'
+export type { QRCodeInstance } from './core/instance'
 
-// 核心类型
+// 便捷函数
+export { download } from './helpers'
+
+// 原生JavaScript API
+export {
+  generateQRCode,
+  SimpleQRCodeGenerator,
+  downloadQRCode,
+  generateQRCodeBatch,
+} from './vanilla'
+export type { SimpleQRCodeOptions } from './vanilla'
+
+// 框架适配器
+export {
+  detectFramework,
+  generateQRCodeAuto,
+  createFrameworkFactory,
+  getFrameworkBestPractices,
+  checkFrameworkCompatibility,
+  createCrossFrameworkConfig,
+} from './adapters'
+export type { FrameworkDetection, AdapterOptions } from './adapters'
+
+// 类型定义
 export type {
-  ColorStop,
-  ColorValue,
-  CornerStyle,
-  DotStyle,
-  GeneratorConfig,
-  GradientOptions,
-  GradientType,
-  LogoOptions,
-  LogoShape,
-  PerformanceMetric,
-  QRCodeError,
-  QRCodeErrorCorrectionLevel,
-  QRCodeEvents,
-  QRCodeFormat,
   QRCodeOptions,
-  QRCodeProps,
   QRCodeResult,
+  QRCodeError,
+  LogoOptions,
   StyleOptions,
-  UseQRCodeReturn,
-  ValidationResult,
+  ColorOptions,
+  GradientColor,
+  ColorStop,
+  PerformanceMetric,
 } from './types'
 
 // 工具函数
 export {
-  calculateActualSize,
-  canvasToDataURL,
-  createError,
-  DEFAULT_OPTIONS,
-  downloadFile,
-  generateCacheKey,
-  getDefaultOptions,
   isValidColor,
-  mergeOptions,
+  validateOptions,
+  getDefaultOptions,
+  generateCacheKey,
+  createError,
   PerformanceMonitor,
-  validateQRCodeOptions,
+  calculateActualSize,
 } from './utils'
-// Vue组件和Hook
-export { default as QRCode } from './vue/QRCode.vue'
+// Vue集成
+export * from './vue'
 
-export {
-  useBatchQRCode,
-  useQRCode,
-  useQRCodeGenerator,
-  useReactiveQRCode,
-} from './vue/useQRCode'
+// React集成 (需要单独导入)
+// export * from './react'
+
+// Angular集成 (需要单独导入)
+// export * from './angular'
 
 // 版本信息
 export const version = '1.0.0'
@@ -71,4 +71,7 @@ export const version = '1.0.0'
 // 默认导出
 export default {
   version,
+  generateQRCode,
+  QRCodeGenerator,
+  detectFramework,
 }

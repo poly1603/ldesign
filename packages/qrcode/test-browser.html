@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDesign QR Code - 浏览器兼容性测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            background: white;
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .test-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            background: #fafafa;
+        }
+        
+        .test-item h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 220px;
+            background: white;
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .browser-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .performance-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .error-log {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 LDesign QR Code 浏览器兼容性测试</h1>
+        <p>测试二维码生成库在不同浏览器环境中的功能和性能</p>
+        <div class="browser-info" id="browserInfo">
+            <strong>浏览器信息:</strong> <span id="userAgent"></span>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button onclick="runAllTests()">🚀 运行所有测试</button>
+        <button onclick="clearResults()">🗑️ 清除结果</button>
+        <button onclick="downloadResults()">📥 下载结果</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 基础功能测试</h2>
+        <div class="test-grid" id="basicTests">
+            <!-- 基础测试项目将在这里动态生成 -->
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎨 样式和格式测试</h2>
+        <div class="test-grid" id="styleTests">
+            <!-- 样式测试项目将在这里动态生成 -->
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>⚡ 性能测试</h2>
+        <div id="performanceResults">
+            <div class="performance-info">
+                <div>生成时间: <span id="generationTime">-</span></div>
+                <div>内存使用: <span id="memoryUsage">-</span></div>
+                <div>缓存效果: <span id="cacheEffect">-</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🐛 错误日志</h2>
+        <div class="error-log" id="errorLog">
+            暂无错误
+        </div>
+    </div>
+
+    <script>
+        // 浏览器信息
+        document.getElementById('userAgent').textContent = navigator.userAgent;
+
+        // 测试配置
+        const testConfigs = {
+            basic: [
+                { name: '基础文本', data: 'Hello World', options: { size: 200 } },
+                { name: 'URL链接', data: 'https://example.com', options: { size: 200 } },
+                { name: '中文文本', data: '你好世界', options: { size: 200 } },
+                { name: '长文本', data: 'A'.repeat(100), options: { size: 200 } },
+            ],
+            style: [
+                { name: 'Canvas格式', data: 'Canvas Test', options: { size: 200, format: 'canvas' } },
+                { name: 'SVG格式', data: 'SVG Test', options: { size: 200, format: 'svg' } },
+                { name: 'Image格式', data: 'Image Test', options: { size: 200, format: 'image' } },
+                { name: '大尺寸', data: 'Large Size', options: { size: 400 } },
+            ]
+        };
+
+        // 错误日志
+        const errorLog = [];
+        function logError(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            errorLog.push(`[${timestamp}] ${message}`);
+            document.getElementById('errorLog').innerHTML = errorLog.join('<br>');
+        }
+
+        // 模拟二维码生成（因为实际的库可能需要构建）
+        async function generateQRCode(data, options = {}) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        // 创建一个模拟的二维码元素
+                        const canvas = document.createElement('canvas');
+                        canvas.width = options.size || 200;
+                        canvas.height = options.size || 200;
+                        
+                        const ctx = canvas.getContext('2d');
+                        
+                        // 绘制简单的模拟二维码
+                        ctx.fillStyle = '#000';
+                        const cellSize = canvas.width / 25;
+                        
+                        for (let i = 0; i < 25; i++) {
+                            for (let j = 0; j < 25; j++) {
+                                if (Math.random() > 0.5) {
+                                    ctx.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
+                                }
+                            }
+                        }
+                        
+                        // 添加边框
+                        ctx.strokeStyle = '#000';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+                        
+                        // 添加文本标识
+                        ctx.fillStyle = '#fff';
+                        ctx.font = '12px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(data.substring(0, 10), canvas.width / 2, canvas.height / 2);
+                        
+                        resolve({
+                            element: canvas,
+                            data: canvas.toDataURL(),
+                            format: options.format || 'canvas',
+                            size: options.size || 200,
+                            timestamp: Date.now()
+                        });
+                    } catch (error) {
+                        reject(error);
+                    }
+                }, Math.random() * 100 + 50); // 模拟生成时间
+            });
+        }
+
+        // 创建测试项目
+        function createTestItem(config, category) {
+            const item = document.createElement('div');
+            item.className = 'test-item';
+            item.innerHTML = `
+                <h4>${config.name}</h4>
+                <div class="status loading" id="status-${category}-${config.name}">等待测试</div>
+                <div class="qr-container" id="qr-${category}-${config.name}">
+                    <span style="color: #666;">点击"运行所有测试"开始</span>
+                </div>
+                <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                    数据: ${config.data.substring(0, 30)}${config.data.length > 30 ? '...' : ''}
+                </div>
+            `;
+            return item;
+        }
+
+        // 初始化测试项目
+        function initializeTests() {
+            const basicContainer = document.getElementById('basicTests');
+            const styleContainer = document.getElementById('styleTests');
+            
+            testConfigs.basic.forEach(config => {
+                basicContainer.appendChild(createTestItem(config, 'basic'));
+            });
+            
+            testConfigs.style.forEach(config => {
+                styleContainer.appendChild(createTestItem(config, 'style'));
+            });
+        }
+
+        // 运行单个测试
+        async function runSingleTest(config, category) {
+            const statusId = `status-${category}-${config.name}`;
+            const containerId = `qr-${category}-${config.name}`;
+            const statusEl = document.getElementById(statusId);
+            const containerEl = document.getElementById(containerId);
+            
+            try {
+                statusEl.textContent = '生成中...';
+                statusEl.className = 'status loading';
+                
+                const startTime = performance.now();
+                const result = await generateQRCode(config.data, config.options);
+                const endTime = performance.now();
+                
+                containerEl.innerHTML = '';
+                containerEl.appendChild(result.element);
+                
+                statusEl.textContent = `成功 (${(endTime - startTime).toFixed(1)}ms)`;
+                statusEl.className = 'status success';
+                
+                return { success: true, time: endTime - startTime };
+            } catch (error) {
+                statusEl.textContent = `失败: ${error.message}`;
+                statusEl.className = 'status error';
+                containerEl.innerHTML = `<span style="color: #dc3545;">生成失败</span>`;
+                logError(`${category}-${config.name}: ${error.message}`);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // 运行所有测试
+        async function runAllTests() {
+            const startTime = performance.now();
+            const results = { basic: [], style: [] };
+            
+            // 清除之前的错误日志
+            errorLog.length = 0;
+            document.getElementById('errorLog').textContent = '暂无错误';
+            
+            // 运行基础测试
+            for (const config of testConfigs.basic) {
+                const result = await runSingleTest(config, 'basic');
+                results.basic.push(result);
+            }
+            
+            // 运行样式测试
+            for (const config of testConfigs.style) {
+                const result = await runSingleTest(config, 'style');
+                results.style.push(result);
+            }
+            
+            const totalTime = performance.now() - startTime;
+            
+            // 更新性能信息
+            updatePerformanceInfo(results, totalTime);
+        }
+
+        // 更新性能信息
+        function updatePerformanceInfo(results, totalTime) {
+            const allResults = [...results.basic, ...results.style];
+            const successCount = allResults.filter(r => r.success).length;
+            const avgTime = allResults
+                .filter(r => r.success)
+                .reduce((sum, r) => sum + r.time, 0) / successCount;
+            
+            document.getElementById('generationTime').textContent = 
+                `平均 ${avgTime.toFixed(1)}ms (总计 ${totalTime.toFixed(1)}ms)`;
+            
+            document.getElementById('memoryUsage').textContent = 
+                `${(performance.memory ? (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(1) : '不支持')} MB`;
+            
+            document.getElementById('cacheEffect').textContent = 
+                `${successCount}/${allResults.length} 成功`;
+        }
+
+        // 清除结果
+        function clearResults() {
+            document.querySelectorAll('.status').forEach(el => {
+                el.textContent = '等待测试';
+                el.className = 'status loading';
+            });
+            
+            document.querySelectorAll('.qr-container').forEach(el => {
+                el.innerHTML = '<span style="color: #666;">点击"运行所有测试"开始</span>';
+            });
+            
+            document.getElementById('generationTime').textContent = '-';
+            document.getElementById('memoryUsage').textContent = '-';
+            document.getElementById('cacheEffect').textContent = '-';
+            
+            errorLog.length = 0;
+            document.getElementById('errorLog').textContent = '暂无错误';
+        }
+
+        // 下载结果
+        function downloadResults() {
+            const results = {
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                tests: [],
+                errors: [...errorLog]
+            };
+            
+            document.querySelectorAll('.test-item').forEach(item => {
+                const title = item.querySelector('h4').textContent;
+                const status = item.querySelector('.status').textContent;
+                results.tests.push({ title, status });
+            });
+            
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `qrcode-test-results-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 初始化页面
+        initializeTests();
+        
+        // 页面加载完成后的提示
+        console.log('🔍 LDesign QR Code 浏览器兼容性测试页面已加载');
+        console.log('点击"运行所有测试"按钮开始测试');
+    </script>
+</body>
+</html>

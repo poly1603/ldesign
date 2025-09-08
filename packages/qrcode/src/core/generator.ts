@@ -327,6 +327,13 @@ export class QRCodeGenerator {
   }
 
   /**
+   * 获取性能指标
+   */
+  getPerformanceMetrics(): PerformanceMetric[] {
+    return this.performanceMonitor.getMetrics()
+  }
+
+  /**
    * 销毁生成器
    */
   destroy(): void {

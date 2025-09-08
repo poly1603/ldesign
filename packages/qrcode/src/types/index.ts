@@ -156,8 +156,21 @@ export interface QRCodeEvents {
 
 // Vue组件Props类型
 export interface QRCodeProps extends QRCodeOptions {
+  // 基础属性
+  text?: string
+  width?: number
+  height?: number
+
+  // 行为控制
   autoGenerate?: boolean
   loading?: boolean
+
+  // 下载功能
+  showDownloadButton?: boolean
+  downloadButtonText?: string
+  downloadFilename?: string
+
+  // 事件回调
   onGenerated?: (result: QRCodeResult) => void
   onError?: (error: QRCodeError) => void
 }

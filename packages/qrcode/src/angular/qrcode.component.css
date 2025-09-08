@@ -1,0 +1,203 @@
+/**
+ * Angular QR Code Component Styles
+ * 使用LDESIGN设计系统的颜色变量
+ */
+
+.qrcode-container {
+  display: inline-block;
+  position: relative;
+  border-radius: var(--ls-border-radius-base);
+  background-color: var(--ldesign-bg-color-component);
+  border: 1px solid var(--ldesign-border-color);
+  transition: all 0.3s ease;
+}
+
+.qrcode-container:hover {
+  border-color: var(--ldesign-border-color-hover);
+  background-color: var(--ldesign-bg-color-component-hover);
+}
+
+/* 加载状态 */
+.qrcode-loading {
+  border-color: var(--ldesign-brand-color);
+}
+
+.qrcode-loading-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  padding: var(--ls-padding-base);
+}
+
+.qrcode-loading-default {
+  color: var(--ldesign-text-color-secondary);
+  font-size: var(--ls-font-size-sm);
+  text-align: center;
+}
+
+/* 错误状态 */
+.qrcode-error {
+  border-color: var(--ldesign-error-color);
+  background-color: var(--ldesign-error-color-1);
+}
+
+.qrcode-error-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  padding: var(--ls-padding-base);
+}
+
+.qrcode-error-default {
+  color: var(--ldesign-error-color);
+  font-size: var(--ls-font-size-sm);
+  text-align: center;
+}
+
+/* 内容区域 */
+.qrcode-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--ls-padding-sm);
+}
+
+/* Canvas样式 */
+.qrcode-canvas {
+  display: block;
+  border-radius: var(--ls-border-radius-sm);
+  box-shadow: var(--ldesign-shadow-1);
+}
+
+/* SVG样式 */
+.qrcode-svg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ls-border-radius-sm);
+  box-shadow: var(--ldesign-shadow-1);
+}
+
+.qrcode-svg svg {
+  display: block;
+  border-radius: var(--ls-border-radius-sm);
+}
+
+/* Image样式 */
+.qrcode-image {
+  display: block;
+  border-radius: var(--ls-border-radius-sm);
+  box-shadow: var(--ldesign-shadow-1);
+}
+
+/* 操作按钮区域 */
+.qrcode-actions {
+  display: flex;
+  justify-content: center;
+  padding: var(--ls-padding-sm);
+  border-top: 1px solid var(--ldesign-border-level-1-color);
+  background-color: var(--ldesign-bg-color-container);
+}
+
+.qrcode-download-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--ls-button-height-small);
+  padding: 0 var(--ls-padding-base);
+  font-size: var(--ls-font-size-sm);
+  font-weight: 500;
+  color: var(--ldesign-font-white-1);
+  background-color: var(--ldesign-brand-color);
+  border: 1px solid var(--ldesign-brand-color);
+  border-radius: var(--ls-border-radius-base);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.qrcode-download-button:hover {
+  background-color: var(--ldesign-brand-color-hover);
+  border-color: var(--ldesign-brand-color-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--ldesign-shadow-2);
+}
+
+.qrcode-download-button:active {
+  background-color: var(--ldesign-brand-color-active);
+  border-color: var(--ldesign-brand-color-active);
+  transform: translateY(0);
+  box-shadow: var(--ldesign-shadow-1);
+}
+
+.qrcode-download-button:focus {
+  box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+}
+
+.qrcode-download-button:disabled {
+  background-color: var(--ldesign-brand-color-disabled);
+  border-color: var(--ldesign-brand-color-disabled);
+  color: var(--ldesign-text-color-disabled);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .qrcode-container {
+    max-width: 100%;
+  }
+  
+  .qrcode-content {
+    padding: var(--ls-padding-xs);
+  }
+  
+  .qrcode-actions {
+    padding: var(--ls-padding-xs);
+  }
+  
+  .qrcode-download-button {
+    width: 100%;
+  }
+}
+
+/* 动画效果 */
+@keyframes qrcode-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.qrcode-content {
+  animation: qrcode-fade-in 0.3s ease-out;
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .qrcode-container {
+    background-color: var(--ldesign-gray-color-9);
+    border-color: var(--ldesign-gray-color-7);
+  }
+  
+  .qrcode-container:hover {
+    border-color: var(--ldesign-gray-color-6);
+    background-color: var(--ldesign-gray-color-8);
+  }
+  
+  .qrcode-loading-default {
+    color: var(--ldesign-font-white-3);
+  }
+  
+  .qrcode-actions {
+    background-color: var(--ldesign-gray-color-8);
+    border-color: var(--ldesign-gray-color-7);
+  }
+}

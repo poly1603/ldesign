@@ -13,6 +13,11 @@ vi.mock('qrcode', () => ({
 
 // Mock LogoProcessor
 vi.mock('../src/core/logo', () => ({
+  LogoProcessor: vi.fn(() => ({
+    addLogoToCanvas: vi.fn().mockResolvedValue(undefined),
+    addLogoToSVG: vi.fn().mockResolvedValue('<svg>test with logo</svg>'),
+    destroy: vi.fn(),
+  })),
   createLogoProcessor: vi.fn(() => ({
     addLogoToCanvas: vi.fn().mockResolvedValue(undefined),
     addLogoToSVG: vi.fn().mockResolvedValue('<svg>test with logo</svg>'),
@@ -22,6 +27,11 @@ vi.mock('../src/core/logo', () => ({
 
 // Mock StyleProcessor
 vi.mock('../src/core/styles', () => ({
+  StyleProcessor: vi.fn(() => ({
+    applyStylesToCanvas: vi.fn().mockResolvedValue(undefined),
+    applyStylesToSVG: vi.fn().mockResolvedValue('<svg>styled</svg>'),
+    destroy: vi.fn(),
+  })),
   createStyleProcessor: vi.fn(() => ({
     applyStylesToCanvas: vi.fn().mockResolvedValue(undefined),
     applyStylesToSVG: vi.fn().mockResolvedValue('<svg>styled</svg>'),

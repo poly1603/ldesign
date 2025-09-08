@@ -8,13 +8,15 @@ import QRCode from '../../src/vue/QRCode.vue'
 vi.mock('../../src/core/generator', () => ({
   QRCodeGenerator: vi.fn().mockImplementation(() => ({
     generate: vi.fn().mockResolvedValue({
-      canvas: document.createElement('canvas'),
-      svg: '<svg></svg>',
-      dataURL: 'data:image/png;base64,test',
+      data: 'data:image/png;base64,test',
+      element: document.createElement('canvas'),
+      format: 'canvas',
+      size: 200,
+      timestamp: Date.now(),
     }),
     updateOptions: vi.fn(),
     clearCache: vi.fn(),
-    getMetrics: vi.fn().mockReturnValue([]),
+    getPerformanceMetrics: vi.fn().mockReturnValue([]),
     destroy: vi.fn(),
   })),
 }))
