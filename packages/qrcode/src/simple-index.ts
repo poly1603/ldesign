@@ -17,7 +17,7 @@ export interface QRCodeOptions {
 
 export interface QRCodeResult {
   data: string
-  element?: HTMLElement | null
+  element?: HTMLElement | SVGElement | null
   format: string
   size: number
   timestamp: number
@@ -49,6 +49,7 @@ export class QRCodeGenerator {
 
     try {
       let data: string
+      let element: HTMLElement | SVGElement | null = null
 
       if (finalOptions.format === 'svg') {
         data = await QRCode.toString(text, {
@@ -61,8 +62,31 @@ export class QRCodeGenerator {
             light: finalOptions.backgroundColor
           }
         })
+
+        // 创建SVG元素
+        const parser = new DOMParser()
+        const svgDoc = parser.parseFromString(data, 'image/svg+xml')
+        element = svgDoc.documentElement as unknown as SVGElement
+      } else if (finalOptions.format === 'canvas') {
+        // 创建Canvas元素
+        const canvas = document.createElement('canvas')
+        canvas.width = finalOptions.size || 200
+        canvas.height = finalOptions.size || 200
+
+        await QRCode.toCanvas(canvas, text, {
+          width: finalOptions.size,
+          margin: finalOptions.margin,
+          errorCorrectionLevel: finalOptions.errorCorrectionLevel,
+          color: {
+            dark: finalOptions.foregroundColor,
+            light: finalOptions.backgroundColor
+          }
+        })
+
+        data = canvas.toDataURL('image/png')
+        element = canvas
       } else {
-        // 默认生成 data URL
+        // 生成 data URL 并创建 Image 元素
         data = await QRCode.toDataURL(text, {
           width: finalOptions.size,
           margin: finalOptions.margin,
@@ -72,11 +96,17 @@ export class QRCodeGenerator {
             light: finalOptions.backgroundColor
           }
         })
+
+        const img = new Image()
+        img.src = data
+        img.width = finalOptions.size || 200
+        img.height = finalOptions.size || 200
+        element = img
       }
 
       return {
         data,
-        element: null,
+        element,
         format: finalOptions.format || 'canvas',
         size: finalOptions.size || 200,
         timestamp: Date.now()
