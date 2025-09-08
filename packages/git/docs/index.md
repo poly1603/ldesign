@@ -100,6 +100,22 @@ ldesign-git commit "Initial commit"
 ldesign-git push origin main
 ```
 
+## 快速链接
+
+- 指南
+  - [快速开始](/guide/getting-started)
+  - [安装配置](/guide/installation)
+  - [仓库操作](/guide/repository) · [分支管理](/guide/branches) · [状态查询](/guide/status)
+- CLI
+  - [命令概览](/cli/commands) · [远程仓库](/cli/remote)
+- 高级
+  - [代码可视化](/guide/visualization)
+  - [智能命令推荐](/guide/recommendations)
+  - [智能同步 API](/api/smart-sync)
+  - [批量操作](/guide/batch-ops) · [钩子模板](/guide/hooks) · [团队协作](/guide/team) · [插件系统](/guide/plugins)
+- 其他
+  - [FAQ](/faq) · [故障排查](/troubleshooting)
+
 ## 为什么选择 @ldesign/git？
 
 - **🎯 专业级功能** - 涵盖所有常用 Git 操作，满足各种开发需求

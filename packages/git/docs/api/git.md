@@ -378,6 +378,43 @@ const options = git.getOptions()
 console.log('超时时间:', options.timeout)
 ```
 
+## 事件与类型
+
+下面展示如何使用类型安全的事件监听器（GitEventListener）来获取精确的负载类型提示：
+
+```ts
+import type { GitEventListener } from '@ldesign/git'
+
+// push 事件（带有 remote/branch/options 等字段）
+const onPush: GitEventListener<'push'> = (event, data) => {
+  if (data?.success) {
+    console.log(`已推送: ${data.remote}/${data.branch ?? ''}`)
+  }
+}
+
+git.repository.on('push', onPush)
+
+// branch 事件（根据 action 返回不同字段）
+const onBranch: GitEventListener<'branch'> = (event, data) => {
+  if (data?.action === 'list' && data.branches) {
+    console.log('分支数量:', data.branches.length)
+  }
+}
+
+git.branch.on('branch', onBranch)
+
+// diff 事件（支持文件/提交对比或分支对比场景）
+const onDiff: GitEventListener<'diff'> = (event, data) => {
+  if (data?.success) {
+    console.log('diff 长度:', data.diff?.length ?? 0)
+  }
+}
+
+git.status.on('diff', onDiff)
+```
+
+更多事件与负载说明可参考“指南 > 事件”页面。
+
 ## 类型定义
 
 ### `GitRepositoryOptions`

@@ -200,6 +200,12 @@ export interface GitLogOptions {
   until?: string
   /** 是否包含合并提交 */
   merges?: boolean
+  /** grep 过滤 */
+  grep?: string
+  /** 倒序显示 */
+  reverse?: boolean
+  /** 单行输出 */
+  oneline?: boolean
   /** 格式化选项 */
   format?: {
     hash: string
@@ -251,11 +257,82 @@ export type GitEventType =
   | 'error'
 
 /**
+ * Git 事件负载类型映射
+ */
+export type GitEventPayloads = {
+  init: {
+    success?: boolean
+    baseDir: string
+    bare?: boolean
+  }
+  clone: {
+    success?: boolean
+    repoUrl: string
+    options?: GitCloneOptions
+    targetDir?: string
+  }
+  add: {
+    success?: boolean
+    files: string[]
+  }
+  commit: {
+    success?: boolean
+    message?: string
+    files?: string[]
+    commit?: GitCommitInfo
+  }
+  push: {
+    success?: boolean
+    remote?: string
+    branch?: string
+    options?: GitPushOptions
+  }
+  pull: {
+    success?: boolean
+    remote?: string
+    branch?: string
+    options?: GitPullOptions
+  }
+  checkout: { success?: boolean; branchName: string }
+  branch: {
+    action: 'create' | 'delete' | 'list' | 'rename' | 'current'
+    success?: boolean
+    branchName?: string
+    startPoint?: string
+    includeRemote?: boolean
+    branches?: GitBranchInfo[]
+    force?: boolean
+    oldName?: string
+    newName?: string
+    currentBranch?: string
+  }
+  merge: { success?: boolean; branchName: string; options?: { noFf?: boolean; squash?: boolean } }
+  tag: unknown
+  status: { success?: boolean; status?: GitStatusInfo }
+  log: { success?: boolean; commits?: GitCommitInfo[]; options?: GitLogOptions; file?: string; maxCount?: number }
+  diff: { success?: boolean; file?: string; cached?: boolean; diff?: string; fromCommit?: string; toCommit?: string; baseBranch?: string; compareBranch?: string }
+  show: { success?: boolean; commitHash?: string; content?: string }
+  remote: {
+    action: 'add' | 'remove' | 'list' | 'fetch' | 'set-url' | 'rename'
+    success?: boolean
+    name?: string
+    url?: string
+    verbose?: boolean
+    remotes?: GitRemoteInfo[]
+    remoteName?: string
+    oldName?: string
+    newName?: string
+  }
+  error: { operation: string; error: unknown }
+}
+
+/**
  * Git 事件监听器
  */
-export interface GitEventListener {
-  (event: GitEventType, data?: any): void
-}
+export type GitEventListener<T extends GitEventType = GitEventType> = (
+  event: T,
+  data?: GitEventPayloads[T]
+) => void
 
 /**
  * Git 配置项

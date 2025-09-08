@@ -491,6 +491,6 @@ class GitWorkspaceAnalyzer {
 
 ## 下一步
 
-- 了解 [远程仓库](/guide/remote) 管理远程状态
+- 了解 [远程仓库](/cli/remote) 管理远程状态
 - 学习 [事件系统](/guide/events) 监听状态变化事件
 - 查看 [错误处理](/guide/error-handling) 处理状态查询错误

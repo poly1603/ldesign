@@ -280,4 +280,4 @@ if (process.env.NODE_ENV === 'development') {
 - 了解 [仓库操作](/guide/repository) 的详细用法
 - 学习 [分支管理](/guide/branches) 的最佳实践
 - 查看 [状态查询](/guide/status) 的各种方法
-- 掌握 [远程仓库](/guide/remote) 的管理技巧
+- 掌握 [远程仓库](/cli/remote) 的管理技巧

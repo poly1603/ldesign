@@ -437,6 +437,72 @@ class AutomatedWorkflow {
 }
 ```
 
+## 事件 Payload 类型参考
+
+以下为各事件的负载类型结构（简化版），实际以源代码中的 GitEventPayloads 为准：
+
+```ts
+// 仓库相关
+init: { success?: boolean; baseDir: string; bare?: boolean }
+clone: { success?: boolean; repoUrl: string; options?: GitCloneOptions; targetDir?: string }
+add: { success?: boolean; files: string[] }
+commit: { success?: boolean; message?: string; files?: string[]; commit?: GitCommitInfo }
+push: { success?: boolean; remote?: string; branch?: string; options?: GitPushOptions }
+pull: { success?: boolean; remote?: string; branch?: string; options?: GitPullOptions }
+
+// 分支与合并
+checkout: { success?: boolean; branchName: string }
+branch: {
+  action: 'create' | 'delete' | 'list' | 'rename' | 'current'
+  success?: boolean
+  branchName?: string
+  startPoint?: string
+  includeRemote?: boolean
+  branches?: GitBranchInfo[]
+  force?: boolean
+  oldName?: string
+  newName?: string
+  currentBranch?: string
+}
+merge: { success?: boolean; branchName: string; options?: { noFf?: boolean; squash?: boolean } }
+
+// 状态、日志、差异、展示
+status: { success?: boolean; status?: GitStatusInfo }
+log: { success?: boolean; commits?: GitCommitInfo[]; options?: GitLogOptions; file?: string; maxCount?: number }
+diff: { success?: boolean; file?: string; cached?: boolean; diff?: string; fromCommit?: string; toCommit?: string; baseBranch?: string; compareBranch?: string }
+show: { success?: boolean; commitHash?: string; content?: string }
+
+// 远程
+remote: {
+  action: 'add' | 'remove' | 'list' | 'fetch' | 'set-url' | 'rename'
+  success?: boolean
+  name?: string
+  url?: string
+  verbose?: boolean
+  remotes?: GitRemoteInfo[]
+  remoteName?: string
+  oldName?: string
+  newName?: string
+}
+
+// 错误
+error: { operation: string; error: unknown }
+```
+
+示例：为 push 事件定义类型安全的监听器
+
+```ts
+import type { GitEventListener } from '@ldesign/git'
+
+const onPush: GitEventListener<'push'> = (event, data) => {
+  if (data?.success) {
+    console.log(`推送成功: ${data.remote}/${data.branch ?? ''}`)
+  }
+}
+
+git.repository.on('push', onPush)
+```
+
 ## 调试和开发
 
 ### 事件调试

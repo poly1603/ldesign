@@ -21,11 +21,10 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
     }
   },
-  "main": "dist/index.cjs",
+  "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -35,10 +34,11 @@
   ],
   "bin": {
     "ldesign-git": "./bin/cli.js",
-    "lgit": "./dist/cli/git-cli.js"
+    "lgit": "./bin/cli.js"
   },
   "scripts": {
-    "build": "node scripts/build.js",
+    "build": "tsup",
+    "postbuild": "pnpm run size-check",
     "build:watch": "tsup --watch",
     "dev": "tsup --watch",
     "type-check": "tsc --noEmit",
@@ -51,7 +51,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "clean": "rimraf esm cjs dist types lib coverage .nyc_output bin",
-    "size-check": "size-limit",
+    "size-check": "node scripts/size-check.cjs",
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
@@ -64,7 +64,24 @@
     "tslib": "^2.6.2",
     "commander": "^11.0.0",
     "chalk": "^5.3.0",
-    "cli-table3": "^0.6.3"
+    "cli-table3": "^0.6.3",
+    "inquirer": "^9.2.12",
+    "inquirer-autocomplete-prompt": "^3.0.1",
+    "ora": "^7.0.1",
+    "boxen": "^7.1.1",
+    "figlet": "^1.7.0",
+    "gradient-string": "^2.0.2",
+    "fuzzy": "^0.1.3",
+    "cli-progress": "^3.12.0",
+    "cli-spinners": "^2.9.2",
+    "ansi-colors": "^4.1.3",
+    "terminal-link": "^3.0.0",
+    "conf": "^12.0.0",
+    "update-notifier": "^7.0.0",
+    "semver": "^7.5.4",
+    "execa": "^8.0.1",
+    "listr2": "^8.0.0",
+    "prompts": "^2.4.2"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.1",
@@ -79,11 +96,5 @@
     "vitepress": "^1.0.0",
     "vitest": "^3.2.4",
     "@ldesign/builder": "workspace:*"
-  },
-  "size-limit": [
-    {
-      "path": "dist/index.js",
-      "limit": "50 KB"
-    }
-  ]
+  }
 }

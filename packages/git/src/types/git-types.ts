@@ -118,3 +118,31 @@ export interface GitCredentials {
   sshKey?: string
   sshPassphrase?: string
 }
+
+// Public API result types
+export interface BranchCompareResult {
+  baseBranch: string
+  compareBranch: string
+  diff: string
+  hasChanges: boolean
+}
+
+export interface GitStatsFile {
+  file: string
+  additions: number
+  deletions: number
+}
+
+export interface GitStatsSummary {
+  filesChanged: number
+  insertions: number
+  deletions: number
+}
+
+export interface GitStatsResult {
+  fromCommit?: string
+  toCommit?: string
+  files: GitStatsFile[]
+  summary: GitStatsSummary
+  raw?: string
+}

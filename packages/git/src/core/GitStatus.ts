@@ -354,7 +354,7 @@ export class GitStatus {
   public async getStats(
     fromCommit?: string,
     toCommit?: string
-  ): Promise<GitOperationResult<any>> {
+  ): Promise<GitOperationResult<import('../types').GitStatsResult>> {
     return wrapGitOperation(async () => {
       try {
         if (fromCommit && !isValidGitRef(fromCommit)) {
@@ -365,21 +365,46 @@ export class GitStatus {
           throw GitError.invalidArgument('toCommit', toCommit)
         }
 
-        const diffOptions = ['--stat']
-
+        const diffArgs: string[] = []
         if (fromCommit && toCommit) {
-          diffOptions.unshift(`${fromCommit}..${toCommit}`)
+          diffArgs.push(`${fromCommit}..${toCommit}`)
         } else if (fromCommit) {
-          diffOptions.unshift(fromCommit)
+          diffArgs.push(fromCommit)
+        }
+        diffArgs.push('--numstat')
+
+        const numstat = await this.git.diff(diffArgs)
+
+        const files: import('../types').GitStatsFile[] = []
+        let insertions = 0
+        let deletions = 0
+
+        const lines = numstat.split('\n').filter(Boolean)
+        for (const line of lines) {
+          // numstat format: additions\tdeletions\tpath
+          const match = line.match(/^(\d+|-)\t(\d+|-)\t(.+)$/)
+          if (!match) continue
+          const add = match[1] === '-' ? 0 : parseInt(match[1], 10)
+          const del = match[2] === '-' ? 0 : parseInt(match[2], 10)
+          const file = match[3]
+          files.push({ file, additions: add, deletions: del })
+          insertions += add
+          deletions += del
         }
 
-        const statsResult = await this.git.diff(diffOptions)
-
-        return {
+        const result: import('../types').GitStatsResult = {
           fromCommit,
           toCommit,
-          stats: statsResult
+          files,
+          summary: {
+            filesChanged: files.length,
+            insertions,
+            deletions
+          },
+          raw: numstat
         }
+
+        return result
       } catch (error) {
         this.emit('error', { operation: 'stats', error })
         throw handleSimpleGitError(error, 'stats')

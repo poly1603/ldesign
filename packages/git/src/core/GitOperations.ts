@@ -5,23 +5,18 @@
 
 import { 
   CommandRunner, 
-  Logger, 
   ConsoleLogger,
   ProgressBar,
   LoadingSpinner,
-  ConsoleTheme,
   FileSystem,
-  PathUtils,
-  StringUtils
+  PathUtils
 } from '@ldesign/kit'
-import { GitError } from '../errors'
+import { GitError, GitErrorType } from '../errors'
 import type { 
   GitStatus, 
   GitCommit, 
   GitBranch,
   GitRemote,
-  GitConfig,
-  GitFileStatus,
   GitLogOptions,
   GitDiffOptions,
   GitMergeOptions
@@ -31,16 +26,14 @@ import type {
  * Git 操作类 - 封装所有 Git 命令操作
  */
 export class GitOperations {
-  private commandRunner: CommandRunner
-  private logger: Logger
+  private commandRunner: any
+  private logger: any
   private repoPath: string
-  private theme: ConsoleTheme
 
-  constructor(repoPath: string = process.cwd(), logger?: Logger) {
+  constructor(repoPath: string = process.cwd(), logger?: any) {
     this.repoPath = PathUtils.resolve(repoPath)
     this.commandRunner = new CommandRunner()
     this.logger = logger || new ConsoleLogger({ level: 'info' })
-    this.theme = new ConsoleTheme()
     
     // 验证是否为 Git 仓库
     this.validateRepository()
@@ -52,14 +45,14 @@ export class GitOperations {
   private async validateRepository(): Promise<void> {
     const gitDir = PathUtils.join(this.repoPath, '.git')
     if (!await FileSystem.exists(gitDir)) {
-      throw new GitError(`Not a git repository: ${this.repoPath}`)
+      throw GitError.repositoryNotFound(this.repoPath)
     }
   }
 
   /**
    * 执行 Git 命令
    */
-  private async exec(args: string[], options: { silent?: boolean } = {}): Promise<string> {
+  public async exec(args: string[], options: { silent?: boolean } = {}): Promise<string> {
     const command = `git ${args.join(' ')}`
     
     if (!options.silent) {
@@ -73,7 +66,12 @@ export class GitOperations {
       })
 
       if (result.exitCode !== 0) {
-        throw new GitError(`Git command failed: ${command}\n${result.stderr}`)
+        throw new GitError(
+          GitErrorType.COMMAND_FAILED,
+          `Git command failed: ${command}`,
+          undefined,
+          result.stderr
+        )
       }
 
       return result.stdout.trim()
@@ -81,7 +79,11 @@ export class GitOperations {
       if (error instanceof GitError) {
         throw error
       }
-      throw new GitError(`Failed to execute git command: ${command}`, error as Error)
+      throw new GitError(
+        GitErrorType.COMMAND_FAILED,
+        `Failed to execute git command: ${command}`,
+        error as Error
+      )
     }
   }
 
@@ -721,7 +723,12 @@ export class GitOperations {
       })
 
       if (result.exitCode !== 0) {
-        throw new GitError(`Failed to clone repository: ${result.stderr}`)
+        throw new GitError(
+          GitErrorType.CLONE_FAILED,
+          `Failed to clone repository: ${url}`,
+          undefined,
+          result.stderr
+        )
       }
 
       spinner.succeed('Repository cloned successfully')
@@ -754,7 +761,12 @@ export class GitOperations {
     })
 
     if (result.exitCode !== 0) {
-      throw new GitError(`Failed to initialize repository: ${result.stderr}`)
+      throw new GitError(
+        GitErrorType.COMMAND_FAILED,
+        `Failed to initialize repository: ${path}`,
+        undefined,
+        result.stderr
+      )
     }
 
     return new GitOperations(path)
@@ -792,9 +804,6 @@ export class GitOperations {
     maxCount?: number
     follow?: boolean
   } = {}): Promise<GitCommit[]> {
-    const logOptions: GitLogOptions = {
-      maxCount: options.maxCount
-    }
 
     const args = ['log', '--format=%H|%an|%ae|%at|%s|%b']
     if (options.follow) args.push('--follow')

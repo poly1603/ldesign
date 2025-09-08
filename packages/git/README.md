@@ -1,8 +1,8 @@
 # @ldesign/git
 
-一个功能完整的 Git 操作封装库，提供面向对象的 API 接口，支持基础 Git 操作、分支管理、状态查询、远程仓库操作等功能。
+一个智能、友好的 Git CLI 与库，提供面向对象 API、统一命令、交互式增强与全套可视化/协作能力。支持基础 Git 操作、分支管理、状态查询、远程仓库操作，并内置智能化增强模块。
 
-## 特性
+## 特性概览
 
 - 🚀 **完整的 Git 功能** - 支持所有常用的 Git 操作
 - 🎯 **面向对象设计** - 清晰的类结构和 API 接口
@@ -14,18 +14,33 @@
 - 🔧 **tsup 构建** - 使用 tsup 进行快速构建和打包
 - ✅ **完整测试** - 96/97 测试通过，确保代码质量
 
-## 安装
+> 八大增强模块：
+> 1) 仓库分析（贡献者排行、热门文件、分支活跃度、趋势与热力图）
+> 2) AI 提交信息（自动生成规范化提交消息）
+> 3) Git Hook 模板（pre-commit/commit-msg 等一键生成）
+> 4) 批量操作（cherry-pick、revert、merge、rebase、tag、stash）
+> 5) 团队协作（PR 管理、评审分配、通知集成）
+> 6) 插件系统（命令/Hook/配置/存储/调用 API）
+> 7) 代码可视化（终端仪表盘、语言分布、热点、时间线、分支关系等）
+> 8) 智能命令推荐（基于历史/上下文的推荐、预测与恢复）
+
+## 环境与安装
+
+- 运行环境：Node.js 18+，Git 已安装
+- 操作系统：Windows / macOS / Linux（Windows 推荐使用 Windows Terminal / PowerShell 7+）
+
+### 安装
 
 ```bash
 pnpm add @ldesign/git
 ```
 
-## CLI 工具
+## CLI 工具（统一入口，支持增强/经典模式）
 
 安装后可以使用 `ldesign-git` 命令行工具：
 
 ```bash
-# 查看帮助
+# 查看帮助（增强模式）
 ldesign-git --help
 
 # 初始化仓库
@@ -45,9 +60,14 @@ ldesign-git branch checkout feature/new-feature
 
 # 推送到远程
 ldesign-git push origin main
+
+# 经典模式示例（三选一）
+ldesign-git --classic status
+ldesign-git classic status
+LGIT_MODE=classic ldesign-git status
 ```
 
-## 快速开始
+## 快速开始（API）
 
 ### 基础用法
 
@@ -73,7 +93,7 @@ await git.commit('Initial commit')
 await git.push()
 ```
 
-### 高级用法
+### 进阶示例
 
 ```typescript
 import { Git, GitRepository, GitBranch } from '@ldesign/git'
@@ -89,6 +109,48 @@ const git = new Git('/path/to/repo', {
   maxConcurrentProcesses: 5
 })
 ```
+
+## CLI 增强能力（速览）
+
+以下示例默认使用增强模式：
+
+- 交互式仪表盘
+  ```bash
+  ldesign-git interactive
+  ```
+
+- 仓库分析
+  ```bash
+  ldesign-git analyze contributors --since 2024-01-01 --format table
+  ```
+
+- 智能提交
+  ```bash
+  ldesign-git smart-commit "feat: add search" --all --push
+  ```
+
+- 批量操作（示例：批量删除分支）
+  ```bash
+  ldesign-git batch branch --branches feature/a feature/b --force
+  ```
+
+- 钩子模板
+  ```bash
+  ldesign-git hooks enable pre-commit lint-staged
+  ```
+
+- 冲突解决助手
+  ```bash
+  ldesign-git resolve-conflicts --strategy interactive
+  ```
+
+- 工作流（GitFlow）
+  ```bash
+  ldesign-git workflow start --name feature/new-ui --type gitflow
+  ```
+
+> 需要轻量行为时，切换到经典模式：
+> - `ldesign-git --classic ...` / `ldesign-git classic ...` / `LGIT_MODE=classic ldesign-git ...`
 
 ## API 文档
 
@@ -476,6 +538,31 @@ async function gitWorkflow() {
 
 gitWorkflow()
 ```
+
+## TypeScript 与构建
+
+- 类型检查：
+  ```bash
+  pnpm run type-check
+  ```
+- 构建产物（ESM + d.ts + CLI）：
+  ```bash
+  pnpm run build
+  ```
+
+## 文档与帮助
+
+- VitePress 文档站点（建议优先阅读）：
+  - 指南：安装、快速开始、核心/高级特性
+  - CLI：命令总览、经典与增强模式、配置与选项
+  - API：Git 主类、仓库/分支/状态/远程、SmartSync 等
+  - 高级：可视化、智能推荐、批量操作、钩子、团队协作
+  - FAQ 与 故障排查
+
+## 安全与隐私
+
+- 智能命令推荐的历史与偏好数据仅保存在本地（conf），不会上传。
+- 可在增强 CLI 的 `config` 命令或删除配置文件来清理。
 
 ## 许可证
 

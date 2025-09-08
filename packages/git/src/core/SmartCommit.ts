@@ -4,17 +4,14 @@
  */
 
 import {
-  Logger,
   ConsoleLogger,
-  FileSystem,
   PathUtils,
-  StringUtils,
   PromptManager,
   ConsoleTheme
 } from '@ldesign/kit'
 import { GitOperations } from './GitOperations'
-import { GitError } from '../errors'
-import type { GitStatus, GitCommit, GitFileStatus } from '../types'
+import { GitError, GitErrorType } from '../errors'
+import type { GitStatus } from '../types'
 
 /**
  * 提交类型定义
@@ -95,10 +92,10 @@ interface ChangeAnalysis {
  */
 export class SmartCommit {
   private git: GitOperations
-  private logger: Logger
+  private logger: any
   private config: Required<SmartCommitConfig>
-  private promptManager: PromptManager
-  private theme: ConsoleTheme
+  private promptManager: any
+  private theme: any
 
   private static readonly DEFAULT_TYPES: CommitTypeConfig[] = [
     { type: CommitType.FEAT, title: 'Features', description: 'A new feature', emoji: '✨' },
@@ -114,7 +111,7 @@ export class SmartCommit {
     { type: CommitType.REVERT, title: 'Reverts', description: 'Reverts a previous commit', emoji: '🗑' }
   ]
 
-  constructor(git: GitOperations, config: SmartCommitConfig = {}, logger?: Logger) {
+  constructor(git: GitOperations, config: SmartCommitConfig = {}, logger?: any) {
     this.git = git
     this.logger = logger || new ConsoleLogger({ level: 'info' })
     this.promptManager = new PromptManager()
@@ -150,7 +147,7 @@ export class SmartCommit {
     const status = await this.git.status()
     
     if (status.staged.length === 0) {
-      throw new GitError('No staged changes to commit')
+      throw new GitError(GitErrorType.INVALID_ARGUMENT, 'No staged changes to commit')
     }
 
     let commitMessage: string
@@ -607,14 +604,20 @@ export class SmartCommit {
     // 检查长度
     const firstLine = message.split('\n')[0]
     if (firstLine.length > this.config.maxLength) {
-      throw new GitError(`Commit message first line exceeds ${this.config.maxLength} characters`)
+      throw new GitError(
+        GitErrorType.INVALID_ARGUMENT,
+        `Commit message first line exceeds ${this.config.maxLength} characters`
+      )
     }
 
     // 检查格式
     if (this.config.useConventional) {
       const pattern = /^(?:[\w\s]+:\s)?(?:\w+)(?:\([\w\-]+\))?!?:\s.+/
       if (!pattern.test(firstLine)) {
-        throw new GitError('Commit message does not follow conventional format')
+        throw new GitError(
+          GitErrorType.INVALID_ARGUMENT,
+          'Commit message does not follow conventional format'
+        )
       }
     }
 
@@ -622,7 +625,10 @@ export class SmartCommit {
     for (const rule of this.config.validationRules) {
       const result = rule(message)
       if (result !== true) {
-        throw new GitError(typeof result === 'string' ? result : 'Commit message validation failed')
+        throw new GitError(
+          GitErrorType.INVALID_ARGUMENT,
+          typeof result === 'string' ? result : 'Commit message validation failed'
+        )
       }
     }
   }
@@ -641,7 +647,10 @@ export class SmartCommit {
       await this.git.add('.')
       const newStatus = await this.git.status()
       if (newStatus.staged.length === 0) {
-        throw new GitError('No changes to commit')
+        throw new GitError(
+          GitErrorType.INVALID_ARGUMENT,
+          'No changes to commit'
+        )
       }
     }
 

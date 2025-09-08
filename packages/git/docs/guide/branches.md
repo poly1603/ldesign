@@ -390,5 +390,5 @@ class BatchBranchOperations {
 ## 下一步
 
 - 了解 [状态查询](/guide/status) 获取分支状态信息
-- 学习 [远程仓库](/guide/remote) 管理远程分支
+- 学习 [远程仓库](/cli/remote) 管理远程分支
 - 查看 [事件系统](/guide/events) 监听分支操作事件

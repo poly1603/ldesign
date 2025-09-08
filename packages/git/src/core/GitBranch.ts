@@ -341,7 +341,7 @@ export class GitBranch {
    * @param compareBranch 比较分支
    * @returns 操作结果
    */
-  public async compare(baseBranch: string, compareBranch: string): Promise<GitOperationResult<any>> {
+public async compare(baseBranch: string, compareBranch: string): Promise<GitOperationResult<import('../types').BranchCompareResult>> {
     return wrapGitOperation(async () => {
       try {
         validateBranchName(baseBranch)

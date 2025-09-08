@@ -7,18 +7,14 @@
 
 import { Command } from 'commander'
 import {
-  Logger,
   ConsoleLogger,
   ConsoleTheme,
-  PromptManager,
-  ProgressBar,
-  LoadingSpinner,
-  MultiProgress
+  PromptManager
 } from '@ldesign/kit'
 import { GitOperations } from '../core/GitOperations'
 import { SmartCommit, CommitType } from '../core/SmartCommit'
 import { SmartSync } from '../core/SmartSync'
-import { GitError } from '../errors'
+import { GitError, GitErrorType } from '../errors'
 import { version } from '../../package.json'
 import chalk from 'chalk'
 import Table from 'cli-table3'
@@ -28,9 +24,9 @@ import Table from 'cli-table3'
  */
 export class GitCLI {
   private program: Command
-  private logger: Logger
-  private theme: ConsoleTheme
-  private promptManager: PromptManager
+  private logger: any
+  private theme: any
+  private promptManager: any
   private git?: GitOperations
 
   constructor() {
@@ -374,9 +370,9 @@ export class GitCLI {
   private async handleSync(options: any): Promise<void> {
     try {
       const git = await this.initGit()
-      const smartSync = new SmartSync(git, this.logger)
+      const smartSync: any = new SmartSync(git as any, {})
 
-      await smartSync.sync({
+      await (smartSync as any).sync({
         remote: options.remote,
         branch: options.branch,
         rebase: options.rebase,
@@ -433,7 +429,6 @@ export class GitCLI {
    */
   private async cleanupBranches(git: GitOperations): Promise<void> {
     const branches = await git.branches({ merged: true })
-    const currentBranch = await git.getCurrentBranch()
     
     const toDelete = branches.filter(b => 
       !b.current && 
@@ -519,7 +514,7 @@ export class GitCLI {
         author: options.author,
         grep: options.grep,
         oneline: options.oneline
-      })
+      } as any)
 
       this.displayCommits(commits, options)
     } catch (error) {
@@ -696,7 +691,7 @@ export class GitCLI {
       await git.deleteBranch(branch)
       this.logger.success(`Release ${branch} finished, tagged, and merged to main and develop`)
     } else {
-      throw new GitError('Not in a workflow branch')
+      throw new GitError(GitErrorType.INVALID_ARGUMENT, 'Not in a workflow branch')
     }
   }
 
@@ -835,8 +830,3 @@ export class GitCLI {
   }
 }
 
-// 如果直接运行此文件
-if (require.main === module) {
-  const cli = new GitCLI()
-  cli.run(process.argv)
-}

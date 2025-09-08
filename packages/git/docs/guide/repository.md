@@ -211,4 +211,4 @@ async function workWithExistingProject() {
 
 - 了解 [分支管理](/guide/branches) 进行分支操作
 - 学习 [状态查询](/guide/status) 获取仓库信息
-- 查看 [远程仓库](/guide/remote) 管理远程仓库
+- 查看 [远程仓库](/cli/remote) 管理远程仓库

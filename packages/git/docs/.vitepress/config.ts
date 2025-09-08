@@ -4,6 +4,7 @@ export default defineConfig({
   title: '@ldesign/git',
   description: '功能完整的 Git 操作封装库',
   base: '/git/',
+  ignoreDeadLinks: false,
   
   themeConfig: {
     nav: [
@@ -11,7 +12,9 @@ export default defineConfig({
       { text: '指南', link: '/guide/getting-started' },
       { text: 'API', link: '/api/git' },
       { text: 'CLI', link: '/cli/commands' },
-      { text: '示例', link: '/examples/basic' }
+      { text: '示例', link: '/examples/basic' },
+      { text: 'FAQ', link: '/faq' },
+      { text: '故障排查', link: '/troubleshooting' }
     ],
 
     sidebar: {
@@ -30,7 +33,7 @@ export default defineConfig({
             { text: '仓库操作', link: '/guide/repository' },
             { text: '分支管理', link: '/guide/branches' },
             { text: '状态查询', link: '/guide/status' },
-            { text: '远程仓库', link: '/guide/remote' }
+            { text: '远程仓库', link: '/cli/remote' }
           ]
         },
         {
@@ -38,7 +41,15 @@ export default defineConfig({
           items: [
             { text: '事件系统', link: '/guide/events' },
             { text: '错误处理', link: '/guide/error-handling' },
-            { text: '配置选项', link: '/guide/configuration' }
+            { text: '配置选项', link: '/guide/configuration' },
+            { text: 'CLI 配置总览', link: '/guide/cli-configuration' },
+            { text: '代码可视化', link: '/guide/visualization' },
+            { text: '智能命令推荐', link: '/guide/recommendations' },
+            { text: '批量操作', link: '/guide/batch-ops' },
+            { text: '团队协作与 PR', link: '/guide/team' },
+            { text: '钩子模板与管理', link: '/guide/hooks' },
+            { text: '插件系统', link: '/guide/plugins' },
+            { text: 'AI 提交信息', link: '/guide/ai-commit' }
           ]
         }
       ],
@@ -52,7 +63,8 @@ export default defineConfig({
             { text: 'GitStatus', link: '/api/status' },
             { text: 'GitRemote', link: '/api/remote' },
             { text: 'GitError', link: '/api/error' },
-            { text: '类型定义', link: '/api/types' }
+            { text: '类型定义', link: '/api/types' },
+            { text: 'SmartSync', link: '/api/smart-sync' }
           ]
         }
       ],
