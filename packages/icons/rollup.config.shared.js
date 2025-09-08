@@ -34,7 +34,7 @@ export function createRollupConfig(options) {
       
       if (stat.isDirectory()) {
         scanDirectory(fullPath, baseDir);
-      } else if (file.endsWith('.ts') || file.endsWith('.tsx')) {
+      } else if ((file.endsWith('.ts') && !file.endsWith('.d.ts')) || file.endsWith('.tsx')) {
         const relativePath = path.relative(baseDir, fullPath);
         const key = relativePath.replace(/\.tsx?$/, '').replace(/\\/g, '/');
         inputFiles[key] = fullPath;

@@ -1,193 +1,294 @@
-# LDesign Icons
+# @ldesign/icons
 
-> 一个现代化、高性能、支持多框架的企业级图标库解决方案
-
-一个强大的工具，可以将 SVG 文件自动转换成 Vue2、Vue3、React 和 Lit Web Component 组件，让你可以轻松发布多个框架的图标库。
+强大的 SVG 图标转换工具，将 SVG 文件转换为各种前端框架的组件。
 
 ## ✨ 特性
 
-- 🎯 **多框架支持**: 支持 Vue 2、Vue 3、React 和 Lit Web Components
-- 🚀 **批量转换**: 一次性将整个目录的 SVG 文件转换为组件
-- 📦 **即时发布**: 生成的组件包含 package.json，可直接发布到 npm
-- 🔧 **SVG 优化**: 内置 SVGO 优化，减小文件大小
-- 💪 **TypeScript 支持**: 可生成 TypeScript 组件和类型定义
-- 🎨 **自定义配置**: 支持组件名前缀、后缀等自定义配置
+- 🎯 **多框架支持**: Vue 2/3、React、Lit、Angular、Svelte
+- 🔧 **高度可配置**: 支持前缀、后缀、主题、动画等
+- 🚀 **性能优化**: 内置 SVGO 优化，支持 Tree-shaking
+- 📦 **TypeScript 优先**: 完整的类型定义和类型安全
+- 🎨 **主题系统**: 支持颜色主题和动态切换
+- ⚡ **CLI 工具**: 命令行工具，支持批量转换
+- 🧪 **全面测试**: 100% 测试覆盖率
+- 📚 **详细文档**: 完整的 API 文档和示例
 
 ## 📦 安装
 
 ```bash
-# 克隆或下载项目后，在项目目录运行：
-npm install
+# 使用 pnpm
+pnpm add @ldesign/icons
 
-# 构建项目
-npm run build
+# 使用 npm
+npm install @ldesign/icons
+
+# 使用 yarn
+yarn add @ldesign/icons
 ```
 
-## 🚀 使用方法
+## 🚀 快速开始
 
-### 命令行使用
+### CLI 使用
 
 ```bash
-# 转换为所有支持的框架格式
-npm run convert:all
+# 转换 SVG 为 Vue 3 组件
+npx ldesign-icons convert -i ./svg -o ./icons -t vue3
 
-# 只转换为 Vue 2 组件
-npm run convert:vue2
+# 使用配置文件
+npx ldesign-icons convert -c ldesign-icons.config.json
 
-# 只转换为 Vue 3 组件
-npm run convert:vue3
-
-# 只转换为 React 组件
-npm run convert:react
-
-# 只转换为 Lit Web Component
-npm run convert:lit
+# 初始化配置文件
+npx ldesign-icons init --target vue3
 ```
 
-### 高级用法
+### 编程式使用
 
-使用 CLI 工具进行更多自定义配置：
+```typescript
+import { IconConverter } from '@ldesign/icons';
 
-```bash
-# 使用自定义输入输出目录
-node dist/cli.js --input ./my-svgs --output ./my-components --target vue3
+const converter = new IconConverter({
+  target: 'vue3',
+  inputDir: './svg',
+  outputDir: './icons',
+  typescript: true,
+  optimize: true,
+  prefix: 'Icon',
+  suffix: '',
+  features: {
+    theming: true,
+    animation: true,
+    preview: true
+  }
+});
 
-# 添加组件名前缀和后缀
-node dist/cli.js --prefix My --suffix Icon --target react
-
-# 生成 JavaScript 组件（默认为 TypeScript）
-node dist/cli.js --no-typescript --target vue2
-
-# 不优化 SVG（默认会优化）
-node dist/cli.js --no-optimize --target lit
+const result = await converter.convert();
+console.log(`转换完成！生成了 ${result.stats?.totalIcons} 个图标组件`);
 ```
 
-### CLI 参数说明
+## 📋 配置选项
 
-| 参数 | 别名 | 说明 | 默认值 |
-|------|------|------|--------|
-| `--target` | `-t` | 目标框架 (vue2/vue3/react/lit/all) | all |
-| `--input` | `-i` | SVG 文件输入目录 | ./examples/svg |
-| `--output` | `-o` | 组件输出目录 | ./output |
-| `--prefix` | `-p` | 组件名前缀 | - |
-| `--suffix` | `-s` | 组件名后缀 | - |
-| `--typescript` | `--ts` | 生成 TypeScript 组件 | true |
-| `--optimize` | - | 使用 SVGO 优化 SVG | true |
+### 基础配置
 
-## 📁 项目结构
+| 选项 | 类型 | 默认值 | 描述 |
+|------|------|--------|------|
+| `target` | `TargetFramework` | - | 目标框架 |
+| `inputDir` | `string` | - | SVG 文件输入目录 |
+| `outputDir` | `string` | - | 组件输出目录 |
+| `typescript` | `boolean` | `true` | 生成 TypeScript 组件 |
+| `optimize` | `boolean` | `true` | 启用 SVG 优化 |
 
-```
-icons/
-├── src/                    # 源代码
-│   ├── generators/         # 各框架的生成器
-│   │   ├── vue2.ts        # Vue 2 组件生成器
-│   │   ├── vue3.ts        # Vue 3 组件生成器
-│   │   ├── react.ts       # React 组件生成器
-│   │   └── lit.ts         # Lit 组件生成器
-│   ├── utils/             # 工具函数
-│   │   └── svg.ts         # SVG 处理工具
-│   ├── types/             # TypeScript 类型定义
-│   ├── cli.ts             # CLI 入口
-│   └── index.ts           # 主入口
-├── examples/              # 示例文件
-│   └── svg/              # 示例 SVG 图标
-├── output/               # 生成的组件（git ignored）
-│   ├── vue2/            # Vue 2 组件
-│   ├── vue3/            # Vue 3 组件
-│   ├── react/           # React 组件
-│   └── lit/             # Lit Web Components
-└── dist/                # 编译后的 JavaScript 文件
-```
+### 组件命名
 
-## 🎯 生成的组件使用示例
+| 选项 | 类型 | 默认值 | 描述 |
+|------|------|--------|------|
+| `prefix` | `string` | `''` | 组件名前缀 |
+| `suffix` | `string` | `'Icon'` | 组件名后缀 |
 
-### Vue 2
-```vue
-<template>
-  <div>
-    <HomeIcon :size="24" color="#333" />
-  </div>
-</template>
+### 高级功能
 
-<script>
-import { HomeIcon } from '@ldesign/icons-vue2'
-
-export default {
-  components: { HomeIcon }
+```typescript
+interface AdvancedFeatures {
+  theming: boolean;      // 主题支持
+  animation: boolean;    // 动画支持
+  preview: boolean;      // 预览页面生成
+  composables: boolean;  // Vue Composables
+  styles: boolean;       // 样式文件生成
 }
-</script>
 ```
+
+## 🎨 主题系统
+
+支持完整的主题配置：
+
+```typescript
+interface ColorTheme {
+  primary: string;
+  secondary: string;
+  success: string;
+  warning: string;
+  error: string;
+  custom?: Record<string, string>;
+}
+```
+
+## 📖 支持的框架
 
 ### Vue 3
+
+生成现代 Vue 3 组件，支持：
+- Composition API
+- TypeScript
+- 主题系统
+- 动画效果
+- Composables
+
 ```vue
 <template>
-  <HomeIcon :size="24" color="#333" />
+  <HomeIcon :size="24" color="primary" />
 </template>
 
 <script setup>
-import { HomeIcon } from '@ldesign/icons-vue3'
+import { HomeIcon } from '@/icons';
 </script>
 ```
 
+### Vue 2
+
+生成兼容 Vue 2 的组件：
+- Options API
+- 向后兼容
+- 完整功能支持
+
 ### React
-```jsx
-import { HomeIcon } from '@ldesign/icons-react'
+
+生成 React 函数组件：
+- TypeScript 支持
+- Props 类型定义
+- 主题集成
+
+```tsx
+import { HomeIcon } from './icons';
 
 function App() {
-  return <HomeIcon size={24} color="#333" />
+  return <HomeIcon size={24} color="primary" />;
 }
 ```
 
-### Lit Web Component
-```html
-<!-- 在 HTML 中直接使用 -->
-<script type="module">
-  import '@ldesign/icons-lit'
-</script>
+### 其他框架
 
-<home-icon size="24" color="#333"></home-icon>
-```
+- **Lit**: Web Components
+- **Angular**: Angular 组件
+- **Svelte**: Svelte 组件
 
-```javascript
-// 或在 JavaScript 中使用
-import { HomeIcon } from '@ldesign/icons-lit'
+## 🛠️ CLI 命令
 
-const icon = document.createElement('home-icon')
-icon.size = '24'
-icon.color = '#333'
-document.body.appendChild(icon)
-```
+### convert
 
-## 📦 发布到 NPM
-
-生成的每个组件库都包含 `package.json`，可以直接发布：
+转换 SVG 文件为组件：
 
 ```bash
-# 进入生成的组件目录
-cd output/vue3
-
-# 发布到 npm（需要先登录 npm）
-npm publish --access public
+ldesign-icons convert [options]
 ```
 
-## 🎨 添加新的 SVG 图标
+**选项:**
+- `-i, --input <dir>`: 输入目录
+- `-o, --output <dir>`: 输出目录
+- `-t, --target <framework>`: 目标框架
+- `-c, --config <file>`: 配置文件
+- `--prefix <prefix>`: 组件名前缀
+- `--suffix <suffix>`: 组件名后缀
+- `--no-optimize`: 禁用优化
+- `--no-typescript`: 生成 JavaScript
+- `--verbose`: 详细输出
 
-1. 将 SVG 文件放入 `examples/svg/` 目录（或你指定的输入目录）
-2. 运行转换命令
-3. 新的组件会自动生成在输出目录
+### validate
 
-## ⚙️ SVG 优化配置
+验证配置文件：
 
-默认使用 SVGO 进行优化，配置包括：
-- 保留 viewBox 属性
-- 移除不必要的属性和元数据
-- 转换样式到属性
-- 移除脚本元素
+```bash
+ldesign-icons validate -c config.json
+```
+
+### init
+
+创建配置文件模板：
+
+```bash
+ldesign-icons init [options]
+```
+
+## 📁 输出结构
+
+```
+icons/
+├── components/
+│   ├── HomeIcon.ts
+│   ├── UserIcon.ts
+│   └── ...
+├── composables/
+│   ├── useTheme.ts
+│   └── useAnimation.ts
+├── styles/
+│   └── icons.css
+├── types/
+│   └── index.ts
+├── index.ts
+└── package.json
+```
+
+## ⚙️ 一键生成与打包
+
+```bash
+# 在 packages/icons 目录下
+pnpm run build:all
+# 或者
+pnpm run generate:packages
+
+# 支持可选参数（示例）：
+# 使用自定义配置文件、输入目录、输出基目录和框架选择
+pnpm run build:all -- --config ldesign-icons.config.json --input examples/svg --output output --frameworks vue3,react
+```
+
+## 🧪 测试
+
+```bash
+# 运行所有测试
+pnpm test
+
+# 运行测试并生成覆盖率报告
+pnpm test:coverage
+
+# 运行测试 UI
+pnpm test:ui
+```
+
+## 📚 API 文档
+
+### IconConverter
+
+主要的转换器类：
+
+```typescript
+class IconConverter {
+  constructor(config: Partial<IconConfig>);
+  convert(): Promise<ConversionResult>;
+  validateConfig(): ValidationResult;
+}
+```
+
+### SVGParser
+
+SVG 解析器：
+
+```typescript
+class SVGParser {
+  static parse(content: string): ParsedSVG;
+  static validate(svg: ParsedSVG): ValidationResult;
+}
+```
+
+### ConfigManager
+
+配置管理器：
+
+```typescript
+class ConfigManager {
+  static createDefault(target: TargetFramework, inputDir: string, outputDir: string): IconConfig;
+  static loadFromFile(filePath: string): Promise<IconConfig>;
+  static validate(config: Partial<IconConfig>): ValidationResult;
+}
+```
 
 ## 🤝 贡献
 
-欢迎提交 Issue 和 Pull Request！
+欢迎贡献代码！请查看 [贡献指南](../../CONTRIBUTING.md)。
 
-## 📄 License
+## 📄 许可证
 
-MIT
+MIT License - 查看 [LICENSE](../../LICENSE) 文件了解详情。
+
+## 🔗 相关链接
+
+- [LDesign 设计系统](https://github.com/ldesign/ldesign)
+- [问题反馈](https://github.com/ldesign/ldesign/issues)
+- [更新日志](./CHANGELOG.md)

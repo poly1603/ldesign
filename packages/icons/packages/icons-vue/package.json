@@ -14,8 +14,8 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "rimraf dist es lib && rollup -c",
-    "dev": "rollup -c -w",
+    "build": "ldesign-builder build",
+    "dev": "ldesign-builder watch",
     "clean": "rimraf dist es lib"
   },
   "publishConfig": {
@@ -26,6 +26,7 @@
     "vue": "^3.0.0"
   },
   "devDependencies": {
+    "@ldesign/builder": "workspace:^",
     "@vue/compiler-sfc": "^3.4.15",
     "rimraf": "^5.0.5",
     "rollup": "^4.9.4",

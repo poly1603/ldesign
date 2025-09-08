@@ -1,8 +1,70 @@
-.ld-icon-spin {
+/* Vue 3 Icon Components Styles */
+
+.ld-icon {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+
+/* Animation styles */
+.ld-icon--spin {
   animation: ld-icon-spin 1s linear infinite;
 }
 
-@keyframes ld-icon-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.ld-icon--pulse {
+  animation: ld-icon-pulse 2s ease-in-out infinite;
 }
+
+@keyframes ld-icon-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ld-icon-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+
+
+/* Theme colors */
+.ld-icon--primary {
+  color: var(--ld-color-primary, #722ED1);
+}
+
+.ld-icon--secondary {
+  color: var(--ld-color-secondary, #8C5AD3);
+}
+
+.ld-icon--success {
+  color: var(--ld-color-success, #42BD42);
+}
+
+.ld-icon--warning {
+  color: var(--ld-color-warning, #F0B80F);
+}
+
+.ld-icon--error {
+  color: var(--ld-color-error, #DD2222);
+}
+
+.ld-icon--info {
+  color: var(--ld-color-info, #1890FF);
+}
+
+
+/* Size presets */
+.ld-icon--xs { width: 12px; height: 12px; }
+.ld-icon--sm { width: 16px; height: 16px; }
+.ld-icon--md { width: 20px; height: 20px; }
+.ld-icon--lg { width: 24px; height: 24px; }
+.ld-icon--xl { width: 32px; height: 32px; }

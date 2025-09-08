@@ -1,115 +1,122 @@
 import path from 'path';
 import fs from 'fs-extra';
-import type { GeneratorOptions, SVGInfo } from '../types';
+import type { GeneratorOptions, SVGElement, SVGInfo } from '../types';
+import { SVGParser } from '../utils/parser';
 
-function generateVue2Component(svg: SVGInfo): string {
-  const svgContent = svg.optimizedContent || svg.content;
-  // Remove the outer svg tag and extract its attributes
-  const svgInner = svgContent
-    .replace(/<\?xml[^>]*>/gi, '')
-    .replace(/<!DOCTYPE[^>]*>/gi, '')
-    .replace(/<svg([^>]*)>([\s\S]*)<\/svg>/i, (_, attrs, content) => {
-      return `<svg v-bind="$attrs" ${attrs}>${content}</svg>`;
-    });
+/**
+ * 生成 Vue 2（TS）组件源码（使用 render 函数，避免 .vue SFC 依赖）
+ */
+function generateVue2TsComponent(svg: SVGInfo, config: any): string {
+  const parsed = svg.parsed || SVGParser.parse(svg.optimizedContent || svg.content);
+  const componentName = `${svg.componentName}Icon`;
+  const viewBox = (parsed.attributes.viewBox as string) || '0 0 24 24';
 
-  return `<template>
-  ${svgInner}
-</template>
+  const propsSection = `props: {
+    size: { type: [String, Number], default: '${config.componentProps?.defaultSize || '1em'}' },
+    color: { type: String, default: '${config.componentProps?.defaultColor || 'currentColor'}' },
+    strokeWidth: { type: [String, Number], default: 2 },
+    ${config.componentProps?.customClass ? `class: { type: [String, Array, Object], default: undefined },` : ''}
+    ${config.componentProps?.customStyle ? `style: { type: [String, Object], default: undefined },` : ''}
+    ${config.features?.animation ? `spin: { type: Boolean, default: false },` : ''}
+  },`;
 
-<script>
-export default {
-  name: '${svg.componentName}Icon',
-  inheritAttrs: false
+  const genAttrs = (attrs: Record<string, any>): string => {
+    // 过滤 fill/stroke 由组件控制
+    const entries = Object.entries(attrs).filter(([k]) => k !== 'fill' && k !== 'stroke');
+    return entries.map(([k, v]) => `'${k}': ${typeof v === 'string' ? `'${v}'` : v}`).join(', ');
+  };
+
+  const genElements = (elements: SVGElement[]): string => {
+    return elements.map((el) => {
+      const children = el.children || [];
+      const hasChildren = children.length > 0;
+      const text = el.textContent ? `, '${el.textContent.replace(/'/g, "\\'")}'` : '';
+      const attrs = genAttrs(el.attributes || {});
+      return `h('${el.tag}', { attrs: { ${attrs} } }${hasChildren ? `, [${genElements(children)}]` : text})`;
+    }).join(', ');
+  };
+
+  return `import Vue, { CreateElement, VNode } from 'vue';
+
+export interface ${componentName}Props {
+  size?: string | number;
+  color?: string;
+  strokeWidth?: string | number;
+  ${config.features?.animation ? 'spin?: boolean;' : ''}
+  ${config.componentProps?.customClass ? 'class?: string | string[] | Record<string, boolean>;' : ''}
+  ${config.componentProps?.customStyle ? 'style?: string | Record<string, any>;' : ''}
 }
-</script>
-`;
-}
 
-function generateVue2TypeScript(svg: SVGInfo): string {
-  const svgContent = svg.optimizedContent || svg.content;
-  const svgInner = svgContent
-    .replace(/<\?xml[^>]*>/gi, '')
-    .replace(/<!DOCTYPE[^>]*>/gi, '')
-    .replace(/<svg([^>]*)>([\s\S]*)<\/svg>/i, (_, attrs, content) => {
-      return `<svg v-bind="$attrs" ${attrs}>${content}</svg>`;
-    });
+export default Vue.extend({
+  name: '${componentName}',
+  inheritAttrs: false,
+  ${propsSection}
+  render(this: Vue & ${componentName}Props, h: CreateElement): VNode {
+    const classes: any[] = ['ld-icon'];
+    ${config.features?.animation ? 'if (this.spin) classes.push("ld-icon--spin");' : ''}
 
-  return `<template>
-  ${svgInner}
-</template>
+    const style: Record<string, any> = {
+      width: typeof this.size === 'number' ? (this.size + 'px') : this.size,
+      height: typeof this.size === 'number' ? (this.size + 'px') : this.size,
+      display: 'inline-block',
+      verticalAlign: 'middle'
+    };
+    ${config.componentProps?.customStyle ? 'if (this.style && typeof this.style === "object") Object.assign(style, this.style);' : ''}
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  name: '${svg.componentName}Icon',
-  inheritAttrs: false
-})
-</script>
-`;
+    return h(
+      'svg',
+      {
+        class: classes,
+        style,
+        attrs: {
+          viewBox: '${viewBox}',
+          fill: 'none',
+          stroke: this.color,
+          'stroke-width': this.strokeWidth,
+          xmlns: 'http://www.w3.org/2000/svg',
+          'aria-hidden': 'true',
+          focusable: 'false',
+          ...this.$attrs
+        }
+      },
+      [${genElements(parsed.children)}]
+    );
+  }
+});`;
 }
 
 function generateIndexFile(icons: SVGInfo[], typescript: boolean): string {
-  const imports = icons.map(icon => 
-    `import ${icon.componentName}Icon from './${icon.componentName}Icon.vue'`
-  ).join('\n');
-  
-  const exports = icons.map(icon => 
-    `  ${icon.componentName}Icon`
-  ).join(',\n');
-
-  if (typescript) {
-    return `${imports}
-import type { DefineComponent } from 'vue'
-
-export {
-${exports}
-}
-
-export type IconComponent = DefineComponent<{}, {}, any>
-`;
+  const ext = typescript ? '.ts' : '.js';
+  const lines: string[] = [];
+  for (const icon of icons) {
+    lines.push(`export { default as ${icon.componentName}Icon } from './${icon.componentName}Icon${ext}';`);
   }
-
-  return `${imports}
-
-export {
-${exports}
-}
-`;
+  if (typescript) {
+    lines.push('');
+    lines.push('export type {');
+    lines.push(...icons.map(i => `  ${i.componentName}IconProps`));
+    lines.push('} from "./types"');
+  }
+  return `// Auto-generated Vue 2 icon components\n${lines.join('\n')}\n`;
 }
 
 export async function generateVue2Components(options: GeneratorOptions): Promise<void> {
   const { icons, config } = options;
   const outputDir = config.outputDir;
-
   await fs.ensureDir(outputDir);
 
-  // Generate individual component files
   for (const icon of icons) {
-    const fileName = `${icon.componentName}Icon.vue`;
-    const filePath = path.join(outputDir, fileName);
-    const content = config.typescript 
-      ? generateVue2TypeScript(icon) 
-      : generateVue2Component(icon);
-    
-    await fs.writeFile(filePath, content, 'utf-8');
+    const fileName = `${icon.componentName}Icon${config.typescript ? '.ts' : '.js'}`;
+    const content = generateVue2TsComponent(icon, config);
+    await fs.writeFile(path.join(outputDir, fileName), content, 'utf-8');
   }
 
-  // Generate index file
   const indexContent = generateIndexFile(icons, config.typescript ?? false);
-  const indexPath = path.join(outputDir, config.typescript ? 'index.ts' : 'index.js');
-  await fs.writeFile(indexPath, indexContent, 'utf-8');
+  await fs.writeFile(path.join(outputDir, config.typescript ? 'index.ts' : 'index.js'), indexContent, 'utf-8');
 
-  // Generate package.json for the icon library
-  const packageJson = {
-    name: '@ldesign/icons-vue2',
-    version: '1.0.0',
-    description: 'Vue 2 icon components',
-    main: config.typescript ? 'index.ts' : 'index.js',
-    peerDependencies: {
-      vue: '^2.6.0 || ^2.7.0'
-    }
-  };
-
-  await fs.writeJson(path.join(outputDir, 'package.json'), packageJson, { spaces: 2 });
+  // 样式（可选，仅当需要动画时写入）
+  if (config.features?.animation) {
+    const css = `/* Vue 2 Icon Components Styles */\n.ld-icon--spin { animation: ld-icon-spin 1s linear infinite; }\n@keyframes ld-icon-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }\n`;
+    await fs.writeFile(path.join(outputDir, 'style.css'), css, 'utf-8');
+  }
 }

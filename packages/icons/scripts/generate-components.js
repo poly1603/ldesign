@@ -181,8 +181,75 @@ async function generateVue2Components(manifest) {
   const outputDir = path.resolve(ROOT_DIR, 'packages/icons-vue2/src');
   await fs.ensureDir(outputDir);
 
-  // Generate components similar to Vue 3 but with Vue 2 syntax
-  // ... (implementation similar to Vue 3 but adapted for Vue 2)
+  // Generate individual icon components for Vue 2 (TypeScript)
+  for (const icon of manifest) {
+    const svgContent = await fs.readFile(
+      path.resolve(ROOT_DIR, 'packages/icons-svg/src/svg', `${icon.name}.svg`),
+      'utf-8'
+    );
+
+    const componentContent = `import Vue, { CreateElement, VNode } from 'vue';
+
+const rawSvg = \`${svgContent.replace(/`/g, '\\`')}\`;
+
+export interface ${icon.componentName}IconProps {
+  size?: string | number;
+  color?: string;
+  strokeWidth?: string | number;
+  spin?: boolean;
+}
+
+export default Vue.extend({
+  name: '${icon.componentName}Icon',
+  inheritAttrs: false,
+  props: {
+    size: { type: [String, Number], default: '1em' },
+    color: { type: String, default: 'currentColor' },
+    strokeWidth: { type: [String, Number], default: 2 },
+    spin: { type: Boolean, default: false }
+  },
+  render(this: Vue & ${icon.componentName}IconProps, h: CreateElement): VNode {
+    const classes = ['ld-icon', this.spin ? 'ld-icon-spin' : ''].filter(Boolean);
+    const html = rawSvg
+      .replace(/width=\"[^\"]*\"/g, 'width="' + (typeof this.size === "number" ? String(this.size) : this.size) + '"')
+      .replace(/height=\"[^\"]*\"/g, 'height="' + (typeof this.size === "number" ? String(this.size) : this.size) + '"')
+      .replace(/stroke=\"[^\"]*\"/g, 'stroke="' + this.color + '"')
+      .replace(/fill=\"[^\"]*\"/g, 'fill="' + this.color + '"')
+      .replace(/stroke-width=\"[^\"]*\"/g, 'stroke-width="' + String(this.strokeWidth) + '"');
+
+    const style: Record<string, any> = {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: typeof this.size === 'number' ? (this.size + 'px') : this.size,
+      height: typeof this.size === 'number' ? (this.size + 'px') : this.size
+    };
+
+    return h('span', {
+      class: classes,
+      style,
+      domProps: { innerHTML: html },
+      attrs: this.$attrs
+    });
+  }
+});
+`;
+
+    await fs.writeFile(
+      path.resolve(outputDir, `${icon.componentName}Icon.ts`),
+      componentContent
+    );
+  }
+
+  // Generate index file
+  const indexContent = manifest.map(({ componentName }) => (
+    `export { default as ${componentName}Icon } from './${componentName}Icon';`
+  )).join('\n');
+  await fs.writeFile(path.resolve(outputDir, 'index.ts'), `// Auto-generated file, do not edit directly\n${indexContent}\n`);
+
+  // Generate style file
+  const styleContent = `.ld-icon-spin {\n  animation: ld-icon-spin 1s linear infinite;\n}\n@keyframes ld-icon-spin {\n  from { transform: rotate(0deg); }\n  to { transform: rotate(360deg); }\n}\n`;
+  await fs.writeFile(path.resolve(outputDir, 'style.css'), styleContent);
 
   console.log(chalk.gray('  ✓ Vue 2 components generated'));
 }
@@ -194,8 +261,8 @@ async function generateLitComponents(manifest) {
   // Generate Lit Web Components
   for (const icon of manifest) {
     const kebabName = icon.name.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`);
-    const componentContent = `import { LitElement, html, css, property } from 'lit';
-import { customElement } from 'lit/decorators.js';
+    const componentContent = `import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
 @customElement('ld-${kebabName}-icon')
 export class ${icon.componentName}Icon extends LitElement {

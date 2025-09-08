@@ -9,8 +9,3 @@ export { default as HomeIcon } from './HomeIcon';
 export type { HomeIconProps } from './HomeIcon';
 export { default as HeartIcon } from './HeartIcon';
 export type { HeartIconProps } from './HeartIcon';
-
-export type { IconName, IconComponentName } from '@ldesign/icons-svg';
-
-// Export style
-import './style.css';

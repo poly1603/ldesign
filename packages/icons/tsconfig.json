@@ -11,7 +11,10 @@
     "declarationMap": true,
     "sourceMap": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "outDir": "./dist",
     "allowSyntheticDefaultImports": true,
     "jsx": "preserve",
     "baseUrl": ".",
@@ -25,6 +28,7 @@
     }
   },
   "include": [
+    "src/**/*",
     "packages/*/src/**/*",
     "scripts/**/*",
     "test/**/*"
@@ -35,6 +39,7 @@
     "**/es",
     "**/lib",
     "**/*.spec.ts",
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "src/__tests__/**/*"
   ]
 }

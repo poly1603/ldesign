@@ -14,8 +14,8 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "rimraf dist es lib && rollup -c",
-    "dev": "rollup -c -w",
+    "build": "ldesign-builder build",
+    "dev": "ldesign-builder watch",
     "clean": "rimraf dist es lib"
   },
   "publishConfig": {
@@ -27,6 +27,7 @@
     "react-dom": ">=16.8.0"
   },
   "devDependencies": {
+    "@ldesign/builder": "workspace:^",
     "@types/react": "^18.2.47",
     "@types/react-dom": "^18.2.18",
     "react": "^18.2.0",
