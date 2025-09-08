@@ -26,9 +26,22 @@ export { SecurityManager } from './security/security-manager'
 
 // 策略
 export { StorageStrategy } from './strategies/storage-strategy'
+export * from './strategies/eviction-strategies'
+
+// 命名空间与同步
+export { CacheNamespace, createNamespace } from './core/namespace-manager'
+export type { NamespaceOptions } from './core/namespace-manager'
+export { SyncManager, WarmupManager } from './core/sync-manager'
+export type { SyncOptions } from './core/sync-manager'
+
 // 核心导出
 export * from './types'
 export * from './utils'
+
+// 性能监控与容错
+export { PerformanceMonitor } from './core/performance-monitor'
+export type { PerformanceMetrics, PerformanceStats, PerformanceMonitorOptions } from './core/performance-monitor'
+export * from './utils/retry-manager'
 
 /**
  * 创建缓存管理器实例
@@ -38,20 +51,59 @@ export function createCache(options?: CacheOptions) {
 }
 
 /**
- * 默认缓存管理器实例（延迟初始化）
+ * 获取（懒初始化）默认缓存管理器实例
+ * 避免在 SSR/Node 环境下提前触发浏览器 API 导致报错
  */
 let _defaultCache: CacheManager | null = null
-export const defaultCache = (() => {
+export function getDefaultCache(options?: CacheOptions): CacheManager {
   if (!_defaultCache) {
-    _defaultCache = new CacheManager()
+    _defaultCache = new CacheManager(options)
   }
   return _defaultCache
-})()
+}
+
+/**
+ * 统一简洁的 API：按需获取单例并执行操作（不提前创建实例）
+ */
+export const cache = {
+  get<T = any>(key: string) {
+    return getDefaultCache().get<T>(key)
+  },
+  set<T = any>(key: string, value: T, options?: import('./types').SetOptions) {
+    return getDefaultCache().set<T>(key, value, options)
+  },
+  remove(key: string) {
+    return getDefaultCache().remove(key)
+  },
+  clear(engine?: import('./types').StorageEngine) {
+    return getDefaultCache().clear(engine)
+  },
+  has(key: string) {
+    return getDefaultCache().has(key)
+  },
+  keys(engine?: import('./types').StorageEngine) {
+    return getDefaultCache().keys(engine)
+  },
+  getStats() {
+    return getDefaultCache().getStats()
+  },
+  remember<T = any>(
+    key: string,
+    fetcher: () => Promise<T> | T,
+    options?: import('./types').SetOptions & { refresh?: boolean },
+  ) {
+    return getDefaultCache().remember<T>(key, fetcher, options)
+  },
+  manager(): CacheManager {
+    return getDefaultCache()
+  },
+}
 
 // 默认导出
 export default {
   CacheManager,
   createCache,
-  defaultCache,
+  getDefaultCache,
+  cache,
   StorageEngineFactory,
 }

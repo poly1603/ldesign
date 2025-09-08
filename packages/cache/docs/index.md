@@ -130,3 +130,16 @@ await cache.set('temp', data, { ttl: 1000 })
 - 🎭 [@ldesign/icons](../icons) - 图标库
 - 🎪 [@ldesign/utils](../utils) - 工具函数库
 - 🎨 [@ldesign/theme](../theme) - 主题系统
+
+## 🧭 功能导航
+
+- 命名空间： [指南](/guide/namespaces) · [API](/api/namespace) · [示例](/examples/namespaces)
+- 批量操作： [API](/api/batch)
+- 缓存预热： [API](/api/warmup)
+- 跨标签页同步： [API](/api/sync)
+- 智能预取： [API](/api/prefetch)
+- 性能监控： [API](/api/performance-monitor)
+- 错误处理： [API](/api/error-handling)
+- 数据压缩： [API](/api/compression)
+- 存储引擎： [指南](/guide/storage-engines) · [API](/api/storage-engines)
+- 迁移示例： [命名空间迁移](/examples/namespace-migration)

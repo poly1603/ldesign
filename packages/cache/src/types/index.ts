@@ -139,8 +139,12 @@ export interface StorageEngineConfig {
   memory?: {
     /** 最大存储大小（字节） */
     maxSize?: number
+    /** 最大项数 */
+    maxItems?: number
     /** 清理间隔（毫秒） */
     cleanupInterval?: number
+    /** 淘汰策略：'LRU' | 'LFU' | 'FIFO' | 'MRU' | 'Random' | 'TTL' | 'ARC' */
+    evictionStrategy?: string
   }
 }
 

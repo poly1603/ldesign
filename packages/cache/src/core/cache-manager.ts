@@ -84,11 +84,17 @@ export class CacheManager implements ICacheManager {
    */
   private startCleanupTimer(): void {
     if (this.options.cleanupInterval && this.options.cleanupInterval > 0) {
-      this.cleanupTimer = window.setInterval(() => {
+      // 兼容浏览器与 Node/SSR 环境
+      const setIntervalFn
+        = typeof window !== 'undefined' && typeof window.setInterval === 'function'
+          ? window.setInterval
+          : (globalThis as any).setInterval
+
+      this.cleanupTimer = setIntervalFn(() => {
         this.cleanup().catch((error) => {
           console.error(error)
         })
-      }, this.options.cleanupInterval)
+      }, this.options.cleanupInterval) as unknown as number
     }
   }
 
@@ -538,9 +544,21 @@ export class CacheManager implements ICacheManager {
     // 处理缓存键（可能包含混淆处理）
     const processedKey = await this.processKey(key)
 
-    // 按优先级顺序尝试从各个存储引擎获取数据
+    // 按优先级顺序尝试从各个存储引擎获取数据（优化检索性能）
     // 优先级：memory > localStorage > sessionStorage > cookie > indexedDB
-    for (const [engineType, engine] of this.engines) {
+    const searchOrder: StorageEngine[] = [
+      'memory',
+      'localStorage',
+      'sessionStorage',
+      'cookie',
+      'indexedDB',
+    ]
+
+    for (const engineType of searchOrder) {
+      const engine = this.engines.get(engineType)
+      if (!engine)
+        continue
+
       try {
         // 从当前引擎获取原始数据
         const itemData = await engine.getItem(processedKey)
@@ -557,7 +575,7 @@ export class CacheManager implements ICacheManager {
             continue // 继续尝试下一个引擎
           }
 
-          // 更新访问统计信息
+          // 更新访问统计信息（仅内存，避免频繁写回存储）
           metadata.lastAccessedAt = Date.now()
           metadata.accessCount++
 
@@ -589,6 +607,154 @@ export class CacheManager implements ICacheManager {
     }
 
     return null
+  }
+
+  /**
+   * 获取或设置（缺省则计算并写入）
+   *
+   * 当缓存不存在时，调用提供的 fetcher 计算值并写入缓存，然后返回该值。
+   * 可通过 options.refresh 强制刷新。
+   */
+  async remember<T = any>(
+    key: string,
+    fetcher: () => Promise<T> | T,
+    options?: SetOptions & { refresh?: boolean },
+  ): Promise<T> {
+    await this.ensureInitialized()
+
+    if (!options?.refresh) {
+      const cached = await this.get<T>(key)
+      if (cached !== null)
+        return cached
+    }
+    const value = await Promise.resolve().then(fetcher)
+    await this.set<T>(key, value, options)
+    return value
+  }
+
+  /** 获取或设置（别名） */
+  async getOrSet<T = any>(
+    key: string,
+    fetcher: () => Promise<T> | T,
+    options?: SetOptions,
+  ): Promise<T> {
+    return this.remember<T>(key, fetcher, options)
+  }
+
+  /**
+   * 批量设置缓存项
+   *
+   * 并行设置多个缓存项，提高效率
+   *
+   * @param items - 要设置的缓存项数组
+   * @returns 设置结果数组，包含成功和失败信息
+   *
+   * @example
+   * ```typescript
+   * const results = await cache.mset([
+   *   { key: 'user:1', value: user1, options: { ttl: 3600000 } },
+   *   { key: 'user:2', value: user2 },
+   *   { key: 'user:3', value: user3, options: { encrypt: true } },
+   * ])
+   * ```
+   */
+  async mset<T = any>(
+    items: Array<{ key: string, value: T, options?: SetOptions }>,
+  ): Promise<Array<{ key: string, success: boolean, error?: Error }>> {
+    await this.ensureInitialized()
+
+    const results = await Promise.allSettled(
+      items.map(item => this.set(item.key, item.value, item.options)),
+    )
+
+    return items.map((item, index) => {
+      const result = results[index]
+      return {
+        key: item.key,
+        success: result.status === 'fulfilled',
+        error: result.status === 'rejected' ? result.reason : undefined,
+      }
+    })
+  }
+
+  /**
+   * 批量获取缓存项
+   *
+   * 并行获取多个缓存项，提高效率
+   *
+   * @param keys - 要获取的缓存键数组
+   * @returns 键值对映射，不存在的键值为 null
+   *
+   * @example
+   * ```typescript
+   * const users = await cache.mget(['user:1', 'user:2', 'user:3'])
+   * // { 'user:1': {...}, 'user:2': {...}, 'user:3': null }
+   * ```
+   */
+  async mget<T = any>(keys: string[]): Promise<Record<string, T | null>> {
+    await this.ensureInitialized()
+
+    const results = await Promise.all(
+      keys.map(key => this.get<T>(key).catch(() => null)),
+    )
+
+    return Object.fromEntries(
+      keys.map((key, index) => [key, results[index]]),
+    )
+  }
+
+  /**
+   * 批量删除缓存项
+   *
+   * 并行删除多个缓存项
+   *
+   * @param keys - 要删除的缓存键数组
+   * @returns 删除结果数组
+   *
+   * @example
+   * ```typescript
+   * const results = await cache.mremove(['user:1', 'user:2', 'user:3'])
+   * ```
+   */
+  async mremove(keys: string[]): Promise<Array<{ key: string, success: boolean, error?: Error }>> {
+    await this.ensureInitialized()
+
+    const results = await Promise.allSettled(
+      keys.map(key => this.remove(key)),
+    )
+
+    return keys.map((key, index) => {
+      const result = results[index]
+      return {
+        key,
+        success: result.status === 'fulfilled',
+        error: result.status === 'rejected' ? result.reason : undefined,
+      }
+    })
+  }
+
+  /**
+   * 批量检查缓存项是否存在
+   *
+   * @param keys - 要检查的缓存键数组
+   * @returns 键存在性映射
+   *
+   * @example
+   * ```typescript
+   * const exists = await cache.mhas(['user:1', 'user:2'])
+   * // { 'user:1': true, 'user:2': false }
+   * ```
+   */
+  async mhas(keys: string[]): Promise<Record<string, boolean>> {
+    await this.ensureInitialized()
+
+    const results = await Promise.all(
+      keys.map(key => this.has(key).catch(() => false)),
+    )
+
+    return Object.fromEntries(
+      keys.map((key, index) => [key, results[index]]),
+    )
   }
 
   /**
@@ -789,7 +955,11 @@ export class CacheManager implements ICacheManager {
    */
   async destroy(): Promise<void> {
     if (this.cleanupTimer) {
-      clearInterval(this.cleanupTimer)
+      const clearIntervalFn
+        = typeof window !== 'undefined' && typeof window.clearInterval === 'function'
+          ? window.clearInterval
+          : (globalThis as any).clearInterval
+      clearIntervalFn(this.cleanupTimer)
       this.cleanupTimer = undefined
     }
 

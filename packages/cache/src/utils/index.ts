@@ -7,6 +7,12 @@ export { EventEmitter } from './event-emitter'
 // 导出数据验证工具
 export * from './validator'
 
+// 导出压缩器
+export * from './compressor'
+
+// 导出预取器
+export * from './prefetcher'
+
 /**
  * 工具函数
  */

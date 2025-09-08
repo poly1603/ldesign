@@ -1,5 +1,6 @@
 import type { StorageEngineConfig } from '../types'
 import { BaseStorageEngine } from './base-engine'
+import { type EvictionStrategy, EvictionStrategyFactory } from '../strategies/eviction-strategies'
 
 /**
  * 内存缓存项接口
@@ -43,6 +44,10 @@ export class MemoryEngine extends BaseStorageEngine {
   readonly available = true
   /** 最大内存大小限制（字节） */
   readonly maxSize: number
+  /** 最大项数限制 */
+  private readonly maxItems: number
+  /** 淘汰策略 */
+  private evictionStrategy: EvictionStrategy
 
   /** 内存存储容器 */
   private storage: Map<string, MemoryCacheItem> = new Map()
@@ -58,6 +63,12 @@ export class MemoryEngine extends BaseStorageEngine {
     super()
     // 设置最大内存大小，默认10MB
     this.maxSize = config?.maxSize || 10 * 1024 * 1024
+    // 设置最大项数，默认1000
+    this.maxItems = config?.maxItems || 1000
+    
+    // 初始化淘汰策略，默认使用 LRU
+    const strategyName = config?.evictionStrategy || 'LRU'
+    this.evictionStrategy = EvictionStrategyFactory.create(strategyName)
 
     // 启动定期清理过期项
     const cleanupInterval = config?.cleanupInterval || 60000 // 默认1分钟
@@ -106,6 +117,11 @@ export class MemoryEngine extends BaseStorageEngine {
   async setItem(key: string, value: string, ttl?: number): Promise<void> {
     const dataSize = this.calculateSize(key) + this.calculateSize(value)
 
+    // 检查项数限制
+    if (this.storage.size >= this.maxItems && !this.storage.has(key)) {
+      await this.evictByStrategy()
+    }
+
     // 检查存储空间
     if (!this.checkStorageSpace(dataSize)) {
       // 尝试清理过期项
@@ -113,8 +129,8 @@ export class MemoryEngine extends BaseStorageEngine {
 
       // 再次检查
       if (!this.checkStorageSpace(dataSize)) {
-        // 清理最旧的项
-        await this.evictOldestItems(dataSize)
+        // 根据策略清理项
+        await this.evictUntilSpaceAvailable(dataSize)
       }
     }
 
@@ -125,7 +141,17 @@ export class MemoryEngine extends BaseStorageEngine {
       expiresAt: ttl ? now + ttl : undefined,
     }
 
+    // 更新或添加到存储
+    const isUpdate = this.storage.has(key)
     this.storage.set(key, item)
+    
+    // 记录到淘汰策略
+    if (isUpdate) {
+      this.evictionStrategy.recordAccess(key)
+    } else {
+      this.evictionStrategy.recordAdd(key, ttl)
+    }
+    
     await this.updateUsedSize()
   }
 
@@ -142,10 +168,14 @@ export class MemoryEngine extends BaseStorageEngine {
     // 检查是否过期
     if (item.expiresAt && Date.now() > item.expiresAt) {
       this.storage.delete(key)
+      this.evictionStrategy.removeKey(key)
       await this.updateUsedSize()
       return null
     }
 
+    // 记录访问
+    this.evictionStrategy.recordAccess(key)
+    
     return item.value
   }
 
@@ -154,6 +184,7 @@ export class MemoryEngine extends BaseStorageEngine {
    */
   async removeItem(key: string): Promise<void> {
     this.storage.delete(key)
+    this.evictionStrategy.removeKey(key)
     await this.updateUsedSize()
   }
 
@@ -162,6 +193,7 @@ export class MemoryEngine extends BaseStorageEngine {
    */
   async clear(): Promise<void> {
     this.storage.clear()
+    this.evictionStrategy.clear()
     this._usedSize = 0
   }
 
@@ -201,11 +233,53 @@ export class MemoryEngine extends BaseStorageEngine {
 
     for (const key of keysToDelete) {
       this.storage.delete(key)
+      this.evictionStrategy.removeKey(key)
     }
 
     if (keysToDelete.length > 0) {
       await this.updateUsedSize()
     }
+  }
+
+  /**
+   * 根据策略淘汰一个项
+   */
+  private async evictByStrategy(): Promise<void> {
+    const keyToEvict = this.evictionStrategy.getEvictionKey()
+    if (keyToEvict && this.storage.has(keyToEvict)) {
+      this.storage.delete(keyToEvict)
+      this.evictionStrategy.removeKey(keyToEvict)
+      await this.updateUsedSize()
+    }
+  }
+
+  /**
+   * 淘汰项直到有足够空间
+   */
+  private async evictUntilSpaceAvailable(requiredSpace: number): Promise<void> {
+    let freedSpace = 0
+    const maxEvictions = Math.min(this.storage.size, Math.ceil(this.storage.size * 0.3)) // 最多淘汰30%的项
+    let evictionCount = 0
+
+    while (freedSpace < requiredSpace && evictionCount < maxEvictions) {
+      const keyToEvict = this.evictionStrategy.getEvictionKey()
+      if (!keyToEvict || !this.storage.has(keyToEvict)) {
+        // 没有更多可淘汰的项，回退到清理最旧的项
+        await this.evictOldestItems(requiredSpace - freedSpace)
+        break
+      }
+
+      const item = this.storage.get(keyToEvict)!
+      const itemSize = this.calculateSize(keyToEvict) + this.calculateSize(item.value)
+      
+      this.storage.delete(keyToEvict)
+      this.evictionStrategy.removeKey(keyToEvict)
+      
+      freedSpace += itemSize
+      evictionCount++
+    }
+
+    await this.updateUsedSize()
   }
 
   /**
@@ -244,6 +318,7 @@ export class MemoryEngine extends BaseStorageEngine {
 
     for (const key of keysToDelete) {
       this.storage.delete(key)
+      this.evictionStrategy.removeKey(key)
     }
 
     await this.updateUsedSize()
@@ -342,6 +417,34 @@ export class MemoryEngine extends BaseStorageEngine {
     }
 
     this.storage.clear()
+    this.evictionStrategy.clear()
     this._usedSize = 0
+  }
+
+  /**
+   * 获取淘汰策略统计
+   */
+  getEvictionStats(): Record<string, any> {
+    return this.evictionStrategy.getStats()
+  }
+
+  /**
+   * 切换淘汰策略
+   */
+  setEvictionStrategy(strategyName: string): void {
+    // 保存当前所有键的记录
+    const keys = Array.from(this.storage.keys())
+    
+    // 创建新策略
+    this.evictionStrategy = EvictionStrategyFactory.create(strategyName)
+    
+    // 将所有键添加到新策略
+    for (const key of keys) {
+      const item = this.storage.get(key)
+      if (item) {
+        const ttl = item.expiresAt ? item.expiresAt - Date.now() : undefined
+        this.evictionStrategy.recordAdd(key, ttl)
+      }
+    }
   }
 }

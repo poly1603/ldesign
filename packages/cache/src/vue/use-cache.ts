@@ -1,7 +1,8 @@
 import type { ComputedRef } from 'vue'
 import type { CacheStats, SetOptions, UseCacheOptions } from '../types'
-import { computed, onUnmounted, ref } from 'vue'
+import { computed, inject, onUnmounted, ref, watch } from 'vue'
 import { CacheManager } from '../core/cache-manager'
+import { CACHE_MANAGER_KEY } from './cache-provider'
 
 /**
  * 响应式缓存返回类型
@@ -21,6 +22,8 @@ export interface ReactiveCache<T> {
   remove: () => Promise<void>
   /** 是否存在 */
   exists: ComputedRef<boolean>
+  /** 启用自动保存，返回停止函数 */
+  enableAutoSave: (options?: { ttl?: number, throttle?: number }) => () => void
 }
 
 /**
@@ -76,8 +79,9 @@ export interface UseCacheReturn {
  * Vue 3 缓存组合式函数
  */
 export function useCache(options?: UseCacheOptions): UseCacheReturn {
-  // 创建缓存管理器实例
-  const cacheManager = new CacheManager(options)
+  // 优先使用由 CacheProvider 注入的全局管理器；若不存在则本地创建
+  const injectedManager = inject(CACHE_MANAGER_KEY, null as unknown as CacheManager | null)
+  const cacheManager = injectedManager ?? new CacheManager(options)
 
   // 响应式状态
   const loading = ref(false)
@@ -305,6 +309,46 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
     }
 
     /**
+     * 启用自动保存（带节流）
+     */
+    const enableAutoSave = (opts?: { ttl?: number, throttle?: number }): (() => void) => {
+      const throttleMs = opts?.throttle ?? 500
+      let pending = false
+      let timer: number | undefined
+
+      const stop = watch(
+        () => value.value,
+        async (val) => {
+          // 节流，避免频繁写入
+          if (pending)
+            return
+          pending = true
+          timer = window.setTimeout(async () => {
+            try {
+              await save(val as T, opts?.ttl ? { ttl: opts.ttl } : undefined)
+            }
+            finally {
+              pending = false
+              if (timer !== undefined) {
+                clearTimeout(timer)
+                timer = undefined
+              }
+            }
+          }, throttleMs)
+        },
+        { deep: true },
+      )
+
+      return () => {
+        stop()
+        if (timer !== undefined) {
+          clearTimeout(timer)
+          timer = undefined
+        }
+      }
+    }
+
+    /**
      * 从缓存中移除值
      */
     const removeValue = async (): Promise<void> => {
@@ -343,11 +387,13 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
       refresh: load,
       remove: removeValue,
       exists: existsComputed,
+      enableAutoSave,
     }
   }
 
-  // 组件卸载时清理
-  if (options?.cleanupOnUnmount !== false) {
+  // 组件卸载时清理（仅在本地创建管理器时执行，避免销毁全局实例）
+  const createdLocally = !injectedManager
+  if (createdLocally && options?.cleanupOnUnmount !== false) {
     onUnmounted(async () => {
       try {
         await cacheManager.destroy()

@@ -2,6 +2,12 @@
 
 ## 🎯 核心概念
 
+> 更多阅读：
+> - [命名空间](/guide/namespaces) · [API](/api/namespace)
+> - [批量操作](/api/batch)
+> - [缓存预热](/api/warmup)
+> - [跨标签页同步](/api/sync)
+
 ### 缓存管理器 (CacheManager)
 
 缓存管理器是整个库的核心，它提供了统一的 API 来管理不同的存储引擎。

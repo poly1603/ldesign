@@ -242,4 +242,9 @@ await cache.set('form-data', formObject, { ttl: 30 * 60 * 1000 })
 - [存储引擎详解](./storage-engines) - 了解各种存储引擎的特点
 - [安全特性](./security) - 学习如何保护敏感数据
 - [Vue 集成](./vue-integration) - 深入了解 Vue 3 集成功能
+- [命名空间](./namespaces) - 通过命名空间组织与分区管理缓存
+- [批量操作](../api/batch) - 高效处理大体量读写
+- [缓存预热](../api/warmup) - 冷启动加速与批量导入
+- [跨标签页同步](../api/sync) - 多页面一致性保障
+- [示例：命名空间](../examples/namespaces) · [示例：命名空间迁移](../examples/namespace-migration)
 - [API 参考](../api/cache-manager) - 查看完整的 API 文档

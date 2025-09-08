@@ -61,12 +61,22 @@ export abstract class BaseStorageEngine implements IStorageEngine {
 
     for (const key of keys) {
       try {
-        const itemData = await this.getItem(key)
-        if (itemData) {
-          const parsed = JSON.parse(itemData)
-          if (parsed.metadata?.expiresAt && now > parsed.metadata.expiresAt) {
-            await this.removeItem(key)
-          }
+        const raw = await this.getItem(key)
+        if (!raw)
+          continue
+
+        // 先解析 TTL 包装（如有）
+        const { value, expired } = this.parseTTLData(raw)
+        if (expired) {
+          await this.removeItem(key)
+          continue
+        }
+
+        // 再解析缓存结构，检查元数据中的过期时间
+        const parsed = JSON.parse(value)
+        const expiresAt: number | undefined = parsed?.metadata?.expiresAt
+        if (expiresAt && now > expiresAt) {
+          await this.removeItem(key)
         }
       }
       catch (error) {

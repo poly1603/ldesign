@@ -65,6 +65,14 @@ async function safeSetCache(key: string, value: any, options?: any) {
 }
 ```
 
+## 建议清单
+
+- 采用命名空间前缀规范（如 app:module:sub:key），并在团队内统一约定。
+- 大体量操作使用批量 API（mset/mget/mremove/mhas），导入/迁移/预热尽量分批处理。
+- 针对多标签页应用开启同步，并设置前缀过滤与节流。
+- 为关键路径数据配置预热，结合监控评估收益。
+- 结合错误处理设施（重试/熔断/降级）提高稳定性。
+
 ## 🏗️ 架构设计
 
 ### 1. 分层缓存策略

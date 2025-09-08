@@ -14,8 +14,10 @@ export class LocalStorageEngine extends BaseStorageEngine {
     this.maxSize = config?.maxSize || 5 * 1024 * 1024 // 默认 5MB
     this.keyPrefix = config?.keyPrefix || 'ldesign_cache_'
 
-    // 初始化时计算已使用大小
-    this.updateUsedSize().catch(console.error)
+    // 初始化时计算已使用大小（仅在可用时，避免 SSR/Node 环境报错）
+    if (this.available) {
+      this.updateUsedSize().catch(console.error)
+    }
   }
 
   get available(): boolean {

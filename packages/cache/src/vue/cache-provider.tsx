@@ -5,6 +5,7 @@ import {
   type InjectionKey,
   type PropType,
   provide,
+  onUnmounted,
 } from 'vue'
 import { CacheManager } from '../core/cache-manager'
 
@@ -36,6 +37,11 @@ export const CacheProvider = defineComponent({
 
     // 提供缓存管理器
     provide(CACHE_MANAGER_KEY, cacheManager)
+
+    // 组件卸载时销毁缓存管理器，防止资源泄漏
+    onUnmounted(() => {
+      cacheManager.destroy().catch(err => console.error('Failed to destroy CacheManager on unmount:', err))
+    })
 
     return () => slots.default?.()
   },

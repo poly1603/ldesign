@@ -280,7 +280,370 @@ const keys = ['user1', 'user2', 'user3']
 const values = await Promise.all(keys.map(key => cache.get(key)))
 ```
 
-## 🎯 使用场景
+## 🎯 新增功能
+
+### 🔄 批量操作
+
+高效处理大量数据：
+
+```typescript
+// 批量设置
+const results = await cache.mset([
+  { key: 'user:1', value: user1, options: { ttl: 3600000 } },
+  { key: 'user:2', value: user2 },
+  { key: 'user:3', value: user3 },
+])
+
+// 批量获取
+const users = await cache.mget(['user:1', 'user:2', 'user:3'])
+// { 'user:1': {...}, 'user:2': {...}, 'user:3': null }
+
+// 批量删除
+const removeResults = await cache.mremove(['user:1', 'user:2'])
+
+// 批量检查
+const exists = await cache.mhas(['user:1', 'user:2'])
+// { 'user:1': true, 'user:2': false }
+```
+
+### 📁 命名空间
+
+按模块隔离缓存：
+
+```typescript
+import { createNamespace } from '@ldesign/cache'
+
+// 创建根命名空间
+const rootNs = createNamespace('app')
+
+// 创建子命名空间
+const userNs = rootNs.namespace('user')
+const authNs = rootNs.namespace('auth')
+
+// 使用命名空间
+await userNs.set('profile', userProfile)  // 键: app:user:profile
+await authNs.set('token', token)         // 键: app:auth:token
+
+// 清空命名空间
+await userNs.clear()  // 仅清空 user 命名空间
+await rootNs.clear(true)  // 清空所有命名空间
+
+// 导出/导入数据
+const data = await userNs.export()
+await userNs.import(data)
+```
+
+### 🔄 跨标签页同步
+
+实时同步缓存数据：
+
+```typescript
+import { SyncManager } from '@ldesign/cache'
+
+const sync = new SyncManager(cache, {
+  enabled: true,
+  channel: 'my-app-cache',
+  debounce: 100,
+  engines: ['localStorage'],
+  events: ['set', 'remove', 'clear'],
+})
+
+// 监听同步事件
+sync.on('sync', (message) => {
+  console.log('同步消息:', message)
+})
+
+// 请求全量同步
+await sync.requestSync()
+```
+
+### 🔥 缓存预热
+
+导入导出和预热缓存：
+
+```typescript
+import { WarmupManager } from '@ldesign/cache'
+
+const warmup = new WarmupManager(cache)
+
+// 导出缓存
+const exported = await warmup.export(
+  key => key.startsWith('important:')  // 仅导出重要数据
+)
+
+// 导入缓存
+await warmup.import(exported, {
+  overwrite: false,  // 不覆盖已存在的
+  prefix: 'imported:',  // 添加前缀
+})
+
+// 预热缓存
+await warmup.warmup([
+  { key: 'config', fetcher: () => fetch('/api/config').then(r => r.json()) },
+  { key: 'user', fetcher: () => fetch('/api/user').then(r => r.json()) },
+])
+
+// 从 URL 预热
+await warmup.warmupFromUrl('https://api.example.com/cache-data.json')
+```
+
+### 🌪️ 淘汰策略
+
+支持多种淘汰策略：
+
+```typescript
+import { EvictionStrategyFactory } from '@ldesign/cache'
+
+// 创建策略
+const lru = EvictionStrategyFactory.create('LRU')  // 最近最少使用
+const lfu = EvictionStrategyFactory.create('LFU')  // 最不常用
+const fifo = EvictionStrategyFactory.create('FIFO')  // 先进先出
+const ttl = EvictionStrategyFactory.create('TTL')  // TTL 优先
+const arc = EvictionStrategyFactory.create('ARC')  // 自适应策略
+
+// 记录访问
+lru.recordAccess('key1')
+lru.recordAdd('key2')
+
+// 获取应淘汰的键
+const evictKey = lru.getEvictionKey()
+if (evictKey) {
+  await cache.remove(evictKey)
+}
+
+// 获取统计
+const stats = lru.getStats()
+```
+
+### 💾 自动保存 (Vue)
+
+响应式缓存带节流自动保存：
+
+```vue
+<script setup>
+import { useCache } from '@ldesign/cache/vue'
+
+const { useReactiveCache } = useCache()
+
+// 创建响应式缓存
+const draft = useReactiveCache('form-draft', {
+  title: '',
+  content: '',
+})
+
+// 启用自动保存（节流 500ms）
+const stopAutoSave = draft.enableAutoSave({
+  ttl: 30 * 60 * 1000,  // 30分钟过期
+  throttle: 500,  // 节流 500ms
+})
+
+// 需要时停止自动保存
+onUnmounted(() => {
+  stopAutoSave()
+})
+</script>
+
+<template>
+  <form>
+    <input v-model="draft.value.value.title" />
+    <textarea v-model="draft.value.value.content" />
+  </form>
+</template>
+```
+
+### 📊 性能监控
+
+实时监控缓存性能：
+
+```typescript
+import { PerformanceMonitor } from '@ldesign/cache'
+
+const monitor = new PerformanceMonitor({
+  enabled: true,
+  slowThreshold: 100,  // 慢操作阈值 100ms
+  samplingRate: 0.1,   // 10% 采样率
+  collector: (metrics) => {
+    // 发送到监控系统
+    console.log('性能指标:', metrics)
+  },
+})
+
+// 监听慢操作
+monitor.on('slow', (metrics) => {
+  console.warn(`慢操作: ${metrics.operation} 耗时 ${metrics.duration}ms`)
+})
+
+// 测量操作
+await monitor.measure('cache.set', async () => {
+  await cache.set('key', 'value')
+}, { key: 'key', engine: 'localStorage' })
+
+// 获取统计
+const stats = monitor.getStats()
+const percentiles = monitor.getPercentiles([50, 95, 99])
+
+// 生成报告
+console.log(monitor.generateReport())
+```
+
+### 🔄 重试与容错
+
+自动重试、断路器、降级策略：
+
+```typescript
+import { 
+  RetryManager, 
+  CircuitBreaker, 
+  FallbackHandler,
+  withRetry,
+  withCircuitBreaker,
+  withFallback 
+} from '@ldesign/cache'
+
+// 自动重试
+const retry = new RetryManager()
+const result = await retry.retry(
+  () => fetch('/api/data').then(r => r.json()),
+  {
+    maxAttempts: 3,
+    strategy: 'exponential',
+    jitter: true,
+    onRetry: (error, attempt) => {
+      console.log(`重试 ${attempt} 次: ${error.message}`)
+    },
+  }
+)
+
+// 断路器
+const breaker = new CircuitBreaker({
+  failureThreshold: 5,
+  resetTimeout: 30000,
+})
+
+try {
+  await breaker.execute(() => riskyOperation())
+} catch (error) {
+  if (error.message === 'Circuit breaker is OPEN') {
+    console.log('服务不可用，请稍后重试')
+  }
+}
+
+// 降级策略
+const fallback = new FallbackHandler<any>()
+  .addFallback(() => getFromCache())
+  .addFallback(() => getDefaultValue())
+
+const data = await fallback.execute(
+  () => getFromAPI(),
+  {
+    onFallback: (level, error) => {
+      console.log(`降级到方案 ${level}: ${error.message}`)
+    },
+  }
+)
+
+// 装饰器模式
+const fetchWithRetry = withRetry(fetch, { maxAttempts: 3 })
+const fetchWithBreaker = withCircuitBreaker(fetch)
+const fetchWithFallback = withFallback(
+  () => fetch('/api/data'),
+  () => fetch('/api/backup'),
+  () => Promise.resolve({ default: true })
+)
+```
+
+### 🗜️ 数据压缩
+
+自动压缩大数据，减少存储空间占用：
+
+```typescript
+import { withCompression, Compressor } from '@ldesign/cache'
+
+// 使用压缩装饰器
+const compressedCache = withCompression(cache, {
+  enabled: true,
+  algorithm: 'gzip', // 'gzip' | 'deflate' | 'brotli' | 'none'
+  minSize: 1024, // 最小压缩大小（1KB）
+  level: 6, // 压缩级别（1-9）
+})
+
+// 存储大数据（会自动压缩）
+await compressedCache.set('largeData', bigJsonObject)
+const data = await compressedCache.get('largeData') // 自动解压
+
+// 直接使用压缩器
+const compressor = new Compressor({
+  algorithm: 'gzip',
+  minSize: 500,
+})
+
+const result = await compressor.compress(JSON.stringify(data))
+console.log(`压缩率: ${(result.ratio * 100).toFixed(1)}%`)
+console.log(`节省空间: ${result.originalSize - result.compressedSize} bytes`)
+
+// 获取压缩建议
+const stats = compressor.getCompressionStats(jsonString)
+console.log(`推荐算法: ${stats.recommendedAlgorithm}`)
+console.log(`预计节省: ${stats.potentialSavings} bytes`)
+```
+
+### 🚀 智能预取
+
+基于访问模式预测和预加载数据：
+
+```typescript
+import { withPrefetching, Prefetcher } from '@ldesign/cache'
+
+// 使用预取装饰器
+const smartCache = withPrefetching(cache, {
+  maxConcurrent: 3, // 最大并发预取数
+  timeout: 5000, // 预取超时
+  enablePredictive: true, // 启用预测性预取
+  predictionWindow: 5, // 预测窗口大小
+  minConfidence: 0.6, // 最小置信度
+  prefetchOnIdle: true, // 空闲时预取
+  idleThreshold: 2000, // 空闲阈值（毫秒）
+})
+
+// 添加预取规则
+smartCache.prefetcher.addRule({
+  id: 'user-profile',
+  trigger: (context) => {
+    // 当访问用户列表时，预取用户详情
+    return context.currentKey?.startsWith('users/list')
+  },
+  keys: (context) => {
+    // 根据上下文生成需要预取的键
+    return ['users/1', 'users/2', 'users/3']
+  },
+  fetcher: async (key) => {
+    // 获取数据的函数
+    return fetch(`/api/${key}`).then(r => r.json())
+  },
+  priority: 10, // 高优先级
+  strategy: 'eager', // 立即预取
+})
+
+// 访问数据（会触发预取和预测）
+const userList = await smartCache.get('users/list')
+// 后续访问可能已经被预取
+const user1 = await smartCache.get('users/1') // 即时返回
+
+// 手动预取
+await smartCache.prefetcher.prefetch(
+  ['posts/1', 'posts/2', 'posts/3'],
+  async (key) => fetch(`/api/${key}`).then(r => r.json()),
+  { priority: 5, strategy: 'lazy' }
+)
+
+// 获取预取统计
+const stats = smartCache.prefetcher.getStats()
+console.log(`预取任务: ${stats.totalTasks}`)
+console.log(`访问模式: ${stats.patterns}`)
+console.log(`预测: `, stats.predictions)
+```
+
+## 🎉 使用场景
 
 ### 1. 用户状态管理
 
