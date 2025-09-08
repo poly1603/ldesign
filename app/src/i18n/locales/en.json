@@ -75,7 +75,19 @@
     "performanceMonitor": "Performance Monitor",
     "errorHandling": "Error Handling",
     "cacheSystem": "Cache System",
-    "httpClient": "HTTP Client"
+    "httpClient": "HTTP Client",
+    "cryptoDemo": "Crypto Demo",
+    "cryptoDescription": "Experience powerful encryption and decryption features",
+    "cacheDemo": "Cache System",
+    "cacheDescription": "High-performance cache management solution",
+    "storeDemo": "State Management",
+    "storeDescription": "Elegant state management and data flow",
+    "httpDemo": "HTTP Client",
+    "httpDescription": "Powerful network request handling capabilities",
+    "apiDemo": "API Interface Management",
+    "apiDescription": "Unified interface calling and cache management",
+    "deviceDemo": "Device Detection",
+    "deviceDescription": "Powerful device information detection and monitoring features"
   },
   "home": {
     "title": "Welcome to LDesign Demo",
@@ -96,9 +108,18 @@
     },
     "buttons": {
       "learnMore": "Learn More",
-      "getStarted": "Get Started",
-      "viewDocs": "View Documentation",
-      "tryDemo": "Try Demo"
+      "getStarted": "🌈 Get Started",
+      "viewDocs": "💾 View Demo",
+      "tryDemo": "Try Demo",
+      "experienceRouter": "Experience Router →",
+      "templateEngine": "Template Engine →",
+      "colorSystem": "Color System →",
+      "i18nSystem": "Internationalization →",
+      "tryNow": "Try Now"
+    },
+    "descriptions": {
+      "powerfulFeatures": "Powerful features, elegant design",
+      "completeDemo": "Experience complete feature demonstrations"
     }
   },
   "user": {

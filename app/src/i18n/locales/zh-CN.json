@@ -75,7 +75,19 @@
     "performanceMonitor": "性能监控",
     "errorHandling": "错误处理",
     "cacheSystem": "缓存系统",
-    "httpClient": "HTTP 客户端"
+    "httpClient": "HTTP 客户端",
+    "cryptoDemo": "加密演示",
+    "cryptoDescription": "体验强大的加密解密功能",
+    "cacheDemo": "缓存系统",
+    "cacheDescription": "高性能的缓存管理解决方案",
+    "storeDemo": "状态管理",
+    "storeDescription": "优雅的状态管理和数据流",
+    "httpDemo": "HTTP 客户端",
+    "httpDescription": "强大的网络请求处理能力",
+    "apiDemo": "API 接口管理",
+    "apiDescription": "统一的接口调用和缓存管理",
+    "deviceDemo": "设备检测",
+    "deviceDescription": "强大的设备信息检测和监控功能"
   },
   "home": {
     "title": "欢迎使用 LDesign Demo",
@@ -96,9 +108,18 @@
     },
     "buttons": {
       "learnMore": "了解更多",
-      "getStarted": "开始使用",
-      "viewDocs": "查看文档",
-      "tryDemo": "试用演示"
+      "getStarted": "开始探索",
+      "viewDocs": "查看演示",
+      "tryDemo": "试用演示",
+      "experienceRouter": "体验路由 →",
+      "templateEngine": "模板引擎 →",
+      "colorSystem": "色彩系统 →",
+      "i18nSystem": "国际化 →",
+      "tryNow": "立即体验"
+    },
+    "descriptions": {
+      "powerfulFeatures": "强大的功能，优雅的设计",
+      "completeDemo": "体验完整的功能演示"
     }
   },
   "user": {

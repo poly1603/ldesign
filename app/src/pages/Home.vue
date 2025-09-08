@@ -14,11 +14,11 @@
         <div class="hero-actions">
           <router-link to="/color-scales" class="btn btn-primary btn-large">
             <span class="btn-icon">🌈</span>
-            开始探索
+            {{ t('home.buttons.getStarted') }}
           </router-link>
           <router-link to="/cache-demo" class="btn btn-secondary btn-large">
             <span class="btn-icon">💾</span>
-            查看演示
+            {{ t('home.buttons.viewDocs') }}
           </router-link>
         </div>
       </div>
@@ -29,7 +29,7 @@
       <section class="features-section">
         <div class="section-header">
           <h2 class="section-title">{{ t('home.features.title') }}</h2>
-          <p class="section-subtitle">强大的功能，优雅的设计</p>
+          <p class="section-subtitle">{{ t('home.descriptions.powerfulFeatures') }}</p>
         </div>
         <div class="features-grid">
           <div class="feature-card" data-feature="router">
@@ -40,7 +40,7 @@
             <p class="feature-description">{{ t('demo.routerSystem') }}</p>
             <div class="feature-footer">
               <router-link to="/login" class="feature-link">
-                体验路由 →
+                {{ t('home.buttons.experienceRouter') }}
               </router-link>
             </div>
           </div>
@@ -51,7 +51,7 @@
             </div>
             <p class="feature-description">{{ t('demo.templateEngine') }}</p>
             <div class="feature-footer">
-              <span class="feature-link">模板引擎 →</span>
+              <span class="feature-link">{{ t('home.buttons.templateEngine') }}</span>
             </div>
           </div>
           <div class="feature-card" data-feature="color">
@@ -62,7 +62,7 @@
             <p class="feature-description">{{ t('demo.colorSystem') }}</p>
             <div class="feature-footer">
               <router-link to="/color-scales" class="feature-link">
-                色彩系统 →
+                {{ t('home.buttons.colorSystem') }}
               </router-link>
             </div>
           </div>
@@ -73,7 +73,7 @@
             </div>
             <p class="feature-description">{{ t('demo.i18nSystem') }}</p>
             <div class="feature-footer">
-              <span class="feature-link">国际化 →</span>
+              <span class="feature-link">{{ t('home.buttons.i18nSystem') }}</span>
             </div>
           </div>
         </div>
@@ -83,55 +83,55 @@
       <section class="demos-section">
         <div class="section-header">
           <h2 class="section-title">{{ t('home.sections.engineApi') }}</h2>
-          <p class="section-subtitle">体验完整的功能演示</p>
+          <p class="section-subtitle">{{ t('home.descriptions.completeDemo') }}</p>
         </div>
         <div class="demos-grid">
           <div class="demo-card">
             <div class="demo-icon">🔐</div>
-            <h3>加密演示</h3>
-            <p>体验强大的加密解密功能</p>
+            <h3>{{ t('demo.cryptoDemo') }}</h3>
+            <p>{{ t('demo.cryptoDescription') }}</p>
             <router-link to="/crypto-demo" class="demo-link">
-              立即体验
+              {{ t('home.buttons.tryNow') }}
             </router-link>
           </div>
           <div class="demo-card">
             <div class="demo-icon">💾</div>
-            <h3>缓存系统</h3>
-            <p>高性能的缓存管理解决方案</p>
+            <h3>{{ t('demo.cacheDemo') }}</h3>
+            <p>{{ t('demo.cacheDescription') }}</p>
             <router-link to="/cache-demo" class="demo-link">
-              立即体验
+              {{ t('home.buttons.tryNow') }}
             </router-link>
           </div>
           <div class="demo-card">
             <div class="demo-icon">🗃️</div>
-            <h3>状态管理</h3>
-            <p>优雅的状态管理和数据流</p>
+            <h3>{{ t('demo.storeDemo') }}</h3>
+            <p>{{ t('demo.storeDescription') }}</p>
             <router-link to="/store-test" class="demo-link">
-              立即体验
+              {{ t('home.buttons.tryNow') }}
             </router-link>
           </div>
           <div class="demo-card">
             <div class="demo-icon">🌐</div>
-            <h3>HTTP 客户端</h3>
-            <p>强大的网络请求处理能力</p>
+            <h3>{{ t('demo.httpDemo') }}</h3>
+            <p>{{ t('demo.httpDescription') }}</p>
             <router-link to="/http-demo" class="demo-link">
-              立即体验
+              {{ t('home.buttons.tryNow') }}
             </router-link>
           </div>
           <div class="demo-card">
             <div class="demo-icon">🔌</div>
-            <h3>API 接口管理</h3>
-            <p>统一的接口调用和缓存管理</p>
+            <h3>{{ t('demo.apiDemo') }}</h3>
+            <p>{{ t('demo.apiDescription') }}</p>
             <router-link to="/api-demo" class="demo-link">
-              立即体验
+              {{ t('home.buttons.tryNow') }}
             </router-link>
           </div>
           <div class="demo-card">
             <div class="demo-icon">📱</div>
-            <h3>设备检测</h3>
-            <p>强大的设备信息检测和监控功能</p>
+            <h3>{{ t('demo.deviceDemo') }}</h3>
+            <p>{{ t('demo.deviceDescription') }}</p>
             <router-link to="/device-demo" class="demo-link">
-              立即体验
+              {{ t('home.buttons.tryNow') }}
             </router-link>
           </div>
         </div>

@@ -58,7 +58,7 @@ import { ref, computed } from 'vue'
 import { ThemeSelector, DarkModeToggle } from '@ldesign/color'
 import { useI18n, LanguageSwitcher } from '@ldesign/i18n/vue'
 import { SizeSwitcher } from '@ldesign/size/vue'
-import { getAvailableLocales } from './i18n/locales'
+import { getAvailableLocales } from './i18n'
 
 // 使用国际化功能
 const { t, locale } = useI18n()

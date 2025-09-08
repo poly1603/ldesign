@@ -1,68 +1,74 @@
 /**
- * 国际化插件配置
+ * 国际化插件配置（应用侧）
  *
- * 使用 @ldesign/i18n 的 createI18nEnginePlugin 创建 Engine 插件
- * 支持动态语言列表和翻译合并功能
+ * 移除 app/src/i18n/locales/index.ts 后，这里直接汇总语言包，
+ * 保持对外导出的 API 不变，避免影响现有调用。
  */
 
 import { createI18nEnginePlugin } from '@ldesign/i18n/vue'
-import { messages, getAvailableLocales, defaultLocale, fallbackLocale } from './locales'
+import zhCN from './locales/zh-CN.json'
+import en from './locales/en.json'
+import ja from './locales/ja.json'
 
-/**
- * 创建国际化引擎插件
- *
- * 配置了完整的国际化功能，包括语言包、缓存、自动检测、
- * 性能优化和错误处理等特性，支持语言状态持久化
- */
+// 基础语言设定
+export const defaultLocale = 'zh-CN'
+export const fallbackLocale = 'en'
+
+// 汇总消息
+export const messages = {
+  'zh-CN': zhCN,
+  en,
+  ja
+} as const
+
+// 轻量语言信息（仅涵盖当前应用使用的语言）
+const languageInfoMap: Record<string, { code: string; name: string; flag: string; nativeName?: string }> = {
+  'zh-CN': { code: 'zh-CN', name: '简体中文', flag: '', nativeName: '简体中文' },
+  en: { code: 'en', name: 'English', flag: '', nativeName: 'English' },
+  ja: { code: 'ja', name: '日本語', flag: '', nativeName: '日本語' }
+}
+
+// 供应用 UI 使用的可用语言列表
+export function getAvailableLocales() {
+  const codes = Object.keys(messages)
+  return codes.map(code => languageInfoMap[code] || { code, name: code.toUpperCase(), flag: '', nativeName: code.toUpperCase() })
+}
+
+// 创建国际化引擎插件
 export const i18nPlugin = createI18nEnginePlugin({
-  // 基础配置
-  locale: defaultLocale, // 默认语言
-  fallbackLocale: fallbackLocale, // 回退语言
-  messages, // 语言包
+  locale: defaultLocale,
+  fallbackLocale,
+  messages,
 
-  // 存储配置 - 持久化语言偏好
-  storage: 'localStorage', // 使用 localStorage 存储
-  storageKey: 'ldesign-app-locale', // 存储键名
+  // 持久化设置
+  storage: 'localStorage',
+  storageKey: 'ldesign-app-locale',
 
-  // 自动检测配置
-  autoDetect: true, // 启用自动语言检测
+  // 自动检测
+  autoDetect: true,
 
-  // 缓存配置 - 优化性能
+  // 明确启用语言，确保 UI 可见
+  enabledLanguages: ['zh-CN', 'en', 'ja'],
+
+  // 缓存与性能
   cache: {
-    enabled: true, // 启用缓存
-    maxSize: 500, // 缓存最大条目数
-    maxMemory: 10 * 1024 * 1024, // 最大内存使用 10MB
-    defaultTTL: 60 * 60 * 1000, // 默认缓存时间 1小时
-    enableTTL: true, // 启用 TTL
-    cleanupInterval: 5 * 60 * 1000, // 清理间隔 5分钟
-    memoryPressureThreshold: 0.8 // 内存压力阈值
+    enabled: true,
+    maxSize: 100,
+    defaultTTL: 60 * 60 * 1000,
+    maxMemory: 50 * 1024 * 1024,
+    enableTTL: true,
+    cleanupInterval: 5 * 60 * 1000,
+    memoryPressureThreshold: 0.8
   },
 
-  // 预加载配置
-  preload: [defaultLocale, fallbackLocale], // 预加载语言
-
-  // 性能配置
-  performance: false, // 关闭性能监控减少开销
-
-  // 开发工具配置
-  devtools: false, // 关闭开发工具
-
-  // 生命周期回调
   onLanguageChanged: (locale: string) => {
-    // 语言切换时的回调
     document.documentElement.lang = locale
-
-    // 可以在这里添加其他语言切换后的处理逻辑
-    // 已禁用调试日志输出
+    console.log(`[I18n] Language changed to: ${locale}`)
   },
 
   onLoadError: (error: Error) => {
-    // 语言包加载错误时的回调
-    console.error(`[I18n] Failed to load locale:`, error)
+    console.error('[I18n] Failed to load locale:', error)
   }
 })
 
-/**
- * 导出插件实例
- */
 export default i18nPlugin
