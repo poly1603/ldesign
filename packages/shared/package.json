@@ -23,35 +23,14 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./es/index-no-components.d.ts",
-      "import": "./es/index-no-components.js",
-      "require": "./lib/index-no-components.js"
-    },
-    "./hooks": {
-      "types": "./es/hooks/index.d.ts",
-      "import": "./es/hooks/index.js",
-      "require": "./lib/hooks/index.js"
-    },
-    "./utils": {
-      "types": "./es/utils/index.d.ts",
-      "import": "./es/utils/index.js",
-      "require": "./lib/utils/index.js"
-    },
-    "./types": {
-      "types": "./es/types/index.d.ts",
-      "import": "./es/types/index.js",
-      "require": "./lib/types/index.js"
-    },
-    "./es/*": "./es/*",
-    "./lib/*": "./lib/*",
-    "./dist/*": "./dist/*"
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
+    }
   },
-  "main": "lib/index-no-components.js",
-  "module": "es/index-no-components.js",
-  "types": "es/index-no-components.d.ts",
-  "browser": "dist/index.js",
-  "unpkg": "dist/index.min.js",
-  "jsdelivr": "dist/index.min.js",
+  "main": "lib/index.cjs",
+  "module": "es/index.js",
+  "types": "es/index.d.ts",
   "files": [
     "dist",
     "es",
@@ -61,7 +40,7 @@
     "package.json"
   ],
   "scripts": {
-    "build": "node scripts/build-fixed.js",
+    "build": "ldesign-builder build -f esm,cjs",
     "build:ldesign": "node scripts/build-with-ldesign.js",
     "build:fixed": "node scripts/build-fixed.js",
     "build:final": "node scripts/build-final.js",

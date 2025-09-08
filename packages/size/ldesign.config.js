@@ -5,8 +5,11 @@ export default defineConfig({
   root: process.cwd(),
   outDir: 'dist',
   
-  // 输出格式：ESM、CJS、UMD
-  formats: ['esm', 'cjs', 'umd'],
+  // 库类型：Vue 3
+  libraryType: 'vue3',
+  
+  // 输出格式：ESM、CJS
+  formats: ['esm', 'cjs'],
   
   // 生成类型声明文件
   dts: true,

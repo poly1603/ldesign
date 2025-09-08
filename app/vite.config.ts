@@ -86,12 +86,22 @@ export default defineConfig({
     }
   },
   build: {
-    target: 'es2015',
+    target: 'es2020',
     outDir: 'dist',
     assetsDir: 'assets',
-    sourcemap: true,
+    reportCompressedSize: false,
+    sourcemap: process.env.SOURCEMAP === 'true',
     rollupOptions: {
       output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('vue')) return 'vendor-vue'
+            return 'vendor'
+          }
+          if (id.includes(resolve(__dirname, '../packages/'))) {
+            return 'ldesign'
+          }
+        },
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js',
         assetFileNames: '[ext]/[name]-[hash].[ext]'
@@ -111,14 +121,15 @@ export default defineConfig({
     ]
   },
   esbuild: {
-    // 忽略 TypeScript 配置错误
+    // 蹇界暐 TypeScript 閰嶇疆閿欒
     tsconfigRaw: {
       compilerOptions: {
         target: 'es2020',
         module: 'esnext',
         moduleResolution: 'bundler'
       }
-    }
+    },
+    drop: process.env.DROP_LOGS === 'true' ? ['console','debugger'] : undefined
   },
   define: {
     __VUE_OPTIONS_API__: true,

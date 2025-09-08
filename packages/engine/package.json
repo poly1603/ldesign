@@ -15,22 +15,23 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./lib/src/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
     }
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "browser": "dist/index.min.js",
+  "main": "lib/index.cjs",
+  "module": "es/index.js",
+  "types": "lib/src/index.d.ts",
   "files": [
     "CHANGELOG.md",
     "README.md",
+    "es",
+    "lib",
     "dist"
   ],
   "scripts": {
-    "build": "node scripts/build.js",
+    "build": "ldesign-builder build -f esm,cjs",
     "build:clean": "node scripts/build.js --clean",
     "build:types": "node scripts/build.js --types",
     "build:analyze": "node scripts/analyze-bundle.js",

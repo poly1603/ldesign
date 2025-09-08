@@ -5,6 +5,7 @@ export default defineConfig({
   root: process.cwd(),
   entry: 'src/index.ts',
   outDir: 'dist',
+  libraryType: 'vue3',
 
   // 输出格式：ESM、CJS、UMD
   formats: ['esm', 'cjs', 'umd'],

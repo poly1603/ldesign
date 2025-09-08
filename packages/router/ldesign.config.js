@@ -22,6 +22,7 @@ export default {
     'vue',
     'vue-router',
     '@ldesign/shared',
+    '@ldesign/template',
   ],
 
   // UMD 格式的全局变量映射

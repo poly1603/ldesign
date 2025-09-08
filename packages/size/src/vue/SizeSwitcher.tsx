@@ -4,7 +4,7 @@
 
 /* eslint-disable */
 import type { SizeMode } from '../types'
-import { defineComponent, type PropType, computed, ref, onMounted, onUnmounted } from 'vue'
+import { defineComponent, type PropType, computed, ref, onMounted, onUnmounted, h } from 'vue'
 import { useSizeSwitcher } from './composables'
 import { getRecommendedSizeMode, createResponsiveSizeWatcher } from '../utils'
 import { Minus, Type, Plus, Maximize2 } from 'lucide-vue-next'
@@ -198,142 +198,142 @@ export const SizeSwitcher = defineComponent({
 
     const renderModeContent = (mode: SizeMode) => {
       const IconComponent = SIZE_MODE_ICONS[mode]
-      return (
-        <>
-          {props.showIcons && IconComponent && (
-            <IconComponent class="size-switcher__button-icon" size={16} />
-          )}
-          {props.showLabels && (
-            <span class="size-switcher__button-text">{getModeDisplayName(mode)}</span>
-          )}
-          {props.showDescriptions && (
-            <div class="size-switcher__description">{SIZE_MODE_DESCRIPTIONS[mode]}</div>
-          )}
-        </>
-      )
+      const children: any[] = []
+      if (props.showIcons && IconComponent) {
+        children.push(h(IconComponent, { class: 'size-switcher__button-icon', size: 16 }))
+      }
+      if (props.showLabels) {
+        children.push(h('span', { class: 'size-switcher__button-text' }, getModeDisplayName(mode)))
+      }
+      if (props.showDescriptions) {
+        children.push(h('div', { class: 'size-switcher__description' }, SIZE_MODE_DESCRIPTIONS[mode]))
+      }
+      return h('span', { class: 'size-switcher__mode-content' }, children)
     }
 
-    const renderButtonSwitcher = () => (
-      <div class="size-switcher__buttons">
-        {computedModes.value.map(mode => (
-          <button
-            key={mode}
-            class={[
-              'size-switcher__button',
-              {
-                'size-switcher__button--active': currentMode.value === mode,
-              },
-            ]}
-            disabled={props.disabled}
-            onClick={() => handleModeChange(mode)}
-            title={SIZE_MODE_DESCRIPTIONS[mode]}
-          >
-            {renderModeContent(mode)}
-          </button>
-        ))}
-      </div>
-    )
+    const renderButtonSwitcher = () =>
+      h(
+        'div',
+        { class: 'size-switcher__buttons' },
+        computedModes.value.map(mode =>
+          h(
+            'button',
+            {
+              key: mode,
+              class: [
+                'size-switcher__button',
+                { 'size-switcher__button--active': currentMode.value === mode }
+              ],
+              disabled: props.disabled,
+              onClick: () => handleModeChange(mode),
+              title: SIZE_MODE_DESCRIPTIONS[mode]
+            },
+            [renderModeContent(mode)]
+          )
+        )
+      )
 
-    const renderSegmentedSwitcher = () => (
-      <div class="size-switcher__segmented">
-        {computedModes.value.map(mode => (
-          <div
-            key={mode}
-            class={[
-              'size-switcher__segmented-item',
-              {
-                'size-switcher__segmented-item--active': currentMode.value === mode,
-              },
-            ]}
-            onClick={() => handleModeChange(mode)}
-            title={SIZE_MODE_DESCRIPTIONS[mode]}
-          >
-            {renderModeContent(mode)}
-          </div>
-        ))}
-      </div>
-    )
+    const renderSegmentedSwitcher = () =>
+      h(
+        'div',
+        { class: 'size-switcher__segmented' },
+        computedModes.value.map(mode =>
+          h(
+            'div',
+            {
+              key: mode,
+              class: [
+                'size-switcher__segmented-item',
+                { 'size-switcher__segmented-item--active': currentMode.value === mode }
+              ],
+              onClick: () => handleModeChange(mode),
+              title: SIZE_MODE_DESCRIPTIONS[mode]
+            },
+            [renderModeContent(mode)]
+          )
+        )
+      )
 
-    const renderSelectSwitcher = () => (
-      <select
-        class="size-switcher__select"
-        value={currentMode.value}
-        disabled={props.disabled}
-        onChange={(e: Event) => {
-          const target = e.target as HTMLSelectElement
-          handleModeChange(target.value as SizeMode)
-        }}
-      >
-        {computedModes.value.map(mode => (
-          <option key={mode} value={mode}>
-            {getModeDisplayName(mode)}
-          </option>
-        ))}
-      </select>
-    )
+    const renderSelectSwitcher = () =>
+      h(
+        'select',
+        {
+          class: 'size-switcher__select',
+          value: currentMode.value,
+          disabled: props.disabled,
+          onChange: (e: Event) => {
+            const target = e.target as HTMLSelectElement
+            handleModeChange(target.value as SizeMode)
+          }
+        },
+        computedModes.value.map(mode =>
+          h('option', { key: mode, value: mode }, getModeDisplayName(mode))
+        )
+      )
 
-    const renderRadioSwitcher = () => (
-      <div class="size-switcher__radios">
-        {computedModes.value.map(mode => (
-          <label key={mode} class="size-switcher__radio-label">
-            <input
-              type="radio"
-              class="size-switcher__radio"
-              name={`size-mode-${Math.random().toString(36).substr(2, 9)}`}
-              value={mode}
-              checked={currentMode.value === mode}
-              disabled={props.disabled}
-              onChange={() => handleModeChange(mode)}
-            />
-            <span class="size-switcher__radio-text">
-              {props.showIcons && SIZE_MODE_ICONS[mode] && (() => {
-                const IconComponent = SIZE_MODE_ICONS[mode]
-                return <IconComponent class="size-switcher__radio-icon" size={16} />
-              })()}
-              {props.showLabels && getModeDisplayName(mode)}
-            </span>
-            {props.showDescriptions && (
-              <div class="size-switcher__description">{SIZE_MODE_DESCRIPTIONS[mode]}</div>
-            )}
-          </label>
-        ))}
-      </div>
-    )
+    const renderRadioSwitcher = () =>
+      h(
+        'div',
+        { class: 'size-switcher__radios' },
+        computedModes.value.map(mode => {
+          const children: any[] = []
+          children.push(
+            h('input', {
+              type: 'radio',
+              class: 'size-switcher__radio',
+              name: `size-mode-${Math.random().toString(36).substr(2, 9)}`,
+              value: mode as any,
+              checked: currentMode.value === mode,
+              disabled: props.disabled,
+              onChange: () => handleModeChange(mode)
+            })
+          )
+          const labelChildren: any[] = []
+          if (props.showIcons && SIZE_MODE_ICONS[mode]) {
+            const IconComponent = SIZE_MODE_ICONS[mode]
+            labelChildren.push(h(IconComponent, { class: 'size-switcher__radio-icon', size: 16 }))
+          }
+          if (props.showLabels) {
+            labelChildren.push(getModeDisplayName(mode))
+          }
+          children.push(h('span', { class: 'size-switcher__radio-text' }, labelChildren))
+          if (props.showDescriptions) {
+            children.push(h('div', { class: 'size-switcher__description' }, SIZE_MODE_DESCRIPTIONS[mode]))
+          }
+          return h('label', { key: mode, class: 'size-switcher__radio-label' }, children)
+        })
+      )
 
     const renderSliderSwitcher = () => {
       const modeIndex = computedModes.value.indexOf(currentMode.value)
       const percentage = (modeIndex / (computedModes.value.length - 1)) * 100
 
-      return (
-        <div class="size-switcher__slider">
-          <span class="size-switcher__slider-label">
-            {computedModes.value[0] && getModeDisplayName(computedModes.value[0])}
-          </span>
-          <div
-            class="size-switcher__slider-track"
-            onClick={(e: MouseEvent) => {
+      const leftLabel =
+        computedModes.value[0] && getModeDisplayName(computedModes.value[0])
+      const rightLabel =
+        computedModes.value[computedModes.value.length - 1] &&
+        getModeDisplayName(computedModes.value[computedModes.value.length - 1])
+
+      return h('div', { class: 'size-switcher__slider' }, [
+        h('span', { class: 'size-switcher__slider-label' }, leftLabel as any),
+        h(
+          'div',
+          {
+            class: 'size-switcher__slider-track',
+            onClick: (e: MouseEvent) => {
               if (props.disabled) return
               const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
               const x = e.clientX - rect.left
-              const percentage = x / rect.width
-              const index = Math.round(percentage * (computedModes.value.length - 1))
+              const percent = x / rect.width
+              const index = Math.round(percent * (computedModes.value.length - 1))
               const mode = computedModes.value[index]
-              if (mode) {
-                handleModeChange(mode)
-              }
-            }}
-          >
-            <div
-              class="size-switcher__slider-thumb"
-              style={{ left: `${percentage}%` }}
-            />
-          </div>
-          <span class="size-switcher__slider-label">
-            {computedModes.value[computedModes.value.length - 1] &&
-              getModeDisplayName(computedModes.value[computedModes.value.length - 1])}
-          </span>
-        </div>
-      )
+              if (mode) handleModeChange(mode)
+            }
+          },
+          [h('div', { class: 'size-switcher__slider-thumb', style: { left: `${percentage}%` } })]
+        ),
+        h('span', { class: 'size-switcher__slider-label' }, rightLabel as any)
+      ])
     }
 
     const renderSwitcher = () => {
@@ -353,15 +353,8 @@ export const SizeSwitcher = defineComponent({
     }
 
     return () => {
-      if (!props.showSwitcher) {
-        return null
-      }
-
-      return (
-        <div class={computedClasses.value}>
-          {renderSwitcher()}
-        </div>
-      )
+      if (!props.showSwitcher) return null
+      return h('div', { class: computedClasses.value as any }, [renderSwitcher()])
     }
   },
 })
@@ -388,24 +381,13 @@ export const SizeIndicator = defineComponent({
   setup(props) {
     const { currentMode, currentModeDisplayName } = useSizeSwitcher()
 
-    return () => (
-      <div class={`size-indicator ${props.className}`}>
-        {props.showMode && (
-          <span class="size-indicator__mode">
-            当前尺寸:
-            {' '}
-            {currentModeDisplayName.value}
-          </span>
-        )}
-        {props.showScale && (
-          <span class="size-indicator__scale">
-            (
-            {currentMode.value}
-            )
-          </span>
-        )}
-      </div>
-    )
+    return () =>
+      h('div', { class: `size-indicator ${props.className}` }, [
+        props.showMode &&
+          h('span', { class: 'size-indicator__mode' }, ['当前尺寸: ', currentModeDisplayName.value as any]),
+        props.showScale &&
+          h('span', { class: 'size-indicator__scale' }, ['(', currentMode.value as any, ')'])
+      ])
   },
 })
 
@@ -438,20 +420,16 @@ export const SizeControlPanel = defineComponent({
       emit('change', mode)
     }
 
-    return () => (
-      <div class={`size-control-panel ${props.className}`}>
-        {props.showIndicator && (
-          <SizeIndicator class="size-control-panel__indicator" />
-        )}
-        {props.showSwitcher && (
-          <SizeSwitcher
-            class="size-control-panel__switcher"
-            switcherStyle={props.switcherStyle}
-            onChange={handleChange}
-          />
-        )}
-      </div>
-    )
+    return () =>
+      h('div', { class: `size-control-panel ${props.className}` }, [
+        props.showIndicator && h(SizeIndicator as any, { class: 'size-control-panel__indicator' }),
+        props.showSwitcher &&
+          h(SizeSwitcher as any, {
+            class: 'size-control-panel__switcher',
+            switcherStyle: props.switcherStyle,
+            onChange: handleChange
+          })
+      ])
   },
 })
 

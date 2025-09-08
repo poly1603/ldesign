@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I18n 最终测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .success {
+            background: rgba(40, 167, 69, 0.2);
+            border-color: rgba(40, 167, 69, 0.5);
+        }
+        .error {
+            background: rgba(220, 53, 69, 0.2);
+            border-color: rgba(220, 53, 69, 0.5);
+        }
+        .warning {
+            background: rgba(255, 193, 7, 0.2);
+            border-color: rgba(255, 193, 7, 0.5);
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        button {
+            padding: 12px 24px;
+            margin: 8px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.online {
+            background: rgba(40, 167, 69, 0.8);
+            color: white;
+        }
+        .status.offline {
+            background: rgba(220, 53, 69, 0.8);
+            color: white;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        h2 {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        .checklist li:before {
+            content: "⏳";
+            margin-right: 12px;
+            font-size: 1.2em;
+        }
+        .checklist li.checked:before {
+            content: "✅";
+        }
+        .checklist li.failed:before {
+            content: "❌";
+        }
+        .result-box {
+            text-align: center;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 LDesign I18n 最终测试</h1>
+        
+        <div class="test-section">
+            <h2>📱 应用状态检查</h2>
+            <p><strong>应用地址:</strong> <a href="http://localhost:8889/" target="_blank" style="color: #87CEEB;">http://localhost:8889/</a>
+            <span id="app-status" class="status offline">检查中...</span></p>
+            <button onclick="checkAppStatus()">🔄 重新检查</button>
+            <button onclick="openApp()">🚀 在新窗口打开</button>
+        </div>
+
+        <div class="test-section">
+            <h2>✅ 修复验证清单</h2>
+            <ul class="checklist" id="checklist">
+                <li id="check-1">应用正常启动，无编译错误</li>
+                <li id="check-2">页面显示正确的中文翻译（不是键名）</li>
+                <li id="check-3">导航栏显示"首页"和"登录"</li>
+                <li id="check-4">主页标题显示"欢迎使用 LDesign Demo"</li>
+                <li id="check-5">语言切换器组件可见</li>
+                <li id="check-6">可以切换到英文</li>
+                <li id="check-7">英文切换后内容正确显示</li>
+                <li id="check-8">控制台无错误信息</li>
+            </ul>
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="markAllPassed()">✅ 全部通过</button>
+                <button onclick="markSomeFailed()">⚠️ 部分问题</button>
+                <button onclick="markAllFailed()">❌ 仍有问题</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📺 应用预览</h2>
+            <iframe id="app-frame" src="http://localhost:8889/"></iframe>
+            <div style="text-align: center; margin-top: 15px;">
+                <button onclick="refreshFrame()">🔄 刷新预览</button>
+                <button onclick="toggleFrame()">👁️ 显示/隐藏</button>
+            </div>
+        </div>
+
+        <div class="test-section" id="result-section" style="display: none;">
+            <h2>📊 测试结果</h2>
+            <div id="result-content" class="result-box"></div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {};
+
+        // 检查应用状态
+        async function checkAppStatus() {
+            const statusEl = document.getElementById('app-status');
+            statusEl.textContent = '检查中...';
+            statusEl.className = 'status offline';
+
+            try {
+                const response = await fetch('http://localhost:8889/', { 
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+                statusEl.textContent = '在线';
+                statusEl.className = 'status online';
+                markCheck('check-1', true);
+            } catch (error) {
+                statusEl.textContent = '离线';
+                statusEl.className = 'status offline';
+                markCheck('check-1', false);
+            }
+        }
+
+        // 标记检查项
+        function markCheck(id, passed) {
+            const item = document.getElementById(id);
+            if (passed) {
+                item.className = 'checked';
+                testResults[id] = true;
+            } else {
+                item.className = 'failed';
+                testResults[id] = false;
+            }
+        }
+
+        // 全部通过
+        function markAllPassed() {
+            for (let i = 1; i <= 8; i++) {
+                markCheck(`check-${i}`, true);
+            }
+            showResult('success', '🎉 修复成功！', '多语言功能已完全恢复正常。所有翻译都正确显示，语言切换功能正常工作。');
+        }
+
+        // 部分问题
+        function markSomeFailed() {
+            // 模拟部分通过
+            for (let i = 1; i <= 5; i++) {
+                markCheck(`check-${i}`, true);
+            }
+            for (let i = 6; i <= 8; i++) {
+                markCheck(`check-${i}`, false);
+            }
+            showResult('warning', '⚠️ 部分修复', '基础翻译功能已恢复，但语言切换可能还有问题。建议进一步检查语言切换器组件。');
+        }
+
+        // 仍有问题
+        function markAllFailed() {
+            for (let i = 1; i <= 8; i++) {
+                markCheck(`check-${i}`, false);
+            }
+            showResult('error', '❌ 需要进一步修复', '多语言功能仍有问题。建议检查控制台错误信息，确认 i18n 插件是否正确加载。');
+        }
+
+        // 显示结果
+        function showResult(type, title, message) {
+            const resultSection = document.getElementById('result-section');
+            const resultContent = document.getElementById('result-content');
+            
+            resultSection.style.display = 'block';
+            resultSection.className = `test-section ${type}`;
+            
+            const passed = Object.values(testResults).filter(r => r === true).length;
+            const total = Object.keys(testResults).length;
+            
+            resultContent.innerHTML = `
+                <h3>${title}</h3>
+                <p>${message}</p>
+                <p><strong>测试结果:</strong> ${passed}/${total} 项通过</p>
+                <p><strong>时间:</strong> ${new Date().toLocaleString()}</p>
+            `;
+        }
+
+        // 其他功能
+        function openApp() {
+            window.open('http://localhost:8889/', '_blank');
+        }
+
+        function refreshFrame() {
+            const frame = document.getElementById('app-frame');
+            frame.src = frame.src;
+        }
+
+        function toggleFrame() {
+            const frame = document.getElementById('app-frame');
+            frame.style.display = frame.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // 页面加载时检查应用状态
+        window.addEventListener('load', () => {
+            checkAppStatus();
+        });
+    </script>
+</body>
+</html>

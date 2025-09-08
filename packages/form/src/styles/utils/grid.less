@@ -1,0 +1,100 @@
+/**
+ * 栅格系统样式
+ * 
+ * @author LDesign Team
+ * @since 1.0.0
+ */
+
+// 栅格容器
+.ldesign-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: calc(var(--ldesign-form-gutter) / -2);
+  margin-right: calc(var(--ldesign-form-gutter) / -2);
+  
+  // 对齐方式
+  &--start {
+    justify-content: flex-start;
+  }
+  
+  &--center {
+    justify-content: center;
+  }
+  
+  &--end {
+    justify-content: flex-end;
+  }
+  
+  &--space-between {
+    justify-content: space-between;
+  }
+  
+  &--space-around {
+    justify-content: space-around;
+  }
+  
+  &--space-evenly {
+    justify-content: space-evenly;
+  }
+  
+  // 垂直对齐
+  &--top {
+    align-items: flex-start;
+  }
+  
+  &--middle {
+    align-items: center;
+  }
+  
+  &--bottom {
+    align-items: flex-end;
+  }
+}
+
+// 栅格列
+.ldesign-col {
+  position: relative;
+  padding-left: calc(var(--ldesign-form-gutter) / 2);
+  padding-right: calc(var(--ldesign-form-gutter) / 2);
+  
+  // 基础栅格
+  &-1 { width: 8.33333333%; }
+  &-2 { width: 16.66666667%; }
+  &-3 { width: 25%; }
+  &-4 { width: 33.33333333%; }
+  &-5 { width: 41.66666667%; }
+  &-6 { width: 50%; }
+  &-7 { width: 58.33333333%; }
+  &-8 { width: 66.66666667%; }
+  &-9 { width: 75%; }
+  &-10 { width: 83.33333333%; }
+  &-11 { width: 91.66666667%; }
+  &-12 { width: 100%; }
+  
+  // 偏移
+  &-offset-1 { margin-left: 8.33333333%; }
+  &-offset-2 { margin-left: 16.66666667%; }
+  &-offset-3 { margin-left: 25%; }
+  &-offset-4 { margin-left: 33.33333333%; }
+  &-offset-5 { margin-left: 41.66666667%; }
+  &-offset-6 { margin-left: 50%; }
+  &-offset-7 { margin-left: 58.33333333%; }
+  &-offset-8 { margin-left: 66.66666667%; }
+  &-offset-9 { margin-left: 75%; }
+  &-offset-10 { margin-left: 83.33333333%; }
+  &-offset-11 { margin-left: 91.66666667%; }
+  
+  // 排序
+  &-order-1 { order: 1; }
+  &-order-2 { order: 2; }
+  &-order-3 { order: 3; }
+  &-order-4 { order: 4; }
+  &-order-5 { order: 5; }
+  &-order-6 { order: 6; }
+  &-order-7 { order: 7; }
+  &-order-8 { order: 8; }
+  &-order-9 { order: 9; }
+  &-order-10 { order: 10; }
+  &-order-11 { order: 11; }
+  &-order-12 { order: 12; }
+}

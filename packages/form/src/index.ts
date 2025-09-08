@@ -1,62 +1,106 @@
 /**
- * LDesign Form 表单插件系统主入口
+ * LDesign Form 组件库入口文件
  * 
- * @description
- * 统一导出所有功能模块，提供完整的表单解决方案
+ * 提供完整的表单解决方案，包括：
+ * - 表单组件
+ * - 验证系统
+ * - 布局系统
+ * - 自定义 Hooks
+ * - 工具函数
+ * 
+ * @author LDesign Team
+ * @since 1.0.0
  */
 
-// === 类型定义 ===
-export * from './types';
+import type { App } from 'vue'
 
-// === 核心库 ===
-export * from './core';
+// 导出所有组件
+export * from './components'
 
-// === Vue 3 适配器（按需导出） ===
-// export * from './vue';
+// 导出所有 Hooks
+export * from './hooks'
 
-// === 工具函数 ===
-export * from './utils';
+// 导出核心模块
+export * from './core'
 
-// === 验证器 ===
-export * from './validators';
+// 导出工具函数
+export * from './utils'
 
-// === 兼容层（确保现有代码正常工作） ===
-export * from './legacy';
+// 导出类型定义
+export * from './types'
 
-// === 版本信息 ===
-export const version = '1.0.0';
+// 导出样式
+import './styles/index.less'
 
-// === 默认导出（Vue 插件） ===
-// import { App } from 'vue';
-// import { install } from './vue';
+// 组件列表
+import {
+  Form,
+  FormItem,
+  Input,
+  Textarea,
+  Select,
+  Checkbox,
+  CheckboxGroup,
+  Radio,
+  RadioGroup,
+  Switch,
+  DatePicker,
+  Upload,
+} from './components'
 
-// export default {
-//   install,
-//   version
-// };
+const components = [
+  Form,
+  FormItem,
+  Input,
+  Textarea,
+  Select,
+  Checkbox,
+  CheckboxGroup,
+  Radio,
+  RadioGroup,
+  Switch,
+  DatePicker,
+  Upload,
+]
 
-// === 安装函数（支持全局安装） ===
-// export { install };
+/**
+ * 安装插件函数
+ * 
+ * @param app Vue 应用实例
+ * @param options 安装选项
+ */
+export function install(app: App, options?: Record<string, any>): void {
+  // 注册所有组件
+  components.forEach(component => {
+    if (component.name) {
+      app.component(component.name, component)
+    }
+  })
 
-// === 类型声明增强 ===
-declare module '@vue/runtime-core' {
-  interface ComponentCustomProperties {
-    $form: any; // 将在实现时提供具体类型
+  // 设置全局配置
+  if (options) {
+    app.config.globalProperties.$ldesignForm = options
   }
 }
 
-declare module 'vue' {
-  interface GlobalComponents {
-    LDesignForm: any; // 将在实现时提供具体类型
-    LDesignFormItem: any; // 将在实现时提供具体类型
-    FieldArray: any; // 将在实现时提供具体类型
-    FormProvider: any; // 将在实现时提供具体类型
-    // TSX 组件
-    LDesignButton: any;
-    LDesignInput: any;
-  }
+// 默认导出
+export default {
+  install,
+  version: '1.0.0',
 }
 
-// === TSX 组件导出（用于测试 TSX 打包） ===
-// 暂时注释掉，因为 @ldesign/builder 可能不支持 TSX
-// export * from './vue/components/tsx'
+// 单独导出组件，支持按需引入
+export {
+  Form,
+  FormItem,
+  Input,
+  Textarea,
+  Select,
+  Checkbox,
+  CheckboxGroup,
+  Radio,
+  RadioGroup,
+  Switch,
+  DatePicker,
+  Upload,
+}

@@ -19,6 +19,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.tsbuildinfo",
     "jsx": "preserve",
     "strict": true,
     "noUnusedLocals": false,

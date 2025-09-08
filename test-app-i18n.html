@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDesign App I18n 测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-title {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border-left: 4px solid #007acc;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #f8fff9;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #fff8f8;
+        }
+        .warning {
+            border-left-color: #ffc107;
+            background: #fffef8;
+        }
+        iframe {
+            width: 100%;
+            height: 800px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .controls {
+            margin: 15px 0;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #f0f0f0;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.online {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .checklist li:before {
+            content: "☐ ";
+            margin-right: 8px;
+            color: #666;
+        }
+        .checklist li.checked:before {
+            content: "✅ ";
+            color: #28a745;
+        }
+        .checklist li.failed:before {
+            content: "❌ ";
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌐 LDesign App 多语言功能测试</h1>
+    
+    <div class="test-section">
+        <h2 class="test-title">📱 应用状态检查</h2>
+        <div class="test-result">
+            <strong>应用地址:</strong> <a href="http://localhost:8889/" target="_blank">http://localhost:8889/</a>
+            <span id="app-status" class="status offline">检查中...</span>
+        </div>
+        <div class="controls">
+            <button onclick="checkAppStatus()">🔄 重新检查应用状态</button>
+            <button onclick="openApp()">🚀 在新窗口打开应用</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="test-title">✅ 多语言功能检查清单</h2>
+        <div class="test-result">
+            <strong>请在应用中手动验证以下功能:</strong>
+            <ul class="checklist" id="checklist">
+                <li id="check-1">应用正常启动和加载</li>
+                <li id="check-2">页面显示中文翻译内容（默认语言）</li>
+                <li id="check-3">找到语言切换器组件（通常在导航栏右侧）</li>
+                <li id="check-4">语言切换器显示当前语言信息</li>
+                <li id="check-5">点击语言切换器可以看到可用语言列表</li>
+                <li id="check-6">切换到英语，页面内容变为英文</li>
+                <li id="check-7">导航栏文本正确切换（首页、登录等）</li>
+                <li id="check-8">底部版权信息正确切换</li>
+                <li id="check-9">刷新页面后语言设置保持不变</li>
+                <li id="check-10">切换回中文，所有内容恢复中文显示</li>
+                <li id="check-11">控制台无错误信息</li>
+                <li id="check-12">语言切换动画流畅，无闪烁</li>
+            </ul>
+        </div>
+        <div class="controls">
+            <button onclick="markAllChecked()">✅ 全部通过</button>
+            <button onclick="resetChecklist()">🔄 重置清单</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="test-title">📺 应用预览</h2>
+        <div class="test-result">
+            <strong>说明:</strong> 在下方预览框中测试多语言功能，或点击"在新窗口打开"进行完整测试。
+        </div>
+        <iframe id="app-frame" src="http://localhost:8889/"></iframe>
+        <div class="controls">
+            <button onclick="refreshFrame()">🔄 刷新预览</button>
+            <button onclick="toggleFrame()">👁️ 显示/隐藏预览</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="test-title">📋 测试报告</h2>
+        <div id="test-report" class="test-result">
+            <strong>测试状态:</strong> 等待手动验证...
+        </div>
+        <div class="controls">
+            <button onclick="generateReport()">📊 生成测试报告</button>
+            <button onclick="exportReport()">💾 导出报告</button>
+        </div>
+    </div>
+
+    <script>
+        let checklistStatus = {};
+
+        // 检查应用状态
+        async function checkAppStatus() {
+            const statusEl = document.getElementById('app-status');
+            statusEl.textContent = '检查中...';
+            statusEl.className = 'status offline';
+
+            try {
+                const response = await fetch('http://localhost:8889/', { 
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+                statusEl.textContent = '在线';
+                statusEl.className = 'status online';
+                markChecklistItem('check-1', true);
+            } catch (error) {
+                statusEl.textContent = '离线';
+                statusEl.className = 'status offline';
+                markChecklistItem('check-1', false);
+            }
+        }
+
+        // 打开应用
+        function openApp() {
+            window.open('http://localhost:8889/', '_blank');
+        }
+
+        // 刷新预览框架
+        function refreshFrame() {
+            const frame = document.getElementById('app-frame');
+            frame.src = frame.src;
+        }
+
+        // 切换预览框架显示
+        function toggleFrame() {
+            const frame = document.getElementById('app-frame');
+            frame.style.display = frame.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // 标记检查项
+        function markChecklistItem(id, passed) {
+            const item = document.getElementById(id);
+            if (passed) {
+                item.className = 'checked';
+                checklistStatus[id] = true;
+            } else {
+                item.className = 'failed';
+                checklistStatus[id] = false;
+            }
+        }
+
+        // 全部标记为通过
+        function markAllChecked() {
+            for (let i = 1; i <= 12; i++) {
+                markChecklistItem(`check-${i}`, true);
+            }
+            generateReport();
+        }
+
+        // 重置清单
+        function resetChecklist() {
+            for (let i = 1; i <= 12; i++) {
+                const item = document.getElementById(`check-${i}`);
+                item.className = '';
+                checklistStatus[`check-${i}`] = null;
+            }
+            updateReport('等待手动验证...');
+        }
+
+        // 生成测试报告
+        function generateReport() {
+            const total = 12;
+            const passed = Object.values(checklistStatus).filter(status => status === true).length;
+            const failed = Object.values(checklistStatus).filter(status => status === false).length;
+            const pending = total - passed - failed;
+
+            let reportText = `测试完成！通过: ${passed}/${total}`;
+            if (failed > 0) {
+                reportText += `, 失败: ${failed}`;
+            }
+            if (pending > 0) {
+                reportText += `, 待测试: ${pending}`;
+            }
+
+            let status = 'success';
+            if (failed > 0) {
+                status = 'error';
+            } else if (pending > 0) {
+                status = 'warning';
+            }
+
+            updateReport(reportText, status);
+        }
+
+        // 更新报告
+        function updateReport(text, type = 'info') {
+            const reportEl = document.getElementById('test-report');
+            reportEl.innerHTML = `<strong>测试状态:</strong> ${text}`;
+            reportEl.className = `test-result ${type}`;
+        }
+
+        // 导出报告
+        function exportReport() {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const report = {
+                timestamp: new Date().toISOString(),
+                testName: 'LDesign App I18n 功能测试',
+                results: checklistStatus,
+                summary: {
+                    total: 12,
+                    passed: Object.values(checklistStatus).filter(status => status === true).length,
+                    failed: Object.values(checklistStatus).filter(status => status === false).length
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `i18n-test-report-${timestamp}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 页面加载时检查应用状态
+        window.addEventListener('load', () => {
+            checkAppStatus();
+        });
+
+        // 监听点击事件来手动标记检查项
+        document.addEventListener('click', (e) => {
+            if (e.target.tagName === 'LI' && e.target.id.startsWith('check-')) {
+                const currentClass = e.target.className;
+                if (currentClass === '') {
+                    markChecklistItem(e.target.id, true);
+                } else if (currentClass === 'checked') {
+                    markChecklistItem(e.target.id, false);
+                } else {
+                    e.target.className = '';
+                    checklistStatus[e.target.id] = null;
+                }
+                generateReport();
+            }
+        });
+    </script>
+</body>
+</html>

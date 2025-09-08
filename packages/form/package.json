@@ -29,31 +29,15 @@
   "bugs": {
     "url": "https://github.com/ldesign/form/issues"
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/index.umd.js",
+  "module": "dist/index.umd.js",
+  "types": "dist/src/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./core": {
-      "types": "./dist/core/index.d.ts",
-      "import": "./dist/core/index.js",
-      "require": "./dist/core/index.cjs"
-    },
-    "./vue": {
-      "types": "./dist/vue/index.d.ts",
-      "import": "./dist/vue/index.js",
-      "require": "./dist/vue/index.cjs"
-    },
-    "./legacy": {
-      "types": "./dist/legacy/index.d.ts",
-      "import": "./dist/legacy/index.js",
-      "require": "./dist/legacy/index.cjs"
-    },
-    "./styles": "./dist/styles/index.css"
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/index.umd.js",
+      "require": "./dist/index.umd.js"
+    }
   },
   "files": [
     "README.md",
@@ -89,6 +73,7 @@
     "vue": "^3.3.0"
   },
   "dependencies": {
+    "lit": "^3.0.0",
     "lodash-es": "^4.17.21"
   },
   "devDependencies": {
@@ -100,10 +85,10 @@
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "@vitejs/plugin-vue": "^4.0.0",
-    "@vue/eslint-config-typescript": "^12.0.0",
-    "@vue/test-utils": "^2.4.0",
     "@vitest/coverage-v8": "^1.0.0",
     "@vitest/ui": "^1.0.0",
+    "@vue/eslint-config-typescript": "^12.0.0",
+    "@vue/test-utils": "^2.4.0",
     "eslint": "^8.0.0",
     "eslint-plugin-vue": "^9.0.0",
     "jsdom": "^22.0.0",
