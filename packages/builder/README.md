@@ -5,7 +5,7 @@
 ## ✨ 特性
 
 - 🚀 **双打包核心支持** - 支持 Rollup 和 Rolldown，可灵活切换
-- 📦 **多格式输出** - 自动输出 ESM (es/)、CJS (lib/)、UMD (dist/) 三种格式
+- 📦 **多格式输出** - 自动输出 ESM (es/)、CJS (cjs/)、UMD (dist/) 三种格式
 - 🎯 **多入口构建** - 默认将 src/ 下所有源文件作为入口，保留模块结构
 - 📝 **TypeScript 优先** - 完整的 TypeScript 支持，自动分发 .d.ts 到各格式目录
 - ⚡ **智能配置** - 基于项目类型自动生成最佳配置，零配置可用
@@ -37,7 +37,7 @@ yarn add @ldesign/builder --dev
 ```javascript
 import { build } from '@ldesign/builder'
 
-// 零配置构建 - 自动多入口，输出到 es/lib/dist
+// 零配置构建 - 自动多入口，输出到 es/cjs/dist
 await build()
 
 // 或指定入口
@@ -128,6 +128,31 @@ node bin/ldesign-builder.js examples --root examples
 - Lit/Web Components: `node bin/ldesign-builder.js examples --filter lit-components`
 - Angular（基础）: `node bin/ldesign-builder.js examples --filter angular-lib`
 
+### 验证所有示例
+
+提供了一个一键验证脚本，用于批量构建并测试所有示例项目。
+
+- 在 PowerShell 中运行：
+
+```
+# 运行全部示例（默认）
+pwsh -File packages/builder/scripts/verify-examples.ps1
+
+# 仅验证部分示例
+pwsh -File packages/builder/scripts/verify-examples.ps1 -Examples react-components,vue3-components
+
+# 仅构建不测试
+pwsh -File packages/builder/scripts/verify-examples.ps1 -NoTest
+
+# 仅测试（跳过构建）
+pwsh -File packages/builder/scripts/verify-examples.ps1 -NoBuild
+
+# 发现失败时立即中断
+pwsh -File packages/builder/scripts/verify-examples.ps1 -FailFast
+```
+
+成功示例会显示 build:OK / test:OK，总结中如有 FAIL，脚本会以非零状态码退出，便于在 CI 中使用。
+
 ### 输出目录结构
 
 默认情况下，构建会产生以下目录结构：
@@ -140,7 +165,7 @@ project/
 │   └── utils/
 │       ├── helper.js
 │       └── helper.d.ts
-├── lib/          # CJS 格式，保留模块结构
+├── cjs/          # CJS 格式，保留模块结构
 │   ├── index.cjs
 │   ├── index.d.ts
 │   └── utils/
@@ -172,7 +197,7 @@ project/
 
     // CJS 格式 - 保持目录结构，生成类型声明
     cjs: {
-      dir: 'lib',
+      dir: 'cjs',
       format: 'cjs',
       preserveStructure: true,
       sourcemap: true,
@@ -368,7 +393,7 @@ export default defineConfig({
 
     // CJS 格式输出到 lib/ 目录
     cjs: {
-      dir: 'lib',
+      dir: 'cjs',
       format: 'cjs',
       preserveStructure: true,
       dts: true

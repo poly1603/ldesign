@@ -112,6 +112,18 @@ async function main() {
   ]
   
   
+  // 额外检查：构建的 JS 产物是否存在
+  const coreFiles = [
+    ['es/index.js', 'ESM 主文件'],
+    ['cjs/index.cjs', 'CJS 主文件'],
+    ['dist/index.umd.js', 'UMD 主文件']
+  ]
+  coreFiles.forEach(([file, desc]) => {
+    if (!checkFileExists(file, desc)) {
+      allPassed = false
+    }
+  })
+
   console.log('\n📄 检查可能的其他文件...')
   possibleFiles.forEach(([file, desc]) => {
     if (fs.existsSync(file)) {
