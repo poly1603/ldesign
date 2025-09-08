@@ -119,7 +119,8 @@ export class CryptoUtils {
     let result = ''
 
     for (let i = 0; i < length; i++) {
-      result += charset[bytes[i] % charset.length]
+      const byte = bytes.at(i) ?? 0
+      result += charset.charAt(byte % charset.length)
     }
 
     return result
@@ -211,7 +212,9 @@ export class CryptoUtils {
     const result = Buffer.alloc(dataBuffer.length)
 
     for (let i = 0; i < dataBuffer.length; i++) {
-      result[i] = dataBuffer[i] ^ keyBuffer[i % keyBuffer.length]
+      const db = dataBuffer[i]!
+      const kb = keyBuffer[i % keyBuffer.length]!
+      result[i] = db ^ kb
     }
 
     return result
@@ -331,8 +334,10 @@ export class CryptoUtils {
     const bytes = CryptoUtils.randomBytes(16)
 
     // 设置版本号 (4) 和变体位
-    bytes[6] = (bytes[6] & 0x0F) | 0x40
-    bytes[8] = (bytes[8] & 0x3F) | 0x80
+    const b6 = bytes[6]!
+    const b8 = bytes[8]!
+    bytes[6] = (b6 & 0x0F) | 0x40
+    bytes[8] = (b8 & 0x3F) | 0x80
 
     const hex = bytes.toString('hex')
     return [
@@ -354,7 +359,8 @@ export class CryptoUtils {
     let id = ''
 
     for (let i = 0; i < size; i++) {
-      id += alphabet[bytes[i] % alphabet.length]
+      const byte = bytes.at(i) ?? 0
+      id += alphabet.charAt(byte % alphabet.length)
     }
 
     return id
@@ -451,7 +457,7 @@ export class CryptoUtils {
 
       return { valid: true, payload }
     }
-    catch (error) {
+    catch {
       return { valid: false, error: 'Token parsing failed' }
     }
   }

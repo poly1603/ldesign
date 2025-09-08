@@ -338,7 +338,7 @@ export class BuildToolDetector {
 
     // 按分数排序，选择分数最高的作为主要工具
     scoredTools.sort((a, b) => b.score - a.score)
-    const primaryTool = { ...scoredTools[0].tool, isPrimary: true }
+    const primaryTool = { ...scoredTools[0]!.tool, isPrimary: true }
 
     return primaryTool
   }
@@ -428,7 +428,10 @@ export class BuildToolDetector {
       return {}
     }
 
-    const configFile = tool.configFiles[0] // 使用第一个配置文件
+    const configFile = tool.configFiles[0]
+    if (!configFile) {
+      return {}
+    }
     const configPath = resolve(this.projectRoot, configFile)
 
     try {
@@ -481,12 +484,14 @@ export class BuildToolDetector {
   private extractEntryPoints(content: string): string[] {
     const entryMatches = content.match(/entry[:\\s]*["']([^"']+)["']/g)
     if (entryMatches) {
-      return entryMatches
-        .map((match) => {
-          const result = match.match(/["']([^"']+)["']/)
-          return result ? result[1] : ''
-        })
-        .filter(Boolean)
+      return (
+        entryMatches
+          .map((match) => {
+            const result = match.match(/["']([^"']+)["']/)
+            return result ? result[1] : ''
+          })
+          .filter(Boolean) as string[]
+      )
     }
     return []
   }

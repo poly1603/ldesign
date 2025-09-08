@@ -125,15 +125,30 @@
       "import": "./dist/console/index.js",
       "require": "./dist/console/index.cjs"
     },
-    "./builder": {
-      "types": "./dist/builder/index.d.ts",
-      "import": "./dist/builder/index.js",
-      "require": "./dist/builder/index.cjs"
-    },
     "./project": {
       "types": "./dist/project/index.d.ts",
       "import": "./dist/project/index.js",
       "require": "./dist/project/index.cjs"
+    },
+    "./cache": {
+      "types": "./dist/cache/index.d.ts",
+      "import": "./dist/cache/index.js",
+      "require": "./dist/cache/index.cjs"
+    },
+    "./events": {
+      "types": "./dist/events/index.d.ts",
+      "import": "./dist/events/index.js",
+      "require": "./dist/events/index.cjs"
+    },
+    "./validation": {
+      "types": "./dist/validation/index.d.ts",
+      "import": "./dist/validation/index.js",
+      "require": "./dist/validation/index.cjs"
+    },
+    "./iconfont": {
+      "types": "./dist/iconfont/index.d.ts",
+      "import": "./dist/iconfont/index.js",
+      "require": "./dist/iconfont/index.cjs"
     }
   },
   "main": "./dist/index.cjs",
@@ -152,8 +167,8 @@
     "build:watch": "tsup --watch",
     "dev": "tsup --watch",
     "type-check": "tsc --noEmit",
-    "lint": "eslint --config ../../eslint.config.js \"src/**/*.{ts,tsx,js,jsx}\" \"tests/**/*.{ts,tsx,js,jsx}\" --fix",
-    "lint:check": "eslint --config ../../eslint.config.js \"src/**/*.{ts,tsx,js,jsx}\" \"tests/**/*.{ts,tsx,js,jsx}\"",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "lint:check": "eslint . --ext .ts,.tsx,.js,.jsx",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:run": "vitest run",

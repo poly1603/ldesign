@@ -233,19 +233,19 @@ describe('stringUtils', () => {
   describe('escapeHtml', () => {
     it('应该转义HTML特殊字符', () => {
       expect(StringUtils.escapeHtml('<div>Hello & "World"</div>')).toBe(
-        '&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;'
+        '&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;',
       )
     })
 
     it('应该处理单引号', () => {
-      expect(StringUtils.escapeHtml("It's a test")).toBe('It&#39;s a test')
+      expect(StringUtils.escapeHtml('It\'s a test')).toBe('It&#39;s a test')
     })
   })
 
   describe('unescapeHtml', () => {
     it('应该反转义HTML特殊字符', () => {
       expect(StringUtils.unescapeHtml('&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;')).toBe(
-        '<div>Hello & "World"</div>'
+        '<div>Hello & "World"</div>',
       )
     })
   })

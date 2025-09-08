@@ -87,7 +87,7 @@ export class AsyncUtils {
       }
     }
 
-    throw lastError!
+    throw (lastError instanceof Error ? lastError : new Error(String(lastError)))
   }
 
   /**
@@ -106,7 +106,10 @@ export class AsyncUtils {
     let index = 0
 
     const executeTask = async (taskIndex: number) => {
-      const result = await tasks[taskIndex]()
+      const task = tasks[taskIndex]
+      if (!task)
+        return
+      const result = await task()
       results[taskIndex] = result
     }
 
@@ -197,8 +200,11 @@ export class AsyncUtils {
     fn: (item: T, index: number) => Promise<boolean>,
   ): Promise<T | undefined> {
     for (let i = 0; i < items.length; i++) {
-      if (await fn(items[i], i)) {
-        return items[i]
+      const item = items[i]
+      if (item === undefined)
+        continue
+      if (await fn(item, i)) {
+        return item
       }
     }
     return undefined
@@ -215,7 +221,10 @@ export class AsyncUtils {
     fn: (item: T, index: number) => Promise<boolean>,
   ): Promise<boolean> {
     for (let i = 0; i < items.length; i++) {
-      if (!(await fn(items[i], i))) {
+      const item = items[i]
+      if (item === undefined)
+        continue
+      if (!(await fn(item, i))) {
         return false
       }
     }
@@ -233,7 +242,10 @@ export class AsyncUtils {
     fn: (item: T, index: number) => Promise<boolean>,
   ): Promise<boolean> {
     for (let i = 0; i < items.length; i++) {
-      if (await fn(items[i], i)) {
+      const item = items[i]
+      if (item === undefined)
+        continue
+      if (await fn(item, i)) {
         return true
       }
     }
@@ -254,7 +266,10 @@ export class AsyncUtils {
   ): Promise<R> {
     let accumulator = initialValue
     for (let i = 0; i < items.length; i++) {
-      accumulator = await fn(accumulator, items[i], i)
+      const current = items[i]
+      if (current === undefined)
+        continue
+      accumulator = await fn(accumulator, current, i)
     }
     return accumulator
   }

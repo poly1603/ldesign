@@ -336,6 +336,7 @@ export class TemplateManager extends EventEmitter {
 
     // 简单的表达式评估（仅支持基本比较）
     try {
+      // eslint-disable-next-line no-new-func
       return new Function(`"use strict"; return (${evaluatedCondition})`)()
     }
     catch {
@@ -458,8 +459,8 @@ export class TemplateManager extends EventEmitter {
 
   private async executeHooks(
     hooks: string[],
-    workingDir: string,
-    variables: Record<string, any>,
+    _workingDir: string,
+    _variables: Record<string, any>,
   ): Promise<void> {
     for (const hook of hooks) {
       try {

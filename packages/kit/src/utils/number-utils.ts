@@ -76,7 +76,7 @@ export class NumberUtils {
     }
 
     const [, numStr, unit] = match
-    const num = Number.parseFloat(numStr)
+    const num = Number.parseFloat(numStr || '0')
 
     const units: Record<string, number> = {
       B: 1,
@@ -98,7 +98,8 @@ export class NumberUtils {
       YiB: 1024 ** 8,
     }
 
-    const multiplier = units[unit.toUpperCase()] || 1
+    const unitKey = (unit || 'B').toUpperCase()
+    const multiplier = units[unitKey] || 1
     return Math.round(num * multiplier)
   }
 
@@ -315,7 +316,7 @@ export class NumberUtils {
     const sorted = [...numbers].sort((a, b) => a - b)
     const mid = Math.floor(sorted.length / 2)
 
-    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
+    return sorted.length % 2 === 0 ? (sorted[mid - 1]! + sorted[mid]!) / 2 : sorted[mid]!
   }
 
   /**

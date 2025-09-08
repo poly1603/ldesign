@@ -21,7 +21,7 @@ global.testUtils = {
 
     const tempDir = path.join(
       os.tmpdir(),
-      `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     )
     fs.mkdirSync(tempDir, { recursive: true })
 
@@ -101,6 +101,6 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason)
 })
 
-process.on('uncaughtException', error => {
+process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error)
 })

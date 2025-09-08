@@ -180,7 +180,7 @@ export class NotificationManager {
       switch (currentPlatform) {
         case 'darwin':
           // macOS - 检查通知权限
-          const { stdout } = await execAsync(
+          await execAsync(
             'osascript -e "display notification \\"test\\" with title \\"test\\""',
           )
           return 'granted'
@@ -223,15 +223,15 @@ export class NotificationManager {
 
     switch (currentPlatform) {
       case 'darwin':
-        console.log('请在系统偏好设置 > 通知中允许此应用发送通知')
+        process.stdout.write('请在系统偏好设置 > 通知中允许此应用发送通知\n')
         break
 
       case 'win32':
-        console.log('请在 Windows 设置 > 系统 > 通知和操作中允许此应用发送通知')
+        process.stdout.write('请在 Windows 设置 > 系统 > 通知和操作中允许此应用发送通知\n')
         break
 
       case 'linux':
-        console.log('请安装 libnotify-bin: sudo apt-get install libnotify-bin')
+        process.stdout.write('请安装 libnotify-bin: sudo apt-get install libnotify-bin\n')
         break
     }
 
@@ -244,12 +244,12 @@ export class NotificationManager {
   async createSystemTray(options: SystemTrayOptions): Promise<void> {
     // 简化的系统托盘实现
     // 实际项目中应该使用 electron 或其他 GUI 框架
-    console.log(`System tray created: ${options.title}`)
+    process.stdout.write(`System tray created: ${options.title}\n`)
 
     if (options.menu) {
-      console.log('Tray menu items:')
+      process.stdout.write('Tray menu items:\n')
       options.menu.forEach((item, index) => {
-        console.log(`  ${index + 1}. ${item.label}`)
+        process.stdout.write(`  ${index + 1}. ${item.label}\n`)
       })
     }
   }

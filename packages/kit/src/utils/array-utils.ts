@@ -104,10 +104,10 @@ export class ArrayUtils {
     const result: T[] = []
     for (const item of array) {
       if (Array.isArray(item)) {
-        result.push(...ArrayUtils.flattenDeep(item))
+        result.push(...(ArrayUtils.flattenDeep<T>(item as any[]) as T[]))
       }
       else {
-        result.push(item)
+        result.push(item as T)
       }
     }
     return result
@@ -122,7 +122,7 @@ export class ArrayUtils {
     if (arrays.length === 0)
       return []
     if (arrays.length === 1)
-      return arrays[0]
+      return arrays[0] ?? [] as T[]
 
     return arrays.reduce((acc, array) => acc.filter(item => array.includes(item)))
   }
@@ -175,7 +175,9 @@ export class ArrayUtils {
     const result = [...array]
     for (let i = result.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
-      ;[result[i], result[j]] = [result[j], result[i]]
+      const temp = result[i]!
+      result[i] = result[j]!
+      result[j] = temp
     }
     return result
   }
@@ -253,7 +255,7 @@ export class ArrayUtils {
     const result: T[][] = []
 
     for (let i = 0; i < maxLength; i++) {
-      result.push(arrays.map(arr => arr[i]))
+      result.push(arrays.map(arr => arr[i] as T))
     }
 
     return result
@@ -272,7 +274,7 @@ export class ArrayUtils {
     const result: T[][] = []
 
     for (let i = 0; i < maxLength; i++) {
-      result.push(array.map(arr => arr[i]))
+      result.push(array.map(arr => arr[i] as T))
     }
 
     return result

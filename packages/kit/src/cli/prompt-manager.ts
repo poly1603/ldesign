@@ -2,6 +2,7 @@
  * 交互式提示管理器
  */
 
+import type { Interface } from 'node:readline'
 import type { PromptManagerOptions, PromptOptions } from '../types'
 import { createInterface } from 'node:readline'
 
@@ -10,7 +11,7 @@ import { createInterface } from 'node:readline'
  */
 export class PromptManager {
   private options: Required<PromptManagerOptions>
-  private readline: any
+  private readline?: Interface
 
   constructor(options: PromptManagerOptions = {}) {
     this.options = {
@@ -31,7 +32,7 @@ export class PromptManager {
   /**
    * 通用提示方法
    */
-  async prompt<T = any>(options: PromptOptions): Promise<T> {
+  async prompt<T = unknown>(options: PromptOptions): Promise<T> {
     if (!this.options.enabled) {
       return options.initial as T
     }
@@ -71,7 +72,7 @@ export class PromptManager {
     return new Promise((resolve) => {
       const prompt = defaultValue ? `${message} (${defaultValue}): ` : `${message}: `
 
-      this.readline.question(prompt, (answer: string) => {
+      this.readline!.question(prompt, (answer: string) => {
         resolve(answer.trim() || defaultValue || '')
       })
     })
@@ -89,11 +90,12 @@ export class PromptManager {
       const prompt = `${message}: `
 
       // 隐藏输入
-      const stdin = process.stdin
-      const originalMode = (stdin as any).isTTY ? (stdin as any).setRawMode : null
+      type RawTTY = NodeJS.ReadStream & { setRawMode?: (mode: boolean) => void }
+      const stdin = process.stdin as RawTTY
+      const originalMode = stdin.isTTY && typeof stdin.setRawMode === 'function' ? stdin.setRawMode : null
 
       if (originalMode) {
-        ;(stdin as any).setRawMode(true)
+        stdin.setRawMode!(true)
       }
 
       process.stdout.write(prompt)
@@ -108,7 +110,7 @@ export class PromptManager {
           case '\r':
           case '\u0004': // Ctrl+D
             if (originalMode) {
-              ;(stdin as any).setRawMode(false)
+              stdin.setRawMode!(false)
             }
             stdin.removeListener('data', onData)
             process.stdout.write('\n')
@@ -117,7 +119,7 @@ export class PromptManager {
 
           case '\u0003': // Ctrl+C
             if (originalMode) {
-              ;(stdin as any).setRawMode(false)
+              stdin.setRawMode!(false)
             }
             stdin.removeListener('data', onData)
             process.stdout.write('\n')
@@ -157,7 +159,7 @@ export class PromptManager {
       return defaultValue
     }
 
-    return /^y(es)?$/i.test(answer)
+    return /^y(?:es)?$/i.test(answer)
   }
 
   /**
@@ -174,10 +176,10 @@ export class PromptManager {
       throw new Error('No choices available and prompts are disabled')
     }
 
-    console.log(message)
+    this.options.output.write(`${message}\n`)
     choices.forEach((choice, index) => {
       const description = choice.description ? ` - ${choice.description}` : ''
-      console.log(`  ${index + 1}. ${choice.title}${description}`)
+      this.options.output.write(`  ${index + 1}. ${choice.title}${description}\n`)
     })
 
     while (true) {
@@ -188,7 +190,7 @@ export class PromptManager {
         return choices[index].value
       }
 
-      console.log('无效选择，请重试')
+      this.options.output.write('无效选择，请重试\n')
     }
   }
 
@@ -203,12 +205,12 @@ export class PromptManager {
       return []
     }
 
-    console.log(message)
-    console.log('(使用空格分隔多个选择，例如: 1 3 5)')
+    this.options.output.write(`${message}\n`)
+    this.options.output.write('(使用空格分隔多个选择，例如: 1 3 5)\n')
 
     choices.forEach((choice, index) => {
       const description = choice.description ? ` - ${choice.description}` : ''
-      console.log(`  ${index + 1}. ${choice.title}${description}`)
+      this.options.output.write(`  ${index + 1}. ${choice.title}${description}\n`)
     })
 
     while (true) {
@@ -222,14 +224,14 @@ export class PromptManager {
         return indices
           .map(i => choices[i])
           .filter(choice => choice)
-          .map(choice => choice.value)
+          .map(choice => choice!.value)
       }
 
       if (answer.trim() === '') {
         return []
       }
 
-      console.log('无效选择，请重试')
+      this.options.output.write('无效选择，请重试\n')
     }
   }
 
@@ -245,11 +247,11 @@ export class PromptManager {
       const answer = await this.input(message, defaultValue?.toString())
       const num = Number(answer)
 
-      if (!isNaN(num)) {
+      if (!Number.isNaN(num)) {
         return num
       }
 
-      console.log('请输入有效的数字')
+      this.options.output.write('请输入有效的数字\n')
     }
   }
 
@@ -262,8 +264,8 @@ export class PromptManager {
     }
 
     // 简化版自动完成，实际实现可能需要更复杂的逻辑
-    console.log(message)
-    console.log('可选项:', choices.join(', '))
+    this.options.output.write(`${message}\n`)
+    this.options.output.write(`可选项: ${choices.join(', ')}\n`)
 
     while (true) {
       const answer = await this.input('请输入', defaultValue)
@@ -280,11 +282,11 @@ export class PromptManager {
         return matches[0]
       }
       else if (matches.length > 1) {
-        console.log('多个匹配项:', matches.join(', '))
-        console.log('请输入更具体的内容')
+        this.options.output.write(`多个匹配项: ${matches.join(', ')}\n`)
+        this.options.output.write('请输入更具体的内容\n')
       }
       else {
-        console.log('没有匹配项，请重试')
+        this.options.output.write('没有匹配项，请重试\n')
       }
     }
   }
@@ -304,14 +306,14 @@ export class PromptManager {
       throw new Error('No choices available and prompts are disabled')
     }
 
-    console.log(message)
-    console.log(`输入关键词搜索，或直接输入数字选择`)
+    this.options.output.write(`${message}\n`)
+    this.options.output.write(`输入关键词搜索，或直接输入数字选择\n`)
 
     while (true) {
       // 显示当前选项
       choices.forEach((choice, index) => {
         const description = choice.description ? ` - ${choice.description}` : ''
-        console.log(`  ${index + 1}. ${choice.title}${description}`)
+        this.options.output.write(`  ${index + 1}. ${choice.title}${description}\n`)
       })
 
       const answer = await this.input(searchPlaceholder)
@@ -330,14 +332,14 @@ export class PromptManager {
       )
 
       if (filtered.length === 0) {
-        console.log('没有找到匹配项，请重试')
+        this.options.output.write('没有找到匹配项，请重试\n')
         continue
       }
       else if (filtered.length === 1 && filtered[0]) {
         return filtered[0].value
       }
       else {
-        console.log(`找到 ${filtered.length} 个匹配项:`)
+        this.options.output.write(`找到 ${filtered.length} 个匹配项:\n`)
         choices = filtered
       }
     }

@@ -16,7 +16,7 @@ import { SchemaValidator } from './schema-validator'
  * 配置管理器类
  */
 export class ConfigManager extends EventEmitter {
-  private config: Record<string, any> = {}
+  private config: Record<string, unknown> = {}
   private schema?: ConfigSchema
   private options: Required<ConfigOptions>
   private loader: ConfigLoader
@@ -132,11 +132,11 @@ export class ConfigManager extends EventEmitter {
   /**
    * 合并配置
    */
-  private mergeConfigs(...configs: Record<string, any>[]): Record<string, any> {
-    return configs.reduce((merged, config) => {
+  private mergeConfigs(...configs: Record<string, unknown>[]): Record<string, unknown> {
+    return configs.reduce<Record<string, unknown>>((merged, config) => {
       return ObjectUtils.deepMerge(merged, config, {
         mergeArrays: this.options.mergeArrays,
-      })
+      }) as Record<string, unknown>
     }, {})
   }
 
@@ -185,8 +185,8 @@ export class ConfigManager extends EventEmitter {
   /**
    * 获取配置值
    */
-  get<T = any>(key: string, defaultValue?: T): T {
-    return ObjectUtils.get(this.config, key, defaultValue)
+  get<T = unknown>(key: string, defaultValue?: T): T {
+    return ObjectUtils.get(this.config, key, defaultValue as unknown as T) as T
   }
 
   /**
@@ -235,14 +235,14 @@ export class ConfigManager extends EventEmitter {
   /**
    * 获取所有配置
    */
-  getAll(): Record<string, any> {
-    return ObjectUtils.deepClone(this.config)
+  getAll(): Record<string, unknown> {
+    return ObjectUtils.deepClone(this.config) as Record<string, unknown>
   }
 
   /**
    * 设置多个配置
    */
-  setAll(config: Record<string, any>): void {
+  setAll(config: Record<string, unknown>): void {
     if (this.frozen) {
       throw new Error('Configuration is frozen and cannot be modified')
     }

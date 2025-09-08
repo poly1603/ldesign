@@ -298,7 +298,7 @@ export class NotificationUtils {
     // 这里应该有一个方法来删除过期的通知
     // 由于当前的 NotificationManager 没有提供这个方法，我们只是记录
     const expired = history.filter(n => n.timestamp < cutoff)
-    console.log(`Found ${expired.length} expired notifications`)
+    process.stdout.write(`Found ${expired.length} expired notifications\n`)
   }
 
   /**

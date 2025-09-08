@@ -50,7 +50,16 @@ export class ArchiveManager extends EventEmitter {
     const sourceList = Array.isArray(sources) ? sources : [sources]
     const mergedOptions = { ...this.options, ...options }
 
-    return new Promise(async (resolve, reject) => {
+    // 预先获取需要添加的条目，避免在 Promise 执行器中使用 await
+    const entries: Array<{ source: string, isDir: boolean }> = []
+    for (const source of sourceList) {
+      if (await FileSystem.exists(source)) {
+        const stat = await FileSystem.stat(source)
+        entries.push({ source, isDir: stat.isDirectory() })
+      }
+    }
+
+    return new Promise((resolve, reject) => {
       try {
         const output = createWriteStream(outputPath)
         const archive = archiver('zip', {
@@ -107,17 +116,13 @@ export class ArchiveManager extends EventEmitter {
         // 连接流
         archive.pipe(output)
 
-        // 添加文件/目录
-        for (const source of sourceList) {
-          if (await FileSystem.exists(source)) {
-            const stat = await FileSystem.stat(source)
-
-            if (stat.isDirectory()) {
-              archive.directory(source, false)
-            }
-            else {
-              archive.file(source, { name: source })
-            }
+        // 添加文件/目录（无需在此处 await）
+        for (const { source, isDir } of entries) {
+          if (isDir) {
+            archive.directory(source, false)
+          }
+          else {
+            archive.file(source, { name: source })
           }
         }
 
@@ -141,7 +146,16 @@ export class ArchiveManager extends EventEmitter {
     const sourceList = Array.isArray(sources) ? sources : [sources]
     const mergedOptions = { ...this.options, ...options }
 
-    return new Promise(async (resolve, reject) => {
+    // 预先获取需要添加的条目，避免在 Promise 执行器中使用 await
+    const entries: Array<{ source: string, isDir: boolean }> = []
+    for (const source of sourceList) {
+      if (await FileSystem.exists(source)) {
+        const stat = await FileSystem.stat(source)
+        entries.push({ source, isDir: stat.isDirectory() })
+      }
+    }
+
+    return new Promise((resolve, reject) => {
       try {
         const output = createWriteStream(outputPath)
         const archive = archiver('tar', {
@@ -188,17 +202,13 @@ export class ArchiveManager extends EventEmitter {
         // 连接流
         archive.pipe(output)
 
-        // 添加文件/目录
-        for (const source of sourceList) {
-          if (await FileSystem.exists(source)) {
-            const stat = await FileSystem.stat(source)
-
-            if (stat.isDirectory()) {
-              archive.directory(source, false)
-            }
-            else {
-              archive.file(source, { name: source })
-            }
+        // 添加文件/目录（无需在此处 await）
+        for (const { source, isDir } of entries) {
+          if (isDir) {
+            archive.directory(source, false)
+          }
+          else {
+            archive.file(source, { name: source })
           }
         }
 
@@ -217,7 +227,7 @@ export class ArchiveManager extends EventEmitter {
   async extractZip(
     archivePath: string,
     outputDir: string,
-    options: ExtractionOptions = {},
+    _options: ExtractionOptions = {},
   ): Promise<ArchiveStats> {
     // Remove unused variable
     // const mergedOptions = { ...this.options, ...options }

@@ -90,7 +90,7 @@ export class PackageUtils {
     isExact: boolean
   } {
     const exactMatch = range.match(/^(\d+\.\d+\.\d+)$/)
-    if (exactMatch) {
+    if (exactMatch && exactMatch[1]) {
       return {
         operator: '=',
         version: exactMatch[1],
@@ -98,11 +98,11 @@ export class PackageUtils {
       }
     }
 
-    const rangeMatch = range.match(/^([~^>=<]+)?(.+)$/)
+    const rangeMatch = range.match(/^([~^><=]+)?\s*([^\s~^><=].*)$/)
     if (rangeMatch) {
       return {
         operator: rangeMatch[1] || '=',
-        version: rangeMatch[2],
+        version: rangeMatch[2] || '',
         isExact: false,
       }
     }
@@ -332,7 +332,7 @@ export class PackageUtils {
     try {
       const installed = await packageManager.getInstalledPackages({ depth: 0 })
 
-      const tree = {
+      const tree: { name: string, version: string, dependencies: Record<string, any> } = {
         name: 'root',
         version: '1.0.0',
         dependencies: {},
@@ -456,7 +456,7 @@ export class PackageUtils {
    * 获取包的下载统计
    */
   static async getDownloadStats(
-    packageName: string,
+    _packageName: string,
     period = 'last-month',
   ): Promise<{
     downloads: number

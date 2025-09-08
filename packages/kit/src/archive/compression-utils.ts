@@ -192,7 +192,7 @@ export class CompressionUtils {
           compressionTime,
         })
       }
-      catch (error) {
+      catch {
         // 跳过不支持的算法
         continue
       }
@@ -217,8 +217,7 @@ export class CompressionUtils {
     level: CompressionLevel = 6,
     concurrency: number = 4,
   ): Promise<Array<{ input: string, output: string, success: boolean, error?: string }>> {
-    const results: Array<{ input: string, output: string, success: boolean, error?: string }> = []
-    const semaphore = new Array(concurrency).fill(null)
+    const semaphore = Array.from({ length: concurrency }, () => null as number | null)
 
     const processFile = async (file: { input: string, output: string }) => {
       try {
@@ -278,17 +277,13 @@ export class CompressionUtils {
   static async detectCompressionType(filePath: string): Promise<CompressionAlgorithm | null> {
     const buffer = Buffer.alloc(10)
     const file = await FileSystem.readFile(filePath)
+    const fileBuf: Buffer = Buffer.isBuffer(file) ? (file as Buffer) : Buffer.from(file as string | Uint8Array)
 
-    if (file.length < 10)
+    if (fileBuf.length < 10)
       return null
 
     // Copy first 10 bytes to buffer for magic number detection
-    if (Buffer.isBuffer(file)) {
-      file.copy(buffer, 0, 0, 10)
-    }
-    else {
-      Buffer.from(file).copy(buffer, 0, 0, 10)
-    }
+    fileBuf.copy(buffer, 0, 0, 10)
 
     // GZIP 魔数: 1f 8b
     if (buffer[0] === 0x1F && buffer[1] === 0x8B) {
@@ -305,7 +300,7 @@ export class CompressionUtils {
 
     // Brotli 没有标准魔数，但可以尝试解压来检测
     try {
-      const testData = Buffer.isBuffer(file) ? file.slice(0, 100) : Buffer.from(file).slice(0, 100)
+      const testData = fileBuf.slice(0, 100)
       await this.decompress(testData, 'brotli')
       return 'brotli'
     }

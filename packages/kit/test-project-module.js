@@ -23,7 +23,8 @@ async function testProjectDetection() {
     console.log('BuildTool.TSUP:', BuildTool.TSUP)
 
     console.log('✅ Project module test passed!')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ Project module test failed:', error.message)
     process.exit(1)
   }

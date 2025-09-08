@@ -20,7 +20,7 @@ export interface MemoryCacheOptions {
 /**
  * 内存缓存条目
  */
-interface MemoryCacheEntry<T = any> extends CacheEntry<T> {
+interface MemoryCacheEntry<T = unknown> extends CacheEntry<T> {
   accessTime: number
   accessCount: number
 }
@@ -59,7 +59,7 @@ export class MemoryCache extends EventEmitter implements CacheStore {
   /**
    * 获取缓存值
    */
-  async get<T = any>(key: string): Promise<T | undefined> {
+  async get<T = unknown>(key: string): Promise<T | undefined> {
     const entry = this.cache.get(key)
 
     if (!entry) {
@@ -89,7 +89,7 @@ export class MemoryCache extends EventEmitter implements CacheStore {
   /**
    * 设置缓存值
    */
-  async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
+  async set<T = unknown>(key: string, value: T, ttl?: number): Promise<void> {
     const now = Date.now()
     const expiresAt = ttl ? now + ttl * 1000 : undefined
 
@@ -157,7 +157,7 @@ export class MemoryCache extends EventEmitter implements CacheStore {
   /**
    * 批量获取
    */
-  async mget<T = any>(keys: string[]): Promise<Map<string, T>> {
+  async mget<T = unknown>(keys: string[]): Promise<Map<string, T>> {
     const results = new Map<string, T>()
 
     for (const key of keys) {
@@ -173,7 +173,7 @@ export class MemoryCache extends EventEmitter implements CacheStore {
   /**
    * 批量设置
    */
-  async mset<T = any>(entries: Map<string, T>, ttl?: number): Promise<void> {
+  async mset<T = unknown>(entries: Map<string, T>, ttl?: number): Promise<void> {
     for (const [key, value] of entries) {
       await this.set(key, value, ttl)
     }
@@ -364,7 +364,6 @@ export class MemoryCache extends EventEmitter implements CacheStore {
    * 清理过期条目
    */
   private cleanup(): void {
-    const now = Date.now()
     const expiredKeys: string[] = []
 
     for (const [key, entry] of this.cache) {
@@ -418,7 +417,7 @@ export class MemoryCache extends EventEmitter implements CacheStore {
   /**
    * 估算值的大小
    */
-  private estimateValueSize(value: any): number {
+  private estimateValueSize(value: unknown): number {
     if (value === null || value === undefined) {
       return 8
     }

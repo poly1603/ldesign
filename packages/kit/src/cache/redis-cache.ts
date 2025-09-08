@@ -38,8 +38,8 @@ export interface RedisClient {
   mget: (...keys: string[]) => Promise<(string | null)[]>
   mset: (...keyValues: string[]) => Promise<string>
   quit: () => Promise<string>
-  on: (event: string, listener: (...args: any[]) => void) => void
-  off: (event: string, listener: (...args: any[]) => void) => void
+  on: (event: string, listener: (...args: unknown[]) => void) => void
+  off: (event: string, listener: (...args: unknown[]) => void) => void
 }
 
 /**
@@ -122,7 +122,7 @@ export class RedisCache extends EventEmitter implements CacheStore {
   /**
    * 获取缓存值
    */
-  async get<T = any>(key: string): Promise<T | undefined> {
+  async get<T = unknown>(key: string): Promise<T | undefined> {
     try {
       await this.ensureConnection()
 
@@ -159,7 +159,7 @@ export class RedisCache extends EventEmitter implements CacheStore {
   /**
    * 设置缓存值
    */
-  async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
+  async set<T = unknown>(key: string, value: T, ttl?: number): Promise<void> {
     try {
       await this.ensureConnection()
 
@@ -262,7 +262,7 @@ export class RedisCache extends EventEmitter implements CacheStore {
   /**
    * 批量获取
    */
-  async mget<T = any>(keys: string[]): Promise<Map<string, T>> {
+  async mget<T = unknown>(keys: string[]): Promise<Map<string, T>> {
     try {
       await this.ensureConnection()
 
@@ -276,13 +276,17 @@ export class RedisCache extends EventEmitter implements CacheStore {
       const results = new Map<string, T>()
 
       for (let i = 0; i < keys.length; i++) {
+        const originalKey = keys[i]
         const value = values[i]
-        if (value !== null) {
+        if (!originalKey)
+          continue
+        const v = value ?? null
+        if (v !== null) {
           try {
-            results.set(keys[i], JSON.parse(value) as T)
+            results.set(originalKey, JSON.parse(v) as T)
           }
           catch {
-            results.set(keys[i], value as T)
+            results.set(originalKey, v as T)
           }
         }
       }
@@ -299,7 +303,7 @@ export class RedisCache extends EventEmitter implements CacheStore {
   /**
    * 批量设置
    */
-  async mset<T = any>(entries: Map<string, T>, ttl?: number): Promise<void> {
+  async mset<T = unknown>(entries: Map<string, T>, ttl?: number): Promise<void> {
     try {
       await this.ensureConnection()
 
@@ -481,7 +485,7 @@ export class RedisCache extends EventEmitter implements CacheStore {
   /**
    * 使用ioredis创建实例
    */
-  static createWithIORedis(redisClient: any, options?: Partial<RedisCacheOptions>): RedisCache {
+  static createWithIORedis(redisClient: unknown, options?: Partial<RedisCacheOptions>): RedisCache {
     const cache = new RedisCache(options)
     cache.client = redisClient
     cache.connected = true
@@ -491,7 +495,7 @@ export class RedisCache extends EventEmitter implements CacheStore {
   /**
    * 使用node_redis创建实例
    */
-  static createWithNodeRedis(redisClient: any, options?: Partial<RedisCacheOptions>): RedisCache {
+  static createWithNodeRedis(redisClient: unknown, options?: Partial<RedisCacheOptions>): RedisCache {
     const cache = new RedisCache(options)
     cache.client = redisClient
     cache.connected = true

@@ -117,14 +117,14 @@ export class DirectoryUtils {
       const children2 = new Map(node2.children!.map(child => [child.name, child]))
 
       // 找出只在第一个目录中存在的文件
-      for (const [name, child] of children1) {
+      for (const [name] of children1) {
         if (!children2.has(name)) {
           comparison.onlyInFirst.push(join(currentPath, name))
         }
       }
 
       // 找出只在第二个目录中存在的文件
-      for (const [name, child] of children2) {
+      for (const [name] of children2) {
         if (!children1.has(name)) {
           comparison.onlyInSecond.push(join(currentPath, name))
         }

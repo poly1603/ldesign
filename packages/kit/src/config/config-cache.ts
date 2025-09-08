@@ -23,13 +23,13 @@ export interface ConfigCacheOptions {
  * 配置缓存条目
  */
 export interface ConfigCacheEntry {
-  value: any
+  value: unknown
   hash: string
   timestamp: number
   ttl?: number
   version: number
   dependencies: string[]
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
 }
 
 /**
@@ -37,8 +37,8 @@ export interface ConfigCacheEntry {
  */
 export interface ConfigChange {
   path: string
-  oldValue: any
-  newValue: any
+  oldValue: unknown
+  newValue: unknown
   timestamp: number
   type: 'added' | 'modified' | 'deleted'
   source: string
@@ -73,11 +73,11 @@ export class ConfigCache extends EventEmitter {
    */
   set(
     key: string,
-    value: any,
+    value: unknown,
     options: {
       ttl?: number
       dependencies?: string[]
-      metadata?: Record<string, any>
+      metadata?: Record<string, unknown>
       source?: string
     } = {},
   ): void {
@@ -135,7 +135,7 @@ export class ConfigCache extends EventEmitter {
   /**
    * 获取配置值
    */
-  get<T = any>(key: string): T | undefined {
+  get<T = unknown>(key: string): T | undefined {
     const entry = this.cache.get(key)
 
     if (!entry) {
@@ -151,7 +151,7 @@ export class ConfigCache extends EventEmitter {
     }
 
     this.emit('hit', key)
-    return this.restoreValue(entry.value)
+    return this.restoreValue(entry.value) as T
   }
 
   /**
@@ -230,7 +230,7 @@ export class ConfigCache extends EventEmitter {
   /**
    * 智能重载配置
    */
-  smartReload(changes: Record<string, any>, source = 'reload'): ConfigChange[] {
+  smartReload(changes: Record<string, unknown>, source = 'reload'): ConfigChange[] {
     const configChanges: ConfigChange[] = []
 
     for (const [key, newValue] of Object.entries(changes)) {
@@ -310,17 +310,17 @@ export class ConfigCache extends EventEmitter {
 
   // 私有方法
 
-  private generateHash(value: any): string {
-    const serialized = JSON.stringify(value, Object.keys(value).sort())
+  private generateHash(value: unknown): string {
+    const serialized = this.serializeForHash(value)
     return createHash('sha256').update(serialized).digest('hex')
   }
 
-  private processValue(value: any): any {
+  private processValue(value: unknown): unknown {
     // 这里可以添加压缩和加密逻辑
     return value
   }
 
-  private restoreValue(value: any): any {
+  private restoreValue(value: unknown): unknown {
     // 这里可以添加解压缩和解密逻辑
     return value
   }
@@ -382,5 +382,41 @@ export class ConfigCache extends EventEmitter {
   private calculateMemoryUsage(): number {
     // 这里需要实现内存使用量计算逻辑
     return 0
+  }
+
+  /**
+   * 将值序列化为用于哈希的稳定字符串（对象键排序）
+   */
+  private serializeForHash(value: unknown): string {
+    if (value === null || value === undefined) {
+      return String(value)
+    }
+    const t = typeof value
+    if (t === 'string' || t === 'number' || t === 'boolean') {
+      return JSON.stringify(value)
+    }
+    if (Array.isArray(value)) {
+      const items = value.map(v => this.serializeForHash(v)).join(',')
+      return `[${items}]`
+    }
+    if (this.isRecord(value)) {
+      const keys = Object.keys(value).sort()
+      const parts = keys.map((k) => {
+        const v = (value as Record<string, unknown>)[k]
+        return `${JSON.stringify(k)}:${this.serializeForHash(v)}`
+      })
+      return `{${parts.join(',')}}`
+    }
+    // Fallback for other types (functions, symbols, bigint, etc.)
+    try {
+      return JSON.stringify(value)
+    }
+    catch {
+      return String(value)
+    }
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value)
   }
 }

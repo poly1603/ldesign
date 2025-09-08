@@ -218,7 +218,7 @@ describe('cacheManager', () => {
 
       cache.set('key1', 'value1')
 
-      cache.on('delete', key => {
+      cache.on('delete', (key) => {
         expect(key).toBe('key1')
         eventTriggered = true
       })
@@ -230,7 +230,7 @@ describe('cacheManager', () => {
     it('应该在缓存过期时触发事件', async () => {
       let eventTriggered = false
 
-      cache.on('expire', key => {
+      cache.on('expire', (key) => {
         expect(key).toBe('key1')
         eventTriggered = true
       })

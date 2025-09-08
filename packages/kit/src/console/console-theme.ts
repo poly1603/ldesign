@@ -196,7 +196,7 @@ export class ConsoleTheme {
 
   constructor(themeName = 'default') {
     const selectedTheme = THEMES[themeName as keyof typeof THEMES]
-    this.currentTheme = selectedTheme || THEMES.default
+    this.currentTheme = (selectedTheme || THEMES.default) as ThemeConfig
   }
 
   /**
@@ -234,7 +234,7 @@ export class ConsoleTheme {
   /**
    * 获取颜色函数
    */
-  color(colorName: keyof ColorConfig): chalk.Chalk {
+  color(colorName: keyof ColorConfig): any {
     const color = this.currentTheme.colors[colorName]
     return chalk.hex(color)
   }
@@ -336,10 +336,10 @@ export class ConsoleTheme {
 
     return format
       .replace('{bar}', bar)
-      .replace('{percentage}', percentage.toString())
+      .replace('{percentage}', showPercentage ? percentage.toString() : '')
       .replace('{value}', progress.toString())
       .replace('{total}', total.toString())
-      .replace('{eta}', eta.toString())
+      .replace('{eta}', showEta ? eta.toString() : '')
   }
 
   /**
@@ -419,13 +419,13 @@ export class ConsoleTheme {
     const base = THEMES[baseTheme as keyof typeof THEMES] || THEMES.default
 
     return {
-      ...base,
-      ...overrides,
+      ...(base as ThemeConfig),
+      ...(overrides as ThemeConfig),
       name,
-      colors: { ...base.colors, ...overrides.colors },
-      symbols: { ...base.symbols, ...overrides.symbols },
-      progressBar: { ...base.progressBar, ...overrides.progressBar },
-      spinner: { ...base.spinner, ...overrides.spinner },
+      colors: { ...base!.colors, ...overrides.colors },
+      symbols: { ...base!.symbols, ...overrides.symbols },
+      progressBar: { ...base!.progressBar, ...overrides.progressBar },
+      spinner: { ...base!.spinner, ...overrides.spinner },
     }
   }
 }

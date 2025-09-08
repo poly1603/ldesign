@@ -66,7 +66,7 @@ export class GitUtils {
         isClean: status.clean,
       }
     }
-    catch (error) {
+    catch {
       return null
     }
   }
@@ -164,11 +164,11 @@ export class GitUtils {
       if (!output)
         return null
 
-      const [hash, author, date, message] = output.split('|')
+      const [hash = '', author = '', dateStr = '', message = ''] = output.split('|')
       return {
         hash,
         author,
-        date: new Date(date),
+        date: new Date(dateStr),
         message,
       }
     }
@@ -204,8 +204,8 @@ export class GitUtils {
 
       return output.split('\n').map((line) => {
         const parts = line.split('\t')
-        const statusCode = parts[0]
-        const file = parts[1]
+        const statusCode = parts[0] || ''
+        const file = parts[1] || ''
         const oldFile = parts[2]
 
         let status: 'added' | 'modified' | 'deleted' | 'renamed'

@@ -56,7 +56,7 @@ export class RandomUtils {
     if (array.length === 0) {
       throw new Error('Array cannot be empty')
     }
-    return array[RandomUtils.int(0, array.length - 1)]
+    return array[RandomUtils.int(0, array.length - 1)]!
   }
 
   /**
@@ -110,7 +110,9 @@ export class RandomUtils {
     const result = [...array]
     for (let i = result.length - 1; i > 0; i--) {
       const j = RandomUtils.int(0, i)
-      ;[result[i], result[j]] = [result[j], result[i]]
+      const tmp = result[i]!
+      result[i] = result[j]!
+      result[j] = tmp
     }
     return result
   }
@@ -136,14 +138,16 @@ export class RandomUtils {
 
     let random = Math.random() * totalWeight
     for (let i = 0; i < items.length; i++) {
-      random -= weights[i]
+      random -= (weights[i] ?? 0)
       if (random <= 0) {
-        return items[i]
+        const item = items[i]
+        if (item !== undefined)
+          return item
       }
     }
 
     // fallback（不应该到达这里）
-    return items[items.length - 1]
+    return items[items.length - 1]!
   }
 
   /**
@@ -360,7 +364,8 @@ export class RandomUtils {
       const bytes = randomBytes(bytesNeeded)
       randomValue = 0
       for (let i = 0; i < bytesNeeded; i++) {
-        randomValue = randomValue * 256 + bytes[i]
+        const byte = bytes[i] ?? 0
+        randomValue = randomValue * 256 + byte
       }
     } while (randomValue >= threshold)
 

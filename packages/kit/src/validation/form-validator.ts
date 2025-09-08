@@ -94,7 +94,7 @@ export class FormValidator extends EventEmitter {
 
     try {
       // 验证各个字段
-      for (const [fieldName, rules] of this.fieldRules) {
+      for (const [fieldName] of this.fieldRules) {
         const fieldResult = await this.validateField(fieldName, formData[fieldName], formData)
         result.fieldResults[fieldName] = fieldResult
 

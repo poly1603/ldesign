@@ -80,7 +80,7 @@ export class Timer {
       this.logger.info(`${this.label}: ${result.formatted}`)
     }
     else if (log) {
-      console.log(`⏱️  ${this.label}: ${result.formatted}`)
+      process.stdout.write(`⏱️  ${this.label}: ${result.formatted}\n`)
     }
 
     return result
@@ -305,7 +305,8 @@ export class Timer {
     const min = Math.min(...results)
     const max = Math.max(...results)
     const avg = results.reduce((sum, time) => sum + time, 0) / results.length
-    const median = results.sort((a, b) => a - b)[Math.floor(results.length / 2)]
+    const sortedResults = [...results].sort((a, b) => a - b)
+    const median = sortedResults[Math.floor(sortedResults.length / 2)] ?? 0
 
     const benchmarkResult: BenchmarkResult = {
       iterations,

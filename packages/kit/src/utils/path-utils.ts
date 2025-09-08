@@ -195,8 +195,10 @@ export class PathUtils {
   static getCommonAncestor(...paths: string[]): string {
     if (paths.length === 0)
       return ''
-    if (paths.length === 1)
-      return PathUtils.dirname(paths[0])
+    if (paths.length === 1) {
+      const first = paths[0] || ''
+      return PathUtils.dirname(first)
+    }
 
     const normalizedPaths = paths.map(p => PathUtils.normalize(p))
     const segments = normalizedPaths.map(p => p.split('/').filter(Boolean))
@@ -208,8 +210,9 @@ export class PathUtils {
     const commonSegments: string[] = []
 
     for (let i = 0; i < minLength; i++) {
-      const segment = segments[0][i]
-      if (segments.every(s => s[i] === segment)) {
+      const firstSeg = segments[0] || []
+      const segment = firstSeg[i]
+      if (segment !== undefined && segments.every(s => s[i] === segment)) {
         commonSegments.push(segment)
       }
       else {
@@ -365,9 +368,10 @@ export class PathUtils {
    */
   static isValidFileName(fileName: string): boolean {
     // Windows 禁用字符
+    // eslint-disable-next-line no-control-regex
     const invalidChars = /[<>:"|?*\x00-\x1F]/
-    // Windows 保留名称
-    const reservedNames = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i
+    // Windows 保留名称（非捕获分组避免未使用捕获组规则）
+    const reservedNames = /^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i
 
     return (
       !invalidChars.test(fileName)
@@ -387,7 +391,7 @@ export class PathUtils {
    */
   static sanitizeFileName(fileName: string, replacement = '_'): string {
     return fileName
-      .replace(/[<>:"|?*\x00-\x1F]/g, replacement)
+      .replace(/[<>:"|?*\x00-\x1F]/g, replacement) /* eslint-disable-line no-control-regex */
       .replace(/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i, `${replacement}$1`)
       .replace(/[. ]+$/, '')
       .slice(0, 255)

@@ -105,14 +105,13 @@ export type LoadingStatus = 'loading' | 'success' | 'error' | 'warning' | 'info'
 export class LoadingSpinner extends EventEmitter {
   private spinner: Ora | null = null
   private options: LoadingSpinnerOptions
-  private theme: ConsoleTheme
   private isActive = false
   private startTime = 0
 
   constructor(options: LoadingSpinnerOptions = {}) {
     super()
 
-    this.theme = ConsoleTheme.create(options.theme)
+    ConsoleTheme.create(options.theme)
     this.options = {
       text: options.text || 'Loading...',
       spinner: options.spinner || 'dots',
@@ -319,7 +318,7 @@ export class LoadingSpinner extends EventEmitter {
   setPrefixText(text: string): void {
     this.options.prefixText = text
     if (this.spinner) {
-      this.spinner.prefixText = text
+      ;(this.spinner as any).prefixText = text
     }
   }
 
@@ -329,7 +328,7 @@ export class LoadingSpinner extends EventEmitter {
   setSuffixText(text: string): void {
     this.options.suffixText = text
     if (this.spinner) {
-      this.spinner.suffixText = text
+      ;(this.spinner as any).suffixText = text
     }
   }
 
@@ -483,6 +482,8 @@ export class LoadingSpinner extends EventEmitter {
     const nextStage = () => {
       if (currentStage < stages.length) {
         const stage = stages[currentStage]
+        if (!stage)
+          return
         spinner.updateText(stage.text)
 
         if (stage.duration) {

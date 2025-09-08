@@ -23,7 +23,7 @@ export interface SchemaValidatorOptions {
 export interface ValidationResult {
   valid: boolean
   errors: SchemaValidationError[]
-  data?: any
+  data?: unknown
 }
 
 /**
@@ -64,7 +64,7 @@ export class SchemaValidator extends EventEmitter {
   /**
    * 验证数据
    */
-  async validate(data: any): Promise<boolean> {
+  async validate(data: unknown): Promise<boolean> {
     if (!this.schema) {
       throw new Error('No schema defined for validation')
     }
@@ -93,9 +93,9 @@ export class SchemaValidator extends EventEmitter {
   /**
    * 验证值
    */
-  private validateValue(value: any, schema: ConfigSchema, path: string): ValidationResult {
+  private validateValue(value: unknown, schema: ConfigSchema, path: string): ValidationResult {
     const errors: SchemaValidationError[] = []
-    let processedValue = value
+    let processedValue: unknown = value
 
     // 处理默认值
     if (value === undefined && schema.default !== undefined && this.options.useDefaults) {
@@ -190,7 +190,7 @@ export class SchemaValidator extends EventEmitter {
         })
       }
 
-      if (schema.pattern && !new RegExp(schema.pattern).test(processedValue)) {
+      if (schema.pattern && !new RegExp(schema.pattern).test(processedValue as string)) {
         errors.push({
           path,
           message: `String does not match pattern: ${schema.pattern}`,
@@ -222,11 +222,11 @@ export class SchemaValidator extends EventEmitter {
 
       // 验证数组项
       if (schema.items) {
-        const validatedItems: any[] = []
+        const validatedItems: unknown[] = []
         for (let i = 0; i < processedValue.length; i++) {
           const itemResult = this.validateValue(processedValue[i], schema.items, `${path}[${i}]`)
           errors.push(...itemResult.errors)
-          validatedItems.push(itemResult.data || processedValue[i])
+          validatedItems.push(itemResult.data ?? processedValue[i])
         }
         processedValue = validatedItems
       }
@@ -239,24 +239,24 @@ export class SchemaValidator extends EventEmitter {
       && !Array.isArray(processedValue)
       && schema.type === 'object'
     ) {
-      const validatedObject: Record<string, any> = {}
+      const validatedObject: Record<string, unknown> = {}
 
       // 验证已定义的属性
       if (schema.properties) {
         for (const [key, propSchema] of Object.entries(schema.properties)) {
           const propPath = path ? `${path}.${key}` : key
-          const propResult = this.validateValue(processedValue[key], propSchema, propPath)
+          const propResult = this.validateValue((processedValue as Record<string, unknown>)[key], propSchema, propPath)
           errors.push(...propResult.errors)
 
-          if (propResult.data !== undefined || processedValue[key] !== undefined) {
+          if (propResult.data !== undefined || (processedValue as Record<string, unknown>)[key] !== undefined) {
             validatedObject[key]
-              = propResult.data !== undefined ? propResult.data : processedValue[key]
+              = propResult.data !== undefined ? propResult.data : (processedValue as Record<string, unknown>)[key]
           }
         }
       }
 
       // 处理额外属性
-      for (const [key, value] of Object.entries(processedValue)) {
+      for (const [key, value] of Object.entries(processedValue as Record<string, unknown>)) {
         if (!schema.properties || !(key in schema.properties)) {
           if (this.options.allowAdditionalProperties) {
             if (!this.options.removeAdditional) {
@@ -310,7 +310,7 @@ export class SchemaValidator extends EventEmitter {
   /**
    * 验证类型
    */
-  private validateType(value: any, type: string | string[]): boolean {
+  private validateType(value: unknown, type: string | string[]): boolean {
     const types = Array.isArray(type) ? type : [type]
 
     return types.some((t) => {
@@ -318,7 +318,7 @@ export class SchemaValidator extends EventEmitter {
         case 'string':
           return typeof value === 'string'
         case 'number':
-          return typeof value === 'number' && !isNaN(value)
+          return typeof value === 'number' && !Number.isNaN(value)
         case 'integer':
           return typeof value === 'number' && Number.isInteger(value)
         case 'boolean':
@@ -338,7 +338,7 @@ export class SchemaValidator extends EventEmitter {
   /**
    * 类型转换
    */
-  private coerceType(value: any, type: string | string[]): { success: boolean, value?: any } {
+  private coerceType(value: unknown, type: string | string[]): { success: boolean, value?: unknown } {
     const targetType = Array.isArray(type) ? type[0] : type
 
     try {
@@ -346,13 +346,15 @@ export class SchemaValidator extends EventEmitter {
         case 'string':
           return { success: true, value: String(value) }
 
-        case 'number':
+        case 'number': {
           const num = Number(value)
-          return { success: !isNaN(num), value: num }
+          return { success: !Number.isNaN(num), value: num }
+        }
 
-        case 'integer':
+        case 'integer': {
           const int = Number.parseInt(String(value), 10)
-          return { success: !isNaN(int), value: int }
+          return { success: !Number.isNaN(int), value: int }
+        }
 
         case 'boolean':
           if (typeof value === 'string') {
@@ -438,7 +440,7 @@ export class SchemaValidator extends EventEmitter {
   /**
    * 快速验证
    */
-  static async quickValidate(data: any, schema: ConfigSchema): Promise<ValidationResult> {
+  static async quickValidate(data: unknown, schema: ConfigSchema): Promise<ValidationResult> {
     const validator = new SchemaValidator()
     validator.setSchema(schema)
     const valid = await validator.validate(data)
@@ -447,5 +449,12 @@ export class SchemaValidator extends EventEmitter {
       errors: validator.getErrors(),
       data,
     }
+  }
+
+  /**
+   * 简单对象类型守卫
+   */
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value)
   }
 }

@@ -179,7 +179,7 @@ export class GitManager {
 
     // 提取提交哈希
     const match = output.match(/\[.+?\s([a-f0-9]+)\]/)
-    return match ? match[1] : ''
+    return match?.[1] ?? ''
   }
 
   /**
@@ -222,12 +222,12 @@ export class GitManager {
       return []
 
     return output.split('\n').map((line) => {
-      const [hash, author, email, date, message] = line.split('|')
+      const [hash = '', author = '', email = '', dateStr = '', message = ''] = line.split('|')
       return {
         hash,
         author,
         email,
-        date: new Date(date),
+        date: new Date(dateStr),
         message,
       }
     })
@@ -353,8 +353,11 @@ export class GitManager {
 
       for (const line of lines) {
         const [name, url, type] = line.split(/\s+/)
+        if (!name || !url) {
+          continue
+        }
         if (!remotes.has(name)) {
-          remotes.set(name, { name, url, type: type?.replace(/[()]/g, '') })
+          remotes.set(name, { name, url, type: type?.replace(/[()]/g, '') || '' })
         }
       }
 
@@ -518,7 +521,9 @@ export class GitManager {
         if (currentFile) {
           diffs.push({ file: currentFile, additions, deletions })
         }
-        currentFile = line.split(' ')[3].substring(2) // 移除 b/ 前缀
+        const parts = line.split(' ')
+        const filePart = parts[3]?.substring(2) || ''
+        currentFile = filePart
         additions = 0
         deletions = 0
       }

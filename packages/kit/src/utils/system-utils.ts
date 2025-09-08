@@ -5,6 +5,7 @@
 
 import { execSync } from 'node:child_process'
 import { promises as fs } from 'node:fs'
+import * as net from 'node:net'
 import {
   arch,
   cpus,
@@ -80,7 +81,8 @@ export class SystemUtils {
    * 获取系统信息
    */
   static getSystemInfo(): SystemInfo {
-    const cpuInfo = cpus()[0]
+    const cpuList = cpus()
+    const cpuInfo = cpuList[0]
     const userDetails = userInfo()
     const networks = networkInterfaces()
 
@@ -115,14 +117,14 @@ export class SystemUtils {
         percentage: (usedMem / totalMem) * 100,
       },
       cpu: {
-        model: cpuInfo.model,
+        model: cpuInfo?.model || '',
         cores: cpus().length,
-        speed: cpuInfo.speed,
+        speed: cpuInfo?.speed || 0,
       },
       user: {
         username: userDetails.username,
         homedir: userDetails.homedir,
-        shell: userDetails.shell,
+        shell: userDetails.shell || undefined,
       },
       network: networkList,
       node: {
@@ -186,9 +188,10 @@ export class SystemUtils {
         const lines = output.split('\n').filter(line => line.includes(drive))
 
         if (lines.length > 0) {
-          const parts = lines[0].split(',')
-          const size = Number.parseInt(parts[2]) || 0
-          const free = Number.parseInt(parts[1]) || 0
+          const firstLine = lines[0] ?? ''
+          const parts = firstLine.split(',')
+          const size = Number.parseInt(parts[2] || '0') || 0
+          const free = Number.parseInt(parts[1] || '0') || 0
           const used = size - free
 
           return {
@@ -207,11 +210,12 @@ export class SystemUtils {
         const lines = output.split('\n')
 
         if (lines.length > 1) {
-          const parts = lines[1].split(/\s+/)
-          const filesystem = parts[0]
-          const size = Number.parseInt(parts[1]) || 0
-          const used = Number.parseInt(parts[2]) || 0
-          const available = Number.parseInt(parts[3]) || 0
+          const line = lines[1] ?? ''
+          const parts = line.split(/\s+/)
+          const filesystem = parts[0] || path
+          const size = Number.parseInt(parts[1] || '0') || 0
+          const used = Number.parseInt(parts[2] || '0') || 0
+          const available = Number.parseInt(parts[3] || '0') || 0
           const mountpoint = parts[5] || path
 
           return {
@@ -225,7 +229,7 @@ export class SystemUtils {
         }
       }
     }
-    catch (error) {
+    catch {
       // 忽略错误，返回 null
     }
 
@@ -298,7 +302,6 @@ export class SystemUtils {
    */
   static async isPortAvailable(port: number, host = 'localhost'): Promise<boolean> {
     return new Promise((resolve) => {
-      const net = require('node:net')
       const server = net.createServer()
 
       server.listen(port, host, () => {

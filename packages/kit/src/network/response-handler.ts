@@ -193,7 +193,7 @@ export class ResponseHandler<T = any> {
         )
       }
     }
-    return this.response.data as U
+    return this.response.data as unknown as U
   }
 
   /**
@@ -269,13 +269,8 @@ export class ResponseHandler<T = any> {
         this.response.config.url,
       )
 
-      try {
-        const handledData = handler(error)
-        this.response = { ...this.response, data: handledData }
-      }
-      catch (handlerError) {
-        throw handlerError
-      }
+      const handledData = handler(error)
+      this.response = { ...this.response, data: handledData }
     }
     return this
   }
@@ -341,17 +336,26 @@ export class ResponseHandler<T = any> {
       const totalFields = ['total', 'totalCount', 'totalItems']
       const pagesFields = ['pages', 'totalPages', 'pageCount']
 
-      const page = pageFields.find(field => field in data)?.[0]
-      const size = sizeFields.find(field => field in data)?.[0]
-      const total = totalFields.find(field => field in data)?.[0]
-      const pages = pagesFields.find(field => field in data)?.[0]
+      const pageField = pageFields.find(field => field in data)
+      const sizeField = sizeFields.find(field => field in data)
+      const totalField = totalFields.find(field => field in data)
+      const pagesField = pagesFields.find(field => field in data)
+
+      const page = pageField !== undefined ? Number(data[pageField]) : undefined
+      const size = sizeField !== undefined ? Number(data[sizeField]) : undefined
+      const total = totalField !== undefined ? Number(data[totalField]) : undefined
+      const pages = pagesField !== undefined ? Number(data[pagesField]) : undefined
 
       if (page !== undefined || size !== undefined || total !== undefined) {
+        const pg = Number.isFinite(page as number) ? (page as number) : 1
+        const sz = Number.isFinite(size as number) ? (size as number) : 10
+        const tt = Number.isFinite(total as number) ? (total as number) : 0
+        const ps = Number.isFinite(pages as number) ? (pages as number) : Math.ceil(tt / sz)
         return {
-          page: page || 1,
-          size: size || 10,
-          total: total || 0,
-          pages: pages || Math.ceil((total || 0) / (size || 10)),
+          page: pg,
+          size: sz,
+          total: tt,
+          pages: ps,
         }
       }
     }

@@ -62,7 +62,6 @@ export class ProgressBar extends EventEmitter {
   private theme: ConsoleTheme
   private isActive = false
   private startTime = 0
-  private lastUpdate = 0
 
   constructor(options: ProgressBarOptions) {
     super()
@@ -88,7 +87,7 @@ export class ProgressBar extends EventEmitter {
       barGlue: options.barGlue || '',
       etaBuffer: options.etaBuffer || 10,
       fps: options.fps || 10,
-      barsize: options.barsize || this.options?.width || 40,
+      barsize: options.barsize || options.width || 40,
       position: options.position || 'left',
       linewrap: options.linewrap !== false,
       autopadding: options.autopadding !== false,
@@ -121,18 +120,16 @@ export class ProgressBar extends EventEmitter {
       etaBuffer: this.options.etaBuffer,
       fps: this.options.fps,
       barsize: this.options.barsize,
-      position: this.options.position,
       linewrap: this.options.linewrap,
       autopadding: this.options.autopadding,
       autopaddingChar: this.options.autopaddingChar,
       emptyOnZero: this.options.emptyOnZero,
       forceRedraw: this.options.forceRedraw,
-    })
+    } as any)
 
     this.bar.start(startTotal, startCurrent)
     this.isActive = true
     this.startTime = Date.now()
-    this.lastUpdate = Date.now()
 
     this.emit('start', startTotal)
   }
@@ -146,7 +143,6 @@ export class ProgressBar extends EventEmitter {
     }
 
     this.bar.update(current, payload)
-    this.lastUpdate = Date.now()
 
     this.emit('update', current, this.options.total)
 
@@ -165,7 +161,6 @@ export class ProgressBar extends EventEmitter {
     }
 
     this.bar.increment(delta, payload)
-    this.lastUpdate = Date.now()
 
     const current = this.bar.getProgress() * this.options.total
     this.emit('update', current, this.options.total)

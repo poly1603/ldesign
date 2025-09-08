@@ -66,8 +66,10 @@ describe('projectDetector', () => {
       }
 
       mockExistsSync.mockImplementation((path: string) => {
-        if (path.includes('package.json')) return true
-        if (path.includes('pnpm-lock.yaml')) return true
+        if (path.includes('package.json'))
+          return true
+        if (path.includes('pnpm-lock.yaml'))
+          return true
         return false
       })
 
@@ -98,8 +100,10 @@ describe('projectDetector', () => {
       }
 
       mockExistsSync.mockImplementation((path: string) => {
-        if (path.includes('package.json')) return true
-        if (path.includes('yarn.lock')) return true
+        if (path.includes('package.json'))
+          return true
+        if (path.includes('yarn.lock'))
+          return true
         return false
       })
 
@@ -139,7 +143,7 @@ describe('projectDetector', () => {
     it('应该检测到 React 项目', async () => {
       const mockPackageJson = {
         dependencies: {
-          react: '^18.0.0',
+          'react': '^18.0.0',
           'react-dom': '^18.0.0',
         },
         devDependencies: {
@@ -160,8 +164,8 @@ describe('projectDetector', () => {
     it('应该检测到 Next.js 项目', async () => {
       const mockPackageJson = {
         dependencies: {
-          next: '^14.0.0',
-          react: '^18.0.0',
+          'next': '^14.0.0',
+          'react': '^18.0.0',
           'react-dom': '^18.0.0',
         },
       }
@@ -190,8 +194,10 @@ describe('projectDetector', () => {
       }
 
       mockExistsSync.mockImplementation((path: string) => {
-        if (path.includes('package.json')) return true
-        if (path.includes('angular.json')) return true
+        if (path.includes('package.json'))
+          return true
+        if (path.includes('angular.json'))
+          return true
         return false
       })
 
@@ -214,8 +220,10 @@ describe('projectDetector', () => {
       }
 
       mockExistsSync.mockImplementation((path: string) => {
-        if (path.includes('package.json')) return true
-        if (path.includes('tsconfig.json')) return true
+        if (path.includes('package.json'))
+          return true
+        if (path.includes('tsconfig.json'))
+          return true
         return false
       })
 
@@ -232,7 +240,7 @@ describe('projectDetector', () => {
           react: '^18.0.0',
         },
         devDependencies: {
-          typescript: '^5.0.0',
+          'typescript': '^5.0.0',
           '@types/node': '^20.0.0',
         },
       }
@@ -252,8 +260,10 @@ describe('projectDetector', () => {
   describe('包管理器检测', () => {
     it('应该检测到 pnpm', async () => {
       mockExistsSync.mockImplementation((path: string) => {
-        if (path.includes('package.json')) return true
-        if (path.includes('pnpm-lock.yaml')) return true
+        if (path.includes('package.json'))
+          return true
+        if (path.includes('pnpm-lock.yaml'))
+          return true
         return false
       })
 
@@ -266,8 +276,10 @@ describe('projectDetector', () => {
 
     it('应该检测到 yarn', async () => {
       mockExistsSync.mockImplementation((path: string) => {
-        if (path.includes('package.json')) return true
-        if (path.includes('yarn.lock')) return true
+        if (path.includes('package.json'))
+          return true
+        if (path.includes('yarn.lock'))
+          return true
         return false
       })
 
@@ -295,14 +307,16 @@ describe('projectDetector', () => {
     it('应该检测到 Vite', async () => {
       const mockPackageJson = {
         devDependencies: {
-          vite: '^5.0.0',
+          'vite': '^5.0.0',
           '@vitejs/plugin-vue': '^4.0.0',
         },
       }
 
       mockExistsSync.mockImplementation((path: string) => {
-        if (path.includes('package.json')) return true
-        if (path.includes('vite.config.ts')) return true
+        if (path.includes('package.json'))
+          return true
+        if (path.includes('vite.config.ts'))
+          return true
         return false
       })
 
@@ -316,14 +330,16 @@ describe('projectDetector', () => {
     it('应该检测到 Webpack', async () => {
       const mockPackageJson = {
         devDependencies: {
-          webpack: '^5.0.0',
+          'webpack': '^5.0.0',
           'webpack-cli': '^5.0.0',
         },
       }
 
       mockExistsSync.mockImplementation((path: string) => {
-        if (path.includes('package.json')) return true
-        if (path.includes('webpack.config.js')) return true
+        if (path.includes('package.json'))
+          return true
+        if (path.includes('webpack.config.js'))
+          return true
         return false
       })
 
@@ -426,7 +442,7 @@ describe('工厂函数', () => {
     mockReadFileSync.mockReturnValue(
       JSON.stringify({
         dependencies: { vue: '^3.0.0' },
-      })
+      }),
     )
 
     const result = await detectProjectType()

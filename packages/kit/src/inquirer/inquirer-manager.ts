@@ -32,7 +32,7 @@ export class InquirerManager {
   /**
    * 询问单个问题
    */
-  async ask<T = any>(question: Question): Promise<T> {
+  async ask<T = unknown>(question: Question): Promise<T> {
     return new Promise((resolve, reject) => {
       this.askQuestion(
         question,
@@ -47,8 +47,8 @@ export class InquirerManager {
   /**
    * 询问多个问题
    */
-  async askMany(questions: Question[]): Promise<Record<string, any>> {
-    const answers: Record<string, any> = {}
+  async askMany(questions: Question[]): Promise<Record<string, unknown>> {
+    const answers: Record<string, unknown> = {}
 
     for (const question of questions) {
       // 检查条件
@@ -121,7 +121,7 @@ export class InquirerManager {
   /**
    * 单选列表
    */
-  async select<T = any>(options: {
+  async select<T = unknown>(options: {
     message: string
     choices: ChoiceOption<T>[]
     default?: T
@@ -140,7 +140,7 @@ export class InquirerManager {
   /**
    * 多选列表
    */
-  async multiSelect<T = any>(options: {
+  async multiSelect<T = unknown>(options: {
     message: string
     choices: ChoiceOption<T>[]
     default?: T[]
@@ -176,7 +176,7 @@ export class InquirerManager {
       validate: (input: string) => {
         const num = Number.parseFloat(input)
 
-        if (isNaN(num)) {
+        if (Number.isNaN(num)) {
           return '请输入有效的数字'
         }
 
@@ -242,7 +242,7 @@ export class InquirerManager {
    */
   private askQuestion(
     question: Question,
-    onAnswer: (answer: any) => void,
+    onAnswer: (answer: unknown) => void,
     onError: (error: Error) => void,
   ): void {
     try {
@@ -285,7 +285,7 @@ export class InquirerManager {
    */
   private handleInput(
     question: Question,
-    onAnswer: (answer: any) => void,
+    onAnswer: (answer: unknown) => void,
     onError: (error: Error) => void,
   ): void {
     const prompt = this.formatPrompt(question)
@@ -318,15 +318,16 @@ export class InquirerManager {
    */
   private handlePassword(
     question: Question,
-    onAnswer: (answer: any) => void,
+    onAnswer: (answer: unknown) => void,
     onError: (error: Error) => void,
   ): void {
     const prompt = this.formatPrompt(question)
     this.output(prompt)
 
     // 隐藏输入
-    const stdin = this.options.input as any
-    if (stdin.setRawMode) {
+    type RawTTY = NodeJS.ReadStream & { setRawMode?: (mode: boolean) => void }
+    const stdin = this.options.input as RawTTY
+    if (typeof stdin.setRawMode === 'function') {
       stdin.setRawMode(true)
     }
 
@@ -338,7 +339,7 @@ export class InquirerManager {
 
       if (str === '\n' || str === '\r' || str === '\u0004') {
         // 回车或 Ctrl+D
-        if (stdin.setRawMode) {
+        if (typeof stdin.setRawMode === 'function') {
           stdin.setRawMode(false)
         }
         stdin.removeListener('data', onData)
@@ -359,7 +360,7 @@ export class InquirerManager {
       }
       else if (str === '\u0003') {
         // Ctrl+C
-        if (stdin.setRawMode) {
+        if (typeof stdin.setRawMode === 'function') {
           stdin.setRawMode(false)
         }
         stdin.removeListener('data', onData)
@@ -387,7 +388,7 @@ export class InquirerManager {
    */
   private handleConfirm(
     question: Question,
-    onAnswer: (answer: any) => void,
+    onAnswer: (answer: unknown) => void,
     onError: (error: Error) => void,
   ): void {
     const defaultValue = question.default !== undefined ? question.default : true
@@ -418,7 +419,7 @@ export class InquirerManager {
    */
   private handleList(
     question: Question,
-    onAnswer: (answer: any) => void,
+    onAnswer: (answer: unknown) => void,
     onError: (error: Error) => void,
   ): void {
     if (!question.choices || question.choices.length === 0) {
@@ -435,15 +436,15 @@ export class InquirerManager {
     this.rl.question('请选择 (输入数字): ', (input) => {
       const index = Number.parseInt(input.trim()) - 1
 
-      if (isNaN(index) || index < 0 || index >= question.choices!.length) {
+      if (Number.isNaN(index) || index < 0 || index >= question.choices!.length) {
         this.output(this.colorize('无效的选择', 'red'))
         this.handleList(question, onAnswer, onError)
         return
       }
 
-      const choice = question.choices![index]
-      const value = typeof choice === 'string' ? choice : choice.value
-      onAnswer(value)
+      const choice = question.choices![index]!
+      const value = typeof choice === 'string' ? choice : (choice as { value?: unknown }).value
+      onAnswer(value as unknown)
     })
   }
 
@@ -452,7 +453,7 @@ export class InquirerManager {
    */
   private handleCheckbox(
     question: Question,
-    onAnswer: (answer: any) => void,
+    onAnswer: (answer: unknown) => void,
     onError: (error: Error) => void,
   ): void {
     if (!question.choices || question.choices.length === 0) {
@@ -474,18 +475,18 @@ export class InquirerManager {
           .trim()
           .split(/\s+/)
           .map(s => Number.parseInt(s) - 1)
-        const selected: any[] = []
+        const selected: unknown[] = []
 
         for (const index of indices) {
-          if (isNaN(index) || index < 0 || index >= question.choices!.length) {
+          if (Number.isNaN(index) || index < 0 || index >= question.choices!.length) {
             this.output(this.colorize(`无效的选择: ${index + 1}`, 'red'))
             this.handleCheckbox(question, onAnswer, onError)
             return
           }
 
-          const choice = question.choices![index]
-          const value = typeof choice === 'string' ? choice : choice.value
-          selected.push(value)
+          const choice = question.choices![index]!
+          const value = typeof choice === 'string' ? choice : (choice as { value?: unknown }).value
+          selected.push(value as unknown)
         }
 
         // 验证选择
@@ -511,7 +512,7 @@ export class InquirerManager {
    */
   private handleNumber(
     question: Question,
-    onAnswer: (answer: any) => void,
+    onAnswer: (answer: unknown) => void,
     onError: (error: Error) => void,
   ): void {
     // 复用文本输入处理，验证在 number() 方法中已处理
@@ -523,14 +524,14 @@ export class InquirerManager {
    */
   private handleEditor(
     question: Question,
-    onAnswer: (answer: any) => void,
-    onError: (error: Error) => void,
+    onAnswer: (answer: unknown) => void,
+    _onError: (error: Error) => void,
   ): void {
     // 简化实现，实际应该启动外部编辑器
     this.output(`${question.message} (按 Ctrl+D 结束输入):`)
 
     let content = ''
-    const stdin = this.options.input as any
+    const stdin = this.options.input as NodeJS.ReadStream
 
     const onData = (chunk: Buffer) => {
       const str = chunk.toString()
@@ -553,7 +554,7 @@ export class InquirerManager {
    */
   private handleAutocomplete(
     question: Question,
-    onAnswer: (answer: any) => void,
+    onAnswer: (answer: unknown) => void,
     onError: (error: Error) => void,
   ): void {
     // 简化实现，实际应该实现实时自动完成
@@ -563,16 +564,16 @@ export class InquirerManager {
   /**
    * 验证输入
    */
-  private async validateInput(
-    value: any,
-    validator?: (value: any) => InquirerValidationResult,
+  private async validateInput<V>(
+    value: V,
+    validator?: (value: V) => InquirerValidationResult,
   ): Promise<string | true> {
     if (!validator)
       return true
 
     try {
       const result = await validator(value)
-      return result
+      return result === true ? true : result || 'Invalid input'
     }
     catch (error) {
       return (error as Error).message

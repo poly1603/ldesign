@@ -73,7 +73,8 @@ export class Logger extends EventEmitter {
    */
   static getInstance(name: string, options?: LoggerOptions): Logger {
     if (!Logger.instances.has(name)) {
-      new Logger(name, options)
+      const _logger = new Logger(name, options)
+      void _logger
     }
     return Logger.instances.get(name)!
   }

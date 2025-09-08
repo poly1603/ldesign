@@ -199,7 +199,7 @@ export class EventEmitter extends NodeEventEmitter {
   /**
    * 发射事件
    */
-  override emit(event: string, ...args: any[]): boolean {
+  override emit(event: string, ...args: unknown[]): boolean {
     const startTime = this.enableStats ? Date.now() : 0
 
     // 更新统计信息
@@ -238,7 +238,7 @@ export class EventEmitter extends NodeEventEmitter {
   /**
    * 异步发射事件
    */
-  async emitAsync(event: string, ...args: any[]): Promise<any[]> {
+  async emitAsync(event: string, ...args: unknown[]): Promise<unknown[]> {
     const eventListeners = this.listenerInfos.get(event)
     if (!eventListeners || eventListeners.length === 0) {
       return []
@@ -255,7 +255,7 @@ export class EventEmitter extends NodeEventEmitter {
       }
     }
 
-    const results: any[] = []
+    const results: unknown[] = []
 
     for (const listenerInfo of eventListeners) {
       try {
@@ -449,11 +449,11 @@ export class EventEmitter extends NodeEventEmitter {
   /**
    * 等待事件发生
    */
-  waitFor(event: string, timeout?: number): Promise<any[]> {
+  waitFor(event: string, timeout?: number): Promise<unknown[]> {
     return new Promise((resolve, reject) => {
       let timeoutId: NodeJS.Timeout | undefined
 
-      const listener = (...args: any[]) => {
+      const listener = (...args: unknown[]) => {
         if (timeoutId) {
           clearTimeout(timeoutId)
         }

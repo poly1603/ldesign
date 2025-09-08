@@ -132,7 +132,7 @@ export class FileUtils {
 
         for (const range of sizeRanges) {
           if (size >= range.min && size <= range.max) {
-            groups[range.name].push(file)
+            ;(groups[range.name] ?? (groups[range.name] = [])).push(file)
             grouped = true
             break
           }
@@ -275,6 +275,8 @@ export class FileUtils {
     try {
       for (let i = 0; i < files.length; i++) {
         const oldPath = files[i]
+        if (!oldPath)
+          continue
         const oldName = basename(oldPath)
         const newName = renameFunction(oldName, i)
         const newPath = join(dirname(oldPath), newName)
@@ -344,7 +346,7 @@ export class FileUtils {
       }
 
       for (let i = 0; i < lines.length; i++) {
-        const line = lines[i]
+        const line = lines[i] ?? ''
         const matches = line.match(pattern)
 
         if (matches) {

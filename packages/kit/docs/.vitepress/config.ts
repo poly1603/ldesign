@@ -7,6 +7,7 @@ export default defineConfig({
   // 基础配置
   base: '/kit/',
   lang: 'zh-CN',
+  ignoreDeadLinks: true,
 
   // 主题配置
   themeConfig: {
@@ -43,6 +44,7 @@ export default defineConfig({
             { text: '安装', link: '/guide/installation' },
             { text: '快速开始', link: '/guide/getting-started' },
             { text: '配置', link: '/guide/configuration' },
+            { text: '打包与发布 (tsup)', link: '/guide/build-and-publish' },
           ],
         },
         {

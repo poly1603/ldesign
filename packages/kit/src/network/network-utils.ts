@@ -23,8 +23,8 @@ export class NetworkUtils {
    * @returns 是否可用
    */
   static async isPortAvailable(port: number, host = 'localhost'): Promise<boolean> {
+    const { createServer } = await import('node:net')
     return new Promise((resolve) => {
-      const { createServer } = require('node:net')
       const server = createServer()
 
       server.listen(port, host, () => {
@@ -158,8 +158,8 @@ export class NetworkUtils {
    */
   static async reverseResolve(ip: string): Promise<string[]> {
     try {
-      const { reverse } = require('node:dns')
-      const reverseAsync = promisify(reverse)
+      const { reverse } = await import('node:dns')
+      const reverseAsync = promisify(reverse as unknown as (ip: string, callback: (err: unknown, hostnames: string[]) => void) => void)
       return await reverseAsync(ip)
     }
     catch (error) {
@@ -205,7 +205,14 @@ export class NetworkUtils {
    */
   static isValidURL(url: string): boolean {
     try {
-      new URL(url)
+      const URLCtor = URL as unknown as { canParse?: (input: string) => boolean }
+      const canParse = URLCtor.canParse?.(url)
+      if (typeof canParse === 'boolean') {
+        return canParse
+      }
+
+      const parsed = new URL(url)
+      void parsed
       return true
     }
     catch {
@@ -353,7 +360,7 @@ export class NetworkUtils {
     if (interfaceName) {
       const interfaceInfo = interfaces[interfaceName]
       if (interfaceInfo && interfaceInfo.length > 0) {
-        return interfaceInfo[0].mac
+        return interfaceInfo[0]!.mac
       }
       return null
     }
@@ -383,9 +390,8 @@ export class NetworkUtils {
   static async scanPorts(host: string, ports: number[], timeout = 3000): Promise<number[]> {
     const openPorts: number[] = []
 
+    const { createConnection } = await import('node:net')
     const scanPromises = ports.map(async (port) => {
-      const { createConnection } = require('node:net')
-
       return new Promise<boolean>((resolve) => {
         const socket = createConnection({ port, host, timeout })
 
@@ -409,7 +415,7 @@ export class NetworkUtils {
 
     for (let i = 0; i < ports.length; i++) {
       if (results[i]) {
-        openPorts.push(ports[i])
+        openPorts.push(ports[i]!)
       }
     }
 

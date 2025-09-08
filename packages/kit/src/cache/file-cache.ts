@@ -27,7 +27,7 @@ export interface FileCacheOptions {
 /**
  * 文件缓存条目
  */
-interface FileCacheEntry<T = any> extends CacheEntry<T> {
+interface FileCacheEntry<T = unknown> extends CacheEntry<T> {
   size: number
 }
 
@@ -65,7 +65,7 @@ export class FileCache extends EventEmitter implements CacheStore {
   /**
    * 获取缓存值
    */
-  async get<T = any>(key: string): Promise<T | undefined> {
+  async get<T = unknown>(key: string): Promise<T | undefined> {
     try {
       const filePath = this.getFilePath(key)
 
@@ -76,7 +76,7 @@ export class FileCache extends EventEmitter implements CacheStore {
       }
 
       const content = await fs.readFile(filePath, 'utf8')
-      const entry: FileCacheEntry<T> = JSON.parse(content)
+      const entry = JSON.parse(content) as FileCacheEntry<T>
 
       // 检查是否过期
       if (this.isExpired(entry)) {
@@ -102,7 +102,7 @@ export class FileCache extends EventEmitter implements CacheStore {
   /**
    * 设置缓存值
    */
-  async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
+  async set<T = unknown>(key: string, value: T, ttl?: number): Promise<void> {
     try {
       const filePath = this.getFilePath(key)
       const now = Date.now()
@@ -150,7 +150,7 @@ export class FileCache extends EventEmitter implements CacheStore {
       }
 
       const content = await fs.readFile(filePath, 'utf8')
-      const entry: FileCacheEntry = JSON.parse(content)
+      const entry = JSON.parse(content) as FileCacheEntry
 
       if (this.isExpired(entry)) {
         await this.delete(key)
@@ -217,7 +217,7 @@ export class FileCache extends EventEmitter implements CacheStore {
   /**
    * 批量获取
    */
-  async mget<T = any>(keys: string[]): Promise<Map<string, T>> {
+  async mget<T = unknown>(keys: string[]): Promise<Map<string, T>> {
     const results = new Map<string, T>()
 
     await Promise.all(
@@ -235,7 +235,7 @@ export class FileCache extends EventEmitter implements CacheStore {
   /**
    * 批量设置
    */
-  async mset<T = any>(entries: Map<string, T>, ttl?: number): Promise<void> {
+  async mset<T = unknown>(entries: Map<string, T>, ttl?: number): Promise<void> {
     await Promise.all(
       Array.from(entries.entries()).map(([key, value]) => this.set(key, value, ttl)),
     )
@@ -306,7 +306,7 @@ export class FileCache extends EventEmitter implements CacheStore {
       }
 
       const content = await fs.readFile(filePath, 'utf8')
-      const entry: FileCacheEntry = JSON.parse(content)
+      const entry = JSON.parse(content) as FileCacheEntry
 
       if (!entry.expiresAt) {
         return -1
@@ -429,7 +429,10 @@ export class FileCache extends EventEmitter implements CacheStore {
 
       // 删除最旧的文件
       for (let i = 0; i < Math.min(count, fileStats.length); i++) {
-        await fs.unlink(fileStats[i].file)
+        const stat = fileStats[i]
+        if (!stat)
+          continue
+        await fs.unlink(stat.file)
         this.stats.files--
       }
     }

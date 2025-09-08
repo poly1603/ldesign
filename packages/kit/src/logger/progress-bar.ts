@@ -211,7 +211,7 @@ export class ProgressBar {
       this.logger.success(message)
     }
     else {
-      console.log(`✅ ${message}`)
+      this.options.stream.write(`✅ ${message}\n`)
     }
   }
 
@@ -231,7 +231,7 @@ export class ProgressBar {
         this.logger.info(message)
       }
       else {
-        console.log(message)
+        this.options.stream.write(`${message}\n`)
       }
     }
   }
@@ -246,7 +246,7 @@ export class ProgressBar {
       this.logger.warn(message)
     }
     else {
-      console.log(`⚠️  ${message}`)
+      this.options.stream.write(`⚠️  ${message}\n`)
     }
 
     this.render()

@@ -11,12 +11,12 @@ import { EventEmitter } from 'node:events'
 export interface ValidationRule {
   type?: 'string' | 'number' | 'boolean' | 'array' | 'object' | 'function'
   required?: boolean
-  default?: any
+  default?: unknown
   min?: number
   max?: number
   pattern?: RegExp
-  enum?: any[]
-  custom?: (value: any) => boolean | string
+  enum?: unknown[]
+  custom?: (value: unknown) => boolean | string
   message?: string
 }
 
@@ -26,7 +26,7 @@ export interface ValidationRule {
 export interface ValidationError {
   path: string
   message: string
-  value: any
+  value: unknown
   rule: ValidationRule
 }
 
@@ -104,7 +104,7 @@ export class ConfigValidator extends EventEmitter {
   /**
    * 验证配置
    */
-  validate(config: Record<string, any>): boolean {
+  validate(config: Record<string, unknown>): boolean {
     this.errors = []
 
     // 验证已定义的规则
@@ -132,7 +132,7 @@ export class ConfigValidator extends EventEmitter {
   /**
    * 验证指定路径
    */
-  private validatePath(config: Record<string, any>, path: string, rule: ValidationRule): void {
+  private validatePath(config: Record<string, unknown>, path: string, rule: ValidationRule): void {
     const value = this.getValue(config, path)
     const exists = this.hasValue(config, path)
 
@@ -185,7 +185,7 @@ export class ConfigValidator extends EventEmitter {
     }
 
     // 范围验证
-    if (rule.min !== undefined && this.isComparable(value) && value < rule.min) {
+    if (rule.min !== undefined && this.isComparable(value) && (value as number | string) < rule.min) {
       this.addError(
         path,
         rule.message || `Field '${path}' must be at least ${rule.min}`,
@@ -195,7 +195,7 @@ export class ConfigValidator extends EventEmitter {
       return
     }
 
-    if (rule.max !== undefined && this.isComparable(value) && value > rule.max) {
+    if (rule.max !== undefined && this.isComparable(value) && (value as number | string) > rule.max) {
       this.addError(
         path,
         rule.message || `Field '${path}' must be at most ${rule.max}`,
@@ -232,12 +232,12 @@ export class ConfigValidator extends EventEmitter {
   /**
    * 验证类型
    */
-  private validateType(value: any, type: string): boolean {
+  private validateType(value: unknown, type: string): boolean {
     switch (type) {
       case 'string':
         return typeof value === 'string'
       case 'number':
-        return typeof value === 'number' && !isNaN(value)
+        return typeof value === 'number' && !Number.isNaN(value)
       case 'boolean':
         return typeof value === 'boolean'
       case 'array':
@@ -254,14 +254,15 @@ export class ConfigValidator extends EventEmitter {
   /**
    * 类型转换
    */
-  private coerceType(value: any, type: string): any {
+  private coerceType(value: unknown, type: string): unknown {
     try {
       switch (type) {
         case 'string':
           return String(value)
-        case 'number':
+        case 'number': {
           const num = Number(value)
-          return isNaN(num) ? undefined : num
+          return Number.isNaN(num) ? undefined : num
+        }
         case 'boolean':
           if (typeof value === 'string') {
             const lower = value.toLowerCase()
@@ -283,16 +284,16 @@ export class ConfigValidator extends EventEmitter {
   }
 
   /**
-   * 检查值是否可比较
+   * 检查值是否可比较（数值或字符串）
    */
-  private isComparable(value: any): boolean {
-    return typeof value === 'number' || typeof value === 'string' || value instanceof Date
+  private isComparable(value: unknown): value is number | string {
+    return typeof value === 'number' || typeof value === 'string'
   }
 
   /**
    * 检查未知字段
    */
-  private checkUnknownFields(config: Record<string, any>, prefix = ''): void {
+  private checkUnknownFields(config: Record<string, unknown>, prefix = ''): void {
     for (const [key, value] of Object.entries(config)) {
       const path = prefix ? `${prefix}.${key}` : key
 
@@ -304,7 +305,7 @@ export class ConfigValidator extends EventEmitter {
           this.addError(path, `Unknown field '${path}'`, value, {})
         }
       }
-      else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      else if (this.isRecord(value)) {
         this.checkUnknownFields(value, path)
       }
     }
@@ -313,15 +314,15 @@ export class ConfigValidator extends EventEmitter {
   /**
    * 获取值
    */
-  private getValue(obj: Record<string, any>, path: string): any {
+  private getValue(obj: Record<string, unknown>, path: string): unknown {
     const keys = path.split('.')
-    let current = obj
+    let current: unknown = obj
 
     for (const key of keys) {
-      if (current === null || current === undefined || !(key in current)) {
+      if (!this.isRecord(current) || !(key in current)) {
         return undefined
       }
-      current = current[key]
+      current = (current as Record<string, unknown>)[key]
     }
 
     return current
@@ -330,15 +331,15 @@ export class ConfigValidator extends EventEmitter {
   /**
    * 检查值是否存在
    */
-  private hasValue(obj: Record<string, any>, path: string): boolean {
+  private hasValue(obj: Record<string, unknown>, path: string): boolean {
     const keys = path.split('.')
-    let current = obj
+    let current: unknown = obj
 
     for (const key of keys) {
-      if (current === null || current === undefined || !(key in current)) {
+      if (!this.isRecord(current) || !(key in current)) {
         return false
       }
-      current = current[key]
+      current = (current as Record<string, unknown>)[key]
     }
 
     return true
@@ -347,18 +348,21 @@ export class ConfigValidator extends EventEmitter {
   /**
    * 设置值
    */
-  private setValue(obj: Record<string, any>, path: string, value: any): void {
+  private setValue(obj: Record<string, unknown>, path: string, value: unknown): void {
     const keys = path.split('.')
-    let current = obj
+    let current: Record<string, unknown> = obj
 
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i]
-      if (!key)
+      if (!key) {
         continue
-      if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
+      }
+
+      const next = current[key]
+      if (!this.isRecord(next)) {
         current[key] = {}
       }
-      current = current[key]
+      current = current[key] as Record<string, unknown>
     }
 
     const lastKey = keys[keys.length - 1]
@@ -370,7 +374,7 @@ export class ConfigValidator extends EventEmitter {
   /**
    * 添加错误
    */
-  private addError(path: string, message: string, value: any, rule: ValidationRule): void {
+  private addError(path: string, message: string, value: unknown, rule: ValidationRule): void {
     this.errors.push({ path, message, value, rule })
   }
 
@@ -476,6 +480,13 @@ export class ConfigValidator extends EventEmitter {
    */
   static create(options?: ConfigValidatorOptions): ConfigValidator {
     return new ConfigValidator(options)
+  }
+
+  /**
+   * 简单对象类型守卫
+   */
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value)
   }
 }
 

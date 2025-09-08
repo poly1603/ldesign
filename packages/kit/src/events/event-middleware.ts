@@ -10,7 +10,7 @@ import type { EventListener } from '../types'
  */
 export type MiddlewareFunction = (
   event: string,
-  args: any[],
+  args: unknown[],
   next: () => void | Promise<void>
 ) => void | Promise<void>
 
@@ -116,7 +116,7 @@ export class EventMiddleware {
   /**
    * 执行中间件链
    */
-  async execute(event: string, args: any[], finalHandler?: EventListener): Promise<void> {
+  async execute(event: string, args: unknown[], finalHandler?: EventListener): Promise<void> {
     const enabledMiddleware = this.middleware.filter(info => info.options.enabled)
 
     if (enabledMiddleware.length === 0) {
@@ -131,24 +131,26 @@ export class EventMiddleware {
     const next = async (): Promise<void> => {
       if (index < enabledMiddleware.length) {
         const middlewareInfo = enabledMiddleware[index++]
+        if (!middlewareInfo) {
+          if (finalHandler)
+            await finalHandler(...args)
+          return
+        }
         const startTime = this.enableStats ? Date.now() : 0
 
+        // 更新统计信息
+        if (this.enableStats) {
+          middlewareInfo.callCount++
+          middlewareInfo.lastCalledAt = new Date()
+        }
+
         try {
-          // 更新统计信息
-          if (this.enableStats) {
-            middlewareInfo.callCount++
-            middlewareInfo.lastCalledAt = new Date()
-          }
-
           await middlewareInfo.middleware(event, args, next)
-
-          // 更新执行时间
+        }
+        finally {
           if (this.enableStats && startTime > 0) {
             middlewareInfo.totalExecutionTime += Date.now() - startTime
           }
-        }
-        catch (error) {
-          throw error
         }
       }
       else if (finalHandler) {
@@ -170,7 +172,15 @@ export class EventMiddleware {
   /**
    * 获取中间件统计信息
    */
-  getStats(): Record<string, any> {
+  getStats(): Record<string, {
+    callCount: number
+    lastCalledAt?: Date
+    totalExecutionTime: number
+    averageExecutionTime: number
+    enabled: boolean
+    priority: number
+    tags: string[]
+  }> {
     return this.middleware.reduce(
       (stats, info) => {
         stats[info.options.name] = {
@@ -184,7 +194,15 @@ export class EventMiddleware {
         }
         return stats
       },
-      {} as Record<string, any>,
+      {} as Record<string, {
+        callCount: number
+        lastCalledAt?: Date
+        totalExecutionTime: number
+        averageExecutionTime: number
+        enabled: boolean
+        priority: number
+        tags: string[]
+      }>,
     )
   }
 
@@ -281,12 +299,21 @@ export class BuiltinMiddleware {
   ): MiddlewareFunction {
     const { logLevel = 'info', includeArgs = false, prefix = '[Event]' } = options
 
-    return (event: string, args: any[], next: () => void) => {
+    return (event: string, args: unknown[], next: () => void) => {
       const message = includeArgs
         ? `${prefix} ${event} with args: ${JSON.stringify(args)}`
         : `${prefix} ${event}`
 
-      console[logLevel](message)
+      // Use allowed console methods for warn/error; stdout for info/debug
+      if (logLevel === 'error') {
+        console.error(message)
+      }
+      else if (logLevel === 'warn') {
+        console.warn(message)
+      }
+      else {
+        process.stdout.write(`${message}\n`)
+      }
       next()
     }
   }
@@ -302,7 +329,7 @@ export class BuiltinMiddleware {
   ): MiddlewareFunction {
     const { threshold = 100, onSlowEvent } = options
 
-    return async (event: string, args: any[], next: () => void) => {
+    return async (event: string, _args: unknown[], next: () => void) => {
       const startTime = Date.now()
       await next()
       const duration = Date.now() - startTime
@@ -318,13 +345,13 @@ export class BuiltinMiddleware {
    */
   static errorHandler(
     options: {
-      onError?: (error: Error, event: string, args: any[]) => void
+      onError?: (error: Error, event: string, args: unknown[]) => void
       rethrow?: boolean
     } = {},
   ): MiddlewareFunction {
     const { onError, rethrow = true } = options
 
-    return async (event: string, args: any[], next: () => void) => {
+    return async (event: string, args: unknown[], next: () => void) => {
       try {
         await next()
       }
@@ -353,7 +380,7 @@ export class BuiltinMiddleware {
     const { maxEvents = 100, windowMs = 60000, onLimitExceeded } = options
     const eventCounts = new Map<string, { count: number, resetTime: number }>()
 
-    return (event: string, args: any[], next: () => void) => {
+    return (event: string, _args: unknown[], next: () => void) => {
       const now = Date.now()
       const eventData = eventCounts.get(event)
 
@@ -378,8 +405,8 @@ export class BuiltinMiddleware {
   /**
    * 事件过滤中间件
    */
-  static filter(predicate: (event: string, args: any[]) => boolean): MiddlewareFunction {
-    return (event: string, args: any[], next: () => void) => {
+  static filter(predicate: (event: string, args: unknown[]) => boolean): MiddlewareFunction {
+    return (event: string, args: unknown[], next: () => void) => {
       if (predicate(event, args)) {
         next()
       }
@@ -391,9 +418,9 @@ export class BuiltinMiddleware {
    * 事件转换中间件
    */
   static transform(
-    transformer: (event: string, args: any[]) => { event: string, args: any[] },
+    transformer: (event: string, args: unknown[]) => { event: string, args: unknown[] },
   ): MiddlewareFunction {
-    return (event: string, args: any[], next: () => void) => {
+    return (event: string, args: unknown[], next: () => void) => {
       const transformed = transformer(event, args)
       // 注意：这里需要修改原始参数，因为中间件链是引用传递
       args.splice(0, args.length, ...transformed.args)
@@ -408,7 +435,7 @@ export class BuiltinMiddleware {
     options: {
       ttl?: number
       maxSize?: number
-      keyGenerator?: (event: string, args: any[]) => string
+      keyGenerator?: (event: string, args: unknown[]) => string
     } = {},
   ): MiddlewareFunction {
     const {
@@ -416,9 +443,9 @@ export class BuiltinMiddleware {
       maxSize = 1000,
       keyGenerator = (event, args) => `${event}:${JSON.stringify(args)}`,
     } = options
-    const cache = new Map<string, { value: any, expiry: number }>()
+    const cache = new Map<string, { value: unknown, expiry: number }>()
 
-    return async (event: string, args: any[], next: () => void) => {
+    return async (event: string, args: unknown[], next: () => void) => {
       const key = keyGenerator(event, args)
       const cached = cache.get(key)
 

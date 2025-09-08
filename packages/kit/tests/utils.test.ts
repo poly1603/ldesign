@@ -68,13 +68,13 @@ describe('stringUtils', () => {
 
     it('应该能够转义HTML', () => {
       expect(StringUtils.escapeHtml('<div>Hello & "World"</div>')).toBe(
-        '&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;'
+        '&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;',
       )
     })
 
     it('应该能够反转义HTML', () => {
       expect(StringUtils.unescapeHtml('&lt;div&gt;Hello &amp; &quot;World&quot;&lt;/div&gt;')).toBe(
-        '<div>Hello & "World"</div>'
+        '<div>Hello & "World"</div>',
       )
     })
   })

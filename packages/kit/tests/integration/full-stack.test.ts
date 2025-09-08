@@ -69,7 +69,7 @@ describe('全栈集成测试', () => {
         private logger: Logger,
         private cache: CacheManager,
         private eventBus: EventBus,
-        private validator: Validator
+        private validator: Validator,
       ) {}
 
       async createUser(userData: Omit<User, 'id' | 'createdAt'>): Promise<User> {
@@ -80,7 +80,7 @@ describe('全栈集成测试', () => {
         if (!validationResult.valid) {
           this.logger.error('User validation failed', { errors: validationResult.errors })
           throw new Error(
-            `Validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`
+            `Validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`,
           )
         }
 
@@ -122,7 +122,7 @@ describe('全栈集成测试', () => {
 
       async updateUser(
         id: string,
-        updates: Partial<Omit<User, 'id' | 'createdAt'>>
+        updates: Partial<Omit<User, 'id' | 'createdAt'>>,
       ): Promise<User | null> {
         this.logger.info('Updating user', { userId: id, updates })
 
@@ -137,7 +137,7 @@ describe('全栈集成测试', () => {
         if (!validationResult.valid) {
           this.logger.error('User update validation failed', { errors: validationResult.errors })
           throw new Error(
-            `Validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`
+            `Validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`,
           )
         }
 
@@ -231,7 +231,7 @@ describe('全栈集成测试', () => {
     })
 
     it('应该发布正确的事件', async () => {
-      const events: Array<{ event: string; data: any }> = []
+      const events: Array<{ event: string, data: any }> = []
 
       eventBus.on('user:created', data => events.push({ event: 'user:created', data }))
       eventBus.on('user:cache_hit', data => events.push({ event: 'user:cache_hit', data }))
@@ -323,7 +323,7 @@ describe('全栈集成测试', () => {
         MemoryCache.create({
           maxSize: configManager.get('cache.maxSize'),
           defaultTTL: configManager.get('cache.defaultTTL'),
-        })
+        }),
       )
 
       const appValidator = Validator.create({
@@ -383,7 +383,8 @@ describe('全栈集成测试', () => {
       // 应用应该继续工作即使缓存失败
       try {
         await faultyCache.get('test')
-      } catch (error) {
+      }
+      catch (error) {
         logger.error('Cache operation failed', { error: (error as Error).message })
       }
 

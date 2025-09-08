@@ -30,7 +30,7 @@ export class PerformanceUtils {
     const result = fn()
     const end = performance.now()
 
-    console.log(`${name}: ${(end - start).toFixed(2)}ms`)
+    process.stdout.write(`${name}: ${(end - start).toFixed(2)}ms\n`)
     return result
   }
 
@@ -42,7 +42,7 @@ export class PerformanceUtils {
     const result = await fn()
     const end = performance.now()
 
-    console.log(`${name}: ${(end - start).toFixed(2)}ms`)
+    process.stdout.write(`${name}: ${(end - start).toFixed(2)}ms\n`)
     return result
   }
 
@@ -100,7 +100,7 @@ export class PerformanceUtils {
     const results: BenchmarkResult[] = []
 
     for (const { name, fn } of functions) {
-      const result = await this.quickBenchmark(name, fn, iterations)
+      const result = await this.quickBenchmark(name, () => Promise.resolve(fn()), iterations)
       results.push(result)
     }
 
@@ -177,27 +177,29 @@ export class PerformanceUtils {
     percentiles: Record<string, number>
   }> {
     return new Promise((resolve) => {
-      const { monitorEventLoopDelay } = require('node:perf_hooks')
-      const histogram = monitorEventLoopDelay({ resolution: 20 })
+      ;(async () => {
+        const { monitorEventLoopDelay } = await import('node:perf_hooks')
+        const histogram = monitorEventLoopDelay({ resolution: 20 })
 
-      histogram.enable()
+        histogram.enable()
 
-      setTimeout(() => {
-        histogram.disable()
+        setTimeout(() => {
+          histogram.disable()
 
-        resolve({
-          min: histogram.min,
-          max: histogram.max,
-          mean: histogram.mean,
-          stddev: histogram.stddev,
-          percentiles: {
-            p50: histogram.percentile(50),
-            p90: histogram.percentile(90),
-            p95: histogram.percentile(95),
-            p99: histogram.percentile(99),
-          },
-        })
-      }, duration)
+          resolve({
+            min: histogram.min,
+            max: histogram.max,
+            mean: histogram.mean,
+            stddev: histogram.stddev,
+            percentiles: {
+              p50: histogram.percentile(50),
+              p90: histogram.percentile(90),
+              p95: histogram.percentile(95),
+              p99: histogram.percentile(99),
+            },
+          })
+        }, duration)
+      })()
     })
   }
 
@@ -224,21 +226,26 @@ export class PerformanceUtils {
     return {
       start: () => {
         try {
-          const { PerformanceObserver } = require('node:perf_hooks')
-          observer = new PerformanceObserver((list: any) => {
-            const entries = list.getEntries()
-            entries.forEach((entry: any) => {
-              if (entry.entryType === 'gc') {
-                gcStats.push({
-                  type: this.getGCType(entry.kind),
-                  duration: entry.duration,
-                  timestamp: new Date(),
+          void import('node:perf_hooks')
+            .then(({ PerformanceObserver }) => {
+              observer = new PerformanceObserver((list: any) => {
+                const entries = list.getEntries()
+                entries.forEach((entry: any) => {
+                  if (entry.entryType === 'gc') {
+                    gcStats.push({
+                      type: this.getGCType(entry.kind),
+                      duration: entry.duration,
+                      timestamp: new Date(),
+                    })
+                  }
                 })
-              }
-            })
-          })
+              })
 
-          observer.observe({ entryTypes: ['gc'] })
+              observer.observe({ entryTypes: ['gc'] })
+            })
+            .catch((error) => {
+              console.warn('GC monitoring not available:', error)
+            })
         }
         catch (error) {
           console.warn('GC monitoring not available:', error)

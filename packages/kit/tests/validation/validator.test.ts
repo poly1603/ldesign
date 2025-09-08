@@ -218,7 +218,7 @@ describe('validator', () => {
       validator.addRule('username', {
         code: 'UNIQUE',
         async: true,
-        validator: async value => {
+        validator: async (value) => {
           await global.testUtils.sleep(10)
           return value !== 'taken'
         },

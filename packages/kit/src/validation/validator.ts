@@ -233,10 +233,7 @@ export class Validator extends EventEmitter {
 
     // 执行验证函数
     if (rule.validator) {
-      const validationResult
-        = this.options.enableAsync && rule.async
-          ? await rule.validator(value, data, context)
-          : rule.validator(value, data, context)
+      const validationResult = await Promise.resolve(rule.validator(value, data, context))
 
       if (typeof validationResult === 'boolean') {
         if (!validationResult) {

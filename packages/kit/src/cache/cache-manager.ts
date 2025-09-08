@@ -96,7 +96,7 @@ export class CacheManager extends EventEmitter {
   /**
    * 获取缓存值
    */
-  async get<T = any>(key: string, store?: string): Promise<T | undefined> {
+  async get<T = unknown>(key: string, store?: string): Promise<T | undefined> {
     const cacheStore = this.getStore(store)
     if (!cacheStore) {
       throw new Error(`Store '${store || this.defaultStore}' not found`)
@@ -109,7 +109,7 @@ export class CacheManager extends EventEmitter {
   /**
    * 设置缓存值
    */
-  async set<T = any>(key: string, value: T, ttl?: number, store?: string): Promise<void> {
+  async set<T = unknown>(key: string, value: T, ttl?: number, store?: string): Promise<void> {
     const cacheStore = this.getStore(store)
     if (!cacheStore) {
       throw new Error(`Store '${store || this.defaultStore}' not found`)
@@ -168,7 +168,7 @@ export class CacheManager extends EventEmitter {
   /**
    * 获取或设置缓存（缓存穿透保护）
    */
-  async getOrSet<T = any>(
+  async getOrSet<T = unknown>(
     key: string,
     factory: () => Promise<T> | T,
     ttl?: number,
@@ -192,7 +192,7 @@ export class CacheManager extends EventEmitter {
   /**
    * 批量获取缓存
    */
-  async mget<T = any>(keys: string[], store?: string): Promise<Map<string, T>> {
+  async mget<T = unknown>(keys: string[], store?: string): Promise<Map<string, T>> {
     const cacheStore = this.getStore(store)
     if (!cacheStore) {
       throw new Error(`Store '${store || this.defaultStore}' not found`)
@@ -214,9 +214,13 @@ export class CacheManager extends EventEmitter {
     else {
       // 逐个获取
       for (let i = 0; i < keys.length; i++) {
-        const value = await cacheStore.get<T>(fullKeys[i])
+        const fullKey = fullKeys[i]
+        const originalKey = keys[i]
+        if (!fullKey || !originalKey)
+          continue
+        const value = await cacheStore.get<T>(fullKey)
         if (value !== undefined) {
-          results.set(keys[i], value)
+          results.set(originalKey, value)
         }
       }
     }
@@ -227,7 +231,7 @@ export class CacheManager extends EventEmitter {
   /**
    * 批量设置缓存
    */
-  async mset<T = any>(entries: Map<string, T>, ttl?: number, store?: string): Promise<void> {
+  async mset<T = unknown>(entries: Map<string, T>, ttl?: number, store?: string): Promise<void> {
     const cacheStore = this.getStore(store)
     if (!cacheStore) {
       throw new Error(`Store '${store || this.defaultStore}' not found`)
@@ -446,7 +450,7 @@ export class CacheManager extends EventEmitter {
   /**
    * 创建带Redis缓存的管理器
    */
-  static createWithRedisCache(redisOptions: any, options?: CacheOptions): CacheManager {
+  static createWithRedisCache(redisOptions: unknown, options?: CacheOptions): CacheManager {
     const manager = new CacheManager(options)
     manager.addStore('redis', new RedisCache(redisOptions))
     return manager

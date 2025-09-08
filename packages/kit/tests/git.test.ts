@@ -26,7 +26,8 @@ describe('gitManager', () => {
   afterEach(async () => {
     try {
       await FileSystem.removeDir(testDir)
-    } catch {
+    }
+    catch {
       // 忽略清理错误
     }
   })
@@ -106,8 +107,8 @@ describe('gitManager', () => {
       const { exec } = await import('node:child_process')
       vi.mocked(exec).mockImplementation((command, options, callback) => {
         if (typeof callback === 'function') {
-          const mockOutput =
-            'abc1234|John Doe|john@example.com|2023-12-25 10:30:00 +0800|Initial commit'
+          const mockOutput
+            = 'abc1234|John Doe|john@example.com|2023-12-25 10:30:00 +0800|Initial commit'
           callback(null, { stdout: mockOutput, stderr: '' } as any)
         }
         return {} as any
@@ -204,7 +205,7 @@ describe('gitManager', () => {
       })
 
       await expect(
-        git.addRemote('upstream', 'https://github.com/user/repo.git')
+        git.addRemote('upstream', 'https://github.com/user/repo.git'),
       ).resolves.not.toThrow()
     })
 
@@ -269,7 +270,7 @@ describe('gitUtils', () => {
   describe('工具函数', () => {
     it('应该能够查找仓库根目录', async () => {
       // Mock FileSystem.exists
-      vi.spyOn(FileSystem, 'exists').mockImplementation(async path => {
+      vi.spyOn(FileSystem, 'exists').mockImplementation(async (path) => {
         return path.includes('.git')
       })
 

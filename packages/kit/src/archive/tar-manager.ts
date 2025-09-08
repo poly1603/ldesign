@@ -80,7 +80,6 @@ export class TarManager extends EventEmitter {
     const tarStream = tar.create(
       {
         gzip: mergedOptions.gzip,
-        level: mergedOptions.gzip ? mergedOptions.compressionLevel : undefined,
         preservePaths: false,
         follow: mergedOptions.followSymlinks,
         filter: (path) => {
@@ -94,7 +93,7 @@ export class TarManager extends EventEmitter {
     )
 
     // 监听事件
-    tarStream.on('entry', (entry) => {
+    tarStream.on('entry', (entry: any) => {
       const archiveEntry: ArchiveEntry = {
         name: entry.path,
         size: entry.size || 0,
@@ -241,7 +240,6 @@ export class TarManager extends EventEmitter {
     options: CompressionOptions = {},
   ): Promise<void> {
     const fileList = Array.isArray(files) ? files : [files]
-    const mergedOptions = { ...this.options, ...options }
 
     // 创建临时文件
     const tempPath = `${archivePath}.tmp`

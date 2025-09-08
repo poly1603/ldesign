@@ -16,11 +16,11 @@ describe('builderFactory', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // 清除所有预设
-    BuilderFactory.getPresetNames().forEach(name => {
+    BuilderFactory.getPresetNames().forEach((name) => {
       BuilderFactory.removePreset(name)
     })
     // 重新注册内置预设
-    Object.values(BuiltinPresets).forEach(preset => {
+    Object.values(BuiltinPresets).forEach((preset) => {
       BuilderFactory.registerPreset(preset)
     })
   })
@@ -106,7 +106,7 @@ describe('builderFactory', () => {
         expect.objectContaining({
           entry: 'src/main.ts',
           outDir: 'dist',
-        })
+        }),
       )
       expect(builder).toBeInstanceOf(ViteBuilder)
     })
@@ -121,7 +121,7 @@ describe('builderFactory', () => {
             expect.objectContaining({ format: 'es' }),
             expect.objectContaining({ format: 'cjs' }),
           ]),
-        })
+        }),
       )
       expect(builder).toBeInstanceOf(RollupBuilder)
     })
@@ -138,7 +138,7 @@ describe('builderFactory', () => {
         expect.objectContaining({
           entry: 'src/custom.ts',
           outDir: 'custom-dist',
-        })
+        }),
       )
     })
 
@@ -157,7 +157,7 @@ describe('builderFactory', () => {
             port: 8080,
             open: true, // 来自预设的默认值
           }),
-        })
+        }),
       )
     })
   })
@@ -261,7 +261,7 @@ describe('builderFactory', () => {
           entry: 'src/index.ts',
           outDir: 'build',
           minify: false,
-        })
+        }),
       )
     })
 
@@ -282,7 +282,7 @@ describe('builderFactory', () => {
       expect(ViteBuilder).toHaveBeenCalledWith(
         expect.objectContaining({
           external: ['lodash'], // 数组应该被完全替换
-        })
+        }),
       )
     })
 
@@ -307,7 +307,7 @@ describe('builderFactory', () => {
           entry: 'src/index.ts',
           outDir: 'build',
           minify: true, // undefined 值不应该覆盖预设值
-        })
+        }),
       )
     })
   })

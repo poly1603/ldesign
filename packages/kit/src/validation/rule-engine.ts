@@ -264,7 +264,10 @@ export class RuleEngine extends EventEmitter {
   /**
    * 评估条件
    */
-  private async evaluateCondition(condition: Function, context: RuleContext): Promise<boolean> {
+  private async evaluateCondition(
+    condition: (context: RuleContext) => boolean | Promise<boolean>,
+    context: RuleContext,
+  ): Promise<boolean> {
     try {
       const result = condition(context)
       return result instanceof Promise ? await result : result

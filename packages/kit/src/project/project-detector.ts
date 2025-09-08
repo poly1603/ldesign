@@ -555,7 +555,7 @@ export class ProjectDetector {
    */
   private detectReactProject(
     dependencies: Record<string, string>,
-    configFiles: ConfigFile[],
+    _configFiles: ConfigFile[],
   ): {
       type: ProjectType
       framework: string
@@ -820,16 +820,18 @@ export class ProjectDetector {
       case 'file':
         return configFiles.some(f => f.name === condition.target)
 
-      case 'dependency':
+      case 'dependency': {
         const allDeps = {
           ...packageJson?.dependencies,
           ...packageJson?.devDependencies,
         }
         return condition.target in allDeps
+      }
 
-      case 'script':
+      case 'script': {
         const scripts = packageJson?.scripts || {}
         return condition.target in scripts
+      }
 
       case 'content':
         // 这里可以实现文件内容检测

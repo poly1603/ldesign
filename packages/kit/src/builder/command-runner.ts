@@ -1,19 +1,23 @@
 /**
  * 命令运行器
- * 
+ *
  * 负责执行具体的构建命令
  */
 
-import * as path from 'path'
-import { build, watch, analyze, init } from '@ldesign/builder'
-import type { BuildOptions, BuildResult, WatchResult, AnalyzeResult, InitResult } from '@ldesign/builder'
-import type { 
-  BuildCommand, 
-  DevCommand, 
-  AnalyzeCommand, 
+import type {
+  AnalyzeCommand,
+  AnalyzeResult,
+  BuildCommand,
+  BuildOptions,
+  BuildResult,
+  ConfigFile,
+  DevCommand,
   InitCommand,
-  ConfigFile 
+  InitResult,
+  WatchResult,
 } from './types'
+import * as path from 'node:path'
+import * as Builder from '@ldesign/builder'
 
 /**
  * 命令运行器
@@ -32,27 +36,28 @@ export class CommandRunner {
    */
   async runBuild(
     config: ConfigFile | null,
-    options: BuildCommand
+    options: BuildCommand,
   ): Promise<BuildResult> {
     const buildOptions = this.mergeBuildOptions(config?.config || {}, options)
-    
+
     if (this.verbose) {
-      console.log('🔧 构建配置:', JSON.stringify(buildOptions, null, 2))
+      process.stdout.write(`🔧 构建配置: ${JSON.stringify(buildOptions, null, 2)}\n`)
     }
 
     if (options.watch) {
-      console.log('👀 启动监听模式...')
-      const watchResult = await watch(buildOptions)
-      
+      process.stdout.write('👀 启动监听模式...\n')
+      await (Builder as any).watch(buildOptions)
+
       // 监听模式不会返回，这里返回一个占位结果
       return {
         success: true,
         outputs: [],
         duration: 0,
       }
-    } else {
-      console.log('🚀 开始构建...')
-      return await build(buildOptions)
+    }
+    else {
+      process.stdout.write('🚀 开始构建...\n')
+      return await (Builder as any).build(buildOptions)
     }
   }
 
@@ -61,7 +66,7 @@ export class CommandRunner {
    */
   async runDev(
     config: ConfigFile | null,
-    options: DevCommand
+    options: DevCommand,
   ): Promise<WatchResult> {
     const buildOptions = this.mergeBuildOptions(config?.config || {}, {
       mode: 'development',
@@ -78,18 +83,18 @@ export class CommandRunner {
     }
 
     if (this.verbose) {
-      console.log('🔧 开发配置:', JSON.stringify(watchOptions, null, 2))
+      process.stdout.write(`🔧 开发配置: ${JSON.stringify(watchOptions, null, 2)}\n`)
     }
 
-    console.log('🚀 启动开发模式...')
-    return await watch(watchOptions)
+    process.stdout.write('🚀 启动开发模式...\n')
+    return await (Builder as any).watch(watchOptions)
   }
 
   /**
    * 执行分析命令
    */
   async runAnalyze(
-    options: AnalyzeCommand
+    options: AnalyzeCommand,
   ): Promise<AnalyzeResult> {
     const analyzeOptions = {
       includePatterns: ['**/*.{ts,tsx,js,jsx,vue}'],
@@ -98,11 +103,11 @@ export class CommandRunner {
     }
 
     if (this.verbose) {
-      console.log('🔧 分析配置:', JSON.stringify(analyzeOptions, null, 2))
+      process.stdout.write(`🔧 分析配置: ${JSON.stringify(analyzeOptions, null, 2)}\n`)
     }
 
-    console.log('📊 开始分析项目...')
-    const result = await analyze(this.cwd, analyzeOptions)
+    process.stdout.write('📊 开始分析项目...\n')
+    const result = await (Builder as any).analyze(this.cwd, analyzeOptions)
 
     // 如果需要生成报告
     if (options.report && options.output) {
@@ -125,11 +130,11 @@ export class CommandRunner {
     }
 
     if (this.verbose) {
-      console.log('🔧 初始化配置:', JSON.stringify(initOptions, null, 2))
+      process.stdout.write(`🔧 初始化配置: ${JSON.stringify(initOptions, null, 2)}\n`)
     }
 
-    console.log('🎯 初始化项目...')
-    return await init(initOptions)
+    process.stdout.write('🎯 初始化项目...\n')
+    return await (Builder as any).init(initOptions)
   }
 
   /**
@@ -137,7 +142,7 @@ export class CommandRunner {
    */
   private mergeBuildOptions(
     baseConfig: BuildOptions,
-    overrides: Partial<BuildOptions>
+    overrides: Partial<BuildOptions>,
   ): BuildOptions {
     // 处理格式选项
     let formats = baseConfig.formats
@@ -162,18 +167,20 @@ export class CommandRunner {
   private resolveInput(input: any): any {
     if (typeof input === 'string') {
       return path.resolve(this.cwd, input)
-    } else if (Array.isArray(input)) {
-      return input.map(item => 
-        typeof item === 'string' ? path.resolve(this.cwd, item) : item
+    }
+    else if (Array.isArray(input)) {
+      return input.map(item =>
+        typeof item === 'string' ? path.resolve(this.cwd, item) : item,
       )
-    } else if (input && typeof input === 'object') {
-      const resolved: Record<string, string> = {}
+    }
+    else if (input && typeof input === 'object') {
+      const resolved: Record<string, any> = {}
       for (const [key, value] of Object.entries(input)) {
         resolved[key] = typeof value === 'string' ? path.resolve(this.cwd, value) : value
       }
       return resolved
     }
-    
+
     return input
   }
 
@@ -182,10 +189,10 @@ export class CommandRunner {
    */
   private async generateAnalyzeReport(
     result: AnalyzeResult,
-    outputPath: string
+    outputPath: string,
   ): Promise<void> {
-    const fs = await import('fs/promises')
-    
+    const fs = await import('node:fs/promises')
+
     const report = {
       timestamp: new Date().toISOString(),
       projectType: result.projectType,
@@ -198,8 +205,8 @@ export class CommandRunner {
 
     const reportContent = JSON.stringify(report, null, 2)
     const resolvedPath = path.resolve(this.cwd, outputPath)
-    
+
     await fs.writeFile(resolvedPath, reportContent, 'utf-8')
-    console.log(`📄 分析报告已生成: ${resolvedPath}`)
+    process.stdout.write(`📄 分析报告已生成: ${resolvedPath}\n`)
   }
 }

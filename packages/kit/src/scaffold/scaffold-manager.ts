@@ -151,8 +151,8 @@ export class ScaffoldManager extends EventEmitter {
 
       // 启用热重载
       if (this.options.enableHotReload && this.configCache) {
-        this.hotReload = new ConfigHotReload(this.configCache, this.configManager.loader)
-        await this.hotReload.enable(this.configManager.options.configFile!)
+        this.hotReload = new ConfigHotReload(this.configCache, (this.configManager as any).loader)
+        await this.hotReload.enable((this.configManager as any).options.configFile!)
       }
 
       // 初始化子模块

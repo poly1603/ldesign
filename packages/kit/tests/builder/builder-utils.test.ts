@@ -23,7 +23,7 @@ describe('builderUtils', () => {
       vi.mocked(readFileSync).mockReturnValue(
         JSON.stringify({
           dependencies: { vue: '^3.0.0' },
-        })
+        }),
       )
 
       const type = BuilderUtils.detectProjectType('/test/project')
@@ -34,8 +34,8 @@ describe('builderUtils', () => {
       vi.mocked(existsSync).mockReturnValue(true)
       vi.mocked(readFileSync).mockReturnValue(
         JSON.stringify({
-          dependencies: { react: '^18.0.0', 'react-dom': '^18.0.0' },
-        })
+          dependencies: { 'react': '^18.0.0', 'react-dom': '^18.0.0' },
+        }),
       )
 
       const type = BuilderUtils.detectProjectType('/test/project')
@@ -47,7 +47,7 @@ describe('builderUtils', () => {
       vi.mocked(readFileSync).mockReturnValue(
         JSON.stringify({
           dependencies: { '@angular/core': '^15.0.0' },
-        })
+        }),
       )
 
       const type = BuilderUtils.detectProjectType('/test/project')
@@ -60,7 +60,7 @@ describe('builderUtils', () => {
         JSON.stringify({
           main: 'dist/index.js',
           module: 'dist/index.esm.js',
-        })
+        }),
       )
 
       const type = BuilderUtils.detectProjectType('/test/project')
@@ -73,7 +73,7 @@ describe('builderUtils', () => {
         JSON.stringify({
           type: 'module',
           dependencies: { express: '^4.18.0' },
-        })
+        }),
       )
 
       const type = BuilderUtils.detectProjectType('/test/project')
@@ -280,7 +280,7 @@ describe('builderUtils', () => {
         JSON.stringify({
           dependencies: { react: '^18.0.0' },
           devDependencies: { typescript: '^5.0.0' },
-        })
+        }),
       )
 
       const result = BuilderUtils.checkDependencies('/test/project', ['react', 'typescript', 'vue'])
@@ -308,7 +308,7 @@ describe('builderUtils', () => {
       expect(writeFileSync).toHaveBeenCalledWith(
         expect.stringContaining('build.config.js'),
         expect.stringContaining('"entry": "src/index.ts"'),
-        'utf-8'
+        'utf-8',
       )
     })
 
@@ -320,14 +320,14 @@ describe('builderUtils', () => {
       expect(writeFileSync).toHaveBeenCalledWith(
         expect.stringContaining('custom.config.js'),
         expect.any(String),
-        'utf-8'
+        'utf-8',
       )
     })
 
     it('应该读取配置文件', () => {
       vi.mocked(existsSync).mockReturnValue(true)
       vi.mocked(readFileSync).mockReturnValue(
-        'export default {"entry": "src/index.ts", "outDir": "dist"}'
+        'export default {"entry": "src/index.ts", "outDir": "dist"}',
       )
 
       const config = BuilderUtils.readConfigFile('/test/project')
@@ -355,7 +355,7 @@ describe('builderUtils', () => {
       vi.mocked(readFileSync).mockReturnValue(
         JSON.stringify({
           dependencies: { vue: '^3.0.0' },
-        })
+        }),
       )
 
       const config = BuilderUtils.getRecommendedConfig('/test/project')
@@ -374,7 +374,7 @@ describe('builderUtils', () => {
       vi.mocked(readFileSync).mockReturnValue(
         JSON.stringify({
           main: 'dist/index.js',
-        })
+        }),
       )
 
       const config = BuilderUtils.getRecommendedConfig('/test/project')

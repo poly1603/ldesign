@@ -56,16 +56,25 @@ export class ServiceManager extends EventEmitter {
       throw new ProcessError(`Service already registered: ${name}`, '', undefined)
     }
 
+    const fullConfig: Required<ServiceConfig> = {
+      command: config.command,
+      args: config.args ?? [],
+      cwd: config.cwd ?? process.cwd(),
+      env: config.env ?? {},
+      stdio: config.stdio ?? 'pipe',
+      detached: config.detached ?? false,
+      autoRestart: config.autoRestart ?? true,
+      maxRestarts: config.maxRestarts ?? 5,
+      restartDelay: config.restartDelay ?? 1000,
+      healthCheck: config.healthCheck ?? (async () => true),
+      healthCheckInterval: config.healthCheckInterval ?? 30000,
+      gracefulShutdownTimeout: config.gracefulShutdownTimeout ?? 10000,
+      logFile: config.logFile ?? false,
+    }
+
     const service: ManagedService = {
       name,
-      config: {
-        autoRestart: true,
-        maxRestarts: 5,
-        restartDelay: 1000,
-        healthCheckInterval: 30000,
-        gracefulShutdownTimeout: 10000,
-        ...config,
-      },
+      config: fullConfig,
       status: 'stopped',
       restartCount: 0,
       startTime: null,
@@ -115,9 +124,7 @@ export class ServiceManager extends EventEmitter {
       this.setupProcessListeners(service)
 
       // 启动健康检查
-      if (service.config.healthCheck) {
-        this.startHealthCheck(service)
-      }
+      this.startHealthCheck(service)
 
       this.emit('started', { name, pid: childProcess.pid })
     }

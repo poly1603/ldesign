@@ -647,7 +647,7 @@ export class QueryBuilder {
    * 克隆查询构建器
    */
   clone(): QueryBuilder {
-    const builder = new QueryBuilder(this.connection || null)
+    const builder = new QueryBuilder(this.connection || undefined)
     builder.queryType = this.queryType
     builder.tableName = this.tableName
     builder.selectFields = [...this.selectFields]

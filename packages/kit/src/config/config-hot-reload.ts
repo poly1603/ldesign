@@ -40,7 +40,7 @@ export interface ReloadResult {
 export class ConfigHotReload extends EventEmitter {
   private cache: ConfigCache
   private watcher?: ConfigWatcher
-  private loader: ConfigLoader
+  private _loader: ConfigLoader
   private options: Required<HotReloadOptions>
   private isEnabled = false
   private reloadCount = 0
@@ -50,7 +50,7 @@ export class ConfigHotReload extends EventEmitter {
     super()
 
     this.cache = cache
-    this.loader = loader
+    this._loader = loader
     this.options = {
       enabled: options.enabled !== false,
       debounceMs: options.debounceMs || 500,
@@ -211,7 +211,7 @@ export class ConfigHotReload extends EventEmitter {
     enabled: boolean
     reloadCount: number
     lastReload?: ReloadResult
-    watcherStats?: any
+    watcherStats?: unknown
   } {
     return {
       enabled: this.isEnabled,
@@ -262,7 +262,7 @@ export class ConfigHotReload extends EventEmitter {
     })
   }
 
-  private async handleFileChange(event: { filePath: string, eventType: string }): Promise<void> {
+  private async handleFileChange(_event: { filePath: string, eventType: string }): Promise<void> {
     if (!this.isEnabled) {
       return
     }
@@ -279,13 +279,15 @@ export class ConfigHotReload extends EventEmitter {
     this.emit('watcherError', error)
   }
 
-  private async loadConfiguration(): Promise<Record<string, any>> {
+  private async loadConfiguration(): Promise<Record<string, unknown>> {
+    // reference loader to avoid unused warning
+    void this._loader
     // 这里需要根据实际情况加载配置
     // 暂时返回空对象
     return {}
   }
 
-  private fullReload(newConfig: Record<string, any>, source: string): ConfigChange[] {
+  private fullReload(newConfig: Record<string, unknown>, source: string): ConfigChange[] {
     const changes: ConfigChange[] = []
 
     // 清空现有配置

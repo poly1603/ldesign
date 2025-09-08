@@ -55,7 +55,7 @@ describe('performanceMonitor', () => {
       expect(performance.measure).toHaveBeenCalledWith(
         'test-timer',
         'test-timer-start',
-        'test-timer-end'
+        'test-timer-end',
       )
     })
 
@@ -105,7 +105,7 @@ describe('performanceMonitor', () => {
       const errorFunction = vi.fn().mockRejectedValue(new Error('Test error'))
 
       await expect(monitor.measureFunction('error-func', errorFunction)).rejects.toThrow(
-        'Test error'
+        'Test error',
       )
 
       // 验证计时器已被清理
@@ -182,7 +182,7 @@ describe('performanceMonitor', () => {
         monitor.benchmark('timeout-test', slowFunction, {
           iterations: 1,
           timeout: 50,
-        })
+        }),
       ).rejects.toThrow('Benchmark timeout')
     })
   })

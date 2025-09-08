@@ -10,11 +10,6 @@ import type { DatabaseConnection } from '../types'
  */
 export class SchemaBuilder {
   private connection: DatabaseConnection
-  private tableName: string = ''
-  private columns: ColumnDefinition[] = []
-  private indexes: IndexDefinition[] = []
-  private foreignKeys: ForeignKeyDefinition[] = []
-  private tableOptions: TableOptions = {}
 
   constructor(connection: DatabaseConnection) {
     this.connection = connection
@@ -91,7 +86,6 @@ export class SchemaBuilder {
    */
   private buildCreateTableSQL(tableName: string, tableBuilder: TableBuilder): string {
     const columns = tableBuilder.getColumns()
-    const indexes = tableBuilder.getIndexes()
     const foreignKeys = tableBuilder.getForeignKeys()
 
     let sql = `CREATE TABLE ${tableName} (\n`
@@ -666,12 +660,12 @@ interface ForeignKeyDefinition {
   onUpdate?: string
 }
 
-interface TableOptions {
+/* interface TableOptions {
   engine?: string
   charset?: string
   collation?: string
   comment?: string
-}
+} */
 
 interface TableInfo {
   name: string

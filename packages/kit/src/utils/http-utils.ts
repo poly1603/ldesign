@@ -3,9 +3,9 @@
  * 提供高级 HTTP 请求功能、重试机制、缓存等
  */
 
-import type { RequestInit, Response } from 'node-fetch'
+import { createHash } from 'node:crypto'
 import { EventEmitter } from 'node:events'
-import fetch from 'node-fetch'
+import fetch, { type RequestInit, type Response } from 'node-fetch'
 
 /**
  * HTTP 请求选项
@@ -292,28 +292,27 @@ export class HttpUtils extends EventEmitter {
     const fileStream = fs.createWriteStream(filePath)
 
     if (response.body) {
-      const reader = response.body.getReader()
       const contentLength = Number.parseInt(response.headers.get('content-length') || '0')
       let downloaded = 0
 
-      try {
-        while (true) {
-          const { done, value } = await reader.read()
-
-          if (done)
-            break
-
-          downloaded += value.length
-          fileStream.write(value)
-
-          if (options.onProgress && contentLength > 0) {
-            options.onProgress(downloaded, contentLength)
-          }
-        }
-      }
-      finally {
-        fileStream.end()
-      }
+      await new Promise<void>((resolve, reject) => {
+        (response.body as any)
+          .on('data', (chunk: Buffer) => {
+            downloaded += chunk.length
+            fileStream.write(chunk)
+            if (options.onProgress && contentLength > 0) {
+              options.onProgress(downloaded, contentLength)
+            }
+          })
+          .on('end', () => {
+            fileStream.end()
+            resolve()
+          })
+          .on('error', (err: Error) => {
+            fileStream.end()
+            reject(err)
+          })
+      })
     }
   }
 
@@ -337,7 +336,7 @@ export class HttpUtils extends EventEmitter {
       method: 'POST',
       body: form as any,
       headers: {
-        ...form.getHeaders(),
+        ...((form as any).getHeaders ? (form as any).getHeaders() : {}),
         ...options.headers,
       },
     })
@@ -402,8 +401,7 @@ export class HttpUtils extends EventEmitter {
   private static generateCacheKey(url: string, options: HttpRequestOptions): string {
     const key = `${options.method || 'GET'}:${url}`
     if (options.body) {
-      const bodyHash = require('node:crypto')
-        .createHash('md5')
+      const bodyHash = createHash('md5')
         .update(JSON.stringify(options.body))
         .digest('hex')
       return `${key}:${bodyHash}`

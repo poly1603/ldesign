@@ -219,7 +219,7 @@ export class StatusIndicator extends EventEmitter {
     })
 
     // 显示表头
-    const headerRow = headers.map((header, index) => header.padEnd(columnWidths[index])).join(' | ')
+    const headerRow = headers.map((header, index) => header.padEnd(columnWidths[index] ?? 10)).join(' | ')
 
     this.info(headerRow)
     this.info('-'.repeat(headerRow.length))
@@ -228,8 +228,10 @@ export class StatusIndicator extends EventEmitter {
     rows.forEach((row) => {
       const formattedRow = row
         .map((cell, index) => {
-          const value = cell.value.padEnd(columnWidths[index])
-          const type = cell.type || 'info'
+          const width = columnWidths[index] ?? 10
+          const safeCell = cell ?? { value: '', type: 'info' as StatusType }
+          const value = String(safeCell.value ?? '').padEnd(width)
+          const type = safeCell.type || 'info'
           return this.colorizeText(value, type)
         })
         .join(' | ')
@@ -332,7 +334,7 @@ export class StatusIndicator extends EventEmitter {
    * 获取最后一条消息
    */
   getLastMessage(): StatusMessage | null {
-    return this.messages.length > 0 ? this.messages[this.messages.length - 1] : null
+    return this.messages.length > 0 ? (this.messages[this.messages.length - 1] as StatusMessage) : null
   }
 
   /**

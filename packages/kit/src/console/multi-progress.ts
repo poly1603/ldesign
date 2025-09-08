@@ -5,7 +5,6 @@
 
 import { EventEmitter } from 'node:events'
 import * as cliProgress from 'cli-progress'
-import { ConsoleTheme } from './console-theme'
 import { StatusIndicator } from './status-indicator'
 
 /**
@@ -79,7 +78,6 @@ export interface OverallProgress {
  */
 export class MultiProgress extends EventEmitter {
   private options: Required<MultiProgressOptions>
-  private theme: ConsoleTheme
   private multiBar: cliProgress.MultiBar | null = null
   private tasks = new Map<string, TaskProgress>()
   private taskBars = new Map<string, cliProgress.SingleBar>()
@@ -87,12 +85,10 @@ export class MultiProgress extends EventEmitter {
   private statusIndicator: StatusIndicator
   private isActive = false
   private startTime = 0
-  private maxConcurrent: number
 
   constructor(options: MultiProgressOptions = {}) {
     super()
 
-    this.theme = ConsoleTheme.create(options.theme)
     this.statusIndicator = StatusIndicator.create({ theme: options.theme })
 
     this.options = {
@@ -107,8 +103,6 @@ export class MultiProgress extends EventEmitter {
       maxConcurrent: options.maxConcurrent || 5,
       autoStart: options.autoStart !== false,
     }
-
-    this.maxConcurrent = this.options.maxConcurrent
   }
 
   /**

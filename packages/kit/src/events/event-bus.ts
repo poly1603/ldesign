@@ -10,11 +10,11 @@ import { EventEmitter } from './event-emitter'
  * 事件总线类
  */
 export class EventBus {
-  private static instance: EventBus
+  private static instance: EventBus | undefined
   private emitter: EventEmitter
   private channels: Map<string, EventEmitter> = new Map()
   private filters: Map<string, EventFilter[]> = new Map()
-  private middleware: Array<(event: string, args: any[], next: () => void) => void> = []
+  private middleware: Array<(event: string, args: unknown[], next: () => void) => void> = []
   private options: Required<EventBusOptions>
 
   constructor(options: EventBusOptions = {}) {
@@ -43,7 +43,7 @@ export class EventBus {
     if (!EventBus.instance) {
       EventBus.instance = new EventBus(options)
     }
-    return EventBus.instance
+    return EventBus.instance!
   }
 
   /**
@@ -120,14 +120,14 @@ export class EventBus {
   /**
    * 发布事件
    */
-  emit(event: string, ...args: any[]): boolean {
+  emit(event: string, ...args: unknown[]): boolean {
     return this.emitToChannel('default', event, ...args)
   }
 
   /**
    * 发布事件到指定频道
    */
-  emitToChannel(channel: string, event: string, ...args: any[]): boolean {
+  emitToChannel(channel: string, event: string, ...args: unknown[]): boolean {
     const channelEmitter = this.getChannel(channel)
     if (!channelEmitter) {
       return false
@@ -154,14 +154,14 @@ export class EventBus {
   /**
    * 异步发布事件
    */
-  async emitAsync(event: string, ...args: any[]): Promise<any[]> {
+  async emitAsync(event: string, ...args: unknown[]): Promise<unknown[]> {
     return this.emitAsyncToChannel('default', event, ...args)
   }
 
   /**
    * 异步发布事件到指定频道
    */
-  async emitAsyncToChannel(channel: string, event: string, ...args: any[]): Promise<any[]> {
+  async emitAsyncToChannel(channel: string, event: string, ...args: unknown[]): Promise<unknown[]> {
     const channelEmitter = this.getChannel(channel)
     if (!channelEmitter) {
       return []
@@ -178,7 +178,7 @@ export class EventBus {
   /**
    * 广播事件到所有频道
    */
-  broadcast(event: string, ...args: any[]): void {
+  broadcast(event: string, ...args: unknown[]): void {
     for (const [channelName] of this.channels) {
       this.emitToChannel(channelName, event, ...args)
     }
@@ -246,7 +246,7 @@ export class EventBus {
   /**
    * 添加中间件
    */
-  use(middleware: (event: string, args: any[], next: () => void) => void): this {
+  use(middleware: (event: string, args: unknown[], next: () => void) => void): this {
     this.middleware.push(middleware)
     return this
   }
@@ -254,7 +254,7 @@ export class EventBus {
   /**
    * 移除中间件
    */
-  removeMiddleware(middleware: (event: string, args: any[], next: () => void) => void): boolean {
+  removeMiddleware(middleware: (event: string, args: unknown[], next: () => void) => void): boolean {
     const index = this.middleware.indexOf(middleware)
     if (index !== -1) {
       this.middleware.splice(index, 1)
@@ -296,7 +296,7 @@ export class EventBus {
   /**
    * 应用过滤器
    */
-  private applyFilters(event: string, args: any[]): boolean {
+  private applyFilters(event: string, args: unknown[]): boolean {
     const filters = this.filters.get(event)
     if (!filters || filters.length === 0) {
       return true
@@ -308,13 +308,18 @@ export class EventBus {
   /**
    * 应用中间件
    */
-  private applyMiddleware(emitter: EventEmitter, event: string, args: any[]): boolean {
+  private applyMiddleware(emitter: EventEmitter, event: string, args: unknown[]): boolean {
     let index = 0
 
     const next = (): void => {
       if (index < this.middleware.length) {
         const middleware = this.middleware[index++]
-        middleware(event, args, next)
+        if (middleware) {
+          middleware(event, args, next)
+        }
+        else {
+          next()
+        }
       }
       else {
         // 所有中间件都执行完毕，发射事件
@@ -329,7 +334,7 @@ export class EventBus {
   /**
    * 处理通配符事件
    */
-  private emitWildcardEvents(emitter: EventEmitter, event: string, args: any[]): void {
+  private emitWildcardEvents(emitter: EventEmitter, event: string, args: unknown[]): void {
     const parts = event.split('.')
 
     // 发射父级通配符事件
@@ -381,7 +386,7 @@ export class EventBus {
   /**
    * 等待事件
    */
-  waitFor(event: string, timeout?: number, channel?: string): Promise<any[]> {
+  waitFor(event: string, timeout?: number, channel?: string): Promise<unknown[]> {
     const channelEmitter = this.getChannel(channel || 'default')
     if (!channelEmitter) {
       return Promise.reject(new Error(`Channel '${channel}' not found`))
@@ -392,13 +397,13 @@ export class EventBus {
   /**
    * 获取统计信息
    */
-  getStats(channel?: string): any {
+  getStats(channel?: string): unknown {
     if (channel) {
       const channelEmitter = this.getChannel(channel)
       return channelEmitter ? channelEmitter.getEventStats() : undefined
     }
 
-    const stats: Record<string, any> = {}
+    const stats: Record<string, unknown> = {}
     for (const [name, channelEmitter] of this.channels) {
       stats[name] = channelEmitter.getEventStats()
     }
@@ -449,7 +454,7 @@ export class EventBus {
     this.channels.clear()
     this.filters.clear()
     this.middleware = []
-    EventBus.instance = undefined as any
+    EventBus.instance = undefined
   }
 
   /**

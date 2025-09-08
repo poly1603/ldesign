@@ -247,7 +247,7 @@ describe('rollupBuilder', () => {
       expect(watch).toHaveBeenCalledWith(
         expect.objectContaining({
           input: 'src/index.ts',
-        })
+        }),
       )
       expect(mockWatcher.on).toHaveBeenCalled()
     })

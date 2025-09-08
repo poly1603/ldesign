@@ -26,7 +26,8 @@ describe('packageManager', () => {
   afterEach(async () => {
     try {
       await FileSystem.removeDir(testDir)
-    } catch {
+    }
+    catch {
       // 忽略清理错误
     }
   })
@@ -43,7 +44,7 @@ describe('packageManager', () => {
 
       await FileSystem.writeFile(
         join(testDir, 'package.json'),
-        JSON.stringify(mockPackageJson, null, 2)
+        JSON.stringify(mockPackageJson, null, 2),
       )
 
       const pkg = await packageManager.readPackageJson()
@@ -76,7 +77,7 @@ describe('packageManager', () => {
 
       await FileSystem.writeFile(
         join(testDir, 'package.json'),
-        JSON.stringify(initialPackage, null, 2)
+        JSON.stringify(initialPackage, null, 2),
       )
 
       await packageManager.updatePackageJson({
@@ -102,7 +103,7 @@ describe('packageManager', () => {
 
       await FileSystem.writeFile(
         join(testDir, 'package.json'),
-        JSON.stringify(mockPackageJson, null, 2)
+        JSON.stringify(mockPackageJson, null, 2),
       )
     })
 
@@ -160,7 +161,7 @@ describe('packageManager', () => {
 
       await FileSystem.writeFile(
         join(testDir, 'package.json'),
-        JSON.stringify(mockPackageJson, null, 2)
+        JSON.stringify(mockPackageJson, null, 2),
       )
     })
 
@@ -248,7 +249,7 @@ describe('packageManager', () => {
 
       await FileSystem.writeFile(
         join(testDir, 'package.json'),
-        JSON.stringify(mockPackageJson, null, 2)
+        JSON.stringify(mockPackageJson, null, 2),
       )
     })
 
@@ -324,7 +325,7 @@ describe('packageUtils', () => {
 
     it('应该能够查找包管理器', async () => {
       // Mock FileSystem.exists
-      vi.spyOn(FileSystem, 'exists').mockImplementation(async path => {
+      vi.spyOn(FileSystem, 'exists').mockImplementation(async (path) => {
         return path.includes('package-lock.json')
       })
 

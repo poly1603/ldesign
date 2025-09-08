@@ -132,9 +132,12 @@ export class CommandParser {
 
               if (j === flags.length - 1) {
                 // 最后一个标志，从下一个参数获取值
-                if (i + 1 < args.length && args[i + 1] && !args[i + 1].startsWith('-')) {
-                  value = args[i + 1]
-                  i++
+                if (i + 1 < args.length) {
+                  const nextArg = args[i + 1]
+                  if (nextArg && !nextArg.startsWith('-')) {
+                    value = nextArg
+                    i++
+                  }
                 }
               }
               else {
@@ -218,11 +221,12 @@ export class CommandParser {
         args
         && index !== undefined
         && index + 1 < args.length
-        && args[index + 1]
-        && !args[index + 1].startsWith('-')
       ) {
-        value = args[index + 1]
-        consumed = 2
+        const nextArg = args[index + 1]
+        if (nextArg && !nextArg.startsWith('-')) {
+          value = nextArg
+          consumed = 2
+        }
       }
       else if (option.required) {
         throw new Error(`选项 --${option.name} 需要一个值`)
@@ -233,12 +237,13 @@ export class CommandParser {
     }
 
     switch (option.type) {
-      case 'number':
+      case 'number': {
         const num = Number(value)
-        if (isNaN(num)) {
+        if (Number.isNaN(num)) {
           throw new TypeError(`选项 --${option.name} 需要一个数字值，得到: ${value}`)
         }
         return { value: num, consumed }
+      }
 
       case 'string':
       default:

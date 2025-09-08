@@ -18,7 +18,8 @@ describe('fileSystem', () => {
   afterEach(async () => {
     try {
       await FileSystem.removeDir(testDir)
-    } catch {
+    }
+    catch {
       // 忽略清理错误
     }
   })

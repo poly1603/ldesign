@@ -40,7 +40,7 @@ function discoverEntries(patterns, options = {}) {
     const allPatterns = Array.isArray(patterns) ? patterns : [patterns]
     const allFiles = []
 
-    allPatterns.forEach(pattern => {
+    allPatterns.forEach((pattern) => {
       const files = glob.sync(pattern, {
         cwd: baseDir,
         ignore: [...excludeModules.map(module => `src/${module}/**`), ...excludePatterns],
@@ -50,13 +50,15 @@ function discoverEntries(patterns, options = {}) {
 
     const uniqueFiles = [...new Set(allFiles)]
     const entries = uniqueFiles
-      .map(file => {
+      .map((file) => {
         const moduleInfo = extractModuleInfo(file)
-        if (!moduleInfo) return null
+        if (!moduleInfo)
+          return null
 
         const fullPath = resolve(baseDir, file)
         if (!existsSync(fullPath)) {
-          if (verbose) console.warn(`文件不存在: ${file}`)
+          if (verbose)
+            console.warn(`文件不存在: ${file}`)
           return null
         }
 
@@ -82,7 +84,8 @@ function discoverEntries(patterns, options = {}) {
     }
 
     return entries
-  } catch (error) {
+  }
+  catch (error) {
     console.error('发现入口文件时出错:', error.message)
     return []
   }

@@ -68,7 +68,7 @@ describe('logger', () => {
     it('应该支持结构化日志', () => {
       const messages: any[] = []
 
-      logger.on('log', entry => {
+      logger.on('log', (entry) => {
         messages.push(entry)
       })
 
@@ -88,7 +88,7 @@ describe('logger', () => {
     it('应该包含时间戳和级别', () => {
       const messages: any[] = []
 
-      logger.on('log', entry => {
+      logger.on('log', (entry) => {
         messages.push(entry)
       })
 
@@ -162,7 +162,7 @@ describe('logger', () => {
         await fs
           .access(logFile)
           .then(() => true)
-          .catch(() => false)
+          .catch(() => false),
       ).toBe(true)
     })
   })
@@ -298,7 +298,7 @@ describe('logger', () => {
       const child = logger.child({ module: 'auth' })
 
       const messages: any[] = []
-      child.on('log', entry => {
+      child.on('log', (entry) => {
         messages.push(entry)
       })
 
@@ -318,7 +318,7 @@ describe('logger', () => {
       const grandchild = child.child({ action: 'login' })
 
       const messages: any[] = []
-      grandchild.on('log', entry => {
+      grandchild.on('log', (entry) => {
         messages.push(entry)
       })
 
@@ -389,7 +389,7 @@ describe('logger', () => {
         transports: [
           {
             type: 'custom',
-            write: async message => {
+            write: async (message) => {
               await global.testUtils.sleep(10)
               messages.push(message)
             },

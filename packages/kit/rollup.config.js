@@ -134,7 +134,7 @@ function discoverEntries(patterns, options = {}) {
     const allFiles = []
 
     // 收集所有匹配的文件
-    allPatterns.forEach(pattern => {
+    allPatterns.forEach((pattern) => {
       const files = glob.sync(pattern, {
         cwd: baseDir,
         ignore: [...excludeModules.map(module => `src/${module}/**`), ...excludePatterns],
@@ -145,15 +145,17 @@ function discoverEntries(patterns, options = {}) {
     // 去重并转换为模块配置
     const uniqueFiles = [...new Set(allFiles)]
     const entries = uniqueFiles
-      .map(file => {
+      .map((file) => {
         // 提取模块信息
         const moduleInfo = extractModuleInfo(file)
-        if (!moduleInfo) return null
+        if (!moduleInfo)
+          return null
 
         // 验证文件是否存在
         const fullPath = resolve(baseDir, file)
         if (!existsSync(fullPath)) {
-          if (verbose) console.warn(`文件不存在: ${file}`)
+          if (verbose)
+            console.warn(`文件不存在: ${file}`)
           return null
         }
 
@@ -169,13 +171,14 @@ function discoverEntries(patterns, options = {}) {
 
     if (verbose) {
       console.log(`发现 ${entries.length} 个入口文件:`)
-      entries.forEach(entry => {
+      entries.forEach((entry) => {
         console.log(`  - ${entry.name} (${entry.input})`)
       })
     }
 
     return entries
-  } catch (error) {
+  }
+  catch (error) {
     console.error('发现入口文件时出错:', error.message)
     return []
   }
@@ -246,7 +249,7 @@ if (BUILD_CONFIG.verbose || process.env.NODE_ENV !== 'production') {
 }
 
 // 生成所有发现的入口配置
-const dynamicConfigs = discoveredEntries.map(entry => {
+const dynamicConfigs = discoveredEntries.map((entry) => {
   const outputDir = entry.isNested ? entry.path : entry.name
 
   return defineConfig({
@@ -292,7 +295,7 @@ const subModuleConfigs = subModules.map(module =>
         inlineDynamicImports: true,
       },
     ],
-  })
+  }),
 )
 
 // 类型声明文件配置
@@ -307,7 +310,7 @@ const dtsConfig = defineConfig({
 })
 
 // 所有入口的类型声明配置
-const dynamicDtsConfigs = discoveredEntries.map(entry => {
+const dynamicDtsConfigs = discoveredEntries.map((entry) => {
   const outputDir = entry.isNested ? entry.path : entry.name
 
   return defineConfig({
@@ -331,7 +334,7 @@ const subModuleDtsConfigs = subModules.map(module =>
       file: `dist/${module}/index.d.ts`,
       format: 'es',
     },
-  })
+  }),
 )
 
 // 根据环境变量选择使用动态配置或传统配置

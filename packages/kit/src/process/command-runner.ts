@@ -38,6 +38,7 @@ export class CommandRunner extends EventEmitter {
       retryDelay = 1000,
       killSignal = 'SIGTERM',
     } = options
+    const useShell: boolean = typeof shell === 'boolean' ? shell : true
 
     const commandId = this.generateCommandId()
     const startTime = Date.now()
@@ -54,7 +55,7 @@ export class CommandRunner extends EventEmitter {
           cwd,
           env,
           timeout,
-          shell,
+          shell: useShell,
           stdio,
           onStdout,
           onStderr,
@@ -104,7 +105,9 @@ export class CommandRunner extends EventEmitter {
     })
 
     this.emit('error', { commandId, command, error: lastError, attempts: attempt })
-    throw lastError!
+    throw (lastError instanceof Error
+      ? lastError
+      : new ProcessError(`Command failed: ${command}`, command, undefined))
   }
 
   /**
@@ -188,7 +191,7 @@ export class CommandRunner extends EventEmitter {
           stdout: runningCommand.stdout,
           stderr: runningCommand.stderr,
           exitCode: code || 0,
-          signal,
+          signal: (signal as unknown as string | undefined),
           killed: signal !== null,
           timedOut: false,
         }
@@ -264,7 +267,7 @@ export class CommandRunner extends EventEmitter {
     }
 
     if (commands.length === 1) {
-      return this.run(commands[0], options)
+      return this.run(commands[0]!, options)
     }
 
     // 构建管道命令

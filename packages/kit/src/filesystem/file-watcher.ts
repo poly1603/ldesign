@@ -260,26 +260,6 @@ export class FileWatcher extends EventEmitter {
   }
 
   /**
-   * 检查路径是否应该被忽略
-   * @param path 路径
-   */
-  private shouldIgnore(path: string): boolean {
-    if (!this.options.ignored || this.options.ignored.length === 0) {
-      return false
-    }
-
-    return this.options.ignored.some((pattern) => {
-      if (typeof pattern === 'string') {
-        return PathUtils.match(path, pattern)
-      }
-      else if (pattern instanceof RegExp) {
-        return pattern.test(path)
-      }
-      return false
-    })
-  }
-
-  /**
    * 创建文件监听器实例
    * @param options 选项
    */

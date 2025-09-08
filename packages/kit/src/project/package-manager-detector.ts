@@ -338,7 +338,9 @@ export class PackageManagerDetector {
     // 优先选择有锁文件的管理器
     const withLockFile = managers.filter(m => m.lockFile)
     if (withLockFile.length === 1) {
-      return { ...withLockFile[0], isActive: true }
+      const first = withLockFile[0]
+      if (first)
+        return { ...first, isActive: true }
     }
 
     // 如果有多个锁文件，按优先级选择
@@ -359,7 +361,9 @@ export class PackageManagerDetector {
     // 如果没有锁文件，选择已安装的管理器
     const installed = managers.filter(m => m.isInstalled)
     if (installed.length > 0) {
-      return { ...installed[0], isActive: true }
+      const firstInstalled = installed[0]
+      if (firstInstalled)
+        return { ...firstInstalled, isActive: true }
     }
 
     // 默认返回 npm

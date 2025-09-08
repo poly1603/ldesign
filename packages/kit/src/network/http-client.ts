@@ -17,8 +17,22 @@ import { AsyncUtils } from '../utils'
 /**
  * HTTP客户端类
  */
+type InternalHttpOptions = Required<HttpClientOptions> & {
+  baseURL: string
+  timeout: number
+  headers: Record<string, string>
+  followRedirects: boolean
+  maxRedirects: number
+  validateStatus: (status: number) => boolean
+  retries: number
+  retryDelay: number
+  retryCondition: (error: any) => boolean
+  cache: boolean
+  cacheMaxAge: number
+}
+
 export class HttpClient extends EventEmitter {
-  private options: Required<HttpClientOptions>
+  private config: InternalHttpOptions
   private requestInterceptors: RequestInterceptor[] = []
   private responseInterceptors: ResponseInterceptor[] = []
   private cache: Map<string, CacheEntry> = new Map()
@@ -26,7 +40,7 @@ export class HttpClient extends EventEmitter {
   constructor(options: HttpClientOptions = {}) {
     super()
 
-    this.options = {
+    this.config = {
       baseURL: '',
       timeout: 30000,
       headers: {},
@@ -35,10 +49,10 @@ export class HttpClient extends EventEmitter {
       validateStatus: status => status >= 200 && status < 300,
       retries: 0,
       retryDelay: 1000,
-      retryCondition: error => error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT',
+      retryCondition: (error: any) => (error as any).code === 'ECONNRESET' || (error as any).code === 'ETIMEDOUT',
       cache: false,
       cacheMaxAge: 300000, // 5分钟
-      ...options,
+      ...options as any,
     }
   }
 
@@ -123,7 +137,7 @@ export class HttpClient extends EventEmitter {
    * @param config 配置
    * @returns 响应
    */
-  async options<T = any>(url: string, config: Partial<HttpRequest> = {}): Promise<HttpResponse<T>> {
+  async optionsRequest<T = any>(url: string, config: Partial<HttpRequest> = {}): Promise<HttpResponse<T>> {
     return this.request<T>({ ...config, method: 'OPTIONS', url })
   }
 
@@ -136,11 +150,11 @@ export class HttpClient extends EventEmitter {
     const requestConfig = this.mergeConfig(config)
 
     // 检查缓存
-    if (this.options.cache && requestConfig.method === 'GET') {
+    if (this.config.cache && requestConfig.method === 'GET') {
       const cached = this.getFromCache(requestConfig)
       if (cached) {
         this.emit('cache-hit', { url: requestConfig.url })
-        return cached
+        return cached as HttpResponse<T>
       }
     }
 
@@ -154,7 +168,7 @@ export class HttpClient extends EventEmitter {
 
     let lastError: Error
     let attempt = 0
-    const maxAttempts = this.options.retries + 1
+    const maxAttempts = this.config.retries + 1
 
     while (attempt < maxAttempts) {
       try {
@@ -167,8 +181,8 @@ export class HttpClient extends EventEmitter {
         }
 
         // 验证状态码
-        if (!this.options.validateStatus(processedResponse.status)) {
-          throw new NetworkError(
+        if (!this.config.validateStatus(processedResponse.status)) {
+          throw new (NetworkError as any)(
             `Request failed with status ${processedResponse.status}`,
             processedConfig,
             processedResponse,
@@ -176,7 +190,7 @@ export class HttpClient extends EventEmitter {
         }
 
         // 缓存响应
-        if (this.options.cache && processedConfig.method === 'GET') {
+        if (this.config.cache && processedConfig.method === 'GET') {
           this.setCache(processedConfig, processedResponse)
         }
 
@@ -189,7 +203,7 @@ export class HttpClient extends EventEmitter {
 
         if (attempt < maxAttempts && this.shouldRetry(lastError)) {
           this.emit('retry', { attempt, error: lastError, config: processedConfig })
-          await AsyncUtils.delay(this.options.retryDelay * attempt)
+          await AsyncUtils.delay(this.config.retryDelay * attempt)
         }
         else {
           break
@@ -198,14 +212,14 @@ export class HttpClient extends EventEmitter {
     }
 
     this.emit('error', lastError!)
-    throw lastError!
+    throw (lastError instanceof Error ? lastError : new Error(String(lastError)))
   }
 
   /**
    * 执行HTTP请求
    */
   private async executeRequest<T>(config: HttpRequest): Promise<HttpResponse<T>> {
-    const url = new URL(config.url, this.options.baseURL)
+    const url = new URL(config.url, this.config.baseURL)
 
     // 添加查询参数
     if (config.params) {
@@ -218,35 +232,37 @@ export class HttpClient extends EventEmitter {
       method: config.method,
       headers: config.headers,
       body: this.prepareBody(config.data, config.headers),
-      signal: AbortSignal.timeout(config.timeout || this.options.timeout),
+      signal: AbortSignal.timeout(config.timeout || this.config.timeout),
     }
 
     const startTime = Date.now()
 
     try {
       const response = await fetch(url.toString(), requestOptions)
-      const duration = Date.now() - startTime
 
       const responseData = await this.parseResponse<T>(response, config.responseType)
+
+      const headersObj: Record<string, string> = {}
+      ;(response.headers as any).forEach((value: string, key: string) => {
+        headersObj[key] = value
+      })
 
       return {
         data: responseData,
         status: response.status,
         statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
+        headers: headersObj,
         config,
-        duration,
+        duration: Date.now() - startTime,
         url: response.url,
       }
     }
     catch (error) {
-      const duration = Date.now() - startTime
-
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new NetworkError('Request timeout', config.url, error)
+      if (error instanceof Error && (error as any).name === 'AbortError') {
+        throw new (NetworkError as any)('Request timeout', config.url, error)
       }
 
-      throw new NetworkError('Request failed', config.url, error as Error)
+      throw new (NetworkError as any)('Request failed', config.url, error as Error)
     }
   }
 
@@ -255,12 +271,12 @@ export class HttpClient extends EventEmitter {
    */
   private prepareBody(
     data: any,
-    headers: Record<string, string>,
+    headers?: Record<string, string>,
   ): string | FormData | URLSearchParams | null {
     if (!data)
       return null
 
-    const contentType = headers['content-type'] || headers['Content-Type']
+    const contentType = headers?.['content-type'] || headers?.['Content-Type']
 
     if (data instanceof FormData || data instanceof URLSearchParams) {
       return data
@@ -324,8 +340,8 @@ export class HttpClient extends EventEmitter {
     return {
       method: 'GET',
       url: '',
-      headers: { ...this.options.headers, ...config.headers },
-      timeout: config.timeout || this.options.timeout,
+      headers: { ...this.config.headers, ...config.headers },
+      timeout: config.timeout || this.config.timeout,
       ...config,
     }
   }
@@ -334,7 +350,7 @@ export class HttpClient extends EventEmitter {
    * 判断是否应该重试
    */
   private shouldRetry(error: Error): boolean {
-    return this.options.retryCondition(error)
+    return this.config.retryCondition(error)
   }
 
   /**
@@ -344,7 +360,7 @@ export class HttpClient extends EventEmitter {
     const key = this.getCacheKey(config)
     const entry = this.cache.get(key)
 
-    if (entry && Date.now() - entry.timestamp < this.options.cacheMaxAge) {
+    if (entry && Date.now() - entry.timestamp < this.config.cacheMaxAge) {
       return entry.response as HttpResponse<T>
     }
 
@@ -370,7 +386,7 @@ export class HttpClient extends EventEmitter {
    * 获取缓存键
    */
   private getCacheKey(config: HttpRequest): string {
-    const url = new URL(config.url, this.options.baseURL)
+    const url = new URL(config.url, this.config.baseURL)
 
     if (config.params) {
       for (const [key, value] of Object.entries(config.params)) {
@@ -435,7 +451,7 @@ export class HttpClient extends EventEmitter {
     let expiredEntries = 0
 
     for (const entry of this.cache.values()) {
-      if (now - entry.timestamp < this.options.cacheMaxAge) {
+      if (now - entry.timestamp < this.config.cacheMaxAge) {
         validEntries++
       }
       else {

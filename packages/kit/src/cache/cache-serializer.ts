@@ -9,8 +9,8 @@ import { EventEmitter } from 'node:events'
  * 序列化器接口
  */
 export interface Serializer {
-  serialize: (value: any) => string | Buffer
-  deserialize: <T = any>(data: string | Buffer) => T
+  serialize: (value: unknown) => string | Buffer
+  deserialize: <T = unknown>(data: string | Buffer) => T
   name: string
 }
 
@@ -30,12 +30,13 @@ export interface SerializerOptions {
 export class JSONSerializer implements Serializer {
   readonly name = 'json'
 
-  serialize(value: any): string {
+  serialize(value: unknown): string {
     return JSON.stringify(value)
   }
 
-  deserialize<T = any>(data: string): T {
-    return JSON.parse(data)
+  deserialize<T = unknown>(data: string | Buffer): T {
+    const text = Buffer.isBuffer(data) ? data.toString('utf8') : data
+    return JSON.parse(text) as T
   }
 }
 
@@ -45,12 +46,12 @@ export class JSONSerializer implements Serializer {
 export class MessagePackSerializer implements Serializer {
   readonly name = 'msgpack'
 
-  serialize(value: any): Buffer {
+  serialize(_value: unknown): Buffer {
     // 这里需要msgpack库，为了避免依赖，提供抽象实现
     throw new Error('MessagePack serializer requires msgpack library. Please install it.')
   }
 
-  deserialize<T = any>(data: Buffer): T {
+  deserialize<T = unknown>(_data: string | Buffer): T {
     // 这里需要msgpack库，为了避免依赖，提供抽象实现
     throw new Error('MessagePack serializer requires msgpack library. Please install it.')
   }
@@ -62,12 +63,13 @@ export class MessagePackSerializer implements Serializer {
 export class RawSerializer implements Serializer {
   readonly name = 'raw'
 
-  serialize(value: any): string {
+  serialize(value: unknown): string {
     return String(value)
   }
 
-  deserialize<T = any>(data: string): T {
-    return data as T
+  deserialize<T = unknown>(data: string | Buffer): T {
+    const text = Buffer.isBuffer(data) ? data.toString('utf8') : data
+    return text as unknown as T
   }
 }
 
@@ -132,7 +134,7 @@ export class CacheSerializer extends EventEmitter {
   /**
    * 序列化数据
    */
-  async serialize(value: any, serializerName?: string): Promise<string | Buffer> {
+  async serialize(value: unknown, serializerName?: string): Promise<string | Buffer> {
     try {
       const serializer = this.getSerializer(serializerName)
       let serialized = serializer.serialize(value)
@@ -154,7 +156,7 @@ export class CacheSerializer extends EventEmitter {
   /**
    * 反序列化数据
    */
-  async deserialize<T = any>(data: string | Buffer, serializerName?: string): Promise<T> {
+  async deserialize<T = unknown>(data: string | Buffer, serializerName?: string): Promise<T> {
     try {
       let processedData = data
 
@@ -249,14 +251,14 @@ export class CacheSerializer extends EventEmitter {
   /**
    * 批量序列化
    */
-  async serializeMany(values: any[], serializerName?: string): Promise<(string | Buffer)[]> {
+  async serializeMany(values: unknown[], serializerName?: string): Promise<(string | Buffer)[]> {
     return Promise.all(values.map(value => this.serialize(value, serializerName)))
   }
 
   /**
    * 批量反序列化
    */
-  async deserializeMany<T = any>(
+  async deserializeMany<T = unknown>(
     dataList: (string | Buffer)[],
     serializerName?: string,
   ): Promise<T[]> {
@@ -279,14 +281,14 @@ export class CacheSerializer extends EventEmitter {
   /**
    * 测试序列化性能
    */
-  async benchmark(value: any, iterations = 1000): Promise<BenchmarkResult> {
+  async benchmark(value: unknown, iterations = 1000): Promise<BenchmarkResult> {
     const results: BenchmarkResult = {
       serializers: {},
       testValue: typeof value,
       iterations,
     }
 
-    for (const [name, serializer] of this.serializers) {
+    for (const [name] of this.serializers) {
       try {
         const startTime = process.hrtime.bigint()
 
@@ -327,10 +329,9 @@ export class CacheSerializer extends EventEmitter {
    */
   async validateSerializer(
     name: string,
-    testValue: any = { test: 'data', number: 42, array: [1, 2, 3] },
+    testValue: unknown = { test: 'data', number: 42, array: [1, 2, 3] },
   ): Promise<boolean> {
     try {
-      const serializer = this.getSerializer(name)
       const serialized = await this.serialize(testValue, name)
       const deserialized = await this.deserialize(serialized, name)
 

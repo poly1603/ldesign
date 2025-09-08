@@ -168,7 +168,7 @@ const subModuleConfigs = subModules.map(module =>
  * Released under the MIT License
  */`,
     },
-  })
+  }),
 )
 
 /**

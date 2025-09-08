@@ -12,7 +12,7 @@ import { EventEmitter } from 'node:events'
 export class EventStore extends EventEmitter {
   private events: EventRecord[] = []
   private options: Required<EventStoreOptions>
-  private snapshots: Map<string, any> = new Map()
+  private snapshots: Map<string, unknown> = new Map()
 
   constructor(options: EventStoreOptions = {}) {
     super()
@@ -32,7 +32,7 @@ export class EventStore extends EventEmitter {
   /**
    * 存储事件
    */
-  store(event: string, data: any, metadata: Record<string, any> = {}): string {
+  store(event: string, data: unknown, metadata: Record<string, unknown> = {}): string {
     const eventRecord: EventRecord = {
       id: this.generateEventId(),
       event,
@@ -185,7 +185,7 @@ export class EventStore extends EventEmitter {
       name: snapshotName,
       timestamp: new Date(),
       eventCount: this.events.length,
-      lastSequence: this.events.length > 0 ? this.events[this.events.length - 1].sequence : 0,
+      lastSequence: this.events.length > 0 ? (this.events[this.events.length - 1]?.sequence ?? 0) : 0,
       events: [...this.events],
     }
 
@@ -304,19 +304,41 @@ export class EventStore extends EventEmitter {
     else {
       // CSV格式解析
       const lines = data.split('\n')
-      const headers = lines[0].split(',')
+      const headerLine = lines[0]
+      if (headerLine) {
+        const headers = headerLine.split(',')
 
-      for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',')
-        if (values.length === headers.length) {
-          importedEvents.push({
-            id: values[0],
-            event: values[1],
-            data: JSON.parse(values[2]),
-            metadata: {},
-            timestamp: new Date(values[3]),
-            sequence: Number.parseInt(values[4]),
-          })
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i]
+          if (!line)
+            continue
+          const values = line.split(',')
+          if (values.length === headers.length) {
+            const id = values[0] ?? ''
+            const eventName = values[1] ?? ''
+            const dataStr = values[2] ?? '{}'
+            const ts = values[3] ?? ''
+            const seqStr = values[4] ?? '0'
+            if (!id || !eventName)
+              continue
+            let parsedData: unknown
+            try {
+              parsedData = JSON.parse(dataStr)
+            }
+            catch {
+              parsedData = {}
+            }
+            const sequence = Number.parseInt(seqStr)
+            const timestamp = ts ? new Date(ts) : new Date()
+            importedEvents.push({
+              id,
+              event: eventName,
+              data: parsedData,
+              metadata: {},
+              timestamp,
+              sequence,
+            })
+          }
         }
       }
     }
@@ -344,7 +366,7 @@ export class EventStore extends EventEmitter {
   /**
    * 压缩数据
    */
-  private compress(data: any): any {
+  private compress(data: unknown): string {
     // 简单的JSON压缩，实际应用中可以使用gzip等
     return JSON.stringify(data)
   }
@@ -352,7 +374,7 @@ export class EventStore extends EventEmitter {
   /**
    * 解压数据
    */
-  private decompress(data: any): any {
+  private decompress(data: unknown): unknown {
     if (typeof data === 'string') {
       try {
         return JSON.parse(data)
@@ -367,7 +389,7 @@ export class EventStore extends EventEmitter {
   /**
    * 加密数据
    */
-  private encrypt(data: any): any {
+  private encrypt(data: unknown): unknown {
     // 简单的加密实现，实际应用中应使用更安全的加密算法
     if (!this.options.encryptionKey)
       return data
@@ -386,14 +408,14 @@ export class EventStore extends EventEmitter {
   /**
    * 解密数据
    */
-  private decrypt(data: any): any {
+  private decrypt(data: unknown): unknown {
     if (!this.options.encryptionKey || typeof data !== 'string')
       return data
 
     let decrypted = ''
     for (let i = 0; i < data.length; i++) {
       decrypted += String.fromCharCode(
-        data.charCodeAt(i)
+        (data as string).charCodeAt(i)
         ^ this.options.encryptionKey.charCodeAt(i % this.options.encryptionKey.length),
       )
     }
@@ -428,7 +450,7 @@ export class EventStore extends EventEmitter {
   /**
    * 获取字段值
    */
-  private getFieldValue(record: EventRecord, field: string): any {
+  private getFieldValue(record: EventRecord, field: string): unknown {
     switch (field) {
       case 'timestamp':
         return record.timestamp
@@ -444,7 +466,7 @@ export class EventStore extends EventEmitter {
   /**
    * 验证事件
    */
-  private validateEvent(event: any): event is EventRecord {
+  private validateEvent(event: unknown): event is EventRecord {
     return (
       event
       && typeof event.id === 'string'

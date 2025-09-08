@@ -23,14 +23,14 @@ export class OutputFormatter {
    * 输出信息
    */
   info(message: string): void {
-    console.log(this.formatMessage(message, 'info'))
+    this.writeLine(this.formatMessage(message, 'info'))
   }
 
   /**
    * 输出成功信息
    */
   success(message: string): void {
-    console.log(this.formatMessage(message, 'success'))
+    this.writeLine(this.formatMessage(message, 'success'))
   }
 
   /**
@@ -52,7 +52,7 @@ export class OutputFormatter {
    */
   debug(message: string): void {
     if (process.env.DEBUG) {
-      console.log(this.formatMessage(message, 'debug'))
+      this.writeLine(this.formatMessage(message, 'debug'))
     }
   }
 
@@ -77,6 +77,20 @@ export class OutputFormatter {
     }
 
     return `${colors[type]}${message}${colors.reset}`
+  }
+
+  /**
+   * 写一行到标准输出
+   */
+  private writeLine(str: string): void {
+    process.stdout.write(`${str}\n`)
+  }
+
+  /**
+   * 写入到标准输出
+   */
+  private write(str: string): void {
+    process.stdout.write(str)
   }
 
   /**
@@ -176,7 +190,7 @@ export class OutputFormatter {
    * 显示表格
    */
   table(
-    data: any[],
+    data: Array<Record<string, unknown>>,
     options: {
       headers?: string[]
       maxColumnWidth?: number
@@ -207,17 +221,17 @@ export class OutputFormatter {
 
     // 输出表格
     if (opts.border)
-      console.log(separator)
+      this.writeLine(separator)
 
     // 输出表头
     const headerRow = columns
       .map((col, i) => this.padString(col, columnWidths[i] || 0))
       .join(opts.border ? ' | ' : '  ')
 
-    console.log(opts.border ? `| ${headerRow} |` : headerRow)
+    this.writeLine(opts.border ? `| ${headerRow} |` : headerRow)
 
     if (opts.border)
-      console.log(separator)
+      this.writeLine(separator)
 
     // 输出数据行
     data.forEach((row) => {
@@ -225,11 +239,11 @@ export class OutputFormatter {
         .map((col, i) => this.padString(String(row[col] || ''), columnWidths[i] || 0))
         .join(opts.border ? ' | ' : '  ')
 
-      console.log(opts.border ? `| ${dataRow} |` : dataRow)
+      this.writeLine(opts.border ? `| ${dataRow} |` : dataRow)
     })
 
     if (opts.border)
-      console.log(separator)
+      this.writeLine(separator)
   }
 
   /**
@@ -254,7 +268,7 @@ export class OutputFormatter {
     items.forEach((item, index) => {
       const prefix = opts.numbered ? `${index + 1}.` : opts.bullet
 
-      console.log(`${indentStr}${prefix} ${item}`)
+      this.writeLine(`${indentStr}${prefix} ${item}`)
     })
   }
 
@@ -262,7 +276,7 @@ export class OutputFormatter {
    * 显示 JSON
    */
   json(
-    data: any,
+    data: unknown,
     options: {
       indent?: number
       colors?: boolean
@@ -284,10 +298,10 @@ export class OutputFormatter {
         .replace(/: (true|false)/g, ': \x1B[35m$1\x1B[0m') // 布尔值 - 紫色
         .replace(/: null/g, ': \x1B[90mnull\x1B[0m') // null - 灰色
 
-      console.log(highlighted)
+      this.writeLine(highlighted)
     }
     else {
-      console.log(jsonStr)
+      this.writeLine(jsonStr)
     }
   }
 
@@ -295,7 +309,7 @@ export class OutputFormatter {
    * 清屏
    */
   clear(): void {
-    console.clear()
+    process.stdout.write('\x1B[2J\x1B[0f')
   }
 
   /**
@@ -303,14 +317,14 @@ export class OutputFormatter {
    */
   separator(char = '-', length?: number): void {
     const len = length || this.options.maxWidth
-    console.log(char.repeat(len))
+    this.writeLine(char.repeat(len))
   }
 
   /**
    * 输出空行
    */
   newline(count = 1): void {
-    console.log('\n'.repeat(count - 1))
+    process.stdout.write('\n'.repeat(count))
   }
 
   /**
@@ -346,17 +360,17 @@ export class OutputFormatter {
     const marginStr = ' '.repeat(opts.margin)
 
     // 顶部边框
-    console.log(marginStr + border.tl + border.h.repeat(boxWidth) + border.tr)
+    this.writeLine(marginStr + border.tl + border.h.repeat(boxWidth) + border.tr)
 
     // 内容
     lines.forEach((line) => {
       const paddedLine = this.alignText(line, maxLength, opts.align)
       const padding = ' '.repeat(opts.padding)
-      console.log(marginStr + border.v + padding + paddedLine + padding + border.v)
+      this.writeLine(marginStr + border.v + padding + paddedLine + padding + border.v)
     })
 
     // 底部边框
-    console.log(marginStr + border.bl + border.h.repeat(boxWidth) + border.br)
+    this.writeLine(marginStr + border.bl + border.h.repeat(boxWidth) + border.br)
   }
 
   /**
@@ -379,16 +393,19 @@ export class OutputFormatter {
     const padding = width - text.length
 
     switch (align) {
-      case 'center':
+      case 'center': {
         const leftPad = Math.floor(padding / 2)
         const rightPad = padding - leftPad
         return ' '.repeat(leftPad) + text + ' '.repeat(rightPad)
+      }
 
-      case 'right':
+      case 'right': {
         return ' '.repeat(padding) + text
+      }
 
-      default: // left
+      default: { // left
         return text + ' '.repeat(padding)
+      }
     }
   }
 

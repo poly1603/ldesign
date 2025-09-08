@@ -109,8 +109,8 @@ export class InquirerUtils {
     /**
      * 必填验证器
      */
-    required(message = '此字段为必填项'): (value: any) => InquirerValidationResult {
-      return (value: any) => {
+    required(message = '此字段为必填项'): (value: unknown) => InquirerValidationResult {
+      return (value: unknown) => {
         if (value === undefined || value === null || value === '') {
           return message
         }
@@ -161,7 +161,8 @@ export class InquirerUtils {
     url(message = '请输入有效的 URL'): (value: string) => InquirerValidationResult {
       return (value: string) => {
         try {
-          new URL(value)
+          const parsed = new URL(value)
+          void parsed
           return true
         }
         catch {
@@ -200,8 +201,8 @@ export class InquirerUtils {
     /**
      * 自定义验证器
      */
-    custom(validator: (value: any) => boolean | string): (value: any) => InquirerValidationResult {
-      return (value: any) => {
+    custom(validator: (value: unknown) => boolean | string): (value: unknown) => InquirerValidationResult {
+      return (value: unknown) => {
         const result = validator(value)
         return result === true ? true : typeof result === 'string' ? result : '验证失败'
       }
@@ -211,9 +212,9 @@ export class InquirerUtils {
      * 组合验证器
      */
     combine(
-      ...validators: Array<(value: any) => InquirerValidationResult>
-    ): (value: any) => InquirerValidationResult {
-      return (value: any) => {
+      ...validators: Array<(value: unknown) => InquirerValidationResult>
+    ): (value: unknown) => InquirerValidationResult {
+      return (value: unknown) => {
         for (const validator of validators) {
           const result = validator(value)
           if (result !== true) {
@@ -235,7 +236,7 @@ export class InquirerUtils {
   /**
    * 批量询问助手
    */
-  static async askSeries(questions: Question[]): Promise<Record<string, any>> {
+  static async askSeries(questions: Question[]): Promise<Record<string, unknown>> {
     const inquirer = InquirerManager.create()
     try {
       return await inquirer.askMany(questions)
@@ -251,7 +252,7 @@ export class InquirerUtils {
   static async askConditional(
     condition: () => boolean | Promise<boolean>,
     question: Question,
-  ): Promise<any> {
+  ): Promise<unknown> {
     const shouldAsk = await condition()
     if (!shouldAsk) {
       return question.default
@@ -300,13 +301,13 @@ export class InquirerUtils {
   static async askForm(config: {
     title?: string
     fields: Array<Question & { label?: string }>
-    validate?: (answers: Record<string, any>) => InquirerValidationResult
-  }): Promise<Record<string, any>> {
+    validate?: (answers: Record<string, unknown>) => InquirerValidationResult
+  }): Promise<Record<string, unknown>> {
     const inquirer = InquirerManager.create()
 
     try {
       if (config.title) {
-        console.log(`\n=== ${config.title} ===`)
+        process.stdout.write(`\n=== ${config.title} ===\n`)
       }
 
       const answers = await inquirer.askMany(config.fields)
@@ -315,7 +316,7 @@ export class InquirerUtils {
       if (config.validate) {
         const validation = await config.validate(answers)
         if (validation !== true) {
-          console.log(`\n错误: ${validation}`)
+          process.stdout.write(`\n错误: ${validation}\n`)
           return this.askForm(config) // 重新询问
         }
       }
@@ -346,12 +347,12 @@ export class InquirerUtils {
       choices.push({ name: '✕ 退出', value: 'exit' as T })
     }
 
-    console.log(`\n=== ${config.title} ===`)
+    process.stdout.write(`\n=== ${config.title} ===\n`)
 
     // 显示选项描述
     config.choices.forEach((choice, index) => {
       if (choice.description) {
-        console.log(`  ${index + 1}. ${choice.name} - ${choice.description}`)
+        process.stdout.write(`  ${index + 1}. ${choice.name} - ${choice.description}\n`)
       }
     })
 
@@ -380,27 +381,27 @@ class QuestionBuilder {
     return this
   }
 
-  default(defaultValue: any): this {
+  default(defaultValue: unknown): this {
     this.question.default = defaultValue
     return this
   }
 
-  choices(choices: ChoiceOption<any>[]): this {
+  choices(choices: ChoiceOption<unknown>[]): this {
     this.question.choices = choices
     return this
   }
 
-  validate(validator: (value: any) => InquirerValidationResult): this {
+  validate(validator: (value: unknown) => InquirerValidationResult): this {
     this.question.validate = validator
     return this
   }
 
-  when(condition: (answers: Record<string, any>) => boolean): this {
+  when(condition: (answers: Record<string, unknown>) => boolean): this {
     this.question.when = condition
     return this
   }
 
-  transform(transformer: (value: any) => any): this {
+  transform(transformer: (value: unknown) => unknown): this {
     this.question.transform = transformer
     return this
   }

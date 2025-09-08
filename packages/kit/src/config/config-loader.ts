@@ -5,7 +5,7 @@
 
 import { EventEmitter } from 'node:events'
 import { promises as fs } from 'node:fs'
-import { extname, resolve } from 'node:path'
+import { dirname, extname, isAbsolute, resolve } from 'node:path'
 import * as JSON5 from 'json5'
 import { FileSystem } from '../filesystem'
 
@@ -39,7 +39,7 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 加载配置文件
    */
-  async load(configFile: string): Promise<Record<string, any>> {
+  async load(configFile: string): Promise<Record<string, unknown>> {
     const filePath = this.resolveConfigPath(configFile)
 
     try {
@@ -70,11 +70,11 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 加载多个配置文件
    */
-  async loadMultiple(configFiles: string[]): Promise<Record<string, any>> {
+  async loadMultiple(configFiles: string[]): Promise<Record<string, unknown>> {
     const configs = await Promise.all(configFiles.map(file => this.load(file)))
 
     // 合并所有配置
-    return configs.reduce((merged, config) => {
+    return configs.reduce<Record<string, unknown>>((merged, config) => {
       return { ...merged, ...config }
     }, {})
   }
@@ -82,12 +82,12 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 保存配置到文件
    */
-  async save(configFile: string, config: Record<string, any>): Promise<void> {
+  async save(configFile: string, config: Record<string, unknown>): Promise<void> {
     const filePath = this.resolveConfigPath(configFile)
 
     try {
       // 确保目录存在
-      await FileSystem.ensureDir(require('node:path').dirname(filePath))
+      await FileSystem.ensureDir(dirname(filePath))
 
       // 根据文件扩展名序列化内容
       const content = this.serializeContent(config, filePath)
@@ -106,7 +106,7 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 解析文件内容
    */
-  private async parseContent(content: string, filePath: string): Promise<Record<string, any>> {
+  private async parseContent(content: string, filePath: string): Promise<Record<string, unknown>> {
     const ext = extname(filePath).toLowerCase()
 
     switch (ext) {
@@ -157,7 +157,7 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 序列化配置内容
    */
-  private serializeContent(config: Record<string, any>, filePath: string): string {
+  private serializeContent(config: Record<string, unknown>, filePath: string): string {
     const ext = extname(filePath).toLowerCase()
 
     switch (ext) {
@@ -185,21 +185,29 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 解析 JSON
    */
-  private parseJSON(content: string): Record<string, any> {
+  private parseJSON(content: string): Record<string, unknown> {
     try {
-      return JSON.parse(content)
+      const parsed = JSON.parse(content) as unknown
+      if (this.isRecord(parsed)) {
+        return parsed
+      }
+      throw new Error('Top-level JSON must be an object')
     }
     catch (error) {
-      throw new Error(`Invalid JSON format: ${error}`)
+      throw new Error(`Invalid JSON format: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
   /**
    * 解析 JSON5
    */
-  private parseJSON5(content: string): Record<string, any> {
+  private parseJSON5(content: string): Record<string, unknown> {
     try {
-      return JSON5.parse(content)
+      const parsed = JSON5.parse(content) as unknown
+      if (this.isRecord(parsed)) {
+        return parsed
+      }
+      throw new Error('Top-level JSON5 must be an object')
     }
     catch (error) {
       throw new Error(
@@ -211,7 +219,7 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 解析 YAML
    */
-  private parseYAML(content: string): Record<string, any> {
+  private parseYAML(_content: string): Record<string, unknown> {
     try {
       // 这里应该使用 yaml 库，但为了避免依赖，我们提供一个基础实现
       // 在实际使用中，建议安装 js-yaml 库
@@ -225,7 +233,7 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 解析 TOML
    */
-  private parseTOML(content: string): Record<string, any> {
+  private parseTOML(_content: string): Record<string, unknown> {
     try {
       // 这里应该使用 toml 库，但为了避免依赖，我们提供一个基础实现
       // 在实际使用中，建议安装 @iarna/toml 库
@@ -239,11 +247,15 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 解析 JavaScript 模块
    */
-  private async parseJavaScript(filePath: string): Promise<Record<string, any>> {
+  private async parseJavaScript(filePath: string): Promise<Record<string, unknown>> {
     try {
       // 动态导入 JavaScript 配置文件
-      const module = await import(filePath)
-      return module.default || module
+      const module = (await import(filePath)) as { default?: unknown }
+      const exported = module.default ?? (module as unknown)
+      if (this.isRecord(exported)) {
+        return exported
+      }
+      throw new Error('JavaScript config must export an object (default or module)')
     }
     catch (error) {
       throw new Error(`Failed to load JavaScript config: ${error}`)
@@ -253,7 +265,7 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 解析 TypeScript 模块
    */
-  private async parseTypeScript(filePath: string): Promise<Record<string, any>> {
+  private async parseTypeScript(_filePath: string): Promise<Record<string, unknown>> {
     try {
       // 这里需要 TypeScript 编译支持
       // 在实际使用中，可能需要使用 ts-node 或预编译
@@ -267,8 +279,8 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 解析 INI 格式
    */
-  private parseINI(content: string): Record<string, any> {
-    const config: Record<string, any> = {}
+  private parseINI(content: string): Record<string, unknown> {
+    const config: Record<string, unknown> = {}
     let currentSection = ''
 
     const lines = content.split('\n')
@@ -284,7 +296,7 @@ export class ConfigLoader extends EventEmitter {
       // 处理节
       if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
         currentSection = trimmed.slice(1, -1)
-        if (!config[currentSection]) {
+        if (!this.isRecord(config[currentSection])) {
           config[currentSection] = {}
         }
         continue
@@ -297,7 +309,8 @@ export class ConfigLoader extends EventEmitter {
         const value = trimmed.slice(equalIndex + 1).trim()
 
         if (currentSection) {
-          config[currentSection][key] = this.parseValue(value)
+          const section = config[currentSection] as Record<string, unknown>
+          section[key] = this.parseValue(value)
         }
         else {
           config[key] = this.parseValue(value)
@@ -311,8 +324,8 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 解析环境变量格式
    */
-  private parseEnv(content: string): Record<string, any> {
-    const config: Record<string, any> = {}
+  private parseEnv(content: string): Record<string, unknown> {
+    const config: Record<string, unknown> = {}
     const lines = content.split('\n')
 
     for (const line of lines) {
@@ -346,7 +359,7 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 解析值类型
    */
-  private parseValue(value: string): any {
+  private parseValue(value: string): string | number | boolean {
     // 移除引号
     if (
       (value.startsWith('"') && value.endsWith('"'))
@@ -373,7 +386,7 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 序列化 YAML
    */
-  private serializeYAML(config: Record<string, any>): string {
+  private serializeYAML(_config: Record<string, unknown>): string {
     // 基础 YAML 序列化实现
     // 在实际使用中，建议使用 js-yaml 库
     throw new Error('YAML serialization requires js-yaml library. Please install it.')
@@ -382,7 +395,7 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 序列化 TOML
    */
-  private serializeTOML(config: Record<string, any>): string {
+  private serializeTOML(_config: Record<string, unknown>): string {
     // 基础 TOML 序列化实现
     // 在实际使用中，建议使用 @iarna/toml 库
     throw new Error('TOML serialization requires @iarna/toml library. Please install it.')
@@ -391,19 +404,19 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 序列化 INI
    */
-  private serializeINI(config: Record<string, any>): string {
+  private serializeINI(config: Record<string, unknown>): string {
     let content = ''
 
     for (const [key, value] of Object.entries(config)) {
-      if (typeof value === 'object' && value !== null) {
+      if (this.isRecord(value)) {
         content += `[${key}]\n`
         for (const [subKey, subValue] of Object.entries(value)) {
-          content += `${subKey}=${subValue}\n`
+          content += `${subKey}=${String(subValue)}\n`
         }
         content += '\n'
       }
       else {
-        content += `${key}=${value}\n`
+        content += `${key}=${String(value)}\n`
       }
     }
 
@@ -413,7 +426,7 @@ export class ConfigLoader extends EventEmitter {
   /**
    * 序列化环境变量格式
    */
-  private serializeEnv(config: Record<string, any>): string {
+  private serializeEnv(config: Record<string, unknown>): string {
     let content = ''
 
     for (const [key, value] of Object.entries(config)) {
@@ -421,7 +434,7 @@ export class ConfigLoader extends EventEmitter {
         content += `${key}="${value}"\n`
       }
       else {
-        content += `${key}=${value}\n`
+        content += `${key}=${String(value)}\n`
       }
     }
 
@@ -432,7 +445,7 @@ export class ConfigLoader extends EventEmitter {
    * 解析配置文件路径
    */
   private resolveConfigPath(configFile: string): string {
-    if (require('node:path').isAbsolute(configFile)) {
+    if (isAbsolute(configFile)) {
       return configFile
     }
 
@@ -440,10 +453,17 @@ export class ConfigLoader extends EventEmitter {
   }
 
   /**
+   * 简单对象类型守卫
+   */
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value)
+  }
+
+  /**
    * 导出配置
    */
   export(
-    config: Record<string, any>,
+    config: Record<string, unknown>,
     format: 'json' | 'json5' | 'yaml' | 'toml' | 'ini' | 'env',
   ): string {
     switch (format) {
@@ -470,7 +490,7 @@ export class ConfigLoader extends EventEmitter {
   import(
     data: string,
     format: 'json' | 'json5' | 'yaml' | 'toml' | 'ini' | 'env',
-  ): Record<string, any> {
+  ): Record<string, unknown> {
     switch (format) {
       case 'json':
         return this.parseJSON(data)

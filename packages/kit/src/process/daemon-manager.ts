@@ -57,17 +57,22 @@ export class DaemonManager extends EventEmitter {
       throw new ProcessError(`Daemon already exists: ${name}`, '', undefined)
     }
 
+    const normalizedConfig: Required<DaemonConfig> = {
+      command: config.command,
+      args: config.args ?? [],
+      cwd: config.cwd ?? process.cwd(),
+      env: config.env ?? {},
+      autoStart: config.autoStart ?? true,
+      autoRestart: config.autoRestart ?? true,
+      maxRestarts: config.maxRestarts ?? 10,
+      restartDelay: config.restartDelay ?? 5000,
+      stopTimeout: config.stopTimeout ?? 30000,
+      killTimeout: config.killTimeout ?? 10000,
+    }
+
     const daemon: ManagedDaemon = {
       name,
-      config: {
-        autoStart: true,
-        autoRestart: true,
-        maxRestarts: 10,
-        restartDelay: 5000,
-        stopTimeout: 30000,
-        killTimeout: 10000,
-        ...config,
-      },
+      config: normalizedConfig,
       status: 'stopped',
       pid: null,
       startTime: null,
@@ -105,7 +110,7 @@ export class DaemonManager extends EventEmitter {
       const scriptPath = await this.createStartScript(daemon)
 
       // 启动守护进程
-      const process = spawn(scriptPath, [], {
+      const child = spawn(scriptPath, [], {
         detached: true,
         stdio: 'ignore',
         cwd: daemon.config.cwd || process.cwd(),
@@ -113,14 +118,16 @@ export class DaemonManager extends EventEmitter {
       })
 
       // 分离进程
-      process.unref()
+      child.unref()
 
-      daemon.pid = process.pid!
+      daemon.pid = child.pid!
       daemon.startTime = new Date()
       daemon.status = 'running'
 
       // 写入 PID 文件
-      await this.writePidFile(name, daemon.pid)
+      if (daemon.pid != null) {
+        await this.writePidFile(name, daemon.pid)
+      }
 
       this.emit('started', { name, pid: daemon.pid })
 

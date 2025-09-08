@@ -14,11 +14,9 @@ import { AsyncUtils } from '../utils'
 export class DatabaseManager extends EventEmitter {
   private connections: Map<string, DatabaseConnection> = new Map()
   private defaultConnection: string | null = null
-  private config: DatabaseConfig
 
-  constructor(config: DatabaseConfig) {
+  constructor(_config: DatabaseConfig) {
     super()
-    this.config = config
   }
 
   /**
@@ -46,7 +44,7 @@ export class DatabaseManager extends EventEmitter {
    * 创建数据库连接
    */
   private async createConnection(config: ConnectionConfig): Promise<DatabaseConnection> {
-    const { type, host, port, database, username, password, options = {} } = config
+    const { type, host, port, database, username } = config
 
     // 这里是一个简化的实现，实际应该根据数据库类型创建相应的连接
     const connection: DatabaseConnection = {
@@ -69,7 +67,7 @@ export class DatabaseManager extends EventEmitter {
         this.connected = false
       },
 
-      async query(sql: string, params?: any[]): Promise<QueryResult> {
+      async query(_sql: string, _params?: any[]): Promise<QueryResult> {
         if (!this.connected) {
           throw new DatabaseError('Connection not established')
         }

@@ -30,7 +30,6 @@ export class ProcessManager extends EventEmitter {
       cwd = process.cwd(),
       env = process.env,
       timeout = 30000,
-      encoding = 'utf8',
       shell = true,
       silent = false,
     } = options
@@ -40,8 +39,7 @@ export class ProcessManager extends EventEmitter {
         cwd,
         env,
         timeout,
-        encoding,
-        shell,
+        shell: typeof shell === 'string' ? shell : (shell ? (process.platform === 'win32' ? 'cmd.exe' : '/bin/sh') : undefined),
         maxBuffer: 1024 * 1024 * 10, // 10MB
       }
 

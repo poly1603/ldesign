@@ -24,7 +24,8 @@ export class ValidationUtils {
    */
   static isUrl(url: string): boolean {
     try {
-      new URL(url)
+      const parsed = new URL(url)
+      void parsed
       return true
     }
     catch {
@@ -78,7 +79,7 @@ export class ValidationUtils {
    * @returns 是否有效
    */
   static isMacAddress(mac: string): boolean {
-    const macRegex = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/i
+    const macRegex = /^(?:[0-9A-F]{2}[:-]){5}[0-9A-F]{2}$/i
     return macRegex.test(mac)
   }
 
@@ -108,11 +109,13 @@ export class ValidationUtils {
 
     let sum = 0
     for (let i = 0; i < 17; i++) {
-      sum += Number.parseInt(idCard[i]) * weights[i]
+      const ch = idCard[i] ?? '0'
+      const w = weights[i] ?? 0
+      sum += Number.parseInt(ch, 10) * w
     }
 
     const checkCode = checkCodes[sum % 11]
-    return idCard[17].toUpperCase() === checkCode
+    return (idCard[17]?.toUpperCase() || '') === checkCode
   }
 
   /**
@@ -139,7 +142,7 @@ export class ValidationUtils {
     let isEven = false
 
     for (let i = cleaned.length - 1; i >= 0; i--) {
-      let digit = Number.parseInt(cleaned[i])
+      let digit = Number.parseInt(cleaned[i] ?? '0')
 
       if (isEven) {
         digit *= 2
@@ -213,7 +216,7 @@ export class ValidationUtils {
    * @returns 是否有效
    */
   static isHexColor(color: string): boolean {
-    const colorRegex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
+    const colorRegex = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i
     return colorRegex.test(color)
   }
 
@@ -231,7 +234,7 @@ export class ValidationUtils {
 
     const [, r, g, b] = match
     return [r, g, b].every((val) => {
-      const num = Number.parseInt(val)
+      const num = Number.parseInt(val ?? '0')
       return num >= 0 && num <= 255
     })
   }
@@ -251,11 +254,11 @@ export class ValidationUtils {
 
     const [, r, g, b, a] = match
     const rgbValid = [r, g, b].every((val) => {
-      const num = Number.parseInt(val)
+      const num = Number.parseInt(val ?? '0')
       return num >= 0 && num <= 255
     })
 
-    const alpha = Number.parseFloat(a)
+    const alpha = Number.parseFloat(a ?? '0')
     return rgbValid && alpha >= 0 && alpha <= 1
   }
 
@@ -391,7 +394,7 @@ export class ValidationUtils {
   static isValidDate(dateString: string, format?: string): boolean {
     if (!format) {
       const date = new Date(dateString)
-      return !isNaN(date.getTime())
+      return !Number.isNaN(date.getTime())
     }
 
     // 简化的格式验证
@@ -412,7 +415,7 @@ export class ValidationUtils {
     // 尝试解析日期
     try {
       const date = new Date(dateString)
-      return !isNaN(date.getTime())
+      return !Number.isNaN(date.getTime())
     }
     catch {
       return false

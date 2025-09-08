@@ -127,7 +127,8 @@ export class ProcessUtils {
       },
     }
 
-    return commands[packageManager] || commands.npm
+    const mapped = commands[packageManager] ?? commands.npm
+    return mapped as PackageManagerCommands
   }
 
   /**
@@ -199,22 +200,29 @@ export class ProcessUtils {
       if (isWindows) {
         const parts = stdout.trim().split(',')
         if (parts.length >= 5) {
+          const p0 = parts[0] ?? ''
+          const p1 = parts[1] ?? '0'
+          const p4 = parts[4] ?? '0'
           return {
             pid,
-            name: parts[0].replace(/"/g, ''),
-            memory: Number.parseInt(parts[4].replace(/[",\s]/g, '')) * 1024, // KB to bytes
-            command: parts[0].replace(/"/g, ''),
+            name: p0.replace(/"/g, ''),
+            memory: Number.parseInt(p4.replace(/[",\s]/g, '')) * 1024, // KB to bytes
+            command: p0.replace(/"/g, ''),
+            ppid: Number.parseInt(p1),
           }
         }
       }
       else {
         const parts = stdout.trim().split(/\s+/)
         if (parts.length >= 3) {
+          const p1 = parts[1] ?? '0'
+          const p2 = parts[2] ?? ''
+          const cmd = parts.slice(2).join(' ')
           return {
             pid,
-            ppid: Number.parseInt(parts[1]),
-            command: parts.slice(2).join(' '),
-            name: parts[2],
+            ppid: Number.parseInt(p1),
+            command: cmd,
+            name: p2,
           }
         }
       }
@@ -280,17 +288,17 @@ export class ProcessUtils {
         return stdout
           .split('\n')
           .slice(1) // 跳过标题行
-          .map(line => line.split(',')[1])
-          .filter(pid => pid && pid.trim())
-          .map(pid => Number.parseInt(pid.trim()))
-          .filter(pid => !isNaN(pid))
+          .map((line: string) => line.split(',')[1] ?? '')
+          .filter((p: string) => p && p.trim())
+          .map((p: string) => Number.parseInt(p.trim()))
+          .filter((n: number) => !Number.isNaN(n))
       }
       else {
         return stdout
           .split('\n')
-          .filter(line => line.trim())
-          .map(pid => Number.parseInt(pid.trim()))
-          .filter(pid => !isNaN(pid))
+          .filter((line: string) => line.trim())
+          .map((p: string) => Number.parseInt(p.trim()))
+          .filter((n: number) => !Number.isNaN(n))
       }
     }
     catch {
@@ -354,24 +362,31 @@ export class ProcessUtils {
         if (isWindows) {
           const parts = line.split(',')
           if (parts.length >= 5) {
+            const p0 = parts[0] ?? ''
+            const p1 = parts[1] ?? '0'
+            const p4 = parts[4] ?? '0'
             processes.push({
-              pid: Number.parseInt(parts[1].replace(/"/g, '')),
-              name: parts[0].replace(/"/g, ''),
-              memory: Number.parseInt(parts[4].replace(/[",\s]/g, '')) * 1024,
-              command: parts[0].replace(/"/g, ''),
+              pid: Number.parseInt(p1.replace(/"/g, '')),
+              name: p0.replace(/"/g, ''),
+              memory: Number.parseInt(p4.replace(/[",\s]/g, '')) * 1024,
+              command: p0.replace(/"/g, ''),
             })
           }
         }
         else {
           const parts = line.trim().split(/\s+/)
           if (parts.length >= 11) {
+            const p1 = parts[1] ?? '0'
+            const p2 = parts[2] ?? '0'
+            const p5 = parts[5] ?? '0'
+            const p10 = parts[10] ?? ''
             processes.push({
-              pid: Number.parseInt(parts[1]),
-              ppid: Number.parseInt(parts[2]),
-              name: parts[10],
+              pid: Number.parseInt(p1),
+              ppid: Number.parseInt(p2),
+              name: p10,
               command: parts.slice(10).join(' '),
-              memory: Number.parseInt(parts[5]) * 1024, // KB to bytes
-              cpu: Number.parseFloat(parts[2]),
+              memory: Number.parseInt(p5) * 1024, // KB to bytes
+              cpu: Number.parseFloat(p2),
             })
           }
         }

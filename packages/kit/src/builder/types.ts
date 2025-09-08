@@ -2,8 +2,6 @@
  * Builder CLI 类型定义
  */
 
-import type { BuildOptions } from '@ldesign/builder'
-
 /**
  * Builder CLI 选项
  */
@@ -31,7 +29,7 @@ export interface CLICommand {
   /** 命令选项 */
   options?: CommandOption[]
   /** 命令执行函数 */
-  action: (args: any, options: any) => Promise<void>
+  action: <A = unknown, O = Record<string, unknown>>(args: A, options: O) => Promise<void>
 }
 
 /**
@@ -45,7 +43,7 @@ export interface CommandOption {
   /** 选项类型 */
   type?: 'string' | 'boolean' | 'number'
   /** 默认值 */
-  default?: any
+  default?: unknown
   /** 是否必需 */
   required?: boolean
   /** 选项别名 */
@@ -81,7 +79,7 @@ export interface BuildCommand {
   /** 输出目录 */
   outDir?: string
   /** 输出格式 */
-  formats?: string[]
+  formats?: string | string[]
   /** 是否生成类型声明文件 */
   dts?: boolean
 }
@@ -128,4 +126,39 @@ export interface InitCommand {
   output?: string
   /** 是否覆盖已存在的文件 */
   force?: boolean
+}
+
+/**
+ * 本地 BuildOptions 定义（与 @ldesign/builder 松耦合）
+ */
+export interface BuildOptions {
+  input?: string | string[] | Record<string, string>
+  outDir?: string
+  formats?: string[]
+  [key: string]: unknown
+}
+
+/** 运行结果类型（与 @ldesign/builder 松耦合） */
+export interface BuildResult {
+  success: boolean
+  outputs: Array<{ fileName: string, size: number }>
+  duration: number
+  errors?: Array<{ message: string }>
+}
+
+export type WatchResult = unknown
+
+export interface AnalyzeResult {
+  projectType: string
+  stats: Record<string, unknown>
+  files: unknown[]
+  entryPoints: string[]
+  recommendations: string[]
+  issues: string[]
+}
+
+export interface InitResult {
+  success: boolean
+  path: string
+  files: string[]
 }

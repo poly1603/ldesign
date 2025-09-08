@@ -176,13 +176,13 @@ describe('eventEmitter', () => {
     it('应该支持异步事件发射', async () => {
       const results: string[] = []
 
-      emitter.on('test', async data => {
+      emitter.on('test', async (data) => {
         await global.testUtils.sleep(10)
         results.push(`async1-${data}`)
         return `result1-${data}`
       })
 
-      emitter.on('test', async data => {
+      emitter.on('test', async (data) => {
         await global.testUtils.sleep(5)
         results.push(`async2-${data}`)
         return `result2-${data}`

@@ -13,7 +13,7 @@ export interface EnvConfigOptions {
   parseValues?: boolean
   allowList?: string[]
   denyList?: string[]
-  transform?: (key: string, value: string) => any
+  transform?: (key: string, value: unknown) => unknown
 }
 
 /**
@@ -30,15 +30,15 @@ export class EnvConfig {
       parseValues: options.parseValues !== false,
       allowList: options.allowList || [],
       denyList: options.denyList || [],
-      transform: options.transform || ((key, value) => value),
+      transform: options.transform || ((_key: string, value: unknown) => value),
     }
   }
 
   /**
    * 加载环境变量配置
    */
-  load(): Record<string, any> {
-    const config: Record<string, any> = {}
+  load(): Record<string, unknown> {
+    const config: Record<string, unknown> = {}
     const env = process.env
 
     for (const [key, value] of Object.entries(env)) {
@@ -147,7 +147,7 @@ export class EnvConfig {
   /**
    * 解析环境变量值
    */
-  private parseValue(value: string): any {
+  private parseValue(value: string): unknown {
     if (!this.options.parseValues) {
       return value
     }
@@ -202,18 +202,19 @@ export class EnvConfig {
   /**
    * 设置嵌套配置值
    */
-  private setNestedValue(config: Record<string, any>, key: string, value: any): void {
+  private setNestedValue(config: Record<string, unknown>, key: string, value: unknown): void {
     const keys = key.split('.')
-    let current = config
+    let current: Record<string, unknown> = config
 
     for (let i = 0; i < keys.length - 1; i++) {
       const k = keys[i]
       if (!k)
         continue
-      if (!(k in current) || typeof current[k] !== 'object' || current[k] === null) {
+      const next = current[k]
+      if (!this.isRecord(next)) {
         current[k] = {}
       }
-      current = current[k]
+      current = current[k] as Record<string, unknown>
     }
 
     const lastKey = keys[keys.length - 1]
@@ -225,21 +226,21 @@ export class EnvConfig {
   /**
    * 获取环境变量
    */
-  get(key: string, defaultValue?: any): any {
+  get<T = unknown>(key: string, defaultValue?: T): T {
     const envKey = this.buildEnvKey(key)
     const value = process.env[envKey]
 
     if (value === undefined) {
-      return defaultValue
+      return defaultValue as T
     }
 
-    return this.options.parseValues ? this.parseValue(value) : value
+    return (this.options.parseValues ? this.parseValue(value) : value) as unknown as T
   }
 
   /**
    * 设置环境变量
    */
-  set(key: string, value: any): void {
+  set(key: string, value: unknown): void {
     const envKey = this.buildEnvKey(key)
     process.env[envKey] = String(value)
   }
@@ -321,11 +322,11 @@ export class EnvConfig {
   /**
    * 从对象设置多个环境变量
    */
-  setFromObject(config: Record<string, any>, prefix = ''): void {
+  setFromObject(config: Record<string, unknown>, prefix = ''): void {
     for (const [key, value] of Object.entries(config)) {
       const fullKey = prefix ? `${prefix}.${key}` : key
 
-      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      if (this.isRecord(value)) {
         this.setFromObject(value, fullKey)
       }
       else {
@@ -410,8 +411,15 @@ export class EnvConfig {
   /**
    * 快速加载环境变量配置
    */
-  static load(prefix?: string): Record<string, any> {
+  static load(prefix?: string): Record<string, unknown> {
     const envConfig = new EnvConfig({ prefix })
     return envConfig.load()
+  }
+
+  /**
+   * 简单对象类型守卫
+   */
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value)
   }
 }

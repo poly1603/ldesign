@@ -277,7 +277,8 @@ export class SSLManager {
 
     // 验证每个证书
     for (let i = 0; i < certificates.length; i++) {
-      const result = await this.verifyCertificate(certificates[i])
+      const cert = certificates[i]!
+      const result = await this.verifyCertificate(cert)
       if (!result.valid) {
         errors.push(`Certificate ${i + 1}: ${result.errors.join(', ')}`)
       }
@@ -285,8 +286,8 @@ export class SSLManager {
 
     // 验证证书链的连续性
     for (let i = 0; i < certificates.length - 1; i++) {
-      const current = this.parseCertificate(certificates[i])
-      const next = this.parseCertificate(certificates[i + 1])
+      const current = this.parseCertificate(certificates[i]!)
+      const next = this.parseCertificate(certificates[i + 1]!)
 
       if (current.issuer !== next.subject) {
         errors.push(`Certificate chain break between certificate ${i + 1} and ${i + 2}`)
@@ -377,7 +378,7 @@ export class SSLManager {
       const [key, value] = part.split('=', 2)
       switch (key) {
         case 'CN':
-          subject.commonName = value
+          subject.commonName = value ?? subject.commonName
           break
         case 'O':
           subject.organization = value
@@ -413,7 +414,7 @@ export class SSLManager {
   /**
    * 签名证书
    */
-  private signCertificate(certData: any, privateKey: string): string {
+  private signCertificate(certData: any, _privateKey: string): string {
     // 简化的证书签名实现
     const content = JSON.stringify(certData)
     return Buffer.from(content).toString('base64')

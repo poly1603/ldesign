@@ -14,10 +14,8 @@ export class StringUtils {
    */
   static toCamelCase(str: string): string {
     return str
-      .replace(/^\w|[A-Z]|\b\w/g, (word, index) =>
-        index === 0 ? word.toLowerCase() : word.toUpperCase())
-      .replace(/\s+/g, '')
-      .replace(/[-_]/g, '')
+      .replace(/[-_\s]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ''))
+      .replace(/^(.)/, m => m.toLowerCase())
   }
 
   /**
@@ -26,10 +24,9 @@ export class StringUtils {
    * @returns 帕斯卡命名字符串
    */
   static toPascalCase(str: string): string {
-    return str
-      .replace(/^\w|[A-Z]|\b\w/g, word => word.toUpperCase())
-      .replace(/\s+/g, '')
-      .replace(/[-_]/g, '')
+    const s = str
+      .replace(/[-_\s]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ''))
+    return s.charAt(0).toUpperCase() + s.slice(1)
   }
 
   /**
@@ -162,10 +159,10 @@ export class StringUtils {
         return str.padStart(length, fillString)
       case 'end':
         return str.padEnd(length, fillString)
-      case 'both':
+      case 'both': {
         const leftPad = Math.floor(fillLength / 2)
-        const rightPad = fillLength - leftPad
         return str.padStart(str.length + leftPad, fillString).padEnd(length, fillString)
+      }
       default:
         return str
     }
@@ -240,7 +237,7 @@ export class StringUtils {
     const { prefix = '{{', suffix = '}}', fallback = '' } = options
     const pattern = new RegExp(`${prefix}\\s*([^${suffix}]+)\\s*${suffix}`, 'g')
 
-    return template.replace(pattern, (match, key) => {
+    return template.replace(pattern, (_match, key) => {
       const value = StringUtils.get(data, key.trim())
       return value !== undefined ? String(value) : fallback
     })
@@ -311,30 +308,29 @@ export class StringUtils {
    * @returns 编辑距离
    */
   static levenshteinDistance(str1: string, str2: string): number {
-    const matrix = Array.from({ length: str2.length + 1 })
-      .fill(null)
-      .map(() => Array.from({ length: str1.length + 1 }).fill(null))
+    const matrix: number[][] = Array.from({ length: str2.length + 1 }, () =>
+      Array.from({ length: str1.length + 1 }).fill(0))
 
     for (let i = 0; i <= str1.length; i++) {
-      matrix[0][i] = i
+      matrix[0]![i] = i
     }
 
     for (let j = 0; j <= str2.length; j++) {
-      matrix[j][0] = j
+      matrix[j]![0] = j
     }
 
     for (let j = 1; j <= str2.length; j++) {
       for (let i = 1; i <= str1.length; i++) {
         const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1
-        matrix[j][i] = Math.min(
-          matrix[j][i - 1] + 1, // deletion
-          matrix[j - 1][i] + 1, // insertion
-          matrix[j - 1][i - 1] + indicator, // substitution
+        matrix[j]![i] = Math.min(
+          matrix[j]![i - 1]! + 1,
+          matrix[j - 1]![i]! + 1,
+          matrix[j - 1]![i - 1]! + indicator,
         )
       }
     }
 
-    return matrix[str2.length][str1.length]
+    return matrix[str2.length]![str1.length]!
   }
 
   /**
@@ -370,7 +366,7 @@ export class StringUtils {
       '\'': '&#39;',
     }
 
-    return str.replace(/[&<>"']/g, match => htmlEscapes[match])
+    return str.replace(/[&<>"']/g, match => htmlEscapes[match as keyof typeof htmlEscapes] || match)
   }
 
   /**
@@ -387,7 +383,7 @@ export class StringUtils {
       '&#39;': '\'',
     }
 
-    return str.replace(/&(?:amp|lt|gt|quot|#39);/g, match => htmlUnescapes[match])
+    return str.replace(/&(?:amp|lt|gt|quot|#39);/g, match => htmlUnescapes[match as keyof typeof htmlUnescapes] || match)
   }
 
   /**

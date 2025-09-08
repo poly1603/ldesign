@@ -1,20 +1,21 @@
 /**
  * Builder CLI 主类
- * 
+ *
  * 提供完整的命令行界面
  */
 
+import type {
+  AnalyzeCommand,
+  BuildCommand,
+  BuilderCLIOptions,
+  DevCommand,
+  InitCommand,
+} from './types'
 import { cac } from 'cac'
 import chalk from 'chalk'
-import { ConfigLoader } from './config-loader'
+import pkg from '../../package.json' assert { type: 'json' }
 import { CommandRunner } from './command-runner'
-import type { 
-  BuilderCLIOptions,
-  BuildCommand,
-  DevCommand,
-  AnalyzeCommand,
-  InitCommand 
-} from './types'
+import { ConfigLoader } from './config-loader'
 
 /**
  * Builder CLI 类
@@ -49,7 +50,7 @@ export class BuilderCLI {
     this.cli
       .command('build [input]', '构建项目')
       .option('--mode <mode>', '构建模式 (development|production)', {
-        default: 'production'
+        default: 'production',
       })
       .option('--watch', '监听模式')
       .option('--clean', '清理输出目录', { default: true })
@@ -105,7 +106,7 @@ export class BuilderCLI {
       .option('--verbose', '显示详细日志')
       .option('--silent', '静默模式')
       .help()
-      .version(require('../../package.json').version)
+      .version((pkg as any).version)
   }
 
   /**
@@ -114,7 +115,7 @@ export class BuilderCLI {
   private async handleBuild(input: string, options: BuildCommand): Promise<void> {
     try {
       const config = await this.loadConfig()
-      
+
       // 如果提供了 input 参数，覆盖配置中的 input
       if (input) {
         if (config) {
@@ -124,33 +125,35 @@ export class BuilderCLI {
 
       // 处理格式选项
       if (options.formats) {
-        const formats = typeof options.formats === 'string' 
-          ? options.formats.split(',').map(f => f.trim())
+        const formats = typeof options.formats === 'string'
+          ? (options.formats as string).split(',').map((f: string) => f.trim())
           : options.formats
         options.formats = formats as any
       }
 
       const result = await this.commandRunner.runBuild(config, options)
-      
+
       if (result.success) {
-        console.log(chalk.green('✅ 构建成功!'))
+        process.stdout.write(`${chalk.green('✅ 构建成功!')}\n`)
         if (result.outputs.length > 0) {
-          console.log('\n📦 输出文件:')
-          result.outputs.forEach(output => {
-            console.log(`  ${chalk.cyan(output.fileName)} (${output.size} bytes)`)
+          process.stdout.write('\n📦 输出文件:\n')
+          result.outputs.forEach((output: any) => {
+            process.stdout.write(`  ${chalk.cyan(output.fileName)} (${output.size} bytes)\n`)
           })
         }
-        console.log(`\n⏱️  构建耗时: ${result.duration}ms`)
-      } else {
+        process.stdout.write(`\n⏱️  构建耗时: ${result.duration}ms\n`)
+      }
+      else {
         console.error(chalk.red('❌ 构建失败!'))
         if (result.errors) {
-          result.errors.forEach(error => {
+          result.errors.forEach((error: any) => {
             console.error(chalk.red(`  ${error.message}`))
           })
         }
         process.exit(1)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 构建过程中发生错误:'), error)
       process.exit(1)
     }
@@ -162,14 +165,15 @@ export class BuilderCLI {
   private async handleDev(input: string, options: DevCommand): Promise<void> {
     try {
       const config = await this.loadConfig()
-      
+
       if (input && config) {
         config.config.input = input
       }
 
-      console.log(chalk.blue('🚀 启动开发服务器...'))
+      process.stdout.write(`${chalk.blue('🚀 启动开发服务器...')}\n`)
       await this.commandRunner.runDev(config, options)
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 开发服务器启动失败:'), error)
       process.exit(1)
     }
@@ -185,26 +189,27 @@ export class BuilderCLI {
       }
 
       const result = await this.commandRunner.runAnalyze(options)
-      
-      console.log(chalk.green('✅ 项目分析完成!'))
-      console.log(`\n📊 项目类型: ${chalk.cyan(result.projectType)}`)
-      console.log(`📁 文件数量: ${chalk.cyan(result.files.length)}`)
-      console.log(`🎯 入口文件: ${chalk.cyan(result.entryPoints.join(', '))}`)
-      
+
+      process.stdout.write(`${chalk.green('✅ 项目分析完成!')}\n`)
+      process.stdout.write(`\n📊 项目类型: ${chalk.cyan(result.projectType)}\n`)
+      process.stdout.write(`📁 文件数量: ${chalk.cyan(result.files.length)}\n`)
+      process.stdout.write(`🎯 入口文件: ${chalk.cyan(result.entryPoints.join(', '))}\n`)
+
       if (result.recommendations.length > 0) {
-        console.log('\n💡 建议:')
-        result.recommendations.forEach(rec => {
-          console.log(`  ${chalk.yellow('•')} ${rec}`)
+        process.stdout.write('\n💡 建议:\n')
+        result.recommendations.forEach((rec: any) => {
+          process.stdout.write(`  ${chalk.yellow('•')} ${rec}\n`)
         })
       }
 
       if (result.issues.length > 0) {
-        console.log('\n⚠️  问题:')
-        result.issues.forEach(issue => {
-          console.log(`  ${chalk.red('•')} ${issue}`)
+        process.stdout.write('\n⚠️  问题:\n')
+        result.issues.forEach((issue: any) => {
+          process.stdout.write(`  ${chalk.red('•')} ${issue}\n`)
         })
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 项目分析失败:'), error)
       process.exit(1)
     }
@@ -220,22 +225,24 @@ export class BuilderCLI {
       }
 
       const result = await this.commandRunner.runInit(options)
-      
+
       if (result.success) {
-        console.log(chalk.green('✅ 项目初始化成功!'))
-        console.log(`📁 项目路径: ${chalk.cyan(result.path)}`)
-        
+        process.stdout.write(`${chalk.green('✅ 项目初始化成功!')}\n`)
+        process.stdout.write(`📁 项目路径: ${chalk.cyan(result.path)}\n`)
+
         if (result.files.length > 0) {
-          console.log('\n📄 创建的文件:')
-          result.files.forEach(file => {
-            console.log(`  ${chalk.cyan(file)}`)
+          process.stdout.write('\n📄 创建的文件:\n')
+          result.files.forEach((file: any) => {
+            process.stdout.write(`  ${chalk.cyan(file)}\n`)
           })
         }
-      } else {
+      }
+      else {
         console.error(chalk.red('❌ 项目初始化失败!'))
         process.exit(1)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 项目初始化过程中发生错误:'), error)
       process.exit(1)
     }
@@ -248,10 +255,12 @@ export class BuilderCLI {
     try {
       if (this.options.config) {
         return await this.configLoader.loadConfigFile(this.options.config)
-      } else {
+      }
+      else {
         return await this.configLoader.discoverConfig()
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (this.options.verbose) {
         console.warn(chalk.yellow('⚠️  配置文件加载失败:'), error)
       }
@@ -265,7 +274,8 @@ export class BuilderCLI {
   async run(argv?: string[]): Promise<void> {
     try {
       this.cli.parse(argv)
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ CLI 运行失败:'), error)
       process.exit(1)
     }

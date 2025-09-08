@@ -137,7 +137,7 @@ describe('viteBuilder', () => {
       expect(build).toHaveBeenCalledWith(
         expect.objectContaining({
           root: '/test/project',
-        })
+        }),
       )
     })
 
@@ -173,7 +173,7 @@ describe('viteBuilder', () => {
 
     it('应该在没有库配置时抛出错误', async () => {
       await expect(builder.buildLib()).rejects.toThrow(
-        'Library configuration is required for buildLib()'
+        'Library configuration is required for buildLib()',
       )
     })
   })
@@ -266,7 +266,7 @@ describe('viteBuilder', () => {
           build: expect.objectContaining({
             watch: {},
           }),
-        })
+        }),
       )
     })
   })

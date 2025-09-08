@@ -22,12 +22,12 @@ export abstract class AbstractCacheStore extends EventEmitter implements CacheSt
   /**
    * 获取缓存值
    */
-  abstract get<T = any>(key: string): Promise<T | undefined>
+  abstract get<T = unknown>(key: string): Promise<T | undefined>
 
   /**
    * 设置缓存值
    */
-  abstract set<T = any>(key: string, value: T, ttl?: number): Promise<void>
+  abstract set<T = unknown>(key: string, value: T, ttl?: number): Promise<void>
 
   /**
    * 检查缓存是否存在
@@ -52,7 +52,7 @@ export abstract class AbstractCacheStore extends EventEmitter implements CacheSt
   /**
    * 批量获取（默认实现）
    */
-  async mget<T = any>(keys: string[]): Promise<Map<string, T>> {
+  async mget<T = unknown>(keys: string[]): Promise<Map<string, T>> {
     const results = new Map<string, T>()
 
     for (const key of keys) {
@@ -68,7 +68,7 @@ export abstract class AbstractCacheStore extends EventEmitter implements CacheSt
   /**
    * 批量设置（默认实现）
    */
-  async mset<T = any>(entries: Map<string, T>, ttl?: number): Promise<void> {
+  async mset<T = unknown>(entries: Map<string, T>, ttl?: number): Promise<void> {
     for (const [key, value] of entries) {
       await this.set(key, value, ttl)
     }
@@ -126,7 +126,7 @@ export abstract class AbstractCacheStore extends EventEmitter implements CacheSt
   /**
    * 记录设置
    */
-  protected recordSet(key: string, value: any): void {
+  protected recordSet(key: string, value: unknown): void {
     this.stats.sets++
     this.emit('set', key, value)
   }
@@ -195,11 +195,11 @@ export class CacheStoreDecorator extends AbstractCacheStore {
     this.store.on('error', error => this.emit('error', error))
   }
 
-  async get<T = any>(key: string): Promise<T | undefined> {
+  async get<T = unknown>(key: string): Promise<T | undefined> {
     return await this.store.get<T>(key)
   }
 
-  async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
+  async set<T = unknown>(key: string, value: T, ttl?: number): Promise<void> {
     return await this.store.set(key, value, ttl)
   }
 
@@ -215,14 +215,14 @@ export class CacheStoreDecorator extends AbstractCacheStore {
     return await this.store.clear()
   }
 
-  override async mget<T = any>(keys: string[]): Promise<Map<string, T>> {
+  override async mget<T = unknown>(keys: string[]): Promise<Map<string, T>> {
     if (this.store.mget) {
       return await this.store.mget<T>(keys)
     }
     return await super.mget<T>(keys)
   }
 
-  override async mset<T = any>(entries: Map<string, T>, ttl?: number): Promise<void> {
+  override async mset<T = unknown>(entries: Map<string, T>, ttl?: number): Promise<void> {
     if (this.store.mset) {
       return await this.store.mset(entries, ttl)
     }
@@ -280,7 +280,7 @@ export class CompressedCacheStore extends CacheStoreDecorator {
     super(store)
   }
 
-  override async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
+  override async set<T = unknown>(key: string, value: T, ttl?: number): Promise<void> {
     let processedValue = value
 
     // 如果值是字符串且超过阈值，进行压缩
@@ -301,7 +301,7 @@ export class CompressedCacheStore extends CacheStoreDecorator {
     return await this.store.set(key, processedValue, ttl)
   }
 
-  override async get<T = any>(key: string): Promise<T | undefined> {
+  override async get<T = unknown>(key: string): Promise<T | undefined> {
     const value = await this.store.get<T>(key)
 
     if (typeof value === 'string' && value.startsWith('__compressed__')) {
@@ -334,7 +334,7 @@ export class SerializedCacheStore extends CacheStoreDecorator {
     super(store)
   }
 
-  override async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
+  override async set<T = unknown>(key: string, value: T, ttl?: number): Promise<void> {
     let serializedValue: string
 
     try {
@@ -348,7 +348,7 @@ export class SerializedCacheStore extends CacheStoreDecorator {
     return await this.store.set(key, serializedValue, ttl)
   }
 
-  override async get<T = any>(key: string): Promise<T | undefined> {
+  override async get<T = unknown>(key: string): Promise<T | undefined> {
     const value = await this.store.get<string>(key)
 
     if (value === undefined) {
@@ -386,11 +386,11 @@ export class NamespacedCacheStore extends CacheStoreDecorator {
     return key.startsWith(prefix) ? key.slice(prefix.length) : key
   }
 
-  override async get<T = any>(key: string): Promise<T | undefined> {
+  override async get<T = unknown>(key: string): Promise<T | undefined> {
     return await this.store.get<T>(this.addNamespace(key))
   }
 
-  override async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
+  override async set<T = unknown>(key: string, value: T, ttl?: number): Promise<void> {
     return await this.store.set(this.addNamespace(key), value, ttl)
   }
 
@@ -402,7 +402,7 @@ export class NamespacedCacheStore extends CacheStoreDecorator {
     return await this.store.delete(this.addNamespace(key))
   }
 
-  override async mget<T = any>(keys: string[]): Promise<Map<string, T>> {
+  override async mget<T = unknown>(keys: string[]): Promise<Map<string, T>> {
     const namespacedKeys = keys.map(key => this.addNamespace(key))
     const results = await super.mget<T>(namespacedKeys)
 
@@ -415,7 +415,7 @@ export class NamespacedCacheStore extends CacheStoreDecorator {
     return finalResults
   }
 
-  override async mset<T = any>(entries: Map<string, T>, ttl?: number): Promise<void> {
+  override async mset<T = unknown>(entries: Map<string, T>, ttl?: number): Promise<void> {
     const namespacedEntries = new Map<string, T>()
     for (const [key, value] of entries) {
       namespacedEntries.set(this.addNamespace(key), value)

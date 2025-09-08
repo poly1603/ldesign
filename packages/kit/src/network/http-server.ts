@@ -10,7 +10,6 @@ import { createReadStream, existsSync, statSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { createServer as createHttpsServer } from 'node:https'
 import { extname, join } from 'node:path'
-import { parse } from 'node:url'
 import { NetworkError } from '../types'
 
 /**
@@ -18,7 +17,21 @@ import { NetworkError } from '../types'
  */
 export class HttpServer extends EventEmitter {
   private server: Server | null = null
-  private options: Required<HttpServerOptions>
+  private options: (
+    HttpServerOptions & {
+      port: number
+      host: string
+      https: boolean
+      cors: any
+      compression: boolean
+      bodyParser: boolean
+      maxBodySize: number
+      timeout: number
+      keepAliveTimeout: number
+      httpsOptions?: any
+    }
+  )
+
   private routes: Map<string, Map<string, RouteHandler>> = new Map()
   private middlewares: Middleware[] = []
   private staticDirs: Map<string, string> = new Map()
@@ -158,7 +171,8 @@ export class HttpServer extends EventEmitter {
    * 创建请求上下文
    */
   private async createContext(req: IncomingMessage, res: ServerResponse): Promise<HttpContext> {
-    const url = parse(req.url || '', true)
+    const base = `${this.options.https ? 'https' : 'http'}://${this.options.host}:${this.options.port}`
+    const parsedUrl = new URL(req.url || '/', base)
 
     // 解析请求体
     let body: any = null
@@ -170,8 +184,8 @@ export class HttpServer extends EventEmitter {
       request: {
         method: req.method || 'GET',
         url: req.url || '/',
-        path: url.pathname || '/',
-        query: url.query || {},
+        path: parsedUrl.pathname || '/',
+        query: Object.fromEntries(parsedUrl.searchParams.entries()),
         headers: req.headers,
         body,
         params: {},
@@ -361,8 +375,8 @@ export class HttpServer extends EventEmitter {
     const params: Record<string, string> = {}
 
     for (let i = 0; i < patternParts.length; i++) {
-      const patternPart = patternParts[i]
-      const pathPart = pathParts[i]
+      const patternPart = patternParts[i]!
+      const pathPart = pathParts[i]!
 
       if (patternPart.startsWith(':')) {
         // 参数匹配
@@ -445,7 +459,7 @@ export class HttpServer extends EventEmitter {
   /**
    * 处理错误
    */
-  private handleError(error: Error, req: IncomingMessage, res: ServerResponse): void {
+  private handleError(error: Error, _req: IncomingMessage, res: ServerResponse): void {
     this.emit('error', error)
 
     if (!res.headersSent) {

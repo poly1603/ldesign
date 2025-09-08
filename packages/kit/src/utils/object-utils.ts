@@ -48,8 +48,8 @@ export class ObjectUtils {
     if (typeof obj === 'object') {
       const cloned = {} as T
       for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          cloned[key] = ObjectUtils.deepClone(obj[key])
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          cloned[key] = ObjectUtils.deepClone((obj as Record<string, any>)[key])
         }
       }
       return cloned
@@ -143,17 +143,18 @@ export class ObjectUtils {
    */
   static set<T extends Record<string, any>>(obj: T, path: string | string[], value: any): T {
     const keys = Array.isArray(path) ? path : path.split('.')
-    let current = obj
+    let current: any = obj as any
 
     for (let i = 0; i < keys.length - 1; i++) {
-      const key = keys[i]
+      const key = keys[i]!
       if (!(key in current) || !ObjectUtils.isObject(current[key])) {
         current[key] = {}
       }
       current = current[key]
     }
 
-    current[keys[keys.length - 1]] = value
+    const lastKey = keys[keys.length - 1]!
+    current[lastKey] = value
     return obj
   }
 
@@ -185,17 +186,17 @@ export class ObjectUtils {
    */
   static unset<T extends Record<string, any>>(obj: T, path: string | string[]): boolean {
     const keys = Array.isArray(path) ? path : path.split('.')
-    let current = obj
+    let current: any = obj as any
 
     for (let i = 0; i < keys.length - 1; i++) {
-      const key = keys[i]
+      const key = keys[i]!
       if (!(key in current) || !ObjectUtils.isObject(current[key])) {
         return false
       }
       current = current[key]
     }
 
-    const lastKey = keys[keys.length - 1]
+    const lastKey = keys[keys.length - 1]!
     if (lastKey in current) {
       delete current[lastKey]
       return true
@@ -214,7 +215,7 @@ export class ObjectUtils {
     const result: string[] = []
 
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const currentPath = prefix ? `${prefix}.${key}` : key
 
         if (ObjectUtils.isObject(obj[key])) {
@@ -240,7 +241,7 @@ export class ObjectUtils {
 
     function flattenRecursive(current: any, prefix = '') {
       for (const key in current) {
-        if (current.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(current, key)) {
           const newKey = prefix ? `${prefix}${separator}${key}` : key
 
           if (ObjectUtils.isObject(current[key])) {
@@ -267,7 +268,7 @@ export class ObjectUtils {
     const result: Record<string, any> = {}
 
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         ObjectUtils.set(result, key.split(separator), obj[key])
       }
     }
@@ -322,7 +323,7 @@ export class ObjectUtils {
     const result: Record<string, any> = {}
 
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const newKey = transformer(key, obj[key])
         result[newKey] = obj[key]
       }
@@ -344,7 +345,7 @@ export class ObjectUtils {
     const result = {} as Record<keyof T, R>
 
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         result[key] = transformer(obj[key], key)
       }
     }
@@ -361,7 +362,7 @@ export class ObjectUtils {
     const result: Record<string, string> = {}
 
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         result[String(obj[key])] = key
       }
     }
@@ -382,7 +383,7 @@ export class ObjectUtils {
     const result: Partial<T> = {}
 
     for (const key in obj) {
-      if (obj.hasOwnProperty(key) && predicate(obj[key], key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key) && predicate(obj[key], key)) {
         result[key] = obj[key]
       }
     }

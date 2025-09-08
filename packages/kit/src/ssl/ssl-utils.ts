@@ -145,7 +145,7 @@ export class SSLUtils {
         recommendations.push('添加组织信息以提高证书可信度')
       }
     }
-    catch (error) {
+    catch {
       issues.push('证书解析失败')
       score = 0
     }
@@ -204,7 +204,7 @@ export class SSLUtils {
         differences.push('签名算法不同')
       }
     }
-    catch (error) {
+    catch {
       differences.push('证书解析失败')
     }
 
@@ -265,7 +265,8 @@ export class SSLUtils {
 
     // 验证每个证书
     for (let i = 0; i < certificates.length; i++) {
-      const result = await sslManager.verifyCertificate(certificates[i])
+      const cert = certificates[i]!
+      const result = await sslManager.verifyCertificate(cert)
       if (!result.valid) {
         errors.push(`证书 ${i + 1}: ${result.errors.join(', ')}`)
       }
@@ -274,8 +275,8 @@ export class SSLUtils {
     // 检查证书链顺序
     for (let i = 0; i < certificates.length - 1; i++) {
       try {
-        const current = sslManager.parseCertificate(certificates[i])
-        const next = sslManager.parseCertificate(certificates[i + 1])
+        const current = sslManager.parseCertificate(certificates[i]!)
+        const next = sslManager.parseCertificate(certificates[i + 1]!)
 
         if (this.formatSubjectString(current.issuer) !== this.formatSubjectString(next.subject)) {
           errors.push(`证书链在第 ${i + 1} 和第 ${i + 2} 个证书之间断裂`)
@@ -289,7 +290,7 @@ export class SSLUtils {
     // 检查根证书
     if (certificates.length > 1) {
       try {
-        const rootCert = sslManager.parseCertificate(certificates[certificates.length - 1])
+        const rootCert = sslManager.parseCertificate(certificates[certificates.length - 1]!)
         if (
           this.formatSubjectString(rootCert.subject) !== this.formatSubjectString(rootCert.issuer)
         ) {

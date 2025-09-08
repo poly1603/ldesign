@@ -312,7 +312,8 @@ ${this.options.fontName}-prefix = '${this.options.cssOptions.classPrefix}'`
    * 构建 Stylus 基础类
    */
   private buildStylusBaseClass(): string {
-    return `${this.options.cssOptions.baseSelector.replace('.', '')}
+    const baseSel = (this.options.cssOptions?.baseSelector ?? '').replace('.', '')
+    return `${baseSel}
   font-family: ${this.options.fontName}-font-family !important
   speak: never
   font-style: normal
@@ -333,7 +334,8 @@ ${this.options.fontName}-prefix = '${this.options.cssOptions.classPrefix}'`
         const className = `${this.options.cssOptions.classPrefix}${icon.name}`
         const unicode = `\\${icon.unicode.charCodeAt(0).toString(16)}`
 
-        return `${this.options.cssOptions.baseSelector.replace('.', '')}.${className}:before
+        const baseSel = (this.options.cssOptions?.baseSelector ?? '').replace('.', '')
+        return `${baseSel}.${className}:before
   content: "${unicode}"`
       })
       .join('\n\n')

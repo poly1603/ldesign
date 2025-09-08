@@ -211,7 +211,7 @@ export class FileUtils {
     const renamed: Array<{ old: string, new: string }> = []
 
     for (let i = 0; i < files.length; i++) {
-      const oldPath = files[i]
+      const oldPath = files[i]!
       const oldName = basename(oldPath)
       const newName = renameFunction(oldName, i)
       const newPath = join(dirname(oldPath), newName)

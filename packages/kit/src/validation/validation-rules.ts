@@ -88,7 +88,7 @@ export class ValidationRules {
       message: message || `数值必须在 ${min || '-∞'} 到 ${max || '∞'} 之间`,
       validator: (value: any) => {
         const num = Number(value)
-        if (isNaN(num))
+        if (Number.isNaN(num))
           return false
         if (min !== undefined && num < min)
           return false
@@ -108,7 +108,7 @@ export class ValidationRules {
       message: message || `最小值为 ${min}`,
       validator: (value: any) => {
         const num = Number(value)
-        return !isNaN(num) && num >= min
+        return !Number.isNaN(num) && num >= min
       },
     }
   }
@@ -122,7 +122,7 @@ export class ValidationRules {
       message: message || `最大值为 ${max}`,
       validator: (value: any) => {
         const num = Number(value)
-        return !isNaN(num) && num <= max
+        return !Number.isNaN(num) && num <= max
       },
     }
   }
@@ -182,7 +182,7 @@ export class ValidationRules {
       validator: (value: any) => {
         if (typeof value !== 'string')
           return false
-        return ValidationUtils.isPhone(value)
+        return ValidationUtils.isChinesePhone(value)
       },
     }
   }
@@ -197,7 +197,7 @@ export class ValidationRules {
       validator: (value: any) => {
         if (typeof value !== 'string')
           return false
-        return ValidationUtils.isIdCard(value)
+        return ValidationUtils.isChineseIdCard(value)
       },
     }
   }
@@ -210,7 +210,7 @@ export class ValidationRules {
       code: 'NUMERIC',
       message: message || '请输入数字',
       validator: (value: any) => {
-        return !isNaN(Number(value))
+        return !Number.isNaN(Number(value))
       },
     }
   }
@@ -224,7 +224,7 @@ export class ValidationRules {
       message: message || '请输入整数',
       validator: (value: any) => {
         const num = Number(value)
-        return !isNaN(num) && Number.isInteger(num)
+        return !Number.isNaN(num) && Number.isInteger(num)
       },
     }
   }
@@ -270,7 +270,7 @@ export class ValidationRules {
         if (!value)
           return false
         const date = new Date(value)
-        return !isNaN(date.getTime())
+        return !Number.isNaN(date.getTime())
       },
     }
   }
@@ -285,7 +285,7 @@ export class ValidationRules {
       validator: (value: any) => {
         if (typeof value !== 'string')
           return false
-        return /^([01]?\d|2[0-3]):[0-5]\d$/.test(value)
+        return /^(?:[01]?\d|2[0-3]):[0-5]\d$/.test(value)
       },
     }
   }
@@ -301,7 +301,7 @@ export class ValidationRules {
         if (!value)
           return false
         const date = new Date(value)
-        return !isNaN(date.getTime())
+        return !Number.isNaN(date.getTime())
       },
     }
   }
@@ -520,7 +520,7 @@ export class ValidationRules {
       validator: (value: any) => {
         if (typeof value !== 'string')
           return false
-        return /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/i.test(value)
+        return /^(?:[0-9A-F]{2}[:-]){5}[0-9A-F]{2}$/i.test(value)
       },
     }
   }
@@ -564,7 +564,7 @@ export class ValidationRules {
       validator: (value: any) => {
         if (typeof value !== 'string')
           return false
-        return /^#([A-F0-9]{6}|[A-F0-9]{3})$/i.test(value)
+        return /^#(?:[A-F0-9]{6}|[A-F0-9]{3})$/i.test(value)
       },
     }
   }

@@ -75,12 +75,12 @@ describe('sSLManager', () => {
 
       // Mock certificate generation
       vi.spyOn(sslManager, 'generateSelfSignedCertificate').mockResolvedValue(
-        '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
+        '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----',
       )
 
       const certificate = await sslManager.generateSelfSignedCertificate(
         mockKeyPair,
-        certificateRequest
+        certificateRequest,
       )
 
       expect(certificate).toContain('BEGIN CERTIFICATE')
@@ -104,7 +104,7 @@ describe('sSLManager', () => {
 
       // Mock CSR generation
       vi.spyOn(sslManager, 'generateCSR').mockResolvedValue(
-        '-----BEGIN CERTIFICATE REQUEST-----\nmock-csr\n-----END CERTIFICATE REQUEST-----'
+        '-----BEGIN CERTIFICATE REQUEST-----\nmock-csr\n-----END CERTIFICATE REQUEST-----',
       )
 
       const csr = await sslManager.generateCSR(mockKeyPair, certificateRequest)
@@ -116,8 +116,8 @@ describe('sSLManager', () => {
 
   describe('证书验证', () => {
     it('应该能够验证证书', async () => {
-      const mockCertificate =
-        '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
+      const mockCertificate
+        = '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
 
       // Mock certificate verification
       vi.spyOn(sslManager, 'verifyCertificate').mockResolvedValue({
@@ -151,8 +151,8 @@ describe('sSLManager', () => {
 
   describe('证书解析', () => {
     it('应该能够解析证书信息', () => {
-      const mockCertificate =
-        '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
+      const mockCertificate
+        = '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
 
       // Mock certificate parsing
       vi.spyOn(sslManager, 'parseCertificate').mockReturnValue({
@@ -182,8 +182,8 @@ describe('sSLManager', () => {
 
   describe('指纹生成', () => {
     it('应该能够生成证书指纹', () => {
-      const mockCertificate =
-        '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
+      const mockCertificate
+        = '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
       const { createHash } = require('node:crypto')
 
       const mockHash = {
@@ -216,12 +216,12 @@ describe('sSLUtils', () => {
       const mockGenerateCertificate = vi
         .fn()
         .mockResolvedValue(
-          '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
+          '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----',
         )
 
       vi.spyOn(SSLManager.prototype, 'generateKeyPair').mockImplementation(mockGenerateKeyPair)
       vi.spyOn(SSLManager.prototype, 'generateSelfSignedCertificate').mockImplementation(
-        mockGenerateCertificate
+        mockGenerateCertificate,
       )
 
       const result = await SSLUtils.generateQuickCertificate({
@@ -237,8 +237,8 @@ describe('sSLUtils', () => {
 
   describe('域名验证', () => {
     it('应该能够验证域名匹配', () => {
-      const mockCertificate =
-        '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
+      const mockCertificate
+        = '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
 
       // Mock certificate parsing
       vi.spyOn(SSLManager.prototype, 'parseCertificate').mockReturnValue({
@@ -259,8 +259,8 @@ describe('sSLUtils', () => {
     })
 
     it('应该能够验证通配符域名', () => {
-      const mockCertificate =
-        '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
+      const mockCertificate
+        = '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
 
       // Mock certificate with SAN extension
       vi.spyOn(SSLManager.prototype, 'parseCertificate').mockReturnValue({
@@ -283,8 +283,8 @@ describe('sSLUtils', () => {
 
   describe('证书强度分析', () => {
     it('应该能够分析证书强度', () => {
-      const mockCertificate =
-        '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
+      const mockCertificate
+        = '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
 
       // Mock strong certificate
       vi.spyOn(SSLManager.prototype, 'parseCertificate').mockReturnValue({
@@ -308,8 +308,8 @@ describe('sSLUtils', () => {
     })
 
     it('应该能够检测弱证书', () => {
-      const mockCertificate =
-        '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
+      const mockCertificate
+        = '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
 
       // Mock weak certificate
       vi.spyOn(SSLManager.prototype, 'parseCertificate').mockReturnValue({
@@ -384,8 +384,8 @@ describe('sSLUtils', () => {
 
   describe('证书摘要', () => {
     it('应该能够生成证书摘要', () => {
-      const mockCertificate =
-        '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
+      const mockCertificate
+        = '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
 
       vi.spyOn(SSLManager.prototype, 'parseCertificate').mockReturnValue({
         subject: {

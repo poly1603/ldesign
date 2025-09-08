@@ -473,7 +473,7 @@ export class SchemaValidator extends EventEmitter {
       case 'string':
         return typeof value === 'string'
       case 'number':
-        return typeof value === 'number' && !isNaN(value)
+        return typeof value === 'number' && !Number.isNaN(value)
       case 'integer':
         return typeof value === 'number' && Number.isInteger(value)
       case 'boolean':
@@ -497,12 +497,14 @@ export class SchemaValidator extends EventEmitter {
       switch (type) {
         case 'string':
           return { success: true, value: String(value) }
-        case 'number':
+        case 'number': {
           const num = Number(value)
-          return { success: !isNaN(num), value: num }
-        case 'integer':
+          return { success: !Number.isNaN(num), value: num }
+        }
+        case 'integer': {
           const int = Number.parseInt(String(value), 10)
-          return { success: !isNaN(int), value: int }
+          return { success: !Number.isNaN(int), value: int }
+        }
         case 'boolean':
           if (typeof value === 'string') {
             const lower = value.toLowerCase()
@@ -549,17 +551,20 @@ export class SchemaValidator extends EventEmitter {
     }
 
     const keys = path.split('.')
-    let current = obj
+    let current: any = obj
 
     for (let i = 0; i < keys.length - 1; i++) {
-      const key = keys[i]
-      if (!(key in current) || typeof current[key] !== 'object') {
-        current[key] = {}
+      const k = keys[i]!
+      if (!(k in current) || typeof current[k] !== 'object') {
+        current[k] = {}
       }
-      current = current[key]
+      current = current[k]
     }
 
-    current[keys[keys.length - 1]] = value
+    const lastKey = keys[keys.length - 1]
+    if (lastKey !== undefined) {
+      current[lastKey] = value
+    }
   }
 
   /**

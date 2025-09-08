@@ -3,6 +3,7 @@
  * 提供高级路径解析和处理功能
  */
 
+import { existsSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import { dirname, join, relative, resolve } from 'node:path'
 import { FileSystemError } from '../types'
@@ -130,7 +131,7 @@ export class PathResolver {
     while (true) {
       const nodeModulesPath = join(currentDir, 'node_modules')
 
-      if (FileSystem.exists(nodeModulesPath)) {
+      if (existsSync(nodeModulesPath)) {
         return nodeModulesPath
       }
 

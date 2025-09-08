@@ -15,7 +15,7 @@ export class DateUtils {
    */
   static format(date: Date | number | string, format = 'YYYY-MM-DD HH:mm:ss'): string {
     const d = new Date(date)
-    if (isNaN(d.getTime())) {
+    if (Number.isNaN(d.getTime())) {
       throw new TypeError('Invalid date')
     }
 
@@ -72,35 +72,36 @@ export class DateUtils {
     }
 
     const [, ...groups] = match
+    const [g0 = '0', g1 = '0', g2 = '0', g3 = '0', g4 = '0', g5 = '0'] = groups
 
     switch (format) {
       case 'YYYY-MM-DD':
       case 'YYYY/MM/DD':
         return new Date(
-          Number.parseInt(groups[0]),
-          Number.parseInt(groups[1]) - 1,
-          Number.parseInt(groups[2]),
+          Number.parseInt(g0),
+          Number.parseInt(g1) - 1,
+          Number.parseInt(g2),
         )
       case 'DD/MM/YYYY':
         return new Date(
-          Number.parseInt(groups[2]),
-          Number.parseInt(groups[1]) - 1,
-          Number.parseInt(groups[0]),
+          Number.parseInt(g2),
+          Number.parseInt(g1) - 1,
+          Number.parseInt(g0),
         )
       case 'MM/DD/YYYY':
         return new Date(
-          Number.parseInt(groups[2]),
-          Number.parseInt(groups[0]) - 1,
-          Number.parseInt(groups[1]),
+          Number.parseInt(g2),
+          Number.parseInt(g0) - 1,
+          Number.parseInt(g1),
         )
       case 'YYYY-MM-DD HH:mm:ss':
         return new Date(
-          Number.parseInt(groups[0]),
-          Number.parseInt(groups[1]) - 1,
-          Number.parseInt(groups[2]),
-          Number.parseInt(groups[3]),
-          Number.parseInt(groups[4]),
-          Number.parseInt(groups[5]),
+          Number.parseInt(g0),
+          Number.parseInt(g1) - 1,
+          Number.parseInt(g2),
+          Number.parseInt(g3),
+          Number.parseInt(g4),
+          Number.parseInt(g5),
         )
       default:
         return new Date(dateString)
