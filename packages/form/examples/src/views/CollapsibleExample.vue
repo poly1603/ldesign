@@ -15,9 +15,32 @@
         </div>
         <div class="result-panel">
           <h4>表单数据</h4>
-          <pre>{{ JSON.stringify(formData, null, 2) }}</pre>
+          <div class="data-content">
+            <div v-if="Object.keys(formData).length === 0" class="empty-state">
+              暂无数据
+            </div>
+            <div v-else class="data-items">
+              <div v-for="(value, key) in formData" :key="key" class="data-item">
+                <span class="data-key">{{ getFieldLabel(key, verticalFields) }}:</span>
+                <span class="data-value">{{ formatValue(value) }}</span>
+              </div>
+            </div>
+          </div>
           <h4>验证结果</h4>
-          <pre>{{ validationResult ? JSON.stringify(validationResult, null, 2) : 'null' }}</pre>
+          <div class="validation-content">
+            <div v-if="!validationResult" class="empty-state">
+              暂无验证结果
+            </div>
+            <div v-else-if="validationResult.valid" class="validation-success">
+              ✅ 表单验证通过
+            </div>
+            <div v-else class="validation-errors">
+              <div v-for="(error, field) in validationResult.errors" :key="field" class="validation-error">
+                <span class="error-field">{{ getFieldLabel(field, verticalFields) }}:</span>
+                <span class="error-message">{{ error.message }}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -25,14 +48,27 @@
     <!-- 水平布局展开/收起示例 - 按钮组内联 -->
     <div class="example-section">
       <div class="example-header">
-        <h3>水平布局展开/收起 - 按钮组内联</h3>
-        <p>水平布局，配置显示2行（每行2列），根据字段colSpan智能计算可见字段数量。按钮组内联显示，智能定位在网格中的合适位置。</p>
+        <h3>水平布局展开/收起 - 水平标签布局</h3>
+        <p>水平布局，标签和输入框在一行显示，标签宽度精确计算（以最长文本为准），标签右对齐。支持配置表单项间隔（20px）和标签控件间隔（16px）。按钮组内联显示，智能定位在网格中的合适位置。</p>
       </div>
       <div class="example-content">
         <div class="form-container full-width">
           <div id="horizontal-form"></div>
         </div>
         <!-- 隐藏表单数据和验证结果，让表单更宽便于测试 -->
+      </div>
+    </div>
+
+    <!-- 水平布局展开/收起示例 - 不同间隔配置 -->
+    <div class="example-section">
+      <div class="example-header">
+        <h3>水平布局展开/收起 - 紧凑间隔</h3>
+        <p>水平布局，标签和输入框在一行显示，使用紧凑间隔配置：表单项间隔8px，标签控件间隔8px。展示不同间隔配置的效果。</p>
+      </div>
+      <div class="example-content">
+        <div class="form-container full-width">
+          <div id="compact-form"></div>
+        </div>
       </div>
     </div>
 
@@ -65,12 +101,17 @@ const horizontalValidationResult = ref(null)
 // 表单实例
 let form: FormCore | null = null
 let horizontalForm: FormCore | null = null
+let compactForm: FormCore | null = null
 let horizontalFormSeparate: FormCore | null = null
 
 // 适配器实例 - 为每个表单创建独立的适配器实例
 let verticalAdapter: VanillaAdapter | null = null
 let horizontalAdapter: VanillaAdapter | null = null
+let compactAdapter: VanillaAdapter | null = null
 let horizontalSeparateAdapter: VanillaAdapter | null = null
+
+// 字段定义（用于数据显示）
+let verticalFields: any[] = []
 
 onMounted(() => {
   // 为垂直布局表单创建独立的适配器
@@ -78,6 +119,9 @@ onMounted(() => {
 
   // 为水平布局表单创建独立的适配器
   horizontalAdapter = new VanillaAdapter()
+
+  // 为紧凑间隔表单创建独立的适配器
+  compactAdapter = new VanillaAdapter()
 
   // 为水平布局独占行表单创建独立的适配器
   horizontalSeparateAdapter = new VanillaAdapter()
@@ -87,6 +131,9 @@ onMounted(() => {
 
   // 创建水平布局展开/收起表单（按钮组内联）
   createHorizontalForm()
+
+  // 创建紧凑间隔表单
+  createCompactForm()
 
   // 创建水平布局展开/收起表单（按钮组独占行）
   createHorizontalFormSeparate()
@@ -99,6 +146,30 @@ onUnmounted(() => {
   verticalAdapter?.destroy()
   horizontalAdapter?.destroy()
 })
+
+/**
+ * 获取字段标签
+ */
+function getFieldLabel(fieldName: string, fieldList: any[]): string {
+  const field = fieldList.find(f => f.name === fieldName)
+  return field?.label || fieldName
+}
+
+/**
+ * 格式化值显示
+ */
+function formatValue(value: any): string {
+  if (value === null || value === undefined) {
+    return '空'
+  }
+  if (typeof value === 'string' && value === '') {
+    return '空字符串'
+  }
+  if (typeof value === 'object') {
+    return JSON.stringify(value)
+  }
+  return String(value)
+}
 
 /**
  * 添加表单操作按钮
@@ -198,6 +269,9 @@ function createCollapsibleForm() {
       type: 'textarea'
     }
   ]
+
+  // 保存字段定义用于数据显示
+  verticalFields = fields
 
   const config: FormConfig = {
     layout: {
@@ -312,7 +386,14 @@ function createHorizontalForm() {
         rowGap: 16,
         columnGap: 20,
         buttonPosition: 'inline',
-        buttonColSpan: 1
+        buttonColSpan: 1,
+        labelLayout: 'horizontal', // 标签和输入框在一行
+        labelAlign: 'right', // 标签右对齐
+        autoLabelWidth: true, // 自动计算标签宽度
+        itemSpacing: 20, // 表单项之间的垂直间隔
+        labelControlSpacing: 16, // 标签和输入框之间的水平间隔
+        buttonAlign: 'right', // 按钮组右对齐
+        resetBehavior: 'empty' // 重置为空值
       },
       collapsible: {
         enabled: true,
@@ -341,6 +422,126 @@ function createHorizontalForm() {
   })
 
   // 不再需要手动添加按钮，VanillaAdapter会自动创建按钮组
+}
+
+/**
+ * 创建紧凑间隔表单
+ */
+function createCompactForm() {
+  const fields: FieldConfig[] = [
+    {
+      name: 'c_firstName',
+      label: '名',
+      type: 'input',
+      defaultValue: '张',
+      required: true,
+      validation: { required: true, message: '请输入名' }
+    },
+    {
+      name: 'c_lastName',
+      label: '姓',
+      type: 'input',
+      defaultValue: '三',
+      required: true,
+      validation: { required: true, message: '请输入姓' }
+    },
+    {
+      name: 'c_email',
+      label: '邮箱地址',
+      type: 'input',
+      colSpan: 1,
+      validation: { email: true, message: '请输入有效的邮箱地址' }
+    },
+    {
+      name: 'c_phone',
+      label: '手机号码',
+      type: 'input',
+      validation: { pattern: /^1[3-9]\d{9}$/, message: '请输入有效的手机号码' }
+    },
+    {
+      name: 'c_city',
+      label: '城市',
+      type: 'input'
+    },
+    {
+      name: 'c_country',
+      label: '国家',
+      type: 'input'
+    },
+    {
+      name: 'c_company',
+      label: '公司名称',
+      type: 'input',
+      colSpan: 2
+    },
+    {
+      name: 'c_department',
+      label: '部门',
+      type: 'input'
+    },
+    {
+      name: 'c_position',
+      label: '职位',
+      type: 'input'
+    },
+    {
+      name: 'c_experience',
+      label: '工作经验',
+      type: 'select',
+      colSpan: 2,
+      options: [
+        { label: '1年以下', value: '0-1' },
+        { label: '1-3年', value: '1-3' },
+        { label: '3-5年', value: '3-5' },
+        { label: '5-10年', value: '5-10' },
+        { label: '10年以上', value: '10+' }
+      ]
+    }
+  ]
+
+  const config: FormConfig = {
+    layout: {
+      mode: 'horizontal',
+      horizontal: {
+        columnsPerRow: 2,
+        useGrid: true,
+        rowGap: 16,
+        columnGap: 20,
+        buttonPosition: 'inline',
+        buttonColSpan: 1,
+        labelLayout: 'horizontal', // 标签和输入框在一行
+        labelAlign: 'right', // 标签右对齐
+        autoLabelWidth: true, // 自动计算标签宽度
+        itemSpacing: 8, // 紧凑的表单项间隔
+        labelControlSpacing: 8, // 紧凑的标签控件间隔
+        buttonAlign: 'space-between', // 按钮组两端对齐
+        resetBehavior: 'default' // 重置为默认值
+      },
+      collapsible: {
+        enabled: true,
+        defaultVisibleRows: 2,
+        expandText: '展开',
+        collapseText: '收起',
+        showFieldCount: false,
+        animationDuration: 300
+      }
+    }
+  }
+
+  const formConfig = {
+    ...config,
+    fields: fields
+  }
+
+  compactForm = new FormCore(formConfig)
+
+  // 渲染表单 - 使用紧凑间隔专用的适配器
+  compactAdapter!.mount(compactForm, '#compact-form')
+
+  // 监听数据变化
+  compactForm.on('change', (data) => {
+    console.log('Compact form data:', data)
+  })
 }
 
 /**
@@ -600,5 +801,87 @@ function createHorizontalFormSeparate() {
       }
     }
   }
+}
+
+/* 数据显示样式 */
+.data-content, .validation-content {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  margin: 0 0 15px 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.empty-state {
+  color: #999;
+  font-style: italic;
+  text-align: center;
+  padding: 10px;
+}
+
+.data-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.data-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.data-item:last-child {
+  border-bottom: none;
+}
+
+.data-key {
+  font-weight: 500;
+  color: #333;
+  min-width: 80px;
+}
+
+.data-value {
+  color: #666;
+  text-align: right;
+  word-break: break-all;
+}
+
+.validation-success {
+  color: #52c41a;
+  font-weight: 500;
+  text-align: center;
+  padding: 10px;
+}
+
+.validation-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.validation-error {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
+  border-radius: 4px;
+}
+
+.error-field {
+  font-weight: 500;
+  color: #cf1322;
+  font-size: 11px;
+}
+
+.error-message {
+  color: #a8071a;
+  font-size: 11px;
 }
 </style>

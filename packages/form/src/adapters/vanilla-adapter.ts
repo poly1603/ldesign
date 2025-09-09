@@ -55,6 +55,9 @@ export class VanillaAdapter extends BaseAdapter {
   /** 可折叠字段容器 */
   private collapsibleContainer: HTMLElement | null = null
 
+  /** 当前字段配置 */
+  private currentFields: FieldConfig[] = []
+
   /**
    * 构造函数
    * 
@@ -167,9 +170,19 @@ export class VanillaAdapter extends BaseAdapter {
       const layoutClasses = generateHorizontalLayoutClasses(layoutConfig, containerWidth)
       className += ' ' + layoutClasses.join(' ')
 
-      // 添加标签对齐类名
-      if (layoutConfig.labelAlign) {
-        className += ` ldesign-form--label-${layoutConfig.labelAlign}`
+      // 添加标签布局类名
+      const horizontal = layoutConfig.horizontal || {}
+      if (horizontal.labelLayout === 'horizontal') {
+        className += ' ldesign-form--label-horizontal'
+
+        // 添加标签对齐类名
+        const labelAlign = horizontal.labelAlign || 'right'
+        className += ` ldesign-form--label-${labelAlign}`
+      } else {
+        // 垂直标签布局时的对齐方式
+        if (layoutConfig.labelAlign) {
+          className += ` ldesign-form--label-${layoutConfig.labelAlign}`
+        }
       }
     } else {
       className += ' ldesign-form--vertical'
@@ -204,6 +217,11 @@ export class VanillaAdapter extends BaseAdapter {
       this.updateFieldValue(name, value)
     })
 
+    // 监听数据批量变化（如setData）
+    form.on('values:change', (data) => {
+      this.updateAllFieldValues(data)
+    })
+
     // 监听验证状态变化
     form.on('validation:complete', (result) => {
       this.updateValidationDisplay(result)
@@ -213,6 +231,9 @@ export class VanillaAdapter extends BaseAdapter {
     form.on('state:change', (state) => {
       this.updateFormState(state)
     })
+
+    // 绑定重置按钮事件委托
+    this.bindResetButtonEvents(form)
   }
 
   /**
@@ -238,6 +259,9 @@ export class VanillaAdapter extends BaseAdapter {
    * 渲染可折叠字段
    */
   private renderCollapsibleFields(fields: FieldConfig[], form: FormCore): void {
+    // 存储当前字段配置
+    this.currentFields = fields
+
     const layoutConfig = form.config.layout || DEFAULT_LAYOUT_CONFIG
     const visibleFields = calculateVisibleFields(fields, layoutConfig, this.isExpanded)
 
@@ -274,6 +298,14 @@ export class VanillaAdapter extends BaseAdapter {
     const buttonGroupContainer = document.createElement('div')
     buttonGroupContainer.className = 'ldesign-form-item ldesign-form-actions'
 
+    // 获取按钮对齐配置
+    const horizontal = layoutConfig.horizontal || {}
+    const buttonAlign = horizontal.buttonAlign || 'right'
+    const resetBehavior = horizontal.resetBehavior || 'empty'
+
+    // 设置重置行为数据属性
+    buttonGroupContainer.setAttribute('data-reset-behavior', resetBehavior)
+
     // 创建按钮组内容容器
     const buttonsContainer = document.createElement('div')
     buttonsContainer.className = 'ldesign-form-control'
@@ -282,44 +314,67 @@ export class VanillaAdapter extends BaseAdapter {
     const buttonGroup = document.createElement('div')
     buttonGroup.className = 'ldesign-form-button-group'
 
-    // 1. 创建展开/收起按钮（如果有隐藏字段）
-    if (hiddenCount > 0) {
-      const collapseButtonContainer = this.createCollapseButtonElement(layoutConfig, hiddenCount)
-      buttonGroup.appendChild(collapseButtonContainer)
+    // 根据对齐方式决定按钮结构
+    if (buttonAlign === 'space-between') {
+      // 两端对齐：展开/收起在左侧，重置/提交在右侧
 
-      // 绑定展开/收起事件
-      const actualButton = collapseButtonContainer.querySelector('.ldesign-form-collapse-button') as HTMLElement
-      if (actualButton) {
-        actualButton.addEventListener('click', (e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          this.toggleCollapse(layoutConfig, fields)
-        })
-      } else {
-        console.error('Could not find .ldesign-form-collapse-button element')
+      // 1. 创建展开/收起按钮（如果有隐藏字段）
+      if (hiddenCount > 0) {
+        const collapseButtonContainer = this.createCollapseButtonElement(layoutConfig, hiddenCount)
+        collapseButtonContainer.className += ' ldesign-form-collapse-button'
+        buttonGroup.appendChild(collapseButtonContainer)
+
+        // 绑定展开/收起事件
+        const actualButton = collapseButtonContainer.querySelector('.ldesign-form-collapse-button') as HTMLElement
+        if (actualButton) {
+          actualButton.addEventListener('click', (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            this.toggleCollapse(layoutConfig, fields)
+          })
+        }
       }
+
+      // 2. 创建右侧按钮组容器
+      const actionButtonsContainer = document.createElement('div')
+      actionButtonsContainer.className = 'ldesign-form-action-buttons'
+
+      // 创建重置按钮
+      const resetButton = this.createResetButton(form, fields, resetBehavior)
+      actionButtonsContainer.appendChild(resetButton)
+
+      // 创建提交按钮
+      const submitButton = this.createSubmitButton(form)
+      actionButtonsContainer.appendChild(submitButton)
+
+      buttonGroup.appendChild(actionButtonsContainer)
+    } else {
+      // 其他对齐方式：所有按钮在一起
+
+      // 1. 创建展开/收起按钮（如果有隐藏字段）
+      if (hiddenCount > 0) {
+        const collapseButtonContainer = this.createCollapseButtonElement(layoutConfig, hiddenCount)
+        buttonGroup.appendChild(collapseButtonContainer)
+
+        // 绑定展开/收起事件
+        const actualButton = collapseButtonContainer.querySelector('.ldesign-form-collapse-button') as HTMLElement
+        if (actualButton) {
+          actualButton.addEventListener('click', (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            this.toggleCollapse(layoutConfig, fields)
+          })
+        }
+      }
+
+      // 2. 创建重置按钮
+      const resetButton = this.createResetButton(form, fields, resetBehavior)
+      buttonGroup.appendChild(resetButton)
+
+      // 3. 创建提交按钮
+      const submitButton = this.createSubmitButton(form)
+      buttonGroup.appendChild(submitButton)
     }
-
-    // 2. 创建重置按钮
-    const resetButton = document.createElement('button')
-    resetButton.type = 'button'
-    resetButton.className = 'ldesign-form-button ldesign-form-button--secondary'
-    resetButton.textContent = '重置'
-    resetButton.addEventListener('click', () => {
-      form.reset()
-    })
-    buttonGroup.appendChild(resetButton)
-
-    // 3. 创建提交按钮
-    const submitButton = document.createElement('button')
-    submitButton.type = 'button'
-    submitButton.className = 'ldesign-form-button ldesign-form-button--primary'
-    submitButton.textContent = '提交'
-    submitButton.addEventListener('click', () => {
-      const data = form.getData()
-      console.log('提交数据:', data)
-    })
-    buttonGroup.appendChild(submitButton)
 
     // 组装结构
     buttonsContainer.appendChild(buttonGroup)
@@ -333,6 +388,9 @@ export class VanillaAdapter extends BaseAdapter {
 
     // 添加到表单中
     this.formElement!.appendChild(buttonGroupContainer)
+
+    // 应用按钮对齐样式
+    this.applyButtonAlignment(this.formElement!, horizontal)
   }
 
   /**
@@ -345,6 +403,39 @@ export class VanillaAdapter extends BaseAdapter {
     buttonContainer.innerHTML = buttonHTML
 
     return buttonContainer.firstElementChild as HTMLElement
+  }
+
+  /**
+   * 创建重置按钮
+   */
+  private createResetButton(form: FormCore, fields: FieldConfig[], resetBehavior: 'empty' | 'default'): HTMLElement {
+    const resetButton = document.createElement('button')
+    resetButton.type = 'button'
+    resetButton.className = 'ldesign-form-button ldesign-form-button--secondary'
+    resetButton.textContent = '重置'
+
+    // 不在这里绑定事件，使用事件委托处理
+    console.log('创建重置按钮，重置行为:', resetBehavior)
+
+    return resetButton
+  }
+
+  /**
+   * 创建提交按钮
+   */
+  private createSubmitButton(form: FormCore): HTMLElement {
+    const submitButton = document.createElement('button')
+    submitButton.type = 'button'
+    submitButton.className = 'ldesign-form-button ldesign-form-button--primary'
+    submitButton.textContent = '提交'
+
+    submitButton.addEventListener('click', () => {
+      const data = form.getData()
+      console.log('提交数据:', data)
+      // 这里可以添加表单验证和提交逻辑
+    })
+
+    return submitButton
   }
 
   /**
@@ -436,6 +527,14 @@ export class VanillaAdapter extends BaseAdapter {
     fieldContainer.className = 'ldesign-form-item'
     fieldContainer.dataset.field = config.name
 
+    // 添加智能对齐CSS类
+    const fieldType = config.type || 'input'
+    if (fieldType === 'textarea') {
+      fieldContainer.classList.add('field-align-top')
+    } else {
+      fieldContainer.classList.add('field-align-center')
+    }
+
     // 应用布局样式
     this.applyFieldLayoutStyles(fieldContainer, config, layoutConfig)
 
@@ -492,6 +591,14 @@ export class VanillaAdapter extends BaseAdapter {
     const fieldContainer = document.createElement('div')
     fieldContainer.className = 'ldesign-form-item'
     fieldContainer.dataset.field = config.name
+
+    // 添加智能对齐CSS类
+    const fieldType = config.type || 'input'
+    if (fieldType === 'textarea') {
+      fieldContainer.classList.add('field-align-top')
+    } else {
+      fieldContainer.classList.add('field-align-center')
+    }
 
     // 应用字段布局样式
     this.applyFieldLayoutStyles(fieldContainer, config, layoutConfig)
@@ -561,10 +668,93 @@ export class VanillaAdapter extends BaseAdapter {
    * 更新字段值
    */
   private updateFieldValue(fieldName: string, value: any): void {
-    const fieldElement = this.fieldElements.get(fieldName)
-    if (fieldElement && 'value' in fieldElement) {
-      (fieldElement as any).value = value
+    if (!this.formElement) return
+
+    // 直接从DOM查找字段元素
+    const fieldElement = this.formElement.querySelector(`[name="${fieldName}"]`) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    if (fieldElement) {
+      if (fieldElement.type === 'radio') {
+        // 处理单选按钮
+        const radioGroup = this.formElement.querySelectorAll(`[name="${fieldName}"]`) as NodeListOf<HTMLInputElement>
+        radioGroup.forEach(radio => {
+          radio.checked = radio.value === value
+        })
+      } else if (fieldElement.type === 'checkbox') {
+        // 处理复选框
+        (fieldElement as HTMLInputElement).checked = Boolean(value)
+      } else {
+        // 处理其他输入类型
+        fieldElement.value = value || ''
+      }
     }
+  }
+
+  /**
+   * 批量更新所有字段值显示
+   */
+  private updateAllFieldValues(data: Record<string, any>): void {
+    Object.entries(data).forEach(([name, value]) => {
+      this.updateFieldValue(name, value)
+    })
+  }
+
+  /**
+   * 绑定重置按钮事件委托
+   */
+  private bindResetButtonEvents(form: FormCore): void {
+    if (!this.formElement) return
+
+    // 使用事件委托监听表单容器的点击事件
+    this.formElement.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement
+
+      // 检查是否点击了重置按钮
+      if (target && target.classList.contains('ldesign-form-button') &&
+        target.classList.contains('ldesign-form-button--secondary') &&
+        target.textContent === '重置') {
+
+        event.preventDefault()
+        event.stopPropagation()
+
+        // 获取重置行为配置
+        const buttonGroup = target.closest('.ldesign-form-actions')
+        if (buttonGroup) {
+          // 从按钮组的数据属性中获取配置，或使用默认值
+          const resetBehavior = buttonGroup.getAttribute('data-reset-behavior') || 'empty'
+
+          console.log('重置按钮被点击，重置行为:', resetBehavior)
+
+          if (resetBehavior === 'default') {
+            // 重置为默认值
+            this.resetToDefaultValues(form)
+          } else {
+            // 重置为空值
+            form.reset()
+            console.log('执行form.reset()')
+          }
+        }
+      }
+    })
+  }
+
+  /**
+   * 重置为默认值
+   */
+  private resetToDefaultValues(form: FormCore): void {
+    // 获取当前表单的字段配置
+    const fields = this.currentFields || []
+    const defaultData: Record<string, any> = {}
+
+    fields.forEach(field => {
+      if (field.defaultValue !== undefined) {
+        defaultData[field.name] = field.defaultValue
+      } else {
+        defaultData[field.name] = ''
+      }
+    })
+
+    console.log('重置为默认值:', defaultData)
+    form.setData(defaultData)
   }
 
   /**
@@ -679,9 +869,19 @@ export class VanillaAdapter extends BaseAdapter {
       if (layoutConfig.horizontal?.columnGap) {
         formElement.style.setProperty('--ldesign-form-column-gap', `${layoutConfig.horizontal.columnGap}px`)
       }
+
+      // 处理水平标签布局的标签宽度和间隔
+      const horizontal = layoutConfig.horizontal || {}
+      if (horizontal.labelLayout === 'horizontal') {
+        this.applyHorizontalLabelWidth(formElement, horizontal)
+        this.applyHorizontalLabelSpacing(formElement, horizontal)
+      }
+
+      // 应用按钮对齐（对所有水平布局都生效）
+      this.applyButtonAlignment(formElement, horizontal)
     }
 
-    // 设置标签宽度
+    // 设置标签宽度（全局配置）
     if (layoutConfig.labelWidth) {
       const labelWidth = typeof layoutConfig.labelWidth === 'number'
         ? `${layoutConfig.labelWidth}px`
@@ -692,6 +892,111 @@ export class VanillaAdapter extends BaseAdapter {
     // 设置间距
     if (layoutConfig.gutter) {
       formElement.style.setProperty('--ldesign-form-gutter', `${layoutConfig.gutter}px`)
+    }
+  }
+
+  /**
+   * 应用水平标签布局的标签宽度
+   */
+  private applyHorizontalLabelWidth(formElement: HTMLFormElement, horizontal: any): void {
+    // 如果指定了固定宽度，直接使用
+    if (horizontal.labelWidth) {
+      const labelWidth = typeof horizontal.labelWidth === 'number'
+        ? `${horizontal.labelWidth}px`
+        : horizontal.labelWidth
+      formElement.style.setProperty('--ldesign-form-label-width', labelWidth)
+      return
+    }
+
+    // 如果启用了自动计算标签宽度（默认启用）
+    if (horizontal.autoLabelWidth !== false) {
+      // 延迟计算，等待DOM渲染完成
+      setTimeout(() => {
+        this.calculateAndApplyAutoLabelWidth(formElement)
+      }, 0)
+    }
+  }
+
+  /**
+   * 计算并应用自动标签宽度
+   */
+  private calculateAndApplyAutoLabelWidth(formElement: HTMLFormElement): void {
+    const labels = formElement.querySelectorAll('.ldesign-form-label')
+    let maxWidth = 0
+
+    // 创建临时元素来测量文本宽度，使用更精确的样式
+    const tempElement = document.createElement('span')
+    tempElement.style.cssText = `
+      visibility: hidden;
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      white-space: nowrap;
+      font-size: var(--ls-font-size-sm, 16px);
+      font-weight: 400;
+      font-family: inherit;
+      line-height: 1.4;
+      padding: 0;
+      margin: 0;
+      border: none;
+    `
+    document.body.appendChild(tempElement)
+
+    // 测量每个标签的宽度
+    labels.forEach(label => {
+      const text = label.textContent || ''
+      tempElement.textContent = text
+
+      // 强制重新计算布局
+      tempElement.offsetHeight
+
+      const width = tempElement.getBoundingClientRect().width
+      maxWidth = Math.max(maxWidth, width)
+    })
+
+    // 清理临时元素
+    document.body.removeChild(tempElement)
+
+    // 应用计算出的最大宽度，只加上最小必要的padding（4px左右各2px）
+    const finalWidth = Math.ceil(maxWidth) + 4
+    formElement.style.setProperty('--ldesign-form-label-width', `${finalWidth}px`)
+  }
+
+  /**
+   * 应用水平标签布局的间隔配置
+   */
+  private applyHorizontalLabelSpacing(formElement: HTMLFormElement, horizontal: any): void {
+    // 设置表单项之间的垂直间隔
+    if (horizontal.itemSpacing !== undefined) {
+      formElement.style.setProperty('--ldesign-form-item-spacing', `${horizontal.itemSpacing}px`)
+    }
+
+    // 设置标签和输入框之间的水平间隔
+    if (horizontal.labelControlSpacing !== undefined) {
+      formElement.style.setProperty('--ldesign-form-label-control-spacing', `${horizontal.labelControlSpacing}px`)
+    }
+
+    // 设置按钮组对齐方式（移动到独立方法中）
+    this.applyButtonAlignment(formElement, horizontal)
+  }
+
+  /**
+   * 应用按钮对齐样式
+   */
+  private applyButtonAlignment(formElement: HTMLFormElement, horizontal: any): void {
+    if (horizontal.buttonAlign) {
+      const buttonGroup = formElement.querySelector('.ldesign-form-actions')
+      if (buttonGroup) {
+        // 移除所有对齐类名
+        buttonGroup.classList.remove(
+          'ldesign-form-actions--left',
+          'ldesign-form-actions--center',
+          'ldesign-form-actions--right',
+          'ldesign-form-actions--space-between'
+        )
+        // 添加新的对齐类名
+        buttonGroup.classList.add(`ldesign-form-actions--${horizontal.buttonAlign}`)
+      }
     }
   }
 

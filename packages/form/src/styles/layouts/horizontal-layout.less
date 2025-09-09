@@ -227,6 +227,70 @@
   }
 }
 
+// 水平标签布局（标签和输入框在一行）
+.ldesign-form--horizontal.ldesign-form--label-horizontal {
+  // 表单项之间的间隔
+  gap: var(--ldesign-form-item-spacing, 16px);
+
+  .ldesign-form-item {
+    display: flex;
+    align-items: flex-start; // 默认顶部对齐
+    // 标签和输入框之间的间隔
+    gap: var(--ldesign-form-label-control-spacing, 12px);
+
+    // 智能对齐：普通控件居中对齐
+    &.field-align-center {
+      align-items: center;
+    }
+
+    // 智能对齐：高控件（如textarea）顶部对齐
+    &.field-align-top {
+      align-items: flex-start;
+    }
+
+    .ldesign-form-label {
+      flex-shrink: 0;
+      margin-bottom: 0;
+      padding-top: calc((var(--ls-input-height-medium) - var(--ls-font-size-sm) * 1.4) / 2);
+      line-height: 1.4;
+
+      // 默认右对齐
+      text-align: right;
+
+      // 标签宽度
+      width: var(--ldesign-form-label-width, 120px);
+      min-width: var(--ldesign-form-label-width, 120px);
+    }
+
+    .ldesign-form-control {
+      flex: 1;
+      min-width: 0; // 防止 flex 子元素溢出
+    }
+
+    .ldesign-form-error {
+      margin-top: var(--ls-spacing-xs);
+    }
+  }
+
+  // 标签左对齐
+  &.ldesign-form--label-left {
+    .ldesign-form-item {
+      .ldesign-form-label {
+        text-align: left;
+      }
+    }
+  }
+
+  // 标签右对齐（默认）
+  &.ldesign-form--label-right {
+    .ldesign-form-item {
+      .ldesign-form-label {
+        text-align: right;
+      }
+    }
+  }
+}
+
 // 间距变体
 .ldesign-form--horizontal {
 
@@ -258,12 +322,42 @@
   .ldesign-form-actions {
     grid-column: 1 / -1; // 占满整行
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-end; // 默认右对齐
     gap: var(--ls-spacing-sm);
-    margin-top: var(--ls-spacing-base);
+    // margin-top: var(--ls-spacing-base);
 
     .ldesign-button {
       min-width: 80px;
+    }
+
+    // 左对齐
+    &.ldesign-form-actions--left {
+      justify-content: flex-start;
+    }
+
+    // 居中对齐
+    &.ldesign-form-actions--center {
+      justify-content: center;
+    }
+
+    // 右对齐（默认）
+    &.ldesign-form-actions--right {
+      justify-content: flex-end;
+    }
+
+    // 两端对齐（展开/收起 和 重置/提交分开）
+    &.ldesign-form-actions--space-between {
+      justify-content: space-between;
+
+      .ldesign-form-collapse-button {
+        order: -1; // 展开/收起按钮在左侧
+      }
+
+      .ldesign-form-action-buttons {
+        display: flex;
+        gap: var(--ls-spacing-sm);
+        order: 1; // 重置/提交按钮在右侧
+      }
     }
 
     // 移动端按钮样式

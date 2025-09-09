@@ -166,6 +166,10 @@ export interface LayoutConfig {
   labelWidth?: number | string
   /** 标签对齐方式，默认为 'right' */
   labelAlign?: 'left' | 'right' | 'top'
+  /** 标签布局方式，默认为 'vertical'（标签在上方），'horizontal' 表示标签和输入框在一行 */
+  labelLayout?: 'vertical' | 'horizontal'
+  /** 当 labelLayout 为 'horizontal' 时，是否自动计算标签宽度（以最长文本为准），默认为 true */
+  autoLabelWidth?: boolean
   /** 是否启用响应式布局，默认为 true */
   responsive?: boolean
   /** 响应式断点配置 */
@@ -195,6 +199,22 @@ export interface LayoutConfig {
     buttonPosition?: 'separate-row' | 'inline'
     /** 按钮组占用的列数，默认为 1 */
     buttonColSpan?: number
+    /** 标签布局方式，默认为 'vertical'（标签在上方），'horizontal' 表示标签和输入框在一行 */
+    labelLayout?: 'vertical' | 'horizontal'
+    /** 当 labelLayout 为 'horizontal' 时，标签宽度，可以是数字（px）或字符串（如 '120px', '20%'） */
+    labelWidth?: number | string
+    /** 当 labelLayout 为 'horizontal' 时，是否自动计算标签宽度（以最长文本为准），默认为 true */
+    autoLabelWidth?: boolean
+    /** 当 labelLayout 为 'horizontal' 时，标签对齐方式，默认为 'right' */
+    labelAlign?: 'left' | 'right'
+    /** 表单项之间的垂直间隔，单位px，默认为 16 */
+    itemSpacing?: number
+    /** 标签和输入框之间的水平间隔，单位px，默认为 12 */
+    labelControlSpacing?: number
+    /** 按钮组对齐方式，默认为 'right' */
+    buttonAlign?: 'left' | 'center' | 'right' | 'space-between'
+    /** 重置行为，'empty' 重置为空值，'default' 重置为默认值，默认为 'empty' */
+    resetBehavior?: 'empty' | 'default'
   }
   /** 展开/收起配置 */
   collapsible?: {

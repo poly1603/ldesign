@@ -63,6 +63,14 @@ const routes: RouteRecordRaw[] = [
     meta: {
       title: '展开/收起示例'
     }
+  },
+  {
+    path: '/playground',
+    name: 'Playground',
+    component: () => import('./views/PlaygroundExample.vue'),
+    meta: {
+      title: 'Playground'
+    }
   }
 ]
 

@@ -13,6 +13,7 @@
           <router-link to="/advanced" class="nav-link">高级功能</router-link>
           <router-link to="/horizontal-layout" class="nav-link">水平布局</router-link>
           <router-link to="/collapsible" class="nav-link">展开/收起</router-link>
+          <router-link to="/playground" class="nav-link">Playground</router-link>
           <router-link to="/adapter" class="nav-link">适配器</router-link>
         </nav>
       </div>
