@@ -1,0 +1,149 @@
+/**
+ * Switch 组件样式
+ * 
+ * @author LDesign Team
+ * @since 2.0.0
+ */
+
+@import '../utils/mixins.less';
+
+// Switch 组件基础样式
+.ldesign-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  
+  // 禁用状态
+  &.ldesign-switch-disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  
+  // Switch 轨道
+  &__track {
+    position: relative;
+    width: var(--ldesign-switch-width, 44px);
+    height: var(--ldesign-switch-height, 22px);
+    background: var(--ldesign-switch-bg-off, var(--ldesign-gray-color-4));
+    border-radius: var(--ldesign-switch-border-radius, 11px);
+    transition: background-color var(--ldesign-form-transition-base);
+    
+    // 激活状态
+    &.ldesign-switch-track-checked {
+      background: var(--ldesign-switch-bg-on, var(--ldesign-brand-color));
+    }
+    
+    // 禁用状态
+    &.ldesign-switch-track-disabled {
+      background: var(--ldesign-switch-bg-disabled, var(--ldesign-gray-color-2));
+    }
+  }
+  
+  // Switch 滑块
+  &__thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: var(--ldesign-switch-thumb-size, 18px);
+    height: var(--ldesign-switch-thumb-size, 18px);
+    background: var(--ldesign-switch-thumb-bg, #ffffff);
+    border-radius: 50%;
+    box-shadow: var(--ldesign-shadow-1);
+    transition: transform var(--ldesign-form-transition-base);
+    
+    // 激活状态
+    &.ldesign-switch-thumb-checked {
+      transform: translateX(22px);
+    }
+    
+    // 禁用状态
+    &.ldesign-switch-thumb-disabled {
+      background: var(--ldesign-switch-thumb-bg-disabled, var(--ldesign-gray-color-3));
+    }
+  }
+  
+  // 隐藏的原生 input
+  &__input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    
+    // 焦点状态
+    &:focus + .ldesign-switch__track {
+      box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+    }
+  }
+  
+  // 标签文本
+  &__label {
+    margin-left: var(--ls-margin-xs);
+    color: var(--ldesign-text-color-primary);
+    font-size: var(--ls-font-size-sm);
+    line-height: 1.5;
+  }
+  
+  // 尺寸变体
+  &--small {
+    --ldesign-switch-width: 36px;
+    --ldesign-switch-height: 18px;
+    --ldesign-switch-thumb-size: 14px;
+    --ldesign-switch-border-radius: 9px;
+    
+    .ldesign-switch__thumb.ldesign-switch-thumb-checked {
+      transform: translateX(18px);
+    }
+  }
+  
+  &--large {
+    --ldesign-switch-width: 52px;
+    --ldesign-switch-height: 26px;
+    --ldesign-switch-thumb-size: 22px;
+    --ldesign-switch-border-radius: 13px;
+    
+    .ldesign-switch__thumb.ldesign-switch-thumb-checked {
+      transform: translateX(26px);
+    }
+  }
+  
+  // 加载状态
+  &--loading {
+    .ldesign-switch__thumb {
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 10px;
+        height: 10px;
+        margin: -5px 0 0 -5px;
+        border: 1px solid var(--ldesign-brand-color);
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: ldesign-switch-loading 0.8s linear infinite;
+      }
+    }
+  }
+}
+
+// 加载动画
+@keyframes ldesign-switch-loading {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// 响应式适配
+@media (max-width: 768px) {
+  .ldesign-switch {
+    // 移动端适配
+    &__label {
+      font-size: var(--ls-font-size-xs);
+    }
+  }
+}

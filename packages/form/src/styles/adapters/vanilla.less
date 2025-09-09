@@ -1,0 +1,371 @@
+/**
+ * 原生JavaScript适配器样式
+ * 
+ * 为VanillaAdapter提供专用的样式支持
+ * 确保在原生JavaScript环境中的最佳显示效果
+ * 
+ * @author LDesign Team
+ * @since 2.0.0
+ */
+
+@import '../utils/mixins.less';
+
+// 原生适配器表单容器
+.ldesign-form[data-adapter="vanilla"] {
+  // 确保表单在各种容器中都能正确显示
+  width: 100%;
+  max-width: 100%;
+
+  // 表单项布局优化
+  .ldesign-form-item {
+    position: relative;
+    margin-bottom: var(--ls-spacing-base);
+
+    // 标签和控件的间距优化
+    .ldesign-form-label {
+      margin-bottom: var(--ls-spacing-xs);
+
+      // 必填标记样式优化
+      &.ldesign-form-label-required::before {
+        content: '*';
+        color: var(--ldesign-error-color);
+        margin-right: 4px;
+        font-weight: bold;
+      }
+    }
+
+    // 控件容器样式
+    .ldesign-form-control {
+      position: relative;
+
+      // 输入框样式优化
+      input,
+      textarea,
+      select {
+        .input-base();
+
+        // 原生适配器特定的样式调整
+        &:focus {
+          outline: none;
+          border-color: var(--ldesign-brand-color);
+          box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+        }
+
+        // 错误状态样式
+        &.ldesign-form-error-field {
+          border-color: var(--ldesign-error-color);
+          box-shadow: 0 0 0 2px var(--ldesign-error-color-focus);
+          animation: ldesign-shake 0.3s ease-in-out;
+        }
+
+        // 成功状态样式
+        &.ldesign-form-success-field {
+          border-color: var(--ldesign-success-color);
+          box-shadow: 0 0 0 2px var(--ldesign-success-color-focus);
+        }
+      }
+
+      // 选择框特殊样式
+      select {
+        cursor: pointer;
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23666' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 16px;
+        padding-right: 40px;
+        appearance: none;
+
+        &::-ms-expand {
+          display: none;
+        }
+      }
+
+      // 文本域特殊样式
+      textarea {
+        resize: vertical;
+        min-height: 80px;
+        line-height: 1.5;
+      }
+
+      // 加载状态指示器
+      &.ldesign-form-control-loading {
+        &::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          right: 12px;
+          width: 16px;
+          height: 16px;
+          border: 2px solid var(--ldesign-brand-color);
+          border-top-color: transparent;
+          border-radius: 50%;
+          animation: ldesign-spin 1s linear infinite;
+          transform: translateY(-50%);
+          z-index: 1;
+        }
+      }
+    }
+
+    // 错误信息样式
+    .ldesign-form-error {
+      margin-top: var(--ls-spacing-xs);
+      font-size: var(--ls-font-size-xs);
+      color: var(--ldesign-error-color);
+      line-height: 1.4;
+      animation: ldesign-fade-in 0.3s ease-out;
+
+      // 错误图标
+      &::before {
+        content: '⚠';
+        margin-right: 4px;
+        font-weight: bold;
+      }
+    }
+
+    // 帮助信息样式
+    .ldesign-form-help {
+      margin-top: var(--ls-spacing-xs);
+      font-size: var(--ls-font-size-xs);
+      color: var(--ldesign-text-color-placeholder);
+      line-height: 1.4;
+
+      // 帮助图标
+      &::before {
+        content: 'ℹ';
+        margin-right: 4px;
+        color: var(--ldesign-brand-color);
+      }
+    }
+  }
+
+  // 表单状态样式
+  &.ldesign-form-submitting {
+    position: relative;
+    pointer-events: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      z-index: 999;
+      border-radius: inherit;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--ldesign-brand-color);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: ldesign-spin 1s linear infinite;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+    }
+  }
+
+  &.ldesign-form-validating {
+    .ldesign-form-item {
+      .ldesign-form-control {
+        &::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          right: 12px;
+          width: 16px;
+          height: 16px;
+          border: 2px solid var(--ldesign-brand-color);
+          border-top-color: transparent;
+          border-radius: 50%;
+          animation: ldesign-spin 1s linear infinite;
+          transform: translateY(-50%);
+          z-index: 1;
+        }
+      }
+    }
+  }
+
+  // 表单按钮样式
+  .ldesign-form-actions {
+    margin-top: var(--ls-spacing-lg);
+
+    .ldesign-button {
+      .button-base();
+      .button-size(var(--ls-button-height-medium), var(--ls-padding-base), var(--ls-font-size-sm));
+      margin-right: var(--ls-spacing-sm);
+
+      &:last-child {
+        margin-right: 0;
+      }
+
+      // 主要按钮
+      &.ldesign-button-primary {
+        background-color: var(--ldesign-brand-color);
+        color: white;
+        border-color: var(--ldesign-brand-color);
+
+        &:hover:not(:disabled) {
+          background-color: var(--ldesign-brand-color-hover);
+          border-color: var(--ldesign-brand-color-hover);
+        }
+
+        &:active:not(:disabled) {
+          background-color: var(--ldesign-brand-color-active);
+          border-color: var(--ldesign-brand-color-active);
+        }
+
+        &:focus:not(:disabled) {
+          box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+        }
+      }
+
+      // 次要按钮
+      &.ldesign-button-secondary {
+        background-color: transparent;
+        color: var(--ldesign-text-color-primary);
+        border-color: var(--ldesign-border-color);
+
+        &:hover:not(:disabled) {
+          background-color: var(--ldesign-bg-color-component-hover);
+          border-color: var(--ldesign-border-color-hover);
+        }
+
+        &:active:not(:disabled) {
+          background-color: var(--ldesign-bg-color-component-active);
+          border-color: var(--ldesign-border-color-hover);
+        }
+
+        &:focus:not(:disabled) {
+          box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+        }
+      }
+
+      // 危险按钮
+      &.ldesign-button-danger {
+        background-color: var(--ldesign-error-color);
+        color: white;
+        border-color: var(--ldesign-error-color);
+
+        &:hover:not(:disabled) {
+          background-color: var(--ldesign-error-color-hover);
+          border-color: var(--ldesign-error-color-hover);
+        }
+
+        &:active:not(:disabled) {
+          background-color: var(--ldesign-error-color-active);
+          border-color: var(--ldesign-error-color-active);
+        }
+
+        &:focus:not(:disabled) {
+          box-shadow: 0 0 0 2px var(--ldesign-error-color-focus);
+        }
+      }
+
+      // 成功按钮
+      &.ldesign-button-success {
+        background-color: var(--ldesign-success-color);
+        color: white;
+        border-color: var(--ldesign-success-color);
+
+        &:hover:not(:disabled) {
+          background-color: var(--ldesign-success-color-hover);
+          border-color: var(--ldesign-success-color-hover);
+        }
+
+        &:active:not(:disabled) {
+          background-color: var(--ldesign-success-color-active);
+          border-color: var(--ldesign-success-color-active);
+        }
+
+        &:focus:not(:disabled) {
+          box-shadow: 0 0 0 2px var(--ldesign-success-color-focus);
+        }
+      }
+    }
+  }
+}
+
+// 响应式设计
+.mobile({
+  .ldesign-form[data-adapter="vanilla"] {
+    .ldesign-form-item {
+      margin-bottom: var(--ls-spacing-sm);
+
+      .ldesign-form-control {
+
+        input,
+        textarea,
+        select {
+          padding: var(--ls-padding-xs);
+          font-size: var(--ls-font-size-xs);
+        }
+      }
+    }
+
+    .ldesign-form-actions {
+      .ldesign-button {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: var(--ls-spacing-xs);
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+});
+
+// 深色主题支持
+@media (prefers-color-scheme: dark) {
+  .ldesign-form[data-adapter="vanilla"] {
+    .ldesign-form-control {
+      select {
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23ccc' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+      }
+    }
+  }
+}
+
+// 高对比度模式支持
+@media (prefers-contrast: high) {
+  .ldesign-form[data-adapter="vanilla"] {
+    .ldesign-form-control {
+
+      input,
+      textarea,
+      select {
+        border-width: 2px;
+
+        &:focus {
+          border-width: 3px;
+        }
+      }
+    }
+
+    .ldesign-form-error {
+      font-weight: bold;
+    }
+  }
+}
+
+// 减少动画模式支持
+@media (prefers-reduced-motion: reduce) {
+  .ldesign-form[data-adapter="vanilla"] {
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

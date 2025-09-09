@@ -1,0 +1,302 @@
+/**
+ * Select 组件样式
+ * 
+ * @author LDesign Team
+ * @since 1.0.0
+ */
+
+.ldesign-select {
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+  cursor: pointer;
+  
+  // 选择器输入框
+  &__selector {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: var(--ldesign-select-min-height);
+    padding: var(--ldesign-input-padding-vertical) var(--ldesign-input-padding-horizontal);
+    color: var(--ldesign-input-color);
+    background: var(--ldesign-input-background);
+    border: var(--ldesign-input-border-width) var(--ldesign-input-border-style) var(--ldesign-input-border-color);
+    border-radius: var(--ldesign-input-border-radius);
+    transition: var(--ldesign-input-transition);
+    
+    &:hover:not(.ldesign-select__selector--disabled) {
+      border-color: var(--ldesign-input-hover-border-color);
+    }
+    
+    &.ldesign-select__selector--focused {
+      border-color: var(--ldesign-input-focus-border-color);
+      box-shadow: var(--ldesign-input-focus-shadow);
+      outline: none;
+    }
+    
+    &.ldesign-select__selector--error {
+      border-color: var(--ldesign-input-error-border-color);
+      
+      &.ldesign-select__selector--focused {
+        box-shadow: var(--ldesign-input-error-shadow);
+      }
+    }
+    
+    &.ldesign-select__selector--disabled {
+      background: var(--ldesign-input-disabled-background);
+      border-color: var(--ldesign-input-disabled-border-color);
+      color: var(--ldesign-input-disabled-color);
+      cursor: not-allowed;
+    }
+  }
+  
+  // 选择器内容
+  &__selection {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    min-width: 0;
+    
+    // 占位符
+    &-placeholder {
+      color: var(--ldesign-input-placeholder-color);
+    }
+    
+    // 单选显示
+    &-item {
+      display: flex;
+      align-items: center;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    // 多选标签
+    &-tag {
+      display: inline-flex;
+      align-items: center;
+      max-width: var(--ldesign-select-tag-max-width);
+      padding: var(--ldesign-select-tag-padding);
+      margin: var(--ldesign-select-tag-margin);
+      color: var(--ldesign-select-tag-color);
+      font-size: var(--ldesign-select-tag-font-size);
+      background: var(--ldesign-select-tag-background);
+      border-radius: var(--ldesign-select-tag-border-radius);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      
+      &-content {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      
+      &-close {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 14px;
+        margin-left: 4px;
+        color: var(--ldesign-text-color-placeholder);
+        cursor: pointer;
+        border-radius: 50%;
+        transition: var(--ldesign-input-transition);
+        
+        &:hover {
+          color: var(--ldesign-text-color-secondary);
+          background: var(--ldesign-bg-color-component-hover);
+        }
+      }
+    }
+  }
+  
+  // 箭头图标
+  &__arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: 8px;
+    color: var(--ldesign-text-color-placeholder);
+    transition: var(--ldesign-input-transition);
+    
+    &--open {
+      transform: rotate(180deg);
+    }
+    
+    &--loading {
+      animation: ldesign-select-loading 1s linear infinite;
+    }
+  }
+  
+  // 清除按钮
+  &__clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: 8px;
+    color: var(--ldesign-text-color-placeholder);
+    cursor: pointer;
+    border-radius: 50%;
+    transition: var(--ldesign-input-transition);
+    
+    &:hover {
+      color: var(--ldesign-text-color-secondary);
+      background: var(--ldesign-bg-color-component-hover);
+    }
+  }
+  
+  // 下拉面板
+  &__dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    margin-top: 4px;
+    max-height: var(--ldesign-select-dropdown-max-height);
+    background: var(--ldesign-select-dropdown-background);
+    border: 1px solid var(--ldesign-select-dropdown-border-color);
+    border-radius: var(--ldesign-select-dropdown-border-radius);
+    box-shadow: var(--ldesign-select-dropdown-shadow);
+    overflow: hidden;
+    
+    &-list {
+      max-height: var(--ldesign-select-dropdown-max-height);
+      overflow-y: auto;
+      
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: var(--ldesign-gray-color-4);
+        border-radius: 3px;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: var(--ldesign-gray-color-2);
+      }
+    }
+  }
+  
+  // 选项
+  &__option {
+    display: flex;
+    align-items: center;
+    min-height: var(--ldesign-select-option-height);
+    padding: var(--ldesign-select-option-padding);
+    color: var(--ldesign-select-option-color);
+    background: var(--ldesign-select-option-background);
+    cursor: pointer;
+    transition: var(--ldesign-input-transition);
+    
+    &:hover:not(.ldesign-select__option--disabled) {
+      background: var(--ldesign-select-option-hover-background);
+    }
+    
+    &--selected {
+      background: var(--ldesign-select-option-selected-background);
+      color: var(--ldesign-select-option-selected-color);
+      font-weight: 500;
+    }
+    
+    &--disabled {
+      color: var(--ldesign-select-option-disabled-color);
+      background: var(--ldesign-select-option-disabled-background);
+      cursor: not-allowed;
+    }
+    
+    &-content {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    &-checkmark {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      margin-left: 8px;
+      color: var(--ldesign-brand-color);
+    }
+  }
+  
+  // 空状态
+  &__empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60px;
+    color: var(--ldesign-text-color-placeholder);
+    font-size: var(--ls-font-size-sm);
+  }
+  
+  // 加载状态
+  &__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    color: var(--ldesign-text-color-placeholder);
+    font-size: var(--ls-font-size-sm);
+  }
+  
+  // 尺寸变体
+  &--small {
+    .ldesign-select__selector {
+      min-height: var(--ldesign-input-height-small);
+      padding: var(--ls-padding-xs) var(--ls-padding-sm);
+      font-size: var(--ls-font-size-sm);
+    }
+  }
+  
+  &--medium {
+    .ldesign-select__selector {
+      min-height: var(--ldesign-input-height-medium);
+    }
+  }
+  
+  &--large {
+    .ldesign-select__selector {
+      min-height: var(--ldesign-input-height-large);
+      padding: var(--ls-padding-sm) var(--ls-padding-base);
+      font-size: var(--ls-font-size-lg);
+    }
+  }
+}
+
+// 加载动画
+@keyframes ldesign-select-loading {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// 响应式样式
+@media (max-width: 768px) {
+  .ldesign-select {
+    &--large {
+      .ldesign-select__selector {
+        min-height: var(--ldesign-input-height-medium);
+        font-size: var(--ldesign-input-font-size);
+      }
+    }
+  }
+}

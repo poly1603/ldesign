@@ -1,106 +1,42 @@
 /**
- * LDesign Form 组件库入口文件
- * 
- * 提供完整的表单解决方案，包括：
- * - 表单组件
- * - 验证系统
- * - 布局系统
- * - 自定义 Hooks
- * - 工具函数
- * 
+ * @ldesign/form 表单组件库 - 核心API
+ *
+ * 框架无关的表单解决方案，支持多种前端框架。
+ *
  * @author LDesign Team
- * @since 1.0.0
+ * @since 2.0.0
  */
 
-import type { App } from 'vue'
+// 导出核心工厂函数
+export * from './core/factory'
 
-// 导出所有组件
-export * from './components'
+// 导出核心类
+export { FormCore } from './core/form-core'
+export { DataManager } from './core/data-manager'
+export { ValidationEngine } from './core/validation-engine'
+export { FieldManager } from './core/field-manager'
 
-// 导出所有 Hooks
-export * from './hooks'
-
-// 导出核心模块
-export * from './core'
+// 导出适配器
+export { BaseAdapter } from './adapters/base-adapter'
+export { VanillaAdapter } from './adapters/vanilla-adapter'
 
 // 导出工具函数
-export * from './utils'
+export * from './utils/helpers'
+export * from './utils/validation'
+export * from './utils/layout'
+
+// 导出验证规则
+export * from './utils/validation-rules'
 
 // 导出类型定义
 export * from './types'
 
-// 导出样式
-import './styles/index.less'
-
-// 组件列表
-import {
-  Form,
-  FormItem,
-  Input,
-  Textarea,
-  Select,
-  Checkbox,
-  CheckboxGroup,
-  Radio,
-  RadioGroup,
-  Switch,
-  DatePicker,
-  Upload,
-} from './components'
-
-const components = [
-  Form,
-  FormItem,
-  Input,
-  Textarea,
-  Select,
-  Checkbox,
-  CheckboxGroup,
-  Radio,
-  RadioGroup,
-  Switch,
-  DatePicker,
-  Upload,
-]
-
-/**
- * 安装插件函数
- * 
- * @param app Vue 应用实例
- * @param options 安装选项
- */
-export function install(app: App, options?: Record<string, any>): void {
-  // 注册所有组件
-  components.forEach(component => {
-    if (component.name) {
-      app.component(component.name, component)
-    }
-  })
-
-  // 设置全局配置
-  if (options) {
-    app.config.globalProperties.$ldesignForm = options
-  }
-}
+// 版本信息
+export const version = '2.0.0'
+export const VERSION = version
 
 // 默认导出
 export default {
-  install,
-  version: '1.0.0',
-}
-
-// 单独导出组件，支持按需引入
-export {
-  Form,
-  FormItem,
-  Input,
-  Textarea,
-  Select,
-  Checkbox,
-  CheckboxGroup,
-  Radio,
-  RadioGroup,
-  Switch,
-  DatePicker,
-  Upload,
+  version,
+  VERSION
 }

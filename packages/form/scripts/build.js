@@ -30,7 +30,19 @@ async function build() {
         '@ldesign/components'
       ],
       minify: !isDev,
-      dts: true
+      dts: false, // 暂时禁用类型生成
+      exclude: [
+        'src/styles/**/*',
+        'src/**/*.less',
+        'src/**/*.css',
+        'src/**/*.vue',
+        'src/components/**/*',
+        'src/**/*.test.*',
+        'src/**/*.spec.*',
+        'src/test-*.ts',
+        'src/dev/**/*',
+        '__tests__/**/*'
+      ]
     }
   })
 

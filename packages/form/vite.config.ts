@@ -14,7 +14,7 @@ export default defineConfig({
     //   logDiagnostics: true,
     //   rollupTypes: true,
     //   include: ['src/**/*'],
-    //   exclude: ['src/**/*.test.*', 'src/**/*.spec.*']
+    //   exclude: ['src/**/*.test.*', 'src/**/*.spec.*', 'src/test-*.ts']
     // })
   ],
 

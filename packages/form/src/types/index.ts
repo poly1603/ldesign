@@ -21,6 +21,9 @@ export type {
   FormInstance,
   FieldInstance,
   FormEventCallbacks,
+  ValidationEngineConfig,
+  ValidationContext,
+  ValidatorFunction
 } from './core'
 
 // 组件类型

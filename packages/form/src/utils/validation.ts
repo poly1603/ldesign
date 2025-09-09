@@ -375,7 +375,7 @@ export async function executeValidationRule(context: ValidationContext): Promise
   // 使用自定义验证器
   if (rule.validator) {
     const result = await rule.validator(context)
-    
+
     if (typeof result === 'boolean') {
       return {
         valid: result,
@@ -383,7 +383,7 @@ export async function executeValidationRule(context: ValidationContext): Promise
         validator: rule.type,
       }
     }
-    
+
     if (typeof result === 'string') {
       return {
         valid: false,
@@ -391,7 +391,7 @@ export async function executeValidationRule(context: ValidationContext): Promise
         validator: rule.type,
       }
     }
-    
+
     return result
   }
 
@@ -422,27 +422,27 @@ export async function executeValidationRules(
   stopOnFirstError = false
 ): Promise<ValidationResult[]> {
   const results: ValidationResult[] = []
-  
+
   // 按优先级排序
   const sortedRules = [...rules].sort((a, b) => (a.priority || 0) - (b.priority || 0))
-  
+
   for (const rule of sortedRules) {
     // 如果设置了跳过错误且已有错误，则跳过
     if (rule.skipOnError && results.some(r => !r.valid)) {
       continue
     }
-    
+
     const context: ValidationContext = {
       value,
       values,
       fieldName,
       rule,
     }
-    
+
     try {
       const result = await executeValidationRule(context)
       results.push(result)
-      
+
       // 如果验证失败且设置了在第一个错误时停止，则停止验证
       if (!result.valid && stopOnFirstError) {
         break
@@ -453,13 +453,13 @@ export async function executeValidationRules(
         message: error instanceof Error ? error.message : 'Validation error',
         validator: rule.type,
       })
-      
+
       if (stopOnFirstError) {
         break
       }
     }
   }
-  
+
   return results
 }
 
@@ -543,15 +543,15 @@ export function max(max: number, message?: string, options?: Partial<ValidationR
  */
 export function length(minLength: number, maxLength?: number, options?: Partial<ValidationRule>): ValidationRule[] {
   const rules: ValidationRule[] = []
-  
+
   if (minLength > 0) {
     rules.push(createValidationRule('minLength', undefined, minLength, options))
   }
-  
+
   if (maxLength !== undefined) {
     rules.push(createValidationRule('maxLength', undefined, maxLength, options))
   }
-  
+
   return rules
 }
 
@@ -579,13 +579,13 @@ export function url(message?: string, options?: Partial<ValidationRule>): Valida
 
 /**
  * 创建自定义验证规则
- * 
+ *
  * @param validator 验证器函数
  * @param message 错误消息
  * @param options 其他选项
  * @returns 验证规则
  */
-export function custom(
+export function createCustomRule(
   validator: ValidatorFunction,
   message = 'Validation failed',
   options?: Partial<ValidationRule>

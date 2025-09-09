@@ -101,6 +101,17 @@ export function getValue(obj: any, path: string, defaultValue?: any): any {
 }
 
 /**
+ * 通过路径获取对象的值（别名函数，用于框架无关设计）
+ *
+ * @param obj 对象
+ * @param path 路径，支持点号分隔
+ * @returns 值
+ */
+export function getValueByPath(obj: any, path: string): any {
+  return getValue(obj, path)
+}
+
+/**
  * 设置对象的嵌套属性值
  * 
  * @param obj 对象
@@ -126,6 +137,17 @@ export function setValue(obj: any, path: string, value: any): void {
   }
 
   current[keys[keys.length - 1]] = value
+}
+
+/**
+ * 通过路径设置对象的值（别名函数，用于框架无关设计）
+ *
+ * @param obj 对象
+ * @param path 路径，支持点号分隔
+ * @param value 值
+ */
+export function setValueByPath(obj: any, path: string, value: any): void {
+  setValue(obj, path, value)
 }
 
 /**
@@ -281,7 +303,7 @@ export function debounce<T extends (...args: any[]) => any>(
   delay: number
 ): (...args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout>
-  
+
   return (...args: Parameters<T>) => {
     clearTimeout(timeoutId)
     timeoutId = setTimeout(() => fn(...args), delay)
@@ -300,7 +322,7 @@ export function throttle<T extends (...args: any[]) => any>(
   delay: number
 ): (...args: Parameters<T>) => void {
   let lastCall = 0
-  
+
   return (...args: Parameters<T>) => {
     const now = Date.now()
     if (now - lastCall >= delay) {
@@ -357,7 +379,7 @@ export function unique<T>(array: T[], keyFn?: (item: T) => any): T[] {
   if (!keyFn) {
     return [...new Set(array)]
   }
-  
+
   const seen = new Set()
   return array.filter(item => {
     const key = keyFn(item)
@@ -411,7 +433,7 @@ export async function retry<T>(
   delayMs = 1000
 ): Promise<T> {
   let lastError: Error
-  
+
   for (let i = 0; i <= maxRetries; i++) {
     try {
       return await fn()
@@ -422,7 +444,7 @@ export async function retry<T>(
       }
     }
   }
-  
+
   throw lastError!
 }
 
@@ -443,7 +465,7 @@ export function safeJsonParse<T>(str: string, defaultValue: T): T {
 
 /**
  * 安全的JSON序列化
- * 
+ *
  * @param obj 要序列化的对象
  * @param defaultValue 默认值
  * @returns 序列化结果
@@ -455,3 +477,41 @@ export function safeJsonStringify(obj: any, defaultValue = '{}'): string {
     return defaultValue
   }
 }
+
+/**
+ * 深度比较两个对象是否相等
+ *
+ * @param a 对象A
+ * @param b 对象B
+ * @returns 是否相等
+ */
+export function deepEqual(a: any, b: any): boolean {
+  if (a === b) return true
+
+  if (a instanceof Date && b instanceof Date) {
+    return a.getTime() === b.getTime()
+  }
+
+  if (a instanceof RegExp && b instanceof RegExp) {
+    return a.toString() === b.toString()
+  }
+
+  if (!a || !b || (typeof a !== 'object' && typeof b !== 'object')) {
+    return a === b
+  }
+
+  if (a === null || a === undefined || b === null || b === undefined) {
+    return false
+  }
+
+  if (a.prototype !== b.prototype) return false
+
+  const keys = Object.keys(a)
+  if (keys.length !== Object.keys(b).length) {
+    return false
+  }
+
+  return keys.every(k => deepEqual(a[k], b[k]))
+}
+
+

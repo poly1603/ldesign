@@ -1,6 +1,62 @@
 # API 文档
 
-## 核心 API
+## 框架无关的核心 API（v2.0 新特性）
+
+### createForm
+
+创建框架无关的表单实例。
+
+```typescript
+function createForm<T = Record<string, any>>(
+  config: FormConfig<T>,
+  callbacks?: FormEventCallbacks<T>
+): FormInstance<T>
+```
+
+**参数：**
+- `config`: 表单配置对象
+- `callbacks`: 事件回调函数（可选）
+
+**示例：**
+```typescript
+import { createForm } from '@ldesign/form'
+
+const form = createForm({
+  initialValues: { name: '', email: '' },
+  fields: [
+    {
+      name: 'name',
+      label: '姓名',
+      type: 'input',
+      rules: [{ type: 'required', message: '请输入姓名' }]
+    }
+  ]
+}, {
+  onSubmit: async (values) => {
+    console.log('提交数据:', values)
+  }
+})
+```
+
+### 适配器 API
+
+#### createVanillaAdapter
+
+创建原生JavaScript适配器。
+
+```typescript
+function createVanillaAdapter(config?: Partial<AdapterConfig>): VanillaAdapter
+```
+
+**示例：**
+```typescript
+import { createVanillaAdapter } from '@ldesign/form'
+
+const adapter = createVanillaAdapter({ debug: true })
+adapter.mount(form, '#form-container')
+```
+
+## Vue 3 组件 API
 
 ### createForm(options)
 
