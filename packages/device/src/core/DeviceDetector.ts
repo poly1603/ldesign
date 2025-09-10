@@ -48,7 +48,7 @@ import { ModuleLoader } from './ModuleLoader'
  * ```
  */
 export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
-  private options: Required<DeviceDetectorOptions>
+  private options: DeviceDetectorOptions
   private moduleLoader: ModuleLoader
   private currentDeviceInfo: DeviceInfo
   private resizeHandler?: () => void
@@ -315,6 +315,16 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
         userAgent: '',
         os: { name: 'unknown', version: 'unknown' },
         browser: { name: 'unknown', version: 'unknown' },
+        screen: {
+          width: 1920,
+          height: 1080,
+          pixelRatio: 1,
+          availWidth: 1920,
+          availHeight: 1080,
+        },
+        features: {
+          touch: false,
+        },
       }
     }
 
@@ -347,16 +357,30 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
         this.cachedBrowser = browser = parseBrowser(userAgent)
       }
 
-      const deviceInfo = {
+      const pixelRatio = getPixelRatio()
+      const touchDevice = isTouchDevice()
+      
+      const deviceInfo: DeviceInfo = {
         type: getDeviceTypeByWidth(width, this.options.breakpoints),
         orientation: getScreenOrientation(),
         width,
         height,
-        pixelRatio: getPixelRatio(),
-        isTouchDevice: isTouchDevice(),
+        pixelRatio,
+        isTouchDevice: touchDevice,
         userAgent,
         os: os!,
         browser: browser!,
+        screen: {
+          width,
+          height,
+          pixelRatio,
+          availWidth: window.screen?.availWidth || width,
+          availHeight: window.screen?.availHeight || height,
+        },
+        features: {
+          touch: touchDevice,
+          webgl: typeof window !== 'undefined' ? this.detectWebGL() : false,
+        },
       }
 
       // 更新性能指标
@@ -371,6 +395,19 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
     catch (error) {
       this.handleDetectionError(error)
       return this.currentDeviceInfo
+    }
+  }
+
+  /**
+   * 检测 WebGL 支持
+   */
+  private detectWebGL(): boolean {
+    try {
+      const canvas = document.createElement('canvas')
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+      return !!gl
+    } catch (e) {
+      return false
     }
   }
 

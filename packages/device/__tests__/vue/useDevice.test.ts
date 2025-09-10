@@ -6,7 +6,7 @@ import {
   useDevice,
   useGeolocation,
   useNetwork,
-} from '../../src/adapt/vue/composables/useDevice'
+} from '../../src/vue/composables/useDevice'
 
 // Mock window and navigator
 const mockWindow = {

@@ -39,7 +39,7 @@
     "node": ">=16"
   },
   "scripts": {
-    "build": "ldesign-builder build -f esm,cjs",
+    "build": "ldesign-builder build -f esm,cjs,umd",
     "build:watch": "ldesign-builder build --watch",
     "dev": "rollup -c -w",
     "type-check": "vue-tsc --noEmit --project tsconfig.test.json",

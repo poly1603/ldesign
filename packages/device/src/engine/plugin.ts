@@ -4,8 +4,9 @@
  * 将 Device 功能集成到 LDesign Engine 中，提供统一的设备检测管理体验
  */
 
-import type { Plugin } from '@ldesign/engine/types'
-import { DevicePlugin, type DevicePluginOptions } from '../vue/plugin'
+// import type { Plugin } from '@ldesign/engine/types' // 暂时注释，等待外部包安装
+import { DevicePlugin } from '../vue/plugin'
+import type { DevicePluginOptions } from '../types'
 import { DeviceDetector } from '../core/DeviceDetector'
 
 /**
@@ -26,6 +27,17 @@ export interface DeviceEnginePluginOptions extends DevicePluginOptions {
   enablePerformanceMonitoring?: boolean
   /** 是否启用调试模式 */
   debug?: boolean
+}
+
+/**
+ * Plugin 接口定义（临时）
+ */
+export interface Plugin {
+  name: string
+  version?: string
+  dependencies?: string[]
+  install: (context: any) => Promise<void> | void
+  uninstall?: (context: any) => Promise<void> | void
 }
 
 /**
@@ -71,7 +83,6 @@ function createGlobalDeviceInstance(config: DeviceEnginePluginOptions): DeviceDe
   const detector = new DeviceDetector({
     enableResize,
     enableOrientation,
-    modules,
   })
 
   // 根据配置加载模块
@@ -140,7 +151,7 @@ export function createDeviceEnginePlugin(
     version,
     dependencies,
 
-    async install(context) {
+    async install(context: any) {
       try {
         if (debug) {
           console.log('[Device Plugin] install method called with context:', context)
@@ -242,7 +253,7 @@ export function createDeviceEnginePlugin(
       }
     },
 
-    async uninstall(context) {
+    async uninstall(context: any) {
       try {
         if (debug) {
           console.log('[Device Plugin] uninstall method called')

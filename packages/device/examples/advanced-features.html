@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@ldesign/device 高级功能示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .feature-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+
+    .feature-card h2 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .feature-card h2 .icon {
+      font-size: 1.8rem;
+    }
+
+    .info-list {
+      list-style: none;
+      margin: 15px 0;
+    }
+
+    .info-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .info-list li:last-child {
+      border-bottom: none;
+    }
+
+    .label {
+      color: #666;
+      font-weight: 500;
+    }
+
+    .value {
+      color: #333;
+      font-weight: 600;
+      background: #f0f0f0;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .value.success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .value.warning {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .value.danger {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .value.info {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin: 5px;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .device-list {
+      max-height: 200px;
+      overflow-y: auto;
+      margin: 10px 0;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 4px;
+    }
+
+    .device-item {
+      padding: 8px;
+      margin: 5px 0;
+      background: white;
+      border-radius: 4px;
+      border-left: 4px solid #667eea;
+    }
+
+    .console-output {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .console-line {
+      margin: 5px 0;
+      padding: 3px 0;
+    }
+
+    .console-line.info {
+      color: #66d9ef;
+    }
+
+    .console-line.success {
+      color: #a6e22e;
+    }
+
+    .console-line.error {
+      color: #f92672;
+    }
+
+    .console-line.warning {
+      color: #fd971f;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .performance-graph {
+      height: 200px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      padding: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .performance-bar {
+      position: absolute;
+      bottom: 0;
+      width: 30px;
+      background: linear-gradient(to top, #667eea, #764ba2);
+      transition: height 0.3s;
+      border-radius: 4px 4px 0 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 @ldesign/device 高级功能示例</h1>
+
+    <div class="feature-grid">
+      <!-- 媒体设备检测 -->
+      <div class="feature-card">
+        <h2><span class="icon">📷</span>媒体设备检测</h2>
+        <ul class="info-list">
+          <li>
+            <span class="label">摄像头</span>
+            <span id="camera-status" class="value">检测中...</span>
+          </li>
+          <li>
+            <span class="label">麦克风</span>
+            <span id="mic-status" class="value">检测中...</span>
+          </li>
+          <li>
+            <span class="label">扬声器</span>
+            <span id="speaker-status" class="value">检测中...</span>
+          </li>
+          <li>
+            <span class="label">摄像头权限</span>
+            <span id="camera-permission" class="value">未知</span>
+          </li>
+          <li>
+            <span class="label">麦克风权限</span>
+            <span id="mic-permission" class="value">未知</span>
+          </li>
+        </ul>
+        <div id="device-list" class="device-list"></div>
+        <div class="button-group">
+          <button onclick="requestCameraPermission()">请求摄像头权限</button>
+          <button onclick="requestMicPermission()">请求麦克风权限</button>
+          <button onclick="testCamera()">测试摄像头</button>
+          <button onclick="testMicrophone()">测试麦克风</button>
+        </div>
+      </div>
+
+      <!-- 性能优化演示 -->
+      <div class="feature-card">
+        <h2><span class="icon">⚡</span>性能优化工具</h2>
+        <ul class="info-list">
+          <li>
+            <span class="label">防抖计数</span>
+            <span id="debounce-count" class="value info">0</span>
+          </li>
+          <li>
+            <span class="label">节流计数</span>
+            <span id="throttle-count" class="value info">0</span>
+          </li>
+          <li>
+            <span class="label">缓存命中率</span>
+            <span id="cache-hit-rate" class="value success">0%</span>
+          </li>
+          <li>
+            <span class="label">批处理大小</span>
+            <span id="batch-size" class="value warning">0</span>
+          </li>
+        </ul>
+        <div class="button-group">
+          <button onclick="testDebounce()">测试防抖（快速点击）</button>
+          <button onclick="testThrottle()">测试节流（快速点击）</button>
+          <button onclick="testCache()">测试缓存</button>
+          <button onclick="testBatch()">测试批处理</button>
+        </div>
+        <div id="performance-graph" class="performance-graph"></div>
+      </div>
+
+      <!-- 设备信息增强 -->
+      <div class="feature-card">
+        <h2><span class="icon">📱</span>设备信息增强</h2>
+        <ul class="info-list">
+          <li>
+            <span class="label">WebGL 支持</span>
+            <span id="webgl-support" class="value">检测中...</span>
+          </li>
+          <li>
+            <span class="label">触摸支持</span>
+            <span id="touch-support" class="value">检测中...</span>
+          </li>
+          <li>
+            <span class="label">屏幕尺寸</span>
+            <span id="screen-size" class="value">检测中...</span>
+          </li>
+          <li>
+            <span class="label">可用区域</span>
+            <span id="available-size" class="value">检测中...</span>
+          </li>
+          <li>
+            <span class="label">像素密度</span>
+            <span id="pixel-ratio" class="value">检测中...</span>
+          </li>
+          <li>
+            <span class="label">浏览器引擎</span>
+            <span id="browser-engine" class="value">检测中...</span>
+          </li>
+        </ul>
+        <div class="button-group">
+          <button onclick="refreshDeviceInfo()">刷新信息</button>
+          <button onclick="testWebGL()">测试 WebGL 渲染</button>
+        </div>
+      </div>
+
+      <!-- 懒加载管理 -->
+      <div class="feature-card">
+        <h2><span class="icon">📦</span>模块懒加载</h2>
+        <ul class="info-list">
+          <li>
+            <span class="label">网络模块</span>
+            <span id="network-module" class="value">未加载</span>
+          </li>
+          <li>
+            <span class="label">电池模块</span>
+            <span id="battery-module" class="value">未加载</span>
+          </li>
+          <li>
+            <span class="label">地理位置模块</span>
+            <span id="geolocation-module" class="value">未加载</span>
+          </li>
+          <li>
+            <span class="label">媒体模块</span>
+            <span id="media-module" class="value">未加载</span>
+          </li>
+        </ul>
+        <div class="button-group">
+          <button onclick="loadModule('network')">加载网络模块</button>
+          <button onclick="loadModule('battery')">加载电池模块</button>
+          <button onclick="loadModule('geolocation')">加载地理位置模块</button>
+          <button onclick="preloadAllModules()">预加载所有模块</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 控制台输出 -->
+    <div class="console-output" id="console">
+      <div class="console-line info">🚀 @ldesign/device 高级功能示例已启动</div>
+      <div class="console-line info">📦 正在初始化设备检测器...</div>
+    </div>
+  </div>
+
+  <script type="module">
+    // 导入 @ldesign/device 模块
+    import { DeviceDetector } from '../es/core/DeviceDetector.js'
+    import { MediaModule } from '../es/modules/MediaModule.js'
+    import { 
+      debounce, 
+      throttle, 
+      MemoryCache, 
+      memoize, 
+      LazyLoader,
+      BatchExecutor 
+    } from '../es/utils/performance.js'
+
+    // 全局变量
+    window.detector = null
+    window.mediaModule = null
+    window.cache = new MemoryCache({ maxSize: 50, defaultTTL: 60000 })
+    window.lazyLoader = new LazyLoader()
+    window.batchExecutor = null
+
+    // 控制台日志
+    function log(message, type = 'info') {
+      const console = document.getElementById('console')
+      const line = document.createElement('div')
+      line.className = `console-line ${type}`
+      const time = new Date().toLocaleTimeString()
+      line.textContent = `[${time}] ${message}`
+      console.appendChild(line)
+      console.scrollTop = console.scrollHeight
+    }
+
+    // 初始化
+    async function init() {
+      try {
+        // 创建设备检测器
+        window.detector = new DeviceDetector({
+          enableResize: true,
+          enableOrientation: true
+        })
+        log('✅ 设备检测器初始化成功', 'success')
+
+        // 创建媒体模块
+        window.mediaModule = new MediaModule()
+        await window.mediaModule.init()
+        log('✅ 媒体模块初始化成功', 'success')
+
+        // 更新设备信息
+        updateDeviceInfo()
+        updateMediaInfo()
+
+        // 监听事件
+        window.mediaModule.on('deviceChange', (info) => {
+          log('📷 检测到媒体设备变化', 'warning')
+          updateMediaInfo()
+        })
+
+        window.mediaModule.on('permissionChange', (change) => {
+          log(`🔐 ${change.type} 权限变更为: ${change.state}`, 'warning')
+          updateMediaInfo()
+        })
+
+        // 初始化批处理执行器
+        window.batchExecutor = new BatchExecutor(
+          async (batch) => {
+            log(`⚡ 批处理执行，批大小: ${batch.length}`, 'info')
+            return batch.map(x => x * 2)
+          },
+          { maxBatchSize: 5, maxWaitTime: 1000 }
+        )
+
+        // 注册懒加载模块
+        registerLazyModules()
+
+      } catch (error) {
+        log(`❌ 初始化失败: ${error.message}`, 'error')
+      }
+    }
+
+    // 更新设备信息
+    function updateDeviceInfo() {
+      const info = window.detector.getDeviceInfo()
+      
+      document.getElementById('webgl-support').textContent = info.features.webgl ? '支持' : '不支持'
+      document.getElementById('webgl-support').className = `value ${info.features.webgl ? 'success' : 'danger'}`
+      
+      document.getElementById('touch-support').textContent = info.features.touch ? '支持' : '不支持'
+      document.getElementById('touch-support').className = `value ${info.features.touch ? 'success' : 'warning'}`
+      
+      document.getElementById('screen-size').textContent = `${info.screen.width} × ${info.screen.height}`
+      document.getElementById('available-size').textContent = `${info.screen.availWidth} × ${info.screen.availHeight}`
+      document.getElementById('pixel-ratio').textContent = info.screen.pixelRatio.toFixed(2)
+      document.getElementById('browser-engine').textContent = info.browser.engine || '未知'
+    }
+
+    // 更新媒体信息
+    function updateMediaInfo() {
+      const info = window.mediaModule.getData()
+      
+      document.getElementById('camera-status').textContent = info.hasCamera ? `${info.cameras.length} 个` : '无'
+      document.getElementById('camera-status').className = `value ${info.hasCamera ? 'success' : 'warning'}`
+      
+      document.getElementById('mic-status').textContent = info.hasMicrophone ? `${info.microphones.length} 个` : '无'
+      document.getElementById('mic-status').className = `value ${info.hasMicrophone ? 'success' : 'warning'}`
+      
+      document.getElementById('speaker-status').textContent = info.hasSpeaker ? `${info.speakers.length} 个` : '无'
+      document.getElementById('speaker-status').className = `value ${info.hasSpeaker ? 'success' : 'warning'}`
+      
+      document.getElementById('camera-permission').textContent = info.cameraPermission
+      document.getElementById('camera-permission').className = `value ${
+        info.cameraPermission === 'granted' ? 'success' : 
+        info.cameraPermission === 'denied' ? 'danger' : 'warning'
+      }`
+      
+      document.getElementById('mic-permission').textContent = info.microphonePermission
+      document.getElementById('mic-permission').className = `value ${
+        info.microphonePermission === 'granted' ? 'success' : 
+        info.microphonePermission === 'denied' ? 'danger' : 'warning'
+      }`
+
+      // 更新设备列表
+      const deviceList = document.getElementById('device-list')
+      deviceList.innerHTML = ''
+      
+      info.cameras.forEach(camera => {
+        const item = document.createElement('div')
+        item.className = 'device-item'
+        item.textContent = `📷 ${camera.label || camera.deviceId}`
+        deviceList.appendChild(item)
+      })
+      
+      info.microphones.forEach(mic => {
+        const item = document.createElement('div')
+        item.className = 'device-item'
+        item.textContent = `🎤 ${mic.label || mic.deviceId}`
+        deviceList.appendChild(item)
+      })
+    }
+
+    // 媒体功能
+    window.requestCameraPermission = async function() {
+      log('📷 请求摄像头权限...', 'info')
+      const result = await window.mediaModule.requestCameraPermission()
+      log(result ? '✅ 摄像头权限已授予' : '❌ 摄像头权限被拒绝', result ? 'success' : 'error')
+    }
+
+    window.requestMicPermission = async function() {
+      log('🎤 请求麦克风权限...', 'info')
+      const result = await window.mediaModule.requestMicrophonePermission()
+      log(result ? '✅ 麦克风权限已授予' : '❌ 麦克风权限被拒绝', result ? 'success' : 'error')
+    }
+
+    window.testCamera = async function() {
+      log('📷 测试摄像头...', 'info')
+      const result = await window.mediaModule.testCamera()
+      log(result ? '✅ 摄像头工作正常' : '❌ 摄像头测试失败', result ? 'success' : 'error')
+    }
+
+    window.testMicrophone = async function() {
+      log('🎤 测试麦克风...', 'info')
+      const result = await window.mediaModule.testMicrophone()
+      log(result ? '✅ 麦克风工作正常' : '❌ 麦克风测试失败', result ? 'success' : 'error')
+    }
+
+    // 性能优化功能
+    let debounceCount = 0
+    let throttleCount = 0
+    let cacheHits = 0
+    let cacheMisses = 0
+
+    const debouncedFunction = debounce(() => {
+      debounceCount++
+      document.getElementById('debounce-count').textContent = debounceCount
+      log(`⏱️ 防抖函数执行，计数: ${debounceCount}`, 'info')
+    }, 500)
+
+    const throttledFunction = throttle(() => {
+      throttleCount++
+      document.getElementById('throttle-count').textContent = throttleCount
+      log(`⚡ 节流函数执行，计数: ${throttleCount}`, 'info')
+    }, 500)
+
+    window.testDebounce = function() {
+      debouncedFunction()
+    }
+
+    window.testThrottle = function() {
+      throttledFunction()
+    }
+
+    window.testCache = function() {
+      const key = `test-${Math.floor(Math.random() * 10)}`
+      
+      if (window.cache.has(key)) {
+        cacheHits++
+        log(`✅ 缓存命中: ${key}`, 'success')
+      } else {
+        cacheMisses++
+        const value = Math.random()
+        window.cache.set(key, value)
+        log(`📝 缓存写入: ${key} = ${value.toFixed(4)}`, 'info')
+      }
+      
+      const hitRate = cacheHits + cacheMisses > 0 
+        ? Math.round((cacheHits / (cacheHits + cacheMisses)) * 100)
+        : 0
+      document.getElementById('cache-hit-rate').textContent = `${hitRate}%`
+    }
+
+    let batchCount = 0
+    window.testBatch = async function() {
+      batchCount++
+      const result = await window.batchExecutor.add(batchCount)
+      log(`📦 批处理项添加: ${batchCount} -> ${result}`, 'info')
+      document.getElementById('batch-size').textContent = batchCount % 5 + 1
+    }
+
+    // 设备功能
+    window.refreshDeviceInfo = function() {
+      window.detector.refresh()
+      updateDeviceInfo()
+      log('🔄 设备信息已刷新', 'info')
+    }
+
+    window.testWebGL = function() {
+      const canvas = document.createElement('canvas')
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+      
+      if (gl) {
+        const renderer = gl.getParameter(gl.RENDERER)
+        const vendor = gl.getParameter(gl.VENDOR)
+        log(`✅ WebGL 渲染器: ${renderer}`, 'success')
+        log(`✅ WebGL 供应商: ${vendor}`, 'success')
+      } else {
+        log('❌ WebGL 不可用', 'error')
+      }
+    }
+
+    // 懒加载功能
+    function registerLazyModules() {
+      window.lazyLoader.register('network', async () => {
+        log('📡 正在加载网络模块...', 'info')
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        const { NetworkModule } = await import('../es/modules/NetworkModule.js')
+        return new NetworkModule()
+      })
+
+      window.lazyLoader.register('battery', async () => {
+        log('🔋 正在加载电池模块...', 'info')
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        const { BatteryModule } = await import('../es/modules/BatteryModule.js')
+        return new BatteryModule()
+      })
+
+      window.lazyLoader.register('geolocation', async () => {
+        log('📍 正在加载地理位置模块...', 'info')
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        const { GeolocationModule } = await import('../es/modules/GeolocationModule.js')
+        return new GeolocationModule()
+      })
+    }
+
+    window.loadModule = async function(name) {
+      try {
+        document.getElementById(`${name}-module`).textContent = '加载中...'
+        document.getElementById(`${name}-module`).className = 'value warning'
+        
+        const module = await window.lazyLoader.load(name)
+        await module.init()
+        
+        document.getElementById(`${name}-module`).textContent = '已加载'
+        document.getElementById(`${name}-module`).className = 'value success'
+        log(`✅ ${name} 模块加载成功`, 'success')
+      } catch (error) {
+        document.getElementById(`${name}-module`).textContent = '加载失败'
+        document.getElementById(`${name}-module`).className = 'value danger'
+        log(`❌ ${name} 模块加载失败: ${error.message}`, 'error')
+      }
+    }
+
+    window.preloadAllModules = async function() {
+      log('📦 预加载所有模块...', 'info')
+      await window.lazyLoader.preload(['network', 'battery', 'geolocation'])
+      
+      for (const name of ['network', 'battery', 'geolocation']) {
+        document.getElementById(`${name}-module`).textContent = '已预加载'
+        document.getElementById(`${name}-module`).className = 'value info'
+      }
+      
+      log('✅ 所有模块预加载完成', 'success')
+    }
+
+    // 启动应用
+    init()
+  </script>
+</body>
+</html>

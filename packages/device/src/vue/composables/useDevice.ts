@@ -1,14 +1,8 @@
 import type { Ref } from 'vue'
 import type {
-  BatteryInfo,
-  BatteryModule,
   DeviceDetectorOptions,
   DeviceInfo,
   DeviceType,
-  GeolocationInfo,
-  GeolocationModule,
-  NetworkInfo,
-  NetworkModule,
   Orientation,
   UseDeviceReturn,
 } from '../../types'

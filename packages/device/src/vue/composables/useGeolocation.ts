@@ -99,9 +99,9 @@ export function useGeolocation() {
     latitude.value = pos.latitude
     longitude.value = pos.longitude
     accuracy.value = pos.accuracy
-    altitude.value = pos.altitude
-    heading.value = pos.heading
-    speed.value = pos.speed
+    altitude.value = pos.altitude ?? null
+    heading.value = pos.heading ?? null
+    speed.value = pos.speed ?? null
     error.value = null
   }
 
@@ -171,7 +171,7 @@ export function useGeolocation() {
     isLoading.value = true
     try {
       if (geolocationModule && typeof geolocationModule.getCurrentPosition === 'function') {
-        const pos = await geolocationModule.getCurrentPosition(options)
+        const pos = await geolocationModule.getCurrentPosition()
         updatePosition(pos)
       }
     }
@@ -205,7 +205,7 @@ export function useGeolocation() {
           updatePosition(pos)
         }
 
-        geolocationModule.startWatching(positionHandler, options)
+        geolocationModule.startWatching(positionHandler)
         isWatching.value = true
         error.value = null
 

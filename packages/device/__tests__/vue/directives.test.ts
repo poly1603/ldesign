@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, nextTick } from 'vue'
-import { vDevice } from '../../src/adapt/vue/directives/vDevice'
+import { vDevice } from '../../src/vue/directives/vDevice'
 
 // 模拟 DeviceDetector
 vi.mock('../../src/core/DeviceDetector', () => {

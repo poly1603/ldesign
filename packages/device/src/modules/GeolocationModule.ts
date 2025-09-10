@@ -1,16 +1,18 @@
 import type { DeviceModule, GeolocationInfo } from '../types'
 import { safeNavigatorAccess } from '../utils'
+import { EventEmitter } from '../core/EventEmitter'
 
 /**
  * 地理位置模块
  */
-export class GeolocationModule implements DeviceModule {
+export class GeolocationModule extends EventEmitter<{ positionChange: GeolocationInfo }> implements DeviceModule {
   name = 'geolocation'
   private geolocationInfo: GeolocationInfo | null = null
   private watchId: number | null = null
   private options: PositionOptions
 
   constructor(options: PositionOptions = {}) {
+    super()
     this.options = {
       enableHighAccuracy: true,
       timeout: 10000,
@@ -76,6 +78,7 @@ export class GeolocationModule implements DeviceModule {
         (position) => {
           const info = this.parsePosition(position)
           this.geolocationInfo = info
+          this.emit('positionChange', info)
           resolve(info)
         },
         (error) => {
@@ -102,6 +105,7 @@ export class GeolocationModule implements DeviceModule {
       (position) => {
         const info = this.parsePosition(position)
         this.geolocationInfo = info
+        this.emit('positionChange', info)
         callback?.(info)
       },
       (error) => {
@@ -140,6 +144,7 @@ export class GeolocationModule implements DeviceModule {
       (position) => {
         const info = this.parsePosition(position)
         this.geolocationInfo = info
+        this.emit('positionChange', info)
         callback(info)
       },
       (error) => {

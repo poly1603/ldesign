@@ -67,7 +67,7 @@ describe('GeolocationModule', () => {
     })
 
     it('应该处理地理位置权限被拒绝', async () => {
-      mockGeolocation.getCurrentPosition.mockImplementation((success: PositionCallback, error: PositionErrorCallback) => {
+      mockGeolocation.getCurrentPosition.mockImplementation((_success: PositionCallback, error: PositionErrorCallback) => {
         error({
           code: 1, // PERMISSION_DENIED
           message: 'User denied the request for Geolocation.',
@@ -222,7 +222,7 @@ describe('GeolocationModule', () => {
     })
 
     it('应该处理位置不可用错误', async () => {
-      mockGeolocation.getCurrentPosition.mockImplementation((success: PositionCallback, error: PositionErrorCallback) => {
+      mockGeolocation.getCurrentPosition.mockImplementation((_success: PositionCallback, error: PositionErrorCallback) => {
         error({
           code: 2, // POSITION_UNAVAILABLE
           message: 'Position unavailable.',
@@ -237,7 +237,7 @@ describe('GeolocationModule', () => {
     })
 
     it('应该处理超时错误', async () => {
-      mockGeolocation.getCurrentPosition.mockImplementation((success: PositionCallback, error: PositionErrorCallback) => {
+      mockGeolocation.getCurrentPosition.mockImplementation((_success: PositionCallback, error: PositionErrorCallback) => {
         error({
           code: 3, // TIMEOUT
           message: 'Timeout expired.',
@@ -252,7 +252,7 @@ describe('GeolocationModule', () => {
     })
 
     it('应该处理未知错误', async () => {
-      mockGeolocation.getCurrentPosition.mockImplementation((success: PositionCallback, error: PositionErrorCallback) => {
+      mockGeolocation.getCurrentPosition.mockImplementation((_success: PositionCallback, error: PositionErrorCallback) => {
         error({
           code: 999, // 未知错误码
           message: 'Unknown error.',

@@ -42,6 +42,8 @@ export interface DeviceDetectorOptions {
   }
   /** 防抖延迟时间（毫秒） */
   debounceDelay?: number
+  /** 要加载的模块列表 */
+  modules?: string[]
 }
 
 /**
@@ -66,11 +68,29 @@ export interface DeviceInfo {
   os: {
     name: string
     version: string
+    platform?: string
   }
   /** 浏览器信息 */
   browser: {
     name: string
     version: string
+    engine?: string
+  }
+  /** 屏幕信息 */
+  screen: {
+    width: number
+    height: number
+    pixelRatio: number
+    availWidth: number
+    availHeight: number
+  }
+  /** 设备特性 */
+  features: {
+    touch: boolean
+    webgl?: boolean
+    camera?: boolean
+    microphone?: boolean
+    bluetooth?: boolean
   }
 }
 
@@ -168,6 +188,12 @@ export interface DeviceModule {
   destroy: () => Promise<void> | void
   /** 获取模块数据 */
   getData: () => unknown
+  /** 添加事件监听器 */
+  on?: (event: string, listener: EventListener) => void
+  /** 移除事件监听器 */
+  off?: (event: string, listener: EventListener) => void
+  /** 触发事件 */
+  emit?: (event: string, data?: any) => void
 }
 
 /**
@@ -240,6 +266,19 @@ export interface DevicePluginOptions extends DeviceDetectorOptions {
   /** 全局属性名称 */
   globalPropertyName?: string
 }
+
+/**
+ * 屏幕方向锁定类型
+ */
+export type OrientationLockType = 
+  | 'any'
+  | 'natural'
+  | 'landscape'
+  | 'portrait'
+  | 'portrait-primary'
+  | 'portrait-secondary'
+  | 'landscape-primary'
+  | 'landscape-secondary'
 
 // 导入 Vue 相关类型（仅在 Vue 环境中可用）
 declare module 'vue' {

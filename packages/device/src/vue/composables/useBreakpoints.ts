@@ -1,4 +1,3 @@
-import type { Ref } from 'vue'
 import type { DeviceDetectorOptions, DeviceInfo } from '../../types'
 import { computed, onMounted, onUnmounted, readonly, ref } from 'vue'
 import { DeviceDetector } from '../../core/DeviceDetector'
