@@ -146,6 +146,28 @@ const { isSmall, isMedium, isLarge } = useSizeResponsive()
 
 在演示或展示时使用大尺寸模式，确保内容清晰可见。
 
+## 🔧 重要修复说明
+
+### 路由切换样式丢失问题修复
+
+**问题描述**：在Vue应用中，路由切换时可能出现尺寸相关的CSS样式丢失问题。
+
+**根本原因**：某些Vue组件在使用`useSize`等hooks时创建了独立的SizeManager实例，当组件卸载时会调用`destroy()`方法移除CSS样式。
+
+**修复方案**：
+- 所有Vue hooks（`useSizeSwitcher`、`useSizeWatcher`、`useSmartSize`等）现在默认使用全局管理器
+- `useSize` hook在没有注入管理器时会回退到全局管理器而不是创建新实例
+- 增强了组件卸载时的保护逻辑，避免误删全局样式
+
+**使用建议**：
+```typescript
+// ✅ 推荐：明确使用全局管理器
+const { currentMode, setMode } = useSize({ global: true })
+
+// ✅ 现在也安全：会自动使用全局管理器
+const { currentMode, setMode } = useSizeSwitcher()
+```
+
 ## 📱 示例项目
 
 我们提供了完整的示例项目来展示各种使用方式：

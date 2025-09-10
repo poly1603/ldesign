@@ -6,17 +6,10 @@
 import type { SizeMode } from '../types'
 import { defineComponent, type PropType, computed, ref, onMounted, onUnmounted, h } from 'vue'
 import { useSizeSwitcher } from './composables'
-import { getRecommendedSizeMode, createResponsiveSizeWatcher } from '../utils'
+import { createResponsiveSizeWatcher } from '../utils'
 import { Minus, Type, Plus, Maximize2 } from 'lucide-vue-next'
 import './SizeSwitcher.less'
 
-// 尺寸模式标签
-const SIZE_MODE_LABELS: Partial<Record<SizeMode, string>> = {
-  small: '小',
-  medium: '中',
-  large: '大',
-  'extra-large': '超大',
-}
 
 // 尺寸模式图标组件
 const SIZE_MODE_ICONS: Partial<Record<SizeMode, any>> = {
@@ -131,8 +124,6 @@ export const SizeSwitcher = defineComponent({
       currentMode,
       availableModes,
       setMode,
-      nextMode,
-      previousMode,
       getModeDisplayName,
     } = useSizeSwitcher({
       initialMode: props.mode,
@@ -356,80 +347,6 @@ export const SizeSwitcher = defineComponent({
       if (!props.showSwitcher) return null
       return h('div', { class: computedClasses.value as any }, [renderSwitcher()])
     }
-  },
-})
-
-/**
- * 尺寸指示器组件
- */
-export const SizeIndicator = defineComponent({
-  name: 'SizeIndicator',
-  props: {
-    showMode: {
-      type: Boolean,
-      default: true,
-    },
-    showScale: {
-      type: Boolean,
-      default: false,
-    },
-    className: {
-      type: String,
-      default: '',
-    },
-  },
-  setup(props) {
-    const { currentMode, currentModeDisplayName } = useSizeSwitcher()
-
-    return () =>
-      h('div', { class: `size-indicator ${props.className}` }, [
-        props.showMode &&
-          h('span', { class: 'size-indicator__mode' }, ['当前尺寸: ', currentModeDisplayName.value as any]),
-        props.showScale &&
-          h('span', { class: 'size-indicator__scale' }, ['(', currentMode.value as any, ')'])
-      ])
-  },
-})
-
-/**
- * 尺寸控制面板组件
- */
-export const SizeControlPanel = defineComponent({
-  name: 'SizeControlPanel',
-  props: {
-    showSwitcher: {
-      type: Boolean,
-      default: true,
-    },
-    showIndicator: {
-      type: Boolean,
-      default: true,
-    },
-    switcherStyle: {
-      type: String as PropType<'button' | 'select' | 'radio'>,
-      default: 'button',
-    },
-    className: {
-      type: String,
-      default: '',
-    },
-  },
-  emits: ['change'],
-  setup(props, { emit }) {
-    const handleChange = (mode: SizeMode) => {
-      emit('change', mode)
-    }
-
-    return () =>
-      h('div', { class: `size-control-panel ${props.className}` }, [
-        props.showIndicator && h(SizeIndicator as any, { class: 'size-control-panel__indicator' }),
-        props.showSwitcher &&
-          h(SizeSwitcher as any, {
-            class: 'size-control-panel__switcher',
-            switcherStyle: props.switcherStyle,
-            onChange: handleChange
-          })
-      ])
   },
 })
 

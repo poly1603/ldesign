@@ -34,10 +34,12 @@ const DEFAULT_CSS_OPTIONS: Required<CSSInjectionOptions> = {
 
 /**
  * CSS注入器类
+ * 完全独立的CSS注入器，不依赖任何共享实例
  */
 export class CSSInjector {
   private options: Required<CSSInjectionOptions>
   private styleElement: HTMLStyleElement | null = null
+  private isProtected: boolean = true // 默认启用保护
 
   constructor(options?: CSSInjectionOptions) {
     this.options = { ...DEFAULT_CSS_OPTIONS, ...options }
@@ -57,11 +59,19 @@ export class CSSInjector {
   }
 
   /**
-   * 注入CSS字符串
+   * 注入CSS字符串（增强版，带保护机制）
    */
   injectCSS(cssString: string): void {
     if (typeof document === 'undefined') {
       console.warn('CSS injection is only available in browser environment')
+      return
+    }
+
+    // 检查是否已存在相同ID的style标签
+    const existingStyle = document.getElementById(this.options.styleId)
+    if (existingStyle && existingStyle.textContent === cssString) {
+      // 内容相同，无需重新注入
+      this.styleElement = existingStyle as HTMLStyleElement
       return
     }
 
@@ -73,21 +83,33 @@ export class CSSInjector {
     this.styleElement.id = this.options.styleId
     this.styleElement.textContent = cssString
 
+    // 添加保护属性，防止被其他包误删
+    if (this.isProtected) {
+      this.styleElement.setAttribute('data-package', 'ldesign-size')
+      this.styleElement.setAttribute('data-protected', 'true')
+      this.styleElement.setAttribute('data-injector', 'size-css-injector')
+    }
+
     // 插入到head中
     document.head.appendChild(this.styleElement)
   }
 
   /**
-   * 移除CSS
+   * 移除CSS（只移除自己管理的样式）
    */
   removeCSS(): void {
     if (typeof document === 'undefined') {
       return
     }
 
-    // 移除现有的样式元素
+    // 只移除自己管理的样式元素
+    if (this.styleElement && this.styleElement.parentNode) {
+      this.styleElement.remove()
+    }
+
+    // 作为备用，也检查DOM中是否有同ID的元素
     const existingStyle = document.getElementById(this.options.styleId)
-    if (existingStyle) {
+    if (existingStyle && existingStyle.getAttribute('data-package') === 'ldesign-size') {
       existingStyle.remove()
     }
 

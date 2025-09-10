@@ -6,8 +6,9 @@ export { Size } from './api'
 export * from './core/css-generator'
 export * from './core/css-injector'
 export * from './core/presets'
-
 export * from './core/size-manager'
+export * from './core/keyboard-manager'
+export * from './core/theme-manager'
 
 // 默认导出
 export { globalSizeManager as default } from './core/size-manager'

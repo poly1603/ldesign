@@ -373,3 +373,6 @@ export function createResponsiveSizeWatcher(
     unsubscribers.forEach(unsubscribe => unsubscribe())
   }
 }
+
+// 导出性能工具
+export * from './performance'

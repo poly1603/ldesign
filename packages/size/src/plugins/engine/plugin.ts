@@ -125,7 +125,6 @@ export function createSizeEnginePlugin(
           }
 
           // 创建响应式状态
-          const { ref } = await import('vue')
           let forceUpdateCounter = 0
           const forceUpdateCallbacks: Array<() => void> = []
 

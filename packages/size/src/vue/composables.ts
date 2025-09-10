@@ -78,10 +78,10 @@ export function useSize(options: UseSizeOptions = {}): UseSizeReturn {
     sizeManager = injectedManager
   }
   else {
-    sizeManager = createSizeManager({
-      defaultMode: initialMode,
-      autoInject,
-    })
+    // 如果没有注入的管理器，优先使用全局管理器而不是创建新实例
+    // 这样可以避免路由切换时样式丢失的问题
+    console.warn('[useSize] No injected manager found, falling back to global manager to prevent style loss')
+    sizeManager = globalSizeManager
   }
 
   // 响应式状态
@@ -134,7 +134,8 @@ export function useSize(options: UseSizeOptions = {}): UseSizeReturn {
   onUnmounted(() => {
     unsubscribe()
     // 如果不是全局管理器且不是注入的管理器，则销毁
-    if (!global && !injectedManager) {
+    // 但是由于我们现在默认使用全局管理器，这个条件基本不会触发
+    if (!global && !injectedManager && sizeManager !== globalSizeManager) {
       sizeManager.destroy()
     }
   })
@@ -163,9 +164,13 @@ export function useGlobalSize(): UseSizeReturn {
 
 /**
  * 使用尺寸切换器 Hook
+ *
+ * 修复说明：默认使用全局管理器，避免在路由切换时因组件卸载导致样式丢失
+ * 原因：当组件使用非全局管理器时，组件卸载会调用destroy()移除CSS样式
  */
 export function useSizeSwitcher(options: UseSizeOptions = {}) {
-  const sizeHook = useSize(options)
+  // 默认使用全局管理器，避免创建新实例导致样式丢失
+  const sizeHook = useSize({ global: true, ...options })
   const availableModes: SizeMode[] = ['small', 'medium', 'large', 'extra-large']
 
   const switchToMode = (mode: string) => {
@@ -231,7 +236,7 @@ export function useSizeWatcher(
   callback: (event: SizeChangeEvent) => void,
   options: UseSizeOptions = {},
 ) {
-  const { sizeManager } = useSize(options)
+  const { sizeManager } = useSize({ global: true, ...options })
 
   const unsubscribe = sizeManager.onSizeChange(callback)
 
@@ -268,6 +273,7 @@ export function useSmartSize(options: UseSizeOptions & {
   }
 
   const sizeHook = useSize({
+    global: true, // 默认使用全局管理器
     ...sizeOptions,
     initialMode: userPreferredMode.value || recommendedMode.value,
   })
@@ -393,7 +399,7 @@ export function useSizeState(options: UseSizeOptions & {
 } = {}) {
   const { enableHistory = true, maxHistoryLength = 10, ...sizeOptions } = options
 
-  const sizeHook = useSize(sizeOptions)
+  const sizeHook = useSize({ global: true, ...sizeOptions })
 
   // 历史记录
   const history = ref<SizeMode[]>([])
