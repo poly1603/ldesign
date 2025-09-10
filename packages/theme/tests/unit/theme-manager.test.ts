@@ -4,8 +4,8 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { createThemeManager, ThemeManager } from '../../src/core/theme-manager'
-import { springFestivalTheme } from '../../src/themes/festivals/spring-festival'
-import { christmasTheme } from '../../src/themes/festivals/christmas'
+import { springFestivalTheme } from '../../src/themes/spring-festival'
+import { christmasTheme } from '../../src/themes/christmas'
 import { valentineTheme } from '../../src/themes/festivals/valentine'
 import type { ThemeManagerOptions } from '../../src/core/types'
 

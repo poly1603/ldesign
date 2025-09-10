@@ -3,11 +3,11 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { springFestivalTheme } from '../../src/themes/festivals/spring-festival'
-import { christmasTheme } from '../../src/themes/festivals/christmas'
-import { halloweenTheme } from '../../src/themes/festivals/halloween'
-import { valentineTheme } from '../../src/themes/festivals/valentine'
-import { midAutumnTheme } from '../../src/themes/festivals/mid-autumn'
+import { springFestivalTheme } from '../../src/themes/spring-festival'
+import { christmasTheme } from '../../src/themes/christmas'
+import { halloweenTheme } from '../../src/themes/halloween'
+import { valentinesDayTheme } from '../../src/themes/valentines-day'
+import { midAutumnTheme } from '../../src/themes/mid-autumn'
 import {
   presetThemes,
   festivalThemes,
@@ -227,7 +227,7 @@ describe('节日主题', () => {
       // 应该包含红色和绿色元素
       expect(
         colors.primary.toLowerCase().includes('16a34a') ||
-          colors.secondary.toLowerCase().includes('dc2626')
+        colors.secondary.toLowerCase().includes('dc2626')
       ).toBe(true)
     })
 
@@ -241,7 +241,7 @@ describe('节日主题', () => {
       // 应该包含橙色元素
       expect(
         colors.primary.toLowerCase().includes('ea580c') ||
-          colors.secondary.toLowerCase().includes('f97316')
+        colors.secondary.toLowerCase().includes('f97316')
       ).toBe(true)
     })
 

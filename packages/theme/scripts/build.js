@@ -1,40 +1,35 @@
 /**
  * theme 构建脚本
- * 使用 @ldesign/builder 进行零配置打包
+ * 使用 @ldesign/builder 进行构建（ESM/CJS/UMD）
  */
 
-import { SimpleBuilder } from '@ldesign/builder'
+import { VueBuilder } from '@ldesign/builder'
 import { sep } from 'path'
 
 async function build() {
   const isDev = process.argv.includes('--dev')
-  
-  const builder = new SimpleBuilder({
+
+  const builder = new VueBuilder({
     root: process.cwd(),
     src: 'src',
-    outDir: 'dist',
-    formats: ["esm","cjs"],
+    formats: ["esm","cjs","umd","dts"],
     sourcemap: true,
     minify: !isDev,
     clean: true,
-    external: [
-      'vue',
-      'react', 
-      'react-dom',
-      '@ldesign/shared',
-      '@ldesign/utils'
-    ],
+    enableVue: true,
+    external: ['vue', '@ldesign/shared', '@ldesign/color'],
     globals: {
-      'vue': 'Vue',
-      'react': 'React',
-      'react-dom': 'ReactDOM'
+      vue: 'Vue',
+      '@ldesign/shared': 'LDesignShared',
+      '@ldesign/color': 'LDesignColor'
     }
   })
 
   try {
     const result = await builder.build()
+    const packageName = process.cwd().split(sep).pop()
     if (result.success) {
-      console.log(`✅ ${process.cwd().split(sep).pop()} 构建成功！`)
+      console.log(`✅ ${packageName} 构建成功！`)
     } else {
       console.error(`❌ 构建失败: ${result.errors?.join(', ')}`)
       process.exit(1)

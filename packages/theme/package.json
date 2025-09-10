@@ -38,14 +38,14 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "browser": "dist/index.min.js",
+  "browser": "dist/index.umd.js",
   "files": [
     "README.md",
     "CHANGELOG.md",
     "dist"
   ],
   "scripts": {
-    "build": "node scripts/build.js",
+    "build": "ldesign-builder build -f esm,cjs && ldesign-builder build -f umd",
     "build:watch": "ldesign-builder build --watch",
     "dev": "rollup -c -w",
     "type-check": "vue-tsc --noEmit",

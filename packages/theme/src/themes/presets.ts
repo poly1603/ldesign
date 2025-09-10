@@ -1,359 +1,247 @@
 /**
- * @ldesign/theme - 主题预设
- *
- * 提供所有预设主题的统一管理和导出
+ * 主题预设和工具函数
+ * 
+ * 提供主题搜索、验证和管理功能
  */
 
-import type { FestivalType, ThemeCategory, ThemeConfig } from '../core/types'
-import { christmasTheme } from './festivals/christmas'
-import { halloweenTheme } from './festivals/halloween'
-import { springFestivalTheme } from './festivals/spring-festival'
+import type { FestivalThemeConfig, FestivalType } from '../core/types'
+import { 
+  springFestivalTheme,
+  christmasTheme,
+  halloweenTheme,
+  valentinesDayTheme,
+  midAutumnTheme,
+  defaultTheme
+} from './index'
 
 /**
- * 所有预设主题
+ * 所有预设主题的集合
  */
-export const presetThemes: ThemeConfig[] = [
-  christmasTheme,
+export const allThemes: FestivalThemeConfig[] = [
+  defaultTheme,
   springFestivalTheme,
+  christmasTheme,
   halloweenTheme,
+  valentinesDayTheme,
+  midAutumnTheme
 ]
 
 /**
- * 节日主题映射
+ * 主题映射表，用于快速查找
  */
-export const festivalThemes: Record<FestivalType, ThemeConfig> = {
-  'christmas': christmasTheme,
-  'spring-festival': springFestivalTheme,
-  'halloween': halloweenTheme,
-  'valentine': christmasTheme, // 暂时使用圣诞节主题
-  'easter': springFestivalTheme, // 暂时使用春节主题
-  'thanksgiving': halloweenTheme, // 暂时使用万圣节主题
-}
+export const themeMap = new Map<string, FestivalThemeConfig>(
+  allThemes.map(theme => [theme.name, theme])
+)
 
 /**
- * 按类别分组的主题
+ * 根据节日类型获取主题配置
+ * 
+ * @param festival 节日类型
+ * @returns 主题配置，如果未找到则返回默认主题
  */
-export const themesByCategory: Record<ThemeCategory, ThemeConfig[]> = {
-  festival: [christmasTheme, springFestivalTheme, halloweenTheme],
-  seasonal: [],
-  custom: [],
-  business: [],
-}
-
-/**
- * 主题标签映射
- */
-export const themesByTag: Record<string, ThemeConfig[]> = {
-  // 节日标签
-  'festival': [christmasTheme, springFestivalTheme, halloweenTheme],
-  'christmas': [christmasTheme],
-  'spring-festival': [springFestivalTheme],
-  'chinese-new-year': [springFestivalTheme],
-  'halloween': [halloweenTheme],
-
-  // 颜色标签
-  'red': [christmasTheme, springFestivalTheme],
-  'green': [christmasTheme],
-  'gold': [springFestivalTheme],
-  'orange': [halloweenTheme],
-  'black': [halloweenTheme],
-
-  // 季节标签
-  'winter': [christmasTheme],
-  'spring': [springFestivalTheme],
-  'autumn': [halloweenTheme],
-
-  // 装饰标签
-  'snow': [christmasTheme],
-  'lantern': [springFestivalTheme],
-  'pumpkin': [halloweenTheme],
-
-  // 动画标签
-  'falling': [christmasTheme, springFestivalTheme],
-  'floating': [halloweenTheme],
-  'glowing': [christmasTheme, springFestivalTheme, halloweenTheme],
-}
-
-/**
- * 获取预设主题
- */
-export function getPresetTheme(name: string): ThemeConfig | undefined {
-  return presetThemes.find(theme => theme.name === name)
-}
-
-/**
- * 获取所有预设主题名称
- */
-export function getPresetThemeNames(): string[] {
-  return presetThemes.map(theme => theme.name)
-}
-
-/**
- * 检查是否为预设主题
- */
-export function isPresetTheme(name: string): boolean {
-  return presetThemes.some(theme => theme.name === name)
-}
-
-/**
- * 按类别获取主题
- */
-export function getThemesByCategory(category: ThemeCategory): ThemeConfig[] {
-  return themesByCategory[category] || []
-}
-
-/**
- * 按标签获取主题
- */
-export function getThemesByTag(tag: string): ThemeConfig[] {
-  return themesByTag[tag] || []
-}
-
-/**
- * 获取节日主题
- */
-export function getFestivalTheme(
-  festival: FestivalType,
-): ThemeConfig | undefined {
-  return festivalThemes[festival]
-}
-
-/**
- * 获取当前季节推荐的主题
- */
-export function getSeasonalThemes(): ThemeConfig[] {
-  const now = new Date()
-  const month = now.getMonth() + 1 // 1-12
-
-  // 根据月份推荐主题
-  if (month === 12 || month === 1) {
-    return [christmasTheme]
-  }
-  else if (month === 2) {
-    return [springFestivalTheme]
-  }
-  else if (month === 10) {
-    return [halloweenTheme]
-  }
-
-  return []
-}
-
-/**
- * 获取随机预设主题
- */
-export function getRandomPresetTheme(): ThemeConfig {
-  const randomIndex = Math.floor(Math.random() * presetThemes.length)
-  return presetThemes[randomIndex]
-}
-
-/**
- * 根据时间获取应该激活的主题
- */
-export function getActiveThemeByTime(
-  date: Date = new Date(),
-): ThemeConfig | undefined {
-  for (const theme of presetThemes) {
-    if (theme.timeRange && isInTimeRange(date, theme.timeRange)) {
-      return theme
-    }
-  }
-  return undefined
-}
-
-/**
- * 检查日期是否在时间范围内
- */
-function isInTimeRange(
-  date: Date,
-  timeRange: { start: string, end: string },
-): boolean {
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  const currentDate = `${month.toString().padStart(2, '0')}-${day
-    .toString()
-    .padStart(2, '0')}`
-
-  const { start, end } = timeRange
-
-  // 处理跨年的情况（如圣诞节主题：12-01 到 01-07）
-  if (start > end) {
-    return currentDate >= start || currentDate <= end
-  }
-  else {
-    return currentDate >= start && currentDate <= end
-  }
+export function getThemeByFestival(festival: FestivalType): FestivalThemeConfig {
+  const theme = themeMap.get(festival)
+  return theme || defaultTheme
 }
 
 /**
  * 搜索主题
+ * 
+ * @param query 搜索关键词
+ * @returns 匹配的主题列表
  */
-export function searchThemes(query: string): ThemeConfig[] {
+export function searchThemes(query: string): FestivalThemeConfig[] {
   const lowerQuery = query.toLowerCase()
-
-  return presetThemes.filter((theme) => {
-    // 搜索名称
+  
+  return allThemes.filter(theme => {
+    // 搜索主题名称
     if (theme.name.toLowerCase().includes(lowerQuery)) {
       return true
     }
-
+    
     // 搜索显示名称
     if (theme.displayName.toLowerCase().includes(lowerQuery)) {
       return true
     }
-
+    
     // 搜索描述
-    if (theme.description?.toLowerCase().includes(lowerQuery)) {
+    if (theme.description.toLowerCase().includes(lowerQuery)) {
       return true
     }
-
+    
     // 搜索标签
     if (theme.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))) {
       return true
     }
-
-    // 搜索类别
-    if (theme.category.toLowerCase().includes(lowerQuery)) {
-      return true
-    }
-
-    // 搜索节日类型
-    if (theme.festival?.toLowerCase().includes(lowerQuery)) {
-      return true
-    }
-
+    
     return false
   })
 }
 
 /**
- * 获取主题统计信息
- */
-export function getThemeStats() {
-  const stats = {
-    total: presetThemes.length,
-    byCategory: {} as Record<ThemeCategory, number>,
-    byFestival: {} as Record<FestivalType, number>,
-    withAnimations: 0,
-    withDecorations: 0,
-    withSounds: 0,
-  }
-
-  // 统计各类别主题数量
-  for (const category of Object.keys(themesByCategory) as ThemeCategory[]) {
-    stats.byCategory[category] = themesByCategory[category].length
-  }
-
-  // 统计各节日主题数量
-  for (const festival of Object.keys(festivalThemes) as FestivalType[]) {
-    if (festivalThemes[festival]) {
-      stats.byFestival[festival] = 1
-    }
-  }
-
-  // 统计功能特性
-  for (const theme of presetThemes) {
-    if (theme.animations.length > 0) {
-      stats.withAnimations++
-    }
-    if (theme.decorations.length > 0) {
-      stats.withDecorations++
-    }
-    if (
-      theme.resources.sounds
-      && Object.keys(theme.resources.sounds).length > 0
-    ) {
-      stats.withSounds++
-    }
-  }
-
-  return stats
-}
-
-/**
  * 验证主题配置
+ * 
+ * @param theme 主题配置
+ * @returns 验证结果
  */
-export function validateTheme(theme: ThemeConfig): {
-  valid: boolean
-  errors: string[]
-} {
+export function validateTheme(theme: any): { valid: boolean; errors: string[] } {
   const errors: string[] = []
-
+  
   // 检查必需字段
-  if (!theme.name) {
-    errors.push('Theme name is required')
+  if (!theme.name || typeof theme.name !== 'string') {
+    errors.push('主题名称是必需的且必须是字符串')
   }
-
-  if (!theme.displayName) {
-    errors.push('Theme displayName is required')
+  
+  if (!theme.displayName || typeof theme.displayName !== 'string') {
+    errors.push('显示名称是必需的且必须是字符串')
   }
-
-  if (!theme.version) {
-    errors.push('Theme version is required')
+  
+  if (!theme.description || typeof theme.description !== 'string') {
+    errors.push('描述是必需的且必须是字符串')
   }
-
-  if (!theme.colors) {
-    errors.push('Theme colors configuration is required')
+  
+  if (!theme.category || typeof theme.category !== 'string') {
+    errors.push('分类是必需的且必须是字符串')
   }
-
-  // 检查装饰元素
-  for (const decoration of theme.decorations) {
-    if (!decoration.id) {
-      errors.push(`Decoration missing id: ${decoration.name}`)
+  
+  if (!theme.version || typeof theme.version !== 'string') {
+    errors.push('版本是必需的且必须是字符串')
+  }
+  
+  if (!theme.author || typeof theme.author !== 'string') {
+    errors.push('作者是必需的且必须是字符串')
+  }
+  
+  // 检查颜色配置
+  if (!theme.colors || typeof theme.colors !== 'object') {
+    errors.push('颜色配置是必需的且必须是对象')
+  } else {
+    if (!theme.colors.name || typeof theme.colors.name !== 'string') {
+      errors.push('颜色配置名称是必需的')
     }
-
-    if (!decoration.src) {
-      errors.push(`Decoration missing src: ${decoration.id}`)
+    
+    if (!theme.colors.light || typeof theme.colors.light !== 'object') {
+      errors.push('浅色模式颜色配置是必需的')
+    }
+    
+    if (!theme.colors.dark || typeof theme.colors.dark !== 'object') {
+      errors.push('深色模式颜色配置是必需的')
     }
   }
-
+  
+  // 检查装饰配置
+  if (!Array.isArray(theme.decorations)) {
+    errors.push('装饰配置必须是数组')
+  }
+  
   // 检查动画配置
-  for (const animation of theme.animations) {
-    if (!animation.name) {
-      errors.push('Animation missing name')
+  if (!Array.isArray(theme.animations)) {
+    errors.push('动画配置必须是数组')
+  }
+  
+  // 检查资源配置
+  if (!theme.resources || typeof theme.resources !== 'object') {
+    errors.push('资源配置是必需的且必须是对象')
+  } else {
+    if (!theme.resources.images || typeof theme.resources.images !== 'object') {
+      errors.push('图片资源配置是必需的')
     }
-
-    if (!animation.duration || animation.duration <= 0) {
-      errors.push(`Invalid animation duration: ${animation.name}`)
+    
+    if (!theme.resources.icons || typeof theme.resources.icons !== 'object') {
+      errors.push('图标资源配置是必需的')
     }
   }
-
+  
   return {
     valid: errors.length === 0,
-    errors,
+    errors
   }
 }
 
 /**
- * 创建自定义主题
+ * 根据分类获取主题
+ * 
+ * @param category 分类名称
+ * @returns 该分类下的主题列表
  */
-export function createCustomTheme(
-  name: string,
-  displayName: string,
-  options: Partial<ThemeConfig> = {},
-): ThemeConfig {
-  return {
-    name,
-    displayName,
-    description: options.description || `自定义主题：${displayName}`,
-    category: 'custom',
-    version: '1.0.0',
-    author: 'User',
-    colors: options.colors || christmasTheme.colors, // 使用默认颜色
-    decorations: options.decorations || [],
-    animations: options.animations || [],
-    resources: options.resources || { images: {}, icons: {} },
-    tags: options.tags || ['custom'],
-    ...options,
-  }
+export function getThemesByCategory(category: string): FestivalThemeConfig[] {
+  return allThemes.filter(theme => theme.category === category)
 }
 
-// 导出默认主题（圣诞节主题）
-export const defaultTheme = christmasTheme
+/**
+ * 获取所有分类
+ * 
+ * @returns 分类列表
+ */
+export function getAllCategories(): string[] {
+  const categories = new Set(allThemes.map(theme => theme.category))
+  return Array.from(categories)
+}
 
-// 导出推荐主题列表
-export const recommendedThemes = [
-  christmasTheme,
-  springFestivalTheme,
-  halloweenTheme,
-]
+/**
+ * 根据标签获取主题
+ * 
+ * @param tag 标签名称
+ * @returns 包含该标签的主题列表
+ */
+export function getThemesByTag(tag: string): FestivalThemeConfig[] {
+  return allThemes.filter(theme => theme.tags?.includes(tag))
+}
+
+/**
+ * 获取所有标签
+ * 
+ * @returns 标签列表
+ */
+export function getAllTags(): string[] {
+  const tags = new Set<string>()
+  allThemes.forEach(theme => {
+    theme.tags?.forEach(tag => tags.add(tag))
+  })
+  return Array.from(tags)
+}
+
+/**
+ * 获取推荐主题
+ * 
+ * @param currentTheme 当前主题名称
+ * @returns 推荐主题列表
+ */
+export function getRecommendedThemes(currentTheme?: string): FestivalThemeConfig[] {
+  // 简单的推荐逻辑：排除当前主题，返回其他主题
+  return allThemes.filter(theme => theme.name !== currentTheme).slice(0, 3)
+}
+
+/**
+ * 检查主题是否存在
+ * 
+ * @param themeName 主题名称
+ * @returns 是否存在
+ */
+export function themeExists(themeName: string): boolean {
+  return themeMap.has(themeName)
+}
+
+/**
+ * 获取主题统计信息
+ * 
+ * @returns 统计信息
+ */
+export function getThemeStats() {
+  const categories = getAllCategories()
+  const tags = getAllTags()
+  
+  return {
+    totalThemes: allThemes.length,
+    categories: categories.length,
+    tags: tags.length,
+    categoriesBreakdown: categories.map(category => ({
+      name: category,
+      count: getThemesByCategory(category).length
+    })),
+    tagsBreakdown: tags.map(tag => ({
+      name: tag,
+      count: getThemesByTag(tag).length
+    }))
+  }
+}
