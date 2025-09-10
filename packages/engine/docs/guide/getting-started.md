@@ -7,7 +7,8 @@
 ### 环境要求
 
 - **Node.js** >= 16.0.0
-- **npm** >= 8.0.0 或 **pnpm** >= 7.0.0 (推荐)
+- **pnpm** >= 7.0.0 (推荐) 或 **npm** >= 8.0.0
+- **Vue** >= 3.3.0
 - **TypeScript** >= 4.9.0 (可选，但强烈推荐)
 
 ### 安装引擎
@@ -25,29 +26,7 @@ yarn add @ldesign/engine
 
 ## 🚀 第一个应用
 
-### 方式一：一步到位API（推荐）
-
-```typescript
-import { createAndMountApp } from '@ldesign/engine'
-import App from './App.vue'
-
-// 最简单的使用方式 - 一步完成应用创建、配置和挂载
-const engine = createAndMountApp(App, '#app', {
-  config: {
-    debug: true,
-    appName: 'My First App',
-    features: {
-      enableHotReload: true,
-      enableDevTools: true,
-      enablePerformanceMonitoring: true
-    }
-  }
-})
-
-console.log('应用已创建并挂载！', engine.getConfig('appName'))
-```
-
-### 方式二：分步骤API
+### 方式一：基础使用（推荐）
 
 ```typescript
 import { createEngine } from '@ldesign/engine'
@@ -57,57 +36,93 @@ import App from './App.vue'
 // 创建引擎实例
 const engine = createEngine({
   config: {
-    appName: 'My First App',
     debug: true,
-    features: {
-      enableHotReload: true,
-      enableDevTools: true,
-      enablePerformanceMonitoring: true
+    app: {
+      name: 'My First App',
+      version: '1.0.0'
     }
   }
 })
 
-// 创建Vue应用
+// 创建 Vue 应用并安装引擎
 const app = createApp(App)
-
-// 安装引擎
 engine.install(app)
-
-// 挂载应用
 app.mount('#app')
 
-console.log('引擎创建成功！', engine.getConfig('appName'))
+console.log('应用已创建并挂载！', engine.config.get('app.name'))
 ```
 
-### 方式三：简化API
+### 方式二：带插件和中间件
 
 ```typescript
-import { createApp } from '@ldesign/engine'
+import { createEngine } from '@ldesign/engine'
+import { createApp } from 'vue'
 import App from './App.vue'
 
-// 使用简化API，自动创建引擎和Vue应用
-const engine = createApp(App, {
+// 创建引擎实例，包含插件和中间件
+const engine = createEngine({
   config: {
     debug: true,
-    appName: 'My First Engine App',
-    version: '1.0.0',
+    app: {
+      name: 'My Advanced App',
+      version: '1.0.0'
+    }
   },
+  plugins: [
+    // 插件列表
+  ],
+  middleware: [
+    // 中间件列表
+  ]
 })
 
-// 手动挂载应用
-engine.mount('#app')
+// 创建 Vue 应用并安装引擎
+const app = createApp(App)
+engine.install(app)
+app.mount('#app')
 
-// 导出引擎实例供其他模块使用
-export { engine }
+console.log('引擎创建成功！', engine.config.get('app.name'))
 ```
 
-### 🎯 API对比
+### 方式三：使用 Vue Composition API
 
-| API | 使用场景 | 代码量 | 控制度 |
-|-----|---------|--------|--------|
-| `createAndMountApp` | 快速原型、简单应用 | 最少 | 低 |
-| `createApp` | 需要手动控制挂载时机 | 中等 | 中 |
-| `createEngine` | 需要完全控制Vue应用创建 | 最多 | 高 |
+```typescript
+// composables/useEngine.ts
+import { createEngine } from '@ldesign/engine'
+
+const engine = createEngine({
+  config: {
+    debug: true,
+    app: {
+      name: 'My Composable App',
+      version: '1.0.0'
+    }
+  }
+})
+
+export function useEngine() {
+  return engine
+}
+
+// main.ts
+import { createApp } from 'vue'
+import App from './App.vue'
+import { useEngine } from './composables/useEngine'
+
+const engine = useEngine()
+const app = createApp(App)
+
+engine.install(app)
+app.mount('#app')
+```
+
+### 🎯 使用场景对比
+
+| 方式 | 使用场景 | 优势 | 适用项目 |
+|-----|---------|------|---------|
+| 基础使用 | 简单应用、快速原型 | 代码简洁 | 小型项目 |
+| 带插件中间件 | 复杂应用、企业级项目 | 功能完整 | 中大型项目 |
+| Composition API | 需要在多处使用引擎 | 复用性强 | 模块化项目 |
 
 ### 传统 API（完全控制）
 
@@ -297,10 +312,15 @@ engine.plugins // 插件管理器
 engine.middleware // 中间件管理器
 engine.events // 事件管理器
 engine.state // 状态管理器
+engine.cache // 缓存管理器
 engine.directives // 指令管理器
 engine.errors // 错误管理器
 engine.logger // 日志系统
 engine.notifications // 通知管理器
+engine.security // 安全管理器
+engine.performance // 性能管理器
+engine.environment // 环境管理器
+engine.lifecycle // 生命周期管理器
 ```
 
 ### 配置系统
@@ -344,10 +364,10 @@ const user = computed(() => engine.state.get('user'))
 
 ### 事件系统
 
-全局事件系统支持发布订阅模式：
+全局事件系统支持发布订阅模式，并提供命名空间、防抖节流等高级功能：
 
 ```typescript
-// 监听事件
+// 基础事件监听
 engine.events.on('data:loaded', (data) => {
   console.log('数据加载完成:', data)
 })
@@ -360,9 +380,19 @@ engine.events.once('app:ready', () => {
   console.log('应用准备就绪')
 })
 
-// 取消监听
-const unsubscribe = engine.events.on('test', handler)
-unsubscribe() // 取消监听
+// 命名空间
+const userEvents = engine.events.namespace('user')
+userEvents.on('login', (user) => console.log('用户登录:', user))
+userEvents.emit('login', { id: 1, name: 'John' })
+
+// 防抖处理
+const searchDebouncer = engine.events.debounce('search', 300)
+searchDebouncer.emit('query text')
+
+// 条件监听
+engine.events.onWhen('order:paid', (data) => data.amount > 0, (data) => {
+  console.log('有效付款:', data)
+})
 ```
 
 ## 下一步

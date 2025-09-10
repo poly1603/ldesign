@@ -294,7 +294,7 @@ export class NotificationStyleManager {
   ): void {
     Object.entries(styles).forEach(([property, value]) => {
       if (value !== undefined) {
-        ;(element.style as any)[property] = value
+        element.style.setProperty(property, String(value))
       }
     })
   }
@@ -316,8 +316,8 @@ export class NotificationStyleManager {
   /**
    * 注册自定义主题
    */
-  registerTheme(name: string, colors: ThemeColors): void {
-    ;(this.themes as any)[name] = colors
+  registerTheme(name: NotificationTheme | string, colors: ThemeColors): void {
+    (this.themes as Record<string, ThemeColors>)[name] = colors
   }
 
   /**
@@ -345,7 +345,7 @@ export class NotificationStyleManager {
    */
   watchSystemTheme(callback: (theme: 'light' | 'dark') => void): () => void {
     if (typeof window === 'undefined') {
-      return () => {}
+      return () => { }
     }
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')

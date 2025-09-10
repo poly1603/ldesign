@@ -7,58 +7,60 @@ LDesign Engine 与 Vite 深度集成，提供了优化的开发体验和构建�
 ### 安装和设置
 
 ```bash
-# 创建 Vite 项目
+# 创建 Vite 项目（推荐使用最新版本）
 pnpm create vue@latest my-app
 cd my-app
 
 # 安装 LDesign Engine
 pnpm add @ldesign/engine
 
-# 安装开发依赖
-pnpm add -D @ldesign/vite-plugin-engine
+# 安装开发依赖（如果有专用插件）
+# pnpm add -D @ldesign/vite-plugin-engine
+
+# 确保 TypeScript 版本
+pnpm add -D typescript@^5.0.0
+
+# 确保 Vue 版本
+pnpm add vue@^3.3.0
 ```
 
 ### Vite 配置
 
 ```typescript
-import { resolve } from 'node:path'
-import { ldesignEngine } from '@ldesign/vite-plugin-engine'
-import vue from '@vitejs/plugin-vue'
 // vite.config.ts
+import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [
-    vue(),
-    ldesignEngine({
-      // 引擎配置
-      debug: true,
-      hotReload: true,
-
-      // 自动导入
-      autoImport: {
-        engine: true,
-        composables: true,
-        components: true,
-      },
-
-      // 代码生成
-      codegen: {
-        plugins: true,
-        middleware: true,
-        types: true,
-      },
+    vue({
+      // Vue 3.3+ 特性支持
+      script: {
+        defineModel: true,
+        propsDestructure: true
+      }
     }),
+    // 如果有专用插件，可以添加
+    // ldesignEngine({
+    //   debug: true,
+    //   hotReload: true,
+    // }),
   ],
 
   // 路径别名
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@engine': resolve(__dirname, 'src/engine'),
-      '@plugins': resolve(__dirname, 'src/plugins'),
-      '@middleware': resolve(__dirname, 'src/middleware'),
+      '@components': resolve(__dirname, 'src/components'),
+      '@utils': resolve(__dirname, 'src/utils'),
+      '@types': resolve(__dirname, 'src/types'),
     },
+  },
+
+  // TypeScript 配置
+  esbuild: {
+    target: 'es2020'
   },
 
   // 开发服务器配置

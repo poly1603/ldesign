@@ -395,7 +395,7 @@ export const errorHandlers = {
   },
 
   // 通知错误处理器
-  notification: (notificationManager: any) => (errorInfo: ErrorInfo) => {
+  notification: (notificationManager: { show: (options: { type: string; title: string; message: string; duration?: number }) => void }) => (errorInfo: ErrorInfo) => {
     if (errorInfo.level === 'error') {
       notificationManager.show({
         type: 'error',
@@ -409,53 +409,53 @@ export const errorHandlers = {
   // 远程上报错误处理器
   remote:
     (config: { endpoint: string; apiKey?: string }) =>
-    async (errorInfo: ErrorInfo) => {
-      try {
-        const payload = {
-          ...errorInfo,
-          userAgent: navigator.userAgent,
-          url: window.location.href,
-          timestamp: new Date(errorInfo.timestamp).toISOString(),
-        }
+      async (errorInfo: ErrorInfo) => {
+        try {
+          const payload = {
+            ...errorInfo,
+            userAgent: navigator.userAgent,
+            url: window.location.href,
+            timestamp: new Date(errorInfo.timestamp).toISOString(),
+          }
 
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-        }
+          const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+          }
 
-        if (config.apiKey) {
-          headers.Authorization = `Bearer ${config.apiKey}`
-        }
+          if (config.apiKey) {
+            headers.Authorization = `Bearer ${config.apiKey}`
+          }
 
-        await fetch(config.endpoint, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-        })
-      } catch (error) {
-        console.error('Failed to report error to remote service:', error)
-      }
-    },
+          await fetch(config.endpoint, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload),
+          })
+        } catch (error) {
+          console.error('Failed to report error to remote service:', error)
+        }
+      },
 
   // 本地存储错误处理器
   localStorage:
     (key = 'engine-errors') =>
-    (errorInfo: ErrorInfo) => {
-      try {
-        const stored = localStorage.getItem(key)
-        const errors = stored ? JSON.parse(stored) : []
+      (errorInfo: ErrorInfo) => {
+        try {
+          const stored = localStorage.getItem(key)
+          const errors = stored ? JSON.parse(stored) : []
 
-        errors.unshift(errorInfo)
+          errors.unshift(errorInfo)
 
-        // 限制存储的错误数量
-        if (errors.length > 50) {
-          errors.splice(50)
+          // 限制存储的错误数量
+          if (errors.length > 50) {
+            errors.splice(50)
+          }
+
+          localStorage.setItem(key, JSON.stringify(errors))
+        } catch (error) {
+          console.error('Failed to store error in localStorage:', error)
         }
-
-        localStorage.setItem(key, JSON.stringify(errors))
-      } catch (error) {
-        console.error('Failed to store error in localStorage:', error)
-      }
-    },
+      },
 }
 
 // 错误边界组件工厂
@@ -469,8 +469,8 @@ export function createErrorBoundary(errorManager: ErrorManager) {
       }
     },
     errorCaptured(error: Error, component: Component, info: string) {
-      ;(this as any).hasError = true
-      ;(this as any).error = error
+      ; (this as unknown as { hasError: boolean; error: Error | null }).hasError = true
+        ; (this as unknown as { hasError: boolean; error: Error | null }).error = error
 
       // 捕获错误到错误管理器
       errorManager.captureError(error, component, info)
@@ -479,7 +479,7 @@ export function createErrorBoundary(errorManager: ErrorManager) {
       return false
     },
     render() {
-      const self = this as any
+      const self = this as unknown as { hasError: boolean; error: Error | null; $slots: { fallback?: (arg: { error: Error | null }) => unknown; default?: () => unknown } }
       if (self.hasError) {
         return (
           self.$slots.fallback?.({ error: self.error }) ||

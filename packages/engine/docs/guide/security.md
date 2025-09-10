@@ -10,8 +10,12 @@ Vue3 Engine 提供了完整的安全管理功能，帮助开发者防范常见�
 ```typescript
 // 清理用户输入
 const userInput = '<script>alert("XSS")</script>Hello World'
-const cleanInput = engine.security.sanitizeInput(userInput)
+const cleanInput = engine.security.sanitize(userInput)
 console.log(cleanInput) // 'Hello World'
+
+// 验证输入安全性
+const isValid = engine.security.validateInput(userInput, 'text')
+console.log(isValid) // false (包含脚本)
 ```
 
 ### HTML 清理
@@ -19,17 +23,25 @@ console.log(cleanInput) // 'Hello World'
 ```typescript
 // 清理 HTML 内容
 const htmlContent = '<div>Safe content</div><script>alert("XSS")</script>'
-const cleanHtml = engine.security.sanitizeHtml(htmlContent)
-console.log(cleanHtml) // '<div>Safe content</div>'
+const result = engine.security.sanitizeHTML(htmlContent)
+console.log(result.sanitized) // '<div>Safe content</div>'
+console.log(result.safe) // false
+console.log(result.threats) // ['script tag detected']
 ```
 
-### CSS 清理
+### CSRF 防护
 
 ```typescript
-// 清理 CSS 内容
-const cssContent = 'body { color: red; } .malicious { background: url(javascript:alert(1)); }'
-const cleanCss = engine.security.sanitizeCss(cssContent)
-console.log(cleanCss) // 'body { color: red; }'
+// 生成 CSRF 令牌
+const csrfToken = engine.security.generateCSRFToken()
+console.log(csrfToken.token) // 随机生成的令牌
+
+// 验证 CSRF 令牌
+const isValidToken = engine.security.validateCSRFToken(csrfToken.token)
+console.log(isValidToken) // true
+
+// 获取当前 CSRF 令牌
+const currentToken = engine.security.getCSRFToken()
 ```
 
 ### URL 验证
@@ -39,8 +51,8 @@ console.log(cleanCss) // 'body { color: red; }'
 const url1 = 'https://example.com'
 const url2 = 'javascript:alert("XSS")'
 
-console.log(engine.security.validateUrl(url1)) // true
-console.log(engine.security.validateUrl(url2)) // false
+console.log(engine.security.validateInput(url1, 'url')) // true
+console.log(engine.security.validateInput(url2, 'url')) // false
 ```
 
 ## 高级功能
@@ -48,25 +60,37 @@ console.log(engine.security.validateUrl(url2)) // false
 ### 内容安全策略 (CSP)
 
 ```typescript
-// 设置 CSP 策略
-engine.security.setCSP({
-  'default-src': ['\'self\''],
-  'script-src': ['\'self\'', '\'unsafe-inline\''],
-  'style-src': ['\'self\'', '\'unsafe-inline\''],
-  'img-src': ['\'self\'', 'data:', 'https:'],
+// 更新安全配置（包含 CSP）
+engine.security.updateConfig({
+  csp: {
+    enabled: true,
+    directives: {
+      'default-src': ['\'self\''],
+      'script-src': ['\'self\'', '\'unsafe-inline\''],
+      'style-src': ['\'self\'', '\'unsafe-inline\''],
+      'img-src': ['\'self\'', 'data:', 'https:'],
+    },
+    reportOnly: false
+  }
 })
+
+// 生成 CSP 头
+const cspHeader = engine.security.generateCSPHeader()
+console.log(cspHeader)
 ```
 
 ### 安全头设置
 
 ```typescript
-// 设置安全响应头
-engine.security.setSecurityHeaders({
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
-  'X-XSS-Protection': '1; mode=block',
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-})
+// 获取安全响应头
+const securityHeaders = engine.security.getSecurityHeaders()
+console.log(securityHeaders)
+// {
+//   'X-Content-Type-Options': 'nosniff',
+//   'X-Frame-Options': 'DENY',
+//   'X-XSS-Protection': '1; mode=block',
+//   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+// }
 ```
 
 ### 输入验证规则

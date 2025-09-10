@@ -10,7 +10,7 @@ import type {
 import { getNestedValue, isObject, setNestedValue } from '../utils'
 
 export class ConfigManagerImpl implements ConfigManager {
-  private config: Record<string, any> = {}
+  private config: Record<string, unknown> = {}
   private schema?: ConfigSchema
   private watchers = new Map<string, ConfigWatcher[]>()
   private snapshots: ConfigSnapshot[] = []
@@ -19,7 +19,7 @@ export class ConfigManagerImpl implements ConfigManager {
   private maxSnapshots = 10
   private logger?: Logger
 
-  constructor(initialConfig: Record<string, any> = {}, logger?: Logger) {
+  constructor(initialConfig: Record<string, unknown> = {}, logger?: Logger) {
     this.config = { ...initialConfig }
     this.logger = logger
     this.environment = this.detectEnvironment()
@@ -34,12 +34,12 @@ export class ConfigManagerImpl implements ConfigManager {
   }
 
   // 基础操作
-  get<T = any>(path: string, defaultValue?: T): T {
+  get<T = unknown>(path: string, defaultValue?: T): T {
     const value = getNestedValue(this.config, path, defaultValue) as T
     return value
   }
 
-  set(path: string, value: any): void {
+  set(path: string, value: unknown): void {
     const oldValue = this.get(path)
 
     // 验证新值
@@ -85,7 +85,7 @@ export class ConfigManagerImpl implements ConfigManager {
   }
 
   // 配置合并
-  merge(newConfig: Partial<Record<string, any>>): void {
+  merge(newConfig: Partial<Record<string, unknown>>): void {
     const oldConfig = { ...this.config }
     this.deepMerge(this.config, newConfig)
 
@@ -281,7 +281,7 @@ export class ConfigManagerImpl implements ConfigManager {
   restoreSnapshot(snapshot: ConfigSnapshot): void {
     const oldConfig = { ...this.config }
     this.config = JSON.parse(JSON.stringify(snapshot.config))
-    this.environment = snapshot.environment as any
+    this.environment = snapshot.environment
 
     // 触发所有监听器
     this.triggerMergeWatchers(oldConfig, this.config)
@@ -385,7 +385,7 @@ export class ConfigManagerImpl implements ConfigManager {
       // 在测试环境中，vitest会设置NODE_ENV为test
       if (
         typeof globalThis !== 'undefined' &&
-        (globalThis as any).__vitest__ !== undefined
+        (globalThis as Record<string, unknown>).__vitest__ !== undefined
       ) {
         return 'test'
       }
@@ -396,7 +396,7 @@ export class ConfigManagerImpl implements ConfigManager {
     }
   }
 
-  private triggerWatchers(path: string, newValue: any, oldValue: any): void {
+  private triggerWatchers(path: string, newValue: unknown, oldValue: unknown): void {
     const callbacks = this.watchers.get(path)
     if (callbacks) {
       callbacks.forEach(callback => {
@@ -434,8 +434,8 @@ export class ConfigManagerImpl implements ConfigManager {
   }
 
   private triggerMergeWatchers(
-    oldConfig: Record<string, any>,
-    newConfig: Record<string, any>
+    oldConfig: Record<string, unknown>,
+    newConfig: Record<string, unknown>
   ): void {
     const allKeys = new Set([
       ...this.getAllKeysFromObject(oldConfig),
@@ -452,7 +452,7 @@ export class ConfigManagerImpl implements ConfigManager {
     }
   }
 
-  private deleteNestedValue(obj: any, path: string): void {
+  private deleteNestedValue(obj: Record<string, unknown>, path: string): void {
     const keys = path.split('.')
     let current = obj
 
@@ -467,13 +467,16 @@ export class ConfigManagerImpl implements ConfigManager {
     delete current[keys[keys.length - 1]]
   }
 
-  private deepMerge(target: any, source: any): void {
+  private deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): void {
     for (const key in source) {
       if (source[key] && isObject(source[key])) {
         if (!target[key] || !isObject(target[key])) {
           target[key] = {}
         }
-        this.deepMerge(target[key], source[key])
+        this.deepMerge(
+          target[key] as Record<string, unknown>,
+          source[key] as Record<string, unknown>
+        )
       } else {
         target[key] = source[key]
       }
@@ -481,7 +484,7 @@ export class ConfigManagerImpl implements ConfigManager {
   }
 
   private validateConfig(
-    config: any,
+    config: Record<string, unknown>,
     schema: ConfigSchema,
     basePath = ''
   ): ValidationResult {
@@ -536,7 +539,7 @@ export class ConfigManagerImpl implements ConfigManager {
     return { valid: errors.length === 0, errors, warnings }
   }
 
-  private validatePath(path: string, value: any): ValidationResult {
+  private validatePath(path: string, value: unknown): ValidationResult {
     if (!this.schema) {
       return { valid: true, errors: [], warnings: [] }
     }
@@ -585,7 +588,7 @@ export class ConfigManagerImpl implements ConfigManager {
     return { valid: true, errors: [], warnings: [] }
   }
 
-  private validateType(value: any, expectedType: string): boolean {
+  private validateType(value: unknown, expectedType: string): boolean {
     switch (expectedType) {
       case 'string':
         return typeof value === 'string'
@@ -602,7 +605,7 @@ export class ConfigManagerImpl implements ConfigManager {
     }
   }
 
-  private getDefaultValue(path: string): any {
+  private getDefaultValue(path: string): unknown {
     if (!this.schema) return undefined
 
     const pathParts = path.split('.')
@@ -629,16 +632,16 @@ export class ConfigManagerImpl implements ConfigManager {
     return undefined
   }
 
-  private getDefaultConfig(): Record<string, any> {
+  private getDefaultConfig(): Record<string, unknown> {
     if (!this.schema) return {}
 
-    const config: Record<string, any> = {}
+    const config: Record<string, unknown> = {}
     this.buildDefaultConfig(config, this.schema)
     return config
   }
 
   private buildDefaultConfig(
-    config: Record<string, any>,
+    config: Record<string, unknown>,
     schema: ConfigSchema,
     basePath = ''
   ): void {
@@ -659,7 +662,7 @@ export class ConfigManagerImpl implements ConfigManager {
     return this.getAllKeysFromObject(this.config)
   }
 
-  private getAllKeysFromObject(obj: any, prefix = ''): string[] {
+  private getAllKeysFromObject(obj: Record<string, unknown>, prefix = ''): string[] {
     const keys: string[] = []
 
     for (const key in obj) {
@@ -674,7 +677,7 @@ export class ConfigManagerImpl implements ConfigManager {
     return keys
   }
 
-  private toYAML(obj: any, indent = 0): string {
+  private toYAML(obj: Record<string, unknown> | Array<unknown>, indent = 0): string {
     const spaces = '  '.repeat(indent)
     let result = ''
 
@@ -694,10 +697,10 @@ export class ConfigManagerImpl implements ConfigManager {
     return result
   }
 
-  private fromYAML(yamlString: string): any {
+  private fromYAML(yamlString: string): Record<string, unknown> {
     // 简单的YAML解析实现（实际项目中应使用专业的YAML库）
     const lines = yamlString.split('\n').filter(line => line.trim())
-    const result: any = {}
+    const result: Record<string, unknown> = {}
 
     // 这里只是一个简单的实现，实际应该使用js-yaml等库
     lines.forEach(line => {
@@ -727,18 +730,18 @@ export class NamespacedConfigManager implements ConfigManager {
   constructor(
     private parent: ConfigManager,
     private namespaceName: string
-  ) {}
+  ) { }
 
   private getKey(key: string): string {
     return `${this.namespaceName}.${key}`
   }
 
   // 基础操作
-  get<T = any>(key: string, defaultValue?: T): T {
+  get<T = unknown>(key: string, defaultValue?: T): T {
     return this.parent.get(this.getKey(key), defaultValue) as T
   }
 
-  set(key: string, value: any): void {
+  set(key: string, value: unknown): void {
     this.parent.set(this.getKey(key), value)
   }
 
@@ -756,8 +759,8 @@ export class NamespacedConfigManager implements ConfigManager {
   }
 
   // 配置合并
-  merge(config: Partial<Record<string, any>>): void {
-    const namespacedConfig: Record<string, any> = {}
+  merge(config: Partial<Record<string, unknown>>): void {
+    const namespacedConfig: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(config)) {
       namespacedConfig[this.getKey(key)] = value
     }
@@ -861,7 +864,7 @@ export class NamespacedConfigManager implements ConfigManager {
 
 // 工厂函数
 export function createConfigManager(
-  initialConfig?: Record<string, any>,
+  initialConfig?: Record<string, unknown>,
   logger?: Logger
 ): ConfigManager {
   return new ConfigManagerImpl(initialConfig, logger)

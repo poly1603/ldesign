@@ -1,9 +1,8 @@
 import type {
-  EngineEventMap,
   EventHandler,
   EventManager,
-  Logger,
   EventMap,
+  Logger,
 } from '../types'
 
 interface EventListener {
@@ -12,14 +11,38 @@ interface EventListener {
   priority: number
 }
 
+// 事件对象池，用于减少内存分配
+class EventObjectPool {
+  private pool: EventListener[] = []
+  private maxSize = 100
+
+  get(): EventListener {
+    return this.pool.pop() || { handler: () => { }, once: false, priority: 0 }
+  }
+
+  release(obj: EventListener): void {
+    if (this.pool.length < this.maxSize) {
+      // 重置对象状态
+      obj.handler = () => { }
+      obj.once = false
+      obj.priority = 0
+      this.pool.push(obj)
+    }
+  }
+
+  clear(): void {
+    this.pool.length = 0
+  }
+}
+
 export class EventManagerImpl<TEventMap extends EventMap = EventMap>
-  implements EventManager<TEventMap>
-{
+  implements EventManager<TEventMap> {
   private events: Map<string, EventListener[]> = new Map()
   private maxListeners = 50
   private sortedListenersCache: Map<string, EventListener[]> = new Map()
   private eventStats: Map<string, { count: number; lastEmit: number }> =
     new Map()
+  private eventPool = new EventObjectPool() // 事件对象池
 
   constructor(private logger?: Logger) {
     // 定期清理统计数据，防止内存泄漏
@@ -38,7 +61,7 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
   ): void
   on(event: string, handler: EventHandler): void
   on(event: string, handler: EventHandler, priority: number): void
-  on(event: any, handler: any, priority = 0): void {
+  on(event: unknown, handler: unknown, priority = 0): void {
     this.addEventListener(String(event), handler as EventHandler, false, priority)
   }
 
@@ -48,7 +71,7 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
     handler?: EventHandler<TEventMap[K]>
   ): void
   off(event: string, handler?: EventHandler): void
-  off(event: any, handler?: any): void {
+  off(event: unknown, handler?: unknown): void {
     const key = String(event)
     if (!this.events.has(key)) {
       return
@@ -79,7 +102,7 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
   // 重载：类型安全事件 + 通用字符串事件
   emit<K extends keyof TEventMap>(event: K, data: TEventMap[K]): void
   emit(event: string, ...args: unknown[]): void
-  emit(event: any, ...args: any[]): void {
+  emit(event: unknown, ...args: unknown[]): void {
     const key = String(event)
     // 更新事件统计
     this.updateEventStats(key)
@@ -103,7 +126,7 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
 
     for (const listener of listenersToExecute) {
       try {
-        listener.handler(args[0] as any)
+        listener.handler(args[0] as unknown)
       } catch (error) {
         if (this.logger) {
           this.logger.error(`Error in event handler for "${key}":`, error)
@@ -136,7 +159,7 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
   ): void
   once(event: string, handler: EventHandler): void
   once(event: string, handler: EventHandler, priority: number): void
-  once(event: any, handler: any, priority = 0): void {
+  once(event: unknown, handler: unknown, priority = 0): void {
     this.addEventListener(String(event), handler as EventHandler, true, priority)
   }
 
@@ -156,16 +179,18 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
     if (listeners.length >= this.maxListeners) {
       console.warn(
         `MaxListenersExceededWarning: Possible EventManager memory leak detected. ` +
-          `${listeners.length + 1} "${event}" listeners added. ` +
-          `Use setMaxListeners() to increase limit.`
+        `${listeners.length + 1} "${event}" listeners added. ` +
+        `Use setMaxListeners() to increase limit.`
       )
     }
 
-    listeners.push({
-      handler,
-      once,
-      priority,
-    })
+    // 使用对象池来减少内存分配
+    const listener = this.eventPool.get()
+    listener.handler = handler
+    listener.once = once
+    listener.priority = priority
+
+    listeners.push(listener)
 
     // 清除该事件的缓存
     this.sortedListenersCache.delete(event)
@@ -242,8 +267,15 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
     // 使用 Set 提高查找性能
     const removeSet = new Set(listenersToRemove.map(l => l.handler))
 
-    // 过滤掉需要移除的监听器
-    const filteredListeners = listeners.filter(l => !removeSet.has(l.handler))
+    // 过滤掉需要移除的监听器，并释放到对象池
+    const filteredListeners = listeners.filter(l => {
+      if (removeSet.has(l.handler)) {
+        // 释放监听器对象到池中
+        this.eventPool.release(l)
+        return false
+      }
+      return true
+    })
 
     if (filteredListeners.length === 0) {
       this.events.delete(event)
@@ -296,6 +328,64 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
     return new EventNamespace(this, ns)
   }
 
+  /**
+   * 新增：批量事件操作
+   * 一次性添加多个事件监听器
+   */
+  addListeners(listeners: Array<{
+    event: string
+    handler: EventHandler
+    options?: { once?: boolean; priority?: number }
+  }>): void {
+    for (const { event, handler, options } of listeners) {
+      this.addEventListener(event, handler, !!options?.once, options?.priority ?? 0)
+    }
+  }
+
+  /**
+   * 新增：事件管道
+   * 支持事件的链式处理
+   */
+  pipe(sourceEvent: string, targetEvent: string, transform?: (data: unknown) => unknown): void {
+    this.on(sourceEvent, (data) => {
+      const transformedData = transform ? transform(data) : data
+      this.emit(targetEvent, transformedData)
+    })
+  }
+
+  /**
+   * 新增：条件事件监听
+   * 只有满足条件时才触发监听器
+   */
+  onWhen(
+    event: string,
+    condition: (data: unknown) => boolean,
+    handler: EventHandler,
+    options?: { once?: boolean; priority?: number }
+  ): void {
+    this.addEventListener(event, (data) => {
+      if (condition(data)) {
+        handler(data)
+      }
+    }, !!options?.once, options?.priority ?? 0)
+  }
+
+  /**
+   * 新增：事件防抖
+   * 在指定时间内只触发一次事件
+   */
+  debounce(event: string, delay: number = 300): EventDebouncer {
+    return new EventDebouncer(this, event, delay)
+  }
+
+  /**
+   * 新增：事件节流
+   * 在指定时间间隔内最多触发一次事件
+   */
+  throttle(event: string, interval: number = 300): EventThrottler {
+    return new EventThrottler(this, event, interval)
+  }
+
   getStats(): {
     totalEvents: number
     totalListeners: number
@@ -317,36 +407,7 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
   }
 }
 
-export class EventNamespace {
-  constructor(
-    private eventManager: EventManager,
-    private namespace: string
-  ) {}
 
-  private getEventName(event: string): string {
-    return `${this.namespace}:${event}`
-  }
-
-  on(event: string, handler: EventHandler): void {
-    this.eventManager.on(this.getEventName(event), handler)
-  }
-
-  off(event: string, handler?: EventHandler): void {
-    this.eventManager.off(this.getEventName(event), handler)
-  }
-
-  emit(event: string, ...args: unknown[]): void {
-    this.eventManager.emit(this.getEventName(event), ...args)
-  }
-
-  once(event: string, handler: EventHandler): void {
-    this.eventManager.once(this.getEventName(event), handler)
-  }
-}
-
-export function createEventManager(logger?: Logger): EventManager<EngineEventMap> {
-  return new EventManagerImpl<EngineEventMap>(logger)
-}
 
 export const ENGINE_EVENTS = {
   CREATED: 'engine:created',
@@ -376,3 +437,138 @@ export const ENGINE_EVENTS = {
 
   LOCALE_CHANGED: 'locale:changed',
 } as const
+
+/**
+ * 事件命名空间类 - 功能增强
+ * 提供命名空间隔离的事件管理
+ */
+export class EventNamespace {
+  constructor(
+    private eventManager: EventManagerImpl,
+    private namespace: string
+  ) { }
+
+  private getNamespacedEvent(event: string): string {
+    return `${this.namespace}:${event}`
+  }
+
+  on(event: string, handler: EventHandler, priority?: number): void {
+    this.eventManager.on(this.getNamespacedEvent(event), handler, priority ?? 0)
+  }
+
+  once(event: string, handler: EventHandler, priority?: number): void {
+    this.eventManager.once(this.getNamespacedEvent(event), handler, priority ?? 0)
+  }
+
+  emit(event: string, data?: unknown): void {
+    this.eventManager.emit(this.getNamespacedEvent(event), data)
+  }
+
+  off(event: string, handler?: EventHandler): void {
+    this.eventManager.off(this.getNamespacedEvent(event), handler)
+  }
+
+  clear(): void {
+    // 清理该命名空间下的所有事件
+    const namespacedPrefix = `${this.namespace}:`
+    const eventsToRemove: string[] = []
+
+    for (const event of this.eventManager.eventNames()) {
+      if (event.startsWith(namespacedPrefix)) {
+        eventsToRemove.push(event)
+      }
+    }
+
+    for (const event of eventsToRemove) {
+      this.eventManager.removeAllListeners(event)
+    }
+  }
+}
+
+/**
+ * 事件防抖器类 - 功能增强
+ */
+export class EventDebouncer {
+  private timeoutId?: NodeJS.Timeout
+  private lastArgs?: unknown
+
+  constructor(
+    private eventManager: EventManagerImpl,
+    private event: string,
+    private delay: number
+  ) { }
+
+  emit(data?: unknown): void {
+    this.lastArgs = data
+
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId)
+    }
+
+    this.timeoutId = setTimeout(() => {
+      this.eventManager.emit(this.event, this.lastArgs)
+      this.timeoutId = undefined
+    }, this.delay)
+  }
+
+  cancel(): void {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId)
+      this.timeoutId = undefined
+    }
+  }
+
+  flush(): void {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId)
+      this.eventManager.emit(this.event, this.lastArgs)
+      this.timeoutId = undefined
+    }
+  }
+}
+
+/**
+ * 事件节流器类 - 功能增强
+ */
+export class EventThrottler {
+  private lastEmitTime = 0
+  private timeoutId?: NodeJS.Timeout
+  private lastArgs?: unknown
+
+  constructor(
+    private eventManager: EventManagerImpl,
+    private event: string,
+    private interval: number
+  ) { }
+
+  emit(data?: unknown): void {
+    const now = Date.now()
+    this.lastArgs = data
+
+    if (now - this.lastEmitTime >= this.interval) {
+      this.eventManager.emit(this.event, data)
+      this.lastEmitTime = now
+    } else if (!this.timeoutId) {
+      // 设置延迟触发，确保最后一次调用会被执行
+      const remainingTime = this.interval - (now - this.lastEmitTime)
+      this.timeoutId = setTimeout(() => {
+        this.eventManager.emit(this.event, this.lastArgs)
+        this.lastEmitTime = Date.now()
+        this.timeoutId = undefined
+      }, remainingTime)
+    }
+  }
+
+  cancel(): void {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId)
+      this.timeoutId = undefined
+    }
+  }
+}
+
+export function createEventManager<TEventMap extends EventMap = EventMap>(
+  logger?: Logger
+): EventManager<TEventMap> {
+  return new EventManagerImpl<TEventMap>(logger)
+}

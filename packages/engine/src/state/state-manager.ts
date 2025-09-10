@@ -1,15 +1,15 @@
 import type { Logger, StateManager } from '../types'
 import { reactive } from 'vue'
 
-type WatchCallback<T = any> = (newValue: T, oldValue: T) => void
+type WatchCallback = (newValue: unknown, oldValue: unknown) => void
 
 export class StateManagerImpl implements StateManager {
-  private state = reactive<Record<string, any>>({})
+  private state = reactive<Record<string, unknown>>({})
   private watchers = new Map<string, WatchCallback[]>()
   private changeHistory: Array<{
     path: string
-    oldValue: any
-    newValue: any
+    oldValue: unknown
+    newValue: unknown
     timestamp: number
   }> = []
 
@@ -20,11 +20,11 @@ export class StateManagerImpl implements StateManager {
     // logger参数保留用于未来扩展
   }
 
-  get<T = any>(key: string): T | undefined {
+  get<T = unknown>(key: string): T | undefined {
     return this.getNestedValue(this.state, key) as T
   }
 
-  set<T = any>(key: string, value: T): void {
+  set<T = unknown>(key: string, value: T): void {
     try {
       const oldValue = this.getNestedValue(this.state, key)
 
@@ -56,7 +56,7 @@ export class StateManagerImpl implements StateManager {
     })
   }
 
-  watch<T = any>(
+  watch<T = unknown>(
     key: string,
     callback: (newValue: T, oldValue: T) => void
   ): () => void {
@@ -64,13 +64,13 @@ export class StateManagerImpl implements StateManager {
     if (!this.watchers.has(key)) {
       this.watchers.set(key, [])
     }
-    this.watchers.get(key)!.push(callback)
+    this.watchers.get(key)!.push(callback as WatchCallback)
 
     // 返回取消监听函数
     return () => {
       const callbacks = this.watchers.get(key)
       if (callbacks) {
-        const index = callbacks.indexOf(callback)
+        const index = callbacks.indexOf(callback as unknown as WatchCallback)
         if (index > -1) {
           callbacks.splice(index, 1)
         }
@@ -81,7 +81,7 @@ export class StateManagerImpl implements StateManager {
     }
   }
 
-  private triggerWatchers<T = any>(
+  private triggerWatchers<T = unknown>(
     key: string,
     newValue: T,
     oldValue: T
@@ -99,58 +99,59 @@ export class StateManagerImpl implements StateManager {
   }
 
   // 获取嵌套值
-  private getNestedValue(obj: any, path: string): any {
+  private getNestedValue(obj: Record<string, unknown>, path: string): unknown {
     const keys = path.split('.')
-    let current = obj
+    let current: unknown = obj
 
     for (const key of keys) {
-      if (current === null || current === undefined) {
+      if (current === null || current === undefined || typeof current !== 'object') {
         return undefined
       }
-      current = current[key]
+      const rec = current as Record<string, unknown>
+      current = rec[key]
     }
 
     return current
   }
 
   // 设置嵌套值
-  private setNestedValue(obj: any, path: string, value: any): void {
+  private setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
     const keys = path.split('.')
-    let current = obj
+    let current: Record<string, unknown> = obj
 
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i]
-      if (
-        !(key in current) ||
-        typeof current[key] !== 'object' ||
-        current[key] === null
-      ) {
+      const next = current[key]
+      if (typeof next !== 'object' || next === null || Array.isArray(next)) {
         current[key] = {}
       }
-      current = current[key]
+      current = current[key] as Record<string, unknown>
     }
 
     current[keys[keys.length - 1]] = value
   }
 
   // 删除嵌套值
-  private deleteNestedValue(obj: any, path: string): void {
+  private deleteNestedValue(obj: Record<string, unknown>, path: string): void {
     const keys = path.split('.')
-    let current = obj
+    let current: unknown = obj
 
     for (let i = 0; i < keys.length - 1; i++) {
-      const key = keys[i]
-      if (
-        !(key in current) ||
-        typeof current[key] !== 'object' ||
-        current[key] === null
-      ) {
-        return // 路径不存在
+      if (current === null || current === undefined || typeof current !== 'object') {
+        return
       }
-      current = current[key]
+      const rec = current as Record<string, unknown>
+      const key = keys[i]
+      const next = rec[key]
+      if (typeof next !== 'object' || next === null) {
+        return
+      }
+      current = next
     }
 
-    delete current[keys[keys.length - 1]]
+    if (current && typeof current === 'object') {
+      delete (current as Record<string, unknown>)[keys[keys.length - 1]]
+    }
   }
 
   // 检查键是否存在
@@ -164,19 +165,16 @@ export class StateManagerImpl implements StateManager {
   }
 
   // 递归获取所有键
-  private getAllKeys(obj: any, prefix = ''): string[] {
+  private getAllKeys(obj: Record<string, unknown>, prefix = ''): string[] {
     const keys: string[] = []
 
-    for (const key in obj) {
+    for (const key of Object.keys(obj)) {
       const fullKey = prefix ? `${prefix}.${key}` : key
       keys.push(fullKey)
 
-      if (
-        typeof obj[key] === 'object' &&
-        obj[key] !== null &&
-        !Array.isArray(obj[key])
-      ) {
-        keys.push(...this.getAllKeys(obj[key], fullKey))
+      const val = obj[key]
+      if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
+        keys.push(...this.getAllKeys(val as Record<string, unknown>, fullKey))
       }
     }
 
@@ -184,35 +182,33 @@ export class StateManagerImpl implements StateManager {
   }
 
   // 获取状态快照
-  getSnapshot(): Record<string, any> {
+  getSnapshot(): Record<string, unknown> {
     return JSON.parse(JSON.stringify(this.state))
   }
 
   // 从快照恢复状态
-  restoreFromSnapshot(snapshot: Record<string, any>): void {
+  restoreFromSnapshot(snapshot: Record<string, unknown>): void {
     this.clear()
     Object.assign(this.state, snapshot)
   }
 
   // 合并状态
-  merge(newState: Record<string, any>): void {
+  merge(newState: Record<string, unknown>): void {
     this.deepMerge(this.state, newState)
   }
 
   // 深度合并对象
-  private deepMerge(target: any, source: any): void {
-    for (const key in source) {
-      if (
-        source[key] &&
-        typeof source[key] === 'object' &&
-        !Array.isArray(source[key])
-      ) {
-        if (!target[key] || typeof target[key] !== 'object') {
+  private deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): void {
+    for (const key of Object.keys(source)) {
+      const sVal = source[key]
+      if (sVal && typeof sVal === 'object' && !Array.isArray(sVal)) {
+        const tVal = target[key]
+        if (!tVal || typeof tVal !== 'object' || Array.isArray(tVal)) {
           target[key] = {}
         }
-        this.deepMerge(target[key], source[key])
+        this.deepMerge(target[key] as Record<string, unknown>, sVal as Record<string, unknown>)
       } else {
-        target[key] = source[key]
+        target[key] = sVal
       }
     }
   }
@@ -243,7 +239,7 @@ export class StateManagerImpl implements StateManager {
   }
 
   // 记录变更历史
-  private recordChange(path: string, oldValue: any, newValue: any): void {
+  private recordChange(path: string, oldValue: unknown, newValue: unknown): void {
     this.changeHistory.unshift({
       path,
       oldValue,
@@ -280,7 +276,7 @@ export class StateManagerImpl implements StateManager {
   // 获取变更历史
   getChangeHistory(
     limit?: number
-  ): Array<{ path: string; oldValue: any; newValue: any; timestamp: number }> {
+  ): Array<{ path: string; oldValue: unknown; newValue: unknown; timestamp: number }> {
     return limit ? this.changeHistory.slice(0, limit) : [...this.changeHistory]
   }
 
@@ -345,17 +341,17 @@ export class StateNamespace implements StateManager {
   constructor(
     private stateManager: StateManager,
     private namespaceName: string
-  ) {}
+  ) { }
 
   private getKey(key: string): string {
     return `${this.namespaceName}.${key}`
   }
 
-  get<T = any>(key: string): T | undefined {
+  get<T = unknown>(key: string): T | undefined {
     return this.stateManager.get<T>(this.getKey(key))
   }
 
-  set<T = any>(key: string, value: T): void {
+  set<T = unknown>(key: string, value: T): void {
     this.stateManager.set(this.getKey(key), value)
   }
 
@@ -367,7 +363,7 @@ export class StateNamespace implements StateManager {
     return this.stateManager.has(this.getKey(key))
   }
 
-  watch<T = any>(
+  watch<T = unknown>(
     key: string,
     callback: (newValue: T, oldValue: T) => void
   ): () => void {
@@ -411,7 +407,7 @@ export const stateModules = {
     const userState = stateManager.namespace('user')
 
     return {
-      setUser: (user: any) => userState.set('profile', user),
+      setUser: (user: unknown) => userState.set('profile', user),
       getUser: () => userState.get('profile'),
       setToken: (token: string) => userState.set('token', token),
       getToken: () => userState.get('token'),
@@ -442,8 +438,8 @@ export const stateModules = {
     const settingsState = stateManager.namespace('settings')
 
     return {
-      setSetting: (key: string, value: any) => settingsState.set(key, value),
-      getSetting: (key: string, defaultValue?: any) =>
+      setSetting: (key: string, value: unknown) => settingsState.set(key, value),
+      getSetting: (key: string, defaultValue?: unknown) =>
         settingsState.get(key) ?? defaultValue,
       removeSetting: (key: string) => settingsState.remove(key),
       getAllSettings: () => settingsState.get('') || {},

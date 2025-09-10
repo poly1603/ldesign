@@ -26,12 +26,12 @@
   "files": [
     "CHANGELOG.md",
     "README.md",
+    "dist",
     "es",
-    "lib",
-    "dist"
+    "lib"
   ],
   "scripts": {
-    "build": "ldesign-builder build -f esm,cjs",
+    "build": "ldesign-builder build -f esm,cjs,umd",
     "build:clean": "node scripts/build.js --clean",
     "build:types": "node scripts/build.js --types",
     "build:analyze": "node scripts/analyze-bundle.js",

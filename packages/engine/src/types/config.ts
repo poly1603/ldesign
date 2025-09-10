@@ -86,7 +86,7 @@ export interface EnhancedEngineConfig {
 export interface ConfigSnapshot {
   timestamp: number
   config: Record<string, unknown>
-  environment: string
+  environment: 'development' | 'production' | 'test'
   version: string
 }
 
@@ -104,13 +104,13 @@ export interface ConfigManager<TConfig = Record<string, unknown>> {
     path: P,
     defaultValue?: ConfigValue<TConfig, P>
   ) => ConfigValue<TConfig, P>) &
-    (<T = unknown>(path: string, defaultValue?: T) => T)
+  (<T = unknown>(path: string, defaultValue?: T) => T)
 
   set: (<P extends ConfigPath<TConfig>>(
     path: P,
     value: ConfigValue<TConfig, P>
   ) => void) &
-    ((path: string, value: unknown) => void)
+  ((path: string, value: unknown) => void)
 
   has: (path: string) => boolean
   remove: (path: string) => void
@@ -214,12 +214,12 @@ export interface NotificationConfig {
   maxNotifications: number
   defaultDuration: number
   defaultPosition:
-    | 'top-left'
-    | 'top-center'
-    | 'top-right'
-    | 'bottom-left'
-    | 'bottom-center'
-    | 'bottom-right'
+  | 'top-left'
+  | 'top-center'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-center'
+  | 'bottom-right'
   defaultTheme: 'light' | 'dark' | 'auto'
 }
 

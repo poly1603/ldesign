@@ -13,25 +13,33 @@ engine.performance.startMonitoring()
 // 停止性能监控
 engine.performance.stopMonitoring()
 
-// 获取性能数据
-const metrics = engine.performance.getMetrics()
-console.log(metrics)
+// 获取性能报告
+const report = engine.performance.getReport()
+console.log('总事件数:', report.summary.totalEvents)
+console.log('平均响应时间:', report.summary.averageResponseTime)
+console.log('平均FPS:', report.summary.averageFPS)
+console.log('内存使用:', report.summary.memoryUsage)
 ```
 
 ### 性能标记
 
 ```typescript
-// 添加性能标记
-engine.performance.mark('operation-start')
+// 开始性能事件记录
+const eventId = engine.performance.startEvent('api-call', 'fetchUserData')
 
 // 执行一些操作
 await someAsyncOperation()
 
-// 添加结束标记
-engine.performance.mark('operation-end')
+// 结束性能事件记录
+engine.performance.endEvent(eventId, {
+  userId: 123,
+  dataSize: 1024
+})
 
-// 测量性能
-engine.performance.measure('operation-duration', 'operation-start', 'operation-end')
+// 或者使用便捷方法记录完整事件
+await engine.performance.recordEvent('database-query', async () => {
+  return await database.query('SELECT * FROM users')
+})
 ```
 
 ### 内存监控
@@ -39,9 +47,15 @@ engine.performance.measure('operation-duration', 'operation-start', 'operation-e
 ```typescript
 // 获取内存使用情况
 const memoryInfo = engine.performance.getMemoryInfo()
-console.log('已使用内存:', memoryInfo.usedJSHeapSize)
-console.log('总内存:', memoryInfo.totalJSHeapSize)
-console.log('内存限制:', memoryInfo.jsHeapSizeLimit)
+console.log('已使用内存:', memoryInfo.used)
+console.log('总内存:', memoryInfo.total)
+console.log('内存限制:', memoryInfo.limit)
+
+// 获取当前性能指标
+const metrics = engine.performance.getCurrentMetrics()
+console.log('FPS:', metrics.rendering?.fps)
+console.log('帧时间:', metrics.rendering?.frameTime)
+console.log('网络请求数:', metrics.network?.requests)
 ```
 
 ## 高级功能
@@ -49,41 +63,44 @@ console.log('内存限制:', memoryInfo.jsHeapSizeLimit)
 ### 自动性能分析
 
 ```typescript
-// 启用自动性能分析
-engine.performance.enableAutoAnalysis({
-  // 监控间隔（毫秒）
-  interval: 1000,
-
-  // 内存使用阈值（百分比）
-  memoryThreshold: 80,
-
-  // 响应时间阈值（毫秒）
-  responseTimeThreshold: 1000,
-
-  // 自动优化建议
-  autoOptimization: true,
+// 设置性能阈值
+engine.performance.setThresholds({
+  responseTime: {
+    good: 100,
+    poor: 1000
+  },
+  fps: {
+    good: 60,
+    poor: 30
+  },
+  memory: {
+    warning: 50, // MB
+    critical: 100 // MB
+  },
+  bundleSize: {
+    warning: 500, // KB
+    critical: 1000 // KB
+  }
 })
 ```
 
 ### 性能预算
 
 ```typescript
-// 设置性能预算
-engine.performance.setBudget({
-  // 首次内容绘制时间
-  fcp: 1500,
+// 监听性能违规事件
+engine.events.on('performance:violation', (violation) => {
+  console.warn('性能违规:', violation.type, violation.message)
 
-  // 最大内容绘制时间
-  lcp: 2500,
-
-  // 首次输入延迟
-  fid: 100,
-
-  // 累积布局偏移
-  cls: 0.1,
-
-  // 内存使用限制（MB）
-  memory: 50,
+  // 根据违规类型采取不同措施
+  switch (violation.severity) {
+    case 'warning':
+      engine.logger.warn('性能警告:', violation.message)
+      break
+    case 'critical':
+      engine.logger.error('严重性能问题:', violation.message)
+      // 可能需要降级处理或通知用户
+      break
+  }
 })
 ```
 

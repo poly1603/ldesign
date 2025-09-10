@@ -1,28 +1,30 @@
 import type {
-  CacheManager,
   ConfigManager,
   DirectiveManager,
   EngineConfig,
-  EnvironmentManager,
   ErrorManager,
   EventManager,
   I18nAdapter,
-  LifecycleManager,
   Logger,
   MiddlewareManager,
   NotificationManager,
-  PerformanceManager,
   Plugin,
   PluginManager,
   RouterAdapter,
-  SecurityManager,
   StateAdapter,
   StateManager,
   ThemeAdapter,
 } from '../types'
+// 与 Engine 接口保持一致：从实现处引入这些管理器的类型
+import type { CacheManager } from '../cache/cache-manager'
+import type { EnvironmentManager } from '../environment/environment-manager'
+import type { LifecycleManager } from '../lifecycle/lifecycle-manager'
+import type { PerformanceManager } from '../performance/performance-manager'
+import type { SecurityManager } from '../security/security-manager'
 import type { Engine } from '../types/engine'
-import { type App, type Component, createApp } from 'vue'
-import { createCacheManager } from '../cache/cache-manager'
+import type { LogLevel } from '../types'
+import { type App, type Component, createApp, type Directive } from 'vue'
+import { createCacheManager, type CacheConfig } from '../cache/cache-manager'
 import {
   createConfigManager,
   defaultConfigSchema,
@@ -40,6 +42,7 @@ import { createPluginManager } from '../plugins/plugin-manager'
 import { createSecurityManager } from '../security/security-manager'
 import { createStateManager } from '../state/state-manager'
 import { ManagerRegistry } from './manager-registry'
+import { convertEngineToVueDirective } from '../directives/utils/directive-compatibility'
 
 /**
  * 引擎核心实现类
@@ -150,8 +153,8 @@ export class EngineImpl implements Engine {
       const startTime = Date.now()
       // 从配置中获取缓存设置，使用默认配置作为备用
       this._cache = createCacheManager(
-        this.config.get('cache', {}) as any
-      ) as any
+        this.config.get('cache', {}) as CacheConfig
+      )
       const initTime = Date.now() - startTime
       // 在管理器注册表中标记为已初始化
       this.managerRegistry.markInitialized('cache')
@@ -177,7 +180,7 @@ export class EngineImpl implements Engine {
     if (!this._performance) {
       const startTime = Date.now()
       // 创建性能管理器并传入引擎实例作为上下文
-      this._performance = createPerformanceManager(undefined, this) as any
+      this._performance = createPerformanceManager(undefined, this)
       const initTime = Date.now() - startTime
       this.managerRegistry.markInitialized('performance')
       this.logger.debug('Performance manager initialized lazily', {
@@ -203,7 +206,7 @@ export class EngineImpl implements Engine {
     if (!this._security) {
       const startTime = Date.now()
       // 创建安全管理器并传入引擎实例作为上下文
-      this._security = createSecurityManager(undefined, this) as any
+      this._security = createSecurityManager(undefined, this)
       const initTime = Date.now() - startTime
       this.managerRegistry.markInitialized('security')
       this.logger.debug('Security manager initialized lazily', {
@@ -246,10 +249,10 @@ export class EngineImpl implements Engine {
     this.registerManagers()
 
     // 4. 初始化环境管理器（优先级最高，其他管理器可能依赖环境信息）
-    this.environment = createEnvironmentManager(this.logger) as any
+    this.environment = createEnvironmentManager(this.logger)
 
     // 5. 初始化生命周期管理器 - 管理整个应用的生命周期钩子
-    this.lifecycle = createLifecycleManager(this.logger) as any
+    this.lifecycle = createLifecycleManager(this.logger)
 
     // 6. 按依赖顺序初始化核心管理器 - 确保依赖关系正确
     this.initializeManagers()
@@ -266,7 +269,7 @@ export class EngineImpl implements Engine {
     })
 
     // 执行初始化后的生命周期钩子
-    this.lifecycle.execute('afterInit').catch(error => {
+    this.lifecycle.execute('afterInit', this).catch(error => {
       this.logger.error('Error in afterInit lifecycle hooks', error)
     })
   }
@@ -324,26 +327,28 @@ export class EngineImpl implements Engine {
 
     // 2. 监听日志级别变化 - 直接应用新级别
     this.config.watch('logger.level', (newValue: unknown) => {
-      this.logger.setLevel(newValue as any)
-      this.logger.info('Log level changed', { level: newValue })
+      const allowed: LogLevel[] = ['debug', 'info', 'warn', 'error']
+      const level = typeof newValue === 'string' && (allowed as string[]).includes(newValue)
+        ? (newValue as LogLevel)
+        : this.logger.getLevel()
+      this.logger.setLevel(level)
+      this.logger.info('Log level changed', { level })
     })
 
     // 监听功能开关变化
-    this.config.watch('features', (newFeatures: any) => {
+    this.config.watch('features', (newFeatures: unknown) => {
       this.logger.info('Features configuration changed', newFeatures)
-
-      // 根据功能开关调整管理器状态
-      if (newFeatures.enablePerformanceMonitoring !== undefined) {
+      const f = newFeatures as Record<string, unknown>
+      if (f['enablePerformanceMonitoring'] !== undefined) {
         // 可以在这里启用/禁用性能监控
       }
-
-      if (newFeatures.enableSecurityProtection !== undefined) {
+      if (f['enableSecurityProtection'] !== undefined) {
         // 可以在这里启用/禁用安全防护
       }
     })
 
     // 监听缓存配置变化
-    this.config.watch('cache', (newCacheConfig: any) => {
+    this.config.watch('cache', (newCacheConfig: unknown) => {
       this.logger.info('Cache configuration changed', newCacheConfig)
       // 这里可以重新配置缓存管理器
     })
@@ -393,9 +398,13 @@ export class EngineImpl implements Engine {
     app.provide('engine', this)
 
     // 注册全局指令
-    const directives = this.directives.getAll()
-    Object.entries(directives).forEach(([name, directive]) => {
-      app.directive(name, directive as any)
+    const directiveNames = this.directives.getNames()
+    directiveNames.forEach(name => {
+      const eng = this.directives.get(name)
+      if (eng) {
+        const vueDir = convertEngineToVueDirective(eng)
+        app.directive(name, vueDir as Directive)
+      }
     })
 
     // 设置Vue错误处理
@@ -438,7 +447,7 @@ export class EngineImpl implements Engine {
     }
 
     // 执行挂载前的生命周期钩子
-    await this.lifecycle.execute('beforeMount')
+    await this.lifecycle.execute('beforeMount', this)
 
     this._mountTarget = selector
     this._app.mount(selector)
@@ -448,7 +457,7 @@ export class EngineImpl implements Engine {
     this.events.emit('engine:mounted', { target: selector })
 
     // 执行挂载后的生命周期钩子
-    await this.lifecycle.execute('afterMount')
+    await this.lifecycle.execute('afterMount', this)
   }
 
   async unmount(): Promise<void> {
@@ -458,7 +467,7 @@ export class EngineImpl implements Engine {
     }
 
     // 执行卸载前的生命周期钩子
-    await this.lifecycle.execute('beforeUnmount')
+    await this.lifecycle.execute('beforeUnmount', this)
 
     this._app.unmount()
     this._mounted = false
@@ -467,7 +476,7 @@ export class EngineImpl implements Engine {
     this.events.emit('engine:unmounted')
 
     // 执行卸载后的生命周期钩子
-    await this.lifecycle.execute('afterUnmount')
+    await this.lifecycle.execute('afterUnmount', this)
   }
 
   // 扩展方法
@@ -521,7 +530,7 @@ export class EngineImpl implements Engine {
   // 销毁引擎
   async destroy(): Promise<void> {
     // 执行销毁前的生命周期钩子
-    await this.lifecycle.execute('beforeDestroy')
+    await this.lifecycle.execute('beforeDestroy', this)
 
     if (this._mounted) {
       await this.unmount()
@@ -548,34 +557,35 @@ export class EngineImpl implements Engine {
     this.logger.info('Engine destroyed')
 
     // 执行销毁后的生命周期钩子
-    await this.lifecycle.execute('afterDestroy')
+    await this.lifecycle.execute('afterDestroy', this)
   }
 
   // 配置相关方法
-  updateConfig(config: Partial<Record<string, any>>): void {
+  updateConfig(config: Partial<Record<string, unknown>>): void {
     this.config.merge(config)
     this.logger.info('Engine configuration updated', {
       keys: Object.keys(config),
     })
   }
 
-  getConfig<T = any>(path: string, defaultValue?: T): T {
+  getConfig<T = unknown>(path: string, defaultValue?: T): T {
     return this.config.get(path, defaultValue) as T
   }
 
-  setConfig(path: string, value: any): void {
+  setConfig(path: string, value: unknown): void {
     this.config.set(path, value)
     this.logger.debug('Engine configuration set', { path, value })
   }
 
   // 获取管理器初始化统计
-  getManagerStats(): any {
-    return this.managerRegistry.getInitializationStats()
+  getManagerStats(): Record<string, unknown> {
+    return this.managerRegistry.getInitializationStats() as unknown as Record<string, unknown>
   }
 
   // 验证管理器依赖图
-  validateManagers(): any {
-    return this.managerRegistry.validateDependencyGraph()
+  validateManagers(): { valid: boolean; errors: string[] } {
+    const { valid, errors } = this.managerRegistry.validateDependencyGraph()
+    return { valid, errors }
   }
 
   // 私有方法：注册管理器
@@ -624,52 +634,80 @@ export class EngineImpl implements Engine {
     }
   }
 
+  // 管理器初始化工厂映射 - 提高可维护性
+  private readonly managerFactories: Record<string, () => unknown> = {
+    events: () => createEventManager(this.logger),
+    state: () => createStateManager(this.logger),
+    errors: () => createErrorManager(),
+    directives: () => createDirectiveManager(),
+    notifications: () => createNotificationManager(this.logger),
+    middleware: () => createMiddlewareManager(this.logger),
+    plugins: () => createPluginManager(this),
+  }
+
   // 私有方法：按顺序初始化管理器
   private initializeManagersInOrder(order: string[]): void {
     for (const managerName of order) {
-      try {
-        const startTime = Date.now()
+      this.initializeSingleManager(managerName)
+    }
+  }
 
-        switch (managerName) {
-          case 'events':
-            this.events = createEventManager(this.logger)
-            break
-          case 'state':
-            this.state = createStateManager(this.logger)
-            break
-          case 'errors':
-            this.errors = createErrorManager()
-            break
-          case 'directives':
-            this.directives = createDirectiveManager()
-            break
-          case 'notifications':
-            this.notifications = createNotificationManager(this.logger)
-            break
-          case 'middleware':
-            this.middleware = createMiddlewareManager(this.logger)
-            break
-          case 'plugins':
-            this.plugins = createPluginManager(this)
-            break
-          default:
-            this.logger.warn(`Unknown manager: ${managerName}`)
-            continue
-        }
+  // 私有方法：初始化单个管理器
+  private initializeSingleManager(managerName: string): void {
+    try {
+      const startTime = Date.now()
 
-        const initTime = Date.now() - startTime
-        this.managerRegistry.markInitialized(managerName)
-        this.logger.debug(`Manager "${managerName}" initialized`, {
-          initTime: `${initTime}ms`,
-        })
-      } catch (error) {
-        this.managerRegistry.markInitialized(managerName, error as Error)
-        this.logger.error(
-          `Failed to initialize manager "${managerName}"`,
-          error
-        )
-        throw error
+      const factory = this.managerFactories[managerName]
+      if (!factory) {
+        this.logger.warn(`Unknown manager: ${managerName}`)
+        return
       }
+
+      // 使用工厂函数创建管理器
+      const manager = factory()
+
+      // 将管理器分配到对应的属性
+      this.assignManagerToProperty(managerName, manager)
+
+      const initTime = Date.now() - startTime
+      this.managerRegistry.markInitialized(managerName)
+      this.logger.debug(`Manager "${managerName}" initialized`, {
+        initTime: `${initTime}ms`,
+      })
+    } catch (error) {
+      this.managerRegistry.markInitialized(managerName, error as Error)
+      this.logger.error(
+        `Failed to initialize manager "${managerName}"`,
+        error
+      )
+      throw error
+    }
+  }
+
+  // 私有方法：将管理器分配到对应的属性
+  private assignManagerToProperty(managerName: string, manager: unknown): void {
+    switch (managerName) {
+      case 'events':
+        this.events = manager as EventManager
+        break
+      case 'state':
+        this.state = manager as StateManager
+        break
+      case 'errors':
+        this.errors = manager as ErrorManager
+        break
+      case 'directives':
+        this.directives = manager as DirectiveManager
+        break
+      case 'notifications':
+        this.notifications = manager as NotificationManager
+        break
+      case 'middleware':
+        this.middleware = manager as MiddlewareManager
+        break
+      case 'plugins':
+        this.plugins = manager as PluginManager
+        break
     }
   }
 }

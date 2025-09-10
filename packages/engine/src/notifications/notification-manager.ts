@@ -1301,8 +1301,8 @@ export function createNotificationHelpers(manager: NotificationManager) {
     // 清除分组
     clearGroup: (groupId: string) => {
       const allNotifications = manager.getAll()
-      allNotifications.forEach(notification => {
-        if ((notification as any).group === groupId) {
+      allNotifications.forEach((notification) => {
+        if (notification.group === groupId) {
           // 需要通过某种方式获取通知ID来隐藏
         }
       })

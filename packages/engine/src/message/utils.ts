@@ -158,7 +158,7 @@ export function kebabCase(str: string): string {
 /**
  * 防抖函数
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => any>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -178,13 +178,13 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * 节流函数
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => any>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean
 
-  return function executedFunction(this: any, ...args: Parameters<T>) {
+  return function executedFunction(this: unknown, ...args: Parameters<T>) {
     if (!inThrottle) {
       func.apply(this, args)
       inThrottle = true
@@ -253,10 +253,10 @@ export function calculatePosition(
 ): { top?: string; bottom?: string; left: string; transform: string } {
   const elementRect = element.getBoundingClientRect()
 
-  const result = {
+  const result: { top?: string; bottom?: string; left: string; transform: string } = {
     left: '50%',
     transform: 'translateX(-50%)',
-  } as any
+  }
 
   switch (position) {
     case 'top':
@@ -415,9 +415,9 @@ export class MessageQueue {
  * 消息存储实现（基于内存）
  */
 export class MessageMemoryStorage {
-  private storage = new Map<string, any>()
+  private storage = new Map<string, { id: string; options: unknown; timestamp: number }>()
 
-  save(instance: any): void {
+  save(instance: { id: string; options: unknown }): void {
     this.storage.set(instance.id, {
       id: instance.id,
       options: instance.options,
@@ -425,7 +425,7 @@ export class MessageMemoryStorage {
     })
   }
 
-  load(id: string): any | null {
+  load(id: string): unknown | null {
     return this.storage.get(id) || null
   }
 
@@ -437,7 +437,7 @@ export class MessageMemoryStorage {
     this.storage.clear()
   }
 
-  getAll(): any[] {
+  getAll(): unknown[] {
     return Array.from(this.storage.values())
   }
 
@@ -487,19 +487,24 @@ export class MessagePerformanceMonitor {
     const avgRender =
       this.metrics.renderTimes.length > 0
         ? this.metrics.renderTimes.reduce((a, b) => a + b, 0) /
-          this.metrics.renderTimes.length
+        this.metrics.renderTimes.length
         : 0
 
     const avgAnimation =
       this.metrics.animationTimes.length > 0
         ? this.metrics.animationTimes.reduce((a, b) => a + b, 0) /
-          this.metrics.animationTimes.length
+        this.metrics.animationTimes.length
         : 0
 
     return {
       averageRenderTime: avgRender,
       averageAnimationTime: avgAnimation,
-      memoryUsage: (performance as any).memory?.usedJSHeapSize || 0,
+      memoryUsage:
+        typeof globalThis !== 'undefined' &&
+          typeof globalThis.performance !== 'undefined' &&
+          'memory' in (globalThis.performance as Performance)
+          ? ((globalThis.performance as Performance & { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize || 0)
+          : 0,
     }
   }
 

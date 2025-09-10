@@ -7,7 +7,7 @@ export enum CacheStrategy {
 }
 
 // 缓存项接口
-export interface CacheItem<T = any> {
+export interface CacheItem<T = unknown> {
   key: string
   value: T
   timestamp: number
@@ -37,19 +37,32 @@ export interface CacheStats {
 }
 
 // 缓存管理器接口
-export interface CacheManager {
-  get: <T = unknown>(key: string) => T | undefined
-  set: <T = unknown>(key: string, value: T, ttl?: number) => void
+export interface CacheManager<T = unknown> {
+  get: (key: string) => T | undefined
+  set: (key: string, value: T, ttl?: number) => void
   has: (key: string) => boolean
   delete: (key: string) => boolean
   clear: () => void
   size: () => number
   keys: () => string[]
-  values: () => unknown[]
-  entries: () => [string, unknown][]
-  getStats: () => CacheStats
+  values: () => T[]
+  entries: () => [string, T][]
+  getStats: () => CacheStats & {
+    hitRate: number
+    memoryUsage: number
+    averageItemSize: number
+  }
+  // 新增的功能增强方法
+  preload: <K extends string>(
+    keys: K[],
+    loader: (key: K) => Promise<T> | T,
+    options?: { ttl?: number; priority?: 'high' | 'normal' | 'low' }
+  ) => Promise<void>
+  warmup: <K extends string>(
+    warmupData: Array<{ key: K; loader: () => Promise<T> | T; ttl?: number }>
+  ) => Promise<void>
   resetStats: () => void
-  namespace: (name: string) => CacheManager
+  namespace: (name: string) => CacheManager<T>
 }
 
 // LRU缓存实现
@@ -185,30 +198,48 @@ class LRUCache<T = unknown> {
   }
 
   values(): T[] {
+    // 优化：直接从缓存项中获取值，避免重复的 TTL 检查
     const values: T[] = []
-    for (const key of this.cache.keys()) {
-      const value = this.get(key)
-      if (value !== undefined) {
-        values.push(value)
+    const now = Date.now()
+
+    for (const [key, item] of this.cache.entries()) {
+      // 检查 TTL
+      if (item.ttl && now - item.timestamp > item.ttl) {
+        this.cache.delete(key)
+        this.stats.evictions++
+        continue
       }
+      values.push(item.value)
     }
+
+    this.stats.size = this.cache.size
     return values
   }
 
   entries(): [string, T][] {
+    // 优化：直接从缓存项中获取值，避免重复的 TTL 检查
     const entries: [string, T][] = []
-    for (const key of this.cache.keys()) {
-      const value = this.get(key)
-      if (value !== undefined) {
-        entries.push([key, value])
+    const now = Date.now()
+
+    for (const [key, item] of this.cache.entries()) {
+      // 检查 TTL
+      if (item.ttl && now - item.timestamp > item.ttl) {
+        this.cache.delete(key)
+        this.stats.evictions++
+        continue
       }
+      entries.push([key, item.value])
     }
+
+    this.stats.size = this.cache.size
     return entries
   }
 
-  getStats(): CacheStats {
-    return { ...this.stats }
-  }
+  // 新增：批量清理过期项的方法
+
+
+
+
 
   resetStats(): void {
     this.stats = {
@@ -220,6 +251,16 @@ class LRUCache<T = unknown> {
       size: this.cache.size,
       hitRate: 0,
     }
+  }
+
+  // 获取内部缓存映射（用于统计计算）
+  get internalCache(): Map<string, CacheItem<T>> {
+    return this.cache
+  }
+
+  // 安全获取统计信息
+  public getStats(): CacheStats {
+    return this.stats
   }
 
   private updateHitRate(): void {
@@ -247,12 +288,7 @@ class LRUCache<T = unknown> {
     this.stats.size = this.cache.size
   }
 
-  // 预热缓存
-  warmup(entries: Array<{ key: string; value: T; ttl?: number }>): void {
-    for (const entry of entries) {
-      this.set(entry.key, entry.value, entry.ttl)
-    }
-  }
+
 
   /**
    * 性能优化：启动定期清理定时器
@@ -358,29 +394,29 @@ class LRUCache<T = unknown> {
 }
 
 // 缓存管理器实现
-export class CacheManagerImpl implements CacheManager {
-  private cache: LRUCache
-  private config: Required<CacheConfig>
-  private namespaces = new Map<string, CacheManager>()
+export class CacheManagerImpl<T = unknown> implements CacheManager<T> {
+  private cache: LRUCache<T>
+  private config: Required<CacheConfig<T>>
+  private namespaces = new Map<string, CacheManager<T>>()
 
-  constructor(config: CacheConfig = {}) {
+  constructor(config: CacheConfig<T> = {}) {
     this.config = {
       maxSize: 100,
       defaultTTL: 0, // 0表示永不过期
       strategy: CacheStrategy.LRU,
       enableStats: true,
-      onEvict: () => {},
+      onEvict: () => { },
       ...config,
     }
 
     this.cache = new LRUCache(this.config.maxSize, this.config.onEvict)
   }
 
-  get<T = unknown>(key: string): T | undefined {
-    return this.cache.get(key) as T | undefined
+  get(key: string): T | undefined {
+    return this.cache.get(key)
   }
 
-  set<T = unknown>(key: string, value: T, ttl?: number): void {
+  set(key: string, value: T, ttl?: number): void {
     const finalTTL = ttl ?? this.config.defaultTTL
     this.cache.set(key, value, finalTTL > 0 ? finalTTL : undefined)
   }
@@ -390,9 +426,10 @@ export class CacheManagerImpl implements CacheManager {
   }
 
   delete(key: string): boolean {
+    const prev = this.cache.get(key)
     const deleted = this.cache.delete(key)
-    if (deleted && this.config.onEvict) {
-      this.config.onEvict(key, undefined)
+    if (deleted && this.config.onEvict && prev !== undefined) {
+      this.config.onEvict(key, prev)
     }
     return deleted
   }
@@ -409,8 +446,11 @@ export class CacheManagerImpl implements CacheManager {
     return this.cache.keys()
   }
 
-  values(): unknown[] {
-    const values: unknown[] = []
+  values(): T[] {
+    // 先清理过期项
+    this.cache.cleanup()
+
+    const values: T[] = []
     for (const key of this.cache.keys()) {
       const value = this.cache.get(key)
       if (value !== undefined) {
@@ -420,8 +460,11 @@ export class CacheManagerImpl implements CacheManager {
     return values
   }
 
-  entries(): [string, unknown][] {
-    const entries: [string, unknown][] = []
+  entries(): [string, T][] {
+    // 先清理过期项
+    this.cache.cleanup()
+
+    const entries: [string, T][] = []
     for (const key of this.cache.keys()) {
       const value = this.cache.get(key)
       if (value !== undefined) {
@@ -431,8 +474,35 @@ export class CacheManagerImpl implements CacheManager {
     return entries
   }
 
-  getStats(): CacheStats {
-    return this.cache.getStats()
+  getStats(): CacheStats & {
+    hitRate: number
+    memoryUsage: number
+    averageItemSize: number
+  } {
+    const baseStats = this.cache.getStats()
+    const hitRate = baseStats.hits + baseStats.misses > 0
+      ? baseStats.hits / (baseStats.hits + baseStats.misses)
+      : 0
+
+    // 估算内存使用（简单估算）- 直接访问缓存，不触发统计
+    let memoryUsage = 0
+    for (const [key, item] of this.cache.internalCache.entries()) {
+      // 检查是否过期
+      if (!item.ttl || Date.now() - item.timestamp <= item.ttl) {
+        memoryUsage += key.length * 2 // 字符串大小估算
+        memoryUsage += JSON.stringify(item.value).length * 2 // 值大小估算
+      }
+    }
+
+    const currentSize = this.size()
+    const averageItemSize = currentSize > 0 ? memoryUsage / currentSize : 0
+
+    return {
+      ...baseStats,
+      hitRate: Math.round(hitRate * 100) / 100,
+      memoryUsage,
+      averageItemSize: Math.round(averageItemSize)
+    }
   }
 
   resetStats(): void {
@@ -446,11 +516,63 @@ export class CacheManagerImpl implements CacheManager {
     this.cache.forceCleanup()
   }
 
-  namespace(name: string): CacheManager {
+  /**
+   * 新增：智能预加载功能
+   * 根据访问模式预加载可能需要的数据
+   */
+  async preload<K extends string>(
+    keys: K[],
+    loader: (key: K) => Promise<T> | T,
+    options?: { ttl?: number; priority?: 'high' | 'normal' | 'low' }
+  ): Promise<void> {
+    const { ttl, priority = 'normal' } = options || {}
+
+    const loadPromises = keys.map(async (key) => {
+      if (!this.has(key)) {
+        try {
+          const value = await loader(key)
+          this.set(key, value, ttl)
+        } catch (error) {
+          // 预加载失败不应该影响主流程
+          console.warn(`Failed to preload cache key: ${key}`, error)
+        }
+      }
+    })
+
+    // 根据优先级决定是否等待完成
+    if (priority === 'high') {
+      return Promise.all(loadPromises).then(() => { })
+    } else {
+      // 低优先级异步执行，不阻塞
+      Promise.all(loadPromises).catch(() => { })
+      return Promise.resolve()
+    }
+  }
+
+  /**
+   * 新增：缓存预热功能
+   * 在系统启动时预热常用数据
+   */
+  async warmup<K extends string>(
+    warmupData: Array<{ key: K; loader: () => Promise<T> | T; ttl?: number }>
+  ): Promise<void> {
+    const warmupPromises = warmupData.map(async ({ key, loader, ttl }) => {
+      try {
+        const value = await loader()
+        this.set(key, value, ttl)
+      } catch (error) {
+        console.warn(`Failed to warmup cache key: ${key}`, error)
+      }
+    })
+
+    await Promise.all(warmupPromises)
+  }
+
+  namespace(name: string): CacheManager<T> {
     if (!this.namespaces.has(name)) {
       this.namespaces.set(
         name,
-        new NamespacedCacheManager(this, name) as CacheManager
+        new NamespacedCacheManager<T>(this, name)
       )
     }
     return this.namespaces.get(name)!
@@ -458,21 +580,21 @@ export class CacheManagerImpl implements CacheManager {
 }
 
 // 命名空间缓存管理器
-class NamespacedCacheManager implements CacheManager {
+class NamespacedCacheManager<T = unknown> implements CacheManager<T> {
   constructor(
-    private parent: CacheManager,
+    private parent: CacheManager<T>,
     private namespaceName: string
-  ) {}
+  ) { }
 
   private getKey(key: string): string {
     return `${this.namespaceName}:${key}`
   }
 
-  get<T = any>(key: string): T | undefined {
+  get(key: string): T | undefined {
     return this.parent.get(this.getKey(key))
   }
 
-  set<T = any>(key: string, value: T, ttl?: number): void {
+  set(key: string, value: T, ttl?: number): void {
     this.parent.set(this.getKey(key), value, ttl)
   }
 
@@ -503,32 +625,56 @@ class NamespacedCacheManager implements CacheManager {
       .map(key => key.slice(prefix.length))
   }
 
-  values(): unknown[] {
-    return this.keys().map(key => this.get(key))
+  values(): T[] {
+    return this.keys().map(key => this.get(key)!).filter(value => value !== undefined)
   }
 
-  entries(): [string, unknown][] {
-    return this.keys().map(key => [key, this.get(key)])
+  entries(): [string, T][] {
+    const result: [string, T][] = []
+    for (const key of this.keys()) {
+      const v = this.get(key)
+      if (v !== undefined) {
+        result.push([key, v])
+      }
+    }
+    return result
   }
 
-  getStats(): CacheStats {
+  getStats(): CacheStats & {
+    hitRate: number
+    memoryUsage: number
+    averageItemSize: number
+  } {
     // 命名空间缓存的统计信息是父缓存的子集
     return this.parent.getStats()
   }
 
+  async preload<K extends string>(
+    keys: K[],
+    loader: (key: K) => Promise<T> | T,
+    options?: { ttl?: number; priority?: 'high' | 'normal' | 'low' }
+  ): Promise<void> {
+    return this.parent.preload(keys, loader, options)
+  }
+
+  async warmup<K extends string>(
+    warmupData: Array<{ key: K; loader: () => Promise<T> | T; ttl?: number }>
+  ): Promise<void> {
+    return this.parent.warmup(warmupData)
+  }
+
   resetStats(): void {
-    // 重置父缓存的统计信息
     this.parent.resetStats()
   }
 
-  namespace(name: string): CacheManager {
+  namespace(name: string): CacheManager<T> {
     return this.parent.namespace(`${this.namespaceName}:${name}`)
   }
 }
 
 // 创建缓存管理器
-export function createCacheManager(config?: CacheConfig): CacheManager {
-  return new CacheManagerImpl(config)
+export function createCacheManager<T = unknown>(config?: CacheConfig<T>): CacheManager<T> {
+  return new CacheManagerImpl<T>(config)
 }
 
 // 全局缓存管理器

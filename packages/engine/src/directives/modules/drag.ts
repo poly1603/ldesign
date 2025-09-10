@@ -14,14 +14,14 @@ export interface DragOptions {
   axis?: 'x' | 'y' | 'both'
   grid?: [number, number]
   bounds?:
-    | {
-        left?: number
-        top?: number
-        right?: number
-        bottom?: number
-      }
-    | 'parent'
-    | string
+  | {
+    left?: number
+    top?: number
+    right?: number
+    bottom?: number
+  }
+  | 'parent'
+  | string
   onStart?: (event: MouseEvent, position: { x: number; y: number }) => void
   onDrag?: (event: MouseEvent, position: { x: number; y: number }) => void
   onEnd?: (event: MouseEvent, position: { x: number; y: number }) => void
@@ -98,22 +98,23 @@ export class DragDirective extends DirectiveBase {
     }
 
     if (typeof value === 'object' && value !== null) {
+      const obj = value as Partial<DragOptions>
       return {
-        disabled: value.disabled || false,
-        handle: value.handle,
-        container: value.container,
-        axis: value.axis || 'both',
-        grid: value.grid,
-        bounds: value.bounds,
-        onStart: value.onStart,
-        onDrag: value.onDrag,
-        onEnd: value.onEnd,
-        cursor: value.cursor || 'move',
-        zIndex: value.zIndex,
-        opacity: value.opacity,
-        clone: value.clone || false,
-        revert: value.revert || false,
-        helper: value.helper || 'original',
+        disabled: obj.disabled || false,
+        handle: obj.handle,
+        container: obj.container,
+        axis: obj.axis || 'both',
+        grid: obj.grid,
+        bounds: obj.bounds,
+        onStart: obj.onStart,
+        onDrag: obj.onDrag,
+        onEnd: obj.onEnd,
+        cursor: obj.cursor || 'move',
+        zIndex: obj.zIndex,
+        opacity: obj.opacity,
+        clone: obj.clone || false,
+        revert: obj.revert || false,
+        helper: obj.helper || 'original',
       }
     }
 
@@ -188,7 +189,7 @@ export class DragDirective extends DirectiveBase {
       const startPosition = this.getStartPosition(el, mouseEvent)
 
       // 创建拖拽状态
-      const dragState = {
+      const dragState: DragState = {
         isDragging: false,
         startX: mouseEvent.clientX,
         startY: mouseEvent.clientY,
@@ -229,7 +230,7 @@ export class DragDirective extends DirectiveBase {
   private createMouseMoveHandler(
     el: HTMLElement,
     config: DragOptions,
-    dragState: any
+    dragState: DragState
   ): EventListener {
     return (event: Event) => {
       const mouseEvent = event as MouseEvent
@@ -280,7 +281,7 @@ export class DragDirective extends DirectiveBase {
   private createMouseUpHandler(
     el: HTMLElement,
     config: DragOptions,
-    dragState: any,
+    dragState: DragState,
     mouseMoveHandler: EventListener
   ): EventListener {
     return (event: Event) => {
@@ -382,7 +383,7 @@ export class DragDirective extends DirectiveBase {
   private onDragEnd(
     el: HTMLElement,
     config: DragOptions,
-    dragState: any
+    dragState: DragState
   ): void {
     // 移除拖拽样式
     this.removeClass(el, 'dragging')
@@ -402,7 +403,7 @@ export class DragDirective extends DirectiveBase {
     }
   }
 
-  private revertPosition(el: HTMLElement, dragState: any): void {
+  private revertPosition(el: HTMLElement, dragState: DragState): void {
     // 动画回到原位置
     el.style.transition = 'all 0.3s ease'
     this.updatePosition(el, dragState.originalX, dragState.originalY)
@@ -454,16 +455,26 @@ export const vDrag = defineDirective('drag', {
 // 扩展HTMLElement类型
 declare global {
   interface HTMLElement {
+    _dragState?: DragState
     _dragConfig?: DragOptions
     _dragMouseDownHandler?: EventListener
     _dragMouseMoveHandler?: EventListener
     _dragMouseUpHandler?: EventListener
     _dragHandle?: HTMLElement
-    _dragState?: any
   }
 }
 
 // 导出指令实例
+type DragState = {
+  isDragging: boolean
+  startX: number
+  startY: number
+  currentX: number
+  currentY: number
+  originalX: number
+  originalY: number
+}
+
 export const dragDirective = new DragDirective()
 
 // 使用示例

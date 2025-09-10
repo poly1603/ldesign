@@ -3,27 +3,29 @@
  * 处理 Vue 指令和引擎指令之间的类型转换和兼容性检查
  */
 
-import type { Directive } from 'vue'
+import type { ObjectDirective } from 'vue'
 import type {
   DirectiveAdapterFactory,
   DirectiveCompatibilityChecker,
   DirectiveType,
   EngineDirective,
+  VueDirectiveBinding,
 } from '../../types/directive'
 
 /**
  * 检查指令类型
  */
-export function checkDirectiveType(directive: any): DirectiveType {
+export function checkDirectiveType(directive: unknown): DirectiveType {
   if (!directive) return 'engine'
 
   // 检查是否是 Vue 指令
+  const obj = (typeof directive === 'object' && directive !== null) ? (directive as Record<string, unknown>) : undefined
   const hasVueHooks = ['created', 'beforeMount', 'mounted', 'beforeUpdate', 'updated', 'beforeUnmount', 'unmounted']
-    .some(hook => typeof directive[hook] === 'function' && directive[hook].length >= 2)
+    .some(hook => !!obj && typeof obj[hook] === 'function' && (obj[hook] as Function).length >= 2)
 
   // 检查是否是引擎指令
   const hasEngineHooks = ['beforeCreate', 'created', 'beforeMount', 'mounted', 'beforeUpdate', 'updated', 'beforeUnmount', 'unmounted']
-    .some(hook => typeof directive[hook] === 'function' && directive[hook].length === 0)
+    .some(hook => !!obj && typeof obj[hook] === 'function' && (obj[hook] as Function).length === 0)
 
   if (hasVueHooks && hasEngineHooks) return 'hybrid'
   if (hasVueHooks) return 'vue'
@@ -33,28 +35,28 @@ export function checkDirectiveType(directive: any): DirectiveType {
 /**
  * 检查是否是 Vue 指令
  */
-export function isVueDirective(directive: any): boolean {
+export function isVueDirective(directive: unknown): boolean {
   return checkDirectiveType(directive) === 'vue'
 }
 
 /**
  * 检查是否是引擎指令
  */
-export function isEngineDirective(directive: any): boolean {
+export function isEngineDirective(directive: unknown): boolean {
   return checkDirectiveType(directive) === 'engine'
 }
 
 /**
  * 检查是否是混合指令
  */
-export function isHybridDirective(directive: any): boolean {
+export function isHybridDirective(directive: unknown): boolean {
   return checkDirectiveType(directive) === 'hybrid'
 }
 
 /**
  * 将 Vue 指令转换为引擎指令
  */
-export function convertVueToEngineDirective(vueDirective: any): EngineDirective {
+export function convertVueToEngineDirective(vueDirective: unknown): EngineDirective {
   const engineDirective: EngineDirective = {
     name: 'converted-vue-directive',
     description: 'Converted from Vue directive',
@@ -63,30 +65,33 @@ export function convertVueToEngineDirective(vueDirective: any): EngineDirective 
 
   // 转换生命周期方法 - 检查是否是对象指令
   if (typeof vueDirective === 'object' && vueDirective !== null) {
-    if (vueDirective.created) {
-      engineDirective.created = vueDirective.created
+    const d = vueDirective as Record<string, unknown>
+    if (typeof d.created === 'function') {
+      engineDirective.created = d.created as unknown as EngineDirective['created']
     }
-    if (vueDirective.beforeMount) {
-      engineDirective.beforeMount = vueDirective.beforeMount
+    if (typeof d.beforeMount === 'function') {
+      engineDirective.beforeMount = d.beforeMount as unknown as EngineDirective['beforeMount']
     }
-    if (vueDirective.mounted) {
-      engineDirective.mounted = vueDirective.mounted
+    if (typeof d.mounted === 'function') {
+      engineDirective.mounted = d.mounted as unknown as EngineDirective['mounted']
     }
-    if (vueDirective.beforeUpdate) {
-      engineDirective.beforeUpdate = vueDirective.beforeUpdate
+    if (typeof d.beforeUpdate === 'function') {
+      engineDirective.beforeUpdate = d.beforeUpdate as unknown as EngineDirective['beforeUpdate']
     }
-    if (vueDirective.updated) {
-      engineDirective.updated = vueDirective.updated
+    if (typeof d.updated === 'function') {
+      engineDirective.updated = d.updated as unknown as EngineDirective['updated']
     }
-    if (vueDirective.beforeUnmount) {
-      engineDirective.beforeUnmount = vueDirective.beforeUnmount
+    if (typeof d.beforeUnmount === 'function') {
+      engineDirective.beforeUnmount = d.beforeUnmount as unknown as EngineDirective['beforeUnmount']
     }
-    if (vueDirective.unmounted) {
-      engineDirective.unmounted = vueDirective.unmounted
+    if (typeof d.unmounted === 'function') {
+      engineDirective.unmounted = d.unmounted as unknown as EngineDirective['unmounted']
     }
   } else if (typeof vueDirective === 'function') {
-    // 如果是函数指令，转换为 mounted 钩子
-    engineDirective.mounted = vueDirective
+    // 如果是函数指令，转换为 mounted 钩子（保持 Vue 风格签名）
+    engineDirective.mounted = ((el: HTMLElement, binding: VueDirectiveBinding) => {
+      ; (vueDirective as (el: HTMLElement, binding: VueDirectiveBinding) => void)(el, binding)
+    })
   }
 
   return engineDirective
@@ -95,20 +100,20 @@ export function convertVueToEngineDirective(vueDirective: any): EngineDirective 
 /**
  * 将引擎指令转换为 Vue 指令
  */
-export function convertEngineToVueDirective(engineDirective: EngineDirective): Directive {
-  const vueDirective: Directive = {}
+export function convertEngineToVueDirective(engineDirective: EngineDirective): ObjectDirective {
+  const vueDirective: ObjectDirective = {} as ObjectDirective
 
   // 转换生命周期方法
   if (engineDirective.created) {
     if (typeof engineDirective.created === 'function') {
       // 如果是引擎风格的方法（无参数），包装为 Vue 风格
       if (engineDirective.created.length === 0) {
-        vueDirective.created = (_el: HTMLElement, _binding: any) => {
+        vueDirective.created = (_el: HTMLElement, _binding: unknown) => {
           ; (engineDirective.created as () => void)()
         }
       } else {
         // 如果已经是 Vue 风格的方法，直接使用
-        vueDirective.created = engineDirective.created as any
+        vueDirective.created = engineDirective.created as unknown as ObjectDirective['created']
       }
     }
   }
@@ -116,11 +121,11 @@ export function convertEngineToVueDirective(engineDirective: EngineDirective): D
   if (engineDirective.beforeMount) {
     if (typeof engineDirective.beforeMount === 'function') {
       if (engineDirective.beforeMount.length === 0) {
-        vueDirective.beforeMount = (_el: HTMLElement, _binding: any) => {
+        vueDirective.beforeMount = (_el: HTMLElement, _binding: unknown) => {
           ; (engineDirective.beforeMount as () => void)()
         }
       } else {
-        vueDirective.beforeMount = engineDirective.beforeMount as any
+        vueDirective.beforeMount = engineDirective.beforeMount as unknown as ObjectDirective['beforeMount']
       }
     }
   }
@@ -128,11 +133,11 @@ export function convertEngineToVueDirective(engineDirective: EngineDirective): D
   if (engineDirective.mounted) {
     if (typeof engineDirective.mounted === 'function') {
       if (engineDirective.mounted.length === 0) {
-        vueDirective.mounted = (_el: HTMLElement, _binding: any) => {
+        vueDirective.mounted = (_el: HTMLElement, _binding: unknown) => {
           ; (engineDirective.mounted as () => void)()
         }
       } else {
-        vueDirective.mounted = engineDirective.mounted as any
+        vueDirective.mounted = engineDirective.mounted as unknown as ObjectDirective['mounted']
       }
     }
   }
@@ -140,11 +145,11 @@ export function convertEngineToVueDirective(engineDirective: EngineDirective): D
   if (engineDirective.beforeUpdate) {
     if (typeof engineDirective.beforeUpdate === 'function') {
       if (engineDirective.beforeUpdate.length === 0) {
-        vueDirective.beforeUpdate = (_el: HTMLElement, _binding: any) => {
+        vueDirective.beforeUpdate = (_el: HTMLElement, _binding: unknown) => {
           ; (engineDirective.beforeUpdate as () => void)()
         }
       } else {
-        vueDirective.beforeUpdate = engineDirective.beforeUpdate as any
+        vueDirective.beforeUpdate = engineDirective.beforeUpdate as unknown as ObjectDirective['beforeUpdate']
       }
     }
   }
@@ -152,11 +157,11 @@ export function convertEngineToVueDirective(engineDirective: EngineDirective): D
   if (engineDirective.updated) {
     if (typeof engineDirective.updated === 'function') {
       if (engineDirective.updated.length === 0) {
-        vueDirective.updated = (_el: HTMLElement, _binding: any) => {
+        vueDirective.updated = (_el: HTMLElement, _binding: unknown) => {
           ; (engineDirective.updated as () => void)()
         }
       } else {
-        vueDirective.updated = engineDirective.updated as any
+        vueDirective.updated = engineDirective.updated as unknown as ObjectDirective['updated']
       }
     }
   }
@@ -164,11 +169,11 @@ export function convertEngineToVueDirective(engineDirective: EngineDirective): D
   if (engineDirective.beforeUnmount) {
     if (typeof engineDirective.beforeUnmount === 'function') {
       if (engineDirective.beforeUnmount.length === 0) {
-        vueDirective.beforeUnmount = (_el: HTMLElement, _binding: any) => {
+        vueDirective.beforeUnmount = (_el: HTMLElement, _binding: unknown) => {
           ; (engineDirective.beforeUnmount as () => void)()
         }
       } else {
-        vueDirective.beforeUnmount = engineDirective.beforeUnmount as any
+        vueDirective.beforeUnmount = engineDirective.beforeUnmount as unknown as ObjectDirective['beforeUnmount']
       }
     }
   }
@@ -176,11 +181,11 @@ export function convertEngineToVueDirective(engineDirective: EngineDirective): D
   if (engineDirective.unmounted) {
     if (typeof engineDirective.unmounted === 'function') {
       if (engineDirective.unmounted.length === 0) {
-        vueDirective.unmounted = (_el: HTMLElement, _binding: any) => {
+        vueDirective.unmounted = (_el: HTMLElement, _binding: unknown) => {
           ; (engineDirective.unmounted as () => void)()
         }
       } else {
-        vueDirective.unmounted = engineDirective.unmounted as any
+        vueDirective.unmounted = engineDirective.unmounted as unknown as ObjectDirective['unmounted']
       }
     }
   }
@@ -191,7 +196,7 @@ export function convertEngineToVueDirective(engineDirective: EngineDirective): D
 /**
  * 创建混合指令适配器
  */
-export function createHybridDirectiveAdapter(directive: any): EngineDirective {
+export function createHybridDirectiveAdapter(directive: unknown): EngineDirective {
   const type = checkDirectiveType(directive)
 
   switch (type) {

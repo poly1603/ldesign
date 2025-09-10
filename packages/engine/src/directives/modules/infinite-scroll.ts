@@ -84,7 +84,7 @@ export class InfiniteScrollDirective extends DirectiveBase {
 
     if (typeof value === 'function') {
       return {
-        callback: value,
+        callback: value as () => void | Promise<void>,
         distance: 100,
         delay: 200,
         disabled: false,
@@ -96,23 +96,24 @@ export class InfiniteScrollDirective extends DirectiveBase {
     }
 
     if (typeof value === 'object' && value !== null) {
+      const obj = value as Partial<InfiniteScrollOptions> & { load?: () => void }
       return {
-        callback: value.callback || value.load,
-        distance: value.distance || 100,
-        delay: value.delay || 200,
-        disabled: value.disabled || false,
-        immediate: value.immediate || false,
-        direction: value.direction || 'vertical',
-        container: value.container || window,
-        throttle: value.throttle || 100,
-        onLoad: value.onLoad,
-        onError: value.onError,
-        loadingClass: value.loadingClass || 'infinite-loading',
+        callback: obj.callback || obj.load || (() => { }),
+        distance: obj.distance ?? 100,
+        delay: obj.delay ?? 200,
+        disabled: obj.disabled ?? false,
+        immediate: obj.immediate ?? false,
+        direction: obj.direction ?? 'vertical',
+        container: obj.container || window,
+        throttle: obj.throttle ?? 100,
+        onLoad: obj.onLoad,
+        onError: obj.onError,
+        loadingClass: obj.loadingClass || 'infinite-loading',
       }
     }
 
     return {
-      callback: () => {},
+      callback: () => { },
       distance: 100,
       delay: 200,
       disabled: false,

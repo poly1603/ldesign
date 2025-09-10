@@ -7,17 +7,17 @@ import type { Directive, DirectiveBinding } from 'vue'
 import type { DirectiveBase } from './directive-base'
 
 export interface VueDirectiveBinding {
-  value: any
-  oldValue: any
+  value: unknown
+  oldValue: unknown
   arg?: string
   modifiers: Record<string, boolean>
-  instance: any
+  instance: unknown
   dir: Directive
 }
 
 // 创建兼容的绑定对象
 function createCompatibleBinding(
-  binding: DirectiveBinding<any, string, string>
+  binding: DirectiveBinding<unknown, string, string>
 ): VueDirectiveBinding {
   return {
     value: binding.value,
@@ -33,7 +33,7 @@ function createCompatibleBinding(
  * 安全调用指令方法，支持两种签名
  */
 function safeCallDirectiveMethod(
-  method: any,
+  method: unknown,
   el: HTMLElement,
   binding: VueDirectiveBinding,
   methodName: string
@@ -57,7 +57,7 @@ function safeCallDirectiveMethod(
  * 安全调用生命周期方法
  */
 function safeCallLifecycleMethod(
-  method: any,
+  method: unknown,
   el: HTMLElement,
   binding: VueDirectiveBinding,
   methodName: string
@@ -97,7 +97,7 @@ export function createVueDirective(directive: DirectiveBase): Directive {
 
         // 调用生命周期方法
         safeCallLifecycleMethod(directive.lifecycle.created, el, compatibleBinding, 'lifecycle.created')
-        safeCallLifecycleMethod((directive as any).created, el, compatibleBinding, 'created')
+        safeCallLifecycleMethod(directive.created, el, compatibleBinding, 'created')
       } catch (error) {
         directive.lifecycle.error?.(error as Error)
       }
@@ -110,7 +110,7 @@ export function createVueDirective(directive: DirectiveBase): Directive {
       try {
         const compatibleBinding = createCompatibleBinding(binding)
         safeCallLifecycleMethod(directive.lifecycle.beforeMount, el, compatibleBinding, 'lifecycle.beforeMount')
-        safeCallLifecycleMethod((directive as any).beforeMount, el, compatibleBinding, 'beforeMount')
+        safeCallLifecycleMethod(directive.beforeMount, el, compatibleBinding, 'beforeMount')
       } catch (error) {
         directive.lifecycle.error?.(error as Error)
       }
@@ -120,7 +120,7 @@ export function createVueDirective(directive: DirectiveBase): Directive {
       try {
         const compatibleBinding = createCompatibleBinding(binding)
         safeCallLifecycleMethod(directive.lifecycle.mounted, el, compatibleBinding, 'lifecycle.mounted')
-        safeCallLifecycleMethod((directive as any).mounted, el, compatibleBinding, 'mounted')
+        safeCallLifecycleMethod(directive.mounted, el, compatibleBinding, 'mounted')
       } catch (error) {
         directive.lifecycle.error?.(error as Error)
       }
@@ -133,7 +133,7 @@ export function createVueDirective(directive: DirectiveBase): Directive {
       try {
         const compatibleBinding = createCompatibleBinding(binding)
         safeCallLifecycleMethod(directive.lifecycle.beforeUpdate, el, compatibleBinding, 'lifecycle.beforeUpdate')
-        safeCallLifecycleMethod((directive as any).beforeUpdate, el, compatibleBinding, 'beforeUpdate')
+        safeCallLifecycleMethod(directive.beforeUpdate, el, compatibleBinding, 'beforeUpdate')
       } catch (error) {
         directive.lifecycle.error?.(error as Error)
       }
@@ -143,7 +143,7 @@ export function createVueDirective(directive: DirectiveBase): Directive {
       try {
         const compatibleBinding = createCompatibleBinding(binding)
         safeCallLifecycleMethod(directive.lifecycle.updated, el, compatibleBinding, 'lifecycle.updated')
-        safeCallLifecycleMethod((directive as any).updated, el, compatibleBinding, 'updated')
+        safeCallLifecycleMethod(directive.updated, el, compatibleBinding, 'updated')
       } catch (error) {
         directive.lifecycle.error?.(error as Error)
       }
@@ -156,7 +156,7 @@ export function createVueDirective(directive: DirectiveBase): Directive {
       try {
         const compatibleBinding = createCompatibleBinding(binding)
         safeCallLifecycleMethod(directive.lifecycle.beforeUnmount, el, compatibleBinding, 'lifecycle.beforeUnmount')
-        safeCallLifecycleMethod((directive as any).beforeUnmount, el, compatibleBinding, 'beforeUnmount')
+        safeCallLifecycleMethod(directive.beforeUnmount, el, compatibleBinding, 'beforeUnmount')
       } catch (error) {
         directive.lifecycle.error?.(error as Error)
       }
@@ -165,7 +165,7 @@ export function createVueDirective(directive: DirectiveBase): Directive {
     unmounted(el: HTMLElement, binding: DirectiveBinding<any, string, string>) {
       try {
         const compatibleBinding = createCompatibleBinding(binding)
-        safeCallLifecycleMethod((directive as any).unmounted, el, compatibleBinding, 'unmounted')
+        safeCallLifecycleMethod(directive.unmounted, el, compatibleBinding, 'unmounted')
 
         // 清理指令实例
         if (el._engineDirectives) {
@@ -196,13 +196,13 @@ export function defineDirective(
   }
 ): Directive {
   return {
-    created: hooks.created as any,
-    beforeMount: hooks.beforeMount as any,
-    mounted: hooks.mounted as any,
-    beforeUpdate: hooks.beforeUpdate as any,
-    updated: hooks.updated as any,
-    beforeUnmount: hooks.beforeUnmount as any,
-    unmounted: hooks.unmounted as any,
+    created(el, binding) { hooks.created?.(el as HTMLElement, createCompatibleBinding(binding as DirectiveBinding<unknown, string, string>)) },
+    beforeMount(el, binding) { hooks.beforeMount?.(el as HTMLElement, createCompatibleBinding(binding as DirectiveBinding<unknown, string, string>)) },
+    mounted(el, binding) { hooks.mounted?.(el as HTMLElement, createCompatibleBinding(binding as DirectiveBinding<unknown, string, string>)) },
+    beforeUpdate(el, binding) { hooks.beforeUpdate?.(el as HTMLElement, createCompatibleBinding(binding as DirectiveBinding<unknown, string, string>)) },
+    updated(el, binding) { hooks.updated?.(el as HTMLElement, createCompatibleBinding(binding as DirectiveBinding<unknown, string, string>)) },
+    beforeUnmount(el, binding) { hooks.beforeUnmount?.(el as HTMLElement, createCompatibleBinding(binding as DirectiveBinding<unknown, string, string>)) },
+    unmounted(el, binding) { hooks.unmounted?.(el as HTMLElement, createCompatibleBinding(binding as DirectiveBinding<unknown, string, string>)) },
   }
 }
 
@@ -213,7 +213,7 @@ export const directiveUtils = {
   /**
    * 获取绑定值
    */
-  getValue(binding: VueDirectiveBinding, defaultValue?: any): any {
+  getValue(binding: VueDirectiveBinding, defaultValue?: unknown): unknown {
     return binding.value !== undefined ? binding.value : defaultValue
   },
 
@@ -241,7 +241,7 @@ export const directiveUtils = {
   /**
    * 获取旧值
    */
-  getOldValue(binding: VueDirectiveBinding): any {
+  getOldValue(binding: VueDirectiveBinding): unknown {
     return binding.oldValue
   },
 
@@ -255,11 +255,11 @@ export const directiveUtils = {
   /**
    * 解析配置对象
    */
-  parseConfig(binding: VueDirectiveBinding): Record<string, any> {
+  parseConfig(binding: VueDirectiveBinding): Record<string, unknown> {
     const value = binding.value
 
     if (typeof value === 'object' && value !== null) {
-      return value
+      return { ...(value as Record<string, unknown>) }
     }
 
     return { value }
@@ -269,14 +269,14 @@ export const directiveUtils = {
    * 创建事件处理器
    */
   createHandler(
-    callback: (...args: any[]) => void,
+    callback: EventListener,
     options?: {
       debounce?: number
       throttle?: number
       once?: boolean
     }
   ): EventListener {
-    let handler = callback as EventListener
+    let handler: EventListener = callback
 
     if (options?.debounce) {
       handler = debounce(handler, options.debounce)
@@ -286,10 +286,8 @@ export const directiveUtils = {
 
     if (options?.once) {
       const originalHandler = handler
-      handler = function (this: any, ...args: any[]) {
-        if (args.length > 0) {
-          originalHandler.apply(this, [args[0]] as [Event])
-        }
+      handler = function (this: unknown, evt: Event) {
+        originalHandler.call(this, evt)
         // 移除事件监听器的逻辑需要在调用处处理
       }
     }
@@ -299,13 +297,13 @@ export const directiveUtils = {
 }
 
 // 防抖函数
-function debounce(func: (...args: any[]) => void, wait: number): EventListener {
+function debounce(func: EventListener, wait: number): EventListener {
   let timeout: number | undefined
 
-  return function (this: any, ...args: any[]) {
+  return function (this: unknown, evt: Event) {
     const later = () => {
       timeout = undefined
-      func.apply(this, args)
+      func.call(this, evt)
     }
 
     clearTimeout(timeout)
@@ -314,15 +312,15 @@ function debounce(func: (...args: any[]) => void, wait: number): EventListener {
 }
 
 // 节流函数
-function throttle(func: (...args: any[]) => void, wait: number): EventListener {
+function throttle(func: EventListener, wait: number): EventListener {
   let lastTime = 0
 
-  return function (this: any, ...args: any[]) {
+  return function (this: unknown, evt: Event) {
     const now = Date.now()
 
     if (now - lastTime >= wait) {
       lastTime = now
-      func.apply(this, args)
+      func.call(this, evt)
     }
   } as EventListener
 }

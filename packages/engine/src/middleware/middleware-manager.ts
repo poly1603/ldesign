@@ -171,7 +171,7 @@ export function createErrorMiddleware(
 // 常用中间件示例
 export const commonMiddleware = {
   // 日志中间件
-  logger: (logger: any) =>
+  logger: (logger: { info: (msg: string, data?: unknown) => void; warn: (msg: string, data?: unknown) => void; debug: (msg: string, data?: unknown) => void }) =>
     createRequestMiddleware(
       'logger',
       async (context, next) => {
@@ -187,7 +187,7 @@ export const commonMiddleware = {
     ),
 
   // 错误处理中间件
-  errorHandler: (errorManager: any) =>
+  errorHandler: (errorManager: { captureError: (error: Error) => void }) =>
     createErrorMiddleware(
       'errorHandler',
       async (context, next) => {
@@ -203,7 +203,7 @@ export const commonMiddleware = {
     ),
 
   // 性能监控中间件
-  performance: (logger: any) =>
+  performance: (logger: { warn: (msg: string, data?: unknown) => void }) =>
     createRequestMiddleware(
       'performance',
       async (context, next) => {
@@ -224,7 +224,7 @@ export const commonMiddleware = {
     ),
 
   // 安全中间件
-  security: (logger: any) =>
+  security: (logger: { debug: (msg: string, data?: unknown) => void }) =>
     createRequestMiddleware(
       'security',
       async (context, next) => {

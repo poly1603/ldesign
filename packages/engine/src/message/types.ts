@@ -187,7 +187,7 @@ export interface MessageThemeManager {
 
 // 消息国际化接口
 export interface MessageI18n {
-  t: (key: string, params?: Record<string, any>) => string
+  t: (key: string, params?: Record<string, unknown>) => string
   setLocale: (locale: string) => void
   getLocale: () => string
 }
@@ -221,7 +221,7 @@ export interface MessageErrorHandler {
       options?: MessageConfig
     }
   ) => void
-  onError: (callback: (error: Error, context: any) => void) => void
+  onError: (callback: (error: Error, context: unknown) => void) => void
 }
 
 // 消息生命周期钩子

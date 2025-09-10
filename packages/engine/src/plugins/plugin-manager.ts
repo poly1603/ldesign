@@ -8,6 +8,8 @@ import type { Engine, Plugin, PluginManager } from '../types'
  * - 为每个插件提供上下文（engine/logger/config/events）
  * - 提供依赖图与依赖校验缓存，避免重复计算
  */
+import type { PluginInfo, PluginStatus, PluginContext } from '../types'
+
 export class PluginManagerImpl implements PluginManager {
   readonly name = 'PluginManager'
   readonly version = '1.0.0'
@@ -321,14 +323,15 @@ export class PluginManagerImpl implements PluginManager {
   /**
    * 获取单个插件的元信息摘要。
    */
-  getInfo(name: string): any | undefined {
+  getInfo(name: string): PluginInfo<Engine> | undefined {
     const plugin = this.plugins.get(name)
     if (!plugin) return undefined
 
     return {
-      name: plugin.name,
-      version: plugin.version,
-      description: plugin.description,
+      plugin,
+      status: 'installed',
+      installTime: undefined,
+      error: undefined,
       dependencies: plugin.dependencies || [],
       dependents: this.getDependents(name),
     }
@@ -338,7 +341,7 @@ export class PluginManagerImpl implements PluginManager {
   /**
    * 获取所有已注册插件的元信息摘要列表。
    */
-  getAllInfo(): any[] {
+  getAllInfo(): PluginInfo<Engine>[] {
     return Array.from(this.plugins.keys())
       .map(name => this.getInfo(name)!)
       .filter(Boolean)
@@ -348,7 +351,7 @@ export class PluginManagerImpl implements PluginManager {
   /**
    * 获取插件状态（当前实现为简化版）。
    */
-  getStatus(name: string): any | undefined {
+  getStatus(name: string): PluginStatus | undefined {
     if (!this.plugins.has(name)) return undefined
     return 'installed' // 简化实现
   }
@@ -378,9 +381,9 @@ export class PluginManagerImpl implements PluginManager {
    * 按作者筛选插件（依赖插件公开 author 字段）。
    */
   findByAuthor(author: string): Plugin[] {
-    return Array.from(this.plugins.values()).filter(
-      plugin => (plugin as any).author === author
-    )
+    return Array.from(this.plugins.values()).filter((plugin) => {
+      return (plugin as { author?: string }).author === author
+    })
   }
 
   // 按依赖查找插件
@@ -403,7 +406,7 @@ export class PluginManagerImpl implements PluginManager {
             logger: this.engine!.logger,
             config: this.engine!.config,
             events: this.engine!.events,
-          } as any)
+          } as PluginContext<Engine>)
         } catch (error) {
           console.error(`Error uninstalling plugin ${plugin.name}:`, error)
         }

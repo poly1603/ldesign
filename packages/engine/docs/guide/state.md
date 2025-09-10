@@ -10,14 +10,12 @@
 interface StateManager {
   set: <T>(key: string, value: T) => void
   get: <T>(key: string) => T | undefined
-  has: (key: string) => boolean
-  remove: (key: string) => boolean
+  remove: (key: string) => void
   clear: () => void
-  getAll: () => Record<string, any>
-  subscribe: (key: string, callback: StateChangeCallback) => () => void
+  watch: <T>(key: string, callback: WatchCallback<T>) => () => void
 }
 
-type StateChangeCallback<T = any> = (newValue: T, oldValue: T) => void
+type WatchCallback<T = any> = (newValue: T, oldValue: T) => void
 ```
 
 ## 基本用法
@@ -25,10 +23,17 @@ type StateChangeCallback<T = any> = (newValue: T, oldValue: T) => void
 ### 设置和获取状态
 
 ```typescript
-import { createApp } from '@ldesign/engine'
+import { createEngine } from '@ldesign/engine'
+import { createApp } from 'vue'
 import App from './App.vue'
 
-const engine = createApp(App)
+const engine = createEngine({
+  config: {
+    debug: true
+  }
+})
+const app = createApp(App)
+engine.install(app)
 
 // 设置状态
 engine.state.set('user', {
@@ -49,23 +54,20 @@ console.log('当前用户:', user)
 console.log('当前主题:', theme)
 ```
 
-### 检查和删除状态
+### 删除状态
 
 ```typescript
-// 检查状态是否存在
-if (engine.state.has('user')) {
-  console.log('用户状态存在')
-}
-
 // 删除状态
 engine.state.remove('temporaryData')
 
 // 清空所有状态
 engine.state.clear()
 
-// 获取所有状态
-const allState = engine.state.getAll()
-console.log('所有状态:', allState)
+// 检查状态是否存在（通过 get 方法）
+const user = engine.state.get('user')
+if (user !== undefined) {
+  console.log('用户状态存在')
+}
 ```
 
 ## 响应式状态
@@ -74,7 +76,7 @@ console.log('所有状态:', allState)
 
 ```typescript
 // 监听特定状态的变化
-const unsubscribe = engine.state.subscribe('user', (newUser, oldUser) => {
+const unsubscribe = engine.state.watch('user', (newUser, oldUser) => {
   console.log('用户状态变化:')
   console.log('旧值:', oldUser)
   console.log('新值:', newUser)

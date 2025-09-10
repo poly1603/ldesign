@@ -73,27 +73,27 @@ export abstract class DirectiveBase implements EngineDirective {
     // 指令创建前
   }
 
-  created(_el?: HTMLElement, _binding?: any): void {
+  created(_el?: HTMLElement, _binding?: unknown): void {
     // 指令创建后
   }
 
-  beforeMount(_el?: HTMLElement, _binding?: any): void {
+  beforeMount(_el?: HTMLElement, _binding?: unknown): void {
     // 指令挂载前
   }
 
-  mounted(_el?: HTMLElement, _binding?: any): void {
+  mounted(_el?: HTMLElement, _binding?: unknown): void {
     // 指令挂载后
   }
 
-  beforeUpdate(_el?: HTMLElement, _binding?: any): void {
+  beforeUpdate(_el?: HTMLElement, _binding?: unknown): void {
     // 指令更新前
   }
 
-  updated(_el?: HTMLElement, _binding?: any): void {
+  updated(_el?: HTMLElement, _binding?: unknown): void {
     // 指令更新后
   }
 
-  beforeUnmount(_el?: HTMLElement, _binding?: any): void {
+  beforeUnmount(_el?: HTMLElement, _binding?: unknown): void {
     // 指令卸载前
   }
 
@@ -126,7 +126,7 @@ export abstract class DirectiveBase implements EngineDirective {
     return el instanceof HTMLElement
   }
 
-  protected validateBinding(binding: any): boolean {
+  protected validateBinding(binding: unknown): boolean {
     return binding !== null && binding !== undefined
   }
 

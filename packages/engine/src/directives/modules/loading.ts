@@ -80,20 +80,21 @@ export class LoadingDirective extends DirectiveBase {
     }
 
     if (typeof value === 'object' && value !== null) {
+      const obj = value as Partial<LoadingOptions>
       return {
-        loading: value.loading !== false,
-        text: value.text || '加载中...',
-        spinner: value.spinner || 'default',
-        size: value.size || 'medium',
-        color: value.color || '#409eff',
-        background: value.background || 'rgba(255, 255, 255, 0.9)',
-        opacity: value.opacity || 0.9,
-        zIndex: value.zIndex || 2000,
-        customSpinner: value.customSpinner,
-        position: value.position || 'absolute',
-        fullscreen: value.fullscreen || false,
-        lock: value.lock !== false,
-        target: value.target,
+        loading: obj.loading !== false,
+        text: obj.text || '加载中...',
+        spinner: obj.spinner || 'default',
+        size: obj.size || 'medium',
+        color: obj.color || '#409eff',
+        background: obj.background || 'rgba(255, 255, 255, 0.9)',
+        opacity: obj.opacity ?? 0.9,
+        zIndex: obj.zIndex ?? 2000,
+        customSpinner: obj.customSpinner,
+        position: obj.position || 'absolute',
+        fullscreen: obj.fullscreen || false,
+        lock: obj.lock !== false,
+        target: obj.target,
       }
     }
 

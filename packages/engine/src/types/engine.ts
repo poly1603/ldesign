@@ -10,20 +10,21 @@ import type {
   StateAdapter,
   ThemeAdapter,
 } from './base'
-import type { CacheManager } from './cache'
 import type { ConfigManager, EnhancedEngineConfig } from './config'
 import type { DirectiveManager } from './directive'
-import type { EnvironmentManager } from './environment'
 import type { ErrorManager } from './error'
 import type { EventManager } from './event'
-import type { LifecycleManager } from './lifecycle'
 import type { Logger } from './logger'
 import type { Middleware, MiddlewareManager } from './middleware'
 import type { NotificationManager } from './notification'
-import type { PerformanceManager } from './performance'
 import type { Plugin, PluginManager } from './plugin'
-import type { SecurityManager } from './security'
 import type { StateManager } from './state'
+// 使用实现定义以保证与实际工厂函数一致
+import type { CacheManager } from '../cache/cache-manager'
+import type { EnvironmentManager } from '../environment/environment-manager'
+import type { LifecycleManager } from '../lifecycle/lifecycle-manager'
+import type { PerformanceManager } from '../performance/performance-manager'
+import type { SecurityManager } from '../security/security-manager'
 
 // 引擎主接口
 export interface Engine {

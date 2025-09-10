@@ -109,15 +109,16 @@ export class CopyDirective extends DirectiveBase {
     }
 
     if (typeof value === 'object' && value !== null) {
+      const obj = value as Partial<CopyOptions>
       return {
-        text: value.text,
-        target: value.target,
-        onSuccess: value.onSuccess,
-        onError: value.onError,
-        successClass: value.successClass || 'copy-success',
-        errorClass: value.errorClass || 'copy-error',
-        successDuration: value.successDuration,
-        fallback: value.fallback !== false,
+        text: obj.text,
+        target: obj.target,
+        onSuccess: obj.onSuccess,
+        onError: obj.onError,
+        successClass: obj.successClass || 'copy-success',
+        errorClass: obj.errorClass || 'copy-error',
+        successDuration: obj.successDuration,
+        fallback: obj.fallback !== false,
       }
     }
 

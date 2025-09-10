@@ -11,8 +11,15 @@ interface Plugin {
   name: string
   version?: string
   dependencies?: string[]
-  install: (engine: Engine) => void | Promise<void>
-  uninstall?: (engine: Engine) => void | Promise<void>
+  install: (context: PluginContext) => void | Promise<void>
+  uninstall?: (context: PluginContext) => void | Promise<void>
+}
+
+interface PluginContext {
+  engine: Engine
+  logger: Logger
+  config: ConfigManager
+  events: EventManager
 }
 ```
 
@@ -21,40 +28,55 @@ interface Plugin {
 ### 基本插件
 
 ```typescript
-import { createApp, creators } from '@ldesign/engine'
+import { createEngine } from '@ldesign/engine'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 // 创建一个简单的插件
-const myPlugin = creators.plugin('my-plugin', (engine) => {
-  // 插件安装逻辑
-  engine.logger.info('My plugin installed!')
+const myPlugin = {
+  name: 'my-plugin',
+  version: '1.0.0',
+  install: (context) => {
+    // 插件安装逻辑
+    context.logger.info('My plugin installed!')
 
-  // 注册全局状态
-  engine.state.set('myPluginData', { count: 0 })
+    // 注册全局状态
+    context.engine.state.set('myPluginData', { count: 0 })
 
-  // 监听事件
-  engine.events.on('my-event', (data) => {
-    console.log('My event triggered:', data)
-  })
-})
+    // 监听事件
+    context.events.on('my-event', (data) => {
+      console.log('My event triggered:', data)
+    })
+  }
+}
 
 // 使用插件
-const engine = createApp(App, {
+const engine = createEngine({
   plugins: [myPlugin],
+  config: {
+    debug: true
+  }
 })
+
+const app = createApp(App)
+engine.install(app)
 ```
 
 ### 异步插件
 
 ```typescript
-const asyncPlugin = creators.plugin('async-plugin', async (engine) => {
-  // 异步初始化
-  const data = await fetch('/api/plugin-config')
-  const config = await data.json()
+const asyncPlugin = {
+  name: 'async-plugin',
+  version: '1.0.0',
+  install: async (context) => {
+    // 异步初始化
+    const data = await fetch('/api/plugin-config')
+    const config = await data.json()
 
-  engine.state.set('asyncPluginConfig', config)
-  engine.logger.info('Async plugin loaded with config:', config)
-})
+    context.engine.state.set('asyncPluginConfig', config)
+    context.logger.info('Async plugin loaded with config:', config)
+  }
+}
 ```
 
 ### 带依赖的插件
@@ -64,13 +86,13 @@ const dependentPlugin = {
   name: 'dependent-plugin',
   version: '1.0.0',
   dependencies: ['base-plugin'], // 依赖其他插件
-  install: (engine) => {
+  install: (context) => {
     // 确保依赖插件已安装
-    if (!engine.plugins.isRegistered('base-plugin')) {
+    if (!context.engine.plugins.isRegistered('base-plugin')) {
       throw new Error('base-plugin is required')
     }
 
-    engine.logger.info('Dependent plugin installed')
+    context.logger.info('Dependent plugin installed')
   },
 }
 ```
@@ -81,12 +103,15 @@ const dependentPlugin = {
 
 ```typescript
 // 在创建引擎时注册
-const engine = createApp(App, {
+const engine = createEngine({
   plugins: [myPlugin, asyncPlugin],
+  config: {
+    debug: true
+  }
 })
 
 // 动态注册插件
-await engine.use(dependentPlugin)
+await engine.plugins.register(dependentPlugin)
 ```
 
 ### 卸载插件

@@ -1,4 +1,4 @@
-import type { DirectiveManager, EngineDirective, Logger } from '../types'
+import type { DirectiveManager, EngineDirective, Logger, DirectiveValidationResult, VueDirectiveBinding } from '../types'
 import { createHybridDirectiveAdapter } from './utils/directive-compatibility'
 
 export class DirectiveManagerImpl implements DirectiveManager {
@@ -10,7 +10,7 @@ export class DirectiveManagerImpl implements DirectiveManager {
     // logger参数保留用于未来扩展
   }
 
-  register(name: string, directive: any): void {
+  register(name: string, directive: unknown): void {
     if (this.directives.has(name)) {
       console.warn(
         `Directive "${name}" is already registered. It will be replaced.`
@@ -56,7 +56,7 @@ export class DirectiveManagerImpl implements DirectiveManager {
   }
 
   // 批量注册指令
-  registerBatch(directives: Record<string, any>): void {
+  registerBatch(directives: Record<string, unknown>): void {
     for (const [name, directive] of Object.entries(directives)) {
       this.register(name, directive)
     }
@@ -111,7 +111,7 @@ export class DirectiveManagerImpl implements DirectiveManager {
   }
 
   // 验证指令
-  validate(_directive: EngineDirective): any {
+  validate(_directive: EngineDirective | unknown): DirectiveValidationResult {
     return {
       isValid: true,
       errors: [],
@@ -129,36 +129,42 @@ export function createDirectiveManager(logger?: Logger): DirectiveManager {
 export const commonDirectives = {
   // 点击外部区域指令
   clickOutside: {
-    mounted(el: HTMLElement, binding: any) {
-      el._clickOutsideHandler = (event: Event) => {
+    mounted(el: HTMLElement, binding: VueDirectiveBinding) {
+      type ClickEl = HTMLElement & { _clickOutsideHandler?: (event: Event) => void }
+      const elWith = el as ClickEl
+      elWith._clickOutsideHandler = (event: Event) => {
         if (!(el === event.target || el.contains(event.target as Node))) {
-          binding.value(event)
+          const handler = binding.value as ((e: Event) => void) | undefined
+          if (typeof handler === 'function') handler(event)
         }
       }
-      document.addEventListener('click', el._clickOutsideHandler)
+      document.addEventListener('click', elWith._clickOutsideHandler as (e: Event) => void)
     },
     unmounted(el: HTMLElement) {
-      if (el._clickOutsideHandler) {
-        document.removeEventListener('click', el._clickOutsideHandler)
-        delete el._clickOutsideHandler
+      type ClickEl = HTMLElement & { _clickOutsideHandler?: (event: Event) => void }
+      const elWith = el as ClickEl
+      if (elWith._clickOutsideHandler) {
+        document.removeEventListener('click', elWith._clickOutsideHandler)
+        delete elWith._clickOutsideHandler
       }
     },
-  } as any,
+  } as unknown,
 
   // 复制到剪贴板指令
   copy: {
-    mounted(el: HTMLElement, binding: any) {
-      el._copyHandler = async () => {
+    mounted(el: HTMLElement, binding: VueDirectiveBinding) {
+      interface CopyBindingValue { text?: string; target?: string; callback?: (payload: unknown) => void }
+      type CopyEl = HTMLElement & { _copyHandler?: () => void }
+      const elWith = el as CopyEl
+      elWith._copyHandler = async () => {
         try {
-          const text = binding.value || el.textContent || ''
+          const val = binding.value as CopyBindingValue | string | undefined
+          const text = typeof val === 'string' ? val : val?.text ?? el.textContent ?? ''
           await navigator.clipboard.writeText(text)
 
-          // 触发成功回调
-          if (
-            binding.arg === 'success' &&
-            typeof binding.modifiers.callback === 'function'
-          ) {
-            binding.modifiers.callback(text)
+          const cb = (typeof val === 'object' && val && typeof val.callback === 'function') ? val.callback : undefined
+          if (binding.arg === 'success' && cb) {
+            cb(text)
           }
 
           // 添加成功样式
@@ -169,44 +175,48 @@ export const commonDirectives = {
         } catch (error) {
           console.error('Failed to copy text:', error)
 
-          // 触发错误回调
-          if (
-            binding.arg === 'error' &&
-            typeof binding.modifiers.callback === 'function'
-          ) {
-            binding.modifiers.callback(error)
+          const val = binding.value as { callback?: (e: unknown) => void } | undefined
+          const cb = val && typeof val.callback === 'function' ? val.callback : undefined
+          if (binding.arg === 'error' && cb) {
+            cb(error)
           }
         }
       }
 
-      el.addEventListener('click', el._copyHandler)
+      el.addEventListener('click', elWith._copyHandler as () => void)
       el.style.cursor = 'pointer'
     },
     unmounted(el: HTMLElement) {
-      if (el._copyHandler) {
-        el.removeEventListener('click', el._copyHandler)
-        delete el._copyHandler
+      type CopyEl = HTMLElement & { _copyHandler?: () => void }
+      const elWith = el as CopyEl
+      if (elWith._copyHandler) {
+        el.removeEventListener('click', elWith._copyHandler)
+        delete elWith._copyHandler
       }
     },
-  } as any,
+  } as unknown,
 
   // 懒加载指令
   lazy: {
-    mounted(el: HTMLElement, binding: any) {
+    mounted(el: HTMLElement, binding: VueDirectiveBinding) {
+      interface LazyBindingValue { options?: Record<string, unknown>; callback?: (el: HTMLElement) => void }
+      const val = binding.value as LazyBindingValue | ((el: HTMLElement) => void) | undefined
       const options = {
         threshold: 0.1,
         rootMargin: '50px',
-        ...binding.value?.options,
+        ...(typeof val === 'object' && val ? (val.options ?? {}) : {}),
       }
 
-      el._lazyObserver = new IntersectionObserver(entries => {
+      type LazyEl = HTMLElement & { _lazyObserver?: IntersectionObserver }
+      const elWith = el as LazyEl
+      elWith._lazyObserver = new IntersectionObserver(entries => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             // 执行懒加载回调
-            if (typeof binding.value === 'function') {
-              binding.value(el)
-            } else if (typeof binding.value?.callback === 'function') {
-              binding.value.callback(el)
+            if (typeof val === 'function') {
+              val(el)
+            } else if (typeof val?.callback === 'function') {
+              val.callback(el)
             }
 
             // 停止观察
@@ -215,7 +225,7 @@ export const commonDirectives = {
         })
       }, options)
 
-      el._lazyObserver.observe(el)
+      elWith._lazyObserver.observe(el)
     },
     unmounted(el: HTMLElement) {
       if (el._lazyObserver) {
@@ -223,29 +233,33 @@ export const commonDirectives = {
         delete el._lazyObserver
       }
     },
-  } as any,
+  } as unknown,
 
   // 防抖指令
   debounce: {
-    mounted(el: HTMLElement, binding: any) {
-      const delay = binding.value?.delay || 300
-      const event = binding.arg || 'click'
+    mounted(el: HTMLElement, binding: VueDirectiveBinding) {
+      interface DebounceValue { delay?: number; callback?: (...args: unknown[]) => void; event?: string }
+      const val = binding.value as DebounceValue | ((...args: unknown[]) => void) | undefined
+      const delay = (typeof val === 'object' && val ? val.delay : undefined) ?? 300
+      const event = binding.arg || (typeof val === 'object' && val ? val.event : undefined) || 'click'
 
-      el._debounceHandler = (...args: any[]) => {
+      el._debounceHandler = (...args: unknown[]) => {
         clearTimeout(el._debounceTimer)
         el._debounceTimer = window.setTimeout(() => {
-          if (typeof binding.value === 'function') {
-            binding.value(...args)
-          } else if (typeof binding.value?.callback === 'function') {
-            binding.value.callback(...args)
+          if (typeof val === 'function') {
+            val(...args)
+          } else if (typeof val?.callback === 'function') {
+            val.callback(...args)
           }
         }, delay)
       }
 
       el.addEventListener(event, el._debounceHandler)
     },
-    updated(el: HTMLElement, binding: any) {
-      const delay = binding.value?.delay || 300
+    updated(el: HTMLElement, binding: VueDirectiveBinding) {
+      interface DebounceValue { delay?: number }
+      const val = binding.value as DebounceValue | undefined
+      const delay = (val?.delay ?? 300)
       el._debounceDelay = delay
     },
     unmounted(el: HTMLElement) {
@@ -258,23 +272,25 @@ export const commonDirectives = {
         delete el._debounceHandler
       }
     },
-  } as any,
+  } as unknown,
 
   // 节流指令
   throttle: {
-    mounted(el: HTMLElement, binding: any) {
-      const delay = binding.value?.delay || 300
-      const event = binding.arg || 'click'
+    mounted(el: HTMLElement, binding: VueDirectiveBinding) {
+      interface ThrottleValue { delay?: number; callback?: (...args: unknown[]) => void; event?: string }
+      const val = binding.value as ThrottleValue | ((...args: unknown[]) => void) | undefined
+      const delay = (typeof val === 'object' && val ? val.delay : undefined) ?? 300
+      const event = binding.arg || (typeof val === 'object' && val ? val.event : undefined) || 'click'
       let lastTime = 0
 
-      el._throttleHandler = (...args: any[]) => {
+      el._throttleHandler = (...args: unknown[]) => {
         const now = Date.now()
         if (now - lastTime >= delay) {
           lastTime = now
-          if (typeof binding.value === 'function') {
-            binding.value(...args)
-          } else if (typeof binding.value?.callback === 'function') {
-            binding.value.callback(...args)
+          if (typeof val === 'function') {
+            val(...args)
+          } else if (typeof val?.callback === 'function') {
+            val.callback(...args)
           }
         }
       }
@@ -288,14 +304,13 @@ export const commonDirectives = {
         delete el._throttleHandler
       }
     },
-  } as any,
+  } as unknown,
 
   // 权限控制指令
   permission: {
-    mounted(el: HTMLElement, binding: any) {
-      const permissions = Array.isArray(binding.value)
-        ? binding.value
-        : [binding.value]
+    mounted(el: HTMLElement, binding: VueDirectiveBinding) {
+      const val = binding.value as string | string[] | undefined
+      const permissions = Array.isArray(val) ? val : [val].filter((v): v is string => typeof v === 'string')
       const hasPermission = permissions.some((permission: string) => {
         // 这里应该调用实际的权限检查逻辑
         return checkPermission(permission)
@@ -313,21 +328,21 @@ export const commonDirectives = {
         }
       }
     },
-  } as any,
+  } as unknown,
 
   // 焦点指令
   focus: {
-    mounted(el: HTMLElement, binding: any) {
+    mounted(el: HTMLElement, binding: VueDirectiveBinding) {
       if (binding.value !== false) {
         el.focus()
       }
     },
-    updated(el: HTMLElement, binding: any) {
+    updated(el: HTMLElement, binding: VueDirectiveBinding) {
       if (binding.value && !binding.oldValue) {
         el.focus()
       }
     },
-  } as any,
+  } as unknown,
 }
 
 // 权限检查函数（示例实现）
@@ -343,9 +358,9 @@ declare global {
     _clickOutsideHandler?: (event: Event) => void
     _copyHandler?: () => void
     _lazyObserver?: IntersectionObserver
-    _debounceHandler?: (...args: unknown[]) => void
+    _debounceHandler?: EventListener
     _debounceTimer?: number
     _debounceDelay?: number
-    _throttleHandler?: (...args: unknown[]) => void
+    _throttleHandler?: EventListener
   }
 }

@@ -4,7 +4,7 @@
  */
 
 import type { Component } from 'vue'
-import type { CreateEngineOptions, Engine } from '../types'
+import type { CreateEngineOptions, Engine, ConfigSchema } from '../types'
 import { commonDirectives } from '../directives/directive-manager'
 import { EngineImpl } from './engine'
 
@@ -23,7 +23,7 @@ import { EngineImpl } from './engine'
  * - 🔔 通知系统：统一的通知和消息管理
  *
  * @param {CreateEngineOptions} options 引擎配置选项
- * @param {Record<string, any>} [options.config] 基本配置项
+ * @param {Record<string, unknown>} [options.config] 基本配置项
  * @param {Plugin[]} [options.plugins] 要注册的插件列表
  * @param {Middleware[]} [options.middleware] 要注册的中间件列表
  * @param {ConfigSchema} [options.configSchema] 自定义配置模式
@@ -90,7 +90,7 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
   // 3. 配置高级特性
   // 3.1 设置自定义配置模式，用于配置验证和类型检查
   if (configSchema) {
-    engine.config.setSchema(configSchema as any)
+    engine.config.setSchema(configSchema as ConfigSchema)
   }
 
   // 3.2 启用配置自动保存功能，防止配置丢失
@@ -219,7 +219,7 @@ export const creators = {
    * @param options 其他选项
    * @returns 插件对象
    */
-  plugin: (name: string, install: any, options?: Record<string, unknown>) => ({
+  plugin: (name: string, install: unknown, options?: Record<string, unknown>) => ({
     name,
     install,
     ...options,
@@ -233,7 +233,7 @@ export const creators = {
    * @param priority 优先级
    * @returns 中间件对象
    */
-  middleware: (name: string, handler: any, priority?: number) => ({
+  middleware: (name: string, handler: unknown, priority?: number) => ({
     name,
     handler,
     priority,

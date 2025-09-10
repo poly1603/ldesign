@@ -10,18 +10,18 @@ import { defineDirective } from '../base/vue-directive-adapter'
 export interface TooltipOptions {
   content?: string
   placement?:
-    | 'top'
-    | 'bottom'
-    | 'left'
-    | 'right'
-    | 'top-start'
-    | 'top-end'
-    | 'bottom-start'
-    | 'bottom-end'
-    | 'left-start'
-    | 'left-end'
-    | 'right-start'
-    | 'right-end'
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'top-start'
+  | 'top-end'
+  | 'bottom-start'
+  | 'bottom-end'
+  | 'left-start'
+  | 'left-end'
+  | 'right-start'
+  | 'right-end'
   trigger?: 'hover' | 'click' | 'focus' | 'manual'
   delay?: number | { show: number; hide: number }
   offset?: number
@@ -96,28 +96,31 @@ export class TooltipDirective extends DirectiveBase {
     const value = binding.value
 
     if (typeof value === 'string') {
+      const argPlacement = binding.arg as TooltipOptions['placement'] | undefined
       return {
         content: value,
-        placement: (binding.arg as any) || 'top',
+        placement: argPlacement ?? 'top',
       }
     }
 
     if (typeof value === 'object' && value !== null) {
+      const obj = value as Partial<TooltipOptions> & { title?: string }
+      const argPlacement = binding.arg as TooltipOptions['placement'] | undefined
       return {
-        content: value.content || value.title,
-        placement: value.placement || binding.arg || 'top',
-        trigger: value.trigger || 'hover',
-        delay: value.delay || { show: 100, hide: 100 },
-        offset: value.offset || 8,
-        disabled: value.disabled || false,
-        theme: value.theme || 'dark',
-        maxWidth: value.maxWidth || '200px',
-        zIndex: value.zIndex || 3000,
-        arrow: value.arrow !== false,
-        customClass: value.customClass,
-        html: value.html || false,
-        onShow: value.onShow,
-        onHide: value.onHide,
+        content: obj.content || obj.title,
+        placement: obj.placement || argPlacement || 'top',
+        trigger: obj.trigger || 'hover',
+        delay: obj.delay || { show: 100, hide: 100 },
+        offset: obj.offset ?? 8,
+        disabled: obj.disabled ?? false,
+        theme: obj.theme || 'dark',
+        maxWidth: obj.maxWidth || '200px',
+        zIndex: obj.zIndex ?? 3000,
+        arrow: obj.arrow !== false,
+        customClass: obj.customClass,
+        html: obj.html ?? false,
+        onShow: obj.onShow,
+        onHide: obj.onHide,
       }
     }
 

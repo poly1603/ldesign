@@ -51,7 +51,7 @@ export interface PerformanceEvent {
   startTime: number
   endTime?: number
   duration?: number
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   metrics?: Partial<PerformanceMetrics>
 }
 
@@ -116,9 +116,9 @@ export interface PerformanceManager {
   startEvent: (
     type: PerformanceEventType,
     name: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ) => string
-  endEvent: (id: string, metadata?: Record<string, any>) => void
+  endEvent: (id: string, metadata?: Record<string, unknown>) => void
   recordEvent: (event: Omit<PerformanceEvent, 'id'>) => string
 
   // 指标收集
@@ -152,17 +152,22 @@ export interface PerformanceManager {
   importData: (data: string) => void
 }
 
-// FPS监控器
+// FPS监控器 - 优化版本
 class FPSMonitor {
-  private frames: number[] = []
+  private frames: Float32Array = new Float32Array(60) // 使用 TypedArray 提高性能
+  private frameIndex = 0
+  private frameCount = 0
   private lastTime = 0
   private animationId?: number
   private callback?: (fps: number) => void
+  private fpsSum = 0 // 缓存总和，避免重复计算
 
   start(callback: (fps: number) => void): void {
     this.callback = callback
     this.lastTime = globalThis.performance.now()
-    this.frames = []
+    this.frameIndex = 0
+    this.frameCount = 0
+    this.fpsSum = 0
     this.tick()
   }
 
@@ -179,17 +184,17 @@ class FPSMonitor {
     const delta = now - this.lastTime
     this.lastTime = now
 
-    this.frames.push(delta)
+    // 使用循环缓冲区，避免数组 shift 操作
+    const oldValue = this.frames[this.frameIndex] || 0
+    this.frames[this.frameIndex] = delta
+    this.fpsSum = this.fpsSum - oldValue + delta
 
-    // 保持最近60帧的数据
-    if (this.frames.length > 60) {
-      this.frames.shift()
-    }
+    this.frameIndex = (this.frameIndex + 1) % 60
+    this.frameCount = Math.min(this.frameCount + 1, 60)
 
-    // 计算FPS
-    if (this.frames.length >= 10) {
-      const averageFrameTime =
-        this.frames.reduce((a, b) => a + b, 0) / this.frames.length
+    // 计算FPS - 使用缓存的总和
+    if (this.frameCount >= 10) {
+      const averageFrameTime = this.fpsSum / this.frameCount
       const fps = 1000 / averageFrameTime
 
       if (this.callback) {
@@ -229,8 +234,12 @@ class MemoryMonitor {
   }
 
   private getMemoryInfo(): PerformanceMetrics['memory'] | undefined {
-    if (typeof performance !== 'undefined' && 'memory' in performance) {
-      const memory = (performance as any).memory
+    if (
+      typeof globalThis !== 'undefined' &&
+      typeof globalThis.performance !== 'undefined' &&
+      'memory' in (globalThis.performance as Performance)
+    ) {
+      const memory = (globalThis.performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory!
       return {
         used: memory.usedJSHeapSize,
         total: memory.totalJSHeapSize,
@@ -268,7 +277,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
   startEvent(
     type: PerformanceEventType,
     name: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): string {
     const id = `perf_${++this.eventIdCounter}_${Date.now()}`
     const event: PerformanceEvent = {
@@ -283,7 +292,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
     return id
   }
 
-  endEvent(id: string, metadata?: Record<string, any>): void {
+  endEvent(id: string, metadata?: Record<string, unknown>): void {
     const event = this.events.get(id)
     if (!event) {
       this.engine?.logger?.warn(`Performance event ${id} not found`)
@@ -332,8 +341,12 @@ export class PerformanceManagerImpl implements PerformanceManager {
     }
 
     // 收集内存信息
-    if (typeof performance !== 'undefined' && 'memory' in performance) {
-      const memory = (performance as any).memory
+    if (
+      typeof globalThis !== 'undefined' &&
+      typeof globalThis.performance !== 'undefined' &&
+      'memory' in (globalThis.performance as Performance)
+    ) {
+      const memory = (globalThis.performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory!
       metrics.memory = {
         used: memory.usedJSHeapSize,
         total: memory.totalJSHeapSize,
@@ -496,7 +509,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
     const averageFPS =
       fpsMetrics.length > 0
         ? fpsMetrics.reduce((sum, m) => sum + (m.rendering?.fps || 0), 0) /
-          fpsMetrics.length
+        fpsMetrics.length
         : 0
 
     const latestMemory = metrics.filter(m => m.memory).pop()
@@ -626,15 +639,16 @@ export class PerformanceManagerImpl implements PerformanceManager {
     }
   }
 
-  private getEntryMetadata(entry: PerformanceEntry): Record<string, any> {
-    const metadata: Record<string, any> = {}
+  private getEntryMetadata(entry: PerformanceEntry): Record<string, unknown> {
+    const metadata: Record<string, unknown> = {}
 
-    if ('transferSize' in entry) {
-      metadata.transferSize = (entry as any).transferSize
+    const anyEntry = entry as unknown as { transferSize?: number; decodedBodySize?: number }
+    if (typeof anyEntry.transferSize === 'number') {
+      metadata.transferSize = anyEntry.transferSize
     }
 
-    if ('decodedBodySize' in entry) {
-      metadata.decodedBodySize = (entry as any).decodedBodySize
+    if (typeof anyEntry.decodedBodySize === 'number') {
+      metadata.decodedBodySize = anyEntry.decodedBodySize
     }
 
     return metadata
@@ -649,9 +663,8 @@ export class PerformanceManagerImpl implements PerformanceManager {
       this.reportViolation({
         type: 'threshold',
         severity: 'high',
-        message: `Slow operation detected: ${
-          event.name
-        } took ${event.duration.toFixed(2)}ms`,
+        message: `Slow operation detected: ${event.name
+          } took ${event.duration.toFixed(2)}ms`,
         details: { event, threshold: responseTime.poor },
         timestamp: Date.now(),
       })
@@ -941,14 +954,15 @@ export function createPerformanceManager(
 // 性能装饰器
 export function performance(name?: string) {
   return function (
-    target: any,
+    target: unknown,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
     const originalMethod = descriptor.value
-    const eventName = name || `${target.constructor.name}.${propertyKey}`
+    const ctorName = (target as { constructor?: { name?: string } }).constructor?.name ?? 'UnknownTarget'
+    const eventName = name || `${ctorName}.${propertyKey}`
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       const manager = getGlobalPerformanceManager()
       const eventId = manager.startEvent(PerformanceEventType.CUSTOM, eventName)
 

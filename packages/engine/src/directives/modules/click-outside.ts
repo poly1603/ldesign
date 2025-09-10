@@ -8,7 +8,7 @@ import { DirectiveBase } from '../base/directive-base'
 import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface ClickOutsideOptions {
-  handler: (event: Event) => void
+  handler?: (event: Event) => void
   exclude?: string[] | HTMLElement[]
   capture?: boolean
   disabled?: boolean
@@ -75,8 +75,11 @@ export class ClickOutsideDirective extends DirectiveBase {
     // 存储处理器
     el._clickOutsideHandler = handler
 
-    // 添加事件监听器
-    document.addEventListener('click', handler, config.capture || false)
+    // 添加事件监听器（使用被动监听器以优化滚动性能）
+    const useCapture = !!config.capture
+    document.addEventListener('click', handler, { capture: useCapture, passive: true })
+    // 记录以便正确移除监听器
+    el._clickOutsideCapture = useCapture
 
     this.log('Click outside directive mounted')
   }
@@ -91,8 +94,10 @@ export class ClickOutsideDirective extends DirectiveBase {
 
   public unmounted(el: HTMLElement): void {
     if (el._clickOutsideHandler) {
-      document.removeEventListener('click', el._clickOutsideHandler)
+      // 使用相同的 capture 选项确保能够移除监听器
+      document.removeEventListener('click', el._clickOutsideHandler, !!el._clickOutsideCapture)
       delete el._clickOutsideHandler
+      delete el._clickOutsideCapture
     }
 
     this.log('Click outside directive unmounted')
@@ -102,20 +107,21 @@ export class ClickOutsideDirective extends DirectiveBase {
     const value = binding.value
 
     if (typeof value === 'function') {
-      return { handler: value }
+      return { handler: value as (event: Event) => void }
     }
 
     if (typeof value === 'object' && value !== null) {
+      const obj = value as Partial<ClickOutsideOptions> & { handler?: (event: Event) => void }
       return {
-        handler: value.handler || value,
-        exclude: value.exclude,
-        capture: value.capture,
-        disabled: value.disabled,
+        handler: obj.handler,
+        exclude: obj.exclude,
+        capture: obj.capture,
+        disabled: obj.disabled,
       }
     }
 
-    // 返回一个标记为无效的处理器
-    return { handler: null as any }
+    // 未提供处理器时返回空配置，以便在 mounted 中发出警告
+    return {}
   }
 }
 
@@ -156,6 +162,7 @@ export const vClickOutside = defineDirective('click-outside', {
 declare global {
   interface HTMLElement {
     _clickOutsideHandler?: (event: Event) => void
+    _clickOutsideCapture?: boolean
   }
 }
 

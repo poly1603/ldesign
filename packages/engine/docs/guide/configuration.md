@@ -12,8 +12,10 @@ import { createEngine } from '@ldesign/engine'
 const engine = createEngine({
   config: {
     // 应用基础信息
-    appName: 'My Application',
-    version: '1.0.0',
+    app: {
+      name: 'My Application',
+      version: '1.0.0'
+    },
 
     // 调试模式
     debug: process.env.NODE_ENV === 'development',
@@ -41,8 +43,10 @@ const engine = createEngine({
 ```typescript
 interface EngineConfig {
   // 基础配置
-  appName?: string
-  version?: string
+  app?: {
+    name?: string
+    version?: string
+  }
   debug?: boolean
   logLevel?: 'debug' | 'info' | 'warn' | 'error'
 

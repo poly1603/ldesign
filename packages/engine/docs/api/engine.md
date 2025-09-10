@@ -18,13 +18,16 @@ const vueApp = engine.app
 
 #### `config`
 
-- **类型**: `EngineConfig`
-- **描述**: 引擎配置对象
-- **只读**: 是
+- **类型**: `ConfigManager`
+- **描述**: 配置管理器实例
 
 ```typescript
-const config = engine.config
-console.log(config.appName) // 应用名称
+// 获取配置
+const appName = engine.config.get('app.name')
+const debug = engine.config.get('debug')
+
+// 设置配置
+engine.config.set('debug', true)
 ```
 
 #### `state`
@@ -66,6 +69,19 @@ engine.logger.info('应用启动')
 engine.logger.error('错误信息', error)
 ```
 
+#### `cache`
+
+- **类型**: `CacheManager`
+- **描述**: 缓存管理器实例
+
+```typescript
+// 缓存数据
+engine.cache.set('user:123', userData, 60000)
+
+// 获取缓存
+const user = engine.cache.get('user:123')
+```
+
 #### `notifications`
 
 - **类型**: `NotificationManager`
@@ -73,8 +89,37 @@ engine.logger.error('错误信息', error)
 
 ```typescript
 // 显示通知
-engine.notifications.success('操作成功')
-engine.notifications.error('操作失败')
+engine.notifications.show({
+  type: 'success',
+  title: '成功',
+  message: '操作完成'
+})
+```
+
+#### `security`
+
+- **类型**: `SecurityManager`
+- **描述**: 安全管理器实例
+
+```typescript
+// 清理输入
+const clean = engine.security.sanitize(userInput)
+
+// 生成 CSRF 令牌
+const token = engine.security.generateCSRFToken()
+```
+
+#### `performance`
+
+- **类型**: `PerformanceManager`
+- **描述**: 性能管理器实例
+
+```typescript
+// 开始监控
+engine.performance.startMonitoring()
+
+// 记录事件
+const eventId = engine.performance.startEvent('api-call', 'fetchData')
 ```
 
 ### 方法

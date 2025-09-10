@@ -150,18 +150,21 @@ engine.events.on('middleware:error', ({ phase, error, middleware }) => {
 使用命名空间来组织事件，避免命名冲突：
 
 ```typescript
-// 用户相关事件
+// 基于名称前缀
 engine.events.on('user:login', handleLogin)
 engine.events.on('user:logout', handleLogout)
 engine.events.on('user:profile:updated', handleProfileUpdate)
 
-// 数据相关事件
-engine.events.on('data:loaded', handleDataLoaded)
-engine.events.on('data:error', handleDataError)
+// 使用命名空间对象
+const userNS = engine.events.namespace('user')
+userNS.on('login', handleLogin)
+userNS.once('logout', handleLogout)
+userNS.emit('login', { id: 1 })
+userNS.clear() // 清理 user:* 所有监听
 
-// UI相关事件
-engine.events.on('ui:modal:opened', handleModalOpened)
-engine.events.on('ui:notification:shown', handleNotificationShown)
+// 嵌套命名空间（通过前缀组合）
+const paymentNS = engine.events.namespace('order:payment')
+paymentNS.on('completed', handlePaymentCompleted)
 ```
 
 ## 异步事件处理
@@ -208,6 +211,42 @@ async function initializeApp() {
   const user = await waitForEvent<User>('auth:completed')
   console.log('用户认证完成:', user)
 }
+```
+
+## 高级能力
+
+### 批量监听
+
+```ts
+engine.events.addListeners([
+  { event: 'user:login', handler: onLogin },
+  { event: 'user:logout', handler: onLogout, options: { once: true, priority: 10 } },
+])
+```
+
+### 事件管道
+
+```ts
+// 将 source 的数据转换后转发到 target
+engine.events.pipe('source', 'target', (d) => ({ value: d }))
+```
+
+### 条件监听
+
+```ts
+engine.events.onWhen('order:paid', (d) => d.amount > 0, (d) => {
+  console.log('有效付款', d)
+})
+```
+
+### 防抖与节流
+
+```ts
+const debouncer = engine.events.debounce('search', 200)
+const throttler = engine.events.throttle('scroll', 100)
+
+debouncer.emit('hello')
+throttler.emit({ y: 100 })
 ```
 
 ## 事件过滤和转换

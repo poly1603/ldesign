@@ -8,7 +8,7 @@ import { DirectiveBase } from '../base/directive-base'
 import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface ThrottleOptions {
-  handler: (...args: any[]) => void
+  handler: (event: Event) => void
   delay?: number
   leading?: boolean
   trailing?: boolean
@@ -38,7 +38,7 @@ export class ThrottleDirective extends DirectiveBase {
     const event = config.event || binding.arg || 'click'
 
     // 存储处理器和配置
-    ;(el as any)._throttleHandler = throttleHandler
+    el._throttleHandler = throttleHandler
     el._throttleConfig = config
 
     // 添加事件监听器
@@ -78,7 +78,7 @@ export class ThrottleDirective extends DirectiveBase {
 
     if (typeof value === 'function') {
       return {
-        handler: value,
+        handler: value as EventListener,
         delay: 300,
         leading: true,
         trailing: true,
@@ -86,17 +86,18 @@ export class ThrottleDirective extends DirectiveBase {
     }
 
     if (typeof value === 'object' && value !== null) {
+      const obj = value as Partial<ThrottleOptions> & { callback?: (...args: unknown[]) => void; event?: string }
       return {
-        handler: value.handler || value.callback,
-        delay: value.delay || 300,
-        leading: value.leading !== false,
-        trailing: value.trailing !== false,
-        event: value.event,
+        handler: obj.handler || obj.callback || (() => { }),
+        delay: obj.delay ?? 300,
+        leading: obj.leading !== false,
+        trailing: obj.trailing !== false,
+        event: obj.event,
       }
     }
 
     return {
-      handler: () => {},
+      handler: () => { },
       delay: 300,
       leading: true,
       trailing: true,
@@ -159,8 +160,8 @@ export class ThrottleDirective extends DirectiveBase {
 
         if (timeSinceLastCall >= config.delay!) {
           // 执行尾部调用
-          if (el._throttleLastArgs) {
-            config.handler.apply(el, el._throttleLastArgs)
+          if (el._throttleLastArgs && el._throttleLastArgs.length > 0) {
+            config.handler.call(el, el._throttleLastArgs[0] as Event)
             el._throttleLastTime = now
           }
         }
@@ -207,11 +208,11 @@ export const vThrottle = defineDirective('throttle', {
 // 扩展HTMLElement类型
 declare global {
   interface HTMLElement {
-    _throttleHandler?: (...args: unknown[]) => void
+    _throttleHandler?: EventListener
     _throttleConfig?: ThrottleOptions
     _throttleTimer?: number
     _throttleLastTime?: number
-    _throttleLastArgs?: any[]
+    _throttleLastArgs?: Event[]
   }
 }
 

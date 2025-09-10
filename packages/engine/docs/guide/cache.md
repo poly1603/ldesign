@@ -81,16 +81,22 @@ engine.cache.setStrategy('api-data', {
 ### 缓存预热
 
 ```typescript
-// 预热缓存
-async function warmupCache() {
-  const criticalData = await fetchCriticalData()
+// 推荐：使用内置 warmup API
+await engine.cache.warmup([
+  { key: 'critical:config', loader: () => fetchCriticalConfig(), ttl: 0 },
+  { key: 'critical:users', loader: () => fetchCriticalUsers(), ttl: 3600_000 },
+])
+```
 
-  // 预加载关键数据
-  engine.cache.set('critical:config', criticalData.config, { ttl: 0 }) // 永不过期
-  engine.cache.set('critical:users', criticalData.users, 3600000) // 1小时
+### 智能预加载
 
-  engine.logger.info('缓存预热完成')
-}
+```typescript
+// 根据访问路径提前准备可能访问的键
+await engine.cache.preload(
+  ['user:1', 'user:2', 'user:3'],
+  (key) => fetchUserByKey(key),
+  { ttl: 10 * 60_000, priority: 'high' }
+)
 ```
 
 ### 缓存穿透保护

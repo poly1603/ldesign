@@ -4,7 +4,11 @@
  */
 
 // 性能优化工具导出
-export * from './performance-optimizer'
+export {
+  BatchProcessor,
+  debounce as perfDebounce,
+  throttle as perfThrottle
+} from './performance-optimizer'
 
 /**
  * 检查是否为浏览器环境
@@ -740,9 +744,9 @@ export function isFunction(
 export function isPromise(value: unknown): value is Promise<unknown> {
   return Boolean(
     value &&
-      typeof value === 'object' &&
-      'then' in value &&
-      typeof (value as any).then === 'function'
+    typeof value === 'object' &&
+    'then' in value &&
+    typeof (value as { then?: unknown }).then === 'function'
   )
 }
 
@@ -843,5 +847,3 @@ export const utils = {
   groupBy,
   chunk,
 }
-
-export default utils

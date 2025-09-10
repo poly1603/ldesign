@@ -39,12 +39,12 @@ export type {
   NotificationProgress,
   NotificationStats,
 } from './notification'
-// 性能监控类型 - 只导出非配置类型
-export type { PerformanceManager } from './performance'
+// 性能监控类型 - 使用实现接口以匹配实现
+export type { PerformanceManager } from '../performance/performance-manager'
 // 插件系统类型
 export * from './plugin'
-// 安全管理类型 - 只导出非配置类型
-export type { SecurityManager } from './security'
+// 安全管理类型 - 使用实现接口以匹配实现
+export type { SecurityManager } from '../security/security-manager'
 // 状态管理类型
 export * from './state'
 // 样式管理类型
@@ -54,3 +54,5 @@ export * from './style'
 export * from './utils'
 // Vue集成类型
 export * from './vue'
+// 增强类型（如需请从 './enhanced' 单独按需导入，避免与基础类型冲突）
+// export * from './enhanced'

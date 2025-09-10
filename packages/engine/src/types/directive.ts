@@ -97,8 +97,8 @@ export interface DirectiveLifecycle {
 
 // 指令管理器接口
 export interface DirectiveManager {
-  register: (name: string, directive: EngineDirective) => void
-  registerBatch: (directives: Record<string, EngineDirective>) => void
+  register: (name: string, directive: EngineDirective | unknown) => void
+  registerBatch: (directives: Record<string, EngineDirective | unknown>) => void
   unregister: (name: string) => void
   get: (name: string) => EngineDirective | undefined
   getAll: () => EngineDirective[]
@@ -107,9 +107,13 @@ export interface DirectiveManager {
   enable: (name: string) => void
   disable: (name: string) => void
   reload: (name: string) => void
-  validate: (directive: EngineDirective) => DirectiveValidationResult
+  validate: (directive: EngineDirective | unknown) => DirectiveValidationResult
   clear: () => void
   unregisterBatch: (names: string[]) => void
+  // 额外的便捷方法（与实现保持一致）
+  getNames: () => string[]
+  has: (name: string) => boolean
+  size: () => number
 }
 
 // 指令验证结果

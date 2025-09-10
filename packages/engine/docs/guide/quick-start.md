@@ -5,7 +5,14 @@
 ## 📦 安装
 
 ```bash
+# 推荐使用 pnpm
+pnpm add @ldesign/engine
+
+# 或使用 npm
 npm install @ldesign/engine
+
+# 或使用 yarn
+yarn add @ldesign/engine
 ```
 
 ## 🎯 基础使用
@@ -19,7 +26,10 @@ import App from './App.vue'
 const engine = createEngine({
   config: {
     debug: true,
-    appName: 'My App',
+    app: {
+      name: 'My App',
+      version: '1.0.0'
+    }
   },
 })
 
@@ -58,6 +68,28 @@ engine.events.on('user:login', (user) => {
 
 // 触发事件
 engine.events.emit('user:login', { name: 'John' })
+
+// 命名空间事件
+const userEvents = engine.events.namespace('user')
+userEvents.on('logout', () => console.log('用户登出'))
+
+// 防抖事件
+const searchDebouncer = engine.events.debounce('search', 300)
+searchDebouncer.emit('search query')
+```
+
+### 缓存系统
+```typescript
+// 基础缓存
+engine.cache.set('user:123', userData, 60000) // 缓存1分钟
+
+// 获取缓存
+const user = engine.cache.get('user:123')
+
+// 预热缓存
+await engine.cache.warmup([
+  { key: 'config', loader: () => fetchConfig() }
+])
 ```
 
 ### 通知系统

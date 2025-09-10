@@ -87,7 +87,7 @@ export class LazyDirective extends DirectiveBase {
     const value = binding.value
 
     if (typeof value === 'function') {
-      return { callback: value }
+      return { callback: value as (el: HTMLElement, entry: IntersectionObserverEntry) => void }
     }
 
     if (typeof value === 'string') {
@@ -95,22 +95,23 @@ export class LazyDirective extends DirectiveBase {
     }
 
     if (typeof value === 'object' && value !== null) {
+      const obj = value as Partial<LazyOptions>
       return {
-        callback: value.callback,
-        src: value.src,
-        placeholder: value.placeholder,
-        error: value.error,
-        loading: value.loading,
-        threshold: value.threshold || 0.1,
-        rootMargin: value.rootMargin || '50px',
-        root: value.root || null,
-        once: value.once !== false,
-        onLoad: value.onLoad,
-        onError: value.onError,
-        onEnter: value.onEnter,
-        loadingClass: value.loadingClass || 'lazy-loading',
-        loadedClass: value.loadedClass || 'lazy-loaded',
-        errorClass: value.errorClass || 'lazy-error',
+        callback: obj.callback,
+        src: obj.src,
+        placeholder: obj.placeholder,
+        error: obj.error,
+        loading: obj.loading,
+        threshold: obj.threshold ?? 0.1,
+        rootMargin: obj.rootMargin ?? '50px',
+        root: obj.root ?? null,
+        once: obj.once !== false,
+        onLoad: obj.onLoad,
+        onError: obj.onError,
+        onEnter: obj.onEnter,
+        loadingClass: obj.loadingClass || 'lazy-loading',
+        loadedClass: obj.loadedClass || 'lazy-loaded',
+        errorClass: obj.errorClass || 'lazy-error',
       }
     }
 

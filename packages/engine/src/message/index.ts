@@ -2,7 +2,7 @@
  * 消息系统统一导出
  */
 
-import type { MessageManagerConfig } from './message-manager'
+import type { MessageManagerConfig, MessageOptions } from './message-manager'
 // 导出核心类
 // 导入核心类用于创建实例
 import { MessageManager } from './message-manager'
@@ -71,36 +71,36 @@ export const message = {
   /**
    * 显示消息
    */
-  show: (options: any) => getGlobalMessageManager().show(options),
+  show: (options: MessageOptions) => getGlobalMessageManager().show(options),
 
   /**
    * 显示成功消息
    */
-  success: (content: string, options?: any) =>
+  success: (content: string, options?: Partial<MessageOptions>) =>
     getGlobalMessageManager().success(content, options),
 
   /**
    * 显示错误消息
    */
-  error: (content: string, options?: any) =>
+  error: (content: string, options?: Partial<MessageOptions>) =>
     getGlobalMessageManager().error(content, options),
 
   /**
    * 显示警告消息
    */
-  warning: (content: string, options?: any) =>
+  warning: (content: string, options?: Partial<MessageOptions>) =>
     getGlobalMessageManager().warning(content, options),
 
   /**
    * 显示信息消息
    */
-  info: (content: string, options?: any) =>
+  info: (content: string, options?: Partial<MessageOptions>) =>
     getGlobalMessageManager().info(content, options),
 
   /**
    * 显示加载消息
    */
-  loading: (content: string, options?: any) =>
+  loading: (content: string, options?: Partial<MessageOptions>) =>
     getGlobalMessageManager().loading(content, options),
 
   /**
@@ -127,8 +127,7 @@ export const message = {
   getStats: () => getGlobalMessageManager().getStats(),
 }
 
-// 默认导出消息管理器类
-export default MessageManager
+// 使用命名导出，避免混合导出警告
 
 // 使用示例
 /*

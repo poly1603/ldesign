@@ -84,7 +84,7 @@ export interface SecurityManager {
 
   // CSP管理
   generateCSPHeader: () => string
-  reportCSPViolation: (violation: any) => void
+  reportCSPViolation: (violation: unknown) => void
 
   // 安全头设置
   getSecurityHeaders: () => Record<string, string>
@@ -507,7 +507,7 @@ export class SecurityManagerImpl implements SecurityManager {
     return `${headerName}: ${directives}`
   }
 
-  reportCSPViolation(violation: any): void {
+  reportCSPViolation(violation: unknown): void {
     this.reportSecurityEvent({
       type: SecurityEventType.CSP_VIOLATION,
       message: 'Content Security Policy violation',

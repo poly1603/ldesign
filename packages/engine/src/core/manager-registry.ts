@@ -267,7 +267,7 @@ export function Manager(
   dependencies: string[] = [],
   lazy = false
 ) {
-  return function <T extends new (...args: any[]) => any>(constructor: T) {
+  return function <T extends new (...args: any[]) => object>(constructor: T) {
     const registry = getGlobalManagerRegistry()
     registry.register(name, dependencies, lazy)
 

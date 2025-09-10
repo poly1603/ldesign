@@ -18,8 +18,8 @@ export function useEngine(): Engine {
   }
 
   // 尝试从全局变量中获取（开发环境）
-  if (typeof window !== 'undefined' && (window as any).__LDESIGN_ENGINE__) {
-    return (window as any).__LDESIGN_ENGINE__
+  if (typeof window !== 'undefined' && (window as { __LDESIGN_ENGINE__?: Engine }).__LDESIGN_ENGINE__) {
+    return (window as { __LDESIGN_ENGINE__?: Engine }).__LDESIGN_ENGINE__ as Engine
   }
 
   throw new Error(

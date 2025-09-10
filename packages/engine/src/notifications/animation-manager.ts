@@ -333,8 +333,8 @@ export class NotificationAnimationManager {
   /**
    * 注册自定义动画
    */
-  registerAnimation(name: string, keyframes: AnimationKeyframes): void {
-    ;(this.animations as any)[name] = keyframes
+  registerAnimation(name: NotificationAnimation, keyframes: AnimationKeyframes): void {
+    this.animations[name] = keyframes
   }
 
   /**

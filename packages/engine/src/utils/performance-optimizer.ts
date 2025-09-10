@@ -115,7 +115,7 @@ export class BatchProcessor<T> {
  * 防抖函数
  * 🎯 防止函数被频繁调用
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => any>(
   func: T,
   wait: number,
   immediate = false
@@ -123,7 +123,7 @@ export function debounce<T extends (...args: any[]) => any>(
   let timeout: NodeJS.Timeout | undefined
   let result: ReturnType<T>
 
-  const debounced = function (this: any, ...args: Parameters<T>) {
+  const debounced = function (this: unknown, ...args: Parameters<T>) {
     const later = () => {
       timeout = undefined
       if (!immediate) {
@@ -160,7 +160,7 @@ export function debounce<T extends (...args: any[]) => any>(
  * 节流函数
  * 🎯 限制函数的调用频率
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => any>(
   func: T,
   wait: number,
   options: { leading?: boolean; trailing?: boolean } = {}
@@ -171,7 +171,7 @@ export function throttle<T extends (...args: any[]) => any>(
 
   const { leading = true, trailing = true } = options
 
-  const throttled = function (this: any, ...args: Parameters<T>) {
+  const throttled = function (this: unknown, ...args: Parameters<T>) {
     const now = Date.now()
 
     if (!previous && !leading) {
@@ -281,7 +281,7 @@ export class PerformanceMonitor {
   /**
    * 包装函数以监控性能
    */
-  wrap<T extends (...args: any[]) => any>(name: string, func: T): T {
+  wrap<T extends (...args: unknown[]) => any>(name: string, func: T): T {
     return ((...args: Parameters<T>) => {
       const start = performance.now()
       const result = func(...args)
@@ -319,8 +319,8 @@ export class PerformanceMonitor {
   /**
    * 获取性能指标
    */
-  getMetrics(): Record<string, any> {
-    const result: Record<string, any> = {}
+  getMetrics(): Record<string, unknown> {
+    const result: Record<string, unknown> = {}
 
     for (const [name, metric] of this.metrics) {
       result[name] = { ...metric }

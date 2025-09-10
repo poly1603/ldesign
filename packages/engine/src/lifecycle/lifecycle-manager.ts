@@ -18,12 +18,12 @@ export type LifecyclePhase =
   | 'custom'
 
 // 生命周期钩子函数
-export type LifecycleHook<T = any> = (
+export type LifecycleHook<T = unknown> = (
   context: LifecycleContext<T>
 ) => void | Promise<void>
 
 // 生命周期上下文
-export interface LifecycleContext<T = any> {
+export interface LifecycleContext<T = unknown> {
   readonly phase: LifecyclePhase
   readonly timestamp: number
   readonly engine: T
@@ -32,10 +32,10 @@ export interface LifecycleContext<T = any> {
 }
 
 // 钩子信息
-export interface HookInfo {
+export interface HookInfo<T = unknown> {
   readonly id: string
   readonly phase: LifecyclePhase
-  readonly hook: LifecycleHook
+  readonly hook: LifecycleHook<T>
   readonly priority: number
   readonly once: boolean
   readonly name?: string
@@ -55,7 +55,7 @@ export interface LifecycleEvent {
 }
 
 // 生命周期管理器接口
-export interface LifecycleManager<T = any> {
+export interface LifecycleManager<T = unknown> {
   // 钩子注册
   on: (
     phase: LifecyclePhase,
@@ -71,8 +71,8 @@ export interface LifecycleManager<T = any> {
   offAll: (phase?: LifecyclePhase) => number
 
   // 钩子查询
-  getHooks: (phase: LifecyclePhase) => HookInfo[]
-  getAllHooks: () => HookInfo[]
+  getHooks: (phase: LifecyclePhase) => HookInfo<T>[]
+  getAllHooks: () => HookInfo<T>[]
   hasHooks: (phase: LifecyclePhase) => boolean
   getHookCount: (phase?: LifecyclePhase) => number
 
@@ -82,7 +82,7 @@ export interface LifecycleManager<T = any> {
     engine: T,
     data?: any
   ) => Promise<LifecycleEvent>
-  executeSync: (phase: LifecyclePhase, engine: T, data?: any) => LifecycleEvent
+  executeSync: (phase: LifecyclePhase, engine: T, data?: unknown) => LifecycleEvent
 
   // 生命周期状态
   getCurrentPhase: () => LifecyclePhase | undefined
@@ -116,8 +116,8 @@ export interface LifecycleManager<T = any> {
  * - 钩子支持优先级、一次性执行（once）
  * - 执行过程中收集历史与错误回调
  */
-export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
-  private hooks = new Map<string, HookInfo>()
+export class LifecycleManagerImpl<T = unknown> implements LifecycleManager<T> {
+  private hooks = new Map<string, HookInfo<T>>()
   private phaseHooks = new Map<LifecyclePhase, Set<string>>()
   private history: LifecycleEvent[] = []
   private currentPhase?: LifecyclePhase
@@ -144,7 +144,7 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
    */
   on(phase: LifecyclePhase, hook: LifecycleHook<T>, priority = 0): string {
     const id = this.generateHookId()
-    const hookInfo: HookInfo = {
+    const hookInfo: HookInfo<T> = {
       id,
       phase,
       hook,
@@ -174,7 +174,7 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
    */
   once(phase: LifecyclePhase, hook: LifecycleHook<T>, priority = 0): string {
     const id = this.generateHookId()
-    const hookInfo: HookInfo = {
+    const hookInfo: HookInfo<T> = {
       id,
       phase,
       hook,
@@ -260,7 +260,7 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
   /**
    * 获取指定阶段的钩子（按优先级降序）。
    */
-  getHooks(phase: LifecyclePhase): HookInfo[] {
+  getHooks(phase: LifecyclePhase): HookInfo<T>[] {
     const phaseHooks = this.phaseHooks.get(phase)
     if (!phaseHooks) {
       return []
@@ -277,7 +277,7 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
   /**
    * 获取所有已注册钩子（按优先级降序）。
    */
-  getAllHooks(): HookInfo[] {
+  getAllHooks(): HookInfo<T>[] {
     return Array.from(this.hooks.values()).sort(
       (a, b) => b.priority - a.priority
     )
@@ -393,7 +393,7 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
     return event
   }
 
-  executeSync(phase: LifecyclePhase, engine: T, data?: any): LifecycleEvent {
+  executeSync(phase: LifecyclePhase, engine: T, data?: unknown): LifecycleEvent {
     const startTime = Date.now()
     this.currentPhase = phase
 
@@ -541,7 +541,7 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
     const averageExecutionTime =
       executionTimes.length > 0
         ? executionTimes.reduce((sum, time) => sum + time, 0) /
-          executionTimes.length
+        executionTimes.length
         : 0
 
     // 统计错误数量
@@ -594,9 +594,9 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
   }
 
   // 添加缺失的方法
-  add(hook: any): void {
+  add(hook: { phase: LifecyclePhase; handler: LifecycleHook<T>; priority?: number }): void {
     // 兼容性方法，委托给on方法
-    if (hook.phase && hook.handler) {
+    if (hook && hook.phase && hook.handler) {
       this.on(hook.phase, hook.handler, hook.priority || 0)
     }
   }
@@ -613,7 +613,7 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
       .map(h => h?.id || '')
   }
 
-  validate(): any {
+  validate(): unknown {
     return {
       valid: true,
       errors: [],
@@ -628,7 +628,7 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
 }
 
 // 工厂函数
-export function createLifecycleManager<T = any>(
+export function createLifecycleManager<T = unknown>(
   logger?: Logger
 ): LifecycleManager<T> {
   return new LifecycleManagerImpl<T>(logger)
@@ -637,19 +637,17 @@ export function createLifecycleManager<T = any>(
 // 生命周期装饰器
 export function LifecycleHookDecorator(phase: LifecyclePhase, priority = 0) {
   return function (
-    _target: any,
+    _target: unknown,
     _propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
     const originalMethod = descriptor.value
 
     // 在类实例化时自动注册钩子
-    descriptor.value = function (...args: any[]) {
-      if (
-        (this as any).lifecycle &&
-        typeof (this as any).lifecycle.on === 'function'
-      ) {
-        ;(this as any).lifecycle.on(phase, originalMethod.bind(this), priority)
+    descriptor.value = function (...args: unknown[]) {
+      const self = this as { lifecycle?: { on: (p: unknown, h: (...args: unknown[]) => unknown, pr: number) => void } }
+      if (self.lifecycle && typeof self.lifecycle.on === 'function') {
+        self.lifecycle.on(phase, originalMethod.bind(this), priority)
       }
       return originalMethod.apply(this, args)
     }

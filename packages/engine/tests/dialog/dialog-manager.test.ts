@@ -48,6 +48,9 @@ describe('dialogManager', () => {
   it('should show alert dialog', async () => {
     const alertPromise = dialogManager.alert('这是一个提示')
 
+    // 等待一个微任务，确保DOM更新
+    await new Promise(resolve => setTimeout(resolve, 0))
+
     // 检查DOM中是否有dialog元素
     const mask = document.querySelector('.engine-dialog-mask')
     const dialog = document.querySelector('.engine-dialog')
@@ -67,6 +70,9 @@ describe('dialogManager', () => {
   it('should show confirm dialog and return boolean', async () => {
     const confirmPromise = dialogManager.confirm('确定要删除吗？')
 
+    // 等待一个微任务，确保DOM更新
+    await new Promise(resolve => setTimeout(resolve, 0))
+
     const dialog = document.querySelector('.engine-dialog')
     const buttons = dialog?.querySelectorAll('.engine-dialog-button')
 
@@ -74,8 +80,8 @@ describe('dialogManager', () => {
     expect(buttons?.[0].textContent).toBe('取消')
     expect(buttons?.[1].textContent).toBe('确定')
 
-    // 模拟点击确定
-    ; (buttons?.[1] as HTMLButtonElement)?.click()
+      // 模拟点击确定
+      ; (buttons?.[1] as HTMLButtonElement)?.click()
 
     const result = await confirmPromise
     expect(result).toBe(true)
@@ -83,6 +89,9 @@ describe('dialogManager', () => {
 
   it('should show prompt dialog and return input value', async () => {
     const promptPromise = dialogManager.prompt('请输入您的姓名：', '默认值')
+
+    // 等待一个微任务，确保DOM更新
+    await new Promise(resolve => setTimeout(resolve, 0))
 
     const dialog = document.querySelector('.engine-dialog')
     const input = dialog?.querySelector('input') as HTMLInputElement
@@ -315,8 +324,8 @@ describe('dialogManager', () => {
     expect(buttons[0].textContent).toBe('按钮1')
     expect(buttons[1].textContent).toBe('按钮2')
 
-    ; (buttons[0] as HTMLButtonElement).click()
-    ; (buttons[1] as HTMLButtonElement).click()
+      ; (buttons[0] as HTMLButtonElement).click()
+      ; (buttons[1] as HTMLButtonElement).click()
 
     expect(button1Click).toHaveBeenCalledWith(instance)
     expect(button2Click).toHaveBeenCalledWith(instance)

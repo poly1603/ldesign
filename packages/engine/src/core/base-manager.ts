@@ -34,7 +34,7 @@ export interface IBaseManager {
  * 基础管理器抽象类
  * 提供管理器的通用实现
  */
-export abstract class AbstractBaseManager<T = any> implements IBaseManager {
+export abstract class AbstractBaseManager<T = Record<string, unknown>> implements IBaseManager {
   protected engine: Engine
   protected _status: 'idle' | 'initializing' | 'ready' | 'error' | 'destroyed' = 'idle'
   protected _initialized = false
@@ -116,7 +116,7 @@ export abstract class AbstractBaseManager<T = any> implements IBaseManager {
   /**
    * 记录日志
    */
-  protected log(level: 'info' | 'warn' | 'error', message: string, ...args: any[]): void {
+  protected log(level: 'info' | 'warn' | 'error', message: string, ...args: unknown[]): void {
     if (this.engine.logger) {
       this.engine.logger[level](`[${this.name}] ${message}`, ...args)
     } else {
@@ -127,7 +127,7 @@ export abstract class AbstractBaseManager<T = any> implements IBaseManager {
   /**
    * 触发事件
    */
-  protected emit(event: string, data?: any): void {
+  protected emit(event: string, data?: unknown): void {
     if (this.engine.events) {
       this.engine.events.emit(`${this.name}:${event}`, data)
     }
@@ -136,7 +136,7 @@ export abstract class AbstractBaseManager<T = any> implements IBaseManager {
   /**
    * 监听事件
    */
-  protected on(event: string, handler: (data?: any) => void): void {
+  protected on(event: string, handler: (data?: unknown) => void): void {
     if (this.engine.events) {
       this.engine.events.on(`${this.name}:${event}`, handler)
     }
@@ -145,7 +145,7 @@ export abstract class AbstractBaseManager<T = any> implements IBaseManager {
   /**
    * 移除事件监听
    */
-  protected off(event: string, handler?: (data?: any) => void): void {
+  protected off(event: string, handler?: (data?: unknown) => void): void {
     if (this.engine.events) {
       this.engine.events.off(`${this.name}:${event}`, handler)
     }
@@ -156,7 +156,7 @@ export abstract class AbstractBaseManager<T = any> implements IBaseManager {
  * 基础管理器类
  * 提供管理器的具体实现
  */
-export class BaseManager<T = any> extends AbstractBaseManager<T> {
+export class BaseManager<T = Record<string, unknown>> extends AbstractBaseManager<T> {
   constructor(name: string, config?: T, engine?: Engine) {
     super(engine!, name, config)
   }
@@ -190,7 +190,7 @@ export class BaseManager<T = any> extends AbstractBaseManager<T> {
   /**
    * 记录日志
    */
-  protected log(level: 'info' | 'warn' | 'error', message: string, ...args: any[]): void {
+  protected log(level: 'info' | 'warn' | 'error', message: string, ...args: unknown[]): void {
     if (this.engine?.logger) {
       this.engine.logger[level](`[${this.name}] ${message}`, ...args)
     } else {
@@ -201,7 +201,7 @@ export class BaseManager<T = any> extends AbstractBaseManager<T> {
   /**
    * 记录错误
    */
-  protected error(message: string, ...args: any[]): void {
+  protected error(message: string, ...args: unknown[]): void {
     this.log('error', message, ...args)
   }
 }

@@ -5,6 +5,27 @@
 
 import type { CacheStrategy } from './base'
 
+// 缺失的缓存类型，供高级缓存与存储实现使用
+export interface CacheOptions {
+  ttl?: number
+  metadata?: Record<string, unknown>
+}
+
+export interface CacheItem<T = unknown> {
+  value: T
+  expiry?: number
+  metadata?: Record<string, unknown>
+}
+
+export interface CacheStorage {
+  get<T>(key: string): Promise<T | null>
+  set<T>(key: string, value: T, options?: CacheOptions): Promise<void>
+  remove(key: string): Promise<void>
+  clear(): Promise<void>
+  getSize(): Promise<number>
+}
+
+
 // 缓存条目接口
 export interface CacheEntry<T = unknown> {
   key: string

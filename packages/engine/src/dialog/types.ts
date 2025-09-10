@@ -37,10 +37,10 @@ export interface DialogConfig {
   animationDuration?: number
   buttons?: DialogButtonConfig[]
   onOpen?: () => void
-  onClose?: (result?: any) => void
+  onClose?: (result?: unknown) => void
   onCancel?: () => void
-  onConfirm?: (result?: any) => void
-  beforeClose?: (result?: any) => boolean | Promise<boolean>
+  onConfirm?: (result?: unknown) => void
+  beforeClose?: (result?: unknown) => boolean | Promise<boolean>
 }
 
 export interface DialogButtonConfig {
@@ -88,7 +88,7 @@ export interface DialogInstance {
   zIndex: number
   result?: any
   open: () => Promise<void>
-  close: (result?: any) => Promise<void>
+  close: (result?: unknown) => Promise<void>
   update: (options: Partial<DialogConfig>) => void
   destroy: () => void
   focus: () => void
@@ -110,7 +110,7 @@ export interface DialogAPI {
     defaultValue?: string,
     options?: Partial<DialogConfig>
   ) => Promise<string | null>
-  close: (id: string, result?: any) => Promise<boolean>
+  close: (id: string, result?: unknown) => Promise<boolean>
   closeAll: () => Promise<void>
   getById: (id: string) => DialogInstance | null
   getAll: () => DialogInstance[]
@@ -275,7 +275,7 @@ export interface DialogLifecycleHooks {
     instance: DialogInstance,
     result?: any
   ) => boolean | Promise<boolean>
-  closed?: (instance: DialogInstance, result?: any) => void
+  closed?: (instance: DialogInstance, result?: unknown) => void
 }
 
 // Dialog配置构建器
@@ -308,9 +308,9 @@ export interface DialogConfigBuilder {
   ) => DialogConfigBuilder
   buttons: (buttons: DialogButtonConfig[]) => DialogConfigBuilder
   onOpen: (callback: () => void) => DialogConfigBuilder
-  onClose: (callback: (result?: any) => void) => DialogConfigBuilder
+  onClose: (callback: (result?: unknown) => void) => DialogConfigBuilder
   beforeClose: (
-    callback: (result?: any) => boolean | Promise<boolean>
+    callback: (result?: unknown) => boolean | Promise<boolean>
   ) => DialogConfigBuilder
   build: () => DialogConfig
 }
@@ -404,5 +404,5 @@ export interface DialogErrorHandler {
       options?: DialogConfig
     }
   ) => void
-  onError: (callback: (error: Error, context: any) => void) => void
+  onError: (callback: (error: Error, context: unknown) => void) => void
 }

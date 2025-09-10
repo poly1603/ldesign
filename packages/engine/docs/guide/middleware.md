@@ -7,12 +7,19 @@
 中间件是一个函数，它接收上下文对象和下一个中间件的调用函数：
 
 ```typescript
-type Middleware = (context: MiddlewareContext, next: () => Promise<void>) => Promise<void>
+interface Middleware {
+  name: string
+  priority?: number
+  handler: (context: MiddlewareContext, next: MiddlewareNext) => Promise<void>
+}
+
+type MiddlewareNext = () => Promise<void>
 
 interface MiddlewareContext {
   engine: Engine
   phase: 'beforeMount' | 'afterMount' | 'beforeUnmount' | 'afterUnmount'
   data?: any
+  error?: Error
 }
 ```
 
@@ -21,71 +28,90 @@ interface MiddlewareContext {
 ### 基本中间件
 
 ```typescript
-import { createApp, creators } from '@ldesign/engine'
+import { createEngine } from '@ldesign/engine'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 // 创建一个简单的中间件
-const loggingMiddleware = creators.middleware('logging', async (context, next) => {
-  console.log(`[${context.phase}] 开始执行`)
-  const startTime = Date.now()
+const loggingMiddleware = {
+  name: 'logging',
+  priority: 10,
+  handler: async (context, next) => {
+    console.log(`[${context.phase}] 开始执行`)
+    const startTime = Date.now()
 
-  // 调用下一个中间件
-  await next()
+    // 调用下一个中间件
+    await next()
 
-  const endTime = Date.now()
-  console.log(`[${context.phase}] 执行完成，耗时: ${endTime - startTime}ms`)
-})
+    const endTime = Date.now()
+    console.log(`[${context.phase}] 执行完成，耗时: ${endTime - startTime}ms`)
+  }
+}
 
 // 使用中间件
-const engine = createApp(App, {
+const engine = createEngine({
   middleware: [loggingMiddleware],
+  config: {
+    debug: true
+  }
 })
+
+const app = createApp(App)
+engine.install(app)
 ```
 
 ### 条件中间件
 
 ```typescript
-const conditionalMiddleware = creators.middleware('conditional', async (context, next) => {
-  // 只在开发环境执行
-  if (context.engine.config.debug) {
-    console.log('开发环境中间件执行')
+const conditionalMiddleware = {
+  name: 'conditional',
+  priority: 20,
+  handler: async (context, next) => {
+    // 只在开发环境执行
+    if (context.engine.config.get('debug')) {
+      console.log('开发环境中间件执行')
 
-    // 添加开发工具
-    if (typeof window !== 'undefined') {
-      ;(window as any).__ENGINE_DEBUG__ = context.engine
+      // 添加开发工具
+      if (typeof window !== 'undefined') {
+        ;(window as any).__ENGINE_DEBUG__ = context.engine
+      }
     }
-  }
 
-  await next()
-})
+    await next()
+  }
+}
 ```
 
 ### 错误处理中间件
 
 ```typescript
-const errorHandlingMiddleware = creators.middleware('error-handler', async (context, next) => {
-  try {
-    await next()
-  }
-  catch (error) {
-    // 记录错误
-    context.engine.logger.error('中间件执行错误:', error)
-
-    // 发送错误事件
-    context.engine.events.emit('middleware:error', {
-      phase: context.phase,
-      error,
-      middleware: 'error-handler',
-    })
-
-    // 可以选择重新抛出错误或进行错误恢复
-    if (context.phase === 'beforeMount') {
-      // 在挂载前的错误可能需要阻止应用启动
-      throw error
+const errorHandlingMiddleware = {
+  name: 'error-handler',
+  priority: 1, // 高优先级，最先执行
+  handler: async (context, next) => {
+    try {
+      await next()
     }
-    // 其他阶段的错误可以静默处理
+    catch (error) {
+      // 记录错误
+      context.engine.logger.error('中间件执行错误:', error)
+
+      // 发送错误事件
+      context.engine.events.emit('middleware:error', {
+        phase: context.phase,
+        error,
+        middleware: 'error-handler',
+      })
+
+      // 可以选择重新抛出错误或进行错误恢复
+      if (context.phase === 'beforeMount') {
+        // 在挂载前的错误可能需要阻止应用启动
+        throw error
+      }
+      // 其他阶段的错误可以静默处理
+    }
   }
-})
+}
 ```
 
 ## 中间件执行阶段

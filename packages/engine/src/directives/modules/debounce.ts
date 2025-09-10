@@ -8,7 +8,7 @@ import { DirectiveBase } from '../base/directive-base'
 import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface DebounceOptions {
-  handler: (...args: any[]) => void
+  handler: (event: Event) => void
   delay?: number
   immediate?: boolean
   maxWait?: number
@@ -38,7 +38,7 @@ export class DebounceDirective extends DirectiveBase {
     const event = config.event || binding.arg || 'click'
 
     // 存储处理器和配置
-    ;(el as any)._debounceHandler = debounceHandler
+    el._debounceHandler = debounceHandler
     el._debounceConfig = config
 
     // 添加事件监听器
@@ -82,24 +82,25 @@ export class DebounceDirective extends DirectiveBase {
 
     if (typeof value === 'function') {
       return {
-        handler: value,
+        handler: value as EventListener,
         delay: 300,
         immediate: false,
       }
     }
 
     if (typeof value === 'object' && value !== null) {
+      const obj = value as Partial<DebounceOptions> & { callback?: EventListener; event?: string }
       return {
-        handler: value.handler || value.callback,
-        delay: value.delay || 300,
-        immediate: value.immediate || false,
-        maxWait: value.maxWait,
-        event: value.event,
+        handler: obj.handler || obj.callback || ((_e: Event) => { }),
+        delay: obj.delay ?? 300,
+        immediate: obj.immediate ?? false,
+        maxWait: obj.maxWait,
+        event: obj.event,
       }
     }
 
     return {
-      handler: () => {},
+      handler: (_e: Event) => { },
       delay: 300,
       immediate: false,
     }
@@ -203,7 +204,7 @@ export const vDebounce = defineDirective('debounce', {
 // 扩展HTMLElement类型
 declare global {
   interface HTMLElement {
-    _debounceHandler?: (...args: unknown[]) => void
+    _debounceHandler?: EventListener
     _debounceConfig?: DebounceOptions
     _debounceTimer?: number
     _debounceMaxTimer?: number

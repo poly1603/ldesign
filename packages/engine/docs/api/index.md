@@ -54,6 +54,8 @@ engine.middleware.execute(context: MiddlewareContext)
 
 ### 📡 [事件管理器](./event-manager.md)
 
+> 更新提示：事件管理器新增命名空间、批量监听、事件管道、条件监听、防抖/节流；缓存管理器新增 warmup、preload 以及统计信息增强。
+
 提供发布订阅模式的事件系统。
 
 ```typescript

@@ -7,48 +7,67 @@
 ### 1. 最简单的应用
 
 ```typescript
-import { createApp } from '@ldesign/engine'
-// main.ts
+import { createEngine } from '@ldesign/engine'
+import { createApp } from 'vue'
 import App from './App.vue'
 
-// 创建并挂载应用
-const engine = createApp(App)
-engine.mount('#app')
+// 创建引擎和 Vue 应用
+const engine = createEngine({
+  config: {
+    debug: true
+  }
+})
+
+const app = createApp(App)
+engine.install(app)
+app.mount('#app')
 ```
 
 ### 2. 使用预设配置
 
 ```typescript
-import { createApp, presets } from '@ldesign/engine'
-// main.ts
+import { createEngine } from '@ldesign/engine'
+import { createApp } from 'vue'
 import App from './App.vue'
 
-// 使用开发环境预设
-const engine = createApp(App, presets.development())
-engine.mount('#app')
+// 使用开发环境配置
+const engine = createEngine({
+  config: {
+    debug: true,
+    logLevel: 'debug',
+    enablePerformanceMonitoring: true,
+    enableErrorReporting: true
+  }
+})
+
+const app = createApp(App)
+engine.install(app)
+app.mount('#app')
 ```
 
 ### 3. 自定义配置
 
 ```typescript
-import { createApp } from '@ldesign/engine'
-// main.ts
+import { createEngine } from '@ldesign/engine'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 // 自定义配置
-const engine = createApp(App, {
+const engine = createEngine({
   config: {
-    appName: '我的应用',
-    version: '1.0.0',
+    app: {
+      name: '我的应用',
+      version: '1.0.0'
+    },
     debug: true,
-  },
-  logger: {
-    level: 'info',
-    format: 'json',
-  },
+    logLevel: 'info',
+    enablePerformanceMonitoring: true
+  }
 })
 
-engine.mount('#app')
+const app = createApp(App)
+engine.install(app)
+app.mount('#app')
 ```
 
 ## 状态管理示例
@@ -75,12 +94,13 @@ const userName = engine.state.get('user.name')
 console.log(userName) // '张三'
 
 // 检查状态是否存在
-if (engine.state.has('user')) {
+const user = engine.state.get('user')
+if (user !== undefined) {
   console.log('用户已登录')
 }
 
 // 删除状态
-engine.state.delete('user')
+engine.state.remove('user')
 ```
 
 ### 2. 响应式状态

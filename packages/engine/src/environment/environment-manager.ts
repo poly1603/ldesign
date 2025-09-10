@@ -145,7 +145,7 @@ export interface EnvironmentManager {
   // 特性检测
   hasFeature: (feature: string) => boolean
   getFeatures: () => Record<string, boolean>
-  checkCompatibility: (requirements: Record<string, any>) => boolean
+  checkCompatibility: (requirements: Record<string, unknown>) => boolean
 
   // 环境适配
   getAdaptation: () => EnvironmentAdaptation
@@ -223,7 +223,7 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
   hasFeature(feature: string): boolean {
     return (
       this.environmentInfo.features[
-        feature as keyof typeof this.environmentInfo.features
+      feature as keyof typeof this.environmentInfo.features
       ] || false
     )
   }
@@ -232,10 +232,10 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
     return { ...this.environmentInfo.features }
   }
 
-  checkCompatibility(requirements: Record<string, any>): boolean {
+  checkCompatibility(requirements: { browser?: Partial<Record<Browser, string>>; features?: string[] }): boolean {
     // 检查浏览器版本兼容性
     if (requirements.browser) {
-      const browserReq = requirements.browser[this.environmentInfo.browser.name]
+      const browserReq = requirements.browser?.[this.environmentInfo.browser.name]
       if (
         browserReq &&
         !this.isVersionCompatible(
@@ -248,7 +248,7 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
     }
 
     // 检查特性兼容性
-    if (requirements.features) {
+    if (requirements.features && Array.isArray(requirements.features)) {
       for (const feature of requirements.features) {
         if (!this.hasFeature(feature)) {
           return false
@@ -388,14 +388,14 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
       // 检测测试环境
       if (
         typeof globalThis !== 'undefined' &&
-        (globalThis as any).__vitest__ !== undefined
+        (globalThis as { __vitest__?: unknown }).__vitest__ !== undefined
       ) {
         return 'test'
       }
 
       if (
         typeof window !== 'undefined' &&
-        (window as any).__karma__ !== undefined
+        (window as { __karma__?: unknown }).__karma__ !== undefined
       ) {
         return 'test'
       }
@@ -410,12 +410,13 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
     if (typeof window !== 'undefined') {
       // 检测 Electron
       // eslint-disable-next-line node/prefer-global/process
-      if ((window as any).require && (window as any).process?.type) {
+      const w = window as unknown as { require?: unknown; process?: { type?: unknown } }
+      if (w.require && w.process?.type) {
         return 'electron'
       }
 
       // 检测 Web Worker
-      if (typeof (globalThis as any).importScripts === 'function') {
+      if (typeof (globalThis as { importScripts?: unknown }).importScripts === 'function') {
         return 'webworker'
       }
 
@@ -566,8 +567,8 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
     const info: EnvironmentInfo['performance'] = {}
 
     // Memory information
-    if (typeof performance !== 'undefined' && (performance as any).memory) {
-      const memory = (performance as any).memory
+    if (typeof performance !== 'undefined' && 'memory' in performance) {
+      const memory = (performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory!
       info.memory = {
         used: memory.usedJSHeapSize,
         total: memory.totalJSHeapSize,
@@ -576,8 +577,8 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
     }
 
     // Network information
-    if (typeof navigator !== 'undefined' && (navigator as any).connection) {
-      const connection = (navigator as any).connection
+    if (typeof navigator !== 'undefined' && 'connection' in navigator) {
+      const connection = (navigator as Navigator & { connection?: { effectiveType?: string; downlink?: number; rtt?: number; saveData?: boolean } }).connection!
       info.connection = {
         effectiveType: connection.effectiveType || 'unknown',
         downlink: connection.downlink || 0,

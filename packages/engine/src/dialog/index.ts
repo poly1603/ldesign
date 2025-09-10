@@ -2,7 +2,7 @@
  * Dialog弹窗系统统一导出
  */
 
-import type { DialogManagerConfig } from './dialog-manager'
+import type { DialogManagerConfig, DialogOptions } from './dialog-manager'
 // 导出核心类
 // 导入核心类用于创建实例
 import { DialogManager } from './dialog-manager'
@@ -58,30 +58,30 @@ export const dialog = {
   /**
    * 显示弹窗
    */
-  open: (options: any) => getGlobalDialogManager().open(options),
+  open: (options: DialogOptions) => getGlobalDialogManager().open(options),
 
   /**
    * 显示Alert弹窗
    */
-  alert: (content: string, options?: any) =>
+  alert: (content: string, options?: Partial<DialogOptions>) =>
     getGlobalDialogManager().alert(content, options),
 
   /**
    * 显示Confirm弹窗
    */
-  confirm: (content: string, options?: any) =>
+  confirm: (content: string, options?: Partial<DialogOptions>) =>
     getGlobalDialogManager().confirm(content, options),
 
   /**
    * 显示Prompt弹窗
    */
-  prompt: (content: string, defaultValue?: string, options?: any) =>
+  prompt: (content: string, defaultValue?: string, options?: Partial<DialogOptions>) =>
     getGlobalDialogManager().prompt(content, defaultValue, options),
 
   /**
    * 关闭弹窗
    */
-  close: (id: string, result?: any) =>
+  close: (id: string, result?: unknown) =>
     getGlobalDialogManager().close(id, result),
 
   /**
@@ -103,8 +103,7 @@ export const dialog = {
   getStats: () => getGlobalDialogManager().getStats(),
 }
 
-// 默认导出Dialog管理器类
-export default DialogManager
+// 使用命名导出，避免混合导出警告
 
 // 使用示例
 /*

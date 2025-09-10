@@ -49,6 +49,18 @@ export {
 
 export { createErrorManager, errorHandlers } from './errors/error-manager'
 
+// 错误恢复系统导出
+export {
+  ErrorRecoveryManager,
+  createErrorRecoveryManager,
+  commonRecoveryStrategies,
+  type RecoveryStrategy,
+  type RetryStrategy,
+  type FallbackStrategy,
+  type ErrorContext,
+  type ErrorReport
+} from './errors/error-recovery'
+
 export { createEventManager, ENGINE_EVENTS } from './events/event-manager'
 
 export { createLogger, logFormatters, logTransports } from './logger/logger'
@@ -154,11 +166,35 @@ export * from './utils'
 // Vue集成导出
 export * from './vue'
 
+// 高级缓存管理器导出
+export {
+  AdvancedCacheManager,
+  type LayeredCacheConfig,
+  type PreloadConfig,
+  type AutoUpdateConfig,
+  type CacheStatistics
+} from './cache/advanced-cache'
+
+// 请求拦截器导出
+export {
+  RequestInterceptorManager,
+  createRequestInterceptor,
+  requestInterceptor,
+  type RequestConfig,
+  type ResponseData,
+  type InterceptorFn,
+  type ErrorInterceptorFn,
+  type ProgressEvent
+} from './interceptors/request-interceptor'
+
 // 版本信息
 export const version = '0.1.0'
 
 // Vue插件安装函数
-export async function install(app: any, options: any = {}) {
+import type { App } from 'vue'
+import type { CreateEngineOptions, Engine } from './types'
+
+export async function install(app: App, options: CreateEngineOptions = {}): Promise<Engine> {
   // 动态导入避免循环依赖
   const { createEngine } = await import('./core/factory')
   const engine = createEngine(options)

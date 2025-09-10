@@ -10,7 +10,7 @@ test.describe('跨浏览器兼容性测试', () => {
 
   browsers.forEach(({ name, device }) => {
     test.describe(`${name} 浏览器`, () => {
-      test.use(device)
+
 
       test('应该正确加载引擎', async ({ page }) => {
         await page.goto('/examples/basic/')
@@ -169,7 +169,7 @@ test.describe('跨浏览器兼容性测试', () => {
 
     mobileDevices.forEach(({ name, device }) => {
       test.describe(`${name}`, () => {
-        test.use(device)
+
 
         test('应该在移动设备上正确加载', async ({ page }) => {
           await page.goto('/examples/basic/')

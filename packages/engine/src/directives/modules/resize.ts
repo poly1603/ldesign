@@ -93,7 +93,7 @@ export class ResizeDirective extends DirectiveBase {
 
     if (typeof value === 'function') {
       return {
-        callback: value,
+        callback: value as (entry: ResizeObserverEntry) => void,
         throttle: 0,
         debounce: 0,
         immediate: false,
@@ -103,18 +103,19 @@ export class ResizeDirective extends DirectiveBase {
     }
 
     if (typeof value === 'object' && value !== null) {
+      const obj = value as Partial<ResizeOptions> & { handler?: (entry: ResizeObserverEntry) => void }
       return {
-        callback: value.callback || value.handler,
-        throttle: value.throttle || 0,
-        debounce: value.debounce || 0,
-        immediate: value.immediate || false,
-        disabled: value.disabled || false,
-        box: value.box || 'content-box',
+        callback: obj.callback || obj.handler || (() => { }),
+        throttle: obj.throttle ?? 0,
+        debounce: obj.debounce ?? 0,
+        immediate: obj.immediate ?? false,
+        disabled: obj.disabled ?? false,
+        box: obj.box || 'content-box',
       }
     }
 
     return {
-      callback: () => {},
+      callback: () => { },
       throttle: 0,
       debounce: 0,
       immediate: false,
