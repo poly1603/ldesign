@@ -1,0 +1,35 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": [
+    "env.d.ts",
+    "src/**/*",
+    "src/**/*.vue",
+    "../src/**/*"
+  ],
+  "exclude": [
+    "src/**/__tests__/*"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "baseUrl": ".",
+    "paths": {
+      "@ldesign/editor": ["../src"],
+      "@ldesign/editor/*": ["../src/*"],
+      "@/*": ["./src/*"],
+      "@/types": ["../src/types"],
+      "@/utils": ["../src/utils"],
+      "@/core": ["../src/core"],
+      "@/plugins": ["../src/plugins"],
+      "@/renderers": ["../src/renderers"],
+      "@/themes": ["../src/themes"]
+    },
+    "types": [
+      "vite/client"
+    ],
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false
+  }
+}

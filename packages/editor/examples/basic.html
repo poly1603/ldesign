@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign Editor - 基础示例</title>
+  <style>
+    /* 基础样式 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: #722ED1;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      opacity: 0.9;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .demo-section {
+      margin-bottom: 30px;
+    }
+
+    .demo-section h2 {
+      margin-bottom: 15px;
+      color: #333;
+      border-bottom: 2px solid #722ED1;
+      padding-bottom: 5px;
+    }
+
+    .editor-container {
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      min-height: 200px;
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #f0f0f0;
+      border-color: #722ED1;
+    }
+
+    .btn.active {
+      background: #722ED1;
+      color: white;
+      border-color: #722ED1;
+    }
+
+    .output {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+      padding: 15px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 14px;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .theme-selector {
+      margin-bottom: 15px;
+    }
+
+    .theme-selector select {
+      padding: 8px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      background: white;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+        border-radius: 0;
+      }
+      
+      .content {
+        padding: 15px;
+      }
+      
+      .controls {
+        gap: 5px;
+      }
+      
+      .btn {
+        padding: 6px 12px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>LDesign Editor</h1>
+      <p>功能完整的富文本编辑器组件</p>
+    </div>
+
+    <div class="content">
+      <!-- 基础编辑器 -->
+      <div class="demo-section">
+        <h2>基础编辑器</h2>
+        <div class="controls">
+          <button class="btn" onclick="executeCommand('bold')">加粗</button>
+          <button class="btn" onclick="executeCommand('italic')">斜体</button>
+          <button class="btn" onclick="executeCommand('underline')">下划线</button>
+          <button class="btn" onclick="executeCommand('heading1')">标题1</button>
+          <button class="btn" onclick="executeCommand('heading2')">标题2</button>
+          <button class="btn" onclick="executeCommand('bulletList')">无序列表</button>
+          <button class="btn" onclick="executeCommand('orderedList')">有序列表</button>
+          <button class="btn" onclick="executeCommand('blockquote')">引用</button>
+        </div>
+        <div id="editor1" class="editor-container"></div>
+        <div class="controls">
+          <button class="btn" onclick="getContent()">获取内容</button>
+          <button class="btn" onclick="setContent()">设置内容</button>
+          <button class="btn" onclick="clearContent()">清空内容</button>
+          <button class="btn" onclick="toggleReadonly()">切换只读</button>
+        </div>
+      </div>
+
+      <!-- 主题切换 -->
+      <div class="demo-section">
+        <h2>主题切换</h2>
+        <div class="theme-selector">
+          <label for="themeSelect">选择主题：</label>
+          <select id="themeSelect" onchange="changeTheme(this.value)">
+            <option value="default">默认主题</option>
+            <option value="dark">暗色主题</option>
+            <option value="minimal">简洁主题</option>
+          </select>
+        </div>
+        <div id="editor2" class="editor-container"></div>
+      </div>
+
+      <!-- 响应式演示 -->
+      <div class="demo-section">
+        <h2>响应式演示</h2>
+        <p>当前设备类型：<span id="deviceType">-</span></p>
+        <div id="editor3" class="editor-container"></div>
+      </div>
+
+      <!-- 内容输出 -->
+      <div class="demo-section">
+        <h2>内容输出</h2>
+        <div id="output" class="output">编辑器内容将在这里显示...</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // 模拟 LDesign Editor
+    class MockLDesignEditor {
+      constructor(options) {
+        this.container = typeof options.container === 'string' 
+          ? document.querySelector(options.container)
+          : options.container
+        this.content = options.content || ''
+        this.readonly = options.readonly || false
+        this.theme = options.theme || 'default'
+        this.onChange = options.onChange
+        this.initialized = false
+        this.destroyed = false
+        
+        // 模拟管理器
+        this.themes = {
+          setTheme: (theme) => {
+            this.theme = theme
+            this.updateThemeClass()
+          },
+          getCurrentTheme: () => this.theme,
+          getAllThemes: () => [
+            { name: 'default', displayName: '默认主题' },
+            { name: 'dark', displayName: '暗色主题' },
+            { name: 'minimal', displayName: '简洁主题' }
+          ]
+        }
+        
+        this.responsive = {
+          getCurrentDevice: () => {
+            const width = window.innerWidth
+            if (width < 768) return 'mobile'
+            if (width < 1024) return 'tablet'
+            return 'desktop'
+          },
+          isMobile: () => this.responsive.getCurrentDevice() === 'mobile',
+          isTablet: () => this.responsive.getCurrentDevice() === 'tablet',
+          isDesktop: () => this.responsive.getCurrentDevice() === 'desktop',
+          onDeviceChange: (callback) => {
+            window.addEventListener('resize', () => {
+              callback(this.responsive.getCurrentDevice())
+            })
+          }
+        }
+        
+        this.commands = {
+          execute: (command) => {
+            console.log(`Executing command: ${command}`)
+            return { success: true }
+          },
+          canExecute: () => true,
+          isActive: () => false
+        }
+      }
+      
+      init() {
+        if (this.initialized) return
+        
+        this.container.contentEditable = true
+        this.container.innerHTML = this.content
+        this.container.style.padding = '15px'
+        this.container.style.outline = 'none'
+        this.container.style.minHeight = '150px'
+        
+        this.updateThemeClass()
+        this.bindEvents()
+        
+        this.initialized = true
+        console.log('Editor initialized')
+      }
+      
+      destroy() {
+        if (this.destroyed) return
+        
+        this.container.contentEditable = false
+        this.container.innerHTML = ''
+        this.destroyed = true
+        console.log('Editor destroyed')
+      }
+      
+      getContent() {
+        return this.container.innerHTML
+      }
+      
+      setContent(content) {
+        this.container.innerHTML = content
+        this.content = content
+        if (this.onChange) {
+          this.onChange(content)
+        }
+      }
+      
+      clear() {
+        this.setContent('')
+      }
+      
+      setReadonly(readonly) {
+        this.readonly = readonly
+        this.container.contentEditable = !readonly
+        this.container.style.backgroundColor = readonly ? '#f5f5f5' : 'white'
+      }
+      
+      insertContent(content) {
+        document.execCommand('insertHTML', false, content)
+      }
+      
+      updateThemeClass() {
+        this.container.className = `editor-container ldesign-editor-theme-${this.theme}`
+      }
+      
+      bindEvents() {
+        this.container.addEventListener('input', () => {
+          this.content = this.container.innerHTML
+          if (this.onChange) {
+            this.onChange(this.content)
+          }
+        })
+      }
+      
+      get state() {
+        return {
+          content: this.content,
+          readonly: this.readonly,
+          deviceType: this.responsive.getCurrentDevice()
+        }
+      }
+    }
+    
+    // 全局变量
+    window.LDesignEditor = MockLDesignEditor
+    
+    // 创建编辑器实例
+    const editor1 = new MockLDesignEditor({
+      container: '#editor1',
+      content: '<p>这是一个基础的富文本编辑器示例。你可以在这里输入文本，使用工具栏按钮进行格式化。</p>',
+      onChange: (content) => {
+        document.getElementById('output').textContent = content
+      }
+    })
+    
+    const editor2 = new MockLDesignEditor({
+      container: '#editor2',
+      content: '<p>这个编辑器演示主题切换功能。</p>'
+    })
+    
+    const editor3 = new MockLDesignEditor({
+      container: '#editor3',
+      content: '<p>这个编辑器演示响应式设计。调整浏览器窗口大小查看效果。</p>'
+    })
+    
+    // 初始化编辑器
+    editor1.init()
+    editor2.init()
+    editor3.init()
+    
+    // 全局函数
+    window.executeCommand = (command) => {
+      editor1.commands.execute(command)
+    }
+    
+    window.getContent = () => {
+      const content = editor1.getContent()
+      alert('当前内容：\n' + content)
+    }
+    
+    window.setContent = () => {
+      const content = prompt('请输入新内容：', '<p>新的内容</p>')
+      if (content !== null) {
+        editor1.setContent(content)
+      }
+    }
+    
+    window.clearContent = () => {
+      editor1.clear()
+    }
+    
+    window.toggleReadonly = () => {
+      const isReadonly = editor1.state.readonly
+      editor1.setReadonly(!isReadonly)
+    }
+    
+    window.changeTheme = (theme) => {
+      editor2.themes.setTheme(theme)
+    }
+    
+    // 更新设备类型显示
+    const updateDeviceType = () => {
+      document.getElementById('deviceType').textContent = editor3.responsive.getCurrentDevice()
+    }
+    
+    updateDeviceType()
+    window.addEventListener('resize', updateDeviceType)
+    
+    // 初始化输出
+    document.getElementById('output').textContent = editor1.getContent()
+  </script>
+</body>
+</html>

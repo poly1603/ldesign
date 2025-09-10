@@ -1,0 +1,334 @@
+/**
+ * 编辑器基础样式
+ * 定义编辑器的基础样式和布局
+ */
+
+// 编辑器容器基础样式
+.ldesign-editor {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  background-color: var(--ldesign-bg-color-container);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--ls-font-size-base);
+  line-height: 1.6;
+  color: var(--ldesign-text-color-primary);
+  overflow: hidden;
+  
+  // 聚焦状态
+  &:focus-within {
+    border-color: var(--ldesign-border-color-focus);
+    box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+  }
+  
+  // 只读状态
+  &.ldesign-editor-readonly {
+    background-color: var(--ldesign-bg-color-component-disabled);
+    cursor: not-allowed;
+    
+    .ldesign-editor-content {
+      cursor: not-allowed;
+    }
+  }
+  
+  // 设备类型样式
+  &.ldesign-editor-mobile {
+    min-height: 150px;
+    font-size: var(--ls-font-size-sm);
+  }
+  
+  &.ldesign-editor-tablet {
+    min-height: 180px;
+  }
+  
+  &.ldesign-editor-desktop {
+    min-height: 200px;
+  }
+}
+
+// 编辑器内容区域
+.ldesign-editor-content {
+  position: relative;
+  width: 100%;
+  min-height: inherit;
+  padding: var(--ls-padding-base);
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  
+  // 占位符样式
+  &:empty::before {
+    content: attr(data-placeholder);
+    color: var(--ldesign-text-color-placeholder);
+    pointer-events: none;
+    position: absolute;
+    top: var(--ls-padding-base);
+    left: var(--ls-padding-base);
+  }
+  
+  // 基础文本元素样式
+  p {
+    margin: 0 0 var(--ls-margin-sm) 0;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    &:empty {
+      min-height: 1.2em;
+    }
+  }
+  
+  // 标题样式
+  h1, h2, h3, h4, h5, h6 {
+    margin: var(--ls-margin-lg) 0 var(--ls-margin-base) 0;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--ldesign-text-color-primary);
+    
+    &:first-child {
+      margin-top: 0;
+    }
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  h1 {
+    font-size: var(--ls-font-size-h1);
+  }
+  
+  h2 {
+    font-size: var(--ls-font-size-h2);
+  }
+  
+  h3 {
+    font-size: var(--ls-font-size-h3);
+  }
+  
+  h4 {
+    font-size: var(--ls-font-size-h4);
+  }
+  
+  h5 {
+    font-size: var(--ls-font-size-h5);
+  }
+  
+  h6 {
+    font-size: var(--ls-font-size-h6);
+  }
+  
+  // 列表样式
+  ul, ol {
+    margin: var(--ls-margin-base) 0;
+    padding-left: var(--ls-padding-xl);
+    
+    &:first-child {
+      margin-top: 0;
+    }
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    li {
+      margin: var(--ls-margin-xs) 0;
+      
+      &:first-child {
+        margin-top: 0;
+      }
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      // 嵌套列表
+      ul, ol {
+        margin: var(--ls-margin-xs) 0;
+      }
+    }
+  }
+  
+  ul {
+    list-style-type: disc;
+    
+    ul {
+      list-style-type: circle;
+      
+      ul {
+        list-style-type: square;
+      }
+    }
+  }
+  
+  ol {
+    list-style-type: decimal;
+    
+    ol {
+      list-style-type: lower-alpha;
+      
+      ol {
+        list-style-type: lower-roman;
+      }
+    }
+  }
+  
+  // 引用块样式
+  blockquote {
+    margin: var(--ls-margin-base) 0;
+    padding: var(--ls-padding-base) var(--ls-padding-lg);
+    border-left: 4px solid var(--ldesign-brand-color);
+    background-color: var(--ldesign-bg-color-component);
+    color: var(--ldesign-text-color-secondary);
+    font-style: italic;
+    
+    &:first-child {
+      margin-top: 0;
+    }
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    p {
+      margin: 0;
+      
+      &:not(:last-child) {
+        margin-bottom: var(--ls-margin-sm);
+      }
+    }
+  }
+  
+  // 内联格式化样式
+  strong, b {
+    font-weight: 600;
+  }
+  
+  em, i {
+    font-style: italic;
+  }
+  
+  u {
+    text-decoration: underline;
+  }
+  
+  s, strike, del {
+    text-decoration: line-through;
+  }
+  
+  code {
+    padding: 2px 4px;
+    background-color: var(--ldesign-bg-color-component);
+    border-radius: var(--ls-border-radius-sm);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+  }
+  
+  // 链接样式
+  a {
+    color: var(--ldesign-brand-color);
+    text-decoration: none;
+    
+    &:hover {
+      color: var(--ldesign-brand-color-hover);
+      text-decoration: underline;
+    }
+    
+    &:focus {
+      outline: 2px solid var(--ldesign-brand-color-focus);
+      outline-offset: 2px;
+    }
+  }
+  
+  // 图片样式
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--ls-border-radius-sm);
+    
+    &.ldesign-editor-image-selected {
+      outline: 2px solid var(--ldesign-brand-color);
+      outline-offset: 2px;
+    }
+  }
+  
+  // 表格样式
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--ls-margin-base) 0;
+    
+    &:first-child {
+      margin-top: 0;
+    }
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    th, td {
+      padding: var(--ls-padding-sm) var(--ls-padding-base);
+      border: 1px solid var(--ldesign-border-level-2-color);
+      text-align: left;
+    }
+    
+    th {
+      background-color: var(--ldesign-bg-color-component);
+      font-weight: 600;
+    }
+    
+    tr:nth-child(even) {
+      background-color: var(--ldesign-bg-color-component-hover);
+    }
+  }
+  
+  // 水平分割线
+  hr {
+    margin: var(--ls-margin-lg) 0;
+    border: none;
+    border-top: 1px solid var(--ldesign-border-level-2-color);
+    
+    &:first-child {
+      margin-top: 0;
+    }
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  // 预格式化文本
+  pre {
+    margin: var(--ls-margin-base) 0;
+    padding: var(--ls-padding-base);
+    background-color: var(--ldesign-bg-color-component);
+    border-radius: var(--ls-border-radius-base);
+    overflow-x: auto;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+    
+    &:first-child {
+      margin-top: 0;
+    }
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    code {
+      padding: 0;
+      background: transparent;
+      border-radius: 0;
+      font-size: inherit;
+    }
+  }
+}

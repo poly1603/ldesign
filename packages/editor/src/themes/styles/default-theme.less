@@ -1,0 +1,131 @@
+/**
+ * 默认主题样式
+ * 基于 LDesign 设计系统的默认主题
+ */
+
+.ldesign-editor-theme-default {
+  // 编辑器专用变量
+  --ldesign-editor-bg: var(--ldesign-bg-color-container);
+  --ldesign-editor-color: var(--ldesign-text-color-primary);
+  --ldesign-editor-border: var(--ldesign-border-color);
+  --ldesign-editor-border-focus: var(--ldesign-border-color-focus);
+  --ldesign-editor-placeholder: var(--ldesign-text-color-placeholder);
+  
+  // 工具栏变量
+  --ldesign-toolbar-bg: var(--ldesign-bg-color-component);
+  --ldesign-toolbar-border: var(--ldesign-border-level-2-color);
+  --ldesign-toolbar-shadow: var(--ldesign-shadow-1);
+  
+  // 按钮变量
+  --ldesign-button-bg: transparent;
+  --ldesign-button-color: var(--ldesign-text-color-primary);
+  --ldesign-button-border: var(--ldesign-border-level-2-color);
+  --ldesign-button-hover-bg: var(--ldesign-bg-color-component-hover);
+  --ldesign-button-hover-color: var(--ldesign-text-color-primary);
+  --ldesign-button-active-bg: var(--ldesign-brand-color);
+  --ldesign-button-active-color: var(--ldesign-font-white-1);
+  --ldesign-button-disabled-bg: var(--ldesign-bg-color-component-disabled);
+  --ldesign-button-disabled-color: var(--ldesign-text-color-disabled);
+  
+  // 下拉菜单变量
+  --ldesign-dropdown-bg: var(--ldesign-bg-color-container);
+  --ldesign-dropdown-border: var(--ldesign-border-level-2-color);
+  --ldesign-dropdown-shadow: var(--ldesign-shadow-2);
+  --ldesign-dropdown-item-hover-bg: var(--ldesign-bg-color-component-hover);
+  
+  // 弹窗变量
+  --ldesign-modal-bg: var(--ldesign-bg-color-container);
+  --ldesign-modal-border: var(--ldesign-border-level-2-color);
+  --ldesign-modal-shadow: var(--ldesign-shadow-3);
+  --ldesign-modal-overlay-bg: rgba(0, 0, 0, 0.5);
+  
+  // 输入框变量
+  --ldesign-input-bg: var(--ldesign-bg-color-component);
+  --ldesign-input-color: var(--ldesign-text-color-primary);
+  --ldesign-input-border: var(--ldesign-border-color);
+  --ldesign-input-border-focus: var(--ldesign-border-color-focus);
+  --ldesign-input-placeholder: var(--ldesign-text-color-placeholder);
+  
+  // 滚动条变量
+  --ldesign-scrollbar-track: var(--ldesign-bg-color-component);
+  --ldesign-scrollbar-thumb: var(--ldesign-gray-color-4);
+  --ldesign-scrollbar-thumb-hover: var(--ldesign-gray-color-5);
+  
+  // 选区变量
+  --ldesign-selection-bg: var(--ldesign-brand-color-focus);
+  --ldesign-selection-color: var(--ldesign-text-color-primary);
+  
+  // 代码块变量
+  --ldesign-code-bg: var(--ldesign-gray-color-1);
+  --ldesign-code-color: var(--ldesign-text-color-primary);
+  --ldesign-code-border: var(--ldesign-border-level-2-color);
+  
+  // 表格变量
+  --ldesign-table-border: var(--ldesign-border-level-2-color);
+  --ldesign-table-header-bg: var(--ldesign-bg-color-component);
+  --ldesign-table-row-hover-bg: var(--ldesign-bg-color-component-hover);
+  
+  // 引用块变量
+  --ldesign-blockquote-border: var(--ldesign-brand-color);
+  --ldesign-blockquote-bg: var(--ldesign-bg-color-component);
+  --ldesign-blockquote-color: var(--ldesign-text-color-secondary);
+  
+  // 链接变量
+  --ldesign-link-color: var(--ldesign-brand-color);
+  --ldesign-link-hover-color: var(--ldesign-brand-color-hover);
+  --ldesign-link-visited-color: var(--ldesign-brand-color-active);
+  
+  // 图片变量
+  --ldesign-image-border: var(--ldesign-border-level-2-color);
+  --ldesign-image-selected-border: var(--ldesign-brand-color);
+  
+  // 分割线变量
+  --ldesign-hr-color: var(--ldesign-border-level-2-color);
+  
+  // 列表变量
+  --ldesign-list-marker-color: var(--ldesign-text-color-secondary);
+  
+  // 响应式调整
+  &.ldesign-editor-mobile {
+    // 移动端特定样式调整
+    --ldesign-editor-padding: var(--ls-padding-sm);
+    --ldesign-toolbar-height: 44px;
+    --ldesign-button-size: 40px;
+  }
+  
+  &.ldesign-editor-tablet {
+    // 平板端特定样式调整
+    --ldesign-editor-padding: var(--ls-padding-base);
+    --ldesign-toolbar-height: 48px;
+    --ldesign-button-size: 44px;
+  }
+  
+  &.ldesign-editor-desktop {
+    // 桌面端特定样式调整
+    --ldesign-editor-padding: var(--ls-padding-base);
+    --ldesign-toolbar-height: 52px;
+    --ldesign-button-size: 48px;
+  }
+  
+  // 暗色模式支持
+  @media (prefers-color-scheme: dark) {
+    // 可以在这里添加暗色模式的变量覆盖
+    // 或者通过 JavaScript 动态切换主题类名
+  }
+  
+  // 高对比度模式支持
+  @media (prefers-contrast: high) {
+    --ldesign-editor-border: var(--ldesign-gray-color-8);
+    --ldesign-button-border: var(--ldesign-gray-color-8);
+    --ldesign-dropdown-border: var(--ldesign-gray-color-8);
+  }
+  
+  // 减少动画模式支持
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
