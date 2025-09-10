@@ -3,6 +3,7 @@ import { defineConfig } from 'rollup'
 import typescript from '@rollup/plugin-typescript'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
+import json from '@rollup/plugin-json'
 import { babel } from '@rollup/plugin-babel'
 import postcss from 'rollup-plugin-postcss'
 import dts from 'rollup-plugin-dts'
@@ -46,7 +47,7 @@ export default defineConfig([
       json(),
       postcss({
         extensions: ['.css', '.less'],
-        extract: 'esm/adapt/vue/index.css',
+        extract: resolve(process.cwd(), 'esm/adapt/vue/index.css'),
         minimize: true,
         use: ['less'],
       }),
@@ -102,7 +103,7 @@ export default defineConfig([
       json(),
       postcss({
         extensions: ['.css', '.less'],
-        extract: 'cjs/adapt/vue/index.css',
+        extract: resolve(process.cwd(), 'cjs/adapt/vue/index.css'),
         minimize: true,
         use: ['less'],
       }),
@@ -133,6 +134,7 @@ export default defineConfig([
   // Vue Types
   {
     input: vueInput,
+    external: [...external, /\.less$/, /\.css$/],
     output: {
       file: 'types/adapt/vue/index.d.ts',
       format: 'es',

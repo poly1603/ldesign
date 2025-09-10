@@ -58,12 +58,22 @@ export interface UsePdfViewerReturn {
   search: (options: SearchOptions) => Promise<SearchResult[]>
   enterFullscreen: () => void
   exitFullscreen: () => void
-  download: (options?: DownloadOptions) => void
-  print: (options?: PrintOptions) => void
+  download: (options?: DownloadOptions) => Promise<void>
+  print: (options?: PrintOptions) => Promise<void>
   destroy: () => void
+
+  // 高级：布局/虚拟滚动/页面信息
+  setHeightMode: (mode: 'auto' | 'custom', customHeight?: string | number) => void
+  getPageRenderInfos: () => import('../../core/types').PageRenderInfo[]
+  calculateVisiblePages: (scrollTop: number, containerHeight: number) => { currentPage: number; visiblePages: number[] }
+  getPageScrollPosition: (pageNumber: number) => number
 
   // 内部实例（高级用法）
   viewer: Ref<IPdfViewer | null>
+
+  // 获取PDF文档对象（用于缩略图等高级功能）
+  getDocument: () => Promise<any>
+  getDocumentInfo: () => any
 }
 
 /**
@@ -159,6 +169,14 @@ export function usePdfViewer(
       state.value = pdfViewer.getState()
     })
 
+    // 可见页面与多页渲染事件（用于虚拟滚动场景的外部联动）
+    pdfViewer.on('allPagesRendered', () => {
+      // no-op: 外部可通过 viewer.on 订阅处理
+    })
+    pdfViewer.on('visiblePagesChanged', () => {
+      // no-op: 外部可通过 viewer.on 订阅处理
+    })
+
     viewer.value = pdfViewer
   }
 
@@ -234,14 +252,14 @@ export function usePdfViewer(
     viewer.value.exitFullscreen()
   }
 
-  const download = (options?: DownloadOptions): void => {
+  const download = async (options?: DownloadOptions): Promise<void> => {
     if (!viewer.value) return
-    viewer.value.download(options)
+    await viewer.value.download(options)
   }
 
-  const print = (options?: PrintOptions): void => {
+  const print = async (options?: PrintOptions): Promise<void> => {
     if (!viewer.value) return
-    viewer.value.print(options)
+    await viewer.value.print(options)
   }
 
   const destroy = (): void => {
@@ -297,8 +315,28 @@ export function usePdfViewer(
     print,
     destroy,
 
+    // 高级：布局/虚拟滚动/页面信息
+    setHeightMode: (mode: 'auto' | 'custom', customHeight?: string | number) => {
+      if (!viewer.value) return
+      viewer.value.setHeightMode(mode, customHeight)
+    },
+    getPageRenderInfos: () => viewer.value?.getPageRenderInfos() || [],
+    calculateVisiblePages: (scrollTop: number, containerHeight: number) =>
+      viewer.value?.calculateVisiblePages(scrollTop, containerHeight) || { currentPage: 1, visiblePages: [] },
+    getPageScrollPosition: (pageNumber: number) => viewer.value?.getPageScrollPosition(pageNumber) || 0,
+
     // 内部实例
     viewer,
+
+    // 高级功能
+    getDocument: async () => {
+      if (!viewer.value) throw new Error('Viewer not initialized')
+      return await viewer.value.getDocument()
+    },
+    getDocumentInfo: async () => {
+      if (!viewer.value) return null
+      return await viewer.value.getDocumentInfo()
+    },
   }
 }
 
@@ -366,6 +404,9 @@ export function usePdfSearch(viewer: Ref<IPdfViewer | null>) {
     searchResults.value = []
     currentMatchIndex.value = -1
     searchOptions.query = ''
+    if (viewer.value && typeof (viewer.value as any).clearSearchHighlights === 'function') {
+      ;(viewer.value as any).clearSearchHighlights()
+    }
   }
 
   return {
@@ -390,27 +431,52 @@ export function usePdfThumbnails(viewer: Ref<IPdfViewer | null>) {
   const thumbnails = ref<Map<number, HTMLCanvasElement>>(new Map())
   const isGenerating = ref(false)
   const showThumbnails = ref(false)
+  let genSeq = 0
 
-  const generateThumbnails = async (): Promise<void> => {
+  const generateThumbnails = async (options: { scale?: number } = {}): Promise<void> => {
     if (!viewer.value || isGenerating.value) return
+
+    const thisSeq = ++genSeq
+    const ordered: Array<{ pageNumber: number; canvas: HTMLCanvasElement }> = []
 
     try {
       isGenerating.value = true
-      // TODO: 实现缩略图生成逻辑
-      // 这需要访问内部的文档管理器和缩略图管理器
+      const doc = await viewer.value.getDocument()
+      if (!doc) return
+      const total = viewer.value.getState().totalPages
+      const scale = options.scale ?? 0.2
+
+      for (let pageNum = 1; pageNum <= total; pageNum++) {
+        if (thisSeq !== genSeq) return
+        const page = await doc.getPage(pageNum)
+        const viewport = page.getViewport({ scale })
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        if (!ctx) continue
+        canvas.width = viewport.width
+        canvas.height = viewport.height
+        await page.render({ canvasContext: ctx, viewport }).promise
+        ordered.push({ pageNumber: pageNum, canvas })
+        // 渐进式但保持顺序
+        const map = new Map<number, HTMLCanvasElement>()
+        ordered.sort((a, b) => a.pageNumber - b.pageNumber).forEach(({ pageNumber, canvas }) => map.set(pageNumber, canvas))
+        thumbnails.value = map
+      }
     }
     catch (error) {
       console.error('Failed to generate thumbnails:', error)
     }
     finally {
-      isGenerating.value = false
+      if (thisSeq === genSeq) {
+        isGenerating.value = false
+      }
     }
   }
 
   const toggleThumbnails = (): void => {
     showThumbnails.value = !showThumbnails.value
     if (showThumbnails.value && thumbnails.value.size === 0) {
-      generateThumbnails()
+      void generateThumbnails()
     }
   }
 

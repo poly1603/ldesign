@@ -315,4 +315,156 @@ describe('PdfPageRenderer', () => {
       expect(mockPage.getViewport).toHaveBeenCalledTimes(5)
     })
   })
+
+  describe('Multi-page rendering', () => {
+    const createMockGetPage = (totalPages: number) => {
+      return vi.fn((pageNumber: number) => {
+        if (pageNumber < 1 || pageNumber > totalPages) {
+          return Promise.reject(new Error(`Invalid page number: ${pageNumber}`))
+        }
+
+        const page = createMockPage()
+        page.pageNumber = pageNumber
+        return Promise.resolve(page)
+      })
+    }
+
+    it('should render all pages in multi-page mode', async () => {
+      const totalPages = 3
+      const getPage = createMockGetPage(totalPages)
+
+      // Mock the private renderPageToCanvas method
+      const mockCanvas = document.createElement('canvas')
+      mockCanvas.width = 200
+      mockCanvas.height = 300
+      vi.spyOn(renderer as any, 'renderPageToCanvas').mockResolvedValue(mockCanvas)
+
+      const pageInfos = await renderer.renderAllPages(
+        getPage,
+        totalPages,
+        container,
+        { pageSpacing: 20 }
+      )
+
+      expect(pageInfos).toHaveLength(totalPages)
+      expect(getPage).toHaveBeenCalledTimes(totalPages)
+
+      // Check page containers were created
+      const pageContainers = container.querySelectorAll('.pdf-page-container')
+      expect(pageContainers).toHaveLength(totalPages)
+
+      // Check page info structure
+      pageInfos.forEach((info, index) => {
+        expect(info.pageNumber).toBe(index + 1)
+        expect(info.canvas).toBeInstanceOf(HTMLCanvasElement)
+        expect(info.container).toBeInstanceOf(HTMLElement)
+        expect(info.offsetTop).toBeGreaterThanOrEqual(0)
+        expect(info.height).toBeGreaterThan(0)
+      })
+    })
+
+    it('should calculate correct page offsets with spacing', async () => {
+      const totalPages = 3
+      const pageSpacing = 30
+      const getPage = createMockGetPage(totalPages)
+
+      const pageInfos = await renderer.renderAllPages(
+        getPage,
+        totalPages,
+        container,
+        { pageSpacing }
+      )
+
+      // First page should start at 0
+      expect(pageInfos[0].offsetTop).toBe(0)
+
+      // Subsequent pages should have correct offsets
+      for (let i = 1; i < pageInfos.length; i++) {
+        const expectedOffset = pageInfos[i - 1].offsetTop + pageInfos[i - 1].height + pageSpacing
+        expect(pageInfos[i].offsetTop).toBe(expectedOffset)
+      }
+    })
+
+    it('should calculate visible pages correctly', async () => {
+      const totalPages = 5
+      const getPage = createMockGetPage(totalPages)
+
+      await renderer.renderAllPages(getPage, totalPages, container)
+
+      // Test different scroll positions
+      const containerHeight = 600
+
+      // At top - should see first page
+      let result = renderer.calculateVisiblePages(container, 0, containerHeight)
+      expect(result.currentPage).toBe(1)
+      expect(result.visiblePages).toContain(1)
+
+      // Scroll to middle - should see multiple pages
+      result = renderer.calculateVisiblePages(container, 500, containerHeight)
+      expect(result.visiblePages.length).toBeGreaterThan(0)
+
+      // Test edge case - no pages rendered
+      const emptyContainer = document.createElement('div')
+      result = renderer.calculateVisiblePages(emptyContainer, 0, containerHeight)
+      expect(result.currentPage).toBe(1)
+      expect(result.visiblePages).toEqual([])
+    })
+
+    it('should get correct page scroll position', async () => {
+      const totalPages = 3
+      const getPage = createMockGetPage(totalPages)
+
+      const pageInfos = await renderer.renderAllPages(getPage, totalPages, container)
+
+      // Test getting scroll position for each page
+      pageInfos.forEach((info) => {
+        const scrollPosition = renderer.getPageScrollPosition(container, info.pageNumber)
+        expect(scrollPosition).toBe(info.offsetTop)
+      })
+
+      // Test invalid page number
+      const invalidPosition = renderer.getPageScrollPosition(container, 999)
+      expect(invalidPosition).toBe(0)
+    })
+
+    it('should handle render errors gracefully', async () => {
+      const totalPages = 2
+      const getPage = vi.fn()
+        .mockResolvedValueOnce(createMockPage()) // First page succeeds
+        .mockRejectedValueOnce(new Error('Render failed')) // Second page fails
+
+      await expect(
+        renderer.renderAllPages(getPage, totalPages, container)
+      ).rejects.toThrow('Failed to render all pages')
+
+      expect(getPage).toHaveBeenCalledTimes(2)
+    })
+
+    it('should store and retrieve page render infos', async () => {
+      const totalPages = 2
+      const getPage = createMockGetPage(totalPages)
+
+      // Initially no page infos
+      expect(renderer.getPageRenderInfos(container)).toEqual([])
+
+      // After rendering
+      const pageInfos = await renderer.renderAllPages(getPage, totalPages, container)
+      const retrievedInfos = renderer.getPageRenderInfos(container)
+
+      expect(retrievedInfos).toEqual(pageInfos)
+      expect(retrievedInfos).toHaveLength(totalPages)
+    })
+
+    it('should clean up page render infos on container cleanup', async () => {
+      const totalPages = 2
+      const getPage = createMockGetPage(totalPages)
+
+      await renderer.renderAllPages(getPage, totalPages, container)
+      expect(renderer.getPageRenderInfos(container)).toHaveLength(totalPages)
+
+      // Render single page (which cleans up container)
+      await renderer.renderPage(createMockPage() as any, container)
+      expect(renderer.getPageRenderInfos(container)).toEqual([])
+    })
+  })
 })

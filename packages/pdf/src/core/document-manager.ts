@@ -13,8 +13,13 @@ import type { IPdfDocumentManager, PdfInput, PdfDocumentInfo } from './types'
 export class PdfDocumentManager implements IPdfDocumentManager {
   private document: PDFDocumentProxy | null = null
   private pageCache = new Map<number, PDFPageProxy>()
+  private originalData: string | ArrayBuffer | Uint8Array | null = null
+  private documentId: string | null = null
+  private options: { workerSrc?: string | URL; workerPort?: Worker; workerModule?: string | URL } | undefined
+  private ownedWorker: Worker | null = null
 
-  constructor() {
+  constructor(options?: { workerSrc?: string | URL; workerPort?: Worker; workerModule?: string | URL }) {
+    this.options = options
     // 设置PDF.js worker路径
     this.setupWorker()
   }
@@ -25,29 +30,43 @@ export class PdfDocumentManager implements IPdfDocumentManager {
   private setupWorker(): void {
     if (typeof window !== 'undefined') {
       try {
-        // 1) 显式指定与依赖版本匹配的 worker 资源路径
-        pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js'
-        // 2) 强制注入 Worker 实例，避免打包工具覆盖 workerSrc
-        if (typeof Worker !== 'undefined') {
+        const gwo = (pdfjsLib as any).GlobalWorkerOptions
+        const workerSrc = this.options?.workerSrc ?? '/pdf.worker.min.js'
+
+        // 情况1：直接使用传入的 Worker 实例（最高优先级）
+        if (this.options?.workerPort) {
+          if (gwo) {
+            gwo.workerPort = this.options.workerPort
+            gwo.workerSrc = workerSrc as any
+          }
+          console.log('PDF.js worker: 使用外部传入的 workerPort')
+          return
+        }
+
+        // 情况2：使用 module worker URL 创建 Worker
+        if (this.options?.workerModule && typeof Worker !== 'undefined') {
           try {
-            // 优先使用 classic worker，确保与 pdfjs-dist@3 兼容
-            const worker = new Worker('/pdf.worker.min.js')
-            const gwo = (pdfjsLib as any).GlobalWorkerOptions
-            if (gwo) gwo.workerPort = worker
-          } catch (e) {
-            // 兼容某些环境需要 type: 'module'
-            try {
-              const worker = new Worker('/pdf.worker.min.js', { type: 'module' as any })
-              const gwo = (pdfjsLib as any).GlobalWorkerOptions
-              if (gwo) gwo.workerPort = worker
-            } catch (e2) {
-              console.warn('使用内置Worker失败，降级为仅设置workerSrc。错误：', e2)
+            const worker = new Worker(this.options.workerModule as any, { type: 'module' as any })
+            this.ownedWorker = worker
+            if (gwo) {
+              gwo.workerPort = worker
+              gwo.workerSrc = workerSrc as any
             }
+            console.log('PDF.js worker: 使用 module worker 创建成功')
+            return
+          } catch (e) {
+            console.warn('module worker 创建失败，回退到 workerSrc', e)
           }
         }
+
+        // 情况3：回退到 workerSrc，仅设置路径，不强行创建 Worker（由 pdf.js 自行加载）
+        if (gwo) gwo.workerSrc = workerSrc as any
+        // 不再强制 new Worker，以避免某些开发环境（Vite/路径基准/CORS）下创建失败导致加载卡住
+
         console.log('PDF.js worker 已设置:', {
-          workerSrc: (pdfjsLib as any).GlobalWorkerOptions?.workerSrc,
+          workerSrc: (pdfjsLib as any).GlobalWorkerOptions?.workerSrc || workerSrc,
           hasWorkerPort: Boolean((pdfjsLib as any).GlobalWorkerOptions?.workerPort),
+          by: this.options?.workerPort ? 'port' : (this.options?.workerModule ? 'module' : 'src'),
         })
       } catch (error) {
         console.error('设置 PDF.js worker 失败:', error)
@@ -67,6 +86,7 @@ export class PdfDocumentManager implements IPdfDocumentManager {
 
       // 根据输入类型处理数据
       const data = await this.processInput(input)
+      this.originalData = data
 
       // 加载PDF文档
       console.log('创建PDF.js加载任务...')
@@ -75,9 +95,13 @@ export class PdfDocumentManager implements IPdfDocumentManager {
       console.log('等待PDF文档加载完成...')
       this.document = await loadingTask.promise
 
+      // 记录文档ID（指纹）
+      const fp = (this.document as any).fingerprint ?? ((this.document as any).fingerprints?.[0])
+      this.documentId = fp ? String(fp) : null
+
       console.log('PDF文档加载成功:', {
         numPages: this.document.numPages,
-        fingerprint: (this.document as any).fingerprint ?? (this.document as any).fingerprints
+        fingerprint: this.documentId,
       })
 
       // 清空页面缓存
@@ -258,5 +282,29 @@ export class PdfDocumentManager implements IPdfDocumentManager {
       await this.document.destroy()
       this.document = null
     }
+
+    // 终止内部持有的 worker（如有）
+    if (this.ownedWorker && typeof this.ownedWorker.terminate === 'function') {
+      try { this.ownedWorker.terminate() } catch {}
+      this.ownedWorker = null
+    }
+
+    this.documentId = null
+
+    // 清理原始数据引用（保留URL字符串，便于下载/打印；二进制无引用问题）
+    // 如需彻底清理，可置空：
+    // this.originalData = null
+  }
+
+  /**
+   * 获取原始输入数据（URL 或二进制）
+   */
+  getOriginalData(): string | ArrayBuffer | Uint8Array | null {
+    return this.originalData
+  }
+
+  /** 获取文档ID（指纹） */
+  getDocumentId(): string | null {
+    return this.documentId
   }
 }

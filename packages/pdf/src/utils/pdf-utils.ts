@@ -325,3 +325,21 @@ export function isElementInViewport(element: HTMLElement): boolean {
 export function scrollToElement(element: HTMLElement, behavior: ScrollBehavior = 'smooth'): void {
   element.scrollIntoView({ behavior, block: 'center' })
 }
+
+/**
+ * 解析打印页面范围（如 "1-5,8,10-12"）为页码数组
+ */
+export function parsePageRange(range: string, totalPages: number): number[] {
+  const result = new Set<number>()
+  const parts = (range || '').split(',').map(s => s.trim()).filter(Boolean)
+  for (const part of parts) {
+    const m = part.match(/^(\d+)(?:-(\d+))?$/)
+    if (!m) continue
+    const start = Math.max(1, Math.min(totalPages, parseInt(m[1], 10)))
+    const end = m[2] ? Math.max(1, Math.min(totalPages, parseInt(m[2], 10))) : start
+    const [from, to] = start <= end ? [start, end] : [end, start]
+    for (let p = from; p <= to; p++) result.add(p)
+  }
+  // 默认返回空代表非法/未解析，让上层用全量兜底
+  return Array.from(result).sort((a, b) => a - b)
+}

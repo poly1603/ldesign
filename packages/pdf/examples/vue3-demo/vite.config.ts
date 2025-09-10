@@ -11,6 +11,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      '@ldesign/pdf': resolve(__dirname, '../../src'),
       'pdfjs-dist': resolve(__dirname, '../../node_modules/pdfjs-dist'),
     },
   },

@@ -25,15 +25,10 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
   ],
-  // webServer: {
-  //   command: 'pnpm --filter vue3-demo run dev',
-  //   url: 'http://localhost:5176',
-  //   reuseExistingServer: !process.env.CI,
-  //   timeout: 120 * 1000,
-  // },
   webServer: {
-    command: 'pnpm run dev',
+    command: 'pnpm --filter @ldesign/pdf-vue3-demo run dev',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,
   },
 })

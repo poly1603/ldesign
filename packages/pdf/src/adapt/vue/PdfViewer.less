@@ -178,16 +178,26 @@
     flex: 1;
     overflow: hidden;
 
-    .pdf-sidebar {
-      width: 250px;
+.pdf-sidebar {
+width: 250px;
       background-color: #ffffff;
       border-right: 1px solid #dee2e6;
-      overflow-y: auto;
+      overflow: hidden; /* 只让内层容器滚动，避免双层滚动条 */
+      display: flex;
+      flex-direction: column;
 
       .sidebar-content {
         padding: 16px;
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
 
         .thumbnails-section {
+          display: flex;
+          flex-direction: column;
+          flex: 1 1 auto;
+          min-height: 0;
           h3 {
             margin: 0 0 12px 0;
             font-size: 14px;
@@ -199,6 +209,30 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            /* 与右侧内容区保持一致高度：使用弹性填充而非固定 calc */
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 4px;
+
+            // 自定义滚动条
+            &::-webkit-scrollbar {
+              width: 4px;
+            }
+
+            &::-webkit-scrollbar-track {
+              background: #f1f1f1;
+              border-radius: 2px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+              background: #c1c1c1;
+              border-radius: 2px;
+
+              &:hover {
+                background: #a8a8a8;
+              }
+            }
 
             .thumbnail-placeholder {
               padding: 20px;
@@ -218,11 +252,121 @@
       position: relative;
       overflow: hidden;
 
+      // 自适应高度模式下允许内容溢出
+      &.auto-height-mode {
+        overflow: visible;
+        height: auto;
+      }
+
       .pdf-container {
         width: 100%;
         height: 100%;
-        overflow: auto;
+        overflow: hidden;
         background-color: #e9ecef;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+
+        // 页面切换动画（自动高度模式下触发）
+        &.page-animate {
+          animation: page-slide-in 0.25s ease;
+        }
+
+        // 确保滚动条样式
+        &::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: #c1c1c1;
+          border-radius: 4px;
+
+          &:hover {
+            background: #a8a8a8;
+          }
+        }
+
+        canvas {
+          max-width: 100%;
+          height: auto;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          border-radius: 4px;
+          background-color: #ffffff;
+          margin-bottom: 20px;
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        // 单页模式样式
+        &.single-page {
+          justify-content: center;
+
+          canvas {
+            margin-bottom: 0;
+          }
+        }
+
+        // 自适应高度模式样式
+        &.auto-height {
+          overflow: visible;
+          height: auto;
+          min-height: auto;
+          max-height: none;
+        }
+
+        // 多页模式样式
+        &.custom-height {
+          overflow: auto;
+          justify-content: flex-start;
+
+          .pdf-page-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+
+            canvas {
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+              border-radius: 4px;
+              background-color: #ffffff;
+              display: block;
+            }
+
+            // 页面标签
+            &::before {
+              content: attr(data-page-number);
+              position: absolute;
+              top: -25px;
+              left: 50%;
+              transform: translateX(-50%);
+              background: rgba(0, 0, 0, 0.7);
+              color: white;
+              padding: 2px 8px;
+              border-radius: 3px;
+              font-size: 12px;
+              font-weight: 500;
+              z-index: 10;
+              opacity: 0;
+              transition: opacity 0.2s ease;
+            }
+
+            &:hover::before {
+              opacity: 1;
+            }
+          }
+        }
       }
     }
   }
@@ -291,8 +435,24 @@
 
   // 动画
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes page-slide-in {
+    0% {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   // 响应式设计
@@ -393,21 +553,69 @@
   padding: 8px;
   background-color: #ffffff;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+  position: relative;
 
   &:hover {
     border-color: #adb5bd;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
   }
 
   &.active {
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    border-color: var(--ldesign-brand-color);
+    box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+    background-color: var(--ldesign-brand-color-1);
+
+    .thumbnail-label {
+      color: var(--ldesign-brand-color);
+      font-weight: 600;
+    }
   }
 
-  canvas {
-    max-width: 100%;
-    height: auto;
-    display: block;
+  .thumbnail-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 4px;
+    position: relative;
+
+    canvas {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 2px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
+    }
+  }
+
+  .thumbnail-label {
+    text-align: center;
+    font-size: 12px;
+    color: var(--ldesign-text-color-secondary);
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  // 页面指示器
+  &::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--ldesign-brand-color);
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.2s ease;
+  }
+
+  &.active::after {
+    opacity: 1;
+    transform: scale(1);
   }
 }

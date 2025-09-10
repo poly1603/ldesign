@@ -17,10 +17,15 @@ import type {
   DownloadOptions,
   PrintOptions,
   RenderOptions,
+  HeightMode,
+  ViewerMode,
+  PageRenderInfo,
 } from './types'
 import { PdfDocumentManager } from './document-manager'
 import { PdfPageRenderer } from './page-renderer'
 import { EventManager } from './event-manager'
+import { getFileNameFromUrl } from '../utils/file-utils'
+import { parsePageRange } from '../utils/pdf-utils'
 
 /**
  * PDF预览器实现
@@ -29,12 +34,15 @@ export class PdfViewer implements IPdfViewer {
   private documentManager: PdfDocumentManager
   private pageRenderer: PdfPageRenderer
   private eventManager: EventManager
-  private config: Required<PdfViewerConfig>
+  private config: PdfViewerConfig
   private state: PdfViewerState
+  private lastSearchResults: import('./types').SearchResult[] = []
+  private lastDocumentInfo: PdfDocumentInfo | null = null
+  private currentDocumentId: string | null = null
 
   constructor(config: PdfViewerConfig) {
     // 初始化管理器
-    this.documentManager = new PdfDocumentManager()
+    this.documentManager = new PdfDocumentManager({ workerSrc: config.workerSrc, workerPort: config.workerPort as any, workerModule: config.workerModule as any })
     this.pageRenderer = new PdfPageRenderer()
     this.eventManager = new EventManager()
 
@@ -43,7 +51,14 @@ export class PdfViewer implements IPdfViewer {
       initialScale: 1,
       initialPage: 1,
       zoomMode: 'fit-width',
+      renderMode: 'single-page',
+      heightMode: 'auto',
       renderOptions: {},
+      multiPageOptions: {
+        pageSpacing: 20,
+        enableVirtualScroll: false,
+        visibleBuffer: 2,
+      },
       enableToolbar: true,
       enableSidebar: true,
       enableSearch: true,
@@ -60,10 +75,10 @@ export class PdfViewer implements IPdfViewer {
     // 初始化状态
     this.state = {
       isDocumentLoaded: false,
-      currentPage: this.config.initialPage,
+      currentPage: this.config.initialPage ?? 1,
       totalPages: 0,
-      currentScale: this.config.initialScale,
-      currentZoomMode: this.config.zoomMode,
+      currentScale: this.config.initialScale ?? 1,
+      currentZoomMode: this.config.zoomMode ?? 'fit-width',
       currentRotation: 0,
       isLoading: false,
       isFullscreen: false,
@@ -91,9 +106,11 @@ export class PdfViewer implements IPdfViewer {
     container.classList.add('ldesign-pdf-viewer')
 
     // 应用自定义样式
-    Object.entries(this.config.customStyles).forEach(([property, value]) => {
-      container.style.setProperty(property, value)
-    })
+    if (this.config.customStyles) {
+      Object.entries(this.config.customStyles).forEach(([property, value]) => {
+        container.style.setProperty(property, value)
+      })
+    }
   }
 
   /**
@@ -107,13 +124,21 @@ export class PdfViewer implements IPdfViewer {
       // 加载文档
       const document = await this.documentManager.loadDocument(input)
 
+      // 清理上一文档的渲染缓存
+      const newDocId = this.documentManager.getDocumentId()
+      if (this.currentDocumentId && this.currentDocumentId !== newDocId) {
+        this.pageRenderer.clearCacheForDocument(this.currentDocumentId)
+      }
+      this.currentDocumentId = newDocId || null
+
       // 更新状态
       this.state.isDocumentLoaded = true
       this.state.totalPages = document.numPages
-      this.state.currentPage = Math.min(this.config.initialPage, document.numPages)
+      this.state.currentPage = Math.min(this.config.initialPage ?? 1, document.numPages)
 
       // 获取文档信息
       const documentInfo = await this.documentManager.getDocumentInfo()
+      this.lastDocumentInfo = documentInfo
       this.eventManager.emit('documentLoaded', documentInfo)
 
       // 渲染当前页面
@@ -227,28 +252,83 @@ export class PdfViewer implements IPdfViewer {
   }
 
   /**
-   * 搜索文本
+   * 搜索文本（基础实现：逐页遍历 textContent）
    */
   async search(options: SearchOptions): Promise<SearchResult[]> {
     if (!this.state.isDocumentLoaded) {
       throw new Error('No document loaded')
     }
 
+    const queryRaw = options.query || ''
+    const query = options.caseSensitive ? queryRaw : queryRaw.toLowerCase()
+    if (!query.trim()) return []
+
     this.state.searchState.isSearching = true
     this.state.searchState.query = options.query
 
+    const results: SearchResult[] = []
+
     try {
-      // 实现搜索逻辑
-      const results: SearchResult[] = []
-      // TODO: 实现实际的搜索功能
+      for (let pageNumber = 1; pageNumber <= this.state.totalPages; pageNumber++) {
+        const page = await this.documentManager.getPage(pageNumber)
+        const viewport = page.getViewport({
+          scale: this.state.currentScale,
+          rotation: this.state.currentRotation,
+        })
+        const textContent: any = await page.getTextContent()
+
+        for (const item of textContent.items) {
+          const text: string = String(item.str ?? '')
+          const haystack = options.caseSensitive ? text : text.toLowerCase()
+
+          // 简单匹配（可选全词）
+          let indices: number[] = []
+          if (options.wholeWords) {
+            const pattern = new RegExp(`(^|\b)${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\b|$)`, options.caseSensitive ? 'g' : 'gi')
+            let m: RegExpExecArray | null
+            while ((m = pattern.exec(text)) !== null) {
+              indices.push(m.index)
+            }
+          } else {
+            let idx = haystack.indexOf(query)
+            while (idx !== -1) {
+              indices.push(idx)
+              idx = haystack.indexOf(query, idx + 1)
+            }
+          }
+
+          if (indices.length === 0) continue
+
+          // 估算位置（简化版，根据 item.transform 与字体大小估算）
+          const [a, , , d, e, f] = item.transform || [1, 0, 0, 1, 0, 0]
+          const fontSize = Math.abs(a || 12)
+          const x = (e || 0)
+          const y = viewport.height - (f || 0)
+          const widthPerChar = fontSize * 0.6
+
+          indices.forEach((start, indexInItem) => {
+            const width = widthPerChar * queryRaw.length
+            const height = fontSize
+            results.push({
+              pageNumber,
+              text,
+              position: { x: x + start * widthPerChar, y: y - height, width, height },
+              matchIndex: indexInItem,
+              totalMatches: indices.length,
+            })
+          })
+        }
+      }
 
       this.state.searchState.totalMatches = results.length
       this.state.searchState.currentMatch = results.length > 0 ? 1 : 0
-
       this.eventManager.emit('searchResult', results)
+
+      // 保存并应用高亮
+      this.lastSearchResults = results
+      this.pageRenderer.updateHighlightsForAll(this.config.container, results)
       return results
-    }
-    finally {
+    } finally {
       this.state.searchState.isSearching = false
     }
   }
@@ -278,28 +358,161 @@ export class PdfViewer implements IPdfViewer {
     }
   }
 
+  // 便捷方法补充
+  getCurrentPage(): number { return this.state.currentPage }
+  getTotalPages(): number { return this.state.totalPages }
+  getScale(): number { return this.state.currentScale }
+  getRotation(): RotationAngle { return this.state.currentRotation }
+  isFullscreen(): boolean { return this.state.isFullscreen }
+  fitToWidth(): void { this.setZoomMode('fit-width') }
+  fitToPage(): void { this.setZoomMode('fit-page') }
+  clearSearchHighlights(): void { this.lastSearchResults = []; this.pageRenderer.clearAllHighlights(this.config.container) }
+
   /**
    * 下载PDF
    */
-  download(options: DownloadOptions = {}): void {
+  async download(options: DownloadOptions = {}): Promise<void> {
     if (!this.config.enableDownload) {
       return
     }
 
-    // TODO: 实现下载功能
-    console.log('Download PDF:', options)
+    try {
+      const data = this.documentManager.getOriginalData()
+      let blobUrl: string | null = null
+
+      // 生成默认文件名：Title -> URL 文件名 -> document.pdf
+      const defaultName = this.lastDocumentInfo?.title
+        || (typeof data === 'string' ? getFileNameFromUrl(data) : 'document.pdf')
+      const filename = options.filename || defaultName
+
+      if (typeof data === 'string') {
+        // URL 源：如需保存副本则尝试fetch后生成Blob，否则直接跳转下载
+        if (options.saveAsCopy) {
+          try {
+            const resp = await fetch(data, { mode: 'cors' as RequestMode })
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+            const buf = await resp.arrayBuffer()
+            blobUrl = URL.createObjectURL(new Blob([buf], { type: 'application/pdf' }))
+          } catch (e) {
+            // CORS 等失败场景，回退为直接下载 URL（可能被浏览器拦截为新标签打开）
+            blobUrl = data
+          }
+        } else {
+          blobUrl = data
+        }
+      } else if (data instanceof ArrayBuffer || data instanceof Uint8Array) {
+        const buf = data instanceof Uint8Array ? data.slice().buffer : data
+        blobUrl = URL.createObjectURL(new Blob([buf], { type: 'application/pdf' }))
+      }
+
+      if (!blobUrl) return
+
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+
+      if (blobUrl.startsWith('blob:')) {
+        setTimeout(() => URL.revokeObjectURL(blobUrl!), 2000)
+      }
+    } catch (error) {
+      this.eventManager.emit('error', error as Error)
+    }
   }
 
   /**
    * 打印PDF
    */
-  print(options: PrintOptions = {}): void {
+  async print(options: PrintOptions = {}): Promise<void> {
     if (!this.config.enablePrint) {
       return
     }
 
-    // TODO: 实现打印功能
-    console.log('Print PDF:', options)
+    const needsCustomPipeline = Boolean(options.pageRange) || Boolean(options.fitToPage) || Boolean(options.quality && options.quality !== 'normal')
+
+    try {
+      if (!needsCustomPipeline) {
+        // 默认：走浏览器内置 PDF 打印
+        const data = this.documentManager.getOriginalData()
+        let url: string | null = null
+        if (typeof data === 'string') url = data
+        else if (data instanceof ArrayBuffer || data instanceof Uint8Array) {
+          const buf = data instanceof Uint8Array ? data.slice().buffer : data
+          url = URL.createObjectURL(new Blob([buf], { type: 'application/pdf' }))
+        }
+        if (!url) return
+        const printWindow = window.open(url)
+        if (printWindow) {
+          const onLoad = () => {
+            try { printWindow.focus(); printWindow.print() } finally {
+              if (url!.startsWith('blob:')) setTimeout(() => URL.revokeObjectURL(url!), 2000)
+              printWindow.close()
+            }
+          }
+          if (printWindow.document?.readyState === 'complete') onLoad()
+          else printWindow.addEventListener('load', onLoad, { once: true })
+        }
+        return
+      }
+
+      // 自定义打印：按页渲染为 Canvas 并打印
+      const doc = await this.documentManager.getDocument()
+      if (!doc) throw new Error('No document loaded')
+
+      const total = doc.numPages
+      const pages = options.pageRange ? parsePageRange(options.pageRange, total) : Array.from({ length: total }, (_, i) => i + 1)
+      if (!pages.length) pages.push(this.state.currentPage)
+
+      const quality = options.quality || 'normal'
+      const scaleMap: Record<string, number> = { draft: 1, normal: 2, high: 3 }
+      const baseScale = scaleMap[quality] ?? 2
+
+      const printWindow = window.open('', '_blank')
+      if (!printWindow) return
+
+      // 基础样式：去边距，按页分页
+      printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8" />
+<style>
+  @page { margin: 0; }
+  html, body { margin: 0; padding: 0; }
+  .page { page-break-after: always; display: flex; justify-content: center; align-items: center; }
+  canvas { display: block; ${options.fitToPage ? 'width: 100%; height: auto;' : ''} }
+</style>
+</head><body></body></html>`)
+
+      // 渲染所选页
+      for (const p of pages) {
+        const page = await doc.getPage(p)
+        // 以当前缩放为基准，叠加质量倍数，尽量保证打印清晰
+        const scale = (this.state.currentScale || 1) * baseScale * (window.devicePixelRatio || 1)
+        const viewport = page.getViewport({ scale, rotation: this.state.currentRotation })
+
+        const wrapper = printWindow.document.createElement('div')
+        wrapper.className = 'page'
+        const canvas = printWindow.document.createElement('canvas') as HTMLCanvasElement
+        const ctx = canvas.getContext('2d')
+        if (!ctx) continue
+        canvas.width = viewport.width
+        canvas.height = viewport.height
+        if (!options.fitToPage) {
+          canvas.style.width = `${viewport.width}px`
+          canvas.style.height = `${viewport.height}px`
+        }
+        wrapper.appendChild(canvas)
+        printWindow.document.body.appendChild(wrapper)
+
+        await page.render({ canvasContext: ctx, viewport }).promise
+      }
+
+      // 打印并关闭
+      const doPrint = () => { try { printWindow.focus(); printWindow.print() } finally { printWindow.close() } }
+      if (printWindow.document?.readyState === 'complete') doPrint()
+      else printWindow.addEventListener('load', doPrint, { once: true })
+    } catch (error) {
+      this.eventManager.emit('error', error as Error)
+    }
   }
 
   /**
@@ -312,13 +525,19 @@ export class PdfViewer implements IPdfViewer {
   /**
    * 获取文档信息
    */
-  getDocumentInfo(): PdfDocumentInfo | null {
+  async getDocumentInfo(): Promise<PdfDocumentInfo | null> {
     if (!this.state.isDocumentLoaded) {
       return null
     }
 
-    // TODO: 返回缓存的文档信息
-    return null
+    return await this.documentManager.getDocumentInfo()
+  }
+
+  /**
+   * 获取PDF文档对象
+   */
+  async getDocument(): Promise<any> {
+    return this.documentManager.getDocument()
   }
 
   /**
@@ -330,19 +549,139 @@ export class PdfViewer implements IPdfViewer {
     }
 
     try {
-      const page = await this.documentManager.getPage(this.state.currentPage)
-      const renderOptions: RenderOptions = {
-        scale: this.state.currentScale,
-        rotation: this.state.currentRotation,
-        ...this.config.renderOptions,
+      if (this.config.renderMode === 'multi-page') {
+        await this.renderAllPages()
+      } else {
+        await this.renderSinglePage()
       }
-
-      await this.pageRenderer.renderPage(page, this.config.container, renderOptions)
-      this.eventManager.emit('renderComplete', this.state.currentPage)
     }
     catch (error) {
       const errorObj = error instanceof Error ? error : new Error('Render failed')
       this.eventManager.emit('error', errorObj)
+    }
+  }
+
+  /**
+   * 渲染单页模式
+   */
+  private async renderSinglePage(): Promise<void> {
+    const page = await this.documentManager.getPage(this.state.currentPage)
+    const renderOptions: RenderOptions = {
+      scale: this.state.currentScale,
+      rotation: this.state.currentRotation,
+      documentId: this.documentManager.getDocumentId() || undefined,
+      ...this.config.renderOptions,
+    }
+
+    await this.pageRenderer.renderPage(page, this.config.container, renderOptions)
+    this.eventManager.emit('renderComplete', this.state.currentPage)
+    // 渲染后更新高亮（单页模式）
+    if (this.lastSearchResults.length) {
+      this.pageRenderer.updateHighlightsForAll(this.config.container, this.lastSearchResults)
+    }
+    // 预加载后续页面以提升翻页体验
+    const buffer = this.config.multiPageOptions?.visibleBuffer ?? 2
+    await this.documentManager.preloadPages(this.state.currentPage + 1, this.state.currentPage + buffer)
+  }
+
+  /**
+   * 渲染多页模式
+   */
+  private async renderAllPages(): Promise<void> {
+    const getPage = (pageNumber: number) => this.documentManager.getPage(pageNumber)
+    const multiPageOptions = {
+      scale: this.state.currentScale,
+      rotation: this.state.currentRotation,
+      documentId: this.documentManager.getDocumentId() || undefined,
+      ...this.config.renderOptions,
+      ...this.config.multiPageOptions,
+    }
+
+    const pageInfos = await this.pageRenderer.renderAllPages(
+      getPage,
+      this.state.totalPages,
+      this.config.container,
+      multiPageOptions
+    )
+
+    this.eventManager.emit('renderComplete', this.state.currentPage)
+    this.eventManager.emit('allPagesRendered', pageInfos)
+    // 渲染后更新高亮（多页模式）
+    if (this.lastSearchResults.length) {
+      this.pageRenderer.updateHighlightsForAll(this.config.container, this.lastSearchResults)
+    }
+  }
+
+  /**
+   * 获取页面渲染信息
+   */
+  getPageRenderInfos(): PageRenderInfo[] {
+    return this.pageRenderer.getPageRenderInfos(this.config.container)
+  }
+
+  /**
+   * 计算可见页面
+   */
+  calculateVisiblePages(scrollTop: number, containerHeight: number): { currentPage: number; visiblePages: number[] } {
+    return this.pageRenderer.calculateVisiblePages(this.config.container, scrollTop, containerHeight)
+  }
+
+  /** 更新可见页面（虚拟滚动按需渲染/回收） */
+  updateVisiblePages(scrollTop: number, containerHeight: number): void {
+    const options = {
+      ...this.config.renderOptions,
+      ...this.config.multiPageOptions,
+      scale: this.state.currentScale,
+      rotation: this.state.currentRotation,
+      documentId: this.documentManager.getDocumentId() || undefined,
+    }
+    void this.pageRenderer.updateVisiblePages(this.config.container, scrollTop, containerHeight, options as any)
+      .then(() => {
+        if (this.lastSearchResults.length) {
+          // 下一帧更新高亮，确保Canvas等节点已就绪
+          requestAnimationFrame(() => this.pageRenderer.updateHighlightsForAll(this.config.container, this.lastSearchResults))
+        }
+      })
+  }
+
+  /**
+   * 获取页面滚动位置
+   */
+  getPageScrollPosition(pageNumber: number): number {
+    return this.pageRenderer.getPageScrollPosition(this.config.container, pageNumber)
+  }
+
+  /**
+   * 设置渲染模式
+   */
+  setRenderMode(mode: ViewerMode): void {
+    if (this.config.renderMode !== mode) {
+      this.config.renderMode = mode
+      this.renderCurrentPage()
+    }
+  }
+
+  /**
+   * 设置高度模式
+   */
+  setHeightMode(mode: HeightMode, customHeight?: string | number): void {
+    this.config.heightMode = mode
+    if (customHeight !== undefined) {
+      this.config.customHeight = customHeight
+    }
+
+    // 根据高度模式自动设置渲染模式，并默认启用虚拟滚动（固定高度更适合多页+虚拟化）
+    if (mode === 'auto') {
+      this.setRenderMode('single-page')
+    } else {
+      // 开启多页+虚拟滚动
+      this.config.multiPageOptions = {
+        pageSpacing: 20,
+        visibleBuffer: 2,
+        enableVirtualScroll: true,
+        ...this.config.multiPageOptions,
+      }
+      this.setRenderMode('multi-page')
     }
   }
 
@@ -370,18 +709,45 @@ export class PdfViewer implements IPdfViewer {
     }
   }
 
-  /**
-   * 根据缩放模式计算缩放比例
+/**
+   * 根据缩放模式计算缩放比例（同步、基于当前渲染的DOM信息估算）
    */
   private calculateScaleForMode(mode: ZoomMode): number {
-    // TODO: 实现根据容器大小和页面大小计算缩放比例
+    const container = this.config.container
+    const canvas = container.querySelector('canvas') as HTMLCanvasElement | null
+    const containerWidth = container.clientWidth || 0
+    const containerHeight = container.clientHeight || 0
+
+    if (!canvas || containerWidth === 0) {
+      // 无法获取有效参考时，保持现有缩放比例
+      return this.state.currentScale
+    }
+
+    const parsePx = (v: string | null): number => (v && v.endsWith('px')) ? parseFloat(v) : NaN
+    const styledWidth = parsePx(canvas.style.width) || canvas.width
+    const styledHeight = parsePx(canvas.style.height) || canvas.height
+
+    const currentScale = this.state.currentScale
+    const widthScale = styledWidth ? (containerWidth / styledWidth) * currentScale : currentScale
+    // 计算高度基准：custom 模式使用容器高度，auto 模式退化为按宽度适配
+    const effectiveHeight = this.config.heightMode === 'custom'
+      ? (containerHeight || (typeof this.config.customHeight === 'number' ? this.config.customHeight : 0))
+      : 0
+    const heightScale = (this.config.heightMode === 'custom' && styledHeight)
+      ? (effectiveHeight / styledHeight) * currentScale
+      : widthScale
+
+    const clamp = (n: number) => Math.max(0.1, Math.min(5, n))
+
     switch (mode) {
       case 'fit-width':
-        return 1
+        return clamp(widthScale)
       case 'fit-page':
-        return 1
+        return clamp(Math.min(widthScale, heightScale))
       case 'auto':
-        return 1
+        return this.config.heightMode === 'custom'
+          ? clamp(Math.min(widthScale, heightScale))
+          : clamp(widthScale)
       default:
         return this.state.currentScale
     }

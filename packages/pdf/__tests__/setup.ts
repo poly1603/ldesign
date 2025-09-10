@@ -161,52 +161,52 @@ global.File = class MockFile extends global.Blob {
 } as any
 
 // Mock DOM methods
+const __originalCreateElement = document.createElement.bind(document)
 Object.defineProperty(document, 'createElement', {
   value: vi.fn((tagName: string) => {
-    const element = {
-      tagName: tagName.toUpperCase(),
-      style: {},
-      classList: {
-        add: vi.fn(),
-        remove: vi.fn(),
-        contains: vi.fn(() => false),
-        toggle: vi.fn(),
-      },
-      appendChild: vi.fn(),
-      removeChild: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      setAttribute: vi.fn(),
-      getAttribute: vi.fn(),
-      removeAttribute: vi.fn(),
-      querySelector: vi.fn(),
-      querySelectorAll: vi.fn(() => []),
-      innerHTML: '',
-      textContent: '',
-      value: '',
-      checked: false,
-      disabled: false,
-      click: vi.fn(),
-      focus: vi.fn(),
-      blur: vi.fn(),
-      scrollIntoView: vi.fn(),
-    }
-
+    // 为 canvas 提供稳定的 mock，其它元素使用原生行为，避免 jsdom 断言 Node 类型失败
     if (tagName === 'canvas') {
+      const element = {
+        tagName: tagName.toUpperCase(),
+        style: {},
+        classList: {
+          add: vi.fn(),
+          remove: vi.fn(),
+          contains: vi.fn(() => false),
+          toggle: vi.fn(),
+        },
+        appendChild: vi.fn(),
+        removeChild: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        setAttribute: vi.fn(),
+        getAttribute: vi.fn(),
+        removeAttribute: vi.fn(),
+        querySelector: vi.fn(),
+        querySelectorAll: vi.fn(() => []),
+        innerHTML: '',
+        textContent: '',
+        click: vi.fn(),
+        focus: vi.fn(),
+        blur: vi.fn(),
+        scrollIntoView: vi.fn(),
+      } as any
       Object.assign(element, {
         width: 595,
         height: 842,
         getContext: HTMLCanvasElement.prototype.getContext,
         toDataURL: vi.fn(() => 'data:image/png;base64,mock'),
-        toBlob: vi.fn((callback) => {
+        toBlob: vi.fn((callback: (b: Blob) => void) => {
           const blob = new Blob(['fake-image-data'], { type: 'image/png' })
           callback(blob)
         }),
       })
+      return element
     }
-
-    return element
+    return __originalCreateElement(tagName as any)
   }),
+  configurable: true,
+  writable: true,
 })
 
 // Mock window methods

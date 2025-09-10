@@ -12,9 +12,9 @@ import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist'
 export type PdfInput = string | File | ArrayBuffer | Uint8Array
 
 /**
- * PDF页面渲染模式
+ * 页面渲染输出介质（单页渲染目标）
  */
-export type RenderMode = 'canvas' | 'svg' | 'text'
+export type RenderSurface = 'canvas' | 'svg' | 'text'
 
 /**
  * 缩放模式
@@ -76,11 +76,11 @@ export interface PdfDocumentInfo {
 }
 
 /**
- * 渲染选项
+ * 渲染选项（单页渲染）
  */
 export interface RenderOptions {
-  /** 渲染模式 */
-  mode?: RenderMode
+  /** 渲染介质 */
+  mode?: RenderSurface
   /** 缩放比例 */
   scale?: number
   /** 旋转角度 */
@@ -93,6 +93,8 @@ export interface RenderOptions {
   backgroundColor?: string
   /** 是否使用高质量渲染 */
   useHighQuality?: boolean
+  /** 文档ID（用于渲染缓存） */
+  documentId?: string
 }
 
 /**
@@ -166,9 +168,19 @@ export interface PrintOptions {
 export interface DownloadOptions {
   /** 文件名 */
   filename?: string
-  /** 是否保存为副本 */
+  /** 是否保存为副本（当源为 URL 时尝试 fetch 后下载） */
   saveAsCopy?: boolean
 }
+
+/**
+ * 预览器渲染模式（单页/多页）
+ */
+export type ViewerMode = 'single-page' | 'multi-page'
+
+/**
+ * 高度模式
+ */
+export type HeightMode = 'auto' | 'custom'
 
 /**
  * PDF预览器配置
@@ -182,8 +194,16 @@ export interface PdfViewerConfig {
   initialPage?: number
   /** 缩放模式 */
   zoomMode?: ZoomMode
+  /** 渲染模式（单页/多页） */
+  renderMode?: ViewerMode
+  /** 高度模式 */
+  heightMode?: HeightMode
+  /** 自定义高度（当heightMode为custom时） */
+  customHeight?: string | number
   /** 渲染选项 */
   renderOptions?: RenderOptions
+  /** 多页渲染选项 */
+  multiPageOptions?: MultiPageRenderOptions
   /** 是否启用工具栏 */
   enableToolbar?: boolean
   /** 是否启用侧边栏 */
@@ -202,6 +222,12 @@ export interface PdfViewerConfig {
   customStyles?: Record<string, string>
   /** 本地化配置 */
   locale?: string
+  /** 自定义 PDF.js worker 路径 */
+  workerSrc?: string | URL
+  /** 直接传入已创建的 Worker 实例 */
+  workerPort?: Worker
+  /** 提供 module worker 的 URL（将以 { type: 'module' } 创建） */
+  workerModule?: string | URL
 }
 
 /**
@@ -224,6 +250,10 @@ export interface PdfViewerEvents {
   loadProgress: (progress: number) => void
   /** 渲染完成 */
   renderComplete: (pageNumber: number) => void
+  /** 所有页面渲染完成 */
+  allPagesRendered: (pageInfos: PageRenderInfo[]) => void
+  /** 可见页面变化 */
+  visiblePagesChanged: (currentPage: number, visiblePages: number[]) => void
 }
 
 /**
@@ -284,20 +314,70 @@ export interface IPdfViewer {
   /** 退出全屏 */
   exitFullscreen(): void
   /** 下载PDF */
-  download(options?: DownloadOptions): void
+  download(options?: DownloadOptions): Promise<void>
   /** 打印PDF */
-  print(options?: PrintOptions): void
+  print(options?: PrintOptions): Promise<void>
   /** 获取当前状态 */
   getState(): PdfViewerState
   /** 获取文档信息 */
-  getDocumentInfo(): PdfDocumentInfo | null
+  getDocumentInfo(): Promise<PdfDocumentInfo | null>
+  /** 获取PDF.js文档对象 */
+  getDocument(): Promise<any>
   /** 销毁预览器 */
   destroy(): void
+
+  /** 便捷方法 */
+  getCurrentPage(): number
+  getTotalPages(): number
+  getScale(): number
+  getRotation(): RotationAngle
+  isFullscreen(): boolean
+  fitToWidth(): void
+  fitToPage(): void
+  /** 清除搜索高亮 */
+  clearSearchHighlights(): void
+
+  /** 获取页面渲染信息 */
+  getPageRenderInfos(): PageRenderInfo[]
+  /** 计算可见页面 */
+  calculateVisiblePages(scrollTop: number, containerHeight: number): { currentPage: number; visiblePages: number[] }
+  /** 更新可见页面（虚拟滚动渲染/回收） */
+  updateVisiblePages(scrollTop: number, containerHeight: number): void
+  /** 获取页面滚动位置 */
+  getPageScrollPosition(pageNumber: number): number
+  /** 设置渲染模式 */
+  setRenderMode(mode: ViewerMode): void
+  /** 设置高度模式 */
+  setHeightMode(mode: HeightMode, customHeight?: string | number): void
 
   /** 事件订阅 */
   on<K extends keyof PdfViewerEvents>(event: K, listener: PdfViewerEvents[K]): void
   off<K extends keyof PdfViewerEvents>(event: K, listener: PdfViewerEvents[K]): void
   once<K extends keyof PdfViewerEvents>(event: K, listener: PdfViewerEvents[K]): void
+}
+
+/**
+ * 页面渲染信息
+ */
+export interface PageRenderInfo {
+  pageNumber: number
+  canvas?: HTMLCanvasElement
+  container: HTMLElement
+  viewport: any
+  offsetTop: number
+  height: number
+}
+
+/**
+ * 多页渲染选项
+ */
+export interface MultiPageRenderOptions extends RenderOptions {
+  /** 页面间距 */
+  pageSpacing?: number
+  /** 是否启用虚拟滚动 */
+  enableVirtualScroll?: boolean
+  /** 可见页面缓冲区大小 */
+  visibleBuffer?: number
 }
 
 /**
@@ -310,6 +390,36 @@ export interface IPdfPageRenderer {
     container: HTMLElement,
     options: RenderOptions
   ): Promise<void>
+  /** 渲染所有页面（可启用虚拟滚动） */
+  renderAllPages(
+    getPage: (pageNumber: number) => Promise<PDFPageProxy>,
+    totalPages: number,
+    container: HTMLElement,
+    options: MultiPageRenderOptions
+  ): Promise<PageRenderInfo[]>
+  /** 获取页面渲染信息 */
+  getPageRenderInfos(container: HTMLElement): PageRenderInfo[]
+  /** 计算可见页面 */
+  calculateVisiblePages(
+    container: HTMLElement,
+    scrollTop: number,
+    containerHeight: number
+  ): { currentPage: number; visiblePages: number[] }
+  /** 更新可见页面（渲染可见+缓冲，回收不可见） */
+  updateVisiblePages(
+    container: HTMLElement,
+    scrollTop: number,
+    containerHeight: number,
+    options?: MultiPageRenderOptions,
+  ): Promise<void>
+  /** 更新所有页面的高亮覆盖层 */
+  updateHighlightsForAll(container: HTMLElement, results: SearchResult[]): void
+  /** 清理所有高亮覆盖层 */
+  clearAllHighlights(container: HTMLElement): void
+  /** 清理指定文档的渲染缓存 */
+  clearCacheForDocument(documentId: string): void
+  /** 获取页面滚动位置 */
+  getPageScrollPosition(container: HTMLElement, pageNumber: number): number
   /** 清理渲染内容 */
   cleanup(): void
 }
@@ -317,6 +427,28 @@ export interface IPdfPageRenderer {
 /**
  * PDF文档管理器接口
  */
+export interface IPdfDocumentManager {
+  /** 加载文档 */
+  loadDocument(input: PdfInput): Promise<PDFDocumentProxy>
+  /** 获取页面 */
+  getPage(pageNumber: number): Promise<PDFPageProxy>
+  /** 获取文档信息 */
+  getDocumentInfo(): Promise<PdfDocumentInfo>
+  /** 获取当前文档 */
+  getDocument(): PDFDocumentProxy | null
+  /** 是否已加载文档 */
+  hasDocument(): boolean
+  /** 获取总页数 */
+  getPageCount(): number
+  /** 预加载页面 */
+  preloadPages(startPage: number, endPage: number): Promise<void>
+  /** 清理页面缓存 */
+  clearPageCache(): void
+  /** 获取原始输入数据（URL 或二进制） */
+  getOriginalData(): string | ArrayBuffer | Uint8Array | null
+  /** 销毁文档 */
+  destroy(): Promise<void>
+}
 export interface IPdfDocumentManager {
   /** 加载文档 */
   loadDocument(input: PdfInput): Promise<PDFDocumentProxy>

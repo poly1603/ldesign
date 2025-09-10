@@ -15,6 +15,8 @@
 - ⚡ **高性能**：智能缓存、懒加载、页面预取
 - 🎨 **高度可定制**：丰富的配置选项和主题支持
 - 🔍 **功能丰富**：页面导航、缩放、旋转、搜索、缩略图、全屏等
+- 📏 **智能高度**：支持自适应高度和固定高度两种模式
+- 🔄 **滚动联动**：缩略图与内容区域双向联动，精确定位
 - 🛡️ **稳定可靠**：基于 PDF.js，经过大量测试验证
 
 ## 🚀 快速开始
@@ -63,12 +65,15 @@ viewer.on('documentLoaded', (info) => {
 <template>
   <PdfViewer
     :src="pdfUrl"
+    :height-mode="'custom'"
+    :height="'600px'"
     :enable-toolbar="true"
     :enable-search="true"
     :enable-thumbnails="true"
     :theme="'light'"
     @document-loaded="onDocumentLoaded"
     @page-changed="onPageChanged"
+    @visible-pages-changed="onVisiblePagesChanged"
     @error="onError"
   />
 </template>
@@ -307,6 +312,11 @@ const viewer = createPdfViewer({
   scale: 1.0,                // 初始缩放比例
   rotation: 0,               // 初始旋转角度
 
+  // 高度模式设置
+  heightMode: 'auto',        // 高度模式: 'auto' | 'custom'
+  customHeight: '600px',     // 自定义高度（当heightMode为custom时）
+  renderMode: 'single-page', // 渲染模式: 'single-page' | 'multi-page'
+
   // 性能选项
   cacheSize: 10,             // 页面缓存数量
   preloadPages: 2,           // 预加载页面数
@@ -318,6 +328,129 @@ const viewer = createPdfViewer({
   }
 })
 ```
+
+## 🧰 Worker 配置
+
+支持三种方式配置 PDF.js worker（按优先级）：
+
+- 直接传入 Worker 实例（最高优先级）
+  ```ts path=null start=null
+  import { createPdfViewer } from '@ldesign/pdf'
+  const worker = new Worker('/pdf.worker.min.js')
+  const viewer = createPdfViewer({ container, workerPort: worker })
+  ```
+
+- 提供 module worker 地址
+  ```ts path=null start=null
+  const viewer = createPdfViewer({ container, workerModule: '/pdf.worker.min.js' })
+  ```
+
+- 指定传统 worker 路径（默认：/pdf.worker.min.js）
+  ```ts path=null start=null
+  const viewer = createPdfViewer({ container, workerSrc: '/pdf.worker.min.js' })
+  ```
+
+## 🖨 打印与下载增强
+
+- 下载默认文件名：优先使用 PDF Title，其次 URL 文件名，最后回退 document.pdf
+- 保存副本：当源为 URL 且 saveAsCopy=true 时尝试 fetch 生成 Blob（CORS 失败则回退直接下载 URL）
+- 自定义打印：
+  - pageRange：示例 '1-5,8,10-12'
+  - fitToPage：按纸张宽度自适应
+  - quality：draft | normal | high
+
+```ts path=null start=null
+// 下载
+viewer.download({ filename: 'my.pdf', saveAsCopy: true })
+
+// 打印所选页，高质量，适配纸张
+viewer.print({ pageRange: '1-3,5', quality: 'high', fitToPage: true })
+```
+
+## 🔎 搜索与高亮
+
+- search({ query }) 完成后自动绘制高亮覆盖层
+- clearSearchHighlights() 可清除所有高亮
+- 在 Vue 组件中，点击“上一个/下一个”会自动滚动到匹配位置
+
+```ts path=null start=null
+await viewer.search({ query: 'keyword', highlightAll: true })
+viewer.clearSearchHighlights()
+```
+
+## 🚀 虚拟滚动
+
+- 在固定高度（height-mode="custom"）下默认启用，仅渲染可见页与缓冲区，降低内存与首屏时间
+- 在滚动时内部自动按需渲染/回收并刷新搜索高亮
+
+```ts path=null start=null
+// 固定高度可滚动，自动启用虚拟滚动
+<PdfViewer :src="pdfUrl" height-mode="custom" height="600px" />
+```
+
+## 📏 高度模式与滚动联动
+
+PDF预览器支持两种高度模式，满足不同的使用场景：
+
+### 自适应高度模式 (auto)
+
+在自适应高度模式下，容器高度会自动调整为能够完整显示当前页面内容的高度，用户无需滚动即可查看完整的一页内容。
+
+```vue
+<template>
+  <PdfViewer
+    :src="pdfUrl"
+    height-mode="auto"
+    :enable-thumbnails="true"
+  />
+</template>
+```
+
+**特点：**
+- 容器高度自动适应页面内容
+- 单页完整显示，无需滚动
+- 适合展示单页文档或逐页浏览
+
+### 固定高度模式 (custom)
+
+在固定高度模式下，容器使用固定高度，内容区域会渲染所有页面，支持滚动浏览和缩略图联动。
+
+```vue
+<template>
+  <PdfViewer
+    :src="pdfUrl"
+    height-mode="custom"
+    height="600px"
+    :enable-thumbnails="true"
+    @visible-pages-changed="onVisiblePagesChanged"
+  />
+</template>
+
+<script setup>
+const onVisiblePagesChanged = (currentPage, visiblePages) => {
+  console.log('当前页面:', currentPage)
+  console.log('可见页面:', visiblePages)
+}
+</script>
+```
+
+**特点：**
+- 固定容器高度，支持滚动浏览
+- 渲染所有页面，连续阅读体验
+- 缩略图与内容区域双向联动
+- 实时显示当前可见页面信息
+
+### 滚动联动功能
+
+固定高度模式下提供强大的滚动联动功能：
+
+1. **内容滚动联动**：当用户在内容区域滚动时，缩略图会自动滚动到对应位置并高亮显示当前可见页面
+
+2. **缩略图点击跳转**：点击缩略图中的任意页面，内容区域会自动滚动到对应页面位置
+
+3. **可见页面检测**：实时计算并报告当前可见的页面，支持多页面同时可见的情况
+
+4. **平滑滚动**：所有滚动操作都使用平滑动画，提供良好的用户体验
 
 ## 📱 响应式支持
 

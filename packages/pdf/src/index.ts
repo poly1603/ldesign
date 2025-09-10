@@ -10,7 +10,7 @@ import { PdfViewer } from './core/pdf-viewer'
 // 核心类型导出
 export type {
   PdfInput,
-  RenderMode,
+  ViewerMode,
   ZoomMode,
   RotationAngle,
   PdfPageInfo,
@@ -27,6 +27,7 @@ export type {
   IPdfViewer,
   IPdfPageRenderer,
   IPdfDocumentManager,
+  HeightMode,
 } from './core/types'
 
 // 核心类导出

@@ -257,7 +257,12 @@ export function getBrowserInfo(): {
   let name = 'Unknown'
   let version = 'Unknown'
   
-  if (userAgent.includes('Chrome')) {
+  if (userAgent.includes('Edge')) {
+    name = 'Edge'
+    const match = userAgent.match(/Edge\/(\d+)/)
+    version = match ? match[1] : 'Unknown'
+  }
+  else if (userAgent.includes('Chrome')) {
     name = 'Chrome'
     const match = userAgent.match(/Chrome\/(\d+)/)
     version = match ? match[1] : 'Unknown'
