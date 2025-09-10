@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
-import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
+import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [vue()],
@@ -18,7 +18,7 @@ export default defineConfig({
       '**/coverage/**',
       '**/.{idea,git,cache,output,temp}/**',
       '**/examples/**',
-      '**/docs/**'
+      '**/docs/**',
     ],
     coverage: {
       provider: 'v8',
@@ -32,18 +32,18 @@ export default defineConfig({
         'src/types/**', // 类型定义文件
         'src/**/*.stories.{js,ts}',
         'src/**/__tests__/**',
-        'src/**/__mocks__/**'
+        'src/**/__mocks__/**',
       ],
       thresholds: {
         global: {
           branches: 80,
           functions: 80,
           lines: 80,
-          statements: 80
-        }
+          statements: 80,
+        },
       },
       all: true,
-      clean: true
+      clean: true,
     },
     // 性能优化配置
     pool: 'threads',
@@ -51,8 +51,8 @@ export default defineConfig({
       threads: {
         singleThread: false,
         maxThreads: 4,
-        minThreads: 1
-      }
+        minThreads: 1,
+      },
     },
     // 超时配置
     testTimeout: 10000,
@@ -63,8 +63,8 @@ export default defineConfig({
     reporter: ['verbose', 'json', 'html'],
     outputFile: {
       json: './coverage/test-results.json',
-      html: './coverage/test-results.html'
-    }
+      html: './coverage/test-results.html',
+    },
   },
   resolve: {
     alias: {
@@ -75,6 +75,6 @@ export default defineConfig({
   },
   // 优化构建性能
   esbuild: {
-    target: 'es2020'
-  }
+    target: 'es2020',
+  },
 })

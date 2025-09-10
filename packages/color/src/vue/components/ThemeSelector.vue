@@ -113,15 +113,13 @@ const selectOptions = computed(() => {
 
 // 方法
 function handleThemeChange() {
-  // 应用主题（不传入模式参数，让applyTheme自动检测当前模式）
-  applyTheme(selectedTheme.value)
-
-  // 通知主题管理器，让它处理存储
+  // 通知主题管理器，让它处理主题应用和存储
   if (themeManager && typeof themeManager.setTheme === 'function') {
     themeManager.setTheme(selectedTheme.value, currentMode.value)
   }
   else {
-    // 如果没有主题管理器，使用本地逻辑保存
+    // 如果没有主题管理器，使用本地逻辑应用和保存主题
+    applyTheme(selectedTheme.value, currentMode.value)
     saveThemeToStorage(selectedTheme.value, currentMode.value)
   }
   emit('themeChange', selectedTheme.value, currentMode.value)

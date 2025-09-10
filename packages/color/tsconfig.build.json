@@ -1,19 +1,19 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "incremental": true,
+    "composite": false,
+    "tsBuildInfoFile": ".tsbuildinfo",
     "rootDir": "src",
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": false,
+    "importHelpers": true,
+    "inlineSources": false,
     "noEmit": false,
     "outDir": "dist",
     "removeComments": true,
-    "importHelpers": true,
-    "inlineSources": false,
-    "sourceMap": true,
-    "composite": false,
-    "incremental": true,
-    "tsBuildInfoFile": ".tsbuildinfo"
+    "sourceMap": true
   },
   "include": ["src/**/*"],
   "exclude": [

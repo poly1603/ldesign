@@ -11,6 +11,7 @@ export default antfu({
     'coverage',
     'cjs',
     'esm',
+    'es',
     '**/*.d.ts',
     '**/*.md',
     'docs/**',
@@ -18,8 +19,10 @@ export default antfu({
     'examples/**',
     '__tests__/**',
     '.rollup.cache',
+    '.test-runtime',
     'playwright-report',
     'test-results',
+    '.vitepress/**',
   ],
 },
 // Project overrides

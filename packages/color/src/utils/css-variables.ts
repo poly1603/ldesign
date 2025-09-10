@@ -583,7 +583,10 @@ export class EnhancedThemeApplier {
   private currentMode: 'light' | 'dark' = 'light'
 
   constructor() {
-    this.cssInjector = new CSSVariableInjector()
+    // 使用更具体的配置，确保不与其他包冲突
+    this.cssInjector = new CSSVariableInjector({
+      prefix: 'ldesign-color-theme'  // 使用更具体的前缀，避免与size包冲突
+    })
     this.cacheManager = new ThemeCacheManager()
   }
 

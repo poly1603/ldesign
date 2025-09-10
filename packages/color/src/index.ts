@@ -238,19 +238,121 @@ export {
 
 export type { IdleProcessorOptions } from './utils/idle-processor'
 
-// 导出 Vue 集成（仅导出 composables，不导出 Vue 组件）
+// 导出性能优化工具
 export {
+  BatchProcessor,
+  debounce,
+  memoize,
+  PerformanceMonitor,
+  RAFScheduler,
+  throttle,
+  withPerformance,
+} from './utils/performance'
+
+export type {
+  BatchOptions,
+  DebounceOptions,
+  ThrottleOptions,
+} from './utils/performance'
+
+// 导出颜色分析工具
+export {
+  analyzeColor,
+  analyzeColors,
+  calculateHarmonyScore,
+  extractDominantColors,
+  findSimilarColors,
+  getColorName,
+} from './utils/color-analyzer'
+
+export type {
+  ColorAnalysis,
+  ColorEmotion,
+  ColorSeason,
+  ColorTemperature,
+} from './utils/color-analyzer'
+
+// 导出 Worker 管理器
+export {
+  executeInWorker,
+  getDefaultWorkerPool,
+  isWorkerSupported,
+  WorkerColorGenerator,
+  WorkerPool,
+} from './utils/worker-manager'
+
+export type {
+  WorkerPoolOptions,
+} from './utils/worker-manager'
+
+// 导出智能缓存系统
+export {
+  cached,
+  createColorCache,
+  createThemeCache,
+  SmartCache,
+} from './utils/smart-cache'
+
+export type {
+  CacheMetadata,
+  CacheStats,
+  CacheStrategy,
+  SmartCacheConfig,
+} from './utils/smart-cache'
+
+// 导出 AI 颜色引擎
+export {
+  AIColorEngine,
+} from './utils/ai-color-engine'
+
+export type {
+  ColorInteraction,
+  ColorRecommendation,
+  ColorScheme,
+  ColorTrend,
+  UserPreference,
+} from './utils/ai-color-engine'
+
+// 导出 WebAssembly 加速
+export {
+  getWasmLoader,
+  loadWasm,
+  WasmColorConverter,
+  WasmLoader,
+} from './wasm/wasm-loader'
+
+export type {
+  WasmColorModule,
+  WasmConfig,
+} from './wasm/wasm-loader'
+
+// 导出实时协作
+export {
+  RealtimeCollaboration,
+} from './collaboration/realtime-sync'
+
+export type {
+  CollaborationEvent,
+  CollaborationSession,
+  CollaborationState,
+  CollaborationUser,
+  ConflictResolution,
+  SyncMessage,
+} from './collaboration/realtime-sync'
+
+// 导出 Vue 集成（仅导出composables，不导出 Vue 组件）
+export {
+  ColorPicker,
+  ColorVuePlugin,
   createColorEnginePlugin,
   createColorPlugin,
-  useTheme,
-  useThemeSelector,
-  useThemeToggle,
-  useSystemThemeSync,
-  ColorVuePlugin,
   DarkModeToggle,
   ModeToggle,
   ThemeSelector,
-  ColorPicker,
+  useSystemThemeSync,
+  useTheme,
+  useThemeSelector,
+  useThemeToggle,
 } from './vue'
 
 // Vue 组件需要单独构建，暂时注释掉
@@ -339,6 +441,20 @@ export async function createCustomThemeManager(
   await manager.init()
   return manager
 }
+
+// Export accessibility features
+export { ColorBlindnessSimulator, colorBlindnessSimulator } from './accessibility/color-blindness'
+export type { ColorBlindnessType as AccessibilityColorBlindnessType } from './accessibility/color-blindness'
+
+// Export color harmony analyzer
+export { ColorHarmonyAnalyzer, colorHarmonyAnalyzer } from './harmony/color-harmony'
+export type {
+  HarmonyType,
+  HarmonyAnalysis,
+  ColorRelationship,
+  HSL as HarmonyHSL,
+  RGB as HarmonyRGB
+} from './harmony/color-harmony'
 
 /**
  * 版本信息

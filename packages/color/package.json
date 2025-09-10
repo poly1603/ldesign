@@ -16,22 +16,32 @@
   ],
   "exports": {
     ".": {
-      "types": "./es/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.cjs"
-    }
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.cjs"
+    },
+    "./vue": {
+      "types": "./dist/vue/index.d.ts",
+      "import": "./dist/esm/vue/index.js",
+      "require": "./dist/cjs/vue/index.cjs"
+    },
+    "./style.css": "./dist/index.css"
   },
-  "main": "lib/index.cjs",
-  "module": "es/index.js",
-  "types": "es/index.d.ts",
+  "main": "dist/cjs/index.cjs",
+  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "style": "dist/index.css",
+  "unpkg": "dist/index.umd.js",
+  "jsdelivr": "dist/index.umd.js",
   "files": [
-    "README.md",
     "CHANGELOG.md",
+    "README.md",
     "dist"
   ],
   "scripts": {
-    "build": "ldesign-builder build -f esm,cjs",
-    "dev": "rollup -c -w",
+    "build": "ldesign-builder build -f esm,cjs,umd",
+    "build:prod": "pnpm run clean && ldesign-builder build -f esm,cjs,umd --minify",
+    "dev": "ldesign-builder watch",
     "type-check": "tsc --noEmit --project tsconfig.json",
     "type-check:test": "tsc --noEmit --project tsconfig.test.json",
     "lint": "eslint . --fix --cache",

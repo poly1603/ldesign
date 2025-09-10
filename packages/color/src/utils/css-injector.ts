@@ -197,10 +197,15 @@ export class CSSInjectorImpl implements CSSInjector {
 
   /**
    * 清空所有注入的样式
+   * 只清理由当前注入器管理的color相关样式，避免影响其他包的样式
    */
   clearAll(): void {
+    // 只清理由当前注入器实例管理的color相关样式标签
     for (const id of this.styleElements.keys()) {
-      this.removeVariables(id)
+      // 只清理color和theme相关的样式，不清理其他包的样式
+      if (id.startsWith('ldesign-color-') || id.startsWith('ldesign-theme-') || id === 'ldesign-color-variables') {
+        this.removeVariables(id)
+      }
     }
   }
 
@@ -486,7 +491,24 @@ export function injectScaleVariables(
 
 /**
  * 便捷函数：移除所有颜色变量
+ * 只移除color包管理的样式，不影响其他包
  */
 export function removeAllColorVariables(): void {
-  defaultCSSInjector.clearAll()
+  // 只移除color相关的样式ID
+  const colorStyleIds = ['ldesign-color-variables', 'ldesign-theme-variables']
+
+  colorStyleIds.forEach(id => {
+    const element = document.getElementById(id)
+    if (element) {
+      element.remove()
+    }
+  })
+
+  // 清理defaultCSSInjector中color相关的样式
+  const injectedIds = defaultCSSInjector.getInjectedIds()
+  injectedIds.forEach(id => {
+    if (id.startsWith('ldesign-color-') || id.startsWith('ldesign-theme-')) {
+      defaultCSSInjector.removeVariables(id)
+    }
+  })
 }
