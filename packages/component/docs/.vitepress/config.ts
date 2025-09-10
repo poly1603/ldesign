@@ -1,125 +1,177 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: 'LDesign',
-  description: '基于 Web Components 的现代化 UI 组件库',
+  title: 'LDesign Component',
+  description: '基于 Vue 3 + TypeScript + Vite 的现代化组件库',
+
+  // 基础配置
+  base: '/',
   lang: 'zh-CN',
 
-  head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
-    ['meta', { name: 'theme-color', content: '#646cff' }],
-    ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }],
-  ],
-
+  // 主题配置
   themeConfig: {
-    logo: '/logo.svg',
-    
+    // 导航栏
     nav: [
       { text: '指南', link: '/guide/introduction' },
       { text: '组件', link: '/components/button' },
+      { text: '设计', link: '/design/color' },
       { text: 'API', link: '/api/' },
-      { text: '更新日志', link: '/changelog' },
       {
-        text: '相关链接',
+        text: '更多',
         items: [
-          { text: 'GitHub', link: 'https://github.com/your-org/ldesign' },
-          { text: 'npm', link: 'https://www.npmjs.com/package/@ldesign/component' },
+          { text: '更新日志', link: '/changelog' },
+          { text: 'GitHub', link: 'https://github.com/ldesign/ldesign' }
         ]
       }
     ],
 
+    // 侧边栏
     sidebar: {
       '/guide/': [
         {
           text: '开始',
           items: [
             { text: '介绍', link: '/guide/introduction' },
-            { text: '安装', link: '/guide/installation' },
             { text: '快速开始', link: '/guide/getting-started' },
+            { text: '安装', link: '/guide/installation' }
           ]
         },
         {
-          text: '深入',
+          text: '进阶',
           items: [
             { text: '主题定制', link: '/guide/theming' },
             { text: '国际化', link: '/guide/i18n' },
-            { text: '最佳实践', link: '/guide/best-practices' },
+            { text: '按需引入', link: '/guide/tree-shaking' }
           ]
         }
       ],
       '/components/': [
         {
-          text: '通用组件',
+          text: '基础组件',
           items: [
             { text: 'Button 按钮', link: '/components/button' },
+            { text: 'Icon 图标', link: '/components/icon' }
           ]
         },
         {
-          text: '数据输入',
+          text: '表单组件',
           items: [
-            { text: 'Input 输入框', link: '/components/input' },
-            { text: 'Form 表单', link: '/components/form' },
-            { text: 'Form Item 表单项', link: '/components/form-item' },
+            { text: 'Input 输入框', link: '/components/input' }
           ]
-        },
+        }
+      ],
+      '/design/': [
         {
-          text: '数据展示',
+          text: '设计语言',
           items: [
-            { text: 'Card 卡片', link: '/components/card' },
-            { text: 'Table 表格', link: '/components/table' },
-            { text: 'Tooltip 工具提示', link: '/components/tooltip' },
-          ]
-        },
-        {
-          text: '反馈',
-          items: [
-            { text: 'Modal 模态框', link: '/components/modal' },
+            { text: '色彩', link: '/design/color' },
+            { text: '字体', link: '/design/typography' },
+            { text: '间距', link: '/design/spacing' },
+            { text: '图标', link: '/design/icons' }
           ]
         }
       ]
     },
 
+    // 社交链接
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/your-org/ldesign' }
+      { icon: 'github', link: 'https://github.com/ldesign/ldesign' }
     ],
 
+    // 页脚
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2024-present LDesign'
+      copyright: 'Copyright © 2025 LDesign Team'
     },
 
+    // 搜索
     search: {
       provider: 'local'
     },
 
+    // 编辑链接
+    editLink: {
+      pattern: 'https://github.com/ldesign/ldesign/edit/main/packages/component/docs/:path',
+      text: '在 GitHub 上编辑此页'
+    },
+
+    // 最后更新时间
+    lastUpdated: {
+      text: '最后更新于',
+      formatOptions: {
+        dateStyle: 'short',
+        timeStyle: 'medium'
+      }
+    },
+
+    // 大纲配置
     outline: {
+      level: [2, 3],
       label: '页面导航'
     },
 
+    // 文档页脚导航
     docFooter: {
       prev: '上一页',
       next: '下一页'
+    }
+  },
+
+  // Markdown 配置
+  markdown: {
+    // 代码块主题
+    theme: {
+      light: 'github-light',
+      dark: 'github-dark'
     },
 
-    returnToTopLabel: '返回顶部',
-    sidebarMenuLabel: '菜单',
-    darkModeSwitchLabel: '主题',
-    lightModeSwitchTitle: '切换到浅色模式',
-    darkModeSwitchTitle: '切换到深色模式'
+    // 代码块行号
+    lineNumbers: true,
+
+    // 代码组
+    codeTransformers: []
   },
 
   // Vite 配置
   vite: {
-    define: {
-      __VUE_OPTIONS_API__: false,
-    },
-    optimizeDeps: {
-      include: ['vue'],
-    },
-    server: {
-      fs: {
-        allow: ['..']
+    resolve: {
+      alias: {
+        '@': '/src'
       }
     },
+    css: {
+      preprocessorOptions: {
+        less: {
+          javascriptEnabled: true,
+          additionalData: `
+            @import "../src/styles/variables.less";
+            @import "../src/styles/mixins.less";
+          `
+        }
+      }
+    },
+    define: {
+      // 支持 Stencil 组件
+      'process.env': {}
+    },
+    optimizeDeps: {
+      // 预构建 Stencil 组件
+      include: ['@stencil/core']
+    }
+  },
+
+  // 头部配置
+  head: [
+    ['link', { rel: 'icon', href: '/favicon.ico' }],
+    ['meta', { name: 'theme-color', content: '#722ED1' }],
+    ['meta', { name: 'og:type', content: 'website' }],
+    ['meta', { name: 'og:locale', content: 'zh-CN' }],
+    ['meta', { name: 'og:site_name', content: 'LDesign Component' }],
+    ['meta', { name: 'og:image', content: '/og-image.png' }]
+  ],
+
+  // 站点地图
+  sitemap: {
+    hostname: 'https://ldesign.github.io'
   }
 })

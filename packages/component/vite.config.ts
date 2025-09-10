@@ -1,71 +1,19 @@
-/**
- * Vite 配置文件
- * 
- * 用于开发服务器和构建配置
- */
-
-import { defineConfig } from 'vite';
-import { resolve } from 'path';
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import { resolve } from 'path'
 
 export default defineConfig({
-  // 根目录
-  root: './src',
-  
-  // 公共基础路径
-  base: './',
-  
-  // 开发服务器配置
-  server: {
-    port: 3333,
-    host: true,
-    open: true,
-    cors: true,
-    hmr: {
-      overlay: true,
-    },
-  },
-  
-  // 预览服务器配置
-  preview: {
-    port: 3334,
-    host: true,
-    cors: true,
-  },
-  
-  // 构建配置
-  build: {
-    outDir: '../www',
-    emptyOutDir: true,
-    sourcemap: true,
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    },
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'src/index.html'),
-      },
-      output: {
-        manualChunks: {
-          vendor: ['@stencil/core'],
-        },
-      },
-    },
-  },
+  plugins: [vue()],
   
   // 路径解析
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
       '@components': resolve(__dirname, 'src/components'),
+      '@styles': resolve(__dirname, 'src/styles'),
       '@utils': resolve(__dirname, 'src/utils'),
-      '@types': resolve(__dirname, 'src/types'),
-      '@global': resolve(__dirname, 'src/global'),
-      '@theme': resolve(__dirname, 'src/theme'),
-    },
+      '@types': resolve(__dirname, 'src/types')
+    }
   },
   
   // CSS 配置
@@ -73,35 +21,57 @@ export default defineConfig({
     preprocessorOptions: {
       less: {
         javascriptEnabled: true,
+        // 自动注入全局变量和混入
+        additionalData: `
+          @import "@/styles/variables.less";
+          @import "@/styles/mixins.less";
+        `,
         modifyVars: {
-          // 可以在这里定义全局 Less 变量
-        },
-      },
+          // 可以在这里动态修改 LESS 变量
+        }
+      }
     },
     modules: {
+      // CSS Modules 配置
       localsConvention: 'camelCase',
+      generateScopedName: '[name]__[local]___[hash:base64:5]'
+    }
+  },
+  
+  // 构建配置
+  build: {
+    lib: {
+      entry: resolve(__dirname, 'src/index.ts'),
+      name: 'LDesignComponent',
+      fileName: (format) => `ldesign-component.${format}.js`,
+      formats: ['es', 'cjs', 'umd']
     },
+    rollupOptions: {
+      // 确保外部化处理那些你不想打包进库的依赖
+      external: ['vue'],
+      output: {
+        // 在 UMD 构建模式下为这些外部化的依赖提供一个全局变量
+        globals: {
+          vue: 'Vue'
+        }
+      }
+    },
+    sourcemap: true,
+    minify: 'esbuild',
+    target: 'es2015'
   },
   
-  // 插件配置
-  plugins: [],
-  
-  // 依赖优化
-  optimizeDeps: {
-    include: ['@stencil/core'],
-    exclude: [],
+  // 开发服务器配置
+  server: {
+    port: 3000,
+    host: '127.0.0.1',
+    open: true,
+    cors: true
   },
   
-  // 环境变量
+  // 定义全局变量
   define: {
-    __DEV__: JSON.stringify(process.env.NODE_ENV === 'development'),
-    __TEST__: JSON.stringify(process.env.NODE_ENV === 'test'),
-    __VERSION__: JSON.stringify(process.env.npm_package_version || '1.0.0'),
-  },
-  
-  // 日志级别
-  logLevel: 'info',
-  
-  // 清除屏幕
-  clearScreen: false,
-});
+    __VUE_OPTIONS_API__: true,
+    __VUE_PROD_DEVTOOLS__: false
+  }
+})

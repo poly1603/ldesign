@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign Component 示例</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      color: #722ED1;
+      margin-bottom: 30px;
+    }
+    
+    .section {
+      margin-bottom: 40px;
+    }
+    
+    .section h2 {
+      margin-bottom: 20px;
+      color: #333;
+      border-bottom: 2px solid #722ED1;
+      padding-bottom: 10px;
+    }
+    
+    .demo-row {
+      margin-bottom: 20px;
+    }
+    
+    .demo-row h3 {
+      margin-bottom: 10px;
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .demo-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>LDesign Component 示例</h1>
+    
+    <div class="section">
+      <h2>Button 按钮组件</h2>
+      
+      <div class="demo-row">
+        <h3>基础按钮</h3>
+        <div class="demo-buttons" id="basic-buttons">
+          <!-- 按钮将通过 JavaScript 动态创建 -->
+        </div>
+      </div>
+      
+      <div class="demo-row">
+        <h3>按钮尺寸</h3>
+        <div class="demo-buttons" id="size-buttons">
+          <!-- 按钮将通过 JavaScript 动态创建 -->
+        </div>
+      </div>
+      
+      <div class="demo-row">
+        <h3>按钮状态</h3>
+        <div class="demo-buttons" id="state-buttons">
+          <!-- 按钮将通过 JavaScript 动态创建 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createApp, h } from 'vue'
+    import { LButton } from '../src/index.ts'
+
+    // 创建 Vue 应用
+    const app = createApp({
+      render() {
+        return h('div', [
+          // 基础按钮
+          h('div', { class: 'demo-buttons' }, [
+            h(LButton, {}, '默认按钮'),
+            h(LButton, { type: 'primary' }, '主要按钮'),
+            h(LButton, { type: 'success' }, '成功按钮'),
+            h(LButton, { type: 'warning' }, '警告按钮'),
+            h(LButton, { type: 'error' }, '错误按钮')
+          ]),
+
+          h('br'),
+          h('br'),
+
+          // 按钮尺寸
+          h('div', { class: 'demo-buttons' }, [
+            h(LButton, { size: 'small', type: 'primary' }, '小按钮'),
+            h(LButton, { size: 'medium', type: 'primary' }, '中按钮'),
+            h(LButton, { size: 'large', type: 'primary' }, '大按钮')
+          ]),
+
+          h('br'),
+          h('br'),
+
+          // 按钮状态
+          h('div', { class: 'demo-buttons' }, [
+            h(LButton, { disabled: true }, '禁用按钮'),
+            h(LButton, { loading: true }, '加载按钮'),
+            h(LButton, { block: true, type: 'primary' }, '块级按钮')
+          ]),
+
+          h('br'),
+          h('br'),
+
+          // 按钮变体
+          h('div', { class: 'demo-buttons' }, [
+            h(LButton, { type: 'primary', variant: 'outline' }, '轮廓按钮'),
+            h(LButton, { type: 'primary', variant: 'text' }, '文本按钮'),
+            h(LButton, { type: 'primary', ghost: true }, '幽灵按钮')
+          ]),
+
+          h('br'),
+          h('br'),
+
+          // 图标按钮
+          h('div', { class: 'demo-buttons' }, [
+            h(LButton, { type: 'primary', icon: '🔍' }, '搜索'),
+            h(LButton, { type: 'success', icon: '✓' }, '确认'),
+            h(LButton, { type: 'primary', shape: 'circle', icon: '🔍' })
+          ])
+        ])
+      }
+    })
+
+    // 挂载到页面
+    app.mount('#app')
+  </script>
+  
+  <div id="app"></div>
+</body>
+</html>

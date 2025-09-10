@@ -1,0 +1,189 @@
+/**
+ * 工具类样式
+ * 
+ * 提供常用的原子化 CSS 类，用于快速布局和样式调整
+ */
+
+/* 显示/隐藏 */
+.ld-show { display: block !important; }
+.ld-hide { display: none !important; }
+.ld-invisible { visibility: hidden !important; }
+.ld-visible { visibility: visible !important; }
+
+/* 定位 */
+.ld-relative { position: relative !important; }
+.ld-absolute { position: absolute !important; }
+.ld-fixed { position: fixed !important; }
+.ld-sticky { position: sticky !important; }
+
+/* 浮动 */
+.ld-float-left { float: left !important; }
+.ld-float-right { float: right !important; }
+.ld-float-none { float: none !important; }
+
+/* 清除浮动 */
+.ld-clearfix {
+  &::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+/* 溢出 */
+.ld-overflow-hidden { overflow: hidden !important; }
+.ld-overflow-auto { overflow: auto !important; }
+.ld-overflow-scroll { overflow: scroll !important; }
+.ld-overflow-visible { overflow: visible !important; }
+
+/* 文本对齐 */
+.ld-text-left { text-align: left !important; }
+.ld-text-center { text-align: center !important; }
+.ld-text-right { text-align: right !important; }
+.ld-text-justify { text-align: justify !important; }
+
+/* 文本装饰 */
+.ld-text-underline { text-decoration: underline !important; }
+.ld-text-line-through { text-decoration: line-through !important; }
+.ld-text-no-decoration { text-decoration: none !important; }
+
+/* 文本转换 */
+.ld-text-uppercase { text-transform: uppercase !important; }
+.ld-text-lowercase { text-transform: lowercase !important; }
+.ld-text-capitalize { text-transform: capitalize !important; }
+
+/* 字体粗细 */
+.ld-font-thin { font-weight: 100 !important; }
+.ld-font-light { font-weight: 300 !important; }
+.ld-font-normal { font-weight: 400 !important; }
+.ld-font-medium { font-weight: 500 !important; }
+.ld-font-semibold { font-weight: 600 !important; }
+.ld-font-bold { font-weight: 700 !important; }
+.ld-font-extrabold { font-weight: 800 !important; }
+.ld-font-black { font-weight: 900 !important; }
+
+/* 字体大小 */
+.ld-text-xs { font-size: var(--ls-font-size-xs) !important; }
+.ld-text-sm { font-size: var(--ls-font-size-sm) !important; }
+.ld-text-base { font-size: var(--ls-font-size-base) !important; }
+.ld-text-lg { font-size: var(--ls-font-size-lg) !important; }
+.ld-text-xl { font-size: var(--ls-font-size-xl) !important; }
+.ld-text-xxl { font-size: var(--ls-font-size-xxl) !important; }
+
+/* 行高 */
+.ld-leading-none { line-height: 1 !important; }
+.ld-leading-tight { line-height: 1.25 !important; }
+.ld-leading-snug { line-height: 1.375 !important; }
+.ld-leading-normal { line-height: 1.5 !important; }
+.ld-leading-relaxed { line-height: 1.625 !important; }
+.ld-leading-loose { line-height: 2 !important; }
+
+/* 宽度 */
+.ld-w-auto { width: auto !important; }
+.ld-w-full { width: 100% !important; }
+.ld-w-screen { width: 100vw !important; }
+.ld-w-min { width: min-content !important; }
+.ld-w-max { width: max-content !important; }
+
+/* 高度 */
+.ld-h-auto { height: auto !important; }
+.ld-h-full { height: 100% !important; }
+.ld-h-screen { height: 100vh !important; }
+.ld-h-min { height: min-content !important; }
+.ld-h-max { height: max-content !important; }
+
+/* 最大/最小宽度 */
+.ld-max-w-none { max-width: none !important; }
+.ld-max-w-full { max-width: 100% !important; }
+.ld-min-w-0 { min-width: 0 !important; }
+.ld-min-w-full { min-width: 100% !important; }
+
+/* 最大/最小高度 */
+.ld-max-h-none { max-height: none !important; }
+.ld-max-h-full { max-height: 100% !important; }
+.ld-min-h-0 { min-height: 0 !important; }
+.ld-min-h-full { min-height: 100% !important; }
+
+/* 边距 - 外边距 */
+.ld-m-0 { margin: 0 !important; }
+.ld-m-auto { margin: auto !important; }
+
+.ld-mt-0 { margin-top: 0 !important; }
+.ld-mr-0 { margin-right: 0 !important; }
+.ld-mb-0 { margin-bottom: 0 !important; }
+.ld-ml-0 { margin-left: 0 !important; }
+
+.ld-mx-0 { margin-left: 0 !important; margin-right: 0 !important; }
+.ld-my-0 { margin-top: 0 !important; margin-bottom: 0 !important; }
+
+.ld-mx-auto { margin-left: auto !important; margin-right: auto !important; }
+
+/* 边距 - 内边距 */
+.ld-p-0 { padding: 0 !important; }
+
+.ld-pt-0 { padding-top: 0 !important; }
+.ld-pr-0 { padding-right: 0 !important; }
+.ld-pb-0 { padding-bottom: 0 !important; }
+.ld-pl-0 { padding-left: 0 !important; }
+
+.ld-px-0 { padding-left: 0 !important; padding-right: 0 !important; }
+.ld-py-0 { padding-top: 0 !important; padding-bottom: 0 !important; }
+
+/* 边框 */
+.ld-border-0 { border-width: 0 !important; }
+.ld-border { border-width: 1px !important; }
+.ld-border-2 { border-width: 2px !important; }
+
+.ld-border-t { border-top-width: 1px !important; }
+.ld-border-r { border-right-width: 1px !important; }
+.ld-border-b { border-bottom-width: 1px !important; }
+.ld-border-l { border-left-width: 1px !important; }
+
+.ld-border-solid { border-style: solid !important; }
+.ld-border-dashed { border-style: dashed !important; }
+.ld-border-dotted { border-style: dotted !important; }
+.ld-border-none { border-style: none !important; }
+
+/* 圆角 */
+.ld-rounded-none { border-radius: 0 !important; }
+.ld-rounded-sm { border-radius: var(--ls-border-radius-sm) !important; }
+.ld-rounded { border-radius: var(--ls-border-radius-base) !important; }
+.ld-rounded-lg { border-radius: var(--ls-border-radius-lg) !important; }
+.ld-rounded-xl { border-radius: var(--ls-border-radius-xl) !important; }
+.ld-rounded-full { border-radius: var(--ls-border-radius-full) !important; }
+
+/* 阴影 */
+.ld-shadow-none { box-shadow: none !important; }
+.ld-shadow-sm { box-shadow: var(--ls-shadow-sm) !important; }
+.ld-shadow { box-shadow: var(--ls-shadow-base) !important; }
+.ld-shadow-lg { box-shadow: var(--ls-shadow-lg) !important; }
+.ld-shadow-xl { box-shadow: var(--ls-shadow-xl) !important; }
+
+/* 光标 */
+.ld-cursor-auto { cursor: auto !important; }
+.ld-cursor-default { cursor: default !important; }
+.ld-cursor-pointer { cursor: pointer !important; }
+.ld-cursor-wait { cursor: wait !important; }
+.ld-cursor-text { cursor: text !important; }
+.ld-cursor-move { cursor: move !important; }
+.ld-cursor-help { cursor: help !important; }
+.ld-cursor-not-allowed { cursor: not-allowed !important; }
+
+/* 用户选择 */
+.ld-select-none { user-select: none !important; }
+.ld-select-text { user-select: text !important; }
+.ld-select-all { user-select: all !important; }
+.ld-select-auto { user-select: auto !important; }
+
+/* 指针事件 */
+.ld-pointer-events-none { pointer-events: none !important; }
+.ld-pointer-events-auto { pointer-events: auto !important; }
+
+/* 层级 */
+.ld-z-0 { z-index: 0 !important; }
+.ld-z-10 { z-index: 10 !important; }
+.ld-z-20 { z-index: 20 !important; }
+.ld-z-30 { z-index: 30 !important; }
+.ld-z-40 { z-index: 40 !important; }
+.ld-z-50 { z-index: 50 !important; }
+.ld-z-auto { z-index: auto !important; }

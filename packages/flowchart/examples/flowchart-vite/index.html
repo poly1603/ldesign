@@ -12,6 +12,10 @@
         <div class="toolbar-left">
           <button id="btnAddRect" type="button">添加矩形</button>
           <button id="btnAddDiamond" type="button">添加菱形</button>
+          <button id="btnAddCircle" type="button">添加圆形</button>
+          <button id="btnAddEllipse" type="button">添加椭圆</button>
+          <button id="btnAddText" type="button">添加文本</button>
+          <button id="btnConnectMode" type="button">连线模式</button>
           <button id="btnSample" type="button">示例数据</button>
           <button id="btnClear" type="button">清空</button>
         </div>
@@ -20,8 +24,19 @@
             <input id="chkLive" type="checkbox" checked />
             实时预览
           </label>
+          <label class="live-toggle">
+            <input id="chkMiniMap" type="checkbox" />
+            迷你地图
+          </label>
           <button id="btnSync" type="button">手动同步</button>
+          <button id="btnDelete" type="button">删除选中(Delete)</button>
+          <button id="btnUndo" type="button">撤销(Ctrl+Z)</button>
+          <button id="btnRedo" type="button">重做(Ctrl+Y)</button>
+          <button id="btnFit" type="button">适配屏幕</button>
+          <button id="btnResetZoom" type="button">复位缩放</button>
           <button id="btnExport" type="button">导出JSON</button>
+          <button id="btnExportPNG" type="button">导出PNG</button>
+          <button id="btnExportSVG" type="button">导出SVG</button>
           <label class="import-label" for="fileImport">导入JSON</label>
           <input id="fileImport" type="file" accept="application/json" hidden />
         </div>

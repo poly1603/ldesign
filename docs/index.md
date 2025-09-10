@@ -167,7 +167,7 @@ LDesign 支持所有现代浏览器：
 
 - [📖 完整文档](./guide/introduction) - 详细的使用指南和 API 参考
 - [🎯 组件文档](./components/button) - 丰富的组件示例和最佳实践
-- [🎮 在线示例](./examples/basic) - 交互式功能演示
+- [🎮 在线示例](./examples/basic-app) - 交互式功能演示
 - [🤝 贡献指南](https://github.com/ldesign-org/ldesign/blob/main/CONTRIBUTING.md) - 如何参与项目开发
 
 ## 🤝 社区支持

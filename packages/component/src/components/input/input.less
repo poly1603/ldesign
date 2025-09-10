@@ -1,99 +1,150 @@
 /**
  * Input 组件样式
- * 
- * 基于设计系统的输入框样式实现，支持多种变体、尺寸、状态
- * 包含完整的交互状态和可访问性支持
  */
 
-@import '../../global/variables.less';
-@import '../../global/mixins.less';
-
-// ==================== 基础输入框样式 ====================
-
-:host {
-  display: block;
-  width: 100%;
-}
-
-.ld-input {
+.l-input {
   position: relative;
-  display: flex;
-  align-items: stretch;
+  display: inline-flex;
   width: 100%;
-  font-family: var(--ld-font-family);
+  font-size: var(--ls-font-size-sm);
+  line-height: 1.5;
 
-  // 输入框包装器
+  // 输入框容器
   &__wrapper {
     position: relative;
     display: flex;
     align-items: center;
-    flex: 1;
-    background-color: var(--ld-color-bg-primary);
-    border: 1px solid var(--ld-color-border-primary);
-    border-radius: var(--ld-border-radius-base);
-    transition: all var(--ld-duration-base) var(--ld-ease-in-out);
-    overflow: hidden;
+    width: 100%;
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: var(--ls-border-radius-base);
+    background-color: var(--ldesign-bg-color-component);
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--ldesign-border-color-hover);
+    }
+
+    &:focus-within {
+      border-color: var(--ldesign-border-color-focus);
+      box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+    }
   }
 
-  // 输入控件
-  &__control {
-    font-size: var(--ld-input-font-size, 14px);
-    line-height: var(--ld-input-line-height, 1.5715);
-    color: var(--ld-input-color, rgba(0, 0, 0, 0.85));
+  // 输入框
+  &__inner {
     flex: 1;
+    width: 100%;
+    padding: 0 var(--ls-padding-sm);
     border: none;
-    background: transparent;
     outline: none;
+    background: transparent;
+    color: var(--ldesign-text-color-primary);
+    font-size: inherit;
+    line-height: inherit;
 
     &::placeholder {
-      color: var(--ld-color-text-tertiary);
-      opacity: 1;
+      color: var(--ldesign-text-color-placeholder);
     }
 
-    // 文本域特殊样式
-    &[type="textarea"] {
-      resize: vertical;
-      min-height: auto;
-      line-height: var(--ld-line-height-base);
+    &:disabled {
+      cursor: not-allowed;
+      color: var(--ldesign-text-color-disabled);
     }
   }
 
-  // 前缀
+  // 尺寸变体
+  &--small {
+    .l-input__wrapper {
+      height: var(--ls-input-height-small);
+    }
+    .l-input__inner {
+      font-size: var(--ls-font-size-xs);
+    }
+  }
+
+  &--medium {
+    .l-input__wrapper {
+      height: var(--ls-input-height-medium);
+    }
+  }
+
+  &--large {
+    .l-input__wrapper {
+      height: var(--ls-input-height-large);
+    }
+    .l-input__inner {
+      font-size: var(--ls-font-size-base);
+    }
+  }
+
+  // 状态变体
+  &--success {
+    .l-input__wrapper {
+      border-color: var(--ldesign-success-color);
+      
+      &:focus-within {
+        border-color: var(--ldesign-success-color);
+        box-shadow: 0 0 0 2px var(--ldesign-success-color-focus);
+      }
+    }
+  }
+
+  &--warning {
+    .l-input__wrapper {
+      border-color: var(--ldesign-warning-color);
+      
+      &:focus-within {
+        border-color: var(--ldesign-warning-color);
+        box-shadow: 0 0 0 2px var(--ldesign-warning-color-focus);
+      }
+    }
+  }
+
+  &--error {
+    .l-input__wrapper {
+      border-color: var(--ldesign-error-color);
+      
+      &:focus-within {
+        border-color: var(--ldesign-error-color);
+        box-shadow: 0 0 0 2px var(--ldesign-error-color-focus);
+      }
+    }
+  }
+
+  // 禁用状态
+  &--disabled {
+    .l-input__wrapper {
+      background-color: var(--ldesign-bg-color-component-disabled);
+      border-color: var(--ldesign-border-color);
+      cursor: not-allowed;
+
+      &:hover {
+        border-color: var(--ldesign-border-color);
+      }
+    }
+  }
+
+  // 只读状态
+  &--readonly {
+    .l-input__wrapper {
+      background-color: var(--ldesign-bg-color-component-disabled);
+    }
+  }
+
+  // 前缀图标
   &__prefix {
     display: flex;
     align-items: center;
-    padding-left: var(--ld-spacing-sm);
-    color: var(--ld-color-text-tertiary);
-    white-space: nowrap;
-
-    &-icon {
-      display: flex;
-      align-items: center;
-      margin-right: var(--ld-spacing-xs);
-    }
-
-    &-text {
-      margin-right: var(--ld-spacing-xs);
-    }
+    padding-left: var(--ls-padding-sm);
+    color: var(--ldesign-text-color-secondary);
   }
 
-  // 后缀
+  // 后缀图标
   &__suffix {
     display: flex;
     align-items: center;
-    padding-right: var(--ld-spacing-sm);
-    color: var(--ld-color-text-tertiary);
-    white-space: nowrap;
-
-    &-text {
-      margin-left: var(--ld-spacing-xs);
-    }
-
-    &-icon {
-      display: flex;
-      align-items: center;
-      margin-left: var(--ld-spacing-xs);
-    }
+    padding-right: var(--ls-padding-sm);
+    color: var(--ldesign-text-color-secondary);
   }
 
   // 清空按钮
@@ -103,348 +154,79 @@
     justify-content: center;
     width: 16px;
     height: 16px;
-    margin-left: var(--ld-spacing-xs);
-    background: none;
-    border: none;
+    margin-right: 4px;
     cursor: pointer;
-    color: var(--ld-color-text-tertiary);
-    transition: color var(--ld-duration-base) var(--ld-ease-in-out);
+    color: var(--ldesign-text-color-placeholder);
+    transition: color 0.3s ease;
 
     &:hover {
-      color: var(--ld-color-text-secondary);
+      color: var(--ldesign-text-color-secondary);
     }
   }
 
   // 密码切换按钮
-  &__password-toggle {
+  &__password {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 16px;
     height: 16px;
-    margin-left: var(--ld-spacing-xs);
-    background: none;
-    border: none;
+    margin-right: 4px;
     cursor: pointer;
-    color: var(--ld-color-text-tertiary);
-    transition: color var(--ld-duration-base) var(--ld-ease-in-out);
+    color: var(--ldesign-text-color-placeholder);
+    transition: color 0.3s ease;
 
     &:hover {
-      color: var(--ld-color-text-secondary);
+      color: var(--ldesign-text-color-secondary);
     }
   }
 
-  // 字符计数
+  // 字数统计
   &__count {
-    margin-left: var(--ld-spacing-xs);
-    font-size: var(--ld-font-size-xs);
-    color: var(--ld-color-text-tertiary);
+    position: absolute;
+    right: var(--ls-padding-sm);
+    bottom: -20px;
+    font-size: var(--ls-font-size-xs);
+    color: var(--ldesign-text-color-placeholder);
   }
 
-  // 前置/后置插件
-  &__addon {
+  // 前置内容
+  &__prepend {
     display: flex;
     align-items: center;
-    padding: 0 var(--ld-spacing-sm);
-    background-color: var(--ld-color-bg-secondary);
-    border: 1px solid var(--ld-color-border-primary);
-    color: var(--ld-color-text-secondary);
+    padding: 0 var(--ls-padding-sm);
+    background-color: var(--ldesign-bg-color-container);
+    border: 1px solid var(--ldesign-border-color);
+    border-right: none;
+    border-radius: var(--ls-border-radius-base) 0 0 var(--ls-border-radius-base);
+    color: var(--ldesign-text-color-secondary);
     white-space: nowrap;
+  }
 
-    &--before {
-      border-right: none;
-      border-radius: var(--ld-border-radius-base) 0 0 var(--ld-border-radius-base);
-    }
+  // 后置内容
+  &__append {
+    display: flex;
+    align-items: center;
+    padding: 0 var(--ls-padding-sm);
+    background-color: var(--ldesign-bg-color-container);
+    border: 1px solid var(--ldesign-border-color);
+    border-left: none;
+    border-radius: 0 var(--ls-border-radius-base) var(--ls-border-radius-base) 0;
+    color: var(--ldesign-text-color-secondary);
+    white-space: nowrap;
+  }
 
-    &--after {
-      border-left: none;
-      border-radius: 0 var(--ld-border-radius-base) var(--ld-border-radius-base) 0;
+  // 有前置内容时的样式调整
+  &--prepend {
+    .l-input__wrapper {
+      border-radius: 0 var(--ls-border-radius-base) var(--ls-border-radius-base) 0;
     }
   }
 
-  // 错误消息
-  &__error {
-    margin-top: var(--ld-spacing-xs);
-    font-size: var(--ld-font-size-sm);
-    color: var(--ld-color-error);
-    line-height: var(--ld-line-height-sm);
-  }
-
-  // 帮助文本
-  &__help {
-    margin-top: var(--ld-spacing-xs);
-    font-size: var(--ld-font-size-sm);
-    color: var(--ld-color-text-tertiary);
-    line-height: var(--ld-line-height-sm);
-  }
-
-  // ==================== 尺寸变体 ====================
-
-  &--small {
-    .ld-input__wrapper {
-      min-height: 24px;
-    }
-
-    .ld-input__control {
-      .input-size(var(--ld-spacing-xs),
-        var(--ld-spacing-sm),
-        var(--ld-font-size-sm),
-        var(--ld-border-radius-sm));
-    }
-
-    .ld-input__prefix,
-    .ld-input__suffix {
-      font-size: var(--ld-font-size-sm);
-    }
-
-    .ld-input__addon {
-      padding: 0 var(--ld-spacing-xs);
-      font-size: var(--ld-font-size-sm);
-    }
-  }
-
-  &--medium {
-    .ld-input__wrapper {
-      min-height: 32px;
-    }
-
-    .ld-input__control {
-      .input-size(var(--ld-spacing-sm),
-        var(--ld-spacing-base),
-        var(--ld-font-size-base),
-        var(--ld-border-radius-base));
-    }
-  }
-
-  &--large {
-    .ld-input__wrapper {
-      min-height: 40px;
-    }
-
-    .ld-input__control {
-      .input-size(var(--ld-spacing-base),
-        var(--ld-spacing-lg),
-        var(--ld-font-size-lg),
-        var(--ld-border-radius-lg));
-    }
-
-    .ld-input__prefix,
-    .ld-input__suffix {
-      font-size: var(--ld-font-size-lg);
-    }
-
-    .ld-input__addon {
-      padding: 0 var(--ld-spacing-base);
-      font-size: var(--ld-font-size-lg);
-    }
-  }
-
-  // ==================== 变体样式 ====================
-
-  &--outlined {
-    .ld-input__wrapper {
-      background-color: var(--ld-color-bg-primary);
-      border: 1px solid var(--ld-color-border-primary);
-    }
-  }
-
-  &--filled {
-    .ld-input__wrapper {
-      background-color: var(--ld-color-bg-secondary);
-      border: 1px solid transparent;
-    }
-  }
-
-  &--borderless {
-    .ld-input__wrapper {
-      background-color: transparent;
-      border: none;
-      border-bottom: 1px solid var(--ld-color-border-primary);
-      border-radius: 0;
-    }
-  }
-
-  // ==================== 状态样式 ====================
-
-  &--success {
-    .ld-input__wrapper {
-      border-color: var(--ld-color-success);
-    }
-
-    &.ld-input--focused .ld-input__wrapper {
-      border-color: var(--ld-color-success);
-      box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2);
-    }
-  }
-
-  &--warning {
-    .ld-input__wrapper {
-      border-color: var(--ld-color-warning);
-    }
-
-    &.ld-input--focused .ld-input__wrapper {
-      border-color: var(--ld-color-warning);
-      box-shadow: 0 0 0 2px rgba(250, 173, 20, 0.2);
-    }
-  }
-
-  &--error {
-    .ld-input__wrapper {
-      border-color: var(--ld-color-error);
-    }
-
-    &.ld-input--focused .ld-input__wrapper {
-      border-color: var(--ld-color-error);
-      box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
-    }
-  }
-
-  &--info {
-    .ld-input__wrapper {
-      border-color: var(--ld-color-info);
-    }
-
-    &.ld-input--focused .ld-input__wrapper {
-      border-color: var(--ld-color-info);
-      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-    }
-  }
-
-  // ==================== 交互状态 ====================
-
-  &:hover:not(&--disabled):not(&--readonly) {
-    .ld-input__wrapper {
-      border-color: var(--ld-color-primary-hover);
-    }
-  }
-
-  &--focused {
-    .ld-input__wrapper {
-      border-color: var(--ld-color-primary);
-      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-    }
-  }
-
-  &--disabled {
-    .ld-input__wrapper {
-      background-color: var(--ld-color-bg-disabled);
-      border-color: var(--ld-color-border-secondary);
-      cursor: not-allowed;
-    }
-
-    .ld-input__control {
-      color: var(--ld-color-text-disabled);
-      cursor: not-allowed;
-
-      &::placeholder {
-        color: var(--ld-color-text-disabled);
-      }
-    }
-
-    .ld-input__prefix,
-    .ld-input__suffix,
-    .ld-input__addon {
-      color: var(--ld-color-text-disabled);
-    }
-
-    .ld-input__clear,
-    .ld-input__password-toggle {
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
-  }
-
-  &--readonly {
-    .ld-input__wrapper {
-      background-color: var(--ld-color-bg-secondary);
-    }
-
-    .ld-input__control {
-      cursor: default;
-    }
-
-    .ld-input__clear,
-    .ld-input__password-toggle {
-      display: none;
-    }
-  }
-
-  // ==================== 布局调整 ====================
-
-  &--has-prefix {
-    .ld-input__control {
-      padding-left: 0;
-    }
-  }
-
-  &--has-suffix {
-    .ld-input__control {
-      padding-right: 0;
-    }
-  }
-
-  &--has-addon-before {
-    .ld-input__wrapper {
-      border-left: none;
-      border-radius: 0 var(--ld-border-radius-base) var(--ld-border-radius-base) 0;
-    }
-  }
-
-  &--has-addon-after {
-    .ld-input__wrapper {
-      border-right: none;
-      border-radius: var(--ld-border-radius-base) 0 0 var(--ld-border-radius-base);
-    }
-  }
-
-  // ==================== 响应式设计 ====================
-
-  @media (max-width: @screen-sm) {
-    &--large {
-      .ld-input__control {
-        font-size: var(--ld-font-size-base);
-      }
-    }
-  }
-
-  // ==================== 暗色主题适配 ====================
-
-  :host-context([data-theme="dark"]) & {
-    .ld-input__wrapper {
-      background-color: var(--ld-color-bg-secondary);
-      border-color: var(--ld-color-border-primary);
-    }
-
-    &--filled .ld-input__wrapper {
-      background-color: var(--ld-color-bg-tertiary);
-    }
-
-    .ld-input__addon {
-      background-color: var(--ld-color-bg-tertiary);
-      border-color: var(--ld-color-border-primary);
-    }
-  }
-
-  // ==================== 高对比度模式 ====================
-
-  @media (prefers-contrast: high) {
-    .ld-input__wrapper {
-      border-width: 2px;
-    }
-
-    &--focused .ld-input__wrapper {
-      box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.3);
-    }
-  }
-
-  // ==================== 减少动画模式 ====================
-
-  @media (prefers-reduced-motion: reduce) {
-
-    .ld-input__wrapper,
-    .ld-input__clear,
-    .ld-input__password-toggle {
-      transition: none;
+  // 有后置内容时的样式调整
+  &--append {
+    .l-input__wrapper {
+      border-radius: var(--ls-border-radius-base) 0 0 var(--ls-border-radius-base);
     }
   }
 }

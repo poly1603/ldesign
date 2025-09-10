@@ -1,42 +1,39 @@
+/**
+ * VitePress 主题配置
+ * 注册 LDesign 组件库
+ */
+
 import DefaultTheme from 'vitepress/theme'
+import type { Theme } from 'vitepress'
+import { h } from 'vue'
+
+// 导入组件库
+import LDesignComponent, { LButton } from '../../../src/index'
+
+// 导入样式
+import '../../../src/styles/index.less'
+
+// 自定义样式
 import './custom.css'
 
-// 导入文档组件
-import Demo from '../components/Demo.vue'
-import ComponentPlayground from '../components/ComponentPlayground.vue'
-import PropertyControl from '../components/PropertyControl.vue'
 
-export default {
+
+const theme: Theme = {
   extends: DefaultTheme,
-  enhanceApp({ app }) {
-    // 注册全局组件
-    app.component('Demo', Demo)
-    app.component('ComponentPlayground', ComponentPlayground)
-    app.component('PropertyControl', PropertyControl)
-    
-    // 在客户端动态加载组件库
-    if (typeof window !== 'undefined') {
-      // 先尝试加载构建好的组件
-      Promise.all([
-        import('../../../dist/ldesign-component/ldesign-component.esm.js'),
-        import('../../../dist/ldesign-component/ldesign-component.css')
-      ])
-      .then(([{ defineCustomElements }]) => {
-        defineCustomElements();
-        console.log('LDesign components loaded successfully');
-      })
-      .catch(err => {
-        console.warn('Failed to load built components, trying to load from loader:', err);
-        // 如果构建版本不存在，尝试加载 loader 版本
-        import('../../../loader/index.js')
-          .then(({ defineCustomElements }) => {
-            defineCustomElements();
-            console.log('LDesign components loaded from loader');
-          })
-          .catch(err => {
-            console.error('Failed to load LDesign components:', err);
-          });
-      });
+  Layout: () => {
+    return h(DefaultTheme.Layout, null, {
+      // https://vitepress.dev/guide/extending-default-theme#layout-slots
+    })
+  },
+  enhanceApp({ app, router, siteData }) {
+    // 注册组件库
+    app.use(LDesignComponent)
+
+    // 全局属性
+    app.config.globalProperties.$message = (msg: string) => {
+      console.log(`[LDesign Message]: ${msg}`)
     }
   }
 }
+
+export default theme

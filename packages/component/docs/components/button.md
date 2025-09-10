@@ -1,293 +1,201 @@
 # Button 按钮
 
-按钮用于触发一个操作，如提交表单、打开对话框、取消操作等。
+按钮用于开始一个即时操作。
 
 ## 基础用法
 
-最简单的按钮用法。
+基础的按钮用法。
 
-<Demo 
-  title="基础按钮" 
-  description="按钮有五种基础类型：主按钮、默认按钮、虚线按钮、文本按钮和链接按钮。"
-  :code='`<ld-button type="primary">主要按钮</ld-button>
-<ld-button type="default">默认按钮</ld-button>
-<ld-button type="dashed">虚线按钮</ld-button>
-<ld-button type="text">文本按钮</ld-button>
-<ld-button type="link">链接按钮</ld-button>`'
->
-  <ld-button type="primary">主要按钮</ld-button>
-  <ld-button type="default">默认按钮</ld-button>
-  <ld-button type="dashed">虚线按钮</ld-button>
-  <ld-button type="text">文本按钮</ld-button>
-  <ld-button type="link">链接按钮</ld-button>
-</Demo>
+::: demo
+```vue
+<template>
+  <div class="demo-button">
+    <l-button>默认按钮</l-button>
+    <l-button type="primary">主要按钮</l-button>
+    <l-button type="success">成功按钮</l-button>
+    <l-button type="warning">警告按钮</l-button>
+    <l-button type="error">错误按钮</l-button>
+  </div>
+</template>
 
-## 按钮尺寸
-
-按钮有大、中、小三种尺寸。
-
-<Demo 
-  title="不同尺寸" 
-  description="通过设置 size 属性来控制按钮大小。"
-  :code='`<ld-button type="primary" size="large">大按钮</ld-button>
-<ld-button type="primary" size="medium">中按钮</ld-button>
-<ld-button type="primary" size="small">小按钮</ld-button>`'
->
-  <ld-button type="primary" size="large">大按钮</ld-button>
-  <ld-button type="primary" size="medium">中按钮</ld-button>
-  <ld-button type="primary" size="small">小按钮</ld-button>
-</Demo>
-
-## 按钮状态
-
-### 禁用状态
-
-添加 `disabled` 属性即可让按钮处于不可用状态。
-
-<Demo 
-  title="禁用状态" 
-  description="按钮不可点击。"
-  :code='`<ld-button type="primary" disabled>禁用按钮</ld-button>
-<ld-button type="default" disabled>禁用按钮</ld-button>
-<ld-button type="dashed" disabled>禁用按钮</ld-button>
-<ld-button type="text" disabled>禁用按钮</ld-button>
-<ld-button type="link" disabled>禁用按钮</ld-button>`'
->
-  <ld-button type="primary" disabled>禁用按钮</ld-button>
-  <ld-button type="default" disabled>禁用按钮</ld-button>
-  <ld-button type="dashed" disabled>禁用按钮</ld-button>
-  <ld-button type="text" disabled>禁用按钮</ld-button>
-  <ld-button type="link" disabled>禁用按钮</ld-button>
-</Demo>
-
-### 加载状态
-
-添加 `loading` 属性即可让按钮处于加载状态。
-
-<Demo 
-  title="加载状态" 
-  description="按钮处于加载中状态。"
-  :code='`<ld-button type="primary" loading>加载中</ld-button>
-<ld-button type="default" loading>加载中</ld-button>`'
->
-  <ld-button type="primary" loading>加载中</ld-button>
-  <ld-button type="default" loading>加载中</ld-button>
-</Demo>
-
-## 危险按钮
-
-`danger` 属性可以让按钮显示为危险状态。
-
-<Demo 
-  title="危险按钮" 
-  description="用于危险操作，如删除等。"
-  :code='`<ld-button type="primary" danger>危险主按钮</ld-button>
-<ld-button type="default" danger>危险按钮</ld-button>
-<ld-button type="dashed" danger>危险虚线按钮</ld-button>
-<ld-button type="text" danger>危险文本按钮</ld-button>
-<ld-button type="link" danger>危险链接按钮</ld-button>`'
->
-  <ld-button type="primary" danger>危险主按钮</ld-button>
-  <ld-button type="default" danger>危险按钮</ld-button>
-  <ld-button type="dashed" danger>危险虚线按钮</ld-button>
-  <ld-button type="text" danger>危险文本按钮</ld-button>
-  <ld-button type="link" danger>危险链接按钮</ld-button>
-</Demo>
-
-## 块级按钮
-
-`block` 属性将使按钮适合其父宽度。
-
-<Demo 
-  title="块级按钮" 
-  description="按钮宽度充满父容器。"
-  vertical
-  :code='`<ld-button type="primary" block>块级主按钮</ld-button>
-<ld-button type="default" block>块级默认按钮</ld-button>`'
->
-  <ld-button type="primary" block>块级主按钮</ld-button>
-  <ld-button type="default" block>块级默认按钮</ld-button>
-</Demo>
-
-## 图标按钮
-
-可以在按钮中添加图标。
-
-<Demo 
-  title="图标按钮" 
-  description="带图标的按钮可以更直观地表达按钮功能。"
-  :code='`<ld-button type="primary" icon="search">搜索</ld-button>
-<ld-button type="default" icon="download">下载</ld-button>
-<ld-button type="primary" icon="plus"></ld-button>
-<ld-button type="default" icon="setting"></ld-button>`'
->
-  <ld-button type="primary" icon="search">搜索</ld-button>
-  <ld-button type="default" icon="download">下载</ld-button>
-  <ld-button type="primary" icon="plus"></ld-button>
-  <ld-button type="default" icon="setting"></ld-button>
-</Demo>
-
-
-<script setup>
-const handleButtonClick = (event) => {
-  console.log('按钮被点击:', event)
-  alert('按钮被点击！')
+<style scoped>
+.demo-button {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
-</script>
+</style>
+```
+:::
 
-## API
+## 按钮变体
 
-### 属性
+按钮有四种变体：基础、轮廓、文本和幽灵。
 
-<table class="props-table">
-  <thead>
-    <tr>
-      <th>属性</th>
-      <th>说明</th>
-      <th>类型</th>
-      <th>默认值</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>type</code></td>
-      <td>按钮类型</td>
-      <td><code>'default' | 'primary' | 'dashed' | 'text' | 'link'</code></td>
-      <td><code>'default'</code></td>
-    </tr>
-    <tr>
-      <td><code>size</code></td>
-      <td>按钮尺寸</td>
-      <td><code>'small' | 'medium' | 'large'</code></td>
-      <td><code>'medium'</code></td>
-    </tr>
-    <tr>
-      <td><code>disabled</code></td>
-      <td>是否禁用</td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-    </tr>
-    <tr>
-      <td><code>loading</code></td>
-      <td>是否加载中</td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-    </tr>
-    <tr>
-      <td><code>danger</code></td>
-      <td>是否危险按钮</td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-    </tr>
-    <tr>
-      <td><code>block</code></td>
-      <td>是否块级按钮</td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-    </tr>
-    <tr>
-      <td><code>icon</code></td>
-      <td>图标名称</td>
-      <td><code>string</code></td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td><code>icon-only</code></td>
-      <td>是否只显示图标</td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-    </tr>
-    <tr>
-      <td><code>href</code></td>
-      <td>链接地址（当 type 为 link 时）</td>
-      <td><code>string</code></td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td><code>target</code></td>
-      <td>链接打开方式</td>
-      <td><code>string</code></td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td><code>html-type</code></td>
-      <td>原生 button 的 type</td>
-      <td><code>'button' | 'submit' | 'reset'</code></td>
-      <td><code>'button'</code></td>
-    </tr>
-  </tbody>
-</table>
+::: demo
+```vue
+<template>
+  <div class="demo-section">
+    <div class="demo-row">
+      <h4>基础变体</h4>
+      <div class="demo-button">
+        <l-button type="primary">主要按钮</l-button>
+        <l-button type="success">成功按钮</l-button>
+        <l-button type="warning">警告按钮</l-button>
+        <l-button type="error">错误按钮</l-button>
+      </div>
+    </div>
 
-### 事件
+    <div class="demo-row">
+      <h4>轮廓变体</h4>
+      <div class="demo-button">
+        <l-button type="primary" variant="outline">主要按钮</l-button>
+        <l-button type="success" variant="outline">成功按钮</l-button>
+        <l-button type="warning" variant="outline">警告按钮</l-button>
+        <l-button type="error" variant="outline">错误按钮</l-button>
+      </div>
+    </div>
 
-<table class="props-table">
-  <thead>
-    <tr>
-      <th>事件名</th>
-      <th>说明</th>
-      <th>回调参数</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>ldClick</code></td>
-      <td>点击按钮时触发</td>
-      <td><code>(event: MouseEvent) => void</code></td>
-    </tr>
-    <tr>
-      <td><code>ldFocus</code></td>
-      <td>获得焦点时触发</td>
-      <td><code>(event: FocusEvent) => void</code></td>
-    </tr>
-    <tr>
-      <td><code>ldBlur</code></td>
-      <td>失去焦点时触发</td>
-      <td><code>(event: FocusEvent) => void</code></td>
-    </tr>
-  </tbody>
-</table>
+    <div class="demo-row">
+      <h4>文本变体</h4>
+      <div class="demo-button">
+        <l-button type="primary" variant="text">主要按钮</l-button>
+        <l-button type="success" variant="text">成功按钮</l-button>
+        <l-button type="warning" variant="text">警告按钮</l-button>
+        <l-button type="error" variant="text">错误按钮</l-button>
+      </div>
+    </div>
 
-### 方法
+    <div class="demo-row">
+      <h4>幽灵变体</h4>
+      <div class="demo-button" style="background: #333; padding: 20px; border-radius: 6px;">
+        <l-button ghost>默认按钮</l-button>
+        <l-button type="primary" ghost>主要按钮</l-button>
+        <l-button type="success" ghost>成功按钮</l-button>
+      </div>
+    </div>
+  </div>
+</template>
 
-<table class="props-table">
-  <thead>
-    <tr>
-      <th>方法名</th>
-      <th>说明</th>
-      <th>参数</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>focus</code></td>
-      <td>使按钮获得焦点</td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td><code>blur</code></td>
-      <td>使按钮失去焦点</td>
-      <td>-</td>
-    </tr>
-  </tbody>
-</table>
+<style scoped>
+.demo-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
-### 插槽
+.demo-row h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #666;
+}
 
-<table class="props-table">
-  <thead>
-    <tr>
-      <th>插槽名</th>
-      <th>说明</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>default</td>
-      <td>按钮内容</td>
-    </tr>
-    <tr>
-      <td>icon</td>
-      <td>自定义图标</td>
-    </tr>
-  </tbody>
-</table>
+.demo-button {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+</style>
+```
+:::
+```vue
+<template>
+  <div class="demo-button">
+    <l-button size="small" type="primary">小按钮</l-button>
+    <l-button size="medium" type="primary">中按钮</l-button>
+    <l-button size="large" type="primary">大按钮</l-button>
+  </div>
+</template>
+
+<style scoped>
+.demo-button {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+</style>
+```
+:::
+
+## 按钮形状
+
+按钮有三种形状：矩形、圆角和圆形。
+
+::: demo
+```vue
+<template>
+  <div class="demo-button">
+    <l-button type="primary">矩形按钮</l-button>
+    <l-button type="primary" shape="round">圆角按钮</l-button>
+    <l-button type="primary" shape="circle" icon="🔍"></l-button>
+  </div>
+</template>
+
+<style scoped>
+.demo-button {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+</style>
+```
+:::
+
+## 禁用状态
+
+按钮不可用状态。
+
+::: demo
+```vue
+<template>
+  <div class="demo-section">
+    <div class="demo-row">
+      <h4>基础变体</h4>
+      <div class="demo-button">
+        <l-button disabled>默认按钮</l-button>
+        <l-button type="primary" disabled>主要按钮</l-button>
+        <l-button type="success" disabled>成功按钮</l-button>
+      </div>
+    </div>
+
+    <div class="demo-row">
+      <h4>轮廓变体</h4>
+      <div class="demo-button">
+        <l-button variant="outline" disabled>默认按钮</l-button>
+        <l-button type="primary" variant="outline" disabled>主要按钮</l-button>
+        <l-button type="success" variant="outline" disabled>成功按钮</l-button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.demo-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.demo-row h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.demo-button {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+</style>
+```
+:::
+
+## 加载状态
+
+点击按钮后进行数据加载操作，在按钮上显示加载状态。
+
+
+

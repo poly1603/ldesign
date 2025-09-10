@@ -1,0 +1,253 @@
+/**
+ * LDESIGN 组件库 LESS 混入
+ * 
+ * 提供常用的样式混入，提高开发效率和样式一致性
+ */
+
+/**
+ * 清除浮动
+ */
+.clearfix() {
+  &::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+/**
+ * 文本省略号
+ * @param lines 行数，默认为1行
+ */
+.text-ellipsis(@lines: 1) when (@lines = 1) {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.text-ellipsis(@lines) when (@lines > 1) {
+  display: -webkit-box;
+  -webkit-line-clamp: @lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/**
+ * 居中对齐
+ */
+.center-absolute() {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.center-flex() {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/**
+ * 按钮基础样式
+ */
+.button-base() {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--ls-border-radius-base);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  outline: none;
+  user-select: none;
+  white-space: nowrap;
+  
+  &:focus {
+    outline: none;
+  }
+  
+  &:disabled,
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+/**
+ * 按钮尺寸
+ */
+.button-size(@size) when (@size = small) {
+  height: var(--ls-button-height-small);
+  padding: 0 var(--ls-padding-sm);
+  font-size: var(--ls-font-size-xs);
+}
+
+.button-size(@size) when (@size = medium) {
+  height: var(--ls-button-height-medium);
+  padding: 0 var(--ls-padding-base);
+  font-size: var(--ls-font-size-sm);
+}
+
+.button-size(@size) when (@size = large) {
+  height: var(--ls-button-height-large);
+  padding: 0 var(--ls-padding-lg);
+  font-size: var(--ls-font-size-base);
+}
+
+/**
+ * 输入框基础样式
+ */
+.input-base() {
+  display: inline-block;
+  width: 100%;
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  background-color: var(--ldesign-bg-color-component);
+  color: var(--ldesign-text-color-primary);
+  transition: all 0.3s ease;
+  outline: none;
+  
+  &::placeholder {
+    color: var(--ldesign-text-color-placeholder);
+  }
+  
+  &:hover {
+    border-color: var(--ldesign-border-color-hover);
+  }
+  
+  &:focus {
+    border-color: var(--ldesign-border-color-focus);
+    box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+  }
+  
+  &:disabled {
+    background-color: var(--ldesign-bg-color-component-disabled);
+    color: var(--ldesign-text-color-disabled);
+    cursor: not-allowed;
+  }
+}
+
+/**
+ * 输入框尺寸
+ */
+.input-size(@size) when (@size = small) {
+  height: var(--ls-input-height-small);
+  padding: 0 var(--ls-padding-sm);
+  font-size: var(--ls-font-size-xs);
+}
+
+.input-size(@size) when (@size = medium) {
+  height: var(--ls-input-height-medium);
+  padding: 0 var(--ls-padding-base);
+  font-size: var(--ls-font-size-sm);
+}
+
+.input-size(@size) when (@size = large) {
+  height: var(--ls-input-height-large);
+  padding: 0 var(--ls-padding-lg);
+  font-size: var(--ls-font-size-base);
+}
+
+/**
+ * 卡片样式
+ */
+.card-base() {
+  background-color: var(--ldesign-bg-color-container);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  box-shadow: var(--ls-shadow-sm);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: var(--ls-shadow-base);
+  }
+}
+
+/**
+ * 模态框遮罩
+ */
+.modal-overlay() {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/**
+ * 加载动画
+ */
+.loading-spin() {
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  animation: spin 1s linear infinite;
+}
+
+/**
+ * 渐变背景
+ */
+.gradient-background(@start-color, @end-color, @direction: to right) {
+  background: linear-gradient(@direction, @start-color, @end-color);
+}
+
+/**
+ * 响应式断点
+ */
+.responsive(@breakpoint) when (@breakpoint = xs) {
+  @media (max-width: 575px) { & { .content(); } }
+}
+
+.responsive(@breakpoint) when (@breakpoint = sm) {
+  @media (min-width: 576px) and (max-width: 767px) { & { .content(); } }
+}
+
+.responsive(@breakpoint) when (@breakpoint = md) {
+  @media (min-width: 768px) and (max-width: 991px) { & { .content(); } }
+}
+
+.responsive(@breakpoint) when (@breakpoint = lg) {
+  @media (min-width: 992px) and (max-width: 1199px) { & { .content(); } }
+}
+
+.responsive(@breakpoint) when (@breakpoint = xl) {
+  @media (min-width: 1200px) and (max-width: 1599px) { & { .content(); } }
+}
+
+.responsive(@breakpoint) when (@breakpoint = xxl) {
+  @media (min-width: 1600px) { & { .content(); } }
+}
+
+/**
+ * 滚动条样式
+ */
+.custom-scrollbar(@width: 6px, @track-color: #f1f1f1, @thumb-color: #c1c1c1) {
+  &::-webkit-scrollbar {
+    width: @width;
+    height: @width;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: @track-color;
+    border-radius: @width / 2;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: @thumb-color;
+    border-radius: @width / 2;
+    
+    &:hover {
+      background: darken(@thumb-color, 10%);
+    }
+  }
+}

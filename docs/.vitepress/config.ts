@@ -24,7 +24,7 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: '指南', link: '/guide/introduction' },
       { text: '组件', link: '/components/button' },
-      { text: '示例', link: '/examples/basic' },
+      { text: '示例', link: '/examples/' },
       {
         text: '相关链接',
         items: [
@@ -62,24 +62,15 @@ export default defineConfig({
             { text: 'Input 输入框', link: '/components/input' },
             { text: 'Card 卡片', link: '/components/card' }
           ]
-        },
-        {
-          text: '高级组件',
-          items: [
-            { text: 'Modal 模态框', link: '/components/modal' },
-            { text: 'Table 表格', link: '/components/table' },
-            { text: 'Form 表单', link: '/components/form' }
-          ]
         }
       ],
       '/examples/': [
         {
           text: '示例',
           items: [
-            { text: '基础用法', link: '/examples/basic' },
-            { text: 'Vue 集成', link: '/examples/vue' },
-            { text: 'React 集成', link: '/examples/react' },
-            { text: 'Angular 集成', link: '/examples/angular' }
+            { text: '示例总览', link: '/examples/' },
+            { text: '基础应用', link: '/examples/basic-app' },
+            { text: '完整示例', link: '/examples/complete-example' }
           ]
         }
       ]

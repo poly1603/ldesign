@@ -1,306 +1,279 @@
 # 快速开始
 
-本节将介绍如何在项目中使用 LDesign。
+本指南将帮助您快速上手 LDesign Component，在几分钟内搭建一个基本的 Vue 3 应用。
+
+## 环境要求
+
+在开始之前，请确保您的开发环境满足以下要求：
+
+- **Node.js**: >= 18.0.0
+- **Vue**: >= 3.3.0
+- **TypeScript**: >= 5.0.0 (可选，但推荐)
 
 ## 安装
 
-### 使用包管理器
+### 使用包管理器安装
 
-我们建议您使用包管理器（npm、yarn、pnpm）安装 LDesign，然后您就可以使用打包工具，例如 Vite、webpack。
+::: code-group
 
-```bash
-# 选择一个你喜欢的包管理器
-
-# npm
-npm install @ldesign/components
-
-# yarn
-yarn add @ldesign/components
-
-# pnpm
-pnpm add @ldesign/components
+```bash [pnpm (推荐)]
+pnpm add @ldesign/component
 ```
 
-### 浏览器直接引入
+```bash [npm]
+npm install @ldesign/component
+```
 
-直接通过浏览器的 HTML 标签导入 LDesign，然后就可以使用全局变量 `LDesign` 了。
+```bash [yarn]
+yarn add @ldesign/component
+```
+
+:::
+
+### CDN 引入
+
+如果您不想使用构建工具，也可以通过 CDN 的方式引入：
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LDesign 示例</title>
-</head>
-<body>
-  <!-- 引入样式 -->
-  <link rel="stylesheet" href="https://unpkg.com/@ldesign/components/dist/ldesign-component/ldesign-component.css">
-  
-  <!-- 引入组件库 -->
-  <script type="module" src="https://unpkg.com/@ldesign/components/dist/ldesign-component/ldesign-component.esm.js"></script>
-  
-  <!-- 使用组件 -->
-  <ld-button type="primary">Hello LDesign!</ld-button>
-</body>
-</html>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/@ldesign/component/dist/style.css">
+
+<!-- 引入 Vue 3 -->
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+<!-- 引入 LDesign Component -->
+<script src="https://unpkg.com/@ldesign/component/dist/ldesign-component.umd.js"></script>
 ```
 
-## 用法
+## 完整引入
 
-### 完整引入
+如果您对打包后的文件大小不是很在乎，那么使用完整导入会更方便。
 
-如果你对打包后的文件大小不是很在乎，那么使用完整导入会更方便。
+### 全局注册
 
-```javascript
-// main.js
-import { defineCustomElements } from '@ldesign/components/loader';
+```typescript
+// main.ts
+import { createApp } from 'vue'
+import LDesignComponent from '@ldesign/component'
+import '@ldesign/component/styles'
+import App from './App.vue'
 
-// 注册所有组件
-defineCustomElements();
+const app = createApp(App)
+app.use(LDesignComponent)
+app.mount('#app')
 ```
 
-### 按需引入
-
-LDesign 支持基于 ES modules 的 tree shaking，直接引入 `@ldesign/components` 即可。
-
-```javascript
-// 只引入需要的组件
-import { defineCustomElements } from '@ldesign/components/dist/components/ld-button';
-import { defineCustomElements as defineInput } from '@ldesign/components/dist/components/ld-input';
-
-// 注册组件
-defineCustomElements();
-defineInput();
-```
-
-## 在不同框架中使用
-
-### React
-
-在 React 项目中使用 LDesign：
-
-```tsx
-// App.tsx
-import React, { useEffect } from 'react';
-import { defineCustomElements } from '@ldesign/components/loader';
-
-// 注册组件
-defineCustomElements();
-
-// 类型声明（可选）
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'ld-button': any;
-      'ld-input': any;
-      'ld-card': any;
-    }
-  }
-}
-
-function App() {
-  const handleButtonClick = (event: CustomEvent) => {
-    console.log('按钮被点击了', event.detail);
-  };
-
-  return (
-    <div className="App">
-      <h1>LDesign + React 示例</h1>
-      
-      <ld-button 
-        type="primary" 
-        onLdClick={handleButtonClick}
-      >
-        主要按钮
-      </ld-button>
-      
-      <ld-input 
-        placeholder="请输入内容"
-        onLdChange={(e: CustomEvent) => console.log(e.detail)}
-      />
-      
-      <ld-card card-title="React 卡片">
-        <p>这是在 React 中使用的 LDesign 卡片组件</p>
-      </ld-card>
-    </div>
-  );
-}
-
-export default App;
-```
-
-### Vue 3
-
-在 Vue 3 项目中使用 LDesign：
+### 使用组件
 
 ```vue
-<!-- App.vue -->
 <template>
-  <div class="app">
-    <h1>LDesign + Vue 3 示例</h1>
-    
-    <ld-button 
-      type="primary" 
-      @ldClick="handleButtonClick"
-    >
-      主要按钮
-    </ld-button>
-    
-    <ld-input 
-      :value="inputValue"
-      placeholder="请输入内容"
-      @ldChange="handleInputChange"
-    />
-    
-    <ld-card card-title="Vue 卡片">
-      <p>这是在 Vue 中使用的 LDesign 卡片组件</p>
-      <p>输入值：{{ inputValue }}</p>
-    </ld-card>
+  <div>
+    <l-button type="primary">主要按钮</l-button>
+    <l-button type="default">默认按钮</l-button>
+  </div>
+</template>
+```
+
+## 按需引入
+
+LDesign Component 支持基于 ES modules 的 tree shaking，当您使用支持 tree shaking 的打包工具时，可以按需引入组件。
+
+### 手动按需引入
+
+```vue
+<template>
+  <div>
+    <l-button type="primary" @click="handleClick">
+      点击我
+    </l-button>
+    <l-input v-model="inputValue" placeholder="请输入内容" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { defineCustomElements } from '@ldesign/components/loader';
+import { ref } from 'vue'
+import { LButton, LInput } from '@ldesign/component'
+// 引入样式
+import '@ldesign/component/styles'
 
-// 注册组件
-onMounted(() => {
-  defineCustomElements();
-});
+const inputValue = ref('')
 
-const inputValue = ref('');
-
-const handleButtonClick = (event: CustomEvent) => {
-  console.log('按钮被点击了', event.detail);
-};
-
-const handleInputChange = (event: CustomEvent) => {
-  inputValue.value = event.detail;
-};
+const handleClick = () => {
+  console.log('按钮被点击了！')
+}
 </script>
 ```
 
-### Angular
+### 自动按需引入
 
-在 Angular 项目中使用 LDesign：
+推荐使用 [unplugin-vue-components](https://github.com/antfu/unplugin-vue-components) 实现自动按需引入：
 
-```typescript
-// app.module.ts
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { defineCustomElements } from '@ldesign/components/loader';
+#### 安装插件
 
-import { AppComponent } from './app.component';
-
-// 注册组件
-defineCustomElements();
-
-@NgModule({
-  declarations: [AppComponent],
-  imports: [BrowserModule],
-  providers: [],
-  bootstrap: [AppComponent],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA], // 允许使用自定义元素
-})
-export class AppModule {}
+```bash
+pnpm add -D unplugin-vue-components
 ```
 
+#### 配置 Vite
+
 ```typescript
-// app.component.ts
-import { Component } from '@angular/core';
+// vite.config.ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import Components from 'unplugin-vue-components/vite'
+import { LDesignResolver } from '@ldesign/component/resolvers'
 
-@Component({
-  selector: 'app-root',
-  template: `
-    <div class="app">
-      <h1>LDesign + Angular 示例</h1>
-      
-      <ld-button 
-        type="primary" 
-        (ldClick)="handleButtonClick($event)"
-      >
-        主要按钮
-      </ld-button>
-      
-      <ld-input 
-        [value]="inputValue"
-        placeholder="请输入内容"
-        (ldChange)="handleInputChange($event)"
-      ></ld-input>
-      
-      <ld-card card-title="Angular 卡片">
-        <p>这是在 Angular 中使用的 LDesign 卡片组件</p>
-        <p>输入值：{{ inputValue }}</p>
-      </ld-card>
-    </div>
-  `,
+export default defineConfig({
+  plugins: [
+    vue(),
+    Components({
+      resolvers: [LDesignResolver()]
+    })
+  ]
 })
-export class AppComponent {
-  inputValue = '';
+```
 
-  handleButtonClick(event: CustomEvent) {
-    console.log('按钮被点击了', event.detail);
-  }
+#### 配置 Webpack
 
-  handleInputChange(event: CustomEvent) {
-    this.inputValue = event.detail;
+```javascript
+// webpack.config.js
+const Components = require('unplugin-vue-components/webpack')
+const { LDesignResolver } = require('@ldesign/component/resolvers')
+
+module.exports = {
+  plugins: [
+    Components({
+      resolvers: [LDesignResolver()]
+    })
+  ]
+}
+```
+
+配置完成后，您可以直接在模板中使用组件，无需手动导入：
+
+```vue
+<template>
+  <div>
+    <!-- 自动导入，无需手动 import -->
+    <l-button type="primary">主要按钮</l-button>
+    <l-input placeholder="请输入内容" />
+  </div>
+</template>
+
+<script setup lang="ts">
+// 无需手动导入组件
+</script>
+```
+
+## 样式引入
+
+### 完整样式
+
+如果您使用完整引入，建议引入完整的样式文件：
+
+```typescript
+import '@ldesign/component/styles'
+```
+
+### 按需样式
+
+如果您使用按需引入，可以只引入需要的组件样式：
+
+```typescript
+import '@ldesign/component/styles/button'
+import '@ldesign/component/styles/input'
+```
+
+### 样式定制
+
+您也可以引入 LESS 源文件进行样式定制：
+
+```less
+// 引入基础变量
+@import '@ldesign/component/styles/variables.less';
+
+// 修改主题色
+:root {
+  --ldesign-brand-color: #1890ff; // 自定义主色
+}
+
+// 引入组件样式
+@import '@ldesign/component/styles/index.less';
+```
+
+## TypeScript 支持
+
+LDesign Component 使用 TypeScript 编写，提供完整的类型定义。
+
+### 全局类型
+
+如果您使用全局注册，可以在 `tsconfig.json` 中添加全局类型：
+
+```json
+{
+  "compilerOptions": {
+    "types": ["@ldesign/component/global"]
   }
 }
 ```
 
-## 开始使用
+### 组件类型
 
-现在你可以启动你的项目了。对于大部分示例，这里都会有一个 Hello world 页面。
+```typescript
+import type { ButtonProps, InputProps } from '@ldesign/component'
 
-<div class="demo-container">
-  <div class="demo-title">Hello World</div>
-  <div class="demo-description">一个简单的示例</div>
-  <div class="demo-showcase">
-    <ld-button type="primary">Hello LDesign!</ld-button>
-    <ld-input placeholder="输入一些内容..."></ld-input>
-    <ld-card card-title="欢迎使用 LDesign" style="width: 300px; margin-top: 16px;">
-      <p>🎉 恭喜你成功运行了第一个 LDesign 程序！</p>
-      <div slot="footer">
-        <ld-button type="primary" size="small">开始探索</ld-button>
-      </div>
-    </ld-card>
-  </div>
-</div>
+// 使用组件类型
+const buttonProps: ButtonProps = {
+  type: 'primary',
+  size: 'large',
+  disabled: false
+}
+```
+
+## 开发工具
+
+### Volar 支持
+
+如果您使用 VS Code 和 Volar 插件，可以获得更好的开发体验：
+
+```json
+// .vscode/settings.json
+{
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.suggest.autoImports": true
+}
+```
+
+### ESLint 配置
+
+推荐的 ESLint 配置：
+
+```javascript
+// .eslintrc.js
+module.exports = {
+  extends: [
+    '@vue/typescript/recommended'
+  ],
+  rules: {
+    // 您的自定义规则
+  }
+}
+```
+
+## 示例项目
+
+我们提供了一些示例项目帮助您快速上手：
+
+- [基础示例](https://github.com/ldesign/ldesign/tree/main/examples/basic)
+- [TypeScript 示例](https://github.com/ldesign/ldesign/tree/main/examples/typescript)
+- [Vite 示例](https://github.com/ldesign/ldesign/tree/main/examples/vite)
 
 ## 下一步
 
-现在你已经把 LDesign 添加到了你的项目中，是时候阅读我们的组件文档来了解更多组件的使用了。
+现在您已经成功安装并配置了 LDesign Component，可以：
 
-- [Button 按钮](/components/button)
-- [Input 输入框](/components/input)  
-- [Card 卡片](/components/card)
-- [Modal 模态框](/components/modal)
-- [Table 表格](/components/table)
-- [Form 表单](/components/form)
+- 查看 [组件文档](/components/button) 了解各个组件的用法
+- 学习 [主题定制](/guide/theming) 来定制您的设计系统
+- 了解 [最佳实践](/guide/best-practices) 来优化您的开发体验
 
-## 常见问题
-
-### TypeScript 支持
-
-LDesign 使用 TypeScript 编写，提供了完整的类型定义。
-
-### 样式覆盖
-
-如果你想要覆盖组件的样式，可以通过 CSS 变量或者直接覆盖 CSS 类名：
-
-```css
-/* 通过 CSS 变量覆盖 */
-:root {
-  --ld-color-primary: #your-color;
-}
-
-/* 直接覆盖样式 */
-ld-button {
-  --ld-button-primary-bg: #your-color;
-}
-```
-
-### 浏览器兼容性
-
-LDesign 支持所有现代浏览器。如果你需要支持 IE，请使用相应的 polyfill。
+如果您在使用过程中遇到问题，请查看 [常见问题](/guide/faq) 或在 [GitHub](https://github.com/ldesign/ldesign/issues) 上提交 issue。

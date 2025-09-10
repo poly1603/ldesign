@@ -1,0 +1,131 @@
+/**
+ * 主题配置文件
+ * 
+ * 定义不同主题下的样式变量
+ * 支持亮色主题和暗色主题
+ */
+
+/* 亮色主题（默认） */
+:root,
+[data-theme="light"] {
+  // 品牌色
+  --ldesign-brand-color: var(--ldesign-brand-color-7);
+  --ldesign-brand-color-hover: var(--ldesign-brand-color-6);
+  --ldesign-brand-color-active: var(--ldesign-brand-color-8);
+  --ldesign-brand-color-disabled: var(--ldesign-brand-color-3);
+  --ldesign-brand-color-focus: var(--ldesign-brand-color-2);
+  
+  // 功能色
+  --ldesign-success-color: var(--ldesign-success-color-5);
+  --ldesign-warning-color: var(--ldesign-warning-color-5);
+  --ldesign-error-color: var(--ldesign-error-color-5);
+  
+  // 文本色
+  --ldesign-text-color-primary: var(--ldesign-font-gray-1);
+  --ldesign-text-color-secondary: var(--ldesign-font-gray-2);
+  --ldesign-text-color-placeholder: var(--ldesign-font-gray-3);
+  --ldesign-text-color-disabled: var(--ldesign-font-gray-4);
+  
+  // 背景色
+  --ldesign-bg-color-page: #ffffff;
+  --ldesign-bg-color-container: #ffffff;
+  --ldesign-bg-color-component: #ffffff;
+  
+  // 边框色
+  --ldesign-border-color: var(--ldesign-border-level-1-color);
+  --ldesign-border-color-hover: var(--ldesign-border-level-2-color);
+  --ldesign-border-color-focus: var(--ldesign-brand-color);
+}
+
+/* 暗色主题 */
+[data-theme="dark"] {
+  // 品牌色（暗色主题下稍微调亮）
+  --ldesign-brand-color: var(--ldesign-brand-color-5);
+  --ldesign-brand-color-hover: var(--ldesign-brand-color-4);
+  --ldesign-brand-color-active: var(--ldesign-brand-color-6);
+  --ldesign-brand-color-disabled: var(--ldesign-brand-color-8);
+  --ldesign-brand-color-focus: var(--ldesign-brand-color-9);
+  
+  // 功能色
+  --ldesign-success-color: var(--ldesign-success-color-4);
+  --ldesign-warning-color: var(--ldesign-warning-color-4);
+  --ldesign-error-color: var(--ldesign-error-color-4);
+  
+  // 文本色（暗色主题下使用白色文本）
+  --ldesign-text-color-primary: var(--ldesign-font-white-1);
+  --ldesign-text-color-secondary: var(--ldesign-font-white-2);
+  --ldesign-text-color-placeholder: var(--ldesign-font-white-3);
+  --ldesign-text-color-disabled: var(--ldesign-font-white-4);
+  
+  // 背景色（暗色主题）
+  --ldesign-bg-color-page: #1a1a1a;
+  --ldesign-bg-color-container: #2a2a2a;
+  --ldesign-bg-color-component: #333333;
+  
+  // 边框色（暗色主题）
+  --ldesign-border-color: #404040;
+  --ldesign-border-color-hover: #505050;
+  --ldesign-border-color-focus: var(--ldesign-brand-color);
+}
+
+/* 高对比度主题 */
+[data-theme="high-contrast"] {
+  // 品牌色（高对比度）
+  --ldesign-brand-color: #0066cc;
+  --ldesign-brand-color-hover: #0052a3;
+  --ldesign-brand-color-active: #004080;
+  --ldesign-brand-color-disabled: #cccccc;
+  --ldesign-brand-color-focus: #66b3ff;
+  
+  // 功能色（高对比度）
+  --ldesign-success-color: #008000;
+  --ldesign-warning-color: #ff8000;
+  --ldesign-error-color: #cc0000;
+  
+  // 文本色（高对比度）
+  --ldesign-text-color-primary: #000000;
+  --ldesign-text-color-secondary: #333333;
+  --ldesign-text-color-placeholder: #666666;
+  --ldesign-text-color-disabled: #999999;
+  
+  // 背景色（高对比度）
+  --ldesign-bg-color-page: #ffffff;
+  --ldesign-bg-color-container: #ffffff;
+  --ldesign-bg-color-component: #ffffff;
+  
+  // 边框色（高对比度）
+  --ldesign-border-color: #000000;
+  --ldesign-border-color-hover: #333333;
+  --ldesign-border-color-focus: #0066cc;
+}
+
+/* 主题切换动画 */
+* {
+  transition: 
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* 媒体查询：系统主题偏好 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    // 如果没有明确设置主题，且系统偏好暗色，则应用暗色主题变量
+    --ldesign-brand-color: var(--ldesign-brand-color-5);
+    --ldesign-text-color-primary: var(--ldesign-font-white-1);
+    --ldesign-text-color-secondary: var(--ldesign-font-white-2);
+    --ldesign-bg-color-page: #1a1a1a;
+    --ldesign-bg-color-container: #2a2a2a;
+    --ldesign-bg-color-component: #333333;
+    --ldesign-border-color: #404040;
+  }
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -15,9 +15,9 @@
     <p>LDesign 核心引擎，提供插件系统、中间件、事件管理等基础功能。</p>
   </div>
   <div class="api-links">
-    <a href="/api/engine/" class="api-link">完整文档</a>
-    <a href="/api/engine/quick-start" class="api-link">快速开始</a>
-    <a href="/examples/engine" class="api-link">示例代码</a>
+    <a href="/api/" class="api-link">完整文档</a>
+    <a href="/guide/getting-started" class="api-link">快速开始</a>
+    <a href="/examples/" class="api-link">示例代码</a>
   </div>
   <div class="api-preview">
     <h4>主要接口</h4>
@@ -42,9 +42,9 @@
     <p>强大的路由系统，支持动态路由、守卫、懒加载等高级功能。</p>
   </div>
   <div class="api-links">
-    <a href="/api/router/" class="api-link">完整文档</a>
-    <a href="/api/router/quick-start" class="api-link">快速开始</a>
-    <a href="/examples/router" class="api-link">示例代码</a>
+    <a href="/api/" class="api-link">完整文档</a>
+    <a href="/guide/getting-started" class="api-link">快速开始</a>
+    <a href="/examples/" class="api-link">示例代码</a>
   </div>
   <div class="api-preview">
     <h4>主要接口</h4>
@@ -69,9 +69,9 @@
     <p>功能丰富的HTTP客户端，支持拦截器、缓存、重试等企业级特性。</p>
   </div>
   <div class="api-links">
-    <a href="/api/http/" class="api-link">完整文档</a>
-    <a href="/api/http/quick-start" class="api-link">快速开始</a>
-    <a href="/examples/http" class="api-link">示例代码</a>
+    <a href="/api/" class="api-link">完整文档</a>
+    <a href="/guide/getting-started" class="api-link">快速开始</a>
+    <a href="/examples/" class="api-link">示例代码</a>
   </div>
   <div class="api-preview">
     <h4>主要接口</h4>
@@ -96,9 +96,9 @@
     <p>全面的加密解决方案，支持对称加密、非对称加密、哈希算法等。</p>
   </div>
   <div class="api-links">
-    <a href="/api/crypto/" class="api-link">完整文档</a>
-    <a href="/api/crypto/quick-start" class="api-link">快速开始</a>
-    <a href="/examples/crypto" class="api-link">示例代码</a>
+    <a href="/api/" class="api-link">完整文档</a>
+    <a href="/guide/getting-started" class="api-link">快速开始</a>
+    <a href="/examples/" class="api-link">示例代码</a>
   </div>
   <div class="api-preview">
     <h4>主要接口</h4>
@@ -123,9 +123,9 @@
     <p>设备信息检测和传感器访问，支持多种设备类型和传感器。</p>
   </div>
   <div class="api-links">
-    <a href="/api/device/" class="api-link">完整文档</a>
-    <a href="/api/device/quick-start" class="api-link">快速开始</a>
-    <a href="/examples/device" class="api-link">示例代码</a>
+    <a href="/api/" class="api-link">完整文档</a>
+    <a href="/guide/getting-started" class="api-link">快速开始</a>
+    <a href="/examples/" class="api-link">示例代码</a>
   </div>
   <div class="api-preview">
     <h4>主要接口</h4>
@@ -150,9 +150,9 @@
     <p>灵活的模板系统，支持动态模板、设备适配、主题切换等功能。</p>
   </div>
   <div class="api-links">
-    <a href="/api/template/" class="api-link">完整文档</a>
-    <a href="/api/template/quick-start" class="api-link">快速开始</a>
-    <a href="/examples/template" class="api-link">示例代码</a>
+    <a href="/api/" class="api-link">完整文档</a>
+    <a href="/guide/getting-started" class="api-link">快速开始</a>
+    <a href="/examples/" class="api-link">示例代码</a>
   </div>
   <div class="api-preview">
     <h4>主要接口</h4>
@@ -177,9 +177,9 @@
     <p>专业的颜色管理系统，支持颜色转换、主题生成、暗色模式等。</p>
   </div>
   <div class="api-links">
-    <a href="/api/color/" class="api-link">完整文档</a>
-    <a href="/api/color/quick-start" class="api-link">快速开始</a>
-    <a href="/examples/color" class="api-link">示例代码</a>
+    <a href="/api/" class="api-link">完整文档</a>
+    <a href="/guide/getting-started" class="api-link">快速开始</a>
+    <a href="/examples/" class="api-link">示例代码</a>
   </div>
   <div class="api-preview">
     <h4>主要接口</h4>
