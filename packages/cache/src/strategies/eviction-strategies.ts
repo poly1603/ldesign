@@ -428,7 +428,7 @@ export class EvictionStrategyFactory {
     ['LFU', () => new LFUStrategy()],
     ['FIFO', () => new FIFOStrategy()],
     ['MRU', () => new MRUStrategy()],
-    ['Random', () => new RandomStrategy()],
+    ['RANDOM', () => new RandomStrategy()],
     ['TTL', () => new TTLStrategy()],
     ['ARC', () => new ARCStrategy()],
   ])
@@ -437,7 +437,9 @@ export class EvictionStrategyFactory {
    * 创建淘汰策略
    */
   static create(name: string): EvictionStrategy {
-    const factory = this.strategies.get(name.toUpperCase())
+    // 支持大小写不敏感
+    const normalizedName = name.toUpperCase()
+    const factory = this.strategies.get(normalizedName)
     if (!factory) {
       throw new Error(`Unknown eviction strategy: ${name}`)
     }

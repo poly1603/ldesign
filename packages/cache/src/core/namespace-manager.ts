@@ -102,6 +102,20 @@ export class CacheNamespace {
   }
 
   /**
+   * 检查键是否存在
+   */
+  async has(key: string): Promise<boolean> {
+    return this.manager.has(key)
+  }
+
+  /**
+   * 获取元数据
+   */
+  async getMetadata(key: string): Promise<any> {
+    return this.manager.getMetadata(key)
+  }
+
+  /**
    * 清空当前命名空间的所有缓存
    * 
    * @param includeChildren - 是否包含子命名空间
@@ -143,16 +157,17 @@ export class CacheNamespace {
    * 批量操作
    */
   async mset<T = any>(
-    items: Array<{ key: string, value: T, options?: SetOptions }>
-  ): Promise<Array<{ key: string, success: boolean, error?: Error }>> {
-    return this.manager.mset(items)
+    items: Array<{ key: string, value: T, options?: SetOptions }> | Record<string, T>,
+    options?: SetOptions
+  ): Promise<{ success: string[], failed: Array<{ key: string, error: Error }> }> {
+    return this.manager.mset(items, options)
   }
 
   async mget<T = any>(keys: string[]): Promise<Record<string, T | null>> {
     return this.manager.mget<T>(keys)
   }
 
-  async mremove(keys: string[]): Promise<Array<{ key: string, success: boolean, error?: Error }>> {
+  async mremove(keys: string[] | string): Promise<{ success: string[], failed: Array<{ key: string, error: Error }> }> {
     return this.manager.mremove(keys)
   }
 
@@ -229,8 +244,33 @@ export class CacheNamespace {
 
   /**
    * 导出命名空间数据
+   * 
+   * @param filter - 可选的过滤函数
+   * @returns 导出的键值对数组
    */
-  async export(includeChildren = true): Promise<{
+  async export(filter?: (key: string) => boolean): Promise<Array<{ key: string, value: any }>> {
+    const keys = await this.keys(false)
+    const result: Array<{ key: string, value: any }> = []
+    
+    for (const key of keys) {
+      // 应用过滤器
+      if (filter && !filter(key)) {
+        continue
+      }
+      
+      const value = await this.get(key)
+      if (value !== null) {
+        result.push({ key, value })
+      }
+    }
+
+    return result
+  }
+
+  /**
+   * 导出完整的命名空间数据（包含子命名空间）
+   */
+  async exportFull(includeChildren = true): Promise<{
     namespace: string
     data: Record<string, any>
     children?: Record<string, any>
@@ -251,7 +291,7 @@ export class CacheNamespace {
       const childData: Record<string, any> = {}
       
       for (const [name, child] of this.children) {
-        childData[name] = await child.export(true)
+        childData[name] = await child.exportFull(true)
       }
       
       result.children = childData
@@ -262,25 +302,47 @@ export class CacheNamespace {
 
   /**
    * 导入命名空间数据
+   * 
+   * @param data - 要导入的数据，支持数组或对象格式
+   * @param options - 导入选项，包括转换函数
    */
-  async import(data: {
-    data?: Record<string, any>
-    children?: Record<string, any>
-  }): Promise<void> {
-    // 导入当前命名空间数据
-    if (data.data) {
-      const items = Object.entries(data.data).map(([key, value]) => ({
-        key,
-        value,
-      }))
-      await this.mset(items)
-    }
+  async import(
+    data: Array<{ key: string, value: any }> | { data?: Record<string, any>, children?: Record<string, any> },
+    options?: { transform?: (item: { key: string, value: any }) => { key: string, value: any } }
+  ): Promise<void> {
+    // 处理数组格式
+    if (Array.isArray(data)) {
+      let items = data
+      
+      // 应用转换函数
+      if (options?.transform) {
+        items = items.map(options.transform)
+      }
+      
+      // 转换为对象格式并批量设置
+      const itemsObj: Record<string, any> = {}
+      for (const item of items) {
+        itemsObj[item.key] = item.value
+      }
+      await this.mset(itemsObj)
+    } 
+    // 处理对象格式（全量导入）
+    else {
+      // 导入当前命名空间数据
+      if (data.data) {
+        const items = Object.entries(data.data).map(([key, value]) => ({
+          key,
+          value,
+        }))
+        await this.mset(items)
+      }
 
-    // 递归导入子命名空间数据
-    if (data.children) {
-      for (const [name, childData] of Object.entries(data.children)) {
-        const child = this.namespace(name)
-        await child.import(childData as any)
+      // 递归导入子命名空间数据
+      if (data.children) {
+        for (const [name, childData] of Object.entries(data.children)) {
+          const child = this.namespace(name)
+          await child.import(childData as any)
+        }
       }
     }
   }

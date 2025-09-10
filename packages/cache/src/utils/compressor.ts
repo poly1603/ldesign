@@ -137,13 +137,13 @@ export class Compressor {
    * 解压数据
    */
   async decompress(data: string, algorithm: CompressionAlgorithm): Promise<string> {
-    if (algorithm === 'none') {
-      return data
-    }
-
-    // 使用自定义解压
+    // 使用自定义解压（无论算法是什么）
     if (this.options.customDecompress) {
       return this.options.customDecompress(data)
+    }
+    
+    if (algorithm === 'none') {
+      return data
     }
 
     try {
@@ -415,44 +415,69 @@ export class Compressor {
 /**
  * 创建带压缩的缓存装饰器
  */
-export function withCompression<T extends { set: any, get: any }>(
+export function withCompression<T extends { set: any, get: any, has?: any, remove?: any }>(
   cache: T,
   options?: CompressionOptions
 ): T {
   const compressor = new Compressor(options)
   const compressionMap = new Map<string, CompressionAlgorithm>()
 
-  return {
-    ...cache,
-    async set(key: string, value: any, setOptions?: any) {
-      const serialized = JSON.stringify(value)
-      const result = await compressor.compress(serialized)
-      
-      // 记录使用的算法
-      compressionMap.set(key, result.algorithm)
-      
-      // 存储压缩后的数据
-      return cache.set(key, {
-        compressed: true,
-        algorithm: result.algorithm,
-        data: result.data,
-        originalSize: result.originalSize,
-        compressedSize: result.compressedSize,
-      }, setOptions)
-    },
-    
-    async get(key: string) {
-      const stored = await cache.get(key)
-      
-      if (!stored) return null
-      
-      // 检查是否是压缩数据
-      if (stored.compressed && stored.algorithm) {
-        const decompressed = await compressor.decompress(stored.data, stored.algorithm)
-        return JSON.parse(decompressed)
-      }
-      
-      return stored
-    },
+  // 创建代理对象以保留所有原始方法
+  const proxy = Object.create(cache)
+  
+  // 复制所有属性和方法
+  for (const key in cache) {
+    if (typeof cache[key] === 'function') {
+      proxy[key] = cache[key].bind(cache)
+    } else {
+      proxy[key] = cache[key]
+    }
   }
+  
+  // 重写 set 和 get 方法
+  proxy.set = async function(key: string, value: any, setOptions?: any) {
+    const serialized = JSON.stringify(value)
+    const result = await compressor.compress(serialized)
+    
+    // 记录使用的算法
+    compressionMap.set(key, result.algorithm)
+    
+    // 存储压缩后的数据
+    return cache.set(key, {
+      compressed: true,
+      algorithm: result.algorithm,
+      data: result.data,
+      originalSize: result.originalSize,
+      compressedSize: result.compressedSize,
+    }, setOptions)
+  }
+  
+  proxy.get = async function(key: string) {
+    const stored = await cache.get(key)
+    
+    if (!stored) return null
+    
+    // 检查是否是压缩数据
+    if (stored && typeof stored === 'object' && stored.compressed && stored.algorithm) {
+      const decompressed = await compressor.decompress(stored.data, stored.algorithm)
+      return JSON.parse(decompressed)
+    }
+    
+    return stored
+  }
+  
+  // 如果存在 has 方法，保留它
+  if ('has' in cache && typeof cache.has === 'function') {
+    proxy.has = cache.has.bind(cache)
+  }
+  
+  // 如果存在 remove 方法，保留它
+  if ('remove' in cache && typeof cache.remove === 'function') {
+    proxy.remove = async function(key: string) {
+      compressionMap.delete(key)
+      return cache.remove(key)
+    }
+  }
+  
+  return proxy as T
 }

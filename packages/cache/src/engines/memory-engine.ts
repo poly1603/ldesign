@@ -53,6 +53,8 @@ export class MemoryEngine extends BaseStorageEngine {
   private storage: Map<string, MemoryCacheItem> = new Map()
   /** 清理定时器ID */
   private cleanupTimer?: number
+  /** 淘汰计数 */
+  private evictionCount = 0
 
   /**
    * 构造函数
@@ -180,6 +182,20 @@ export class MemoryEngine extends BaseStorageEngine {
   }
 
   /**
+   * 获取缓存项（别名，用于测试兼容）
+   */
+  async get(key: string): Promise<string | null> {
+    return this.getItem(key)
+  }
+
+  /**
+   * 设置缓存项（别名，用于测试兼容）
+   */
+  async set(key: string, value: string, options: { ttl?: number } = {}): Promise<void> {
+    return this.setItem(key, value, options.ttl)
+  }
+
+  /**
    * 删除缓存项
    */
   async removeItem(key: string): Promise<void> {
@@ -249,6 +265,7 @@ export class MemoryEngine extends BaseStorageEngine {
     if (keyToEvict && this.storage.has(keyToEvict)) {
       this.storage.delete(keyToEvict)
       this.evictionStrategy.removeKey(keyToEvict)
+      this.evictionCount++
       await this.updateUsedSize()
     }
   }
@@ -274,6 +291,7 @@ export class MemoryEngine extends BaseStorageEngine {
       
       this.storage.delete(keyToEvict)
       this.evictionStrategy.removeKey(keyToEvict)
+      this.evictionCount++
       
       freedSpace += itemSize
       evictionCount++
@@ -358,6 +376,38 @@ export class MemoryEngine extends BaseStorageEngine {
   }
 
   /**
+   * 设置淘汰策略
+   */
+  setEvictionStrategy(strategyName: string): void {
+    // 创建新策略
+    const newStrategy = EvictionStrategyFactory.create(strategyName)
+    
+    // 将所有现有的键添加到新策略中
+    for (const [key, item] of this.storage) {
+      const ttl = item.expiresAt ? item.expiresAt - Date.now() : undefined
+      newStrategy.recordAdd(key, ttl)
+    }
+    
+    // 替换策略
+    this.evictionStrategy = newStrategy
+  }
+
+  /**
+   * 获取淘汰统计
+   */
+  getEvictionStats(): {
+    totalEvictions: number
+    strategy: string
+    strategyStats: Record<string, any>
+  } {
+    return {
+      totalEvictions: this.evictionCount || 0,
+      strategy: this.evictionStrategy.name,
+      strategyStats: this.evictionStrategy.getStats(),
+    }
+  }
+
+  /**
    * 获取存储统计
    */
   async getStorageStats(): Promise<{
@@ -420,31 +470,5 @@ export class MemoryEngine extends BaseStorageEngine {
     this.evictionStrategy.clear()
     this._usedSize = 0
   }
-
-  /**
-   * 获取淘汰策略统计
-   */
-  getEvictionStats(): Record<string, any> {
-    return this.evictionStrategy.getStats()
-  }
-
-  /**
-   * 切换淘汰策略
-   */
-  setEvictionStrategy(strategyName: string): void {
-    // 保存当前所有键的记录
-    const keys = Array.from(this.storage.keys())
-    
-    // 创建新策略
-    this.evictionStrategy = EvictionStrategyFactory.create(strategyName)
-    
-    // 将所有键添加到新策略
-    for (const key of keys) {
-      const item = this.storage.get(key)
-      if (item) {
-        const ttl = item.expiresAt ? item.expiresAt - Date.now() : undefined
-        this.evictionStrategy.recordAdd(key, ttl)
-      }
-    }
-  }
 }
+

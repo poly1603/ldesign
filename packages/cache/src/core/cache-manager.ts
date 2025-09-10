@@ -646,35 +646,68 @@ export class CacheManager implements ICacheManager {
    *
    * 并行设置多个缓存项，提高效率
    *
-   * @param items - 要设置的缓存项数组
-   * @returns 设置结果数组，包含成功和失败信息
+   * @param items - 要设置的缓存项，可以是数组或对象格式
+   * @param options - 可选的全局设置选项，应用于所有项
+   * @returns 设置结果，包含成功和失败信息
    *
    * @example
    * ```typescript
+   * // 数组格式
    * const results = await cache.mset([
    *   { key: 'user:1', value: user1, options: { ttl: 3600000 } },
    *   { key: 'user:2', value: user2 },
-   *   { key: 'user:3', value: user3, options: { encrypt: true } },
    * ])
+   * 
+   * // 对象格式
+   * const results = await cache.mset({
+   *   'user:1': user1,
+   *   'user:2': user2,
+   * }, { ttl: 3600000 })
    * ```
    */
   async mset<T = any>(
-    items: Array<{ key: string, value: T, options?: SetOptions }>,
-  ): Promise<Array<{ key: string, success: boolean, error?: Error }>> {
+    items: Array<{ key: string, value: T, options?: SetOptions }> | Record<string, T>,
+    options?: SetOptions,
+  ): Promise<{ success: string[], failed: Array<{ key: string, error: Error }> }> {
     await this.ensureInitialized()
 
+    // 转换输入格式
+    let itemsArray: Array<{ key: string, value: T, options?: SetOptions }>
+    if (Array.isArray(items)) {
+      itemsArray = items
+    } else {
+      itemsArray = Object.entries(items).map(([key, value]) => ({
+        key,
+        value,
+        options,
+      }))
+    }
+
+    // 验证输入
+    if (itemsArray.length === 0) {
+      return { success: [], failed: [] }
+    }
+
     const results = await Promise.allSettled(
-      items.map(item => this.set(item.key, item.value, item.options)),
+      itemsArray.map(item => this.set(item.key, item.value, item.options || options)),
     )
 
-    return items.map((item, index) => {
+    const success: string[] = []
+    const failed: Array<{ key: string, error: Error }> = []
+
+    itemsArray.forEach((item, index) => {
       const result = results[index]
-      return {
-        key: item.key,
-        success: result.status === 'fulfilled',
-        error: result.status === 'rejected' ? result.reason : undefined,
+      if (result.status === 'fulfilled') {
+        success.push(item.key)
+      } else {
+        failed.push({
+          key: item.key,
+          error: result.reason instanceof Error ? result.reason : new Error(String(result.reason)),
+        })
       }
     })
+
+    return { success, failed }
   }
 
   /**
@@ -708,29 +741,44 @@ export class CacheManager implements ICacheManager {
    *
    * 并行删除多个缓存项
    *
-   * @param keys - 要删除的缓存键数组
-   * @returns 删除结果数组
+   * @param keys - 要删除的缓存键数组或单个键
+   * @returns 删除结果，包含成功和失败信息
    *
    * @example
    * ```typescript
    * const results = await cache.mremove(['user:1', 'user:2', 'user:3'])
    * ```
    */
-  async mremove(keys: string[]): Promise<Array<{ key: string, success: boolean, error?: Error }>> {
+  async mremove(keys: string[] | string): Promise<{ success: string[], failed: Array<{ key: string, error: Error }> }> {
     await this.ensureInitialized()
 
+    // 规范化输入为数组
+    const keysArray = Array.isArray(keys) ? keys : [keys]
+
+    if (keysArray.length === 0) {
+      return { success: [], failed: [] }
+    }
+
     const results = await Promise.allSettled(
-      keys.map(key => this.remove(key)),
+      keysArray.map(key => this.remove(key)),
     )
 
-    return keys.map((key, index) => {
+    const success: string[] = []
+    const failed: Array<{ key: string, error: Error }> = []
+
+    keysArray.forEach((key, index) => {
       const result = results[index]
-      return {
-        key,
-        success: result.status === 'fulfilled',
-        error: result.status === 'rejected' ? result.reason : undefined,
+      if (result.status === 'fulfilled') {
+        success.push(key)
+      } else {
+        failed.push({
+          key,
+          error: result.reason instanceof Error ? result.reason : new Error(String(result.reason)),
+        })
       }
     })
+
+    return { success, failed }
   }
 
   /**

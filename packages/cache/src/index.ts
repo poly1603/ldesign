@@ -33,6 +33,9 @@ export { CacheNamespace, createNamespace } from './core/namespace-manager'
 export type { NamespaceOptions } from './core/namespace-manager'
 export { SyncManager, WarmupManager } from './core/sync-manager'
 export type { SyncOptions } from './core/sync-manager'
+export { WarmupManager as CacheWarmupManager, createWarmupManager } from './core/warmup-manager'
+export { CacheAnalyzer, createCacheAnalyzer } from './core/cache-analyzer'
+export type { AnalysisReport, OptimizationSuggestion, AccessPattern, PerformanceMetrics } from './core/cache-analyzer'
 
 // 核心导出
 export * from './types'
