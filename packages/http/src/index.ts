@@ -184,6 +184,46 @@ export {
   TimeoutManager,
 } from './utils/error'
 
+// 性能监控导出
+export {
+  createRequestMonitor,
+  defaultMonitor,
+  RequestMonitor,
+} from './utils/monitor'
+
+export type {
+  MonitorConfig,
+  PerformanceMetrics,
+  PerformanceStats,
+} from './utils/monitor'
+
+// 优先级队列导出
+export {
+  createPriorityQueue,
+  determinePriority,
+  Priority,
+  PriorityQueue,
+} from './utils/priority'
+
+export type {
+  PriorityItem,
+  PriorityQueueConfig,
+  PriorityQueueStats,
+} from './utils/priority'
+
+// 连接池导出
+export {
+  createRequestPool,
+  defaultPool,
+  RequestPool,
+} from './utils/pool'
+
+export type {
+  ConnectionInfo,
+  PoolConfig,
+  PoolStats,
+} from './utils/pool'
+
 // 导出错误处理相关类型
 export type {
   ErrorRecoveryStrategy,

@@ -34,6 +34,8 @@ export interface RequestConfig {
   withCredentials?: boolean
   /** 取消令牌 */
   signal?: AbortSignal
+  /** 请求优先级 */
+  priority?: number
   /** 自定义配置 */
   [key: string]: any
 }
@@ -162,6 +164,12 @@ export interface HttpClientConfig extends RequestConfig {
   cache?: CacheConfig
   /** 并发控制配置 */
   concurrency?: ConcurrencyConfig
+  /** 性能监控配置 */
+  monitor?: any
+  /** 优先级队列配置 */
+  priorityQueue?: any
+  /** 连接池配置 */
+  connectionPool?: any
 }
 
 /**

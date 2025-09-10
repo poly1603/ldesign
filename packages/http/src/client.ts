@@ -20,11 +20,18 @@ import type {
   UploadConfig,
   UploadResult,
 } from './utils/upload'
+import type { MonitorConfig } from './utils/monitor'
+import type { Priority, PriorityQueueConfig } from './utils/priority'
+import type { PoolConfig } from './utils/pool'
 import { InterceptorManagerImpl } from './interceptors/manager'
 import { CacheManager } from './utils/cache'
 import { globalCancelManager } from './utils/cancel'
 import { ConcurrencyManager } from './utils/concurrency'
 import { RetryManager } from './utils/error'
+import { RequestMonitor } from './utils/monitor'
+import { PriorityQueue, determinePriority } from './utils/priority'
+import { RequestPool } from './utils/pool'
+import { generateId } from './utils'
 
 /**
  * HTTP 客户端实现
@@ -37,6 +44,9 @@ export class HttpClientImpl implements HttpClient {
   private cancelManager: CancelManager
   private cacheManager: CacheManager
   private concurrencyManager: ConcurrencyManager
+  private monitor: RequestMonitor
+  private priorityQueue: PriorityQueue
+  private requestPool: RequestPool
   private isDestroyed = false
 
   public interceptors: {
@@ -66,6 +76,9 @@ export class HttpClientImpl implements HttpClient {
     this.cancelManager = globalCancelManager
     this.cacheManager = new CacheManager(config.cache)
     this.concurrencyManager = new ConcurrencyManager(config.concurrency)
+    this.monitor = new RequestMonitor(config.monitor)
+    this.priorityQueue = new PriorityQueue(config.priorityQueue)
+    this.requestPool = new RequestPool(config.connectionPool)
 
     // 初始化拦截器
     this.interceptors = {
@@ -83,16 +96,64 @@ export class HttpClientImpl implements HttpClient {
 
     // 合并配置（只在需要时进行深度合并）
     const mergedConfig = this.optimizedMergeConfig(config)
-
-    // 如果启用了重试，使用重试管理器
-    if (mergedConfig.retry?.retries && mergedConfig.retry.retries > 0) {
-      return this.retryManager.executeWithRetry(
-        () => this.executeRequest<T>(mergedConfig),
+    
+    // 生成请求ID
+    const requestId = generateId()
+    
+    // 开始监控
+    this.monitor.startRequest(requestId, mergedConfig)
+    
+    // 判断优先级
+    const priority = determinePriority(mergedConfig)
+    
+    // 使用优先级队列执行请求
+    if (priority !== undefined && this.priorityQueue) {
+      return this.priorityQueue.enqueue(
         mergedConfig,
+        async () => {
+          try {
+            const response = await this.executeRequestWithRetry<T>(mergedConfig, requestId)
+            this.monitor.endRequest(requestId, mergedConfig, response)
+            return response
+          } catch (error) {
+            this.monitor.endRequest(requestId, mergedConfig, undefined, error as Error)
+            throw error
+          }
+        },
+        priority,
       )
     }
 
-    return this.executeRequest<T>(mergedConfig)
+    // 普通执行
+    try {
+      const response = await this.executeRequestWithRetry<T>(mergedConfig, requestId)
+      this.monitor.endRequest(requestId, mergedConfig, response)
+      return response
+    } catch (error) {
+      this.monitor.endRequest(requestId, mergedConfig, undefined, error as Error)
+      throw error
+    }
+  }
+  
+  /**
+   * 执行带重试的请求
+   */
+  private async executeRequestWithRetry<T = any>(
+    config: RequestConfig,
+    requestId: string,
+  ): Promise<ResponseData<T>> {
+    // 如果启用了重试，使用重试管理器
+    if (config.retry?.retries && config.retry.retries > 0) {
+      return this.retryManager.executeWithRetry(
+        () => {
+          this.monitor.recordRetry(requestId)
+          return this.executeRequest<T>(config)
+        },
+        config,
+      )
+    }
+
+    return this.executeRequest<T>(config)
   }
 
   /**
@@ -607,6 +668,92 @@ export class HttpClientImpl implements HttpClient {
   }
 
   /**
+   * 获取性能监控统计
+   */
+  getPerformanceStats() {
+    return this.monitor.getStats()
+  }
+
+  /**
+   * 获取最近的请求指标
+   */
+  getRecentMetrics(count?: number) {
+    return this.monitor.getRecentMetrics(count)
+  }
+
+  /**
+   * 获取慢请求列表
+   */
+  getSlowRequests() {
+    return this.monitor.getSlowRequests()
+  }
+
+  /**
+   * 获取失败请求列表
+   */
+  getFailedRequests() {
+    return this.monitor.getFailedRequests()
+  }
+
+  /**
+   * 启用性能监控
+   */
+  enableMonitoring() {
+    this.monitor.enable()
+  }
+
+  /**
+   * 禁用性能监控
+   */
+  disableMonitoring() {
+    this.monitor.disable()
+  }
+
+  /**
+   * 获取优先级队列统计
+   */
+  getPriorityQueueStats() {
+    return this.priorityQueue.getStats()
+  }
+
+  /**
+   * 获取连接池统计
+   */
+  getConnectionPoolStats() {
+    return this.requestPool.getStats()
+  }
+
+  /**
+   * 获取连接池详情
+   */
+  getConnectionDetails() {
+    return this.requestPool.getConnectionDetails()
+  }
+
+  /**
+   * 导出性能指标
+   */
+  exportMetrics() {
+    return {
+      performance: this.monitor.exportMetrics(),
+      priorityQueue: this.priorityQueue.getStats(),
+      connectionPool: this.requestPool.getStats(),
+      concurrency: this.concurrencyManager.getStatus(),
+      cache: this.cacheManager.getStats ? this.cacheManager.getStats() : null,
+    }
+  }
+
+  /**
+   * 设置请求优先级
+   */
+  setPriority(config: RequestConfig, priority: Priority): RequestConfig {
+    return {
+      ...config,
+      priority,
+    }
+  }
+
+  /**
    * 销毁客户端，清理资源
    */
   destroy(): void {
@@ -624,6 +771,15 @@ export class HttpClientImpl implements HttpClient {
 
     // 清理并发队列
     this.concurrencyManager.cancelQueue('Client destroyed')
+    
+    // 清理优先级队列
+    this.priorityQueue.destroy()
+    
+    // 清理连接池
+    this.requestPool.destroy()
+    
+    // 清理监控器
+    this.monitor.clear()
 
     // 清理拦截器
     this.interceptors.request.clear()
