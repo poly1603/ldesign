@@ -3,7 +3,7 @@
  */
 
 import type { App } from 'vue'
-import type { TemplateSystemConfig } from './config'
+import type { TemplateSystemConfig, CacheConfig } from './config'
 
 /**
  * 插件配置选项（向后兼容的接口）
@@ -11,9 +11,9 @@ import type { TemplateSystemConfig } from './config'
  * 这个接口保持向后兼容性，同时支持新的配置系统
  * 旧的配置选项会被自动转换为新的配置格式
  */
-export interface TemplatePluginOptions extends Partial<TemplateSystemConfig> {
+export interface PluginOptions extends Partial<Omit<TemplateSystemConfig, 'cache'>> {
   /** @deprecated 使用 cache.enabled 替代 */
-  cache?: boolean
+  cache?: boolean | CacheConfig
   /** @deprecated 使用 preloadStrategy.priority 替代 */
   preloadTemplates?: string[]
   /** @deprecated 使用 cache.maxSize 替代 */
@@ -27,6 +27,9 @@ export interface TemplatePluginOptions extends Partial<TemplateSystemConfig> {
   /** @deprecated 使用 preloadStrategy 替代 */
   preloadStrategy?: PreloadStrategy
 }
+
+// 保留旧名称以保持向后兼容
+export type TemplatePluginOptions = PluginOptions
 
 /**
  * 预加载策略（向后兼容）
@@ -60,4 +63,16 @@ export interface TemplatePluginInstance {
   version: string
   /** 插件名称 */
   name: string
+}
+
+/**
+ * 插件状态
+ */
+export interface PluginState {
+  /** 是否已安装 */
+  installed: boolean
+  /** 配置选项 */
+  options?: TemplateSystemConfig
+  /** 初始化时间 */
+  initTime?: number
 }

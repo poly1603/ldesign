@@ -132,48 +132,6 @@ onMounted(() => {
 
 <template>
   <div class="login-template-modern" :style="cssVars">
-    <!-- 模板标识横幅 -->
-    <div class="template-banner">
-      <div class="banner-content">
-        <div class="template-info">
-          <span class="template-name">现代登录模板</span>
-          <span class="template-meta">
-            <span class="device-type">🖥️ Desktop</span>
-            <span class="template-version">v2.0.0</span>
-          </span>
-        </div>
-        <div class="template-category">
-          Login
-        </div>
-      </div>
-    </div>
-
-    <!-- 调试信息显示 -->
-    <div v-if="showDebugInfo" class="debug-info">
-      <div class="debug-panel">
-        <h4>🔧 调试信息</h4>
-        <div class="debug-items">
-          <div class="debug-item">
-            <span class="debug-label">设备类型:</span>
-            <span class="debug-value device-type" :class="`device-${currentDeviceType}`">
-              {{ deviceTypeLabels[currentDeviceType] || currentDeviceType }}
-            </span>
-          </div>
-          <div class="debug-item">
-            <span class="debug-label">模板名称:</span>
-            <span class="debug-value template-name">{{ currentTemplateName }}</span>
-          </div>
-          <div class="debug-item">
-            <span class="debug-label">模板版本:</span>
-            <span class="debug-value">v2.0.0</span>
-          </div>
-          <div class="debug-item">
-            <span class="debug-label">渲染时间:</span>
-            <span class="debug-value">{{ renderTime }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- 现代动态背景 -->
     <div class="background-container">

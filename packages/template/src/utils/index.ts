@@ -5,6 +5,9 @@
 // 导出缓存相关工具
 export * from './cache'
 
+// 导出高级缓存系统
+export * from './advanced-cache'
+
 // 导出文件监听器
 export * from './file-watcher'
 
@@ -28,3 +31,6 @@ export * from './template-category-manager'
 
 // 导出验证工具
 export * from './validation'
+
+// 导出国际化系统
+export * from './i18n'

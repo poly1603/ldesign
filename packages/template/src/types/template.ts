@@ -246,3 +246,144 @@ export interface TemplateSelectorProps {
   /** 关闭回调 */
   onClose?: () => void
 }
+
+/**
+ * 扩展的模板元数据
+ */
+export interface ExtendedTemplateMetadata extends TemplateMetadata {
+  /** 模板状态 */
+  status: 'active' | 'inactive' | 'deprecated'
+  /** 优先级 */
+  priority: number
+  /** 创建时间 */
+  createdAt: Date
+  /** 更新时间 */
+  updatedAt: Date
+  /** 使用统计 */
+  usage: {
+    count: number
+    lastUsed: Date
+    rating?: number
+    ratingCount?: number
+  }
+  /** 兼容性信息 */
+  compatibility: {
+    browsers: string[]
+    vue: string
+    node?: string
+  }
+}
+
+/**
+ * 模板管理器配置
+ */
+export interface TemplateManagerConfig {
+  /** 模板根目录 */
+  templateRoot: string
+  /** 是否启用缓存 */
+  enableCache: boolean
+  /** 缓存大小限制 */
+  cacheSize: number
+  /** 是否启用热更新 */
+  enableHMR: boolean
+  /** 设备检测配置 */
+  deviceDetection: {
+    breakpoints: {
+      mobile: number
+      tablet: number
+      desktop: number
+    }
+  }
+}
+
+/**
+ * 加载结果
+ */
+export interface LoadResult<T = Component> {
+  /** 是否成功 */
+  success: boolean
+  /** 加载的数据 */
+  data?: T
+  /** 错误信息 */
+  error?: Error
+  /** 加载耗时 */
+  duration: number
+  /** 是否从缓存加载 */
+  fromCache?: boolean
+}
+
+/**
+ * 模板信息
+ */
+export interface TemplateInfo extends TemplateMetadata {
+  /** 模板组件 */
+  component?: Component
+  /** 加载状态 */
+  loaded: boolean
+  /** 加载错误 */
+  error?: Error
+  /** 使用次数 */
+  usageCount: number
+  /** 最后使用时间 */
+  lastUsed?: Date
+}
+
+/**
+ * 模板事件类型
+ */
+export interface TemplateEvents {
+  'template:load': TemplateInfo
+  'template:error': { template: string; error: Error }
+  'template:switch': { from: string; to: string }
+  'device:change': DeviceType
+  'cache:hit': string
+  'cache:miss': string
+}
+
+/**
+ * 事件监听器类型
+ */
+export type EventListener<T = any> = (data: T) => void
+
+/**
+ * 预加载策略
+ */
+export type PreloadStrategy = 'immediate' | 'idle' | 'interaction' | 'visible' | 'none'
+
+/**
+ * 文件变更事件
+ */
+export interface FileChangeEvent {
+  /** 变更类型 */
+  type: 'add' | 'change' | 'unlink'
+  /** 文件路径 */
+  path: string
+  /** 文件名 */
+  filename: string
+  /** 时间戳 */
+  timestamp: number
+  /** 模板信息 */
+  templateInfo?: {
+    category: string
+    device: DeviceType
+    templateName: string
+    fileType: 'component' | 'config' | 'style' | 'preview'
+  }
+}
+
+/**
+ * 默认配置
+ */
+export const DEFAULT_CONFIG = {
+  templateRoot: 'src/templates',
+  enableCache: true,
+  cacheSize: 50,
+  enableHMR: true,
+  deviceDetection: {
+    breakpoints: {
+      mobile: 768,
+      tablet: 1024,
+      desktop: 1920
+    }
+  }
+}
