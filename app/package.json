@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "type-check": "vue-tsc --noEmit"
+    "type-check": "vue-tsc --noEmit",
+    "build:builder": "ldesign-builder build --mode production",
+    "watch:builder": "ldesign-builder watch --mode development",
+    "clean:builder": "ldesign-builder clean",
+    "analyze:builder": "ldesign-builder analyze"
   },
   "dependencies": {
     "@ldesign/api": "workspace:*",
@@ -40,7 +44,9 @@
     "@vitejs/plugin-vue-jsx": "^5.1.1",
     "typescript": "^5.0.0",
     "vite": "^5.0.0",
-    "vue-tsc": "^2.0.0"
+    "vue-tsc": "^2.0.0",
+    "@ldesign/builder": "workspace:*",
+    "@rollup/plugin-alias": "^5.1.0"
   },
   "keywords": [],
   "author": "",

@@ -4,7 +4,7 @@
     <TemplateRenderer
       category="login"
       :responsive="true"
-      :show-selector="false"
+      :show-selector="true"
       fallback-template="default"
       :props="templateProps"
       @template-change="onTemplateChange"

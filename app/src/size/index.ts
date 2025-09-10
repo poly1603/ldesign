@@ -21,7 +21,7 @@ export const sizePlugin = createSizeEnginePlugin({
   // 基础配置
   name: 'size',
   version: '1.0.0',
-  
+
   // 尺寸管理器配置
   prefix: '--ls', // CSS变量前缀
   defaultMode: 'medium', // 默认尺寸模式
@@ -32,7 +32,7 @@ export const sizePlugin = createSizeEnginePlugin({
   storageType: 'localStorage', // 存储类型
   enableTransition: true, // 启用过渡动画
   transitionDuration: '0.3s', // 过渡动画时长
-  
+
   // 自定义尺寸配置（可选）
   customSizes: {
     // 可以在这里添加自定义尺寸配置
@@ -43,34 +43,36 @@ export const sizePlugin = createSizeEnginePlugin({
     //   buttonHeight: '24px'
     // }
   },
-  
+
   // 启用深度合并
   enableDeepMerge: true,
-  
+
   // 尺寸变化回调
   onSizeChanged: async (previousMode: SizeMode, currentMode: SizeMode) => {
     // 已禁用调试日志输出
-    
+
     // 添加尺寸切换的动画效果
     document.documentElement.style.setProperty('--size-transition', 'all 0.3s ease')
-    
+
     // 延迟移除过渡效果，避免影响后续操作
     setTimeout(() => {
       document.documentElement.style.removeProperty('--size-transition')
     }, 300)
-    
+
     // 这里可以添加尺寸切换后的自定义逻辑
     // 例如：通知其他系统、更新用户偏好设置等
   }
 })
 
+
+
 /**
  * 导出尺寸管理插件
- * 
+ *
  * 使用示例：
  * ```typescript
  * import { sizePlugin } from './size'
- * 
+ *
  * // 在engine中使用
  * const engine = createAndMountApp(App, '#app', {
  *   plugins: [sizePlugin]

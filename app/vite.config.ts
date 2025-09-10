@@ -32,8 +32,8 @@ export default defineConfig({
       '@ldesign/engine': resolve(__dirname, '../packages/engine/src'),
       '@ldesign/engine/vue': resolve(__dirname, '../packages/engine/src/vue'),
 
-      '@lemonform/form': resolve(__dirname, '../packages/form/src'),
-      '@lemonform/form/vue': resolve(__dirname, '../packages/form/src/vue'),
+      '@ldesign/form': resolve(__dirname, '../packages/form/src'),
+      '@ldesign/form/vue': resolve(__dirname, '../packages/form/src/vue'),
 
       '@ldesign/git': resolve(__dirname, '../packages/git/src'),
 
@@ -95,11 +95,13 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('vue')) return 'vendor-vue'
+            if (id.includes('vue') || id.includes('vue-router')) return 'vendor-vue'
             return 'vendor'
           }
           if (id.includes(resolve(__dirname, '../packages/'))) {
-            return 'ldesign'
+            const m = id.match(/[\\\\/]{1}packages[\\\\/]{1}([^\\\\/]+)/)
+            const name = (m && m[1]) || 'ldesign'
+            return `ldesign-${name}`
           }
         },
         chunkFileNames: 'js/[name]-[hash].js',
@@ -114,11 +116,36 @@ export default defineConfig({
       'vue-router'
     ],
     exclude: [
-      // 排除有问题的包，让它们在运行时加载
-      '@ldesign/device',
+      '@ldesign/api',
+      '@ldesign/cache',
+      '@ldesign/color',
       '@ldesign/component',
-      '@ldesign/http'
-    ]
+      '@ldesign/crypto',
+      '@ldesign/device',
+      '@ldesign/engine',
+      '@ldesign/git',
+      '@ldesign/http',
+      '@ldesign/i18n',
+      '@ldesign/kit',
+      '@ldesign/pdf',
+      '@ldesign/qrcode',
+      '@ldesign/router',
+      '@ldesign/shared',
+      '@ldesign/size',
+      '@ldesign/store',
+      '@ldesign/template',
+      '@ldesign/theme',
+      '@ldesign/watermark',
+      '@ldesign/form',
+      'fsevents'
+    ],
+    esbuildOptions: {
+      target: 'es2020',
+      // 忽略 .node 文件
+      loader: {
+        '.node': 'empty'
+      }
+    }
   },
   esbuild: {
     // 蹇界暐 TypeScript 閰嶇疆閿欒
@@ -129,7 +156,7 @@ export default defineConfig({
         moduleResolution: 'bundler'
       }
     },
-    drop: process.env.DROP_LOGS === 'true' ? ['console','debugger'] : undefined
+    drop: process.env.DROP_LOGS === 'true' ? ['console', 'debugger'] : undefined
   },
   define: {
     __VUE_OPTIONS_API__: true,
