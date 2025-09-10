@@ -214,3 +214,31 @@ describe('集成测试', () => {
     })
   })
 })
+
+describe('嵌套路由 - 根路径默认子路由', () => {
+  it('匹配 / 时应包含父记录和默认子记录，避免 RouterView 递归渲染自身', () => {
+    const nestedRoutes: RouteRecordRaw[] = [
+      {
+        path: '/',
+        name: 'root',
+        component: () => Promise.resolve({ default: { template: '<div>Root</div>' } }),
+        children: [
+          {
+            path: '',
+            name: 'home',
+            component: () => Promise.resolve({ default: { template: '<div>Home</div>' } }),
+          },
+        ],
+      },
+    ]
+
+    const nestedRouter = createRouter({ history: createMemoryHistory(), routes: nestedRoutes })
+    const resolved = nestedRouter.resolve('/')
+
+    expect(resolved.matched.length).toBe(2)
+    expect(resolved.matched[0].name).toBe('root')
+    expect(resolved.matched[1].name).toBe('home')
+  })
+})
+
+

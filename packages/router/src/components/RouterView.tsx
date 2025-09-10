@@ -5,9 +5,12 @@
  */
 
 import type { Component, Router } from '../types'
-import { defineComponent, h, inject, KeepAlive, markRaw, type PropType, ref, Transition, watch } from 'vue'
+import { defineComponent, h, inject, KeepAlive, markRaw, provide, type PropType, ref, Transition, watch } from 'vue'
 import { useRoute } from '../composables'
 import { ROUTER_INJECTION_SYMBOL } from '../core/constants'
+
+// RouterView 深度注入键
+const ROUTER_VIEW_DEPTH_SYMBOL = Symbol('RouterViewDepth')
 
 export const RouterView = defineComponent({
   name: 'RouterView',
@@ -47,6 +50,13 @@ export const RouterView = defineComponent({
   setup(props, { slots }) {
     const router = inject<Router>(ROUTER_INJECTION_SYMBOL)
     const route = useRoute()
+
+    // 获取当前RouterView的嵌套深度
+    const parentDepth = inject<number>(ROUTER_VIEW_DEPTH_SYMBOL, 0)
+    const currentDepth = parentDepth + 1
+
+    // 为子RouterView提供深度信息
+    provide(ROUTER_VIEW_DEPTH_SYMBOL, currentDepth)
 
     if (!router) {
       throw new Error('RouterView must be used within a Router')
@@ -94,9 +104,13 @@ export const RouterView = defineComponent({
           return
         }
 
-        // 找到匹配的路由记录
-        const matched = newRoute.matched[newRoute.matched.length - 1]
+        // 根据当前RouterView的深度找到对应的路由记录
+        // 深度从0开始，第一层RouterView（深度1）渲染matched[0]，第二层渲染matched[1]，以此类推
+        const matchedIndex = currentDepth - 1
+        const matched = newRoute.matched[matchedIndex]
         const component = matched?.components?.[props.name]
+
+
 
         if (component) {
           try {
@@ -106,6 +120,7 @@ export const RouterView = defineComponent({
             }
 
             const loadedComponent = await loadComponent(component)
+
             if (loadedComponent) {
               currentComponent.value = markRaw(loadedComponent)
               error.value = null

@@ -247,10 +247,10 @@ describe('路径工具函数', () => {
   describe('normalizeParams', () => {
     it('应该标准化路由参数', () => {
       const params = normalizeParams({
-        id: 123,
+        id: '123',
         name: 'test',
         tags: ['a', 'b'],
-        active: true,
+        active: 'true',
       })
       expect(params).toEqual({
         id: '123',
@@ -262,12 +262,29 @@ describe('路径工具函数', () => {
 
     it('应该过滤空值', () => {
       const params = normalizeParams({
-        id: 123,
-        name: null,
-        active: undefined,
+        id: '123',
+        name: null as any,
+        active: undefined as any,
       })
       expect(params).toEqual({
         id: '123',
+      })
+    })
+
+    it('应该处理数字和布尔值转换', () => {
+      // 这个测试用例验证 normalizeParams 内部会正确转换类型
+      const inputWithInvalidTypes: any = {
+        id: 123,
+        count: 456,
+        active: true,
+        disabled: false,
+      }
+      const params = normalizeParams(inputWithInvalidTypes)
+      expect(params).toEqual({
+        id: '123',
+        count: '456',
+        active: 'true',
+        disabled: 'false',
       })
     })
   })

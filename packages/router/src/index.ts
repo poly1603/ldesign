@@ -8,10 +8,21 @@
 // ==================== 核心功能导出 ====================
 
 // Vue 组件
-export { DeviceUnsupported, RouterLink, RouterView } from './components'
-import { RouterLink, RouterView } from './components'
-// 设备适配组件类型
-export type { DeviceUnsupportedProps } from './components'
+export {
+  DeviceUnsupported,
+  ErrorBoundary,
+  ErrorRecoveryStrategies,
+  RouteErrorHandler,
+  RouterLink,
+  RouterView,
+  withErrorBoundary,
+} from './components'
+// 组件类型
+export type {
+  DeviceUnsupportedProps,
+  ErrorBoundaryProps,
+  RouteErrorInfo,
+} from './components'
 // 组件类型
 export type {
   AnimationConfig,
@@ -268,10 +279,26 @@ export {
   stringifyURL,
 } from './utils'
 
+// ==================== 性能优化工具 ====================
+
+export {
+  hoverPreload,
+  lazyLoadComponent,
+  lazyLoadRoutes,
+  optimizeRoutes,
+  preloadRoutes,
+  SmartPreloader,
+  splitChunk,
+  visibilityPreload,
+} from './utils/lazy-load'
+
+export type { LazyLoadOptions } from './utils/lazy-load'
+
 // ==================== 便捷创建函数 ====================
 
 /**
  * 创建完整的路由器实例（包含所有插件）
+ * 提供一个便捷的方式来创建包含所有常用插件的路由器
  */
 export async function createFullRouter(options: {
   history: import('./types').RouterHistory
@@ -280,10 +307,7 @@ export async function createFullRouter(options: {
   animation?: {
     enabled?: boolean
     defaultAnimation?: import('./core/constants').AnimationType
-    customAnimations?: Record<
-      string,
-      import('./components/types').AnimationConfig
-    >
+    customAnimations?: Record<string, import('./components/types').AnimationConfig>
   }
   // 缓存配置
   cache?: {
@@ -308,31 +332,38 @@ export async function createFullRouter(options: {
   linkExactActiveClass?: string
   scrollBehavior?: import('./types').ScrollBehavior
 }) {
-  const { createRouter: createVueRouter } = await import('./core/router')
-  // 导入插件函数
-  const { createAnimationPlugin } = await import('./plugins/animation')
-  const { createCachePlugin } = await import('./plugins/cache')
-  const { createPerformancePlugin } = await import('./plugins/performance')
-  const { createPreloadPlugin } = await import('./plugins/preload')
+  // 动态导入以支持代码分割
+  const [vueRouter, animationPlugin, cachePlugin, performancePlugin, preloadPlugin] =
+    await Promise.all([
+      import('./core/router'),
+      import('./plugins/animation'),
+      import('./plugins/cache'),
+      import('./plugins/performance'),
+      import('./plugins/preload'),
+    ])
 
-  const routerOptions: any = {
+  const { RouterLink, RouterView } = await import('./components')
+  const { DEFAULT_LINK_ACTIVE_CLASS, DEFAULT_LINK_EXACT_ACTIVE_CLASS, AnimationType, CacheStrategy, PreloadStrategy } = await import('./core/constants')
+
+  const routerOptions: import('./types').RouterOptions = {
     history: options.history,
     routes: options.routes,
-    linkActiveClass: options.linkActiveClass || 'router-link-active',
-    linkExactActiveClass: options.linkExactActiveClass || 'router-link-exact-active',
+    linkActiveClass: options.linkActiveClass || DEFAULT_LINK_ACTIVE_CLASS,
+    linkExactActiveClass: options.linkExactActiveClass || DEFAULT_LINK_EXACT_ACTIVE_CLASS,
   }
+
   if (options.scrollBehavior) {
     routerOptions.scrollBehavior = options.scrollBehavior
   }
-  const router = createVueRouter(routerOptions)
 
+  const router = vueRouter.createRouter(routerOptions)
   const plugins: any[] = []
 
   // 动画插件
   if (options.animation?.enabled !== false) {
     plugins.push(
-      createAnimationPlugin({
-        defaultAnimation: options.animation?.defaultAnimation || 'fade',
+      animationPlugin.createAnimationPlugin({
+        defaultAnimation: options.animation?.defaultAnimation || AnimationType.FADE,
         customAnimations: options.animation?.customAnimations || {},
       }),
     )
@@ -341,8 +372,8 @@ export async function createFullRouter(options: {
   // 缓存插件
   if (options.cache?.enabled !== false) {
     plugins.push(
-      createCachePlugin({
-        strategy: options.cache?.strategy || 'memory',
+      cachePlugin.createCachePlugin({
+        strategy: options.cache?.strategy || CacheStrategy.MEMORY,
         maxSize: options.cache?.maxSize || 10,
       }),
     )
@@ -351,9 +382,9 @@ export async function createFullRouter(options: {
   // 预加载插件
   if (options.preload?.enabled !== false) {
     plugins.push(
-      createPreloadPlugin({
-        strategy: options.preload?.strategy || 'idle',
-        autoPreloadRelated: options.preload?.autoPreloadRelated || false,
+      preloadPlugin.createPreloadPlugin({
+        strategy: options.preload?.strategy || PreloadStrategy.IDLE,
+        autoPreloadRelated: options.preload?.autoPreloadRelated ?? false,
       }),
     )
   }
@@ -361,7 +392,7 @@ export async function createFullRouter(options: {
   // 性能监控插件
   if (options.performance?.enabled !== false) {
     plugins.push(
-      createPerformancePlugin({
+      performancePlugin.createPerformancePlugin({
         warningThreshold: options.performance?.warningThreshold || 1000,
         errorThreshold: options.performance?.errorThreshold || 3000,
       }),
@@ -374,10 +405,14 @@ export async function createFullRouter(options: {
     install(app: any) {
       app.use(router)
 
-      // 注册 Router 组件
+      // 注册全局组件
+      app.component('RouterLink', RouterLink)
+      app.component('RouterView', RouterView)
+      // 兼容 kebab-case
       app.component('router-link', RouterLink)
       app.component('router-view', RouterView)
 
+      // 安装所有插件
       plugins.forEach((plugin) => {
         if (plugin.install) {
           plugin.install(app, router)

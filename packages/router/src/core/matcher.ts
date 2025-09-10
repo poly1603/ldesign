@@ -497,7 +497,7 @@ export class RouteMatcher {
   private updateAverageMatchTime(time: number): void {
     this.stats.averageMatchTime
       = (this.stats.averageMatchTime * (this.stats.totalMatches - 1) + time)
-        / this.stats.totalMatches
+      / this.stats.totalMatches
   }
 
   /**
@@ -635,22 +635,44 @@ export class RouteMatcher {
     // 检查路径是否可能匹配到有子路由的路由记录
     // 需要检查路径的所有可能的父路径
 
+    // 特殊处理根路径：当存在以 '/' 为路径且包含子路由的记录时，应视为嵌套路由
+    if (path === '/' || path === '') {
+      for (const [name, route] of this.rawRoutes.entries()) {
+        const normalizedRoute = this.routes.get(name)
+        if (
+          normalizedRoute?.path === '/'
+          && Array.isArray(route.children)
+          && route.children.length > 0
+        ) {
+          return true
+        }
+      }
+    }
+
+    // 对于子路由路径，检查是否有父路由包含子路由
+    // 例如：/color-scales 应该检查父路径 / 是否有子路由
     const segments = this.parsePathSegments(path)
 
-    // 检查每个可能的父路径
-    for (let i = 1; i <= segments.length; i++) {
-      const parentPath = `/${segments.slice(0, i).join('/')}`
+    // 检查每个可能的父路径（从最短到最长）
+    for (let i = 0; i < segments.length; i++) {
+      const parentPath = i === 0 ? '/' : `/${segments.slice(0, i).join('/')}`
 
       for (const [name, route] of this.rawRoutes.entries()) {
         const normalizedRoute = this.routes.get(name)
 
-        // 如果找到匹配的父路径且有子路由，则认为是嵌套路由
+        // 如果找到匹配的父路径且有子路由，则认为当前路径是嵌套路由
         if (
           normalizedRoute?.path === parentPath
-          && route.children
+          && Array.isArray(route.children)
           && route.children.length > 0
         ) {
-          return true
+          // 进一步检查当前路径是否真的是这个父路由的子路由
+          for (const child of route.children) {
+            const childPath = this.normalizePath(child.path, parentPath)
+            if (childPath === path) {
+              return true
+            }
+          }
         }
       }
     }
@@ -756,6 +778,8 @@ export class RouteMatcher {
         // 检查是否有默认子路由
         if (node.defaultChild) {
           allMatched = [...allMatched, node.defaultChild]
+          // 对于嵌套路由，我们需要返回最深层的路由记录作为当前路由
+          // 但matched数组应该包含完整的路由层级链
           finalRecord = node.defaultChild
         }
 
@@ -789,12 +813,9 @@ export class RouteMatcher {
     // 尝试静态匹配
     const staticChild = node.children.get(segment)
     if (staticChild) {
-      // 只有当当前节点不是根节点或者路径是根路径时，才添加到匹配记录
-      const isRootPath = segments.length === 0
-      const shouldAddRecord
-        = node.record && (matchedSegments.length > 0 || isRootPath)
-      const newMatchedRecords = shouldAddRecord
-        ? [...matchedRecords, node.record!]
+      // 修复：确保父路由始终被包含在匹配记录中（对于嵌套路由）
+      const newMatchedRecords = node.record
+        ? [...matchedRecords, node.record]
         : matchedRecords
       const result = this.matchSegments(
         staticChild,
@@ -812,12 +833,9 @@ export class RouteMatcher {
     if (node.paramChild) {
       const paramName = node.paramChild.paramName!
       const newParams: RouteParams = { ...params, [paramName]: segment }
-      // 只有当当前节点不是根节点或者路径是根路径时，才添加到匹配记录
-      const isRootPath = segments.length === 0
-      const shouldAddRecord
-        = node.record && (matchedSegments.length > 0 || isRootPath)
-      const newMatchedRecords = shouldAddRecord
-        ? [...matchedRecords, node.record!]
+      // 修复：确保父路由始终被包含在匹配记录中（对于嵌套路由）
+      const newMatchedRecords = node.record
+        ? [...matchedRecords, node.record]
         : matchedRecords
       const result = this.matchSegments(
         node.paramChild,
@@ -835,12 +853,9 @@ export class RouteMatcher {
     if (node.wildcardChild) {
       const remainingPath = segments.slice(index).join('/')
       const newParams = { ...params, pathMatch: remainingPath }
-      // 只有当当前节点不是根节点或者路径是根路径时，才添加到匹配记录
-      const isRootPath = segments.length === 0
-      const shouldAddRecord
-        = node.record && (matchedSegments.length > 0 || isRootPath)
-      const newMatchedRecords = shouldAddRecord
-        ? [...matchedRecords, node.record!]
+      // 修复：确保父路由始终被包含在匹配记录中（对于嵌套路由）
+      const newMatchedRecords = node.record
+        ? [...matchedRecords, node.record]
         : matchedRecords
       const allMatched = [...newMatchedRecords, node.wildcardChild.record!]
       return {
