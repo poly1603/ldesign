@@ -8,6 +8,7 @@ import type {
   EncryptResult,
   HashAlgorithm,
   HashOptions,
+  HashResult,
   RSAKeyPair,
   RSAOptions,
   TripleDESOptions,
@@ -18,8 +19,8 @@ import {
   des,
   des3,
   encoding,
-  hash,
-  hmac,
+  Hasher,
+  HMACHasher,
   rsa,
   tripledes,
 } from '../algorithms'
@@ -353,72 +354,59 @@ export class Decrypt {
  * 哈希类
  */
 export class Hash {
+  private hasher = new Hasher()
+
   /**
    * MD5 哈希
    */
-  md5(data: string, options?: HashOptions): string {
-    return hash.md5(data, options)
+  md5(data: string, options?: HashOptions): HashResult {
+    return this.hasher.hash(data, 'MD5', options)
   }
 
   /**
    * SHA1 哈希
    */
-  sha1(data: string, options?: HashOptions): string {
-    return hash.sha1(data, options)
+  sha1(data: string, options?: HashOptions): HashResult {
+    return this.hasher.hash(data, 'SHA1', options)
   }
 
   /**
    * SHA224 哈希
    */
-  sha224(data: string, options?: HashOptions): string {
-    return hash.sha224(data, options)
+  sha224(data: string, options?: HashOptions): HashResult {
+    return this.hasher.hash(data, 'SHA224', options)
   }
 
   /**
    * SHA256 哈希
    */
-  sha256(data: string, options?: HashOptions): string {
-    return hash.sha256(data, options)
+  sha256(data: string, options?: HashOptions): HashResult {
+    return this.hasher.hash(data, 'SHA256', options)
   }
 
   /**
    * SHA384 哈希
    */
-  sha384(data: string, options?: HashOptions): string {
-    return hash.sha384(data, options)
+  sha384(data: string, options?: HashOptions): HashResult {
+    return this.hasher.hash(data, 'SHA384', options)
   }
 
   /**
    * SHA512 哈希
    */
-  sha512(data: string, options?: HashOptions): string {
-    return hash.sha512(data, options)
+  sha512(data: string, options?: HashOptions): HashResult {
+    return this.hasher.hash(data, 'SHA512', options)
   }
 
   /**
-   * 通用哈希
+   * 通用哈希方法
    */
   hash(
     data: string,
     algorithm: HashAlgorithm = 'SHA256',
     options?: HashOptions,
-  ): string {
-    switch (algorithm.toUpperCase()) {
-      case 'MD5':
-        return this.md5(data, options)
-      case 'SHA1':
-        return this.sha1(data, options)
-      case 'SHA224':
-        return this.sha224(data, options)
-      case 'SHA256':
-        return this.sha256(data, options)
-      case 'SHA384':
-        return this.sha384(data, options)
-      case 'SHA512':
-        return this.sha512(data, options)
-      default:
-        return this.sha256(data, options)
-    }
+  ): HashResult {
+    return this.hasher.hash(data, algorithm, options)
   }
 
   /**
@@ -430,7 +418,7 @@ export class Hash {
     algorithm: HashAlgorithm = 'SHA256',
     options?: HashOptions,
   ): boolean {
-    return hash.verify(data, expectedHash, algorithm, options)
+    return this.hasher.verify(data, expectedHash, algorithm, options)
   }
 }
 
@@ -438,39 +426,41 @@ export class Hash {
  * HMAC 类
  */
 export class HMAC {
+  private hmacHasher = new HMACHasher()
+
   /**
    * HMAC-MD5
    */
   md5(data: string, key: string, options?: HashOptions): string {
-    return hmac.md5(data, key, options)
+    return this.hmacHasher.hmac(data, key, 'MD5', options).hash
   }
 
   /**
    * HMAC-SHA1
    */
   sha1(data: string, key: string, options?: HashOptions): string {
-    return hmac.sha1(data, key, options)
+    return this.hmacHasher.hmac(data, key, 'SHA1', options).hash
   }
 
   /**
    * HMAC-SHA256
    */
   sha256(data: string, key: string, options?: HashOptions): string {
-    return hmac.sha256(data, key, options)
+    return this.hmacHasher.hmac(data, key, 'SHA256', options).hash
   }
 
   /**
    * HMAC-SHA384
    */
   sha384(data: string, key: string, options?: HashOptions): string {
-    return hmac.sha384(data, key, options)
+    return this.hmacHasher.hmac(data, key, 'SHA384', options).hash
   }
 
   /**
    * HMAC-SHA512
    */
   sha512(data: string, key: string, options?: HashOptions): string {
-    return hmac.sha512(data, key, options)
+    return this.hmacHasher.hmac(data, key, 'SHA512', options).hash
   }
 
   /**
@@ -508,7 +498,7 @@ export class HMAC {
     algorithm: HashAlgorithm = 'SHA256',
     options?: HashOptions,
   ): boolean {
-    return hmac.verify(data, key, expectedHmac, algorithm, options)
+    return this.hmacHasher.verify(data, key, expectedHmac, algorithm, options)
   }
 }
 
