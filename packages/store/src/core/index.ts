@@ -9,6 +9,18 @@ export { BaseStore } from './BaseStore'
 // 性能优化器
 export { PerformanceOptimizer, CacheManager, PersistenceManager, DebounceManager, ThrottleManager } from './PerformanceOptimizer'
 
+// 增强版性能优化器
+export {
+  EnhancedPerformanceOptimizer,
+  LazyLoadManager,
+  PreloadManager,
+  MemoryManager,
+  ConcurrencyController,
+  VirtualizationManager,
+  ComputationOptimizer,
+  RequestMerger
+} from './EnhancedPerformance'
+
 // 函数式 Store
 export { createFunctionalStore, defineStore as defineFunctionalStore, defineStoreWithOptions } from './FunctionalStore'
 export type { FunctionalStoreOptions, FunctionalStoreInstance } from './FunctionalStore'
@@ -37,6 +49,17 @@ export { PooledStore, StorePool, useStorePool } from './storePool'
 export type { StorePoolOptions } from './storePool'
 // 工具函数
 export * from './utils'
+
+// 高级功能
+export {
+  BatchOperationManager,
+  TransactionManager,
+  SnapshotManager,
+  TimeTravelDebugger,
+  StateDiffer,
+  StateValidator,
+  createAdvancedStore
+} from './AdvancedFeatures'
 
 // 类型定义
 export type {

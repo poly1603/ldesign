@@ -6,7 +6,7 @@
 
 import type { App } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
-import { StoreFactory } from '../core/StoreFactory'
+import { StoreFactory, StoreType } from '../core/StoreFactory'
 import { PerformanceOptimizer } from '../core/PerformanceOptimizer'
 import type { StoreOptions } from '../types'
 
@@ -190,23 +190,14 @@ export function createStoreEnginePlugin(
         // 创建性能优化器实例
         let performanceOptimizer: PerformanceOptimizer | undefined
         if (storeConfig.enablePerformanceOptimization) {
-          performanceOptimizer = new PerformanceOptimizer({
-            cacheOptions: storeConfig.defaultCacheOptions,
-            persistOptions: storeConfig.defaultPersistOptions,
-            debug: storeConfig.debug
-          })
+          performanceOptimizer = new PerformanceOptimizer()
           if (debug) {
             console.log('[Store Plugin] Performance optimizer created')
           }
         }
 
         // 创建 Store 工厂实例
-        const storeFactory = new StoreFactory({
-          pinia,
-          performanceOptimizer,
-          debug: storeConfig.debug,
-          ...globalConfig
-        })
+        const storeFactory = new StoreFactory()
 
         // 将 Store 相关实例注册到引擎中
         if (engine) {
@@ -247,11 +238,16 @@ export function createStoreEnginePlugin(
 
           // 注册事件监听器
           if (engine.events) {
-            engine.events.on('store:create', (storeOptions: StoreOptions) => {
+            engine.events.on('store:create', (storeOptions: any) => {
               if (debug) {
                 console.log('[Store Plugin] Creating store with options:', storeOptions)
               }
-              return storeFactory.createStore(storeOptions)
+              // 确保 storeOptions 有正确的类型
+              const options = {
+                ...storeOptions,
+                type: storeOptions.type || StoreType.FUNCTIONAL
+              }
+              return storeFactory.createStore(options)
             })
 
             engine.events.on('store:destroy', (storeName: string) => {

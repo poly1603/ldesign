@@ -89,6 +89,20 @@ export type UnifiedStoreOptions<
 export class StoreFactory {
   private static instances = new Map<string, any>()
   private static definitions = new Map<string, any>()
+  
+  /**
+   * 创建 Store 实例（用于兼容）
+   */
+  createStore<
+    TState extends StateDefinition = StateDefinition,
+    TActions extends ActionDefinition = ActionDefinition,
+    TGetters extends GetterDefinition = GetterDefinition,
+    T = any
+  >(
+    options: UnifiedStoreOptions<TState, TActions, TGetters, T>
+  ): any {
+    return StoreFactory.create(options)
+  }
 
   /**
    * 创建 Store 实例
