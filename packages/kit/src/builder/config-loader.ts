@@ -189,16 +189,16 @@ export class ConfigLoader {
       // 特殊处理数组和对象字段
       external: overrides.external || baseConfig.external,
       globals: {
-        ...baseConfig.globals,
-        ...overrides.globals,
+        ...(baseConfig.globals || {}),
+        ...(overrides.globals || {}),
       },
       plugins: [
         ...(baseConfig.plugins || []),
         ...(overrides.plugins || []),
       ],
       rollupOptions: {
-        ...baseConfig.rollupOptions,
-        ...overrides.rollupOptions,
+        ...(baseConfig.rollupOptions || {}),
+        ...(overrides.rollupOptions || {}),
       },
       output: overrides.output || baseConfig.output,
     }

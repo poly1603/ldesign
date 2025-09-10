@@ -61,7 +61,7 @@ export class AsyncUtils {
       onRetry,
     } = options
 
-    let lastError: Error
+    let lastError: Error | undefined
     let currentDelay = delay
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -87,7 +87,7 @@ export class AsyncUtils {
       }
     }
 
-    throw (lastError instanceof Error ? lastError : new Error(String(lastError)))
+    throw (lastError instanceof Error ? lastError : new Error(String(lastError || 'Unknown error')))
   }
 
   /**

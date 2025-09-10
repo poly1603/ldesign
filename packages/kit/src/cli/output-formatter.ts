@@ -87,13 +87,6 @@ export class OutputFormatter {
   }
 
   /**
-   * 写入到标准输出
-   */
-  private write(str: string): void {
-    process.stdout.write(str)
-  }
-
-  /**
    * 创建进度条
    */
   createProgressBar(
@@ -105,9 +98,9 @@ export class OutputFormatter {
       incomplete?: string
     } = {},
   ): {
-      update: (current: number) => void
-      complete: () => void
-    } {
+    update: (current: number) => void
+    complete: () => void
+  } {
     const opts = {
       format: options.format ?? ':bar :percent :current/:total',
       width: options.width ?? 40,
@@ -207,7 +200,7 @@ export class OutputFormatter {
     }
 
     // 获取列名
-    const columns = opts.headers || Object.keys(data[0])
+    const columns = opts.headers || Object.keys(data[0] || {})
 
     // 计算列宽
     const columnWidths = columns.map((col) => {

@@ -1,7 +1,9 @@
-/**
+﻿/**
  * SSL 模块测试
  */
 
+
+import { vi } from 'vitest'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { SSLManager, SSLUtils } from '../src/ssl'
 
@@ -22,8 +24,8 @@ describe('sSLManager', () => {
     })
   })
 
-  describe('密钥对生成', () => {
-    it('应该能够生成 RSA 密钥对', async () => {
+  describe('密钥对生�?, () => {
+    it('应该能够生成 RSA 密钥�?, async () => {
       const { generateKeyPairSync } = await import('node:crypto')
       vi.mocked(generateKeyPairSync).mockReturnValue({
         publicKey: {
@@ -42,7 +44,7 @@ describe('sSLManager', () => {
       expect(keyPair.keySize).toBe(2048)
     })
 
-    it('应该能够生成不同大小的密钥', async () => {
+    it('应该能够生成不同大小的密�?, async () => {
       const manager4096 = new SSLManager({ keySize: 4096 })
       const { generateKeyPairSync } = await import('node:crypto')
 
@@ -57,7 +59,7 @@ describe('sSLManager', () => {
   })
 
   describe('证书生成', () => {
-    it('应该能够生成自签名证书', async () => {
+    it('应该能够生成自签名证�?, async () => {
       const mockKeyPair = {
         publicKey: 'mock-public-key',
         privateKey: 'mock-private-key',
@@ -132,7 +134,7 @@ describe('sSLManager', () => {
       expect(result.errors).toHaveLength(0)
     })
 
-    it('应该能够检测无效证书', async () => {
+    it('应该能够检测无效证�?, async () => {
       const invalidCertificate = 'invalid-certificate'
 
       // Mock invalid certificate verification
@@ -203,7 +205,7 @@ describe('sSLManager', () => {
 })
 
 describe('sSLUtils', () => {
-  describe('快速证书生成', () => {
+  describe('快速证书生�?, () => {
     it('应该能够快速生成自签名证书', async () => {
       // Mock SSLManager methods
       const mockGenerateKeyPair = vi.fn().mockResolvedValue({
@@ -258,7 +260,7 @@ describe('sSLUtils', () => {
       expect(matches).toBe(true)
     })
 
-    it('应该能够验证通配符域名', () => {
+    it('应该能够验证通配符域�?, () => {
       const mockCertificate
         = '-----BEGIN CERTIFICATE-----\nmock-certificate\n-----END CERTIFICATE-----'
 
@@ -320,8 +322,7 @@ describe('sSLUtils', () => {
         serialNumber: '123',
         notBefore: '2023-01-01',
         notAfter: '2026-01-01', // 过长的有效期
-        algorithm: 'md5WithRSAEncryption', // 弱算法
-        publicKey: 'weak-1024-bit-key',
+        algorithm: 'md5WithRSAEncryption', // 弱算�?        publicKey: 'weak-1024-bit-key',
         extensions: [],
       })
 
@@ -334,7 +335,7 @@ describe('sSLUtils', () => {
   })
 
   describe('证书比较', () => {
-    it('应该能够比较相同的证书', () => {
+    it('应该能够比较相同的证�?, () => {
       const cert1 = '-----BEGIN CERTIFICATE-----\ncert1\n-----END CERTIFICATE-----'
       const cert2 = '-----BEGIN CERTIFICATE-----\ncert1\n-----END CERTIFICATE-----'
 
@@ -356,7 +357,7 @@ describe('sSLUtils', () => {
       expect(comparison.differences).toHaveLength(0)
     })
 
-    it('应该能够检测证书差异', () => {
+    it('应该能够检测证书差�?, () => {
       const cert1 = '-----BEGIN CERTIFICATE-----\ncert1\n-----END CERTIFICATE-----'
       const cert2 = '-----BEGIN CERTIFICATE-----\ncert2\n-----END CERTIFICATE-----'
 
@@ -414,3 +415,6 @@ describe('sSLUtils', () => {
     })
   })
 })
+
+
+

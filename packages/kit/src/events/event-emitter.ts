@@ -1,27 +1,71 @@
 /**
- * 增强的事件发射器
- * 提供比Node.js原生EventEmitter更强大的功能
+ * 增强的事件发射器模块
+ * 提供比 Node.js 原生 EventEmitter 更强大的功能，包括优先级、命名空间、统计信息等
+ *
+ * @example
+ * ```typescript
+ * import { EventEmitter } from '@ldesign/kit'
+ *
+ * const emitter = new EventEmitter({
+ *   maxListeners: 50,
+ *   enableStats: true
+ * })
+ *
+ * // 添加带优先级的监听器
+ * emitter.on('data', (data) => console.log('Low priority:', data), { priority: 1 })
+ * emitter.on('data', (data) => console.log('High priority:', data), { priority: 10 })
+ *
+ * // 添加带命名空间的监听器
+ * emitter.on('user:login', (user) => console.log('User logged in:', user))
+ *
+ * // 发射事件
+ * emitter.emit('data', { message: 'Hello' })
+ * emitter.emit('user:login', { id: 1, name: 'John' })
+ *
+ * // 获取统计信息
+ * const stats = emitter.getEventStats('data')
+ * console.log(`Event 'data' was emitted ${stats.emitCount} times`)
+ * ```
  */
 
 import type { EventListener, EventOptions, EventStats } from '../types'
 import { EventEmitter as NodeEventEmitter } from 'node:events'
 
 /**
- * 事件监听器信息
+ * 事件监听器信息接口
+ * 存储每个监听器的详细信息，用于管理和统计
  */
 interface ListenerInfo {
+  /** 事件监听器函数 */
   listener: EventListener
+  /** 是否为一次性监听器 */
   once: boolean
+  /** 监听器优先级，数值越大优先级越高 */
   priority: number
+  /** 监听器所属的命名空间 */
   namespace?: string
+  /** 监听器标签，用于分类和过滤 */
   tags: string[]
+  /** 监听器创建时间 */
   createdAt: Date
+  /** 监听器被调用次数 */
   callCount: number
+  /** 最后一次被调用的时间 */
   lastCalledAt?: Date
 }
 
 /**
  * 增强的事件发射器类
+ * 继承自 Node.js 原生 EventEmitter，提供额外的功能：
+ *
+ * - 监听器优先级控制
+ * - 命名空间支持
+ * - 事件统计信息
+ * - 监听器标签和过滤
+ * - 批量操作支持
+ * - 条件监听器
+ *
+ * @extends NodeEventEmitter
  */
 export class EventEmitter extends NodeEventEmitter {
   private listenerInfos: Map<string, ListenerInfo[]> = new Map()

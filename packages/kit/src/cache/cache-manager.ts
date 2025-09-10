@@ -7,7 +7,7 @@ import type { CacheOptions, CacheStats, CacheStore } from '../types'
 import { EventEmitter } from 'node:events'
 import { FileCache } from './file-cache'
 import { MemoryCache } from './memory-cache'
-import { RedisCache } from './redis-cache'
+import { RedisCache, type RedisCacheOptions } from './redis-cache'
 
 /**
  * 缓存管理器类
@@ -450,7 +450,7 @@ export class CacheManager extends EventEmitter {
   /**
    * 创建带Redis缓存的管理器
    */
-  static createWithRedisCache(redisOptions: unknown, options?: CacheOptions): CacheManager {
+  static createWithRedisCache(redisOptions: RedisCacheOptions, options?: CacheOptions): CacheManager {
     const manager = new CacheManager(options)
     manager.addStore('redis', new RedisCache(redisOptions))
     return manager

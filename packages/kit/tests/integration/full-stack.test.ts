@@ -1,7 +1,6 @@
-/**
+﻿/**
  * 全栈集成测试
- * 测试多个模块之间的协作
- */
+ * 测试多个模块之间的协�? */
 
 import {
   CacheManager,
@@ -24,8 +23,7 @@ describe('全栈集成测试', () => {
   beforeEach(() => {
     tempDir = global.testUtils.createTempDir()
 
-    // 设置日志器
-    logger = Logger.create({
+    // 设置日志�?    logger = Logger.create({
       level: 'info',
       transports: [{ type: 'console', silent: true }],
     })
@@ -37,8 +35,7 @@ describe('全栈集成测试', () => {
     // 设置事件总线
     eventBus = EventBus.getInstance()
 
-    // 设置验证器
-    validator = Validator.create()
+    // 设置验证�?    validator = Validator.create()
     validator.addRules({
       id: ValidationRules.required(),
       name: ValidationRules.required(),
@@ -105,8 +102,7 @@ describe('全栈集成测试', () => {
       async getUser(id: string): Promise<User | null> {
         this.logger.debug('Getting user', { userId: id })
 
-        // 尝试从缓存获取
-        const cached = await this.cache.get<User>(`user:${id}`)
+        // 尝试从缓存获�?        const cached = await this.cache.get<User>(`user:${id}`)
         if (cached) {
           this.logger.debug('User found in cache', { userId: id })
           this.eventBus.emit('user:cache_hit', { userId: id })
@@ -167,8 +163,7 @@ describe('全栈集成测试', () => {
           return false
         }
 
-        // 从缓存删除
-        await this.cache.delete(`user:${id}`)
+        // 从缓存删�?        await this.cache.delete(`user:${id}`)
         this.logger.info('User deleted from cache', { userId: id })
 
         // 发布事件
@@ -200,8 +195,7 @@ describe('全栈集成测试', () => {
       expect(user.age).toBe(userData.age)
       expect(user.createdAt).toBeInstanceOf(Date)
 
-      // 获取用户（应该从缓存获取）
-      const retrievedUser = await userService.getUser(user.id)
+      // 获取用户（应该从缓存获取�?      const retrievedUser = await userService.getUser(user.id)
       expect(retrievedUser).toEqual(user)
 
       // 更新用户
@@ -209,28 +203,24 @@ describe('全栈集成测试', () => {
       const updatedUser = await userService.updateUser(user.id, updates)
       expect(updatedUser!.name).toBe(updates.name)
       expect(updatedUser!.age).toBe(updates.age)
-      expect(updatedUser!.email).toBe(userData.email) // 未更改的字段应保持不变
-
+      expect(updatedUser!.email).toBe(userData.email) // 未更改的字段应保持不�?
       // 删除用户
       const deleted = await userService.deleteUser(user.id)
       expect(deleted).toBe(true)
 
-      // 确认用户已删除
-      const deletedUser = await userService.getUser(user.id)
+      // 确认用户已删�?      const deletedUser = await userService.getUser(user.id)
       expect(deletedUser).toBeNull()
     })
 
     it('应该处理验证错误', async () => {
       const invalidUserData = {
-        name: '', // 空名称
-        email: 'invalid-email', // 无效邮箱
-        age: 150, // 超出范围的年龄
-      }
+        name: '', // 空名�?        email: 'invalid-email', // 无效邮箱
+        age: 150, // 超出范围的年�?      }
 
       await expect(userService.createUser(invalidUserData)).rejects.toThrow('Validation failed')
     })
 
-    it('应该发布正确的事件', async () => {
+    it('应该发布正确的事�?, async () => {
       const events: Array<{ event: string, data: any }> = []
 
       eventBus.on('user:created', data => events.push({ event: 'user:created', data }))
@@ -262,8 +252,8 @@ describe('全栈集成测试', () => {
     })
   })
 
-  describe('配置驱动的应用', () => {
-    it('应该根据配置文件初始化应用组件', async () => {
+  describe('配置驱动的应�?, () => {
+    it('应该根据配置文件初始化应用组�?, async () => {
       // 创建配置文件
       const configFile = `${tempDir}/app.json`
       const config = {
@@ -310,8 +300,7 @@ describe('全栈集成测试', () => {
 
       await configManager.load()
 
-      // 根据配置初始化组件
-      const appLogger = Logger.create({
+      // 根据配置初始化组�?      const appLogger = Logger.create({
         level: configManager.get('logger.level') as any,
         format: configManager.get('logger.format') as any,
         transports: [{ type: 'console', silent: true }],
@@ -356,8 +345,8 @@ describe('全栈集成测试', () => {
     })
   })
 
-  describe('错误处理和恢复', () => {
-    it('应该优雅地处理组件故障', async () => {
+  describe('错误处理和恢�?, () => {
+    it('应该优雅地处理组件故�?, async () => {
       const errors: Error[] = []
 
       // 设置错误监听
@@ -388,8 +377,7 @@ describe('全栈集成测试', () => {
         logger.error('Cache operation failed', { error: (error as Error).message })
       }
 
-      // 验证器应该继续工作
-      validator.addRule('email', ValidationRules.email())
+      // 验证器应该继续工�?      validator.addRule('email', ValidationRules.email())
       const result = await validator.validate({ email: 'test@example.com' })
       expect(result.valid).toBe(true)
 
@@ -401,12 +389,11 @@ describe('全栈集成测试', () => {
       eventBus.emit('test-event')
       expect(eventReceived).toBe(true)
 
-      // 应该记录了错误
-      expect(errors.length).toBeGreaterThan(0)
+      // 应该记录了错�?      expect(errors.length).toBeGreaterThan(0)
     })
   })
 
-  describe('性能和扩展性', () => {
+  describe('性能和扩展�?, () => {
     it('应该处理大量并发操作', async () => {
       const operations = 100
       const promises: Promise<any>[] = []
@@ -418,8 +405,7 @@ describe('全栈集成测试', () => {
 
       await Promise.all(promises)
 
-      // 验证所有数据都已缓存
-      const retrievePromises = []
+      // 验证所有数据都已缓�?      const retrievePromises = []
       for (let i = 0; i < operations; i++) {
         retrievePromises.push(cache.get(`key-${i}`))
       }
@@ -447,3 +433,5 @@ describe('全栈集成测试', () => {
     })
   })
 })
+
+

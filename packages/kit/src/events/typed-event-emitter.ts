@@ -3,7 +3,7 @@
  * 提供完整的TypeScript类型支持
  */
 
-import type { EventListener as BaseEventListener } from '../types'
+import type { EventListener as BaseEventListener, EventOptions } from '../types'
 import { EventEmitter } from './event-emitter'
 
 /**
@@ -108,7 +108,7 @@ export class TypedEventEmitter<TEventMap extends EventMap> extends EventEmitter 
   /**
    * 创建类型安全的事件发射器实例
    */
-  static override create<TEventMap extends EventMap>(options?: unknown): TypedEventEmitter<TEventMap> {
+  static override create<TEventMap extends EventMap>(options?: EventOptions): TypedEventEmitter<TEventMap> {
     return new TypedEventEmitter<TEventMap>(options)
   }
 }
@@ -130,7 +130,7 @@ export class EventEmitterBuilder<TEventMap extends EventMap = Record<string, unk
   /**
    * 构建类型安全的事件发射器
    */
-  build(options?: unknown): TypedEventEmitter<TEventMap> {
+  build(options?: EventOptions): TypedEventEmitter<TEventMap> {
     return new TypedEventEmitter<TEventMap>(options)
   }
 
@@ -256,7 +256,7 @@ export interface AllEvents
  * 创建类型安全的事件发射器
  */
 export function createTypedEventEmitter<TEventMap extends EventMap>(
-  options?: unknown,
+  options?: EventOptions,
 ): TypedEventEmitter<TEventMap> {
   return new TypedEventEmitter<TEventMap>(options)
 }
@@ -264,14 +264,14 @@ export function createTypedEventEmitter<TEventMap extends EventMap>(
 /**
  * 创建带有常用事件的事件发射器
  */
-export function createCommonEventEmitter(options?: unknown): TypedEventEmitter<CommonEvents> {
+export function createCommonEventEmitter(options?: EventOptions): TypedEventEmitter<CommonEvents> {
   return new TypedEventEmitter<CommonEvents>(options)
 }
 
 /**
  * 创建带有所有预定义事件的事件发射器
  */
-export function createFullEventEmitter(options?: unknown): TypedEventEmitter<AllEvents> {
+export function createFullEventEmitter(options?: EventOptions): TypedEventEmitter<AllEvents> {
   return new TypedEventEmitter<AllEvents>(options)
 }
 
@@ -369,10 +369,10 @@ export function EventHandler<TEventMap extends EventMap, K extends keyof TEventM
  * 自动事件绑定装饰器
  */
 export function AutoBind<TEventMap extends EventMap>(eventMap: TEventMap) {
-  return function <T extends { new (...args: unknown[]): object }>(constructor: T) {
+  return function <T extends new (...args: any[]) => any>(constructor: T) {
     return class extends constructor {
-      constructor(...args: unknown[]) {
-        super(...(args as []))
+      constructor(...args: any[]) {
+        super(...args)
 
         // 自动绑定事件处理方法
         const prototype = Object.getPrototypeOf(this)

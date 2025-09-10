@@ -1,7 +1,9 @@
-/**
+﻿/**
  * MemoryCache 测试
  */
 
+
+import { vi } from 'vitest'
 import { MemoryCache } from '../../src/cache/memory-cache'
 
 describe('memoryCache', () => {
@@ -20,13 +22,13 @@ describe('memoryCache', () => {
   })
 
   describe('基本操作', () => {
-    it('应该设置和获取缓存值', async () => {
+    it('应该设置和获取缓存�?, async () => {
       await cache.set('key1', 'value1')
       const value = await cache.get('key1')
       expect(value).toBe('value1')
     })
 
-    it('应该返回undefined对于不存在的键', async () => {
+    it('应该返回undefined对于不存在的�?, async () => {
       const value = await cache.get('nonexistent')
       expect(value).toBeUndefined()
     })
@@ -38,7 +40,7 @@ describe('memoryCache', () => {
       expect(await cache.has('nonexistent')).toBe(false)
     })
 
-    it('应该删除缓存项', async () => {
+    it('应该删除缓存�?, async () => {
       await cache.set('key1', 'value1')
       expect(await cache.has('key1')).toBe(true)
 
@@ -47,7 +49,7 @@ describe('memoryCache', () => {
       expect(await cache.has('key1')).toBe(false)
     })
 
-    it('应该清空所有缓存', async () => {
+    it('应该清空所有缓�?, async () => {
       await cache.set('key1', 'value1')
       await cache.set('key2', 'value2')
 
@@ -59,7 +61,7 @@ describe('memoryCache', () => {
   })
 
   describe('tTL (生存时间)', () => {
-    it('应该在TTL过期后删除项目', async () => {
+    it('应该在TTL过期后删除项�?, async () => {
       await cache.set('key1', 'value1', 0.1) // 100ms TTL
 
       expect(await cache.get('key1')).toBe('value1')
@@ -96,7 +98,7 @@ describe('memoryCache', () => {
   })
 
   describe('批量操作', () => {
-    it('应该批量获取值', async () => {
+    it('应该批量获取�?, async () => {
       await cache.set('key1', 'value1')
       await cache.set('key2', 'value2')
       await cache.set('key3', 'value3')
@@ -108,7 +110,7 @@ describe('memoryCache', () => {
       expect(results.has('nonexistent')).toBe(false)
     })
 
-    it('应该批量设置值', async () => {
+    it('应该批量设置�?, async () => {
       const entries = new Map([
         ['key1', 'value1'],
         ['key2', 'value2'],
@@ -122,7 +124,7 @@ describe('memoryCache', () => {
       expect(await cache.get('key3')).toBe('value3')
     })
 
-    it('应该批量删除值', async () => {
+    it('应该批量删除�?, async () => {
       await cache.set('key1', 'value1')
       await cache.set('key2', 'value2')
       await cache.set('key3', 'value3')
@@ -136,7 +138,7 @@ describe('memoryCache', () => {
     })
   })
 
-  describe('键管理', () => {
+  describe('键管�?, () => {
     it('应该获取所有键', async () => {
       await cache.set('user:1', 'data1')
       await cache.set('user:2', 'data2')
@@ -163,7 +165,7 @@ describe('memoryCache', () => {
     })
   })
 
-  describe('驱逐策略', () => {
+  describe('驱逐策�?, () => {
     beforeEach(() => {
       cache = new MemoryCache({
         maxSize: 3,
@@ -171,7 +173,7 @@ describe('memoryCache', () => {
       })
     })
 
-    it('应该使用LRU策略驱逐项目', async () => {
+    it('应该使用LRU策略驱逐项�?, async () => {
       await cache.set('key1', 'value1')
       await cache.set('key2', 'value2')
       await cache.set('key3', 'value3')
@@ -179,8 +181,7 @@ describe('memoryCache', () => {
       // 访问key1使其成为最近使用的
       await cache.get('key1')
 
-      // 添加新项目应该驱逐key2（最少最近使用的）
-      await cache.set('key4', 'value4')
+      // 添加新项目应该驱逐key2（最少最近使用的�?      await cache.set('key4', 'value4')
 
       expect(await cache.has('key1')).toBe(true)
       expect(await cache.has('key2')).toBe(false)
@@ -188,7 +189,7 @@ describe('memoryCache', () => {
       expect(await cache.has('key4')).toBe(true)
     })
 
-    it('应该使用FIFO策略驱逐项目', async () => {
+    it('应该使用FIFO策略驱逐项�?, async () => {
       cache = new MemoryCache({
         maxSize: 3,
         strategy: 'fifo',
@@ -198,8 +199,7 @@ describe('memoryCache', () => {
       await cache.set('key2', 'value2')
       await cache.set('key3', 'value3')
 
-      // 添加新项目应该驱逐key1（最先进入的）
-      await cache.set('key4', 'value4')
+      // 添加新项目应该驱逐key1（最先进入的�?      await cache.set('key4', 'value4')
 
       expect(await cache.has('key1')).toBe(false)
       expect(await cache.has('key2')).toBe(true)
@@ -216,8 +216,7 @@ describe('memoryCache', () => {
       await cache.get('key1')
       await cache.get('key1')
 
-      // 未命中
-      await cache.get('nonexistent')
+      // 未命�?      await cache.get('nonexistent')
 
       const stats = await cache.getStats()
 
@@ -251,7 +250,7 @@ describe('memoryCache', () => {
 
   describe('事件', () => {
     it('应该发出hit事件', async () => {
-      const hitSpy = jest.fn()
+      const hitSpy = vi.fn()
       cache.on('hit', hitSpy)
 
       await cache.set('key1', 'value1')
@@ -261,7 +260,7 @@ describe('memoryCache', () => {
     })
 
     it('应该发出miss事件', async () => {
-      const missSpy = jest.fn()
+      const missSpy = vi.fn()
       cache.on('miss', missSpy)
 
       await cache.get('nonexistent')
@@ -270,7 +269,7 @@ describe('memoryCache', () => {
     })
 
     it('应该发出set事件', async () => {
-      const setSpy = jest.fn()
+      const setSpy = vi.fn()
       cache.on('set', setSpy)
 
       await cache.set('key1', 'value1')
@@ -279,7 +278,7 @@ describe('memoryCache', () => {
     })
 
     it('应该发出delete事件', async () => {
-      const deleteSpy = jest.fn()
+      const deleteSpy = vi.fn()
       cache.on('delete', deleteSpy)
 
       await cache.set('key1', 'value1')
@@ -289,20 +288,19 @@ describe('memoryCache', () => {
     })
 
     it('应该发出expired事件', async () => {
-      const expiredSpy = jest.fn()
+      const expiredSpy = vi.fn()
       cache.on('expired', expiredSpy)
 
       await cache.set('key1', 'value1', 0.1) // 100ms TTL
 
       await global.testUtils.sleep(150)
-      await cache.get('key1') // 触发过期检查
-
+      await cache.get('key1') // 触发过期检�?
       expect(expiredSpy).toHaveBeenCalledWith('key1')
     })
   })
 
   describe('数据类型', () => {
-    it('应该存储不同类型的数据', async () => {
+    it('应该存储不同类型的数�?, async () => {
       const testData = {
         string: 'hello',
         number: 42,
@@ -320,7 +318,7 @@ describe('memoryCache', () => {
       }
     })
 
-    it('应该保持对象引用的独立性', async () => {
+    it('应该保持对象引用的独立�?, async () => {
       const original = { count: 0 }
       await cache.set('object', original)
 
@@ -332,7 +330,7 @@ describe('memoryCache', () => {
   })
 
   describe('内存管理', () => {
-    it('应该估算内存使用量', async () => {
+    it('应该估算内存使用�?, async () => {
       const stats1 = await cache.getStats()
       const initialMemory = stats1.memory
 
@@ -343,7 +341,7 @@ describe('memoryCache', () => {
       expect(stats2.memory).toBeGreaterThan(initialMemory)
     })
 
-    it('应该在内存压力下驱逐项目', async () => {
+    it('应该在内存压力下驱逐项�?, async () => {
       cache = new MemoryCache({
         maxSize: 1000,
         maxMemory: 1024, // 1KB
@@ -355,7 +353,9 @@ describe('memoryCache', () => {
       }
 
       const stats = await cache.getStats()
-      expect(stats.keys).toBeLessThan(100) // 应该有一些项目被驱逐
-    })
+      expect(stats.keys).toBeLessThan(100) // 应该有一些项目被驱�?    })
   })
 })
+
+
+

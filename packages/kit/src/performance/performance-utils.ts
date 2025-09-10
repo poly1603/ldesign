@@ -100,7 +100,7 @@ export class PerformanceUtils {
     const results: BenchmarkResult[] = []
 
     for (const { name, fn } of functions) {
-      const result = await this.quickBenchmark(name, () => Promise.resolve(fn()), iterations)
+      const result = await this.quickBenchmark(name, async () => { await Promise.resolve(fn()) }, iterations)
       results.push(result)
     }
 
@@ -177,7 +177,7 @@ export class PerformanceUtils {
     percentiles: Record<string, number>
   }> {
     return new Promise((resolve) => {
-      ;(async () => {
+      ; (async () => {
         const { monitorEventLoopDelay } = await import('node:perf_hooks')
         const histogram = monitorEventLoopDelay({ resolution: 20 })
 

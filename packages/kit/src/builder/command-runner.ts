@@ -141,13 +141,17 @@ export class CommandRunner {
    * 合并构建选项
    */
   private mergeBuildOptions(
-    baseConfig: BuildOptions,
-    overrides: Partial<BuildOptions>,
-  ): BuildOptions {
-    // 处理格式选项
+    baseConfig: Partial<BuildOptions>,
+    overrides: BuildCommand | Partial<BuildOptions>,
+  ): Partial<BuildOptions> {
+    // 处理格式选项 - 将 string | string[] 转换为 string[]
     let formats = baseConfig.formats
-    if (overrides.formats && Array.isArray(overrides.formats)) {
-      formats = overrides.formats as any[]
+    if ('formats' in overrides && overrides.formats) {
+      if (Array.isArray(overrides.formats)) {
+        formats = overrides.formats
+      } else if (typeof overrides.formats === 'string') {
+        formats = [overrides.formats]
+      }
     }
 
     return {
@@ -155,7 +159,7 @@ export class CommandRunner {
       ...overrides,
       formats,
       // 确保输入路径是绝对路径
-      input: this.resolveInput(overrides.input || baseConfig.input),
+      input: this.resolveInput(('input' in overrides ? overrides.input : undefined) || baseConfig.input),
       // 确保输出路径是绝对路径
       outDir: overrides.outDir ? path.resolve(this.cwd, overrides.outDir) : baseConfig.outDir,
     }

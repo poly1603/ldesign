@@ -1,7 +1,9 @@
-/**
+﻿/**
  * Validator 测试
  */
 
+
+import { vi } from 'vitest'
 import { ValidationRules } from '../../src/validation/validation-rules'
 import { Validator } from '../../src/validation/validator'
 
@@ -30,7 +32,7 @@ describe('validator', () => {
       expect(result.errors).toHaveLength(0)
     })
 
-    it('应该检测验证错误', async () => {
+    it('应该检测验证错�?, async () => {
       validator.addRule('name', ValidationRules.required())
       validator.addRule('email', ValidationRules.email())
 
@@ -91,7 +93,7 @@ describe('validator', () => {
       expect(validator.getRules('name')).toHaveLength(0)
     })
 
-    it('应该移除字段的所有规则', () => {
+    it('应该移除字段的所有规�?, () => {
       validator.addRule('name', ValidationRules.required())
       validator.addRule('name', ValidationRules.minLength(2))
 
@@ -123,8 +125,7 @@ describe('validator', () => {
       })
 
       expect(result.valid).toBe(false)
-      expect(result.errors).toHaveLength(1) // 只有第一个错误
-    })
+      expect(result.errors).toHaveLength(1) // 只有第一个错�?    })
 
     it('应该拒绝未知字段', async () => {
       validator = new Validator({ allowUnknownFields: false })
@@ -157,7 +158,7 @@ describe('validator', () => {
   })
 
   describe('数据转换', () => {
-    it('应该应用转换器', async () => {
+    it('应该应用转换�?, async () => {
       validator.addRule('name', {
         code: 'TRANSFORM',
         validator: () => true,
@@ -172,7 +173,7 @@ describe('validator', () => {
       expect(result.data.name).toBe('john doe')
     })
 
-    it('应该处理转换器错误', async () => {
+    it('应该处理转换器错�?, async () => {
       validator.addRule('name', {
         code: 'TRANSFORM',
         validator: () => true,
@@ -198,8 +199,7 @@ describe('validator', () => {
         validator: (value, data) => value === data.password,
       })
 
-      // 没有密码时应该跳过确认密码验证
-      const result1 = await validator.validate({
+      // 没有密码时应该跳过确认密码验�?      const result1 = await validator.validate({
         confirmPassword: 'wrong',
       })
       expect(result1.valid).toBe(true)
@@ -214,7 +214,7 @@ describe('validator', () => {
   })
 
   describe('异步验证', () => {
-    it('应该支持异步验证器', async () => {
+    it('应该支持异步验证�?, async () => {
       validator.addRule('username', {
         code: 'UNIQUE',
         async: true,
@@ -231,7 +231,7 @@ describe('validator', () => {
       expect(result2.valid).toBe(false)
     })
 
-    it('应该处理异步验证器错误', async () => {
+    it('应该处理异步验证器错�?, async () => {
       validator.addRule('field', {
         code: 'ASYNC_ERROR',
         async: true,
@@ -247,8 +247,8 @@ describe('validator', () => {
     })
   })
 
-  describe('自定义消息', () => {
-    it('应该使用自定义错误消息', async () => {
+  describe('自定义消�?, () => {
+    it('应该使用自定义错误消�?, async () => {
       validator = new Validator({ enableCustomMessages: true })
 
       validator.addRule('name', {
@@ -317,7 +317,7 @@ describe('validator', () => {
       expect(fields).toHaveLength(3)
     })
 
-    it('应该清空所有规则', () => {
+    it('应该清空所有规�?, () => {
       validator.addRule('name', ValidationRules.required())
       validator.addRule('email', ValidationRules.email())
 
@@ -326,7 +326,7 @@ describe('validator', () => {
       expect(validator.getFields()).toHaveLength(0)
     })
 
-    it('应该克隆验证器', () => {
+    it('应该克隆验证�?, () => {
       validator.addRule('name', ValidationRules.required())
       validator.addRule('email', ValidationRules.email())
 
@@ -337,7 +337,7 @@ describe('validator', () => {
       expect(cloned.getRules('email')).toHaveLength(1)
     })
 
-    it('应该合并验证器', () => {
+    it('应该合并验证�?, () => {
       const other = new Validator()
       other.addRule('age', ValidationRules.numeric())
       other.addRule('phone', ValidationRules.phone())
@@ -353,7 +353,7 @@ describe('validator', () => {
 
   describe('事件', () => {
     it('应该发出规则添加事件', () => {
-      const spy = jest.fn()
+      const spy = vi.fn()
       validator.on('ruleAdded', spy)
 
       const rule = ValidationRules.required()
@@ -363,7 +363,7 @@ describe('validator', () => {
     })
 
     it('应该发出规则移除事件', () => {
-      const spy = jest.fn()
+      const spy = vi.fn()
       validator.on('ruleRemoved', spy)
 
       const rule = ValidationRules.required()
@@ -374,7 +374,7 @@ describe('validator', () => {
     })
 
     it('应该发出字段规则清除事件', () => {
-      const spy = jest.fn()
+      const spy = vi.fn()
       validator.on('fieldRulesRemoved', spy)
 
       validator.addRule('name', ValidationRules.required())
@@ -384,7 +384,7 @@ describe('validator', () => {
     })
 
     it('应该发出规则清空事件', () => {
-      const spy = jest.fn()
+      const spy = vi.fn()
       validator.on('rulesCleared', spy)
 
       validator.addRule('name', ValidationRules.required())
@@ -394,14 +394,14 @@ describe('validator', () => {
     })
   })
 
-  describe('静态方法', () => {
-    it('应该创建验证器实例', () => {
+  describe('静态方�?, () => {
+    it('应该创建验证器实�?, () => {
       const instance = Validator.create({ stopOnFirstError: true })
 
       expect(instance).toBeInstanceOf(Validator)
     })
 
-    it('应该创建带规则的验证器', () => {
+    it('应该创建带规则的验证�?, () => {
       const instance = Validator.createWithRules({
         name: ValidationRules.required(),
         email: [ValidationRules.required(), ValidationRules.email()],
@@ -414,7 +414,7 @@ describe('validator', () => {
   })
 
   describe('边界情况', () => {
-    it('应该处理空数据', async () => {
+    it('应该处理空数�?, async () => {
       validator.addRule('name', ValidationRules.required())
 
       const result = await validator.validate({})
@@ -423,7 +423,7 @@ describe('validator', () => {
       expect(result.errors[0].field).toBe('name')
     })
 
-    it('应该处理null和undefined值', async () => {
+    it('应该处理null和undefined�?, async () => {
       validator.addRule('nullable', {
         code: 'NULLABLE',
         validator: value => value === null || value === undefined || typeof value === 'string',
@@ -438,7 +438,7 @@ describe('validator', () => {
       expect(result3.valid).toBe(true)
     })
 
-    it('应该处理深度嵌套的对象', async () => {
+    it('应该处理深度嵌套的对�?, async () => {
       validator.addRule('user.profile.settings.theme', ValidationRules.oneOf(['light', 'dark']))
 
       const result = await validator.validate({
@@ -466,3 +466,6 @@ describe('validator', () => {
     })
   })
 })
+
+
+

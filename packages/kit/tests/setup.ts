@@ -1,11 +1,10 @@
 /**
- * Jest 测试环境设置
+ * Vitest 测试环境设置
  */
 
-import { jest } from '@jest/globals'
+import { vi } from 'vitest'
 
-// 设置测试超时时间
-jest.setTimeout(10000)
+// 设置测试超时时间（Vitest 通过配置文件设置）
 
 // 模拟环境变量
 process.env.NODE_ENV = 'test'
@@ -86,14 +85,14 @@ declare global {
 // 测试前后钩子
 beforeEach(() => {
   // 清理控制台输出（避免测试时的日志干扰）
-  jest.spyOn(console, 'log').mockImplementation(() => {})
-  jest.spyOn(console, 'warn').mockImplementation(() => {})
-  jest.spyOn(console, 'error').mockImplementation(() => {})
+  vi.spyOn(console, 'log').mockImplementation(() => { })
+  vi.spyOn(console, 'warn').mockImplementation(() => { })
+  vi.spyOn(console, 'error').mockImplementation(() => { })
 })
 
 afterEach(() => {
   // 恢复控制台输出
-  jest.restoreAllMocks()
+  vi.restoreAllMocks()
 })
 
 // 全局错误处理

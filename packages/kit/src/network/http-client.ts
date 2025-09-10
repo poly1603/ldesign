@@ -166,7 +166,7 @@ export class HttpClient extends EventEmitter {
 
     this.emit('request', processedConfig)
 
-    let lastError: Error
+    let lastError: Error | undefined
     let attempt = 0
     const maxAttempts = this.config.retries + 1
 
@@ -212,7 +212,7 @@ export class HttpClient extends EventEmitter {
     }
 
     this.emit('error', lastError!)
-    throw (lastError instanceof Error ? lastError : new Error(String(lastError)))
+    throw (lastError instanceof Error ? lastError : new Error(String(lastError || 'Unknown error')))
   }
 
   /**
@@ -243,9 +243,9 @@ export class HttpClient extends EventEmitter {
       const responseData = await this.parseResponse<T>(response, config.responseType)
 
       const headersObj: Record<string, string> = {}
-      ;(response.headers as any).forEach((value: string, key: string) => {
-        headersObj[key] = value
-      })
+        ; (response.headers as any).forEach((value: string, key: string) => {
+          headersObj[key] = value
+        })
 
       return {
         data: responseData,

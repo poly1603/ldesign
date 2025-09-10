@@ -135,6 +135,11 @@ export interface BuildOptions {
   input?: string | string[] | Record<string, string>
   outDir?: string
   formats?: string[]
+  external?: string[]
+  globals?: Record<string, string>
+  plugins?: unknown[]
+  rollupOptions?: Record<string, unknown>
+  output?: unknown
   [key: string]: unknown
 }
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Cache 模块测试
  */
 
@@ -65,8 +65,7 @@ describe('cacheManager', () => {
 
     it('应该能够更新缓存的TTL', () => {
       cache.set('key1', 'value1', 100)
-      cache.touch('key1', 1000) // 延长到1秒
-
+      cache.touch('key1', 1000) // 延长TTL
       // 立即检查仍然存在
       expect(cache.get('key1')).toBe('value1')
     })
@@ -179,71 +178,72 @@ describe('cacheManager', () => {
       expect(keys.sort()).toEqual(['key1', 'key2', 'key3'])
     })
 
-    it('应该能够获取所有值', () => {
+    it('应该能够获取所有�?, () => {
       cache.set('key1', 'value1')
       cache.set('key2', 'value2')
       cache.set('key3', 'value3')
 
       const values = cache.values()
-      expect(values.sort()).toEqual(['value1', 'value2', 'value3'])
-    })
+    expect(values.sort()).toEqual(['value1', 'value2', 'value3'])
+  })
 
-    it('应该能够获取所有条目', () => {
+  it('应该能够获取所有条�?, () => {
       cache.set('key1', 'value1')
       cache.set('key2', 'value2')
 
       const entries = cache.entries()
-      expect(entries).toHaveLength(2)
-      expect(entries).toContainEqual(['key1', 'value1'])
-      expect(entries).toContainEqual(['key2', 'value2'])
-    })
+  expect(entries).toHaveLength(2)
+  expect(entries).toContainEqual(['key1', 'value1'])
+  expect(entries).toContainEqual(['key2', 'value2'])
+})
   })
 
-  describe('事件监听', () => {
-    it('应该在设置缓存时触发事件', () => {
-      let eventTriggered = false
+describe('事件监听', () => {
+  it('应该在设置缓存时触发事件', () => {
+    let eventTriggered = false
 
-      cache.on('set', (key, value) => {
-        expect(key).toBe('key1')
-        expect(value).toBe('value1')
-        eventTriggered = true
-      })
-
-      cache.set('key1', 'value1')
-      expect(eventTriggered).toBe(true)
+    cache.on('set', (key, value) => {
+      expect(key).toBe('key1')
+      expect(value).toBe('value1')
+      eventTriggered = true
     })
 
-    it('应该在删除缓存时触发事件', () => {
-      let eventTriggered = false
+    cache.set('key1', 'value1')
+    expect(eventTriggered).toBe(true)
+  })
 
-      cache.set('key1', 'value1')
+  it('应该在删除缓存时触发事件', () => {
+    let eventTriggered = false
 
-      cache.on('delete', (key) => {
-        expect(key).toBe('key1')
-        eventTriggered = true
-      })
+    cache.set('key1', 'value1')
 
-      cache.delete('key1')
-      expect(eventTriggered).toBe(true)
+    cache.on('delete', (key) => {
+      expect(key).toBe('key1')
+      eventTriggered = true
     })
 
-    it('应该在缓存过期时触发事件', async () => {
-      let eventTriggered = false
+    cache.delete('key1')
+    expect(eventTriggered).toBe(true)
+  })
 
-      cache.on('expire', (key) => {
-        expect(key).toBe('key1')
-        eventTriggered = true
-      })
+  it('应该在缓存过期时触发事件', async () => {
+    let eventTriggered = false
 
-      cache.set('key1', 'value1', 50) // 50ms TTL
-
-      // 等待过期
-      await new Promise(resolve => setTimeout(resolve, 100))
-
-      // 触发清理
-      cache.get('key1')
-
-      expect(eventTriggered).toBe(true)
+    cache.on('expire', (key) => {
+      expect(key).toBe('key1')
+      eventTriggered = true
     })
+
+    cache.set('key1', 'value1', 50) // 50ms TTL
+
+    // 等待过期
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    // 触发清理
+    cache.get('key1')
+
+    expect(eventTriggered).toBe(true)
   })
 })
+})
+

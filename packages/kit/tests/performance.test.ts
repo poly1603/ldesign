@@ -1,7 +1,9 @@
-/**
+﻿/**
  * Performance 模块测试
  */
 
+
+import { vi } from 'vitest'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { PerformanceMonitor, PerformanceUtils } from '../src/performance'
 
@@ -37,7 +39,7 @@ describe('performanceMonitor', () => {
     monitor.stopMonitoring()
   })
 
-  describe('计时器功能', () => {
+  describe('计时器功�?, () => {
     it('应该能够开始和结束计时', async () => {
       const { performance } = await import('node:perf_hooks')
       let callCount = 0
@@ -108,8 +110,7 @@ describe('performanceMonitor', () => {
         'Test error',
       )
 
-      // 验证计时器已被清理
-      expect(() => monitor.endTimer('error-func')).toThrow()
+      // 验证计时器已被清�?      expect(() => monitor.endTimer('error-func')).toThrow()
     })
   })
 
@@ -136,9 +137,7 @@ describe('performanceMonitor', () => {
     it('应该能够获取 CPU 快照', async () => {
       const { cpuUsage } = await import('node:process')
       vi.mocked(cpuUsage).mockReturnValue({
-        user: 1000000, // 1 秒
-        system: 500000, // 0.5 秒
-      })
+        user: 1000000, // 1 �?        system: 500000, // 0.5 �?      })
 
       const snapshot = monitor.getCPUSnapshot()
 
@@ -220,8 +219,7 @@ describe('performanceMonitor', () => {
 
   describe('性能报告', () => {
     it('应该能够生成性能报告', async () => {
-      // 添加一些模拟指标
-      const { performance } = await import('node:perf_hooks')
+      // 添加一些模拟指�?      const { performance } = await import('node:perf_hooks')
       vi.mocked(performance.now).mockReturnValue(1000)
 
       monitor.startTimer('test1')
@@ -237,7 +235,7 @@ describe('performanceMonitor', () => {
       expect(report.timers[1].name).toBe('test2')
     })
 
-    it('应该能够按时间范围过滤报告', async () => {
+    it('应该能够按时间范围过滤报�?, async () => {
       const now = new Date()
       const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
       const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000)
@@ -272,8 +270,8 @@ describe('performanceMonitor', () => {
 })
 
 describe('performanceUtils', () => {
-  describe('快速计时', () => {
-    it('应该能够快速计时同步函数', async () => {
+  describe('快速计�?, () => {
+    it('应该能够快速计时同步函�?, async () => {
       const { performance } = await import('node:perf_hooks')
       let callCount = 0
       vi.mocked(performance.now).mockImplementation(() => {
@@ -292,7 +290,7 @@ describe('performanceUtils', () => {
       consoleSpy.mockRestore()
     })
 
-    it('应该能够快速计时异步函数', async () => {
+    it('应该能够快速计时异步函�?, async () => {
       const { performance } = await import('node:perf_hooks')
       let callCount = 0
       vi.mocked(performance.now).mockImplementation(() => {
@@ -339,9 +337,7 @@ describe('performanceUtils', () => {
   describe('cPU 分析', () => {
     it('应该能够分析 CPU 使用', () => {
       const mockCpuUsage = vi.fn().mockReturnValue({
-        user: 1000000, // 1 秒
-        system: 500000, // 0.5 秒
-      })
+        user: 1000000, // 1 �?        system: 500000, // 0.5 �?      })
 
       // Mock process.cpuUsage
       Object.defineProperty(process, 'cpuUsage', {
@@ -356,7 +352,7 @@ describe('performanceUtils', () => {
       expect(analysis.percentage).toBeUndefined() // 没有 previousUsage
     })
 
-    it('应该能够计算 CPU 使用百分比', () => {
+    it('应该能够计算 CPU 使用百分�?, () => {
       const mockCpuUsage = vi
         .fn()
         .mockReturnValueOnce({ user: 500000, system: 250000 })
@@ -376,8 +372,8 @@ describe('performanceUtils', () => {
     })
   })
 
-  describe('快速基准测试', () => {
-    it('应该能够运行快速基准测试', async () => {
+  describe('快速基准测�?, () => {
+    it('应该能够运行快速基准测�?, async () => {
       // Mock PerformanceMonitor
       const mockBenchmark = vi.fn().mockResolvedValue({
         name: 'quick-test',
@@ -442,10 +438,12 @@ describe('performanceUtils', () => {
       const results = await PerformanceUtils.compareFunctions(functions, 1000)
 
       expect(results).toHaveLength(2)
-      expect(results[0].name).toBe('func2') // 更快的函数排在前面
-      expect(results[0].rank).toBe(1)
+      expect(results[0].name).toBe('func2') // 更快的函数排在前�?      expect(results[0].rank).toBe(1)
       expect(results[1].name).toBe('func1')
       expect(results[1].rank).toBe(2)
     })
   })
 })
+
+
+

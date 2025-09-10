@@ -1,4 +1,4 @@
-/**
+﻿/**
  * FileSystem 模块测试
  */
 
@@ -25,7 +25,7 @@ describe('fileSystem', () => {
   })
 
   describe('文件操作', () => {
-    it('应该能够写入和读取文件', async () => {
+    it('应该能够写入和读取文�?, async () => {
       const filePath = join(testDir, 'test.txt')
       const content = 'Hello, World!'
 
@@ -35,7 +35,7 @@ describe('fileSystem', () => {
       expect(readContent).toBe(content)
     })
 
-    it('应该能够检查文件是否存在', async () => {
+    it('应该能够检查文件是否存�?, async () => {
       const filePath = join(testDir, 'test.txt')
 
       expect(await FileSystem.exists(filePath)).toBe(false)
@@ -87,8 +87,7 @@ describe('fileSystem', () => {
     })
 
     it('应该能够读取目录内容', async () => {
-      // 创建测试文件和目录
-      await FileSystem.writeFile(join(testDir, 'file1.txt'), 'content1')
+      // 创建测试文件和目�?      await FileSystem.writeFile(join(testDir, 'file1.txt'), 'content1')
       await FileSystem.writeFile(join(testDir, 'file2.txt'), 'content2')
       await FileSystem.createDir(join(testDir, 'subdir'))
 
@@ -119,7 +118,7 @@ describe('fileSystem', () => {
       expect(result).toBe(join(testDir, 'test'))
     })
 
-    it('应该能够规范化路径', () => {
+    it('应该能够规范化路�?, () => {
       const result = FileSystem.normalizePath('path//to///file')
       expect(result).toBe(join('path', 'to', 'file'))
     })
@@ -141,13 +140,11 @@ describe('fileSystem', () => {
         changeDetected = true
       })
 
-      // 等待监听器启动
-      await new Promise(resolve => setTimeout(resolve, 100))
+      // 等待监听器启�?      await new Promise(resolve => setTimeout(resolve, 100))
 
       await FileSystem.writeFile(filePath, 'initial content')
 
-      // 等待变化检测
-      await new Promise(resolve => setTimeout(resolve, 200))
+      // 等待变化检�?      await new Promise(resolve => setTimeout(resolve, 200))
 
       watcher.close()
       expect(changeDetected).toBe(true)
@@ -175,7 +172,7 @@ describe('fileSystem', () => {
   })
 
   describe('工具方法', () => {
-    it('应该能够获取文件扩展名', () => {
+    it('应该能够获取文件扩展�?, () => {
       expect(FileSystem.getExtension('file.txt')).toBe('.txt')
       expect(FileSystem.getExtension('file.tar.gz')).toBe('.gz')
       expect(FileSystem.getExtension('file')).toBe('')
@@ -194,3 +191,5 @@ describe('fileSystem', () => {
     })
   })
 })
+
+

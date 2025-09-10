@@ -7,12 +7,23 @@ import type { EventQuery, EventRecord, EventStoreOptions } from '../types'
 import { EventEmitter } from 'node:events'
 
 /**
+ * 快照接口
+ */
+interface EventSnapshot {
+  name: string
+  timestamp: Date
+  eventCount: number
+  lastSequence: number
+  events: EventRecord[]
+}
+
+/**
  * 事件存储类
  */
 export class EventStore extends EventEmitter {
   private events: EventRecord[] = []
   private options: Required<EventStoreOptions>
-  private snapshots: Map<string, unknown> = new Map()
+  private snapshots: Map<string, EventSnapshot> = new Map()
 
   constructor(options: EventStoreOptions = {}) {
     super()
@@ -128,10 +139,10 @@ export class EventStore extends EventEmitter {
         const bValue = this.getFieldValue(b, field)
 
         if (direction === 'asc') {
-          return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
+          return this.compareValues(aValue, bValue)
         }
         else {
-          return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
+          return this.compareValues(bValue, aValue)
         }
       })
     }
@@ -468,11 +479,12 @@ export class EventStore extends EventEmitter {
    */
   private validateEvent(event: unknown): event is EventRecord {
     return (
-      event
-      && typeof event.id === 'string'
-      && typeof event.event === 'string'
-      && event.timestamp instanceof Date
-      && typeof event.sequence === 'number'
+      event !== null
+      && typeof event === 'object'
+      && typeof (event as EventRecord).id === 'string'
+      && typeof (event as EventRecord).event === 'string'
+      && (event as EventRecord).timestamp instanceof Date
+      && typeof (event as EventRecord).sequence === 'number'
     )
   }
 
@@ -483,6 +495,29 @@ export class EventStore extends EventEmitter {
     // 实际实现中应该写入文件系统或数据库
     // 这里只是一个占位符
     this.emit('eventPersisted', event)
+  }
+
+  /**
+   * 比较两个值
+   */
+  private compareValues(a: unknown, b: unknown): number {
+    // 处理 null 和 undefined
+    if (a == null && b == null) return 0
+    if (a == null) return -1
+    if (b == null) return 1
+
+    // 如果类型相同，直接比较
+    if (typeof a === typeof b) {
+      if (typeof a === 'number' || typeof a === 'string') {
+        return a < b ? -1 : a > b ? 1 : 0
+      }
+      if (a instanceof Date && b instanceof Date) {
+        return a.getTime() - b.getTime()
+      }
+    }
+
+    // 转换为字符串比较
+    return String(a).localeCompare(String(b))
   }
 
   /**

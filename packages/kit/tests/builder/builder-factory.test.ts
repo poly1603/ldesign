@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BuilderFactory 单元测试
  */
 
@@ -15,8 +15,7 @@ vi.mock('../../src/builder/rollup-builder')
 describe('builderFactory', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // 清除所有预设
-    BuilderFactory.getPresetNames().forEach((name) => {
+    // 清除所有预�?    BuilderFactory.getPresetNames().forEach((name) => {
       BuilderFactory.removePreset(name)
     })
     // 重新注册内置预设
@@ -25,7 +24,7 @@ describe('builderFactory', () => {
     })
   })
 
-  describe('创建构建器', () => {
+  describe('创建构建�?, () => {
     it('应该能够创建 ViteBuilder', () => {
       const config = { entry: 'src/index.ts' }
       const builder = BuilderFactory.createViteBuilder(config)
@@ -76,13 +75,13 @@ describe('builderFactory', () => {
       expect(preset.name).toBe('vue-app')
     })
 
-    it('应该在预设不存在时抛出错误', () => {
+    it('应该在预设不存在时抛出错�?, () => {
       expect(() => {
         BuilderFactory.getPreset('non-existent')
       }).toThrow('Preset "non-existent" not found')
     })
 
-    it('应该能够获取所有预设名称', () => {
+    it('应该能够获取所有预设名�?, () => {
       const names = BuilderFactory.getPresetNames()
       expect(names).toContain('vue-app')
       expect(names).toContain('react-app')
@@ -98,7 +97,7 @@ describe('builderFactory', () => {
     })
   })
 
-  describe('使用预设创建构建器', () => {
+  describe('使用预设创建构建�?, () => {
     it('应该能够使用预设创建 ViteBuilder', () => {
       const builder = BuilderFactory.createViteBuilderWithPreset('vue-app')
 
@@ -155,8 +154,7 @@ describe('builderFactory', () => {
         expect.objectContaining({
           server: expect.objectContaining({
             port: 8080,
-            open: true, // 来自预设的默认值
-          }),
+            open: true, // 来自预设的默认�?          }),
         }),
       )
     })
@@ -181,7 +179,7 @@ describe('builderFactory', () => {
       })
     })
 
-    it('应该包含库开发预设', () => {
+    it('应该包含库开发预�?, () => {
       const preset = BuilderFactory.getPreset('library')
       expect(preset.name).toBe('library')
       expect(preset.config).toMatchObject({
@@ -192,7 +190,7 @@ describe('builderFactory', () => {
       })
     })
 
-    it('应该包含 TypeScript 库预设', () => {
+    it('应该包含 TypeScript 库预�?, () => {
       const preset = BuilderFactory.getPreset('ts-library')
       expect(preset.name).toBe('ts-library')
       expect(preset.config).toMatchObject({
@@ -214,7 +212,7 @@ describe('builderFactory', () => {
       })
     })
 
-    it('应该包含 Rollup 库预设', () => {
+    it('应该包含 Rollup 库预�?, () => {
       const preset = BuilderFactory.getPreset('rollup-library')
       expect(preset.name).toBe('rollup-library')
       expect(preset.config).toMatchObject({
@@ -226,7 +224,7 @@ describe('builderFactory', () => {
       })
     })
 
-    it('应该包含 UMD 库预设', () => {
+    it('应该包含 UMD 库预�?, () => {
       const preset = BuilderFactory.getPreset('umd-library')
       expect(preset.name).toBe('umd-library')
       expect(preset.config).toMatchObject({
@@ -240,7 +238,7 @@ describe('builderFactory', () => {
   })
 
   describe('配置合并', () => {
-    it('应该正确合并简单配置', () => {
+    it('应该正确合并简单配�?, () => {
       const preset: PresetConfig = {
         name: 'test',
         config: {
@@ -281,12 +279,11 @@ describe('builderFactory', () => {
 
       expect(ViteBuilder).toHaveBeenCalledWith(
         expect.objectContaining({
-          external: ['lodash'], // 数组应该被完全替换
-        }),
+          external: ['lodash'], // 数组应该被完全替�?        }),
       )
     })
 
-    it('应该正确处理 undefined 值', () => {
+    it('应该正确处理 undefined �?, () => {
       const preset: PresetConfig = {
         name: 'test-undefined',
         config: {
@@ -306,9 +303,10 @@ describe('builderFactory', () => {
         expect.objectContaining({
           entry: 'src/index.ts',
           outDir: 'build',
-          minify: true, // undefined 值不应该覆盖预设值
-        }),
+          minify: true, // undefined 值不应该覆盖预设�?        }),
       )
     })
   })
 })
+
+

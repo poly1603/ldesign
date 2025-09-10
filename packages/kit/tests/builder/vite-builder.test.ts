@@ -1,7 +1,9 @@
-/**
+﻿/**
  * ViteBuilder 单元测试
  */
 
+
+import { vi } from 'vitest'
 import type { ViteBuilderConfig } from '../../src/builder/types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ViteBuilder } from '../../src/builder/vite-builder'
@@ -33,8 +35,8 @@ describe('viteBuilder', () => {
     vi.clearAllMocks()
   })
 
-  describe('构造函数', () => {
-    it('应该正确初始化配置', () => {
+  describe('构造函�?, () => {
+    it('应该正确初始化配�?, () => {
       const config = builder.getConfig()
       expect(config.root).toBe('/test/project')
       expect(config.entry).toBe('src/index.ts')
@@ -54,7 +56,7 @@ describe('viteBuilder', () => {
       defaultBuilder.destroy()
     })
 
-    it('应该正确合并服务器配置', () => {
+    it('应该正确合并服务器配�?, () => {
       const builderWithServer = new ViteBuilder({
         server: {
           port: 8080,
@@ -65,8 +67,7 @@ describe('viteBuilder', () => {
       const config = builderWithServer.getConfig()
       expect(config.server?.port).toBe(8080)
       expect(config.server?.host).toBe('localhost')
-      expect(config.server?.cors).toBe(true) // 默认值
-
+      expect(config.server?.cors).toBe(true) // 默认�?
       builderWithServer.destroy()
     })
   })
@@ -153,7 +154,7 @@ describe('viteBuilder', () => {
       expect(result.errors).toContain('Build failed')
     })
 
-    it('应该能够构建库', async () => {
+    it('应该能够构建�?, async () => {
       const libBuilder = new ViteBuilder({
         lib: {
           entry: 'src/index.ts',
@@ -171,7 +172,7 @@ describe('viteBuilder', () => {
       libBuilder.destroy()
     })
 
-    it('应该在没有库配置时抛出错误', async () => {
+    it('应该在没有库配置时抛出错�?, async () => {
       await expect(builder.buildLib()).rejects.toThrow(
         'Library configuration is required for buildLib()',
       )
@@ -226,8 +227,8 @@ describe('viteBuilder', () => {
     })
   })
 
-  describe('预览服务器', () => {
-    it('应该能够启动预览服务器', async () => {
+  describe('预览服务�?, () => {
+    it('应该能够启动预览服务�?, async () => {
       const { preview } = await import('vite')
       const mockPreviewServer = {
         close: vi.fn(),
@@ -258,8 +259,7 @@ describe('viteBuilder', () => {
       // 由于 watch 是一个持续运行的过程，我们只测试它是否正确调用了 build
       const watchPromise = builder.watch()
 
-      // 等待一小段时间让 watch 开始
-      await new Promise(resolve => setTimeout(resolve, 10))
+      // 等待一小段时间�?watch 开�?      await new Promise(resolve => setTimeout(resolve, 10))
 
       expect(build).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -272,7 +272,7 @@ describe('viteBuilder', () => {
   })
 
   describe('事件系统', () => {
-    it('应该触发构建开始事件', async () => {
+    it('应该触发构建开始事�?, async () => {
       const { build } = await import('vite')
       vi.mocked(build).mockResolvedValue({ output: [] })
 
@@ -319,15 +319,15 @@ describe('viteBuilder', () => {
     })
   })
 
-  describe('销毁功能', () => {
-    it('应该能够正确销毁', async () => {
+  describe('销毁功�?, () => {
+    it('应该能够正确销�?, async () => {
       await builder.destroy()
 
       // 销毁后应该无法执行操作
       await expect(builder.build()).rejects.toThrow('ViteBuilder has been destroyed')
     })
 
-    it('应该在销毁时关闭服务器', async () => {
+    it('应该在销毁时关闭服务�?, async () => {
       const { createServer } = await import('vite')
       const mockServer = {
         listen: vi.fn(),
@@ -350,3 +350,6 @@ describe('viteBuilder', () => {
     })
   })
 })
+
+
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 项目类型检测器测试
  *
  * 测试项目类型检测、框架识别、配置文件扫描等功能
@@ -7,6 +7,8 @@
  * @version 1.0.0
  */
 
+
+import { vi } from 'vitest'
 import { existsSync, readFileSync } from 'node:fs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
@@ -30,15 +32,14 @@ describe('projectDetector', () => {
 
   beforeEach(() => {
     detector = new ProjectDetector({ projectRoot: '/test/project' })
-    // 重置所有模拟
-    vi.clearAllMocks()
+    // 重置所有模�?    vi.clearAllMocks()
   })
 
   afterEach(() => {
     vi.resetAllMocks()
   })
 
-  describe('构造函数', () => {
+  describe('构造函�?, () => {
     it('应该使用默认选项创建检测器', () => {
       const defaultDetector = new ProjectDetector()
       expect(defaultDetector).toBeInstanceOf(ProjectDetector)
@@ -53,7 +54,7 @@ describe('projectDetector', () => {
     })
   })
 
-  describe('vue.js 项目检测', () => {
+  describe('vue.js 项目检�?, () => {
     it('应该检测到 Vue 3.x 项目', async () => {
       // 模拟 package.json
       const mockPackageJson = {
@@ -139,7 +140,7 @@ describe('projectDetector', () => {
     })
   })
 
-  describe('react 项目检测', () => {
+  describe('react 项目检�?, () => {
     it('应该检测到 React 项目', async () => {
       const mockPackageJson = {
         dependencies: {
@@ -181,7 +182,7 @@ describe('projectDetector', () => {
     })
   })
 
-  describe('angular 项目检测', () => {
+  describe('angular 项目检�?, () => {
     it('应该检测到 Angular 项目', async () => {
       const mockPackageJson = {
         dependencies: {
@@ -211,8 +212,8 @@ describe('projectDetector', () => {
     })
   })
 
-  describe('typeScript 检测', () => {
-    it('应该检测到 TypeScript 支持（通过 tsconfig.json）', async () => {
+  describe('typeScript 检�?, () => {
+    it('应该检测到 TypeScript 支持（通过 tsconfig.json�?, async () => {
       const mockPackageJson = {
         dependencies: {
           react: '^18.0.0',
@@ -234,7 +235,7 @@ describe('projectDetector', () => {
       expect(result.hasTypeScript).toBe(true)
     })
 
-    it('应该检测到 TypeScript 支持（通过依赖）', async () => {
+    it('应该检测到 TypeScript 支持（通过依赖�?, async () => {
       const mockPackageJson = {
         dependencies: {
           react: '^18.0.0',
@@ -257,7 +258,7 @@ describe('projectDetector', () => {
     })
   })
 
-  describe('包管理器检测', () => {
+  describe('包管理器检�?, () => {
     it('应该检测到 pnpm', async () => {
       mockExistsSync.mockImplementation((path: string) => {
         if (path.includes('package.json'))
@@ -290,7 +291,7 @@ describe('projectDetector', () => {
       expect(result.packageManager).toBe(PackageManager.YARN)
     })
 
-    it('应该默认为 npm', async () => {
+    it('应该默认�?npm', async () => {
       mockExistsSync.mockImplementation((path: string) => {
         return path.includes('package.json')
       })
@@ -303,7 +304,7 @@ describe('projectDetector', () => {
     })
   })
 
-  describe('构建工具检测', () => {
+  describe('构建工具检�?, () => {
     it('应该检测到 Vite', async () => {
       const mockPackageJson = {
         devDependencies: {
@@ -378,8 +379,8 @@ describe('projectDetector', () => {
     })
   })
 
-  describe('自定义检测规则', () => {
-    it('应该支持自定义检测规则', async () => {
+  describe('自定义检测规�?, () => {
+    it('应该支持自定义检测规�?, async () => {
       const customDetector = new ProjectDetector({
         customDetectionRules: [
           {
@@ -411,7 +412,7 @@ describe('projectDetector', () => {
   })
 
   describe('错误处理', () => {
-    it('应该处理缺失的 package.json', async () => {
+    it('应该处理缺失�?package.json', async () => {
       mockExistsSync.mockReturnValue(false)
 
       const result = await detector.detectProject()
@@ -420,7 +421,7 @@ describe('projectDetector', () => {
       expect(result.confidence).toBe(50)
     })
 
-    it('应该处理损坏的 package.json', async () => {
+    it('应该处理损坏�?package.json', async () => {
       mockExistsSync.mockReturnValue(true)
       mockReadFileSync.mockReturnValue('invalid json')
 
@@ -437,7 +438,7 @@ describe('工厂函数', () => {
     expect(detector).toBeInstanceOf(ProjectDetector)
   })
 
-  it('detectProjectType 应该执行快速检测', async () => {
+  it('detectProjectType 应该执行快速检�?, async () => {
     mockExistsSync.mockReturnValue(true)
     mockReadFileSync.mockReturnValue(
       JSON.stringify({
@@ -450,3 +451,6 @@ describe('工厂函数', () => {
     expect(result.projectType).toBe(ProjectType.VUE3)
   })
 })
+
+
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BuilderUtils 单元测试
  */
 
@@ -8,7 +8,7 @@ import { glob } from 'glob'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { BuilderUtils } from '../../src/builder/builder-utils'
 
-// Mock 文件系统和 glob
+// Mock 文件系统�?glob
 vi.mock('fs')
 vi.mock('glob')
 
@@ -17,8 +17,8 @@ describe('builderUtils', () => {
     vi.clearAllMocks()
   })
 
-  describe('项目类型检测', () => {
-    it('应该检测 Vue 项目', () => {
+  describe('项目类型检�?, () => {
+    it('应该检�?Vue 项目', () => {
       vi.mocked(existsSync).mockReturnValue(true)
       vi.mocked(readFileSync).mockReturnValue(
         JSON.stringify({
@@ -30,7 +30,7 @@ describe('builderUtils', () => {
       expect(type).toBe('vue')
     })
 
-    it('应该检测 React 项目', () => {
+    it('应该检�?React 项目', () => {
       vi.mocked(existsSync).mockReturnValue(true)
       vi.mocked(readFileSync).mockReturnValue(
         JSON.stringify({
@@ -42,7 +42,7 @@ describe('builderUtils', () => {
       expect(type).toBe('react')
     })
 
-    it('应该检测 Angular 项目', () => {
+    it('应该检�?Angular 项目', () => {
       vi.mocked(existsSync).mockReturnValue(true)
       vi.mocked(readFileSync).mockReturnValue(
         JSON.stringify({
@@ -67,7 +67,7 @@ describe('builderUtils', () => {
       expect(type).toBe('library')
     })
 
-    it('应该检测 Node.js 项目', () => {
+    it('应该检�?Node.js 项目', () => {
       vi.mocked(existsSync).mockReturnValue(true)
       vi.mocked(readFileSync).mockReturnValue(
         JSON.stringify({
@@ -80,14 +80,14 @@ describe('builderUtils', () => {
       expect(type).toBe('node')
     })
 
-    it('应该在没有 package.json 时返回 unknown', () => {
+    it('应该在没�?package.json 时返�?unknown', () => {
       vi.mocked(existsSync).mockReturnValue(false)
 
       const type = BuilderUtils.detectProjectType('/test/project')
       expect(type).toBe('unknown')
     })
 
-    it('应该在 package.json 解析失败时返回 unknown', () => {
+    it('应该�?package.json 解析失败时返�?unknown', () => {
       vi.mocked(existsSync).mockReturnValue(true)
       vi.mocked(readFileSync).mockImplementation(() => {
         throw new Error('Parse error')
@@ -115,7 +115,7 @@ describe('builderUtils', () => {
       expect(entry).toBeNull()
     })
 
-    it('应该支持自定义搜索模式', () => {
+    it('应该支持自定义搜索模�?, () => {
       vi.mocked(existsSync).mockReturnValue(true)
 
       const entry = BuilderUtils.findEntryFile('/test/project', ['custom/entry.ts'])
@@ -123,7 +123,7 @@ describe('builderUtils', () => {
     })
   })
 
-  describe('多入口文件查找', () => {
+  describe('多入口文件查�?, () => {
     it('应该找到多个入口文件', () => {
       vi.mocked(glob.sync).mockReturnValue(['src/components/index.ts', 'src/utils/index.ts'])
 
@@ -135,7 +135,7 @@ describe('builderUtils', () => {
       })
     })
 
-    it('应该支持自定义搜索模式', () => {
+    it('应该支持自定义搜索模�?, () => {
       vi.mocked(glob.sync).mockReturnValue(['lib/core/index.ts'])
 
       const entries = BuilderUtils.findMultipleEntries('/test/project', 'lib/*/index.ts')
@@ -146,18 +146,18 @@ describe('builderUtils', () => {
     })
   })
 
-  describe('文件名生成', () => {
-    it('应该生成 ES 模块文件名', () => {
+  describe('文件名生�?, () => {
+    it('应该生成 ES 模块文件�?, () => {
       const fileName = BuilderUtils.generateFileName('es', 'index')
       expect(fileName).toBe('index.js')
     })
 
-    it('应该生成 CommonJS 文件名', () => {
+    it('应该生成 CommonJS 文件�?, () => {
       const fileName = BuilderUtils.generateFileName('cjs', 'index')
       expect(fileName).toBe('index.cjs.cjs')
     })
 
-    it('应该生成 UMD 文件名', () => {
+    it('应该生成 UMD 文件�?, () => {
       const fileName = BuilderUtils.generateFileName('umd', 'index')
       expect(fileName).toBe('index.umd.umd.js')
     })
@@ -178,7 +178,7 @@ describe('builderUtils', () => {
     })
   })
 
-  describe('构建结果格式化', () => {
+  describe('构建结果格式�?, () => {
     it('应该格式化成功的构建结果', () => {
       const result: BuildResult = {
         success: true,
@@ -193,7 +193,7 @@ describe('builderUtils', () => {
 
       const formatted = BuilderUtils.formatBuildResult(result)
 
-      expect(formatted).toContain('✅ 构建成功 (1500ms)')
+      expect(formatted).toContain('�?构建成功 (1500ms)')
       expect(formatted).toContain('📦 输出文件:')
       expect(formatted).toContain('index.js - 1.00 KB')
       expect(formatted).toContain('index.cjs - 2.00 KB')
@@ -210,7 +210,7 @@ describe('builderUtils', () => {
 
       const formatted = BuilderUtils.formatBuildResult(result)
 
-      expect(formatted).toContain('❌ 构建失败 (500ms)')
+      expect(formatted).toContain('�?构建失败 (500ms)')
       expect(formatted).toContain('🚫 错误信息:')
       expect(formatted).toContain('Syntax error in src/index.ts')
     })
@@ -230,7 +230,7 @@ describe('builderUtils', () => {
       expect(formatted).toContain('Unused variable detected')
     })
 
-    it('应该显示压缩后大小', () => {
+    it('应该显示压缩后大�?, () => {
       const result: BuildResult = {
         success: true,
         duration: 1000,
@@ -248,33 +248,33 @@ describe('builderUtils', () => {
 
       const formatted = BuilderUtils.formatBuildResult(result)
 
-      expect(formatted).toContain('index.js - 2.00 KB (压缩后: 1.00 KB)')
+      expect(formatted).toContain('index.js - 2.00 KB (压缩�? 1.00 KB)')
     })
   })
 
-  describe('文件大小格式化', () => {
-    it('应该格式化字节', () => {
+  describe('文件大小格式�?, () => {
+    it('应该格式化字�?, () => {
       expect(BuilderUtils.formatFileSize(0)).toBe('0 B')
       expect(BuilderUtils.formatFileSize(512)).toBe('512 B')
     })
 
-    it('应该格式化 KB', () => {
+    it('应该格式�?KB', () => {
       expect(BuilderUtils.formatFileSize(1024)).toBe('1 KB')
       expect(BuilderUtils.formatFileSize(1536)).toBe('1.5 KB')
     })
 
-    it('应该格式化 MB', () => {
+    it('应该格式�?MB', () => {
       expect(BuilderUtils.formatFileSize(1024 * 1024)).toBe('1 MB')
       expect(BuilderUtils.formatFileSize(1.5 * 1024 * 1024)).toBe('1.5 MB')
     })
 
-    it('应该格式化 GB', () => {
+    it('应该格式�?GB', () => {
       expect(BuilderUtils.formatFileSize(1024 * 1024 * 1024)).toBe('1 GB')
     })
   })
 
-  describe('依赖检查', () => {
-    it('应该检查已安装的依赖', () => {
+  describe('依赖检�?, () => {
+    it('应该检查已安装的依�?, () => {
       vi.mocked(existsSync).mockReturnValue(true)
       vi.mocked(readFileSync).mockReturnValue(
         JSON.stringify({
@@ -289,7 +289,7 @@ describe('builderUtils', () => {
       expect(result.missing).toEqual(['vue'])
     })
 
-    it('应该在没有 package.json 时返回所有依赖为缺失', () => {
+    it('应该在没�?package.json 时返回所有依赖为缺失', () => {
       vi.mocked(existsSync).mockReturnValue(false)
 
       const result = BuilderUtils.checkDependencies('/test/project', ['react', 'vue'])
@@ -338,7 +338,7 @@ describe('builderUtils', () => {
       })
     })
 
-    it('应该在配置文件不存在时返回 null', () => {
+    it('应该在配置文件不存在时返�?null', () => {
       vi.mocked(existsSync).mockReturnValue(false)
 
       const config = BuilderUtils.readConfigFile('/test/project')
@@ -348,7 +348,7 @@ describe('builderUtils', () => {
   })
 
   describe('推荐配置生成', () => {
-    it('应该为 Vue 项目生成推荐配置', () => {
+    it('应该�?Vue 项目生成推荐配置', () => {
       vi.mocked(existsSync)
         .mockReturnValueOnce(true) // package.json
         .mockReturnValueOnce(true) // src/main.ts
@@ -401,25 +401,25 @@ describe('builderUtils', () => {
       expect(result.errors).toHaveLength(0)
     })
 
-    it('应该检测缺少入口文件', () => {
+    it('应该检测缺少入口文�?, () => {
       const result = BuilderUtils.validateConfig({
         outDir: 'dist',
       })
 
       expect(result.valid).toBe(false)
-      expect(result.errors).toContain('缺少入口文件配置 (entry 或 input)')
+      expect(result.errors).toContain('缺少入口文件配置 (entry �?input)')
     })
 
-    it('应该检测缺少输出目录', () => {
+    it('应该检测缺少输出目�?, () => {
       const result = BuilderUtils.validateConfig({
         entry: 'src/index.ts',
       })
 
       expect(result.valid).toBe(false)
-      expect(result.errors).toContain('缺少输出目录配置 (outDir 或 output)')
+      expect(result.errors).toContain('缺少输出目录配置 (outDir �?output)')
     })
 
-    it('应该检测入口文件是否存在', () => {
+    it('应该检测入口文件是否存�?, () => {
       vi.mocked(existsSync).mockReturnValue(false)
 
       const result = BuilderUtils.validateConfig({
@@ -428,7 +428,9 @@ describe('builderUtils', () => {
       })
 
       expect(result.valid).toBe(false)
-      expect(result.errors).toContain('入口文件不存在: src/nonexistent.ts')
+      expect(result.errors).toContain('入口文件不存�? src/nonexistent.ts')
     })
   })
 })
+
+

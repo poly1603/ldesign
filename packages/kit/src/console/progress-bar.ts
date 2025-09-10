@@ -137,7 +137,7 @@ export class ProgressBar extends EventEmitter {
   /**
    * 更新进度
    */
-  update(current: number, payload?: any): void {
+  update(current: number, payload?: Record<string, unknown>): void {
     if (!this.isActive || !this.bar) {
       return
     }
@@ -155,7 +155,7 @@ export class ProgressBar extends EventEmitter {
   /**
    * 增加进度
    */
-  increment(delta = 1, payload?: any): void {
+  increment(delta = 1, payload?: Record<string, unknown>): void {
     if (!this.isActive || !this.bar) {
       return
     }

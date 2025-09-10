@@ -1,7 +1,9 @@
-/**
+﻿/**
  * Package 模块测试
  */
 
+
+import { vi } from 'vitest'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -114,7 +116,7 @@ describe('packageManager', () => {
       expect(pkg.dependencies?.lodash).toBe('^4.17.21')
     })
 
-    it('应该能够添加开发依赖', async () => {
+    it('应该能够添加开发依�?, async () => {
       await packageManager.addDependency('typescript', '^5.0.0', { dev: true })
 
       const pkg = await packageManager.readPackageJson()
@@ -122,11 +124,9 @@ describe('packageManager', () => {
     })
 
     it('应该能够移除依赖', async () => {
-      // 先添加依赖
-      await packageManager.addDependency('lodash', '^4.17.21')
+      // 先添加依�?      await packageManager.addDependency('lodash', '^4.17.21')
 
-      // 再移除依赖
-      await packageManager.removeDependency('lodash')
+      // 再移除依�?      await packageManager.removeDependency('lodash')
 
       const pkg = await packageManager.readPackageJson()
       expect(pkg.dependencies?.lodash).toBeUndefined()
@@ -202,8 +202,8 @@ describe('packageManager', () => {
     })
   })
 
-  describe('包安装', () => {
-    it('应该能够安装包', async () => {
+  describe('包安�?, () => {
+    it('应该能够安装�?, async () => {
       const { exec } = await import('node:child_process')
       vi.mocked(exec).mockImplementation((command, options, callback) => {
         if (typeof callback === 'function') {
@@ -215,7 +215,7 @@ describe('packageManager', () => {
       await expect(packageManager.install()).resolves.not.toThrow()
     })
 
-    it('应该能够安装特定包', async () => {
+    it('应该能够安装特定�?, async () => {
       const { exec } = await import('node:child_process')
       vi.mocked(exec).mockImplementation((command, options, callback) => {
         if (typeof callback === 'function') {
@@ -227,7 +227,7 @@ describe('packageManager', () => {
       await expect(packageManager.installPackage('lodash')).resolves.not.toThrow()
     })
 
-    it('应该能够卸载包', async () => {
+    it('应该能够卸载�?, async () => {
       const { exec } = await import('node:child_process')
       vi.mocked(exec).mockImplementation((command, options, callback) => {
         if (typeof callback === 'function') {
@@ -305,19 +305,19 @@ describe('packageUtils', () => {
       })
     })
 
-    it('应该能够验证版本号', () => {
+    it('应该能够验证版本�?, () => {
       expect(PackageUtils.isValidVersion('1.0.0')).toBe(true)
       expect(PackageUtils.isValidVersion('1.0.0-alpha.1')).toBe(true)
       expect(PackageUtils.isValidVersion('invalid')).toBe(false)
     })
 
-    it('应该能够比较版本号', () => {
+    it('应该能够比较版本�?, () => {
       expect(PackageUtils.compareVersions('1.0.0', '1.0.1')).toBe(-1)
       expect(PackageUtils.compareVersions('1.1.0', '1.0.0')).toBe(1)
       expect(PackageUtils.compareVersions('1.0.0', '1.0.0')).toBe(0)
     })
 
-    it('应该能够检查版本是否满足范围', () => {
+    it('应该能够检查版本是否满足范�?, () => {
       expect(PackageUtils.satisfiesRange('1.2.3', '^1.0.0')).toBe(true)
       expect(PackageUtils.satisfiesRange('2.0.0', '^1.0.0')).toBe(false)
       expect(PackageUtils.satisfiesRange('1.0.5', '~1.0.0')).toBe(true)
@@ -333,7 +333,7 @@ describe('packageUtils', () => {
       expect(manager).toBe('npm')
     })
 
-    it('应该能够获取包信息', async () => {
+    it('应该能够获取包信�?, async () => {
       const { exec } = await import('node:child_process')
       vi.mocked(exec).mockImplementation((command, options, callback) => {
         if (typeof callback === 'function') {
@@ -353,3 +353,6 @@ describe('packageUtils', () => {
     })
   })
 })
+
+
+

@@ -1,6 +1,6 @@
 # Utils 工具函数
 
-Utils 模块提供了一系列常用的工具函数，包括字符串、数字、日期、对象、数组等处理工具。
+Utils 模块提供了一系列常用的工具函数，包括字符串、数字、日期、对象、数组、颜色、树形数据、URL等处理工具。
 
 ## 导入方式
 
@@ -13,10 +13,13 @@ import {
   ObjectUtils,
   ArrayUtils,
   ValidationUtils,
+  ColorUtils,
+  TreeUtils,
+  UrlUtils,
 } from '@ldesign/kit'
 
 // 按需导入
-import { StringUtils } from '@ldesign/kit/utils'
+import { StringUtils, ColorUtils } from '@ldesign/kit/utils'
 
 // 单独导入
 import { StringUtils } from '@ldesign/kit'
@@ -483,6 +486,294 @@ ValidationUtils.isCreditCard('4111111111111111') // true
 ValidationUtils.isCreditCard('1234567890') // false
 ```
 
+## ColorUtils
+
+颜色处理工具类，提供颜色格式转换、颜色操作和颜色分析方法。
+
+### 方法
+
+#### `hexToRgb(hex: string): RgbColor`
+
+将十六进制颜色转换为RGB格式。
+
+```typescript
+ColorUtils.hexToRgb('#ff0000') // { r: 255, g: 0, b: 0 }
+ColorUtils.hexToRgb('#00ff00') // { r: 0, g: 255, b: 0 }
+ColorUtils.hexToRgb('#0000ff') // { r: 0, g: 0, b: 255 }
+```
+
+#### `rgbToHex(rgb: RgbColor): string`
+
+将RGB颜色转换为十六进制格式。
+
+```typescript
+ColorUtils.rgbToHex({ r: 255, g: 0, b: 0 }) // '#ff0000'
+ColorUtils.rgbToHex({ r: 0, g: 255, b: 0 }) // '#00ff00'
+ColorUtils.rgbToHex({ r: 0, g: 0, b: 255 }) // '#0000ff'
+```
+
+#### `rgbToHsl(rgb: RgbColor): HslColor`
+
+将RGB颜色转换为HSL格式。
+
+```typescript
+ColorUtils.rgbToHsl({ r: 255, g: 0, b: 0 }) // { h: 0, s: 100, l: 50 }
+ColorUtils.rgbToHsl({ r: 128, g: 128, b: 128 }) // { h: 0, s: 0, l: 50 }
+```
+
+#### `hslToRgb(hsl: HslColor): RgbColor`
+
+将HSL颜色转换为RGB格式。
+
+```typescript
+ColorUtils.hslToRgb({ h: 0, s: 100, l: 50 }) // { r: 255, g: 0, b: 0 }
+ColorUtils.hslToRgb({ h: 120, s: 100, l: 50 }) // { r: 0, g: 255, b: 0 }
+```
+
+#### `lighten(color: string, amount: number): string`
+
+使颜色变亮。
+
+```typescript
+ColorUtils.lighten('#ff0000', 0.2) // '#ff6666'
+ColorUtils.lighten('#000000', 0.5) // '#808080'
+```
+
+#### `darken(color: string, amount: number): string`
+
+使颜色变暗。
+
+```typescript
+ColorUtils.darken('#ff0000', 0.2) // '#cc0000'
+ColorUtils.darken('#ffffff', 0.5) // '#808080'
+```
+
+#### `mix(color1: string, color2: string, weight?: number): string`
+
+混合两种颜色。
+
+```typescript
+ColorUtils.mix('#ff0000', '#0000ff') // '#800080' (紫色)
+ColorUtils.mix('#ff0000', '#0000ff', 0.3) // '#4d00b3' (偏蓝)
+ColorUtils.mix('#ff0000', '#0000ff', 0.7) // '#b3004d' (偏红)
+```
+
+#### `getContrast(color1: string, color2: string): number`
+
+计算两种颜色的对比度。
+
+```typescript
+ColorUtils.getContrast('#000000', '#ffffff') // 21 (最高对比度)
+ColorUtils.getContrast('#ff0000', '#00ff00') // ~2.9
+```
+
+#### `isLight(color: string): boolean`
+
+判断颜色是否为浅色。
+
+```typescript
+ColorUtils.isLight('#ffffff') // true
+ColorUtils.isLight('#000000') // false
+ColorUtils.isLight('#ff0000') // false
+```
+
+#### `isDark(color: string): boolean`
+
+判断颜色是否为深色。
+
+```typescript
+ColorUtils.isDark('#000000') // true
+ColorUtils.isDark('#ffffff') // false
+ColorUtils.isDark('#ff0000') // true
+```
+
+#### `getComplement(color: string): string`
+
+获取颜色的补色。
+
+```typescript
+ColorUtils.getComplement('#ff0000') // '#00ffff' (青色)
+ColorUtils.getComplement('#00ff00') // '#ff00ff' (洋红)
+```
+
+#### `generatePalette(baseColor: string, count: number): string[]`
+
+基于基础颜色生成调色板。
+
+```typescript
+ColorUtils.generatePalette('#ff0000', 5)
+// ['#ff0000', '#ff4000', '#ff8000', '#ffbf00', '#ffff00']
+```
+
+## TreeUtils
+
+树形数据处理工具类，提供树形结构的转换、遍历和操作方法。
+
+### 方法
+
+#### `arrayToTree<T>(items: T[], options?: TreeOptions): TreeNode<T>[]`
+
+将扁平数组转换为树形结构。
+
+```typescript
+const flatData = [
+  { id: '1', name: 'Root', parentId: null },
+  { id: '2', name: 'Child 1', parentId: '1' },
+  { id: '3', name: 'Child 2', parentId: '1' },
+  { id: '4', name: 'Grandchild', parentId: '2' }
+]
+
+const tree = TreeUtils.arrayToTree(flatData)
+// 转换为树形结构，包含 children 属性
+```
+
+#### `treeToArray<T>(tree: TreeNode<T>[]): T[]`
+
+将树形结构转换为扁平数组。
+
+```typescript
+const flatArray = TreeUtils.treeToArray(tree)
+// 返回扁平化的数组，移除 children 属性
+```
+
+#### `findNode<T>(tree: TreeNode<T>[], predicate: (node: TreeNode<T>) => boolean): TreeNode<T> | null`
+
+在树中查找节点。
+
+```typescript
+const foundNode = TreeUtils.findNode(tree, node => node.id === '4')
+// 返回匹配的节点或 null
+```
+
+#### `filterTree<T>(tree: TreeNode<T>[], predicate: (node: TreeNode<T>) => boolean): TreeNode<T>[]`
+
+过滤树节点。
+
+```typescript
+const filteredTree = TreeUtils.filterTree(tree, node => node.name.includes('Child'))
+// 返回包含匹配节点及其父节点的树
+```
+
+#### `mapTree<T, R>(tree: TreeNode<T>[], mapper: (node: TreeNode<T>) => R): TreeNode<R>[]`
+
+映射树节点。
+
+```typescript
+const mappedTree = TreeUtils.mapTree(tree, node => ({
+  ...node,
+  displayName: `[${node.id}] ${node.name}`
+}))
+// 返回转换后的树结构
+```
+
+#### `getDepth<T>(tree: TreeNode<T>[]): number`
+
+获取树的最大深度。
+
+```typescript
+const depth = TreeUtils.getDepth(tree) // 3
+```
+
+#### `getNodePath<T>(tree: TreeNode<T>[], nodeId: string, idKey?: string): TreeNode<T>[]`
+
+获取到指定节点的路径。
+
+```typescript
+const path = TreeUtils.getNodePath(tree, '4')
+// 返回从根节点到目标节点的路径数组
+```
+
+## UrlUtils
+
+URL处理工具类，提供URL构建、解析和操作方法。
+
+### 方法
+
+#### `buildUrl(baseUrl: string, params?: Record<string, any>): string`
+
+构建URL，支持查询参数。
+
+```typescript
+UrlUtils.buildUrl('https://api.example.com/users')
+// 'https://api.example.com/users'
+
+UrlUtils.buildUrl('https://api.example.com/users', { page: 1, limit: 10 })
+// 'https://api.example.com/users?page=1&limit=10'
+```
+
+#### `parseQuery(queryString: string): Record<string, string | string[]>`
+
+解析查询字符串。
+
+```typescript
+UrlUtils.parseQuery('?name=john&age=25&tags=a&tags=b')
+// { name: 'john', age: '25', tags: ['a', 'b'] }
+```
+
+#### `stringifyQuery(params: Record<string, any>): string`
+
+将对象转换为查询字符串。
+
+```typescript
+UrlUtils.stringifyQuery({ name: 'john', age: 25, tags: ['a', 'b'] })
+// 'name=john&age=25&tags=a&tags=b'
+```
+
+#### `normalize(url: string): string`
+
+规范化URL。
+
+```typescript
+UrlUtils.normalize('https://example.com//path/../api/')
+// 'https://example.com/api/'
+```
+
+#### `isAbsolute(url: string): boolean`
+
+检查URL是否为绝对路径。
+
+```typescript
+UrlUtils.isAbsolute('https://example.com') // true
+UrlUtils.isAbsolute('/api/users') // false
+UrlUtils.isAbsolute('api/users') // false
+```
+
+#### `join(...parts: string[]): string`
+
+连接URL片段。
+
+```typescript
+UrlUtils.join('https://api.example.com', 'v1', 'users', '123')
+// 'https://api.example.com/v1/users/123'
+```
+
+#### `getDomain(url: string): string`
+
+提取URL的域名。
+
+```typescript
+UrlUtils.getDomain('https://sub.example.com/path') // 'example.com'
+UrlUtils.getDomain('https://example.com:8080/api') // 'example.com'
+```
+
+#### `getSubdomain(url: string): string | null`
+
+提取URL的子域名。
+
+```typescript
+UrlUtils.getSubdomain('https://api.example.com') // 'api'
+UrlUtils.getSubdomain('https://example.com') // null
+```
+
+#### `isSameDomain(url1: string, url2: string): boolean`
+
+检查两个URL是否属于同一域名。
+
+```typescript
+UrlUtils.isSameDomain('https://api.example.com', 'https://www.example.com') // true
+UrlUtils.isSameDomain('https://example.com', 'https://other.com') // false
+```
+
 ## 类型定义
 
 ```typescript
@@ -497,6 +788,32 @@ interface NumberFormatOptions {
   maximumFractionDigits?: number
   useGrouping?: boolean
 }
+
+// 颜色相关类型
+interface RgbColor {
+  r: number
+  g: number
+  b: number
+}
+
+interface HslColor {
+  h: number
+  s: number
+  l: number
+}
+
+// 树形数据相关类型
+interface TreeNode<T = any> extends Record<string, unknown> {
+  id: string
+  children?: TreeNode<T>[]
+}
+
+interface TreeOptions {
+  idKey?: string
+  parentIdKey?: string
+  childrenKey?: string
+  rootValue?: any
+}
 ```
 
 ## 最佳实践
@@ -505,6 +822,15 @@ interface NumberFormatOptions {
 2. **类型安全**: 使用 TypeScript 类型定义确保类型安全
 3. **错误处理**: 对可能失败的操作进行适当的错误处理
 4. **内存管理**: 避免在循环中创建大量临时对象
+5. **颜色处理**:
+   - 使用 ColorUtils 进行颜色转换时，注意颜色值的有效范围
+   - 对比度计算遵循 WCAG 2.0 标准，确保可访问性
+6. **树形数据**:
+   - 处理大型树结构时，考虑使用懒加载
+   - 避免深度过大的树结构，可能导致栈溢出
+7. **URL处理**:
+   - 始终验证URL的有效性
+   - 处理用户输入的URL时要进行安全检查
 
 ## 示例应用
 

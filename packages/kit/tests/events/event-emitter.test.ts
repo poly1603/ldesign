@@ -1,7 +1,8 @@
-/**
+﻿/**
  * EventEmitter 测试
  */
 
+import { vi } from 'vitest'
 import { EventEmitter } from '../../src/events/event-emitter'
 
 describe('eventEmitter', () => {
@@ -20,7 +21,7 @@ describe('eventEmitter', () => {
 
   describe('基本事件操作', () => {
     it('应该注册和触发事件监听器', () => {
-      const listener = jest.fn()
+      const listener = vi.fn()
 
       emitter.on('test', listener)
       emitter.emit('test', 'data')
@@ -28,9 +29,9 @@ describe('eventEmitter', () => {
       expect(listener).toHaveBeenCalledWith('data')
     })
 
-    it('应该支持多个监听器', () => {
-      const listener1 = jest.fn()
-      const listener2 = jest.fn()
+    it('应该支持多个监听�?, () => {
+      const listener1 = vi.fn()
+      const listener2 = vi.fn()
 
       emitter.on('test', listener1)
       emitter.on('test', listener2)
@@ -40,8 +41,8 @@ describe('eventEmitter', () => {
       expect(listener2).toHaveBeenCalledWith('data')
     })
 
-    it('应该移除事件监听器', () => {
-      const listener = jest.fn()
+    it('应该移除事件监听�?, () => {
+      const listener = vi.fn()
 
       emitter.on('test', listener)
       emitter.off('test', listener)
@@ -51,7 +52,7 @@ describe('eventEmitter', () => {
     })
 
     it('应该支持一次性监听器', () => {
-      const listener = jest.fn()
+      const listener = vi.fn()
 
       emitter.once('test', listener)
       emitter.emit('test', 'data1')
@@ -62,8 +63,8 @@ describe('eventEmitter', () => {
     })
 
     it('应该移除所有监听器', () => {
-      const listener1 = jest.fn()
-      const listener2 = jest.fn()
+      const listener1 = vi.fn()
+      const listener2 = vi.fn()
 
       emitter.on('test1', listener1)
       emitter.on('test2', listener2)
@@ -77,8 +78,8 @@ describe('eventEmitter', () => {
     })
   })
 
-  describe('优先级', () => {
-    it('应该按优先级顺序执行监听器', () => {
+  describe('优先�?, () => {
+    it('应该按优先级顺序执行监听�?, () => {
       const order: number[] = []
 
       emitter.on('test', () => order.push(1), { priority: 1 })
@@ -90,7 +91,7 @@ describe('eventEmitter', () => {
       expect(order).toEqual([3, 2, 1])
     })
 
-    it('应该处理相同优先级的监听器', () => {
+    it('应该处理相同优先级的监听�?, () => {
       const order: number[] = []
 
       emitter.on('test', () => order.push(1), { priority: 1 })
@@ -104,8 +105,8 @@ describe('eventEmitter', () => {
 
   describe('命名空间', () => {
     it('应该支持命名空间', () => {
-      const listener1 = jest.fn()
-      const listener2 = jest.fn()
+      const listener1 = vi.fn()
+      const listener2 = vi.fn()
 
       emitter.on('test', listener1, { namespace: 'ns1' })
       emitter.on('test', listener2, { namespace: 'ns2' })
@@ -117,8 +118,8 @@ describe('eventEmitter', () => {
     })
 
     it('应该按命名空间移除监听器', () => {
-      const listener1 = jest.fn()
-      const listener2 = jest.fn()
+      const listener1 = vi.fn()
+      const listener2 = vi.fn()
 
       emitter.on('test', listener1, { namespace: 'ns1' })
       emitter.on('test', listener2, { namespace: 'ns2' })
@@ -130,10 +131,10 @@ describe('eventEmitter', () => {
       expect(listener2).toHaveBeenCalledWith('data')
     })
 
-    it('应该获取所有命名空间', () => {
-      emitter.on('test1', () => {}, { namespace: 'ns1' })
-      emitter.on('test2', () => {}, { namespace: 'ns2' })
-      emitter.on('test3', () => {}, { namespace: 'ns1' })
+    it('应该获取所有命名空�?, () => {
+      emitter.on('test1', () => { }, { namespace: 'ns1' })
+      emitter.on('test2', () => { }, { namespace: 'ns2' })
+      emitter.on('test3', () => { }, { namespace: 'ns1' })
 
       const namespaces = emitter.getNamespaces()
 
@@ -145,8 +146,8 @@ describe('eventEmitter', () => {
 
   describe('标签', () => {
     it('应该支持标签', () => {
-      const listener1 = jest.fn()
-      const listener2 = jest.fn()
+      const listener1 = vi.fn()
+      const listener2 = vi.fn()
 
       emitter.on('test', listener1, { tags: ['tag1', 'tag2'] })
       emitter.on('test', listener2, { tags: ['tag2', 'tag3'] })
@@ -158,8 +159,8 @@ describe('eventEmitter', () => {
     })
 
     it('应该按标签移除监听器', () => {
-      const listener1 = jest.fn()
-      const listener2 = jest.fn()
+      const listener1 = vi.fn()
+      const listener2 = vi.fn()
 
       emitter.on('test', listener1, { tags: ['tag1'] })
       emitter.on('test', listener2, { tags: ['tag2'] })
@@ -196,8 +197,8 @@ describe('eventEmitter', () => {
       expect(responses).toContain('result2-data')
     })
 
-    it('应该处理异步监听器中的错误', async () => {
-      const errorSpy = jest.fn()
+    it('应该处理异步监听器中的错�?, async () => {
+      const errorSpy = vi.fn()
       emitter.on('error', errorSpy)
 
       emitter.on('test', async () => {
@@ -217,7 +218,7 @@ describe('eventEmitter', () => {
 
   describe('统计信息', () => {
     it('应该跟踪事件统计', () => {
-      emitter.on('test', () => {})
+      emitter.on('test', () => { })
 
       emitter.emit('test', 'data1')
       emitter.emit('test', 'data2')
@@ -245,7 +246,7 @@ describe('eventEmitter', () => {
     })
 
     it('应该重置统计信息', () => {
-      emitter.on('test', () => {})
+      emitter.on('test', () => { })
       emitter.emit('test')
 
       emitter.resetStats('test')
@@ -255,9 +256,9 @@ describe('eventEmitter', () => {
       expect(stats!.lastEmittedAt).toBeUndefined()
     })
 
-    it('应该获取所有事件统计', () => {
-      emitter.on('test1', () => {})
-      emitter.on('test2', () => {})
+    it('应该获取所有事件统�?, () => {
+      emitter.on('test1', () => { })
+      emitter.on('test2', () => { })
 
       emitter.emit('test1')
       emitter.emit('test2')
@@ -270,9 +271,9 @@ describe('eventEmitter', () => {
     })
   })
 
-  describe('监听器信息', () => {
-    it('应该获取监听器信息', () => {
-      const listener = () => {}
+  describe('监听器信�?, () => {
+    it('应该获取监听器信�?, () => {
+      const listener = () => { }
 
       emitter.on('test', listener, {
         priority: 5,
@@ -291,8 +292,8 @@ describe('eventEmitter', () => {
       expect(info[0].callCount).toBe(0)
     })
 
-    it('应该跟踪监听器调用次数', () => {
-      emitter.on('test', () => {})
+    it('应该跟踪监听器调用次�?, () => {
+      emitter.on('test', () => { })
 
       emitter.emit('test')
       emitter.emit('test')
@@ -306,8 +307,8 @@ describe('eventEmitter', () => {
 
   describe('工具方法', () => {
     it('应该获取事件名称列表', () => {
-      emitter.on('test1', () => {})
-      emitter.on('test2', () => {})
+      emitter.on('test1', () => { })
+      emitter.on('test2', () => { })
 
       const eventNames = emitter.getEventNames()
 
@@ -315,18 +316,18 @@ describe('eventEmitter', () => {
       expect(eventNames).toContain('test2')
     })
 
-    it('应该获取监听器数量', () => {
-      emitter.on('test', () => {})
-      emitter.on('test', () => {})
+    it('应该获取监听器数�?, () => {
+      emitter.on('test', () => { })
+      emitter.on('test', () => { })
 
       expect(emitter.getListenerCount('test')).toBe(2)
       expect(emitter.getListenerCount()).toBe(2)
     })
 
-    it('应该检查是否有监听器', () => {
+    it('应该检查是否有监听�?, () => {
       expect(emitter.hasListeners('test')).toBe(false)
 
-      emitter.on('test', () => {})
+      emitter.on('test', () => { })
 
       expect(emitter.hasListeners('test')).toBe(true)
     })
@@ -358,8 +359,8 @@ describe('eventEmitter', () => {
   })
 
   describe('错误处理', () => {
-    it('应该处理监听器中的同步错误', () => {
-      const errorSpy = jest.fn()
+    it('应该处理监听器中的同步错�?, () => {
+      const errorSpy = vi.fn()
       emitter.on('error', errorSpy)
 
       emitter.on('test', () => {
@@ -371,8 +372,8 @@ describe('eventEmitter', () => {
     })
 
     it('应该继续执行其他监听器即使有错误', async () => {
-      const successSpy = jest.fn()
-      const errorSpy = jest.fn()
+      const successSpy = vi.fn()
+      const errorSpy = vi.fn()
       emitter.on('error', errorSpy)
 
       emitter.on('test', async () => {
@@ -389,8 +390,8 @@ describe('eventEmitter', () => {
   })
 
   describe('内存管理', () => {
-    it('应该正确清理监听器', () => {
-      const listener = () => {}
+    it('应该正确清理监听�?, () => {
+      const listener = () => { }
 
       emitter.on('test', listener)
       expect(emitter.getListenerCount('test')).toBe(1)
@@ -399,10 +400,10 @@ describe('eventEmitter', () => {
       expect(emitter.getListenerCount('test')).toBe(0)
     })
 
-    it('应该清理命名空间监听器', () => {
-      emitter.on('test1', () => {}, { namespace: 'ns1' })
-      emitter.on('test2', () => {}, { namespace: 'ns1' })
-      emitter.on('test3', () => {}, { namespace: 'ns2' })
+    it('应该清理命名空间监听�?, () => {
+      emitter.on('test1', () => { }, { namespace: 'ns1' })
+      emitter.on('test2', () => { }, { namespace: 'ns1' })
+      emitter.on('test3', () => { }, { namespace: 'ns2' })
 
       emitter.removeListenersByNamespace('ns1')
 
@@ -412,3 +413,6 @@ describe('eventEmitter', () => {
     })
   })
 })
+
+
+

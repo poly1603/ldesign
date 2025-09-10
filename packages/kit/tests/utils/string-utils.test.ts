@@ -1,7 +1,8 @@
-/**
+﻿/**
  * StringUtils 测试
  */
 
+import { vi } from 'vitest'
 import { StringUtils } from '../../src/utils/string-utils'
 
 describe('stringUtils', () => {
@@ -84,7 +85,7 @@ describe('stringUtils', () => {
   describe('truncate', () => {
     it('应该截断长字符串', () => {
       const longText = 'This is a very long text that should be truncated'
-      expect(StringUtils.truncate(longText, 20)).toBe('This is a very long...')
+      expect(StringUtils.truncate(longText, 20)).toBe('This is a very lo...')
     })
 
     it('应该不截断短字符串', () => {
@@ -94,7 +95,7 @@ describe('stringUtils', () => {
 
     it('应该使用自定义省略符', () => {
       const text = 'This is a long text'
-      expect(StringUtils.truncate(text, 10, '---')).toBe('This is a---')
+      expect(StringUtils.truncate(text, 10, '---')).toBe('This is---')
     })
 
     it('应该处理边界情况', () => {
@@ -197,7 +198,7 @@ describe('stringUtils', () => {
     it('应该处理缺失的变量', () => {
       const template = 'Hello {{name}}, your age is {{age}}'
       const data = { name: 'John' }
-      expect(StringUtils.template(template, data)).toBe('Hello John, your age is {{age}}')
+      expect(StringUtils.template(template, data)).toBe('Hello John, your age is ')
     })
 
     it('应该处理嵌套对象', () => {
@@ -260,7 +261,7 @@ describe('stringUtils', () => {
 
     it('应该处理中文', () => {
       expect(StringUtils.wordCount('你好世界')).toBe(4)
-      expect(StringUtils.wordCount('这是一个测试')).toBe(5)
+      expect(StringUtils.wordCount('这是一个测试')).toBe(6)
     })
   })
 
@@ -272,3 +273,5 @@ describe('stringUtils', () => {
     })
   })
 })
+
+

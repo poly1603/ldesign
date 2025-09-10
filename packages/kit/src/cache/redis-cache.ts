@@ -485,7 +485,7 @@ export class RedisCache extends EventEmitter implements CacheStore {
   /**
    * 使用ioredis创建实例
    */
-  static createWithIORedis(redisClient: unknown, options?: Partial<RedisCacheOptions>): RedisCache {
+  static createWithIORedis(redisClient: RedisClient, options?: Partial<RedisCacheOptions>): RedisCache {
     const cache = new RedisCache(options)
     cache.client = redisClient
     cache.connected = true
@@ -495,7 +495,7 @@ export class RedisCache extends EventEmitter implements CacheStore {
   /**
    * 使用node_redis创建实例
    */
-  static createWithNodeRedis(redisClient: unknown, options?: Partial<RedisCacheOptions>): RedisCache {
+  static createWithNodeRedis(redisClient: RedisClient, options?: Partial<RedisCacheOptions>): RedisCache {
     const cache = new RedisCache(options)
     cache.client = redisClient
     cache.connected = true

@@ -451,10 +451,5 @@ export class SchemaValidator extends EventEmitter {
     }
   }
 
-  /**
-   * 简单对象类型守卫
-   */
-  private isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null && !Array.isArray(value)
-  }
+
 }

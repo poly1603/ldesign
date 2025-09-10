@@ -1,5 +1,29 @@
 /**
- * CLI 应用程序
+ * CLI 应用程序模块
+ * 提供完整的命令行应用程序框架，支持命令解析、交互式提示、格式化输出等功能
+ *
+ * @example
+ * ```typescript
+ * import { CLIApp } from '@ldesign/kit'
+ *
+ * const app = new CLIApp({
+ *   name: 'my-cli',
+ *   version: '1.0.0',
+ *   description: 'My CLI application'
+ * })
+ *
+ * app.command('hello', {
+ *   description: 'Say hello',
+ *   options: [
+ *     { name: 'name', type: 'string', description: 'Your name' }
+ *   ],
+ *   action: async (args) => {
+ *     app.success(`Hello, ${args.name || 'World'}!`)
+ *   }
+ * })
+ *
+ * app.run()
+ * ```
  */
 
 import type {
@@ -8,6 +32,7 @@ import type {
   CommandOptions,
   OptionDefinition,
   ParsedArgs,
+  PromptOptions,
 } from '../types'
 import { EventEmitter } from 'node:events'
 import { CommandParser } from './command-parser'
@@ -16,17 +41,61 @@ import { PromptManager } from './prompt-manager'
 
 /**
  * CLI 应用程序类
+ * 继承自 EventEmitter，提供事件驱动的命令行应用程序框架
+ *
+ * 主要功能：
+ * - 命令注册和解析
+ * - 交互式用户输入
+ * - 格式化输出和日志
+ * - 中间件支持
+ * - 错误处理
+ *
+ * @extends EventEmitter
  */
 export class CLIApp extends EventEmitter {
+  /** 命令解析器实例，负责解析命令行参数和选项 */
   private parser: CommandParser
+
+  /** 提示管理器实例，负责处理用户交互输入 */
   private promptManager: PromptManager
+
+  /** 输出格式化器实例，负责格式化控制台输出 */
   private formatter: OutputFormatter
+
+  /** CLI 应用程序配置选项 */
   private options: Required<CLIAppOptions>
+
+  /** 中间件数组，用于在命令执行前后进行处理 */
   private middlewares: Array<(context: CLIContext, next: () => Promise<void>) => Promise<void>> = []
 
+  /**
+   * 创建 CLI 应用程序实例
+   *
+   * @param options - CLI 应用程序配置选项
+   * @param options.name - 应用程序名称，默认为 'cli-app'
+   * @param options.version - 应用程序版本，默认为 '1.0.0'
+   * @param options.description - 应用程序描述，默认为空字符串
+   * @param options.exitOnError - 发生错误时是否退出程序，默认为 true
+   * @param options.exitOnSuccess - 成功执行后是否退出程序，默认为 false
+   * @param options.colors - 是否启用彩色输出，默认为 true
+   * @param options.interactive - 是否启用交互模式，默认为 true
+   *
+   * @example
+   * ```typescript
+   * const app = new CLIApp({
+   *   name: 'my-tool',
+   *   version: '2.1.0',
+   *   description: 'A powerful CLI tool',
+   *   colors: true,
+   *   interactive: true
+   * })
+   * ```
+   */
   constructor(options: CLIAppOptions = {}) {
+    // 调用父类构造函数，初始化 EventEmitter
     super()
 
+    // 合并默认选项和用户提供的选项
     this.options = {
       name: options.name ?? 'cli-app',
       version: options.version ?? '1.0.0',
@@ -38,19 +107,22 @@ export class CLIApp extends EventEmitter {
       ...options,
     }
 
+    // 初始化命令解析器
     this.parser = new CommandParser({
       version: this.options.version,
       description: this.options.description,
-      allowUnknownOptions: false,
-      caseSensitive: false,
+      allowUnknownOptions: false, // 不允许未知选项
+      caseSensitive: false, // 不区分大小写
     })
 
+    // 初始化提示管理器
     this.promptManager = new PromptManager({
-      enabled: this.options.interactive,
+      enabled: this.options.interactive, // 根据配置启用/禁用交互模式
     })
 
+    // 初始化输出格式化器
     this.formatter = new OutputFormatter({
-      colors: this.options.colors,
+      colors: this.options.colors, // 根据配置启用/禁用彩色输出
     })
 
     this.setupDefaultCommands()
@@ -244,7 +316,7 @@ export class CLIApp extends EventEmitter {
   /**
    * 询问用户输入
    */
-  async prompt<T = any>(options: any): Promise<T> {
+  async prompt<T = unknown>(options: PromptOptions): Promise<T> {
     return this.promptManager.prompt<T>(options)
   }
 
@@ -299,35 +371,35 @@ export class CLIApp extends EventEmitter {
   /**
    * 显示进度条
    */
-  createProgressBar(total: number, options?: any): any {
+  createProgressBar(total: number, options?: Record<string, unknown>): unknown {
     return this.formatter.createProgressBar(total, options)
   }
 
   /**
    * 显示加载动画
    */
-  createSpinner(message?: string): any {
+  createSpinner(message?: string): unknown {
     return this.formatter.createSpinner(message)
   }
 
   /**
    * 显示表格
    */
-  table(data: any[], options?: any): void {
+  table(data: Record<string, unknown>[], options?: Record<string, unknown>): void {
     this.formatter.table(data, options)
   }
 
   /**
    * 显示列表
    */
-  list(items: string[], options?: any): void {
+  list(items: string[], options?: Record<string, unknown>): void {
     this.formatter.list(items, options)
   }
 
   /**
    * 显示 JSON
    */
-  json(data: any, options?: any): void {
+  json(data: unknown, options?: Record<string, unknown>): void {
     this.formatter.json(data, options)
   }
 

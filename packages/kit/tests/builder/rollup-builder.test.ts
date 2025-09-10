@@ -1,7 +1,9 @@
-/**
+﻿/**
  * RollupBuilder 单元测试
  */
 
+
+import { vi } from 'vitest'
 import type { RollupBuilderConfig } from '../../src/builder/types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { RollupBuilder } from '../../src/builder/rollup-builder'
@@ -33,8 +35,8 @@ describe('rollupBuilder', () => {
     vi.clearAllMocks()
   })
 
-  describe('构造函数', () => {
-    it('应该正确初始化配置', () => {
+  describe('构造函�?, () => {
+    it('应该正确初始化配�?, () => {
       const config = builder.getConfig()
       expect(config.input).toBe('src/index.ts')
       expect(config.output).toEqual({
@@ -192,7 +194,7 @@ describe('rollupBuilder', () => {
     })
   })
 
-  describe('多格式构建', () => {
+  describe('多格式构�?, () => {
     it('应该能够构建多种格式', async () => {
       const { rollup } = await import('rollup')
       const mockBundle = {
@@ -216,7 +218,7 @@ describe('rollupBuilder', () => {
       expect(results.every(r => r.success)).toBe(true)
     })
 
-    it('应该处理多格式构建中的错误', async () => {
+    it('应该处理多格式构建中的错�?, async () => {
       const { rollup } = await import('rollup')
       vi.mocked(rollup).mockRejectedValue(new Error('Build failed'))
 
@@ -238,11 +240,9 @@ describe('rollupBuilder', () => {
 
       vi.mocked(watch).mockReturnValue(mockWatcher as any)
 
-      // 启动监听模式（不等待完成，因为它是持续运行的）
-      const watchPromise = builder.watch()
+      // 启动监听模式（不等待完成，因为它是持续运行的�?      const watchPromise = builder.watch()
 
-      // 等待一小段时间让 watch 开始
-      await new Promise(resolve => setTimeout(resolve, 10))
+      // 等待一小段时间�?watch 开�?      await new Promise(resolve => setTimeout(resolve, 10))
 
       expect(watch).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -292,7 +292,7 @@ describe('rollupBuilder', () => {
   })
 
   describe('事件系统', () => {
-    it('应该触发构建开始事件', async () => {
+    it('应该触发构建开始事�?, async () => {
       const { rollup } = await import('rollup')
       const mockBundle = {
         write: vi.fn().mockResolvedValue({ output: [] }),
@@ -347,15 +347,15 @@ describe('rollupBuilder', () => {
     })
   })
 
-  describe('销毁功能', () => {
-    it('应该能够正确销毁', async () => {
+  describe('销毁功�?, () => {
+    it('应该能够正确销�?, async () => {
       await builder.destroy()
 
       // 销毁后应该无法执行操作
       await expect(builder.build()).rejects.toThrow('RollupBuilder has been destroyed')
     })
 
-    it('应该在销毁时关闭监听器', async () => {
+    it('应该在销毁时关闭监听�?, async () => {
       const { watch } = await import('rollup')
       const mockWatcher = {
         on: vi.fn(),
@@ -371,3 +371,6 @@ describe('rollupBuilder', () => {
     })
   })
 })
+
+
+

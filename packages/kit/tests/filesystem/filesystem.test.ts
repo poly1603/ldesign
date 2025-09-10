@@ -1,4 +1,4 @@
-/**
+﻿/**
  * FileSystem 测试
  */
 
@@ -18,7 +18,7 @@ describe('fileSystem', () => {
   })
 
   describe('exists', () => {
-    it('应该检测文件是否存在', async () => {
+    it('应该检测文件是否存�?, async () => {
       const filePath = join(tempDir, 'test.txt')
 
       expect(await FileSystem.exists(filePath)).toBe(false)
@@ -27,7 +27,7 @@ describe('fileSystem', () => {
       expect(await FileSystem.exists(filePath)).toBe(true)
     })
 
-    it('应该检测目录是否存在', async () => {
+    it('应该检测目录是否存�?, async () => {
       const dirPath = join(tempDir, 'testdir')
 
       expect(await FileSystem.exists(dirPath)).toBe(false)
@@ -238,7 +238,7 @@ describe('fileSystem', () => {
       expect(await FileSystem.exists(dirPath)).toBe(true)
     })
 
-    it('应该不影响已存在的目录', async () => {
+    it('应该不影响已存在的目�?, async () => {
       const dirPath = join(tempDir, 'existing')
 
       await fs.mkdir(dirPath)
@@ -252,7 +252,7 @@ describe('fileSystem', () => {
   })
 
   describe('removeDir', () => {
-    it('应该删除空目录', async () => {
+    it('应该删除空目�?, async () => {
       const dirPath = join(tempDir, 'emptydir')
 
       await fs.mkdir(dirPath)
@@ -262,7 +262,7 @@ describe('fileSystem', () => {
       expect(await FileSystem.exists(dirPath)).toBe(false)
     })
 
-    it('应该删除包含文件的目录', async () => {
+    it('应该删除包含文件的目�?, async () => {
       const dirPath = join(tempDir, 'fulldir')
       const filePath = join(dirPath, 'test.txt')
 
@@ -380,7 +380,7 @@ describe('fileSystem', () => {
       await fs.writeFile(join(tempDir, 'README.md'), '# Test')
     })
 
-    it('应该匹配简单模式', async () => {
+    it('应该匹配简单模�?, async () => {
       const files = await FileSystem.glob('*.md', { cwd: tempDir })
 
       expect(files).toHaveLength(1)
@@ -395,7 +395,7 @@ describe('fileSystem', () => {
       expect(files.some(f => f.includes('utils.ts'))).toBe(true)
     })
 
-    it('应该匹配多种扩展名', async () => {
+    it('应该匹配多种扩展�?, async () => {
       const files = await FileSystem.glob('src/**/*.{ts,tsx}', { cwd: tempDir })
 
       expect(files).toHaveLength(3)
@@ -412,3 +412,5 @@ describe('fileSystem', () => {
     })
   })
 })
+
+

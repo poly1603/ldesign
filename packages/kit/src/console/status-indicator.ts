@@ -43,7 +43,7 @@ export interface StatusMessage {
   message: string
   timestamp?: Date
   duration?: number
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 /**
@@ -101,49 +101,49 @@ export class StatusIndicator extends EventEmitter {
   /**
    * 显示成功状态
    */
-  success(message: string, metadata?: Record<string, any>): void {
+  success(message: string, metadata?: Record<string, unknown>): void {
     this.show('success', message, metadata)
   }
 
   /**
    * 显示错误状态
    */
-  error(message: string, metadata?: Record<string, any>): void {
+  error(message: string, metadata?: Record<string, unknown>): void {
     this.show('error', message, metadata)
   }
 
   /**
    * 显示警告状态
    */
-  warning(message: string, metadata?: Record<string, any>): void {
+  warning(message: string, metadata?: Record<string, unknown>): void {
     this.show('warning', message, metadata)
   }
 
   /**
    * 显示信息状态
    */
-  info(message: string, metadata?: Record<string, any>): void {
+  info(message: string, metadata?: Record<string, unknown>): void {
     this.show('info', message, metadata)
   }
 
   /**
    * 显示加载状态
    */
-  loading(message: string, metadata?: Record<string, any>): void {
+  loading(message: string, metadata?: Record<string, unknown>): void {
     this.show('loading', message, metadata)
   }
 
   /**
    * 显示待处理状态
    */
-  pending(message: string, metadata?: Record<string, any>): void {
+  pending(message: string, metadata?: Record<string, unknown>): void {
     this.show('pending', message, metadata)
   }
 
   /**
    * 显示跳过状态
    */
-  skipped(message: string, metadata?: Record<string, any>): void {
+  skipped(message: string, metadata?: Record<string, unknown>): void {
     this.show('skipped', message, metadata)
   }
 

@@ -445,13 +445,13 @@ export class BuiltinMiddleware {
     } = options
     const cache = new Map<string, { value: unknown, expiry: number }>()
 
-    return async (event: string, args: unknown[], next: () => void) => {
+    return async (event: string, args: unknown[], next: () => void): Promise<void> => {
       const key = keyGenerator(event, args)
       const cached = cache.get(key)
 
       if (cached && Date.now() < cached.expiry) {
-        // 返回缓存的结果
-        return cached.value
+        // 返回缓存的结果，但不返回值，因为中间件应该返回 void
+        return
       }
 
       // 清理过期缓存

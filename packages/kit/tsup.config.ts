@@ -1,7 +1,7 @@
 /**
- * @ldesign/kit tsup 构建配置
+ * @ldesign/kit 构建配置
  *
- * 使用 tsup 作为构建工具，提供快速的 TypeScript 构建
+ * 使用 @ldesign/builder 作为构建工具，提供快速的 TypeScript 构建
  * 支持 ESM 和 CJS 双格式输出，以及类型声明生成
  *
  * @author LDesign Team
@@ -52,7 +52,7 @@ const mainConfig = defineConfig({
   },
   format: ['esm', 'cjs'],
   outDir: 'dist',
-  dts: false, // Disable DTS generation to skip type checking during build
+  dts: true, // 启用类型声明文件生成
   sourcemap: true,
   clean: false, // 因为要构建多个目标，所以不清理
   splitting: false, // 禁用代码分割以确保兼容性
@@ -115,7 +115,7 @@ const subModuleConfigs = subModules.map(module =>
     },
     format: ['esm', 'cjs'],
     outDir: `dist/${module}`,
-    dts: false, // Disable DTS generation to skip type checking during build
+    dts: true, // 启用类型声明文件生成
     sourcemap: true,
     clean: false,
     splitting: false,

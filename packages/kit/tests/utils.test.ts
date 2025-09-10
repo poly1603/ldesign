@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Utils 模块测试
  */
 
@@ -15,7 +15,7 @@ import {
 
 describe('stringUtils', () => {
   describe('基本操作', () => {
-    it('应该能够转换为驼峰命名', () => {
+    it('应该能够转换为驼峰命�?, () => {
       expect(StringUtils.toCamelCase('hello-world')).toBe('helloWorld')
       expect(StringUtils.toCamelCase('hello_world')).toBe('helloWorld')
       expect(StringUtils.toCamelCase('hello world')).toBe('helloWorld')
@@ -31,18 +31,18 @@ describe('stringUtils', () => {
       expect(StringUtils.toSnakeCase('HelloWorld')).toBe('hello_world')
     })
 
-    it('应该能够首字母大写', () => {
+    it('应该能够首字母大�?, () => {
       expect(StringUtils.capitalize('hello')).toBe('Hello')
       expect(StringUtils.capitalize('HELLO')).toBe('Hello')
     })
 
-    it('应该能够截断字符串', () => {
+    it('应该能够截断字符�?, () => {
       expect(StringUtils.truncate('Hello World', 5)).toBe('Hello...')
       expect(StringUtils.truncate('Hi', 5)).toBe('Hi')
     })
   })
 
-  describe('字符串验证', () => {
+  describe('字符串验�?, () => {
     it('应该能够检查是否为空字符串', () => {
       expect(StringUtils.isEmpty('')).toBe(true)
       expect(StringUtils.isEmpty('  ')).toBe(true)
@@ -60,7 +60,7 @@ describe('stringUtils', () => {
     })
   })
 
-  describe('字符串处理', () => {
+  describe('字符串处�?, () => {
     it('应该能够计算编辑距离', () => {
       expect(StringUtils.levenshteinDistance('kitten', 'sitting')).toBe(3)
       expect(StringUtils.levenshteinDistance('hello', 'hello')).toBe(0)
@@ -81,13 +81,13 @@ describe('stringUtils', () => {
 })
 
 describe('numberUtils', () => {
-  describe('数字格式化', () => {
-    it('应该能够格式化数字', () => {
+  describe('数字格式�?, () => {
+    it('应该能够格式化数�?, () => {
       expect(NumberUtils.format(1234.567, 2)).toBe('1,234.57')
       expect(NumberUtils.format(1000)).toBe('1,000')
     })
 
-    it('应该能够格式化文件大小', () => {
+    it('应该能够格式化文件大�?, () => {
       expect(NumberUtils.formatBytes(1024)).toBe('1.00 KB')
       expect(NumberUtils.formatBytes(1048576)).toBe('1.00 MB')
       expect(NumberUtils.formatBytes(1073741824)).toBe('1.00 GB')
@@ -107,12 +107,12 @@ describe('numberUtils', () => {
       expect(NumberUtils.clamp(15, 1, 10)).toBe(10)
     })
 
-    it('应该能够计算平均值', () => {
+    it('应该能够计算平均�?, () => {
       expect(NumberUtils.average([1, 2, 3, 4, 5])).toBe(3)
       expect(NumberUtils.average([10, 20])).toBe(15)
     })
 
-    it('应该能够计算中位数', () => {
+    it('应该能够计算中位�?, () => {
       expect(NumberUtils.median([1, 2, 3, 4, 5])).toBe(3)
       expect(NumberUtils.median([1, 2, 3, 4])).toBe(2.5)
     })
@@ -161,7 +161,7 @@ describe('arrayUtils', () => {
       ])
     })
 
-    it('应该能够扁平化', () => {
+    it('应该能够扁平�?, () => {
       expect(ArrayUtils.flatten([1, [2, 3], [4, [5, 6]]])).toEqual([1, 2, 3, 4, 5, 6])
     })
   })
@@ -203,14 +203,14 @@ describe('objectUtils', () => {
       })
     })
 
-    it('应该能够获取嵌套值', () => {
+    it('应该能够获取嵌套�?, () => {
       const obj = { a: { b: { c: 'value' } } }
 
       expect(ObjectUtils.get(obj, 'a.b.c')).toBe('value')
       expect(ObjectUtils.get(obj, 'a.b.d', 'default')).toBe('default')
     })
 
-    it('应该能够设置嵌套值', () => {
+    it('应该能够设置嵌套�?, () => {
       const obj = {}
       ObjectUtils.set(obj, 'a.b.c', 'value')
 
@@ -219,7 +219,7 @@ describe('objectUtils', () => {
   })
 
   describe('对象验证', () => {
-    it('应该能够检查是否为空对象', () => {
+    it('应该能够检查是否为空对�?, () => {
       expect(ObjectUtils.isEmpty({})).toBe(true)
       expect(ObjectUtils.isEmpty({ a: 1 })).toBe(false)
     })
@@ -233,15 +233,15 @@ describe('objectUtils', () => {
 })
 
 describe('dateUtils', () => {
-  describe('日期格式化', () => {
-    it('应该能够格式化日期', () => {
+  describe('日期格式�?, () => {
+    it('应该能够格式化日�?, () => {
       const date = new Date('2023-12-25T10:30:00')
 
       expect(DateUtils.format(date, 'YYYY-MM-DD')).toBe('2023-12-25')
       expect(DateUtils.format(date, 'HH:mm:ss')).toBe('10:30:00')
     })
 
-    it('应该能够解析日期字符串', () => {
+    it('应该能够解析日期字符�?, () => {
       const date = DateUtils.parse('2023-12-25', 'YYYY-MM-DD')
 
       expect(date.getFullYear()).toBe(2023)
@@ -258,7 +258,7 @@ describe('dateUtils', () => {
       expect(result.getDate()).toBe(26)
     })
 
-    it('应该能够计算时间差', () => {
+    it('应该能够计算时间�?, () => {
       const date1 = new Date('2023-12-25')
       const date2 = new Date('2023-12-26')
 
@@ -279,7 +279,7 @@ describe('validationUtils', () => {
       expect(ValidationUtils.isUrl('invalid-url')).toBe(false)
     })
 
-    it('应该能够验证手机号', () => {
+    it('应该能够验证手机�?, () => {
       expect(ValidationUtils.isMobilePhone('13800138000')).toBe(true)
       expect(ValidationUtils.isMobilePhone('12345')).toBe(false)
     })
@@ -300,13 +300,13 @@ describe('randomUtils', () => {
       expect(Number.isInteger(num)).toBe(true)
     })
 
-    it('应该能够生成随机浮点数', () => {
+    it('应该能够生成随机浮点�?, () => {
       const num = RandomUtils.float(1, 10)
       expect(num).toBeGreaterThanOrEqual(1)
       expect(num).toBeLessThan(10)
     })
 
-    it('应该能够生成随机字符串', () => {
+    it('应该能够生成随机字符�?, () => {
       const str = RandomUtils.string(10)
       expect(str).toHaveLength(10)
       expect(/^[a-z0-9]+$/i.test(str)).toBe(true)
@@ -319,3 +319,5 @@ describe('randomUtils', () => {
     })
   })
 })
+
+

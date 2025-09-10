@@ -1,7 +1,9 @@
-/**
+﻿/**
  * Git 模块测试
  */
 
+
+import { vi } from 'vitest'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -47,7 +49,7 @@ describe('gitManager', () => {
       expect(isRepo).toBe(true)
     })
 
-    it('应该能够初始化 Git 仓库', async () => {
+    it('应该能够初始�?Git 仓库', async () => {
       const { exec } = await import('node:child_process')
       vi.mocked(exec).mockImplementation((command, options, callback) => {
         if (typeof callback === 'function') {
@@ -85,8 +87,8 @@ describe('gitManager', () => {
     })
   })
 
-  describe('状态操作', () => {
-    it('应该能够获取仓库状态', async () => {
+  describe('状态操�?, () => {
+    it('应该能够获取仓库状�?, async () => {
       const { exec } = await import('node:child_process')
       vi.mocked(exec).mockImplementation((command, options, callback) => {
         if (typeof callback === 'function') {
@@ -221,7 +223,7 @@ describe('gitManager', () => {
       await expect(git.push()).resolves.not.toThrow()
     })
 
-    it('应该能够从远程仓库拉取', async () => {
+    it('应该能够从远程仓库拉�?, async () => {
       const { exec } = await import('node:child_process')
       vi.mocked(exec).mockImplementation((command, options, callback) => {
         if (typeof callback === 'function') {
@@ -268,7 +270,7 @@ describe('gitManager', () => {
 
 describe('gitUtils', () => {
   describe('工具函数', () => {
-    it('应该能够查找仓库根目录', async () => {
+    it('应该能够查找仓库根目�?, async () => {
       // Mock FileSystem.exists
       vi.spyOn(FileSystem, 'exists').mockImplementation(async (path) => {
         return path.includes('.git')
@@ -291,7 +293,7 @@ describe('gitUtils', () => {
       expect(isTracked).toBe(true)
     })
 
-    it('应该能够获取文件状态', async () => {
+    it('应该能够获取文件状�?, async () => {
       const { exec } = await import('node:child_process')
       vi.mocked(exec).mockImplementation((command, options, callback) => {
         if (typeof callback === 'function') {
@@ -306,3 +308,6 @@ describe('gitUtils', () => {
     })
   })
 })
+
+
+

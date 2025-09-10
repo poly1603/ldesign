@@ -185,46 +185,52 @@ export class ConfigValidator extends EventEmitter {
     }
 
     // 范围验证
-    if (rule.min !== undefined && this.isComparable(value) && (value as number | string) < rule.min) {
-      this.addError(
-        path,
-        rule.message || `Field '${path}' must be at least ${rule.min}`,
-        value,
-        rule,
-      )
-      return
+    if (rule.min !== undefined && this.isComparable(value)) {
+      const numValue = typeof value === 'string' ? value.length : value as number
+      if (numValue < rule.min) {
+        this.addError(
+          path,
+          rule.message || `Field '${path}' must be at least ${rule.min}`,
+          value,
+          rule,
+        )
+        return
+      }
     }
 
-    if (rule.max !== undefined && this.isComparable(value) && (value as number | string) > rule.max) {
-      this.addError(
-        path,
-        rule.message || `Field '${path}' must be at most ${rule.max}`,
-        value,
-        rule,
-      )
-      return
-    }
+    if (rule.max !== undefined && this.isComparable(value)) {
+      const numValue = typeof value === 'string' ? value.length : value as number
+      if (numValue > rule.max) {
+        this.addError(
+          path,
+          rule.message || `Field '${path}' must be at most ${rule.max}`,
+          value,
+          rule,
+        )
+        return
+      }
 
-    // 正则表达式验证
-    if (rule.pattern && typeof value === 'string' && !rule.pattern.test(value)) {
-      this.addError(
-        path,
-        rule.message || `Field '${path}' does not match required pattern`,
-        value,
-        rule,
-      )
-      return
-    }
+      // 正则表达式验证
+      if (rule.pattern && typeof value === 'string' && !rule.pattern.test(value)) {
+        this.addError(
+          path,
+          rule.message || `Field '${path}' does not match required pattern`,
+          value,
+          rule,
+        )
+        return
+      }
 
-    // 自定义验证
-    if (rule.custom) {
-      const result = rule.custom(value)
-      if (result !== true) {
-        const message
-          = typeof result === 'string'
-            ? result
-            : rule.message || `Field '${path}' failed custom validation`
-        this.addError(path, message, value, rule)
+      // 自定义验证
+      if (rule.custom) {
+        const result = rule.custom(value)
+        if (result !== true) {
+          const message
+            = typeof result === 'string'
+              ? result
+              : rule.message || `Field '${path}' failed custom validation`
+          this.addError(path, message, value, rule)
+        }
       }
     }
   }

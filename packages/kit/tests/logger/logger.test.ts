@@ -1,7 +1,9 @@
-/**
+﻿/**
  * Logger 测试
  */
 
+
+import { vi } from 'vitest'
 import { promises as fs } from 'node:fs'
 import { join } from 'node:path'
 import { Logger } from '../../src/logger/logger'
@@ -31,7 +33,7 @@ describe('logger', () => {
       })
     })
 
-    it('应该记录不同级别的日志', () => {
+    it('应该记录不同级别的日�?, () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
 
       logger = Logger.create({
@@ -56,16 +58,14 @@ describe('logger', () => {
         transports: [{ type: 'console' }],
       })
 
-      logger.debug('Debug message') // 不应该输出
-      logger.info('Info message') // 不应该输出
-      logger.warn('Warning message') // 应该输出
+      logger.debug('Debug message') // 不应该输�?      logger.info('Info message') // 不应该输�?      logger.warn('Warning message') // 应该输出
       logger.error('Error message') // 应该输出
 
       expect(consoleSpy).toHaveBeenCalledTimes(2)
       consoleSpy.mockRestore()
     })
 
-    it('应该支持结构化日志', () => {
+    it('应该支持结构化日�?, () => {
       const messages: any[] = []
 
       logger.on('log', (entry) => {
@@ -146,7 +146,7 @@ describe('logger', () => {
       expect(logFiles.length).toBeGreaterThan(1)
     })
 
-    it('应该创建目录如果不存在', async () => {
+    it('应该创建目录如果不存�?, async () => {
       const logFile = join(tempDir, 'logs', 'nested', 'app.log')
 
       logger = Logger.create({
@@ -167,7 +167,7 @@ describe('logger', () => {
     })
   })
 
-  describe('格式化', () => {
+  describe('格式�?, () => {
     it('应该支持JSON格式', () => {
       const messages: string[] = []
 
@@ -209,7 +209,7 @@ describe('logger', () => {
       expect(messages[0]).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*INFO.*Test message/)
     })
 
-    it('应该支持自定义格式化器', () => {
+    it('应该支持自定义格式化�?, () => {
       const messages: string[] = []
 
       logger = Logger.create({
@@ -229,7 +229,7 @@ describe('logger', () => {
     })
   })
 
-  describe('多传输', () => {
+  describe('多传�?, () => {
     it('应该同时写入多个传输', async () => {
       const consoleMessages: string[] = []
       const fileMessages: string[] = []
@@ -257,7 +257,7 @@ describe('logger', () => {
       expect(fileMessages[0]).toContain('Test message')
     })
 
-    it('应该支持不同传输的不同级别', () => {
+    it('应该支持不同传输的不同级�?, () => {
       const debugMessages: string[] = []
       const errorMessages: string[] = []
 
@@ -281,8 +281,7 @@ describe('logger', () => {
       logger.info('Info message')
       logger.error('Error message')
 
-      expect(debugMessages).toHaveLength(3) // debug传输接收所有消息
-      expect(errorMessages).toHaveLength(1) // error传输只接收error消息
+      expect(debugMessages).toHaveLength(3) // debug传输接收所有消�?      expect(errorMessages).toHaveLength(1) // error传输只接收error消息
     })
   })
 
@@ -307,7 +306,7 @@ describe('logger', () => {
       expect(messages[0].metadata.module).toBe('auth')
     })
 
-    it('应该继承父日志器的配置', () => {
+    it('应该继承父日志器的配�?, () => {
       const child = logger.child({ service: 'api' })
 
       expect(child.getLevel()).toBe(logger.getLevel())
@@ -331,7 +330,7 @@ describe('logger', () => {
 
   describe('错误处理', () => {
     it('应该处理传输错误', () => {
-      const errorSpy = jest.fn()
+      const errorSpy = vi.fn()
 
       logger = Logger.create({
         level: 'info',
@@ -353,7 +352,7 @@ describe('logger', () => {
 
     it('应该继续工作即使某个传输失败', () => {
       const successMessages: string[] = []
-      const errorSpy = jest.fn()
+      const errorSpy = vi.fn()
 
       logger = Logger.create({
         level: 'info',
@@ -436,7 +435,7 @@ describe('logger', () => {
   })
 
   describe('配置', () => {
-    it('应该动态更改日志级别', () => {
+    it('应该动态更改日志级�?, () => {
       logger = Logger.create({
         level: 'info',
         transports: [{ type: 'console', silent: true }],
@@ -448,7 +447,7 @@ describe('logger', () => {
       expect(logger.getLevel()).toBe('debug')
     })
 
-    it('应该添加和移除传输', () => {
+    it('应该添加和移除传�?, () => {
       logger = Logger.create({
         level: 'info',
         transports: [],
@@ -467,15 +466,14 @@ describe('logger', () => {
     })
   })
 
-  describe('静态方法', () => {
-    it('应该创建默认日志器', () => {
+  describe('静态方�?, () => {
+    it('应该创建默认日志�?, () => {
       const defaultLogger = Logger.getDefault()
 
       expect(defaultLogger).toBeInstanceOf(Logger)
-      expect(Logger.getDefault()).toBe(defaultLogger) // 应该返回同一个实例
-    })
+      expect(Logger.getDefault()).toBe(defaultLogger) // 应该返回同一个实�?    })
 
-    it('应该创建带配置的日志器', () => {
+    it('应该创建带配置的日志�?, () => {
       const customLogger = Logger.create({
         level: 'warn',
         format: 'json',
@@ -509,3 +507,6 @@ describe('logger', () => {
     })
   })
 })
+
+
+
