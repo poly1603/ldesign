@@ -40,7 +40,7 @@
     "package.json"
   ],
   "scripts": {
-    "build": "ldesign-builder build -f esm,cjs",
+    "build": "ldesign-builder build -f esm,cjs,umd",
     "build:ldesign": "node scripts/build-with-ldesign.js",
     "build:fixed": "node scripts/build-fixed.js",
     "build:final": "node scripts/build-final.js",

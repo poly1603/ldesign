@@ -266,7 +266,7 @@ export function useForm<T extends Record<string, any>>(
   })
 
   return {
-    values,
+    values: values as Ref<T>,
     errors,
     touched,
     dirty,

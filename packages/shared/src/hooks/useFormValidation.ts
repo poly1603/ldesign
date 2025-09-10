@@ -290,16 +290,16 @@ export function useFormValidation<T extends Record<string, any>>(
       
       if (Array.isArray(ruleValue)) {
         // [value, message] 格式
-        result = validator(value, ruleValue[0], ruleValue[1])
+        result = (validator as any)(value, ruleValue[0], ruleValue[1])
       } else if (typeof ruleValue === 'boolean' && ruleValue) {
         // boolean 格式
-        result = validator(value)
+        result = (validator as any)(value)
       } else if (typeof ruleValue === 'string') {
         // 自定义消息格式
-        result = validator(value, undefined, ruleValue)
+        result = (validator as any)(value, undefined, ruleValue)
       } else {
         // 直接传值格式
-        result = validator(value, ruleValue)
+        result = (validator as any)(value, ruleValue)
       }
 
       if (result !== true) {

@@ -101,6 +101,7 @@ export function arrayToTree<T extends Record<string, any>>(
   data.forEach(item => {
     const node: TreeNode<T> = {
       ...item,
+      id: item[idField],
       [childrenField]: [],
     }
     nodeMap.set(item[idField], node)

@@ -198,9 +198,9 @@ export function useInfiniteScroll<T>(
         const transformedData = newData.map((item, index) => 
           transform(item, data.value.length + index, [...data.value, ...newData])
         )
-        data.value = [...data.value, ...transformedData]
+        data.value = [...data.value, ...transformedData] as T[]
       } else {
-        data.value = [...data.value, ...newData]
+        data.value = [...data.value, ...newData] as T[]
       }
       
       // 更新状态

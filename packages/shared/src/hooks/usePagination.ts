@@ -469,7 +469,7 @@ export function usePagination<T>(
     setSearch,
     setSort,
     setFilters,
-    refresh,
+    refresh: refresh as () => Promise<void>,
     reset,
   }
 

@@ -6,7 +6,7 @@
  * 适用于成功提示、错误提示、警告提示、信息提示等场景。
  */
 
-import { ref, reactive, computed, nextTick, type Ref } from 'vue'
+import { reactive, computed, ref, toRefs, nextTick, type Ref } from 'vue'
 
 /**
  * 消息类型
@@ -385,7 +385,7 @@ export function useToast() {
 
   return {
     // 状态
-    toasts: toasts as Ref<ToastItem[]>,
+    toasts: toRefs(reactive({ items: toasts })).items as unknown as Ref<ToastItem[]>,
     positions,
     
     // 方法

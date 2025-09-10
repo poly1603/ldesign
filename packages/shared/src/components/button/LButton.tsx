@@ -3,20 +3,20 @@
  * 支持多种类型、尺寸和状态的按钮组件
  */
 
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, type PropType } from 'vue'
 import type { ButtonProps, ButtonEmits, ButtonSlots } from './types'
 import './button.less'
 
-export default defineComponent<ButtonProps, ButtonEmits, ButtonSlots>({
+export default defineComponent({
   name: 'LButton',
   
   props: {
     type: {
-      type: String as () => ButtonProps['type'],
+      type: String as PropType<ButtonProps['type']>,
       default: 'default'
     },
     size: {
-      type: String as () => ButtonProps['size'],
+      type: String as PropType<ButtonProps['size']>,
       default: 'medium'
     },
     disabled: {
@@ -32,7 +32,7 @@ export default defineComponent<ButtonProps, ButtonEmits, ButtonSlots>({
       default: false
     },
     shape: {
-      type: String as () => ButtonProps['shape'],
+      type: String as PropType<ButtonProps['shape']>,
       default: 'default'
     },
     icon: {
@@ -40,14 +40,14 @@ export default defineComponent<ButtonProps, ButtonEmits, ButtonSlots>({
       default: undefined
     },
     htmlType: {
-      type: String as () => ButtonProps['htmlType'],
+      type: String as PropType<ButtonProps['htmlType']>,
       default: 'button'
     }
-  },
+  } as const,
 
-  emits: ['click', 'focus', 'blur'] as (keyof ButtonEmits)[],
+  emits: ['click', 'focus', 'blur'],
 
-  setup(props, { slots, emit }) {
+  setup(props: ButtonProps, { slots, emit }: any) {
     // 计算类名
     const buttonClass = computed(() => {
       return [

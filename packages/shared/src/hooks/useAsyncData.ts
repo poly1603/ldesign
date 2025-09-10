@@ -183,7 +183,7 @@ export function useAsyncData<T, P extends any[] = any[]>(
    */
   const getCacheKey = (...params: P): string => {
     if (typeof cacheKey === 'function') {
-      return cacheKey(...params)
+      return (cacheKey as any)(...params)
     }
     if (typeof cacheKey === 'string') {
       return cacheKey
@@ -287,7 +287,7 @@ export function useAsyncData<T, P extends any[] = any[]>(
 
         // 数据转换
         if (transform) {
-          result = transform(result)
+          result = transform(result) as T
         }
 
         // 更新状态
@@ -386,7 +386,7 @@ export function useAsyncData<T, P extends any[] = any[]>(
       dependencies,
       () => {
         if (finished.value || loading.value) {
-          execute()
+          execute(...([] as unknown as P))
         }
       },
       { deep: true }
@@ -396,7 +396,7 @@ export function useAsyncData<T, P extends any[] = any[]>(
   // 组件挂载时执行
   if (immediate) {
     onMounted(() => {
-      execute()
+      execute(...([] as unknown as P))
     })
   }
 
