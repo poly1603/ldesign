@@ -10,8 +10,8 @@ export { StyleProcessor } from './core/styles'
 export { createQRCodeInstance } from './core/instance'
 export type { QRCodeInstance } from './core/instance'
 
-// 便捷函数
-export { download } from './helpers'
+// 渚挎嵎鍑芥暟
+export { downloadQRCode } from './helpers'
 
 // 原生JavaScript API
 export {

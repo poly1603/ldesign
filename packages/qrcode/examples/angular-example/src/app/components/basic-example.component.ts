@@ -6,7 +6,7 @@
 import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { generateQRCode, type QRCodeResult, type QRCodeOptions } from '@ldesign/qrcode';
+import { generateQRCode, type QRCodeResult, type SimpleQRCodeOptions } from '@ldesign/qrcode';
 
 @Component({
   selector: 'app-basic-example',
@@ -249,20 +249,31 @@ export class BasicExampleComponent implements OnInit {
     this.result = null;
 
     try {
-      const options: QRCodeOptions = {
+      const options: SimpleQRCodeOptions = {
         size: this.qrSize,
         format: this.qrFormat,
         errorCorrectionLevel: this.errorLevel,
         margin: this.qrMargin
       };
 
-      const qrResult = await generateQRCode(this.qrText, options);
-      this.result = qrResult;
+      const qrResult = await this.generateWithFallback(this.qrText, options);
+      this.result = qrResult as any;
 
-      // 渲染二维码到容器
-      if (this.qrContainer && qrResult.element) {
-        this.qrContainer.nativeElement.innerHTML = '';
-        this.qrContainer.nativeElement.appendChild(qrResult.element);
+      // 渲染二维码到容器（包含回退）
+      if (this.qrContainer) {
+        const host = this.qrContainer.nativeElement;
+        host.innerHTML = '';
+        if ((qrResult as any)?.element) {
+          host.appendChild((qrResult as any).element);
+        } else if ((qrResult as any)?.svg) {
+          host.innerHTML = (qrResult as any).svg;
+        } else if ((qrResult as any)?.dataURL) {
+          const img = new Image();
+          img.src = (qrResult as any).dataURL;
+          img.width = this.qrSize;
+          img.height = this.qrSize;
+          host.appendChild(img);
+        }
       }
     } catch (err) {
       this.error = err instanceof Error ? err.message : '生成二维码失败';
@@ -270,6 +281,22 @@ export class BasicExampleComponent implements OnInit {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  /**
+   * 生成（带超时回退到 SVG）
+   */
+  private async generateWithFallback(text: string, options: SimpleQRCodeOptions): Promise<QRCodeResult> {
+    const timeoutMs = 2000;
+    let settled = false;
+    const primary = generateQRCode(text, options).then(r => { settled = true; return r; });
+    const first = await Promise.race<QRCodeResult | null>([
+      primary,
+      new Promise<null>(resolve => setTimeout(() => resolve(null), timeoutMs)),
+    ]);
+    if (first) return first as QRCodeResult;
+    // 回退到 SVG 以保证可见
+    return await generateQRCode(text, { ...options, format: 'svg' });
   }
 
   /**

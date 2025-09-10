@@ -24,15 +24,189 @@
 
         <!-- 动态表单 -->
         <div class="data-form">
-          <component
-            :is="currentFormComponent"
-            v-model="formData"
-            @update="generateQRCode"
-          />
+          <!-- URL表单 -->
+          <div v-if="activeType === 'url'">
+            <div class="form-group">
+              <label class="form-label">网站URL</label>
+              <input
+                v-model="formData.url"
+                type="url"
+                class="form-input"
+                placeholder="https://example.com"
+                @input="generateQRCodeHandler"
+              />
+            </div>
+          </div>
+
+          <!-- WiFi表单 -->
+          <div v-else-if="activeType === 'wifi'">
+            <div class="form-group">
+              <label class="form-label">网络名称 (SSID)</label>
+              <input
+                v-model="formData.ssid"
+                type="text"
+                class="form-input"
+                placeholder="WiFi网络名称"
+                @input="generateQRCodeHandler"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">密码</label>
+              <input
+                v-model="formData.password"
+                type="password"
+                class="form-input"
+                placeholder="WiFi密码"
+                @input="generateQRCodeHandler"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">加密类型</label>
+            <select v-model="formData.security" class="form-select" @change="generateQRCodeHandler">
+              <option value="WPA">WPA/WPA2</option>
+              <option value="WEP">WEP</option>
+              <option value="nopass">无密码</option>
+            </select>
+            </div>
+          </div>
+
+          <!-- 联系人表单 -->
+          <div v-else-if="activeType === 'contact'">
+            <div class="form-group">
+              <label class="form-label">姓名</label>
+              <input
+                v-model="formData.name"
+                type="text"
+                class="form-input"
+                placeholder="联系人姓名"
+                @input="generateQRCodeHandler"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">电话</label>
+              <input
+                v-model="formData.phone"
+                type="tel"
+                class="form-input"
+                placeholder="联系人电话"
+                @input="generateQRCodeHandler"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">邮箱</label>
+              <input
+                v-model="formData.email"
+                type="email"
+                class="form-input"
+                placeholder="联系人邮箱"
+                @input="generateQRCodeHandler"
+              />
+            </div>
+          </div>
+
+          <!-- 邮件表单 -->
+          <div v-else-if="activeType === 'email'">
+            <div class="form-group">
+              <label class="form-label">收件人</label>
+              <input
+                v-model="formData.email"
+                type="email"
+                class="form-input"
+                placeholder="收件人邮箱"
+                @input="generateQRCodeHandler"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">主题</label>
+              <input
+                v-model="formData.subject"
+                type="text"
+                class="form-input"
+                placeholder="邮件主题"
+                @input="generateQRCodeHandler"
+              />
+            </div>
+          </div>
+
+          <!-- 短信表单 -->
+          <div v-else-if="activeType === 'sms'">
+            <div class="form-group">
+              <label class="form-label">手机号码</label>
+              <input
+                v-model="formData.phone"
+                type="tel"
+                class="form-input"
+                placeholder="手机号码"
+                @input="generateQRCodeHandler"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">短信内容</label>
+              <textarea
+                v-model="formData.message"
+                class="form-textarea"
+                placeholder="短信内容"
+                @input="generateQRCodeHandler"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- 电话表单 -->
+          <div v-else-if="activeType === 'phone'">
+            <div class="form-group">
+              <label class="form-label">电话号码</label>
+              <input
+                v-model="formData.phone"
+                type="tel"
+                class="form-input"
+                placeholder="电话号码"
+                @input="generateQRCodeHandler"
+              />
+            </div>
+          </div>
+
+          <!-- 地理位置表单 -->
+          <div v-else-if="activeType === 'location'">
+            <div class="form-group">
+              <label class="form-label">纬度</label>
+              <input
+                v-model.number="formData.latitude"
+                type="number"
+                step="any"
+                class="form-input"
+                placeholder="纬度"
+                @input="generateQRCodeHandler"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">经度</label>
+              <input
+                v-model.number="formData.longitude"
+                type="number"
+                step="any"
+                class="form-input"
+                placeholder="经度"
+                @input="generateQRCodeHandler"
+              />
+            </div>
+          </div>
+
+          <!-- 纯文本表单 -->
+          <div v-else-if="activeType === 'text'">
+            <div class="form-group">
+              <label class="form-label">文本内容</label>
+              <textarea
+                v-model="formData.text"
+                class="form-textarea"
+                placeholder="输入文本内容"
+                @input="generateQRCodeHandler"
+              ></textarea>
+            </div>
+          </div>
         </div>
 
         <div class="form-actions">
-          <button @click="generateQRCode" class="btn btn-primary" :disabled="!isFormValid">
+          <button @click="generateQRCodeHandler" class="btn btn-primary" :disabled="!isFormValid">
             生成二维码
           </button>
           <button @click="copyToClipboard" class="btn" :disabled="!currentData">
@@ -52,7 +226,7 @@
           </div>
           
           <div v-else-if="result" class="qr-result">
-            <div class="qr-container" ref="qrContainer"></div>
+            <div class="qr-container" ref="qrContainer" v-html="displayHtml"></div>
             <div class="qr-info">
               <h4>数据信息</h4>
               <p><strong>类型:</strong> {{ activeTypeInfo?.label }}</p>
@@ -94,7 +268,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, watch } from 'vue'
 import {
   generateQRCode,
   type QRCodeResult,
@@ -120,24 +294,24 @@ const isLoading = ref(false)
 const result = ref<QRCodeResult | null>(null)
 const qrContainer = ref<HTMLDivElement>()
 
+// 渲染HTML（优先 SVG，其次 dataURL）
+const displayHtml = computed(() => {
+  const r: any = result.value as any
+  if (!r) return ''
+  if (r.svg) return r.svg as string
+  const dataURL = r.dataURL || (typeof r.data === 'string' ? r.data : '')
+  if (dataURL) {
+    return `<img src="${dataURL}" width="250" height="250" />`
+  }
+  return ''
+})
+
 // 计算属性
 const activeTypeInfo = computed(() => 
   dataTypes.find(type => type.id === activeType.value)
 )
 
-const currentFormComponent = computed(() => {
-  const componentMap: Record<string, string> = {
-    url: 'URLForm',
-    wifi: 'WiFiForm',
-    contact: 'ContactForm',
-    email: 'EmailForm',
-    sms: 'SMSForm',
-    phone: 'PhoneForm',
-    location: 'LocationForm',
-    text: 'TextForm'
-  }
-  return componentMap[activeType.value] || 'TextForm'
-})
+// 移除了 currentFormComponent 计算属性，直接在模板中使用 v-if 条件渲染
 
 const isFormValid = computed(() => {
   switch (activeType.value) {
@@ -244,15 +418,46 @@ const quickExamples = [
  */
 const selectType = (type: typeof dataTypes[0]): void => {
   activeType.value = type.id
-  formData.value = {}
+  formData.value = getDefaultFormData(type.id)
   result.value = null
+  // 自动生成默认示例，避免用户空表单时不知所措
+  generateQRCodeHandler()
+}
+
+/**
+ * 不同数据类型的默认表单值，用于快速预览
+ */
+const getDefaultFormData = (typeId: string): any => {
+  switch (typeId) {
+    case 'url':
+      return { url: 'https://example.com' }
+    case 'wifi':
+      return { ssid: 'MyWiFi', password: '12345678', security: 'WPA' }
+    case 'contact':
+      return { name: 'LDesign', phone: '+86-13800138000', email: 'contact@ldesign.com', organization: 'LDesign', website: 'https://www.ldesign.com' }
+    case 'email':
+      return { email: 'contact@ldesign.com', subject: 'Hello', body: '您好！' }
+    case 'sms':
+      return { phone: '13800138000', message: '您好！' }
+    case 'phone':
+      return { phone: '10086' }
+    case 'location':
+      return { latitude: 39.9042, longitude: 116.4074 }
+    case 'text':
+      return { text: 'Hello LDesign' }
+    default:
+      return {}
+  }
 }
 
 /**
  * 生成二维码
  */
-const generateQRCode = async (): Promise<void> => {
-  if (!isFormValid.value) return
+const generateQRCodeHandler = async (): Promise<void> => {
+  // 允许在表单数据不完整的情况下也生成一个示例，避免用户误以为无响应
+  if (!isFormValid.value && !currentData.value) {
+    return
+  }
 
   isLoading.value = true
 
@@ -263,13 +468,31 @@ const generateQRCode = async (): Promise<void> => {
       errorCorrectionLevel: 'M'
     }
 
-    const qrResult = await generateQRCode(currentData.value, options)
+    const data = currentData.value || 'Hello LDesign'
+    const qrResult = await generateQRCode(data, options)
     result.value = qrResult
 
     await nextTick()
-    if (qrContainer.value && qrResult.element) {
-      qrContainer.value.innerHTML = ''
-      qrContainer.value.appendChild(qrResult.element)
+    if (qrContainer.value) {
+      const host = qrContainer.value
+      host.innerHTML = ''
+      const svg = (qrResult as any)?.svg
+      const dataURL = (qrResult as any)?.dataURL || (typeof (qrResult as any)?.data === 'string' ? (qrResult as any).data : '')
+      if (svg) {
+        host.innerHTML = svg
+      } else if (dataURL) {
+        const img = new Image()
+        img.src = dataURL
+        img.width = 250
+        img.height = 250
+        host.appendChild(img)
+      } else if (qrResult.element) {
+        host.appendChild(qrResult.element as any)
+      } else {
+        console.warn('二维码结果不包含 svg/dataURL/element')
+      }
+    } else {
+      console.warn('qrContainer 未找到')
     }
   } catch (error) {
     console.error('生成二维码失败:', error)
@@ -298,112 +521,21 @@ const copyToClipboard = async (): Promise<void> => {
 const loadExample = (example: typeof quickExamples[0]): void => {
   activeType.value = example.type
   formData.value = { ...example.data }
-  generateQRCode()
+  generateQRCodeHandler()
 }
+
+// 监听表单数据变化，自动重新生成二维码
+watch(
+  [activeType, formData],
+  () => {
+    if (isFormValid.value) {
+      generateQRCodeHandler()
+    }
+  },
+  { deep: true }
+)
 </script>
 
-<!-- 表单组件定义 -->
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-// URL表单组件
-const URLForm = defineComponent({
-  props: ['modelValue'],
-  emits: ['update:modelValue', 'update'],
-  template: `
-    <div>
-      <div class="form-group">
-        <label class="form-label">网址URL</label>
-        <input
-          :value="modelValue.url || ''"
-          @input="updateValue('url', $event.target.value)"
-          type="url"
-          class="form-input"
-          placeholder="https://www.example.com"
-        />
-      </div>
-    </div>
-  `,
-  methods: {
-    updateValue(key: string, value: any) {
-      const newValue = { ...this.modelValue, [key]: value }
-      this.$emit('update:modelValue', newValue)
-      this.$emit('update')
-    }
-  }
-})
-
-// WiFi表单组件
-const WiFiForm = defineComponent({
-  props: ['modelValue'],
-  emits: ['update:modelValue', 'update'],
-  template: `
-    <div>
-      <div class="form-group">
-        <label class="form-label">网络名称(SSID)</label>
-        <input
-          :value="modelValue.ssid || ''"
-          @input="updateValue('ssid', $event.target.value)"
-          type="text"
-          class="form-input"
-          placeholder="WiFi网络名称"
-        />
-      </div>
-      <div class="form-group">
-        <label class="form-label">密码</label>
-        <input
-          :value="modelValue.password || ''"
-          @input="updateValue('password', $event.target.value)"
-          type="password"
-          class="form-input"
-          placeholder="WiFi密码"
-        />
-      </div>
-      <div class="form-group">
-        <label class="form-label">安全类型</label>
-        <select
-          :value="modelValue.security || 'WPA'"
-          @change="updateValue('security', $event.target.value)"
-          class="form-input"
-        >
-          <option value="WPA">WPA/WPA2</option>
-          <option value="WEP">WEP</option>
-          <option value="nopass">无密码</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">
-          <input
-            :checked="modelValue.hidden || false"
-            @change="updateValue('hidden', $event.target.checked)"
-            type="checkbox"
-            class="form-checkbox"
-          />
-          隐藏网络
-        </label>
-      </div>
-    </div>
-  `,
-  methods: {
-    updateValue(key: string, value: any) {
-      const newValue = { ...this.modelValue, [key]: value }
-      this.$emit('update:modelValue', newValue)
-      this.$emit('update')
-    }
-  }
-})
-
-// 其他表单组件类似定义...
-// 为了简化，这里只展示主要的两个组件
-
-export default {
-  components: {
-    URLForm,
-    WiFiForm,
-    // 其他组件...
-  }
-}
-</script>
 
 <style scoped>
 .datatype-example {

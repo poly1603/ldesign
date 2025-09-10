@@ -57,7 +57,7 @@ export async function generateQRCodeImage(
 }
 
 /**
- * 下载二维码
+ * 涓嬭浇浜岀淮鐮?
  */
 export async function downloadQRCode(
   text: string,
@@ -65,6 +65,14 @@ export async function downloadQRCode(
   options?: QRCodeOptions,
 ): Promise<void> {
   const result = await generateQRCode(text, options)
+  const finalFilename = filename || 'qrcode'
+  await downloadFile(result.dataURL || '', finalFilename, result.format)
+}
+
+/**
+ * 直接根据已生成的结果下载（供 vanilla 使用）
+ */
+export async function download(result: QRCodeResult, filename?: string): Promise<void> {
   const finalFilename = filename || 'qrcode'
   await downloadFile(result.dataURL || '', finalFilename, result.format)
 }

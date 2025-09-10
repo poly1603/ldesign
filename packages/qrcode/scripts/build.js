@@ -4,7 +4,7 @@
  */
 
 import { execSync } from 'child_process'
-import { existsSync, rmSync, mkdirSync, writeFileSync, copyFileSync } from 'fs'
+import { existsSync, rmSync, mkdirSync, copyFileSync } from 'fs'
 
 async function buildQRCode() {
   console.log(`🚀 构建 qrcode 包...`)
@@ -19,26 +19,19 @@ async function buildQRCode() {
     // 创建 dist 目录
     mkdirSync('dist', { recursive: true })
 
-    // 编译 TypeScript 到 ESM
-    console.log('📦 编译 TypeScript (ESM)...')
+    // 简化入口：编译 src/simple-index.ts -> dist/esm + dist/cjs
+    console.log('📦 编译简化入口 (ESM/CJS)...')
     execSync('npx tsc src/simple-index.ts --target ES2020 --module ESNext --moduleResolution node --declaration --outDir dist/esm --skipLibCheck', { stdio: 'inherit' })
-
-    // 编译 TypeScript 到 CJS
-    console.log('📦 编译 TypeScript (CJS)...')
     execSync('npx tsc src/simple-index.ts --target ES2020 --module CommonJS --moduleResolution node --declaration --outDir dist/cjs --skipLibCheck', { stdio: 'inherit' })
 
-    // 创建主入口文件
+    // 写入主入口文件 (使用简化入口作为默认导出)
     console.log('📦 创建入口文件...')
-
-    // 复制 ESM 版本到根目录
     if (existsSync('dist/esm/simple-index.js')) {
       copyFileSync('dist/esm/simple-index.js', 'dist/index.js')
     }
     if (existsSync('dist/esm/simple-index.d.ts')) {
       copyFileSync('dist/esm/simple-index.d.ts', 'dist/index.d.ts')
     }
-
-    // 复制 CJS 版本
     if (existsSync('dist/cjs/simple-index.js')) {
       copyFileSync('dist/cjs/simple-index.js', 'dist/index.cjs')
     }

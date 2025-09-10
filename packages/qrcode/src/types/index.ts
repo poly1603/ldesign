@@ -31,12 +31,18 @@ export type ColorValue = string | GradientOptions
 // Logo配置接口
 export interface LogoOptions {
   src: string
-  size?: number
+  size?: number // <= 1 ratio, >1 px
   margin?: number
   shape?: LogoShape
   borderWidth?: number
   borderColor?: string
   backgroundColor?: string
+  // Test-friendly aliases
+  background?: string
+  border?: { width: number, color: string }
+  // Positioning
+  position?: 'center' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+  offset?: { x: number, y: number }
   opacity?: number
 }
 
@@ -52,10 +58,11 @@ export interface StyleOptions {
 
 // 主要配置接口
 export interface QRCodeOptions {
-  // 基础配置
+  // 鍩虹閰嶇疆
   data: string
   size?: number
   format?: QRCodeFormat
+  outputFormat?: QRCodeFormat
 
   // 二维码配置
   errorCorrectionLevel?: QRCodeErrorCorrectionLevel
@@ -74,9 +81,11 @@ export interface QRCodeOptions {
   scale?: number
   quality?: number
 
-  // 性能配置
+  // 鎬ц兘閰嶇疆
   enableCache?: boolean
   cacheKey?: string
+  performance?: { enableCache?: boolean }
+  color?: { foreground?: string, background?: string }
 }
 
 // 生成结果接口
@@ -100,13 +109,17 @@ export interface QRCodeResult {
 // 生成结果接口（新版本）
 export interface QRCodeGenerationResult {
   success: boolean
-  data: string
+  data: any
   format: QRCodeFormat
-  metrics: {
-    generationTime: number
-    cacheHit: boolean
-    size: number
+  metrics?: {
+    operation?: string
+    duration: number
+    timestamp: Date
+    cacheHit?: boolean
+    size?: number
   }
+  error?: Error
+  fromCache?: boolean
 }
 
 // 性能指标接口

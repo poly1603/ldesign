@@ -8,6 +8,7 @@ import type {
   PerformanceMetric,
   QRCodeOptions,
   QRCodeResult,
+  QRCodeGenerationResult,
 } from '../types'
 import QRCode from 'qrcode'
 import { createError, PerformanceMonitor } from '../utils'
@@ -18,7 +19,7 @@ export class QRCodeGenerator {
   private logoProcessor: LogoProcessor
   private styleProcessor: StyleProcessor
   private performanceMonitor: PerformanceMonitor
-  private cache: Map<string, QRCodeResult> = new Map()
+  private cache: Map<string, any> = new Map()
   private config: GeneratorConfig
   private options: QRCodeOptions
 
@@ -48,50 +49,88 @@ export class QRCodeGenerator {
   async generate(
     text?: string,
     overrideOptions?: Partial<QRCodeOptions>,
-  ): Promise<QRCodeResult> {
-    const endTimer = this.performanceMonitor.startOperation('generate')
+  ): Promise<QRCodeGenerationResult> {
+    const perfId = this.performanceMonitor.start('generate')
+
+    const targetText = (text ?? this.options.data) || ''
+    if (!targetText) {
+      const metric = this.performanceMonitor.end(perfId, false)
+      return {
+        success: false,
+        data: '',
+        format: (overrideOptions?.format || this.options.format || 'canvas') as any,
+        metrics: {
+          duration: metric.duration,
+          timestamp: new Date(metric.timestamp),
+        },
+        error: createError('No data provided for QR code generation', 'INVALID_DATA'),
+      }
+    }
+
+    // Merge options and normalize
+    const mergedOptions: QRCodeOptions = {
+      ...this.options,
+      ...(overrideOptions || {}),
+    }
+    const format = (mergedOptions.outputFormat || mergedOptions.format || 'canvas') as 'canvas' | 'svg' | 'image'
+    const enableCache = (mergedOptions.performance?.enableCache ?? mergedOptions.enableCache) ?? true
+
+    // Cache
+    const cacheKey = this.generateCacheKey(targetText, { ...mergedOptions, format })
+    if (enableCache && this.cache.has(cacheKey)) {
+      const cached = this.cache.get(cacheKey)!
+      const metric = this.performanceMonitor.end(perfId, true)
+      return {
+        success: true,
+        data: cached.data,
+        format: cached.format,
+        fromCache: true,
+        metrics: {
+          duration: metric.duration,
+          timestamp: new Date(metric.timestamp),
+          cacheHit: true,
+        },
+      }
+    }
 
     try {
-      const targetText = (text ?? this.options.data) || ''
-      if (!targetText) {
-        throw createError('No data provided for QR code generation', 'INVALID_DATA')
+      const generated = await this.generateQRCode(targetText, { ...mergedOptions, format })
+
+      // Add to cache
+      if (enableCache) {
+        this.cache.set(cacheKey, { data: generated.data, format })
       }
 
-      // 合并选项
-      const mergedOptions: QRCodeOptions = {
-        ...this.options,
-        ...(overrideOptions || {}),
-        format: overrideOptions?.format || this.options.format || 'canvas',
-        errorCorrectionLevel: overrideOptions?.errorCorrectionLevel || this.options.errorCorrectionLevel || 'M',
-        margin: overrideOptions?.margin ?? this.options.margin ?? 4,
+      const metric = this.performanceMonitor.end(perfId, false)
+      return {
+        success: true,
+        data: generated.data,
+        format,
+        fromCache: false,
+        metrics: {
+          duration: metric.duration,
+          timestamp: new Date(metric.timestamp),
+          cacheHit: false,
+          size: generated.size,
+        },
       }
-
-      // 检查缓存
-      const cacheKey = this.generateCacheKey(targetText, mergedOptions)
-      if ((mergedOptions.enableCache ?? true) && this.cache.has(cacheKey)) {
-        const cached = this.cache.get(cacheKey)!
-        endTimer(true, cached.dataURL ? cached.dataURL.length : undefined)
-        return { ...cached, fromCache: true }
-      }
-
-      const result = await this.generateQRCode(targetText, mergedOptions)
-
-      // 添加到缓存
-      if (mergedOptions.enableCache ?? true) {
-        this.addToCache(cacheKey, result)
-      }
-
-      endTimer(false, result.dataURL ? result.dataURL.length : undefined)
-
-      return result
     }
     catch (error) {
-      endTimer(false)
-      console.error('QRCode generation failed:', error)
-      throw createError(
-        `Generation failed: ${error instanceof Error ? error.message : String(error)}`,
-        'GENERATION_ERROR',
-      )
+      const metric = this.performanceMonitor.end(perfId, false)
+      return {
+        success: false,
+        data: '',
+        format,
+        metrics: {
+          duration: metric.duration,
+          timestamp: new Date(metric.timestamp),
+          cacheHit: false,
+        },
+        error: createError(
+          `Generation failed: ${error instanceof Error ? error.message : String(error)}`,
+          'GENERATION_ERROR',
+        ),
+      }
     }
   }
 
@@ -101,60 +140,40 @@ export class QRCodeGenerator {
   private async generateQRCode(
     text: string,
     options: QRCodeOptions,
-  ): Promise<QRCodeResult> {
-    const format = options.format || 'canvas'
+  ): Promise<{ data: any, size: number }> {
+    const format = (options.outputFormat || options.format || 'canvas') as 'canvas' | 'svg' | 'image'
     const width = options.size || 200
     const height = options.size || width
 
-    // 准备QRCode库的选项
-    const qrOptions = {
+    // Prepare QR options
+    const qrOptions: any = {
       errorCorrectionLevel: options.errorCorrectionLevel || 'M',
       type: format === 'svg' ? 'svg' : 'image/png',
-      quality: 0.92,
-      margin: options.margin || 1,
+      quality: options.quality ?? 0.92,
+      margin: options.margin ?? 1,
       color: {
-        dark: '#000000',
-        light: '#FFFFFF',
+        dark: options.color?.foreground || '#000000',
+        light: options.color?.background || '#FFFFFF',
       },
       width,
     }
 
-    let dataURL: string
-    let element: HTMLCanvasElement | SVGElement | HTMLImageElement
-
     switch (format) {
-      case 'canvas':
-        element = await this.generateCanvas(text, qrOptions, options)
-        dataURL = (element as HTMLCanvasElement).toDataURL('image/png')
-        break
-
-      case 'svg':
-        element = await this.generateSVG(text, qrOptions, options)
+      case 'canvas': {
+        const element = await this.generateCanvas(text, qrOptions, options)
+        return { data: element, size: Math.max(width, height) }
+      }
+      case 'svg': {
+        const element = await this.generateSVG(text, qrOptions, options)
         const svgData = new XMLSerializer().serializeToString(element)
-        dataURL = `data:image/svg+xml;base64,${btoa(svgData)}`
-        break
-
-      case 'image':
-        element = await this.generateImage(text, qrOptions, options)
-        dataURL = (element as HTMLImageElement).src
-        break
-
+        return { data: svgData, size: Math.max(width, height) }
+      }
+      case 'image': {
+        const element = await this.generateImage(text, qrOptions, options)
+        return { data: (element as HTMLImageElement).src, size: Math.max(width, height) }
+      }
       default:
         throw createError(`Unsupported format: ${format}`, 'INVALID_FORMAT')
-    }
-
-    return {
-      dataURL,
-      element,
-      format,
-      width,
-      height,
-      text,
-      options,
-      fromCache: false,
-      generatedAt: Date.now(),
-      size: Math.max(width, height),
-      timestamp: Date.now(),
     }
   }
 
@@ -299,38 +318,31 @@ export class QRCodeGenerator {
   }
 
   /**
-   * 清除性能指标
+   * 娓呴櫎鎬ц兘鎸囨爣
    */
   clearPerformanceMetrics(): void {
     this.performanceMonitor.clear()
   }
 
   /**
-   * 获取当前选项
+   * 鑾峰彇褰撳墠閫夐」
    */
   getOptions(): QRCodeOptions {
     return { ...this.options }
   }
 
   /**
-   * 更新选项
+   * 鏇存柊閫夐」
    */
   updateOptions(options: Partial<QRCodeOptions>): void {
     this.options = { ...this.options, ...options }
   }
 
   /**
-   * 更新配置
+   * 鏇存柊閰嶇疆
    */
   updateConfig(config: Partial<GeneratorConfig>): void {
     this.config = { ...this.config, ...config }
-  }
-
-  /**
-   * 获取性能指标
-   */
-  getPerformanceMetrics(): PerformanceMetric[] {
-    return this.performanceMonitor.getMetrics()
   }
 
   /**

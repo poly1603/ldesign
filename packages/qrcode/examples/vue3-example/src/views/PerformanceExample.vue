@@ -199,10 +199,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed } from 'vue'
 import {
   generateQRCode,
-  type SimpleQRCodeOptions,
   type QRCodeResult
 } from '@ldesign/qrcode'
 
@@ -225,6 +224,13 @@ const chartRefs = ref<Map<string, HTMLCanvasElement>>(new Map())
 const comparisonChart = ref<HTMLCanvasElement>()
 const comparisonData = ref<any[]>([])
 
+const setChartRef = (el: any, id: string): void => {
+  if (el && el instanceof HTMLCanvasElement) {
+    chartRefs.value.set(id, el)
+    drawChart(el, id)
+  }
+}
+
 // 计算属性
 const hasSelectedTests = computed(() => 
   Object.values(testTypes.value).some(Boolean)
@@ -240,7 +246,7 @@ const runPerformanceTest = async (): Promise<void> => {
   progress.value = 0
   testResults.value = []
 
-  const tests = []
+  const tests: string[] = []
   if (testTypes.value.generation) tests.push('generation')
   if (testTypes.value.cache) tests.push('cache')
   if (testTypes.value.batch) tests.push('batch')
@@ -248,7 +254,7 @@ const runPerformanceTest = async (): Promise<void> => {
 
   try {
     for (let i = 0; i < tests.length; i++) {
-      const testType = tests[i]
+      const testType = tests[i]!
       progressText.value = `正在执行${getTestName(testType)}...`
       
       const result = await runSingleTest(testType)
@@ -340,7 +346,7 @@ const runCacheTest = async (): Promise<any> => {
   for (let i = 1; i < testCount.value; i++) {
     const start = performance.now()
 
-    const result = await generateQRCode(testData, {
+    await generateQRCode(testData, {
       size: testSize.value,
       format: 'canvas'
     })
@@ -407,11 +413,11 @@ const runMemoryTest = async (startMemory: number): Promise<any> => {
   const results: QRCodeResult[] = []
 
   for (const data of testData) {
-    const result = await generateQRCode(data, {
+    const r = await generateQRCode(data, {
       size: testSize.value,
       format: 'canvas'
     })
-    results.push(result)
+    results.push(r)
   }
 
   const endMemory = (performance as any).memory?.usedJSHeapSize || 0
@@ -459,13 +465,6 @@ const getTestName = (testType: string): string => {
 /**
  * 设置图表引用
  */
-const setChartRef = (el: HTMLCanvasElement | null, id: string): void => {
-  if (el) {
-    chartRefs.value.set(id, el)
-    // 这里可以绘制具体的图表
-    drawChart(el, id)
-  }
-}
 
 /**
  * 绘制图表

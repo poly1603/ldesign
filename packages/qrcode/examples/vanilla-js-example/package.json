@@ -11,7 +11,7 @@
     "serve": "vite --port 3003 --open"
   },
   "dependencies": {
-    "@ldesign/qrcode": "workspace:*"
+    "@ldesign/qrcode": "file:../.."
   },
   "devDependencies": {
     "vite": "^4.5.0"

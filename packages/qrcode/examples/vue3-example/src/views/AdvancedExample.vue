@@ -151,7 +151,6 @@ import { ref, nextTick } from 'vue'
 import {
   generateQRCode,
   type QRCodeResult,
-  type QRCodeError,
   type SimpleQRCodeOptions
 } from '@ldesign/qrcode'
 
@@ -212,7 +211,7 @@ const generateLogoQR = async (): Promise<void> => {
       size: 250,
       format: 'canvas',
       errorCorrectionLevel: 'H', // 使用高纠错级别以支持 Logo
-      logo: logoOptions
+      ...(logoOptions ? { logo: logoOptions } : {}),
     }
 
     const result = await generateQRCode(logoQRText.value, options)
@@ -266,8 +265,8 @@ const generateBatchQR = async (): Promise<void> => {
 /**
  * 设置批量结果的引用
  */
-const setBatchRef = (el: HTMLDivElement | null, index: number): void => {
-  if (el) {
+const setBatchRef = (el: any, index: number): void => {
+  if (el && el instanceof HTMLDivElement) {
     batchRefs.value[index] = el
   }
 }
@@ -318,11 +317,9 @@ const testCachePerformance = async (): Promise<void> => {
 
   // 第一次生成（无缓存）
   const start1 = performance.now()
-  await generateQRCode({
-    data: testData,
+  await generateQRCode(testData, {
     size: 200,
-    enableCache: true,
-    cacheKey: 'performance-test'
+    format: 'canvas',
   })
   const end1 = performance.now()
 
@@ -335,11 +332,9 @@ const testCachePerformance = async (): Promise<void> => {
 
   // 第二次生成（使用缓存）
   const start2 = performance.now()
-  await generateQRCode({
-    data: testData,
+  await generateQRCode(testData, {
     size: 200,
-    enableCache: true,
-    cacheKey: 'performance-test'
+    format: 'canvas',
   })
   const end2 = performance.now()
 

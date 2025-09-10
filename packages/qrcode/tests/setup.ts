@@ -143,6 +143,7 @@ Object.defineProperty(document.body, 'removeChild', {
 // Mock document.createElement for <a> tags
 const originalCreateElement = document.createElement.bind(document)
 Object.defineProperty(document, 'createElement', {
+  configurable: true,
   value: vi.fn((tagName: string) => {
     const element = originalCreateElement(tagName)
 

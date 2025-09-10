@@ -25,6 +25,7 @@
           <button class="nav-tab" data-tab="advanced">高级功能</button>
           <button class="nav-tab" data-tab="style">样式定制</button>
           <button class="nav-tab" data-tab="datatype">数据类型</button>
+          <button class="nav-tab" data-tab="performance">性能测试</button>
         </nav>
 
         <!-- 标签内容 -->
@@ -250,9 +251,66 @@ LDesign 设计系统</textarea>
             <p class="section-description">
               展示 @ldesign/qrcode 的样式定制功能，包括颜色、渐变、形状和边框等自定义选项。
             </p>
-            <div class="placeholder">
-              <div class="placeholder-icon">🎨</div>
-              <p>样式定制功能正在开发中...</p>
+
+            <div class="grid grid-2">
+              <!-- 控制面板 -->
+              <div class="card">
+                <h3 class="card-title">样式控制</h3>
+
+                <div class="form-group">
+                  <label class="form-label">二维码内容</label>
+                  <input type="text" id="style-text" class="form-input" value="https://www.ldesign.com/style-demo" placeholder="输入要生成二维码的内容">
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">尺寸: <span id="style-size-value">250</span>px</label>
+                    <input type="range" id="style-size" class="form-range" min="150" max="400" step="10" value="250">
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">边距: <span id="style-margin-value">4</span>px</label>
+                    <input type="range" id="style-margin" class="form-range" min="0" max="20" step="1" value="4">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">前景色</label>
+                    <div class="color-input-group">
+                      <input type="color" id="style-foreground" class="color-picker" value="#722ED1">
+                      <input type="text" id="style-foreground-text" class="color-text" value="#722ED1">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">背景色</label>
+                    <div class="color-input-group">
+                      <input type="color" id="style-background" class="color-picker" value="#ffffff">
+                      <input type="text" id="style-background-text" class="color-text" value="#ffffff">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">预设样式</label>
+                  <div class="preset-styles">
+                    <button class="preset-button" data-preset="classic">经典</button>
+                    <button class="preset-button" data-preset="modern">现代</button>
+                    <button class="preset-button" data-preset="gradient">渐变</button>
+                    <button class="preset-button" data-preset="elegant">优雅</button>
+                  </div>
+                </div>
+
+                <button id="generate-style-qr" class="btn btn-primary">生成二维码</button>
+              </div>
+
+              <!-- 结果展示 -->
+              <div class="card">
+                <h3 class="card-title">生成结果</h3>
+                <div id="style-qr-container" class="qr-container"></div>
+                <div id="style-preset-container" class="preset-container"></div>
+              </div>
             </div>
           </div>
 
@@ -262,9 +320,230 @@ LDesign 设计系统</textarea>
             <p class="section-description">
               展示 @ldesign/qrcode 支持的各种数据类型，包括URL、WiFi、联系人、地理位置、邮件等。
             </p>
-            <div class="placeholder">
-              <div class="placeholder-icon">📊</div>
-              <p>数据类型示例正在开发中...</p>
+
+            <!-- 数据类型选择 -->
+            <div class="card">
+              <h3 class="card-title">选择数据类型</h3>
+              <div class="type-grid">
+                <button class="type-card" data-type="url">
+                  <div class="type-icon">🌐</div>
+                  <div class="type-label">URL链接</div>
+                  <div class="type-description">网站链接、在线资源等</div>
+                </button>
+                <button class="type-card" data-type="wifi">
+                  <div class="type-icon">📶</div>
+                  <div class="type-label">WiFi网络</div>
+                  <div class="type-description">WiFi连接信息</div>
+                </button>
+                <button class="type-card" data-type="contact">
+                  <div class="type-icon">👤</div>
+                  <div class="type-label">联系人</div>
+                  <div class="type-description">联系人名片信息</div>
+                </button>
+                <button class="type-card" data-type="email">
+                  <div class="type-icon">📧</div>
+                  <div class="type-label">邮件</div>
+                  <div class="type-description">邮件地址和内容</div>
+                </button>
+                <button class="type-card" data-type="sms">
+                  <div class="type-icon">💬</div>
+                  <div class="type-label">短信</div>
+                  <div class="type-description">短信号码和内容</div>
+                </button>
+                <button class="type-card" data-type="phone">
+                  <div class="type-icon">📞</div>
+                  <div class="type-label">电话</div>
+                  <div class="type-description">电话号码</div>
+                </button>
+                <button class="type-card" data-type="location">
+                  <div class="type-icon">📍</div>
+                  <div class="type-label">地理位置</div>
+                  <div class="type-description">地理坐标和位置</div>
+                </button>
+                <button class="type-card" data-type="text">
+                  <div class="type-icon">📝</div>
+                  <div class="type-label">纯文本</div>
+                  <div class="type-description">任意文本内容</div>
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-2">
+              <!-- 数据输入 -->
+              <div class="card">
+                <h3 class="card-title">
+                  <span id="datatype-icon">📱</span>
+                  <span id="datatype-title">请选择数据类型</span>
+                </h3>
+
+                <div id="datatype-input-area" class="input-area" style="display: none;">
+                  <div class="form-group">
+                    <label class="form-label">数据内容</label>
+                    <textarea id="datatype-content" class="form-textarea" rows="8" placeholder="请输入数据内容"></textarea>
+                  </div>
+
+                  <div class="form-actions">
+                    <button id="generate-datatype-qr" class="btn btn-primary">生成二维码</button>
+                    <button id="reset-datatype" class="btn btn-secondary">重置为默认</button>
+                  </div>
+                </div>
+
+                <div id="datatype-empty" class="empty-state">
+                  <div class="empty-icon">📱</div>
+                  <div class="empty-text">请选择一种数据类型开始生成二维码</div>
+                </div>
+              </div>
+
+              <!-- 结果展示 -->
+              <div class="card">
+                <h3 class="card-title">生成结果</h3>
+                <div id="datatype-qr-container" class="qr-container">
+                  <div class="qr-placeholder">
+                    <div class="placeholder-icon">🔲</div>
+                    <div class="placeholder-text">二维码将在这里显示</div>
+                  </div>
+                </div>
+                <div id="datatype-info" class="result-info" style="display: none;">
+                  <div class="info-item">
+                    <span class="info-label">数据长度:</span>
+                    <span id="datatype-length" class="info-value">0 字符</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">生成时间:</span>
+                    <span id="datatype-timestamp" class="info-value">-</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">格式:</span>
+                    <span class="info-value">canvas</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 性能测试 -->
+          <div id="performance-tab" class="tab-panel">
+            <h2 class="section-title">性能测试示例</h2>
+            <p class="section-description">
+              展示 @ldesign/qrcode 的性能特性，包括生成速度测试、缓存效果、批量处理和内存使用情况。
+            </p>
+
+            <div class="grid grid-2">
+              <!-- 性能测试控制面板 -->
+              <div class="card">
+                <h3 class="card-title">性能测试</h3>
+
+                <div class="test-controls">
+                  <div class="form-group">
+                    <label class="form-label">测试数据量</label>
+                    <select id="perf-test-count" class="form-input">
+                      <option value="10">10个二维码</option>
+                      <option value="50" selected>50个二维码</option>
+                      <option value="100">100个二维码</option>
+                      <option value="200">200个二维码</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">二维码大小</label>
+                    <select id="perf-test-size" class="form-input">
+                      <option value="100">100x100</option>
+                      <option value="200" selected>200x200</option>
+                      <option value="300">300x300</option>
+                      <option value="400">400x400</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">测试类型</label>
+                    <div class="test-type-options">
+                      <label class="checkbox-label">
+                        <input type="checkbox" id="test-generation" class="form-checkbox" checked>
+                        生成速度测试
+                      </label>
+                      <label class="checkbox-label">
+                        <input type="checkbox" id="test-cache" class="form-checkbox">
+                        缓存性能测试
+                      </label>
+                      <label class="checkbox-label">
+                        <input type="checkbox" id="test-batch" class="form-checkbox">
+                        批量处理测试
+                      </label>
+                      <label class="checkbox-label">
+                        <input type="checkbox" id="test-memory" class="form-checkbox">
+                        内存使用测试
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="test-actions">
+                    <button id="run-performance-test" class="btn btn-primary">开始测试</button>
+                    <button id="clear-performance-results" class="btn">清空结果</button>
+                  </div>
+                </div>
+
+                <!-- 实时进度 -->
+                <div id="performance-progress" class="progress-section" style="display: none;">
+                  <h4>测试进度</h4>
+                  <div class="progress-bar">
+                    <div id="performance-progress-fill" class="progress-fill" style="width: 0%;"></div>
+                  </div>
+                  <p id="performance-progress-text" class="progress-text">准备开始...</p>
+                </div>
+              </div>
+
+              <!-- 测试结果展示 -->
+              <div class="card">
+                <h3 class="card-title">测试结果</h3>
+
+                <div id="performance-no-results" class="no-results">
+                  <div class="no-results-icon">📊</div>
+                  <p>暂无测试结果</p>
+                  <p class="hint">选择测试类型并点击开始测试</p>
+                </div>
+
+                <div id="performance-results-container" class="results-container" style="display: none;">
+                  <!-- 测试结果将在这里动态生成 -->
+                </div>
+              </div>
+            </div>
+
+            <!-- 性能对比图表 -->
+            <div id="performance-comparison-card" class="card" style="display: none;">
+              <h3 class="card-title">性能对比</h3>
+              <div class="comparison-chart">
+                <canvas id="performance-comparison-chart" width="800" height="400"></canvas>
+              </div>
+              <div id="performance-comparison-legend" class="comparison-legend">
+                <!-- 图例将在这里动态生成 -->
+              </div>
+            </div>
+
+            <!-- 性能建议 -->
+            <div class="card">
+              <h3 class="card-title">性能优化建议</h3>
+              <div class="recommendations">
+                <div class="recommendation-item">
+                  <h4>🚀 启用缓存</h4>
+                  <p>对于相同内容的二维码，启用缓存可以显著提升生成速度，减少重复计算。</p>
+                  <code>{ enableCache: true }</code>
+                </div>
+                <div class="recommendation-item">
+                  <h4>📏 合理选择尺寸</h4>
+                  <p>较大的二维码需要更多计算时间，根据实际需求选择合适的尺寸。</p>
+                  <code>{ size: 200 } // 推荐200-300px</code>
+                </div>
+                <div class="recommendation-item">
+                  <h4>🔄 批量处理</h4>
+                  <p>对于大量二维码生成，使用批量API可以获得更好的性能表现。</p>
+                  <code>generateQRCodeBatch(options[])</code>
+                </div>
+                <div class="recommendation-item">
+                  <h4>💾 内存管理</h4>
+                  <p>及时清理不需要的二维码实例，避免内存泄漏。</p>
+                  <code>qrInstance.destroy()</code>
+                </div>
+              </div>
             </div>
           </div>
         </div>

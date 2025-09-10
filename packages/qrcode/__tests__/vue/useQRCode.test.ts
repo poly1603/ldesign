@@ -1,5 +1,5 @@
 import type { QRCodeOptions } from '../../src/types'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import { useQRCode } from '../../src/vue/useQRCode'
 
@@ -28,6 +28,30 @@ vi.mock('../../src/core/generator', () => ({
 describe('useQRCode', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  // Ensure the generator mock is restored after tests that override its implementation
+  afterEach(async () => {
+    const { QRCodeGenerator } = await import('../../src/core/generator')
+    const mockGenerator = QRCodeGenerator as any
+    mockGenerator.mockImplementation(() => ({
+      generate: vi.fn().mockResolvedValue({
+        data: 'data:image/png;base64,test',
+        element: document.createElement('canvas'),
+        format: 'canvas',
+        size: 200,
+        timestamp: Date.now(),
+      }),
+      updateOptions: vi.fn(),
+      clearCache: vi.fn(),
+      getOptions: vi.fn().mockReturnValue({
+        data: 'test',
+        size: 200,
+        format: 'canvas',
+      }),
+      getPerformanceMetrics: vi.fn().mockReturnValue([]),
+      destroy: vi.fn(),
+    }))
   })
 
   describe('initialization', () => {

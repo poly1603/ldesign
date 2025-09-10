@@ -8,13 +8,15 @@ import BasicExample from './pages/BasicExample'
 import AdvancedExample from './pages/AdvancedExample'
 import StyleExample from './pages/StyleExample'
 import DataTypeExample from './pages/DataTypeExample'
+import PerformanceExample from './pages/PerformanceExample'
 
 // 标签配置
 const tabs = [
   { id: 'basic', label: '基础示例', component: BasicExample },
   { id: 'advanced', label: '高级功能', component: AdvancedExample },
   { id: 'style', label: '样式定制', component: StyleExample },
-  { id: 'datatype', label: '数据类型', component: DataTypeExample }
+  { id: 'datatype', label: '数据类型', component: DataTypeExample },
+  { id: 'performance', label: '性能测试', component: PerformanceExample }
 ]
 
 const App: React.FC = () => {

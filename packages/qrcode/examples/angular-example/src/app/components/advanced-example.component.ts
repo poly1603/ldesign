@@ -6,7 +6,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { generateQRCode, type QRCodeResult, type QRCodeOptions } from '@ldesign/qrcode';
+import { generateQRCode, type QRCodeResult, type SimpleQRCodeOptions } from '@ldesign/qrcode';
 
 @Component({
   selector: 'app-advanced-example',
@@ -211,7 +211,7 @@ export class AdvancedExampleComponent {
         size: this.logoSize
       } : undefined;
 
-      const options: QRCodeOptions = {
+      const options: SimpleQRCodeOptions = {
         size: 250,
         format: 'canvas',
         errorCorrectionLevel: 'H', // 使用高纠错级别以支持 Logo
@@ -219,10 +219,21 @@ export class AdvancedExampleComponent {
       };
 
       const result = await generateQRCode(this.logoQRText, options);
-
-      if (this.logoContainer && result.element) {
-        this.logoContainer.nativeElement.innerHTML = '';
-        this.logoContainer.nativeElement.appendChild(result.element);
+      
+      if (this.logoContainer) {
+        const host = this.logoContainer.nativeElement;
+        host.innerHTML = '';
+        if (result.element) {
+          host.appendChild(result.element);
+        } else if ((result as any).svg) {
+          host.innerHTML = (result as any).svg;
+        } else if ((result as any).dataURL) {
+          const img = new Image();
+          img.src = (result as any).dataURL;
+          img.width = 250;
+          img.height = 250;
+          host.appendChild(img);
+        }
       }
     } catch (err) {
       console.error('生成带Logo二维码失败:', err);
@@ -260,29 +271,40 @@ export class AdvancedExampleComponent {
       if (this.batchContainer) {
         this.batchContainer.nativeElement.innerHTML = '';
         results.forEach((result, index) => {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'batch-item';
+          wrapper.style.cssText = `
+            text-align: center;
+            padding: var(--ls-spacing-sm);
+            border: 1px solid var(--ldesign-border-level-1-color);
+            border-radius: var(--ls-border-radius-base);
+          `;
+          // 渲染结果（包含回退）
           if (result.element) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'batch-item';
-            wrapper.style.cssText = `
-              text-align: center;
-              padding: var(--ls-spacing-sm);
-              border: 1px solid var(--ldesign-border-level-1-color);
-              border-radius: var(--ls-border-radius-base);
-            `;
             wrapper.appendChild(result.element);
-
-            const label = document.createElement('p');
-            label.textContent = texts[index];
-            label.style.cssText = `
-              margin-top: var(--ls-spacing-xs);
-              font-size: 12px;
-              color: var(--ldesign-text-color-secondary);
-              word-break: break-all;
-            `;
-            wrapper.appendChild(label);
-
-            this.batchContainer.nativeElement.appendChild(wrapper);
+          } else if ((result as any).svg) {
+            const div = document.createElement('div');
+            div.innerHTML = (result as any).svg as string;
+            wrapper.appendChild(div.firstChild as Node);
+          } else if ((result as any).dataURL) {
+            const img = new Image();
+            img.src = (result as any).dataURL;
+            img.width = this.batchSize;
+            img.height = this.batchSize;
+            wrapper.appendChild(img);
           }
+
+          const label = document.createElement('p');
+          label.textContent = texts[index];
+          label.style.cssText = `
+            margin-top: var(--ls-spacing-xs);
+            font-size: 12px;
+            color: var(--ldesign-text-color-secondary);
+            word-break: break-all;
+          `;
+          wrapper.appendChild(label);
+
+          this.batchContainer.nativeElement.appendChild(wrapper);
         });
       }
     } catch (err) {

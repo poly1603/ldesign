@@ -1,6 +1,6 @@
 {
   "name": "@ldesign/qrcode",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "LDesign QRCode - A powerful and flexible QR code generator for Vue.js and vanilla JavaScript",
   "author": "LDesign Team",

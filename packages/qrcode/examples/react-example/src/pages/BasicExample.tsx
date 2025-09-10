@@ -50,11 +50,6 @@ const BasicExample: React.FC = () => {
       const qrResult = await generateQRCode(qrText, options)
       setResult(qrResult)
 
-      // 渲染二维码到容器
-      if (qrContainer.current && qrResult.element) {
-        qrContainer.current.innerHTML = ''
-        qrContainer.current.appendChild(qrResult.element)
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '生成二维码失败')
       console.error('二维码生成失败:', err)
@@ -72,14 +67,14 @@ const BasicExample: React.FC = () => {
     try {
       const link = document.createElement('a')
       link.download = `qrcode-${Date.now()}.${qrFormat === 'svg' ? 'svg' : 'png'}`
-      
+
       if (qrFormat === 'svg' && result.svg) {
         const blob = new Blob([result.svg], { type: 'image/svg+xml' })
         link.href = URL.createObjectURL(blob)
       } else if (result.dataURL) {
         link.href = result.dataURL
       }
-      
+
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -103,6 +98,14 @@ const BasicExample: React.FC = () => {
     return new Date(timestamp).toLocaleTimeString()
   }
 
+  // 渲染二维码到容器
+  useEffect(() => {
+    if (result && result.element && qrContainer.current) {
+      qrContainer.current.innerHTML = ''
+      qrContainer.current.appendChild(result.element)
+    }
+  }, [result])
+
   // 初始生成
   useEffect(() => {
     generateQRCodeHandler()
@@ -119,7 +122,7 @@ const BasicExample: React.FC = () => {
         {/* 配置面板 */}
         <div className="card">
           <h3 className="card-title">配置选项</h3>
-          
+
           <div className="form-group">
             <label className="form-label">输入文本或URL</label>
             <textarea
@@ -147,8 +150,8 @@ const BasicExample: React.FC = () => {
 
           <div className="form-group">
             <label className="form-label">输出格式</label>
-            <select 
-              value={qrFormat} 
+            <select
+              value={qrFormat}
               onChange={(e) => setQrFormat(e.target.value as 'canvas' | 'svg' | 'image')}
               className="form-input"
             >
@@ -160,8 +163,8 @@ const BasicExample: React.FC = () => {
 
           <div className="form-group">
             <label className="form-label">错误纠正级别</label>
-            <select 
-              value={errorLevel} 
+            <select
+              value={errorLevel}
               onChange={(e) => setErrorLevel(e.target.value as 'L' | 'M' | 'Q' | 'H')}
               className="form-input"
             >
@@ -187,16 +190,16 @@ const BasicExample: React.FC = () => {
           </div>
 
           <div className="form-actions">
-            <button 
-              onClick={generateQRCodeHandler} 
-              className="btn btn-primary" 
+            <button
+              onClick={generateQRCodeHandler}
+              className="btn btn-primary"
               disabled={!qrText.trim() || isLoading}
             >
               {isLoading ? '生成中...' : '生成二维码'}
             </button>
-            <button 
-              onClick={downloadQRCode} 
-              className="btn" 
+            <button
+              onClick={downloadQRCode}
+              className="btn"
               disabled={!result}
             >
               下载二维码
@@ -207,7 +210,7 @@ const BasicExample: React.FC = () => {
         {/* 预览面板 */}
         <div className="card">
           <h3 className="card-title">二维码预览</h3>
-          
+
           <div className="qr-preview">
             {isLoading && (
               <div className="loading">
@@ -215,14 +218,14 @@ const BasicExample: React.FC = () => {
                 <p>正在生成二维码...</p>
               </div>
             )}
-            
+
             {error && (
               <div className="error">
                 <p className="error-message">{error}</p>
                 <button onClick={generateQRCodeHandler} className="btn btn-primary">重试</button>
               </div>
             )}
-            
+
             {result && !isLoading && !error && (
               <div className="qr-result">
                 <div className="qr-container" ref={qrContainer}></div>
@@ -234,7 +237,7 @@ const BasicExample: React.FC = () => {
                 </div>
               </div>
             )}
-            
+
             {!result && !isLoading && !error && (
               <div className="placeholder">
                 <div className="placeholder-icon">📱</div>

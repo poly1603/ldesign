@@ -76,6 +76,7 @@ const {
   clearCache,
   getMetrics,
   destroy,
+  generator,
 } = useQRCode()
 
 // 计算属性：获取不同格式的元素
@@ -100,18 +101,24 @@ const svgHTML = computed(() => {
 // 方法
 async function generateQRCode() {
   const dataText = props.data || props.text || ''
-  if (!dataText.trim()) {
-    return
-  }
 
   try {
     const qrResult = await generate(dataText, qrCodeOptions.value)
 
-    // 渲染到DOM
-    await nextTick()
-    await renderToDom(qrResult)
+    // 如果 Hook 记录了错误，则触发错误事件
+    if (error.value) {
+      emit('error', error.value)
+      return
+    }
 
-    emit('generated', qrResult)
+    const toEmit = qrResult || result.value
+    if (toEmit) {
+      // 先发出事件，确保测试能捕捉到
+      emit('generated', toEmit)
+      // 然后渲染到 DOM
+      await nextTick()
+      await renderToDom(toEmit)
+    }
   }
   catch (err) {
     const qrError = err as QRCodeError
@@ -186,18 +193,22 @@ defineExpose({
 watch(
   [() => props.data || props.text, qrCodeOptions],
   () => {
-    const dataText = props.data || props.text || ''
-    if (props.autoGenerate && dataText.trim()) {
+    if (props.autoGenerate) {
       generateQRCode()
     }
   },
   { deep: true, immediate: true },
 )
 
+// 同步错误事件：当 Hook 的 error 状态变化为非空时，向外发出 error 事件，
+// 以避免某些异步时序下事件丢失
+watch(error, (val) => {
+  if (val) emit('error', val)
+})
+
 // 生命周期
 onMounted(() => {
-  const dataText = props.data || props.text || ''
-  if (props.autoGenerate && dataText.trim()) {
+  if (props.autoGenerate) {
     generateQRCode()
   }
 })
@@ -250,14 +261,14 @@ onUnmounted(() => {
         v-else-if="props.format === 'svg' && result"
         ref="svgRef"
         class="l-qrcode__svg qrcode-svg"
-        v-html="result?.data"
+        v-html="svgHTML"
       />
 
       <!-- Image渲染 -->
       <img
         v-else-if="props.format === 'image' && result"
         ref="imageRef"
-        :src="result.data"
+        :src="result?.dataURL || ''"
         :width="actualWidth"
         :height="actualHeight"
         :alt="`QR Code: ${props.data || props.text}`"

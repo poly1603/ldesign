@@ -10,10 +10,11 @@
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "serve": "vite --port 3004 --open"
   },
   "dependencies": {
-    "@ldesign/qrcode": "workspace:*",
+    "@ldesign/qrcode": "file:../..",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

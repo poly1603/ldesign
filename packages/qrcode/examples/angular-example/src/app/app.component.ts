@@ -28,6 +28,9 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
           <nav class="nav-tabs">
             <a routerLink="/basic" routerLinkActive="active" class="nav-tab">基础示例</a>
             <a routerLink="/advanced" routerLinkActive="active" class="nav-tab">高级功能</a>
+            <a routerLink="/style" routerLinkActive="active" class="nav-tab">样式定制</a>
+            <a routerLink="/datatype" routerLinkActive="active" class="nav-tab">数据类型</a>
+            <a routerLink="/performance" routerLinkActive="active" class="nav-tab">性能测试</a>
           </nav>
 
           <!-- 路由内容 -->

@@ -188,7 +188,7 @@
           </div>
           
           <div v-else-if="result" class="qr-result">
-            <div class="qr-container" ref="qrContainer"></div>
+            <div class="qr-container" ref="qrContainer" v-html="displayHtml"></div>
             <div class="style-info">
               <h4>当前样式配置</h4>
               <div class="style-details">
@@ -247,7 +247,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, watch, computed } from 'vue'
 import {
   generateQRCode,
   type QRCodeResult,
@@ -277,6 +277,19 @@ const margin = ref(4)
 const isLoading = ref(false)
 const result = ref<QRCodeResult | null>(null)
 const qrContainer = ref<HTMLDivElement>()
+
+// 渲染HTML（优先 SVG，其次 dataURL）
+const displayHtml = computed(() => {
+  const r: any = result.value as any
+  if (!r) return ''
+  if (r.svg) return r.svg as string
+  const dataURL = r.dataURL || (typeof r.data === 'string' ? r.data : '')
+  if (dataURL) {
+    const size = qrSize.value
+    return `<img src="${dataURL}" width="${size}" height="${size}" />`
+  }
+  return ''
+})
 
 // 对比示例
 const comparisons = ref<any[]>([])
@@ -364,9 +377,22 @@ const generateStyledQR = async (): Promise<void> => {
     result.value = qrResult
 
     await nextTick()
-    if (qrContainer.value && qrResult.element) {
-      qrContainer.value.innerHTML = ''
-      qrContainer.value.appendChild(qrResult.element)
+    if (qrContainer.value) {
+      const host = qrContainer.value
+      host.innerHTML = ''
+      const svg = (qrResult as any)?.svg
+      const dataURL = (qrResult as any)?.dataURL || (typeof (qrResult as any)?.data === 'string' ? (qrResult as any).data : '')
+      if (svg) {
+        host.innerHTML = svg
+      } else if (dataURL) {
+        const img = new Image()
+        img.src = dataURL
+        img.width = qrSize.value
+        img.height = qrSize.value
+        host.appendChild(img)
+      } else if (qrResult.element) {
+        host.appendChild(qrResult.element)
+      }
     }
   } catch (error) {
     console.error('生成样式化二维码失败:', error)
@@ -430,7 +456,7 @@ const generateComparisons = async (): Promise<void> => {
   comparisonRefs.value = []
 
   for (let i = 0; i < comparisonConfigs.length; i++) {
-    const config = comparisonConfigs[i]
+    const config = comparisonConfigs[i]!
     
     try {
       const options: SimpleQRCodeOptions = {
@@ -465,11 +491,20 @@ const generateComparisons = async (): Promise<void> => {
 /**
  * 设置对比示例的引用
  */
-const setComparisonRef = (el: HTMLDivElement | null, index: number): void => {
-  if (el) {
+const setComparisonRef = (el: any, index: number): void => {
+  if (el && el instanceof HTMLDivElement) {
     comparisonRefs.value[index] = el
   }
 }
+
+// 监听配置变化，自动重新生成二维码
+watch(
+  [qrText, qrSize, margin, foregroundColor, backgroundColor, useGradient, gradientStart, gradientEnd],
+  () => {
+    generateStyledQR()
+  },
+  { deep: true }
+)
 
 // 初始生成
 generateStyledQR()

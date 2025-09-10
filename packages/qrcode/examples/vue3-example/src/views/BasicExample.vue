@@ -126,8 +126,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
-import { generateQRCode, type QRCodeResult, type QRCodeError, type SimpleQRCodeOptions } from '@ldesign/qrcode'
+import { ref, nextTick, onMounted, watch } from 'vue'
+import { generateQRCode, type QRCodeResult, type QRCodeError } from '@ldesign/qrcode'
 
 // 响应式数据
 const qrText = ref('https://github.com/ldesign/qrcode')
@@ -171,13 +171,6 @@ const generateQRCodeHandler = async (): Promise<void> => {
 
     const qrResult = await generateQRCode(qrText.value, options)
     result.value = qrResult
-
-    // 等待 DOM 更新后渲染二维码
-    await nextTick()
-    if (qrContainer.value && qrResult.element) {
-      qrContainer.value.innerHTML = ''
-      qrContainer.value.appendChild(qrResult.element)
-    }
   } catch (err) {
     error.value = err as QRCodeError
     console.error('二维码生成失败:', err)
@@ -227,8 +220,22 @@ const formatTime = (timestamp: number): string => {
   return new Date(timestamp).toLocaleTimeString()
 }
 
+// 监听 result 变化，渲染二维码
+watch(result, async (newResult) => {
+  if (newResult && newResult.element) {
+    await nextTick()
+    if (qrContainer.value) {
+      qrContainer.value.innerHTML = ''
+      qrContainer.value.appendChild(newResult.element)
+    }
+  }
+})
+
 // 初始生成
-generateQRCodeHandler()
+onMounted(async () => {
+  await nextTick()
+  generateQRCodeHandler()
+})
 </script>
 
 <style scoped>

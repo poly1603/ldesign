@@ -3,7 +3,7 @@
  * 展示 @ldesign/qrcode 支持的各种数据类型
  */
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { generateQRCode, type QRCodeResult, type SimpleQRCodeOptions } from '@ldesign/qrcode'
 
 interface DataType {
@@ -170,6 +170,13 @@ const DataTypeExample: React.FC = () => {
     setSelectedType('')
   }
 
+  // 监听数据变化，自动生成二维码
+  useEffect(() => {
+    if (currentData.trim()) {
+      generateQRCodeHandler()
+    }
+  }, [currentData])
+
   return (
     <div className="datatype-example">
       <h2 className="section-title">数据类型示例</h2>
@@ -181,7 +188,7 @@ const DataTypeExample: React.FC = () => {
         {/* 数据类型选择 */}
         <div className="card">
           <h3 className="card-title">数据类型</h3>
-          
+
           <div className="datatype-grid">
             {dataTypes.map((type) => (
               <button
@@ -218,16 +225,16 @@ const DataTypeExample: React.FC = () => {
           </div>
 
           <div className="form-actions">
-            <button 
-              onClick={generateQRCodeHandler} 
-              className="btn btn-primary" 
+            <button
+              onClick={generateQRCodeHandler}
+              className="btn btn-primary"
               disabled={!currentData.trim() || isLoading}
             >
               生成二维码
             </button>
-            <button 
-              onClick={copyData} 
-              className="btn" 
+            <button
+              onClick={copyData}
+              className="btn"
               disabled={!currentData.trim()}
             >
               复制数据
@@ -238,7 +245,7 @@ const DataTypeExample: React.FC = () => {
         {/* 二维码预览 */}
         <div className="card">
           <h3 className="card-title">二维码预览</h3>
-          
+
           <div className="qr-preview">
             {isLoading && (
               <div className="loading">
@@ -246,11 +253,11 @@ const DataTypeExample: React.FC = () => {
                 <p>正在生成二维码...</p>
               </div>
             )}
-            
+
             {!isLoading && currentData && (
               <div className="qr-container" ref={qrContainer}></div>
             )}
-            
+
             {!currentData && !isLoading && (
               <div className="placeholder">
                 <div className="placeholder-icon">📱</div>
