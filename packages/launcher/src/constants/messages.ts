@@ -129,7 +129,12 @@ export const CLI_HELP_MESSAGES = {
   dev      启动开发服务器
   build    执行生产构建
   preview  预览构建结果
+  test     运行测试
+  dashboard 启动仪表板
+  ai       AI辅助优化
   config   配置管理
+  plugin   插件管理
+  cache    缓存管理
   help     显示帮助信息
   version  显示版本信息
 
@@ -242,6 +247,118 @@ export const CLI_HELP_MESSAGES = {
   launcher config get server.port 获取服务器端口配置
   launcher config set server.port 8080 设置服务器端口
   launcher config validate        验证配置文件
+`,
+
+  /** ai 命令帮助 */
+  AI_HELP: `
+使用方法: launcher ai [options]
+
+AI辅助优化工具，分析项目并提供智能优化建议。
+
+选项:
+  --project <path>   指定项目路径 (默认: 当前目录)
+  --auto             自动应用高优先级建议
+  --export <file>    导出分析报告
+  --analyze-only     仅分析，不应用建议
+  --config <file>    指定配置文件路径
+
+示例:
+  launcher ai                     分析当前项目并交互式优化
+  launcher ai --auto              自动应用高优先级优化
+  launcher ai --export report.json 导出分析报告
+  launcher ai --analyze-only      仅分析项目
+`,
+
+  /** test 命令帮助 */
+  TEST_HELP: `
+使用方法: launcher test [options]
+
+运行测试套件，支持单元测试和集成测试。
+
+选项:
+  --watch            监听文件变化并重新运行测试
+  --coverage         生成测试覆盖率报告
+  --filter <pattern> 过滤测试文件
+  --bail             遇到失败立即停止
+  --config <file>    指定测试配置文件
+
+示例:
+  launcher test                   运行所有测试
+  launcher test --watch           监听模式运行测试
+  launcher test --coverage        生成覆盖率报告
+  launcher test --filter unit     只运行单元测试
+`,
+
+  /** dashboard 命令帮助 */
+  DASHBOARD_HELP: `
+使用方法: launcher dashboard [options]
+
+启动可视化监控面板，实时查看项目状态和性能指标。
+
+选项:
+  --port <port>      指定端口号 (默认: 9000)
+  --host <host>      指定主机地址 (默认: localhost)
+  --open             自动打开浏览器
+  --config <file>    指定配置文件路径
+
+示例:
+  launcher dashboard              启动监控面板
+  launcher dashboard --port 8090  在端口 8090 启动
+  launcher dashboard --open       启动后自动打开浏览器
+`,
+
+  /** plugin 命令帮助 */
+  PLUGIN_HELP: `
+使用方法: launcher plugin <action> [options]
+
+插件管理工具，支持安装、卸载、更新和管理插件。
+
+操作:
+  list               列出已安装的插件
+  search <keyword>   搜索插件市场
+  install <name>     安装插件
+  uninstall <name>   卸载插件
+  update <name>      更新插件
+  info <name>        查看插件详情
+  enable <name>      启用插件
+  disable <name>     禁用插件
+
+选项:
+  --version <ver>    指定插件版本
+  --force            强制操作
+  --dev              安装为开发依赖
+  --global           全局安装
+
+示例:
+  launcher plugin list            列出已安装插件
+  launcher plugin search vue      搜索Vue相关插件
+  launcher plugin install @ldesign/plugin-vue3  安装Vue3插件
+  launcher plugin update all      更新所有插件
+`,
+
+  /** cache 命令帮助 */
+  CACHE_HELP: `
+使用方法: launcher cache <action> [options]
+
+缓存管理工具，管理构建缓存和依赖缓存。
+
+操作:
+  clean              清理所有缓存
+  clear <type>       清理指定类型缓存
+  list               列出缓存信息
+  size               显示缓存大小
+  verify             验证缓存完整性
+
+选项:
+  --force            强制清理
+  --keep-deps        保留依赖缓存
+  --keep-build       保留构建缓存
+
+示例:
+  launcher cache clean            清理所有缓存
+  launcher cache clear build      清理构建缓存
+  launcher cache size             查看缓存大小
+  launcher cache verify           验证缓存
 `
 } as const
 

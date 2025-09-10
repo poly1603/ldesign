@@ -114,14 +114,19 @@ export class HelpCommand implements CliCommandDefinition {
       dev: CLI_HELP_MESSAGES.DEV_HELP,
       build: CLI_HELP_MESSAGES.BUILD_HELP,
       preview: CLI_HELP_MESSAGES.PREVIEW_HELP,
-      config: CLI_HELP_MESSAGES.CONFIG_HELP
+      config: CLI_HELP_MESSAGES.CONFIG_HELP,
+      ai: CLI_HELP_MESSAGES.AI_HELP,
+      test: CLI_HELP_MESSAGES.TEST_HELP,
+      dashboard: CLI_HELP_MESSAGES.DASHBOARD_HELP,
+      plugin: CLI_HELP_MESSAGES.PLUGIN_HELP,
+      cache: CLI_HELP_MESSAGES.CACHE_HELP
     }
 
     const helpMessage = helpMessages[commandName]
 
     if (!helpMessage) {
       logger.error(`未知命令: ${commandName}`)
-      logger.info('可用命令: dev, build, preview, config, help, version')
+      logger.info('可用命令: dev, build, preview, test, dashboard, ai, config, plugin, cache, help, version')
       return
     }
 
@@ -156,7 +161,7 @@ export class HelpCommand implements CliCommandDefinition {
    * 显示所有命令的详细帮助
    */
   private showAllCommandsHelp(logger: Logger): void {
-    const commands = ['dev', 'build', 'preview', 'config']
+    const commands = ['dev', 'build', 'preview', 'test', 'dashboard', 'ai', 'config', 'plugin', 'cache']
 
     logger.info(this.colorize('='.repeat(60), 'cyan'))
     logger.info(this.colorize('                @ldesign/launcher 详细帮助', 'cyan'))

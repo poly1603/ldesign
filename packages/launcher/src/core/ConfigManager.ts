@@ -753,7 +753,19 @@ ${presetInfo ? ` * 项目类型: ${presetInfo.description}\n` : ''}${presetInfo 
    * 查找配置文件（供单测 spy）
    */
   private async findConfigFile(cwd: string): Promise<string | null> {
-    for (const fileName of DEFAULT_CONFIG_FILES) {
+    // 定义默认配置文件列表
+    const configFiles = [
+      'vite.config.ts',
+      'vite.config.mjs',
+      'vite.config.js',
+      'vite.config.cjs',
+      'launcher.config.mjs',
+      'launcher.config.ts',
+      'launcher.config.js',
+      'launcher.config.cjs'
+    ]
+    
+    for (const fileName of configFiles) {
       const filePath = PathUtils.resolve(cwd, fileName)
       if (await FileSystem.exists(filePath)) return filePath
     }

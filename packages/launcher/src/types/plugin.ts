@@ -193,6 +193,64 @@ export interface PluginInfo {
 }
 
 /**
+ * 插件清单
+ */
+export interface PluginManifest {
+  /** 插件ID */
+  id: string
+  /** 插件名称 */
+  name: string
+  /** 版本 */
+  version: string
+  /** 描述 */
+  description: string
+  /** 主文件 */
+  main: string
+  /** 配置 */
+  config: Record<string, any>
+  /** 是否启用 */
+  enabled: boolean
+  /** 安装时间 */
+  installedAt?: string
+}
+
+/**
+ * 插件版本信息
+ */
+export interface PluginVersion {
+  /** 版本号 */
+  version: string
+  /** 依赖 */
+  dependencies?: Record<string, string>
+  /** 发布时间 */
+  publishedAt: Date
+}
+
+/**
+ * 插件搜索结果
+ */
+export interface PluginSearchResult {
+  /** 插件ID */
+  id: string
+  /** 名称 */
+  name: string
+  /** 描述 */
+  description: string
+  /** 版本 */
+  version: string
+  /** 作者 */
+  author: string
+  /** 下载量 */
+  downloads: number
+  /** 评分 */
+  rating: number
+  /** 标签 */
+  tags: string[]
+  /** 分类 */
+  category: string
+}
+
+/**
  * 插件状态枚举
  * 定义插件的运行状态
  */

@@ -11,12 +11,47 @@
 // 导出核心类
 export { ViteLauncher } from './core/ViteLauncher'
 export { ConfigManager } from './core/ConfigManager'
-// export { ConfigPresetsManager, configPresets } from './core/ConfigPresets' // 暂时移除以稳定打包
 export { PluginMarketManager, pluginMarket } from './core/PluginMarket'
 export { CacheManager, cacheManager } from './core/CacheManager'
-// export { ProjectTemplateManager } from './core/ProjectTemplateManager' // 暂无该模块，移除导出
-// export { PerformanceMonitor } from './core/PerformanceMonitor' // 与 utils/performance 重复，移除
-// export { PluginManager } from './core/PluginManager' // 暂时禁用，类型问题待修复
+
+// 导出新增的优化和增强模块
+export { PerformanceOptimizer, createPerformanceOptimizer } from './core/PerformanceOptimizer'
+export type { OptimizationOptions, PerformanceMetrics as OptimizerMetrics } from './core/PerformanceOptimizer'
+
+export { DevExperience, createDevExperience } from './core/DevExperience'
+export type { DevExperienceOptions, DevMetrics } from './core/DevExperience'
+
+export { TestIntegration, createTestIntegration } from './core/TestIntegration'
+export type { TestConfig, TestResult, TestFramework } from './core/TestIntegration'
+
+export { DashboardServer, createDashboardServer } from './dashboard/server'
+export type { DashboardConfig, DashboardMetrics, BuildRecord } from './dashboard/server'
+
+export { BenchmarkReporter } from './benchmark/performance.bench'
+
+// 导出插件预设系统
+export { presetManager, definePreset } from './plugins/presets'
+export type { PresetType, PresetOptions } from './plugins/presets'
+export * from './plugins/presets'
+
+// 导出 AI 优化器
+export { AIOptimizer, createAIOptimizer } from './ai/optimizer'
+export type { ProjectAnalysis, OptimizationSuggestion } from './ai/optimizer'
+
+// 导出插件市场模块
+export { 
+  pluginRegistry,
+  pluginManager,
+  marketplace,
+  PluginMarketplace,
+  PluginStatus
+} from './marketplace'
+export type {
+  PluginMetadata,
+  InstallOptions,
+  PluginOperationResult,
+  MarketplaceConfig
+} from './marketplace'
 
 // 导出所有类型定义
 export * from './types'

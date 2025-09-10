@@ -19,6 +19,9 @@ import { HelpCommand } from './commands/help'
 import { VersionCommand } from './commands/version'
 import { PluginCommand } from './commands/plugin'
 import { CacheCommand } from './commands/cache'
+import { TestCommand } from './commands/test'
+import { DashboardCommand } from './commands/dashboard'
+import { AICommand } from './commands/ai'
 
 /**
  * 创建 CLI 应用
@@ -110,6 +113,9 @@ export function createCli(config?: Partial<CliConfig>) {
     ['dev', new DevCommand()],
     ['build', new BuildCommand()],
     ['preview', new PreviewCommand()],
+    ['test', new TestCommand()],
+    ['dashboard', new DashboardCommand()],
+    ['ai', new AICommand()],
     ['config', new ConfigCommand()],
     ['plugin', new PluginCommand()],
     ['cache', new CacheCommand()],

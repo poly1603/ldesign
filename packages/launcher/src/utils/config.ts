@@ -7,7 +7,8 @@
  * @since 1.0.0
  */
 
-import { FileSystem, PathUtils } from '@ldesign/kit'
+import { FileSystem } from './file-system'
+import { PathUtils } from './path-utils'
 import type { ViteLauncherConfig, ValidationResult } from '../types'
 import { DEFAULT_CONFIG_FILES, SUPPORTED_CONFIG_EXTENSIONS } from '../constants'
 
@@ -99,11 +100,11 @@ export async function saveConfigFile(configPath: string, config: ViteLauncherCon
     if (ext === '.json') {
       // JSON 格式
       const content = JSON.stringify(config, null, 2)
-      await FileSystem.writeFile(configPath, content, 'utf-8')
+      await FileSystem.writeFile(configPath, content, { encoding: 'utf-8' })
     } else {
       // JavaScript/TypeScript 格式
       const content = generateConfigFileContent(config, ext === '.ts')
-      await FileSystem.writeFile(configPath, content, 'utf-8')
+      await FileSystem.writeFile(configPath, content, { encoding: 'utf-8' })
     }
 
   } catch (error) {

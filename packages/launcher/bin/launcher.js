@@ -41,12 +41,12 @@ async function main() {
 
     try {
       // 优先尝试 ESM 构建
-      mod = await import('../dist/cli/index.mjs')
+      mod = await import('../dist/cli/index.js')
       createCli = mod.createCli || (typeof mod.default === 'function' ? mod.default : mod.default?.createCli)
     } catch (_) {
       // 回退到 CJS 构建
-      mod = await import('../dist/cli/index.js')
-      createCli = mod.createCli || (typeof mod.default === 'function' ? mod.default : mod.default?.createCli)
+      const { createCli: cjsCreateCli } = require('../dist/cli/index.cjs')
+      createCli = cjsCreateCli
     }
 
     if (typeof createCli !== 'function') {
