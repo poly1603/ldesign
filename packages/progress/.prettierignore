@@ -1,0 +1,10 @@
+node_modules
+dist
+es
+lib
+cjs
+coverage
+*.min.js
+*.map
+.augment_cache
+CHANGELOG.md

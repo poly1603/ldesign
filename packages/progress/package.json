@@ -1,0 +1,65 @@
+{
+  "name": "@ldesign/progress",
+  "version": "1.0.0",
+  "description": "A modern, flexible progress bar plugin supporting various shapes and rendering methods",
+  "type": "module",
+  "main": "cjs/index.cjs",
+  "module": "es/index.js",
+  "types": "es/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./es/src/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./cjs/index.cjs"
+    }
+  },
+  "files": [
+    "es",
+    "cjs",
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "ldesign-builder build",
+    "dev": "npx http-server demo -p 8080 -o",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "type-check": "tsc --noEmit -p tsconfig.build.json",
+    "clean": "rimraf es cjs dist",
+    "demo": "vite --config demo/vite.config.ts",
+    "docs:dev": "cd docs && pnpm dev",
+    "docs:build": "cd docs && pnpm build",
+    "docs:preview": "cd docs && pnpm preview"
+  },
+  "keywords": [
+    "progress",
+    "progressbar",
+    "canvas",
+    "svg",
+    "animation",
+    "circular",
+    "linear",
+    "semicircle"
+  ],
+  "author": "LDesign",
+  "license": "MIT",
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@ldesign/launcher": "workspace:*",
+    "@types/node": "^20.11.17",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitest/coverage-v8": "^1.6.1",
+    "eslint": "^8.56.0",
+    "rimraf": "^5.0.5",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "vitest": "^1.6.1"
+  },
+  "dependencies": {}
+}

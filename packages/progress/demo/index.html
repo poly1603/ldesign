@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDesign Progress - 强大的进度条插件演示</title>
+    <style>
+        :root {
+            --primary-color: #165DFF;
+            --success-color: #00B42A;
+            --warning-color: #FF7D00;
+            --error-color: #F53F3F;
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-color: #1D2129;
+            --text-secondary: #86909C;
+            --border-color: #E5E6EB;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            font-size: 20px;
+            opacity: 0.95;
+            margin-bottom: 30px;
+        }
+
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .feature {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h3 {
+            font-size: 18px;
+            margin: 20px 0 15px;
+            color: var(--text-color);
+        }
+
+        .demo-item {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(22, 93, 255, 0.3);
+        }
+
+        button.secondary {
+            background: #f2f3f5;
+            color: var(--text-color);
+        }
+
+        button.success {
+            background: var(--success-color);
+        }
+
+        button.warning {
+            background: var(--warning-color);
+        }
+
+        button.error {
+            background: var(--error-color);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .circular-container {
+            height: 150px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .code {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .color-item {
+            text-align: center;
+        }
+
+        .color-preview {
+            height: 100px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 32px;
+            }
+
+            .subtitle {
+                font-size: 16px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        /* 自定义进度条样式 */
+        .custom-progress {
+            position: relative;
+            width: 100%;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .custom-progress-bar {
+            position: absolute;
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header>
+            <h1>🚀 LDesign Progress</h1>
+            <p class="subtitle">功能强大、美观易用的跨框架进度条插件</p>
+            <div class="features">
+                <div class="feature">⚡ 高性能渲染</div>
+                <div class="feature">🎨 双引擎支持</div>
+                <div class="feature">📱 响应式设计</div>
+                <div class="feature">🎯 多种形状</div>
+                <div class="feature">✨ 丰富特效</div>
+                <div class="feature">🔧 高度可定制</div>
+            </div>
+        </header>
+
+        <!-- 基础示例 -->
+        <section class="section">
+            <h2>📊 基础进度条</h2>
+            
+            <div class="demo-item">
+                <h3>线性进度条</h3>
+                <div class="progress-container">
+                    <div id="basic-linear" style="width: 100%;"></div>
+                </div>
+                <div class="controls">
+                    <button onclick="setProgress('basic-linear', 0)">0%</button>
+                    <button onclick="setProgress('basic-linear', 25)">25%</button>
+                    <button onclick="setProgress('basic-linear', 50)">50%</button>
+                    <button onclick="setProgress('basic-linear', 75)">75%</button>
+                    <button onclick="setProgress('basic-linear', 100)">100%</button>
+                    <button class="secondary" onclick="animateProgress('basic-linear')">动画演示</button>
+                </div>
+                <div class="code">
+const progress = new LinearProgress({
+    container: '#basic-linear',
+    value: 50,
+    progressColor: '#165DFF',
+    height: 20,
+    rounded: true,
+    text: {
+        enabled: true,
+        format: (value) => `${Math.round(value)}%`
+    }
+});
+                </div>
+            </div>
+
+            <div class="demo-item">
+                <h3>圆形进度条（支持动画）</h3>
+                <div class="progress-container circular-container">
+                    <div id="basic-circular"></div>
+                </div>
+                <div class="controls">
+                    <button onclick="setProgress('basic-circular', 30)">30%</button>
+                    <button onclick="setProgress('basic-circular', 60)">60%</button>
+                    <button onclick="setProgress('basic-circular', 90)">90%</button>
+                    <button class="secondary" onclick="animateProgress('basic-circular')">动画演示</button>
+                    <button class="secondary" onclick="toggleCircularSegments()">切换分段</button>
+                </div>
+                <div class="stats" style="margin-top: 10px;">
+                    <span>✨ 支持流畅动画过渡</span>
+                    <span>🎯 可切换分段显示</span>
+                </div>
+            </div>
+
+            <div class="demo-item">
+                <h3>圆形进度条状态</h3>
+                <div class="grid">
+                    <div>
+                        <p style="margin-bottom: 10px; text-align: center;">正常状态</p>
+                        <div class="progress-container circular-container" style="height: 120px;">
+                            <div id="circular-normal"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <p style="margin-bottom: 10px; text-align: center;">成功状态</p>
+                        <div class="progress-container circular-container" style="height: 120px;">
+                            <div id="circular-success"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <p style="margin-bottom: 10px; text-align: center;">警告状态</p>
+                        <div class="progress-container circular-container" style="height: 120px;">
+                            <div id="circular-warning"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <p style="margin-bottom: 10px; text-align: center;">错误状态</p>
+                        <div class="progress-container circular-container" style="height: 120px;">
+                            <div id="circular-error"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <button onclick="setCircularStatus('normal')">设为正常</button>
+                    <button class="success" onclick="setCircularStatus('success')">设为成功</button>
+                    <button class="warning" onclick="setCircularStatus('warning')">设为警告</button>
+                    <button class="error" onclick="setCircularStatus('error')">设为错误</button>
+                </div>
+            </div>
+
+            <div class="demo-item">
+                <h3>圆形分段进度条</h3>
+                <div class="progress-container circular-container">
+                    <div id="circular-segment"></div>
+                </div>
+                <div class="controls">
+                    <button onclick="setProgress('circular-segment', 25)">25%</button>
+                    <button onclick="setProgress('circular-segment', 50)">50%</button>
+                    <button onclick="setProgress('circular-segment', 75)">75%</button>
+                    <button onclick="setProgress('circular-segment', 100)">100%</button>
+                    <button class="secondary" onclick="animateProgress('circular-segment')">动画演示</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 视觉效果 -->
+        <section class="section">
+            <h2>✨ 视觉效果展示</h2>
+            
+            <div class="grid">
+                <div class="demo-item">
+                    <h3>条纹效果 <span class="badge">动画</span></h3>
+                    <div class="progress-container">
+                        <div id="stripe-progress"></div>
+                    </div>
+                </div>
+
+                <div class="demo-item">
+                    <h3>波浪效果 <span class="badge">动画</span></h3>
+                    <div class="progress-container">
+                        <div id="wave-progress"></div>
+                    </div>
+                </div>
+
+                <div class="demo-item">
+                    <h3>发光效果 <span class="badge">脉冲</span></h3>
+                    <div class="progress-container">
+                        <div id="glow-progress"></div>
+                    </div>
+                </div>
+
+                <div class="demo-item">
+                    <h3>渐变色彩</h3>
+                    <div class="progress-container">
+                        <div id="gradient-progress"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 状态展示 -->
+        <section class="section">
+            <h2>🎯 状态与场景</h2>
+            
+            <div class="demo-item">
+                <h3>不同状态</h3>
+                <div class="grid">
+                    <div>
+                        <p style="margin-bottom: 10px;">成功状态</p>
+                        <div class="progress-container">
+                            <div id="success-progress"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <p style="margin-bottom: 10px;">警告状态</p>
+                        <div class="progress-container">
+                            <div id="warning-progress"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <p style="margin-bottom: 10px;">错误状态</p>
+                        <div class="progress-container">
+                            <div id="error-progress"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <p style="margin-bottom: 10px;">加载状态</p>
+                        <div class="progress-container">
+                            <div id="loading-progress"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-item">
+                <h3>分段进度条</h3>
+                <div class="progress-container">
+                    <div id="segment-progress"></div>
+                </div>
+                <div class="controls">
+                    <button onclick="setProgress('segment-progress', 20)">1/5 完成</button>
+                    <button onclick="setProgress('segment-progress', 40)">2/5 完成</button>
+                    <button onclick="setProgress('segment-progress', 60)">3/5 完成</button>
+                    <button onclick="setProgress('segment-progress', 80)">4/5 完成</button>
+                    <button onclick="setProgress('segment-progress', 100)">全部完成</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 实际应用场景 -->
+        <section class="section">
+            <h2>💼 实际应用场景</h2>
+            
+            <div class="demo-item">
+                <h3>文件上传</h3>
+                <div style="padding: 20px; background: white; border-radius: 8px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <span style="font-size: 24px; margin-right: 10px;">📄</span>
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold;">document.pdf</div>
+                            <div style="font-size: 12px; color: #86909C;">2.5 MB</div>
+                        </div>
+                    </div>
+                    <div class="progress-container" style="padding: 0;">
+                        <div id="upload-progress" style="width: 100%;"></div>
+                    </div>
+                    <div class="stats">
+                        <span id="upload-speed">速度: 0 KB/s</span>
+                        <span id="upload-eta">剩余时间: --:--</span>
+                    </div>
+                    <div class="controls">
+                        <button class="success" onclick="startUpload()">开始上传</button>
+                        <button class="secondary" onclick="pauseUpload()">暂停</button>
+                        <button class="secondary" onclick="resetUpload()">重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-item">
+                <h3>技能等级</h3>
+                <div style="padding: 20px; background: white; border-radius: 8px;">
+                    <div id="skills-container"></div>
+                    <div class="controls">
+                        <button onclick="animateSkills()">展示技能</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-item">
+                <h3>步骤进度</h3>
+                <div style="padding: 20px; background: white; border-radius: 8px;">
+                    <div id="steps-progress"></div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px;">📝</div>
+                            <div style="font-size: 12px;">填写信息</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px;">✅</div>
+                            <div style="font-size: 12px;">确认订单</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px;">💳</div>
+                            <div style="font-size: 12px;">支付</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px;">🎉</div>
+                            <div style="font-size: 12px;">完成</div>
+                        </div>
+                    </div>
+                    <div class="controls" style="margin-top: 20px;">
+                        <button onclick="setStep(1)">步骤 1</button>
+                        <button onclick="setStep(2)">步骤 2</button>
+                        <button onclick="setStep(3)">步骤 3</button>
+                        <button onclick="setStep(4)">步骤 4</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 高级功能 -->
+        <section class="section">
+            <h2>🎨 高级功能</h2>
+            
+            <div class="demo-item">
+                <h3>多环进度条</h3>
+                <div class="progress-container circular-container">
+                    <div id="multi-ring"></div>
+                </div>
+                <div class="controls">
+                    <button onclick="updateMultiRing()">更新数据</button>
+                </div>
+            </div>
+
+            <div class="demo-item">
+                <h3>仪表盘</h3>
+                <div class="progress-container" style="height: 200px;">
+                    <div id="dashboard"></div>
+                </div>
+                <div class="controls">
+                    <button onclick="setDashboard(30)">低速</button>
+                    <button onclick="setDashboard(60)">中速</button>
+                    <button onclick="setDashboard(90)">高速</button>
+                </div>
+            </div>
+
+            <div class="demo-item">
+                <h3>半圆仪表盘进度条</h3>
+                <div class="grid">
+                    <div>
+                        <p style="margin-bottom: 10px; text-align: center;">底部半圆</p>
+                        <div class="progress-container" style="height: 150px;">
+                            <div id="semicircle-bottom"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <p style="margin-bottom: 10px; text-align: center;">顶部半圆</p>
+                        <div class="progress-container" style="height: 150px;">
+                            <div id="semicircle-top"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <p style="margin-bottom: 10px; text-align: center;">左侧半圆</p>
+                        <div class="progress-container" style="height: 150px;">
+                            <div id="semicircle-left"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <p style="margin-bottom: 10px; text-align: center;">右侧半圆</p>
+                        <div class="progress-container" style="height: 150px;">
+                            <div id="semicircle-right"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <button onclick="setSemicircle(25)">25%</button>
+                    <button onclick="setSemicircle(50)">50%</button>
+                    <button onclick="setSemicircle(75)">75%</button>
+                    <button onclick="setSemicircle(100)">100%</button>
+                    <button class="secondary" onclick="animateSemicircle()">动画演示</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 颜色主题 -->
+        <section class="section">
+            <h2>🎨 颜色主题</h2>
+            <div class="color-grid">
+                <div class="color-item">
+                    <div class="color-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        紫色渐变
+                    </div>
+                    <div class="progress-container">
+                        <div id="color-purple"></div>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-preview" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        粉色渐变
+                    </div>
+                    <div class="progress-container">
+                        <div id="color-pink"></div>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-preview" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        蓝色渐变
+                    </div>
+                    <div class="progress-container">
+                        <div id="color-blue"></div>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-preview" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        绿色渐变
+                    </div>
+                    <div class="progress-container">
+                        <div id="color-green"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script type="module" src="/main.ts"></script>
+</body>
+</html>

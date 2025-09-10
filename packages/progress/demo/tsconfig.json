@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@ldesign/progress": ["../src"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}
