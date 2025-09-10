@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>流程图编辑与预览 - Vite + JS</title>
+  </head>
+  <body>
+    <div id="app">
+      <header class="toolbar">
+        <div class="toolbar-left">
+          <button id="btnAddRect" type="button">添加矩形</button>
+          <button id="btnAddDiamond" type="button">添加菱形</button>
+          <button id="btnSample" type="button">示例数据</button>
+          <button id="btnClear" type="button">清空</button>
+        </div>
+        <div class="toolbar-right">
+          <label class="live-toggle">
+            <input id="chkLive" type="checkbox" checked />
+            实时预览
+          </label>
+          <button id="btnSync" type="button">手动同步</button>
+          <button id="btnExport" type="button">导出JSON</button>
+          <label class="import-label" for="fileImport">导入JSON</label>
+          <input id="fileImport" type="file" accept="application/json" hidden />
+        </div>
+      </header>
+      <main class="workbench">
+        <section class="pane">
+          <div class="pane-title">编辑区</div>
+          <div id="editor" class="canvas"></div>
+        </section>
+        <section class="pane">
+          <div class="pane-title">预览区</div>
+          <div id="preview" class="canvas"></div>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
