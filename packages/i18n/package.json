@@ -35,7 +35,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "ldesign-builder build -f esm,cjs",
+    "build": "ldesign-builder build -f esm,cjs,umd",
     "build:verbose": "rollup -c",
     "build:watch": "ldesign-builder build --watch",
     "dev": "rollup -c -w",

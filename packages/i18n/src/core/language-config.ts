@@ -241,7 +241,7 @@ export class LanguageRegistry {
     if (config.regions) {
       result = result.filter(locale => {
         const info = this.availableLanguages.get(locale)
-        return info && config.regions!.includes(info.region)
+        return info && info.region && config.regions!.includes(info.region)
       })
     }
 

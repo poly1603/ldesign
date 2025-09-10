@@ -198,6 +198,34 @@ export {
   formatRelativeTime,
 } from './utils/formatters'
 
+// ==================== 新增功能导出 ====================
+
+// 命名空间支持
+export {
+  NamespaceManager,
+  createNamespacedTranslator,
+  type NamespaceConfig,
+  type NamespaceMetadata,
+  type NamespaceTree,
+  type NamespaceStatistics,
+  type NamespaceExport
+} from './core/namespace'
+
+// 性能优化工具
+export {
+  memoize,
+  debounce,
+  throttle,
+  BatchProcessor,
+  LazyLoader,
+  OptimizedInterpolator,
+  VirtualScroller,
+  ResourcePreloader,
+  MemoryMonitor,
+  WorkerTranslator,
+  createOptimizedTranslator
+} from './utils/performance-optimizations'
+
 // ==================== 便捷创建函数 ====================
 // 注意：createI18n 已经从 './core/createI18n' 导出，这里不需要重复定义
 

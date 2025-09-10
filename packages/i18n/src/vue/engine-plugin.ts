@@ -363,10 +363,10 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
           codes = Array.from(new Set<string>([...codes, ...messageKeys]))
 
           if (Array.isArray(enabledLanguages) && enabledLanguages.length) {
-            codes = codes.filter(code => enabledLanguages.includes(code))
+            codes = codes.filter((code: string) => enabledLanguages.includes(code))
           }
           if (Array.isArray(disabledLanguages) && disabledLanguages.length) {
-            codes = codes.filter(code => !disabledLanguages.includes(code))
+            codes = codes.filter((code: string) => !disabledLanguages.includes(code))
           }
 
           if (codes.length > 0) {
@@ -400,10 +400,10 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
               codes = Array.from(new Set<string>([...codes, ...messageKeys]))
 
               if (Array.isArray(enabledLanguages) && enabledLanguages.length) {
-                codes = codes.filter(code => enabledLanguages.includes(code))
+                codes = codes.filter((code: string) => enabledLanguages.includes(code))
               }
               if (Array.isArray(disabledLanguages) && disabledLanguages.length) {
-                codes = codes.filter(code => !disabledLanguages.includes(code))
+                codes = codes.filter((code: string) => !disabledLanguages.includes(code))
               }
               return codes.length ? codes : [mergedOptions.locale, mergedOptions.fallbackLocale]
             },

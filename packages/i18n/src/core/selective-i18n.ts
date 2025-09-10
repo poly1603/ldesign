@@ -80,7 +80,7 @@ export interface ConfigurableI18nOptions extends SelectiveI18nOptions {
   /** 语言变更回调 */
   onLanguageChanged?: (locale: string) => void
   /** 加载错误回调 */
-  onLoadError?: (error: Error) => void
+  onLoadError?: (locale: string, error: Error) => void
 }
 
 /**

@@ -92,7 +92,7 @@ export class BuiltInLoader implements Loader {
       throw new I18nError(
         `Language '${locale}' is not enabled in strict mode`,
         'LANGUAGE_NOT_ENABLED',
-        { context: { locale, enabledLanguages: this.languageRegistry.getEnabledLanguages() } }
+        { context: { locale, custom: { enabledLanguages: this.languageRegistry.getEnabledLanguages() } } }
       )
     }
 

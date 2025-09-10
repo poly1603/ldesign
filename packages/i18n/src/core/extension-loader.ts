@@ -422,20 +422,20 @@ export class ExtensionLoader implements Loader {
     translations: NestedObject
   ): LanguagePackage {
     const result = { ...package_ }
-    const resultTranslations = { ...result.translations }
+    const resultTranslations = { ...result.translations } as Record<string, any>
 
     this.addOnlyRecursive(resultTranslations, translations)
 
     return {
       ...result,
-      translations: resultTranslations
+      translations: resultTranslations as NestedObject
     }
   }
 
   /**
    * 递归添加不存在的翻译
    */
-  private addOnlyRecursive(target: NestedObject, source: NestedObject): void {
+  private addOnlyRecursive(target: Record<string, any>, source: NestedObject): void {
     for (const [key, value] of Object.entries(source)) {
       if (!(key in target)) {
         target[key] = value
@@ -447,7 +447,7 @@ export class ExtensionLoader implements Loader {
         !Array.isArray(target[key]) &&
         !Array.isArray(value)
       ) {
-        this.addOnlyRecursive(target[key] as NestedObject, value as NestedObject)
+        this.addOnlyRecursive(target[key] as Record<string, any>, value as NestedObject)
       }
     }
   }
@@ -460,20 +460,20 @@ export class ExtensionLoader implements Loader {
     translations: NestedObject
   ): LanguagePackage {
     const result = { ...package_ }
-    const resultTranslations = { ...result.translations }
+    const resultTranslations = { ...result.translations } as Record<string, any>
 
     this.appendRecursive(resultTranslations, translations)
 
     return {
       ...result,
-      translations: resultTranslations
+      translations: resultTranslations as NestedObject
     }
   }
 
   /**
    * 递归追加翻译
    */
-  private appendRecursive(target: NestedObject, source: NestedObject): void {
+  private appendRecursive(target: Record<string, any>, source: NestedObject): void {
     for (const [key, value] of Object.entries(source)) {
       if (key in target) {
         const targetValue = target[key]
@@ -489,7 +489,7 @@ export class ExtensionLoader implements Loader {
           !Array.isArray(targetValue) &&
           !Array.isArray(value)
         ) {
-          this.appendRecursive(targetValue as NestedObject, value as NestedObject)
+          this.appendRecursive(targetValue as Record<string, any>, value as NestedObject)
         } else {
           target[key] = value
         }
