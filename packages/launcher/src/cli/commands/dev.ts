@@ -276,12 +276,9 @@ export class DevCommand implements CliCommandDefinition {
             logger.info(pc.dim('二维码（扫码在手机上打开）：'))
             console.log('\n' + qrOutput + '\n')
           }
-        } catch {
-          logger.info(
-            pc.dim(
-              '提示: 安装 qrcode-terminal 可显示访问地址二维码（在 packages/launcher 执行：pnpm add qrcode-terminal -D）'
-            )
-          )
+        } catch (e) {
+          // 二维码生成失败时静默降级（调试模式输出错误信息）
+          logger.debug('二维码生成失败', { error: (e as Error).message })
         }
       }
 
