@@ -29,12 +29,10 @@ export class RollupAdapter implements IBundlerAdapter {
   readonly available: boolean
 
   private logger: Logger
-  private performanceMonitor: any
   private multiConfigs?: any[]
 
   constructor(options: Partial<AdapterOptions> = {}) {
     this.logger = options.logger || new Logger()
-    this.performanceMonitor = options.performanceMonitor
 
     // 初始化时假设可用，在实际使用时再检查
     this.version = 'unknown'

@@ -133,7 +133,7 @@ async function buildConfig(options: BuildOptions, globalOptions: any): Promise<B
   // 使用ConfigManager加载配置（包含默认配置合并）
   const { ConfigManager } = await import('../..')
   const configManager = new ConfigManager()
-  let baseConfig: BuilderConfig = {}
+  let baseConfig: BuilderConfig = await configManager.loadConfig({})
 
   try {
     const configPath = options.config
@@ -265,6 +265,7 @@ function showBuildResult(result: any, startTime: number): void {
  * 分析构建结果
  */
 async function analyzeBuildResult(result: any): Promise<void> {
+  void result
   logger.info('正在分析打包结果...')
 
   // TODO: 实现打包分析功能

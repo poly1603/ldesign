@@ -20,7 +20,7 @@ export class LitStrategy implements ILibraryStrategy {
       input,
       output: this.buildOutputConfig(config),
       plugins: await this.buildPlugins(config),
-      external: [...(config.external || []), 'lit'],
+      external: this.mergeExternal(config.external),
       treeshake: config.performance?.treeshaking !== false,
       onwarn: this.createWarningHandler()
     }
@@ -93,6 +93,37 @@ export class LitStrategy implements ILibraryStrategy {
 
   private createWarningHandler() {
     return (_warning: any) => { /* 可按需过滤 */ }
+  }
+
+  /**
+   * 合并 external 配置，确保 Lit 相关依赖被标记为外部
+   */
+  private mergeExternal(external: any): any {
+    const pkgs = ['lit']
+
+    if (!external) return pkgs
+
+    if (Array.isArray(external)) {
+      return [...external, ...pkgs]
+    }
+
+    if (typeof external === 'function') {
+      return (id: string, ...args: any[]) => pkgs.includes(id) || external(id, ...args)
+    }
+
+    if (external instanceof RegExp) {
+      return (id: string) => pkgs.includes(id) || (external as RegExp).test(id)
+    }
+
+    if (typeof external === 'string') {
+      return [external, ...pkgs]
+    }
+
+    if (typeof external === 'object') {
+      return [...Object.keys(external), ...pkgs]
+    }
+
+    return pkgs
   }
 }
 

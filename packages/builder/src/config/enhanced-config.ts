@@ -8,7 +8,8 @@
  */
 
 import type { BuilderConfig } from '../types/config'
-import type { MinifyOptions, MinifyLevel } from '../types/minify'
+import type { MinifyLevel } from '../types/minify'
+import type { OutputFormat } from '../types/adapter'
 import { ConfigValidator, type ValidationResult } from '../core/ConfigValidator'
 import { Logger } from '../utils/logger'
 
@@ -38,13 +39,13 @@ export interface EnhancedConfigOptions extends Partial<BuilderConfig> {
     outputPath?: string
   }
 
-  /** Banner 选项 */
-  banner?: {
-    /** 是否启用 banner */
+  /** Banner 閫夐」 */
+  bannerOptions?: {
+    /** 鏄惁鍚敤 banner */
     enabled?: boolean
-    /** Banner 样式 */
+    /** Banner 鏍峰紡 */
     style?: 'default' | 'compact' | 'detailed'
-    /** 自定义信息 */
+    /** 鑷畾涔変俊鎭?*/
     customInfo?: Record<string, string>
   }
 
@@ -100,7 +101,7 @@ export const CONFIG_PRESETS = {
   /** 库开发预设 */
   library: {
     output: {
-      format: ['esm', 'cjs'] as const,
+      format: ['esm', 'cjs'] as OutputFormat[],
       sourcemap: true
     },
     minify: false,
@@ -114,7 +115,7 @@ export const CONFIG_PRESETS = {
   /** 应用开发预设 */
   application: {
     output: {
-      format: 'esm' as const,
+      format: 'esm' as OutputFormat,
       sourcemap: true
     },
     minify: true,
@@ -132,7 +133,7 @@ export const CONFIG_PRESETS = {
   /** 组件库预设 */
   components: {
     output: {
-      format: ['esm', 'cjs', 'umd'] as const,
+      format: ['esm', 'cjs', 'umd'] as OutputFormat[],
       sourcemap: true
     },
     minify: {
@@ -150,7 +151,7 @@ export const CONFIG_PRESETS = {
   /** 工具库预设 */
   utils: {
     output: {
-      format: ['esm', 'cjs'] as const,
+      format: ['esm', 'cjs'] as OutputFormat[],
       sourcemap: true
     },
     minify: {
@@ -162,7 +163,7 @@ export const CONFIG_PRESETS = {
     },
     clean: true
   }
-} as const
+}
 
 /**
  * 增强的配置定义函数
@@ -257,9 +258,9 @@ function processAdvancedOptions(config: EnhancedConfigOptions, logger: Logger): 
     logger.info(`启用构建清单，格式: ${config.manifest.formats?.join(', ') || 'json'}`)
   }
 
-  // 处理 Banner
-  if (config.banner?.enabled) {
-    logger.info(`启用 Banner，样式: ${config.banner.style || 'default'}`)
+  // 澶勭悊 Banner
+  if (config.bannerOptions?.enabled) {
+    logger.info(`鍚敤 Banner锛屾牱寮? ${config.bannerOptions.style || 'default'}`)
   }
 
   return config

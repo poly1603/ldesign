@@ -7,7 +7,7 @@
  * @version 1.0.0
  */
 
-import type { MinifyOptions, JSMinifyOptions, CSSMinifyOptions, getMinifyConfig } from '../types/minify'
+import type { MinifyOptions, JSMinifyOptions, CSSMinifyOptions } from '../types/minify'
 import { Logger } from './logger'
 
 export class MinifyProcessor {

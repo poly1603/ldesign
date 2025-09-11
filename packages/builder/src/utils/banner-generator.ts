@@ -42,20 +42,7 @@ export class BannerGenerator {
    * 生成 banner 字符串
    */
   static generate(options: BannerOptions): string {
-    const {
-      bundler,
-      bundlerVersion,
-      projectName,
-      projectVersion,
-      projectDescription,
-      projectAuthor,
-      projectLicense,
-      buildTime = new Date(),
-      buildMode = 'production',
-      minified = false,
-      customInfo = {},
-      style = 'default'
-    } = options
+    const style = options.style ?? 'default'
 
     switch (style) {
       case 'compact':

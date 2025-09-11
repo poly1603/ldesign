@@ -29,11 +29,9 @@ export class RolldownAdapter implements IBundlerAdapter {
   readonly available: boolean
 
   private logger: Logger
-  private performanceMonitor: any
 
   constructor(options: Partial<AdapterOptions> = {}) {
     this.logger = options.logger || new Logger()
-    this.performanceMonitor = options.performanceMonitor
 
     // 在 ES 模块环境中，我们无法在构造函数中同步加载 rolldown
     // 所以我们假设它是可用的，并在实际使用时进行检查
@@ -123,20 +121,52 @@ export class RolldownAdapter implements IBundlerAdapter {
       const combinedWarnings = allResults.flatMap(r => r.result.warnings || [])
 
       // 构建结果
+      const totalRawSize = combinedOutputs.reduce((sum, output) => sum + (output.size || 0), 0)
+      const largestOutput = combinedOutputs.reduce((max, o) => (o.size || 0) > (max.size || 0) ? o : max, { size: 0, fileName: '' } as any)
+
       const buildResult: BuildResult = {
         success: allResults.length > 0,
         outputs: combinedOutputs,
         duration,
         stats: {
-          totalSize: combinedOutputs.reduce((sum, output) => sum + (output.size || 0), 0),
-          gzipSize: 0,
-          files: combinedOutputs.map(output => output.fileName || ''),
-          chunks: [],
-          assets: [],
-          modules: [],
-          dependencies: [],
-          warnings: combinedWarnings,
-          errors: []
+          buildTime: duration,
+          fileCount: combinedOutputs.length,
+          totalSize: {
+            raw: totalRawSize,
+            gzip: 0,
+            brotli: 0,
+            byType: {},
+            byFormat: {} as any,
+            largest: {
+              file: largestOutput.fileName || '',
+              size: largestOutput.size || 0
+            },
+            fileCount: combinedOutputs.length
+          },
+          byFormat: {} as any,
+          modules: {
+            total: 0,
+            external: 0,
+            internal: 0,
+            largest: {
+              id: '',
+              size: 0,
+              renderedLength: 0,
+              originalLength: 0,
+              isEntry: false,
+              isExternal: false,
+              importedIds: [],
+              dynamicallyImportedIds: [],
+              importers: [],
+              dynamicImporters: []
+            }
+          },
+          dependencies: {
+            total: 0,
+            external: [],
+            bundled: [],
+            circular: []
+          }
         },
         performance: this.getPerformanceMetrics(),
         warnings: combinedWarnings,

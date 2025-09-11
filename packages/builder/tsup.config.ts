@@ -1,12 +1,14 @@
 import { defineConfig } from 'tsup'
 
-export default defineConfig({
-  // 入口文件 - 只打包核心文件，排除测试文件
+// 基础库配置（ESM + CJS）
+const libraryConfig = defineConfig({
+  // 入口文件 - 打包所有核心 TypeScript 文件，排除测试文件
   entry: [
-    'src/index.ts',
-    'src/simple-builder.ts',
-    'src/vue-builder.ts',
-    'src/cli/index.ts'
+    'src/**/*.ts',
+    '!src/**/*.test.ts',
+    '!src/**/*.spec.ts',
+    '!src/__tests__/**',
+    '!src/tests/**/*.test.ts'
   ],
 
   // 输出格式
@@ -15,11 +17,11 @@ export default defineConfig({
   // 输出目录
   outDir: 'dist',
 
-  // 生成类型声明文件 - 临时禁用以解决类型冲突
-  dts: false,
+  // 不生成类型声明文件
+  dts: true,
 
-  // 代码分割
-  splitting: false,
+  // 代码分割 - 启用以优化输出结构
+  splitting: true,
 
   // 生成 source map
   sourcemap: true,
@@ -89,7 +91,7 @@ export default defineConfig({
   // 平台
   platform: 'node',
 
-  // 保持模块结构
+  // 保持模块结构 - 启用打包以减少文件数量
   bundle: true,
 
   // TypeScript 配置
@@ -104,5 +106,96 @@ export default defineConfig({
   // 输出配置
   esbuildOptions(options) {
     options.packages = 'external'
+    // 设置 chunk 文件输出到 chunks 目录
+    options.chunkNames = 'chunks/[name]-[hash]'
   },
 })
+
+// UMD 配置（用于浏览器和独立使用）
+const umdConfig = defineConfig([
+  // 非压缩版本
+  {
+    entry: { index: 'src/index.ts' },
+    format: ['iife'],
+    outDir: 'dist',
+    dts: false,
+    splitting: false,
+    sourcemap: true,
+    clean: false, // 不清理，避免删除其他配置的输出
+    minify: false,
+    globalName: 'LDesignBuilder',
+    platform: 'neutral', // 适用于浏览器和 Node.js
+    target: 'es2020',
+    outExtension() {
+      return { js: '.js' }
+    },
+    // 外部依赖 - 对于 UMD 构建，需要明确外部化 Node.js 内置模块
+    external: [
+      // Node.js 内置模块
+      'node:path', 'node:fs', 'node:url', 'node:process', 'node:module',
+      'path', 'fs', 'events', 'crypto', 'url', 'os', 'assert', 'worker_threads', 'child_process', 'util',
+
+      // 第三方依赖
+      'rollup', 'chalk', 'commander', 'ora', 'fast-glob', 'fs-extra', 'glob', 'gzip-size', 'pretty-bytes', 'tslib', 'typescript',
+
+      // Rollup 插件
+      '@rollup/plugin-babel', '@rollup/plugin-commonjs', '@rollup/plugin-json', '@rollup/plugin-node-resolve', '@rollup/plugin-replace', '@rollup/plugin-terser', '@rollup/plugin-typescript',
+
+      // Vue 相关
+      '@vitejs/plugin-react', '@vue/compiler-sfc', 'unplugin-vue', 'unplugin-vue-jsx',
+
+      // 样式处理插件
+      'rollup-plugin-esbuild', 'rollup-plugin-filesize', 'rollup-plugin-less', 'rollup-plugin-livereload', 'rollup-plugin-postcss', 'rollup-plugin-sass', 'rollup-plugin-serve', 'rollup-plugin-stylus', 'rollup-plugin-vue'
+    ],
+    esbuildOptions(options) {
+      options.packages = 'external'
+      options.footer = {
+        js: '// UMD build for @ldesign/builder'
+      }
+    },
+  },
+  // 压缩版本
+  {
+    entry: { 'index.min': 'src/index.ts' },
+    format: ['iife'],
+    outDir: 'dist',
+    dts: false,
+    splitting: false,
+    sourcemap: true,
+    clean: false,
+    minify: true,
+    globalName: 'LDesignBuilder',
+    platform: 'neutral',
+    target: 'es2020',
+    outExtension() {
+      return { js: '.js' }
+    },
+    // 外部依赖 - 与非压缩版本相同
+    external: [
+      // Node.js 内置模块
+      'node:path', 'node:fs', 'node:url', 'node:process', 'node:module',
+      'path', 'fs', 'events', 'crypto', 'url', 'os', 'assert', 'worker_threads', 'child_process', 'util',
+
+      // 第三方依赖
+      'rollup', 'chalk', 'commander', 'ora', 'fast-glob', 'fs-extra', 'glob', 'gzip-size', 'pretty-bytes', 'tslib', 'typescript',
+
+      // Rollup 插件
+      '@rollup/plugin-babel', '@rollup/plugin-commonjs', '@rollup/plugin-json', '@rollup/plugin-node-resolve', '@rollup/plugin-replace', '@rollup/plugin-terser', '@rollup/plugin-typescript',
+
+      // Vue 相关
+      '@vitejs/plugin-react', '@vue/compiler-sfc', 'unplugin-vue', 'unplugin-vue-jsx',
+
+      // 样式处理插件
+      'rollup-plugin-esbuild', 'rollup-plugin-filesize', 'rollup-plugin-less', 'rollup-plugin-livereload', 'rollup-plugin-postcss', 'rollup-plugin-sass', 'rollup-plugin-serve', 'rollup-plugin-stylus', 'rollup-plugin-vue'
+    ],
+    esbuildOptions(options) {
+      options.packages = 'external'
+      options.footer = {
+        js: '// Minified UMD build for @ldesign/builder'
+      }
+    },
+  }
+])
+
+// 导出主配置（基础库配置 + UMD 配置）
+export default [libraryConfig, ...umdConfig]

@@ -21,7 +21,7 @@ export class ReactStrategy implements ILibraryStrategy {
       input: resolvedInput,
       output: this.buildOutputConfig(config),
       plugins: await this.buildPlugins(config),
-      external: [...(config.external || []), 'react', 'react-dom'],
+      external: this.mergeExternal(config.external),
       treeshake: config.performance?.treeshaking !== false,
       onwarn: this.createWarningHandler()
     }
@@ -166,6 +166,37 @@ export class ReactStrategy implements ILibraryStrategy {
       entryMap[key] = abs
     }
     return entryMap
+  }
+
+  /**
+   * 合并 external 配置，确保 React 相关依赖被标记为外部
+   */
+  private mergeExternal(external: any): any {
+    const reactPkgs = ['react', 'react-dom']
+
+    if (!external) return reactPkgs
+
+    if (Array.isArray(external)) {
+      return [...external, ...reactPkgs]
+    }
+
+    if (typeof external === 'function') {
+      return (id: string, ...args: any[]) => reactPkgs.includes(id) || external(id, ...args)
+    }
+
+    if (external instanceof RegExp) {
+      return (id: string) => reactPkgs.includes(id) || (external as RegExp).test(id)
+    }
+
+    if (typeof external === 'string') {
+      return [external, ...reactPkgs]
+    }
+
+    if (typeof external === 'object') {
+      return [...Object.keys(external), ...reactPkgs]
+    }
+
+    return reactPkgs
   }
 }
 

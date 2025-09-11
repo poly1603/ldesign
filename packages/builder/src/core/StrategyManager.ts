@@ -32,46 +32,6 @@ import { LitStrategy } from '../strategies/lit/LitStrategy'
 import { AngularStrategy } from '../strategies/angular/AngularStrategy'
 import { MixedStrategy } from '../strategies/mixed/MixedStrategy'
 
-/**
- * 基础策略实现（临时）
- */
-class BaseStrategy implements ILibraryStrategy {
-  readonly name: string
-  readonly supportedTypes: LibraryType[]
-  readonly priority: number
-
-  constructor(name: string, supportedTypes: LibraryType[], priority: number = 1) {
-    this.name = name
-    this.supportedTypes = supportedTypes
-    this.priority = priority
-  }
-
-  async applyStrategy(config: BuilderConfig): Promise<any> {
-    // 基础实现，返回原配置
-    return config
-  }
-
-  isApplicable(_config: BuilderConfig): boolean {
-    return this.supportedTypes.includes(_config.libraryType as LibraryType)
-  }
-
-  getDefaultConfig(): Partial<BuilderConfig> {
-    return {}
-  }
-
-  getRecommendedPlugins(_config: BuilderConfig): any[] {
-    return []
-  }
-
-  validateConfig(_config: BuilderConfig): any {
-    return {
-      valid: true,
-      errors: [],
-      warnings: [],
-      suggestions: []
-    }
-  }
-}
 
 /**
  * 策略管理器类

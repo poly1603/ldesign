@@ -9,7 +9,6 @@
 
 import fs from 'fs'
 import path from 'path'
-import { execSync } from 'child_process'
 import { Logger } from '../utils/logger'
 
 export interface QualityCheckResult {

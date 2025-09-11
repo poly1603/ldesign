@@ -22,8 +22,6 @@ import type {
   ValidationSummary,
   ValidationDetails
 } from '../types/validation'
-import { TestRunner } from './TestRunner'
-import { ValidationReporter } from './ValidationReporter'
 import { TemporaryEnvironment } from './TemporaryEnvironment'
 import { Logger } from '../utils/logger'
 import { ErrorHandler } from '../utils/error-handler'
@@ -66,12 +64,7 @@ interface RuntimeValidation {
     error?: string
     duration: number
   }[]
-  coverage?: {
-    lines: number
-    branches: number
-    functions: number
-    statements: number
-  }
+  coverage?: import('../types/validation').CoverageInfo
 }
 
 /**
@@ -145,11 +138,6 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
   /** 验证配置 */
   private config: EnhancedValidationConfig
 
-  /** 测试运行器 */
-  private testRunner: TestRunner
-
-  /** 验证报告生成器 */
-  private reporter: ValidationReporter
 
   /** 临时环境管理器 */
   private tempEnvironment: TemporaryEnvironment
@@ -182,15 +170,7 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
     this.logger = options.logger || new Logger({ level: 'info', prefix: 'EnhancedValidator' })
     this.errorHandler = options.errorHandler || new ErrorHandler({ logger: this.logger })
 
-    // 初始化组件
-    this.testRunner = new TestRunner({
-      logger: this.logger,
-      errorHandler: this.errorHandler
-    })
-
-    this.reporter = new ValidationReporter({
-      logger: this.logger
-    })
+    // 初始化组件（简化：此处仅初始化临时环境与日志、错误处理器）
 
     this.tempEnvironment = new TemporaryEnvironment({
       logger: this.logger,
@@ -341,7 +321,8 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
           skippedTests: 0,
           duration: stats.testDuration,
           coverage: runtimeValidation?.coverage,
-          testResults: runtimeValidation?.tests ?? []
+          output: '',
+          errors: []
         },
         report: await this.generateEnhancedReport(context, {
           exportComparison,
@@ -369,17 +350,7 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
         }),
         stats,
         timestamp: endTime,
-        validationId,
-        functionalityComparison: {
-          exports: exportComparison,
-          imports: importComparison,
-          behavior: behaviorComparison,
-          performance: performanceComparison
-        },
-        apiCompatibility,
-        runtimeValidation,
-        integrationResults,
-        snapshotResults
+        validationId
       }
 
       // 11. 输出报告
@@ -418,7 +389,7 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
     } catch (error) {
       // 处理验证错误
       const validationError = this.errorHandler.createError(
-        ErrorCode.VALIDATION_FAILED,
+        ErrorCode.BUILD_FAILED,
         `增强验证失败: ${(error as Error).message}`,
         { cause: error as Error }
       )
@@ -443,7 +414,7 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
   ): Promise<FunctionalityComparison> {
     this.logger.debug('比较导出...')
 
-    const differences = {
+    const differences: FunctionalityComparison['differences'] = {
       exports: [],
       imports: [],
       behavior: [],
@@ -498,7 +469,7 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
   ): Promise<FunctionalityComparison> {
     this.logger.debug('比较导入...')
 
-    const differences = {
+    const differences: FunctionalityComparison['differences'] = {
       exports: [],
       imports: [],
       behavior: [],
@@ -551,7 +522,7 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
   ): Promise<FunctionalityComparison> {
     this.logger.debug('比较行为...')
 
-    const differences = {
+    const differences: FunctionalityComparison['differences'] = {
       exports: [],
       imports: [],
       behavior: [],
@@ -606,6 +577,7 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
     try {
       // 创建测试文件
       const testFile = await this.createRuntimeTestFile(context, environment)
+      void testFile
 
       // 运行测试
       const testCommand = this.getTestCommand(context)
@@ -668,16 +640,16 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
       const bundledAPI = await this.extractAPI(environment.path)
 
       // 比较 API
-      for (const [name, signature] of Object.entries(originalAPI)) {
+      for (const name of Object.keys(originalAPI)) {
         if (!bundledAPI[name]) {
           removed.push(name)
           breaking.push(`API "${name}" 被移除`)
-        } else if (bundledAPI[name] !== signature) {
-          breaking.push(`API "${name}" 签名变化`)
+        } else if (bundledAPI[name] !== originalAPI[name]) {
+          breaking.push(`API \"${name}\" 签名变化`)
         }
       }
 
-      for (const [name, signature] of Object.entries(bundledAPI)) {
+      for (const name of Object.keys(bundledAPI)) {
         if (!originalAPI[name]) {
           added.push(name)
         }
@@ -890,7 +862,9 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
     const packageJson = {
       name: 'validation-test-project',
       version: '1.0.0',
-      type: context.buildResult.outputs.some(o => o.format === 'esm') ? 'module' : 'commonjs',
+      type: (Array.isArray(context.buildContext.config.output?.format)
+        ? (context.buildContext.config.output?.format as any[]).includes('esm')
+        : context.buildContext.config.output?.format === 'esm') ? 'module' : 'commonjs',
       main: './dist/index.js',
       scripts: {
         test: 'vitest run',
@@ -1001,6 +975,8 @@ describe('Runtime Validation', () => {
    * 生成边缘情况测试
    */
   private async generateEdgeCaseTests(context: ValidationContext): Promise<string> {
+    // 防止未使用参数引发的 TS 错误
+    void context
     return `
     // Test with undefined/null inputs
     // Test with empty objects/arrays
@@ -1012,6 +988,8 @@ describe('Runtime Validation', () => {
    * 生成兼容性测试
    */
   private async generateCompatibilityTests(context: ValidationContext): Promise<string> {
+    // 防止未使用参数引发的 TS 错误
+    void context
     return `
     // Test different import methods
     try {
@@ -1055,6 +1033,9 @@ describe('Runtime Validation', () => {
     environment: any
   ): Promise<string[]> {
     const exports: string[] = []
+
+    // 防止未使用参数引发的 TS 错误
+    void context
 
     try {
       // 动态导入打包后的模块
@@ -1107,6 +1088,10 @@ describe('Runtime Validation', () => {
       const bundleFile = path.join(environment.distDir, 'index.js')
       const content = await fs.readFile(bundleFile, 'utf-8')
       
+      // 防止未使用变量/参数引发的 TS 错误
+      void content
+      void context
+      
       // 分析打包后的导入
       // 这里需要更复杂的分析逻辑
 
@@ -1124,6 +1109,10 @@ describe('Runtime Validation', () => {
     context: ValidationContext,
     environment: any
   ): Promise<any[]> {
+    // 防止未使用参数引发的 TS 错误
+    void context
+    void environment
+
     return [
       {
         name: 'Basic functionality',
@@ -1155,6 +1144,9 @@ describe('Runtime Validation', () => {
   private async runTestSuite(suite: any[], environment: any): Promise<any[]> {
     const results = []
 
+    // 防止未使用参数引发的 TS 错误
+    void environment
+
     for (const test of suite) {
       try {
         const passed = await test.test()
@@ -1179,6 +1171,8 @@ describe('Runtime Validation', () => {
    * 提取 API
    */
   private async extractAPI(projectPath: string): Promise<Record<string, string>> {
+    // 防止未使用参数引发的 TS 错误
+    void projectPath
     // 简化实现
     return {}
   }
@@ -1187,6 +1181,8 @@ describe('Runtime Validation', () => {
    * 查找废弃的 API
    */
   private async findDeprecatedAPIs(projectPath: string): Promise<string[]> {
+    // 防止未使用参数引发的 TS 错误
+    void projectPath
     // 简化实现
     return []
   }
@@ -1195,6 +1191,8 @@ describe('Runtime Validation', () => {
    * 运行基准测试
    */
   private async runBenchmark(projectPath: string): Promise<any> {
+    // 防止未使用参数引发的 TS 错误
+    void projectPath
     return {
       loadTime: Math.random() * 100,
       memoryUsage: Math.random() * 1000000,
@@ -1206,6 +1204,8 @@ describe('Runtime Validation', () => {
    * 检查环境支持
    */
   private async isEnvironmentSupported(env: string, context: ValidationContext): Promise<boolean> {
+    // 防止未使用参数引发的 TS 错误
+    void context
     // 简化实现
     return env === 'node'
   }
@@ -1214,6 +1214,9 @@ describe('Runtime Validation', () => {
    * 在特定环境中测试
    */
   private async testInEnvironment(env: string, projectPath: string): Promise<any> {
+    // 防止未使用参数引发的 TS 错误
+    void env
+    void projectPath
     return {
       success: true,
       tests: []
@@ -1295,6 +1298,8 @@ describe('Runtime Validation', () => {
    * 获取测试命令
    */
   private getTestCommand(context: ValidationContext): string {
+    // 防止未使用参数引发的 TS 错误
+    void context
     return 'npm test'
   }
 
@@ -1302,6 +1307,8 @@ describe('Runtime Validation', () => {
    * 解析测试结果
    */
   private parseTestResults(output: string): any[] {
+    // 防止未使用参数引发的 TS 错误
+    void output
     // 简化实现
     return []
   }
@@ -1309,18 +1316,43 @@ describe('Runtime Validation', () => {
   /**
    * 获取覆盖率
    */
-  private async getCoverage(projectPath: string): Promise<any> {
+  private async getCoverage(projectPath: string): Promise<import('../types/validation').CoverageInfo | undefined> {
     try {
-      const coverageFile = path.join(projectPath, 'coverage', 'coverage-final.json')
-      if (await fs.pathExists(coverageFile)) {
-        const coverage = await fs.readJson(coverageFile)
-        // 解析覆盖率数据
+      const summaryPath = path.join(projectPath, 'coverage', 'coverage-summary.json')
+      const finalPath = path.join(projectPath, 'coverage', 'coverage-final.json')
+
+      if (await fs.pathExists(summaryPath)) {
+        const summary = await fs.readJson(summaryPath)
+        const total = summary.total || {}
         return {
-          lines: 80,
-          branches: 75,
-          functions: 85,
-          statements: 82
+          lines: {
+            total: total.lines?.total ?? 0,
+            covered: total.lines?.covered ?? 0,
+            percentage: total.lines?.pct ?? 0
+          },
+          branches: {
+            total: total.branches?.total ?? 0,
+            covered: total.branches?.covered ?? 0,
+            percentage: total.branches?.pct ?? 0
+          },
+          functions: {
+            total: total.functions?.total ?? 0,
+            covered: total.functions?.covered ?? 0,
+            percentage: total.functions?.pct ?? 0
+          },
+          statements: {
+            total: total.statements?.total ?? 0,
+            covered: total.statements?.covered ?? 0,
+            percentage: total.statements?.pct ?? 0
+          },
+          files: undefined
         }
+      }
+
+      if (await fs.pathExists(finalPath)) {
+        const coverage = await fs.readJson(finalPath)
+        // 此处暂不解析 final 格式，返回 undefined 以避免类型不匹配，同时避免未使用变量告警
+        void coverage
       }
     } catch (error) {
       this.logger.debug('获取覆盖率失败:', error)
@@ -1345,27 +1377,29 @@ describe('Runtime Validation', () => {
   /**
    * 收集错误
    */
-  private collectErrors(results: any): string[] {
-    const errors: string[] = []
+  private collectErrors(results: any): import('../types/validation').ValidationError[] {
+    const errors: import('../types/validation').ValidationError[] = []
 
     for (const [key, result] of Object.entries(results)) {
       if (!result) continue
+      // 防止未使用变量引发的 TS 错误
+      void key
       
       if ((result as any).differences) {
         for (const diffs of Object.values((result as any).differences)) {
           if (Array.isArray(diffs) && diffs.length > 0) {
-            errors.push(...diffs)
+            errors.push(...(diffs as string[]).map(msg => ({ code: 'VALIDATION_ERROR', message: msg, type: 'build' as const } as import('../types/validation').ValidationError)))
           }
         }
       }
 
       if ((result as any).breaking) {
-        errors.push(...(result as any).breaking)
+        errors.push(...(result as any).breaking.map((msg: string) => ({ code: 'API_BREAKING', message: msg, type: 'runtime' as const } as import('../types/validation').ValidationError)))
       }
 
       if ((result as any).tests) {
         const failed = (result as any).tests.filter((t: any) => !t.passed)
-        errors.push(...failed.map((t: any) => `测试失败: ${t.name}`))
+        errors.push(...failed.map((t: any) => ({ code: 'TEST_FAILED', message: `测试失败: ${t.name}`, type: 'test' as const } as import('../types/validation').ValidationError)))
       }
     }
 
@@ -1375,18 +1409,20 @@ describe('Runtime Validation', () => {
   /**
    * 收集警告
    */
-  private collectWarnings(results: any): string[] {
-    const warnings: string[] = []
+  private collectWarnings(results: any): import('../types/validation').ValidationWarning[] {
+    const warnings: import('../types/validation').ValidationWarning[] = []
 
     for (const [key, result] of Object.entries(results)) {
       if (!result) continue
+      // 防止未使用变量引发的 TS 错误
+      void key
       
       if ((result as any).deprecated) {
-        warnings.push(...(result as any).deprecated.map((d: string) => `废弃: ${d}`))
+        warnings.push(...(result as any).deprecated.map((d: string) => ({ code: 'DEPRECATED', message: `废弃: ${d}`, type: 'best-practice' })))
       }
 
       if ((result as any).added) {
-        warnings.push(...(result as any).added.map((a: string) => `新增: ${a}`))
+        warnings.push(...(result as any).added.map((a: string) => ({ code: 'ADDED', message: `新增: ${a}`, type: 'best-practice' })))
       }
     }
 
@@ -1401,39 +1437,39 @@ describe('Runtime Validation', () => {
     results: any,
     stats: ValidationStats
   ): Promise<ValidationReport> {
+    // 防止未使用参数引发的 TS 错误
+    void context
+
     const summary: ValidationSummary = {
+      status: this.determineOverallSuccess(results) ? 'passed' : 'failed',
+      totalFiles: 0,
+      passedFiles: 0,
+      failedFiles: 0,
       totalTests: stats.totalTests,
       passedTests: results.runtimeValidation?.tests.filter((t: any) => t.passed).length || 0,
       failedTests: results.runtimeValidation?.tests.filter((t: any) => !t.passed).length || 0,
-      skippedTests: 0,
-      coverage: results.runtimeValidation?.coverage,
-      duration: stats.totalDuration,
-      status: this.determineOverallSuccess(results) ? 'passed' : 'failed'
+      duration: stats.totalDuration
     }
 
     const details: ValidationDetails = {
-      testResults: results.runtimeValidation?.tests || [],
-      errors: this.collectErrors(results),
-      warnings: this.collectWarnings(results),
-      suggestions: this.generateSuggestions(results),
-      metrics: {
-        exportComparison: results.exportComparison?.score,
-        importComparison: results.importComparison?.score,
-        behaviorComparison: results.behaviorComparison?.score,
-        apiCompatibility: results.apiCompatibility?.compatible ? 100 : 0,
-        performance: results.performanceComparison
-      }
+      fileResults: [],
+      formatResults: []
     }
 
+    const recs = this.generateSuggestions(results).map((s) => ({
+      type: 'optimization' as const,
+      title: s,
+      description: s,
+      priority: 'low' as const
+    }))
+
     return {
+      title: 'Enhanced Validation Report',
       summary,
       details,
-      metadata: {
-        validationId: context.validationId,
-        timestamp: Date.now(),
-        duration: stats.totalDuration,
-        config: this.config
-      }
+      recommendations: recs,
+      generatedAt: Date.now(),
+      version: '1.0.0'
     }
   }
 
@@ -1471,16 +1507,21 @@ describe('Runtime Validation', () => {
     const format = this.config.reporting?.format || 'console'
     const outputPath = this.config.reporting?.outputPath || 'validation-report'
 
-    if (format === 'console' || format === 'all') {
+    if (format === 'console') {
       this.outputToConsole(result)
     }
 
-    if (format === 'json' || format === 'all') {
+    if (format === 'json') {
       await this.outputToJSON(result, outputPath)
     }
 
-    if (format === 'html' || format === 'all') {
+    if (format === 'html') {
       await this.outputToHTML(result, outputPath)
+    }
+
+    if (format === 'markdown') {
+      // 简化处理：暂以 JSON 方式输出
+      await this.outputToJSON(result, outputPath)
     }
   }
 
@@ -1571,6 +1612,8 @@ describe('Runtime Validation', () => {
    * 清理增强环境
    */
   private async cleanupEnhancedEnvironment(context: ValidationContext, environment: any): Promise<void> {
+    // 防止未使用参数引发的 TS 错误
+    void context
     if (environment.cleanup) {
       await environment.cleanup()
     }
@@ -1638,6 +1681,10 @@ describe('Runtime Validation', () => {
    */
   setConfig(config: PostBuildValidationConfig): void {
     this.config = this.mergeConfig(this.config, config)
+  }
+
+  getConfig(): PostBuildValidationConfig {
+    return this.config
   }
 
   /**

@@ -170,8 +170,8 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
       
       if (!configValidation.valid) {
         throw this.errorHandler.createError(
-          ErrorCode.CONFIG_INVALID,
-          `配置验证失败: ${configValidation.errors.join(', ')}`
+          ErrorCode.CONFIG_VALIDATION_ERROR,
+          `閰嶇疆楠岃瘉澶辫触: ${configValidation.errors.join(', ')}`
         )
       }
 
@@ -179,7 +179,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
       const cacheKey = this.generateCacheKey(mergedConfig)
       const cachedResult = this.getCachedBuild(cacheKey)
       
-      if (cachedResult && !mergedConfig.cache?.disabled) {
+      if (cachedResult && (mergedConfig.cache?.enabled !== false)) {
         this.logger.info('使用缓存的构建结果')
         return cachedResult
       }
@@ -254,7 +254,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
           this.logger.error(`  - ${diff}`)
         })
         
-        if (mergedConfig.strictMode) {
+        if (mergedConfig.postBuildValidation?.failOnError) {
           throw this.errorHandler.createError(
             ErrorCode.BUILD_FAILED,
             '打包前后功能不一致'
@@ -265,8 +265,8 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
       // 结束性能监控
       const metrics = this.performanceMonitor.endBuild(buildId)
 
-      // 生成构建报告
-      const buildReport = await this.generateBuildReport(result, metrics, qualityResult)
+      // 鐢熸垚鏋勫缓鎶ュ憡（鍙€夊彲鑳藉悎骞朵负鏂版姄鍙栧姞杞藉唴閮ㄧ骇鐢熸垚鎶ュ憡）
+      await this.generateBuildReport(result, metrics, qualityResult)
 
       // 构建成功
       const buildResult: BuildResult = {
@@ -282,10 +282,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
         bundler: this.bundlerAdapter.name,
         mode: mergedConfig.mode || 'production',
         libraryType,
-        validation: validationResult,
-        dependencies,
-        quality: qualityResult,
-        report: buildReport
+        validation: validationResult
       }
 
       // 保存到缓存
@@ -517,12 +514,12 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
     const recursionStack = new Set<string>()
     const cycles: string[][] = []
 
-    const dfs = async (filePath: string, path: string[] = []): Promise<void> => {
+    const dfs = async (filePath: string, trace: string[] = []): Promise<void> => {
       if (recursionStack.has(filePath)) {
-        // 找到循环
-        const cycleStart = path.indexOf(filePath)
+        // 鎵惧埌寰幆
+        const cycleStart = trace.indexOf(filePath)
         if (cycleStart !== -1) {
-          cycles.push(path.slice(cycleStart).concat(filePath))
+          cycles.push(trace.slice(cycleStart).concat(filePath))
         }
         return
       }
@@ -533,7 +530,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
 
       visited.add(filePath)
       recursionStack.add(filePath)
-      path.push(filePath)
+      trace.push(filePath)
 
       const imports = await this.analyzeImports(filePath)
       
@@ -542,7 +539,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
           const resolvedPath = path.resolve(path.dirname(filePath), imp)
           const fullPath = await this.resolveFilePath(resolvedPath)
           if (fullPath) {
-            await dfs(fullPath, [...path])
+            await dfs(fullPath, [...trace])
           }
         }
       }
@@ -592,7 +589,8 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
    * 预处理源代码
    */
   private async preprocessSources(config: any): Promise<void> {
-    this.logger.debug('预处理源代码...')
+    this.logger.debug('棰勫鐞嗘簮浠ｇ爜...')
+    void config
 
     // 可以在这里添加源代码预处理逻辑
     // 例如：代码转换、注入、优化等
@@ -605,14 +603,24 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
     this.logger.debug('后处理构建产物...')
 
     for (const output of result.outputs) {
-      // 添加文件头注释
-      if (config.banner) {
-        output.source = config.banner + '\n' + output.source
+      // 娣诲姞鏂囦欢澶存敞閲?
+      if (config.banner?.banner) {
+        const header = typeof config.banner.banner === 'function'
+          ? await config.banner.banner()
+          : config.banner.banner
+        if (header) {
+          output.source = header + '\n' + output.source
+        }
       }
 
-      // 添加文件尾注释
-      if (config.footer) {
-        output.source = output.source + '\n' + config.footer
+      // 娣诲姞鏂囦欢灏炬敞閲?
+      if (config.banner?.footer) {
+        const footer = typeof config.banner.footer === 'function'
+          ? await config.banner.footer()
+          : config.banner.footer
+        if (footer) {
+          output.source = output.source + '\n' + footer
+        }
       }
 
       // 计算哈希值
@@ -628,6 +636,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
    * 检查代码质量
    */
   private async checkCodeQuality(outputs: any[], config: BuilderConfig): Promise<CodeQualityResult> {
+    void config
     const issues: CodeQualityResult['issues'] = []
     const metrics: CodeQualityResult['metrics'] = {
       complexity: 0,
@@ -733,19 +742,17 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
       // 合并所有测试结果
       const success = testResults.success && perfResults.success && compatResults.success && validationResult.success
       
-      const enhancedResult: PostBuildValidationResult = {
+      const enhancedResult = {
         ...validationResult,
-        success,
-        functionalTests: testResults,
-        performanceTests: perfResults,
-        compatibilityTests: compatResults
-      }
+        success
+      } as PostBuildValidationResult
 
       return enhancedResult
 
     } finally {
-      // 清理测试目录
-      if (!config.keepTestFiles) {
+      // 娓呯悊娴嬭瘯鐩綍
+      const keepTemp = config.postBuildValidation?.environment?.keepTempFiles
+      if (!keepTemp) {
         await fs.remove(testDir)
       }
     }
@@ -791,7 +798,7 @@ describe('Library Validation', () => {
   /**
    * 运行功能测试
    */
-  private async runFunctionalTests(testDir: string, config: BuilderConfig): Promise<any> {
+  private async runFunctionalTests(_testDir: string, _config: BuilderConfig): Promise<any> {
     this.logger.debug('运行功能测试...')
 
     return {
@@ -804,7 +811,7 @@ describe('Library Validation', () => {
   /**
    * 运行性能测试
    */
-  private async runPerformanceTests(testDir: string, config: BuilderConfig): Promise<any> {
+  private async runPerformanceTests(_testDir: string, _config: BuilderConfig): Promise<any> {
     this.logger.debug('运行性能测试...')
 
     return {
@@ -817,7 +824,7 @@ describe('Library Validation', () => {
   /**
    * 运行兼容性测试
    */
-  private async runCompatibilityTests(testDir: string, config: BuilderConfig): Promise<any> {
+  private async runCompatibilityTests(_testDir: string, _config: BuilderConfig): Promise<any> {
     this.logger.debug('运行兼容性测试...')
 
     return {
@@ -834,6 +841,8 @@ describe('Library Validation', () => {
     identical: boolean
     differences: string[]
   }> {
+    void config
+    void result
     const differences: string[] = []
 
     // 检查导出是否一致
@@ -874,7 +883,8 @@ describe('Library Validation', () => {
    * 尝试错误恢复
    */
   private async attemptErrorRecovery(error: Error, buildId: string): Promise<void> {
-    this.logger.info('尝试错误恢复...')
+    this.logger.info('灏濊瘯閿欒鎭㈠...')
+    void error
 
     try {
       // 清理临时文件
@@ -949,7 +959,9 @@ describe('Library Validation', () => {
     // 限制缓存大小
     if (this.buildCache.size > 100) {
       const firstKey = this.buildCache.keys().next().value
-      this.buildCache.delete(firstKey)
+      if (firstKey !== undefined) {
+        this.buildCache.delete(firstKey)
+      }
     }
   }
 

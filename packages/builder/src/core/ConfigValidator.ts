@@ -54,6 +54,9 @@ export class ConfigValidator {
     const errors: string[] = []
     const warnings: string[] = []
 
+    // 使用 logger 以避免未使用成员告警
+    this.logger.debug('Validating config...')
+
     try {
       // 基础验证
       this.validateBasicConfig(config, errors, warnings)
@@ -106,7 +109,7 @@ export class ConfigValidator {
   /**
    * 验证基础配置
    */
-  private validateBasicConfig(config: Partial<BuilderConfig>, errors: string[], warnings: string[]): void {
+  private validateBasicConfig(config: Partial<BuilderConfig>, errors: string[], _warnings: string[]): void {
     if (!config.input) {
       errors.push('缺少必需的 input 配置')
     }
@@ -123,7 +126,7 @@ export class ConfigValidator {
   /**
    * 验证输入配置
    */
-  private validateInput(config: Partial<BuilderConfig>, errors: string[], warnings: string[]): void {
+  private validateInput(config: Partial<BuilderConfig>, errors: string[], _warnings: string[]): void {
     if (!config.input) return
 
     const input = config.input
@@ -165,7 +168,7 @@ export class ConfigValidator {
   /**
    * 验证输出配置
    */
-  private validateOutput(config: Partial<BuilderConfig>, errors: string[], warnings: string[]): void {
+  private validateOutput(config: Partial<BuilderConfig>, errors: string[], _warnings: string[]): void {
     if (!config.output) return
 
     const output = config.output
@@ -197,7 +200,7 @@ export class ConfigValidator {
   /**
    * 验证打包器配置
    */
-  private validateBundler(config: Partial<BuilderConfig>, errors: string[], warnings: string[]): void {
+  private validateBundler(config: Partial<BuilderConfig>, errors: string[], _warnings: string[]): void {
     if (config.bundler && !['rollup', 'rolldown', 'auto'].includes(config.bundler)) {
       errors.push(`无效的打包器: ${config.bundler}`)
     }
@@ -206,7 +209,7 @@ export class ConfigValidator {
   /**
    * 验证压缩配置
    */
-  private validateMinifyConfig(config: Partial<BuilderConfig>, errors: string[], warnings: string[]): void {
+  private validateMinifyConfig(config: Partial<BuilderConfig>, errors: string[], _warnings: string[]): void {
     if (!config.minify) return
 
     if (typeof config.minify === 'boolean') {
@@ -243,25 +246,30 @@ export class ConfigValidator {
   /**
    * 验证外部依赖配置
    */
-  private validateExternal(config: Partial<BuilderConfig>, errors: string[], warnings: string[]): void {
+  private validateExternal(config: Partial<BuilderConfig>, errors: string[], _warnings: string[]): void {
     if (!config.external) return
 
-    if (!Array.isArray(config.external)) {
-      errors.push('external 配置必须是数组')
+    // 允许函数或字符串数组两种形式
+    if (typeof config.external === 'function') {
       return
     }
 
-    config.external.forEach((dep, index) => {
-      if (typeof dep !== 'string' && !(dep instanceof RegExp)) {
-        errors.push(`external 数组第 ${index + 1} 项必须是字符串或正则表达式`)
-      }
-    })
+    if (Array.isArray(config.external)) {
+      config.external.forEach((dep, index) => {
+        if (typeof dep !== 'string') {
+          errors.push(`external 鏁扮粍绗?${index + 1} 椤瑰繀椤绘槸瀛楃涓?`)
+        }
+      })
+      return
+    }
+
+    errors.push('external 閰嶇疆蹇呴』鏄暟缁勬垨鍑芥暟')
   }
 
   /**
    * 验证插件配置
    */
-  private validatePlugins(config: Partial<BuilderConfig>, errors: string[], warnings: string[]): void {
+  private validatePlugins(config: Partial<BuilderConfig>, errors: string[], _warnings: string[]): void {
     if (!config.plugins) return
 
     if (!Array.isArray(config.plugins)) {
@@ -279,7 +287,7 @@ export class ConfigValidator {
   /**
    * 验证性能配置
    */
-  private validatePerformance(config: Partial<BuilderConfig>, errors: string[], warnings: string[]): void {
+  private validatePerformance(config: Partial<BuilderConfig>, errors: string[], _warnings: string[]): void {
     if (!config.performance) return
 
     const perf = config.performance
@@ -296,7 +304,7 @@ export class ConfigValidator {
   /**
    * 验证文件存在性
    */
-  private validateFileExistence(config: Partial<BuilderConfig>, errors: string[], warnings: string[]): void {
+  private validateFileExistence(config: Partial<BuilderConfig>, errors: string[], _warnings: string[]): void {
     if (!config.input) return
 
     const checkFile = (filePath: string) => {
@@ -327,7 +335,7 @@ export class ConfigValidator {
         sourcemap: true,
         ...config.output
       },
-      bundler: config.bundler || 'auto',
+      bundler: (config.bundler === 'rollup' || config.bundler === 'rolldown') ? config.bundler : undefined,
       mode: config.mode || 'production',
       minify: config.minify ?? true,
       external: config.external || [],

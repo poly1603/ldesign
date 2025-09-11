@@ -15,7 +15,9 @@ import type {
   UnifiedConfig,
   AdapterOptions,
   BundlerSpecificConfig,
-  BundlerSpecificPlugin
+  BundlerSpecificPlugin,
+  BundlerFeature,
+  FeatureSupportMap
 } from '../../types/adapter'
 import type { BuildResult, BuildWatcher } from '../../types/builder'
 import type { PerformanceMetrics } from '../../types/performance'
@@ -92,7 +94,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
       const configValidation = await this.validateConfig(config)
       if (!configValidation.valid) {
         throw new BuilderError(
-          ErrorCode.CONFIG_INVALID,
+          ErrorCode.CONFIG_VALIDATION_ERROR,
           `配置验证失败: ${configValidation.errors.join(', ')}`
         )
       }
@@ -325,13 +327,14 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
 
     // 高级 tree-shaking 配置
     if (config.treeshake !== false) {
+      const tsOptions = typeof config.treeshake === 'object' ? config.treeshake : undefined
       rollupConfig.treeshake = {
-        moduleSideEffects: config.treeshake?.moduleSideEffects ?? true,
-        propertyReadSideEffects: config.treeshake?.propertyReadSideEffects ?? true,
-        tryCatchDeoptimization: config.treeshake?.tryCatchDeoptimization ?? true,
-        unknownGlobalSideEffects: config.treeshake?.unknownGlobalSideEffects ?? true,
+        moduleSideEffects: tsOptions?.moduleSideEffects ?? true,
+        propertyReadSideEffects: tsOptions?.propertyReadSideEffects ?? true,
+        tryCatchDeoptimization: tsOptions?.tryCatchDeoptimization ?? true,
+        unknownGlobalSideEffects: tsOptions?.unknownGlobalSideEffects ?? true,
         correctVarValueBeforeDeclaration: true,
-        ...(typeof config.treeshake === 'object' ? config.treeshake : {})
+        ...(tsOptions || {})
       }
     }
 
@@ -415,9 +418,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
 
     // 智能目录分配
     let dir = config.output?.dir || 'dist'
-    if (config.output?.preserveDirectoryStructure) {
-      dir = path.join(dir, format)
-    } else if (isESM) {
+    if (isESM) {
       dir = path.join(dir, 'es')
     } else if (isCJS) {
       dir = path.join(dir, 'cjs')
@@ -435,9 +436,8 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
       dir,
       entryFileNames,
       chunkFileNames,
-      preserveModules: (isESM || isCJS) && config.output?.preserveModules !== false,
+      preserveModules: (isESM || isCJS),
       preserveModulesRoot: (isESM || isCJS) ? 'src' : undefined,
-      exports: config.output?.exports || 'auto',
       sourcemap: config.output?.sourcemap ?? true,
       globals: config.output?.globals,
       name: (isUMD || isIIFE) ? config.output?.name : undefined,
@@ -895,6 +895,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
     if (format === 'esm' && await this.hasTypeScriptFiles(config)) {
       try {
         const dts = await import('rollup-plugin-dts')
+        void dts
         if (config.typescript?.declaration) {
           // 这里可以添加 dts 插件配置
         }
@@ -958,8 +959,12 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
    * 获取入口文件名
    */
   private getEntryFileName(format: string, config: UnifiedConfig): string {
-    if (config.output?.entryFileNames) {
-      return config.output.entryFileNames
+    const out: any = config.output as any
+    if (out?.entryFileNames) {
+      return out.entryFileNames
+    }
+    if (config.output?.fileName) {
+      return config.output.fileName as string
     }
     
     switch (format) {
@@ -1030,10 +1035,19 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
    * 检查是否有 TypeScript 文件
    */
   private async hasTypeScriptFiles(config: UnifiedConfig): Promise<boolean> {
-    const entries = Array.isArray(config.input) ? config.input : [config.input]
-    return entries.some(entry => 
-      entry.endsWith('.ts') || entry.endsWith('.tsx')
-    )
+    const input = config.input as any
+
+    let entries: string[] = []
+    if (Array.isArray(input)) {
+      entries = input.filter((e: any): e is string => typeof e === 'string')
+    } else if (typeof input === 'object' && input !== null) {
+      // 命名入口对象 { name: path }
+      entries = Object.values(input).filter((e: any): e is string => typeof e === 'string')
+    } else if (typeof input === 'string') {
+      entries = [input]
+    }
+
+    return entries.some((entry) => entry.endsWith('.ts') || entry.endsWith('.tsx'))
   }
 
   /**
@@ -1060,7 +1074,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
   /**
    * 检查是否有样式文件
    */
-  private async hasStyleFiles(config: UnifiedConfig): Promise<boolean> {
+  private async hasStyleFiles(_config: UnifiedConfig): Promise<boolean> {
     // 简单检查，实际实现可以更复杂
     return true
   }
@@ -1068,21 +1082,21 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
   /**
    * 检查是否有 Sass 文件
    */
-  private async hasSassFiles(config: UnifiedConfig): Promise<boolean> {
+  private async hasSassFiles(_config: UnifiedConfig): Promise<boolean> {
     return false // 简化实现
   }
 
   /**
    * 检查是否有 Less 文件
    */
-  private async hasLessFiles(config: UnifiedConfig): Promise<boolean> {
+  private async hasLessFiles(_config: UnifiedConfig): Promise<boolean> {
     return false // 简化实现
   }
 
   /**
    * 检查是否有 Stylus 文件
    */
-  private async hasStylusFiles(config: UnifiedConfig): Promise<boolean> {
+  private async hasStylusFiles(_config: UnifiedConfig): Promise<boolean> {
     return false // 简化实现
   }
 
@@ -1210,7 +1224,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
   /**
    * 获取性能指标
    */
-  private getPerformanceMetrics(): PerformanceMetrics {
+  getPerformanceMetrics(): PerformanceMetrics {
     return this.performanceMonitor?.getMetrics() || {
       buildTime: 0,
       bundleTime: 0,
@@ -1235,5 +1249,30 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
     this.rollupInstance = null
     
     this.logger.debug('增强版 Rollup 适配器已清理')
+  }
+
+  supportsFeature(feature: BundlerFeature): boolean {
+    const support = this.getFeatureSupport()
+    return support[feature] ?? false
+  }
+
+  getFeatureSupport(): FeatureSupportMap {
+    return {
+      'treeshaking': true,
+      'code-splitting': true,
+      'dynamic-import': true,
+      'worker-support': true,
+      'css-bundling': true,
+      'asset-processing': true,
+      'sourcemap': true,
+      'minification': true,
+      'hot-reload': false,
+      'module-federation': false,
+      'incremental-build': true,
+      'parallel-build': true,
+      'cache-support': true,
+      'plugin-system': true,
+      'config-file': true
+    } as unknown as FeatureSupportMap
   }
 }
