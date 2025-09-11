@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图表导出功能演示 - @ldesign/chart</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      color: #722ED1;
+      margin-bottom: 10px;
+    }
+
+    .demo-section {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+    }
+
+    .chart-container {
+      width: 100%;
+      height: 400px;
+      margin-bottom: 30px;
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+    }
+
+    .export-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .export-btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 4px;
+      background: #722ED1;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+
+    .export-btn:hover {
+      background: #5e2aa7;
+    }
+
+    .export-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .export-status {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .export-status.info {
+      background: #e6f7ff;
+      color: #1890ff;
+      border: 1px solid #91d5ff;
+    }
+
+    .export-status.success {
+      background: #f6ffed;
+      color: #52c41a;
+      border: 1px solid #b7eb8f;
+    }
+
+    .export-status.error {
+      background: #fff2f0;
+      color: #ff4d4f;
+      border: 1px solid #ffccc7;
+    }
+
+    .preview-section {
+      margin-top: 30px;
+      padding: 20px;
+      background: #fafafa;
+      border-radius: 4px;
+      border: 1px solid #e5e5e5;
+    }
+
+    .preview-section h4 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .feature-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .feature-item {
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 4px;
+      border-left: 4px solid #722ED1;
+    }
+
+    .feature-item h4 {
+      color: #722ED1;
+      margin-bottom: 10px;
+    }
+
+    .feature-item p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .code-example {
+      background: #f6f8fa;
+      border: 1px solid #e1e4e8;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 15px 0;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 13px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 页面标题 -->
+    <div class="header">
+      <h1>图表导出功能演示</h1>
+      <p>展示 @ldesign/chart 强大的导出功能，支持多种格式导出</p>
+    </div>
+
+    <!-- 导出演示 -->
+    <div class="demo-section">
+      <h2>导出演示</h2>
+      <p>下面的图表支持导出为多种格式，点击按钮体验导出功能：</p>
+
+      <!-- 图表容器 -->
+      <div id="export-demo-chart" class="chart-container"></div>
+
+      <!-- 状态显示 -->
+      <div id="export-status" class="export-status"></div>
+
+      <!-- 导出控制按钮 -->
+      <div class="export-controls">
+        <button id="export-png-btn" class="export-btn">导出 PNG</button>
+        <button id="export-svg-btn" class="export-btn">导出 SVG</button>
+        <button id="export-pdf-btn" class="export-btn">导出 PDF</button>
+        <button id="export-csv-btn" class="export-btn">导出 CSV</button>
+        <button id="export-excel-btn" class="export-btn">导出 Excel</button>
+        <button id="export-json-btn" class="export-btn">导出 JSON</button>
+        <button id="preview-image-btn" class="export-btn">预览图片</button>
+      </div>
+
+      <!-- 预览区域 -->
+      <div id="image-preview" class="preview-section"></div>
+    </div>
+
+    <!-- 功能特性 -->
+    <div class="demo-section">
+      <h2>导出功能特性</h2>
+      <div class="feature-list">
+        <div class="feature-item">
+          <h4>🖼️ 图片导出</h4>
+          <p>支持导出为 PNG 和 SVG 格式，可自定义尺寸、质量和背景色</p>
+        </div>
+        <div class="feature-item">
+          <h4>📄 PDF 导出</h4>
+          <p>将图表导出为 PDF 文档，适合报告和文档嵌入</p>
+        </div>
+        <div class="feature-item">
+          <h4>📊 数据导出</h4>
+          <p>支持导出为 CSV、Excel 和 JSON 格式，便于数据分析</p>
+        </div>
+        <div class="feature-item">
+          <h4>🎨 自定义选项</h4>
+          <p>丰富的导出选项，包括文件名、尺寸、质量等设置</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 使用示例 -->
+    <div class="demo-section">
+      <h2>使用示例</h2>
+      <p>以下是如何在代码中使用导出功能：</p>
+
+      <div class="code-example">
+// 导出为 PNG 图片
+await chart.downloadExport('png', 'my-chart')
+
+// 导出为 PDF
+await chart.downloadExport('pdf', 'my-chart')
+
+// 导出数据为 CSV
+await chart.downloadExport('csv', 'my-data')
+
+// 自定义导出选项
+await chart.export({
+  format: 'png',
+  filename: 'custom-chart',
+  width: 800,
+  height: 600,
+  quality: 0.9,
+  backgroundColor: 'white'
+})
+
+// 获取图片数据 URL（不下载）
+const imageDataURL = await chart.exportImage('png')
+      </div>
+    </div>
+  </div>
+
+  <!-- 引入图表库 -->
+  <script type="module">
+    import { initExportDemo } from './examples/vite-demo/src/charts/export-demo.js'
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      initExportDemo()
+    })
+  </script>
+</body>
+</html>

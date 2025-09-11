@@ -1,0 +1,29 @@
+{
+  "name": "@ldesign/chart-vite-demo",
+  "version": "1.0.0",
+  "description": "Vite + JavaScript 示例项目，展示 @ldesign/chart 的所有功能",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "echarts": "^5.4.3",
+    "@ldesign/chart": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "chart",
+    "echarts",
+    "visualization",
+    "vite",
+    "javascript",
+    "demo"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT"
+}

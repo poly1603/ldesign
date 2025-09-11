@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@ldesign/chart - 完整示例</title>
+  <link rel="icon" type="image/svg+xml" href="/vite.svg">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      transition: all 0.3s ease;
+    }
+    
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #722ED1;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- 加载动画 -->
+  <div id="loading" class="loading">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- 主应用容器 -->
+  <div id="app">
+    <!-- 头部导航 -->
+    <header class="header">
+      <div class="header-content">
+        <h1 class="logo">@ldesign/chart</h1>
+        <p class="subtitle">基于 ECharts 的通用图表组件库</p>
+        
+        <!-- 主题切换器 -->
+        <div class="theme-switcher">
+          <label for="theme-select">主题：</label>
+          <select id="theme-select">
+            <option value="light">浅色主题</option>
+            <option value="dark">深色主题</option>
+            <option value="colorful">彩色主题</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <!-- 导航菜单 -->
+    <nav class="nav">
+      <div class="nav-content">
+        <button class="nav-item active" data-section="overview">概览</button>
+        <button class="nav-item" data-section="line">折线图</button>
+        <button class="nav-item" data-section="bar">柱状图</button>
+        <button class="nav-item" data-section="pie">饼图</button>
+        <button class="nav-item" data-section="scatter">散点图</button>
+        <button class="nav-item" data-section="area">面积图</button>
+        <button class="nav-item" data-section="advanced">高级功能</button>
+        <button class="nav-item" data-section="performance">性能测试</button>
+      </div>
+    </nav>
+
+    <!-- 主内容区域 -->
+    <main class="main">
+      <!-- 概览页面 -->
+      <section id="overview" class="section active">
+        <div class="section-header">
+          <h2>功能概览</h2>
+          <p>@ldesign/chart 是一个基于 ECharts 的通用图表组件库，提供简化的 API 和数据驱动的设计理念。</p>
+        </div>
+        
+        <div class="overview-grid">
+          <div class="overview-card">
+            <h3>🚀 框架无关</h3>
+            <p>可在 React、Vue、原生 JavaScript 等任意环境中使用</p>
+          </div>
+          <div class="overview-card">
+            <h3>📊 多种图表</h3>
+            <p>支持折线图、柱状图、饼图、散点图、面积图等</p>
+          </div>
+          <div class="overview-card">
+            <h3>🎨 主题系统</h3>
+            <p>内置多种主题，支持自定义主题</p>
+          </div>
+          <div class="overview-card">
+            <h3>📱 响应式</h3>
+            <p>自动适应容器大小变化</p>
+          </div>
+          <div class="overview-card">
+            <h3>⚡ 高性能</h3>
+            <p>支持大数据量渲染，优化内存使用</p>
+          </div>
+          <div class="overview-card">
+            <h3>🔧 TypeScript</h3>
+            <p>完整的类型定义，开发体验更佳</p>
+          </div>
+        </div>
+
+        <!-- 快速开始示例 -->
+        <div class="quick-start">
+          <h3>快速开始</h3>
+          <div class="demo-container">
+            <div id="quick-start-chart" class="chart-container"></div>
+            <div class="code-container">
+              <pre><code id="quick-start-code"></code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 折线图页面 -->
+      <section id="line" class="section">
+        <div class="section-header">
+          <h2>折线图示例</h2>
+          <p>展示数据随时间或类别的变化趋势</p>
+        </div>
+        <div class="charts-grid" id="line-charts"></div>
+      </section>
+
+      <!-- 柱状图页面 -->
+      <section id="bar" class="section">
+        <div class="section-header">
+          <h2>柱状图示例</h2>
+          <p>比较不同类别的数据</p>
+        </div>
+        <div class="charts-grid" id="bar-charts"></div>
+      </section>
+
+      <!-- 饼图页面 -->
+      <section id="pie" class="section">
+        <div class="section-header">
+          <h2>饼图示例</h2>
+          <p>展示数据的占比关系</p>
+        </div>
+        <div class="charts-grid" id="pie-charts"></div>
+      </section>
+
+      <!-- 散点图页面 -->
+      <section id="scatter" class="section">
+        <div class="section-header">
+          <h2>散点图示例</h2>
+          <p>展示两个变量之间的关系</p>
+        </div>
+        <div class="charts-grid" id="scatter-charts"></div>
+      </section>
+
+      <!-- 面积图页面 -->
+      <section id="area" class="section">
+        <div class="section-header">
+          <h2>面积图示例</h2>
+          <p>强调数据的累积效果</p>
+        </div>
+        <div class="charts-grid" id="area-charts"></div>
+      </section>
+
+      <!-- 高级功能页面 -->
+      <section id="advanced" class="section">
+        <div class="section-header">
+          <h2>高级功能</h2>
+          <p>事件处理、动态更新、自定义配置等</p>
+        </div>
+        <div class="charts-grid" id="advanced-charts"></div>
+      </section>
+
+      <!-- 性能测试页面 -->
+      <section id="performance" class="section">
+        <div class="section-header">
+          <h2>性能测试</h2>
+          <p>大数据量渲染和性能优化展示</p>
+        </div>
+        <div class="charts-grid" id="performance-charts"></div>
+      </section>
+    </main>
+
+    <!-- 底部信息 -->
+    <footer class="footer">
+      <p>&copy; 2024 LDesign Team. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
