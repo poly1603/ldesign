@@ -167,9 +167,21 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     this.setupEventListeners(options.listeners)
 
     // 默认监听 error 事件，避免未监听时抛出异常
+    // 注意：不要在此处再次调用 handleError，否则会与 handleError 内部的 emit('error') 形成递归
     this.on('error', (err: any) => {
-      const error = err instanceof Error ? err : new Error(String(err))
-      this.handleError(error, '运行时错误')
+      try {
+        // 如果是内部 emit 传递的事件负载
+        if (err && typeof err === 'object' && 'error' in err) {
+          const e = (err as any).error as any
+          const ctx = (err as any).context || '运行时错误'
+          const real = e instanceof Error ? e : new Error(String(e))
+          this.logger.error(ctx, { error: real.message, stack: real.stack })
+          return
+        }
+        // 其他未知来源错误：仅记录，避免递归
+        const real = err instanceof Error ? err : new Error(String(err))
+        this.logger.error('运行时错误', { error: real.message, stack: real.stack })
+      } catch {}
     })
 
     // 设置错误处理
@@ -184,8 +196,18 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
    */
   async initialize(): Promise<void> {
     try {
-      // 自动加载配置文件
-      await this.autoLoadConfig()
+      // 优先使用显式指定的配置文件，其次自动查找
+      const specified = this.config.launcher?.configFile
+      if (specified) {
+        // 加载并合并用户配置到当前配置（修复：之前未合并导致用户 plugins 等失效）
+        const loaded = await this.configManager.loadConfig(specified)
+        if (loaded && typeof loaded === 'object') {
+          this.config = this.mergeConfig(this.config, loaded)
+        }
+      } else {
+        // autoLoadConfig 内部已合并到 this.config
+        await this.autoLoadConfig()
+      }
 
       this.logger.info('ViteLauncher 初始化完成')
     } catch (error) {
@@ -340,6 +362,13 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
 
       // 执行构建前钩子
       await this.executeHook('beforeBuild')
+
+      // 调试：输出最终插件列表
+      try {
+        const names = (mergedConfig.plugins || [])
+          .map((p: any) => (p && typeof p === 'object' && 'name' in p) ? (p as any).name : String(p))
+        this.logger.info('已加载插件', { count: names.length, plugins: names })
+      } catch {}
 
       this.logger.info('正在执行生产构建...')
 
