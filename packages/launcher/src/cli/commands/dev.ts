@@ -156,10 +156,10 @@ export class DevCommand implements CliCommandDefinition {
             host: context.options.host || DEFAULT_HOST,
             port: context.options.port || DEFAULT_PORT,
             open: context.options.open || false,
-            https: context.options.https || false,
             cors: context.options.cors !== false,
-            strictPort: context.options.strictPort || false
-          },
+            strictPort: context.options.strictPort || false,
+            ...(context.options.https && { https: true })
+          } as any,
           optimizeDeps: {
             force: context.options.force || false
           },
@@ -172,26 +172,85 @@ export class DevCommand implements CliCommandDefinition {
       })
 
       // 设置事件监听器
-      launcher.onReady(() => {
+      launcher.onReady(async () => {
         const serverInfo = launcher.getServerInfo()
         if (serverInfo) {
-          const lines = [] as string[]
-          lines.push(pc.dim('─'.repeat(56)))
-          lines.push(`${pc.green('✔')} ${pc.bold('开发服务器已启动')}`)
-          lines.push(`${pc.dim('•')} 本地:   ${pc.cyan(serverInfo.url)}`)
+          const localUrl = serverInfo.url
+          const hasNetwork = serverInfo.host === '0.0.0.0' && !!serverInfo.url
+          const networkUrl = hasNetwork ? localUrl.replace('0.0.0.0', getLocalIP()) : null
 
-          if (serverInfo.host === '0.0.0.0') {
-            // 显示网络访问地址
-            const networkUrl = serverInfo.url.replace('0.0.0.0', getLocalIP())
-            lines.push(`${pc.dim('•')} 网络:   ${pc.cyan(networkUrl)}`)
+          // 盒式美化输出
+          const title = '开发服务器已启动'
+          const entries: Array<{ label: string; value: string }> = [
+            { label: '本地', value: localUrl }
+          ]
+          if (networkUrl) entries.push({ label: '网络', value: networkUrl })
+
+          const boxLines = renderServerBanner(title, entries)
+          for (const line of boxLines) logger.info(line)
+
+          // 二维码输出（优先展示可在移动端访问的网络地址）
+          const qrTarget = networkUrl || localUrl
+          try {
+            const mod: any = await import('qrcode-terminal')
+            const qrt = mod?.default || mod
+            let qrOutput = ''
+            qrt.generate(qrTarget, { small: true }, (q: string) => {
+              qrOutput = q
+            })
+
+            if (qrOutput) {
+              logger.info(pc.dim('二维码（扫码在手机上打开）：'))
+              // 直接用 console.log 避免前缀/图标破坏二维码排版
+              console.log('\n' + qrOutput + '\n')
+            }
+          } catch (e) {
+            // 未安装依赖时给出友情提示
+            logger.info(
+              pc.dim(
+                '提示: 安装 qrcode-terminal 可显示访问地址二维码（在 packages/launcher 执行：pnpm add qrcode-terminal -D）'
+              )
+            )
           }
-
-          lines.push(`${pc.dim('•')} 提示:   按 ${pc.yellow('Ctrl+C')} 停止服务器`)
-          lines.push(pc.dim('─'.repeat(56)))
-
-          for (const line of lines) logger.info(line)
         }
       })
+
+      function renderServerBanner(
+        title: string,
+        items: Array<{ label: string; value: string }>
+      ): string[] {
+        const leftPad = '  '
+        const labelPad = 4
+        const rows = [
+          `${pc.green('✔')} ${pc.bold(title)}`,
+          ...items.map(({ label, value }) => {
+            const l = (label + ':').padEnd(labelPad, ' ')
+            return `${pc.dim('•')} ${pc.bold(l)} ${pc.cyan(value)}`
+          }),
+          `${pc.dim('•')} 提示: 按 ${pc.yellow('Ctrl+C')} 停止服务器`
+        ]
+
+        // 根据内容计算盒宽度
+        const contentWidth = rows.reduce((m, s) => Math.max(m, stripAnsi(s).length), 0)
+        const width = Math.min(Math.max(contentWidth + 4, 38), 80)
+        const top = pc.dim('┌' + '─'.repeat(width - 2) + '┐')
+        const bottom = pc.dim('└' + '─'.repeat(width - 2) + '┘')
+
+        const padded = rows.map(r => {
+          const visible = stripAnsi(r)
+          const space = width - 2 - visible.length
+          return pc.dim('│') + leftPad + r + ' '.repeat(Math.max(0, space - leftPad.length)) + pc.dim('│')
+        })
+
+        return [top, ...padded, bottom]
+      }
+
+      // 去除 ANSI 颜色后的长度计算辅助
+      function stripAnsi(str: string) {
+        // eslint-disable-next-line no-control-regex
+        const ansiRegex = /[\u001B\u009B][[\]()#;?]*(?:((?:[a-zA-Z\d]*(?:;[a-zA-Z\d]*)*)?\u0007)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-nq-uy=><~]))/g
+        return str.replace(ansiRegex, '')
+      }
 
       launcher.onError((error) => {
         logger.error('开发服务器错误', { error: error.message })

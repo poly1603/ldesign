@@ -279,7 +279,8 @@ export class ConfigCommand implements CliCommandDefinition {
 
       // 保存配置
       const configFile = context.configFile || await this.findOrCreateConfigFile(context.cwd)
-      await configManager.save(configFile)
+      const updatedConfig = configManager.getConfig()
+      await configManager.save(configFile, updatedConfig)
 
       logger.success(`配置项 "${key}" 已设置为 ${JSON.stringify(parsedValue)}`)
 
@@ -314,7 +315,8 @@ export class ConfigCommand implements CliCommandDefinition {
 
       // 保存配置
       const configFile = context.configFile || await this.findOrCreateConfigFile(context.cwd)
-      await configManager.save(configFile)
+      const updatedConfig = configManager.getConfig()
+      await configManager.save(configFile, updatedConfig)
 
       logger.success(`配置项 "${key}" 已删除`)
 

@@ -130,7 +130,7 @@ export class PerformanceMonitor extends EventEmitter {
       })
 
       try {
-        this.observer.observe({ entryTypes: ['measure', 'navigation', 'resource'] })
+        this.observer.observe({ entryTypes: ['measure', 'resource'] })
       } catch (error) {
         this.logger.warn('无法设置性能观察器', error)
       }

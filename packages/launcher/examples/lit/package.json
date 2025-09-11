@@ -1,0 +1,24 @@
+{
+  "name": "@ldesign/launcher-example-lit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LDesign Launcher - Lit Web Components Example",
+  "type": "module",
+  "scripts": {
+    "dev": "launcher dev",
+    "build": "launcher build",
+    "preview": "launcher preview"
+  },
+  "dependencies": {
+    "@ldesign/launcher": "workspace:*",
+    "lit": "^3.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "packageManager": "pnpm@8.0.0"
+}

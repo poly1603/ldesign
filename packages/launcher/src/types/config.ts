@@ -17,6 +17,9 @@ import type { LogLevel, Mode, LifecycleHook, ValidationResult, FilePath, Host, P
 export interface ViteLauncherConfig extends UserConfig {
   /** Launcher 特有的配置选项 */
   launcher?: LauncherConfigOptions
+  
+  /** 配置文件路径 */
+  configFile?: FilePath
 }
 
 /**
@@ -142,7 +145,7 @@ export interface ServerOptions {
   open?: boolean | string
 
   /** 是否启用 HTTPS */
-  https?: boolean
+  https?: boolean | Record<string, any>
 
   /** 代理配置 */
   proxy?: Record<string, any>
@@ -196,7 +199,7 @@ export interface PreviewOptions {
   open?: boolean | string
 
   /** 是否启用 HTTPS */
-  https?: boolean
+  https?: boolean | Record<string, any>
 
   /** 代理配置 */
   proxy?: Record<string, any>

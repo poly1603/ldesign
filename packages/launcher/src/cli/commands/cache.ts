@@ -20,6 +20,12 @@ export class CacheCommand implements CliCommandDefinition {
   aliases = ['c']
   description = '缓存管理'
   usage = 'launcher cache <subcommand> [options]'
+  options = [
+    { name: 'all', description: '清理所有类型的缓存', type: 'boolean' as const },
+    { name: 'force', description: '强制重新生成缓存', type: 'boolean' as const },
+    { name: 'debug', description: '启用调试模式', type: 'boolean' as const },
+    { name: 'silent', description: '静默模式', type: 'boolean' as const }
+  ]
 
   subCommands = [
     {

@@ -1,23 +1,43 @@
 import { defineConfig } from 'tsup'
 
 export default defineConfig({
-  entry: ['src/index.ts', 'src/cli/index.ts'],
-  format: ['cjs', 'esm'],
-  // 生成 DTS（index 与 cli），使用包内 tsconfig.json
-  dts: {
-    entry: {
-      index: 'src/index.ts',
-      cli: 'src/cli/index.ts'
-    }
+  // 明确的入口点配置，避免打包每个.ts文件
+  entry: {
+    // 主入口
+    'index': 'src/index.ts',
+    // CLI入口
+    'cli/index': 'src/cli/index.ts',
+    // 核心模块统一导出
+    'core/index': 'src/core/index.ts',
+    // CLI命令统一导出
+    'cli/commands/index': 'src/cli/commands/index.ts',
+    // 工具类统一导出
+    'utils/index': 'src/utils/index.ts',
+    // 类型定义统一导出
+    'types/index': 'src/types/index.ts',
+    // 常量统一导出
+    'constants/index': 'src/constants/index.ts',
+    // AI优化器（独立模块）
+    'ai/optimizer': 'src/ai/optimizer.ts',
+    // 基准测试报告器（独立模块）
+    'benchmark/reporter': 'src/benchmark/reporter.ts',
+    // 仪表板服务器（独立模块）
+    'dashboard/server': 'src/dashboard/server.ts',
+    // 插件预设（独立模块）
+    'plugins/presets': 'src/plugins/presets.ts',
+    // 市场管理（独立模块）
+    'marketplace/index': 'src/marketplace/index.ts'
   },
+  format: ['cjs', 'esm'],
+  dts: true,
   tsconfig: 'tsconfig.json',
   clean: true,
-  splitting: false,
+  splitting: true, // 启用代码分割以减少重复代码
   sourcemap: true,
   minify: false,
   target: 'node16',
   outDir: 'dist',
-  shims: true, // 提供 __dirname 等在 ESM 下的垫片
+  shims: true,
   // 将运行时依赖全部 external，减小产物体积
   external: [
     'vite',
@@ -33,6 +53,28 @@ export default defineConfig({
     'jiti',
     'ora',
     'picocolors',
+    'ws',
+    'inquirer',
+    // 测试相关依赖
+    'vitest',
+    '@vitest/ui',
+    'jsdom',
+    'happy-dom',
+    '@testing-library/dom',
+    '@testing-library/react',
+    '@testing-library/vue',
+    // Node.js 内置模块
+    'fs',
+    'path',
+    'url',
+    'util',
+    'os',
+    'crypto',
+    'events',
+    'stream',
+    'http',
+    'https',
+    'child_process',
     // Optional Vue template engines - mark as external to avoid build errors
     'velocityjs',
     'dustjs-linkedin',
@@ -72,7 +114,18 @@ export default defineConfig({
     'twing'
   ],
   treeshake: true,
+  // 优化内存使用，但不过度bundle大文件
+  bundle: true,
   esbuildOptions(options) {
     options.conditions = ['node']
-  }
+    options.chunkNames = 'chunks/[name]-[hash]'
+    options.logLevel = 'warning'
+    // 优化打包策略
+    options.treeShaking = true
+    // 避免过大的bundle，设置分割阈值
+    options.mangleProps = undefined // 不混淆属性名以保证兼容性
+    options.keepNames = true // 保持函数名以便调试
+  },
+  // 使用 tsup 的 noDefaultExport 选项来避免混合导出警告
+  noDefaultExport: true
 })

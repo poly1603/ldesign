@@ -27,7 +27,7 @@ export type { TestConfig, TestResult, TestFramework } from './core/TestIntegrati
 export { DashboardServer, createDashboardServer } from './dashboard/server'
 export type { DashboardConfig, DashboardMetrics, BuildRecord } from './dashboard/server'
 
-export { BenchmarkReporter } from './benchmark/performance.bench'
+export { BenchmarkReporter } from './benchmark/reporter'
 
 // 导出插件预设系统
 export { presetManager, definePreset } from './plugins/presets'
@@ -115,15 +115,16 @@ export { defineConfig } from './utils/config'
 // 导出版本信息
 export const version = '1.0.0'
 
-// 默认导出
-export default {
-  version,
-  ViteLauncher: () => import('./core/ViteLauncher').then(m => m.ViteLauncher),
-  ConfigManager: () => import('./core/ConfigManager').then(m => m.ConfigManager),
-  PluginMarketManager: () => import('./core/PluginMarket').then(m => m.PluginMarketManager),
-  CacheManager: () => import('./core/CacheManager').then(m => m.CacheManager),
-  // ProjectTemplateManager: () => import('./core/ProjectTemplateManager').then(m => m.ProjectTemplateManager),
-  // PerformanceMonitor: () => import('./core/PerformanceMonitor').then(m => m.PerformanceMonitor),
-  PluginManager: () => import('./core/PluginManager').then(m => m.PluginManager),
-  createCli: () => import('./cli').then(m => m.createCli)
+// 为了保持导出一致性，使用 createLauncher 函数
+// 提供懒加载的方式访问所有模块
+export function createLauncher() {
+  return {
+    version,
+    ViteLauncher: () => import('./core/ViteLauncher').then(m => m.ViteLauncher),
+    ConfigManager: () => import('./core/ConfigManager').then(m => m.ConfigManager), 
+    PluginMarketManager: () => import('./core/PluginMarket').then(m => m.PluginMarketManager),
+    CacheManager: () => import('./core/CacheManager').then(m => m.CacheManager),
+    PluginManager: () => import('./core/PluginManager').then(m => m.PluginManager),
+    createCli: () => import('./cli').then(m => m.createCli)
+  }
 }

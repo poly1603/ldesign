@@ -19,6 +19,7 @@ export interface ConfigManagerOptions {
   configFile?: string
   watch?: boolean
   logger?: Logger
+  cwd?: string
 }
 
 export class ConfigManager extends EventEmitter {

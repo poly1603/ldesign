@@ -131,7 +131,7 @@ export class SmartPluginManager {
       // 读取 package.json
       const packageJsonPath = PathUtils.resolve(this.cwd, 'package.json')
       if (await FileSystem.exists(packageJsonPath)) {
-        const packageJson = JSON.parse(await FileSystem.readFile(packageJsonPath, 'utf-8'))
+        const packageJson = JSON.parse(await FileSystem.readFile(packageJsonPath))
         const dependencies = { ...packageJson.dependencies, ...packageJson.devDependencies }
 
         // 检测 Vue 版本
@@ -209,10 +209,10 @@ export class SmartPluginManager {
     }
 
     try {
-      const files = await FileSystem.readdir(srcDir)
+      const files = await FileSystem.readDir(srcDir)
       for (const pattern of patterns) {
         const extension = pattern.replace('**/*.', '.')
-        if (files.some(file => file.endsWith(extension))) {
+        if (files.some((file: string) => file.endsWith(extension))) {
           return true
         }
       }

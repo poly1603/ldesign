@@ -381,5 +381,5 @@ export function createCli(config?: Partial<CliConfig>) {
   }
 }
 
-// 默认导出
-export default createCli
+// 移除默认导出，保持导出一致性
+// export default createCli

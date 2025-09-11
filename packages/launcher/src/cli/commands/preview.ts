@@ -176,10 +176,10 @@ export class PreviewCommand implements CliCommandDefinition {
             host: context.options.host || DEFAULT_HOST,
             port: context.options.port || 4173,
             open: context.options.open || false,
-            https: context.options.https || false,
             cors: context.options.cors !== false,
-            strictPort: context.options.strictPort || false
-          },
+            strictPort: context.options.strictPort || false,
+            ...(context.options.https && { https: true })
+          } as any,
           launcher: {
             logLevel: context.options.debug ? 'debug' : 'info',
             debug: context.options.debug || false

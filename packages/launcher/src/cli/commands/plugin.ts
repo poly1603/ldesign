@@ -8,7 +8,7 @@
  */
 
 import { Logger } from '../../utils/logger'
-import { pluginMarket, type PluginSearchOptions } from '../../core/PluginMarket'
+import { pluginMarket, type PluginSearchOptions, type PluginCategory, type PluginType } from '../../core/PluginMarket'
 import type { CliCommandDefinition, CliContext } from '../../types'
 import chalk from 'chalk'
 
@@ -20,6 +20,22 @@ export class PluginCommand implements CliCommandDefinition {
   aliases = ['p']
   description = '插件管理'
   usage = 'launcher plugin <subcommand> [options]'
+  options = [
+    { name: 'category', alias: 'c', description: '按类别过滤', type: 'string' as const },
+    { name: 'type', alias: 't', description: '按类型过滤', type: 'string' as const },
+    { name: 'official', description: '仅显示官方插件', type: 'boolean' as const },
+    { name: 'installed', description: '仅显示已安装插件', type: 'boolean' as const },
+    { name: 'sort', description: '排序字段', type: 'string' as const },
+    { name: 'order', description: '排序方向', type: 'string' as const },
+    { name: 'limit', description: '结果数量限制', type: 'string' as const },
+    { name: 'version', alias: 'v', description: '指定版本', type: 'string' as const },
+    { name: 'dev', alias: 'D', description: '安装到开发依赖', type: 'boolean' as const },
+    { name: 'pm', description: '包管理器', type: 'string' as const },
+    { name: 'skip-deps', description: '跳过依赖安装', type: 'boolean' as const },
+    { name: 'outdated', description: '显示过时的插件', type: 'boolean' as const },
+    { name: 'debug', description: '启用调试模式', type: 'boolean' as const },
+    { name: 'silent', description: '静默模式', type: 'boolean' as const }
+  ]
 
   subCommands = [
     {
@@ -156,12 +172,12 @@ export class PluginCommand implements CliCommandDefinition {
 
       const searchOptions: PluginSearchOptions = {
         query,
-        category: options.category,
-        type: options.type,
+        category: options.category as PluginCategory | undefined,
+        type: options.type as PluginType | undefined,
         officialOnly: options.official,
         installedOnly: options.installed,
-        sortBy: options.sort,
-        sortOrder: options.order,
+        sortBy: options.sort as 'name' | 'downloads' | 'rating' | 'updated' | undefined,
+        sortOrder: options.order as 'asc' | 'desc' | undefined,
         limit: parseInt(options.limit || '10')
       }
 

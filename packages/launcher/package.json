@@ -37,6 +37,36 @@
       "import": "./dist/cli/index.js",
       "require": "./dist/cli/index.cjs"
     },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js",
+      "require": "./dist/core/index.cjs"
+    },
+    "./core/*": {
+      "types": "./dist/core/*.d.ts",
+      "import": "./dist/core/*.js",
+      "require": "./dist/core/*.cjs"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js",
+      "require": "./dist/utils/index.cjs"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js",
+      "require": "./dist/types/index.cjs"
+    },
+    "./constants": {
+      "types": "./dist/constants/index.d.ts",
+      "import": "./dist/constants/index.js",
+      "require": "./dist/constants/index.cjs"
+    },
+    "./cli/commands": {
+      "types": "./dist/cli/commands/index.d.ts",
+      "import": "./dist/cli/commands/index.js",
+      "require": "./dist/cli/commands/index.cjs"
+    },
     "./package.json": "./package.json"
   },
   "bin": {
@@ -52,7 +82,9 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "cross-env NODE_OPTIONS=\"--max-old-space-size=8192\" tsup",
+    "build:js": "cross-env NODE_OPTIONS=\"--max-old-space-size=8192\" tsup --no-dts",
+    "build:dts": "cross-env NODE_OPTIONS=\"--max-old-space-size=8192\" tsup --dts-only",
     "build:tsc": "tsc",
     "dev": "tsup --watch",
     "test": "vitest",
@@ -88,6 +120,7 @@
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vitest/ui": "^1.0.0",
+    "cross-env": "^10.0.0",
     "eslint": "^8.55.0",
     "rimraf": "^5.0.5",
     "tsup": "^8.5.0",

@@ -164,7 +164,7 @@ export class BuildCommand implements CliCommandDefinition {
       const launcher = new ViteLauncher({
         cwd: context.cwd,
         config: {
-          configFile: context.configFile,
+          // 顶层 mode 仍保留，以便 Vite 正确识别
           mode: context.options.mode || 'production',
           build: {
             outDir,
@@ -179,7 +179,9 @@ export class BuildCommand implements CliCommandDefinition {
           launcher: {
             logLevel: context.options.debug ? 'debug' : 'info',
             mode: context.options.mode || 'production',
-            debug: context.options.debug || false
+            debug: context.options.debug || false,
+            // 关键修复：将 CLI --config 映射到 launcher.configFile，供 ConfigManager 使用
+            configFile: context.configFile
           }
         }
       })
@@ -389,7 +391,7 @@ async function generateAnalysisReport(result: any, outDir: string, logger: Logge
     const reportPath = PathUtils.join(outDir, 'build-report.json')
     const report = {
       timestamp: new Date().toISOString(),
-      files: [],
+      files: [] as Array<{ fileName: any; size: any; type: string }>,
       summary: {
         totalFiles: 0,
         totalSize: 0,

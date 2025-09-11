@@ -334,7 +334,7 @@ export function getNetworkInterfaces(): Array<{
       mac: string
     }> = []
     
-    for (const [name, ifaces] of Object.entries(interfaces)) {
+    for (const [name, ifaces] of Object.entries(interfaces) as Array<[string, any[]]>) {
       for (const iface of ifaces || []) {
         result.push({
           name,

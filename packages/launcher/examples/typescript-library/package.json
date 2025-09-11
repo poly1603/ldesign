@@ -1,0 +1,50 @@
+{
+  "name": "launcher-example-typescript-library",
+  "version": "1.0.0",
+  "description": "TypeScript 库示例项目使用 @ldesign/launcher",
+  "type": "module",
+  "main": "./dist/my-library.cjs.js",
+  "module": "./dist/my-library.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/my-library.es.js",
+      "require": "./dist/my-library.cjs.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "launcher dev",
+    "build": "launcher build && npm run build:types",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist",
+    "preview": "launcher preview",
+    "test": "launcher test",
+    "test:watch": "launcher test --watch",
+    "test:coverage": "launcher test --coverage",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@ldesign/launcher": "workspace:*",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^0.34.0",
+    "eslint": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0"
+  },
+  "keywords": [
+    "typescript",
+    "library",
+    "launcher",
+    "example",
+    "esm",
+    "cjs",
+    "umd"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT"
+}

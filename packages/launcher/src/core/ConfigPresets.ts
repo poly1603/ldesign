@@ -63,10 +63,8 @@ export class Vue3Preset extends BasePreset {
     return {
       ...DEFAULT_VITE_LAUNCHER_CONFIG,
       plugins: [
-        {
-          name: '@vitejs/plugin-vue',
-          options: {}
-        }
+        // 注意：这里使用字符串占位，在实际使用时需要由用户或插件系统解析为真正的插件实例
+        '@vitejs/plugin-vue' as any
       ],
       launcher: {
         ...DEFAULT_VITE_LAUNCHER_CONFIG.launcher,
@@ -117,15 +115,8 @@ export class Vue3TypeScriptPreset extends BasePreset {
     return {
       ...DEFAULT_VITE_LAUNCHER_CONFIG,
       plugins: [
-        {
-          name: '@vitejs/plugin-vue',
-          options: {
-            script: {
-              defineModel: true,
-              propsDestructure: true
-            }
-          }
-        }
+        // 注意：这里使用字符串占位，在实际使用时需要由用户或插件系统解析为真正的插件实例
+        '@vitejs/plugin-vue' as any
       ],
       launcher: {
         ...DEFAULT_VITE_LAUNCHER_CONFIG.launcher,
@@ -182,16 +173,9 @@ export class Vue2Preset extends BasePreset {
     return {
       ...DEFAULT_VITE_LAUNCHER_CONFIG,
       plugins: [
-        {
-          name: '@vitejs/plugin-vue2',
-          options: {}
-        },
-        {
-          name: '@vitejs/plugin-legacy',
-          options: {
-            targets: ['> 1%', 'last 2 versions', 'not dead']
-          }
-        }
+        // 注意：这里使用字符串占位，在实际使用时需要由用户或插件系统解析为真正的插件实例
+        '@vitejs/plugin-vue2' as any,
+        '@vitejs/plugin-legacy' as any
       ],
       launcher: {
         ...DEFAULT_VITE_LAUNCHER_CONFIG.launcher,
@@ -237,10 +221,8 @@ export class ReactPreset extends BasePreset {
     return {
       ...DEFAULT_VITE_LAUNCHER_CONFIG,
       plugins: [
-        {
-          name: '@vitejs/plugin-react',
-          options: {}
-        }
+        // 注意：这里使用字符串占位，在实际使用时需要由用户或插件系统解析为真正的插件实例
+        '@vitejs/plugin-react' as any
       ],
       launcher: {
         ...DEFAULT_VITE_LAUNCHER_CONFIG.launcher,
@@ -291,16 +273,8 @@ export class ReactTypeScriptPreset extends BasePreset {
     return {
       ...DEFAULT_VITE_LAUNCHER_CONFIG,
       plugins: [
-        {
-          name: '@vitejs/plugin-react',
-          options: {
-            babel: {
-              plugins: [
-                ['@babel/plugin-proposal-decorators', { legacy: true }]
-              ]
-            }
-          }
-        }
+        // 注意：这里使用字符串占位，在实际使用时需要由用户或插件系统解析为真正的插件实例
+        '@vitejs/plugin-react' as any
       ],
       launcher: {
         ...DEFAULT_VITE_LAUNCHER_CONFIG.launcher,
@@ -358,10 +332,8 @@ export class SveltePreset extends BasePreset {
     return {
       ...DEFAULT_VITE_LAUNCHER_CONFIG,
       plugins: [
-        {
-          name: '@sveltejs/vite-plugin-svelte',
-          options: {}
-        }
+        // 注意：这里使用字符串占位，在实际使用时需要由用户或插件系统解析为真正的插件实例
+        '@sveltejs/vite-plugin-svelte' as any
       ],
       launcher: {
         ...DEFAULT_VITE_LAUNCHER_CONFIG.launcher,
@@ -404,12 +376,8 @@ export class SvelteTypeScriptPreset extends BasePreset {
     return {
       ...DEFAULT_VITE_LAUNCHER_CONFIG,
       plugins: [
-        {
-          name: '@sveltejs/vite-plugin-svelte',
-          options: {
-            preprocess: true
-          }
-        }
+        // 注意：这里使用字符串占位，在实际使用时需要由用户或插件系统解析为真正的插件实例
+        '@sveltejs/vite-plugin-svelte' as any
       ],
       launcher: {
         ...DEFAULT_VITE_LAUNCHER_CONFIG.launcher,
@@ -662,20 +630,20 @@ export class ConfigPresetsManager {
     base: ViteLauncherConfig,
     override: ViteLauncherConfig
   ): ViteLauncherConfig {
-    const result = { ...base }
+    const result = { ...base } as any
     
     for (const [key, value] of Object.entries(override)) {
       if (value && typeof value === 'object' && !Array.isArray(value)) {
-        result[key as keyof ViteLauncherConfig] = this.deepMergeConfigs(
+        result[key] = this.deepMergeConfigs(
           (base[key as keyof ViteLauncherConfig] as any) || {},
           value as any
         )
       } else if (Array.isArray(value)) {
         // 合并数组
         const baseArray = (base[key as keyof ViteLauncherConfig] as any) || []
-        result[key as keyof ViteLauncherConfig] = [...baseArray, ...value] as any
+        result[key] = [...baseArray, ...value]
       } else {
-        result[key as keyof ViteLauncherConfig] = value as any
+        result[key] = value
       }
     }
     

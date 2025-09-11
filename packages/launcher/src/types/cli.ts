@@ -101,6 +101,57 @@ export interface CliOptions {
 
   /** 是否显示详细信息 */
   verbose?: boolean
+
+  /** 是否启用 SSR 模式 */
+  ssr?: boolean
+
+  /** 是否分析构建产物 */
+  analyze?: boolean
+
+  /** 是否显示所有信息 */
+  all?: boolean
+
+  /** 是否美化输出格式 */
+  pretty?: boolean
+
+  /** 是否清除屏幕 */
+  clearScreen?: boolean
+
+  /** 插件类别过滤 */
+  category?: string
+
+  /** 插件类型过滤 */
+  type?: string
+
+  /** 是否只显示官方插件 */
+  official?: boolean
+
+  /** 是否只显示已安装插件 */
+  installed?: boolean
+
+  /** 排序方式 */
+  sort?: string
+
+  /** 排序顺序 */
+  order?: 'asc' | 'desc'
+
+  /** 限制数量 */
+  limit?: string
+
+  /** 指定版本 */
+  version?: string
+
+  /** 开发依赖模式 */
+  dev?: boolean
+
+  /** 包管理器 */
+  pm?: 'npm' | 'pnpm' | 'yarn'
+
+  /** 跳过依赖安装 */
+  'skip-deps'?: boolean
+
+  /** 是否检查过期 */
+  outdated?: boolean
 }
 
 /**
