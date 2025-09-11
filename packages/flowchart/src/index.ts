@@ -145,3 +145,7 @@ export {
   removeClass,
   hasClass
 } from './utils/index.js';
+
+// 兼容层（@logicflow/core 常用 API）
+export { LogicFlow } from './compat/logicflow-core/index.js';
+export type { LogicFlowOptions, LFGraphData, LFNode, LFEdge } from './compat/logicflow-core/index.js';

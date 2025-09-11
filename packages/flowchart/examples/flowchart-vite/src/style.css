@@ -66,9 +66,10 @@ body {
 .workbench {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 1fr;
   gap: 12px;
   padding: 12px;
-  height: calc(100vh - 52px);
+  height: 100vh;
 }
 
 .pane {
@@ -78,7 +79,7 @@ body {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   overflow: hidden;
-  min-height: 300px;
+  min-height: 0;
 }
 
 .pane-title {
@@ -92,13 +93,12 @@ body {
 
 .canvas {
   flex: 1;
-  min-height: 300px;
+  min-height: 0;
 }
 
 /* 让预览区只读，所有交互事件被忽略 */
 #preview {
   background: #fafafa;
-  pointer-events: none;
 }
 
 @media (max-width: 1024px) {

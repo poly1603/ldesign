@@ -68,9 +68,9 @@ export class StraightEdge extends BaseEdge {
   /**
    * 获取路径上的点（优化版本）
    */
-  override getPointAtPosition(position: number): Point | null {
+  override getPointAtPosition(position: number): Point {
     if (!this.path || this.path.points.length < 2) {
-      return null;
+      return { x: 0, y: 0 };
     }
 
     position = Math.max(0, Math.min(1, position));
@@ -175,7 +175,7 @@ export class StraightEdge extends BaseEdge {
   /**
    * 克隆连接线
    */
-  override clone(): StraightEdge {
+  override clone(): BaseEdge {
     const data: StraightEdgeData = {
       ...this.getData(),
       type: EdgeType.STRAIGHT,

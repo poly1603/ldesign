@@ -14,7 +14,7 @@ import { drawRoundedRect } from '@/utils/index.js';
 export class ProcessNode extends BaseNode {
   constructor(data: ProcessNodeData) {
     super(data);
-    
+
     // 设置默认样式
     this.style = {
       fillColor: 'var(--ldesign-brand-color-1)',
@@ -26,7 +26,7 @@ export class ProcessNode extends BaseNode {
       opacity: 1,
       ...data.style
     };
-    
+
     // 设置默认尺寸
     if (!data.size.width || !data.size.height) {
       this.size = { width: 120, height: 60 };
@@ -37,7 +37,7 @@ export class ProcessNode extends BaseNode {
    * 初始化端口
    * 处理节点有输入和输出端口
    */
-  protected initializePorts(): void {
+  protected override initializePorts(): void {
     this.ports = [
       {
         id: 'input',
@@ -73,7 +73,7 @@ export class ProcessNode extends BaseNode {
    */
   protected renderShape(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
     const borderRadius = 8;
-    
+
     // 绘制圆角矩形
     drawRoundedRect(
       ctx,
@@ -83,7 +83,7 @@ export class ProcessNode extends BaseNode {
       this.size.height,
       borderRadius
     );
-    
+
     ctx.fill();
     ctx.stroke();
   }
@@ -91,7 +91,7 @@ export class ProcessNode extends BaseNode {
   /**
    * 渲染标签
    */
-  protected renderLabel(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
+  protected override renderLabel(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
     if (!this.label) {
       return;
     }
@@ -133,7 +133,7 @@ export class ProcessNode extends BaseNode {
     for (let i = 1; i < words.length; i++) {
       const word = words[i]!;
       const width = ctx.measureText(currentLine + ' ' + word).width;
-      
+
       if (width < maxWidth) {
         currentLine += ' ' + word;
       } else {
@@ -141,7 +141,7 @@ export class ProcessNode extends BaseNode {
         currentLine = word;
       }
     }
-    
+
     lines.push(currentLine);
     return lines;
   }
@@ -155,7 +155,7 @@ export class ProcessNode extends BaseNode {
       type: NodeType.PROCESS,
       id: `${this.id}_copy_${Date.now()}`
     };
-    
+
     return new ProcessNode(data);
   }
 }

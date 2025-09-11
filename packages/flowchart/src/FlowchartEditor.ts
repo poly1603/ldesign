@@ -16,10 +16,10 @@ import { SimpleEventEmitter, createHighDPICanvas } from '@/utils/index.js';
 import { CanvasRenderer, DataManager } from '@/core/index.js';
 import { NodeFactory } from '@/nodes/index.js';
 import { EdgeFactory } from '@/edges/index.js';
-import { 
-  SelectionManager, 
-  InteractionManager, 
-  CommandManager, 
+import {
+  SelectionManager,
+  InteractionManager,
+  CommandManager,
   InteractionMode,
   AddNodeCommand,
   RemoveNodeCommand,
@@ -27,7 +27,7 @@ import {
   AddEdgeCommand,
   RemoveEdgeCommand,
   UpdateNodeCommand,
-  UpdateEdgeCommand 
+  UpdateEdgeCommand
 } from '@/managers/index.js';
 import { Toolbar, PropertyPanel, StatusBar } from '@/ui/index.js';
 import { i18n } from '@/ui/i18n.js';
@@ -39,6 +39,8 @@ import type { ToolbarConfig, PropertyPanelConfig } from '@/ui/index.js';
 export interface FlowchartEditorConfig {
   /** 容器元素 */
   container: HTMLElement;
+  /** 画布元素（可选，如果不提供则自动创建） */
+  canvas?: HTMLCanvasElement;
   /** 画布宽度 */
   width?: number;
   /** 画布高度 */
@@ -135,13 +137,26 @@ export class FlowchartEditor extends SimpleEventEmitter implements EventEmitter 
     const width = this.config.width || this.container.clientWidth || 800;
     const height = this.config.height || this.container.clientHeight || 600;
 
-    const canvasResult = createHighDPICanvas(width, height);
-    this.canvas = canvasResult.canvas;
-    this.canvas.style.display = 'block';
-    this.canvas.style.cursor = 'default';
-    this.canvas.tabIndex = 0; // 使画布可以获得焦点
+    if (this.config.canvas) {
+      // 使用传入的canvas元素
+      this.canvas = this.config.canvas;
+      // 设置canvas尺寸
+      this.canvas.width = width;
+      this.canvas.height = height;
+      this.canvas.style.display = 'block';
+      this.canvas.style.cursor = 'default';
+      this.canvas.tabIndex = 0; // 使画布可以获得焦点
+    } else {
+      // 创建新的canvas元素
+      const canvasResult = createHighDPICanvas(width, height);
+      this.canvas = canvasResult.canvas;
+      this.canvas.style.display = 'block';
+      this.canvas.style.cursor = 'default';
+      this.canvas.tabIndex = 0; // 使画布可以获得焦点
 
-    this.container.appendChild(this.canvas);
+      this.container.appendChild(this.canvas);
+    }
+
   }
 
   /**
@@ -865,7 +880,7 @@ export class FlowchartEditor extends SimpleEventEmitter implements EventEmitter 
   private tempConnection: { start: { x: number; y: number }; end: { x: number; y: number } } | undefined;
 
   private createNodeAtPoint(point: Point): void {
-    const nodeType = this.toolbar?.getActiveNodeType();
+    const nodeType = this.currentNodeType;
     if (!nodeType) {
       return;
     }
@@ -887,7 +902,36 @@ export class FlowchartEditor extends SimpleEventEmitter implements EventEmitter 
    * 设置当前节点类型
    */
   private setActiveNodeType(nodeType: NodeType): void {
-    // 实现节点类型设置逻辑
+    this.currentNodeType = nodeType;
+    this.statusBar?.setMessage(`当前节点类型：${nodeType}`);
+  }
+
+  /**
+   * 设置绘制模式并指定节点类型
+   */
+  setDrawMode(nodeType: NodeType): void {
+    this.interactionManager.setMode(InteractionMode.DRAW);
+    this.setActiveNodeType(nodeType);
+    this.statusBar?.setMode('绘制');
+    this.statusBar?.setMessage(`点击画布添加${nodeType}节点`);
+  }
+
+  /**
+   * 设置选择模式
+   */
+  setSelectMode(): void {
+    this.interactionManager.setMode(InteractionMode.SELECT);
+    this.statusBar?.setMode('选择');
+    this.statusBar?.setMessage('选择模式：点击选择节点或连线');
+  }
+
+  /**
+   * 设置平移模式
+   */
+  setPanMode(): void {
+    this.interactionManager.setMode(InteractionMode.PAN);
+    this.statusBar?.setMode('平移');
+    this.statusBar?.setMessage('平移模式：拖拽移动画布');
   }
 
   /**
@@ -914,7 +958,7 @@ export class FlowchartEditor extends SimpleEventEmitter implements EventEmitter 
     if (!node) return 'unknown';
     const pid = (portId || '').toLowerCase();
     if (pid === 'input') return 'input';
-    if (['output','yes','no','approved','rejected'].includes(pid)) return 'output';
+    if (['output', 'yes', 'no', 'approved', 'rejected'].includes(pid)) return 'output';
     // fallback by port position: LEFT/TOP -> input, RIGHT/BOTTOM -> output
     try {
       const inst = this.nodeFactory.createNode(node.type as any, node) as any;
@@ -924,10 +968,11 @@ export class FlowchartEditor extends SimpleEventEmitter implements EventEmitter 
         if (pos.includes('left') || pos.includes('top')) return 'input';
         if (pos.includes('right') || pos.includes('bottom')) return 'output';
       }
-    } catch {}
+    } catch { }
     return 'unknown';
   }
   private currentEdgeType: EdgeType = EdgeType.STRAIGHT as any;
+  private currentNodeType: NodeType | null = null;
   private snapSizes: number[] = [8, 10, 16, 20];
 
   private setActiveEdgeType(edgeType: EdgeType): void {
@@ -1218,6 +1263,32 @@ export class FlowchartEditor extends SimpleEventEmitter implements EventEmitter 
    */
   getZoom(): number {
     return this.viewport.scale;
+  }
+
+  /**
+   * 平移画布（相对位移，单位为世界坐标系）
+   */
+  translate(dx: number, dy: number): void {
+    this.viewport.offset = {
+      x: this.viewport.offset.x + dx,
+      y: this.viewport.offset.y + dy
+    };
+    this.updateRendering();
+  }
+
+  /**
+   * 设置画布偏移（绝对值，单位为世界坐标系）
+   */
+  setOffset(x: number, y: number): void {
+    this.viewport.offset = { x, y };
+    this.updateRendering();
+  }
+
+  /**
+   * 获取当前视口（拷贝）
+   */
+  getViewport(): Viewport {
+    return { offset: { ...this.viewport.offset }, scale: this.viewport.scale };
   }
 
   /**

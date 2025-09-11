@@ -49,9 +49,9 @@ export class EdgeFactory implements IEdgeFactory {
       type: type,
       source: data.source || '',
       target: data.target || '',
-      sourcePort: data.sourcePort,
-      targetPort: data.targetPort,
-      label: data.label,
+      ...(data.sourcePort !== undefined && { sourcePort: data.sourcePort }),
+      ...(data.targetPort !== undefined && { targetPort: data.targetPort }),
+      ...(data.label !== undefined && { label: data.label }),
       style: data.style || {},
       properties: data.properties || {}
     };

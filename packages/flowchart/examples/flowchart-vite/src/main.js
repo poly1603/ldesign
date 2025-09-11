@@ -1,23 +1,236 @@
 import './style.css'
-import LogicFlow from '@logicflow/core'
-import '@logicflow/core/dist/index.css'
-import '@logicflow/extension/lib/style/index.css'
+// 使用本包源码（ES 构建产物）而非 @logicflow
+// 如果你已经构建生成了 dist，也可以改为从 '@ldesign/flowchart' 导入
+import { FlowchartEditor, FlowchartViewer } from '@ldesign/flowchart'
 // 注意：@logicflow/extension 的部分插件（如 Menu/ContextMenu 等）依赖 vue-demi，会与纯 JS 示例产生打包冲突。
 // 这里不启用扩展插件，示例提供了导出 PNG/SVG 的降级方案，其他能力以核心 API 为主。
 
 const editorEl = document.getElementById('editor')
 const previewEl = document.getElementById('preview')
+// 初始化：用 @ldesign/flowchart 的编辑器 + 预览器
+// 预览同步开关（默认开启）
+let livePreview = true
 
-// 初始化编辑器实例
-const lfEditor = new LogicFlow({
+// 隐藏的导入文件 input
+const fileImportInput = document.createElement('input')
+fileImportInput.type = 'file'
+fileImportInput.accept = 'application/json'
+fileImportInput.style.display = 'none'
+document.body.appendChild(fileImportInput)
+
+function triggerImportJSON() {
+  fileImportInput.onchange = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const text = await file.text()
+      const json = JSON.parse(text)
+      editor.loadData(json)
+      if (livePreview) viewer.loadData(json)
+    } catch (err) {
+      alert('导入失败：不是有效的 JSON 文件')
+    } finally {
+      fileImportInput.value = ''
+    }
+  }
+  fileImportInput.click()
+}
+
+function downloadFile(filename, dataOrBlobUrl) {
+  const a = document.createElement('a')
+  let url = ''
+  if (typeof dataOrBlobUrl === 'string' && dataOrBlobUrl.startsWith('data:')) {
+    url = dataOrBlobUrl
+  } else {
+    const blob = dataOrBlobUrl instanceof Blob ? dataOrBlobUrl : new Blob([dataOrBlobUrl], { type: 'application/octet-stream' })
+    url = URL.createObjectURL(blob)
+  }
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  if (!url.startsWith('data:')) URL.revokeObjectURL(url)
+  a.remove()
+}
+
+// 自定义工具集合（将显示在内置 Toolbar 末尾）
+const customTools = [
+  {
+    id: 'export-json',
+    name: '导出JSON',
+    icon: '⇩',
+    tooltip: '导出 JSON',
+    type: 'button',
+    group: 'file',
+    onClick: () => {
+      const data = editor.getData()
+      downloadFile(`flow-${Date.now()}.json`, new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }))
+    }
+  },
+  {
+    id: 'import-json',
+    name: '导入JSON',
+    icon: '⇧',
+    tooltip: '导入 JSON',
+    type: 'button',
+    group: 'file',
+    onClick: () => triggerImportJSON()
+  },
+  {
+    id: 'export-png',
+    name: '导出PNG',
+    icon: '🖼',
+    tooltip: '导出 PNG（预览区）',
+    type: 'button',
+    group: 'file',
+    onClick: () => {
+      const dataUrl = viewer.exportAsImage('png')
+      downloadFile(`flow-${Date.now()}.png`, dataUrl)
+    }
+  },
+  {
+    id: 'export-jpeg',
+    name: '导出JPEG',
+    icon: '🖼J',
+    tooltip: '导出 JPEG（预览区）',
+    type: 'button',
+    group: 'file',
+    onClick: () => {
+      const dataUrl = viewer.exportAsImage('jpeg', 0.92)
+      downloadFile(`flow-${Date.now()}.jpg`, dataUrl)
+    }
+  },
+  {
+    id: 'sample-data',
+    name: '示例数据',
+    icon: '☆',
+    tooltip: '载入示例数据',
+    type: 'button',
+    group: 'data',
+    onClick: () => {
+      editor.loadData(demoData)
+      if (livePreview) viewer.loadData(demoData)
+    }
+  },
+  {
+    id: 'clear',
+    name: '清空',
+    icon: '🧹',
+    tooltip: '清空画布',
+    type: 'button',
+    group: 'data',
+    onClick: () => {
+      const empty = { nodes: [], edges: [] }
+      editor.loadData(empty)
+      if (livePreview) viewer.loadData(empty)
+    }
+  },
+  {
+    id: 'toggle-live',
+    name: '实时开关',
+    icon: '⏱',
+    tooltip: '切换编辑->预览实时同步',
+    type: 'button',
+    group: 'preview',
+    onClick: () => {
+      livePreview = !livePreview
+      const msg = livePreview ? '实时预览：开' : '实时预览：关'
+      console.log(`[example] ${msg}`)
+      if (livePreview) {
+        const data = editor.getData()
+        viewer.loadData(data)
+      }
+    }
+  },
+  {
+    id: 'sync-now',
+    name: '手动同步',
+    icon: '↻',
+    tooltip: '当实时关闭时，手动同步一次编辑->预览',
+    type: 'button',
+    group: 'preview',
+    onClick: () => {
+      const data = editor.getData()
+      viewer.loadData(data)
+    }
+  },
+  {
+    id: 'preview-fit',
+    name: '预览适配',
+    icon: '⬜P',
+    tooltip: '预览区适应内容',
+    type: 'button',
+    group: 'preview',
+    onClick: () => viewer.zoomToFit()
+  },
+  {
+    id: 'preview-reset',
+    name: '预览复位',
+    icon: '1:1P',
+    tooltip: '预览区重置缩放和位移',
+    type: 'button',
+    group: 'preview',
+    onClick: () => viewer.zoomReset()
+  },
+]
+
+const editor = new FlowchartEditor({
   container: editorEl,
-  grid: { size: 20, visible: true },
-  background: { color: '#ffffff' },
+  width: editorEl.clientWidth,
+  height: editorEl.clientHeight,
+  showGrid: true,
+  enableSnap: true,
+  snapSize: 20,
+  toolbar: { customTools },
+  propertyPanel: { title: '属性', collapsible: true, defaultExpanded: true },
 })
-lfEditor.setDefaultEdgeType && lfEditor.setDefaultEdgeType('polyline')
 
-// 初始化预览实例（只读）
-const lfPreview = new LogicFlow({
+const viewer = new FlowchartViewer({
+  container: previewEl,
+  width: previewEl.clientWidth,
+  height: previewEl.clientHeight,
+  showGrid: false,
+  enablePan: true,
+  enableZoom: true,
+  autoFit: true,
+})
+
+// 示例数据（使用本库的数据结构）
+const demoData = {
+  nodes: [
+    { id: 'n1', type: 'start', position: { x: 120, y: 120 }, label: '开始', properties: {} },
+    { id: 'n2', type: 'decision', position: { x: 320, y: 120 }, label: '判断', properties: {} },
+    { id: 'n3', type: 'process', position: { x: 520, y: 120 }, label: '处理', properties: {} },
+    { id: 'n4', type: 'end', position: { x: 720, y: 120 }, label: '结束', properties: {} },
+  ],
+  edges: [
+    { id: 'e1', type: 'straight', source: 'n1', target: 'n2', label: '', properties: {} },
+    { id: 'e2', type: 'orthogonal', source: 'n2', target: 'n3', label: '是', properties: {} },
+    { id: 'e3', type: 'bezier', source: 'n3', target: 'n4', label: '', properties: {} },
+  ],
+}
+
+editor.loadData(demoData)
+viewer.loadData(demoData)
+
+// 同步编辑 -> 预览（可控）
+editor.on('data:change', () => {
+  if (!livePreview) return
+  const data = editor.getData()
+  viewer.loadData(data)
+})
+
+// 下面保留了用于之前逻辑流的复杂工具栏/右键菜单/框选等逻辑。
+// 为避免与本库冲突，这里直接返回，不继续初始化那一大段逻辑。
+// 你可以后续用 @ldesign/flowchart 的工具栏/属性面板改造这些交互。
+if (true) {
+  console.log('[example] Using @ldesign/flowchart for editor & viewer')
+}
+
+// ---- 提前结束，避免旧逻辑执行 ----
+export default {}
+
+/*
   container: previewEl,
   grid: { size: 20, visible: false },
   background: { color: '#fafafa' },
@@ -284,4 +497,4 @@ setInterval(() => { if (live) syncPreview(false) }, 600)
 
 // 初始化
 lfEditor.render(sampleData)
-syncPreview(true)
+*/

@@ -13,8 +13,8 @@ export interface StatusBarConfig {
 
 type MessageItem = {
   text: string;
-  expiresAt?: number; // 过期时间（毫秒时间戳），sticky 时为 undefined
-  sticky?: boolean;
+  expiresAt: number | undefined; // 过期时间（毫秒时间戳），sticky 时为 undefined
+  sticky: boolean;
 };
 
 export class StatusBar extends SimpleEventEmitter implements EventEmitter {
@@ -247,7 +247,7 @@ export class StatusBar extends SimpleEventEmitter implements EventEmitter {
       this.requestFlush();
       return;
     }
-    this.queue.push({ text, sticky, expiresAt: sticky ? undefined : (now + durationMs) });
+    this.queue.push({ text, sticky: sticky || false, expiresAt: sticky ? undefined : (now + durationMs) });
     this.requestFlush();
   }
 

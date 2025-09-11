@@ -13,7 +13,7 @@ import { BaseNode } from './BaseNode.js';
 export class EndNode extends BaseNode {
   constructor(data: EndNodeData) {
     super(data);
-    
+
     // 设置默认样式
     this.style = {
       fillColor: 'var(--ldesign-error-color-1)',
@@ -25,7 +25,7 @@ export class EndNode extends BaseNode {
       opacity: 1,
       ...data.style
     };
-    
+
     // 设置默认尺寸（圆形）
     if (!data.size.width || !data.size.height) {
       this.size = { width: 60, height: 60 };
@@ -36,7 +36,7 @@ export class EndNode extends BaseNode {
    * 初始化端口
    * 结束节点只有输入端口
    */
-  protected initializePorts(): void {
+  protected override initializePorts(): void {
     this.ports = [
       {
         id: 'input',
@@ -81,22 +81,22 @@ export class EndNode extends BaseNode {
   /**
    * 点击测试（圆形）
    */
-  hitTest(point: { x: number; y: number }): boolean {
+  override hitTest(point: { x: number; y: number }): boolean {
     const centerX = this.position.x + this.size.width / 2;
     const centerY = this.position.y + this.size.height / 2;
     const radius = Math.min(this.size.width, this.size.height) / 2;
-    
+
     const dx = point.x - centerX;
     const dy = point.y - centerY;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    
+
     return distance <= radius;
   }
 
   /**
    * 获取端口在画布上的绝对位置
    */
-  getPortPosition(portId: string): { x: number; y: number } | undefined {
+  override getPortPosition(portId: string): { x: number; y: number } | undefined {
     const port = this.getPort(portId);
     if (!port) {
       return undefined;
@@ -142,7 +142,7 @@ export class EndNode extends BaseNode {
       type: NodeType.END,
       id: `${this.id}_copy_${Date.now()}`
     };
-    
+
     return new EndNode(data);
   }
 }

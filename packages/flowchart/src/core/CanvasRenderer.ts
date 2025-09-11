@@ -4,11 +4,9 @@
  */
 
 import type { Point, Rectangle, Size, Viewport, Style } from '@/types/index.js';
-import { 
-  createHighDPICanvas, 
-  clearCanvas, 
-  setCanvasTransform, 
-  resetCanvasTransform,
+import {
+  clearCanvas,
+  setCanvasTransform,
   saveCanvasState,
   restoreCanvasState
 } from '@/utils/index.js';
@@ -84,25 +82,25 @@ export class CanvasRenderer {
     }
     this.ctx = ctx;
     this.pixelRatio = window.devicePixelRatio || 1;
-    
+
     // 从Canvas获取尺寸
     this.size = {
       width: canvas.clientWidth,
       height: canvas.clientHeight
     };
-    
+
     // 设置选项
     if (options) {
       this.showGrid = options.showGrid !== false;
     }
-    
+
     // 初始化视口
     this.viewport = {
       scale: 1,
       offset: { x: 0, y: 0 },
       size: this.size
     };
-    
+
     // 设置Canvas样式
     this.canvas.style.display = 'block';
     this.canvas.style.outline = 'none';
@@ -143,16 +141,16 @@ export class CanvasRenderer {
   setSize(size: Size): void {
     this.size = size;
     this.viewport.size = size;
-    
+
     // 更新Canvas尺寸
     this.canvas.width = size.width * this.pixelRatio;
     this.canvas.height = size.height * this.pixelRatio;
     this.canvas.style.width = `${size.width}px`;
     this.canvas.style.height = `${size.height}px`;
-    
+
     // 重新设置缩放
     this.ctx.scale(this.pixelRatio, this.pixelRatio);
-    
+
     // 标记整个画布为脏区域
     this.markDirty({
       x: 0,
@@ -174,23 +172,23 @@ export class CanvasRenderer {
    */
   setViewport(viewport: Partial<Viewport>): void {
     const oldViewport = { ...this.viewport };
-    
+
     if (viewport.scale !== undefined) {
       this.viewport.scale = Math.max(0.1, Math.min(10, viewport.scale));
     }
-    
+
     if (viewport.offset !== undefined) {
       this.viewport.offset = { ...viewport.offset };
     }
-    
+
     if (viewport.size !== undefined) {
       this.viewport.size = { ...viewport.size };
     }
-    
+
     // 如果视口发生变化，标记整个画布为脏区域
-    if (oldViewport.scale !== this.viewport.scale || 
-        oldViewport.offset.x !== this.viewport.offset.x ||
-        oldViewport.offset.y !== this.viewport.offset.y) {
+    if (oldViewport.scale !== this.viewport.scale ||
+      oldViewport.offset.x !== this.viewport.offset.x ||
+      oldViewport.offset.y !== this.viewport.offset.y) {
       this.markDirty({
         x: 0,
         y: 0,
@@ -259,10 +257,10 @@ export class CanvasRenderer {
     if (existingObject) {
       // 标记旧边界为脏区域
       this.markDirty(existingObject.bounds);
-      
+
       // 更新对象
       Object.assign(existingObject, object);
-      
+
       // 标记新边界为脏区域
       this.markDirty(existingObject.bounds);
     }
@@ -276,7 +274,7 @@ export class CanvasRenderer {
       ...rect,
       needsRedraw: true
     });
-    
+
     // 请求重绘
     this.requestRender();
   }
@@ -300,35 +298,35 @@ export class CanvasRenderer {
     if (this.isRendering) {
       return;
     }
-    
+
     this.isRendering = true;
-    
+
     try {
       // 更新视口
       if (viewport) {
         this.viewport = viewport;
       }
-      
+
       // 清除画布
       clearCanvas(this.ctx, this.size.width, this.size.height);
-      
+
       // 设置视口变换
       saveCanvasState(this.ctx);
       setCanvasTransform(this.ctx, this.viewport);
-      
+
       // 按层级渲染
       if (renderData) {
         this.renderFlowchartData(renderData);
       } else {
         this.renderByLayers();
       }
-      
+
       // 恢复变换
       restoreCanvasState(this.ctx);
-      
+
       // 清除脏区域
       this.dirtyRects = [];
-      
+
     } finally {
       this.isRendering = false;
     }
@@ -342,7 +340,7 @@ export class CanvasRenderer {
     if (this.showGrid) {
       this.renderGrid();
     }
-    
+
     // 渲染连接线
     for (const edge of renderData.edges) {
       if (edge.render) {
@@ -351,7 +349,7 @@ export class CanvasRenderer {
         restoreCanvasState(this.ctx);
       }
     }
-    
+
     // 渲染节点
     for (const node of renderData.nodes) {
       if (node.render) {
@@ -360,7 +358,7 @@ export class CanvasRenderer {
         restoreCanvasState(this.ctx);
       }
     }
-    
+
     // 渲染选择框
     if (renderData.selectionBox) {
       this.renderSelectionBox(renderData.selectionBox);
@@ -442,21 +440,21 @@ export class CanvasRenderer {
     if (!selectionBox || !selectionBox.visible) {
       return;
     }
-    
+
     saveCanvasState(this.ctx);
-    
+
     this.ctx.strokeStyle = '#007bff';
     this.ctx.lineWidth = 1 / this.viewport.scale;
     this.ctx.setLineDash([4, 4]);
     this.ctx.globalAlpha = 0.8;
-    
+
     this.ctx.strokeRect(
       selectionBox.x,
       selectionBox.y,
       selectionBox.width,
       selectionBox.height
     );
-    
+
     restoreCanvasState(this.ctx);
   }
 
@@ -473,12 +471,12 @@ export class CanvasRenderer {
         }
         return a.priority - b.priority;
       });
-    
+
     // 渲染背景和网格
     if (this.showGrid) {
       this.renderGrid();
     }
-    
+
     // 渲染所有对象
     for (const object of sortedObjects) {
       try {
@@ -497,37 +495,37 @@ export class CanvasRenderer {
   private renderGrid(): void {
     const { scale, offset } = this.viewport;
     const gridSize = this.gridSize * scale;
-    
+
     if (gridSize < 5) {
       return; // 网格太小时不渲染
     }
-    
+
     saveCanvasState(this.ctx);
-    
+
     // 应用网格样式
     this.ctx.strokeStyle = this.gridStyle.strokeColor || '#e0e0e0';
     this.ctx.lineWidth = (this.gridStyle.strokeWidth || 1) / scale;
     this.ctx.globalAlpha = this.gridStyle.opacity || 0.5;
-    
+
     // 计算网格起始位置
     const startX = Math.floor(-offset.x / this.gridSize) * this.gridSize;
     const startY = Math.floor(-offset.y / this.gridSize) * this.gridSize;
     const endX = startX + (this.size.width / scale) + this.gridSize;
     const endY = startY + (this.size.height / scale) + this.gridSize;
-    
+
     // 绘制垂直线
     this.ctx.beginPath();
     for (let x = startX; x <= endX; x += this.gridSize) {
       this.ctx.moveTo(x, startY);
       this.ctx.lineTo(x, endY);
     }
-    
+
     // 绘制水平线
     for (let y = startY; y <= endY; y += this.gridSize) {
       this.ctx.moveTo(startX, y);
       this.ctx.lineTo(endX, y);
     }
-    
+
     this.ctx.stroke();
     restoreCanvasState(this.ctx);
   }
@@ -540,10 +538,10 @@ export class CanvasRenderer {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
     }
-    
+
     this.renderObjects.clear();
     this.dirtyRects = [];
-    
+
     // 移除Canvas
     if (this.canvas.parentNode) {
       this.canvas.parentNode.removeChild(this.canvas);

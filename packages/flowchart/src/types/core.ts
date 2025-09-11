@@ -132,6 +132,13 @@ export enum EventType {
   EDITOR_READY = 'editor:ready',
   EDITOR_DESTROY = 'editor:destroy',
 
+  /** 查看器相关事件 */
+  VIEWER_READY = 'viewer:ready',
+  VIEWER_ZOOM = 'viewer:zoom',
+  VIEWER_PAN = 'viewer:pan',
+  VIEWER_ZOOM_FIT = 'viewer:zoomfit',
+  EXECUTION_STATE_CHANGE = 'execution:statechange',
+
   /** 历史相关事件 */
   HISTORY_UNDO = 'history:undo',
   HISTORY_REDO = 'history:redo',

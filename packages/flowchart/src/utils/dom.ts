@@ -12,11 +12,11 @@
  */
 export function createElement<K extends keyof HTMLElementTagNameMap>(
   tagName: K,
-  attributes?: Record<string, string | number | boolean>,
+  attributes?: Record<string, string | number | boolean | Record<string, any>>,
   ...children: (HTMLElement | string)[]
 ): HTMLElementTagNameMap[K] {
   const element = document.createElement(tagName);
-  
+
   // 设置属性
   if (attributes) {
     for (const [key, value] of Object.entries(attributes)) {
@@ -33,7 +33,7 @@ export function createElement<K extends keyof HTMLElementTagNameMap>(
       }
     }
   }
-  
+
   // 添加子元素
   for (const child of children) {
     if (typeof child === 'string') {
@@ -42,7 +42,7 @@ export function createElement<K extends keyof HTMLElementTagNameMap>(
       element.appendChild(child);
     }
   }
-  
+
   return element;
 }
 
@@ -202,7 +202,7 @@ export function insertHTML(
  */
 export function createFragment(...children: (HTMLElement | string)[]): DocumentFragment {
   const fragment = document.createDocumentFragment();
-  
+
   for (const child of children) {
     if (typeof child === 'string') {
       fragment.appendChild(document.createTextNode(child));
@@ -210,7 +210,7 @@ export function createFragment(...children: (HTMLElement | string)[]): DocumentF
       fragment.appendChild(child);
     }
   }
-  
+
   return fragment;
 }
 

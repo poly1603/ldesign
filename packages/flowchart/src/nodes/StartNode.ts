@@ -36,7 +36,7 @@ export class StartNode extends BaseNode {
    * 初始化端口
    * 开始节点只有输出端口
    */
-  protected initializePorts(): void {
+  protected override initializePorts(): void {
     this.ports = [
       {
         id: 'output',
@@ -87,7 +87,7 @@ export class StartNode extends BaseNode {
   /**
    * 获取端口在画布上的绝对位置
    */
-  getPortPosition(portId: string): { x: number; y: number } | undefined {
+  override getPortPosition(portId: string): { x: number; y: number } | undefined {
     const port = this.getPort(portId);
     if (!port) {
       return undefined;

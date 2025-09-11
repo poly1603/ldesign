@@ -13,7 +13,7 @@ import { BaseNode } from './BaseNode.js';
 export class DecisionNode extends BaseNode {
   constructor(data: DecisionNodeData) {
     super(data);
-    
+
     // 设置默认样式
     this.style = {
       fillColor: 'var(--ldesign-warning-color-1)',
@@ -25,7 +25,7 @@ export class DecisionNode extends BaseNode {
       opacity: 1,
       ...data.style
     };
-    
+
     // 设置默认尺寸（菱形）
     if (!data.size.width || !data.size.height) {
       this.size = { width: 100, height: 80 };
@@ -36,7 +36,7 @@ export class DecisionNode extends BaseNode {
    * 初始化端口
    * 决策节点有一个输入端口和多个输出端口
    */
-  protected initializePorts(): void {
+  protected override initializePorts(): void {
     this.ports = [
       {
         id: 'input',
@@ -96,7 +96,7 @@ export class DecisionNode extends BaseNode {
     ctx.lineTo(centerX, this.position.y + this.size.height); // 底点
     ctx.lineTo(this.position.x, centerY); // 左点
     ctx.closePath();
-    
+
     ctx.fill();
     ctx.stroke();
   }
@@ -104,25 +104,25 @@ export class DecisionNode extends BaseNode {
   /**
    * 点击测试（菱形）
    */
-  hitTest(point: { x: number; y: number }): boolean {
+  override hitTest(point: { x: number; y: number }): boolean {
     const centerX = this.position.x + this.size.width / 2;
     const centerY = this.position.y + this.size.height / 2;
-    
+
     // 将点转换为相对于菱形中心的坐标
     const relativeX = Math.abs(point.x - centerX);
     const relativeY = Math.abs(point.y - centerY);
-    
+
     // 菱形的边界检测：|x|/a + |y|/b <= 1
     const a = this.size.width / 2;
     const b = this.size.height / 2;
-    
+
     return (relativeX / a + relativeY / b) <= 1;
   }
 
   /**
    * 获取端口在画布上的绝对位置
    */
-  getPortPosition(portId: string): { x: number; y: number } | undefined {
+  override getPortPosition(portId: string): { x: number; y: number } | undefined {
     const port = this.getPort(portId);
     if (!port) {
       return undefined;
@@ -161,7 +161,7 @@ export class DecisionNode extends BaseNode {
   /**
    * 渲染端口标签
    */
-  protected renderPorts(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
+  protected override renderPorts(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
     // 先渲染端口圆点
     super.renderPorts(ctx, viewport);
 
@@ -177,7 +177,7 @@ export class DecisionNode extends BaseNode {
       }
 
       ctx.save();
-      
+
       // 标签样式
       ctx.fillStyle = port.style?.fontColor || this.style.fontColor || 'var(--ldesign-warning-color-8)';
       ctx.font = `12px ${this.style.fontFamily || 'Arial, sans-serif'}`;
@@ -218,7 +218,7 @@ export class DecisionNode extends BaseNode {
       id: `${this.id}_copy_${Date.now()}`,
       conditions: []
     };
-    
+
     return new DecisionNode(data);
   }
 }

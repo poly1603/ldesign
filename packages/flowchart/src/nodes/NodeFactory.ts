@@ -3,8 +3,9 @@
  * 负责创建和管理各种类型的节点
  */
 
-import type { NodeFactory as INodeFactory, BaseNode, NodeData } from '@/types/index.js';
+import type { NodeFactory as INodeFactory, NodeData } from '@/types/index.js';
 import { NodeType } from '@/types/index.js';
+import { BaseNode } from './BaseNode.js';
 import { StartNode } from './StartNode.js';
 import { EndNode } from './EndNode.js';
 import { ProcessNode } from './ProcessNode.js';
@@ -14,7 +15,7 @@ import { ApprovalNode } from './ApprovalNode.js';
 /**
  * 节点构造函数类型
  */
-type NodeConstructor = new (data: NodeData) => BaseNode;
+type NodeConstructor = new (data: any) => BaseNode;
 
 /**
  * 节点工厂类
@@ -31,11 +32,11 @@ export class NodeFactory implements INodeFactory {
    * 注册内置节点类型
    */
   private registerBuiltinNodeTypes(): void {
-    this.nodeTypes.set(NodeType.START, StartNode as NodeConstructor);
-    this.nodeTypes.set(NodeType.END, EndNode as NodeConstructor);
-    this.nodeTypes.set(NodeType.PROCESS, ProcessNode as NodeConstructor);
-    this.nodeTypes.set(NodeType.DECISION, DecisionNode as NodeConstructor);
-    this.nodeTypes.set(NodeType.APPROVAL, ApprovalNode as NodeConstructor);
+    this.nodeTypes.set(NodeType.START, StartNode);
+    this.nodeTypes.set(NodeType.END, EndNode);
+    this.nodeTypes.set(NodeType.PROCESS, ProcessNode);
+    this.nodeTypes.set(NodeType.DECISION, DecisionNode as any);
+    this.nodeTypes.set(NodeType.APPROVAL, ApprovalNode as any);
   }
 
   /**
@@ -190,7 +191,7 @@ export class NodeFactory implements INodeFactory {
    */
   createNodes(nodesData: Partial<NodeData>[]): BaseNode[] {
     const nodes: BaseNode[] = [];
-    
+
     for (const data of nodesData) {
       try {
         if (!data.type || !data.position || !data.label) continue;
@@ -200,7 +201,7 @@ export class NodeFactory implements INodeFactory {
         console.warn('创建节点失败:', error);
       }
     }
-    
+
     return nodes;
   }
 
@@ -209,7 +210,7 @@ export class NodeFactory implements INodeFactory {
    */
   getNodeTypeInfo(type: NodeType) {
     const defaultConfig = this.getDefaultNodeConfig(type);
-    
+
     switch (type) {
       case NodeType.START:
         return {

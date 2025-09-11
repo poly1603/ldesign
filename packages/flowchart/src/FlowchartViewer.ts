@@ -3,11 +3,11 @@
  * 提供只读的流程图显示功能，支持流程执行状态展示
  */
 
-import type { 
-  FlowchartData, 
-  NodeData, 
-  EdgeData, 
-  Point, 
+import type {
+  FlowchartData,
+  NodeData,
+  EdgeData,
+  Point,
   Viewport,
   EventEmitter,
   NodeStatus,
@@ -68,13 +68,13 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
   private container: HTMLElement;
   private canvas: HTMLCanvasElement;
   private config: FlowchartViewerConfig;
-  
+
   // 核心组件
   private renderer: CanvasRenderer;
   private dataManager: DataManager;
   private nodeFactory: NodeFactory;
   private edgeFactory: EdgeFactory;
-  
+
   // 状态
   private viewport: Viewport = {
     offset: { x: 0, y: 0 },
@@ -92,10 +92,10 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
 
   constructor(config: FlowchartViewerConfig) {
     super();
-    
+
     this.config = config;
     this.container = config.container;
-    
+
     this.initialize();
   }
 
@@ -107,7 +107,7 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
     this.createCoreComponents();
     this.setupEventListeners();
     this.loadInitialData();
-    
+
     this.isInitialized = true;
     this.emit(EventType.VIEWER_READY);
   }
@@ -118,11 +118,12 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
   private createCanvas(): void {
     const width = this.config.width || this.container.clientWidth || 800;
     const height = this.config.height || this.container.clientHeight || 600;
-    
-    this.canvas = createHighDPICanvas(width, height);
+
+    const canvasResult = createHighDPICanvas(width, height);
+    this.canvas = canvasResult.canvas;
     this.canvas.style.display = 'block';
     this.canvas.style.cursor = this.config.enablePan ? 'grab' : 'default';
-    
+
     this.container.appendChild(this.canvas);
   }
 
@@ -134,7 +135,7 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
       showGrid: this.config.showGrid !== false,
       showRuler: false
     });
-    
+
     this.dataManager = new DataManager();
     this.nodeFactory = new NodeFactory();
     this.edgeFactory = new EdgeFactory();
@@ -172,28 +173,28 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
    */
   private handleWheel(event: WheelEvent): void {
     event.preventDefault();
-    
+
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
-    
+
     // 计算缩放
     const scaleFactor = event.deltaY > 0 ? 0.9 : 1.1;
     const newScale = Math.max(
       this.config.minZoom || 0.1,
       Math.min(this.config.maxZoom || 5, this.viewport.scale * scaleFactor)
     );
-    
+
     // 以鼠标位置为中心缩放
     const scaleRatio = newScale / this.viewport.scale;
     const newOffset = {
       x: this.viewport.offset.x + (mouseX / this.viewport.scale - mouseX / newScale),
       y: this.viewport.offset.y + (mouseY / this.viewport.scale - mouseY / newScale)
     };
-    
+
     this.viewport.scale = newScale;
     this.viewport.offset = newOffset;
-    
+
     this.updateRendering();
     this.emit(EventType.VIEWER_ZOOM, { scale: newScale });
   }
@@ -216,12 +217,12 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
     if (this.isDragging) {
       const dx = event.clientX - this.lastMousePosition.x;
       const dy = event.clientY - this.lastMousePosition.y;
-      
+
       this.viewport.offset.x += dx / this.viewport.scale;
       this.viewport.offset.y += dy / this.viewport.scale;
-      
+
       this.lastMousePosition = { x: event.clientX, y: event.clientY };
-      
+
       this.updateRendering();
       this.emit(EventType.VIEWER_PAN, { offset: this.viewport.offset });
     }
@@ -244,7 +245,7 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
     } else {
       this.updateRendering();
     }
-    
+
     if (this.config.autoFit) {
       setTimeout(() => this.zoomToFit(), 100);
     }
@@ -261,33 +262,33 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
     // 创建节点和连接线实例
     const nodes = this.dataManager.getNodes().map(nodeData => {
       const node = this.nodeFactory.createNode(nodeData.type as any, nodeData);
-      
+
       // 设置节点状态
       if (this.executionState.currentNodeId === nodeData.id) {
-        node.setStatus('running' as NodeStatus);
+        node.status = 'running' as NodeStatus;
       } else if (this.executionState.completedNodeIds.includes(nodeData.id)) {
-        node.setStatus('completed' as NodeStatus);
+        node.status = 'completed' as NodeStatus;
       } else if (this.executionState.failedNodeIds.includes(nodeData.id)) {
-        node.setStatus('failed' as NodeStatus);
+        node.status = 'failed' as NodeStatus;
       } else if (this.executionState.pendingNodeIds.includes(nodeData.id)) {
-        node.setStatus('pending' as NodeStatus);
+        node.status = 'pending' as NodeStatus;
       } else {
-        node.setStatus('normal' as NodeStatus);
+        node.status = 'normal' as NodeStatus;
       }
-      
+
       return node;
     });
 
     const edges = this.dataManager.getEdges().map(edgeData => {
       const edge = this.edgeFactory.createEdge(edgeData.type as any, edgeData);
-      
+
       // 设置连接线状态
       if (this.executionState.executedEdgeIds.includes(edgeData.id)) {
-        edge.setStatus('executed' as EdgeStatus);
+        edge.status = 'executed' as EdgeStatus;
       } else {
-        edge.setStatus('normal' as EdgeStatus);
+        edge.status = 'normal' as EdgeStatus;
       }
-      
+
       return edge;
     });
 
@@ -304,12 +305,12 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
   private handleResize(): void {
     const width = this.container.clientWidth;
     const height = this.container.clientHeight;
-    
+
     this.canvas.width = width * window.devicePixelRatio;
     this.canvas.height = height * window.devicePixelRatio;
     this.canvas.style.width = `${width}px`;
     this.canvas.style.height = `${height}px`;
-    
+
     this.updateRendering();
   }
 
@@ -365,17 +366,22 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
     if (!completedNodeIds.includes(nodeId)) {
       completedNodeIds.push(nodeId);
     }
-    
+
     // 从其他状态列表中移除
     const pendingNodeIds = this.executionState.pendingNodeIds.filter(id => id !== nodeId);
     const failedNodeIds = this.executionState.failedNodeIds.filter(id => id !== nodeId);
-    
-    this.setExecutionState({
+
+    const newState: Partial<ProcessExecutionState> = {
       completedNodeIds,
       pendingNodeIds,
-      failedNodeIds,
-      currentNodeId: this.executionState.currentNodeId === nodeId ? undefined : this.executionState.currentNodeId
-    });
+      failedNodeIds
+    };
+
+    if (this.executionState.currentNodeId !== nodeId) {
+      newState.currentNodeId = this.executionState.currentNodeId;
+    }
+
+    this.setExecutionState(newState);
   }
 
   /**
@@ -386,17 +392,22 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
     if (!failedNodeIds.includes(nodeId)) {
       failedNodeIds.push(nodeId);
     }
-    
+
     // 从其他状态列表中移除
     const pendingNodeIds = this.executionState.pendingNodeIds.filter(id => id !== nodeId);
     const completedNodeIds = this.executionState.completedNodeIds.filter(id => id !== nodeId);
-    
-    this.setExecutionState({
+
+    const newState: Partial<ProcessExecutionState> = {
       failedNodeIds,
       pendingNodeIds,
-      completedNodeIds,
-      currentNodeId: this.executionState.currentNodeId === nodeId ? undefined : this.executionState.currentNodeId
-    });
+      completedNodeIds
+    };
+
+    if (this.executionState.currentNodeId !== nodeId) {
+      newState.currentNodeId = this.executionState.currentNodeId;
+    }
+
+    this.setExecutionState(newState);
   }
 
   /**
@@ -407,7 +418,7 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
     if (!executedEdgeIds.includes(edgeId)) {
       executedEdgeIds.push(edgeId);
     }
-    
+
     this.setExecutionState({ executedEdgeIds });
   }
 
@@ -416,7 +427,6 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
    */
   resetExecutionState(): void {
     this.setExecutionState({
-      currentNodeId: undefined,
       completedNodeIds: [],
       executedEdgeIds: [],
       failedNodeIds: [],
@@ -450,11 +460,11 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
     }
 
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    
+
     for (const node of nodes) {
       const { x, y } = node.position;
       const { width = 100, height = 60 } = node.size || {};
-      
+
       minX = Math.min(minX, x);
       minY = Math.min(minY, y);
       maxX = Math.max(maxX, x + width);
@@ -521,7 +531,7 @@ export class FlowchartViewer extends SimpleEventEmitter implements EventEmitter 
   destroy(): void {
     this.renderer.destroy();
     this.dataManager.destroy();
-    
+
     this.canvas.remove();
     this.removeAllListeners();
   }

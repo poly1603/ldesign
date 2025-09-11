@@ -29,9 +29,9 @@ interface HistoryItem {
  */
 export interface DataChangeEvent {
   /** 变更类型 */
-  type: 'node' | 'edge' | 'viewport' | 'metadata';
+  type: 'node' | 'edge' | 'viewport' | 'metadata' | 'data' | 'all';
   /** 操作类型 */
-  action: 'add' | 'update' | 'remove';
+  action: 'add' | 'update' | 'remove' | 'load' | 'clear';
   /** 变更的数据 */
   data: any;
   /** 旧数据（更新和删除时） */
@@ -564,7 +564,7 @@ export class DataManager extends SimpleEventEmitter implements EventEmitter {
       throw new Error('连接线数据必须是数组');
     }
 
-    if (!data.metadata || typeof data.metadata !== 'object') {
+    if (data.metadata && typeof data.metadata !== 'object') {
       throw new Error('元数据格式无效');
     }
   }

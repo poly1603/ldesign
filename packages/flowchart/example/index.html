@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDesign Flowchart 示例</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: white;
+            border-right: 1px solid #e5e5e5;
+            padding: 20px;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .toolbar {
+            height: 60px;
+            background: white;
+            border-bottom: 1px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 10px;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background: white;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #d9d9d9;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            border-color: #722ED1;
+            color: #722ED1;
+        }
+
+        .btn.active {
+            background: #722ED1;
+            color: white;
+            border-color: #722ED1;
+        }
+
+        .node-palette {
+            margin-bottom: 20px;
+        }
+
+        .node-palette h3 {
+            margin-bottom: 10px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .node-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            cursor: pointer;
+            background: white;
+        }
+
+        .node-item:hover {
+            border-color: #722ED1;
+            background: #f9f0ff;
+        }
+
+        .node-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+
+        .node-icon.start { background: #52c41a; }
+        .node-icon.end { background: #f5222d; }
+        .node-icon.process { background: #1890ff; }
+        .node-icon.decision { background: #fa8c16; }
+        .node-icon.approval { background: #722ed1; }
+
+        #flowchart-canvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="node-palette">
+                <h3>节点类型</h3>
+                <div class="node-item" data-node-type="start">
+                    <div class="node-icon start">S</div>
+                    <span>开始节点</span>
+                </div>
+                <div class="node-item" data-node-type="process">
+                    <div class="node-icon process">P</div>
+                    <span>处理节点</span>
+                </div>
+                <div class="node-item" data-node-type="decision">
+                    <div class="node-icon decision">D</div>
+                    <span>决策节点</span>
+                </div>
+                <div class="node-item" data-node-type="approval">
+                    <div class="node-icon approval">A</div>
+                    <span>审批节点</span>
+                </div>
+                <div class="node-item" data-node-type="end">
+                    <div class="node-icon end">E</div>
+                    <span>结束节点</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="toolbar">
+                <button class="btn" id="btn-select">选择</button>
+                <button class="btn" id="btn-pan">平移</button>
+                <button class="btn" id="btn-zoom-in">放大</button>
+                <button class="btn" id="btn-zoom-out">缩小</button>
+                <button class="btn" id="btn-zoom-fit">适应画布</button>
+                <button class="btn" id="btn-undo">撤销</button>
+                <button class="btn" id="btn-redo">重做</button>
+                <button class="btn" id="btn-delete">删除</button>
+                <button class="btn" id="btn-clear">清空</button>
+            </div>
+            
+            <div class="canvas-container">
+                <canvas id="flowchart-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { FlowchartEditor } from '../es/index.js';
+
+        // 初始化流程图编辑器
+        const canvas = document.getElementById('flowchart-canvas');
+        const editor = new FlowchartEditor({
+            container: canvas.parentElement,
+            canvas: canvas,
+            width: canvas.parentElement.clientWidth,
+            height: canvas.parentElement.clientHeight
+        });
+
+        // 暴露到window对象以便调试
+        window.editor = editor;
+
+        // 当前选中的节点类型
+        let selectedNodeType = null;
+
+        // 节点类型选择
+        document.querySelectorAll('.node-item').forEach(item => {
+            item.addEventListener('click', () => {
+                // 移除之前的选中状态
+                document.querySelectorAll('.node-item').forEach(i => i.classList.remove('active'));
+                // 添加选中状态
+                item.classList.add('active');
+                selectedNodeType = item.dataset.nodeType;
+
+                // 设置编辑器为绘制模式
+                editor.setDrawMode(selectedNodeType);
+            });
+        });
+
+        // 工具栏按钮事件
+        document.getElementById('btn-select').addEventListener('click', () => {
+            editor.setSelectMode();
+            selectedNodeType = null;
+            document.querySelectorAll('.node-item').forEach(i => i.classList.remove('active'));
+        });
+
+        document.getElementById('btn-pan').addEventListener('click', () => {
+            editor.setPanMode();
+        });
+
+        document.getElementById('btn-zoom-in').addEventListener('click', () => {
+            editor.zoomIn();
+        });
+
+        document.getElementById('btn-zoom-out').addEventListener('click', () => {
+            editor.zoomOut();
+        });
+
+        document.getElementById('btn-zoom-fit').addEventListener('click', () => {
+            editor.zoomToFit();
+        });
+
+        document.getElementById('btn-undo').addEventListener('click', () => {
+            editor.undo();
+        });
+
+        document.getElementById('btn-redo').addEventListener('click', () => {
+            editor.redo();
+        });
+
+        document.getElementById('btn-delete').addEventListener('click', () => {
+            editor.deleteSelected();
+        });
+
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            if (confirm('确定要清空所有内容吗？')) {
+                editor.clear();
+            }
+        });
+
+        // 编辑器会自动处理画布点击事件来添加节点，无需手动监听
+
+        // 获取默认标签
+        function getDefaultLabel(type) {
+            const labels = {
+                start: '开始',
+                process: '处理',
+                decision: '决策',
+                approval: '审批',
+                end: '结束'
+            };
+            return labels[type] || '节点';
+        }
+
+        // 窗口大小调整
+        window.addEventListener('resize', () => {
+            const container = canvas.parentElement;
+            editor.resize(container.clientWidth, container.clientHeight);
+        });
+
+        // 添加一些示例数据
+        // setTimeout(() => {
+        //     editor.loadData({
+        //         nodes: [
+        //             {
+        //                 id: 'start1',
+        //                 type: 'start',
+        //                 position: { x: 100, y: 100 },
+        //                 label: '开始'
+        //             },
+        //             {
+        //                 id: 'process1',
+        //                 type: 'process',
+        //                 position: { x: 300, y: 100 },
+        //                 label: '处理数据'
+        //             },
+        //             {
+        //                 id: 'decision1',
+        //                 type: 'decision',
+        //                 position: { x: 500, y: 100 },
+        //                 label: '是否通过？'
+        //             },
+        //             {
+        //                 id: 'end1',
+        //                 type: 'end',
+        //                 position: { x: 700, y: 100 },
+        //                 label: '结束'
+        //             }
+        //         ],
+        //         edges: [
+        //             {
+        //                 id: 'edge1',
+        //                 type: 'straight',
+        //                 source: 'start1',
+        //                 sourcePort: 'output',
+        //                 target: 'process1',
+        //                 targetPort: 'input'
+        //             },
+        //             {
+        //                 id: 'edge2',
+        //                 type: 'straight',
+        //                 source: 'process1',
+        //                 sourcePort: 'output',
+        //                 target: 'decision1',
+        //                 targetPort: 'input'
+        //             },
+        //             {
+        //                 id: 'edge3',
+        //                 type: 'straight',
+        //                 source: 'decision1',
+        //                 sourcePort: 'yes',
+        //                 target: 'end1',
+        //                 targetPort: 'input'
+        //             }
+        //         ]
+        //     });
+        // }, 100);
+    </script>
+</body>
+</html>
