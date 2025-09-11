@@ -1,0 +1,125 @@
+{
+  "name": "@ldesign/map",
+  "version": "1.0.0",
+  "description": "功能全面的地图插件，支持多种地图类型、框架兼容性和丰富的地图功能",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./vue": {
+      "types": "./dist/types/adapters/vue/index.d.ts",
+      "import": "./dist/vue.js",
+      "require": "./dist/vue.cjs"
+    },
+    "./react": {
+      "types": "./dist/types/adapters/react/index.d.ts",
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs"
+    },
+    "./vanilla": {
+      "types": "./dist/types/adapters/vanilla/index.d.ts",
+      "import": "./dist/vanilla.js",
+      "require": "./dist/vanilla.cjs"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "pnpm run build:lib",
+    "build:lib": "vite build && tsc --project tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:performance": "vitest run tests/performance-simple.test.ts",
+    "test:integration": "vitest run src/__tests__/integration/",
+    "lint": "eslint src --ext .ts,.tsx,.vue",
+    "lint:fix": "eslint src --ext .ts,.tsx,.vue --fix",
+    "type-check": "tsc --noEmit",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "prepublishOnly": "npm run build && npm run test",
+    "release": "npm version patch && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:major": "npm version major && npm publish"
+  },
+  "keywords": [
+    "map",
+    "mapbox",
+    "leaflet",
+    "vue",
+    "react",
+    "typescript",
+    "2d",
+    "3d",
+    "routing",
+    "geofence",
+    "heatmap",
+    "markers",
+    "layers",
+    "search",
+    "measurement",
+    "ldesign"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "dependencies": {
+    "mapbox-gl": "^3.6.0",
+    "@turf/turf": "^7.0.0"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@ldesign/launcher": "workspace:*",
+    "@types/mapbox-gl": "^3.1.0",
+    "@vue/test-utils": "^2.4.6",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/jest-dom": "^6.5.0",
+    "vue": "^3.4.38",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2",
+    "vitest": "^2.0.5",
+    "@vitest/coverage-v8": "^2.0.5",
+    "vitepress": "^1.3.4",
+    "less": "^4.2.0",
+    "jsdom": "^25.0.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.0",
+    "vue": ">=3.0.0",
+    "react": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/ldesign.git",
+    "directory": "packages/map"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign/ldesign/issues"
+  },
+  "homepage": "https://ldesign.dev/map"
+}

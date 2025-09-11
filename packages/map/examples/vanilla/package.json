@@ -1,0 +1,18 @@
+{
+  "name": "@ldesign/map-example-vanilla",
+  "version": "1.0.0",
+  "description": "原生JavaScript示例项目 - LDesign地图插件",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ldesign/map": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0"
+  }
+}

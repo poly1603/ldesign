@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LDesign Map 原生JavaScript示例</title>
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- 头部 -->
+    <header class="header">
+      <h1>LDesign Map 原生JavaScript示例</h1>
+      <p>展示LDesign地图插件在原生JavaScript中的完整功能</p>
+    </header>
+
+    <!-- 主体内容 -->
+    <main class="main">
+      <!-- 侧边栏控制面板 -->
+      <aside class="sidebar">
+        <!-- 地图状态 -->
+        <div class="control-group">
+          <h3>地图状态</h3>
+          <div class="info-panel" id="map-status">
+            <div class="info-item">
+              <span>状态:</span>
+              <span id="status-text">未加载</span>
+            </div>
+            <div class="info-item">
+              <span>中心点:</span>
+              <span id="center-text">116.4040, 39.9150</span>
+            </div>
+            <div class="info-item">
+              <span>缩放级别:</span>
+              <span id="zoom-text">10.0</span>
+            </div>
+            <div class="info-item">
+              <span>标记点数量:</span>
+              <span id="marker-count">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 地图控制 -->
+        <div class="control-group">
+          <h3>地图控制</h3>
+          <div class="control-item">
+            <label>缩放级别</label>
+            <input 
+              type="range" 
+              id="zoom-slider"
+              min="0" 
+              max="20" 
+              step="0.1"
+              value="10"
+              disabled
+            />
+          </div>
+          <div class="control-item">
+            <button id="fly-to-beijing" disabled>
+              飞行到北京
+            </button>
+          </div>
+          <div class="control-item">
+            <button id="fly-to-shanghai" disabled>
+              飞行到上海
+            </button>
+          </div>
+        </div>
+
+        <!-- 标记点管理 -->
+        <div class="control-group">
+          <h3>标记点管理</h3>
+          <div class="control-item">
+            <button id="add-random-marker" disabled>
+              添加随机标记点
+            </button>
+          </div>
+          <div class="control-item">
+            <button id="add-beijing-marker" disabled>
+              添加北京标记点
+            </button>
+          </div>
+          <div class="control-item">
+            <button id="clear-markers" disabled>
+              清除所有标记点
+            </button>
+          </div>
+        </div>
+
+        <!-- 功能演示 -->
+        <div class="control-group">
+          <h3>功能演示</h3>
+          <div class="control-item">
+            <button id="show-routing" disabled>
+              路径规划演示
+            </button>
+          </div>
+          <div class="control-item">
+            <button id="show-heatmap" disabled>
+              热力图演示
+            </button>
+          </div>
+          <div class="control-item">
+            <button id="show-geofence" disabled>
+              地理围栏演示
+            </button>
+          </div>
+        </div>
+
+        <!-- 错误信息 -->
+        <div class="control-group" id="error-group" style="display: none;">
+          <h3>错误信息</h3>
+          <div class="info-panel" id="error-panel" style="background: #fee; color: #c33;">
+            <span id="error-text"></span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 地图容器 -->
+      <div class="map-container">
+        <div id="map" style="width: 100%; height: 100%;"></div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

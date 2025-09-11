@@ -1,0 +1,290 @@
+/**
+ * @ldesign/map 样式入口文件
+ * 基于 LDESIGN 设计系统的地图组件样式
+ */
+
+// 导入变量
+@import './variables.less';
+
+// 地图容器样式
+.ldesign-map {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: @map-container-bg;
+  border: @map-container-border;
+  border-radius: @map-container-border-radius;
+  box-shadow: @map-container-shadow;
+  overflow: hidden;
+
+  // Mapbox GL JS 样式覆盖
+  .mapboxgl-map {
+    width: 100%;
+    height: 100%;
+    font-family: inherit;
+  }
+
+  // 控件样式
+  .mapboxgl-ctrl {
+    background: @map-control-bg;
+    border: @map-control-border;
+    border-radius: @map-control-border-radius;
+    box-shadow: @map-control-shadow;
+
+    &:hover {
+      background: @map-control-hover-bg;
+    }
+
+    &:active {
+      background: @map-control-active-bg;
+    }
+  }
+
+  // 导航控件
+  .mapboxgl-ctrl-group {
+    background: @map-control-bg;
+    border-radius: @map-control-border-radius;
+    box-shadow: @map-control-shadow;
+
+    button {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: @spacing-xs;
+      transition: background-color @transition-duration @transition-timing;
+
+      &:hover {
+        background: @map-control-hover-bg;
+      }
+
+      &:active {
+        background: @map-control-active-bg;
+      }
+
+      &:first-child {
+        border-top-left-radius: @map-control-border-radius;
+        border-top-right-radius: @map-control-border-radius;
+      }
+
+      &:last-child {
+        border-bottom-left-radius: @map-control-border-radius;
+        border-bottom-right-radius: @map-control-border-radius;
+      }
+    }
+  }
+
+  // 比例尺控件
+  .mapboxgl-ctrl-scale {
+    background: @map-control-bg;
+    border: @map-control-border;
+    border-radius: @map-control-border-radius;
+    color: var(--ldesign-text-color-primary);
+    font-size: @font-size-xs;
+    padding: @spacing-xs @spacing-sm;
+  }
+
+  // 全屏控件
+  .mapboxgl-ctrl-fullscreen {
+    .mapboxgl-ctrl-icon {
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23333' d='M2 2v6h2V4h4V2H2zm14 0h-4v2h4v4h2V2h-2zm-4 14h4v-4h2v6h-6v-2zM4 14v4h4v2H2v-6h2z'/%3E%3C/svg%3E");
+    }
+  }
+}
+
+// 标记点样式
+.ldesign-map-marker {
+  cursor: pointer;
+  transition: transform @transition-duration @transition-timing;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &.dragging {
+    cursor: grabbing;
+  }
+}
+
+.ldesign-map-marker-icon {
+  img {
+    display: block;
+    border: none;
+    border-radius: 50%;
+    box-shadow: @marker-shadow;
+  }
+}
+
+// 弹窗样式
+.mapboxgl-popup {
+  .mapboxgl-popup-content {
+    background: @popup-bg;
+    border: @popup-border;
+    border-radius: @popup-border-radius;
+    box-shadow: @popup-shadow;
+    color: @popup-text-color;
+    font-size: @font-size-sm;
+    padding: @spacing-sm;
+    max-width: 240px;
+
+    h1, h2, h3, h4, h5, h6 {
+      margin: 0 0 @spacing-xs 0;
+      color: var(--ldesign-text-color-primary);
+    }
+
+    p {
+      margin: 0 0 @spacing-xs 0;
+      color: var(--ldesign-text-color-secondary);
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .mapboxgl-popup-close-button {
+    color: var(--ldesign-text-color-secondary);
+    font-size: @font-size-lg;
+    padding: @spacing-xs;
+    
+    &:hover {
+      color: var(--ldesign-text-color-primary);
+    }
+  }
+
+  .mapboxgl-popup-tip {
+    border-top-color: @popup-bg;
+  }
+}
+
+// 图层控制样式
+.ldesign-layer-control {
+  background: @layer-control-bg;
+  border: @layer-control-border;
+  border-radius: @map-control-border-radius;
+  box-shadow: @map-control-shadow;
+  padding: @spacing-sm;
+  min-width: 200px;
+
+  .layer-item {
+    display: flex;
+    align-items: center;
+    padding: @spacing-xs;
+    border-radius: @map-control-border-radius;
+    cursor: pointer;
+    transition: background-color @transition-duration @transition-timing;
+
+    &:hover {
+      background: @layer-control-item-hover;
+    }
+
+    .layer-checkbox {
+      margin-right: @spacing-xs;
+    }
+
+    .layer-name {
+      flex: 1;
+      font-size: @font-size-sm;
+      color: var(--ldesign-text-color-primary);
+    }
+
+    .layer-opacity {
+      margin-left: @spacing-xs;
+      width: 60px;
+    }
+  }
+}
+
+// 加载状态样式
+.ldesign-map-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: @loading-bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--ldesign-border-level-1-color);
+    border-top: 3px solid @loading-spinner-color;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  .loading-text {
+    margin-top: @spacing-sm;
+    color: var(--ldesign-text-color-secondary);
+    font-size: @font-size-sm;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// 测量工具样式
+.ldesign-measurement-tooltip {
+  background: @popup-bg;
+  border: @popup-border;
+  border-radius: @popup-border-radius;
+  box-shadow: @popup-shadow;
+  padding: @spacing-xs @spacing-sm;
+  font-size: @font-size-xs;
+  color: @popup-text-color;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .ldesign-map {
+    .mapboxgl-ctrl-group {
+      button {
+        padding: @spacing-sm;
+      }
+    }
+
+    .ldesign-layer-control {
+      min-width: 150px;
+      font-size: @font-size-xs;
+    }
+  }
+}
+
+// 暗色主题支持
+@media (prefers-color-scheme: dark) {
+  .ldesign-map {
+    // 可以在这里添加暗色主题的特定样式
+    // 或者通过CSS变量动态切换
+  }
+}
+
+// 高对比度支持
+@media (prefers-contrast: high) {
+  .ldesign-map {
+    .mapboxgl-ctrl {
+      border-width: 2px;
+    }
+
+    .ldesign-map-marker {
+      filter: contrast(1.5);
+    }
+  }
+}
+
+// 减少动画支持
+@media (prefers-reduced-motion: reduce) {
+  .ldesign-map {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
