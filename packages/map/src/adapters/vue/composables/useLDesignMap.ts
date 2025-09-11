@@ -62,13 +62,13 @@ export function useLDesignMap(
   const isInitialized = ref(false)
   const isLoading = ref(false)
   const error = ref<Error | null>(null)
-  
+
   // 地图状态
   const center = ref<LngLat>(options.center || [116.404, 39.915])
   const zoom = ref(options.zoom || 10)
   const bearing = ref(options.bearing || 0)
   const pitch = ref(options.pitch || 0)
-  
+
   // 标记点管理
   const markers = ref<MarkerOptions[]>([])
   const markerIds = new Map<string, MarkerOptions>()
@@ -84,7 +84,7 @@ export function useLDesignMap(
       error.value = null
 
       // 获取容器元素
-      const containerElement = typeof container === 'string' 
+      const containerElement = typeof container === 'string'
         ? document.querySelector(container) as HTMLElement
         : container.value
 
@@ -95,7 +95,8 @@ export function useLDesignMap(
       // 创建地图配置
       const mapOptions: MapOptions = {
         ...options,
-        container: containerElement
+        container: containerElement,
+        engine: (options as any).engine || 'leaflet' // 强制使用Leaflet引擎
       }
 
       // 创建地图实例
@@ -143,7 +144,7 @@ export function useLDesignMap(
     duration?: number
   }): Promise<void> => {
     if (!map.value) throw new Error('Map not initialized')
-    
+
     await map.value.flyTo({
       center: flyOptions.center || center.value,
       zoom: flyOptions.zoom || zoom.value,
@@ -158,13 +159,13 @@ export function useLDesignMap(
    */
   const addMarker = (marker: MarkerOptions): string => {
     if (!map.value) throw new Error('Map not initialized')
-    
+
     const id = map.value.addMarker(marker)
     const markerWithId = { ...marker, id }
-    
+
     markers.value.push(markerWithId)
     markerIds.set(id, markerWithId)
-    
+
     return id
   }
 
@@ -173,7 +174,7 @@ export function useLDesignMap(
    */
   const removeMarker = (id: string): void => {
     if (!map.value) return
-    
+
     map.value.removeMarker(id)
     markers.value = markers.value.filter(m => m.id !== id)
     markerIds.delete(id)
@@ -184,13 +185,13 @@ export function useLDesignMap(
    */
   const clearMarkers = (): void => {
     if (!map.value) return
-    
+
     markers.value.forEach(marker => {
       if (marker.id) {
         map.value!.removeMarker(marker.id)
       }
     })
-    
+
     markers.value = []
     markerIds.clear()
   }

@@ -23,6 +23,8 @@ import { registerApprovalNodes } from '../nodes'
 import { registerApprovalEdges } from '../edges'
 import { defaultConfig } from '../config/defaultConfig'
 import { UIManager } from '../ui/UIManager'
+import { MaterialRepositoryManager } from '../materials/MaterialRepositoryManager'
+import { MaterialRepositoryPanel } from '../ui/native/MaterialRepositoryPanel'
 
 /**
  * 审批流程图编辑器类
@@ -40,6 +42,8 @@ export class FlowchartEditor {
   private currentBackgroundType: 'grid' | 'ps' | 'solid' = 'grid'
   private copiedNodeData: any = null
   private isSelectionMode: boolean = false
+  private materialRepositoryManager!: MaterialRepositoryManager
+  private materialRepositoryPanel: MaterialRepositoryPanel | null = null
 
   /**
    * 构造函数
@@ -65,6 +69,13 @@ export class FlowchartEditor {
 
     // 初始化插件管理器
     this.pluginManager = new PluginManager(this)
+
+    // 初始化物料仓库管理器
+    this.materialRepositoryManager = new MaterialRepositoryManager()
+    this.loadMaterialRepository()
+
+    // 更新UI管理器的物料面板配置
+    this.updateMaterialPanelConfig()
 
     // 注册审批流程节点和边
     this.registerElements()
@@ -1090,6 +1101,9 @@ export class FlowchartEditor {
       case 'multi-select':
         this.toggleSelectionMode()
         break
+      case 'material-repository':
+        this.showMaterialRepository()
+        break
       case 'undo':
         this.lf.undo()
         break
@@ -1330,8 +1344,7 @@ export class FlowchartEditor {
     }
   }
 
-  // 复制粘贴相关属性
-  private copiedNodeData: any = null
+
 
   /**
    * 复制节点
@@ -1509,9 +1522,114 @@ export class FlowchartEditor {
   }
 
   /**
+   * 加载物料仓库
+   */
+  private loadMaterialRepository(): void {
+    // 尝试从本地存储加载
+    this.materialRepositoryManager.loadFromLocalStorage()
+  }
+
+  /**
+   * 保存物料仓库
+   */
+  private saveMaterialRepository(): void {
+    this.materialRepositoryManager.saveToLocalStorage()
+  }
+
+  /**
+   * 显示物料仓库面板
+   */
+  showMaterialRepository(): void {
+    if (this.materialRepositoryPanel) {
+      return // 已经显示
+    }
+
+    this.materialRepositoryPanel = new MaterialRepositoryPanel({
+      container: document.body,
+      repositoryManager: this.materialRepositoryManager,
+      onMaterialSelect: (material) => {
+        // 将自定义物料添加到画布
+        this.addCustomMaterialToCanvas(material)
+      },
+      onClose: () => {
+        this.materialRepositoryPanel = null
+        this.saveMaterialRepository()
+      }
+    })
+  }
+
+  /**
+   * 添加自定义物料到画布
+   */
+  private addCustomMaterialToCanvas(material: any): void {
+    // 在画布中心添加物料
+    const canvasCenter = this.getCanvasCenter()
+
+    const nodeConfig = {
+      type: 'custom-material',
+      x: canvasCenter.x,
+      y: canvasCenter.y,
+      text: material.name,
+      properties: {
+        material: material // 将完整的物料数据传递给节点
+      }
+    }
+
+    // 使用LogicFlow的addNode方法
+    const nodeId = this.lf.addNode(nodeConfig)
+    console.log(`自定义物料"${material.name}"已添加到画布，节点ID: ${nodeId}`)
+  }
+
+  /**
+   * 获取画布中心点
+   */
+  private getCanvasCenter(): { x: number, y: number } {
+    const container = this.lf.container
+    if (!container) {
+      return { x: 200, y: 200 }
+    }
+
+    const rect = container.getBoundingClientRect()
+    const transform = this.lf.getTransform()
+
+    return {
+      x: (rect.width / 2 - transform.TRANSLATE_X) / transform.SCALE_X,
+      y: (rect.height / 2 - transform.TRANSLATE_Y) / transform.SCALE_Y
+    }
+  }
+
+  /**
+   * 更新物料面板配置
+   */
+  private updateMaterialPanelConfig(): void {
+    if (!this.uiManager) return
+
+    // 获取物料面板组件
+    const materialPanel = this.uiManager.getComponent('material')
+    if (materialPanel && typeof materialPanel.updateConfig === 'function') {
+      materialPanel.updateConfig({
+        materialRepositoryManager: this.materialRepositoryManager,
+        onCustomMaterialAdd: (material: any, position: { x: number, y: number }) => {
+          this.addCustomMaterialToCanvas(material)
+        }
+      })
+    }
+  }
+
+  /**
    * 销毁编辑器
    */
   destroy(): void {
+    // 销毁物料仓库面板
+    this.materialRepositoryPanel?.destroy()
+    this.materialRepositoryPanel = null
+
+    // 保存物料仓库
+    this.saveMaterialRepository()
+
+    // 销毁物料仓库管理器
+    this.materialRepositoryManager?.destroy()
+
     // 销毁UI管理器
     if (this.uiManager) {
       this.uiManager.destroy()

@@ -2,7 +2,8 @@
  * 原生DOM实现的物料面板
  */
 
-import type { ApprovalNodeType, FlowchartTheme } from '../../types'
+import type { ApprovalNodeType, FlowchartTheme, CustomMaterial } from '../../types'
+import type { MaterialRepositoryManager } from '../../materials/MaterialRepositoryManager'
 
 /**
  * SVG图标映射
@@ -81,6 +82,8 @@ export interface MaterialPanelConfig {
   readonly?: boolean
   theme?: FlowchartTheme
   onNodeAdd?: (type: ApprovalNodeType, position: { x: number, y: number }) => void
+  materialRepositoryManager?: MaterialRepositoryManager
+  onCustomMaterialAdd?: (material: CustomMaterial, position: { x: number, y: number }) => void
 }
 
 /**
@@ -133,11 +136,38 @@ export class MaterialPanel {
   private container: HTMLElement
   private config: MaterialPanelConfig
   private panelElement: HTMLElement | null = null
+  private customMaterials: CustomMaterial[] = []
 
   constructor(container: HTMLElement, config: MaterialPanelConfig = {}) {
     this.container = container
     this.config = config
+    this.loadCustomMaterials()
     this.init()
+  }
+
+  /**
+   * 加载自定义物料
+   */
+  private loadCustomMaterials(): void {
+    if (this.config.materialRepositoryManager) {
+      this.customMaterials = this.config.materialRepositoryManager.getAllMaterials()
+
+      // 监听物料变化
+      this.config.materialRepositoryManager.on('material:add', () => {
+        this.customMaterials = this.config.materialRepositoryManager!.getAllMaterials()
+        this.refreshCustomMaterials()
+      })
+
+      this.config.materialRepositoryManager.on('material:update', () => {
+        this.customMaterials = this.config.materialRepositoryManager!.getAllMaterials()
+        this.refreshCustomMaterials()
+      })
+
+      this.config.materialRepositoryManager.on('material:delete', () => {
+        this.customMaterials = this.config.materialRepositoryManager!.getAllMaterials()
+        this.refreshCustomMaterials()
+      })
+    }
   }
 
   /**
@@ -172,15 +202,15 @@ export class MaterialPanel {
    * 创建分类HTML
    */
   private createCategoriesHTML(): string {
-    return NODE_TYPES.map(category => `
+    let html = NODE_TYPES.map(category => `
       <div class="node-category">
         <div class="category-header">
           <span class="category-title">${category.category}</span>
         </div>
         <div class="category-nodes">
           ${category.nodes.map(node => `
-            <div class="node-item" 
-                 data-type="${node.type}" 
+            <div class="node-item"
+                 data-type="${node.type}"
                  draggable="true"
                  title="${node.label}">
               <div class="node-icon">${node.icon}</div>
@@ -190,6 +220,89 @@ export class MaterialPanel {
         </div>
       </div>
     `).join('')
+
+    // 添加自定义物料分类
+    if (this.customMaterials.length > 0) {
+      html += `
+        <div class="node-category">
+          <div class="category-header">
+            <span class="category-title">🎨 自定义物料</span>
+          </div>
+          <div class="category-nodes" id="custom-materials">
+            ${this.createCustomMaterialsHTML()}
+          </div>
+        </div>
+      `
+    }
+
+    return html
+  }
+
+  /**
+   * 创建自定义物料HTML
+   */
+  private createCustomMaterialsHTML(): string {
+    return this.customMaterials.map(material => `
+      <div class="node-item custom-material-item"
+           data-material-id="${material.id}"
+           draggable="true"
+           title="${material.description || material.name}">
+        <div class="node-icon">${this.createCustomMaterialIcon(material)}</div>
+        <span class="node-label">${material.name}</span>
+      </div>
+    `).join('')
+  }
+
+  /**
+   * 创建自定义物料图标
+   */
+  private createCustomMaterialIcon(material: CustomMaterial): string {
+    const { shape, style, icon } = material
+    const size = 16
+    const centerX = size / 2
+    const centerY = size / 2
+
+    let shapeElement = ''
+
+    switch (shape) {
+      case 'circle':
+        shapeElement = `<circle cx="${centerX}" cy="${centerY}" r="${size / 3}"
+          fill="${style.fill || '#ffffff'}" stroke="${style.stroke || '#722ED1'}" stroke-width="1" />`
+        break
+      case 'diamond':
+        shapeElement = `<polygon points="${centerX},2 ${size - 2},${centerY} ${centerX},${size - 2} 2,${centerY}"
+          fill="${style.fill || '#ffffff'}" stroke="${style.stroke || '#722ED1'}" stroke-width="1" />`
+        break
+      case 'ellipse':
+        shapeElement = `<ellipse cx="${centerX}" cy="${centerY}" rx="${size / 3}" ry="${size / 4}"
+          fill="${style.fill || '#ffffff'}" stroke="${style.stroke || '#722ED1'}" stroke-width="1" />`
+        break
+      default:
+        shapeElement = `<rect x="2" y="3" width="${size - 4}" height="${size - 6}" rx="1"
+          fill="${style.fill || '#ffffff'}" stroke="${style.stroke || '#722ED1'}" stroke-width="1" />`
+    }
+
+    let iconElement = ''
+    if (icon && icon.content) {
+      iconElement = `<text x="${centerX}" y="${centerY + 2}" text-anchor="middle" font-size="8" fill="${icon.color || '#333'}">${icon.content}</text>`
+    }
+
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${shapeElement}${iconElement}</svg>`
+  }
+
+  /**
+   * 刷新自定义物料
+   */
+  private refreshCustomMaterials(): void {
+    if (!this.panelElement) return
+
+    const customMaterialsContainer = this.panelElement.querySelector('#custom-materials')
+    if (customMaterialsContainer) {
+      customMaterialsContainer.innerHTML = this.createCustomMaterialsHTML()
+    } else {
+      // 重新创建整个面板
+      this.panelElement.querySelector('.panel-content')!.innerHTML = this.createCategoriesHTML()
+    }
   }
 
   /**
@@ -204,9 +317,18 @@ export class MaterialPanel {
       const nodeItem = target.closest('.node-item') as HTMLElement
 
       if (nodeItem) {
-        const nodeType = nodeItem.dataset.type as ApprovalNodeType
-        e.dataTransfer?.setData('text/plain', nodeType)
-        e.dataTransfer?.setData('application/node-type', nodeType)
+        // 检查是否是自定义物料
+        const materialId = nodeItem.dataset.materialId
+        if (materialId) {
+          // 自定义物料拖拽
+          e.dataTransfer?.setData('text/plain', 'custom-material')
+          e.dataTransfer?.setData('application/custom-material-id', materialId)
+        } else {
+          // 标准节点拖拽
+          const nodeType = nodeItem.dataset.type as ApprovalNodeType
+          e.dataTransfer?.setData('text/plain', nodeType)
+          e.dataTransfer?.setData('application/node-type', nodeType)
+        }
 
         // 添加拖拽样式
         nodeItem.classList.add('dragging')
@@ -229,9 +351,19 @@ export class MaterialPanel {
       const nodeItem = target.closest('.node-item') as HTMLElement
 
       if (nodeItem) {
-        const nodeType = nodeItem.dataset.type as ApprovalNodeType
-        // 在画布中心添加节点
-        this.config.onNodeAdd?.(nodeType, { x: 400, y: 300 })
+        // 检查是否是自定义物料
+        const materialId = nodeItem.dataset.materialId
+        if (materialId) {
+          // 添加自定义物料
+          const material = this.customMaterials.find(m => m.id === materialId)
+          if (material) {
+            this.config.onCustomMaterialAdd?.(material, { x: 400, y: 300 })
+          }
+        } else {
+          // 添加标准节点
+          const nodeType = nodeItem.dataset.type as ApprovalNodeType
+          this.config.onNodeAdd?.(nodeType, { x: 400, y: 300 })
+        }
       }
     })
   }
@@ -407,6 +539,22 @@ export class MaterialPanel {
   public setTheme(theme: FlowchartTheme): void {
     this.config.theme = theme
     // 主题通过CSS类在容器级别控制
+  }
+
+  /**
+   * 更新配置
+   */
+  public updateConfig(newConfig: Partial<MaterialPanelConfig>): void {
+    this.config = { ...this.config, ...newConfig }
+    this.loadCustomMaterials()
+
+    // 刷新面板内容
+    if (this.panelElement) {
+      const panelContent = this.panelElement.querySelector('.panel-content')
+      if (panelContent) {
+        panelContent.innerHTML = this.createCategoriesHTML()
+      }
+    }
   }
 
   /**

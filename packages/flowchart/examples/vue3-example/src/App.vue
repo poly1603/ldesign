@@ -55,7 +55,7 @@ async function initEditor() {
       // 启用所有UI组件
       toolbar: {
         visible: true,
-        tools: ['select', 'zoom-fit', 'undo', 'redo', 'delete']
+        tools: ['select', 'multi-select', 'material-repository', 'zoom-fit', 'undo', 'redo', 'delete']
       },
       nodePanel: {
         visible: true,

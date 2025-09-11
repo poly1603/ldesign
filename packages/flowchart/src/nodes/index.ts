@@ -29,6 +29,9 @@ import { TimerEventNode, TimerEventNodeModel } from './TimerEventNode'
 import { MessageEventNode, MessageEventNodeModel } from './MessageEventNode'
 import { SignalEventNode, SignalEventNodeModel } from './SignalEventNode'
 
+// 自定义物料节点
+import { registerCustomMaterialNode } from './CustomMaterialNode'
+
 /**
  * 注册所有审批流程节点
  * @param lf LogicFlow 实例
@@ -145,6 +148,9 @@ export function registerApprovalNodes(lf: LogicFlow): void {
     view: SignalEventNode,
     model: SignalEventNodeModel
   })
+
+  // 注册自定义物料节点
+  registerCustomMaterialNode(lf)
 }
 
 // 导出所有节点类

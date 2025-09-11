@@ -18,6 +18,7 @@ export interface ToolbarConfig {
 const TOOLS = {
   'select': { label: '选择', icon: '👆', title: '选择工具' },
   'multi-select': { label: '多选', icon: '🔲', title: '多选模式' },
+  'material-repository': { label: '物料库', icon: '🏪', title: '物料仓库' },
   'zoom-fit': { label: '适应', icon: '🔍', title: '适应画布' },
   'zoom-in': { label: '放大', icon: '➕', title: '放大画布' },
   'zoom-out': { label: '缩小', icon: '➖', title: '缩小画布' },

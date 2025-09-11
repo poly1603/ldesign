@@ -494,6 +494,13 @@ export class UIManager {
   }
 
   /**
+   * 获取组件
+   */
+  getComponent(name: string): any {
+    return this.components.get(name)
+  }
+
+  /**
    * 销毁UI
    */
   destroy(): void {
