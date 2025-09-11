@@ -1,148 +1,122 @@
 /**
  * 结束节点
- * 流程图的结束节点，通常为圆形，带有双边框
+ * 
+ * 审批流程的结束节点，表示流程的终点
  */
 
-import type { EndNodeData, Viewport } from '@/types/index.js';
-import { NodeType, PortPosition } from '@/types/index.js';
-import { BaseNode } from './BaseNode.js';
+import { CircleNode, CircleNodeModel, h } from '@logicflow/core'
 
 /**
- * 结束节点类
+ * 结束节点模型
  */
-export class EndNode extends BaseNode {
-  constructor(data: EndNodeData) {
-    super(data);
-
-    // 设置默认样式
-    this.style = {
-      fillColor: 'var(--ldesign-error-color-1)',
-      strokeColor: 'var(--ldesign-error-color)',
-      strokeWidth: 2,
-      fontSize: 14,
-      fontColor: 'var(--ldesign-error-color-8)',
-      fontFamily: 'Arial, sans-serif',
-      opacity: 1,
-      ...data.style
-    };
-
-    // 设置默认尺寸（圆形）
-    if (!data.size.width || !data.size.height) {
-      this.size = { width: 60, height: 60 };
-    }
-  }
-
+export class EndNodeModel extends CircleNodeModel {
   /**
-   * 初始化端口
-   * 结束节点只有输入端口
+   * 设置节点属性
    */
-  protected override initializePorts(): void {
-    this.ports = [
-      {
-        id: 'input',
-        position: PortPosition.LEFT,
-        offset: 0.5,
-        label: '结束',
-        connectable: true,
-        maxConnections: -1,
-        currentConnections: 0,
-        style: {
-          fillColor: 'var(--ldesign-error-color)',
-          strokeColor: '#ffffff'
-        }
+  setAttributes(): void {
+    // 设置节点尺寸
+    this.r = 30
+
+    // 设置默认文本
+    if (!this.text?.value) {
+      this.text = {
+        value: '结束',
+        x: this.x,
+        y: this.y
       }
-    ];
-  }
-
-  /**
-   * 渲染节点形状
-   */
-  protected renderShape(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
-    const centerX = this.position.x + this.size.width / 2;
-    const centerY = this.position.y + this.size.height / 2;
-    const radius = Math.min(this.size.width, this.size.height) / 2;
-
-    // 绘制外圆
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    // 绘制内圆（双边框效果）
-    ctx.save();
-    ctx.strokeStyle = this.style.strokeColor || 'var(--ldesign-error-color)';
-    ctx.lineWidth = (this.style.strokeWidth || 2) / 2;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius - 4, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  /**
-   * 点击测试（圆形）
-   */
-  override hitTest(point: { x: number; y: number }): boolean {
-    const centerX = this.position.x + this.size.width / 2;
-    const centerY = this.position.y + this.size.height / 2;
-    const radius = Math.min(this.size.width, this.size.height) / 2;
-
-    const dx = point.x - centerX;
-    const dy = point.y - centerY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    return distance <= radius;
-  }
-
-  /**
-   * 获取端口在画布上的绝对位置
-   */
-  override getPortPosition(portId: string): { x: number; y: number } | undefined {
-    const port = this.getPort(portId);
-    if (!port) {
-      return undefined;
-    }
-
-    const centerX = this.position.x + this.size.width / 2;
-    const centerY = this.position.y + this.size.height / 2;
-    const radius = Math.min(this.size.width, this.size.height) / 2;
-
-    // 对于圆形节点，端口位置在圆周上
-    switch (port.position) {
-      case PortPosition.TOP:
-        return {
-          x: centerX,
-          y: centerY - radius
-        };
-      case PortPosition.RIGHT:
-        return {
-          x: centerX + radius,
-          y: centerY
-        };
-      case PortPosition.BOTTOM:
-        return {
-          x: centerX,
-          y: centerY + radius
-        };
-      case PortPosition.LEFT:
-        return {
-          x: centerX - radius,
-          y: centerY
-        };
-      default:
-        return undefined;
     }
   }
 
   /**
-   * 克隆节点
+   * 获取节点样式
    */
-  clone(): EndNode {
-    const data: EndNodeData = {
-      ...this.getData(),
-      type: NodeType.END,
-      id: `${this.id}_copy_${Date.now()}`
-    };
+  getNodeStyle() {
+    const style = super.getNodeStyle()
+    return {
+      ...style,
+      fill: 'var(--ldesign-error-color-1, #fde8e8)',
+      stroke: 'var(--ldesign-error-color, #e54848)',
+      strokeWidth: 2,
+      cursor: 'pointer'
+    }
+  }
 
-    return new EndNode(data);
+  /**
+   * 获取文本样式
+   */
+  getTextStyle() {
+    const style = super.getTextStyle()
+    return {
+      ...style,
+      fontSize: 12,
+      fill: 'var(--ldesign-text-color-primary, rgba(0, 0, 0, 0.9))',
+      fontWeight: 'bold'
+    }
+  }
+
+  /**
+   * 获取锚点
+   */
+  getDefaultAnchor() {
+    const { x, y, r } = this
+    return [
+      // 左侧锚点（只允许输入）
+      {
+        x: x - r,
+        y,
+        id: `${this.id}_left`,
+        edgeAddable: true,
+        type: 'left'
+      }
+    ]
+  }
+
+  /**
+   * 连接规则：结束节点可以作为目标节点
+   */
+  isAllowConnectedAsTarget(): boolean {
+    return true
+  }
+
+  /**
+   * 连接规则：结束节点不能作为源节点
+   */
+  isAllowConnectedAsSource(): boolean {
+    return false
+  }
+}
+
+/**
+ * 结束节点视图
+ */
+export class EndNode extends CircleNode {
+  /**
+   * 获取节点形状
+   */
+  getShape(): h.JSX.Element {
+    const { model } = this.props
+    const { x, y, r } = model
+    const style = model.getNodeStyle()
+
+    return h('g', {}, [
+      // 主圆形
+      h('circle', {
+        cx: x,
+        cy: y,
+        r,
+        ...style
+      }),
+      // 内部停止图标
+      h('rect', {
+        x: x - 8,
+        y: y - 8,
+        width: 16,
+        height: 16,
+        rx: 2,
+        ry: 2,
+        fill: 'var(--ldesign-error-color, #e54848)',
+        stroke: 'none'
+      })
+    ])
   }
 }

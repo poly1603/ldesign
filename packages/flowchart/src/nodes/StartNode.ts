@@ -1,139 +1,120 @@
 /**
  * 开始节点
- * 流程图的起始节点，通常为圆形
+ * 
+ * 审批流程的开始节点，通常表示流程的起始点
  */
 
-import type { StartNodeData, Viewport } from '@/types/index.js';
-import { NodeType, PortPosition } from '@/types/index.js';
-import { BaseNode } from './BaseNode.js';
+import { CircleNode, CircleNodeModel, h } from '@logicflow/core'
 
 /**
- * 开始节点类
+ * 开始节点模型
  */
-export class StartNode extends BaseNode {
-  constructor(data: StartNodeData) {
-    super(data);
-
-    // 设置默认样式
-    this.style = {
-      fillColor: 'var(--ldesign-success-color-1)',
-      strokeColor: 'var(--ldesign-success-color)',
-      strokeWidth: 2,
-      fontSize: 14,
-      fontColor: 'var(--ldesign-success-color-8)',
-      fontFamily: 'Arial, sans-serif',
-      opacity: 1,
-      ...data.style
-    };
-
-    // 设置默认尺寸（圆形）
-    if (!data.size.width || !data.size.height) {
-      this.size = { width: 60, height: 60 };
-    }
-  }
-
+export class StartNodeModel extends CircleNodeModel {
   /**
-   * 初始化端口
-   * 开始节点只有输出端口
+   * 设置节点属性
    */
-  protected override initializePorts(): void {
-    this.ports = [
-      {
-        id: 'output',
-        position: PortPosition.RIGHT,
-        offset: 0.5,
-        label: '开始',
-        connectable: true,
-        maxConnections: -1,
-        currentConnections: 0,
-        style: {
-          fillColor: 'var(--ldesign-success-color)',
-          strokeColor: '#ffffff'
-        }
+  override setAttributes(): void {
+    // 设置节点尺寸
+    this.r = 30
+
+    // 设置默认文本
+    if (!this.text?.value) {
+      this.text = {
+        value: '开始',
+        x: this.x,
+        y: this.y,
+        draggable: false,
+        editable: true
       }
-    ];
-  }
-
-  /**
-   * 渲染节点形状
-   */
-  protected override renderShape(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
-    const centerX = this.position.x + this.size.width / 2;
-    const centerY = this.position.y + this.size.height / 2;
-    const radius = Math.min(this.size.width, this.size.height) / 2;
-
-    // 绘制圆形
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-  }
-
-  /**
-   * 点击测试（圆形）
-   */
-  override hitTest(point: { x: number; y: number }): boolean {
-    const centerX = this.position.x + this.size.width / 2;
-    const centerY = this.position.y + this.size.height / 2;
-    const radius = Math.min(this.size.width, this.size.height) / 2;
-
-    const dx = point.x - centerX;
-    const dy = point.y - centerY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    return distance <= radius;
-  }
-
-  /**
-   * 获取端口在画布上的绝对位置
-   */
-  override getPortPosition(portId: string): { x: number; y: number } | undefined {
-    const port = this.getPort(portId);
-    if (!port) {
-      return undefined;
-    }
-
-    const centerX = this.position.x + this.size.width / 2;
-    const centerY = this.position.y + this.size.height / 2;
-    const radius = Math.min(this.size.width, this.size.height) / 2;
-
-    // 对于圆形节点，端口位置在圆周上
-    switch (port.position) {
-      case PortPosition.TOP:
-        return {
-          x: centerX,
-          y: centerY - radius
-        };
-      case PortPosition.RIGHT:
-        return {
-          x: centerX + radius,
-          y: centerY
-        };
-      case PortPosition.BOTTOM:
-        return {
-          x: centerX,
-          y: centerY + radius
-        };
-      case PortPosition.LEFT:
-        return {
-          x: centerX - radius,
-          y: centerY
-        };
-      default:
-        return undefined;
     }
   }
 
   /**
-   * 克隆节点
+   * 获取节点样式
    */
-  override clone(): StartNode {
-    const data: StartNodeData = {
-      ...this.getData(),
-      type: NodeType.START,
-      id: `${this.id}_copy_${Date.now()}`
-    };
+  override getNodeStyle() {
+    const style = super.getNodeStyle()
+    return {
+      ...style,
+      fill: 'var(--ldesign-success-color-1, #ebfaeb)',
+      stroke: 'var(--ldesign-success-color, #52c41a)',
+      strokeWidth: 2,
+      cursor: 'pointer'
+    }
+  }
 
-    return new StartNode(data);
+  /**
+   * 获取文本样式
+   */
+  override getTextStyle() {
+    const style = super.getTextStyle()
+    return {
+      ...style,
+      fontSize: 12,
+      fill: 'var(--ldesign-text-color-primary, rgba(0, 0, 0, 0.9))',
+      fontWeight: 'bold'
+    }
+  }
+
+  /**
+   * 获取锚点
+   */
+  override getDefaultAnchor() {
+    const { x, y, r } = this
+    return [
+      // 右侧锚点（只允许输出）
+      {
+        x: x + r,
+        y,
+        id: `${this.id}_right`,
+        edgeAddable: true,
+        type: 'right'
+      }
+    ]
+  }
+
+  /**
+   * 连接规则：开始节点只能作为源节点
+   */
+  override isAllowConnectedAsTarget(): boolean {
+    return false
+  }
+
+  /**
+   * 连接规则：开始节点可以作为源节点
+   */
+  override isAllowConnectedAsSource(): boolean {
+    return true
+  }
+}
+
+/**
+ * 开始节点视图
+ */
+export class StartNode extends CircleNode {
+  /**
+   * 获取节点形状
+   */
+  override getShape(): h.JSX.Element {
+    const { model } = this.props
+    const { x, y, r } = model
+    const style = model.getNodeStyle()
+
+    return h('g', {}, [
+      // 主圆形
+      h('circle', {
+        cx: x,
+        cy: y,
+        r,
+        ...style
+      }),
+      // 内部图标
+      h('path', {
+        d: 'M-8,-4 L-8,4 L8,0 Z',
+        transform: `translate(${x}, ${y})`,
+        fill: 'var(--ldesign-success-color, #52c41a)',
+        stroke: 'none'
+      })
+    ])
   }
 }

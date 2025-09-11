@@ -1,249 +1,253 @@
 /**
  * 审批节点
- * OA系统中的审批节点，通常为带有特殊标识的矩形
+ * 
+ * 审批流程的核心节点，表示需要人工审批的环节
  */
 
-import type { ApprovalNodeData, Viewport } from '@/types/index.js';
-import { NodeType, PortPosition } from '@/types/index.js';
-import { BaseNode } from './BaseNode.js';
-import { drawRoundedRect } from '@/utils/index.js';
+import { RectNode, RectNodeModel, h } from '@logicflow/core'
 
 /**
- * 审批节点类
+ * 审批节点模型
  */
-export class ApprovalNode extends BaseNode {
-  constructor(data: ApprovalNodeData) {
-    super(data);
+export class ApprovalNodeModel extends RectNodeModel {
+  /**
+   * 设置节点属性
+   */
+  override setAttributes(): void {
+    // 设置节点尺寸
+    this.width = 120
+    this.height = 60
+    this.radius = 8
 
-    // 设置默认样式
-    this.style = {
-      fillColor: 'var(--ldesign-brand-color-1)',
-      strokeColor: 'var(--ldesign-brand-color)',
+    // 设置默认文本
+    if (!this.text?.value) {
+      this.text = {
+        value: '审批节点',
+        x: this.x,
+        y: this.y,
+        draggable: false,
+        editable: true
+      }
+    }
+  }
+
+  /**
+   * 获取节点样式
+   */
+  override getNodeStyle() {
+    const style = super.getNodeStyle()
+    const status = this.properties?.status
+
+    // 根据审批状态设置不同样式
+    let fillColor = 'var(--ldesign-brand-color-1, #f1ecf9)'
+    let strokeColor = 'var(--ldesign-brand-color, #722ED1)'
+
+    switch (status) {
+      case 'approved':
+        fillColor = 'var(--ldesign-success-color-1, #ebfaeb)'
+        strokeColor = 'var(--ldesign-success-color, #52c41a)'
+        break
+      case 'rejected':
+        fillColor = 'var(--ldesign-error-color-1, #fde8e8)'
+        strokeColor = 'var(--ldesign-error-color, #e54848)'
+        break
+      case 'processing':
+        fillColor = 'var(--ldesign-warning-color-1, #fff8e6)'
+        strokeColor = 'var(--ldesign-warning-color, #f5c538)'
+        break
+    }
+
+    return {
+      ...style,
+      fill: fillColor,
+      stroke: strokeColor,
       strokeWidth: 2,
-      fontSize: 14,
-      fontColor: 'var(--ldesign-brand-color-8)',
-      fontFamily: 'Arial, sans-serif',
-      opacity: 1,
-      ...data.style
-    };
-
-    // 设置默认尺寸
-    if (!data.size.width || !data.size.height) {
-      this.size = { width: 140, height: 80 };
+      cursor: 'pointer'
     }
   }
 
   /**
-   * 初始化端口
-   * 审批节点有输入、通过、拒绝端口
+   * 获取文本样式
    */
-  protected override initializePorts(): void {
-    this.ports = [
+  override getTextStyle() {
+    const style = super.getTextStyle()
+    return {
+      ...style,
+      fontSize: 12,
+      fill: 'var(--ldesign-text-color-primary, rgba(0, 0, 0, 0.9))',
+      fontWeight: 'normal'
+    }
+  }
+
+  /**
+   * 获取锚点
+   */
+  override getDefaultAnchor() {
+    const { x, y, width, height } = this
+    return [
+      // 左侧锚点（输入）
       {
-        id: 'input',
-        position: PortPosition.LEFT,
-        offset: 0.5,
-        label: '输入',
-        connectable: true,
-        maxConnections: -1,
-        currentConnections: 0,
-        style: {
-          fillColor: 'var(--ldesign-brand-color)',
-          strokeColor: '#ffffff'
-        }
+        x: x - width / 2,
+        y,
+        id: `${this.id}_left`,
+        edgeAddable: true,
+        type: 'left'
       },
+      // 右侧锚点（输出）
       {
-        id: 'approved',
-        position: PortPosition.RIGHT,
-        offset: 0.3,
-        label: '通过',
-        connectable: true,
-        maxConnections: -1,
-        currentConnections: 0,
-        style: {
-          fillColor: 'var(--ldesign-success-color)',
-          strokeColor: '#ffffff'
-        }
+        x: x + width / 2,
+        y,
+        id: `${this.id}_right`,
+        edgeAddable: true,
+        type: 'right'
       },
+      // 上方锚点
       {
-        id: 'rejected',
-        position: PortPosition.RIGHT,
-        offset: 0.7,
-        label: '拒绝',
-        connectable: true,
-        maxConnections: -1,
-        currentConnections: 0,
-        style: {
-          fillColor: 'var(--ldesign-error-color)',
-          strokeColor: '#ffffff'
-        }
+        x,
+        y: y - height / 2,
+        id: `${this.id}_top`,
+        edgeAddable: true,
+        type: 'top'
+      },
+      // 下方锚点
+      {
+        x,
+        y: y + height / 2,
+        id: `${this.id}_bottom`,
+        edgeAddable: true,
+        type: 'bottom'
       }
-    ];
+    ]
   }
 
   /**
-   * 渲染节点形状
+   * 连接规则：审批节点可以作为目标节点
    */
-  protected renderShape(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
-    const borderRadius = 8;
-
-    // 绘制主体矩形
-    drawRoundedRect(
-      ctx,
-      this.position.x,
-      this.position.y,
-      this.size.width,
-      this.size.height,
-      borderRadius
-    );
-
-    ctx.fill();
-    ctx.stroke();
-
-    // 绘制审批标识（左上角的小三角形）
-    this.renderApprovalIndicator(ctx);
+  override isAllowConnectedAsTarget(): boolean {
+    return true
   }
 
   /**
-   * 渲染审批标识
+   * 连接规则：审批节点可以作为源节点
    */
-  private renderApprovalIndicator(ctx: CanvasRenderingContext2D): void {
-    const indicatorSize = 16;
-    const x = this.position.x;
-    const y = this.position.y;
-
-    ctx.save();
-
-    // 绘制三角形背景
-    ctx.fillStyle = 'var(--ldesign-brand-color)';
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + indicatorSize, y);
-    ctx.lineTo(x, y + indicatorSize);
-    ctx.closePath();
-    ctx.fill();
-
-    // 绘制审批图标（简化的勾号）
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    const iconSize = 8;
-    const iconX = x + 4;
-    const iconY = y + 4;
-
-    ctx.beginPath();
-    ctx.moveTo(iconX + 2, iconY + 4);
-    ctx.lineTo(iconX + 4, iconY + 6);
-    ctx.lineTo(iconX + 8, iconY + 2);
-    ctx.stroke();
-
-    ctx.restore();
+  override isAllowConnectedAsSource(): boolean {
+    return true
   }
 
   /**
-   * 渲染标签
+   * 获取审批人信息
    */
-  protected override renderLabel(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
-    if (!this.label) {
-      return;
-    }
-
-    // 主标签
-    const center = {
-      x: this.position.x + this.size.width / 2,
-      y: this.position.y + this.size.height / 2 - 8
-    };
-
-    ctx.save();
-    ctx.fillStyle = this.style.fontColor || 'var(--ldesign-brand-color-8)';
-    ctx.font = `${this.style.fontSize || 14}px ${this.style.fontFamily || 'Arial, sans-serif'}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(this.label, center.x, center.y);
-
-    // 审批人信息
-    const approvalConfig = (this.properties as ApprovalNodeData).approvalConfig;
-    if (approvalConfig && approvalConfig.approvers.length > 0) {
-      const approverText = approvalConfig.approvers.length === 1
-        ? approvalConfig.approvers[0]!.name
-        : `${approvalConfig.approvers.length}人审批`;
-
-      ctx.font = `12px ${this.style.fontFamily || 'Arial, sans-serif'}`;
-      ctx.fillStyle = 'var(--ldesign-font-gray-3)';
-      ctx.fillText(approverText, center.x, center.y + 16);
-    }
-
-    ctx.restore();
+  getApprovers() {
+    return this.properties?.approvers || []
   }
 
   /**
-   * 渲染端口标签
+   * 设置审批状态
    */
-  protected override renderPorts(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
-    // 先渲染端口圆点
-    super.renderPorts(ctx, viewport);
-
-    // 然后渲染端口标签
-    for (const port of this.ports) {
-      if (!port.connectable || !port.label || port.id === 'input') {
-        continue;
-      }
-
-      const portPosition = this.getPortPosition(port.id);
-      if (!portPosition) {
-        continue;
-      }
-
-      ctx.save();
-
-      // 标签样式
-      ctx.fillStyle = port.style?.fontColor || port.style?.fillColor || 'var(--ldesign-brand-color)';
-      ctx.font = `10px ${this.style.fontFamily || 'Arial, sans-serif'}`;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-
-      // 标签位置
-      const labelX = portPosition.x + 8;
-      const labelY = portPosition.y;
-
-      ctx.fillText(port.label, labelX, labelY);
-      ctx.restore();
-    }
-  }
-
-  /**
-   * 获取审批配置
-   */
-  getApprovalConfig(): any {
-    return (this.properties as ApprovalNodeData).approvalConfig;
-  }
-
-  /**
-   * 设置审批配置
-   */
-  setApprovalConfig(config: any): void {
-    this.properties = {
+  setApprovalStatus(status: string) {
+    this.setProperties({
       ...this.properties,
-      approvalConfig: config
-    };
+      status
+    })
   }
 
   /**
-   * 克隆节点
+   * 获取审批状态
    */
-  clone(): ApprovalNode {
-    const data: ApprovalNodeData = {
-      ...this.getData(),
-      type: NodeType.APPROVAL,
-      id: `${this.id}_copy_${Date.now()}`,
-      approvalConfig: {
-        type: 'single',
-        approvers: []
-      }
-    };
+  getApprovalStatus() {
+    return this.properties?.status || 'pending'
+  }
+}
 
-    return new ApprovalNode(data);
+/**
+ * 审批节点视图
+ */
+export class ApprovalNode extends RectNode {
+  /**
+   * 获取节点形状
+   */
+  override getShape(): h.JSX.Element {
+    const { model } = this.props
+    const { x, y, width, height, radius } = model
+    const style = model.getNodeStyle()
+    const status = model.properties?.status
+
+    return h('g', {}, [
+      // 主矩形
+      h('rect', {
+        x: x - width / 2,
+        y: y - height / 2,
+        width,
+        height,
+        rx: radius,
+        ry: radius,
+        ...style
+      }),
+      // 状态图标
+      this.getStatusIcon(x, y, status),
+      // 审批人数量标识
+      this.getApproverCount(x, y, model.getApprovers().length)
+    ])
+  }
+
+  /**
+   * 获取状态图标
+   */
+  private getStatusIcon(x: number, y: number, status?: string): h.JSX.Element | null {
+    if (!status || status === 'pending') return null
+
+    let iconPath = ''
+    let iconColor = ''
+
+    switch (status) {
+      case 'approved':
+        iconPath = 'M-6,-2 L-2,2 L6,-6'
+        iconColor = 'var(--ldesign-success-color, #52c41a)'
+        break
+      case 'rejected':
+        iconPath = 'M-4,-4 L4,4 M4,-4 L-4,4'
+        iconColor = 'var(--ldesign-error-color, #e54848)'
+        break
+      case 'processing':
+        iconPath = 'M-4,0 A4,4 0 1,1 4,0 A4,4 0 1,1 -4,0'
+        iconColor = 'var(--ldesign-warning-color, #f5c538)'
+        break
+    }
+
+    return h('path', {
+      d: iconPath,
+      transform: `translate(${x + 35}, ${y - 20})`,
+      stroke: iconColor,
+      strokeWidth: 2,
+      fill: 'none'
+    })
+  }
+
+  /**
+   * 获取审批人数量标识
+   */
+  private getApproverCount(x: number, y: number, count: number): h.JSX.Element | null {
+    if (count === 0) return null
+
+    return h('g', {}, [
+      // 背景圆
+      h('circle', {
+        cx: x - 35,
+        cy: y - 20,
+        r: 8,
+        fill: 'var(--ldesign-brand-color, #722ED1)',
+        stroke: 'white',
+        strokeWidth: 1
+      }),
+      // 数量文本
+      h('text', {
+        x: x - 35,
+        y: y - 16,
+        fontSize: 10,
+        fill: 'white',
+        textAnchor: 'middle',
+        fontWeight: 'bold'
+      }, count.toString())
+    ])
   }
 }

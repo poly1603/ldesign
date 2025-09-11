@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>插件系统演示 - LDesign Flowchart Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #722ED1;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .demo-section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-section h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #722ED1;
+            padding-bottom: 8px;
+        }
+
+        .plugin-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .plugin-btn {
+            padding: 8px 16px;
+            border: 2px solid #722ED1;
+            background: #fff;
+            color: #722ED1;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .plugin-btn:hover {
+            background: #722ED1;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(114, 46, 209, 0.3);
+        }
+
+        .plugin-btn.active {
+            background: #722ED1;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(114, 46, 209, 0.4);
+        }
+
+        .plugin-btn.active::after {
+            content: '✓';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #52c41a;
+            color: #fff;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+
+        .flowchart-container {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #e5e5e5;
+            border-radius: 8px;
+            background: #fafafa;
+            position: relative;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .plugin-panel {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 16px;
+        }
+
+        .plugin-panel h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 8px;
+        }
+
+        .plugin-list {
+            list-style: none;
+        }
+
+        .plugin-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .plugin-item:last-child {
+            border-bottom: none;
+        }
+
+        .plugin-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .plugin-status {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            color: #fff;
+        }
+
+        .plugin-status.installed {
+            background: #52c41a;
+        }
+
+        .plugin-status.not-installed {
+            background: #d9d9d9;
+            color: #666;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            color: #333;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            border-color: #722ED1;
+            color: #722ED1;
+        }
+
+        .action-btn.primary {
+            background: #722ED1;
+            color: #fff;
+            border-color: #722ED1;
+        }
+
+        .action-btn.primary:hover {
+            background: #5e2aa7;
+        }
+
+        .history-panel {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 8px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .history-item.current {
+            background: #f0f5ff;
+            color: #1890ff;
+            font-weight: 500;
+        }
+
+        .export-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .export-btn {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            color: #333;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .export-btn:hover {
+            border-color: #722ED1;
+            color: #722ED1;
+        }
+
+        .minimap-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            border: 2px solid #d9d9d9;
+            border-radius: 6px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 16px;
+            background: #fff;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 2000;
+            transform: translateX(100%);
+            transition: transform 0.3s;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-color: #52c41a;
+            background: #f6ffed;
+        }
+
+        .notification.error {
+            border-color: #ff4d4f;
+            background: #fff2f0;
+        }
+
+        .notification.warning {
+            border-color: #faad14;
+            background: #fffbe6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>LDesign Flowchart Editor - 插件系统演示</h1>
+            <p>体验强大的插件系统，包括小地图、历史记录、导出等功能</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="demo-section">
+            <h2>插件管理</h2>
+            
+            <div class="plugin-controls">
+                <button class="plugin-btn" onclick="installMiniMap()">安装小地图</button>
+                <button class="plugin-btn" onclick="installHistory()">安装历史记录</button>
+                <button class="plugin-btn" onclick="installExport()">安装导出功能</button>
+                <button class="plugin-btn" onclick="uninstallAll()">卸载所有插件</button>
+                <button class="plugin-btn" onclick="showPluginInfo()">插件信息</button>
+            </div>
+
+            <div class="main-content">
+                <div class="flowchart-container" id="flowchart-container">
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666;">
+                        编辑器初始化中...
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <div class="plugin-panel">
+                        <h3>已安装插件</h3>
+                        <ul class="plugin-list" id="plugin-list">
+                            <li class="plugin-item">
+                                <span class="plugin-name">无插件</span>
+                                <span class="plugin-status not-installed">未安装</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="plugin-panel">
+                        <h3>历史记录</h3>
+                        <div class="history-panel" id="history-panel">
+                            <div class="history-item">暂无历史记录</div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="undo()">撤销</button>
+                            <button class="action-btn" onclick="redo()">重做</button>
+                            <button class="action-btn" onclick="clearHistory()">清空</button>
+                        </div>
+                    </div>
+
+                    <div class="plugin-panel">
+                        <h3>导出功能</h3>
+                        <div class="export-options">
+                            <button class="export-btn" onclick="exportPNG()">PNG</button>
+                            <button class="export-btn" onclick="exportJPG()">JPG</button>
+                            <button class="export-btn" onclick="exportSVG()">SVG</button>
+                            <button class="export-btn" onclick="exportJSON()">JSON</button>
+                        </div>
+                    </div>
+
+                    <div class="plugin-panel">
+                        <h3>小地图控制</h3>
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="toggleMiniMap()">显示/隐藏</button>
+                            <button class="action-btn" onclick="refreshMiniMap()">刷新</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <span id="notification-text"></span>
+    </div>
+
+    <script type="module">
+        import { FlowchartEditor, MiniMapPlugin, HistoryPlugin, ExportPlugin } from '../src/index.ts';
+
+        let editor = null;
+        let miniMapPlugin = null;
+        let historyPlugin = null;
+        let exportPlugin = null;
+
+        // 初始化编辑器
+        function initEditor() {
+            const container = document.getElementById('flowchart-container');
+            
+            editor = new FlowchartEditor({
+                container: container,
+                width: container.offsetWidth,
+                height: container.offsetHeight,
+                background: { color: '#fafafa' },
+                grid: { visible: true, size: 20 }
+            });
+
+            // 添加示例节点
+            const nodes = [
+                { type: 'start', x: 150, y: 100, text: '开始' },
+                { type: 'approval', x: 300, y: 100, text: '审批' },
+                { type: 'condition', x: 450, y: 100, text: '条件' },
+                { type: 'process', x: 600, y: 50, text: '处理A' },
+                { type: 'process', x: 600, y: 150, text: '处理B' },
+                { type: 'end', x: 750, y: 100, text: '结束' }
+            ];
+
+            nodes.forEach(node => {
+                editor.addNode(node);
+            });
+
+            console.log('编辑器初始化完成');
+            updatePluginList();
+        }
+
+        // 安装小地图插件
+        window.installMiniMap = function() {
+            if (!miniMapPlugin) {
+                miniMapPlugin = new MiniMapPlugin({
+                    width: 200,
+                    height: 150
+                });
+                
+                editor.getPluginManager().install(miniMapPlugin);
+                showNotification('小地图插件安装成功', 'success');
+                updatePluginList();
+            } else {
+                showNotification('小地图插件已安装', 'warning');
+            }
+        };
+
+        // 安装历史记录插件
+        window.installHistory = function() {
+            if (!historyPlugin) {
+                historyPlugin = new HistoryPlugin({
+                    maxSize: 20,
+                    enableKeyboard: true
+                });
+                
+                editor.getPluginManager().install(historyPlugin);
+                showNotification('历史记录插件安装成功', 'success');
+                updatePluginList();
+                updateHistoryPanel();
+            } else {
+                showNotification('历史记录插件已安装', 'warning');
+            }
+        };
+
+        // 安装导出插件
+        window.installExport = function() {
+            if (!exportPlugin) {
+                exportPlugin = new ExportPlugin({
+                    defaultFileName: 'my-flowchart',
+                    quality: 0.9
+                });
+                
+                editor.getPluginManager().install(exportPlugin);
+                showNotification('导出插件安装成功', 'success');
+                updatePluginList();
+            } else {
+                showNotification('导出插件已安装', 'warning');
+            }
+        };
+
+        // 卸载所有插件
+        window.uninstallAll = function() {
+            editor.getPluginManager().uninstallAll();
+            miniMapPlugin = null;
+            historyPlugin = null;
+            exportPlugin = null;
+            showNotification('所有插件已卸载', 'success');
+            updatePluginList();
+            updateHistoryPanel();
+        };
+
+        // 显示插件信息
+        window.showPluginInfo = function() {
+            const pluginManager = editor.getPluginManager();
+            const installed = pluginManager.getInstalledPlugins();
+            const registered = pluginManager.getRegisteredPlugins();
+            
+            console.log('已注册插件:', registered);
+            console.log('已安装插件:', installed);
+            
+            showNotification(`已安装 ${installed.length} 个插件`, 'info');
+        };
+
+        // 撤销
+        window.undo = function() {
+            if (historyPlugin && historyPlugin.canUndo()) {
+                historyPlugin.undo();
+                updateHistoryPanel();
+            } else {
+                showNotification('无法撤销或历史插件未安装', 'warning');
+            }
+        };
+
+        // 重做
+        window.redo = function() {
+            if (historyPlugin && historyPlugin.canRedo()) {
+                historyPlugin.redo();
+                updateHistoryPanel();
+            } else {
+                showNotification('无法重做或历史插件未安装', 'warning');
+            }
+        };
+
+        // 清空历史
+        window.clearHistory = function() {
+            if (historyPlugin) {
+                historyPlugin.clear();
+                updateHistoryPanel();
+                showNotification('历史记录已清空', 'success');
+            } else {
+                showNotification('历史插件未安装', 'warning');
+            }
+        };
+
+        // 导出 PNG
+        window.exportPNG = function() {
+            if (exportPlugin) {
+                exportPlugin.exportToPNG();
+            } else {
+                showNotification('导出插件未安装', 'warning');
+            }
+        };
+
+        // 导出 JPG
+        window.exportJPG = function() {
+            if (exportPlugin) {
+                exportPlugin.exportToJPG();
+            } else {
+                showNotification('导出插件未安装', 'warning');
+            }
+        };
+
+        // 导出 SVG
+        window.exportSVG = function() {
+            if (exportPlugin) {
+                exportPlugin.exportToSVG();
+            } else {
+                showNotification('导出插件未安装', 'warning');
+            }
+        };
+
+        // 导出 JSON
+        window.exportJSON = function() {
+            if (exportPlugin) {
+                exportPlugin.exportToJSON();
+            } else {
+                showNotification('导出插件未安装', 'warning');
+            }
+        };
+
+        // 切换小地图
+        window.toggleMiniMap = function() {
+            if (miniMapPlugin) {
+                miniMapPlugin.toggle();
+                showNotification('小地图显示状态已切换', 'info');
+            } else {
+                showNotification('小地图插件未安装', 'warning');
+            }
+        };
+
+        // 刷新小地图
+        window.refreshMiniMap = function() {
+            if (miniMapPlugin) {
+                // 小地图会自动更新，这里只是示例
+                showNotification('小地图已刷新', 'info');
+            } else {
+                showNotification('小地图插件未安装', 'warning');
+            }
+        };
+
+        // 更新插件列表
+        function updatePluginList() {
+            const pluginList = document.getElementById('plugin-list');
+            const pluginManager = editor.getPluginManager();
+            const installedPlugins = pluginManager.getInstalledPlugins();
+            
+            const plugins = [
+                { name: '小地图', key: 'minimap' },
+                { name: '历史记录', key: 'history' },
+                { name: '导出功能', key: 'export' }
+            ];
+
+            pluginList.innerHTML = '';
+            
+            if (installedPlugins.length === 0) {
+                pluginList.innerHTML = '<li class="plugin-item"><span class="plugin-name">无插件</span><span class="plugin-status not-installed">未安装</span></li>';
+                return;
+            }
+
+            plugins.forEach(plugin => {
+                const isInstalled = installedPlugins.includes(plugin.key);
+                const li = document.createElement('li');
+                li.className = 'plugin-item';
+                li.innerHTML = `
+                    <span class="plugin-name">${plugin.name}</span>
+                    <span class="plugin-status ${isInstalled ? 'installed' : 'not-installed'}">
+                        ${isInstalled ? '已安装' : '未安装'}
+                    </span>
+                `;
+                pluginList.appendChild(li);
+            });
+        }
+
+        // 更新历史面板
+        function updateHistoryPanel() {
+            const historyPanel = document.getElementById('history-panel');
+            
+            if (!historyPlugin) {
+                historyPanel.innerHTML = '<div class="history-item">历史插件未安装</div>';
+                return;
+            }
+
+            const history = historyPlugin.getHistory();
+            const currentIndex = historyPlugin.getCurrentIndex();
+            
+            if (history.length === 0) {
+                historyPanel.innerHTML = '<div class="history-item">暂无历史记录</div>';
+                return;
+            }
+
+            historyPanel.innerHTML = '';
+            history.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = `history-item ${index === currentIndex ? 'current' : ''}`;
+                div.textContent = `${index + 1}. ${item.description}`;
+                div.onclick = () => {
+                    historyPlugin.goTo(index);
+                    updateHistoryPanel();
+                };
+                historyPanel.appendChild(div);
+            });
+        }
+
+        // 显示通知
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notification-text');
+            
+            text.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initEditor();
+        });
+
+        // 页面卸载时清理
+        window.addEventListener('beforeunload', () => {
+            if (editor) {
+                editor.destroy();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 接口演示 - LDesign Flowchart Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #722ED1;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .demo-section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-section h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #722ED1;
+            padding-bottom: 8px;
+        }
+
+        .api-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .api-btn {
+            padding: 8px 16px;
+            border: 2px solid #722ED1;
+            background: #fff;
+            color: #722ED1;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .api-btn:hover {
+            background: #722ED1;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(114, 46, 209, 0.3);
+        }
+
+        .api-btn.primary {
+            background: #722ED1;
+            color: #fff;
+        }
+
+        .api-btn.primary:hover {
+            background: #5e2aa7;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+
+        .flowchart-container {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #e5e5e5;
+            border-radius: 8px;
+            background: #fafafa;
+            position: relative;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .api-panel {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 16px;
+        }
+
+        .api-panel h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 8px;
+        }
+
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #333;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            margin-bottom: 12px;
+        }
+
+        .template-list {
+            list-style: none;
+        }
+
+        .template-item {
+            padding: 8px 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .template-item:hover {
+            background: #f8f9fa;
+            border-color: #722ED1;
+        }
+
+        .template-name {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .template-desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .validation-result {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        .validation-result.valid {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+
+        .validation-result.invalid {
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+        }
+
+        .node-types {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .node-type {
+            padding: 6px 10px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            font-size: 12px;
+            text-align: center;
+            color: #666;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 16px;
+            background: #fff;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 2000;
+            transform: translateX(100%);
+            transition: transform 0.3s;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-color: #52c41a;
+            background: #f6ffed;
+        }
+
+        .notification.error {
+            border-color: #ff4d4f;
+            background: #fff2f0;
+        }
+
+        .notification.info {
+            border-color: #1890ff;
+            background: #f0f8ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>LDesign Flowchart Editor - API 接口演示</h1>
+            <p>体验简洁易用的 API 接口，快速创建和管理流程图</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="demo-section">
+            <h2>API 功能演示</h2>
+            
+            <div class="api-controls">
+                <button class="api-btn primary" onclick="createEditorWithAPI()">创建编辑器</button>
+                <button class="api-btn" onclick="createApprovalTemplate()">创建审批模板</button>
+                <button class="api-btn" onclick="addCustomNodes()">添加自定义节点</button>
+                <button class="api-btn" onclick="validateCurrentData()">验证数据</button>
+                <button class="api-btn" onclick="exportToBPMN()">导出 BPMN</button>
+                <button class="api-btn" onclick="showAPIInfo()">API 信息</button>
+            </div>
+
+            <div class="main-content">
+                <div class="flowchart-container" id="flowchart-container">
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666;">
+                        点击"创建编辑器"开始使用 API
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <div class="api-panel">
+                        <h3>API 使用示例</h3>
+                        <div class="code-block" id="code-example">
+// 创建编辑器
+const editor = FlowchartAPI.createEditor({
+  container: '#editor',
+  width: 800,
+  height: 600,
+  plugins: {
+    minimap: true,
+    history: true,
+    export: true
+  }
+})
+                        </div>
+                    </div>
+
+                    <div class="api-panel">
+                        <h3>流程模板</h3>
+                        <ul class="template-list">
+                            <li class="template-item" onclick="loadTemplate('simple')">
+                                <div class="template-name">简单审批</div>
+                                <div class="template-desc">申请 → 审批 → 完成</div>
+                            </li>
+                            <li class="template-item" onclick="loadTemplate('complex')">
+                                <div class="template-name">复杂审批</div>
+                                <div class="template-desc">多级审批流程</div>
+                            </li>
+                            <li class="template-item" onclick="loadTemplate('parallel')">
+                                <div class="template-name">并行审批</div>
+                                <div class="template-desc">并行处理流程</div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="api-panel">
+                        <h3>数据验证</h3>
+                        <div class="validation-result" id="validation-result">
+                            <div>暂未验证</div>
+                        </div>
+                    </div>
+
+                    <div class="api-panel">
+                        <h3>支持的节点类型</h3>
+                        <div class="node-types" id="node-types">
+                            <!-- 动态生成 -->
+                        </div>
+                    </div>
+
+                    <div class="api-panel">
+                        <h3>API 信息</h3>
+                        <div class="code-block" id="api-info">
+版本: 加载中...
+节点类型: 加载中...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <span id="notification-text"></span>
+    </div>
+
+    <script type="module">
+        import { FlowchartAPI } from '../src/index.ts';
+
+        let editor = null;
+
+        // 创建编辑器
+        window.createEditorWithAPI = function() {
+            const container = document.getElementById('flowchart-container');
+            
+            try {
+                editor = FlowchartAPI.createEditor({
+                    container: container,
+                    width: container.offsetWidth,
+                    height: container.offsetHeight,
+                    background: { color: '#fafafa' },
+                    grid: { visible: true, size: 20 },
+                    plugins: {
+                        minimap: { width: 180, height: 120 },
+                        history: { maxSize: 30 },
+                        export: { defaultFileName: 'api-demo' }
+                    }
+                });
+
+                showNotification('编辑器创建成功！已启用所有插件', 'success');
+                updateCodeExample('createEditor');
+                console.log('编辑器创建成功:', editor);
+            } catch (error) {
+                showNotification(`创建编辑器失败: ${error.message}`, 'error');
+                console.error('创建编辑器失败:', error);
+            }
+        };
+
+        // 创建审批模板
+        window.createApprovalTemplate = function() {
+            if (!editor) {
+                showNotification('请先创建编辑器', 'error');
+                return;
+            }
+
+            try {
+                const template = FlowchartAPI.createApprovalTemplate({
+                    title: '请假审批流程',
+                    steps: ['申请提交', '直属领导审批', 'HR审批', '总经理审批'],
+                    layout: 'horizontal'
+                });
+
+                editor.setData(template);
+                showNotification('审批模板创建成功', 'success');
+                updateCodeExample('createTemplate');
+            } catch (error) {
+                showNotification(`创建模板失败: ${error.message}`, 'error');
+            }
+        };
+
+        // 添加自定义节点
+        window.addCustomNodes = function() {
+            if (!editor) {
+                showNotification('请先创建编辑器', 'error');
+                return;
+            }
+
+            try {
+                // 使用 API 创建节点
+                const startNode = FlowchartAPI.createNode({
+                    type: 'start',
+                    x: 100,
+                    y: 200,
+                    text: '开始节点'
+                });
+
+                const approvalNode = FlowchartAPI.createNode({
+                    type: 'approval',
+                    x: 300,
+                    y: 200,
+                    text: '审批节点'
+                });
+
+                const conditionNode = FlowchartAPI.createNode({
+                    type: 'condition',
+                    x: 500,
+                    y: 200,
+                    text: '条件判断'
+                });
+
+                // 添加到编辑器
+                const startId = editor.addNode(startNode);
+                const approvalId = editor.addNode(approvalNode);
+                const conditionId = editor.addNode(conditionNode);
+
+                // 创建连接
+                const edge1 = FlowchartAPI.createEdge({
+                    source: startId,
+                    target: approvalId,
+                    text: '提交'
+                });
+
+                const edge2 = FlowchartAPI.createEdge({
+                    source: approvalId,
+                    target: conditionId,
+                    text: '审批'
+                });
+
+                editor.addEdge(edge1);
+                editor.addEdge(edge2);
+
+                showNotification('自定义节点添加成功', 'success');
+                updateCodeExample('addNodes');
+            } catch (error) {
+                showNotification(`添加节点失败: ${error.message}`, 'error');
+            }
+        };
+
+        // 验证当前数据
+        window.validateCurrentData = function() {
+            if (!editor) {
+                showNotification('请先创建编辑器', 'error');
+                return;
+            }
+
+            try {
+                const data = editor.getFlowchartData();
+                const validation = FlowchartAPI.validateData(data);
+                
+                const resultDiv = document.getElementById('validation-result');
+                if (validation.valid) {
+                    resultDiv.className = 'validation-result valid';
+                    resultDiv.innerHTML = '<div>✓ 数据验证通过</div>';
+                    showNotification('数据验证通过', 'success');
+                } else {
+                    resultDiv.className = 'validation-result invalid';
+                    resultDiv.innerHTML = `
+                        <div>✗ 数据验证失败</div>
+                        <div style="margin-top: 8px; font-size: 12px;">
+                            ${validation.errors.map(error => `• ${error}`).join('<br>')}
+                        </div>
+                    `;
+                    showNotification('数据验证失败', 'error');
+                }
+
+                updateCodeExample('validate');
+            } catch (error) {
+                showNotification(`验证失败: ${error.message}`, 'error');
+            }
+        };
+
+        // 导出 BPMN
+        window.exportToBPMN = function() {
+            if (!editor) {
+                showNotification('请先创建编辑器', 'error');
+                return;
+            }
+
+            try {
+                const data = editor.getFlowchartData();
+                const bpmn = FlowchartAPI.convertToBPMN(data);
+                
+                // 下载 BPMN 文件
+                const blob = new Blob([bpmn], { type: 'application/xml' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'flowchart.bpmn';
+                link.click();
+                URL.revokeObjectURL(url);
+
+                showNotification('BPMN 导出成功', 'success');
+                updateCodeExample('exportBPMN');
+            } catch (error) {
+                showNotification(`导出失败: ${error.message}`, 'error');
+            }
+        };
+
+        // 显示 API 信息
+        window.showAPIInfo = function() {
+            try {
+                const version = FlowchartAPI.getVersion();
+                const nodeTypes = FlowchartAPI.getSupportedNodeTypes();
+                
+                const infoDiv = document.getElementById('api-info');
+                infoDiv.textContent = `版本: ${version}\n节点类型: ${nodeTypes.length} 种\n支持的类型: ${nodeTypes.join(', ')}`;
+                
+                showNotification(`API 版本: ${version}`, 'info');
+                updateCodeExample('apiInfo');
+            } catch (error) {
+                showNotification(`获取信息失败: ${error.message}`, 'error');
+            }
+        };
+
+        // 加载模板
+        window.loadTemplate = function(templateType) {
+            if (!editor) {
+                showNotification('请先创建编辑器', 'error');
+                return;
+            }
+
+            try {
+                let template;
+                
+                switch (templateType) {
+                    case 'simple':
+                        template = FlowchartAPI.createApprovalTemplate({
+                            steps: ['申请', '审批', '完成']
+                        });
+                        break;
+                    case 'complex':
+                        template = FlowchartAPI.createApprovalTemplate({
+                            steps: ['申请', '初审', '复审', '终审', '完成'],
+                            layout: 'vertical'
+                        });
+                        break;
+                    case 'parallel':
+                        template = FlowchartAPI.createApprovalTemplate({
+                            steps: ['申请', '并行审批A', '并行审批B', '汇总', '完成']
+                        });
+                        break;
+                }
+
+                if (template) {
+                    editor.setData(template);
+                    showNotification(`${templateType} 模板加载成功`, 'success');
+                }
+            } catch (error) {
+                showNotification(`加载模板失败: ${error.message}`, 'error');
+            }
+        };
+
+        // 更新代码示例
+        function updateCodeExample(type) {
+            const codeDiv = document.getElementById('code-example');
+            const examples = {
+                createEditor: `// 创建编辑器
+const editor = FlowchartAPI.createEditor({
+  container: '#editor',
+  width: 800,
+  height: 600,
+  plugins: {
+    minimap: true,
+    history: true,
+    export: true
+  }
+})`,
+                createTemplate: `// 创建审批模板
+const template = FlowchartAPI.createApprovalTemplate({
+  title: '请假审批流程',
+  steps: ['申请', '审批', '完成'],
+  layout: 'horizontal'
+})
+editor.setData(template)`,
+                addNodes: `// 添加自定义节点
+const node = FlowchartAPI.createNode({
+  type: 'approval',
+  x: 300,
+  y: 200,
+  text: '审批节点'
+})
+const nodeId = editor.addNode(node)`,
+                validate: `// 验证数据
+const data = editor.getFlowchartData()
+const result = FlowchartAPI.validateData(data)
+console.log('验证结果:', result)`,
+                exportBPMN: `// 导出 BPMN
+const data = editor.getFlowchartData()
+const bpmn = FlowchartAPI.convertToBPMN(data)
+// 下载文件...`,
+                apiInfo: `// 获取 API 信息
+const version = FlowchartAPI.getVersion()
+const types = FlowchartAPI.getSupportedNodeTypes()
+console.log('版本:', version)
+console.log('节点类型:', types)`
+            };
+
+            codeDiv.textContent = examples[type] || examples.createEditor;
+        }
+
+        // 显示通知
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notification-text');
+            
+            text.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 初始化页面
+        function initPage() {
+            // 显示支持的节点类型
+            const nodeTypes = FlowchartAPI.getSupportedNodeTypes();
+            const nodeTypesDiv = document.getElementById('node-types');
+            nodeTypesDiv.innerHTML = nodeTypes.map(type => 
+                `<div class="node-type">${type}</div>`
+            ).join('');
+
+            // 显示 API 信息
+            const version = FlowchartAPI.getVersion();
+            const infoDiv = document.getElementById('api-info');
+            infoDiv.textContent = `版本: ${version}\n节点类型: ${nodeTypes.length} 种`;
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initPage();
+        });
+
+        // 页面卸载时清理
+        window.addEventListener('beforeunload', () => {
+            if (editor) {
+                editor.destroy();
+            }
+        });
+    </script>
+</body>
+</html>

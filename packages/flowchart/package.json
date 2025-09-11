@@ -1,29 +1,31 @@
 {
   "name": "@ldesign/flowchart",
   "version": "1.0.0",
-  "description": "A powerful and flexible flowchart editor and viewer for OA workflow visualization",
+  "description": "基于 @logicflow/core 的审批流程图编辑器组件，专为 OA 系统的流程审批流程可视化设计",
   "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./es/index.js",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./cjs/index.cjs"
     },
     "./styles": {
-      "import": "./dist/styles/index.css",
-      "require": "./dist/styles/index.css"
+      "import": "./es/styles/index.css",
+      "require": "./cjs/styles/index.css"
     }
   },
   "files": [
+    "es",
+    "cjs",
     "dist",
     "README.md",
     "CHANGELOG.md"
   ],
   "scripts": {
-    "dev": "vite",
+    "dev": "launcher dev",
     "build": "ldesign-builder build",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -34,20 +36,23 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "clean": "rimraf dist coverage",
+    "clean": "rimraf es cjs dist coverage",
     "prepublishOnly": "npm run clean && npm run build && npm run test"
   },
   "keywords": [
     "flowchart",
     "workflow",
     "editor",
-    "canvas",
-    "diagram",
-    "oa",
+    "logicflow",
     "approval",
     "process",
+    "oa",
+    "diagram",
     "visualization",
-    "typescript"
+    "typescript",
+    "vue",
+    "react",
+    "angular"
   ],
   "author": "LDESIGN Team",
   "license": "MIT",
@@ -61,16 +66,19 @@
   },
   "homepage": "https://ldesign.github.io/flowchart",
   "dependencies": {
+    "@logicflow/core": "^1.2.26",
     "@ldesign/shared": "workspace:*"
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
+    "@ldesign/launcher": "workspace:*",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "@vitest/coverage-v8": "^1.0.0",
     "eslint": "^8.0.0",
     "jsdom": "^23.0.0",
+    "less": "^4.2.0",
     "rimraf": "^5.0.0",
     "typescript": "^5.0.0",
     "vite": "^5.0.0",

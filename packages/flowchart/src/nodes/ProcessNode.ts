@@ -1,161 +1,148 @@
 /**
  * 处理节点
- * 流程图的处理节点，通常为矩形
+ * 
+ * 审批流程中的一般处理节点
  */
 
-import type { ProcessNodeData, Viewport } from '@/types/index.js';
-import { NodeType, PortPosition } from '@/types/index.js';
-import { BaseNode } from './BaseNode.js';
-import { drawRoundedRect } from '@/utils/index.js';
+import { RectNode, RectNodeModel, h } from '@logicflow/core'
 
 /**
- * 处理节点类
+ * 处理节点模型
  */
-export class ProcessNode extends BaseNode {
-  constructor(data: ProcessNodeData) {
-    super(data);
+export class ProcessNodeModel extends RectNodeModel {
+  /**
+   * 设置节点属性
+   */
+  setAttributes(): void {
+    // 设置节点尺寸
+    this.width = 100
+    this.height = 50
+    this.radius = 6
 
-    // 设置默认样式
-    this.style = {
-      fillColor: 'var(--ldesign-brand-color-1)',
-      strokeColor: 'var(--ldesign-brand-color)',
+    // 设置默认文本
+    if (!this.text?.value) {
+      this.text = {
+        value: '处理节点',
+        x: this.x,
+        y: this.y
+      }
+    }
+  }
+
+  /**
+   * 获取节点样式
+   */
+  getNodeStyle() {
+    const style = super.getNodeStyle()
+    return {
+      ...style,
+      fill: 'var(--ldesign-gray-color-1, #f2f2f2)',
+      stroke: 'var(--ldesign-gray-color-6, #808080)',
       strokeWidth: 2,
-      fontSize: 14,
-      fontColor: 'var(--ldesign-brand-color-8)',
-      fontFamily: 'Arial, sans-serif',
-      opacity: 1,
-      ...data.style
-    };
-
-    // 设置默认尺寸
-    if (!data.size.width || !data.size.height) {
-      this.size = { width: 120, height: 60 };
+      cursor: 'pointer'
     }
   }
 
   /**
-   * 初始化端口
-   * 处理节点有输入和输出端口
+   * 获取文本样式
    */
-  protected override initializePorts(): void {
-    this.ports = [
+  getTextStyle() {
+    const style = super.getTextStyle()
+    return {
+      ...style,
+      fontSize: 12,
+      fill: 'var(--ldesign-text-color-primary, rgba(0, 0, 0, 0.9))',
+      fontWeight: 'normal'
+    }
+  }
+
+  /**
+   * 获取锚点
+   */
+  getDefaultAnchor() {
+    const { x, y, width, height } = this
+    return [
+      // 左侧锚点（输入）
       {
-        id: 'input',
-        position: PortPosition.LEFT,
-        offset: 0.5,
-        label: '输入',
-        connectable: true,
-        maxConnections: -1,
-        currentConnections: 0,
-        style: {
-          fillColor: 'var(--ldesign-brand-color)',
-          strokeColor: '#ffffff'
-        }
+        x: x - width / 2,
+        y,
+        id: `${this.id}_left`,
+        edgeAddable: true,
+        type: 'left'
       },
+      // 右侧锚点（输出）
       {
-        id: 'output',
-        position: PortPosition.RIGHT,
-        offset: 0.5,
-        label: '输出',
-        connectable: true,
-        maxConnections: -1,
-        currentConnections: 0,
-        style: {
-          fillColor: 'var(--ldesign-brand-color)',
-          strokeColor: '#ffffff'
-        }
+        x: x + width / 2,
+        y,
+        id: `${this.id}_right`,
+        edgeAddable: true,
+        type: 'right'
+      },
+      // 上方锚点
+      {
+        x,
+        y: y - height / 2,
+        id: `${this.id}_top`,
+        edgeAddable: true,
+        type: 'top'
+      },
+      // 下方锚点
+      {
+        x,
+        y: y + height / 2,
+        id: `${this.id}_bottom`,
+        edgeAddable: true,
+        type: 'bottom'
       }
-    ];
+    ]
   }
+}
 
+/**
+ * 处理节点视图
+ */
+export class ProcessNode extends RectNode {
   /**
-   * 渲染节点形状
+   * 获取节点形状
    */
-  protected renderShape(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
-    const borderRadius = 8;
+  getShape(): h.JSX.Element {
+    const { model } = this.props
+    const { x, y, width, height, radius } = model
+    const style = model.getNodeStyle()
 
-    // 绘制圆角矩形
-    drawRoundedRect(
-      ctx,
-      this.position.x,
-      this.position.y,
-      this.size.width,
-      this.size.height,
-      borderRadius
-    );
-
-    ctx.fill();
-    ctx.stroke();
-  }
-
-  /**
-   * 渲染标签
-   */
-  protected override renderLabel(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
-    if (!this.label) {
-      return;
-    }
-
-    const center = {
-      x: this.position.x + this.size.width / 2,
-      y: this.position.y + this.size.height / 2
-    };
-
-    // 设置文本样式
-    ctx.save();
-    ctx.fillStyle = this.style.fontColor || 'var(--ldesign-brand-color-8)';
-    ctx.font = `${this.style.fontSize || 14}px ${this.style.fontFamily || 'Arial, sans-serif'}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    // 处理多行文本
-    const maxWidth = this.size.width - 16; // 留出边距
-    const lines = this.wrapText(ctx, this.label, maxWidth);
-    const lineHeight = (this.style.fontSize || 14) * 1.2;
-    const totalHeight = lines.length * lineHeight;
-    const startY = center.y - totalHeight / 2 + lineHeight / 2;
-
-    lines.forEach((line, index) => {
-      ctx.fillText(line, center.x, startY + index * lineHeight);
-    });
-
-    ctx.restore();
-  }
-
-  /**
-   * 文本换行处理
-   */
-  private wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
-    const words = text.split(' ');
-    const lines: string[] = [];
-    let currentLine = words[0] || '';
-
-    for (let i = 1; i < words.length; i++) {
-      const word = words[i]!;
-      const width = ctx.measureText(currentLine + ' ' + word).width;
-
-      if (width < maxWidth) {
-        currentLine += ' ' + word;
-      } else {
-        lines.push(currentLine);
-        currentLine = word;
-      }
-    }
-
-    lines.push(currentLine);
-    return lines;
-  }
-
-  /**
-   * 克隆节点
-   */
-  clone(): ProcessNode {
-    const data: ProcessNodeData = {
-      ...this.getData(),
-      type: NodeType.PROCESS,
-      id: `${this.id}_copy_${Date.now()}`
-    };
-
-    return new ProcessNode(data);
+    return h('g', {}, [
+      // 主矩形
+      h('rect', {
+        x: x - width / 2,
+        y: y - height / 2,
+        width,
+        height,
+        rx: radius,
+        ry: radius,
+        ...style
+      }),
+      // 处理图标
+      h('circle', {
+        cx: x - 25,
+        cy: y - 15,
+        r: 3,
+        fill: 'var(--ldesign-gray-color-6, #808080)',
+        stroke: 'none'
+      }),
+      h('circle', {
+        cx: x - 15,
+        cy: y - 15,
+        r: 3,
+        fill: 'var(--ldesign-gray-color-6, #808080)',
+        stroke: 'none'
+      }),
+      h('circle', {
+        cx: x - 5,
+        cy: y - 15,
+        r: 3,
+        fill: 'var(--ldesign-gray-color-6, #808080)',
+        stroke: 'none'
+      })
+    ])
   }
 }

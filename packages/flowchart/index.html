@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDesign Flowchart Editor - 审批流程图编辑器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #722ED1;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .demo-section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-section h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #722ED1;
+            padding-bottom: 8px;
+        }
+
+        .flowchart-container {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            background: #fafafa;
+            position: relative;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #666;
+            font-size: 16px;
+        }
+
+        .controls {
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #722ED1;
+            background: #fff;
+            color: #722ED1;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #722ED1;
+            color: #fff;
+        }
+
+        .btn.primary {
+            background: #722ED1;
+            color: #fff;
+        }
+
+        .btn.primary:hover {
+            background: #5e2aa7;
+        }
+
+        .info-panel {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .info-panel h3 {
+            color: #495057;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .info-panel ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-panel li {
+            padding: 4px 0;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .info-panel li:before {
+            content: "✓ ";
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 16px 0;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>LDesign Flowchart Editor</h1>
+            <p>基于 LogicFlow 的审批流程图编辑器 - 支持多种节点类型和自定义主题</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="demo-section">
+            <h2>基础编辑器演示</h2>
+            <div class="controls">
+                <button class="btn primary" onclick="initEditor()">初始化编辑器</button>
+                <button class="btn" onclick="addStartNode()">添加开始节点</button>
+                <button class="btn" onclick="addApprovalNode()">添加审批节点</button>
+                <button class="btn" onclick="addConditionNode()">添加条件节点</button>
+                <button class="btn" onclick="addEndNode()">添加结束节点</button>
+                <button class="btn" onclick="clearCanvas()">清空画布</button>
+                <button class="btn" onclick="exportData()">导出数据</button>
+            </div>
+            <div class="flowchart-container" id="flowchart-container">
+                <div class="loading">正在加载流程图编辑器...</div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>功能特性</h2>
+            <div class="info-panel">
+                <h3>已实现功能</h3>
+                <ul>
+                    <li>基于 @logicflow/core 的流程图编辑器</li>
+                    <li>支持多种审批节点类型（开始、审批、条件、结束等）</li>
+                    <li>自定义节点样式和主题系统</li>
+                    <li>完整的 TypeScript 类型定义</li>
+                    <li>事件驱动的架构设计</li>
+                    <li>插件系统支持功能扩展</li>
+                    <li>跨框架兼容（Vue、React、Angular）</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { FlowchartEditor } from './src/index.ts';
+
+        let editor = null;
+
+        // 全局函数，供按钮调用
+        window.initEditor = function() {
+            try {
+                const container = document.getElementById('flowchart-container');
+                container.innerHTML = '';
+
+                editor = new FlowchartEditor({
+                    container: container,
+                    width: container.offsetWidth,
+                    height: container.offsetHeight,
+                    background: {
+                        color: '#fafafa'
+                    },
+                    grid: {
+                        visible: true,
+                        size: 20,
+                        color: '#e5e5e5'
+                    }
+                });
+
+                // 监听事件
+                editor.on('node:click', (data) => {
+                    console.log('节点点击:', data);
+                });
+
+                editor.on('edge:click', (data) => {
+                    console.log('连线点击:', data);
+                });
+
+                showSuccess('编辑器初始化成功！');
+            } catch (error) {
+                console.error('初始化失败:', error);
+                showError('编辑器初始化失败: ' + error.message);
+            }
+        };
+
+        window.addStartNode = function() {
+            if (!editor) {
+                showError('请先初始化编辑器');
+                return;
+            }
+            try {
+                editor.addNode({
+                    type: 'start',
+                    x: 200,
+                    y: 100,
+                    text: '开始'
+                });
+                showSuccess('添加开始节点成功');
+            } catch (error) {
+                showError('添加节点失败: ' + error.message);
+            }
+        };
+
+        window.addApprovalNode = function() {
+            if (!editor) {
+                showError('请先初始化编辑器');
+                return;
+            }
+            try {
+                editor.addNode({
+                    type: 'approval',
+                    x: 200,
+                    y: 200,
+                    text: '审批节点'
+                });
+                showSuccess('添加审批节点成功');
+            } catch (error) {
+                showError('添加节点失败: ' + error.message);
+            }
+        };
+
+        window.addConditionNode = function() {
+            if (!editor) {
+                showError('请先初始化编辑器');
+                return;
+            }
+            try {
+                editor.addNode({
+                    type: 'condition',
+                    x: 200,
+                    y: 300,
+                    text: '条件判断'
+                });
+                showSuccess('添加条件节点成功');
+            } catch (error) {
+                showError('添加节点失败: ' + error.message);
+            }
+        };
+
+        window.addEndNode = function() {
+            if (!editor) {
+                showError('请先初始化编辑器');
+                return;
+            }
+            try {
+                editor.addNode({
+                    type: 'end',
+                    x: 200,
+                    y: 400,
+                    text: '结束'
+                });
+                showSuccess('添加结束节点成功');
+            } catch (error) {
+                showError('添加节点失败: ' + error.message);
+            }
+        };
+
+        window.clearCanvas = function() {
+            if (!editor) {
+                showError('请先初始化编辑器');
+                return;
+            }
+            try {
+                editor.clearData();
+                showSuccess('画布清空成功');
+            } catch (error) {
+                showError('清空失败: ' + error.message);
+            }
+        };
+
+        window.exportData = function() {
+            if (!editor) {
+                showError('请先初始化编辑器');
+                return;
+            }
+            try {
+                const data = editor.getData();
+                console.log('导出数据:', data);
+                showSuccess('数据已导出到控制台');
+            } catch (error) {
+                showError('导出失败: ' + error.message);
+            }
+        };
+
+        function showSuccess(message) {
+            showMessage(message, 'success');
+        }
+
+        function showError(message) {
+            showMessage(message, 'error');
+        }
+
+        function showMessage(message, type) {
+            const existing = document.querySelector('.message');
+            if (existing) {
+                existing.remove();
+            }
+
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.textContent = message;
+            div.style.position = 'fixed';
+            div.style.top = '20px';
+            div.style.right = '20px';
+            div.style.zIndex = '9999';
+            div.style.padding = '12px 16px';
+            div.style.borderRadius = '4px';
+            div.style.fontSize = '14px';
+            div.style.maxWidth = '300px';
+            
+            if (type === 'success') {
+                div.style.background = '#d4edda';
+                div.style.color = '#155724';
+                div.style.border = '1px solid #c3e6cb';
+            } else {
+                div.style.background = '#f8d7da';
+                div.style.color = '#721c24';
+                div.style.border = '1px solid #f5c6cb';
+            }
+
+            document.body.appendChild(div);
+
+            setTimeout(() => {
+                div.remove();
+            }, 3000);
+        }
+
+        // 页面加载完成后自动初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                initEditor();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

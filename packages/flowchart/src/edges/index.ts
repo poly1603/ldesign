@@ -1,10 +1,24 @@
 /**
- * 连接线模块导出文件
- * 统一导出所有连接线相关的类和接口
+ * 审批流程边注册
+ * 
+ * 统一注册所有审批流程边类型
  */
 
-export { BaseEdge } from './BaseEdge.js';
-export { StraightEdge } from './StraightEdge.js';
-export { BezierEdge } from './BezierEdge.js';
-export { OrthogonalEdge } from './OrthogonalEdge.js';
-export { EdgeFactory } from './EdgeFactory.js';
+import type { LogicFlow } from '@logicflow/core'
+import { ApprovalEdge, ApprovalEdgeModel } from './ApprovalEdge'
+
+/**
+ * 注册所有审批流程边
+ * @param lf LogicFlow 实例
+ */
+export function registerApprovalEdges(lf: LogicFlow): void {
+  // 注册审批边
+  lf.register({
+    type: 'approval-edge',
+    view: ApprovalEdge,
+    model: ApprovalEdgeModel
+  })
+}
+
+// 导出所有边类
+export { ApprovalEdge, ApprovalEdgeModel } from './ApprovalEdge'

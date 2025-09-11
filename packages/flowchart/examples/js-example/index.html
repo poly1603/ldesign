@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign Flowchart - JavaScript 示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+    }
+
+    .header {
+      background: white;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      color: #722ED1;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #666;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .toolbar {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .toolbar button {
+      background: #722ED1;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      margin-right: 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .toolbar button:hover {
+      background: #5e2aa7;
+    }
+
+    .toolbar select {
+      padding: 8px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+
+    .flowchart-container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    #flowchart {
+      width: 100%;
+      height: 600px;
+    }
+
+    .info {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .info h3 {
+      color: #722ED1;
+      margin-bottom: 10px;
+    }
+
+    .info pre {
+      background: #f8f8f8;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="container">
+      <h1>🎨 LDesign Flowchart - JavaScript 示例</h1>
+      <p>基于原生 JavaScript 的审批流程图编辑器演示</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="toolbar">
+      <button id="addStartNode">添加开始节点</button>
+      <button id="addApprovalNode">添加审批节点</button>
+      <button id="addConditionNode">添加条件节点</button>
+      <button id="addEndNode">添加结束节点</button>
+      <button id="clearAll">清空画布</button>
+      
+      <select id="themeSelect">
+        <option value="default">默认主题</option>
+        <option value="dark">暗色主题</option>
+        <option value="blue">蓝色主题</option>
+      </select>
+      
+      <button id="exportData">导出数据</button>
+      <button id="loadTemplate">加载模板</button>
+    </div>
+
+    <div class="flowchart-container">
+      <div id="flowchart"></div>
+    </div>
+
+    <div class="info">
+      <h3>📊 流程图数据</h3>
+      <pre id="dataOutput">点击"导出数据"查看流程图数据...</pre>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
