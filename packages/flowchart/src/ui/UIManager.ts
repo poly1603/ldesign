@@ -4,39 +4,34 @@
  * 负责管理流程图编辑器的UI组件
  */
 
-import { createApp, App, ref, reactive } from 'vue'
-import type { FlowchartEditorConfig, ApprovalNodeConfig, ApprovalNodeType } from '../types'
-import PropertyPanel from './PropertyPanel.vue'
-import MaterialPanel from './MaterialPanel.vue'
-import Toolbar from './Toolbar.vue'
+import type { FlowchartEditorConfig, ApprovalNodeConfig, ApprovalNodeType, FlowchartTheme } from '../types'
+import { MaterialPanel } from './native/MaterialPanel'
+import { PropertyPanel } from './native/PropertyPanel'
+import { Toolbar } from './native/Toolbar'
 
 export interface UIState {
   selectedNode: ApprovalNodeConfig | null
   readonly: boolean
-  currentTheme: string
+  currentTheme: FlowchartTheme
 }
 
 /**
- * UI管理器类
+ * UI管理器类 - 原生DOM实现
  */
 export class UIManager {
   private config: FlowchartEditorConfig
   private container: HTMLElement
   private uiContainer: HTMLElement | null = null
   private canvasContainer: HTMLElement | null = null
-  private vueApps: App[] = []
+  private components: Map<string, any> = new Map()
   private state: UIState
-  private propertyPanelRefs: {
-    selectedNode?: any
-    readonly?: any
-  } = {}
 
   // 事件回调
   private onNodeUpdate?: (nodeId: string, updates: Partial<ApprovalNodeConfig>) => void
   private onNodeDelete?: (nodeId: string) => void
   private onNodeDrop?: (nodeType: ApprovalNodeType, position: { x: number; y: number }) => void
   private onToolClick?: (toolName: string) => void
-  private onThemeChange?: (theme: string) => void
+  private onThemeChange?: (theme: FlowchartTheme) => void
 
   constructor(config: FlowchartEditorConfig) {
     this.config = config
@@ -49,11 +44,11 @@ export class UIManager {
     }
 
     // 初始化状态
-    this.state = reactive({
+    this.state = {
       selectedNode: null,
       readonly: config.readonly || false,
-      currentTheme: typeof config.theme === 'string' ? config.theme : 'default'
-    })
+      currentTheme: typeof config.theme === 'string' ? config.theme as FlowchartTheme : 'default'
+    }
   }
 
   /**
@@ -142,7 +137,7 @@ export class UIManager {
   }
 
   /**
-   * 挂载Vue组件
+   * 挂载原生组件
    */
   private mountComponents(): void {
     // 挂载工具栏
@@ -168,22 +163,21 @@ export class UIManager {
     const container = document.getElementById('ldesign-toolbar-container')
     if (!container) return
 
-    const app = createApp(Toolbar, {
+    const toolbar = new Toolbar(container, {
       tools: this.config.toolbar?.tools || ['select', 'zoom-fit', 'undo', 'redo'],
       readonly: this.state.readonly,
-      currentTheme: this.state.currentTheme,
-      showThemeSelector: true,
-      'onTool:click': (toolName: string) => {
+      theme: this.state.currentTheme,
+      onToolAction: (toolName: string) => {
         this.onToolClick?.(toolName)
       },
-      'onTheme:change': (theme: string) => {
+      onThemeChange: (theme: FlowchartTheme) => {
         this.state.currentTheme = theme
+        this.applyTheme(theme)
         this.onThemeChange?.(theme)
       }
     })
 
-    app.mount(container)
-    this.vueApps.push(app)
+    this.components.set('toolbar', toolbar)
   }
 
   /**
@@ -193,14 +187,15 @@ export class UIManager {
     const container = document.getElementById('ldesign-material-container')
     if (!container) return
 
-    const app = createApp(MaterialPanel, {
-      'onDrag:start': (nodeType: ApprovalNodeType) => {
-        // 处理拖拽开始事件
+    const materialPanel = new MaterialPanel(container, {
+      readonly: this.state.readonly,
+      theme: this.state.currentTheme,
+      onNodeAdd: (type: ApprovalNodeType, position: { x: number, y: number }) => {
+        this.onNodeDrop?.(type, position)
       }
     })
 
-    app.mount(container)
-    this.vueApps.push(app)
+    this.components.set('material', materialPanel)
 
     // 添加拖拽事件监听
     this.setupDragAndDrop()
@@ -213,42 +208,16 @@ export class UIManager {
     const container = document.getElementById('ldesign-property-container')
     if (!container) return
 
-    // 创建响应式状态
-    const selectedNodeRef = ref(this.state.selectedNode)
-    const readonlyRef = ref(this.state.readonly)
-
-    // 保存refs以便后续更新
-    this.propertyPanelRefs.selectedNode = selectedNodeRef
-    this.propertyPanelRefs.readonly = readonlyRef
-
-    // 创建PropertyPanel组件实例
-    const self = this
-    const app = createApp({
-      components: { PropertyPanel },
-      setup() {
-        return {
-          selectedNode: selectedNodeRef,
-          readonly: readonlyRef,
-          onUpdateNode: (nodeId: string, updates: Partial<ApprovalNodeConfig>) => {
-            self.onNodeUpdate?.(nodeId, updates)
-          },
-          onDeleteNode: (nodeId: string) => {
-            self.onNodeDelete?.(nodeId)
-          }
-        }
-      },
-      template: `
-        <PropertyPanel
-          :selectedNode="selectedNode"
-          :readonly="readonly"
-          @update:node="onUpdateNode"
-          @delete:node="onDeleteNode"
-        />
-      `
+    const propertyPanel = new PropertyPanel(container, {
+      selectedNode: this.state.selectedNode,
+      readonly: this.state.readonly,
+      theme: this.state.currentTheme,
+      onUpdateNode: (nodeId: string, updates: Partial<ApprovalNodeConfig>) => {
+        this.onNodeUpdate?.(nodeId, updates)
+      }
     })
 
-    app.mount(container)
-    this.vueApps.push(app)
+    this.components.set('property', propertyPanel)
   }
 
   /**
@@ -265,7 +234,7 @@ export class UIManager {
     this.canvasContainer.addEventListener('drop', (event) => {
       event.preventDefault()
 
-      const nodeType = event.dataTransfer?.getData('application/ldesign-node-type') as ApprovalNodeType
+      const nodeType = event.dataTransfer?.getData('application/node-type') as ApprovalNodeType
       if (!nodeType) return
 
       // 计算相对于画布的坐标
@@ -284,9 +253,11 @@ export class UIManager {
    */
   setSelectedNode(node: ApprovalNodeConfig | null): void {
     this.state.selectedNode = node
-    // 更新属性面板的响应式ref
-    if (this.propertyPanelRefs.selectedNode) {
-      this.propertyPanelRefs.selectedNode.value = node
+
+    // 更新属性面板
+    const propertyPanel = this.components.get('property')
+    if (propertyPanel) {
+      propertyPanel.setSelectedNode(node)
     }
   }
 
@@ -295,19 +266,44 @@ export class UIManager {
    */
   setReadonly(readonly: boolean): void {
     this.state.readonly = readonly
-    // 更新属性面板的响应式ref
-    if (this.propertyPanelRefs.readonly) {
-      this.propertyPanelRefs.readonly.value = readonly
-    }
+
+    // 更新所有组件
+    this.components.forEach(component => {
+      if (component.setReadonly) {
+        component.setReadonly(readonly)
+      }
+    })
+
     this.updateUIVisibility()
   }
 
   /**
    * 设置主题
    */
-  setTheme(theme: string): void {
+  setTheme(theme: FlowchartTheme): void {
     this.state.currentTheme = theme
-    this.updateThemeStyles(theme)
+
+    // 更新所有组件
+    this.components.forEach(component => {
+      if (component.setTheme) {
+        component.setTheme(theme)
+      }
+    })
+
+    this.applyTheme(theme)
+  }
+
+  /**
+   * 应用主题
+   */
+  private applyTheme(theme: FlowchartTheme): void {
+    if (!this.uiContainer) return
+
+    // 移除旧主题类
+    this.uiContainer.classList.remove('theme-default', 'theme-dark', 'theme-blue')
+
+    // 添加新主题类
+    this.uiContainer.classList.add(`theme-${theme}`)
   }
 
   /**
@@ -460,7 +456,7 @@ export class UIManager {
     onNodeDelete?: (nodeId: string) => void
     onNodeDrop?: (nodeType: ApprovalNodeType, position: { x: number; y: number }) => void
     onToolClick?: (toolName: string) => void
-    onThemeChange?: (theme: string) => void
+    onThemeChange?: (theme: FlowchartTheme) => void
   }): void {
     this.onNodeUpdate = callbacks.onNodeUpdate
     this.onNodeDelete = callbacks.onNodeDelete
@@ -473,10 +469,13 @@ export class UIManager {
    * 销毁UI
    */
   destroy(): void {
-    this.vueApps.forEach(app => {
-      app.unmount()
+    // 销毁所有组件
+    this.components.forEach(component => {
+      if (component.destroy) {
+        component.destroy()
+      }
     })
-    this.vueApps = []
+    this.components.clear()
 
     if (this.uiContainer) {
       this.uiContainer.remove()

@@ -5,6 +5,12 @@
       <h1>🎨 LDesign Flowchart - Vue 3 示例</h1>
       <p>基于 Vue 3 Composition API 的专业流程图编辑器演示</p>
       <div class="header-actions">
+        <select v-model="currentTheme" @change="changeTheme" class="theme-select">
+          <option value="default">默认主题</option>
+          <option value="dark">暗色主题</option>
+          <option value="blue">蓝色主题</option>
+        </select>
+
         <button @click="toggleReadonlyMode" class="btn btn-outline">
           {{ isReadonly ? '编辑模式' : '只读模式' }}
         </button>
@@ -29,6 +35,7 @@ import { FlowchartEditor, FlowchartAPI } from '@ldesign/flowchart'
 // 响应式数据
 const flowchartContainer = ref<HTMLElement | null>(null)
 const isReadonly = ref(false)
+const currentTheme = ref('default')
 
 // 编辑器实例
 let editor: FlowchartEditor | null = null
@@ -108,6 +115,20 @@ async function loadTemplate() {
 }
 
 /**
+ * 切换主题
+ */
+function changeTheme() {
+  if (!editor) return
+
+  try {
+    editor.setTheme(currentTheme.value)
+    console.log(`主题已切换为: ${currentTheme.value}`)
+  } catch (error) {
+    console.error('主题切换失败:', error)
+  }
+}
+
+/**
  * 导出数据
  */
 function exportData() {
@@ -175,6 +196,27 @@ onUnmounted(() => {
 .flowchart-container {
   flex: 1;
   overflow: hidden;
+}
+
+.theme-select {
+  padding: 8px 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  background: #ffffff;
+  color: rgba(0, 0, 0, 0.8);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-select:hover {
+  border-color: #7334cb;
+}
+
+.theme-select:focus {
+  outline: none;
+  border-color: #7334cb;
+  box-shadow: 0 0 0 2px rgba(115, 52, 203, 0.1);
 }
 
 .btn {

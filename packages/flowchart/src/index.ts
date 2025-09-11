@@ -50,6 +50,11 @@ export * from './types'
 // 导出UI组件
 export * from './ui'
 
+// 导出Vue组件和Hook
+export { default as FlowchartEditorVue } from './vue/FlowchartEditor.vue'
+export { useFlowchart, createFlowchartEditor } from './vue/useFlowchart'
+export type { UseFlowchartOptions, UseFlowchartReturn } from './vue/useFlowchart'
+
 // 导出默认配置
 export { defaultConfig } from './config/defaultConfig'
 

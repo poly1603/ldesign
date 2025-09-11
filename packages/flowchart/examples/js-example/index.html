@@ -112,25 +112,23 @@
 
   <div class="container">
     <div class="toolbar">
-      <p style="color: #666; margin: 0; font-size: 14px;">
-        🚀 原生JavaScript示例：无Vue依赖，纯JS实现的流程图编辑器
-      </p>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <p style="color: #666; margin: 0; font-size: 14px;">
+            🚀 原生JavaScript示例：内置完整UI组件，支持拖拽物料面板、属性编辑等功能
+          </p>
+        </div>
 
-      <div style="margin-top: 10px;">
-        <button id="addStartNode">添加开始节点</button>
-        <button id="addApprovalNode">添加审批节点</button>
-        <button id="addConditionNode">添加条件节点</button>
-        <button id="addEndNode">添加结束节点</button>
-        <button id="clearAll">清空画布</button>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <select id="themeSelect">
+            <option value="default">默认主题</option>
+            <option value="dark">暗色主题</option>
+            <option value="blue">蓝色主题</option>
+          </select>
 
-        <select id="themeSelect">
-          <option value="default">默认主题</option>
-          <option value="dark">暗色主题</option>
-          <option value="blue">蓝色主题</option>
-        </select>
-
-        <button id="exportData">导出数据</button>
-        <button id="loadTemplate">加载模板</button>
+          <button id="loadTemplate">加载模板</button>
+          <button id="exportData">导出数据</button>
+        </div>
       </div>
     </div>
 

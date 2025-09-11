@@ -13,22 +13,30 @@ import { FlowchartEditor, FlowchartAPI } from '@ldesign/flowchart'
 
 // 全局变量
 let editor = null
-let nodeCounter = 0
 
 /**
  * 初始化流程图编辑器（带完整UI）
  */
 function initFlowchart() {
   try {
-    // 创建编辑器实例，不使用Vue UI组件（纯原生JS）
+    // 创建编辑器实例，启用完整UI组件
     editor = new FlowchartEditor({
       container: '#flowchart',
       width: 1160,
       height: 600,
-      // 禁用所有UI组件，使用原生JS实现
-      toolbar: { visible: false },
-      nodePanel: { visible: false },
-      propertyPanel: { visible: false },
+      // 启用所有UI组件
+      toolbar: {
+        visible: true,
+        tools: ['select', 'zoom-fit', 'undo', 'redo', 'delete']
+      },
+      nodePanel: {
+        visible: true,
+        position: 'left'
+      },
+      propertyPanel: {
+        visible: true,
+        position: 'right'
+      },
       // 主题配置
       theme: 'default',
       // 画布配置
@@ -89,109 +97,15 @@ function initFlowchart() {
 }
 
 /**
- * 添加开始节点
+ * 切换只读模式
  */
-function addStartNode() {
+function toggleReadonly() {
   if (!editor) return
 
-  const nodeId = `start-${++nodeCounter}`
-  const id = editor.addNode({
-    id: nodeId,
-    type: 'start',
-    x: 100 + Math.random() * 200,
-    y: 100 + Math.random() * 200,
-    text: '开始'
-  })
+  const currentReadonly = editor.isReadonly()
+  editor.setReadonly(!currentReadonly)
 
-  console.log(`✅ 添加开始节点: ${id}`)
-  updateDataOutput()
-}
-
-/**
- * 添加审批节点
- */
-function addApprovalNode() {
-  if (!editor) return
-
-  const nodeId = `approval-${++nodeCounter}`
-  const id = editor.addNode({
-    id: nodeId,
-    type: 'approval',
-    x: 300 + Math.random() * 200,
-    y: 100 + Math.random() * 200,
-    text: '审批节点',
-    properties: {
-      approver: '审批人',
-      department: '部门',
-      status: 'pending'
-    }
-  })
-
-  console.log(`✅ 添加审批节点: ${id}`)
-  updateDataOutput()
-}
-
-/**
- * 添加条件节点
- */
-function addConditionNode() {
-  if (!editor) return
-
-  const nodeId = `condition-${++nodeCounter}`
-  const id = editor.addNode({
-    id: nodeId,
-    type: 'condition',
-    x: 500 + Math.random() * 200,
-    y: 100 + Math.random() * 200,
-    text: '条件判断',
-    properties: {
-      condition: '金额 > 1000',
-      trueLabel: '是',
-      falseLabel: '否'
-    }
-  })
-
-  console.log(`✅ 添加条件节点: ${id}`)
-  updateDataOutput()
-}
-
-/**
- * 添加结束节点
- */
-function addEndNode() {
-  if (!editor) return
-
-  const nodeId = `end-${++nodeCounter}`
-  const id = editor.addNode({
-    id: nodeId,
-    type: 'end',
-    x: 700 + Math.random() * 200,
-    y: 100 + Math.random() * 200,
-    text: '结束'
-  })
-
-  console.log(`✅ 添加结束节点: ${id}`)
-  updateDataOutput()
-}
-
-/**
- * 清空画布
- */
-function clearAll() {
-  if (!editor) return
-
-  const data = editor.getData()
-  if (data.nodes.length === 0 && data.edges.length === 0) {
-    alert('画布已经是空的了！')
-    return
-  }
-
-  if (confirm('确定要清空画布吗？')) {
-    editor.setData({ nodes: [], edges: [] })
-    nodeCounter = 0
-    updateDataOutput()
-    console.log('✅ 画布已清空')
-  }
+  console.log(`✅ 切换到${!currentReadonly ? '只读' : '编辑'}模式`)
 }
 
 /**
@@ -313,11 +227,6 @@ function updateDataOutput(data = null) {
  */
 function bindEventListeners() {
   // 工具栏按钮事件
-  document.getElementById('addStartNode')?.addEventListener('click', addStartNode)
-  document.getElementById('addApprovalNode')?.addEventListener('click', addApprovalNode)
-  document.getElementById('addConditionNode')?.addEventListener('click', addConditionNode)
-  document.getElementById('addEndNode')?.addEventListener('click', addEndNode)
-  document.getElementById('clearAll')?.addEventListener('click', clearAll)
   document.getElementById('exportData')?.addEventListener('click', exportData)
   document.getElementById('loadTemplate')?.addEventListener('click', loadTemplate)
 
@@ -353,14 +262,10 @@ main()
 // 导出到全局作用域（用于调试）
 window.flowchartDemo = {
   editor,
-  addStartNode,
-  addApprovalNode,
-  addConditionNode,
-  addEndNode,
-  clearAll,
   changeTheme,
   exportData,
   loadTemplate,
+  toggleReadonly,
   // 调试函数
   getEditor: () => editor,
   getData: () => editor?.getData(),

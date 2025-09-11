@@ -217,7 +217,38 @@ export class FlowchartEditor {
   updateNode(id: string, nodeConfig: Partial<ApprovalNodeConfig>): void {
     const nodeModel = this.lf.getNodeModelById(id)
     if (nodeModel) {
-      Object.assign(nodeModel, nodeConfig)
+      // 构建更新数据
+      const updateData: any = {}
+
+      if (nodeConfig.text !== undefined) {
+        updateData.text = nodeConfig.text
+      }
+      if (nodeConfig.x !== undefined) {
+        updateData.x = nodeConfig.x
+      }
+      if (nodeConfig.y !== undefined) {
+        updateData.y = nodeConfig.y
+      }
+      if (nodeConfig.properties !== undefined) {
+        updateData.properties = { ...nodeModel.properties, ...nodeConfig.properties }
+      }
+
+      // 使用LogicFlow的updateText方法更新节点文本
+      if (nodeConfig.text !== undefined) {
+        this.lf.updateText(id, nodeConfig.text)
+      }
+
+      // 更新其他属性
+      if (nodeConfig.x !== undefined || nodeConfig.y !== undefined) {
+        nodeModel.moveTo(nodeConfig.x || nodeModel.x, nodeConfig.y || nodeModel.y)
+      }
+
+      if (nodeConfig.properties !== undefined) {
+        nodeModel.properties = { ...nodeModel.properties, ...nodeConfig.properties }
+      }
+
+      // 触发数据变化事件
+      this.emit('data:change', this.getData())
     }
   }
 
