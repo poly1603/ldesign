@@ -407,7 +407,7 @@ export function useInfiniteApi<T = unknown>(
     const res = await execute(params, options)
     const { items: its, total: tot } = extract(res)
     total.value = tot
-    items.value = items.value.concat(its)
+    items.value = [...items.value, ...its] as T[]
     page.value += 1
     return its
   }

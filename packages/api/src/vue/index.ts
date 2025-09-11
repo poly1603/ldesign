@@ -3,6 +3,27 @@
  * 导出所有 Vue 相关的功能
  */
 
+// 重新导出核心工厂与辅助创建方法
+export {
+  createApiEngine,
+  createApiEngineByEnv,
+  createApiEngineWithDefaults,
+  createApiEngineWithPlugins,
+  createDevelopmentApiEngine,
+  createProductionApiEngine,
+  createSingletonApiEngine,
+  createTestApiEngine,
+  destroySingletonApiEngine,
+  createSystemApiEngine,
+  createSystemApiEngineByEnv,
+} from '../core/factory'
+
+// 重新导出系统 API 插件
+export {
+  createCustomSystemApiPlugin,
+  systemApiPlugin,
+} from '../plugins/systemApi'
+
 // 重新导出核心类型
 export type {
   ApiCallOptions,
@@ -61,3 +82,6 @@ export {
 export type { ApiVuePluginOptions } from './plugin'
 export { useIntersectionObserver } from './utils'
 export { vIntersect } from './directives'
+
+// 版本信息
+export { version } from '../version'

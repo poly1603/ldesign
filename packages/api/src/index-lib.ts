@@ -1,13 +1,12 @@
 /**
- * @ldesign/api - 通用系统接口管理包
- * 统一导出核心工厂、类型、系统插件与 Vue 集成能力
+ * @ldesign/api - UMD 构建专用入口文件
+ * 为浏览器环境和库模式提供精简的 API 界面
  */
 
-// 核心功能
+// 核心引擎实现
 export { ApiEngineImpl } from './core/ApiEngine'
 
-// 核心工厂与辅助创建方法
-
+// 主要的 API 创建工厂函数
 export {
   createApiEngine,
   createApiEngineByEnv,
@@ -22,13 +21,19 @@ export {
   createSystemApiEngineByEnv,
 } from './core/factory'
 
+// 系统 API 插件
 export {
   createCustomSystemApiPlugin,
   systemApiPlugin,
 } from './plugins/systemApi'
+
+// REST API 插件
 export { createRestApiPlugin } from './plugins/rest'
 
-// 核心类型
+// 认证中间件插件
+export { authMiddlewaresPlugin, createAuthMiddlewaresPlugin } from './plugins/auth'
+
+// 核心类型（仅类型导出）
 export type {
   ApiCallOptions,
   ApiEngine,
@@ -36,13 +41,10 @@ export type {
   ApiMethodConfig,
   ApiPlugin,
   CacheConfig,
-  CacheItem,
   CacheStats,
   CaptchaInfo,
   DebounceConfig,
-  DebounceManager,
   DeduplicationConfig,
-  DeduplicationManager,
   LoginParams,
   LoginResult,
   MenuItem,
@@ -50,45 +52,10 @@ export type {
   UserInfo,
 } from './types'
 
-// 系统 API 常量和方法
+// 系统 API 常量
 export { SYSTEM_API_METHODS } from './types'
 
-// 认证中间件插件
-export { authMiddlewaresPlugin, createAuthMiddlewaresPlugin } from './plugins/auth'
-
-// 工具类
-export { CacheManager } from './utils/CacheManager'
-export { renameKeysShallow, renameKeysDeep } from './utils/object'
-
-/**
- * @ldesign/api 主入口文件
- * 导出所有公共 API
- */
-
-export { DebounceManagerImpl } from './utils/DebounceManager'
-// 工具函数
-export {
-  createDebounceFunction,
-  createKeyedDebounceFunction,
-  debounce,
-  keyedDebounce,
-} from './utils/DebounceManager'
-
-export { DeduplicationManagerImpl } from './utils/DeduplicationManager'
-
-export {
-  classBasedDeduplicate,
-  createDeduplicatedFunction,
-  deduplicate,
-  deduplicateGlobally,
-  globalDeduplicationManager,
-} from './utils/DeduplicationManager'
-
-// 类型辅助（可选的强类型注册表）
-export type { TypedApiEngine } from './types/typed'
-export { withTypedApi } from './types/typed'
-
-// Vue 集成：组合式 API、Engine 集成、插件、工具
+// Vue 组合式 API
 export {
   useApi,
   useApiCall,
@@ -102,6 +69,7 @@ export {
 } from './vue/composables'
 export type { ApiCallState, UseApiCallOptions } from './vue/composables'
 
+// Vue Engine 插件集成
 export {
   apiPlugin,
   createApiEnginePlugin,
@@ -112,6 +80,7 @@ export {
 } from './vue/engine'
 export type { ApiEnginePluginOptions } from './vue/engine'
 
+// Vue 插件
 export {
   API_ENGINE_INJECTION_KEY,
   ApiVuePlugin,
@@ -121,10 +90,16 @@ export {
 } from './vue/plugin'
 export type { ApiVuePluginOptions } from './vue/plugin'
 
+// Vue 工具函数和指令
 export { useIntersectionObserver } from './vue/utils'
 export { vIntersect } from './vue/directives'
 
-/**
- * 版本信息
- */
+// 主要工具类
+export { CacheManager } from './utils/CacheManager'
+
+// 类型辅助
+export type { TypedApiEngine } from './types/typed'
+export { withTypedApi } from './types/typed'
+
+// 版本信息
 export { version } from './version'

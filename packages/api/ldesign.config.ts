@@ -21,6 +21,7 @@ export default defineConfig({
   globals: {
     vue: 'Vue',
     '@ldesign/http': 'LDesignHttp',
+    'node:process': 'process',
   },
 
   // 明确指定不同格式的输出目录，确保与 package.json 保持一致
@@ -37,12 +38,14 @@ export default defineConfig({
       preserveStructure: true,
       dts: true,
     },
+    // UMD 配置，在 dist 目录不生成 dts 文件
     umd: {
       dir: 'dist',
-      format: 'umd',
+      format: 'iife', // IIFE 格式，避免 umd名称
       name: 'LDesignApi',
       sourcemap: true,
       minify: true,
+      input: 'src/index-lib.ts',
     },
   },
 })
