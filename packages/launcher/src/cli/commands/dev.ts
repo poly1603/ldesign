@@ -175,7 +175,7 @@ export class DevCommand implements CliCommandDefinition {
       launcher.onReady(async () => {
         const serverInfo = launcher.getServerInfo()
         if (serverInfo) {
-          const localUrl = serverInfo.url
+          const localUrl = serverInfo.url || ''
           const hasNetwork = serverInfo.host === '0.0.0.0' && !!serverInfo.url
           const networkUrl = hasNetwork ? localUrl.replace('0.0.0.0', getLocalIP()) : null
 
@@ -190,8 +190,9 @@ export class DevCommand implements CliCommandDefinition {
           for (const line of boxLines) logger.info(line)
 
           // 二维码输出（优先展示可在移动端访问的网络地址）
-          const qrTarget = networkUrl || localUrl
+          const qrTarget = (networkUrl || localUrl)
           try {
+            if (!qrTarget) throw new Error('empty-url')
             const mod: any = await import('qrcode-terminal')
             const qrt = mod?.default || mod
             let qrOutput = ''
