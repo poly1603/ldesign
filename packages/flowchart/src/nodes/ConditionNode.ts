@@ -18,12 +18,12 @@ export class ConditionNodeModel extends DiamondNodeModel {
     this.rx = 60
     this.ry = 30
 
-    // 设置默认文本
+    // 设置默认文本 - 文本在节点下方
     if (!this.text?.value) {
       this.text = {
         value: '条件判断',
         x: this.x,
-        y: this.y,
+        y: this.y + this.ry + 15, // 文本在菱形下方
         draggable: false,
         editable: true
       }
@@ -111,24 +111,34 @@ export class ConditionNode extends DiamondNode {
     const { x, y, rx, ry } = model
     const style = model.getNodeStyle()
 
+    // 计算菱形的四个顶点
+    const points = [
+      [x, y - ry], // 上
+      [x + rx, y], // 右
+      [x, y + ry], // 下
+      [x - rx, y]  // 左
+    ].map(point => point.join(',')).join(' ')
+
     return h('g', {}, [
       // 主菱形
-      h('ellipse', {
-        cx: x,
-        cy: y,
-        rx,
-        ry,
-        transform: `rotate(45 ${x} ${y})`,
+      h('polygon', {
+        points,
         ...style
       }),
-      // 条件图标
-      h('path', {
-        d: 'M-8,-8 L8,8 M8,-8 L-8,8',
-        transform: `translate(${x}, ${y})`,
-        stroke: 'var(--ldesign-warning-color, #f5c538)',
-        strokeWidth: 2,
-        fill: 'none'
-      })
+      // 条件图标 - 问号
+      h('g', {
+        transform: `translate(${x}, ${y - 8})`
+      }, [
+        h('text', {
+          x: 0,
+          y: 0,
+          textAnchor: 'middle',
+          dominantBaseline: 'middle',
+          fontSize: 16,
+          fontWeight: 'bold',
+          fill: 'var(--ldesign-warning-color, #f5c538)'
+        }, '?')
+      ])
     ])
   }
 }

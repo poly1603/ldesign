@@ -44,10 +44,15 @@ export class LeafletEngine extends MapEngine {
   /** 当前瓦片图层 */
   private tileLayer: any = null
 
+  constructor() {
+    // 使用默认选项初始化，实际选项在initialize时传入
+    super({} as MapOptions)
+  }
+
   /**
    * 初始化Leaflet地图
    */
-  async initialize(): Promise<void> {
+  async initialize(options: MapOptions): Promise<void> {
     if (this.initialized) return
 
     try {
@@ -59,17 +64,17 @@ export class LeafletEngine extends MapEngine {
       const L = window.L
 
       // 获取容器
-      const container = typeof this.options.container === 'string' 
-        ? document.querySelector(this.options.container)
-        : this.options.container
+      const container = typeof options.container === 'string'
+        ? document.querySelector(options.container)
+        : options.container
 
       if (!container) {
         throw new Error('地图容器未找到')
       }
 
       // 创建Leaflet地图
-      const center = this.options.center || [39.915, 116.404]
-      const zoom = this.options.zoom || 10
+      const center = options.center || [116.404, 39.915]
+      const zoom = options.zoom || 10
 
       this.map = L.map(container).setView([center[1], center[0]], zoom)
 
@@ -158,7 +163,7 @@ export class LeafletEngine extends MapEngine {
     if (!isValidCoordinate(center)) throw new Error('无效的坐标')
 
     const targetZoom = zoom !== undefined ? zoom : this.getZoom()
-    
+
     this.map.setView([center[1], center[0]], targetZoom, {
       animate: true,
       duration: options?.duration || 2,
@@ -169,22 +174,22 @@ export class LeafletEngine extends MapEngine {
   /**
    * 添加标记点
    */
-  addMarker(position: LngLat, options: MarkerOptions = {}): string {
+  addMarker(marker: MarkerOptions): string {
     if (!this.map) throw new Error('地图未初始化')
-    if (!isValidCoordinate(position)) throw new Error('无效的坐标')
+    if (!marker.lngLat || !isValidCoordinate(marker.lngLat)) throw new Error('无效的坐标')
 
     const L = window.L
-    const markerId = `marker_${Date.now()}_${Math.random()}`
+    const markerId = marker.id || `marker_${Date.now()}_${Math.random()}`
 
-    const marker = L.marker([position[1], position[0]], {
-      title: options.title || '标记点'
+    const leafletMarker = L.marker([marker.lngLat[1], marker.lngLat[0]], {
+      title: marker.title || '标记点'
     }).addTo(this.map)
 
-    if (options.popup) {
-      marker.bindPopup(options.popup)
+    if (marker.popup) {
+      leafletMarker.bindPopup(marker.popup.content || '')
     }
 
-    this.markers.set(markerId, marker)
+    this.markers.set(markerId, leafletMarker)
     return markerId
   }
 
@@ -197,6 +202,53 @@ export class LeafletEngine extends MapEngine {
       this.map.removeLayer(marker)
       this.markers.delete(markerId)
     }
+  }
+
+  /**
+   * 更新标记点
+   */
+  updateMarker(id: string, options: Partial<MarkerOptions>): void {
+    const marker = this.markers.get(id)
+    if (!marker) return
+
+    if (options.lngLat) {
+      marker.setLatLng([options.lngLat[1], options.lngLat[0]])
+    }
+
+    if (options.popup) {
+      marker.bindPopup(options.popup.content || '')
+    }
+  }
+
+  /**
+   * 获取标记点
+   */
+  getMarker(id: string): MarkerOptions | undefined {
+    const marker = this.markers.get(id)
+    if (!marker) return undefined
+
+    const latLng = marker.getLatLng()
+    return {
+      id,
+      lngLat: [latLng.lng, latLng.lat],
+      title: marker.options.title
+    }
+  }
+
+  /**
+   * 获取所有标记点
+   */
+  getMarkers(): MarkerOptions[] {
+    const markers: MarkerOptions[] = []
+    this.markers.forEach((marker, id) => {
+      const latLng = marker.getLatLng()
+      markers.push({
+        id,
+        lngLat: [latLng.lng, latLng.lat],
+        title: marker.options.title
+      })
+    })
+    return markers
   }
 
   /**
@@ -260,7 +312,7 @@ export class LeafletEngine extends MapEngine {
     if (!this.map) throw new Error('地图未初始化')
 
     const L = window.L
-    
+
     if (source.type === 'geojson' && source.data) {
       const layer = L.geoJSON(source.data)
       this.layers.set(sourceId, layer)
@@ -281,11 +333,11 @@ export class LeafletEngine extends MapEngine {
   /**
    * 添加图层
    */
-  addLayer(layerId: string, layer: LayerOptions): void {
+  addLayer(layer: LayerOptions): void {
     if (!this.map) throw new Error('地图未初始化')
-    
+
     // Leaflet的图层添加相对简单，这里提供基础实现
-    console.log(`添加图层: ${layerId}`, layer)
+    console.log(`添加图层: ${layer.id}`, layer)
   }
 
   /**
@@ -296,6 +348,28 @@ export class LeafletEngine extends MapEngine {
     if (layer && this.map) {
       this.map.removeLayer(layer)
       this.layers.delete(layerId)
+    }
+  }
+
+  /**
+   * 更新图层
+   */
+  updateLayer(id: string, options: Partial<LayerOptions>): void {
+    // Leaflet的图层更新实现
+    console.log(`更新图层: ${id}`, options)
+  }
+
+  /**
+   * 显示/隐藏图层
+   */
+  toggleLayer(id: string, visible: boolean): void {
+    const layer = this.layers.get(id)
+    if (layer && this.map) {
+      if (visible) {
+        this.map.addLayer(layer)
+      } else {
+        this.map.removeLayer(layer)
+      }
     }
   }
 
@@ -351,13 +425,78 @@ export class LeafletEngine extends MapEngine {
   /**
    * 设置地图边界
    */
-  fitBounds(bounds: [[number, number], [number, number]]): void {
+  fitBounds(bounds: LngLatBounds, options?: any): void {
     if (!this.map) throw new Error('地图未初始化')
 
     this.map.fitBounds([
-      [bounds[0][0], bounds[0][1]],
-      [bounds[1][0], bounds[1][1]]
+      [bounds[0][1], bounds[0][0]], // [lat, lng]
+      [bounds[1][1], bounds[1][0]]  // [lat, lng]
     ])
+  }
+
+  /**
+   * 添加事件监听器
+   */
+  on(event: string, listener: EventListener): void {
+    if (!this.map) throw new Error('地图未初始化')
+    this.map.on(event, listener)
+  }
+
+  /**
+   * 移除事件监听器
+   */
+  off(event: string, listener: EventListener): void {
+    if (!this.map) throw new Error('地图未初始化')
+    this.map.off(event, listener)
+  }
+
+  /**
+   * 触发事件
+   */
+  emit(event: string, data?: any): void {
+    if (!this.map) throw new Error('地图未初始化')
+    this.map.fire(event, data)
+  }
+
+  /**
+   * 调整地图大小
+   */
+  resize(): void {
+    if (!this.map) throw new Error('地图未初始化')
+    this.map.invalidateSize()
+  }
+
+  /**
+   * 获取地图容器
+   */
+  getContainer(): HTMLElement {
+    if (!this.map) throw new Error('地图未初始化')
+    return this.map.getContainer()
+  }
+
+  /**
+   * 屏幕坐标转地理坐标
+   */
+  unproject(point: [number, number]): LngLat {
+    if (!this.map) throw new Error('地图未初始化')
+    const latlng = this.map.containerPointToLatLng(point)
+    return [latlng.lng, latlng.lat]
+  }
+
+  /**
+   * 地理坐标转屏幕坐标
+   */
+  project(lngLat: LngLat): [number, number] {
+    if (!this.map) throw new Error('地图未初始化')
+    const point = this.map.latLngToContainerPoint([lngLat[1], lngLat[0]])
+    return [point.x, point.y]
+  }
+
+  /**
+   * 获取原始地图实例
+   */
+  getMapInstance(): any {
+    return this.map
   }
 
   /**
@@ -369,7 +508,7 @@ export class LeafletEngine extends MapEngine {
       this.clearPopups()
       this.layers.forEach(layer => this.map.removeLayer(layer))
       this.layers.clear()
-      
+
       this.map.remove()
       this.map = null
     }

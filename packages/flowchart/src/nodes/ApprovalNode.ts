@@ -19,12 +19,12 @@ export class ApprovalNodeModel extends RectNodeModel {
     this.height = 60
     this.radius = 8
 
-    // 设置默认文本
+    // 设置默认文本 - 文本在节点下方
     if (!this.text?.value) {
       this.text = {
         value: '审批节点',
         x: this.x,
-        y: this.y,
+        y: this.y + this.height / 2 + 15, // 文本在矩形下方
         draggable: false,
         editable: true
       }
@@ -216,7 +216,7 @@ export class ApprovalNode extends RectNode {
 
     return h('path', {
       d: iconPath,
-      transform: `translate(${x + 35}, ${y - 20})`,
+      transform: `translate(${x}, ${y - 8})`, // 图标在矩形中心稍微上方
       stroke: iconColor,
       strokeWidth: 2,
       fill: 'none'
@@ -232,8 +232,8 @@ export class ApprovalNode extends RectNode {
     return h('g', {}, [
       // 背景圆
       h('circle', {
-        cx: x - 35,
-        cy: y - 20,
+        cx: x - 20,
+        cy: y - 8,
         r: 8,
         fill: 'var(--ldesign-brand-color, #722ED1)',
         stroke: 'white',
@@ -241,8 +241,8 @@ export class ApprovalNode extends RectNode {
       }),
       // 数量文本
       h('text', {
-        x: x - 35,
-        y: y - 16,
+        x: x - 20,
+        y: y - 4,
         fontSize: 10,
         fill: 'white',
         textAnchor: 'middle',

@@ -4,13 +4,14 @@
  * 负责管理流程图编辑器的UI组件
  */
 
-import type { FlowchartEditorConfig, ApprovalNodeConfig, ApprovalNodeType, FlowchartTheme } from '../types'
+import type { FlowchartEditorConfig, ApprovalNodeConfig, ApprovalEdgeConfig, ApprovalNodeType, FlowchartTheme } from '../types'
 import { MaterialPanel } from './native/MaterialPanel'
 import { PropertyPanel } from './native/PropertyPanel'
 import { Toolbar } from './native/Toolbar'
 
 export interface UIState {
   selectedNode: ApprovalNodeConfig | null
+  selectedEdge: ApprovalEdgeConfig | null
   readonly: boolean
   currentTheme: FlowchartTheme
 }
@@ -46,6 +47,7 @@ export class UIManager {
     // 初始化状态
     this.state = {
       selectedNode: null,
+      selectedEdge: null,
       readonly: config.readonly || false,
       currentTheme: typeof config.theme === 'string' ? config.theme as FlowchartTheme : 'default'
     }
@@ -239,10 +241,23 @@ export class UIManager {
 
       // 计算相对于画布的坐标
       const rect = this.canvasContainer!.getBoundingClientRect()
-      const position = {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top
+      let x = event.clientX - rect.left
+      let y = event.clientY - rect.top
+
+      // 查找LogicFlow画布元素来获取更精确的坐标
+      const lfCanvas = this.canvasContainer!.querySelector('.lf-canvas-overlay')
+      if (lfCanvas) {
+        const canvasRect = lfCanvas.getBoundingClientRect()
+        x = event.clientX - canvasRect.left
+        y = event.clientY - canvasRect.top
       }
+
+      // 确保坐标在合理范围内
+      x = Math.max(50, Math.min(x, rect.width - 50))
+      y = Math.max(30, Math.min(y, rect.height - 30))
+
+      const position = { x, y }
+      console.log(`拖拽创建节点: ${nodeType} at (${x.toFixed(0)}, ${y.toFixed(0)})`)
 
       this.onNodeDrop?.(nodeType, position)
     })
@@ -258,6 +273,19 @@ export class UIManager {
     const propertyPanel = this.components.get('property')
     if (propertyPanel) {
       propertyPanel.setSelectedNode(node)
+    }
+  }
+
+  /**
+   * 设置选中边
+   */
+  setSelectedEdge(edge: ApprovalEdgeConfig | null): void {
+    this.state.selectedEdge = edge
+
+    // 更新属性面板
+    const propertyPanel = this.components.get('property')
+    if (propertyPanel) {
+      propertyPanel.setSelectedEdge(edge)
     }
   }
 

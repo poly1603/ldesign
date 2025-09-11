@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
   server: {
@@ -18,6 +19,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': new URL('./src', import.meta.url).pathname,
-    },
+      '@ldesign/watermark': fileURLToPath(new URL('../../src', import.meta.url))
+    }
   },
 })

@@ -4,8 +4,19 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "allowImportingTsExtensions": false,
+    "noEmit": false,
+    "emitDeclarationOnly": false,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "dist",
+    "declarationDir": "dist",
+    "rootDir": "src",
+    "strict": false,
+    "skipLibCheck": true,
+    "noErrorTruncation": true
   },
-  "include": ["src/**/*", "__tests__/**/*", "tests/**/*"],
-  "exclude": ["examples/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["examples/**/*", "tests/**/*", "__tests__/**/*", "**/*.mock.*", "**/*.test.*", "**/*.spec.*"]
 }

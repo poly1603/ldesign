@@ -2,6 +2,7 @@
  * 测试辅助工具
  */
 
+import { vi } from 'vitest'
 import type { WatermarkConfig, WatermarkInstance } from '../../src/types'
 
 /**
@@ -172,4 +173,123 @@ export function isElementVisible(element: HTMLElement): boolean {
  */
 export function getComputedStyleValue(element: HTMLElement, property: string): string {
   return window.getComputedStyle(element).getPropertyValue(property)
+}
+
+/**
+ * 创建 Mock Canvas Context
+ */
+export function createMockCanvasContext(): CanvasRenderingContext2D {
+  const mockContext = {
+    // 绘制方法
+    fillText: vi.fn(),
+    strokeText: vi.fn(),
+    fillRect: vi.fn(),
+    strokeRect: vi.fn(),
+    clearRect: vi.fn(),
+    beginPath: vi.fn(),
+    closePath: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    arc: vi.fn(),
+    arcTo: vi.fn(),
+    quadraticCurveTo: vi.fn(),
+    bezierCurveTo: vi.fn(),
+    rect: vi.fn(),
+    fill: vi.fn(),
+    stroke: vi.fn(),
+    clip: vi.fn(),
+    drawImage: vi.fn(),
+    
+    // 变换方法
+    scale: vi.fn(),
+    rotate: vi.fn(),
+    translate: vi.fn(),
+    transform: vi.fn(),
+    setTransform: vi.fn(),
+    resetTransform: vi.fn(),
+    save: vi.fn(),
+    restore: vi.fn(),
+    
+    // 样式属性（使用可写的属性来模拟真实的Canvas上下文）
+    _fillStyle: '#000000',
+    get fillStyle() { return this._fillStyle },
+    set fillStyle(value) { this._fillStyle = value },
+    _strokeStyle: '#000000',
+    get strokeStyle() { return this._strokeStyle },
+    set strokeStyle(value) { this._strokeStyle = value },
+    _globalAlpha: 1,
+    get globalAlpha() { return this._globalAlpha },
+    set globalAlpha(value) { this._globalAlpha = value },
+    lineWidth: 1,
+    lineCap: 'butt',
+    lineJoin: 'miter',
+    miterLimit: 10,
+    _font: '10px sans-serif',
+    get font() { return this._font },
+    set font(value) { this._font = value },
+    textAlign: 'start',
+    textBaseline: 'alphabetic',
+    direction: 'ltr',
+    globalCompositeOperation: 'source-over',
+    
+    // 其他方法
+    measureText: vi.fn().mockReturnValue({ width: 100 }),
+    createLinearGradient: vi.fn(),
+    createRadialGradient: vi.fn(),
+    createPattern: vi.fn(),
+    getImageData: vi.fn().mockImplementation((x: number, y: number, width: number, height: number) => {
+      // 返回一个模拟ImageData对象
+      const data = new Uint8ClampedArray(width * height * 4) // RGBA
+      return { data, width, height }
+    }),
+    putImageData: vi.fn(),
+    createImageData: vi.fn(),
+    
+    // Canvas 属性
+    canvas: null as any,
+  } as any
+  
+  return mockContext
+}
+
+/**
+ * 设置 Canvas Mock
+ */
+export function setupCanvasMock(): void {
+  // Mock HTMLCanvasElement.getContext
+  if (typeof HTMLCanvasElement !== 'undefined') {
+    const originalGetContext = HTMLCanvasElement.prototype.getContext
+    const originalToDataURL = HTMLCanvasElement.prototype.toDataURL
+    
+    // 使用WeakMap来存储每个canvas元素对应的context对象
+    const canvasContextMap = new WeakMap<HTMLCanvasElement, CanvasRenderingContext2D>()
+    
+    HTMLCanvasElement.prototype.getContext = vi.fn().mockImplementation(function(this: HTMLCanvasElement, contextId: string) {
+      if (contextId === '2d') {
+        // 检查是否已经为这个canvas创建了context
+        if (canvasContextMap.has(this)) {
+          return canvasContextMap.get(this)!
+        }
+        
+        // 创建新的context并存储起来
+        const mockContext = createMockCanvasContext()
+        mockContext.canvas = this
+        canvasContextMap.set(this, mockContext)
+        return mockContext
+      }
+      return originalGetContext.call(this, contextId as any)
+    })
+    
+    // Mock toDataURL
+    HTMLCanvasElement.prototype.toDataURL = vi.fn().mockReturnValue('data:image/png;base64,mock-canvas-data')
+  }
+}
+
+/**
+ * 清理 Canvas Mock
+ */
+export function cleanupCanvasMock(): void {
+  if (typeof HTMLCanvasElement !== 'undefined' && HTMLCanvasElement.prototype.getContext) {
+    vi.restoreAllMocks()
+  }
 }

@@ -1,0 +1,263 @@
+/**
+ * 组件样式定义
+ */
+
+/* 卡片组件 */
+.card {
+  background-color: var(--ldesign-bg-color-container);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  box-shadow: var(--ldesign-shadow-1);
+  padding: var(--ls-padding-lg);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: var(--ldesign-shadow-2);
+    transform: translateY(-2px);
+  }
+
+  &__header {
+    margin-bottom: var(--ls-margin-base);
+    padding-bottom: var(--ls-padding-base);
+    border-bottom: 1px solid var(--ldesign-border-color);
+
+    h3 {
+      margin: 0;
+      font-size: var(--ls-font-size-lg);
+      color: var(--ldesign-text-color-primary);
+    }
+
+    p {
+      margin: var(--ls-margin-xs) 0 0;
+      color: var(--ldesign-text-color-secondary);
+      font-size: var(--ls-font-size-sm);
+    }
+  }
+
+  &__body {
+    margin-bottom: var(--ls-margin-base);
+  }
+
+  &__footer {
+    padding-top: var(--ls-padding-base);
+    border-top: 1px solid var(--ldesign-border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--ls-spacing-sm);
+  }
+}
+
+/* 按钮组件 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ls-spacing-xs);
+  height: var(--ls-button-height-medium);
+  padding: 0 var(--ls-padding-base);
+  border: 1px solid transparent;
+  border-radius: var(--ls-border-radius-base);
+  font-size: var(--ls-font-size-sm);
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+
+  &:focus {
+    outline: 2px solid var(--ldesign-brand-color-focus);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  // 主要按钮
+  &--primary {
+    background-color: var(--ldesign-brand-color);
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: var(--ldesign-brand-color-hover);
+    }
+
+    &:active {
+      background-color: var(--ldesign-brand-color-active);
+    }
+  }
+
+  // 次要按钮
+  &--secondary {
+    background-color: transparent;
+    border-color: var(--ldesign-border-color);
+    color: var(--ldesign-text-color-primary);
+
+    &:hover:not(:disabled) {
+      border-color: var(--ldesign-brand-color);
+      color: var(--ldesign-brand-color);
+    }
+  }
+
+  // 文本按钮
+  &--text {
+    background-color: transparent;
+    color: var(--ldesign-brand-color);
+
+    &:hover:not(:disabled) {
+      background-color: var(--ldesign-brand-color-1);
+    }
+  }
+
+  // 尺寸变体
+  &--small {
+    height: var(--ls-button-height-small);
+    padding: 0 var(--ls-padding-sm);
+    font-size: var(--ls-font-size-xs);
+  }
+
+  &--large {
+    height: var(--ls-button-height-large);
+    padding: 0 var(--ls-padding-lg);
+    font-size: var(--ls-font-size-base);
+  }
+}
+
+/* 代码块组件 */
+.code-block {
+  background-color: var(--ldesign-bg-color-component);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  padding: var(--ls-padding-base);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: var(--ls-font-size-sm);
+  line-height: 1.5;
+  overflow-x: auto;
+  position: relative;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--ls-margin-sm);
+    padding-bottom: var(--ls-padding-xs);
+    border-bottom: 1px solid var(--ldesign-border-color);
+
+    .language {
+      font-size: var(--ls-font-size-xs);
+      color: var(--ldesign-text-color-secondary);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .copy-btn {
+      padding: var(--ls-padding-xs);
+      background: transparent;
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-sm);
+      cursor: pointer;
+      font-size: var(--ls-font-size-xs);
+
+      &:hover {
+        background-color: var(--ldesign-bg-color-component-hover);
+      }
+    }
+  }
+
+  pre {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+  }
+
+  code {
+    font-family: inherit;
+    font-size: inherit;
+  }
+}
+
+/* 标签组件 */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ls-spacing-xs);
+  padding: var(--ls-padding-xs) var(--ls-padding-sm);
+  border-radius: var(--ls-border-radius-sm);
+  font-size: var(--ls-font-size-xs);
+  font-weight: 500;
+  line-height: 1;
+
+  &--default {
+    background-color: var(--ldesign-bg-color-component);
+    color: var(--ldesign-text-color-secondary);
+  }
+
+  &--primary {
+    background-color: var(--ldesign-brand-color-1);
+    color: var(--ldesign-brand-color);
+  }
+
+  &--success {
+    background-color: var(--ldesign-success-color-1);
+    color: var(--ldesign-success-color);
+  }
+
+  &--warning {
+    background-color: var(--ldesign-warning-color-1);
+    color: var(--ldesign-warning-color);
+  }
+
+  &--error {
+    background-color: var(--ldesign-error-color-1);
+    color: var(--ldesign-error-color);
+  }
+}
+
+/* 分割线组件 */
+.divider {
+  border: none;
+  border-top: 1px solid var(--ldesign-border-color);
+  margin: var(--ls-margin-base) 0;
+
+  &--vertical {
+    border-top: none;
+    border-left: 1px solid var(--ldesign-border-color);
+    height: 1em;
+    margin: 0 var(--ls-margin-sm);
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+
+/* 提示框组件 */
+.alert {
+  padding: var(--ls-padding-base);
+  border-radius: var(--ls-border-radius-base);
+  border: 1px solid;
+  margin-bottom: var(--ls-margin-base);
+
+  &--info {
+    background-color: var(--ldesign-brand-color-1);
+    border-color: var(--ldesign-brand-color-2);
+    color: var(--ldesign-brand-color-7);
+  }
+
+  &--success {
+    background-color: var(--ldesign-success-color-1);
+    border-color: var(--ldesign-success-color-2);
+    color: var(--ldesign-success-color-7);
+  }
+
+  &--warning {
+    background-color: var(--ldesign-warning-color-1);
+    border-color: var(--ldesign-warning-color-2);
+    color: var(--ldesign-warning-color-7);
+  }
+
+  &--error {
+    background-color: var(--ldesign-error-color-1);
+    border-color: var(--ldesign-error-color-2);
+    color: var(--ldesign-error-color-7);
+  }
+}

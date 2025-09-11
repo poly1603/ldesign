@@ -22,6 +22,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@ldesign/watermark': fileURLToPath(new URL('../../src', import.meta.url))
     },
   },
   css: {

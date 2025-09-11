@@ -21,6 +21,11 @@
       "import": "./es/packages/chart/src/index.js",
       "require": "./cjs/packages/chart/src/index.cjs"
     },
+    "./vue": {
+      "types": "./es/packages/chart/vue.d.ts",
+      "import": "./es/packages/chart/vue.js",
+      "require": "./cjs/packages/chart/vue.cjs"
+    },
     "./themes": {
       "types": "./es/packages/chart/src/themes/index.d.ts",
       "import": "./es/packages/chart/src/themes/index.js",
@@ -76,6 +81,14 @@
     "tslib": "^2.6.2",
     "jspdf": "^2.5.1",
     "xlsx": "^0.18.5"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",

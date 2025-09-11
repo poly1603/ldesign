@@ -61,6 +61,7 @@ import type {
   IMeasurementModule,
   ILayerModule
 } from '../types'
+import { LeafletEngine } from './LeafletEngine'
 import { MapboxEngine } from './MapboxEngine'
 
 /**
@@ -104,8 +105,8 @@ export class LDesignMap {
       ...options
     }
 
-    // 创建地图引擎
-    this.engine = new MapboxEngine()
+    // 创建地图引擎 - 默认使用Leaflet（免费，无需API密钥）
+    this.engine = this.options.engine === 'mapbox' ? new MapboxEngine() : new LeafletEngine()
   }
 
   /**

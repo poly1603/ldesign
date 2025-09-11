@@ -39,7 +39,8 @@ export class RendererFactory implements IRendererFactory {
    * 创建渲染器
    */
   createRenderer(config: WatermarkConfig): BaseRenderer {
-    const mode = config.mode || 'dom'
+    // 首先尝试使用renderMode，如果不存在再使用mode
+    const mode = config.renderMode || config.mode || 'dom'
 
     // 检查浏览器兼容性
     if (!this.isRendererSupported(mode)) {
@@ -94,6 +95,17 @@ export class RendererFactory implements IRendererFactory {
    * 检查渲染器是否支持
    */
   isRendererSupported(mode: string): boolean {
+    const renderer = this.renderers.get(mode)
+    if (!renderer) {
+      return false
+    }
+    
+    // 优先使用渲染器自身的 isSupported 方法
+    if (typeof (renderer as any).isSupported === 'function') {
+      return (renderer as any).isSupported()
+    }
+    
+    // 备用检查逻辑
     switch (mode) {
       case 'dom':
         return true // DOM渲染器总是支持的

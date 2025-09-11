@@ -19,12 +19,14 @@ export class ProcessNodeModel extends RectNodeModel {
     this.height = 50
     this.radius = 6
 
-    // 设置默认文本
+    // 设置默认文本 - 文本在节点下方
     if (!this.text?.value) {
       this.text = {
         value: '处理节点',
         x: this.x,
-        y: this.y
+        y: this.y + this.height / 2 + 15, // 文本在矩形下方
+        draggable: false,
+        editable: true
       }
     }
   }

@@ -4,7 +4,7 @@ import {
   generateColorScales,
   injectThemeVariables,
 } from '@ldesign/color'
-import { ThemePlugin } from '@ldesign/color/vue'
+import { ColorVuePlugin as ThemePlugin } from '@ldesign/color/vue'
 import { createApp } from 'vue'
 import App from './App.vue'
 import './styles/index.css'

@@ -232,6 +232,24 @@ export class AnimationEngine implements IAnimationEngine {
   }
 
   /**
+   * 恢复动画
+   */
+  async resumeAnimation(animationId: string): Promise<void> {
+    const animation = this.animations.get(animationId)
+    const state = this.states.get(animationId)
+
+    if (!animation || !state) {
+      return
+    }
+
+    if (state.status === 'paused') {
+      state.status = 'running'
+      animation.play()
+      this.emitEvent(animationId, 'resume', {})
+    }
+  }
+
+  /**
    * 停止动画
    */
   async stopAnimation(animationId: string): Promise<void> {

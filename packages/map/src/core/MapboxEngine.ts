@@ -41,10 +41,13 @@ export class MapboxEngine implements IMapEngine {
 
     try {
       // 设置访问令牌
-      if (options.accessToken) {
+      if (options.accessToken && options.accessToken !== 'DEMO_TOKEN_PLEASE_REPLACE') {
         mapboxgl.accessToken = options.accessToken
       } else {
-        throw new Error('Mapbox access token is required')
+        throw new Error(
+          'Mapbox访问令牌无效或未设置。请到 https://account.mapbox.com/access-tokens/ 获取您的访问令牌，' +
+          '然后在 .env.local 文件中设置 VITE_MAPBOX_ACCESS_TOKEN=your_token_here'
+        )
       }
 
       // 获取容器元素

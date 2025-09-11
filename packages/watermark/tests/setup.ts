@@ -86,9 +86,15 @@ beforeAll(() => {
     width: 0,
     height: 0,
     style: {},
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+    setAttribute: vi.fn(),
+    getAttribute: vi.fn(),
+    getBoundingClientRect: vi.fn(() => ({ width: 200, height: 100, top: 0, left: 0 })),
   }
 
-  // 模拟 createElement 对于 canvas
+  // 模拟 createElement 对于canvas
   const originalCreateElement = document.createElement
   vi.spyOn(document, 'createElement').mockImplementation((tagName) => {
     if (tagName === 'canvas') {
@@ -96,6 +102,44 @@ beforeAll(() => {
     }
     return originalCreateElement.call(document, tagName)
   })
+  
+  // 模拟 SVG 支持
+  const originalCreateElementNS = document.createElementNS
+  if (!originalCreateElementNS) {
+    document.createElementNS = vi.fn((namespace, tagName) => {
+      if (namespace === 'http://www.w3.org/2000/svg' && tagName === 'svg') {
+        const mockSVG = {
+          createSVGRect: vi.fn(() => ({
+            x: 0, y: 0, width: 0, height: 0
+          })),
+          getAttribute: vi.fn(),
+          setAttribute: vi.fn(),
+          appendChild: vi.fn(),
+          removeChild: vi.fn(),
+          style: {}
+        }
+        return mockSVG
+      }
+      return originalCreateElement.call(document, tagName)
+    })
+  } else {
+    vi.spyOn(document, 'createElementNS').mockImplementation((namespace, tagName) => {
+      if (namespace === 'http://www.w3.org/2000/svg' && tagName === 'svg') {
+        const mockSVG = {
+          createSVGRect: vi.fn(() => ({
+            x: 0, y: 0, width: 0, height: 0
+          })),
+          getAttribute: vi.fn(),
+          setAttribute: vi.fn(),
+          appendChild: vi.fn(),
+          removeChild: vi.fn(),
+          style: {}
+        }
+        return mockSVG
+      }
+      return originalCreateElementNS.call(document, namespace, tagName)
+    })
+  }
 
   // 模拟 Image 构造函数
   global.Image = class MockImage {
@@ -105,13 +149,170 @@ beforeAll(() => {
     crossOrigin: string | null = null
     naturalWidth: number = 100
     naturalHeight: number = 100
+    width: number = 100
+    height: number = 100
+    complete: boolean = true
+    style: any
+    alt: string = ''
+    id: string = ''
+    className: string = ''
+    tagName: string = 'IMG'
+    nodeType: number = 1 // Element node
+    nodeName: string = 'IMG'
+    parentNode: any = null
+    parentElement: any = null
+    children: any[] = []
+    childNodes: any[] = []
+    firstChild: any = null
+    lastChild: any = null
+    nextSibling: any = null
+    previousSibling: any = null
+
+    private _initStyle() {
+      // 创建一个类似 CSSStyleDeclaration 的对象
+      const styleObj: any = {}
+      const styleProperties = [
+        'width', 'height', 'display', 'maxWidth', 'maxHeight', 'opacity',
+        'position', 'left', 'top', 'zIndex', 'pointerEvents', 'userSelect',
+        'webkitUserSelect', 'mozUserSelect', 'msUserSelect', 'webkitUserDrag',
+        'mozUserDrag', 'msUserDrag', 'alignItems', 'justifyContent', 
+        'whiteSpace', 'overflow', 'fontSize', 'fontFamily', 'fontWeight', 
+        'fontStyle', 'color', 'backgroundColor', 'border', 'borderRadius',
+        'textShadow', 'boxShadow', 'padding', 'mixBlendMode', 'filter', 
+        'background', 'textDecoration', 'transform'
+      ]
+      
+      styleProperties.forEach(prop => {
+        styleObj[prop] = ''
+      })
+      
+      return styleObj
+    }
 
     constructor() {
-      setTimeout(() => {
+      // 初始化 style 对象
+      this.style = this._initStyle()
+      
+      // 同步触发 load 事件，避免异步问题
+      Promise.resolve().then(() => {
         if (this.onload) {
           this.onload(new Event('load'))
         }
-      }, 10)
+      })
+    }
+
+    cloneNode(deep?: boolean): MockImage {
+      const clone = new MockImage()
+      clone.src = this.src
+      clone.crossOrigin = this.crossOrigin
+      clone.naturalWidth = this.naturalWidth
+      clone.naturalHeight = this.naturalHeight
+      clone.width = this.width
+      clone.height = this.height
+      clone.complete = this.complete
+      clone.style = clone._initStyle()
+      // 复制已设置的样式属性
+      Object.assign(clone.style, this.style)
+      clone.alt = this.alt
+      clone.id = this.id
+      clone.className = this.className
+      return clone
+    }
+
+    // DOM Node interface methods
+    appendChild(child: any): any {
+      this.children.push(child)
+      this.childNodes.push(child)
+      child.parentNode = this
+      child.parentElement = this
+      return child
+    }
+
+    removeChild(child: any): any {
+      const index = this.children.indexOf(child)
+      if (index > -1) {
+        this.children.splice(index, 1)
+        this.childNodes.splice(index, 1)
+        child.parentNode = null
+        child.parentElement = null
+      }
+      return child
+    }
+
+    insertBefore(newChild: any, referenceChild: any): any {
+      if (!referenceChild) {
+        return this.appendChild(newChild)
+      }
+      const index = this.children.indexOf(referenceChild)
+      if (index > -1) {
+        this.children.splice(index, 0, newChild)
+        this.childNodes.splice(index, 0, newChild)
+        newChild.parentNode = this
+        newChild.parentElement = this
+      }
+      return newChild
+    }
+
+    contains(other: any): boolean {
+      return this === other || this.children.includes(other)
+    }
+
+    setAttribute(name: string, value: string): void {
+      if (name === 'src') {
+        this.src = value
+      } else if (name === 'crossOrigin') {
+        this.crossOrigin = value
+      } else if (name === 'alt') {
+        this.alt = value
+      } else if (name === 'id') {
+        this.id = value
+      } else if (name === 'class') {
+        this.className = value
+      }
+    }
+
+    getAttribute(name: string): string | null {
+      if (name === 'src') {
+        return this.src
+      } else if (name === 'crossOrigin') {
+        return this.crossOrigin
+      } else if (name === 'alt') {
+        return this.alt
+      } else if (name === 'id') {
+        return this.id
+      } else if (name === 'class') {
+        return this.className
+      }
+      return null
+    }
+
+    addEventListener(type: string, listener: EventListener): void {
+      if (type === 'load') {
+        this.onload = listener as any
+      } else if (type === 'error') {
+        this.onerror = listener as any
+      }
+    }
+
+    removeEventListener(type: string, listener: EventListener): void {
+      if (type === 'load') {
+        this.onload = null
+      } else if (type === 'error') {
+        this.onerror = null
+      }
+    }
+
+    getBoundingClientRect(): DOMRect {
+      return {
+        width: this.width,
+        height: this.height,
+        top: 0,
+        left: 0,
+        bottom: this.height,
+        right: this.width,
+        x: 0,
+        y: 0
+      } as DOMRect
     }
   } as any
 

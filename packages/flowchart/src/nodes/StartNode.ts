@@ -17,12 +17,12 @@ export class StartNodeModel extends CircleNodeModel {
     // 设置节点尺寸
     this.r = 30
 
-    // 设置默认文本
+    // 设置默认文本 - 文本在节点下方
     if (!this.text?.value) {
       this.text = {
         value: '开始',
         x: this.x,
-        y: this.y,
+        y: this.y + this.r + 15, // 文本在圆形下方
         draggable: false,
         editable: true
       }
@@ -108,10 +108,10 @@ export class StartNode extends CircleNode {
         r,
         ...style
       }),
-      // 内部图标
+      // 内部图标 - 播放按钮图标在圆形中心
       h('path', {
-        d: 'M-8,-4 L-8,4 L8,0 Z',
-        transform: `translate(${x}, ${y})`,
+        d: 'M-6,-4 L-6,4 L6,0 Z',
+        transform: `translate(${x}, ${y - 5})`, // 图标稍微上移
         fill: 'var(--ldesign-success-color, #52c41a)',
         stroke: 'none'
       })

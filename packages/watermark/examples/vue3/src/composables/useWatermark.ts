@@ -13,9 +13,11 @@ export interface UseWatermarkReturn {
   loading: Ref<boolean>
   error: Ref<Error | null>
   isCreated: Readonly<Ref<boolean>>
+  isActive: Readonly<Ref<boolean>> // 别名，保持向后兼容
   create: (content: string, config?: Partial<WatermarkConfig>) => Promise<void>
   update: (config: Partial<WatermarkConfig>) => Promise<void>
   destroy: () => Promise<void>
+  toggle: () => Promise<void>
   clearError: () => void
 }
 
@@ -32,6 +34,7 @@ export function useWatermark(
 
   // 计算属性
   const isCreated = computed(() => instance.value !== null)
+  const isActive = isCreated // 别名，保持向后兼容
 
   /**
    * 销毁水印
@@ -135,6 +138,18 @@ export function useWatermark(
   }
 
   /**
+   * 切换水印显示状态
+   */
+  const toggle = async (): Promise<void> => {
+    if (instance.value) {
+      await destroy()
+    } else {
+      // 需要默认内容，这里使用简单的默认值
+      await create('Toggle Watermark')
+    }
+  }
+
+  /**
    * 清除错误
    */
   const clearError = (): void => {
@@ -171,9 +186,11 @@ export function useWatermark(
     loading,
     error,
     isCreated,
+    isActive,
     create,
     update,
     destroy,
+    toggle,
     clearError,
   }
 }

@@ -6,6 +6,8 @@
  */
 
 import LogicFlow from '@logicflow/core'
+import { SelectionSelect } from '@logicflow/extension'
+import '@logicflow/extension/lib/style/index.css'
 import type {
   FlowchartEditorConfig,
   FlowchartData,
@@ -33,6 +35,11 @@ export class FlowchartEditor {
   private uiManager?: UIManager
   private eventListeners: Map<keyof FlowchartEvents, Function[]> = new Map()
   private selectedNode: ApprovalNodeConfig | null = null
+  private selectedEdge: ApprovalEdgeConfig | null = null
+  private keyboardEventListener?: (event: KeyboardEvent) => void
+  private currentBackgroundType: 'grid' | 'ps' | 'solid' = 'grid'
+  private copiedNodeData: any = null
+  private isSelectionMode: boolean = false
 
   /**
    * 构造函数
@@ -46,6 +53,9 @@ export class FlowchartEditor {
       this.uiManager = new UIManager(this.config)
       this.setupUICallbacks()
     }
+
+    // 注册LogicFlow插件（必须在创建实例之前）
+    this.registerLogicFlowPlugins()
 
     // 初始化 LogicFlow
     this.initLogicFlow()
@@ -73,6 +83,14 @@ export class FlowchartEditor {
 
     // 绑定事件
     this.bindEvents()
+
+    // 绑定键盘快捷键
+    this.bindKeyboardShortcuts()
+
+    // 设置默认背景
+    setTimeout(() => {
+      this.setCanvasBackground('grid')
+    }, 100)
   }
 
   /**
@@ -103,8 +121,14 @@ export class FlowchartEditor {
       grid: {
         size: this.config.grid?.size || 20,
         visible: this.config.grid?.visible !== false,
-        type: this.config.grid?.type || 'dot'
+        type: this.config.grid?.type || 'dot',
+        config: {
+          color: '#e1e1e1',
+          thickness: 1
+        }
       },
+      // 启用对齐线
+      snapline: true,
       // 禁用默认的右键菜单
       disabledMenus: [],
       // 启用键盘快捷键
@@ -113,11 +137,45 @@ export class FlowchartEditor {
       },
       // 启用历史记录（撤销重做）
       history: true,
+      // 启用多选模式
+      multipleSelectKey: 'ctrl',
+      // 自定义样式配置
+      style: {
+        // 节点选中样式
+        nodeSelected: {
+          stroke: '#722ED1',
+          strokeWidth: 2,
+          strokeDasharray: '4,4'
+        },
+        // 节点悬停样式
+        nodeHovered: {
+          stroke: '#722ED1',
+          strokeWidth: 1,
+          strokeOpacity: 0.8
+        },
+        // 对齐线样式
+        snapline: {
+          stroke: '#722ED1',
+          strokeWidth: 1,
+          strokeDasharray: '5,5'
+        }
+      },
       // 自定义配置
       ...this.config.logicflowConfig
     }
 
     this.lf = new LogicFlow(lfConfig)
+
+    // 添加自定义样式
+    this.addCustomStyles()
+  }
+
+  /**
+   * 注册LogicFlow插件
+   */
+  private registerLogicFlowPlugins(): void {
+    // 注册多选插件
+    LogicFlow.use(SelectionSelect)
   }
 
   /**
@@ -129,6 +187,349 @@ export class FlowchartEditor {
 
     // 注册审批流程边
     registerApprovalEdges(this.lf)
+  }
+
+  /**
+   * 添加自定义样式
+   */
+  private addCustomStyles(): void {
+    const style = document.createElement('style')
+    style.textContent = `
+      /* LogicFlow 画布样式优化 */
+      .lf-canvas-overlay {
+        cursor: default;
+      }
+
+      /* 节点拖拽时的鼠标样式 */
+      .lf-node.lf-node-dragging {
+        cursor: grabbing !important;
+      }
+
+      /* 节点悬停时的鼠标样式 */
+      .lf-node:hover {
+        cursor: grab;
+      }
+
+      /* 节点选中效果增强 */
+      .lf-node.lf-node-selected .lf-node-shape {
+        stroke: var(--ldesign-brand-color) !important;
+        stroke-width: 2px !important;
+        stroke-dasharray: 4,4 !important;
+        filter: drop-shadow(0 0 8px rgba(114, 46, 209, 0.3));
+      }
+
+      /* 连线悬停效果 */
+      .lf-edge:hover .lf-edge-path {
+        stroke: var(--ldesign-brand-color) !important;
+        stroke-width: 2px !important;
+      }
+
+      /* 默认网格背景 */
+      .lf-canvas-overlay.grid-background {
+        background-color: #fafafa;
+      }
+
+      .lf-canvas-overlay.grid-background .lf-grid {
+        opacity: 0.4;
+      }
+
+      .lf-canvas-overlay.grid-background .lf-grid circle {
+        fill: #d9d9d9;
+      }
+
+      .lf-canvas-overlay.grid-background .lf-grid line {
+        stroke: #d9d9d9;
+        stroke-width: 0.5;
+      }
+
+      /* PS风格透明背景 */
+      .lf-canvas-overlay.ps-background {
+        background-image:
+          linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+          linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+          linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        background-color: #ffffff;
+      }
+
+      .lf-canvas-overlay.ps-background .lf-grid {
+        opacity: 0.3;
+      }
+
+      /* 纯色背景 */
+      .lf-canvas-overlay.solid-background {
+        background-color: #ffffff;
+      }
+
+      .lf-canvas-overlay.solid-background .lf-grid {
+        opacity: 0.2;
+      }
+
+
+
+      /* 暗色主题下的网格背景 */
+      [data-theme="dark"] .lf-canvas-overlay.grid-background {
+        background-color: #1f1f1f;
+      }
+
+      /* 暗色主题下的PS风格背景 */
+      [data-theme="dark"] .lf-canvas-overlay.ps-background {
+        background-image:
+          linear-gradient(45deg, #2a2a2a 25%, transparent 25%),
+          linear-gradient(-45deg, #2a2a2a 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #2a2a2a 75%),
+          linear-gradient(-45deg, transparent 75%, #2a2a2a 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        background-color: #1f1f1f;
+      }
+
+      /* 暗色主题下的纯色背景 */
+      [data-theme="dark"] .lf-canvas-overlay.solid-background {
+        background-color: #1f1f1f;
+      }
+
+      [data-theme="dark"] .lf-canvas-overlay .lf-grid {
+        opacity: 0.2;
+      }
+
+      [data-theme="dark"] .lf-canvas-overlay .lf-grid circle {
+        fill: #404040;
+      }
+
+      [data-theme="dark"] .lf-canvas-overlay .lf-grid line {
+        stroke: #404040;
+        stroke-width: 0.5;
+      }
+
+      /* 蓝色主题下的网格背景 */
+      [data-theme="blue"] .lf-canvas-overlay.grid-background {
+        background-color: #f0f8ff;
+      }
+
+      /* 蓝色主题下的PS风格背景 */
+      [data-theme="blue"] .lf-canvas-overlay.ps-background {
+        background-image:
+          linear-gradient(45deg, #e6f4ff 25%, transparent 25%),
+          linear-gradient(-45deg, #e6f4ff 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #e6f4ff 75%),
+          linear-gradient(-45deg, transparent 75%, #e6f4ff 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        background-color: #f0f8ff;
+      }
+
+      /* 蓝色主题下的纯色背景 */
+      [data-theme="blue"] .lf-canvas-overlay.solid-background {
+        background-color: #f0f8ff;
+      }
+
+      [data-theme="blue"] .lf-canvas-overlay .lf-grid circle {
+        fill: #b3d9ff;
+      }
+
+      [data-theme="blue"] .lf-canvas-overlay .lf-grid line {
+        stroke: #b3d9ff;
+        stroke-width: 0.5;
+      }
+
+      [data-theme="dark"] .lf-node.lf-node-selected .lf-node-shape {
+        filter: drop-shadow(0 0 8px rgba(114, 46, 209, 0.5));
+      }
+
+      /* 主题切换动画 */
+      .lf-canvas-overlay,
+      .lf-canvas-overlay .lf-grid,
+      .lf-canvas-overlay .lf-grid circle,
+      .lf-canvas-overlay .lf-grid line {
+        transition: all 0.3s ease;
+      }
+
+      /* 滚动条美化 - 默认主题 */
+      .ldesign-material-panel::-webkit-scrollbar,
+      .ldesign-property-panel::-webkit-scrollbar,
+      .panel-content::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+
+      .ldesign-material-panel::-webkit-scrollbar-track,
+      .ldesign-property-panel::-webkit-scrollbar-track,
+      .panel-content::-webkit-scrollbar-track {
+        background: var(--ldesign-bg-color-component, #f8f9fa);
+        border-radius: 3px;
+      }
+
+      .ldesign-material-panel::-webkit-scrollbar-thumb,
+      .ldesign-property-panel::-webkit-scrollbar-thumb,
+      .panel-content::-webkit-scrollbar-thumb {
+        background: var(--ldesign-gray-color-4, #adadad);
+        border-radius: 3px;
+        transition: background 0.2s ease;
+      }
+
+      .ldesign-material-panel::-webkit-scrollbar-thumb:hover,
+      .ldesign-property-panel::-webkit-scrollbar-thumb:hover,
+      .panel-content::-webkit-scrollbar-thumb:hover {
+        background: var(--ldesign-gray-color-6, #808080);
+      }
+
+      /* 暗色主题下的滚动条 */
+      [data-theme="dark"] .ldesign-material-panel::-webkit-scrollbar-track,
+      [data-theme="dark"] .ldesign-property-panel::-webkit-scrollbar-track,
+      [data-theme="dark"] .panel-content::-webkit-scrollbar-track {
+        background: #2a2a2a;
+      }
+
+      [data-theme="dark"] .ldesign-material-panel::-webkit-scrollbar-thumb,
+      [data-theme="dark"] .ldesign-property-panel::-webkit-scrollbar-thumb,
+      [data-theme="dark"] .panel-content::-webkit-scrollbar-thumb {
+        background: #555555;
+      }
+
+      [data-theme="dark"] .ldesign-material-panel::-webkit-scrollbar-thumb:hover,
+      [data-theme="dark"] .ldesign-property-panel::-webkit-scrollbar-thumb:hover,
+      [data-theme="dark"] .panel-content::-webkit-scrollbar-thumb:hover {
+        background: #777777;
+      }
+
+      /* 蓝色主题下的滚动条 */
+      [data-theme="blue"] .ldesign-material-panel::-webkit-scrollbar-thumb,
+      [data-theme="blue"] .ldesign-property-panel::-webkit-scrollbar-thumb,
+      [data-theme="blue"] .panel-content::-webkit-scrollbar-thumb {
+        background: var(--ldesign-brand-color-4, #a67fdb);
+      }
+
+      [data-theme="blue"] .ldesign-material-panel::-webkit-scrollbar-thumb:hover,
+      [data-theme="blue"] .ldesign-property-panel::-webkit-scrollbar-thumb:hover,
+      [data-theme="blue"] .panel-content::-webkit-scrollbar-thumb:hover {
+        background: var(--ldesign-brand-color-6, #7334cb);
+      }
+
+      /* 节点文本在不同主题下的可读性优化 */
+      [data-theme="dark"] .lf-node-text {
+        fill: #ffffff !important;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+      }
+
+      [data-theme="blue"] .lf-node-text {
+        fill: #1a1a1a !important;
+      }
+
+      /* 连线在不同主题下的样式 */
+      [data-theme="dark"] .lf-edge-path {
+        stroke: #666666 !important;
+      }
+
+      [data-theme="dark"] .lf-edge-text {
+        fill: #ffffff !important;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+      }
+
+      [data-theme="blue"] .lf-edge-path {
+        stroke: #4a90e2 !important;
+      }
+
+      [data-theme="blue"] .lf-edge-text {
+        fill: #1a1a1a !important;
+      }
+    `
+    document.head.appendChild(style)
+  }
+
+  /**
+   * 绑定键盘快捷键
+   */
+  private bindKeyboardShortcuts(): void {
+    // 确保画布容器可以接收键盘事件
+    if (this.lf.container) {
+      this.lf.container.setAttribute('tabindex', '0')
+      this.lf.container.style.outline = 'none'
+    }
+
+    // 绑定键盘事件
+    this.keyboardEventListener = (event) => {
+      // 阻止在输入框中触发快捷键
+      const target = event.target as HTMLElement
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true') {
+        return
+      }
+
+      // 只有在画布容器或其子元素获得焦点时才处理快捷键
+      // 或者当前没有其他输入元素获得焦点时也处理
+      const activeElement = document.activeElement
+      const isInCanvas = this.lf.container?.contains(activeElement) || activeElement === this.lf.container
+      const isBodyOrDocument = activeElement === document.body || activeElement === document.documentElement
+
+      if (!isInCanvas && !isBodyOrDocument) {
+        return
+      }
+
+      const { ctrlKey, metaKey, key } = event
+      const isCtrlOrCmd = ctrlKey || metaKey
+
+      switch (key.toLowerCase()) {
+        case 'delete':
+        case 'backspace':
+          if (this.selectedNode) {
+            event.preventDefault()
+            this.deleteNode(this.selectedNode.id)
+          } else if (this.selectedEdge) {
+            event.preventDefault()
+            this.lf.deleteEdge(this.selectedEdge.id)
+          }
+          break
+
+        case 'c':
+          if (isCtrlOrCmd && this.selectedNode) {
+            event.preventDefault()
+            this.copyNode(this.selectedNode.id)
+          }
+          break
+
+        case 'v':
+          if (isCtrlOrCmd && this.copiedNodeData) {
+            event.preventDefault()
+            this.pasteNodeWithOffset()
+          }
+          break
+
+        case 'a':
+          if (isCtrlOrCmd) {
+            event.preventDefault()
+            // 全选功能可以后续添加
+            console.log('全选功能待实现')
+          }
+          break
+
+        case 'z':
+          if (isCtrlOrCmd) {
+            event.preventDefault()
+            this.lf.undo()
+          }
+          break
+
+        case 'y':
+          if (isCtrlOrCmd) {
+            event.preventDefault()
+            this.lf.redo()
+          }
+          break
+      }
+    }
+
+    document.addEventListener('keydown', this.keyboardEventListener)
+
+    // 点击画布时获取焦点，以便接收键盘事件
+    this.lf.on('blank:click', () => {
+      this.lf.container?.focus()
+    })
+
+    this.lf.on('node:click', () => {
+      this.lf.container?.focus()
+    })
   }
 
   /**
@@ -156,6 +557,38 @@ export class FlowchartEditor {
       this.emit('node:dblclick', { node: data.data, event: data.e })
     })
 
+    // 节点右键菜单
+    this.lf.on('node:contextmenu', (data) => {
+      this.showNodeContextMenu(data.e, data.data)
+    })
+
+    // 节点移动事件 - 实时更新属性面板
+    this.lf.on('node:drag', (data) => {
+      if (this.selectedNode && this.selectedNode.id === data.data.id) {
+        const updatedNode: ApprovalNodeConfig = {
+          ...this.selectedNode,
+          x: data.data.x,
+          y: data.data.y
+        }
+        this.selectedNode = updatedNode
+        this.uiManager?.setSelectedNode(updatedNode)
+      }
+    })
+
+    // 节点移动结束事件
+    this.lf.on('node:drop', (data) => {
+      if (this.selectedNode && this.selectedNode.id === data.data.id) {
+        const updatedNode: ApprovalNodeConfig = {
+          ...this.selectedNode,
+          x: data.data.x,
+          y: data.data.y
+        }
+        this.selectedNode = updatedNode
+        this.uiManager?.setSelectedNode(updatedNode)
+        this.emit('data:change', this.getData())
+      }
+    })
+
     this.lf.on('node:add', (data) => {
       this.emit('node:add', { node: data.data })
     })
@@ -166,7 +599,19 @@ export class FlowchartEditor {
 
     // 边事件
     this.lf.on('edge:click', (data) => {
+      // 设置选中的边
+      this.selectedEdge = {
+        id: data.data.id,
+        type: data.data.type as ApprovalEdgeType,
+        sourceNodeId: data.data.sourceNodeId,
+        targetNodeId: data.data.targetNodeId,
+        text: data.data.text?.value || '',
+        properties: data.data.properties || {}
+      }
+      this.selectedNode = null // 清除节点选中
+      this.uiManager?.setSelectedEdge(this.selectedEdge)
       this.emit('edge:click', { edge: data.data, event: data.e })
+      this.emit('edge:select', this.selectedEdge)
     })
 
     this.lf.on('edge:add', (data) => {
@@ -180,14 +625,41 @@ export class FlowchartEditor {
     // 画布事件
     this.lf.on('blank:click', (data) => {
       this.selectedNode = null
+      this.selectedEdge = null
       this.uiManager?.setSelectedNode(null)
+      this.uiManager?.setSelectedEdge(null)
       this.emit('canvas:click', { event: data.e, position: data.position })
     })
 
+    // 画布右键菜单
+    this.lf.on('blank:contextmenu', (data) => {
+      this.showCanvasContextMenu(data.e, data.position)
+    })
+
     // 选择变化事件
-    this.lf.on('selection:selected', () => {
+    this.lf.on('selection:selected', (data) => {
       const selected = this.lf.getSelectElements()
+      console.log(`已选中 ${selected.nodes.length} 个节点和 ${selected.edges.length} 条连线`)
       this.emit('selection:change', { selected: selected as any })
+    })
+
+    // 多选框选事件
+    this.lf.on('selection:selected-area', (data) => {
+      console.log('框选区域:', data)
+    })
+
+    // 多选拖拽事件
+    this.lf.on('selection:dragstart', (data) => {
+      console.log('开始拖拽选中元素')
+    })
+
+    this.lf.on('selection:drag', (data) => {
+      // 拖拽过程中可以显示对齐线
+    })
+
+    this.lf.on('selection:drop', (data) => {
+      console.log('选中元素拖拽结束')
+      this.emit('data:change', this.getData())
     })
 
     // 数据变化事件
@@ -207,7 +679,28 @@ export class FlowchartEditor {
    * 添加节点
    */
   addNode(nodeConfig: ApprovalNodeConfig): string {
-    const node = this.lf.addNode(nodeConfig)
+    // 创建节点数据，确保文本位置正确
+    const nodeData = {
+      ...nodeConfig,
+      text: {
+        value: nodeConfig.text || this.getDefaultNodeText(nodeConfig.type),
+        x: nodeConfig.x,
+        y: nodeConfig.y,
+        draggable: false,
+        editable: true
+      }
+    }
+
+    const node = this.lf.addNode(nodeData)
+
+    // 添加节点后，强制更新文本位置
+    setTimeout(() => {
+      const nodeModel = this.lf.getNodeModelById(node.id)
+      if (nodeModel) {
+        nodeModel.setAttributes()
+      }
+    }, 0)
+
     return node.id
   }
 
@@ -307,9 +800,60 @@ export class FlowchartEditor {
    */
   setTheme(theme: string | ThemeConfig): void {
     this.themeManager.setTheme(theme)
-    // 同时更新UI主题
-    if (this.uiManager && typeof theme === 'string') {
-      this.uiManager.setTheme(theme)
+
+    // 设置画布容器的data-theme属性
+    if (typeof theme === 'string') {
+      const container = this.lf.container
+      if (container) {
+        container.setAttribute('data-theme', theme)
+        // 同时设置父容器的主题属性
+        const parentContainer = container.closest('.ldesign-flowchart-editor')
+        if (parentContainer) {
+          parentContainer.setAttribute('data-theme', theme)
+        }
+      }
+
+      // 同时更新UI主题
+      if (this.uiManager) {
+        this.uiManager.setTheme(theme)
+      }
+    }
+  }
+
+  /**
+   * 设置画布背景类型
+   */
+  setCanvasBackground(type: 'grid' | 'ps' | 'solid'): void {
+    // 更新当前背景类型
+    this.currentBackgroundType = type
+
+    // 尝试找到画布覆盖层
+    let canvasOverlay = this.lf.container?.querySelector('.lf-canvas-overlay') as HTMLElement
+
+    // 如果没有找到，尝试创建或使用画布容器
+    if (!canvasOverlay) {
+      canvasOverlay = this.lf.container as HTMLElement
+      if (canvasOverlay) {
+        canvasOverlay.classList.add('lf-canvas-overlay')
+      }
+    }
+
+    if (canvasOverlay) {
+      // 移除所有背景类
+      canvasOverlay.classList.remove('ps-background', 'solid-background', 'grid-background')
+
+      // 添加对应的背景类
+      if (type === 'ps') {
+        canvasOverlay.classList.add('ps-background')
+      } else if (type === 'solid') {
+        canvasOverlay.classList.add('solid-background')
+      } else {
+        canvasOverlay.classList.add('grid-background')
+      }
+
+      console.log(`画布背景已切换为: ${type}`)
+    } else {
+      console.warn('未找到画布容器，无法设置背景')
     }
   }
 
@@ -317,7 +861,61 @@ export class FlowchartEditor {
    * 缩放到适应内容
    */
   fitView(): void {
-    this.lf.fitView()
+    try {
+      // 获取所有节点的边界
+      const graphData = this.lf.getGraphData()
+      if (!graphData.nodes || graphData.nodes.length === 0) {
+        console.warn('没有节点可以适应')
+        return
+      }
+
+      // 计算所有节点的边界框
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+
+      graphData.nodes.forEach(node => {
+        const x = node.x || 0
+        const y = node.y || 0
+        const width = 120 // 节点默认宽度
+        const height = 60 // 节点默认高度
+
+        minX = Math.min(minX, x - width / 2)
+        minY = Math.min(minY, y - height / 2)
+        maxX = Math.max(maxX, x + width / 2)
+        maxY = Math.max(maxY, y + height / 2)
+      })
+
+      // 添加边距
+      const padding = 50
+      minX -= padding
+      minY -= padding
+      maxX += padding
+      maxY += padding
+
+      // 计算内容区域
+      const contentWidth = maxX - minX
+      const contentHeight = maxY - minY
+      const contentCenterX = (minX + maxX) / 2
+      const contentCenterY = (minY + maxY) / 2
+
+      // 获取画布尺寸
+      const canvasWidth = this.config.width || 800
+      const canvasHeight = this.config.height || 600
+
+      // 计算缩放比例
+      const scaleX = canvasWidth / contentWidth
+      const scaleY = canvasHeight / contentHeight
+      const scale = Math.min(scaleX, scaleY, 1) // 不超过100%
+
+      // 应用缩放和居中
+      this.lf.zoom(scale)
+      this.lf.translateCenter(contentCenterX, contentCenterY)
+
+      console.log(`适应视图: 缩放=${scale.toFixed(2)}, 中心=(${contentCenterX.toFixed(0)}, ${contentCenterY.toFixed(0)})`)
+    } catch (error) {
+      console.error('适应视图失败:', error)
+      // 降级到默认的fitView
+      this.lf.fitView()
+    }
   }
 
   /**
@@ -487,7 +1085,10 @@ export class FlowchartEditor {
   private handleToolClick(toolName: string): void {
     switch (toolName) {
       case 'zoom-fit':
-        this.lf.fitView()
+        this.fitView()
+        break
+      case 'multi-select':
+        this.toggleSelectionMode()
         break
       case 'undo':
         this.lf.undo()
@@ -534,6 +1135,380 @@ export class FlowchartEditor {
   }
 
   /**
+   * 显示节点右键菜单
+   */
+  private showNodeContextMenu(event: MouseEvent, nodeData: any): void {
+    event.preventDefault()
+
+    const menu = this.createContextMenu([
+      {
+        label: '复制节点',
+        action: () => this.copyNode(nodeData.id)
+      },
+      {
+        label: '删除节点',
+        action: () => this.deleteNode(nodeData.id)
+      },
+      { type: 'separator' },
+      {
+        label: '编辑属性',
+        action: () => this.editNodeProperties(nodeData.id)
+      }
+    ])
+
+    this.showContextMenu(menu, event.clientX, event.clientY)
+  }
+
+  /**
+   * 显示画布右键菜单
+   */
+  private showCanvasContextMenu(event: MouseEvent, position: { x: number, y: number }): void {
+    event.preventDefault()
+
+    // 如果position为空，从鼠标事件计算位置
+    let pasteX = position?.x
+    let pasteY = position?.y
+
+    if (pasteX === undefined || pasteY === undefined) {
+      // 从鼠标事件计算画布坐标
+      const rect = this.lf.container?.getBoundingClientRect()
+      if (rect) {
+        pasteX = event.clientX - rect.left
+        pasteY = event.clientY - rect.top
+      } else {
+        pasteX = event.clientX
+        pasteY = event.clientY
+      }
+    }
+
+    const menu = this.createContextMenu([
+      {
+        label: '粘贴节点',
+        action: () => this.pasteNodeAtPosition(pasteX, pasteY),
+        disabled: !this.copiedNodeData
+      },
+      { type: 'separator' },
+      {
+        label: '清空画布',
+        action: () => this.clearCanvas()
+      },
+      { type: 'separator' },
+      {
+        label: '网格背景',
+        action: () => this.setCanvasBackground('grid'),
+        checked: this.currentBackgroundType === 'grid'
+      },
+      {
+        label: 'PS透明背景',
+        action: () => this.setCanvasBackground('ps'),
+        checked: this.currentBackgroundType === 'ps'
+      },
+      {
+        label: '纯色背景',
+        action: () => this.setCanvasBackground('solid'),
+        checked: this.currentBackgroundType === 'solid'
+      },
+      { type: 'separator' },
+      {
+        label: '适应画布',
+        action: () => this.fitView()
+      },
+      {
+        label: '重置缩放',
+        action: () => this.lf.resetZoom()
+      }
+    ])
+
+    this.showContextMenu(menu, event.clientX, event.clientY)
+  }
+
+  /**
+   * 创建右键菜单
+   */
+  private createContextMenu(items: Array<{ label: string, action: () => void, disabled?: boolean, checked?: boolean } | { type: 'separator' }>): HTMLElement {
+    const menu = document.createElement('div')
+    menu.className = 'flowchart-context-menu'
+    // 根据主题设置样式
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const isBlue = document.documentElement.getAttribute('data-theme') === 'blue'
+
+    menu.style.cssText = `
+      position: fixed;
+      background: ${isDark ? '#2a2a2a' : 'white'};
+      border: 1px solid ${isDark ? '#404040' : '#ddd'};
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,${isDark ? '0.3' : '0.15'});
+      padding: 4px 0;
+      z-index: 10000;
+      min-width: 120px;
+      color: ${isDark ? '#ffffff' : '#333333'};
+    `
+
+    items.forEach(item => {
+      if ('type' in item && item.type === 'separator') {
+        const separator = document.createElement('div')
+        separator.style.cssText = 'height: 1px; background: #eee; margin: 4px 0;'
+        menu.appendChild(separator)
+      } else {
+        const menuItem = document.createElement('div')
+
+        // 添加选中标记
+        if (item.checked) {
+          menuItem.innerHTML = `<span style="margin-right: 8px;">✓</span>${item.label}`
+        } else {
+          menuItem.textContent = item.label
+        }
+
+        // 根据主题设置菜单项样式
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+        const checkedBg = isDark ? '#404040' : '#f0f8ff'
+        const disabledColor = isDark ? '#666666' : '#ccc'
+        const normalColor = isDark ? '#ffffff' : '#333'
+
+        menuItem.style.cssText = `
+          padding: 6px 12px;
+          cursor: ${item.disabled ? 'not-allowed' : 'pointer'};
+          color: ${item.disabled ? disabledColor : normalColor};
+          font-size: 12px;
+          background-color: ${item.checked ? checkedBg : 'transparent'};
+        `
+
+        if (!item.disabled) {
+          const hoverBg = isDark ? '#404040' : '#f0f0f0'
+          const originalBg = item.checked ? checkedBg : 'transparent'
+
+          menuItem.addEventListener('mouseenter', () => {
+            menuItem.style.backgroundColor = hoverBg
+          })
+          menuItem.addEventListener('mouseleave', () => {
+            menuItem.style.backgroundColor = originalBg
+          })
+          menuItem.addEventListener('click', () => {
+            item.action()
+            this.hideContextMenu()
+          })
+        }
+
+        menu.appendChild(menuItem)
+      }
+    })
+
+    return menu
+  }
+
+  /**
+   * 显示右键菜单
+   */
+  private showContextMenu(menu: HTMLElement, x: number, y: number): void {
+    // 隐藏之前的菜单
+    this.hideContextMenu()
+
+    // 添加到页面
+    document.body.appendChild(menu)
+
+    // 调整位置避免超出屏幕
+    const rect = menu.getBoundingClientRect()
+    const maxX = window.innerWidth - rect.width
+    const maxY = window.innerHeight - rect.height
+
+    menu.style.left = Math.min(x, maxX) + 'px'
+    menu.style.top = Math.min(y, maxY) + 'px'
+
+    // 点击其他地方隐藏菜单
+    setTimeout(() => {
+      document.addEventListener('click', this.hideContextMenu.bind(this), { once: true })
+    }, 0)
+  }
+
+  /**
+   * 隐藏右键菜单
+   */
+  private hideContextMenu(): void {
+    const existingMenu = document.querySelector('.flowchart-context-menu')
+    if (existingMenu) {
+      existingMenu.remove()
+    }
+  }
+
+  // 复制粘贴相关属性
+  private copiedNodeData: any = null
+
+  /**
+   * 复制节点
+   */
+  private copyNode(nodeId: string): void {
+    const nodeModel = this.lf.getNodeModelById(nodeId)
+    if (nodeModel) {
+      this.copiedNodeData = {
+        id: nodeModel.id,
+        type: nodeModel.type,
+        x: nodeModel.x,
+        y: nodeModel.y,
+        text: nodeModel.text?.value || '',
+        properties: nodeModel.properties || {}
+      }
+      console.log('节点已复制:', this.copiedNodeData.text)
+    }
+  }
+
+  /**
+   * 在指定位置粘贴节点（右键菜单）
+   */
+  private pasteNodeAtPosition(x: number, y: number): void {
+    if (this.copiedNodeData) {
+      const nodeId = this.addNode({
+        type: this.copiedNodeData.type as ApprovalNodeType,
+        x,
+        y,
+        text: this.copiedNodeData.text,
+        properties: this.copiedNodeData.properties
+      })
+      console.log('节点已粘贴到位置:', x, y)
+      return nodeId
+    }
+  }
+
+  /**
+   * 粘贴节点（快捷键，在原位置右下方偏移）
+   */
+  private pasteNodeWithOffset(): void {
+    if (this.copiedNodeData) {
+      const offsetX = this.copiedNodeData.x + 50
+      const offsetY = this.copiedNodeData.y + 50
+
+      const nodeId = this.addNode({
+        type: this.copiedNodeData.type as ApprovalNodeType,
+        x: offsetX,
+        y: offsetY,
+        text: this.copiedNodeData.text,
+        properties: this.copiedNodeData.properties
+      })
+      console.log('节点已粘贴到偏移位置:', offsetX, offsetY)
+      return nodeId
+    }
+  }
+
+  /**
+   * 清空画布
+   */
+  private clearCanvas(): void {
+    if (confirm('确定要清空画布吗？此操作不可撤销。')) {
+      this.lf.clearData()
+      this.selectedNode = null
+      this.selectedEdge = null
+      this.uiManager?.setSelectedNode(null)
+      this.uiManager?.setSelectedEdge(null)
+      console.log('画布已清空')
+    }
+  }
+
+  /**
+   * 删除节点
+   */
+  private deleteNode(nodeId: string): void {
+    this.lf.deleteNode(nodeId)
+    console.log('节点已删除')
+  }
+
+  /**
+   * 编辑节点属性
+   */
+  private editNodeProperties(nodeId: string): void {
+    const nodeModel = this.lf.getNodeModelById(nodeId)
+    if (nodeModel) {
+      // 选中节点以显示属性面板
+      this.selectedNode = {
+        id: nodeModel.id,
+        type: nodeModel.type as ApprovalNodeType,
+        x: nodeModel.x,
+        y: nodeModel.y,
+        text: nodeModel.text?.value || '',
+        properties: nodeModel.properties || {}
+      }
+      this.uiManager?.setSelectedNode(this.selectedNode)
+    }
+  }
+
+  /**
+   * 启用多选模式
+   */
+  enableSelectionMode(): void {
+    this.isSelectionMode = true
+    this.lf.extension.selectionSelect.openSelectionSelect()
+    console.log('多选模式已启用')
+  }
+
+  /**
+   * 禁用多选模式
+   */
+  disableSelectionMode(): void {
+    this.isSelectionMode = false
+    this.lf.extension.selectionSelect.closeSelectionSelect()
+    console.log('多选模式已禁用')
+  }
+
+  /**
+   * 切换多选模式
+   */
+  toggleSelectionMode(): void {
+    if (this.isSelectionMode) {
+      this.disableSelectionMode()
+    } else {
+      this.enableSelectionMode()
+    }
+  }
+
+  /**
+   * 设置选择敏感度
+   * @param isWholeEdge 是否需要整条边都在选择框内
+   * @param isWholeNode 是否需要整个节点都在选择框内
+   */
+  setSelectionSensitivity(isWholeEdge: boolean = true, isWholeNode: boolean = true): void {
+    this.lf.extension.selectionSelect.setSelectionSense(isWholeEdge, isWholeNode)
+    console.log(`选择敏感度已设置: 整条边=${isWholeEdge}, 整个节点=${isWholeNode}`)
+  }
+
+  /**
+   * 设置排他选择模式
+   * @param exclusive 是否启用排他模式
+   */
+  setExclusiveSelectionMode(exclusive: boolean): void {
+    this.lf.extension.selectionSelect.setExclusiveMode(exclusive)
+    console.log(`排他选择模式: ${exclusive ? '已启用' : '已禁用'}`)
+  }
+
+  /**
+   * 获取当前选中的所有元素
+   */
+  getSelectedElements(): any[] {
+    return this.lf.getSelectElements()
+  }
+
+  /**
+   * 清空所有选中的元素
+   */
+  clearSelection(): void {
+    this.lf.clearSelectElements()
+    console.log('已清空所有选中元素')
+  }
+
+  /**
+   * 多选节点（按ID）
+   * @param nodeIds 节点ID数组
+   */
+  selectMultipleNodes(nodeIds: string[]): void {
+    // 先清空选择
+    this.clearSelection()
+
+    // 逐个选择节点
+    nodeIds.forEach((nodeId, index) => {
+      this.lf.selectElementById(nodeId, index > 0) // 第一个不是多选，后续都是多选
+    })
+
+    console.log(`已选中 ${nodeIds.length} 个节点`)
+  }
+
+  /**
    * 销毁编辑器
    */
   destroy(): void {
@@ -550,6 +1525,12 @@ export class FlowchartEditor {
     // 清除所有事件监听
     if (this.eventListeners) {
       this.eventListeners.clear()
+    }
+
+    // 清除键盘事件监听器
+    if (this.keyboardEventListener) {
+      document.removeEventListener('keydown', this.keyboardEventListener)
+      this.keyboardEventListener = undefined
     }
 
     // 销毁 LogicFlow 实例

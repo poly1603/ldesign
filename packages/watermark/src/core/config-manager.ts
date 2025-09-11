@@ -37,12 +37,11 @@ export class ConfigManager {
     const errors: string[] = []
 
     // 验证基本配置
-    if (!config.content) {
+    if (config.content == null) {
       errors.push('Content is required')
     }
-
     // 验证文本内容
-    if (typeof config.content === 'string' && !isValidInput(config.content)) {
+    else if (typeof config.content === 'string' && !isValidInput(config.content)) {
       errors.push('Text content cannot be empty')
     }
 
@@ -99,6 +98,7 @@ export class ConfigManager {
       this.validateResponsiveConfig(config.responsive, errors)
     }
 
+    // 在合并之前检查错误
     if (errors.length > 0) {
       throw new WatermarkError(
         `Configuration validation failed: ${errors.join(', ')}`,
@@ -108,7 +108,7 @@ export class ConfigManager {
       )
     }
 
-    // 返回合并了默认值的配置
+    // 只有在验证通过后才合并默认值
     return this.mergeWithDefaults(config)
   }
 
@@ -173,7 +173,7 @@ export class ConfigManager {
   getDefaultConfig(): WatermarkConfig {
     return {
       ...this.defaultConfig,
-      content: this.defaultConfig.content || 'Watermark',
+      content: this.defaultConfig.content ?? 'Watermark',
     } as WatermarkConfig
   }
 

@@ -17,6 +17,7 @@ export interface ToolbarConfig {
  */
 const TOOLS = {
   'select': { label: '选择', icon: '👆', title: '选择工具' },
+  'multi-select': { label: '多选', icon: '🔲', title: '多选模式' },
   'zoom-fit': { label: '适应', icon: '🔍', title: '适应画布' },
   'zoom-in': { label: '放大', icon: '➕', title: '放大画布' },
   'zoom-out': { label: '缩小', icon: '➖', title: '缩小画布' },
@@ -41,7 +42,7 @@ export class Toolbar {
   constructor(container: HTMLElement, config: ToolbarConfig = {}) {
     this.container = container
     this.config = {
-      tools: ['select', 'zoom-fit', 'undo', 'redo', 'delete'],
+      tools: ['select', 'multi-select', 'zoom-fit', 'undo', 'redo', 'delete'],
       readonly: false,
       theme: 'default',
       ...config
@@ -132,14 +133,14 @@ export class Toolbar {
     this.toolbarElement.addEventListener('click', (e) => {
       const target = e.target as HTMLElement
       const button = target.closest('.toolbar-btn') as HTMLButtonElement
-      
+
       if (button && !button.disabled) {
         const tool = button.dataset.tool
         if (tool) {
           // 添加点击效果
           button.classList.add('active')
           setTimeout(() => button.classList.remove('active'), 150)
-          
+
           this.config.onToolAction?.(tool)
         }
       }
@@ -331,7 +332,7 @@ export class Toolbar {
    */
   public setReadonly(readonly: boolean): void {
     this.config.readonly = readonly
-    
+
     if (this.toolbarElement) {
       if (readonly) {
         this.toolbarElement.classList.add('readonly')
@@ -346,7 +347,7 @@ export class Toolbar {
    */
   public setTheme(theme: FlowchartTheme): void {
     this.config.theme = theme
-    
+
     const themeSelect = this.toolbarElement?.querySelector('#theme-select') as HTMLSelectElement
     if (themeSelect) {
       themeSelect.value = theme

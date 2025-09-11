@@ -4,6 +4,79 @@
 
 import type { ApprovalNodeType, FlowchartTheme } from '../../types'
 
+/**
+ * SVG图标映射
+ */
+const SVG_ICONS = {
+  start: `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <circle cx="8" cy="8" r="7" fill="#52c41a" stroke="#389e0d" stroke-width="1"/>
+    <path d="M6 5l6 3-6 3V5z" fill="white"/>
+  </svg>`,
+  approval: `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <rect x="1" y="3" width="14" height="10" rx="2" fill="#1890ff" stroke="#096dd9" stroke-width="1"/>
+    <path d="M4 8l2 2 6-4" stroke="white" stroke-width="2" fill="none"/>
+  </svg>`,
+  condition: `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <path d="M8 1l7 7-7 7-7-7z" fill="#faad14" stroke="#d48806" stroke-width="1"/>
+    <text x="8" y="10" text-anchor="middle" fill="white" font-size="8">?</text>
+  </svg>`,
+  process: `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <rect x="1" y="3" width="14" height="10" rx="2" fill="#722ed1" stroke="#531dab" stroke-width="1"/>
+    <circle cx="6" cy="8" r="1.5" fill="white"/>
+    <circle cx="10" cy="8" r="1.5" fill="white"/>
+  </svg>`,
+  end: `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <circle cx="8" cy="8" r="7" fill="#f5222d" stroke="#cf1322" stroke-width="1"/>
+    <rect x="5" y="5" width="6" height="6" fill="white"/>
+  </svg>`,
+  'user-task': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <rect x="1" y="3" width="14" height="10" rx="2" fill="#13c2c2" stroke="#08979c" stroke-width="1"/>
+    <circle cx="8" cy="7" r="2" fill="white"/>
+    <path d="M5 11c0-1.5 1.5-3 3-3s3 1.5 3 3" stroke="white" stroke-width="1" fill="none"/>
+  </svg>`,
+  'service-task': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <rect x="1" y="3" width="14" height="10" rx="2" fill="#eb2f96" stroke="#c41d7f" stroke-width="1"/>
+    <path d="M6 6l4 2-4 2V6z" fill="white"/>
+  </svg>`,
+  'script-task': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <rect x="1" y="3" width="14" height="10" rx="2" fill="#52c41a" stroke="#389e0d" stroke-width="1"/>
+    <text x="8" y="10" text-anchor="middle" fill="white" font-size="8">&lt;/&gt;</text>
+  </svg>`,
+  'manual-task': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <rect x="1" y="3" width="14" height="10" rx="2" fill="#fa8c16" stroke="#d46b08" stroke-width="1"/>
+    <path d="M6 6h4M6 8h4M6 10h2" stroke="white" stroke-width="1"/>
+  </svg>`,
+  'parallel-gateway': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <path d="M8 1l7 7-7 7-7-7z" fill="#1890ff" stroke="#096dd9" stroke-width="1"/>
+    <path d="M8 4v8M4 8h8" stroke="white" stroke-width="2"/>
+  </svg>`,
+  'exclusive-gateway': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <path d="M8 1l7 7-7 7-7-7z" fill="#f5222d" stroke="#cf1322" stroke-width="1"/>
+    <path d="M5 5l6 6M11 5l-6 6" stroke="white" stroke-width="2"/>
+  </svg>`,
+  'inclusive-gateway': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <path d="M8 1l7 7-7 7-7-7z" fill="#52c41a" stroke="#389e0d" stroke-width="1"/>
+    <circle cx="8" cy="8" r="3" stroke="white" stroke-width="2" fill="none"/>
+  </svg>`,
+  'event-gateway': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <path d="M8 1l7 7-7 7-7-7z" fill="#722ed1" stroke="#531dab" stroke-width="1"/>
+    <path d="M8 4l2 4-2 4-2-4z" fill="white"/>
+  </svg>`,
+  'timer-event': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <circle cx="8" cy="8" r="7" fill="#faad14" stroke="#d48806" stroke-width="1"/>
+    <path d="M8 4v4l3 3" stroke="white" stroke-width="2" fill="none"/>
+  </svg>`,
+  'message-event': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <circle cx="8" cy="8" r="7" fill="#13c2c2" stroke="#08979c" stroke-width="1"/>
+    <rect x="4" y="6" width="8" height="5" rx="1" fill="white"/>
+    <path d="M4 6l4 3 4-3" stroke="#13c2c2" stroke-width="1" fill="none"/>
+  </svg>`,
+  'signal-event': `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <circle cx="8" cy="8" r="7" fill="#eb2f96" stroke="#c41d7f" stroke-width="1"/>
+    <path d="M5 10l3-6 3 6H5z" fill="white"/>
+  </svg>`
+}
+
 export interface MaterialPanelConfig {
   readonly?: boolean
   theme?: FlowchartTheme
@@ -18,40 +91,40 @@ const NODE_TYPES = [
   {
     category: '基础节点',
     nodes: [
-      { type: 'start', label: '开始', icon: '▶️' },
-      { type: 'approval', label: '审批', icon: '✅' },
-      { type: 'condition', label: '条件', icon: '◆' },
-      { type: 'process', label: '处理', icon: '⚙️' },
-      { type: 'end', label: '结束', icon: '⏹️' }
+      { type: 'start', label: '开始', icon: SVG_ICONS.start },
+      { type: 'approval', label: '审批', icon: SVG_ICONS.approval },
+      { type: 'condition', label: '条件', icon: SVG_ICONS.condition },
+      { type: 'process', label: '处理', icon: SVG_ICONS.process },
+      { type: 'end', label: '结束', icon: SVG_ICONS.end }
     ]
   },
   // 任务节点
   {
     category: '任务节点',
     nodes: [
-      { type: 'user-task', label: '用户任务', icon: '👤' },
-      { type: 'service-task', label: '服务任务', icon: '🔧' },
-      { type: 'script-task', label: '脚本任务', icon: '📜' },
-      { type: 'manual-task', label: '手工任务', icon: '✋' }
+      { type: 'user-task', label: '用户任务', icon: SVG_ICONS['user-task'] },
+      { type: 'service-task', label: '服务任务', icon: SVG_ICONS['service-task'] },
+      { type: 'script-task', label: '脚本任务', icon: SVG_ICONS['script-task'] },
+      { type: 'manual-task', label: '手工任务', icon: SVG_ICONS['manual-task'] }
     ]
   },
   // 网关节点
   {
     category: '网关节点',
     nodes: [
-      { type: 'parallel-gateway', label: '并行网关', icon: '➕' },
-      { type: 'exclusive-gateway', label: '排他网关', icon: '❌' },
-      { type: 'inclusive-gateway', label: '包容网关', icon: '⭕' },
-      { type: 'event-gateway', label: '事件网关', icon: '⚡' }
+      { type: 'parallel-gateway', label: '并行网关', icon: SVG_ICONS['parallel-gateway'] },
+      { type: 'exclusive-gateway', label: '排他网关', icon: SVG_ICONS['exclusive-gateway'] },
+      { type: 'inclusive-gateway', label: '包容网关', icon: SVG_ICONS['inclusive-gateway'] },
+      { type: 'event-gateway', label: '事件网关', icon: SVG_ICONS['event-gateway'] }
     ]
   },
   // 事件节点
   {
     category: '事件节点',
     nodes: [
-      { type: 'timer-event', label: '定时事件', icon: '⏰' },
-      { type: 'message-event', label: '消息事件', icon: '💬' },
-      { type: 'signal-event', label: '信号事件', icon: '📡' }
+      { type: 'timer-event', label: '定时事件', icon: SVG_ICONS['timer-event'] },
+      { type: 'message-event', label: '消息事件', icon: SVG_ICONS['message-event'] },
+      { type: 'signal-event', label: '信号事件', icon: SVG_ICONS['signal-event'] }
     ]
   }
 ]
@@ -129,12 +202,12 @@ export class MaterialPanel {
     this.panelElement.addEventListener('dragstart', (e) => {
       const target = e.target as HTMLElement
       const nodeItem = target.closest('.node-item') as HTMLElement
-      
+
       if (nodeItem) {
         const nodeType = nodeItem.dataset.type as ApprovalNodeType
         e.dataTransfer?.setData('text/plain', nodeType)
         e.dataTransfer?.setData('application/node-type', nodeType)
-        
+
         // 添加拖拽样式
         nodeItem.classList.add('dragging')
       }
@@ -144,7 +217,7 @@ export class MaterialPanel {
     this.panelElement.addEventListener('dragend', (e) => {
       const target = e.target as HTMLElement
       const nodeItem = target.closest('.node-item') as HTMLElement
-      
+
       if (nodeItem) {
         nodeItem.classList.remove('dragging')
       }
@@ -154,7 +227,7 @@ export class MaterialPanel {
     this.panelElement.addEventListener('dblclick', (e) => {
       const target = e.target as HTMLElement
       const nodeItem = target.closest('.node-item') as HTMLElement
-      
+
       if (nodeItem) {
         const nodeType = nodeItem.dataset.type as ApprovalNodeType
         // 在画布中心添加节点
@@ -318,7 +391,7 @@ export class MaterialPanel {
    */
   public setReadonly(readonly: boolean): void {
     this.config.readonly = readonly
-    
+
     if (this.panelElement) {
       if (readonly) {
         this.panelElement.classList.add('readonly')

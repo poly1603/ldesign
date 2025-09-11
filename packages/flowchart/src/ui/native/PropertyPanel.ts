@@ -2,7 +2,7 @@
  * 原生DOM实现的属性面板
  */
 
-import type { ApprovalNodeConfig, ApprovalNodeType, FlowchartTheme } from '../../types'
+import type { ApprovalNodeConfig, ApprovalEdgeConfig, ApprovalNodeType, ApprovalEdgeType, FlowchartTheme } from '../../types'
 
 export interface PropertyPanelConfig {
   selectedNode?: ApprovalNodeConfig | null
@@ -33,11 +33,22 @@ const NODE_TYPE_LABELS: Record<ApprovalNodeType, string> = {
   'signal-event': '信号事件'
 }
 
+/**
+ * 连线类型标签映射
+ */
+const EDGE_TYPE_LABELS: Record<ApprovalEdgeType, string> = {
+  'approval-edge': '审批连线',
+  'condition-edge': '条件连线',
+  'sequence-edge': '顺序连线',
+  'default-edge': '默认连线'
+}
+
 export class PropertyPanel {
   private container: HTMLElement
   private config: PropertyPanelConfig
   private panelElement: HTMLElement | null = null
   private selectedNode: ApprovalNodeConfig | null = null
+  private selectedEdge: ApprovalEdgeConfig | null = null
 
   constructor(container: HTMLElement, config: PropertyPanelConfig = {}) {
     this.container = container
@@ -70,20 +81,20 @@ export class PropertyPanel {
   private render(): void {
     if (!this.panelElement) return
 
-    if (!this.selectedNode) {
+    if (!this.selectedNode && !this.selectedEdge) {
       this.panelElement.innerHTML = `
         <div class="panel-header">
           <h3>属性面板</h3>
-          <p>选择一个节点查看属性</p>
+          <p>选择一个节点或连线查看属性</p>
         </div>
         <div class="panel-content">
           <div class="empty-state">
             <div class="empty-icon">📋</div>
-            <p>请点击画布中的节点<br>查看和编辑属性</p>
+            <p>请点击画布中的节点或连线<br>查看和编辑属性</p>
           </div>
         </div>
       `
-    } else {
+    } else if (this.selectedNode) {
       this.panelElement.innerHTML = `
         <div class="panel-header">
           <h3>属性面板</h3>
@@ -94,6 +105,17 @@ export class PropertyPanel {
         </div>
       `
       this.bindPropertyEvents()
+    } else if (this.selectedEdge) {
+      this.panelElement.innerHTML = `
+        <div class="panel-header">
+          <h3>属性面板</h3>
+          <p>连线属性</p>
+        </div>
+        <div class="panel-content">
+          ${this.createEdgePropertiesHTML()}
+        </div>
+      `
+      this.bindEdgePropertyEvents()
     }
   }
 
@@ -119,10 +141,13 @@ export class PropertyPanel {
         </div>
         <div class="property-group">
           <label>节点类型</label>
-          <input type="text" 
-                 class="property-input" 
-                 value="${NODE_TYPE_LABELS[this.selectedNode.type] || this.selectedNode.type}" 
-                 readonly>
+          <select class="property-input"
+                  data-field="type"
+                  ${readonly ? 'disabled' : ''}>
+            ${Object.entries(NODE_TYPE_LABELS).map(([type, label]) =>
+      `<option value="${type}" ${type === this.selectedNode.type ? 'selected' : ''}>${label}</option>`
+    ).join('')}
+          </select>
         </div>
         <div class="property-group">
           <label>节点文本</label>
@@ -255,10 +280,10 @@ export class PropertyPanel {
 
     // 触发更新回调
     this.config.onUpdateNode?.(this.selectedNode.id, updates)
-    
+
     // 更新本地状态
     Object.assign(this.selectedNode, updates)
-    
+
     // 移除更改标记
     this.removeChangedMark()
   }
@@ -471,6 +496,16 @@ export class PropertyPanel {
    */
   public setSelectedNode(node: ApprovalNodeConfig | null): void {
     this.selectedNode = node
+    this.selectedEdge = null // 清除边选中
+    this.render()
+  }
+
+  /**
+   * 设置选中的边
+   */
+  public setSelectedEdge(edge: ApprovalEdgeConfig | null): void {
+    this.selectedEdge = edge
+    this.selectedNode = null // 清除节点选中
     this.render()
   }
 
@@ -488,6 +523,139 @@ export class PropertyPanel {
   public setTheme(theme: FlowchartTheme): void {
     this.config.theme = theme
     // 主题通过CSS类在容器级别控制
+  }
+
+  /**
+   * 创建边属性HTML
+   */
+  private createEdgePropertiesHTML(): string {
+    if (!this.selectedEdge) return ''
+
+    return `
+      <div class="property-section">
+        <h4>基本信息</h4>
+        <div class="property-group">
+          <label>连线ID</label>
+          <input type="text" class="property-input" value="${this.selectedEdge.id}" readonly>
+        </div>
+        <div class="property-group">
+          <label>连线类型</label>
+          <select class="property-input"
+                  data-field="type"
+                  ${this.config.readonly ? 'disabled' : ''}>
+            ${Object.entries(EDGE_TYPE_LABELS).map(([type, label]) =>
+      `<option value="${type}" ${type === this.selectedEdge.type ? 'selected' : ''}>${label}</option>`
+    ).join('')}
+          </select>
+        </div>
+        <div class="property-group">
+          <label>连线文本</label>
+          <input type="text" class="property-input" data-field="text" value="${this.selectedEdge.text || ''}" ${this.config.readonly ? 'readonly' : ''}>
+        </div>
+      </div>
+
+      <div class="property-section">
+        <h4>连接信息</h4>
+        <div class="property-group">
+          <label>源节点ID</label>
+          <input type="text" class="property-input" value="${this.selectedEdge.sourceNodeId}" readonly>
+        </div>
+        <div class="property-group">
+          <label>目标节点ID</label>
+          <input type="text" class="property-input" value="${this.selectedEdge.targetNodeId}" readonly>
+        </div>
+      </div>
+
+      ${!this.config.readonly ? `
+        <div class="property-actions">
+          <button class="btn btn-primary" id="applyEdgeChanges">应用更改</button>
+          <button class="btn btn-secondary" id="resetEdgeChanges">重置</button>
+        </div>
+      ` : ''}
+    `
+  }
+
+  /**
+   * 绑定边属性事件
+   */
+  private bindEdgePropertyEvents(): void {
+    if (!this.panelElement || this.config.readonly) return
+
+    // 监听输入变化
+    const inputs = this.panelElement.querySelectorAll('.property-input:not([readonly])')
+    inputs.forEach(input => {
+      input.addEventListener('input', () => {
+        this.markEdgeAsChanged()
+      })
+    })
+
+    // 应用更改按钮
+    const applyBtn = this.panelElement.querySelector('#applyEdgeChanges')
+    if (applyBtn) {
+      applyBtn.addEventListener('click', () => {
+        this.applyEdgeChanges()
+      })
+    }
+
+    // 重置按钮
+    const resetBtn = this.panelElement.querySelector('#resetEdgeChanges')
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        this.render()
+      })
+    }
+  }
+
+  /**
+   * 标记边为已更改
+   */
+  private markEdgeAsChanged(): void {
+    const applyBtn = this.panelElement?.querySelector('#applyEdgeChanges')
+    if (applyBtn) {
+      applyBtn.textContent = '应用更改 *'
+      applyBtn.classList.add('has-changes')
+    }
+  }
+
+  /**
+   * 应用边更改
+   */
+  private applyEdgeChanges(): void {
+    if (!this.selectedEdge || !this.panelElement) return
+
+    const inputs = this.panelElement.querySelectorAll('.property-input:not([readonly])') as NodeListOf<HTMLInputElement>
+    const updates: Partial<ApprovalEdgeConfig> = {}
+
+    inputs.forEach(input => {
+      const field = input.dataset.field
+      const value = input.value
+
+      if (field) {
+        if (field === 'text') {
+          updates.text = value
+        }
+      }
+    })
+
+    // 触发更新回调（需要在UIManager中添加）
+    // this.config.onUpdateEdge?.(this.selectedEdge.id, updates)
+
+    // 更新本地状态
+    Object.assign(this.selectedEdge, updates)
+
+    // 移除更改标记
+    this.removeEdgeChangedMark()
+  }
+
+  /**
+   * 移除边更改标记
+   */
+  private removeEdgeChangedMark(): void {
+    const applyBtn = this.panelElement?.querySelector('#applyEdgeChanges')
+    if (applyBtn) {
+      applyBtn.textContent = '应用更改'
+      applyBtn.classList.remove('has-changes')
+    }
   }
 
   /**

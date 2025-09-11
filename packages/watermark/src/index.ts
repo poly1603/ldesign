@@ -4,6 +4,9 @@
 
 import type { WatermarkConfig, WatermarkInstance } from './types'
 
+// 用于存储全局core实例和实例映射
+const globalCoreMap = new Map<string, { core: any, instance: WatermarkInstance }>()
+
 // 动画模块
 export { AnimationEngine } from './animation'
 
@@ -87,7 +90,12 @@ export async function createWatermark(
     throw new Error('Container element not found')
   }
 
-  return core.create(containerElement as HTMLElement, config)
+  const instance = await core.create(containerElement as HTMLElement, config)
+  
+  // 保存core和实例的映射关系
+  globalCoreMap.set(instance.id, { core, instance })
+  
+  return instance
 }
 
 /**
@@ -96,9 +104,19 @@ export async function createWatermark(
 export async function destroyWatermark(
   instance: WatermarkInstance,
 ): Promise<void> {
-  const { WatermarkCore } = await import('./core')
-  const core = new WatermarkCore()
-  await core.destroy(instance.id)
+  // 使用保存的core实例
+  const coreInfo = globalCoreMap.get(instance.id)
+  if (coreInfo) {
+    await coreInfo.core.destroy(instance.id)
+    // 从全局映射中移除
+    globalCoreMap.delete(instance.id)
+  } else {
+    // 如果找不到对应的core，尝试创建新的（向后兼容）
+    const { WatermarkCore } = await import('./core')
+    const core = new WatermarkCore()
+    await core.init()
+    await core.destroy(instance.id)
+  }
 }
 
 /**

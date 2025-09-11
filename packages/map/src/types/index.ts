@@ -8,7 +8,7 @@ export type LngLat = [number, number] // [经度, 纬度]
 export type LngLatBounds = [LngLat, LngLat] // [西南角, 东北角]
 
 // 地图引擎类型
-export type MapEngineType = 'mapbox'
+export type MapEngineType = 'mapbox' | 'leaflet'
 
 // 地图类型
 export type MapType =

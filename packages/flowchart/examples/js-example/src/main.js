@@ -27,7 +27,7 @@ function initFlowchart() {
       // 启用所有UI组件
       toolbar: {
         visible: true,
-        tools: ['select', 'zoom-fit', 'undo', 'redo', 'delete']
+        tools: ['select', 'multi-select', 'zoom-fit', 'undo', 'redo', 'delete']
       },
       nodePanel: {
         visible: true,
@@ -53,19 +53,16 @@ function initFlowchart() {
     // 监听节点点击事件
     editor.on('node:click', (data) => {
       console.log('节点被点击:', data)
-      updateDataOutput()
     })
 
     // 监听边点击事件
     editor.on('edge:click', (data) => {
       console.log('边被点击:', data)
-      updateDataOutput()
     })
 
     // 监听数据变化事件
     editor.on('data:change', (data) => {
       console.log('流程图数据已更新')
-      updateDataOutput()
     })
 
     // 监听节点选中事件（用于属性面板）
@@ -127,11 +124,10 @@ function changeTheme(theme) {
  */
 function exportData() {
   if (!editor) return
-  
+
   const data = editor.getData()
-  updateDataOutput(data)
-  
-  // 也可以下载为文件
+
+  // 下载为文件
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -139,8 +135,9 @@ function exportData() {
   a.download = 'flowchart-data.json'
   a.click()
   URL.revokeObjectURL(url)
-  
+
   console.log('✅ 数据已导出')
+  console.log('📊 数据内容:', data)
 }
 
 /**
@@ -153,7 +150,6 @@ function loadTemplate() {
     // 使用API创建简单的审批流程模板
     const template = FlowchartAPI.createApprovalTemplate()
     editor.setData(template)
-    updateDataOutput()
     console.log('✅ 审批流程模板已加载')
     console.log('📋 模板包含:', template.nodes.length, '个节点，', template.edges.length, '条连线')
   } catch (error) {
@@ -165,15 +161,15 @@ function loadTemplate() {
 
       const startId = editor.addNode({
         type: 'start',
-        x: 100,
-        y: 200,
+        x: 200,
+        y: 150,
         text: '开始'
       })
 
       const approvalId = editor.addNode({
         type: 'approval',
-        x: 300,
-        y: 200,
+        x: 400,
+        y: 150,
         text: '部门审批',
         properties: {
           approver: '部门经理',
@@ -183,8 +179,8 @@ function loadTemplate() {
 
       const endId = editor.addNode({
         type: 'end',
-        x: 500,
-        y: 200,
+        x: 600,
+        y: 150,
         text: '结束'
       })
 
@@ -201,24 +197,10 @@ function loadTemplate() {
         text: '通过'
       })
 
-      updateDataOutput()
       console.log('✅ 手动创建的简单模板已加载')
     } catch (manualError) {
       console.error('❌ 手动创建模板也失败:', manualError)
     }
-  }
-}
-
-/**
- * 更新数据显示
- */
-function updateDataOutput(data = null) {
-  const outputElement = document.getElementById('dataOutput')
-  if (!outputElement) return
-  
-  const flowchartData = data || (editor ? editor.getData() : null)
-  if (flowchartData) {
-    outputElement.textContent = JSON.stringify(flowchartData, null, 2)
   }
 }
 

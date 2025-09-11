@@ -1,0 +1,186 @@
+/**
+ * 全局样式定义
+ */
+
+/* 全局容器样式 */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--ls-padding-base);
+}
+
+/* 网格布局 */
+.grid {
+  display: grid;
+  gap: var(--ls-spacing-base);
+  
+  &--cols-1 { grid-template-columns: 1fr; }
+  &--cols-2 { grid-template-columns: repeat(2, 1fr); }
+  &--cols-3 { grid-template-columns: repeat(3, 1fr); }
+  &--cols-4 { grid-template-columns: repeat(4, 1fr); }
+  
+  @media (max-width: 768px) {
+    &--cols-2,
+    &--cols-3,
+    &--cols-4 {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+/* Flex 布局 */
+.flex {
+  display: flex;
+  
+  &--center {
+    align-items: center;
+    justify-content: center;
+  }
+  
+  &--between {
+    justify-content: space-between;
+  }
+  
+  &--around {
+    justify-content: space-around;
+  }
+  
+  &--column {
+    flex-direction: column;
+  }
+  
+  &--wrap {
+    flex-wrap: wrap;
+  }
+  
+  &--gap {
+    gap: var(--ls-spacing-base);
+  }
+}
+
+/* 文本样式 */
+.text {
+  &--center { text-align: center; }
+  &--left { text-align: left; }
+  &--right { text-align: right; }
+  
+  &--primary { color: var(--ldesign-text-color-primary); }
+  &--secondary { color: var(--ldesign-text-color-secondary); }
+  &--placeholder { color: var(--ldesign-text-color-placeholder); }
+  &--disabled { color: var(--ldesign-text-color-disabled); }
+  
+  &--brand { color: var(--ldesign-brand-color); }
+  &--success { color: var(--ldesign-success-color); }
+  &--warning { color: var(--ldesign-warning-color); }
+  &--error { color: var(--ldesign-error-color); }
+  
+  &--xs { font-size: var(--ls-font-size-xs); }
+  &--sm { font-size: var(--ls-font-size-sm); }
+  &--base { font-size: var(--ls-font-size-base); }
+  &--lg { font-size: var(--ls-font-size-lg); }
+  &--xl { font-size: var(--ls-font-size-xl); }
+  
+  &--bold { font-weight: 600; }
+  &--normal { font-weight: 400; }
+  &--light { font-weight: 300; }
+}
+
+/* 间距工具类 */
+.m {
+  &-0 { margin: 0; }
+  &-xs { margin: var(--ls-margin-xs); }
+  &-sm { margin: var(--ls-margin-sm); }
+  &-base { margin: var(--ls-margin-base); }
+  &-lg { margin: var(--ls-margin-lg); }
+  &-xl { margin: var(--ls-margin-xl); }
+  
+  &t-0 { margin-top: 0; }
+  &t-xs { margin-top: var(--ls-margin-xs); }
+  &t-sm { margin-top: var(--ls-margin-sm); }
+  &t-base { margin-top: var(--ls-margin-base); }
+  &t-lg { margin-top: var(--ls-margin-lg); }
+  &t-xl { margin-top: var(--ls-margin-xl); }
+  
+  &b-0 { margin-bottom: 0; }
+  &b-xs { margin-bottom: var(--ls-margin-xs); }
+  &b-sm { margin-bottom: var(--ls-margin-sm); }
+  &b-base { margin-bottom: var(--ls-margin-base); }
+  &b-lg { margin-bottom: var(--ls-margin-lg); }
+  &b-xl { margin-bottom: var(--ls-margin-xl); }
+}
+
+.p {
+  &-0 { padding: 0; }
+  &-xs { padding: var(--ls-padding-xs); }
+  &-sm { padding: var(--ls-padding-sm); }
+  &-base { padding: var(--ls-padding-base); }
+  &-lg { padding: var(--ls-padding-lg); }
+  &-xl { padding: var(--ls-padding-xl); }
+}
+
+/* 显示/隐藏工具类 */
+.hidden { display: none !important; }
+.visible { display: block !important; }
+
+@media (max-width: 768px) {
+  .hidden-mobile { display: none !important; }
+  .visible-mobile { display: block !important; }
+}
+
+@media (min-width: 769px) {
+  .hidden-desktop { display: none !important; }
+  .visible-desktop { display: block !important; }
+}
+
+/* 动画工具类 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.slide-enter-from {
+  transform: translateX(-100%);
+}
+
+.slide-leave-to {
+  transform: translateX(100%);
+}
+
+/* 加载动画 */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading {
+  animation: spin 1s linear infinite;
+}
+
+/* 无障碍支持 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 焦点样式 */
+.focus-visible {
+  outline: 2px solid var(--ldesign-brand-color);
+  outline-offset: 2px;
+}

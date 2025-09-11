@@ -11,7 +11,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      // 工作空间包的 alias 配置
+      // 工作空间包的 alias 配置已注释掉，使用打包后的产物
       '@ldesign/api': resolve(__dirname, '../packages/api/src'),
       '@ldesign/api/vue': resolve(__dirname, '../packages/api/src/vue'),
 

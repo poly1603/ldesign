@@ -17,12 +17,14 @@ export class EndNodeModel extends CircleNodeModel {
     // 设置节点尺寸
     this.r = 30
 
-    // 设置默认文本
+    // 设置默认文本 - 文本在节点下方
     if (!this.text?.value) {
       this.text = {
         value: '结束',
         x: this.x,
-        y: this.y
+        y: this.y + this.r + 15, // 文本在圆形下方
+        draggable: false,
+        editable: true
       }
     }
   }
@@ -106,12 +108,12 @@ export class EndNode extends CircleNode {
         r,
         ...style
       }),
-      // 内部停止图标
+      // 内部停止图标 - 图标稍微上移
       h('rect', {
-        x: x - 8,
-        y: y - 8,
-        width: 16,
-        height: 16,
+        x: x - 6,
+        y: y - 11,
+        width: 12,
+        height: 12,
         rx: 2,
         ry: 2,
         fill: 'var(--ldesign-error-color, #e54848)',
