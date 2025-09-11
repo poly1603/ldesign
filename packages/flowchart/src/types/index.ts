@@ -26,8 +26,17 @@ export type ApprovalNodeType =
   | 'condition'       // 条件节点
   | 'end'            // 结束节点
   | 'process'        // 处理节点
+  | 'user-task'      // 用户任务
+  | 'service-task'   // 服务任务
+  | 'script-task'    // 脚本任务
+  | 'manual-task'    // 手工任务
   | 'parallel-gateway'   // 并行网关
   | 'exclusive-gateway'  // 排他网关
+  | 'inclusive-gateway'  // 包容网关
+  | 'event-gateway'      // 事件网关
+  | 'timer-event'        // 定时事件
+  | 'message-event'      // 消息事件
+  | 'signal-event'       // 信号事件
 
 // 审批状态
 export type ApprovalStatus =

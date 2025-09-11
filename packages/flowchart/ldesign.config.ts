@@ -11,12 +11,13 @@ export default defineConfig({
   input: 'src/index.ts',
 
   // 输出格式
-  formats: ['esm', 'cjs'],
+  formats: ['esm', 'cjs', 'umd'],
 
   // 输出目录
   outDir: {
     esm: 'es',
-    cjs: 'cjs'
+    cjs: 'cjs',
+    umd: 'dist'
   },
 
   // 生成类型声明文件

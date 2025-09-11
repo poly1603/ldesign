@@ -12,13 +12,15 @@ import type {
   ApprovalNodeConfig,
   ApprovalEdgeConfig,
   FlowchartEvents,
-  ThemeConfig
+  ThemeConfig,
+  ApprovalNodeType
 } from '../types'
 import { ThemeManager } from '../themes/ThemeManager'
 import { PluginManager } from '../plugins/PluginManager'
 import { registerApprovalNodes } from '../nodes'
 import { registerApprovalEdges } from '../edges'
 import { defaultConfig } from '../config/defaultConfig'
+import { UIManager } from '../ui/UIManager'
 
 /**
  * 审批流程图编辑器类
@@ -28,7 +30,9 @@ export class FlowchartEditor {
   private config: FlowchartEditorConfig
   private themeManager!: ThemeManager
   private pluginManager!: PluginManager
+  private uiManager?: UIManager
   private eventListeners: Map<keyof FlowchartEvents, Function[]> = new Map()
+  private selectedNode: ApprovalNodeConfig | null = null
 
   /**
    * 构造函数
@@ -36,6 +40,12 @@ export class FlowchartEditor {
    */
   constructor(config: FlowchartEditorConfig) {
     this.config = { ...defaultConfig, ...config }
+
+    // 初始化UI管理器（如果需要UI）
+    if (this.shouldInitUI()) {
+      this.uiManager = new UIManager(this.config)
+      this.setupUICallbacks()
+    }
 
     // 初始化 LogicFlow
     this.initLogicFlow()
@@ -69,9 +79,17 @@ export class FlowchartEditor {
    * 初始化 LogicFlow
    */
   private initLogicFlow(): void {
-    const container = typeof this.config.container === 'string'
-      ? document.querySelector(this.config.container) as HTMLElement
-      : this.config.container
+    let container: HTMLElement
+
+    if (this.uiManager) {
+      // 使用UI管理器提供的画布容器
+      container = this.uiManager.init()
+    } else {
+      // 直接使用配置的容器
+      container = typeof this.config.container === 'string'
+        ? document.querySelector(this.config.container) as HTMLElement
+        : this.config.container
+    }
 
     if (!container) {
       throw new Error('容器元素不存在')
@@ -119,7 +137,19 @@ export class FlowchartEditor {
   private bindEvents(): void {
     // 节点事件
     this.lf.on('node:click', (data) => {
-      this.emit('node:click', { node: data.data, event: data.e })
+      // 转换LogicFlow节点数据为我们的格式
+      const nodeConfig: ApprovalNodeConfig = {
+        id: data.data.id,
+        type: data.data.type as ApprovalNodeType,
+        x: data.data.x,
+        y: data.data.y,
+        text: data.data.text?.value || data.data.text || '',
+        properties: data.data.properties || {}
+      }
+
+      this.selectedNode = nodeConfig
+      this.uiManager?.setSelectedNode(nodeConfig)
+      this.emit('node:click', { node: nodeConfig, event: data.e })
     })
 
     this.lf.on('node:dblclick', (data) => {
@@ -149,6 +179,8 @@ export class FlowchartEditor {
 
     // 画布事件
     this.lf.on('blank:click', (data) => {
+      this.selectedNode = null
+      this.uiManager?.setSelectedNode(null)
       this.emit('canvas:click', { event: data.e, position: data.position })
     })
 
@@ -244,6 +276,10 @@ export class FlowchartEditor {
    */
   setTheme(theme: string | ThemeConfig): void {
     this.themeManager.setTheme(theme)
+    // 同时更新UI主题
+    if (this.uiManager && typeof theme === 'string') {
+      this.uiManager.setTheme(theme)
+    }
   }
 
   /**
@@ -360,9 +396,121 @@ export class FlowchartEditor {
   }
 
   /**
+   * 判断是否需要初始化UI
+   */
+  private shouldInitUI(): boolean {
+    return this.config.toolbar?.visible !== false ||
+      this.config.nodePanel?.visible !== false ||
+      this.config.propertyPanel?.visible !== false
+  }
+
+  /**
+   * 设置UI回调函数
+   */
+  private setupUICallbacks(): void {
+    if (!this.uiManager) return
+
+    this.uiManager.setEventCallbacks({
+      onNodeUpdate: (nodeId: string, updates: Partial<ApprovalNodeConfig>) => {
+        this.updateNode(nodeId, updates)
+      },
+      onNodeDelete: (nodeId: string) => {
+        this.deleteNode(nodeId)
+      },
+      onNodeDrop: (nodeType: ApprovalNodeType, position: { x: number; y: number }) => {
+        this.addNode({
+          type: nodeType,
+          x: position.x,
+          y: position.y,
+          text: this.getDefaultNodeText(nodeType)
+        })
+      },
+      onToolClick: (toolName: string) => {
+        this.handleToolClick(toolName)
+      },
+      onThemeChange: (theme: string) => {
+        this.setTheme(theme)
+      }
+    })
+  }
+
+  /**
+   * 获取默认节点文本
+   */
+  private getDefaultNodeText(nodeType: ApprovalNodeType): string {
+    const textMap: Record<ApprovalNodeType, string> = {
+      'start': '开始',
+      'approval': '审批节点',
+      'condition': '条件判断',
+      'process': '处理节点',
+      'end': '结束',
+      'parallel-gateway': '并行网关',
+      'exclusive-gateway': '排他网关'
+    }
+    return textMap[nodeType] || '节点'
+  }
+
+  /**
+   * 处理工具栏点击
+   */
+  private handleToolClick(toolName: string): void {
+    switch (toolName) {
+      case 'zoom-fit':
+        this.lf.fitView()
+        break
+      case 'undo':
+        this.lf.undo()
+        break
+      case 'redo':
+        this.lf.redo()
+        break
+      case 'delete':
+        const selected = this.lf.getSelectElements()
+        selected.nodes.forEach(node => this.deleteNode(node.id))
+        selected.edges.forEach(edge => this.lf.deleteEdge(edge.id))
+        break
+      case 'copy':
+        // TODO: 实现复制功能
+        break
+      case 'paste':
+        // TODO: 实现粘贴功能
+        break
+    }
+  }
+
+  /**
+   * 设置只读模式
+   */
+  setReadonly(readonly: boolean): void {
+    this.config.readonly = readonly
+    this.uiManager?.setReadonly(readonly)
+
+    if (readonly) {
+      this.lf.updateEditConfig({
+        nodeTextEdit: false,
+        edgeTextEdit: false,
+        nodeSelectedOutline: false,
+        edgeSelectedOutline: false
+      })
+    } else {
+      this.lf.updateEditConfig({
+        nodeTextEdit: true,
+        edgeTextEdit: true,
+        nodeSelectedOutline: true,
+        edgeSelectedOutline: true
+      })
+    }
+  }
+
+  /**
    * 销毁编辑器
    */
   destroy(): void {
+    // 销毁UI管理器
+    if (this.uiManager) {
+      this.uiManager.destroy()
+    }
+
     // 卸载所有插件
     if (this.pluginManager) {
       this.pluginManager.uninstallAll()

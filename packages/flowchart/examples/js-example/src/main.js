@@ -1,6 +1,12 @@
 /**
  * LDesign Flowchart JavaScript 示例
  * 演示如何在原生 JavaScript 项目中使用流程图编辑器
+ *
+ * 本示例展示了：
+ * 1. 基础的流程图编辑器初始化
+ * 2. 完整的UI组件（物料面板、属性面板、工具栏）
+ * 3. 节点拖拽和属性编辑功能
+ * 4. 主题切换和数据导出
  */
 
 import { FlowchartEditor, FlowchartAPI } from '@ldesign/flowchart'
@@ -10,15 +16,30 @@ let editor = null
 let nodeCounter = 0
 
 /**
- * 初始化流程图编辑器
+ * 初始化流程图编辑器（带完整UI）
  */
 function initFlowchart() {
   try {
-    // 创建编辑器实例
+    // 创建编辑器实例，不使用Vue UI组件（纯原生JS）
     editor = new FlowchartEditor({
       container: '#flowchart',
       width: 1160,
-      height: 600
+      height: 600,
+      // 禁用所有UI组件，使用原生JS实现
+      toolbar: { visible: false },
+      nodePanel: { visible: false },
+      propertyPanel: { visible: false },
+      // 主题配置
+      theme: 'default',
+      // 画布配置
+      background: {
+        color: '#fafafa'
+      },
+      grid: {
+        visible: true,
+        size: 20,
+        color: '#e5e5e5'
+      }
     })
 
     // 监听节点点击事件
@@ -39,10 +60,29 @@ function initFlowchart() {
       updateDataOutput()
     })
 
+    // 监听节点选中事件（用于属性面板）
+    editor.on('node:select', (data) => {
+      console.log('节点被选中:', data)
+    })
+
+    // 监听主题变化事件
+    editor.on('theme:change', (theme) => {
+      console.log('主题已切换:', theme)
+      // 同步更新主题选择器
+      const themeSelect = document.getElementById('themeSelect')
+      if (themeSelect) {
+        themeSelect.value = theme
+      }
+    })
+
     // 渲染编辑器
     editor.render()
 
     console.log('✅ 流程图编辑器初始化成功')
+    console.log('💡 提示：')
+    console.log('  - 从左侧物料面板拖拽节点到画布')
+    console.log('  - 点击节点查看右侧属性面板')
+    console.log('  - 使用顶部工具栏进行操作')
   } catch (error) {
     console.error('❌ 流程图编辑器初始化失败:', error)
   }
@@ -139,13 +179,13 @@ function addEndNode() {
  */
 function clearAll() {
   if (!editor) return
-  
+
   const data = editor.getData()
   if (data.nodes.length === 0 && data.edges.length === 0) {
     alert('画布已经是空的了！')
     return
   }
-  
+
   if (confirm('确定要清空画布吗？')) {
     editor.setData({ nodes: [], edges: [] })
     nodeCounter = 0
@@ -196,52 +236,62 @@ function loadTemplate() {
   if (!editor) return
 
   try {
-    // 先清空画布
-    editor.clearData()
-
-    // 手动创建一个简单的审批流程
-    const startId = editor.addNode({
-      type: 'start',
-      x: 100,
-      y: 200,
-      text: '开始'
-    })
-
-    const approvalId = editor.addNode({
-      type: 'approval',
-      x: 300,
-      y: 200,
-      text: '部门审批',
-      properties: {
-        approver: '部门经理',
-        status: 'pending'
-      }
-    })
-
-    const endId = editor.addNode({
-      type: 'end',
-      x: 500,
-      y: 200,
-      text: '结束'
-    })
-
-    // 添加连接线
-    editor.addEdge({
-      sourceNodeId: startId,
-      targetNodeId: approvalId,
-      text: '提交'
-    })
-
-    editor.addEdge({
-      sourceNodeId: approvalId,
-      targetNodeId: endId,
-      text: '通过'
-    })
-
+    // 使用API创建简单的审批流程模板
+    const template = FlowchartAPI.createApprovalTemplate()
+    editor.setData(template)
     updateDataOutput()
-    console.log('✅ 简单审批流程模板已加载')
+    console.log('✅ 审批流程模板已加载')
+    console.log('📋 模板包含:', template.nodes.length, '个节点，', template.edges.length, '条连线')
   } catch (error) {
     console.error('❌ 模板加载失败:', error)
+
+    // 如果API失败，手动创建简单模板
+    try {
+      editor.clearData()
+
+      const startId = editor.addNode({
+        type: 'start',
+        x: 100,
+        y: 200,
+        text: '开始'
+      })
+
+      const approvalId = editor.addNode({
+        type: 'approval',
+        x: 300,
+        y: 200,
+        text: '部门审批',
+        properties: {
+          approver: '部门经理',
+          status: 'pending'
+        }
+      })
+
+      const endId = editor.addNode({
+        type: 'end',
+        x: 500,
+        y: 200,
+        text: '结束'
+      })
+
+      // 添加连接线
+      editor.addEdge({
+        sourceNodeId: startId,
+        targetNodeId: approvalId,
+        text: '提交'
+      })
+
+      editor.addEdge({
+        sourceNodeId: approvalId,
+        targetNodeId: endId,
+        text: '通过'
+      })
+
+      updateDataOutput()
+      console.log('✅ 手动创建的简单模板已加载')
+    } catch (manualError) {
+      console.error('❌ 手动创建模板也失败:', manualError)
+    }
   }
 }
 
@@ -270,12 +320,12 @@ function bindEventListeners() {
   document.getElementById('clearAll')?.addEventListener('click', clearAll)
   document.getElementById('exportData')?.addEventListener('click', exportData)
   document.getElementById('loadTemplate')?.addEventListener('click', loadTemplate)
-  
+
   // 主题切换事件
   document.getElementById('themeSelect')?.addEventListener('change', (e) => {
     changeTheme(e.target.value)
   })
-  
+
   console.log('✅ 事件监听器已绑定')
 }
 
@@ -310,5 +360,11 @@ window.flowchartDemo = {
   clearAll,
   changeTheme,
   exportData,
-  loadTemplate
+  loadTemplate,
+  // 调试函数
+  getEditor: () => editor,
+  getData: () => editor?.getData(),
+  setData: (data) => editor?.setData(data),
+  addNode: (config) => editor?.addNode(config),
+  addEdge: (config) => editor?.addEdge(config)
 }

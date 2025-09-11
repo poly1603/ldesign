@@ -12,3 +12,5 @@ export type { HistoryConfig } from './HistoryPlugin'
 
 export { ExportPlugin } from './ExportPlugin'
 export type { ExportConfig, ExportFormat } from './ExportPlugin'
+
+// export { DndPlugin } from './DndPlugin'

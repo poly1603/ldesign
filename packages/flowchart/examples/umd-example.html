@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDesign Flowchart - UMD 原生示例</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #722ED1;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .toolbar {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #722ED1;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #5e2aa7;
+        }
+
+        .btn.secondary {
+            background: #fff;
+            color: #722ED1;
+            border: 1px solid #722ED1;
+        }
+
+        .btn.secondary:hover {
+            background: #722ED1;
+            color: #fff;
+        }
+
+        select {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .flowchart-container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            height: 600px;
+        }
+
+        .info-panel {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-panel h3 {
+            color: #722ED1;
+            margin-bottom: 10px;
+        }
+
+        .info-panel pre {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .feature-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid #722ED1;
+        }
+
+        .feature-item h4 {
+            color: #722ED1;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .feature-item p {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>🎨 LDesign Flowchart - UMD 原生示例</h1>
+            <p>无需构建工具，直接在浏览器中使用流程图编辑器（UMD版本）</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="toolbar">
+            <button class="btn" id="loadTemplate">加载复杂模板</button>
+            <button class="btn secondary" id="clearCanvas">清空画布</button>
+            
+            <select id="themeSelect">
+                <option value="default">默认主题</option>
+                <option value="dark">暗色主题</option>
+                <option value="blue">蓝色主题</option>
+            </select>
+            
+            <button class="btn secondary" id="toggleReadonly">切换只读模式</button>
+            <button class="btn" id="exportData">导出数据</button>
+            <button class="btn secondary" id="showHelp">显示帮助</button>
+        </div>
+
+        <div class="flowchart-container" id="flowchart-container">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #666;">
+                <h3>🚀 流程图编辑器已就绪</h3>
+                <p style="margin-top: 10px;">点击"加载复杂模板"开始体验，或从左侧拖拽节点到画布</p>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div>
+                <span>节点: <span id="status-nodes">0</span></span>
+                <span style="margin-left: 16px;">连线: <span id="status-edges">0</span></span>
+                <span style="margin-left: 16px;">选中: <span id="status-selected">无</span></span>
+            </div>
+            <div>
+                <span>模式: <span id="status-mode">编辑</span></span>
+                <span style="margin-left: 16px;">主题: <span id="status-theme">默认</span></span>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>📋 功能特性</h3>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <h4>🎯 拖拽式编辑</h4>
+                    <p>从左侧物料面板拖拽节点到画布，支持15种不同类型的节点</p>
+                </div>
+                <div class="feature-item">
+                    <h4>⚙️ 属性编辑</h4>
+                    <p>点击节点查看右侧属性面板，实时编辑节点属性和位置</p>
+                </div>
+                <div class="feature-item">
+                    <h4>🎨 主题切换</h4>
+                    <p>支持默认、暗色、蓝色三种主题，画布和UI组件同步切换</p>
+                </div>
+                <div class="feature-item">
+                    <h4>📱 只读模式</h4>
+                    <p>一键切换只读模式，隐藏编辑UI，适合展示和演示</p>
+                </div>
+                <div class="feature-item">
+                    <h4>💾 数据导出</h4>
+                    <p>支持JSON格式数据导出，完整保存流程图结构</p>
+                </div>
+                <div class="feature-item">
+                    <h4>🔧 原生兼容</h4>
+                    <p>UMD格式，无需构建工具，直接在浏览器中使用</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>📊 流程图数据</h3>
+            <pre id="dataOutput">点击"导出数据"查看流程图JSON数据...</pre>
+        </div>
+    </div>
+
+    <!-- 引入 LogicFlow 依赖 -->
+    <script src="https://unpkg.com/@logicflow/core@1.2.26/dist/logic-flow.js"></script>
+    
+    <!-- 引入 LDesign Flowchart UMD 版本 -->
+    <!-- 注意：这里应该引入实际构建的UMD文件 -->
+    <script src="../dist/index.umd.js"></script>
+
+    <script>
+        // UMD 原生 JavaScript 示例
+        (function() {
+            'use strict';
+            
+            let editor = null;
+            let isReadonly = false;
+
+            // 初始化编辑器
+            function initEditor() {
+                try {
+                    const container = document.getElementById('flowchart-container');
+                    
+                    // 使用 UMD 全局变量
+                    editor = new LDesignFlowchart.FlowchartEditor({
+                        container: container,
+                        width: container.offsetWidth,
+                        height: container.offsetHeight,
+                        // 启用完整UI
+                        toolbar: {
+                            visible: true,
+                            tools: ['select', 'zoom-fit', 'undo', 'redo', 'delete']
+                        },
+                        nodePanel: {
+                            visible: true,
+                            position: 'left'
+                        },
+                        propertyPanel: {
+                            visible: true,
+                            position: 'right'
+                        },
+                        theme: 'default',
+                        background: { color: '#fafafa' },
+                        grid: { visible: true, size: 20 }
+                    });
+
+                    // 绑定事件
+                    editor.on('data:change', updateStatus);
+                    editor.on('node:select', (data) => {
+                        document.getElementById('status-selected').textContent = 
+                            data ? `节点: ${data.id}` : '无';
+                    });
+                    editor.on('theme:change', (theme) => {
+                        document.getElementById('status-theme').textContent = theme;
+                        document.getElementById('themeSelect').value = theme;
+                    });
+
+                    // 渲染编辑器
+                    editor.render();
+                    
+                    updateStatus();
+                    console.log('✅ 流程图编辑器初始化成功');
+                } catch (error) {
+                    console.error('❌ 编辑器初始化失败:', error);
+                    alert('编辑器初始化失败，请检查控制台错误信息');
+                }
+            }
+
+            // 更新状态栏
+            function updateStatus() {
+                if (!editor) return;
+                
+                const data = editor.getData();
+                document.getElementById('status-nodes').textContent = data.nodes.length;
+                document.getElementById('status-edges').textContent = data.edges.length;
+                document.getElementById('status-mode').textContent = isReadonly ? '只读' : '编辑';
+            }
+
+            // 加载模板
+            function loadTemplate() {
+                if (!editor) return;
+                
+                try {
+                    const template = LDesignFlowchart.FlowchartAPI.createApprovalTemplate();
+                    editor.setData(template);
+                    updateDataOutput();
+                    console.log('✅ 模板加载成功');
+                } catch (error) {
+                    console.error('❌ 模板加载失败:', error);
+                }
+            }
+
+            // 清空画布
+            function clearCanvas() {
+                if (!editor) return;
+                
+                if (confirm('确定要清空画布吗？')) {
+                    editor.setData({ nodes: [], edges: [] });
+                    updateDataOutput();
+                    console.log('✅ 画布已清空');
+                }
+            }
+
+            // 切换主题
+            function changeTheme(theme) {
+                if (!editor) return;
+                
+                try {
+                    editor.setTheme(theme);
+                    console.log(`✅ 主题已切换为: ${theme}`);
+                } catch (error) {
+                    console.error('❌ 主题切换失败:', error);
+                }
+            }
+
+            // 切换只读模式
+            function toggleReadonly() {
+                if (!editor) return;
+                
+                isReadonly = !isReadonly;
+                editor.setReadonly(isReadonly);
+                
+                const button = document.getElementById('toggleReadonly');
+                button.textContent = isReadonly ? '切换到编辑' : '切换只读模式';
+                
+                updateStatus();
+                console.log(`✅ 已切换到${isReadonly ? '只读' : '编辑'}模式`);
+            }
+
+            // 导出数据
+            function exportData() {
+                if (!editor) return;
+                
+                const data = editor.getData();
+                updateDataOutput(data);
+                
+                // 下载文件
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'flowchart-data.json';
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                console.log('✅ 数据已导出');
+            }
+
+            // 更新数据显示
+            function updateDataOutput(data = null) {
+                const outputElement = document.getElementById('dataOutput');
+                const flowchartData = data || (editor ? editor.getData() : null);
+                
+                if (flowchartData) {
+                    outputElement.textContent = JSON.stringify(flowchartData, null, 2);
+                }
+            }
+
+            // 显示帮助
+            function showHelp() {
+                alert(`🎨 LDesign Flowchart 使用帮助
+
+📋 基本操作：
+• 从左侧物料面板拖拽节点到画布
+• 点击节点查看右侧属性面板
+• 使用顶部工具栏进行缩放、撤销等操作
+
+🎯 节点类型：
+• 基础节点：开始、审批、条件、处理、结束
+• 任务节点：用户任务、服务任务、脚本任务、手工任务
+• 网关节点：并行网关、排他网关、包容网关、事件网关
+• 事件节点：定时事件、消息事件、信号事件
+
+⚙️ 高级功能：
+• 主题切换：支持默认、暗色、蓝色主题
+• 只读模式：隐藏编辑UI，适合演示
+• 数据导出：JSON格式，完整保存流程结构
+
+💡 提示：这是UMD版本，无需构建工具即可使用！`);
+            }
+
+            // 绑定事件
+            function bindEvents() {
+                document.getElementById('loadTemplate').addEventListener('click', loadTemplate);
+                document.getElementById('clearCanvas').addEventListener('click', clearCanvas);
+                document.getElementById('toggleReadonly').addEventListener('click', toggleReadonly);
+                document.getElementById('exportData').addEventListener('click', exportData);
+                document.getElementById('showHelp').addEventListener('click', showHelp);
+                
+                document.getElementById('themeSelect').addEventListener('change', (e) => {
+                    changeTheme(e.target.value);
+                });
+            }
+
+            // 初始化应用
+            function init() {
+                console.log('🚀 LDesign Flowchart UMD 示例启动');
+                bindEvents();
+                initEditor();
+            }
+
+            // 等待DOM加载完成
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+            // 导出到全局作用域（调试用）
+            window.flowchartUMDDemo = {
+                editor: () => editor,
+                loadTemplate,
+                clearCanvas,
+                changeTheme,
+                toggleReadonly,
+                exportData,
+                showHelp
+            };
+        })();
+    </script>
+</body>
+</html>

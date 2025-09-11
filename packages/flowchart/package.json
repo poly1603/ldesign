@@ -67,7 +67,9 @@
   "homepage": "https://ldesign.github.io/flowchart",
   "dependencies": {
     "@logicflow/core": "^1.2.26",
-    "@ldesign/shared": "workspace:*"
+    "@logicflow/extension": "^1.2.26",
+    "@ldesign/shared": "workspace:*",
+    "vue": "^3.3.0"
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",

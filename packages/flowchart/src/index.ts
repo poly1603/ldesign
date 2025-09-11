@@ -47,6 +47,9 @@ export * from './utils'
 // 导出类型定义
 export * from './types'
 
+// 导出UI组件
+export * from './ui'
+
 // 导出默认配置
 export { defaultConfig } from './config/defaultConfig'
 
