@@ -171,49 +171,9 @@ export class DevCommand implements CliCommandDefinition {
         }
       })
 
-      // 设置事件监听器
-      launcher.onReady(async () => {
-        const serverInfo = launcher.getServerInfo()
-        if (serverInfo) {
-          const localUrl = serverInfo.url || ''
-          const hasNetwork = serverInfo.host === '0.0.0.0' && !!serverInfo.url
-          const networkUrl = hasNetwork ? localUrl.replace('0.0.0.0', getLocalIP()) : null
-
-          // 盒式美化输出
-          const title = '开发服务器已启动'
-          const entries: Array<{ label: string; value: string }> = [
-            { label: '本地', value: localUrl }
-          ]
-          if (networkUrl) entries.push({ label: '网络', value: networkUrl })
-
-          const boxLines = renderServerBanner(title, entries)
-          for (const line of boxLines) logger.info(line)
-
-          // 二维码输出（优先展示可在移动端访问的网络地址）
-          const qrTarget = (networkUrl || localUrl)
-          try {
-            if (!qrTarget) throw new Error('empty-url')
-            const mod: any = await import('qrcode-terminal')
-            const qrt = mod?.default || mod
-            let qrOutput = ''
-            qrt.generate(qrTarget, { small: true }, (q: string) => {
-              qrOutput = q
-            })
-
-            if (qrOutput) {
-              logger.info(pc.dim('二维码（扫码在手机上打开）：'))
-              // 直接用 console.log 避免前缀/图标破坏二维码排版
-              console.log('\n' + qrOutput + '\n')
-            }
-          } catch (e) {
-            // 未安装依赖时给出友情提示
-            logger.info(
-              pc.dim(
-                '提示: 安装 qrcode-terminal 可显示访问地址二维码（在 packages/launcher 执行：pnpm add qrcode-terminal -D）'
-              )
-            )
-          }
-        }
+      // 仅保留错误监听，避免递归日志
+      launcher.onError((error) => {
+        logger.error('开发服务器错误', { error: error.message })
       })
 
       function renderServerBanner(
@@ -285,6 +245,45 @@ export class DevCommand implements CliCommandDefinition {
 
       // 启动开发服务器
       await launcher.startDev()
+
+      // 启动成功后，输出美化的地址信息与二维码
+      const serverInfo = launcher.getServerInfo()
+      if (serverInfo) {
+        const localUrl = serverInfo.url || ''
+        const hasNetwork = serverInfo.host === '0.0.0.0' && !!serverInfo.url
+        const networkUrl = hasNetwork ? localUrl.replace('0.0.0.0', getLocalIP()) : null
+
+        const title = '开发服务器已启动'
+        const entries: Array<{ label: string; value: string }> = [
+          { label: '本地', value: localUrl }
+        ]
+        if (networkUrl) entries.push({ label: '网络', value: networkUrl })
+
+        const boxLines = renderServerBanner(title, entries)
+        for (const line of boxLines) logger.info(line)
+
+        const qrTarget = (networkUrl || localUrl)
+        try {
+          if (!qrTarget) throw new Error('empty-url')
+          const mod: any = await import('qrcode-terminal')
+          const qrt = mod?.default || mod
+          let qrOutput = ''
+          qrt.generate(qrTarget, { small: true }, (q: string) => {
+            qrOutput = q
+          })
+
+          if (qrOutput) {
+            logger.info(pc.dim('二维码（扫码在手机上打开）：'))
+            console.log('\n' + qrOutput + '\n')
+          }
+        } catch {
+          logger.info(
+            pc.dim(
+              '提示: 安装 qrcode-terminal 可显示访问地址二维码（在 packages/launcher 执行：pnpm add qrcode-terminal -D）'
+            )
+          )
+        }
+      }
 
       // 保持进程运行
       await new Promise(() => { }) // 永远等待，直到收到退出信号
