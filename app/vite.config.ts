@@ -83,6 +83,11 @@ export default defineConfig({
     host: true,
     hmr: {
       overlay: true
+    },
+    headers: {
+      'Cache-Control': 'no-store',
+      'Pragma': 'no-cache',
+      'Expires': '0'
     }
   },
   build: {
