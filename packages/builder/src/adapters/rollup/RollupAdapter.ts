@@ -274,87 +274,143 @@ export class RollupAdapter implements IBundlerAdapter {
 
     // 转换输出配置
     if (config.output) {
-      const outputConfig = config.output
+      const outputConfig = config.output as any
 
+      // 优先处理对象化的输出配置（output.esm / output.cjs / output.umd）
+      if (outputConfig.esm || outputConfig.cjs || outputConfig.umd) {
+        const configs: any[] = []
+
+        if (outputConfig.esm) {
+          const esmDir = outputConfig.esm.dir || 'es'
+          const esmPlugins = await this.transformPluginsForFormat(config.plugins || [], esmDir, { emitDts: true })
+          configs.push({
+            input: config.input,
+            external: config.external,
+            plugins: [...basePlugins, ...esmPlugins],
+            output: {
+              dir: esmDir,
+              format: 'es',
+              sourcemap: outputConfig.esm.sourcemap ?? outputConfig.sourcemap,
+              entryFileNames: '[name].js',
+              chunkFileNames: '[name].js',
+              exports: outputConfig.esm.exports ?? 'auto',
+              preserveModules: true,
+              preserveModulesRoot: 'src',
+              globals: outputConfig.globals,
+              name: outputConfig.name,
+            },
+            treeshake: config.treeshake
+          })
+        }
+
+        if (outputConfig.cjs) {
+          const cjsDir = outputConfig.cjs.dir || 'cjs'
+          const cjsPlugins = await this.transformPluginsForFormat(config.plugins || [], cjsDir, { emitDts: true })
+          configs.push({
+            input: config.input,
+            external: config.external,
+            plugins: [...basePlugins, ...cjsPlugins],
+            output: {
+              dir: cjsDir,
+              format: 'cjs',
+              sourcemap: outputConfig.cjs.sourcemap ?? outputConfig.sourcemap,
+              entryFileNames: '[name].cjs',
+              chunkFileNames: '[name].cjs',
+              exports: outputConfig.cjs.exports ?? 'auto',
+              preserveModules: true,
+              preserveModulesRoot: 'src',
+              globals: outputConfig.globals,
+              name: outputConfig.name,
+            },
+            treeshake: config.treeshake
+          })
+        }
+
+        if (outputConfig.umd || (config as any).umd) {
+          const umdCfg = await this.createUMDConfig(config)
+          configs.push(umdCfg)
+        }
+
+        // 如果未声明 umd，但存在 src/index-lib.ts 也自动加上
+        if (!outputConfig.umd && !(config as any).umd) {
+          const fs = await import('fs')
+          const path = await import('path')
+          const projectRoot = (config as any).root || (config as any).cwd || process.cwd()
+          const hasIndexLib = fs.existsSync(path.resolve(projectRoot, 'src/index-lib.ts')) || fs.existsSync(path.resolve(projectRoot, 'src/index-lib.js'))
+          if (hasIndexLib) {
+            const umdCfg = await this.createUMDConfig(config)
+            configs.push(umdCfg)
+          }
+        }
+
+        if (configs.length > 0) {
+          this.multiConfigs = configs
+          return configs[0]
+        }
+        // 如果没有任何子配置，则回退到单一输出逻辑
+      }
+
+      // 处理数组或者单一 format 字段
       // 处理多格式输出
       if (Array.isArray(outputConfig.format)) {
-        // 检查是否为多入口构建
+        // 原有多格式逻辑（略微精简），同上
         const isMultiEntry = this.isMultiEntryBuild(config.input)
-
-        // 处理 UMD 格式的特殊逻辑
         let formats = outputConfig.format
         let umdConfig: any = null
 
         if (isMultiEntry) {
           const originalFormats = [...formats]
-
-          // 检查是否有 UMD 配置且强制启用
           const hasUMD = formats.includes('umd')
           const forceUMD = (config as any).umd?.forceMultiEntry || false
           const umdEnabled = (config as any).umd?.enabled
-
           this.logger.info(`多入口项目UMD检查: hasUMD=${hasUMD}, forceUMD=${forceUMD}, umdEnabled=${umdEnabled}`)
 
           if (hasUMD && forceUMD) {
-            // 保留 UMD 格式，但使用特殊的入口配置
             umdConfig = await this.createUMDConfig(config)
             this.logger.info('多入口项目强制启用 UMD 构建')
           } else if (hasUMD) {
-            // 正常情况下过滤 UMD 格式
-            formats = formats.filter(format => format !== 'umd' && format !== 'iife')
-
-            // 但如果启用了 UMD 配置，仍然创建 UMD 构建
+            formats = formats.filter((format: any) => format !== 'umd' && format !== 'iife')
             if ((config as any).umd?.enabled !== false) {
               umdConfig = await this.createUMDConfig(config)
               this.logger.info('为多入口项目创建独立的 UMD 构建')
             }
           } else {
-            // 即使没有在format中指定umd，也检查umd配置
             if ((config as any).umd?.enabled) {
               umdConfig = await this.createUMDConfig(config)
               this.logger.info('根据UMD配置为多入口项目创建 UMD 构建')
             }
-            formats = formats.filter(format => format !== 'umd' && format !== 'iife')
+            formats = formats.filter((format: any) => format !== 'umd' && format !== 'iife')
           }
 
-          // 如果过滤了格式，记录警告
-          const filteredFormats = originalFormats.filter(format => !formats.includes(format))
+          const filteredFormats = originalFormats.filter((format: any) => !formats.includes(format))
           if (filteredFormats.length > 0 && !umdConfig) {
             this.logger.warn(`多入口构建不支持 ${filteredFormats.join(', ')} 格式，已自动过滤`)
           }
         } else {
-        // 单入口项目，检查是否需要创建 UMD 构建
-        const hasUmdSection = Boolean((config as any).umd || (config as any).output?.umd)
-        const fs = await import('fs')
-        const path = await import('path')
-        const projectRoot = (config as any).root || (config as any).cwd || process.cwd()
-        const hasIndexLib = fs.existsSync(path.resolve(projectRoot, 'src/index-lib.ts')) || fs.existsSync(path.resolve(projectRoot, 'src/index-lib.js'))
-        if (formats.includes('umd') || (config as any).umd?.enabled || hasUmdSection || hasIndexLib) {
-          umdConfig = await this.createUMDConfig(config)
-        }
-        // 统一过滤 UMD/IIFE，让 UMD 独立通过 createUMDConfig 生成
-        formats = formats.filter(f => f !== 'umd' && f !== 'iife')
+          const hasUmdSection = Boolean((config as any).umd || (config as any).output?.umd)
+          const fs = await import('fs')
+          const path = await import('path')
+          const projectRoot = (config as any).root || (config as any).cwd || process.cwd()
+          const hasIndexLib = fs.existsSync(path.resolve(projectRoot, 'src/index-lib.ts')) || fs.existsSync(path.resolve(projectRoot, 'src/index-lib.js'))
+          if (formats.includes('umd') || (config as any).umd?.enabled || hasUmdSection || hasIndexLib) {
+            umdConfig = await this.createUMDConfig(config)
+          }
+          formats = formats.filter((f: any) => f !== 'umd' && f !== 'iife')
         }
 
-        // 为多格式输出创建多个配置
-        const configs = []
-
+        const configs: any[] = []
         for (const format of formats) {
           const mapped = this.mapFormat(format)
           const isESM = format === 'esm'
           const isCJS = format === 'cjs'
-
           const dir = isESM ? 'es' : isCJS ? 'cjs' : 'dist'
-          const entryFileNames = isESM
-            ? '[name].js'
-            : isCJS
-              ? '[name].cjs'
-              : '[name].umd.js'
+          const entryFileNames = isESM ? '[name].js' : isCJS ? '[name].cjs' : '[name].umd.js'
           const chunkFileNames = entryFileNames
-
-          // 为每个格式创建独立的插件配置
-          const formatPlugins = await this.transformPluginsForFormat(config.plugins || [], dir)
-
+          const formatPlugins = await this.transformPluginsForFormat(config.plugins || [], dir, { emitDts: true })
+          try {
+            const names = [...(formatPlugins || [])].map((p: any) => p?.name || '(anon)')
+            this.logger.info(`[${format}] 有效插件: ${names.join(', ')}`)
+          } catch {}
           configs.push({
             input: config.input,
             external: config.external,
@@ -374,31 +430,22 @@ export class RollupAdapter implements IBundlerAdapter {
             treeshake: config.treeshake
           })
         }
-
-        // 如果有 UMD 配置，添加到配置列表中
-        if (umdConfig) {
-          configs.push(umdConfig)
-        }
-
-        // 返回第一个配置，但保存所有配置供后续使用
+        if (umdConfig) configs.push(umdConfig)
         this.multiConfigs = configs
-        return configs[0] as any
+        return configs[0]
       } else {
         const format = (outputConfig as any).format
         const mapped = this.mapFormat(format)
         const isESM = format === 'esm'
         const isCJS = format === 'cjs'
         const dir = isESM ? 'es' : isCJS ? 'cjs' : 'dist'
-        const entryFileNames = isESM
-          ? '[name].js'
-          : isCJS
-            ? '[name].cjs'
-            : '[name].umd.js'
+        const entryFileNames = isESM ? '[name].js' : isCJS ? '[name].cjs' : '[name].umd.js'
         const chunkFileNames = entryFileNames
-
-        // 为单格式输出创建插件配置
-        const userPlugins = await this.transformPluginsForFormat(config.plugins || [], dir)
-
+        const userPlugins = await this.transformPluginsForFormat(config.plugins || [], dir, { emitDts: true })
+        try {
+          const names = [...(userPlugins || [])].map((p: any) => p?.name || '(anon)')
+          this.logger.info(`[${format}] 有效插件: ${names.join(', ')}`)
+        } catch {}
         rollupConfig.plugins = [...basePlugins, ...userPlugins]
         rollupConfig.output = {
           dir,
@@ -455,15 +502,28 @@ export class RollupAdapter implements IBundlerAdapter {
   /**
    * 为特定格式转换插件，动态设置TypeScript插件的declarationDir
    */
-  async transformPluginsForFormat(plugins: any[], outputDir: string): Promise<BundlerSpecificPlugin[]> {
+  async transformPluginsForFormat(plugins: any[], outputDir: string, options?: { emitDts?: boolean }): Promise<BundlerSpecificPlugin[]> {
+    const { emitDts = true } = options || {}
     const transformedPlugins: BundlerSpecificPlugin[] = []
 
     for (const plugin of plugins) {
       try {
+        const pluginName: string = (plugin && (plugin.name || plugin?.rollup?.name)) || ''
+        const nameLc = String(pluginName).toLowerCase()
+
+        // 当明确不需要 d.ts（例如 UMD/IIFE）时，跳过所有 typescript/dts 相关插件（无论是包装器还是已实例化的插件）
+        if (!emitDts && (nameLc.includes('typescript') || nameLc.includes('dts'))) {
+          continue
+        }
+
         // 如果插件有 plugin 函数，调用它来获取实际插件
         if (plugin.plugin && typeof plugin.plugin === 'function') {
-          // 如果是TypeScript插件，需要特殊处理
-          if (plugin.name === 'typescript') {
+          // 如果是TypeScript插件，需要特殊处理（为 ESM/CJS 定向声明输出目录）
+          if (nameLc === 'typescript') {
+            if (!emitDts) {
+              // 已在上方统一拦截，这里双重防御
+              continue
+            }
             // 重新创建TypeScript插件，设置正确的declarationDir
             const typescript = await import('@rollup/plugin-typescript')
 
@@ -494,7 +554,7 @@ export class RollupAdapter implements IBundlerAdapter {
                 emitDeclarationOnly: true,
                 declarationDir: outputDir,
                 outDir: outputDir,
-                // 确保 .d.ts 不再带有 src 目录层级
+                // 避免 @rollup/plugin-typescript 在缺少 tsconfig 时的根目录推断失败
                 rootDir: (origCO as any)?.rootDir ?? 'src'
               }
             })
@@ -508,10 +568,20 @@ export class RollupAdapter implements IBundlerAdapter {
         }
         // 如果插件有 rollup 特定配置，使用它
         else if (plugin.rollup) {
+          // UMD/IIFE 禁止 d.ts 相关插件
+          const rnameLc = String(plugin.rollup.name || '').toLowerCase()
+          if (!emitDts && (rnameLc.includes('typescript') || rnameLc.includes('dts'))) {
+            continue
+          }
           transformedPlugins.push({ ...plugin, ...plugin.rollup })
         }
-        // 直接使用插件
+        // 直接使用已实例化的插件
         else {
+          // UMD/IIFE 禁止 d.ts 相关插件
+          const inameLc = String((plugin as any)?.name || '').toLowerCase()
+          if (!emitDts && (inameLc.includes('typescript') || inameLc.includes('dts'))) {
+            continue
+          }
           transformedPlugins.push(plugin)
         }
       } catch (error) {
@@ -847,7 +917,13 @@ export class RollupAdapter implements IBundlerAdapter {
 
     // 创建 UMD 构建配置
     const basePlugins = await this.getBasePlugins(config)
-    const userPlugins = await this.transformPluginsForFormat(config.plugins || [], (umdSection.dir || 'dist'))
+    const userPlugins = await this.transformPluginsForFormat(config.plugins || [], (umdSection.dir || 'dist'), { emitDts: false })
+
+    // 调试：打印 UMD 插件列表，确认没有 typescript/dts 插件
+    try {
+      const names = [...(userPlugins || [])].map((p: any) => p?.name || '(anon)')
+      this.logger.info(`[UMD] 有效插件: ${names.join(', ')}`)
+    } catch {}
 
     // 应用 Banner 和 Footer 配置
     const bannerConfig = (config as any).banner || {}
@@ -886,10 +962,8 @@ export class RollupAdapter implements IBundlerAdapter {
     }
 
     // 根据入口自动推断默认 UMD 文件名
-    const defaultUmdFile = (() => {
-      const base = path.basename(umdEntry).replace(/\.(m?ts|m?js|tsx|jsx)$/i, '')
-      return `${base}.umd.js`
-    })()
+    const defaultUmdFile = 'index.js'
+
 
     return {
       input: umdEntry,
