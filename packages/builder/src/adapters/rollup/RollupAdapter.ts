@@ -489,8 +489,8 @@ export class RollupAdapter implements IBundlerAdapter {
                 emitDeclarationOnly: true,
                 declarationDir: outputDir,
                 outDir: outputDir,
-                // 避免 @rollup/plugin-typescript 在缺少 tsconfig 时的根目录推断失败
-                rootDir: (origCO as any)?.rootDir ?? '.'
+                // 确保 .d.ts 不再带有 src 目录层级
+                rootDir: (origCO as any)?.rootDir ?? 'src'
               }
             })
 
@@ -797,27 +797,34 @@ export class RollupAdapter implements IBundlerAdapter {
     const outputConfig = config.output || {}
 
     // 确定 UMD 入口文件
-    let umdEntry = umdConfig.entry || (typeof config.input === 'string' ? config.input : 'src/index.ts')
-
-    // 如果入口文件不存在，尝试其他常见的入口文件
     const fs = await import('fs')
     const path = await import('path')
 
-    const possibleEntries = [
-      umdEntry,
+    let umdEntry = umdConfig.entry || (typeof config.input === 'string' ? config.input : undefined)
+
+    // 如果未显式指定，优先使用 src/index-lib.ts，其次常见入口
+    const candidates = [
+      'src/index-lib.ts',
+      'src/index-lib.js',
+      umdEntry as string,
       'src/index.ts',
       'src/index.js',
       'src/main.ts',
       'src/main.js',
       'index.ts',
       'index.js'
-    ]
+    ].filter(Boolean) as string[]
 
-    for (const entry of possibleEntries) {
+    for (const entry of candidates) {
       if (fs.existsSync(path.resolve(process.cwd(), entry))) {
         umdEntry = entry
         break
       }
+    }
+
+    if (!umdEntry) {
+      // 兜底：仍然使用 src/index.ts
+      umdEntry = 'src/index.ts'
     }
 
     // 确定 UMD 全局变量名
@@ -872,6 +879,12 @@ export class RollupAdapter implements IBundlerAdapter {
       ...(umdConfig.globals || {})
     }
 
+    // 根据入口自动推断默认 UMD 文件名
+    const defaultUmdFile = (() => {
+      const base = path.basename(umdEntry).replace(/\.(m?ts|m?js|tsx|jsx)$/i, '')
+      return `${base}.umd.js`
+    })()
+
     return {
       input: umdEntry,
       external: config.external,
@@ -879,7 +892,7 @@ export class RollupAdapter implements IBundlerAdapter {
       output: {
         format: 'umd',
         name: umdName,
-        file: `dist/${umdConfig.fileName || 'index.umd.js'}`,
+        file: `dist/${umdConfig.fileName || defaultUmdFile}`,
         sourcemap: outputConfig.sourcemap,
         globals: mergedGlobals,
         exports: 'auto',
