@@ -323,12 +323,17 @@ export class RollupAdapter implements IBundlerAdapter {
             this.logger.warn(`多入口构建不支持 ${filteredFormats.join(', ')} 格式，已自动过滤`)
           }
         } else {
-          // 单入口项目，检查是否需要创建 UMD 构建
-          if (formats.includes('umd') || (config as any).umd?.enabled) {
-            umdConfig = await this.createUMDConfig(config)
-          }
-          // 统一过滤 UMD/IIFE，让 UMD 独立通过 createUMDConfig 生成
-          formats = formats.filter(f => f !== 'umd' && f !== 'iife')
+        // 单入口项目，检查是否需要创建 UMD 构建
+        const hasUmdSection = Boolean((config as any).umd || (config as any).output?.umd)
+        const fs = await import('fs')
+        const path = await import('path')
+        const projectRoot = (config as any).root || (config as any).cwd || process.cwd()
+        const hasIndexLib = fs.existsSync(path.resolve(projectRoot, 'src/index-lib.ts')) || fs.existsSync(path.resolve(projectRoot, 'src/index-lib.js'))
+        if (formats.includes('umd') || (config as any).umd?.enabled || hasUmdSection || hasIndexLib) {
+          umdConfig = await this.createUMDConfig(config)
+        }
+        // 统一过滤 UMD/IIFE，让 UMD 独立通过 createUMDConfig 生成
+        formats = formats.filter(f => f !== 'umd' && f !== 'iife')
         }
 
         // 为多格式输出创建多个配置
@@ -793,14 +798,14 @@ export class RollupAdapter implements IBundlerAdapter {
    * 创建 UMD 配置
    */
   private async createUMDConfig(config: UnifiedConfig): Promise<any> {
-    const umdConfig = (config as any).umd || {}
+    const umdSection = (config as any).umd || (config as any).output?.umd || {}
     const outputConfig = config.output || {}
 
     // 确定 UMD 入口文件
     const fs = await import('fs')
     const path = await import('path')
 
-    let umdEntry = umdConfig.entry || (typeof config.input === 'string' ? config.input : undefined)
+    let umdEntry = umdSection.entry || umdSection.input || (typeof config.input === 'string' ? config.input : undefined)
 
     // 如果未显式指定，优先使用 src/index-lib.ts，其次常见入口
     const candidates = [
@@ -815,8 +820,9 @@ export class RollupAdapter implements IBundlerAdapter {
       'index.js'
     ].filter(Boolean) as string[]
 
+    const projectRoot = (config as any).root || (config as any).cwd || process.cwd()
     for (const entry of candidates) {
-      if (fs.existsSync(path.resolve(process.cwd(), entry))) {
+      if (fs.existsSync(path.resolve(projectRoot, entry))) {
         umdEntry = entry
         break
       }
@@ -828,7 +834,7 @@ export class RollupAdapter implements IBundlerAdapter {
     }
 
     // 确定 UMD 全局变量名
-    let umdName = umdConfig.name || outputConfig.name
+    let umdName = umdSection.name || outputConfig.name
     if (!umdName) {
       // 尝试从 package.json 推断
       try {
@@ -841,7 +847,7 @@ export class RollupAdapter implements IBundlerAdapter {
 
     // 创建 UMD 构建配置
     const basePlugins = await this.getBasePlugins(config)
-    const userPlugins = await this.transformPluginsForFormat(config.plugins || [], 'dist')
+    const userPlugins = await this.transformPluginsForFormat(config.plugins || [], (umdSection.dir || 'dist'))
 
     // 应用 Banner 和 Footer 配置
     const bannerConfig = (config as any).banner || {}
@@ -876,7 +882,7 @@ export class RollupAdapter implements IBundlerAdapter {
     const mergedGlobals = {
       ...defaultGlobals,
       ...(outputConfig.globals || {}),
-      ...(umdConfig.globals || {})
+      ...(umdSection.globals || {})
     }
 
     // 根据入口自动推断默认 UMD 文件名
@@ -892,8 +898,8 @@ export class RollupAdapter implements IBundlerAdapter {
       output: {
         format: 'umd',
         name: umdName,
-        file: `dist/${umdConfig.fileName || defaultUmdFile}`,
-        sourcemap: outputConfig.sourcemap,
+        file: `${umdSection.dir || 'dist'}/${umdSection.fileName || defaultUmdFile}`,
+        sourcemap: (umdSection.sourcemap ?? outputConfig.sourcemap),
         globals: mergedGlobals,
         exports: 'auto',
         banner,
