@@ -20,10 +20,16 @@ export default defineConfig({
     },
   },
 
+  // 环境变量配置
+  define: {
+    // 为浏览器环境提供 process.env 的基本支持
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+  },
+
   // 路径别名配置
   resolve: {
     alias: {
-      '@ldesign/chart': resolve(__dirname, '../../src/index.ts'),
+      '@ldesign/chart': resolve(__dirname, '../../src'),
       '@': resolve(__dirname, 'src'),
     },
   },

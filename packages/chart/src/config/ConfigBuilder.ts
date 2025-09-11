@@ -62,6 +62,16 @@ export class ConfigBuilder {
     }
 
     // 构建系列
+    console.log('ConfigBuilder: 原始 series 数据:', data.series)
+
+    // 验证 series 数据
+    data.series.forEach((series, index) => {
+      if (!series.type) {
+        console.error(`ConfigBuilder: series[${index}] 的 type 为 undefined:`, series)
+        throw new Error(`series[${index}] 的 type 不能为 undefined`)
+      }
+    })
+
     option.series = data.series
 
     // 构建动画

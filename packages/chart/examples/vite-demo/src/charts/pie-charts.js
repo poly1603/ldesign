@@ -168,6 +168,13 @@ export async function initPieCharts(appState) {
   `
 
   try {
+    // 等待DOM完全渲染
+    await new Promise(resolve => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(resolve)
+      })
+    })
+
     const charts = await Promise.all([
       createBasicPieChart(),
       createDonutChart()

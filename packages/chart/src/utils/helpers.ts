@@ -64,7 +64,11 @@ export function validateData(data: any): boolean {
     // 简单数据格式验证
     // 在测试环境中允许空数组
     if (data.length === 0) {
-      return process?.env?.NODE_ENV === 'test' || typeof window === 'undefined'
+      // 使用安全的环境检测，避免在浏览器中访问 process 对象
+      const isTestEnv = typeof window === 'undefined' ||
+        (typeof import.meta !== 'undefined' && import.meta.env?.NODE_ENV === 'test') ||
+        (typeof globalThis !== 'undefined' && globalThis.__VITEST__)
+      return isTestEnv
     }
     return data.every(validateDataPoint)
   } else if (typeof data === 'object') {
@@ -74,7 +78,11 @@ export function validateData(data: any): boolean {
     }
     // 在测试环境中允许空系列
     if (data.series.length === 0) {
-      return process?.env?.NODE_ENV === 'test' || typeof window === 'undefined'
+      // 使用安全的环境检测，避免在浏览器中访问 process 对象
+      const isTestEnv = typeof window === 'undefined' ||
+        (typeof import.meta !== 'undefined' && import.meta.env?.NODE_ENV === 'test') ||
+        (typeof globalThis !== 'undefined' && globalThis.__VITEST__)
+      return isTestEnv
     }
     return data.series.every(validateDataSeries)
   }
@@ -365,7 +373,18 @@ export function safeExecute<T>(
  * @returns 是否为开发环境
  */
 export function isDevelopment(): boolean {
-  return process.env.NODE_ENV === 'development'
+  // 安全的环境检测，避免在浏览器中访问 process 对象
+  if (typeof process !== 'undefined' && process.env) {
+    return process.env.NODE_ENV === 'development'
+  }
+
+  // 浏览器环境中使用 import.meta.env
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    return import.meta.env.NODE_ENV === 'development'
+  }
+
+  // 默认为非开发环境
+  return false
 }
 
 /**

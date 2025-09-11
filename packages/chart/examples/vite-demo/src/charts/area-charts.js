@@ -200,6 +200,13 @@ export async function initAreaCharts(appState) {
   `
 
   try {
+    // 等待DOM完全渲染
+    await new Promise(resolve => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(resolve)
+      })
+    })
+
     const charts = await Promise.all([
       createBasicAreaChart(),
       createStackedAreaChart()

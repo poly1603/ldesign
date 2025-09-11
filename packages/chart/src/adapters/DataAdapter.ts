@@ -69,9 +69,15 @@ export class DataAdapter {
       return item.value
     })
 
+    const mappedType = CHART_TYPE_MAPPING[chartType]
+    if (!mappedType) {
+      console.error('未知的图表类型:', chartType, '可用类型:', Object.keys(CHART_TYPE_MAPPING))
+      throw new Error(`不支持的图表类型: ${chartType}`)
+    }
+
     const series = [{
       name: '数据',
-      type: CHART_TYPE_MAPPING[chartType],
+      type: mappedType,
       data: values,
     }]
 
@@ -102,9 +108,17 @@ export class DataAdapter {
   ): AdaptedData {
     const categories = data.categories || []
     const series = data.series.map(seriesItem => {
+      const seriesType = seriesItem.type as ChartType || chartType
+      const mappedType = CHART_TYPE_MAPPING[seriesType]
+
+      if (!mappedType) {
+        console.error('未知的系列类型:', seriesType, '原始类型:', seriesItem.type, '图表类型:', chartType, '可用类型:', Object.keys(CHART_TYPE_MAPPING))
+        throw new Error(`不支持的系列类型: ${seriesType}`)
+      }
+
       const adaptedSeries = {
         name: seriesItem.name,
-        type: seriesItem.type ? CHART_TYPE_MAPPING[seriesItem.type as ChartType] : CHART_TYPE_MAPPING[chartType],
+        type: mappedType,
         data: seriesItem.data,
         ...this._extractSeriesProperties(seriesItem),
       }
@@ -182,7 +196,10 @@ export class DataAdapter {
   private _validateComplexData(data: { categories?: string[]; series: DataSeries[] }): void {
     if (!data.series || !Array.isArray(data.series) || data.series.length === 0) {
       // 在测试环境中允许空数据
-      if (process?.env?.NODE_ENV === 'test' || typeof window === 'undefined') {
+      const isTestEnv = typeof window === 'undefined' ||
+        (typeof import.meta !== 'undefined' && import.meta.env?.NODE_ENV === 'test') ||
+        (typeof globalThis !== 'undefined' && globalThis.__VITEST__)
+      if (isTestEnv) {
         return
       }
       throw new Error('数据不能为空')

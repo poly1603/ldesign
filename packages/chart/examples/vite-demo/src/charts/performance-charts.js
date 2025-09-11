@@ -178,9 +178,14 @@ function createRealTimeChart() {
     const container = document.getElementById('realtime-chart')
     if (!container) return null
 
+    // 初始化一些数据点，避免空数据验证失败
+    const initialData = [
+      { name: '0', value: 0 }
+    ]
+
     const chart = new Chart(container, {
       type: 'line',
-      data: [],
+      data: initialData,
       title: '实时数据图表',
       theme: 'light',
       responsive: true,
@@ -281,6 +286,13 @@ export async function initPerformanceCharts(appState) {
   `
 
   try {
+    // 等待DOM完全渲染
+    await new Promise(resolve => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(resolve)
+      })
+    })
+
     const charts = await Promise.all([
       createLargeDataChart(),
       createRealTimeChart()

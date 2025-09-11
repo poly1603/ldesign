@@ -315,6 +315,13 @@ export async function initLineCharts(appState) {
   `
 
   try {
+    // 等待DOM完全渲染
+    await new Promise(resolve => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(resolve)
+      })
+    })
+
     // 创建所有图表
     const charts = await Promise.all([
       createBasicLineChart(),

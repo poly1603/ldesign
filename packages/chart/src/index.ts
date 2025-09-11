@@ -287,11 +287,22 @@ export interface GlobalConfig {
 /**
  * 全局配置对象
  */
+// 安全的环境检测函数
+function isDevelopmentEnv(): boolean {
+  if (typeof process !== 'undefined' && process.env) {
+    return process.env.NODE_ENV === 'development'
+  }
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    return import.meta.env.NODE_ENV === 'development'
+  }
+  return false
+}
+
 let globalConfig: GlobalConfig = {
   defaultTheme: 'light',
   defaultAnimationDuration: 300,
   defaultDebounceDelay: 300,
-  development: process.env.NODE_ENV === 'development',
+  development: isDevelopmentEnv(),
 }
 
 /**
@@ -318,6 +329,6 @@ export function resetGlobalConfig(): void {
     defaultTheme: 'light',
     defaultAnimationDuration: 300,
     defaultDebounceDelay: 300,
-    development: process.env.NODE_ENV === 'development',
+    development: isDevelopmentEnv(),
   }
 }

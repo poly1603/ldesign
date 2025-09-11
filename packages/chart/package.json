@@ -17,16 +17,16 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.cjs"
+      "types": "./es/packages/chart/src/index.d.ts",
+      "import": "./es/packages/chart/src/index.js",
+      "require": "./cjs/packages/chart/src/index.cjs"
     },
     "./themes": {
-      "types": "./dist/themes/index.d.ts",
-      "import": "./dist/esm/themes/index.js",
-      "require": "./dist/cjs/themes/index.cjs"
+      "types": "./es/packages/chart/src/themes/index.d.ts",
+      "import": "./es/packages/chart/src/themes/index.js",
+      "require": "./cjs/packages/chart/src/themes/index.cjs"
     },
-    "./style.css": "./dist/index.css"
+    "./style.css": "./es/packages/chart/src/index.css"
   },
   "main": "dist/cjs/index.cjs",
   "module": "dist/esm/index.js",

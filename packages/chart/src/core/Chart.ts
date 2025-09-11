@@ -120,16 +120,23 @@ export class Chart implements ChartInstance {
    * @param config - 图表配置
    */
   constructor(container: HTMLElement | string, config: ChartConfig) {
+    console.log('创建 Chart 实例，配置:', config)
+
     // 验证和获取容器元素
     this._container = this._resolveContainer(container)
+    console.log('容器元素:', this._container)
 
     // 验证配置
     if (!validateConfig(config)) {
+      console.error('配置验证失败:', config)
       throw new Error(ERROR_MESSAGES.INVALID_CONFIG)
     }
 
+    console.log('配置验证通过')
+
     // 合并默认配置
     this._config = mergeWithDefaults(config, config.type)
+    console.log('合并后的配置:', this._config)
 
     // 初始化管理器
     this._dataAdapter = ChartFactory.getAdapter(this._config.type)
@@ -138,11 +145,16 @@ export class Chart implements ChartInstance {
     this._eventManager = new EventManager()
     this._exportManager = new ExportManager()
 
+    console.log('管理器初始化完成')
+
     // 初始化性能和内存管理器
     this._initPerformanceManager()
     this._initMemoryManager()
 
+    console.log('性能和内存管理器初始化完成')
+
     // 初始化图表
+    console.log('开始初始化图表...')
     this._init()
   }
 
@@ -688,18 +700,35 @@ export class Chart implements ChartInstance {
    * 确保容器已经有正确的尺寸后再初始化 ECharts
    */
   private _delayedInit(): void {
-    // 在测试环境中直接初始化，不使用 requestAnimationFrame
-    if (typeof window === 'undefined' || process?.env?.NODE_ENV === 'test') {
+    console.log('开始延迟初始化...')
+
+    // 在测试环境或服务端渲染环境中直接初始化，不使用 requestAnimationFrame
+    // 使用安全的环境检测，避免在浏览器中访问 process 对象
+    const isTestEnv = typeof window === 'undefined' ||
+      (typeof import.meta !== 'undefined' && import.meta.env?.NODE_ENV === 'test') ||
+      (typeof globalThis !== 'undefined' && globalThis.__VITEST__)
+
+    console.log('是否为测试环境:', isTestEnv)
+
+    if (isTestEnv) {
+      console.log('测试环境，直接初始化')
       this._initEChartsAndRender()
       return
     }
 
+    console.log('浏览器环境，使用 requestAnimationFrame')
     // 使用 requestAnimationFrame 确保 DOM 渲染完成
     requestAnimationFrame(() => {
+      console.log('requestAnimationFrame 回调执行')
       // 检查容器是否有有效尺寸
-      if (this._hasValidContainerSize()) {
+      const hasValidSize = this._hasValidContainerSize()
+      console.log('容器是否有有效尺寸:', hasValidSize)
+
+      if (hasValidSize) {
+        console.log('容器尺寸有效，直接初始化 ECharts')
         this._initEChartsAndRender()
       } else {
+        console.log('容器尺寸无效，等待有效尺寸')
         // 如果容器尺寸无效，使用 ResizeObserver 或定时器等待
         this._waitForValidSize()
       }
@@ -713,19 +742,27 @@ export class Chart implements ChartInstance {
     const rect = this._container.getBoundingClientRect()
     const hasSize = rect.width > 0 && rect.height > 0
 
+    console.log('检查容器尺寸:')
+    console.log('  getBoundingClientRect:', rect.width, 'x', rect.height)
+    console.log('  offsetWidth/Height:', this._container.offsetWidth, 'x', this._container.offsetHeight)
+    console.log('  clientWidth/Height:', this._container.clientWidth, 'x', this._container.clientHeight)
+
     // 如果没有尺寸，检查是否有 CSS 样式设置的尺寸
     if (!hasSize && typeof window !== 'undefined') {
       try {
         const computedStyle = window.getComputedStyle(this._container)
         const cssWidth = parseFloat(computedStyle.width)
         const cssHeight = parseFloat(computedStyle.height)
+        console.log('  CSS 样式尺寸:', cssWidth, 'x', cssHeight)
         return cssWidth > 0 && cssHeight > 0
       } catch (error) {
         // 在测试环境中可能无法访问 getComputedStyle
+        console.log('  无法获取 CSS 样式:', error)
         return false
       }
     }
 
+    console.log('  最终结果:', hasSize)
     return hasSize
   }
 
@@ -734,7 +771,11 @@ export class Chart implements ChartInstance {
    */
   private _waitForValidSize(): void {
     // 在测试环境中直接强制初始化
-    if (typeof window === 'undefined' || process?.env?.NODE_ENV === 'test') {
+    // 使用安全的环境检测，避免在浏览器中访问 process 对象
+    const isTestEnv = typeof window === 'undefined' ||
+      (typeof import.meta !== 'undefined' && import.meta.env?.NODE_ENV === 'test') ||
+      (typeof globalThis !== 'undefined' && globalThis.__VITEST__)
+    if (isTestEnv) {
       this._forceInitWithDefaultSize()
       return
     }
@@ -868,21 +909,31 @@ export class Chart implements ChartInstance {
    */
   private _initECharts(): void {
     try {
+      console.log('开始初始化 ECharts 实例...')
+
       // 确保容器有有效尺寸
       this._ensureContainerSize()
+
+      const rect = this._container.getBoundingClientRect()
+      console.log('容器尺寸:', rect.width, 'x', rect.height)
 
       // 获取主题配置
       const themeConfig = typeof this._config.theme === 'string'
         ? this._themeManager.getEChartsTheme(this._config.theme)
         : undefined
 
+      console.log('主题配置:', themeConfig)
+
       // 初始化 ECharts 实例
+      console.log('调用 echarts.init...')
       this._echarts = echarts.init(this._container, themeConfig, {
         width: this._container.offsetWidth || undefined,
         height: this._container.offsetHeight || undefined,
         renderer: 'canvas', // 明确指定渲染器
         useDirtyRect: true, // 启用脏矩形优化
       })
+
+      console.log('ECharts 实例创建成功:', !!this._echarts)
 
       // 绑定事件管理器
       this._eventManager.setECharts(this._echarts)
@@ -894,6 +945,7 @@ export class Chart implements ChartInstance {
 
     } catch (error) {
       console.error('ECharts 初始化失败:', error)
+      console.error('错误详情:', error.message, error.stack)
       throw new Error(ERROR_MESSAGES.ECHARTS_NOT_FOUND)
     }
   }
@@ -907,7 +959,11 @@ export class Chart implements ChartInstance {
     // 如果容器没有尺寸，尝试设置默认尺寸
     if (rect.width === 0 || rect.height === 0) {
       // 在测试环境中直接设置默认尺寸
-      if (typeof window === 'undefined' || process?.env?.NODE_ENV === 'test') {
+      // 使用安全的环境检测，避免在浏览器中访问 process 对象
+      const isTestEnv = typeof window === 'undefined' ||
+        (typeof import.meta !== 'undefined' && import.meta.env?.NODE_ENV === 'test') ||
+        (typeof globalThis !== 'undefined' && globalThis.__VITEST__)
+      if (isTestEnv) {
         this._container.style.width = this._config.size?.width
           ? (typeof this._config.size.width === 'number'
             ? `${this._config.size.width}px`
@@ -1003,7 +1059,12 @@ export class Chart implements ChartInstance {
     if (!this._echarts) return
 
     // 在测试环境中跳过渲染后检查
-    if (typeof window === 'undefined' || process?.env?.NODE_ENV === 'test') {
+    // 使用安全的环境检测，避免在浏览器中访问 process 对象
+    const isTestEnv = typeof window === 'undefined' ||
+      (typeof import.meta !== 'undefined' && import.meta.env?.NODE_ENV === 'test') ||
+      (typeof globalThis !== 'undefined' && globalThis.__VITEST__)
+
+    if (isTestEnv) {
       return
     }
 
