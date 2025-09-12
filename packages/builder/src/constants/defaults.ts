@@ -16,6 +16,9 @@ export const DEFAULT_BUILDER_CONFIG: Required<Omit<BuilderConfig, 'env' | 'libra
 } = {
   // 基础配置
   input: 'src/index.ts', // 保留作为兼容，但优先使用 output 中的配置
+  // 顶层开关：dts 与 sourcemap（可被各格式覆盖）
+  dts: true,
+  sourcemap: true,
   output: {
     dir: 'dist',
     format: ['esm', 'cjs'],

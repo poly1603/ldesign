@@ -130,11 +130,13 @@ export class StyleStrategy implements ILibraryStrategy {
 
     // 检查入口文件
     if (!config.input) {
-      errors.push('样式策略需要指定入口文件')
+      // 入口可选：当未提供时，策略会自动发现入口，不作为硬错误
+      warnings.push('未显式指定入口，已启用自动入口发现')
     } else if (typeof config.input === 'string') {
+      const inputStr = config.input as string
       const supportedExtensions = ['.css', '.less', '.scss', '.sass', '.styl']
       const hasValidExtension = supportedExtensions.some(ext =>
-        config.input.toString().endsWith(ext)
+        inputStr.endsWith(ext)
       )
 
       if (!hasValidExtension) {

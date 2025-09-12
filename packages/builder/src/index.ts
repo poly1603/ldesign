@@ -51,7 +51,7 @@ export * from './constants'
 export * from './utils'
 
 // 便捷函数
-export { defineConfig } from './utils/config'
+export { defineConfig, defineAsyncConfig } from './utils/config'
 export { createBuilder } from './utils/factory'
 
 // 增强配置导出

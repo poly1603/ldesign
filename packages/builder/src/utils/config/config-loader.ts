@@ -345,3 +345,15 @@ export function defineConfig(
 ): BuilderConfig | ((context: DefineConfigContext) => BuilderConfig | Promise<BuilderConfig>) {
   return config
 }
+
+/**
+ * 便捷函数：定义异步配置
+ * 用于异步计算配置（例如读取远程/本地元数据后生成配置）
+ */
+export function defineAsyncConfig(
+  config:
+    | Promise<BuilderConfig>
+    | ((context: DefineConfigContext) => Promise<BuilderConfig> | BuilderConfig)
+): Promise<BuilderConfig> | ((context: DefineConfigContext) => Promise<BuilderConfig> | BuilderConfig) {
+  return config as any
+}

@@ -20,7 +20,7 @@ import type {
   StyleLibraryConfig,
   LibraryBuildOptions
 } from './library'
-import type { OutputConfig } from './output'
+import type { OutputConfig, SourcemapType } from './output'
 import type { PerformanceConfig } from './performance'
 import type { UnifiedPlugin } from './plugin'
 import type { PostBuildValidationConfig } from './validation'
@@ -30,11 +30,17 @@ import type { MinifyOptions } from './minify'
  * 构建器主配置接口
  */
 export interface BuilderConfig {
-  /** 入口文件 */
-  input: string | string[] | Record<string, string>
+  /** 入口文件（可选；未提供时将根据策略自动发现或使用默认值） */
+  input?: string | string[] | Record<string, string>
 
   /** 输出配置 */
   output?: OutputConfig
+
+  /** 是否生成类型声明文件（顶层开关，具体格式可覆盖） */
+  dts?: boolean
+
+  /** 是否生成 sourcemap（顶层开关，具体格式可覆盖） */
+  sourcemap?: SourcemapType
 
   /** 打包核心选择 */
   bundler?: 'rollup' | 'rolldown'

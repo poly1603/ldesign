@@ -154,7 +154,7 @@ export class BuildManifestGenerator {
       },
       project: projectInfo,
       config: {
-        input: config.input,
+        input: (config.input ?? 'src/index.ts') as string | string[] | Record<string, string>,
         outputDir: config.output?.dir || 'dist',
         formats: Array.isArray(config.output?.format) 
           ? config.output.format 
