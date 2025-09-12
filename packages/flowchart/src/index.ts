@@ -34,7 +34,6 @@ export { PluginManager } from './plugins/PluginManager'
 export { BasePlugin } from './plugins/BasePlugin'
 
 // 导出内置插件
-export { MiniMapPlugin } from './plugins/builtin/MiniMapPlugin'
 export { HistoryPlugin } from './plugins/builtin/HistoryPlugin'
 export { ExportPlugin } from './plugins/builtin/ExportPlugin'
 

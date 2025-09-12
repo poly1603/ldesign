@@ -136,17 +136,6 @@ export interface FlowchartEditorConfig {
   logicflowConfig?: any
   // 性能监控配置
   performance?: PerformanceConfig
-  // 缩略图配置
-  miniMap?: {
-    enabled?: boolean
-    width?: number
-    height?: number
-    position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
-    showZoomControls?: boolean
-    showViewport?: boolean
-    backgroundColor?: string
-    borderColor?: string
-  }
 }
 
 // 预览器配置

@@ -6,7 +6,7 @@
 
 import { FlowchartEditor } from '../core/FlowchartEditor'
 import { FlowchartViewer } from '../core/FlowchartViewer'
-import { MiniMapPlugin, HistoryPlugin, ExportPlugin } from '../plugins/builtin'
+import { HistoryPlugin, ExportPlugin } from '../plugins/builtin'
 import type {
   FlowchartEditorConfig,
   FlowchartViewerConfig,
@@ -24,8 +24,6 @@ export interface CreateEditorOptions extends Partial<Omit<FlowchartEditorConfig,
   container: string | HTMLElement
   /** 是否启用插件 */
   plugins?: {
-    /** 小地图插件 */
-    minimap?: boolean | object
     /** 历史记录插件 */
     history?: boolean | object
     /** 导出插件 */
@@ -87,7 +85,6 @@ export class FlowchartAPI {
    *   width: 800,
    *   height: 600,
    *   plugins: {
-   *     minimap: true,
    *     history: { maxSize: 50 },
    *     export: true
    *   }
@@ -115,11 +112,6 @@ export class FlowchartAPI {
     // 安装插件
     if (plugins) {
       const pluginManager = editor.getPluginManager()
-
-      if (plugins.minimap) {
-        const config = typeof plugins.minimap === 'object' ? plugins.minimap : {}
-        pluginManager.install(new MiniMapPlugin(config))
-      }
 
       if (plugins.history) {
         const config = typeof plugins.history === 'object' ? plugins.history : {}

@@ -35,7 +35,6 @@ import { VirtualRenderer, BatchDOMUpdater } from '../performance/VirtualRenderer
 import { MemoryOptimizer, type MemoryUsageInfo, type MemoryOptimizationStats } from '../performance/MemoryOptimizer'
 import { InteractionOptimizer, type InteractionStats, type DragStats, type ZoomStats } from '../performance/InteractionOptimizer'
 import { ToastManager } from '../ui/native/Toast'
-import { MiniMapPlugin, type MiniMapConfig, type ViewportInfo } from '../plugins/minimap/MiniMapPlugin'
 
 /**
  * 审批流程图编辑器类
@@ -63,7 +62,6 @@ export class FlowchartEditor {
   private memoryOptimizer!: MemoryOptimizer
   private interactionOptimizer!: InteractionOptimizer
   private toastManager!: ToastManager
-  private miniMap: MiniMapPlugin | null = null
 
   /**
    * 构造函数
@@ -700,20 +698,14 @@ export class FlowchartEditor {
         this.uiManager?.setSelectedNode(updatedNode)
         this.emit('data:change', this.getData())
       }
-      // 更新缩略图
-      this.updateMiniMap()
     })
 
     this.lf.on('node:add', (data) => {
       this.emit('node:add', { node: data.data })
-      // 更新缩略图
-      this.updateMiniMap()
     })
 
     this.lf.on('node:delete', (data) => {
       this.emit('node:delete', { node: data.data })
-      // 更新缩略图
-      this.updateMiniMap()
     })
 
     // 边事件
@@ -735,14 +727,10 @@ export class FlowchartEditor {
 
     this.lf.on('edge:add', (data) => {
       this.emit('edge:add', { edge: data.data })
-      // 更新缩略图
-      this.updateMiniMap()
     })
 
     this.lf.on('edge:delete', (data) => {
       this.emit('edge:delete', { edge: data.data })
-      // 更新缩略图
-      this.updateMiniMap()
     })
 
     // 画布事件
@@ -785,8 +773,6 @@ export class FlowchartEditor {
     this.lf.on('selection:drop', (data) => {
       console.log('选中元素拖拽结束')
       this.emit('data:change', this.getData())
-      // 更新缩略图
-      this.updateMiniMap()
     })
 
     // 数据变化事件
@@ -802,8 +788,6 @@ export class FlowchartEditor {
       setTimeout(() => {
         this.forceApplyBackground()
       }, 10)
-      // 更新缩略图视口
-      this.updateMiniMap()
     })
 
     // 画布渲染完成事件
@@ -815,34 +799,7 @@ export class FlowchartEditor {
       }, 50)
     })
 
-    // 监听画布拖拽事件，实时更新缩略图视口
-    this.lf.on('graph:transform', () => {
-      // 使用requestAnimationFrame优化性能
-      requestAnimationFrame(() => {
-        this.updateMiniMap()
-      })
-    })
 
-    // 监听更多事件以确保小地图完全同步
-    this.lf.on('node:dnd-add', () => {
-      this.updateMiniMap()
-    })
-
-    this.lf.on('node:dnd-drag', () => {
-      this.updateMiniMap()
-    })
-
-    this.lf.on('selection:selected', () => {
-      this.updateMiniMap()
-    })
-
-    this.lf.on('anchor:dragstart', () => {
-      this.updateMiniMap()
-    })
-
-    this.lf.on('anchor:drop', () => {
-      this.updateMiniMap()
-    })
 
     // 监听鼠标事件来在拖动时维护背景
     if (this.lf.container) {
@@ -898,10 +855,6 @@ export class FlowchartEditor {
       this.lf.render(data)
     }
 
-    // 初始化缩略图（在LogicFlow渲染完成后）
-    if (this.config.miniMap?.enabled !== false && !this.miniMap) {
-      this.initializeMiniMap()
-    }
 
     this.markRenderEnd()
   }
@@ -2170,10 +2123,6 @@ export class FlowchartEditor {
       this.keyboardEventListener = undefined
     }
 
-    // 销毁缩略图
-    if (this.miniMap) {
-      this.miniMap.destroy()
-    }
 
     // 销毁Toast管理器
     if (this.toastManager) {
@@ -3687,62 +3636,7 @@ export class FlowchartEditor {
     this.interactionOptimizer.clear()
   }
 
-  /**
-   * 初始化缩略图
-   */
-  private initializeMiniMap(): void {
-    // 获取画布容器
-    let canvasContainer: HTMLElement | null = null
 
-    if (this.uiManager) {
-      // 如果使用UI管理器，获取画布容器
-      canvasContainer = this.uiManager.getCanvasContainer()
-    } else {
-      // 否则使用配置的容器
-      canvasContainer = typeof this.config.container === 'string'
-        ? document.querySelector(this.config.container) as HTMLElement
-        : this.config.container
-    }
-
-    if (!canvasContainer) return
-
-    this.miniMap = new MiniMapPlugin(this.lf, canvasContainer, {
-      width: this.config.miniMap?.width || 200,
-      height: this.config.miniMap?.height || 150,
-      position: this.config.miniMap?.position || 'bottom-right',
-      backgroundColor: '#fafafa',
-      borderColor: '#d9d9d9',
-      viewportColor: '#722ed1',
-      showGrid: true,
-      showViewport: true
-    })
-
-    // 设置回调
-    this.miniMap.onViewportChanged((viewport) => {
-      // 视口变化时的处理逻辑已在插件内部处理
-    })
-
-    this.miniMap.onZoomChanged((scale) => {
-      // 缩放变化时的处理逻辑已在插件内部处理
-    })
-
-    // 初始渲染
-    this.miniMap.render()
-  }
-
-  /**
-   * 更新缩略图 - 优化更新逻辑
-   */
-  private updateMiniMap(): void {
-    if (!this.miniMap) return
-
-    try {
-      // 强制更新小地图，确保所有变化都被捕获
-      this.miniMap.forceUpdate()
-    } catch (error) {
-      console.warn('更新小地图失败:', error)
-    }
-  }
 
   /**
    * 显示Toast通知
@@ -3786,13 +3680,5 @@ export class FlowchartEditor {
     this.toastManager.clear()
   }
 
-  /**
-   * 设置缩略图可见性
-   */
-  setMiniMapVisible(visible: boolean): void {
-    if (this.miniMap) {
-      this.miniMap.setVisible(visible)
-    }
-  }
 
 }
