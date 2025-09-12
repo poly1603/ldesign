@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工具栏样式测试</title>
+  
+  <!-- 导入LDESIGN设计系统变量 -->
+  <link rel="stylesheet" href="https://unpkg.com/@ldesign/shared@latest/styles/variables.css">
+  
+  <!-- 导入编译后的裁剪器样式 -->
+  <link rel="stylesheet" href="./dist/cropper.css">
+  
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .test-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #722ED1, #8c5ad3);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .cropper-demo {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .demo-image {
+      max-width: 80%;
+      max-height: 80%;
+      object-fit: contain;
+    }
+
+    .test-section {
+      margin: 20px 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 6px;
+    }
+
+    .test-section h3 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+
+    .button-test {
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <div class="header">
+      <h1>🎨 工具栏样式测试</h1>
+      <p>测试LDESIGN Cropper工具栏的样式和交互</p>
+    </div>
+
+    <div class="content">
+      <!-- 裁剪器演示区域 -->
+      <div class="cropper-demo">
+        <img src="https://picsum.photos/600/400?random=1" alt="演示图片" class="demo-image">
+        
+        <!-- 底部工具栏 -->
+        <div class="ldesign-cropper__toolbar ldesign-cropper__toolbar--bottom" data-theme="light">
+          <!-- 缩放工具 -->
+          <button class="ldesign-cropper__toolbar-button" data-tool="zoom-in" title="放大">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+          </button>
+          
+          <button class="ldesign-cropper__toolbar-button" data-tool="zoom-out" title="缩小">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+          </button>
+          
+          <!-- 旋转工具 -->
+          <button class="ldesign-cropper__toolbar-button" data-tool="rotate-left" title="左转">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+            </svg>
+          </button>
+          
+          <button class="ldesign-cropper__toolbar-button" data-tool="rotate-right" title="右转">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>
+            </svg>
+          </button>
+          
+          <!-- 翻转工具 -->
+          <button class="ldesign-cropper__toolbar-button" data-tool="flip-horizontal" title="水平翻转">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h3"/><path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"/><path d="M12 20v2"/><path d="M12 14v2"/><path d="M12 8v2"/><path d="M12 2v2"/>
+            </svg>
+          </button>
+          
+          <button class="ldesign-cropper__toolbar-button" data-tool="flip-vertical" title="垂直翻转">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/><path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3"/><path d="M4 12H2"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M22 12h-2"/>
+            </svg>
+          </button>
+          
+          <!-- 形状工具 -->
+          <button class="ldesign-cropper__toolbar-button ldesign-cropper__toolbar-button--active" data-tool="shape-rectangle" title="矩形">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2"/>
+            </svg>
+          </button>
+          
+          <button class="ldesign-cropper__toolbar-button" data-tool="shape-circle" title="圆形">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+            </svg>
+          </button>
+          
+          <!-- 选择器 -->
+          <select class="ldesign-cropper__toolbar-select" data-tool="aspect-ratio" title="宽高比">
+            <option value="">自由</option>
+            <option value="1">1:1</option>
+            <option value="1.333">4:3</option>
+            <option value="1.777">16:9</option>
+            <option value="0.75">3:4</option>
+          </select>
+          
+          <select class="ldesign-cropper__toolbar-select" data-tool="mask-opacity" title="遮罩透明度">
+            <option value="0">0%</option>
+            <option value="0.25">25%</option>
+            <option value="0.5" selected>50%</option>
+            <option value="0.75">75%</option>
+            <option value="1">100%</option>
+          </select>
+          
+          <select class="ldesign-cropper__toolbar-select" data-tool="export-format" title="导出格式">
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="webp">WEBP</option>
+          </select>
+          
+          <!-- 操作工具 -->
+          <button class="ldesign-cropper__toolbar-button" data-tool="crop" title="裁剪">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/>
+            </svg>
+          </button>
+          
+          <button class="ldesign-cropper__toolbar-button" data-tool="download" title="下载">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 测试说明 -->
+      <div class="test-section">
+        <h3>✅ 测试项目</h3>
+        <ul>
+          <li><strong>工具栏位置：</strong>工具栏应该显示在图片下方</li>
+          <li><strong>按钮样式：</strong>每个按钮都应该有清晰的图标和悬停效果</li>
+          <li><strong>激活状态：</strong>矩形按钮应该显示为激活状态（紫色背景）</li>
+          <li><strong>下拉选择器：</strong>三个下拉选择器应该有合适的样式</li>
+          <li><strong>响应式：</strong>在不同屏幕尺寸下工具栏应该正确显示</li>
+        </ul>
+      </div>
+
+      <!-- 不同位置的工具栏测试 -->
+      <div class="test-section">
+        <h3>🔄 不同位置测试</h3>
+        
+        <div class="button-test">
+          <h4>顶部工具栏：</h4>
+          <div class="ldesign-cropper__toolbar ldesign-cropper__toolbar--top" data-theme="light">
+            <button class="ldesign-cropper__toolbar-button" title="放大">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+              </svg>
+            </button>
+            <button class="ldesign-cropper__toolbar-button ldesign-cropper__toolbar-button--active" title="矩形">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+              </svg>
+            </button>
+            <select class="ldesign-cropper__toolbar-select">
+              <option>自由</option>
+              <option>1:1</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="button-test">
+          <h4>暗色主题：</h4>
+          <div class="ldesign-cropper__toolbar ldesign-cropper__toolbar--bottom" data-theme="dark">
+            <button class="ldesign-cropper__toolbar-button" title="放大">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+              </svg>
+            </button>
+            <button class="ldesign-cropper__toolbar-button ldesign-cropper__toolbar-button--active" title="矩形">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+              </svg>
+            </button>
+            <select class="ldesign-cropper__toolbar-select">
+              <option>自由</option>
+              <option>1:1</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 添加交互功能
+    document.addEventListener('DOMContentLoaded', () => {
+      // 按钮点击事件
+      document.querySelectorAll('.ldesign-cropper__toolbar-button').forEach(button => {
+        button.addEventListener('click', () => {
+          const tool = button.getAttribute('data-tool')
+          console.log(`点击了工具: ${tool}`)
+          
+          // 处理形状按钮的激活状态
+          if (tool && tool.startsWith('shape-')) {
+            const toolbar = button.closest('.ldesign-cropper__toolbar')
+            toolbar.querySelectorAll('[data-tool^="shape-"]').forEach(btn => {
+              btn.classList.remove('ldesign-cropper__toolbar-button--active')
+            })
+            button.classList.add('ldesign-cropper__toolbar-button--active')
+          }
+        })
+      })
+      
+      // 选择器变更事件
+      document.querySelectorAll('.ldesign-cropper__toolbar-select').forEach(select => {
+        select.addEventListener('change', () => {
+          const tool = select.getAttribute('data-tool')
+          const value = select.value
+          console.log(`${tool} 变更为: ${value}`)
+        })
+      })
+      
+      console.log('工具栏样式测试页面已加载')
+    })
+  </script>
+</body>
+</html>

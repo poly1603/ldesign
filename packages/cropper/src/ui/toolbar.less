@@ -1,0 +1,277 @@
+/**
+ * @file 工具栏样式
+ * @description 使用LDESIGN设计系统的工具栏样式
+ */
+
+.ldesign-cropper__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--ls-spacing-xs);
+  padding: var(--ls-padding-sm);
+  background: var(--ldesign-bg-color-container);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  box-shadow: var(--ldesign-shadow-1);
+  
+  &--top {
+    border-bottom: 1px solid var(--ldesign-border-color);
+    border-radius: 0;
+    box-shadow: var(--ldesign-shadow-table);
+  }
+  
+  &--bottom {
+    border-top: 1px solid var(--ldesign-border-color);
+    border-radius: 0;
+    box-shadow: var(--ldesign-shadow-table);
+  }
+  
+  &--left {
+    flex-direction: column;
+    border-right: 1px solid var(--ldesign-border-color);
+    border-radius: 0;
+    box-shadow: var(--ldesign-shadow-table);
+  }
+  
+  &--right {
+    flex-direction: column;
+    border-left: 1px solid var(--ldesign-border-color);
+    border-radius: 0;
+    box-shadow: var(--ldesign-shadow-table);
+  }
+  
+  &[data-theme="dark"] {
+    background: var(--ldesign-gray-color-9);
+    border-color: var(--ldesign-gray-color-7);
+    color: var(--ldesign-font-white-1);
+  }
+}
+
+.ldesign-cropper__toolbar-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ls-button-height-small);
+  height: var(--ls-button-height-small);
+  padding: 0;
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  background: var(--ldesign-bg-color-component);
+  color: var(--ldesign-text-color-primary);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  
+  &:hover {
+    background: var(--ldesign-bg-color-component-hover);
+    border-color: var(--ldesign-border-color-hover);
+    color: var(--ldesign-brand-color);
+  }
+  
+  &:active {
+    background: var(--ldesign-bg-color-component-active);
+    transform: translateY(1px);
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: var(--ldesign-border-color-focus);
+    box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+  }
+  
+  &:disabled {
+    background: var(--ldesign-bg-color-component-disabled);
+    border-color: var(--ldesign-border-color);
+    color: var(--ldesign-text-color-disabled);
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  &--active {
+    background: var(--ldesign-brand-color);
+    border-color: var(--ldesign-brand-color);
+    color: var(--ldesign-font-white-1);
+    
+    &:hover {
+      background: var(--ldesign-brand-color-hover);
+      border-color: var(--ldesign-brand-color-hover);
+      color: var(--ldesign-font-white-1);
+    }
+    
+    &:active {
+      background: var(--ldesign-brand-color-active);
+      border-color: var(--ldesign-brand-color-active);
+    }
+  }
+  
+  svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 1.5;
+  }
+  
+  .ldesign-cropper__toolbar[data-theme="dark"] & {
+    background: var(--ldesign-gray-color-8);
+    border-color: var(--ldesign-gray-color-6);
+    color: var(--ldesign-font-white-2);
+    
+    &:hover {
+      background: var(--ldesign-gray-color-7);
+      border-color: var(--ldesign-gray-color-5);
+      color: var(--ldesign-font-white-1);
+    }
+    
+    &:active {
+      background: var(--ldesign-gray-color-9);
+    }
+    
+    &--active {
+      background: var(--ldesign-brand-color);
+      border-color: var(--ldesign-brand-color);
+      color: var(--ldesign-font-white-1);
+    }
+  }
+}
+
+.ldesign-cropper__toolbar-select {
+  min-width: 80px;
+  height: var(--ls-input-height-small);
+  padding: 0 var(--ls-padding-xs);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  background: var(--ldesign-bg-color-component);
+  color: var(--ldesign-text-color-primary);
+  font-size: var(--ls-font-size-xs);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  
+  &:hover {
+    border-color: var(--ldesign-border-color-hover);
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: var(--ldesign-border-color-focus);
+    box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+  }
+  
+  &:disabled {
+    background: var(--ldesign-bg-color-component-disabled);
+    color: var(--ldesign-text-color-disabled);
+    cursor: not-allowed;
+  }
+  
+  .ldesign-cropper__toolbar[data-theme="dark"] & {
+    background: var(--ldesign-gray-color-8);
+    border-color: var(--ldesign-gray-color-6);
+    color: var(--ldesign-font-white-2);
+    
+    &:hover {
+      border-color: var(--ldesign-gray-color-5);
+    }
+    
+    option {
+      background: var(--ldesign-gray-color-8);
+      color: var(--ldesign-font-white-2);
+    }
+  }
+}
+
+.ldesign-cropper__toolbar-separator {
+  width: 1px;
+  height: 24px;
+  background: var(--ldesign-border-color);
+  margin: 0 var(--ls-spacing-xs);
+  
+  .ldesign-cropper__toolbar[data-theme="dark"] & {
+    background: var(--ldesign-gray-color-6);
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .ldesign-cropper__toolbar {
+    gap: var(--ls-spacing-xs);
+    padding: var(--ls-padding-xs);
+    
+    &--left,
+    &--right {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  }
+  
+  .ldesign-cropper__toolbar-button {
+    width: 36px;
+    height: 36px;
+    
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+  
+  .ldesign-cropper__toolbar-select {
+    min-width: 70px;
+    height: 36px;
+    font-size: 12px;
+  }
+}
+
+// 动画效果
+@keyframes toolbarSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ldesign-cropper__toolbar {
+  animation: toolbarSlideIn 0.3s ease-out;
+}
+
+// 工具提示样式
+.ldesign-cropper__toolbar-button[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--ls-padding-xs) var(--ls-padding-sm);
+  background: var(--ldesign-gray-color-9);
+  color: var(--ldesign-font-white-1);
+  font-size: var(--ls-font-size-xs);
+  border-radius: var(--ls-border-radius-base);
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+  animation: tooltipFadeIn 0.2s ease-out;
+}
+
+.ldesign-cropper__toolbar-button[title]:hover::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--ldesign-gray-color-9);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}

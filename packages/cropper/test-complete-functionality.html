@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDESIGN Cropper - 完整功能测试</title>
+  
+  <!-- 导入LDESIGN设计系统变量 -->
+  <link rel="stylesheet" href="https://unpkg.com/@ldesign/shared@latest/styles/variables.css">
+  
+  <!-- 导入编译后的裁剪器样式 -->
+  <link rel="stylesheet" href="./dist/cropper.css">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #722ED1, #8c5ad3);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .upload-section {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .upload-btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #722ED1;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s;
+      margin: 5px;
+    }
+
+    .upload-btn:hover {
+      background: #5e2aa7;
+    }
+
+    .upload-input {
+      display: none;
+    }
+
+    .cropper-container {
+      width: 100%;
+      height: 500px;
+      border: 2px dashed #ddd;
+      border-radius: 8px;
+      margin: 20px 0;
+      display: none;
+      position: relative;
+      background: #fafafa;
+    }
+
+    .cropper-container.active {
+      display: block;
+      border-color: #722ED1;
+    }
+
+    .demo-images {
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .demo-images h3 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .demo-image {
+      display: inline-block;
+      margin: 5px;
+      cursor: pointer;
+      border-radius: 4px;
+      overflow: hidden;
+      transition: transform 0.3s;
+    }
+
+    .demo-image:hover {
+      transform: scale(1.05);
+    }
+
+    .demo-image img {
+      width: 120px;
+      height: 80px;
+      object-fit: cover;
+      border: 2px solid transparent;
+    }
+
+    .demo-image:hover img {
+      border-color: #722ED1;
+    }
+
+    .test-info {
+      background: #e6f7ff;
+      border: 1px solid #91d5ff;
+      border-radius: 6px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .test-info h3 {
+      color: #1890ff;
+      margin-bottom: 10px;
+    }
+
+    .test-info ul {
+      margin-left: 20px;
+    }
+
+    .test-info li {
+      margin-bottom: 5px;
+    }
+
+    .result-section {
+      display: none;
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 1px solid #eee;
+    }
+
+    .result-section.active {
+      display: block;
+    }
+
+    .result-preview {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .result-preview img {
+      max-width: 300px;
+      max-height: 300px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-info {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+      font-family: monospace;
+      font-size: 14px;
+    }
+
+    .control-btn {
+      padding: 8px 16px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin: 5px;
+    }
+
+    .control-btn:hover {
+      border-color: #722ED1;
+      color: #722ED1;
+    }
+
+    .control-btn.primary {
+      background: #722ED1;
+      color: white;
+      border-color: #722ED1;
+    }
+
+    .control-btn.primary:hover {
+      background: #5e2aa7;
+    }
+
+    .footer {
+      background: #f8f9fa;
+      padding: 20px;
+      text-align: center;
+      color: #666;
+      border-top: 1px solid #eee;
+    }
+
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .status.success {
+      background: #f6ffed;
+      border: 1px solid #b7eb8f;
+      color: #52c41a;
+    }
+
+    .status.error {
+      background: #fff2f0;
+      border: 1px solid #ffccc7;
+      color: #ff4d4f;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎨 LDESIGN Cropper</h1>
+      <p>完整功能测试页面 - 工具栏集成测试</p>
+    </div>
+
+    <div class="content">
+      <!-- 测试说明 -->
+      <div class="test-info">
+        <h3>🧪 完整功能测试</h3>
+        <ul>
+          <li><strong>工具栏显示：</strong>工具栏应该显示在裁剪框下方，包含所有功能按钮</li>
+          <li><strong>缩放功能：</strong>点击放大/缩小按钮测试缩放功能</li>
+          <li><strong>旋转功能：</strong>点击左转/右转按钮测试旋转功能</li>
+          <li><strong>翻转功能：</strong>点击水平/垂直翻转按钮测试翻转功能</li>
+          <li><strong>形状切换：</strong>点击矩形/圆形按钮切换裁剪形状</li>
+          <li><strong>宽高比：</strong>使用下拉选择器切换宽高比</li>
+          <li><strong>裁剪下载：</strong>点击裁剪和下载按钮测试导出功能</li>
+        </ul>
+      </div>
+
+      <!-- 状态显示 -->
+      <div id="status"></div>
+
+      <!-- 上传区域 -->
+      <div class="upload-section">
+        <button class="upload-btn" onclick="document.getElementById('imageInput').click()">
+          📁 选择图片
+        </button>
+        <input type="file" id="imageInput" class="upload-input" accept="image/*">
+      </div>
+
+      <!-- 示例图片 -->
+      <div class="demo-images">
+        <h3>或选择示例图片：</h3>
+        <div class="demo-image" onclick="loadDemoImage('https://picsum.photos/800/600?random=1')">
+          <img src="https://picsum.photos/120/80?random=1" alt="示例图片1">
+        </div>
+        <div class="demo-image" onclick="loadDemoImage('https://picsum.photos/800/600?random=2')">
+          <img src="https://picsum.photos/120/80?random=2" alt="示例图片2">
+        </div>
+        <div class="demo-image" onclick="loadDemoImage('https://picsum.photos/800/600?random=3')">
+          <img src="https://picsum.photos/120/80?random=3" alt="示例图片3">
+        </div>
+      </div>
+
+      <!-- 裁剪器容器 -->
+      <div id="cropperContainer" class="cropper-container">
+        <!-- 裁剪器将在这里初始化 -->
+      </div>
+
+      <!-- 外部控制按钮 -->
+      <div style="text-align: center; margin: 20px 0;">
+        <button class="control-btn primary" onclick="getCroppedResult()">✂️ 获取裁剪结果</button>
+        <button class="control-btn" onclick="resetCropper()">🔄 重置裁剪器</button>
+        <button class="control-btn" onclick="toggleTheme()">🌙 切换主题</button>
+      </div>
+
+      <!-- 结果展示 -->
+      <div id="resultSection" class="result-section">
+        <h3>裁剪结果</h3>
+        <div class="result-preview">
+          <img id="resultImage" alt="裁剪结果">
+        </div>
+        <div class="result-info" id="resultInfo"></div>
+        <div style="text-align: center;">
+          <button class="control-btn primary" onclick="downloadResult()">💾 下载图片</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Built with ❤️ by LDESIGN Team | 完整功能测试页面</p>
+    </div>
+  </div>
+
+  <!-- 导入简化版Cropper类 -->
+  <script src="./dist/simple-cropper.js"></script>
+  
+  <script>
+    // 全局变量
+    let cropper = null
+    let currentImageSrc = null
+    let currentTheme = 'light'
+
+    // 显示状态消息
+    function showStatus(message, type = 'success') {
+      const statusEl = document.getElementById('status')
+      statusEl.innerHTML = `<div class="status ${type}">${message}</div>`
+      setTimeout(() => {
+        statusEl.innerHTML = ''
+      }, 3000)
+    }
+
+    // 全局函数
+    window.loadDemoImage = async (src) => {
+      try {
+        showStatus('正在加载图片...', 'success')
+        currentImageSrc = src
+        
+        // 显示容器
+        document.getElementById('cropperContainer').classList.add('active')
+        
+        // 初始化裁剪器
+        if (!cropper) {
+          const container = document.getElementById('cropperContainer')
+          
+          // 创建裁剪器实例，启用工具栏
+          cropper = new SimpleCropper({
+            container: container,
+            toolbar: {
+              show: true,
+              position: 'bottom',
+              theme: currentTheme
+            }
+          })
+          
+          // 监听裁剪事件
+          container.addEventListener('crop', (e) => {
+            const canvas = e.detail.canvas
+            showCroppedResult(canvas)
+          })
+        }
+
+        await cropper.setImage(src)
+        showStatus('图片加载成功！工具栏已显示在下方', 'success')
+        
+      } catch (error) {
+        console.error('加载图片失败:', error)
+        showStatus('加载图片失败: ' + error.message, 'error')
+      }
+    }
+
+    // 显示裁剪结果
+    function showCroppedResult(canvas) {
+      const dataURL = canvas.toDataURL('image/png')
+      document.getElementById('resultImage').src = dataURL
+      document.getElementById('resultInfo').innerHTML = `
+        <strong>裁剪信息:</strong><br>
+        尺寸: ${canvas.width} × ${canvas.height}<br>
+        格式: PNG<br>
+        大小: ${Math.round(dataURL.length * 0.75 / 1024)} KB<br>
+        生成时间: ${new Date().toLocaleTimeString()}
+      `
+      document.getElementById('resultSection').classList.add('active')
+      showStatus('裁剪完成！', 'success')
+    }
+
+    window.getCroppedResult = () => {
+      if (!cropper) {
+        showStatus('请先加载图片', 'error')
+        return
+      }
+      
+      try {
+        const canvas = cropper.getCroppedCanvas()
+        showCroppedResult(canvas)
+      } catch (error) {
+        console.error('获取裁剪结果失败:', error)
+        showStatus('获取裁剪结果失败: ' + error.message, 'error')
+      }
+    }
+
+    window.resetCropper = () => {
+      if (!cropper) {
+        showStatus('请先加载图片', 'error')
+        return
+      }
+      
+      try {
+        cropper.reset()
+        showStatus('裁剪器已重置', 'success')
+      } catch (error) {
+        console.error('重置失败:', error)
+        showStatus('重置失败: ' + error.message, 'error')
+      }
+    }
+
+    window.toggleTheme = () => {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light'
+      
+      if (cropper && cropper.toolbar) {
+        cropper.toolbar.config.theme = currentTheme
+        cropper.toolbar.render()
+      }
+      
+      showStatus(`已切换到${currentTheme === 'light' ? '浅色' : '深色'}主题`, 'success')
+    }
+
+    window.downloadResult = () => {
+      const img = document.getElementById('resultImage')
+      if (img.src) {
+        const a = document.createElement('a')
+        a.href = img.src
+        a.download = `cropped-image-${Date.now()}.png`
+        a.click()
+        showStatus('图片下载已开始', 'success')
+      } else {
+        showStatus('没有可下载的图片', 'error')
+      }
+    }
+
+    // 文件上传处理
+    document.getElementById('imageInput').addEventListener('change', (e) => {
+      const file = e.target.files[0]
+      if (file) {
+        if (file.size > 10 * 1024 * 1024) {
+          showStatus('文件大小不能超过10MB', 'error')
+          return
+        }
+        
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          loadDemoImage(e.target.result)
+        }
+        reader.onerror = () => {
+          showStatus('文件读取失败', 'error')
+        }
+        reader.readAsDataURL(file)
+      }
+    })
+
+    // 页面加载完成
+    document.addEventListener('DOMContentLoaded', () => {
+      showStatus('页面加载完成，请选择图片开始测试', 'success')
+      console.log('LDESIGN Cropper 完整功能测试页面已加载')
+      console.log('SimpleCropper类已可用:', typeof SimpleCropper !== 'undefined')
+    })
+  </script>
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDESIGN Cropper - 简化测试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #722ED1, #8c5ad3);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .upload-section {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .upload-btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #722ED1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-btn:hover {
+      background: #8c5ad3;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(114, 46, 209, 0.3);
+    }
+
+    .upload-btn input {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .cropper-section {
+      margin: 30px 0;
+    }
+
+    .cropper-container {
+      width: 100%;
+      height: 400px;
+      border: 2px dashed #ddd;
+      border-radius: 12px;
+      position: relative;
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 18px;
+    }
+
+    .cropper-container.has-image {
+      border: 2px solid #722ED1;
+      background: transparent;
+    }
+
+    .crop-btn {
+      display: block;
+      width: 200px;
+      margin: 20px auto;
+      padding: 12px 24px;
+      background: #722ED1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .crop-btn.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .crop-btn:hover.active {
+      background: #8c5ad3;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(114, 46, 209, 0.3);
+    }
+
+    .result-section {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      display: none;
+    }
+
+    .result-section.show {
+      display: block;
+    }
+
+    .result-section h3 {
+      color: #722ED1;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .result-preview {
+      text-align: center;
+    }
+
+    .result-preview img {
+      max-width: 100%;
+      max-height: 300px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-info {
+      margin-top: 15px;
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      color: #722ED1;
+      margin: 20px 0;
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    .error {
+      display: none;
+      background: #fee;
+      color: #c33;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .error.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📸 LDESIGN Cropper</h1>
+      <p>简化测试 - 上传图片 → 裁剪 → 查看结果</p>
+    </div>
+
+    <div class="content">
+      <!-- 上传区域 -->
+      <div class="upload-section">
+        <button class="upload-btn">
+          📁 选择图片
+          <input type="file" id="imageInput" accept="image/*">
+        </button>
+      </div>
+
+      <!-- 裁剪区域 -->
+      <div class="cropper-section">
+        <div id="cropperContainer" class="cropper-container">
+          请先选择一张图片
+        </div>
+        
+        <button id="cropBtn" class="crop-btn">
+          ✂️ 裁剪图片
+        </button>
+      </div>
+
+      <!-- 加载状态 -->
+      <div id="loading" class="loading">
+        正在处理图片...
+      </div>
+
+      <!-- 错误信息 -->
+      <div id="error" class="error"></div>
+
+      <!-- 结果区域 -->
+      <div id="resultSection" class="result-section">
+        <h3>🎉 裁剪结果</h3>
+        <div class="result-preview">
+          <img id="resultImage" alt="裁剪结果">
+        </div>
+        <div id="resultInfo" class="result-info"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { Cropper } from './src/index.js'
+
+    let cropper = null
+    let currentImage = null
+
+    // DOM 元素
+    const imageInput = document.getElementById('imageInput')
+    const cropperContainer = document.getElementById('cropperContainer')
+    const cropBtn = document.getElementById('cropBtn')
+    const loading = document.getElementById('loading')
+    const error = document.getElementById('error')
+    const resultSection = document.getElementById('resultSection')
+    const resultImage = document.getElementById('resultImage')
+    const resultInfo = document.getElementById('resultInfo')
+
+    // 显示错误信息
+    function showError(message) {
+      error.textContent = message
+      error.classList.add('show')
+      setTimeout(() => {
+        error.classList.remove('show')
+      }, 5000)
+    }
+
+    // 显示加载状态
+    function showLoading(show = true) {
+      loading.classList.toggle('show', show)
+    }
+
+    // 初始化裁剪器
+    function initCropper() {
+      if (cropper) {
+        cropper.destroy()
+      }
+
+      cropper = new Cropper({
+        container: cropperContainer,
+        aspectRatio: null,
+        shape: 'rectangle',
+        resizable: true,
+        movable: true,
+        rotatable: true,
+        scalable: true,
+        zoomable: true,
+        showGrid: true,
+        toolbar: {
+          enabled: true,
+          position: 'bottom',
+          tools: [
+            'zoom-in',
+            'zoom-out',
+            'rotate-left',
+            'rotate-right',
+            'reset',
+            'shape-rectangle',
+            'shape-circle',
+            'aspect-ratio',
+            'mask-opacity',
+            'export-format',
+            'crop',
+            'download'
+          ]
+        }
+      })
+
+      console.log('裁剪器初始化完成')
+      return cropper
+    }
+
+    // 处理图片上传
+    imageInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0]
+      if (!file) return
+
+      if (!file.type.startsWith('image/')) {
+        showError('请选择有效的图片文件')
+        return
+      }
+
+      try {
+        showLoading(true)
+        
+        // 创建图片URL
+        const imageUrl = URL.createObjectURL(file)
+        currentImage = imageUrl
+
+        // 初始化裁剪器
+        if (!cropper) {
+          initCropper()
+        }
+
+        // 加载图片
+        await cropper.setImage(imageUrl)
+        
+        // 更新UI
+        cropperContainer.classList.add('has-image')
+        cropperContainer.textContent = ''
+        cropBtn.classList.add('active')
+        resultSection.classList.remove('show')
+        
+        console.log('图片加载成功:', file.name)
+        
+      } catch (err) {
+        console.error('图片加载失败:', err)
+        showError('图片加载失败: ' + err.message)
+      } finally {
+        showLoading(false)
+      }
+    })
+
+    // 处理裁剪
+    cropBtn.addEventListener('click', () => {
+      if (!cropper || !currentImage) {
+        showError('请先选择图片')
+        return
+      }
+
+      try {
+        showLoading(true)
+        
+        // 执行裁剪
+        const canvas = cropper.getCroppedCanvas()
+        const dataURL = canvas.toDataURL('image/png')
+        
+        // 显示结果
+        resultImage.src = dataURL
+        resultInfo.innerHTML = `
+          <strong>裁剪信息:</strong><br>
+          尺寸: ${canvas.width} × ${canvas.height} 像素<br>
+          格式: PNG<br>
+          大小: ${Math.round(dataURL.length * 0.75 / 1024)} KB
+        `
+        
+        resultSection.classList.add('show')
+        
+        // 滚动到结果区域
+        resultSection.scrollIntoView({ behavior: 'smooth' })
+        
+        console.log('裁剪完成')
+        
+      } catch (err) {
+        console.error('裁剪失败:', err)
+        showError('裁剪失败: ' + err.message)
+      } finally {
+        showLoading(false)
+      }
+    })
+
+    console.log('页面初始化完成')
+  </script>
+</body>
+</html>

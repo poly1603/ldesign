@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDESIGN Cropper - 修复验证</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #722ED1, #8c5ad3);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .test-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+    }
+
+    .test-section h3 {
+      color: #722ED1;
+      margin-bottom: 15px;
+    }
+
+    .cropper-container {
+      width: 100%;
+      height: 400px;
+      border: 2px dashed #ddd;
+      border-radius: 8px;
+      margin: 20px 0;
+      position: relative;
+      background: #fafafa;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .control-btn {
+      padding: 8px 16px;
+      border: 1px solid #722ED1;
+      background: white;
+      color: #722ED1;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .control-btn:hover {
+      background: #722ED1;
+      color: white;
+    }
+
+    .control-btn.primary {
+      background: #722ED1;
+      color: white;
+    }
+
+    .result-section {
+      display: none;
+      margin-top: 20px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .result-section.active {
+      display: block;
+    }
+
+    .result-preview img {
+      max-width: 300px;
+      max-height: 300px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .demo-images {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .demo-image {
+      cursor: pointer;
+      border-radius: 4px;
+      overflow: hidden;
+      transition: transform 0.3s;
+    }
+
+    .demo-image:hover {
+      transform: scale(1.05);
+    }
+
+    .demo-image img {
+      width: 100px;
+      height: 60px;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔧 LDESIGN Cropper 修复验证</h1>
+      <p>验证裁剪结果对应、形状比例实时更新、工具栏样式等问题修复</p>
+    </div>
+
+    <div class="content">
+      <!-- 测试1: 工具栏样式 -->
+      <div class="test-section">
+        <h3>✅ 测试1: 工具栏样式修复</h3>
+        <p>验证工具栏是否有正确的样式，按钮是否美观</p>
+        
+        <div class="demo-images">
+          <div class="demo-image" onclick="loadTestImage('https://picsum.photos/800/600?random=1')">
+            <img src="https://picsum.photos/100/60?random=1" alt="测试图片1">
+          </div>
+          <div class="demo-image" onclick="loadTestImage('https://picsum.photos/800/600?random=2')">
+            <img src="https://picsum.photos/100/60?random=2" alt="测试图片2">
+          </div>
+          <div class="demo-image" onclick="loadTestImage('https://picsum.photos/800/600?random=3')">
+            <img src="https://picsum.photos/100/60?random=3" alt="测试图片3">
+          </div>
+        </div>
+
+        <div id="cropper1" class="cropper-container"></div>
+      </div>
+
+      <!-- 测试2: 形状和比例实时更新 -->
+      <div class="test-section">
+        <h3>🔄 测试2: 形状和比例实时更新</h3>
+        <p>验证改变裁剪形状和比例时，裁剪区域是否实时更新</p>
+        
+        <div class="controls">
+          <button class="control-btn" onclick="changeShape('rectangle')">矩形</button>
+          <button class="control-btn" onclick="changeShape('circle')">圆形</button>
+          <button class="control-btn" onclick="changeAspectRatio(1)">1:1</button>
+          <button class="control-btn" onclick="changeAspectRatio(16/9)">16:9</button>
+          <button class="control-btn" onclick="changeAspectRatio(4/3)">4:3</button>
+          <button class="control-btn" onclick="changeAspectRatio(null)">自由</button>
+        </div>
+      </div>
+
+      <!-- 测试3: 裁剪结果对应 -->
+      <div class="test-section">
+        <h3>✂️ 测试3: 裁剪结果对应性</h3>
+        <p>验证裁剪的图片是否与实际裁剪窗口对应</p>
+        
+        <div class="controls">
+          <button class="control-btn primary" onclick="testCrop()">执行裁剪测试</button>
+        </div>
+
+        <div id="resultSection" class="result-section">
+          <h4>裁剪结果:</h4>
+          <div class="result-preview">
+            <img id="resultImage" alt="裁剪结果">
+          </div>
+          <div id="resultInfo"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { Cropper } from './src/index.js'
+
+    let cropper = null
+
+    // 初始化裁剪器
+    function initCropper() {
+      const container = document.getElementById('cropper1')
+      
+      cropper = new Cropper({
+        container: container,
+        aspectRatio: null,
+        shape: 'rectangle',
+        resizable: true,
+        movable: true,
+        rotatable: true,
+        scalable: true,
+        zoomable: true,
+        showGrid: true,
+        toolbar: {
+          enabled: true,
+          position: 'top',
+          tools: [
+            'zoom-in',
+            'zoom-out',
+            'rotate-left',
+            'rotate-right',
+            'flip-horizontal',
+            'flip-vertical',
+            'reset',
+            'shape-rectangle',
+            'shape-circle',
+            'aspect-ratio',
+            'mask-opacity',
+            'export-format',
+            'crop',
+            'download'
+          ]
+        }
+      })
+
+      console.log('裁剪器初始化完成:', cropper)
+      return cropper
+    }
+
+    // 加载测试图片
+    window.loadTestImage = async (url) => {
+      if (!cropper) {
+        cropper = initCropper()
+      }
+      
+      try {
+        await cropper.setImage(url)
+        console.log('图片加载成功:', url)
+      } catch (error) {
+        console.error('图片加载失败:', error)
+      }
+    }
+
+    // 改变形状
+    window.changeShape = (shape) => {
+      if (cropper) {
+        cropper.setShape(shape)
+        console.log('形状已更改为:', shape)
+      }
+    }
+
+    // 改变宽高比
+    window.changeAspectRatio = (ratio) => {
+      if (cropper) {
+        cropper.setAspectRatio(ratio)
+        console.log('宽高比已更改为:', ratio)
+      }
+    }
+
+    // 测试裁剪
+    window.testCrop = () => {
+      if (!cropper) {
+        alert('请先加载图片')
+        return
+      }
+
+      try {
+        const canvas = cropper.getCroppedCanvas()
+        const dataURL = canvas.toDataURL('image/png')
+        
+        document.getElementById('resultImage').src = dataURL
+        document.getElementById('resultInfo').innerHTML = `
+          <strong>裁剪信息:</strong><br>
+          尺寸: ${canvas.width} × ${canvas.height}<br>
+          格式: PNG<br>
+          大小: ${Math.round(dataURL.length * 0.75 / 1024)} KB
+        `
+        document.getElementById('resultSection').classList.add('active')
+        
+        console.log('裁剪测试完成')
+      } catch (error) {
+        console.error('裁剪失败:', error)
+        alert('裁剪失败: ' + error.message)
+      }
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('页面加载完成，准备初始化裁剪器')
+    })
+  </script>
+</body>
+</html>

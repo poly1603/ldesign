@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDESIGN Cropper - 功能测试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #722ED1, #8c5ad3);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .upload-section {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .upload-btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #722ED1;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s;
+    }
+
+    .upload-btn:hover {
+      background: #5e2aa7;
+    }
+
+    .upload-input {
+      display: none;
+    }
+
+    .cropper-container {
+      width: 100%;
+      height: 500px;
+      border: 2px dashed #ddd;
+      border-radius: 8px;
+      margin: 20px 0;
+      display: none;
+      position: relative;
+      background: #fafafa;
+    }
+
+    .cropper-container.active {
+      display: block;
+      border-color: #722ED1;
+    }
+
+    .default-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: #666;
+    }
+
+    .default-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      background: rgba(114, 46, 209, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .default-icon svg {
+      width: 40px;
+      height: 40px;
+      stroke: rgba(114, 46, 209, 0.7);
+    }
+
+    .controls {
+      display: none;
+      margin: 20px 0;
+      text-align: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .controls.active {
+      display: flex;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 5px;
+    }
+
+    .control-group label {
+      font-weight: 500;
+      min-width: 80px;
+    }
+
+    .control-btn {
+      padding: 8px 16px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .control-btn:hover {
+      border-color: #722ED1;
+      color: #722ED1;
+    }
+
+    .control-btn.primary {
+      background: #722ED1;
+      color: white;
+      border-color: #722ED1;
+    }
+
+    .control-btn.primary:hover {
+      background: #5e2aa7;
+    }
+
+    select, input[type="range"] {
+      padding: 6px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .demo-images {
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .demo-images h3 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .demo-image {
+      display: inline-block;
+      margin: 5px;
+      cursor: pointer;
+      border-radius: 4px;
+      overflow: hidden;
+      transition: transform 0.3s;
+    }
+
+    .demo-image:hover {
+      transform: scale(1.05);
+    }
+
+    .demo-image img {
+      width: 120px;
+      height: 80px;
+      object-fit: cover;
+      border: 2px solid transparent;
+    }
+
+    .demo-image:hover img {
+      border-color: #722ED1;
+    }
+
+    .result-section {
+      display: none;
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 1px solid #eee;
+    }
+
+    .result-section.active {
+      display: block;
+    }
+
+    .result-preview {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .result-preview img {
+      max-width: 300px;
+      max-height: 300px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-info {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+      font-family: monospace;
+      font-size: 14px;
+    }
+
+    .footer {
+      background: #f8f9fa;
+      padding: 20px;
+      text-align: center;
+      color: #666;
+      border-top: 1px solid #eee;
+    }
+
+    .test-info {
+      background: #e6f7ff;
+      border: 1px solid #91d5ff;
+      border-radius: 6px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .test-info h3 {
+      color: #1890ff;
+      margin-bottom: 10px;
+    }
+
+    .test-info ul {
+      margin-left: 20px;
+    }
+
+    .test-info li {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎨 LDESIGN Cropper</h1>
+      <p>功能测试页面 - 验证新增功能</p>
+    </div>
+
+    <div class="content">
+      <!-- 测试说明 -->
+      <div class="test-info">
+        <h3>🧪 测试功能说明</h3>
+        <ul>
+          <li><strong>背景图拖拽：</strong>在裁剪框外的区域拖拽可以移动背景图片位置</li>
+          <li><strong>遮罩透明度：</strong>可以调节遮罩的透明度</li>
+          <li><strong>导出格式：</strong>支持PNG、JPEG、WEBP格式导出</li>
+          <li><strong>优化界面：</strong>使用Lucide图标的现代化默认界面</li>
+        </ul>
+      </div>
+
+      <!-- 上传区域 -->
+      <div class="upload-section">
+        <button class="upload-btn" onclick="document.getElementById('imageInput').click()">
+          📁 选择图片
+        </button>
+        <input type="file" id="imageInput" class="upload-input" accept="image/*">
+      </div>
+
+      <!-- 示例图片 -->
+      <div class="demo-images">
+        <h3>或选择示例图片：</h3>
+        <div class="demo-image" onclick="loadDemoImage('https://picsum.photos/800/600?random=1')">
+          <img src="https://picsum.photos/120/80?random=1" alt="示例图片1">
+        </div>
+        <div class="demo-image" onclick="loadDemoImage('https://picsum.photos/800/600?random=2')">
+          <img src="https://picsum.photos/120/80?random=2" alt="示例图片2">
+        </div>
+        <div class="demo-image" onclick="loadDemoImage('https://picsum.photos/800/600?random=3')">
+          <img src="https://picsum.photos/120/80?random=3" alt="示例图片3">
+        </div>
+      </div>
+
+      <!-- 裁剪器容器 -->
+      <div id="cropperContainer" class="cropper-container">
+        <div class="default-content">
+          <div class="default-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7,10 12,15 17,10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </div>
+          <h3>拖拽图片到此处</h3>
+          <p>或点击选择文件</p>
+          <small>支持 JPG、PNG、WEBP 格式，最大 10MB</small>
+        </div>
+      </div>
+
+      <!-- 控制面板 -->
+      <div id="controls" class="controls">
+        <div class="control-group">
+          <label>裁剪形状:</label>
+          <select id="shapeSelect">
+            <option value="rectangle">矩形</option>
+            <option value="circle">圆形</option>
+            <option value="ellipse">椭圆</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label>宽高比:</label>
+          <select id="aspectRatioSelect">
+            <option value="free">自由</option>
+            <option value="1">1:1</option>
+            <option value="1.333">4:3</option>
+            <option value="1.777">16:9</option>
+            <option value="0.75">3:4</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label>遮罩透明度:</label>
+          <input type="range" id="maskOpacity" min="0" max="1" step="0.1" value="0.5">
+          <span id="maskOpacityValue">50%</span>
+        </div>
+
+        <div class="control-group">
+          <label>导出格式:</label>
+          <select id="exportFormat">
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="webp">WEBP</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <button class="control-btn" onclick="zoomIn()">🔍+ 放大</button>
+          <button class="control-btn" onclick="zoomOut()">🔍- 缩小</button>
+        </div>
+
+        <div class="control-group">
+          <button class="control-btn" onclick="rotateLeft()">↺ 左转</button>
+          <button class="control-btn" onclick="rotateRight()">↻ 右转</button>
+        </div>
+
+        <div class="control-group">
+          <button class="control-btn" onclick="resetCropper()">🔄 重置</button>
+          <button class="control-btn primary" onclick="getCroppedResult()">✂️ 获取结果</button>
+        </div>
+      </div>
+
+      <!-- 结果展示 -->
+      <div id="resultSection" class="result-section">
+        <h3>裁剪结果</h3>
+        <div class="result-preview">
+          <img id="resultImage" alt="裁剪结果">
+        </div>
+        <div class="result-info" id="resultInfo"></div>
+        <div style="text-align: center;">
+          <button class="control-btn primary" onclick="downloadResult()">💾 下载图片</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Built with ❤️ by LDESIGN Team | 功能测试页面</p>
+    </div>
+  </div>
+
+  <script type="module">
+    // 模拟的Cropper类，用于测试功能
+    class TestCropper {
+      constructor(options) {
+        this.container = typeof options.container === 'string'
+          ? document.querySelector(options.container)
+          : options.container
+        this.options = options
+        this.cropData = { x: 50, y: 50, width: 200, height: 150 }
+        this.imageElement = null
+        this.maskOpacity = 0.5
+        this.exportFormat = 'png'
+        this.imageTransform = { x: 0, y: 0, scale: 1 }
+        this.isDragging = false
+        this.dragStart = { x: 0, y: 0 }
+        this.setupContainer()
+      }
+
+      setupContainer() {
+        // 显示默认内容
+        this.showDefaultContent()
+        this.setupEventListeners()
+      }
+
+      showDefaultContent() {
+        this.container.innerHTML = `
+          <div class="default-content">
+            <div class="default-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7,10 12,15 17,10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </div>
+            <h3>拖拽图片到此处</h3>
+            <p>或点击选择文件</p>
+            <small>支持 JPG、PNG、WEBP 格式，最大 10MB</small>
+          </div>
+        `
+      }
+
+      async setImage(src) {
+        return new Promise((resolve) => {
+          const img = new Image()
+          img.onload = () => {
+            this.imageElement = img
+            this.renderCropper()
+            resolve()
+          }
+          img.crossOrigin = 'anonymous'
+          img.src = src
+        })
+      }
+
+      renderCropper() {
+        if (!this.imageElement) return
+
+        const containerRect = this.container.getBoundingClientRect()
+        const imgAspect = this.imageElement.naturalWidth / this.imageElement.naturalHeight
+        const containerAspect = containerRect.width / containerRect.height
+
+        let displayWidth, displayHeight
+        if (imgAspect > containerAspect) {
+          displayWidth = containerRect.width * 0.8
+          displayHeight = displayWidth / imgAspect
+        } else {
+          displayHeight = containerRect.height * 0.8
+          displayWidth = displayHeight * imgAspect
+        }
+
+        this.container.innerHTML = `
+          <div style="position: relative; width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+            <img id="cropperImage" src="${this.imageElement.src}"
+                 style="width: ${displayWidth}px; height: ${displayHeight}px;
+                        transform: translate(${this.imageTransform.x}px, ${this.imageTransform.y}px) scale(${this.imageTransform.scale});
+                        transition: transform 0.1s ease-out;">
+            <div id="cropArea" style="position: absolute;
+                 border: 2px solid #722ED1;
+                 background: rgba(114, 46, 209, ${1 - this.maskOpacity});
+                 left: ${this.cropData.x}px;
+                 top: ${this.cropData.y}px;
+                 width: ${this.cropData.width}px;
+                 height: ${this.cropData.height}px;
+                 cursor: move;
+                 box-shadow: 0 0 0 9999px rgba(0, 0, 0, ${this.maskOpacity});">
+              <div style="position: absolute; width: 8px; height: 8px; background: #722ED1; right: -4px; bottom: -4px; cursor: se-resize;"></div>
+            </div>
+          </div>
+        `
+        this.setupImageEventListeners()
+      }
+
+      setupEventListeners() {
+        // 拖拽上传
+        this.container.addEventListener('dragover', (e) => {
+          e.preventDefault()
+          this.container.style.borderColor = '#722ED1'
+        })
+
+        this.container.addEventListener('dragleave', (e) => {
+          e.preventDefault()
+          this.container.style.borderColor = '#ddd'
+        })
+
+        this.container.addEventListener('drop', (e) => {
+          e.preventDefault()
+          this.container.style.borderColor = '#ddd'
+          const files = e.dataTransfer.files
+          if (files.length > 0) {
+            const file = files[0]
+            if (file.type.startsWith('image/')) {
+              const reader = new FileReader()
+              reader.onload = (e) => this.setImage(e.target.result)
+              reader.readAsDataURL(file)
+            }
+          }
+        })
+      }
+
+      setupImageEventListeners() {
+        const container = this.container
+        const cropArea = container.querySelector('#cropArea')
+
+        // 背景图片拖拽功能
+        container.addEventListener('mousedown', (e) => {
+          if (e.target === cropArea || cropArea.contains(e.target)) return
+
+          this.isDragging = true
+          this.dragStart = { x: e.clientX, y: e.clientY }
+          container.style.cursor = 'grabbing'
+          e.preventDefault()
+        })
+
+        document.addEventListener('mousemove', (e) => {
+          if (!this.isDragging) return
+
+          const deltaX = e.clientX - this.dragStart.x
+          const deltaY = e.clientY - this.dragStart.y
+
+          this.imageTransform.x += deltaX
+          this.imageTransform.y += deltaY
+
+          const img = container.querySelector('#cropperImage')
+          if (img) {
+            img.style.transform = `translate(${this.imageTransform.x}px, ${this.imageTransform.y}px) scale(${this.imageTransform.scale})`
+          }
+
+          this.dragStart = { x: e.clientX, y: e.clientY }
+        })
+
+        document.addEventListener('mouseup', () => {
+          if (this.isDragging) {
+            this.isDragging = false
+            container.style.cursor = 'default'
+          }
+        })
+
+        // 鼠标悬停效果
+        container.addEventListener('mousemove', (e) => {
+          if (this.isDragging) return
+
+          if (e.target === cropArea || cropArea.contains(e.target)) {
+            container.style.cursor = 'move'
+          } else {
+            container.style.cursor = 'grab'
+          }
+        })
+      }
+
+      updateMaskOpacity(opacity) {
+        this.maskOpacity = opacity
+        const cropArea = this.container.querySelector('#cropArea')
+        if (cropArea) {
+          cropArea.style.background = `rgba(114, 46, 209, ${1 - opacity})`
+          cropArea.style.boxShadow = `0 0 0 9999px rgba(0, 0, 0, ${opacity})`
+        }
+      }
+
+      getCroppedCanvas() {
+        if (!this.imageElement) return null
+
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        canvas.width = this.cropData.width
+        canvas.height = this.cropData.height
+
+        ctx.drawImage(this.imageElement, 0, 0, canvas.width, canvas.height)
+        return canvas
+      }
+
+      getCroppedDataURL(format = 'image/png', quality = 0.9) {
+        const canvas = this.getCroppedCanvas()
+        return canvas ? canvas.toDataURL(format, quality) : null
+      }
+
+      zoom(ratio) {
+        this.imageTransform.scale *= ratio
+        this.imageTransform.scale = Math.max(0.1, Math.min(5, this.imageTransform.scale))
+
+        const img = this.container.querySelector('#cropperImage')
+        if (img) {
+          img.style.transform = `translate(${this.imageTransform.x}px, ${this.imageTransform.y}px) scale(${this.imageTransform.scale})`
+        }
+      }
+
+      reset() {
+        this.imageTransform = { x: 0, y: 0, scale: 1 }
+        this.cropData = { x: 50, y: 50, width: 200, height: 150 }
+        if (this.imageElement) {
+          this.renderCropper()
+        }
+      }
+    }
+
+    // 全局变量
+    let cropper = null
+    let currentImageSrc = null
+
+    // 全局函数
+    window.loadDemoImage = async (src) => {
+      currentImageSrc = src
+      if (!cropper) {
+        cropper = new TestCropper({
+          container: '#cropperContainer'
+        })
+      }
+
+      await cropper.setImage(src)
+      document.getElementById('cropperContainer').classList.add('active')
+      document.getElementById('controls').classList.add('active')
+    }
+
+    window.zoomIn = () => cropper?.zoom(1.1)
+    window.zoomOut = () => cropper?.zoom(0.9)
+    window.rotateLeft = () => console.log('左转功能')
+    window.rotateRight = () => console.log('右转功能')
+    window.resetCropper = () => cropper?.reset()
+
+    window.getCroppedResult = () => {
+      if (!cropper) return
+
+      const format = document.getElementById('exportFormat').value
+      const mimeType = format === 'jpeg' ? 'image/jpeg' : format === 'webp' ? 'image/webp' : 'image/png'
+      const quality = format === 'jpeg' ? 0.9 : 1
+
+      const dataURL = cropper.getCroppedDataURL(mimeType, quality)
+      if (dataURL) {
+        document.getElementById('resultImage').src = dataURL
+        document.getElementById('resultInfo').innerHTML = `
+          <strong>裁剪信息:</strong><br>
+          尺寸: ${cropper.cropData.width} × ${cropper.cropData.height}<br>
+          格式: ${format.toUpperCase()}<br>
+          遮罩透明度: ${Math.round(cropper.maskOpacity * 100)}%<br>
+          大小: ${Math.round(dataURL.length * 0.75 / 1024)} KB
+        `
+        document.getElementById('resultSection').classList.add('active')
+      }
+    }
+
+    window.downloadResult = () => {
+      const img = document.getElementById('resultImage')
+      const format = document.getElementById('exportFormat').value
+      if (img.src) {
+        const a = document.createElement('a')
+        a.href = img.src
+        a.download = `cropped-image.${format}`
+        a.click()
+      }
+    }
+
+    // 文件上传处理
+    document.getElementById('imageInput').addEventListener('change', (e) => {
+      const file = e.target.files[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          loadDemoImage(e.target.result)
+        }
+        reader.readAsDataURL(file)
+      }
+    })
+
+    // 遮罩透明度控制
+    document.getElementById('maskOpacity').addEventListener('input', (e) => {
+      const opacity = parseFloat(e.target.value)
+      document.getElementById('maskOpacityValue').textContent = Math.round(opacity * 100) + '%'
+      if (cropper) {
+        cropper.updateMaskOpacity(opacity)
+      }
+    })
+
+    // 控制面板事件
+    document.getElementById('shapeSelect').addEventListener('change', (e) => {
+      console.log('形状变更:', e.target.value)
+    })
+
+    document.getElementById('aspectRatioSelect').addEventListener('change', (e) => {
+      console.log('宽高比变更:', e.target.value)
+    })
+
+    document.getElementById('exportFormat').addEventListener('change', (e) => {
+      console.log('导出格式变更:', e.target.value)
+    })
+  </script>
+</body>
+</html>
