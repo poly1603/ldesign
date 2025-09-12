@@ -103,6 +103,15 @@ export class Toolbar {
   /** 当前导出格式 */
   private currentExportFormat: string = 'png'
 
+  /** 当前裁剪框样式 */
+  private currentCropStyle: string = 'default'
+
+  /** 当前背景样式 */
+  private currentBackground: string = 'transparent'
+
+  /** 当前滤镜 */
+  private currentFilter: string = 'none'
+
   /** 默认配置 */
   private static readonly DEFAULT_CONFIG: Required<ToolbarConfig> = {
     show: true,
@@ -115,9 +124,15 @@ export class Toolbar {
       'flip-horizontal',
       'flip-vertical',
       'reset',
-      'shape-rectangle',
-      'shape-circle',
+      'shape-selector',
       'aspect-ratio',
+      'crop-style-selector',
+      'background-selector',
+      'move-up',
+      'move-down',
+      'move-left',
+      'move-right',
+      'filter-selector',
       'mask-opacity',
       'export-format',
       'crop',
@@ -151,6 +166,48 @@ export class Toolbar {
     { label: '50%', value: 0.5 },
     { label: '75%', value: 0.75 },
     { label: '100%', value: 1 }
+  ]
+
+  /** 形状选项 */
+  private shapeOptions = [
+    { label: '矩形', value: 'rectangle', icon: 'square' },
+    { label: '圆形', value: 'circle', icon: 'circle' },
+    { label: '椭圆', value: 'ellipse', icon: 'ellipsis' },
+    { label: '圆角矩形', value: 'rounded-rectangle', icon: 'rounded-square' },
+    { label: '三角形', value: 'triangle', icon: 'triangle' },
+    { label: '菱形', value: 'diamond', icon: 'diamond' },
+    { label: '六边形', value: 'hexagon', icon: 'hexagon' },
+    { label: '星形', value: 'star', icon: 'star' }
+  ]
+
+  /** 裁剪框样式选项 */
+  private cropStyleOptions = [
+    { label: '默认', value: 'default' },
+    { label: '简约', value: 'minimal' },
+    { label: '经典', value: 'classic' },
+    { label: '现代', value: 'modern' },
+    { label: '霓虹', value: 'neon' }
+  ]
+
+  /** 背景样式选项 */
+  private backgroundOptions = [
+    { label: '透明', value: 'transparent' },
+    { label: '白色', value: 'white' },
+    { label: '黑色', value: 'black' },
+    { label: '棋盘格', value: 'checkerboard' },
+    { label: '模糊', value: 'blur' }
+  ]
+
+  /** 滤镜选项 */
+  private filterOptions = [
+    { label: '无', value: 'none' },
+    { label: '黑白', value: 'grayscale' },
+    { label: '复古', value: 'sepia' },
+    { label: '反色', value: 'invert' },
+    { label: '模糊', value: 'blur' },
+    { label: '锐化', value: 'sharpen' },
+    { label: '高对比度', value: 'contrast' },
+    { label: '饱和度', value: 'saturate' }
   ]
 
   /**
@@ -282,17 +339,44 @@ export class Toolbar {
       case 'crop':
         return this.createButton('crop', 'scissors', '裁剪', () => this.handleCrop())
 
-      case 'shape-rectangle':
-        return this.createShapeButton('rectangle', 'square', '矩形', Shape.RECTANGLE)
-
-      case 'shape-circle':
-        return this.createShapeButton('circle', 'circle', '圆形', Shape.CIRCLE)
-
-      case 'shape-ellipse':
-        return this.createShapeButton('ellipse', 'ellipsis', '椭圆', Shape.ELLIPSE)
+      case 'shape-selector':
+        return this.createShapeSelector()
 
       case 'aspect-ratio':
         return this.createAspectRatioSelect()
+
+      case 'crop-style-selector':
+        return this.createCropStyleSelector()
+
+      case 'background-selector':
+        return this.createBackgroundSelector()
+
+      case 'move-up':
+        return this.createButton('move-up', 'arrow-up', '向上移动', () => this.moveImage(0, -10))
+
+      case 'move-down':
+        return this.createButton('move-down', 'arrow-down', '向下移动', () => this.moveImage(0, 10))
+
+      case 'move-left':
+        return this.createButton('move-left', 'arrow-left', '向左移动', () => this.moveImage(-10, 0))
+
+      case 'move-right':
+        return this.createButton('move-right', 'arrow-right', '向右移动', () => this.moveImage(10, 0))
+
+      case 'move-up-left':
+        return this.createButton('move-up-left', 'arrow-up-left', '向左上移动', () => this.moveImage(-10, -10))
+
+      case 'move-up-right':
+        return this.createButton('move-up-right', 'arrow-up-right', '向右上移动', () => this.moveImage(10, -10))
+
+      case 'move-down-left':
+        return this.createButton('move-down-left', 'arrow-down-left', '向左下移动', () => this.moveImage(-10, 10))
+
+      case 'move-down-right':
+        return this.createButton('move-down-right', 'arrow-down-right', '向右下移动', () => this.moveImage(10, 10))
+
+      case 'filter-selector':
+        return this.createFilterSelector()
 
       case 'mask-opacity':
         return this.createMaskOpacitySelect()
@@ -467,6 +551,127 @@ export class Toolbar {
   }
 
   /**
+   * 创建形状选择器
+   * @returns 选择器元素
+   */
+  private createShapeSelector(): HTMLSelectElement {
+    const select = document.createElement('select')
+    select.className = 'ldesign-cropper__toolbar-select'
+    select.setAttribute('data-tool', 'shape-selector')
+    select.title = '裁剪形状'
+
+    this.shapeOptions.forEach(option => {
+      const optionElement = document.createElement('option')
+      optionElement.value = option.value
+      optionElement.textContent = option.label
+
+      if (option.value === this.currentShape) {
+        optionElement.selected = true
+      }
+
+      select.appendChild(optionElement)
+    })
+
+    select.addEventListener('change', () => {
+      const shape = select.value as CropShape
+      this.currentShape = shape
+      this.cropper.setShape(shape)
+    })
+
+    return select
+  }
+
+  /**
+   * 创建裁剪框样式选择器
+   * @returns 选择器元素
+   */
+  private createCropStyleSelector(): HTMLSelectElement {
+    const select = document.createElement('select')
+    select.className = 'ldesign-cropper__toolbar-select'
+    select.setAttribute('data-tool', 'crop-style-selector')
+    select.title = '裁剪框样式'
+
+    this.cropStyleOptions.forEach(option => {
+      const optionElement = document.createElement('option')
+      optionElement.value = option.value
+      optionElement.textContent = option.label
+
+      if (option.value === this.currentCropStyle) {
+        optionElement.selected = true
+      }
+
+      select.appendChild(optionElement)
+    })
+
+    select.addEventListener('change', () => {
+      this.currentCropStyle = select.value
+      this.applyCropStyle(select.value)
+    })
+
+    return select
+  }
+
+  /**
+   * 创建背景选择器
+   * @returns 选择器元素
+   */
+  private createBackgroundSelector(): HTMLSelectElement {
+    const select = document.createElement('select')
+    select.className = 'ldesign-cropper__toolbar-select'
+    select.setAttribute('data-tool', 'background-selector')
+    select.title = '背景样式'
+
+    this.backgroundOptions.forEach(option => {
+      const optionElement = document.createElement('option')
+      optionElement.value = option.value
+      optionElement.textContent = option.label
+
+      if (option.value === this.currentBackground) {
+        optionElement.selected = true
+      }
+
+      select.appendChild(optionElement)
+    })
+
+    select.addEventListener('change', () => {
+      this.currentBackground = select.value
+      this.applyBackground(select.value)
+    })
+
+    return select
+  }
+
+  /**
+   * 创建滤镜选择器
+   * @returns 选择器元素
+   */
+  private createFilterSelector(): HTMLSelectElement {
+    const select = document.createElement('select')
+    select.className = 'ldesign-cropper__toolbar-select'
+    select.setAttribute('data-tool', 'filter-selector')
+    select.title = '图片滤镜'
+
+    this.filterOptions.forEach(option => {
+      const optionElement = document.createElement('option')
+      optionElement.value = option.value
+      optionElement.textContent = option.label
+
+      if (option.value === this.currentFilter) {
+        optionElement.selected = true
+      }
+
+      select.appendChild(optionElement)
+    })
+
+    select.addEventListener('change', () => {
+      this.currentFilter = select.value
+      this.applyFilter(select.value)
+    })
+
+    return select
+  }
+
+  /**
    * 更新形状按钮状态
    */
   private updateShapeButtons(): void {
@@ -549,6 +754,64 @@ export class Toolbar {
   }
 
   /**
+   * 移动图片
+   */
+  private moveImage(deltaX: number, deltaY: number): void {
+    // 这里需要调用裁剪器的移动方法
+    if (this.cropper && typeof this.cropper.moveImage === 'function') {
+      this.cropper.moveImage(deltaX, deltaY)
+    }
+  }
+
+  /**
+   * 应用裁剪框样式
+   */
+  private applyCropStyle(style: string): void {
+    const container = this.container
+
+    // 移除现有样式类
+    container.classList.remove(
+      'crop-style-default',
+      'crop-style-minimal',
+      'crop-style-classic',
+      'crop-style-modern',
+      'crop-style-neon'
+    )
+
+    // 添加新样式类
+    container.classList.add(`crop-style-${style}`)
+  }
+
+  /**
+   * 应用背景样式
+   */
+  private applyBackground(background: string): void {
+    const container = this.container
+
+    // 移除现有背景类
+    container.classList.remove(
+      'bg-transparent',
+      'bg-white',
+      'bg-black',
+      'bg-checkerboard',
+      'bg-blur'
+    )
+
+    // 添加新背景类
+    container.classList.add(`bg-${background}`)
+  }
+
+  /**
+   * 应用滤镜
+   */
+  private applyFilter(filter: string): void {
+    // 这里需要调用裁剪器的滤镜方法
+    if (this.cropper && typeof this.cropper.applyFilter === 'function') {
+      this.cropper.applyFilter(filter)
+    }
+  }
+
+  /**
    * 绑定事件
    */
   private bindEvents(): void {
@@ -583,7 +846,20 @@ export class Toolbar {
       'square': '<rect width="18" height="18" x="3" y="3" rx="2"/>',
       'circle': '<circle cx="12" cy="12" r="10"/>',
       'ellipsis': '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
-      'download': '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>'
+      'download': '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+      'arrow-up': '<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/>',
+      'arrow-down': '<line x1="12" y1="5" x2="12" y2="19"/><polyline points="19,12 12,19 5,12"/>',
+      'arrow-left': '<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/>',
+      'arrow-right': '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/>',
+      'arrow-up-left': '<line x1="17" y1="17" x2="7" y2="7"/><polyline points="7,17 7,7 17,7"/>',
+      'arrow-up-right': '<line x1="7" y1="17" x2="17" y2="7"/><polyline points="7,7 17,7 17,17"/>',
+      'arrow-down-left': '<line x1="17" y1="7" x2="7" y2="17"/><polyline points="17,17 7,17 7,7"/>',
+      'arrow-down-right': '<line x1="7" y1="7" x2="17" y2="17"/><polyline points="17,7 17,17 7,17"/>',
+      'rounded-square': '<rect width="18" height="18" x="3" y="3" rx="6"/>',
+      'triangle': '<path d="M12 2 L22 20 L2 20 Z"/>',
+      'diamond': '<path d="M12 2 L22 12 L12 22 L2 12 Z"/>',
+      'hexagon': '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>',
+      'star': '<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>'
     }
 
     return iconPaths[iconName] || ''

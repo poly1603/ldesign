@@ -251,12 +251,6 @@ export class CropperCore extends EventEmitter implements CropperInstance {
       ctx.imageSmoothingQuality = 'high'
     }
 
-    // 填充背景
-    if (outputConfig.fillBackground && outputConfig.backgroundColor) {
-      ctx.fillStyle = outputConfig.backgroundColor
-      ctx.fillRect(0, 0, outputCanvas.width, outputCanvas.height)
-    }
-
     // 计算源区域和目标区域
     const sourceRect = this.calculateSourceRect(cropArea)
     const targetRect = {
@@ -264,6 +258,15 @@ export class CropperCore extends EventEmitter implements CropperInstance {
       y: 0,
       width: outputCanvas.width,
       height: outputCanvas.height,
+    }
+
+    // 根据裁剪形状创建裁剪路径
+    this.createClipPath(ctx, cropArea.shape, targetRect)
+
+    // 填充背景（在裁剪路径内）
+    if (outputConfig.fillBackground && outputConfig.backgroundColor) {
+      ctx.fillStyle = outputConfig.backgroundColor
+      ctx.fill()
     }
 
     // 绘制裁剪后的图片
@@ -503,6 +506,44 @@ export class CropperCore extends EventEmitter implements CropperInstance {
         config,
         cropArea: this.getCropData()
       })
+    }
+  }
+
+  /**
+   * 移动图片
+   * @param deltaX X轴移动距离
+   * @param deltaY Y轴移动距离
+   */
+  moveImage(deltaX: number, deltaY: number): void {
+    this.transform.translateX += deltaX
+    this.transform.translateY += deltaY
+    this.render()
+  }
+
+  /**
+   * 应用滤镜
+   * @param filter 滤镜类型
+   */
+  applyFilter(filter: string): void {
+    if (!this.currentImage) return
+
+    const imageElement = this.container.querySelector('.ldesign-cropper__image') as HTMLImageElement
+    if (!imageElement) return
+
+    // 移除现有滤镜类
+    imageElement.classList.remove(
+      'filter-grayscale',
+      'filter-sepia',
+      'filter-invert',
+      'filter-blur',
+      'filter-sharpen',
+      'filter-contrast',
+      'filter-saturate'
+    )
+
+    // 添加新滤镜类
+    if (filter !== 'none') {
+      imageElement.classList.add(`filter-${filter}`)
     }
   }
 
@@ -877,6 +918,147 @@ export class CropperCore extends EventEmitter implements CropperInstance {
     }
 
     return result
+  }
+
+  /**
+   * 创建裁剪路径
+   * @param ctx Canvas上下文
+   * @param shape 裁剪形状
+   * @param rect 目标矩形
+   */
+  private createClipPath(ctx: CanvasRenderingContext2D, shape: CropShape, rect: Rectangle): void {
+    ctx.beginPath()
+
+    const centerX = rect.x + rect.width / 2
+    const centerY = rect.y + rect.height / 2
+
+    switch (shape) {
+      case CropShape.CIRCLE:
+        // 圆形裁剪路径
+        const radius = Math.min(rect.width, rect.height) / 2
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI)
+        break
+
+      case CropShape.ELLIPSE:
+        // 椭圆裁剪路径
+        const radiusX = rect.width / 2
+        const radiusY = rect.height / 2
+        ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI)
+        break
+
+      case CropShape.ROUNDED_RECTANGLE:
+        // 圆角矩形裁剪路径
+        const cornerRadius = Math.min(rect.width, rect.height) * 0.1
+        this.createRoundedRectPath(ctx, rect.x, rect.y, rect.width, rect.height, cornerRadius)
+        break
+
+      case CropShape.TRIANGLE:
+        // 三角形裁剪路径
+        ctx.moveTo(centerX, rect.y)
+        ctx.lineTo(rect.x, rect.y + rect.height)
+        ctx.lineTo(rect.x + rect.width, rect.y + rect.height)
+        ctx.closePath()
+        break
+
+      case CropShape.DIAMOND:
+        // 菱形裁剪路径
+        ctx.moveTo(centerX, rect.y)
+        ctx.lineTo(rect.x + rect.width, centerY)
+        ctx.lineTo(centerX, rect.y + rect.height)
+        ctx.lineTo(rect.x, centerY)
+        ctx.closePath()
+        break
+
+      case CropShape.HEXAGON:
+        // 六边形裁剪路径
+        this.createPolygonPath(ctx, centerX, centerY, Math.min(rect.width, rect.height) / 2, 6)
+        break
+
+      case CropShape.STAR:
+        // 星形裁剪路径
+        this.createStarPath(ctx, centerX, centerY, Math.min(rect.width, rect.height) / 2, 5)
+        break
+
+      case CropShape.RECTANGLE:
+      default:
+        // 矩形裁剪路径
+        ctx.rect(rect.x, rect.y, rect.width, rect.height)
+        break
+    }
+
+    ctx.clip()
+  }
+
+  /**
+   * 创建圆角矩形路径
+   */
+  private createRoundedRectPath(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number
+  ): void {
+    ctx.moveTo(x + radius, y)
+    ctx.lineTo(x + width - radius, y)
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius)
+    ctx.lineTo(x + width, y + height - radius)
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height)
+    ctx.lineTo(x + radius, y + height)
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius)
+    ctx.lineTo(x, y + radius)
+    ctx.quadraticCurveTo(x, y, x + radius, y)
+    ctx.closePath()
+  }
+
+  /**
+   * 创建多边形路径
+   */
+  private createPolygonPath(
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number,
+    radius: number,
+    sides: number
+  ): void {
+    const angle = (2 * Math.PI) / sides
+    ctx.moveTo(centerX + radius * Math.cos(0), centerY + radius * Math.sin(0))
+
+    for (let i = 1; i < sides; i++) {
+      const x = centerX + radius * Math.cos(i * angle)
+      const y = centerY + radius * Math.sin(i * angle)
+      ctx.lineTo(x, y)
+    }
+
+    ctx.closePath()
+  }
+
+  /**
+   * 创建星形路径
+   */
+  private createStarPath(
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number,
+    radius: number,
+    points: number
+  ): void {
+    const outerRadius = radius
+    const innerRadius = radius * 0.4
+    const angle = Math.PI / points
+
+    ctx.moveTo(centerX + outerRadius * Math.cos(0), centerY + outerRadius * Math.sin(0))
+
+    for (let i = 0; i < points * 2; i++) {
+      const r = i % 2 === 0 ? outerRadius : innerRadius
+      const a = i * angle
+      const x = centerX + r * Math.cos(a)
+      const y = centerY + r * Math.sin(a)
+      ctx.lineTo(x, y)
+    }
+
+    ctx.closePath()
   }
 
   /**

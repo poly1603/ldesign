@@ -12,33 +12,33 @@
   border: 1px solid var(--ldesign-border-color);
   border-radius: var(--ls-border-radius-base);
   box-shadow: var(--ldesign-shadow-1);
-  
+
   &--top {
     border-bottom: 1px solid var(--ldesign-border-color);
     border-radius: 0;
     box-shadow: var(--ldesign-shadow-table);
   }
-  
+
   &--bottom {
     border-top: 1px solid var(--ldesign-border-color);
     border-radius: 0;
     box-shadow: var(--ldesign-shadow-table);
   }
-  
+
   &--left {
     flex-direction: column;
     border-right: 1px solid var(--ldesign-border-color);
     border-radius: 0;
     box-shadow: var(--ldesign-shadow-table);
   }
-  
+
   &--right {
     flex-direction: column;
     border-left: 1px solid var(--ldesign-border-color);
     border-radius: 0;
     box-shadow: var(--ldesign-shadow-table);
   }
-  
+
   &[data-theme="dark"] {
     background: var(--ldesign-gray-color-9);
     border-color: var(--ldesign-gray-color-7);
@@ -59,24 +59,24 @@
   color: var(--ldesign-text-color-primary);
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  
+
   &:hover {
     background: var(--ldesign-bg-color-component-hover);
     border-color: var(--ldesign-border-color-hover);
     color: var(--ldesign-brand-color);
   }
-  
+
   &:active {
     background: var(--ldesign-bg-color-component-active);
     transform: translateY(1px);
   }
-  
+
   &:focus {
     outline: none;
     border-color: var(--ldesign-border-color-focus);
     box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
   }
-  
+
   &:disabled {
     background: var(--ldesign-bg-color-component-disabled);
     border-color: var(--ldesign-border-color);
@@ -84,45 +84,45 @@
     cursor: not-allowed;
     transform: none;
   }
-  
+
   &--active {
     background: var(--ldesign-brand-color);
     border-color: var(--ldesign-brand-color);
     color: var(--ldesign-font-white-1);
-    
+
     &:hover {
       background: var(--ldesign-brand-color-hover);
       border-color: var(--ldesign-brand-color-hover);
       color: var(--ldesign-font-white-1);
     }
-    
+
     &:active {
       background: var(--ldesign-brand-color-active);
       border-color: var(--ldesign-brand-color-active);
     }
   }
-  
+
   svg {
     width: 16px;
     height: 16px;
     stroke-width: 1.5;
   }
-  
+
   .ldesign-cropper__toolbar[data-theme="dark"] & {
     background: var(--ldesign-gray-color-8);
     border-color: var(--ldesign-gray-color-6);
     color: var(--ldesign-font-white-2);
-    
+
     &:hover {
       background: var(--ldesign-gray-color-7);
       border-color: var(--ldesign-gray-color-5);
       color: var(--ldesign-font-white-1);
     }
-    
+
     &:active {
       background: var(--ldesign-gray-color-9);
     }
-    
+
     &--active {
       background: var(--ldesign-brand-color);
       border-color: var(--ldesign-brand-color);
@@ -142,32 +142,32 @@
   font-size: var(--ls-font-size-xs);
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  
+
   &:hover {
     border-color: var(--ldesign-border-color-hover);
   }
-  
+
   &:focus {
     outline: none;
     border-color: var(--ldesign-border-color-focus);
     box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
   }
-  
+
   &:disabled {
     background: var(--ldesign-bg-color-component-disabled);
     color: var(--ldesign-text-color-disabled);
     cursor: not-allowed;
   }
-  
+
   .ldesign-cropper__toolbar[data-theme="dark"] & {
     background: var(--ldesign-gray-color-8);
     border-color: var(--ldesign-gray-color-6);
     color: var(--ldesign-font-white-2);
-    
+
     &:hover {
       border-color: var(--ldesign-gray-color-5);
     }
-    
+
     option {
       background: var(--ldesign-gray-color-8);
       color: var(--ldesign-font-white-2);
@@ -180,7 +180,7 @@
   height: 24px;
   background: var(--ldesign-border-color);
   margin: 0 var(--ls-spacing-xs);
-  
+
   .ldesign-cropper__toolbar[data-theme="dark"] & {
     background: var(--ldesign-gray-color-6);
   }
@@ -191,24 +191,24 @@
   .ldesign-cropper__toolbar {
     gap: var(--ls-spacing-xs);
     padding: var(--ls-padding-xs);
-    
+
     &--left,
     &--right {
       flex-direction: row;
       flex-wrap: wrap;
     }
   }
-  
+
   .ldesign-cropper__toolbar-button {
     width: 36px;
     height: 36px;
-    
+
     svg {
       width: 14px;
       height: 14px;
     }
   }
-  
+
   .ldesign-cropper__toolbar-select {
     min-width: 70px;
     height: 36px;
@@ -222,6 +222,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -270,8 +271,137 @@
     opacity: 0;
     transform: translateX(-50%) translateY(-4px);
   }
+
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+  }
+}
+
+// 背景样式
+.ldesign-cropper__container {
+
+  // 透明背景
+  &.bg-transparent {
+    background: transparent;
+  }
+
+  // 白色背景
+  &.bg-white {
+    background: #ffffff;
+  }
+
+  // 黑色背景
+  &.bg-black {
+    background: #000000;
+  }
+
+  // 棋盘格背景
+  &.bg-checkerboard {
+    background-image:
+      linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+      linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+      linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+
+  // 模糊背景
+  &.bg-blur {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+// 裁剪框样式
+.ldesign-cropper__crop-area {
+
+  // 默认样式
+  &.crop-style-default {
+    border: 2px solid var(--ldesign-brand-color);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
+  }
+
+  // 简约样式
+  &.crop-style-minimal {
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: none;
+  }
+
+  // 经典样式
+  &.crop-style-classic {
+    border: 3px solid #000000;
+    box-shadow: 0 0 0 1px #ffffff, 0 0 0 4px #000000;
+  }
+
+  // 现代样式
+  &.crop-style-modern {
+    border: 2px solid var(--ldesign-brand-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(114, 46, 209, 0.3);
+  }
+
+  // 霓虹样式
+  &.crop-style-neon {
+    border: 2px solid #00ffff;
+    box-shadow:
+      0 0 5px #00ffff,
+      0 0 10px #00ffff,
+      0 0 15px #00ffff,
+      inset 0 0 5px rgba(0, 255, 255, 0.2);
+    animation: neon-glow 2s ease-in-out infinite alternate;
+  }
+}
+
+// 霓虹发光动画
+@keyframes neon-glow {
+  from {
+    box-shadow:
+      0 0 5px #00ffff,
+      0 0 10px #00ffff,
+      0 0 15px #00ffff,
+      inset 0 0 5px rgba(0, 255, 255, 0.2);
+  }
+
+  to {
+    box-shadow:
+      0 0 10px #00ffff,
+      0 0 20px #00ffff,
+      0 0 30px #00ffff,
+      inset 0 0 10px rgba(0, 255, 255, 0.4);
+  }
+}
+
+// 滤镜效果
+.ldesign-cropper__image {
+  transition: filter 0.3s ease;
+
+  &.filter-grayscale {
+    filter: grayscale(100%);
+  }
+
+  &.filter-sepia {
+    filter: sepia(100%);
+  }
+
+  &.filter-invert {
+    filter: invert(100%);
+  }
+
+  &.filter-blur {
+    filter: blur(2px);
+  }
+
+  &.filter-sharpen {
+    filter: contrast(150%) brightness(110%);
+  }
+
+  &.filter-contrast {
+    filter: contrast(200%);
+  }
+
+  &.filter-saturate {
+    filter: saturate(200%);
   }
 }

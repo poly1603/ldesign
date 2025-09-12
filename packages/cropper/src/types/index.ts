@@ -13,6 +13,16 @@ export enum CropShape {
   CIRCLE = 'circle',
   /** 椭圆裁剪 */
   ELLIPSE = 'ellipse',
+  /** 圆角矩形裁剪 */
+  ROUNDED_RECTANGLE = 'rounded-rectangle',
+  /** 三角形裁剪 */
+  TRIANGLE = 'triangle',
+  /** 菱形裁剪 */
+  DIAMOND = 'diamond',
+  /** 六边形裁剪 */
+  HEXAGON = 'hexagon',
+  /** 星形裁剪 */
+  STAR = 'star',
   /** 自由形状裁剪 */
   FREEFORM = 'freeform',
 }
@@ -340,13 +350,22 @@ export type ToolbarTool =
   | 'flip-vertical'
   | 'reset'
   | 'crop'
-  | 'shape-rectangle'
-  | 'shape-circle'
-  | 'shape-ellipse'
+  | 'shape-selector'
   | 'aspect-ratio'
   | 'mask-opacity'
   | 'export-format'
   | 'download'
+  | 'move-up'
+  | 'move-down'
+  | 'move-left'
+  | 'move-right'
+  | 'move-up-left'
+  | 'move-up-right'
+  | 'move-down-left'
+  | 'move-down-right'
+  | 'filter-selector'
+  | 'crop-style-selector'
+  | 'background-selector'
 
 export interface ToolbarConfig {
   /** 是否显示工具栏 */
