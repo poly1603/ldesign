@@ -136,8 +136,9 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
       // 开始性能监控
       this.performanceMonitor.startBuild(buildId)
 
-      // 获取库类型（优先使用配置中指定的类型）
-      let libraryType = mergedConfig.libraryType || await this.detectLibraryType(mergedConfig.input as string)
+      // 获取库类型（优先使用配置中指定的类型；否则基于项目根目录自动检测）
+      const projectRoot = (mergedConfig as any).cwd || process.cwd()
+      let libraryType = mergedConfig.libraryType || await this.detectLibraryType(projectRoot)
 
       // 确保 libraryType 是正确的枚举值
       if (typeof libraryType === 'string') {
@@ -232,8 +233,9 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
         this.setBundler(mergedConfig.bundler)
       }
 
-      // 获取库类型（优先使用配置中指定的类型）
-      let libraryType = mergedConfig.libraryType || await this.detectLibraryType(mergedConfig.input as string)
+      // 获取库类型（优先使用配置中指定的类型；否则基于项目根目录自动检测）
+      const projectRoot = (mergedConfig as any).cwd || process.cwd()
+      let libraryType = mergedConfig.libraryType || await this.detectLibraryType(projectRoot)
 
       // 确保 libraryType 是正确的枚举值
       if (typeof libraryType === 'string') {
@@ -327,10 +329,44 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
 
   /**
    * 检测库类型
+   * - 传入路径可能为文件路径或子目录，这里做归一化：
+   *   1) 若为文件，取其所在目录
+   *   2) 自下而上查找最近的 package.json 作为项目根
+   *   3) 若未找到，回退到当前工作目录
    */
   async detectLibraryType(projectPath: string): Promise<LibraryType> {
-    const result = await this.libraryDetector.detect(projectPath)
-    return result.type
+    let base = projectPath
+
+    try {
+      const stat = await fs.stat(projectPath).catch(() => null as any)
+      if (stat && stat.isFile()) {
+        base = path.dirname(projectPath)
+      }
+
+      // 自下而上查找最近的 package.json
+      let current = base
+      let resolvedRoot = ''
+      for (let i = 0; i < 10; i++) {
+        const pkg = path.join(current, 'package.json')
+        const exists = await fs.access(pkg).then(() => true).catch(() => false)
+        if (exists) {
+          resolvedRoot = current
+          break
+        }
+        const parent = path.dirname(current)
+        if (parent === current) break
+        current = parent
+      }
+
+      const root = resolvedRoot || (this.config.cwd || process.cwd())
+      const result = await this.libraryDetector.detect(root)
+      return result.type
+
+    } catch {
+      const fallbackRoot = this.config.cwd || process.cwd()
+      const result = await this.libraryDetector.detect(fallbackRoot)
+      return result.type
+    }
   }
 
   /**

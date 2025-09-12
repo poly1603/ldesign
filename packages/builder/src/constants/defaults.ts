@@ -10,9 +10,14 @@ import { LibraryType } from '../types/library'
 /**
  * 默认构建器配置
  */
-export const DEFAULT_BUILDER_CONFIG: Required<Omit<BuilderConfig, 'env' | 'library'>> & {
+export const DEFAULT_BUILDER_CONFIG: Omit<
+  Required<Omit<BuilderConfig, 'env' | 'library' | 'libraryType'>>,
+  never
+> & {
   env: Record<string, Partial<BuilderConfig>>
   library: Required<LibraryBuildOptions>
+  // 允许默认配置不显式提供 libraryType，以便触发自动检测
+  libraryType?: LibraryType
 } = {
   // 基础配置
   input: 'src/index.ts', // 保留作为兼容，但优先使用 output 中的配置
@@ -61,8 +66,8 @@ export const DEFAULT_BUILDER_CONFIG: Required<Omit<BuilderConfig, 'env' | 'libra
   // 模式配置
   mode: 'production',
 
-  // 库类型（自动检测）
-  libraryType: LibraryType.TYPESCRIPT,
+  // 库类型（自动检测）：默认不设置，交由 LibraryDetector 自动识别
+  // libraryType: undefined,
 
   // 输出选项
   bundleless: false,
@@ -125,7 +130,7 @@ export const DEFAULT_BUILDER_CONFIG: Required<Omit<BuilderConfig, 'env' | 'libra
     moduleResolution: 'node'
   },
 
-  // Vue 配置
+  // Vue 配置（仅作为默认项；实际是否启用由库类型检测与策略决定）
   vue: {
     version: 3,
     onDemand: false,

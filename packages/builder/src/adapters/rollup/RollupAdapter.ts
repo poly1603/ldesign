@@ -265,7 +265,8 @@ export class RollupAdapter implements IBundlerAdapter {
 
     const rollupConfig: any = {
       input: config.input,
-      external: config.external
+      external: config.external,
+      onwarn: this.getOnWarn(config)
     }
 
     // 注入 Acorn 插件以支持在转换前解析 TSX/JSX/TS 语法，避免早期解析错误
@@ -318,7 +319,8 @@ export class RollupAdapter implements IBundlerAdapter {
               intro: _introEsm,
               outro: _outroEsm
             },
-            treeshake: config.treeshake
+            treeshake: config.treeshake,
+            onwarn: this.getOnWarn(config)
           })
         }
 
@@ -348,7 +350,7 @@ export class RollupAdapter implements IBundlerAdapter {
               sourcemap: cjsConfig.sourcemap ?? outputConfig.sourcemap,
               entryFileNames: '[name].cjs',
               chunkFileNames: '[name].cjs',
-              exports: cjsConfig.exports ?? 'auto',
+              exports: cjsConfig.exports ?? 'named',
               preserveModules: cjsConfig.preserveStructure ?? true,
               preserveModulesRoot: 'src',
               globals: outputConfig.globals,
@@ -358,7 +360,8 @@ export class RollupAdapter implements IBundlerAdapter {
               intro: _introCjs,
               outro: _outroCjs
             },
-            treeshake: config.treeshake
+            treeshake: config.treeshake,
+            onwarn: this.getOnWarn(config)
           })
         }
 
@@ -464,7 +467,7 @@ export class RollupAdapter implements IBundlerAdapter {
               globals: outputConfig.globals,
               entryFileNames,
               chunkFileNames,
-              exports: (outputConfig as any).exports ?? 'auto',
+              exports: isESM ? (outputConfig as any).exports ?? 'auto' : 'named',
               preserveModules: isESM || isCJS,
               preserveModulesRoot: (isESM || isCJS) ? 'src' : undefined,
               banner: _banner,
@@ -472,7 +475,8 @@ export class RollupAdapter implements IBundlerAdapter {
               intro: _intro,
               outro: _outro
             },
-            treeshake: config.treeshake
+            treeshake: config.treeshake,
+            onwarn: this.getOnWarn(config)
           })
         }
         if (umdConfig) configs.push(umdConfig)
@@ -507,7 +511,7 @@ export class RollupAdapter implements IBundlerAdapter {
           globals: outputConfig.globals,
           entryFileNames,
           chunkFileNames,
-          exports: (outputConfig as any).exports ?? 'auto',
+          exports: isESM ? (outputConfig as any).exports ?? 'auto' : 'named',
           preserveModules: isESM || isCJS,
           preserveModulesRoot: (isESM || isCJS) ? 'src' : undefined,
           banner: _banner2,
@@ -1052,13 +1056,14 @@ export class RollupAdapter implements IBundlerAdapter {
         file: `${umdSection.dir || 'dist'}/${umdSection.fileName || defaultUmdFile}`,
         sourcemap: (umdSection.sourcemap ?? outputConfig.sourcemap),
         globals: mergedGlobals,
-        exports: 'auto',
+        exports: 'named',
         banner,
         footer,
         intro: await this.resolveIntro(bannerConfig),
         outro: await this.resolveOutro(bannerConfig)
       },
-      treeshake: config.treeshake
+      treeshake: config.treeshake,
+      onwarn: this.getOnWarn(config)
     }
   }
 
@@ -1172,6 +1177,29 @@ export class RollupAdapter implements IBundlerAdapter {
       return bannerConfig.outro
     }
     return undefined
+  }
+
+  /**
+   * 统一的 onwarn 处理：过滤不必要的告警
+   */
+  private getOnWarn(_config?: any) {
+    const ignoredCodes = new Set([
+      'NAMESPACE_CONFLICT',
+      'MIXED_EXPORTS',
+    ])
+    return (warning: any, defaultHandler: (w: any) => void) => {
+      // 过滤常见非致命告警
+      if (ignoredCodes.has(warning.code)) return
+
+      // 过滤 typescript 插件的 TS5096 等诊断噪音
+      if (warning.code === 'PLUGIN_WARNING' && warning.plugin === 'typescript') {
+        const msg = String(warning.message || '')
+        if (msg.includes('TS5096')) return
+      }
+
+      // 其他告警交给默认处理
+      defaultHandler(warning)
+    }
   }
 
   /**

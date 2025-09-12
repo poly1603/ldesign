@@ -93,7 +93,55 @@ export class LibraryDetector {
       // 检测 package.json 字段
       await this.detectPackageJsonFields(projectPath, scores, evidence)
 
-      // 计算最终分数
+      // 如果检测到 .vue 文件，优先判定为 Vue 项目（根据依赖决定 2/3 版本），以确保无需额外配置也能正确处理 SFC
+      try {
+        const vueFiles = await findFiles(['src/**/*.vue', 'lib/**/*.vue', 'components/**/*.vue'], {
+          cwd: projectPath,
+          ignore: ['node_modules/**', 'dist/**', '**/*.test.*', '**/*.spec.*']
+        })
+
+        if (vueFiles.length > 0) {
+          // 解析 package.json 以判断 Vue 主版本
+          let vueMajor = 3
+          try {
+            const pkgPath = path.join(projectPath, 'package.json')
+            if (await exists(pkgPath)) {
+              const pkg = JSON.parse(await readFile(pkgPath, 'utf-8'))
+              const allDeps = { ...pkg.dependencies, ...pkg.devDependencies, ...pkg.peerDependencies }
+              const vueVer: string | undefined = allDeps?.vue
+              if (typeof vueVer === 'string') {
+                // 粗略解析主版本：匹配 ^3, ~3, 3., >=3 等
+                if (/(^|[^\d])2(\D|$)/.test(vueVer)) vueMajor = 2
+                else if (/(^|[^\d])3(\D|$)/.test(vueVer)) vueMajor = 3
+              }
+            }
+          } catch {}
+
+          const forcedType = vueMajor === 2 ? LibraryType.VUE2 : LibraryType.VUE3
+          const forcedEvidence = [
+            ...evidence[forcedType],
+            {
+              type: 'file',
+              description: `检测到 ${vueFiles.length} 个 .vue 文件，优先判定为 ${forcedType}`,
+              weight: 1,
+              source: vueFiles.slice(0, 3).join(', ')
+            }
+          ] as DetectionEvidence[]
+
+          const result: LibraryDetectionResult = {
+            type: forcedType,
+            confidence: 1,
+            evidence: forcedEvidence
+          }
+
+          this.logger.success(`检测完成: ${forcedType} (置信度: 100.0%)`)
+          return result
+        }
+      } catch (e) {
+        this.logger.debug('Vue 文件快速检测失败，回退到评分机制:', e)
+      }
+
+      // 计算最终分数（常规路径）
       const finalScores = this.calculateFinalScores(scores)
 
       // 找到最高分的类型
