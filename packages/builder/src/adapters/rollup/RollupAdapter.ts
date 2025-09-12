@@ -20,6 +20,7 @@ import { Logger } from '../../utils/logger'
 import { BuilderError } from '../../utils/error-handler'
 import { ErrorCode } from '../../constants/errors'
 import { normalizeInput } from '../../utils/glob'
+import { BannerGenerator } from '../../utils/banner-generator'
 
 /**
  * Rollup 适配器类
@@ -291,6 +292,12 @@ export class RollupAdapter implements IBundlerAdapter {
           const esmInput = esmConfig.input 
             ? await normalizeInput(esmConfig.input, process.cwd())
             : config.input
+          // 统一注入 Banner/Footer/Intro/Outro
+          const bannerCfgEsm = (config as any).banner
+          const _bannerEsm = await this.resolveBanner(bannerCfgEsm, config)
+          const _footerEsm = await this.resolveFooter(bannerCfgEsm)
+          const _introEsm = await this.resolveIntro(bannerCfgEsm)
+          const _outroEsm = await this.resolveOutro(bannerCfgEsm)
           configs.push({
             input: esmInput,
             external: config.external,
@@ -306,6 +313,10 @@ export class RollupAdapter implements IBundlerAdapter {
               preserveModulesRoot: 'src',
               globals: outputConfig.globals,
               name: outputConfig.name,
+              banner: _bannerEsm,
+              footer: _footerEsm,
+              intro: _introEsm,
+              outro: _outroEsm
             },
             treeshake: config.treeshake
           })
@@ -321,6 +332,12 @@ export class RollupAdapter implements IBundlerAdapter {
           const cjsInput = cjsConfig.input 
             ? await normalizeInput(cjsConfig.input, process.cwd())
             : config.input
+          // 统一注入 Banner/Footer/Intro/Outro
+          const bannerCfgCjs = (config as any).banner
+          const _bannerCjs = await this.resolveBanner(bannerCfgCjs, config)
+          const _footerCjs = await this.resolveFooter(bannerCfgCjs)
+          const _introCjs = await this.resolveIntro(bannerCfgCjs)
+          const _outroCjs = await this.resolveOutro(bannerCfgCjs)
           configs.push({
             input: cjsInput,
             external: config.external,
@@ -336,6 +353,10 @@ export class RollupAdapter implements IBundlerAdapter {
               preserveModulesRoot: 'src',
               globals: outputConfig.globals,
               name: outputConfig.name,
+              banner: _bannerCjs,
+              footer: _footerCjs,
+              intro: _introCjs,
+              outro: _outroCjs
             },
             treeshake: config.treeshake
           })
@@ -426,6 +447,11 @@ export class RollupAdapter implements IBundlerAdapter {
             const names = [...(formatPlugins || [])].map((p: any) => p?.name || '(anon)')
             this.logger.info(`[${format}] 有效插件: ${names.join(', ')}`)
           } catch {}
+          const bannerCfg = (config as any).banner
+          const _banner = await this.resolveBanner(bannerCfg, config)
+          const _footer = await this.resolveFooter(bannerCfg)
+          const _intro = await this.resolveIntro(bannerCfg)
+          const _outro = await this.resolveOutro(bannerCfg)
           configs.push({
             input: config.input,
             external: config.external,
@@ -440,7 +466,11 @@ export class RollupAdapter implements IBundlerAdapter {
               chunkFileNames,
               exports: (outputConfig as any).exports ?? 'auto',
               preserveModules: isESM || isCJS,
-              preserveModulesRoot: (isESM || isCJS) ? 'src' : undefined
+              preserveModulesRoot: (isESM || isCJS) ? 'src' : undefined,
+              banner: _banner,
+              footer: _footer,
+              intro: _intro,
+              outro: _outro
             },
             treeshake: config.treeshake
           })
@@ -463,6 +493,11 @@ export class RollupAdapter implements IBundlerAdapter {
           const names = [...(userPlugins || [])].map((p: any) => p?.name || '(anon)')
           this.logger.info(`[${format}] 有效插件: ${names.join(', ')}`)
         } catch {}
+        const bannerCfg2 = (config as any).banner
+        const _banner2 = await this.resolveBanner(bannerCfg2, config)
+        const _footer2 = await this.resolveFooter(bannerCfg2)
+        const _intro2 = await this.resolveIntro(bannerCfg2)
+        const _outro2 = await this.resolveOutro(bannerCfg2)
         rollupConfig.plugins = [...basePlugins, ...userPlugins]
         rollupConfig.output = {
           dir,
@@ -474,7 +509,11 @@ export class RollupAdapter implements IBundlerAdapter {
           chunkFileNames,
           exports: (outputConfig as any).exports ?? 'auto',
           preserveModules: isESM || isCJS,
-          preserveModulesRoot: (isESM || isCJS) ? 'src' : undefined
+          preserveModulesRoot: (isESM || isCJS) ? 'src' : undefined,
+          banner: _banner2,
+          footer: _footer2,
+          intro: _intro2,
+          outro: _outro2
         }
       }
     }
@@ -964,8 +1003,8 @@ export class RollupAdapter implements IBundlerAdapter {
     } catch {}
 
     // 应用 Banner 和 Footer 配置
-    const bannerConfig = (config as any).banner || {}
-    const banner = await this.resolveBanner(bannerConfig)
+    const bannerConfig = (config as any).banner
+    const banner = await this.resolveBanner(bannerConfig, config)
     const footer = await this.resolveFooter(bannerConfig)
 
     this.logger.info(`UMD Banner配置: ${JSON.stringify(bannerConfig)}`)
@@ -1042,49 +1081,76 @@ export class RollupAdapter implements IBundlerAdapter {
   /**
    * 解析 Banner
    */
-  private async resolveBanner(bannerConfig: any): Promise<string | undefined> {
+  private async resolveBanner(bannerConfig: any, config?: any): Promise<string | undefined> {
+    // 显式禁用
+    if (bannerConfig === false) return undefined
+
     const banners: string[] = []
 
     // 自定义 Banner
-    if (typeof bannerConfig.banner === 'function') {
+    if (bannerConfig && typeof bannerConfig.banner === 'function') {
       const customBanner = await bannerConfig.banner()
       if (customBanner) banners.push(customBanner)
-    } else if (typeof bannerConfig.banner === 'string' && bannerConfig.banner) {
+    } else if (bannerConfig && typeof bannerConfig.banner === 'string' && bannerConfig.banner) {
       banners.push(bannerConfig.banner)
     }
 
     // 自动生成版权信息
-    if (bannerConfig.copyright) {
-      const copyright = this.generateCopyright(bannerConfig.copyright)
+    if (bannerConfig && (bannerConfig as any).copyright) {
+      const copyright = this.generateCopyright((bannerConfig as any).copyright)
       if (copyright) banners.push(copyright)
     }
 
     // 自动生成构建信息
-    if (bannerConfig.buildInfo) {
-      const buildInfo = this.generateBuildInfo(bannerConfig.buildInfo)
+    if (bannerConfig && (bannerConfig as any).buildInfo) {
+      const buildInfo = this.generateBuildInfo((bannerConfig as any).buildInfo)
       if (buildInfo) banners.push(buildInfo)
     }
 
-    return banners.length > 0 ? banners.join('\n') : undefined
+    if (banners.length > 0) return banners.join('\n')
+
+    // 未提供任何 banner 配置时，自动生成默认 banner（从 package.json 推断）
+    try {
+      const projectInfo = await BannerGenerator.getProjectInfo()
+      const auto = BannerGenerator.generate({
+        bundler: this.name,
+        bundlerVersion: this.version !== 'unknown' ? this.version : undefined,
+        ...projectInfo,
+        buildMode: (config as any)?.mode || process.env.NODE_ENV || 'production',
+        minified: Boolean((config as any)?.minify)
+      })
+      return auto
+    } catch {
+      return undefined
+    }
   }
 
   /**
    * 解析 Footer
    */
   private async resolveFooter(bannerConfig: any): Promise<string | undefined> {
-    if (typeof bannerConfig.footer === 'function') {
+    if (bannerConfig === false) return undefined
+    if (bannerConfig && typeof bannerConfig.footer === 'function') {
       return await bannerConfig.footer()
     }
-    if (typeof bannerConfig.footer === 'string') {
+    if (bannerConfig && typeof bannerConfig.footer === 'string') {
       return bannerConfig.footer
     }
-    return undefined
+    // 默认 Footer（未提供时自动生成）
+    try {
+      const info = await BannerGenerator.getProjectInfo()
+      if (info.projectName) {
+        return `/*! End of ${info.projectName} | Powered by @ldesign/builder */`
+      }
+    } catch {}
+    return '/*! Powered by @ldesign/builder */'
   }
 
   /**
    * 解析 Intro
    */
   private async resolveIntro(bannerConfig: any): Promise<string | undefined> {
+    if (!bannerConfig) return undefined
     if (typeof bannerConfig.intro === 'function') {
       return await bannerConfig.intro()
     }
@@ -1098,6 +1164,7 @@ export class RollupAdapter implements IBundlerAdapter {
    * 解析 Outro
    */
   private async resolveOutro(bannerConfig: any): Promise<string | undefined> {
+    if (!bannerConfig) return undefined
     if (typeof bannerConfig.outro === 'function') {
       return await bannerConfig.outro()
     }

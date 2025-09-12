@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup'
 
-// 基础库配置（ESM + CJS）
-const libraryConfig = defineConfig({
+// 基础库配置拆分为 ESM 与 CJS，避免 CJS 代码分割导致 Node 将 .cjs 识别为 ESM 的告警
+const esmLibraryConfig = defineConfig({
   // 入口文件 - 打包所有核心 TypeScript 文件，排除测试文件
   entry: [
     'src/**/*.ts',
@@ -11,16 +11,16 @@ const libraryConfig = defineConfig({
     '!src/tests/**/*.test.ts'
   ],
 
-  // 输出格式
-  format: ['esm', 'cjs'],
+  // 仅输出 ESM，允许代码分割
+  format: ['esm'],
 
   // 输出目录
   outDir: 'dist',
 
-  // 不生成类型声明文件
+  // 生成类型声明文件
   dts: true,
 
-  // 代码分割 - 启用以优化输出结构
+  // 代码分割 - 启用以优化输出结构（仅对 ESM）
   splitting: true,
 
   // 生成 source map
@@ -111,6 +111,74 @@ const libraryConfig = defineConfig({
   },
 })
 
+// CJS 库配置（禁用代码分割以避免 Node 警告）
+const cjsLibraryConfig = defineConfig({
+  entry: [
+    'src/**/*.ts',
+    '!src/**/*.test.ts',
+    '!src/**/*.spec.ts',
+    '!src/__tests__/**',
+    '!src/tests/**/*.test.ts'
+  ],
+  format: ['cjs'],
+  outDir: 'dist',
+  dts: false, // DTS 已由 ESM 配置生成，避免重复
+  splitting: false, // 关键：CJS 禁止代码分割，防止 .cjs 中出现 ESM 语法
+  sourcemap: true,
+  clean: false, // 避免清理掉 ESM 构建产物
+  outExtension({ format }) {
+    return { js: format === 'esm' ? '.js' : '.cjs' }
+  },
+  external: [
+    'node:path',
+    'node:fs',
+    'node:url',
+    'node:process',
+    'node:module',
+    'rollup',
+    'chalk',
+    'commander',
+    'ora',
+    'fast-glob',
+    'fs-extra',
+    'glob',
+    'gzip-size',
+    'pretty-bytes',
+    'tslib',
+    'typescript',
+    '@rollup/plugin-babel',
+    '@rollup/plugin-commonjs',
+    '@rollup/plugin-json',
+    '@rollup/plugin-node-resolve',
+    '@rollup/plugin-replace',
+    '@rollup/plugin-terser',
+    '@rollup/plugin-typescript',
+    '@vitejs/plugin-react',
+    '@vue/compiler-sfc',
+    'unplugin-vue',
+    'unplugin-vue-jsx',
+    'rollup-plugin-esbuild',
+    'rollup-plugin-filesize',
+    'rollup-plugin-less',
+    'rollup-plugin-livereload',
+    'rollup-plugin-postcss',
+    'rollup-plugin-sass',
+    'rollup-plugin-serve',
+    'rollup-plugin-stylus',
+    'rollup-plugin-vue',
+  ],
+  target: 'node16',
+  platform: 'node',
+  bundle: true,
+  tsconfig: 'tsconfig.json',
+  minify: false,
+  keepNames: true,
+  esbuildOptions(options) {
+    options.packages = 'external'
+    options.chunkNames = 'chunks/[name]-[hash]'
+  },
+})
+
 // UMD 配置（用于浏览器和独立使用）
 const umdConfig = defineConfig([
   // 非压缩版本
@@ -197,5 +265,5 @@ const umdConfig = defineConfig([
   }
 ])
 
-// 导出主配置（基础库配置 + UMD 配置）
-export default [libraryConfig, ...umdConfig]
+// 导出主配置（ESM + CJS + UMD 配置）
+export default [esmLibraryConfig, cjsLibraryConfig, ...umdConfig]

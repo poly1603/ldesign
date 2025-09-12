@@ -103,9 +103,11 @@ async function resolveSinglePattern(
     ignore: ['**/node_modules/**', '**/.git/**'],
   })
 
-  // 如果没有匹配到文件，返回原始模式（可能是新文件）
+  // 如果没有匹配到文件：
+  // - 这是通配符模式时，表示没有该类文件，返回空列表以避免将模式当作物理文件传给打包器
+  // - 非通配符模式的情况在上方已提前返回，这里只处理通配符
   if (files.length === 0) {
-    return path.resolve(rootDir, pattern)
+    return []
   }
 
   // 如果只有一个文件，返回字符串

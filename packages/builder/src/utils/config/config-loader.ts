@@ -126,9 +126,13 @@ export class ConfigLoader {
       let config: BuilderConfig
       if (typeof configModule === 'function') {
         // 函数式配置
+        const env: Record<string, string> = Object.fromEntries(
+          Object.entries(process.env || {}).map(([k, v]) => [k, v ?? ''])
+        )
         config = await configModule({
           mode: process.env.NODE_ENV || 'production',
-          bundler: process.env.BUILDER_BUNDLER || 'rollup'
+          bundler: process.env.BUILDER_BUNDLER || 'rollup',
+          env
         })
       } else if (configModule && typeof configModule === 'object') {
         // 对象配置
