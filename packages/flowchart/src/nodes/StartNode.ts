@@ -17,12 +17,12 @@ export class StartNodeModel extends CircleNodeModel {
     // 设置节点尺寸
     this.r = 30
 
-    // 设置默认文本 - 文本在节点下方
+    // 设置默认文本 - 文本在图标下方，有足够间隔
     if (!this.text?.value) {
       this.text = {
         value: '开始',
         x: this.x,
-        y: this.y + this.r + 15, // 文本在圆形下方
+        y: this.y + 15, // 文本在图标下方，增加间隔
         draggable: false,
         editable: true
       }
@@ -108,10 +108,10 @@ export class StartNode extends CircleNode {
         r,
         ...style
       }),
-      // 内部图标 - 播放按钮图标在圆形中心
+      // 内部图标 - 播放按钮图标，在文本上方
       h('path', {
         d: 'M-6,-4 L-6,4 L6,0 Z',
-        transform: `translate(${x}, ${y - 5})`, // 图标稍微上移
+        transform: `translate(${x}, ${y - 15})`, // 图标在文本上方，增加间隔
         fill: 'var(--ldesign-success-color, #52c41a)',
         stroke: 'none'
       })

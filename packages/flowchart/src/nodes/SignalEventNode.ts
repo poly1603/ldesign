@@ -17,12 +17,12 @@ export class SignalEventNodeModel extends CircleNodeModel {
     // 设置节点尺寸
     this.r = 25
 
-    // 设置默认文本
+    // 设置默认文本 - 文本在图标下方，整体居中
     if (!this.text?.value) {
       this.text = {
         value: '信号事件',
         x: this.x,
-        y: this.y + 35,
+        y: this.y + 12,
         draggable: false,
         editable: true
       }
@@ -34,7 +34,7 @@ export class SignalEventNodeModel extends CircleNodeModel {
    */
   override getNodeStyle() {
     const style = super.getNodeStyle()
-    
+
     return {
       ...style,
       fill: '#e6f7ff',
@@ -142,8 +142,10 @@ export class SignalEventNode extends CircleNode {
    * 获取信号图标
    */
   private getSignalIcon(x: number, y: number): h.JSX.Element {
+    // 图标在文本上方，整体居中
+    const iconY = y - 15
     return h('polygon', {
-      points: `${x},${y - 8} ${x + 8},${y + 6} ${x - 8},${y + 6}`,
+      points: `${x},${iconY - 8} ${x + 8},${iconY + 6} ${x - 8},${iconY + 6}`,
       fill: 'none',
       stroke: '#1890ff',
       strokeWidth: 2

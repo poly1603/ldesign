@@ -18,12 +18,12 @@ export class ConditionNodeModel extends DiamondNodeModel {
     this.rx = 60
     this.ry = 30
 
-    // 设置默认文本 - 文本在节点下方
+    // 设置默认文本 - 文本在图标下方，有足够间隔
     if (!this.text?.value) {
       this.text = {
         value: '条件判断',
         x: this.x,
-        y: this.y + this.ry + 15, // 文本在菱形下方
+        y: this.y + 15, // 文本在图标下方，增加间隔
         draggable: false,
         editable: true
       }
@@ -125,16 +125,16 @@ export class ConditionNode extends DiamondNode {
         points,
         ...style
       }),
-      // 条件图标 - 问号
+      // 条件图标 - 问号，在文本上方，增加间隔
       h('g', {
-        transform: `translate(${x}, ${y - 8})`
+        transform: `translate(${x}, ${y - 15})`
       }, [
         h('text', {
           x: 0,
           y: 0,
           textAnchor: 'middle',
           dominantBaseline: 'middle',
-          fontSize: 16,
+          fontSize: 14,
           fontWeight: 'bold',
           fill: 'var(--ldesign-warning-color, #f5c538)'
         }, '?')

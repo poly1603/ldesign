@@ -18,12 +18,12 @@ export class ExclusiveGatewayModel extends DiamondNodeModel {
     this.rx = 40
     this.ry = 40
 
-    // 设置默认文本
+    // 设置默认文本 - 文本在图标下方，整体居中
     if (!this.text?.value) {
       this.text = {
         value: '排他网关',
         x: this.x,
-        y: this.y + 50
+        y: this.y + 12
       }
     }
   }
@@ -119,9 +119,9 @@ export class ExclusiveGateway extends DiamondNode {
         transform: `rotate(45 ${x} ${y})`,
         ...style
       }),
-      // 排他符号（X）
+      // 排他符号（X） - 图标在文本上方，整体居中
       h('path', {
-        d: `M${x - 10},${y - 10} L${x + 10},${y + 10} M${x + 10},${y - 10} L${x - 10},${y + 10}`,
+        d: `M${x - 10},${y - 25} L${x + 10},${y - 5} M${x + 10},${y - 25} L${x - 10},${y - 5}`,
         stroke: 'var(--ldesign-warning-color-7, #c2960f)',
         strokeWidth: 3,
         fill: 'none'

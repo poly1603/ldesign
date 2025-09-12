@@ -25,6 +25,19 @@ class CustomMaterialNodeModel extends RectNodeModel {
   }
 
   /**
+   * 初始化节点数据，设置文本位置
+   */
+  initNodeData(data: any) {
+    super.initNodeData(data)
+
+    // 如果有图标，调整文本位置到图标下方
+    const material = this.properties?.material as CustomMaterial
+    if (material?.icon && this.text) {
+      this.text.y = this.y + 15 // 文本在图标下方，增加间隔
+    }
+  }
+
+  /**
    * 获取节点样式
    */
   getNodeStyle() {
@@ -91,13 +104,13 @@ class CustomMaterialNodeModel extends RectNodeModel {
       }))
     }
 
-    // 默认锚点
-    const { width, height } = this
+    // 默认锚点 - 使用相对于节点中心的坐标
+    const { x, y, width, height } = this
     return [
-      { x: width / 2, y: 0, type: 'input', id: 'top' },
-      { x: width, y: height / 2, type: 'output', id: 'right' },
-      { x: width / 2, y: height, type: 'output', id: 'bottom' },
-      { x: 0, y: height / 2, type: 'input', id: 'left' }
+      { x: x, y: y - height / 2, type: 'input', id: 'top' },
+      { x: x + width / 2, y: y, type: 'output', id: 'right' },
+      { x: x, y: y + height / 2, type: 'output', id: 'bottom' },
+      { x: x - width / 2, y: y, type: 'input', id: 'left' }
     ]
   }
 }
@@ -253,7 +266,7 @@ class CustomMaterialNodeView extends RectNode {
 
     const { x, y } = model
     const icon = material.icon
-    const iconY = y - 10 // 图标位置稍微上移
+    const iconY = y - 15 // 图标在文本上方，增加间隔
 
     switch (icon.type) {
       case 'text':

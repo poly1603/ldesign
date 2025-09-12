@@ -19,6 +19,7 @@ import type {
 } from '../types'
 import { ThemeManager } from '../themes/ThemeManager'
 import { PluginManager } from '../plugins/PluginManager'
+import { HistoryPlugin } from '../plugins/builtin/HistoryPlugin'
 import { registerApprovalNodes } from '../nodes'
 import { registerApprovalEdges } from '../edges'
 import { defaultConfig } from '../config/defaultConfig'
@@ -85,7 +86,10 @@ export class FlowchartEditor {
       this.setTheme(this.config.theme)
     }
 
-    // 安装插件
+    // 安装默认插件
+    this.installDefaultPlugins()
+
+    // 安装用户自定义插件
     if (this.config.plugins) {
       this.config.plugins.forEach(plugin => {
         this.pluginManager.install(plugin)
@@ -101,6 +105,8 @@ export class FlowchartEditor {
     // 设置默认背景
     setTimeout(() => {
       this.setCanvasBackground('grid')
+      // 启动背景监控
+      this.startBackgroundMonitor()
     }, 100)
   }
 
@@ -111,6 +117,8 @@ export class FlowchartEditor {
     let container: HTMLElement
 
     if (this.uiManager) {
+      // 设置UI管理器的编辑器引用
+      this.uiManager.setEditor(this)
       // 使用UI管理器提供的画布容器
       container = this.uiManager.init()
     } else {
@@ -150,6 +158,9 @@ export class FlowchartEditor {
       history: true,
       // 启用多选模式
       multipleSelectKey: 'ctrl',
+      // 禁用双击编辑
+      nodeTextEdit: false,
+      edgeTextEdit: false,
       // 自定义样式配置
       style: {
         // 节点选中样式
@@ -238,10 +249,13 @@ export class FlowchartEditor {
       /* 默认网格背景 */
       .lf-canvas-overlay.grid-background {
         background-color: #fafafa;
+        background-image:
+          radial-gradient(circle, #d9d9d9 1px, transparent 1px);
+        background-size: 20px 20px;
       }
 
       .lf-canvas-overlay.grid-background .lf-grid {
-        opacity: 0.4;
+        opacity: 0.6;
       }
 
       .lf-canvas-overlay.grid-background .lf-grid circle {
@@ -283,6 +297,9 @@ export class FlowchartEditor {
       /* 暗色主题下的网格背景 */
       [data-theme="dark"] .lf-canvas-overlay.grid-background {
         background-color: #1f1f1f;
+        background-image:
+          radial-gradient(circle, #404040 1px, transparent 1px);
+        background-size: 20px 20px;
       }
 
       /* 暗色主题下的PS风格背景 */
@@ -544,6 +561,17 @@ export class FlowchartEditor {
   }
 
   /**
+   * 安装默认插件
+   */
+  private installDefaultPlugins(): void {
+    // 安装历史记录插件
+    const historyPlugin = new HistoryPlugin({
+      maxSize: 50 // 最多保存50条历史记录
+    })
+    this.pluginManager.install(historyPlugin)
+  }
+
+  /**
    * 绑定事件
    */
   private bindEvents(): void {
@@ -564,9 +592,10 @@ export class FlowchartEditor {
       this.emit('node:click', { node: nodeConfig, event: data.e })
     })
 
-    this.lf.on('node:dblclick', (data) => {
-      this.emit('node:dblclick', { node: data.data, event: data.e })
-    })
+    // 禁用双击节点功能，避免意外进入编辑模式
+    // this.lf.on('node:dblclick', (data) => {
+    //   this.emit('node:dblclick', { node: data.data, event: data.e })
+    // })
 
     // 节点右键菜单
     this.lf.on('node:contextmenu', (data) => {
@@ -677,6 +706,64 @@ export class FlowchartEditor {
     this.lf.on('history:change', () => {
       this.emit('data:change', { flowchartData: this.getData() })
     })
+
+    // 画布变换事件 - 在拖动时维护背景
+    this.lf.on('graph:transform', () => {
+      // 立即应用背景
+      this.forceApplyBackground()
+      // 延迟再次确保
+      setTimeout(() => {
+        this.forceApplyBackground()
+      }, 10)
+    })
+
+    // 画布渲染完成事件
+    this.lf.on('graph:rendered', () => {
+      // 确保背景在渲染后保持
+      this.forceApplyBackground()
+      setTimeout(() => {
+        this.forceApplyBackground()
+      }, 50)
+    })
+
+    // 监听鼠标事件来在拖动时维护背景
+    if (this.lf.container) {
+      let isDragging = false
+      let lastApplyTime = 0
+
+      this.lf.container.addEventListener('mousedown', () => {
+        isDragging = true
+        // 拖动开始时应用背景
+        this.forceApplyBackground()
+      })
+
+      this.lf.container.addEventListener('mousemove', () => {
+        if (isDragging) {
+          // 限制频率，每50ms最多应用一次
+          const now = Date.now()
+          if (now - lastApplyTime > 50) {
+            this.forceApplyBackground()
+            lastApplyTime = now
+          }
+        }
+      })
+
+      this.lf.container.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false
+          // 拖动结束时使用温和的方式应用背景，避免闪动
+          this.smoothApplyBackground()
+        }
+      })
+
+      // 监听鼠标离开，确保状态重置
+      this.lf.container.addEventListener('mouseleave', () => {
+        if (isDragging) {
+          isDragging = false
+          setTimeout(() => this.forceApplyBackground(), 10)
+        }
+      })
+    }
   }
 
   /**
@@ -886,8 +973,16 @@ export class FlowchartEditor {
       graphData.nodes.forEach(node => {
         const x = node.x || 0
         const y = node.y || 0
-        const width = 120 // 节点默认宽度
-        const height = 60 // 节点默认高度
+
+        // 根据节点类型获取实际尺寸
+        let width = 120, height = 60
+
+        // 获取节点模型来获取实际尺寸
+        const nodeModel = this.lf.getNodeModelById(node.id)
+        if (nodeModel) {
+          width = nodeModel.width || 120
+          height = nodeModel.height || 60
+        }
 
         minX = Math.min(minX, x - width / 2)
         minY = Math.min(minY, y - height / 2)
@@ -895,8 +990,19 @@ export class FlowchartEditor {
         maxY = Math.max(maxY, y + height / 2)
       })
 
+      // 如果只有一个节点，设置最小区域
+      if (graphData.nodes.length === 1) {
+        const centerX = (minX + maxX) / 2
+        const centerY = (minY + maxY) / 2
+        const minSize = 200
+        minX = centerX - minSize / 2
+        maxX = centerX + minSize / 2
+        minY = centerY - minSize / 2
+        maxY = centerY + minSize / 2
+      }
+
       // 添加边距
-      const padding = 50
+      const padding = 80
       minX -= padding
       minY -= padding
       maxX += padding
@@ -908,24 +1014,41 @@ export class FlowchartEditor {
       const contentCenterX = (minX + maxX) / 2
       const contentCenterY = (minY + maxY) / 2
 
-      // 获取画布尺寸
-      const canvasWidth = this.config.width || 800
-      const canvasHeight = this.config.height || 600
+      // 获取画布实际尺寸
+      const container = this.lf.container
+      const canvasWidth = container ? container.clientWidth : (this.config.width || 800)
+      const canvasHeight = container ? container.clientHeight : (this.config.height || 600)
 
-      // 计算缩放比例
-      const scaleX = canvasWidth / contentWidth
-      const scaleY = canvasHeight / contentHeight
-      const scale = Math.min(scaleX, scaleY, 1) // 不超过100%
+      // 计算缩放比例，留出一些边距
+      const scaleX = (canvasWidth * 0.9) / contentWidth
+      const scaleY = (canvasHeight * 0.9) / contentHeight
+      const scale = Math.min(scaleX, scaleY, 1.5) // 最大放大到150%
 
-      // 应用缩放和居中
-      this.lf.zoom(scale)
+      // 重置变换
+      this.lf.resetZoom()
+      this.lf.resetTranslate()
+
+      // 应用缩放
+      if (scale !== 1) {
+        this.lf.zoom(scale)
+      }
+
+      // 计算居中偏移
+      const canvasCenterX = canvasWidth / 2
+      const canvasCenterY = canvasHeight / 2
+
+      // 应用居中变换
       this.lf.translateCenter(contentCenterX, contentCenterY)
 
-      console.log(`适应视图: 缩放=${scale.toFixed(2)}, 中心=(${contentCenterX.toFixed(0)}, ${contentCenterY.toFixed(0)})`)
+      console.log(`适应视图: 缩放=${scale.toFixed(2)}, 内容中心=(${contentCenterX.toFixed(0)}, ${contentCenterY.toFixed(0)}), 画布尺寸=(${canvasWidth}, ${canvasHeight})`)
     } catch (error) {
       console.error('适应视图失败:', error)
       // 降级到默认的fitView
-      this.lf.fitView()
+      try {
+        this.lf.fitView()
+      } catch (fallbackError) {
+        console.error('默认fitView也失败:', fallbackError)
+      }
     }
   }
 
@@ -962,6 +1085,13 @@ export class FlowchartEditor {
    */
   getLogicFlow(): LogicFlow {
     return this.lf
+  }
+
+  /**
+   * 获取插件实例
+   */
+  getPlugin(name: string): any {
+    return this.pluginManager.getPlugin(name)
   }
 
   /**
@@ -1065,6 +1195,9 @@ export class FlowchartEditor {
           text: this.getDefaultNodeText(nodeType)
         })
       },
+      onCustomMaterialDrop: (materialId: string, position: { x: number; y: number }) => {
+        this.addCustomMaterialNode(materialId, position)
+      },
       onToolClick: (toolName: string) => {
         this.handleToolClick(toolName)
       },
@@ -1103,6 +1236,9 @@ export class FlowchartEditor {
         break
       case 'material-repository':
         this.showMaterialRepository()
+        break
+      case 'history':
+        this.toggleHistoryPanel()
         break
       case 'undo':
         this.lf.undo()
@@ -1559,6 +1695,15 @@ export class FlowchartEditor {
   }
 
   /**
+   * 切换历史记录面板
+   */
+  private toggleHistoryPanel(): void {
+    if (this.uiManager) {
+      this.uiManager.toggleHistoryPanel()
+    }
+  }
+
+  /**
    * 添加自定义物料到画布
    */
   private addCustomMaterialToCanvas(material: any): void {
@@ -1578,6 +1723,193 @@ export class FlowchartEditor {
     // 使用LogicFlow的addNode方法
     const nodeId = this.lf.addNode(nodeConfig)
     console.log(`自定义物料"${material.name}"已添加到画布，节点ID: ${nodeId}`)
+  }
+
+  /**
+   * 通过拖拽添加自定义物料节点
+   */
+  private addCustomMaterialNode(materialId: string, position: { x: number; y: number }): void {
+    // 从物料仓库获取物料数据
+    const material = this.materialRepositoryManager.getMaterial(materialId)
+    if (!material) {
+      console.error(`找不到物料: ${materialId}`)
+      return
+    }
+
+    // UIManager已经进行了坐标转换，直接使用传入的position
+    const nodeConfig = {
+      type: 'custom-material',
+      x: position.x,
+      y: position.y,
+      text: material.name,
+      properties: {
+        material: material // 将完整的物料数据传递给节点
+      }
+    }
+
+    // 使用LogicFlow的addNode方法
+    const nodeId = this.lf.addNode(nodeConfig)
+    console.log(`自定义物料"${material.name}"已拖拽添加到画布，节点ID: ${nodeId}，位置: (${position.x}, ${position.y})`)
+
+    // 触发数据变化事件
+    this.emit('data:change', this.getData())
+  }
+
+  /**
+   * 启动背景监控，确保背景在DOM变化后能够保持
+   */
+  private startBackgroundMonitor(): void {
+    // 使用更温和的监控策略，减少闪动
+    if (this.lf.container) {
+      let isApplying = false // 防止递归调用
+      let lastCheckTime = 0 // 防止频繁检查
+
+      const observer = new MutationObserver((mutations) => {
+        if (isApplying) return
+
+        const now = Date.now()
+        // 限制检查频率，至少间隔500ms
+        if (now - lastCheckTime < 500) return
+
+        // 只在canvas-overlay的class属性变化时检查
+        const hasRelevantChange = mutations.some(mutation => {
+          if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') return false
+          const target = mutation.target as HTMLElement
+          return target.classList.contains('lf-canvas-overlay')
+        })
+
+        if (hasRelevantChange) {
+          lastCheckTime = now
+          // 延迟检查，避免在拖动过程中触发
+          setTimeout(() => {
+            if (!isApplying) {
+              this.ensureBackgroundApplied()
+            }
+          }, 200)
+        }
+      })
+
+      observer.observe(this.lf.container, {
+        attributes: true,
+        attributeFilter: ['class'],
+        subtree: true
+      })
+
+      // 进一步减少定期检查频率
+      setInterval(() => {
+        if (!isApplying) {
+          this.ensureBackgroundApplied()
+        }
+      }, 10000) // 改为10秒检查一次
+    }
+  }
+
+  /**
+   * 强制应用背景（更激进的方法）
+   */
+  private forceApplyBackground(): void {
+    const canvasOverlay = this.lf.container?.querySelector('.lf-canvas-overlay') as HTMLElement
+    if (canvasOverlay) {
+      // 获取目标类和样式
+      const targetClass = this.currentBackgroundType === 'ps' ? 'ps-background' :
+        this.currentBackgroundType === 'solid' ? 'solid-background' : 'grid-background'
+      const targetStyle = this.getBackgroundStyle()
+      const targetSize = this.getBackgroundSize()
+
+      // 检查是否已经有正确的类和样式
+      const hasCorrectClass = canvasOverlay.classList.contains(targetClass)
+      const currentStyle = canvasOverlay.style.backgroundImage
+
+      if (!hasCorrectClass || currentStyle !== targetStyle) {
+        // 平滑地应用背景，避免闪动
+        canvasOverlay.classList.remove('ps-background', 'solid-background', 'grid-background')
+        canvasOverlay.classList.add(targetClass)
+
+        // 直接设置样式属性，确保立即生效
+        canvasOverlay.style.backgroundImage = targetStyle
+        canvasOverlay.style.backgroundSize = targetSize
+        canvasOverlay.style.backgroundRepeat = 'repeat'
+        canvasOverlay.style.backgroundPosition = '0 0'
+      }
+    }
+  }
+
+  /**
+   * 获取背景样式
+   */
+  private getBackgroundStyle(): string {
+    switch (this.currentBackgroundType) {
+      case 'grid':
+        return 'radial-gradient(circle, #d9d9d9 1px, transparent 1px)'
+      case 'ps':
+        return 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%)'
+      case 'solid':
+        return 'none'
+      default:
+        return 'radial-gradient(circle, #d9d9d9 1px, transparent 1px)'
+    }
+  }
+
+  /**
+   * 获取背景尺寸
+   */
+  private getBackgroundSize(): string {
+    switch (this.currentBackgroundType) {
+      case 'grid':
+        return '20px 20px'
+      case 'ps':
+        return '20px 20px, 20px 20px, 20px 20px, 20px 20px'
+      case 'solid':
+        return 'auto'
+      default:
+        return '20px 20px'
+    }
+  }
+
+  /**
+   * 平滑应用背景（专门用于松手时，避免闪动）
+   */
+  private smoothApplyBackground(): void {
+    const canvasOverlay = this.lf.container?.querySelector('.lf-canvas-overlay') as HTMLElement
+    if (canvasOverlay) {
+      const targetClass = this.currentBackgroundType === 'ps' ? 'ps-background' :
+        this.currentBackgroundType === 'solid' ? 'solid-background' : 'grid-background'
+
+      // 使用requestAnimationFrame确保在下一帧应用，避免闪动
+      requestAnimationFrame(() => {
+        if (!canvasOverlay.classList.contains(targetClass)) {
+          canvasOverlay.classList.remove('ps-background', 'solid-background', 'grid-background')
+          canvasOverlay.classList.add(targetClass)
+
+          // 设置样式，但不强制重绘
+          canvasOverlay.style.backgroundImage = this.getBackgroundStyle()
+          canvasOverlay.style.backgroundSize = this.getBackgroundSize()
+        }
+
+        // 延迟再次确保，但使用更长的延迟避免闪动
+        setTimeout(() => {
+          if (!canvasOverlay.classList.contains(targetClass)) {
+            this.forceApplyBackground()
+          }
+        }, 200)
+      })
+    }
+  }
+
+  /**
+   * 确保背景已应用（温和的方法）
+   */
+  private ensureBackgroundApplied(): void {
+    const canvasOverlay = this.lf.container?.querySelector('.lf-canvas-overlay') as HTMLElement
+    if (canvasOverlay) {
+      const hasBackgroundClass = canvasOverlay.classList.contains('grid-background') ||
+        canvasOverlay.classList.contains('ps-background') ||
+        canvasOverlay.classList.contains('solid-background')
+
+      if (!hasBackgroundClass) {
+        this.forceApplyBackground()
+      }
+    }
   }
 
   /**
@@ -1614,6 +1946,36 @@ export class FlowchartEditor {
         }
       })
     }
+  }
+
+  /**
+   * 进入节点编辑模式
+   */
+  private enterNodeEditMode(nodeData: any): void {
+    // 转换为标准节点配置
+    const nodeConfig: ApprovalNodeConfig = {
+      id: nodeData.id,
+      type: nodeData.type as ApprovalNodeType,
+      x: nodeData.x,
+      y: nodeData.y,
+      text: nodeData.text?.value || nodeData.text || '',
+      properties: nodeData.properties || {}
+    }
+
+    // 选中节点并显示属性面板
+    this.selectedNode = nodeConfig
+    this.uiManager?.setSelectedNode(nodeConfig)
+
+    // 如果有属性面板，聚焦到文本输入框
+    setTimeout(() => {
+      const textInput = document.querySelector('.property-item input[type="text"]') as HTMLInputElement
+      if (textInput) {
+        textInput.focus()
+        textInput.select()
+      }
+    }, 100)
+
+    console.log(`进入节点编辑模式: ${nodeConfig.type} - ${nodeConfig.text}`)
   }
 
   /**

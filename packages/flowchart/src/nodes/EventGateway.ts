@@ -23,12 +23,12 @@ export class EventGatewayNodeModel extends PolygonNodeModel {
       [this.x - size / 2, this.y]  // 左
     ]
 
-    // 设置默认文本
+    // 设置默认文本 - 文本在图标下方，整体居中
     if (!this.text?.value) {
       this.text = {
         value: '事件网关',
         x: this.x,
-        y: this.y + 35,
+        y: this.y + 12,
         draggable: false,
         editable: true
       }
@@ -40,7 +40,7 @@ export class EventGatewayNodeModel extends PolygonNodeModel {
    */
   override getNodeStyle() {
     const style = super.getNodeStyle()
-    
+
     return {
       ...style,
       fill: '#fff1f0',
@@ -153,11 +153,13 @@ export class EventGatewayNode extends PolygonNode {
    * 获取事件网关图标
    */
   private getEventIcon(x: number, y: number): h.JSX.Element {
+    // 图标在文本上方，整体居中
+    const iconY = y - 15
     return h('g', {}, [
       // 外圆
       h('circle', {
         cx: x,
-        cy: y,
+        cy: iconY,
         r: 6,
         fill: 'none',
         stroke: 'white',
@@ -165,7 +167,7 @@ export class EventGatewayNode extends PolygonNode {
       }),
       // 五角星
       h('polygon', {
-        points: `${x},${y-4} ${x+1.2},${y-1.2} ${x+4},${y-1.2} ${x+1.6},${y+0.8} ${x+2.4},${y+4} ${x},${y+2} ${x-2.4},${y+4} ${x-1.6},${y+0.8} ${x-4},${y-1.2} ${x-1.2},${y-1.2}`,
+        points: `${x},${iconY - 4} ${x + 1.2},${iconY - 1.2} ${x + 4},${iconY - 1.2} ${x + 1.6},${iconY + 0.8} ${x + 2.4},${iconY + 4} ${x},${iconY + 2} ${x - 2.4},${iconY + 4} ${x - 1.6},${iconY + 0.8} ${x - 4},${iconY - 1.2} ${x - 1.2},${iconY - 1.2}`,
         fill: 'white'
       })
     ])

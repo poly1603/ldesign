@@ -19,12 +19,12 @@ export class ManualTaskNodeModel extends RectNodeModel {
     this.height = 60
     this.radius = 8
 
-    // 设置默认文本
+    // 设置默认文本 - 文本在图标下方，整体居中
     if (!this.text?.value) {
       this.text = {
         value: '手工任务',
         x: this.x,
-        y: this.y,
+        y: this.y + 12,
         draggable: false,
         editable: true
       }
@@ -36,7 +36,7 @@ export class ManualTaskNodeModel extends RectNodeModel {
    */
   override getNodeStyle() {
     const style = super.getNodeStyle()
-    
+
     return {
       ...style,
       fill: 'var(--ldesign-brand-color-1, #f9f0ff)',
@@ -147,7 +147,8 @@ export class ManualTaskNode extends RectNode {
    * 获取手工图标
    */
   private getManualIcon(x: number, y: number): h.JSX.Element {
-    return h('g', { transform: `translate(${x - 45}, ${y - 20})` }, [
+    // 图标在文本上方，整体居中
+    return h('g', { transform: `translate(${x - 45}, ${y - 35})` }, [
       // 手掌
       h('path', {
         d: 'M-2,-3 C-2,-5 -1,-6 0,-6 C1,-6 2,-5 2,-3 L2,2 C2,3 1,4 0,4 C-1,4 -2,3 -2,2 L-2,-3 Z',

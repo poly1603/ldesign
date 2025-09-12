@@ -19,12 +19,12 @@ export class ScriptTaskNodeModel extends RectNodeModel {
     this.height = 60
     this.radius = 8
 
-    // 设置默认文本
+    // 设置默认文本 - 文本在图标下方，整体居中
     if (!this.text?.value) {
       this.text = {
         value: '脚本任务',
         x: this.x,
-        y: this.y,
+        y: this.y + 12,
         draggable: false,
         editable: true
       }
@@ -36,7 +36,7 @@ export class ScriptTaskNodeModel extends RectNodeModel {
    */
   override getNodeStyle() {
     const style = super.getNodeStyle()
-    
+
     return {
       ...style,
       fill: 'var(--ldesign-warning-color-1, #fff7e6)',
@@ -147,7 +147,8 @@ export class ScriptTaskNode extends RectNode {
    * 获取脚本图标
    */
   private getScriptIcon(x: number, y: number): h.JSX.Element {
-    return h('g', { transform: `translate(${x - 45}, ${y - 20})` }, [
+    // 图标在文本上方，整体居中
+    return h('g', { transform: `translate(${x - 45}, ${y - 35})` }, [
       // 命令行提示符
       h('path', {
         d: 'M-4,-2 L0,0 L-4,2',

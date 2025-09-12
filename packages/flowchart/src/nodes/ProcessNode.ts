@@ -19,12 +19,12 @@ export class ProcessNodeModel extends RectNodeModel {
     this.height = 50
     this.radius = 6
 
-    // 设置默认文本 - 文本在节点下方
+    // 设置默认文本 - 文本在图标下方，有足够间隔
     if (!this.text?.value) {
       this.text = {
         value: '处理节点',
         x: this.x,
-        y: this.y + this.height / 2 + 15, // 文本在矩形下方
+        y: this.y + 15, // 文本在图标下方，增加间隔
         draggable: false,
         editable: true
       }
@@ -123,25 +123,25 @@ export class ProcessNode extends RectNode {
         ry: radius,
         ...style
       }),
-      // 处理图标
+      // 处理图标 - 在文本上方，增加间隔
       h('circle', {
-        cx: x - 25,
+        cx: x - 8,
         cy: y - 15,
-        r: 3,
+        r: 2,
         fill: 'var(--ldesign-gray-color-6, #808080)',
         stroke: 'none'
       }),
       h('circle', {
-        cx: x - 15,
+        cx: x,
         cy: y - 15,
-        r: 3,
+        r: 2,
         fill: 'var(--ldesign-gray-color-6, #808080)',
         stroke: 'none'
       }),
       h('circle', {
-        cx: x - 5,
+        cx: x + 8,
         cy: y - 15,
-        r: 3,
+        r: 2,
         fill: 'var(--ldesign-gray-color-6, #808080)',
         stroke: 'none'
       })

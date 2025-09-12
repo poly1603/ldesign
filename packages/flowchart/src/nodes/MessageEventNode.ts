@@ -17,12 +17,12 @@ export class MessageEventNodeModel extends CircleNodeModel {
     // 设置节点尺寸
     this.r = 25
 
-    // 设置默认文本
+    // 设置默认文本 - 文本在图标下方，整体居中
     if (!this.text?.value) {
       this.text = {
         value: '消息事件',
         x: this.x,
-        y: this.y + 35,
+        y: this.y + 12,
         draggable: false,
         editable: true
       }
@@ -34,7 +34,7 @@ export class MessageEventNodeModel extends CircleNodeModel {
    */
   override getNodeStyle() {
     const style = super.getNodeStyle()
-    
+
     return {
       ...style,
       fill: '#f6ffed',
@@ -142,11 +142,13 @@ export class MessageEventNode extends CircleNode {
    * 获取消息图标
    */
   private getMessageIcon(x: number, y: number): h.JSX.Element {
+    // 图标在文本上方，整体居中
+    const iconY = y - 15
     return h('g', {}, [
       // 信封
       h('rect', {
         x: x - 8,
-        y: y - 5,
+        y: iconY - 5,
         width: 16,
         height: 10,
         rx: 1,
@@ -156,7 +158,7 @@ export class MessageEventNode extends CircleNode {
       }),
       // 信封折线
       h('path', {
-        d: `M${x - 8},${y - 3} L${x},${y + 1} L${x + 8},${y - 3}`,
+        d: `M${x - 8},${iconY - 3} L${x},${iconY + 1} L${x + 8},${iconY - 3}`,
         stroke: '#52c41a',
         strokeWidth: 1.5,
         fill: 'none',

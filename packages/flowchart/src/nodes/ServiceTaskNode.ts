@@ -19,12 +19,12 @@ export class ServiceTaskNodeModel extends RectNodeModel {
     this.height = 60
     this.radius = 8
 
-    // 设置默认文本
+    // 设置默认文本 - 文本在图标下方，整体居中
     if (!this.text?.value) {
       this.text = {
         value: '服务任务',
         x: this.x,
-        y: this.y,
+        y: this.y + 12,
         draggable: false,
         editable: true
       }
@@ -36,7 +36,7 @@ export class ServiceTaskNodeModel extends RectNodeModel {
    */
   override getNodeStyle() {
     const style = super.getNodeStyle()
-    
+
     return {
       ...style,
       fill: 'var(--ldesign-success-color-1, #f6ffed)',
@@ -147,7 +147,8 @@ export class ServiceTaskNode extends RectNode {
    * 获取服务图标
    */
   private getServiceIcon(x: number, y: number): h.JSX.Element {
-    return h('g', { transform: `translate(${x - 45}, ${y - 20})` }, [
+    // 图标在文本上方，整体居中
+    return h('g', { transform: `translate(${x - 45}, ${y - 35})` }, [
       // 齿轮外圈
       h('circle', {
         cx: 0,

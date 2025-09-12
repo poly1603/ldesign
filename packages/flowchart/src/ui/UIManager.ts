@@ -8,6 +8,7 @@ import type { FlowchartEditorConfig, ApprovalNodeConfig, ApprovalEdgeConfig, App
 import { MaterialPanel } from './native/MaterialPanel'
 import { PropertyPanel } from './native/PropertyPanel'
 import { Toolbar } from './native/Toolbar'
+import { HistoryPanel } from './native/HistoryPanel'
 
 export interface UIState {
   selectedNode: ApprovalNodeConfig | null
@@ -26,11 +27,13 @@ export class UIManager {
   private canvasContainer: HTMLElement | null = null
   private components: Map<string, any> = new Map()
   private state: UIState
+  private editor: any = null // 编辑器实例引用
 
   // 事件回调
   private onNodeUpdate?: (nodeId: string, updates: Partial<ApprovalNodeConfig>) => void
   private onNodeDelete?: (nodeId: string) => void
   private onNodeDrop?: (nodeType: ApprovalNodeType, position: { x: number; y: number }) => void
+  private onCustomMaterialDrop?: (materialId: string, position: { x: number; y: number }) => void
   private onToolClick?: (toolName: string) => void
   private onThemeChange?: (theme: FlowchartTheme) => void
 
@@ -127,6 +130,17 @@ export class UIManager {
       ${this.state.readonly || !this.config.propertyPanel?.visible ? 'display: none;' : ''}
     `
 
+    // 创建历史记录面板容器
+    const historyContainer = document.createElement('div')
+    historyContainer.id = 'ldesign-history-container'
+    historyContainer.style.cssText = `
+      width: 280px;
+      height: 100%;
+      display: none;
+      position: relative;
+      overflow: hidden;
+    `
+
     // 组装布局
     if (this.config.toolbar?.visible !== false) {
       this.container.appendChild(toolbarContainer)
@@ -135,6 +149,7 @@ export class UIManager {
     this.uiContainer.appendChild(materialContainer)
     this.uiContainer.appendChild(this.canvasContainer)
     this.uiContainer.appendChild(propertyContainer)
+    this.uiContainer.appendChild(historyContainer)
     this.container.appendChild(this.uiContainer)
   }
 
@@ -156,6 +171,9 @@ export class UIManager {
     if (!this.state.readonly && this.config.propertyPanel?.visible !== false) {
       this.mountPropertyPanel()
     }
+
+    // 挂载历史记录面板
+    this.mountHistoryPanel()
   }
 
   /**
@@ -223,6 +241,62 @@ export class UIManager {
   }
 
   /**
+   * 挂载历史记录面板
+   */
+  private mountHistoryPanel(): void {
+    const container = document.getElementById('ldesign-history-container')
+    if (!container) return
+
+    const historyPanel = new HistoryPanel({
+      visible: false, // 默认隐藏
+      onHistorySelect: (index: number) => {
+        // 跳转到指定历史记录
+        const editor = this.getEditor()
+        if (editor) {
+          const historyPlugin = editor.getPlugin('history')
+          if (historyPlugin && historyPlugin.goTo) {
+            historyPlugin.goTo(index)
+          }
+        }
+      },
+      onHistoryUndo: () => {
+        // 撤销操作
+        const editor = this.getEditor()
+        if (editor) {
+          const historyPlugin = editor.getPlugin('history')
+          if (historyPlugin && historyPlugin.undo) {
+            historyPlugin.undo()
+          }
+        }
+      },
+      onHistoryRedo: () => {
+        // 重做操作
+        const editor = this.getEditor()
+        if (editor) {
+          const historyPlugin = editor.getPlugin('history')
+          if (historyPlugin && historyPlugin.redo) {
+            historyPlugin.redo()
+          }
+        }
+      },
+      onHistoryClear: () => {
+        // 清空历史记录
+        const editor = this.getEditor()
+        if (editor) {
+          const historyPlugin = editor.getPlugin('history')
+          if (historyPlugin && historyPlugin.clear) {
+            historyPlugin.clear()
+          }
+        }
+      }
+    })
+
+    const panelElement = historyPanel.create()
+    container.appendChild(panelElement)
+    this.components.set('history', historyPanel)
+  }
+
+  /**
    * 设置拖拽功能
    */
   private setupDragAndDrop(): void {
@@ -236,30 +310,76 @@ export class UIManager {
     this.canvasContainer.addEventListener('drop', (event) => {
       event.preventDefault()
 
+      // 检查是否是自定义物料
+      const customMaterialId = event.dataTransfer?.getData('application/custom-material-id')
       const nodeType = event.dataTransfer?.getData('application/node-type') as ApprovalNodeType
-      if (!nodeType) return
 
-      // 计算相对于画布的坐标
-      const rect = this.canvasContainer!.getBoundingClientRect()
-      let x = event.clientX - rect.left
-      let y = event.clientY - rect.top
+      if (!customMaterialId && !nodeType) return
 
-      // 查找LogicFlow画布元素来获取更精确的坐标
-      const lfCanvas = this.canvasContainer!.querySelector('.lf-canvas-overlay')
-      if (lfCanvas) {
-        const canvasRect = lfCanvas.getBoundingClientRect()
-        x = event.clientX - canvasRect.left
-        y = event.clientY - canvasRect.top
+      // 获取LogicFlow实例来进行坐标转换
+      const editor = this.getEditor()
+      if (!editor) {
+        console.error('无法获取编辑器实例')
+        return
       }
 
-      // 确保坐标在合理范围内
-      x = Math.max(50, Math.min(x, rect.width - 50))
-      y = Math.max(30, Math.min(y, rect.height - 30))
+      const lf = editor.getLogicFlow()
 
-      const position = { x, y }
-      console.log(`拖拽创建节点: ${nodeType} at (${x.toFixed(0)}, ${y.toFixed(0)})`)
+      // 使用绝对屏幕坐标进行转换
+      const clientX = event.clientX
+      const clientY = event.clientY
 
-      this.onNodeDrop?.(nodeType, position)
+      // 使用LogicFlow的坐标转换方法将屏幕坐标转换为画布坐标
+      let position: { x: number; y: number }
+
+      try {
+        // 尝试使用LogicFlow的pointToCanvasModel方法
+        const canvasPosition = lf.pointToCanvasModel([clientX, clientY])
+        position = { x: canvasPosition[0], y: canvasPosition[1] }
+
+        console.log(`绝对屏幕坐标: (${clientX}, ${clientY}) -> 画布坐标: (${position.x.toFixed(0)}, ${position.y.toFixed(0)})`)
+      } catch (error) {
+        console.warn('pointToCanvasModel转换失败，尝试其他方法:', error)
+
+        // 尝试使用getPointByClient方法
+        try {
+          const point = lf.getPointByClient(clientX, clientY)
+          position = { x: point.x, y: point.y }
+          console.log(`使用getPointByClient转换: (${clientX}, ${clientY}) -> 画布坐标: (${position.x.toFixed(0)}, ${position.y.toFixed(0)})`)
+        } catch (error2) {
+          console.warn('getPointByClient转换也失败，使用手动计算:', error2)
+
+          // 手动计算相对坐标
+          const rect = this.canvasContainer!.getBoundingClientRect()
+          const relativeX = clientX - rect.left
+          const relativeY = clientY - rect.top
+
+          // 获取画布变换信息
+          const transform = lf.getTransform()
+          const scale = transform.SCALE_X || 1
+          const translateX = transform.TRANSLATE_X || 0
+          const translateY = transform.TRANSLATE_Y || 0
+
+          // 应用逆变换
+          position = {
+            x: (relativeX - translateX) / scale,
+            y: (relativeY - translateY) / scale
+          }
+
+          console.log(`手动计算坐标: 相对(${relativeX}, ${relativeY}) -> 画布坐标: (${position.x.toFixed(0)}, ${position.y.toFixed(0)})`)
+          console.log(`变换信息: scale=${scale}, translate=(${translateX}, ${translateY})`)
+        }
+      }
+
+      if (customMaterialId) {
+        // 处理自定义物料拖拽
+        console.log(`拖拽创建自定义物料: ${customMaterialId} at (${position.x.toFixed(0)}, ${position.y.toFixed(0)})`)
+        this.onCustomMaterialDrop?.(customMaterialId, position)
+      } else if (nodeType) {
+        // 处理标准节点拖拽
+        console.log(`拖拽创建节点: ${nodeType} at (${position.x.toFixed(0)}, ${position.y.toFixed(0)})`)
+        this.onNodeDrop?.(nodeType, position)
+      }
     })
   }
 
@@ -332,6 +452,15 @@ export class UIManager {
 
     // 添加新主题类
     this.uiContainer.classList.add(`theme-${theme}`)
+
+    // 设置data-theme属性
+    this.uiContainer.setAttribute('data-theme', theme)
+
+    // 同时设置根容器的data-theme属性
+    this.container.setAttribute('data-theme', theme)
+
+    // 更新画布容器的主题样式
+    this.updateThemeStyles(theme)
   }
 
   /**
@@ -477,18 +606,97 @@ export class UIManager {
   }
 
   /**
+   * 显示/隐藏历史记录面板（带滑出动画）
+   */
+  toggleHistoryPanel(): void {
+    const historyContainer = document.getElementById('ldesign-history-container')
+    const propertyContainer = document.getElementById('ldesign-property-container')
+
+    if (historyContainer && propertyContainer) {
+      const isHistoryVisible = historyContainer.classList.contains('panel-visible')
+
+      if (isHistoryVisible) {
+        // 隐藏历史记录面板，显示属性面板
+        this.hideHistoryPanel(historyContainer, propertyContainer)
+      } else {
+        // 显示历史记录面板，隐藏属性面板
+        this.showHistoryPanel(historyContainer, propertyContainer)
+      }
+    }
+  }
+
+  /**
+   * 显示历史记录面板
+   */
+  private showHistoryPanel(historyContainer: HTMLElement, propertyContainer: HTMLElement): void {
+    // 更新历史记录数据
+    this.updateHistoryPanelData()
+
+    // 设置初始状态
+    historyContainer.style.display = 'block'
+    historyContainer.style.transform = 'translateX(100%)'
+    historyContainer.style.transition = 'transform 0.3s ease-in-out'
+
+    // 隐藏属性面板
+    propertyContainer.style.display = 'none'
+
+    // 触发滑入动画
+    requestAnimationFrame(() => {
+      historyContainer.style.transform = 'translateX(0)'
+      historyContainer.classList.add('panel-visible')
+    })
+  }
+
+  /**
+   * 隐藏历史记录面板
+   */
+  private hideHistoryPanel(historyContainer: HTMLElement, propertyContainer: HTMLElement): void {
+    // 触发滑出动画
+    historyContainer.style.transform = 'translateX(100%)'
+
+    // 动画结束后隐藏面板
+    setTimeout(() => {
+      historyContainer.style.display = 'none'
+      historyContainer.classList.remove('panel-visible')
+
+      // 显示属性面板
+      propertyContainer.style.display = this.state.readonly ? 'none' : 'block'
+    }, 300)
+  }
+
+  /**
+   * 更新历史记录面板数据
+   */
+  private updateHistoryPanelData(): void {
+    const historyPanel = this.components.get('history')
+    if (!historyPanel) return
+
+    const editor = this.getEditor()
+    if (!editor) return
+
+    const historyPlugin = editor.getPlugin('history')
+    if (historyPlugin && historyPlugin.getHistory) {
+      const historyData = historyPlugin.getHistory()
+      const currentIndex = historyPlugin.getCurrentIndex()
+      historyPanel.setHistoryData(historyData, currentIndex)
+    }
+  }
+
+  /**
    * 设置事件回调
    */
   setEventCallbacks(callbacks: {
     onNodeUpdate?: (nodeId: string, updates: Partial<ApprovalNodeConfig>) => void
     onNodeDelete?: (nodeId: string) => void
     onNodeDrop?: (nodeType: ApprovalNodeType, position: { x: number; y: number }) => void
+    onCustomMaterialDrop?: (materialId: string, position: { x: number; y: number }) => void
     onToolClick?: (toolName: string) => void
     onThemeChange?: (theme: FlowchartTheme) => void
   }): void {
     this.onNodeUpdate = callbacks.onNodeUpdate
     this.onNodeDelete = callbacks.onNodeDelete
     this.onNodeDrop = callbacks.onNodeDrop
+    this.onCustomMaterialDrop = callbacks.onCustomMaterialDrop
     this.onToolClick = callbacks.onToolClick
     this.onThemeChange = callbacks.onThemeChange
   }
@@ -498,6 +706,20 @@ export class UIManager {
    */
   getComponent(name: string): any {
     return this.components.get(name)
+  }
+
+  /**
+   * 设置编辑器实例
+   */
+  setEditor(editor: any): void {
+    this.editor = editor
+  }
+
+  /**
+   * 获取编辑器实例
+   */
+  getEditor(): any {
+    return this.editor
   }
 
   /**
@@ -518,5 +740,6 @@ export class UIManager {
     }
 
     this.canvasContainer = null
+    this.editor = null
   }
 }

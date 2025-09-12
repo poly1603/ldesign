@@ -19,12 +19,12 @@ export class UserTaskNodeModel extends RectNodeModel {
     this.height = 60
     this.radius = 8
 
-    // 设置默认文本
+    // 设置默认文本 - 在图标下方，有足够间隔
     if (!this.text?.value) {
       this.text = {
         value: '用户任务',
         x: this.x,
-        y: this.y,
+        y: this.y + 15, // 文本在图标下方，增加间隔
         draggable: false,
         editable: true
       }
@@ -36,7 +36,7 @@ export class UserTaskNodeModel extends RectNodeModel {
    */
   override getNodeStyle() {
     const style = super.getNodeStyle()
-    
+
     return {
       ...style,
       fill: 'var(--ldesign-brand-color-1, #e6f7ff)',
@@ -147,7 +147,7 @@ export class UserTaskNode extends RectNode {
    * 获取用户图标
    */
   private getUserIcon(x: number, y: number): h.JSX.Element {
-    return h('g', { transform: `translate(${x - 45}, ${y - 20})` }, [
+    return h('g', { transform: `translate(${x}, ${y - 15})` }, [
       // 用户头像
       h('circle', {
         cx: 0,

@@ -23,12 +23,12 @@ export class InclusiveGatewayNodeModel extends PolygonNodeModel {
       [this.x - size / 2, this.y]  // 左
     ]
 
-    // 设置默认文本
+    // 设置默认文本 - 文本在图标下方，整体居中
     if (!this.text?.value) {
       this.text = {
         value: '包容网关',
         x: this.x,
-        y: this.y + 35,
+        y: this.y + 12,
         draggable: false,
         editable: true
       }
@@ -40,7 +40,7 @@ export class InclusiveGatewayNodeModel extends PolygonNodeModel {
    */
   override getNodeStyle() {
     const style = super.getNodeStyle()
-    
+
     return {
       ...style,
       fill: '#e6f4ff',
@@ -153,9 +153,10 @@ export class InclusiveGatewayNode extends PolygonNode {
    * 获取包容网关图标
    */
   private getInclusiveIcon(x: number, y: number): h.JSX.Element {
+    // 图标在文本上方，整体居中
     return h('circle', {
       cx: x,
-      cy: y,
+      cy: y - 15,
       r: 8,
       fill: 'none',
       stroke: 'white',

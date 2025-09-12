@@ -17,12 +17,12 @@ export class TimerEventNodeModel extends CircleNodeModel {
     // 设置节点尺寸
     this.r = 25
 
-    // 设置默认文本
+    // 设置默认文本 - 文本在图标下方，整体居中
     if (!this.text?.value) {
       this.text = {
         value: '定时事件',
         x: this.x,
-        y: this.y + 35,
+        y: this.y + 12,
         draggable: false,
         editable: true
       }
@@ -34,7 +34,7 @@ export class TimerEventNodeModel extends CircleNodeModel {
    */
   override getNodeStyle() {
     const style = super.getNodeStyle()
-    
+
     return {
       ...style,
       fill: '#fff7e6',
@@ -151,17 +151,19 @@ export class TimerEventNode extends CircleNode {
    * 获取时钟图标
    */
   private getTimerIcon(x: number, y: number): h.JSX.Element {
+    // 图标在文本上方，整体居中
+    const iconY = y - 15
     return h('g', {}, [
       // 时针
       h('path', {
-        d: `M${x},${y} L${x},${y - 8}`,
+        d: `M${x},${iconY} L${x},${iconY - 8}`,
         stroke: '#fa8c16',
         strokeWidth: 2,
         strokeLinecap: 'round'
       }),
       // 分针
       h('path', {
-        d: `M${x},${y} L${x + 6},${y + 6}`,
+        d: `M${x},${iconY} L${x + 6},${iconY + 6}`,
         stroke: '#fa8c16',
         strokeWidth: 2,
         strokeLinecap: 'round'

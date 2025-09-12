@@ -18,12 +18,12 @@ export class ParallelGatewayModel extends DiamondNodeModel {
     this.rx = 40
     this.ry = 40
 
-    // 设置默认文本
+    // 设置默认文本 - 文本在图标下方，整体居中
     if (!this.text?.value) {
       this.text = {
         value: '并行网关',
         x: this.x,
-        y: this.y + 50
+        y: this.y + 12
       }
     }
   }
@@ -119,9 +119,9 @@ export class ParallelGateway extends DiamondNode {
         transform: `rotate(45 ${x} ${y})`,
         ...style
       }),
-      // 并行符号（+）
+      // 并行符号（+） - 图标在文本上方，整体居中
       h('path', {
-        d: `M${x - 12},${y} L${x + 12},${y} M${x},${y - 12} L${x},${y + 12}`,
+        d: `M${x - 12},${y - 15} L${x + 12},${y - 15} M${x},${y - 27} L${x},${y - 3}`,
         stroke: 'var(--ldesign-brand-color-7, #5e2aa7)',
         strokeWidth: 3,
         fill: 'none'
