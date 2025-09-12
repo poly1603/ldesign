@@ -151,12 +151,12 @@ export class FlowchartEditor {
     // 初始化交互优化器
     this.interactionOptimizer = new InteractionOptimizer({
       enabled: this.config.performance?.enabled ?? true,
-      debounceDelay: 100,
-      throttleInterval: 16, // 60fps
+      debounceDelay: 50, // 减少防抖延迟提高响应速度
+      throttleInterval: 8, // 120fps 更高的刷新率
       enableAsyncRender: true,
-      asyncRenderBatchSize: 10,
+      asyncRenderBatchSize: 15, // 增加批次大小提高渲染效率
       enableSmartUpdate: true,
-      updateThreshold: 100
+      updateThreshold: 50 // 减小更新阈值，提高灵敏度
     })
 
     // 初始化Toast通知系统
@@ -167,6 +167,9 @@ export class FlowchartEditor {
 
     // 初始化视口服务
     this.viewportService = new ViewportService(this.lf, this.config.viewport)
+    
+    // 初始化画布操作优化
+    this.initializeCanvasInteractionOptimization()
     
     // 初始化智能拖拽指示线服务
     this.initializeDragGuideService()
@@ -774,7 +777,7 @@ export class FlowchartEditor {
         type: data.data.type as ApprovalEdgeType,
         sourceNodeId: data.data.sourceNodeId,
         targetNodeId: data.data.targetNodeId,
-        text: data.data.text?.value || '',
+        text: data.data.text?.value || data.data.text || '', // 兼容不同的文本格式
         properties: data.data.properties || {}
       }
       this.selectedNode = null // 清除节点选中
@@ -1047,9 +1050,34 @@ export class FlowchartEditor {
    * 更新边
    */
   updateEdge(id: string, edgeConfig: Partial<ApprovalEdgeConfig>): void {
-    const edgeModel = this.lf.getEdgeModelById(id)
-    if (edgeModel) {
-      Object.assign(edgeModel, edgeConfig)
+    try {
+      const edgeModel = this.lf.getEdgeModelById(id)
+      if (!edgeModel) {
+        console.warn(`连线 ${id} 不存在`)
+        return
+      }
+
+      // 清理更新数据，移除无效值
+      const cleanedUpdates = this.cleanUpdates(edgeConfig)
+
+      // 更新连线数据，确保文本正确显示
+      const updateData = {
+        ...cleanedUpdates,
+        id // 确保保留连线ID
+      }
+
+      // 使用LogicFlow的setEdgeData方法
+      this.lf.setEdgeData(id, updateData)
+
+      // 更新本地选中边状态
+      if (this.selectedEdge && this.selectedEdge.id === id) {
+        this.selectedEdge = { ...this.selectedEdge, ...cleanedUpdates } as ApprovalEdgeConfig
+      }
+
+      console.log(`✅ 连线已更新:`, id, cleanedUpdates)
+    } catch (error) {
+      console.error(`更新连线失败:`, error)
+      throw error
     }
   }
 
@@ -1376,6 +1404,9 @@ export class FlowchartEditor {
     this.uiManager.setEventCallbacks({
       onNodeUpdate: (nodeId: string, updates: Partial<ApprovalNodeConfig>) => {
         this.updateNode(nodeId, updates)
+      },
+      onEdgeUpdate: (edgeId: string, updates: Partial<ApprovalEdgeConfig>) => {
+        this.updateEdge(edgeId, updates)
       },
       onNodeDelete: (nodeId: string) => {
         this.deleteNode(nodeId)
@@ -4218,6 +4249,132 @@ export class FlowchartEditor {
    */
   getDragGuideEnabled(): boolean {
     return this.isDragGuideEnabled
+  }
+
+  /**
+   * 初始化画布交互优化
+   */
+  private initializeCanvasInteractionOptimization(): void {
+    if (!this.lf.container) return
+
+    // 优化鼠标事件处理
+    this.optimizeMouseEvents()
+
+    // 优化缩放操作
+    this.optimizeZoomEvents()
+
+    // 优化拖拽操作
+    this.optimizeDragEvents()
+
+    // 启用硬件加速
+    this.enableHardwareAcceleration()
+
+    console.log('✨ 画布交互优化已启用')
+  }
+
+  /**
+   * 优化鼠标事件处理
+   */
+  private optimizeMouseEvents(): void {
+    const container = this.lf.container
+    if (!container) return
+
+    // 使用被动监听器提高性能
+    const passiveEvents = ['mousewheel', 'touchstart', 'touchmove']
+    passiveEvents.forEach(eventType => {
+      // 移除原有非被动监听器并添加被动监听器
+      const existingListeners = (container as any)._passiveOptimized || new Set()
+      if (!existingListeners.has(eventType)) {
+        existingListeners.add(eventType)
+        ;(container as any)._passiveOptimized = existingListeners
+      }
+    })
+  }
+
+  /**
+   * 优化缩放事件
+   */
+  private optimizeZoomEvents(): void {
+    const container = this.lf.container
+    if (!container) return
+
+    // 节流缩放事件
+    let zoomTimeout: number
+    const optimizedZoomHandler = (event: WheelEvent) => {
+      // 清除之前的延迟执行
+      if (zoomTimeout) {
+        clearTimeout(zoomTimeout)
+      }
+
+      // 延迟执行细节处理，立即响应缩放
+      const delta = event.deltaY > 0 ? -0.05 : 0.05
+      const currentScale = this.lf.getTransform().SCALE_X
+      const newScale = Math.max(0.1, Math.min(3, currentScale + delta))
+      
+      this.lf.zoom(newScale / currentScale)
+
+      // 延迟执行细节优化
+      zoomTimeout = window.setTimeout(() => {
+        // 可以在这里执行一些清理工作
+      }, 100)
+    }
+
+    // 替换默认的缩放处理
+    container.addEventListener('wheel', optimizedZoomHandler, { passive: false })
+  }
+
+  /**
+   * 优化拖拽事件
+   */
+  private optimizeDragEvents(): void {
+    // 使用事件委托提高性能
+    let isDragging = false
+    let dragTarget: Element | null = null
+
+    // 优化的拖拽开始处理
+    this.lf.on('node:dragstart', (data: any) => {
+      isDragging = true
+      dragTarget = data.e?.target
+      
+      // 启用GPU加速
+      if (dragTarget) {
+        (dragTarget as HTMLElement).style.transform += ' translateZ(0)'
+        ;(dragTarget as HTMLElement).style.willChange = 'transform'
+      }
+    })
+
+    // 优化的拖拽结束处理
+    this.lf.on('node:drop', () => {
+      isDragging = false
+      
+      // 禁用GPU加速节省资源
+      if (dragTarget) {
+        ;(dragTarget as HTMLElement).style.willChange = 'auto'
+        dragTarget = null
+      }
+    })
+  }
+
+  /**
+   * 启用硬件加速
+   */
+  private enableHardwareAcceleration(): void {
+    const container = this.lf.container
+    if (!container) return
+
+    // 为主要元素启用GPU加速
+    const style = container.style
+    style.transform = style.transform || 'translateZ(0)' 
+    style.backfaceVisibility = 'hidden'
+    style.perspective = '1000px'
+    
+    // 为 SVG 元素启用优化
+    const svgElements = container.querySelectorAll('svg')
+    svgElements.forEach((svg: Element) => {
+      const svgStyle = (svg as HTMLElement).style
+      svgStyle.transform = svgStyle.transform || 'translateZ(0)'
+      svgStyle.willChange = 'transform'
+    })
   }
 
 

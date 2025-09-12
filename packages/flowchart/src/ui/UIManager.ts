@@ -29,8 +29,9 @@ export class UIManager {
   private state: UIState
   private editor: any = null // 编辑器实例引用
 
-  // 事件回调
+  // 私有属性
   private onNodeUpdate?: (nodeId: string, updates: Partial<ApprovalNodeConfig>) => void
+  private onEdgeUpdate?: (edgeId: string, updates: Partial<ApprovalEdgeConfig>) => void
   private onNodeDelete?: (nodeId: string) => void
   private onNodeDrop?: (nodeType: ApprovalNodeType, position: { x: number; y: number }) => void
   private onCustomMaterialDrop?: (materialId: string, position: { x: number; y: number }) => void
@@ -249,6 +250,9 @@ export class UIManager {
       theme: this.state.currentTheme,
       onUpdateNode: (nodeId: string, updates: Partial<ApprovalNodeConfig>) => {
         this.onNodeUpdate?.(nodeId, updates)
+      },
+      onUpdateEdge: (edgeId: string, updates: Partial<ApprovalEdgeConfig>) => {
+        this.onEdgeUpdate?.(edgeId, updates)
       }
     })
 
@@ -708,6 +712,7 @@ export class UIManager {
    */
   setEventCallbacks(callbacks: {
     onNodeUpdate?: (nodeId: string, updates: Partial<ApprovalNodeConfig>) => void
+    onEdgeUpdate?: (edgeId: string, updates: Partial<ApprovalEdgeConfig>) => void
     onNodeDelete?: (nodeId: string) => void
     onNodeDrop?: (nodeType: ApprovalNodeType, position: { x: number; y: number }) => void
     onCustomMaterialDrop?: (materialId: string, position: { x: number; y: number }) => void
@@ -715,6 +720,7 @@ export class UIManager {
     onThemeChange?: (theme: FlowchartTheme) => void
   }): void {
     this.onNodeUpdate = callbacks.onNodeUpdate
+    this.onEdgeUpdate = callbacks.onEdgeUpdate
     this.onNodeDelete = callbacks.onNodeDelete
     this.onNodeDrop = callbacks.onNodeDrop
     this.onCustomMaterialDrop = callbacks.onCustomMaterialDrop

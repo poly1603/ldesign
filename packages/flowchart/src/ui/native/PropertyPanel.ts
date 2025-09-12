@@ -9,6 +9,7 @@ export interface PropertyPanelConfig {
   readonly?: boolean
   theme?: FlowchartTheme
   onUpdateNode?: (nodeId: string, updates: Partial<ApprovalNodeConfig>) => void
+  onUpdateEdge?: (edgeId: string, updates: Partial<ApprovalEdgeConfig>) => void
 }
 
 /**
@@ -637,8 +638,8 @@ export class PropertyPanel {
       }
     })
 
-    // 触发更新回调（需要在UIManager中添加）
-    // this.config.onUpdateEdge?.(this.selectedEdge.id, updates)
+    // 触发更新回调
+    this.config.onUpdateEdge?.(this.selectedEdge.id, updates)
 
     // 更新本地状态
     Object.assign(this.selectedEdge, updates)
