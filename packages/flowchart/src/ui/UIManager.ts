@@ -36,6 +36,11 @@ export class UIManager {
   private onCustomMaterialDrop?: (materialId: string, position: { x: number; y: number }) => void
   private onToolClick?: (toolName: string) => void
   private onThemeChange?: (theme: FlowchartTheme) => void
+  
+  // 新增扩展功能回调
+  private onAlignNodes?: (alignType: string) => void
+  private onOptimizeLayout?: () => void
+  private onToggleDragGuide?: (enabled: boolean) => void
 
   constructor(config: FlowchartEditorConfig) {
     this.config = config
@@ -188,7 +193,17 @@ export class UIManager {
       readonly: this.state.readonly,
       theme: this.state.currentTheme,
       onToolAction: (toolName: string) => {
-        this.onToolClick?.(toolName)
+        // 检查是否为扩展工具
+        const extendedTools = [
+          'align-left', 'align-center', 'align-right', 'align-top', 'align-middle', 'align-bottom',
+          'distribute-h', 'distribute-v', 'ai-optimize', 'drag-guide', 'layout-analysis'
+        ]
+        
+        if (extendedTools.includes(toolName)) {
+          this.handleExtendedToolClick(toolName)
+        } else {
+          this.onToolClick?.(toolName)
+        }
       },
       onThemeChange: (theme: FlowchartTheme) => {
         this.state.currentTheme = theme
@@ -715,10 +730,13 @@ export class UIManager {
   }
 
   /**
-   * 设置编辑器实例
+   * 设置编辑器引用
    */
   setEditor(editor: any): void {
     this.editor = editor
+    
+    // 设置扩展功能回调
+    this.setupExtendedCallbacks()
   }
 
   /**
@@ -733,6 +751,455 @@ export class UIManager {
    */
   getEditor(): any {
     return this.editor
+  }
+
+  /**
+   * 设置扩展功能回调
+   */
+  private setupExtendedCallbacks(): void {
+    if (!this.editor) return
+
+    // 设置对齐操作回调
+    this.onAlignNodes = (alignType: string) => {
+      const alignTypeMap: Record<string, string> = {
+        'align-left': 'left',
+        'align-center': 'centerX', 
+        'align-right': 'right',
+        'align-top': 'top',
+        'align-middle': 'centerY',
+        'align-bottom': 'bottom',
+        'distribute-h': 'distributeX',
+        'distribute-v': 'distributeY'
+      }
+      
+      const mappedType = alignTypeMap[alignType]
+      if (mappedType && this.editor.alignNodes) {
+        this.editor.alignNodes({ type: mappedType })
+      }
+    }
+
+    // 设置AI布局优化回调
+    this.onOptimizeLayout = () => {
+      if (this.editor.optimizeLayout) {
+        this.editor.optimizeLayout()
+      }
+    }
+
+    // 设置拖拽指示线切换回调
+    this.onToggleDragGuide = (enabled: boolean) => {
+      if (this.editor.setDragGuideEnabled) {
+        this.editor.setDragGuideEnabled(enabled)
+      }
+    }
+  }
+
+  /**
+   * 处理扩展工具点击
+   */
+  handleExtendedToolClick(toolName: string): void {
+    const alignTools = [
+      'align-left', 'align-center', 'align-right',
+      'align-top', 'align-middle', 'align-bottom', 
+      'distribute-h', 'distribute-v'
+    ]
+
+    if (alignTools.includes(toolName)) {
+      this.onAlignNodes?.(toolName)
+    } else {
+      switch (toolName) {
+        case 'ai-optimize':
+          this.onOptimizeLayout?.()
+          break
+        case 'drag-guide':
+          // 切换拖拽指示线状态
+          const enabled = !this.getDragGuideEnabled()
+          this.onToggleDragGuide?.(enabled)
+          this.updateDragGuideButton(enabled)
+          break
+        case 'layout-analysis':
+          this.showLayoutAnalysis()
+          break
+      }
+    }
+  }
+
+  /**
+   * 获取当前拖拽指示线状态
+   */
+  private getDragGuideEnabled(): boolean {
+    return this.editor?.getDragGuideEnabled?.() || false
+  }
+
+  /**
+   * 更新拖拽指示线按钮状态
+   */
+  private updateDragGuideButton(enabled: boolean): void {
+    const toolbar = this.components.get('toolbar')
+    if (toolbar && toolbar.updateToolState) {
+      toolbar.updateToolState('drag-guide', enabled ? 'active' : 'normal')
+    }
+  }
+
+  /**
+   * 显示布局分析结果
+   */
+  private async showLayoutAnalysis(): Promise<void> {
+    if (!this.editor || !this.editor.getLayoutAnalysis) return
+
+    try {
+      const analysis = await this.editor.getLayoutAnalysis()
+      
+      // 创建分析结果弹窗
+      const dialog = document.createElement('div')
+      dialog.className = 'layout-analysis-dialog'
+      dialog.innerHTML = `
+        <div class="analysis-overlay">
+          <div class="analysis-content">
+            <div class="analysis-header">
+              <h3>AI布局分析报告</h3>
+              <button class="close-btn">&times;</button>
+            </div>
+            <div class="analysis-body">
+              <div class="score-section">
+                <div class="overall-score">
+                  <span class="score-label">综合评分:</span>
+                  <span class="score-value ${this.getScoreClass(analysis.score)}">${analysis.score}/100</span>
+                </div>
+              </div>
+              
+              <div class="metrics-section">
+                <h4>指标详情:</h4>
+                <div class="metrics-grid">
+                  <div class="metric-item">
+                    <span class="metric-label">可读性:</span>
+                    <span class="metric-value">${Math.round(analysis.metrics.readabilityScore * 100)}/100</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="metric-label">布局平衡:</span>
+                    <span class="metric-value">${Math.round(analysis.metrics.layoutBalance * 100)}/100</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="metric-label">空间利用率:</span>
+                    <span class="metric-value">${Math.round(analysis.metrics.spaceUtilization * 100)}%</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="metric-label">连线交叉:</span>
+                    <span class="metric-value">${analysis.metrics.edgeCrossings}个</span>
+                  </div>
+                </div>
+              </div>
+              
+              ${analysis.issues.length > 0 ? `
+                <div class="issues-section">
+                  <h4>发现问题:</h4>
+                  <div class="issues-list">
+                    ${analysis.issues.map((issue: any) => `
+                      <div class="issue-item ${issue.severity}">
+                        <div class="issue-title">${issue.description}</div>
+                        <div class="issue-suggestion">${issue.suggestion}</div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : '<div class="no-issues">✅ 未发现布局问题</div>'}
+            </div>
+          </div>
+        </div>
+      `
+
+      // 绑定事件
+      const closeBtn = dialog.querySelector('.close-btn')
+      const overlay = dialog.querySelector('.analysis-overlay')
+      
+      const closeDialog = () => {
+        document.body.removeChild(dialog)
+      }
+
+      closeBtn?.addEventListener('click', closeDialog)
+      overlay?.addEventListener('click', (e) => {
+        if (e.target === overlay) closeDialog()
+      })
+
+      document.body.appendChild(dialog)
+
+      // 添加样式（如果不存在）
+      this.injectLayoutAnalysisStyles()
+
+    } catch (error) {
+      console.error('获取布局分析失败:', error)
+    }
+  }
+
+  /**
+   * 获取评分样式类
+   */
+  private getScoreClass(score: number): string {
+    if (score >= 80) return 'score-good'
+    if (score >= 60) return 'score-fair'
+    return 'score-poor'
+  }
+
+  /**
+   * 注入布局分析弹窗样式
+   */
+  private injectLayoutAnalysisStyles(): void {
+    if (document.getElementById('layout-analysis-styles')) return
+
+    const styleElement = document.createElement('style')
+    styleElement.id = 'layout-analysis-styles'
+    styleElement.textContent = `
+      .layout-analysis-dialog {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10000;
+      }
+
+      .analysis-overlay {
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+
+      .analysis-content {
+        background: white;
+        border-radius: 8px;
+        max-width: 600px;
+        width: 100%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        animation: analysisSlideIn 0.3s ease-out;
+      }
+
+      @keyframes analysisSlideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .analysis-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid #e5e5e5;
+      }
+
+      .analysis-header h3 {
+        margin: 0;
+        color: #333;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #999;
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+      }
+
+      .close-btn:hover {
+        color: #333;
+        background: #f0f0f0;
+      }
+
+      .analysis-body {
+        padding: 20px;
+      }
+
+      .score-section {
+        margin-bottom: 24px;
+        text-align: center;
+      }
+
+      .overall-score {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        font-size: 16px;
+      }
+
+      .score-label {
+        color: #666;
+        font-weight: 500;
+      }
+
+      .score-value {
+        font-size: 20px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 6px;
+      }
+
+      .score-good {
+        color: #52c41a;
+        background: #f6ffed;
+        border: 1px solid #b7eb8f;
+      }
+
+      .score-fair {
+        color: #fa8c16;
+        background: #fff7e6;
+        border: 1px solid #ffd591;
+      }
+
+      .score-poor {
+        color: #ff4d4f;
+        background: #fff1f0;
+        border: 1px solid #ffb3b3;
+      }
+
+      .metrics-section {
+        margin-bottom: 24px;
+      }
+
+      .metrics-section h4 {
+        margin: 0 0 12px 0;
+        color: #333;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .metric-item {
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        border: 1px solid #e9ecef;
+      }
+
+      .metric-label {
+        display: block;
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 4px;
+      }
+
+      .metric-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .issues-section h4 {
+        margin: 0 0 12px 0;
+        color: #333;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .issues-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .issue-item {
+        padding: 12px;
+        border-radius: 6px;
+        border-left: 4px solid;
+      }
+
+      .issue-item.high {
+        background: #fff1f0;
+        border-left-color: #ff4d4f;
+      }
+
+      .issue-item.medium {
+        background: #fff7e6;
+        border-left-color: #fa8c16;
+      }
+
+      .issue-item.low {
+        background: #f6ffed;
+        border-left-color: #52c41a;
+      }
+
+      .issue-title {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #333;
+      }
+
+      .issue-suggestion {
+        font-size: 12px;
+        color: #666;
+        line-height: 1.4;
+      }
+
+      .no-issues {
+        text-align: center;
+        padding: 20px;
+        color: #52c41a;
+        font-size: 14px;
+        background: #f6ffed;
+        border-radius: 6px;
+        border: 1px solid #b7eb8f;
+      }
+
+      /* 暗黑主题支持 */
+      [data-theme="dark"] .analysis-content {
+        background: #2a2a2a;
+        color: #fff;
+      }
+
+      [data-theme="dark"] .analysis-header {
+        border-bottom-color: #444;
+      }
+
+      [data-theme="dark"] .analysis-header h3 {
+        color: #fff;
+      }
+
+      [data-theme="dark"] .close-btn:hover {
+        background: #444;
+        color: #fff;
+      }
+
+      [data-theme="dark"] .metric-item {
+        background: #333;
+        border-color: #444;
+      }
+
+      [data-theme="dark"] .metric-label {
+        color: #aaa;
+      }
+
+      [data-theme="dark"] .metric-value {
+        color: #fff;
+      }
+    `
+    document.head.appendChild(styleElement)
   }
 
   /**

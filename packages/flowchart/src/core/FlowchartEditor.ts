@@ -40,6 +40,15 @@ import { InteractionOptimizer, type InteractionStats, type DragStats, type ZoomS
 import { ToastManager } from '../ui/native/Toast'
 import { UpdateScheduler, UpdatePriority, defaultUpdateScheduler } from './UpdateScheduler'
 import { ViewportService, type ViewportServiceConfig, type ViewportTransform, type ViewportBounds } from './ViewportService'
+import { 
+  dragGuideService, 
+  aiLayoutService,
+  mobileAdapterService,
+  enhancedThemeService,
+  type DragGuideConfig,
+  type SnapResult,
+  type MultiAlignOptions
+} from '../services'
 
 /**
  * 审批流程图编辑器类
@@ -69,6 +78,8 @@ export class FlowchartEditor {
   private toastManager!: ToastManager
   private updateScheduler: UpdateScheduler
   private viewportService!: ViewportService
+  private isDragGuideEnabled: boolean = false // 默认禁用，避免干预基本交互
+  private dragGuideCanvas?: HTMLCanvasElement
 
   /**
    * 构造函数
@@ -156,6 +167,18 @@ export class FlowchartEditor {
 
     // 初始化视口服务
     this.viewportService = new ViewportService(this.lf, this.config.viewport)
+    
+    // 初始化智能拖拽指示线服务
+    this.initializeDragGuideService()
+    
+    // 检测设备类型并应用移动端适配（仅在移动设备上启用）
+    const deviceInfo = mobileAdapterService.getDeviceInfo()
+    if (deviceInfo.deviceType === 'mobile' || deviceInfo.deviceType === 'tablet') {
+      this.initializeMobileAdapter()
+    }
+    
+    // 应用增强主题系统
+    this.initializeEnhancedThemes()
 
     // 更新UI管理器的物料面板配置
     this.updateMaterialPanelConfig()
@@ -3819,6 +3842,382 @@ export class FlowchartEditor {
    */
   flushUpdates(): void {
     this.updateScheduler.flush()
+  }
+
+  // ==================== 新增扩展服务初始化方法 ====================
+
+  /**
+   * 初始化智能拖拽指示线服务
+   */
+  private initializeDragGuideService(): void {
+    if (!this.lf.container) return
+
+    // 创建拖拽指示线画布
+    const container = this.lf.container
+    this.dragGuideCanvas = document.createElement('canvas')
+    this.dragGuideCanvas.style.position = 'absolute'
+    this.dragGuideCanvas.style.top = '0'
+    this.dragGuideCanvas.style.left = '0'
+    this.dragGuideCanvas.style.pointerEvents = 'none'
+    this.dragGuideCanvas.style.zIndex = '1000'
+    
+    // 设置画布尺寸
+    const updateCanvasSize = () => {
+      if (this.dragGuideCanvas) {
+        this.dragGuideCanvas.width = container.clientWidth
+        this.dragGuideCanvas.height = container.clientHeight
+        this.dragGuideCanvas.style.width = container.clientWidth + 'px'
+        this.dragGuideCanvas.style.height = container.clientHeight + 'px'
+      }
+    }
+    updateCanvasSize()
+    container.appendChild(this.dragGuideCanvas)
+
+    // 设置拖拽指示线服务的画布
+    dragGuideService.setCanvas(this.dragGuideCanvas)
+    
+    // 监听窗口大小变化
+    const resizeObserver = new ResizeObserver(updateCanvasSize)
+    resizeObserver.observe(container)
+
+    // 绑定拖拽事件
+    this.setupDragGuideEvents()
+
+    console.log('✅ 智能拖拽与对齐系统已初始化')
+  }
+
+  /**
+   * 设置拖拽指示线事件
+   */
+  private setupDragGuideEvents(): void {
+    let isDragging = false
+    let dragNode: any = null
+
+    // 监听拖拽开始
+    this.lf.on('node:dragstart', (data: any) => {
+      if (!this.isDragGuideEnabled) return
+      
+      isDragging = true
+      dragNode = data.data || data // 兼容不同版本的数据结构
+      
+      try {
+        const flowchartData = this.getData()
+        dragGuideService.startDrag(dragNode, flowchartData)
+      } catch (error) {
+        console.warn('启动拖拽指示线失败:', error)
+      }
+    })
+
+    // 监听拖拽过程 - 只显示指示线，不干预节点位置
+    this.lf.on('node:drag', (data: any) => {
+      if (!isDragging || !this.isDragGuideEnabled) return
+
+      try {
+        const nodeData = data.data || data
+        const flowchartData = this.getData()
+        
+        // 只更新指示线显示，不修改节点实际位置
+        dragGuideService.updateDrag(
+          dragNode, 
+          { x: nodeData.x, y: nodeData.y }, 
+          flowchartData
+        )
+
+        // 渲染指示线
+        dragGuideService.render()
+      } catch (error) {
+        console.warn('更新拖拽指示线失败:', error)
+      }
+    })
+
+    // 监听拖拽结束
+    this.lf.on('node:drop', (data: any) => {
+      if (!isDragging) return
+      
+      // 在拖拽结束后应用吸附效果
+      if (this.isDragGuideEnabled) {
+        try {
+          const nodeData = data.data || data
+          const flowchartData = this.getData()
+          const snapResult = dragGuideService.updateDrag(
+            dragNode, 
+            { x: nodeData.x, y: nodeData.y }, 
+            flowchartData
+          )
+          
+          // 如果有吸附位置，应用它
+          if (snapResult.snapped) {
+            this.lf.setNodeData(nodeData.id, {
+              x: snapResult.position.x,
+              y: snapResult.position.y
+            })
+          }
+        } catch (error) {
+          console.warn('应用拖拽吸附效果失败:', error)
+        }
+      }
+      
+      isDragging = false
+      dragNode = null
+      dragGuideService.endDrag()
+    })
+  }
+
+  /**
+   * 初始化移动端适配
+   */
+  private initializeMobileAdapter(): void {
+    // 检测设备类型
+    const deviceInfo = mobileAdapterService.getDeviceInfo()
+    
+    // 只在真正的移动设备上应用优化
+    if (deviceInfo.deviceType === 'mobile') {
+      // 启用移动端可访问性功能
+      if (this.lf.container) {
+        mobileAdapterService.enableAccessibility(this.lf.container)
+      }
+      
+      // 仅在手机上设置触控事件处理
+      this.setupMobileTouchEvents()
+      
+      console.log(`✅ 移动端适配已启用 (设备类型: ${deviceInfo.deviceType})`)
+    } else {
+      console.log(`ℹ️ 检测到设备类型: ${deviceInfo.deviceType}, 跳过移动端适配`)
+    }
+  }
+
+  /**
+   * 设置移动端触控事件
+   */
+  private setupMobileTouchEvents(): void {
+    if (!this.lf.container) return
+    
+    const container = this.lf.container
+    
+    // 使用被动事件监听，不干预默认行为
+    container.addEventListener('touchstart', (event: TouchEvent) => {
+      // 只记录手势，不阻止事件
+      mobileAdapterService.recognizeGesture(event)
+    }, { passive: true })
+    
+    container.addEventListener('touchmove', (event: TouchEvent) => {
+      // 只记录手势，不阻止事件
+      mobileAdapterService.recognizeGesture(event)
+    }, { passive: true })
+    
+    container.addEventListener('touchend', (event: TouchEvent) => {
+      const result = mobileAdapterService.recognizeGesture(event)
+      // 只在特定情况下处理手势，不干预基本交互
+      if (result && this.shouldHandleMobileGesture(result)) {
+        this.handleMobileGesture(result)
+      }
+    }, { passive: true })
+  }
+
+  /**
+   * 判断是否应该处理移动端手势
+   */
+  private shouldHandleMobileGesture(result: any): boolean {
+    // 只处理特殊手势，不干预基本的点击和拖拽
+    return result.gesture.type === 'pinch' || 
+           result.gesture.type === 'doubleTap' ||
+           result.gesture.type === 'longPress'
+  }
+
+  /**
+   * 处理移动端手势
+   */
+  private handleMobileGesture(result: any): void {
+    switch (result.action) {
+      case 'select':
+        // 处理选择操作
+        break
+      case 'move':
+        // 处理移动操作
+        break
+      case 'zoom':
+        // 处理缩放操作
+        if (result.gesture.scale) {
+          const currentTransform = this.lf.getTransform()
+          const newScale = currentTransform.SCALE_X * result.gesture.scale
+          this.lf.zoom(newScale)
+        }
+        break
+      case 'contextMenu':
+        // 处理长按菜单
+        break
+    }
+  }
+
+  /**
+   * 初始化增强主题系统
+   */
+  private initializeEnhancedThemes(): void {
+    // 应用默认主题
+    enhancedThemeService.applyTheme('default-light')
+    
+    // 监听系统主题变化
+    if (enhancedThemeService.config?.adaptive?.followSystem) {
+      const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+      darkModeQuery.addListener(() => {
+        enhancedThemeService.followSystemTheme()
+      })
+    }
+    
+    // 监听主题变更事件
+    document.addEventListener('flowchart-theme-change', (event: any) => {
+      console.log('🎨 主题已切换:', event.detail.theme.name)
+      
+      // 通知UI管理器更新主题
+      if (this.uiManager) {
+        this.uiManager.updateTheme(event.detail.theme)
+      }
+      
+      // 触发重新渲染
+      this.render()
+    })
+    
+    console.log('✅ 增强主题系统已初始化')
+  }
+
+  // ==================== 新增公共API方法 ====================
+
+  /**
+   * 启用/禁用智能拖拽指示线
+   */
+  setDragGuideEnabled(enabled: boolean): void {
+    this.isDragGuideEnabled = enabled
+    dragGuideService.updateConfig({ enabled })
+  }
+
+  /**
+   * 多节点对齐
+   */
+  alignNodes(options: MultiAlignOptions): void {
+    const selectedElements = this.lf.getSelectElements()
+    const selectedNodes = selectedElements.nodes.map(node => ({
+      id: node.id,
+      type: node.type,
+      position: { x: node.x, y: node.y },
+      size: { width: node.width || 100, height: node.height || 60 }
+    }))
+
+    if (selectedNodes.length < 2) {
+      console.warn('请选择至少2个节点进行对齐')
+      return
+    }
+
+    const alignedNodes = dragGuideService.alignMultipleNodes(selectedNodes, options)
+    
+    // 更新节点位置
+    alignedNodes.forEach(node => {
+      this.lf.setNodeData(node.id, {
+        x: node.position.x,
+        y: node.position.y
+      })
+    })
+    
+    console.log(`✅ 已对齐 ${alignedNodes.length} 个节点 (${options.type})`)
+  }
+
+  /**
+   * AI智能布局优化
+   */
+  async optimizeLayout(): Promise<void> {
+    const flowchartData = this.getData()
+    
+    try {
+      // 获取布局建议
+      const suggestions = await aiLayoutService.getLayoutSuggestions(flowchartData)
+      
+      if (suggestions.length > 0) {
+        const bestSuggestion = suggestions[0]
+        console.log(`💡 AI建议使用: ${bestSuggestion.template.name}`)
+        
+        // 应用最佳布局建议
+        const optimizedData = await aiLayoutService.applyLayoutTemplate(
+          flowchartData, 
+          bestSuggestion.template
+        )
+        
+        // 更新节点位置
+        optimizedData.nodes.forEach(node => {
+          this.lf.setNodeData(node.id, {
+            x: node.position.x,
+            y: node.position.y
+          })
+        })
+        
+        console.log('✅ AI布局优化完成')
+        
+        // 显示改进建议
+        if (bestSuggestion.preview.improvements.length > 0) {
+          this.toastManager.success(
+            `布局已优化: ${bestSuggestion.preview.improvements.join('、')}`
+          )
+        }
+      } else {
+        this.toastManager.info('当前布局已经很好，无需优化')
+      }
+    } catch (error) {
+      console.error('AI布局优化失败:', error)
+      this.toastManager.error('AI布局优化失败')
+    }
+  }
+
+  /**
+   * 切换主题
+   */
+  async switchTheme(themeId: string): Promise<void> {
+    try {
+      const result = await enhancedThemeService.applyTheme(themeId)
+      if (result.success) {
+        console.log(`✅ 主题已切换为: ${result.theme.name}`)
+        this.toastManager.success(`已切换到${result.theme.name}`)
+      } else {
+        console.error('主题切换失败:', result.errors)
+        this.toastManager.error('主题切换失败')
+      }
+    } catch (error) {
+      console.error('主题切换异常:', error)
+      this.toastManager.error('主题切换异常')
+    }
+  }
+
+  /**
+   * 获取可用主题列表
+   */
+  getAvailableThemes() {
+    return enhancedThemeService.getAllThemes()
+  }
+
+  /**
+   * 获取AI布局分析报告
+   */
+  async getLayoutAnalysis() {
+    const flowchartData = this.getData()
+    return await aiLayoutService.analyzePerformance(flowchartData)
+  }
+
+  /**
+   * 设置拖拽指示线启用状态
+   */
+  setDragGuideEnabled(enabled: boolean): void {
+    this.isDragGuideEnabled = enabled
+    
+    if (!enabled) {
+      // 禁用时清理指示线
+      dragGuideService.endDrag()
+    }
+    
+    console.log(`拖拽指示线${enabled ? '已启用' : '已禁用'}`)
+  }
+
+  /**
+   * 获取拖拽指示线启用状态
+   */
+  getDragGuideEnabled(): boolean {
+    return this.isDragGuideEnabled
   }
 
 

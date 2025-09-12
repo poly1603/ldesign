@@ -37,13 +37,29 @@ const TOOLS = {
   'template-new': { label: '新建模板', icon: () => getToolbarIcon('template-new'), title: '从当前流程图创建模板' },
   'template-save': { label: '保存模板', icon: () => getToolbarIcon('template-save'), title: '保存当前流程图为模板' },
   'template-load': { label: '加载模板', icon: () => getToolbarIcon('template-load'), title: '从模板加载流程图' },
-  'template-library': { label: '模板库', icon: () => getToolbarIcon('template-library'), title: '打开模板库' }
+  'template-library': { label: '模板库', icon: () => getToolbarIcon('template-library'), title: '打开模板库' },
+  
+  // 新增扩展功能工具
+  'align-left': { label: '左对齐', icon: () => getToolbarIcon('align-left'), title: '将选中节点左对齐' },
+  'align-center': { label: '居中对齐', icon: () => getToolbarIcon('align-center'), title: '将选中节点居中对齐' },
+  'align-right': { label: '右对齐', icon: () => getToolbarIcon('align-right'), title: '将选中节点右对齐' },
+  'align-top': { label: '顶部对齐', icon: () => getToolbarIcon('align-top'), title: '将选中节点顶部对齐' },
+  'align-middle': { label: '垂直居中', icon: () => getToolbarIcon('align-middle'), title: '将选中节点垂直居中对齐' },
+  'align-bottom': { label: '底部对齐', icon: () => getToolbarIcon('align-bottom'), title: '将选中节点底部对齐' },
+  'distribute-h': { label: '水平分布', icon: () => getToolbarIcon('distribute-h'), title: '水平均匀分布选中节点' },
+  'distribute-v': { label: '垂直分布', icon: () => getToolbarIcon('distribute-v'), title: '垂直均匀分布选中节点' },
+  'ai-optimize': { label: 'AI优化', icon: () => getToolbarIcon('ai-optimize'), title: 'AI智能布局优化' },
+  'drag-guide': { label: '拖拽指示', icon: () => getToolbarIcon('drag-guide'), title: '切换拖拽指示线' },
+  'layout-analysis': { label: '布局分析', icon: () => getToolbarIcon('layout-analysis'), title: '获取AI布局分析报告' }
 }
 
 const THEMES = [
-  { value: 'default', label: '默认主题' },
-  { value: 'dark', label: '暗色主题' },
-  { value: 'blue', label: '蓝色主题' }
+  { value: 'default-light', label: '默认浅色' },
+  { value: 'default-dark', label: '默认深色' },
+  { value: 'high-contrast', label: '高对比度' },
+  { value: 'enterprise', label: '企业主题' },
+  { value: 'colorful', label: '缤纷彩色' },
+  { value: 'christmas', label: '圣诞主题' }
 ]
 
 export class Toolbar {

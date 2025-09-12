@@ -2,31 +2,89 @@
  * 开始节点
  * 
  * 审批流程的开始节点，通常表示流程的起始点
+ * 支持自适应布局和防重叠渲染
  */
 
 import { CircleNode, CircleNodeModel, h } from '@logicflow/core'
 import { createNodeIcon } from '../utils/icons'
+import { layoutDetectionService, type LayoutDirection } from '../services/LayoutDetectionService'
+import { nodeRenderOptimizer, type NodeLayout } from '../services/NodeRenderOptimizer'
 
 /**
  * 开始节点模型
  */
 export class StartNodeModel extends CircleNodeModel {
+  private layoutDirection?: LayoutDirection
+  private nodeLayout?: NodeLayout
+  private isLayoutOptimized = false
+
   /**
    * 设置节点属性
    */
   override setAttributes(): void {
-    // 设置节点尺寸
-    this.r = 30
-
-    // 设置默认文本 - 文本在图标下方，有足够间隔
-    if (!this.text?.value) {
-      this.text = {
-        value: '开始',
-        x: this.x,
-        y: this.y + 15, // 文本在图标下方，增加间隔
-        draggable: false,
-        editable: true
+    // 如果还未优化布局，使用默认设置
+    if (!this.isLayoutOptimized) {
+      this.r = 30
+      
+      // 设置默认文本
+      if (!this.text?.value) {
+        this.text = {
+          value: '开始',
+          x: this.x,
+          y: this.y + 12, // 临时位置，将被优化调整
+          draggable: false,
+          editable: true
+        }
       }
+    }
+    
+    // 尝试应用布局优化
+    this.optimizeLayout()
+  }
+
+  /**
+   * 优化节点布局
+   */
+  private optimizeLayout(): void {
+    try {
+      // 获取当前流程图数据进行布局分析
+      const graphData = this.graphModel?.getGraphData()
+      if (!graphData) return
+      
+      // 检测布局方向
+      const layoutAnalysis = layoutDetectionService.detectLayout(graphData)
+      this.layoutDirection = layoutAnalysis.direction
+      
+      // 计算优化后的布局
+      const textValue = this.text?.value || '开始'
+      this.nodeLayout = nodeRenderOptimizer.calculateOptimalLayout(
+        textValue,
+        'start',
+        undefined,
+        this.layoutDirection
+      )
+      
+      // 应用优化后的样式
+      const styles = nodeRenderOptimizer.generateAdaptiveStyles(
+        'start',
+        this.nodeLayout,
+        this.layoutDirection
+      )
+      
+      // 更新节点半径
+      this.r = styles.nodeStyle.r
+      
+      // 更新文本位置
+      if (this.text) {
+        this.text.x = this.x + this.nodeLayout.textPosition.x
+        this.text.y = this.y + this.nodeLayout.textPosition.y
+      }
+      
+      this.isLayoutOptimized = true
+    } catch (error) {
+      console.warn('StartNode 布局优化失败:', error)
+      // 失败时使用默认布局
+      this.r = 30
     }
   }
 
@@ -58,20 +116,52 @@ export class StartNodeModel extends CircleNodeModel {
   }
 
   /**
-   * 获取锚点
+   * 获取锚点 - 根据布局方向自适应
    */
   override getDefaultAnchor() {
     const { x, y, r } = this
-    return [
-      // 右侧锚点（只允许输出）
-      {
+    const anchors: any[] = []
+    
+    // 根据检测到的布局方向设置锚点
+    if (this.layoutDirection === 'horizontal') {
+      // 横向布局：开始节点使用右侧锚点
+      anchors.push({
         x: x + r,
         y,
         id: `${this.id}_right`,
         edgeAddable: true,
         type: 'right'
-      }
-    ]
+      })
+    } else if (this.layoutDirection === 'vertical') {
+      // 纵向布局：开始节点使用下方锚点
+      anchors.push({
+        x,
+        y: y + r,
+        id: `${this.id}_bottom`,
+        edgeAddable: true,
+        type: 'bottom'
+      })
+    } else {
+      // 混合或未知布局：提供右侧和下方锚点
+      anchors.push(
+        {
+          x: x + r,
+          y,
+          id: `${this.id}_right`,
+          edgeAddable: true,
+          type: 'right'
+        },
+        {
+          x,
+          y: y + r,
+          id: `${this.id}_bottom`,
+          edgeAddable: true,
+          type: 'bottom'
+        }
+      )
+    }
+    
+    return anchors
   }
 
   /**
@@ -94,26 +184,41 @@ export class StartNodeModel extends CircleNodeModel {
  */
 export class StartNode extends CircleNode {
   /**
-   * 获取节点形状
+   * 获取节点形状 - 支持优化布局和防重叠
    */
   override getShape(): h.JSX.Element {
-    const { model } = this.props
+    const { model } = this.props as { model: StartNodeModel }
     const { x, y, r } = model
     const style = model.getNodeStyle()
+    
+    // 获取优化后的布局信息
+    const nodeLayout = (model as any).nodeLayout
+    const layoutDirection = (model as any).layoutDirection
+
+    // 计算图标位置
+    let iconX = x
+    let iconY = y - 8 // 默认位置
+    let iconSize = 14
+    
+    if (nodeLayout) {
+      iconX = x + nodeLayout.iconPosition.x
+      iconY = y + nodeLayout.iconPosition.y
+      iconSize = nodeLayout.iconSize
+    }
 
     // 获取lucide图标数据
     const iconData = createNodeIcon('play', {
-      size: 16,
+      size: iconSize,
       color: 'var(--ldesign-success-color, #52c41a)',
       strokeWidth: 2
     })
 
     const iconElements = []
     if (iconData) {
-      // 创建SVG图标
+      // 创建SVG图标 - 使用优化后的位置
       iconElements.push(
         h('g', {
-          transform: `translate(${x}, ${y - 15}) scale(0.7)` // 图标在文本上方，缩放适配
+          transform: `translate(${iconX}, ${iconY}) scale(${iconSize / 24})` // 根据iconSize动态缩放
         }, [
           h('g', {
             transform: 'translate(-12, -12)' // 居中图标
@@ -132,6 +237,20 @@ export class StartNode extends CircleNode {
       )
     }
 
+    // 添加布局方向指示器（调试用，可选）
+    const debugElements = []
+    if (process.env.NODE_ENV === 'development' && layoutDirection) {
+      debugElements.push(
+        h('text', {
+          x: x + r + 5,
+          y: y - r - 5,
+          fontSize: 10,
+          fill: '#999',
+          opacity: 0.7
+        }, layoutDirection.charAt(0).toUpperCase())
+      )
+    }
+
     return h('g', {}, [
       // 主圆形
       h('circle', {
@@ -140,8 +259,26 @@ export class StartNode extends CircleNode {
         r,
         ...style
       }),
-      // lucide图标
-      ...iconElements
+      // 优化后的图标
+      ...iconElements,
+      // 调试信息
+      ...debugElements
     ])
+  }
+  
+  /**
+   * 手动设置布局方向
+   */
+  setLayoutDirection(direction: LayoutDirection): void {
+    (this.model as any).layoutDirection = direction;
+    (this.model as any).isLayoutOptimized = false
+    this.model.setAttributes()
+  }
+  
+  /**
+   * 获取当前布局方向
+   */
+  getLayoutDirection(): LayoutDirection | undefined {
+    return (this.model as any).layoutDirection
   }
 }

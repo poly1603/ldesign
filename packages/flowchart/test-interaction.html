@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流程图交互测试</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        
+        #app {
+            width: 100%;
+            height: 80vh;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 6px;
+        }
+        
+        .controls button {
+            margin-right: 10px;
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .controls button:hover {
+            background: #e9ecef;
+        }
+        
+        .controls button.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e8f4fd;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .instructions {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        
+        .instructions ul {
+            margin-bottom: 0;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h3>📋 交互功能测试说明</h3>
+        <ul>
+            <li>🖱️ <strong>拖拽测试</strong>：尝试拖动节点改变位置，应该能够正常拖拽</li>
+            <li>🔗 <strong>连线测试</strong>：从一个节点拖动到另一个节点创建连线</li>
+            <li>📱 <strong>基本交互</strong>：点击选中、右键菜单等应该正常工作</li>
+            <li>⚡ <strong>扩展功能</strong>：点击"启用拖拽指示线"按钮测试增强功能</li>
+        </ul>
+    </div>
+
+    <div class="controls">
+        <button id="add-node-btn">➕ 添加节点</button>
+        <button id="toggle-drag-guide-btn" class="">📐 启用拖拽指示线</button>
+        <button id="clear-btn">🗑️ 清空画布</button>
+        <button id="zoom-fit-btn">🔍 适应画布</button>
+        <div class="status">
+            <span id="status-text">✅ 编辑器已就绪，拖拽指示线已禁用（避免干扰基本交互）</span>
+        </div>
+    </div>
+
+    <div id="app"></div>
+
+    <script type="module">
+        // 模拟导入（实际使用时需要正确的模块导入）
+        // import { FlowchartEditor } from './src/index.js'
+        
+        // 这里模拟编辑器初始化
+        console.log('📊 初始化流程图编辑器测试页面')
+        
+        // 模拟编辑器配置
+        const config = {
+            container: '#app',
+            ui: {
+                toolbar: {
+                    visible: true,
+                    tools: ['select', 'zoom-fit', 'undo', 'redo', 'drag-guide', 'ai-optimize']
+                }
+            },
+            grid: {
+                visible: true,
+                size: 20
+            },
+            theme: 'default-light'
+        }
+        
+        // 模拟编辑器实例
+        let editor = null
+        let dragGuideEnabled = false
+        
+        // 按钮事件处理
+        const statusText = document.getElementById('status-text')
+        const toggleDragGuideBtn = document.getElementById('toggle-drag-guide-btn')
+        const addNodeBtn = document.getElementById('add-node-btn')
+        const clearBtn = document.getElementById('clear-btn')
+        const zoomFitBtn = document.getElementById('zoom-fit-btn')
+        
+        // 拖拽指示线切换
+        toggleDragGuideBtn.addEventListener('click', () => {
+            dragGuideEnabled = !dragGuideEnabled
+            toggleDragGuideBtn.textContent = dragGuideEnabled ? '📐 禁用拖拽指示线' : '📐 启用拖拽指示线'
+            toggleDragGuideBtn.classList.toggle('active', dragGuideEnabled)
+            
+            statusText.textContent = dragGuideEnabled 
+                ? '🟢 拖拽指示线已启用 - 拖动节点时会显示对齐指示线' 
+                : '🔵 拖拽指示线已禁用 - 基本拖拽功能正常工作'
+                
+            // 这里会调用实际的编辑器方法
+            // editor?.setDragGuideEnabled(dragGuideEnabled)
+            console.log(`拖拽指示线${dragGuideEnabled ? '已启用' : '已禁用'}`)
+        })
+        
+        // 添加节点
+        addNodeBtn.addEventListener('click', () => {
+            console.log('➕ 添加测试节点')
+            statusText.textContent = '➕ 已添加测试节点 - 请尝试拖动它们'
+        })
+        
+        // 清空画布
+        clearBtn.addEventListener('click', () => {
+            console.log('🗑️ 清空画布')
+            statusText.textContent = '🗑️ 画布已清空'
+        })
+        
+        // 适应画布
+        zoomFitBtn.addEventListener('click', () => {
+            console.log('🔍 适应画布')
+            statusText.textContent = '🔍 画布已适应视图'
+        })
+        
+        // 模拟初始化完成
+        setTimeout(() => {
+            // 这里添加一些测试节点到画布
+            const appContainer = document.getElementById('app')
+            appContainer.innerHTML = `
+                <div style="position: relative; width: 100%; height: 100%; background: #f8f9fa;">
+                    <div style="position: absolute; top: 100px; left: 100px; width: 120px; height: 60px; 
+                                background: #e3f2fd; border: 2px solid #2196f3; border-radius: 8px; 
+                                display: flex; align-items: center; justify-content: center;
+                                cursor: move; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+                         draggable="true">
+                        <span style="color: #1565c0; font-weight: 500;">开始节点</span>
+                    </div>
+                    <div style="position: absolute; top: 200px; left: 300px; width: 120px; height: 60px; 
+                                background: #fff3e0; border: 2px solid #ff9800; border-radius: 8px; 
+                                display: flex; align-items: center; justify-content: center;
+                                cursor: move; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+                         draggable="true">
+                        <span style="color: #e65100; font-weight: 500;">处理节点</span>
+                    </div>
+                    <div style="position: absolute; top: 300px; left: 500px; width: 120px; height: 60px; 
+                                background: #e8f5e8; border: 2px solid #4caf50; border-radius: 8px; 
+                                display: flex; align-items: center; justify-content: center;
+                                cursor: move; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+                         draggable="true">
+                        <span style="color: #2e7d32; font-weight: 500;">结束节点</span>
+                    </div>
+                    
+                    <div style="position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.9); 
+                                padding: 10px; border-radius: 6px; font-size: 12px; color: #666;">
+                        💡 提示：这是模拟的测试页面，用于验证基本交互功能<br>
+                        - 节点应该可以正常拖拽移动<br>
+                        - 拖拽指示线功能默认禁用，不影响基本交互
+                    </div>
+                </div>
+            `
+            
+            statusText.textContent = '✅ 测试页面已加载，请测试节点拖拽功能'
+        }, 1000)
+    </script>
+</body>
+</html>
