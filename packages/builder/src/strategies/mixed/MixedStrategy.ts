@@ -197,7 +197,7 @@ export class MixedStrategy implements ILibraryStrategy {
         const postcss = await import('rollup-plugin-postcss')
         plugins.push(postcss.default({
           extract: true,
-          minimize: config.performance?.minify !== false,
+minimize: config.style?.minimize !== false,
           sourceMap: config.output?.sourcemap !== false,
           modules: config.style?.modules || false
         }))

@@ -245,11 +245,17 @@ export function getDefaultMinifyConfig(): MinifyOptions {
  * 检查是否需要压缩
  */
 export function shouldMinify(config: any): boolean {
+  // 1) 顶层 minify 优先（boolean 或对象）
   if (typeof config.minify === 'boolean') {
     return config.minify
   }
   if (typeof config.minify === 'object') {
     return config.minify.level !== 'none'
   }
+  // 2) 回退到 performance.minify（若显式设置）
+  if (config?.performance && typeof config.performance.minify !== 'undefined') {
+    return Boolean(config.performance.minify)
+  }
+  // 3) 最后按模式：生产环境默认压缩，开发环境不压缩
   return config.mode === 'production'
 }

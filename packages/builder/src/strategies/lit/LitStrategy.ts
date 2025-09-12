@@ -7,6 +7,7 @@ import type { ILibraryStrategy } from '../../types/strategy'
 import { LibraryType } from '../../types/library'
 import type { BuilderConfig } from '../../types/config'
 import type { UnifiedConfig } from '../../types/adapter'
+import { shouldMinify } from '../../utils/minify-processor'
 
 export class LitStrategy implements ILibraryStrategy {
   readonly name = 'lit'
@@ -69,7 +70,7 @@ export class LitStrategy implements ILibraryStrategy {
     // PostCSS (optional)
     if (config.style?.extract !== false) {
       const postcss = await import('rollup-plugin-postcss')
-      plugins.push(postcss.default({ extract: true, minimize: config.performance?.minify !== false }))
+plugins.push(postcss.default({ extract: true, minimize: config.style?.minimize !== false }))
     }
 
     // esbuild for TS
@@ -79,7 +80,7 @@ export class LitStrategy implements ILibraryStrategy {
       exclude: [/node_modules/],
       target: 'es2020',
       sourceMap: config.output?.sourcemap !== false,
-      minify: config.performance?.minify !== false
+minify: shouldMinify(config)
     }))
 
     return plugins

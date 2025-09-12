@@ -16,6 +16,7 @@ import type { ILibraryStrategy } from '../../types/strategy'
 import { LibraryType } from '../../types/library'
 import type { BuilderConfig } from '../../types/config'
 import type { UnifiedConfig } from '../../types/adapter'
+import { shouldMinify } from '../../utils/minify-processor'
 
 /**
  * Vue 3 组件库构建策略
@@ -132,7 +133,7 @@ export class Vue3Strategy implements ILibraryStrategy {
     }
 
     // 代码压缩插件（生产模式）
-    if (config.mode === 'production' && config.performance?.minify !== false) {
+if (shouldMinify(config)) {
       plugins.push({
         name: '@rollup/plugin-terser',
         options: {
@@ -265,7 +266,7 @@ export class Vue3Strategy implements ILibraryStrategy {
           '.ts': 'ts',
           '.tsx': 'tsx'
         },
-        minify: config.performance?.minify !== false,
+minify: shouldMinify(config),
         sourceMap: config.output?.sourcemap !== false
       }))
 

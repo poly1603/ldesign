@@ -15,6 +15,7 @@ import type { ILibraryStrategy } from '../../types/strategy'
 import { LibraryType } from '../../types/library'
 import type { BuilderConfig } from '../../types/config'
 import type { UnifiedConfig } from '../../types/adapter'
+import { shouldMinify } from '../../utils/minify-processor'
 
 /**
  * TypeScript 库构建策略
@@ -349,14 +350,14 @@ export class TypeScriptStrategy implements ILibraryStrategy {
           jsx: 'preserve',
           tsconfig: 'tsconfig.json',
           loaders: { '.ts': 'ts', '.tsx': 'tsx' },
-          minify: config.performance?.minify !== false,
+minify: shouldMinify(config),
           sourceMap: config.output?.sourcemap !== false
         })
       }
     })
 
     // 代码压缩插件（生产模式）
-    if (config.mode === 'production' && config.performance?.minify !== false) {
+if (shouldMinify(config)) {
       plugins.push({
         name: 'terser',
         plugin: async () => {

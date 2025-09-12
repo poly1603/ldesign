@@ -7,6 +7,7 @@ import type { ILibraryStrategy } from '../../types/strategy'
 import { LibraryType } from '../../types/library'
 import type { BuilderConfig } from '../../types/config'
 import type { UnifiedConfig } from '../../types/adapter'
+import { shouldMinify } from '../../utils/minify-processor'
 
 export class PreactStrategy implements ILibraryStrategy {
   readonly name = 'preact'
@@ -57,7 +58,7 @@ export class PreactStrategy implements ILibraryStrategy {
     // PostCSS (optional)
     if (config.style?.extract !== false) {
       const postcss = await import('rollup-plugin-postcss')
-      plugins.push(postcss.default({ extract: true, minimize: config.performance?.minify !== false }))
+plugins.push(postcss.default({ extract: true, minimize: config.style?.minimize !== false }))
     }
 
     // esbuild for TS/JSX with Preact automatic JSX
@@ -65,7 +66,7 @@ export class PreactStrategy implements ILibraryStrategy {
     plugins.push(esbuild.default({
       include: /\.(tsx?|jsx?)$/, exclude: [/node_modules/], target: 'es2020',
       jsx: 'automatic', jsxImportSource: 'preact', tsconfig: 'tsconfig.json',
-      sourceMap: config.output?.sourcemap !== false, minify: config.performance?.minify !== false
+sourceMap: config.output?.sourcemap !== false, minify: shouldMinify(config)
     }))
 
     return plugins
