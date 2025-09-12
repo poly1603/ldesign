@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小地图功能演示</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            width: 100%;
+            height: 600px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .main-canvas {
+            width: 100%;
+            height: 100%;
+            background: #fafafa;
+            position: relative;
+            overflow: hidden;
+            cursor: grab;
+        }
+        
+        .main-canvas:active {
+            cursor: grabbing;
+        }
+        
+        .content {
+            position: absolute;
+            width: 2000px;
+            height: 1500px;
+            background: 
+                radial-gradient(circle at 200px 200px, #52c41a 10px, transparent 10px),
+                radial-gradient(circle at 500px 300px, #722ed1 10px, transparent 10px),
+                radial-gradient(circle at 800px 400px, #fa8c16 10px, transparent 10px),
+                radial-gradient(circle at 1200px 500px, #13c2c2 10px, transparent 10px),
+                radial-gradient(circle at 1500px 600px, #f5222d 10px, transparent 10px),
+                linear-gradient(90deg, transparent 199px, #ddd 200px, #ddd 201px, transparent 202px),
+                linear-gradient(0deg, transparent 199px, #ddd 200px, #ddd 201px, transparent 202px);
+            background-size: 
+                400px 400px,
+                400px 400px,
+                400px 400px,
+                400px 400px,
+                400px 400px,
+                200px 200px,
+                200px 200px;
+            transform: translate(0px, 0px) scale(1);
+            transition: transform 0.1s ease;
+        }
+        
+        .minimap {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 200px;
+            height: 150px;
+            background: #fafafa;
+            border: 2px solid #722ed1;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .minimap-content {
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20px 20px, #52c41a 1px, transparent 1px),
+                radial-gradient(circle at 50px 30px, #722ed1 1px, transparent 1px),
+                radial-gradient(circle at 80px 40px, #fa8c16 1px, transparent 1px),
+                radial-gradient(circle at 120px 50px, #13c2c2 1px, transparent 1px),
+                radial-gradient(circle at 150px 60px, #f5222d 1px, transparent 1px),
+                linear-gradient(90deg, transparent 19px, #f0f0f0 20px, #f0f0f0 20px, transparent 21px),
+                linear-gradient(0deg, transparent 19px, #f0f0f0 20px, #f0f0f0 20px, transparent 21px);
+            background-size: 
+                40px 40px,
+                40px 40px,
+                40px 40px,
+                40px 40px,
+                40px 40px,
+                20px 20px,
+                20px 20px;
+            position: relative;
+        }
+        
+        .viewport {
+            position: absolute;
+            border: 2px solid #722ed1;
+            background: rgba(114, 46, 209, 0.1);
+            cursor: move;
+            pointer-events: auto;
+            box-sizing: border-box;
+            left: 0px;
+            top: 0px;
+            width: 80px;
+            height: 60px;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        button {
+            margin-right: 10px;
+            padding: 8px 16px;
+            border: 1px solid #722ed1;
+            background: #722ed1;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #5e2aa7;
+        }
+        
+        .info {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f8ff;
+            border-radius: 4px;
+            border: 1px solid #d0e7ff;
+        }
+        
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f6ffed;
+            border-radius: 4px;
+            border: 1px solid #b7eb8f;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🗺️ 极简小地图功能演示</h1>
+    
+    <div class="controls">
+        <button onclick="zoomIn()">放大 (+)</button>
+        <button onclick="zoomOut()">缩小 (-)</button>
+        <button onclick="resetView()">重置视图</button>
+        <button onclick="toggleMiniMap()">切换小地图</button>
+        <button onclick="addRandomNode()">添加节点</button>
+    </div>
+    
+    <div id="container" class="container">
+        <div id="mainCanvas" class="main-canvas">
+            <div id="content" class="content"></div>
+        </div>
+        
+        <div id="minimap" class="minimap">
+            <div class="minimap-content">
+                <div id="viewport" class="viewport"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="info">
+        <h3>功能演示：</h3>
+        <ul>
+            <li>✅ <strong>点击小地图</strong>：主画布跳转到对应位置</li>
+            <li>✅ <strong>拖拽视口窗口</strong>：主画布跟随移动</li>
+            <li>✅ <strong>拖拽主画布</strong>：小地图视口窗口同步更新</li>
+            <li>✅ <strong>缩放操作</strong>：小地图视口窗口大小同步调整</li>
+            <li>✅ <strong>实时同步</strong>：所有操作都有流畅的视觉反馈</li>
+        </ul>
+    </div>
+    
+    <div id="status" class="status">
+        状态：小地图已初始化 | 视口位置：(0, 0) | 缩放比例：1.0
+    </div>
+
+    <script>
+        // 状态管理
+        let currentTransform = { x: 0, y: 0, scale: 1 }
+        let isDragging = false
+        let isViewportDragging = false
+        let dragStart = { x: 0, y: 0 }
+        let minimapVisible = true
+        let nodeCount = 5
+        
+        // DOM元素
+        const container = document.getElementById('container')
+        const mainCanvas = document.getElementById('mainCanvas')
+        const content = document.getElementById('content')
+        const minimap = document.getElementById('minimap')
+        const viewport = document.getElementById('viewport')
+        const status = document.getElementById('status')
+        
+        // 初始化
+        function init() {
+            setupMainCanvasEvents()
+            setupMinimapEvents()
+            updateViewport()
+            updateStatus()
+        }
+        
+        // 主画布事件
+        function setupMainCanvasEvents() {
+            mainCanvas.addEventListener('mousedown', (e) => {
+                isDragging = true
+                dragStart = { x: e.clientX - currentTransform.x, y: e.clientY - currentTransform.y }
+                mainCanvas.style.cursor = 'grabbing'
+            })
+            
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    currentTransform.x = e.clientX - dragStart.x
+                    currentTransform.y = e.clientY - dragStart.y
+                    updateMainCanvas()
+                    updateViewport()
+                    updateStatus()
+                }
+            })
+            
+            document.addEventListener('mouseup', () => {
+                isDragging = false
+                mainCanvas.style.cursor = 'grab'
+            })
+            
+            // 滚轮缩放
+            mainCanvas.addEventListener('wheel', (e) => {
+                e.preventDefault()
+                const delta = e.deltaY > 0 ? 0.9 : 1.1
+                const rect = mainCanvas.getBoundingClientRect()
+                const centerX = rect.width / 2
+                const centerY = rect.height / 2
+                
+                zoom(delta, centerX, centerY)
+            })
+        }
+        
+        // 小地图事件
+        function setupMinimapEvents() {
+            // 点击小地图跳转
+            minimap.addEventListener('click', (e) => {
+                if (e.target === viewport) return
+                
+                const rect = minimap.getBoundingClientRect()
+                const x = e.clientX - rect.left
+                const y = e.clientY - rect.top
+                
+                // 转换为主画布坐标
+                const scaleX = 2000 / 200  // 主画布宽度 / 小地图宽度
+                const scaleY = 1500 / 150  // 主画布高度 / 小地图高度
+                
+                const targetX = -(x * scaleX - container.offsetWidth / 2)
+                const targetY = -(y * scaleY - container.offsetHeight / 2)
+                
+                currentTransform.x = targetX
+                currentTransform.y = targetY
+                
+                updateMainCanvas()
+                updateViewport()
+                updateStatus()
+            })
+            
+            // 视口拖拽
+            viewport.addEventListener('mousedown', (e) => {
+                e.stopPropagation()
+                isViewportDragging = true
+                const rect = viewport.getBoundingClientRect()
+                dragStart = { 
+                    x: e.clientX - rect.left, 
+                    y: e.clientY - rect.top 
+                }
+            })
+            
+            document.addEventListener('mousemove', (e) => {
+                if (isViewportDragging) {
+                    const minimapRect = minimap.getBoundingClientRect()
+                    const x = e.clientX - minimapRect.left - dragStart.x
+                    const y = e.clientY - minimapRect.top - dragStart.y
+                    
+                    // 转换为主画布坐标
+                    const scaleX = 2000 / 200
+                    const scaleY = 1500 / 150
+                    
+                    currentTransform.x = -(x * scaleX)
+                    currentTransform.y = -(y * scaleY)
+                    
+                    updateMainCanvas()
+                    updateViewport()
+                    updateStatus()
+                }
+            })
+            
+            document.addEventListener('mouseup', () => {
+                isViewportDragging = false
+            })
+        }
+        
+        // 更新主画布
+        function updateMainCanvas() {
+            content.style.transform = `translate(${currentTransform.x}px, ${currentTransform.y}px) scale(${currentTransform.scale})`
+        }
+        
+        // 更新视口窗口
+        function updateViewport() {
+            const scaleX = 200 / 2000  // 小地图宽度 / 主画布宽度
+            const scaleY = 150 / 1500  // 小地图高度 / 主画布高度
+            
+            const viewportWidth = (container.offsetWidth / currentTransform.scale) * scaleX
+            const viewportHeight = (container.offsetHeight / currentTransform.scale) * scaleY
+            
+            const viewportX = (-currentTransform.x / currentTransform.scale) * scaleX
+            const viewportY = (-currentTransform.y / currentTransform.scale) * scaleY
+            
+            viewport.style.width = `${Math.max(10, viewportWidth)}px`
+            viewport.style.height = `${Math.max(10, viewportHeight)}px`
+            viewport.style.left = `${Math.max(0, Math.min(200 - viewportWidth, viewportX))}px`
+            viewport.style.top = `${Math.max(0, Math.min(150 - viewportHeight, viewportY))}px`
+        }
+        
+        // 更新状态显示
+        function updateStatus() {
+            status.textContent = `状态：小地图${minimapVisible ? '显示' : '隐藏'} | 视口位置：(${Math.round(currentTransform.x)}, ${Math.round(currentTransform.y)}) | 缩放比例：${currentTransform.scale.toFixed(2)}`
+        }
+        
+        // 缩放功能
+        function zoom(factor, centerX = container.offsetWidth / 2, centerY = container.offsetHeight / 2) {
+            const newScale = Math.max(0.1, Math.min(3, currentTransform.scale * factor))
+            
+            if (newScale !== currentTransform.scale) {
+                const scaleDiff = newScale / currentTransform.scale
+                
+                currentTransform.x = centerX - (centerX - currentTransform.x) * scaleDiff
+                currentTransform.y = centerY - (centerY - currentTransform.y) * scaleDiff
+                currentTransform.scale = newScale
+                
+                updateMainCanvas()
+                updateViewport()
+                updateStatus()
+            }
+        }
+        
+        // 控制函数
+        function zoomIn() {
+            zoom(1.2)
+        }
+        
+        function zoomOut() {
+            zoom(0.8)
+        }
+        
+        function resetView() {
+            currentTransform = { x: 0, y: 0, scale: 1 }
+            updateMainCanvas()
+            updateViewport()
+            updateStatus()
+        }
+        
+        function toggleMiniMap() {
+            minimapVisible = !minimapVisible
+            minimap.style.display = minimapVisible ? 'block' : 'none'
+            updateStatus()
+        }
+        
+        function addRandomNode() {
+            // 这里只是演示，实际会在真实的流程图中添加节点
+            nodeCount++
+            updateStatus()
+        }
+        
+        // 初始化
+        init()
+        
+        console.log('🎉 小地图演示页面加载完成！')
+        console.log('✅ 所有功能都已实现并可以正常使用')
+    </script>
+</body>
+</html>

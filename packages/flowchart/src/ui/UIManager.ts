@@ -94,7 +94,7 @@ export class UIManager {
     const toolbarContainer = document.createElement('div')
     toolbarContainer.id = 'ldesign-toolbar-container'
     toolbarContainer.style.cssText = `
-      height: 48px;
+      height: var(--ldesign-flowchart-toolbar-height, 56px);
       border-bottom: 1px solid #e5e5e5;
     `
 
@@ -333,9 +333,15 @@ export class UIManager {
       let position: { x: number; y: number }
 
       try {
+        // 检查LogicFlow实例是否可用
+        if (!lf || typeof lf.getPointByClient !== 'function') {
+          throw new Error('LogicFlow实例未准备好')
+        }
+
         // 尝试使用LogicFlow的getPointByClient方法（这是正确的API）
         const point = lf.getPointByClient(clientX, clientY)
-        if (point && typeof point.x === 'number' && typeof point.y === 'number') {
+        if (point && typeof point.x === 'number' && typeof point.y === 'number' &&
+          !isNaN(point.x) && !isNaN(point.y)) {
           position = { x: point.x, y: point.y }
           console.log(`屏幕坐标转换: (${clientX}, ${clientY}) -> 画布坐标: (${position.x.toFixed(0)}, ${position.y.toFixed(0)})`)
         } else {
@@ -713,6 +719,13 @@ export class UIManager {
    */
   setEditor(editor: any): void {
     this.editor = editor
+  }
+
+  /**
+   * 获取画布容器
+   */
+  getCanvasContainer(): HTMLElement | null {
+    return this.canvasContainer
   }
 
   /**

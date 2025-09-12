@@ -38,6 +38,10 @@ export { MiniMapPlugin } from './plugins/builtin/MiniMapPlugin'
 export { HistoryPlugin } from './plugins/builtin/HistoryPlugin'
 export { ExportPlugin } from './plugins/builtin/ExportPlugin'
 
+// 导出模板系统
+export { TemplateManager } from './templates/TemplateManager'
+export { builtInTemplates, getBuiltInTemplatesByCategory, getBuiltInTemplate, getDefaultTemplate } from './templates/builtInTemplates'
+
 // 导出 API 接口
 export * from './api'
 

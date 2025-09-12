@@ -8,6 +8,7 @@
 - ✅ **TypeScript 支持** - 完整的类型定义和类型安全
 - ✅ **框架无关** - 可在 React、Vue、Angular 等任何前端框架中使用
 - ✅ **审批流程专用** - 提供审批流程特有的节点类型和功能
+- ✅ **模板系统** - 内置常用审批流程模板，支持自定义模板管理
 - ✅ **主题系统** - 基于 LDESIGN 设计系统的可定制主题
 - ✅ **插件机制** - 支持功能扩展和自定义节点
 - ✅ **简洁 API** - 提供简单易用的 API 接口
@@ -60,6 +61,42 @@ editor.addEdge({
   sourceNodeId: startNodeId,
   targetNodeId: approvalNodeId
 })
+```
+
+### 模板系统
+
+```typescript
+import { FlowchartEditor } from '@ldesign/flowchart'
+
+// 创建编辑器实例，启用模板功能
+const editor = new FlowchartEditor({
+  container: '#flowchart-container',
+  toolbar: {
+    tools: [
+      'template-library',  // 模板库按钮
+      'template-save',     // 保存模板按钮
+      // ... 其他工具
+    ]
+  }
+})
+
+// 获取所有模板
+const templates = editor.getTemplateMetadata()
+
+// 加载内置模板
+editor.loadTemplate('builtin_leave_approval')
+
+// 保存当前流程图为模板
+await editor.saveAsTemplate({
+  name: 'my-template',
+  displayName: '我的模板',
+  description: '自定义模板描述',
+  category: 'custom',
+  tags: ['自定义', '测试']
+})
+
+// 显示模板选择器
+editor.showTemplateSelector()
 ```
 
 ### 只读查看器
@@ -115,6 +152,8 @@ new FlowchartEditor(config: FlowchartEditorConfig)
 ```
 
 #### 主要方法
+
+**基础操作**
 - `addNode(nodeData: NodeData): void` - 添加节点
 - `updateNode(id: string, updates: Partial<NodeData>): void` - 更新节点
 - `removeNode(id: string): void` - 删除节点
@@ -127,6 +166,15 @@ new FlowchartEditor(config: FlowchartEditorConfig)
 - `redo(): boolean` - 重做操作
 - `setZoom(scale: number): void` - 设置缩放
 - `exportAsImage(format: 'png' | 'jpeg'): string` - 导出图片
+
+**模板系统**
+- `getTemplateManager(): TemplateManager` - 获取模板管理器
+- `getTemplateMetadata(): TemplateMetadata[]` - 获取模板元数据
+- `loadTemplate(templateId: string): void` - 加载模板
+- `saveAsTemplate(info: TemplateInfo): Promise<string>` - 保存为模板
+- `deleteTemplate(templateId: string): Promise<void>` - 删除模板
+- `showTemplateSelector(): void` - 显示模板选择器
+- `showSaveTemplateDialog(): void` - 显示保存模板对话框
 
 ### FlowchartViewer
 

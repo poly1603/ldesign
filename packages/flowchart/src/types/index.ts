@@ -52,6 +52,8 @@ export interface ApprovalNodeConfig {
   type: ApprovalNodeType
   x: number
   y: number
+  width?: number
+  height?: number
   text?: string
   properties?: {
     // 审批人信息
@@ -132,6 +134,19 @@ export interface FlowchartEditorConfig {
   plugins?: any[]
   // LogicFlow 配置
   logicflowConfig?: any
+  // 性能监控配置
+  performance?: PerformanceConfig
+  // 缩略图配置
+  miniMap?: {
+    enabled?: boolean
+    width?: number
+    height?: number
+    position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
+    showZoomControls?: boolean
+    showViewport?: boolean
+    backgroundColor?: string
+    borderColor?: string
+  }
 }
 
 // 预览器配置
@@ -192,13 +207,32 @@ export interface FlowchartEvents {
   'node:add': (data: { node: ApprovalNodeConfig }) => void
   'node:delete': (data: { node: ApprovalNodeConfig }) => void
   'node:update': (data: { node: ApprovalNodeConfig; oldNode: ApprovalNodeConfig }) => void
+  'node:select': (data: { node: ApprovalNodeConfig; event: MouseEvent }) => void
   'edge:click': (data: { edge: ApprovalEdgeConfig; event: MouseEvent }) => void
+  'edge:select': (data: { edge: ApprovalEdgeConfig; event: MouseEvent }) => void
   'edge:add': (data: { edge: ApprovalEdgeConfig }) => void
   'edge:delete': (data: { edge: ApprovalEdgeConfig }) => void
   'edge:update': (data: { edge: ApprovalEdgeConfig; oldEdge: ApprovalEdgeConfig }) => void
   'canvas:click': (data: { event: MouseEvent; position: Point }) => void
   'selection:change': (data: { selected: Array<ApprovalNodeConfig | ApprovalEdgeConfig> }) => void
-  'data:change': (data: { flowchartData: FlowchartData }) => void
+  'data:change': (data: FlowchartData) => void
+  'theme:change': (data: { theme: string }) => void
+  // 模板相关事件
+  'template:load': (template: any) => void
+  'template:save': (data: any) => void
+  'template:delete': (data: any) => void
+  // 其他事件
+  'copy:success': (data: any) => void
+  'copy:error': (data: any) => void
+  'copy:warning': (data: any) => void
+  'paste:success': (data: any) => void
+  'paste:error': (data: any) => void
+  'paste:warning': (data: any) => void
+  'clipboard:clear': (data: any) => void
+  'export:success': (data: any) => void
+  'export:error': (data: any) => void
+  'export:dialog:show': (data: any) => void
+  'validation:show': (data: any) => void
 }
 
 // 工具栏工具类型
@@ -213,6 +247,61 @@ export type ToolbarTool =
   | 'delete'     // 删除
   | 'copy'       // 复制
   | 'paste'      // 粘贴
+
+// 主题类型
+export type FlowchartTheme = 'default' | 'dark' | 'blue' | string
+
+// 边类型
+export type ApprovalEdgeType = 'approval-edge' | 'polyline' | string
+
+// 性能监控相关类型
+export interface PerformanceConfig {
+  /** 是否启用性能监控 */
+  enabled: boolean
+  /** 采样间隔（毫秒） */
+  sampleInterval: number
+  /** 最大历史记录数量 */
+  maxHistorySize: number
+  /** 是否监控内存 */
+  monitorMemory: boolean
+  /** 是否监控FPS */
+  monitorFPS: boolean
+  /** 性能阈值配置 */
+  thresholds: {
+    renderTime: number // 渲染时间阈值（毫秒）
+    fps: number // FPS阈值
+    memory: number // 内存使用阈值（MB）
+  }
+  /** 虚拟渲染配置 */
+  virtualRender?: {
+    /** 是否启用虚拟渲染 */
+    enabled: boolean
+    /** 可视区域缓冲区大小（像素） */
+    bufferSize: number
+    /** 最大同时渲染的节点数量 */
+    maxVisibleNodes: number
+    /** 最大同时渲染的边数量 */
+    maxVisibleEdges: number
+    /** 是否启用节点懒加载 */
+    enableLazyLoading: boolean
+    /** 懒加载延迟时间（毫秒） */
+    lazyLoadDelay: number
+  }
+}
+
+// 视口信息类型
+export interface ViewportInfo {
+  /** 可视区域左上角X坐标 */
+  x: number
+  /** 可视区域左上角Y坐标 */
+  y: number
+  /** 可视区域宽度 */
+  width: number
+  /** 可视区域高度 */
+  height: number
+  /** 缩放比例 */
+  scale: number
+}
 
 // 物料仓库相关类型
 export interface MaterialStyle {
@@ -345,6 +434,118 @@ export interface MaterialRepositoryEvents {
   'repository:save': (repository: MaterialRepository) => void
   'repository:export': (repository: MaterialRepository) => void
   'repository:import': (repository: MaterialRepository) => void
+}
+
+// 模板系统类型定义
+export interface FlowchartTemplate {
+  id: string                    // 模板唯一ID
+  name: string                  // 模板名称
+  displayName: string           // 显示名称
+  description: string           // 模板描述
+  category: TemplateCategory    // 模板分类
+  version: string               // 模板版本
+  author?: string               // 作者
+  tags?: string[]               // 标签
+  preview?: string              // 预览图URL
+
+  // 模板数据
+  data: FlowchartData           // 流程图数据
+
+  // 元数据
+  isBuiltIn: boolean            // 是否为内置模板
+  isDefault?: boolean           // 是否为默认模板
+  createdAt: string             // 创建时间
+  updatedAt: string             // 更新时间
+}
+
+// 模板分类
+export type TemplateCategory =
+  | 'approval'      // 审批流程
+  | 'workflow'      // 工作流程
+  | 'business'      // 业务流程
+  | 'custom'        // 自定义
+  | 'other'         // 其他
+
+// 模板元数据（用于模板列表显示）
+export interface TemplateMetadata {
+  id: string
+  name: string
+  displayName: string
+  description: string
+  category: TemplateCategory
+  version: string
+  author?: string
+  tags?: string[]
+  preview?: string
+  isBuiltIn: boolean
+  isDefault?: boolean
+  createdAt: string
+  updatedAt: string
+  nodeCount: number             // 节点数量
+  edgeCount: number             // 连接线数量
+}
+
+// 模板过滤器
+export interface TemplateFilter {
+  category?: TemplateCategory
+  tags?: string[]
+  author?: string
+  isBuiltIn?: boolean
+  search?: string               // 搜索关键词
+}
+
+// 模板排序选项
+export interface TemplateSortOptions {
+  field: 'name' | 'displayName' | 'createdAt' | 'updatedAt' | 'nodeCount'
+  order: 'asc' | 'desc'
+}
+
+// 模板导入导出选项
+export interface TemplateExportOptions {
+  includeMetadata?: boolean     // 是否包含元数据
+  format?: 'json' | 'xml'       // 导出格式
+  pretty?: boolean              // 是否美化输出
+}
+
+export interface TemplateImportOptions {
+  overwrite?: boolean           // 是否覆盖同名模板
+  validateData?: boolean        // 是否验证数据
+  generateId?: boolean          // 是否生成新ID
+}
+
+// 模板管理器配置
+export interface TemplateManagerConfig {
+  // 存储配置
+  storage?: {
+    type: 'localStorage' | 'indexedDB' | 'memory'
+    key?: string                // 存储键名
+    maxSize?: number            // 最大存储大小
+  }
+
+  // 内置模板配置
+  builtInTemplates?: {
+    enabled: boolean            // 是否启用内置模板
+    categories?: TemplateCategory[]  // 启用的分类
+  }
+
+  // 缓存配置
+  cache?: {
+    enabled: boolean
+    maxSize: number
+    ttl: number                 // 缓存时间（毫秒）
+  }
+}
+
+// 模板管理器事件
+export interface TemplateManagerEvents {
+  'template:add': (template: FlowchartTemplate) => void
+  'template:update': (template: FlowchartTemplate, oldTemplate: FlowchartTemplate) => void
+  'template:delete': (templateId: string) => void
+  'template:load': (template: FlowchartTemplate) => void
+  'template:save': (template: FlowchartTemplate) => void
+  'template:import': (templates: FlowchartTemplate[]) => void
+  'template:export': (templates: FlowchartTemplate[]) => void
+  'templates:refresh': (templates: FlowchartTemplate[]) => void
 }
 
 // 导出 LogicFlow 相关类型

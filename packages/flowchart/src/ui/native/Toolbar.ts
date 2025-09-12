@@ -33,7 +33,11 @@ const TOOLS = {
   'paste': { label: '粘贴', icon: () => getToolbarIcon('paste'), title: '粘贴元素 (Ctrl+V)' },
   'validate': { label: '验证', icon: () => getToolbarIcon('validate'), title: '验证流程图' },
   'export': { label: '导出', icon: () => getToolbarIcon('export'), title: '导出数据' },
-  'download': { label: '下载', icon: () => getToolbarIcon('download'), title: '下载文件' }
+  'download': { label: '下载', icon: () => getToolbarIcon('download'), title: '下载文件' },
+  'template-new': { label: '新建模板', icon: () => getToolbarIcon('template-new'), title: '从当前流程图创建模板' },
+  'template-save': { label: '保存模板', icon: () => getToolbarIcon('template-save'), title: '保存当前流程图为模板' },
+  'template-load': { label: '加载模板', icon: () => getToolbarIcon('template-load'), title: '从模板加载流程图' },
+  'template-library': { label: '模板库', icon: () => getToolbarIcon('template-library'), title: '打开模板库' }
 }
 
 const THEMES = [

@@ -59,7 +59,10 @@ async function initEditor() {
           'select',
           'multi-select',
           'material-repository',
+          'history',
           'zoom-fit',
+          'zoom-in',
+          'zoom-out',
           'undo',
           'redo',
           'delete',
@@ -68,7 +71,8 @@ async function initEditor() {
           'paste',
           'validate',
           'export',
-          'download'
+          'download',
+          'template-library'
         ]
       },
       nodePanel: {
@@ -79,13 +83,20 @@ async function initEditor() {
         visible: true,
         position: 'right'
       },
-      theme: 'default'
+      theme: 'default',
+      // 启用缩略图
+      miniMap: {
+        enabled: true,
+        position: 'bottom-right',
+        showZoomControls: true,
+        showViewport: true
+      }
     })
 
     // 渲染编辑器
     editor.render()
 
-    console.log('编辑器初始化成功')
+    editor.showSuccess('编辑器初始化成功', 2000)
   } catch (error: any) {
     console.error('编辑器初始化失败:', error)
   }
@@ -113,7 +124,7 @@ async function loadTemplate() {
     const templateData = await response.json()
 
     editor.setData(templateData)
-    console.log('复杂审批流程模板加载成功', templateData)
+    editor.showSuccess('复杂审批流程模板加载成功', 3000)
   } catch (error) {
     console.error('加载复杂模板失败，使用简单模板:', error)
 
@@ -121,7 +132,7 @@ async function loadTemplate() {
     try {
       const template = FlowchartAPI.createApprovalTemplate()
       editor.setData(template)
-      console.log('简单模板加载成功')
+      editor.showSuccess('简单模板加载成功', 3000)
     } catch (apiError) {
       console.error('API模板加载也失败:', apiError)
     }
@@ -136,7 +147,7 @@ function changeTheme() {
 
   try {
     editor.setTheme(currentTheme.value)
-    console.log(`主题已切换为: ${currentTheme.value}`)
+    editor.showInfo(`主题已切换为: ${currentTheme.value}`, 2000)
   } catch (error) {
     console.error('主题切换失败:', error)
   }
@@ -156,7 +167,7 @@ function exportData() {
   a.download = 'flowchart-data.json'
   a.click()
   URL.revokeObjectURL(url)
-  console.log('数据导出成功')
+  editor.showSuccess('数据导出成功', 2000)
 }
 
 // 生命周期钩子
@@ -183,22 +194,23 @@ onUnmounted(() => {
 .header {
   background: #ffffff;
   border-bottom: 1px solid #e5e5e5;
-  padding: 20px;
+  padding: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 
   h1 {
     margin: 0 0 6px 0;
-    font-size: 28px;
+    font-size: 20px;
     color: rgba(0, 0, 0, 0.9);
     font-weight: 600;
   }
 
   p {
-    margin: 0;
-    font-size: 14px;
+    margin: 0 32px;
+    font-size: 12px;
     color: rgba(0, 0, 0, 0.7);
+    flex: 1;
   }
 
   .header-actions {

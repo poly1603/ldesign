@@ -29,6 +29,13 @@ import { MaterialRepositoryPanel } from '../ui/native/MaterialRepositoryPanel'
 import { validateFlowchart, type ValidationResult } from '../utils/validation'
 import { exportFlowchart, downloadExportedFile, type ExportFormat, type ExportOptions } from '../utils/export'
 import { getClipboardManager, type PasteOptions } from '../utils/clipboard'
+import { TemplateManager, type FlowchartTemplate, type TemplateMetadata, type TemplateFilter, type TemplateSortOptions } from '../templates'
+import { PerformanceMonitor, type PerformanceReport } from '../performance/PerformanceMonitor'
+import { VirtualRenderer, BatchDOMUpdater } from '../performance/VirtualRenderer'
+import { MemoryOptimizer, type MemoryUsageInfo, type MemoryOptimizationStats } from '../performance/MemoryOptimizer'
+import { InteractionOptimizer, type InteractionStats, type DragStats, type ZoomStats } from '../performance/InteractionOptimizer'
+import { ToastManager } from '../ui/native/Toast'
+import { MiniMapPlugin, type MiniMapConfig, type ViewportInfo } from '../plugins/minimap/MiniMapPlugin'
 
 /**
  * 审批流程图编辑器类
@@ -49,6 +56,14 @@ export class FlowchartEditor {
   private materialRepositoryManager!: MaterialRepositoryManager
   private materialRepositoryPanel: MaterialRepositoryPanel | null = null
   private clipboardManager = getClipboardManager()
+  private templateManager!: TemplateManager
+  private performanceMonitor!: PerformanceMonitor
+  private virtualRenderer!: VirtualRenderer
+  private batchDOMUpdater!: BatchDOMUpdater
+  private memoryOptimizer!: MemoryOptimizer
+  private interactionOptimizer!: InteractionOptimizer
+  private toastManager!: ToastManager
+  private miniMap: MiniMapPlugin | null = null
 
   /**
    * 构造函数
@@ -78,6 +93,60 @@ export class FlowchartEditor {
     // 初始化物料仓库管理器
     this.materialRepositoryManager = new MaterialRepositoryManager()
     this.loadMaterialRepository()
+
+    // 初始化模板管理器
+    this.templateManager = new TemplateManager()
+    this.initializeTemplateManager()
+
+    // 初始化性能监控器
+    this.performanceMonitor = new PerformanceMonitor({
+      enabled: this.config.performance?.enabled ?? true,
+      sampleInterval: this.config.performance?.sampleInterval ?? 1000,
+      maxHistorySize: this.config.performance?.maxHistorySize ?? 100,
+      monitorMemory: this.config.performance?.monitorMemory ?? true,
+      monitorFPS: this.config.performance?.monitorFPS ?? true
+    })
+    this.initializePerformanceMonitor()
+
+    // 初始化虚拟渲染器
+    this.virtualRenderer = new VirtualRenderer({
+      enabled: this.config.performance?.enabled ?? true,
+      bufferSize: 200,
+      maxVisibleNodes: 500,
+      maxVisibleEdges: 1000
+    })
+
+    // 初始化批量DOM更新器
+    this.batchDOMUpdater = new BatchDOMUpdater()
+
+    // 初始化内存优化器
+    this.memoryOptimizer = new MemoryOptimizer({
+      enabled: this.config.performance?.enabled ?? true,
+      maxPoolSize: 1000,
+      enableEventDelegation: true,
+      enableDataCompression: true,
+      gcInterval: 30000, // 30秒
+      memoryThreshold: 100 // 100MB
+    })
+
+    // 初始化交互优化器
+    this.interactionOptimizer = new InteractionOptimizer({
+      enabled: this.config.performance?.enabled ?? true,
+      debounceDelay: 100,
+      throttleInterval: 16, // 60fps
+      enableAsyncRender: true,
+      asyncRenderBatchSize: 10,
+      enableSmartUpdate: true,
+      updateThreshold: 100
+    })
+
+    // 初始化Toast通知系统
+    this.toastManager = new ToastManager({
+      position: 'top-right',
+      maxToasts: 5
+    })
+
+    // 缩略图将在render()方法中初始化
 
     // 更新UI管理器的物料面板配置
     this.updateMaterialPanelConfig()
@@ -631,14 +700,20 @@ export class FlowchartEditor {
         this.uiManager?.setSelectedNode(updatedNode)
         this.emit('data:change', this.getData())
       }
+      // 更新缩略图
+      this.updateMiniMap()
     })
 
     this.lf.on('node:add', (data) => {
       this.emit('node:add', { node: data.data })
+      // 更新缩略图
+      this.updateMiniMap()
     })
 
     this.lf.on('node:delete', (data) => {
       this.emit('node:delete', { node: data.data })
+      // 更新缩略图
+      this.updateMiniMap()
     })
 
     // 边事件
@@ -660,10 +735,14 @@ export class FlowchartEditor {
 
     this.lf.on('edge:add', (data) => {
       this.emit('edge:add', { edge: data.data })
+      // 更新缩略图
+      this.updateMiniMap()
     })
 
     this.lf.on('edge:delete', (data) => {
       this.emit('edge:delete', { edge: data.data })
+      // 更新缩略图
+      this.updateMiniMap()
     })
 
     // 画布事件
@@ -683,7 +762,9 @@ export class FlowchartEditor {
     // 选择变化事件
     this.lf.on('selection:selected', (data) => {
       const selected = this.lf.getSelectElements()
-      console.log(`已选中 ${selected.nodes.length} 个节点和 ${selected.edges.length} 条连线`)
+      if (selected.nodes.length > 0 || selected.edges.length > 0) {
+        this.showInfo(`已选中 ${selected.nodes.length} 个节点和 ${selected.edges.length} 条连线`, 2000)
+      }
       this.emit('selection:change', { selected: selected as any })
     })
 
@@ -704,6 +785,8 @@ export class FlowchartEditor {
     this.lf.on('selection:drop', (data) => {
       console.log('选中元素拖拽结束')
       this.emit('data:change', this.getData())
+      // 更新缩略图
+      this.updateMiniMap()
     })
 
     // 数据变化事件
@@ -719,6 +802,8 @@ export class FlowchartEditor {
       setTimeout(() => {
         this.forceApplyBackground()
       }, 10)
+      // 更新缩略图视口
+      this.updateMiniMap()
     })
 
     // 画布渲染完成事件
@@ -728,6 +813,35 @@ export class FlowchartEditor {
       setTimeout(() => {
         this.forceApplyBackground()
       }, 50)
+    })
+
+    // 监听画布拖拽事件，实时更新缩略图视口
+    this.lf.on('graph:transform', () => {
+      // 使用requestAnimationFrame优化性能
+      requestAnimationFrame(() => {
+        this.updateMiniMap()
+      })
+    })
+
+    // 监听更多事件以确保小地图完全同步
+    this.lf.on('node:dnd-add', () => {
+      this.updateMiniMap()
+    })
+
+    this.lf.on('node:dnd-drag', () => {
+      this.updateMiniMap()
+    })
+
+    this.lf.on('selection:selected', () => {
+      this.updateMiniMap()
+    })
+
+    this.lf.on('anchor:dragstart', () => {
+      this.updateMiniMap()
+    })
+
+    this.lf.on('anchor:drop', () => {
+      this.updateMiniMap()
     })
 
     // 监听鼠标事件来在拖动时维护背景
@@ -774,7 +888,22 @@ export class FlowchartEditor {
    * 渲染编辑器
    */
   render(data?: FlowchartData): void {
-    this.lf.render(data)
+    this.markRenderStart()
+
+    if (data && this.config.performance?.enabled) {
+      // 使用虚拟渲染优化大型数据
+      const optimizedData = this.optimizeRenderData(data)
+      this.lf.render(optimizedData)
+    } else {
+      this.lf.render(data)
+    }
+
+    // 初始化缩略图（在LogicFlow渲染完成后）
+    if (this.config.miniMap?.enabled !== false && !this.miniMap) {
+      this.initializeMiniMap()
+    }
+
+    this.markRenderEnd()
   }
 
   /**
@@ -1273,6 +1402,18 @@ export class FlowchartEditor {
       case 'paste':
         this.pasteElements()
         break
+      case 'template-library':
+        this.showTemplateSelector()
+        break
+      case 'template-save':
+        this.showSaveTemplateDialog()
+        break
+      case 'template-load':
+        this.showTemplateSelector()
+        break
+      case 'template-new':
+        this.showSaveTemplateDialog()
+        break
     }
   }
 
@@ -1512,7 +1653,7 @@ export class FlowchartEditor {
         text: nodeModel.text?.value || '',
         properties: nodeModel.properties || {}
       }
-      console.log('节点已复制:', this.copiedNodeData.text)
+      this.showSuccess(`节点已复制: ${this.copiedNodeData.text}`, 2000)
     }
   }
 
@@ -1563,7 +1704,7 @@ export class FlowchartEditor {
       this.selectedEdge = null
       this.uiManager?.setSelectedNode(null)
       this.uiManager?.setSelectedEdge(null)
-      console.log('画布已清空')
+      this.showSuccess('画布已清空', 2000)
     }
   }
 
@@ -2029,6 +2170,16 @@ export class FlowchartEditor {
       this.keyboardEventListener = undefined
     }
 
+    // 销毁缩略图
+    if (this.miniMap) {
+      this.miniMap.destroy()
+    }
+
+    // 销毁Toast管理器
+    if (this.toastManager) {
+      this.toastManager.destroy()
+    }
+
     // 销毁 LogicFlow 实例
     if (this.lf && typeof this.lf.destroy === 'function') {
       this.lf.destroy()
@@ -2165,38 +2316,60 @@ export class FlowchartEditor {
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.6);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 10000;
+        backdrop-filter: blur(4px);
+        animation: fadeIn 0.3s ease-out;
       }
       .validation-dialog {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        background: var(--ldesign-bg-color-container, #ffffff);
+        border-radius: var(--ls-border-radius-lg, 12px);
+        box-shadow: var(--ldesign-shadow-3, 0 8px 30px rgba(0, 0, 0, 0.12));
         max-width: 600px;
+        width: 90vw;
         max-height: 80vh;
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        border: 1px solid var(--ldesign-border-color, #e5e5e5);
+        animation: slideIn 0.3s ease-out;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
       }
       .validation-dialog-header {
-        padding: 20px;
-        border-bottom: 1px solid #e5e5e5;
+        padding: var(--ls-padding-base, 20px);
+        border-bottom: 1px solid var(--ldesign-border-color, #e5e5e5);
         display: flex;
         justify-content: space-between;
         align-items: center;
+        background: var(--ldesign-bg-color-component, #fafafa);
+      }
+      .validation-dialog-header h3 {
+        margin: 0;
+        color: var(--ldesign-text-color-primary, rgba(0, 0, 0, 0.9));
+        font-size: var(--ls-font-size-lg, 20px);
+        font-weight: 600;
       }
       .validation-dialog-content {
-        padding: 20px;
+        padding: var(--ls-padding-base, 20px);
         overflow-y: auto;
         flex: 1;
+        background: var(--ldesign-bg-color-container, #ffffff);
       }
       .validation-dialog-footer {
-        padding: 20px;
-        border-top: 1px solid #e5e5e5;
+        padding: var(--ls-padding-base, 20px);
+        border-top: 1px solid var(--ldesign-border-color, #e5e5e5);
         text-align: right;
+        background: var(--ldesign-bg-color-component, #fafafa);
       }
       .validation-report .status.valid {
         color: #52c41a;
@@ -2489,10 +2662,10 @@ export class FlowchartEditor {
 
     if (success) {
       const info = this.clipboardManager.getDataInfo()
-      console.log(`已复制 ${info?.nodeCount || 0} 个节点和 ${info?.edgeCount || 0} 条边`)
+      this.showSuccess(`已复制 ${info?.nodeCount || 0} 个节点和 ${info?.edgeCount || 0} 条边`, 2000)
       this.emit('copy:success', { nodeCount: info?.nodeCount || 0, edgeCount: info?.edgeCount || 0 })
     } else {
-      console.error('复制失败')
+      this.showError('复制失败')
       this.emit('copy:error', { message: '复制失败' })
     }
 
@@ -2561,7 +2734,7 @@ export class FlowchartEditor {
         addedEdges.forEach(edgeId => this.lf.selectElementById(edgeId, true))
       }
 
-      console.log(`已粘贴 ${addedNodes.length} 个节点和 ${addedEdges.length} 条边`)
+      this.showSuccess(`已粘贴 ${addedNodes.length} 个节点和 ${addedEdges.length} 条边`, 2000)
       this.emit('paste:success', {
         nodeCount: addedNodes.length,
         edgeCount: addedEdges.length,
@@ -2571,7 +2744,7 @@ export class FlowchartEditor {
 
       return true
     } catch (error) {
-      console.error('粘贴失败:', error)
+      this.showError(`粘贴失败: ${error instanceof Error ? error.message : String(error)}`)
       this.emit('paste:error', { message: error instanceof Error ? error.message : String(error) })
       return false
     }
@@ -2598,4 +2771,1028 @@ export class FlowchartEditor {
     this.clipboardManager.clear()
     this.emit('clipboard:clear', {})
   }
+
+  // ==================== 模板管理方法 ====================
+
+  /**
+   * 初始化模板管理器
+   */
+  private async initializeTemplateManager(): Promise<void> {
+    try {
+      await this.templateManager.initialize()
+      console.log('模板管理器初始化完成')
+    } catch (error) {
+      console.error('模板管理器初始化失败:', error)
+    }
+  }
+
+  /**
+   * 初始化性能监控器
+   */
+  private initializePerformanceMonitor(): void {
+    try {
+      // 设置流程图节点和边数量的获取方法
+      const originalGetCurrentMetrics = this.performanceMonitor.getCurrentMetrics.bind(this.performanceMonitor)
+      this.performanceMonitor.getCurrentMetrics = () => {
+        const metrics = originalGetCurrentMetrics()
+        const data = this.getData()
+        return {
+          ...metrics,
+          flowchartNodeCount: data.nodes.length,
+          flowchartEdgeCount: data.edges.length
+        }
+      }
+
+      // 启动性能监控
+      this.performanceMonitor.start()
+      console.log('性能监控器初始化完成')
+    } catch (error) {
+      console.error('性能监控器初始化失败:', error)
+    }
+  }
+
+  /**
+   * 获取模板管理器
+   */
+  getTemplateManager(): TemplateManager {
+    return this.templateManager
+  }
+
+  /**
+   * 获取所有模板元数据
+   */
+  getTemplateMetadata(): TemplateMetadata[] {
+    return this.templateManager.getTemplateMetadata()
+  }
+
+  /**
+   * 过滤模板
+   */
+  filterTemplates(filter: TemplateFilter): TemplateMetadata[] {
+    return this.templateManager.filterTemplates(filter)
+  }
+
+  /**
+   * 排序模板
+   */
+  sortTemplates(templates: TemplateMetadata[], options: TemplateSortOptions): TemplateMetadata[] {
+    return this.templateManager.sortTemplates(templates, options)
+  }
+
+  /**
+   * 加载模板
+   */
+  loadTemplate(templateId: string): void {
+    const template = this.templateManager.getTemplate(templateId)
+    if (!template) {
+      throw new Error(`Template not found: ${templateId}`)
+    }
+
+    this.setData(template.data)
+    this.emit('template:load', template)
+    this.showSuccess(`已加载模板: ${template.displayName}`, 3000)
+  }
+
+  /**
+   * 保存当前流程图为模板
+   */
+  async saveAsTemplate(templateInfo: {
+    name: string
+    displayName: string
+    description: string
+    category: string
+    tags?: string[]
+  }): Promise<string> {
+    const data = this.getData()
+
+    const templateId = await this.templateManager.addTemplate({
+      ...templateInfo,
+      category: templateInfo.category as any, // 临时类型转换
+      version: '1.0.0',
+      isBuiltIn: false,
+      data
+    })
+
+    this.emit('template:save', { templateId, ...templateInfo })
+    this.showSuccess(`已保存模板: ${templateInfo.displayName}`, 3000)
+
+    return templateId
+  }
+
+  /**
+   * 删除模板
+   */
+  async deleteTemplate(templateId: string): Promise<void> {
+    await this.templateManager.deleteTemplate(templateId)
+    this.emit('template:delete', { templateId })
+    console.log(`已删除模板: ${templateId}`)
+  }
+
+  /**
+   * 导出模板
+   */
+  exportTemplates(templateIds: string[], options?: { format?: 'json' | 'xml'; pretty?: boolean }): string {
+    return this.templateManager.exportTemplates(templateIds, {
+      includeMetadata: true,
+      format: options?.format || 'json',
+      pretty: options?.pretty !== false
+    })
+  }
+
+  /**
+   * 导入模板
+   */
+  async importTemplates(data: string, options?: { overwrite?: boolean }): Promise<string[]> {
+    return await this.templateManager.importTemplates(data, {
+      overwrite: options?.overwrite || false,
+      validateData: true,
+      generateId: true
+    })
+  }
+
+  /**
+   * 显示模板选择对话框
+   */
+  showTemplateSelector(): void {
+    const templates = this.getTemplateMetadata()
+
+    // 创建模板选择对话框
+    const dialog = document.createElement('div')
+    dialog.className = 'template-selector-overlay'
+    dialog.innerHTML = `
+      <div class="template-selector-dialog">
+        <div class="template-selector-header">
+          <h3>选择模板</h3>
+          <button class="close-btn" type="button">×</button>
+        </div>
+        <div class="template-selector-content">
+          <div class="template-search">
+            <input type="text" placeholder="搜索模板..." class="search-input">
+            <select class="category-filter">
+              <option value="">所有分类</option>
+              <option value="approval">审批流程</option>
+              <option value="workflow">工作流程</option>
+              <option value="business">业务流程</option>
+              <option value="custom">自定义</option>
+            </select>
+          </div>
+          <div class="template-list">
+            ${templates.map(template => `
+              <div class="template-item" data-template-id="${template.id}">
+                <div class="template-info">
+                  <h4>${template.displayName}</h4>
+                  <p>${template.description}</p>
+                  <div class="template-meta">
+                    <span class="category">${template.category}</span>
+                    <span class="node-count">${template.nodeCount} 节点</span>
+                    ${template.isBuiltIn ? '<span class="builtin">内置</span>' : ''}
+                  </div>
+                </div>
+                <div class="template-actions">
+                  <button class="load-btn" data-template-id="${template.id}">加载</button>
+                  ${!template.isBuiltIn ? `<button class="delete-btn" data-template-id="${template.id}">删除</button>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="template-selector-footer">
+          <button class="cancel-btn" type="button">取消</button>
+        </div>
+      </div>
+    `
+
+    // 添加样式
+    const style = document.createElement('style')
+    style.textContent = `
+      .template-selector-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      }
+      .template-selector-dialog {
+        background: white;
+        border-radius: 8px;
+        width: 600px;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      }
+      .template-selector-header {
+        padding: 20px;
+        border-bottom: 1px solid #e5e5e5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .template-selector-header h3 {
+        margin: 0;
+        color: var(--ldesign-text-color-primary);
+      }
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: var(--ldesign-text-color-secondary);
+      }
+      .template-selector-content {
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .template-search {
+        padding: 20px;
+        border-bottom: 1px solid #e5e5e5;
+        display: flex;
+        gap: 12px;
+      }
+      .search-input, .category-filter {
+        padding: 8px 12px;
+        border: 1px solid var(--ldesign-border-color);
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      .search-input {
+        flex: 1;
+      }
+      .template-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+      }
+      .template-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        border: 1px solid #e5e5e5;
+        border-radius: 6px;
+        margin-bottom: 12px;
+        transition: all 0.2s;
+      }
+      .template-item:hover {
+        border-color: var(--ldesign-brand-color);
+        box-shadow: 0 2px 8px rgba(114, 46, 209, 0.1);
+      }
+      .template-info h4 {
+        margin: 0 0 8px 0;
+        color: var(--ldesign-text-color-primary);
+      }
+      .template-info p {
+        margin: 0 0 8px 0;
+        color: var(--ldesign-text-color-secondary);
+        font-size: 14px;
+      }
+      .template-meta {
+        display: flex;
+        gap: 8px;
+        font-size: 12px;
+      }
+      .template-meta span {
+        padding: 2px 6px;
+        border-radius: 3px;
+        background: #f5f5f5;
+        color: var(--ldesign-text-color-secondary);
+      }
+      .template-meta .builtin {
+        background: var(--ldesign-brand-color-2);
+        color: var(--ldesign-brand-color);
+      }
+      .template-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .load-btn, .delete-btn {
+        padding: 6px 12px;
+        border: 1px solid var(--ldesign-border-color);
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+      }
+      .load-btn {
+        background: var(--ldesign-brand-color);
+        color: white;
+        border-color: var(--ldesign-brand-color);
+      }
+      .load-btn:hover {
+        background: var(--ldesign-brand-color-hover);
+      }
+      .delete-btn:hover {
+        border-color: var(--ldesign-error-color);
+        color: var(--ldesign-error-color);
+      }
+      .template-selector-footer {
+        padding: 20px;
+        border-top: 1px solid #e5e5e5;
+        text-align: right;
+      }
+      .cancel-btn {
+        padding: 8px 16px;
+        border: 1px solid var(--ldesign-border-color);
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+      }
+    `
+    document.head.appendChild(style)
+
+    // 绑定事件
+    const closeDialog = () => {
+      document.body.removeChild(dialog)
+      document.head.removeChild(style)
+    }
+
+    dialog.querySelector('.close-btn')?.addEventListener('click', closeDialog)
+    dialog.querySelector('.cancel-btn')?.addEventListener('click', closeDialog)
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) closeDialog()
+    })
+
+    // 加载模板事件
+    dialog.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement
+      if (target.classList.contains('load-btn')) {
+        const templateId = target.dataset.templateId
+        if (templateId) {
+          this.loadTemplate(templateId)
+          closeDialog()
+        }
+      } else if (target.classList.contains('delete-btn')) {
+        const templateId = target.dataset.templateId
+        if (templateId && confirm('确定要删除这个模板吗？')) {
+          this.deleteTemplate(templateId).then(() => {
+            // 重新显示对话框
+            closeDialog()
+            setTimeout(() => this.showTemplateSelector(), 100)
+          })
+        }
+      }
+    })
+
+    // 搜索和过滤功能
+    const searchInput = dialog.querySelector('.search-input') as HTMLInputElement
+    const categoryFilter = dialog.querySelector('.category-filter') as HTMLSelectElement
+
+    const filterTemplates = () => {
+      const searchTerm = searchInput.value.toLowerCase()
+      const category = categoryFilter.value
+
+      const filteredTemplates = templates.filter(template => {
+        const matchesSearch = !searchTerm ||
+          template.displayName.toLowerCase().includes(searchTerm) ||
+          template.description.toLowerCase().includes(searchTerm) ||
+          (template.tags && template.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+
+        const matchesCategory = !category || template.category === category
+
+        return matchesSearch && matchesCategory
+      })
+
+      const templateList = dialog.querySelector('.template-list')!
+      templateList.innerHTML = filteredTemplates.map(template => `
+        <div class="template-item" data-template-id="${template.id}">
+          <div class="template-info">
+            <h4>${template.displayName}</h4>
+            <p>${template.description}</p>
+            <div class="template-meta">
+              <span class="category">${template.category}</span>
+              <span class="node-count">${template.nodeCount} 节点</span>
+              ${template.isBuiltIn ? '<span class="builtin">内置</span>' : ''}
+            </div>
+          </div>
+          <div class="template-actions">
+            <button class="load-btn" data-template-id="${template.id}">加载</button>
+            ${!template.isBuiltIn ? `<button class="delete-btn" data-template-id="${template.id}">删除</button>` : ''}
+          </div>
+        </div>
+      `).join('')
+    }
+
+    searchInput.addEventListener('input', filterTemplates)
+    categoryFilter.addEventListener('change', filterTemplates)
+
+    document.body.appendChild(dialog)
+  }
+
+  /**
+   * 显示保存模板对话框
+   */
+  showSaveTemplateDialog(): void {
+    // 创建保存模板对话框
+    const dialog = document.createElement('div')
+    dialog.className = 'save-template-overlay'
+    dialog.innerHTML = `
+      <div class="save-template-dialog">
+        <div class="save-template-header">
+          <h3>保存为模板</h3>
+          <button class="close-btn" type="button">×</button>
+        </div>
+        <div class="save-template-content">
+          <form class="template-form">
+            <div class="form-group">
+              <label for="template-name">模板名称 *</label>
+              <input type="text" id="template-name" name="name" required placeholder="请输入模板名称">
+            </div>
+            <div class="form-group">
+              <label for="template-display-name">显示名称 *</label>
+              <input type="text" id="template-display-name" name="displayName" required placeholder="请输入显示名称">
+            </div>
+            <div class="form-group">
+              <label for="template-description">模板描述 *</label>
+              <textarea id="template-description" name="description" required placeholder="请输入模板描述" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="template-category">模板分类 *</label>
+              <select id="template-category" name="category" required>
+                <option value="">请选择分类</option>
+                <option value="approval">审批流程</option>
+                <option value="workflow">工作流程</option>
+                <option value="business">业务流程</option>
+                <option value="custom">自定义</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="template-tags">标签</label>
+              <input type="text" id="template-tags" name="tags" placeholder="请输入标签，用逗号分隔">
+              <small>例如：审批,人事,请假</small>
+            </div>
+          </form>
+        </div>
+        <div class="save-template-footer">
+          <button class="cancel-btn" type="button">取消</button>
+          <button class="save-btn" type="button">保存模板</button>
+        </div>
+      </div>
+    `
+
+    // 添加样式
+    const style = document.createElement('style')
+    style.textContent = `
+      .save-template-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      }
+      .save-template-dialog {
+        background: white;
+        border-radius: 8px;
+        width: 500px;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      }
+      .save-template-header {
+        padding: 20px;
+        border-bottom: 1px solid #e5e5e5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .save-template-header h3 {
+        margin: 0;
+        color: var(--ldesign-text-color-primary);
+      }
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: var(--ldesign-text-color-secondary);
+      }
+      .save-template-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+      }
+      .template-form {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .form-group label {
+        font-weight: 500;
+        color: var(--ldesign-text-color-primary);
+        font-size: 14px;
+      }
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        padding: 8px 12px;
+        border: 1px solid var(--ldesign-border-color);
+        border-radius: 4px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+      }
+      .form-group input:focus,
+      .form-group textarea:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: var(--ldesign-brand-color);
+        box-shadow: 0 0 0 2px rgba(114, 46, 209, 0.1);
+      }
+      .form-group small {
+        color: var(--ldesign-text-color-secondary);
+        font-size: 12px;
+      }
+      .save-template-footer {
+        padding: 20px;
+        border-top: 1px solid #e5e5e5;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+      .cancel-btn,
+      .save-btn {
+        padding: 8px 16px;
+        border: 1px solid var(--ldesign-border-color);
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+      }
+      .cancel-btn {
+        background: white;
+        color: var(--ldesign-text-color-primary);
+      }
+      .cancel-btn:hover {
+        background: #f5f5f5;
+      }
+      .save-btn {
+        background: var(--ldesign-brand-color);
+        color: white;
+        border-color: var(--ldesign-brand-color);
+      }
+      .save-btn:hover {
+        background: var(--ldesign-brand-color-hover);
+      }
+      .save-btn:disabled {
+        background: var(--ldesign-brand-color-disabled);
+        cursor: not-allowed;
+      }
+    `
+    document.head.appendChild(style)
+
+    // 绑定事件
+    const closeDialog = () => {
+      document.body.removeChild(dialog)
+      document.head.removeChild(style)
+    }
+
+    dialog.querySelector('.close-btn')?.addEventListener('click', closeDialog)
+    dialog.querySelector('.cancel-btn')?.addEventListener('click', closeDialog)
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) closeDialog()
+    })
+
+    // 保存模板事件
+    dialog.querySelector('.save-btn')?.addEventListener('click', async () => {
+      const form = dialog.querySelector('.template-form') as HTMLFormElement
+      const formData = new FormData(form)
+
+      const templateInfo = {
+        name: formData.get('name') as string,
+        displayName: formData.get('displayName') as string,
+        description: formData.get('description') as string,
+        category: formData.get('category') as string,
+        tags: (formData.get('tags') as string)?.split(',').map(tag => tag.trim()).filter(Boolean)
+      }
+
+      // 验证必填字段
+      if (!templateInfo.name || !templateInfo.displayName || !templateInfo.description || !templateInfo.category) {
+        alert('请填写所有必填字段')
+        return
+      }
+
+      try {
+        const saveBtn = dialog.querySelector('.save-btn') as HTMLButtonElement
+        saveBtn.disabled = true
+        saveBtn.textContent = '保存中...'
+
+        await this.saveAsTemplate(templateInfo)
+        alert('模板保存成功！')
+        closeDialog()
+      } catch (error) {
+        console.error('保存模板失败:', error)
+        alert('保存模板失败: ' + (error as Error).message)
+
+        const saveBtn = dialog.querySelector('.save-btn') as HTMLButtonElement
+        saveBtn.disabled = false
+        saveBtn.textContent = '保存模板'
+      }
+    })
+
+    document.body.appendChild(dialog)
+  }
+
+  // ==================== 性能监控方法 ====================
+
+  /**
+   * 获取性能监控器
+   */
+  getPerformanceMonitor(): PerformanceMonitor {
+    return this.performanceMonitor
+  }
+
+  /**
+   * 获取性能报告
+   */
+  getPerformanceReport(): PerformanceReport {
+    return this.performanceMonitor.getReport()
+  }
+
+  /**
+   * 开始性能监控
+   */
+  startPerformanceMonitoring(): void {
+    this.performanceMonitor.start()
+  }
+
+  /**
+   * 停止性能监控
+   */
+  stopPerformanceMonitoring(): void {
+    this.performanceMonitor.stop()
+  }
+
+  /**
+   * 清空性能数据
+   */
+  clearPerformanceData(): void {
+    this.performanceMonitor.clear()
+  }
+
+  /**
+   * 导出性能数据
+   */
+  exportPerformanceData(): string {
+    return this.performanceMonitor.exportData()
+  }
+
+  /**
+   * 标记渲染开始（用于性能监控）
+   */
+  private markRenderStart(): void {
+    this.performanceMonitor.markRenderStart()
+  }
+
+  /**
+   * 标记渲染结束（用于性能监控）
+   */
+  private markRenderEnd(): void {
+    this.performanceMonitor.markRenderEnd()
+  }
+
+  /**
+   * 优化渲染数据（使用虚拟渲染）
+   */
+  private optimizeRenderData(data: FlowchartData): FlowchartData {
+    if (!this.config.performance?.enabled) {
+      return data
+    }
+
+    // 获取当前视口信息
+    const viewport = this.getCurrentViewport()
+    this.virtualRenderer.updateViewport(viewport)
+
+    // 计算可见的节点和边
+    const visibleNodes = this.virtualRenderer.getVisibleNodes(data.nodes)
+    const visibleEdges = this.virtualRenderer.getVisibleEdges(data.edges, visibleNodes)
+
+    // 简化节点和边
+    const optimizedNodes = visibleNodes.map(node =>
+      this.virtualRenderer.getSimplifiedNode(node)
+    )
+    const optimizedEdges = visibleEdges.map(edge =>
+      this.virtualRenderer.getSimplifiedEdge(edge)
+    )
+
+    return {
+      nodes: optimizedNodes,
+      edges: optimizedEdges
+    }
+  }
+
+  /**
+   * 获取当前视口信息
+   */
+  private getCurrentViewport() {
+    const container = this.lf.getGraphModel().getContainer()
+    const transform = this.lf.getTransform()
+
+    return {
+      x: -transform.TRANSLATE_X / transform.SCALE_X,
+      y: -transform.TRANSLATE_Y / transform.SCALE_Y,
+      width: container.clientWidth / transform.SCALE_X,
+      height: container.clientHeight / transform.SCALE_Y,
+      scale: transform.SCALE_X
+    }
+  }
+
+  /**
+   * 更新虚拟渲染器视口
+   */
+  updateVirtualViewport(): void {
+    if (!this.config.performance?.enabled) {
+      return
+    }
+
+    const viewport = this.getCurrentViewport()
+    this.virtualRenderer.updateViewport(viewport)
+  }
+
+  /**
+   * 获取虚拟渲染器性能统计
+   */
+  getVirtualRenderStats() {
+    return this.virtualRenderer.getPerformanceStats()
+  }
+
+  /**
+   * 重置虚拟渲染器
+   */
+  resetVirtualRenderer(): void {
+    this.virtualRenderer.reset()
+  }
+
+  /**
+   * 批量更新DOM
+   */
+  batchUpdateDOM(updates: Array<() => void>): void {
+    updates.forEach(update => {
+      this.batchDOMUpdater.addUpdate(update)
+    })
+  }
+
+  /**
+   * 立即执行所有DOM更新
+   */
+  flushDOMUpdates(): void {
+    this.batchDOMUpdater.flush()
+  }
+
+  /**
+   * 获取内存使用情况
+   */
+  getMemoryUsage(): MemoryUsageInfo {
+    return this.memoryOptimizer.getMemoryUsage()
+  }
+
+  /**
+   * 获取内存优化统计
+   */
+  getMemoryOptimizationStats(): MemoryOptimizationStats {
+    return this.memoryOptimizer.getOptimizationStats()
+  }
+
+  /**
+   * 强制垃圾回收
+   */
+  forceGarbageCollection(): void {
+    this.memoryOptimizer.forceGarbageCollection()
+  }
+
+  /**
+   * 压缩流程图数据
+   */
+  compressFlowchartData(data: FlowchartData): any {
+    return this.memoryOptimizer.compressData(data.nodes, data.edges)
+  }
+
+  /**
+   * 解压流程图数据
+   */
+  decompressFlowchartData(compressed: any): FlowchartData {
+    return this.memoryOptimizer.decompressData(compressed)
+  }
+
+  /**
+   * 添加委托事件（用于内存优化）
+   */
+  addDelegatedEvent(
+    eventType: string,
+    selector: string,
+    handler: (event: Event, target: Element) => void
+  ): void {
+    const container = this.lf.getGraphModel().getContainer()
+    this.memoryOptimizer.addDelegatedEvent(eventType, container, selector, handler)
+  }
+
+  /**
+   * 获取交互统计信息
+   */
+  getInteractionStats(): InteractionStats {
+    return this.interactionOptimizer.getInteractionStats()
+  }
+
+  /**
+   * 优化拖拽处理器
+   */
+  optimizeDragHandler(handler: (event: MouseEvent) => void): (event: MouseEvent) => void {
+    return this.interactionOptimizer.optimizeDragHandler(handler)
+  }
+
+  /**
+   * 优化缩放处理器
+   */
+  optimizeZoomHandler(handler: (event: WheelEvent) => void): (event: WheelEvent) => void {
+    return this.interactionOptimizer.optimizeZoomHandler(handler)
+  }
+
+  /**
+   * 添加异步渲染任务
+   */
+  addAsyncRenderTask(task: () => void): void {
+    this.interactionOptimizer.addAsyncRenderTask(task)
+  }
+
+  /**
+   * 标记更新区域
+   */
+  markUpdateRegion(x: number, y: number, width: number, height: number): void {
+    this.interactionOptimizer.markUpdateRegion(x, y, width, height)
+  }
+
+  /**
+   * 检查是否需要更新
+   */
+  shouldUpdate(x: number, y: number): boolean {
+    return this.interactionOptimizer.shouldUpdate(x, y)
+  }
+
+  /**
+   * 开始拖拽
+   */
+  startDrag(x: number, y: number): void {
+    this.interactionOptimizer.startDrag(x, y)
+  }
+
+  /**
+   * 结束拖拽
+   */
+  endDrag(): DragStats {
+    return this.interactionOptimizer.endDrag()
+  }
+
+  /**
+   * 设置缩放级别
+   */
+  setZoomLevel(level: number): void {
+    this.interactionOptimizer.setZoomLevel(level)
+    this.lf.zoom(level)
+  }
+
+  /**
+   * 创建防抖函数
+   */
+  createDebounced<T extends (...args: any[]) => any>(func: T): (...args: Parameters<T>) => void {
+    return this.interactionOptimizer.createDebounced(func)
+  }
+
+  /**
+   * 创建节流函数
+   */
+  createThrottled<T extends (...args: any[]) => any>(func: T): (...args: Parameters<T>) => void {
+    return this.interactionOptimizer.createThrottled(func)
+  }
+
+  /**
+   * 清空交互优化器状态
+   */
+  clearInteractionOptimizer(): void {
+    this.interactionOptimizer.clear()
+  }
+
+  /**
+   * 初始化缩略图
+   */
+  private initializeMiniMap(): void {
+    // 获取画布容器
+    let canvasContainer: HTMLElement | null = null
+
+    if (this.uiManager) {
+      // 如果使用UI管理器，获取画布容器
+      canvasContainer = this.uiManager.getCanvasContainer()
+    } else {
+      // 否则使用配置的容器
+      canvasContainer = typeof this.config.container === 'string'
+        ? document.querySelector(this.config.container) as HTMLElement
+        : this.config.container
+    }
+
+    if (!canvasContainer) return
+
+    this.miniMap = new MiniMapPlugin(this.lf, canvasContainer, {
+      width: this.config.miniMap?.width || 200,
+      height: this.config.miniMap?.height || 150,
+      position: this.config.miniMap?.position || 'bottom-right',
+      backgroundColor: '#fafafa',
+      borderColor: '#d9d9d9',
+      viewportColor: '#722ed1',
+      showGrid: true,
+      showViewport: true
+    })
+
+    // 设置回调
+    this.miniMap.onViewportChanged((viewport) => {
+      // 视口变化时的处理逻辑已在插件内部处理
+    })
+
+    this.miniMap.onZoomChanged((scale) => {
+      // 缩放变化时的处理逻辑已在插件内部处理
+    })
+
+    // 初始渲染
+    this.miniMap.render()
+  }
+
+  /**
+   * 更新缩略图 - 优化更新逻辑
+   */
+  private updateMiniMap(): void {
+    if (!this.miniMap) return
+
+    try {
+      // 强制更新小地图，确保所有变化都被捕获
+      this.miniMap.forceUpdate()
+    } catch (error) {
+      console.warn('更新小地图失败:', error)
+    }
+  }
+
+  /**
+   * 显示Toast通知
+   */
+  showToast(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info', duration?: number): void {
+    this.toastManager.show(message, { type, duration })
+  }
+
+  /**
+   * 显示成功Toast
+   */
+  showSuccess(message: string, duration?: number): void {
+    this.toastManager.success(message, { duration })
+  }
+
+  /**
+   * 显示错误Toast
+   */
+  showError(message: string, duration?: number): void {
+    this.toastManager.error(message, { duration })
+  }
+
+  /**
+   * 显示警告Toast
+   */
+  showWarning(message: string, duration?: number): void {
+    this.toastManager.warning(message, { duration })
+  }
+
+  /**
+   * 显示信息Toast
+   */
+  showInfo(message: string, duration?: number): void {
+    this.toastManager.info(message, { duration })
+  }
+
+  /**
+   * 清空所有Toast
+   */
+  clearToasts(): void {
+    this.toastManager.clear()
+  }
+
+  /**
+   * 设置缩略图可见性
+   */
+  setMiniMapVisible(visible: boolean): void {
+    if (this.miniMap) {
+      this.miniMap.setVisible(visible)
+    }
+  }
+
 }

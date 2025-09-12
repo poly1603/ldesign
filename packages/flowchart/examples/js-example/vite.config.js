@@ -5,7 +5,8 @@ export default defineConfig({
   plugins: [],
   server: {
     port: 9998,
-    open: true
+    open: true,
+    host: true
   },
   resolve: {
     alias: {

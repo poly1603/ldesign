@@ -31,6 +31,8 @@ export const defaultConfig: Partial<FlowchartEditorConfig> = {
       'select',
       'multi-select',
       'material-repository',
+      'template-library',
+      'template-save',
       'zoom-fit',
       'undo',
       'redo',

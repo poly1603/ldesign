@@ -206,10 +206,10 @@ export class ApprovalNode extends RectNode {
     if (!iconData) return null
 
     return h('g', {
-      transform: `translate(${x}, ${y - 25}) scale(0.7)` // 节点类型图标在上方
+      transform: `translate(${x}, ${y - 8})` // 图标在节点中心稍微上方，为文本留出空间
     }, [
       h('g', {
-        transform: 'translate(-12, -12)' // 居中图标
+        transform: 'translate(-8, -8)' // 居中图标 (16/2 = 8)
       }, iconData.paths.map((path: string, index: number) =>
         h('path', {
           key: index,
