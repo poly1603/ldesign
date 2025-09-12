@@ -16,6 +16,41 @@ export type { OutputFormat, ChunkInfo, OptimizationSuggestion, MinifyConfig }
 export type SourcemapType = boolean | 'inline' | 'hidden'
 
 /**
+ * 格式特定的输出配置
+ */
+export interface FormatOutputConfig {
+  /** 输出目录 */
+  dir?: string
+
+  /** 输入文件（支持字符串、数组、通配符） */
+  input?: string | string[] | Record<string, string>
+
+  /** 输出格式 */
+  format?: OutputFormat
+
+  /** 是否保留目录结构 */
+  preserveStructure?: boolean
+
+  /** 是否生成类型声明文件 */
+  dts?: boolean
+
+  /** 是否生成 sourcemap */
+  sourcemap?: SourcemapType
+
+  /** 导出模式 */
+  exports?: 'auto' | 'default' | 'named' | 'none'
+
+  /** 压缩配置 */
+  minify?: boolean | MinifyConfig
+
+  /** 文件名模式 */
+  fileName?: string | ((chunkInfo: ChunkInfo) => string)
+
+  /** 库名称（UMD/IIFE 格式需要） */
+  name?: string
+}
+
+/**
  * 输出配置
  */
 export interface OutputConfig {
@@ -27,6 +62,20 @@ export interface OutputConfig {
 
   /** 输出格式 */
   format?: OutputFormat | OutputFormat[]
+
+  /** ESM 格式特定配置 */
+  esm?: FormatOutputConfig
+
+  /** CommonJS 格式特定配置 */
+  cjs?: FormatOutputConfig
+
+  /** UMD 格式特定配置 */
+  umd?: FormatOutputConfig & {
+    /** 全局变量名 */
+    name?: string
+    /** 全局变量映射 */
+    globals?: Record<string, string>
+  }
 
   /** 库名称（UMD/IIFE 格式需要） */
   name?: string

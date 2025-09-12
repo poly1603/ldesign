@@ -1,0 +1,187 @@
+/**
+ * 通配符解析工具函数
+ * 
+ * 提供文件路径模式匹配和解析功能
+ */
+
+import { glob } from 'glob'
+import path from 'path'
+
+/**
+ * 解析输入模式
+ * 
+ * 将通配符模式转换为实际的文件路径列表
+ * 
+ * @param input - 输入模式（支持字符串、数组、对象）
+ * @param rootDir - 根目录
+ * @returns 解析后的文件路径
+ */
+export async function resolveInputPatterns(
+  input: string | string[] | Record<string, string>,
+  rootDir: string = process.cwd()
+): Promise<string | string[] | Record<string, string>> {
+  // 如果是对象（多入口），递归处理每个值
+  if (typeof input === 'object' && !Array.isArray(input)) {
+    const resolved: Record<string, string> = {}
+    for (const [key, pattern] of Object.entries(input)) {
+      const result = await resolveSinglePattern(pattern, rootDir)
+      if (Array.isArray(result) && result.length === 1) {
+        resolved[key] = result[0]
+      } else if (typeof result === 'string') {
+        resolved[key] = result
+      } else {
+        throw new Error(`多入口配置的值必须解析为单个文件: ${key}`)
+      }
+    }
+    return resolved
+  }
+
+  // 如果是数组，处理每个模式
+  if (Array.isArray(input)) {
+    const allFiles: string[] = []
+    const excludePatterns: string[] = []
+    const includePatterns: string[] = []
+
+    // 分离包含和排除模式
+    for (const pattern of input) {
+      if (typeof pattern === 'string' && pattern.startsWith('!')) {
+        excludePatterns.push(pattern.slice(1))
+      } else {
+        includePatterns.push(pattern)
+      }
+    }
+
+    // 解析包含模式
+    for (const pattern of includePatterns) {
+      const files = await resolveSinglePattern(pattern, rootDir)
+      if (Array.isArray(files)) {
+        allFiles.push(...files)
+      } else {
+        allFiles.push(files)
+      }
+    }
+
+    // 应用排除模式
+    if (excludePatterns.length > 0) {
+      const excludedFiles = new Set<string>()
+      for (const pattern of excludePatterns) {
+        const files = await resolveSinglePattern(pattern, rootDir)
+        const fileArray = Array.isArray(files) ? files : [files]
+        fileArray.forEach(f => excludedFiles.add(f))
+      }
+      return allFiles.filter(f => !excludedFiles.has(f))
+    }
+
+    // 去重并排序
+    return [...new Set(allFiles)].sort()
+  }
+
+  // 单个字符串模式
+  return resolveSinglePattern(input, rootDir)
+}
+
+/**
+ * 解析单个模式
+ * 
+ * @param pattern - 文件模式
+ * @param rootDir - 根目录
+ * @returns 解析后的文件路径
+ */
+async function resolveSinglePattern(
+  pattern: string,
+  rootDir: string
+): Promise<string | string[]> {
+  // 如果不包含通配符，直接返回
+  if (!containsGlobPattern(pattern)) {
+    return path.resolve(rootDir, pattern)
+  }
+
+  // 使用 glob 解析通配符
+  const files = await glob(pattern, {
+    cwd: rootDir,
+    absolute: true,
+    ignore: ['**/node_modules/**', '**/.git/**'],
+  })
+
+  // 如果没有匹配到文件，返回原始模式（可能是新文件）
+  if (files.length === 0) {
+    return path.resolve(rootDir, pattern)
+  }
+
+  // 如果只有一个文件，返回字符串
+  if (files.length === 1) {
+    return files[0]
+  }
+
+  // 多个文件返回数组
+  return files.sort()
+}
+
+/**
+ * 检查字符串是否包含通配符模式
+ * 
+ * @param pattern - 要检查的模式
+ * @returns 是否包含通配符
+ */
+function containsGlobPattern(pattern: string): boolean {
+  return /[*?[\]{}]/.test(pattern)
+}
+
+/**
+ * 规范化入口配置
+ * 
+ * 将各种输入格式标准化为 Rollup/Rolldown 可接受的格式
+ * 
+ * @param input - 原始输入配置
+ * @param rootDir - 根目录
+ * @returns 规范化后的输入配置
+ */
+export async function normalizeInput(
+  input: string | string[] | Record<string, string> | undefined,
+  rootDir: string = process.cwd()
+): Promise<string | string[] | Record<string, string>> {
+  if (!input) {
+    // 默认入口
+    return path.resolve(rootDir, 'src/index.ts')
+  }
+
+  const resolved = await resolveInputPatterns(input, rootDir)
+
+  // 对于数组输入，如果为空则抛出错误
+  if (Array.isArray(resolved) && resolved.length === 0) {
+    throw new Error('未找到匹配的输入文件')
+  }
+
+  return resolved
+}
+
+/**
+ * 获取输出目录列表
+ * 
+ * 从配置中提取所有的输出目录
+ * 
+ * @param config - 构建配置
+ * @returns 输出目录列表
+ */
+export function getOutputDirs(config: any): string[] {
+  const dirs: string[] = []
+
+  // 主输出目录
+  if (config.output?.dir) {
+    dirs.push(config.output.dir)
+  }
+
+  // 各格式的输出目录
+  if (config.output?.esm?.dir) {
+    dirs.push(config.output.esm.dir)
+  }
+  if (config.output?.cjs?.dir) {
+    dirs.push(config.output.cjs.dir)
+  }
+  if (config.output?.umd?.dir) {
+    dirs.push(config.output.umd.dir)
+  }
+
+  // 去重
+  return [...new Set(dirs)]
+}

@@ -119,9 +119,12 @@ export class ConfigManager extends EventEmitter {
     }
 
     try {
-      // 基础验证
-      if (!config.input) {
-        result.errors.push('缺少入口文件配置 (input)')
+      // 基础验证 - 检查是否有入口配置（顶层或在 output 中）
+      const hasTopLevelInput = !!config.input
+      const hasOutputInput = !!(config.output?.esm?.input || config.output?.cjs?.input || config.output?.umd?.input)
+      
+      if (!hasTopLevelInput && !hasOutputInput) {
+        result.errors.push('缺少入口文件配置（需要在顶层或 output 中指定 input）')
       }
 
       // 输出配置验证

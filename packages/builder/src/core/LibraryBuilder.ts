@@ -34,6 +34,9 @@ import { Logger, createLogger } from '../utils/logger'
 import { ErrorHandler, createErrorHandler } from '../utils/error-handler'
 import { ErrorCode } from '../constants/errors'
 import { DEFAULT_BUILDER_CONFIG } from '../constants/defaults'
+import { getOutputDirs } from '../utils/glob'
+import { promises as fs } from 'fs'
+import path from 'path'
 
 /**
  * 库构建器主控制器类
@@ -112,6 +115,11 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
 
       // 合并配置
       const mergedConfig = config ? this.mergeConfig(this.config, config) : this.config
+
+      // 清理输出目录（如果启用）
+      if (mergedConfig.clean) {
+        await this.cleanOutputDirs(mergedConfig)
+      }
 
       // 根据配置切换打包核心（确保与 CLI/配置一致）
       if (mergedConfig.bundler && mergedConfig.bundler !== this.bundlerAdapter.name) {
@@ -514,9 +522,31 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
     return `build-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
   }
 
+  /**
+   * 清理输出目录
+   * 
+   * @param config - 构建配置
+   */
+  private async cleanOutputDirs(config: BuilderConfig): Promise<void> {
+    const dirs = getOutputDirs(config)
+    const rootDir = (config as any).root || (config as any).cwd || process.cwd()
 
-
-
+    for (const dir of dirs) {
+      const fullPath = path.isAbsolute(dir) ? dir : path.resolve(rootDir, dir)
+      
+      try {
+        // 检查目录是否存在
+        const exists = await fs.access(fullPath).then(() => true).catch(() => false)
+        
+        if (exists) {
+          this.logger.info(`清理输出目录: ${fullPath}`)
+          await fs.rm(fullPath, { recursive: true, force: true })
+        }
+      } catch (error) {
+        this.logger.warn(`清理目录失败: ${fullPath}`, error)
+      }
+    }
+  }
 
   /**
    * 处理构建错误

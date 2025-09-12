@@ -15,14 +15,41 @@ export const DEFAULT_BUILDER_CONFIG: Required<Omit<BuilderConfig, 'env' | 'libra
   library: Required<LibraryBuildOptions>
 } = {
   // 基础配置
-  input: 'src/index.ts',
+  input: 'src/index.ts', // 保留作为兼容，但优先使用 output 中的配置
   output: {
     dir: 'dist',
     format: ['esm', 'cjs'],
     fileName: '[name].[format].js',
     sourcemap: true,
     chunkFileNames: '[name]-[hash].js',
-    assetFileNames: '[name]-[hash][extname]'
+    assetFileNames: '[name]-[hash][extname]',
+    // ESM 格式默认配置
+    esm: {
+      dir: 'es',
+      format: 'esm',
+      preserveStructure: true,
+      dts: true,
+      // 默认入口：所有源文件，排除 index-lib
+      input: ['src/**/*.ts', 'src/**/*.js', 'src/**/*.vue', 'src/**/*.tsx', 'src/**/*.jsx', '!src/index-lib.ts']
+    },
+    // CommonJS 格式默认配置
+    cjs: {
+      dir: 'lib',
+      format: 'cjs',
+      preserveStructure: true,
+      dts: true,
+      // 默认入口：所有源文件，排除 index-lib
+      input: ['src/**/*.ts', 'src/**/*.js', 'src/**/*.vue', 'src/**/*.tsx', 'src/**/*.jsx', '!src/index-lib.ts']
+    },
+    // UMD 格式默认配置
+    umd: {
+      dir: 'dist',
+      format: 'umd',
+      minify: true,
+      sourcemap: true,
+      // UMD 默认单入口
+      input: 'src/index-lib.ts'
+    }
   },
 
   // 打包器配置

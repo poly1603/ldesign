@@ -19,6 +19,7 @@ import type { PerformanceMetrics } from '../../types/performance'
 import { Logger } from '../../utils/logger'
 import { BuilderError } from '../../utils/error-handler'
 import { ErrorCode } from '../../constants/errors'
+import { normalizeInput } from '../../utils/glob'
 
 /**
  * Rollup 适配器类
@@ -283,8 +284,12 @@ export class RollupAdapter implements IBundlerAdapter {
         if (outputConfig.esm) {
           const esmDir = outputConfig.esm.dir || 'es'
           const esmPlugins = await this.transformPluginsForFormat(config.plugins || [], esmDir, { emitDts: true })
+          // 使用 output 中的 input 配置，如果没有则使用顶层 input
+          const esmInput = outputConfig.esm.input 
+            ? await normalizeInput(outputConfig.esm.input, (config as any).root || process.cwd())
+            : config.input
           configs.push({
-            input: config.input,
+            input: esmInput,
             external: config.external,
             plugins: [...basePlugins, ...esmPlugins],
             output: {
@@ -294,7 +299,7 @@ export class RollupAdapter implements IBundlerAdapter {
               entryFileNames: '[name].js',
               chunkFileNames: '[name].js',
               exports: outputConfig.esm.exports ?? 'auto',
-              preserveModules: true,
+              preserveModules: outputConfig.esm.preserveStructure ?? true,
               preserveModulesRoot: 'src',
               globals: outputConfig.globals,
               name: outputConfig.name,
@@ -304,10 +309,14 @@ export class RollupAdapter implements IBundlerAdapter {
         }
 
         if (outputConfig.cjs) {
-          const cjsDir = outputConfig.cjs.dir || 'cjs'
+          const cjsDir = outputConfig.cjs.dir || 'lib'
           const cjsPlugins = await this.transformPluginsForFormat(config.plugins || [], cjsDir, { emitDts: true })
+          // 使用 output 中的 input 配置，如果没有则使用顶层 input
+          const cjsInput = outputConfig.cjs.input 
+            ? await normalizeInput(outputConfig.cjs.input, (config as any).root || process.cwd())
+            : config.input
           configs.push({
-            input: config.input,
+            input: cjsInput,
             external: config.external,
             plugins: [...basePlugins, ...cjsPlugins],
             output: {
@@ -317,7 +326,7 @@ export class RollupAdapter implements IBundlerAdapter {
               entryFileNames: '[name].cjs',
               chunkFileNames: '[name].cjs',
               exports: outputConfig.cjs.exports ?? 'auto',
-              preserveModules: true,
+              preserveModules: outputConfig.cjs.preserveStructure ?? true,
               preserveModulesRoot: 'src',
               globals: outputConfig.globals,
               name: outputConfig.name,
@@ -874,33 +883,48 @@ export class RollupAdapter implements IBundlerAdapter {
     // 确定 UMD 入口文件
     const fs = await import('fs')
     const path = await import('path')
-
-    let umdEntry = umdSection.entry || umdSection.input || (typeof config.input === 'string' ? config.input : undefined)
-
-    // 如果未显式指定，优先使用 src/index-lib.ts，其次常见入口
-    const candidates = [
-      'src/index-lib.ts',
-      'src/index-lib.js',
-      umdEntry as string,
-      'src/index.ts',
-      'src/index.js',
-      'src/main.ts',
-      'src/main.js',
-      'index.ts',
-      'index.js'
-    ].filter(Boolean) as string[]
-
     const projectRoot = (config as any).root || (config as any).cwd || process.cwd()
-    for (const entry of candidates) {
-      if (fs.existsSync(path.resolve(projectRoot, entry))) {
-        umdEntry = entry
-        break
+
+    // 优先使用 output.umd.input，然后是 umd.entry，最后是顶层 input
+    let umdEntry = umdSection.input || umdSection.entry || (typeof config.input === 'string' ? config.input : undefined)
+
+    // 如果有通配符，需要解析
+    if (umdEntry && (umdEntry.includes('*') || Array.isArray(umdEntry))) {
+      const resolved = await normalizeInput(umdEntry, projectRoot)
+      // UMD 必须是单入口
+      if (Array.isArray(resolved)) {
+        throw new Error('UMD 格式不支持多入口，请指定单个入口文件')
       }
+      if (typeof resolved === 'object' && !Array.isArray(resolved)) {
+        throw new Error('UMD 格式不支持多入口配置')
+      }
+      umdEntry = resolved as string
     }
 
+    // 如果未显式指定，优先使用 src/index-lib.ts，其次常见入口
     if (!umdEntry) {
-      // 兜底：仍然使用 src/index.ts
-      umdEntry = 'src/index.ts'
+      const candidates = [
+        'src/index-lib.ts',
+        'src/index-lib.js',
+        'src/index.ts',
+        'src/index.js',
+        'src/main.ts',
+        'src/main.js',
+        'index.ts',
+        'index.js'
+      ]
+
+      for (const entry of candidates) {
+        if (fs.existsSync(path.resolve(projectRoot, entry))) {
+          umdEntry = entry
+          break
+        }
+      }
+
+      if (!umdEntry) {
+        // 兜底：仍然使用 src/index-lib.ts
+        umdEntry = 'src/index-lib.ts'
+      }
     }
 
     // 确定 UMD 全局变量名
