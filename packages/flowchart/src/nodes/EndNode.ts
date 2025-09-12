@@ -5,6 +5,7 @@
  */
 
 import { CircleNode, CircleNodeModel, h } from '@logicflow/core'
+import { createNodeIcon } from '../utils/icons'
 
 /**
  * 结束节点模型
@@ -108,17 +109,39 @@ export class EndNode extends CircleNode {
         r,
         ...style
       }),
-      // 内部停止图标 - 图标在文本上方，整体居中
-      h('rect', {
-        x: x - 6,
-        y: y - 18,
-        width: 12,
-        height: 12,
-        rx: 2,
-        ry: 2,
-        fill: 'var(--ldesign-error-color, #e54848)',
-        stroke: 'none'
-      })
+      // lucide结束图标
+      this.getEndIcon(x, y)
+    ])
+  }
+
+  /**
+   * 获取结束图标
+   */
+  private getEndIcon(x: number, y: number): h.JSX.Element | null {
+    const iconData = createNodeIcon('square', {
+      size: 16,
+      color: 'var(--ldesign-error-color, #e54848)',
+      strokeWidth: 2
+    })
+
+    if (!iconData) return null
+
+    return h('g', {
+      transform: `translate(${x}, ${y - 15}) scale(0.7)` // 图标在文本上方
+    }, [
+      h('g', {
+        transform: 'translate(-12, -12)' // 居中图标
+      }, iconData.paths.map((path: string, index: number) =>
+        h('path', {
+          key: index,
+          d: path,
+          fill: 'var(--ldesign-error-color, #e54848)', // 结束节点填充颜色
+          stroke: iconData.color,
+          strokeWidth: iconData.strokeWidth,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round'
+        })
+      ))
     ])
   }
 }

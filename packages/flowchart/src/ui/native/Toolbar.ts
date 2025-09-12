@@ -12,22 +12,24 @@ export interface ToolbarConfig {
   onThemeChange?: (theme: FlowchartTheme) => void
 }
 
+import { getToolbarIcon } from '../../utils/icons'
+
 /**
  * 工具定义
  */
 const TOOLS = {
-  'select': { label: '选择', icon: '👆', title: '选择工具' },
-  'multi-select': { label: '多选', icon: '🔲', title: '多选模式' },
-  'material-repository': { label: '物料库', icon: '🏪', title: '物料仓库' },
-  'history': { label: '历史', icon: '📋', title: '历史记录' },
-  'zoom-fit': { label: '适应', icon: '🔍', title: '适应画布' },
-  'zoom-in': { label: '放大', icon: '➕', title: '放大画布' },
-  'zoom-out': { label: '缩小', icon: '➖', title: '缩小画布' },
-  'undo': { label: '撤销', icon: '↶', title: '撤销操作' },
-  'redo': { label: '重做', icon: '↷', title: '重做操作' },
-  'delete': { label: '删除', icon: '🗑️', title: '删除选中元素' },
-  'clear': { label: '清空', icon: '🧹', title: '清空画布' },
-  'export': { label: '导出', icon: '💾', title: '导出数据' }
+  'select': { label: '选择', icon: () => getToolbarIcon('select'), title: '选择工具' },
+  'multi-select': { label: '多选', icon: () => getToolbarIcon('multi-select'), title: '多选模式' },
+  'material-repository': { label: '物料库', icon: () => getToolbarIcon('material-repository'), title: '物料仓库' },
+  'history': { label: '历史', icon: () => getToolbarIcon('history'), title: '历史记录' },
+  'zoom-fit': { label: '适应', icon: () => getToolbarIcon('zoom-fit'), title: '适应画布' },
+  'zoom-in': { label: '放大', icon: () => getToolbarIcon('zoom-in'), title: '放大画布' },
+  'zoom-out': { label: '缩小', icon: () => getToolbarIcon('zoom-out'), title: '缩小画布' },
+  'undo': { label: '撤销', icon: () => getToolbarIcon('undo'), title: '撤销操作' },
+  'redo': { label: '重做', icon: () => getToolbarIcon('redo'), title: '重做操作' },
+  'delete': { label: '删除', icon: () => getToolbarIcon('delete'), title: '删除选中元素' },
+  'clear': { label: '清空', icon: () => getToolbarIcon('clear'), title: '清空画布' },
+  'export': { label: '导出', icon: () => getToolbarIcon('export'), title: '导出数据' }
 }
 
 const THEMES = [
@@ -96,11 +98,11 @@ export class Toolbar {
       const disabled = this.config.readonly && ['delete', 'clear'].includes(toolKey) ? 'disabled' : ''
 
       return `
-        <button class="toolbar-btn ${disabled}" 
-                data-tool="${toolKey}" 
+        <button class="toolbar-btn ${disabled}"
+                data-tool="${toolKey}"
                 title="${tool.title}"
                 ${disabled}>
-          <span class="btn-icon">${tool.icon}</span>
+          <span class="btn-icon">${typeof tool.icon === 'function' ? tool.icon() : tool.icon}</span>
           <span class="btn-text">${tool.label}</span>
         </button>
       `

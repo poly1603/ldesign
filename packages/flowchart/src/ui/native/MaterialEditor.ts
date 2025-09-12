@@ -5,6 +5,7 @@
  */
 
 import type { CustomMaterial, MaterialStyle, MaterialIcon, MaterialCategory } from '../../types'
+import { getCustomMaterialIcon } from '../../utils/icons'
 
 export interface MaterialEditorConfig {
   container: HTMLElement
@@ -85,23 +86,40 @@ export class MaterialEditor {
         height: 100%;
         background: var(--ldesign-bg-color-container, #ffffff);
         border: 1px solid var(--ldesign-border-color, #e5e5e5);
-        border-radius: var(--ls-border-radius-base, 6px);
+        border-radius: var(--ls-border-radius-lg, 12px);
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        box-shadow: var(--ldesign-shadow-2, 0 4px 20px rgba(0, 0, 0, 8%));
+        overflow: hidden;
       }
 
       .material-editor-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: var(--ls-padding-sm, 12px) var(--ls-padding-base, 20px);
+        padding: var(--ls-padding-base, 20px) var(--ls-padding-lg, 28px);
         border-bottom: 1px solid var(--ldesign-border-color, #e5e5e5);
-        background: var(--ldesign-bg-color-component, #fafafa);
+        background: linear-gradient(135deg, var(--ldesign-brand-color-1, #f1ecf9) 0%, var(--ldesign-bg-color-component, #fafafa) 100%);
+        position: relative;
+      }
+
+      .material-editor-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--ldesign-brand-color, #722ED1), var(--ldesign-brand-color-6, #7334cb));
       }
 
       .material-editor-header h3 {
         margin: 0;
-        font-size: var(--ls-font-size-lg, 20px);
+        font-size: var(--ls-font-size-xl, 24px);
+        font-weight: 700;
         color: var(--ldesign-text-color-primary, rgba(0, 0, 0, 0.9));
+        display: flex;
+        align-items: center;
+        gap: 12px;
       }
 
       .editor-actions {
@@ -110,18 +128,38 @@ export class MaterialEditor {
       }
 
       .editor-actions button {
-        padding: var(--ls-padding-xs, 6px) var(--ls-padding-sm, 12px);
-        border: 1px solid var(--ldesign-border-color, #e5e5e5);
-        border-radius: var(--ls-border-radius-sm, 3px);
+        padding: var(--ls-padding-sm, 12px) var(--ls-padding-base, 20px);
+        border: 2px solid var(--ldesign-border-color, #e5e5e5);
+        border-radius: var(--ls-border-radius-base, 6px);
         background: var(--ldesign-bg-color-container, #ffffff);
         cursor: pointer;
         font-size: var(--ls-font-size-sm, 16px);
-        transition: all 0.2s ease;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .editor-actions button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+      }
+
+      .editor-actions button:hover::before {
+        left: 100%;
       }
 
       .editor-actions button:hover {
         background: var(--ldesign-bg-color-container-hover, #fafafa);
-        border-color: var(--ldesign-border-color-hover, #d9d9d9);
+        border-color: var(--ldesign-brand-color, #722ED1);
+        transform: translateY(-1px);
+        box-shadow: var(--ldesign-shadow-1, 0 1px 10px rgba(0, 0, 0, 5%));
       }
 
       .btn-save {
@@ -132,6 +170,22 @@ export class MaterialEditor {
 
       .btn-save:hover {
         background: var(--ldesign-brand-color-hover, #5e2aa7) !important;
+        border-color: var(--ldesign-brand-color-hover, #5e2aa7) !important;
+        transform: translateY(-2px);
+        box-shadow: var(--ldesign-shadow-2, 0 4px 20px rgba(0, 0, 0, 8%));
+      }
+
+      .btn-cancel {
+        background: var(--ldesign-error-color, #e54848) !important;
+        color: white !important;
+        border-color: var(--ldesign-error-color, #e54848) !important;
+      }
+
+      .btn-cancel:hover {
+        background: var(--ldesign-error-color-hover, #ec6f6f) !important;
+        border-color: var(--ldesign-error-color-hover, #ec6f6f) !important;
+        transform: translateY(-2px);
+        box-shadow: var(--ldesign-shadow-2, 0 4px 20px rgba(0, 0, 0, 8%));
       }
 
       .material-editor-content {
@@ -329,11 +383,11 @@ export class MaterialEditor {
     this.editorElement.className = 'ldesign-material-editor'
     this.editorElement.innerHTML = `
       <div class="material-editor-header">
-        <h3>物料编辑器</h3>
+        <h3>${getCustomMaterialIcon()} 物料编辑器</h3>
         <div class="editor-actions">
-          <button class="btn-preview" title="预览">👁️</button>
-          <button class="btn-save" title="保存">💾</button>
-          <button class="btn-cancel" title="取消">❌</button>
+          <button class="btn-preview" title="预览">预览</button>
+          <button class="btn-save" title="保存">保存</button>
+          <button class="btn-cancel" title="取消">取消</button>
         </div>
       </div>
       

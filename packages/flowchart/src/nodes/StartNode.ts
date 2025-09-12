@@ -5,6 +5,7 @@
  */
 
 import { CircleNode, CircleNodeModel, h } from '@logicflow/core'
+import { createNodeIcon } from '../utils/icons'
 
 /**
  * 开始节点模型
@@ -100,6 +101,37 @@ export class StartNode extends CircleNode {
     const { x, y, r } = model
     const style = model.getNodeStyle()
 
+    // 获取lucide图标数据
+    const iconData = createNodeIcon('play', {
+      size: 16,
+      color: 'var(--ldesign-success-color, #52c41a)',
+      strokeWidth: 2
+    })
+
+    const iconElements = []
+    if (iconData) {
+      // 创建SVG图标
+      iconElements.push(
+        h('g', {
+          transform: `translate(${x}, ${y - 15}) scale(0.7)` // 图标在文本上方，缩放适配
+        }, [
+          h('g', {
+            transform: 'translate(-12, -12)' // 居中图标
+          }, iconData.paths.map((path: string, index: number) =>
+            h('path', {
+              key: index,
+              d: path,
+              fill: 'none',
+              stroke: iconData.color,
+              strokeWidth: iconData.strokeWidth,
+              strokeLinecap: 'round',
+              strokeLinejoin: 'round'
+            })
+          ))
+        ])
+      )
+    }
+
     return h('g', {}, [
       // 主圆形
       h('circle', {
@@ -108,13 +140,8 @@ export class StartNode extends CircleNode {
         r,
         ...style
       }),
-      // 内部图标 - 播放按钮图标，在文本上方
-      h('path', {
-        d: 'M-6,-4 L-6,4 L6,0 Z',
-        transform: `translate(${x}, ${y - 15})`, // 图标在文本上方，增加间隔
-        fill: 'var(--ldesign-success-color, #52c41a)',
-        stroke: 'none'
-      })
+      // lucide图标
+      ...iconElements
     ])
   }
 }

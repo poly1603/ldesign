@@ -7,6 +7,7 @@
 import type { CustomMaterial, MaterialCategory, MaterialRepository } from '../../types'
 import { MaterialRepositoryManager } from '../../materials/MaterialRepositoryManager'
 import { MaterialEditor } from './MaterialEditor'
+import { getToolbarIcon } from '../../utils/icons'
 
 export interface MaterialRepositoryPanelConfig {
   container: HTMLElement
@@ -59,40 +60,87 @@ export class MaterialRepositoryPanel {
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(8px);
         display: flex;
         justify-content: center;
         align-items: center;
         z-index: 10000;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
       }
 
       .repository-panel-content {
         width: 90%;
         max-width: 1200px;
-        height: 80%;
-        max-height: 800px;
+        height: 85%;
+        max-height: 900px;
         background: var(--ldesign-bg-color-container, #ffffff);
-        border-radius: var(--ls-border-radius-lg, 12px);
+        border-radius: var(--ls-border-radius-xl, 16px);
         box-shadow: var(--ldesign-shadow-3, 0 8px 30px rgba(0, 0, 0, 0.12));
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        border: 1px solid var(--ldesign-border-color, #e5e5e5);
+        animation: slideUp 0.3s ease-out;
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
       }
 
       .repository-panel-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: var(--ls-padding-base, 20px);
+        padding: var(--ls-padding-lg, 28px) var(--ls-padding-base, 20px);
         border-bottom: 1px solid var(--ldesign-border-color, #e5e5e5);
-        background: var(--ldesign-bg-color-component, #fafafa);
+        background: linear-gradient(135deg, var(--ldesign-brand-color-1, #f1ecf9) 0%, var(--ldesign-bg-color-component, #fafafa) 100%);
+        position: relative;
+      }
+
+      .repository-panel-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--ldesign-brand-color, #722ED1), var(--ldesign-brand-color-6, #7334cb));
       }
 
       .repository-panel-header h2 {
         margin: 0;
         font-size: var(--ls-font-size-xl, 24px);
+        font-weight: 700;
         color: var(--ldesign-text-color-primary, rgba(0, 0, 0, 0.9));
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .repository-panel-header h2::before {
+        content: '';
+        width: 6px;
+        height: 24px;
+        background: var(--ldesign-brand-color, #722ED1);
+        border-radius: 3px;
       }
 
       .repository-panel-actions {
@@ -101,18 +149,38 @@ export class MaterialRepositoryPanel {
       }
 
       .repository-panel-actions button {
-        padding: var(--ls-padding-xs, 6px) var(--ls-padding-sm, 12px);
-        border: 1px solid var(--ldesign-border-color, #e5e5e5);
-        border-radius: var(--ls-border-radius-sm, 3px);
+        padding: var(--ls-padding-sm, 12px) var(--ls-padding-base, 20px);
+        border: 2px solid var(--ldesign-border-color, #e5e5e5);
+        border-radius: var(--ls-border-radius-base, 6px);
         background: var(--ldesign-bg-color-container, #ffffff);
         cursor: pointer;
         font-size: var(--ls-font-size-sm, 16px);
-        transition: all 0.2s ease;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .repository-panel-actions button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+      }
+
+      .repository-panel-actions button:hover::before {
+        left: 100%;
       }
 
       .repository-panel-actions button:hover {
         background: var(--ldesign-bg-color-container-hover, #fafafa);
-        border-color: var(--ldesign-border-color-hover, #d9d9d9);
+        border-color: var(--ldesign-brand-color, #722ED1);
+        transform: translateY(-1px);
+        box-shadow: var(--ldesign-shadow-1, 0 1px 10px rgba(0, 0, 0, 5%));
       }
 
       .btn-primary {
@@ -123,6 +191,9 @@ export class MaterialRepositoryPanel {
 
       .btn-primary:hover {
         background: var(--ldesign-brand-color-hover, #5e2aa7) !important;
+        border-color: var(--ldesign-brand-color-hover, #5e2aa7) !important;
+        transform: translateY(-2px);
+        box-shadow: var(--ldesign-shadow-2, 0 4px 20px rgba(0, 0, 0, 8%));
       }
 
       .repository-panel-body {
@@ -358,12 +429,12 @@ export class MaterialRepositoryPanel {
     this.panelElement.innerHTML = `
       <div class="repository-panel-content">
         <div class="repository-panel-header">
-          <h2>🏪 物料仓库</h2>
+          <h2>${getToolbarIcon('material-repository')} 物料仓库</h2>
           <div class="repository-panel-actions">
-            <button class="btn-new-material btn-primary">➕ 新建物料</button>
-            <button class="btn-import">📥 导入</button>
-            <button class="btn-export">📤 导出</button>
-            <button class="btn-close">❌</button>
+            <button class="btn-new-material btn-primary">${getToolbarIcon('add')} 新建物料</button>
+            <button class="btn-import">${getToolbarIcon('import')} 导入</button>
+            <button class="btn-export">${getToolbarIcon('export')} 导出</button>
+            <button class="btn-close">${getToolbarIcon('close')}</button>
           </div>
         </div>
         
@@ -504,12 +575,12 @@ export class MaterialRepositoryPanel {
    */
   private loadMaterials(): void {
     this.loadCategories()
-    
+
     const materialsGrid = this.panelElement?.querySelector('.materials-grid')
     if (!materialsGrid) return
 
     let materials: CustomMaterial[]
-    
+
     if (this.currentCategory === 'all') {
       materials = this.repositoryManager.getAllMaterials()
     } else {
@@ -535,7 +606,7 @@ export class MaterialRepositoryPanel {
       const materialId = card.getAttribute('data-material-id')
       if (materialId) {
         card.addEventListener('click', () => this.selectMaterial(materialId))
-        
+
         // 编辑按钮
         const editBtn = card.querySelector('.btn-edit')
         editBtn?.addEventListener('click', (e) => {
@@ -583,7 +654,7 @@ export class MaterialRepositoryPanel {
     const centerY = previewHeight / 2
 
     let shapeElement = ''
-    
+
     switch (shape) {
       case 'rect':
         shapeElement = `<rect x="${centerX - 20}" y="${centerY - 15}" width="40" height="30" 
@@ -623,15 +694,15 @@ export class MaterialRepositoryPanel {
    */
   private switchCategory(category: string): void {
     this.currentCategory = category
-    
+
     // 更新分类选中状态
     this.panelElement?.querySelectorAll('.category-item').forEach(item => {
       item.classList.remove('active')
     })
-    
+
     const activeItem = this.panelElement?.querySelector(`[data-category="${category}"]`)
     activeItem?.classList.add('active')
-    
+
     this.loadMaterials()
   }
 
@@ -648,7 +719,7 @@ export class MaterialRepositoryPanel {
     }
 
     const materials = this.repositoryManager.searchMaterials(query)
-    
+
     if (materials.length === 0) {
       materialsGrid.innerHTML = `
         <div class="empty-state">
@@ -731,7 +802,7 @@ export class MaterialRepositoryPanel {
       this.materialEditor.destroy()
       this.materialEditor = null
     }
-    
+
     const editorContainer = document.querySelector('.ldesign-material-repository-panel + div')
     if (editorContainer && editorContainer.parentNode) {
       editorContainer.parentNode.removeChild(editorContainer)
@@ -819,12 +890,12 @@ export class MaterialRepositoryPanel {
     const data = this.repositoryManager.exportRepository()
     const blob = new Blob([data], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
-    
+
     const a = document.createElement('a')
     a.href = url
     a.download = `material-repository-${Date.now()}.json`
     a.click()
-    
+
     URL.revokeObjectURL(url)
   }
 

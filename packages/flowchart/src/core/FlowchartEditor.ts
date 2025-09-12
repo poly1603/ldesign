@@ -1552,9 +1552,9 @@ export class FlowchartEditor {
   }
 
   /**
-   * 删除节点
+   * 删除节点（私有方法）
    */
-  private deleteNode(nodeId: string): void {
+  private deleteNodeInternal(nodeId: string): void {
     this.lf.deleteNode(nodeId)
     console.log('节点已删除')
   }

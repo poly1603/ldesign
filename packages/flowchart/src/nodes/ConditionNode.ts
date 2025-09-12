@@ -5,6 +5,7 @@
  */
 
 import { DiamondNode, DiamondNodeModel, h } from '@logicflow/core'
+import { createNodeIcon } from '../utils/icons'
 
 /**
  * 条件节点模型
@@ -125,20 +126,39 @@ export class ConditionNode extends DiamondNode {
         points,
         ...style
       }),
-      // 条件图标 - 问号，在文本上方，增加间隔
+      // lucide条件图标
+      this.getConditionIcon(x, y)
+    ])
+  }
+
+  /**
+   * 获取条件图标
+   */
+  private getConditionIcon(x: number, y: number): h.JSX.Element | null {
+    const iconData = createNodeIcon('help-circle', {
+      size: 16,
+      color: 'var(--ldesign-warning-color, #f5c538)',
+      strokeWidth: 2
+    })
+
+    if (!iconData) return null
+
+    return h('g', {
+      transform: `translate(${x}, ${y - 15}) scale(0.7)` // 图标在文本上方
+    }, [
       h('g', {
-        transform: `translate(${x}, ${y - 15})`
-      }, [
-        h('text', {
-          x: 0,
-          y: 0,
-          textAnchor: 'middle',
-          dominantBaseline: 'middle',
-          fontSize: 14,
-          fontWeight: 'bold',
-          fill: 'var(--ldesign-warning-color, #f5c538)'
-        }, '?')
-      ])
+        transform: 'translate(-12, -12)' // 居中图标
+      }, iconData.paths.map((path: string, index: number) =>
+        h('path', {
+          key: index,
+          d: path,
+          fill: 'none',
+          stroke: iconData.color,
+          strokeWidth: iconData.strokeWidth,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round'
+        })
+      ))
     ])
   }
 }

@@ -5,6 +5,7 @@
  */
 
 import { RectNode, RectNodeModel, h } from '@logicflow/core'
+import { createNodeIcon } from '../utils/icons'
 
 /**
  * 处理节点模型
@@ -123,28 +124,39 @@ export class ProcessNode extends RectNode {
         ry: radius,
         ...style
       }),
-      // 处理图标 - 在文本上方，增加间隔
-      h('circle', {
-        cx: x - 8,
-        cy: y - 15,
-        r: 2,
-        fill: 'var(--ldesign-gray-color-6, #808080)',
-        stroke: 'none'
-      }),
-      h('circle', {
-        cx: x,
-        cy: y - 15,
-        r: 2,
-        fill: 'var(--ldesign-gray-color-6, #808080)',
-        stroke: 'none'
-      }),
-      h('circle', {
-        cx: x + 8,
-        cy: y - 15,
-        r: 2,
-        fill: 'var(--ldesign-gray-color-6, #808080)',
-        stroke: 'none'
-      })
+      // lucide处理图标
+      this.getProcessIcon(x, y)
+    ])
+  }
+
+  /**
+   * 获取处理图标
+   */
+  private getProcessIcon(x: number, y: number): h.JSX.Element | null {
+    const iconData = createNodeIcon('settings', {
+      size: 16,
+      color: 'var(--ldesign-brand-color, #722ed1)',
+      strokeWidth: 2
+    })
+
+    if (!iconData) return null
+
+    return h('g', {
+      transform: `translate(${x}, ${y - 15}) scale(0.7)` // 图标在文本上方
+    }, [
+      h('g', {
+        transform: 'translate(-12, -12)' // 居中图标
+      }, iconData.paths.map((path: string, index: number) =>
+        h('path', {
+          key: index,
+          d: path,
+          fill: 'none',
+          stroke: iconData.color,
+          strokeWidth: iconData.strokeWidth,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round'
+        })
+      ))
     ])
   }
 }

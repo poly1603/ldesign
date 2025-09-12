@@ -5,6 +5,7 @@
  */
 
 import { RectNode, RectNodeModel, h } from '@logicflow/core'
+import { createNodeIcon } from '../utils/icons'
 
 /**
  * 审批节点模型
@@ -183,10 +184,43 @@ export class ApprovalNode extends RectNode {
         ry: radius,
         ...style
       }),
+      // 节点类型图标
+      this.getNodeTypeIcon(x, y),
       // 状态图标
       this.getStatusIcon(x, y, status),
       // 审批人数量标识
       this.getApproverCount(x, y, model.getApprovers().length)
+    ])
+  }
+
+  /**
+   * 获取节点类型图标
+   */
+  private getNodeTypeIcon(x: number, y: number): h.JSX.Element | null {
+    const iconData = createNodeIcon('check-square', {
+      size: 16,
+      color: 'var(--ldesign-brand-color, #722ed1)',
+      strokeWidth: 2
+    })
+
+    if (!iconData) return null
+
+    return h('g', {
+      transform: `translate(${x}, ${y - 25}) scale(0.7)` // 节点类型图标在上方
+    }, [
+      h('g', {
+        transform: 'translate(-12, -12)' // 居中图标
+      }, iconData.paths.map((path: string, index: number) =>
+        h('path', {
+          key: index,
+          d: path,
+          fill: 'none',
+          stroke: iconData.color,
+          strokeWidth: iconData.strokeWidth,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round'
+        })
+      ))
     ])
   }
 
