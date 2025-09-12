@@ -250,18 +250,21 @@ export class MapConfigManager {
     console.log('[MapConfigManager] 容器类型检查:', typeof container);
     console.log('[MapConfigManager] 容器构造函数:', container?.constructor?.name);
     console.log('[MapConfigManager] 容器 nodeType:', container?.nodeType);
-    console.log('[MapConfigManager] 是否为 HTMLElement:', container instanceof HTMLElement);
-    console.log('[MapConfigManager] 是否为 Node:', container instanceof Node);
-    console.log('[MapConfigManager] 容器对象:', container);
 
     if (typeof container === 'string') {
       const element = document.querySelector(container);
       console.log('[MapConfigManager] 通过选择器找到元素:', element);
-      return element;
-    } else if (container && typeof container === 'object' && container.nodeType === Node.ELEMENT_NODE) {
-      // 更宽松的检查，不依赖 instanceof
-      console.log('[MapConfigManager] 直接使用传入的元素:', container);
-      return container as HTMLElement;
+      return element as HTMLElement;
+    } else if (container && typeof container === 'object') {
+      // 检查是否是 DOM 元素（更宽松的检查）
+      const hasNodeType = 'nodeType' in container && container.nodeType === 1;
+      const hasTagName = 'tagName' in container;
+      const isElement = hasNodeType || hasTagName;
+
+      if (isElement) {
+        console.log('[MapConfigManager] 直接使用传入的元素:', container);
+        return container as HTMLElement;
+      }
     }
 
     console.log('[MapConfigManager] 无法识别的容器类型');
@@ -274,20 +277,25 @@ export class MapConfigManager {
    */
   isContainerValid(): boolean {
     const element = this.getContainerElement();
-    const isValid = element !== null && element.nodeType === Node.ELEMENT_NODE;
+
+    // 更宽松的验证逻辑
+    const isValid = element !== null && (
+      element.nodeType === 1 || // ELEMENT_NODE
+      (typeof element === 'object' && 'tagName' in element)
+    );
 
     // 添加调试信息
     if (!isValid) {
       console.error('[MapConfigManager] 容器验证失败:', {
         element,
         nodeType: element?.nodeType,
-        expectedNodeType: Node.ELEMENT_NODE,
+        hasTagName: element && 'tagName' in element,
         containerConfig: this.config.container
       });
     } else {
       console.log('[MapConfigManager] 容器验证成功:', {
         element: element.tagName,
-        size: `${element.offsetWidth}x${element.offsetHeight}`
+        size: `${element.offsetWidth || 0}x${element.offsetHeight || 0}`
       });
     }
 

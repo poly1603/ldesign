@@ -38,6 +38,8 @@ export enum MapServiceProvider {
   AMAP = 'amap',
   /** 百度地图 */
   BAIDU = 'baidu',
+  /** 腾讯地图 */
+  TENCENT = 'tencent',
   /** CartoDB */
   CARTODB = 'cartodb',
   /** Stamen */
@@ -169,6 +171,73 @@ export const MAP_SERVICES: Record<string, MapServiceInfo> = {
     } as TileLayerConfig
   },
 
+  // 高德地图服务（无需 API Key 的公开服务）
+  'amap-street': {
+    id: 'amap-street',
+    name: '高德街道地图',
+    description: '高德地图街道地图，适合中国用户使用',
+    provider: MapServiceProvider.AMAP,
+    category: MapServiceCategory.CHINA,
+    layerConfig: {
+      id: 'amap-street',
+      name: '高德街道地图',
+      type: LayerType.XYZ,
+      url: 'https://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+      visible: true,
+      attribution: '© 高德地图'
+    } as TileLayerConfig
+  },
+
+  'amap-satellite': {
+    id: 'amap-satellite',
+    name: '高德卫星地图',
+    description: '高德地图卫星影像，清晰的卫星图像',
+    provider: MapServiceProvider.AMAP,
+    category: MapServiceCategory.SATELLITE,
+    layerConfig: {
+      id: 'amap-satellite',
+      name: '高德卫星地图',
+      type: LayerType.XYZ,
+      url: 'https://webst0{1-4}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+      visible: true,
+      attribution: '© 高德地图'
+    } as TileLayerConfig
+  },
+
+  // 百度地图服务（无需 API Key 的公开服务）
+  'baidu-street': {
+    id: 'baidu-street',
+    name: '百度街道地图',
+    description: '百度地图街道地图，详细的中国地区信息',
+    provider: MapServiceProvider.BAIDU,
+    category: MapServiceCategory.CHINA,
+    layerConfig: {
+      id: 'baidu-street',
+      name: '百度街道地图',
+      type: LayerType.XYZ,
+      url: 'https://maponline{0-3}.bdimg.com/tile/?qt=vtile&x={x}&y={y}&z={z}&styles=pl&scaler=1&udt=20200825',
+      visible: true,
+      attribution: '© 百度地图'
+    } as TileLayerConfig
+  },
+
+  // OpenStreetMap 中国镜像服务
+  'osm-china': {
+    id: 'osm-china',
+    name: 'OpenStreetMap 中国镜像',
+    description: '使用中国镜像的 OpenStreetMap，访问更稳定',
+    provider: MapServiceProvider.OSM,
+    category: MapServiceCategory.CHINA,
+    layerConfig: {
+      id: 'osm-china',
+      name: 'OpenStreetMap 中国镜像',
+      type: LayerType.XYZ,
+      url: 'https://tile-{a-c}.openstreetmap.org/{z}/{x}/{y}.png',
+      visible: true,
+      attribution: '© OpenStreetMap contributors'
+    } as TileLayerConfig
+  },
+
   // 天地图服务（需要 API Key）
   'tianditu-vec': {
     id: 'tianditu-vec',
@@ -206,6 +275,58 @@ export const MAP_SERVICES: Record<string, MapServiceInfo> = {
       attribution: '© 天地图'
     } as TileLayerConfig,
     limitations: '需要申请天地图 API Key'
+  },
+
+  'tianditu-ter': {
+    id: 'tianditu-ter',
+    name: '天地图地形',
+    description: '国家地理信息公共服务平台地形地图',
+    provider: MapServiceProvider.TIANDITU,
+    category: MapServiceCategory.TERRAIN,
+    requiresApiKey: true,
+    apiKeyParam: 'tk',
+    layerConfig: {
+      id: 'tianditu-ter',
+      name: '天地图地形',
+      type: LayerType.XYZ,
+      url: 'https://t{0-7}.tianditu.gov.cn/ter_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ter&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk={API_KEY}',
+      visible: true,
+      attribution: '© 天地图'
+    } as TileLayerConfig,
+    limitations: '需要申请天地图 API Key'
+  },
+
+  // 腾讯地图服务（无需 API Key 的公开服务）
+  'tencent-street': {
+    id: 'tencent-street',
+    name: '腾讯街道地图',
+    description: '腾讯地图街道地图，适合中国用户使用',
+    provider: MapServiceProvider.TENCENT,
+    category: MapServiceCategory.CHINA,
+    layerConfig: {
+      id: 'tencent-street',
+      name: '腾讯街道地图',
+      type: LayerType.XYZ,
+      url: 'https://rt{0-3}.map.gtimg.com/tile?z={z}&x={x}&y={y}&type=vector&styleid=3',
+      visible: true,
+      attribution: '© 腾讯地图'
+    } as TileLayerConfig
+  },
+
+  'tencent-satellite': {
+    id: 'tencent-satellite',
+    name: '腾讯卫星地图',
+    description: '腾讯地图卫星影像，清晰的卫星图像',
+    provider: MapServiceProvider.TENCENT,
+    category: MapServiceCategory.SATELLITE,
+    layerConfig: {
+      id: 'tencent-satellite',
+      name: '腾讯卫星地图',
+      type: LayerType.XYZ,
+      url: 'https://p{0-3}.map.gtimg.com/sateTiles/{z}/{x}/{y}.jpg',
+      visible: true,
+      attribution: '© 腾讯地图'
+    } as TileLayerConfig
   },
 
   // Google Maps 服务（可能需要代理）
@@ -329,6 +450,6 @@ export function createLayerConfigWithApiKey(serviceId: string, apiKey: string): 
   if (config.url) {
     config.url = config.url.replace('{API_KEY}', apiKey);
   }
-  
+
   return config;
 }

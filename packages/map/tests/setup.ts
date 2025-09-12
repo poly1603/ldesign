@@ -17,35 +17,7 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
   disconnect: vi.fn()
 }))
 
-// Mock Canvas API
-HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
-  fillRect: vi.fn(),
-  clearRect: vi.fn(),
-  getImageData: vi.fn(() => ({ data: new Array(4) })),
-  putImageData: vi.fn(),
-  createImageData: vi.fn(() => ({ data: new Array(4) })),
-  setTransform: vi.fn(),
-  drawImage: vi.fn(),
-  save: vi.fn(),
-  fillText: vi.fn(),
-  restore: vi.fn(),
-  beginPath: vi.fn(),
-  moveTo: vi.fn(),
-  lineTo: vi.fn(),
-  closePath: vi.fn(),
-  stroke: vi.fn(),
-  translate: vi.fn(),
-  scale: vi.fn(),
-  rotate: vi.fn(),
-  arc: vi.fn(),
-  fill: vi.fn(),
-  measureText: vi.fn(() => ({ width: 0 })),
-  transform: vi.fn(),
-  rect: vi.fn(),
-  clip: vi.fn()
-})
-
-// Mock WebGL context
+// Mock Canvas API with comprehensive context support
 HTMLCanvasElement.prototype.getContext = vi.fn().mockImplementation((contextType) => {
   if (contextType === 'webgl' || contextType === 'webgl2') {
     return {
@@ -72,7 +44,34 @@ HTMLCanvasElement.prototype.getContext = vi.fn().mockImplementation((contextType
       viewport: vi.fn()
     }
   }
-  return null
+
+  // 2D context
+  return {
+    fillRect: vi.fn(),
+    clearRect: vi.fn(),
+    getImageData: vi.fn(() => ({ data: new Array(4) })),
+    putImageData: vi.fn(),
+    createImageData: vi.fn(() => ({ data: new Array(4) })),
+    setTransform: vi.fn(),
+    drawImage: vi.fn(),
+    save: vi.fn(),
+    fillText: vi.fn(),
+    restore: vi.fn(),
+    beginPath: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    closePath: vi.fn(),
+    stroke: vi.fn(),
+    translate: vi.fn(),
+    scale: vi.fn(),
+    rotate: vi.fn(),
+    arc: vi.fn(),
+    fill: vi.fn(),
+    measureText: vi.fn(() => ({ width: 0 })),
+    transform: vi.fn(),
+    rect: vi.fn(),
+    clip: vi.fn()
+  }
 })
 
 // Mock URL.createObjectURL
@@ -147,5 +146,123 @@ Object.defineProperty(window, 'performance', {
 // 设置测试环境变量
 process.env.NODE_ENV = 'test'
 process.env.VITEST = 'true'
+
+// 测试工具函数
+export function createMockMapContainer(): HTMLElement {
+  const container = new MockHTMLElement();
+  container.id = 'test-map-container';
+  container.tagName = 'DIV';
+  container.nodeType = 1;
+  container.style = { width: '800px', height: '600px' };
+  container.offsetWidth = 800;
+  container.offsetHeight = 600;
+
+  // 确保 document.body 存在
+  if (!document.body) {
+    document.body = new MockHTMLElement();
+    document.body.tagName = 'BODY';
+  }
+
+  // Mock querySelector 返回我们创建的容器
+  const originalQuerySelector = document.querySelector;
+  document.querySelector = vi.fn().mockImplementation((selector: string) => {
+    if (selector === '#test-map-container' || selector === container.id) {
+      return container;
+    }
+    return originalQuerySelector?.call(document, selector) || null;
+  });
+
+  return container as HTMLElement;
+}
+
+export function createMockMapConfig(overrides: any = {}): any {
+  return {
+    container: overrides.container || createMockMapContainer(),
+    center: overrides.center || [116.404, 39.915],
+    zoom: overrides.zoom || 10,
+    minZoom: overrides.minZoom || 1,
+    maxZoom: overrides.maxZoom || 20,
+    projection: overrides.projection || 'EPSG:3857',
+    theme: overrides.theme || 'default',
+    ...overrides
+  };
+}
+
+export function cleanupTestEnvironment(): void {
+  // 清理 DOM 元素
+  if (document.body) {
+    const containers = document.body.querySelectorAll('[id*="test-map"]');
+    containers.forEach(container => {
+      if (container.parentNode) {
+        container.parentNode.removeChild(container);
+      }
+    });
+  }
+
+  // 清理全局变量
+  vi.clearAllMocks();
+
+  // 清理定时器
+  vi.clearAllTimers();
+}
+
+// Mock Node 常量
+global.Node = {
+  ELEMENT_NODE: 1,
+  ATTRIBUTE_NODE: 2,
+  TEXT_NODE: 3,
+  CDATA_SECTION_NODE: 4,
+  ENTITY_REFERENCE_NODE: 5,
+  ENTITY_NODE: 6,
+  PROCESSING_INSTRUCTION_NODE: 7,
+  COMMENT_NODE: 8,
+  DOCUMENT_NODE: 9,
+  DOCUMENT_TYPE_NODE: 10,
+  DOCUMENT_FRAGMENT_NODE: 11,
+  NOTATION_NODE: 12
+};
+
+// Mock HTMLElement 构造函数
+class MockHTMLElement {
+  nodeType = 1;
+  tagName = 'DIV';
+  style: any = {};
+  offsetWidth = 800;
+  offsetHeight = 600;
+  id = '';
+  className = '';
+
+  appendChild(child: any) {
+    return child;
+  }
+
+  removeChild(child: any) {
+    return child;
+  }
+
+  querySelector(selector: string) {
+    return null;
+  }
+
+  querySelectorAll(selector: string) {
+    return [];
+  }
+
+  addEventListener(event: string, handler: any) {
+    // Mock implementation
+  }
+
+  removeEventListener(event: string, handler: any) {
+    // Mock implementation
+  }
+}
+
+global.HTMLElement = MockHTMLElement;
+
+// 确保 document.body 存在
+if (!document.body) {
+  document.body = new MockHTMLElement();
+  document.body.tagName = 'BODY';
+}
 
 console.log('Test environment setup completed')
