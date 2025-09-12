@@ -12,6 +12,11 @@
       "import": "./es/index.js",
       "require": "./cjs/index.cjs"
     },
+    "./vue": {
+      "types": "./es/vue/index.d.ts",
+      "import": "./es/vue/index.js",
+      "require": "./cjs/vue/index.cjs"
+    },
     "./styles": {
       "import": "./es/styles/index.css",
       "require": "./cjs/styles/index.css"
@@ -69,8 +74,16 @@
     "@ldesign/shared": "workspace:*",
     "@logicflow/core": "^1.2.26",
     "@logicflow/extension": "^1.2.26",
-    "lucide": "^0.544.0",
-    "vue": "^3.3.0"
+    "lucide": "^0.544.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0",
+    "typescript": ">=4.5.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
@@ -87,9 +100,6 @@
     "vite": "^5.0.0",
     "vitepress": "^1.0.0",
     "vitest": "^1.0.0"
-  },
-  "peerDependencies": {
-    "typescript": ">=4.5.0"
   },
   "engines": {
     "node": ">=16.0.0"

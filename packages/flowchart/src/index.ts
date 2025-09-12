@@ -47,13 +47,11 @@ export * from './utils'
 // 导出类型定义
 export * from './types'
 
-// 导出UI组件
+// 导出原生UI组件（框架无关）
 export * from './ui'
 
-// 导出Vue组件和Hook
-export { default as FlowchartEditorVue } from './vue/FlowchartEditor.vue'
-export { useFlowchart, createFlowchartEditor } from './vue/useFlowchart'
-export type { UseFlowchartOptions, UseFlowchartReturn } from './vue/useFlowchart'
+// 注意：Vue组件和Hook请从 '@ldesign/flowchart/vue' 导入
+// 这样可以确保核心库不依赖Vue，保持框架无关性
 
 // 导出默认配置
 export { defaultConfig } from './config/defaultConfig'

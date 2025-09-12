@@ -333,32 +333,28 @@ export class UIManager {
       let position: { x: number; y: number }
 
       try {
-        // 尝试使用LogicFlow的pointToCanvasModel方法
-        const canvasPosition = lf.pointToCanvasModel([clientX, clientY])
-        position = { x: canvasPosition[0], y: canvasPosition[1] }
-
-        console.log(`绝对屏幕坐标: (${clientX}, ${clientY}) -> 画布坐标: (${position.x.toFixed(0)}, ${position.y.toFixed(0)})`)
-      } catch (error) {
-        console.warn('pointToCanvasModel转换失败，尝试其他方法:', error)
-
-        // 尝试使用getPointByClient方法
-        try {
-          const point = lf.getPointByClient(clientX, clientY)
+        // 尝试使用LogicFlow的getPointByClient方法（这是正确的API）
+        const point = lf.getPointByClient(clientX, clientY)
+        if (point && typeof point.x === 'number' && typeof point.y === 'number') {
           position = { x: point.x, y: point.y }
-          console.log(`使用getPointByClient转换: (${clientX}, ${clientY}) -> 画布坐标: (${position.x.toFixed(0)}, ${position.y.toFixed(0)})`)
-        } catch (error2) {
-          console.warn('getPointByClient转换也失败，使用手动计算:', error2)
+          console.log(`屏幕坐标转换: (${clientX}, ${clientY}) -> 画布坐标: (${position.x.toFixed(0)}, ${position.y.toFixed(0)})`)
+        } else {
+          throw new Error('getPointByClient返回了无效的坐标')
+        }
+      } catch (error) {
+        console.warn('LogicFlow坐标转换失败，使用手动计算:', error)
 
-          // 手动计算相对坐标
-          const rect = this.canvasContainer!.getBoundingClientRect()
-          const relativeX = clientX - rect.left
-          const relativeY = clientY - rect.top
+        // 手动计算相对坐标
+        const rect = this.canvasContainer!.getBoundingClientRect()
+        const relativeX = clientX - rect.left
+        const relativeY = clientY - rect.top
 
-          // 获取画布变换信息
+        // 获取画布变换信息
+        try {
           const transform = lf.getTransform()
-          const scale = transform.SCALE_X || 1
-          const translateX = transform.TRANSLATE_X || 0
-          const translateY = transform.TRANSLATE_Y || 0
+          const scale = transform?.SCALE_X || 1
+          const translateX = transform?.TRANSLATE_X || 0
+          const translateY = transform?.TRANSLATE_Y || 0
 
           // 应用逆变换
           position = {
@@ -368,6 +364,10 @@ export class UIManager {
 
           console.log(`手动计算坐标: 相对(${relativeX}, ${relativeY}) -> 画布坐标: (${position.x.toFixed(0)}, ${position.y.toFixed(0)})`)
           console.log(`变换信息: scale=${scale}, translate=(${translateX}, ${translateY})`)
+        } catch (transformError) {
+          console.warn('获取变换信息失败，使用基础坐标:', transformError)
+          // 如果获取变换信息也失败，就使用基础的相对坐标
+          position = { x: relativeX, y: relativeY }
         }
       }
 

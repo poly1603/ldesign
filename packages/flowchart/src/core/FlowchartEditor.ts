@@ -26,6 +26,9 @@ import { defaultConfig } from '../config/defaultConfig'
 import { UIManager } from '../ui/UIManager'
 import { MaterialRepositoryManager } from '../materials/MaterialRepositoryManager'
 import { MaterialRepositoryPanel } from '../ui/native/MaterialRepositoryPanel'
+import { validateFlowchart, type ValidationResult } from '../utils/validation'
+import { exportFlowchart, downloadExportedFile, type ExportFormat, type ExportOptions } from '../utils/export'
+import { getClipboardManager, type PasteOptions } from '../utils/clipboard'
 
 /**
  * 审批流程图编辑器类
@@ -45,6 +48,7 @@ export class FlowchartEditor {
   private isSelectionMode: boolean = false
   private materialRepositoryManager!: MaterialRepositoryManager
   private materialRepositoryPanel: MaterialRepositoryPanel | null = null
+  private clipboardManager = getClipboardManager()
 
   /**
    * 构造函数
@@ -511,16 +515,16 @@ export class FlowchartEditor {
           break
 
         case 'c':
-          if (isCtrlOrCmd && this.selectedNode) {
+          if (isCtrlOrCmd) {
             event.preventDefault()
-            this.copyNode(this.selectedNode.id)
+            this.copySelectedElements()
           }
           break
 
         case 'v':
-          if (isCtrlOrCmd && this.copiedNodeData) {
+          if (isCtrlOrCmd) {
             event.preventDefault()
-            this.pasteNodeWithOffset()
+            this.pasteElements()
           }
           break
 
@@ -1251,11 +1255,23 @@ export class FlowchartEditor {
         selected.nodes.forEach(node => this.deleteNode(node.id))
         selected.edges.forEach(edge => this.lf.deleteEdge(edge.id))
         break
+      case 'clear':
+        this.clearCanvas()
+        break
+      case 'validate':
+        this.showValidationDialog()
+        break
+      case 'export':
+        this.showExportDialog()
+        break
+      case 'download':
+        this.exportAndDownload('json')
+        break
       case 'copy':
-        // TODO: 实现复制功能
+        this.copySelectedElements()
         break
       case 'paste':
-        // TODO: 实现粘贴功能
+        this.pasteElements()
         break
     }
   }
@@ -2017,5 +2033,569 @@ export class FlowchartEditor {
     if (this.lf && typeof this.lf.destroy === 'function') {
       this.lf.destroy()
     }
+  }
+
+  /**
+   * 验证流程图
+   * @returns 验证结果
+   */
+  validateFlowchart(): ValidationResult {
+    const data = this.getData()
+    return validateFlowchart(data)
+  }
+
+  /**
+   * 检查流程图是否有效
+   * @returns 是否有效
+   */
+  isValid(): boolean {
+    return this.validateFlowchart().valid
+  }
+
+  /**
+   * 导出流程图数据
+   * @param format 导出格式
+   * @param options 导出选项
+   * @returns 导出结果
+   */
+  async exportData(format: ExportFormat, options?: Partial<ExportOptions>): Promise<any> {
+    const data = this.getData()
+    const exportOptions: ExportOptions = {
+      format,
+      filename: options?.filename || `flowchart_${Date.now()}`,
+      includeValidation: options?.includeValidation ?? true,
+      prettify: options?.prettify ?? true,
+      ...options
+    }
+
+    return exportFlowchart(data, format, exportOptions.filename)
+  }
+
+  /**
+   * 导出并下载流程图文件
+   * @param format 导出格式
+   * @param filename 文件名（可选）
+   */
+  async exportAndDownload(format: ExportFormat, filename?: string): Promise<void> {
+    try {
+      const result = await this.exportData(format, { filename })
+      if (result.success) {
+        downloadExportedFile(result)
+        this.emit('export:success', { format, filename: result.filename })
+      } else {
+        console.error('导出失败:', result.error)
+        this.emit('export:error', { format, error: result.error })
+      }
+    } catch (error) {
+      console.error('导出过程中发生错误:', error)
+      this.emit('export:error', { format, error: error instanceof Error ? error.message : String(error) })
+    }
+  }
+
+  /**
+   * 获取流程图验证报告
+   * @returns 验证报告的HTML字符串
+   */
+  getValidationReport(): string {
+    const validation = this.validateFlowchart()
+
+    let html = '<div class="validation-report">'
+    html += `<h3>流程图验证报告</h3>`
+    html += `<p class="status ${validation.valid ? 'valid' : 'invalid'}">`
+    html += validation.valid ? '✅ 流程图验证通过' : '❌ 流程图验证失败'
+    html += '</p>'
+
+    if (validation.errors.length > 0) {
+      html += '<div class="errors">'
+      html += '<h4>错误信息：</h4>'
+      html += '<ul>'
+      validation.errors.forEach(error => {
+        html += `<li class="error">${error.message}</li>`
+      })
+      html += '</ul>'
+      html += '</div>'
+    }
+
+    if (validation.warnings.length > 0) {
+      html += '<div class="warnings">'
+      html += '<h4>警告信息：</h4>'
+      html += '<ul>'
+      validation.warnings.forEach(warning => {
+        html += `<li class="warning">${warning.message}</li>`
+      })
+      html += '</ul>'
+      html += '</div>'
+    }
+
+    html += '</div>'
+    return html
+  }
+
+  /**
+   * 显示验证结果对话框
+   */
+  showValidationDialog(): void {
+    const validation = this.validateFlowchart()
+    const reportHtml = this.getValidationReport()
+
+    // 创建对话框
+    const dialog = document.createElement('div')
+    dialog.className = 'validation-dialog-overlay'
+    dialog.innerHTML = `
+      <div class="validation-dialog">
+        <div class="validation-dialog-header">
+          <h3>流程图验证</h3>
+          <button class="close-btn" onclick="this.closest('.validation-dialog-overlay').remove()">×</button>
+        </div>
+        <div class="validation-dialog-content">
+          ${reportHtml}
+        </div>
+        <div class="validation-dialog-footer">
+          <button class="btn btn-primary" onclick="this.closest('.validation-dialog-overlay').remove()">确定</button>
+        </div>
+      </div>
+    `
+
+    // 添加样式
+    const style = document.createElement('style')
+    style.textContent = `
+      .validation-dialog-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      }
+      .validation-dialog {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        max-width: 600px;
+        max-height: 80vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .validation-dialog-header {
+        padding: 20px;
+        border-bottom: 1px solid #e5e5e5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .validation-dialog-content {
+        padding: 20px;
+        overflow-y: auto;
+        flex: 1;
+      }
+      .validation-dialog-footer {
+        padding: 20px;
+        border-top: 1px solid #e5e5e5;
+        text-align: right;
+      }
+      .validation-report .status.valid {
+        color: #52c41a;
+      }
+      .validation-report .status.invalid {
+        color: #ff4d4f;
+      }
+      .validation-report .errors {
+        margin-top: 16px;
+      }
+      .validation-report .warnings {
+        margin-top: 16px;
+      }
+      .validation-report .error {
+        color: #ff4d4f;
+        margin: 4px 0;
+      }
+      .validation-report .warning {
+        color: #faad14;
+        margin: 4px 0;
+      }
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #999;
+      }
+      .close-btn:hover {
+        color: #333;
+      }
+      .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .btn-primary {
+        background: #722ED1;
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #5e2aa7;
+      }
+    `
+    document.head.appendChild(style)
+    document.body.appendChild(dialog)
+
+    // 触发验证事件
+    this.emit('validation:show', validation)
+  }
+
+  /**
+   * 显示导出对话框
+   */
+  showExportDialog(): void {
+    // 创建导出对话框
+    const dialog = document.createElement('div')
+    dialog.className = 'export-dialog-overlay'
+    dialog.innerHTML = `
+      <div class="export-dialog">
+        <div class="export-dialog-header">
+          <h3>导出流程图</h3>
+          <button class="close-btn" onclick="this.closest('.export-dialog-overlay').remove()">×</button>
+        </div>
+        <div class="export-dialog-content">
+          <div class="export-options">
+            <div class="export-format">
+              <label>导出格式：</label>
+              <select id="exportFormat" class="format-select">
+                <option value="json">JSON 格式</option>
+                <option value="xml">XML 格式</option>
+                <option value="svg">SVG 图片</option>
+                <option value="bpmn">BPMN 格式</option>
+              </select>
+            </div>
+            <div class="export-filename">
+              <label>文件名：</label>
+              <input type="text" id="exportFilename" class="filename-input" value="flowchart_${Date.now()}" />
+            </div>
+            <div class="export-options-checkboxes">
+              <label class="checkbox-label">
+                <input type="checkbox" id="includeValidation" checked />
+                包含验证信息
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="prettifyOutput" checked />
+                美化输出格式
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="export-dialog-footer">
+          <button class="btn btn-secondary" onclick="this.closest('.export-dialog-overlay').remove()">取消</button>
+          <button class="btn btn-primary" id="confirmExport">导出</button>
+        </div>
+      </div>
+    `
+
+    // 添加样式
+    const style = document.createElement('style')
+    style.textContent = `
+      .export-dialog-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      }
+      .export-dialog {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        width: 480px;
+        max-height: 80vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .export-dialog-header {
+        padding: 20px;
+        border-bottom: 1px solid #e5e5e5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .export-dialog-content {
+        padding: 20px;
+        flex: 1;
+      }
+      .export-dialog-footer {
+        padding: 20px;
+        border-top: 1px solid #e5e5e5;
+        text-align: right;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+      }
+      .export-options {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .export-format, .export-filename {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .export-format label, .export-filename label {
+        min-width: 80px;
+        font-weight: 500;
+      }
+      .format-select, .filename-input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #d9d9d9;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      .export-options-checkboxes {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .checkbox-label input[type="checkbox"] {
+        margin: 0;
+      }
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #999;
+      }
+      .close-btn:hover {
+        color: #333;
+      }
+      .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .btn-secondary {
+        background: #f5f5f5;
+        color: #666;
+      }
+      .btn-secondary:hover {
+        background: #e5e5e5;
+      }
+      .btn-primary {
+        background: #722ED1;
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #5e2aa7;
+      }
+    `
+    document.head.appendChild(style)
+
+    // 绑定导出按钮事件
+    const confirmBtn = dialog.querySelector('#confirmExport') as HTMLButtonElement
+    confirmBtn.addEventListener('click', async () => {
+      const format = (dialog.querySelector('#exportFormat') as HTMLSelectElement).value as ExportFormat
+      const filename = (dialog.querySelector('#exportFilename') as HTMLInputElement).value
+      const includeValidation = (dialog.querySelector('#includeValidation') as HTMLInputElement).checked
+      const prettify = (dialog.querySelector('#prettifyOutput') as HTMLInputElement).checked
+
+      try {
+        const result = await this.exportData(format, {
+          filename,
+          includeValidation,
+          prettify
+        })
+
+        if (result.success) {
+          downloadExportedFile(result)
+          dialog.remove()
+          this.emit('export:success', { format, filename: result.filename })
+        } else {
+          alert(`导出失败: ${result.error}`)
+        }
+      } catch (error) {
+        alert(`导出过程中发生错误: ${error instanceof Error ? error.message : String(error)}`)
+      }
+    })
+
+    document.body.appendChild(dialog)
+
+    // 触发导出对话框显示事件
+    this.emit('export:dialog:show', {})
+  }
+
+  /**
+   * 复制选中的元素
+   */
+  copySelectedElements(): boolean {
+    const selected = this.lf.getSelectElements()
+
+    if (selected.nodes.length === 0 && selected.edges.length === 0) {
+      console.info('请先选中要复制的元素')
+      // 可以考虑显示用户友好的提示
+      this.emit('copy:warning', { message: '请先选中要复制的元素' })
+      return false
+    }
+
+    // 获取选中节点的完整数据
+    const nodes = selected.nodes.map(node => {
+      const nodeData = this.lf.getNodeModelById(node.id)
+      return {
+        id: node.id,
+        type: node.type as any,
+        x: node.x,
+        y: node.y,
+        text: node.text || '',
+        width: nodeData?.width,
+        height: nodeData?.height,
+        properties: nodeData?.properties || {}
+      }
+    })
+
+    // 获取选中边的完整数据
+    const edges = selected.edges.map(edge => {
+      const edgeData = this.lf.getEdgeModelById(edge.id)
+      return {
+        id: edge.id,
+        type: edge.type as any,
+        sourceNodeId: edge.sourceNodeId,
+        targetNodeId: edge.targetNodeId,
+        text: edge.text || '',
+        properties: edgeData?.properties || {}
+      }
+    })
+
+    const success = this.clipboardManager.copy(nodes, edges)
+
+    if (success) {
+      const info = this.clipboardManager.getDataInfo()
+      console.log(`已复制 ${info?.nodeCount || 0} 个节点和 ${info?.edgeCount || 0} 条边`)
+      this.emit('copy:success', { nodeCount: info?.nodeCount || 0, edgeCount: info?.edgeCount || 0 })
+    } else {
+      console.error('复制失败')
+      this.emit('copy:error', { message: '复制失败' })
+    }
+
+    return success
+  }
+
+  /**
+   * 粘贴元素
+   */
+  async pasteElements(options?: PasteOptions): Promise<boolean> {
+    try {
+      const result = await this.clipboardManager.paste(options)
+
+      if (!result) {
+        console.info('剪贴板中没有可粘贴的数据，请先复制一些元素')
+        this.emit('paste:warning', { message: '剪贴板中没有可粘贴的数据，请先复制一些元素' })
+        return false
+      }
+
+      const { nodes, edges } = result
+
+      // 添加节点
+      const addedNodes: string[] = []
+      for (const nodeData of nodes) {
+        try {
+          const nodeId = this.lf.addNode({
+            id: nodeData.id,
+            type: nodeData.type,
+            x: nodeData.x,
+            y: nodeData.y,
+            text: nodeData.text,
+            properties: nodeData.properties
+          })
+          if (nodeId) {
+            addedNodes.push(nodeId)
+          }
+        } catch (error) {
+          console.error('添加节点失败:', error)
+        }
+      }
+
+      // 添加边
+      const addedEdges: string[] = []
+      for (const edgeData of edges) {
+        try {
+          const edgeId = this.lf.addEdge({
+            id: edgeData.id,
+            type: edgeData.type,
+            sourceNodeId: edgeData.sourceNodeId,
+            targetNodeId: edgeData.targetNodeId,
+            text: edgeData.text,
+            properties: edgeData.properties
+          })
+          if (edgeId) {
+            addedEdges.push(edgeId)
+          }
+        } catch (error) {
+          console.error('添加边失败:', error)
+        }
+      }
+
+      // 选中粘贴的元素
+      if (addedNodes.length > 0 || addedEdges.length > 0) {
+        this.lf.clearSelectElements()
+        addedNodes.forEach(nodeId => this.lf.selectElementById(nodeId, true))
+        addedEdges.forEach(edgeId => this.lf.selectElementById(edgeId, true))
+      }
+
+      console.log(`已粘贴 ${addedNodes.length} 个节点和 ${addedEdges.length} 条边`)
+      this.emit('paste:success', {
+        nodeCount: addedNodes.length,
+        edgeCount: addedEdges.length,
+        nodeIds: addedNodes,
+        edgeIds: addedEdges
+      })
+
+      return true
+    } catch (error) {
+      console.error('粘贴失败:', error)
+      this.emit('paste:error', { message: error instanceof Error ? error.message : String(error) })
+      return false
+    }
+  }
+
+  /**
+   * 检查是否可以粘贴
+   */
+  canPaste(): boolean {
+    return this.clipboardManager.hasData()
+  }
+
+  /**
+   * 获取剪贴板信息
+   */
+  getClipboardInfo(): { nodeCount: number; edgeCount: number; timestamp: number } | null {
+    return this.clipboardManager.getDataInfo()
+  }
+
+  /**
+   * 清空剪贴板
+   */
+  clearClipboard(): void {
+    this.clipboardManager.clear()
+    this.emit('clipboard:clear', {})
   }
 }

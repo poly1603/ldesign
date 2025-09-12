@@ -34,7 +34,13 @@ export const defaultConfig: Partial<FlowchartEditorConfig> = {
       'zoom-fit',
       'undo',
       'redo',
-      'delete'
+      'delete',
+      'clear',
+      'copy',
+      'paste',
+      'validate',
+      'export',
+      'download'
     ]
   },
 

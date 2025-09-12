@@ -29,7 +29,11 @@ const TOOLS = {
   'redo': { label: '重做', icon: () => getToolbarIcon('redo'), title: '重做操作' },
   'delete': { label: '删除', icon: () => getToolbarIcon('delete'), title: '删除选中元素' },
   'clear': { label: '清空', icon: () => getToolbarIcon('clear'), title: '清空画布' },
-  'export': { label: '导出', icon: () => getToolbarIcon('export'), title: '导出数据' }
+  'copy': { label: '复制', icon: () => getToolbarIcon('copy'), title: '复制选中元素 (Ctrl+C)' },
+  'paste': { label: '粘贴', icon: () => getToolbarIcon('paste'), title: '粘贴元素 (Ctrl+V)' },
+  'validate': { label: '验证', icon: () => getToolbarIcon('validate'), title: '验证流程图' },
+  'export': { label: '导出', icon: () => getToolbarIcon('export'), title: '导出数据' },
+  'download': { label: '下载', icon: () => getToolbarIcon('download'), title: '下载文件' }
 }
 
 const THEMES = [
