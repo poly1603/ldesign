@@ -5,6 +5,8 @@
  */
 
 import type { LogicFlow } from '@logicflow/core'
+import type { UpdateScheduler } from '../core/UpdateScheduler'
+import type { ViewportServiceConfig } from '../core/ViewportService'
 
 // 基础几何类型
 export interface Point {
@@ -136,6 +138,10 @@ export interface FlowchartEditorConfig {
   logicflowConfig?: any
   // 性能监控配置
   performance?: PerformanceConfig
+  // 更新调度器
+  updateScheduler?: UpdateScheduler
+  // 视口服务配置
+  viewport?: ViewportServiceConfig
 }
 
 // 预览器配置
@@ -154,19 +160,22 @@ export interface FlowchartViewerConfig {
   }
 }
 
+// 节点样式配置
+export interface NodeStyleConfig {
+  fill?: string
+  stroke?: string
+  strokeWidth?: number
+  fontSize?: number
+  fontColor?: string
+  [key: string]: any
+}
+
 // 主题配置
 export interface ThemeConfig {
   name: string
   // 节点样式
   nodes: {
-    [key in ApprovalNodeType]: {
-      fill?: string
-      stroke?: string
-      strokeWidth?: number
-      fontSize?: number
-      fontColor?: string
-      [key: string]: any
-    }
+    [key in ApprovalNodeType]: NodeStyleConfig
   }
   // 边样式
   edges: {

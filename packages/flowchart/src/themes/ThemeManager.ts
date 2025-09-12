@@ -5,7 +5,7 @@
  */
 
 import type { LogicFlow } from '@logicflow/core'
-import type { ThemeConfig } from '../types'
+import type { ThemeConfig, NodeStyleConfig } from '../types'
 import { DefaultTheme } from './DefaultTheme'
 import { DarkTheme } from './DarkTheme'
 import { BlueTheme } from './BlueTheme'

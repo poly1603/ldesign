@@ -10,7 +10,7 @@ import type { FlowchartEditor } from '../core/FlowchartEditor'
 /**
  * 基础插件抽象类
  */
-export abstract class BasePlugin implements Plugin {
+export abstract class BasePlugin<TConfig = any> implements Plugin {
   /**
    * 插件名称
    */
@@ -113,9 +113,9 @@ export abstract class BasePlugin implements Plugin {
    * @param event 事件名称
    * @param listener 事件处理函数
    */
-  protected addEventListener(event: string, listener: Function): void {
+  protected addEventListener(event: string, listener: (...args: any[]) => void): void {
     const lf = this.getLogicFlow()
-    lf.on(event, listener)
+    lf.on(event, listener as any)
   }
 
   /**
@@ -123,9 +123,9 @@ export abstract class BasePlugin implements Plugin {
    * @param event 事件名称
    * @param listener 事件处理函数
    */
-  protected removeEventListener(event: string, listener: Function): void {
+  protected removeEventListener(event: string, listener: (...args: any[]) => void): void {
     const lf = this.getLogicFlow()
-    lf.off(event, listener)
+    lf.off(event, listener as any)
   }
 
   /**
@@ -184,22 +184,39 @@ export abstract class BasePlugin implements Plugin {
   }
 
   /**
-   * 获取插件配置
+   * 获取插件配置值
    * @param key 配置键
    * @param defaultValue 默认值
    */
-  protected getConfig<T>(key: string, defaultValue?: T): T {
+  protected getConfigValue<T>(key: string, defaultValue?: T): T {
     // 这里需要与配置系统集成
     return defaultValue as T
   }
 
   /**
-   * 设置插件配置
+   * 设置插件配置（单个键值对）
    * @param key 配置键
    * @param value 配置值
    */
-  protected setConfig(key: string, value: any): void {
+  protected setConfigValue(key: string, value: any): void {
     // 这里需要与配置系统集成
     console.log(`设置配置 ${key}:`, value)
+  }
+
+  /**
+   * 设置插件配置（批量设置）
+   * @param config 配置对象
+   */
+  public setConfig(config: Partial<TConfig>): void {
+    // 默认实现，子类可以重写
+    console.log(`设置配置:`, config)
+  }
+
+  /**
+   * 获取插件配置
+   */
+  public getConfig(): TConfig | undefined {
+    // 默认实现，子类可以重写
+    return undefined
   }
 }

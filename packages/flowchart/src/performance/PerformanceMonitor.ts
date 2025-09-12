@@ -3,6 +3,8 @@
  * 用于监控流程图编辑器的渲染性能、内存使用和DOM操作
  */
 
+export type PerformanceGrade = 'excellent' | 'good' | 'fair' | 'poor'
+
 export interface PerformanceMetrics {
   /** 渲染时间（毫秒） */
   renderTime: number
@@ -38,7 +40,7 @@ export interface PerformanceReport {
   /** 最低FPS */
   minFPS: number
   /** 性能等级 */
-  performanceGrade: 'excellent' | 'good' | 'fair' | 'poor'
+  performanceGrade: PerformanceGrade
   /** 建议 */
   recommendations: string[]
 }
@@ -98,7 +100,7 @@ export class PerformanceMonitor {
     this.isMonitoring = true
     this.startSampling()
     this.startDOMObserver()
-    
+
     if (this.config.monitorFPS) {
       this.fpsCounter.start()
     }
@@ -265,7 +267,7 @@ export class PerformanceMonitor {
 
   private addMetrics(metrics: PerformanceMetrics): void {
     this.metrics.push(metrics)
-    
+
     // 限制历史记录数量
     if (this.metrics.length > this.config.maxHistorySize) {
       this.metrics.shift()

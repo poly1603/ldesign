@@ -10,6 +10,14 @@ export default defineConfig({
   // 入口文件
   input: 'src/index.ts',
 
+  // 排除文件
+  exclude: [
+    'src/vue/**/*',
+    'src/**/*.test.ts',
+    'src/**/*.spec.ts',
+    'src/__tests__/**/*'
+  ],
+
   // 输出格式
   formats: ['esm', 'cjs', 'umd'],
 

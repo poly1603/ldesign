@@ -256,7 +256,7 @@ class CustomMaterialNodeView extends RectNode {
   /**
    * 获取图标元素
    */
-  getIcon() {
+  getIcon(): any {
     const { model } = this.props
     const material = model.properties?.material as CustomMaterial
 

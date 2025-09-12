@@ -379,8 +379,17 @@ export class FlowchartAPI {
       approval: 'userTask',
       condition: 'exclusiveGateway',
       process: 'serviceTask',
+      'user-task': 'userTask',
+      'service-task': 'serviceTask',
+      'script-task': 'scriptTask',
+      'manual-task': 'manualTask',
       'parallel-gateway': 'parallelGateway',
-      'exclusive-gateway': 'exclusiveGateway'
+      'exclusive-gateway': 'exclusiveGateway',
+      'inclusive-gateway': 'inclusiveGateway',
+      'event-gateway': 'eventGateway',
+      'timer-event': 'timerEvent',
+      'message-event': 'messageEvent',
+      'signal-event': 'signalEvent'
     }
     return typeMap[nodeType] || 'task'
   }

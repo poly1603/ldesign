@@ -5,7 +5,15 @@
  */
 
 import type { ApprovalNodeConfig, ApprovalEdgeConfig, FlowchartData } from '../types'
-import { generateId } from './index'
+
+/**
+ * 生成唯一ID
+ * @param prefix 前缀
+ * @returns 唯一ID
+ */
+function generateId(prefix: string = 'node'): string {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+}
 
 /**
  * 剪贴板数据类型

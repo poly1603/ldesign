@@ -36,7 +36,7 @@ export interface ExportConfig {
 /**
  * 导出插件类
  */
-export class ExportPlugin extends BasePlugin {
+export class ExportPlugin extends BasePlugin<ExportConfig> {
   readonly name = 'export'
   readonly version = '1.0.0'
   readonly description = '导出插件，支持多种格式导出'
@@ -79,14 +79,14 @@ export class ExportPlugin extends BasePlugin {
    */
   private addExportMethods(): void {
     const editor = this.getEditor()
-    
-    // 将导出方法添加到编辑器实例
-    ;(editor as any).exportAs = this.exportAs.bind(this)
-    ;(editor as any).exportToPNG = this.exportToPNG.bind(this)
-    ;(editor as any).exportToJPG = this.exportToJPG.bind(this)
-    ;(editor as any).exportToSVG = this.exportToSVG.bind(this)
-    ;(editor as any).exportToJSON = this.exportToJSON.bind(this)
-    ;(editor as any).exportToXML = this.exportToXML.bind(this)
+
+      // 将导出方法添加到编辑器实例
+      ; (editor as any).exportAs = this.exportAs.bind(this)
+      ; (editor as any).exportToPNG = this.exportToPNG.bind(this)
+      ; (editor as any).exportToJPG = this.exportToJPG.bind(this)
+      ; (editor as any).exportToSVG = this.exportToSVG.bind(this)
+      ; (editor as any).exportToJSON = this.exportToJSON.bind(this)
+      ; (editor as any).exportToXML = this.exportToXML.bind(this)
   }
 
   /**
@@ -119,7 +119,7 @@ export class ExportPlugin extends BasePlugin {
         default:
           throw new Error(`不支持的导出格式: ${format}`)
       }
-      
+
       this.showNotification(`导出成功: ${finalFileName}`, 'success')
     } catch (error) {
       console.error('导出失败:', error)
@@ -134,7 +134,7 @@ export class ExportPlugin extends BasePlugin {
   public async exportToPNG(fileName?: string, config?: Partial<ExportConfig>): Promise<void> {
     const exportConfig = { ...this.config, ...config }
     const canvas = await this.createCanvas(exportConfig)
-    
+
     canvas.toBlob((blob) => {
       if (blob) {
         this.downloadBlob(blob, fileName || `${exportConfig.defaultFileName}.png`)
@@ -148,7 +148,7 @@ export class ExportPlugin extends BasePlugin {
   public async exportToJPG(fileName?: string, config?: Partial<ExportConfig>): Promise<void> {
     const exportConfig = { ...this.config, ...config }
     const canvas = await this.createCanvas(exportConfig)
-    
+
     canvas.toBlob((blob) => {
       if (blob) {
         this.downloadBlob(blob, fileName || `${exportConfig.defaultFileName}.jpg`)
@@ -162,7 +162,7 @@ export class ExportPlugin extends BasePlugin {
   public async exportToSVG(fileName?: string, config?: Partial<ExportConfig>): Promise<void> {
     const exportConfig = { ...this.config, ...config }
     const lf = this.getLogicFlow()
-    
+
     // 获取 SVG 内容
     const svgElement = lf.container.querySelector('svg')
     if (!svgElement) {
@@ -172,7 +172,7 @@ export class ExportPlugin extends BasePlugin {
     // 克隆 SVG 并设置样式
     const clonedSvg = svgElement.cloneNode(true) as SVGElement
     clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-    
+
     if (exportConfig.includeBackground) {
       const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
       rect.setAttribute('width', '100%')
@@ -183,7 +183,7 @@ export class ExportPlugin extends BasePlugin {
 
     const svgString = new XMLSerializer().serializeToString(clonedSvg)
     const blob = new Blob([svgString], { type: 'image/svg+xml' })
-    
+
     this.downloadBlob(blob, fileName || `${exportConfig.defaultFileName}.svg`)
   }
 
@@ -193,10 +193,10 @@ export class ExportPlugin extends BasePlugin {
   public async exportToJSON(fileName?: string): Promise<void> {
     const lf = this.getLogicFlow()
     const data = lf.getGraphData()
-    
+
     const jsonString = JSON.stringify(data, null, 2)
     const blob = new Blob([jsonString], { type: 'application/json' })
-    
+
     this.downloadBlob(blob, fileName || `${this.config.defaultFileName}.json`)
   }
 
@@ -206,10 +206,10 @@ export class ExportPlugin extends BasePlugin {
   public async exportToXML(fileName?: string): Promise<void> {
     const lf = this.getLogicFlow()
     const data = lf.getGraphData()
-    
+
     const xml = this.convertToXML(data)
     const blob = new Blob([xml], { type: 'application/xml' })
-    
+
     this.downloadBlob(blob, fileName || `${this.config.defaultFileName}.xml`)
   }
 
@@ -220,7 +220,7 @@ export class ExportPlugin extends BasePlugin {
     // 这里需要集成 PDF 库，如 jsPDF
     // 简化实现：先导出为 PNG，然后提示用户
     this.showNotification('PDF 导出功能需要额外的库支持', 'warning')
-    
+
     // 作为替代，导出 PNG
     await this.exportToPNG(fileName?.replace('.pdf', '.png'), config)
   }
@@ -231,7 +231,7 @@ export class ExportPlugin extends BasePlugin {
   private async createCanvas(config: ExportConfig): Promise<HTMLCanvasElement> {
     const lf = this.getLogicFlow()
     const container = lf.container
-    
+
     // 获取容器尺寸
     const rect = container.getBoundingClientRect()
     const width = config.size?.width || rect.width
@@ -240,7 +240,7 @@ export class ExportPlugin extends BasePlugin {
     // 创建画布
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')!
-    
+
     canvas.width = width + (config.padding! * 2)
     canvas.height = height + (config.padding! * 2)
 
@@ -254,12 +254,12 @@ export class ExportPlugin extends BasePlugin {
     // 这里是简化实现
     ctx.save()
     ctx.translate(config.padding!, config.padding!)
-    
+
     // 绘制流程图内容
     await this.drawFlowchartToCanvas(ctx, width, height)
-    
+
     ctx.restore()
-    
+
     return canvas
   }
 
@@ -386,11 +386,11 @@ export class ExportPlugin extends BasePlugin {
     link.href = url
     link.download = fileName
     link.style.display = 'none'
-    
+
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    
+
     URL.revokeObjectURL(url)
   }
 
@@ -400,7 +400,7 @@ export class ExportPlugin extends BasePlugin {
   private convertToXML(data: any): string {
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<flowchart>\n'
-    
+
     // 节点
     xml += '  <nodes>\n'
     data.nodes.forEach((node: any) => {
@@ -409,7 +409,7 @@ export class ExportPlugin extends BasePlugin {
       xml += '    </node>\n'
     })
     xml += '  </nodes>\n'
-    
+
     // 边
     xml += '  <edges>\n'
     data.edges.forEach((edge: any) => {
@@ -418,9 +418,9 @@ export class ExportPlugin extends BasePlugin {
       xml += '    </edge>\n'
     })
     xml += '  </edges>\n'
-    
+
     xml += '</flowchart>'
-    
+
     return xml
   }
 
@@ -429,6 +429,13 @@ export class ExportPlugin extends BasePlugin {
    */
   public setConfig(config: Partial<ExportConfig>): void {
     this.config = { ...this.config, ...config }
+  }
+
+  /**
+   * 获取配置
+   */
+  public getConfig(): ExportConfig {
+    return this.config
   }
 
   /**

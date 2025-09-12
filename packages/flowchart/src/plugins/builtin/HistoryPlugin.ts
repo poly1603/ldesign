@@ -36,7 +36,7 @@ export interface HistoryConfig {
 /**
  * 历史记录插件类
  */
-export class HistoryPlugin extends BasePlugin {
+export class HistoryPlugin extends BasePlugin<HistoryConfig> {
   readonly name = 'history'
   readonly version = '1.0.0'
   readonly description = '历史记录插件，提供撤销/重做功能'
@@ -68,7 +68,7 @@ export class HistoryPlugin extends BasePlugin {
   protected onInstall(): void {
     this.bindEvents()
     this.saveInitialState()
-    
+
     if (this.config.enableKeyboard) {
       this.bindKeyboardEvents()
     }
@@ -146,7 +146,7 @@ export class HistoryPlugin extends BasePlugin {
     if (event.altKey) pressedKeys.push('alt')
     if (event.shiftKey) pressedKeys.push('shift')
     if (event.metaKey) pressedKeys.push('meta')
-    
+
     pressedKeys.push(event.key.toLowerCase())
 
     return keys.every(key => pressedKeys.includes(key)) && keys.length === pressedKeys.length
@@ -158,7 +158,7 @@ export class HistoryPlugin extends BasePlugin {
   private saveInitialState(): void {
     const lf = this.getLogicFlow()
     const data = lf.getGraphData()
-    
+
     this.addHistoryItem({
       timestamp: Date.now(),
       data: JSON.parse(JSON.stringify(data)),
@@ -183,7 +183,7 @@ export class HistoryPlugin extends BasePlugin {
    */
   private onHistoryRecord(data: { description?: string }): void {
     if (this.isUndoRedo) return
-    
+
     this.recordCurrentState(data.description || '用户操作')
   }
 
@@ -193,7 +193,7 @@ export class HistoryPlugin extends BasePlugin {
   private recordCurrentState(description: string): void {
     const lf = this.getLogicFlow()
     const data = lf.getGraphData()
-    
+
     // 检查是否与上一个状态相同
     if (this.currentIndex >= 0) {
       const lastItem = this.history[this.currentIndex]
@@ -215,7 +215,7 @@ export class HistoryPlugin extends BasePlugin {
   private addHistoryItem(item: HistoryItem): void {
     // 删除当前位置之后的所有记录
     this.history = this.history.slice(0, this.currentIndex + 1)
-    
+
     // 添加新记录
     this.history.push(item)
     this.currentIndex = this.history.length - 1
@@ -240,7 +240,7 @@ export class HistoryPlugin extends BasePlugin {
 
     this.currentIndex--
     const item = this.history[this.currentIndex]
-    
+
     this.isUndoRedo = true
     const lf = this.getLogicFlow()
     lf.render(item.data)
@@ -248,7 +248,7 @@ export class HistoryPlugin extends BasePlugin {
 
     this.showNotification(`撤销: ${item.description}`, 'success')
     console.log(`撤销到: ${item.description} (${this.currentIndex + 1}/${this.history.length})`)
-    
+
     return true
   }
 
@@ -263,7 +263,7 @@ export class HistoryPlugin extends BasePlugin {
 
     this.currentIndex++
     const item = this.history[this.currentIndex]
-    
+
     this.isUndoRedo = true
     const lf = this.getLogicFlow()
     lf.render(item.data)
@@ -271,7 +271,7 @@ export class HistoryPlugin extends BasePlugin {
 
     this.showNotification(`重做: ${item.description}`, 'success')
     console.log(`重做到: ${item.description} (${this.currentIndex + 1}/${this.history.length})`)
-    
+
     return true
   }
 
@@ -323,7 +323,7 @@ export class HistoryPlugin extends BasePlugin {
 
     this.currentIndex = index
     const item = this.history[this.currentIndex]
-    
+
     this.isUndoRedo = true
     const lf = this.getLogicFlow()
     lf.render(item.data)
@@ -331,7 +331,7 @@ export class HistoryPlugin extends BasePlugin {
 
     this.showNotification(`跳转到: ${item.description}`, 'success')
     console.log(`跳转到: ${item.description} (${this.currentIndex + 1}/${this.history.length})`)
-    
+
     return true
   }
 
@@ -356,5 +356,12 @@ export class HistoryPlugin extends BasePlugin {
         this.bindKeyboardEvents()
       }
     }
+  }
+
+  /**
+   * 获取配置
+   */
+  public getConfig(): HistoryConfig {
+    return this.config
   }
 }

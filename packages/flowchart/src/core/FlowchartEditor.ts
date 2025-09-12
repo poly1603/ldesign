@@ -7,7 +7,8 @@
 
 import LogicFlow from '@logicflow/core'
 import { SelectionSelect } from '@logicflow/extension'
-import '@logicflow/extension/lib/style/index.css'
+// CSS 导入在构建时会被处理，这里先注释掉
+// import '@logicflow/extension/lib/style/index.css'
 import type {
   FlowchartEditorConfig,
   FlowchartData,
@@ -15,7 +16,9 @@ import type {
   ApprovalEdgeConfig,
   FlowchartEvents,
   ThemeConfig,
-  ApprovalNodeType
+  ApprovalNodeType,
+  ApprovalEdgeType,
+  Point
 } from '../types'
 import { ThemeManager } from '../themes/ThemeManager'
 import { PluginManager } from '../plugins/PluginManager'
@@ -35,6 +38,8 @@ import { VirtualRenderer, BatchDOMUpdater } from '../performance/VirtualRenderer
 import { MemoryOptimizer, type MemoryUsageInfo, type MemoryOptimizationStats } from '../performance/MemoryOptimizer'
 import { InteractionOptimizer, type InteractionStats, type DragStats, type ZoomStats } from '../performance/InteractionOptimizer'
 import { ToastManager } from '../ui/native/Toast'
+import { UpdateScheduler, UpdatePriority, defaultUpdateScheduler } from './UpdateScheduler'
+import { ViewportService, type ViewportServiceConfig, type ViewportTransform, type ViewportBounds } from './ViewportService'
 
 /**
  * 审批流程图编辑器类
@@ -62,6 +67,8 @@ export class FlowchartEditor {
   private memoryOptimizer!: MemoryOptimizer
   private interactionOptimizer!: InteractionOptimizer
   private toastManager!: ToastManager
+  private updateScheduler: UpdateScheduler
+  private viewportService!: ViewportService
 
   /**
    * 构造函数
@@ -69,6 +76,9 @@ export class FlowchartEditor {
    */
   constructor(config: FlowchartEditorConfig) {
     this.config = { ...defaultConfig, ...config }
+
+    // 初始化更新调度器
+    this.updateScheduler = config.updateScheduler || defaultUpdateScheduler
 
     // 初始化UI管理器（如果需要UI）
     if (this.shouldInitUI()) {
@@ -144,7 +154,8 @@ export class FlowchartEditor {
       maxToasts: 5
     })
 
-    // 缩略图将在render()方法中初始化
+    // 初始化视口服务
+    this.viewportService = new ViewportService(this.lf, this.config.viewport)
 
     // 更新UI管理器的物料面板配置
     this.updateMaterialPanelConfig()
@@ -659,7 +670,14 @@ export class FlowchartEditor {
       }
 
       this.selectedNode = nodeConfig
-      this.uiManager?.setSelectedNode(nodeConfig)
+
+      // 使用调度器优化UI更新
+      this.updateScheduler.schedule(
+        `node-select-${nodeConfig.id}`,
+        () => this.uiManager?.setSelectedNode(nodeConfig),
+        UpdatePriority.HIGH
+      )
+
       this.emit('node:click', { node: nodeConfig, event: data.e })
     })
 
@@ -682,7 +700,13 @@ export class FlowchartEditor {
           y: data.data.y
         }
         this.selectedNode = updatedNode
-        this.uiManager?.setSelectedNode(updatedNode)
+
+        // 使用调度器更新UI，避免频繁重绘
+        this.updateScheduler.schedule(
+          `node-drag-${data.data.id}`,
+          () => this.uiManager?.setSelectedNode(updatedNode),
+          UpdatePriority.HIGH
+        )
       }
     })
 
@@ -695,8 +719,19 @@ export class FlowchartEditor {
           y: data.data.y
         }
         this.selectedNode = updatedNode
-        this.uiManager?.setSelectedNode(updatedNode)
-        this.emit('data:change', this.getData())
+
+        // 使用调度器批量更新UI和数据
+        this.updateScheduler.schedule(
+          `node-drop-ui-${data.data.id}`,
+          () => this.uiManager?.setSelectedNode(updatedNode),
+          UpdatePriority.NORMAL
+        )
+
+        this.updateScheduler.schedule(
+          `node-drop-data-${data.data.id}`,
+          () => this.emit('data:change', this.getData()),
+          UpdatePriority.NORMAL
+        )
       }
     })
 
@@ -720,9 +755,16 @@ export class FlowchartEditor {
         properties: data.data.properties || {}
       }
       this.selectedNode = null // 清除节点选中
-      this.uiManager?.setSelectedEdge(this.selectedEdge)
+
+      // 使用调度器优化边选择UI更新
+      this.updateScheduler.schedule(
+        `edge-select-${this.selectedEdge?.id}`,
+        () => this.uiManager?.setSelectedEdge(this.selectedEdge),
+        UpdatePriority.HIGH
+      )
+
       this.emit('edge:click', { edge: data.data, event: data.e })
-      this.emit('edge:select', this.selectedEdge)
+      this.emit('edge:select', { edge: data.data, event: data.e })
     })
 
     this.lf.on('edge:add', (data) => {
@@ -737,8 +779,17 @@ export class FlowchartEditor {
     this.lf.on('blank:click', (data) => {
       this.selectedNode = null
       this.selectedEdge = null
-      this.uiManager?.setSelectedNode(null)
-      this.uiManager?.setSelectedEdge(null)
+
+      // 使用调度器批量清除选择状态
+      this.updateScheduler.schedule(
+        'canvas-click-clear-selection',
+        () => {
+          this.uiManager?.setSelectedNode(null)
+          this.uiManager?.setSelectedEdge(null)
+        },
+        UpdatePriority.HIGH
+      )
+
       this.emit('canvas:click', { event: data.e, position: data.position })
     })
 
@@ -772,30 +823,55 @@ export class FlowchartEditor {
 
     this.lf.on('selection:drop', (data) => {
       console.log('选中元素拖拽结束')
-      this.emit('data:change', this.getData())
+
+      // 使用调度器延迟数据变化事件
+      this.updateScheduler.schedule(
+        'selection-drop-data-change',
+        () => this.emit('data:change', this.getData()),
+        UpdatePriority.NORMAL
+      )
     })
 
     // 数据变化事件
     this.lf.on('history:change', () => {
-      this.emit('data:change', { flowchartData: this.getData() })
+      this.emit('data:change', this.getData())
     })
 
     // 画布变换事件 - 在拖动时维护背景
     this.lf.on('graph:transform', () => {
-      // 立即应用背景
-      this.forceApplyBackground()
+      // 使用调度器优化背景更新
+      this.updateScheduler.schedule(
+        'graph-transform-background',
+        () => this.forceApplyBackground(),
+        UpdatePriority.LOW
+      )
+
       // 延迟再次确保
       setTimeout(() => {
-        this.forceApplyBackground()
+        this.updateScheduler.schedule(
+          'graph-transform-background-delayed',
+          () => this.forceApplyBackground(),
+          UpdatePriority.LOW
+        )
       }, 10)
     })
 
     // 画布渲染完成事件
     this.lf.on('graph:rendered', () => {
-      // 确保背景在渲染后保持
-      this.forceApplyBackground()
+      // 使用调度器确保背景在渲染后保持
+      this.updateScheduler.schedule(
+        'graph-rendered-background',
+        () => this.forceApplyBackground(),
+        UpdatePriority.LOW
+      )
+
+      // 延迟再次确保
       setTimeout(() => {
-        this.forceApplyBackground()
+        this.updateScheduler.schedule(
+          'graph-rendered-background-delayed',
+          () => this.forceApplyBackground(),
+          UpdatePriority.LOW
+        )
       }, 50)
     })
 
@@ -1045,6 +1121,91 @@ export class FlowchartEditor {
    * 缩放到适应内容
    */
   fitView(): void {
+    this.viewportService.fitView({ animated: true })
+  }
+
+  /**
+   * 适配到选中元素
+   */
+  fitToSelection(): void {
+    this.viewportService.fitToSelection({ animated: true })
+  }
+
+  /**
+   * 获取视口变换信息
+   */
+  getViewportTransform(): ViewportTransform {
+    return this.viewportService.getTransform()
+  }
+
+  /**
+   * 获取视口边界
+   */
+  getViewportBounds(): ViewportBounds {
+    return this.viewportService.getBounds()
+  }
+
+  /**
+   * 屏幕坐标转画布坐标
+   */
+  screenToCanvas(point: Point): Point {
+    return this.viewportService.screenToCanvas(point)
+  }
+
+  /**
+   * 画布坐标转屏幕坐标
+   */
+  canvasToScreen(point: Point): Point {
+    return this.viewportService.canvasToScreen(point)
+  }
+
+  /**
+   * 缩放到指定比例
+   */
+  zoomTo(scale: number, animated = true): void {
+    this.viewportService.zoomTo(scale, { animated })
+  }
+
+  /**
+   * 放大
+   */
+  zoomIn(animated = true): void {
+    this.viewportService.zoomIn({ animated })
+  }
+
+  /**
+   * 缩小
+   */
+  zoomOut(animated = true): void {
+    this.viewportService.zoomOut({ animated })
+  }
+
+  /**
+   * 重置缩放
+   */
+  zoomReset(animated = true): void {
+    this.viewportService.zoomReset({ animated })
+  }
+
+  /**
+   * 平移到指定位置
+   */
+  panTo(x: number, y: number, animated = true): void {
+    this.viewportService.panTo(x, y, { animated })
+  }
+
+  /**
+   * 居中到指定点
+   */
+  centerTo(point: Point, animated = true): void {
+    this.viewportService.centerTo(point, { animated })
+  }
+
+  /**
+   * 旧版本兼容方法 - 缩放到适应内容（已废弃，请使用 fitView）
+   * @deprecated 请使用 fitView() 方法
+   */
+  _legacyFitView(): void {
     try {
       // 获取所有节点的边界
       const graphData = this.lf.getGraphData()
@@ -1053,96 +1214,19 @@ export class FlowchartEditor {
         return
       }
 
-      // 计算所有节点的边界框
-      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
-
-      graphData.nodes.forEach(node => {
-        const x = node.x || 0
-        const y = node.y || 0
-
-        // 根据节点类型获取实际尺寸
-        let width = 120, height = 60
-
-        // 获取节点模型来获取实际尺寸
-        const nodeModel = this.lf.getNodeModelById(node.id)
-        if (nodeModel) {
-          width = nodeModel.width || 120
-          height = nodeModel.height || 60
-        }
-
-        minX = Math.min(minX, x - width / 2)
-        minY = Math.min(minY, y - height / 2)
-        maxX = Math.max(maxX, x + width / 2)
-        maxY = Math.max(maxY, y + height / 2)
-      })
-
-      // 如果只有一个节点，设置最小区域
-      if (graphData.nodes.length === 1) {
-        const centerX = (minX + maxX) / 2
-        const centerY = (minY + maxY) / 2
-        const minSize = 200
-        minX = centerX - minSize / 2
-        maxX = centerX + minSize / 2
-        minY = centerY - minSize / 2
-        maxY = centerY + minSize / 2
-      }
-
-      // 添加边距
-      const padding = 80
-      minX -= padding
-      minY -= padding
-      maxX += padding
-      maxY += padding
-
-      // 计算内容区域
-      const contentWidth = maxX - minX
-      const contentHeight = maxY - minY
-      const contentCenterX = (minX + maxX) / 2
-      const contentCenterY = (minY + maxY) / 2
-
-      // 获取画布实际尺寸
-      const container = this.lf.container
-      const canvasWidth = container ? container.clientWidth : (this.config.width || 800)
-      const canvasHeight = container ? container.clientHeight : (this.config.height || 600)
-
-      // 计算缩放比例，留出一些边距
-      const scaleX = (canvasWidth * 0.9) / contentWidth
-      const scaleY = (canvasHeight * 0.9) / contentHeight
-      const scale = Math.min(scaleX, scaleY, 1.5) // 最大放大到150%
-
-      // 重置变换
-      this.lf.resetZoom()
-      this.lf.resetTranslate()
-
-      // 应用缩放
-      if (scale !== 1) {
-        this.lf.zoom(scale)
-      }
-
-      // 计算居中偏移
-      const canvasCenterX = canvasWidth / 2
-      const canvasCenterY = canvasHeight / 2
-
-      // 应用居中变换
-      this.lf.translateCenter(contentCenterX, contentCenterY)
-
-      console.log(`适应视图: 缩放=${scale.toFixed(2)}, 内容中心=(${contentCenterX.toFixed(0)}, ${contentCenterY.toFixed(0)}), 画布尺寸=(${canvasWidth}, ${canvasHeight})`)
+      // 使用新的 ViewportService 实现
+      this.fitView()
     } catch (error) {
-      console.error('适应视图失败:', error)
-      // 降级到默认的fitView
-      try {
-        this.lf.fitView()
-      } catch (fallbackError) {
-        console.error('默认fitView也失败:', fallbackError)
-      }
+      console.error('旧版适应视图失败:', error)
     }
   }
 
   /**
-   * 设置缩放比例
+   * 设置缩放比例（兼容旧版本）
+   * @deprecated 请使用 zoomTo() 方法
    */
   zoom(scale: number): void {
-    this.lf.zoom(scale)
+    this.zoomTo(scale, false)
   }
 
   /**
@@ -1303,8 +1387,17 @@ export class FlowchartEditor {
       'condition': '条件判断',
       'process': '处理节点',
       'end': '结束',
+      'user-task': '用户任务',
+      'service-task': '服务任务',
+      'script-task': '脚本任务',
+      'manual-task': '手工任务',
       'parallel-gateway': '并行网关',
-      'exclusive-gateway': '排他网关'
+      'exclusive-gateway': '排他网关',
+      'inclusive-gateway': '包容网关',
+      'event-gateway': '事件网关',
+      'timer-event': '定时事件',
+      'message-event': '消息事件',
+      'signal-event': '信号事件'
     }
     return textMap[nodeType] || '节点'
   }
@@ -1513,9 +1606,9 @@ export class FlowchartEditor {
         const menuItem = document.createElement('div')
 
         // 添加选中标记
-        if (item.checked) {
+        if ('checked' in item && item.checked) {
           menuItem.innerHTML = `<span style="margin-right: 8px;">✓</span>${item.label}`
-        } else {
+        } else if ('label' in item) {
           menuItem.textContent = item.label
         }
 
@@ -1525,17 +1618,20 @@ export class FlowchartEditor {
         const disabledColor = isDark ? '#666666' : '#ccc'
         const normalColor = isDark ? '#ffffff' : '#333'
 
+        const isDisabled = 'disabled' in item && item.disabled
+        const isChecked = 'checked' in item && item.checked
+
         menuItem.style.cssText = `
           padding: 6px 12px;
-          cursor: ${item.disabled ? 'not-allowed' : 'pointer'};
-          color: ${item.disabled ? disabledColor : normalColor};
+          cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
+          color: ${isDisabled ? disabledColor : normalColor};
           font-size: 12px;
-          background-color: ${item.checked ? checkedBg : 'transparent'};
+          background-color: ${isChecked ? checkedBg : 'transparent'};
         `
 
-        if (!item.disabled) {
+        if (!isDisabled) {
           const hoverBg = isDark ? '#404040' : '#f0f0f0'
-          const originalBg = item.checked ? checkedBg : 'transparent'
+          const originalBg = isChecked ? checkedBg : 'transparent'
 
           menuItem.addEventListener('mouseenter', () => {
             menuItem.style.backgroundColor = hoverBg
@@ -1544,7 +1640,9 @@ export class FlowchartEditor {
             menuItem.style.backgroundColor = originalBg
           })
           menuItem.addEventListener('click', () => {
-            item.action()
+            if ('action' in item) {
+              item.action()
+            }
             this.hideContextMenu()
           })
         }
@@ -1613,7 +1711,7 @@ export class FlowchartEditor {
   /**
    * 在指定位置粘贴节点（右键菜单）
    */
-  private pasteNodeAtPosition(x: number, y: number): void {
+  private pasteNodeAtPosition(x: number, y: number): string | undefined {
     if (this.copiedNodeData) {
       const nodeId = this.addNode({
         type: this.copiedNodeData.type as ApprovalNodeType,
@@ -1630,7 +1728,7 @@ export class FlowchartEditor {
   /**
    * 粘贴节点（快捷键，在原位置右下方偏移）
    */
-  private pasteNodeWithOffset(): void {
+  private pasteNodeWithOffset(): string | undefined {
     if (this.copiedNodeData) {
       const offsetX = this.copiedNodeData.x + 50
       const offsetY = this.copiedNodeData.y + 50
@@ -1740,7 +1838,8 @@ export class FlowchartEditor {
    * 获取当前选中的所有元素
    */
   getSelectedElements(): any[] {
-    return this.lf.getSelectElements()
+    const selected = this.lf.getSelectElements()
+    return Array.isArray(selected) ? selected : []
   }
 
   /**
@@ -2127,6 +2226,16 @@ export class FlowchartEditor {
     // 销毁Toast管理器
     if (this.toastManager) {
       this.toastManager.destroy()
+    }
+
+    // 销毁视口服务
+    if (this.viewportService) {
+      this.viewportService.destroy()
+    }
+
+    // 销毁更新调度器
+    if (this.updateScheduler) {
+      this.updateScheduler.destroy()
     }
 
     // 销毁 LogicFlow 实例
@@ -2587,7 +2696,7 @@ export class FlowchartEditor {
         type: node.type as any,
         x: node.x,
         y: node.y,
-        text: node.text || '',
+        text: typeof node.text === 'string' ? node.text : (node.text?.value || ''),
         width: nodeData?.width,
         height: nodeData?.height,
         properties: nodeData?.properties || {}
@@ -2602,7 +2711,7 @@ export class FlowchartEditor {
         type: edge.type as any,
         sourceNodeId: edge.sourceNodeId,
         targetNodeId: edge.targetNodeId,
-        text: edge.text || '',
+        text: typeof edge.text === 'string' ? edge.text : (edge.text?.value || ''),
         properties: edgeData?.properties || {}
       }
     })
@@ -2640,7 +2749,7 @@ export class FlowchartEditor {
       const addedNodes: string[] = []
       for (const nodeData of nodes) {
         try {
-          const nodeId = this.lf.addNode({
+          const nodeModel = this.lf.addNode({
             id: nodeData.id,
             type: nodeData.type,
             x: nodeData.x,
@@ -2648,8 +2757,8 @@ export class FlowchartEditor {
             text: nodeData.text,
             properties: nodeData.properties
           })
-          if (nodeId) {
-            addedNodes.push(nodeId)
+          if (nodeModel) {
+            addedNodes.push(nodeModel.id)
           }
         } catch (error) {
           console.error('添加节点失败:', error)
@@ -2660,7 +2769,7 @@ export class FlowchartEditor {
       const addedEdges: string[] = []
       for (const edgeData of edges) {
         try {
-          const edgeId = this.lf.addEdge({
+          const edgeModel = this.lf.addEdge({
             id: edgeData.id,
             type: edgeData.type,
             sourceNodeId: edgeData.sourceNodeId,
@@ -2668,8 +2777,8 @@ export class FlowchartEditor {
             text: edgeData.text,
             properties: edgeData.properties
           })
-          if (edgeId) {
-            addedEdges.push(edgeId)
+          if (edgeModel) {
+            addedEdges.push(edgeModel.id)
           }
         } catch (error) {
           console.error('添加边失败:', error)
@@ -3678,6 +3787,38 @@ export class FlowchartEditor {
    */
   clearToasts(): void {
     this.toastManager.clear()
+  }
+
+  /**
+   * 获取更新调度器实例
+   */
+  getUpdateScheduler(): UpdateScheduler {
+    return this.updateScheduler
+  }
+
+  /**
+   * 调度更新任务
+   * @param id 任务ID
+   * @param task 更新任务
+   * @param priority 优先级
+   */
+  scheduleUpdate(id: string, task: () => void, priority: UpdatePriority = UpdatePriority.NORMAL): void {
+    this.updateScheduler.schedule(id, task, priority)
+  }
+
+  /**
+   * 立即执行更新任务
+   * @param task 更新任务
+   */
+  immediateUpdate(task: () => void): void {
+    this.updateScheduler.immediate(task)
+  }
+
+  /**
+   * 强制执行所有待处理的更新
+   */
+  flushUpdates(): void {
+    this.updateScheduler.flush()
   }
 
 

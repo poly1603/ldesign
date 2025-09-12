@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowchartEditor 核心功能测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background: #fafafa;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .test-result {
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+        
+        .test-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .test-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .test-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .editor-container {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        
+        .log-container {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FlowchartEditor 核心功能测试</h1>
+        
+        <div class="test-section">
+            <div class="test-title">测试控制</div>
+            <button id="runBasicTests" class="btn">运行基础功能测试</button>
+            <button id="runEditorTest" class="btn">运行编辑器测试</button>
+            <button id="runPerformanceTest" class="btn">运行性能测试</button>
+            <button id="clearLog" class="btn">清空日志</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">编辑器测试区域</div>
+            <div id="editorContainer" class="editor-container"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">测试日志</div>
+            <div id="logContainer" class="log-container">点击上方按钮开始测试...</div>
+        </div>
+    </div>
+
+    <!-- 加载构建后的库 -->
+    <script type="module">
+        // 日志功能
+        const logContainer = document.getElementById('logContainer');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            logContainer.textContent += logEntry;
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // 同时输出到控制台
+            console.log(message);
+        }
+        
+        function clearLog() {
+            logContainer.textContent = '';
+        }
+        
+        // 基础功能测试
+        async function runBasicTests() {
+            log('开始基础功能测试...', 'info');
+            
+            try {
+                // 测试模块导入
+                log('测试模块导入...');
+                const { FlowchartEditor, UpdateScheduler, ViewportService, PluginManager, ThemeManager } = await import('./es/index.js');
+                log('✓ 模块导入成功');
+                
+                // 测试 UpdateScheduler
+                log('测试 UpdateScheduler...');
+                const updateScheduler = new UpdateScheduler();
+                let updateCount = 0;
+                
+                updateScheduler.scheduleUpdate(() => {
+                    updateCount++;
+                });
+                
+                updateScheduler.scheduleUpdate(() => {
+                    updateCount++;
+                });
+                
+                // 等待批量更新
+                await new Promise(resolve => setTimeout(resolve, 20));
+                
+                if (updateCount === 2) {
+                    log('✓ UpdateScheduler 测试通过');
+                } else {
+                    log(`✗ UpdateScheduler 测试失败: 期望更新 2 次，实际更新 ${updateCount} 次`);
+                }
+                
+                // 测试 ViewportService
+                log('测试 ViewportService...');
+                const viewportService = new ViewportService();
+                viewportService.setViewport({ x: 100, y: 100, width: 800, height: 600 });
+                const viewport = viewportService.getViewport();
+                
+                if (viewport.x === 100 && viewport.y === 100 && viewport.width === 800 && viewport.height === 600) {
+                    log('✓ ViewportService 测试通过');
+                } else {
+                    log('✗ ViewportService 测试失败');
+                }
+                
+                // 测试 PluginManager
+                log('测试 PluginManager...');
+                const pluginManager = new PluginManager();
+                const testPlugin = {
+                    name: 'test-plugin',
+                    version: '1.0.0',
+                    install: () => {},
+                    uninstall: () => {}
+                };
+                
+                pluginManager.register(testPlugin);
+                const plugins = pluginManager.getRegisteredPlugins();
+                
+                if (plugins.find(p => p.name === 'test-plugin')) {
+                    log('✓ PluginManager 测试通过');
+                } else {
+                    log('✗ PluginManager 测试失败');
+                }
+                
+                // 测试 ThemeManager
+                log('测试 ThemeManager...');
+                const themeManager = new ThemeManager();
+                themeManager.setTheme('dark');
+                
+                if (themeManager.getCurrentTheme() === 'dark') {
+                    log('✓ ThemeManager 测试通过');
+                } else {
+                    log('✗ ThemeManager 测试失败');
+                }
+                
+                log('✅ 基础功能测试完成！');
+                
+            } catch (error) {
+                log(`❌ 基础功能测试失败: ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+        // 编辑器测试
+        async function runEditorTest() {
+            log('开始编辑器测试...', 'info');
+            
+            try {
+                const { FlowchartEditor, defaultConfig } = await import('./es/index.js');
+                
+                const container = document.getElementById('editorContainer');
+                container.innerHTML = ''; // 清空容器
+                
+                log('创建 FlowchartEditor 实例...');
+                const editor = new FlowchartEditor(container, defaultConfig);
+                
+                log('测试获取图数据...');
+                const data = editor.getGraphData();
+                if (data && typeof data === 'object') {
+                    log('✓ 获取图数据成功');
+                } else {
+                    log('✗ 获取图数据失败');
+                }
+                
+                log('测试添加节点...');
+                const nodeId = editor.addNode({
+                    type: 'start',
+                    x: 100,
+                    y: 100,
+                    text: '开始节点'
+                });
+                
+                if (nodeId) {
+                    log(`✓ 添加节点成功，节点ID: ${nodeId}`);
+                } else {
+                    log('✗ 添加节点失败');
+                }
+                
+                log('测试获取所有节点...');
+                const nodes = editor.getNodes();
+                if (Array.isArray(nodes) && nodes.length > 0) {
+                    log(`✓ 获取节点成功，共 ${nodes.length} 个节点`);
+                } else {
+                    log('✗ 获取节点失败');
+                }
+                
+                log('✅ 编辑器测试完成！');
+                
+            } catch (error) {
+                log(`❌ 编辑器测试失败: ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+        // 性能测试
+        async function runPerformanceTest() {
+            log('开始性能测试...', 'info');
+            
+            try {
+                const { PerformanceMonitor } = await import('./es/index.js');
+                
+                const monitor = new PerformanceMonitor();
+                
+                log('测试性能监控...');
+                monitor.startMeasure('test-operation');
+                
+                // 模拟一些操作
+                await new Promise(resolve => setTimeout(resolve, 50));
+                
+                monitor.endMeasure('test-operation');
+                
+                const report = monitor.getReport();
+                if (report.measurements && report.measurements['test-operation']) {
+                    const duration = report.measurements['test-operation'].duration;
+                    log(`✓ 性能监控测试通过，操作耗时: ${duration.toFixed(2)}ms`);
+                } else {
+                    log('✗ 性能监控测试失败');
+                }
+                
+                log('✅ 性能测试完成！');
+                
+            } catch (error) {
+                log(`❌ 性能测试失败: ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+        // 绑定事件
+        document.getElementById('runBasicTests').addEventListener('click', runBasicTests);
+        document.getElementById('runEditorTest').addEventListener('click', runEditorTest);
+        document.getElementById('runPerformanceTest').addEventListener('click', runPerformanceTest);
+        document.getElementById('clearLog').addEventListener('click', clearLog);
+        
+        // 页面加载完成后的初始化
+        log('测试页面已加载，点击按钮开始测试');
+    </script>
+</body>
+</html>

@@ -23,7 +23,9 @@ export class ParallelGatewayModel extends DiamondNodeModel {
       this.text = {
         value: '并行网关',
         x: this.x,
-        y: this.y + 12
+        y: this.y + 12,
+        draggable: false,
+        editable: true
       }
     }
   }
