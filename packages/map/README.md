@@ -4,23 +4,23 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
 
-功能全面的地图插件，支持多种地图类型和前端框架。基于 Mapbox GL JS 构建，提供统一的 API 接口和丰富的功能模块。
+基于 OpenLayers 的通用地图插件，支持多种地图类型、框架兼容性和丰富的地图功能。提供简洁易用的 API 接口，适用于各种 Web 应用场景。
 
 ## ✨ 特性
 
-- 🗺️ **多种地图类型** - 支持2D平面地图、3D立体地图、行政区划地图、自定义区块地图
-- 🎯 **框架兼容** - 支持 Vue 3、React、原生 JavaScript，提供统一的 API 接口
-- 🛣️ **路径规划** - 集成路径规划API，支持驾车、步行、骑行等多种出行方式
-- 🔍 **地址搜索** - 强大的地址搜索和地理编码功能，支持模糊搜索和建议
-- 📍 **地理围栏** - 支持地理围栏创建、编辑和进出检测，实时监控位置变化
-- 🔥 **热力图** - 数据可视化热力图显示，支持动画和自定义渐变
-- 📏 **测量工具** - 距离测量和面积计算，支持交互式测量
-- 🏢 **3D建筑** - 3D建筑物渲染和自定义建筑物添加
-- 🗾 **行政区划** - 省市区县边界显示和行政区域管理
-- 🎨 **样式定制** - 遵循 LDESIGN 设计系统，支持主题定制
+- 🗺️ **多种地图类型** - 支持 OSM、XYZ、WMS、WMTS、矢量地图、热力图等
+- 🌐 **丰富地图服务** - 内置 15+ 种地图服务，包括 OpenStreetMap、Google Maps、CartoDB、Stamen、天地图等
+- 🎯 **框架兼容** - 支持 Vue、React、Angular 等任意前端框架
+- 📍 **标记管理** - 支持标记点、弹窗、聚类等功能
+- 🎨 **图层管理** - 灵活的图层添加、删除、显示控制
+- 🎪 **事件系统** - 完善的事件监听和处理机制
+- 🎨 **绘制工具** - 支持点、线、面、圆等几何图形绘制
+- 🎭 **主题系统** - 内置多套主题，支持自定义样式
 - 📱 **响应式** - 完美适配移动端和桌面端
-- ⚡ **高性能** - 优化的渲染性能和内存管理
+- ⚡ **高性能** - 支持地图懒加载、瓦片缓存、视口优化
+- 🔧 **TypeScript** - 完整的类型定义支持
 - 🧪 **完整测试** - 单元测试和集成测试覆盖
+- 🎨 **样式定制** - 遵循 LDESIGN 设计系统，支持主题定制
 
 ## 📦 安装
 
@@ -40,24 +40,31 @@ pnpm add @ldesign/map
 ### 基础使用
 
 ```typescript
-import { LDesignMap } from '@ldesign/map'
+import { LDesignMap, LayerType } from '@ldesign/map'
 
 // 创建地图实例
 const map = new LDesignMap({
-  container: '#map',
-  center: [116.404, 39.915], // 北京
+  container: 'map', // 地图容器 ID 或 DOM 元素
+  center: [116.404, 39.915], // 北京 [经度, 纬度]
   zoom: 10,
-  accessToken: 'your-mapbox-token'
+  theme: 'default'
 })
 
-// 初始化地图
-await map.initialize()
+// 添加 OSM 图层
+await map.getLayerManager().addLayer({
+  id: 'osm',
+  name: 'OpenStreetMap',
+  type: LayerType.OSM,
+  visible: true
+})
 
 // 添加标记点
-map.addMarker({
-  lngLat: [116.404, 39.915],
+map.getMarkerManager().addMarker({
+  id: 'marker1',
+  coordinate: [116.404, 39.915],
+  title: '北京',
   popup: {
-    content: '这里是北京'
+    content: '<h3>北京</h3><p>中华人民共和国首都</p>'
   }
 })
 ```
@@ -111,6 +118,76 @@ function App() {
     />
   )
 }
+```
+
+## 🌐 地图服务
+
+### 使用预定义地图服务
+
+```typescript
+import {
+  LDesignMap,
+  MAP_SERVICES,
+  getServiceById,
+  createLayerConfigWithApiKey
+} from '@ldesign/map'
+
+// 创建地图实例
+const map = new LDesignMap({
+  container: 'map-container',
+  center: [116.404, 39.915],
+  zoom: 10
+})
+
+// 使用 OpenStreetMap 标准地图
+const osmService = getServiceById('osm-standard')
+await map.getLayerManager().addLayer(osmService.layerConfig)
+
+// 使用 CartoDB 深色地图
+const cartoDarkService = getServiceById('cartodb-dark')
+await map.getLayerManager().addLayer(cartoDarkService.layerConfig)
+
+// 使用需要 API Key 的服务（如天地图）
+const tiandituService = getServiceById('tianditu-vec')
+const layerConfig = createLayerConfigWithApiKey('tianditu-vec', 'your-api-key')
+await map.getLayerManager().addLayer(layerConfig)
+```
+
+### 可用地图服务
+
+#### 街道地图
+- **OpenStreetMap 标准** - 开源的世界地图，详细的街道信息
+- **OpenStreetMap 人道主义** - 适合人道主义用途的地图样式
+- **CartoDB Positron** - 简洁的浅色地图样式
+- **CartoDB Dark Matter** - 简洁的深色地图样式
+- **Stamen Watercolor** - 水彩风格的艺术地图
+- **Google 街道地图** - Google Maps 街道地图
+
+#### 卫星地图
+- **天地图影像** - 国家地理信息公共服务平台卫星影像 🔑
+- **Google 卫星地图** - Google Maps 卫星影像
+
+#### 地形地图
+- **Stamen Terrain** - 地形地图，显示山脉和地形特征
+- **Google 地形地图** - Google Maps 地形地图
+
+#### 混合地图
+- **Google 混合地图** - Google Maps 卫星影像 + 标注
+
+#### 中国地图
+- **天地图矢量** - 国家地理信息公共服务平台矢量地图 🔑
+
+> 🔑 表示需要 API Key
+
+### 切换地图服务
+
+```typescript
+// 清除现有图层
+map.getLayerManager().clearLayers()
+
+// 添加新的地图服务
+const newService = getServiceById('stamen-terrain')
+await map.getLayerManager().addLayer(newService.layerConfig)
 ```
 
 ## 🔧 核心功能
