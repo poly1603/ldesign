@@ -63,19 +63,19 @@ export interface OutputConfig {
   /** 输出格式 */
   format?: OutputFormat | OutputFormat[]
 
-  /** ESM 格式特定配置 */
-  esm?: FormatOutputConfig
+  /** ESM 格式特定配置（true 使用默认配置，false 禁用） */
+  esm?: boolean | FormatOutputConfig
 
-  /** CommonJS 格式特定配置 */
-  cjs?: FormatOutputConfig
+  /** CommonJS 格式特定配置（true 使用默认配置，false 禁用） */
+  cjs?: boolean | FormatOutputConfig
 
-  /** UMD 格式特定配置 */
-  umd?: FormatOutputConfig & {
+  /** UMD 格式特定配置（true 使用默认配置，false 禁用） */
+  umd?: boolean | (FormatOutputConfig & {
     /** 全局变量名 */
     name?: string
     /** 全局变量映射 */
     globals?: Record<string, string>
-  }
+  })
 
   /** 库名称（UMD/IIFE 格式需要） */
   name?: string

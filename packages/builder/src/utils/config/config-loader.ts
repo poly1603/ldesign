@@ -308,8 +308,40 @@ export function loadConfigFile(configPath: string): Promise<BuilderConfig> {
 }
 
 /**
- * 便捷函数：定义配置
+ * 定义配置的上下文参数
  */
-export function defineConfig(config: BuilderConfig | ((context: any) => BuilderConfig)): BuilderConfig | ((context: any) => BuilderConfig) {
+export interface DefineConfigContext {
+  mode: 'development' | 'production' | string
+  bundler: 'rollup' | 'rolldown'
+  env: Record<string, string>
+}
+
+/**
+ * 便捷函数：定义配置
+ * 
+ * @param config - 构建配置对象或返回配置的函数
+ * @returns 配置对象或函数
+ * 
+ * @example
+ * // 对象配置
+ * export default defineConfig({
+ *   input: 'src/index.ts',
+ *   output: {
+ *     esm: true,
+ *     cjs: true,
+ *     umd: { name: 'MyLib' }
+ *   }
+ * })
+ * 
+ * @example
+ * // 函数配置
+ * export default defineConfig((context) => ({
+ *   input: 'src/index.ts',
+ *   minify: context.mode === 'production'
+ * }))
+ */
+export function defineConfig(
+  config: BuilderConfig | ((context: DefineConfigContext) => BuilderConfig | Promise<BuilderConfig>)
+): BuilderConfig | ((context: DefineConfigContext) => BuilderConfig | Promise<BuilderConfig>) {
   return config
 }

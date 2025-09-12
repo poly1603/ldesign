@@ -281,12 +281,15 @@ export class RollupAdapter implements IBundlerAdapter {
       if (outputConfig.esm || outputConfig.cjs || outputConfig.umd) {
         const configs: any[] = []
 
-        if (outputConfig.esm) {
-          const esmDir = outputConfig.esm.dir || 'es'
+        // 处理 ESM 配置
+        if (outputConfig.esm && outputConfig.esm !== false) {
+          const isSimpleConfig = outputConfig.esm === true
+          const esmConfig = isSimpleConfig ? {} : outputConfig.esm
+          const esmDir = esmConfig.dir || 'es'
           const esmPlugins = await this.transformPluginsForFormat(config.plugins || [], esmDir, { emitDts: true })
-          // 使用 output 中的 input 配置，如果没有则使用顶层 input
-          const esmInput = outputConfig.esm.input 
-            ? await normalizeInput(outputConfig.esm.input, (config as any).root || process.cwd())
+          // 使用 output 中的 input 配置，如果没有则使用默认或顶层 input
+          const esmInput = esmConfig.input 
+            ? await normalizeInput(esmConfig.input, process.cwd())
             : config.input
           configs.push({
             input: esmInput,
@@ -295,11 +298,11 @@ export class RollupAdapter implements IBundlerAdapter {
             output: {
               dir: esmDir,
               format: 'es',
-              sourcemap: outputConfig.esm.sourcemap ?? outputConfig.sourcemap,
+              sourcemap: esmConfig.sourcemap ?? outputConfig.sourcemap,
               entryFileNames: '[name].js',
               chunkFileNames: '[name].js',
-              exports: outputConfig.esm.exports ?? 'auto',
-              preserveModules: outputConfig.esm.preserveStructure ?? true,
+              exports: esmConfig.exports ?? 'auto',
+              preserveModules: esmConfig.preserveStructure ?? true,
               preserveModulesRoot: 'src',
               globals: outputConfig.globals,
               name: outputConfig.name,
@@ -308,12 +311,15 @@ export class RollupAdapter implements IBundlerAdapter {
           })
         }
 
-        if (outputConfig.cjs) {
-          const cjsDir = outputConfig.cjs.dir || 'lib'
+        // 处理 CJS 配置
+        if (outputConfig.cjs && outputConfig.cjs !== false) {
+          const isSimpleConfig = outputConfig.cjs === true
+          const cjsConfig = isSimpleConfig ? {} : outputConfig.cjs
+          const cjsDir = cjsConfig.dir || 'lib'
           const cjsPlugins = await this.transformPluginsForFormat(config.plugins || [], cjsDir, { emitDts: true })
-          // 使用 output 中的 input 配置，如果没有则使用顶层 input
-          const cjsInput = outputConfig.cjs.input 
-            ? await normalizeInput(outputConfig.cjs.input, (config as any).root || process.cwd())
+          // 使用 output 中的 input 配置，如果没有则使用默认或顶层 input
+          const cjsInput = cjsConfig.input 
+            ? await normalizeInput(cjsConfig.input, process.cwd())
             : config.input
           configs.push({
             input: cjsInput,
@@ -322,11 +328,11 @@ export class RollupAdapter implements IBundlerAdapter {
             output: {
               dir: cjsDir,
               format: 'cjs',
-              sourcemap: outputConfig.cjs.sourcemap ?? outputConfig.sourcemap,
+              sourcemap: cjsConfig.sourcemap ?? outputConfig.sourcemap,
               entryFileNames: '[name].cjs',
               chunkFileNames: '[name].cjs',
-              exports: outputConfig.cjs.exports ?? 'auto',
-              preserveModules: outputConfig.cjs.preserveStructure ?? true,
+              exports: cjsConfig.exports ?? 'auto',
+              preserveModules: cjsConfig.preserveStructure ?? true,
               preserveModulesRoot: 'src',
               globals: outputConfig.globals,
               name: outputConfig.name,
@@ -447,7 +453,9 @@ export class RollupAdapter implements IBundlerAdapter {
         const mapped = this.mapFormat(format)
         const isESM = format === 'esm'
         const isCJS = format === 'cjs'
-        const dir = isESM ? 'es' : isCJS ? 'cjs' : 'dist'
+        // 使用配置中的输出目录，如果没有则使用默认值
+        const defaultDir = isESM ? 'es' : isCJS ? 'lib' : 'dist'
+        const dir = outputConfig.dir || defaultDir
         const entryFileNames = isESM ? '[name].js' : isCJS ? '[name].cjs' : '[name].umd.js'
         const chunkFileNames = entryFileNames
         const userPlugins = await this.transformPluginsForFormat(config.plugins || [], dir, { emitDts: true })
@@ -877,7 +885,13 @@ export class RollupAdapter implements IBundlerAdapter {
    * 创建 UMD 配置
    */
   private async createUMDConfig(config: UnifiedConfig): Promise<any> {
-    const umdSection = (config as any).umd || (config as any).output?.umd || {}
+    // 处理 boolean 配置
+    let umdSection = (config as any).umd || (config as any).output?.umd || {}
+    if (umdSection === true) {
+      umdSection = {} // 使用默认配置
+    } else if (umdSection === false) {
+      return null // 禁用 UMD
+    }
     const outputConfig = config.output || {}
 
     // 确定 UMD 入口文件

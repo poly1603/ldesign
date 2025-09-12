@@ -171,15 +171,43 @@ export function getOutputDirs(config: any): string[] {
     dirs.push(config.output.dir)
   }
 
-  // 各格式的输出目录
-  if (config.output?.esm?.dir) {
-    dirs.push(config.output.esm.dir)
+  // 各格式的输出目录，支持 boolean 简化配置
+  if (config.output?.esm) {
+    const esmDir = typeof config.output.esm === 'object' && config.output.esm.dir 
+      ? config.output.esm.dir 
+      : 'es'
+    if (config.output.esm !== false) {
+      dirs.push(esmDir)
+    }
   }
-  if (config.output?.cjs?.dir) {
-    dirs.push(config.output.cjs.dir)
+  
+  if (config.output?.cjs) {
+    const cjsDir = typeof config.output.cjs === 'object' && config.output.cjs.dir 
+      ? config.output.cjs.dir 
+      : 'lib'
+    if (config.output.cjs !== false) {
+      dirs.push(cjsDir)
+    }
   }
-  if (config.output?.umd?.dir) {
-    dirs.push(config.output.umd.dir)
+  
+  if (config.output?.umd) {
+    const umdDir = typeof config.output.umd === 'object' && config.output.umd.dir 
+      ? config.output.umd.dir 
+      : 'dist'
+    if (config.output.umd !== false) {
+      dirs.push(umdDir)
+    }
+  }
+
+  // 添加常见的输出目录（兼容旧配置和遗留目录）
+  // 注意：由于这是同步函数，我们不能使用动态 import
+  // 在这里我们只返回配置的目录，不做文件系统检查
+  // 清理时会自动检查目录是否存在
+  const commonDirs = ['lib', 'cjs', 'dist', 'es', 'esm', 'umd']
+  for (const dir of commonDirs) {
+    if (!dirs.includes(dir)) {
+      dirs.push(dir)
+    }
   }
 
   // 去重
