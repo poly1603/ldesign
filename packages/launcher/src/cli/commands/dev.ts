@@ -265,19 +265,40 @@ export class DevCommand implements CliCommandDefinition {
         const qrTarget = (networkUrl || localUrl)
         try {
           if (!qrTarget) throw new Error('empty-url')
-          const mod: any = await import('qrcode-terminal')
-          const qrt = mod?.default || mod
-          let qrOutput = ''
-          qrt.generate(qrTarget, { small: true }, (q: string) => {
-            qrOutput = q
-          })
 
-          if (qrOutput) {
-            logger.info(pc.dim('二维码（扫码在手机上打开）：'))
-            console.log('\n' + qrOutput + '\n')
+          // 优先尝试使用 'qrcode' 的 UTF-8 终端输出，避免额外依赖
+          let printed = false
+          try {
+            const qrlib: any = await import('qrcode')
+            const utf8 = await (qrlib?.default || qrlib).toString(qrTarget, { type: 'utf8' })
+            if (utf8 && typeof utf8 === 'string') {
+              logger.info(pc.dim('二维码（扫码在手机上打开）：'))
+              console.log('\n' + utf8 + '\n')
+              printed = true
+            }
+          } catch (e1) {
+            logger.debug('尝试使用 qrcode 生成终端二维码失败', { error: (e1 as Error).message })
+          }
+
+          // 回退到 qrcode-terminal（如已安装）
+          if (!printed) {
+            try {
+              const mod: any = await import('qrcode-terminal')
+              const qrt = mod?.default || mod
+              let qrOutput = ''
+              qrt.generate(qrTarget, { small: true }, (q: string) => {
+                qrOutput = q
+              })
+              if (qrOutput) {
+                logger.info(pc.dim('二维码（扫码在手机上打开）：'))
+                console.log('\n' + qrOutput + '\n')
+                printed = true
+              }
+            } catch (e2) {
+              logger.debug('尝试使用 qrcode-terminal 生成终端二维码失败', { error: (e2 as Error).message })
+            }
           }
         } catch (e) {
-          // 二维码生成失败时静默降级（调试模式输出错误信息）
           logger.debug('二维码生成失败', { error: (e as Error).message })
         }
       }
