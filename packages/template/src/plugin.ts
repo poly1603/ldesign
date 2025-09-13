@@ -412,9 +412,9 @@ export function getScanner(): TemplateScanner | null {
 }
 
 /**
- * 获取配置管理器
+ * 获取插件的配置管理器
  */
-export function getConfigManager(): TemplateConfigManager | null {
+export function getPluginConfigManager(): TemplateConfigManager | null {
   return pluginState.configManager
 }
 

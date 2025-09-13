@@ -18,7 +18,7 @@ export * from './composables'
 export * from './config'
 
 // 导出Vue3插件
-export { createTemplateEnginePlugin, getConfigManager, getPluginOptions, getPluginState, getScanner, default as TemplatePlugin } from './plugin'
+export { createTemplateEnginePlugin, getPluginOptions, getPluginState, getScanner, default as TemplatePlugin } from './plugin'
 
 // 默认导出插件
 export { default } from './plugin'
