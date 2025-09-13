@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>插件系统演示 - LDesign Video Player</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #722ED1, #9254DE);
+      color: white;
+      padding: 1.5rem 0;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .nav {
+      background: white;
+      padding: 1rem 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .nav a {
+      color: #666;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .nav a:hover,
+    .nav a.active {
+      background: #722ED1;
+      color: white;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .demo-section {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .demo-section h2 {
+      color: #722ED1;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+
+    .demo-section p {
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+
+    .player-container {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto 2rem;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .plugin-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .plugin-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1.5rem;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .plugin-card.active {
+      border-color: #722ED1;
+      background: #f6f0ff;
+    }
+
+    .plugin-card h3 {
+      color: #333;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .plugin-card .status {
+      font-size: 0.8rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 12px;
+      background: #28a745;
+      color: white;
+    }
+
+    .plugin-card .status.disabled {
+      background: #6c757d;
+    }
+
+    .plugin-controls-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .control-row label {
+      font-weight: 500;
+      color: #555;
+      min-width: 60px;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      background: #722ED1;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .btn:hover {
+      background: #5e2aa7;
+    }
+
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .btn-sm {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.8rem;
+    }
+
+    .btn-toggle {
+      background: #28a745;
+    }
+
+    .btn-toggle:hover {
+      background: #218838;
+    }
+
+    .btn-toggle.disabled {
+      background: #dc3545;
+    }
+
+    .btn-toggle.disabled:hover {
+      background: #c82333;
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+    .input-group input,
+    .input-group select {
+      padding: 0.4rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    .input-group input[type="range"] {
+      flex: 1;
+    }
+
+    .danmaku-demo {
+      background: #e3f2fd;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .danmaku-demo h4 {
+      color: #1976d2;
+      margin-bottom: 0.5rem;
+    }
+
+    .danmaku-input {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .danmaku-input input {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .subtitle-demo {
+      background: #fff3e0;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .subtitle-demo h4 {
+      color: #f57c00;
+      margin-bottom: 0.5rem;
+    }
+
+    .code-block {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+      padding: 1rem;
+      margin: 1rem 0;
+      overflow-x: auto;
+    }
+
+    .code-block pre {
+      margin: 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+      
+      .plugin-controls {
+        grid-template-columns: 1fr;
+      }
+      
+      .control-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .control-row label {
+        min-width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>插件系统演示</h1>
+    <p>展示 LDesign Video Player 强大的插件系统</p>
+  </div>
+
+  <div class="nav">
+    <div class="nav-container">
+      <a href="index.html">← 返回首页</a>
+      <a href="basic.html">基础功能</a>
+      <a href="plugins.html" class="active">插件系统</a>
+      <a href="themes.html">主题系统</a>
+      <a href="advanced.html">高级功能</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="demo-section">
+      <h2>🔌 插件系统演示</h2>
+      <p>这个播放器实例加载了多个插件，展示了插件系统的强大功能。</p>
+      
+      <div id="player-plugins" class="player-container"></div>
+
+      <div class="plugin-controls">
+        <!-- 弹幕插件 -->
+        <div class="plugin-card" id="danmaku-card">
+          <h3>
+            💬 弹幕插件
+            <span class="status" id="danmaku-status">已启用</span>
+          </h3>
+          <div class="plugin-controls-group">
+            <div class="control-row">
+              <button id="danmaku-toggle" class="btn btn-toggle">禁用</button>
+              <button id="danmaku-clear" class="btn btn-sm">清空弹幕</button>
+            </div>
+            <div class="danmaku-demo">
+              <h4>发送弹幕</h4>
+              <div class="danmaku-input">
+                <input type="text" id="danmaku-text" placeholder="输入弹幕内容..." maxlength="50">
+                <select id="danmaku-type">
+                  <option value="scroll">滚动</option>
+                  <option value="top">顶部</option>
+                  <option value="bottom">底部</option>
+                </select>
+                <button id="danmaku-send" class="btn btn-sm">发送</button>
+              </div>
+              <div class="control-row">
+                <label>透明度:</label>
+                <div class="input-group">
+                  <input type="range" id="danmaku-opacity" min="0.1" max="1" step="0.1" value="0.8">
+                  <span id="danmaku-opacity-value">80%</span>
+                </div>
+              </div>
+              <div class="control-row">
+                <label>字体大小:</label>
+                <div class="input-group">
+                  <input type="range" id="danmaku-fontsize" min="12" max="24" step="2" value="16">
+                  <span id="danmaku-fontsize-value">16px</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 字幕插件 -->
+        <div class="plugin-card" id="subtitle-card">
+          <h3>
+            📝 字幕插件
+            <span class="status" id="subtitle-status">已启用</span>
+          </h3>
+          <div class="plugin-controls-group">
+            <div class="control-row">
+              <button id="subtitle-toggle" class="btn btn-toggle">禁用</button>
+              <button id="subtitle-load" class="btn btn-sm">加载字幕</button>
+            </div>
+            <div class="subtitle-demo">
+              <h4>字幕控制</h4>
+              <div class="control-row">
+                <label>字幕轨道:</label>
+                <div class="input-group">
+                  <select id="subtitle-track">
+                    <option value="">无字幕</option>
+                    <option value="zh">中文字幕</option>
+                    <option value="en">英文字幕</option>
+                  </select>
+                </div>
+              </div>
+              <div class="control-row">
+                <label>字体大小:</label>
+                <div class="input-group">
+                  <input type="range" id="subtitle-fontsize" min="14" max="28" step="2" value="18">
+                  <span id="subtitle-fontsize-value">18px</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 截图插件 -->
+        <div class="plugin-card" id="screenshot-card">
+          <h3>
+            📷 截图插件
+            <span class="status" id="screenshot-status">已启用</span>
+          </h3>
+          <div class="plugin-controls-group">
+            <div class="control-row">
+              <button id="screenshot-toggle" class="btn btn-toggle">禁用</button>
+              <button id="screenshot-capture" class="btn btn-sm">截图</button>
+            </div>
+            <div class="control-row">
+              <label>格式:</label>
+              <div class="input-group">
+                <select id="screenshot-format">
+                  <option value="png">PNG</option>
+                  <option value="jpeg">JPEG</option>
+                  <option value="webp">WebP</option>
+                </select>
+              </div>
+            </div>
+            <div class="control-row">
+              <label>质量:</label>
+              <div class="input-group">
+                <input type="range" id="screenshot-quality" min="0.1" max="1" step="0.1" value="0.9">
+                <span id="screenshot-quality-value">90%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 画中画插件 -->
+        <div class="plugin-card" id="pip-card">
+          <h3>
+            🖼️ 画中画插件
+            <span class="status" id="pip-status">已启用</span>
+          </h3>
+          <div class="plugin-controls-group">
+            <div class="control-row">
+              <button id="pip-toggle" class="btn btn-toggle">禁用</button>
+              <button id="pip-enter" class="btn btn-sm">进入画中画</button>
+              <button id="pip-exit" class="btn btn-sm">退出画中画</button>
+            </div>
+            <div class="control-row">
+              <label>自动进入:</label>
+              <div class="input-group">
+                <input type="checkbox" id="pip-auto">
+                <select id="pip-trigger">
+                  <option value="scroll">滚动触发</option>
+                  <option value="visibility">可见性触发</option>
+                  <option value="focus">焦点触发</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>📝 代码示例</h2>
+      <p>以下是加载和使用插件的代码示例：</p>
+      
+      <div class="code-block">
+        <pre><code>import { VideoPlayer } from '@ldesign/video'
+import { DanmakuPlugin, SubtitlePlugin, ScreenshotPlugin, PipPlugin } from '@ldesign/video/plugins'
+
+// 创建播放器实例并加载插件
+const player = new VideoPlayer({
+  container: document.getElementById('player'),
+  src: 'video.mp4',
+  plugins: [
+    new DanmakuPlugin({
+      enabled: true,
+      opacity: 0.8,
+      fontSize: 16
+    }),
+    new SubtitlePlugin({
+      enabled: true,
+      fontSize: 18
+    }),
+    new ScreenshotPlugin({
+      enabled: true,
+      format: 'png',
+      quality: 0.9
+    }),
+    new PipPlugin({
+      enabled: true,
+      autoEnter: false
+    })
+  ]
+})
+
+await player.initialize()
+
+// 插件控制
+const danmakuPlugin = player.getPlugin('danmaku')
+danmakuPlugin.send('这是一条弹幕', 'scroll')
+
+const screenshotPlugin = player.getPlugin('screenshot')
+const dataUrl = await screenshotPlugin.capture()</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { VideoPlayer } from '../../src/index.ts'
+    import { DanmakuPlugin, SubtitlePlugin, ScreenshotPlugin, PipPlugin } from '../../plugins/index.ts'
+
+    let player = null
+    let plugins = {}
+
+    // 初始化播放器
+    async function initPlayer() {
+      try {
+        // 创建插件实例
+        plugins.danmaku = new DanmakuPlugin({
+          enabled: true,
+          opacity: 0.8,
+          fontSize: 16
+        })
+
+        plugins.subtitle = new SubtitlePlugin({
+          enabled: true,
+          fontSize: 18
+        })
+
+        plugins.screenshot = new ScreenshotPlugin({
+          enabled: true,
+          format: 'png',
+          quality: 0.9
+        })
+
+        plugins.pip = new PipPlugin({
+          enabled: true,
+          autoEnter: false
+        })
+
+        player = new VideoPlayer({
+          container: document.getElementById('player-plugins'),
+          src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+          autoplay: false,
+          controls: true,
+          volume: 1,
+          theme: 'default',
+          plugins: Object.values(plugins)
+        })
+
+        await player.initialize()
+        
+        // 绑定插件控制
+        bindPluginControls()
+        
+        console.log('播放器和插件初始化成功')
+      } catch (error) {
+        console.error('播放器初始化失败:', error)
+      }
+    }
+
+    // 绑定插件控制
+    function bindPluginControls() {
+      // 弹幕插件控制
+      bindDanmakuControls()
+      
+      // 字幕插件控制
+      bindSubtitleControls()
+      
+      // 截图插件控制
+      bindScreenshotControls()
+      
+      // 画中画插件控制
+      bindPipControls()
+    }
+
+    // 弹幕插件控制
+    function bindDanmakuControls() {
+      const danmakuPlugin = plugins.danmaku
+
+      document.getElementById('danmaku-toggle').onclick = () => {
+        const enabled = danmakuPlugin.enabled
+        if (enabled) {
+          danmakuPlugin.disable()
+          updatePluginStatus('danmaku', false)
+        } else {
+          danmakuPlugin.enable()
+          updatePluginStatus('danmaku', true)
+        }
+      }
+
+      document.getElementById('danmaku-clear').onclick = () => {
+        danmakuPlugin.clear()
+      }
+
+      document.getElementById('danmaku-send').onclick = () => {
+        const text = document.getElementById('danmaku-text').value
+        const type = document.getElementById('danmaku-type').value
+        if (text.trim()) {
+          danmakuPlugin.send(text, type)
+          document.getElementById('danmaku-text').value = ''
+        }
+      }
+
+      document.getElementById('danmaku-opacity').oninput = (e) => {
+        const opacity = parseFloat(e.target.value)
+        danmakuPlugin.setOpacity(opacity)
+        document.getElementById('danmaku-opacity-value').textContent = Math.round(opacity * 100) + '%'
+      }
+
+      document.getElementById('danmaku-fontsize').oninput = (e) => {
+        const fontSize = parseInt(e.target.value)
+        danmakuPlugin.setFontSize(fontSize)
+        document.getElementById('danmaku-fontsize-value').textContent = fontSize + 'px'
+      }
+
+      // 回车发送弹幕
+      document.getElementById('danmaku-text').onkeypress = (e) => {
+        if (e.key === 'Enter') {
+          document.getElementById('danmaku-send').click()
+        }
+      }
+    }
+
+    // 字幕插件控制
+    function bindSubtitleControls() {
+      const subtitlePlugin = plugins.subtitle
+
+      document.getElementById('subtitle-toggle').onclick = () => {
+        const enabled = subtitlePlugin.enabled
+        if (enabled) {
+          subtitlePlugin.disable()
+          updatePluginStatus('subtitle', false)
+        } else {
+          subtitlePlugin.enable()
+          updatePluginStatus('subtitle', true)
+        }
+      }
+
+      document.getElementById('subtitle-track').onchange = (e) => {
+        const track = e.target.value
+        if (track) {
+          subtitlePlugin.setTrack(track)
+        } else {
+          subtitlePlugin.hide()
+        }
+      }
+
+      document.getElementById('subtitle-fontsize').oninput = (e) => {
+        const fontSize = parseInt(e.target.value)
+        subtitlePlugin.setFontSize(fontSize)
+        document.getElementById('subtitle-fontsize-value').textContent = fontSize + 'px'
+      }
+    }
+
+    // 截图插件控制
+    function bindScreenshotControls() {
+      const screenshotPlugin = plugins.screenshot
+
+      document.getElementById('screenshot-toggle').onclick = () => {
+        const enabled = screenshotPlugin.enabled
+        if (enabled) {
+          screenshotPlugin.disable()
+          updatePluginStatus('screenshot', false)
+        } else {
+          screenshotPlugin.enable()
+          updatePluginStatus('screenshot', true)
+        }
+      }
+
+      document.getElementById('screenshot-capture').onclick = async () => {
+        try {
+          const dataUrl = await screenshotPlugin.capture()
+          console.log('截图成功:', dataUrl)
+        } catch (error) {
+          console.error('截图失败:', error)
+        }
+      }
+
+      document.getElementById('screenshot-format').onchange = (e) => {
+        screenshotPlugin.setFormat(e.target.value)
+      }
+
+      document.getElementById('screenshot-quality').oninput = (e) => {
+        const quality = parseFloat(e.target.value)
+        screenshotPlugin.setQuality(quality)
+        document.getElementById('screenshot-quality-value').textContent = Math.round(quality * 100) + '%'
+      }
+    }
+
+    // 画中画插件控制
+    function bindPipControls() {
+      const pipPlugin = plugins.pip
+
+      document.getElementById('pip-toggle').onclick = () => {
+        const enabled = pipPlugin.enabled
+        if (enabled) {
+          pipPlugin.disable()
+          updatePluginStatus('pip', false)
+        } else {
+          pipPlugin.enable()
+          updatePluginStatus('pip', true)
+        }
+      }
+
+      document.getElementById('pip-enter').onclick = async () => {
+        try {
+          await pipPlugin.enter()
+        } catch (error) {
+          console.error('进入画中画失败:', error)
+        }
+      }
+
+      document.getElementById('pip-exit').onclick = async () => {
+        try {
+          await pipPlugin.exit()
+        } catch (error) {
+          console.error('退出画中画失败:', error)
+        }
+      }
+
+      document.getElementById('pip-auto').onchange = (e) => {
+        if (e.target.checked) {
+          pipPlugin.enableAutoEnter()
+        } else {
+          pipPlugin.disableAutoEnter()
+        }
+      }
+    }
+
+    // 更新插件状态显示
+    function updatePluginStatus(pluginName, enabled) {
+      const statusEl = document.getElementById(`${pluginName}-status`)
+      const cardEl = document.getElementById(`${pluginName}-card`)
+      const toggleEl = document.getElementById(`${pluginName}-toggle`)
+
+      if (enabled) {
+        statusEl.textContent = '已启用'
+        statusEl.className = 'status'
+        cardEl.classList.add('active')
+        toggleEl.textContent = '禁用'
+        toggleEl.className = 'btn btn-toggle'
+      } else {
+        statusEl.textContent = '已禁用'
+        statusEl.className = 'status disabled'
+        cardEl.classList.remove('active')
+        toggleEl.textContent = '启用'
+        toggleEl.className = 'btn btn-toggle disabled'
+      }
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', initPlayer)
+  </script>
+</body>
+</html>

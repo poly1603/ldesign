@@ -1,0 +1,123 @@
+{
+  "name": "@ldesign/video",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "A universal video player component library with cross-device compatibility, plugin system, theme system, and danmaku support",
+  "author": "ldesign",
+  "license": "MIT",
+  "keywords": [
+    "video",
+    "player",
+    "video-player",
+    "cross-device",
+    "cross-framework",
+    "plugin-system",
+    "theme-system",
+    "danmaku",
+    "subtitle",
+    "typescript",
+    "responsive",
+    "mobile",
+    "desktop"
+  ],
+  "exports": {
+    ".": {
+      "types": "./es/packages/video/src/index.d.ts",
+      "import": "./es/packages/video/src/index.js",
+      "require": "./cjs/packages/video/src/index.cjs"
+    },
+    "./vue": {
+      "types": "./es/packages/video/src/frameworks/vue.d.ts",
+      "import": "./es/packages/video/src/frameworks/vue.js",
+      "require": "./cjs/packages/video/src/frameworks/vue.cjs"
+    },
+    "./react": {
+      "types": "./es/packages/video/src/frameworks/react.d.ts",
+      "import": "./es/packages/video/src/frameworks/react.js",
+      "require": "./cjs/packages/video/src/frameworks/react.cjs"
+    },
+    "./angular": {
+      "types": "./es/packages/video/src/frameworks/angular.d.ts",
+      "import": "./es/packages/video/src/frameworks/angular.js",
+      "require": "./cjs/packages/video/src/frameworks/angular.cjs"
+    },
+    "./plugins": {
+      "types": "./es/packages/video/plugins/index.d.ts",
+      "import": "./es/packages/video/plugins/index.js",
+      "require": "./cjs/packages/video/plugins/index.cjs"
+    },
+    "./themes": {
+      "types": "./es/packages/video/themes/index.d.ts",
+      "import": "./es/packages/video/themes/index.js",
+      "require": "./cjs/packages/video/themes/index.cjs"
+    },
+    "./style.css": "./es/packages/video/src/index.css"
+  },
+  "main": "dist/cjs/index.cjs",
+  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "style": "dist/index.css",
+  "unpkg": "dist/index.umd.js",
+  "jsdelivr": "dist/index.umd.js",
+  "files": [
+    "CHANGELOG.md",
+    "README.md",
+    "dist",
+    "es",
+    "cjs"
+  ],
+  "scripts": {
+    "build": "ldesign-builder build -f esm,cjs",
+    "build:prod": "pnpm run clean && ldesign-builder build -f esm,cjs --minify",
+    "dev": "ldesign-builder watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist es cjs coverage",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "example:dev": "cd examples/vanilla && launcher dev",
+    "example:build": "cd examples/vanilla && launcher build",
+    "example:preview": "cd examples/vanilla && launcher preview"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@ldesign/launcher": "workspace:*",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "@vitest/ui": "^1.0.0",
+    "eslint": "^8.55.0",
+    "less": "^4.2.0",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.0",
+    "vitepress": "^1.6.4",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "vue": ">=3.0.0",
+    "react": ">=16.8.0",
+    "@angular/core": ">=12.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "@angular/core": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "packageManager": "pnpm@8.0.0"
+}
