@@ -1,49 +1,38 @@
 import { defineConfig } from '@ldesign/builder'
+import fs from 'fs'
+import path from 'path'
 
-const isUmdOnly = process.argv.includes('umd') || process.argv.includes('-f') && process.argv.includes('umd')
+function readPackage() {
+  try {
+    const p = path.resolve(process.cwd(), 'package.json')
+    return JSON.parse(fs.readFileSync(p, 'utf-8'))
+  } catch {
+    return {}
+  }
+}
+
+function pascalCase(name: string): string {
+  const base = name.replace(/^@[^/]+\//, '')
+  return base.split(/[\/-]/).filter(Boolean).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')
+}
+
+const pkg: any = readPackage()
+const external: string[] = Object.keys(pkg.peerDependencies || {})
+const knownGlobals: Record<string, string> = { vue: 'Vue', react: 'React', 'react-dom': 'ReactDOM' }
+const umdGlobals = external.reduce((acc, dep) => {
+  acc[dep] = knownGlobals[dep] || pascalCase(dep)
+  return acc
+}, {} as Record<string, string>)
 
 export default defineConfig({
-  // 单入口：UMD 使用专用入口避免代码分割，其它格式使用常规入口
-  input: isUmdOnly ? 'src/index.umd.ts' : 'src/index.ts',
-  root: process.cwd(),
-
   dts: true,
   sourcemap: true,
-  minify: true,
-
-  external: ['vue'],
-  globals: {
-    vue: 'Vue',
-  },
-
-  // 通过 Rollup 选项强制 UMD 不做代码分割
-  rollupOptions: {
-    output: {
-      inlineDynamicImports: true,
-      exports: 'named'
-    }
-  },
-
-  // 输出目录与现有字段保持一致
+  clean: true,
+  minify: false,
+  external,
   output: {
-    esm: {
-      dir: 'es',
-      format: 'esm',
-      preserveStructure: true,
-      dts: true,
-    },
-    cjs: {
-      dir: 'lib',
-      format: 'cjs',
-      preserveStructure: true,
-      dts: true,
-    },
-    umd: {
-      file: 'dist/index.umd.js',
-      format: 'umd',
-      name: 'LDesignRouter',
-      sourcemap: true,
-      minify: true,
-    },
+    esm: true,
+    cjs: true,
+    umd: Object.keys(umdGlobals).length ? { globals: umdGlobals } : true,
   },
 })
