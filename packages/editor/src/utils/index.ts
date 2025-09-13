@@ -402,3 +402,25 @@ export function deepClone<T>(obj: T): T {
 // ==================== 响应式管理器 ====================
 
 export { ResponsiveManager } from './responsive-manager'
+
+// ==================== 图标管理器 ====================
+
+export { IconManager } from './icon-manager'
+
+// ==================== DOM工具模块 ====================
+
+// 重新导出DOM工具，避免循环引用
+export {
+  createElement as createDOMElement,
+  addClass as addDOMClass,
+  removeClass as removeDOMClass,
+  toggleClass as toggleDOMClass
+} from './dom-utils'
+
+// 保持向后兼容
+export {
+  createElement,
+  addClass,
+  removeClass,
+  toggleClass
+}

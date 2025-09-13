@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign Editor - 媒体插件演示</title>
+  <style>
+    /* 基础样式 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: #722ED1;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin-bottom: 8px;
+      font-size: 28px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 16px;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .demo-section {
+      margin-bottom: 40px;
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .demo-section h2 {
+      background: #f8f9fa;
+      margin: 0;
+      padding: 15px 20px;
+      color: #333;
+      border-bottom: 1px solid #e8e8e8;
+      font-size: 20px;
+    }
+
+    .demo-content {
+      padding: 20px;
+    }
+
+    .editor-container {
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      min-height: 300px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 6px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:hover {
+      background: #f0f0f0;
+      border-color: #722ED1;
+    }
+
+    .btn.active {
+      background: #722ED1;
+      color: white;
+      border-color: #722ED1;
+    }
+
+    .btn.primary {
+      background: #722ED1;
+      color: white;
+      border-color: #722ED1;
+    }
+
+    .btn.primary:hover {
+      background: #5a1ea3;
+    }
+
+    .btn.success {
+      background: #52c41a;
+      color: white;
+      border-color: #52c41a;
+    }
+
+    .btn.warning {
+      background: #faad14;
+      color: white;
+      border-color: #faad14;
+    }
+
+    .btn.danger {
+      background: #ff4d4f;
+      color: white;
+      border-color: #ff4d4f;
+    }
+
+    .output {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+      padding: 15px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .feature-card {
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      padding: 20px;
+      background: white;
+      transition: all 0.2s;
+    }
+
+    .feature-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-color: #722ED1;
+    }
+
+    .feature-card h3 {
+      color: #722ED1;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .feature-card p {
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    .feature-card .demo {
+      background: #f8f9fa;
+      border-radius: 4px;
+      padding: 15px;
+      border: 1px solid #e8e8e8;
+    }
+
+    .stats {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f0f8ff;
+      border-radius: 6px;
+      border: 1px solid #d6e4ff;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #722ED1;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .media-library-preview {
+      border: 1px solid #e8e8e8;
+      border-radius: 6px;
+      height: 200px;
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      margin: 10px 0;
+    }
+
+    .upload-area-demo {
+      border: 2px dashed #d9d9d9;
+      border-radius: 6px;
+      padding: 30px;
+      text-align: center;
+      background: #fafafa;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .upload-area-demo:hover {
+      border-color: #722ED1;
+      background: #f6f0ff;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+        border-radius: 0;
+      }
+      
+      .content {
+        padding: 15px;
+      }
+      
+      .controls {
+        gap: 5px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .btn {
+        padding: 10px 12px;
+        font-size: 14px;
+        justify-content: center;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+
+    /* 媒体插件样式模拟 */
+    .mock-media-dialog {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .mock-media-dialog.show {
+      display: flex;
+    }
+
+    .mock-dialog-content {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      width: 600px;
+      max-width: 90vw;
+      max-height: 80vh;
+      overflow: hidden;
+    }
+
+    .mock-dialog-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #e5e5e5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8f9fa;
+    }
+
+    .mock-dialog-body {
+      padding: 20px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .mock-upload-area {
+      border: 2px dashed #dee2e6;
+      border-radius: 8px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+    }
+
+    .mock-upload-area:hover {
+      border-color: #722ED1;
+      background: #f6f0ff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📸 LDesign Editor 媒体插件</h1>
+      <p>完整的媒体文件管理解决方案 - 图片、视频、音频一站式处理</p>
+    </div>
+
+    <div class="content">
+      <!-- 功能概览 -->
+      <div class="demo-section">
+        <h2>🚀 插件功能概览</h2>
+        <div class="demo-content">
+          <div class="stats">
+            <div class="stat-item">
+              <div class="stat-value">3</div>
+              <div class="stat-label">支持媒体类型</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">15+</div>
+              <div class="stat-label">文件格式</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">10MB</div>
+              <div class="stat-label">默认大小限制</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">100%</div>
+              <div class="stat-label">响应式支持</div>
+            </div>
+          </div>
+          <div class="feature-grid">
+            <div class="feature-card">
+              <h3>🖼️ 图片管理</h3>
+              <p>支持 JPG, PNG, GIF, WebP, SVG 等格式，自动压缩和尺寸优化</p>
+              <div class="demo">
+                <div style="width: 100%; height: 80px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999;">
+                  图片预览区域
+                </div>
+              </div>
+            </div>
+            <div class="feature-card">
+              <h3>🎥 视频支持</h3>
+              <p>支持 MP4, WebM, OGG 等格式，内置播放器控件</p>
+              <div class="demo">
+                <div style="width: 100%; height: 80px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999;">
+                  ▶️ 视频播放器
+                </div>
+              </div>
+            </div>
+            <div class="feature-card">
+              <h3>🎵 音频处理</h3>
+              <p>支持 MP3, WAV, OGG 等格式，自定义音频控件</p>
+              <div class="demo">
+                <div style="width: 100%; height: 40px; background: #f0f0f0; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: #999;">
+                  🎵 音频控件
+                </div>
+              </div>
+            </div>
+            <div class="feature-card">
+              <h3>📚 媒体库</h3>
+              <p>集中管理所有媒体文件，支持搜索、筛选和批量操作</p>
+              <div class="demo">
+                <div class="media-library-preview">
+                  📁 媒体库预览
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 基础编辑器演示 -->
+      <div class="demo-section">
+        <h2>📝 基础编辑器 + 媒体插件</h2>
+        <div class="demo-content">
+          <div class="controls">
+            <button class="btn primary" onclick="openUploadDialog()">
+              📤 上传媒体
+            </button>
+            <button class="btn" onclick="openMediaLibrary()">
+              📚 媒体库
+            </button>
+            <button class="btn" onclick="insertImage()">
+              🖼️ 插入图片
+            </button>
+            <button class="btn" onclick="insertVideo()">
+              🎥 插入视频
+            </button>
+            <button class="btn" onclick="insertAudio()">
+              🎵 插入音频
+            </button>
+            <button class="btn warning" onclick="clearEditor()">
+              🗑️ 清空内容
+            </button>
+          </div>
+          <div id="editor1" class="editor-container"></div>
+          <div class="controls">
+            <button class="btn success" onclick="getContent()">获取内容</button>
+            <button class="btn" onclick="showStats()">统计信息</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 高级功能演示 -->
+      <div class="demo-section">
+        <h2>⚙️ 高级功能配置</h2>
+        <div class="demo-content">
+          <div class="feature-grid">
+            <div class="feature-card">
+              <h3>🎛️ 压缩设置</h3>
+              <p>自动压缩图片以优化性能和存储空间</p>
+              <div class="demo">
+                <label>
+                  压缩质量: <input type="range" min="0.1" max="1" step="0.1" value="0.8" id="qualitySlider" onchange="updateQuality(this.value)">
+                  <span id="qualityValue">80%</span>
+                </label>
+                <br><br>
+                <label>
+                  最大宽度: <input type="number" value="1920" min="100" max="4000" id="maxWidth">
+                </label>
+                <br>
+                <label>
+                  最大高度: <input type="number" value="1080" min="100" max="4000" id="maxHeight">
+                </label>
+              </div>
+            </div>
+            <div class="feature-card">
+              <h3>📊 文件限制</h3>
+              <p>设置文件大小和格式限制</p>
+              <div class="demo">
+                <label>
+                  最大文件大小: <select id="maxSize">
+                    <option value="5">5 MB</option>
+                    <option value="10" selected>10 MB</option>
+                    <option value="20">20 MB</option>
+                    <option value="50">50 MB</option>
+                  </select>
+                </label>
+                <br><br>
+                <label>
+                  <input type="checkbox" checked> 支持图片格式
+                </label>
+                <br>
+                <label>
+                  <input type="checkbox" checked> 支持视频格式
+                </label>
+                <br>
+                <label>
+                  <input type="checkbox" checked> 支持音频格式
+                </label>
+              </div>
+            </div>
+            <div class="feature-card">
+              <h3>💾 存储方式</h3>
+              <p>选择媒体文件的存储和处理方式</p>
+              <div class="demo">
+                <label>
+                  <input type="radio" name="storage" value="dataurl" checked> Data URL (本地)
+                </label>
+                <br>
+                <label>
+                  <input type="radio" name="storage" value="blob"> Blob URL
+                </label>
+                <br>
+                <label>
+                  <input type="radio" name="storage" value="server"> 服务器存储
+                </label>
+              </div>
+            </div>
+            <div class="feature-card">
+              <h3>🎨 预设配置</h3>
+              <p>使用预定义的配置快速设置</p>
+              <div class="demo">
+                <button class="btn" onclick="applyPreset('basic')">基础配置</button>
+                <button class="btn" onclick="applyPreset('imageOnly')">仅图片</button>
+                <button class="btn" onclick="applyPreset('highQuality')">高质量</button>
+                <br><br>
+                <button class="btn" onclick="applyPreset('videoFocused')">视频重点</button>
+                <button class="btn" onclick="applyPreset('audioFocused')">音频重点</button>
+                <button class="btn" onclick="applyPreset('compact')">紧凑模式</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 拖拽上传演示 -->
+      <div class="demo-section">
+        <h2>🚀 拖拽上传演示</h2>
+        <div class="demo-content">
+          <div class="upload-area-demo" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+            <p>📁 拖拽文件到这里上传</p>
+            <p>或点击选择文件</p>
+            <small>支持图片、视频、音频格式</small>
+          </div>
+          <div id="uploadStatus" style="margin-top: 10px; color: #666;"></div>
+        </div>
+      </div>
+
+      <!-- 媒体库演示 -->
+      <div class="demo-section">
+        <h2>📚 媒体库管理</h2>
+        <div class="demo-content">
+          <div class="controls">
+            <input type="text" placeholder="搜索媒体文件..." style="flex: 1; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+            <select style="padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+              <option>全部类型</option>
+              <option>图片</option>
+              <option>视频</option>
+              <option>音频</option>
+            </select>
+            <button class="btn danger" onclick="clearLibrary()">清空媒体库</button>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 15px;">
+            <div style="border: 1px solid #e8e8e8; border-radius: 8px; overflow: hidden; background: white;">
+              <div style="aspect-ratio: 1; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">
+                🖼️
+              </div>
+              <div style="padding: 8px;">
+                <div style="font-size: 12px; font-weight: 500;">示例图片.jpg</div>
+                <div style="font-size: 11px; color: #666;">256 KB</div>
+              </div>
+            </div>
+            <div style="border: 1px solid #e8e8e8; border-radius: 8px; overflow: hidden; background: white;">
+              <div style="aspect-ratio: 1; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">
+                🎥
+              </div>
+              <div style="padding: 8px;">
+                <div style="font-size: 12px; font-weight: 500;">示例视频.mp4</div>
+                <div style="font-size: 11px; color: #666;">2.1 MB</div>
+              </div>
+            </div>
+            <div style="border: 1px solid #e8e8e8; border-radius: 8px; overflow: hidden; background: white;">
+              <div style="aspect-ratio: 1; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">
+                🎵
+              </div>
+              <div style="padding: 8px;">
+                <div style="font-size: 12px; font-weight: 500;">示例音频.mp3</div>
+                <div style="font-size: 11px; color: #666;">3.4 MB</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 代码示例 -->
+      <div class="demo-section">
+        <h2>💻 使用示例代码</h2>
+        <div class="demo-content">
+          <div class="output" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #569cd6;">import</span> { <span style="color: #4ec9b0;">createMediaPlugin</span>, <span style="color: #4ec9b0;">MediaPresets</span> } <span style="color: #569cd6;">from</span> <span style="color: #ce9178;">'@ldesign/editor/plugins/media'</span>
+
+<span style="color: #608b4e;">// 基础使用</span>
+<span style="color: #569cd6;">const</span> <span style="color: #4fc1ff;">mediaPlugin</span> = <span style="color: #dcdcaa;">createMediaPlugin</span>()
+
+<span style="color: #608b4e;">// 自定义配置</span>
+<span style="color: #569cd6;">const</span> <span style="color: #4fc1ff;">customPlugin</span> = <span style="color: #dcdcaa;">createMediaPlugin</span>({
+  <span style="color: #9cdcfe;">maxFileSize</span>: <span style="color: #b5cea8;">20</span> * <span style="color: #b5cea8;">1024</span> * <span style="color: #b5cea8;">1024</span>, <span style="color: #608b4e;">// 20MB</span>
+  <span style="color: #9cdcfe;">compression</span>: {
+    <span style="color: #9cdcfe;">enabled</span>: <span style="color: #569cd6;">true</span>,
+    <span style="color: #9cdcfe;">quality</span>: <span style="color: #b5cea8;">0.9</span>,
+    <span style="color: #9cdcfe;">maxWidth</span>: <span style="color: #b5cea8;">1920</span>,
+    <span style="color: #9cdcfe;">maxHeight</span>: <span style="color: #b5cea8;">1080</span>
+  }
+})
+
+<span style="color: #608b4e;">// 使用预设配置</span>
+<span style="color: #569cd6;">const</span> <span style="color: #4fc1ff;">imageOnlyPlugin</span> = <span style="color: #dcdcaa;">createMediaPlugin</span>(<span style="color: #4ec9b0;">MediaPresets</span>.<span style="color: #9cdcfe;">imageOnly</span>)
+
+<span style="color: #608b4e;">// 集成到编辑器</span>
+<span style="color: #569cd6;">const</span> <span style="color: #4fc1ff;">editor</span> = <span style="color: #569cd6;">new</span> <span style="color: #4ec9b0;">LDesignEditor</span>({
+  <span style="color: #9cdcfe;">container</span>: <span style="color: #ce9178;">'#editor'</span>,
+  <span style="color: #9cdcfe;">plugins</span>: [<span style="color: #4fc1ff;">mediaPlugin</span>]
+})
+          </div>
+        </div>
+      </div>
+
+      <!-- 内容输出 -->
+      <div class="demo-section">
+        <h2>📄 编辑器内容输出</h2>
+        <div class="demo-content">
+          <div id="output" class="output">编辑器内容将在这里显示...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模拟对话框 -->
+  <div id="mockDialog" class="mock-media-dialog">
+    <div class="mock-dialog-content">
+      <div class="mock-dialog-header">
+        <h3 id="dialogTitle">上传媒体文件</h3>
+        <button onclick="closeMockDialog()" style="border: none; background: none; font-size: 20px; cursor: pointer;">×</button>
+      </div>
+      <div class="mock-dialog-body">
+        <div class="mock-upload-area">
+          <p>📁 拖拽文件到这里上传</p>
+          <p>或点击选择文件</p>
+          <small>支持图片、视频、音频格式</small>
+        </div>
+        <p style="margin-top: 15px; color: #666; text-align: center;">这是媒体插件对话框的演示版本</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 模拟编辑器类
+    class MockMediaEditor {
+      constructor(container) {
+        this.container = typeof container === 'string' 
+          ? document.querySelector(container)
+          : container
+        this.content = '<p>这是一个集成了媒体插件的富文本编辑器。</p><p>你可以上传和插入各种类型的媒体文件。</p>'
+        this.mediaLibrary = new Map()
+        this.init()
+      }
+      
+      init() {
+        this.container.contentEditable = true
+        this.container.innerHTML = this.content
+        this.container.style.padding = '20px'
+        this.container.style.outline = 'none'
+        this.container.style.minHeight = '200px'
+        this.container.style.backgroundColor = 'white'
+        
+        // 添加一些示例媒体到库中
+        this.addSampleMedia()
+        
+        this.bindEvents()
+        this.updateOutput()
+      }
+      
+      addSampleMedia() {
+        const samples = [
+          {
+            id: 'img1',
+            name: '示例图片.jpg',
+            type: 'image',
+            size: 256 * 1024,
+            url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCI+8J+WvO+4j0ltYWdlPC90ZXh0Pjwvc3ZnPg=='
+          },
+          {
+            id: 'vid1',
+            name: '示例视频.mp4',
+            type: 'video',
+            size: 2.1 * 1024 * 1024,
+            url: '#'
+          },
+          {
+            id: 'aud1',
+            name: '示例音频.mp3',
+            type: 'audio',
+            size: 3.4 * 1024 * 1024,
+            url: '#'
+          }
+        ]
+        
+        samples.forEach(media => {
+          this.mediaLibrary.set(media.id, media)
+        })
+      }
+      
+      bindEvents() {
+        this.container.addEventListener('input', () => {
+          this.content = this.container.innerHTML
+          this.updateOutput()
+        })
+        
+        // 模拟拖拽上传
+        this.container.addEventListener('dragover', (e) => {
+          e.preventDefault()
+          this.container.style.backgroundColor = '#f6f0ff'
+        })
+        
+        this.container.addEventListener('dragleave', () => {
+          this.container.style.backgroundColor = 'white'
+        })
+        
+        this.container.addEventListener('drop', (e) => {
+          e.preventDefault()
+          this.container.style.backgroundColor = 'white'
+          this.handleFileDrop(e.dataTransfer.files)
+        })
+      }
+      
+      handleFileDrop(files) {
+        Array.from(files).forEach(file => {
+          this.simulateFileUpload(file)
+        })
+      }
+      
+      simulateFileUpload(file) {
+        const id = 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+        const reader = new FileReader()
+        
+        reader.onload = (e) => {
+          const mediaData = {
+            id,
+            name: file.name,
+            type: this.detectMediaType(file),
+            size: file.size,
+            url: e.target.result
+          }
+          
+          this.mediaLibrary.set(id, mediaData)
+          this.insertMediaToEditor(mediaData)
+          this.showMessage(`成功上传: ${file.name}`, 'success')
+        }
+        
+        reader.readAsDataURL(file)
+      }
+      
+      detectMediaType(file) {
+        if (file.type.startsWith('image/')) return 'image'
+        if (file.type.startsWith('video/')) return 'video'
+        if (file.type.startsWith('audio/')) return 'audio'
+        return 'other'
+      }
+      
+      insertMediaToEditor(media) {
+        let element = ''
+        
+        switch(media.type) {
+          case 'image':
+            element = `<img src="${media.url}" alt="${media.name}" style="max-width: 100%; height: auto; margin: 10px 0;" class="ldesign-media-image">`
+            break
+          case 'video':
+            element = `<video src="${media.url}" controls style="max-width: 100%; margin: 10px 0;" class="ldesign-media-video">您的浏览器不支持视频播放</video>`
+            break
+          case 'audio':
+            element = `<audio src="${media.url}" controls style="width: 100%; margin: 10px 0;" class="ldesign-media-audio">您的浏览器不支持音频播放</audio>`
+            break
+        }
+        
+        if (element) {
+          this.insertContent(element)
+        }
+      }
+      
+      insertContent(html) {
+        document.execCommand('insertHTML', false, html)
+        this.updateOutput()
+      }
+      
+      updateOutput() {
+        document.getElementById('output').textContent = this.container.innerHTML
+      }
+      
+      clear() {
+        this.container.innerHTML = ''
+        this.updateOutput()
+      }
+      
+      showMessage(text, type = 'info') {
+        // 简单的消息显示
+        console.log(`[${type.toUpperCase()}] ${text}`)
+        
+        // 创建临时消息元素
+        const message = document.createElement('div')
+        message.textContent = text
+        message.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          padding: 12px 16px;
+          background: ${type === 'success' ? '#52c41a' : type === 'error' ? '#ff4d4f' : '#1890ff'};
+          color: white;
+          border-radius: 4px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          z-index: 1001;
+          font-size: 14px;
+        `
+        
+        document.body.appendChild(message)
+        
+        setTimeout(() => {
+          document.body.removeChild(message)
+        }, 3000)
+      }
+    }
+    
+    // 初始化编辑器
+    const editor = new MockMediaEditor('#editor1')
+    
+    // 全局函数
+    window.openUploadDialog = () => {
+      document.getElementById('dialogTitle').textContent = '上传媒体文件'
+      document.getElementById('mockDialog').classList.add('show')
+    }
+    
+    window.openMediaLibrary = () => {
+      document.getElementById('dialogTitle').textContent = '媒体库'
+      document.getElementById('mockDialog').classList.add('show')
+    }
+    
+    window.closeMockDialog = () => {
+      document.getElementById('mockDialog').classList.remove('show')
+    }
+    
+    window.insertImage = () => {
+      const imageHtml = '<img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTZmN2ZmIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM3MjJFRDEiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCI+8J+WvO+4jyBTYW1wbGUgSW1hZ2U8L3RleHQ+PC9zdmc+" alt="示例图片" style="max-width: 100%; height: auto; margin: 10px 0;" class="ldesign-media-image">'
+      editor.insertContent(imageHtml)
+      editor.showMessage('插入图片成功', 'success')
+    }
+    
+    window.insertVideo = () => {
+      const videoHtml = '<div style="background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; padding: 40px; text-align: center; margin: 10px 0; color: #666;">🎥 视频播放器 (演示)</div>'
+      editor.insertContent(videoHtml)
+      editor.showMessage('插入视频成功', 'success')
+    }
+    
+    window.insertAudio = () => {
+      const audioHtml = '<div style="background: #f0f0f0; border: 1px solid #ddd; border-radius: 20px; padding: 12px 20px; text-align: center; margin: 10px 0; color: #666;">🎵 音频播放器 (演示)</div>'
+      editor.insertContent(audioHtml)
+      editor.showMessage('插入音频成功', 'success')
+    }
+    
+    window.clearEditor = () => {
+      editor.clear()
+      editor.showMessage('内容已清空', 'info')
+    }
+    
+    window.getContent = () => {
+      const content = editor.container.innerHTML
+      alert('编辑器内容：\n' + content)
+    }
+    
+    window.showStats = () => {
+      const images = editor.container.querySelectorAll('img').length
+      const videos = editor.container.querySelectorAll('video').length
+      const audios = editor.container.querySelectorAll('audio').length
+      const total = editor.mediaLibrary.size
+      
+      alert(`媒体统计信息：\n图片: ${images}\n视频: ${videos}\n音频: ${audios}\n媒体库总数: ${total}`)
+    }
+    
+    window.updateQuality = (value) => {
+      document.getElementById('qualityValue').textContent = Math.round(value * 100) + '%'
+      editor.showMessage(`压缩质量已设置为 ${Math.round(value * 100)}%`, 'info')
+    }
+    
+    window.applyPreset = (preset) => {
+      const presets = {
+        basic: '基础配置 (支持所有媒体类型)',
+        imageOnly: '仅图片配置',
+        highQuality: '高质量配置',
+        videoFocused: '视频重点配置',
+        audioFocused: '音频重点配置',
+        compact: '紧凑配置'
+      }
+      
+      editor.showMessage(`已应用${presets[preset]}`, 'success')
+    }
+    
+    window.clearLibrary = () => {
+      if (confirm('确定要清空媒体库吗？此操作不可恢复。')) {
+        editor.mediaLibrary.clear()
+        editor.addSampleMedia() // 重新添加示例数据
+        editor.showMessage('媒体库已清空', 'info')
+      }
+    }
+    
+    // 拖拽上传区域事件
+    window.handleDragOver = (e) => {
+      e.preventDefault()
+      e.currentTarget.style.borderColor = '#722ED1'
+      e.currentTarget.style.background = '#f6f0ff'
+    }
+    
+    window.handleDragLeave = (e) => {
+      e.currentTarget.style.borderColor = '#d9d9d9'
+      e.currentTarget.style.background = '#fafafa'
+    }
+    
+    window.handleDrop = (e) => {
+      e.preventDefault()
+      e.currentTarget.style.borderColor = '#d9d9d9'
+      e.currentTarget.style.background = '#fafafa'
+      
+      const files = Array.from(e.dataTransfer.files)
+      document.getElementById('uploadStatus').innerHTML = 
+        `准备上传 ${files.length} 个文件: ${files.map(f => f.name).join(', ')}`
+      
+      // 模拟上传过程
+      setTimeout(() => {
+        document.getElementById('uploadStatus').innerHTML = '文件上传完成！'
+        editor.showMessage(`成功上传 ${files.length} 个文件`, 'success')
+      }, 1500)
+    }
+    
+    // 点击关闭对话框
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('mock-media-dialog')) {
+        closeMockDialog()
+      }
+    })
+  </script>
+</body>
+</html>

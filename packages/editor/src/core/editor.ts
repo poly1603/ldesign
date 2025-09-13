@@ -20,10 +20,12 @@ import { CommandManager } from './command-manager'
 import { EditorStateManager } from './editor-state'
 import { PluginManager } from './plugin-manager'
 import { getPlugin } from '../plugins/plugin-registry'
-import { StyleManager } from '../renderers'
+import { StyleManager, ToolbarRenderer } from '../renderers'
 import { ThemeManager } from '../themes'
 import { ResponsiveManager } from '../utils'
 import { MediaManager } from './media-manager'
+import { ShortcutManager } from './shortcut-manager'
+import { HistoryManager } from './history-manager'
 import {
   getElement,
   addClass,
@@ -75,6 +77,15 @@ export class LDesignEditor implements IEditor {
   /** 媒体管理器 */
   public readonly mediaManager: MediaManager
 
+  /** 工具栏渲染器 */
+  private toolbarRenderer: ToolbarRenderer | null = null
+
+  /** 快捷键管理器 */
+  public readonly shortcuts: ShortcutManager
+
+  /** 历史记录管理器 */
+  public readonly history: HistoryManager
+
   /** 是否已初始化 */
   public initialized = false
 
@@ -117,6 +128,12 @@ export class LDesignEditor implements IEditor {
     // 初始化媒体管理器
     this.mediaManager = new MediaManager(this.events)
 
+    // 初始化快捷键管理器
+    this.shortcuts = new ShortcutManager(this)
+
+    // 初始化历史记录管理器
+    this.history = new HistoryManager(this)
+
     // 创建内容元素
     this.contentElement = this.createContentElement()
   }
@@ -150,12 +167,21 @@ export class LDesignEditor implements IEditor {
       // 加载插件
       this.loadPlugins()
 
+      // 创建工具栏
+      this.createToolbar()
+
       // 设置默认主题
       const theme = typeof this.options.theme === 'string' ? this.options.theme : 'default'
       this.themes.setTheme(theme)
 
       // 设置初始内容
       this.setContent(this.options.content)
+
+      // 启动快捷键系统
+      this.shortcuts.init()
+
+      // 启动历史记录系统
+      this.history.init()
 
       // 标记为已初始化
       this.initialized = true
@@ -204,6 +230,18 @@ export class LDesignEditor implements IEditor {
 
       // 销毁媒体管理器
       this.mediaManager.destroy()
+
+      // 销毁工具栏渲染器
+      if (this.toolbarRenderer) {
+        this.toolbarRenderer.destroy()
+        this.toolbarRenderer = null
+      }
+
+      // 销毁快捷键管理器
+      this.shortcuts.destroy()
+
+      // 销毁历史记录管理器
+      this.history.destroy()
 
       // 清理DOM
       this.cleanupDOM()
@@ -296,6 +334,16 @@ export class LDesignEditor implements IEditor {
   }
 
   /**
+   * 创建工具栏
+   */
+  private createToolbar(): void {
+    if (this.options.toolbar && this.options.toolbar.visible !== false) {
+      this.toolbarRenderer = new ToolbarRenderer(this, this.options.toolbar)
+      this.toolbarRenderer.render(this.container)
+    }
+  }
+
+  /**
    * 合并默认配置
    */
   private mergeDefaultOptions(options: EditorOptions): Required<EditorOptions> {
@@ -308,7 +356,35 @@ export class LDesignEditor implements IEditor {
       toolbar: options.toolbar || {
         position: 'top',
         sticky: true,
-        items: ['bold', 'italic', 'underline']
+        visible: true,
+        items: [
+          // 操作按钮
+          'undo', 'redo',
+          { type: 'separator' },
+          
+          // 格式化按钮
+          'bold', 'italic', 'underline', 'strikethrough',
+          { type: 'separator' },
+          
+          // 上下标
+          'superscript', 'subscript',
+          { type: 'separator' },
+          
+          // 对齐按钮
+          'alignLeft', 'alignCenter', 'alignRight', 'alignJustify',
+          { type: 'separator' },
+          
+          // 列表按钮
+          'bulletList', 'numberedList',
+          { type: 'separator' },
+          
+          // 媒体按钮
+          'link', 'image',
+          { type: 'separator' },
+          
+          // 其他
+          'code', 'blockquote'
+        ]
       },
       readonly: options.readonly || false,
       spellcheck: options.spellcheck !== false,

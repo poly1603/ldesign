@@ -78,6 +78,13 @@
           🔗
         </button>
         <button 
+          @click="insertTable"
+          class="toolbar-btn"
+          title="插入表格"
+        >
+          📊
+        </button>
+        <button 
           @click="uploadFile"
           class="toolbar-btn"
           title="上传文件"
@@ -134,6 +141,13 @@
           🗑️
         </button>
         <button 
+          @click="showSearchDialog"
+          class="toolbar-btn"
+          title="搜索替换 (Ctrl+F)"
+        >
+          🔍
+        </button>
+        <button 
           @click="exportContent"
           class="toolbar-btn"
           title="导出内容"
@@ -159,15 +173,48 @@
       <ul>
         <li><strong>文本格式化</strong>：支持加粗、斜体、下划线等格式</li>
         <li><strong>段落格式</strong>：支持标题、列表、引用等段落样式</li>
+        <li><strong>表格功能</strong>：支持表格插入、编辑、样式设置和右键操作</li>
+        <li><strong>搜索替换</strong>：支持文本搜索、高亮显示和批量替换</li>
         <li><strong>图片管理</strong>：支持图片插入、上传、编辑和管理</li>
         <li><strong>链接功能</strong>：支持链接插入、编辑和管理</li>
         <li><strong>主题系统</strong>：支持多种主题切换</li>
         <li><strong>响应式设计</strong>：完美适配各种设备</li>
       </ul>
-      <p>试试选择文本并使用工具栏功能，或者插入图片和链接！</p>
+      <p>试试选择文本并使用工具栏功能，或者插入图片、链接和表格！也可以使用 Ctrl+F 来搜索替换文本。</p>
       <blockquote>
         <p>这是一个引用示例。你可以使用工具栏来创建各种格式的内容。</p>
       </blockquote>
+      <h3>表格示例</h3>
+      <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd; margin: 16px 0;">
+        <tbody>
+          <tr>
+            <th style="border: 1px solid #ddd; padding: 8px 12px; background-color: #f8f9fa; font-weight: 600;">功能特性</th>
+            <th style="border: 1px solid #ddd; padding: 8px 12px; background-color: #f8f9fa; font-weight: 600;">支持状态</th>
+            <th style="border: 1px solid #ddd; padding: 8px 12px; background-color: #f8f9fa; font-weight: 600;">说明</th>
+          </tr>
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px 12px;">表格创建</td>
+            <td style="border: 1px solid #ddd; padding: 8px 12px;">✅</td>
+            <td style="border: 1px solid #ddd; padding: 8px 12px;">可视化网格选择器</td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px 12px;">表格编辑</td>
+            <td style="border: 1px solid #ddd; padding: 8px 12px;">✅</td>
+            <td style="border: 1px solid #ddd; padding: 8px 12px;">插入/删除行列</td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px 12px;">样式设置</td>
+            <td style="border: 1px solid #ddd; padding: 8px 12px;">✅</td>
+            <td style="border: 1px solid #ddd; padding: 8px 12px;">边框、背景、对齐</td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px 12px;">右键菜单</td>
+            <td style="border: 1px solid #ddd; padding: 8px 12px;">✅</td>
+            <td style="border: 1px solid #ddd; padding: 8px 12px;">快捷操作菜单</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>右键点击上面的表格可以体验表格操作功能！</p>
     </div>
 
     <!-- 状态栏 -->
@@ -191,6 +238,10 @@
       <div class="status-item">
         <span class="status-label">链接:</span>
         <span class="status-value">{{ linkCount }}</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">表格:</span>
+        <span class="status-value">{{ tableCount }}</span>
       </div>
       <div class="status-item">
         <span class="status-label">主题:</span>
@@ -253,6 +304,11 @@ const imageCount = computed(() => {
 const linkCount = computed(() => {
   if (!editorContainer.value) return 0
   return editorContainer.value.querySelectorAll('a').length
+})
+
+const tableCount = computed(() => {
+  if (!editorContainer.value) return 0
+  return editorContainer.value.querySelectorAll('table').length
 })
 
 // 生命周期
@@ -410,6 +466,130 @@ function insertLink() {
   updateEditorState()
 }
 
+// 插入表格
+function insertTable() {
+  const rows = parseInt(prompt('请输入行数:', '3') || '3')
+  const cols = parseInt(prompt('请输入列数:', '3') || '3')
+  
+  if (rows <= 0 || cols <= 0 || rows > 20 || cols > 10) {
+    alert('请输入合理的行数(1-20)和列数(1-10)')
+    return
+  }
+  
+  const table = document.createElement('table')
+  table.style.width = '100%'
+  table.style.borderCollapse = 'collapse'
+  table.style.border = '1px solid #ddd'
+  table.style.marginTop = '16px'
+  table.style.marginBottom = '16px'
+  
+  const tbody = document.createElement('tbody')
+  
+  for (let i = 0; i < rows; i++) {
+    const row = document.createElement('tr')
+    
+    for (let j = 0; j < cols; j++) {
+      const cell = document.createElement(i === 0 ? 'th' : 'td')
+      cell.style.border = '1px solid #ddd'
+      cell.style.padding = '8px 12px'
+      cell.style.textAlign = 'left'
+      
+      if (i === 0) {
+        cell.style.backgroundColor = '#f8f9fa'
+        cell.style.fontWeight = '600'
+        cell.textContent = `标题 ${j + 1}`
+      } else {
+        cell.innerHTML = '<br>'
+      }
+      
+      row.appendChild(cell)
+    }
+    
+    tbody.appendChild(row)
+  }
+  
+  table.appendChild(tbody)
+  insertElementAtCursor(table)
+  updateEditorState()
+}
+
+// 显示搜索对话框
+function showSearchDialog() {
+  // 创建简单的搜索替换对话框
+  const searchTerm = prompt('请输入要搜索的文本:')
+  if (!searchTerm) return
+  
+  const replaceTerm = prompt('请输入替换文本 (可为空):')
+  
+  if (replaceTerm !== null) {
+    // 简单的搜索替换实现
+    performSearchReplace(searchTerm, replaceTerm)
+  } else {
+    // 只搜索，高亮结果
+    highlightSearchResults(searchTerm)
+  }
+}
+
+// 执行搜索替换
+function performSearchReplace(searchTerm: string, replaceTerm: string) {
+  if (!editorContainer.value) return
+  
+  const content = editorContainer.value.innerHTML
+  const regex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')
+  const matches = content.match(regex)
+  
+  if (matches) {
+    const count = matches.length
+    if (replaceTerm.trim()) {
+      const newContent = content.replace(regex, replaceTerm)
+      editorContainer.value.innerHTML = newContent
+      alert(`已替换 ${count} 个匹配项`)
+    } else {
+      alert(`找到 ${count} 个匹配项`)
+    }
+    updateEditorState()
+  } else {
+    alert('未找到匹配项')
+  }
+}
+
+// 高亮搜索结果
+function highlightSearchResults(searchTerm: string) {
+  if (!editorContainer.value) return
+  
+  // 先清除之前的高亮
+  clearSearchHighlights()
+  
+  const content = editorContainer.value.innerHTML
+  const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+  const highlightedContent = content.replace(regex, '<mark style="background-color: #ffeb3b; color: #000; border-radius: 2px;">$1</mark>')
+  
+  if (highlightedContent !== content) {
+    editorContainer.value.innerHTML = highlightedContent
+    const matches = content.match(new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'))
+    alert(`找到 ${matches?.length || 0} 个匹配项，已高亮显示`)
+  } else {
+    alert('未找到匹配项')
+  }
+}
+
+// 清除搜索高亮
+function clearSearchHighlights() {
+  if (!editorContainer.value) return
+  
+  const marks = editorContainer.value.querySelectorAll('mark')
+  marks.forEach(mark => {
+    const parent = mark.parentNode
+    if (parent) {
+      parent.insertBefore(document.createTextNode(mark.textContent || ''), mark)
+      parent.removeChild(mark)
+    }
+  })
+  
+  // 合并相邻的文本节点
+  editorContainer.value.normalize()
+}
+
 // 上传文件
 function uploadFile() {
   fileInput.value?.click()
@@ -560,6 +740,10 @@ function handleKeydown(event: KeyboardEvent) {
       case 'k':
         event.preventDefault()
         insertLink()
+        break
+      case 'f':
+        event.preventDefault()
+        showSearchDialog()
         break
       case 'z':
         if (event.shiftKey) {

@@ -5,6 +5,7 @@
 
 export { StyleManager } from './style-manager'
 export { DOMRenderer } from './dom-renderer'
+export { ToolbarRenderer } from './toolbar-renderer'
 export type { DOMNode, RenderOptions } from './dom-renderer'
 
 // 重新导出相关类型

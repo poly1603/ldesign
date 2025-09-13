@@ -4,9 +4,25 @@
  */
 
 import type { IPlugin } from '../types'
-import { BoldPlugin, ItalicPlugin, UnderlinePlugin } from './format'
+import { 
+  BoldPlugin, 
+  ItalicPlugin, 
+  UnderlinePlugin,
+  StrikethroughPlugin,
+  SuperscriptPlugin,
+  SubscriptPlugin,
+  CodePlugin
+} from './format'
 import { HeadingPlugin, ListPlugin, BlockquotePlugin } from './block'
 import { ImagePlugin, LinkPlugin } from './media'
+import {
+  AlignLeftPlugin,
+  AlignCenterPlugin,
+  AlignRightPlugin,
+  AlignJustifyPlugin
+} from './align'
+import { TablePlugin } from './table'
+import { SearchReplacePlugin } from './search-replace'
 
 /**
  * 插件注册表类
@@ -166,6 +182,16 @@ PluginRegistry.registerMultipleConstructors({
   'bold': BoldPlugin,
   'italic': ItalicPlugin,
   'underline': UnderlinePlugin,
+  'strikethrough': StrikethroughPlugin,
+  'superscript': SuperscriptPlugin,
+  'subscript': SubscriptPlugin,
+  'code': CodePlugin,
+
+  // 对齐插件
+  'alignLeft': AlignLeftPlugin,
+  'alignCenter': AlignCenterPlugin,
+  'alignRight': AlignRightPlugin,
+  'alignJustify': AlignJustifyPlugin,
 
   // 块级插件
   'heading': HeadingPlugin,
@@ -174,7 +200,13 @@ PluginRegistry.registerMultipleConstructors({
 
   // 媒体插件
   'image': ImagePlugin,
-  'link': LinkPlugin
+  'link': LinkPlugin,
+
+  // 表格插件
+  'table': TablePlugin,
+
+  // 搜索替换插件
+  'searchReplace': SearchReplacePlugin
 })
 
 /**

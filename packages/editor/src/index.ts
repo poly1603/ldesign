@@ -15,6 +15,26 @@ export {
   PluginManager
 } from './core'
 
+// 导出媒体插件
+export {
+  MediaPlugin,
+  createMediaPlugin,
+  MediaPresets,
+  defaultMediaConfig,
+  formatFileSize,
+  detectMediaType,
+  isFileSupported,
+  getFileExtension,
+  generateId as generateMediaId
+} from './plugins/media'
+
+export type {
+  MediaType,
+  MediaFile,
+  MediaConfig,
+  UploadHandler
+} from './plugins/media'
+
 // 导出工具函数
 export {
   getElement,

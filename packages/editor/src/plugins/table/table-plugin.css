@@ -1,0 +1,496 @@
+/* 表格对话框样式 */
+.ldesign-table-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.ldesign-table-dialog.show {
+  display: flex;
+}
+
+.table-dialog-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 400px;
+  max-width: 90vw;
+  overflow: hidden;
+}
+
+.table-dialog-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e5e5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+}
+
+.table-dialog-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.dialog-close {
+  border: none;
+  background: none;
+  font-size: 20px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.dialog-close:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+.table-dialog-body {
+  padding: 20px;
+}
+
+.table-size-selector {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.table-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 16px);
+  gap: 2px;
+  justify-content: center;
+  margin-bottom: 12px;
+  padding: 8px;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  background: #fafafa;
+  max-width: 200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.table-cell {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  border-radius: 2px;
+}
+
+.table-cell:hover,
+.table-cell.selected {
+  background: #007bff;
+  border-color: #0056b3;
+}
+
+.table-size-display {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.table-options {
+  margin-bottom: 20px;
+}
+
+.table-options label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  user-select: none;
+}
+
+.table-options input[type="checkbox"] {
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+}
+
+.table-dialog-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e5e5e5;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #f8f9fa;
+}
+
+.table-dialog-footer .btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.table-dialog-footer .btn-secondary {
+  background: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+.table-dialog-footer .btn-secondary:hover {
+  background: #5a6268;
+  border-color: #545b62;
+}
+
+.table-dialog-footer .btn-primary {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.table-dialog-footer .btn-primary:hover {
+  background: #0056b3;
+  border-color: #004085;
+}
+
+/* 表格右键菜单样式 */
+.ldesign-table-context-menu {
+  position: fixed;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+  min-width: 160px;
+  font-size: 14px;
+  user-select: none;
+}
+
+.context-menu-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  color: #333;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.context-menu-item:hover {
+  background: #f5f5f5;
+}
+
+.context-menu-item:first-child {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.context-menu-item:last-child {
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.context-menu-separator {
+  height: 1px;
+  background: #e5e5e5;
+  margin: 4px 0;
+}
+
+/* 表格样式 */
+.ldesign-editor table {
+  border-collapse: collapse;
+  margin: 8px 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.ldesign-editor table td,
+.ldesign-editor table th {
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  vertical-align: top;
+  word-wrap: break-word;
+  min-width: 50px;
+  position: relative;
+}
+
+.ldesign-editor table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  text-align: left;
+}
+
+.ldesign-editor table tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.ldesign-editor table tr:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* 表格选中状态 */
+.ldesign-editor table td:focus,
+.ldesign-editor table th:focus {
+  outline: 2px solid #007bff;
+  outline-offset: -2px;
+}
+
+/* 表格调整大小样式 */
+.table-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
+  background: transparent;
+  z-index: 10;
+}
+
+.table-resize-handle:hover {
+  background: #007bff;
+}
+
+.table-resize-handle.active {
+  background: #0056b3;
+}
+
+/* 表格工具栏 */
+.table-toolbar {
+  position: absolute;
+  top: -30px;
+  left: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: none;
+  z-index: 100;
+}
+
+.table-toolbar.show {
+  display: flex;
+}
+
+.table-toolbar-button {
+  padding: 6px 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: #666;
+  transition: all 0.2s;
+  border-radius: 3px;
+  margin: 2px;
+}
+
+.table-toolbar-button:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.table-toolbar-button:active {
+  background: #e9ecef;
+}
+
+/* 表格样式对话框 */
+.ldesign-table-style-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1002;
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.ldesign-table-style-dialog.show {
+  display: flex;
+}
+
+.style-dialog-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 450px;
+  max-width: 90vw;
+  overflow: hidden;
+}
+
+.style-dialog-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e5e5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+}
+
+.style-dialog-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.style-dialog-body {
+  padding: 24px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  min-width: 100px;
+  text-align: right;
+  margin: 0;
+}
+
+.form-group input,
+.form-group select {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.form-group input[type="color"] {
+  width: 50px;
+  height: 36px;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.form-group input[type="number"] {
+  max-width: 120px;
+}
+
+.form-group select {
+  max-width: 150px;
+  cursor: pointer;
+}
+
+.style-dialog-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e5e5e5;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #f8f9fa;
+}
+
+.style-dialog-footer .btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.style-dialog-footer .btn-secondary {
+  background: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+.style-dialog-footer .btn-secondary:hover {
+  background: #5a6268;
+  border-color: #545b62;
+}
+
+.style-dialog-footer .btn-primary {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.style-dialog-footer .btn-primary:hover {
+  background: #0056b3;
+  border-color: #004085;
+}
+
+/* 响应式表格 */
+@media (max-width: 768px) {
+  .table-dialog-content {
+    width: 350px;
+    margin: 20px;
+  }
+  
+  .style-dialog-content {
+    width: 350px;
+    margin: 20px;
+  }
+  
+  .form-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .form-group label {
+    min-width: auto;
+    text-align: left;
+  }
+  
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .table-grid {
+    grid-template-columns: repeat(8, 14px);
+  }
+  
+  .table-cell {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .ldesign-editor table {
+    font-size: 14px;
+  }
+  
+  .ldesign-editor table td,
+  .ldesign-editor table th {
+    padding: 6px 8px;
+    min-width: 40px;
+  }
+}

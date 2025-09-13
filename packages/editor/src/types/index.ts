@@ -263,7 +263,13 @@ export enum EventType {
 
   // 生命周期事件
   Init = 'init',
-  Destroy = 'destroy'
+  Destroy = 'destroy',
+
+  // 快捷键事件
+  ShortcutExecuted = 'shortcutExecuted',
+
+  // 历史记录事件
+  HistoryChange = 'historyChange'
 }
 
 /**
@@ -534,6 +540,10 @@ export interface IEditor {
   readonly events: IEventManager
   /** 选区管理器 */
   readonly selection: ISelectionManager
+  /** 快捷键管理器 */
+  readonly shortcuts?: IShortcutManager
+  /** 历史记录管理器 */
+  readonly history?: any
 
   /** 初始化编辑器 */
   init(): void
