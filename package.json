@@ -3,7 +3,7 @@
   "type": "module",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@8.0.0+sha512.0abb2f77c2ca6fe4a8101fdb431459aed4ade518bc83d8e63e0e8c2b27b1313235a5d2dde3880fc1557a7192eada36183efe6afa00033e46136d8afc49e14278",
+  "packageManager": "pnpm@10.15.0",
   "description": "基于Vue3的现代化前端开发引擎 - 提供完整的插件化架构和跨框架兼容性",
   "workspaces": [
     "packages/**",
