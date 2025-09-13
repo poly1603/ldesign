@@ -60,6 +60,40 @@ export {
   ThumbnailCacheManager,
 } from './utils/cache-manager'
 
+// 高级功能导出
+export type { BookmarkItem, OutlineItem } from './utils/bookmark-manager'
+export { PdfBookmarkManager, createBookmarkManager } from './utils/bookmark-manager'
+
+export type { 
+  AdvancedSearchOptions, 
+  AdvancedSearchResult, 
+  HighlightInfo, 
+  SearchHistory 
+} from './utils/advanced-search-manager'
+export { AdvancedSearchManager, createAdvancedSearchManager } from './utils/advanced-search-manager'
+
+export type { 
+  AccessibilityOptions, 
+  KeyboardShortcut 
+} from './utils/accessibility-manager'
+export { AccessibilityManager, createAccessibilityManager } from './utils/accessibility-manager'
+
+// 性能优化模块导出
+export type {
+  PerformanceOptions,
+  PerformanceMetrics,
+  CacheItem
+} from './utils/performance-optimizer'
+export { PerformanceOptimizer, createPerformanceOptimizer } from './utils/performance-optimizer'
+
+export type {
+  VirtualScrollOptions,
+  VirtualItem,
+  ScrollState,
+  VirtualRange
+} from './utils/virtual-scroller'
+export { VirtualScroller, createVirtualScroller } from './utils/virtual-scroller'
+
 // 便捷创建函数
 export function createPdfViewer(config: import('./core/types').PdfViewerConfig): import('./core/types').IPdfViewer {
   return new PdfViewer(config)

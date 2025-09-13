@@ -17,10 +17,21 @@ const createMockPage = () => ({
     rotation,
     transform: [scale, 0, 0, scale, 0, 0],
   })),
-  render: vi.fn(() => ({
-    promise: Promise.resolve(),
-    cancel: vi.fn(),
-  })),
+  render: vi.fn((context) => {
+    // 模拟PDF.js渲染行为，检查上下文有效性
+    if (!context || !context.canvasContext || !context.viewport) {
+      return {
+        promise: Promise.reject(new Error('Invalid render context')),
+        cancel: vi.fn(),
+      }
+    }
+    
+    // 正常情况下返回成功的promise
+    return {
+      promise: Promise.resolve(),
+      cancel: vi.fn(),
+    }
+  }),
   getTextContent: vi.fn(() => Promise.resolve({
     items: [
       { str: 'Sample text', transform: [12, 0, 0, 12, 100, 700] },

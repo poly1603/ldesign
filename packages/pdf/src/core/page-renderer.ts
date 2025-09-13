@@ -40,6 +40,20 @@ export class PdfPageRenderer implements IPdfPageRenderer {
     options: RenderOptions = {}
   ): Promise<void> {
     try {
+      // 参数校验
+      if (!page) {
+        throw new Error('Page proxy is null or undefined')
+      }
+      if (!container) {
+        throw new Error('Container element is null or undefined')
+      }
+      if (typeof page.getViewport !== 'function') {
+        throw new Error('Invalid page proxy - missing getViewport method')
+      }
+      if (typeof page.render !== 'function') {
+        throw new Error('Invalid page proxy - missing render method')
+      }
+      
       // 取消之前的渲染任务
       await this.cancelRenderTask(container)
 
@@ -59,10 +73,25 @@ export class PdfPageRenderer implements IPdfPageRenderer {
       }
 
       // 获取页面视口
-      const viewport = page.getViewport({
-        scale: renderOptions.scale,
-        rotation: renderOptions.rotation,
-      })
+      let viewport
+      try {
+        viewport = page.getViewport({
+          scale: renderOptions.scale,
+          rotation: renderOptions.rotation,
+        })
+      } catch (error) {
+        throw new Error(`Failed to get page viewport: ${error}`)
+      }
+      
+      if (!viewport) {
+        throw new Error('Viewport is null or undefined')
+      }
+      if (typeof viewport.width !== 'number' || viewport.width <= 0) {
+        throw new Error(`Invalid viewport width: ${viewport.width}`)
+      }
+      if (typeof viewport.height !== 'number' || viewport.height <= 0) {
+        throw new Error(`Invalid viewport height: ${viewport.height}`)
+      }
 
       // 根据渲染模式选择渲染方法
       switch (renderOptions.mode) {
@@ -81,16 +110,43 @@ export class PdfPageRenderer implements IPdfPageRenderer {
 
       // 渲染文本层（如果启用）
       if (renderOptions.enableTextSelection && renderOptions.mode !== 'text') {
-        await this.renderTextLayer(page, container, viewport)
+        try {
+          await this.renderTextLayer(page, container, viewport)
+        } catch (textError) {
+          console.warn('文本层渲染失败:', textError)
+          // 文本层失败不应该阻止整个渲染
+        }
       }
 
       // 渲染注释层（如果启用）
       if (renderOptions.enableAnnotations) {
-        await this.renderAnnotationLayer(page, container, viewport)
+        try {
+          await this.renderAnnotationLayer(page, container, viewport)
+        } catch (annotationError) {
+          console.warn('注释层渲染失败:', annotationError)
+          // 注释层失败不应该阻止整个渲染
+        }
       }
     }
     catch (error) {
-      throw new Error(`Failed to render page: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error('Error in renderPage:', error);
+      let errorMessage = 'Failed to render page';
+      
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      } else if (error && typeof error === 'object') {
+        try {
+          errorMessage += `: ${JSON.stringify(error)}`;
+        } catch {
+          errorMessage += `: ${String(error)}`;
+        }
+      } else if (error !== undefined && error !== null) {
+        errorMessage += `: ${String(error)}`;
+      } else {
+        errorMessage += `: Unknown error`;
+      }
+      
+      throw new Error(errorMessage);
     }
   }
 
@@ -186,7 +242,24 @@ export class PdfPageRenderer implements IPdfPageRenderer {
       return pageInfos
     }
     catch (error) {
-      throw new Error(`Failed to render all pages: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error('Error in renderAllPages:', error);
+      let errorMessage = 'Failed to render all pages';
+      
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      } else if (error && typeof error === 'object') {
+        try {
+          errorMessage += `: ${JSON.stringify(error)}`;
+        } catch {
+          errorMessage += `: ${String(error)}`;
+        }
+      } else if (error !== undefined && error !== null) {
+        errorMessage += `: ${String(error)}`;
+      } else {
+        errorMessage += `: Unknown error`;
+      }
+      
+      throw new Error(errorMessage);
     }
   }
 
@@ -348,10 +421,16 @@ export class PdfPageRenderer implements IPdfPageRenderer {
 
     // 创建canvas元素
     const canvas = document.createElement('canvas')
-    const context = canvas.getContext('2d')
+    let context: CanvasRenderingContext2D | null = null
+    
+    try {
+      context = canvas.getContext('2d')
+    } catch (error) {
+      throw new Error(`Failed to create canvas context: ${error}`)
+    }
 
     if (!context) {
-      throw new Error('Failed to get canvas context')
+      throw new Error('Failed to get 2D canvas context - context is null')
     }
 
     // 设置canvas尺寸
@@ -381,14 +460,60 @@ export class PdfPageRenderer implements IPdfPageRenderer {
 
     try {
       console.log(`开始渲染PDF页面 ${page.pageNumber} 到Canvas...`)
+      console.log('Render context:', {
+        hasCanvasContext: !!renderContext.canvasContext,
+        hasViewport: !!renderContext.viewport,
+        contextType: renderContext.canvasContext?.constructor?.name,
+        viewportWidth: renderContext.viewport?.width,
+        viewportHeight: renderContext.viewport?.height
+      })
+      
       const renderTask = page.render(renderContext)
+      console.log('Render task created:', {
+        hasRenderTask: !!renderTask,
+        hasPromise: !!renderTask?.promise,
+        taskType: renderTask?.constructor?.name
+      })
+      
       this.renderTasks.set(container, renderTask)
+
+      if (!renderTask || !renderTask.promise) {
+        throw new Error('Invalid render task - missing promise property')
+      }
 
       await renderTask.promise
       console.log(`PDF页面 ${page.pageNumber} 渲染完成`)
     } catch (error) {
       console.error(`PDF页面 ${page.pageNumber} 渲染失败:`, error)
-      throw error
+      
+      // 更详细的错误信息处理
+      let errorMessage = 'Page render failed'
+      
+      if (error && typeof error === 'object') {
+        if ('message' in error && typeof error.message === 'string') {
+          errorMessage += `: ${error.message}`
+        } else if ('name' in error && typeof error.name === 'string') {
+          errorMessage += `: ${error.name}`
+        } else {
+          // 如果是空对象或其他对象，尝试序列化
+          try {
+            const serialized = JSON.stringify(error)
+            if (serialized && serialized !== '{}') {
+              errorMessage += `: ${serialized}`
+            } else {
+              errorMessage += ': Unknown render error (empty object)'
+            }
+          } catch {
+            errorMessage += ': Unknown render error (non-serializable)'
+          }
+        }
+      } else if (error !== undefined && error !== null) {
+        errorMessage += `: ${String(error)}`
+      } else {
+        errorMessage += ': Unknown error (null/undefined)'
+      }
+      
+      throw new Error(errorMessage)
     }
 
     // 写入缓存

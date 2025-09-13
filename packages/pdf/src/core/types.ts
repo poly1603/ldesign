@@ -449,13 +449,106 @@ export interface IPdfDocumentManager {
   /** 销毁文档 */
   destroy(): Promise<void>
 }
-export interface IPdfDocumentManager {
-  /** 加载文档 */
-  loadDocument(input: PdfInput): Promise<PDFDocumentProxy>
-  /** 获取页面 */
-  getPage(pageNumber: number): Promise<PDFPageProxy>
-  /** 获取文档信息 */
-  getDocumentInfo(): Promise<PdfDocumentInfo>
-  /** 销毁文档 */
+// 高级功能接口和类型
+export interface IBookmarkManager {
+  /** 设置PDF文档 */
+  setDocument(document: PDFDocumentProxy): Promise<void>
+  /** 加载书签 */
+  loadBookmarks(): Promise<any[]>
+  /** 获取书签列表 */
+  getBookmarks(): any[]
+  /** 获取大纲 */
+  getOutline(): any[]
+  /** 切换大纲项展开状态 */
+  toggleOutlineItem(id: string): void
+  /** 获取可见大纲项 */
+  getVisibleOutlineItems(): any[]
+  /** 根据页面查找书签 */
+  findBookmarkByPage(pageNumber: number): any | null
+  /** 搜索书签 */
+  searchBookmarks(query: string): any[]
+  /** 销毁 */
+  destroy(): void
+}
+
+export interface IAdvancedSearchManager {
+  /** 设置PDF文档 */
+  setDocument(document: PDFDocumentProxy): void
+  /** 执行高级搜索 */
+  search(options: any): Promise<any[]>
+  /** 获取当前搜索结果 */
+  getCurrentResults(): any[]
+  /** 清除搜索结果 */
+  clearResults(): void
+  /** 获取搜索历史 */
+  getSearchHistory(): any[]
+  /** 清除搜索历史 */
+  clearHistory(): void
+  /** 获取搜索建议 */
+  getSearchSuggestions(query: string, limit?: number): string[]
+  /** 导出搜索结果 */
+  exportResults(format?: 'json' | 'csv' | 'txt'): string
+  /** 销毁 */
+  destroy(): void
+}
+
+// Performance optimization interfaces
+export interface IPerformanceOptimizer {
+  /** 设置PDF文档 */
+  setDocument(document: PDFDocumentProxy): void
+  /** 缓存页面 */
+  cachePage(pageNumber: number, priority?: number): Promise<PDFPageProxy | null>
+  /** 缓存渲染结果 */
+  cacheRender(pageNumber: number, canvas: HTMLCanvasElement, scale?: number): void
+  /** 获取渲染缓存 */
+  getCachedRender(pageNumber: number, scale?: number): HTMLCanvasElement | null
+  /** 缓存缩略图 */
+  cacheThumbnail(pageNumber: number, thumbnail: HTMLCanvasElement): void
+  /** 预加载页面 */
+  preloadPages(currentPage: number): Promise<void>
+  /** 观察页面元素 */
+  observePageElement(element: HTMLElement): void
+  /** 停止观察页面元素 */
+  unobservePageElement(element: HTMLElement): void
+  /** 获取性能指标 */
+  getMetrics(): any
+  /** 获取缓存统计 */
+  getCacheStats(): any
+  /** 清理所有缓存 */
+  clearAllCaches(): void
+  /** 销毁 */
+  destroy(): void
+}
+
+export interface IVirtualScroller {
+  /** 初始化 */
+  initialize(container: HTMLElement, scrollContainer?: HTMLElement): void
+  /** 设置项目数量 */
+  setItemCount(count: number): void
+  /** 测量项目高度 */
+  measureItem(index: number, height: number): void
+  /** 计算可见范围 */
+  calculateVisibleRange(): any
+  /** 滚动到指定项目 */
+  scrollToItem(index: number, alignment?: 'start' | 'center' | 'end'): void
+  /** 获取项目位置信息 */
+  getItemRect(index: number): DOMRect | null
+  /** 获取可见项目 */
+  getVisibleItems(): any[]
+  /** 观察页面元素 */
+  observePageElement(element: HTMLElement): void
+  /** 停止观察页面元素 */
+  unobservePageElement(element: HTMLElement): void
+  /** 设置回调函数 */
+  onRangeChanged(callback: (range: any) => void): void
+  onItemVisibilityChanged(callback: (item: any, isVisible: boolean) => void): void
+  onScrollStateChanged(callback: (state: any) => void): void
+  /** 获取滚动状态 */
+  getScrollState(): any
+  /** 获取当前范围 */
+  getCurrentRange(): any
+  /** 刷新 */
+  refresh(): void
+  /** 销毁 */
   destroy(): void
 }

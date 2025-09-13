@@ -3,7 +3,7 @@
  * 提供完整的PDF预览功能
  */
 
-import { defineComponent, ref, onMounted, onBeforeUnmount, watch, nextTick, type PropType } from 'vue'
+import { defineComponent, ref, onMounted, onBeforeUnmount, watch, nextTick, h, type PropType } from 'vue'
 import type {
   PdfInput,
   ZoomMode,
@@ -847,10 +847,23 @@ export default defineComponent({
                           >
                             <div class="thumbnail-image">
                               {/* 将canvas添加到DOM */}
-<div ref={(el) => {
+                              <div ref={(el) => {
                                 const host = el as unknown as HTMLElement | null
-                                if (host && !host.querySelector('canvas')) {
-                                  host.appendChild(thumbnail.canvas)
+                                if (host && !host.querySelector('canvas') && thumbnail.canvas) {
+                                  // 检查canvas是否是有效的DOM节点
+                                  if (thumbnail.canvas instanceof HTMLCanvasElement) {
+                                    host.appendChild(thumbnail.canvas)
+                                  } else if (thumbnail.canvas && typeof thumbnail.canvas === 'object' && 'tagName' in thumbnail.canvas) {
+                                    // 如果是模拟对象，创建一个真正的canvas
+                                    const realCanvas = document.createElement('canvas')
+                                    realCanvas.width = thumbnail.canvas.width || 150
+                                    realCanvas.height = thumbnail.canvas.height || 200
+                                    realCanvas.style.width = '100%'
+                                    realCanvas.style.height = 'auto'
+                                    realCanvas.style.border = '1px solid #ccc'
+                                    realCanvas.style.backgroundColor = '#f5f5f5'
+                                    host.appendChild(realCanvas)
+                                  }
                                 }
                               }} />
                             </div>
