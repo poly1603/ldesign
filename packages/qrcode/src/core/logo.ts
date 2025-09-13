@@ -1,6 +1,6 @@
 /**
- * LDesign QRCode - Logo澶勭悊鍣?
- * 瀹炵幇Logo宓屽叆鍒颁簩缁寸爜鐨勫姛鑳?
+ * LDesign QRCode - Logo处理器
+ * 实现Logo嵌入到二维码的功能
  */
 
 import type { LogoOptions } from '../types'
@@ -9,11 +9,11 @@ export class LogoProcessor {
   private imageCache = new Map<string, HTMLImageElement>()
 
   constructor() {
-    // 鍒濆鍖?
+    // 初始化
   }
 
   /**
-   * 鍚慍anvas娣诲姞Logo
+   * 向Canvas添加Logo
    */
   async addLogoToCanvas(
     canvas: HTMLCanvasElement,
@@ -35,7 +35,7 @@ export class LogoProcessor {
       : Math.floor(baseSize * 0.2)
     const margin = logoOptions.margin || 0
 
-    // 璁＄畻Logo浣嶇疆
+    // 计算Logo位置
     const position = this.calculateLogoPosition(
       canvas.width,
       canvas.height,
@@ -47,15 +47,15 @@ export class LogoProcessor {
     const x = position.x
     const y = position.y
 
-    // 淇濆瓨褰撳墠鐘舵€?
+    // 保存当前状态
     ctx.save()
 
-    // 璁剧疆閫忔槑搴?
+    // 设置透明度
     if (logoOptions.opacity !== undefined) {
       ctx.globalAlpha = logoOptions.opacity
     }
 
-    // 缁樺埗鑳屾櫙锛堝鏋滆缃級
+    // 绘制背景（如果设置）
     const bg = (logoOptions as any).background || (logoOptions as any).backgroundColor
     if (bg) {
       this.drawLogoBackground(ctx, x - margin, y - margin, logoSize + margin * 2, {
@@ -64,7 +64,7 @@ export class LogoProcessor {
       } as any)
     }
 
-    // 缁樺埗杈规锛堝鏋滆缃級
+    // 绘制边框（如果设置）
     const border = (logoOptions as any).border
     if (border && border.width && border.color) {
       this.drawLogoBorder(ctx, x - margin, y - margin, logoSize + margin * 2, {
@@ -76,22 +76,22 @@ export class LogoProcessor {
       this.drawLogoBorder(ctx, x - margin, y - margin, logoSize + margin * 2, logoOptions as any)
     }
 
-    // 鍒涘缓瑁佸壀璺緞
+    // 创建裁剪路径
     if (logoOptions.shape === 'circle') {
       ctx.beginPath()
       ctx.arc(x + logoSize / 2, y + logoSize / 2, logoSize / 2, 0, Math.PI * 2)
       ctx.clip()
     }
 
-    // 缁樺埗Logo鍥剧墖
+    // 绘制Logo图片
     ctx.drawImage(image, x, y, logoSize, logoSize)
 
-    // 鎭㈠鐘舵€?
+    // 恢复状态
     ctx.restore()
   }
 
   /**
-   * 鍚慡VG娣诲姞Logo - 鎺堟潈鏀寔SVG瀛楃涓插拰鍏冪礌
+   * 向SVG添加Logo - 授权支持SVG字符串和元素
    */
   async addLogoToSVG(
     svg: string | SVGElement,
@@ -177,7 +177,7 @@ export class LogoProcessor {
 
     const svgElement = svg
 
-    // 鑾峰彇SVG灏哄锛屼紭鍏堜娇鐢ㄥ睘鎬у€?
+    // 获取SVG尺寸，优先使用属性值
     const width = Number(svgElement.getAttribute('width')) || 200
     const height = Number(svgElement.getAttribute('height')) || 200
 
@@ -187,7 +187,7 @@ export class LogoProcessor {
       : Math.floor(baseSize * 0.2)
     const margin = logoOptions.margin || 0
 
-    // 璁＄畻Logo浣嶇疆
+    // 计算Logo位置
     const position = this.calculateLogoPosition(
       width,
       height,

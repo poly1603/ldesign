@@ -41,14 +41,14 @@ export interface UseQRCodeReturn {
  * 主要的二维码Hook
  */
 export function useQRCode(initialOptions?: QRCodeOptions | Ref<QRCodeOptions>): UseQRCodeReturn {
-  // 鐘舵€?
+  // 状态
   const initial = (isRef(initialOptions) ? initialOptions.value : initialOptions) as QRCodeOptions | undefined
   const result = ref<QRCodeResult | null>(null)
   const loading = ref(false)
   const error = ref<QRCodeError | null>(null)
   const options = ref<QRCodeOptions>(initial || { data: '', size: 200, format: 'canvas' })
 
-  // 鐢熸垚鍣ㄥ疄渚?
+  // 生成器实例
   const generator = new QRCodeGenerator(initial)
 
   // 计算属性

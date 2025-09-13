@@ -27,14 +27,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['./tests/setup.ts'],
-    exclude: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/e2e/**',
-      '**/examples/**/tests/e2e/**',
-      '**/*.spec.ts' // 排除Playwright测试文件
-    ]
+    setupFiles: ['./tests/setup.ts']
   },
 
   resolve: {

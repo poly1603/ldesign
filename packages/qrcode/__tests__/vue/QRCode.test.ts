@@ -132,7 +132,9 @@ describe('qRCode Vue Component', () => {
         props: defaultProps,
       })
 
+      // 等待QR码生成和DOM更新完成
       await nextTick()
+      await new Promise(resolve => setTimeout(resolve, 100))
 
       const canvas = wrapper.find('canvas')
       expect(canvas.exists()).toBe(true)
@@ -146,7 +148,9 @@ describe('qRCode Vue Component', () => {
         },
       })
 
+      // 等待QR码生成和DOM更新完成
       await nextTick()
+      await new Promise(resolve => setTimeout(resolve, 100))
 
       const svgContainer = wrapper.find('.qrcode-svg')
       expect(svgContainer.exists()).toBe(true)
@@ -160,7 +164,9 @@ describe('qRCode Vue Component', () => {
         },
       })
 
+      // 等待QR码生成和DOM更新完成
       await nextTick()
+      await new Promise(resolve => setTimeout(resolve, 100))
 
       const img = wrapper.find('img')
       expect(img.exists()).toBe(true)
@@ -222,7 +228,9 @@ describe('qRCode Vue Component', () => {
         props: defaultProps,
       })
 
+      // 等待QR码生成完成
       await nextTick()
+      await new Promise(resolve => setTimeout(resolve, 100))
 
       const generatedEvents = wrapper.emitted('generated')
       expect(generatedEvents).toBeTruthy()
@@ -245,7 +253,9 @@ describe('qRCode Vue Component', () => {
         props: defaultProps,
       })
 
+      // 等待错误处理完成
       await nextTick()
+      await new Promise(resolve => setTimeout(resolve, 100))
 
       const errorEvents = wrapper.emitted('error')
       expect(errorEvents).toBeTruthy()

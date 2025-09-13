@@ -56,6 +56,53 @@ export {
   PerformanceMonitor,
   calculateActualSize,
 } from './utils'
+
+// 新功能模块
+export {
+  QRDataValidator,
+  ValidatorPresets,
+  type ValidationResult,
+} from './features/validation'
+
+export {
+  BatchDownloader,
+  batchDownload,
+  type BatchDownloadOptions,
+  type BatchItem,
+} from './features/batch-download'
+
+export {
+  ThemeManager,
+  themeManager,
+  presetThemes,
+  applyTheme,
+  getTheme,
+  registerTheme,
+  getAllThemes,
+} from './features/themes'
+
+// 高级类型
+export type {
+  StrictLogoOptions,
+  StrictQRCodeOptions,
+  ThemeConfig,
+  PresetThemes,
+  ValidationOptions,
+  DownloadOptions,
+  BatchGenerateOptions,
+  QRCodeElement,
+} from './types/advanced'
+
+export {
+  TypeSafeConverter,
+  RuntimeTypeChecker,
+  isCanvasRenderingContext2D,
+  isSVGElement,
+  isHTMLImageElement,
+  isHTMLCanvasElement,
+  isQRCodeGenerationSuccess,
+  isQRCodeGenerationError,
+} from './types/advanced'
 // Vue集成
 export * from './vue'
 
@@ -66,7 +113,8 @@ export * from './vue'
 // export * from './angular'
 
 // 版本信息
-export const version = '1.0.0'
+// 注意：这里应该从 package.json 动态读取版本，但在构建时会被替换
+export const version = '1.0.1'
 
 // 默认导出
 export default {
@@ -74,4 +122,10 @@ export default {
   generateQRCode,
   QRCodeGenerator,
   detectFramework,
+  // 新功能
+  QRDataValidator,
+  BatchDownloader,
+  ThemeManager,
+  themeManager,
+  presetThemes,
 }

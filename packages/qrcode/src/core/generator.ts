@@ -14,12 +14,13 @@ import QRCode from 'qrcode'
 import { createError, PerformanceMonitor } from '../utils'
 import { LogoProcessor } from './logo'
 import { StyleProcessor } from './styles'
+import { AdvancedCache, createCache, type CacheStats } from './cache'
 
 export class QRCodeGenerator {
   private logoProcessor: LogoProcessor
   private styleProcessor: StyleProcessor
   private performanceMonitor: PerformanceMonitor
-  private cache: Map<string, any> = new Map()
+  private cache: AdvancedCache<any>
   private config: GeneratorConfig
   private options: QRCodeOptions
 
@@ -41,6 +42,11 @@ export class QRCodeGenerator {
     this.logoProcessor = new LogoProcessor()
     this.styleProcessor = new StyleProcessor()
     this.performanceMonitor = new PerformanceMonitor()
+    this.cache = createCache({
+      maxSize: this.config.maxCacheSize,
+      ttl: 1000 * 60 * 30, // 30 minutes
+      maxMemoryUsage: 20 * 1024 * 1024, // 20MB
+    })
   }
 
   /**
@@ -275,7 +281,15 @@ export class QRCodeGenerator {
       return value
     })
 
-    return `${text}:${btoa(optionsStr)}`
+    // 使用简单的哈希而非Btoa来避免编码问题
+    let hash = 0
+    const combined = text + optionsStr
+    for (let i = 0; i < combined.length; i++) {
+      const char = combined.charCodeAt(i)
+      hash = ((hash << 5) - hash) + char
+      hash = hash & hash // 转换为32位整数
+    }
+    return Math.abs(hash).toString(36)
   }
 
   /**
@@ -303,11 +317,8 @@ export class QRCodeGenerator {
   /**
    * 获取缓存统计
    */
-  getCacheStats(): { size: number, maxSize: number } {
-    return {
-      size: this.cache.size,
-      maxSize: this.config.maxCacheSize || 100,
-    }
+  getCacheStats(): CacheStats {
+    return this.cache.getStats()
   }
 
   /**
@@ -318,28 +329,28 @@ export class QRCodeGenerator {
   }
 
   /**
-   * 娓呴櫎鎬ц兘鎸囨爣
+   * 清除性能指标
    */
   clearPerformanceMetrics(): void {
     this.performanceMonitor.clear()
   }
 
   /**
-   * 鑾峰彇褰撳墠閫夐」
+   * 获取当前选项
    */
   getOptions(): QRCodeOptions {
     return { ...this.options }
   }
 
   /**
-   * 鏇存柊閫夐」
+   * 更新选项
    */
   updateOptions(options: Partial<QRCodeOptions>): void {
     this.options = { ...this.options, ...options }
   }
 
   /**
-   * 鏇存柊閰嶇疆
+   * 更新配置
    */
   updateConfig(config: Partial<GeneratorConfig>): void {
     this.config = { ...this.config, ...config }
