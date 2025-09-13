@@ -995,12 +995,29 @@ export class FlowchartEditor {
    */
   updateNode(id: string, nodeConfig: Partial<ApprovalNodeConfig>): void {
     const nodeModel = this.lf.getNodeModelById(id)
-    if (nodeModel) {
-      // 构建更新数据
-      const updateData: any = {}
+    if (!nodeModel) {
+      console.warn(`节点 ${id} 不存在`)
+      return
+    }
 
+    try {
+      // 构建完整的更新数据
+      const currentData = nodeModel.getData()
+      const updateData: any = {
+        ...currentData,
+        id // 确保保留节点ID
+      }
+
+      // 更新各种属性
       if (nodeConfig.text !== undefined) {
-        updateData.text = nodeConfig.text
+        // LogicFlow需要文本为对象格式，不是简单字符串
+        updateData.text = {
+          value: nodeConfig.text,
+          x: nodeConfig.x || currentData.x,
+          y: nodeConfig.y || currentData.y,
+          draggable: false,
+          editable: true
+        }
       }
       if (nodeConfig.x !== undefined) {
         updateData.x = nodeConfig.x
@@ -1008,26 +1025,82 @@ export class FlowchartEditor {
       if (nodeConfig.y !== undefined) {
         updateData.y = nodeConfig.y
       }
+      if (nodeConfig.type !== undefined) {
+        updateData.type = nodeConfig.type
+      }
       if (nodeConfig.properties !== undefined) {
-        updateData.properties = { ...nodeModel.properties, ...nodeConfig.properties }
+        updateData.properties = { ...currentData.properties, ...nodeConfig.properties }
       }
 
-      // 使用LogicFlow的updateText方法更新节点文本
-      if (nodeConfig.text !== undefined) {
-        this.lf.updateText(id, nodeConfig.text)
+      // 使用LogicFlow的正确 API更新节点数据
+      // 方法1: 尝试使用 setNodeData
+      if (typeof this.lf.setNodeData === 'function') {
+        console.log('🔧 使用 lf.setNodeData 方法')
+        this.lf.setNodeData(id, updateData)
+      }
+      // 方法2: 尝试使用 updateNode  
+      else if (typeof this.lf.updateNode === 'function') {
+        console.log('🔧 使用 lf.updateNode 方法')
+        this.lf.updateNode(id, updateData)
+      }
+      // 方法3: 直接操作节点模型属性
+      else {
+        console.log('🔧 直接更新节点模型属性')
+        // 逐个更新节点模型的属性
+        if (updateData.text !== undefined) {
+          // 确保 text 属性是正确的对象格式
+          if (typeof updateData.text === 'string') {
+            // 如果是字符串，转换为对象格式
+            nodeModel.text = {
+              value: updateData.text,
+              x: nodeModel.x,
+              y: nodeModel.y,
+              draggable: false,
+              editable: true
+            }
+          } else {
+            // 已经是对象格式，直接赋值
+            nodeModel.text = updateData.text
+          }
+        }
+        if (updateData.x !== undefined) {
+          nodeModel.x = updateData.x
+        }
+        if (updateData.y !== undefined) {
+          nodeModel.y = updateData.y
+        }
+        if (updateData.type !== undefined) {
+          nodeModel.type = updateData.type
+        }
+        if (updateData.properties !== undefined) {
+          nodeModel.properties = { ...nodeModel.properties, ...updateData.properties }
+        }
+        
+        // 触发节点模型的属性更新
+        if (typeof nodeModel.updateAttributes === 'function') {
+          nodeModel.updateAttributes(updateData)
+        } else if (typeof nodeModel.setAttributes === 'function') {
+          nodeModel.setAttributes(updateData)
+        }
       }
 
-      // 更新其他属性
-      if (nodeConfig.x !== undefined || nodeConfig.y !== undefined) {
-        nodeModel.moveTo(nodeConfig.x || nodeModel.x, nodeConfig.y || nodeModel.y)
-      }
+      // 不要调用无参数的render()，这会清空画布
+      // 直接操作节点模型属性已经能触发视觉更新
+      // 如果需要强制刷新，应该使用 lf.focusOn 或类似方法
+      console.log('💡 跳过render()调用，避免清空画布')
 
-      if (nodeConfig.properties !== undefined) {
-        nodeModel.properties = { ...nodeModel.properties, ...nodeConfig.properties }
+      // 更新本地选中节点状态
+      if (this.selectedNode && this.selectedNode.id === id) {
+        this.selectedNode = { ...this.selectedNode, ...nodeConfig } as ApprovalNodeConfig
       }
 
       // 触发数据变化事件
       this.emit('data:change', this.getData())
+
+      console.log(`✅ 节点已更新:`, id, nodeConfig)
+    } catch (error) {
+      console.error(`更新节点失败:`, error)
+      throw error
     }
   }
 
@@ -1069,6 +1142,9 @@ export class FlowchartEditor {
       // 使用LogicFlow的setEdgeData方法
       this.lf.setEdgeData(id, updateData)
 
+      // 不调用render()避免清空画布，setEdgeData已经会触发更新
+      console.log('💡 跳过render()调用，避免清空画布')
+
       // 更新本地选中边状态
       if (this.selectedEdge && this.selectedEdge.id === id) {
         this.selectedEdge = { ...this.selectedEdge, ...cleanedUpdates } as ApprovalEdgeConfig
@@ -1089,6 +1165,19 @@ export class FlowchartEditor {
   }
 
   /**
+   * 清理更新数据，移除无效值
+   */
+  private cleanUpdates(updates: any): any {
+    const cleaned: any = {}
+    for (const [key, value] of Object.entries(updates)) {
+      if (value !== undefined && value !== null) {
+        cleaned[key] = value
+      }
+    }
+    return cleaned
+  }
+
+  /**
    * 获取流程图数据
    */
   getData(): FlowchartData {
@@ -1104,6 +1193,52 @@ export class FlowchartEditor {
    */
   setData(data: FlowchartData): void {
     this.lf.renderRawData(data)
+  }
+
+  /**
+   * 根据ID获取节点
+   */
+  getNodeById(id: string): ApprovalNodeConfig | null {
+    try {
+      const nodeModel = this.lf.getNodeModelById(id)
+      if (!nodeModel) return null
+      
+      const nodeData = nodeModel.getData()
+      return {
+        id: nodeData.id,
+        type: nodeData.type as ApprovalNodeType,
+        x: nodeData.x,
+        y: nodeData.y,
+        text: typeof nodeData.text === 'object' && nodeData.text?.value ? nodeData.text.value : (typeof nodeData.text === 'string' ? nodeData.text : ''),
+        properties: nodeData.properties || {}
+      }
+    } catch (error) {
+      console.warn(`获取节点 ${id} 失败:`, error)
+      return null
+    }
+  }
+
+  /**
+   * 根据ID获取连线
+   */
+  getEdgeById(id: string): ApprovalEdgeConfig | null {
+    try {
+      const edgeModel = this.lf.getEdgeModelById(id)
+      if (!edgeModel) return null
+      
+      const edgeData = edgeModel.getData()
+      return {
+        id: edgeData.id,
+        type: edgeData.type as ApprovalEdgeType,
+        sourceNodeId: edgeData.sourceNodeId,
+        targetNodeId: edgeData.targetNodeId,
+        text: typeof edgeData.text === 'object' && edgeData.text?.value ? edgeData.text.value : (typeof edgeData.text === 'string' ? edgeData.text : ''),
+        properties: edgeData.properties || {}
+      }
+    } catch (error) {
+      console.warn(`获取连线 ${id} 失败:`, error)
+      return null
+    }
   }
 
   /**
@@ -1384,6 +1519,81 @@ export class FlowchartEditor {
    */
   getContainer(): HTMLElement {
     return this.lf.container
+  }
+
+  /**
+   * 获取LogicFlow实例（用于调试和测试）
+   */
+  getLogicFlow() {
+    return this.lf
+  }
+
+  /**
+   * 调试LogicFlow API
+   */
+  debugLogicFlowAPI(): void {
+    console.log('🔍 LogicFlow API 调试信息:')
+    console.log('LogicFlow 实例:', this.lf)
+    console.log('可用的节点相关方法:')
+    
+    const nodeMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(this.lf))
+      .filter(name => name.includes('Node') && typeof this.lf[name] === 'function')
+    console.log('原型链上的方法:', nodeMethods)
+    
+    const instanceMethods = Object.getOwnPropertyNames(this.lf)
+      .filter(name => name.includes('Node') && typeof this.lf[name] === 'function')
+    console.log('实例上的方法:', instanceMethods)
+    
+    // 检查具体方法
+    const methods = ['setNodeData', 'updateNode', 'updateData', 'changeNodeData', 'setData']
+    methods.forEach(method => {
+      console.log(`${method}: ${typeof this.lf[method] === 'function' ? '✅ 可用' : '❌ 不可用'}`)
+    })
+  }
+
+  /**
+   * 手动设置属性面板的更新回调
+   * 当没有使用UIManager时，可以手动连接属性面板
+   */
+  connectPropertyPanel(propertyPanel: any): void {
+    if (propertyPanel && typeof propertyPanel.setSelectedNode === 'function') {
+      // 监听节点选择事件
+      this.lf.on('node:click', ({ data }) => {
+        const nodeData = this.getNodeById(data.id)
+        propertyPanel.setSelectedNode(nodeData)
+      })
+      
+      // 监听边选择事件  
+      this.lf.on('edge:click', ({ data }) => {
+        const edgeData = this.getEdgeById(data.id)
+        propertyPanel.setSelectedEdge(edgeData)
+      })
+      
+      // 监听画布点击（清除选择）
+      this.lf.on('blank:click', () => {
+        propertyPanel.setSelectedNode(null)
+        propertyPanel.setSelectedEdge?.(null)
+      })
+    }
+    
+    console.log('✅ 属性面板已连接到编辑器')
+  }
+
+  /**
+   * 创建属性面板更新回调函数
+   * 返回一个可以直接用于PropertyPanel配置的回调函数
+   */
+  createPropertyPanelCallbacks() {
+    return {
+      onUpdateNode: (nodeId: string, updates: Partial<ApprovalNodeConfig>) => {
+        console.log('🔄 属性面板触发节点更新:', nodeId, updates)
+        this.updateNode(nodeId, updates)
+      },
+      onUpdateEdge: (edgeId: string, updates: Partial<ApprovalEdgeConfig>) => {
+        console.log('🔄 属性面板触发连线更新:', edgeId, updates)
+        this.updateEdge(edgeId, updates)
+      }
+    }
   }
 
   /**

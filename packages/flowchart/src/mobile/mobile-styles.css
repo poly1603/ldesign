@@ -1,0 +1,356 @@
+/**
+ * 移动端样式优化
+ * 为移动设备提供更好的触控体验
+ */
+
+/* 移动端基础样式 */
+@media (max-width: 768px) {
+  /* 增强触控区域 */
+  .touch-enhanced {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative;
+  }
+
+  /* 触控反馈效果 */
+  .touch-enhanced:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+    transition: all 0.1s ease;
+  }
+
+  /* 工具栏移动端优化 */
+  .ldesign-toolbar {
+    flex-wrap: wrap;
+    padding: 8px 4px;
+  }
+
+  .toolbar-tool {
+    min-width: 48px;
+    min-height: 48px;
+    margin: 2px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 属性面板移动端优化 */
+  .ldesign-property-panel {
+    font-size: 16px; /* 防止iOS缩放 */
+  }
+
+  .property-input {
+    min-height: 44px;
+    font-size: 16px; /* 防止iOS缩放 */
+    padding: 12px 16px;
+    border-radius: 8px;
+  }
+
+  /* 物料面板移动端优化 */
+  .material-item {
+    min-height: 60px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* 节点移动端优化 */
+  .flowchart-node {
+    min-width: 80px;
+    min-height: 60px;
+  }
+
+  /* 按钮移动端优化 */
+  button, .btn {
+    min-height: 44px;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    font-weight: 500;
+  }
+
+  .btn-primary {
+    box-shadow: 0 2px 8px rgba(114, 46, 209, 0.3);
+  }
+
+  .btn-secondary {
+    border: 2px solid var(--ldesign-border-color);
+  }
+
+  /* 滚动优化 */
+  .panel-content,
+  .material-list,
+  .property-list {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* 防止选择 */
+  .ldesign-flowchart-ui {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* 输入框特殊处理 */
+  input, textarea, select {
+    -webkit-user-select: auto;
+    -moz-user-select: auto;
+    -ms-user-select: auto;
+    user-select: auto;
+  }
+}
+
+/* 平板设备优化 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .touch-enhanced {
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+
+  .toolbar-tool {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .property-input {
+    min-height: 40px;
+    font-size: 15px;
+  }
+}
+
+/* 触控设备通用样式 */
+@media (pointer: coarse) {
+  /* 增强所有可点击元素 */
+  button, 
+  [role="button"],
+  .clickable,
+  .toolbar-tool,
+  .material-item {
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(114, 46, 209, 0.1);
+    tap-highlight-color: rgba(114, 46, 209, 0.1);
+  }
+
+  /* 触控反馈动画 */
+  .touch-feedback {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .touch-feedback::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(114, 46, 209, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+    pointer-events: none;
+  }
+
+  .touch-feedback:active::before {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+/* 手势相关样式 */
+.gesture-preview {
+  position: absolute;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.pinch-preview {
+  border: 2px dashed var(--ldesign-brand-color);
+  background: rgba(114, 46, 209, 0.05);
+  border-radius: 8px;
+}
+
+.drag-preview {
+  background: rgba(114, 46, 209, 0.1);
+  border: 1px solid var(--ldesign-brand-color);
+  border-radius: 4px;
+}
+
+/* 长按菜单样式 */
+.long-press-menu {
+  position: fixed;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  padding: 8px;
+  z-index: 10000;
+  animation: longPressMenuFadeIn 0.2s ease-out;
+}
+
+@keyframes longPressMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.long-press-menu-item {
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+}
+
+.long-press-menu-item:hover,
+.long-press-menu-item:active {
+  background: var(--ldesign-bg-color-component);
+}
+
+/* 移动端特殊状态 */
+.mobile-dragging {
+  pointer-events: none;
+}
+
+.mobile-dragging * {
+  pointer-events: none;
+}
+
+/* 触觉反馈指示器 */
+.haptic-feedback-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(114, 46, 209, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  z-index: 10001;
+  animation: hapticFeedbackFade 1s ease-out forwards;
+}
+
+@keyframes hapticFeedbackFade {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* 移动端优化的滚动条 */
+@media (max-width: 768px) {
+  .panel-content::-webkit-scrollbar {
+    width: 2px;
+  }
+
+  .panel-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .panel-content::-webkit-scrollbar-thumb {
+    background: rgba(114, 46, 209, 0.3);
+    border-radius: 1px;
+  }
+}
+
+/* 横屏模式优化 */
+@media (max-width: 768px) and (orientation: landscape) {
+  .ldesign-flowchart-ui {
+    height: 100vh;
+    height: 100dvh; /* 动态视口高度 */
+  }
+
+  .ldesign-toolbar {
+    height: 48px;
+    min-height: 48px;
+  }
+
+  .toolbar-tool {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .ldesign-property-panel,
+  .ldesign-material-panel {
+    font-size: 14px;
+  }
+
+  .property-input {
+    min-height: 36px;
+    font-size: 14px;
+  }
+}
+
+/* 安全区域支持 */
+@supports (padding: max(0px)) {
+  .ldesign-flowchart-ui {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
+
+/* 暗色模式移动端优化 */
+@media (prefers-color-scheme: dark) {
+  .long-press-menu {
+    background: #2a2a2a;
+    color: white;
+  }
+
+  .touch-enhanced:active {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .haptic-feedback-indicator {
+    background: rgba(114, 46, 209, 0.9);
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .touch-enhanced {
+    border: 2px solid;
+  }
+
+  .touch-enhanced:active {
+    border-width: 3px;
+  }
+
+  .toolbar-tool,
+  .material-item,
+  .property-input {
+    border: 2px solid;
+  }
+}
+
+/* 减少动画偏好支持 */
+@media (prefers-reduced-motion: reduce) {
+  .touch-enhanced,
+  .touch-feedback::before,
+  .long-press-menu,
+  .haptic-feedback-indicator {
+    animation: none !important;
+    transition: none !important;
+  }
+}

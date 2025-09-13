@@ -50,6 +50,8 @@ export class PropertyPanel {
   private panelElement: HTMLElement | null = null
   private selectedNode: ApprovalNodeConfig | null = null
   private selectedEdge: ApprovalEdgeConfig | null = null
+  private previewTimer: NodeJS.Timeout | null = null
+  private hasChangesMark: boolean = false
 
   constructor(container: HTMLElement, config: PropertyPanelConfig = {}) {
     this.container = container
@@ -244,11 +246,26 @@ export class PropertyPanel {
       })
     }
 
-    // 输入框实时更新
+    // 输入框实时更新（可选：启用实时预览）
     const inputs = this.panelElement.querySelectorAll('.property-input')
     inputs.forEach(input => {
       input.addEventListener('input', () => {
         this.markAsChanged()
+        
+        // 可选：启用实时预览更新（防抖处理）
+        if (!this.config.readonly) {
+          clearTimeout(this.previewTimer)
+          this.previewTimer = setTimeout(() => {
+            this.previewChanges()
+          }, 300) // 300ms防抖
+        }
+      })
+      
+      // 失焦时立即应用更改（可选）
+      input.addEventListener('blur', () => {
+        if (this.hasChanges()) {
+          this.applyChanges()
+        }
       })
     })
   }
@@ -293,6 +310,7 @@ export class PropertyPanel {
    * 标记为已更改
    */
   private markAsChanged(): void {
+    this.hasChangesMark = true
     const applyBtn = this.panelElement?.querySelector('#apply-changes') as HTMLButtonElement
     if (applyBtn) {
       applyBtn.classList.add('has-changes')
@@ -301,9 +319,47 @@ export class PropertyPanel {
   }
 
   /**
+   * 检查是否有更改
+   */
+  private hasChanges(): boolean {
+    return this.hasChangesMark
+  }
+
+  /**
+   * 预览更改（实时更新但不保存）
+   */
+  private previewChanges(): void {
+    if (!this.selectedNode || !this.panelElement) return
+
+    const updates: Partial<ApprovalNodeConfig> = {}
+    const inputs = this.panelElement.querySelectorAll('.property-input[data-field]') as NodeListOf<HTMLInputElement>
+
+    inputs.forEach(input => {
+      const field = input.dataset.field
+      const value = input.value
+
+      if (field) {
+        if (field.startsWith('properties.')) {
+          const propKey = field.replace('properties.', '')
+          if (!updates.properties) updates.properties = {}
+          updates.properties[propKey] = value
+        } else if (field === 'x' || field === 'y') {
+          updates[field] = parseFloat(value) || 0
+        } else {
+          (updates as any)[field] = value
+        }
+      }
+    })
+
+    // 只触发更新回调，不更新本地状态
+    this.config.onUpdateNode?.(this.selectedNode.id, updates)
+  }
+
+  /**
    * 移除更改标记
    */
   private removeChangedMark(): void {
+    this.hasChangesMark = false
     const applyBtn = this.panelElement?.querySelector('#apply-changes') as HTMLButtonElement
     if (applyBtn) {
       applyBtn.classList.remove('has-changes')
@@ -663,6 +719,12 @@ export class PropertyPanel {
    * 销毁面板
    */
   public destroy(): void {
+    // 清理定时器
+    if (this.previewTimer) {
+      clearTimeout(this.previewTimer)
+      this.previewTimer = null
+    }
+    
     if (this.panelElement) {
       this.panelElement.remove()
       this.panelElement = null

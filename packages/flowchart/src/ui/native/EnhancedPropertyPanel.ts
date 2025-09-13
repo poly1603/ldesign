@@ -1076,36 +1076,67 @@ export class EnhancedPropertyPanel {
   private applyNodeChanges(): void {
     if (!this.selectedNode || !this.panelElement) return
 
-    const updates: Partial<ApprovalNodeConfig> = {}
-    const inputs = this.panelElement.querySelectorAll('.property-input[data-field]') as NodeListOf<HTMLInputElement>
+    try {
+      const updates: Partial<ApprovalNodeConfig> = {}
+      const inputs = this.panelElement.querySelectorAll('.property-input[data-field]') as NodeListOf<HTMLInputElement>
 
-    inputs.forEach(input => {
-      const field = input.dataset.field
-      let value: any = input.value
+      inputs.forEach(input => {
+        const field = input.dataset.field
+        let value: any = input.value
 
-      if (!field) return
+        if (!field) return
 
-      // 处理不同类型的字段
-      if (input.type === 'checkbox') {
-        value = (input as HTMLInputElement).checked
-      } else if (input.type === 'number' || input.type === 'range') {
-        value = parseFloat(value) || 0
+        // 处理不同类型的字段
+        if (input.type === 'checkbox') {
+          value = (input as HTMLInputElement).checked
+        } else if (input.type === 'number' || input.type === 'range') {
+          value = parseFloat(value) || 0
+        }
+
+        // 设置嵌套字段
+        this.setNestedProperty(updates, field, value)
+      })
+
+      // 触发更新回调，传递清理后的数据
+      if (this.selectedNode.id && Object.keys(updates).length > 0) {
+        // 清理空值和无效数据
+        const cleanUpdates = this.cleanUpdates(updates)
+        this.config.onUpdateNode?.(this.selectedNode.id, cleanUpdates)
+        
+        // 更新本地状态
+        Object.assign(this.selectedNode, cleanUpdates)
+        
+        console.log(`✅ 节点属性已更新:`, this.selectedNode.id, cleanUpdates)
       }
 
-      // 设置嵌套字段
-      this.setNestedProperty(updates, field, value)
-    })
-
-    // 触发更新回调
-    if (this.selectedNode.id) {
-      this.config.onUpdateNode?.(this.selectedNode.id, updates)
+      // 移除更改标记
+      this.removeChangedMark()
+    } catch (error) {
+      console.error('应用节点更改失败:', error)
     }
+  }
 
-    // 更新本地状态
-    Object.assign(this.selectedNode, updates)
-
-    // 移除更改标记
-    this.removeChangedMark()
+  /**
+   * 清理更新数据，移除空值和无效数据
+   */
+  private cleanUpdates(updates: any): any {
+    const cleaned: any = {}
+    
+    for (const [key, value] of Object.entries(updates)) {
+      if (value !== undefined && value !== null && value !== '') {
+        if (typeof value === 'object' && value !== null) {
+          // 递归清理嵌套对象
+          const cleanedNested = this.cleanUpdates(value)
+          if (Object.keys(cleanedNested).length > 0) {
+            cleaned[key] = cleanedNested
+          }
+        } else {
+          cleaned[key] = value
+        }
+      }
+    }
+    
+    return cleaned
   }
 
   /**

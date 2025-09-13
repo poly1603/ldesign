@@ -233,6 +233,38 @@ function bindEventListeners() {
 }
 
 /**
+ * 测试属性面板更新功能
+ */
+function testPropertyPanelUpdate() {
+  if (!editor) return
+  
+  try {
+    console.log('🧪 开始测试属性面板更新功能')
+    
+    // 清空画布
+    editor.clearData()
+    
+    // 添加一个测试节点
+    const nodeId = editor.addNode({
+      type: 'approval',
+      x: 300,
+      y: 200,
+      text: '测试节点'
+    })
+    
+    console.log('✅ 测试节点已添加:', nodeId)
+    console.log('💡 请按照以下步骤测试:')
+    console.log('  1. 点击画布中的节点选中它')
+    console.log('  2. 在右侧属性面板修改节点文本')
+    console.log('  3. 点击"应用更改"按钮')
+    console.log('  4. 观察画布中的节点是否立即更新')
+    
+  } catch (error) {
+    console.error('❌ 测试准备失败:', error)
+  }
+}
+
+/**
  * 应用程序入口
  */
 function main() {
@@ -243,10 +275,20 @@ function main() {
     document.addEventListener('DOMContentLoaded', () => {
       bindEventListeners()
       initFlowchart()
+      
+      // 延迟执行测试
+      setTimeout(() => {
+        testPropertyPanelUpdate()
+      }, 2000)
     })
   } else {
     bindEventListeners()
     initFlowchart()
+    
+    // 延迟执行测试
+    setTimeout(() => {
+      testPropertyPanelUpdate()
+    }, 2000)
   }
 }
 

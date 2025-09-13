@@ -280,8 +280,9 @@ export function safeJsonStringify(obj: any, defaultValue: string = '{}'): string
 }
 
 // 导出其他工具模块
+export * from './clipboard'
+export * from './export'
 export * from './icons'
 export * from './performance'
 export * from './validation'
-export * from './export'
-export * from './clipboard'
+export * from './text'
