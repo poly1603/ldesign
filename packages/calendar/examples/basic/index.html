@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign Calendar - 基础示例</title>
+  <link rel="stylesheet" href="calendar.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .header {
+      padding: 20px;
+      background: linear-gradient(135deg, #722ED1, #8c5ad3);
+      color: white;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    
+    .header p {
+      opacity: 0.9;
+    }
+    
+    .controls {
+      padding: 20px;
+      border-bottom: 1px solid #e5e5e5;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border: 1px solid #722ED1;
+      background: white;
+      color: #722ED1;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn:hover {
+      background: #722ED1;
+      color: white;
+    }
+    
+    .btn.active {
+      background: #722ED1;
+      color: white;
+    }
+    
+    .calendar-container {
+      padding: 20px;
+      min-height: 600px;
+    }
+    
+    .event-form {
+      margin-top: 20px;
+      padding: 20px;
+      border-top: 1px solid #e5e5e5;
+      background: #fafafa;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .form-group textarea {
+      height: 80px;
+      resize: vertical;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .form-row .form-group {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>LDesign Calendar 基础示例</h1>
+      <p>功能强大的日历组件，支持多种视图、事件管理、主题切换等功能</p>
+    </div>
+    
+    <div class="controls">
+      <button class="btn active" data-view="month">月视图</button>
+      <button class="btn" data-view="week">周视图</button>
+      <button class="btn" data-view="day">日视图</button>
+      <button class="btn" data-theme="default">默认主题</button>
+      <button class="btn" data-theme="dark">暗色主题</button>
+      <button class="btn" id="today-btn">今天</button>
+      <button class="btn" id="prev-btn">上一页</button>
+      <button class="btn" id="next-btn">下一页</button>
+    </div>
+    
+    <div class="calendar-container" id="calendar"></div>
+    
+    <div class="event-form">
+      <h3>添加事件</h3>
+      <form id="event-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="event-title">事件标题</label>
+            <input type="text" id="event-title" required>
+          </div>
+          <div class="form-group">
+            <label for="event-type">事件类型</label>
+            <select id="event-type">
+              <option value="event">事件</option>
+              <option value="meeting">会议</option>
+              <option value="task">任务</option>
+              <option value="reminder">提醒</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="event-start">开始时间</label>
+            <input type="datetime-local" id="event-start" required>
+          </div>
+          <div class="form-group">
+            <label for="event-end">结束时间</label>
+            <input type="datetime-local" id="event-end" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="event-description">事件描述</label>
+          <textarea id="event-description" placeholder="请输入事件描述..."></textarea>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="event-location">地点</label>
+            <input type="text" id="event-location" placeholder="请输入地点">
+          </div>
+          <div class="form-group">
+            <label for="event-color">颜色</label>
+            <input type="color" id="event-color" value="#722ED1">
+          </div>
+        </div>
+        
+        <button type="submit" class="btn">添加事件</button>
+      </form>
+    </div>
+  </div>
+  
+  <script type="module" src="/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+/**
+ * LDESIGN Calendar 变量定义
+ * 
+ * 基于LDESIGN设计系统的颜色变量和尺寸变量
+ */
+
+// ==================== 颜色变量 ====================
+
+// 品牌�?- 使用具体颜色值以支持Less函数
+@calendar-primary-color: #722ED1;
+@calendar-primary-color-hover: #8c5ad3;
+@calendar-primary-color-active: #5e2aa7;
+@calendar-primary-color-disabled: #bfa4e5;
+
+// 功能�?@calendar-success-color: #42bd42;
+@calendar-warning-color: #f0b80f;
+@calendar-error-color: #dd2222;
+
+// 文本颜色
+@calendar-text-color-primary: var(--ldesign-text-color-primary);
+@calendar-text-color-secondary: var(--ldesign-text-color-secondary);
+@calendar-text-color-placeholder: var(--ldesign-text-color-placeholder);
+@calendar-text-color-disabled: var(--ldesign-text-color-disabled);
+
+// 背景颜色
+@calendar-bg-color-page: var(--ldesign-bg-color-page, #ffffff);
+@calendar-bg-color-container: var(--ldesign-bg-color-container, #ffffff);
+@calendar-bg-color-component: var(--ldesign-bg-color-component, #fafafa);
+@calendar-bg-color-hover: var(--ldesign-bg-color-container-hover);
+@calendar-bg-color-active: var(--ldesign-bg-color-container-active);
+
+// 边框颜色 - 使用具体颜色值以支持Less函数
+@calendar-border-color: #e5e5e5;
+@calendar-border-color-hover: #d9d9d9;
+@calendar-border-color-focus: #722ED1;
+
+// 阴影
+@calendar-shadow-1: var(--ldesign-shadow-1);
+@calendar-shadow-2: var(--ldesign-shadow-2);
+@calendar-shadow-3: var(--ldesign-shadow-3);
+
+// ==================== 尺寸变量 ====================
+
+// 字体大小
+@calendar-font-size-xs: var(--ls-font-size-xs);
+@calendar-font-size-sm: var(--ls-font-size-sm);
+@calendar-font-size-base: var(--ls-font-size-base);
+@calendar-font-size-lg: var(--ls-font-size-lg);
+@calendar-font-size-xl: var(--ls-font-size-xl);
+
+// 间距
+@calendar-spacing-xs: var(--ls-spacing-xs);
+@calendar-spacing-sm: var(--ls-spacing-sm);
+@calendar-spacing-base: var(--ls-spacing-base);
+@calendar-spacing-lg: var(--ls-spacing-lg);
+@calendar-spacing-xl: var(--ls-spacing-xl);
+
+// 内边�?@calendar-padding-xs: var(--ls-padding-xs);
+@calendar-padding-sm: var(--ls-padding-sm);
+@calendar-padding-base: var(--ls-padding-base);
+@calendar-padding-lg: var(--ls-padding-lg);
+@calendar-padding-xl: var(--ls-padding-xl);
+
+// 边框圆角
+@calendar-border-radius-sm: var(--ls-border-radius-sm);
+@calendar-border-radius-base: var(--ls-border-radius-base);
+@calendar-border-radius-lg: var(--ls-border-radius-lg);
+
+// ==================== 日历特定变量 ====================
+
+// 日历容器
+@calendar-container-min-width: 320px;
+@calendar-container-max-width: 1200px;
+@calendar-container-min-height: 400px;
+
+// 头部高度
+@calendar-header-height: 60px;
+@calendar-nav-button-size: 32px;
+
+// 月视�?@calendar-month-cell-height: 120px;
+@calendar-month-cell-min-height: 80px;
+@calendar-weekday-header-height: 40px;
+
+// 周视�?@calendar-week-time-axis-width: 60px;
+@calendar-week-hour-height: 60px;
+@calendar-week-day-header-height: 80px;
+
+// 日视�?@calendar-day-time-axis-width: 80px;
+@calendar-day-hour-height: 60px;
+@calendar-day-quarter-height: 15px;
+
+// 事件
+@calendar-event-min-height: 20px;
+@calendar-event-border-width: 1px;
+@calendar-event-border-radius: @calendar-border-radius-sm;
+@calendar-event-padding: 4px 8px;
+
+// 动画时长
+@calendar-transition-duration: 0.3s;
+@calendar-transition-timing: ease-in-out;
+
+// Z-index层级
+@calendar-z-index-base: 1;
+@calendar-z-index-event: 10;
+@calendar-z-index-all-day-event: 20;
+@calendar-z-index-popup: 1000;
+@calendar-z-index-modal: 2000;
+
+// ==================== 响应式断�?====================
+
+@calendar-breakpoint-xs: 480px;
+@calendar-breakpoint-sm: 768px;
+@calendar-breakpoint-md: 992px;
+@calendar-breakpoint-lg: 1200px;
+@calendar-breakpoint-xl: 1600px;

@@ -1,0 +1,265 @@
+/**
+ * LDESIGN Calendar 基础样式
+ * 
+ * 日历组件的基础样式定义
+ */
+
+// ==================== 基础重置 ====================
+
+.ldesign-calendar {
+  // 盒模型重�?  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  // 基础样式重置
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: @calendar-font-size-sm;
+  line-height: 1.5;
+  color: @calendar-text-color-primary;
+  background-color: @calendar-bg-color-container;
+  border-radius: @calendar-border-radius-base;
+  .card-shadow();
+  
+  // 最小尺寸限�?  min-width: @calendar-container-min-width;
+  min-height: @calendar-container-min-height;
+  
+  // 用户选择控制
+  user-select: none;
+  
+  // 字体渲染优化
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  // 触摸优化
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+// ==================== 容器样式 ====================
+
+.ldesign-calendar-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.ldesign-calendar-header {
+  flex-shrink: 0;
+  height: @calendar-header-height;
+  border-bottom: 1px solid @calendar-border-color;
+  background-color: @calendar-bg-color-container;
+}
+
+.ldesign-calendar-body {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+// ==================== 视图基础样式 ====================
+
+.ldesign-calendar-view {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+// ==================== 通用组件样式 ====================
+
+// 按钮基础样式
+.ldesign-calendar-btn {
+  .button-base();
+  padding: @calendar-padding-xs @calendar-padding-sm;
+  font-size: @calendar-font-size-xs;
+  min-width: 32px;
+  height: 32px;
+  
+  &.primary {
+    .button-primary();
+  }
+  
+  &.secondary {
+    .button-secondary();
+  }
+  
+  &.small {
+    padding: 4px 8px;
+    font-size: 12px;
+    min-width: 24px;
+    height: 24px;
+  }
+  
+  &.large {
+    padding: @calendar-padding-sm @calendar-padding-base;
+    font-size: @calendar-font-size-sm;
+    min-width: 40px;
+    height: 40px;
+  }
+}
+
+// 输入框基础样式
+.ldesign-calendar-input {
+  .input-base();
+}
+
+// 下拉选择�?.ldesign-calendar-select {
+  .input-base();
+  cursor: pointer;
+  
+  &:after {
+    content: '';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid @calendar-text-color-secondary;
+  }
+}
+
+// ==================== 文本样式 ====================
+
+.ldesign-calendar-title {
+  font-size: @calendar-font-size-lg;
+  font-weight: 600;
+  color: @calendar-text-color-primary;
+  margin: 0;
+}
+
+.ldesign-calendar-subtitle {
+  font-size: @calendar-font-size-base;
+  font-weight: 500;
+  color: @calendar-text-color-secondary;
+  margin: 0;
+}
+
+.ldesign-calendar-text {
+  font-size: @calendar-font-size-sm;
+  color: @calendar-text-color-primary;
+  margin: 0;
+}
+
+.ldesign-calendar-text-secondary {
+  font-size: @calendar-font-size-xs;
+  color: @calendar-text-color-secondary;
+  margin: 0;
+}
+
+.ldesign-calendar-text-muted {
+  font-size: @calendar-font-size-xs;
+  color: @calendar-text-color-placeholder;
+  margin: 0;
+}
+
+// ==================== 状态样�?====================
+
+// 今天状�?.is-today {
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    background-color: @calendar-primary-color;
+    border-radius: 50%;
+  }
+}
+
+// 选中状�?.is-selected {
+  background-color: @calendar-primary-color;
+  color: white;
+}
+
+// 禁用状�?.is-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+// 其他月份
+.is-other-month {
+  opacity: 0.4;
+}
+
+// 周末
+.is-weekend {
+  color: @calendar-error-color;
+}
+
+// 节假�?.has-holiday {
+  color: @calendar-error-color;
+  font-weight: 500;
+}
+
+// ==================== 加载状�?====================
+
+.ldesign-calendar-loading {
+  .center-flex();
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: @calendar-z-index-popup;
+  
+  .loading-spinner {
+    .loading-spinner(24px);
+  }
+}
+
+// ==================== 错误状�?====================
+
+.ldesign-calendar-error {
+  .center-flex();
+  flex-direction: column;
+  padding: @calendar-padding-xl;
+  color: @calendar-error-color;
+  
+  .error-icon {
+    font-size: 48px;
+    margin-bottom: @calendar-spacing-base;
+  }
+  
+  .error-message {
+    font-size: @calendar-font-size-base;
+    text-align: center;
+    margin-bottom: @calendar-spacing-base;
+  }
+  
+  .error-action {
+    .button-primary();
+  }
+}
+
+// ==================== 空状�?====================
+
+.ldesign-calendar-empty {
+  .center-flex();
+  flex-direction: column;
+  padding: @calendar-padding-xl;
+  color: @calendar-text-color-placeholder;
+  
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: @calendar-spacing-base;
+  }
+  
+  .empty-message {
+    font-size: @calendar-font-size-base;
+    text-align: center;
+  }
+}

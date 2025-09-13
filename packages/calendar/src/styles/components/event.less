@@ -1,0 +1,398 @@
+/**
+ * 事件组件样式
+ */
+
+// ==================== 基础事件样式 ====================
+
+.ldesign-calendar-event {
+  position: relative;
+  background-color: @calendar-primary-color;
+  color: white;
+  border-radius: @calendar-event-border-radius;
+  padding: @calendar-event-padding;
+  margin-bottom: 1px;
+  font-size: @calendar-font-size-xs;
+  line-height: 1.2;
+  cursor: pointer;
+  border: @calendar-event-border-width solid transparent;
+  overflow: hidden;
+  .transition(all);
+
+  // 悬浮效果
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: @calendar-shadow-2;
+    z-index: @calendar-z-index-event + 1;
+  }
+
+  // 选中状�?  &.is-selected {
+  border-color: @calendar-text-color-primary;
+  box-shadow: @calendar-shadow-2;
+  z-index: @calendar-z-index-event +2;
+}
+
+// 拖拽状�?  &.is-dragging {
+opacity: 0.8;
+transform: rotate(2deg);
+z-index: @calendar-z-index-popup;
+}
+
+// 调整大小状�?  &.is-resizing {
+z-index: @calendar-z-index-event +3;
+}
+}
+
+// ==================== 事件内容 ====================
+
+.ldesign-calendar-event-title {
+  font-weight: 500;
+  margin-bottom: 2px;
+  .text-ellipsis();
+}
+
+.ldesign-calendar-event-time {
+  font-size: 10px;
+  opacity: 0.9;
+  .text-ellipsis();
+}
+
+.ldesign-calendar-event-description {
+  font-size: 10px;
+  opacity: 0.8;
+  margin-top: 2px;
+  .text-ellipsis-multiline(2);
+}
+
+.ldesign-calendar-event-location {
+  font-size: 10px;
+  opacity: 0.8;
+  margin-top: 2px;
+  .text-ellipsis();
+
+  &::before {
+    content: '📍 ';
+    margin-right: 2px;
+  }
+}
+
+// ==================== 事件类型样式 ====================
+
+.ldesign-calendar-event {
+
+  // 全天事件
+  &.all-day {
+    background-color: @calendar-primary-color;
+    border-radius: @calendar-border-radius-sm;
+    padding: 2px 6px;
+    margin-bottom: 2px;
+
+    .ldesign-calendar-event-time {
+      display: none;
+    }
+  }
+
+  // 多日事件
+  &.multi-day {
+    border-radius: 0;
+    margin-bottom: 1px;
+
+    &.multi-day-start {
+      border-top-left-radius: @calendar-event-border-radius;
+      border-bottom-left-radius: @calendar-event-border-radius;
+    }
+
+    &.multi-day-end {
+      border-top-right-radius: @calendar-event-border-radius;
+      border-bottom-right-radius: @calendar-event-border-radius;
+    }
+  }
+
+  // 重复事件
+  &.recurring {
+    &::after {
+      content: '🔄';
+      position: absolute;
+      top: 2px;
+      right: 4px;
+      font-size: 8px;
+      opacity: 0.7;
+    }
+  }
+
+  // 私人事件
+  &.private {
+    background: repeating-linear-gradient(45deg,
+        @calendar-primary-color,
+        @calendar-primary-color 2px,
+        rgba(255, 255, 255, 0.1) 2px,
+        rgba(255, 255, 255, 0.1) 4px);
+
+    &::after {
+      content: '🔒';
+      position: absolute;
+      top: 2px;
+      right: 4px;
+      font-size: 8px;
+      opacity: 0.7;
+    }
+  }
+
+  // 重要事件
+  &.important {
+    border: 2px solid @calendar-warning-color;
+
+    &::after {
+      content: '�?;
+ position: absolute;
+      top: 2px;
+      right: 4px;
+      font-size: 8px;
+    }
+  }
+}
+
+// ==================== 事件状态样�?====================
+
+.ldesign-calendar-event {
+  // 已确�?  &.status-confirmed {
+  background-color: @calendar-success-color;
+}
+
+// 待定
+&.status-tentative {
+  background-color: @calendar-warning-color;
+  opacity: 0.8;
+}
+
+// 已取�?  &.status-cancelled {
+background-color: @calendar-error-color;
+text-decoration: line-through;
+opacity: 0.7;
+}
+
+// 忙碌
+&.status-busy {
+  background-color: @calendar-error-color;
+}
+
+// 空闲
+&.status-free {
+  background-color: @calendar-success-color;
+  opacity: 0.6;
+}
+}
+
+// ==================== 事件优先级样�?====================
+
+.ldesign-calendar-event {
+
+  // 高优先级
+  &.priority-high {
+    border-left: 4px solid @calendar-error-color;
+  }
+
+  // 中优先级
+  &.priority-medium {
+    border-left: 4px solid @calendar-warning-color;
+  }
+
+  // 低优先级
+  &.priority-low {
+    border-left: 4px solid @calendar-success-color;
+  }
+}
+
+// ==================== 事件分类样式 ====================
+
+.ldesign-calendar-event {
+
+  // 工作事件
+  &.category-work {
+    background-color: #1890ff;
+  }
+
+  // 个人事件
+  &.category-personal {
+    background-color: #52c41a;
+  }
+
+  // 家庭事件
+  &.category-family {
+    background-color: #fa8c16;
+  }
+
+  // 健康事件
+  &.category-health {
+    background-color: #eb2f96;
+  }
+
+  // 学习事件
+  &.category-study {
+    background-color: #722ed1;
+  }
+
+  // 旅行事件
+  &.category-travel {
+    background-color: #13c2c2;
+  }
+}
+
+// ==================== 调整大小手柄 ====================
+
+.ldesign-calendar-event {
+  &.resizable {
+    .resize-handle {
+      position: absolute;
+      background-color: rgba(255, 255, 255, 0.3);
+      cursor: ns-resize;
+      opacity: 0;
+      .transition(opacity);
+
+      &.resize-handle-top {
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        cursor: n-resize;
+      }
+
+      &.resize-handle-bottom {
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        cursor: s-resize;
+      }
+    }
+
+    &:hover .resize-handle {
+      opacity: 1;
+    }
+  }
+}
+
+// ==================== 事件冲突样式 ====================
+
+.ldesign-calendar-event {
+  &.has-conflict {
+    border: 2px solid @calendar-warning-color;
+    background: repeating-linear-gradient(45deg,
+        @calendar-primary-color,
+        @calendar-primary-color 3px,
+        @calendar-warning-color 3px,
+        @calendar-warning-color 6px);
+
+    &::after {
+      content: '⚠️';
+      position: absolute;
+      top: 2px;
+      right: 4px;
+      font-size: 8px;
+    }
+  }
+}
+
+// ==================== 事件提醒样式 ====================
+
+.ldesign-calendar-event {
+  &.has-reminder {
+    &::before {
+      content: '🔔';
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      font-size: 8px;
+      opacity: 0.7;
+    }
+  }
+
+  &.reminder-active {
+    animation: reminder-pulse 2s infinite;
+  }
+}
+
+@keyframes reminder-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(red(@calendar-warning-color), green(@calendar-warning-color), blue(@calendar-warning-color), 0.7);
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px rgba(red(@calendar-warning-color), green(@calendar-warning-color), blue(@calendar-warning-color), 0);
+  }
+}
+
+// ==================== 响应式事件样�?====================
+
+.ldesign-calendar-event {
+  @media (max-width: @calendar-breakpoint-sm) {
+    padding: 2px 4px;
+    font-size: 10px;
+
+    .ldesign-calendar-event-title {
+      margin-bottom: 0;
+    }
+
+    .ldesign-calendar-event-time,
+    .ldesign-calendar-event-description,
+    .ldesign-calendar-event-location {
+      display: none;
+    }
+  }
+
+  @media (min-width: @calendar-breakpoint-sm) and (max-width: @calendar-breakpoint-md) {
+    .ldesign-calendar-event-description {
+      display: none;
+    }
+  }
+}
+
+// ==================== 紧凑模式事件样式 ====================
+
+.ldesign-calendar.compact {
+  .ldesign-calendar-event {
+    padding: 1px 4px;
+    font-size: 10px;
+
+    .ldesign-calendar-event-time,
+    .ldesign-calendar-event-description,
+    .ldesign-calendar-event-location {
+      display: none;
+    }
+  }
+}
+
+// ==================== 事件工具提示 ====================
+
+.ldesign-calendar-event-tooltip {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: @calendar-padding-sm;
+  border-radius: @calendar-border-radius-base;
+  font-size: @calendar-font-size-xs;
+  max-width: 200px;
+  z-index: @calendar-z-index-popup;
+  pointer-events: none;
+  opacity: 0;
+  .transition(opacity);
+
+  &.visible {
+    opacity: 1;
+  }
+
+  .tooltip-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .tooltip-time {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 4px;
+  }
+
+  .tooltip-description {
+    line-height: 1.4;
+  }
+}

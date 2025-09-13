@@ -1,0 +1,154 @@
+﻿/**
+ * @ldesign/calendar 样式入口文件
+ */
+
+// 导入基础样式
+@import './variables.less';
+
+// 基础日历样式
+.ldesign-calendar {
+  position: relative;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, 0.9);
+  width: 100%;
+  max-width: 800px;
+}
+
+.ldesign-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.ldesign-calendar-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.ldesign-calendar-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    border-color: #722ED1;
+    color: #722ED1;
+  }
+}
+
+.ldesign-calendar-content {
+  padding: 16px;
+}
+
+.ldesign-calendar-month-view {
+  width: 100%;
+}
+
+.ldesign-calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  margin-bottom: 1px;
+}
+
+.ldesign-calendar-weekday {
+  padding: 8px;
+  text-align: center;
+  font-weight: 500;
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
+}
+
+.ldesign-calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+.ldesign-calendar-day-cell {
+  min-height: 80px;
+  padding: 8px;
+  border: 1px solid #e5e5e5;
+  background: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background: #f8f8f8;
+  }
+  
+  &.today {
+    background: #f1ecf9;
+    border-color: #722ED1;
+  }
+  
+  &.selected {
+    background: #722ED1;
+    color: #fff;
+  }
+  
+  &.other-month {
+    color: #ccc;
+    background: #fafafa;
+  }
+}
+
+.ldesign-calendar-day-number {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.ldesign-calendar-event {
+  padding: 2px 6px;
+  margin: 1px 0;
+  background: #722ED1;
+  color: #fff;
+  border-radius: 3px;
+  font-size: 12px;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .ldesign-calendar {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  
+  .ldesign-calendar-header {
+    padding: 12px;
+  }
+  
+  .ldesign-calendar-day-cell {
+    min-height: 60px;
+    padding: 4px;
+  }
+  
+  .ldesign-calendar-day-number {
+    font-size: 12px;
+  }
+  
+  .ldesign-calendar-event {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+}

@@ -1,0 +1,380 @@
+/**
+ * 暗色主题样式
+ */
+
+.ldesign-calendar-theme-dark {
+  // 暗色主题颜色变量
+  --calendar-dark-bg-primary: #1f1f1f;
+  --calendar-dark-bg-secondary: #2a2a2a;
+  --calendar-dark-bg-tertiary: #333333;
+  --calendar-dark-text-primary: #ffffff;
+  --calendar-dark-text-secondary: #cccccc;
+  --calendar-dark-text-tertiary: #999999;
+  --calendar-dark-border: #404040;
+  --calendar-dark-border-light: #555555;
+  --calendar-dark-primary: var(--ldesign-brand-color, #722ED1);
+  
+  // 基础样式
+  background-color: var(--calendar-dark-bg-primary);
+  color: var(--calendar-dark-text-primary);
+  border-color: var(--calendar-dark-border);
+  
+  // 头部样式
+  .ldesign-calendar-header {
+    background-color: var(--calendar-dark-bg-secondary);
+    border-bottom-color: var(--calendar-dark-border);
+    
+    .ldesign-calendar-title {
+      color: var(--calendar-dark-text-primary);
+    }
+    
+    .ldesign-calendar-nav-btn {
+      color: var(--calendar-dark-text-secondary);
+      border-color: var(--calendar-dark-border);
+      background-color: transparent;
+      
+      &:hover:not(:disabled) {
+        background-color: var(--calendar-dark-bg-tertiary);
+        color: var(--calendar-dark-text-primary);
+      }
+      
+      &:active:not(:disabled) {
+        background-color: var(--calendar-dark-border);
+      }
+    }
+    
+    .ldesign-calendar-toolbar {
+      .ldesign-calendar-view-switcher {
+        border-color: var(--calendar-dark-border);
+        
+        .view-btn {
+          color: var(--calendar-dark-text-secondary);
+          border-color: var(--calendar-dark-border);
+          
+          &:hover:not(:disabled) {
+            background-color: var(--calendar-dark-bg-tertiary);
+            color: var(--calendar-dark-text-primary);
+          }
+          
+          &.active {
+            background-color: var(--calendar-dark-primary);
+            color: white;
+          }
+        }
+      }
+      
+      .ldesign-calendar-today-btn,
+      .ldesign-calendar-settings-btn {
+        color: var(--calendar-dark-text-secondary);
+        border-color: var(--calendar-dark-border);
+        
+        &:hover:not(:disabled) {
+          background-color: var(--calendar-dark-bg-tertiary);
+          color: var(--calendar-dark-text-primary);
+        }
+      }
+    }
+  }
+  
+  // 月视图样�?  .ldesign-calendar-month-view {
+    .ldesign-calendar-week-header {
+      background-color: var(--calendar-dark-bg-secondary);
+      border-bottom-color: var(--calendar-dark-border);
+    }
+    
+    .ldesign-calendar-weekday {
+      color: var(--calendar-dark-text-secondary);
+      
+      &:not(:last-child) {
+        border-right-color: var(--calendar-dark-border);
+      }
+      
+      // 周末样式
+      &:first-child,
+      &:last-child {
+        color: #ff7875;
+      }
+    }
+    
+    .ldesign-calendar-date-grid {
+      background-color: var(--calendar-dark-border);
+    }
+    
+    .ldesign-calendar-day-cell {
+      background-color: var(--calendar-dark-bg-primary);
+      
+      &:hover:not(.is-disabled) {
+        background-color: var(--calendar-dark-bg-tertiary);
+      }
+      
+      &.is-selected {
+        background-color: var(--calendar-dark-primary);
+        
+        .ldesign-calendar-day-number,
+        .ldesign-calendar-lunar,
+        .ldesign-calendar-holiday {
+          color: white;
+        }
+      }
+      
+      &.is-today {
+        .ldesign-calendar-day-number {
+          background-color: var(--calendar-dark-primary);
+          color: white;
+        }
+      }
+      
+      &.is-other-month {
+        background-color: var(--calendar-dark-bg-secondary);
+        
+        .ldesign-calendar-day-number,
+        .ldesign-calendar-lunar,
+        .ldesign-calendar-holiday {
+          opacity: 0.4;
+        }
+      }
+      
+      &.is-weekend {
+        .ldesign-calendar-day-number {
+          color: #ff7875;
+        }
+      }
+      
+      &.has-holiday {
+        .ldesign-calendar-day-number {
+          color: #ff7875;
+        }
+      }
+      
+      &.is-disabled {
+        background-color: var(--calendar-dark-bg-secondary);
+        
+        .ldesign-calendar-day-number {
+          color: var(--calendar-dark-text-tertiary);
+        }
+      }
+    }
+    
+    .ldesign-calendar-day-number {
+      color: var(--calendar-dark-text-primary);
+    }
+    
+    .ldesign-calendar-lunar {
+      color: var(--calendar-dark-text-tertiary);
+    }
+    
+    .ldesign-calendar-holiday {
+      color: #ff7875;
+    }
+  }
+  
+  // 周视图样�?  .ldesign-calendar-week-view {
+    .ldesign-calendar-week-time-axis,
+    .ldesign-calendar-week-time-axis-header {
+      background-color: var(--calendar-dark-bg-secondary);
+      border-right-color: var(--calendar-dark-border);
+    }
+    
+    .ldesign-calendar-week-day-header {
+      border-right-color: var(--calendar-dark-border);
+      
+      &:hover {
+        background-color: var(--calendar-dark-bg-tertiary);
+      }
+      
+      &.is-today {
+        background-color: rgba(red(var(--calendar-dark-primary)), green(var(--calendar-dark-primary)), blue(var(--calendar-dark-primary)), 0.2);
+        
+        .day-number {
+          background-color: var(--calendar-dark-primary);
+          color: white;
+        }
+      }
+      
+      &.is-weekend {
+        .day-name {
+          color: #ff7875;
+        }
+      }
+      
+      .day-name {
+        color: var(--calendar-dark-text-secondary);
+      }
+      
+      .day-number {
+        color: var(--calendar-dark-text-primary);
+      }
+      
+      .day-lunar {
+        color: var(--calendar-dark-text-tertiary);
+      }
+    }
+    
+    .ldesign-calendar-time-slot {
+      border-bottom-color: var(--calendar-dark-border);
+      
+      .time-label {
+        color: var(--calendar-dark-text-secondary);
+      }
+    }
+    
+    .ldesign-calendar-week-day-column {
+      border-right-color: var(--calendar-dark-border);
+      
+      &.is-today {
+        background-color: rgba(red(var(--calendar-dark-primary)), green(var(--calendar-dark-primary)), blue(var(--calendar-dark-primary)), 0.05);
+      }
+      
+      &.is-weekend {
+        background-color: rgba(255, 120, 117, 0.02);
+      }
+    }
+    
+    .ldesign-calendar-all-day-events {
+      background-color: var(--calendar-dark-bg-secondary);
+      border-bottom-color: var(--calendar-dark-border);
+    }
+  }
+  
+  // 日视图样�?  .ldesign-calendar-day-view {
+    .ldesign-calendar-day-time-axis,
+    .ldesign-calendar-day-time-axis-header {
+      background-color: var(--calendar-dark-bg-secondary);
+      border-right-color: var(--calendar-dark-border);
+    }
+    
+    .ldesign-calendar-day-date-header {
+      &.is-today {
+        background-color: rgba(red(var(--calendar-dark-primary)), green(var(--calendar-dark-primary)), blue(var(--calendar-dark-primary)), 0.2);
+        
+        .date-number {
+          background-color: var(--calendar-dark-primary);
+          color: white;
+        }
+      }
+      
+      &.is-weekend {
+        .date-name {
+          color: #ff7875;
+        }
+      }
+      
+      .date-name {
+        color: var(--calendar-dark-text-secondary);
+      }
+      
+      .date-number {
+        color: var(--calendar-dark-text-primary);
+      }
+      
+      .date-lunar {
+        color: var(--calendar-dark-text-tertiary);
+      }
+      
+      .date-holiday {
+        color: #ff7875;
+      }
+    }
+    
+    .ldesign-calendar-day-time-slot {
+      border-bottom-color: var(--calendar-dark-border);
+      
+      .time-label {
+        color: var(--calendar-dark-text-secondary);
+      }
+    }
+    
+    .ldesign-calendar-day-all-day {
+      background-color: var(--calendar-dark-bg-secondary);
+      border-bottom-color: var(--calendar-dark-border);
+      
+      .all-day-time-axis {
+        background-color: var(--calendar-dark-bg-secondary);
+        border-right-color: var(--calendar-dark-border);
+        
+        .all-day-label {
+          color: var(--calendar-dark-text-secondary);
+        }
+      }
+    }
+  }
+  
+  // 事件样式
+  .ldesign-calendar-event {
+    background-color: var(--calendar-dark-primary);
+    color: white;
+    border-color: transparent;
+    
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    &.is-selected {
+      border-color: var(--calendar-dark-text-primary);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+  }
+  
+  // 输入框样�?  .ldesign-calendar-input {
+    background-color: var(--calendar-dark-bg-secondary);
+    border-color: var(--calendar-dark-border);
+    color: var(--calendar-dark-text-primary);
+    
+    &:focus {
+      border-color: var(--calendar-dark-primary);
+    }
+    
+    &::placeholder {
+      color: var(--calendar-dark-text-tertiary);
+    }
+  }
+  
+  // 滚动条样�?  .ldesign-calendar-week-time-axis,
+  .ldesign-calendar-week-grid,
+  .ldesign-calendar-day-time-axis,
+  .ldesign-calendar-day-grid {
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: var(--calendar-dark-bg-secondary);
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: var(--calendar-dark-border-light);
+      border-radius: 3px;
+      
+      &:hover {
+        background: #666666;
+      }
+    }
+  }
+}
+
+// ==================== 暗色主题变体 ====================
+
+// 深黑变体
+.ldesign-calendar-theme-dark.deep-dark {
+  --calendar-dark-bg-primary: #000000;
+  --calendar-dark-bg-secondary: #111111;
+  --calendar-dark-bg-tertiary: #222222;
+  --calendar-dark-border: #333333;
+}
+
+// 蓝色暗色变体
+.ldesign-calendar-theme-dark.blue-dark {
+  --calendar-dark-bg-primary: #0f1419;
+  --calendar-dark-bg-secondary: #1a2332;
+  --calendar-dark-bg-tertiary: #253244;
+  --calendar-dark-primary: #1890ff;
+}
+
+// 绿色暗色变体
+.ldesign-calendar-theme-dark.green-dark {
+  --calendar-dark-bg-primary: #0f1b0f;
+  --calendar-dark-bg-secondary: #1a2e1a;
+  --calendar-dark-bg-tertiary: #254125;
+  --calendar-dark-primary: #52c41a;
+}

@@ -1,0 +1,278 @@
+/**
+ * 动画样式
+ */
+
+// ==================== 基础动画 ====================
+
+// 淡入动画
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+// 淡出动画
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+// 滑入动画（从上）
+@keyframes slideInDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// 滑入动画（从下）
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// 滑入动画（从左）
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// 滑入动画（从右）
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// 缩放动画
+@keyframes zoomIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes zoomOut {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  to {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+// 脉冲动画
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// 旋转动画
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// 呼吸动画
+@keyframes breathe {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scaleY(1.2);
+  }
+}
+
+// 加载动画
+@keyframes loadingDots {
+
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// ==================== 日历特定动画 ====================
+
+// 当前时间指示器动画
+@keyframes currentTimeIndicator {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+}
+
+// 拖拽动画
+@keyframes dragPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(red(@calendar-primary-color), green(@calendar-primary-color), blue(@calendar-primary-color), 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 8px rgba(red(@calendar-primary-color), green(@calendar-primary-color), blue(@calendar-primary-color), 0);
+  }
+}
+
+// ==================== 动画类 ====================
+
+.ldesign-calendar {
+
+  // 基础动画类
+  .fade-in {
+    animation: fadeIn @calendar-animation-duration-base ease-out;
+  }
+
+  .fade-out {
+    animation: fadeOut @calendar-animation-duration-base ease-out;
+  }
+
+  .slide-in-down {
+    animation: slideInDown @calendar-animation-duration-base ease-out;
+  }
+
+  .slide-in-up {
+    animation: slideInUp @calendar-animation-duration-base ease-out;
+  }
+
+  .zoom-in {
+    animation: zoomIn @calendar-animation-duration-base ease-out;
+  }
+
+  .zoom-out {
+    animation: zoomOut @calendar-animation-duration-base ease-out;
+  }
+
+  .pulse {
+    animation: pulse @calendar-animation-duration-base ease-in-out infinite;
+  }
+
+  .spin {
+    animation: spin @calendar-animation-duration-base linear infinite;
+  }
+
+  .breathe {
+    animation: breathe @calendar-animation-duration-slow ease-in-out infinite;
+  }
+}
+
+// ==================== 响应式动画 ====================
+
+// 移动端减少动画
+@media (max-width: @calendar-breakpoint-sm) {
+  .ldesign-calendar {
+    .ldesign-calendar-event {
+      &:hover {
+        transform: none; // 移动端禁用悬浮动画
+      }
+    }
+
+    .ldesign-calendar-day-cell {
+      &:hover {
+        transform: none; // 移动端禁用悬浮动画
+      }
+    }
+  }
+}
+
+// 减少动画偏好
+@media (prefers-reduced-motion: reduce) {
+  .ldesign-calendar {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+
+    .ldesign-calendar-current-time-indicator {
+      animation: none;
+    }
+
+    .loading-dots {
+
+      &::before,
+      &::after,
+      & {
+        animation: none;
+        opacity: 1;
+      }
+    }
+  }
+}

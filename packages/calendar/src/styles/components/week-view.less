@@ -1,0 +1,341 @@
+/**
+ * 周视图组件样�? */
+
+.ldesign-calendar-week-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+// ==================== 日期头部 ====================
+
+.ldesign-calendar-week-header {
+  display: flex;
+  background-color: @calendar-bg-color-component;
+  border-bottom: 1px solid @calendar-border-color;
+  height: @calendar-week-day-header-height;
+  flex-shrink: 0;
+}
+
+.ldesign-calendar-week-time-axis-header {
+  width: @calendar-week-time-axis-width;
+  border-right: 1px solid @calendar-border-color;
+  background-color: @calendar-bg-color-component;
+}
+
+.ldesign-calendar-week-day-header {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: @calendar-padding-sm;
+  cursor: pointer;
+  .transition(background-color);
+
+  &:not(:last-child) {
+    border-right: 1px solid @calendar-border-color;
+  }
+
+  &:hover {
+    background-color: @calendar-bg-color-hover;
+  }
+
+  // 今天状�?  &.is-today {
+  background-color: rgba(red(@calendar-primary-color), green(@calendar-primary-color), blue(@calendar-primary-color), 0.1);
+
+  .day-number {
+    background-color: @calendar-primary-color;
+    color: white;
+    border-radius: 50%;
+  }
+}
+
+// 周末
+&.is-weekend {
+  .day-name {
+    color: @calendar-error-color;
+  }
+}
+
+.day-name {
+  font-size: @calendar-font-size-xs;
+  font-weight: 600;
+  color: @calendar-text-color-secondary;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.day-number {
+  font-size: @calendar-font-size-base;
+  font-weight: 500;
+  color: @calendar-text-color-primary;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .transition(all);
+}
+
+.day-lunar {
+  font-size: 10px;
+  color: @calendar-text-color-placeholder;
+  margin-top: 2px;
+}
+
+// ==================== 时间轴和内容区域 ====================
+
+.ldesign-calendar-week-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.ldesign-calendar-week-time-axis {
+  width: @calendar-week-time-axis-width;
+  background-color: @calendar-bg-color-component;
+  border-right: 1px solid @calendar-border-color;
+  overflow-y: auto;
+  .custom-scrollbar();
+}
+
+.ldesign-calendar-week-grid {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  .custom-scrollbar();
+}
+
+// ==================== 时间槽样�?====================
+
+.ldesign-calendar-time-slot {
+  height: @calendar-week-hour-height;
+  border-bottom: 1px solid @calendar-border-color;
+  display: flex;
+  align-items: flex-start;
+  padding: @calendar-padding-xs;
+  position: relative;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .time-label {
+    font-size: @calendar-font-size-xs;
+    color: @calendar-text-color-secondary;
+    line-height: 1;
+    margin-top: -6px;
+  }
+
+  // 半小时分割线
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background-color: rgba(red(@calendar-border-color), green(@calendar-border-color), blue(@calendar-border-color), 0.3);
+  }
+}
+
+// ==================== 日期�?====================
+
+.ldesign-calendar-week-days {
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.ldesign-calendar-week-day-column {
+  flex: 1;
+  position: relative;
+  border-right: 1px solid @calendar-border-color;
+
+  &:last-child {
+    border-right: none;
+  }
+
+  // 时间网格背景
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: repeating-linear-gradient(to bottom,
+        transparent 0,
+        transparent (@calendar-week-hour-height - 1px),
+        @calendar-border-color (@calendar-week-hour-height - 1px),
+        @calendar-border-color @calendar-week-hour-height );
+    pointer-events: none;
+  }
+
+  // 半小时分割线
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: repeating-linear-gradient(to bottom,
+        transparent 0,
+        transparent (@calendar-week-hour-height / 2 - 0.5px),
+        rgba(red(@calendar-border-color), green(@calendar-border-color), blue(@calendar-border-color), 0.3) (@calendar-week-hour-height / 2 - 0.5px),
+        rgba(red(@calendar-border-color), green(@calendar-border-color), blue(@calendar-border-color), 0.3) (@calendar-week-hour-height / 2 + 0.5px),
+        transparent (@calendar-week-hour-height / 2 + 0.5px),
+        transparent @calendar-week-hour-height );
+    pointer-events: none;
+  }
+
+  // 今天高亮
+  &.is-today {
+    background-color: rgba(red(@calendar-primary-color), green(@calendar-primary-color), blue(@calendar-primary-color), 0.05);
+  }
+
+  // 周末样式
+  &.is-weekend {
+    background-color: rgba(red(@calendar-error-color), green(@calendar-error-color), blue(@calendar-error-color), 0.02);
+  }
+}
+
+// ==================== 当前时间指示�?====================
+
+.ldesign-calendar-current-time-indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: @calendar-error-color;
+  z-index: @calendar-z-index-event;
+  pointer-events: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -3px;
+    width: 8px;
+    height: 8px;
+    background-color: @calendar-error-color;
+    border-radius: 50%;
+  }
+}
+
+// ==================== 全天事件区域 ====================
+
+.ldesign-calendar-all-day-events {
+  background-color: @calendar-bg-color-component;
+  border-bottom: 1px solid @calendar-border-color;
+  padding: @calendar-padding-xs;
+  min-height: 32px;
+  max-height: 120px;
+  overflow-y: auto;
+  .custom-scrollbar();
+
+  .all-day-event {
+    margin-bottom: 2px;
+    padding: 2px 6px;
+    border-radius: @calendar-border-radius-sm;
+    font-size: @calendar-font-size-xs;
+    .text-ellipsis();
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// ==================== 响应式适配 ====================
+
+.ldesign-calendar-week-view {
+  @media (max-width: @calendar-breakpoint-sm) {
+
+    .ldesign-calendar-week-time-axis,
+    .ldesign-calendar-week-time-axis-header {
+      width: 50px;
+    }
+
+    .ldesign-calendar-week-day-header {
+      padding: @calendar-padding-xs;
+
+      .day-name {
+        font-size: 10px;
+      }
+
+      .day-number {
+        font-size: @calendar-font-size-sm;
+        width: 24px;
+        height: 24px;
+      }
+
+      .day-lunar {
+        display: none;
+      }
+    }
+
+    .ldesign-calendar-time-slot {
+      height: 40px;
+
+      .time-label {
+        font-size: 10px;
+      }
+    }
+
+    .ldesign-calendar-week-day-column {
+      &::before {
+        background-image: repeating-linear-gradient(to bottom,
+            transparent 0,
+            transparent 39px,
+            @calendar-border-color 39px,
+            @calendar-border-color 40px);
+      }
+
+      &::after {
+        background-image: repeating-linear-gradient(to bottom,
+            transparent 0,
+            transparent 19px,
+            rgba(red(@calendar-border-color), green(@calendar-border-color), blue(@calendar-border-color), 0.3) 19px,
+            rgba(red(@calendar-border-color), green(@calendar-border-color), blue(@calendar-border-color), 0.3) 21px,
+            transparent 21px,
+            transparent 40px);
+      }
+    }
+  }
+
+  @media (min-width: @calendar-breakpoint-sm) and (max-width: @calendar-breakpoint-md) {
+    .ldesign-calendar-week-day-header {
+      height: 60px;
+    }
+  }
+}
+
+// ==================== 紧凑模式 ====================
+
+.ldesign-calendar.compact {
+  .ldesign-calendar-week-view {
+    .ldesign-calendar-week-day-header {
+      height: 50px;
+      padding: @calendar-padding-xs;
+
+      .day-lunar {
+        display: none;
+      }
+    }
+
+    .ldesign-calendar-time-slot {
+      height: 40px;
+    }
+
+    .ldesign-calendar-all-day-events {
+      max-height: 60px;
+    }
+  }
+}

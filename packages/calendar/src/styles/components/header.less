@@ -1,0 +1,275 @@
+/**
+ * 日历头部组件样式
+ */
+
+.ldesign-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 @calendar-padding-base;
+  background-color: @calendar-bg-color-container;
+  border-bottom: 1px solid @calendar-border-color;
+
+  // 标题区域
+  .ldesign-calendar-title {
+    flex: 1;
+    text-align: center;
+    font-size: @calendar-font-size-lg;
+    font-weight: 600;
+    color: @calendar-text-color-primary;
+    margin: 0;
+    .text-ellipsis();
+  }
+
+  // 导航按钮
+  .ldesign-calendar-nav-btn {
+    .button-secondary();
+    width: @calendar-nav-button-size;
+    height: @calendar-nav-button-size;
+    min-width: @calendar-nav-button-size;
+    padding: 0;
+    border-radius: 50%;
+    font-size: @calendar-font-size-base;
+    font-weight: bold;
+
+    &:hover:not(:disabled) {
+      background-color: @calendar-bg-color-hover;
+    }
+
+    &:active:not(:disabled) {
+      background-color: @calendar-bg-color-active;
+    }
+
+    &.ldesign-calendar-prev {
+      margin-right: @calendar-spacing-sm;
+    }
+
+    &.ldesign-calendar-next {
+      margin-left: @calendar-spacing-sm;
+    }
+  }
+
+  // 工具�?  .ldesign-calendar-toolbar {
+  display: flex;
+  align-items: center;
+  gap: @calendar-spacing-sm;
+
+  .ldesign-calendar-view-switcher {
+    display: flex;
+    border: 1px solid @calendar-border-color;
+    border-radius: @calendar-border-radius-base;
+    overflow: hidden;
+
+    .view-btn {
+      .button-base();
+      padding: 6px 12px;
+      font-size: @calendar-font-size-xs;
+      border: none;
+      border-radius: 0;
+      background-color: transparent;
+      color: @calendar-text-color-secondary;
+
+      &:not(:last-child) {
+        border-right: 1px solid @calendar-border-color;
+      }
+
+      &:hover:not(:disabled) {
+        background-color: @calendar-bg-color-hover;
+        color: @calendar-text-color-primary;
+      }
+
+      &.active {
+        background-color: @calendar-primary-color;
+        color: white;
+      }
+    }
+  }
+
+  .ldesign-calendar-today-btn {
+    .button-secondary();
+    padding: 6px 12px;
+    font-size: @calendar-font-size-xs;
+  }
+
+  .ldesign-calendar-settings-btn {
+    .button-secondary();
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    padding: 0;
+    border-radius: @calendar-border-radius-base;
+    font-size: @calendar-font-size-sm;
+  }
+}
+
+// ==================== 扩展头部样式 ====================
+
+.ldesign-calendar-header-extended {
+  flex-direction: column;
+  height: auto;
+  padding: @calendar-padding-base;
+
+  .header-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: @calendar-spacing-sm;
+  }
+
+  .header-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: @calendar-spacing-base;
+
+    .date-picker {
+      .input-base();
+      width: 140px;
+      text-align: center;
+    }
+
+    .view-info {
+      font-size: @calendar-font-size-xs;
+      color: @calendar-text-color-secondary;
+
+      .event-count {
+        color: @calendar-primary-color;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// ==================== 迷你头部样式 ====================
+
+.ldesign-calendar-header-mini {
+  height: 40px;
+  padding: 0 @calendar-padding-sm;
+
+  .ldesign-calendar-title {
+    font-size: @calendar-font-size-base;
+  }
+
+  .ldesign-calendar-nav-btn {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    font-size: @calendar-font-size-sm;
+  }
+
+  .ldesign-calendar-toolbar {
+    gap: @calendar-spacing-xs;
+
+    .view-btn {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+
+    .ldesign-calendar-today-btn {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+  }
+}
+
+// ==================== 响应式头�?====================
+
+.ldesign-calendar-header {
+  @media (max-width: @calendar-breakpoint-sm) {
+    flex-wrap: wrap;
+    height: auto;
+    padding: @calendar-padding-sm;
+
+    .ldesign-calendar-title {
+      order: 1;
+      width: 100%;
+      margin-bottom: @calendar-spacing-xs;
+      text-align: center;
+    }
+
+    .ldesign-calendar-nav-btn {
+      order: 2;
+
+      &.ldesign-calendar-prev {
+        margin-right: auto;
+      }
+
+      &.ldesign-calendar-next {
+        margin-left: auto;
+      }
+    }
+
+    .ldesign-calendar-toolbar {
+      order: 3;
+      width: 100%;
+      justify-content: center;
+      margin-top: @calendar-spacing-xs;
+
+      .ldesign-calendar-view-switcher {
+        flex: 1;
+        max-width: 200px;
+
+        .view-btn {
+          flex: 1;
+          padding: 8px 4px;
+        }
+      }
+    }
+  }
+
+  @media (min-width: @calendar-breakpoint-sm) and (max-width: @calendar-breakpoint-md) {
+    .ldesign-calendar-toolbar {
+      .ldesign-calendar-view-switcher {
+        .view-btn {
+          padding: 6px 16px;
+        }
+      }
+    }
+  }
+}
+
+// ==================== 头部动画 ====================
+
+.ldesign-calendar-header {
+  .ldesign-calendar-title {
+    .transition(opacity);
+
+    &.changing {
+      opacity: 0.5;
+    }
+  }
+
+  .ldesign-calendar-nav-btn {
+    .transition(transform);
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+// ==================== 头部状�?====================
+
+.ldesign-calendar-header {
+  &.loading {
+    .ldesign-calendar-title {
+      opacity: 0.5;
+    }
+
+    .ldesign-calendar-nav-btn {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+  }
+
+  &.error {
+    background-color: rgba(red(@calendar-error-color), green(@calendar-error-color), blue(@calendar-error-color), 0.1);
+    border-bottom-color: @calendar-error-color;
+
+    .ldesign-calendar-title {
+      color: @calendar-error-color;
+    }
+  }
+}

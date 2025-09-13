@@ -1,0 +1,334 @@
+/**
+ * 月视图组件样�? */
+
+.ldesign-calendar-month-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+// ==================== 星期标题 ====================
+
+.ldesign-calendar-week-header {
+  display: flex;
+  background-color: @calendar-bg-color-component;
+  border-bottom: 1px solid @calendar-border-color;
+  height: @calendar-weekday-header-height;
+  flex-shrink: 0;
+}
+
+.ldesign-calendar-weekday {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: @calendar-font-size-xs;
+  font-weight: 600;
+  color: @calendar-text-color-secondary;
+  text-transform: uppercase;
+
+  &:not(:last-child) {
+    border-right: 1px solid @calendar-border-color;
+  }
+
+  // 周末样式
+  &:first-child,
+  &:last-child {
+    color: @calendar-error-color;
+  }
+}
+
+// ==================== 日期网格 ====================
+
+.ldesign-calendar-date-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 1px;
+  background-color: @calendar-border-color;
+  overflow: hidden;
+}
+
+// ==================== 日期单元�?====================
+
+.ldesign-calendar-day-cell {
+  background-color: @calendar-bg-color-container;
+  position: relative;
+  min-height: @calendar-month-cell-min-height;
+  cursor: pointer;
+  .transition(background-color);
+
+  // 悬浮效果
+  &:hover:not(.is-disabled) {
+    background-color: @calendar-bg-color-hover;
+  }
+
+  // 选中状�?  &.is-selected {
+  background-color: @calendar-primary-color;
+
+  .ldesign-calendar-day-number {
+    color: white;
+  }
+
+  .ldesign-calendar-lunar,
+  .ldesign-calendar-holiday {
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+// 今天状�?  &.is-today {
+.ldesign-calendar-day-number {
+  background-color: @calendar-primary-color;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+}
+
+// 其他月份
+&.is-other-month {
+  background-color: @calendar-bg-color-component;
+
+  .ldesign-calendar-day-number,
+  .ldesign-calendar-lunar,
+  .ldesign-calendar-holiday {
+    opacity: 0.4;
+  }
+}
+
+// 周末
+&.is-weekend {
+  .ldesign-calendar-day-number {
+    color: @calendar-error-color;
+  }
+}
+
+// 节假�?  &.has-holiday {
+.ldesign-calendar-day-number {
+  color: @calendar-error-color;
+  font-weight: 600;
+}
+}
+
+// 禁用状�?  &.is-disabled {
+background-color: @calendar-bg-color-component;
+cursor: not-allowed;
+
+.ldesign-calendar-day-number {
+  color: @calendar-text-color-disabled;
+}
+}
+}
+
+// ==================== 日期内容 ====================
+
+.ldesign-calendar-day-content {
+  padding: @calendar-padding-xs;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ldesign-calendar-day-number {
+  font-size: @calendar-font-size-sm;
+  font-weight: 500;
+  color: @calendar-text-color-primary;
+  text-align: center;
+  margin-bottom: 2px;
+  .transition(all);
+}
+
+.ldesign-calendar-lunar {
+  font-size: 10px;
+  color: @calendar-text-color-placeholder;
+  text-align: center;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.ldesign-calendar-holiday {
+  font-size: 10px;
+  color: @calendar-error-color;
+  text-align: center;
+  line-height: 1;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+// ==================== 事件容器 ====================
+
+.ldesign-calendar-day-events {
+  flex: 1;
+  overflow: hidden;
+  margin-top: auto;
+}
+
+.ldesign-calendar-event-more {
+  font-size: 10px;
+  color: @calendar-text-color-placeholder;
+  text-align: center;
+  padding: 2px;
+  cursor: pointer;
+  .transition(color);
+
+  &:hover {
+    color: @calendar-primary-color;
+  }
+}
+
+// ==================== 多日事件样式 ====================
+
+.ldesign-calendar-multi-day-event {
+  position: relative;
+  margin-bottom: 1px;
+
+  &.multi-day-start {
+    border-top-left-radius: @calendar-event-border-radius;
+    border-bottom-left-radius: @calendar-event-border-radius;
+
+    &::after {
+      content: '';
+      position: absolute;
+      right: -1px;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background-color: inherit;
+    }
+  }
+
+  &.multi-day-middle {
+    border-radius: 0;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background-color: inherit;
+    }
+
+    &::before {
+      left: -1px;
+    }
+
+    &::after {
+      right: -1px;
+    }
+  }
+
+  &.multi-day-end {
+    border-top-right-radius: @calendar-event-border-radius;
+    border-bottom-right-radius: @calendar-event-border-radius;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: -1px;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background-color: inherit;
+    }
+  }
+}
+
+// ==================== 响应式适配 ====================
+
+.ldesign-calendar-month-view {
+  @media (max-width: @calendar-breakpoint-sm) {
+    .ldesign-calendar-weekday {
+      font-size: 10px;
+      padding: @calendar-padding-xs;
+    }
+
+    .ldesign-calendar-day-cell {
+      min-height: 60px;
+    }
+
+    .ldesign-calendar-day-content {
+      padding: 4px;
+    }
+
+    .ldesign-calendar-day-number {
+      font-size: 12px;
+    }
+
+    .ldesign-calendar-lunar,
+    .ldesign-calendar-holiday {
+      font-size: 9px;
+    }
+  }
+
+  @media (min-width: @calendar-breakpoint-sm) and (max-width: @calendar-breakpoint-md) {
+    .ldesign-calendar-day-cell {
+      min-height: 100px;
+    }
+  }
+
+  @media (min-width: @calendar-breakpoint-md) {
+    .ldesign-calendar-day-cell {
+      min-height: @calendar-month-cell-height;
+    }
+  }
+}
+
+// ==================== 紧凑模式 ====================
+
+.ldesign-calendar.compact {
+  .ldesign-calendar-month-view {
+    .ldesign-calendar-week-header {
+      height: 32px;
+    }
+
+    .ldesign-calendar-weekday {
+      font-size: 10px;
+    }
+
+    .ldesign-calendar-day-cell {
+      min-height: 60px;
+    }
+
+    .ldesign-calendar-day-content {
+      padding: 4px;
+    }
+
+    .ldesign-calendar-day-number {
+      font-size: 12px;
+    }
+
+    .ldesign-calendar-lunar,
+    .ldesign-calendar-holiday {
+      display: none;
+    }
+  }
+}
+
+// ==================== 动画效果 ====================
+
+.ldesign-calendar-month-view {
+  .ldesign-calendar-day-cell {
+    .transition(all);
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  // 月份切换动画
+  &.month-changing {
+    .ldesign-calendar-date-grid {
+      opacity: 0.7;
+      .transition(opacity);
+    }
+  }
+}

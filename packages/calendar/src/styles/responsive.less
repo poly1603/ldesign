@@ -1,0 +1,420 @@
+/**
+ * 响应式样�? */
+
+// ==================== 移动端适配 ====================
+
+@media (max-width: @calendar-breakpoint-sm) {
+  .ldesign-calendar {
+    min-width: 100%;
+    border-radius: 0;
+    
+    // 头部适配
+    .ldesign-calendar-header {
+      flex-wrap: wrap;
+      height: auto;
+      padding: @calendar-padding-sm;
+      
+      .ldesign-calendar-title {
+        order: 1;
+        width: 100%;
+        margin-bottom: @calendar-spacing-xs;
+        font-size: @calendar-font-size-base;
+      }
+      
+      .ldesign-calendar-nav-btn {
+        order: 2;
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        
+        &.ldesign-calendar-prev {
+          margin-right: auto;
+        }
+        
+        &.ldesign-calendar-next {
+          margin-left: auto;
+        }
+      }
+      
+      .ldesign-calendar-toolbar {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        margin-top: @calendar-spacing-xs;
+        
+        .ldesign-calendar-view-switcher {
+          flex: 1;
+          max-width: 240px;
+          
+          .view-btn {
+            flex: 1;
+            padding: 8px 4px;
+            font-size: 11px;
+          }
+        }
+        
+        .ldesign-calendar-today-btn {
+          display: none; // 移动端隐藏今天按�?        }
+      }
+    }
+    
+    // 月视图移动端适配
+    .ldesign-calendar-month-view {
+      .ldesign-calendar-week-header {
+        height: 32px;
+      }
+      
+      .ldesign-calendar-weekday {
+        font-size: 10px;
+        padding: @calendar-padding-xs;
+      }
+      
+      .ldesign-calendar-day-cell {
+        min-height: 60px;
+      }
+      
+      .ldesign-calendar-day-content {
+        padding: 4px;
+      }
+      
+      .ldesign-calendar-day-number {
+        font-size: 12px;
+      }
+      
+      .ldesign-calendar-lunar,
+      .ldesign-calendar-holiday {
+        font-size: 9px;
+      }
+      
+      .ldesign-calendar-event {
+        padding: 1px 3px;
+        font-size: 9px;
+        margin-bottom: 1px;
+        
+        .ldesign-calendar-event-title {
+          .text-ellipsis();
+        }
+        
+        .ldesign-calendar-event-time,
+        .ldesign-calendar-event-description {
+          display: none;
+        }
+      }
+    }
+    
+    // 周视图移动端适配
+    .ldesign-calendar-week-view {
+      .ldesign-calendar-week-time-axis,
+      .ldesign-calendar-week-time-axis-header {
+        width: 50px;
+      }
+      
+      .ldesign-calendar-week-day-header {
+        padding: @calendar-padding-xs;
+        height: 60px;
+        
+        .day-name {
+          font-size: 10px;
+        }
+        
+        .day-number {
+          font-size: @calendar-font-size-sm;
+          width: 24px;
+          height: 24px;
+        }
+        
+        .day-lunar {
+          display: none;
+        }
+      }
+      
+      .ldesign-calendar-time-slot {
+        height: 40px;
+        
+        .time-label {
+          font-size: 10px;
+        }
+      }
+      
+      .ldesign-calendar-all-day-events {
+        max-height: 60px;
+      }
+    }
+    
+    // 日视图移动端适配
+    .ldesign-calendar-day-view {
+      .ldesign-calendar-day-time-axis,
+      .ldesign-calendar-day-time-axis-header,
+      .all-day-time-axis {
+        width: 60px;
+      }
+      
+      .ldesign-calendar-day-date-header {
+        padding: @calendar-padding-sm;
+        height: 70px;
+        
+        .date-name {
+          font-size: @calendar-font-size-xs;
+        }
+        
+        .date-number {
+          font-size: @calendar-font-size-lg;
+          width: 36px;
+          height: 36px;
+        }
+        
+        .date-lunar,
+        .date-holiday {
+          font-size: 10px;
+        }
+      }
+      
+      .ldesign-calendar-day-time-slot {
+        height: 40px;
+        
+        .time-label {
+          font-size: 10px;
+        }
+      }
+    }
+    
+    // 事件移动端适配
+    .ldesign-calendar-event {
+      padding: 2px 4px;
+      font-size: 10px;
+      
+      .ldesign-calendar-event-title {
+        margin-bottom: 0;
+      }
+      
+      .ldesign-calendar-event-time,
+      .ldesign-calendar-event-description,
+      .ldesign-calendar-event-location {
+        display: none;
+      }
+      
+      // 移动端禁用悬浮效�?      &:hover {
+        transform: none;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+// ==================== 平板适配 ====================
+
+@media (min-width: @calendar-breakpoint-sm) and (max-width: @calendar-breakpoint-md) {
+  .ldesign-calendar {
+    // 头部平板适配
+    .ldesign-calendar-header {
+      padding: 0 @calendar-padding-base;
+      
+      .ldesign-calendar-toolbar {
+        .ldesign-calendar-view-switcher {
+          .view-btn {
+            padding: 6px 16px;
+          }
+        }
+      }
+    }
+    
+    // 月视图平板适配
+    .ldesign-calendar-month-view {
+      .ldesign-calendar-day-cell {
+        min-height: 100px;
+      }
+      
+      .ldesign-calendar-event {
+        .ldesign-calendar-event-description {
+          display: none;
+        }
+      }
+    }
+    
+    // 周视图平板适配
+    .ldesign-calendar-week-view {
+      .ldesign-calendar-week-day-header {
+        height: 60px;
+      }
+    }
+    
+    // 日视图平板适配
+    .ldesign-calendar-day-view {
+      .ldesign-calendar-day-date-header {
+        height: 70px;
+      }
+    }
+  }
+}
+
+// ==================== 桌面端适配 ====================
+
+@media (min-width: @calendar-breakpoint-md) {
+  .ldesign-calendar {
+    max-width: @calendar-container-max-width;
+    
+    // 月视图桌面适配
+    .ldesign-calendar-month-view {
+      .ldesign-calendar-day-cell {
+        min-height: @calendar-month-cell-height;
+      }
+    }
+    
+    // 启用桌面端交互效�?    .ldesign-calendar-event {
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: @calendar-shadow-2;
+      }
+    }
+    
+    .ldesign-calendar-day-cell {
+      &:hover {
+        transform: scale(1.02);
+      }
+    }
+  }
+}
+
+// ==================== 大屏适配 ====================
+
+@media (min-width: @calendar-breakpoint-lg) {
+  .ldesign-calendar {
+    // 大屏下增加内容密�?    .ldesign-calendar-month-view {
+      .ldesign-calendar-day-cell {
+        min-height: 140px;
+      }
+    }
+    
+    .ldesign-calendar-week-view {
+      .ldesign-calendar-week-day-header {
+        height: 100px;
+      }
+    }
+    
+    .ldesign-calendar-day-view {
+      .ldesign-calendar-day-date-header {
+        height: 100px;
+      }
+    }
+  }
+}
+
+// ==================== 横屏适配 ====================
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .ldesign-calendar {
+    .ldesign-calendar-header {
+      height: 48px;
+      
+      .ldesign-calendar-title {
+        font-size: @calendar-font-size-base;
+      }
+      
+      .ldesign-calendar-nav-btn {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+      }
+    }
+    
+    .ldesign-calendar-month-view {
+      .ldesign-calendar-week-header {
+        height: 32px;
+      }
+      
+      .ldesign-calendar-day-cell {
+        min-height: 60px;
+      }
+    }
+  }
+}
+
+// ==================== 触摸设备适配 ====================
+
+@media (hover: none) and (pointer: coarse) {
+  .ldesign-calendar {
+    // 增加触摸目标大小
+    .ldesign-calendar-nav-btn {
+      min-width: 44px;
+      height: 44px;
+    }
+    
+    .ldesign-calendar-day-cell {
+      min-height: 80px;
+    }
+    
+    .ldesign-calendar-event {
+      min-height: 32px;
+      padding: 6px 8px;
+      
+      // 禁用悬浮效果
+      &:hover {
+        transform: none;
+        box-shadow: none;
+      }
+    }
+    
+    // 增加点击反馈
+    .ldesign-calendar-day-cell,
+    .ldesign-calendar-event,
+    .ldesign-calendar-nav-btn {
+      &:active {
+        opacity: 0.7;
+      }
+    }
+  }
+}
+
+// ==================== 高分辨率屏幕适配 ====================
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .ldesign-calendar {
+    // 高分辨率下的边框优化
+    .ldesign-calendar-day-cell,
+    .ldesign-calendar-time-slot {
+      border-width: 0.5px;
+    }
+    
+    // 高分辨率下的阴影优化
+    .ldesign-calendar-event {
+      &:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+    }
+  }
+}
+
+// ==================== 打印适配 ====================
+
+@media print {
+  .ldesign-calendar {
+    box-shadow: none;
+    border: 1px solid #000;
+    background: white !important;
+    color: black !important;
+    
+    .ldesign-calendar-header {
+      border-bottom: 1px solid #000;
+      
+      .ldesign-calendar-nav-btn,
+      .ldesign-calendar-toolbar {
+        display: none;
+      }
+    }
+    
+    .ldesign-calendar-event {
+      background-color: #f0f0f0 !important;
+      color: #000 !important;
+      border: 1px solid #000 !important;
+      box-shadow: none !important;
+    }
+    
+    .ldesign-calendar-day-cell {
+      border: 1px solid #000;
+      
+      &:hover {
+        background-color: transparent !important;
+      }
+    }
+  }
+}

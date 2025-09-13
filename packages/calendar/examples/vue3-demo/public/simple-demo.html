@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDESIGN Calendar 简单示例</title>
+  <link rel="stylesheet" href="../../dist/index.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    
+    .demo-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .demo-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .demo-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: #722ED1;
+      margin: 0 0 10px 0;
+    }
+    
+    .demo-subtitle {
+      font-size: 16px;
+      color: #666;
+      margin: 0;
+    }
+    
+    .demo-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .demo-btn {
+      padding: 8px 16px;
+      border: 1px solid #722ED1;
+      background: white;
+      color: #722ED1;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .demo-btn:hover {
+      background: #722ED1;
+      color: white;
+    }
+    
+    .demo-btn.active {
+      background: #722ED1;
+      color: white;
+    }
+    
+    #calendar-container {
+      min-height: 600px;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+    }
+    
+    .demo-info {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border-left: 4px solid #722ED1;
+    }
+    
+    .demo-info h3 {
+      margin: 0 0 10px 0;
+      color: #722ED1;
+    }
+    
+    .demo-info p {
+      margin: 5px 0;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <div class="demo-header">
+      <h1 class="demo-title">LDESIGN Calendar</h1>
+      <p class="demo-subtitle">功能丰富的日历组件演示</p>
+    </div>
+    
+    <div class="demo-controls">
+      <button class="demo-btn active" onclick="switchView('month')">月视图</button>
+      <button class="demo-btn" onclick="switchView('week')">周视图</button>
+      <button class="demo-btn" onclick="switchView('day')">日视图</button>
+      <button class="demo-btn" onclick="addSampleEvents()">添加示例事件</button>
+      <button class="demo-btn" onclick="clearEvents()">清空事件</button>
+    </div>
+    
+    <div id="calendar-container"></div>
+    
+    <div class="demo-info">
+      <h3>功能特性</h3>
+      <p>✅ 多视图支持：月视图、周视图、日视图</p>
+      <p>✅ 事件管理：添加、编辑、删除事件</p>
+      <p>✅ 响应式设计：适配不同屏幕尺寸</p>
+      <p>✅ 主题定制：支持多种主题风格</p>
+      <p>✅ 国际化：支持多语言</p>
+      <p>✅ 农历支持：显示农历日期</p>
+    </div>
+  </div>
+
+  <!-- 引入依赖 -->
+  <script src="https://unpkg.com/dayjs@1.11.18/dayjs.min.js"></script>
+  <script src="https://unpkg.com/dayjs@1.11.18/plugin/localeData.js"></script>
+  <script src="https://unpkg.com/dayjs@1.11.18/plugin/weekOfYear.js"></script>
+  <script src="https://unpkg.com/dayjs@1.11.18/plugin/isoWeek.js"></script>
+  <script src="https://unpkg.com/dayjs@1.11.18/plugin/customParseFormat.js"></script>
+  <script src="https://unpkg.com/lunar-javascript@1.6.12/lunar.min.js"></script>
+  
+  <!-- 引入日历组件 -->
+  <script src="../../dist/index.js"></script>
+  
+  <script>
+    let calendar;
+    let currentView = 'month';
+    
+    // 初始化日历
+    function initCalendar() {
+      const container = document.getElementById('calendar-container');
+      
+      // 创建日历实例
+      calendar = new Calendar.Calendar(container, {
+        view: currentView,
+        date: new Date(),
+        events: [],
+        onDateSelect: (date) => {
+          console.log('选择日期:', date);
+          alert(`选择了日期: ${date.toLocaleDateString()}`);
+        },
+        onEventClick: (event) => {
+          console.log('点击事件:', event);
+          alert(`点击了事件: ${event.title}`);
+        },
+        onEventCreate: (event) => {
+          console.log('创建事件:', event);
+        },
+        onEventUpdate: (event) => {
+          console.log('更新事件:', event);
+        },
+        onEventDelete: (eventId) => {
+          console.log('删除事件:', eventId);
+        }
+      });
+      
+      console.log('日历初始化完成');
+    }
+    
+    // 切换视图
+    function switchView(view) {
+      currentView = view;
+      
+      // 更新按钮状态
+      document.querySelectorAll('.demo-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // 切换日历视图
+      if (calendar) {
+        calendar.setView(view);
+      }
+      
+      console.log('切换到视图:', view);
+    }
+    
+    // 添加示例事件
+    function addSampleEvents() {
+      const sampleEvents = [
+        {
+          id: '1',
+          title: '团队会议',
+          start: new Date(2025, 8, 15, 9, 0),
+          end: new Date(2025, 8, 15, 10, 30),
+          color: '#722ED1',
+          description: '讨论项目进展'
+        },
+        {
+          id: '2',
+          title: '产品发布',
+          start: new Date(2025, 8, 18, 14, 0),
+          end: new Date(2025, 8, 18, 16, 0),
+          color: '#52c41a',
+          description: '新版本产品发布会'
+        },
+        {
+          id: '3',
+          title: '客户拜访',
+          start: new Date(2025, 8, 20, 10, 0),
+          end: new Date(2025, 8, 20, 12, 0),
+          color: '#fa8c16',
+          description: '重要客户商务拜访'
+        }
+      ];
+      
+      if (calendar) {
+        sampleEvents.forEach(event => {
+          calendar.addEvent(event);
+        });
+      }
+      
+      console.log('添加示例事件完成');
+    }
+    
+    // 清空事件
+    function clearEvents() {
+      if (calendar) {
+        calendar.clearEvents();
+      }
+      console.log('清空事件完成');
+    }
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('页面加载完成，开始初始化日历');
+      initCalendar();
+    });
+  </script>
+</body>
+</html>
