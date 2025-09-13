@@ -4,7 +4,6 @@
  */
 
 import type { ApiEngine, ApiEngineConfig } from '../types'
-import process from 'node:process'
 import { ApiEngineImpl } from './ApiEngine'
 import { systemApiPlugin } from '../plugins/systemApi'
 

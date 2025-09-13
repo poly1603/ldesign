@@ -6,7 +6,6 @@
 import type { Plugin as EnginePlugin } from '@ldesign/engine'
 import type { ApiEngine, ApiEngineConfig } from '../types'
 import type { ApiVuePluginOptions } from './plugin'
-import process from 'node:process'
 import { createApiEngine } from '../core/factory'
 import { ApiVuePlugin } from './plugin'
 import { version as libVersion } from '../version'
