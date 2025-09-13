@@ -612,6 +612,8 @@ export class RollupAdapter implements IBundlerAdapter {
                 ...origCO,
                 declaration: true,
                 emitDeclarationOnly: true,
+                // 关闭 d.ts 的 sourceMap，避免生成到上级目录等不合法路径
+                declarationMap: false,
                 declarationDir: outputDir,
                 outDir: outputDir,
                 // 避免 @rollup/plugin-typescript 在缺少 tsconfig 时的根目录推断失败
@@ -1054,6 +1056,8 @@ export class RollupAdapter implements IBundlerAdapter {
         format: 'umd',
         name: umdName,
         file: `${umdSection.dir || 'dist'}/${umdSection.fileName || defaultUmdFile}`,
+        // UMD 不支持代码分割，强制内联动态导入
+        inlineDynamicImports: true,
         sourcemap: (umdSection.sourcemap ?? outputConfig.sourcemap),
         globals: mergedGlobals,
         exports: 'named',

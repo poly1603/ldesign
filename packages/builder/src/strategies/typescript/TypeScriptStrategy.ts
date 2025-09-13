@@ -201,6 +201,22 @@ export class TypeScriptStrategy implements ILibraryStrategy {
       options: {}
     })
 
+    // 样式处理（支持 css/less/scss），在 TS 库中也允许按需引入样式
+    plugins.push({
+      name: 'postcss',
+      plugin: async () => {
+        const postcss = await import('rollup-plugin-postcss')
+        return postcss.default({
+          extract: (config as any).style?.extract !== false,
+          minimize: (config as any).style?.minimize !== false,
+          sourceMap: (config as any).output?.sourcemap !== false,
+          modules: (config as any).style?.modules || false,
+          use: ['less'],
+          extensions: ['.css', '.less', '.scss', '.sass']
+        })
+      }
+    })
+
     // 代码压缩插件（生产模式）
     if (config.mode === 'production' && config.performance?.minify !== false) {
       plugins.push({
@@ -338,6 +354,22 @@ export class TypeScriptStrategy implements ILibraryStrategy {
       }
     })
 
+    // 样式处理（支持 css/less/scss）
+    plugins.push({
+      name: 'postcss',
+      plugin: async () => {
+        const postcss = await import('rollup-plugin-postcss')
+        return postcss.default({
+          extract: (config as any).style?.extract !== false,
+          minimize: (config as any).style?.minimize !== false,
+          sourceMap: config.output?.sourcemap !== false,
+          modules: (config as any).style?.modules || false,
+          use: ['less'],
+          extensions: ['.css', '.less', '.scss', '.sass']
+        })
+      }
+    })
+
     // 使用 esbuild 转译 TS/TSX 为 JS（保留 JSX，由后续链按需处理）
     plugins.push({
       name: 'esbuild',
@@ -350,14 +382,14 @@ export class TypeScriptStrategy implements ILibraryStrategy {
           jsx: 'preserve',
           tsconfig: 'tsconfig.json',
           loaders: { '.ts': 'ts', '.tsx': 'tsx' },
-minify: shouldMinify(config),
+          minify: shouldMinify(config),
           sourceMap: config.output?.sourcemap !== false
         })
       }
     })
 
     // 代码压缩插件（生产模式）
-if (shouldMinify(config)) {
+    if (shouldMinify(config)) {
       plugins.push({
         name: 'terser',
         plugin: async () => {
