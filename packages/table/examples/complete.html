@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>完整功能演示 - LDESIGN Table</title>
+  <link rel="stylesheet" href="./src/styles/main.css">
+</head>
+<body>
+  <div class="page-header">
+    <h1>🔧 完整功能演示</h1>
+    <p>综合展示所有高级功能的完整示例</p>
+  </div>
+
+  <nav class="nav">
+    <div class="container">
+      <ul class="nav-links">
+        <li><a href="./index.html">首页</a></li>
+        <li><a href="./basic.html">基础表格</a></li>
+        <li><a href="./filter.html">筛选搜索</a></li>
+        <li><a href="./editable.html">可编辑表格</a></li>
+        <li><a href="./drag-sort.html">拖拽排序</a></li>
+        <li><a href="./export.html">数据导出</a></li>
+        <li><a href="./complete.html" class="active">完整功能</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="example-section">
+      <h2>完整功能演示</h2>
+      <p>这个示例展示了表格组件的所有高级功能，包括编辑、拖拽、导出等。</p>
+      
+      <div class="info-panel">
+        <h4>包含功能</h4>
+        <ul>
+          <li>✏️ 可编辑单元格（双击编辑）</li>
+          <li>🔄 拖拽排序（拖拽手柄）</li>
+          <li>📤 数据导出（多种格式）</li>
+          <li>🔍 筛选和搜索</li>
+          <li>📊 排序功能</li>
+          <li>📄 分页导航</li>
+          <li>✅ 行选择</li>
+        </ul>
+      </div>
+
+      <div class="controls">
+        <button class="btn" onclick="toggleEditing()">
+          <span id="editToggleText">启用编辑</span>
+        </button>
+        <button class="btn" onclick="toggleDragSort()">
+          <span id="dragToggleText">启用拖拽</span>
+        </button>
+        <button class="btn" onclick="addRandomRow()">添加随机行</button>
+        <button class="btn" onclick="clearTable()">清空表格</button>
+      </div>
+      
+      <div class="controls">
+        <button class="btn primary" onclick="exportCSV()">导出 CSV</button>
+        <button class="btn primary" onclick="exportExcel()">导出 Excel</button>
+        <button class="btn primary" onclick="exportJSON()">导出 JSON</button>
+        <button class="btn" onclick="exportSelected()">导出选中列</button>
+      </div>
+
+      <div class="table-container" id="completeTableContainer"></div>
+
+      <div class="info-panel">
+        <h4>当前状态</h4>
+        <div>
+          编辑模式: <span class="status" id="editStatus">禁用</span>
+          拖拽排序: <span class="status" id="dragStatus">禁用</span>
+          数据行数: <span id="rowCount">0</span>
+          选中行数: <span id="selectedCount">0</span>
+        </div>
+      </div>
+
+      <div class="log" id="operationLog"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { Table } from '@ldesign/table'
+    import '@ldesign/table/styles'
+    import { sampleEmployees, dragSortColumns, generateRandomEmployee, createLogger } from './src/utils/data.js'
+
+    let completeTable = null
+    let editingEnabled = false
+    let dragSortEnabled = false
+    const log = createLogger('operationLog')
+
+    // 完整的列配置（包含所有功能）
+    const completeColumns = [
+      {
+        key: 'drag',
+        title: '',
+        width: 40,
+        render: () => '<span class="drag-handle" style="cursor: grab;">⋮⋮</span>'
+      },
+      {
+        key: 'id',
+        title: 'ID',
+        width: 60,
+        sortable: true
+      },
+      {
+        key: 'name',
+        title: '姓名',
+        width: 100,
+        sortable: true,
+        editable: true,
+        editor: {
+          type: 'text',
+          rules: [
+            {
+              validator: (value) => value && value.length > 0,
+              message: '姓名不能为空'
+            }
+          ]
+        }
+      },
+      {
+        key: 'age',
+        title: '年龄',
+        width: 80,
+        sortable: true,
+        editable: true,
+        editor: {
+          type: 'number',
+          props: { min: 18, max: 65 },
+          rules: [
+            {
+              validator: (value) => value >= 18 && value <= 65,
+              message: '年龄必须在18-65之间'
+            }
+          ]
+        }
+      },
+      {
+        key: 'email',
+        title: '邮箱',
+        width: 200,
+        editable: true,
+        editor: {
+          type: 'text',
+          rules: [
+            {
+              validator: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+              message: '请输入有效的邮箱地址'
+            }
+          ]
+        }
+      },
+      {
+        key: 'department',
+        title: '部门',
+        width: 100,
+        filterable: true,
+        editable: true,
+        editor: {
+          type: 'select',
+          options: [
+            { label: '技术部', value: '技术部' },
+            { label: '产品部', value: '产品部' },
+            { label: '设计部', value: '设计部' },
+            { label: '市场部', value: '市场部' },
+            { label: '运营部', value: '运营部' }
+          ]
+        }
+      },
+      {
+        key: 'salary',
+        title: '薪资',
+        width: 100,
+        sortable: true,
+        editable: true,
+        editor: {
+          type: 'number',
+          props: { min: 3000, step: 100 }
+        },
+        formatter: (value) => `¥${value.toLocaleString()}`
+      },
+      {
+        key: 'active',
+        title: '状态',
+        width: 80,
+        editable: true,
+        editor: {
+          type: 'checkbox'
+        },
+        render: (value) => value ? '<span style="color: green;">✓ 在职</span>' : '<span style="color: red;">✗ 离职</span>'
+      },
+      {
+        key: 'joinDate',
+        title: '入职日期',
+        width: 120,
+        editable: true,
+        editor: {
+          type: 'date'
+        }
+      }
+    ]
+
+    // 初始化表格
+    function initCompleteTable() {
+      const container = document.getElementById('completeTableContainer')
+      container.innerHTML = ''
+
+      completeTable = new Table({
+        container,
+        columns: completeColumns,
+        data: [...sampleEmployees],
+        rowKey: 'id',
+        selection: {
+          enabled: true,
+          multiple: true,
+          checkboxColumn: true
+        },
+        editable: {
+          enabled: editingEnabled,
+          trigger: 'dblclick'
+        },
+        dragSort: {
+          enabled: dragSortEnabled,
+          handleSelector: '.drag-handle'
+        },
+        export: {
+          enabled: true
+        },
+        pagination: {
+          enabled: true,
+          pageSize: 10
+        }
+      })
+
+      // 绑定事件
+      bindTableEvents()
+      updateStatus()
+      log('完整功能表格初始化完成', 'success')
+    }
+
+    // 绑定表格事件
+    function bindTableEvents() {
+      // 编辑事件
+      completeTable.on('cell-edit-start', (data) => {
+        log(`开始编辑: ${data.column.title} - 行${data.rowIndex + 1}`, 'info')
+      })
+
+      completeTable.on('cell-edit-finish', (data) => {
+        log(`编辑完成: ${data.column.title} = ${data.newValue}`, 'success')
+        updateStatus()
+      })
+
+      completeTable.on('cell-edit-cancel', (data) => {
+        log(`取消编辑: ${data.column.title}`, 'warning')
+      })
+
+      // 拖拽排序事件
+      completeTable.on('row-sort-change', (data) => {
+        log(`行排序: 从位置${data.fromIndex}移动到位置${data.toIndex}`, 'info')
+        updateStatus()
+      })
+
+      // 导出事件
+      completeTable.on('export-start', (data) => {
+        log(`开始导出: ${data.config.format.toUpperCase()}格式`, 'info')
+      })
+
+      completeTable.on('export-complete', (data) => {
+        log(`导出完成: ${data.rowCount}行数据`, 'success')
+      })
+
+      completeTable.on('export-error', (data) => {
+        log(`导出失败: ${data.error}`, 'error')
+      })
+
+      // 选择事件
+      completeTable.on('selection-change', (data) => {
+        log(`选择变更: ${data.selectedKeys.length}行被选中`, 'info')
+        updateStatus()
+      })
+
+      // 排序事件
+      completeTable.on('sort-change', (data) => {
+        log(`排序变更: ${data.column.title} ${data.direction || '无排序'}`, 'info')
+      })
+
+      // 筛选事件
+      completeTable.on('filter-change', (data) => {
+        log(`筛选变更: ${data.column.title}`, 'info')
+      })
+    }
+
+    // 切换编辑模式
+    window.toggleEditing = function() {
+      editingEnabled = !editingEnabled
+      document.getElementById('editToggleText').textContent = editingEnabled ? '禁用编辑' : '启用编辑'
+      initCompleteTable()
+      log(`编辑模式: ${editingEnabled ? '启用' : '禁用'}`, 'info')
+    }
+
+    // 切换拖拽排序
+    window.toggleDragSort = function() {
+      dragSortEnabled = !dragSortEnabled
+      document.getElementById('dragToggleText').textContent = dragSortEnabled ? '禁用拖拽' : '启用拖拽'
+      initCompleteTable()
+      log(`拖拽排序: ${dragSortEnabled ? '启用' : '禁用'}`, 'info')
+    }
+
+    // 添加随机行
+    window.addRandomRow = function() {
+      const newRow = generateRandomEmployee()
+      completeTable.addData(newRow)
+      updateStatus()
+      log(`添加新行: ${newRow.name}`, 'success')
+    }
+
+    // 清空表格
+    window.clearTable = function() {
+      completeTable.setData([])
+      updateStatus()
+      log('表格已清空', 'warning')
+    }
+
+    // 导出CSV
+    window.exportCSV = function() {
+      completeTable.exportData({
+        format: 'csv',
+        filename: 'complete-table.csv',
+        includeHeader: true
+      })
+    }
+
+    // 导出Excel
+    window.exportExcel = function() {
+      completeTable.exportData({
+        format: 'excel',
+        filename: 'complete-table.xlsx',
+        includeHeader: true
+      })
+    }
+
+    // 导出JSON
+    window.exportJSON = function() {
+      completeTable.exportData({
+        format: 'json',
+        filename: 'complete-table.json'
+      })
+    }
+
+    // 导出选中列
+    window.exportSelected = function() {
+      completeTable.exportData({
+        format: 'csv',
+        filename: 'selected-columns.csv',
+        columns: ['name', 'department', 'salary'],
+        includeHeader: true
+      })
+    }
+
+    // 更新状态
+    function updateStatus() {
+      const editStatus = document.getElementById('editStatus')
+      const dragStatus = document.getElementById('dragStatus')
+      const rowCount = document.getElementById('rowCount')
+      const selectedCount = document.getElementById('selectedCount')
+
+      editStatus.textContent = editingEnabled ? '启用' : '禁用'
+      editStatus.className = `status ${editingEnabled ? 'success' : 'warning'}`
+
+      dragStatus.textContent = dragSortEnabled ? '启用' : '禁用'
+      dragStatus.className = `status ${dragSortEnabled ? 'success' : 'warning'}`
+
+      if (completeTable) {
+        rowCount.textContent = completeTable.getData().length
+        selectedCount.textContent = completeTable.getSelectedKeys().length
+      }
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      initCompleteTable()
+      log('页面加载完成', 'success')
+    })
+  </script>
+</body>
+</html>

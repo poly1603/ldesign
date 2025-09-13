@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>表格性能优化功能示例</title>
+  <link rel="stylesheet" href="../dist/index.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .description {
+      color: #666;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .demo-section {
+      margin-bottom: 32px;
+    }
+
+    .demo-section h2 {
+      color: #333;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #722ED1;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .control-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      border-color: #722ED1;
+      color: #722ED1;
+    }
+
+    button.primary {
+      background: #722ED1;
+      color: white;
+      border-color: #722ED1;
+    }
+
+    button.primary:hover {
+      background: #5e2aa7;
+      border-color: #5e2aa7;
+    }
+
+    select, input {
+      padding: 6px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .table-container {
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .info-panel {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .info-panel h3 {
+      margin: 0 0 12px 0;
+      color: #333;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .metric-item {
+      background: white;
+      padding: 12px;
+      border-radius: 4px;
+      border: 1px solid #e9ecef;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+
+    .error {
+      color: #dc3545;
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      border-radius: 4px;
+      padding: 12px;
+      margin: 12px 0;
+    }
+
+    .success {
+      color: #155724;
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      border-radius: 4px;
+      padding: 12px;
+      margin: 12px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>表格性能优化功能示例</h1>
+    <p class="description">
+      演示表格的性能优化功能，包括增量更新、懒加载、数据缓存、批量处理等特性。
+      这些功能可以显著提升大数据量表格的性能和用户体验。
+    </p>
+
+    <!-- 性能优化示例 -->
+    <div class="demo-section">
+      <h2>性能优化示例</h2>
+      
+      <div class="controls">
+        <div class="control-group">
+          <label>数据量:</label>
+          <select id="dataSize">
+            <option value="100">100条</option>
+            <option value="500">500条</option>
+            <option value="1000" selected>1000条</option>
+            <option value="5000">5000条</option>
+            <option value="10000">10000条</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <button id="loadData" class="primary">加载数据</button>
+          <button id="enableLazyLoad">启用懒加载</button>
+          <button id="disableLazyLoad">禁用懒加载</button>
+        </div>
+        <div class="control-group">
+          <button id="addRandomData">添加随机数据</button>
+          <button id="updateRandomData">更新随机数据</button>
+          <button id="removeRandomData">删除随机数据</button>
+        </div>
+        <div class="control-group">
+          <button id="clearCache">清除缓存</button>
+          <button id="showMetrics">显示性能指标</button>
+        </div>
+      </div>
+
+      <div class="info-panel">
+        <h3>性能指标</h3>
+        <div class="metrics" id="metricsPanel">
+          <div class="metric-item">
+            <div class="metric-label">总数据量</div>
+            <div class="metric-value" id="totalDataCount">0</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">缓存命中率</div>
+            <div class="metric-value" id="cacheHitRate">0%</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">平均渲染时间</div>
+            <div class="metric-value" id="averageRenderTime">0ms</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">增量更新次数</div>
+            <div class="metric-value" id="incrementalUpdateCount">0</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">懒加载次数</div>
+            <div class="metric-value" id="lazyLoadCount">0</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">内存使用量</div>
+            <div class="metric-value" id="memoryUsage">0KB</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container" id="performanceTableContainer">
+        <div class="loading">点击"加载数据"开始演示</div>
+      </div>
+
+      <div class="info-panel">
+        <h3>操作日志</h3>
+        <div id="operationLog" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+          <div>等待操作...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 懒加载示例 -->
+    <div class="demo-section">
+      <h2>懒加载示例</h2>
+      
+      <div class="controls">
+        <div class="control-group">
+          <label>页面大小:</label>
+          <select id="lazyPageSize">
+            <option value="20">20条/页</option>
+            <option value="50" selected>50条/页</option>
+            <option value="100">100条/页</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <button id="initLazyLoad" class="primary">初始化懒加载</button>
+          <button id="loadNextPage">加载下一页</button>
+          <button id="refreshLazyData">刷新数据</button>
+        </div>
+      </div>
+
+      <div class="table-container" id="lazyLoadTableContainer">
+        <div class="loading">点击"初始化懒加载"开始演示</div>
+      </div>
+
+      <div class="info-panel">
+        <h3>懒加载状态</h3>
+        <div id="lazyLoadStatus">
+          <div>状态: 未初始化</div>
+          <div>已加载页数: 0</div>
+          <div>缓存页数: 0</div>
+          <div>总数据量: 0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { Table, DataLazyLoader, IncrementalUpdater, PerformanceManager } from '../es/index.js'
+
+    // 全局变量
+    let performanceTable = null
+    let lazyLoadTable = null
+    let performanceManager = null
+    let lazyLoader = null
+    let incrementalUpdater = null
+    let currentData = []
+
+    // 生成测试数据
+    function generateTestData(count) {
+      const departments = ['技术部', '产品部', '设计部', '运营部', '市场部']
+      const statuses = ['在职', '离职', '试用期']
+      
+      return Array.from({ length: count }, (_, i) => ({
+        id: i + 1,
+        name: `用户${i + 1}`,
+        age: 20 + Math.floor(Math.random() * 40),
+        department: departments[Math.floor(Math.random() * departments.length)],
+        status: statuses[Math.floor(Math.random() * statuses.length)],
+        salary: 5000 + Math.floor(Math.random() * 15000),
+        joinDate: new Date(2020 + Math.floor(Math.random() * 4), Math.floor(Math.random() * 12), Math.floor(Math.random() * 28)).toISOString().split('T')[0]
+      }))
+    }
+
+    // 表格列配置
+    const columns = [
+      { key: 'id', title: 'ID', width: 80, sortable: true },
+      { key: 'name', title: '姓名', width: 120, sortable: true, filterable: true },
+      { key: 'age', title: '年龄', width: 80, sortable: true },
+      { key: 'department', title: '部门', width: 120, filterable: true },
+      { key: 'status', title: '状态', width: 100, filterable: true },
+      { key: 'salary', title: '薪资', width: 120, sortable: true },
+      { key: 'joinDate', title: '入职日期', width: 120, sortable: true }
+    ]
+
+    // 日志记录
+    function log(message) {
+      const logContainer = document.getElementById('operationLog')
+      const timestamp = new Date().toLocaleTimeString()
+      const logEntry = document.createElement('div')
+      logEntry.textContent = `[${timestamp}] ${message}`
+      logContainer.appendChild(logEntry)
+      logContainer.scrollTop = logContainer.scrollHeight
+    }
+
+    // 更新性能指标
+    function updateMetrics() {
+      if (!performanceTable) return
+
+      const metrics = performanceTable.getPerformanceMetrics()
+      
+      document.getElementById('totalDataCount').textContent = metrics.performance.totalDataCount
+      document.getElementById('cacheHitRate').textContent = `${(metrics.performance.cacheHitRate * 100).toFixed(1)}%`
+      document.getElementById('averageRenderTime').textContent = `${metrics.performance.averageRenderTime.toFixed(1)}ms`
+      document.getElementById('incrementalUpdateCount').textContent = metrics.performance.incrementalUpdateCount
+      document.getElementById('lazyLoadCount').textContent = metrics.performance.lazyLoadCount
+      document.getElementById('memoryUsage').textContent = `${(metrics.performance.memoryUsage / 1024).toFixed(1)}KB`
+    }
+
+    // 初始化性能优化表格
+    function initPerformanceTable() {
+      const container = document.getElementById('performanceTableContainer')
+      container.innerHTML = ''
+
+      performanceTable = new Table({
+        container,
+        columns,
+        data: currentData,
+        rowKey: 'id',
+        pagination: {
+          enabled: true,
+          pageSize: 20,
+          showSizeChanger: true,
+          showQuickJumper: true
+        },
+        virtualScroll: {
+          enabled: currentData.length > 500,
+          itemHeight: 40,
+          bufferSize: 10
+        }
+      })
+
+      // 监听性能事件
+      performanceTable.on('performance-update', (data) => {
+        log(`批量更新完成: ${data.updateCount}个操作, 耗时${data.duration.toFixed(1)}ms`)
+        updateMetrics()
+      })
+
+      performanceTable.on('incremental-update', (data) => {
+        log(`增量更新: ${data.totalChanges}个变更`)
+        updateMetrics()
+      })
+
+      log(`表格初始化完成，数据量: ${currentData.length}`)
+      updateMetrics()
+    }
+
+    // 事件监听器
+    document.getElementById('loadData').addEventListener('click', () => {
+      const size = parseInt(document.getElementById('dataSize').value)
+      currentData = generateTestData(size)
+      initPerformanceTable()
+    })
+
+    document.getElementById('addRandomData').addEventListener('click', () => {
+      if (!performanceTable) return
+
+      const newItems = generateTestData(10).map(item => ({
+        ...item,
+        id: currentData.length + item.id
+      }))
+      
+      currentData.push(...newItems)
+      performanceTable.applyIncrementalUpdate(currentData)
+      log(`添加了${newItems.length}条数据`)
+    })
+
+    document.getElementById('updateRandomData').addEventListener('click', () => {
+      if (!performanceTable || currentData.length === 0) return
+
+      const updateCount = Math.min(5, currentData.length)
+      for (let i = 0; i < updateCount; i++) {
+        const randomIndex = Math.floor(Math.random() * currentData.length)
+        currentData[randomIndex] = {
+          ...currentData[randomIndex],
+          name: `更新用户${randomIndex + 1}`,
+          age: 20 + Math.floor(Math.random() * 40)
+        }
+      }
+      
+      performanceTable.applyIncrementalUpdate(currentData)
+      log(`更新了${updateCount}条数据`)
+    })
+
+    document.getElementById('removeRandomData').addEventListener('click', () => {
+      if (!performanceTable || currentData.length === 0) return
+
+      const removeCount = Math.min(3, currentData.length)
+      for (let i = 0; i < removeCount; i++) {
+        const randomIndex = Math.floor(Math.random() * currentData.length)
+        currentData.splice(randomIndex, 1)
+      }
+      
+      performanceTable.applyIncrementalUpdate(currentData)
+      log(`删除了${removeCount}条数据`)
+    })
+
+    document.getElementById('clearCache').addEventListener('click', () => {
+      if (!performanceTable) return
+
+      performanceTable.clearPerformanceCache()
+      log('缓存已清除')
+      updateMetrics()
+    })
+
+    document.getElementById('showMetrics').addEventListener('click', () => {
+      updateMetrics()
+      log('性能指标已更新')
+    })
+
+    // 懒加载示例
+    document.getElementById('initLazyLoad').addEventListener('click', async () => {
+      const pageSize = parseInt(document.getElementById('lazyPageSize').value)
+      const container = document.getElementById('lazyLoadTableContainer')
+      container.innerHTML = ''
+
+      // 模拟大数据集
+      const totalData = generateTestData(10000)
+
+      // 创建懒加载器
+      const dataLoader = async (offset, limit) => {
+        // 模拟网络延迟
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        const data = totalData.slice(offset, offset + limit)
+        return {
+          data,
+          total: totalData.length,
+          hasMore: offset + limit < totalData.length
+        }
+      }
+
+      lazyLoader = new DataLazyLoader(dataLoader, {
+        pageSize,
+        preloadPages: 2,
+        cachePages: 10,
+        enablePreload: true,
+        enableCache: true
+      })
+
+      // 监听懒加载事件
+      lazyLoader.on('page-loaded', (data) => {
+        updateLazyLoadStatus()
+        log(`懒加载页面${data.page}: ${data.data.length}条数据`)
+      })
+
+      lazyLoader.on('loading-state-change', (data) => {
+        updateLazyLoadStatus()
+      })
+
+      // 初始化表格
+      lazyLoadTable = new Table({
+        container,
+        columns,
+        data: [],
+        rowKey: 'id',
+        pagination: {
+          enabled: true,
+          pageSize,
+          mode: 'server'
+        }
+      })
+
+      // 启用懒加载
+      lazyLoadTable.enableLazyLoading(dataLoader, {
+        pageSize,
+        preloadPages: 2,
+        cachePages: 10
+      })
+
+      // 加载第一页
+      const firstPageData = await lazyLoader.getData(0, pageSize - 1)
+      lazyLoadTable.setData(firstPageData)
+
+      updateLazyLoadStatus()
+      log('懒加载表格初始化完成')
+    })
+
+    document.getElementById('loadNextPage').addEventListener('click', async () => {
+      if (!lazyLoader || !lazyLoadTable) return
+
+      const pageSize = parseInt(document.getElementById('lazyPageSize').value)
+      const currentPage = Math.floor(lazyLoadTable.getData().length / pageSize)
+      
+      try {
+        const nextPageData = await lazyLoader.getData(
+          currentPage * pageSize,
+          (currentPage + 1) * pageSize - 1
+        )
+        
+        const allData = [...lazyLoadTable.getData(), ...nextPageData]
+        lazyLoadTable.setData(allData)
+        
+        updateLazyLoadStatus()
+        log(`加载第${currentPage + 1}页数据`)
+      } catch (error) {
+        log(`加载失败: ${error.message}`)
+      }
+    })
+
+    document.getElementById('refreshLazyData').addEventListener('click', async () => {
+      if (!lazyLoader) return
+
+      await lazyLoader.refreshAll()
+      updateLazyLoadStatus()
+      log('懒加载数据已刷新')
+    })
+
+    function updateLazyLoadStatus() {
+      if (!lazyLoader) return
+
+      const stats = lazyLoader.getCacheStats()
+      const loadingState = lazyLoader.getLoadingState()
+      
+      document.getElementById('lazyLoadStatus').innerHTML = `
+        <div>状态: ${loadingState.isLoading ? '加载中' : '空闲'}</div>
+        <div>已加载页数: ${stats.totalPages}</div>
+        <div>缓存页数: ${stats.cachedPages}</div>
+        <div>总数据量: ${lazyLoader.getTotalCount()}</div>
+        <div>内存使用: ${(stats.memoryUsage / 1024).toFixed(1)}KB</div>
+      `
+    }
+
+    // 初始化
+    log('页面加载完成，可以开始演示')
+  </script>
+</body>
+</html>

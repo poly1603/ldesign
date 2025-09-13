@@ -1,0 +1,27 @@
+{
+  "name": "@ldesign/table-examples",
+  "version": "1.0.0",
+  "description": "Examples for @ldesign/table component",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview --port 3000"
+  },
+  "dependencies": {
+    "@ldesign/table": "file:.."
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "table",
+    "component",
+    "examples",
+    "vite",
+    "javascript"
+  ],
+  "author": "LDESIGN Team",
+  "license": "MIT"
+}

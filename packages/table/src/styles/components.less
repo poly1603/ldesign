@@ -1,0 +1,412 @@
+/**
+ * 表格组件样式
+ * 
+ * 定义表格内各种组件的样式
+ * 包括选择框、展开按钮、排序图标、过滤器等
+ */
+
+// 选择列样式
+.ldesign-table {
+
+  // 选择列宽度
+  th.selection-column,
+  td.selection-column {
+    width: 48px;
+    min-width: 48px;
+    max-width: 48px;
+    text-align: center;
+    padding: var(--ls-padding-xs);
+  }
+
+  // 选择框样式
+  .selection-checkbox {
+    .ldesign-table-checkbox;
+  }
+
+  // 全选状态
+  thead .selection-checkbox {
+    &.indeterminate {
+      input+.ldesign-table-checkbox-indicator {
+        background-color: var(--ldesign-brand-color);
+        border-color: var(--ldesign-brand-color);
+
+        &::after {
+          width: 8px;
+          height: 2px;
+          background-color: var(--ldesign-font-white-1);
+          border: none;
+          transform: rotate(0) scale(1);
+        }
+      }
+    }
+  }
+}
+
+// 展开列样式
+.ldesign-table {
+
+  // 展开列宽度
+  th.expand-column,
+  td.expand-column {
+    width: 48px;
+    min-width: 48px;
+    max-width: 48px;
+    text-align: center;
+    padding: var(--ls-padding-xs);
+  }
+
+  // 展开按钮
+  .expand-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--ldesign-border-level-2-color);
+    border-radius: var(--ls-border-radius-sm);
+    background-color: var(--ldesign-bg-color-component);
+    color: var(--ldesign-text-color-primary);
+    cursor: pointer;
+    transition: var(--ldesign-table-transition);
+
+    &:hover {
+      background-color: var(--ldesign-bg-color-component-hover);
+      border-color: var(--ldesign-brand-color);
+    }
+
+    &.expanded {
+      background-color: var(--ldesign-brand-color-1);
+      border-color: var(--ldesign-brand-color);
+      color: var(--ldesign-brand-color);
+    }
+
+    // 展开图标
+    &::after {
+      content: '▶';
+      font-size: 10px;
+      transition: transform 0.2s ease;
+    }
+
+    &.expanded::after {
+      transform: rotate(90deg);
+    }
+  }
+
+  // 展开内容行
+  tr.expand-content {
+    td {
+      padding: var(--ls-padding-base);
+      background-color: var(--ldesign-bg-color-component);
+      border-top: 1px solid var(--ldesign-border-level-1-color);
+    }
+  }
+}
+
+// 排序组件样式
+.ldesign-table-sorter {
+  display: inline-flex;
+  align-items: center;
+  margin-left: var(--ls-margin-xs);
+
+  &-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 12px;
+    height: 16px;
+
+    &-up,
+    &-down {
+      width: 0;
+      height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      opacity: 0.3;
+      transition: opacity 0.2s ease;
+    }
+
+    &-up {
+      border-bottom: 4px solid currentColor;
+      margin-bottom: 1px;
+    }
+
+    &-down {
+      border-top: 4px solid currentColor;
+    }
+  }
+
+  // 排序状态
+  &.asc &-icon-up,
+  &.desc &-icon-down {
+    opacity: 1;
+    color: var(--ldesign-brand-color);
+  }
+
+  // 悬停状态
+  .ldesign-table-header-cell:hover & &-icon-up,
+  .ldesign-table-header-cell:hover & &-icon-down {
+    opacity: 0.6;
+  }
+}
+
+// 过滤器组件样式
+.ldesign-table-filter {
+  &-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-left: var(--ls-margin-xs);
+    border-radius: var(--ls-border-radius-sm);
+    cursor: pointer;
+    transition: var(--ldesign-table-transition);
+
+    &:hover {
+      background-color: var(--ldesign-bg-color-component-hover);
+    }
+
+    &.active {
+      background-color: var(--ldesign-brand-color-1);
+      color: var(--ldesign-brand-color);
+    }
+
+    // 过滤图标
+    &::after {
+      content: '⚬';
+      font-size: 12px;
+    }
+  }
+
+  &-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    max-height: 300px;
+    background-color: var(--ldesign-bg-color-container);
+    border: 1px solid var(--ldesign-border-level-1-color);
+    border-radius: var(--ls-border-radius-base);
+    box-shadow: var(--ldesign-shadow-2);
+    z-index: 1000;
+    overflow: hidden;
+  }
+
+  &-list {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: var(--ls-padding-xs) 0;
+  }
+
+  &-item {
+    display: flex;
+    align-items: center;
+    padding: var(--ls-padding-xs) var(--ls-padding-base);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: var(--ldesign-bg-color-component-hover);
+    }
+
+    &.selected {
+      background-color: var(--ldesign-brand-color-1);
+      color: var(--ldesign-brand-color);
+    }
+
+    .ldesign-table-checkbox {
+      margin-right: var(--ls-margin-sm);
+    }
+  }
+
+  &-actions {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--ls-padding-sm) var(--ls-padding-base);
+    border-top: 1px solid var(--ldesign-border-level-1-color);
+    background-color: var(--ldesign-bg-color-component);
+
+    .ldesign-table-button {
+      font-size: var(--ls-font-size-xs);
+      padding: var(--ls-padding-xs) var(--ls-padding-sm);
+    }
+  }
+}
+
+// 调整列宽组件样式
+.ldesign-table-resizer {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  user-select: none;
+  z-index: 10;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1px;
+    height: 60%;
+    background-color: var(--ldesign-border-level-2-color);
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  &:hover::after,
+  &.resizing::after {
+    opacity: 1;
+    background-color: var(--ldesign-brand-color);
+  }
+
+  // 调整中状态
+  &.resizing {
+    &::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      cursor: col-resize;
+      z-index: 9999;
+    }
+  }
+}
+
+// 加载状态组件
+.ldesign-table-loading {
+  &-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  &-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--ldesign-border-level-1-color);
+    border-top-color: var(--ldesign-brand-color);
+    border-radius: 50%;
+    animation: ldesign-table-spin 1s linear infinite;
+  }
+
+  &-text {
+    margin-top: var(--ls-margin-sm);
+    color: var(--ldesign-text-color-secondary);
+    font-size: var(--ls-font-size-sm);
+  }
+}
+
+// 空数据状态组件
+.ldesign-table-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: var(--ls-padding-xxl);
+  color: var(--ldesign-text-color-placeholder);
+
+  &-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: var(--ls-margin-base);
+    opacity: 0.5;
+
+    // 默认空数据图标
+    &::after {
+      content: '📋';
+      font-size: 48px;
+    }
+  }
+
+  &-text {
+    font-size: var(--ls-font-size-base);
+    margin-bottom: var(--ls-margin-sm);
+  }
+
+  &-description {
+    font-size: var(--ls-font-size-sm);
+    color: var(--ldesign-text-color-disabled);
+  }
+}
+
+// 分页组件样式
+.ldesign-table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ls-padding-base);
+  border-top: 1px solid var(--ldesign-border-level-1-color);
+  background-color: var(--ldesign-bg-color-component);
+
+  &-info {
+    color: var(--ldesign-text-color-secondary);
+    font-size: var(--ls-font-size-sm);
+  }
+
+  &-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-margin-sm);
+  }
+
+  &-button {
+    .ldesign-table-button;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  &-pages {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-margin-xs);
+  }
+
+  &-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 var(--ls-padding-sm);
+    border: 1px solid var(--ldesign-border-level-1-color);
+    border-radius: var(--ls-border-radius-sm);
+    background-color: var(--ldesign-bg-color-component);
+    color: var(--ldesign-text-color-primary);
+    font-size: var(--ls-font-size-sm);
+    cursor: pointer;
+    transition: var(--ldesign-table-transition);
+
+    &:hover {
+      background-color: var(--ldesign-bg-color-component-hover);
+      border-color: var(--ldesign-brand-color);
+    }
+
+    &.active {
+      background-color: var(--ldesign-brand-color);
+      border-color: var(--ldesign-brand-color);
+      color: var(--ldesign-font-white-1);
+    }
+  }
+
+  &-ellipsis {
+    padding: 0 var(--ls-padding-xs);
+    color: var(--ldesign-text-color-placeholder);
+  }
+}

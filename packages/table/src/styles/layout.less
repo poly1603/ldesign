@@ -1,0 +1,365 @@
+/**
+ * 表格布局样式
+ * 
+ * 定义表格的布局相关样式
+ * 包括固定列、虚拟滚动、响应式布局等
+ */
+
+// 表格布局容器
+.ldesign-table-layout {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  
+  // 固定高度布局
+  &--fixed-height {
+    .ldesign-table-body {
+      flex: 1;
+      overflow: auto;
+    }
+  }
+  
+  // 自适应高度布局
+  &--auto-height {
+    .ldesign-table-body {
+      overflow: visible;
+    }
+  }
+}
+
+// 固定表头布局
+.ldesign-table--fixed-header {
+  .ldesign-table-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    box-shadow: var(--ldesign-table-shadow);
+  }
+}
+
+// 固定表脚布局
+.ldesign-table--fixed-footer {
+  .ldesign-table-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// 固定列布局
+.ldesign-table-fixed-columns {
+  // 左固定列
+  &-left {
+    position: sticky;
+    left: 0;
+    z-index: 15;
+    background-color: inherit;
+    
+    // 固定列阴影
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: -1px;
+      bottom: 0;
+      width: 1px;
+      background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.1) 0%,
+        transparent 100%
+      );
+      pointer-events: none;
+    }
+    
+    // 多列固定时的层级
+    &[data-fixed-index="0"] { z-index: 19; }
+    &[data-fixed-index="1"] { z-index: 18; }
+    &[data-fixed-index="2"] { z-index: 17; }
+    &[data-fixed-index="3"] { z-index: 16; }
+  }
+  
+  // 右固定列
+  &-right {
+    position: sticky;
+    right: 0;
+    z-index: 15;
+    background-color: inherit;
+    
+    // 固定列阴影
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -1px;
+      bottom: 0;
+      width: 1px;
+      background: linear-gradient(
+        to left,
+        rgba(0, 0, 0, 0.1) 0%,
+        transparent 100%
+      );
+      pointer-events: none;
+    }
+    
+    // 多列固定时的层级
+    &[data-fixed-index="0"] { z-index: 19; }
+    &[data-fixed-index="1"] { z-index: 18; }
+    &[data-fixed-index="2"] { z-index: 17; }
+    &[data-fixed-index="3"] { z-index: 16; }
+  }
+}
+
+// 虚拟滚动布局
+.ldesign-table-virtual {
+  &-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  &-viewport {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+  }
+  
+  &-spacer {
+    &-top,
+    &-bottom {
+      width: 100%;
+      flex-shrink: 0;
+    }
+  }
+  
+  &-content {
+    position: relative;
+    width: 100%;
+  }
+}
+
+// 表格尺寸变体
+.ldesign-table {
+  // 紧凑尺寸
+  &--compact {
+    --ldesign-table-row-height: 32px;
+    --ldesign-table-header-height: 36px;
+    --ldesign-table-cell-padding: 4px 8px;
+    
+    font-size: var(--ls-font-size-xs);
+  }
+  
+  // 标准尺寸（默认）
+  &--default {
+    --ldesign-table-row-height: var(--ls-button-height-small);
+    --ldesign-table-header-height: var(--ls-button-height-medium);
+    --ldesign-table-cell-padding: var(--ls-padding-sm) var(--ls-padding-base);
+  }
+  
+  // 宽松尺寸
+  &--comfortable {
+    --ldesign-table-row-height: 48px;
+    --ldesign-table-header-height: 52px;
+    --ldesign-table-cell-padding: var(--ls-padding-base) var(--ls-padding-lg);
+    
+    font-size: var(--ls-font-size-base);
+  }
+}
+
+// 列宽度控制
+.ldesign-table-column {
+  // 固定宽度
+  &--fixed-width {
+    flex: none;
+  }
+  
+  // 最小宽度
+  &--min-width {
+    flex: 1 1 auto;
+    min-width: var(--column-min-width, 100px);
+  }
+  
+  // 最大宽度
+  &--max-width {
+    flex: 1 1 auto;
+    max-width: var(--column-max-width, 300px);
+  }
+  
+  // 自适应宽度
+  &--auto-width {
+    flex: 1 1 auto;
+  }
+  
+  // 内容宽度
+  &--content-width {
+    flex: none;
+    width: auto;
+  }
+}
+
+// 行高度控制
+.ldesign-table-row {
+  // 固定行高
+  &--fixed-height {
+    height: var(--row-height);
+    min-height: var(--row-height);
+    max-height: var(--row-height);
+  }
+  
+  // 最小行高
+  &--min-height {
+    min-height: var(--row-min-height, var(--ldesign-table-row-height));
+  }
+  
+  // 自适应行高
+  &--auto-height {
+    height: auto;
+    min-height: var(--ldesign-table-row-height);
+  }
+}
+
+// 表格滚动区域
+.ldesign-table-scroll {
+  &-horizontal {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  
+  &-vertical {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  
+  &-both {
+    overflow: auto;
+  }
+  
+  &-none {
+    overflow: hidden;
+  }
+}
+
+// 表格边框控制
+.ldesign-table-border {
+  // 外边框
+  &--outer {
+    border: 1px solid var(--ldesign-table-border);
+  }
+  
+  // 内边框
+  &--inner {
+    .ldesign-table-cell {
+      border-right: 1px solid var(--ldesign-table-border);
+      border-bottom: 1px solid var(--ldesign-table-border);
+      
+      &:last-child {
+        border-right: none;
+      }
+    }
+    
+    .ldesign-table-row:last-child .ldesign-table-cell {
+      border-bottom: none;
+    }
+  }
+  
+  // 水平边框
+  &--horizontal {
+    .ldesign-table-row {
+      border-bottom: 1px solid var(--ldesign-table-border);
+      
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+  
+  // 垂直边框
+  &--vertical {
+    .ldesign-table-cell {
+      border-right: 1px solid var(--ldesign-table-border);
+      
+      &:last-child {
+        border-right: none;
+      }
+    }
+  }
+}
+
+// 表格对齐方式
+.ldesign-table-align {
+  &--top {
+    .ldesign-table-cell {
+      align-items: flex-start;
+    }
+  }
+  
+  &--middle {
+    .ldesign-table-cell {
+      align-items: center;
+    }
+  }
+  
+  &--bottom {
+    .ldesign-table-cell {
+      align-items: flex-end;
+    }
+  }
+  
+  &--baseline {
+    .ldesign-table-cell {
+      align-items: baseline;
+    }
+  }
+}
+
+// 表格内容溢出处理
+.ldesign-table-overflow {
+  &--ellipsis {
+    .ldesign-table-cell {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+  
+  &--wrap {
+    .ldesign-table-cell {
+      white-space: normal;
+      word-wrap: break-word;
+      word-break: break-word;
+    }
+  }
+  
+  &--hidden {
+    .ldesign-table-cell {
+      overflow: hidden;
+    }
+  }
+  
+  &--visible {
+    .ldesign-table-cell {
+      overflow: visible;
+    }
+  }
+}
+
+// 表格间距控制
+.ldesign-table-spacing {
+  &--none {
+    --ldesign-table-cell-padding: 0;
+  }
+  
+  &--small {
+    --ldesign-table-cell-padding: var(--ls-padding-xs) var(--ls-padding-sm);
+  }
+  
+  &--medium {
+    --ldesign-table-cell-padding: var(--ls-padding-sm) var(--ls-padding-base);
+  }
+  
+  &--large {
+    --ldesign-table-cell-padding: var(--ls-padding-base) var(--ls-padding-lg);
+  }
+}

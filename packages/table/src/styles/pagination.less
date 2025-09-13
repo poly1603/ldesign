@@ -1,0 +1,339 @@
+/**
+ * 分页组件样式
+ * 
+ * 提供完整的分页组件样式
+ * 支持多种分页模式和主题定制
+ */
+
+.ldesign-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin: var(--ls-margin-base) 0;
+  font-size: var(--ls-font-size-sm);
+  color: var(--ldesign-text-color-primary);
+
+  &-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-spacing-base);
+  }
+
+  &-total {
+    color: var(--ldesign-text-color-secondary);
+
+    &-number {
+      color: var(--ldesign-text-color-primary);
+      font-weight: 600;
+    }
+  }
+
+  &-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-spacing-xs);
+  }
+
+  &-prev,
+  &-next {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--ls-button-height-small);
+    height: var(--ls-button-height-small);
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: var(--ls-border-radius-base);
+    background: var(--ldesign-bg-color-component);
+    color: var(--ldesign-text-color-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      border-color: var(--ldesign-brand-color);
+      color: var(--ldesign-brand-color);
+    }
+
+    &:disabled {
+      color: var(--ldesign-text-color-disabled);
+      background: var(--ldesign-bg-color-component-disabled);
+      cursor: not-allowed;
+    }
+  }
+
+  &-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--ls-button-height-small);
+    height: var(--ls-button-height-small);
+    padding: 0 var(--ls-padding-xs);
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: var(--ls-border-radius-base);
+    background: var(--ldesign-bg-color-component);
+    color: var(--ldesign-text-color-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(&-active):not(:disabled) {
+      border-color: var(--ldesign-brand-color);
+      color: var(--ldesign-brand-color);
+    }
+
+    &-active {
+      border-color: var(--ldesign-brand-color);
+      background: var(--ldesign-brand-color);
+      color: var(--ldesign-font-white-1);
+      cursor: default;
+    }
+
+    &:disabled {
+      color: var(--ldesign-text-color-disabled);
+      background: var(--ldesign-bg-color-component-disabled);
+      cursor: not-allowed;
+    }
+  }
+
+  &-ellipsis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--ls-button-height-small);
+    height: var(--ls-button-height-small);
+    color: var(--ldesign-text-color-placeholder);
+    cursor: default;
+  }
+
+  &-size-changer {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-spacing-xs);
+    color: var(--ldesign-text-color-secondary);
+  }
+
+  &-size-select {
+    min-width: 80px;
+    height: var(--ls-input-height-small);
+    padding: 0 var(--ls-padding-sm);
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: var(--ls-border-radius-base);
+    background: var(--ldesign-bg-color-component);
+    color: var(--ldesign-text-color-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      border-color: var(--ldesign-border-color-hover);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--ldesign-brand-color);
+      box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+    }
+
+    &:disabled {
+      color: var(--ldesign-text-color-disabled);
+      background: var(--ldesign-bg-color-component-disabled);
+      cursor: not-allowed;
+    }
+  }
+
+  &-quick-jumper {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-spacing-xs);
+    color: var(--ldesign-text-color-secondary);
+  }
+
+  &-quick-input {
+    width: 60px;
+    height: var(--ls-input-height-small);
+    padding: 0 var(--ls-padding-sm);
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: var(--ls-border-radius-base);
+    background: var(--ldesign-bg-color-component);
+    color: var(--ldesign-text-color-primary);
+    text-align: center;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      border-color: var(--ldesign-border-color-hover);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--ldesign-brand-color);
+      box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+    }
+
+    &:disabled {
+      color: var(--ldesign-text-color-disabled);
+      background: var(--ldesign-bg-color-component-disabled);
+      cursor: not-allowed;
+    }
+
+    /* 隐藏数字输入框的箭头 */
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    &[type=number] {
+      -moz-appearance: textfield;
+    }
+  }
+
+  /* 简洁模式 */
+  &-simple {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-spacing-sm);
+
+    .ldesign-pagination-prev,
+    .ldesign-pagination-next {
+      min-width: 80px;
+      padding: 0 var(--ls-padding-sm);
+    }
+  }
+
+  &-simple-info {
+    color: var(--ldesign-text-color-secondary);
+    font-size: var(--ls-font-size-sm);
+  }
+
+  /* 禁用状态 */
+  &-disabled {
+    .ldesign-pagination-prev,
+    .ldesign-pagination-next,
+    .ldesign-pagination-item,
+    .ldesign-pagination-size-select,
+    .ldesign-pagination-quick-input {
+      color: var(--ldesign-text-color-disabled) !important;
+      background: var(--ldesign-bg-color-component-disabled) !important;
+      border-color: var(--ldesign-border-color) !important;
+      cursor: not-allowed !important;
+
+      &:hover {
+        border-color: var(--ldesign-border-color) !important;
+        color: var(--ldesign-text-color-disabled) !important;
+      }
+    }
+
+    .ldesign-pagination-item-active {
+      background: var(--ldesign-brand-color-disabled) !important;
+      border-color: var(--ldesign-brand-color-disabled) !important;
+    }
+  }
+
+  /* 响应式设计 */
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: var(--ls-spacing-sm);
+
+    &-wrapper {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--ls-spacing-sm);
+    }
+
+    &-total {
+      order: 3;
+      width: 100%;
+      text-align: center;
+    }
+
+    &-nav {
+      order: 1;
+    }
+
+    &-size-changer,
+    &-quick-jumper {
+      order: 2;
+    }
+  }
+
+  @media (max-width: 480px) {
+    &-nav {
+      .ldesign-pagination-item {
+        min-width: 36px;
+        height: 36px;
+        font-size: var(--ls-font-size-xs);
+      }
+
+      .ldesign-pagination-prev,
+      .ldesign-pagination-next {
+        width: 36px;
+        height: 36px;
+        font-size: var(--ls-font-size-xs);
+      }
+    }
+
+    &-size-select,
+    &-quick-input {
+      height: 36px;
+      font-size: var(--ls-font-size-xs);
+    }
+  }
+}
+
+/* 暗色主题支持 */
+@media (prefers-color-scheme: dark) {
+  .ldesign-pagination {
+    &-prev,
+    &-next,
+    &-item {
+      border-color: var(--ldesign-border-color);
+      background: var(--ldesign-bg-color-component);
+
+      &:hover:not(:disabled):not(.ldesign-pagination-item-active) {
+        border-color: var(--ldesign-brand-color);
+        background: var(--ldesign-bg-color-component-hover);
+      }
+    }
+
+    &-size-select,
+    &-quick-input {
+      border-color: var(--ldesign-border-color);
+      background: var(--ldesign-bg-color-component);
+
+      &:hover:not(:disabled) {
+        background: var(--ldesign-bg-color-component-hover);
+      }
+    }
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .ldesign-pagination {
+    &-prev,
+    &-next,
+    &-item {
+      border-width: 2px;
+    }
+
+    &-item-active {
+      border-width: 2px;
+      font-weight: 600;
+    }
+
+    &-size-select,
+    &-quick-input {
+      border-width: 2px;
+    }
+  }
+}
+
+/* 减少动画模式支持 */
+@media (prefers-reduced-motion: reduce) {
+  .ldesign-pagination {
+    &-prev,
+    &-next,
+    &-item,
+    &-size-select,
+    &-quick-input {
+      transition: none;
+    }
+  }
+}

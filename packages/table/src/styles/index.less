@@ -1,0 +1,309 @@
+/**
+ * 表格样式主文件
+ * 
+ * 使用LESS编写，严格使用项目规定的CSS变量
+ * 提供完整的表格样式系统
+ */
+
+// 导入基础样式
+@import './base.less';
+@import './layout.less';
+@import './components.less';
+@import './pagination.less';
+@import './sort-filter.less';
+@import './advanced.less';
+@import './themes.less';
+@import './responsive.less';
+
+// 表格包装器样式
+.ldesign-table-wrapper {
+  position: relative;
+  width: 100%;
+  background-color: var(--ldesign-bg-color-container);
+  border: 1px solid var(--ldesign-border-level-1-color);
+  border-radius: var(--ls-border-radius-base);
+  overflow: hidden;
+  font-size: var(--ls-font-size-sm);
+  color: var(--ldesign-text-color-primary);
+}
+
+// 表格基础样式
+.ldesign-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  background-color: transparent;
+  font-size: inherit;
+  color: inherit;
+
+  // 表头样式
+  thead {
+    background-color: var(--ldesign-bg-color-component);
+
+    tr {
+      border-bottom: 1px solid var(--ldesign-border-level-1-color);
+    }
+
+    th {
+      padding: var(--ls-padding-sm) var(--ls-padding-base);
+      font-weight: 600;
+      color: var(--ldesign-text-color-primary);
+      background-color: var(--ldesign-bg-color-component);
+      border-right: 1px solid var(--ldesign-border-level-1-color);
+      text-align: left;
+      user-select: none;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      vertical-align: middle;
+      height: var(--ls-button-height-medium);
+
+      &:last-child {
+        border-right: none;
+      }
+
+      &:hover {
+        background-color: var(--ldesign-bg-color-component-hover);
+      }
+
+      // 排序状态
+      &.sorted {
+        background-color: var(--ldesign-brand-color-1);
+        color: var(--ldesign-brand-color);
+
+        &.sorted-asc::after {
+          content: '↑';
+          margin-left: var(--ls-margin-xs);
+          color: var(--ldesign-brand-color);
+        }
+
+        &.sorted-desc::after {
+          content: '↓';
+          margin-left: var(--ls-margin-xs);
+          color: var(--ldesign-brand-color);
+        }
+      }
+
+      // 过滤状态
+      &.filtered {
+        position: relative;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          right: var(--ls-padding-xs);
+          width: 6px;
+          height: 6px;
+          background-color: var(--ldesign-brand-color);
+          border-radius: 50%;
+          transform: translateY(-50%);
+        }
+      }
+    }
+  }
+
+  // 表体样式
+  tbody {
+    tr {
+      border-bottom: 1px solid var(--ldesign-border-level-1-color);
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: var(--ldesign-bg-color-container-hover);
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      // 选中状态
+      &.selected {
+        background-color: var(--ldesign-brand-color-1);
+
+        &:hover {
+          background-color: var(--ldesign-brand-color-2);
+        }
+      }
+
+      // 展开状态
+      &.expanded {
+        background-color: var(--ldesign-bg-color-component);
+      }
+    }
+
+    td {
+      padding: var(--ls-padding-sm) var(--ls-padding-base);
+      border-right: 1px solid var(--ldesign-border-level-1-color);
+      word-break: break-word;
+      vertical-align: middle;
+      height: var(--ls-button-height-small);
+
+      &:last-child {
+        border-right: none;
+      }
+
+      // 文本对齐
+      &.text-left {
+        text-align: left;
+      }
+
+      &.text-center {
+        text-align: center;
+      }
+
+      &.text-right {
+        text-align: right;
+      }
+    }
+  }
+
+  // 表脚样式
+  tfoot {
+    background-color: var(--ldesign-bg-color-component);
+    border-top: 1px solid var(--ldesign-border-level-1-color);
+
+    tr {
+      border-bottom: 1px solid var(--ldesign-border-level-1-color);
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    td {
+      padding: var(--ls-padding-sm) var(--ls-padding-base);
+      border-right: 1px solid var(--ldesign-border-level-1-color);
+      font-weight: 600;
+      background-color: var(--ldesign-bg-color-component);
+      vertical-align: middle;
+      height: var(--ls-button-height-medium);
+
+      &:last-child {
+        border-right: none;
+      }
+    }
+  }
+
+  // 固定列样式
+  th.fixed-left,
+  td.fixed-left {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  }
+
+  th.fixed-right,
+  td.fixed-right {
+    position: sticky;
+    right: 0;
+    z-index: 5;
+    box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// 表格修饰符样式
+.ldesign-table-wrapper {
+
+  // 边框样式
+  &--bordered {
+
+    .ldesign-table {
+
+      th,
+      td {
+        border: 1px solid var(--ldesign-border-level-1-color);
+      }
+    }
+  }
+
+  // 斑马纹样式
+  &--striped {
+    .ldesign-table tbody tr:nth-child(even) {
+      background-color: var(--ldesign-bg-color-component);
+    }
+  }
+
+  // 加载状态
+  &--loading {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.8);
+      z-index: 100;
+    }
+  }
+
+  // 空数据状态
+  .ldesign-table-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: var(--ldesign-text-color-placeholder);
+    font-size: var(--ls-font-size-base);
+  }
+
+  // 加载状态
+  .ldesign-table-loading-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 101;
+
+    &::after {
+      content: '';
+      display: block;
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--ldesign-brand-color);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: ldesign-table-spin 1s linear infinite;
+    }
+  }
+}
+
+// 动画定义
+@keyframes ldesign-table-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// 滚动条样式
+.ldesign-table-wrapper {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: var(--ldesign-bg-color-component);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--ldesign-gray-color-4);
+    border-radius: 4px;
+
+    &:hover {
+      background-color: var(--ldesign-gray-color-5);
+    }
+  }
+
+  &::-webkit-scrollbar-corner {
+    background-color: var(--ldesign-bg-color-component);
+  }
+}

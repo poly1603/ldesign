@@ -1,0 +1,386 @@
+/**
+ * 表格响应式样式
+ * 
+ * 定义不同屏幕尺寸下的表格样式
+ * 确保表格在各种设备上的良好显示效果
+ */
+
+// 响应式断点定义
+@mobile: ~'(max-width: 767px)';
+@tablet: ~'(min-width: 768px) and (max-width: 1023px)';
+@desktop: ~'(min-width: 1024px)';
+@large-desktop: ~'(min-width: 1440px)';
+
+// 移动端样式
+@media @mobile {
+  .ldesign-table {
+    // 移动端字体调整
+    font-size: var(--ls-font-size-xs);
+    
+    // 移动端行高调整
+    --ldesign-table-row-height: 36px;
+    --ldesign-table-header-height: 40px;
+    --ldesign-table-cell-padding: var(--ls-padding-xs) var(--ls-padding-sm);
+    
+    // 移动端滚动优化
+    .ldesign-table-body {
+      -webkit-overflow-scrolling: touch;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+    
+    // 移动端列宽调整
+    .ldesign-table-cell {
+      min-width: 80px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    // 移动端选择列调整
+    .ldesign-table-selection-column {
+      width: 36px;
+      min-width: 36px;
+      max-width: 36px;
+    }
+    
+    // 移动端展开列调整
+    .ldesign-table-expand-column {
+      width: 36px;
+      min-width: 36px;
+      max-width: 36px;
+    }
+    
+    // 移动端复选框调整
+    .ldesign-table-checkbox-indicator {
+      width: 14px;
+      height: 14px;
+    }
+    
+    // 移动端展开按钮调整
+    .ldesign-table-expand-button {
+      width: 20px;
+      height: 20px;
+      
+      &::after {
+        font-size: 8px;
+      }
+    }
+    
+    // 移动端排序图标调整
+    .ldesign-table-sorter {
+      &-icon {
+        width: 10px;
+        height: 14px;
+        
+        &-up,
+        &-down {
+          border-left-width: 3px;
+          border-right-width: 3px;
+        }
+        
+        &-up {
+          border-bottom-width: 3px;
+        }
+        
+        &-down {
+          border-top-width: 3px;
+        }
+      }
+    }
+    
+    // 移动端过滤器调整
+    .ldesign-table-filter {
+      &-trigger {
+        width: 18px;
+        height: 18px;
+        
+        &::after {
+          font-size: 10px;
+        }
+      }
+      
+      &-dropdown {
+        min-width: 180px;
+        max-width: calc(100vw - 32px);
+        left: 50%;
+        transform: translateX(-50%);
+      }
+    }
+    
+    // 移动端分页调整
+    .ldesign-table-pagination {
+      flex-direction: column;
+      gap: var(--ls-margin-sm);
+      
+      &-info {
+        order: 2;
+      }
+      
+      &-controls {
+        order: 1;
+        justify-content: center;
+      }
+      
+      &-pages {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      &-page {
+        min-width: 28px;
+        height: 28px;
+        font-size: var(--ls-font-size-xs);
+      }
+    }
+  }
+  
+  // 移动端卡片模式
+  .ldesign-table--mobile-card {
+    .ldesign-table-header {
+      display: none;
+    }
+    
+    .ldesign-table-body {
+      .ldesign-table-body-row {
+        display: block;
+        margin-bottom: var(--ls-margin-base);
+        border: 1px solid var(--ldesign-table-border);
+        border-radius: var(--ls-border-radius-base);
+        padding: var(--ls-padding-base);
+        background-color: var(--ldesign-table-bg);
+        
+        &:hover {
+          box-shadow: var(--ldesign-shadow-1);
+        }
+      }
+      
+      .ldesign-table-body-cell {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--ls-padding-xs) 0;
+        border: none;
+        
+        &:not(:last-child) {
+          border-bottom: 1px solid var(--ldesign-border-level-1-color);
+          margin-bottom: var(--ls-margin-xs);
+          padding-bottom: var(--ls-padding-xs);
+        }
+        
+        &::before {
+          content: attr(data-label);
+          font-weight: 600;
+          color: var(--ldesign-text-color-secondary);
+          font-size: var(--ls-font-size-xs);
+        }
+      }
+    }
+  }
+}
+
+// 平板端样式
+@media @tablet {
+  .ldesign-table {
+    // 平板端字体调整
+    font-size: var(--ls-font-size-sm);
+    
+    // 平板端行高调整
+    --ldesign-table-row-height: 40px;
+    --ldesign-table-header-height: 44px;
+    
+    // 平板端列宽调整
+    .ldesign-table-cell {
+      min-width: 100px;
+    }
+    
+    // 平板端过滤器调整
+    .ldesign-table-filter {
+      &-dropdown {
+        min-width: 200px;
+        max-width: 400px;
+      }
+    }
+    
+    // 平板端分页调整
+    .ldesign-table-pagination {
+      &-page {
+        min-width: 32px;
+        height: 32px;
+      }
+    }
+  }
+}
+
+// 桌面端样式
+@media @desktop {
+  .ldesign-table {
+    // 桌面端默认样式
+    font-size: var(--ls-font-size-sm);
+    
+    // 桌面端悬停效果增强
+    .ldesign-table-body-row {
+      transition: all 0.2s ease;
+      
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+    }
+    
+    // 桌面端列调整器
+    .ldesign-table-resizer {
+      display: block;
+    }
+    
+    // 桌面端工具提示
+    .ldesign-table-cell {
+      &[title] {
+        cursor: help;
+      }
+    }
+  }
+}
+
+// 大屏幕样式
+@media @large-desktop {
+  .ldesign-table {
+    // 大屏幕字体调整
+    font-size: var(--ls-font-size-base);
+    
+    // 大屏幕行高调整
+    --ldesign-table-row-height: 48px;
+    --ldesign-table-header-height: 52px;
+    --ldesign-table-cell-padding: var(--ls-padding-base) var(--ls-padding-lg);
+    
+    // 大屏幕列宽调整
+    .ldesign-table-cell {
+      min-width: 120px;
+    }
+    
+    // 大屏幕选择列调整
+    .ldesign-table-selection-column {
+      width: 56px;
+      min-width: 56px;
+      max-width: 56px;
+    }
+    
+    // 大屏幕展开列调整
+    .ldesign-table-expand-column {
+      width: 56px;
+      min-width: 56px;
+      max-width: 56px;
+    }
+  }
+}
+
+// 横屏模式
+@media (orientation: landscape) {
+  .ldesign-table {
+    // 横屏模式下的优化
+    .ldesign-table-body {
+      max-height: 70vh;
+    }
+  }
+}
+
+// 竖屏模式
+@media (orientation: portrait) {
+  .ldesign-table {
+    // 竖屏模式下的优化
+    .ldesign-table-body {
+      max-height: 60vh;
+    }
+  }
+}
+
+// 高分辨率屏幕
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .ldesign-table {
+    // 高分辨率屏幕下的优化
+    .ldesign-table-border,
+    .ldesign-table-header-cell,
+    .ldesign-table-body-cell {
+      border-width: 0.5px;
+    }
+  }
+}
+
+// 打印样式
+@media print {
+  .ldesign-table {
+    // 打印时的样式调整
+    background-color: white !important;
+    color: black !important;
+    border: 1px solid black !important;
+    box-shadow: none !important;
+    
+    .ldesign-table-header {
+      background-color: #f5f5f5 !important;
+      color: black !important;
+    }
+    
+    .ldesign-table-body-row {
+      background-color: white !important;
+      color: black !important;
+      
+      &:nth-child(even) {
+        background-color: #f9f9f9 !important;
+      }
+      
+      &:hover {
+        background-color: inherit !important;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+    }
+    
+    // 隐藏交互元素
+    .ldesign-table-selection-column,
+    .ldesign-table-expand-column,
+    .ldesign-table-sorter,
+    .ldesign-table-filter,
+    .ldesign-table-resizer,
+    .ldesign-table-pagination {
+      display: none !important;
+    }
+    
+    // 展开所有行
+    .ldesign-table-expand-content {
+      display: block !important;
+    }
+  }
+}
+
+// 减少动画偏好
+@media (prefers-reduced-motion: reduce) {
+  .ldesign-table {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+// 高对比度模式
+@media (prefers-contrast: high) {
+  .ldesign-table {
+    border-width: 2px;
+    
+    .ldesign-table-header-cell,
+    .ldesign-table-body-cell {
+      border-width: 1px;
+    }
+    
+    .ldesign-table-body-row {
+      &:hover {
+        outline: 2px solid var(--ldesign-brand-color);
+      }
+      
+      &.ldesign-table-selected {
+        outline: 3px solid var(--ldesign-brand-color);
+      }
+    }
+  }
+}

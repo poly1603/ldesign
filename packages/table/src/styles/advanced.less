@@ -1,0 +1,338 @@
+/**
+ * 高级功能样式
+ * 
+ * 包含可编辑单元格、拖拽排序、导出等高级功能的样式
+ */
+
+// ==================== 可编辑单元格样式 ====================
+
+.ldesign-table {
+  // 可编辑单元格
+  .editable-cell {
+    position: relative;
+    cursor: pointer;
+    
+    &:hover {
+      background-color: var(--ldesign-bg-color-container-hover);
+    }
+    
+    &.editing {
+      background-color: var(--ldesign-brand-color-focus);
+    }
+  }
+  
+  // 编辑器样式
+  .cell-editor {
+    position: absolute;
+    z-index: 1000;
+    border: 2px solid var(--ldesign-brand-color);
+    border-radius: var(--ls-border-radius-base);
+    padding: var(--ls-padding-xs);
+    font-size: var(--ls-font-size-sm);
+    background-color: var(--ldesign-bg-color-component);
+    box-shadow: var(--ldesign-shadow-2);
+    
+    &:focus {
+      outline: none;
+      border-color: var(--ldesign-brand-color-focus);
+    }
+    
+    // 文本输入框
+    &.text-editor {
+      min-width: 120px;
+    }
+    
+    // 数字输入框
+    &.number-editor {
+      min-width: 80px;
+      text-align: right;
+    }
+    
+    // 选择器
+    &.select-editor {
+      min-width: 100px;
+      
+      option {
+        padding: var(--ls-padding-xs);
+      }
+    }
+    
+    // 日期选择器
+    &.date-editor {
+      min-width: 140px;
+    }
+    
+    // 文本域
+    &.textarea-editor {
+      min-height: 80px;
+      resize: none;
+    }
+    
+    // 复选框
+    &.checkbox-editor {
+      width: 20px;
+      height: 20px;
+    }
+  }
+  
+  // 编辑指示器
+  .edit-indicator {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-top: 6px solid var(--ldesign-brand-color);
+    opacity: 0.6;
+  }
+}
+
+// ==================== 拖拽排序样式 ====================
+
+.ldesign-table {
+  // 拖拽手柄
+  .drag-handle {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: var(--ls-margin-xs);
+    color: var(--ldesign-text-color-placeholder);
+    font-size: 12px;
+    line-height: 16px;
+    text-align: center;
+    cursor: grab;
+    user-select: none;
+    transition: color 0.2s ease;
+    
+    &:hover {
+      color: var(--ldesign-brand-color);
+    }
+    
+    &:active {
+      cursor: grabbing;
+    }
+  }
+  
+  // 拖拽中的行
+  .dragging-row {
+    opacity: 0.5;
+    transform: rotate(2deg);
+    transition: all 0.2s ease;
+    z-index: 999;
+  }
+  
+  // 拖拽占位符
+  .drag-placeholder {
+    opacity: 0.3;
+    background-color: var(--ldesign-brand-color-2);
+    border: 2px dashed var(--ldesign-brand-color);
+    pointer-events: none;
+    
+    td {
+      border-color: transparent;
+    }
+  }
+  
+  // 拖拽目标指示器
+  .drop-indicator {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--ldesign-brand-color);
+    z-index: 1000;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: -4px;
+      top: -3px;
+      width: 8px;
+      height: 8px;
+      background-color: var(--ldesign-brand-color);
+      border-radius: 50%;
+    }
+    
+    &::after {
+      content: '';
+      position: absolute;
+      right: -4px;
+      top: -3px;
+      width: 8px;
+      height: 8px;
+      background-color: var(--ldesign-brand-color);
+      border-radius: 50%;
+    }
+  }
+}
+
+// ==================== 导出功能样式 ====================
+
+.ldesign-table {
+  // 导出按钮容器
+  .export-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-spacing-sm);
+    margin-bottom: var(--ls-margin-base);
+    padding: var(--ls-padding-sm);
+    background-color: var(--ldesign-bg-color-container);
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: var(--ls-border-radius-base);
+  }
+  
+  // 导出按钮
+  .export-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ls-spacing-xs);
+    padding: var(--ls-padding-xs) var(--ls-padding-sm);
+    font-size: var(--ls-font-size-sm);
+    color: var(--ldesign-text-color-primary);
+    background-color: var(--ldesign-bg-color-component);
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: var(--ls-border-radius-base);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      color: var(--ldesign-brand-color);
+      border-color: var(--ldesign-brand-color);
+      background-color: var(--ldesign-brand-color-focus);
+    }
+    
+    &:active {
+      background-color: var(--ldesign-brand-color-active);
+    }
+    
+    &:disabled {
+      color: var(--ldesign-text-color-disabled);
+      background-color: var(--ldesign-bg-color-component-disabled);
+      border-color: var(--ldesign-border-color);
+      cursor: not-allowed;
+    }
+    
+    // 图标
+    .export-icon {
+      width: 16px;
+      height: 16px;
+    }
+  }
+  
+  // 导出进度
+  .export-progress {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-spacing-sm);
+    padding: var(--ls-padding-sm);
+    background-color: var(--ldesign-bg-color-container);
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: var(--ls-border-radius-base);
+    
+    .progress-bar {
+      flex: 1;
+      height: 6px;
+      background-color: var(--ldesign-gray-color-2);
+      border-radius: 3px;
+      overflow: hidden;
+      
+      .progress-fill {
+        height: 100%;
+        background-color: var(--ldesign-brand-color);
+        transition: width 0.3s ease;
+      }
+    }
+    
+    .progress-text {
+      font-size: var(--ls-font-size-xs);
+      color: var(--ldesign-text-color-secondary);
+      white-space: nowrap;
+    }
+  }
+}
+
+// ==================== 响应式设计 ====================
+
+@media (max-width: 768px) {
+  .ldesign-table {
+    // 移动端隐藏拖拽手柄
+    .drag-handle {
+      display: none;
+    }
+    
+    // 移动端导出按钮
+    .export-toolbar {
+      flex-direction: column;
+      align-items: stretch;
+      
+      .export-button {
+        justify-content: center;
+      }
+    }
+    
+    // 移动端编辑器
+    .cell-editor {
+      min-width: 100px;
+      font-size: var(--ls-font-size-base);
+    }
+  }
+}
+
+// ==================== 暗色主题支持 ====================
+
+@media (prefers-color-scheme: dark) {
+  .ldesign-table {
+    .cell-editor {
+      background-color: var(--ldesign-bg-color-component);
+      color: var(--ldesign-text-color-primary);
+    }
+    
+    .drag-placeholder {
+      background-color: var(--ldesign-brand-color-3);
+    }
+    
+    .export-progress {
+      .progress-bar {
+        background-color: var(--ldesign-gray-color-8);
+      }
+    }
+  }
+}
+
+// ==================== 高对比度模式 ====================
+
+@media (prefers-contrast: high) {
+  .ldesign-table {
+    .cell-editor {
+      border-width: 3px;
+    }
+    
+    .drag-placeholder {
+      border-width: 3px;
+    }
+    
+    .drop-indicator {
+      height: 4px;
+      
+      &::before,
+      &::after {
+        width: 12px;
+        height: 12px;
+      }
+    }
+  }
+}
+
+// ==================== 减少动画模式 ====================
+
+@media (prefers-reduced-motion: reduce) {
+  .ldesign-table {
+    .dragging-row,
+    .cell-editor,
+    .export-button,
+    .progress-fill {
+      transition: none;
+    }
+  }
+}

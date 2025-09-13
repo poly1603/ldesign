@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React 集成示例 - LDESIGN Table</title>
+  <link rel="stylesheet" href="../src/styles/main.css">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    // LDESIGN Table React 组件
+    function LDesignTable({ 
+      columns, 
+      data, 
+      config = {}, 
+      onSelectionChange,
+      onSortChange,
+      onRowClick 
+    }) {
+      const containerRef = useRef(null);
+      const tableInstanceRef = useRef(null);
+
+      useEffect(() => {
+        // 动态导入 Table 类
+        import('@ldesign/table').then(({ Table }) => {
+          if (tableInstanceRef.current) {
+            tableInstanceRef.current.destroy();
+          }
+
+          tableInstanceRef.current = new Table({
+            container: containerRef.current,
+            columns,
+            data,
+            rowKey: 'id',
+            ...config,
+            onSelectionChange,
+            onSortChange,
+            onRowClick
+          });
+        });
+
+        return () => {
+          if (tableInstanceRef.current) {
+            tableInstanceRef.current.destroy();
+          }
+        };
+      }, [columns, config]);
+
+      useEffect(() => {
+        if (tableInstanceRef.current) {
+          tableInstanceRef.current.setData(data);
+        }
+      }, [data]);
+
+      return React.createElement('div', { 
+        ref: containerRef, 
+        className: 'table-container' 
+      });
+    }
+
+    // 主应用组件
+    function App() {
+      const [employees, setEmployees] = useState([
+        { id: 1, name: '张三', age: 25, department: '技术部', salary: 8000, joinDate: '2023-01-15', status: '在职' },
+        { id: 2, name: '李四', age: 30, department: '市场部', salary: 7500, joinDate: '2022-06-20', status: '在职' },
+        { id: 3, name: '王五', age: 28, department: '人事部', salary: 6500, joinDate: '2023-03-10', status: '在职' },
+        { id: 4, name: '赵六', age: 32, department: '技术部', salary: 9000, joinDate: '2021-11-05', status: '在职' },
+        { id: 5, name: '钱七', age: 27, department: '财务部', salary: 7000, joinDate: '2023-08-12', status: '在职' }
+      ]);
+
+      const [selectedEmployees, setSelectedEmployees] = useState([]);
+      const [currentTheme, setCurrentTheme] = useState('light');
+      const [eventLog, setEventLog] = useState([]);
+      const [tableConfig, setTableConfig] = useState({
+        pagination: { enabled: true, pageSize: 10 },
+        selection: { enabled: true, multiple: true, checkboxColumn: true },
+        sorting: { enabled: true }
+      });
+
+      const tableRef = useRef(null);
+
+      // 表格列配置
+      const columns = [
+        { key: 'name', title: '姓名', sortable: true, width: 100 },
+        { key: 'age', title: '年龄', sortable: true, width: 80 },
+        { key: 'department', title: '部门', sortable: true, width: 120 },
+        { key: 'salary', title: '薪资', sortable: true, width: 100, render: (value) => `¥${value}` },
+        { key: 'joinDate', title: '入职日期', sortable: true, width: 120 },
+        { key: 'status', title: '状态', width: 80 }
+      ];
+
+      // 添加事件日志
+      const addEventLog = useCallback((type, message) => {
+        const event = {
+          id: Date.now(),
+          time: new Date().toLocaleTimeString(),
+          type: type.toLowerCase(),
+          message
+        };
+        setEventLog(prev => [event, ...prev.slice(0, 19)]);
+      }, []);
+
+      // 事件处理器
+      const handleSelectionChange = useCallback((data) => {
+        setSelectedEmployees(data.selectedRows);
+        addEventLog('选择变更', `选中 ${data.selectedRows.length} 行`);
+      }, [addEventLog]);
+
+      const handleSortChange = useCallback((data) => {
+        addEventLog('排序变更', `按 ${data.column} ${data.direction} 排序`);
+      }, [addEventLog]);
+
+      const handleRowClick = useCallback((data) => {
+        addEventLog('行点击', `点击了 ${data.row.name}`);
+      }, [addEventLog]);
+
+      // 数据操作
+      const addRandomEmployee = () => {
+        const names = ['新员工A', '新员工B', '新员工C', '新员工D', '新员工E'];
+        const departments = ['技术部', '市场部', '人事部', '财务部'];
+        const newEmployee = {
+          id: Date.now(),
+          name: names[Math.floor(Math.random() * names.length)],
+          age: Math.floor(Math.random() * 20) + 25,
+          department: departments[Math.floor(Math.random() * departments.length)],
+          salary: Math.floor(Math.random() * 5000) + 6000,
+          joinDate: new Date().toISOString().split('T')[0],
+          status: '在职'
+        };
+        
+        setEmployees(prev => [...prev, newEmployee]);
+        addEventLog('数据操作', `添加员工: ${newEmployee.name}`);
+      };
+
+      const removeSelectedEmployees = () => {
+        if (selectedEmployees.length === 0) {
+          addEventLog('警告', '请先选择要删除的员工');
+          return;
+        }
+
+        const selectedIds = selectedEmployees.map(emp => emp.id);
+        setEmployees(prev => prev.filter(emp => !selectedIds.includes(emp.id)));
+        setSelectedEmployees([]);
+        addEventLog('数据操作', `删除 ${selectedIds.length} 名员工`);
+      };
+
+      const updateRandomEmployee = () => {
+        if (employees.length === 0) return;
+        
+        const randomIndex = Math.floor(Math.random() * employees.length);
+        const newSalary = Math.floor(Math.random() * 5000) + 6000;
+        
+        setEmployees(prev => prev.map((emp, index) => 
+          index === randomIndex ? { ...emp, salary: newSalary } : emp
+        ));
+        
+        addEventLog('数据操作', `更新员工 ${employees[randomIndex].name} 薪资为 ¥${newSalary}`);
+      };
+
+      const refreshData = () => {
+        setEmployees(prev => [...prev]);
+        addEventLog('数据操作', '刷新表格数据');
+      };
+
+      // 配置更新
+      const updateConfig = (key, value) => {
+        setTableConfig(prev => ({
+          ...prev,
+          [key]: { ...prev[key], ...value }
+        }));
+        addEventLog('配置', '表格配置已更新');
+      };
+
+      // 主题切换
+      const changeTheme = (theme) => {
+        setCurrentTheme(theme);
+        // 这里需要通过 ref 访问表格实例来切换主题
+        addEventLog('主题', `切换到 ${theme} 主题`);
+      };
+
+      const clearEventLog = () => {
+        setEventLog([]);
+      };
+
+      return React.createElement('div', null,
+        React.createElement('div', { className: 'page-header' },
+          React.createElement('h1', null, '⚛️ React 集成示例'),
+          React.createElement('p', null, '演示 LDESIGN Table 与 React 的集成使用')
+        ),
+
+        React.createElement('nav', { className: 'nav' },
+          React.createElement('div', { className: 'container' },
+            React.createElement('ul', { className: 'nav-links' },
+              React.createElement('li', null, React.createElement('a', { href: '../index.html' }, '首页')),
+              React.createElement('li', null, React.createElement('a', { href: './vue-example.html' }, 'Vue.js 示例')),
+              React.createElement('li', null, React.createElement('a', { href: './react-example.html', className: 'active' }, 'React 示例')),
+              React.createElement('li', null, React.createElement('a', { href: './angular-example.html' }, 'Angular 示例'))
+            )
+          )
+        ),
+
+        React.createElement('div', { className: 'container' },
+          React.createElement('div', { className: 'example-section' },
+            React.createElement('h2', null, 'React 集成演示'),
+            React.createElement('p', null, '这个示例展示了如何在 React 应用中使用 LDESIGN Table 组件。'),
+            
+            React.createElement('div', { className: 'info-panel' },
+              React.createElement('h4', null, '集成特性'),
+              React.createElement('ul', null,
+                React.createElement('li', null, '🔄 React Hooks 集成'),
+                React.createElement('li', null, '📊 组件化表格封装'),
+                React.createElement('li', null, '🎯 事件处理集成'),
+                React.createElement('li', null, '🔧 状态管理集成'),
+                React.createElement('li', null, '📱 生命周期管理'),
+                React.createElement('li', null, '🎨 样式主题集成')
+              )
+            ),
+
+            React.createElement('div', { className: 'controls' },
+              React.createElement('h3', null, '数据操作'),
+              React.createElement('button', { className: 'btn', onClick: addRandomEmployee }, '添加员工'),
+              React.createElement('button', { className: 'btn', onClick: removeSelectedEmployees }, '删除选中'),
+              React.createElement('button', { className: 'btn', onClick: updateRandomEmployee }, '更新随机员工'),
+              React.createElement('button', { className: 'btn', onClick: refreshData }, '刷新数据')
+            ),
+
+            React.createElement('div', { className: 'controls' },
+              React.createElement('h3', null, '表格配置'),
+              React.createElement('label', null,
+                React.createElement('input', {
+                  type: 'checkbox',
+                  checked: tableConfig.pagination.enabled,
+                  onChange: (e) => updateConfig('pagination', { enabled: e.target.checked })
+                }),
+                '启用分页'
+              ),
+              React.createElement('label', null,
+                React.createElement('input', {
+                  type: 'checkbox',
+                  checked: tableConfig.selection.enabled,
+                  onChange: (e) => updateConfig('selection', { enabled: e.target.checked })
+                }),
+                '启用选择'
+              ),
+              React.createElement('label', null,
+                React.createElement('input', {
+                  type: 'checkbox',
+                  checked: tableConfig.sorting.enabled,
+                  onChange: (e) => updateConfig('sorting', { enabled: e.target.checked })
+                }),
+                '启用排序'
+              )
+            ),
+
+            React.createElement('div', { className: 'controls' },
+              React.createElement('h3', null, '主题切换'),
+              React.createElement('select', {
+                value: currentTheme,
+                onChange: (e) => changeTheme(e.target.value)
+              },
+                React.createElement('option', { value: 'light' }, '明亮主题'),
+                React.createElement('option', { value: 'dark' }, '暗黑主题'),
+                React.createElement('option', { value: 'compact' }, '紧凑主题'),
+                React.createElement('option', { value: 'comfortable' }, '舒适主题')
+              )
+            ),
+
+            React.createElement(LDesignTable, {
+              ref: tableRef,
+              columns,
+              data: employees,
+              config: tableConfig,
+              onSelectionChange: handleSelectionChange,
+              onSortChange: handleSortChange,
+              onRowClick: handleRowClick
+            }),
+
+            React.createElement('div', { className: 'info-panel' },
+              React.createElement('h4', null, 'React 状态'),
+              React.createElement('div', null,
+                '员工总数: ', React.createElement('span', { className: 'status' }, employees.length),
+                ' 选中数量: ', React.createElement('span', { className: 'status' }, selectedEmployees.length),
+                ' 当前主题: ', React.createElement('span', { className: 'status' }, currentTheme)
+              ),
+              React.createElement('div', null,
+                '分页状态: ', React.createElement('span', { className: 'status' }, tableConfig.pagination.enabled ? '启用' : '禁用'),
+                ' 排序状态: ', React.createElement('span', { className: 'status' }, tableConfig.sorting.enabled ? '启用' : '禁用')
+              )
+            ),
+
+            React.createElement('div', { className: 'info-panel' },
+              React.createElement('h4', null, '事件日志'),
+              React.createElement('div', { className: 'event-log' },
+                eventLog.map(event =>
+                  React.createElement('div', { key: event.id, className: 'event-item' },
+                    React.createElement('span', { className: 'event-time' }, event.time),
+                    React.createElement('span', { className: `event-type ${event.type}` }, event.message)
+                  )
+                )
+              ),
+              React.createElement('button', { className: 'btn btn-small', onClick: clearEventLog }, '清除日志')
+            )
+          )
+        )
+      );
+    }
+
+    // 渲染应用
+    ReactDOM.render(React.createElement(App), document.getElementById('root'));
+  </script>
+
+  <style>
+    .event-log {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-base);
+      padding: 10px;
+      background: var(--ldesign-bg-color-component);
+    }
+
+    .event-item {
+      display: flex;
+      align-items: center;
+      padding: 3px 0;
+      border-bottom: 1px solid var(--ldesign-border-level-1-color);
+    }
+
+    .event-item:last-child {
+      border-bottom: none;
+    }
+
+    .event-time {
+      font-size: var(--ls-font-size-xs);
+      color: var(--ldesign-text-color-secondary);
+      min-width: 80px;
+    }
+
+    .event-type {
+      margin-left: 10px;
+      font-size: var(--ls-font-size-sm);
+    }
+
+    .event-type.系统 { color: var(--ldesign-brand-color); }
+    .event-type.数据操作 { color: var(--ldesign-success-color); }
+    .event-type.配置 { color: var(--ldesign-warning-color); }
+    .event-type.主题 { color: var(--ldesign-brand-color); }
+    .event-type.警告 { color: var(--ldesign-error-color); }
+
+    .btn-small {
+      padding: 5px 10px;
+      font-size: var(--ls-font-size-xs);
+      margin-top: 10px;
+    }
+  </style>
+</body>
+</html>

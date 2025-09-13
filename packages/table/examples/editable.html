@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>可编辑表格示例 - LDESIGN Table</title>
+  <link rel="stylesheet" href="./src/styles/main.css">
+</head>
+<body>
+  <div class="page-header">
+    <h1>✏️ 可编辑表格示例</h1>
+    <p>展示可编辑单元格功能，支持多种编辑器类型和验证</p>
+  </div>
+
+  <nav class="nav">
+    <div class="container">
+      <ul class="nav-links">
+        <li><a href="./index.html">首页</a></li>
+        <li><a href="./basic.html">基础表格</a></li>
+        <li><a href="./filter.html">筛选搜索</a></li>
+        <li><a href="./editable.html" class="active">可编辑表格</a></li>
+        <li><a href="./drag-sort.html">拖拽排序</a></li>
+        <li><a href="./export.html">数据导出</a></li>
+        <li><a href="./complete.html">完整功能</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="example-section">
+      <h2>可编辑功能演示</h2>
+      <p>双击单元格开始编辑，支持多种编辑器类型和验证规则。</p>
+      
+      <div class="info-panel">
+        <h4>编辑器类型</h4>
+        <ul>
+          <li><strong>文本编辑器</strong>：姓名、邮箱字段</li>
+          <li><strong>数字编辑器</strong>：年龄、薪资字段</li>
+          <li><strong>选择器编辑器</strong>：部门字段</li>
+          <li><strong>复选框编辑器</strong>：状态字段</li>
+          <li><strong>日期编辑器</strong>：入职日期字段</li>
+        </ul>
+      </div>
+
+      <div class="info-panel">
+        <h4>操作说明</h4>
+        <ul>
+          <li>双击单元格开始编辑</li>
+          <li>按 Enter 键确认编辑</li>
+          <li>按 Escape 键取消编辑</li>
+          <li>点击其他区域也会确认编辑</li>
+          <li>验证失败时会显示错误提示</li>
+        </ul>
+      </div>
+
+      <div class="controls">
+        <button class="btn" onclick="toggleEditing()">
+          <span id="editToggleText">启用编辑</span>
+        </button>
+        <button class="btn" onclick="addRandomRow()">添加随机行</button>
+        <button class="btn" onclick="validateAllData()">验证所有数据</button>
+        <button class="btn" onclick="resetData()">重置数据</button>
+      </div>
+
+      <div class="table-container" id="editableTableContainer"></div>
+
+      <div class="info-panel">
+        <h4>当前状态</h4>
+        <p>编辑模式: <span class="status" id="editStatus">禁用</span></p>
+        <p>总行数: <span id="totalRows">0</span></p>
+        <p>编辑次数: <span id="editCount">0</span></p>
+      </div>
+
+      <div class="log" id="operationLog"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { Table } from '@ldesign/table'
+    import '@ldesign/table/styles'
+    import { sampleEmployees, editableColumns, generateRandomEmployee, createLogger } from './src/utils/data.js'
+
+    let editableTable = null
+    let editingEnabled = false
+    let editCount = 0
+    const log = createLogger('operationLog')
+
+    // 初始化表格
+    function initEditableTable() {
+      const container = document.getElementById('editableTableContainer')
+      container.innerHTML = ''
+
+      editableTable = new Table({
+        container,
+        columns: editableColumns,
+        data: [...sampleEmployees],
+        rowKey: 'id',
+        editable: {
+          enabled: editingEnabled,
+          trigger: 'dblclick',
+          mode: 'cell'
+        },
+        pagination: {
+          enabled: true,
+          pageSize: 5
+        }
+      })
+
+      // 绑定事件
+      bindTableEvents()
+      updateStatus()
+      log('可编辑表格初始化完成', 'success')
+    }
+
+    // 绑定表格事件
+    function bindTableEvents() {
+      // 编辑开始事件
+      editableTable.on('cell-edit-start', (data) => {
+        log(`开始编辑: ${data.column.title} - 行${data.rowIndex + 1}`, 'info')
+      })
+
+      // 编辑完成事件
+      editableTable.on('cell-edit-finish', (data) => {
+        editCount++
+        log(`编辑完成: ${data.column.title} = ${data.newValue}`, 'success')
+        updateStatus()
+      })
+
+      // 编辑取消事件
+      editableTable.on('cell-edit-cancel', (data) => {
+        log(`取消编辑: ${data.column.title}`, 'warning')
+      })
+
+      // 验证错误事件
+      editableTable.on('cell-edit-error', (data) => {
+        log(`验证失败: ${data.message}`, 'error')
+      })
+
+      // 数据变化事件
+      editableTable.on('data-change', (data) => {
+        log(`数据变更: 当前${data.data.length}行数据`, 'info')
+        updateStatus()
+      })
+    }
+
+    // 切换编辑模式
+    window.toggleEditing = function() {
+      editingEnabled = !editingEnabled
+      document.getElementById('editToggleText').textContent = editingEnabled ? '禁用编辑' : '启用编辑'
+      initEditableTable()
+      log(`编辑模式: ${editingEnabled ? '启用' : '禁用'}`, 'info')
+    }
+
+    // 添加随机行
+    window.addRandomRow = function() {
+      const newRow = generateRandomEmployee()
+      editableTable.addData(newRow)
+      log(`添加新行: ${newRow.name}`, 'success')
+    }
+
+    // 验证所有数据
+    window.validateAllData = function() {
+      const data = editableTable.getData()
+      let validCount = 0
+      let invalidCount = 0
+
+      data.forEach((row, index) => {
+        // 简单的验证逻辑
+        const isValid = row.name && 
+                        row.age >= 18 && row.age <= 65 && 
+                        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)
+        
+        if (isValid) {
+          validCount++
+        } else {
+          invalidCount++
+          log(`第${index + 1}行数据验证失败`, 'error')
+        }
+      })
+
+      log(`数据验证完成: ${validCount}行有效，${invalidCount}行无效`, invalidCount > 0 ? 'warning' : 'success')
+    }
+
+    // 重置数据
+    window.resetData = function() {
+      editableTable.setData([...sampleEmployees])
+      editCount = 0
+      log('数据已重置', 'info')
+      updateStatus()
+    }
+
+    // 更新状态
+    function updateStatus() {
+      const totalRows = editableTable.getData().length
+      
+      document.getElementById('editStatus').textContent = editingEnabled ? '启用' : '禁用'
+      document.getElementById('editStatus').className = `status ${editingEnabled ? 'success' : 'warning'}`
+      document.getElementById('totalRows').textContent = totalRows
+      document.getElementById('editCount').textContent = editCount
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      initEditableTable()
+      log('页面加载完成', 'success')
+    })
+  </script>
+</body>
+</html>
