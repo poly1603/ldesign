@@ -60,20 +60,21 @@ import {
   ValidationUtils,
 } from './utils'
 
-export {
-  useCrypto,
-  useHash,
-  useSignature,
-} from './adapt/vue/composables'
+// Vue imports commented out due to build issues
+// export {
+//   useCrypto,
+//   useHash,
+//   useSignature,
+// } from './adapt/vue/composables'
 
 // === Vue 适配器模块 ===
-export {
-  createCryptoPlugin,
-  CryptoPlugin,
-  type CryptoPluginOptions,
-  type GlobalCrypto,
-  installCrypto,
-} from './adapt/vue/plugin'
+// export {
+//   createCryptoPlugin,
+//   CryptoPlugin,
+//   type CryptoPluginOptions,
+//   type GlobalCrypto,
+//   installCrypto,
+// } from './adapt/vue/plugin'
 
 // === 算法实现模块 ===
 export {
