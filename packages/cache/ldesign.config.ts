@@ -1,47 +1,26 @@
 import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
-  // 基础配置
-  root: process.cwd(),
-  input: 'src/index.ts',
-
   // 生成类型声明文件
   dts: true,
 
-  // 生产环境压缩代码
+  // 打包与调试
   minify: true,
-
-  // 生成 source map
   sourcemap: true,
+  clean: true,
 
   // 外部依赖（不打包进最终产物）
   external: ['vue'],
 
-  // UMD 格式的全局变量映射
-  globals: {
-    vue: 'Vue',
-  },
-
-  // 明确指定不同格式的输出目录，确保与 package.json 保持一致
+  // 输出配置：使用布尔开关；true 使用默认配置，false/缺省跳过
   output: {
-    esm: {
-      dir: 'es',
-      format: 'esm',
-      preserveStructure: true,
-      dts: true,
-    },
-    cjs: {
-      dir: 'lib',
-      format: 'cjs',
-      preserveStructure: true,
-      dts: true,
-    },
+    esm: true,
+    cjs: true,
     umd: {
-      dir: 'dist',
-      format: 'umd',
       name: 'LDesignCache',
-      sourcemap: true,
-      minify: true,
+      globals: {
+        vue: 'Vue',
+      },
     },
   },
 })
