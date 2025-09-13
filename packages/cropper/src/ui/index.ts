@@ -8,8 +8,8 @@ export { BaseComponent, ComponentState } from './base-component'
 export type { BaseComponentOptions } from './base-component'
 
 // 工具栏
-export { Toolbar, ToolbarPosition, ToolType } from './toolbar'
-export type { ToolbarOptions, ToolConfig } from './toolbar'
+export { Toolbar, ToolbarPosition } from './toolbar'
+export type { ToolType, ToolbarOptions, ToolConfig } from './toolbar'
 
 // 控制点渲染器
 export { ControlPointsRenderer } from './control-points-renderer'

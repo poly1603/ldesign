@@ -26,7 +26,7 @@ export class VueAdapter extends BaseAdapter {
   private app?: App
 
   /** Vue 适配器配置 */
-  protected options: VueAdapterOptions
+  protected override options: VueAdapterOptions
 
   /** 默认配置 */
   protected static readonly DEFAULT_VUE_OPTIONS: VueAdapterOptions = {
@@ -50,7 +50,7 @@ export class VueAdapter extends BaseAdapter {
   /**
    * 框架特定的初始化
    */
-  protected async onInit(): Promise<void> {
+  protected override async onInit(): Promise<void> {
     // Vue 特定的初始化逻辑
     if (this.app && this.options.global) {
       this.registerGlobalComponent()
@@ -60,7 +60,7 @@ export class VueAdapter extends BaseAdapter {
   /**
    * 框架特定的销毁
    */
-  protected onDestroy(): void {
+  protected override onDestroy(): void {
     // Vue 特定的清理逻辑
     if (this.app && this.options.global) {
       // 注意：Vue 3 没有直接的取消注册全局组件的方法
@@ -113,12 +113,16 @@ export class VueAdapter extends BaseAdapter {
       },
       watch: {
         src: {
-          handler(newSrc: string | File) {
+          async handler(newSrc: string | File) {
             if (newSrc && this.cropperInstance) {
-              this.cropperInstance.loadImage(newSrc)
+              try {
+                await this.cropperInstance.setImage(newSrc)
+              } catch (error) {
+                this.$emit('error', error)
+              }
             }
           },
-          immediate: true,
+          immediate: false, // 避免在组件未初始化时触发
         },
         modelValue: {
           handler(newValue: any) {
@@ -133,12 +137,16 @@ export class VueAdapter extends BaseAdapter {
         async initCropper() {
           try {
             const container = this.$refs.container as HTMLElement
-            this.cropperInstance = new (adapter.constructor as any)(container, {
-              ...this.options,
-              autoInit: false,
-            })
+            if (!container) {
+              throw new Error('Container reference not found')
+            }
             
-            await this.cropperInstance.init(container)
+            // 修复：使用正确的裁剪器类型
+            const { Cropper } = await import('../cropper')
+            this.cropperInstance = new Cropper({
+              container,
+              ...this.options,
+            })
             
             // 设置事件监听器
             this.setupEventListeners()
@@ -147,9 +155,10 @@ export class VueAdapter extends BaseAdapter {
             
             // 如果有初始图片，加载它
             if (this.src) {
-              await this.cropperInstance.loadImage(this.src)
+              await this.cropperInstance.setImage(this.src)
             }
           } catch (error) {
+            console.error('Failed to initialize cropper:', error)
             this.$emit('error', error)
           }
         },
@@ -164,24 +173,25 @@ export class VueAdapter extends BaseAdapter {
         setupEventListeners() {
           if (!this.cropperInstance) return
           
-          this.cropperInstance.on('cropend', (data: any) => {
-            this.$emit('update:modelValue', data)
+          // 修复：使用正确的事件名称
+          this.cropperInstance.on('cropChange', (data: any) => {
+            this.$emit('update:modelValue', data.cropArea)
             this.$emit('cropend', data)
           })
           
-          this.cropperInstance.on('cropstart', (data: any) => {
-            this.$emit('cropstart', data)
+          this.cropperInstance.on('ready', (data: any) => {
+            this.$emit('ready', data)
           })
           
-          this.cropperInstance.on('cropmove', (data: any) => {
-            this.$emit('cropmove', data)
-          })
-          
-          this.cropperInstance.on('zoom', (data: any) => {
+          this.cropperInstance.on('zoomChange', (data: any) => {
             this.$emit('zoom', data)
           })
           
-          this.cropperInstance.on('error', (error: Error) => {
+          this.cropperInstance.on('imageLoaded', (data: any) => {
+            this.$emit('imageLoaded', data)
+          })
+          
+          this.cropperInstance.on('imageError', (error: Error) => {
             this.$emit('error', error)
           })
         },
@@ -225,7 +235,7 @@ export class VueAdapter extends BaseAdapter {
       },
       data() {
         return {
-          cropperInstance: null as VueAdapter | null,
+          cropperInstance: null as any, // 修复类型问题
         }
       },
     })
@@ -238,36 +248,90 @@ export class VueAdapter extends BaseAdapter {
     container: Ref<HTMLElement | undefined>,
     options: Partial<VueAdapterOptions> = {}
   ) {
-    let adapter: VueAdapter | null = null
+    // 使用Vue的相应式数据
+    const { ref, reactive, computed, onMounted, onUnmounted } = require('vue')
+    
+    const state = reactive({
+      cropper: null as any,
+      isReady: false,
+      error: null as Error | null,
+    })
 
     const init = async () => {
       if (!container.value) {
         throw new Error('Container element is required')
       }
       
-      adapter = new VueAdapter(container.value, {
-        ...options,
-        autoInit: false,
-      })
-      
-      await adapter.init(container.value)
-      return adapter
-    }
-
-    const destroy = () => {
-      if (adapter) {
-        adapter.destroy()
-        adapter = null
+      try {
+        // 修复：直接使用Cropper类
+        const { Cropper } = await import('../cropper')
+        state.cropper = new Cropper({
+          container: container.value,
+          ...options,
+        })
+        
+        state.isReady = true
+        state.error = null
+        return state.cropper
+      } catch (error) {
+        state.error = error as Error
+        state.isReady = false
+        throw error
       }
     }
 
+    const destroy = () => {
+      if (state.cropper) {
+        try {
+          state.cropper.destroy()
+        } catch (error) {
+          console.warn('Error destroying cropper:', error)
+        } finally {
+          state.cropper = null
+          state.isReady = false
+          state.error = null
+        }
+      }
+    }
+    
+    // 便捷方法
+    const getCropData = () => state.cropper?.getCropData()
+    const setCropData = (data: any) => state.cropper?.setCropData(data)
+    const getCroppedCanvas = (config?: any) => state.cropper?.getCroppedCanvas(config)
+    const getCroppedBlob = (config?: any) => state.cropper?.getCroppedBlob(config)
+    const setImage = async (src: string | File) => {
+      if (state.cropper) {
+        try {
+          await state.cropper.setImage(src)
+        } catch (error) {
+          state.error = error as Error
+          throw error
+        }
+      }
+    }
+    
+    // 自动清理
+    onUnmounted(() => {
+      destroy()
+    })
+
     return {
-      adapter,
+      // 状态
+      cropper: computed(() => state.cropper),
+      isReady: computed(() => state.isReady),
+      error: computed(() => state.error),
+      
+      // 方法
       init,
       destroy,
-      isReady: () => adapter?.isReady() ?? false,
-      getState: () => adapter?.getState() ?? AdapterState.IDLE,
-      getCropper: () => adapter?.getCropper(),
+      getCropData,
+      setCropData,
+      getCroppedCanvas,
+      getCroppedBlob,
+      setImage,
+      
+      // 兼容性
+      getCropper: () => state.cropper,
     }
   }
 
@@ -275,22 +339,27 @@ export class VueAdapter extends BaseAdapter {
    * Vue 插件安装函数
    */
   static install(app: App, options: Partial<VueAdapterOptions> = {}) {
-    // 创建一个临时适配器来注册全局组件
-    const tempAdapter = new VueAdapter(document.createElement('div'), {
-      ...options,
-      app,
-      global: true,
-      autoInit: false,
-    })
-    
-    // 注册全局组件
-    tempAdapter.registerGlobalComponent()
-    
-    // 提供全局属性
-    app.config.globalProperties.$cropper = VueAdapter
-    
-    // 提供依赖注入
-    app.provide('cropper', VueAdapter)
+    try {
+      // 创建一个临时适配器来注册全局组件
+      const tempAdapter = new VueAdapter(document.createElement('div'), {
+        ...options,
+        app,
+        global: true,
+        autoInit: false,
+      })
+      
+      // 注册全局组件
+      tempAdapter.registerGlobalComponent()
+      
+      // 提供全局属性
+      app.config.globalProperties.$cropper = VueAdapter
+      
+      // 提供依赖注入
+      app.provide('cropper', VueAdapter)
+      app.provide('useCropper', VueAdapter.useVueCropper)
+    } catch (error) {
+      console.warn('Failed to install Vue Cropper plugin:', error)
+    }
   }
 }
 

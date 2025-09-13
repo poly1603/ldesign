@@ -4,6 +4,7 @@
  */
 
 // 图片处理Worker
+import { ImageWorkerManager } from './image-worker'
 export { ImageWorkerManager } from './image-worker'
 export type { 
   WorkerMessage,

@@ -7,6 +7,16 @@
 import type { CropperInstance, CropShape, CropperEventType } from '@/types'
 import { CropShape as Shape, CropperEventType as EventType } from '@/types'
 
+// 导出与UI索引兼容的类型别名
+export type ToolbarOptions = ToolbarConfig
+export type ToolType = ToolbarTool
+export interface ToolConfig {
+  name: ToolbarTool
+  icon: string
+  tooltip: string
+  action: () => void
+}
+
 /**
  * 工具栏位置枚举
  */
@@ -24,13 +34,24 @@ export interface ToolbarConfig {
   /** 是否显示工具栏 */
   show?: boolean
   /** 工具栏位置 */
-  position?: 'top' | 'bottom' | 'left' | 'right'
+  position?: ToolbarPosition
   /** 显示的工具 */
   tools?: ToolbarTool[]
   /** 自定义样式类名 */
   className?: string
   /** 主题色 */
   theme?: 'light' | 'dark'
+  /** 是否显示按钮提示 */
+  showTooltips?: boolean
+  /** 按钮尺寸 */
+  buttonSize?: 'small' | 'medium' | 'large'
+  /** 自定义工具按钮 */
+  customTools?: Array<{
+    name: string
+    icon: string
+    tooltip: string
+    action: () => void
+  }>
 }
 
 /**
@@ -45,13 +66,22 @@ export type ToolbarTool =
   | 'flip-vertical'
   | 'reset'
   | 'crop'
-  | 'shape-rectangle'
-  | 'shape-circle'
-  | 'shape-ellipse'
+  | 'shape-selector'
   | 'aspect-ratio'
   | 'mask-opacity'
   | 'export-format'
   | 'download'
+  | 'move-up'
+  | 'move-down'
+  | 'move-left'
+  | 'move-right'
+  | 'move-up-left'
+  | 'move-up-right'
+  | 'move-down-left'
+  | 'move-down-right'
+  | 'filter-selector'
+  | 'crop-style-selector'
+  | 'background-selector'
 
 /**
  * 宽高比选项
@@ -85,11 +115,20 @@ export class Toolbar {
   /** 工具栏容器元素 */
   private container: HTMLElement
 
-  /** 裁剪器实例 */
-  private cropper: CropperInstance
+  /** 裁剪器实例（可选，未设置时仅发出工具事件） */
+  private cropper?: CropperInstance
 
   /** 配置 */
   private config: Required<ToolbarConfig>
+
+  /** 工具栏元素引用 */
+  private toolbarElement: HTMLElement | null = null
+
+  /** 事件监听器映射 */
+  private listeners: Map<string, Set<(data: any) => void>> = new Map()
+
+  /** 按钮尺寸 */
+  private buttonSize: 'small' | 'medium' | 'large' = 'small'
 
   /** 当前形状 */
   private currentShape: CropShape = Shape.RECTANGLE
@@ -111,11 +150,17 @@ export class Toolbar {
 
   /** 当前滤镜 */
   private currentFilter: string = 'none'
+  
+  /** ARIA 实时区域元素 */
+  private ariaLiveRegion: HTMLElement | null = null
+  
+  /** 焦点陷阱元素（为了键盘导航） */
+  private focusTrap: HTMLElement | null = null
 
   /** 默认配置 */
   private static readonly DEFAULT_CONFIG: Required<ToolbarConfig> = {
     show: true,
-    position: 'bottom',
+    position: ToolbarPosition.BOTTOM,
     tools: [
       'zoom-in',
       'zoom-out',
@@ -139,7 +184,10 @@ export class Toolbar {
       'download'
     ],
     className: '',
-    theme: 'light'
+    theme: 'light',
+    customTools: [],
+    showTooltips: true,
+    buttonSize: 'small'
   }
 
   /** 宽高比选项 */
@@ -186,7 +234,12 @@ export class Toolbar {
     { label: '简约', value: 'minimal' },
     { label: '经典', value: 'classic' },
     { label: '现代', value: 'modern' },
-    { label: '霓虹', value: 'neon' }
+    { label: '霓虹', value: 'neon' },
+    { label: '虚线', value: 'dashed' },
+    { label: '点线', value: 'dotted' },
+    { label: '双线', value: 'double' },
+    { label: '阴影', value: 'shadow' },
+    { label: '渐变', value: 'gradient' }
   ]
 
   /** 背景样式选项 */
@@ -217,16 +270,28 @@ export class Toolbar {
    * @param config 配置
    */
   constructor(
-    container: HTMLElement,
-    cropper: CropperInstance,
+    arg1: HTMLElement | Partial<ToolbarConfig>,
+    cropper?: CropperInstance,
     config: Partial<ToolbarConfig> = {}
   ) {
-    this.container = container
-    this.cropper = cropper
-    this.config = { ...Toolbar.DEFAULT_CONFIG, ...config }
+    if (arg1 instanceof HTMLElement) {
+      this.container = arg1
+      this.cropper = cropper
+      this.config = { ...Toolbar.DEFAULT_CONFIG, ...config }
+    } else {
+      // 仅使用配置初始化（用于 UI 管理器场景）
+      this.container = document.createElement('div')
+      this.config = { ...Toolbar.DEFAULT_CONFIG, ...(arg1 || {}) }
+    }
 
+    this.setupAccessibility()
     this.render()
     this.bindEvents()
+  }
+
+  /** 设置裁剪器实例（在仅配置初始化的场景下使用） */
+  setCropper(cropper: CropperInstance): void {
+    this.cropper = cropper
   }
 
   /**
@@ -291,6 +356,19 @@ export class Toolbar {
     const toolbar = document.createElement('div')
     toolbar.className = `ldesign-cropper__toolbar ldesign-cropper__toolbar--${this.config.position} ${this.config.className}`
     toolbar.setAttribute('data-theme', this.config.theme)
+    toolbar.setAttribute('role', 'toolbar')
+    toolbar.setAttribute('aria-label', '裁剪器工具栏')
+
+    // 根据按钮尺寸设置类名
+    const sizeClass = this.buttonSize === 'small'
+      ? 'ldesign-cropper__toolbar--size-small'
+      : this.buttonSize === 'medium'
+        ? 'ldesign-cropper__toolbar--size-medium'
+        : 'ldesign-cropper__toolbar--size-large'
+    toolbar.classList.add(sizeClass)
+
+    // 保存引用
+    this.toolbarElement = toolbar
 
     // 添加工具按钮
     this.config.tools.forEach(tool => {
@@ -299,6 +377,9 @@ export class Toolbar {
         toolbar.appendChild(element)
       }
     })
+    
+    // 添加键盘导航支持
+    this.setupToolbarKeyboardNavigation(toolbar)
 
     // 根据位置添加工具栏
     if (this.config.position === 'top') {
@@ -306,6 +387,45 @@ export class Toolbar {
     } else {
       this.container.appendChild(toolbar)
     }
+  }
+  
+  /**
+   * 设置工具栏键盘导航
+   */
+  private setupToolbarKeyboardNavigation(toolbar: HTMLElement): void {
+    toolbar.addEventListener('keydown', (e) => {
+      const focusableElements = toolbar.querySelectorAll(
+        'button:not([disabled]), select:not([disabled]), input:not([disabled])'
+      ) as NodeListOf<HTMLElement>
+      
+      const currentIndex = Array.from(focusableElements).indexOf(document.activeElement as HTMLElement)
+      
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          e.preventDefault()
+          const nextIndex = currentIndex < focusableElements.length - 1 ? currentIndex + 1 : 0
+          focusableElements[nextIndex]?.focus()
+          break
+          
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          e.preventDefault()
+          const prevIndex = currentIndex > 0 ? currentIndex - 1 : focusableElements.length - 1
+          focusableElements[prevIndex]?.focus()
+          break
+          
+        case 'Home':
+          e.preventDefault()
+          focusableElements[0]?.focus()
+          break
+          
+        case 'End':
+          e.preventDefault()
+          focusableElements[focusableElements.length - 1]?.focus()
+          break
+      }
+    })
   }
 
   /**
@@ -316,28 +436,28 @@ export class Toolbar {
   private createToolElement(tool: ToolbarTool): HTMLElement | null {
     switch (tool) {
       case 'zoom-in':
-        return this.createButton('zoom-in', 'zoom-in', '放大', () => this.cropper.zoom(1.1))
+        return this.createButton('zoom-in', 'zoom-in', '放大', () => { if (!this.cropper) return; this.cropper.zoom(1.1) })
 
       case 'zoom-out':
-        return this.createButton('zoom-out', 'zoom-out', '缩小', () => this.cropper.zoom(0.9))
+        return this.createButton('zoom-out', 'zoom-out', '缩小', () => { if (!this.cropper) return; this.cropper.zoom(0.9) })
 
       case 'rotate-left':
-        return this.createButton('rotate-left', 'rotate-ccw', '左转', () => this.cropper.rotate(-90))
+        return this.createButton('rotate-left', 'rotate-ccw', '左转', () => { if (!this.cropper) return; this.cropper.rotate(-90) })
 
       case 'rotate-right':
-        return this.createButton('rotate-right', 'rotate-cw', '右转', () => this.cropper.rotate(90))
+        return this.createButton('rotate-right', 'rotate-cw', '右转', () => { if (!this.cropper) return; this.cropper.rotate(90) })
 
       case 'flip-horizontal':
-        return this.createButton('flip-horizontal', 'flip-horizontal', '水平翻转', () => this.cropper.scaleX(-1))
+        return this.createButton('flip-horizontal', 'flip-horizontal', '水平翻转', () => { if (!this.cropper) return; this.cropper.scaleX(-1) })
 
       case 'flip-vertical':
-        return this.createButton('flip-vertical', 'flip-vertical', '垂直翻转', () => this.cropper.scaleY(-1))
+        return this.createButton('flip-vertical', 'flip-vertical', '垂直翻转', () => { if (!this.cropper) return; this.cropper.scaleY(-1) })
 
       case 'reset':
-        return this.createButton('reset', 'refresh-cw', '重置', () => this.cropper.reset())
+        return this.createButton('reset', 'refresh-cw', '重置', () => { if (!this.cropper) return; this.cropper.reset() })
 
       case 'crop':
-        return this.createButton('crop', 'scissors', '裁剪', () => this.handleCrop())
+        return this.createButton('crop', 'scissors', '裁剪', () => { if (!this.cropper) return; this.handleCrop() })
 
       case 'shape-selector':
         return this.createShapeSelector()
@@ -410,6 +530,9 @@ export class Toolbar {
     button.className = 'ldesign-cropper__toolbar-button'
     button.setAttribute('data-tool', id)
     button.title = title
+    button.setAttribute('aria-label', title)
+    button.setAttribute('role', 'button')
+    button.setAttribute('tabindex', '0')
 
     // 创建SVG图标
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
@@ -426,7 +549,26 @@ export class Toolbar {
     svg.innerHTML = this.getIconPath(iconName)
     button.appendChild(svg)
 
-    button.addEventListener('click', onClick)
+    // 添加点击事件
+    button.addEventListener('click', () => {
+      onClick()
+      this.emit('tool-click', { tool: id })
+    })
+    
+    // 添加键盘导航支持
+    button.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        onClick()
+        this.emit('tool-click', { tool: id })
+      }
+    })
+    
+    // 添加焦点事件以改善辅助功能
+    button.addEventListener('focus', () => {
+      this.announceFocus(title)
+    })
+    
     return button
   }
 
@@ -446,7 +588,9 @@ export class Toolbar {
   ): HTMLButtonElement {
     const button = this.createButton(id, iconName, title, () => {
       this.currentShape = shape
-      this.cropper.setShape(shape)
+      if (this.cropper) {
+        this.cropper.setShape(shape)
+      }
       this.updateShapeButtons()
     })
 
@@ -466,6 +610,8 @@ export class Toolbar {
     select.className = 'ldesign-cropper__toolbar-select'
     select.setAttribute('data-tool', 'aspect-ratio')
     select.title = '宽高比'
+    select.setAttribute('aria-label', '选择裁剪宽高比')
+    select.setAttribute('role', 'combobox')
 
     this.aspectRatioOptions.forEach(option => {
       const optionElement = document.createElement('option')
@@ -483,6 +629,7 @@ export class Toolbar {
       const value = select.value
       const aspectRatio = value ? parseFloat(value) : null
       this.currentAspectRatio = aspectRatio
+      if (!this.cropper) return
       this.cropper.setAspectRatio(aspectRatio)
     })
 
@@ -514,6 +661,7 @@ export class Toolbar {
     select.addEventListener('change', () => {
       const value = parseFloat(select.value)
       this.currentMaskOpacity = value
+      if (!this.cropper) return
       // 更新裁剪器的遮罩透明度
       this.cropper.updateConfig({ maskOpacity: value })
     })
@@ -575,6 +723,7 @@ export class Toolbar {
     select.addEventListener('change', () => {
       const shape = select.value as CropShape
       this.currentShape = shape
+      if (!this.cropper) return
       this.cropper.setShape(shape)
     })
 
@@ -716,11 +865,100 @@ export class Toolbar {
       select.value = this.currentExportFormat
     }
   }
+  
+  /**
+   * 设置辅助功能
+   */
+  private setupAccessibility(): void {
+    // 创建ARIA实时区域
+    this.ariaLiveRegion = document.createElement('div')
+    this.ariaLiveRegion.className = 'ldesign-cropper__sr-only'
+    this.ariaLiveRegion.setAttribute('aria-live', 'polite')
+    this.ariaLiveRegion.setAttribute('aria-atomic', 'true')
+    this.ariaLiveRegion.style.cssText = `
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    `
+    this.container.appendChild(this.ariaLiveRegion)
+    
+    // 创建焦点陷阱元素
+    this.createFocusTrap()
+  }
+  
+  /**
+   * 创建焦点陷阱
+   */
+  private createFocusTrap(): void {
+    this.focusTrap = document.createElement('div')
+    this.focusTrap.setAttribute('tabindex', '0')
+    this.focusTrap.className = 'ldesign-cropper__focus-trap'
+    this.focusTrap.style.position = 'absolute'
+    this.focusTrap.style.opacity = '0'
+    this.focusTrap.style.pointerEvents = 'none'
+    
+    // 焦点陷阱事件
+    this.focusTrap.addEventListener('focus', () => {
+      const firstFocusable = this.getFirstFocusableElement()
+      if (firstFocusable) {
+        firstFocusable.focus()
+      }
+    })
+    
+    this.container.appendChild(this.focusTrap)
+  }
+  
+  /**
+   * 获取第一个可焦点元素
+   */
+  private getFirstFocusableElement(): HTMLElement | null {
+    const focusableSelector = 'button:not([disabled]), select:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    const focusableElements = this.container.querySelectorAll(focusableSelector) as NodeListOf<HTMLElement>
+    return focusableElements[0] || null
+  }
+  
+  /**
+   * 获取最后一个可焦点元素
+   */
+  private getLastFocusableElement(): HTMLElement | null {
+    const focusableSelector = 'button:not([disabled]), select:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    const focusableElements = this.container.querySelectorAll(focusableSelector) as NodeListOf<HTMLElement>
+    return focusableElements[focusableElements.length - 1] || null
+  }
+  
+  /**
+   * 通知焦点变化（传达给屏幕阅读器）
+   */
+  private announceFocus(message: string): void {
+    if (this.ariaLiveRegion) {
+      this.ariaLiveRegion.textContent = `${message} 按钮已焦点`
+    }
+  }
+  
+  /**
+   * 通知操作结果（传达给屏幕阅读器）
+   */
+  private announceAction(message: string): void {
+    if (this.ariaLiveRegion) {
+      this.ariaLiveRegion.textContent = message
+    }
+  }
 
   /**
    * 处理裁剪
    */
   private handleCrop(): void {
+    if (!this.cropper) {
+      console.warn('Cropper instance not available for crop operation')
+      return
+    }
+    
     const canvas = this.cropper.getCroppedCanvas()
     if (canvas) {
       // 触发裁剪完成事件
@@ -733,6 +971,11 @@ export class Toolbar {
    * 处理下载
    */
   private handleDownload(): void {
+    if (!this.cropper) {
+      console.warn('Cropper instance not available for download operation')
+      return
+    }
+    
     const canvas = this.cropper.getCroppedCanvas()
     if (canvas) {
       const formatOption = this.exportFormatOptions.find(opt => opt.value === this.currentExportFormat)
@@ -749,7 +992,15 @@ export class Toolbar {
         link.href = canvas.toDataURL(mimeType)
       }
 
+      // 使用更安全的下载方式
+      document.body.appendChild(link)
       link.click()
+      document.body.removeChild(link)
+      
+      // 释放URL对象
+      setTimeout(() => {
+        URL.revokeObjectURL(link.href)
+      }, 100)
     }
   }
 
@@ -767,29 +1018,25 @@ export class Toolbar {
    * 应用裁剪框样式
    */
   private applyCropStyle(style: string): void {
-    const container = this.container
-
-    // 移除现有样式类
-    container.classList.remove(
-      'crop-style-default',
-      'crop-style-minimal',
-      'crop-style-classic',
-      'crop-style-modern',
-      'crop-style-neon'
-    )
-
-    // 添加新样式类
-    container.classList.add(`crop-style-${style}`)
+    // 通过裁剪器核心类设置边框样式
+    if (this.cropper && typeof this.cropper.setBorderStyle === 'function') {
+      this.cropper.setBorderStyle(style)
+    }
   }
 
   /**
    * 应用背景样式
    */
   private applyBackground(background: string): void {
-    const container = this.container
+    // 找到裁剪器的主容器（不是工具栏容器）
+    const cropperContainer = this.container.closest('.cropper-container') ||
+      this.container.parentElement?.querySelector('.real-cropper') ||
+      this.container.parentElement
+
+    if (!cropperContainer) return
 
     // 移除现有背景类
-    container.classList.remove(
+    cropperContainer.classList.remove(
       'bg-transparent',
       'bg-white',
       'bg-black',
@@ -798,7 +1045,7 @@ export class Toolbar {
     )
 
     // 添加新背景类
-    container.classList.add(`bg-${background}`)
+    cropperContainer.classList.add(`bg-${background}`)
   }
 
   /**
@@ -811,21 +1058,150 @@ export class Toolbar {
     }
   }
 
+  /** ResizeObserver 实例 */
+  private resizeObserver: ResizeObserver | null = null
+  
+  /** 绑定的事件处理器 */
+  private boundHandlers: Map<string, () => void> = new Map()
+
   /**
    * 绑定事件
    */
   private bindEvents(): void {
-    // 监听裁剪器事件
-    this.cropper.on(EventType.READY, () => {
-      this.render()
-    })
+    // 监听裁剪器事件（只有在有裁剪器实例时）
+    if (this.cropper) {
+      const readyHandler = () => {
+        this.render()
+      }
+      this.cropper.on(EventType.READY, readyHandler)
+      this.boundHandlers.set('ready', readyHandler)
+    }
+    
+    // 监听容器尺寸变化以实现响应式
+    if (typeof ResizeObserver !== 'undefined' && this.container) {
+      this.resizeObserver = new ResizeObserver((entries) => {
+        this.handleResize()
+      })
+      this.resizeObserver.observe(this.container)
+    }
+  }
+
+  /** 获取工具栏根元素 */
+  getElement(): HTMLElement {
+    return this.toolbarElement || this.container
+  }
+
+  /** 设置工具启用状态 */
+  setToolEnabled(tool: ToolbarTool, enabled: boolean): void {
+    const tools = new Set(this.config.tools)
+    if (enabled) {
+      tools.add(tool)
+    } else {
+      tools.delete(tool)
+    }
+    this.config.tools = Array.from(tools) as ToolbarTool[]
+    this.render()
+  }
+
+  /** 设置工具栏位置 */
+  setPosition(position: ToolbarPosition): void {
+    this.config.position = position
+    this.render()
+  }
+
+  /** 设置按钮尺寸 */
+  setButtonSize(size: 'small' | 'medium' | 'large'): void {
+    this.buttonSize = size
+    this.render()
+  }
+
+  /** 事件订阅 */
+  on(event: string | EventType, listener: (data: any) => void): void {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, new Set())
+    }
+    this.listeners.get(event)!.add(listener)
+  }
+
+  /** 事件退订 */
+  off(event: string | EventType, listener: (data: any) => void): void {
+    const set = this.listeners.get(event)
+    if (set) {
+      set.delete(listener)
+      if (set.size === 0) this.listeners.delete(event)
+    }
+  }
+
+  /** 触发事件 */
+  private emit(event: string, data?: any): void {
+    const set = this.listeners.get(event)
+    if (set) {
+      for (const l of set) {
+        try { l(data) } catch { /* ignore */ }
+      }
+    }
+  }
+
+  /**
+   * 处理容器尺寸变化
+   */
+  private handleResize(): void {
+    if (!this.toolbarElement) return
+    
+    // 根据容器宽度调整工具栏布局
+    const containerWidth = this.container.clientWidth
+    if (containerWidth < 600) {
+      this.toolbarElement.classList.add('ldesign-cropper__toolbar--compact')
+    } else {
+      this.toolbarElement.classList.remove('ldesign-cropper__toolbar--compact')
+    }
   }
 
   /**
    * 销毁工具栏
    */
   destroy(): void {
-    this.container.innerHTML = ''
+    // 清理事件监听器
+    if (this.cropper) {
+      for (const [event, handler] of this.boundHandlers) {
+        this.cropper.off(event as any, handler)
+      }
+    }
+    this.boundHandlers.clear()
+    
+    // 清理ResizeObserver
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = null
+    }
+    
+    // 清理所有事件监听器
+    this.listeners.clear()
+    
+    // 清理辅助功能元素
+    if (this.ariaLiveRegion && this.ariaLiveRegion.parentNode) {
+      this.ariaLiveRegion.parentNode.removeChild(this.ariaLiveRegion)
+    }
+    this.ariaLiveRegion = null
+    
+    if (this.focusTrap && this.focusTrap.parentNode) {
+      this.focusTrap.parentNode.removeChild(this.focusTrap)
+    }
+    this.focusTrap = null
+    
+    // 移除DOM元素
+    if (this.toolbarElement && this.toolbarElement.parentNode) {
+      this.toolbarElement.parentNode.removeChild(this.toolbarElement)
+    }
+    this.toolbarElement = null
+    
+    // 如果直接管理容器内容，清空它
+    if (this.container) {
+      const toolbar = this.container.querySelector('.ldesign-cropper__toolbar')
+      if (toolbar) {
+        toolbar.remove()
+      }
+    }
   }
 
   /**

@@ -61,7 +61,7 @@ export class PreviewPanel extends BaseComponent {
   private currentPreviewData: PreviewData | null = null
 
   /** 默认配置 */
-  private static readonly DEFAULT_OPTIONS: PreviewPanelOptions = {
+  private static readonly DEFAULT_PREVIEW_OPTIONS: PreviewPanelOptions = {
     ...BaseComponent.DEFAULT_OPTIONS,
     previewSize: { width: 200, height: 200 },
     showInfo: true,
@@ -78,7 +78,7 @@ export class PreviewPanel extends BaseComponent {
    */
   constructor(options: Partial<PreviewPanelOptions> = {}) {
     // 设置PreviewPanel特定的配置
-    const mergedOptions = { ...PreviewPanel.DEFAULT_OPTIONS, ...options }
+    const mergedOptions = { ...PreviewPanel.DEFAULT_PREVIEW_OPTIONS, ...options }
 
     // 初始化基础组件，但不立即调用initialize
     super('div', mergedOptions)

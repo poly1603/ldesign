@@ -314,45 +314,7 @@
   }
 }
 
-// 裁剪框样式
-.ldesign-cropper__crop-area {
-
-  // 默认样式
-  &.crop-style-default {
-    border: 2px solid var(--ldesign-brand-color);
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
-  }
-
-  // 简约样式
-  &.crop-style-minimal {
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    box-shadow: none;
-  }
-
-  // 经典样式
-  &.crop-style-classic {
-    border: 3px solid #000000;
-    box-shadow: 0 0 0 1px #ffffff, 0 0 0 4px #000000;
-  }
-
-  // 现代样式
-  &.crop-style-modern {
-    border: 2px solid var(--ldesign-brand-color);
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(114, 46, 209, 0.3);
-  }
-
-  // 霓虹样式
-  &.crop-style-neon {
-    border: 2px solid #00ffff;
-    box-shadow:
-      0 0 5px #00ffff,
-      0 0 10px #00ffff,
-      0 0 15px #00ffff,
-      inset 0 0 5px rgba(0, 255, 255, 0.2);
-    animation: neon-glow 2s ease-in-out infinite alternate;
-  }
-}
+// 裁剪框样式现在通过Canvas渲染实现，不再需要CSS样式
 
 // 霓虹发光动画
 @keyframes neon-glow {
@@ -373,35 +335,104 @@
   }
 }
 
-// 滤镜效果
-.ldesign-cropper__image {
-  transition: filter 0.3s ease;
-
-  &.filter-grayscale {
-    filter: grayscale(100%);
+// 虚线移动动画
+@keyframes dash-move {
+  0% {
+    border-image-source: linear-gradient(90deg, var(--ldesign-brand-color) 50%, transparent 50%);
+    border-image-slice: 1;
   }
 
-  &.filter-sepia {
-    filter: sepia(100%);
+  100% {
+    border-image-source: linear-gradient(90deg, transparent 50%, var(--ldesign-brand-color) 50%);
+    border-image-slice: 1;
+  }
+}
+
+// 渐变旋转动画
+@keyframes gradient-rotate {
+  0% {
+    background: linear-gradient(0deg, var(--ldesign-brand-color), var(--ldesign-warning-color), var(--ldesign-success-color), var(--ldesign-error-color)) border-box;
   }
 
-  &.filter-invert {
-    filter: invert(100%);
+  25% {
+    background: linear-gradient(90deg, var(--ldesign-brand-color), var(--ldesign-warning-color), var(--ldesign-success-color), var(--ldesign-error-color)) border-box;
   }
 
-  &.filter-blur {
-    filter: blur(2px);
+  50% {
+    background: linear-gradient(180deg, var(--ldesign-brand-color), var(--ldesign-warning-color), var(--ldesign-success-color), var(--ldesign-error-color)) border-box;
   }
 
-  &.filter-sharpen {
-    filter: contrast(150%) brightness(110%);
+  75% {
+    background: linear-gradient(270deg, var(--ldesign-brand-color), var(--ldesign-warning-color), var(--ldesign-success-color), var(--ldesign-error-color)) border-box;
   }
 
-  &.filter-contrast {
-    filter: contrast(200%);
+  100% {
+    background: linear-gradient(360deg, var(--ldesign-brand-color), var(--ldesign-warning-color), var(--ldesign-success-color), var(--ldesign-error-color)) border-box;
+  }
+}
+
+// 滤镜效果 - 修复选择器匹配实际DOM结构
+.real-cropper {
+  .ldesign-cropper__canvas {
+    transition: filter 0.3s ease;
   }
 
-  &.filter-saturate {
-    filter: saturate(200%);
+  &.filter-grayscale .ldesign-cropper__canvas {
+    filter: grayscale(100%) !important;
+  }
+
+  &.filter-sepia .ldesign-cropper__canvas {
+    filter: sepia(100%) !important;
+  }
+
+  &.filter-invert .ldesign-cropper__canvas {
+    filter: invert(100%) !important;
+  }
+
+  &.filter-blur .ldesign-cropper__canvas {
+    filter: blur(2px) !important;
+  }
+
+  &.filter-sharpen .ldesign-cropper__canvas {
+    filter: contrast(150%) brightness(110%) !important;
+  }
+
+  &.filter-contrast .ldesign-cropper__canvas {
+    filter: contrast(200%) !important;
+  }
+
+  &.filter-saturate .ldesign-cropper__canvas {
+    filter: saturate(200%) !important;
+  }
+}
+
+// 背景样式 - 应用到整个裁剪器容器
+.cropper-container,
+.real-cropper {
+  &.bg-transparent {
+    background: transparent !important;
+  }
+
+  &.bg-white {
+    background: #ffffff !important;
+  }
+
+  &.bg-black {
+    background: #000000 !important;
+  }
+
+  &.bg-checkerboard {
+    background-image:
+      linear-gradient(45deg, #ccc 25%, transparent 25%),
+      linear-gradient(-45deg, #ccc 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #ccc 75%),
+      linear-gradient(-45deg, transparent 75%, #ccc 75%) !important;
+    background-size: 20px 20px !important;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px !important;
+  }
+
+  &.bg-blur {
+    backdrop-filter: blur(5px) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
   }
 }

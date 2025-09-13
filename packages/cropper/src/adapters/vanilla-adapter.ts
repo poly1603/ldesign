@@ -22,7 +22,7 @@ export interface VanillaAdapterOptions extends AdapterOptions {
  */
 export class VanillaAdapter extends BaseAdapter {
   /** 原生适配器配置 */
-  protected options: VanillaAdapterOptions
+  protected override options: VanillaAdapterOptions
 
   /** 调试日志前缀 */
   private debugPrefix = '[LCropper]'
@@ -49,7 +49,7 @@ export class VanillaAdapter extends BaseAdapter {
   /**
    * 框架特定的初始化
    */
-  protected async onInit(): Promise<void> {
+  protected override async onInit(): Promise<void> {
     this.log('Initializing VanillaAdapter')
 
     // 绑定到全局对象
@@ -61,7 +61,7 @@ export class VanillaAdapter extends BaseAdapter {
   /**
    * 框架特定的销毁
    */
-  protected onDestroy(): void {
+  protected override onDestroy(): void {
     this.log('Destroying VanillaAdapter')
 
     // 从全局对象移除
@@ -146,7 +146,7 @@ export class VanillaAdapter extends BaseAdapter {
   /**
    * 重写状态变化回调，添加调试日志
    */
-  protected onStateChange(oldState: AdapterState, newState: AdapterState): void {
+  protected override onStateChange(oldState: AdapterState, newState: AdapterState): void {
     this.log(`State changed: ${oldState} -> ${newState}`)
     super.onStateChange(oldState, newState)
   }
@@ -154,7 +154,7 @@ export class VanillaAdapter extends BaseAdapter {
   /**
    * 重写错误处理，添加调试日志
    */
-  protected handleError(error: Error): void {
+  protected override handleError(error: Error): void {
     this.log('Error occurred:', error)
     super.handleError(error)
   }

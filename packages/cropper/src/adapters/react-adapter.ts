@@ -18,7 +18,7 @@ export interface ReactAdapterOptions extends AdapterOptions {
  */
 export class ReactAdapter extends BaseAdapter {
   /** React 适配器配置 */
-  protected options: ReactAdapterOptions
+  protected override options: ReactAdapterOptions
 
   /** 默认配置 */
   protected static readonly DEFAULT_REACT_OPTIONS: ReactAdapterOptions = {
@@ -39,7 +39,7 @@ export class ReactAdapter extends BaseAdapter {
   /**
    * 框架特定的初始化
    */
-  protected async onInit(): Promise<void> {
+  protected override async onInit(): Promise<void> {
     // React 特定的初始化逻辑
     // 通常不需要特殊处理，因为 React 组件会处理生命周期
   }
@@ -47,7 +47,7 @@ export class ReactAdapter extends BaseAdapter {
   /**
    * 框架特定的销毁
    */
-  protected onDestroy(): void {
+  protected override onDestroy(): void {
     // React 特定的清理逻辑
     // 通常不需要特殊处理，因为 React 组件会处理清理
   }

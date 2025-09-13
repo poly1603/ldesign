@@ -29,6 +29,8 @@ export interface RenderConfig {
   centerLineColor?: string
   /** 控制点边框颜色 */
   controlPointBorderColor?: string
+  /** 边框样式 */
+  borderStyle?: string
   /** 是否启用抗锯齿 */
   antiAlias?: boolean
   /** 像素比 */
@@ -60,6 +62,7 @@ export class CanvasRenderer {
     showCenterLines: false,
     centerLineColor: '#ffffff',
     controlPointBorderColor: '#ffffff',
+    borderStyle: 'default',
     antiAlias: true,
     pixelRatio: window.devicePixelRatio || 1,
   }
@@ -208,8 +211,9 @@ export class CanvasRenderer {
     // 绘制遮罩
     this.drawMask(cropArea, cfg)
 
-    // 绘制裁剪边框
-    this.drawCropBorder(cropArea)
+    // 绘制裁剪边框（从配置中获取样式）
+    const borderStyle = (cfg as any).borderStyle || 'default'
+    this.drawCropBorder(cropArea, borderStyle)
 
     // 绘制网格线
     if (cfg.showGrid) {
@@ -279,6 +283,50 @@ export class CanvasRenderer {
         break
       }
 
+      case CropShape.ROUNDED_RECTANGLE: {
+        const centerX = cropArea.x + cropArea.width / 2
+        const centerY = cropArea.y + cropArea.height / 2
+        const cornerRadius = Math.min(cropArea.width, cropArea.height) * 0.1
+        this.createRoundedRectPath(cropArea.x, cropArea.y, cropArea.width, cropArea.height, cornerRadius)
+        break
+      }
+
+      case CropShape.TRIANGLE: {
+        const centerX = cropArea.x + cropArea.width / 2
+        this.ctx.moveTo(centerX, cropArea.y)
+        this.ctx.lineTo(cropArea.x, cropArea.y + cropArea.height)
+        this.ctx.lineTo(cropArea.x + cropArea.width, cropArea.y + cropArea.height)
+        this.ctx.closePath()
+        break
+      }
+
+      case CropShape.DIAMOND: {
+        const centerX = cropArea.x + cropArea.width / 2
+        const centerY = cropArea.y + cropArea.height / 2
+        this.ctx.moveTo(centerX, cropArea.y)
+        this.ctx.lineTo(cropArea.x + cropArea.width, centerY)
+        this.ctx.lineTo(centerX, cropArea.y + cropArea.height)
+        this.ctx.lineTo(cropArea.x, centerY)
+        this.ctx.closePath()
+        break
+      }
+
+      case CropShape.HEXAGON: {
+        const centerX = cropArea.x + cropArea.width / 2
+        const centerY = cropArea.y + cropArea.height / 2
+        const radius = Math.min(cropArea.width, cropArea.height) / 2
+        this.createPolygonPath(centerX, centerY, radius, 6)
+        break
+      }
+
+      case CropShape.STAR: {
+        const centerX = cropArea.x + cropArea.width / 2
+        const centerY = cropArea.y + cropArea.height / 2
+        const radius = Math.min(cropArea.width, cropArea.height) / 2
+        this.createStarPath(centerX, centerY, radius, 5)
+        break
+      }
+
       default:
         // 默认矩形
         this.ctx.rect(cropArea.x, cropArea.y, cropArea.width, cropArea.height)
@@ -288,17 +336,99 @@ export class CanvasRenderer {
   /**
    * 绘制裁剪边框
    * @param cropArea 裁剪区域
+   * @param style 边框样式
    */
-  private drawCropBorder(cropArea: CropArea): void {
+  private drawCropBorder(cropArea: CropArea, style: string = 'default'): void {
     this.ctx.save()
-    this.ctx.strokeStyle = '#ffffff'
-    this.ctx.lineWidth = 2
-    this.ctx.setLineDash([])
+
+    // 根据样式设置边框属性
+    this.applyCropBorderStyle(style)
 
     this.drawCropShape(cropArea)
     this.ctx.stroke()
 
     this.ctx.restore()
+  }
+
+  /**
+   * 应用裁剪边框样式
+   * @param style 样式名称
+   */
+  private applyCropBorderStyle(style: string): void {
+    switch (style) {
+      case 'minimal':
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'
+        this.ctx.lineWidth = 1
+        this.ctx.setLineDash([])
+        break
+
+      case 'classic':
+        this.ctx.strokeStyle = '#000000'
+        this.ctx.lineWidth = 3
+        this.ctx.setLineDash([])
+        break
+
+      case 'modern':
+        this.ctx.strokeStyle = '#722ED1'
+        this.ctx.lineWidth = 2
+        this.ctx.setLineDash([])
+        break
+
+      case 'neon':
+        this.ctx.strokeStyle = '#00ffff'
+        this.ctx.lineWidth = 2
+        this.ctx.setLineDash([])
+        this.ctx.shadowColor = '#00ffff'
+        this.ctx.shadowBlur = 10
+        break
+
+      case 'dashed':
+        this.ctx.strokeStyle = '#722ED1'
+        this.ctx.lineWidth = 2
+        this.ctx.setLineDash([10, 5])
+        break
+
+      case 'dotted':
+        this.ctx.strokeStyle = '#F0B80F'
+        this.ctx.lineWidth = 3
+        this.ctx.setLineDash([2, 8])
+        break
+
+      case 'double':
+        this.ctx.strokeStyle = '#722ED1'
+        this.ctx.lineWidth = 4
+        this.ctx.setLineDash([])
+        break
+
+      case 'shadow':
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)'
+        this.ctx.lineWidth = 2
+        this.ctx.setLineDash([])
+        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)'
+        this.ctx.shadowBlur = 8
+        this.ctx.shadowOffsetX = 2
+        this.ctx.shadowOffsetY = 2
+        break
+
+      case 'gradient':
+        // 渐变边框需要特殊处理
+        const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height)
+        gradient.addColorStop(0, '#722ED1')
+        gradient.addColorStop(0.25, '#F0B80F')
+        gradient.addColorStop(0.5, '#42BD42')
+        gradient.addColorStop(0.75, '#DD2222')
+        gradient.addColorStop(1, '#722ED1')
+        this.ctx.strokeStyle = gradient
+        this.ctx.lineWidth = 3
+        this.ctx.setLineDash([])
+        break
+
+      default: // 'default'
+        this.ctx.strokeStyle = '#ffffff'
+        this.ctx.lineWidth = 2
+        this.ctx.setLineDash([])
+        break
+    }
   }
 
   /**
@@ -314,8 +444,8 @@ export class CanvasRenderer {
     this.ctx.lineWidth = 1
     this.ctx.setLineDash([])
 
-    // 对于圆形和椭圆形状，需要裁剪网格线
-    if (cropArea.shape === CropShape.CIRCLE || cropArea.shape === CropShape.ELLIPSE) {
+    // 对于所有非矩形形状，都需要裁剪网格线
+    if (cropArea.shape !== CropShape.RECTANGLE) {
       // 创建裁剪路径
       this.ctx.save()
       this.drawCropShape(cropArea)
@@ -344,7 +474,7 @@ export class CanvasRenderer {
     }
 
     // 恢复裁剪状态
-    if (cropArea.shape === CropShape.CIRCLE || cropArea.shape === CropShape.ELLIPSE) {
+    if (cropArea.shape !== CropShape.RECTANGLE) {
       this.ctx.restore()
     }
 
@@ -362,6 +492,14 @@ export class CanvasRenderer {
     this.ctx.lineWidth = 1
     this.ctx.setLineDash([5, 5])
 
+    // 对于所有非矩形形状，都需要裁剪中心线
+    if (cropArea.shape !== CropShape.RECTANGLE) {
+      // 创建裁剪路径
+      this.ctx.save()
+      this.drawCropShape(cropArea)
+      this.ctx.clip()
+    }
+
     const centerX = cropArea.x + cropArea.width / 2
     const centerY = cropArea.y + cropArea.height / 2
 
@@ -376,6 +514,11 @@ export class CanvasRenderer {
     this.ctx.moveTo(cropArea.x, centerY)
     this.ctx.lineTo(cropArea.x + cropArea.width, centerY)
     this.ctx.stroke()
+
+    // 恢复裁剪状态
+    if (cropArea.shape !== CropShape.RECTANGLE) {
+      this.ctx.restore()
+    }
 
     this.ctx.restore()
   }
@@ -493,5 +636,58 @@ export class CanvasRenderer {
   destroy(): void {
     // 清空 Canvas
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+  }
+
+  /**
+   * 创建圆角矩形路径
+   */
+  private createRoundedRectPath(x: number, y: number, width: number, height: number, radius: number): void {
+    this.ctx.moveTo(x + radius, y)
+    this.ctx.lineTo(x + width - radius, y)
+    this.ctx.quadraticCurveTo(x + width, y, x + width, y + radius)
+    this.ctx.lineTo(x + width, y + height - radius)
+    this.ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height)
+    this.ctx.lineTo(x + radius, y + height)
+    this.ctx.quadraticCurveTo(x, y + height, x, y + height - radius)
+    this.ctx.lineTo(x, y + radius)
+    this.ctx.quadraticCurveTo(x, y, x + radius, y)
+    this.ctx.closePath()
+  }
+
+  /**
+   * 创建多边形路径
+   */
+  private createPolygonPath(centerX: number, centerY: number, radius: number, sides: number): void {
+    const angle = (Math.PI * 2) / sides
+    this.ctx.moveTo(centerX + radius * Math.cos(0), centerY + radius * Math.sin(0))
+
+    for (let i = 1; i < sides; i++) {
+      const x = centerX + radius * Math.cos(i * angle)
+      const y = centerY + radius * Math.sin(i * angle)
+      this.ctx.lineTo(x, y)
+    }
+
+    this.ctx.closePath()
+  }
+
+  /**
+   * 创建星形路径
+   */
+  private createStarPath(centerX: number, centerY: number, radius: number, points: number): void {
+    const outerRadius = radius
+    const innerRadius = radius * 0.4
+    const angle = Math.PI / points
+
+    this.ctx.moveTo(centerX + outerRadius * Math.cos(0), centerY + outerRadius * Math.sin(0))
+
+    for (let i = 0; i < points * 2; i++) {
+      const currentRadius = i % 2 === 0 ? outerRadius : innerRadius
+      const currentAngle = i * angle
+      const x = centerX + currentRadius * Math.cos(currentAngle)
+      const y = centerY + currentRadius * Math.sin(currentAngle)
+      this.ctx.lineTo(x, y)
+    }
+
+    this.ctx.closePath()
   }
 }

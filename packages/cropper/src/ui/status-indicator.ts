@@ -54,7 +54,7 @@ export class StatusIndicator extends BaseComponent {
   private autoHideTimer: number | null = null
 
   /** 默认配置 */
-  protected static override readonly DEFAULT_OPTIONS: StatusIndicatorOptions = {
+  private static readonly DEFAULT_STATUS_OPTIONS: StatusIndicatorOptions = {
     ...BaseComponent.DEFAULT_OPTIONS,
     type: StatusType.INFO,
     message: '',
@@ -79,7 +79,7 @@ export class StatusIndicator extends BaseComponent {
    */
   constructor(options: Partial<StatusIndicatorOptions> = {}) {
     // 设置StatusIndicator特定的配置
-    const mergedOptions = { ...StatusIndicator.DEFAULT_OPTIONS, ...options }
+    const mergedOptions = { ...StatusIndicator.DEFAULT_STATUS_OPTIONS, ...options }
 
     // 初始化基础组件
     super('div', mergedOptions)

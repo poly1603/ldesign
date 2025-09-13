@@ -63,7 +63,7 @@ export class ControlPointsRenderer extends BaseComponent {
   private hoverPoint: ControlPoint | null = null
 
   /** 默认配置 */
-  private static readonly DEFAULT_OPTIONS: ControlPointsRendererOptions = {
+  private static readonly DEFAULT_RENDERER_OPTIONS: ControlPointsRendererOptions = {
     ...BaseComponent.DEFAULT_OPTIONS,
     pointSize: 12,
     showCorners: true,
@@ -82,7 +82,7 @@ export class ControlPointsRenderer extends BaseComponent {
    */
   constructor(options: Partial<ControlPointsRendererOptions> = {}) {
     super('div', options)
-    this.rendererOptions = { ...ControlPointsRenderer.DEFAULT_OPTIONS, ...options }
+    this.rendererOptions = { ...ControlPointsRenderer.DEFAULT_RENDERER_OPTIONS, ...options }
     this.controlPointsManager = new ControlPointsManager({
       size: this.rendererOptions.pointSize,
       showCorners: this.rendererOptions.showCorners,

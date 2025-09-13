@@ -4,6 +4,7 @@
  */
 
 import { BaseAdapter, type AdapterOptions, AdapterState } from './base-adapter'
+import type { CropperEventType } from '@/types'
 
 /**
  * Angular 适配器配置
@@ -20,7 +21,7 @@ export interface AngularAdapterOptions extends AdapterOptions {
  */
 export class AngularAdapter extends BaseAdapter {
   /** Angular 适配器配置 */
-  protected options: AngularAdapterOptions
+  protected override options: AngularAdapterOptions
 
   /** Angular 组件实例 */
   private component?: any
@@ -54,7 +55,7 @@ export class AngularAdapter extends BaseAdapter {
   /**
    * 框架特定的初始化
    */
-  protected async onInit(): Promise<void> {
+  protected override async onInit(): Promise<void> {
     // Angular 特定的初始化逻辑
     if (this.component && this.component.ngZone) {
       this.zone = this.component.ngZone
@@ -64,7 +65,7 @@ export class AngularAdapter extends BaseAdapter {
   /**
    * 框架特定的销毁
    */
-  protected onDestroy(): void {
+  protected override onDestroy(): void {
     // Angular 特定的清理逻辑
     this.component = undefined
     this.zone = undefined
@@ -84,10 +85,16 @@ export class AngularAdapter extends BaseAdapter {
   /**
    * 重写事件触发，确保在 Angular Zone 中执行
    */
-  protected emit(type: any, data?: any): void {
+  protected override emit(type: CropperEventType, data?: any): void {
     this.runInZone(() => {
       super.emit(type, data)
     })
+  }
+  /**
+   * 获取默认配置（公开）
+   */
+  static getDefaultAngularOptions(): AngularAdapterOptions {
+    return { ...AngularAdapter.DEFAULT_ANGULAR_OPTIONS }
   }
 }
 
@@ -132,7 +139,7 @@ export interface CropperComponentInterface {
   /** 裁剪结束事件 */
   cropEnd: any // EventEmitter<any>
   /** 缩放事件 */
-  zoom: any // EventEmitter<any>
+  onZoom: any // EventEmitter<any>
   /** 错误事件 */
   error: any // EventEmitter<Error>
   
@@ -211,7 +218,7 @@ export function createCropperService(): any {
     }
 
     getDefaultOptions(): AngularAdapterOptions {
-      return { ...AngularAdapter.DEFAULT_ANGULAR_OPTIONS }
+      return AngularAdapter.getDefaultAngularOptions()
     }
   }
 }

@@ -78,6 +78,18 @@ export interface GestureRecognizerOptions {
   minScale: number
   /** 最大缩放比例 */
   maxScale: number
+  /** 惯性滚动支持 */
+  enableInertia: boolean
+  /** 惯性系数 */
+  inertiaDeceleration: number
+  /** 多指触控支持 */
+  enableMultitouch: boolean
+  /** 边缘检测 */
+  enableEdgeDetection: boolean
+  /** 边缘容差 */
+  edgeTolerance: number
+  /** 防抖动时间（毫秒） */
+  debounceTime: number
 }
 
 /**
@@ -119,6 +131,25 @@ export class GestureRecognizer {
   /** 手势回调 */
   private callbacks = new Map<GestureType, Set<GestureCallback>>()
 
+  /** 惯性滚动状态 */
+  private inertiaAnimation: {
+    active: boolean
+    velocity: Point
+    startTime: number
+    rafId?: number
+  } = { active: false, velocity: { x: 0, y: 0 }, startTime: 0 }
+  
+  /** 边缘检测状态 */
+  private edgeState = {
+    left: false,
+    right: false,
+    top: false,
+    bottom: false
+  }
+  
+  /** 防抖动定时器 */
+  private debounceTimer?: NodeJS.Timeout
+  
   /** 默认配置 */
   private static readonly DEFAULT_OPTIONS: GestureRecognizerOptions = {
     enablePan: true,
@@ -129,6 +160,12 @@ export class GestureRecognizer {
     rotateThreshold: Math.PI / 36, // 5度
     minScale: 0.1,
     maxScale: 10,
+    enableInertia: true,
+    inertiaDeceleration: 0.95,
+    enableMultitouch: true,
+    enableEdgeDetection: true,
+    edgeTolerance: 20,
+    debounceTime: 16, // ~60fps
   }
 
   /**
@@ -203,6 +240,10 @@ export class GestureRecognizer {
   destroy(): void {
     this.eventHandler.destroy()
     this.callbacks.clear()
+    this.stopInertia()
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer)
+    }
     this.reset()
   }
 
@@ -257,7 +298,19 @@ export class GestureRecognizer {
   /**
    * 处理指针结束事件
    */
-  private handlePointerEnd = (data: PointerEventData): void => {
+  private handlePointerEnd = (data: PointerEventData): void {
+    const pointer = this.pointers.get(data.pointerId)
+    
+    // 计算惯性速度
+    if (pointer && this.options.enableInertia && this.pointers.size === 1) {
+      const velocity = this.calculateEnhancedVelocity([pointer])
+      const velocityMagnitude = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y)
+      
+      if (velocityMagnitude > 100) { // 只有速度足够大才启动惯性
+        this.startInertia(velocity)
+      }
+    }
+    
     this.pointers.delete(data.pointerId)
     this.updateGesture()
 
@@ -284,23 +337,34 @@ export class GestureRecognizer {
     if (pointerCount === 0) {
       return
     }
-
-    // 计算当前手势数据
-    const gestureData = this.calculateGestureData()
-
-    // 识别手势类型
-    const gestureType = this.recognizeGesture(gestureData)
-
-    // 更新手势状态
-    if (this.currentGesture === GestureType.NONE) {
-      this.startGesture(gestureType, gestureData)
-    } else if (this.currentGesture === gestureType) {
-      this.changeGesture(gestureData)
-    } else {
-      // 手势类型改变，结束当前手势并开始新手势
-      this.endGesture()
-      this.startGesture(gestureType, gestureData)
+    
+    // 停止惯性滚动（如果正在进行）
+    if (this.inertiaAnimation.active) {
+      this.stopInertia()
     }
+
+    // 防抖动处理
+    this.debounceExecution(() => {
+      // 计算当前手势数据
+      const gestureData = this.calculateGestureData()
+      
+      // 边缘检测
+      this.detectEdgeCollision(gestureData.center)
+
+      // 识别手势类型
+      const gestureType = this.recognizeGesture(gestureData)
+
+      // 更新手势状态
+      if (this.currentGesture === GestureType.NONE) {
+        this.startGesture(gestureType, gestureData)
+      } else if (this.currentGesture === gestureType) {
+        this.changeGesture(gestureData)
+      } else {
+        // 手势类型改变，结束当前手势并开始新手势
+        this.endGesture()
+        this.startGesture(gestureType, gestureData)
+      }
+    })
   }
 
   /**
@@ -325,8 +389,8 @@ export class GestureRecognizer {
       rotation = this.calculateRotation(pointers)
     }
 
-    // 计算速度
-    const velocity = this.calculateVelocity(pointers)
+    // 计算速度（使用增强版本）
+    const velocity = this.calculateEnhancedVelocity(pointers)
 
     return {
       type: GestureType.NONE, // 将在识别阶段设置
@@ -563,6 +627,151 @@ export class GestureRecognizer {
     return {
       x: distance.x / timeDelta * 1000, // 像素/秒
       y: distance.y / timeDelta * 1000,
+    }
+  }
+
+  /**
+   * 启动惯性滚动
+   */
+  private startInertia(velocity: Point): void {
+    if (!this.options.enableInertia) return
+    
+    this.inertiaAnimation.active = true
+    this.inertiaAnimation.velocity = { ...velocity }
+    this.inertiaAnimation.startTime = performance.now()
+    
+    const animate = (currentTime: number) => {
+      if (!this.inertiaAnimation.active) return
+      
+      const deltaTime = (currentTime - this.inertiaAnimation.startTime) / 1000
+      
+      // 应用减速
+      this.inertiaAnimation.velocity.x *= this.options.inertiaDeceleration
+      this.inertiaAnimation.velocity.y *= this.options.inertiaDeceleration
+      
+      // 检查是否停止
+      const minVelocity = 1
+      if (Math.abs(this.inertiaAnimation.velocity.x) < minVelocity && 
+          Math.abs(this.inertiaAnimation.velocity.y) < minVelocity) {
+        this.stopInertia()
+        return
+      }
+      
+      // 发送惯性事件
+      const inertiaData: GestureEventData = {
+        type: GestureType.PAN,
+        state: GestureState.CHANGED,
+        center: { x: 0, y: 0 },
+        scale: 1,
+        rotation: 0,
+        translation: {
+          x: this.inertiaAnimation.velocity.x * deltaTime,
+          y: this.inertiaAnimation.velocity.y * deltaTime
+        },
+        velocity: this.inertiaAnimation.velocity,
+        pointerCount: 0,
+        timestamp: currentTime
+      }
+      
+      this.emit(GestureType.PAN, inertiaData)
+      
+      this.inertiaAnimation.rafId = requestAnimationFrame(animate)
+    }
+    
+    this.inertiaAnimation.rafId = requestAnimationFrame(animate)
+  }
+  
+  /**
+   * 停止惯性滚动
+   */
+  private stopInertia(): void {
+    this.inertiaAnimation.active = false
+    if (this.inertiaAnimation.rafId) {
+      cancelAnimationFrame(this.inertiaAnimation.rafId)
+      this.inertiaAnimation.rafId = undefined
+    }
+  }
+  
+  /**
+   * 检测边缘碰撞
+   */
+  private detectEdgeCollision(center: Point, containerRect?: DOMRect): void {
+    if (!this.options.enableEdgeDetection) return
+    
+    const tolerance = this.options.edgeTolerance
+    const rect = containerRect || this.eventHandler.getElement().getBoundingClientRect()
+    
+    this.edgeState.left = center.x <= tolerance
+    this.edgeState.right = center.x >= rect.width - tolerance
+    this.edgeState.top = center.y <= tolerance
+    this.edgeState.bottom = center.y >= rect.height - tolerance
+    
+    // 发送边缘事件
+    if (this.edgeState.left || this.edgeState.right || this.edgeState.top || this.edgeState.bottom) {
+      this.emit(GestureType.PAN, {
+        type: GestureType.PAN,
+        state: GestureState.CHANGED,
+        center,
+        scale: 1,
+        rotation: 0,
+        translation: { x: 0, y: 0 },
+        velocity: { x: 0, y: 0 },
+        pointerCount: 1,
+        timestamp: Date.now()
+      })
+    }
+  }
+  
+  /**
+   * 防抖动执行
+   */
+  private debounceExecution(callback: () => void): void {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer)
+    }
+    
+    this.debounceTimer = setTimeout(() => {
+      callback()
+      this.debounceTimer = undefined
+    }, this.options.debounceTime)
+  }
+  
+  /**
+   * 增强的速度计算
+   */
+  private calculateEnhancedVelocity(pointers: PointerState[]): Point {
+    if (pointers.length === 0) return { x: 0, y: 0 }
+    
+    // 使用最近的多个点来计算更精确的速度
+    const pointer = pointers[0]
+    const currentTime = Date.now()
+    const timeDelta = currentTime - pointer.timestamp
+    
+    if (timeDelta === 0 || timeDelta > 100) return { x: 0, y: 0 } // 避免时间太长或太短
+    
+    const distance = {
+      x: pointer.currentPoint.x - pointer.startPoint.x,
+      y: pointer.currentPoint.y - pointer.startPoint.y
+    }
+    
+    return {
+      x: distance.x / timeDelta * 1000, // 像素/秒
+      y: distance.y / timeDelta * 1000
+    }
+  }
+  
+  /**
+   * 获取设备信息
+   */
+  private getDeviceInfo(): {
+    isTouchDevice: boolean
+    supportsMultitouch: boolean
+    maxTouchPoints: number
+  } {
+    return {
+      isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+      supportsMultitouch: navigator.maxTouchPoints > 1,
+      maxTouchPoints: navigator.maxTouchPoints || 0
     }
   }
 

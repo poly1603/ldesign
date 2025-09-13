@@ -70,7 +70,7 @@ export class UIManager extends BaseComponent {
   private resizeObserver: ResizeObserver | null = null
 
   /** 默认配置 */
-  private static readonly DEFAULT_OPTIONS: UIManagerOptions = {
+  private static readonly DEFAULT_UI_OPTIONS: UIManagerOptions = {
     ...BaseComponent.DEFAULT_OPTIONS,
     toolbar: {
       enabled: true,
@@ -113,7 +113,7 @@ export class UIManager extends BaseComponent {
    */
   constructor(container: HTMLElement, options: Partial<UIManagerOptions> = {}) {
     // 设置UIManager特定的配置
-    const mergedOptions = { ...UIManager.DEFAULT_OPTIONS, ...options }
+    const mergedOptions = { ...UIManager.DEFAULT_UI_OPTIONS, ...options }
 
     // 初始化基础组件
     super('div', mergedOptions)

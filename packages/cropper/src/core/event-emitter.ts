@@ -3,7 +3,6 @@
  * @description 提供事件监听、触发和管理功能
  */
 
-import type { CropperEventType, CropperEventListener, CropperEventData } from '@/types'
 
 /**
  * 事件发射器类
@@ -11,10 +10,10 @@ import type { CropperEventType, CropperEventListener, CropperEventData } from '@
  */
 export class EventEmitter {
   /** 事件监听器映射 */
-  private listeners: Map<CropperEventType, Set<CropperEventListener>> = new Map()
+  private listeners: Map<string, Set<(e: any) => void>> = new Map()
 
   /** 一次性事件监听器映射 */
-  private onceListeners: Map<CropperEventType, Set<CropperEventListener>> = new Map()
+  private onceListeners: Map<string, Set<(e: any) => void>> = new Map()
 
   /** 最大监听器数量 */
   private maxListeners = 100
@@ -37,7 +36,7 @@ export class EventEmitter {
    * @param listener 监听器函数
    * @returns 当前实例，支持链式调用
    */
-  on(event: CropperEventType, listener: CropperEventListener): this {
+  on(event: string, listener: (e: any) => void): this {
     this.validateListener(listener)
 
     if (!this.listeners.has(event)) {
@@ -66,7 +65,7 @@ export class EventEmitter {
    * @param listener 监听器函数
    * @returns 当前实例，支持链式调用
    */
-  once(event: CropperEventType, listener: CropperEventListener): this {
+  once(event: string, listener: (e: any) => void): this {
     this.validateListener(listener)
 
     if (!this.onceListeners.has(event)) {
@@ -88,7 +87,7 @@ export class EventEmitter {
    * @param listener 监听器函数
    * @returns 当前实例，支持链式调用
    */
-  off(event: CropperEventType, listener?: CropperEventListener): this {
+  off(event: string, listener?: (e: any) => void): this {
     if (!listener) {
       // 移除所有监听器
       this.listeners.delete(event)
@@ -134,8 +133,8 @@ export class EventEmitter {
    * @param data 事件数据
    * @returns 是否有监听器处理了该事件
    */
-  emit(event: CropperEventType, data?: any): boolean {
-    const eventData: CropperEventData = {
+  emit(event: string, data?: any): boolean {
+    const eventData: any = {
       type: event,
       ...data,
     }
@@ -157,8 +156,8 @@ export class EventEmitter {
           console.error(`Error in event listener for ${event}:`, error)
 
           // 触发错误事件
-          if (event !== 'error') {
-            this.emit('error', { error })
+          if (event !== 'imageError') {
+            this.emit('imageError', { error })
           }
         }
       }
@@ -182,8 +181,8 @@ export class EventEmitter {
           console.error(`Error in once event listener for ${event}:`, error)
 
           // 触发错误事件
-          if (event !== CropperEventType.IMAGE_ERROR) {
-            this.emit(CropperEventType.IMAGE_ERROR, { error })
+          if (event !== 'imageError') {
+            this.emit('imageError', { error })
           }
         }
       }

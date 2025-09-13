@@ -23,6 +23,16 @@ export enum CropShape {
   HEXAGON = 'hexagon',
   /** 星形裁剪 */
   STAR = 'star',
+  /** 心形裁剪 */
+  HEART = 'heart',
+  /** 五角星裁剪 */
+  PENTAGON = 'pentagon',
+  /** 八角形裁剪 */
+  OCTAGON = 'octagon',
+  /** 箭头形裁剪 */
+  ARROW = 'arrow',
+  /** 阵列形裁剪 */
+  CROSS = 'cross',
   /** 自由形状裁剪 */
   FREEFORM = 'freeform',
 }
@@ -100,6 +110,28 @@ export interface CropArea {
   flipX?: boolean
   /** 是否垂直翻转 */
   flipY?: boolean
+  /** 形状参数（用于自定义形状） */
+  shapeParams?: ShapeParams
+}
+
+/**
+ * 形状参数接口
+ */
+export interface ShapeParams {
+  /** 圆角半径（圆角矩形） */
+  cornerRadius?: number
+  /** 星形尖角数量 */
+  starPoints?: number
+  /** 内半径与外半径的比例（星形） */
+  starInnerRatio?: number
+  /** 多边形边数 */
+  polygonSides?: number
+  /** 箭头宽度比例 */
+  arrowWidth?: number
+  /** 箭头头部长度比例 */
+  arrowHeadLength?: number
+  /** 自定义路径点 */
+  customPath?: Array<{ x: number; y: number; type?: 'move' | 'line' | 'curve' }>
 }
 
 /**
@@ -155,7 +187,7 @@ export interface CropperConfig {
   /** 最大裁剪尺寸 */
   maxSize?: Size
   /** 宽高比限制 */
-  aspectRatio?: number
+  aspectRatio?: number | null
   /** 是否保持宽高比 */
   keepAspectRatio?: boolean
   /** 是否允许调整大小 */
@@ -204,6 +236,32 @@ export interface OutputConfig {
   backgroundColor?: string
   /** 是否平滑缩放 */
   smoothScaling?: boolean
+}
+
+/**
+ * 裁剪框边框样式枚举
+ */
+export enum BorderStyle {
+  /** 默认样式 */
+  DEFAULT = 'default',
+  /** 简约样式 */
+  MINIMAL = 'minimal',
+  /** 经典样式 */
+  CLASSIC = 'classic',
+  /** 现代样式 */
+  MODERN = 'modern',
+  /** 霓虹样式 */
+  NEON = 'neon',
+  /** 虚线样式 */
+  DASHED = 'dashed',
+  /** 点线样式 */
+  DOTTED = 'dotted',
+  /** 双线样式 */
+  DOUBLE = 'double',
+  /** 阴影样式 */
+  SHADOW = 'shadow',
+  /** 渐变样式 */
+  GRADIENT = 'gradient'
 }
 
 /**
@@ -266,6 +324,8 @@ export enum CropperEventType {
   ZOOM_CHANGE = 'zoomChange',
   /** 旋转改变 */
   ROTATION_CHANGE = 'rotationChange',
+  /** 变换改变 */
+  TRANSFORM_CHANGE = 'transformChange',
   /** 翻转改变 */
   FLIP_CHANGE = 'flipChange',
   /** 重置 */
@@ -311,6 +371,10 @@ export interface CropperInstance {
   setCropData(cropArea: Partial<CropArea>): void
   /** 缩放 */
   zoom(ratio: number): void
+  /** 放大 */
+  zoomIn(step?: number): void
+  /** 缩小 */
+  zoomOut(step?: number): void
   /** 旋转 */
   rotate(angle: number): void
   /** 翻转 */
@@ -323,6 +387,16 @@ export interface CropperInstance {
   setShape(shape: CropShape): void
   /** 设置宽高比 */
   setAspectRatio(aspectRatio: number | null): void
+  /** 更新配置 */
+  updateConfig(config: Partial<CropperOptions>): void
+  /** 移动图片 */
+  moveImage(deltaX: number, deltaY: number): void
+  /** 应用滤镜 */
+  applyFilter(filter: string): void
+  /** 设置边框样式 */
+  setBorderStyle(style: string): void
+  /** 下载裁剪后的图片 */
+  downloadCroppedImage(filename?: string, config?: OutputConfig): Promise<void>
   /** 重置 */
   reset(): void
   /** 销毁 */

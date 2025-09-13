@@ -69,6 +69,9 @@ export class CropperCore extends EventEmitter implements CropperInstance {
   /** 是否已销毁 */
   private destroyed = false
 
+  /** 当前边框样式 */
+  private currentBorderStyle: string = 'default'
+
   /** 默认配置 */
   private static readonly DEFAULT_OPTIONS: Required<CropperOptions> = {
     container: '',
@@ -127,7 +130,7 @@ export class CropperCore extends EventEmitter implements CropperInstance {
    * @param options 配置选项
    */
   constructor(options: CropperOptions) {
-    super({ debug: options.debug })
+    super({ debug: options.debug ?? false })
 
     // 合并配置
     this.options = this.mergeOptions(options)
@@ -548,9 +551,18 @@ export class CropperCore extends EventEmitter implements CropperInstance {
   }
 
   /**
+   * 设置边框样式
+   * @param style 边框样式
+   */
+  setBorderStyle(style: string): void {
+    this.currentBorderStyle = style
+    this.render()
+  }
+
+  /**
    * 销毁裁剪器
    */
-  destroy(): void {
+  override destroy(): void {
     if (this.destroyed) return
 
     // 移除事件监听器
@@ -682,17 +694,39 @@ export class CropperCore extends EventEmitter implements CropperInstance {
     }
   }
 
+  /** ResizeObserver 实例 */
+  private resizeObserver: ResizeObserver | null = null
+  
+  /** 方向变化监听器 */
+  private orientationChangeHandler = () => {
+    // 延迟执行以适应iOS的方向变化延迟
+    setTimeout(() => {
+      this.handleResize()
+    }, 300)
+  }
+  
   /**
    * 设置事件监听器
    */
   private setupEventListeners(): void {
+    // 初始化设备信息
+    this.updateDeviceInfo()
+    
     // 窗口大小变化
     window.addEventListener('resize', this.handleResize)
+    
+    // 屏幕方向变化（移动设备）
+    if (screen.orientation) {
+      screen.orientation.addEventListener('change', this.orientationChangeHandler)
+    } else {
+      // 兼容旧版本
+      window.addEventListener('orientationchange', this.orientationChangeHandler)
+    }
 
     // 容器大小变化（如果支持 ResizeObserver）
     if (typeof ResizeObserver !== 'undefined') {
-      const resizeObserver = new ResizeObserver(this.handleContainerResize)
-      resizeObserver.observe(this.container)
+      this.resizeObserver = new ResizeObserver(this.handleContainerResize)
+      this.resizeObserver.observe(this.container)
     }
   }
 
@@ -701,15 +735,90 @@ export class CropperCore extends EventEmitter implements CropperInstance {
    */
   private removeEventListeners(): void {
     window.removeEventListener('resize', this.handleResize)
+    
+    // 移除方向变化监听器
+    if (screen.orientation) {
+      screen.orientation.removeEventListener('change', this.orientationChangeHandler)
+    } else {
+      window.removeEventListener('orientationchange', this.orientationChangeHandler)
+    }
+    
+    // 清理ResizeObserver
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = null
+    }
   }
 
+  /** 当前设备类型 */
+  private deviceType: 'mobile' | 'tablet' | 'desktop' = 'desktop'
+  
+  /** 当前屏幕方向 */
+  private orientation: 'portrait' | 'landscape' = 'landscape'
+  
   /**
    * 处理窗口大小变化
    */
   private handleResize = (): void => {
+    this.updateDeviceInfo()
     this.updateCanvasSize()
     this.updateCropConstraints()
+    this.adjustForResponsiveLayout()
     this.render()
+  }
+  
+  /**
+   * 更新设备信息
+   */
+  private updateDeviceInfo(): void {
+    const width = window.innerWidth
+    const height = window.innerHeight
+    
+    // 检测设备类型
+    if (width <= 768) {
+      this.deviceType = 'mobile'
+    } else if (width <= 1024) {
+      this.deviceType = 'tablet'
+    } else {
+      this.deviceType = 'desktop'
+    }
+    
+    // 检测屏幕方向
+    this.orientation = width > height ? 'landscape' : 'portrait'
+    
+    // 更新容器的设备类型属性
+    this.container.setAttribute('data-device', this.deviceType)
+    this.container.setAttribute('data-orientation', this.orientation)
+  }
+  
+  /**
+   * 调整响应式布局
+   */
+  private adjustForResponsiveLayout(): void {
+    const containerWidth = this.container.clientWidth
+    const containerHeight = this.container.clientHeight
+    
+    // 移动设备上的特殊处理
+    if (this.deviceType === 'mobile') {
+      // 调整最小裁剪区域大小
+      const minSize = Math.min(containerWidth, containerHeight) * 0.3
+      this.options.minSize = { width: minSize, height: minSize }
+      
+      // 调整网格线数量
+      this.options.gridLines = 2
+    } else if (this.deviceType === 'tablet') {
+      const minSize = Math.min(containerWidth, containerHeight) * 0.2
+      this.options.minSize = { width: minSize, height: minSize }
+      this.options.gridLines = 3
+    }
+    
+    // 竖屏模式下的调整
+    if (this.orientation === 'portrait' && this.deviceType !== 'desktop') {
+      // 调整工具栏位置
+      if (this.options.toolbar?.position === 'top') {
+        this.options.toolbar.position = 'bottom'
+      }
+    }
   }
 
   /**
@@ -976,7 +1085,46 @@ export class CropperCore extends EventEmitter implements CropperInstance {
 
       case CropShape.STAR:
         // 星形裁剪路径
-        this.createStarPath(ctx, centerX, centerY, Math.min(rect.width, rect.height) / 2, 5)
+        const starPoints = cropArea.shapeParams?.starPoints || 5
+        const starInnerRatio = cropArea.shapeParams?.starInnerRatio || 0.5
+        this.createStarPath(ctx, centerX, centerY, Math.min(rect.width, rect.height) / 2, starPoints, starInnerRatio)
+        break
+        
+      case CropShape.HEART:
+        // 心形裁剪路径
+        this.createHeartPath(ctx, centerX, centerY, Math.min(rect.width, rect.height) / 2)
+        break
+        
+      case CropShape.PENTAGON:
+        // 五角形裁剪路径
+        this.createPolygonPath(ctx, centerX, centerY, Math.min(rect.width, rect.height) / 2, 5)
+        break
+        
+      case CropShape.OCTAGON:
+        // 八角形裁剪路径
+        this.createPolygonPath(ctx, centerX, centerY, Math.min(rect.width, rect.height) / 2, 8)
+        break
+        
+      case CropShape.ARROW:
+        // 箭头形裁剪路径
+        const arrowWidth = cropArea.shapeParams?.arrowWidth || 0.6
+        const arrowHeadLength = cropArea.shapeParams?.arrowHeadLength || 0.3
+        this.createArrowPath(ctx, rect.x, rect.y, rect.width, rect.height, arrowWidth, arrowHeadLength)
+        break
+        
+      case CropShape.CROSS:
+        // 十字形裁剪路径
+        this.createCrossPath(ctx, centerX, centerY, rect.width, rect.height)
+        break
+        
+      case CropShape.FREEFORM:
+        // 自由形状裁剪路径
+        if (cropArea.shapeParams?.customPath) {
+          this.createCustomPath(ctx, cropArea.shapeParams.customPath, rect)
+        } else {
+          // 默认使用矩形
+          ctx.rect(rect.x, rect.y, rect.width, rect.height)
+        }
         break
 
       case CropShape.RECTANGLE:
@@ -1042,22 +1190,141 @@ export class CropperCore extends EventEmitter implements CropperInstance {
     centerX: number,
     centerY: number,
     radius: number,
-    points: number
+    points: number,
+    innerRatio: number = 0.5
   ): void {
     const outerRadius = radius
-    const innerRadius = radius * 0.4
+    const innerRadius = radius * innerRatio
     const angle = Math.PI / points
 
-    ctx.moveTo(centerX + outerRadius * Math.cos(0), centerY + outerRadius * Math.sin(0))
+    ctx.moveTo(centerX + outerRadius * Math.cos(-Math.PI / 2), centerY + outerRadius * Math.sin(-Math.PI / 2))
 
-    for (let i = 0; i < points * 2; i++) {
+    for (let i = 1; i <= points * 2; i++) {
       const r = i % 2 === 0 ? outerRadius : innerRadius
-      const a = i * angle
+      const a = i * angle - Math.PI / 2 // 从上方开始
       const x = centerX + r * Math.cos(a)
       const y = centerY + r * Math.sin(a)
       ctx.lineTo(x, y)
     }
 
+    ctx.closePath()
+  }
+  
+  /**
+   * 创建心形路径
+   */
+  private createHeartPath(
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number,
+    radius: number
+  ): void {
+    const scale = radius / 13 // 缩放系数
+    
+    ctx.moveTo(centerX, centerY - 3 * scale)
+    
+    // 左侧弧线
+    ctx.bezierCurveTo(
+      centerX - 13 * scale, centerY - 15 * scale,
+      centerX - 25 * scale, centerY - 3 * scale,
+      centerX, centerY + 13 * scale
+    )
+    
+    // 右侧弧线
+    ctx.bezierCurveTo(
+      centerX + 25 * scale, centerY - 3 * scale,
+      centerX + 13 * scale, centerY - 15 * scale,
+      centerX, centerY - 3 * scale
+    )
+    
+    ctx.closePath()
+  }
+  
+  /**
+   * 创建箭头路径
+   */
+  private createArrowPath(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    arrowWidth: number,
+    headLength: number
+  ): void {
+    const bodyWidth = height * arrowWidth
+    const bodyHeight = width * (1 - headLength)
+    const headWidth = height
+    const headHeight = width * headLength
+    
+    const centerY = y + height / 2
+    
+    ctx.moveTo(x, centerY - bodyWidth / 2)
+    ctx.lineTo(x + bodyHeight, centerY - bodyWidth / 2)
+    ctx.lineTo(x + bodyHeight, centerY - headWidth / 2)
+    ctx.lineTo(x + width, centerY)
+    ctx.lineTo(x + bodyHeight, centerY + headWidth / 2)
+    ctx.lineTo(x + bodyHeight, centerY + bodyWidth / 2)
+    ctx.lineTo(x, centerY + bodyWidth / 2)
+    ctx.closePath()
+  }
+  
+  /**
+   * 创建十字形路径
+   */
+  private createCrossPath(
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number,
+    width: number,
+    height: number
+  ): void {
+    const thickness = Math.min(width, height) * 0.3
+    const halfThickness = thickness / 2
+    const halfWidth = width / 2
+    const halfHeight = height / 2
+    
+    // 水平横条
+    ctx.moveTo(centerX - halfWidth, centerY - halfThickness)
+    ctx.lineTo(centerX + halfWidth, centerY - halfThickness)
+    ctx.lineTo(centerX + halfWidth, centerY + halfThickness)
+    ctx.lineTo(centerX - halfWidth, centerY + halfThickness)
+    ctx.closePath()
+    
+    // 垂直竖条
+    ctx.moveTo(centerX - halfThickness, centerY - halfHeight)
+    ctx.lineTo(centerX + halfThickness, centerY - halfHeight)
+    ctx.lineTo(centerX + halfThickness, centerY + halfHeight)
+    ctx.lineTo(centerX - halfThickness, centerY + halfHeight)
+    ctx.closePath()
+  }
+  
+  /**
+   * 创建自定义路径
+   */
+  private createCustomPath(
+    ctx: CanvasRenderingContext2D,
+    points: Array<{ x: number; y: number; type?: 'move' | 'line' | 'curve' }>,
+    rect: Rectangle
+  ): void {
+    if (points.length === 0) return
+    
+    points.forEach((point, index) => {
+      const x = rect.x + (point.x / 100) * rect.width // 假设坐标为百分比
+      const y = rect.y + (point.y / 100) * rect.height
+      
+      if (index === 0 || point.type === 'move') {
+        ctx.moveTo(x, y)
+      } else if (point.type === 'curve' && index > 0 && index < points.length - 1) {
+        const nextPoint = points[index + 1]
+        const nextX = rect.x + (nextPoint.x / 100) * rect.width
+        const nextY = rect.y + (nextPoint.y / 100) * rect.height
+        ctx.quadraticCurveTo(x, y, nextX, nextY)
+      } else {
+        ctx.lineTo(x, y)
+      }
+    })
+    
     ctx.closePath()
   }
 
@@ -1257,7 +1524,9 @@ export class CropperCore extends EventEmitter implements CropperInstance {
 
     // 绘制裁剪区域
     const cropArea = this.cropAreaManager.getCropArea()
-    this.renderer.drawCropArea(cropArea)
+    this.renderer.drawCropArea(cropArea, {
+      borderStyle: this.currentBorderStyle
+    })
 
     // 更新交互控制器的裁剪区域
     if (this.interactionController) {

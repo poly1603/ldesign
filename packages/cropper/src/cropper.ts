@@ -66,12 +66,14 @@ export class Cropper implements CropperInstance {
    * @param config 输出配置
    * @returns Promise<Blob>
    */
-  async getCroppedBlob(config?: OutputConfig): Promise<Blob> {
+  async getCroppedBlob(configOrFormat?: OutputConfig | string, quality?: number): Promise<Blob> {
+    const isConfig = typeof configOrFormat === 'object' || configOrFormat === undefined
+    const config = (isConfig ? configOrFormat : { format: configOrFormat, quality }) as OutputConfig | undefined
     const canvas = this.getCroppedCanvas(config)
     const format = config?.format || ImageFormat.PNG
-    const quality = config?.quality || 0.9
+    const qual = (config?.quality as number | undefined) ?? 0.9
 
-    return ImageUtils.canvasToBlob(canvas, format, quality)
+    return ImageUtils.canvasToBlob(canvas, format, qual)
   }
 
   /**
@@ -79,12 +81,14 @@ export class Cropper implements CropperInstance {
    * @param config 输出配置
    * @returns Data URL 字符串
    */
-  getCroppedDataURL(config?: OutputConfig): string {
+  getCroppedDataURL(configOrFormat?: OutputConfig | string, quality?: number): string {
+    const isConfig = typeof configOrFormat === 'object' || configOrFormat === undefined
+    const config = (isConfig ? configOrFormat : { format: configOrFormat, quality }) as OutputConfig | undefined
     const canvas = this.getCroppedCanvas(config)
     const format = config?.format || ImageFormat.PNG
-    const quality = config?.quality || 0.9
+    const qual = (config?.quality as number | undefined) ?? 0.9
 
-    return canvas.toDataURL(format, quality)
+    return canvas.toDataURL(format, qual)
   }
 
   /**
@@ -240,6 +244,27 @@ export class Cropper implements CropperInstance {
    */
   emit(event: CropperEventType, data?: any): void {
     this.core.emit(event, data)
+  }
+
+  /**
+   * 移动图片
+   */
+  moveImage(deltaX: number, deltaY: number): void {
+    this.core.moveImage(deltaX, deltaY)
+  }
+
+  /**
+   * 应用滤镜
+   */
+  applyFilter(filter: string): void {
+    this.core.applyFilter(filter)
+  }
+
+  /**
+   * 设置边框样式
+   */
+  setBorderStyle(style: string): void {
+    this.core.setBorderStyle(style)
   }
 
   /**

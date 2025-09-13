@@ -289,6 +289,7 @@
     border: 1px solid var(--ldesign-border-color);
     border-radius: var(--ls-border-radius-base);
     box-shadow: var(--ldesign-shadow-2);
+    width: 100%;
     z-index: 10;
 
     // 工具栏位置
@@ -625,3 +626,115 @@
     opacity: 0.5;
   }
 }
+
+// 图片滤镜效果
+.@{cropper-prefix} {
+  &__image {
+    &.filter-grayscale {
+      filter: grayscale(100%);
+    }
+
+    &.filter-sepia {
+      filter: sepia(100%);
+    }
+
+    &.filter-invert {
+      filter: invert(100%);
+    }
+
+    &.filter-blur {
+      filter: blur(2px);
+    }
+
+    &.filter-sharpen {
+      filter: contrast(150%) brightness(110%);
+    }
+
+    &.filter-contrast {
+      filter: contrast(150%);
+    }
+
+    &.filter-saturate {
+      filter: saturate(150%);
+    }
+  }
+
+  // 裁剪框样式
+  &.crop-style-minimal {
+    .@{cropper-prefix}__crop-area {
+      border: 1px dashed var(--ldesign-brand-color) !important;
+      box-shadow: none !important;
+    }
+  }
+
+  &.crop-style-classic {
+    .@{cropper-prefix}__crop-area {
+      border: 2px solid var(--ldesign-warning-color) !important;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5) !important;
+    }
+  }
+
+  &.crop-style-modern {
+    .@{cropper-prefix}__crop-area {
+      border: 2px solid var(--ldesign-success-color) !important;
+      box-shadow: 0 0 10px rgba(66, 189, 66, 0.3) !important;
+      border-radius: 4px !important;
+    }
+  }
+
+  &.crop-style-neon {
+    .@{cropper-prefix}__crop-area {
+      border: 2px solid var(--ldesign-brand-color) !important;
+      box-shadow:
+        0 0 5px var(--ldesign-brand-color),
+        0 0 10px var(--ldesign-brand-color),
+        0 0 15px var(--ldesign-brand-color) !important;
+      animation: neon-glow 2s ease-in-out infinite alternate;
+    }
+  }
+
+  // 背景样式
+  &.bg-white {
+    background-color: white !important;
+  }
+
+  &.bg-black {
+    background-color: black !important;
+  }
+
+  &.bg-checkerboard {
+    background-image:
+      linear-gradient(45deg, #ccc 25%, transparent 25%),
+      linear-gradient(-45deg, #ccc 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #ccc 75%),
+      linear-gradient(-45deg, transparent 75%, #ccc 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+
+  &.bg-blur {
+    .@{cropper-prefix}__image {
+      filter: blur(1px);
+    }
+  }
+}
+
+// 霓虹发光动画
+@keyframes neon-glow {
+  from {
+    box-shadow:
+      0 0 5px var(--ldesign-brand-color),
+      0 0 10px var(--ldesign-brand-color),
+      0 0 15px var(--ldesign-brand-color);
+  }
+
+  to {
+    box-shadow:
+      0 0 10px var(--ldesign-brand-color),
+      0 0 20px var(--ldesign-brand-color),
+      0 0 30px var(--ldesign-brand-color);
+  }
+}
+
+// 导入工具栏样式
+@import '../ui/toolbar.less';

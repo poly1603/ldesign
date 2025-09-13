@@ -39,6 +39,14 @@ export interface LargeImageConfig {
   progressiveLoading: boolean
   /** 预加载距离（像素） */
   preloadDistance: number
+  /** 自适应块尺寸 */
+  adaptiveTileSize: boolean
+  /** 块缓存数量 */
+  maxCachedTiles: number
+  /** 性能监控 */
+  enablePerformanceMonitoring: boolean
+  /** 内存清理阈值 */
+  memoryCleanupThreshold: number
 }
 
 /**
@@ -84,6 +92,24 @@ export class LargeImageProcessor extends EventEmitter {
 
   /** 内存使用量（字节） */
   private memoryUsage: number = 0
+  
+  /** LRU缓存队列 */
+  private lruQueue: number[] = []
+  
+  /** 性能统计 */
+  private performanceStats = {
+    totalLoadTime: 0,
+    averageLoadTime: 0,
+    tilesLoaded: 0,
+    cacheHits: 0,
+    cacheMisses: 0
+  }
+  
+  /** 上次清理时间 */
+  private lastCleanupTime = Date.now()
+  
+  /** 清理间隔（毫秒） */
+  private cleanupInterval = 5000
 
   /**
    * 构造函数
@@ -98,8 +124,15 @@ export class LargeImageProcessor extends EventEmitter {
       memoryLimit: 500, // 500MB
       progressiveLoading: true,
       preloadDistance: 512,
+      adaptiveTileSize: true,
+      maxCachedTiles: 100,
+      enablePerformanceMonitoring: true,
+      memoryCleanupThreshold: 0.8, // 80%
       ...config
     }
+    
+    // 定期清理内存
+    this.schedulePeriodicCleanup()
   }
 
   /**
@@ -223,6 +256,79 @@ export class LargeImageProcessor extends EventEmitter {
   }
 
   /**
+   * 定期清理内存
+   */
+  private schedulePeriodicCleanup(): void {
+    setInterval(() => {
+      if (this.getMemoryUsage().percentage > this.config.memoryCleanupThreshold * 100) {
+        this.intelligentCleanup()
+      }
+    }, this.cleanupInterval)
+  }
+  
+  /**
+   * 智能清理（基于LRU算法）
+   */
+  private intelligentCleanup(): void {
+    const currentTime = Date.now()
+    const visibleTileIndices = this.getVisibleTileIndices()
+    const preloadTileIndices = this.getPreloadTileIndices()
+    const importantIndices = new Set([...visibleTileIndices, ...preloadTileIndices])
+    
+    // 按照LRU顺序清理
+    const tilesToClean = this.lruQueue
+      .filter(index => !importantIndices.has(index) && this.loadedTiles.has(index))
+      .slice(0, Math.max(1, this.loadedTiles.size - this.config.maxCachedTiles))
+    
+    let cleanedMemory = 0
+    tilesToClean.forEach(index => {
+      const tile = this.tiles[index]
+      if (tile) {
+        cleanedMemory += tile.width * tile.height * 4
+        this.unloadTile(tile)
+      }
+    })
+    
+    this.lastCleanupTime = currentTime
+    
+    if (this.config.enablePerformanceMonitoring) {
+      this.emit('memoryCleanup', {
+        tilesCleared: tilesToClean.length,
+        memoryFreed: cleanedMemory,
+        timestamp: currentTime
+      })
+    }
+  }
+  
+  /**
+   * 获取性能统计
+   */
+  getPerformanceStats(): typeof this.performanceStats {
+    return { ...this.performanceStats }
+  }
+  
+  /**
+   * 自适应调整块尺寸
+   */
+  private getAdaptiveTileSize(): number {
+    if (!this.config.adaptiveTileSize) {
+      return this.config.maxTileSize
+    }
+    
+    const memoryUsage = this.getMemoryUsage().percentage
+    const deviceMemory = (navigator as any).deviceMemory || 4 // GB, 默认偈4GB
+    
+    // 根据内存使用情况和设备内存调整块尺寸
+    if (memoryUsage > 70 || deviceMemory < 4) {
+      return Math.max(512, this.config.maxTileSize * 0.5)
+    } else if (memoryUsage < 30 && deviceMemory > 8) {
+      return Math.min(2048, this.config.maxTileSize * 1.5)
+    }
+    
+    return this.config.maxTileSize
+  }
+
+  /**
    * 销毁处理器
    */
   destroy(): void {
@@ -238,6 +344,7 @@ export class LargeImageProcessor extends EventEmitter {
     this.tiles = []
     this.loadedTiles.clear()
     this.loadingTiles.clear()
+    this.lruQueue = []
     this.sourceImage = undefined
     this.memoryUsage = 0
 
@@ -275,16 +382,16 @@ export class LargeImageProcessor extends EventEmitter {
    * 创建图片块
    */
   private createTiles(image: HTMLImageElement): void {
-    const { maxTileSize } = this.config
+    const adaptiveTileSize = this.getAdaptiveTileSize()
     const { naturalWidth: width, naturalHeight: height } = image
 
     this.tiles = []
     let index = 0
 
-    for (let y = 0; y < height; y += maxTileSize) {
-      for (let x = 0; x < width; x += maxTileSize) {
-        const tileWidth = Math.min(maxTileSize, width - x)
-        const tileHeight = Math.min(maxTileSize, height - y)
+    for (let y = 0; y < height; y += adaptiveTileSize) {
+      for (let x = 0; x < width; x += adaptiveTileSize) {
+        const tileWidth = Math.min(adaptiveTileSize, width - x)
+        const tileHeight = Math.min(adaptiveTileSize, height - y)
 
         const canvas = document.createElement('canvas')
         canvas.width = tileWidth
@@ -304,7 +411,11 @@ export class LargeImageProcessor extends EventEmitter {
       }
     }
 
-    this.emit('tilesCreated', { count: this.tiles.length })
+    this.emit('tilesCreated', { 
+      count: this.tiles.length,
+      tileSize: adaptiveTileSize,
+      adaptiveSize: this.config.adaptiveTileSize
+    })
   }
 
   /**
@@ -382,18 +493,27 @@ export class LargeImageProcessor extends EventEmitter {
    */
   private async loadTile(tile: ImageTile): Promise<void> {
     if (tile.loaded || this.loadingTiles.has(tile.index) || !this.sourceImage) {
+      if (tile.loaded) {
+        // 缓存命中，更新LRU
+        this.updateLRU(tile.index)
+        this.performanceStats.cacheHits++
+      }
       return
     }
 
     // 检查内存限制
-    if (this.getMemoryUsage().percentage > 90) {
-      this.cleanupUnusedTiles()
+    if (this.getMemoryUsage().percentage > this.config.memoryCleanupThreshold * 100) {
+      this.intelligentCleanup()
     }
 
     this.loadingTiles.add(tile.index)
+    const loadStartTime = performance.now()
 
     try {
       const ctx = tile.canvas.getContext('2d')!
+      
+      // 优化的绘制设置
+      ctx.imageSmoothingEnabled = false // 禁用平滑以提高性能
       ctx.drawImage(
         this.sourceImage,
         tile.x, tile.y, tile.width, tile.height,
@@ -402,15 +522,41 @@ export class LargeImageProcessor extends EventEmitter {
 
       tile.loaded = true
       this.loadedTiles.add(tile.index)
+      this.updateLRU(tile.index)
       this.memoryUsage += tile.width * tile.height * 4 // RGBA
+      
+      // 更新性能统计
+      const loadTime = performance.now() - loadStartTime
+      this.performanceStats.totalLoadTime += loadTime
+      this.performanceStats.tilesLoaded++
+      this.performanceStats.averageLoadTime = this.performanceStats.totalLoadTime / this.performanceStats.tilesLoaded
+      this.performanceStats.cacheMisses++
 
-      this.emit('tileLoaded', { tile, progress: this.getProgress() })
+      this.emit('tileLoaded', { 
+        tile, 
+        progress: this.getProgress(),
+        loadTime: this.config.enablePerformanceMonitoring ? loadTime : undefined
+      })
     } catch (error) {
       this.emit('tileLoadError', { tile, error })
       throw error
     } finally {
       this.loadingTiles.delete(tile.index)
     }
+  }
+  
+  /**
+   * 更新LRU队列
+   */
+  private updateLRU(index: number): void {
+    // 移除现有的索引
+    const existingIndex = this.lruQueue.indexOf(index)
+    if (existingIndex !== -1) {
+      this.lruQueue.splice(existingIndex, 1)
+    }
+    
+    // 添加到队列尾部（最新使用）
+    this.lruQueue.push(index)
   }
 
   /**

@@ -4,7 +4,6 @@
  */
 
 import { EventEmitter } from '@/core/event-emitter'
-import type { CropperEventType, CropperEventListener } from '@/types'
 
 /**
  * 组件状态

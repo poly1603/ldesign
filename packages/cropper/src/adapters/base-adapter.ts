@@ -9,7 +9,7 @@ import type { CropperOptions, CropperEventType, CropperEventListener } from '@/t
 /**
  * 适配器配置
  */
-export interface AdapterOptions extends CropperOptions {
+export interface AdapterOptions extends Partial<CropperOptions> {
   /** 是否自动初始化 */
   autoInit?: boolean
   /** 是否自动销毁 */
@@ -50,25 +50,6 @@ export abstract class BaseAdapter {
   protected static readonly DEFAULT_OPTIONS: AdapterOptions = {
     autoInit: true,
     autoDestroy: true,
-    aspectRatio: null,
-    minWidth: 0,
-    minHeight: 0,
-    maxWidth: Infinity,
-    maxHeight: Infinity,
-    initialCropArea: null,
-    cropShape: 'rectangle' as const,
-    enableResize: true,
-    enableMove: true,
-    enableRotate: true,
-    enableFlip: true,
-    showGrid: true,
-    showCenterLines: false,
-    gridLines: 2,
-    quality: 0.92,
-    format: 'image/png',
-    backgroundColor: 'transparent',
-    smoothing: true,
-    pixelRatio: window.devicePixelRatio || 1,
   }
 
   /**
@@ -295,7 +276,7 @@ export abstract class BaseAdapter {
     if (!this.isReady()) {
       throw new Error('Adapter is not ready')
     }
-    return this.cropper!.loadImage(source)
+    return this.cropper!.setImage(source)
   }
 
   /**
@@ -339,7 +320,7 @@ export abstract class BaseAdapter {
     if (!this.isReady()) {
       throw new Error('Adapter is not ready')
     }
-    return this.cropper!.getCroppedDataURL(format, quality)
+    return this.cropper!.getCroppedDataURL(format ? { format: format as any, quality } : undefined)
   }
 
   /**
@@ -351,7 +332,7 @@ export abstract class BaseAdapter {
     if (!this.isReady()) {
       throw new Error('Adapter is not ready')
     }
-    return this.cropper!.getCroppedBlob(format, quality)
+    return this.cropper!.getCroppedBlob(format ? { format: format as any, quality } : undefined)
   }
 
   /**
