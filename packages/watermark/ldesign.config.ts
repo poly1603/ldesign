@@ -1,36 +1,38 @@
 import { defineConfig } from '@ldesign/builder'
+import fs from 'fs'
+import path from 'path'
+
+function readPackage() {
+  try {
+    const p = path.resolve(process.cwd(), 'package.json')
+    return JSON.parse(fs.readFileSync(p, 'utf-8'))
+  } catch {
+    return {}
+  }
+}
+
+function pascalCase(name: string): string {
+  const base = name.replace(/^@[^/]+\//, '')
+  return base.split(/[\/-]/).filter(Boolean).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')
+}
+
+const pkg: any = readPackage()
+const external: string[] = Object.keys(pkg.peerDependencies || {})
+const knownGlobals: Record<string, string> = { vue: 'Vue', react: 'React', 'react-dom': 'ReactDOM' }
+const umdGlobals = external.reduce((acc, dep) => {
+  acc[dep] = knownGlobals[dep] || pascalCase(dep)
+  return acc
+}, {} as Record<string, string>)
 
 export default defineConfig({
-  // 基础配置
-  root: process.cwd(),
-  outDir: 'dist',
-  
-  // 输出格式：ESM、CJS、UMD
-  formats: ['esm', 'cjs', 'umd'],
-  
-  // 生成类型声明文件
   dts: true,
-  
-  // 生产环境压缩代码
-  minify: true,
-  
-  // 生成 source map
   sourcemap: true,
-  
-  // 外部依赖（不打包进最终产物）
-  external: [
-    'vue',
-    '@ldesign/shared',
-    '@ldesign/device'
-  ],
-  
-  // UMD 格式的全局变量映射
-  globals: {
-    'vue': 'Vue',
-    '@ldesign/shared': 'LDesignShared',
-    '@ldesign/device': 'LDesignDevice'
+  clean: true,
+  minify: false,
+  external,
+  output: {
+    esm: true,
+    cjs: true,
+    umd: Object.keys(umdGlobals).length ? { globals: umdGlobals } : true,
   },
-  
-  // UMD 格式的库名称
-  name: 'LDesignWatermark'
 })
