@@ -187,6 +187,99 @@ export {
   type ProgressEvent
 } from './interceptors/request-interceptor'
 
+// 性能分析工具导出
+export {
+  PerformanceAnalyzer,
+  globalPerformanceAnalyzer,
+  measurePerformance,
+  debounce,
+  throttle,
+  ObjectPool,
+  BatchProcessor,
+  type PerformanceMeasure,
+  type PerformanceReport
+} from './utils/performance-analyzer'
+
+// 类型安全工具导出
+export {
+  typedEmit,
+  typedOn,
+  typedOnce,
+  getTypedConfig,
+  setTypedConfig,
+  createTypedPluginContext,
+  registerTypedPlugin,
+  isValidObject,
+  isString,
+  isNumber,
+  isBoolean,
+  isFunction,
+  isArray,
+  isPromise,
+  safeDeepClone,
+  safeMerge,
+  safeGet,
+  safeGetNested,
+  safeFilter,
+  safeMap,
+  safeAsync,
+  safeJsonParse,
+  safeJsonStringify,
+  InputValidator,
+  ErrorUtil,
+  TypedConfigWrapper,
+  createTypedConfigManager,
+  PromiseUtil
+} from './utils/type-safety'
+
+// 内存管理工具导出
+export {
+  TimerManager,
+  ListenerManager,
+  ResourceManager,
+  MemoryLeakDetector,
+  ReferenceTracker,
+  GlobalMemoryManager,
+  memoryManager,
+  managedLifecycle,
+  createManagedPromise
+} from './utils/memory-manager'
+
+// 增强配置管理系统导出
+export {
+  EnhancedConfigManager,
+  EnvironmentConfigLoader,
+  JsonConfigLoader,
+  MemoryConfigLoader,
+  ConfigValidators,
+  createEnhancedConfigManager,
+  type ConfigValue,
+  type ConfigObject,
+  type ConfigValidator,
+  type ConfigSchema,
+  type ConfigChangeEvent,
+  type ConfigLoader
+} from './utils/config-manager'
+
+// 日志系统导出
+export {
+  EnhancedLogger,
+  ConsoleLogHandler,
+  MemoryLogHandler,
+  RemoteLogHandler,
+  ErrorTracker,
+  logger,
+  createModuleLogger,
+  logMethod,
+  logPerformance,
+  LogLevel,
+  LogLevelNames,
+  type LogEntry,
+  type LogContext,
+  type LogHandler,
+  type ErrorReport
+} from './utils/logging-system'
+
 // 版本信息
 export const version = '0.1.0'
 

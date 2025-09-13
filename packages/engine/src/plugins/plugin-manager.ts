@@ -22,6 +22,11 @@ export class PluginManagerImpl implements PluginManager {
   private dependencyGraphCache?: Record<string, string[]>
   private validationCache?: { valid: boolean; errors: string[] }
   private dependentsCache = new Map<string, string[]>()
+  
+  // 版本控制的依赖图管理
+  private dependencyGraphVersion = 0 // 依赖图版本号
+  private dependencyGraphCacheVersion = -1 // 缓存版本号
+  private validationCacheVersion = -1 // 验证缓存版本号
 
   constructor(engine?: Engine) {
     this.engine = engine
@@ -38,15 +43,12 @@ export class PluginManagerImpl implements PluginManager {
       throw new Error(`Plugin "${plugin.name}" is already registered`)
     }
 
-    // 检查依赖
-    if (plugin.dependencies) {
-      for (const dep of plugin.dependencies) {
-        if (!this.plugins.has(dep)) {
-          throw new Error(
-            `Plugin "${plugin.name}" depends on "${dep}" which is not registered`
-          )
-        }
-      }
+    // 检查依赖 - 提前验证所有依赖，一次性处理
+    const { satisfied, missing } = this.checkDependencies(plugin)
+    if (!satisfied) {
+      throw new Error(
+        `Plugin "${plugin.name}" depends on missing plugins: ${missing.join(', ')}`
+      )
     }
 
     try {
@@ -54,17 +56,12 @@ export class PluginManagerImpl implements PluginManager {
       this.plugins.set(plugin.name, plugin)
       this.loadOrder.push(plugin.name)
 
-      // 清除缓存
-      this.clearCaches()
+      // 增加版本号，标记依赖图已变更
+      this.dependencyGraphVersion++
 
       // 安装插件
       if (this.engine) {
-        const context = {
-          engine: this.engine,
-          logger: this.engine.logger,
-          config: this.engine.config,
-          events: this.engine.events,
-        }
+        const context = this.createPluginContext()
         await plugin.install(context)
       }
 
@@ -86,19 +83,15 @@ export class PluginManagerImpl implements PluginManager {
         })
       }
     } catch (error) {
-      // 注册失败时清理
+      // 回滚注册
       this.plugins.delete(plugin.name)
       const index = this.loadOrder.indexOf(plugin.name)
       if (index > -1) {
         this.loadOrder.splice(index, 1)
       }
-
-      if (this.engine?.logger) {
-        this.engine.logger.error(
-          `Failed to register plugin "${plugin.name}"`,
-          error
-        )
-      }
+      
+      this.dependencyGraphVersion++ // 回滚也需要增加版本号
+      this.logPluginError(plugin.name, error)
       throw error
     }
   }
@@ -128,12 +121,7 @@ export class PluginManagerImpl implements PluginManager {
     try {
       // 卸载插件
       if (plugin.uninstall && this.engine) {
-        const context = {
-          engine: this.engine,
-          logger: this.engine.logger,
-          config: this.engine.config,
-          events: this.engine.events,
-        }
+        const context = this.createPluginContext()
         await plugin.uninstall(context)
       }
 
@@ -143,6 +131,9 @@ export class PluginManagerImpl implements PluginManager {
       if (index > -1) {
         this.loadOrder.splice(index, 1)
       }
+      
+      // 增加版本号，标记依赖图已变更
+      this.dependencyGraphVersion++
 
       if (this.engine?.logger) {
         this.engine.logger.info(`Plugin "${name}" unregistered successfully`)
@@ -236,29 +227,32 @@ export class PluginManagerImpl implements PluginManager {
 
   // 获取插件依赖图（带缓存）
   /**
-   * 获取当前插件依赖图（带缓存）。
+   * 获取当前插件依赖图（版本控制）。
    */
   getDependencyGraph(): Record<string, string[]> {
-    if (this.dependencyGraphCache) {
+    // 使用版本号管理缓存，避免不必要的重新计算
+    if (this.dependencyGraphCache && this.dependencyGraphCacheVersion === this.dependencyGraphVersion) {
       return this.dependencyGraphCache
     }
 
     const graph: Record<string, string[]> = {}
-
+    
     for (const [name, plugin] of this.plugins) {
       graph[name] = plugin.dependencies ? [...plugin.dependencies] : []
     }
 
     this.dependencyGraphCache = graph
+    this.dependencyGraphCacheVersion = this.dependencyGraphVersion
     return graph
   }
 
   // 验证插件依赖（带缓存）
   /**
-   * 验证所有已注册插件的依赖是否完整（带缓存）。
+   * 验证所有已注册插件的依赖是否完整（版本控制）。
    */
   validateDependencies(): { valid: boolean; errors: string[] } {
-    if (this.validationCache) {
+    // 使用版本号管理缓存
+    if (this.validationCache && this.validationCacheVersion === this.dependencyGraphVersion) {
       return this.validationCache
     }
 
@@ -280,6 +274,7 @@ export class PluginManagerImpl implements PluginManager {
     }
 
     this.validationCache = result
+    this.validationCacheVersion = this.dependencyGraphVersion
     return result
   }
 
@@ -415,6 +410,32 @@ export class PluginManagerImpl implements PluginManager {
     this.plugins.clear()
     this.loadOrder = []
     this.clearCaches()
+  }
+
+  // 新增的辅助方法
+  
+  /**
+   * 抽取创建上下文的逻辑
+   */
+  private createPluginContext(): PluginContext<Engine> {
+    return {
+      engine: this.engine!,
+      logger: this.engine!.logger,
+      config: this.engine!.config,
+      events: this.engine!.events,
+    }
+  }
+  
+  /**
+   * 记录插件错误
+   */
+  private logPluginError(pluginName: string, error: unknown): void {
+    if (this.engine?.logger) {
+      this.engine.logger.error(
+        `Failed to register plugin "${pluginName}"`,
+        error
+      )
+    }
   }
 }
 

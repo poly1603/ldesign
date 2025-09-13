@@ -43,10 +43,24 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
   private eventStats: Map<string, { count: number; lastEmit: number }> =
     new Map()
   private eventPool = new EventObjectPool() // 事件对象池
+  
+  // 性能优化：使用WeakMap减少内存占用
+  private weakSortedCache = new WeakMap<EventListener[], EventListener[]>()
+  private maxEventStats = 1000 // 限制统计数据数量
+  private cleanupInterval = 60000 // 降低到1分钟
 
   constructor(private logger?: Logger) {
-    // 定期清理统计数据，防止内存泄漏
-    setInterval(() => this.cleanupStats(), 300000) // 5分钟清理一次
+    // 更频繁地清理统计数据
+    this.setupCleanupTimer()
+  }
+
+  private setupCleanupTimer(): void {
+    // 使用垃圾回收友好的设计
+    setInterval(() => {
+      this.cleanupStats()
+      // 检测内存使用情况
+      this.checkMemoryUsage()
+    }, this.cleanupInterval)
   }
 
   // 重载：类型安全事件 + 通用字符串事件
@@ -104,7 +118,6 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
   emit(event: string, ...args: unknown[]): void
   emit(event: unknown, ...args: unknown[]): void {
     const key = String(event)
-    // 更新事件统计
     this.updateEventStats(key)
 
     const listeners = this.events.get(key)
@@ -112,19 +125,22 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
       return
     }
 
-    // 使用缓存的排序后的监听器，提高性能
-    let listenersToExecute = this.sortedListenersCache.get(key)
+    // 优化：使用WeakMap缓存以避免重复排序
+    let listenersToExecute = this.weakSortedCache.get(listeners)
     if (!listenersToExecute) {
-      listenersToExecute = [...listeners].sort(
-        (a, b) => b.priority - a.priority
-      )
-      this.sortedListenersCache.set(key, listenersToExecute)
+      // 只有在没有缓存时才排序
+      listenersToExecute = [...listeners].sort((a, b) => b.priority - a.priority)
+      this.weakSortedCache.set(listeners, listenersToExecute)
     }
 
-    // 性能优化：批量处理一次性监听器的移除
-    const onceListenersToRemove: EventListener[] = []
+    // 使用位图标记需要移除的一次性监听器，避免多次数组操作
+    const removeIndexes = new Uint8Array(listenersToExecute.length)
+    let hasOnceListeners = false
 
-    for (const listener of listenersToExecute) {
+    // 单次循环处理事件触发和标记移除
+    for (let i = 0; i < listenersToExecute.length; i++) {
+      const listener = listenersToExecute[i]
+      
       try {
         listener.handler(args[0] as unknown)
       } catch (error) {
@@ -135,15 +151,16 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
         }
       }
 
-      // 收集需要移除的一次性监听器
+      // 标记需要移除的一次性监听器
       if (listener.once) {
-        onceListenersToRemove.push(listener)
+        removeIndexes[i] = 1
+        hasOnceListeners = true
       }
     }
 
-    // 批量移除一次性监听器，减少数组操作次数
-    if (onceListenersToRemove.length > 0) {
-      this.batchRemoveListeners(key, onceListenersToRemove)
+    // 只有在有一次性监听器时才执行批量移除
+    if (hasOnceListeners) {
+      this.batchRemoveIndexedListeners(key, listeners, removeIndexes)
     }
   }
 
@@ -255,6 +272,34 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
   }
 
   /**
+   * 新方法：按索引批量移除监听器
+   */
+  private batchRemoveIndexedListeners(
+    event: string,
+    listeners: EventListener[],
+    removeIndexes: Uint8Array
+  ): void {
+    // 按索引删除，倒序遍历避免索引偏移问题
+    for (let i = removeIndexes.length - 1; i >= 0; i--) {
+      if (removeIndexes[i] === 1) {
+        // 使用对象池回收监听器对象
+        this.eventPool.release(listeners[i])
+        listeners.splice(i, 1)
+      }
+    }
+
+    // 处理空事件监听器列表
+    if (listeners.length === 0) {
+      this.events.delete(event)
+      this.sortedListenersCache.delete(event)
+    } else {
+      // 只有在必要时才更新缓存
+      this.sortedListenersCache.delete(event)
+      this.weakSortedCache.delete(listeners)
+    }
+  }
+
+  /**
    * 性能优化：批量移除监听器
    */
   private batchRemoveListeners(
@@ -283,20 +328,51 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
     } else {
       this.events.set(event, filteredListeners)
       this.sortedListenersCache.delete(event) // 清除缓存
+      this.weakSortedCache.delete(listeners)
     }
   }
 
   /**
-   * 性能优化：清理过期的统计数据
+   * 性能优化：清理过期的统计数据 - 改进版
    */
   private cleanupStats(): void {
     const now = Date.now()
-    const maxAge = 600000 // 10分钟
+    const maxAge = 300000 // 5分钟
 
-    for (const [event, stats] of this.eventStats.entries()) {
-      if (now - stats.lastEmit > maxAge) {
-        this.eventStats.delete(event)
+    // 检查事件统计数量
+    if (this.eventStats.size > this.maxEventStats) {
+      // 根据最后触发时间排序并只保留最近的事件
+      const sortedEvents = Array.from(this.eventStats.entries())
+        .sort((a, b) => b[1].lastEmit - a[1].lastEmit)
+        .slice(0, this.maxEventStats - 100) // 留出一些缓冲空间
+      
+      this.eventStats.clear()
+      for (const [event, stats] of sortedEvents) {
+        this.eventStats.set(event, stats)
       }
+    } else {
+      // 正常的过期检查
+      for (const [event, stats] of this.eventStats.entries()) {
+        if (now - stats.lastEmit > maxAge) {
+          this.eventStats.delete(event)
+        }
+      }
+    }
+  }
+
+  /**
+   * 检查内存使用
+   */
+  private checkMemoryUsage(): void {
+    // 如果事件监听器总数超过警戒线，记录警告
+    const stats = this.getStats()
+    if (stats.totalListeners > 1000) {
+      this.logger?.warn('High number of event listeners detected', {
+        totalListeners: stats.totalListeners,
+        events: Object.entries(stats.events)
+          .filter(([_, count]) => count > 20)
+          .map(([event, count]) => `${event}: ${count}`)
+      })
     }
   }
 
@@ -308,12 +384,22 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
   }
 
   /**
-   * 清理所有资源
+   * 清理所有资源 - 增强版
    */
   cleanup(): void {
     this.events.clear()
     this.sortedListenersCache.clear()
     this.eventStats.clear()
+  }
+
+  /**
+   * 销毁方法 - 确保完全清理
+   */
+  destroy(): void {
+    this.events.clear()
+    this.sortedListenersCache.clear()
+    this.eventStats.clear()
+    this.eventPool.clear()
   }
 
   prependOnceListener(

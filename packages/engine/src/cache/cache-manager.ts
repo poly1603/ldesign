@@ -14,6 +14,7 @@ export interface CacheItem<T = unknown> {
   ttl?: number
   accessCount: number
   lastAccessed: number
+  size?: number // 缓存项大小（字节）
 }
 
 // 缓存配置接口
@@ -72,11 +73,18 @@ class LRUCache<T = unknown> {
   private stats: CacheStats
   private onEvict?: (key: string, value: T) => void
 
-  // 性能优化：批量清理队列
+  // 性能优化：智能清理队列
   private cleanupQueue: string[] = []
   private cleanupTimer?: NodeJS.Timeout
   private readonly CLEANUP_BATCH_SIZE = 20
   private readonly CLEANUP_INTERVAL = 5000 // 5秒
+  private readonly MAX_CLEANUP_QUEUE_SIZE = 1000 // 限制清理队列大小
+  
+  // 自适应清理策略
+  private adaptiveCleanupInterval = 5000 // 初始5秒
+  private lastCleanupPerformance = 0      // 上次清理耗时
+  private lastCleanupTime = 0             // 上次清理时间
+  private maxItemSize = 1024 * 1024       // 默认1MB
 
   constructor(maxSize = 100, onEvict?: (key: string, value: T) => void) {
     this.maxSize = maxSize
@@ -127,6 +135,13 @@ class LRUCache<T = unknown> {
   }
 
   set(key: string, value: T, ttl?: number): void {
+    // 检查项目大小
+    const itemSize = this.estimateItemSize(key, value)
+    if (itemSize > this.maxItemSize) {
+      console.warn(`Cache item "${key}" exceeds maximum size limit (${itemSize} bytes)`)
+      return // 跳过过大的项目
+    }
+
     // 如果已存在，先删除
     if (this.cache.has(key)) {
       this.cache.delete(key)
@@ -153,6 +168,7 @@ class LRUCache<T = unknown> {
       ttl,
       accessCount: 0,
       lastAccessed: Date.now(),
+      size: itemSize, // 记录项目大小
     }
 
     this.cache.set(key, item)
@@ -291,18 +307,89 @@ class LRUCache<T = unknown> {
 
 
   /**
-   * 性能优化：启动定期清理定时器
+   * 估算缓存项目大小
+   */
+  private estimateItemSize(key: string, value: T): number {
+    const keySize = key.length * 2 // 字符串大小估算
+    let valueSize = 0
+    
+    try {
+      const serialized = JSON.stringify(value)
+      valueSize = serialized.length * 2
+    } catch (e) {
+      // 无法序列化的对象，使用保守估计
+      valueSize = 1024 // 默认1KB
+    }
+    
+    return keySize + valueSize
+  }
+
+  /**
+   * 性能优化：智能清理策略启动
    */
   private startCleanupTimer(): void {
     this.cleanupTimer = setInterval(() => {
+      this.intelligentCleanup()
+    }, this.adaptiveCleanupInterval)
+  }
+
+  /**
+   * 智能清理策略
+   */
+  private intelligentCleanup(): void {
+    const startTime = performance.now()
+    
+    // 检查缓存使用率来决定是否需要主动清理
+    const usage = this.cache.size / this.maxSize
+    
+    if (usage > 0.8) {
+      // 缓存接近满时，主动清理
+      this.cleanup()
+    } else if (this.cleanupQueue.length > 0) {
+      // 只处理队列中的项
       this.processCleanupQueue()
-    }, this.CLEANUP_INTERVAL)
+    }
+    
+    // 计算清理耗时并自适应调整间隔
+    const endTime = performance.now()
+    this.lastCleanupPerformance = endTime - startTime
+    this.lastCleanupTime = endTime
+    
+    // 根据性能动态调整清理间隔
+    this.adjustCleanupInterval()
+  }
+
+  /**
+   * 动态调整清理间隔
+   */
+  private adjustCleanupInterval(): void {
+    if (this.lastCleanupPerformance > 50) {
+      // 清理耗时过长，增加间隔减少频率
+      this.adaptiveCleanupInterval = Math.min(this.adaptiveCleanupInterval * 1.5, 30000)
+    } else if (this.lastCleanupPerformance < 5 && this.cache.size > this.maxSize * 0.7) {
+      // 清理很快且缓存使用率高，可以更频繁清理
+      this.adaptiveCleanupInterval = Math.max(this.adaptiveCleanupInterval * 0.8, 1000)
+    }
+    
+    // 重新设置定时器
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = setInterval(() => {
+        this.intelligentCleanup()
+      }, this.adaptiveCleanupInterval)
+    }
   }
 
   /**
    * 性能优化：调度清理任务
    */
   private scheduleCleanup(key: string): void {
+    // 限制队列大小
+    if (this.cleanupQueue.length >= this.MAX_CLEANUP_QUEUE_SIZE) {
+      // 队列太大，直接处理一部分
+      this.processCleanupQueue()
+    }
+    
     if (!this.cleanupQueue.includes(key)) {
       this.cleanupQueue.push(key)
     }
@@ -336,7 +423,7 @@ class LRUCache<T = unknown> {
   }
 
   /**
-   * 销毁缓存，清理资源
+   * 增强的销毁方法
    */
   destroy(): void {
     if (this.cleanupTimer) {
@@ -347,6 +434,36 @@ class LRUCache<T = unknown> {
     this.cache.clear()
     this.cleanupQueue.length = 0
     this.stats.size = 0
+    
+    // 确保没有引用残留
+    this.onEvict = undefined
+  }
+
+  /**
+   * 获取性能指标
+   */
+  getPerformanceMetrics(): {
+    adaptiveInterval: number
+    lastCleanupTime: number
+    lastCleanupPerformance: number
+    cleanupQueueLength: number
+    memoryUsageEstimate: number
+  } {
+    let memoryUsage = 0
+    for (const [key, item] of this.cache.entries()) {
+      // 检查是否过期
+      if (!item.ttl || Date.now() - item.timestamp <= item.ttl) {
+        memoryUsage += (item.size || 0)
+      }
+    }
+
+    return {
+      adaptiveInterval: this.adaptiveCleanupInterval,
+      lastCleanupTime: this.lastCleanupTime,
+      lastCleanupPerformance: this.lastCleanupPerformance,
+      cleanupQueueLength: this.cleanupQueue.length,
+      memoryUsageEstimate: memoryUsage,
+    }
   }
 
   // 获取缓存健康状态
