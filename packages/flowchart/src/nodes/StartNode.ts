@@ -74,7 +74,7 @@ export class StartNodeModel extends CircleNodeModel {
       // 更新节点半径
       this.r = styles.nodeStyle.r
       
-      // 更新文本位置
+      // 更新文本位置 - 确保与图标不重叠
       if (this.text) {
         this.text.x = this.x + this.nodeLayout.textPosition.x
         this.text.y = this.y + this.nodeLayout.textPosition.y
@@ -82,7 +82,6 @@ export class StartNodeModel extends CircleNodeModel {
       
       this.isLayoutOptimized = true
     } catch (error) {
-      console.warn('StartNode 布局优化失败:', error)
       // 失败时使用默认布局
       this.r = 30
     }
@@ -195,15 +194,19 @@ export class StartNode extends CircleNode {
     const nodeLayout = (model as any).nodeLayout
     const layoutDirection = (model as any).layoutDirection
 
-    // 计算图标位置
+    // 计算图标位置 - 确保不与文本重叠
     let iconX = x
-    let iconY = y - 8 // 默认位置
-    let iconSize = 14
-    
+    let iconY = y - 6 // 图标稍微向上，为文本留出空间
+    let iconSize = 12
+
     if (nodeLayout) {
       iconX = x + nodeLayout.iconPosition.x
       iconY = y + nodeLayout.iconPosition.y
       iconSize = nodeLayout.iconSize
+    } else {
+      // 如果没有优化布局，使用安全的默认位置
+      // 图标在上方，文本在下方，确保不重叠
+      iconY = y - 8
     }
 
     // 获取lucide图标数据
@@ -215,13 +218,14 @@ export class StartNode extends CircleNode {
 
     const iconElements = []
     if (iconData) {
-      // 创建SVG图标 - 使用优化后的位置
+      // 创建SVG图标 - 使用优化后的位置，确保完全居中
+      const scale = iconSize / 24
       iconElements.push(
         h('g', {
-          transform: `translate(${iconX}, ${iconY}) scale(${iconSize / 24})` // 根据iconSize动态缩放
+          transform: `translate(${iconX}, ${iconY})`
         }, [
           h('g', {
-            transform: 'translate(-12, -12)' // 居中图标
+            transform: `scale(${scale}) translate(-12, -12)` // 先缩放再居中
           }, iconData.paths.map((path: string, index: number) =>
             h('path', {
               key: index,

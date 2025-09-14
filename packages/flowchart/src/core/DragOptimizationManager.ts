@@ -106,8 +106,6 @@ export class DragOptimizationManager {
       currentPosition: { ...startPosition },
       tempPosition: { ...startPosition }
     })
-
-    console.log(`开始拖拽节点: ${nodeId}`, startPosition)
   }
 
   /**
@@ -155,7 +153,6 @@ export class DragOptimizationManager {
     if (this.dragState.draggedNodes.size === 0) {
       this.dragState.isDragging = false
       this.onDragStateChange?.(false)
-      console.log('拖拽结束')
     }
   }
 
@@ -171,7 +168,6 @@ export class DragOptimizationManager {
     this.dragState.draggedNodes.clear()
     this.dragState.isDragging = false
     this.onDragStateChange?.(false)
-    console.log('拖拽已取消')
   }
 
   /**
@@ -243,7 +239,6 @@ export class DragOptimizationManager {
       `drag-final-${nodeId}`,
       () => {
         this.onNodePositionUpdate?.(nodeId, finalPosition)
-        console.log(`节点 ${nodeId} 最终位置:`, finalPosition)
       },
       UpdatePriority.HIGH
     )
@@ -254,7 +249,6 @@ export class DragOptimizationManager {
    */
   private performFinalUpdate(): void {
     // 这个方法由防抖函数调用
-    console.log('执行批量最终更新')
   }
 }
 

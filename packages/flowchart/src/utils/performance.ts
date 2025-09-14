@@ -156,7 +156,6 @@ export class MemoryMonitor {
   static startMemoryLeakDetection(interval = 5000): () => void {
     const initialMemory = this.getMemoryUsage()
     if (!initialMemory) {
-      console.warn('Memory monitoring not supported in this environment')
       return () => {}
     }
     
@@ -165,7 +164,7 @@ export class MemoryMonitor {
       if (currentMemory) {
         const growth = currentMemory.used - initialMemory.used
         if (growth > 10 * 1024 * 1024) { // 10MB 增长
-          console.warn(`Potential memory leak detected: ${(growth / 1024 / 1024).toFixed(2)}MB growth`)
+          // 静默处理内存泄漏检测
         }
       }
     }, interval)

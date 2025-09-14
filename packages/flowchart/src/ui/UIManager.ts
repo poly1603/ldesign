@@ -90,7 +90,9 @@ export class UIManager {
     this.uiContainer.style.cssText = `
       display: flex;
       flex: 1;
+      min-height: 0;
       overflow: hidden;
+      height: 100%;
     `
 
     // 添加主题样式
@@ -110,6 +112,8 @@ export class UIManager {
     materialContainer.style.cssText = `
       width: 240px;
       height: 100%;
+      min-height: 0;
+      flex-shrink: 0;
       ${this.state.readonly || !this.config.nodePanel?.visible ? 'display: none;' : ''}
     `
 
@@ -118,6 +122,7 @@ export class UIManager {
     this.canvasContainer.style.cssText = `
       flex: 1;
       height: 100%;
+      min-height: 0;
       position: relative;
       overflow: hidden;
       background-color: #f5f5f5;
@@ -125,6 +130,8 @@ export class UIManager {
         linear-gradient(rgba(0,0,0,.1) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0,0,0,.1) 1px, transparent 1px);
       background-size: 20px 20px;
+      display: flex;
+      flex-direction: column;
     `
 
     // 创建属性面板容器
@@ -133,6 +140,8 @@ export class UIManager {
     propertyContainer.style.cssText = `
       width: 280px;
       height: 100%;
+      min-height: 0;
+      flex-shrink: 0;
       ${this.state.readonly || !this.config.propertyPanel?.visible ? 'display: none;' : ''}
     `
 
@@ -338,7 +347,6 @@ export class UIManager {
       // 获取LogicFlow实例来进行坐标转换
       const editor = this.getEditor()
       if (!editor) {
-        console.error('无法获取编辑器实例')
         return
       }
 
@@ -362,12 +370,10 @@ export class UIManager {
         if (point && typeof point.x === 'number' && typeof point.y === 'number' &&
           !isNaN(point.x) && !isNaN(point.y)) {
           position = { x: point.x, y: point.y }
-          console.log(`屏幕坐标转换: (${clientX}, ${clientY}) -> 画布坐标: (${position.x.toFixed(0)}, ${position.y.toFixed(0)})`)
         } else {
           throw new Error('getPointByClient返回了无效的坐标')
         }
       } catch (error) {
-        console.warn('LogicFlow坐标转换失败，使用手动计算:', error)
 
         // 手动计算相对坐标
         const rect = this.canvasContainer!.getBoundingClientRect()
@@ -387,10 +393,7 @@ export class UIManager {
             y: (relativeY - translateY) / scale
           }
 
-          console.log(`手动计算坐标: 相对(${relativeX}, ${relativeY}) -> 画布坐标: (${position.x.toFixed(0)}, ${position.y.toFixed(0)})`)
-          console.log(`变换信息: scale=${scale}, translate=(${translateX}, ${translateY})`)
         } catch (transformError) {
-          console.warn('获取变换信息失败，使用基础坐标:', transformError)
           // 如果获取变换信息也失败，就使用基础的相对坐标
           position = { x: relativeX, y: relativeY }
         }
@@ -398,11 +401,9 @@ export class UIManager {
 
       if (customMaterialId) {
         // 处理自定义物料拖拽
-        console.log(`拖拽创建自定义物料: ${customMaterialId} at (${position.x.toFixed(0)}, ${position.y.toFixed(0)})`)
         this.onCustomMaterialDrop?.(customMaterialId, position)
       } else if (nodeType) {
         // 处理标准节点拖拽
-        console.log(`拖拽创建节点: ${nodeType} at (${position.x.toFixed(0)}, ${position.y.toFixed(0)})`)
         this.onNodeDrop?.(nodeType, position)
       }
     })
@@ -539,6 +540,30 @@ export class UIManager {
     }
 
     styleElement.textContent = `
+      /* 画布布局优化 */
+      .ldesign-flowchart-ui {
+        box-sizing: border-box;
+      }
+
+      .ldesign-flowchart-ui * {
+        box-sizing: border-box;
+      }
+
+      /* 确保画布容器充分利用空间 */
+      #ldesign-toolbar-container + .ldesign-flowchart-ui {
+        height: calc(100% - var(--ldesign-flowchart-toolbar-height, 56px));
+      }
+
+      /* LogicFlow 画布样式优化 */
+      .lf-canvas-overlay {
+        height: 100% !important;
+      }
+
+      .lf-graph {
+        height: 100% !important;
+        width: 100% !important;
+      }
+
       /* 默认主题 */
       .ldesign-flowchart-ui.theme-default {
         --panel-bg: #ffffff;
@@ -932,7 +957,7 @@ export class UIManager {
       this.injectLayoutAnalysisStyles()
 
     } catch (error) {
-      console.error('获取布局分析失败:', error)
+      // 静默处理错误
     }
   }
 

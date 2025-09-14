@@ -9,6 +9,7 @@ export interface ToolbarConfig {
   readonly?: boolean
   theme?: FlowchartTheme
   onToolAction?: (action: string) => void
+  onViewAction?: (action: string) => void
   onThemeChange?: (theme: FlowchartTheme) => void
 }
 
@@ -98,6 +99,10 @@ export class Toolbar {
         <div class="toolbar-group">
           ${this.createToolsHTML()}
         </div>
+        <div class="toolbar-divider"></div>
+        <div class="toolbar-group">
+          ${this.createViewToolsHTML()}
+        </div>
       </div>
       <div class="toolbar-right">
         <div class="toolbar-group">
@@ -134,6 +139,25 @@ export class Toolbar {
   }
 
   /**
+   * 创建视图工具HTML
+   */
+  private createViewToolsHTML(): string {
+    const viewTools = [
+      { key: 'zoomIn', icon: () => getToolbarIcon('zoom-in'), text: '放大', action: 'zoom-in' },
+      { key: 'zoomOut', icon: () => getToolbarIcon('zoom-out'), text: '缩小', action: 'zoom-out' },
+      { key: 'zoomFit', icon: () => getToolbarIcon('zoom-fit'), text: '适应', action: 'zoom-fit' },
+      { key: 'zoomReset', icon: () => getToolbarIcon('zoom-reset'), text: '重置', action: 'zoom-reset' }
+    ]
+
+    return viewTools.map(tool => `
+      <button class="toolbar-btn" data-action="${tool.action}" title="${tool.text}">
+        <span class="btn-icon">${typeof tool.icon === 'function' ? tool.icon() : tool.icon}</span>
+        <span class="btn-text">${tool.text}</span>
+      </button>
+    `).join('')
+  }
+
+  /**
    * 创建主题选择器HTML
    */
   private createThemeSelectorHTML(): string {
@@ -164,12 +188,21 @@ export class Toolbar {
 
       if (button && !button.disabled) {
         const tool = button.dataset.tool
+        const action = button.dataset.action
+
         if (tool) {
           // 添加点击效果
           button.classList.add('active')
           setTimeout(() => button.classList.remove('active'), 150)
 
           this.config.onToolAction?.(tool)
+        } else if (action) {
+          // 处理视图操作
+          this.handleViewAction(action)
+
+          // 添加点击效果
+          button.classList.add('active')
+          setTimeout(() => button.classList.remove('active'), 150)
         }
       }
     })
@@ -181,6 +214,28 @@ export class Toolbar {
         const theme = (e.target as HTMLSelectElement).value as FlowchartTheme
         this.config.onThemeChange?.(theme)
       })
+    }
+  }
+
+  /**
+   * 处理视图操作
+   */
+  private handleViewAction(action: string): void {
+    if (!this.config.onViewAction) return
+
+    switch (action) {
+      case 'zoom-in':
+        this.config.onViewAction('zoomIn')
+        break
+      case 'zoom-out':
+        this.config.onViewAction('zoomOut')
+        break
+      case 'zoom-fit':
+        this.config.onViewAction('zoomFit')
+        break
+      case 'zoom-reset':
+        this.config.onViewAction('zoomReset')
+        break
     }
   }
 
@@ -197,8 +252,10 @@ export class Toolbar {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0 16px;
+        padding: 0 20px;
         box-sizing: border-box;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       }
 
       .toolbar-left, .toolbar-right {
@@ -209,29 +266,49 @@ export class Toolbar {
       .toolbar-group {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 12px;
       }
 
       .toolbar-btn {
         display: flex;
         align-items: center;
-        gap: 4px;
-        padding: 6px 12px;
+        gap: 6px;
+        padding: 8px 16px;
         background: var(--ldesign-bg-color-component, #f8f9fa);
         border: 1px solid var(--ldesign-border-color, #e5e5e5);
-        border-radius: 4px;
+        border-radius: 8px;
         color: var(--ldesign-text-color-primary, #333);
-        font-size: 12px;
+        font-size: 13px;
+        font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         user-select: none;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .toolbar-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--ldesign-brand-color, #722ED1);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        border-radius: 7px;
       }
 
       .toolbar-btn:hover:not(:disabled) {
         background: var(--ldesign-bg-color-component-hover, #e9ecef);
         border-color: var(--ldesign-brand-color, #722ED1);
         transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 12px rgba(114, 46, 209, 0.15);
+      }
+
+      .toolbar-btn:hover:not(:disabled)::before {
+        opacity: 0.05;
       }
 
       .toolbar-btn:active:not(:disabled),
@@ -239,6 +316,12 @@ export class Toolbar {
         background: var(--ldesign-brand-color, #722ED1);
         color: white;
         transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(114, 46, 209, 0.3);
+      }
+
+      .toolbar-btn:active:not(:disabled)::before,
+      .toolbar-btn.active::before {
+        opacity: 0;
       }
 
       .toolbar-btn:disabled {
@@ -249,31 +332,76 @@ export class Toolbar {
       }
 
       .btn-icon {
-        font-size: 14px;
+        font-size: 16px;
         line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .btn-text {
         font-weight: 500;
+        white-space: nowrap;
       }
 
       .theme-selector {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 12px;
+        gap: 10px;
+        font-size: 13px;
         color: var(--ldesign-text-color-secondary, #666);
+        font-weight: 500;
       }
 
       .theme-select {
-        padding: 4px 8px;
+        padding: 6px 12px;
         border: 1px solid var(--ldesign-border-color, #e5e5e5);
-        border-radius: 4px;
+        border-radius: 6px;
         background: var(--ldesign-bg-color-container, #fff);
         color: var(--ldesign-text-color-primary, #333);
-        font-size: 12px;
+        font-size: 13px;
         cursor: pointer;
-        min-width: 100px;
+        min-width: 120px;
+        transition: all 0.2s ease;
+      }
+
+      .theme-select:hover {
+        border-color: var(--ldesign-brand-color, #722ED1);
+        box-shadow: 0 2px 8px rgba(114, 46, 209, 0.1);
+      }
+
+      .theme-select:focus {
+        outline: none;
+        border-color: var(--ldesign-brand-color, #722ED1);
+        box-shadow: 0 0 0 2px rgba(114, 46, 209, 0.2);
+      }
+
+      /* 工具栏分隔线 */
+      .toolbar-divider {
+        width: 1px;
+        height: 24px;
+        background: var(--ldesign-border-color, #e5e5e5);
+        margin: 0 8px;
+      }
+
+      /* 响应式设计 */
+      @media (max-width: 768px) {
+        .ldesign-toolbar {
+          padding: 0 12px;
+        }
+
+        .toolbar-group {
+          gap: 8px;
+        }
+
+        .toolbar-btn {
+          padding: 6px 12px;
+          font-size: 12px;
+        }
+
+        .btn-text {
+          display: none;
+        }
       }
 
       .theme-select:focus {

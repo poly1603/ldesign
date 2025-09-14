@@ -204,33 +204,40 @@ export class NodeRenderOptimizer {
     
     switch (strategy) {
       case 'vertical':
-        // 垂直布局：图标在上，文字在下
-        iconPosition = { x: 0, y: -(iconSize / 2 + iconTextSpacing / 2 + textHeight / 2) }
-        textPosition = { x: 0, y: iconSize / 2 + iconTextSpacing / 2 - textHeight / 2 + config.fontSize }
-        totalHeight = iconSize + iconTextSpacing + textHeight
+        // 垂直布局：图标在上，文字在下，确保居中对齐且有足够间距
+        const verticalSpacing = Math.max(iconTextSpacing, 10) // 最小10px间距
+        const totalVerticalHeight = iconSize + verticalSpacing + textHeight
+        iconPosition = { x: 0, y: -totalVerticalHeight / 2 + iconSize / 2 }
+        textPosition = { x: 0, y: totalVerticalHeight / 2 - textHeight / 2 + config.fontSize / 4 }
+        totalHeight = totalVerticalHeight
         totalWidth = Math.max(iconSize, textWidth)
         break
-        
+
       case 'horizontal':
-        // 水平布局：图标在左，文字在右
-        iconPosition = { x: -(iconSize / 2 + iconTextSpacing / 2 + textWidth / 2), y: 0 }
-        textPosition = { x: iconSize / 2 + iconTextSpacing / 2 - textWidth / 2, y: config.fontSize / 2 }
+        // 水平布局：图标在左，文字在右，确保垂直居中
+        const horizontalSpacing = iconTextSpacing
+        const totalHorizontalWidth = iconSize + horizontalSpacing + textWidth
+        iconPosition = { x: -totalHorizontalWidth / 2 + iconSize / 2, y: 0 }
+        textPosition = { x: totalHorizontalWidth / 2 - textWidth / 2, y: config.fontSize / 4 }
         totalHeight = Math.max(iconSize, textHeight)
-        totalWidth = iconSize + iconTextSpacing + textWidth
+        totalWidth = totalHorizontalWidth
         break
-        
+
       case 'overlay':
-        // 覆盖布局：图标和文字重叠
-        iconPosition = { x: 0, y: -config.fontSize / 2 }
+        // 覆盖布局：图标和文字重叠，图标在上方，文字在下方
+        iconPosition = { x: 0, y: -config.fontSize / 3 }
         textPosition = { x: 0, y: config.fontSize / 2 }
         totalHeight = Math.max(iconSize, textHeight)
         totalWidth = Math.max(iconSize, textWidth)
         break
-        
+
       default:
-        iconPosition = { x: 0, y: -iconTextSpacing }
-        textPosition = { x: 0, y: iconTextSpacing }
-        totalHeight = iconSize + iconTextSpacing + textHeight
+        // 默认垂直布局，优化居中，确保足够间距
+        const defaultSpacing = Math.max(iconTextSpacing, 10) // 最小10px间距
+        const defaultTotalHeight = iconSize + defaultSpacing + textHeight
+        iconPosition = { x: 0, y: -defaultTotalHeight / 2 + iconSize / 2 }
+        textPosition = { x: 0, y: defaultTotalHeight / 2 - textHeight / 2 + config.fontSize / 4 }
+        totalHeight = defaultTotalHeight
         totalWidth = Math.max(iconSize, textWidth)
     }
     
@@ -279,18 +286,19 @@ export class NodeRenderOptimizer {
       }
     }
     
-    // 如果重叠，重新计算位置
-    const totalHeight = iconBounds.height + textBounds.height + 8 // 8px间距
+    // 如果重叠，重新计算位置，确保垂直居中
+    const spacing = 8 // 8px间距
+    const totalHeight = iconBounds.height + spacing + textBounds.height
     const startY = -totalHeight / 2
-    
+
     return {
-      iconPosition: { 
-        x: 0, 
-        y: startY + iconBounds.height / 2 
+      iconPosition: {
+        x: 0,
+        y: startY + iconBounds.height / 2
       },
-      textPosition: { 
-        x: 0, 
-        y: startY + iconBounds.height + 8 + textBounds.height / 2 
+      textPosition: {
+        x: 0,
+        y: startY + iconBounds.height + spacing + textBounds.height / 2
       }
     }
   }

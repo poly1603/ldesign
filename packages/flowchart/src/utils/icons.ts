@@ -21,6 +21,8 @@ const LUCIDE_ICON_PATHS: Record<string, string> = {
   'search': '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>',
   'zoom-in': '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6"/><path d="M8 11h6"/>',
   'zoom-out': '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6"/>',
+  'zoom-fit': '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>',
+  'zoom-reset': '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 12h8"/>',
   'undo': '<path d="M3 7v6h6"/><path d="m21 17a9 9 0 1 1-9-9c2.31 0 4.42.88 6 2.31L21 13"/>',
   'redo': '<path d="M21 7v6h-6"/><path d="m3 17a9 9 0 0 1 9-9c2.31 0 4.42.88 6 2.31L21 13"/>',
   'trash-2': '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',

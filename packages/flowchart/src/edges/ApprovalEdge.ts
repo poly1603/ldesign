@@ -5,6 +5,7 @@
  */
 
 import { PolylineEdge, PolylineEdgeModel, h } from '@logicflow/core'
+import { edgeRenderOptimizer } from '../services/EdgeRenderOptimizer'
 
 /**
  * 审批边模型
@@ -22,6 +23,36 @@ export class ApprovalEdgeModel extends PolylineEdgeModel {
     this.arrowConfig = {
       markerEnd: 'url(#approval-arrow)',
       markerStart: ''
+    }
+
+    // 优化连线路径
+    this.optimizeEdgePath()
+  }
+
+  /**
+   * 优化连线路径
+   */
+  private optimizeEdgePath(): void {
+    try {
+      // 获取源节点和目标节点
+      const sourceNode = this.sourceNode
+      const targetNode = this.targetNode
+
+      if (!sourceNode || !targetNode) return
+
+      // 使用边渲染优化器计算最优路径
+      const optimizedPath = edgeRenderOptimizer.calculateOptimalPath(
+        { x: sourceNode.x, y: sourceNode.y, width: sourceNode.width || 80, height: sourceNode.height || 40 },
+        { x: targetNode.x, y: targetNode.y, width: targetNode.width || 80, height: targetNode.height || 40 },
+        this.properties?.pathType || 'auto'
+      )
+
+      // 更新连线路径
+      if (optimizedPath && optimizedPath.length > 0) {
+        this.pointsList = optimizedPath
+      }
+    } catch (error) {
+      // 优化失败时保持默认路径
     }
   }
 
@@ -64,6 +95,35 @@ export class ApprovalEdgeModel extends PolylineEdgeModel {
         strokeWidth: 1,
         rx: 4,
         ry: 4
+      }
+    }
+  }
+
+  /**
+   * 更新文本位置
+   */
+  updateTextPosition(): void {
+    if (!this.text || !this.pointsList || this.pointsList.length < 2) {
+      return
+    }
+
+    try {
+      // 使用边渲染优化器计算最佳文本位置
+      const optimalPosition = edgeRenderOptimizer.optimizeTextPosition(
+        this.pointsList,
+        this.text.value || ''
+      )
+
+      // 更新文本位置
+      this.text.x = optimalPosition.x
+      this.text.y = optimalPosition.y
+    } catch (error) {
+      // 优化失败时使用默认位置
+      const midIndex = Math.floor(this.pointsList.length / 2)
+      const midPoint = this.pointsList[midIndex]
+      if (this.text && midPoint) {
+        this.text.x = midPoint.x
+        this.text.y = midPoint.y - 10
       }
     }
   }

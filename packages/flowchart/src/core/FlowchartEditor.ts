@@ -636,7 +636,6 @@ export class FlowchartEditor {
           if (isCtrlOrCmd) {
             event.preventDefault()
             // 全选功能可以后续添加
-            console.log('全选功能待实现')
           }
           break
 
@@ -835,12 +834,12 @@ export class FlowchartEditor {
 
     // 多选框选事件
     this.lf.on('selection:selected-area', (data) => {
-      console.log('框选区域:', data)
+      // 框选区域处理
     })
 
     // 多选拖拽事件
     this.lf.on('selection:dragstart', (data) => {
-      console.log('开始拖拽选中元素')
+      // 开始拖拽选中元素
     })
 
     this.lf.on('selection:drag', (data) => {
@@ -848,7 +847,7 @@ export class FlowchartEditor {
     })
 
     this.lf.on('selection:drop', (data) => {
-      console.log('选中元素拖拽结束')
+      // 选中元素拖拽结束
 
       // 使用调度器延迟数据变化事件
       this.updateScheduler.schedule(
@@ -979,10 +978,14 @@ export class FlowchartEditor {
 
     const node = this.lf.addNode(nodeData)
 
-    // 添加节点后，强制更新文本位置
+    // 添加节点后，立即触发布局优化
     setTimeout(() => {
       const nodeModel = this.lf.getNodeModelById(node.id)
       if (nodeModel) {
+        // 触发节点的布局优化
+        if (typeof (nodeModel as any).optimizeLayout === 'function') {
+          (nodeModel as any).optimizeLayout()
+        }
         nodeModel.setAttributes()
       }
     }, 0)
@@ -996,7 +999,6 @@ export class FlowchartEditor {
   updateNode(id: string, nodeConfig: Partial<ApprovalNodeConfig>): void {
     const nodeModel = this.lf.getNodeModelById(id)
     if (!nodeModel) {
-      console.warn(`节点 ${id} 不存在`)
       return
     }
 
@@ -1035,17 +1037,14 @@ export class FlowchartEditor {
       // 使用LogicFlow的正确 API更新节点数据
       // 方法1: 尝试使用 setNodeData
       if (typeof this.lf.setNodeData === 'function') {
-        console.log('🔧 使用 lf.setNodeData 方法')
         this.lf.setNodeData(id, updateData)
       }
-      // 方法2: 尝试使用 updateNode  
+      // 方法2: 尝试使用 updateNode
       else if (typeof this.lf.updateNode === 'function') {
-        console.log('🔧 使用 lf.updateNode 方法')
         this.lf.updateNode(id, updateData)
       }
       // 方法3: 直接操作节点模型属性
       else {
-        console.log('🔧 直接更新节点模型属性')
         // 逐个更新节点模型的属性
         if (updateData.text !== undefined) {
           // 确保 text 属性是正确的对象格式
@@ -1087,7 +1086,6 @@ export class FlowchartEditor {
       // 不要调用无参数的render()，这会清空画布
       // 直接操作节点模型属性已经能触发视觉更新
       // 如果需要强制刷新，应该使用 lf.focusOn 或类似方法
-      console.log('💡 跳过render()调用，避免清空画布')
 
       // 更新本地选中节点状态
       if (this.selectedNode && this.selectedNode.id === id) {
@@ -1096,10 +1094,7 @@ export class FlowchartEditor {
 
       // 触发数据变化事件
       this.emit('data:change', this.getData())
-
-      console.log(`✅ 节点已更新:`, id, nodeConfig)
     } catch (error) {
-      console.error(`更新节点失败:`, error)
       throw error
     }
   }
@@ -1115,7 +1110,19 @@ export class FlowchartEditor {
    * 添加边
    */
   addEdge(edgeConfig: ApprovalEdgeConfig): string {
-    const edge = this.lf.addEdge(edgeConfig)
+    // 确保连线文本格式正确
+    const edgeData = { ...edgeConfig }
+    if (edgeData.text) {
+      edgeData.text = {
+        value: edgeData.text,
+        x: 0,
+        y: 0,
+        draggable: false,
+        editable: true
+      }
+    }
+
+    const edge = this.lf.addEdge(edgeData)
     return edge.id
   }
 
@@ -1126,7 +1133,6 @@ export class FlowchartEditor {
     try {
       const edgeModel = this.lf.getEdgeModelById(id)
       if (!edgeModel) {
-        console.warn(`连线 ${id} 不存在`)
         return
       }
 
@@ -1139,20 +1145,61 @@ export class FlowchartEditor {
         id // 确保保留连线ID
       }
 
-      // 使用LogicFlow的setEdgeData方法
-      this.lf.setEdgeData(id, updateData)
+      // 如果有文本更新，确保文本格式正确
+      if (cleanedUpdates.text !== undefined) {
+        // LogicFlow连线文本需要特定格式
+        updateData.text = {
+          value: cleanedUpdates.text,
+          x: 0,
+          y: 0,
+          draggable: false,
+          editable: true
+        }
+      }
+
+      // 使用LogicFlow的正确API更新连线
+      try {
+        // 首先尝试更新边的属性
+        if (cleanedUpdates.text !== undefined) {
+          edgeModel.updateText(cleanedUpdates.text)
+        }
+
+        // 更新其他属性
+        const otherUpdates = { ...cleanedUpdates }
+        delete otherUpdates.text
+
+        if (Object.keys(otherUpdates).length > 0) {
+          edgeModel.setProperties({
+            ...edgeModel.properties,
+            ...otherUpdates
+          })
+        }
+
+        // 如果边模型有更新文本位置的方法，调用它
+        if (typeof edgeModel.updateTextPosition === 'function') {
+          edgeModel.updateTextPosition()
+        }
+      } catch (error) {
+        // 如果上述方法失败，尝试直接更新数据
+        try {
+          const edgeData = this.lf.getEdgeDataById(id)
+          if (edgeData) {
+            Object.assign(edgeData, updateData)
+            this.lf.render(this.lf.getGraphData())
+          }
+        } catch (renderError) {
+          // 静默处理渲染错误
+          throw error
+        }
+      }
 
       // 不调用render()避免清空画布，setEdgeData已经会触发更新
-      console.log('💡 跳过render()调用，避免清空画布')
 
       // 更新本地选中边状态
       if (this.selectedEdge && this.selectedEdge.id === id) {
         this.selectedEdge = { ...this.selectedEdge, ...cleanedUpdates } as ApprovalEdgeConfig
       }
-
-      console.log(`✅ 连线已更新:`, id, cleanedUpdates)
     } catch (error) {
-      console.error(`更新连线失败:`, error)
       throw error
     }
   }
@@ -1213,7 +1260,6 @@ export class FlowchartEditor {
         properties: nodeData.properties || {}
       }
     } catch (error) {
-      console.warn(`获取节点 ${id} 失败:`, error)
       return null
     }
   }
@@ -1236,7 +1282,6 @@ export class FlowchartEditor {
         properties: edgeData.properties || {}
       }
     } catch (error) {
-      console.warn(`获取连线 ${id} 失败:`, error)
       return null
     }
   }
@@ -1297,9 +1342,6 @@ export class FlowchartEditor {
         canvasOverlay.classList.add('grid-background')
       }
 
-      console.log(`画布背景已切换为: ${type}`)
-    } else {
-      console.warn('未找到画布容器，无法设置背景')
     }
   }
 
@@ -1396,14 +1438,13 @@ export class FlowchartEditor {
       // 获取所有节点的边界
       const graphData = this.lf.getGraphData()
       if (!graphData.nodes || graphData.nodes.length === 0) {
-        console.warn('没有节点可以适应')
         return
       }
 
       // 使用新的 ViewportService 实现
       this.fitView()
     } catch (error) {
-      console.error('旧版适应视图失败:', error)
+      // 静默处理错误
     }
   }
 
@@ -1487,7 +1528,7 @@ export class FlowchartEditor {
         try {
           listener(data)
         } catch (error) {
-          console.error(`事件处理器执行错误 [${event}]:`, error)
+          // 静默处理事件错误
         }
       })
     }
@@ -1528,28 +1569,7 @@ export class FlowchartEditor {
     return this.lf
   }
 
-  /**
-   * 调试LogicFlow API
-   */
-  debugLogicFlowAPI(): void {
-    console.log('🔍 LogicFlow API 调试信息:')
-    console.log('LogicFlow 实例:', this.lf)
-    console.log('可用的节点相关方法:')
-    
-    const nodeMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(this.lf))
-      .filter(name => name.includes('Node') && typeof this.lf[name] === 'function')
-    console.log('原型链上的方法:', nodeMethods)
-    
-    const instanceMethods = Object.getOwnPropertyNames(this.lf)
-      .filter(name => name.includes('Node') && typeof this.lf[name] === 'function')
-    console.log('实例上的方法:', instanceMethods)
-    
-    // 检查具体方法
-    const methods = ['setNodeData', 'updateNode', 'updateData', 'changeNodeData', 'setData']
-    methods.forEach(method => {
-      console.log(`${method}: ${typeof this.lf[method] === 'function' ? '✅ 可用' : '❌ 不可用'}`)
-    })
-  }
+
 
   /**
    * 手动设置属性面板的更新回调
@@ -1576,7 +1596,7 @@ export class FlowchartEditor {
       })
     }
     
-    console.log('✅ 属性面板已连接到编辑器')
+
   }
 
   /**
@@ -1586,11 +1606,9 @@ export class FlowchartEditor {
   createPropertyPanelCallbacks() {
     return {
       onUpdateNode: (nodeId: string, updates: Partial<ApprovalNodeConfig>) => {
-        console.log('🔄 属性面板触发节点更新:', nodeId, updates)
         this.updateNode(nodeId, updates)
       },
       onUpdateEdge: (edgeId: string, updates: Partial<ApprovalEdgeConfig>) => {
-        console.log('🔄 属性面板触发连线更新:', edgeId, updates)
         this.updateEdge(edgeId, updates)
       }
     }
@@ -1984,7 +2002,7 @@ export class FlowchartEditor {
         text: this.copiedNodeData.text,
         properties: this.copiedNodeData.properties
       })
-      console.log('节点已粘贴到位置:', x, y)
+
       return nodeId
     }
   }
@@ -2004,7 +2022,7 @@ export class FlowchartEditor {
         text: this.copiedNodeData.text,
         properties: this.copiedNodeData.properties
       })
-      console.log('节点已粘贴到偏移位置:', offsetX, offsetY)
+
       return nodeId
     }
   }
@@ -2028,7 +2046,6 @@ export class FlowchartEditor {
    */
   private deleteNodeInternal(nodeId: string): void {
     this.lf.deleteNode(nodeId)
-    console.log('节点已删除')
   }
 
   /**
@@ -2056,7 +2073,6 @@ export class FlowchartEditor {
   enableSelectionMode(): void {
     this.isSelectionMode = true
     this.lf.extension.selectionSelect.openSelectionSelect()
-    console.log('多选模式已启用')
   }
 
   /**
@@ -2065,7 +2081,6 @@ export class FlowchartEditor {
   disableSelectionMode(): void {
     this.isSelectionMode = false
     this.lf.extension.selectionSelect.closeSelectionSelect()
-    console.log('多选模式已禁用')
   }
 
   /**
@@ -2086,7 +2101,6 @@ export class FlowchartEditor {
    */
   setSelectionSensitivity(isWholeEdge: boolean = true, isWholeNode: boolean = true): void {
     this.lf.extension.selectionSelect.setSelectionSense(isWholeEdge, isWholeNode)
-    console.log(`选择敏感度已设置: 整条边=${isWholeEdge}, 整个节点=${isWholeNode}`)
   }
 
   /**
@@ -2095,7 +2109,6 @@ export class FlowchartEditor {
    */
   setExclusiveSelectionMode(exclusive: boolean): void {
     this.lf.extension.selectionSelect.setExclusiveMode(exclusive)
-    console.log(`排他选择模式: ${exclusive ? '已启用' : '已禁用'}`)
   }
 
   /**
@@ -2111,7 +2124,6 @@ export class FlowchartEditor {
    */
   clearSelection(): void {
     this.lf.clearSelectElements()
-    console.log('已清空所有选中元素')
   }
 
   /**
@@ -2127,7 +2139,7 @@ export class FlowchartEditor {
       this.lf.selectElementById(nodeId, index > 0) // 第一个不是多选，后续都是多选
     })
 
-    console.log(`已选中 ${nodeIds.length} 个节点`)
+
   }
 
   /**
@@ -2195,7 +2207,6 @@ export class FlowchartEditor {
 
     // 使用LogicFlow的addNode方法
     const nodeId = this.lf.addNode(nodeConfig)
-    console.log(`自定义物料"${material.name}"已添加到画布，节点ID: ${nodeId}`)
   }
 
   /**
@@ -2205,7 +2216,6 @@ export class FlowchartEditor {
     // 从物料仓库获取物料数据
     const material = this.materialRepositoryManager.getMaterial(materialId)
     if (!material) {
-      console.error(`找不到物料: ${materialId}`)
       return
     }
 
@@ -2222,7 +2232,6 @@ export class FlowchartEditor {
 
     // 使用LogicFlow的addNode方法
     const nodeId = this.lf.addNode(nodeConfig)
-    console.log(`自定义物料"${material.name}"已拖拽添加到画布，节点ID: ${nodeId}，位置: (${position.x}, ${position.y})`)
 
     // 触发数据变化事件
     this.emit('data:change', this.getData())
@@ -2448,7 +2457,7 @@ export class FlowchartEditor {
       }
     }, 100)
 
-    console.log(`进入节点编辑模式: ${nodeConfig.type} - ${nodeConfig.text}`)
+
   }
 
   /**
@@ -2556,11 +2565,9 @@ export class FlowchartEditor {
         downloadExportedFile(result)
         this.emit('export:success', { format, filename: result.filename })
       } else {
-        console.error('导出失败:', result.error)
         this.emit('export:error', { format, error: result.error })
       }
     } catch (error) {
-      console.error('导出过程中发生错误:', error)
       this.emit('export:error', { format, error: error instanceof Error ? error.message : String(error) })
     }
   }
@@ -2946,7 +2953,6 @@ export class FlowchartEditor {
     const selected = this.lf.getSelectElements()
 
     if (selected.nodes.length === 0 && selected.edges.length === 0) {
-      console.info('请先选中要复制的元素')
       // 可以考虑显示用户友好的提示
       this.emit('copy:warning', { message: '请先选中要复制的元素' })
       return false
@@ -3002,7 +3008,6 @@ export class FlowchartEditor {
       const result = await this.clipboardManager.paste(options)
 
       if (!result) {
-        console.info('剪贴板中没有可粘贴的数据，请先复制一些元素')
         this.emit('paste:warning', { message: '剪贴板中没有可粘贴的数据，请先复制一些元素' })
         return false
       }
@@ -3025,7 +3030,7 @@ export class FlowchartEditor {
             addedNodes.push(nodeModel.id)
           }
         } catch (error) {
-          console.error('添加节点失败:', error)
+          // 静默处理错误
         }
       }
 
@@ -3102,7 +3107,6 @@ export class FlowchartEditor {
   private async initializeTemplateManager(): Promise<void> {
     try {
       await this.templateManager.initialize()
-      console.log('模板管理器初始化完成')
     } catch (error) {
       console.error('模板管理器初始化失败:', error)
     }
@@ -3127,7 +3131,6 @@ export class FlowchartEditor {
 
       // 启动性能监控
       this.performanceMonitor.start()
-      console.log('性能监控器初始化完成')
     } catch (error) {
       console.error('性能监控器初始化失败:', error)
     }
@@ -3207,7 +3210,6 @@ export class FlowchartEditor {
   async deleteTemplate(templateId: string): Promise<void> {
     await this.templateManager.deleteTemplate(templateId)
     this.emit('template:delete', { templateId })
-    console.log(`已删除模板: ${templateId}`)
   }
 
   /**
@@ -4123,8 +4125,6 @@ export class FlowchartEditor {
 
     // 绑定拖拽事件
     this.setupDragGuideEvents()
-
-    console.log('✅ 智能拖拽与对齐系统已初始化')
   }
 
   /**
@@ -4220,10 +4220,6 @@ export class FlowchartEditor {
       
       // 仅在手机上设置触控事件处理
       this.setupMobileTouchEvents()
-      
-      console.log(`✅ 移动端适配已启用 (设备类型: ${deviceInfo.deviceType})`)
-    } else {
-      console.log(`ℹ️ 检测到设备类型: ${deviceInfo.deviceType}, 跳过移动端适配`)
     }
   }
 
@@ -4307,18 +4303,14 @@ export class FlowchartEditor {
     
     // 监听主题变更事件
     document.addEventListener('flowchart-theme-change', (event: any) => {
-      console.log('🎨 主题已切换:', event.detail.theme.name)
-      
       // 通知UI管理器更新主题
       if (this.uiManager) {
         this.uiManager.updateTheme(event.detail.theme)
       }
-      
+
       // 触发重新渲染
       this.render()
     })
-    
-    console.log('✅ 增强主题系统已初始化')
   }
 
   // ==================== 新增公共API方法 ====================
@@ -4358,7 +4350,7 @@ export class FlowchartEditor {
       })
     })
     
-    console.log(`✅ 已对齐 ${alignedNodes.length} 个节点 (${options.type})`)
+
   }
 
   /**
@@ -4373,14 +4365,13 @@ export class FlowchartEditor {
       
       if (suggestions.length > 0) {
         const bestSuggestion = suggestions[0]
-        console.log(`💡 AI建议使用: ${bestSuggestion.template.name}`)
-        
+
         // 应用最佳布局建议
         const optimizedData = await aiLayoutService.applyLayoutTemplate(
-          flowchartData, 
+          flowchartData,
           bestSuggestion.template
         )
-        
+
         // 更新节点位置
         optimizedData.nodes.forEach(node => {
           this.lf.setNodeData(node.id, {
@@ -4388,8 +4379,6 @@ export class FlowchartEditor {
             y: node.position.y
           })
         })
-        
-        console.log('✅ AI布局优化完成')
         
         // 显示改进建议
         if (bestSuggestion.preview.improvements.length > 0) {
@@ -4413,7 +4402,6 @@ export class FlowchartEditor {
     try {
       const result = await enhancedThemeService.applyTheme(themeId)
       if (result.success) {
-        console.log(`✅ 主题已切换为: ${result.theme.name}`)
         this.toastManager.success(`已切换到${result.theme.name}`)
       } else {
         console.error('主题切换失败:', result.errors)
@@ -4451,7 +4439,7 @@ export class FlowchartEditor {
       dragGuideService.endDrag()
     }
     
-    console.log(`拖拽指示线${enabled ? '已启用' : '已禁用'}`)
+
   }
 
   /**
@@ -4478,8 +4466,6 @@ export class FlowchartEditor {
 
     // 启用硬件加速
     this.enableHardwareAcceleration()
-
-    console.log('✨ 画布交互优化已启用')
   }
 
   /**

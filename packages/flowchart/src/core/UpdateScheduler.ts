@@ -267,9 +267,9 @@ export class UpdateScheduler {
         this.totalExecutionTime += executionTime
         this.lastFrameTime = executionTime
 
-        // 如果执行时间过长，发出警告
+        // 如果执行时间过长，静默处理
         if (executionTime > 16) { // 超过一帧时间
-          console.warn(`UpdateScheduler: 帧执行时间过长: ${executionTime.toFixed(2)}ms`)
+          // 静默处理性能问题
         }
       }
     }

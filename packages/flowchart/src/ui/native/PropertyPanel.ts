@@ -51,7 +51,6 @@ export class PropertyPanel {
   private selectedNode: ApprovalNodeConfig | null = null
   private selectedEdge: ApprovalEdgeConfig | null = null
   private previewTimer: NodeJS.Timeout | null = null
-  private hasChangesMark: boolean = false
 
   constructor(container: HTMLElement, config: PropertyPanelConfig = {}) {
     this.container = container
@@ -185,13 +184,6 @@ export class PropertyPanel {
       </div>
 
       ${this.createCustomPropertiesHTML()}
-
-      ${!this.config.readonly ? `
-        <div class="property-actions">
-          <button class="btn-primary" id="apply-changes">应用更改</button>
-          <button class="btn-secondary" id="reset-changes">重置</button>
-        </div>
-      ` : ''}
     `
   }
 
@@ -230,41 +222,16 @@ export class PropertyPanel {
   private bindPropertyEvents(): void {
     if (!this.panelElement || this.config.readonly) return
 
-    // 应用更改按钮
-    const applyBtn = this.panelElement.querySelector('#apply-changes') as HTMLButtonElement
-    if (applyBtn) {
-      applyBtn.addEventListener('click', () => {
-        this.applyChanges()
-      })
-    }
-
-    // 重置按钮
-    const resetBtn = this.panelElement.querySelector('#reset-changes') as HTMLButtonElement
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
-        this.render() // 重新渲染以重置值
-      })
-    }
-
-    // 输入框实时更新（可选：启用实时预览）
+    // 输入框实时更新
     const inputs = this.panelElement.querySelectorAll('.property-input')
     inputs.forEach(input => {
       input.addEventListener('input', () => {
-        this.markAsChanged()
-        
-        // 可选：启用实时预览更新（防抖处理）
+        // 实时应用更改
         if (!this.config.readonly) {
           clearTimeout(this.previewTimer)
           this.previewTimer = setTimeout(() => {
-            this.previewChanges()
+            this.applyChanges()
           }, 300) // 300ms防抖
-        }
-      })
-      
-      // 失焦时立即应用更改（可选）
-      input.addEventListener('blur', () => {
-        if (this.hasChanges()) {
-          this.applyChanges()
         }
       })
     })
@@ -301,29 +268,9 @@ export class PropertyPanel {
 
     // 更新本地状态
     Object.assign(this.selectedNode, updates)
-
-    // 移除更改标记
-    this.removeChangedMark()
   }
 
-  /**
-   * 标记为已更改
-   */
-  private markAsChanged(): void {
-    this.hasChangesMark = true
-    const applyBtn = this.panelElement?.querySelector('#apply-changes') as HTMLButtonElement
-    if (applyBtn) {
-      applyBtn.classList.add('has-changes')
-      applyBtn.textContent = '应用更改 *'
-    }
-  }
 
-  /**
-   * 检查是否有更改
-   */
-  private hasChanges(): boolean {
-    return this.hasChangesMark
-  }
 
   /**
    * 预览更改（实时更新但不保存）
@@ -355,17 +302,7 @@ export class PropertyPanel {
     this.config.onUpdateNode?.(this.selectedNode.id, updates)
   }
 
-  /**
-   * 移除更改标记
-   */
-  private removeChangedMark(): void {
-    this.hasChangesMark = false
-    const applyBtn = this.panelElement?.querySelector('#apply-changes') as HTMLButtonElement
-    if (applyBtn) {
-      applyBtn.classList.remove('has-changes')
-      applyBtn.textContent = '应用更改'
-    }
-  }
+
 
   /**
    * 应用样式
@@ -622,13 +559,6 @@ export class PropertyPanel {
           <input type="text" class="property-input" value="${this.selectedEdge.targetNodeId}" readonly>
         </div>
       </div>
-
-      ${!this.config.readonly ? `
-        <div class="property-actions">
-          <button class="btn btn-primary" id="applyEdgeChanges">应用更改</button>
-          <button class="btn btn-secondary" id="resetEdgeChanges">重置</button>
-        </div>
-      ` : ''}
     `
   }
 
@@ -638,41 +568,20 @@ export class PropertyPanel {
   private bindEdgePropertyEvents(): void {
     if (!this.panelElement || this.config.readonly) return
 
-    // 监听输入变化
+    // 监听输入变化，实时更新
     const inputs = this.panelElement.querySelectorAll('.property-input:not([readonly])')
     inputs.forEach(input => {
       input.addEventListener('input', () => {
-        this.markEdgeAsChanged()
+        // 实时应用连线更改
+        clearTimeout(this.previewTimer)
+        this.previewTimer = setTimeout(() => {
+          this.applyEdgeChanges()
+        }, 300) // 300ms防抖
       })
     })
-
-    // 应用更改按钮
-    const applyBtn = this.panelElement.querySelector('#applyEdgeChanges')
-    if (applyBtn) {
-      applyBtn.addEventListener('click', () => {
-        this.applyEdgeChanges()
-      })
-    }
-
-    // 重置按钮
-    const resetBtn = this.panelElement.querySelector('#resetEdgeChanges')
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
-        this.render()
-      })
-    }
   }
 
-  /**
-   * 标记边为已更改
-   */
-  private markEdgeAsChanged(): void {
-    const applyBtn = this.panelElement?.querySelector('#applyEdgeChanges')
-    if (applyBtn) {
-      applyBtn.textContent = '应用更改 *'
-      applyBtn.classList.add('has-changes')
-    }
-  }
+
 
   /**
    * 应用边更改
@@ -699,21 +608,9 @@ export class PropertyPanel {
 
     // 更新本地状态
     Object.assign(this.selectedEdge, updates)
-
-    // 移除更改标记
-    this.removeEdgeChangedMark()
   }
 
-  /**
-   * 移除边更改标记
-   */
-  private removeEdgeChangedMark(): void {
-    const applyBtn = this.panelElement?.querySelector('#applyEdgeChanges')
-    if (applyBtn) {
-      applyBtn.textContent = '应用更改'
-      applyBtn.classList.remove('has-changes')
-    }
-  }
+
 
   /**
    * 销毁面板

@@ -1105,8 +1105,6 @@ export class EnhancedPropertyPanel {
         
         // 更新本地状态
         Object.assign(this.selectedNode, cleanUpdates)
-        
-        console.log(`✅ 节点属性已更新:`, this.selectedNode.id, cleanUpdates)
       }
 
       // 移除更改标记

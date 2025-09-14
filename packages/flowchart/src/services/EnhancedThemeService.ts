@@ -1341,7 +1341,7 @@ ${this.config.accessibility.largeText ? '.flowchart-container { font-size: 120% 
     try {
       localStorage.setItem('flowchart-theme', themeId)
     } catch (error) {
-      console.warn('无法保存主题偏好:', error)
+      // 静默处理存储错误
     }
   }
 
@@ -1349,7 +1349,6 @@ ${this.config.accessibility.largeText ? '.flowchart-container { font-size: 120% 
     try {
       return localStorage.getItem('flowchart-theme')
     } catch (error) {
-      console.warn('无法读取主题偏好:', error)
       return null
     }
   }

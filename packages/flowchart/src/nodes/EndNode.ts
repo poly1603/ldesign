@@ -82,7 +82,6 @@ export class EndNodeModel extends CircleNodeModel {
       
       this.isLayoutOptimized = true
     } catch (error) {
-      console.warn('EndNode 布局优化失败:', error)
       // 失败时使用默认布局
       this.r = 30
     }
@@ -195,15 +194,19 @@ export class EndNode extends CircleNode {
     const nodeLayout = (model as any).nodeLayout
     const layoutDirection = (model as any).layoutDirection
 
-    // 计算图标位置
+    // 计算图标位置 - 确保不与文本重叠
     let iconX = x
-    let iconY = y - 8 // 默认位置
-    let iconSize = 14
-    
+    let iconY = y - 6 // 图标稍微向上，为文本留出空间
+    let iconSize = 12
+
     if (nodeLayout) {
       iconX = x + nodeLayout.iconPosition.x
       iconY = y + nodeLayout.iconPosition.y
       iconSize = nodeLayout.iconSize
+    } else {
+      // 如果没有优化布局，使用安全的默认位置
+      // 图标在上方，文本在下方，确保不重叠
+      iconY = y - 8
     }
 
     // 添加布局方向指示器（调试用，可选）
@@ -247,11 +250,12 @@ export class EndNode extends CircleNode {
 
     if (!iconData) return null
 
+    const scale = size / 24
     return h('g', {
-      transform: `translate(${x}, ${y}) scale(${size / 24})` // 根据尺寸动态缩放
+      transform: `translate(${x}, ${y})`
     }, [
       h('g', {
-        transform: 'translate(-12, -12)' // 居中图标
+        transform: `scale(${scale}) translate(-12, -12)` // 先缩放再居中
       }, iconData.paths.map((path: string, index: number) =>
         h('path', {
           key: index,

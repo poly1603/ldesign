@@ -198,7 +198,7 @@ export class ApprovalNode extends RectNode {
    */
   private getNodeTypeIcon(x: number, y: number): h.JSX.Element | null {
     const iconData = createNodeIcon('check-square', {
-      size: 16,
+      size: 14, // 稍微减小图标尺寸
       color: 'var(--ldesign-brand-color, #722ed1)',
       strokeWidth: 2
     })
@@ -206,10 +206,10 @@ export class ApprovalNode extends RectNode {
     if (!iconData) return null
 
     return h('g', {
-      transform: `translate(${x}, ${y - 8})` // 图标在节点中心稍微上方，为文本留出空间
+      transform: `translate(${x}, ${y - 12})` // 图标向上移动更多，确保与文本分离
     }, [
       h('g', {
-        transform: 'translate(-8, -8)' // 居中图标 (16/2 = 8)
+        transform: 'translate(-7, -7)' // 居中图标 (14/2 = 7)
       }, iconData.paths.map((path: string, index: number) =>
         h('path', {
           key: index,
@@ -250,7 +250,7 @@ export class ApprovalNode extends RectNode {
 
     return h('path', {
       d: iconPath,
-      transform: `translate(${x}, ${y - 15})`, // 图标在文本上方，整体居中
+      transform: `translate(${x}, ${y - 18})`, // 状态图标向上移动更多，避免与文本重叠
       stroke: iconColor,
       strokeWidth: 2,
       fill: 'none'
@@ -266,18 +266,18 @@ export class ApprovalNode extends RectNode {
     return h('g', {}, [
       // 背景圆
       h('circle', {
-        cx: x - 20,
-        cy: y - 15,
-        r: 8,
+        cx: x - 22,
+        cy: y - 18,
+        r: 7,
         fill: 'var(--ldesign-brand-color, #722ED1)',
         stroke: 'white',
         strokeWidth: 1
       }),
       // 数量文本
       h('text', {
-        x: x - 20,
-        y: y - 11,
-        fontSize: 10,
+        x: x - 22,
+        y: y - 15,
+        fontSize: 9,
         fill: 'white',
         textAnchor: 'middle',
         fontWeight: 'bold'

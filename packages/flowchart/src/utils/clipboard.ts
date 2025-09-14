@@ -254,7 +254,6 @@ export class ClipboardManager {
       }
     } catch (error) {
       // 系统剪贴板写入失败，使用内存存储
-      console.warn('无法写入系统剪贴板，使用内存存储:', error)
     }
   }
 
