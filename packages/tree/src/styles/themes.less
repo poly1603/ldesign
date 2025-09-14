@@ -1,0 +1,406 @@
+/**
+ * 主题样式
+ */
+
+@import './variables.less';
+
+// 默认主题（浅色）
+.@{tree-prefix} {
+  // 默认主题变量已在 variables.less 中定义
+}
+
+// 暗色主题
+.@{tree-prefix}--dark {
+  // 重写颜色变量
+  --ldesign-bg-color-component: var(--ldesign-gray-color-9);
+  --ldesign-bg-color-component-hover: var(--ldesign-gray-color-8);
+  --ldesign-bg-color-component-active: var(--ldesign-gray-color-7);
+  --ldesign-border-color: var(--ldesign-gray-color-7);
+  --ldesign-text-color-primary: var(--ldesign-gray-color-2);
+  --ldesign-text-color-secondary: var(--ldesign-gray-color-4);
+  --ldesign-text-color-disabled: var(--ldesign-gray-color-6);
+
+  background: var(--ldesign-gray-color-9);
+  border-color: var(--ldesign-gray-color-7);
+  color: var(--ldesign-gray-color-2);
+
+  .@{tree-prefix}__node {
+    &:hover {
+      background: var(--ldesign-gray-color-8);
+    }
+
+    &--selected {
+      background: fade(@tree-brand-color, 20%);
+      color: @tree-brand-color;
+    }
+
+    &--disabled {
+      color: var(--ldesign-gray-color-6);
+    }
+  }
+
+  // 滚动条
+  &::-webkit-scrollbar-track {
+    background: var(--ldesign-gray-color-8);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--ldesign-gray-color-6);
+
+    &:hover {
+      background: var(--ldesign-gray-color-5);
+    }
+  }
+}
+
+// 紧凑主题
+.@{tree-prefix}--compact {
+  .@{tree-prefix}__node {
+    min-height: @tree-node-height-small;
+    padding: calc(var(--ls-padding-xs) / 2) var(--ls-padding-xs);
+
+    &-content {
+      gap: var(--ls-spacing-xs);
+    }
+
+    &-indent {
+      width: calc(@tree-indent-size / 2);
+    }
+
+    &-icon {
+      font-size: calc(@tree-icon-size - 2px);
+    }
+
+    &-label {
+      font-size: @tree-font-size-small;
+    }
+  }
+
+  .@{tree-prefix}__search {
+    &-input {
+      height: @tree-node-height-small;
+      font-size: @tree-font-size-small;
+    }
+  }
+}
+
+// 宽松主题
+.@{tree-prefix}--comfortable {
+  .@{tree-prefix}__node {
+    min-height: @tree-node-height-large;
+    padding: var(--ls-padding-sm) var(--ls-padding-base);
+
+    &-content {
+      gap: var(--ls-spacing-base);
+    }
+
+    &-indent {
+      width: calc(@tree-indent-size * 1.5);
+    }
+
+    &-icon {
+      font-size: calc(@tree-icon-size + 2px);
+    }
+
+    &-label {
+      font-size: @tree-font-size-large;
+    }
+  }
+
+  .@{tree-prefix}__search {
+    &-input {
+      height: @tree-node-height-large;
+      font-size: @tree-font-size;
+    }
+  }
+}
+
+// 圆角主题
+.@{tree-prefix}--rounded {
+  border-radius: var(--ls-border-radius-lg);
+
+  .@{tree-prefix}__node {
+    border-radius: var(--ls-border-radius-base);
+    margin: 2px;
+
+    &:first-child {
+      margin-top: 4px;
+    }
+
+    &:last-child {
+      margin-bottom: 4px;
+    }
+  }
+
+  .@{tree-prefix}__search {
+    &-input {
+      border-radius: var(--ls-border-radius-lg);
+    }
+  }
+}
+
+// 无边框主题
+.@{tree-prefix}--borderless {
+  border: none;
+
+  .@{tree-prefix}__node {
+    border: none;
+    border-radius: 0;
+
+    &--selected {
+      border-left: 3px solid @tree-brand-color;
+    }
+  }
+
+  .@{tree-prefix}__search {
+    border-bottom: none;
+    padding-bottom: 0;
+
+    &-input {
+      border: none;
+      border-bottom: 1px solid @tree-border-color;
+      border-radius: 0;
+
+      &:focus {
+        border-bottom-color: @tree-brand-color;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+// 卡片主题
+.@{tree-prefix}--card {
+  background: transparent;
+  border: none;
+
+  .@{tree-prefix}__node {
+    background: @tree-bg-color;
+    border: 1px solid @tree-border-color;
+    border-radius: @tree-border-radius;
+    margin: var(--ls-margin-xs);
+    box-shadow: @tree-shadow;
+    transition: @tree-transition;
+
+    &:hover {
+      box-shadow: @tree-shadow-hover;
+      transform: translateY(-1px);
+    }
+
+    &--selected {
+      border-color: @tree-brand-color;
+      box-shadow: 0 0 0 2px fade(@tree-brand-color, 20%);
+    }
+
+    &-children {
+      margin-left: var(--ls-margin-base);
+      padding-left: var(--ls-padding-base);
+      border-left: 2px solid @tree-border-color;
+    }
+  }
+}
+
+// 线条主题
+.@{tree-prefix}--lines {
+  .@{tree-prefix}__node {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: calc(@tree-indent-size / 2);
+      top: 0;
+      bottom: 50%;
+      width: 1px;
+      background: @tree-border-color;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: calc(@tree-indent-size / 2);
+      top: 50%;
+      width: calc(@tree-indent-size / 2);
+      height: 1px;
+      background: @tree-border-color;
+    }
+
+    &:last-child::before {
+      bottom: 50%;
+    }
+
+    &--root {
+      &::before,
+      &::after {
+        display: none;
+      }
+    }
+
+    &-children {
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: calc(@tree-indent-size / 2);
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: @tree-border-color;
+      }
+    }
+  }
+}
+
+// 彩色主题
+.@{tree-prefix}--colorful {
+  .@{tree-prefix}__node {
+    &[data-level="0"] {
+      border-left: 4px solid var(--ldesign-brand-color-6);
+    }
+
+    &[data-level="1"] {
+      border-left: 4px solid var(--ldesign-success-color-5);
+    }
+
+    &[data-level="2"] {
+      border-left: 4px solid var(--ldesign-warning-color-5);
+    }
+
+    &[data-level="3"] {
+      border-left: 4px solid var(--ldesign-error-color-5);
+    }
+
+    &[data-level="4"] {
+      border-left: 4px solid var(--ldesign-brand-color-4);
+    }
+
+    &[data-level="5"] {
+      border-left: 4px solid var(--ldesign-success-color-3);
+    }
+
+    &--selected {
+      background: fade(@tree-brand-color, 10%);
+    }
+  }
+}
+
+// 简约主题
+.@{tree-prefix}--minimal {
+  border: none;
+  background: transparent;
+
+  .@{tree-prefix}__node {
+    border: none;
+    background: transparent;
+    border-radius: 0;
+    padding: var(--ls-padding-xs) 0;
+
+    &:hover {
+      background: fade(@tree-text-color, 5%);
+    }
+
+    &--selected {
+      background: fade(@tree-brand-color, 10%);
+      color: @tree-brand-color;
+    }
+
+    &-expand-icon {
+      color: @tree-text-color-secondary;
+    }
+  }
+
+  .@{tree-prefix}__search {
+    border: none;
+    padding: 0;
+
+    &-input {
+      border: none;
+      border-bottom: 1px solid @tree-border-color;
+      border-radius: 0;
+      background: transparent;
+
+      &:focus {
+        border-bottom-color: @tree-brand-color;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+// 高对比度主题
+.@{tree-prefix}--high-contrast {
+  border: 2px solid @tree-text-color;
+  background: @tree-bg-color;
+
+  .@{tree-prefix}__node {
+    border: 1px solid @tree-text-color;
+    background: @tree-bg-color;
+    color: @tree-text-color;
+
+    &:hover {
+      background: @tree-text-color;
+      color: @tree-bg-color;
+    }
+
+    &--selected {
+      background: @tree-text-color;
+      color: @tree-bg-color;
+      font-weight: bold;
+    }
+
+    &--disabled {
+      opacity: 0.5;
+    }
+  }
+
+  .@{tree-prefix}__search {
+    &-input {
+      border: 2px solid @tree-text-color;
+      background: @tree-bg-color;
+      color: @tree-text-color;
+
+      &:focus {
+        border-color: @tree-brand-color;
+        box-shadow: 0 0 0 2px @tree-brand-color;
+      }
+    }
+  }
+}
+
+// 主题切换动画
+.@{tree-prefix} {
+  transition: background-color @tree-transition-duration @tree-transition-timing,
+              border-color @tree-transition-duration @tree-transition-timing,
+              color @tree-transition-duration @tree-transition-timing;
+
+  * {
+    transition: background-color @tree-transition-duration @tree-transition-timing,
+                border-color @tree-transition-duration @tree-transition-timing,
+                color @tree-transition-duration @tree-transition-timing;
+  }
+}
+
+// 媒体查询：自动暗色主题
+@media (prefers-color-scheme: dark) {
+  .@{tree-prefix}:not(.@{tree-prefix}--light) {
+    &:extend(.@{tree-prefix}--dark all);
+  }
+}
+
+// 媒体查询：高对比度
+@media (prefers-contrast: high) {
+  .@{tree-prefix}:not(.@{tree-prefix}--normal-contrast) {
+    &:extend(.@{tree-prefix}--high-contrast all);
+  }
+}
+
+// 媒体查询：减少动画
+@media (prefers-reduced-motion: reduce) {
+  .@{tree-prefix} {
+    * {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}

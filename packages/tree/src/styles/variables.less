@@ -1,0 +1,99 @@
+/**
+ * 树形组件样式变量
+ * 
+ * 基于LDESIGN设计系统的CSS变量
+ */
+
+// 基础变量
+@tree-prefix: 'ldesign-tree';
+
+// 尺寸变量
+@tree-node-height: var(--ls-button-height-medium); // 44px
+@tree-node-height-small: var(--ls-button-height-small); // 40px
+@tree-node-height-large: var(--ls-button-height-large); // 48px
+
+@tree-indent-size: var(--ls-spacing-base); // 20px
+@tree-icon-size: var(--ls-icon-size-medium); // 22px
+@tree-checkbox-size: 16px;
+
+// 间距变量
+@tree-node-padding-horizontal: var(--ls-padding-sm); // 12px
+@tree-node-padding-vertical: var(--ls-padding-xs); // 6px
+@tree-node-margin: 2px;
+
+// 颜色变量
+@tree-bg-color: var(--ldesign-bg-color-component);
+@tree-border-color: var(--ldesign-border-color);
+@tree-text-color: var(--ldesign-text-color-primary);
+@tree-text-color-secondary: var(--ldesign-text-color-secondary);
+@tree-text-color-disabled: var(--ldesign-text-color-disabled);
+
+// 节点状态颜色
+@tree-node-bg-hover: var(--ldesign-bg-color-component-hover);
+@tree-node-bg-active: var(--ldesign-bg-color-component-active);
+@tree-node-bg-selected: var(--ldesign-brand-color-focus);
+@tree-node-bg-disabled: var(--ldesign-bg-color-component-disabled);
+
+@tree-node-border-hover: var(--ldesign-border-color-hover);
+@tree-node-border-focus: var(--ldesign-border-color-focus);
+
+// 品牌色
+@tree-brand-color: var(--ldesign-brand-color);
+@tree-brand-color-hover: var(--ldesign-brand-color-hover);
+@tree-brand-color-active: var(--ldesign-brand-color-active);
+@tree-brand-color-disabled: var(--ldesign-brand-color-disabled);
+
+// 状态颜色
+@tree-success-color: var(--ldesign-success-color);
+@tree-warning-color: var(--ldesign-warning-color);
+@tree-error-color: var(--ldesign-error-color);
+
+// 阴影
+@tree-shadow: var(--ldesign-shadow-1);
+@tree-shadow-hover: var(--ldesign-shadow-2);
+@tree-shadow-focus: var(--ldesign-shadow-3);
+
+// 圆角
+@tree-border-radius: var(--ls-border-radius-base); // 6px
+@tree-border-radius-small: var(--ls-border-radius-sm); // 3px
+
+// 过渡动画
+@tree-transition-duration: 0.2s;
+@tree-transition-timing: ease-in-out;
+@tree-transition: all @tree-transition-duration @tree-transition-timing;
+
+// 字体
+@tree-font-size: var(--ls-font-size-sm); // 16px
+@tree-font-size-small: var(--ls-font-size-xs); // 14px
+@tree-font-size-large: var(--ls-font-size-base); // 18px
+
+// Z-index
+@tree-z-index-base: 1;
+@tree-z-index-dropdown: 1000;
+@tree-z-index-modal: 1050;
+@tree-z-index-tooltip: 1070;
+
+// 拖拽相关
+@tree-drag-ghost-opacity: 0.5;
+@tree-drop-indicator-color: var(--ldesign-brand-color);
+@tree-drop-indicator-width: 2px;
+
+// 搜索高亮
+@tree-search-highlight-bg: var(--ldesign-warning-color-2);
+@tree-search-highlight-color: var(--ldesign-warning-color-8);
+
+// 加载状态
+@tree-loading-color: var(--ldesign-brand-color);
+@tree-loading-size: 16px;
+
+// 虚拟滚动
+@tree-virtual-scroll-track-bg: var(--ldesign-gray-color-2);
+@tree-virtual-scroll-thumb-bg: var(--ldesign-gray-color-5);
+@tree-virtual-scroll-thumb-hover-bg: var(--ldesign-gray-color-6);
+
+// 响应式断点
+@tree-breakpoint-xs: 480px;
+@tree-breakpoint-sm: 768px;
+@tree-breakpoint-md: 1024px;
+@tree-breakpoint-lg: 1200px;
+@tree-breakpoint-xl: 1600px;

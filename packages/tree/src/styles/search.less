@@ -1,0 +1,382 @@
+/**
+ * 搜索样式
+ */
+
+@import './variables.less';
+
+.@{tree-prefix} {
+  // 搜索容器
+  &__search {
+    position: relative;
+    margin-bottom: var(--ls-margin-sm);
+    border-bottom: 1px solid @tree-border-color;
+    padding-bottom: var(--ls-padding-sm);
+
+    &-input {
+      width: 100%;
+      height: @tree-node-height;
+      padding: 0 var(--ls-padding-sm);
+      border: 1px solid @tree-border-color;
+      border-radius: @tree-border-radius;
+      font-size: @tree-font-size;
+      color: @tree-text-color;
+      background: @tree-bg-color;
+      transition: @tree-transition;
+
+      &:focus {
+        outline: none;
+        border-color: @tree-node-border-focus;
+        box-shadow: 0 0 0 2px fade(@tree-brand-color, 20%);
+      }
+
+      &::placeholder {
+        color: @tree-text-color-secondary;
+      }
+
+      &:disabled {
+        background: @tree-node-bg-disabled;
+        color: @tree-text-color-disabled;
+        cursor: not-allowed;
+      }
+    }
+
+    &-icon {
+      position: absolute;
+      right: var(--ls-padding-sm);
+      top: 50%;
+      transform: translateY(-50%);
+      color: @tree-text-color-secondary;
+      font-size: @tree-icon-size;
+      pointer-events: none;
+    }
+
+    &-clear {
+      position: absolute;
+      right: var(--ls-padding-sm);
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      background: @tree-text-color-secondary;
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+      opacity: 0;
+      transition: @tree-transition;
+
+      &:hover {
+        background: @tree-text-color;
+      }
+
+      &--visible {
+        opacity: 1;
+      }
+    }
+
+    &-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: @tree-bg-color;
+      border: 1px solid @tree-border-color;
+      border-top: none;
+      border-radius: 0 0 @tree-border-radius @tree-border-radius;
+      box-shadow: @tree-shadow;
+      z-index: @tree-z-index-dropdown;
+      max-height: 200px;
+      overflow-y: auto;
+
+      &-item {
+        padding: var(--ls-padding-xs) var(--ls-padding-sm);
+        cursor: pointer;
+        transition: @tree-transition;
+
+        &:hover {
+          background: @tree-node-bg-hover;
+        }
+
+        &--active {
+          background: @tree-node-bg-selected;
+          color: @tree-brand-color;
+        }
+      }
+
+      &-empty {
+        padding: var(--ls-padding-base);
+        text-align: center;
+        color: @tree-text-color-secondary;
+        font-size: @tree-font-size;
+      }
+    }
+  }
+
+  // 搜索高亮
+  &__search-highlight {
+    background: @tree-search-highlight-bg;
+    color: @tree-search-highlight-color;
+    padding: 1px 2px;
+    border-radius: 2px;
+    font-weight: 500;
+    animation: tree-search-highlight-pulse 1s ease-in-out 3;
+  }
+
+  // 搜索匹配节点
+  &__node {
+    &--search-match {
+      background: fade(@tree-search-highlight-bg, 30%);
+      border-left: 3px solid @tree-search-highlight-color;
+    }
+
+    &--search-filtered {
+      display: none;
+    }
+
+    &--search-expanded {
+      .@{tree-prefix}__node-expand-icon {
+        color: @tree-search-highlight-color;
+      }
+    }
+  }
+
+  // 搜索统计
+  &__search-stats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--ls-margin-xs);
+    padding: var(--ls-padding-xs) 0;
+    font-size: @tree-font-size-small;
+    color: @tree-text-color-secondary;
+
+    &-count {
+      font-weight: 500;
+    }
+
+    &-navigation {
+      display: flex;
+      align-items: center;
+      gap: var(--ls-spacing-xs);
+
+      button {
+        width: 24px;
+        height: 24px;
+        border: 1px solid @tree-border-color;
+        border-radius: @tree-border-radius-small;
+        background: @tree-bg-color;
+        color: @tree-text-color-secondary;
+        font-size: 12px;
+        cursor: pointer;
+        transition: @tree-transition;
+
+        &:hover {
+          background: @tree-node-bg-hover;
+          color: @tree-text-color;
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+
+          &:hover {
+            background: @tree-bg-color;
+            color: @tree-text-color-secondary;
+          }
+        }
+      }
+    }
+  }
+
+  // 搜索模式切换
+  &__search-mode {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-spacing-xs);
+    margin-top: var(--ls-margin-xs);
+
+    &-label {
+      font-size: @tree-font-size-small;
+      color: @tree-text-color-secondary;
+    }
+
+    &-toggle {
+      display: flex;
+      border: 1px solid @tree-border-color;
+      border-radius: @tree-border-radius-small;
+      overflow: hidden;
+
+      button {
+        padding: 2px 8px;
+        border: none;
+        background: @tree-bg-color;
+        color: @tree-text-color-secondary;
+        font-size: @tree-font-size-small;
+        cursor: pointer;
+        transition: @tree-transition;
+
+        &:hover {
+          background: @tree-node-bg-hover;
+          color: @tree-text-color;
+        }
+
+        &--active {
+          background: @tree-brand-color;
+          color: white;
+
+          &:hover {
+            background: @tree-brand-color-hover;
+          }
+        }
+
+        &:not(:last-child) {
+          border-right: 1px solid @tree-border-color;
+        }
+      }
+    }
+  }
+
+  // 搜索加载状态
+  &__search-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--ls-padding-base);
+    color: @tree-text-color-secondary;
+
+    &-spinner {
+      width: 16px;
+      height: 16px;
+      margin-right: var(--ls-margin-xs);
+      border: 2px solid @tree-border-color;
+      border-top-color: @tree-loading-color;
+      border-radius: 50%;
+      animation: tree-loading 1s linear infinite;
+    }
+  }
+
+  // 搜索建议
+  &__search-suggestions {
+    margin-top: var(--ls-margin-xs);
+    padding: var(--ls-padding-xs) 0;
+    border-top: 1px solid @tree-border-color;
+
+    &-title {
+      font-size: @tree-font-size-small;
+      color: @tree-text-color-secondary;
+      margin-bottom: var(--ls-margin-xs);
+    }
+
+    &-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--ls-spacing-xs);
+    }
+
+    &-item {
+      padding: 2px 6px;
+      background: @tree-node-bg-hover;
+      border: 1px solid @tree-border-color;
+      border-radius: @tree-border-radius-small;
+      font-size: @tree-font-size-small;
+      color: @tree-text-color-secondary;
+      cursor: pointer;
+      transition: @tree-transition;
+
+      &:hover {
+        background: @tree-node-bg-selected;
+        color: @tree-brand-color;
+      }
+    }
+  }
+}
+
+// 搜索高亮动画
+@keyframes tree-search-highlight-pulse {
+  0%, 100% {
+    background-color: @tree-search-highlight-bg;
+  }
+  50% {
+    background-color: fade(@tree-search-highlight-bg, 60%);
+  }
+}
+
+// 响应式搜索
+@media (max-width: @tree-breakpoint-sm) {
+  .@{tree-prefix} {
+    &__search {
+      &-input {
+        height: @tree-node-height-large;
+        font-size: @tree-font-size;
+      }
+
+      &-results {
+        max-height: 150px;
+      }
+    }
+
+    &__search-stats {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--ls-spacing-xs);
+    }
+
+    &__search-mode {
+      flex-direction: column;
+      align-items: flex-start;
+
+      &-toggle {
+        width: 100%;
+
+        button {
+          flex: 1;
+        }
+      }
+    }
+  }
+}
+
+// 高对比度模式
+@media (prefers-contrast: high) {
+  .@{tree-prefix} {
+    &__search-highlight {
+      background: @tree-text-color;
+      color: @tree-bg-color;
+      font-weight: bold;
+    }
+
+    &__node--search-match {
+      border-left-width: 4px;
+    }
+  }
+}
+
+// 暗色主题
+.@{tree-prefix}--dark {
+  .@{tree-prefix}__search {
+    &-input {
+      background: var(--ldesign-gray-color-9);
+      border-color: var(--ldesign-gray-color-7);
+      color: var(--ldesign-gray-color-2);
+
+      &:focus {
+        border-color: @tree-brand-color;
+      }
+
+      &::placeholder {
+        color: var(--ldesign-gray-color-5);
+      }
+    }
+
+    &-results {
+      background: var(--ldesign-gray-color-9);
+      border-color: var(--ldesign-gray-color-7);
+    }
+  }
+
+  .@{tree-prefix}__search-highlight {
+    background: var(--ldesign-warning-color-7);
+    color: var(--ldesign-warning-color-2);
+  }
+}

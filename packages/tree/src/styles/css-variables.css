@@ -1,0 +1,269 @@
+/**
+ * CSS变量定义
+ * 用于运行时主题切换和自定义
+ */
+
+:root {
+  /* 基础颜色 */
+  --tree-primary-color: #1890ff;
+  --tree-primary-color-hover: #40a9ff;
+  --tree-primary-color-active: #096dd9;
+  --tree-primary-color-disabled: #d9d9d9;
+  
+  --tree-success-color: #52c41a;
+  --tree-warning-color: #faad14;
+  --tree-error-color: #ff4d4f;
+  --tree-info-color: #1890ff;
+  
+  /* 中性色 */
+  --tree-text-color-primary: rgba(0, 0, 0, 0.85);
+  --tree-text-color-secondary: rgba(0, 0, 0, 0.65);
+  --tree-text-color-disabled: rgba(0, 0, 0, 0.25);
+  --tree-text-color-placeholder: rgba(0, 0, 0, 0.45);
+  
+  --tree-bg-color: #ffffff;
+  --tree-bg-color-container: #fafafa;
+  --tree-bg-color-hover: #f5f5f5;
+  --tree-bg-color-active: #e6f7ff;
+  --tree-bg-color-disabled: #f5f5f5;
+  
+  --tree-border-color: #d9d9d9;
+  --tree-border-color-hover: #40a9ff;
+  --tree-border-color-focus: #1890ff;
+  
+  /* 尺寸 */
+  --tree-node-height: 32px;
+  --tree-node-height-small: 24px;
+  --tree-node-height-large: 40px;
+  
+  --tree-node-padding: 4px 8px;
+  --tree-node-padding-small: 2px 6px;
+  --tree-node-padding-large: 6px 12px;
+  
+  --tree-indent-size: 24px;
+  --tree-icon-size: 16px;
+  --tree-checkbox-size: 16px;
+  
+  /* 间距 */
+  --tree-spacing-xs: 4px;
+  --tree-spacing-sm: 8px;
+  --tree-spacing-base: 12px;
+  --tree-spacing-lg: 16px;
+  --tree-spacing-xl: 24px;
+  
+  /* 圆角 */
+  --tree-border-radius: 6px;
+  --tree-border-radius-small: 3px;
+  --tree-border-radius-large: 8px;
+  
+  /* 阴影 */
+  --tree-shadow-1: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --tree-shadow-2: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --tree-shadow-3: 0 6px 16px rgba(0, 0, 0, 0.15);
+  
+  /* 动画 */
+  --tree-animation-duration: 0.2s;
+  --tree-animation-timing: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* 字体 */
+  --tree-font-size: 14px;
+  --tree-font-size-small: 12px;
+  --tree-font-size-large: 16px;
+  --tree-line-height: 1.5;
+  
+  /* Z-index */
+  --tree-z-index-base: 1;
+  --tree-z-index-dropdown: 1000;
+  --tree-z-index-modal: 1050;
+  --tree-z-index-tooltip: 1070;
+  
+  /* 拖拽 */
+  --tree-drag-ghost-opacity: 0.5;
+  --tree-drop-indicator-color: var(--tree-primary-color);
+  --tree-drop-indicator-width: 2px;
+  
+  /* 搜索高亮 */
+  --tree-search-highlight-bg: #fff2e8;
+  --tree-search-highlight-color: #fa8c16;
+  
+  /* 虚拟滚动 */
+  --tree-virtual-scroll-track-bg: #f0f0f0;
+  --tree-virtual-scroll-thumb-bg: #bfbfbf;
+  --tree-virtual-scroll-thumb-hover-bg: #999999;
+}
+
+/* 暗色主题 */
+[data-theme="dark"] {
+  --tree-text-color-primary: rgba(255, 255, 255, 0.85);
+  --tree-text-color-secondary: rgba(255, 255, 255, 0.65);
+  --tree-text-color-disabled: rgba(255, 255, 255, 0.25);
+  --tree-text-color-placeholder: rgba(255, 255, 255, 0.45);
+  
+  --tree-bg-color: #141414;
+  --tree-bg-color-container: #1f1f1f;
+  --tree-bg-color-hover: #262626;
+  --tree-bg-color-active: #111a2c;
+  --tree-bg-color-disabled: #262626;
+  
+  --tree-border-color: #434343;
+  --tree-border-color-hover: #40a9ff;
+  --tree-border-color-focus: #1890ff;
+  
+  --tree-shadow-1: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --tree-shadow-2: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --tree-shadow-3: 0 6px 16px rgba(0, 0, 0, 0.45);
+  
+  --tree-virtual-scroll-track-bg: #262626;
+  --tree-virtual-scroll-thumb-bg: #595959;
+  --tree-virtual-scroll-thumb-hover-bg: #737373;
+  
+  --tree-search-highlight-bg: #2c1810;
+  --tree-search-highlight-color: #fa8c16;
+}
+
+/* 紧凑主题 */
+[data-theme="compact"] {
+  --tree-node-height: 24px;
+  --tree-node-padding: 2px 6px;
+  --tree-indent-size: 16px;
+  --tree-icon-size: 14px;
+  --tree-font-size: 12px;
+  --tree-spacing-base: 8px;
+}
+
+/* 舒适主题 */
+[data-theme="comfortable"] {
+  --tree-node-height: 40px;
+  --tree-node-padding: 8px 12px;
+  --tree-indent-size: 32px;
+  --tree-icon-size: 18px;
+  --tree-font-size: 16px;
+  --tree-spacing-base: 16px;
+}
+
+/* 高对比度主题 */
+[data-theme="high-contrast"] {
+  --tree-text-color-primary: #000000;
+  --tree-text-color-secondary: #000000;
+  --tree-bg-color: #ffffff;
+  --tree-bg-color-hover: #000000;
+  --tree-border-color: #000000;
+  --tree-primary-color: #0000ff;
+  --tree-error-color: #ff0000;
+  --tree-success-color: #008000;
+  --tree-warning-color: #ff8c00;
+}
+
+/* 自动暗色主题 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --tree-text-color-primary: rgba(255, 255, 255, 0.85);
+    --tree-text-color-secondary: rgba(255, 255, 255, 0.65);
+    --tree-text-color-disabled: rgba(255, 255, 255, 0.25);
+    --tree-text-color-placeholder: rgba(255, 255, 255, 0.45);
+    
+    --tree-bg-color: #141414;
+    --tree-bg-color-container: #1f1f1f;
+    --tree-bg-color-hover: #262626;
+    --tree-bg-color-active: #111a2c;
+    --tree-bg-color-disabled: #262626;
+    
+    --tree-border-color: #434343;
+    --tree-border-color-hover: #40a9ff;
+    --tree-border-color-focus: #1890ff;
+    
+    --tree-shadow-1: 0 2px 8px rgba(0, 0, 0, 0.45);
+    --tree-shadow-2: 0 4px 12px rgba(0, 0, 0, 0.45);
+    --tree-shadow-3: 0 6px 16px rgba(0, 0, 0, 0.45);
+    
+    --tree-virtual-scroll-track-bg: #262626;
+    --tree-virtual-scroll-thumb-bg: #595959;
+    --tree-virtual-scroll-thumb-hover-bg: #737373;
+    
+    --tree-search-highlight-bg: #2c1810;
+    --tree-search-highlight-color: #fa8c16;
+  }
+}
+
+/* 高对比度偏好 */
+@media (prefers-contrast: high) {
+  :root:not([data-theme]) {
+    --tree-text-color-primary: #000000;
+    --tree-text-color-secondary: #000000;
+    --tree-bg-color: #ffffff;
+    --tree-bg-color-hover: #000000;
+    --tree-border-color: #000000;
+    --tree-primary-color: #0000ff;
+    --tree-error-color: #ff0000;
+    --tree-success-color: #008000;
+    --tree-warning-color: #ff8c00;
+  }
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --tree-animation-duration: 0.01s;
+  }
+}
+
+/* 品牌色变体 */
+[data-brand-color="blue"] {
+  --tree-primary-color: #1890ff;
+  --tree-primary-color-hover: #40a9ff;
+  --tree-primary-color-active: #096dd9;
+}
+
+[data-brand-color="green"] {
+  --tree-primary-color: #52c41a;
+  --tree-primary-color-hover: #73d13d;
+  --tree-primary-color-active: #389e0d;
+}
+
+[data-brand-color="red"] {
+  --tree-primary-color: #ff4d4f;
+  --tree-primary-color-hover: #ff7875;
+  --tree-primary-color-active: #d9363e;
+}
+
+[data-brand-color="purple"] {
+  --tree-primary-color: #722ed1;
+  --tree-primary-color-hover: #9254de;
+  --tree-primary-color-active: #531dab;
+}
+
+[data-brand-color="orange"] {
+  --tree-primary-color: #fa8c16;
+  --tree-primary-color-hover: #ffa940;
+  --tree-primary-color-active: #d46b08;
+}
+
+/* 尺寸变体 */
+[data-size="small"] {
+  --tree-node-height: 24px;
+  --tree-node-padding: 2px 6px;
+  --tree-font-size: 12px;
+  --tree-icon-size: 14px;
+  --tree-indent-size: 16px;
+}
+
+[data-size="large"] {
+  --tree-node-height: 40px;
+  --tree-node-padding: 8px 12px;
+  --tree-font-size: 16px;
+  --tree-icon-size: 18px;
+  --tree-indent-size: 32px;
+}
+
+/* 圆角变体 */
+[data-border-radius="none"] {
+  --tree-border-radius: 0;
+  --tree-border-radius-small: 0;
+  --tree-border-radius-large: 0;
+}
+
+[data-border-radius="large"] {
+  --tree-border-radius: 12px;
+  --tree-border-radius-small: 6px;
+  --tree-border-radius-large: 16px;
+}

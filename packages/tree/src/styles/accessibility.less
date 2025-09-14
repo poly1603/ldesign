@@ -1,0 +1,412 @@
+/**
+ * 无障碍样式
+ */
+
+@import './variables.less';
+
+.@{tree-prefix} {
+  // 焦点管理
+  &:focus {
+    outline: 2px solid @tree-brand-color;
+    outline-offset: 2px;
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid @tree-brand-color;
+    outline-offset: 2px;
+  }
+
+  // 键盘导航
+  &__node {
+    &:focus {
+      outline: 2px solid @tree-brand-color;
+      outline-offset: -2px;
+      z-index: @tree-z-index-base + 1;
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid @tree-brand-color;
+      outline-offset: -2px;
+      z-index: @tree-z-index-base + 1;
+    }
+
+    // 键盘焦点指示器
+    &--keyboard-focused {
+      background: fade(@tree-brand-color, 10%);
+      border: 1px solid @tree-brand-color;
+      box-shadow: inset 0 0 0 1px @tree-brand-color;
+    }
+
+    // 活动节点
+    &--active {
+      background: @tree-node-bg-selected;
+      color: @tree-brand-color;
+      font-weight: 500;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: @tree-brand-color;
+      }
+    }
+  }
+
+  // 屏幕阅读器支持
+  &__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  // 跳转链接
+  &__skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: @tree-bg-color;
+    color: @tree-text-color;
+    padding: 8px;
+    border: 1px solid @tree-border-color;
+    border-radius: @tree-border-radius;
+    text-decoration: none;
+    z-index: @tree-z-index-modal;
+    transition: top @tree-transition-duration @tree-transition-timing;
+
+    &:focus {
+      top: 6px;
+    }
+  }
+
+  // 高对比度模式
+  @media (prefers-contrast: high) {
+    border: 2px solid @tree-text-color;
+
+    .@{tree-prefix}__node {
+      border: 1px solid @tree-text-color;
+
+      &:hover {
+        background: @tree-text-color;
+        color: @tree-bg-color;
+      }
+
+      &--selected {
+        background: @tree-text-color;
+        color: @tree-bg-color;
+        font-weight: bold;
+      }
+
+      &:focus,
+      &:focus-visible {
+        outline: 3px solid @tree-brand-color;
+        outline-offset: 2px;
+      }
+    }
+
+    .@{tree-prefix}__search-highlight {
+      background: @tree-text-color;
+      color: @tree-bg-color;
+      font-weight: bold;
+      border: 1px solid @tree-bg-color;
+    }
+  }
+
+  // 减少动画
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  // 大字体支持
+  @media (min-resolution: 2dppx) {
+    .@{tree-prefix}__node {
+      &-icon {
+        font-size: calc(@tree-icon-size + 2px);
+      }
+
+      &-expand-icon {
+        font-size: calc(@tree-icon-size + 2px);
+      }
+    }
+  }
+
+  // 触摸设备优化
+  @media (hover: none) and (pointer: coarse) {
+    .@{tree-prefix}__node {
+      min-height: 44px; // 最小触摸目标
+      padding: var(--ls-padding-sm);
+
+      &-expand-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+      }
+
+      &-checkbox {
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    .@{tree-prefix}__search {
+      &-input {
+        height: 44px;
+        font-size: 16px; // 防止iOS缩放
+      }
+    }
+  }
+
+  // 语音控制支持
+  &[data-voice-control="true"] {
+    .@{tree-prefix}__node {
+      &::after {
+        content: attr(data-voice-label);
+        position: absolute;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+      }
+    }
+  }
+
+  // 键盘导航提示
+  &__keyboard-help {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: @tree-bg-color;
+    border: 1px solid @tree-border-color;
+    border-top: none;
+    border-radius: 0 0 @tree-border-radius @tree-border-radius;
+    padding: var(--ls-padding-base);
+    font-size: @tree-font-size-small;
+    color: @tree-text-color-secondary;
+    z-index: @tree-z-index-tooltip;
+    opacity: 0;
+    visibility: hidden;
+    transition: @tree-transition;
+
+    &--visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    &-title {
+      font-weight: 500;
+      margin-bottom: var(--ls-margin-xs);
+      color: @tree-text-color;
+    }
+
+    &-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      li {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      kbd {
+        background: @tree-node-bg-hover;
+        border: 1px solid @tree-border-color;
+        border-radius: 3px;
+        padding: 2px 4px;
+        font-size: 11px;
+        font-family: monospace;
+      }
+    }
+  }
+
+  // ARIA 状态指示器
+  &__aria-status {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+
+    &[aria-live="polite"],
+    &[aria-live="assertive"] {
+      // 确保屏幕阅读器能够读取状态更新
+    }
+  }
+
+  // 错误状态
+  &--error {
+    border-color: @tree-error-color;
+
+    .@{tree-prefix}__node {
+      &--error {
+        background: fade(@tree-error-color, 10%);
+        border-left: 3px solid @tree-error-color;
+        color: @tree-error-color;
+
+        &::before {
+          content: '⚠';
+          margin-right: var(--ls-margin-xs);
+          color: @tree-error-color;
+        }
+      }
+    }
+  }
+
+  // 成功状态
+  &--success {
+    border-color: @tree-success-color;
+
+    .@{tree-prefix}__node {
+      &--success {
+        background: fade(@tree-success-color, 10%);
+        border-left: 3px solid @tree-success-color;
+        color: @tree-success-color;
+
+        &::before {
+          content: '✓';
+          margin-right: var(--ls-margin-xs);
+          color: @tree-success-color;
+        }
+      }
+    }
+  }
+
+  // 警告状态
+  &--warning {
+    border-color: @tree-warning-color;
+
+    .@{tree-prefix}__node {
+      &--warning {
+        background: fade(@tree-warning-color, 10%);
+        border-left: 3px solid @tree-warning-color;
+        color: @tree-warning-color;
+
+        &::before {
+          content: '⚠';
+          margin-right: var(--ls-margin-xs);
+          color: @tree-warning-color;
+        }
+      }
+    }
+  }
+
+  // 加载状态无障碍
+  &--loading {
+    .@{tree-prefix}__aria-status::after {
+      content: '正在加载...';
+    }
+  }
+
+  // 空状态无障碍
+  &--empty {
+    .@{tree-prefix}__aria-status::after {
+      content: '没有数据';
+    }
+  }
+
+  // 搜索状态无障碍
+  &--searching {
+    .@{tree-prefix}__aria-status::after {
+      content: '正在搜索...';
+    }
+  }
+
+  // 过滤状态无障碍
+  &--filtered {
+    .@{tree-prefix}__aria-status::after {
+      content: '已应用过滤器';
+    }
+  }
+}
+
+// Windows 高对比度模式
+@media screen and (-ms-high-contrast: active) {
+  .@{tree-prefix} {
+    border: 2px solid WindowText;
+    background: Window;
+    color: WindowText;
+
+    .@{tree-prefix}__node {
+      border: 1px solid WindowText;
+      background: Window;
+      color: WindowText;
+
+      &:hover {
+        background: Highlight;
+        color: HighlightText;
+      }
+
+      &--selected {
+        background: Highlight;
+        color: HighlightText;
+      }
+
+      &:focus {
+        outline: 2px solid WindowText;
+      }
+    }
+  }
+}
+
+// 强制颜色模式
+@media (forced-colors: active) {
+  .@{tree-prefix} {
+    border-color: CanvasText;
+    background: Canvas;
+    color: CanvasText;
+
+    .@{tree-prefix}__node {
+      border-color: CanvasText;
+      background: Canvas;
+      color: CanvasText;
+
+      &:hover {
+        background: Highlight;
+        color: HighlightText;
+      }
+
+      &--selected {
+        background: Highlight;
+        color: HighlightText;
+        forced-color-adjust: none;
+      }
+
+      &:focus {
+        outline: 2px solid Highlight;
+        forced-color-adjust: none;
+      }
+    }
+
+    .@{tree-prefix}__search-highlight {
+      background: Mark;
+      color: MarkText;
+      forced-color-adjust: none;
+    }
+  }
+}
