@@ -1,0 +1,326 @@
+/**
+ * 响应式设计样式
+ * 适配 PC、平板、手机三端
+ */
+
+// 断点定义
+@mobile-max: 767px;
+@tablet-min: 768px;
+@tablet-max: 1023px;
+@desktop-min: 1024px;
+
+// 移动端样式
+@media (max-width: @mobile-max) {
+  .ldesign-datepicker {
+    &--mobile {
+      .ldesign-datepicker__dropdown {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        z-index: 9999 !important;
+        transform: translateY(100%) !important;
+        
+        &--visible {
+          transform: translateY(0) !important;
+        }
+        
+        // 移除箭头
+        &::before,
+        &::after {
+          display: none;
+        }
+      }
+      
+      .ldesign-datepicker__dropdown-content {
+        max-height: none;
+        height: calc(100vh - 120px);
+        padding: var(--ls-spacing-base);
+      }
+      
+      .ldesign-calendar {
+        &__header {
+          padding: var(--ls-spacing-base);
+          font-size: var(--ls-font-size-lg);
+        }
+        
+        &__nav {
+          width: 44px;
+          height: 44px;
+          font-size: var(--ls-font-size-lg);
+        }
+        
+        &__title {
+          font-size: var(--ls-font-size-lg);
+          padding: var(--ls-spacing-sm) var(--ls-spacing-base);
+        }
+        
+        &__weekday {
+          padding: var(--ls-spacing-base) var(--ls-spacing-sm);
+          font-size: var(--ls-font-size-sm);
+        }
+        
+        &__cell {
+          height: 44px;
+          font-size: var(--ls-font-size-base);
+          
+          // 增加触摸目标大小
+          &::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+          }
+        }
+        
+        &__month-cell,
+        &__year-cell {
+          padding: var(--ls-spacing-lg) var(--ls-spacing-base);
+          font-size: var(--ls-font-size-base);
+        }
+      }
+      
+      .ldesign-datepicker__footer {
+        padding: var(--ls-spacing-base);
+        position: sticky;
+        bottom: 0;
+        background: var(--ldesign-bg-color-component);
+        border-top: 1px solid var(--ldesign-border-color);
+        
+        .ldesign-datepicker__button {
+          height: 44px;
+          padding: 0 var(--ls-spacing-base);
+          font-size: var(--ls-font-size-base);
+          flex: 1;
+        }
+      }
+      
+      // 移动端输入框
+      .ldesign-datepicker__input {
+        input {
+          height: 44px;
+          font-size: var(--ls-font-size-base);
+          padding: 0 var(--ls-spacing-base);
+        }
+        
+        &-icon {
+          right: var(--ls-spacing-base);
+          font-size: 20px;
+        }
+        
+        &-clear {
+          right: var(--ls-spacing-base);
+          width: 24px;
+          height: 24px;
+        }
+      }
+      
+      // 移动端快捷选择
+      .ldesign-datepicker__shortcuts {
+        border-right: none;
+        border-bottom: 1px solid var(--ldesign-border-color);
+        padding: var(--ls-spacing-base);
+        
+        &-item {
+          padding: var(--ls-spacing-base);
+          font-size: var(--ls-font-size-base);
+        }
+      }
+      
+      // 移动端双面板
+      .ldesign-datepicker__panels {
+        flex-direction: column;
+      }
+      
+      .ldesign-datepicker__panel {
+        &:not(:last-child) {
+          border-right: none;
+          border-bottom: 1px solid var(--ldesign-border-color);
+        }
+      }
+    }
+  }
+  
+  // 全局移动端优化
+  .ldesign-datepicker {
+    font-size: var(--ls-font-size-base);
+    
+    &__input input {
+      height: 44px;
+      font-size: var(--ls-font-size-base);
+    }
+    
+    &__button {
+      height: 44px;
+      font-size: var(--ls-font-size-base);
+      padding: 0 var(--ls-spacing-base);
+    }
+  }
+}
+
+// 平板端样式
+@media (min-width: @tablet-min) and (max-width: @tablet-max) {
+  .ldesign-datepicker {
+    &--tablet {
+      .ldesign-datepicker__dropdown {
+        min-width: 320px;
+      }
+      
+      .ldesign-calendar {
+        &__cell {
+          height: 40px;
+          font-size: var(--ls-font-size-sm);
+        }
+        
+        &__nav {
+          width: 40px;
+          height: 40px;
+        }
+      }
+      
+      .ldesign-datepicker__input {
+        input {
+          height: 40px;
+          font-size: var(--ls-font-size-sm);
+        }
+      }
+      
+      .ldesign-datepicker__button {
+        height: 40px;
+        font-size: var(--ls-font-size-sm);
+      }
+    }
+  }
+}
+
+// 桌面端样式
+@media (min-width: @desktop-min) {
+  .ldesign-datepicker {
+    &--desktop {
+      .ldesign-datepicker__dropdown {
+        min-width: 280px;
+        
+        // 桌面端可以有更复杂的动画
+        &--visible {
+          animation: ldesign-dropdown-enter 0.2s ease-out;
+        }
+      }
+      
+      .ldesign-calendar {
+        &__cell {
+          &:hover {
+            transform: scale(1.05);
+          }
+        }
+      }
+    }
+  }
+}
+
+// 高分辨率屏幕优化
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .ldesign-datepicker {
+    .ldesign-calendar__cell {
+      &::after {
+        width: 3px;
+        height: 3px;
+      }
+    }
+  }
+}
+
+// 触摸设备优化
+@media (hover: none) and (pointer: coarse) {
+  .ldesign-datepicker {
+    .ldesign-calendar__cell,
+    .ldesign-datepicker__button,
+    .ldesign-datepicker__nav {
+      // 增加触摸目标大小
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    // 移除 hover 效果
+    .ldesign-calendar__cell:hover,
+    .ldesign-datepicker__button:hover,
+    .ldesign-datepicker__nav:hover {
+      transform: none;
+    }
+  }
+}
+
+// 键盘导航优化
+@media (hover: hover) and (pointer: fine) {
+  .ldesign-datepicker {
+    .ldesign-calendar__cell:focus,
+    .ldesign-datepicker__button:focus,
+    .ldesign-datepicker__nav:focus {
+      outline: 2px solid var(--ldesign-brand-color);
+      outline-offset: 2px;
+    }
+  }
+}
+
+// 暗色模式媒体查询
+@media (prefers-color-scheme: dark) {
+  .ldesign-datepicker {
+    &--auto {
+      // 自动切换到暗色主题的样式
+      // 这些样式会在 themes/dark.less 中定义
+    }
+  }
+}
+
+// 减少动画偏好
+@media (prefers-reduced-motion: reduce) {
+  .ldesign-datepicker {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+// 高对比度模式
+@media (prefers-contrast: high) {
+  .ldesign-datepicker {
+    .ldesign-calendar__cell {
+      border: 1px solid var(--ldesign-border-color);
+      
+      &.selected {
+        border-color: var(--ldesign-brand-color);
+        border-width: 2px;
+      }
+    }
+    
+    .ldesign-datepicker__input input {
+      border-width: 2px;
+      
+      &:focus {
+        border-width: 3px;
+      }
+    }
+  }
+}
+
+// 动画定义
+@keyframes ldesign-dropdown-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

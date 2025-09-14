@@ -1,0 +1,387 @@
+/**
+ * 暗色主题样式
+ */
+
+.ldesign-theme-dark {
+  .ldesign-datepicker {
+    // 输入框暗色主题特定样式
+    &__input {
+      input {
+        background: #1f1f1f;
+        border-color: #404040;
+        color: rgba(255, 255, 255, 0.9);
+        
+        &::placeholder {
+          color: rgba(255, 255, 255, 0.5);
+        }
+        
+        &::selection {
+          background: rgba(140, 90, 211, 0.3);
+          color: #a67fdb;
+        }
+        
+        &:hover {
+          border-color: #4a4a4a;
+        }
+        
+        &:focus {
+          border-color: #8c5ad3;
+          box-shadow: 0 0 0 2px rgba(140, 90, 211, 0.2);
+        }
+        
+        &:disabled {
+          background: #1a1a1a;
+          color: rgba(255, 255, 255, 0.3);
+        }
+        
+        &[readonly] {
+          background: #2a2a2a;
+        }
+      }
+    }
+    
+    // 日历暗色主题特定样式
+    .ldesign-calendar {
+      background: #1f1f1f;
+      
+      &__header {
+        border-bottom-color: #404040;
+        background: linear-gradient(135deg, #1f1f1f 0%, #2a2a2a 100%);
+      }
+      
+      &__weekday {
+        background: #2a2a2a;
+        color: rgba(255, 255, 255, 0.7);
+      }
+      
+      &__cell {
+        color: rgba(255, 255, 255, 0.9);
+        
+        &:hover {
+          background: #2a2a2a;
+        }
+        
+        &.adjacent-month {
+          color: rgba(255, 255, 255, 0.3);
+        }
+        
+        &.today {
+          background: rgba(140, 90, 211, 0.2);
+          color: #a67fdb;
+          box-shadow: inset 0 0 0 1px #8c5ad3;
+        }
+        
+        &.selected {
+          background: #8c5ad3;
+          color: rgba(255, 255, 255, 1);
+          box-shadow: 0 2px 8px rgba(140, 90, 211, 0.4);
+        }
+        
+        &.in-range {
+          background: rgba(140, 90, 211, 0.15);
+          color: #a67fdb;
+          
+          &::before {
+            background: linear-gradient(135deg, 
+              rgba(140, 90, 211, 0.2) 0%, 
+              rgba(140, 90, 211, 0.05) 100%);
+          }
+        }
+        
+        &.range-start,
+        &.range-end {
+          background: #8c5ad3;
+          color: rgba(255, 255, 255, 1);
+        }
+        
+        &.disabled {
+          color: rgba(255, 255, 255, 0.3);
+        }
+        
+        &.weekend {
+          color: #ec6f6f;
+        }
+        
+        &.has-event::after {
+          background: #8c5ad3;
+        }
+        
+        &.selected.has-event::after {
+          background: rgba(255, 255, 255, 1);
+        }
+      }
+      
+      &__nav {
+        color: rgba(255, 255, 255, 0.7);
+        
+        &:hover {
+          background: #2a2a2a;
+          color: rgba(255, 255, 255, 0.9);
+        }
+        
+        &:active {
+          background: #333333;
+        }
+      }
+      
+      &__title {
+        color: rgba(255, 255, 255, 0.9);
+        
+        &:hover {
+          background: #2a2a2a;
+        }
+      }
+      
+      &__time-panel {
+        border-top-color: #404040;
+        background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+      }
+      
+      &__time-column {
+        &-header {
+          color: rgba(255, 255, 255, 0.7);
+        }
+        
+        &-list {
+          border-color: #404040;
+          background: #1f1f1f;
+        }
+        
+        &-item {
+          color: rgba(255, 255, 255, 0.9);
+          
+          &:hover {
+            background: #2a2a2a;
+          }
+          
+          &.selected {
+            background: #8c5ad3;
+            color: rgba(255, 255, 255, 1);
+          }
+        }
+      }
+    }
+    
+    // 下拉框暗色主题特定样式
+    &__dropdown {
+      background: #1f1f1f;
+      border-color: #404040;
+      box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+      
+      &::before {
+        border-bottom-color: #404040;
+      }
+      
+      &::after {
+        border-bottom-color: #1f1f1f;
+      }
+      
+      &--top::before {
+        border-top-color: #404040;
+      }
+      
+      &--top::after {
+        border-top-color: #1f1f1f;
+      }
+    }
+    
+    // 按钮暗色主题特定样式
+    &__button {
+      background: #1f1f1f;
+      border-color: #404040;
+      color: rgba(255, 255, 255, 0.9);
+      
+      &:hover {
+        background: #2a2a2a;
+        border-color: #4a4a4a;
+      }
+      
+      &:active {
+        background: #333333;
+      }
+      
+      &--primary {
+        background: linear-gradient(135deg, #8c5ad3 0%, #a67fdb 100%);
+        border-color: #8c5ad3;
+        color: rgba(255, 255, 255, 1);
+        box-shadow: 0 2px 4px rgba(140, 90, 211, 0.3);
+        
+        &:hover {
+          background: linear-gradient(135deg, #a67fdb 0%, #bfa4e5 100%);
+          border-color: #a67fdb;
+          box-shadow: 0 4px 8px rgba(140, 90, 211, 0.4);
+        }
+        
+        &:active {
+          background: #8c5ad3;
+          box-shadow: 0 1px 2px rgba(140, 90, 211, 0.4);
+        }
+      }
+    }
+    
+    // 快捷选择暗色主题特定样式
+    &__shortcuts {
+      border-right-color: #404040;
+      background: linear-gradient(135deg, #1f1f1f 0%, #2a2a2a 100%);
+      
+      &-title {
+        color: rgba(255, 255, 255, 0.7);
+      }
+      
+      &-item {
+        color: rgba(255, 255, 255, 0.9);
+        
+        &:hover {
+          background: rgba(140, 90, 211, 0.15);
+          color: #a67fdb;
+          transform: translateX(2px);
+        }
+        
+        &:active {
+          background: rgba(140, 90, 211, 0.25);
+        }
+      }
+    }
+    
+    // 面板暗色主题特定样式
+    &__panel {
+      &:not(:last-child) {
+        border-right-color: #404040;
+      }
+      
+      &-title {
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+    
+    // 页脚暗色主题特定样式
+    &__footer {
+      border-top-color: #404040;
+      background: #2a2a2a;
+      
+      &-text {
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+    
+    // 滚动条暗色主题样式
+    &__dropdown-content {
+      &::-webkit-scrollbar-track {
+        background: #2a2a2a;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #4a4a4a 0%, #666666 100%);
+        
+        &:hover {
+          background: linear-gradient(135deg, #666666 0%, #808080 100%);
+        }
+      }
+    }
+    
+    // 加载状态暗色主题
+    &__loading {
+      color: rgba(255, 255, 255, 0.7);
+      
+      &-spinner {
+        border-color: #404040;
+        border-top-color: #8c5ad3;
+      }
+    }
+    
+    // 空状态暗色主题
+    &__empty {
+      color: rgba(255, 255, 255, 0.5);
+    }
+  }
+}
+
+// 暗色主题下的特殊效果
+.ldesign-theme-dark .ldesign-datepicker {
+  // 光晕效果
+  &__input input:focus {
+    box-shadow: 
+      0 0 0 2px rgba(140, 90, 211, 0.3),
+      0 0 12px rgba(140, 90, 211, 0.2);
+  }
+  
+  // 选中状态的光晕
+  .ldesign-calendar__cell.selected {
+    box-shadow: 
+      0 2px 8px rgba(140, 90, 211, 0.4),
+      0 0 12px rgba(140, 90, 211, 0.2);
+  }
+  
+  // 今天的特殊标记
+  .ldesign-calendar__cell.today {
+    &::after {
+      background: #8c5ad3;
+      box-shadow: 0 0 6px rgba(140, 90, 211, 0.6);
+    }
+  }
+}
+
+// 暗色主题下的动画增强
+.ldesign-theme-dark .ldesign-datepicker {
+  .ldesign-calendar__cell {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+  }
+  
+  &__button {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+      transform: translateY(-1px);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+// 暗色主题下的状态指示
+.ldesign-theme-dark .ldesign-datepicker {
+  // 错误状态增强
+  &__input--error input {
+    border-color: #ec6f6f;
+    box-shadow: 0 0 0 1px #ec6f6f;
+    
+    &:focus {
+      box-shadow: 
+        0 0 0 2px rgba(236, 111, 111, 0.3),
+        0 0 8px rgba(236, 111, 111, 0.2);
+    }
+  }
+  
+  // 成功状态增强
+  &__input--success input {
+    border-color: #83d883;
+    box-shadow: 0 0 0 1px #83d883;
+    
+    &:focus {
+      box-shadow: 
+        0 0 0 2px rgba(131, 216, 131, 0.3),
+        0 0 8px rgba(131, 216, 131, 0.2);
+    }
+  }
+  
+  // 警告状态增强
+  &__input--warning input {
+    border-color: #f8d362;
+    box-shadow: 0 0 0 1px #f8d362;
+    
+    &:focus {
+      box-shadow: 
+        0 0 0 2px rgba(248, 211, 98, 0.3),
+        0 0 8px rgba(248, 211, 98, 0.2);
+    }
+  }
+}

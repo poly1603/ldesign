@@ -1,0 +1,30 @@
+{
+  "name": "@ldesign/datepicker-example-vanilla",
+  "version": "1.0.0",
+  "description": "LDesign DatePicker Vanilla JavaScript 示例",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview --port 3000"
+  },
+  "dependencies": {
+    "@ldesign/datepicker": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "datepicker",
+    "calendar",
+    "date",
+    "time",
+    "picker",
+    "ldesign",
+    "vanilla",
+    "javascript"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT"
+}

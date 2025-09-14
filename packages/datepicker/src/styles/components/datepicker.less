@@ -1,0 +1,187 @@
+/**
+ * DatePicker 组件样式
+ */
+
+.ldesign-datepicker {
+  &__input {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    
+    input {
+      width: 100%;
+      height: var(--ls-input-height-medium);
+      padding: 0 var(--ls-spacing-sm);
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-base);
+      background: var(--ldesign-bg-color-component);
+      color: var(--ldesign-text-color-primary);
+      font-size: inherit;
+      line-height: 1.5;
+      transition: all 0.2s ease-in-out;
+      
+      &::placeholder {
+        color: var(--ldesign-text-color-placeholder);
+      }
+      
+      &:hover {
+        border-color: var(--ldesign-border-color-hover);
+      }
+      
+      &:focus {
+        outline: none;
+        border-color: var(--ldesign-border-color-focus);
+        box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+      }
+      
+      &:disabled {
+        background: var(--ldesign-bg-color-component-disabled);
+        color: var(--ldesign-text-color-disabled);
+        cursor: not-allowed;
+      }
+      
+      &[readonly] {
+        background: var(--ldesign-bg-color-component-hover);
+        cursor: default;
+      }
+    }
+    
+    // 输入框图标
+    &-icon {
+      position: absolute;
+      right: var(--ls-spacing-sm);
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--ldesign-text-color-secondary);
+      pointer-events: none;
+      font-size: var(--ls-icon-size-medium);
+    }
+    
+    // 清除按钮
+    &-clear {
+      position: absolute;
+      right: var(--ls-spacing-sm);
+      top: 50%;
+      transform: translateY(-50%);
+      width: var(--ls-icon-size-medium);
+      height: var(--ls-icon-size-medium);
+      border: none;
+      background: none;
+      color: var(--ldesign-text-color-secondary);
+      cursor: pointer;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease-in-out;
+      
+      &:hover {
+        background: var(--ldesign-bg-color-component-hover);
+        color: var(--ldesign-text-color-primary);
+      }
+      
+      &:active {
+        background: var(--ldesign-bg-color-component-active);
+      }
+    }
+  }
+  
+  &__dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: var(--ldesign-z-index-dropdown, 1000);
+    min-width: 280px;
+    margin-top: var(--ls-spacing-xs);
+    background: var(--ldesign-bg-color-component);
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: var(--ls-border-radius-base);
+    box-shadow: var(--ldesign-shadow-2);
+    animation: ldesign-fade-in 0.2s ease-out;
+    
+    &--hidden {
+      display: none;
+    }
+    
+    // 不同位置的样式
+    &--top {
+      top: auto;
+      bottom: 100%;
+      margin-top: 0;
+      margin-bottom: var(--ls-spacing-xs);
+    }
+    
+    &--left {
+      left: auto;
+      right: 0;
+    }
+    
+    &--right {
+      left: 0;
+      right: auto;
+    }
+  }
+  
+  &__footer {
+    padding: var(--ls-spacing-sm);
+    border-top: 1px solid var(--ldesign-border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--ls-spacing-sm);
+    
+    &-left {
+      display: flex;
+      align-items: center;
+      gap: var(--ls-spacing-sm);
+    }
+    
+    &-right {
+      display: flex;
+      align-items: center;
+      gap: var(--ls-spacing-sm);
+    }
+  }
+  
+  &__button {
+    height: var(--ls-button-height-small);
+    padding: 0 var(--ls-spacing-sm);
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: var(--ls-border-radius-base);
+    background: var(--ldesign-bg-color-component);
+    color: var(--ldesign-text-color-primary);
+    font-size: var(--ls-font-size-sm);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    
+    &:hover {
+      border-color: var(--ldesign-border-color-hover);
+      background: var(--ldesign-bg-color-component-hover);
+    }
+    
+    &:active {
+      background: var(--ldesign-bg-color-component-active);
+    }
+    
+    &--primary {
+      background: var(--ldesign-brand-color);
+      border-color: var(--ldesign-brand-color);
+      color: var(--ldesign-font-white-1);
+      
+      &:hover {
+        background: var(--ldesign-brand-color-hover);
+        border-color: var(--ldesign-brand-color-hover);
+      }
+      
+      &:active {
+        background: var(--ldesign-brand-color-active);
+        border-color: var(--ldesign-brand-color-active);
+      }
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign DatePicker 示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 40px 0;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      color: #722ED1;
+    }
+    
+    .header p {
+      font-size: 1.1rem;
+      color: #666;
+    }
+    
+    .demo-section {
+      background: white;
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .demo-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #333;
+      border-bottom: 2px solid #722ED1;
+      padding-bottom: 10px;
+    }
+    
+    .demo-item {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      background: #fafafa;
+    }
+    
+    .demo-item h3 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      color: #555;
+    }
+    
+    .demo-item p {
+      margin-bottom: 15px;
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    .demo-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .demo-control {
+      flex: 1;
+      min-width: 200px;
+    }
+    
+    .demo-control label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #333;
+    }
+    
+    .demo-result {
+      margin-top: 15px;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: #333;
+    }
+    
+    .theme-switcher {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+    }
+    
+    .theme-switcher button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      background: #722ED1;
+      color: white;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    
+    .theme-switcher button:hover {
+      background: #5e2aa7;
+    }
+    
+    .device-switcher {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    .device-switcher button {
+      padding: 6px 12px;
+      border: 1px solid #722ED1;
+      border-radius: 4px;
+      background: white;
+      color: #722ED1;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+    
+    .device-switcher button:hover,
+    .device-switcher button.active {
+      background: #722ED1;
+      color: white;
+    }
+    
+    /* 响应式样式 */
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+      
+      .demo-controls {
+        flex-direction: column;
+      }
+      
+      .demo-control {
+        min-width: auto;
+      }
+      
+      .theme-switcher,
+      .device-switcher {
+        position: static;
+        margin-bottom: 20px;
+      }
+      
+      .device-switcher {
+        flex-direction: row;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="theme-switcher">
+    <button id="themeToggle">切换主题</button>
+  </div>
+  
+  <div class="device-switcher">
+    <button class="device-btn active" data-device="desktop">桌面</button>
+    <button class="device-btn" data-device="tablet">平板</button>
+    <button class="device-btn" data-device="mobile">手机</button>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <h1>LDesign DatePicker</h1>
+      <p>跨平台日期选择器组件库 - 支持 PC、平板、手机三端响应式适配</p>
+    </div>
+
+    <div class="demo-section">
+      <h2>基础日期选择器</h2>
+      
+      <div class="demo-item">
+        <h3>单日期选择</h3>
+        <p>最基础的日期选择功能，支持点击选择单个日期。</p>
+        <div class="demo-controls">
+          <div class="demo-control">
+            <label for="basic-datepicker">选择日期：</label>
+            <div id="basic-datepicker"></div>
+          </div>
+        </div>
+        <div class="demo-result" id="basic-result">选中的日期将显示在这里</div>
+      </div>
+
+      <div class="demo-item">
+        <h3>日期范围选择</h3>
+        <p>支持选择日期范围，包括开始日期和结束日期。</p>
+        <div class="demo-controls">
+          <div class="demo-control">
+            <label for="range-datepicker">选择日期范围：</label>
+            <div id="range-datepicker"></div>
+          </div>
+        </div>
+        <div class="demo-result" id="range-result">选中的日期范围将显示在这里</div>
+      </div>
+
+      <div class="demo-item">
+        <h3>多日期选择</h3>
+        <p>支持选择多个不连续的日期。</p>
+        <div class="demo-controls">
+          <div class="demo-control">
+            <label for="multiple-datepicker">选择多个日期：</label>
+            <div id="multiple-datepicker"></div>
+          </div>
+        </div>
+        <div class="demo-result" id="multiple-result">选中的多个日期将显示在这里</div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>日期时间选择器</h2>
+      
+      <div class="demo-item">
+        <h3>日期时间选择</h3>
+        <p>同时选择日期和时间。</p>
+        <div class="demo-controls">
+          <div class="demo-control">
+            <label for="datetime-datepicker">选择日期时间：</label>
+            <div id="datetime-datepicker"></div>
+          </div>
+        </div>
+        <div class="demo-result" id="datetime-result">选中的日期时间将显示在这里</div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>月份和年份选择器</h2>
+      
+      <div class="demo-item">
+        <h3>月份选择</h3>
+        <p>只选择月份，不显示具体日期。</p>
+        <div class="demo-controls">
+          <div class="demo-control">
+            <label for="month-datepicker">选择月份：</label>
+            <div id="month-datepicker"></div>
+          </div>
+        </div>
+        <div class="demo-result" id="month-result">选中的月份将显示在这里</div>
+      </div>
+
+      <div class="demo-item">
+        <h3>年份选择</h3>
+        <p>只选择年份。</p>
+        <div class="demo-controls">
+          <div class="demo-control">
+            <label for="year-datepicker">选择年份：</label>
+            <div id="year-datepicker"></div>
+          </div>
+        </div>
+        <div class="demo-result" id="year-result">选中的年份将显示在这里</div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>高级配置</h2>
+      
+      <div class="demo-item">
+        <h3>禁用日期</h3>
+        <p>禁用特定日期或日期范围。</p>
+        <div class="demo-controls">
+          <div class="demo-control">
+            <label for="disabled-datepicker">禁用周末和特定日期：</label>
+            <div id="disabled-datepicker"></div>
+          </div>
+        </div>
+        <div class="demo-result" id="disabled-result">选中的日期将显示在这里</div>
+      </div>
+
+      <div class="demo-item">
+        <h3>自定义格式</h3>
+        <p>自定义日期显示格式。</p>
+        <div class="demo-controls">
+          <div class="demo-control">
+            <label for="format-datepicker">自定义格式 (YYYY年MM月DD日)：</label>
+            <div id="format-datepicker"></div>
+          </div>
+        </div>
+        <div class="demo-result" id="format-result">选中的日期将显示在这里</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 引入样式文件 -->
+  <style>
+    /* 临时内联样式 - 确保日历可见 */
+    .ldesign-datepicker {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .ldesign-datepicker__input {
+      position: relative;
+    }
+
+    .ldesign-datepicker__input input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .ldesign-datepicker__input input:focus {
+      border-color: #722ED1;
+      box-shadow: 0 0 0 2px rgba(114, 46, 209, 0.1);
+    }
+
+    .ldesign-datepicker__dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 1000;
+      background: white;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      margin-top: 4px;
+      min-width: 280px;
+    }
+
+    .ldesign-calendar {
+      padding: 12px;
+    }
+
+    .ldesign-calendar__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .ldesign-calendar__nav {
+      background: none;
+      border: none;
+      padding: 4px 8px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .ldesign-calendar__nav:hover {
+      background-color: #f5f5f5;
+    }
+
+    .ldesign-calendar__title {
+      font-weight: 500;
+      font-size: 16px;
+    }
+
+    .ldesign-calendar__weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .ldesign-calendar__weekday {
+      text-align: center;
+      padding: 8px 4px;
+      font-size: 12px;
+      color: #666;
+      font-weight: 500;
+    }
+
+    .ldesign-calendar__grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .ldesign-calendar__cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .ldesign-calendar__cell:hover {
+      background-color: #f0f0f0;
+    }
+
+    .ldesign-calendar__cell.today {
+      background-color: #722ED1;
+      color: white;
+    }
+
+    .ldesign-calendar__cell.selected {
+      background-color: #722ED1;
+      color: white;
+    }
+
+    .ldesign-calendar__cell.adjacent-month {
+      color: #ccc;
+    }
+
+    .ldesign-calendar__cell.weekend {
+      color: #ff4d4f;
+    }
+
+    .ldesign-calendar__cell.disabled {
+      color: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* 暗色主题 */
+    [data-theme="dark"] .ldesign-datepicker__input input {
+      background-color: #1f1f1f;
+      border-color: #434343;
+      color: white;
+    }
+
+    [data-theme="dark"] .ldesign-datepicker__dropdown {
+      background-color: #1f1f1f;
+      border-color: #434343;
+    }
+
+    [data-theme="dark"] .ldesign-calendar__title {
+      color: white;
+    }
+
+    [data-theme="dark"] .ldesign-calendar__weekday {
+      color: #ccc;
+    }
+
+    [data-theme="dark"] .ldesign-calendar__cell {
+      color: white;
+    }
+
+    [data-theme="dark"] .ldesign-calendar__cell:hover {
+      background-color: #333;
+    }
+
+    [data-theme="dark"] .ldesign-calendar__nav:hover {
+      background-color: #333;
+    }
+
+    [data-theme="dark"] .ldesign-calendar__nav {
+      color: white;
+    }
+  </style>
+  
+  <!-- 引入脚本文件 -->
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

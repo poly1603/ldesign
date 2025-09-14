@@ -1,0 +1,223 @@
+/**
+ * Input 输入框组件样式
+ */
+
+.ldesign-datepicker {
+  &__input {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    
+    input {
+      width: 100%;
+      height: var(--ls-input-height-medium);
+      padding: 0 var(--ls-spacing-sm);
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ls-border-radius-base);
+      background: var(--ldesign-bg-color-component);
+      color: var(--ldesign-text-color-primary);
+      font-size: inherit;
+      line-height: 1.5;
+      transition: all 0.2s ease-in-out;
+      outline: none;
+      
+      &::placeholder {
+        color: var(--ldesign-text-color-placeholder);
+      }
+      
+      &:hover {
+        border-color: var(--ldesign-border-color-hover);
+      }
+      
+      &:focus {
+        border-color: var(--ldesign-border-color-focus);
+        box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+      }
+      
+      &:disabled {
+        background: var(--ldesign-bg-color-component-disabled);
+        color: var(--ldesign-text-color-disabled);
+        cursor: not-allowed;
+        
+        &:hover {
+          border-color: var(--ldesign-border-color);
+        }
+      }
+      
+      &[readonly] {
+        background: var(--ldesign-bg-color-component-hover);
+        cursor: default;
+        
+        &:focus {
+          box-shadow: none;
+        }
+      }
+    }
+    
+    // 不同尺寸
+    &--small input {
+      height: var(--ls-input-height-small);
+      font-size: var(--ls-font-size-xs);
+    }
+    
+    &--large input {
+      height: var(--ls-input-height-large);
+      font-size: var(--ls-font-size-base);
+    }
+    
+    // 输入框图标
+    &-icon {
+      position: absolute;
+      right: var(--ls-spacing-sm);
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--ldesign-text-color-secondary);
+      pointer-events: none;
+      font-size: var(--ls-icon-size-medium);
+      transition: color 0.2s ease-in-out;
+      
+      &--calendar::before {
+        content: '📅';
+      }
+      
+      &--time::before {
+        content: '🕐';
+      }
+      
+      &--date-range::before {
+        content: '📆';
+      }
+    }
+    
+    // 清除按钮
+    &-clear {
+      position: absolute;
+      right: var(--ls-spacing-sm);
+      top: 50%;
+      transform: translateY(-50%);
+      width: var(--ls-icon-size-medium);
+      height: var(--ls-icon-size-medium);
+      border: none;
+      background: none;
+      color: var(--ldesign-text-color-secondary);
+      cursor: pointer;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease-in-out;
+      opacity: 0;
+      visibility: hidden;
+      
+      &::before {
+        content: '✕';
+        font-size: var(--ls-font-size-xs);
+      }
+      
+      &:hover {
+        background: var(--ldesign-bg-color-component-hover);
+        color: var(--ldesign-text-color-primary);
+      }
+      
+      &:active {
+        background: var(--ldesign-bg-color-component-active);
+      }
+    }
+    
+    // 有值时显示清除按钮
+    &--has-value &-clear {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    // 有清除按钮时调整图标位置
+    &--has-value &-icon {
+      right: calc(var(--ls-spacing-sm) + var(--ls-icon-size-medium) + var(--ls-spacing-xs));
+    }
+    
+    // 错误状态
+    &--error input {
+      border-color: var(--ldesign-error-color);
+      
+      &:focus {
+        border-color: var(--ldesign-error-color);
+        box-shadow: 0 0 0 2px var(--ldesign-error-color-focus);
+      }
+    }
+    
+    // 成功状态
+    &--success input {
+      border-color: var(--ldesign-success-color);
+      
+      &:focus {
+        border-color: var(--ldesign-success-color);
+        box-shadow: 0 0 0 2px var(--ldesign-success-color-focus);
+      }
+    }
+    
+    // 警告状态
+    &--warning input {
+      border-color: var(--ldesign-warning-color);
+      
+      &:focus {
+        border-color: var(--ldesign-warning-color);
+        box-shadow: 0 0 0 2px var(--ldesign-warning-color-focus);
+      }
+    }
+  }
+  
+  // 输入框组（范围选择）
+  &__input-group {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-spacing-sm);
+    
+    &-separator {
+      color: var(--ldesign-text-color-secondary);
+      font-size: var(--ls-font-size-sm);
+      
+      &::before {
+        content: '~';
+      }
+    }
+    
+    .ldesign-datepicker__input {
+      flex: 1;
+    }
+  }
+  
+  // 标签
+  &__label {
+    display: block;
+    margin-bottom: var(--ls-spacing-xs);
+    font-size: var(--ls-font-size-sm);
+    color: var(--ldesign-text-color-primary);
+    font-weight: 500;
+    
+    &--required::after {
+      content: '*';
+      color: var(--ldesign-error-color);
+      margin-left: 2px;
+    }
+  }
+  
+  // 帮助文本
+  &__help {
+    margin-top: var(--ls-spacing-xs);
+    font-size: var(--ls-font-size-xs);
+    color: var(--ldesign-text-color-secondary);
+    line-height: 1.4;
+  }
+  
+  // 错误信息
+  &__error {
+    margin-top: var(--ls-spacing-xs);
+    font-size: var(--ls-font-size-xs);
+    color: var(--ldesign-error-color);
+    line-height: 1.4;
+    
+    &::before {
+      content: '⚠ ';
+    }
+  }
+}

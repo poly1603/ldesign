@@ -1,0 +1,220 @@
+/**
+ * 浅色主题样式
+ */
+
+.ldesign-theme-light {
+  .ldesign-datepicker {
+    // 基础颜色已在 CSS 变量中定义，这里可以添加特定的浅色主题样式
+    
+    // 输入框浅色主题特定样式
+    &__input {
+      input {
+        &::selection {
+          background: var(--ldesign-brand-color-focus);
+          color: var(--ldesign-brand-color);
+        }
+      }
+    }
+    
+    // 日历浅色主题特定样式
+    .ldesign-calendar {
+      &__cell {
+        // 浅色主题下的特殊状态
+        &.today {
+          box-shadow: inset 0 0 0 1px var(--ldesign-brand-color);
+        }
+        
+        &.selected {
+          box-shadow: 0 2px 4px rgba(114, 46, 209, 0.2);
+        }
+        
+        &.in-range {
+          position: relative;
+          
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+              var(--ldesign-brand-color-focus) 0%, 
+              rgba(114, 46, 209, 0.05) 100%);
+            border-radius: inherit;
+          }
+        }
+      }
+      
+      &__header {
+        background: linear-gradient(135deg, 
+          var(--ldesign-bg-color-component) 0%, 
+          var(--ldesign-bg-color-component-hover) 100%);
+      }
+    }
+    
+    // 下拉框浅色主题特定样式
+    &__dropdown {
+      box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(0, 0, 0, 0.04);
+      
+      &::before {
+        border-bottom-color: rgba(0, 0, 0, 0.1);
+      }
+      
+      &::after {
+        border-bottom-color: var(--ldesign-bg-color-component);
+      }
+    }
+    
+    // 按钮浅色主题特定样式
+    &__button {
+      &--primary {
+        background: linear-gradient(135deg, 
+          var(--ldesign-brand-color) 0%, 
+          var(--ldesign-brand-color-hover) 100%);
+        box-shadow: 0 2px 4px rgba(114, 46, 209, 0.2);
+        
+        &:hover {
+          background: linear-gradient(135deg, 
+            var(--ldesign-brand-color-hover) 0%, 
+            var(--ldesign-brand-color-active) 100%);
+          box-shadow: 0 4px 8px rgba(114, 46, 209, 0.3);
+        }
+        
+        &:active {
+          box-shadow: 0 1px 2px rgba(114, 46, 209, 0.3);
+        }
+      }
+    }
+    
+    // 快捷选择浅色主题特定样式
+    &__shortcuts {
+      background: linear-gradient(135deg, 
+        var(--ldesign-bg-color-component) 0%, 
+        var(--ldesign-bg-color-component-hover) 100%);
+      
+      &-item {
+        &:hover {
+          background: rgba(114, 46, 209, 0.08);
+          transform: translateX(2px);
+        }
+      }
+    }
+    
+    // 时间面板浅色主题特定样式
+    .ldesign-calendar__time-panel {
+      background: linear-gradient(135deg, 
+        var(--ldesign-bg-color-component-hover) 0%, 
+        var(--ldesign-bg-color-component) 100%);
+    }
+    
+    // 滚动条浅色主题样式
+    &__dropdown-content {
+      &::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, 
+          var(--ldesign-border-color-hover) 0%, 
+          var(--ldesign-text-color-placeholder) 100%);
+        
+        &:hover {
+          background: linear-gradient(135deg, 
+            var(--ldesign-text-color-placeholder) 0%, 
+            var(--ldesign-text-color-secondary) 100%);
+        }
+      }
+    }
+  }
+}
+
+// 浅色主题下的特殊效果
+.ldesign-theme-light .ldesign-datepicker {
+  // 光晕效果
+  &__input input:focus {
+    box-shadow: 
+      0 0 0 2px var(--ldesign-brand-color-focus),
+      0 0 12px rgba(114, 46, 209, 0.15);
+  }
+  
+  // 选中状态的光晕
+  .ldesign-calendar__cell.selected {
+    box-shadow: 
+      0 2px 4px rgba(114, 46, 209, 0.2),
+      0 0 8px rgba(114, 46, 209, 0.1);
+  }
+  
+  // 今天的特殊标记
+  .ldesign-calendar__cell.today {
+    &::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 6px;
+      height: 6px;
+      background: var(--ldesign-brand-color);
+      border-radius: 50%;
+      box-shadow: 0 0 4px rgba(114, 46, 209, 0.5);
+    }
+  }
+}
+
+// 浅色主题下的动画增强
+.ldesign-theme-light .ldesign-datepicker {
+  .ldesign-calendar__cell {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  &__button {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+      transform: translateY(-1px);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+// 浅色主题下的状态指示
+.ldesign-theme-light .ldesign-datepicker {
+  // 错误状态增强
+  &__input--error input {
+    box-shadow: 0 0 0 1px var(--ldesign-error-color);
+    
+    &:focus {
+      box-shadow: 
+        0 0 0 2px var(--ldesign-error-color-focus),
+        0 0 8px rgba(221, 34, 34, 0.2);
+    }
+  }
+  
+  // 成功状态增强
+  &__input--success input {
+    box-shadow: 0 0 0 1px var(--ldesign-success-color);
+    
+    &:focus {
+      box-shadow: 
+        0 0 0 2px var(--ldesign-success-color-focus),
+        0 0 8px rgba(66, 189, 66, 0.2);
+    }
+  }
+  
+  // 警告状态增强
+  &__input--warning input {
+    box-shadow: 0 0 0 1px var(--ldesign-warning-color);
+    
+    &:focus {
+      box-shadow: 
+        0 0 0 2px var(--ldesign-warning-color-focus),
+        0 0 8px rgba(240, 184, 15, 0.2);
+    }
+  }
+}
