@@ -1,0 +1,248 @@
+/**
+ * 验证码主题配置
+ * 支持多种主题切换
+ */
+
+// 默认主题（浅色）
+.ldesign-captcha-theme-default {
+  --captcha-primary-color: var(--ldesign-brand-color);
+  --captcha-border-color: var(--ldesign-border-color);
+  --captcha-background-color: var(--ldesign-bg-color-container);
+  --captcha-text-color: var(--ldesign-text-color-primary);
+  --captcha-border-radius: var(--ls-border-radius-base);
+  --captcha-box-shadow: var(--ldesign-shadow-1);
+  --captcha-success-color: var(--ldesign-success-color);
+  --captcha-error-color: var(--ldesign-error-color);
+  --captcha-warning-color: var(--ldesign-warning-color);
+}
+
+// 暗色主题
+.ldesign-captcha-theme-dark {
+  --captcha-primary-color: #4096ff;
+  --captcha-border-color: #424242;
+  --captcha-background-color: #1f1f1f;
+  --captcha-text-color: rgba(255, 255, 255, 0.85);
+  --captcha-border-radius: var(--ls-border-radius-base);
+  --captcha-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --captcha-success-color: #52c41a;
+  --captcha-error-color: #ff4d4f;
+  --captcha-warning-color: #faad14;
+
+  // 暗色主题特定样式
+  .ldesign-captcha-content {
+    background-color: #262626;
+  }
+
+  .ldesign-captcha-slider-track {
+    background-color: #3c3c3c;
+  }
+
+  .ldesign-captcha-slider-thumb {
+    background-color: #1f1f1f;
+    border-color: #424242;
+
+    &:hover {
+      border-color: var(--captcha-primary-color);
+    }
+  }
+
+  .ldesign-captcha-hint,
+  .ldesign-captcha-rotate-hint,
+  .ldesign-captcha-status {
+    background-color: #262626;
+    border-color: #424242;
+    color: var(--captcha-text-color);
+  }
+
+  .ldesign-captcha-rotate-track {
+    background-color: #3c3c3c;
+    border-color: #424242;
+  }
+
+  .ldesign-captcha-text-canvas,
+  .ldesign-captcha-click-canvas {
+    border-color: #424242;
+  }
+}
+
+// 简约主题
+.ldesign-captcha-theme-minimal {
+  --captcha-primary-color: #000000;
+  --captcha-border-color: #e0e0e0;
+  --captcha-background-color: #ffffff;
+  --captcha-text-color: #333333;
+  --captcha-border-radius: 2px;
+  --captcha-box-shadow: none;
+  --captcha-success-color: #4caf50;
+  --captcha-error-color: #f44336;
+  --captcha-warning-color: #ff9800;
+
+  .ldesign-captcha {
+    border: 1px solid var(--captcha-border-color);
+    box-shadow: none;
+  }
+
+  .ldesign-captcha-slider-thumb,
+  .ldesign-captcha-rotate-slider {
+    border-radius: 2px;
+    box-shadow: none;
+    border: 1px solid var(--captcha-border-color);
+
+    &:hover {
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+// 彩色主题
+.ldesign-captcha-theme-colorful {
+  --captcha-primary-color: #ff6b6b;
+  --captcha-border-color: #ffeaa7;
+  --captcha-background-color: #ffffff;
+  --captcha-text-color: #2d3436;
+  --captcha-border-radius: 12px;
+  --captcha-box-shadow: 0 4px 20px rgba(255, 107, 107, 0.15);
+  --captcha-success-color: #00b894;
+  --captcha-error-color: #e17055;
+  --captcha-warning-color: #fdcb6e;
+
+  .ldesign-captcha {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .ldesign-captcha-content {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    margin: 8px;
+  }
+
+  .ldesign-captcha-slider-track {
+    background: linear-gradient(90deg, #ffeaa7, #fab1a0);
+  }
+
+  .ldesign-captcha-slider-thumb {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    border: none;
+    color: white;
+
+    .ldesign-captcha-slider-icon {
+      color: white;
+    }
+  }
+}
+
+// 高对比度主题（无障碍）
+.ldesign-captcha-theme-high-contrast {
+  --captcha-primary-color: #0000ff;
+  --captcha-border-color: #000000;
+  --captcha-background-color: #ffffff;
+  --captcha-text-color: #000000;
+  --captcha-border-radius: 0;
+  --captcha-box-shadow: none;
+  --captcha-success-color: #008000;
+  --captcha-error-color: #ff0000;
+  --captcha-warning-color: #ff8000;
+
+  .ldesign-captcha {
+    border: 3px solid var(--captcha-border-color);
+  }
+
+  .ldesign-captcha-slider-thumb,
+  .ldesign-captcha-rotate-slider {
+    border: 3px solid var(--captcha-border-color);
+    background-color: var(--captcha-background-color);
+
+    &:hover,
+    &:focus {
+      background-color: var(--captcha-primary-color);
+      color: var(--captcha-background-color);
+    }
+  }
+
+  .ldesign-captcha-text-canvas,
+  .ldesign-captcha-click-canvas {
+    border: 2px solid var(--captcha-border-color);
+  }
+}
+
+// 主题切换动画
+.ldesign-captcha {
+  transition: all 0.3s ease;
+
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+// 主题应用混合器
+.apply-theme(@theme-name) {
+  &.ldesign-captcha-theme-@{theme-name} {
+
+    // 动态调用主题混合器
+    & when (@theme-name =default) {
+      .ldesign-captcha-theme-default();
+    }
+
+    & when (@theme-name =dark) {
+      .ldesign-captcha-theme-dark();
+    }
+
+    & when (@theme-name =minimal) {
+      .ldesign-captcha-theme-minimal();
+    }
+
+    & when (@theme-name =colorful) {
+      .ldesign-captcha-theme-colorful();
+    }
+
+    & when (@theme-name =high-contrast) {
+      .ldesign-captcha-theme-high-contrast();
+    }
+  }
+}
+
+// 响应式主题适配
+@media (prefers-color-scheme: dark) {
+  .ldesign-captcha:not([class*="theme-"]) {
+    .ldesign-captcha-theme-dark();
+  }
+}
+
+@media (prefers-contrast: high) {
+  .ldesign-captcha:not([class*="theme-"]) {
+    .ldesign-captcha-theme-high-contrast();
+  }
+}
+
+// 主题切换工具类
+.ldesign-captcha-theme-switcher {
+  display: flex;
+  gap: var(--ls-spacing-sm);
+  padding: var(--ls-padding-sm);
+  background-color: var(--ldesign-bg-color-component);
+  border-radius: var(--ls-border-radius-base);
+  margin-bottom: var(--ls-margin-sm);
+
+  .theme-option {
+    padding: var(--ls-padding-xs) var(--ls-padding-sm);
+    border: 1px solid var(--ldesign-border-color);
+    border-radius: var(--ls-border-radius-sm);
+    background-color: var(--ldesign-bg-color-container);
+    color: var(--ldesign-text-color-primary);
+    cursor: pointer;
+    font-size: var(--ls-font-size-xs);
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: var(--ldesign-brand-color);
+      background-color: var(--ldesign-brand-color-1);
+    }
+
+    &.active {
+      background-color: var(--ldesign-brand-color);
+      color: var(--ldesign-font-white-1);
+      border-color: var(--ldesign-brand-color);
+    }
+  }
+}

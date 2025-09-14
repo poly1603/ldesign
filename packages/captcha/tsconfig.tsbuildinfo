@@ -1,0 +1,1 @@
+{"root":["./src/index-core.ts","./src/index.ts","./src/captcha/click-text.ts","./src/captcha/click.ts","./src/captcha/rotate-slider.ts","./src/captcha/slide-puzzle.ts","./src/core/base-captcha.ts","./src/core/captcha-manager.ts","./src/core/event-emitter.ts","./src/types/index.ts","./src/utils/index.ts","./src/utils/theme-manager.ts"],"version":"5.9.2"}
