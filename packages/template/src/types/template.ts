@@ -226,6 +226,56 @@ export interface UseTemplateReturn {
 }
 
 /**
+ * useSimpleTemplate Hook 选项
+ */
+export interface UseSimpleTemplateOptions {
+  /** 模板分类（可选，默认 'login'） */
+  category?: string
+  /** 设备类型（可选，默认自动检测） */
+  device?: DeviceType
+  /** 是否显示模板选择器（可选，默认 false） */
+  showSelector?: boolean
+  /** 模板选择器配置（可选） */
+  selectorConfig?: Partial<TemplateSelectorConfig>
+  /** 传递给模板的属性（可选） */
+  templateProps?: Record<string, any>
+}
+
+/**
+ * useSimpleTemplate Hook 返回值
+ */
+export interface UseSimpleTemplateReturn {
+  /** 可直接渲染的模板组件 */
+  TemplateComponent: Component
+  /** 是否显示选择器 */
+  showSelector: Ref<boolean>
+  /** 当前选中的模板名称 */
+  selectedTemplate: Ref<string | undefined>
+  /** 打开选择器 */
+  openSelector: () => void
+  /** 关闭选择器 */
+  closeSelector: () => void
+  /** 切换模板 */
+  switchTemplate: (templateName: string) => void
+}
+
+/**
+ * useTemplateList Hook 返回值
+ */
+export interface UseTemplateListReturn {
+  /** 可用模板列表 */
+  availableTemplates: Ref<TemplateMetadata[]>
+  /** 加载状态 */
+  loading: Ref<boolean>
+  /** 错误信息 */
+  error: Ref<string | null>
+  /** 当前设备类型 */
+  deviceType: Ref<DeviceType>
+  /** 刷新模板列表 */
+  refresh: () => Promise<void>
+}
+
+/**
  * 模板选择器Props
  */
 export interface TemplateSelectorProps {

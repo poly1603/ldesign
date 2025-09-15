@@ -418,6 +418,7 @@ export function useTemplateList(category: string, device?: DeviceType | Ref<Devi
 /**
  * 简化版模板Hook - 返回可直接渲染的组件
  * 这是新的推荐API，简化了使用方式
+ * 内部使用 useTemplate 实现，提供更简单的接口
  */
 export function useSimpleTemplate(options: {
   category?: string
@@ -434,46 +435,69 @@ export function useSimpleTemplate(options: {
     templateProps = {},
   } = options
 
-  // 内部状态
-  const showSelectorModal = ref(showSelector)
-  const selectedTemplate = ref<string>()
+  // 使用 useTemplate 作为底层实现
+  const {
+    currentTemplate,
+    currentComponent,
+    loading,
+    error,
+    switchTemplate: switchTemplateInternal,
+    showSelector: showSelectorInternal,
+    openSelector: openSelectorInternal,
+    closeSelector: closeSelectorInternal,
+    TemplateTransition,
+  } = useTemplate({
+    category,
+    device,
+    autoDetectDevice: !device,
+    enableCache: true,
+    showSelector,
+    selectorConfig,
+  })
 
-  // 创建渲染组件
+  // 创建简化的渲染组件
   const TemplateComponent = defineComponent({
     name: 'SimpleTemplateComponent',
     setup() {
-      return () => h(TemplateRenderer, {
-        category,
-        device: device || 'desktop',
-        templateName: selectedTemplate.value || undefined,
-        showSelector: showSelectorModal.value,
-        selectorConfig,
-        props: templateProps,
-        onTemplateChange: (templateName: string) => {
-          selectedTemplate.value = templateName
-          showSelectorModal.value = false
+      return () => {
+        if (loading.value) {
+          return h('div', { class: 'template-loading' }, '正在加载模板...')
         }
-      })
+
+        if (error.value) {
+          return h('div', { class: 'template-error' }, `加载失败: ${error.value}`)
+        }
+
+        if (currentComponent.value) {
+          return h(TemplateTransition, {}, {
+            default: () => h(currentComponent.value as any, templateProps)
+          })
+        }
+
+        return h('div', { class: 'template-empty' }, '没有可用的模板')
+      }
     }
   })
 
-  // 控制方法
+  // 简化的控制方法
   const openSelector = () => {
-    showSelectorModal.value = true
+    openSelectorInternal()
   }
 
   const closeSelector = () => {
-    showSelectorModal.value = false
+    closeSelectorInternal()
   }
 
-  const switchTemplate = (templateName: string) => {
-    selectedTemplate.value = templateName
-    showSelectorModal.value = false
+  const switchTemplate = async (templateName: string) => {
+    await switchTemplateInternal(templateName)
   }
+
+  // 当前选中的模板名称
+  const selectedTemplate = computed(() => currentTemplate.value?.name)
 
   return {
     TemplateComponent: markRaw(TemplateComponent),
-    showSelector: showSelectorModal,
+    showSelector: showSelectorInternal,
     selectedTemplate,
     openSelector,
     closeSelector,
