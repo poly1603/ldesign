@@ -74,10 +74,13 @@ function initDatePickers() {
   
   // 年份选择器
   initYearPicker();
-  
+
+  // 季度选择器
+  initQuarterPicker();
+
   // 禁用日期选择器
   initDisabledDatePicker();
-  
+
   // 自定义格式选择器
   initFormatDatePicker();
 }
@@ -239,6 +242,35 @@ function initYearPicker() {
   });
   
   datePickers.year = datePicker;
+}
+
+/**
+ * 初始化季度选择器
+ */
+function initQuarterPicker() {
+  const container = document.getElementById('quarter-datepicker');
+  const result = document.getElementById('quarter-result');
+
+  if (!container) return;
+
+  const datePicker = new DatePicker({
+    mode: 'quarter',
+    selectionType: 'single',
+    placeholder: '请选择季度',
+    format: 'YYYY-[Q]Q'
+  });
+
+  datePicker.mount(container);
+
+  datePicker.on('change', (value) => {
+    const date = DateUtils.toDate(value);
+    if (date) {
+      const quarter = Math.floor(date.getMonth() / 3) + 1;
+      result.textContent = `选中的季度: ${date.getFullYear()}年第${quarter}季度`;
+    }
+  });
+
+  datePickers.quarter = datePicker;
 }
 
 /**
