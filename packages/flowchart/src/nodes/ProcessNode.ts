@@ -6,6 +6,7 @@
 
 import { RectNode, RectNodeModel, h } from '@logicflow/core'
 import { createNodeIcon } from '../utils/icons'
+import { applySimpleLayout } from '../utils/SimpleNodeLayout'
 
 /**
  * 处理节点模型
@@ -20,12 +21,12 @@ export class ProcessNodeModel extends RectNodeModel {
     this.height = 50
     this.radius = 6
 
-    // 设置默认文本 - 文本在图标下方，有足够间隔
+    // 使用简化的布局系统设置文本位置
     if (!this.text?.value) {
       this.text = {
         value: '处理节点',
         x: this.x,
-        y: this.y + 15, // 文本在图标下方，增加间隔
+        y: this.y + 25, // 增加偏移量，确保在图标下方且不重叠
         draggable: false,
         editable: true
       }
@@ -133,8 +134,11 @@ export class ProcessNode extends RectNode {
    * 获取处理图标
    */
   private getProcessIcon(x: number, y: number): h.JSX.Element | null {
+    // 使用简化的布局系统计算图标位置
+    const { iconX, iconY } = applySimpleLayout(null, x, y, 'rect', { width: 100, height: 50 })
+
     const iconData = createNodeIcon('settings', {
-      size: 16,
+      size: 14,
       color: 'var(--ldesign-brand-color, #722ed1)',
       strokeWidth: 2
     })
@@ -142,7 +146,8 @@ export class ProcessNode extends RectNode {
     if (!iconData) return null
 
     return h('g', {
-      transform: `translate(${x}, ${y - 15}) scale(0.7)` // 图标在文本上方
+      transform: `translate(${iconX}, ${iconY}) scale(0.8)`,
+      className: 'lf-node-icon lf-node-process'
     }, [
       h('g', {
         transform: 'translate(-12, -12)' // 居中图标

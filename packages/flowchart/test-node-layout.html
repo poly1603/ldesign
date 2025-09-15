@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>节点布局测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #722ed1;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .flowchart-container {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            margin: 20px 0;
+            position: relative;
+            background: #fafafa;
+        }
+        
+        .materials-panel {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 200px;
+            height: 100%;
+            background: white;
+            border-right: 1px solid #e5e5e5;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .canvas-area {
+            margin-left: 200px;
+            height: 100%;
+            position: relative;
+            background: #fff;
+        }
+        
+        .material-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            cursor: move;
+            background: white;
+            transition: all 0.2s ease;
+        }
+        
+        .material-item:hover {
+            border-color: #722ed1;
+            box-shadow: 0 2px 4px rgba(114, 46, 209, 0.2);
+        }
+        
+        .material-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .material-text {
+            font-size: 12px;
+            color: #333;
+        }
+        
+        .instructions {
+            background: #fff7e6;
+            border: 1px solid #ffd591;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions h3 {
+            margin: 0 0 10px 0;
+            color: #d46b08;
+        }
+        
+        .test-node {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .test-node.circle {
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            background: #52c41a;
+            border: 2px solid #389e0d;
+        }
+        
+        .test-node.rect {
+            width: 120px;
+            height: 60px;
+            background: #722ed1;
+            border: 2px solid #5e2aa7;
+        }
+        
+        .test-node.diamond {
+            width: 80px;
+            height: 40px;
+            background: #f5c538;
+            border: 2px solid #d4a017;
+            transform: rotate(45deg);
+        }
+        
+        .test-node-icon {
+            font-size: 14px;
+            color: white;
+            margin-bottom: 5px;
+        }
+        
+        .test-node-text {
+            font-size: 12px;
+            color: white;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .diamond .test-node-icon,
+        .diamond .test-node-text {
+            transform: rotate(-45deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 节点布局测试</h1>
+            <p>测试修复后的节点图标和文本布局</p>
+        </div>
+        
+        <div class="content">
+            <div class="instructions">
+                <h3>测试说明</h3>
+                <p>1. 从左侧物料面板拖拽节点到右侧画布区域</p>
+                <p>2. 观察节点的图标和文本是否正确对齐（图标在上，文本在下）</p>
+                <p>3. 检查是否还有重叠问题</p>
+            </div>
+            
+            <div class="flowchart-container">
+                <div class="materials-panel">
+                    <h4 style="margin: 0 0 15px 0; color: #333; font-size: 14px;">物料面板</h4>
+                    
+                    <div class="material-item" draggable="true" data-type="start">
+                        <div class="material-icon">🟢</div>
+                        <div class="material-text">开始节点</div>
+                    </div>
+                    
+                    <div class="material-item" draggable="true" data-type="end">
+                        <div class="material-icon">🔴</div>
+                        <div class="material-text">结束节点</div>
+                    </div>
+                    
+                    <div class="material-item" draggable="true" data-type="process">
+                        <div class="material-icon">⚙️</div>
+                        <div class="material-text">处理节点</div>
+                    </div>
+                    
+                    <div class="material-item" draggable="true" data-type="user">
+                        <div class="material-icon">👤</div>
+                        <div class="material-text">用户任务</div>
+                    </div>
+                    
+                    <div class="material-item" draggable="true" data-type="service">
+                        <div class="material-icon">🔧</div>
+                        <div class="material-text">服务任务</div>
+                    </div>
+                    
+                    <div class="material-item" draggable="true" data-type="condition">
+                        <div class="material-icon">❓</div>
+                        <div class="material-text">条件判断</div>
+                    </div>
+                </div>
+                
+                <div class="canvas-area" id="canvas">
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #999; text-align: center;">
+                        <p>拖拽左侧物料到此处</p>
+                        <p style="font-size: 12px;">测试节点布局是否正确</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let nodeCounter = 0;
+        
+        // 拖拽功能
+        document.querySelectorAll('.material-item').forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', item.dataset.type);
+            });
+        });
+        
+        const canvas = document.getElementById('canvas');
+        
+        canvas.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+        
+        canvas.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const nodeType = e.dataTransfer.getData('text/plain');
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            createTestNode(nodeType, x, y);
+        });
+        
+        function createTestNode(type, x, y) {
+            const node = document.createElement('div');
+            node.className = 'test-node';
+            node.style.left = (x - 40) + 'px';
+            node.style.top = (y - 30) + 'px';
+            
+            let nodeClass, icon, text;
+            
+            switch(type) {
+                case 'start':
+                    nodeClass = 'circle';
+                    icon = '▶️';
+                    text = '开始';
+                    break;
+                case 'end':
+                    nodeClass = 'circle';
+                    icon = '⏹️';
+                    text = '结束';
+                    break;
+                case 'process':
+                    nodeClass = 'rect';
+                    icon = '⚙️';
+                    text = '处理节点';
+                    break;
+                case 'user':
+                    nodeClass = 'rect';
+                    icon = '👤';
+                    text = '用户任务';
+                    break;
+                case 'service':
+                    nodeClass = 'rect';
+                    icon = '🔧';
+                    text = '服务任务';
+                    break;
+                case 'condition':
+                    nodeClass = 'diamond';
+                    icon = '❓';
+                    text = '条件';
+                    break;
+            }
+            
+            node.classList.add(nodeClass);
+            
+            // 应用修复后的布局 - 图标在上，文本在下，增加间距
+            node.innerHTML = `
+                <div class="test-node-icon" style="margin-bottom: ${nodeClass === 'circle' ? '8px' : '10px'}">${icon}</div>
+                <div class="test-node-text">${text}</div>
+            `;
+            
+            canvas.appendChild(node);
+            nodeCounter++;
+            
+            // 双击删除节点
+            node.addEventListener('dblclick', () => {
+                node.remove();
+            });
+        }
+        
+        console.log('节点布局测试页面已加载');
+    </script>
+</body>
+</html>

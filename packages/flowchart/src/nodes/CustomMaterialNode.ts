@@ -266,24 +266,29 @@ class CustomMaterialNodeView extends RectNode {
 
     const { x, y } = model
     const icon = material.icon
-    const iconY = y - 15 // 图标在文本上方，增加间隔
+
+    // 使用简化的图标位置计算
+    const iconX = x
+    const iconY = y - 25 // 图标在文本上方，增加间隔避免重叠
 
     switch (icon.type) {
       case 'text':
       case 'emoji':
         return h('text', {
-          x,
+          x: iconX,
           y: iconY,
           textAnchor: 'middle',
           dominantBaseline: 'middle',
           fontSize: icon.size || 16,
-          fill: icon.color || '#333333'
+          fill: icon.color || '#333333',
+          className: 'lf-node-icon lf-node-custom-material'
         }, icon.content)
 
       case 'svg':
         // 简单的SVG图标支持
         return h('g', {
-          transform: `translate(${x - (icon.size || 16) / 2}, ${iconY - (icon.size || 16) / 2})`
+          transform: `translate(${iconX - (icon.size || 16) / 2}, ${iconY - (icon.size || 16) / 2})`,
+          className: 'lf-node-icon lf-node-custom-material'
         }, [
           h('foreignObject', {
             width: icon.size || 16,

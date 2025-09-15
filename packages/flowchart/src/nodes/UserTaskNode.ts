@@ -5,6 +5,7 @@
  */
 
 import { RectNode, RectNodeModel, h } from '@logicflow/core'
+import { applySimpleLayout } from '../utils/SimpleNodeLayout'
 
 /**
  * 用户任务节点模型
@@ -19,12 +20,12 @@ export class UserTaskNodeModel extends RectNodeModel {
     this.height = 60
     this.radius = 8
 
-    // 设置默认文本 - 在图标下方，有足够间隔
+    // 使用简化的布局系统设置文本位置
     if (!this.text?.value) {
       this.text = {
         value: '用户任务',
         x: this.x,
-        y: this.y + 15, // 文本在图标下方，增加间隔
+        y: this.y + 25, // 增加偏移量，确保在图标下方且不重叠
         draggable: false,
         editable: true
       }
@@ -147,7 +148,13 @@ export class UserTaskNode extends RectNode {
    * 获取用户图标
    */
   private getUserIcon(x: number, y: number): h.JSX.Element {
-    return h('g', { transform: `translate(${x}, ${y - 15})` }, [
+    // 使用简化的布局系统计算图标位置
+    const { iconX, iconY } = applySimpleLayout(null, x, y, 'rect', { width: 120, height: 60 })
+
+    return h('g', {
+      transform: `translate(${iconX}, ${iconY})`,
+      className: 'lf-node-icon lf-node-user-task'
+    }, [
       // 用户头像
       h('circle', {
         cx: 0,

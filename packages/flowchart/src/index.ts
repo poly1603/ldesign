@@ -1,12 +1,15 @@
 /**
  * @ldesign/flowchart - 基于 LogicFlow 的审批流程图编辑器
- * 
+ *
  * 这是一个基于 @logicflow/core 的审批流程图编辑器组件，
  * 专为 OA 系统的流程审批流程可视化设计。
- * 
+ *
  * @author LDESIGN Team
  * @version 1.0.0
  */
+
+// 导入样式文件
+import './styles'
 
 // 导出核心编辑器类
 export { FlowchartEditor } from './core/FlowchartEditor'

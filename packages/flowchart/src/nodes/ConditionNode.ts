@@ -6,6 +6,7 @@
 
 import { DiamondNode, DiamondNodeModel, h } from '@logicflow/core'
 import { createNodeIcon } from '../utils/icons'
+import { applySimpleLayout } from '../utils/SimpleNodeLayout'
 
 /**
  * 条件节点模型
@@ -19,12 +20,12 @@ export class ConditionNodeModel extends DiamondNodeModel {
     this.rx = 60
     this.ry = 30
 
-    // 设置默认文本 - 文本在图标下方，有足够间隔
+    // 使用简化的文本位置设置
     if (!this.text?.value) {
       this.text = {
         value: '条件判断',
         x: this.x,
-        y: this.y + 15, // 文本在图标下方，增加间隔
+        y: this.y + 25, // 增加偏移量，确保在图标下方且不重叠
         draggable: false,
         editable: true
       }
@@ -135,8 +136,11 @@ export class ConditionNode extends DiamondNode {
    * 获取条件图标
    */
   private getConditionIcon(x: number, y: number): h.JSX.Element | null {
+    // 使用简化的布局系统计算图标位置
+    const { iconX, iconY } = applySimpleLayout(null, x, y, 'diamond', { rx: 60, ry: 30 })
+
     const iconData = createNodeIcon('help-circle', {
-      size: 16,
+      size: 12,
       color: 'var(--ldesign-warning-color, #f5c538)',
       strokeWidth: 2
     })
@@ -144,10 +148,11 @@ export class ConditionNode extends DiamondNode {
     if (!iconData) return null
 
     return h('g', {
-      transform: `translate(${x}, ${y - 15}) scale(0.7)` // 图标在文本上方
+      transform: `translate(${iconX}, ${iconY}) scale(0.8)`,
+      className: 'lf-node-icon lf-node-condition'
     }, [
       h('g', {
-        transform: 'translate(-12, -12)' // 居中图标
+        transform: 'translate(-6, -6)' // 居中图标
       }, iconData.paths.map((path: string, index: number) =>
         h('path', {
           key: index,

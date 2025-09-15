@@ -9,6 +9,7 @@ import { CircleNode, CircleNodeModel, h } from '@logicflow/core'
 import { createNodeIcon } from '../utils/icons'
 import { layoutDetectionService, type LayoutDirection } from '../services/LayoutDetectionService'
 import { nodeRenderOptimizer, type NodeLayout } from '../services/NodeRenderOptimizer'
+import { applySimpleLayout } from '../utils/SimpleNodeLayout'
 
 /**
  * 开始节点模型
@@ -74,10 +75,9 @@ export class StartNodeModel extends CircleNodeModel {
       // 更新节点半径
       this.r = styles.nodeStyle.r
       
-      // 更新文本位置 - 确保与图标不重叠
+      // 使用简化的布局系统更新文本位置
       if (this.text) {
-        this.text.x = this.x + this.nodeLayout.textPosition.x
-        this.text.y = this.y + this.nodeLayout.textPosition.y
+        applySimpleLayout(this.text, this.x, this.y, 'circle', { radius: this.r })
       }
       
       this.isLayoutOptimized = true
@@ -186,28 +186,13 @@ export class StartNode extends CircleNode {
    * 获取节点形状 - 支持优化布局和防重叠
    */
   override getShape(): h.JSX.Element {
-    const { model } = this.props as { model: StartNodeModel }
+    const { model } = this.props
     const { x, y, r } = model
     const style = model.getNodeStyle()
-    
-    // 获取优化后的布局信息
-    const nodeLayout = (model as any).nodeLayout
-    const layoutDirection = (model as any).layoutDirection
 
-    // 计算图标位置 - 确保不与文本重叠
-    let iconX = x
-    let iconY = y - 6 // 图标稍微向上，为文本留出空间
-    let iconSize = 12
-
-    if (nodeLayout) {
-      iconX = x + nodeLayout.iconPosition.x
-      iconY = y + nodeLayout.iconPosition.y
-      iconSize = nodeLayout.iconSize
-    } else {
-      // 如果没有优化布局，使用安全的默认位置
-      // 图标在上方，文本在下方，确保不重叠
-      iconY = y - 8
-    }
+    // 使用简化的布局系统计算图标位置
+    const { iconX, iconY } = applySimpleLayout(null, x, y, 'circle', { radius: r })
+    const iconSize = 14
 
     // 获取lucide图标数据
     const iconData = createNodeIcon('play', {
@@ -243,6 +228,7 @@ export class StartNode extends CircleNode {
 
     // 添加布局方向指示器（调试用，可选）
     const debugElements = []
+    const layoutDirection = (model as any).layoutDirection
     if (process.env.NODE_ENV === 'development' && layoutDirection) {
       debugElements.push(
         h('text', {
@@ -274,15 +260,17 @@ export class StartNode extends CircleNode {
    * 手动设置布局方向
    */
   setLayoutDirection(direction: LayoutDirection): void {
-    (this.model as any).layoutDirection = direction;
-    (this.model as any).isLayoutOptimized = false
-    this.model.setAttributes()
+    const { model } = this.props;
+    (model as any).layoutDirection = direction;
+    (model as any).isLayoutOptimized = false
+    model.setAttributes()
   }
-  
+
   /**
    * 获取当前布局方向
    */
   getLayoutDirection(): LayoutDirection | undefined {
-    return (this.model as any).layoutDirection
+    const { model } = this.props
+    return (model as any).layoutDirection
   }
 }

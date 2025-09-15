@@ -19,12 +19,12 @@ export class ServiceTaskNodeModel extends RectNodeModel {
     this.height = 60
     this.radius = 8
 
-    // 设置默认文本 - 文本在图标下方，整体居中
+    // 使用简化的文本位置设置
     if (!this.text?.value) {
       this.text = {
         value: '服务任务',
         x: this.x,
-        y: this.y + 12,
+        y: this.y + 25, // 增加偏移量，确保在图标下方且不重叠
         draggable: false,
         editable: true
       }
