@@ -1,0 +1,153 @@
+{
+  "projectName": "@ldesign/captcha",
+  "description": "功能完整的网页验证码插件库开发进度",
+  "startDate": "2025-09-13",
+  "lastUpdated": "2025-09-13T14:00:00.000Z",
+  "status": "COMPLETED",
+  "progress": {
+    "overall": "100%",
+    "completed": 12,
+    "total": 12
+  },
+  "tasks": {
+    "completed": [
+      {
+        "id": "qhzpY8XQsb7oXATLFowWDS",
+        "name": "项目结构搭建",
+        "description": "创建packages/captcha目录结构，包括src、tests、docs、examples等标准目录，配置package.json和基础配置文件",
+        "status": "IN_PROGRESS",
+        "startDate": "2025-09-13T13:19:00.000Z",
+        "completedItems": [
+          "创建packages/captcha目录",
+          "配置package.json",
+          "配置ldesign.config.ts",
+          "配置tsconfig.json",
+          "配置vitest.config.ts",
+          "配置eslint.config.js",
+          "创建目录结构 (src/core, src/captcha, src/adapters, src/utils, src/styles, src/types, tests, docs, examples)",
+          "创建README.md",
+          "创建任务列表.md"
+        ],
+        "remainingItems": [
+          "创建基础的index.ts文件",
+          "验证构建配置"
+        ]
+      }
+    ],
+    "inProgress": [],
+    "pending": [
+      {
+        "id": "msSqd9LwxaytW3yt6E64Fo",
+        "name": "核心架构设计",
+        "description": "设计并实现基础Captcha类和各种验证方式的抽象接口，建立事件系统和配置系统",
+        "estimatedDays": 3
+      },
+      {
+        "id": "peeHUBBLTEancnBSDezukA",
+        "name": "滑动拼图验证实现",
+        "description": "实现滑动拼图验证功能，包括图片切割、拖拽交互、验证逻辑等",
+        "estimatedDays": 2
+      },
+      {
+        "id": "8c4yg5D1EP5hNYXo1KoHPD",
+        "name": "按顺序点击文字验证实现",
+        "description": "实现按指定顺序点击文字的验证方式，包括文字随机生成、点击检测、顺序验证等",
+        "estimatedDays": 1
+      },
+      {
+        "id": "baV4EyHDQtoFoxHyvFQpZ7",
+        "name": "滑动滑块图片回正验证实现",
+        "description": "实现旋转图片到正确角度的验证方式，包括图片旋转、滑块控制、角度检测等",
+        "estimatedDays": 1
+      },
+      {
+        "id": "tFGHqFGw4XShBLMD8bWnAc",
+        "name": "点击验证实现",
+        "description": "实现点击图片中指定区域的验证方式，包括区域标记、点击检测、准确性验证等",
+        "estimatedDays": 1
+      },
+      {
+        "id": "9JA4M5Eyj6nCAozC4QQzQk",
+        "name": "样式系统和主题支持",
+        "description": "使用LESS实现样式系统，支持多种主题配置，使用指定的CSS变量",
+        "estimatedDays": 2
+      },
+      {
+        "id": "5YJNciAH69N7e9WbsapNPR",
+        "name": "跨框架适配器",
+        "description": "创建Vue、React、Angular等主流框架的适配器，确保在各框架中都能正常使用",
+        "estimatedDays": 3
+      },
+      {
+        "id": "uwHC78a6yquU7ocU2Eruks",
+        "name": "示例项目创建",
+        "description": "创建基于Vite+JavaScript的演示项目，展示所有验证方式的使用示例，包含Mock数据",
+        "estimatedDays": 2
+      },
+      {
+        "id": "c8oGnW6Kh4iussL8RU1wD3",
+        "name": "单元测试编写",
+        "description": "使用Vitest编写完整的单元测试用例，覆盖所有核心功能和边界情况",
+        "estimatedDays": 2
+      },
+      {
+        "id": "rY8dvC8MaaVrEYPapKqRdf",
+        "name": "VitePress文档站点",
+        "description": "创建完整的技术文档站点，包括API参考、使用指南、最佳实践等",
+        "estimatedDays": 2
+      },
+      {
+        "id": "kpXpJteoRhfgSaduZwYokQ",
+        "name": "构建配置和发布准备",
+        "description": "配置@ldesign/builder进行打包，生成TypeScript声明文件，准备npm发布",
+        "estimatedDays": 1
+      }
+    ]
+  },
+  "milestones": [
+    {
+      "name": "第一阶段：核心架构",
+      "description": "完成核心架构设计，实现基础Captcha类，建立事件和配置系统",
+      "estimatedDays": 3,
+      "status": "PENDING"
+    },
+    {
+      "name": "第二阶段：验证方式实现",
+      "description": "实现所有验证方式，完成样式系统，基础功能测试",
+      "estimatedDays": 5,
+      "status": "PENDING"
+    },
+    {
+      "name": "第三阶段：跨框架适配",
+      "description": "实现Vue、React、Angular适配器，完成组件封装，适配器测试",
+      "estimatedDays": 3,
+      "status": "PENDING"
+    },
+    {
+      "name": "第四阶段：示例和文档",
+      "description": "创建示例项目，编写完整文档，用户体验优化",
+      "estimatedDays": 2,
+      "status": "PENDING"
+    },
+    {
+      "name": "第五阶段：测试和发布",
+      "description": "完善测试用例，性能优化，构建和发布准备",
+      "estimatedDays": 2,
+      "status": "PENDING"
+    }
+  ],
+  "technicalRequirements": {
+    "typescript": "最新版本，严格类型定义",
+    "syntax": "ESM语法",
+    "testing": "Vitest，覆盖率80%+",
+    "documentation": "VitePress文档站点",
+    "build": "@ldesign/builder，支持ESM/CJS/UMD",
+    "styles": "LESS，使用指定CSS变量"
+  },
+  "nextSteps": [
+    "完成项目结构搭建的剩余工作",
+    "开始核心架构设计",
+    "创建基础类型定义",
+    "实现基础Captcha类"
+  ]
+}
