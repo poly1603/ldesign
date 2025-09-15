@@ -21,6 +21,8 @@ export interface CSSInjectionOptions {
   important?: boolean
   /** 样式标签 ID */
   styleId?: string
+  /** 是否尝试使用 Constructable Stylesheet（adoptedStyleSheets） */
+  useConstructable?: boolean
 }
 
 /**
@@ -31,6 +33,7 @@ const DEFAULT_CSS_OPTIONS: Required<CSSInjectionOptions> = {
   selector: ':root',
   important: false,
   styleId: 'ldesign-color-variables',
+  useConstructable: false,
 }
 
 /**
@@ -39,6 +42,8 @@ const DEFAULT_CSS_OPTIONS: Required<CSSInjectionOptions> = {
 export class CSSInjectorImpl implements CSSInjector {
   private options: Required<CSSInjectionOptions>
   private styleElements: Map<string, HTMLStyleElement> = new Map()
+  private styleSheets: Map<string, CSSStyleSheet> = new Map()
+  private lastCssText: Map<string, string> = new Map()
 
   constructor(options?: CSSInjectionOptions) {
     this.options = { ...DEFAULT_CSS_OPTIONS, ...options }
@@ -51,7 +56,9 @@ export class CSSInjectorImpl implements CSSInjector {
     const styleId = id || this.options.styleId
     const cssText = this.generateCSSText(variables)
 
+    if (this.lastCssText.get(styleId) === cssText) return
     this.updateStyleElement(styleId, cssText)
+    this.lastCssText.set(styleId, cssText)
   }
 
   /**
@@ -64,7 +71,9 @@ export class CSSInjectorImpl implements CSSInjector {
     const styleId = id || this.options.styleId
     const cssText = this.generateCSSTextWithComments(variableGroups)
 
+    if (this.lastCssText.get(styleId) === cssText) return
     this.updateStyleElement(styleId, cssText)
+    this.lastCssText.set(styleId, cssText)
   }
 
   /**
@@ -72,12 +81,24 @@ export class CSSInjectorImpl implements CSSInjector {
    */
   removeVariables(id?: string): void {
     const styleId = id || this.options.styleId
-    const styleElement = this.styleElements.get(styleId)
 
+    // 移除 constructable sheet
+    const sheet = this.styleSheets.get(styleId)
+    if (sheet) {
+      const adopted = (document as any).adoptedStyleSheets || []
+      ;(document as any).adoptedStyleSheets = adopted.filter((s: any) => s !== sheet)
+      this.styleSheets.delete(styleId)
+    }
+
+    // 移除 style 标签
+    const styleElement = this.styleElements.get(styleId)
     if (styleElement && styleElement.parentNode) {
       styleElement.parentNode.removeChild(styleElement)
       this.styleElements.delete(styleId)
     }
+
+    // 清理缓存的最后 CSS 文本
+    this.lastCssText.delete(styleId)
   }
 
   /**
@@ -101,34 +122,21 @@ export class CSSInjectorImpl implements CSSInjector {
     id?: string,
   ): void {
     const styleId = id || this.options.styleId
-
-    // 生成主题信息注释
-    const themeComment = themeInfo
-      ? `/* LDesign Theme: ${themeInfo.name} | Primary Color: ${themeInfo.primaryColor} | Generated: ${new Date().toISOString()} */\n`
-      : `/* LDesign Theme Variables | Generated: ${new Date().toISOString()} */\n`
-
-    // 生成亮色模式CSS规则
-    const lightDeclarations = Object.entries(lightVariables)
-      .map(([key, value]) => {
-        const varName = key.startsWith('--') ? key : `${this.options.prefix}-${key}`
-        const important = this.options.important ? ' !important' : ''
-        return `  ${varName}: ${value}${important};`
-      })
-      .join('\n')
-
-    // 生成暗色模式CSS规则
-    const darkDeclarations = Object.entries(darkVariables)
-      .map(([key, value]) => {
-        const varName = key.startsWith('--') ? key : `${this.options.prefix}-${key}`
-        const important = this.options.important ? ' !important' : ''
-        return `  ${varName}: ${value}${important};`
-      })
-      .join('\n')
-
-    // 组合CSS文本
-    const cssText = `${themeComment}/* Light Mode Variables */\n:root {\n${lightDeclarations}\n}\n\n/* Dark Mode Variables */\n:root[data-theme-mode="dark"] {\n${darkDeclarations}\n}`
-
+    const cssText = this.composeThemeCSSText(lightVariables, darkVariables, themeInfo)
+    if (this.lastCssText.get(styleId) === cssText) return
     this.updateStyleElement(styleId, cssText)
+    this.lastCssText.set(styleId, cssText)
+  }
+
+  /**
+   * 构建主题 CSS 文本（不注入，仅返回字符串）
+   */
+  buildThemeCSSText(
+    lightVariables: Record<string, string>,
+    darkVariables: Record<string, string>,
+    themeInfo?: { name: string, primaryColor: string },
+  ): string {
+    return this.composeThemeCSSText(lightVariables, darkVariables, themeInfo)
   }
 
   /**
@@ -175,8 +183,31 @@ export class CSSInjectorImpl implements CSSInjector {
    * 更新样式元素
    */
   private updateStyleElement(id: string, cssText: string): void {
-    let styleElement = this.styleElements.get(id)
+    // 优先使用 Constructable Stylesheet（如果开启且环境支持）
+    const canUseConstructable = this.options.useConstructable && typeof (document as any).adoptedStyleSheets !== 'undefined' && typeof (window as any).CSSStyleSheet !== 'undefined'
+    if (canUseConstructable) {
+      let sheet = this.styleSheets.get(id)
+      if (!sheet) {
+        sheet = new (window as any).CSSStyleSheet()
+        this.styleSheets.set(id, sheet)
+        // 采用样式表（避免重复）
+        const adopted = (document as any).adoptedStyleSheets || []
+        if (!adopted.includes(sheet)) {
+          (document as any).adoptedStyleSheets = [...adopted, sheet]
+        }
+      }
+      try {
+        // 同步替换内容（测试环境更稳定）
+        ;(sheet as any).replaceSync(cssText)
+      } catch {
+        // 某些环境只能异步
+        ;(sheet as any).replace(cssText)
+      }
+      return
+    }
 
+    // 回退：使用 <style> 标签
+    let styleElement = this.styleElements.get(id)
     if (!styleElement) {
       styleElement = document.createElement('style')
       styleElement.id = id
@@ -184,8 +215,35 @@ export class CSSInjectorImpl implements CSSInjector {
       document.head.appendChild(styleElement)
       this.styleElements.set(id, styleElement)
     }
-
     styleElement.textContent = cssText
+  }
+
+  /**
+   * 组合主题 CSS 文本
+   */
+  private composeThemeCSSText(
+    lightVariables: Record<string, string>,
+    darkVariables: Record<string, string>,
+    themeInfo?: { name: string, primaryColor: string },
+  ): string {
+    const themeComment = themeInfo
+      ? `/* LDesign Theme: ${themeInfo.name} | Primary Color: ${themeInfo.primaryColor} | Generated: ${new Date().toISOString()} */\n`
+      : `/* LDesign Theme Variables | Generated: ${new Date().toISOString()} */\n`
+
+    const makeDecls = (vars: Record<string, string>) => Object.entries(vars)
+      .map(([key, value]) => {
+        const varName = key.startsWith('--') ? key : `${this.options.prefix}-${key}`
+        const important = this.options.important ? ' !important' : ''
+        return `  ${varName}: ${value}${important};`
+      })
+      .join('\n')
+
+    const lightDeclarations = makeDecls(lightVariables)
+    const darkDeclarations = makeDecls(darkVariables)
+
+    const baseSelector = this.options.selector || ':root'
+    const darkSelector = `${baseSelector}[data-theme-mode=\"dark\"]`
+    return `${themeComment}/* Light Mode Variables */\n${baseSelector} {\n${lightDeclarations}\n}\n\n/* Dark Mode Variables */\n${darkSelector} {\n${darkDeclarations}\n}`
   }
 
   /**
@@ -196,16 +254,28 @@ export class CSSInjectorImpl implements CSSInjector {
   }
 
   /**
+   * 接管（hydrate）已有的样式标签
+   */
+  hydrate(id?: string): void {
+    const targetId = id || this.options.styleId
+    const el = document.getElementById(targetId) as HTMLStyleElement | null
+    if (el) {
+      this.styleElements.set(targetId, el)
+    }
+  }
+
+  /**
    * 清空所有注入的样式
    * 只清理由当前注入器管理的color相关样式，避免影响其他包的样式
    */
   clearAll(): void {
-    // 只清理由当前注入器实例管理的color相关样式标签
-    for (const id of this.styleElements.keys()) {
-      // 只清理color和theme相关的样式，不清理其他包的样式
-      if (id.startsWith('ldesign-color-') || id.startsWith('ldesign-theme-') || id === 'ldesign-color-variables') {
-        this.removeVariables(id)
-      }
+    // 先清除 constructable sheets
+    for (const id of Array.from(this.styleSheets.keys())) {
+      this.removeVariables(id)
+    }
+    // 再清除 style 标签
+    for (const id of Array.from(this.styleElements.keys())) {
+      this.removeVariables(id)
     }
   }
 

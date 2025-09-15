@@ -39,6 +39,14 @@ interface PixelData {
   count: number
 }
 
+// Palette entry returned from Octree quantization
+interface OctreePaletteEntry {
+  r: number
+  g: number
+  b: number
+  pixelCount: number
+}
+
 export class ImageColorExtractor {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
@@ -371,17 +379,17 @@ export class ImageColorExtractor {
     const palette = octree.getPalette()
     const totalPixels = pixels.reduce((sum, p) => sum + p.count, 0)
 
-    return palette.map(node => {
-      const population = (node.pixelCount / totalPixels) * 100
+    return palette.map(entry => {
+      const population = (entry.pixelCount / totalPixels) * 100
       const prominence = this.calculateProminence(
-        { r: node.r, g: node.g, b: node.b, count: node.pixelCount },
+        { r: entry.r, g: entry.g, b: entry.b, count: entry.pixelCount },
         population
       )
 
       return {
-        hex: this.rgbToHex(node.r, node.g, node.b),
-        rgb: { r: node.r, g: node.g, b: node.b },
-        hsl: this.rgbToHsl(node.r, node.g, node.b),
+        hex: this.rgbToHex(entry.r, entry.g, entry.b),
+        rgb: { r: entry.r, g: entry.g, b: entry.b },
+        hsl: this.rgbToHsl(entry.r, entry.g, entry.b),
         population,
         prominence
       }
@@ -766,7 +774,6 @@ class OctreeNode {
   private g = 0
   private b = 0
   pixelCount = 0
-  private paletteIndex = 0
 
   addColor(r: number, g: number, b: number, count: number, level = 0): void {
     if (level >= 8) {
@@ -794,23 +801,20 @@ class OctreeNode {
       // Find and merge smallest nodes
       leaves.sort((a, b) => a.pixelCount - b.pixelCount)
       
-      // Merge smallest leaf
-      const smallest = leaves.shift()!
-      // Implementation would merge with sibling or parent
+      // Merge smallest leaf (placeholder for real merge logic)
+      leaves.shift()
+      // Note: A real implementation would merge with sibling or parent nodes.
     }
   }
 
-  getPalette(): OctreeNode[] {
+  getPalette(): OctreePaletteEntry[] {
     const leaves = this.getLeaves()
     
-    return leaves.map(leaf => ({
-      r: Math.round(leaf.r / leaf.pixelCount),
-      g: Math.round(leaf.g / leaf.pixelCount),
-      b: Math.round(leaf.b / leaf.pixelCount),
+    return leaves.map((leaf): OctreePaletteEntry => ({
+      r: Math.round(leaf.r / Math.max(1, leaf.pixelCount)),
+      g: Math.round(leaf.g / Math.max(1, leaf.pixelCount)),
+      b: Math.round(leaf.b / Math.max(1, leaf.pixelCount)),
       pixelCount: leaf.pixelCount,
-      children: [],
-      isLeaf: true,
-      paletteIndex: 0
     }))
   }
 

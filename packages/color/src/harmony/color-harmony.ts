@@ -555,9 +555,7 @@ export class ColorHarmonyAnalyzer {
       (c.h >= 0 && c.h <= 60) || (c.h >= 300 && c.h <= 360)
     ).length
     
-    const coolCount = colors.filter(c => 
-      c.h >= 120 && c.h <= 240
-    ).length
+    // const coolCount = colors.filter(c => c.h >= 120 && c.h <= 240).length
     
     const ratio = warmCount / colors.length
     

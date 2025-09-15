@@ -32,7 +32,7 @@ export class AdvancedColorPicker {
   private isDragging = false
   
   // UI Elements
-  private colorWheel?: HTMLCanvasElement
+  // private colorWheel?: HTMLCanvasElement // reserved for future wheel UI
   private saturationValue?: HTMLCanvasElement
   private hueSlider?: HTMLElement
   private alphaSlider?: HTMLElement
@@ -40,8 +40,7 @@ export class AdvancedColorPicker {
   private inputFields?: Map<string, HTMLInputElement>
   
   // Canvas contexts
-  private wheelCtx?: CanvasRenderingContext2D
-  private svCtx?: CanvasRenderingContext2D
+  private svCtx: CanvasRenderingContext2D | null = null
 
   constructor(options: ColorPickerOptions = {}) {
     this.options = {
@@ -186,18 +185,16 @@ export class AdvancedColorPicker {
     `
 
     // Get references to elements
-    this.colorWheel = this.container.querySelector('#color-wheel') as HTMLCanvasElement
+    // wheel canvas is not used currently
     this.saturationValue = this.container.querySelector('#saturation-value') as HTMLCanvasElement
     this.hueSlider = this.container.querySelector('#hue-slider') as HTMLElement
     this.alphaSlider = this.container.querySelector('#alpha-slider') as HTMLElement
     this.previewBox = this.container.querySelector('#preview-box') as HTMLElement
     
     // Get canvas contexts
-    if (this.colorWheel) {
-      this.wheelCtx = this.colorWheel.getContext('2d')!
-    }
+    // no-op: colorWheel context currently unused
     if (this.saturationValue) {
-      this.svCtx = this.saturationValue.getContext('2d')!
+      this.svCtx = this.saturationValue.getContext('2d')
     }
 
     // Setup input fields map
@@ -230,7 +227,8 @@ export class AdvancedColorPicker {
     const tabs = this.container.querySelectorAll('.tab-btn')
     tabs.forEach(tab => {
       tab.addEventListener('click', (e) => {
-        const format = (e.target as HTMLElement).dataset.format!
+        const el = e.currentTarget as HTMLElement
+        const format = (el.getAttribute('data-format') || 'hex')
         this.switchInputFormat(format)
       })
     })
@@ -239,7 +237,8 @@ export class AdvancedColorPicker {
     const paletteColors = this.container.querySelectorAll('.palette-color')
     paletteColors.forEach(el => {
       el.addEventListener('click', (e) => {
-        const color = (e.target as HTMLElement).dataset.color!
+        const elTarget = e.currentTarget as HTMLElement
+        const color = elTarget.getAttribute('data-color') || '#000000'
         this.setColor(color)
       })
     })
@@ -270,6 +269,9 @@ export class AdvancedColorPicker {
 
   private renderSaturationValue(): void {
     if (!this.svCtx || !this.saturationValue) return
+    
+    // TypeScript null-check guard for old browsers
+    if (!this.svCtx) return
     
     const width = this.saturationValue.width
     const height = this.saturationValue.height
@@ -577,13 +579,15 @@ export class AdvancedColorPicker {
     // Update tab buttons
     const tabs = this.container.querySelectorAll('.tab-btn')
     tabs.forEach(tab => {
-      tab.classList.toggle('active', tab.dataset.format === format)
+      const tabEl = tab as HTMLElement
+      tabEl.classList.toggle('active', (tabEl.getAttribute('data-format') || '') === format)
     })
     
     // Update field groups
     const groups = this.container.querySelectorAll('.field-group')
     groups.forEach(group => {
-      group.classList.toggle('active', group.dataset.format === format)
+      const groupEl = group as HTMLElement
+      groupEl.classList.toggle('active', (groupEl.getAttribute('data-format') || '') === format)
     })
   }
 

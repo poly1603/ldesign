@@ -162,6 +162,19 @@ function createThemeManagerConfig(config: ColorPluginOptions) {
  * @param options 插件配置选项
  * @returns Engine 插件实例
  */
+/**
+ * 创建颜色管理 Engine 插件
+ *
+ * 用于将 @ldesign/color 集成到第三方引擎或框架中。
+ * 该插件会：
+ * - 创建并初始化 ThemeManager
+ * - 将 ThemeManager 注入到全局（provide / globalProperties / window）
+ * - 应用默认主题与模式
+ * - 在需要时触发回调（onReady / onThemeChanged / onError）
+ *
+ * @param options 插件配置选项
+ * @returns Engine 插件对象（具备 install/uninstall 生命周期）
+ */
 export function createColorEnginePlugin(options: ColorPluginOptions = {}) {
   const config = { ...defaultOptions, ...options }
 
@@ -294,6 +307,22 @@ export function createColorEnginePlugin(options: ColorPluginOptions = {}) {
  * @param options 插件配置选项
  * @returns Vue 插件实例
  */
+/**
+ * 创建 Vue 插件（直接在 Vue 应用中使用）
+ *
+ * 功能：
+ * - 初始化并注入 ThemeManager
+ * - 在应用启动时应用默认主题与模式
+ * - 在全局（provide/globalProperties）暴露 $themeManager
+ *
+ * 示例：
+ * ```ts
+ * import { createApp } from 'vue'
+ * import { createColorPlugin } from '@ldesign/color/vue'
+ * const app = createApp(App)
+ * app.use(createColorPlugin({ defaultTheme: 'default', defaultMode: 'light' }))
+ * ```
+ */
 export function createColorPlugin(options: ColorPluginOptions = {}): Plugin {
   const config = { ...defaultOptions, ...options }
 
@@ -399,6 +428,14 @@ export function createColorPlugin(options: ColorPluginOptions = {}): Plugin {
 /**
  * 组合式函数：使用主题
  */
+/**
+ * 组合式函数：使用主题
+ *
+ * 提供以下响应式能力：
+ * - currentTheme/currentMode 当前主题与模式
+ * - availableThemes 可用主题名称列表
+ * - setTheme/setMode/toggleMode 修改主题与模式
+ */
 export function useTheme() {
   const themeManager = inject('themeManager') as any
 
@@ -409,25 +446,39 @@ export function useTheme() {
       currentMode: ref('light' as const),
       isDark: computed(() => false),
       isLight: computed(() => true),
-      availableThemes: computed(() => []),
-      setTheme: () => { },
-      setMode: () => { },
-      toggleMode: () => { },
+      availableThemes: computed(() => [] as string[]),
+      setTheme: async () => { /* no-op */ },
+      setMode: async () => { /* no-op */ },
+      toggleMode: async () => { /* no-op */ },
       getCurrentTheme: () => 'blue',
       getCurrentMode: () => 'light' as const,
     }
   }
 
-  // 响应式状态
-  const currentTheme = ref(themeManager.currentTheme || 'blue')
-  const currentMode = ref(themeManager.currentMode || 'light')
+  // 响应式状态（通过公开方法而非私有字段获取）
+  const initialTheme = typeof themeManager.getCurrentTheme === 'function'
+    ? themeManager.getCurrentTheme()
+    : 'blue'
+  const initialMode = typeof themeManager.getCurrentMode === 'function'
+    ? themeManager.getCurrentMode()
+    : 'light'
+
+  const currentTheme = ref<string>(initialTheme)
+  const currentMode = ref<'light' | 'dark'>(initialMode)
 
   // 计算属性
   const isDark = computed(() => currentMode.value === 'dark')
   const isLight = computed(() => currentMode.value === 'light')
-  const availableThemes = computed(() => {
+  const availableThemes = computed<string[]>(() => {
+    if (typeof themeManager.getThemeNames === 'function') {
+      return themeManager.getThemeNames()
+    }
     if (typeof themeManager.getAvailableThemes === 'function') {
-      return themeManager.getAvailableThemes()
+      // 回退：某些实现可能返回 ThemeConfig[]
+      const list = themeManager.getAvailableThemes()
+      if (Array.isArray(list)) {
+        return list.map((t: any) => (typeof t === 'string' ? t : t?.name)).filter(Boolean)
+      }
     }
     return []
   })
@@ -440,6 +491,9 @@ export function useTheme() {
       if (mode) {
         currentMode.value = mode
       }
+      else if (typeof themeManager.getCurrentMode === 'function') {
+        currentMode.value = themeManager.getCurrentMode()
+      }
     }
     catch (error) {
       console.error('[useTheme] 设置主题失败:', error)
@@ -448,7 +502,7 @@ export function useTheme() {
 
   const setMode = async (mode: 'light' | 'dark') => {
     try {
-      await themeManager.setTheme(currentTheme.value, mode)
+      await themeManager.setMode ? themeManager.setMode(mode) : themeManager.setTheme(currentTheme.value, mode)
       currentMode.value = mode
     }
     catch (error) {
@@ -470,8 +524,8 @@ export function useTheme() {
     setTheme,
     setMode,
     toggleMode,
-    getCurrentTheme: () => themeManager.currentTheme,
-    getCurrentMode: () => themeManager.currentMode,
+    getCurrentTheme: () => (typeof themeManager.getCurrentTheme === 'function' ? themeManager.getCurrentTheme() : currentTheme.value),
+    getCurrentMode: () => (typeof themeManager.getCurrentMode === 'function' ? themeManager.getCurrentMode() : currentMode.value),
   }
 }
 

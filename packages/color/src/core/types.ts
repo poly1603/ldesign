@@ -219,6 +219,14 @@ export interface ThemeManagerOptions {
   cssPrefix?: string
   /** 是否启用闲时处理 */
   idleProcessing?: boolean
+  /** 是否尝试使用 Constructable Stylesheet 进行 CSS 注入 */
+  useConstructableCss?: boolean
+  /** 是否在注入时自动应用对比度优化（高对比度覆盖） */
+  autoAdjustContrast?: boolean
+  /** 目标对比度等级 */
+  contrastLevel?: WCAGLevel
+  /** 文本大小，用于对比度阈值 */
+  textSize?: TextSize
   /** 主题变更回调 */
   onThemeChanged?: (theme: string, mode: ColorMode) => void
   /** 错误回调 */
@@ -271,11 +279,38 @@ export interface ThemeManagerInstance extends EventEmitter {
   /** 应用主题到页面 */
   applyTheme: (name: string, mode: ColorMode) => void
 
+  /** 渲染（SSR）主题 CSS 文本（包含 light/dark 两套） */
+  renderThemeCSS: (
+    name: string,
+    mode?: ColorMode,
+    options?: { includeComments?: boolean }
+  ) => Promise<string>
+
+  /** 接管（hydrate）SSR 注入的样式标签，避免重复插入与闪烁 */
+  hydrateMountedStyles: (idOrSelector?: string) => void
+
   /** 移除主题样式 */
   removeTheme: () => void
 
+  /**
+   * 将主题作用域应用到指定容器
+   * 为容器分配 data-theme-scope，并注入仅对该容器生效的 CSS 变量
+   */
+  applyThemeTo: (root: Element, theme?: string, mode?: ColorMode) => Promise<void>
+
+  /**
+   * 从指定容器移除作用域主题
+   */
+  removeThemeFrom: (root: Element) => void
+
   /** 销毁实例 */
   destroy: () => void
+
+  /** 启用/禁用高对比度覆盖 */
+  enableHighContrast: (enable: boolean, options?: { level?: WCAGLevel, textSize?: TextSize }) => void
+
+  /** 是否启用了高对比度覆盖 */
+  isHighContrastEnabled: () => boolean
 }
 
 /**
@@ -410,6 +445,27 @@ export interface CSSInjector {
     variableGroups: CSSVariableGroup[],
     id?: string
   ) => void
+
+  /** 注入主题变量（亮暗两套）并带注释 */
+  injectThemeVariables?: (
+    lightVariables: Record<string, string>,
+    darkVariables: Record<string, string>,
+    themeInfo?: { name: string, primaryColor: string },
+    id?: string,
+  ) => void
+
+  /** 构建主题 CSS 文本（不注入，仅返回字符串） */
+  buildThemeCSSText?: (
+    lightVariables: Record<string, string>,
+    darkVariables: Record<string, string>,
+    themeInfo?: { name: string, primaryColor: string }
+  ) => string
+
+  /** 采用（hydrate）已有的样式标签，纳入管理 */
+  hydrate?: (id?: string) => void
+
+  /** 获取所有注入的样式 ID */
+  getInjectedIds?: () => string[]
 
   /** 移除 CSS 变量 */
   removeVariables: (id?: string) => void
