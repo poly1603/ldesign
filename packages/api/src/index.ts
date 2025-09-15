@@ -27,6 +27,10 @@ export {
   systemApiPlugin,
 } from './plugins/systemApi'
 export { createRestApiPlugin } from './plugins/rest'
+export { createGraphqlApiPlugin, gql } from './plugins/graphql'
+export { createOfflineCachePlugin } from './plugins/offlineCache'
+export { createRateLimitPlugin } from './plugins/rateLimit'
+export { createLoggingPlugin } from './plugins/logging'
 
 // 核心类型
 export type {

@@ -1,4 +1,11 @@
-// 简单的 IntersectionObserver 工具
+/**
+ * 简单的 IntersectionObserver 工具
+ *
+ * @param target 观察的目标元素 Ref
+ * @param onIntersect 进入可视区域时触发的回调
+ * @param options 观察选项
+ * @returns stop 函数用于停止观察
+ */
 import type { Ref } from 'vue'
 import { onUnmounted, watch } from 'vue'
 

@@ -33,7 +33,7 @@ const api = createApiEngine({
 
 ## 请求重试
 
-- 配置项：enabled, retries, delay, backoff('fixed'|'exponential'), maxDelay, retryOn(error, attempt)
+- 配置项：enabled, retries, delay, backoff('fixed'|'exponential'), maxDelay, jitter, retryOn(error, attempt), circuitBreaker
 - 错误中间件优先于重试（若中间件已恢复，则不再重试）
 
 示例：方法级重试
@@ -41,7 +41,15 @@ const api = createApiEngine({
 api.register('fetchData', {
   name: 'fetchData',
   config: { method: 'GET', url: '/data' },
-  retry: { enabled: true, retries: 3, delay: 200, backoff: 'exponential', maxDelay: 2000 },
+  retry: {
+    enabled: true,
+    retries: 3,
+    delay: 200,
+    backoff: 'exponential',
+    maxDelay: 2000,
+    jitter: 0.2, // ±20% 抖动
+    circuitBreaker: { enabled: true, failureThreshold: 5, halfOpenAfter: 30000, successThreshold: 1 },
+  },
 })
 ```
 

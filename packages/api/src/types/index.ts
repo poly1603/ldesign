@@ -36,6 +36,8 @@ export interface ApiEngineConfig {
     response?: ResponseMiddleware[]
     error?: ErrorMiddleware[]
   }
+  /** 请求队列配置（限流/并发控制） */
+  queue?: RequestQueueConfig
 }
 
 /**
@@ -50,6 +52,8 @@ export interface CacheConfig {
   maxSize?: number
   /** 缓存存储类型 */
   storage?: 'memory' | 'localStorage' | 'sessionStorage'
+  /** 缓存键前缀（仅 local/sessionStorage 生效） */
+  prefix?: string
   /** 缓存键生成函数 */
   keyGenerator?: (methodName: string, params?: any) => string
 }
@@ -77,6 +81,17 @@ export interface DeduplicationConfig {
 /**
  * 重试配置
  */
+export interface CircuitBreakerConfig {
+  /** 是否启用断路器 */
+  enabled?: boolean
+  /** 连续失败阈值，超过后打开断路器 */
+  failureThreshold?: number
+  /** 半开等待时间（毫秒） */
+  halfOpenAfter?: number
+  /** 从半开到关闭所需的连续成功次数 */
+  successThreshold?: number
+}
+
 export interface RetryConfig {
   /** 是否启用重试 */
   enabled?: boolean
@@ -88,8 +103,12 @@ export interface RetryConfig {
   backoff?: 'fixed' | 'exponential'
   /** 最大延迟（毫秒），用于限制指数退避 */
   maxDelay?: number
+  /** 抖动比例（0~1），用于打散重试风暴，示例：0.2 表示 ±20% 随机抖动 */
+  jitter?: number
   /** 是否针对特定错误进行重试 */
   retryOn?: (error: any, attempt: number) => boolean
+  /** 断路器配置 */
+  circuitBreaker?: CircuitBreakerConfig
 }
 
 /**
@@ -168,6 +187,8 @@ export interface ApiMethodConfig {
     response?: ResponseMiddleware[]
     error?: ErrorMiddleware[]
   }
+  /** 方法级队列配置 */
+  queue?: Partial<RequestQueueConfig>
 }
 
 /**
@@ -210,6 +231,10 @@ export interface ApiCallOptions {
     response?: ResponseMiddleware[]
     error?: ErrorMiddleware[]
   }
+  /** 调用级队列配置 */
+  queue?: Partial<RequestQueueConfig>
+  /** 调用级优先级（越大优先级越高） */
+  priority?: number
   /** 成功回调 */
   onSuccess?: (data: any) => void
   /** 错误回调 */
@@ -348,6 +373,16 @@ export interface DeduplicationManager {
   execute<T>(key: string, fn: () => Promise<T>): Promise<T>
   /** 清除去重缓存 */
   clear(): void
+}
+
+/** 请求队列配置 */
+export interface RequestQueueConfig {
+  /** 是否启用 */
+  enabled?: boolean
+  /** 并发上限 */
+  concurrency?: number
+  /** 最大排队长度（0 表示无限） */
+  maxQueue?: number
 }
 
 /**

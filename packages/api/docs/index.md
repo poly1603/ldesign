@@ -47,7 +47,7 @@ graph TB
 
 - [安装和配置](./guide/installation.md)
 - [基础用法](./guide/basic-usage.md)
-- [Vue 3 集成](./guide/vue-integration.md)
+- [Vue 3 集成](./guide/vue.md)
 
 ### 核心概念
 
@@ -58,7 +58,7 @@ graph TB
 
 ### API 参考
 
-- [核心 API](./api/core.md)
+- [API 参考](./api/core.md)
 - [插件 API](./api/plugins.md)
 - [Vue API](./api/vue.md)
 - [类型定义](./api/types.md)

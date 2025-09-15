@@ -60,13 +60,16 @@ const systemApiMethods: Record<string, ApiMethodConfig> = {
       }
     },
     onSuccess: (result: LoginResult) => {
-      // 自动保存 token 到 localStorage
-      if (result.accessToken) {
-        localStorage.setItem('access_token', result.accessToken)
+      // 自动保存 token 到 localStorage（在无 localStorage 环境下静默跳过）
+      try {
+        if (result.accessToken && typeof localStorage !== 'undefined') {
+          localStorage.setItem('access_token', result.accessToken)
+        }
+        if (result.refreshToken && typeof localStorage !== 'undefined') {
+          localStorage.setItem('refresh_token', result.refreshToken)
+        }
       }
-      if (result.refreshToken) {
-        localStorage.setItem('refresh_token', result.refreshToken)
-      }
+      catch {}
     },
     cache: {
       enabled: false, // 登录结果不缓存
@@ -86,10 +89,15 @@ const systemApiMethods: Record<string, ApiMethodConfig> = {
       url: '/auth/logout',
     },
     onSuccess: () => {
-      // 清除本地存储的 token
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
-      localStorage.removeItem('user_info')
+      // 清除本地存储的 token（在无 localStorage 环境下静默跳过）
+      try {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+          localStorage.removeItem('user_info')
+        }
+      }
+      catch {}
     },
     cache: {
       enabled: false,
@@ -129,8 +137,13 @@ const systemApiMethods: Record<string, ApiMethodConfig> = {
       }
     },
     onSuccess: (userInfo: UserInfo) => {
-      // 缓存用户信息到 localStorage
-      localStorage.setItem('user_info', JSON.stringify(userInfo))
+      // 缓存用户信息到 localStorage（在无 localStorage 环境下静默跳过）
+      try {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('user_info', JSON.stringify(userInfo))
+        }
+      }
+      catch {}
     },
     cache: {
       enabled: true,
@@ -272,13 +285,16 @@ const systemApiMethods: Record<string, ApiMethodConfig> = {
       }
     },
     onSuccess: (result: LoginResult) => {
-      // 更新 token
-      if (result.accessToken) {
-        localStorage.setItem('access_token', result.accessToken)
+      // 更新 token（在无 localStorage 环境下静默跳过）
+      try {
+        if (result.accessToken && typeof localStorage !== 'undefined') {
+          localStorage.setItem('access_token', result.accessToken)
+        }
+        if (result.refreshToken && typeof localStorage !== 'undefined') {
+          localStorage.setItem('refresh_token', result.refreshToken)
+        }
       }
-      if (result.refreshToken) {
-        localStorage.setItem('refresh_token', result.refreshToken)
-      }
+      catch {}
     },
     cache: {
       enabled: false,

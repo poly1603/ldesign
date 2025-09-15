@@ -18,6 +18,7 @@ import { createHttpClient } from '@ldesign/http'
 import { CacheManager } from '../utils/CacheManager'
 import { DebounceManagerImpl } from '../utils/DebounceManager'
 import { DeduplicationManagerImpl } from '../utils/DeduplicationManager'
+import { RequestQueueManager } from '../utils/RequestQueue'
 import { version as libVersion } from '../version'
 
 /**
@@ -45,8 +46,14 @@ export class ApiEngineImpl implements ApiEngine {
   /** 去重管理器 */
   private readonly deduplicationManager: DeduplicationManager
 
+  /** 请求队列管理器（可选） */
+  private requestQueueManager: RequestQueueManager | null = null
+
   /** 是否已销毁 */
   private destroyed = false
+
+  /** 断路器状态 */
+  private readonly circuitStates = new Map<string, { state: 'closed' | 'open' | 'half-open'; failureCount: number; successCount: number; nextTryAt: number }>()
 
   constructor(config: ApiEngineConfig = {}) {
     this.config = {
@@ -83,6 +90,16 @@ export class ApiEngineImpl implements ApiEngine {
     this.cacheManager = new CacheManager(this.config.cache!)
     this.debounceManager = new DebounceManagerImpl()
     this.deduplicationManager = new DeduplicationManagerImpl()
+
+    // 创建请求队列（按需）
+    if (this.config.queue?.enabled) {
+      const q = {
+        enabled: true,
+        concurrency: this.config.queue.concurrency ?? 5,
+        maxQueue: this.config.queue.maxQueue ?? 0,
+      }
+      this.requestQueueManager = new RequestQueueManager(q)
+    }
 
     this.log('API Engine initialized', this.config)
   }
@@ -282,8 +299,37 @@ export class ApiEngineImpl implements ApiEngine {
           requestConfig = await Promise.resolve(mw(requestConfig, ctx))
         }
 
-        // 发送请求
-        let response = await this.httpClient.request(requestConfig)
+        // 发送请求（可选队列）
+        const useQueue = this.shouldUseQueue(methodConfig, options)
+        const effectiveQueue = {
+          enabled: this.config.queue?.enabled ?? false,
+          concurrency: this.config.queue?.concurrency ?? 5,
+          maxQueue: this.config.queue?.maxQueue ?? 0,
+          ...methodConfig.queue,
+          ...options.queue,
+        }
+
+        const send = () => this.httpClient.request(requestConfig)
+
+        let response
+        if (useQueue) {
+          if (!this.requestQueueManager) {
+            this.requestQueueManager = new RequestQueueManager({
+              enabled: true,
+              concurrency: effectiveQueue.concurrency ?? 5,
+              maxQueue: effectiveQueue.maxQueue ?? 0,
+            })
+          } else {
+            this.requestQueueManager.updateConfig({
+              concurrency: effectiveQueue.concurrency,
+              maxQueue: effectiveQueue.maxQueue,
+            })
+          }
+          response = await this.requestQueueManager.enqueue(send, options.priority ?? 0)
+        }
+        else {
+          response = await send()
+        }
 
         // 响应中间件
         for (const mw of resMiddlewares) {
@@ -307,9 +353,49 @@ export class ApiEngineImpl implements ApiEngine {
       // 含重试的执行器
       const executeWithRetry = async (): Promise<T> => {
         let attempt = 0
+
+        // 断路器预检查
+        const cb = {
+          enabled: this.config.retry?.circuitBreaker?.enabled || methodConfig.retry?.circuitBreaker?.enabled || options.retry?.circuitBreaker?.enabled || false,
+          failureThreshold: options.retry?.circuitBreaker?.failureThreshold ?? methodConfig.retry?.circuitBreaker?.failureThreshold ?? this.config.retry?.circuitBreaker?.failureThreshold ?? 5,
+          halfOpenAfter: options.retry?.circuitBreaker?.halfOpenAfter ?? methodConfig.retry?.circuitBreaker?.halfOpenAfter ?? this.config.retry?.circuitBreaker?.halfOpenAfter ?? 30000,
+          successThreshold: options.retry?.circuitBreaker?.successThreshold ?? methodConfig.retry?.circuitBreaker?.successThreshold ?? this.config.retry?.circuitBreaker?.successThreshold ?? 1,
+        }
+
+        if (cb.enabled) {
+          const st = this.circuitStates.get(methodName)
+          const now = Date.now()
+          if (st?.state === 'open' && now < st.nextTryAt) {
+            const err = new Error(`Circuit breaker open for method "${methodName}"`)
+            methodConfig.onError?.(err)
+            options.onError?.(err)
+            throw err
+          }
+          if (st?.state === 'open' && now >= st.nextTryAt) {
+            // 半开
+            this.circuitStates.set(methodName, { state: 'half-open', failureCount: st.failureCount, successCount: 0, nextTryAt: now + cb.halfOpenAfter })
+          }
+        }
+
         while (true) {
           try {
             const data = await performOnce()
+            // 断路器成功反馈
+            if (cb.enabled) {
+              const st = this.circuitStates.get(methodName)
+              if (st?.state === 'half-open') {
+                const successCount = (st.successCount ?? 0) + 1
+                if (successCount >= cb.successThreshold) {
+                  this.circuitStates.set(methodName, { state: 'closed', failureCount: 0, successCount: 0, nextTryAt: 0 })
+                }
+                else {
+                  this.circuitStates.set(methodName, { ...st, successCount })
+                }
+              }
+              else if (!st || st.state !== 'closed') {
+                this.circuitStates.set(methodName, { state: 'closed', failureCount: 0, successCount: 0, nextTryAt: 0 })
+              }
+            }
 
             // 缓存结果
             if (!options.skipCache && this.shouldUseCache(methodConfig, options)) {
@@ -328,6 +414,22 @@ export class ApiEngineImpl implements ApiEngine {
             return data
           }
           catch (err) {
+            // 断路器失败反馈
+            if (cb.enabled) {
+              const st = this.circuitStates.get(methodName) ?? { state: 'closed', failureCount: 0, successCount: 0, nextTryAt: 0 }
+              const failureCount = st.failureCount + 1
+              if (st.state === 'half-open') {
+                // 半开失败立即打开
+                this.circuitStates.set(methodName, { state: 'open', failureCount, successCount: 0, nextTryAt: Date.now() + cb.halfOpenAfter })
+              }
+              else if (failureCount >= cb.failureThreshold) {
+                this.circuitStates.set(methodName, { state: 'open', failureCount, successCount: 0, nextTryAt: Date.now() + cb.halfOpenAfter })
+              }
+              else {
+                this.circuitStates.set(methodName, { ...st, failureCount })
+              }
+            }
+
             // 错误中间件尝试恢复
             let recovered: any | undefined
             for (const mw of errMiddlewares) {
@@ -373,7 +475,7 @@ export class ApiEngineImpl implements ApiEngine {
               throw err
             }
 
-            // 退避计算
+            // 退避计算 + 抖动
             const baseDelay = retryConfig.delay || 0
             let delay = baseDelay
             if (retryConfig.backoff === 'exponential') {
@@ -381,6 +483,13 @@ export class ApiEngineImpl implements ApiEngine {
               if (retryConfig.maxDelay) {
                 delay = Math.min(delay, retryConfig.maxDelay)
               }
+            }
+            const jitter = (retryConfig as any).jitter ?? this.config.retry?.jitter ?? 0
+            if (typeof jitter === 'number' && jitter > 0) {
+              const delta = delay * jitter
+              const min = Math.max(0, delay - delta)
+              const max = delay + delta
+              delay = Math.floor(min + Math.random() * (max - min))
             }
 
             await new Promise(resolve => globalThis.setTimeout(resolve, delay))
@@ -585,6 +694,21 @@ export class ApiEngineImpl implements ApiEngine {
     const globalEnabled = this.config.deduplication?.enabled ?? true
     const methodEnabled = methodConfig.deduplication?.enabled ?? true
     return globalEnabled && methodEnabled
+  }
+
+  /**
+   * 判断是否使用请求队列
+   */
+  private shouldUseQueue(
+    methodConfig: ApiMethodConfig,
+    options: ApiCallOptions,
+  ): boolean {
+    const globalEnabled = this.config.queue?.enabled ?? false
+    const methodEnabled = methodConfig.queue?.enabled ?? undefined
+    const optionEnabled = options.queue?.enabled ?? undefined
+
+    const decided = optionEnabled ?? methodEnabled ?? globalEnabled
+    return !!decided
   }
 
   /**

@@ -381,10 +381,10 @@ describe('API Configuration', () => {
 
 1. [学习基础用法](./basic-usage.md)
 2. [了解插件系统](./plugin-system.md)
-3. [集成到 Vue 3 项目](./vue-integration.md)
+3. [集成到 Vue 3 项目](./vue.md)
 4. [查看完整示例](../examples/basic.md)
 
 ---
 
-如果您在配置过程中遇到问题，请查看 [故障排除指南](../troubleshooting.md) 或
+如果您在配置过程中遇到问题，请查看 [故障排除指南](./faq.md) 或
 [提交 Issue](https://github.com/ldesign/ldesign/issues)。

@@ -47,7 +47,7 @@ class MemoryCacheStorage implements CacheStorage {
  * localStorage 缓存存储
  */
 class LocalStorageCacheStorage implements CacheStorage {
-  private prefix = 'ldesign_api_cache_'
+  constructor(private prefix: string = 'ldesign_api_cache_') {}
 
   get(key: string): string | null {
     try {
@@ -107,7 +107,7 @@ class LocalStorageCacheStorage implements CacheStorage {
  * sessionStorage 缓存存储
  */
 class SessionStorageCacheStorage implements CacheStorage {
-  private prefix = 'ldesign_api_cache_'
+  constructor(private prefix: string = 'ldesign_api_cache_') {}
 
   get(key: string): string | null {
     try {
@@ -185,16 +185,18 @@ export class CacheManager {
       storage: 'memory',
       keyGenerator: (methodName: string, params?: unknown) =>
         `${methodName}:${JSON.stringify(params || {})}`,
+      prefix: 'ldesign_api_cache_',
       ...config,
     }
 
     // 创建存储实例
+    const prefix = this.config.prefix || 'ldesign_api_cache_'
     switch (this.config.storage) {
       case 'localStorage':
-        this.storage = new LocalStorageCacheStorage()
+        this.storage = new LocalStorageCacheStorage(prefix)
         break
       case 'sessionStorage':
-        this.storage = new SessionStorageCacheStorage()
+        this.storage = new SessionStorageCacheStorage(prefix)
         break
       default:
         this.storage = new MemoryCacheStorage()

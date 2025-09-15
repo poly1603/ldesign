@@ -126,7 +126,7 @@ export function createRestApiPlugin(options: RestPluginOptions): ApiPlugin {
       config: (data?: Record<string, unknown>) => ({ method: 'POST', url: basePath, data: options.map?.createData ? options.map.createData(data) : data }),
       transform: options.transform?.create,
       validate: options.validate?.create,
-      onSuccess: (data) => { onSuccess?.(names.create, data, (undefined as unknown as ApiEngine)) },
+      // onSuccess 将在 install 中统一包装，以便拿到 engine 实例并清理缓存
       cache: { enabled: false },
     }
   }
@@ -137,7 +137,7 @@ export function createRestApiPlugin(options: RestPluginOptions): ApiPlugin {
       config: (data: Record<string, unknown>) => ({ method: 'PUT', url: resolvePath(basePath, data), data: options.map?.updateData ? options.map.updateData(data) : data }),
       transform: options.transform?.update,
       validate: options.validate?.update,
-      onSuccess: (data) => { onSuccess?.(names.update, data, (undefined as unknown as ApiEngine)) },
+      // onSuccess 将在 install 中统一包装
       cache: { enabled: false },
     }
   }
@@ -148,7 +148,7 @@ export function createRestApiPlugin(options: RestPluginOptions): ApiPlugin {
       config: (data: Record<string, unknown>) => ({ method: 'DELETE', url: resolvePath(basePath, data), data: options.map?.removeData ? options.map.removeData(data) : data }),
       transform: options.transform?.remove,
       validate: options.validate?.remove,
-      onSuccess: (data) => { onSuccess?.(names.remove, data, (undefined as unknown as ApiEngine)) },
+      // onSuccess 将在 install 中统一包装
       cache: { enabled: false },
     }
   }
@@ -167,6 +167,7 @@ export function createRestApiPlugin(options: RestPluginOptions): ApiPlugin {
         onSuccess: (data: unknown) => {
           try { cfg.onSuccess?.(data) } catch {}
           if (methodName === names.create || methodName === names.update || methodName === names.remove) {
+            // 变更类操作成功后清理相关缓存
             clearList()
             clearGet()
           }
