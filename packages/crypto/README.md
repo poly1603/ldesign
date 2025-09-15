@@ -210,6 +210,90 @@ pnpm test:e2e
 pnpm docs:dev
 ```
 
+## 导出结构
+
+- ESM（推荐）
+  - 命名导出：
+    ```ts path=null start=null
+    import { aes, rsa, hash, hmac, encoding } from '@ldesign/crypto'
+    ```
+  - 命名空间导入：
+    ```ts path=null start=null
+    import * as LDesignCrypto from '@ldesign/crypto'
+    // 例如：LDesignCrypto.aes.encrypt('data', 'key')
+    ```
+- CommonJS（需要在 CJS 环境）
+  ```js path=null start=null
+  const Crypto = require('@ldesign/crypto')
+  const result = Crypto.aes.encrypt('data', 'key')
+  ```
+
+## API 总览
+
+- AES（对称加密）
+  - `aes.encrypt(data, key, options?)` → `{ success, data?, iv?, algorithm, mode, keySize, error? }`
+  - `aes.decrypt(input, key, options?)` → `{ success, data?, error? }`
+  - 便捷方法：`aes128/aes192/aes256`（对应 keySize 128/192/256）
+  - 常用可选项：`{ keySize?: 128|192|256, mode?: 'CBC'|'ECB'|'CFB'|'OFB'|'CTR', iv?: string }`
+- RSA（非对称加密）
+  - `rsa.generateKeyPair(bits = 2048)` → `{ publicKey, privateKey }`
+  - `rsa.encrypt(data, publicKey, options?)` / `rsa.decrypt(input, privateKey, options?)`
+  - 常用可选项：`{ padding?: 'OAEP'|'PKCS1', hashAlgorithm?: 'SHA256'|'SHA1' }`
+- Hash（哈希）
+  - `hash.md5/sha1/sha224/sha256/sha384/sha512(data, { encoding?: 'hex'|'base64' } = { encoding:'hex' })`
+  - `hash.verify(data, expected, algorithm)` 常数时间比较
+- HMAC（消息认证码）
+  - `hmac.md5/sha1/sha256/sha384/sha512(message, key, { encoding?: 'hex'|'base64' })`
+  - `hmac.verify(message, key, mac, 'SHA256' | ... )`
+- 编码
+  - `encoding.encode(text, 'base64' | 'hex')` / `encoding.decode(text, 'base64' | 'hex')`
+  - 便捷：`encrypt.base64/base64Url/hex`，`decrypt.base64/base64Url/hex`（如在示例中所示）
+- 随机/密钥工具（名称视导出可能为 keyGenerator 或 RandomUtils）
+  - `generateKey(lengthBytes)`、`generateIV(lengthBytes)`、`generateSalt(lengthBytes)`
+- 数字签名
+  - `digitalSignature.sign(data, privateKey, 'SHA256' | ... )`
+  - `digitalSignature.verify(data, signature, publicKey, 'SHA256' | ... )`
+- 统一管理器（如有暴露）
+  - `cryptoManager.batchEncrypt(ops)` / `cryptoManager.batchDecrypt(ops)`（批量与并行）
+
+> 注：以上为概要，具体入参与返回结构请以源码与类型声明为准。
+
+## 安全建议（强烈推荐阅读）
+
+- 算法选择
+  - 避免在生产使用 ECB；首选 AES-256（CBC/CTR）与 RSA-OAEP + SHA-256
+  - 避免将 MD5/SHA-1 用于安全场景；首选 SHA-256/384/512
+- IV/Nonce
+  - CBC/CTR/CFB/OFB 等模式请每次加密使用新的随机 IV，不要复用
+  - IV 可公开存储，但必须与对应密文绑定
+- 密钥管理
+  - 不要在代码中硬编码密钥；通过安全存储或环境变量注入
+  - 使用足够长度与熵的密钥；定期轮换
+- 完整性与认证
+  - 对敏感数据同时使用 HMAC 进行完整性校验或采用 AEAD（若后续提供）
+  - 比较摘要/签名时使用常数时间比较（库已提供 verify）
+- 编码误区
+  - Base64/Hex 仅是编码，不提供安全性
+- 其他
+  - 处理失败（success=false 或抛错）时不要泄漏过多错误细节
+  - 注意浏览器与 Node 环境差异，必要时使用 polyfill/降级实现
+
+## 常见问题（FAQ）
+
+- 解密失败常见原因？
+  - 密钥错误、IV 不匹配、加密模式/参数不一致、密文被截断/篡改
+- 如何在前端页面安全使用？
+  - 避免在客户端存储长期有效的密钥；必要时使用临时密钥与后端协商
+  - 文档中的交互示例在 SSR 中已移除/静态化，避免构建报错
+- 为什么我的哈希值与其他工具不同？
+  - 请核对输入是否包含空白/编码差异，以及输出编码（hex/base64）是否一致
+- RSA 能加密大数据吗？
+  - 不适合。请使用“混合加密”（RSA 加密对称密钥，对称密钥加密大数据）
+
+## 变更日志
+
+请查看根目录的 [CHANGELOG.md](./CHANGELOG.md)。
+
 ## 许可证
 
 MIT License

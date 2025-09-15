@@ -4,14 +4,8 @@
  */
 
 import CryptoJS from 'crypto-js'
-import { 
-  PBKDF2, 
-  Argon2, 
-  scrypt,
-  KDFManager 
-} from '../algorithms/kdf'
+import { KDFManager } from '../algorithms/kdf'
 import { AESEncryptor } from '../algorithms/aes'
-import { Utils } from '../utils'
 
 /**
  * 密钥元数据
@@ -98,6 +92,19 @@ export class KeyManager {
     
     if (this.options.type !== 'memory') {
       this.loadKeysFromStorage()
+    }
+  }
+
+  /**
+   * 通过口令派生并初始化主密钥（向后兼容别名）
+   * 等价于 initializeMasterKey，但保留 name 参数以兼容现有调用方（仅用于标记用途）。
+   * @param password 用于派生主密钥的口令
+   * @param name 可选的主密钥标识标签（用于存储标记，不参与派生）
+   */
+  async deriveKeyFromPassword(password: string, name?: string): Promise<void> {
+    await this.initializeMasterKey(password)
+    if (name && this.options.type !== 'memory') {
+      await this.saveToStorage('master_label', name)
     }
   }
 

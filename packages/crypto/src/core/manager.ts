@@ -35,8 +35,22 @@ export interface CryptoConfig {
 }
 
 /**
- * 统一的加解密管理器
- * 提供简化的 API 和性能优化功能
+ * 统一的加解密管理器（CryptoManager）
+ *
+ * 在 Encrypt/Decrypt/Hash/HMAC/KeyGenerator 基础上提供更易用的一致入口，并内置批量、并行与结果缓存等性能优化能力。
+ *
+ * 能力概览：
+ * - encryptData/decryptData：统一算法选择与错误捕获，返回标准结构体
+ * - batchEncrypt/batchDecrypt：可按配置启用并行（Web Worker/模拟）
+ * - 配置项：默认算法、缓存、并行、自动 IV、KDF、调试日志等级等
+ * - 性能：通过 PerformanceOptimizer 统计与缓存，getPerformanceStats 获取指标
+ *
+ * 使用示例：
+ * ```ts
+ * import { cryptoManager } from '@ldesign/crypto'
+ * const enc = await cryptoManager.encryptData('hello', 'secret', 'AES')
+ * const dec = await cryptoManager.decryptData(enc, 'secret')
+ * ```
  */
 export class CryptoManager {
   private encrypt: Encrypt
@@ -196,7 +210,7 @@ export class CryptoManager {
     algorithm: HashAlgorithm = 'SHA256',
     options?: HashOptions,
   ): string {
-    return this.hash.hash(data, algorithm, options)
+    return this.hash.hash(data, algorithm, options).hash
   }
 
   /**

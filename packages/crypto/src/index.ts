@@ -137,15 +137,9 @@ export type {
   PerformanceMetrics,
 } from './core'
 
-// === Engine 插件模块 ===
-export {
-  createCryptoEnginePlugin,
-  createDebugCryptoEnginePlugin,
-  createDefaultCryptoEnginePlugin,
-  createPerformanceCryptoEnginePlugin,
-  cryptoEnginePlugin,
-  type CryptoEnginePluginOptions,
-} from './engine'
+// === Engine 插件模块（已移至独立入口，避免将可选依赖纳入基础构建）===
+// 如需使用 Engine 插件，请从独立入口导入：
+// import { createCryptoEnginePlugin } from '@ldesign/crypto/engine'
 
 // === 类型定义模块 ===
 export type {

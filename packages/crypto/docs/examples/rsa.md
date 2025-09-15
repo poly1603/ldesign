@@ -1,156 +1,62 @@
 # RSA 非对称加密示例
 
+本页展示 RSA 的常用用法（密钥对生成、加密/解密、签名/验签），示例均为纯代码，SSR 友好。
+
+## 密钥对生成
+
+```ts path=null start=null
+import { rsa } from '@ldesign/crypto'
+
+const keyPair = rsa.generateKeyPair(2048)
+console.log(keyPair.publicKey, keyPair.privateKey)
+```
+
+## 加密与解密
+
+```ts path=null start=null
+import { decrypt, encrypt, rsa } from '@ldesign/crypto'
+
+const { publicKey, privateKey } = rsa.generateKeyPair(2048)
+const enc = encrypt.rsa('Hello, RSA!', publicKey)
+const dec = decrypt.rsa(enc, privateKey)
+console.log(dec.success, dec.data)
+```
+
+## 数字签名
+
+```ts path=null start=null
+import { digitalSignature, rsa } from '@ldesign/crypto'
+
+const { publicKey, privateKey } = rsa.generateKeyPair(2048)
+const data = 'Important document'
+const signature = digitalSignature.sign(data, privateKey)
+const isValid = digitalSignature.verify(data, signature, publicKey)
+```
+
+## 混合加密（示例）
+
+```ts path=null start=null
+import { decrypt, encrypt, rsa, keyGenerator } from '@ldesign/crypto'
+
+const aesKey = keyGenerator.generateKey(32)
+const payload = encrypt.aes('large-data', aesKey)
+const wrappedKey = encrypt.rsa(aesKey, rsa.generateKeyPair(2048).publicKey)
+
+// 发送 payload + wrappedKey
+```
+
+## 注意事项
+
+- RSA 仅适合加密小数据；大数据请使用混合加密
+- 推荐最少 2048 位密钥；使用 OAEP 填充与安全哈希（SHA-256）
+
 RSA 是一种非对称加密算法，使用公钥加密、私钥解密。本页面提供了完整的交互式演示。
 
 ## 交互式演示
 
-<div class="crypto-demo">
-  <div class="demo-section">
-    <h3>🔑 RSA 密钥生成演示</h3>
+<!-- Interactive demo removed in SSR build: replace with static examples or client-only components -->
 
-    <div class="form-group">
-      <label>密钥长度:</label>
-      <select id="rsa-key-size">
-        <option value="1024">1024 位（不推荐）</option>
-        <option value="2048" selected>2048 位（推荐）</option>
-        <option value="3072">3072 位（高安全）</option>
-        <option value="4096">4096 位（最高安全）</option>
-      </select>
-    </div>
 
-    <div class="form-actions">
-      <button id="rsa-generate-keys-btn" class="btn primary">🔑 生成密钥对</button>
-      <button id="rsa-clear-keys-btn" class="btn">🗑️ 清除密钥</button>
-    </div>
-
-    <div id="rsa-keys-result" class="result-box" style="display: none;">
-      <h4>🔑 RSA 密钥对</h4>
-      <div class="result-item">
-        <label>公钥 (Public Key):</label>
-        <textarea id="rsa-public-key" class="result-textarea" readonly></textarea>
-      </div>
-      <div class="result-item">
-        <label>私钥 (Private Key):</label>
-        <textarea id="rsa-private-key" class="result-textarea" readonly></textarea>
-      </div>
-      <div class="result-item">
-        <label>密钥信息:</label>
-        <div id="rsa-key-info" class="result-value"></div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<div class="crypto-demo">
-  <div class="demo-section">
-    <h3>🔐 RSA 加密解密演示</h3>
-
-    <div class="form-group">
-      <label>要加密的数据:</label>
-      <textarea id="rsa-data" placeholder="输入要加密的数据（RSA适合加密小量数据）">Hello, RSA Encryption!</textarea>
-    </div>
-
-    <div class="form-group">
-      <label>公钥 (用于加密):</label>
-      <textarea id="rsa-encrypt-public-key" placeholder="粘贴公钥或先生成密钥对"></textarea>
-    </div>
-
-    <div class="form-group">
-      <label>私钥 (用于解密):</label>
-      <textarea id="rsa-decrypt-private-key" placeholder="粘贴私钥或先生成密钥对"></textarea>
-    </div>
-
-    <div class="form-actions">
-      <button id="rsa-encrypt-btn" class="btn primary">🔒 RSA 加密</button>
-      <button id="rsa-decrypt-btn" class="btn secondary">🔓 RSA 解密</button>
-      <button id="rsa-copy-keys-btn" class="btn success">📋 复制密钥</button>
-      <button id="rsa-clear-data-btn" class="btn">🗑️ 清除</button>
-    </div>
-
-    <div id="rsa-encrypted-result" class="result-box" style="display: none;">
-      <h4>🔒 RSA 加密结果</h4>
-      <div class="result-item">
-        <label>加密数据:</label>
-        <textarea id="rsa-encrypted-data" class="result-textarea" readonly></textarea>
-      </div>
-      <div class="result-item">
-        <label>算法信息:</label>
-        <div id="rsa-encrypt-info" class="result-value"></div>
-      </div>
-    </div>
-
-    <div id="rsa-decrypted-result" class="result-box success" style="display: none;">
-      <h4>🔓 RSA 解密结果</h4>
-      <div class="result-item">
-        <label>解密数据:</label>
-        <div id="rsa-decrypted-data" class="result-value"></div>
-      </div>
-    </div>
-
-    <div id="rsa-error" class="result-box error" style="display: none;"></div>
-
-  </div>
-</div>
-
-<div class="crypto-demo">
-  <div class="demo-section">
-    <h3>✍️ RSA 数字签名演示</h3>
-
-    <div class="form-group">
-      <label>要签名的数据:</label>
-      <textarea id="rsa-sign-data" placeholder="输入要签名的数据">This is a message to be signed.</textarea>
-    </div>
-
-    <div class="form-group">
-      <label>签名私钥:</label>
-      <textarea id="rsa-sign-private-key" placeholder="粘贴私钥用于签名"></textarea>
-    </div>
-
-    <div class="form-group">
-      <label>验证公钥:</label>
-      <textarea id="rsa-verify-public-key" placeholder="粘贴公钥用于验证"></textarea>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label>哈希算法:</label>
-        <select id="rsa-hash-algorithm">
-          <option value="SHA1">SHA1</option>
-          <option value="SHA256" selected>SHA256</option>
-          <option value="SHA384">SHA384</option>
-          <option value="SHA512">SHA512</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-actions">
-      <button id="rsa-sign-btn" class="btn primary">✍️ 生成签名</button>
-      <button id="rsa-verify-btn" class="btn success">✅ 验证签名</button>
-      <button id="rsa-clear-sign-btn" class="btn">🗑️ 清除</button>
-    </div>
-
-    <div id="rsa-signature-result" class="result-box" style="display: none;">
-      <h4>✍️ 数字签名</h4>
-      <div class="result-item">
-        <label>签名值:</label>
-        <textarea id="rsa-signature-value" class="result-textarea" readonly></textarea>
-      </div>
-      <div class="result-item">
-        <label>签名信息:</label>
-        <div id="rsa-signature-info" class="result-value"></div>
-      </div>
-    </div>
-
-    <div id="rsa-verify-result" class="result-box success" style="display: none;">
-      <h4>✅ 签名验证结果</h4>
-      <div id="rsa-verify-message" class="result-value"></div>
-    </div>
-
-    <div id="rsa-sign-error" class="result-box error" style="display: none;"></div>
-
-  </div>
-</div>
 
 ## 代码示例
 
@@ -538,146 +444,4 @@ const insecureConfig = {
 }
 ```
 
-<style>
-.crypto-demo {
-  border: 1px solid #e1e5e9;
-  border-radius: 8px;
-  padding: 20px;
-  margin: 20px 0;
-  background-color: #f8f9fa;
-}
 
-.demo-section h3 {
-  margin-top: 0;
-  color: #2c3e50;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 600;
-  color: #555;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.form-group textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-
-.result-textarea {
-  min-height: 120px;
-  font-family: monospace;
-  font-size: 12px;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-}
-
-.form-actions {
-  margin: 20px 0;
-}
-
-.btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-right: 10px;
-  margin-bottom: 10px;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-
-.btn.primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn.secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn.success {
-  background-color: #28a745;
-  color: white;
-}
-
-.btn:hover {
-  opacity: 0.9;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.result-box {
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 4px;
-  border-left: 4px solid #007bff;
-  background-color: white;
-}
-
-.result-box.success {
-  border-left-color: #28a745;
-  background-color: #d4edda;
-}
-
-.result-box.error {
-  border-left-color: #dc3545;
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.result-box h4 {
-  margin-top: 0;
-  margin-bottom: 15px;
-}
-
-.result-item {
-  margin-bottom: 10px;
-}
-
-.result-item label {
-  font-weight: 600;
-  color: #555;
-  margin-bottom: 5px;
-  display: block;
-}
-
-.result-value {
-  background-color: #f8f9fa;
-  padding: 8px;
-  border-radius: 4px;
-  font-family: monospace;
-  word-break: break-all;
-  border: 1px solid #e9ecef;
-}
-
-.error {
-  color: #dc3545;
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #f8d7da;
-  border-radius: 4px;
-}
-</style>

@@ -8,7 +8,12 @@
     "sourceMap": true
   },
   "include": [
-    "src/**/*"
+    "src/index.ts",
+    "src/index-lib.ts",
+    "src/algorithms/**/*.ts",
+    "src/core/**/*.ts",
+    "src/utils/**/*.ts",
+    "src/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
@@ -28,6 +33,14 @@
     "**/*.test.ts",
     "**/*.spec.ts",
     "src/adapt/**/*",
-    "src/vue/**/*"
+    "src/vue/**/*",
+    "src/core/encrypted-storage.ts",
+    "src/core/modern-ciphers.ts",
+    "src/core/wasm-accelerator.ts",
+    "src/core/wasm-builder.ts",
+    "src/core/stream.ts",
+    "src/core/quantum-safe.ts",
+    "src/engine/**/*",
+    "src/algorithms/advanced.ts"
   ]
 }

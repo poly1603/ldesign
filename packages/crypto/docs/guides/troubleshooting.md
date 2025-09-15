@@ -419,8 +419,8 @@ function validateInputs(data: string, key: string) {
 
 1. **查看示例代码**
 
-   - 参考 [examples](../../examples/) 目录中的示例项目
-   - 查看 [实战教程](../tutorials/practical-examples.md)
+- 参考仓库 examples 目录中的示例项目（本包下的 examples 子仓）
+- 查看实战教程（docs/tutorials/practical-examples.md）
 
 2. **检查版本兼容性**
 
@@ -435,7 +435,7 @@ function validateInputs(data: string, key: string) {
    - 包含您的环境信息（Node.js 版本、浏览器版本等）
 
 4. **查看更新日志**
-   - 检查 [CHANGELOG.md](../../CHANGELOG.md) 了解最新变更
+- 检查 CHANGELOG.md 了解最新变更
    - 确保使用最新版本
 
 ## 常见错误代码

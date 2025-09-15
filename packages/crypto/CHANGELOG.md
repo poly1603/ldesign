@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- 文档：完善 README（导出结构、API 总览、安全建议、FAQ、变更日志链接）
+- 文档：修复 docs 示例（hash、encoding、aes、rsa）的 SSR 构建问题，移除残留 HTML/CSS
+- 构建：继续沿用 ldesign-builder，未变更工具链
+
 ## [0.1.0] - 2024-12-19
 
 ### Added

@@ -1,171 +1,50 @@
 # 编码示例
 
+展示 Base64 与 Hex 的编码/解码，示例为纯代码，SSR 友好。
+
+## Base64 编解码
+
+```ts path=null start=null
+import { decrypt, encrypt } from '@ldesign/crypto'
+
+const encoded = encrypt.base64('Hello, Base64!')
+const decoded = decrypt.base64(encoded)
+
+const urlSafeEncoded = encrypt.base64Url('Hello, URL-safe!')
+const urlSafeDecoded = decrypt.base64Url(urlSafeEncoded)
+```
+
+## Hex 编解码
+
+```ts path=null start=null
+import { decrypt, encrypt } from '@ldesign/crypto'
+
+const hex = encrypt.hex('Hello, Hex!')
+const text = decrypt.hex(hex)
+```
+
+## 通用编码接口
+
+```ts path=null start=null
+import { encoding } from '@ldesign/crypto'
+
+const b64 = encoding.encode('Universal', 'base64')
+const b64Decoded = encoding.decode(b64, 'base64')
+const hexStr = encoding.encode('Universal', 'hex')
+```
+
+## 小贴士
+
+- URL 参数建议使用 Base64 URL 安全格式
+- Debug/展示建议使用 Hex
+
 本页面展示了 @ldesign/crypto 中各种编码和解码功能的使用示例。
 
 ## 交互式演示
 
-<div class="crypto-demo">
-  <div class="demo-section">
-    <h3>📝 Base64 编码演示</h3>
+<!-- Interactive demo removed in SSR build: replace with static examples or client-only components -->
 
-    <div class="form-group">
-      <label>要编码的数据:</label>
-      <textarea id="base64-data" placeholder="输入要编码的数据">Hello, Base64 Encoding! 你好，Base64编码！</textarea>
-    </div>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label>编码类型:</label>
-        <select id="base64-type">
-          <option value="standard" selected>标准 Base64</option>
-          <option value="url-safe">URL 安全 Base64</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-actions">
-      <button id="base64-encode-btn" class="btn primary">📝 Base64 编码</button>
-      <button id="base64-decode-btn" class="btn secondary">🔓 Base64 解码</button>
-      <button id="base64-clear-btn" class="btn">🗑️ 清除</button>
-    </div>
-
-    <div id="base64-encoded-result" class="result-box" style="display: none;">
-      <h4>📝 Base64 编码结果</h4>
-      <div class="result-item">
-        <label>编码数据:</label>
-        <textarea id="base64-encoded-data" class="result-textarea" readonly></textarea>
-      </div>
-      <div class="result-item">
-        <label>编码信息:</label>
-        <div id="base64-encode-info" class="result-value"></div>
-      </div>
-    </div>
-
-    <div id="base64-decoded-result" class="result-box success" style="display: none;">
-      <h4>🔓 Base64 解码结果</h4>
-      <div class="result-item">
-        <label>解码数据:</label>
-        <div id="base64-decoded-data" class="result-value"></div>
-      </div>
-    </div>
-
-    <div id="base64-error" class="result-box error" style="display: none;"></div>
-
-  </div>
-</div>
-
-<div class="crypto-demo">
-  <div class="demo-section">
-    <h3>🔢 Hex 编码演示</h3>
-
-    <div class="form-group">
-      <label>要编码的数据:</label>
-      <textarea id="hex-data" placeholder="输入要编码的数据">Hello, Hex Encoding! 你好，十六进制编码！</textarea>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label>输出格式:</label>
-        <select id="hex-format">
-          <option value="lowercase" selected>小写 (a-f)</option>
-          <option value="uppercase">大写 (A-F)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>分隔符:</label>
-        <select id="hex-separator">
-          <option value="none" selected>无分隔符</option>
-          <option value="space">空格分隔</option>
-          <option value="colon">冒号分隔</option>
-          <option value="dash">短横线分隔</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-actions">
-      <button id="hex-encode-btn" class="btn primary">🔢 Hex 编码</button>
-      <button id="hex-decode-btn" class="btn secondary">🔓 Hex 解码</button>
-      <button id="hex-clear-btn" class="btn">🗑️ 清除</button>
-    </div>
-
-    <div id="hex-encoded-result" class="result-box" style="display: none;">
-      <h4>🔢 Hex 编码结果</h4>
-      <div class="result-item">
-        <label>编码数据:</label>
-        <textarea id="hex-encoded-data" class="result-textarea" readonly></textarea>
-      </div>
-      <div class="result-item">
-        <label>编码信息:</label>
-        <div id="hex-encode-info" class="result-value"></div>
-      </div>
-    </div>
-
-    <div id="hex-decoded-result" class="result-box success" style="display: none;">
-      <h4>🔓 Hex 解码结果</h4>
-      <div class="result-item">
-        <label>解码数据:</label>
-        <div id="hex-decoded-data" class="result-value"></div>
-      </div>
-    </div>
-
-    <div id="hex-error" class="result-box error" style="display: none;"></div>
-
-  </div>
-</div>
-
-<div class="crypto-demo">
-  <div class="demo-section">
-    <h3>🔄 编码转换演示</h3>
-
-    <div class="form-group">
-      <label>输入数据:</label>
-      <textarea id="convert-input" placeholder="输入要转换的数据">Hello, Encoding Conversion!</textarea>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label>输入格式:</label>
-        <select id="convert-from">
-          <option value="text" selected>文本</option>
-          <option value="base64">Base64</option>
-          <option value="hex">Hex</option>
-          <option value="binary">二进制</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>输出格式:</label>
-        <select id="convert-to">
-          <option value="text">文本</option>
-          <option value="base64" selected>Base64</option>
-          <option value="hex">Hex</option>
-          <option value="binary">二进制</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-actions">
-      <button id="convert-btn" class="btn primary">🔄 转换</button>
-      <button id="convert-clear-btn" class="btn">🗑️ 清除</button>
-    </div>
-
-    <div id="convert-result" class="result-box" style="display: none;">
-      <h4>🔄 转换结果</h4>
-      <div class="result-item">
-        <label>转换数据:</label>
-        <textarea id="convert-output" class="result-textarea" readonly></textarea>
-      </div>
-      <div class="result-item">
-        <label>转换信息:</label>
-        <div id="convert-info" class="result-value"></div>
-      </div>
-    </div>
-
-    <div id="convert-error" class="result-box error" style="display: none;"></div>
-
-  </div>
-</div>
 
 ## 代码示例
 
@@ -242,6 +121,7 @@ console.log('Hex 解码:', hexDecoded)
 ### 使用 Composition API
 
 ```vue
+<!-- client-only demo removed for SSR build -->
 <script setup>
 import { useCrypto } from '@ldesign/crypto/vue'
 import { ref } from 'vue'
@@ -699,146 +579,3 @@ function safeDecode(encodedData: string, type: 'base64' | 'hex' | 'base64url') {
 }
 ```
 
-<style>
-.crypto-demo {
-  border: 1px solid #e1e5e9;
-  border-radius: 8px;
-  padding: 20px;
-  margin: 20px 0;
-  background-color: #f8f9fa;
-}
-
-.demo-section h3 {
-  margin-top: 0;
-  color: #2c3e50;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 600;
-  color: #555;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.form-group textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-
-.result-textarea {
-  min-height: 120px;
-  font-family: monospace;
-  font-size: 12px;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-}
-
-.form-actions {
-  margin: 20px 0;
-}
-
-.btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-right: 10px;
-  margin-bottom: 10px;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-
-.btn.primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn.secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn.success {
-  background-color: #28a745;
-  color: white;
-}
-
-.btn:hover {
-  opacity: 0.9;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.result-box {
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 4px;
-  border-left: 4px solid #007bff;
-  background-color: white;
-}
-
-.result-box.success {
-  border-left-color: #28a745;
-  background-color: #d4edda;
-}
-
-.result-box.error {
-  border-left-color: #dc3545;
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.result-box h4 {
-  margin-top: 0;
-  margin-bottom: 15px;
-}
-
-.result-item {
-  margin-bottom: 10px;
-}
-
-.result-item label {
-  font-weight: 600;
-  color: #555;
-  margin-bottom: 5px;
-  display: block;
-}
-
-.result-value {
-  background-color: #f8f9fa;
-  padding: 8px;
-  border-radius: 4px;
-  font-family: monospace;
-  word-break: break-all;
-  border: 1px solid #e9ecef;
-}
-
-.error {
-  color: #dc3545;
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #f8d7da;
-  border-radius: 4px;
-}
-</style>

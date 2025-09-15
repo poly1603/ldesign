@@ -1,80 +1,119 @@
 # AES 对称加密示例
 
+本页展示 AES 对称加密在 @ldesign/crypto 中的常用用法，示例均为纯代码，SSR 友好。
+
+## 基本用法
+
+```ts path=null start=null
+import { decrypt, encrypt } from '@ldesign/crypto'
+
+const data = 'Hello, AES!'
+const key = 'my-secret-key'
+
+const encrypted = encrypt.aes(data, key)
+const decrypted = decrypt.aes(encrypted, key)
+
+console.log(encrypted.success, decrypted.data)
+```
+
+## 指定参数
+
+```ts path=null start=null
+import { encrypt } from '@ldesign/crypto'
+
+// AES-128+ECB（仅示例，不推荐用于生产）
+const e1 = encrypt.aes('text', 'key', { keySize: 128, mode: 'ECB' })
+
+// AES-256+CTR
+const e2 = encrypt.aes('text', 'key', { keySize: 256, mode: 'CTR' })
+```
+
+## 自定义 IV
+
+```ts path=null start=null
+import { decrypt, encrypt, keyGenerator } from '@ldesign/crypto'
+
+const iv = keyGenerator.generateIV(16)
+const encrypted = encrypt.aes('text', 'key', { iv })
+const decrypted = decrypt.aes(encrypted, 'key', { iv })
+```
+
+## 便捷方法
+
+```ts path=null start=null
+import { decrypt, encrypt } from '@ldesign/crypto'
+
+const e128 = encrypt.aes128('data', 'key')
+const e192 = encrypt.aes192('data', 'key')
+const e256 = encrypt.aes256('data', 'key')
+
+const d128 = decrypt.aes128(e128, 'key')
+const d192 = decrypt.aes192(e192, 'key')
+const d256 = decrypt.aes256(e256, 'key')
+```
+
+## 实际场景：表单数据保护
+
+```ts path=null start=null
+import { decrypt, encrypt } from '@ldesign/crypto'
+
+class FormEncryption {
+  static encryptFormData(obj: Record<string, string>, key: string): string {
+    const json = JSON.stringify(obj)
+    const enc = encrypt.aes(json, key)
+    return JSON.stringify(enc)
+  }
+
+  static decryptFormData(data: string, key: string): Record<string, string> | null {
+    try {
+      const enc = JSON.parse(data)
+      const dec = decrypt.aes(enc, key)
+      if (!dec.success) return null
+      return JSON.parse(dec.data!)
+    } catch {
+      return null
+    }
+  }
+}
+```
+
+## 性能测试（示例）
+
+```ts path=null start=null
+import { decrypt, encrypt } from '@ldesign/crypto'
+
+function test() {
+  const data = 'A'.repeat(10_000)
+  const key = 'performance-key-32'
+
+  console.time('AES-128')
+  const e128 = encrypt.aes128(data, key)
+  decrypt.aes128(e128, key)
+  console.timeEnd('AES-128')
+
+  console.time('AES-192')
+  const e192 = encrypt.aes192(data, key)
+  decrypt.aes192(e192, key)
+  console.timeEnd('AES-192')
+
+  console.time('AES-256')
+  const e256 = encrypt.aes256(data, key)
+  decrypt.aes256(e256, key)
+  console.timeEnd('AES-256')
+}
+```
+
+## 安全注意事项
+
+- 避免使用 ECB 模式于生产环境
+- 每次加密都使用新的随机 IV（CBC/CTR 等）
+- 密钥不要硬编码；使用安全的密钥来源
+
 AES (Advanced Encryption Standard) 是最广泛使用的对称加密算法。本页面提供了完整的交互式演示。
 
 ## 交互式演示
 
-<div class="crypto-demo">
-  <div class="demo-section">
-    <h3>🔐 AES 加密演示</h3>
-
-    <div class="form-group">
-      <label>要加密的数据:</label>
-      <textarea id="aes-data" placeholder="输入要加密的数据">Hello, AES Encryption!</textarea>
-    </div>
-
-    <div class="form-group">
-      <label>密钥:</label>
-      <input type="text" id="aes-key" placeholder="输入密钥" value="my-secret-key-32-characters-long">
-    </div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label>密钥长度:</label>
-        <select id="aes-key-size">
-          <option value="128">AES-128</option>
-          <option value="192">AES-192</option>
-          <option value="256" selected>AES-256</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>加密模式:</label>
-        <select id="aes-mode">
-          <option value="CBC" selected>CBC</option>
-          <option value="ECB">ECB</option>
-          <option value="CFB">CFB</option>
-          <option value="OFB">OFB</option>
-          <option value="CTR">CTR</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-actions">
-      <button id="aes-encrypt-btn" class="btn primary">🔒 加密</button>
-      <button id="aes-decrypt-btn" class="btn secondary">🔓 解密</button>
-      <button id="aes-generate-key-btn" class="btn success">🔑 生成密钥</button>
-      <button id="aes-clear-btn" class="btn">🗑️ 清除</button>
-    </div>
-
-    <div id="aes-encrypted-result" class="result-box" style="display: none;">
-      <h4>🔒 加密结果</h4>
-      <div class="result-item">
-        <label>加密数据:</label>
-        <div id="aes-encrypted-data" class="result-value"></div>
-      </div>
-      <div class="result-item">
-        <label>算法:</label>
-        <div id="aes-algorithm" class="result-value"></div>
-      </div>
-      <div class="result-item">
-        <label>初始化向量 (IV):</label>
-        <div id="aes-iv" class="result-value"></div>
-      </div>
-    </div>
-
-    <div id="aes-decrypted-result" class="result-box success" style="display: none;">
-      <h4>🔓 解密结果</h4>
-      <div class="result-item">
-        <label>解密数据:</label>
-        <div id="aes-decrypted-data" class="result-value"></div>
-      </div>
-    </div>
-
-    <div id="aes-error" class="result-box error" style="display: none;"></div>
-
-  </div>
-</div>
+<!-- Interactive demo removed in SSR build: replace with static examples or client-only components -->
 
 ## 代码示例
 
@@ -153,6 +192,7 @@ const decrypted256 = decrypt.aes256(encrypted256, key)
 ### 使用 Composition API
 
 ```vue
+<!-- client-only demo removed for SSR build -->
 <script setup>
 import { useCrypto } from '@ldesign/crypto/vue'
 import { ref } from 'vue'
@@ -418,141 +458,6 @@ function safeDecrypt(encryptedData: any, key: string) {
 }
 ```
 
-<script>
-// 交互式演示的 JavaScript 代码
-document.addEventListener('DOMContentLoaded', function() {
-  // 这里会添加交互式演示的逻辑
-  // 由于这是 markdown 文件，实际的 JavaScript 需要在 VitePress 主题中实现
-  console.log('AES 演示页面已加载')
-})
-</script>
+<!-- client-only interactive JS removed for SSR build -->
 
-<style>
-.crypto-demo {
-  border: 1px solid #e1e5e9;
-  border-radius: 8px;
-  padding: 20px;
-  margin: 20px 0;
-  background-color: #f8f9fa;
-}
-
-.demo-section h3 {
-  margin-top: 0;
-  color: #2c3e50;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 600;
-  color: #555;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.form-group textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-}
-
-.form-actions {
-  margin: 20px 0;
-}
-
-.btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-right: 10px;
-  margin-bottom: 10px;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-
-.btn.primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn.secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn.success {
-  background-color: #28a745;
-  color: white;
-}
-
-.btn:hover {
-  opacity: 0.9;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.result-box {
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 4px;
-  border-left: 4px solid #007bff;
-  background-color: white;
-}
-
-.result-box.success {
-  border-left-color: #28a745;
-  background-color: #d4edda;
-}
-
-.result-box.error {
-  border-left-color: #dc3545;
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.result-box h4 {
-  margin-top: 0;
-  margin-bottom: 15px;
-}
-
-.result-item {
-  margin-bottom: 10px;
-}
-
-.result-item label {
-  font-weight: 600;
-  color: #555;
-  margin-bottom: 5px;
-  display: block;
-}
-
-.result-value {
-  background-color: #f8f9fa;
-  padding: 8px;
-  border-radius: 4px;
-  font-family: monospace;
-  word-break: break-all;
-  border: 1px solid #e9ecef;
-}
-</style>
+<!-- styles removed for SSR build -->

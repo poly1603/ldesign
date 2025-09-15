@@ -128,6 +128,8 @@ export interface EncryptResult {
   iv?: string
   salt?: string
   keySize?: number
+  nonce?: string
+  aad?: string
   error?: string
 }
 

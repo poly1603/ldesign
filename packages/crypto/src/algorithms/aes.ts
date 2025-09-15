@@ -24,6 +24,17 @@ export class AESEncryptor implements IEncryptor {
 
   /**
    * AES 加密
+   *
+   * @param data 明文字符串（允许为空字符串）
+   * @param key 加密密钥；可传入普通字符串（将通过 PBKDF2-SHA256 派生），或十六进制字符串（长度需与 keySize 匹配）
+   * @param options 可选项：mode、keySize、iv（十六进制）、padding
+   * @returns EncryptResult 包含加密后字符串（默认使用 CryptoJS 默认格式，通常为 Base64）以及算法、模式、IV 等信息
+   *
+   * @example
+   * ```ts
+   * const res = new AESEncryptor().encrypt('hello', 'secret', { keySize: 256, mode: 'CBC' })
+   * if (res.success) console.log(res.data)
+   * ```
    */
   encrypt(data: string, key: string, options: AESOptions = {}): EncryptResult {
     try {
@@ -73,6 +84,17 @@ export class AESEncryptor implements IEncryptor {
 
   /**
    * AES 解密
+   *
+   * @param encryptedData 加密后的字符串，或加密结果对象（包含算法、模式、iv、keySize 等）
+   * @param key 解密密钥；规则与加密相同
+   * @param options 可选项：mode、keySize、iv（十六进制）、padding。若传入字符串且未提供 iv，将尝试使用 CryptoJS 默认格式自动解析
+   * @returns DecryptResult 包含解密后的明文字符串
+   *
+   * @example
+   * ```ts
+   * const enc = new AESEncryptor().encrypt('hello', 'secret')
+   * const dec = new AESEncryptor().decrypt(enc, 'secret')
+   * ```
    */
   decrypt(
     encryptedData: string | EncryptResult,

@@ -28,7 +28,23 @@ import { Encoder } from '../algorithms/encoding'
 import { CONSTANTS, RandomUtils } from '../utils'
 
 /**
- * 加密类
+ * 加密类（Encrypt）
+ *
+ * 提供对称/非对称加密的一致 API 封装：AES、RSA、DES/3DES、Blowfish 以及通用入口 encrypt。
+ * - 自动处理 IV：若未显式提供，AES/3DES 会按库常量自动生成 IV 并包含在结果中（或依赖 CryptoJS 格式）
+ * - 密钥派生：当传入非十六进制密钥字符串时，AES 会使用 PBKDF2-SHA256 派生密钥
+ * - 结果结构：返回 EncryptResult，包含 success、data、algorithm、mode、iv、keySize 等元数据
+ *
+ * 使用建议：
+ * - 优先使用 AES-256/CBC 或 AES-256/GCM（如需 AEAD）
+ * - RSA 适用于小数据/密钥封装（不要直接加密大数据）
+ *
+ * 示例：
+ * ```ts
+ * import { Encrypt } from '@ldesign/crypto'
+ * const enc = new Encrypt()
+ * const res = enc.aes('hello', 'secret', { keySize: 256, mode: 'CBC' })
+ * ```
  */
 export class Encrypt {
   /**
@@ -174,7 +190,19 @@ export class Encrypt {
 }
 
 /**
- * 解密类
+ * 解密类（Decrypt）
+ *
+ * 与 Encrypt 配套的解密封装，支持：AES、RSA、DES/3DES、Blowfish 以及通用入口 decrypt。
+ * - 自动探测：当传入 EncryptResult 时，会优先读取其中的 algorithm/mode/iv 参数进行解密
+ * - 统一返回：返回 DecryptResult，包含 success、data、algorithm、mode 等元数据
+ *
+ * 示例：
+ * ```ts
+ * import { Encrypt, Decrypt } from '@ldesign/crypto'
+ * const enc = new Encrypt(); const dec = new Decrypt()
+ * const res = enc.aes('hello', 'secret')
+ * const plain = dec.decrypt(res, 'secret')
+ * ```
  */
 export class Decrypt {
   private encoder = new Encoder()
@@ -351,7 +379,11 @@ export class Decrypt {
 }
 
 /**
- * 哈希类
+ * 哈希类（Hash）
+ *
+ * 提供常见消息摘要：MD5、SHA-1/224/256/384/512，统一编码输出（默认 hex）。
+ * - 支持 verify：用于对比明文与期望哈希值
+ * - 支持自定义编码：hex/base64/utf8（默认 hex）
  */
 export class Hash {
   private hasher = new Hasher()
@@ -423,7 +455,11 @@ export class Hash {
 }
 
 /**
- * HMAC 类
+ * HMAC 类（HMAC）
+ *
+ * 提供 HMAC-MD5/SHA1/SHA256/SHA384/SHA512 便捷封装，默认输出 hex。
+ * - verify：常量时间比较由底层实现负责，API 提供简便验证接口
+ * - 建议：密钥长度不小于哈希输出位数，避免键重用
  */
 export class HMAC {
   private hmacHasher = new HMACHasher()
@@ -503,7 +539,10 @@ export class HMAC {
 }
 
 /**
- * 密钥生成类
+ * 密钥生成类（KeyGenerator）
+ *
+ * 提供对称密钥/随机材料生成：RSA 密钥对、随机密钥/字节、盐值与 IV。
+ * 注意：generateKey 返回十六进制字符串（长度为字节数×2）。
  */
 export class KeyGenerator {
   /**
@@ -545,7 +584,13 @@ export class KeyGenerator {
 }
 
 /**
- * 数字签名类
+ * 数字签名类（DigitalSignature）
+ *
+ * 基于 RSA 的签名与验签封装（默认算法 sha256）。
+ * - sign：使用私钥对字符串数据签名，返回 Base64 编码签名
+ * - verify：使用公钥验证签名，返回 boolean
+ *
+ * 提示：请妥善保管私钥，不要在客户端暴露。
  */
 export class DigitalSignature {
   /**

@@ -25,6 +25,11 @@
       "types": "./es/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
+    },
+    "./engine": {
+      "types": "./es/engine/index.d.ts",
+      "import": "./es/engine/index.js",
+      "require": "./lib/engine/index.cjs"
     }
   },
   "main": "lib/index.cjs",
@@ -39,7 +44,7 @@
     "build": "ldesign-builder build -f esm,cjs,umd",
     "build:watch": "ldesign-builder build --watch",
     "dev": "rollup -c -w",
-    "type-check": "vue-tsc --noEmit",
+    "type-check": "vue-tsc --noEmit -p tsconfig.build.json",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "test": "vitest",

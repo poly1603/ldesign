@@ -3,10 +3,14 @@ import CryptoJS from 'crypto-js'
 
 /**
  * 字符串转换工具
+ *
+ * 提供字符串与常见编码（Base64、Hex、Utf8）之间的转换便捷方法。
  */
 export class StringUtils {
   /**
    * 字符串转 WordArray
+   * @param str 输入的 UTF-8 字符串
+   * @returns CryptoJS 的 WordArray 表示
    */
   static stringToWordArray(str: string): CryptoJS.lib.WordArray {
     return CryptoJS.enc.Utf8.parse(str)
@@ -14,6 +18,8 @@ export class StringUtils {
 
   /**
    * WordArray 转字符串
+   * @param wordArray CryptoJS WordArray
+   * @returns UTF-8 字符串
    */
   static wordArrayToString(wordArray: CryptoJS.lib.WordArray): string {
     return CryptoJS.enc.Utf8.stringify(wordArray)
@@ -21,6 +27,8 @@ export class StringUtils {
 
   /**
    * 字符串转 Base64
+   * @param str 输入 UTF-8 字符串
+   * @returns Base64 字符串
    */
   static stringToBase64(str: string): string {
     return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(str))
@@ -28,6 +36,8 @@ export class StringUtils {
 
   /**
    * Base64 转字符串
+   * @param base64 Base64 字符串
+   * @returns UTF-8 字符串
    */
   static base64ToString(base64: string): string {
     return CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse(base64))
@@ -35,6 +45,8 @@ export class StringUtils {
 
   /**
    * 字符串转 Hex
+   * @param str 输入 UTF-8 字符串
+   * @returns 十六进制字符串
    */
   static stringToHex(str: string): string {
     return CryptoJS.enc.Hex.stringify(CryptoJS.enc.Utf8.parse(str))
@@ -42,6 +54,8 @@ export class StringUtils {
 
   /**
    * Hex 转字符串
+   * @param hex 十六进制字符串
+   * @returns UTF-8 字符串
    */
   static hexToString(hex: string): string {
     return CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Hex.parse(hex))
@@ -49,6 +63,8 @@ export class StringUtils {
 
   /**
    * 根据编码类型转换字符串
+   * @param str 输入 UTF-8 字符串
+   * @param encoding 'base64' | 'hex' | 'utf8'
    */
   static encodeString(str: string, encoding: EncodingType): string {
     switch (encoding) {
@@ -64,6 +80,8 @@ export class StringUtils {
 
   /**
    * 根据编码类型解码字符串
+   * @param encodedStr 已编码的字符串
+   * @param encoding 'base64' | 'hex' | 'utf8'
    */
   static decodeString(encodedStr: string, encoding: EncodingType): string {
     switch (encoding) {
@@ -84,6 +102,7 @@ export class StringUtils {
 export class RandomUtils {
   /**
    * 生成随机字节
+   * @param length 字节长度
    */
   static generateRandomBytes(length: number): CryptoJS.lib.WordArray {
     return CryptoJS.lib.WordArray.random(length)
@@ -91,6 +110,8 @@ export class RandomUtils {
 
   /**
    * 生成随机字符串
+   * @param length 字节长度（将被转换为不同编码的字符串）
+   * @param encoding 输出编码类型：'base64' | 'hex' | 'utf8'（默认 hex）
    */
   static generateRandomString(
     length: number,
@@ -111,6 +132,8 @@ export class RandomUtils {
 
   /**
    * 生成盐值
+   * @param length 盐值字节长度（默认 16）
+   * @returns 十六进制字符串
    */
   static generateSalt(length: number = 16): string {
     return this.generateRandomString(length, 'hex')
@@ -118,6 +141,8 @@ export class RandomUtils {
 
   /**
    * 生成初始化向量 (IV)
+   * @param length IV 字节长度（默认 16）
+   * @returns 十六进制字符串
    */
   static generateIV(length: number = 16): string {
     return this.generateRandomString(length, 'hex')
@@ -126,6 +151,7 @@ export class RandomUtils {
   /**
    * 生成随机密钥
    * @param length 期望的字节长度，返回的十六进制字符串长度为 length * 2
+   * @returns 十六进制字符串
    */
   static generateKey(length: number = 32): string {
     // length 是字节长度，生成对应的十六进制字符串（长度为 length * 2）
@@ -139,6 +165,7 @@ export class RandomUtils {
 export class ValidationUtils {
   /**
    * 验证字符串是否为空
+   * @param str 目标字符串
    */
   static isEmpty(str: string | null | undefined): boolean {
     return !str || str.trim().length === 0
@@ -147,6 +174,7 @@ export class ValidationUtils {
   /**
    * 验证是否为有效的 Base64 字符串
    * 兼容浏览器与 Node 环境（无 atob/btoa 时使用正则与 CryptoJS 校验）
+   * @param str Base64 字符串
    */
   static isValidBase64(str: string): boolean {
     if (typeof str !== 'string')
@@ -186,6 +214,7 @@ export class ValidationUtils {
 
   /**
    * 验证是否为有效的 Hex 字符串
+   * @param str 十六进制字符串
    */
   static isValidHex(str: string): boolean {
     // 空字符串是有效的Hex字符串
@@ -196,6 +225,8 @@ export class ValidationUtils {
 
   /**
    * 验证密钥长度
+   * @param key 密钥字符串
+   * @param expectedLength 期望字节长度
    */
   static validateKeyLength(key: string, expectedLength: number): boolean {
     return key.length === expectedLength
@@ -203,6 +234,8 @@ export class ValidationUtils {
 
   /**
    * 验证 AES 密钥长度
+   * @param key 明文密钥字符串
+   * @param keySize 位数（128/192/256）
    */
   static validateAESKeyLength(key: string, keySize: number): boolean {
     const expectedLength = keySize / 8 // 转换为字节长度

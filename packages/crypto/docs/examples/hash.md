@@ -1,137 +1,55 @@
 # 哈希算法示例
 
+本页展示哈希与 HMAC 的常见用法，示例为纯代码，SSR 友好。
+
+## 哈希计算
+
+```ts path=null start=null
+import { hash } from '@ldesign/crypto'
+
+const data = 'Hello, Hash!'
+const md5 = hash.md5(data)
+const sha1 = hash.sha1(data)
+const sha256 = hash.sha256(data)
+const sha384 = hash.sha384(data)
+const sha512 = hash.sha512(data)
+```
+
+## HMAC 计算
+
+```ts path=null start=null
+import { hmac } from '@ldesign/crypto'
+
+const msg = 'API request'
+const key = 'api-secret'
+const mac = hmac.sha256(msg, key)
+const ok = hmac.verify(msg, key, mac, 'SHA256')
+```
+
+## 密码哈希（示例，PBKDF2）
+
+```ts path=null start=null
+import { hash, keyGenerator } from '@ldesign/crypto'
+
+const salt = keyGenerator.generateSalt(16)
+const password = 'user-password'
+// 伪代码：若集成 KDF 模块，可使用 PBKDF2/Argon2 等
+// const derived = kdf.pbkdf2(password, salt, { iterations: 100_000, keyLength: 32 })
+```
+
+## 注意事项
+
+- 不要将 MD5/SHA-1 用于安全场景；推荐 SHA-256/384/512
+- 验证时使用常数时间比较，避免时序攻击
+
 哈希算法用于生成数据的固定长度摘要，本页面提供了完整的交互式演示。
 
-## 交互式演示
+<!-- 交互式演示与样式已移除，下面保留的纯代码示例可在 SSR 下构建通过。 -->
 
-<div class="crypto-demo">
-  <div class="demo-section">
-    <h3>🔢 哈希计算演示</h3>
-
-    <div class="form-group">
-      <label>要哈希的数据:</label>
-      <textarea id="hash-data" placeholder="输入要哈希的数据">Hello, Hash Algorithm!</textarea>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label>哈希算法:</label>
-        <select id="hash-algorithm">
-          <option value="MD5">MD5</option>
-          <option value="SHA1">SHA1</option>
-          <option value="SHA224">SHA224</option>
-          <option value="SHA256" selected>SHA256</option>
-          <option value="SHA384">SHA384</option>
-          <option value="SHA512">SHA512</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>输出编码:</label>
-        <select id="hash-encoding">
-          <option value="hex" selected>Hex</option>
-          <option value="base64">Base64</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-actions">
-      <button id="hash-calculate-btn" class="btn primary">🔢 计算哈希</button>
-      <button id="hash-all-btn" class="btn secondary">📊 计算所有算法</button>
-      <button id="hash-verify-btn" class="btn success">✅ 验证哈希</button>
-      <button id="hash-clear-btn" class="btn">🗑️ 清除</button>
-    </div>
-
-    <div id="hash-result" class="result-box" style="display: none;">
-      <h4>🔢 哈希结果</h4>
-      <div class="result-item">
-        <label>哈希值:</label>
-        <div id="hash-value" class="result-value"></div>
-      </div>
-      <div class="result-item">
-        <label>算法:</label>
-        <div id="hash-algorithm-used" class="result-value"></div>
-      </div>
-      <div class="result-item">
-        <label>编码:</label>
-        <div id="hash-encoding-used" class="result-value"></div>
-      </div>
-      <div class="result-item">
-        <label>长度:</label>
-        <div id="hash-length" class="result-value"></div>
-      </div>
-    </div>
-
-    <div id="hash-all-result" class="result-box" style="display: none;">
-      <h4>📊 所有哈希结果</h4>
-      <div id="hash-all-values"></div>
-    </div>
-
-    <div id="hash-verify-result" class="result-box success" style="display: none;">
-      <h4>✅ 哈希验证</h4>
-      <div id="hash-verify-message" class="result-value"></div>
-    </div>
-
-    <div id="hash-error" class="result-box error" style="display: none;"></div>
-
-  </div>
-</div>
+<!-- Interactive demo removed in SSR build: replace with static examples or client-only components -->
 
 ## HMAC 演示
 
-<div class="crypto-demo">
-  <div class="demo-section">
-    <h3>🔐 HMAC 消息认证码演示</h3>
-
-    <div class="form-group">
-      <label>消息:</label>
-      <textarea id="hmac-message" placeholder="输入消息">Hello, HMAC!</textarea>
-    </div>
-
-    <div class="form-group">
-      <label>密钥:</label>
-      <input type="text" id="hmac-key" placeholder="输入HMAC密钥" value="secret-key">
-    </div>
-
-    <div class="form-group">
-      <label>HMAC算法:</label>
-      <select id="hmac-algorithm">
-        <option value="MD5">HMAC-MD5</option>
-        <option value="SHA1">HMAC-SHA1</option>
-        <option value="SHA256" selected>HMAC-SHA256</option>
-        <option value="SHA384">HMAC-SHA384</option>
-        <option value="SHA512">HMAC-SHA512</option>
-      </select>
-    </div>
-
-    <div class="form-actions">
-      <button id="hmac-calculate-btn" class="btn primary">🔐 计算HMAC</button>
-      <button id="hmac-verify-btn" class="btn success">✅ 验证HMAC</button>
-      <button id="hmac-generate-key-btn" class="btn secondary">🔑 生成密钥</button>
-      <button id="hmac-clear-btn" class="btn">🗑️ 清除</button>
-    </div>
-
-    <div id="hmac-result" class="result-box" style="display: none;">
-      <h4>🔐 HMAC结果</h4>
-      <div class="result-item">
-        <label>HMAC值:</label>
-        <div id="hmac-value" class="result-value"></div>
-      </div>
-      <div class="result-item">
-        <label>算法:</label>
-        <div id="hmac-algorithm-used" class="result-value"></div>
-      </div>
-    </div>
-
-    <div id="hmac-verify-result" class="result-box success" style="display: none;">
-      <h4>✅ HMAC验证</h4>
-      <div id="hmac-verify-message" class="result-value"></div>
-    </div>
-
-    <div id="hmac-error" class="result-box error" style="display: none;"></div>
-
-  </div>
-</div>
 
 ## 代码示例
 
@@ -227,6 +145,7 @@ console.log('HMAC 验证:', isValid) // true
 ## Vue 3 集成示例
 
 ```vue
+<!-- client-only demo removed for SSR build -->
 <script setup>
 import { useHash } from '@ldesign/crypto/vue'
 import { ref } from 'vue'
@@ -473,132 +392,3 @@ function performanceTest() {
 performanceTest()
 ```
 
-<style>
-.crypto-demo {
-  border: 1px solid #e1e5e9;
-  border-radius: 8px;
-  padding: 20px;
-  margin: 20px 0;
-  background-color: #f8f9fa;
-}
-
-.demo-section h3 {
-  margin-top: 0;
-  color: #2c3e50;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 600;
-  color: #555;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.form-group textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-}
-
-.form-actions {
-  margin: 20px 0;
-}
-
-.btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-right: 10px;
-  margin-bottom: 10px;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-
-.btn.primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn.secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn.success {
-  background-color: #28a745;
-  color: white;
-}
-
-.btn:hover {
-  opacity: 0.9;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.result-box {
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 4px;
-  border-left: 4px solid #007bff;
-  background-color: white;
-}
-
-.result-box.success {
-  border-left-color: #28a745;
-  background-color: #d4edda;
-}
-
-.result-box.error {
-  border-left-color: #dc3545;
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.result-box h4 {
-  margin-top: 0;
-  margin-bottom: 15px;
-}
-
-.result-item {
-  margin-bottom: 10px;
-}
-
-.result-item label {
-  font-weight: 600;
-  color: #555;
-  margin-bottom: 5px;
-  display: block;
-}
-
-.result-value {
-  background-color: #f8f9fa;
-  padding: 8px;
-  border-radius: 4px;
-  font-family: monospace;
-  word-break: break-all;
-  border: 1px solid #e9ecef;
-}
-</style>
