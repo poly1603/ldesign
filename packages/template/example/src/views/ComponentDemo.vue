@@ -42,6 +42,7 @@ function handleError(error: any) {
 <template>
   <TemplateRenderer
     category="login"
+    responsive
     :show-selector="true"
     :props="templateProps"
     :selector-config="selectorConfig"

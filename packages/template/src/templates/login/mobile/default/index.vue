@@ -241,6 +241,10 @@ onUnmounted(() => {
           </div>
         </slot>
       </div>
+        <div class="mobile-selector">
+          <slot name="selector" />
+        </div>
+
 
       <!-- 主要内容区域 -->
       <div class="mobile-main">
@@ -612,6 +616,17 @@ onUnmounted(() => {
     }
   }
 }
+
+// 移动端：头部与主体之间的选择器容器
+.mobile-selector {
+  padding: 0 1.5rem;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+  :deep(.template-selector-wrapper) { margin-bottom: 0; }
+}
+
 
 // 头部
 .mobile-header {

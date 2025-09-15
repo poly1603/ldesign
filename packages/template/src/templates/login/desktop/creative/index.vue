@@ -227,6 +227,10 @@ onMounted(() => {
               </div>
             </div>
           </div>
+              <div class="template-selector-slot">
+                <slot name="selector" />
+              </div>
+
         </slot>
       </div>
 
@@ -737,6 +741,17 @@ onMounted(() => {
     }
   }
 }
+
+// 左侧艺术区域中的模板选择器
+.artwork-section {
+  .template-selector-slot {
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+    :deep(.template-selector-wrapper) { margin-bottom: 0; }
+  }
+}
+
 
 @keyframes float-element {
   0%, 100% { transform: translateY(0px) rotate(0deg); }

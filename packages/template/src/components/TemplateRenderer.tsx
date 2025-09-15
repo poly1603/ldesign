@@ -20,7 +20,7 @@ import {
 } from 'vue'
 import { useDeviceDetection } from '../composables/useDeviceDetection'
 import { useTemplate } from '../composables/useTemplate'
-import { useTemplateSelectorAnimation, useTemplateSwitchAnimation } from '../composables/useTemplateAnimation'
+import { useTemplateSelectorAnimation } from '../composables/useTemplateAnimation'
 import { TemplateSelector } from './TemplateSelector'
 import { TemplateTransition } from './TemplateTransition'
 import './TemplateRenderer.less'
@@ -40,36 +40,6 @@ const DefaultLoadingComponent = defineComponent({
   },
 })
 
-/**
- * 默认错误组件
- */
-const DefaultErrorComponent = defineComponent({
-  name: 'DefaultError',
-  props: {
-    error: {
-      type: String,
-      required: true,
-    },
-    retry: {
-      type: Function,
-      required: true,
-    },
-  },
-  setup(props) {
-    return () => (
-      <div class="template-error">
-        <div class="template-error__icon">⚠️</div>
-        <div class="template-error__message">{props.error}</div>
-        <button
-          class="template-error__retry"
-          onClick={() => props.retry?.()}
-        >
-          重试
-        </button>
-      </div>
-    )
-  },
-})
 
 /**
  * 模板渲染器组件
@@ -127,6 +97,12 @@ export const TemplateRenderer = defineComponent({
       type: Object,
       default: () => ({}),
     },
+    /** 是否缓存模板选择（默认: true） */
+    cacheSelection: {
+      type: Boolean,
+      default: true,
+    },
+
     /** 模板切换回调（可选） */
     onTemplateChange: {
       type: Function as PropType<(templateName: string) => void>,
@@ -150,9 +126,12 @@ export const TemplateRenderer = defineComponent({
     const currentDevice = computed(() => props.device || deviceType.value)
 
     // 模板管理
+    // 注意：仅当外部显式指定 device 时才传入 device，
+    // 否则让 useTemplate 自行基于窗口尺寸响应式检测设备，
+    // 以便在浏览器缩放时能够实时切换设备模板。
     const templateApi = useTemplate({
       category: props.category,
-      device: currentDevice.value,
+      ...(props.device ? { device: props.device as DeviceType } : {}),
       autoDetectDevice: props.responsive && !props.device,
       enableCache: true,
     })
@@ -177,20 +156,44 @@ export const TemplateRenderer = defineComponent({
 
     // 动画管理
     const selectorAnimation = useTemplateSelectorAnimation()
-    const templateSwitchAnimation = useTemplateSwitchAnimation()
 
     // 计算属性
     const LoadingComponent = computed(() =>
       props.loadingComponent || DefaultLoadingComponent,
     )
 
-    const ErrorComponent = computed(() =>
-      props.errorComponent || DefaultErrorComponent,
-    )
 
     const shouldShowSelector = computed(() =>
       props.showSelector && availableTemplates.value.length > 1,
     )
+
+
+    // 选择持久化
+    const SELECTION_STORAGE_KEY = 'ldesign:templateSelection'
+    type SelectionMap = Record<string, Partial<Record<DeviceType, string>>>
+
+    const saveSelection = (category: string, device: DeviceType, name: string) => {
+      if (!props.cacheSelection) return
+      try {
+        const raw = localStorage.getItem(SELECTION_STORAGE_KEY)
+        const map: SelectionMap = raw ? JSON.parse(raw) : {}
+        if (!map[category]) map[category] = {}
+        map[category]![device] = name
+        localStorage.setItem(SELECTION_STORAGE_KEY, JSON.stringify(map))
+      } catch { }
+    }
+
+    const loadSelection = (category: string, device: DeviceType): string | undefined => {
+      try {
+        const raw = localStorage.getItem(SELECTION_STORAGE_KEY)
+        if (!raw) return undefined
+        const map: SelectionMap = JSON.parse(raw)
+        const hit = map?.[category]?.[device]
+        return typeof hit === 'string' ? hit : undefined
+      } catch {
+        return undefined
+      }
+    }
 
     /**
      * 处理模板切换
@@ -205,6 +208,10 @@ export const TemplateRenderer = defineComponent({
         props.onTemplateChange?.(templateName)
         emit('template-change', templateName)
         emit('load-success', currentTemplate.value)
+
+        // 根据配置持久化本次选择
+        saveSelection(props.category, currentDevice.value as DeviceType, templateName)
+
       }
       catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error')
@@ -236,7 +243,7 @@ export const TemplateRenderer = defineComponent({
 
       // 尝试默认模板
       if (!hasTriedFallback.value) {
-        const defaultTemplate = availableTemplates.value.find(t => t.isDefault)
+        const defaultTemplate = availableTemplates.value.find((t: import('../types/template').TemplateMetadata) => t.isDefault)
         if (defaultTemplate && defaultTemplate.name !== props.templateName) {
           hasTriedFallback.value = true
           try {
@@ -321,7 +328,6 @@ export const TemplateRenderer = defineComponent({
       if (!shouldShowSelector.value)
         return null
 
-      const transitionClasses = selectorAnimation.getTransitionClasses()
       const transitionStyles = selectorAnimation.getTransitionStyles()
 
       // 合并选择器配置 - 默认简化功能
@@ -402,10 +408,10 @@ export const TemplateRenderer = defineComponent({
                     currentTemplate={currentTemplate.value?.name}
                     visible={true}
                     showPreview={false}
-                    showSearch={config.showSearch}
-                    showTags={config.showTags}
-                    showSort={config.showSort}
-                    itemsPerRow={config.itemsPerRow}
+                    showSearch={!!config.showSearch}
+                    showTags={!!config.showTags}
+                    showSort={!!config.showSort}
+                    itemsPerRow={config.itemsPerRow ?? 3}
                     searchable={true}
                     onSelect={handleTemplateSelect}
                     onClose={handleSelectorClose}
@@ -422,8 +428,6 @@ export const TemplateRenderer = defineComponent({
      * 渲染模板内容
      */
     const renderTemplate = () => {
-      const templateTransitionClasses = templateSwitchAnimation.getTransitionClasses()
-      const templateTransitionStyles = templateSwitchAnimation.getTransitionStyles()
 
       // 加载状态
       if (loading.value) {
@@ -449,7 +453,6 @@ export const TemplateRenderer = defineComponent({
 
       // 错误状态
       if (error.value) {
-        const ErrorComp = ErrorComponent.value as any
         const errorContent = slots.error
           ? slots.error({ error: error.value, retry: retryLoad })
           : (
@@ -490,7 +493,10 @@ export const TemplateRenderer = defineComponent({
             >
               <TemplateComponent
                 {...props.props}
-                v-slots={slots}
+                v-slots={{
+                  ...slots,
+                  selector: () => (shouldShowSelector.value ? renderSelector() : null),
+                }}
               />
             </div>
           </TemplateTransition>
@@ -547,18 +553,53 @@ export const TemplateRenderer = defineComponent({
 
     // 监听设备类型变化
     watch(currentDevice, async () => {
-      // 设备变化时重新加载模板列表
+      // 设备变化时刷新对应设备下的模板列表
       await refreshTemplates()
+
+      // 1) 优先读取并应用该设备的上次选择
+      const preferName = props.templateName ?? loadSelection(props.category, currentDevice.value as DeviceType)
+      if (preferName && !isSwitching.value) {
+        const hasPrefer = availableTemplates.value.some((t: import('../types/template').TemplateMetadata) => t.name === preferName || t.id === preferName)
+        if (hasPrefer && preferName !== currentTemplate.value?.name) {
+          isSwitching.value = true
+          try {
+            await handleTemplateSwitch(preferName)
+          } finally {
+            isSwitching.value = false
+          }
+          return
+        }
+      }
+
+      // 2) 若无上次选择或不可用，再尝试“同名模板跨设备沿用”
+      const currentName = currentTemplate.value?.name
+      if (currentName && currentTemplate.value?.device !== (currentDevice.value as DeviceType)) {
+        const existsInNewDevice = availableTemplates.value.some((t: import('../types/template').TemplateMetadata) => t.name === currentName)
+        if (existsInNewDevice && !isSwitching.value) {
+          isSwitching.value = true
+          try {
+            await handleTemplateSwitch(currentName)
+          } finally {
+            isSwitching.value = false
+          }
+          return
+        }
+      }
+
+      // 3) 其余情况交由内部默认逻辑处理（useTemplate 会兜底到默认模板）
     })
 
-    // 监听模板列表变化，当模板加载完成后尝试切换到指定模板
+    // 监听模板列表变化，当模板加载完成后尝试切换到指定模板（或持久化的上次选择）
     watch(availableTemplates, async (templates) => {
-      if (templates.length > 0 && props.templateName && !currentTemplate.value && !isSwitching.value) {
-        isSwitching.value = true
-        try {
-          await handleTemplateSwitch(props.templateName)
-        } finally {
-          isSwitching.value = false
+      if (templates.length > 0 && !currentTemplate.value && !isSwitching.value) {
+        const preferName = props.templateName ?? loadSelection(props.category, currentDevice.value as DeviceType)
+        if (preferName && templates.some((t: import('../types/template').TemplateMetadata) => t.name === preferName || t.id === preferName)) {
+          isSwitching.value = true
+          try {
+            await handleTemplateSwitch(preferName)
+          } finally {
+            isSwitching.value = false
+          }
         }
       }
     }, { immediate: true })
@@ -573,7 +614,6 @@ export const TemplateRenderer = defineComponent({
 
     return () => (
       <div class="template-renderer">
-        {shouldShowSelector.value && renderSelector()}
         <div class="template-renderer__content template-content-transition">
           {renderTemplate()}
         </div>

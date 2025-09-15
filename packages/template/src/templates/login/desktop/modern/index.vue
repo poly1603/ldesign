@@ -314,6 +314,10 @@ onMounted(() => {
               <a href="#" class="footer-link">帮助中心</a>
             </div>
           </slot>
+            <div class="template-selector-slot">
+              <slot name="selector" />
+            </div>
+
         </div>
       </div>
     </div>
@@ -966,6 +970,17 @@ onMounted(() => {
     }
   }
 }
+
+// 选择器容器（位于卡片 footer 内，居中展示）
+.card-footer {
+  .template-selector-slot {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    :deep(.template-selector-wrapper) { margin-bottom: 0; }
+  }
+}
+
 
 // 模板标识横幅样式
 .template-banner {

@@ -148,6 +148,10 @@ onMounted(() => {
                 {{ subtitle }}
               </p>
             </div>
+            <div class="template-selector-slot">
+              <slot name="selector" />
+            </div>
+
           </slot>
         </div>
 
@@ -408,6 +412,17 @@ onMounted(() => {
     }
   }
 }
+
+.template-selector-slot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+  // 让触发器紧贴标题区，避免额外底部间距
+  :deep(.template-selector-wrapper) {
+    margin-bottom: 0;
+  }
+}
+
 
 .login-form {
   .form-group {

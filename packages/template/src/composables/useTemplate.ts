@@ -5,7 +5,7 @@
  * 支持简化模式，可以返回可直接渲染的组件
  */
 
-import { ref, computed, markRaw, onMounted, onUnmounted, unref, watch, defineComponent, type Component, type Ref, h } from 'vue'
+import { ref, computed, markRaw, onMounted, onUnmounted, unref, watch, defineComponent, nextTick, type Component, type Ref, h } from 'vue'
 import type {
   DeviceType,
   TemplateMetadata,
@@ -85,6 +85,33 @@ export function useTemplate(options: UseTemplateOptions = {}) {
   // 扫描器实例
   const scanner = getGlobalScanner()
 
+  // 选择持久化
+  const SELECTION_STORAGE_KEY = 'ldesign:templateSelection'
+  type SelectionMap = Record<string, Partial<Record<DeviceType, string>>>
+
+  const saveSelection = (category: string, device: DeviceType, name: string) => {
+    if (!enableCache) return
+    try {
+      const raw = localStorage.getItem(SELECTION_STORAGE_KEY)
+      const map: SelectionMap = raw ? JSON.parse(raw) : {}
+      if (!map[category]) map[category] = {}
+      map[category]![device] = name
+      localStorage.setItem(SELECTION_STORAGE_KEY, JSON.stringify(map))
+    } catch { }
+  }
+
+  const loadSelection = (category: string, device: DeviceType): string | undefined => {
+    try {
+      const raw = localStorage.getItem(SELECTION_STORAGE_KEY)
+      if (!raw) return undefined
+      const map: SelectionMap = JSON.parse(raw)
+      const hit = map?.[category]?.[device]
+      return typeof hit === 'string' ? hit : undefined
+    } catch {
+      return undefined
+    }
+  }
+
   /**
    * 加载模板列表
    */
@@ -104,11 +131,23 @@ export function useTemplate(options: UseTemplateOptions = {}) {
       const templates = scanner.getTemplates(category || 'default', deviceType.value)
       availableTemplates.value = templates
 
-      // 如果没有当前模板或当前模板不在列表中，选择默认模板
+      // 如果没有当前模板或当前模板不在列表中，选择模板
       if (!currentTemplate.value || !templates.find(t => t.id === currentTemplate.value!.id || t.name === currentTemplate.value!.name)) {
-        const defaultTemplate = templates.find(t => t.isDefault) || templates[0]
-        if (defaultTemplate) {
-          await switchTemplate(defaultTemplate.id || defaultTemplate.name)
+        // 优先尝试恢复上次选择的模板
+        const cachedSelection = loadSelection(category || 'default', deviceType.value)
+        let targetTemplate = null
+
+        if (cachedSelection) {
+          targetTemplate = templates.find(t => t.name === cachedSelection || t.id === cachedSelection)
+        }
+
+        // 如果没有缓存或缓存的模板不存在，则使用默认模板
+        if (!targetTemplate) {
+          targetTemplate = templates.find(t => t.isDefault) || templates[0]
+        }
+
+        if (targetTemplate) {
+          await switchTemplate(targetTemplate.id || targetTemplate.name)
         }
       }
     }
@@ -164,6 +203,9 @@ export function useTemplate(options: UseTemplateOptions = {}) {
       currentTemplate.value = template
       // 使用 markRaw 防止组件被包装成响应式对象
       currentComponent.value = markRaw(loadResult.component)
+
+      // 保存选择到缓存
+      saveSelection(category || 'default', deviceType.value, template.name)
     }
     catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to switch template'
@@ -236,7 +278,41 @@ export function useTemplate(options: UseTemplateOptions = {}) {
   // 监听设备类型变化
   watch(deviceType, async (newDevice, oldDevice) => {
     if (newDevice !== oldDevice) {
+      // 重新加载对应设备的模板列表
       await loadTemplates()
+
+      // 等待模板列表更新后，尝试恢复该设备下的上次选择
+      await nextTick()
+
+      if (availableTemplates.value.length > 0) {
+        // 1) 优先恢复该设备的上次选择
+        const cachedSelection = loadSelection(category || 'default', newDevice)
+        if (cachedSelection) {
+          const targetTemplate = availableTemplates.value.find(t => t.name === cachedSelection || t.id === cachedSelection)
+          if (targetTemplate && targetTemplate.name !== currentTemplate.value?.name) {
+            await switchTemplate(targetTemplate.name)
+            return
+          }
+        }
+
+        // 2) 若无上次选择，再尝试“同名模板跨设备沿用”
+        const currentName = currentTemplate.value?.name
+        if (currentName && currentTemplate.value?.device !== newDevice) {
+          const sameNameInNewDevice = availableTemplates.value.find(t => t.name === currentName)
+          if (sameNameInNewDevice) {
+            await switchTemplate(currentName)
+            return
+          }
+        }
+
+        // 3) 否则回退默认模板
+        if (!currentTemplate.value || !availableTemplates.value.find(t => t.name === currentTemplate.value!.name)) {
+          const defaultTemplate = availableTemplates.value.find(t => t.isDefault) || availableTemplates.value[0]
+          if (defaultTemplate) {
+            await switchTemplate(defaultTemplate.name)
+          }
+        }
+      }
     }
   })
 
@@ -367,30 +443,30 @@ export function useTemplateList(category: string, device?: DeviceType | Ref<Devi
       },
     ]
   }
-  
+
   // 立即提供一个安全的本地回退模板集合，确保首屏渲染有数据
   availableTemplates.value = buildFallbackTemplates(category, currentDevice.value as DeviceType)
-  
-  async function loadTemplates() {
+
+  // 实际加载模板列表（扫描 + 设备过滤），并在失败时回退到本地占位
+  async function loadTemplates(): Promise<void> {
     try {
       loading.value = true
       error.value = null
 
       const scanner = getGlobalScanner()
-      const scanResult = await scanner.scan()
+      await scanner.scan()
 
-      if (scanResult.errors.length > 0) {
-        console.warn('Template scan errors:', scanResult.errors)
-      }
+      const deviceVal = currentDevice.value as DeviceType
+      const list = scanner.getTemplates(category, deviceVal)
 
-      const templates = scanner.getTemplates(category, currentDevice.value)
-      availableTemplates.value = templates.length > 0
-        ? templates
-        : buildFallbackTemplates(category, currentDevice.value as DeviceType)
+      // 若扫描结果为空，退回到占位模板，避免空白
+      availableTemplates.value = list.length > 0
+        ? list
+        : buildFallbackTemplates(category, deviceVal)
     }
     catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load templates'
-      // 提供降级的模板以保持基本功能
+      // 出错也提供占位数据，避免 UI 停滞
       availableTemplates.value = buildFallbackTemplates(category, currentDevice.value as DeviceType)
     }
     finally {

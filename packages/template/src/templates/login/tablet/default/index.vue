@@ -161,6 +161,12 @@ onUnmounted(() => {
     </div>
 
     <div class="tablet-container">
+
+        <!-- 模板选择器插槽（平板） -->
+        <div class="tablet-selector">
+          <slot name="selector" />
+        </div>
+
       <!-- 侧边栏（横屏模式） -->
       <div v-if="isLandscape && enableLandscapeMode" class="sidebar-section">
         <slot name="sidebar">
@@ -548,6 +554,16 @@ onUnmounted(() => {
   padding: 2rem;
   gap: 2rem;
 }
+
+// 平板：容器顶部的选择器容器（靠右对齐）
+.tablet-selector {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+  :deep(.template-selector-wrapper) { margin-bottom: 0; }
+}
+
 
 // 侧边栏（横屏模式）
 .sidebar-section {

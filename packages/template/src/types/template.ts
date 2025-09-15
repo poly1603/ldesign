@@ -162,6 +162,9 @@ export interface TemplateRendererProps {
   /** 模板选择器样式配置（可选） */
   selectorConfig?: TemplateSelectorConfig
   /** 模板切换回调（可选） */
+  /** 是否缓存模板选择（可选，默认 true） */
+  cacheSelection?: boolean
+
   onTemplateChange?: (templateName: string) => void
   /** 加载错误回调（可选） */
   onLoadError?: (error: Error) => void
