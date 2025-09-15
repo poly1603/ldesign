@@ -12,6 +12,8 @@
 import { BaseView } from './base-view'
 import type { ViewType } from '../types/view'
 import type { CalendarEvent } from '../types/event'
+import { getLunarShortText } from '../utils/lunar'
+import { getHolidayName } from '../utils/holidays'
 
 /**
  * 月视图类
@@ -156,7 +158,7 @@ export class MonthView extends BaseView {
    * @param currentDate 当前选中日期
    */
   private createDateCell(date: Date, today: Date, currentDate: Date): HTMLElement {
-    const dateCell = this.createElement('div', 'ldesign-calendar-date-cell')
+    const dateCell = this.createElement('div', 'ldesign-calendar-day-cell')
 
     // 添加日期相关的CSS类
     const isToday = this.isSameDay(date, today)
@@ -170,10 +172,10 @@ export class MonthView extends BaseView {
     if (isWeekend) dateCell.classList.add('is-weekend')
 
     // 创建日期内容
-    const dateContent = this.createElement('div', 'ldesign-calendar-date-content')
+    const dateContent = this.createElement('div', 'ldesign-calendar-day-content')
 
     // 日期数字
-    const dateNumber = this.createElement('div', 'ldesign-calendar-date-number', String(date.getDate()))
+    const dateNumber = this.createElement('div', 'ldesign-calendar-day-number', String(date.getDate()))
     dateContent.appendChild(dateNumber)
 
     // 农历显示（如果启用）
@@ -422,8 +424,6 @@ export class MonthView extends BaseView {
    */
   private getLunarText(date: Date): string {
     try {
-      // 动态导入农历工具函数
-      const { getLunarShortText } = require('../utils/lunar')
       return getLunarShortText(date)
     } catch (error) {
       console.warn('农历功能加载失败:', error)
@@ -437,8 +437,6 @@ export class MonthView extends BaseView {
    */
   private getHolidayText(date: Date): string {
     try {
-      // 动态导入节假日工具函数
-      const { getHolidayName } = require('../utils/holidays')
       return getHolidayName(date) || ''
     } catch (error) {
       console.warn('节假日功能加载失败:', error)

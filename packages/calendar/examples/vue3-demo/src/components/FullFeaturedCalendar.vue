@@ -55,12 +55,38 @@
       <div class="calendar-sidebar">
         <div class="sidebar-header">
           <h3>事件列表</h3>
-          <span class="event-count">{{ events.length }} 个事件</span>
+          <span class="event-count">{{ filteredEvents.length }} 个事件</span>
+        </div>
+
+        <!-- 搜索和筛选控件 -->
+        <div class="search-filter-controls">
+          <div class="search-box">
+            <input
+              type="text"
+              v-model="searchQuery"
+              @input="filterEvents"
+              placeholder="搜索事件标题..."
+              class="search-input"
+            />
+          </div>
+          <div class="filter-box">
+            <select
+              v-model="filterType"
+              @change="filterEvents"
+              class="filter-select"
+            >
+              <option value="">所有类型</option>
+              <option value="meeting">会议</option>
+              <option value="task">任务</option>
+              <option value="event">事件</option>
+              <option value="reminder">提醒</option>
+            </select>
+          </div>
         </div>
         
         <div class="event-list">
-          <div 
-            v-for="event in sortedEvents" 
+          <div
+            v-for="event in filteredEvents"
             :key="event.id"
             :class="['event-item', { 'event-item-selected': selectedEventId === event.id }]"
             @click="selectEvent(event)"
@@ -98,14 +124,25 @@
       @save="saveEvent"
       @close="closeEventModal"
     />
+
+    <!-- 右键菜单 -->
+    <ContextMenu
+      :visible="showContextMenu"
+      :x="contextMenuPosition.x"
+      :y="contextMenuPosition.y"
+      :items="contextMenuItems"
+      @item-click="handleContextMenuItemClick"
+      @close="closeContextMenu"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { Calendar, type CalendarEvent } from '@ldesign/calendar'
-import '@ldesign/calendar/styles/index.less'
+import { Calendar, type CalendarEvent, type ContextMenuItem } from '@ldesign/calendar'
+
 import EventModal from './EventModal.vue'
+import ContextMenu from './ContextMenu.vue'
 
 // 响应式数据
 const calendarRef = ref<HTMLElement>()
@@ -116,6 +153,15 @@ const selectedEventId = ref<string | null>(null)
 const showEventModal = ref(false)
 const editingEvent = ref<CalendarEvent | null>(null)
 const isDarkTheme = ref(false)
+
+// 搜索和筛选相关
+const searchQuery = ref('')
+const filterType = ref('')
+
+// 右键菜单相关
+const showContextMenu = ref(false)
+const contextMenuPosition = ref({ x: 0, y: 0 })
+const contextMenuItems = ref<ContextMenuItem[]>([])
 
 let calendar: Calendar | null = null
 
@@ -149,6 +195,28 @@ const sortedEvents = computed(() => {
   return [...events.value].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
 })
 
+// 筛选后的事件
+const filteredEvents = computed(() => {
+  let filtered = [...events.value]
+
+  // 按标题搜索
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase().trim()
+    filtered = filtered.filter(event =>
+      event.title.toLowerCase().includes(query) ||
+      (event.description && event.description.toLowerCase().includes(query))
+    )
+  }
+
+  // 按类型筛选
+  if (filterType.value) {
+    filtered = filtered.filter(event => event.type === filterType.value)
+  }
+
+  // 按时间排序
+  return filtered.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+})
+
 // 初始化日历
 onMounted(() => {
   if (calendarRef.value) {
@@ -158,7 +226,8 @@ onMounted(() => {
       showLunar: true,
       showHolidays: true,
       editable: true,
-      dragAndDrop: true,
+      draggable: true,
+      keyboardNavigation: true,
       onEventClick: handleEventClick,
       onDateClick: handleDateClick
     })
@@ -170,12 +239,27 @@ onMounted(() => {
     calendar.on('viewChange', (view) => {
       currentView.value = view
     })
-    
+
     calendar.on('dateChange', (date) => {
       currentDate.value = date
     })
-    
-    calendar.render()
+
+    // 绑定右键菜单事件
+    bindContextMenuEvents()
+
+    // 绑定键盘快捷键事件
+    bindKeyboardEvents()
+
+    // 调试：将Calendar实例暴露到window对象
+    ;(window as any).calendar = calendar
+    console.log('Calendar实例已暴露到window.calendar:', calendar)
+    console.log('KeyboardManager状态:', {
+      isActive: calendar.keyboardManager?.isActive,
+      config: calendar.keyboardManager?.config,
+      shortcuts: calendar.keyboardManager ? Array.from(calendar.keyboardManager.shortcuts?.keys() || []) : []
+    })
+
+    // Calendar在构造函数中已经自动初始化和渲染，无需手动调用render()
   }
 })
 
@@ -200,6 +284,21 @@ const today = () => {
 const switchView = (view: 'month' | 'week' | 'day') => {
   currentView.value = view
   calendar?.setView(view)
+}
+
+// 搜索和筛选方法
+const filterEvents = () => {
+  // 筛选逻辑在计算属性中处理，这里可以添加额外的处理
+  console.log('筛选事件:', {
+    searchQuery: searchQuery.value,
+    filterType: filterType.value,
+    filteredCount: filteredEvents.value.length
+  })
+}
+
+const clearFilters = () => {
+  searchQuery.value = ''
+  filterType.value = ''
 }
 
 // 事件处理
@@ -298,7 +397,8 @@ const addSampleEvents = () => {
       start: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 10, 0),
       end: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 11, 0),
       color: '#722ED1',
-      description: '讨论项目进展和下周计划'
+      description: '讨论项目进展和下周计划',
+      draggable: true
     },
     {
       id: '2',
@@ -306,7 +406,8 @@ const addSampleEvents = () => {
       start: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 14, 0),
       end: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 16, 0),
       color: '#52C41A',
-      description: '新功能产品评审会议'
+      description: '新功能产品评审会议',
+      draggable: true
     },
     {
       id: '3',
@@ -315,7 +416,8 @@ const addSampleEvents = () => {
       end: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 5),
       allDay: true,
       color: '#FA8C16',
-      description: '年假休息'
+      description: '年假休息',
+      draggable: true
     }
   ]
   
@@ -323,6 +425,86 @@ const addSampleEvents = () => {
     calendar?.addEvent(event)
     events.value.push(event)
   })
+}
+
+// 绑定右键菜单事件
+const bindContextMenuEvents = () => {
+  if (!calendar) return
+
+  // 监听右键菜单显示事件
+  calendar.on('menuShow', (data: any) => {
+    contextMenuPosition.value = data.position
+    contextMenuItems.value = data.menuItems
+    showContextMenu.value = true
+  })
+
+  // 监听右键菜单隐藏事件
+  calendar.on('menuHide', () => {
+    showContextMenu.value = false
+  })
+
+  // 绑定DOM右键事件
+  const calendarContainer = calendar.container
+  if (calendarContainer) {
+    calendarContainer.addEventListener('contextmenu', handleContextMenu)
+  }
+}
+
+// 绑定键盘快捷键事件
+const bindKeyboardEvents = () => {
+  if (!calendar) return
+
+  // 监听快捷键触发事件
+  calendar.on('shortcutTriggered', (data: any) => {
+    console.log('快捷键触发:', data)
+    if (data.action === 'addEvent') {
+      showEventModal.value = true
+      editingEvent.value = null
+    }
+  })
+}
+
+// 处理右键菜单
+const handleContextMenu = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+
+  // 检查是否点击在日期单元格上
+  const dateCell = target.closest('.ldesign-calendar-day-cell')
+  if (dateCell) {
+    const dateStr = dateCell.getAttribute('data-date')
+    if (dateStr) {
+      const date = new Date(dateStr)
+      calendar?.handleContextMenu(event, 'date', { date })
+      return
+    }
+  }
+
+  // 检查是否点击在事件上
+  const eventElement = target.closest('.ldesign-calendar-event')
+  if (eventElement) {
+    const eventId = eventElement.getAttribute('data-event-id')
+    if (eventId) {
+      const event = events.value.find(e => e.id === eventId)
+      if (event) {
+        calendar?.handleContextMenu(event, 'event', { event })
+        return
+      }
+    }
+  }
+
+  // 空白区域右键
+  calendar?.handleContextMenu(event, 'empty')
+}
+
+// 处理右键菜单项点击
+const handleContextMenuItemClick = (itemId: string) => {
+  calendar?.handleMenuItemClick?.(itemId)
+}
+
+// 关闭右键菜单
+const closeContextMenu = () => {
+  showContextMenu.value = false
+  calendar?.hideContextMenu()
 }
 </script>
 
@@ -513,6 +695,57 @@ const addSampleEvents = () => {
 
 .empty-state p {
   margin-bottom: 16px;
+}
+
+/* 搜索和筛选控件样式 */
+.search-filter-controls {
+  padding: 16px;
+  border-bottom: 1px solid var(--ldesign-border-level-1-color);
+  background: var(--ldesign-bg-color-container);
+}
+
+.search-box {
+  margin-bottom: 12px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--ldesign-border-level-1-color);
+  border-radius: var(--ls-border-radius-base);
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--ldesign-brand-color);
+  box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+}
+
+.search-input::placeholder {
+  color: var(--ldesign-text-color-placeholder);
+}
+
+.filter-box {
+  margin-bottom: 8px;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--ldesign-border-level-1-color);
+  border-radius: var(--ls-border-radius-base);
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--ldesign-brand-color);
+  box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
 }
 
 /* 响应式设计 */

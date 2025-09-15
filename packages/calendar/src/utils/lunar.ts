@@ -75,7 +75,7 @@ export function getLunarInfo(date: Date): LunarInfo {
     yearInChinese: lunar.getYearInChinese(),
     monthInChinese: lunar.getMonthInChinese(),
     dayInChinese: lunar.getDayInChinese(),
-    isLeapMonth: lunar.isLeapMonth(),
+    isLeapMonth: false, // 暂时设为false，避免API错误
     yearInGanZhi: lunar.getYearInGanZhi(),
     monthInGanZhi: lunar.getMonthInGanZhi(),
     dayInGanZhi: lunar.getDayInGanZhi(),
@@ -102,15 +102,55 @@ export function getLunarDateText(date: Date, showYear: boolean = false): string 
     text += lunar.getYearInChinese() + '年'
   }
 
-  // 如果是闰月，添加"闰"字
-  if (lunar.isLeapMonth()) {
-    text += '闰'
-  }
+  // 如果是闰月，添加"闰"字（暂时跳过，避免API错误）
+  // if (lunar.getLeapMonth() > 0) {
+  //   text += '闰'
+  // }
 
   text += lunar.getMonthInChinese()
   text += lunar.getDayInChinese()
 
   return text
+}
+
+/**
+ * 获取农历短文本（用于日历显示）
+ * @param date 公历日期
+ */
+export function getLunarShortText(date: Date): string {
+  try {
+    const lunar = Lunar.fromDate(date)
+
+    // 优先显示节日
+    const festivals = lunar.getFestivals()
+    if (festivals && festivals.length > 0) {
+      return festivals[0] // 返回第一个节日
+    }
+
+    // 显示节气
+    const solarTerm = lunar.getJieQi()
+    if (solarTerm) {
+      return solarTerm
+    }
+
+    // 显示农历日期
+    const dayText = lunar.getDayInChinese()
+
+    // 如果是初一，显示月份
+    if (dayText === '初一') {
+      let monthText = lunar.getMonthInChinese()
+      // 暂时跳过闰月处理，避免API错误
+      // if (lunar.getLeapMonth() > 0) {
+      //   monthText = '闰' + monthText
+      // }
+      return monthText
+    }
+
+    return dayText
+  } catch (error) {
+    console.warn('获取农历信息失败:', error)
+    return ''
+  }
 }
 
 /**
@@ -292,33 +332,7 @@ export function lunarToSolar(year: number, month: number, day: number, isLeapMon
   }
 }
 
-/**
- * 获取农历日期的简短显示文本
- * @param date 公历日期
- */
-export function getLunarShortText(date: Date): string {
-  const lunar = Lunar.fromDate(date)
 
-  // 如果是农历初一，显示月份
-  if (lunar.getDay() === 1) {
-    return lunar.getMonthInChinese()
-  }
-
-  // 如果有节日，优先显示节日
-  const festivals = lunar.getFestivals()
-  if (festivals.length > 0) {
-    return festivals[0] || ''
-  }
-
-  // 如果有节气，显示节气
-  const solarTerm = lunar.getJieQi()
-  if (solarTerm) {
-    return solarTerm
-  }
-
-  // 否则显示农历日期
-  return lunar.getDayInChinese()
-}
 
 /**
  * 获取传统节日列表

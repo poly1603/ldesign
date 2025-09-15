@@ -23,6 +23,14 @@ export { Calendar } from './core/calendar'
 export { EventManager } from './core/event-manager'
 export { StateManager } from './core/state-manager'
 
+// 交互管理器
+export { ContextMenuManager } from './core/context-menu-manager'
+export { DragDropManager } from './core/drag-drop-manager'
+export { KeyboardManager } from './core/keyboard-manager'
+export type { ContextMenuItem, ContextMenuConfig, ContextMenuContext } from './core/context-menu-manager'
+export type { DragContext, DragDropConfig, DragType } from './core/drag-drop-manager'
+export type { KeyboardShortcut, KeyboardConfig } from './core/keyboard-manager'
+
 // 视图组件
 export { MonthView } from './views/month-view'
 export { WeekView } from './views/week-view'

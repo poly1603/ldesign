@@ -77,7 +77,7 @@ describe('Calendar', () => {
   })
 
   it('should render calendar correctly', () => {
-    calendar.render()
+    // Calendar在构造函数中已经自动初始化和渲染，无需手动调用render()
 
     // 检查是否创建了基本的DOM结构
     expect(container.classList.contains('ldesign-calendar')).toBe(true)
@@ -93,7 +93,7 @@ describe('Calendar', () => {
   })
 
   it('should switch views correctly', () => {
-    calendar.render()
+    // Calendar在构造函数中已经自动初始化和渲染，无需手动调用render()
 
     // 切换到周视图
     calendar.setView('week')
@@ -109,7 +109,7 @@ describe('Calendar', () => {
   })
 
   it('should navigate dates correctly', () => {
-    calendar.render()
+    // Calendar在构造函数中已经自动初始化和渲染，无需手动调用render()
 
     const initialDate = calendar.getCurrentDate()
 
@@ -131,7 +131,7 @@ describe('Calendar', () => {
   })
 
   it('should go to specific date', () => {
-    calendar.render()
+    // Calendar在构造函数中已经自动初始化和渲染，无需手动调用render()
 
     const targetDate = new Date('2023-12-25')
     calendar.goToDate(targetDate)
@@ -173,11 +173,14 @@ describe('Calendar', () => {
       description: 'Updated description',
     }
 
-    calendar.updateEvent(updatedEvent)
+    calendar.updateEvent(event.id, {
+      title: 'Updated Event',
+      description: 'Updated description',
+    })
 
     const events = calendar.getEvents()
-    expect(events[0].title).toBe('Updated Event')
-    expect(events[0].description).toBe('Updated description')
+    expect(events[0]?.title).toBe('Updated Event')
+    expect(events[0]?.description).toBe('Updated description')
   })
 
   it('should remove events correctly', () => {
@@ -267,7 +270,7 @@ describe('Calendar', () => {
   })
 
   it('should refresh view correctly', () => {
-    calendar.render()
+    // Calendar在构造函数中已经自动初始化和渲染，无需手动调用render()
 
     const renderSpy = vi.spyOn(calendar, 'render')
 
@@ -279,7 +282,7 @@ describe('Calendar', () => {
   })
 
   it('should resize correctly', () => {
-    calendar.render()
+    // Calendar在构造函数中已经自动初始化和渲染，无需手动调用render()
 
     const renderSpy = vi.spyOn(calendar, 'render')
 
@@ -291,7 +294,7 @@ describe('Calendar', () => {
   })
 
   it('should destroy correctly', () => {
-    calendar.render()
+    // Calendar在构造函数中已经自动初始化和渲染，无需手动调用render()
 
     // 添加一些事件监听器
     const handler = vi.fn()

@@ -78,20 +78,6 @@
   }
 }
 
-// 今天状�?  &.is-today {
-.ldesign-calendar-day-number {
-  background-color: @calendar-primary-color;
-  color: white;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-}
-}
-
 // 其他月份
 &.is-other-month {
   background-color: @calendar-bg-color-component;
@@ -117,13 +103,29 @@
 }
 }
 
-// 禁用状�?  &.is-disabled {
-background-color: @calendar-bg-color-component;
-cursor: not-allowed;
+// 禁用状态
+&.is-disabled {
+  background-color: @calendar-bg-color-component;
+  cursor: not-allowed;
 
-.ldesign-calendar-day-number {
-  color: @calendar-text-color-disabled;
+  .ldesign-calendar-day-number {
+    color: @calendar-text-color-disabled;
+  }
 }
+
+// 今天状态
+&.is-today {
+  .ldesign-calendar-day-number {
+    background-color: @calendar-primary-color !important;
+    color: white !important;
+    border-radius: 50% !important;
+    width: 24px !important;
+    height: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto !important;
+  }
 }
 }
 

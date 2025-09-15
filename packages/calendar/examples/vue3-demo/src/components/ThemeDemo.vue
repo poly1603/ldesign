@@ -49,7 +49,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Calendar, type CalendarEvent } from '@ldesign/calendar'
-import '@ldesign/calendar/styles/index.less'
+
 
 // 响应式数据
 const calendarRef = ref<HTMLElement>()
@@ -134,7 +134,7 @@ onMounted(() => {
     // 添加示例事件
     addSampleEvents()
     
-    calendar.render()
+    // Calendar在构造函数中已经自动初始化和渲染，无需手动调用render()
   }
 })
 

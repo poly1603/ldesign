@@ -16,10 +16,14 @@ import type {
 } from '../types/calendar'
 import type { CalendarEvent } from '../types/event'
 import { getMonthViewDates, isInCurrentMonth } from '../utils/date-utils'
+import { MonthView } from '../views/month-view'
 import { WeekView } from '../views/week-view'
 import { DayView } from '../views/day-view'
 import { EventManager } from './event-manager'
 import { StateManager } from './state-manager'
+import { ContextMenuManager, type ContextMenuConfig } from './context-menu-manager'
+import { DragDropManager, type DragDropConfig } from './drag-drop-manager'
+import { KeyboardManager, type KeyboardConfig } from './keyboard-manager'
 
 /**
  * 日历主类
@@ -28,6 +32,11 @@ export class Calendar implements ICalendar {
   private config: CalendarConfig
   private container: HTMLElement
   private destroyed = false
+  private isRendering = false
+  private isInitializing = false
+  private renderTimeout: NodeJS.Timeout | null = null
+  private renderCount = 0
+  private lastRenderTime = 0
 
   /** 事件管理器 */
   private eventManager: EventManager
@@ -35,11 +44,26 @@ export class Calendar implements ICalendar {
   /** 状态管理器 */
   private stateManager: StateManager
 
+  /** 右键菜单管理器 */
+  private contextMenuManager: ContextMenuManager
+
+  /** 拖拽管理器 */
+  private dragDropManager: DragDropManager
+
+  /** 键盘管理器 */
+  private keyboardManager: KeyboardManager
+
+  /** 月视图实例 */
+  private monthView: MonthView | null = null
+
   /** 周视图实例 */
   private weekView: WeekView | null = null
 
   /** 日视图实例 */
   private dayView: DayView | null = null
+
+  /** 当前视图实例 */
+  public currentView: MonthView | WeekView | DayView | null = null
 
   /**
    * 构造函数
@@ -69,6 +93,9 @@ export class Calendar implements ICalendar {
 
     // 初始化事件管理器
     this.eventManager = new EventManager()
+
+    // 初始化交互管理器
+    this.initializeInteractionManagers()
 
     // 初始化日历
     this.init()
@@ -147,6 +174,8 @@ export class Calendar implements ICalendar {
    * 初始化日历
    */
   init(): void {
+    this.isInitializing = true
+
     // 设置容器类名
     this.container.classList.add('ldesign-calendar')
 
@@ -158,6 +187,126 @@ export class Calendar implements ICalendar {
 
     // 绑定事件监听器
     this.bindEventListeners()
+
+    this.isInitializing = false
+  }
+
+  /**
+   * 初始化交互管理器
+   */
+  private initializeInteractionManagers(): void {
+    // 初始化右键菜单管理器
+    this.contextMenuManager = new ContextMenuManager({
+      enabled: this.config.contextMenu !== false,
+      ...this.config.contextMenu
+    })
+
+    // 初始化拖拽管理器
+    this.dragDropManager = new DragDropManager({
+      enabled: this.config.draggable !== false,
+      allowMove: this.config.draggable !== false,
+      allowResize: this.config.resizable !== false,
+      ...this.config.dragDrop
+    })
+
+    // 初始化键盘管理器
+    this.keyboardManager = new KeyboardManager({
+      enabled: this.config.keyboardNavigation !== false,
+      ...this.config.keyboard
+    })
+
+    // 绑定交互管理器事件
+    this.bindInteractionEvents()
+  }
+
+  /**
+   * 绑定交互管理器事件
+   */
+  private bindInteractionEvents(): void {
+    // 转发右键菜单显示/隐藏事件
+    this.contextMenuManager.on('menuShow', (data) => {
+      this.eventManager.emit('menuShow', data)
+    })
+
+    this.contextMenuManager.on('menuHide', () => {
+      this.eventManager.emit('menuHide')
+    })
+
+    // 右键菜单事件
+    this.contextMenuManager.on('addEvent', (context) => {
+      this.config.onDateClick?.(context.date!)
+    })
+
+    this.contextMenuManager.on('editEvent', (context) => {
+      this.config.onEventClick?.(context.event!)
+    })
+
+    this.contextMenuManager.on('deleteEvent', (context) => {
+      if (context.event) {
+        this.removeEvent(context.event.id)
+      }
+    })
+
+    this.contextMenuManager.on('duplicateEvent', (context) => {
+      if (context.event) {
+        const duplicatedEvent = {
+          ...context.event,
+          id: Date.now().toString(),
+          title: `${context.event.title} (副本)`
+        }
+        this.addEvent(duplicatedEvent)
+      }
+    })
+
+    this.contextMenuManager.on('goToToday', () => {
+      this.today()
+    })
+
+    // 拖拽事件
+    this.dragDropManager.on('dragEnd', (dragContext) => {
+      if (dragContext.targetTime && dragContext.event) {
+        const updatedEvent = {
+          ...dragContext.event,
+          start: dragContext.targetTime.start,
+          end: dragContext.targetTime.end
+        }
+        this.updateEvent(updatedEvent)
+      }
+    })
+
+    // 键盘事件
+    this.keyboardManager.on('goToToday', () => this.today())
+    this.keyboardManager.on('previousPeriod', () => this.prev())
+    this.keyboardManager.on('nextPeriod', () => this.next())
+    this.keyboardManager.on('setView', (view) => this.setView(view))
+    this.keyboardManager.on('newEvent', () => {
+      // 转发键盘快捷键事件到Vue组件
+      this.eventManager.emit('shortcutTriggered', { action: 'addEvent' })
+      // 同时也调用原有的回调
+      const today = new Date()
+      this.config.onDateClick?.(today)
+    })
+
+    // 转发其他键盘事件
+    this.keyboardManager.on('editEvent', () => {
+      this.eventManager.emit('shortcutTriggered', { action: 'editEvent' })
+    })
+
+    this.keyboardManager.on('deleteEvent', () => {
+      this.eventManager.emit('shortcutTriggered', { action: 'deleteEvent' })
+    })
+
+    this.keyboardManager.on('duplicateEvent', () => {
+      this.eventManager.emit('shortcutTriggered', { action: 'duplicateEvent' })
+    })
+
+    this.keyboardManager.on('escape', () => {
+      this.eventManager.emit('shortcutTriggered', { action: 'escape' })
+    })
+
+    this.keyboardManager.on('refresh', () => {
+      this.eventManager.emit('shortcutTriggered', { action: 'refresh' })
+    })
   }
 
   /**
@@ -180,10 +329,8 @@ export class Calendar implements ICalendar {
       this.config.onEventDelete?.(event.id)
     })
 
-    // 绑定状态管理器监听器
-    this.stateManager.on('stateChanged', () => {
-      this.render()
-    })
+    // 绑定状态管理器监听器 - 移除自动渲染以防止无限循环
+    // 注意：不再自动监听 stateChanged 事件来触发渲染，改为手动控制渲染时机
 
     this.stateManager.on('currentViewChanged', (view: CalendarViewType) => {
       this.config.onViewChange?.(view, this.stateManager.getCurrentDate())
@@ -205,16 +352,36 @@ export class Calendar implements ICalendar {
   /**
    * 渲染日历
    */
-  private render(): void {
-    console.log('render() 被调用，容器子元素数量:', this.container.children.length)
-    // 如果是第一次渲染，创建完整结构
-    if (this.container.children.length === 0) {
-      console.log('第一次渲染，调用 renderInitial()')
-      this.renderInitial()
-    } else {
-      console.log('更新渲染，调用 updateContent()')
-      // 只更新内容，不重新创建结构
-      this.updateContent()
+  render(): void {
+    // 检查是否已销毁
+    if (this.destroyed) {
+      return
+    }
+
+    // 严格防止重复渲染
+    if (this.isRendering) {
+      return
+    }
+
+    // 严格的渲染节流 - 200ms内只允许一次渲染
+    const now = Date.now()
+    if (now - this.lastRenderTime < 200) {
+      return
+    }
+
+    this.lastRenderTime = now
+    this.isRendering = true
+
+    try {
+      // 如果是第一次渲染，创建完整结构
+      if (this.container.children.length === 0) {
+        this.renderInitial()
+      } else {
+        // 只更新内容，不重新创建结构
+        this.updateContent()
+      }
+    } finally {
+      this.isRendering = false
     }
   }
 
@@ -245,22 +412,23 @@ export class Calendar implements ICalendar {
    * 更新内容
    */
   private updateContent(): void {
-    console.log('updateContent() 被调用')
-    // 对于所有视图，都重新渲染主体以确保一致性
-    const wrapper = this.container.querySelector('.ldesign-calendar-wrapper')
-    if (wrapper) {
-      console.log('找到wrapper元素')
-      const oldBody = wrapper.querySelector('.ldesign-calendar-body')
-      if (oldBody) {
-        console.log('找到oldBody元素，准备创建新的body')
-        const newBody = this.createBody()
-        wrapper.replaceChild(newBody, oldBody)
-        console.log('body替换完成')
-      } else {
-        console.log('未找到oldBody元素')
+    // 临时设置标志，防止DOM变化触发新的渲染
+    const wasRendering = this.isRendering
+    this.isRendering = true
+
+    try {
+      // 对于所有视图，都重新渲染主体以确保一致性
+      const wrapper = this.container.querySelector('.ldesign-calendar-wrapper')
+      if (wrapper) {
+        const oldBody = wrapper.querySelector('.ldesign-calendar-body')
+        if (oldBody) {
+          const newBody = this.createBody()
+          wrapper.replaceChild(newBody, oldBody)
+        }
       }
-    } else {
-      console.log('未找到wrapper元素')
+    } finally {
+      // 恢复原始状态
+      this.isRendering = wasRendering
     }
   }
 
@@ -303,15 +471,11 @@ export class Calendar implements ICalendar {
 
     // 根据当前视图创建内容
     const currentView = this.stateManager.getCurrentView()
-    console.log('createBody() - 当前视图:', currentView)
     if (currentView === 'month') {
-      console.log('createBody() - 创建月视图')
       body.appendChild(this.createMonthView())
     } else if (currentView === 'week') {
-      console.log('createBody() - 创建周视图')
       body.appendChild(this.createWeekView())
     } else if (currentView === 'day') {
-      console.log('createBody() - 创建日视图')
       body.appendChild(this.createDayView())
     }
 
@@ -322,187 +486,64 @@ export class Calendar implements ICalendar {
    * 创建月视图
    */
   private createMonthView(): HTMLElement {
-    const monthView = document.createElement('div')
-    monthView.className = 'ldesign-calendar-month-view'
+    console.log('createMonthView() 被调用')
+    // 创建月视图容器
+    const monthViewContainer = document.createElement('div')
+    monthViewContainer.className = 'ldesign-calendar-month-view'
 
-    // 创建星期标题
-    const weekHeader = document.createElement('div')
-    weekHeader.className = 'ldesign-calendar-week-header'
-
-    const weekdays = ['日', '一', '二', '三', '四', '五', '六']
-    weekdays.forEach(day => {
-      const dayHeader = document.createElement('div')
-      dayHeader.className = 'ldesign-calendar-weekday'
-      dayHeader.textContent = day
-      weekHeader.appendChild(dayHeader)
-    })
-
-    monthView.appendChild(weekHeader)
-
-    // 创建日期网格
-    const dateGrid = document.createElement('div')
-    dateGrid.className = 'ldesign-calendar-date-grid'
-
-    // 获取当前月份的日期信息
-    const currentDate = this.stateManager.getCurrentDate()
-    const year = currentDate.getFullYear()
-    const month = currentDate.getMonth()
-
-    // 获取当月第一天和最后一天
-    const firstDay = new Date(year, month, 1)
-    const lastDay = new Date(year, month + 1, 0)
-
-    // 获取第一天是星期几
-    const firstDayOfWeek = firstDay.getDay()
-
-    // 添加上个月的日期（如果需要）
-    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-      const prevDate = new Date(year, month, -i)
-      const dayCell = this.createDayCell(prevDate, true)
-      dateGrid.appendChild(dayCell)
-    }
-
-    // 添加当月的日期
-    for (let day = 1; day <= lastDay.getDate(); day++) {
-      const date = new Date(year, month, day)
-      const dayCell = this.createDayCell(date, false)
-      dateGrid.appendChild(dayCell)
-    }
-
-    // 添加下个月的日期（填满6行）
-    const totalCells = dateGrid.children.length
-    const remainingCells = 42 - totalCells // 6行 * 7列
-    for (let day = 1; day <= remainingCells; day++) {
-      const nextDate = new Date(year, month + 1, day)
-      const dayCell = this.createDayCell(nextDate, true)
-      dateGrid.appendChild(dayCell)
-    }
-
-    monthView.appendChild(dateGrid)
-
-    return monthView
-  }
-
-  /**
-   * 创建日期单元格
-   */
-  private createDayCell(date: Date, isOtherMonth: boolean): HTMLElement {
-    const dayCell = document.createElement('div')
-    dayCell.className = `ldesign-calendar-day-cell ${isOtherMonth ? 'other-month' : ''}`
-
-    // 添加日期数字
-    const dayNumber = document.createElement('div')
-    dayNumber.className = 'ldesign-calendar-day-number'
-    dayNumber.textContent = date.getDate().toString()
-    dayCell.appendChild(dayNumber)
-
-    // 检查是否是今天
-    const today = new Date()
-    if (date.toDateString() === today.toDateString()) {
-      dayCell.classList.add('today')
-    }
-
-    // 获取该日期的事件并显示
-    const dayEvents = this.getEventsForDate(date)
-    if (dayEvents.length > 0) {
-      const eventsContainer = document.createElement('div')
-      eventsContainer.className = 'ldesign-calendar-day-events'
-
-      // 最多显示3个事件，超出的显示"更多"
-      const maxDisplayEvents = 3
-      const displayEvents = dayEvents.slice(0, maxDisplayEvents)
-
-      displayEvents.forEach(event => {
-        const eventElement = this.createEventElement(event)
-        eventsContainer.appendChild(eventElement)
+    // 创建或重用MonthView实例
+    if (!this.monthView) {
+      console.log('创建新的MonthView实例')
+      this.monthView = new MonthView({
+        enabled: true,
+        displayName: '月视图',
+        options: {
+          firstDay: 0, // 周日开始
+          showWeekends: true,
+          showLunar: this.config.showLunar || false,
+          showHolidays: this.config.showHolidays || false
+        }
       })
 
-      // 如果有更多事件，显示"更多"提示
-      if (dayEvents.length > maxDisplayEvents) {
-        const moreElement = document.createElement('div')
-        moreElement.className = 'ldesign-calendar-event-more'
-        moreElement.textContent = `+${dayEvents.length - maxDisplayEvents}更多`
-        eventsContainer.appendChild(moreElement)
+      // 只在第一次创建时初始化
+      const context = {
+        calendar: this,
+        viewType: 'month' as const,
+        currentDate: this.stateManager.getCurrentDate(),
+        dateRange: this.monthView.getDateRange(),
+        events: this.stateManager.getEvents(),
+        config: this.monthView.config,
+        container: monthViewContainer
       }
 
-      dayCell.appendChild(eventsContainer)
-    }
+      console.log('调用 monthView.init()')
+      this.monthView.init(context)
 
-    // 添加点击事件
-    dayCell.onclick = (e) => {
-      // 如果点击的是事件，不触发日期选择
-      if ((e.target as HTMLElement).closest('.ldesign-calendar-event')) {
-        return
+      // 设置当前视图
+      this.currentView = this.monthView
+
+      // 初始化后进行渲染
+      this.monthView.render()
+    } else {
+      console.log('重用现有的MonthView实例')
+      // 重用时更新容器和事件数据
+      this.monthView.setContainer(monthViewContainer)
+
+      // 更新上下文中的其他数据
+      const context = this.monthView.getContext()
+      if (context) {
+        context.events = this.stateManager.getEvents()
+        context.currentDate = this.stateManager.getCurrentDate()
       }
-      this.config.onDateSelect?.(date)
+
+      // 重用时也需要重新渲染
+      this.monthView.render()
     }
 
-    return dayCell
+    return monthViewContainer
   }
 
-  /**
-   * 获取指定日期的事件
-   */
-  private getEventsForDate(date: Date): CalendarEvent[] {
-    return this.stateManager.getEvents().filter(event => {
-      const eventDate = new Date(event.start)
-      return eventDate.toDateString() === date.toDateString()
-    })
-  }
 
-  /**
-   * 创建事件元素
-   */
-  private createEventElement(event: CalendarEvent): HTMLElement {
-    const eventElement = document.createElement('div')
-    eventElement.className = 'ldesign-calendar-event'
-
-    // 设置事件颜色
-    if (event.color) {
-      eventElement.style.backgroundColor = event.color
-      eventElement.style.borderColor = event.color
-    }
-
-    // 创建事件标题
-    const eventTitle = document.createElement('span')
-    eventTitle.className = 'ldesign-calendar-event-title'
-    eventTitle.textContent = event.title
-    eventElement.appendChild(eventTitle)
-
-    // 如果不是全天事件，显示时间
-    if (!event.allDay) {
-      const eventTime = document.createElement('span')
-      eventTime.className = 'ldesign-calendar-event-time'
-      const startTime = new Date(event.start).toLocaleTimeString('zh-CN', {
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-      eventTime.textContent = startTime
-      eventElement.appendChild(eventTime)
-    }
-
-    // 添加点击事件
-    eventElement.onclick = (e) => {
-      e.stopPropagation()
-      this.config.onEventClick?.(event)
-    }
-
-    return eventElement
-  }
-
-  /**
-   * 获取月视图需要显示的所有日期
-   */
-  private getMonthViewDates(date: Date): Date[] {
-    return getMonthViewDates(date, 0) // 周日开始
-  }
-
-  /**
-   * 判断日期是否在当前月份
-   */
-  private isInCurrentMonth(date: Date, referenceDate: Date): boolean {
-    return isInCurrentMonth(date, referenceDate)
-  }
 
   /**
    * 创建周视图
@@ -648,10 +689,83 @@ export class Calendar implements ICalendar {
    * 绑定事件监听器
    */
   private bindEventListeners(): void {
-    // TODO: 绑定键盘事件
-    // TODO: 绑定鼠标事件
+    // 绑定右键菜单事件
+    this.container.addEventListener('contextmenu', this.handleContainerContextMenu.bind(this))
+
+    // 绑定拖拽事件
+    if (this.config.draggable) {
+      this.container.addEventListener('mousedown', this.handleContainerMouseDown.bind(this))
+    }
+
+    // 绑定键盘事件
+    if (this.config.keyboardNavigation) {
+      this.keyboardManager.activate(this.container)
+    }
+
     // TODO: 绑定触摸事件
     // TODO: 绑定窗口大小变化事件
+  }
+
+  /**
+   * 处理容器鼠标按下事件
+   */
+  private handleContainerMouseDown(event: MouseEvent): void {
+    // 只处理左键
+    if (event.button !== 0) {
+      return
+    }
+
+    const target = event.target as HTMLElement
+
+    // 检查是否点击在事件上
+    const eventElement = target.closest('.ldesign-calendar-event')
+    if (eventElement) {
+      const eventId = eventElement.getAttribute('data-event-id')
+      if (eventId) {
+        const calendarEvent = this.stateManager.getEvents().find(e => e.id === eventId)
+        if (calendarEvent && calendarEvent.draggable !== false) {
+          // 开始拖拽事件
+          this.startDrag(calendarEvent, event, 'move')
+          return
+        }
+      }
+    }
+  }
+
+  /**
+   * 处理容器右键菜单事件
+   */
+  private handleContainerContextMenu(event: MouseEvent): void {
+    event.preventDefault()
+
+    const target = event.target as HTMLElement
+
+    // 检查是否点击在日期单元格上
+    const dateCell = target.closest('.ldesign-calendar-day-cell')
+    if (dateCell) {
+      const dateStr = dateCell.getAttribute('data-date')
+      if (dateStr) {
+        const date = new Date(dateStr)
+        this.handleContextMenu(event, 'date', { date })
+        return
+      }
+    }
+
+    // 检查是否点击在事件上
+    const eventElement = target.closest('.ldesign-calendar-event')
+    if (eventElement) {
+      const eventId = eventElement.getAttribute('data-event-id')
+      if (eventId) {
+        const event = this.stateManager.getEvents().find(e => e.id === eventId)
+        if (event) {
+          this.handleContextMenu(event, 'event', { event })
+          return
+        }
+      }
+    }
+
+    // 空白区域右键
+    this.handleContextMenu(event, 'empty')
   }
 
   /**
@@ -807,7 +921,7 @@ export class Calendar implements ICalendar {
     const result = await this.eventManager.createEvent({
       title: event.title || '未命名事件',
       start: event.start || new Date(),
-      end: event.end,
+      end: event.end || new Date(),
       allDay: event.allDay,
       description: event.description,
       type: event.type,
@@ -865,21 +979,61 @@ export class Calendar implements ICalendar {
   /**
    * 添加事件（简化版本）
    * @param event 事件数据
+   * @returns 事件ID
    */
-  addEvent(event: CalendarEvent): void {
-    this.eventManager.addEvent(event)
+  addEvent(event: Partial<CalendarEvent>): string {
+    // 生成事件ID（如果没有提供）
+    const eventId = event.id || `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+
+    const fullEvent: CalendarEvent = {
+      id: eventId,
+      title: event.title || '未命名事件',
+      start: event.start || new Date(),
+      end: event.end || new Date(),
+      allDay: event.allDay || false,
+      ...(event.description !== undefined && { description: event.description }),
+      ...(event.type !== undefined && { type: event.type }),
+      ...(event.color !== undefined && { color: event.color }),
+      ...(event.location !== undefined && { location: event.location }),
+      ...(event.recurrence !== undefined && { recurrence: event.recurrence }),
+      ...(event.customData !== undefined && { customData: event.customData }),
+      ...(event.draggable !== undefined && { draggable: event.draggable }),
+    }
+
+    this.eventManager.addEvent(fullEvent)
     // 更新状态管理器中的事件
     this.stateManager.setEvents(this.eventManager.getEvents())
+
+    // 重新渲染当前视图以显示新事件
+    this.render()
+
+    return eventId
   }
 
   /**
    * 更新事件（简化版本）
-   * @param event 事件数据
+   * @param eventId 事件ID
+   * @param updates 更新数据
    */
-  updateEvent(event: CalendarEvent): void {
-    this.eventManager.updateEvent(event)
+  updateEvent(eventId: string, updates: Partial<CalendarEvent>): void {
+    const existingEvent = this.eventManager.getEvent(eventId)
+    if (!existingEvent) {
+      console.warn(`Event with id ${eventId} not found`)
+      return
+    }
+
+    const updatedEvent: CalendarEvent = {
+      ...existingEvent,
+      ...updates,
+      id: eventId, // 确保ID不被覆盖
+    }
+
+    this.eventManager.updateEvent(updatedEvent)
     // 更新状态管理器中的事件
     this.stateManager.setEvents(this.eventManager.getEvents())
+
+    // 重新渲染当前视图以显示更新的事件
+    this.render()
   }
 
   /**
@@ -890,6 +1044,9 @@ export class Calendar implements ICalendar {
     this.eventManager.removeEvent(eventId)
     // 更新状态管理器中的事件
     this.stateManager.setEvents(this.eventManager.getEvents())
+
+    // 重新渲染当前视图以移除删除的事件
+    this.render()
   }
 
   /**
@@ -946,6 +1103,76 @@ export class Calendar implements ICalendar {
 
 
 
+  // ==================== 交互功能API ====================
+
+  /**
+   * 处理右键菜单
+   */
+  handleContextMenu(event: MouseEvent, type: 'date' | 'event' | 'empty', data?: { date?: Date; event?: CalendarEvent }): boolean {
+    return this.contextMenuManager.handleContextMenu(event, type, data)
+  }
+
+  /**
+   * 隐藏右键菜单
+   */
+  hideContextMenu(): void {
+    this.contextMenuManager.hideMenu()
+  }
+
+  /**
+   * 开始拖拽事件
+   */
+  startDrag(event: CalendarEvent, mouseEvent: MouseEvent, type: 'move' | 'resize-start' | 'resize-end' = 'move'): boolean {
+    return this.dragDropManager.startDrag(event, mouseEvent, type)
+  }
+
+  /**
+   * 取消拖拽
+   */
+  cancelDrag(): void {
+    this.dragDropManager.cancelDrag()
+  }
+
+  /**
+   * 激活键盘导航
+   */
+  activateKeyboard(): void {
+    this.keyboardManager.activate(this.container)
+  }
+
+  /**
+   * 停用键盘导航
+   */
+  deactivateKeyboard(): void {
+    this.keyboardManager.deactivate(this.container)
+  }
+
+  /**
+   * 获取所有快捷键
+   */
+  getKeyboardShortcuts() {
+    return this.keyboardManager.getShortcuts()
+  }
+
+  /**
+   * 更新交互配置
+   */
+  updateInteractionConfig(config: {
+    contextMenu?: Partial<ContextMenuConfig>
+    dragDrop?: Partial<DragDropConfig>
+    keyboard?: Partial<KeyboardConfig>
+  }): void {
+    if (config.contextMenu) {
+      this.contextMenuManager.updateConfig(config.contextMenu)
+    }
+    if (config.dragDrop) {
+      this.dragDropManager.updateConfig(config.dragDrop)
+    }
+    if (config.keyboard) {
+      this.keyboardManager.updateConfig(config.keyboard)
+    }
+  }
+
   /**
    * 销毁日历实例
    */
@@ -953,6 +1180,11 @@ export class Calendar implements ICalendar {
     if (this.destroyed) return
 
     // 销毁视图
+    if (this.monthView) {
+      this.monthView.destroy()
+      this.monthView = null
+    }
+
     if (this.weekView) {
       this.weekView.destroy()
       this.weekView = null
@@ -969,6 +1201,17 @@ export class Calendar implements ICalendar {
 
     // 清理状态管理器
     this.stateManager.removeAllListeners()
+
+    // 清理交互管理器
+    this.contextMenuManager.destroy()
+    this.dragDropManager.destroy()
+    this.keyboardManager.destroy()
+
+    // 清理渲染timeout
+    if (this.renderTimeout) {
+      clearTimeout(this.renderTimeout)
+      this.renderTimeout = null
+    }
 
     // 清理DOM
     this.container.innerHTML = ''

@@ -6,6 +6,9 @@ import type { CalendarEvent } from './event'
 import type { CalendarPlugin } from './plugin'
 import type { CalendarTheme } from './theme'
 import type { ViewConfig } from './view'
+import type { ContextMenuConfig } from '../core/context-menu-manager'
+import type { DragDropConfig } from '../core/drag-drop-manager'
+import type { KeyboardConfig } from '../core/keyboard-manager'
 
 /**
  * 日历视图类型
@@ -22,6 +25,9 @@ export interface CalendarOptions {
   /** 默认视图类型 */
   view?: CalendarViewType
 
+  /** 默认视图类型（向后兼容） */
+  defaultView?: CalendarViewType
+
   /** 初始日期 */
   date?: Date | string
 
@@ -30,6 +36,12 @@ export interface CalendarOptions {
 
   /** 时区设置 */
   timezone?: string
+
+  /** 一周开始的日期（0-6，0表示周日） */
+  weekStartsOn?: number
+
+  /** 时间格式 */
+  timeFormat?: '12h' | '24h'
 
   /** 是否显示农历 */
   showLunar?: boolean
@@ -40,8 +52,20 @@ export interface CalendarOptions {
   /** 是否启用拖拽 */
   draggable?: boolean
 
+  /** 是否启用调整大小 */
+  resizable?: boolean
+
   /** 是否启用键盘导航 */
   keyboardNavigation?: boolean
+
+  /** 右键菜单配置 */
+  contextMenu?: ContextMenuConfig | false
+
+  /** 拖拽配置 */
+  dragDrop?: DragDropConfig
+
+  /** 键盘配置 */
+  keyboard?: KeyboardConfig
 
   /** 是否响应式 */
   responsive?: boolean

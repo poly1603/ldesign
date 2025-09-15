@@ -6,15 +6,16 @@
 
 // ==================== 颜色变量 ====================
 
-// 品牌�?- 使用具体颜色值以支持Less函数
+// 品牌�?- 使用具体颜色值以支持Less函数
 @calendar-primary-color: #722ED1;
-@calendar-primary-color-hover: #8c5ad3;
-@calendar-primary-color-active: #5e2aa7;
-@calendar-primary-color-disabled: #bfa4e5;
+@calendar-primary-color-hover: #9254DE;
+@calendar-primary-color-active: #531DAB;
+@calendar-primary-color-disabled: #D3ADF7;
 
-// 功能�?@calendar-success-color: #42bd42;
-@calendar-warning-color: #f0b80f;
-@calendar-error-color: #dd2222;
+// 功能色
+@calendar-success-color: #52C41A;
+@calendar-warning-color: #FAAD14;
+@calendar-error-color: #FF4D4F;
 
 // 文本颜色
 @calendar-text-color-primary: var(--ldesign-text-color-primary);
@@ -29,10 +30,10 @@
 @calendar-bg-color-hover: var(--ldesign-bg-color-container-hover);
 @calendar-bg-color-active: var(--ldesign-bg-color-container-active);
 
-// 边框颜色 - 使用具体颜色值以支持Less函数
-@calendar-border-color: #e5e5e5;
-@calendar-border-color-hover: #d9d9d9;
-@calendar-border-color-focus: #722ED1;
+// 边框颜色 - 使用LDESIGN设计系统变量
+@calendar-border-color: var(--ldesign-border-color);
+@calendar-border-color-hover: var(--ldesign-border-color-hover);
+@calendar-border-color-focus: var(--ldesign-border-color-focus);
 
 // 阴影
 @calendar-shadow-1: var(--ldesign-shadow-1);
@@ -55,7 +56,7 @@
 @calendar-spacing-lg: var(--ls-spacing-lg);
 @calendar-spacing-xl: var(--ls-spacing-xl);
 
-// 内边�?@calendar-padding-xs: var(--ls-padding-xs);
+// 内边�?@calendar-padding-xs: var(--ls-padding-xs);
 @calendar-padding-sm: var(--ls-padding-sm);
 @calendar-padding-base: var(--ls-padding-base);
 @calendar-padding-lg: var(--ls-padding-lg);
@@ -77,15 +78,15 @@
 @calendar-header-height: 60px;
 @calendar-nav-button-size: 32px;
 
-// 月视�?@calendar-month-cell-height: 120px;
+// 月视�?@calendar-month-cell-height: 120px;
 @calendar-month-cell-min-height: 80px;
 @calendar-weekday-header-height: 40px;
 
-// 周视�?@calendar-week-time-axis-width: 60px;
+// 周视�?@calendar-week-time-axis-width: 60px;
 @calendar-week-hour-height: 60px;
 @calendar-week-day-header-height: 80px;
 
-// 日视�?@calendar-day-time-axis-width: 80px;
+// 日视�?@calendar-day-time-axis-width: 80px;
 @calendar-day-hour-height: 60px;
 @calendar-day-quarter-height: 15px;
 
@@ -106,7 +107,7 @@
 @calendar-z-index-popup: 1000;
 @calendar-z-index-modal: 2000;
 
-// ==================== 响应式断�?====================
+// ==================== 响应式断�?====================
 
 @calendar-breakpoint-xs: 480px;
 @calendar-breakpoint-sm: 768px;

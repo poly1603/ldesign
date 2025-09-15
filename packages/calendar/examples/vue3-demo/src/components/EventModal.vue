@@ -140,12 +140,31 @@ const formData = ref({
 // 计算属性
 const isEditing = computed(() => !!props.event?.id)
 
+// 工具函数
+const formatDateTimeLocal = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
+const formatDateLocal = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
 // 监听props变化
 watch(() => props.event, (newEvent) => {
   if (newEvent) {
     const start = new Date(newEvent.start)
     const end = new Date(newEvent.end)
-    
+
     formData.value = {
       title: newEvent.title || '',
       description: newEvent.description || '',
@@ -159,7 +178,7 @@ watch(() => props.event, (newEvent) => {
     // 重置表单
     const now = new Date()
     const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000)
-    
+
     formData.value = {
       title: '',
       description: '',
@@ -221,25 +240,6 @@ const handleSubmit = () => {
 // 处理遮罩点击
 const handleOverlayClick = () => {
   emit('close')
-}
-
-// 工具函数
-const formatDateTimeLocal = (date: Date): string => {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  
-  return `${year}-${month}-${day}T${hours}:${minutes}`
-}
-
-const formatDateLocal = (date: Date): string => {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  
-  return `${year}-${month}-${day}`
 }
 </script>
 

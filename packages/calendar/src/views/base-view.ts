@@ -67,29 +67,22 @@ export abstract class BaseView implements IView {
     this.bindEventListeners()
 
     this.initialized = true
-
-    // 初始渲染
-    this.render()
   }
 
   /**
    * 渲染视图
    */
   render(): void {
-    console.log(`BaseView render() 被调用，视图类型: ${this.type}`)
     if (!this.initialized || this.destroyed) {
-      console.warn(`视图 ${this.type} 未初始化或已销毁`)
       return
     }
 
     // 清空容器
     if (this.container) {
-      console.log(`BaseView 清空容器，视图类型: ${this.type}`)
       this.container.innerHTML = ''
     }
 
     // 执行具体的渲染逻辑
-    console.log(`BaseView 调用 onRender()，视图类型: ${this.type}`)
     this.onRender()
   }
 
