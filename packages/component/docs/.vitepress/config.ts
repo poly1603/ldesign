@@ -43,6 +43,13 @@ export default defineConfig({
             { text: '国际化', link: '/guide/i18n' },
             { text: '按需引入', link: '/guide/tree-shaking' }
           ]
+        },
+        {
+          text: '开发',
+          items: [
+            { text: '组件开发规范', link: '/guide/component-development' },
+            { text: '贡献指南', link: '/guide/contributing' }
+          ]
         }
       ],
       '/components/': [
@@ -56,7 +63,30 @@ export default defineConfig({
         {
           text: '表单组件',
           items: [
-            { text: 'Input 输入框', link: '/components/input' }
+            { text: 'Input 输入框', link: '/components/input' },
+            { text: 'Select 选择器', link: '/components/select' },
+            { text: 'Checkbox 复选框', link: '/components/checkbox' },
+            { text: 'Radio 单选框', link: '/components/radio' },
+            { text: 'Switch 开关', link: '/components/switch' }
+          ]
+        },
+        {
+          text: '布局组件',
+          items: [
+            { text: 'Card 卡片', link: '/components/card' }
+          ]
+        },
+        {
+          text: '数据展示',
+          items: [
+            { text: 'Badge 徽标', link: '/components/badge' },
+            { text: 'Tag 标签', link: '/components/tag' }
+          ]
+        },
+        {
+          text: '反馈组件',
+          items: [
+            { text: 'Loading 加载', link: '/components/loading' }
           ]
         }
       ],
@@ -151,12 +181,14 @@ export default defineConfig({
       }
     },
     define: {
-      // 支持 Stencil 组件
-      'process.env': {}
+      // 支持 Vue 3 组件
+      'process.env': {},
+      __VUE_OPTIONS_API__: true,
+      __VUE_PROD_DEVTOOLS__: false
     },
     optimizeDeps: {
-      // 预构建 Stencil 组件
-      include: ['@stencil/core']
+      // 预构建 Vue 组件
+      include: ['vue', 'lucide-vue-next']
     }
   },
 

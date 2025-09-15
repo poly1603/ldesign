@@ -6,7 +6,14 @@
 
 基础的按钮用法。
 
-::: demo
+<div class="demo-button">
+  <l-button>默认按钮</l-button>
+  <l-button type="primary">主要按钮</l-button>
+  <l-button type="success">成功按钮</l-button>
+  <l-button type="warning">警告按钮</l-button>
+  <l-button type="error">错误按钮</l-button>
+</div>
+
 ```vue
 <template>
   <div class="demo-button">
@@ -17,65 +24,42 @@
     <l-button type="error">错误按钮</l-button>
   </div>
 </template>
-
-<style scoped>
-.demo-button {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-</style>
 ```
-:::
 
 ## 按钮变体
 
 按钮有四种变体：基础、轮廓、文本和幽灵。
 
-::: demo
-```vue
-<template>
-  <div class="demo-section">
-    <div class="demo-row">
-      <h4>基础变体</h4>
-      <div class="demo-button">
-        <l-button type="primary">主要按钮</l-button>
-        <l-button type="success">成功按钮</l-button>
-        <l-button type="warning">警告按钮</l-button>
-        <l-button type="error">错误按钮</l-button>
-      </div>
-    </div>
+### 基础变体
+<div class="demo-button">
+  <l-button type="primary">主要按钮</l-button>
+  <l-button type="success">成功按钮</l-button>
+  <l-button type="warning">警告按钮</l-button>
+  <l-button type="error">错误按钮</l-button>
+</div>
 
-    <div class="demo-row">
-      <h4>轮廓变体</h4>
-      <div class="demo-button">
-        <l-button type="primary" variant="outline">主要按钮</l-button>
-        <l-button type="success" variant="outline">成功按钮</l-button>
-        <l-button type="warning" variant="outline">警告按钮</l-button>
-        <l-button type="error" variant="outline">错误按钮</l-button>
-      </div>
-    </div>
+### 轮廓变体
+<div class="demo-button">
+  <l-button type="primary" variant="outline">主要按钮</l-button>
+  <l-button type="success" variant="outline">成功按钮</l-button>
+  <l-button type="warning" variant="outline">警告按钮</l-button>
+  <l-button type="error" variant="outline">错误按钮</l-button>
+</div>
 
-    <div class="demo-row">
-      <h4>文本变体</h4>
-      <div class="demo-button">
-        <l-button type="primary" variant="text">主要按钮</l-button>
-        <l-button type="success" variant="text">成功按钮</l-button>
-        <l-button type="warning" variant="text">警告按钮</l-button>
-        <l-button type="error" variant="text">错误按钮</l-button>
-      </div>
-    </div>
+### 文本变体
+<div class="demo-button">
+  <l-button type="primary" variant="text">主要按钮</l-button>
+  <l-button type="success" variant="text">成功按钮</l-button>
+  <l-button type="warning" variant="text">警告按钮</l-button>
+  <l-button type="error" variant="text">错误按钮</l-button>
+</div>
 
-    <div class="demo-row">
-      <h4>幽灵变体</h4>
-      <div class="demo-button" style="background: #333; padding: 20px; border-radius: 6px;">
-        <l-button ghost>默认按钮</l-button>
-        <l-button type="primary" ghost>主要按钮</l-button>
-        <l-button type="success" ghost>成功按钮</l-button>
-      </div>
-    </div>
-  </div>
-</template>
+### 幽灵变体
+<div class="demo-button" style="background: #333; padding: 20px; border-radius: 6px;">
+  <l-button ghost>默认按钮</l-button>
+  <l-button type="primary" ghost>主要按钮</l-button>
+  <l-button type="success" ghost>成功按钮</l-button>
+</div>
 
 <style scoped>
 .demo-section {
@@ -197,5 +181,22 @@
 
 点击按钮后进行数据加载操作，在按钮上显示加载状态。
 
+<div class="demo-button">
+  <l-button loading>加载中</l-button>
+  <l-button type="primary" loading>主要按钮</l-button>
+  <l-button type="success" loading>成功按钮</l-button>
+</div>
 
+<style scoped>
+.demo-button {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
 
+.demo-button .ld-button {
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+</style>

@@ -57,18 +57,18 @@
   align-items: center;
   justify-content: center;
   border: 1px solid transparent;
-  border-radius: var(--ls-border-radius-base);
+  border-radius: var(--ldesign-border-radius-base);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--ldesign-transition-base);
   text-decoration: none;
   outline: none;
   user-select: none;
   white-space: nowrap;
-  
+
   &:focus {
     outline: none;
   }
-  
+
   &:disabled,
   &.disabled {
     cursor: not-allowed;
@@ -80,21 +80,21 @@
  * 按钮尺寸
  */
 .button-size(@size) when (@size = small) {
-  height: var(--ls-button-height-small);
-  padding: 0 var(--ls-padding-sm);
-  font-size: var(--ls-font-size-xs);
+  height: var(--ldesign-height-sm);
+  padding: 0 var(--ldesign-spacing-sm);
+  font-size: var(--ldesign-font-size-sm);
 }
 
 .button-size(@size) when (@size = medium) {
-  height: var(--ls-button-height-medium);
-  padding: 0 var(--ls-padding-base);
-  font-size: var(--ls-font-size-sm);
+  height: var(--ldesign-height-base);
+  padding: 0 var(--ldesign-spacing-base);
+  font-size: var(--ldesign-font-size-base);
 }
 
 .button-size(@size) when (@size = large) {
-  height: var(--ls-button-height-large);
-  padding: 0 var(--ls-padding-lg);
-  font-size: var(--ls-font-size-base);
+  height: var(--ldesign-height-lg);
+  padding: 0 var(--ldesign-spacing-lg);
+  font-size: var(--ldesign-font-size-lg);
 }
 
 /**
@@ -103,26 +103,26 @@
 .input-base() {
   display: inline-block;
   width: 100%;
-  border: 1px solid var(--ldesign-border-color);
-  border-radius: var(--ls-border-radius-base);
+  border: 1px solid var(--ldesign-border-level-1-color);
+  border-radius: var(--ldesign-border-radius-base);
   background-color: var(--ldesign-bg-color-component);
   color: var(--ldesign-text-color-primary);
-  transition: all 0.3s ease;
+  transition: all var(--ldesign-transition-base);
   outline: none;
-  
+
   &::placeholder {
     color: var(--ldesign-text-color-placeholder);
   }
-  
+
   &:hover {
-    border-color: var(--ldesign-border-color-hover);
+    border-color: var(--ldesign-border-level-2-color);
   }
-  
+
   &:focus {
-    border-color: var(--ldesign-border-color-focus);
+    border-color: var(--ldesign-brand-color);
     box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
   }
-  
+
   &:disabled {
     background-color: var(--ldesign-bg-color-component-disabled);
     color: var(--ldesign-text-color-disabled);
@@ -134,21 +134,21 @@
  * 输入框尺寸
  */
 .input-size(@size) when (@size = small) {
-  height: var(--ls-input-height-small);
-  padding: 0 var(--ls-padding-sm);
-  font-size: var(--ls-font-size-xs);
+  height: var(--ldesign-height-sm);
+  padding: 0 var(--ldesign-spacing-sm);
+  font-size: var(--ldesign-font-size-sm);
 }
 
 .input-size(@size) when (@size = medium) {
-  height: var(--ls-input-height-medium);
-  padding: 0 var(--ls-padding-base);
-  font-size: var(--ls-font-size-sm);
+  height: var(--ldesign-height-base);
+  padding: 0 var(--ldesign-spacing-base);
+  font-size: var(--ldesign-font-size-base);
 }
 
 .input-size(@size) when (@size = large) {
-  height: var(--ls-input-height-large);
-  padding: 0 var(--ls-padding-lg);
-  font-size: var(--ls-font-size-base);
+  height: var(--ldesign-height-lg);
+  padding: 0 var(--ldesign-spacing-lg);
+  font-size: var(--ldesign-font-size-lg);
 }
 
 /**
@@ -156,13 +156,13 @@
  */
 .card-base() {
   background-color: var(--ldesign-bg-color-container);
-  border: 1px solid var(--ldesign-border-color);
-  border-radius: var(--ls-border-radius-base);
-  box-shadow: var(--ls-shadow-sm);
-  transition: all 0.3s ease;
-  
+  border: 1px solid var(--ldesign-border-level-1-color);
+  border-radius: var(--ldesign-border-radius-base);
+  box-shadow: var(--ldesign-shadow-sm);
+  transition: all var(--ldesign-transition-base);
+
   &:hover {
-    box-shadow: var(--ls-shadow-base);
+    box-shadow: var(--ldesign-shadow-base);
   }
 }
 

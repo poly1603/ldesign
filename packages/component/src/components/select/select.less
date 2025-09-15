@@ -1,0 +1,279 @@
+/**
+ * Select 组件样式
+ */
+
+@select-prefix: ~'ld-select';
+
+.@{select-prefix} {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  font-size: var(--ldesign-font-size-base);
+
+  // 输入框
+  &__input {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: var(--ldesign-height-base);
+    padding: 0 var(--ldesign-spacing-base);
+    background-color: var(--ldesign-bg-color-component);
+    border: 1px solid var(--ldesign-border-level-1-color);
+    border-radius: var(--ldesign-border-radius-base);
+    cursor: pointer;
+    transition: all var(--ldesign-transition-base);
+
+    &:hover {
+      border-color: var(--ldesign-brand-color);
+    }
+
+    &--focus {
+      border-color: var(--ldesign-brand-color);
+      box-shadow: 0 0 0 2px var(--ldesign-brand-color-1);
+    }
+  }
+
+  // 标签容器
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ldesign-spacing-xs);
+    flex: 1;
+    min-width: 0;
+  }
+
+  // 标签
+  &__tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px var(--ldesign-spacing-xs);
+    background-color: var(--ldesign-bg-color-container);
+    border: 1px solid var(--ldesign-border-level-2-color);
+    border-radius: var(--ldesign-border-radius-sm);
+    font-size: var(--ldesign-font-size-sm);
+    color: var(--ldesign-text-color-primary);
+    max-width: 100%;
+
+    &-close {
+      margin-left: var(--ldesign-spacing-xs);
+      cursor: pointer;
+      color: var(--ldesign-text-color-secondary);
+      font-style: normal;
+
+      &:hover {
+        color: var(--ldesign-text-color-primary);
+      }
+    }
+  }
+
+  // 选中文本
+  &__selected-text {
+    flex: 1;
+    color: var(--ldesign-text-color-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // 占位符
+  &__placeholder {
+    flex: 1;
+    color: var(--ldesign-text-color-placeholder);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // 过滤输入框
+  &__filter-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--ldesign-text-color-primary);
+    font-size: inherit;
+    min-width: 20px;
+  }
+
+  // 清空按钮
+  &__clear {
+    margin-left: var(--ldesign-spacing-xs);
+    color: var(--ldesign-text-color-secondary);
+    cursor: pointer;
+    font-style: normal;
+
+    &:hover {
+      color: var(--ldesign-text-color-primary);
+    }
+  }
+
+  // 箭头
+  &__arrow {
+    margin-left: var(--ldesign-spacing-xs);
+    color: var(--ldesign-text-color-secondary);
+    font-style: normal;
+    transition: transform var(--ldesign-transition-base);
+
+    &--reverse {
+      transform: rotate(180deg);
+    }
+  }
+
+  // 下拉面板
+  &__dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: var(--ldesign-z-index-dropdown);
+    margin-top: var(--ldesign-spacing-xs);
+    background-color: var(--ldesign-bg-color-component);
+    border: 1px solid var(--ldesign-border-level-1-color);
+    border-radius: var(--ldesign-border-radius-base);
+    box-shadow: var(--ldesign-shadow-lg);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  // 加载状态
+  &__loading {
+    padding: var(--ldesign-spacing-base);
+    text-align: center;
+    color: var(--ldesign-text-color-secondary);
+    font-size: var(--ldesign-font-size-sm);
+  }
+
+  // 选项容器
+  &__options {
+    padding: var(--ldesign-spacing-xs) 0;
+  }
+
+  // 选项
+  &__option {
+    padding: var(--ldesign-spacing-sm) var(--ldesign-spacing-base);
+    cursor: pointer;
+    color: var(--ldesign-text-color-primary);
+    transition: background-color var(--ldesign-transition-base);
+
+    &:hover {
+      background-color: var(--ldesign-bg-color-container);
+    }
+
+    &--selected {
+      background-color: var(--ldesign-brand-color-1);
+      color: var(--ldesign-brand-color);
+    }
+
+    &--disabled {
+      color: var(--ldesign-text-color-disabled);
+      cursor: not-allowed;
+
+      &:hover {
+        background-color: transparent;
+      }
+    }
+  }
+
+  // 空状态
+  &__empty {
+    padding: var(--ldesign-spacing-base);
+    text-align: center;
+    color: var(--ldesign-text-color-secondary);
+    font-size: var(--ldesign-font-size-sm);
+  }
+
+  // 尺寸变体
+  &--small {
+    font-size: var(--ldesign-font-size-sm);
+
+    .@{select-prefix}__input {
+      min-height: var(--ldesign-height-sm);
+      padding: 0 var(--ldesign-spacing-sm);
+    }
+
+    .@{select-prefix}__tag {
+      padding: 1px var(--ldesign-spacing-xs);
+      font-size: var(--ldesign-font-size-xs);
+    }
+
+    .@{select-prefix}__option {
+      padding: var(--ldesign-spacing-xs) var(--ldesign-spacing-sm);
+    }
+  }
+
+  &--medium {
+    font-size: var(--ldesign-font-size-base);
+
+    .@{select-prefix}__input {
+      min-height: var(--ldesign-height-base);
+      padding: 0 var(--ldesign-spacing-base);
+    }
+  }
+
+  &--large {
+    font-size: var(--ldesign-font-size-lg);
+
+    .@{select-prefix}__input {
+      min-height: var(--ldesign-height-lg);
+      padding: 0 var(--ldesign-spacing-lg);
+    }
+
+    .@{select-prefix}__tag {
+      padding: 4px var(--ldesign-spacing-sm);
+      font-size: var(--ldesign-font-size-base);
+    }
+
+    .@{select-prefix}__option {
+      padding: var(--ldesign-spacing-base) var(--ldesign-spacing-lg);
+    }
+  }
+
+  // 状态变体
+  &--disabled {
+    .@{select-prefix}__input {
+      background-color: var(--ldesign-bg-color-container);
+      color: var(--ldesign-text-color-disabled);
+      cursor: not-allowed;
+
+      &:hover {
+        border-color: var(--ldesign-border-level-1-color);
+      }
+    }
+
+    .@{select-prefix}__arrow {
+      color: var(--ldesign-text-color-disabled);
+    }
+  }
+
+  &--multiple {
+    .@{select-prefix}__input {
+      min-height: auto;
+      padding: var(--ldesign-spacing-xs) var(--ldesign-spacing-base);
+    }
+  }
+
+  &--filterable {
+    .@{select-prefix}__input {
+      cursor: text;
+    }
+  }
+}
+
+// 下拉动画
+.ld-select-dropdown-enter-active,
+.ld-select-dropdown-leave-active {
+  transition: all var(--ldesign-transition-base);
+  transform-origin: top;
+}
+
+.ld-select-dropdown-enter-from,
+.ld-select-dropdown-leave-to {
+  opacity: 0;
+  transform: scaleY(0.8) translateY(-8px);
+}
+
+.ld-select-dropdown-enter-to,
+.ld-select-dropdown-leave-from {
+  opacity: 1;
+  transform: scaleY(1) translateY(0);
+}

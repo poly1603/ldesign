@@ -125,42 +125,81 @@
 /* 尺寸和间距变量 */
 :root {
   transition: --ls-font-size-xs, --ls-font-size-sm, --ls-font-size-base, --ls-font-size-lg, --ls-font-size-xl, --ls-font-size-xxl, --ls-font-size-h1, --ls-font-size-h2, --ls-font-size-h3, --ls-font-size-h4, --ls-font-size-h5, --ls-font-size-h6, --ls-spacing-xs, --ls-spacing-sm, --ls-spacing-base, --ls-spacing-lg, --ls-spacing-xl, --ls-spacing-xxl, --ls-padding-xs, --ls-padding-sm, --ls-padding-base, --ls-padding-lg, --ls-padding-xl, --ls-padding-xxl, --ls-margin-xs, --ls-margin-sm, --ls-margin-base, --ls-margin-lg, --ls-margin-xl, --ls-margin-xxl, --ls-button-height-small, --ls-button-height-medium, --ls-button-height-large, --ls-input-height-small, --ls-input-height-medium, --ls-input-height-large, --ls-icon-size-small, --ls-icon-size-medium, --ls-icon-size-large, --ls-avatar-size-small, --ls-avatar-size-medium, --ls-avatar-size-large, --ls-border-radius-none, --ls-border-radius-sm, --ls-border-radius-base, --ls-border-radius-lg, --ls-border-radius-xl, --ls-border-radius-full, --ls-shadow-none, --ls-shadow-sm, --ls-shadow-base, --ls-shadow-lg, --ls-shadow-xl 0.3s ease-in-out;
-  --ls-font-size-xs: 14px;
-  --ls-font-size-sm: 16px;
-  --ls-font-size-base: 18px;
-  --ls-font-size-lg: 20px;
-  --ls-font-size-xl: 24px;
-  --ls-font-size-xxl: 28px;
-  --ls-font-size-h1: 40px;
-  --ls-font-size-h2: 36px;
-  --ls-font-size-h3: 32px;
-  --ls-font-size-h4: 28px;
-  --ls-font-size-h5: 24px;
-  --ls-font-size-h6: 20px;
-  --ls-spacing-xs: 6px;
-  --ls-spacing-sm: 12px;
-  --ls-spacing-base: 20px;
-  --ls-spacing-lg: 28px;
-  --ls-spacing-xl: 36px;
-  --ls-spacing-xxl: 56px;
-  --ls-padding-xs: 6px;
-  --ls-padding-sm: 12px;
-  --ls-padding-base: 20px;
-  --ls-padding-lg: 28px;
-  --ls-padding-xl: 36px;
-  --ls-padding-xxl: 56px;
-  --ls-margin-xs: 6px;
-  --ls-margin-sm: 12px;
-  --ls-margin-base: 20px;
-  --ls-margin-lg: 28px;
-  --ls-margin-xl: 36px;
-  --ls-margin-xxl: 56px;
-  --ls-button-height-small: 40px;
-  --ls-button-height-medium: 44px;
-  --ls-button-height-large: 48px;
-  --ls-input-height-small: 40px;
-  --ls-input-height-medium: 44px;
-  --ls-input-height-large: 48px;
+  /* 字体大小 */
+  --ldesign-font-size-xs: 12px;
+  --ldesign-font-size-sm: 14px;
+  --ldesign-font-size-base: 16px;
+  --ldesign-font-size-lg: 18px;
+  --ldesign-font-size-xl: 20px;
+  --ldesign-font-size-xxl: 24px;
+  --ldesign-font-size-h1: 32px;
+  --ldesign-font-size-h2: 28px;
+  --ldesign-font-size-h3: 24px;
+  --ldesign-font-size-h4: 20px;
+  --ldesign-font-size-h5: 18px;
+  --ldesign-font-size-h6: 16px;
+
+  /* 字体粗细 */
+  --ldesign-font-weight-light: 300;
+  --ldesign-font-weight-normal: 400;
+  --ldesign-font-weight-medium: 500;
+  --ldesign-font-weight-semibold: 600;
+  --ldesign-font-weight-bold: 700;
+
+  /* 行高 */
+  --ldesign-line-height-tight: 1.25;
+  --ldesign-line-height-normal: 1.5;
+  --ldesign-line-height-relaxed: 1.75;
+
+  /* 间距系统 */
+  --ldesign-spacing-xs: 4px;
+  --ldesign-spacing-sm: 8px;
+  --ldesign-spacing-base: 16px;
+  --ldesign-spacing-lg: 24px;
+  --ldesign-spacing-xl: 32px;
+  --ldesign-spacing-xxl: 48px;
+
+  /* 圆角 */
+  --ldesign-border-radius-sm: 2px;
+  --ldesign-border-radius-base: 4px;
+  --ldesign-border-radius-lg: 8px;
+  --ldesign-border-radius-xl: 12px;
+  --ldesign-border-radius-full: 9999px;
+
+  /* 组件高度 */
+  --ldesign-height-sm: 32px;
+  --ldesign-height-base: 40px;
+  --ldesign-height-lg: 48px;
+
+  /* 图标大小 */
+  --ldesign-icon-size-xs: 12px;
+  --ldesign-icon-size-sm: 16px;
+  --ldesign-icon-size-base: 20px;
+  --ldesign-icon-size-lg: 24px;
+  --ldesign-icon-size-xl: 32px;
+
+  /* 阴影系统 */
+  --ldesign-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --ldesign-shadow-base: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --ldesign-shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --ldesign-shadow-xl: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --ldesign-shadow-2xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 8px 10px rgba(0, 0, 0, 0.04);
+
+  /* 过渡动画 */
+  --ldesign-transition-fast: 0.15s ease-out;
+  --ldesign-transition-base: 0.2s ease-out;
+  --ldesign-transition-slow: 0.3s ease-out;
+
+  /* 层级系统 */
+  --ldesign-z-index-dropdown: 1000;
+  --ldesign-z-index-sticky: 1020;
+  --ldesign-z-index-fixed: 1030;
+  --ldesign-z-index-modal-backdrop: 1040;
+  --ldesign-z-index-modal: 1050;
+  --ldesign-z-index-popover: 1060;
+  --ldesign-z-index-tooltip: 1070;
+  --ldesign-z-index-toast: 1080;
+  --ldesign-z-index-affix: 10;
   --ls-icon-size-small: 20px;
   --ls-icon-size-medium: 22px;
   --ls-icon-size-large: 24px;

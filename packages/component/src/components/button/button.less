@@ -11,11 +11,11 @@
   justify-content: center;
   box-sizing: border-box;
   margin: 0;
-  padding: 0 var(--ls-padding-base);
+  padding: 0 var(--ldesign-spacing-base);
   font-family: inherit;
-  font-size: var(--ls-font-size-base);
-  font-weight: 400;
-  line-height: 1.5;
+  font-size: var(--ldesign-font-size-base);
+  font-weight: var(--ldesign-font-weight-normal);
+  line-height: var(--ldesign-line-height-normal);
   text-align: center;
   text-decoration: none;
   white-space: nowrap;
@@ -23,10 +23,10 @@
   cursor: pointer;
   user-select: none;
   border: 1px solid transparent;
-  border-radius: var(--ls-border-radius-base);
+  border-radius: var(--ldesign-border-radius-base);
   background-color: transparent;
   color: var(--ldesign-text-color-primary);
-  transition: all 0.2s ease-in-out;
+  transition: all var(--ldesign-transition-base);
   outline: none;
 
   // 基础交互状态
@@ -77,7 +77,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--ls-spacing-xs);
+    gap: var(--ldesign-spacing-xs);
   }
 
   // 图标
@@ -85,7 +85,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--ls-icon-size-medium);
+    font-size: var(--ldesign-icon-size-base);
 
     &--left {
       order: -1;
@@ -102,77 +102,77 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: var(--ls-icon-size-medium);
+    font-size: var(--ldesign-icon-size-base);
     animation: ld-button-loading 1s linear infinite;
   }
 
   // 大小变体
   &--small {
-    height: var(--ls-button-height-small);
-    padding: 0 var(--ls-padding-sm);
-    font-size: var(--ls-font-size-sm);
+    height: var(--ldesign-height-sm);
+    padding: 0 var(--ldesign-spacing-sm);
+    font-size: var(--ldesign-font-size-sm);
 
     .@{button-prefix}__icon {
-      font-size: var(--ls-icon-size-small);
+      font-size: var(--ldesign-icon-size-sm);
     }
   }
 
   &--medium {
-    height: var(--ls-button-height-medium);
-    padding: 0 var(--ls-padding-base);
-    font-size: var(--ls-font-size-base);
+    height: var(--ldesign-height-base);
+    padding: 0 var(--ldesign-spacing-base);
+    font-size: var(--ldesign-font-size-base);
 
     .@{button-prefix}__icon {
-      font-size: var(--ls-icon-size-medium);
+      font-size: var(--ldesign-icon-size-base);
     }
   }
 
   &--large {
-    height: var(--ls-button-height-large);
-    padding: 0 var(--ls-padding-lg);
-    font-size: var(--ls-font-size-lg);
+    height: var(--ldesign-height-lg);
+    padding: 0 var(--ldesign-spacing-lg);
+    font-size: var(--ldesign-font-size-lg);
 
     .@{button-prefix}__icon {
-      font-size: var(--ls-icon-size-large);
+      font-size: var(--ldesign-icon-size-lg);
     }
   }
 
   // 形状变体
   &--round {
-    border-radius: calc(var(--ls-button-height-medium) / 2);
+    border-radius: calc(var(--ldesign-height-base) / 2);
 
     &.@{button-prefix}--small {
-      border-radius: calc(var(--ls-button-height-small) / 2);
+      border-radius: calc(var(--ldesign-height-sm) / 2);
     }
 
     &.@{button-prefix}--large {
-      border-radius: calc(var(--ls-button-height-large) / 2);
+      border-radius: calc(var(--ldesign-height-lg) / 2);
     }
   }
 
   &--circle {
-    width: var(--ls-button-height-medium);
+    width: var(--ldesign-height-base);
     padding: 0;
     border-radius: 50%;
 
     &.@{button-prefix}--small {
-      width: var(--ls-button-height-small);
+      width: var(--ldesign-height-sm);
     }
 
     &.@{button-prefix}--large {
-      width: var(--ls-button-height-large);
+      width: var(--ldesign-height-lg);
     }
   }
 
   // 类型变体 - 默认
   &--default {
     background-color: var(--ldesign-bg-color-component);
-    border-color: var(--ldesign-border-color);
+    border-color: var(--ldesign-border-level-1-color);
     color: var(--ldesign-text-color-primary);
 
     &:hover:not(.@{button-prefix}--disabled) {
       background-color: var(--ldesign-bg-color-component-hover);
-      border-color: var(--ldesign-border-color-hover);
+      border-color: var(--ldesign-border-level-2-color);
     }
 
     &:active:not(.@{button-prefix}--disabled) {

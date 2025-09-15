@@ -162,7 +162,7 @@ const blur = () => {
 }
 
 // 暴露给父组件的方法和属性
-defineExpose<ButtonInstance>({
+defineExpose({
   $el: buttonRef,
   focus,
   blur

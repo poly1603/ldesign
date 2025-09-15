@@ -1,0 +1,190 @@
+/**
+ * Tag 组件样式
+ */
+
+@tag-prefix: ~'ld-tag';
+
+.@{tag-prefix} {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ldesign-spacing-xs);
+  padding: 2px var(--ldesign-spacing-xs);
+  font-size: var(--ldesign-font-size-sm);
+  font-weight: var(--ldesign-font-weight-normal);
+  line-height: 1.5;
+  border: 1px solid transparent;
+  border-radius: var(--ldesign-border-radius-sm);
+  white-space: nowrap;
+  cursor: default;
+  transition: all var(--ldesign-transition-base);
+  box-sizing: border-box;
+
+  // 图标
+  &__icon {
+    font-size: inherit;
+  }
+
+  // 内容
+  &__content {
+    flex: 1;
+  }
+
+  // 关闭按钮
+  &__close {
+    margin-left: var(--ldesign-spacing-xs);
+    font-size: var(--ldesign-font-size-sm);
+    font-style: normal;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity var(--ldesign-transition-base);
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  // 类型变体 - filled
+  &--default.@{tag-prefix}--filled {
+    background-color: var(--ldesign-bg-color-container);
+    border-color: var(--ldesign-border-level-2-color);
+    color: var(--ldesign-text-color-primary);
+  }
+
+  &--primary.@{tag-prefix}--filled {
+    background-color: var(--ldesign-brand-color);
+    border-color: var(--ldesign-brand-color);
+    color: #ffffff;
+  }
+
+  &--success.@{tag-prefix}--filled {
+    background-color: var(--ldesign-success-color);
+    border-color: var(--ldesign-success-color);
+    color: #ffffff;
+  }
+
+  &--warning.@{tag-prefix}--filled {
+    background-color: var(--ldesign-warning-color);
+    border-color: var(--ldesign-warning-color);
+    color: #ffffff;
+  }
+
+  &--error.@{tag-prefix}--filled {
+    background-color: var(--ldesign-error-color);
+    border-color: var(--ldesign-error-color);
+    color: #ffffff;
+  }
+
+  // 类型变体 - outlined
+  &--default.@{tag-prefix}--outlined {
+    background-color: transparent;
+    border-color: var(--ldesign-border-level-2-color);
+    color: var(--ldesign-text-color-primary);
+  }
+
+  &--primary.@{tag-prefix}--outlined {
+    background-color: transparent;
+    border-color: var(--ldesign-brand-color);
+    color: var(--ldesign-brand-color);
+  }
+
+  &--success.@{tag-prefix}--outlined {
+    background-color: transparent;
+    border-color: var(--ldesign-success-color);
+    color: var(--ldesign-success-color);
+  }
+
+  &--warning.@{tag-prefix}--outlined {
+    background-color: transparent;
+    border-color: var(--ldesign-warning-color);
+    color: var(--ldesign-warning-color);
+  }
+
+  &--error.@{tag-prefix}--outlined {
+    background-color: transparent;
+    border-color: var(--ldesign-error-color);
+    color: var(--ldesign-error-color);
+  }
+
+  // 类型变体 - light
+  &--default.@{tag-prefix}--light {
+    background-color: var(--ldesign-bg-color-container);
+    border-color: transparent;
+    color: var(--ldesign-text-color-primary);
+  }
+
+  &--primary.@{tag-prefix}--light {
+    background-color: var(--ldesign-brand-color-1);
+    border-color: transparent;
+    color: var(--ldesign-brand-color);
+  }
+
+  &--success.@{tag-prefix}--light {
+    background-color: #f6ffed;
+    border-color: transparent;
+    color: var(--ldesign-success-color);
+  }
+
+  &--warning.@{tag-prefix}--light {
+    background-color: #fffbe6;
+    border-color: transparent;
+    color: var(--ldesign-warning-color);
+  }
+
+  &--error.@{tag-prefix}--light {
+    background-color: #fff2f0;
+    border-color: transparent;
+    color: var(--ldesign-error-color);
+  }
+
+  // 尺寸变体
+  &--small {
+    padding: 1px var(--ldesign-spacing-xs);
+    font-size: var(--ldesign-font-size-xs);
+
+    .@{tag-prefix}__close {
+      font-size: 10px;
+    }
+  }
+
+  &--medium {
+    padding: 2px var(--ldesign-spacing-xs);
+    font-size: var(--ldesign-font-size-sm);
+  }
+
+  &--large {
+    padding: 4px var(--ldesign-spacing-sm);
+    font-size: var(--ldesign-font-size-base);
+
+    .@{tag-prefix}__close {
+      font-size: var(--ldesign-font-size-base);
+    }
+  }
+
+  // 状态变体
+  &--clickable {
+    cursor: pointer;
+
+    &:hover:not(.@{tag-prefix}--disabled) {
+      opacity: 0.8;
+      transform: translateY(-1px);
+    }
+
+    &:active:not(.@{tag-prefix}--disabled) {
+      transform: translateY(0);
+    }
+  }
+
+  &--checked {
+    box-shadow: 0 0 0 2px var(--ldesign-brand-color-2);
+  }
+
+  &--closable {
+    padding-right: var(--ldesign-spacing-xs);
+  }
+
+  &--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}

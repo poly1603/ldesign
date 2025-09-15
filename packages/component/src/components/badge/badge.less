@@ -1,0 +1,144 @@
+/**
+ * Badge 组件样式
+ */
+
+@badge-prefix: ~'ld-badge';
+
+.@{badge-prefix} {
+  position: relative;
+  display: inline-block;
+
+  // 徽标
+  &__sup {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: var(--ldesign-z-index-affix);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    font-size: var(--ldesign-font-size-xs);
+    font-weight: var(--ldesign-font-weight-medium);
+    line-height: 1;
+    white-space: nowrap;
+    text-align: center;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transform: translate(50%, -50%);
+    transform-origin: center;
+
+    // 类型变体
+    &--primary {
+      background-color: var(--ldesign-brand-color);
+      color: #ffffff;
+    }
+
+    &--success {
+      background-color: var(--ldesign-success-color);
+      color: #ffffff;
+    }
+
+    &--warning {
+      background-color: var(--ldesign-warning-color);
+      color: #ffffff;
+    }
+
+    &--error {
+      background-color: var(--ldesign-error-color);
+      color: #ffffff;
+    }
+
+    &--info {
+      background-color: var(--ldesign-text-color-secondary);
+      color: #ffffff;
+    }
+
+    // 尺寸变体
+    &--small {
+      min-width: 14px;
+      height: 14px;
+      font-size: 10px;
+      border-radius: 7px;
+    }
+
+    &--medium {
+      min-width: 16px;
+      height: 16px;
+      font-size: var(--ldesign-font-size-xs);
+      border-radius: 8px;
+    }
+
+    &--large {
+      min-width: 20px;
+      height: 20px;
+      font-size: var(--ldesign-font-size-sm);
+      border-radius: 10px;
+    }
+
+    // 小红点
+    &--dot {
+      min-width: 6px;
+      width: 6px;
+      height: 6px;
+      padding: 0;
+      border-radius: 50%;
+
+      &.@{badge-prefix}__sup--small {
+        width: 4px;
+        height: 4px;
+      }
+
+      &.@{badge-prefix}__sup--large {
+        width: 8px;
+        height: 8px;
+      }
+    }
+
+    // 固定定位（有子内容时）
+    &--fixed {
+      position: absolute;
+    }
+  }
+}
+
+// 独立徽标（无子内容）
+.@{badge-prefix}:not(:has(*)) {
+  .@{badge-prefix}__sup {
+    position: static;
+    transform: none;
+  }
+}
+
+// 缩放动画
+.ld-badge-zoom-enter-active,
+.ld-badge-zoom-leave-active {
+  transition: all var(--ldesign-transition-base);
+}
+
+.ld-badge-zoom-enter-from,
+.ld-badge-zoom-leave-to {
+  opacity: 0;
+  transform: translate(50%, -50%) scale(0);
+}
+
+.ld-badge-zoom-enter-to,
+.ld-badge-zoom-leave-from {
+  opacity: 1;
+  transform: translate(50%, -50%) scale(1);
+}
+
+// 独立徽标的动画
+.@{badge-prefix}:not(:has(*)) {
+  .ld-badge-zoom-enter-from,
+  .ld-badge-zoom-leave-to {
+    transform: scale(0);
+  }
+
+  .ld-badge-zoom-enter-to,
+  .ld-badge-zoom-leave-from {
+    transform: scale(1);
+  }
+}

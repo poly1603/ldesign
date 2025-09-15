@@ -53,6 +53,10 @@
     "docs:dev": "vitepress dev docs --port 3001",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
+    "create:component": "node scripts/create-component.js",
+    "build:all": "pnpm run clean && pnpm run build:prod && pnpm run docs:build",
+    "ci": "pnpm run lint && pnpm run type-check && pnpm run test:run",
+    "release": "pnpm run ci && pnpm run build:all",
     "prepublishOnly": "pnpm run build:prod"
   },
   "dependencies": {
