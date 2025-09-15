@@ -144,6 +144,10 @@ const updateProfile = async () => {
 
 ## 📖 详细文档
 
+- 文档开发：`pnpm docs:dev`
+- 文档构建：`pnpm docs:build`
+- 文档预览：`pnpm docs:preview`
+
 ### 配置选项
 
 ```typescript

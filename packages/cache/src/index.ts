@@ -31,11 +31,12 @@ export * from './strategies/eviction-strategies'
 // 命名空间与同步
 export { CacheNamespace, createNamespace } from './core/namespace-manager'
 export type { NamespaceOptions } from './core/namespace-manager'
-export { SyncManager, WarmupManager } from './core/sync-manager'
+export { SyncManager } from './core/sync-manager'
 export type { SyncOptions } from './core/sync-manager'
-export { WarmupManager as CacheWarmupManager, createWarmupManager } from './core/warmup-manager'
+export { WarmupManager, createWarmupManager } from './core/warmup-manager'
+export { WarmupManager as CacheWarmupManager } from './core/warmup-manager'
 export { CacheAnalyzer, createCacheAnalyzer } from './core/cache-analyzer'
-export type { AnalysisReport, OptimizationSuggestion, AccessPattern, PerformanceMetrics } from './core/cache-analyzer'
+export type { AnalysisReport, OptimizationSuggestion, AccessPattern, PerformanceMetrics as AnalyzerPerformanceMetrics } from './core/cache-analyzer'
 
 // 核心导出
 export * from './types'
@@ -43,7 +44,7 @@ export * from './utils'
 
 // 性能监控与容错
 export { PerformanceMonitor } from './core/performance-monitor'
-export type { PerformanceMetrics, PerformanceStats, PerformanceMonitorOptions } from './core/performance-monitor'
+export type { PerformanceMetrics as MonitorPerformanceMetrics, PerformanceStats, PerformanceMonitorOptions } from './core/performance-monitor'
 export * from './utils/retry-manager'
 
 /**
@@ -69,27 +70,35 @@ export function getDefaultCache(options?: CacheOptions): CacheManager {
  * 统一简洁的 API：按需获取单例并执行操作（不提前创建实例）
  */
 export const cache = {
+  /** 获取缓存值（泛型推断） */
   get<T = any>(key: string) {
     return getDefaultCache().get<T>(key)
   },
+  /** 设置缓存值 */
   set<T = any>(key: string, value: T, options?: import('./types').SetOptions) {
     return getDefaultCache().set<T>(key, value, options)
   },
+  /** 删除指定键 */
   remove(key: string) {
     return getDefaultCache().remove(key)
   },
+  /** 清空缓存（可指定引擎） */
   clear(engine?: import('./types').StorageEngine) {
     return getDefaultCache().clear(engine)
   },
+  /** 判断键是否存在 */
   has(key: string) {
     return getDefaultCache().has(key)
   },
+  /** 获取键列表 */
   keys(engine?: import('./types').StorageEngine) {
     return getDefaultCache().keys(engine)
   },
+  /** 获取统计信息 */
   getStats() {
     return getDefaultCache().getStats()
   },
+  /** 记忆函数：不存在则计算并写入 */
   remember<T = any>(
     key: string,
     fetcher: () => Promise<T> | T,
@@ -97,6 +106,7 @@ export const cache = {
   ) {
     return getDefaultCache().remember<T>(key, fetcher, options)
   },
+  /** 获取管理器实例 */
   manager(): CacheManager {
     return getDefaultCache()
   },

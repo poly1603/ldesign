@@ -23,8 +23,9 @@ export default defineConfig({
       '**/examples/**',
       '**/.{idea,git,cache,output,temp}/**',
     ],
-    threads: true,
-    maxThreads: 4,
+    // 限制为单线程以降低内存占用
+    threads: false,
+    maxThreads: 1,
     minThreads: 1,
   },
   resolve: {

@@ -40,6 +40,7 @@ export default defineConfig({
           text: '高级用法',
           items: [
             { text: '自定义引擎', link: '/guide/custom-engines' },
+            { text: '排障指南', link: '/guide/troubleshooting' },
             { text: '性能优化', link: '/guide/performance' },
             { text: '最佳实践', link: '/guide/best-practices' },
           ],

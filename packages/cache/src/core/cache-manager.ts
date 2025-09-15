@@ -148,15 +148,16 @@ export class CacheManager implements ICacheManager {
       }
     }
 
-    // 回退到默认引擎
-    const defaultEngine = this.options.defaultEngine || 'localStorage'
-    const engine = this.engines.get(defaultEngine)
-    if (!engine) {
-      throw new Error(
-        `Default storage engine ${defaultEngine} is not available`,
-      )
-    }
-    return engine
+    // 回退到默认/推荐引擎（提高 SSR/Node 环境健壮性）
+    const defaultEngine = this.options.defaultEngine || StorageEngineFactory.getRecommendedEngine()
+    let engine = this.engines.get(defaultEngine)
+    if (engine) return engine
+
+    // 兜底：选择第一个可用引擎
+    const firstAvailable = Array.from(this.engines.values())[0]
+    if (firstAvailable) return firstAvailable
+
+    throw new Error(`No storage engine is available`)
   }
 
   /**
@@ -356,6 +357,12 @@ export class CacheManager implements ICacheManager {
   /**
    * 创建元数据
    */
+  /**
+   * 创建元数据
+   *
+   * 根据值、引擎和选项生成标准化的缓存元数据。
+   * 注意：size 基于 JSON 字符串字节大小估算，若启用压缩请使用 compressor 统计真实值。
+   */
   private createMetadata(
     value: any,
     engine: StorageEngine,
@@ -379,6 +386,9 @@ export class CacheManager implements ICacheManager {
 
   /**
    * 获取数据类型
+   */
+  /**
+   * 推断数据类型
    */
   private getDataType(value: any): import('../types').DataType {
     if (value === null || value === undefined)
@@ -588,6 +598,22 @@ export class CacheManager implements ICacheManager {
             value,
             metadata.encrypted,
           )
+
+          // 读穿缓存：非内存命中则回填到内存引擎，提升后续读取性能
+          if (engineType !== 'memory') {
+            const memoryEngine = this.engines.get('memory')
+            if (memoryEngine) {
+              try {
+                const ttlRemaining = metadata.expiresAt
+                  ? Math.max(0, metadata.expiresAt - Date.now())
+                  : undefined
+                await memoryEngine.setItem(processedKey, itemData, ttlRemaining)
+              }
+              catch (e) {
+                console.warn('[CacheManager] Failed to promote item to memory:', e)
+              }
+            }
+          }
 
           // 发出获取成功事件
           this.emitEvent('get', key, engineType, deserializedValue)
