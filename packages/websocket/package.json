@@ -1,0 +1,127 @@
+{
+  "name": "@ldesign/websocket",
+  "version": "1.0.0",
+  "description": "通用的WebSocket客户端库，支持自动重连、心跳检测、消息队列等功能",
+  "type": "module",
+  "main": "./lib/index.js",
+  "module": "./es/index.js",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.js"
+    },
+    "./vue": {
+      "types": "./types/adapters/vue.d.ts",
+      "import": "./es/adapters/vue.js",
+      "require": "./lib/adapters/vue.js"
+    },
+    "./react": {
+      "types": "./types/adapters/react.d.ts",
+      "import": "./es/adapters/react.js",
+      "require": "./lib/adapters/react.js"
+    },
+    "./angular": {
+      "types": "./types/adapters/angular.d.ts",
+      "import": "./es/adapters/angular.js",
+      "require": "./lib/adapters/angular.js"
+    }
+  },
+  "files": [
+    "dist",
+    "es",
+    "lib",
+    "types",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "ldesign-builder",
+    "dev": "ldesign-builder --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "test:performance": "vitest --config vitest.performance.config.ts",
+    "benchmark": "vitest --config vitest.performance.config.ts --reporter=verbose",
+    "test:e2e": "playwright test",
+    "lint": "eslint src --ext .ts,.tsx --fix",
+    "type-check": "tsc --noEmit",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "clean": "rimraf dist es lib types coverage",
+    "prepublishOnly": "pnpm run build && pnpm run test"
+  },
+  "keywords": [
+    "websocket",
+    "client",
+    "reconnect",
+    "heartbeat",
+    "message-queue",
+    "typescript",
+    "vue",
+    "react",
+    "angular",
+    "framework-agnostic",
+    "real-time",
+    "connection-pool",
+    "authentication",
+    "web-worker"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/websocket#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/ldesign.git",
+    "directory": "packages/websocket"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign/ldesign/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "@angular/core": "^12.0.0 || ^13.0.0 || ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0",
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+    "vue": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "@angular/core": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@ldesign/shared": "workspace:^"
+  },
+  "devDependencies": {
+    "@angular/core": "^17.3.12",
+    "@ldesign/builder": "workspace:^",
+    "@playwright/test": "^1.54.1",
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
+    "eslint": "^9.0.0",
+    "happy-dom": "^18.0.1",
+    "react": "^18.0.0",
+    "rimraf": "^5.0.0",
+    "rxjs": "^7.8.2",
+    "typescript": "^5.6.0",
+    "vitepress": "^1.6.4",
+    "vitest": "^3.2.4",
+    "vue": "^3.5.18"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
