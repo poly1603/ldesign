@@ -29,7 +29,6 @@ const {
   isDesktop, // 是否桌面设备
   isTouchDevice, // 是否触摸设备
   refresh, // 刷新设备信息
-  detector, // 检测器实例
 } = useDevice()
 </script>
 
@@ -57,9 +56,9 @@ const {
   networkInfo, // 网络信息
   isOnline, // 是否在线
   connectionType, // 连接类型
-  downlink, // 下载速度
-  rtt, // 往返时间
-  saveData, // 数据节省模式
+  isLoaded,
+  loadModule,
+  unloadModule,
 } = useNetwork()
 </script>
 
@@ -67,8 +66,8 @@ const {
   <div>
     <p>网络状态: {{ isOnline ? '在线' : '离线' }}</p>
     <p>连接类型: {{ connectionType }}</p>
-    <p>下载速度: {{ downlink }}Mbps</p>
-    <p>延迟: {{ rtt }}ms</p>
+    <p v-if="networkInfo?.downlink">下载速度: {{ networkInfo.downlink }}Mbps</p>
+    <p v-if="networkInfo?.rtt">延迟: {{ networkInfo.rtt }}ms</p>
   </div>
 </template>
 ```

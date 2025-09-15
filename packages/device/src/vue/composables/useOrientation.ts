@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import type { DeviceDetectorOptions, DeviceInfo, Orientation } from '../../types'
+import type { DeviceDetectorOptions, DeviceInfo, Orientation, OrientationLockType } from '../../types'
 import { computed, onMounted, onUnmounted, readonly, ref } from 'vue'
 import { DeviceDetector } from '../../core/DeviceDetector'
 
@@ -97,8 +97,8 @@ export function useOrientation(options: DeviceDetectorOptions = {}) {
    */
   const lockOrientation = async (targetOrientation: OrientationLockType) => {
     try {
-      if (typeof screen !== 'undefined' && screen.orientation && screen.orientation.lock) {
-        await screen.orientation.lock(targetOrientation)
+      if (typeof screen !== 'undefined' && (screen as any).orientation && typeof (screen as any).orientation.lock === 'function') {
+        await (screen as any).orientation.lock(targetOrientation)
         isLocked.value = true
         error.value = null
       } else {
@@ -117,8 +117,8 @@ export function useOrientation(options: DeviceDetectorOptions = {}) {
    */
   const unlockOrientation = () => {
     try {
-      if (typeof screen !== 'undefined' && screen.orientation && screen.orientation.unlock) {
-        screen.orientation.unlock()
+      if (typeof screen !== 'undefined' && (screen as any).orientation && typeof (screen as any).orientation.unlock === 'function') {
+        (screen as any).orientation.unlock()
         isLocked.value = false
         error.value = null
       } else {
@@ -137,8 +137,8 @@ export function useOrientation(options: DeviceDetectorOptions = {}) {
    */
   const isOrientationLockSupported = computed(() => {
     return typeof screen !== 'undefined' && 
-           screen.orientation && 
-           typeof screen.orientation.lock === 'function'
+           (screen as any).orientation && 
+           typeof (screen as any).orientation.lock === 'function'
   })
 
   /**

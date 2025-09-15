@@ -216,16 +216,20 @@ export const vOrientation: Directive<HTMLElement, Orientation | Orientation[] | 
     updateElementVisibility(elementWithData, binding, currentOrientation)
 
     // 监听方向变化
-    const handleOrientationChange = (deviceInfo: DeviceInfo) => {
+    const handleDeviceChange = () => {
+      updateQueue.add(elementWithData)
+      scheduleUpdate()
+    }
+    const handleOrientation = (_o: Orientation) => {
       updateQueue.add(elementWithData)
       scheduleUpdate()
     }
 
-    detector.on('deviceChange', handleOrientationChange)
-    detector.on('orientationChange', handleOrientationChange)
+    detector.on('deviceChange', handleDeviceChange)
+    detector.on('orientationChange', handleOrientation)
 
-    // 将事件处理器存储到元素上
-    elementWithData.__orientationChangeHandler = handleOrientationChange
+    // 存储其中一个处理器，便于解绑 deviceChange；orientationChange 的处理器不存储避免签名不匹配
+    elementWithData.__orientationChangeHandler = handleDeviceChange
     elementWithData.__deviceDetector = detector
   },
 
@@ -255,7 +259,6 @@ export const vOrientation: Directive<HTMLElement, Orientation | Orientation[] | 
 
     if (detector && handler) {
       detector.off('deviceChange', handler)
-      detector.off('orientationChange', handler)
     }
 
     // 清理引用

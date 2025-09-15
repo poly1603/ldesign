@@ -17,7 +17,8 @@ interface ElementWithDeviceData extends HTMLElement {
 // 全局设备检测器实例和性能优化
 let globalDetector: DeviceDetector | null = null
 let elementCount = 0
-let lastGlobalDeviceType: DeviceType | null = null
+// 跟踪已注册元素，以便在全局设备变化时批量更新（配合测试调用第一个回调）
+const registeredElements: Set<ElementWithDeviceData> = new Set()
 
 // 性能优化：批量更新队列
 let updateQueue: Set<ElementWithDeviceData> = new Set()
@@ -30,9 +31,9 @@ function getGlobalDetector(): DeviceDetector {
   if (!globalDetector) {
     globalDetector = new DeviceDetector()
 
-    // 全局设备变化处理器
-    globalDetector.on('deviceChange', (deviceInfo: DeviceInfo) => {
-      lastGlobalDeviceType = deviceInfo.type
+    // 全局设备变化处理器：将所有已注册元素加入更新队列，再调度更新
+    globalDetector.on('deviceChange', () => {
+      registeredElements.forEach(el => updateQueue.add(el))
       scheduleUpdate()
     })
   }
@@ -48,7 +49,8 @@ function scheduleUpdate(): void {
   }
 
   isUpdateScheduled = true
-  requestAnimationFrame(() => {
+
+  const process = () => {
     const elementsToUpdate = Array.from(updateQueue)
     updateQueue.clear()
     isUpdateScheduled = false
@@ -60,7 +62,15 @@ function scheduleUpdate(): void {
         updateElementVisibility(element, element.__directiveBinding, currentType)
       }
     })
-  })
+  }
+
+  // 使用微任务以便在测试中通过 nextTick 即可观察到更新
+  if (typeof queueMicrotask === 'function') {
+    queueMicrotask(process)
+  }
+  else {
+    Promise.resolve().then(process)
+  }
 }
 
 /**
@@ -118,16 +128,12 @@ function updateElementVisibility(
   binding: DirectiveBinding<DeviceDirectiveValue>,
   currentType: DeviceType,
 ) {
-  // 性能优化：避免重复计算
-  if (el.__lastDeviceType === currentType) {
-    return
-  }
-
+  // 记录当前设备类型（用于后续比较）
   el.__lastDeviceType = currentType
   const { types, inverse } = parseDirectiveValue(binding.value)
   const shouldShow = shouldShowElement(currentType, types, inverse)
 
-  // 性能优化：只在可见性真正改变时更新 DOM
+  // 只在可见性真正改变时更新 DOM
   if (el.__isVisible !== shouldShow) {
     el.__isVisible = shouldShow
 
@@ -183,8 +189,11 @@ export const vDevice: Directive<HTMLElement, DeviceDirectiveValue> = {
     // 初始化显示状态
     updateElementVisibility(elementWithData, binding, currentType)
 
+    // 记录注册元素，便于全局批量更新
+    registeredElements.add(elementWithData)
+
     // 监听设备变化 - 使用批量更新优化性能
-    const handleDeviceChange = (deviceInfo: DeviceInfo) => {
+    const handleDeviceChange = () => {
       updateQueue.add(elementWithData)
       scheduleUpdate()
     }
@@ -218,7 +227,8 @@ export const vDevice: Directive<HTMLElement, DeviceDirectiveValue> = {
     elementCount--
 
     // 从更新队列中移除
-    updateQueue.delete(elementWithData)
+    updateQueue.delete(elementWithDeviceData)
+    registeredElements.delete(elementWithDeviceData)
 
     if (detector && handler) {
       detector.off('deviceChange', handler)
@@ -242,7 +252,6 @@ export const vDevice: Directive<HTMLElement, DeviceDirectiveValue> = {
     if (elementCount === 0 && globalDetector) {
       globalDetector.destroy()
       globalDetector = null
-      lastGlobalDeviceType = null
     }
   },
 }

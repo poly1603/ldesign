@@ -1,4 +1,12 @@
-# API 参考
+# API 参考总览
+
+欢迎查阅 @ldesign/device 的 API 参考。本节提供核心类与工具的概览：
+
+- DeviceDetector — 核心设备检测器
+- EventEmitter — 事件系统基类
+- ModuleLoader — 扩展模块加载器
+
+更多详细内容请查看左侧侧边栏的对应页面。
 
 ## DeviceDetector
 

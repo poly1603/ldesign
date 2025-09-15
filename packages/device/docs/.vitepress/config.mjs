@@ -16,6 +16,7 @@ export default defineConfig({
     nav: [
       { text: '指南', link: '/guide/' },
       { text: 'API', link: '/api/' },
+      { text: 'Vue', link: '/vue/' },
       { text: '示例', link: '/examples/' },
       {
         text: '相关链接',
@@ -43,6 +44,8 @@ export default defineConfig({
           items: [
             { text: '设备检测', link: '/guide/device-detection' },
             { text: '事件系统', link: '/guide/events' },
+            { text: '迁移指南', link: '/guide/migration' },
+            { text: '常见问题', link: '/guide/faq' },
           ],
         },
       ],
@@ -52,6 +55,26 @@ export default defineConfig({
           items: [
             { text: 'DeviceDetector', link: '/api/device-detector' },
             { text: 'EventEmitter', link: '/api/event-emitter' },
+            { text: 'ModuleLoader', link: '/api/module-loader' },
+          ],
+        },
+      ],
+      '/vue/': [
+        {
+          text: 'Vue 集成',
+          items: [
+            { text: '概览', link: '/vue/' },
+            { text: '指令详解', link: '/vue/directives' },
+            { text: '组合式 API', link: '/vue/composables' },
+            { text: '插件', link: '/vue/plugin' },
+          ],
+        },
+      ],
+      '/examples/': [
+        {
+          text: '示例',
+          items: [
+            { text: '概览', link: '/examples/' },
           ],
         },
       ],

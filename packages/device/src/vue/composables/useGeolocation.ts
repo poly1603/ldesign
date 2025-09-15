@@ -164,14 +164,16 @@ export function useGeolocation() {
       await loadModule()
     }
 
-    if (!isSupported.value) {
-      throw new Error('Geolocation is not supported')
-    }
-
     isLoading.value = true
     try {
+      if (!isSupported.value) {
+        const err = new Error('Geolocation is not supported')
+        error.value = err.message
+        throw err
+      }
+
       if (geolocationModule && typeof geolocationModule.getCurrentPosition === 'function') {
-        const pos = await geolocationModule.getCurrentPosition()
+        const pos = await geolocationModule.getCurrentPosition(options)
         updatePosition(pos)
       }
     }

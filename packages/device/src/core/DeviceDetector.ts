@@ -75,6 +75,9 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
     lastDetectionDuration: 0,
   }
 
+  // 模块事件桥接的取消订阅器集合
+  private moduleEventUnsubscribers: Map<string, Array<() => void>> = new Map()
+
   /**
    * 构造函数 - 创建设备检测器实例
    *
@@ -83,7 +86,7 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
    * @param options.enableOrientation 是否启用屏幕方向变化监听，默认 true
    * @param options.modules 要加载的扩展模块列表，如 ['network', 'battery', 'geolocation']
    * @param options.breakpoints 设备类型断点配置，用于判断设备类型
-   * @param options.debounceTime 事件防抖时间（毫秒），默认 100ms
+   * @param options.debounceDelay 事件防抖时间（毫秒），默认 100ms
    *
    * @example
    * ```typescript
@@ -99,7 +102,7 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
    *     mobile: 768,
    *     tablet: 1024
    *   },
-   *   debounceTime: 200
+   *   debounceDelay: 200
    * })
    * ```
    */
@@ -219,14 +222,57 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
     if (this.isDestroyed) {
       throw new Error('DeviceDetector has been destroyed')
     }
-    return this.moduleLoader.loadModuleInstance<T>(name)
+
+    const instance = await this.moduleLoader.loadModuleInstance<T>(name)
+
+    // 桥接模块事件到 DeviceDetector，自适应各模块事件名称
+    try {
+      const unsubs: Array<() => void> = []
+      const anyInstance = instance as any
+      const hasOn = typeof anyInstance.on === 'function'
+      const hasOff = typeof anyInstance.off === 'function'
+
+      if (hasOn && hasOff) {
+        if (name === 'network') {
+          const handler = (info: unknown) => this.emit('networkChange', info as any)
+          anyInstance.on('networkChange', handler)
+          unsubs.push(() => anyInstance.off('networkChange', handler))
+        }
+        if (name === 'battery') {
+          const handler = (info: unknown) => this.emit('batteryChange', info as any)
+          anyInstance.on('batteryChange', handler)
+          unsubs.push(() => anyInstance.off('batteryChange', handler))
+        }
+        if (name === 'geolocation') {
+          const handler = (info: unknown) => this.emit('positionChange', info as any)
+          anyInstance.on('positionChange', handler)
+          unsubs.push(() => anyInstance.off('positionChange', handler))
+        }
+      }
+
+      if (unsubs.length > 0) {
+        this.moduleEventUnsubscribers.set(name, unsubs)
+      }
+    }
+    catch (e) {
+      // 忽略桥接错误，不影响模块加载
+    }
+
+    return instance
   }
 
   /**
    * 卸载扩展模块
    */
   async unloadModule(name: string): Promise<void> {
-    return this.moduleLoader.unload(name)
+    const unsubs = this.moduleEventUnsubscribers.get(name)
+    if (unsubs && unsubs.length) {
+      unsubs.forEach(fn => {
+        try { fn() } catch {}
+      })
+      this.moduleEventUnsubscribers.delete(name)
+    }
+    await this.moduleLoader.unload(name)
   }
 
   /**
@@ -254,6 +300,14 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
 
     // 移除事件监听器
     this.removeEventListeners()
+
+    // 先清理模块事件桥接
+    this.moduleEventUnsubscribers.forEach((unsubs) => {
+      unsubs.forEach(fn => {
+        try { fn() } catch {}
+      })
+    })
+    this.moduleEventUnsubscribers.clear()
 
     // 卸载所有模块
     await this.moduleLoader.unloadAll()
@@ -291,10 +345,10 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
 
     // 如果错误次数过多，触发错误事件
     if (this.errorCount >= this.maxErrors) {
-      this.emit('error' as keyof DeviceDetectorEvents, {
+      this.emit('error', {
         message: 'Too many detection errors',
         count: this.errorCount,
-        lastError: error,
+        lastError: error as unknown,
       } as any)
     }
   }
@@ -424,7 +478,7 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
         if (!this.isDestroyed) {
           this.handleDeviceChange()
         }
-      }, this.options.debounceDelay)
+      }, this.options.debounceDelay ?? 100)
 
       window.addEventListener('resize', this.resizeHandler, { passive: true })
     }
@@ -435,7 +489,7 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
         if (!this.isDestroyed) {
           this.handleDeviceChange()
         }
-      }, this.options.debounceDelay)
+      }, this.options.debounceDelay ?? 100)
 
       // 监听 orientationchange 事件
       window.addEventListener('orientationchange', this.orientationHandler, {

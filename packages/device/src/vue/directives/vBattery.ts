@@ -1,5 +1,5 @@
 import type { Directive, DirectiveBinding } from 'vue'
-import type { BatteryInfo } from '../../types'
+import type { BatteryInfo, BatteryModule } from '../../types'
 import { DeviceDetector } from '../../core/DeviceDetector'
 
 interface ElementWithBatteryData extends HTMLElement {
@@ -37,7 +37,7 @@ function getGlobalDetector(): DeviceDetector {
     })
 
     // 初始化电池模块
-    globalDetector.loadModule('battery').catch(error => {
+    globalDetector.loadModule<import('../../types').BatteryModule>('battery').catch(error => {
       console.warn('Failed to load battery module:', error)
     })
   }
@@ -62,7 +62,7 @@ function scheduleUpdate(): void {
       if (element.isConnected && element.__directiveBinding) {
         const detector = getGlobalDetector()
         try {
-          const batteryModule = await detector.loadModule('battery')
+          const batteryModule = await detector.loadModule<BatteryModule>('battery')
           if (batteryModule && typeof batteryModule.getData === 'function') {
             const batteryInfo = batteryModule.getData()
             updateElementVisibility(element, element.__directiveBinding, batteryInfo)
@@ -261,26 +261,26 @@ export const vBattery: Directive<HTMLElement, BatteryCondition | BatteryDirectiv
 
     try {
       // 加载电池模块并获取初始状态
-      const batteryModule = await detector.loadModule('battery')
-      if (batteryModule && typeof batteryModule.getData === 'function') {
-        const batteryInfo = batteryModule.getData()
-        updateElementVisibility(elementWithData, binding, batteryInfo)
+      const batteryModule = await detector.loadModule<BatteryModule>('battery')
+        if (batteryModule && typeof batteryModule.getData === 'function') {
+          const batteryInfo = batteryModule.getData()
+          updateElementVisibility(elementWithData, binding, batteryInfo)
 
-        // 监听电池变化
-        const handleBatteryChange = (newBatteryInfo: BatteryInfo) => {
-          updateQueue.add(elementWithData)
-          scheduleUpdate()
+          // 监听电池变化
+          const handleBatteryChange = () => {
+            updateQueue.add(elementWithData)
+            scheduleUpdate()
+          }
+
+          // 如果电池模块支持事件监听
+          const maybeOn = (batteryModule as any).on as ((...args: any[]) => any) | undefined
+          if (typeof maybeOn === 'function') {
+            maybeOn.call(batteryModule, 'batteryChange', handleBatteryChange)
+            elementWithData.__batteryChangeHandler = handleBatteryChange
+          }
+
+          elementWithData.__deviceDetector = detector
         }
-
-        // 如果电池模块支持事件监听
-        if (typeof batteryModule.on === 'function') {
-          batteryModule.on('batteryChange', handleBatteryChange)
-        }
-
-        // 将事件处理器存储到元素上
-        elementWithData.__batteryChangeHandler = handleBatteryChange
-        elementWithData.__deviceDetector = detector
-      }
     } catch (error) {
       console.warn('Failed to initialize battery directive:', error)
     }
@@ -296,8 +296,10 @@ export const vBattery: Directive<HTMLElement, BatteryCondition | BatteryDirectiv
     if (detector) {
       detector.loadModule('battery').then(batteryModule => {
         if (batteryModule && typeof batteryModule.getData === 'function') {
-          const batteryInfo = batteryModule.getData()
-          updateElementVisibility(elementWithData, binding, batteryInfo)
+          const batteryInfo = batteryModule.getData() as BatteryInfo
+          if (batteryInfo) {
+            updateElementVisibility(elementWithData, binding, batteryInfo)
+          }
         }
       }).catch(error => {
         console.warn('Failed to update battery directive:', error)
@@ -318,9 +320,10 @@ export const vBattery: Directive<HTMLElement, BatteryCondition | BatteryDirectiv
 
     if (detector && handler) {
       // 如果电池模块支持事件移除
-      detector.loadModule('battery').then(batteryModule => {
-        if (batteryModule && typeof batteryModule.off === 'function') {
-          batteryModule.off('batteryChange', handler)
+      detector.loadModule<BatteryModule>('battery').then(batteryModule => {
+        const maybeOff = (batteryModule as any).off as ((...args: any[]) => any) | undefined
+        if (batteryModule && typeof maybeOff === 'function' && handler) {
+          maybeOff.call(batteryModule, 'batteryChange', handler)
         }
       }).catch(() => {
         // 忽略错误

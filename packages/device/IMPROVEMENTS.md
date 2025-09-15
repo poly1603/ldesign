@@ -191,3 +191,42 @@ if (deviceInfo.features.webgl) {
 - API 文档：添加新模块和工具的使用说明
 - 示例代码：提供性能优化和媒体设备的示例
 - 迁移指南：说明类型变更和新功能的使用方式
+
+## 📝 注释规范与计划
+
+为确保代码具备长期可维护性与文档可生成性，采用 TSDoc 规范（与 VSCode、typedoc 等工具兼容）。
+
+### 注释风格
+- 统一使用多行注释块，位于导出类、函数、类型前
+- 保持中文为主、必要处附英文术语
+- 标签建议：
+  - `@public | @internal` 标注公开性
+  - `@param` 参数说明，包含类型与边界
+  - `@returns` 返回值说明，注明不可变副本等语义
+  - `@example` 至少 1 个典型示例
+  - `@throws` 说明可能抛出的错误（如权限拒绝）
+  - `@remarks` 复杂行为或跨平台差异
+
+### 覆盖清单（第一期）
+- [x] core/EventEmitter.ts：类与核心方法
+- [x] core/DeviceDetector.ts：公开方法与事件说明（现存示例基础上补 `@returns` 等标签）
+- [x] core/ModuleLoader.ts：load/unload/getLoadedModules 语义
+- [x] modules/NetworkModule.ts：getData 字段含义、事件
+- [x] modules/BatteryModule.ts：状态字段与兼容性
+- [x] modules/GeolocationModule.ts：权限、超时、事件
+- [x] modules/MediaModule.ts：权限、设备枚举、约束
+- [x] vue/composables/*：返回对象字段与生命周期说明
+- [x] vue/directives/*：绑定值结构、回调参数
+- [x] utils/*：SSR 差异、性能工具返回对象（含 cancel）
+
+### 生成与校验
+- 可后续接入 typedoc 生成 API 文档（非必须）
+- PR 审查项：新增/修改公开 API 必须补齐 TSDoc 注释、示例
+- 统一术语表：
+  - deviceChange / orientationChange / resize
+  - networkChange / batteryChange / positionChange
+
+### 后续改进（第二期）
+- 在 docs/api 下按类拆分更细页面（Event、Module 专章）
+- 添加“常见错误码与处理指引”页（权限/超时/不支持）
+- 为 Engine 插件单独提供运维与调试章节（logger、state、hooks）

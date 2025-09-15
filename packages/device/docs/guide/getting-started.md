@@ -83,10 +83,6 @@ detector.on('deviceChange', (deviceInfo) => {
   console.log('设备信息已更新:', deviceInfo)
 })
 
-// 监听设备类型变化
-detector.on('deviceTypeChange', (deviceType) => {
-  console.log('设备类型已变化:', deviceType)
-})
 
 // 监听屏幕方向变化
 detector.on('orientationChange', (orientation) => {
@@ -128,13 +124,12 @@ import { useDevice } from '@ldesign/device/vue'
 const {
   deviceType,
   orientation,
-  width,
-  height,
-  pixelRatio,
+  deviceInfo,
   isMobile,
   isTablet,
   isDesktop,
   isTouchDevice,
+  refresh,
 } = useDevice()
 </script>
 
@@ -143,8 +138,8 @@ const {
     <h2>设备信息</h2>
     <p>设备类型: {{ deviceType }}</p>
     <p>屏幕方向: {{ orientation }}</p>
-    <p>屏幕尺寸: {{ width }} x {{ height }}</p>
-    <p>像素比: {{ pixelRatio }}</p>
+<p>屏幕尺寸: {{ deviceInfo.screen.width }} x {{ deviceInfo.screen.height }}</p>
+    <p>像素比: {{ deviceInfo.pixelRatio }}</p>
 
     <div v-if="isMobile">
       <h3>移动设备专用内容</h3>
@@ -178,15 +173,16 @@ const app = createApp(App)
 // 安装插件
 app.use(DevicePlugin, {
   // 全局属性名（可选）
-  globalProperty: '$device',
+  globalPropertyName: '$device',
 
   // 设备检测器配置（可选）
-  detectorOptions: {
-    breakpoints: {
-      mobile: 600,
-      tablet: 1024,
-    },
+  breakpoints: {
+    mobile: 600,
+    tablet: 1024,
   },
+  debounceDelay: 250,
+  enableResize: true,
+  enableOrientation: true,
 })
 
 app.mount('#app')
@@ -232,51 +228,47 @@ detector.on('deviceChange', (info) => {
 ### 网络状态检测
 
 ```typescript
-import { NetworkModule } from '@ldesign/device'
+import type { NetworkModule } from '@ldesign/device'
 
 // 加载网络模块
-await detector.loadModule('network', NetworkModule)
+const networkModule = await detector.loadModule<NetworkModule>('network')
 
 // 获取网络信息
-const networkModule = detector.getModule('network')
-const networkInfo = networkModule?.getNetworkInfo()
+const networkInfo = networkModule.getData()
 
-console.log('网络类型:', networkInfo?.type)
-console.log('在线状态:', networkInfo?.isOnline)
-console.log('下载速度:', networkInfo?.downlink)
+console.log('网络类型:', networkInfo.type)
+console.log('在线状态:', networkInfo.status === 'online')
+console.log('下载速度:', networkInfo.downlink)
 ```
 
 ### 电池状态检测
 
 ```typescript
-import { BatteryModule } from '@ldesign/device'
+import type { BatteryModule } from '@ldesign/device'
 
 // 加载电池模块
-await detector.loadModule('battery', BatteryModule)
+const batteryModule = await detector.loadModule<BatteryModule>('battery')
 
 // 获取电池信息
-const batteryModule = detector.getModule('battery')
-const batteryInfo = batteryModule?.getBatteryInfo()
+const batteryInfo = batteryModule.getData()
 
-console.log('电池电量:', batteryInfo?.level)
-console.log('充电状态:', batteryInfo?.charging)
+console.log('电池电量:', batteryInfo.level)
+console.log('充电状态:', batteryInfo.charging)
 ```
 
 ### 地理位置检测
 
 ```typescript
-import { GeolocationModule } from '@ldesign/device'
+import type { GeolocationModule } from '@ldesign/device'
 
 // 加载地理位置模块
-await detector.loadModule('geolocation', GeolocationModule)
+const geolocationModule = await detector.loadModule<GeolocationModule>('geolocation')
 
 // 获取当前位置
-const geolocationModule = detector.getModule('geolocation')
-await geolocationModule?.getCurrentPosition()
+const position = await geolocationModule.getCurrentPosition()
 
-const position = geolocationModule?.getPosition()
-console.log('纬度:', position?.latitude)
-console.log('经度:', position?.longitude)
+console.log('纬度:', position.latitude)
+console.log('经度:', position.longitude)
 ```
 
 ## 清理资源
@@ -294,7 +286,7 @@ await detector.destroy()
 
 - 查看 [API 文档](/api/) 了解更多功能
 - 浏览 [示例](/examples/) 学习实际应用
-- 了解 [Vue 集成](/guide/vue-composables) 的更多用法
-- 探索 [扩展模块](/guide/modules) 的强大功能
+- 了解 [Vue 集成](/vue/) 的更多用法
+- 查看 [指令详解](/vue/directives) 与 [组合式 API](/vue/composables)
 
 如果遇到问题，欢迎查看我们的 [GitHub 仓库](https://github.com/ldesign-org/device) 或提交 Issue。

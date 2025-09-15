@@ -2,15 +2,12 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "types": ["vitest/globals", "node"],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "include": [
-    "src/**/*",
-    "__tests__/**/*",
-    "tests/**/*",
-    "test/**/*",
-    "e2e/**/*",
-    "examples/**/*"
+    "src/**/*"
   ],
-  "exclude": ["dist", "cjs", "esm", "types"]
+  "exclude": ["dist", "cjs", "esm", "types", "__tests__", "tests", "test", "e2e", "examples"]
 }

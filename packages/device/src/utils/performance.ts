@@ -14,11 +14,19 @@
  * @param immediate 是否立即执行
  * @returns 防抖后的函数
  */
+export type DebouncedFunction<T extends (...args: any[]) => any> = ((...args: Parameters<T>) => void) & {
+  cancel: () => void
+}
+
+export type ThrottledFunction<T extends (...args: any[]) => any> = ((...args: Parameters<T>) => void) & {
+  cancel: () => void
+}
+
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number,
   immediate = false,
-): (...args: Parameters<T>) => void {
+): DebouncedFunction<T> {
   let timeout: ReturnType<typeof setTimeout> | null = null
   let result: ReturnType<T>
 
@@ -55,7 +63,7 @@ export function debounce<T extends (...args: any[]) => any>(
     }
   }
 
-  return debounced
+  return debounced as DebouncedFunction<T>
 }
 
 /**
@@ -72,7 +80,7 @@ export function throttle<T extends (...args: any[]) => any>(
   func: T,
   wait: number,
   options: { leading?: boolean; trailing?: boolean } = {},
-): (...args: Parameters<T>) => void {
+): ThrottledFunction<T> {
   let timeout: ReturnType<typeof setTimeout> | null = null
   let context: any
   let args: Parameters<T> | null = null
@@ -125,7 +133,7 @@ export function throttle<T extends (...args: any[]) => any>(
     timeout = context = args = null
   }
 
-  return throttled
+  return throttled as ThrottledFunction<T>
 }
 
 /**
@@ -389,7 +397,7 @@ export class LazyLoader<T = any> {
  */
 export function rafThrottle<T extends (...args: any[]) => any>(
   callback: T,
-): (...args: Parameters<T>) => void {
+): ThrottledFunction<T> {
   let requestId: number | null = null
 
   const throttled = (...args: Parameters<T>) => {
@@ -409,7 +417,7 @@ export function rafThrottle<T extends (...args: any[]) => any>(
     }
   }
 
-  return throttled
+  return throttled as ThrottledFunction<T>
 }
 
 /**

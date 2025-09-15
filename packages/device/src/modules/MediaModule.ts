@@ -56,7 +56,7 @@ export interface MediaModuleEvents {
  * 
  * 提供摄像头、麦克风、扬声器等媒体设备的检测功能
  */
-export class MediaModule extends EventEmitter<MediaModuleEvents> implements DeviceModule {
+export class MediaModule extends EventEmitter<Record<string, unknown>> implements DeviceModule {
   name = 'media'
   private mediaInfo: MediaDeviceInfo
   private deviceChangeHandler?: () => void

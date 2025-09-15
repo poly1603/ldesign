@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import type { BatteryInfo, BatteryModule } from '../../types'
-import { onUnmounted, readonly, ref } from 'vue'
+import { computed, onUnmounted, readonly, ref } from 'vue'
 import { DeviceDetector } from '../../core/DeviceDetector'
 
 /**
@@ -89,17 +89,19 @@ export function useBattery() {
         isLoaded.value = true
         error.value = null
 
-        // 监听电池状态变化
-        const batteryChangeHandler = (newInfo: BatteryInfo) => {
-          updateBatteryInfo(newInfo)
+        // 监听电池状态变化（如模块支持事件）
+        const maybeOn = (batteryModule as any).on as ((...args: any[]) => any) | undefined
+        const maybeOff = (batteryModule as any).off as ((...args: any[]) => any) | undefined
+        if (typeof maybeOn === 'function' && typeof maybeOff === 'function') {
+          const batteryChangeHandler = (newInfo: BatteryInfo) => {
+            updateBatteryInfo(newInfo)
+          }
+          maybeOn.call(batteryModule, 'batteryChange', batteryChangeHandler)
+          // 保存清理函数
+          cleanupFunctions.push(
+            () => maybeOff.call(batteryModule, 'batteryChange', batteryChangeHandler)
+          )
         }
-
-        batteryModule.on('batteryChange', batteryChangeHandler)
-
-        // 保存清理函数
-        cleanupFunctions.push(
-          () => batteryModule?.off('batteryChange', batteryChangeHandler)
-        )
       }
     }
     catch (err) {
@@ -158,9 +160,9 @@ export function useBattery() {
   }
 
   // 计算属性
-  const batteryPercentage = readonly(ref(() => Math.round(batteryLevel.value * 100)))
-  const isLowBattery = readonly(ref(() => batteryLevel.value < 0.2))
-  const isCriticalBattery = readonly(ref(() => batteryLevel.value < 0.1))
+  const batteryPercentage = readonly(computed(() => Math.round(batteryLevel.value * 100)))
+  const isLowBattery = readonly(computed(() => batteryLevel.value < 0.2))
+  const isCriticalBattery = readonly(computed(() => batteryLevel.value < 0.1))
 
   onUnmounted(() => {
     destroyBattery()

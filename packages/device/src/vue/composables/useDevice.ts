@@ -5,6 +5,9 @@ import type {
   DeviceType,
   Orientation,
   UseDeviceReturn,
+  NetworkInfo,
+  NetworkModule,
+  NetworkType,
 } from '../../types'
 import { computed, onMounted, onUnmounted, readonly, ref } from 'vue'
 import { DeviceDetector } from '../../core/DeviceDetector'
@@ -216,7 +219,7 @@ export function useDevice(
 export function useNetwork() {
   const networkInfo = ref<NetworkInfo | null>(null)
   const isOnline = ref(true)
-  const connectionType = ref<string>('unknown')
+  const connectionType = ref<NetworkType>('unknown')
   const isLoaded = ref(false)
 
   let detector: DeviceDetector | null = null
@@ -272,3 +275,7 @@ export function useNetwork() {
     unloadModule,
   }
 }
+
+// 为测试兼容性导出其他组合式 API（从此文件重导出）
+export { useBattery } from './useBattery'
+export { useGeolocation } from './useGeolocation'

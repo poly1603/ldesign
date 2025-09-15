@@ -110,6 +110,7 @@ if ('ontouchstart' in window) {
 // 模拟网络连接 API
 Object.defineProperty(navigator, 'connection', {
   writable: true,
+  configurable: true,
   value: {
     effectiveType: '4g',
     downlink: 10,

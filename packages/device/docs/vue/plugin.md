@@ -351,7 +351,6 @@ declare module '@vue/runtime-core' {
 
 ## 🔗 相关链接
 
-- [组合式 API](./composables.md) - 使用组合式 API
-- [自定义指令](./directives.md) - 使用自定义指令
-- [Vue 组件](./components.md) - 使用预制组件
-- [API 参考](../api/reference.md) - 完整的 API 文档
+- [组合式 API](/vue/composables) - 使用组合式 API
+- [自定义指令](/vue/directives) - 使用自定义指令
+- [API 参考](/api/) - 完整的 API 文档

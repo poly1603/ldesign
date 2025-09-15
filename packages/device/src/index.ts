@@ -10,6 +10,7 @@ export { GeolocationModule } from './modules/GeolocationModule'
 
 // 扩展模块
 export { NetworkModule } from './modules/NetworkModule'
+export { MediaModule } from './modules/MediaModule'
 
 // 类型定义
 export type {
@@ -27,6 +28,8 @@ export type {
   NetworkType,
   Orientation,
 } from './types'
+
+export type { MediaDeviceInfo, MediaDeviceItem, MediaModuleEvents } from './modules/MediaModule'
 
 // 工具函数
 export {

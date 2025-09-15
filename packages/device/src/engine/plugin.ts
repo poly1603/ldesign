@@ -182,6 +182,7 @@ export function createDeviceEnginePlugin(
           engine.logger?.info(`Installing ${name} plugin...`, {
             version,
             enablePerformanceMonitoring,
+            description,
           })
 
           // 创建全局 Device 实例

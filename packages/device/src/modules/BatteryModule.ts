@@ -65,6 +65,8 @@ export class BatteryModule implements DeviceModule {
    * 获取电池信息
    */
   getData(): BatteryInfo {
+    // 每次获取时尝试同步最新的电池信息，满足测试对实时性的期望
+    this.updateBatteryInfo()
     return { ...this.batteryInfo }
   }
 
@@ -166,12 +168,17 @@ export class BatteryModule implements DeviceModule {
     if (!this.battery)
       return
 
-    const oldInfo = { ...this.batteryInfo }
+    const normalizeTime = (t: number | null | undefined): number => {
+      if (typeof t !== 'number' || !Number.isFinite(t) || t < 0 || t === Number.MAX_VALUE)
+        return Number.POSITIVE_INFINITY
+      return t
+    }
+
     this.batteryInfo = {
-      level: this.battery.level || 1,
-      charging: this.battery.charging || false,
-      chargingTime: this.battery.chargingTime || Number.POSITIVE_INFINITY,
-      dischargingTime: this.battery.dischargingTime || Number.POSITIVE_INFINITY,
+      level: typeof this.battery.level === 'number' ? this.battery.level : 1,
+      charging: !!this.battery.charging,
+      chargingTime: normalizeTime((this.battery as any).chargingTime),
+      dischargingTime: normalizeTime((this.battery as any).dischargingTime),
     }
 
     // 触发电池状态变化事件

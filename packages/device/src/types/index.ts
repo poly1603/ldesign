@@ -139,13 +139,15 @@ export interface GeolocationInfo {
   /** 精度（米） */
   accuracy: number
   /** 海拔（米） */
-  altitude?: number
+  altitude: number | null
   /** 海拔精度（米） */
-  altitudeAccuracy?: number
+  altitudeAccuracy: number | null
   /** 方向（度） */
-  heading?: number
+  heading: number | null
   /** 速度（米/秒） */
-  speed?: number
+  speed: number | null
+  /** 时间戳（毫秒） */
+  timestamp?: number
 }
 
 /**
@@ -162,6 +164,10 @@ export interface DeviceDetectorEvents extends Record<string, unknown> {
   resize: { width: number; height: number }
   networkChange: NetworkInfo
   batteryChange: BatteryInfo
+  /** 地理位置变化（来自 geolocation 模块的桥接事件） */
+  positionChange: GeolocationInfo
+  /** 检测错误事件（内部错误过多时触发） */
+  error: { message: string; count: number; lastError: unknown }
 }
 
 /**
@@ -171,9 +177,11 @@ export interface ModuleLoader {
   /** 加载模块 */
   load: <T = any>(name: string) => Promise<T>
   /** 卸载模块 */
-  unload: (name: string) => void
+  unload: (name: string) => Promise<void>
   /** 检查模块是否已加载 */
   isLoaded: (name: string) => boolean
+  /** 获取已加载的模块名称 */
+  getLoadedModules?: () => string[]
 }
 
 /**
@@ -188,12 +196,6 @@ export interface DeviceModule {
   destroy: () => Promise<void> | void
   /** 获取模块数据 */
   getData: () => unknown
-  /** 添加事件监听器 */
-  on?: (event: string, listener: EventListener) => void
-  /** 移除事件监听器 */
-  off?: (event: string, listener: EventListener) => void
-  /** 触发事件 */
-  emit?: (event: string, data?: any) => void
 }
 
 /**

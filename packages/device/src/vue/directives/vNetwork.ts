@@ -4,6 +4,7 @@ import { DeviceDetector } from '../../core/DeviceDetector'
 
 interface ElementWithNetworkData extends HTMLElement {
   __networkChangeHandler?: (networkInfo: NetworkInfo) => void
+  __deviceChangeHandler?: () => void
   __deviceDetector?: DeviceDetector
   __lastNetworkStatus?: NetworkStatus
   __isVisible?: boolean
@@ -59,7 +60,7 @@ function scheduleUpdate(): void {
       if (element.isConnected && element.__directiveBinding) {
         const detector = getGlobalDetector()
         try {
-          const networkModule = await detector.loadModule('network')
+          const networkModule = await detector.loadModule<import('../../types').NetworkModule>('network')
           if (networkModule && typeof networkModule.getData === 'function') {
             const networkInfo = networkModule.getData()
             updateElementVisibility(element, element.__directiveBinding, networkInfo)
@@ -223,7 +224,7 @@ export const vNetwork: Directive<HTMLElement, NetworkStatus | NetworkStatus[] | 
 
     try {
       // 加载网络模块并获取初始状态
-      const networkModule = await detector.loadModule('network')
+      const networkModule = await detector.loadModule<import('../../types').NetworkModule>('network')
       if (networkModule && typeof networkModule.getData === 'function') {
         const networkInfo = networkModule.getData()
         updateElementVisibility(elementWithData, binding, networkInfo)
@@ -235,12 +236,13 @@ export const vNetwork: Directive<HTMLElement, NetworkStatus | NetworkStatus[] | 
         }
 
         // 如果网络模块支持事件监听
-        if (typeof networkModule.on === 'function') {
-          networkModule.on('networkChange', handleNetworkChange)
+        const maybeOn2 = (networkModule as any).on as ((...args: any[]) => any) | undefined
+        if (typeof maybeOn2 === 'function') {
+          maybeOn2.call(networkModule, 'networkChange', handleNetworkChange)
         }
 
         // 监听全局设备变化（可能包含网络信息）
-        const handleDeviceChange = (deviceInfo: DeviceInfo) => {
+        const handleDeviceChange = () => {
           updateQueue.add(elementWithData)
           scheduleUpdate()
         }
@@ -249,6 +251,7 @@ export const vNetwork: Directive<HTMLElement, NetworkStatus | NetworkStatus[] | 
 
         // 将事件处理器存储到元素上
         elementWithData.__networkChangeHandler = handleNetworkChange
+        elementWithData.__deviceChangeHandler = handleDeviceChange
         elementWithData.__deviceDetector = detector
       }
     } catch (error) {
@@ -266,8 +269,10 @@ export const vNetwork: Directive<HTMLElement, NetworkStatus | NetworkStatus[] | 
     if (detector) {
       detector.loadModule('network').then(networkModule => {
         if (networkModule && typeof networkModule.getData === 'function') {
-          const networkInfo = networkModule.getData()
-          updateElementVisibility(elementWithData, binding, networkInfo)
+          const networkInfo = networkModule.getData() as NetworkInfo
+          if (networkInfo) {
+            updateElementVisibility(elementWithData, binding, networkInfo)
+          }
         }
       }).catch(error => {
         console.warn('Failed to update network directive:', error)
@@ -278,7 +283,8 @@ export const vNetwork: Directive<HTMLElement, NetworkStatus | NetworkStatus[] | 
   unmounted(el) {
     const elementWithData = el as ElementWithNetworkData
     const detector = elementWithData.__deviceDetector
-    const handler = elementWithData.__networkChangeHandler
+    const networkHandler = elementWithData.__networkChangeHandler
+    const deviceHandler = elementWithData.__deviceChangeHandler
 
     // 减少元素计数
     elementCount--
@@ -286,21 +292,24 @@ export const vNetwork: Directive<HTMLElement, NetworkStatus | NetworkStatus[] | 
     // 从更新队列中移除
     updateQueue.delete(elementWithData)
 
-    if (detector && handler) {
-      detector.off('deviceChange', handler)
-      
-      // 如果网络模块支持事件移除
-      detector.loadModule('network').then(networkModule => {
-        if (networkModule && typeof networkModule.off === 'function') {
-          networkModule.off('networkChange', handler)
-        }
-      }).catch(() => {
-        // 忽略错误
-      })
+    if (detector) {
+      if (deviceHandler) {
+        detector.off('deviceChange', deviceHandler)
+      }
+      if (networkHandler) {
+        detector.loadModule<import('../../types').NetworkModule>('network').then(networkModule => {
+          if (networkModule && typeof (networkModule as any).off === 'function') {
+            (networkModule as any).off('networkChange', networkHandler)
+          }
+        }).catch(() => {
+          // 忽略错误
+        })
+      }
     }
 
     // 清理引用
     delete elementWithData.__networkChangeHandler
+    delete elementWithData.__deviceChangeHandler
     delete elementWithData.__deviceDetector
     delete elementWithData.__lastNetworkStatus
     delete elementWithData.__isVisible

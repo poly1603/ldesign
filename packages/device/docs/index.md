@@ -107,21 +107,22 @@ const { deviceType, orientation, isMobile, isTablet, isDesktop } = useDevice()
 ### 扩展功能
 
 ```typescript
-import { BatteryModule, DeviceDetector, NetworkModule } from '@ldesign/device'
+import { DeviceDetector } from '@ldesign/device'
+import type { NetworkModule, BatteryModule } from '@ldesign/device'
 
 const detector = new DeviceDetector()
 
 // 加载网络模块
-await detector.loadModule('network', NetworkModule)
-const networkInfo = detector.getModule('network')?.getNetworkInfo()
-console.log('网络类型:', networkInfo?.type)
-console.log('在线状态:', networkInfo?.isOnline)
+const network = await detector.loadModule<NetworkModule>('network')
+const networkInfo = network.getData()
+console.log('网络类型:', networkInfo.type)
+console.log('在线状态:', networkInfo.status === 'online')
 
-// 加载电池模块
-await detector.loadModule('battery', BatteryModule)
-const batteryInfo = detector.getModule('battery')?.getBatteryInfo()
-console.log('电池电量:', batteryInfo?.level)
-console.log('充电状态:', batteryInfo?.charging)
+// 加载电池模块（如设备支持）
+const battery = await detector.loadModule<BatteryModule>('battery')
+const batteryInfo = battery.getData()
+console.log('电池电量:', batteryInfo.level)
+console.log('充电状态:', batteryInfo.charging)
 ```
 
 ## 为什么选择 @ldesign/device？
