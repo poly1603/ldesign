@@ -4,11 +4,7 @@ export default defineConfig({
   input: 'src/index.ts',
   output: {
     format: ['esm', 'cjs', 'umd'],
-    dir: {
-      esm: 'es',
-      cjs: 'lib',
-      umd: 'dist'
-    }
+    dir: 'dist'
   },
   external: ['react', 'react-dom'],
   dts: true,
