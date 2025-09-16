@@ -40,7 +40,7 @@
     "package.json"
   ],
   "scripts": {
-    "build": "ldesign-builder build -f esm,cjs,umd",
+    "build": "ldesign-builder build",
     "build:ldesign": "node scripts/build-with-ldesign.js",
     "build:fixed": "node scripts/build-fixed.js",
     "build:final": "node scripts/build-final.js",
@@ -52,7 +52,7 @@
     "build:legacy": "node scripts/build-fixed.js",
     "build:test": "node scripts/test-build.js",
     "build:watch": "ldesign-builder build --watch",
-    "dev": "rollup -c -w",
+    "dev": "ldesign-builder watch",
     "type-check": "vue-tsc --noEmit",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",

@@ -17,8 +17,17 @@ function pascalCase(name: string): string {
 }
 
 const pkg: any = readPackage()
-const external: string[] = Object.keys(pkg.peerDependencies || {})
-const knownGlobals: Record<string, string> = { vue: 'Vue', react: 'React', 'react-dom': 'ReactDOM' }
+const external: string[] = [
+  ...Object.keys(pkg.peerDependencies || {}),
+  ...Object.keys(pkg.dependencies || {})
+]
+const knownGlobals: Record<string, string> = {
+  vue: 'Vue',
+  react: 'React',
+  'react-dom': 'ReactDOM',
+  'lodash-es': '_',
+  'raf': 'raf'
+}
 const umdGlobals = external.reduce((acc, dep) => {
   acc[dep] = knownGlobals[dep] || pascalCase(dep)
   return acc
@@ -31,9 +40,27 @@ export default defineConfig({
   minify: false,
   external,
   output: {
-    esm: true,
-    cjs: true,
-    umd: Object.keys(umdGlobals).length ? { globals: umdGlobals } : true,
+    esm: {
+      dir: 'es',
+      format: 'esm',
+      preserveStructure: true,
+      dts: true,
+      input: ['src/**/*.ts', 'src/**/*.vue', '!src/index-lib.ts']
+    },
+    cjs: {
+      dir: 'lib',
+      format: 'cjs',
+      preserveStructure: true,
+      dts: true,
+      input: ['src/**/*.ts', 'src/**/*.vue', '!src/index-lib.ts']
+    },
+    umd: {
+      dir: 'dist',
+      format: 'umd',
+      name: pascalCase(pkg.name || 'LDesignShared'),
+      globals: umdGlobals,
+      input: 'src/index.ts'
+    },
   },
 })
 
