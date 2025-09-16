@@ -45,6 +45,8 @@
   "files": [
     "README.md",
     "CHANGELOG.md",
+    "es",
+    "lib",
     "dist"
   ],
   "scripts": {
