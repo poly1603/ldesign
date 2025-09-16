@@ -278,7 +278,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
-import { useDevice, useNetwork, useBattery, useGeolocation } from '@ldesign/device/vue'
+import { useDevice, useNetwork, useBattery, useGeolocation } from '@ldesign/device/vue/index.ts'
 
 // 使用 Device Composition API
 const { deviceInfo: deviceInfoRef, isDesktop, isMobile, isTablet, isTouchDevice, refresh } = useDevice()
@@ -433,31 +433,61 @@ const toggleBatteryMonitoring = async () => {
 const handleGeolocationDetection = async () => {
   try {
     error.value = ''
-    
-    if (!isGeolocationSupported.value) {
-      throw new Error('当前设备不支持地理位置检测')
+
+    // 检查浏览器是否支持地理位置API
+    if (!navigator.geolocation) {
+      throw new Error('当前浏览器不支持地理位置功能')
     }
-    
+
     const startTime = performance.now()
-    
-    await getCurrentPosition()
-    
-    if (position.value) {
-      geolocationInfo.value = {
-        latitude: position.value.coords.latitude,
-        longitude: position.value.coords.longitude,
-        accuracy: position.value.coords.accuracy,
-        altitude: position.value.coords.altitude
-      }
+
+    // 使用原生地理位置API，提供更好的错误处理
+    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        resolve,
+        (error) => {
+          let errorMessage = '获取地理位置失败'
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = '用户拒绝了地理位置请求。请在浏览器设置中允许位置访问权限。'
+              break
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = '地理位置信息不可用。请检查设备的位置服务是否开启。'
+              break
+            case error.TIMEOUT:
+              errorMessage = '获取地理位置超时。请重试或检查网络连接。'
+              break
+            default:
+              errorMessage = error.message || '未知错误'
+          }
+          reject(new Error(errorMessage))
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 60000
+        }
+      )
+    })
+
+    geolocationInfo.value = {
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+      accuracy: position.coords.accuracy,
+      altitude: position.coords.altitude,
+      altitudeAccuracy: position.coords.altitudeAccuracy,
+      heading: position.coords.heading,
+      speed: position.coords.speed,
+      timestamp: position.timestamp
     }
-    
+
     const endTime = performance.now()
     updateStats(endTime - startTime)
     stats.modulesLoaded = Math.max(stats.modulesLoaded, 4)
-    
+
     console.log('地理位置检测完成:', geolocationInfo.value)
   } catch (err) {
-    error.value = `地理位置检测失败: ${err instanceof Error ? err.message : String(err)}`
+    error.value = err instanceof Error ? err.message : String(err)
   }
 }
 

@@ -12,3 +12,26 @@ bootstrap().then(engine => {
 }).catch(error => {
   console.error('❌ 应用启动失败:', error)
 })
+
+// 导出配置相关功能
+export {
+  defineConfig,
+  defineConfigAsync,
+  getDefaultConfig,
+  createConfigTemplate
+} from './config/index'
+
+// 导出类型定义
+export type {
+  AppConfig,
+  ConfigInput,
+  ConfigFunction,
+  ApiConfig,
+  ThemeConfig,
+  FeaturesConfig,
+  I18nConfig,
+  RouterConfig,
+  BuildConfig,
+  SecurityConfig,
+  LogConfig
+} from './types/app-config'

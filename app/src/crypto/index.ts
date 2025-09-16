@@ -10,8 +10,8 @@
  * - 性能优化和缓存
  */
 
-import { createCryptoEnginePlugin } from '@ldesign/crypto/engine'
-import type { CryptoEnginePluginOptions } from '@ldesign/crypto/engine'
+import { createCryptoEnginePlugin } from '../../../packages/crypto/src/engine'
+import type { CryptoEnginePluginOptions } from '../../../packages/crypto/src/engine'
 
 /**
  * Crypto 插件基础配置
@@ -39,13 +39,13 @@ const cryptoConfig: CryptoEnginePluginOptions = {
   config: {
     // AES 配置 - 使用 256 位密钥提供最高安全性
     defaultAESKeySize: 256,
-    
+
     // RSA 配置 - 使用 2048 位密钥平衡安全性和性能
     defaultRSAKeySize: 2048,
-    
+
     // 哈希算法 - 使用 SHA256 提供良好的安全性
     defaultHashAlgorithm: 'SHA256',
-    
+
     // 编码方式 - 使用 base64 便于传输和存储
     defaultEncoding: 'base64',
   },

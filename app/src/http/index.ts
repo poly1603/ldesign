@@ -13,8 +13,8 @@
  * - Vue 3 深度集成
  */
 
-import { createHttpEnginePlugin } from '@ldesign/http'
-import type { HttpClientConfig } from '@ldesign/http'
+import { createHttpEnginePlugin } from '@ldesign/http/index.ts'
+import type { HttpClientConfig } from '@ldesign/http/index.ts'
 
 /**
  * HTTP 客户端基础配置

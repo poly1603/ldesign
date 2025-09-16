@@ -10,6 +10,9 @@
           <router-link to="/" class="nav-link" active-class="active" exact-active-class="active">
             {{ t('nav.home') }}
           </router-link>
+          <router-link to="/config" class="nav-link" active-class="active">
+            ⚙️ 配置中心
+          </router-link>
           <router-link to="/login" class="nav-link" active-class="active">
             {{ t('nav.login') }}
           </router-link>
@@ -55,9 +58,9 @@
  */
 
 import { ref, computed } from 'vue'
-import { ThemeSelector, DarkModeToggle } from '@ldesign/color'
-import { useI18n, LanguageSwitcher } from '@ldesign/i18n/vue'
-import { SizeSwitcher } from '@ldesign/size/vue'
+import { ThemeSelector, DarkModeToggle } from '@ldesign/color/index.ts'
+import { useI18n, LanguageSwitcher } from '@ldesign/i18n/vue/index.ts'
+import { SizeSwitcher } from '@ldesign/size/vue/index.ts'
 import { getAvailableLocales } from '../i18n'
 
 // 使用国际化功能
@@ -66,7 +69,8 @@ const { t, locale } = useI18n()
 // 当前语言信息
 const availableLocales = getAvailableLocales()
 const currentLocaleInfo = computed(() => {
-  return availableLocales.find((item: any) => item.code === locale.value)
+  const currentLocale = typeof locale.value === 'object' ? locale.value.value : locale.value
+  return availableLocales.find((item: any) => item.code === currentLocale)
 })
 
 // 禁用的内置主题列表（示例：禁用红色和粉色主题）
@@ -209,6 +213,100 @@ body {
 
 .app-controls>* {
   flex-shrink: 0;
+}
+
+/* 主题选择器样式 */
+.app-controls :deep(.theme-selector) {
+  min-width: 120px;
+}
+
+.app-controls :deep(.theme-selector .theme-dropdown) {
+  background: var(--ldesign-bg-color-container);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  color: var(--ldesign-text-color-primary);
+  padding: 8px 12px;
+  font-size: var(--ls-font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.app-controls :deep(.theme-selector .theme-dropdown:hover) {
+  border-color: var(--ldesign-brand-color);
+  box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+}
+
+.app-controls :deep(.theme-selector .theme-dropdown:focus) {
+  outline: none;
+  border-color: var(--ldesign-brand-color);
+  box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+}
+
+/* 暗色模式切换器样式 */
+.app-controls :deep(.dark-mode-toggle) {
+  background: var(--ldesign-bg-color-container);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  color: var(--ldesign-text-color-primary);
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.app-controls :deep(.dark-mode-toggle:hover) {
+  background: var(--ldesign-bg-color-container-hover);
+  border-color: var(--ldesign-brand-color);
+}
+
+/* 语言切换器样式 */
+.app-controls :deep(.language-switcher) {
+  background: var(--ldesign-bg-color-container);
+  border-radius: var(--ls-border-radius-base);
+  overflow: hidden;
+}
+
+.app-controls :deep(.language-switcher .lang-button) {
+  background: transparent;
+  border: none;
+  color: var(--ldesign-text-color-primary);
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.app-controls :deep(.language-switcher .lang-button:hover) {
+  background: var(--ldesign-bg-color-container-hover);
+}
+
+.app-controls :deep(.language-switcher .lang-button.active) {
+  background: var(--ldesign-brand-color);
+  color: white;
+}
+
+/* 尺寸切换器样式 */
+.app-controls :deep(.size-switcher) {
+  background: var(--ldesign-bg-color-container);
+  border: 1px solid var(--ldesign-border-color);
+  border-radius: var(--ls-border-radius-base);
+  overflow: hidden;
+}
+
+.app-controls :deep(.size-switcher .size-option) {
+  background: transparent;
+  border: none;
+  color: var(--ldesign-text-color-primary);
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.app-controls :deep(.size-switcher .size-option:hover) {
+  background: var(--ldesign-bg-color-container-hover);
+}
+
+.app-controls :deep(.size-switcher .size-option.active) {
+  background: var(--ldesign-brand-color);
+  color: white;
 }
 
 

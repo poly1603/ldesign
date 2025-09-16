@@ -1,8 +1,10 @@
 import { createTemplateEnginePlugin } from "@ldesign/template";
+// 导入template包的样式文件
+import "@ldesign/template/es/index.css";
 
 export const templatePlugin = createTemplateEnginePlugin({
-  // 基础配置
-  templatesDir: 'src/templates',
+  // 基础配置 - 指向packages中的模板目录
+  templatesDir: '../packages/template/src/templates',
   autoScan: true,
   enableHMR: true,
   defaultDevice: 'desktop',

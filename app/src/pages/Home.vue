@@ -79,6 +79,15 @@
         </div>
       </section>
 
+      <!-- App Config 演示区域 -->
+      <section class="app-config-section">
+        <div class="section-header">
+          <h2 class="section-title">App Configuration</h2>
+          <p class="section-subtitle">实时查看 import.meta.env.appConfig 配置</p>
+        </div>
+        <AppConfigPanel />
+      </section>
+
       <!-- 演示区域 -->
       <section class="demos-section">
         <div class="section-header">
@@ -182,7 +191,8 @@
 
 <script setup lang="ts">
 import { useRoute } from '@ldesign/router'
-import { useI18n } from '@ldesign/i18n/vue'
+import { useI18n } from '@ldesign/i18n/vue/index.ts'
+import AppConfigPanel from '../components/AppConfigPanel.vue'
 
 /**
  * 首页组件
@@ -717,5 +727,14 @@ const { t } = useI18n()
   .info-label {
     min-width: auto;
   }
+}
+
+/* App Config 区域样式 */
+.app-config-section {
+  margin: var(--ls-spacing-xxl) 0;
+  padding: var(--ls-spacing-lg);
+  background: var(--ldesign-bg-color-container);
+  border-radius: var(--ls-border-radius-lg);
+  border: 1px solid var(--ldesign-border-color);
 }
 </style>

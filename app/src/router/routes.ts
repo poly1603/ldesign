@@ -5,6 +5,9 @@
 
 import type { RouteRecordRaw } from '@ldesign/router'
 import Dashboard from '../pages/Dashboard.vue'
+import CacheDemo from '../pages/CacheDemo.vue'
+import CryptoDemo from '../pages/CryptoDemo.vue'
+import Login from '../pages/Login.vue'
 
 /**
  * 路由配置
@@ -79,7 +82,7 @@ export const routes: RouteRecordRaw[] = [
       {
         path: '/crypto-demo',
         name: 'crypto-demo',
-        component: () => import('../pages/CryptoDemo.vue'),
+        component: CryptoDemo,
         meta: {
           title: 'Crypto 加密演示',
           description: '验证 @ldesign/crypto 包的功能和集成效果',
@@ -91,7 +94,7 @@ export const routes: RouteRecordRaw[] = [
       {
         path: '/cache-demo',
         name: 'cache-demo',
-        component: () => import('../pages/CacheDemo.vue'),
+        component: CacheDemo,
         meta: {
           title: 'Cache 缓存演示',
           description: '验证 @ldesign/cache 包的功能和集成效果',
@@ -124,12 +127,24 @@ export const routes: RouteRecordRaw[] = [
           animation: 'fade',
         },
       },
+      {
+        path: '/config',
+        name: 'config',
+        component: () => import('../views/ConfigView.vue'),
+        meta: {
+          title: '系统配置',
+          description: '查看和管理 LDesign 应用的配置信息',
+          cache: false, // 配置页面不缓存，确保实时性
+          preload: true,
+          animation: 'fade',
+        },
+      },
     ]
   },
   {
     path: '/login',
     name: 'login',
-    component: () => import('../pages/Login.vue'),
+    component: Login,
     meta: {
       title: '登录',
       description: '用户登录页面',

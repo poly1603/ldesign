@@ -5,7 +5,7 @@
  * 保持对外导出的 API 不变，避免影响现有调用。
  */
 
-import { createI18nEnginePlugin } from '@ldesign/i18n/vue'
+import { createI18nEnginePlugin } from '@ldesign/i18n/vue/index.ts'
 import zhCN from './locales/zh-CN.json'
 import en from './locales/en.json'
 import ja from './locales/ja.json'
@@ -49,6 +49,11 @@ export const i18nPlugin = createI18nEnginePlugin({
 
   // 明确启用语言，确保 UI 可见
   enabledLanguages: ['zh-CN', 'en', 'ja'],
+
+  // 禁用内置翻译，只使用用户提供的翻译
+  useBuiltIn: false,
+  preferBuiltIn: false,
+  fallbackToBuiltIn: false,
 
   // 缓存与性能
   cache: {

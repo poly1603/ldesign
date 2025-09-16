@@ -1,6 +1,12 @@
-# LDesign App - Vite 版本
+# LDesign App
 
-这是 LDesign 工作空间的演示应用，已成功迁移到 Vite 构建系统。
+[![Version](https://img.shields.io/badge/version-4.0.0-blue.svg)](https://github.com/ldesign/ldesign)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/ldesign/ldesign/blob/main/LICENSE)
+[![Vue](https://img.shields.io/badge/Vue-3.4+-4FC08D.svg)](https://vuejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-3178C6.svg)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.0+-646CFF.svg)](https://vitejs.dev/)
+
+LDesign 设计系统演示应用 - 展示完整的组件库和工具集，包含 Vue3、TypeScript、Vite 等现代前端技术栈。
 
 ## 🚀 功能特性
 

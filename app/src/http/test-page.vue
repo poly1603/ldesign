@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useHttp } from '@ldesign/http/vue'
+import { useHttp } from '@ldesign/http/vue/index.ts'
 import { httpPlugin } from './index'
 
 // 响应式数据

@@ -10,8 +10,8 @@
  * - Vue 3 深度集成
  */
 
-import { createCacheEnginePlugin } from '@ldesign/cache'
-import type { CacheEnginePluginOptions } from '@ldesign/cache'
+import { createCacheEnginePlugin } from '@ldesign/cache/index.ts'
+import type { CacheEnginePluginOptions } from '@ldesign/cache/index.ts'
 
 /**
  * 缓存配置
@@ -19,20 +19,20 @@ import type { CacheEnginePluginOptions } from '@ldesign/cache'
 const cacheConfig: CacheEnginePluginOptions['cacheConfig'] = {
   // 默认存储引擎
   defaultEngine: 'localStorage',
-  
+
   // 安全配置
   enableEncryption: false, // 在生产环境中可以启用
   enableCompression: true, // 启用压缩以节省存储空间
-  
+
   // 容量配置
   maxSize: 50 * 1024 * 1024, // 50MB 最大缓存大小
-  
+
   // 过期配置
   ttl: 7 * 24 * 60 * 60 * 1000, // 7天默认过期时间
-  
+
   // 清理配置
   cleanupInterval: 60 * 60 * 1000, // 1小时清理一次过期数据
-  
+
   // 存储引擎特定配置
   engines: {
     localStorage: {

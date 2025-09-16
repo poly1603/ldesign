@@ -162,11 +162,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useApi, useApiCall } from '@ldesign/api/vue'
+import { ref, onMounted, getCurrentInstance } from 'vue'
+
+// 获取当前组件实例
+const instance = getCurrentInstance()
 
 // 获取 API 引擎实例
-const api = useApi()
+const api = instance?.appContext.app.config.globalProperties.$api
 
 // 基础 API 调用状态
 const posts = ref<any[]>()
@@ -175,8 +177,10 @@ const postsError = ref<Error | null>(null)
 
 const selectedPost = ref<any>()
 
-// Vue 组合式 API 演示
-const { data: users, loading: usersLoading, error: usersError, execute: executeUsersCall } = useApiCall('getUsers')
+// Vue 组合式 API 演示状态
+const users = ref<any[]>()
+const usersLoading = ref(false)
+const usersError = ref<Error | null>(null)
 
 // 批量调用状态
 const batchResults = ref<any>()
@@ -193,9 +197,14 @@ const apiMethods = ref<string[]>()
  * 获取文章列表
  */
 async function fetchPosts() {
+  if (!api) {
+    postsError.value = new Error('API 引擎未初始化')
+    return
+  }
+
   postsLoading.value = true
   postsError.value = null
-  
+
   try {
     posts.value = await api.call('getPosts')
   } catch (error) {
@@ -209,6 +218,8 @@ async function fetchPosts() {
  * 获取单个文章
  */
 async function fetchPost(id: number) {
+  if (!api) return
+
   try {
     selectedPost.value = await api.call('getPost', { id })
   } catch (error) {
@@ -220,19 +231,45 @@ async function fetchPost(id: number) {
 }
 
 /**
+ * 执行用户列表调用
+ */
+async function executeUsersCall() {
+  if (!api) {
+    usersError.value = new Error('API 引擎未初始化')
+    return
+  }
+
+  usersLoading.value = true
+  usersError.value = null
+
+  try {
+    users.value = await api.call('getUsers')
+  } catch (error) {
+    usersError.value = error as Error
+  } finally {
+    usersLoading.value = false
+  }
+}
+
+/**
  * 批量调用 API
  */
 async function executeBatchCall() {
+  if (!api) {
+    batchError.value = 'API 引擎未初始化'
+    return
+  }
+
   batchLoading.value = true
   batchError.value = undefined
-  
+
   try {
     const results = await api.callBatch([
       { methodName: 'getPosts' },
       { methodName: 'getUsers' },
       { methodName: 'getComments' },
     ])
-    
+
     batchResults.value = {
       posts: results[0],
       users: results[1],
