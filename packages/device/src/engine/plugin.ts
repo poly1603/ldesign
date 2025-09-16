@@ -234,9 +234,17 @@ export function createDeviceEnginePlugin(
           // Vue 应用已存在，直接安装
           await performInstall()
         } else {
-          // Vue 应用尚未创建，监听创建事件
-          engine.events?.once('app:created', async () => {
-            await performInstall()
+          // Vue 应用尚未创建，等待创建事件
+          await new Promise<void>((resolve, reject) => {
+            engine.events?.once('app:created', async () => {
+              try {
+                await performInstall()
+                resolve()
+              } catch (error) {
+                engine.logger?.error(`[Device Plugin] Failed to install after app creation:`, error)
+                reject(error)
+              }
+            })
           })
         }
 
