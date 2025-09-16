@@ -425,11 +425,13 @@ export class ThemeManager implements ThemeManagerInstance {
         // 如果实现了 injectThemeVariables 则优先使用
         if (this.cssInjector.injectThemeVariables) {
           this.cssInjector.injectThemeVariables(light, dark, { name, primaryColor: light[`${this.options.cssPrefix}-primary`] as string || '#165DFF' })
-        } else {
+        }
+        else {
           const modeData = generatedTheme[mode]
           if (modeData.cssVariableGroups && modeData.cssVariableGroups.length > 0) {
             this.cssInjector.injectVariablesWithComments(modeData.cssVariableGroups)
-          } else {
+          }
+          else {
             this.cssInjector.injectVariables(modeData.cssVariables)
           }
         }
@@ -440,7 +442,8 @@ export class ThemeManager implements ThemeManagerInstance {
     if (this.highContrastEnabled) {
       try {
         this.applyHighContrastOverrides(mode)
-      } catch (e) {
+      }
+      catch (e) {
         this.handleError(e as Error)
       }
     }
@@ -458,7 +461,8 @@ export class ThemeManager implements ThemeManagerInstance {
     // 确保有生成数据
     await this.preGenerateTheme(name)
     const generated = this.getGeneratedTheme(name)
-    if (!generated) return ''
+    if (!generated)
+      return ''
 
     const light = generated.light.cssVariables as Record<string, string>
     const dark = generated.dark.cssVariables as Record<string, string>
@@ -471,7 +475,8 @@ export class ThemeManager implements ThemeManagerInstance {
 
     // 退回到手动拼接
     const makeDecls = (vars: Record<string, string>) => Object.entries(vars)
-      .map(([k, v]) => `  ${k}: ${v};`).join('\n')
+      .map(([k, v]) => `  ${k}: ${v};`)
+      .join('\n')
 
     const lightDecls = makeDecls(light)
     const darkDecls = makeDecls(dark)
@@ -484,14 +489,16 @@ export class ThemeManager implements ThemeManagerInstance {
    */
   hydrateMountedStyles(idOrSelector?: string): void {
     try {
-      if (typeof document === 'undefined') return
+      if (typeof document === 'undefined')
+        return
       const id = idOrSelector || 'ldesign-theme-variables'
       const el = id.startsWith('#') || id.startsWith('.') ? document.querySelector(id) : document.getElementById(id)
       if (el && this.cssInjector.hydrate) {
         const targetId = (el as HTMLElement).id || 'ldesign-theme-variables'
         this.cssInjector.hydrate(targetId)
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.handleError(error as Error)
     }
   }
@@ -516,7 +523,8 @@ export class ThemeManager implements ThemeManagerInstance {
     const name = theme || this.currentTheme
     const targetMode = mode || this.currentMode
     const config = this.getThemeConfig(name)
-    if (!config) throw new Error(`Theme config for \"${name}\" not found`)
+    if (!config)
+      throw new Error(`Theme config for \"${name}\" not found`)
 
     // 为容器打标签，供选择器作用
     const scopeId = this.ensureScopeId(root)
@@ -524,7 +532,8 @@ export class ThemeManager implements ThemeManagerInstance {
     // 确保已生成数据
     await this.preGenerateTheme(name)
     const generated = this.getGeneratedTheme(name)
-    if (!generated) return
+    if (!generated)
+      return
 
     const light = generated.light.cssVariables as Record<string, string>
     const dark = generated.dark.cssVariables as Record<string, string>
@@ -539,10 +548,11 @@ export class ThemeManager implements ThemeManagerInstance {
 
     if (scopedInjector.injectThemeVariables) {
       scopedInjector.injectThemeVariables(light, dark, { name, primaryColor: light[`${this.options.cssPrefix}-primary`] as string || '#165DFF' })
-    } else {
+    }
+    else {
       // 退回：仅注入当前模式的扁平变量
       const modeVars = targetMode === 'dark' ? dark : light
-      const cssText = Object.entries(modeVars).map(([k,v]) => `  ${k}: ${v};`).join('\n')
+      const cssText = Object.entries(modeVars).map(([k, v]) => `  ${k}: ${v};`).join('\n')
       const base = `[data-theme-scope=\"${scopeId}\"]`
       const text = `${base} {\n${cssText}\n}`
       // 简易注入
@@ -555,9 +565,11 @@ export class ThemeManager implements ThemeManagerInstance {
    */
   removeThemeFrom(root: Element): void {
     const scopeId = (root as HTMLElement).getAttribute('data-theme-scope')
-    if (!scopeId) return
+    if (!scopeId)
+      return
     const el = document.getElementById(`ldesign-theme-variables-${scopeId}`)
-    if (el) el.remove()
+    if (el)
+      el.remove()
     ;(root as HTMLElement).removeAttribute('data-theme-scope')
   }
 
@@ -567,7 +579,8 @@ export class ThemeManager implements ThemeManagerInstance {
   private ensureScopeId(root: Element): string {
     const el = root as HTMLElement
     const existing = el.getAttribute('data-theme-scope')
-    if (existing) return existing
+    if (existing)
+      return existing
     const id = `scope-${Math.random().toString(36).slice(2, 8)}`
     el.setAttribute('data-theme-scope', id)
     return id
@@ -986,7 +999,8 @@ export class ThemeManager implements ThemeManagerInstance {
     if (this.isInitialized) {
       if (enable) {
         this.applyHighContrastOverrides(this.currentMode)
-      } else {
+      }
+      else {
         this.removeHighContrastOverrides()
       }
     }
@@ -1042,10 +1056,13 @@ ${overridesDark.join('\n')}
     if ((this.cssInjector as any).updateStyleElement) {
       // 通过 injectVariables 注入固定文本不可行，这里直接走底层更新方法
       ;(this.cssInjector as any).updateStyleElement(styleId, css)
-    } else {
+    }
+    else {
       // 回退：创建独立 <style>
       const exist = document.getElementById(styleId) as HTMLStyleElement
-      if (exist) exist.textContent = css
+      if (exist) {
+        exist.textContent = css
+      }
       else {
         const st = document.createElement('style')
         st.id = styleId
@@ -1066,6 +1083,7 @@ ${overridesDark.join('\n')}
       (this.cssInjector as any).removeVariables(styleId)
     }
     const el = document.getElementById(styleId)
-    if (el) el.remove()
+    if (el)
+      el.remove()
   }
 }

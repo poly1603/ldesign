@@ -93,10 +93,10 @@ export function debounce<T extends (...args: any[]) => any>(
     const timeSinceLastInvoke = time - lastInvokeTime
 
     return (
-      lastCallTime === null ||
-      timeSinceLastCall >= wait ||
-      timeSinceLastCall < 0 ||
-      (maxWait !== undefined && timeSinceLastInvoke >= maxWait)
+      lastCallTime === null
+      || timeSinceLastCall >= wait
+      || timeSinceLastCall < 0
+      || (maxWait !== undefined && timeSinceLastInvoke >= maxWait)
     )
   }
 
@@ -168,7 +168,7 @@ export function debounce<T extends (...args: any[]) => any>(
   }
 
   Object.assign(debounced, { cancel, flush, pending })
-  
+
   return debounced
 }
 
@@ -182,7 +182,7 @@ export function throttle<T extends (...args: any[]) => any>(
   options: ThrottleOptions,
 ): (...args: Parameters<T>) => void {
   const { wait, leading = true, trailing = true } = options
-  
+
   return debounce(func, {
     wait,
     leading,
@@ -216,7 +216,8 @@ export class BatchProcessor<T> {
 
     if (this.queue.length >= this.options.size) {
       this.flush()
-    } else if (!this.timeoutId) {
+    }
+    else if (!this.timeoutId) {
       this.timeoutId = setTimeout(() => this.flush(), this.options.delay)
     }
   }
@@ -273,23 +274,23 @@ export function memoize<T extends (...args: any[]) => any>(
   getKey?: (...args: Parameters<T>) => string,
 ): T {
   const cache = new Map<string, ReturnType<T>>()
-  
+
   const defaultGetKey = (...args: Parameters<T>): string => {
     return JSON.stringify(args)
   }
-  
+
   const keyGetter = getKey || defaultGetKey
-  
+
   return ((...args: Parameters<T>): ReturnType<T> => {
     const key = keyGetter(...args)
-    
+
     if (cache.has(key)) {
       return cache.get(key)!
     }
-    
+
     const result = fn(...args)
     cache.set(key, result)
-    
+
     // 限制缓存大小
     if (cache.size > 100) {
       const firstKey = cache.keys().next().value
@@ -297,7 +298,7 @@ export function memoize<T extends (...args: any[]) => any>(
         cache.delete(firstKey)
       }
     }
-    
+
     return result
   }) as T
 }
@@ -314,11 +315,11 @@ export class RAFScheduler {
    */
   schedule(task: () => void): () => void {
     this.tasks.add(task)
-    
+
     if (!this.rafId) {
       this.rafId = requestAnimationFrame(() => this.flush())
     }
-    
+
     // 返回取消函数
     return () => {
       this.tasks.delete(task)
@@ -336,11 +337,12 @@ export class RAFScheduler {
     const tasks = [...this.tasks]
     this.tasks.clear()
     this.rafId = null
-    
-    tasks.forEach(task => {
+
+    tasks.forEach((task) => {
       try {
         task()
-      } catch (error) {
+      }
+      catch (error) {
         console.error('RAF task error:', error)
       }
     })
@@ -382,13 +384,13 @@ export class PerformanceMonitor {
     }
 
     const duration = performance.now() - startTime
-    
+
     if (!this.measures.has(name)) {
       this.measures.set(name, [])
     }
-    
+
     this.measures.get(name)!.push(duration)
-    
+
     return duration
   }
 
@@ -441,7 +443,7 @@ export class PerformanceMonitor {
    */
   report(): void {
     console.group('Performance Report')
-    
+
     this.measures.forEach((_, name) => {
       const stats = this.getStats(name)
       if (stats) {
@@ -455,7 +457,7 @@ export class PerformanceMonitor {
         })
       }
     })
-    
+
     console.groupEnd()
   }
 }

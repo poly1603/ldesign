@@ -5,19 +5,19 @@
 
 export interface ExtractorOptions {
   maxColors?: number
-  quality?: number  // 1-10, higher = better quality but slower
+  quality?: number // 1-10, higher = better quality but slower
   algorithm?: 'kmeans' | 'median-cut' | 'octree'
   ignoreWhite?: boolean
   ignoreBlack?: boolean
-  deltaE?: number  // Color difference threshold
+  deltaE?: number // Color difference threshold
 }
 
 export interface ExtractedColor {
   hex: string
-  rgb: { r: number; g: number; b: number }
-  hsl: { h: number; s: number; l: number }
-  population: number  // Percentage of pixels
-  prominence: number  // Visual prominence score
+  rgb: { r: number, g: number, b: number }
+  hsl: { h: number, s: number, l: number }
+  population: number // Percentage of pixels
+  prominence: number // Visual prominence score
 }
 
 export interface ColorPalette {
@@ -60,7 +60,7 @@ export class ImageColorExtractor {
       ignoreWhite: true,
       ignoreBlack: true,
       deltaE: 2.3,
-      ...options
+      ...options,
     }
 
     this.canvas = document.createElement('canvas')
@@ -73,9 +73,9 @@ export class ImageColorExtractor {
   async extractColors(source: string | HTMLImageElement | File): Promise<ColorPalette> {
     const image = await this.loadImage(source)
     const pixels = this.getPixelData(image)
-    
+
     let colors: ExtractedColor[]
-    
+
     switch (this.options.algorithm) {
       case 'median-cut':
         colors = this.medianCutQuantization(pixels)
@@ -105,17 +105,17 @@ export class ImageColorExtractor {
     this.canvas.width = 1
     this.canvas.height = 1
     this.ctx.drawImage(image, x, y, 1, 1, 0, 0, 1, 1)
-    
+
     const [r, g, b] = this.ctx.getImageData(0, 0, 1, 1).data
     const hex = this.rgbToHex(r, g, b)
     const hsl = this.rgbToHsl(r, g, b)
-    
+
     return {
       hex,
       rgb: { r, g, b },
       hsl,
       population: 0,
-      prominence: 0
+      prominence: 0,
     }
   }
 
@@ -124,11 +124,11 @@ export class ImageColorExtractor {
    */
   async generateColorScheme(
     source: string | HTMLImageElement | File,
-    type: 'monochromatic' | 'analogous' | 'complementary' | 'triadic' = 'analogous'
+    type: 'monochromatic' | 'analogous' | 'complementary' | 'triadic' = 'analogous',
   ): Promise<string[]> {
     const palette = await this.extractColors(source)
     const baseColor = palette.dominant.hsl
-    
+
     switch (type) {
       case 'monochromatic':
         return this.generateMonochromaticScheme(baseColor)
@@ -156,7 +156,8 @@ export class ImageColorExtractor {
 
       if (typeof source === 'string') {
         img.src = source
-      } else if (source instanceof File) {
+      }
+      else if (source instanceof File) {
         const reader = new FileReader()
         reader.onload = (e) => {
           img.src = e.target?.result as string
@@ -187,23 +188,27 @@ export class ImageColorExtractor {
       const a = pixels[i + 3]
 
       // Skip transparent pixels
-      if (a < 125) continue
+      if (a < 125)
+        continue
 
       // Skip white/black if configured
-      if (this.options.ignoreWhite && this.isWhite(r, g, b)) continue
-      if (this.options.ignoreBlack && this.isBlack(r, g, b)) continue
+      if (this.options.ignoreWhite && this.isWhite(r, g, b))
+        continue
+      if (this.options.ignoreBlack && this.isBlack(r, g, b))
+        continue
 
       // Quantize to reduce colors
       const qr = Math.round(r / 5) * 5
       const qg = Math.round(g / 5) * 5
       const qb = Math.round(b / 5) * 5
-      
+
       const key = `${qr},${qg},${qb}`
       const existing = pixelMap.get(key)
-      
+
       if (existing) {
         existing.count++
-      } else {
+      }
+      else {
         pixelMap.set(key, { r: qr, g: qg, b: qb, count: 1 })
       }
     }
@@ -213,7 +218,8 @@ export class ImageColorExtractor {
 
   private kmeansQuantization(pixels: PixelData[]): ExtractedColor[] {
     const k = Math.min(this.options.maxColors, pixels.length)
-    if (k === 0) return []
+    if (k === 0)
+      return []
 
     // Initialize centroids randomly
     let centroids = this.initializeCentroids(pixels, k)
@@ -223,8 +229,8 @@ export class ImageColorExtractor {
 
     while (iterations < maxIterations) {
       // Assign pixels to clusters
-      clusters = Array(k).fill(null).map(() => [])
-      
+      clusters = new Array(k).fill(null).map(() => [])
+
       for (const pixel of pixels) {
         let minDist = Infinity
         let closestCentroid = 0
@@ -256,7 +262,7 @@ export class ImageColorExtractor {
           r: 0,
           g: 0,
           b: 0,
-          count: totalCount
+          count: totalCount,
         }
 
         for (const pixel of cluster) {
@@ -280,12 +286,13 @@ export class ImageColorExtractor {
       centroids = newCentroids
       iterations++
 
-      if (!changed) break
+      if (!changed)
+        break
     }
 
     // Convert to ExtractedColor format
     const totalPixels = pixels.reduce((sum, p) => sum + p.count, 0)
-    
+
     return centroids.map((centroid, i) => {
       const clusterCount = clusters[i].reduce((sum, p) => sum + p.count, 0)
       const population = (clusterCount / totalPixels) * 100
@@ -296,13 +303,14 @@ export class ImageColorExtractor {
         rgb: { r: centroid.r, g: centroid.g, b: centroid.b },
         hsl: this.rgbToHsl(centroid.r, centroid.g, centroid.b),
         population,
-        prominence
+        prominence,
       }
     })
   }
 
   private medianCutQuantization(pixels: PixelData[]): ExtractedColor[] {
-    if (pixels.length === 0) return []
+    if (pixels.length === 0)
+      return []
 
     const boxes: PixelData[][] = [pixels]
     const targetBoxes = Math.min(this.options.maxColors, pixels.length)
@@ -323,20 +331,20 @@ export class ImageColorExtractor {
       // Split the box
       const box = boxes[boxToSplit]
       const [box1, box2] = this.splitBox(box)
-      
+
       boxes.splice(boxToSplit, 1, box1, box2)
     }
 
     // Calculate average color for each box
     const totalPixels = pixels.reduce((sum, p) => sum + p.count, 0)
-    
-    return boxes.map(box => {
+
+    return boxes.map((box) => {
       const totalCount = box.reduce((sum, p) => sum + p.count, 0)
       const avgColor: PixelData = {
         r: 0,
         g: 0,
         b: 0,
-        count: totalCount
+        count: totalCount,
       }
 
       for (const pixel of box) {
@@ -358,7 +366,7 @@ export class ImageColorExtractor {
         rgb: { r: avgColor.r, g: avgColor.g, b: avgColor.b },
         hsl: this.rgbToHsl(avgColor.r, avgColor.g, avgColor.b),
         population,
-        prominence
+        prominence,
       }
     })
   }
@@ -366,7 +374,7 @@ export class ImageColorExtractor {
   private octreeQuantization(pixels: PixelData[]): ExtractedColor[] {
     // Simplified octree implementation
     const octree = new OctreeNode()
-    
+
     // Add all pixels to octree
     for (const pixel of pixels) {
       octree.addColor(pixel.r, pixel.g, pixel.b, pixel.count)
@@ -379,11 +387,11 @@ export class ImageColorExtractor {
     const palette = octree.getPalette()
     const totalPixels = pixels.reduce((sum, p) => sum + p.count, 0)
 
-    return palette.map(entry => {
+    return palette.map((entry) => {
       const population = (entry.pixelCount / totalPixels) * 100
       const prominence = this.calculateProminence(
         { r: entry.r, g: entry.g, b: entry.b, count: entry.pixelCount },
-        population
+        population,
       )
 
       return {
@@ -391,17 +399,17 @@ export class ImageColorExtractor {
         rgb: { r: entry.r, g: entry.g, b: entry.b },
         hsl: this.rgbToHsl(entry.r, entry.g, entry.b),
         population,
-        prominence
+        prominence,
       }
     })
   }
 
   private generatePalette(colors: ExtractedColor[]): ColorPalette {
     const dominant = colors[0] || this.createDefaultColor()
-    
+
     // Calculate average color
-    let totalR = 0, totalG = 0, totalB = 0, totalWeight = 0
-    
+    let totalR = 0; let totalG = 0; let totalB = 0; let totalWeight = 0
+
     for (const color of colors) {
       const weight = color.population
       totalR += color.rgb.r * weight
@@ -432,57 +440,57 @@ export class ImageColorExtractor {
       darkVibrant,
       lightVibrant,
       darkMuted,
-      lightMuted
+      lightMuted,
     }
   }
 
   private findVibrantColor(colors: ExtractedColor[]): ExtractedColor | undefined {
-    return colors.find(c => 
-      c.hsl.s > 50 && c.hsl.l >= 30 && c.hsl.l <= 70
+    return colors.find(c =>
+      c.hsl.s > 50 && c.hsl.l >= 30 && c.hsl.l <= 70,
     )
   }
 
   private findMutedColor(colors: ExtractedColor[]): ExtractedColor | undefined {
-    return colors.find(c => 
-      c.hsl.s <= 50 && c.hsl.l >= 30 && c.hsl.l <= 70
+    return colors.find(c =>
+      c.hsl.s <= 50 && c.hsl.l >= 30 && c.hsl.l <= 70,
     )
   }
 
   private findDarkVibrantColor(colors: ExtractedColor[]): ExtractedColor | undefined {
-    return colors.find(c => 
-      c.hsl.s > 50 && c.hsl.l < 30
+    return colors.find(c =>
+      c.hsl.s > 50 && c.hsl.l < 30,
     )
   }
 
   private findLightVibrantColor(colors: ExtractedColor[]): ExtractedColor | undefined {
-    return colors.find(c => 
-      c.hsl.s > 50 && c.hsl.l > 70
+    return colors.find(c =>
+      c.hsl.s > 50 && c.hsl.l > 70,
     )
   }
 
   private findDarkMutedColor(colors: ExtractedColor[]): ExtractedColor | undefined {
-    return colors.find(c => 
-      c.hsl.s <= 50 && c.hsl.l < 30
+    return colors.find(c =>
+      c.hsl.s <= 50 && c.hsl.l < 30,
     )
   }
 
   private findLightMutedColor(colors: ExtractedColor[]): ExtractedColor | undefined {
-    return colors.find(c => 
-      c.hsl.s <= 50 && c.hsl.l > 70
+    return colors.find(c =>
+      c.hsl.s <= 50 && c.hsl.l > 70,
     )
   }
 
   private initializeCentroids(pixels: PixelData[], k: number): PixelData[] {
     // K-means++ initialization
     const centroids: PixelData[] = []
-    
+
     // Choose first centroid randomly
     const firstIndex = Math.floor(Math.random() * pixels.length)
     centroids.push({ ...pixels[firstIndex] })
 
     // Choose remaining centroids
     for (let i = 1; i < k; i++) {
-      const distances = pixels.map(pixel => {
+      const distances = pixels.map((pixel) => {
         let minDist = Infinity
         for (const centroid of centroids) {
           const dist = this.colorDistance(pixel, centroid)
@@ -511,9 +519,9 @@ export class ImageColorExtractor {
   }
 
   private getColorRange(box: PixelData[]): number {
-    let minR = 255, maxR = 0
-    let minG = 255, maxG = 0
-    let minB = 255, maxB = 0
+    let minR = 255; let maxR = 0
+    let minG = 255; let maxG = 0
+    let minB = 255; let maxB = 0
 
     for (const pixel of box) {
       minR = Math.min(minR, pixel.r)
@@ -532,9 +540,9 @@ export class ImageColorExtractor {
   }
 
   private splitBox(box: PixelData[]): [PixelData[], PixelData[]] {
-    let minR = 255, maxR = 0
-    let minG = 255, maxG = 0
-    let minB = 255, maxB = 0
+    let minR = 255; let maxR = 0
+    let minG = 255; let maxG = 0
+    let minB = 255; let maxB = 0
 
     for (const pixel of box) {
       minR = Math.min(minR, pixel.r)
@@ -556,10 +564,12 @@ export class ImageColorExtractor {
     if (rangeR >= rangeG && rangeR >= rangeB) {
       splitDimension = 'r'
       splitValue = (minR + maxR) / 2
-    } else if (rangeG >= rangeB) {
+    }
+    else if (rangeG >= rangeB) {
       splitDimension = 'g'
       splitValue = (minG + maxG) / 2
-    } else {
+    }
+    else {
       splitDimension = 'b'
       splitValue = (minB + maxB) / 2
     }
@@ -570,7 +580,8 @@ export class ImageColorExtractor {
     for (const pixel of box) {
       if (pixel[splitDimension] <= splitValue) {
         box1.push(pixel)
-      } else {
+      }
+      else {
         box2.push(pixel)
       }
     }
@@ -578,7 +589,8 @@ export class ImageColorExtractor {
     // Ensure both boxes have at least one pixel
     if (box1.length === 0) {
       box1.push(box2.pop()!)
-    } else if (box2.length === 0) {
+    }
+    else if (box2.length === 0) {
       box2.push(box1.pop()!)
     }
 
@@ -587,12 +599,12 @@ export class ImageColorExtractor {
 
   private calculateProminence(color: PixelData, population: number): number {
     const { s, l } = this.rgbToHsl(color.r, color.g, color.b)
-    
+
     // Prominence based on saturation, lightness, and population
     const saturationWeight = s / 100
-    const lightnessWeight = 1 - Math.abs(l - 50) / 50  // Prefer mid-range lightness
+    const lightnessWeight = 1 - Math.abs(l - 50) / 50 // Prefer mid-range lightness
     const populationWeight = Math.sqrt(population / 100)
-    
+
     return (saturationWeight * 0.3 + lightnessWeight * 0.3 + populationWeight * 0.4) * 100
   }
 
@@ -601,7 +613,7 @@ export class ImageColorExtractor {
     const dr = c1.r - c2.r
     const dg = c1.g - c2.g
     const db = c1.b - c2.b
-    
+
     return Math.sqrt(dr * dr + dg * dg + db * db)
   }
 
@@ -623,83 +635,83 @@ export class ImageColorExtractor {
       rgb: { r: 0, g: 0, b: 0 },
       hsl: { h: 0, s: 0, l: 0 },
       population: 0,
-      prominence: 0
+      prominence: 0,
     }
   }
 
   // Color scheme generation methods
-  private generateMonochromaticScheme(base: { h: number; s: number; l: number }): string[] {
+  private generateMonochromaticScheme(base: { h: number, s: number, l: number }): string[] {
     const colors: string[] = []
-    
+
     for (let i = 0; i < 5; i++) {
       const lightness = 20 + (i * 15)
       const { r, g, b } = this.hslToRgb(base.h, base.s, lightness)
       colors.push(this.rgbToHex(r, g, b))
     }
-    
+
     return colors
   }
 
-  private generateAnalogousScheme(base: { h: number; s: number; l: number }): string[] {
+  private generateAnalogousScheme(base: { h: number, s: number, l: number }): string[] {
     const colors: string[] = []
     const hueStep = 30
-    
+
     for (let i = -2; i <= 2; i++) {
       const hue = (base.h + i * hueStep + 360) % 360
       const { r, g, b } = this.hslToRgb(hue, base.s, base.l)
       colors.push(this.rgbToHex(r, g, b))
     }
-    
+
     return colors
   }
 
-  private generateComplementaryScheme(base: { h: number; s: number; l: number }): string[] {
+  private generateComplementaryScheme(base: { h: number, s: number, l: number }): string[] {
     const colors: string[] = []
-    
+
     // Base color
     const { r: r1, g: g1, b: b1 } = this.hslToRgb(base.h, base.s, base.l)
     colors.push(this.rgbToHex(r1, g1, b1))
-    
+
     // Complementary color
     const compHue = (base.h + 180) % 360
     const { r: r2, g: g2, b: b2 } = this.hslToRgb(compHue, base.s, base.l)
     colors.push(this.rgbToHex(r2, g2, b2))
-    
+
     // Variations
     for (let i = 1; i <= 3; i++) {
       const lightness = base.l + (i - 2) * 20
       const { r, g, b } = this.hslToRgb(base.h, base.s, Math.max(10, Math.min(90, lightness)))
       colors.push(this.rgbToHex(r, g, b))
     }
-    
+
     return colors
   }
 
-  private generateTriadicScheme(base: { h: number; s: number; l: number }): string[] {
+  private generateTriadicScheme(base: { h: number, s: number, l: number }): string[] {
     const colors: string[] = []
-    
+
     for (let i = 0; i < 3; i++) {
       const hue = (base.h + i * 120) % 360
       const { r, g, b } = this.hslToRgb(hue, base.s, base.l)
       colors.push(this.rgbToHex(r, g, b))
     }
-    
+
     // Add variations
     const { r: r1, g: g1, b: b1 } = this.hslToRgb(base.h, base.s, Math.min(90, base.l + 15))
     colors.push(this.rgbToHex(r1, g1, b1))
-    
+
     const { r: r2, g: g2, b: b2 } = this.hslToRgb(base.h, base.s, Math.max(10, base.l - 15))
     colors.push(this.rgbToHex(r2, g2, b2))
-    
+
     return colors
   }
 
   // Color conversion utilities
   private rgbToHex(r: number, g: number, b: number): string {
-    return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase()
+    return `#${[r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase()}`
   }
 
-  private rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: number } {
+  private rgbToHsl(r: number, g: number, b: number): { h: number, s: number, l: number } {
     r /= 255
     g /= 255
     b /= 255
@@ -731,7 +743,7 @@ export class ImageColorExtractor {
     return { h: h * 360, s: s * 100, l: l * 100 }
   }
 
-  private hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: number } {
+  private hslToRgb(h: number, s: number, l: number): { r: number, g: number, b: number } {
     h /= 360
     s /= 100
     l /= 100
@@ -740,35 +752,41 @@ export class ImageColorExtractor {
 
     if (s === 0) {
       r = g = b = l
-    } else {
+    }
+    else {
       const hue2rgb = (p: number, q: number, t: number) => {
-        if (t < 0) t += 1
-        if (t > 1) t -= 1
-        if (t < 1/6) return p + (q - p) * 6 * t
-        if (t < 1/2) return q
-        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6
+        if (t < 0)
+          t += 1
+        if (t > 1)
+          t -= 1
+        if (t < 1 / 6)
+          return p + (q - p) * 6 * t
+        if (t < 1 / 2)
+          return q
+        if (t < 2 / 3)
+          return p + (q - p) * (2 / 3 - t) * 6
         return p
       }
 
       const q = l < 0.5 ? l * (1 + s) : l + s - l * s
       const p = 2 * l - q
-      
-      r = hue2rgb(p, q, h + 1/3)
+
+      r = hue2rgb(p, q, h + 1 / 3)
       g = hue2rgb(p, q, h)
-      b = hue2rgb(p, q, h - 1/3)
+      b = hue2rgb(p, q, h - 1 / 3)
     }
 
     return {
       r: Math.round(r * 255),
       g: Math.round(g * 255),
-      b: Math.round(b * 255)
+      b: Math.round(b * 255),
     }
   }
 }
 
 // Octree implementation for color quantization
 class OctreeNode {
-  private children: (OctreeNode | null)[] = Array(8).fill(null)
+  private children: (OctreeNode | null)[] = Array.from({ length: 8 }).fill(null)
   private isLeaf = false
   private r = 0
   private g = 0
@@ -786,21 +804,21 @@ class OctreeNode {
     }
 
     const index = this.getColorIndex(r, g, b, level)
-    
+
     if (!this.children[index]) {
       this.children[index] = new OctreeNode()
     }
-    
+
     this.children[index]!.addColor(r, g, b, count, level + 1)
   }
 
   reduce(maxColors: number): void {
     const leaves = this.getLeaves()
-    
+
     while (leaves.length > maxColors) {
       // Find and merge smallest nodes
       leaves.sort((a, b) => a.pixelCount - b.pixelCount)
-      
+
       // Merge smallest leaf (placeholder for real merge logic)
       leaves.shift()
       // Note: A real implementation would merge with sibling or parent nodes.
@@ -809,7 +827,7 @@ class OctreeNode {
 
   getPalette(): OctreePaletteEntry[] {
     const leaves = this.getLeaves()
-    
+
     return leaves.map((leaf): OctreePaletteEntry => ({
       r: Math.round(leaf.r / Math.max(1, leaf.pixelCount)),
       g: Math.round(leaf.g / Math.max(1, leaf.pixelCount)),
@@ -820,29 +838,33 @@ class OctreeNode {
 
   private getLeaves(): OctreeNode[] {
     const leaves: OctreeNode[] = []
-    
+
     if (this.isLeaf) {
       leaves.push(this)
-    } else {
+    }
+    else {
       for (const child of this.children) {
         if (child) {
           leaves.push(...child.getLeaves())
         }
       }
     }
-    
+
     return leaves
   }
 
   private getColorIndex(r: number, g: number, b: number, level: number): number {
     const bit = 7 - level
     const mask = 1 << bit
-    
+
     let index = 0
-    if (r & mask) index |= 4
-    if (g & mask) index |= 2
-    if (b & mask) index |= 1
-    
+    if (r & mask)
+      index |= 4
+    if (g & mask)
+      index |= 2
+    if (b & mask)
+      index |= 1
+
     return index
   }
 }

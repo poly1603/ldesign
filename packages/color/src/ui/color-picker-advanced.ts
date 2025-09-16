@@ -19,9 +19,9 @@ export interface ColorPickerOptions {
 
 export interface ColorValue {
   hex: string
-  rgb: { r: number; g: number; b: number; a?: number }
-  hsl: { h: number; s: number; l: number; a?: number }
-  hsv: { h: number; s: number; v: number; a?: number }
+  rgb: { r: number, g: number, b: number, a?: number }
+  hsl: { h: number, s: number, l: number, a?: number }
+  hsv: { h: number, s: number, v: number, a?: number }
 }
 
 export class AdvancedColorPicker {
@@ -30,7 +30,7 @@ export class AdvancedColorPicker {
   private currentColor: ColorValue
   private history: string[] = []
   private isDragging = false
-  
+
   // UI Elements
   // private colorWheel?: HTMLCanvasElement // reserved for future wheel UI
   private saturationValue?: HTMLCanvasElement
@@ -38,7 +38,7 @@ export class AdvancedColorPicker {
   private alphaSlider?: HTMLElement
   private previewBox?: HTMLElement
   private inputFields?: Map<string, HTMLInputElement>
-  
+
   // Canvas contexts
   private svCtx: CanvasRenderingContext2D | null = null
 
@@ -52,18 +52,26 @@ export class AdvancedColorPicker {
       showHistory: true,
       showInput: true,
       paletteColors: [
-        '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
-        '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'
+        '#FF6B6B',
+        '#4ECDC4',
+        '#45B7D1',
+        '#96CEB4',
+        '#FFEAA7',
+        '#DDA0DD',
+        '#98D8C8',
+        '#F7DC6F',
+        '#BB8FCE',
+        '#85C1E2',
       ],
       maxHistory: 20,
       onChange: () => {},
       onSave: () => {},
-      ...options
+      ...options,
     }
 
     this.container = this.resolveContainer(this.options.container)
     this.currentColor = this.parseColor(this.options.initialColor)
-    
+
     this.init()
   }
 
@@ -110,7 +118,8 @@ export class AdvancedColorPicker {
               </div>
             </div>
             
-            ${this.options.showAlpha ? `
+            ${this.options.showAlpha
+              ? `
               <div class="slider-group">
                 <label>Alpha</label>
                 <div class="alpha-slider" id="alpha-slider">
@@ -118,11 +127,13 @@ export class AdvancedColorPicker {
                   <div class="slider-handle"></div>
                 </div>
               </div>
-            ` : ''}
+            `
+              : ''}
           </div>
           
           <!-- Input Fields -->
-          ${this.options.showInput ? `
+          ${this.options.showInput
+            ? `
             <div class="input-section">
               <div class="input-tabs">
                 <button class="tab-btn active" data-format="hex">HEX</button>
@@ -154,27 +165,32 @@ export class AdvancedColorPicker {
                 </div>
               </div>
             </div>
-          ` : ''}
+          `
+            : ''}
           
           <!-- Palette -->
-          ${this.options.showPalette ? `
+          ${this.options.showPalette
+            ? `
             <div class="palette-section">
               <h4>Quick Colors</h4>
               <div class="palette-colors">
-                ${this.options.paletteColors.map(color => 
-                  `<div class="palette-color" data-color="${color}" style="background: ${color}"></div>`
+                ${this.options.paletteColors.map(color =>
+                  `<div class="palette-color" data-color="${color}" style="background: ${color}"></div>`,
                 ).join('')}
               </div>
             </div>
-          ` : ''}
+          `
+            : ''}
           
           <!-- History -->
-          ${this.options.showHistory ? `
+          ${this.options.showHistory
+            ? `
             <div class="history-section">
               <h4>Recent Colors</h4>
               <div class="history-colors" id="history-colors"></div>
             </div>
-          ` : ''}
+          `
+            : ''}
         </div>
         
         <div class="picker-footer">
@@ -190,7 +206,7 @@ export class AdvancedColorPicker {
     this.hueSlider = this.container.querySelector('#hue-slider') as HTMLElement
     this.alphaSlider = this.container.querySelector('#alpha-slider') as HTMLElement
     this.previewBox = this.container.querySelector('#preview-box') as HTMLElement
-    
+
     // Get canvas contexts
     // no-op: colorWheel context currently unused
     if (this.saturationValue) {
@@ -200,7 +216,7 @@ export class AdvancedColorPicker {
     // Setup input fields map
     this.inputFields = new Map()
     const inputs = this.container.querySelectorAll('input')
-    inputs.forEach(input => {
+    inputs.forEach((input) => {
       this.inputFields?.set(input.id, input as HTMLInputElement)
     })
   }
@@ -209,49 +225,49 @@ export class AdvancedColorPicker {
     // Saturation/Value canvas
     this.saturationValue?.addEventListener('mousedown', this.handleSVMouseDown.bind(this))
     this.saturationValue?.addEventListener('touchstart', this.handleSVTouchStart.bind(this))
-    
+
     // Hue slider
     this.hueSlider?.addEventListener('mousedown', this.handleHueMouseDown.bind(this))
     this.hueSlider?.addEventListener('touchstart', this.handleHueTouchStart.bind(this))
-    
+
     // Alpha slider
     this.alphaSlider?.addEventListener('mousedown', this.handleAlphaMouseDown.bind(this))
     this.alphaSlider?.addEventListener('touchstart', this.handleAlphaTouchStart.bind(this))
-    
+
     // Input fields
     this.inputFields?.forEach((input, id) => {
       input.addEventListener('change', () => this.handleInputChange(id))
     })
-    
+
     // Format tabs
     const tabs = this.container.querySelectorAll('.tab-btn')
-    tabs.forEach(tab => {
+    tabs.forEach((tab) => {
       tab.addEventListener('click', (e) => {
         const el = e.currentTarget as HTMLElement
         const format = (el.getAttribute('data-format') || 'hex')
         this.switchInputFormat(format)
       })
     })
-    
+
     // Palette colors
     const paletteColors = this.container.querySelectorAll('.palette-color')
-    paletteColors.forEach(el => {
+    paletteColors.forEach((el) => {
       el.addEventListener('click', (e) => {
         const elTarget = e.currentTarget as HTMLElement
         const color = elTarget.getAttribute('data-color') || '#000000'
         this.setColor(color)
       })
     })
-    
+
     // Buttons
     this.container.querySelector('.btn-save')?.addEventListener('click', () => {
       this.saveColor()
     })
-    
+
     this.container.querySelector('.btn-cancel')?.addEventListener('click', () => {
       this.close()
     })
-    
+
     // Global mouse/touch events
     document.addEventListener('mousemove', this.handleMouseMove.bind(this))
     document.addEventListener('mouseup', this.handleMouseUp.bind(this))
@@ -268,57 +284,63 @@ export class AdvancedColorPicker {
   }
 
   private renderSaturationValue(): void {
-    if (!this.svCtx || !this.saturationValue) return
-    
+    if (!this.svCtx || !this.saturationValue)
+      return
+
     // TypeScript null-check guard for old browsers
-    if (!this.svCtx) return
-    
+    if (!this.svCtx)
+      return
+
     const width = this.saturationValue.width
     const height = this.saturationValue.height
     const { h } = this.currentColor.hsv
-    
+
     // Create gradients
     const hueColor = this.hsvToRgb(h, 100, 100)
-    
+
     // White to hue gradient (horizontal)
     const whiteGradient = this.svCtx.createLinearGradient(0, 0, width, 0)
     whiteGradient.addColorStop(0, 'white')
     whiteGradient.addColorStop(1, `rgb(${hueColor.r}, ${hueColor.g}, ${hueColor.b})`)
-    
+
     this.svCtx.fillStyle = whiteGradient
     this.svCtx.fillRect(0, 0, width, height)
-    
+
     // Transparent to black gradient (vertical)
     const blackGradient = this.svCtx.createLinearGradient(0, 0, 0, height)
     blackGradient.addColorStop(0, 'transparent')
     blackGradient.addColorStop(1, 'black')
-    
+
     this.svCtx.fillStyle = blackGradient
     this.svCtx.fillRect(0, 0, width, height)
   }
 
   private renderHueSlider(): void {
-    if (!this.hueSlider) return
-    
+    if (!this.hueSlider)
+      return
+
     const track = this.hueSlider.querySelector('.slider-track') as HTMLElement
-    if (!track) return
-    
+    if (!track)
+      return
+
     // Create hue gradient
     const gradient = []
     for (let i = 0; i <= 360; i += 30) {
       const { r, g, b } = this.hsvToRgb(i, 100, 100)
       gradient.push(`rgb(${r}, ${g}, ${b})`)
     }
-    
+
     track.style.background = `linear-gradient(to right, ${gradient.join(', ')})`
   }
 
   private renderAlphaSlider(): void {
-    if (!this.alphaSlider) return
-    
+    if (!this.alphaSlider)
+      return
+
     const track = this.alphaSlider.querySelector('.slider-track') as HTMLElement
-    if (!track) return
-    
+    if (!track)
+      return
+
     const { r, g, b } = this.currentColor.rgb
     track.style.background = `
       linear-gradient(to right, 
@@ -335,96 +357,115 @@ export class AdvancedColorPicker {
       const { r, g, b, a = 1 } = this.currentColor.rgb
       this.previewBox.style.background = `rgba(${r}, ${g}, ${b}, ${a})`
     }
-    
+
     // Update color value display
     const valueDisplay = this.container.querySelector('.color-value')
     if (valueDisplay) {
       valueDisplay.textContent = this.getFormattedColor()
     }
-    
+
     // Update cursors
     this.updateSVCursor()
     this.updateHueCursor()
     this.updateAlphaCursor()
-    
+
     // Update input fields
     this.updateInputFields()
   }
 
   private updateSVCursor(): void {
-    if (!this.saturationValue) return
-    
+    if (!this.saturationValue)
+      return
+
     const cursor = this.container.querySelector('.sv-cursor') as HTMLElement
-    if (!cursor) return
-    
+    if (!cursor)
+      return
+
     const { s, v } = this.currentColor.hsv
     const x = (s / 100) * this.saturationValue.width
     const y = ((100 - v) / 100) * this.saturationValue.height
-    
+
     cursor.style.left = `${x}px`
     cursor.style.top = `${y}px`
   }
 
   private updateHueCursor(): void {
-    if (!this.hueSlider) return
-    
+    if (!this.hueSlider)
+      return
+
     const handle = this.hueSlider.querySelector('.slider-handle') as HTMLElement
-    if (!handle) return
-    
+    if (!handle)
+      return
+
     const { h } = this.currentColor.hsv
     const x = (h / 360) * this.hueSlider.offsetWidth
-    
+
     handle.style.left = `${x}px`
   }
 
   private updateAlphaCursor(): void {
-    if (!this.alphaSlider || !this.options.showAlpha) return
-    
+    if (!this.alphaSlider || !this.options.showAlpha)
+      return
+
     const handle = this.alphaSlider.querySelector('.slider-handle') as HTMLElement
-    if (!handle) return
-    
+    if (!handle)
+      return
+
     const a = this.currentColor.rgb.a || 1
     const x = a * this.alphaSlider.offsetWidth
-    
+
     handle.style.left = `${x}px`
   }
 
   private updateInputFields(): void {
     const { hex, rgb, hsl, hsv } = this.currentColor
-    
+
     // Update hex input
     const hexInput = this.inputFields?.get('hex-input')
-    if (hexInput) hexInput.value = hex
-    
+    if (hexInput)
+      hexInput.value = hex
+
     // Update RGB inputs
     const rgbR = this.inputFields?.get('rgb-r')
-    if (rgbR) rgbR.value = String(rgb.r)
+    if (rgbR)
+      rgbR.value = String(rgb.r)
     const rgbG = this.inputFields?.get('rgb-g')
-    if (rgbG) rgbG.value = String(rgb.g)
+    if (rgbG)
+      rgbG.value = String(rgb.g)
     const rgbB = this.inputFields?.get('rgb-b')
-    if (rgbB) rgbB.value = String(rgb.b)
+    if (rgbB)
+      rgbB.value = String(rgb.b)
     const rgbA = this.inputFields?.get('rgb-a')
-    if (rgbA) rgbA.value = String(rgb.a || 1)
-    
+    if (rgbA)
+      rgbA.value = String(rgb.a || 1)
+
     // Update HSL inputs
     const hslH = this.inputFields?.get('hsl-h')
-    if (hslH) hslH.value = String(Math.round(hsl.h))
+    if (hslH)
+      hslH.value = String(Math.round(hsl.h))
     const hslS = this.inputFields?.get('hsl-s')
-    if (hslS) hslS.value = String(Math.round(hsl.s))
+    if (hslS)
+      hslS.value = String(Math.round(hsl.s))
     const hslL = this.inputFields?.get('hsl-l')
-    if (hslL) hslL.value = String(Math.round(hsl.l))
+    if (hslL)
+      hslL.value = String(Math.round(hsl.l))
     const hslA = this.inputFields?.get('hsl-a')
-    if (hslA) hslA.value = String(hsl.a || 1)
-    
+    if (hslA)
+      hslA.value = String(hsl.a || 1)
+
     // Update HSV inputs
     const hsvH = this.inputFields?.get('hsv-h')
-    if (hsvH) hsvH.value = String(Math.round(hsv.h))
+    if (hsvH)
+      hsvH.value = String(Math.round(hsv.h))
     const hsvS = this.inputFields?.get('hsv-s')
-    if (hsvS) hsvS.value = String(Math.round(hsv.s))
+    if (hsvS)
+      hsvS.value = String(Math.round(hsv.s))
     const hsvV = this.inputFields?.get('hsv-v')
-    if (hsvV) hsvV.value = String(Math.round(hsv.v))
+    if (hsvV)
+      hsvV.value = String(Math.round(hsv.v))
     const hsvA = this.inputFields?.get('hsv-a')
-    if (hsvA) hsvA.value = String(hsv.a || 1)
+    if (hsvA)
+      hsvA.value = String(hsv.a || 1)
   }
 
   // Event handlers
@@ -459,28 +500,34 @@ export class AdvancedColorPicker {
   }
 
   private handleMouseMove(e: MouseEvent): void {
-    if (!this.isDragging) return
-    
+    if (!this.isDragging)
+      return
+
     // Determine which element is being dragged
     const target = e.target as HTMLElement
     if (target === this.saturationValue || target.closest('.sv-mode')) {
       this.updateSVFromMouse(e)
-    } else if (target === this.hueSlider || target.closest('#hue-slider')) {
+    }
+    else if (target === this.hueSlider || target.closest('#hue-slider')) {
       this.updateHueFromMouse(e)
-    } else if (target === this.alphaSlider || target.closest('#alpha-slider')) {
+    }
+    else if (target === this.alphaSlider || target.closest('#alpha-slider')) {
       this.updateAlphaFromMouse(e)
     }
   }
 
   private handleTouchMove(e: TouchEvent): void {
-    if (!this.isDragging) return
-    
+    if (!this.isDragging)
+      return
+
     const target = e.target as HTMLElement
     if (target === this.saturationValue || target.closest('.sv-mode')) {
       this.updateSVFromTouch(e)
-    } else if (target === this.hueSlider || target.closest('#hue-slider')) {
+    }
+    else if (target === this.hueSlider || target.closest('#hue-slider')) {
       this.updateHueFromTouch(e)
-    } else if (target === this.alphaSlider || target.closest('#alpha-slider')) {
+    }
+    else if (target === this.alphaSlider || target.closest('#alpha-slider')) {
       this.updateAlphaFromTouch(e)
     }
   }
@@ -494,15 +541,16 @@ export class AdvancedColorPicker {
   }
 
   private updateSVFromMouse(e: MouseEvent): void {
-    if (!this.saturationValue) return
-    
+    if (!this.saturationValue)
+      return
+
     const rect = this.saturationValue.getBoundingClientRect()
     const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left))
     const y = Math.max(0, Math.min(rect.height, e.clientY - rect.top))
-    
+
     const s = (x / rect.width) * 100
     const v = 100 - (y / rect.height) * 100
-    
+
     this.updateColorFromHSV(this.currentColor.hsv.h, s, v)
   }
 
@@ -512,12 +560,13 @@ export class AdvancedColorPicker {
   }
 
   private updateHueFromMouse(e: MouseEvent): void {
-    if (!this.hueSlider) return
-    
+    if (!this.hueSlider)
+      return
+
     const rect = this.hueSlider.getBoundingClientRect()
     const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left))
     const h = (x / rect.width) * 360
-    
+
     this.updateColorFromHSV(h, this.currentColor.hsv.s, this.currentColor.hsv.v)
   }
 
@@ -527,16 +576,17 @@ export class AdvancedColorPicker {
   }
 
   private updateAlphaFromMouse(e: MouseEvent): void {
-    if (!this.alphaSlider) return
-    
+    if (!this.alphaSlider)
+      return
+
     const rect = this.alphaSlider.getBoundingClientRect()
     const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left))
     const a = x / rect.width
-    
+
     this.currentColor.rgb.a = a
     this.currentColor.hsl.a = a
     this.currentColor.hsv.a = a
-    
+
     this.updateUI()
     this.emitChange()
   }
@@ -548,29 +598,33 @@ export class AdvancedColorPicker {
 
   private handleInputChange(inputId: string): void {
     const input = this.inputFields?.get(inputId)
-    if (!input) return
-    
+    if (!input)
+      return
+
     const value = input.value
-    
+
     if (inputId === 'hex-input') {
       this.setColor(value)
-    } else if (inputId.startsWith('rgb-')) {
-      const r = parseInt(this.inputFields?.get('rgb-r')?.value || '0')
-      const g = parseInt(this.inputFields?.get('rgb-g')?.value || '0')
-      const b = parseInt(this.inputFields?.get('rgb-b')?.value || '0')
-      const a = parseFloat(this.inputFields?.get('rgb-a')?.value || '1')
+    }
+    else if (inputId.startsWith('rgb-')) {
+      const r = Number.parseInt(this.inputFields?.get('rgb-r')?.value || '0')
+      const g = Number.parseInt(this.inputFields?.get('rgb-g')?.value || '0')
+      const b = Number.parseInt(this.inputFields?.get('rgb-b')?.value || '0')
+      const a = Number.parseFloat(this.inputFields?.get('rgb-a')?.value || '1')
       this.setColorFromRGB(r, g, b, a)
-    } else if (inputId.startsWith('hsl-')) {
-      const h = parseInt(this.inputFields?.get('hsl-h')?.value || '0')
-      const s = parseInt(this.inputFields?.get('hsl-s')?.value || '0')
-      const l = parseInt(this.inputFields?.get('hsl-l')?.value || '0')
-      const a = parseFloat(this.inputFields?.get('hsl-a')?.value || '1')
+    }
+    else if (inputId.startsWith('hsl-')) {
+      const h = Number.parseInt(this.inputFields?.get('hsl-h')?.value || '0')
+      const s = Number.parseInt(this.inputFields?.get('hsl-s')?.value || '0')
+      const l = Number.parseInt(this.inputFields?.get('hsl-l')?.value || '0')
+      const a = Number.parseFloat(this.inputFields?.get('hsl-a')?.value || '1')
       this.setColorFromHSL(h, s, l, a)
-    } else if (inputId.startsWith('hsv-')) {
-      const h = parseInt(this.inputFields?.get('hsv-h')?.value || '0')
-      const s = parseInt(this.inputFields?.get('hsv-s')?.value || '0')
-      const v = parseInt(this.inputFields?.get('hsv-v')?.value || '0')
-      const a = parseFloat(this.inputFields?.get('hsv-a')?.value || '1')
+    }
+    else if (inputId.startsWith('hsv-')) {
+      const h = Number.parseInt(this.inputFields?.get('hsv-h')?.value || '0')
+      const s = Number.parseInt(this.inputFields?.get('hsv-s')?.value || '0')
+      const v = Number.parseInt(this.inputFields?.get('hsv-v')?.value || '0')
+      const a = Number.parseFloat(this.inputFields?.get('hsv-a')?.value || '1')
       this.setColorFromHSV(h, s, v, a)
     }
   }
@@ -578,14 +632,14 @@ export class AdvancedColorPicker {
   private switchInputFormat(format: string): void {
     // Update tab buttons
     const tabs = this.container.querySelectorAll('.tab-btn')
-    tabs.forEach(tab => {
+    tabs.forEach((tab) => {
       const tabEl = tab as HTMLElement
       tabEl.classList.toggle('active', (tabEl.getAttribute('data-format') || '') === format)
     })
-    
+
     // Update field groups
     const groups = this.container.querySelectorAll('.field-group')
-    groups.forEach(group => {
+    groups.forEach((group) => {
       const groupEl = group as HTMLElement
       groupEl.classList.toggle('active', (groupEl.getAttribute('data-format') || '') === format)
     })
@@ -598,47 +652,48 @@ export class AdvancedColorPicker {
     const rgb = this.hexToRgb(hex)
     const hsl = this.rgbToHsl(rgb)
     const hsv = this.rgbToHsv(rgb)
-    
+
     return { hex, rgb, hsl, hsv }
   }
 
-  private hexToRgb(hex: string): { r: number; g: number; b: number; a?: number } {
+  private hexToRgb(hex: string): { r: number, g: number, b: number, a?: number } {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(hex)
-    if (!result) return { r: 0, g: 0, b: 0, a: 1 }
-    
+    if (!result)
+      return { r: 0, g: 0, b: 0, a: 1 }
+
     return {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16),
-      a: result[4] ? parseInt(result[4], 16) / 255 : 1
+      r: Number.parseInt(result[1], 16),
+      g: Number.parseInt(result[2], 16),
+      b: Number.parseInt(result[3], 16),
+      a: result[4] ? Number.parseInt(result[4], 16) / 255 : 1,
     }
   }
 
   private rgbToHex(r: number, g: number, b: number, a?: number): string {
     const toHex = (n: number) => n.toString(16).padStart(2, '0')
-    let hex = '#' + toHex(r) + toHex(g) + toHex(b)
+    let hex = `#${toHex(r)}${toHex(g)}${toHex(b)}`
     if (a !== undefined && a < 1) {
       hex += toHex(Math.round(a * 255))
     }
     return hex.toUpperCase()
   }
 
-  private rgbToHsl(rgb: { r: number; g: number; b: number; a?: number }): { h: number; s: number; l: number; a?: number } {
+  private rgbToHsl(rgb: { r: number, g: number, b: number, a?: number }): { h: number, s: number, l: number, a?: number } {
     const r = rgb.r / 255
     const g = rgb.g / 255
     const b = rgb.b / 255
-    
+
     const max = Math.max(r, g, b)
     const min = Math.min(r, g, b)
     const l = (max + min) / 2
-    
+
     if (max === min) {
       return { h: 0, s: 0, l: l * 100, a: rgb.a }
     }
-    
+
     const d = max - min
     const s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
-    
+
     let h = 0
     switch (max) {
       case r:
@@ -651,61 +706,67 @@ export class AdvancedColorPicker {
         h = ((r - g) / d + 4) / 6
         break
     }
-    
+
     return { h: h * 360, s: s * 100, l: l * 100, a: rgb.a }
   }
 
-  private hslToRgb(h: number, s: number, l: number, a?: number): { r: number; g: number; b: number; a?: number } {
+  private hslToRgb(h: number, s: number, l: number, a?: number): { r: number, g: number, b: number, a?: number } {
     h = h / 360
     s = s / 100
     l = l / 100
-    
+
     let r, g, b
-    
+
     if (s === 0) {
       r = g = b = l
-    } else {
+    }
+    else {
       const hue2rgb = (p: number, q: number, t: number) => {
-        if (t < 0) t += 1
-        if (t > 1) t -= 1
-        if (t < 1/6) return p + (q - p) * 6 * t
-        if (t < 1/2) return q
-        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6
+        if (t < 0)
+          t += 1
+        if (t > 1)
+          t -= 1
+        if (t < 1 / 6)
+          return p + (q - p) * 6 * t
+        if (t < 1 / 2)
+          return q
+        if (t < 2 / 3)
+          return p + (q - p) * (2 / 3 - t) * 6
         return p
       }
-      
+
       const q = l < 0.5 ? l * (1 + s) : l + s - l * s
       const p = 2 * l - q
-      
-      r = hue2rgb(p, q, h + 1/3)
+
+      r = hue2rgb(p, q, h + 1 / 3)
       g = hue2rgb(p, q, h)
-      b = hue2rgb(p, q, h - 1/3)
+      b = hue2rgb(p, q, h - 1 / 3)
     }
-    
+
     return {
       r: Math.round(r * 255),
       g: Math.round(g * 255),
       b: Math.round(b * 255),
-      a
+      a,
     }
   }
 
-  private rgbToHsv(rgb: { r: number; g: number; b: number; a?: number }): { h: number; s: number; v: number; a?: number } {
+  private rgbToHsv(rgb: { r: number, g: number, b: number, a?: number }): { h: number, s: number, v: number, a?: number } {
     const r = rgb.r / 255
     const g = rgb.g / 255
     const b = rgb.b / 255
-    
+
     const max = Math.max(r, g, b)
     const min = Math.min(r, g, b)
     const v = max
-    
+
     if (max === min) {
       return { h: 0, s: 0, v: v * 100, a: rgb.a }
     }
-    
+
     const d = max - min
     const s = max === 0 ? 0 : d / max
-    
+
     let h = 0
     switch (max) {
       case r:
@@ -718,23 +779,23 @@ export class AdvancedColorPicker {
         h = ((r - g) / d + 4) / 6
         break
     }
-    
+
     return { h: h * 360, s: s * 100, v: v * 100, a: rgb.a }
   }
 
-  private hsvToRgb(h: number, s: number, v: number, a?: number): { r: number; g: number; b: number; a?: number } {
+  private hsvToRgb(h: number, s: number, v: number, a?: number): { r: number, g: number, b: number, a?: number } {
     h = h / 360
     s = s / 100
     v = v / 100
-    
+
     const i = Math.floor(h * 6)
     const f = h * 6 - i
     const p = v * (1 - s)
     const q = v * (1 - f * s)
     const t = v * (1 - (1 - f) * s)
-    
+
     let r, g, b
-    
+
     switch (i % 6) {
       case 0: r = v; g = t; b = p; break
       case 1: r = q; g = v; b = p; break
@@ -744,12 +805,12 @@ export class AdvancedColorPicker {
       case 5: r = v; g = p; b = q; break
       default: r = g = b = 0
     }
-    
+
     return {
       r: Math.round(r * 255),
       g: Math.round(g * 255),
       b: Math.round(b * 255),
-      a
+      a,
     }
   }
 
@@ -766,7 +827,7 @@ export class AdvancedColorPicker {
     const hex = this.rgbToHex(r, g, b, a)
     const hsl = this.rgbToHsl(rgb)
     const hsv = this.rgbToHsv(rgb)
-    
+
     this.currentColor = { hex, rgb, hsl, hsv }
     this.render()
     this.updateUI()
@@ -778,7 +839,7 @@ export class AdvancedColorPicker {
     const hex = this.rgbToHex(rgb.r, rgb.g, rgb.b, rgb.a)
     const hsl = { h, s, l, a }
     const hsv = this.rgbToHsv(rgb)
-    
+
     this.currentColor = { hex, rgb, hsl, hsv }
     this.render()
     this.updateUI()
@@ -790,7 +851,7 @@ export class AdvancedColorPicker {
     const hex = this.rgbToHex(rgb.r, rgb.g, rgb.b, rgb.a)
     const hsl = this.rgbToHsl(rgb)
     const hsv = { h, s, v, a }
-    
+
     this.currentColor = { hex, rgb, hsl, hsv }
     this.render()
     this.updateUI()
@@ -813,8 +874,9 @@ export class AdvancedColorPicker {
         return a < 1 ? `rgba(${r}, ${g}, ${b}, ${a})` : `rgb(${r}, ${g}, ${b})`
       case 'hsl':
         const { h, s, l, a: ha = 1 } = this.currentColor.hsl
-        return ha < 1 ? `hsla(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%, ${ha})` 
-                     : `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`
+        return ha < 1
+          ? `hsla(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%, ${ha})`
+          : `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`
       case 'hsv':
         const hsv = this.currentColor.hsv
         return `hsv(${Math.round(hsv.h)}, ${Math.round(hsv.s)}%, ${Math.round(hsv.v)}%)`
@@ -829,12 +891,12 @@ export class AdvancedColorPicker {
 
   private saveColor(): void {
     const color = this.currentColor.hex
-    
+
     // Add to history
     if (this.options.showHistory) {
       this.addToHistory(color)
     }
-    
+
     // Emit save event
     this.options.onSave(this.getColor())
   }
@@ -845,29 +907,30 @@ export class AdvancedColorPicker {
     if (index > -1) {
       this.history.splice(index, 1)
     }
-    
+
     // Add to beginning
     this.history.unshift(color)
-    
+
     // Limit history size
     if (this.history.length > this.options.maxHistory) {
       this.history = this.history.slice(0, this.options.maxHistory)
     }
-    
+
     // Update UI
     this.renderHistory()
   }
 
   private renderHistory(): void {
     const historyContainer = this.container.querySelector('#history-colors')
-    if (!historyContainer) return
-    
-    historyContainer.innerHTML = this.history.map(color => 
-      `<div class="history-color" data-color="${color}" style="background: ${color}"></div>`
+    if (!historyContainer)
+      return
+
+    historyContainer.innerHTML = this.history.map(color =>
+      `<div class="history-color" data-color="${color}" style="background: ${color}"></div>`,
     ).join('')
-    
+
     // Add click handlers
-    historyContainer.querySelectorAll('.history-color').forEach(el => {
+    historyContainer.querySelectorAll('.history-color').forEach((el) => {
       el.addEventListener('click', (e) => {
         const color = (e.target as HTMLElement).dataset.color!
         this.setColor(color)
@@ -878,7 +941,8 @@ export class AdvancedColorPicker {
   private resolveContainer(container: HTMLElement | string): HTMLElement {
     if (typeof container === 'string') {
       const el = document.querySelector(container) as HTMLElement
-      if (!el) throw new Error(`Container ${container} not found`)
+      if (!el)
+        throw new Error(`Container ${container} not found`)
       return el
     }
     return container
@@ -898,7 +962,7 @@ export class AdvancedColorPicker {
     document.removeEventListener('mouseup', this.handleMouseUp.bind(this))
     document.removeEventListener('touchmove', this.handleTouchMove.bind(this))
     document.removeEventListener('touchend', this.handleTouchEnd.bind(this))
-    
+
     // Clear container
     this.container.innerHTML = ''
   }

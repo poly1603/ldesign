@@ -8,27 +8,27 @@
  */
 export interface WasmColorModule {
   // 颜色转换
-  hex_to_rgb(hex: number): Uint8Array
-  rgb_to_hex(r: number, g: number, b: number): number
-  rgb_to_hsl(r: number, g: number, b: number): Float32Array
-  hsl_to_rgb(h: number, s: number, l: number): Uint8Array
-  
+  hex_to_rgb: (hex: number) => Uint8Array
+  rgb_to_hex: (r: number, g: number, b: number) => number
+  rgb_to_hsl: (r: number, g: number, b: number) => Float32Array
+  hsl_to_rgb: (h: number, s: number, l: number) => Uint8Array
+
   // 颜色计算
-  blend_colors(color1: number, color2: number, ratio: number): number
-  calculate_contrast(color1: number, color2: number): number
-  generate_palette(base_color: number, count: number): Uint32Array
-  
+  blend_colors: (color1: number, color2: number, ratio: number) => number
+  calculate_contrast: (color1: number, color2: number) => number
+  generate_palette: (base_color: number, count: number) => Uint32Array
+
   // 批量处理
-  batch_convert_hex_to_rgb(hex_array: Uint32Array): Uint8Array
-  batch_calculate_contrast(colors: Uint32Array): Float32Array
-  
+  batch_convert_hex_to_rgb: (hex_array: Uint32Array) => Uint8Array
+  batch_calculate_contrast: (colors: Uint32Array) => Float32Array
+
   // 高级算法
-  kmeans_clustering(data: Float32Array, k: number, max_iter: number): Float32Array
-  neural_network_forward(input: Float32Array, weights: Float32Array): Float32Array
-  
+  kmeans_clustering: (data: Float32Array, k: number, max_iter: number) => Float32Array
+  neural_network_forward: (input: Float32Array, weights: Float32Array) => Float32Array
+
   // 内存管理
-  allocate(size: number): number
-  deallocate(ptr: number): void
+  allocate: (size: number) => number
+  deallocate: (ptr: number) => void
   memory: WebAssembly.Memory
 }
 
@@ -76,8 +76,10 @@ export class WasmLoader {
    * 加载 WASM 模块
    */
   async load(): Promise<void> {
-    if (this.isLoaded) return
-    if (this.loadPromise) return this.loadPromise
+    if (this.isLoaded)
+      return
+    if (this.loadPromise)
+      return this.loadPromise
 
     this.loadPromise = this._load()
     await this.loadPromise
@@ -101,7 +103,7 @@ export class WasmLoader {
       // 如果没有缓存，从网络加载
       if (!this.module) {
         this.module = await this.loadFromNetwork()
-        
+
         // 缓存模块
         if (this.config.cache && this.module) {
           await this.saveToCache(this.module)
@@ -114,13 +116,15 @@ export class WasmLoader {
       }
 
       this.isLoaded = true
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to load WASM module:', error)
-      
+
       if (this.config.fallback) {
         console.warn('Falling back to JavaScript implementation')
         this.setupFallback()
-      } else {
+      }
+      else {
         throw error
       }
     }
@@ -130,8 +134,8 @@ export class WasmLoader {
    * 检查 WebAssembly 支持
    */
   private isWebAssemblySupported(): boolean {
-    return typeof WebAssembly !== 'undefined' &&
-           typeof WebAssembly.instantiate === 'function'
+    return typeof WebAssembly !== 'undefined'
+      && typeof WebAssembly.instantiate === 'function'
   }
 
   /**
@@ -139,7 +143,7 @@ export class WasmLoader {
    */
   private async loadFromNetwork(): Promise<WebAssembly.Module> {
     const response = await fetch(this.config.wasmPath)
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch WASM module: ${response.statusText}`)
     }
@@ -147,7 +151,8 @@ export class WasmLoader {
     if (this.config.streaming && WebAssembly.instantiateStreaming) {
       const { module } = await WebAssembly.instantiateStreaming(response, this.getImports())
       return module
-    } else {
+    }
+    else {
       const buffer = await response.arrayBuffer()
       const { module } = await WebAssembly.instantiate(buffer, this.getImports())
       return module
@@ -158,17 +163,19 @@ export class WasmLoader {
    * 从缓存加载
    */
   private async loadFromCache(): Promise<WebAssembly.Module | null> {
-    if (!('caches' in self)) return null
+    if (!('caches' in self))
+      return null
 
     try {
       const cache = await caches.open('wasm-cache-v1')
       const response = await cache.match(this.config.wasmPath)
-      
+
       if (response) {
         const buffer = await response.arrayBuffer()
         return await WebAssembly.compile(buffer)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to load from cache:', error)
     }
 
@@ -181,7 +188,7 @@ export class WasmLoader {
   private async saveToCache(_module: WebAssembly.Module): Promise<void> {
     // Cache saving is not directly supported for compiled modules
     // The browser will cache the fetched WASM file automatically
-    return
+
   }
 
   /**
@@ -221,24 +228,24 @@ export class WasmLoader {
         Math_ceil: Math.ceil,
         Math_round: Math.round,
         Math_random: Math.random,
-        
+
         // 日志函数
         console_log: (ptr: number, len: number) => {
           const buffer = new Uint8Array(memory.buffer, ptr, len)
           const text = new TextDecoder().decode(buffer)
           console.log('[WASM]:', text)
         },
-        
+
         // 性能计时
         performance_now: () => performance.now(),
-        
+
         // 内存操作
         memcpy: (dest: number, src: number, n: number) => {
           const destView = new Uint8Array(memory.buffer, dest, n)
           const srcView = new Uint8Array(memory.buffer, src, n)
           destView.set(srcView)
         },
-        
+
         memset: (ptr: number, value: number, n: number) => {
           const view = new Uint8Array(memory.buffer, ptr, n)
           view.fill(value)
@@ -285,7 +292,7 @@ export class WasmLoader {
         if (max !== min) {
           const d = max - min
           s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
-          
+
           switch (max) {
             case r:
               h = ((g - b) / d + (g < b ? 6 : 0)) / 6
@@ -311,27 +318,33 @@ export class WasmLoader {
 
         if (s === 0) {
           r = g = b = l
-        } else {
+        }
+        else {
           const hue2rgb = (p: number, q: number, t: number) => {
-            if (t < 0) t += 1
-            if (t > 1) t -= 1
-            if (t < 1/6) return p + (q - p) * 6 * t
-            if (t < 1/2) return q
-            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6
+            if (t < 0)
+              t += 1
+            if (t > 1)
+              t -= 1
+            if (t < 1 / 6)
+              return p + (q - p) * 6 * t
+            if (t < 1 / 2)
+              return q
+            if (t < 2 / 3)
+              return p + (q - p) * (2 / 3 - t) * 6
             return p
           }
 
           const q = l < 0.5 ? l * (1 + s) : l + s - l * s
           const p = 2 * l - q
-          r = hue2rgb(p, q, h + 1/3)
+          r = hue2rgb(p, q, h + 1 / 3)
           g = hue2rgb(p, q, h)
-          b = hue2rgb(p, q, h - 1/3)
+          b = hue2rgb(p, q, h - 1 / 3)
         }
 
         return new Uint8Array([
           Math.round(r * 255),
           Math.round(g * 255),
-          Math.round(b * 255)
+          Math.round(b * 255),
         ])
       },
 
@@ -339,15 +352,15 @@ export class WasmLoader {
         const r1 = (color1 >> 16) & 0xFF
         const g1 = (color1 >> 8) & 0xFF
         const b1 = color1 & 0xFF
-        
+
         const r2 = (color2 >> 16) & 0xFF
         const g2 = (color2 >> 8) & 0xFF
         const b2 = color2 & 0xFF
-        
+
         const r = Math.round(r1 * (1 - ratio) + r2 * ratio)
         const g = Math.round(g1 * (1 - ratio) + g2 * ratio)
         const b = Math.round(b1 * (1 - ratio) + b2 * ratio)
-        
+
         return (r << 16) | (g << 8) | b
       },
 
@@ -356,20 +369,20 @@ export class WasmLoader {
           const r = ((color >> 16) & 0xFF) / 255
           const g = ((color >> 8) & 0xFF) / 255
           const b = (color & 0xFF) / 255
-          
-          const [rs, gs, bs] = [r, g, b].map(c => 
-            c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+
+          const [rs, gs, bs] = [r, g, b].map(c =>
+            c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4,
           )
-          
+
           return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs
         }
-        
+
         const l1 = getLuminance(color1)
         const l2 = getLuminance(color2)
-        
+
         const lighter = Math.max(l1, l2)
         const darker = Math.min(l1, l2)
-        
+
         return (lighter + 0.05) / (darker + 0.05)
       },
 
@@ -378,7 +391,7 @@ export class WasmLoader {
         const r = (base_color >> 16) & 0xFF
         const g = (base_color >> 8) & 0xFF
         const b = base_color & 0xFF
-        
+
         // Simple palette generation
         for (let i = 0; i < count; i++) {
           const factor = i / count
@@ -387,7 +400,7 @@ export class WasmLoader {
           const newB = Math.round(b * (1 - factor) + 255 * factor) % 256
           palette[i] = (newR << 16) | (newG << 8) | newB
         }
-        
+
         return palette
       },
 
@@ -406,19 +419,19 @@ export class WasmLoader {
         const n = colors.length
         const result = new Float32Array((n * (n - 1)) / 2)
         let idx = 0
-        
+
         const getLuminance = (color: number): number => {
           const r = ((color >> 16) & 0xFF) / 255
           const g = ((color >> 8) & 0xFF) / 255
           const b = (color & 0xFF) / 255
-          
-          const [rs, gs, bs] = [r, g, b].map(c => 
-            c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+
+          const [rs, gs, bs] = [r, g, b].map(c =>
+            c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4,
           )
-          
+
           return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs
         }
-        
+
         for (let i = 0; i < n - 1; i++) {
           for (let j = i + 1; j < n; j++) {
             const l1 = getLuminance(colors[i])
@@ -428,7 +441,7 @@ export class WasmLoader {
             result[idx++] = (lighter + 0.05) / (darker + 0.05)
           }
         }
-        
+
         return result
       },
 
@@ -437,7 +450,7 @@ export class WasmLoader {
         const n = data.length / 3 // 假设是 RGB 数据
         const centroids = new Float32Array(k * 3)
         const assignments = new Float32Array(n)
-        
+
         // 随机初始化质心
         for (let i = 0; i < k; i++) {
           const idx = Math.floor(Math.random() * n) * 3
@@ -445,32 +458,32 @@ export class WasmLoader {
           centroids[i * 3 + 1] = data[idx + 1]
           centroids[i * 3 + 2] = data[idx + 2]
         }
-        
+
         for (let iter = 0; iter < max_iter; iter++) {
           // 分配点到最近的质心
           for (let i = 0; i < n; i++) {
             let minDist = Infinity
             let minIdx = 0
-            
+
             for (let j = 0; j < k; j++) {
               const dx = data[i * 3] - centroids[j * 3]
               const dy = data[i * 3 + 1] - centroids[j * 3 + 1]
               const dz = data[i * 3 + 2] - centroids[j * 3 + 2]
               const dist = dx * dx + dy * dy + dz * dz
-              
+
               if (dist < minDist) {
                 minDist = dist
                 minIdx = j
               }
             }
-            
+
             assignments[i] = minIdx
           }
-          
+
           // 更新质心
           const counts = new Float32Array(k)
           centroids.fill(0)
-          
+
           for (let i = 0; i < n; i++) {
             const cluster = assignments[i]
             centroids[cluster * 3] += data[i * 3]
@@ -478,7 +491,7 @@ export class WasmLoader {
             centroids[cluster * 3 + 2] += data[i * 3 + 2]
             counts[cluster]++
           }
-          
+
           for (let i = 0; i < k; i++) {
             if (counts[i] > 0) {
               centroids[i * 3] /= counts[i]
@@ -487,7 +500,7 @@ export class WasmLoader {
             }
           }
         }
-        
+
         return centroids
       },
 
@@ -496,7 +509,7 @@ export class WasmLoader {
         const inputSize = 3
         const hiddenSize = 4
         const outputSize = 1
-        
+
         // 隐藏层
         const hidden = new Float32Array(hiddenSize)
         for (let i = 0; i < hiddenSize; i++) {
@@ -506,7 +519,7 @@ export class WasmLoader {
           }
           hidden[i] = Math.max(0, sum) // ReLU
         }
-        
+
         // 输出层
         const output = new Float32Array(outputSize)
         for (let i = 0; i < outputSize; i++) {
@@ -516,7 +529,7 @@ export class WasmLoader {
           }
           output[i] = 1 / (1 + Math.exp(-sum)) // Sigmoid
         }
-        
+
         return output
       },
 
@@ -596,12 +609,13 @@ export class WasmColorConverter {
     this.wasm = await loadWasm()
   }
 
-  hexToRgb(hex: string): { r: number; g: number; b: number } | null {
-    if (!this.wasm) return null
-    
-    const hexNum = parseInt(hex.slice(1), 16)
+  hexToRgb(hex: string): { r: number, g: number, b: number } | null {
+    if (!this.wasm)
+      return null
+
+    const hexNum = Number.parseInt(hex.slice(1), 16)
     const rgb = this.wasm.hex_to_rgb(hexNum)
-    
+
     return {
       r: rgb[0],
       g: rgb[1],
@@ -610,19 +624,21 @@ export class WasmColorConverter {
   }
 
   rgbToHex(r: number, g: number, b: number): string {
-    if (!this.wasm) return '#000000'
-    
+    if (!this.wasm)
+      return '#000000'
+
     const hex = this.wasm.rgb_to_hex(r, g, b)
-    return '#' + hex.toString(16).padStart(6, '0')
+    return `#${hex.toString(16).padStart(6, '0')}`
   }
 
-  batchConvert(colors: string[]): Array<{ r: number; g: number; b: number }> {
-    if (!this.wasm) return []
-    
-    const hexArray = new Uint32Array(colors.map(c => parseInt(c.slice(1), 16)))
+  batchConvert(colors: string[]): Array<{ r: number, g: number, b: number }> {
+    if (!this.wasm)
+      return []
+
+    const hexArray = new Uint32Array(colors.map(c => Number.parseInt(c.slice(1), 16)))
     const rgbArray = this.wasm.batch_convert_hex_to_rgb(hexArray)
-    
-    const result: Array<{ r: number; g: number; b: number }> = []
+
+    const result: Array<{ r: number, g: number, b: number }> = []
     for (let i = 0; i < colors.length; i++) {
       result.push({
         r: rgbArray[i * 3],
@@ -630,7 +646,7 @@ export class WasmColorConverter {
         b: rgbArray[i * 3 + 2],
       })
     }
-    
+
     return result
   }
 }

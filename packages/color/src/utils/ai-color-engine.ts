@@ -3,9 +3,10 @@
  * 基于机器学习算法提供智能颜色推荐
  */
 
+import type { SmartCache } from './smart-cache'
 import { analyzeColor, type ColorAnalysis } from './color-analyzer'
 import { hexToRgb, rgbToHex } from './color-converter'
-import { SmartCache, createColorCache } from './smart-cache'
+import { createColorCache } from './smart-cache'
 
 /**
  * 颜色趋势数据
@@ -79,25 +80,24 @@ class NeuralLayer {
   constructor(
     inputSize: number,
     outputSize: number,
-    activation: (x: number) => number = (x) => Math.max(0, x) // ReLU
+    activation: (x: number) => number = x => Math.max(0, x), // ReLU
   ) {
     // 初始化权重（Xavier 初始化）
-    this.weights = Array(outputSize).fill(0).map(() =>
-      Array(inputSize).fill(0).map(() => 
-        (Math.random() - 0.5) * Math.sqrt(2 / inputSize)
-      )
+    this.weights = new Array(outputSize).fill(0).map(() =>
+      new Array(inputSize).fill(0).map(() =>
+        (Math.random() - 0.5) * Math.sqrt(2 / inputSize),
+      ),
     )
-    
+
     // 初始化偏置
-    this.biases = Array(outputSize).fill(0)
+    this.biases = new Array(outputSize).fill(0)
     this.activation = activation
   }
 
   forward(input: number[]): number[] {
     return this.weights.map((neuronWeights, i) => {
-      const sum = neuronWeights.reduce((acc, weight, j) => 
-        acc + weight * input[j], this.biases[i]
-      )
+      const sum = neuronWeights.reduce((acc, weight, j) =>
+        acc + weight * input[j], this.biases[i])
       return this.activation(sum)
     })
   }
@@ -112,14 +112,14 @@ class SimpleNeuralNetwork {
   constructor(architecture: number[]) {
     this.layers = []
     for (let i = 0; i < architecture.length - 1; i++) {
-      const activation = i === architecture.length - 2 
+      const activation = i === architecture.length - 2
         ? (x: number) => 1 / (1 + Math.exp(-x)) // Sigmoid for output
         : (x: number) => Math.max(0, x) // ReLU for hidden layers
-      
+
       this.layers.push(new NeuralLayer(
         architecture[i],
         architecture[i + 1],
-        activation
+        activation,
       ))
     }
   }
@@ -140,7 +140,7 @@ class SimpleNeuralNetwork {
       for (let i = 0; i < inputs.length; i++) {
         const output = this.predict(inputs[i])
         const error = targets[i].map((t, j) => t - output[j])
-        
+
         // 简化的反向传播（仅更新最后一层）
         const lastLayer = this.layers[this.layers.length - 1]
         for (let j = 0; j < lastLayer.weights.length; j++) {
@@ -172,24 +172,25 @@ class KMeansClustering {
   fit(data: number[][], maxIterations: number = 100): void {
     // 随机初始化质心
     this.centroids = this.initializeCentroids(data)
-    
+
     for (let iter = 0; iter < maxIterations; iter++) {
       // 分配数据点到最近的质心
-      const newClusters: number[][] = Array(this.k).fill(0).map(() => [])
-      
+      const newClusters: number[][] = new Array(this.k).fill(0).map(() => [])
+
       for (const point of data) {
         const closestCentroid = this.findClosestCentroid(point)
         newClusters[closestCentroid].push(...point)
       }
-      
+
       // 更新质心
-      const newCentroids = newClusters.map(cluster => {
-        if (cluster.length === 0) return this.centroids[0] // 防止空簇
-        
+      const newCentroids = newClusters.map((cluster) => {
+        if (cluster.length === 0)
+          return this.centroids[0] // 防止空簇
+
         const dim = this.centroids[0].length
-        const mean = Array(dim).fill(0)
+        const mean = new Array(dim).fill(0)
         const clusterPoints = cluster.length / dim
-        
+
         for (let i = 0; i < cluster.length; i += dim) {
           for (let j = 0; j < dim; j++) {
             mean[j] += cluster[i + j] / clusterPoints
@@ -197,12 +198,12 @@ class KMeansClustering {
         }
         return mean
       })
-      
+
       // 检查收敛
       if (this.hasConverged(this.centroids, newCentroids)) {
         break
       }
-      
+
       this.centroids = newCentroids
       this.clusters = newClusters
     }
@@ -211,7 +212,7 @@ class KMeansClustering {
   private initializeCentroids(data: number[][]): number[][] {
     const centroids: number[][] = []
     const indices = new Set<number>()
-    
+
     while (centroids.length < this.k) {
       const idx = Math.floor(Math.random() * data.length)
       if (!indices.has(idx)) {
@@ -219,14 +220,14 @@ class KMeansClustering {
         centroids.push([...data[idx]])
       }
     }
-    
+
     return centroids
   }
 
   private findClosestCentroid(point: number[]): number {
     let minDist = Infinity
     let closest = 0
-    
+
     for (let i = 0; i < this.centroids.length; i++) {
       const dist = this.euclideanDistance(point, this.centroids[i])
       if (dist < minDist) {
@@ -234,13 +235,13 @@ class KMeansClustering {
         closest = i
       }
     }
-    
+
     return closest
   }
 
   private euclideanDistance(a: number[], b: number[]): number {
     return Math.sqrt(
-      a.reduce((sum, val, i) => sum + Math.pow(val - b[i], 2), 0)
+      a.reduce((sum, val, i) => sum + (val - b[i]) ** 2, 0),
     )
   }
 
@@ -274,13 +275,13 @@ export class AIColorEngine {
   constructor() {
     // 初始化神经网络（输入：RGB + HSL，输出：评分）
     this.network = new SimpleNeuralNetwork([6, 12, 8, 1])
-    
+
     // 初始化聚类（5个颜色簇）
     this.clustering = new KMeansClustering(5)
-    
+
     // 初始化缓存
     this.cache = createColorCache()
-    
+
     // 加载预训练数据
     this.loadPretrainedModel()
   }
@@ -304,10 +305,10 @@ export class AIColorEngine {
       emotion?: string
       season?: string
       baseColor?: string
-    }
+    },
   ): Promise<ColorRecommendation> {
     const cacheKey = `recommendations:${userId}:${JSON.stringify(context)}`
-    
+
     // 尝试从缓存获取
     const cached = await this.cache.get<ColorRecommendation>(cacheKey)
     if (cached) {
@@ -316,19 +317,19 @@ export class AIColorEngine {
 
     // 获取用户偏好
     const userPref = this.userPreferences.get(userId) || this.createDefaultPreference(userId)
-    
+
     // 生成特征向量
     const features = this.extractFeatures(userPref, context)
-    
+
     // 使用神经网络预测
     const predictions = this.predictColors(features)
-    
+
     // 应用聚类分析
     const clusters = this.applyClusteringAnalysis(predictions)
-    
+
     // 结合趋势数据
     const withTrends = this.incorporateTrends(clusters, context)
-    
+
     // 生成推荐
     const recommendation: ColorRecommendation = {
       colors: withTrends.slice(0, 5),
@@ -349,10 +350,10 @@ export class AIColorEngine {
    */
   async generateColorScheme(
     baseColor: string,
-    style: 'modern' | 'classic' | 'bold' | 'minimal' | 'natural' = 'modern'
+    style: 'modern' | 'classic' | 'bold' | 'minimal' | 'natural' = 'modern',
   ): Promise<ColorScheme> {
     const cacheKey = `scheme:${baseColor}:${style}`
-    
+
     // 尝试从缓存获取
     const cached = await this.cache.get<ColorScheme>(cacheKey)
     if (cached) {
@@ -361,13 +362,13 @@ export class AIColorEngine {
 
     // 分析基础颜色
     const analysis = analyzeColor(baseColor)
-    
+
     // 根据风格生成配色
     const scheme = await this.generateSchemeByStyle(baseColor, analysis, style)
-    
+
     // 评分
     scheme.score = this.evaluateScheme(scheme)
-    
+
     // 缓存结果
     await this.cache.set(cacheKey, scheme, { ttl: 7200000 }) // 2小时
 
@@ -379,10 +380,10 @@ export class AIColorEngine {
    */
   async learnFromInteraction(
     userId: string,
-    interaction: ColorInteraction
+    interaction: ColorInteraction,
   ): Promise<void> {
     let userPref = this.userPreferences.get(userId)
-    
+
     if (!userPref) {
       userPref = this.createDefaultPreference(userId)
       this.userPreferences.set(userId, userPref)
@@ -390,13 +391,14 @@ export class AIColorEngine {
 
     // 记录交互
     userPref.history.push(interaction)
-    
+
     // 更新偏好
     if (interaction.action === 'select' || interaction.action === 'save') {
       if (!userPref.favoriteColors.includes(interaction.color)) {
         userPref.favoriteColors.push(interaction.color)
       }
-    } else if (interaction.action === 'reject') {
+    }
+    else if (interaction.action === 'reject') {
       if (!userPref.dislikedColors.includes(interaction.color)) {
         userPref.dislikedColors.push(interaction.color)
       }
@@ -415,13 +417,13 @@ export class AIColorEngine {
    * 预测颜色趋势
    */
   async predictTrends(
-    timeframe: 'week' | 'month' | 'season' | 'year' = 'month'
+    timeframe: 'week' | 'month' | 'season' | 'year' = 'month',
   ): Promise<ColorTrend[]> {
     const trends: ColorTrend[] = []
-    
+
     // 分析历史数据
     const historicalData = await this.getHistoricalData(timeframe)
-    
+
     // 使用时间序列分析预测趋势
     for (const [color, data] of historicalData) {
       const trend = this.analyzeTimeSeries(data)
@@ -437,7 +439,7 @@ export class AIColorEngine {
 
     // 按趋势分数排序
     trends.sort((a, b) => b.trendScore - a.trendScore)
-    
+
     return trends.slice(0, 20) // 返回前20个趋势
   }
 
@@ -446,30 +448,30 @@ export class AIColorEngine {
    */
   private extractFeatures(
     userPref: UserPreference,
-    context?: any
+    context?: any,
   ): number[] {
     const features: number[] = []
-    
+
     // 用户历史偏好特征
     const colorStats = this.analyzeUserColorHistory(userPref.history)
     features.push(...colorStats)
-    
+
     // 上下文特征
     if (context) {
       features.push(
         context.industry ? this.encodeIndustry(context.industry) : 0,
         context.emotion ? this.encodeEmotion(context.emotion) : 0,
-        context.season ? this.encodeSeason(context.season) : 0
+        context.season ? this.encodeSeason(context.season) : 0,
       )
     }
-    
+
     // 时间特征
     const now = new Date()
     features.push(
       now.getMonth() / 11, // 月份归一化
       now.getHours() / 23, // 小时归一化
     )
-    
+
     return features
   }
 
@@ -477,15 +479,16 @@ export class AIColorEngine {
    * 使用神经网络预测颜色
    */
   private predictColors(features: number[]): string[] {
-    const predictions: Array<{ color: string; score: number }> = []
-    
+    const predictions: Array<{ color: string, score: number }> = []
+
     // 生成候选颜色
     const candidates = this.generateCandidateColors()
-    
+
     for (const color of candidates) {
       const rgb = hexToRgb(color)
-      if (!rgb) continue
-      
+      if (!rgb)
+        continue
+
       // 构建输入向量
       const input = [
         rgb.r / 255,
@@ -493,7 +496,7 @@ export class AIColorEngine {
         rgb.b / 255,
         ...features.slice(0, 3), // 使用部分特征
       ]
-      
+
       // 预测评分
       const [score] = this.network.predict(input)
       predictions.push({ color, score })
@@ -501,7 +504,7 @@ export class AIColorEngine {
 
     // 按评分排序
     predictions.sort((a, b) => b.score - a.score)
-    
+
     return predictions.map(p => p.color)
   }
 
@@ -510,19 +513,19 @@ export class AIColorEngine {
    */
   private applyClusteringAnalysis(colors: string[]): string[] {
     // 将颜色转换为特征向量
-    const colorVectors = colors.map(color => {
+    const colorVectors = colors.map((color) => {
       const rgb = hexToRgb(color)
       return rgb ? [rgb.r / 255, rgb.g / 255, rgb.b / 255] : [0, 0, 0]
     })
 
     // 执行聚类
     this.clustering.fit(colorVectors)
-    
+
     // 从每个簇中选择代表颜色
     const representatives: string[] = []
     for (let i = 0; i < this.clustering.k; i++) {
-      const clusterColors = colors.filter((_, idx) => 
-        this.clustering.predict(colorVectors[idx]) === i
+      const clusterColors = colors.filter((_, idx) =>
+        this.clustering.predict(colorVectors[idx]) === i,
       )
       if (clusterColors.length > 0) {
         representatives.push(clusterColors[0])
@@ -537,9 +540,9 @@ export class AIColorEngine {
    */
   private incorporateTrends(
     colors: string[],
-    _context?: any
+    _context?: any,
   ): string[] {
-    return colors.map(color => {
+    return colors.map((color) => {
       const trend = this.trendData.get(color)
       if (trend && trend.trendScore > 50) {
         return color // 保留趋势色
@@ -562,28 +565,28 @@ export class AIColorEngine {
    */
   private generateReasoning(
     userPref: UserPreference,
-    context?: any
+    context?: any,
   ): string[] {
     const reasoning: string[] = []
-    
+
     if (userPref.favoriteColors.length > 0) {
       reasoning.push(`基于您喜欢的颜色：${userPref.favoriteColors.slice(0, 3).join(', ')}`)
     }
-    
+
     if (context?.emotion) {
       reasoning.push(`适合${context.emotion}情感表达`)
     }
-    
+
     if (context?.season) {
       reasoning.push(`符合${context.season}季节特征`)
     }
-    
+
     if (context?.industry) {
       reasoning.push(`适用于${context.industry}行业`)
     }
-    
+
     reasoning.push('结合当前流行趋势')
-    
+
     return reasoning
   }
 
@@ -593,7 +596,7 @@ export class AIColorEngine {
   private async generateSchemeByStyle(
     baseColor: string,
     analysis: ColorAnalysis,
-    style: string
+    style: string,
   ): Promise<ColorScheme> {
     const scheme: Partial<ColorScheme> = {
       primary: baseColor,
@@ -606,25 +609,25 @@ export class AIColorEngine {
         scheme.accent = this.generateAnalogous(baseColor, 30)
         scheme.neutral = this.generateNeutrals(baseColor, 3)
         break
-        
+
       case 'classic':
         scheme.secondary = this.generateAnalogous(baseColor, 60)
         scheme.accent = this.generateComplementary(baseColor, 0.5)
         scheme.neutral = ['#F5F5F5', '#E0E0E0', '#333333']
         break
-        
+
       case 'bold':
         scheme.secondary = this.generateComplementary(baseColor, 1)
         scheme.accent = this.generateTriadic(baseColor)[0]
         scheme.neutral = ['#000000', '#FFFFFF']
         break
-        
+
       case 'minimal':
         scheme.secondary = this.adjustSaturation(baseColor, 0.3)
         scheme.accent = this.adjustBrightness(baseColor, 1.2)
         scheme.neutral = ['#FAFAFA', '#F0F0F0', '#666666', '#333333']
         break
-        
+
       case 'natural':
         scheme.secondary = this.generateEarthTone(baseColor)
         scheme.accent = this.generateAnalogous(baseColor, 45)
@@ -638,25 +641,27 @@ export class AIColorEngine {
   // 辅助方法
   private generateComplementary(color: string, intensity: number): string {
     const rgb = hexToRgb(color)
-    if (!rgb) return color
-    
+    if (!rgb)
+      return color
+
     return rgbToHex(
       255 - Math.round(rgb.r * intensity),
       255 - Math.round(rgb.g * intensity),
-      255 - Math.round(rgb.b * intensity)
+      255 - Math.round(rgb.b * intensity),
     )
   }
 
   private generateAnalogous(color: string, degrees: number): string {
     // 简化实现
     const rgb = hexToRgb(color)
-    if (!rgb) return color
-    
+    if (!rgb)
+      return color
+
     const shift = degrees / 360
     return rgbToHex(
       Math.round(rgb.r * (1 + shift)) % 256,
       Math.round(rgb.g * (1 - shift / 2)) % 256,
-      Math.round(rgb.b * (1 + shift / 3)) % 256
+      Math.round(rgb.b * (1 + shift / 3)) % 256,
     )
   }
 
@@ -679,13 +684,14 @@ export class AIColorEngine {
 
   private generateEarthTone(color: string): string {
     const rgb = hexToRgb(color)
-    if (!rgb) return color
-    
+    if (!rgb)
+      return color
+
     // 向棕色调整
     return rgbToHex(
       Math.round(rgb.r * 0.8 + 51),
       Math.round(rgb.g * 0.6 + 34),
-      Math.round(rgb.b * 0.4 + 17)
+      Math.round(rgb.b * 0.4 + 17),
     )
   }
 
@@ -695,40 +701,42 @@ export class AIColorEngine {
 
   private adjustSaturation(color: string, factor: number): string {
     const rgb = hexToRgb(color)
-    if (!rgb) return color
-    
+    if (!rgb)
+      return color
+
     const gray = (rgb.r + rgb.g + rgb.b) / 3
     return rgbToHex(
       Math.round(gray + (rgb.r - gray) * factor),
       Math.round(gray + (rgb.g - gray) * factor),
-      Math.round(gray + (rgb.b - gray) * factor)
+      Math.round(gray + (rgb.b - gray) * factor),
     )
   }
 
   private adjustBrightness(color: string, factor: number): string {
     const rgb = hexToRgb(color)
-    if (!rgb) return color
-    
+    if (!rgb)
+      return color
+
     return rgbToHex(
       Math.min(255, Math.round(rgb.r * factor)),
       Math.min(255, Math.round(rgb.g * factor)),
-      Math.min(255, Math.round(rgb.b * factor))
+      Math.min(255, Math.round(rgb.b * factor)),
     )
   }
 
   private evaluateScheme(scheme: ColorScheme): number {
     // 简化的评分算法
     let score = 50
-    
+
     // 对比度评分
     score += this.evaluateContrast(scheme) * 20
-    
+
     // 和谐度评分
     score += this.evaluateHarmony(scheme) * 20
-    
+
     // 趋势评分
     score += this.evaluateTrendiness(scheme) * 10
-    
+
     return Math.min(100, Math.max(0, score))
   }
 
@@ -796,42 +804,46 @@ export class AIColorEngine {
     // 查找相似的趋势色
     let minDistance = Infinity
     let trendingColor: string | null = null
-    
+
     const rgb = hexToRgb(color)
-    if (!rgb) return null
-    
+    if (!rgb)
+      return null
+
     for (const [tColor, trend] of this.trendData) {
-      if (trend.trendScore < 50) continue
-      
+      if (trend.trendScore < 50)
+        continue
+
       const tRgb = hexToRgb(tColor)
-      if (!tRgb) continue
-      
+      if (!tRgb)
+        continue
+
       const distance = Math.sqrt(
-        Math.pow(rgb.r - tRgb.r, 2) +
-        Math.pow(rgb.g - tRgb.g, 2) +
-        Math.pow(rgb.b - tRgb.b, 2)
+        (rgb.r - tRgb.r) ** 2
+        + (rgb.g - tRgb.g) ** 2
+        + (rgb.b - tRgb.b) ** 2,
       )
-      
+
       if (distance < minDistance && distance < 50) {
         minDistance = distance
         trendingColor = tColor
       }
     }
-    
+
     return trendingColor
   }
 
   private getRelevantTrends(context?: any): ColorTrend[] {
     const trends: ColorTrend[] = []
-    
+
     for (const trend of this.trendData.values()) {
       if (context?.industry && trend.industry === context.industry) {
         trends.push(trend)
-      } else if (context?.region && trend.region === context.region) {
+      }
+      else if (context?.region && trend.region === context.region) {
         trends.push(trend)
       }
     }
-    
+
     return trends.slice(0, 5)
   }
 
@@ -872,7 +884,7 @@ export class AIColorEngine {
       trendScore: 75,
       category: 'energetic',
     })
-    
+
     this.trendData.set('#4ECDC4', {
       color: '#4ECDC4',
       popularity: 0.85,

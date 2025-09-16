@@ -56,7 +56,8 @@ export class CSSInjectorImpl implements CSSInjector {
     const styleId = id || this.options.styleId
     const cssText = this.generateCSSText(variables)
 
-    if (this.lastCssText.get(styleId) === cssText) return
+    if (this.lastCssText.get(styleId) === cssText)
+      return
     this.updateStyleElement(styleId, cssText)
     this.lastCssText.set(styleId, cssText)
   }
@@ -71,7 +72,8 @@ export class CSSInjectorImpl implements CSSInjector {
     const styleId = id || this.options.styleId
     const cssText = this.generateCSSTextWithComments(variableGroups)
 
-    if (this.lastCssText.get(styleId) === cssText) return
+    if (this.lastCssText.get(styleId) === cssText)
+      return
     this.updateStyleElement(styleId, cssText)
     this.lastCssText.set(styleId, cssText)
   }
@@ -123,7 +125,8 @@ export class CSSInjectorImpl implements CSSInjector {
   ): void {
     const styleId = id || this.options.styleId
     const cssText = this.composeThemeCSSText(lightVariables, darkVariables, themeInfo)
-    if (this.lastCssText.get(styleId) === cssText) return
+    if (this.lastCssText.get(styleId) === cssText)
+      return
     this.updateStyleElement(styleId, cssText)
     this.lastCssText.set(styleId, cssText)
   }
@@ -199,7 +202,8 @@ export class CSSInjectorImpl implements CSSInjector {
       try {
         // 同步替换内容（测试环境更稳定）
         ;(sheet as any).replaceSync(cssText)
-      } catch {
+      }
+      catch {
         // 某些环境只能异步
         ;(sheet as any).replace(cssText)
       }
@@ -567,7 +571,7 @@ export function removeAllColorVariables(): void {
   // 只移除color相关的样式ID
   const colorStyleIds = ['ldesign-color-variables', 'ldesign-theme-variables']
 
-  colorStyleIds.forEach(id => {
+  colorStyleIds.forEach((id) => {
     const element = document.getElementById(id)
     if (element) {
       element.remove()
@@ -576,7 +580,7 @@ export function removeAllColorVariables(): void {
 
   // 清理defaultCSSInjector中color相关的样式
   const injectedIds = defaultCSSInjector.getInjectedIds()
-  injectedIds.forEach(id => {
+  injectedIds.forEach((id) => {
     if (id.startsWith('ldesign-color-') || id.startsWith('ldesign-theme-')) {
       defaultCSSInjector.removeVariables(id)
     }

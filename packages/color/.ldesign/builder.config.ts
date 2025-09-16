@@ -21,7 +21,7 @@ export default defineConfig({
     umd: {
       name: 'LDesignColor',
       globals: {
-        vue: 'Vue',
+        'vue': 'Vue',
         '@arco-design/color': 'ArcoColor',
         'chroma-js': 'chroma',
         'lucide-vue-next': 'LucideVueNext',
@@ -29,4 +29,3 @@ export default defineConfig({
     },
   },
 })
-

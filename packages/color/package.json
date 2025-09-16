@@ -17,22 +17,22 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.cjs"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./vue": {
       "types": "./dist/vue/index.d.ts",
-      "import": "./dist/esm/vue/index.js",
-      "require": "./dist/cjs/vue/index.cjs"
+      "import": "./dist/vue/index.js",
+      "require": "./dist/vue/index.cjs"
     },
     "./style.css": "./dist/index.css"
   },
-  "main": "dist/cjs/index.cjs",
-  "module": "dist/esm/index.js",
-  "types": "dist/index.d.ts",
-  "style": "dist/index.css",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "unpkg": "dist/index.umd.js",
   "jsdelivr": "dist/index.umd.js",
+  "types": "dist/index.d.ts",
+  "style": "dist/index.css",
   "files": [
     "CHANGELOG.md",
     "README.md",

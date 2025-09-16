@@ -8,12 +8,12 @@
 /**
  * 缓存策略类型
  */
-export type CacheStrategy = 
-  | 'lru'        // 最近最少使用
-  | 'lfu'        // 最不经常使用
-  | 'fifo'       // 先进先出
-  | 'ttl'        // 基于时间
-  | 'adaptive'   // 自适应策略
+export type CacheStrategy =
+  | 'lru' // 最近最少使用
+  | 'lfu' // 最不经常使用
+  | 'fifo' // 先进先出
+  | 'ttl' // 基于时间
+  | 'adaptive' // 自适应策略
 
 /**
  * 缓存项元数据
@@ -88,11 +88,11 @@ class IndexedDBWrapper {
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result
-        
+
         // 创建对象存储
         if (!db.objectStoreNames.contains(this.storeName)) {
           const store = db.createObjectStore(this.storeName, { keyPath: 'key' })
-          
+
           // 创建索引
           store.createIndex('lastAccess', 'lastAccess', { unique: false })
           store.createIndex('expiresAt', 'expiresAt', { unique: false })
@@ -133,7 +133,7 @@ class IndexedDBWrapper {
     return new Promise((resolve, reject) => {
       const transaction = this.getTransaction('readwrite')
       const store = transaction.objectStore(this.storeName)
-      
+
       const item = {
         key,
         value,
@@ -159,7 +159,7 @@ class IndexedDBWrapper {
     return new Promise((resolve, reject) => {
       const transaction = this.getTransaction('readwrite')
       const store = transaction.objectStore(this.storeName)
-      
+
       const request = store.get(key)
       request.onsuccess = () => {
         const item = request.result
@@ -169,7 +169,8 @@ class IndexedDBWrapper {
           item.hits++
           store.put(item)
           resolve(item.value)
-        } else {
+        }
+        else {
           resolve(undefined)
         }
       }
@@ -263,7 +264,7 @@ export class SmartCache {
     }
 
     this.db = new IndexedDBWrapper(this.config.dbName, this.config.storeName)
-    
+
     this.stats = {
       hits: 0,
       misses: 0,
@@ -280,10 +281,10 @@ export class SmartCache {
    */
   async init(): Promise<void> {
     await this.db.init()
-    
+
     // 加载统计信息
     await this.loadStats()
-    
+
     // 启动自动清理
     if (this.config.autoCleanup) {
       this.startAutoCleanup()
@@ -297,13 +298,13 @@ export class SmartCache {
    * 设置缓存项
    */
   async set<T>(
-    key: string, 
-    value: T, 
+    key: string,
+    value: T,
     options: {
       ttl?: number
       priority?: number
       tags?: string[]
-    } = {}
+    } = {},
   ): Promise<void> {
     const startTime = Date.now()
 
@@ -347,7 +348,8 @@ export class SmartCache {
       // 更新统计
       this.stats.itemCount++
       this.stats.size += JSON.stringify(data).length
-    } finally {
+    }
+    finally {
       this.updateAvgAccessTime(Date.now() - startTime)
     }
   }
@@ -368,7 +370,7 @@ export class SmartCache {
 
       // 从 IndexedDB 获取
       let data = await this.db.get(key)
-      
+
       if (data === undefined) {
         this.stats.misses++
         this.updateHitRate()
@@ -385,7 +387,7 @@ export class SmartCache {
 
       // 更新访问记录
       this.updateAccessRecord(key)
-      
+
       // 更新统计
       this.stats.hits++
       this.updateHitRate()
@@ -396,7 +398,8 @@ export class SmartCache {
       }
 
       return data
-    } finally {
+    }
+    finally {
       this.updateAvgAccessTime(Date.now() - startTime)
     }
   }
@@ -436,7 +439,7 @@ export class SmartCache {
     // 预加载高优先级缓存项
     const keys = await this.db.keys()
     const highPriorityKeys = keys.slice(0, 10) // 简化实现
-    
+
     for (const key of highPriorityKeys) {
       const value = await this.db.get(key)
       if (value && this.config.strategy === 'adaptive') {
@@ -450,7 +453,7 @@ export class SmartCache {
    */
   private async ensureSpace(): Promise<void> {
     const currentSize = await this.db.size()
-    
+
     if (currentSize >= this.config.maxItems) {
       // 根据策略驱逐缓存项
       await this.evict()
@@ -463,7 +466,7 @@ export class SmartCache {
   private async evict(): Promise<void> {
     const strategy = this.config.strategy
     const keys = await this.db.keys()
-    
+
     let keyToEvict: string | undefined
 
     switch (strategy) {
@@ -471,7 +474,7 @@ export class SmartCache {
         // 驱逐最近最少使用的
         keyToEvict = this.accessQueue[0]
         break
-        
+
       case 'lfu':
         // 驱逐最不经常使用的
         let minFreq = Infinity
@@ -482,17 +485,17 @@ export class SmartCache {
           }
         }
         break
-        
+
       case 'fifo':
         // 驱逐最早的
         keyToEvict = keys[0]
         break
-        
+
       case 'ttl':
         // 驱逐过期的
         // 这里需要查询过期的项
         break
-        
+
       case 'adaptive':
         // 自适应策略：结合 LRU 和 LFU
         const score = (key: string): number => {
@@ -500,7 +503,7 @@ export class SmartCache {
           const recency = this.accessQueue.indexOf(key)
           return freq * 0.7 + (1 / (recency + 1)) * 0.3
         }
-        
+
         let minScore = Infinity
         for (const key of keys) {
           const s = score(key)
@@ -528,7 +531,7 @@ export class SmartCache {
       this.accessQueue.splice(index, 1)
     }
     this.accessQueue.push(key)
-    
+
     // 更新频率映射
     this.frequencyMap.set(key, (this.frequencyMap.get(key) || 0) + 1)
   }
@@ -546,8 +549,8 @@ export class SmartCache {
    */
   private updateAvgAccessTime(time: number): void {
     const alpha = 0.1 // 指数加权移动平均系数
-    this.stats.avgAccessTime = 
-      this.stats.avgAccessTime * (1 - alpha) + time * alpha
+    this.stats.avgAccessTime
+      = this.stats.avgAccessTime * (1 - alpha) + time * alpha
   }
 
   /**
@@ -565,7 +568,7 @@ export class SmartCache {
   private async cleanup(): Promise<void> {
     const keys = await this.db.keys()
     const now = Date.now()
-    
+
     for (const key of keys) {
       const item = await this.db.get(key)
       if (item && item.expiresAt && item.expiresAt < now) {
@@ -617,7 +620,6 @@ export class SmartCache {
     this.stats.itemCount = await this.db.size()
   }
 
-
   /**
    * 销毁缓存
    */
@@ -666,34 +668,34 @@ export function cached(options: {
   cache?: SmartCache
 } = {}) {
   const cache = options.cache || new SmartCache()
-  
+
   return function (
     _target: any,
     propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     const originalMethod = descriptor.value
-    
+
     descriptor.value = async function (...args: any[]) {
-      const cacheKey = typeof options.key === 'function' 
+      const cacheKey = typeof options.key === 'function'
         ? options.key(args)
         : options.key || `${propertyKey}:${JSON.stringify(args)}`
-      
+
       // 尝试从缓存获取
       const cached = await cache.get(cacheKey)
       if (cached !== undefined) {
         return cached
       }
-      
+
       // 执行原方法
       const result = await originalMethod.apply(this, args)
-      
+
       // 存入缓存
       await cache.set(cacheKey, result, { ttl: options.ttl })
-      
+
       return result
     }
-    
+
     return descriptor
   }
 }

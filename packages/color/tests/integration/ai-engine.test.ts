@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { AIColorEngine } from '../../src/ai/ai-color-engine'
 
-describe('AIColorEngine Integration Tests', () => {
+describe('aIColorEngine Integration Tests', () => {
   let engine: AIColorEngine
 
   beforeEach(async () => {
@@ -9,18 +9,18 @@ describe('AIColorEngine Integration Tests', () => {
       modelPath: './models/color-nn.json',
       cacheSize: 100,
       learningRate: 0.01,
-      batchSize: 32
+      batchSize: 32,
     })
     await engine.initialize()
   })
 
   it('should initialize neural network and clustering', async () => {
     expect(engine).toBeDefined()
-    
+
     // Test initial recommendations
     const recommendations = await engine.getRecommendations('#FF5733', {
       style: 'modern',
-      mood: 'energetic'
+      mood: 'energetic',
     })
 
     expect(recommendations).toBeDefined()
@@ -35,7 +35,7 @@ describe('AIColorEngine Integration Tests', () => {
       { color: '#FF5733', action: 'like', context: { style: 'modern' } },
       { color: '#33FF57', action: 'dislike', context: { style: 'modern' } },
       { color: '#5733FF', action: 'like', context: { style: 'modern' } },
-      { color: '#FFFF33', action: 'save', context: { style: 'modern' } }
+      { color: '#FFFF33', action: 'save', context: { style: 'modern' } },
     ]
 
     for (const interaction of userInteractions) {
@@ -43,7 +43,7 @@ describe('AIColorEngine Integration Tests', () => {
         'user123',
         interaction.color,
         interaction.action as any,
-        interaction.context
+        interaction.context,
       )
     }
 
@@ -57,14 +57,22 @@ describe('AIColorEngine Integration Tests', () => {
   it('should analyze color trends', async () => {
     // Simulate trending colors
     const trendingColors = [
-      '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
-      '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'
+      '#FF6B6B',
+      '#4ECDC4',
+      '#45B7D1',
+      '#96CEB4',
+      '#FFEAA7',
+      '#DDA0DD',
+      '#98D8C8',
+      '#F7DC6F',
+      '#BB8FCE',
+      '#85C1E2',
     ]
 
     for (const color of trendingColors) {
       await engine.recordUsage(color, {
         timestamp: Date.now(),
-        category: 'web-design'
+        category: 'web-design',
       })
     }
 
@@ -76,17 +84,23 @@ describe('AIColorEngine Integration Tests', () => {
 
   it('should perform color clustering', async () => {
     const palette = [
-      '#FF0000', '#FF3333', '#FF6666', // Reds
-      '#00FF00', '#33FF33', '#66FF66', // Greens
-      '#0000FF', '#3333FF', '#6666FF'  // Blues
+      '#FF0000',
+      '#FF3333',
+      '#FF6666', // Reds
+      '#00FF00',
+      '#33FF33',
+      '#66FF66', // Greens
+      '#0000FF',
+      '#3333FF',
+      '#6666FF', // Blues
     ]
 
     const clusters = await engine.clusterColors(palette, 3)
-    
+
     expect(clusters).toBeDefined()
     expect(clusters.length).toBe(3)
-    
-    clusters.forEach(cluster => {
+
+    clusters.forEach((cluster) => {
       expect(cluster.centroid).toMatch(/^#[0-9A-F]{6}$/i)
       expect(cluster.colors).toBeInstanceOf(Array)
       expect(cluster.colors.length).toBeGreaterThan(0)
@@ -98,15 +112,15 @@ describe('AIColorEngine Integration Tests', () => {
     const palettes = await engine.generatePalettes(baseColor, {
       count: 5,
       harmony: 'complementary',
-      variation: 0.2
+      variation: 0.2,
     })
 
     expect(palettes).toBeInstanceOf(Array)
     expect(palettes.length).toBe(5)
-    
-    palettes.forEach(palette => {
+
+    palettes.forEach((palette) => {
       expect(palette).toBeInstanceOf(Array)
-      palette.forEach(color => {
+      palette.forEach((color) => {
         expect(color).toMatch(/^#[0-9A-F]{6}$/i)
       })
     })
@@ -115,7 +129,7 @@ describe('AIColorEngine Integration Tests', () => {
   it('should calculate color similarity', async () => {
     const similarity1 = await engine.calculateSimilarity('#FF0000', '#FF0033')
     const similarity2 = await engine.calculateSimilarity('#FF0000', '#00FF00')
-    
+
     expect(similarity1).toBeGreaterThan(similarity2)
     expect(similarity1).toBeGreaterThan(0.8)
     expect(similarity2).toBeLessThan(0.5)
@@ -125,17 +139,17 @@ describe('AIColorEngine Integration Tests', () => {
     const inputs = [
       { baseColor: '#FF5733', context: { style: 'modern' } },
       { baseColor: '#33FF57', context: { style: 'vintage' } },
-      { baseColor: '#5733FF', context: { style: 'minimalist' } }
+      { baseColor: '#5733FF', context: { style: 'minimalist' } },
     ]
 
     const predictions = await Promise.all(
-      inputs.map(input => 
-        engine.predictNextColor(input.baseColor, input.context)
-      )
+      inputs.map(input =>
+        engine.predictNextColor(input.baseColor, input.context),
+      ),
     )
 
     expect(predictions).toHaveLength(3)
-    predictions.forEach(pred => {
+    predictions.forEach((pred) => {
       expect(pred).toHaveProperty('color')
       expect(pred).toHaveProperty('confidence')
       expect(pred.color).toMatch(/^#[0-9A-F]{6}$/i)
@@ -156,7 +170,7 @@ describe('AIColorEngine Integration Tests', () => {
     // Create new engine and import state
     const newEngine = new AIColorEngine({
       modelPath: './models/color-nn.json',
-      cacheSize: 100
+      cacheSize: 100,
     })
     await newEngine.initialize()
     await newEngine.importModel(modelState)
@@ -183,17 +197,17 @@ describe('AIColorEngine Integration Tests', () => {
 
   it('should provide performance metrics', async () => {
     const startTime = Date.now()
-    
+
     // Perform multiple operations
-    const operations = Array(10).fill(null).map((_, i) => 
-      engine.getRecommendations(`#${i.toString(16).padStart(6, '0')}`, {})
+    const operations = Array.from({ length: 10 }).fill(null).map((_, i) =>
+      engine.getRecommendations(`#${i.toString(16).padStart(6, '0')}`, {}),
     )
-    
+
     await Promise.all(operations)
-    
+
     const endTime = Date.now()
     const avgTime = (endTime - startTime) / operations.length
-    
+
     // Should complete within reasonable time (adjust threshold as needed)
     expect(avgTime).toBeLessThan(100) // 100ms per operation
   })
