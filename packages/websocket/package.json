@@ -39,8 +39,8 @@
   "scripts": {
     "build": "ldesign-builder",
     "dev": "ldesign-builder --watch",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:performance": "vitest --config vitest.performance.config.ts",
@@ -52,7 +52,9 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "clean": "rimraf dist es lib types coverage",
-    "prepublishOnly": "pnpm run build && pnpm run test"
+    "prepublishOnly": "pnpm run build && pnpm run test",
+    "test:run": "vitest run",
+    "lint:fix": "eslint . --ext .ts,.tsx,.vue,.js,.jsx --fix"
   },
   "keywords": [
     "websocket",
