@@ -101,16 +101,16 @@ export function createHttpEnginePlugin(
           // 创建或使用提供的 HTTP 客户端
           const httpClient
             = providedClient
-              || (() => {
-                const adapter = createAdapter(clientConfig.adapter)
-                return new HttpClientImpl(
-                  {
-                    ...clientConfig,
-                    ...globalConfig,
-                  },
-                  adapter,
-                )
-              })()
+            || (() => {
+              const adapter = createAdapter(clientConfig.adapter)
+              return new HttpClientImpl(
+                {
+                  ...clientConfig,
+                  ...globalConfig,
+                },
+                adapter,
+              )
+            })()
 
           // 安装 HTTP Vue 插件
           vueApp.use(HttpPlugin, {
@@ -145,10 +145,18 @@ export function createHttpEnginePlugin(
         }
         else {
           engine.logger.info(`[HTTP Plugin] Vue app not found, registering event listener`)
-          // 如果 Vue 应用还没有创建，监听 app:created 事件
-          engine.events.once('app:created', async () => {
-            engine.logger.info(`[HTTP Plugin] app:created event received, installing now`)
-            await performInstall()
+          // 如果 Vue 应用还没有创建，等待 app:created 事件
+          await new Promise<void>((resolve, reject) => {
+            engine.events.once('app:created', async () => {
+              try {
+                engine.logger.info(`[HTTP Plugin] app:created event received, installing now`)
+                await performInstall()
+                resolve()
+              } catch (error) {
+                engine.logger.error(`[HTTP Plugin] Failed to install after app creation:`, error)
+                reject(error)
+              }
+            })
           })
         }
 

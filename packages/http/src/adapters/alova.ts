@@ -75,20 +75,24 @@ export class AlovaAdapter extends BaseAdapter {
     try {
       // 使用 fetch 作为默认请求适配器
       const { createAlova } = this.alova
-      let GlobalFetch: any
+      let adapterFetch: any
 
       try {
+        // 尝试导入 alova/fetch 适配器（alova 3.x 版本）
         // eslint-disable-next-line ts/no-require-imports
-        GlobalFetch = require('alova/GlobalFetch')
+        adapterFetch = require('alova/fetch')
+        if (typeof adapterFetch === 'object' && adapterFetch.default) {
+          adapterFetch = adapterFetch.default
+        }
       }
       catch {
-        // 如果 GlobalFetch 不可用，使用原生 fetch
-        GlobalFetch = () => fetch
+        // 如果不可用，创建一个简单的 fetch 适配器
+        adapterFetch = () => (url: string, config: any) => fetch(url, config)
       }
 
       return createAlova({
         baseURL: '',
-        requestAdapter: GlobalFetch(),
+        requestAdapter: adapterFetch(),
         responded: (response: any) => response.json(),
       })
     }
@@ -157,7 +161,7 @@ export class AlovaAdapter extends BaseAdapter {
     if (config.signal) {
       alovaMethod.abort = () => {
         if (config.signal && !config.signal.aborted) {
-          ;(config.signal as any).abort()
+          ; (config.signal as any).abort()
         }
       }
     }
