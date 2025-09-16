@@ -1,131 +1,333 @@
 /**
- * LDesign DatePicker 主样式文件
- * 使用 Less 编写，基于 CSS 变量系统
+ * LDesign DatePicker 样式入口文件
+ * 统一导入所有样式文件
  */
 
-// 导入组件样式
-@import './components/datepicker.less';
-@import './components/calendar.less';
-@import './components/input.less';
-@import './components/dropdown.less';
+// ==================== 基础样式 ====================
 
-// 导入响应式样式
+// CSS变量系统
+@import './variables.less';
+
+// 组件样式
+@import './components/datepicker.less';
+
+// 响应式设计
 @import './responsive.less';
 
-// 导入主题样式
+// 主题样式
 @import './themes/light.less';
 @import './themes/dark.less';
 
-// 基础样式
-.ldesign-datepicker {
-  position: relative;
-  display: inline-block;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: var(--ls-font-size-sm);
-  line-height: 1.5;
-  color: var(--ldesign-text-color-primary);
+// ==================== 全局重置样式 ====================
+
+// 确保组件样式不受外部影响
+.ld-datepicker {
+  // 重置字体
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+               'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 
+               'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 
+               'Noto Color Emoji';
   
-  // 禁用状态
-  &--disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  // 重置盒模型
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  
+  // 重置边距
+  * {
+    margin: 0;
+    padding: 0;
+  }
+  
+  // 重置列表样式
+  ul,
+  ol {
+    list-style: none;
+  }
+  
+  // 重置按钮样式
+  button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    outline: none;
     
-    * {
-      cursor: not-allowed !important;
+    &:focus-visible {
+      outline: 2px solid var(--ld-primary-color);
+      outline-offset: 2px;
     }
   }
   
-  // 只读状态
-  &--readonly {
-    .ldesign-datepicker__input input {
-      cursor: default;
-    }
-  }
-  
-  // 不同设备类型的样式
-  &--desktop {
-    // 桌面端样式
-  }
-  
-  &--tablet {
-    // 平板端样式
-    font-size: var(--ls-font-size-base);
-  }
-  
-  &--mobile {
-    // 移动端样式
-    font-size: var(--ls-font-size-base);
+  // 重置输入框样式
+  input {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    outline: none;
     
-    .ldesign-datepicker__dropdown {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 9999;
-      background: var(--ldesign-bg-color-component);
+    &:focus-visible {
+      outline: 2px solid var(--ld-primary-color);
+      outline-offset: 2px;
+    }
+  }
+  
+  // 重置链接样式
+  a {
+    color: inherit;
+    text-decoration: none;
+    
+    &:focus-visible {
+      outline: 2px solid var(--ld-primary-color);
+      outline-offset: 2px;
     }
   }
 }
 
-// 全局动画
-@keyframes ldesign-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+// ==================== 工具类样式 ====================
+
+// 隐藏元素（保持可访问性）
+.ld-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
 
-@keyframes ldesign-fade-out {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes ldesign-slide-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes ldesign-slide-down {
-  from {
-    transform: translateY(-100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-// 工具类
-.ldesign-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.ldesign-clearfix {
+// 清除浮动
+.ld-clearfix {
   &::after {
     content: '';
     display: table;
     clear: both;
+  }
+}
+
+// 文本省略
+.ld-text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 多行文本省略
+.ld-text-ellipsis-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ld-text-ellipsis-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ==================== 动画关键帧 ====================
+
+// 淡入动画
+@keyframes ld-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// 淡出动画
+@keyframes ld-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+// 滑入动画
+@keyframes ld-slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 滑出动画
+@keyframes ld-slide-out-down {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+// 缩放进入动画
+@keyframes ld-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// 缩放退出动画
+@keyframes ld-zoom-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+// 脉冲动画
+@keyframes ld-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+// 摇摆动画
+@keyframes ld-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px);
+  }
+}
+
+// ==================== 状态类样式 ====================
+
+// 加载状态
+.ld-loading {
+  position: relative;
+  pointer-events: none;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid var(--ld-border-color);
+    border-top-color: var(--ld-primary-color);
+    border-radius: 50%;
+    animation: ld-spin 1s linear infinite;
+  }
+}
+
+@keyframes ld-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// 错误状态
+.ld-error {
+  border-color: var(--ld-error-color) !important;
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2) !important;
+}
+
+// 成功状态
+.ld-success {
+  border-color: var(--ld-success-color) !important;
+  box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2) !important;
+}
+
+// 警告状态
+.ld-warning {
+  border-color: var(--ld-warning-color) !important;
+  box-shadow: 0 0 0 2px rgba(250, 173, 20, 0.2) !important;
+}
+
+// ==================== 打印样式 ====================
+
+@media print {
+  .ld-datepicker {
+    // 隐藏交互元素
+    &-clear,
+    &-popup,
+    &-today,
+    &-clear-btn {
+      display: none !important;
+    }
+    
+    // 简化输入框样式
+    &-input {
+      border: 1px solid #000 !important;
+      background: white !important;
+      color: black !important;
+      box-shadow: none !important;
+      page-break-inside: avoid;
+    }
+    
+    // 确保文本可读
+    * {
+      color: black !important;
+      background: white !important;
+    }
+  }
+}
+
+// ==================== 兼容性样式 ====================
+
+// IE11 兼容性
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+  .ld-datepicker {
+    &-grid {
+      display: -ms-grid;
+      -ms-grid-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    }
+    
+    &-cell {
+      -ms-grid-column-span: 1;
+    }
+  }
+}
+
+// Safari 兼容性
+@supports (-webkit-appearance: none) {
+  .ld-datepicker-input {
+    -webkit-appearance: none;
   }
 }

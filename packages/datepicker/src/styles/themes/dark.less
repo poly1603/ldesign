@@ -1,387 +1,358 @@
 /**
- * 暗色主题样式
+ * LDesign DatePicker 暗色主题
+ * 实现暗色主题的样式变体
  */
 
-.ldesign-theme-dark {
-  .ldesign-datepicker {
-    // 输入框暗色主题特定样式
-    &__input {
-      input {
-        background: #1f1f1f;
-        border-color: #404040;
-        color: rgba(255, 255, 255, 0.9);
-        
-        &::placeholder {
-          color: rgba(255, 255, 255, 0.5);
-        }
-        
-        &::selection {
-          background: rgba(140, 90, 211, 0.3);
-          color: #a67fdb;
-        }
-        
-        &:hover {
-          border-color: #4a4a4a;
-        }
-        
-        &:focus {
-          border-color: #8c5ad3;
-          box-shadow: 0 0 0 2px rgba(140, 90, 211, 0.2);
-        }
-        
-        &:disabled {
-          background: #1a1a1a;
-          color: rgba(255, 255, 255, 0.3);
-        }
-        
-        &[readonly] {
-          background: #2a2a2a;
-        }
+// ==================== 暗色主题变量 ====================
+
+.ld-theme-dark {
+  // ==================== 颜色变量重定义 ====================
+  
+  // 品牌色
+  --ld-primary-color: #1890ff;
+  --ld-primary-color-hover: #40a9ff;
+  --ld-primary-color-active: #096dd9;
+  --ld-primary-color-disabled: #177ddc;
+  
+  // 功能色
+  --ld-success-color: #52c41a;
+  --ld-warning-color: #faad14;
+  --ld-error-color: #ff4d4f;
+  --ld-info-color: #1890ff;
+  
+  // 中性色
+  --ld-text-color: #ffffffd9;
+  --ld-text-color-secondary: #ffffff73;
+  --ld-text-color-disabled: #ffffff40;
+  --ld-text-color-inverse: #000000d9;
+  
+  // 背景色
+  --ld-background-color: #141414;
+  --ld-background-color-secondary: #1f1f1f;
+  --ld-background-color-tertiary: #262626;
+  --ld-background-color-disabled: #262626;
+  
+  // 边框色
+  --ld-border-color: #434343;
+  --ld-border-color-hover: #40a9ff;
+  --ld-border-color-focus: #1890ff;
+  --ld-border-color-disabled: #434343;
+  
+  // 阴影色
+  --ld-shadow-color: rgba(0, 0, 0, 0.45);
+  --ld-shadow-color-hover: rgba(0, 0, 0, 0.65);
+  --ld-shadow-color-focus: rgba(24, 144, 255, 0.3);
+  
+  // ==================== 组件特定样式 ====================
+  
+  .ld-datepicker {
+    // 输入框暗色主题
+    &-input {
+      background-color: var(--ld-background-color);
+      border-color: var(--ld-border-color);
+      color: var(--ld-text-color);
+      
+      &::placeholder {
+        color: var(--ld-text-color-disabled);
+      }
+      
+      &:hover {
+        border-color: var(--ld-border-color-hover);
+        background-color: var(--ld-background-color-secondary);
+      }
+      
+      &:focus {
+        border-color: var(--ld-border-color-focus);
+        box-shadow: 0 0 0 2px var(--ld-shadow-color-focus);
+        background-color: var(--ld-background-color);
+      }
+      
+      &:disabled {
+        background-color: var(--ld-background-color-disabled);
+        border-color: var(--ld-border-color-disabled);
+        color: var(--ld-text-color-disabled);
       }
     }
     
-    // 日历暗色主题特定样式
-    .ldesign-calendar {
-      background: #1f1f1f;
+    // 清除按钮暗色主题
+    &-clear {
+      color: var(--ld-text-color-secondary);
       
-      &__header {
-        border-bottom-color: #404040;
-        background: linear-gradient(135deg, #1f1f1f 0%, #2a2a2a 100%);
+      &:hover {
+        color: var(--ld-text-color);
+        background-color: var(--ld-background-color-secondary);
       }
-      
-      &__weekday {
-        background: #2a2a2a;
-        color: rgba(255, 255, 255, 0.7);
-      }
-      
-      &__cell {
-        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    // 弹出层暗色主题
+    &-popup {
+      background-color: var(--ld-background-color);
+      border-color: var(--ld-border-color);
+      box-shadow: 0 6px 16px 0 var(--ld-shadow-color),
+                  0 3px 6px -4px var(--ld-shadow-color),
+                  0 9px 28px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    // 头部暗色主题
+    &-header {
+      button {
+        color: var(--ld-text-color-secondary);
         
         &:hover {
-          background: #2a2a2a;
-        }
-        
-        &.adjacent-month {
-          color: rgba(255, 255, 255, 0.3);
-        }
-        
-        &.today {
-          background: rgba(140, 90, 211, 0.2);
-          color: #a67fdb;
-          box-shadow: inset 0 0 0 1px #8c5ad3;
-        }
-        
-        &.selected {
-          background: #8c5ad3;
-          color: rgba(255, 255, 255, 1);
-          box-shadow: 0 2px 8px rgba(140, 90, 211, 0.4);
-        }
-        
-        &.in-range {
-          background: rgba(140, 90, 211, 0.15);
-          color: #a67fdb;
-          
-          &::before {
-            background: linear-gradient(135deg, 
-              rgba(140, 90, 211, 0.2) 0%, 
-              rgba(140, 90, 211, 0.05) 100%);
-          }
-        }
-        
-        &.range-start,
-        &.range-end {
-          background: #8c5ad3;
-          color: rgba(255, 255, 255, 1);
-        }
-        
-        &.disabled {
-          color: rgba(255, 255, 255, 0.3);
-        }
-        
-        &.weekend {
-          color: #ec6f6f;
-        }
-        
-        &.has-event::after {
-          background: #8c5ad3;
-        }
-        
-        &.selected.has-event::after {
-          background: rgba(255, 255, 255, 1);
-        }
-      }
-      
-      &__nav {
-        color: rgba(255, 255, 255, 0.7);
-        
-        &:hover {
-          background: #2a2a2a;
-          color: rgba(255, 255, 255, 0.9);
+          color: var(--ld-text-color);
+          background-color: var(--ld-background-color-secondary);
         }
         
         &:active {
-          background: #333333;
-        }
-      }
-      
-      &__title {
-        color: rgba(255, 255, 255, 0.9);
-        
-        &:hover {
-          background: #2a2a2a;
-        }
-      }
-      
-      &__time-panel {
-        border-top-color: #404040;
-        background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
-      }
-      
-      &__time-column {
-        &-header {
-          color: rgba(255, 255, 255, 0.7);
-        }
-        
-        &-list {
-          border-color: #404040;
-          background: #1f1f1f;
-        }
-        
-        &-item {
-          color: rgba(255, 255, 255, 0.9);
-          
-          &:hover {
-            background: #2a2a2a;
-          }
-          
-          &.selected {
-            background: #8c5ad3;
-            color: rgba(255, 255, 255, 1);
-          }
+          background-color: var(--ld-background-color-tertiary);
         }
       }
     }
     
-    // 下拉框暗色主题特定样式
-    &__dropdown {
-      background: #1f1f1f;
-      border-color: #404040;
-      box-shadow: 
-        0 4px 20px rgba(0, 0, 0, 0.4),
-        0 0 0 1px rgba(255, 255, 255, 0.1);
-      
-      &::before {
-        border-bottom-color: #404040;
-      }
-      
-      &::after {
-        border-bottom-color: #1f1f1f;
-      }
-      
-      &--top::before {
-        border-top-color: #404040;
-      }
-      
-      &--top::after {
-        border-top-color: #1f1f1f;
-      }
-    }
-    
-    // 按钮暗色主题特定样式
-    &__button {
-      background: #1f1f1f;
-      border-color: #404040;
-      color: rgba(255, 255, 255, 0.9);
+    &-title {
+      color: var(--ld-text-color);
       
       &:hover {
-        background: #2a2a2a;
-        border-color: #4a4a4a;
+        color: var(--ld-primary-color);
+      }
+    }
+    
+    // 星期标题暗色主题
+    &-weekday {
+      color: var(--ld-text-color-secondary);
+    }
+    
+    // 单元格暗色主题
+    &-cell {
+      color: var(--ld-text-color);
+      
+      &:hover {
+        background-color: var(--ld-background-color-secondary);
+      }
+      
+      // 今天
+      &--today {
+        color: var(--ld-primary-color);
+        
+        &::after {
+          background-color: var(--ld-primary-color);
+        }
+      }
+      
+      // 选中状态
+      &--selected {
+        color: var(--ld-text-color-inverse);
+        background-color: var(--ld-primary-color);
+        
+        &:hover {
+          background-color: var(--ld-primary-color-hover);
+        }
+      }
+      
+      // 范围内
+      &--in-range {
+        background-color: var(--ld-primary-color-disabled);
+        color: var(--ld-text-color-inverse);
+      }
+      
+      // 范围开始和结束
+      &--range-start,
+      &--range-end {
+        color: var(--ld-text-color-inverse);
+        background-color: var(--ld-primary-color);
+        
+        &:hover {
+          background-color: var(--ld-primary-color-hover);
+        }
+      }
+      
+      // 禁用状态
+      &--disabled {
+        color: var(--ld-text-color-disabled);
+        background-color: transparent;
+        
+        &:hover {
+          background-color: transparent;
+        }
+      }
+      
+      // 周末
+      &--weekend {
+        color: var(--ld-error-color);
+      }
+      
+      // 其他月份
+      &--other-month {
+        color: var(--ld-text-color-disabled);
+      }
+    }
+    
+    // 底部暗色主题
+    &-footer {
+      border-top-color: var(--ld-border-color);
+    }
+    
+    // 按钮暗色主题
+    &-today,
+    &-clear-btn {
+      color: var(--ld-primary-color);
+      
+      &:hover {
+        color: var(--ld-primary-color-hover);
+        background-color: var(--ld-background-color-secondary);
+        border-color: var(--ld-border-color);
       }
       
       &:active {
-        background: #333333;
+        color: var(--ld-primary-color-active);
+        background-color: var(--ld-background-color-tertiary);
       }
-      
-      &--primary {
-        background: linear-gradient(135deg, #8c5ad3 0%, #a67fdb 100%);
-        border-color: #8c5ad3;
-        color: rgba(255, 255, 255, 1);
-        box-shadow: 0 2px 4px rgba(140, 90, 211, 0.3);
-        
-        &:hover {
-          background: linear-gradient(135deg, #a67fdb 0%, #bfa4e5 100%);
-          border-color: #a67fdb;
-          box-shadow: 0 4px 8px rgba(140, 90, 211, 0.4);
-        }
-        
-        &:active {
-          background: #8c5ad3;
-          box-shadow: 0 1px 2px rgba(140, 90, 211, 0.4);
-        }
-      }
-    }
-    
-    // 快捷选择暗色主题特定样式
-    &__shortcuts {
-      border-right-color: #404040;
-      background: linear-gradient(135deg, #1f1f1f 0%, #2a2a2a 100%);
-      
-      &-title {
-        color: rgba(255, 255, 255, 0.7);
-      }
-      
-      &-item {
-        color: rgba(255, 255, 255, 0.9);
-        
-        &:hover {
-          background: rgba(140, 90, 211, 0.15);
-          color: #a67fdb;
-          transform: translateX(2px);
-        }
-        
-        &:active {
-          background: rgba(140, 90, 211, 0.25);
-        }
-      }
-    }
-    
-    // 面板暗色主题特定样式
-    &__panel {
-      &:not(:last-child) {
-        border-right-color: #404040;
-      }
-      
-      &-title {
-        color: rgba(255, 255, 255, 0.7);
-      }
-    }
-    
-    // 页脚暗色主题特定样式
-    &__footer {
-      border-top-color: #404040;
-      background: #2a2a2a;
-      
-      &-text {
-        color: rgba(255, 255, 255, 0.7);
-      }
-    }
-    
-    // 滚动条暗色主题样式
-    &__dropdown-content {
-      &::-webkit-scrollbar-track {
-        background: #2a2a2a;
-      }
-      
-      &::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #4a4a4a 0%, #666666 100%);
-        
-        &:hover {
-          background: linear-gradient(135deg, #666666 0%, #808080 100%);
-        }
-      }
-    }
-    
-    // 加载状态暗色主题
-    &__loading {
-      color: rgba(255, 255, 255, 0.7);
-      
-      &-spinner {
-        border-color: #404040;
-        border-top-color: #8c5ad3;
-      }
-    }
-    
-    // 空状态暗色主题
-    &__empty {
-      color: rgba(255, 255, 255, 0.5);
-    }
-  }
-}
-
-// 暗色主题下的特殊效果
-.ldesign-theme-dark .ldesign-datepicker {
-  // 光晕效果
-  &__input input:focus {
-    box-shadow: 
-      0 0 0 2px rgba(140, 90, 211, 0.3),
-      0 0 12px rgba(140, 90, 211, 0.2);
-  }
-  
-  // 选中状态的光晕
-  .ldesign-calendar__cell.selected {
-    box-shadow: 
-      0 2px 8px rgba(140, 90, 211, 0.4),
-      0 0 12px rgba(140, 90, 211, 0.2);
-  }
-  
-  // 今天的特殊标记
-  .ldesign-calendar__cell.today {
-    &::after {
-      background: #8c5ad3;
-      box-shadow: 0 0 6px rgba(140, 90, 211, 0.6);
-    }
-  }
-}
-
-// 暗色主题下的动画增强
-.ldesign-theme-dark .ldesign-datepicker {
-  .ldesign-calendar__cell {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    &:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
   }
   
-  &__button {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    &:hover {
-      transform: translateY(-1px);
-    }
-    
-    &:active {
-      transform: translateY(0);
-    }
+  // ==================== 特殊状态样式 ====================
+  
+  // 聚焦状态增强
+  .ld-datepicker-input:focus-visible {
+    outline: 2px solid var(--ld-primary-color);
+    outline-offset: 2px;
   }
-}
-
-// 暗色主题下的状态指示
-.ldesign-theme-dark .ldesign-datepicker {
-  // 错误状态增强
-  &__input--error input {
-    border-color: #ec6f6f;
-    box-shadow: 0 0 0 1px #ec6f6f;
+  
+  // 选择状态增强
+  .ld-datepicker-cell--selected {
+    box-shadow: 0 2px 4px rgba(24, 144, 255, 0.4);
+  }
+  
+  // 范围选择状态增强
+  .ld-datepicker-cell--range-start,
+  .ld-datepicker-cell--range-end {
+    box-shadow: 0 2px 4px rgba(24, 144, 255, 0.4);
+  }
+  
+  // ==================== 暗色主题特有效果 ====================
+  
+  // 暗色主题下的发光效果
+  .ld-datepicker {
+    &-cell--selected,
+    &-cell--range-start,
+    &-cell--range-end {
+      box-shadow: 0 0 8px rgba(24, 144, 255, 0.3),
+                  0 2px 4px rgba(24, 144, 255, 0.2);
+    }
     
-    &:focus {
-      box-shadow: 
-        0 0 0 2px rgba(236, 111, 111, 0.3),
-        0 0 8px rgba(236, 111, 111, 0.2);
+    &-input:focus {
+      box-shadow: 0 0 0 2px var(--ld-shadow-color-focus),
+                  0 0 8px rgba(24, 144, 255, 0.2);
     }
   }
   
-  // 成功状态增强
-  &__input--success input {
-    border-color: #83d883;
-    box-shadow: 0 0 0 1px #83d883;
+  // 暗色主题下的边框增强
+  .ld-datepicker-popup {
+    border: 1px solid var(--ld-border-color);
+    backdrop-filter: blur(8px);
+  }
+  
+  // ==================== 动画效果 ====================
+  
+  // 弹出层动画（暗色主题特有）
+  .ld-datepicker-popup {
+    &:not(.ld-datepicker-popup--visible) {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.95);
+      filter: brightness(0.8);
+    }
     
-    &:focus {
-      box-shadow: 
-        0 0 0 2px rgba(131, 216, 131, 0.3),
-        0 0 8px rgba(131, 216, 131, 0.2);
+    &.ld-datepicker-popup--visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: brightness(1);
     }
   }
   
-  // 警告状态增强
-  &__input--warning input {
-    border-color: #f8d362;
-    box-shadow: 0 0 0 1px #f8d362;
+  // 单元格悬停发光效果
+  .ld-datepicker-cell:hover {
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.1);
+  }
+  
+  // ==================== 无障碍支持 ====================
+  
+  // 高对比度模式支持
+  @media (prefers-contrast: high) {
+    .ld-datepicker {
+      &-input {
+        border-width: 2px;
+        border-color: #ffffff;
+        background-color: #000000;
+        color: #ffffff;
+      }
+      
+      &-popup {
+        background-color: #000000;
+        border-color: #ffffff;
+      }
+      
+      &-cell {
+        color: #ffffff;
+        
+        &--selected {
+          background-color: #ffffff;
+          color: #000000;
+          border: 2px solid #ffffff;
+        }
+        
+        &--today::after {
+          background-color: #ffffff;
+        }
+      }
+    }
+  }
+  
+  // 减少透明度偏好支持
+  @media (prefers-reduced-transparency: reduce) {
+    .ld-datepicker {
+      &-popup {
+        background-color: var(--ld-background-color);
+        backdrop-filter: none;
+      }
+      
+      &-cell--in-range {
+        background-color: #003a8c;
+      }
+    }
+  }
+  
+  // ==================== 暗色主题特殊适配 ====================
+  
+  // 滚动条样式（暗色主题）
+  .ld-datepicker-popup {
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
     
-    &:focus {
-      box-shadow: 
-        0 0 0 2px rgba(248, 211, 98, 0.3),
-        0 0 8px rgba(248, 211, 98, 0.2);
+    &::-webkit-scrollbar-track {
+      background: var(--ld-background-color-secondary);
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: var(--ld-border-color);
+      border-radius: 3px;
+      
+      &:hover {
+        background: var(--ld-text-color-secondary);
+      }
+    }
+  }
+  
+  // 选择文本颜色
+  .ld-datepicker {
+    ::selection {
+      background-color: var(--ld-primary-color);
+      color: var(--ld-text-color-inverse);
+    }
+    
+    ::-moz-selection {
+      background-color: var(--ld-primary-color);
+      color: var(--ld-text-color-inverse);
     }
   }
 }

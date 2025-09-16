@@ -1,348 +1,426 @@
 /**
- * ThemeManager 主题管理器
- * 提供主题切换、CSS 变量管理等功能
+ * 主题管理类
+ * 实现主题切换、CSS变量管理、系统主题检测等功能
  */
 
-import type { ThemeType } from '../types';
-import { EventManager } from './EventManager';
+import type { ThemeType, ThemeConfig } from '../types';
+import { EventManager } from '../utils/EventManager';
+import { DOMUtils } from '../utils/DOMUtils';
 
 /**
  * 主题变量定义
  */
 interface ThemeVariables {
-  // 品牌色
-  '--ldesign-brand-color': string;
-  '--ldesign-brand-color-hover': string;
-  '--ldesign-brand-color-active': string;
-  '--ldesign-brand-color-disabled': string;
-
-  // 背景色
-  '--ldesign-bg-color-component': string;
-  '--ldesign-bg-color-component-hover': string;
-  '--ldesign-bg-color-component-active': string;
-  '--ldesign-bg-color-component-disabled': string;
-
-  // 边框色
-  '--ldesign-border-color': string;
-  '--ldesign-border-color-hover': string;
-  '--ldesign-border-color-focus': string;
-
-  // 文字色
-  '--ldesign-text-color-primary': string;
-  '--ldesign-text-color-secondary': string;
-  '--ldesign-text-color-placeholder': string;
-  '--ldesign-text-color-disabled': string;
-
-  // 阴影
-  '--ldesign-shadow-1': string;
-  '--ldesign-shadow-2': string;
-  '--ldesign-shadow-3': string;
-
-  // 圆角
-  '--ls-border-radius-base': string;
-  '--ls-border-radius-sm': string;
-  '--ls-border-radius-lg': string;
-
-  // 间距
-  '--ls-spacing-xs': string;
-  '--ls-spacing-sm': string;
-  '--ls-spacing-base': string;
-  '--ls-spacing-lg': string;
-  '--ls-spacing-xl': string;
+  // 颜色变量
+  '--ld-primary-color': string;
+  '--ld-primary-color-hover': string;
+  '--ld-primary-color-active': string;
+  '--ld-background-color': string;
+  '--ld-background-color-secondary': string;
+  '--ld-text-color': string;
+  '--ld-text-color-secondary': string;
+  '--ld-text-color-disabled': string;
+  '--ld-border-color': string;
+  '--ld-border-color-hover': string;
+  '--ld-border-color-focus': string;
+  '--ld-shadow-color': string;
+  
+  // 尺寸变量
+  '--ld-border-radius': string;
+  '--ld-border-radius-small': string;
+  '--ld-border-radius-large': string;
+  '--ld-font-size': string;
+  '--ld-font-size-small': string;
+  '--ld-font-size-large': string;
+  '--ld-line-height': string;
+  '--ld-spacing': string;
+  '--ld-spacing-small': string;
+  '--ld-spacing-large': string;
+  
+  // 阴影变量
+  '--ld-box-shadow': string;
+  '--ld-box-shadow-hover': string;
+  '--ld-box-shadow-focus': string;
+  
+  // 动画变量
+  '--ld-transition-duration': string;
+  '--ld-transition-timing': string;
 }
 
 /**
- * 内置主题配置
+ * 预定义主题
  */
-const BUILT_IN_THEMES: Record<ThemeType, Partial<ThemeVariables>> = {
+const PREDEFINED_THEMES: Record<'light' | 'dark', Partial<ThemeVariables>> = {
   light: {
-    '--ldesign-brand-color': '#722ED1',
-    '--ldesign-brand-color-hover': '#5e2aa7',
-    '--ldesign-brand-color-active': '#491f84',
-    '--ldesign-brand-color-disabled': '#bfa4e5',
-
-    '--ldesign-bg-color-component': '#ffffff',
-    '--ldesign-bg-color-component-hover': '#f8f8f8',
-    '--ldesign-bg-color-component-active': '#f0f0f0',
-    '--ldesign-bg-color-component-disabled': '#fafafa',
-
-    '--ldesign-border-color': '#e5e5e5',
-    '--ldesign-border-color-hover': '#d9d9d9',
-    '--ldesign-border-color-focus': '#722ED1',
-
-    '--ldesign-text-color-primary': 'rgba(0, 0, 0, 0.9)',
-    '--ldesign-text-color-secondary': 'rgba(0, 0, 0, 0.7)',
-    '--ldesign-text-color-placeholder': 'rgba(0, 0, 0, 0.5)',
-    '--ldesign-text-color-disabled': 'rgba(0, 0, 0, 0.3)',
-
-    '--ldesign-shadow-1': '0 1px 10px rgba(0, 0, 0, 0.05)',
-    '--ldesign-shadow-2': '0 4px 20px rgba(0, 0, 0, 0.08)',
-    '--ldesign-shadow-3': '0 8px 30px rgba(0, 0, 0, 0.12)'
+    '--ld-primary-color': '#1890ff',
+    '--ld-primary-color-hover': '#40a9ff',
+    '--ld-primary-color-active': '#096dd9',
+    '--ld-background-color': '#ffffff',
+    '--ld-background-color-secondary': '#fafafa',
+    '--ld-text-color': '#000000d9',
+    '--ld-text-color-secondary': '#00000073',
+    '--ld-text-color-disabled': '#00000040',
+    '--ld-border-color': '#d9d9d9',
+    '--ld-border-color-hover': '#40a9ff',
+    '--ld-border-color-focus': '#1890ff',
+    '--ld-shadow-color': 'rgba(0, 0, 0, 0.15)',
+    '--ld-border-radius': '6px',
+    '--ld-border-radius-small': '4px',
+    '--ld-border-radius-large': '8px',
+    '--ld-font-size': '14px',
+    '--ld-font-size-small': '12px',
+    '--ld-font-size-large': '16px',
+    '--ld-line-height': '1.5715',
+    '--ld-spacing': '8px',
+    '--ld-spacing-small': '4px',
+    '--ld-spacing-large': '16px',
+    '--ld-box-shadow': '0 2px 8px rgba(0, 0, 0, 0.15)',
+    '--ld-box-shadow-hover': '0 4px 12px rgba(0, 0, 0, 0.15)',
+    '--ld-box-shadow-focus': '0 0 0 2px rgba(24, 144, 255, 0.2)',
+    '--ld-transition-duration': '0.3s',
+    '--ld-transition-timing': 'cubic-bezier(0.645, 0.045, 0.355, 1)'
   },
-
+  
   dark: {
-    '--ldesign-brand-color': '#8c5ad3',
-    '--ldesign-brand-color-hover': '#a67fdb',
-    '--ldesign-brand-color-active': '#bfa4e5',
-    '--ldesign-brand-color-disabled': '#5e2aa7',
-
-    '--ldesign-bg-color-component': '#1f1f1f',
-    '--ldesign-bg-color-component-hover': '#2a2a2a',
-    '--ldesign-bg-color-component-active': '#333333',
-    '--ldesign-bg-color-component-disabled': '#1a1a1a',
-
-    '--ldesign-border-color': '#404040',
-    '--ldesign-border-color-hover': '#4a4a4a',
-    '--ldesign-border-color-focus': '#8c5ad3',
-
-    '--ldesign-text-color-primary': 'rgba(255, 255, 255, 0.9)',
-    '--ldesign-text-color-secondary': 'rgba(255, 255, 255, 0.7)',
-    '--ldesign-text-color-placeholder': 'rgba(255, 255, 255, 0.5)',
-    '--ldesign-text-color-disabled': 'rgba(255, 255, 255, 0.3)',
-
-    '--ldesign-shadow-1': '0 1px 10px rgba(0, 0, 0, 0.3)',
-    '--ldesign-shadow-2': '0 4px 20px rgba(0, 0, 0, 0.4)',
-    '--ldesign-shadow-3': '0 8px 30px rgba(0, 0, 0, 0.5)'
-  },
-
-  auto: {} // 自动模式会根据系统主题动态切换
+    '--ld-primary-color': '#1890ff',
+    '--ld-primary-color-hover': '#40a9ff',
+    '--ld-primary-color-active': '#096dd9',
+    '--ld-background-color': '#141414',
+    '--ld-background-color-secondary': '#1f1f1f',
+    '--ld-text-color': '#ffffffd9',
+    '--ld-text-color-secondary': '#ffffff73',
+    '--ld-text-color-disabled': '#ffffff40',
+    '--ld-border-color': '#434343',
+    '--ld-border-color-hover': '#40a9ff',
+    '--ld-border-color-focus': '#1890ff',
+    '--ld-shadow-color': 'rgba(0, 0, 0, 0.45)',
+    '--ld-border-radius': '6px',
+    '--ld-border-radius-small': '4px',
+    '--ld-border-radius-large': '8px',
+    '--ld-font-size': '14px',
+    '--ld-font-size-small': '12px',
+    '--ld-font-size-large': '16px',
+    '--ld-line-height': '1.5715',
+    '--ld-spacing': '8px',
+    '--ld-spacing-small': '4px',
+    '--ld-spacing-large': '16px',
+    '--ld-box-shadow': '0 2px 8px rgba(0, 0, 0, 0.45)',
+    '--ld-box-shadow-hover': '0 4px 12px rgba(0, 0, 0, 0.45)',
+    '--ld-box-shadow-focus': '0 0 0 2px rgba(24, 144, 255, 0.2)',
+    '--ld-transition-duration': '0.3s',
+    '--ld-transition-timing': 'cubic-bezier(0.645, 0.045, 0.355, 1)'
+  }
 };
-
-/**
- * 主题管理器事件
- */
-interface ThemeManagerEvents {
-  'theme-change': (theme: ThemeType, variables: Partial<ThemeVariables>) => void;
-  'variables-update': (variables: Partial<ThemeVariables>) => void;
-  'system-theme-change': (isDark: boolean) => void;
-}
 
 /**
  * 主题管理器类
  */
 export class ThemeManager {
-  /** 事件管理器 */
-  private eventManager = new EventManager();
-
-  /** 当前主题 */
+  /** 当前主题类型 */
   private currentTheme: ThemeType = 'light';
-
-  /** 自定义主题配置 */
-  private customThemes: Map<string, Partial<ThemeVariables>> = new Map();
-
-  /** 系统主题监听器 */
-  private systemThemeMediaQuery?: MediaQueryList;
-
-  /** 根元素 */
-  private rootElement: HTMLElement;
-
+  
+  /** 当前主题配置 */
+  private currentConfig: ThemeConfig;
+  
+  /** 事件管理器 */
+  private eventManager: EventManager;
+  
+  /** 系统主题媒体查询 */
+  private systemThemeQuery?: MediaQueryList;
+  
+  /** 主题容器元素 */
+  private container: HTMLElement;
+  
+  /** 是否已初始化 */
+  private initialized: boolean = false;
+  
+  // ==================== 构造函数 ====================
+  
   /**
    * 构造函数
-   * @param rootElement 根元素，默认为 document.documentElement
+   * @param config 主题配置
+   * @param container 主题容器元素
    */
-  constructor(rootElement: HTMLElement = document.documentElement) {
-    this.rootElement = rootElement;
-    this.initSystemThemeListener();
+  constructor(config?: Partial<ThemeConfig>, container?: HTMLElement) {
+    this.eventManager = new EventManager();
+    this.container = container || document.documentElement;
+    
+    // 初始化配置
+    this.currentConfig = {
+      type: 'light',
+      ...config
+    };
+    
+    this.initialize();
   }
-
+  
+  // ==================== 初始化方法 ====================
+  
   /**
-   * 初始化系统主题监听器
+   * 初始化主题管理器
    */
-  private initSystemThemeListener(): void {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-
-    this.systemThemeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-    const handleSystemThemeChange = (e: MediaQueryListEvent): void => {
-      this.eventManager.emit('system-theme-change', e.matches);
-
-      // 如果当前是自动模式，更新主题
+  private initialize(): void {
+    if (this.initialized) {
+      return;
+    }
+    
+    // 检测系统主题
+    this.setupSystemThemeDetection();
+    
+    // 设置初始主题
+    this.setTheme(this.currentConfig.type);
+    
+    this.initialized = true;
+  }
+  
+  /**
+   * 设置系统主题检测
+   */
+  private setupSystemThemeDetection(): void {
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      return;
+    }
+    
+    this.systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    // 监听系统主题变化
+    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
       if (this.currentTheme === 'auto') {
-        this.applyTheme(e.matches ? 'dark' : 'light');
+        const systemTheme = e.matches ? 'dark' : 'light';
+        this.applyTheme(systemTheme);
+        
+        // 触发主题变化事件
+        this.eventManager.emit('themeChange', {
+          theme: 'auto',
+          actualTheme: systemTheme,
+          source: 'system'
+        });
       }
     };
-
-    // 添加监听器
-    if (this.systemThemeMediaQuery.addEventListener) {
-      this.systemThemeMediaQuery.addEventListener('change', handleSystemThemeChange);
-    } else {
-      // 兼容旧版本浏览器
-      this.systemThemeMediaQuery.addListener(handleSystemThemeChange);
+    
+    // 兼容不同浏览器的事件监听方式
+    if (this.systemThemeQuery.addEventListener) {
+      this.systemThemeQuery.addEventListener('change', handleSystemThemeChange);
+    } else if (this.systemThemeQuery.addListener) {
+      this.systemThemeQuery.addListener(handleSystemThemeChange);
     }
   }
-
+  
+  // ==================== 主题设置方法 ====================
+  
   /**
    * 设置主题
-   * @param theme 主题类型或自定义主题名称
-   */
-  setTheme(theme: ThemeType | string): void {
-    let actualTheme: ThemeType;
-    let variables: Partial<ThemeVariables>;
-
-    if (theme === 'auto') {
-      // 自动模式：根据系统主题决定
-      const isDarkMode = this.systemThemeMediaQuery?.matches ?? false;
-      actualTheme = isDarkMode ? 'dark' : 'light';
-      variables = BUILT_IN_THEMES[actualTheme];
-    } else if (theme === 'light' || theme === 'dark') {
-      // 内置主题
-      actualTheme = theme;
-      variables = BUILT_IN_THEMES[theme];
-    } else {
-      // 自定义主题
-      const customVariables = this.customThemes.get(theme);
-      if (!customVariables) {
-        console.warn(`[ThemeManager] Custom theme "${theme}" not found, falling back to light theme`);
-        actualTheme = 'light';
-        variables = BUILT_IN_THEMES.light;
-      } else {
-        actualTheme = 'light'; // 自定义主题基于 light 主题
-        variables = { ...BUILT_IN_THEMES.light, ...customVariables };
-      }
-    }
-
-    this.currentTheme = theme as ThemeType;
-    this.applyTheme(actualTheme, variables);
-
-    this.eventManager.emit('theme-change', this.currentTheme as any, variables as any);
-  }
-
-  /**
-   * 应用主题变量
    * @param theme 主题类型
-   * @param variables 主题变量
+   * @param config 主题配置
    */
-  private applyTheme(theme: ThemeType, variables?: Partial<ThemeVariables>): void {
-    const vars = variables || BUILT_IN_THEMES[theme];
-
-    // 应用 CSS 变量
-    for (const [property, value] of Object.entries(vars)) {
-      this.rootElement.style.setProperty(property, value);
+  setTheme(theme: ThemeType, config?: Partial<ThemeConfig>): void {
+    const oldTheme = this.currentTheme;
+    this.currentTheme = theme;
+    
+    // 更新配置
+    if (config) {
+      this.currentConfig = { ...this.currentConfig, ...config, type: theme };
+    } else {
+      this.currentConfig.type = theme;
     }
-
-    // 设置主题类名
-    this.rootElement.classList.remove('ldesign-theme-light', 'ldesign-theme-dark');
-    this.rootElement.classList.add(`ldesign-theme-${theme}`);
+    
+    // 应用主题
+    const actualTheme = this.resolveActualTheme(theme);
+    this.applyTheme(actualTheme);
+    
+    // 触发主题变化事件
+    this.eventManager.emit('themeChange', {
+      theme,
+      oldTheme,
+      actualTheme,
+      source: 'manual'
+    });
   }
-
+  
   /**
    * 获取当前主题
-   * @returns 当前主题
+   * @returns 当前主题类型
    */
-  getCurrentTheme(): ThemeType {
+  getTheme(): ThemeType {
     return this.currentTheme;
   }
-
+  
   /**
-   * 注册自定义主题
-   * @param name 主题名称
-   * @param variables 主题变量
+   * 获取实际应用的主题
+   * @returns 实际主题类型
    */
-  registerTheme(name: string, variables: Partial<ThemeVariables>): void {
-    this.customThemes.set(name, variables);
+  getActualTheme(): 'light' | 'dark' {
+    return this.resolveActualTheme(this.currentTheme);
   }
-
+  
   /**
-   * 移除自定义主题
-   * @param name 主题名称
+   * 切换主题
+   * @returns 切换后的主题
    */
-  removeTheme(name: string): void {
-    this.customThemes.delete(name);
-  }
-
-  /**
-   * 获取所有可用主题
-   * @returns 主题名称数组
-   */
-  getAvailableThemes(): string[] {
-    return ['light', 'dark', 'auto', ...Array.from(this.customThemes.keys())];
-  }
-
-  /**
-   * 更新主题变量
-   * @param variables 要更新的变量
-   */
-  updateVariables(variables: Partial<ThemeVariables>): void {
-    // 应用变量
-    for (const [property, value] of Object.entries(variables)) {
-      this.rootElement.style.setProperty(property, value);
-    }
-
-    this.eventManager.emit('variables-update', variables);
-  }
-
-  /**
-   * 获取 CSS 变量值
-   * @param property CSS 变量名
-   * @returns 变量值
-   */
-  getVariable(property: keyof ThemeVariables): string {
-    return getComputedStyle(this.rootElement).getPropertyValue(property).trim();
-  }
-
-  /**
-   * 检查是否为深色主题
-   * @returns 是否为深色主题
-   */
-  isDarkTheme(): boolean {
-    if (this.currentTheme === 'dark') return true;
-    if (this.currentTheme === 'light') return false;
-    if (this.currentTheme === 'auto') {
-      return this.systemThemeMediaQuery?.matches ?? false;
-    }
-    return false; // 自定义主题默认为浅色
-  }
-
-  /**
-   * 切换主题（在 light 和 dark 之间切换）
-   */
-  toggleTheme(): void {
-    const newTheme = this.isDarkTheme() ? 'light' : 'dark';
+  toggleTheme(): ThemeType {
+    const currentActual = this.getActualTheme();
+    const newTheme: ThemeType = currentActual === 'light' ? 'dark' : 'light';
     this.setTheme(newTheme);
+    return newTheme;
   }
-
+  
+  // ==================== 主题应用方法 ====================
+  
   /**
-   * 监听主题事件
-   * @param event 事件名称
-   * @param listener 监听器
+   * 应用主题
+   * @param theme 主题类型
+   */
+  private applyTheme(theme: 'light' | 'dark'): void {
+    // 获取主题变量
+    const themeVariables = this.getThemeVariables(theme);
+    
+    // 应用CSS变量
+    this.applyCSSVariables(themeVariables);
+    
+    // 设置主题类名
+    this.setThemeClassName(theme);
+    
+    // 应用自定义配置
+    this.applyCustomConfig();
+  }
+  
+  /**
+   * 获取主题变量
+   * @param theme 主题类型
+   * @returns 主题变量
+   */
+  private getThemeVariables(theme: 'light' | 'dark'): Partial<ThemeVariables> {
+    const baseVariables = PREDEFINED_THEMES[theme];
+    const customVariables = this.currentConfig.customVariables || {};
+    
+    return { ...baseVariables, ...customVariables };
+  }
+  
+  /**
+   * 应用CSS变量
+   * @param variables CSS变量
+   */
+  private applyCSSVariables(variables: Record<string, string>): void {
+    Object.entries(variables).forEach(([name, value]) => {
+      this.container.style.setProperty(name, value);
+    });
+  }
+  
+  /**
+   * 设置主题类名
+   * @param theme 主题类型
+   */
+  private setThemeClassName(theme: 'light' | 'dark'): void {
+    // 移除旧的主题类名
+    DOMUtils.removeClass(this.container, 'ld-theme-light');
+    DOMUtils.removeClass(this.container, 'ld-theme-dark');
+    
+    // 添加新的主题类名
+    DOMUtils.addClass(this.container, `ld-theme-${theme}`);
+  }
+  
+  /**
+   * 应用自定义配置
+   */
+  private applyCustomConfig(): void {
+    const config = this.currentConfig;
+    
+    // 应用主色调
+    if (config.primaryColor) {
+      this.container.style.setProperty('--ld-primary-color', config.primaryColor);
+    }
+    
+    // 应用背景色
+    if (config.backgroundColor) {
+      this.container.style.setProperty('--ld-background-color', config.backgroundColor);
+    }
+    
+    // 应用文本色
+    if (config.textColor) {
+      this.container.style.setProperty('--ld-text-color', config.textColor);
+    }
+    
+    // 应用边框色
+    if (config.borderColor) {
+      this.container.style.setProperty('--ld-border-color', config.borderColor);
+    }
+    
+    // 应用阴影
+    if (config.boxShadow) {
+      this.container.style.setProperty('--ld-box-shadow', config.boxShadow);
+    }
+    
+    // 应用圆角
+    if (config.borderRadius) {
+      this.container.style.setProperty('--ld-border-radius', config.borderRadius);
+    }
+  }
+  
+  // ==================== 工具方法 ====================
+  
+  /**
+   * 解析实际主题类型
+   * @param theme 主题类型
+   * @returns 实际主题类型
+   */
+  private resolveActualTheme(theme: ThemeType): 'light' | 'dark' {
+    if (theme === 'auto') {
+      return this.getSystemTheme();
+    }
+    return theme;
+  }
+  
+  /**
+   * 获取系统主题
+   * @returns 系统主题类型
+   */
+  private getSystemTheme(): 'light' | 'dark' {
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      return 'light';
+    }
+    
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  
+  // ==================== 事件方法 ====================
+  
+  /**
+   * 监听主题变化事件
+   * @param listener 事件监听器
    * @returns 监听器ID
    */
-  on<K extends keyof ThemeManagerEvents>(
-    event: K,
-    listener: ThemeManagerEvents[K]
-  ): string {
-    return this.eventManager.on(event, listener as any);
+  onThemeChange(listener: (data: any) => void): string {
+    return this.eventManager.on('themeChange', listener);
   }
-
+  
   /**
-   * 移除事件监听器
-   * @param event 事件名称
-   * @param listenerOrId 监听器或ID
+   * 移除主题变化事件监听器
+   * @param listenerId 监听器ID
    */
-  off<K extends keyof ThemeManagerEvents>(
-    event: K,
-    listenerOrId?: ThemeManagerEvents[K] | string
-  ): void {
-    this.eventManager.off(event, listenerOrId as any);
+  offThemeChange(listenerId: string): void {
+    this.eventManager.off('themeChange', listenerId);
   }
-
+  
+  // ==================== 销毁方法 ====================
+  
   /**
    * 销毁主题管理器
    */
   destroy(): void {
-    // 移除系统主题监听器
-    if (this.systemThemeMediaQuery) {
-      if (this.systemThemeMediaQuery.removeEventListener) {
-        this.systemThemeMediaQuery.removeEventListener('change', () => { });
-      } else {
-        this.systemThemeMediaQuery.removeListener(() => { });
+    // 移除系统主题监听
+    if (this.systemThemeQuery) {
+      // 兼容不同浏览器的事件移除方式
+      if (this.systemThemeQuery.removeEventListener) {
+        this.systemThemeQuery.removeEventListener('change', () => {});
+      } else if (this.systemThemeQuery.removeListener) {
+        this.systemThemeQuery.removeListener(() => {});
       }
     }
-
+    
     // 清理事件管理器
-    this.eventManager.destroy();
-
-    // 清理自定义主题
-    this.customThemes.clear();
+    this.eventManager.removeAllListeners();
+    
+    // 重置状态
+    this.initialized = false;
   }
 }

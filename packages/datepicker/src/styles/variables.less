@@ -1,0 +1,241 @@
+/**
+ * LDesign DatePicker CSS变量系统
+ * 基于 LDesign 设计系统的CSS变量定义
+ */
+
+// ==================== 根变量定义 ====================
+
+:root {
+  // ==================== 颜色变量 ====================
+  
+  // 品牌色
+  --ld-primary-color: #1890ff;
+  --ld-primary-color-hover: #40a9ff;
+  --ld-primary-color-active: #096dd9;
+  --ld-primary-color-disabled: #91d5ff;
+  
+  // 功能色
+  --ld-success-color: #52c41a;
+  --ld-warning-color: #faad14;
+  --ld-error-color: #ff4d4f;
+  --ld-info-color: #1890ff;
+  
+  // 中性色
+  --ld-text-color: #000000d9;
+  --ld-text-color-secondary: #00000073;
+  --ld-text-color-disabled: #00000040;
+  --ld-text-color-inverse: #ffffff;
+  
+  // 背景色
+  --ld-background-color: #ffffff;
+  --ld-background-color-secondary: #fafafa;
+  --ld-background-color-tertiary: #f5f5f5;
+  --ld-background-color-disabled: #f5f5f5;
+  
+  // 边框色
+  --ld-border-color: #d9d9d9;
+  --ld-border-color-hover: #40a9ff;
+  --ld-border-color-focus: #1890ff;
+  --ld-border-color-disabled: #d9d9d9;
+  
+  // 阴影色
+  --ld-shadow-color: rgba(0, 0, 0, 0.15);
+  --ld-shadow-color-hover: rgba(0, 0, 0, 0.25);
+  --ld-shadow-color-focus: rgba(24, 144, 255, 0.2);
+  
+  // ==================== 尺寸变量 ====================
+  
+  // 字体大小
+  --ld-font-size-xs: 12px;
+  --ld-font-size-sm: 14px;
+  --ld-font-size-md: 16px;
+  --ld-font-size-lg: 18px;
+  --ld-font-size-xl: 20px;
+  --ld-font-size-xxl: 24px;
+  
+  // 行高
+  --ld-line-height-xs: 1.2;
+  --ld-line-height-sm: 1.4;
+  --ld-line-height-md: 1.5715;
+  --ld-line-height-lg: 1.6;
+  --ld-line-height-xl: 1.8;
+  
+  // 字重
+  --ld-font-weight-normal: 400;
+  --ld-font-weight-medium: 500;
+  --ld-font-weight-semibold: 600;
+  --ld-font-weight-bold: 700;
+  
+  // 圆角
+  --ld-border-radius-xs: 2px;
+  --ld-border-radius-sm: 4px;
+  --ld-border-radius-md: 6px;
+  --ld-border-radius-lg: 8px;
+  --ld-border-radius-xl: 12px;
+  --ld-border-radius-xxl: 16px;
+  
+  // 边框宽度
+  --ld-border-width-thin: 1px;
+  --ld-border-width-medium: 2px;
+  --ld-border-width-thick: 3px;
+  
+  // ==================== 间距变量 ====================
+  
+  // 内边距
+  --ld-padding-xs: 4px;
+  --ld-padding-sm: 8px;
+  --ld-padding-md: 12px;
+  --ld-padding-lg: 16px;
+  --ld-padding-xl: 20px;
+  --ld-padding-xxl: 24px;
+  
+  // 外边距
+  --ld-margin-xs: 4px;
+  --ld-margin-sm: 8px;
+  --ld-margin-md: 12px;
+  --ld-margin-lg: 16px;
+  --ld-margin-xl: 20px;
+  --ld-margin-xxl: 24px;
+  
+  // 间隙
+  --ld-gap-xs: 4px;
+  --ld-gap-sm: 8px;
+  --ld-gap-md: 12px;
+  --ld-gap-lg: 16px;
+  --ld-gap-xl: 20px;
+  --ld-gap-xxl: 24px;
+  
+  // ==================== 阴影变量 ====================
+  
+  // 基础阴影
+  --ld-box-shadow-xs: 0 1px 2px var(--ld-shadow-color);
+  --ld-box-shadow-sm: 0 1px 3px var(--ld-shadow-color);
+  --ld-box-shadow-md: 0 2px 8px var(--ld-shadow-color);
+  --ld-box-shadow-lg: 0 4px 12px var(--ld-shadow-color);
+  --ld-box-shadow-xl: 0 6px 16px var(--ld-shadow-color);
+  --ld-box-shadow-xxl: 0 8px 24px var(--ld-shadow-color);
+  
+  // 交互阴影
+  --ld-box-shadow-hover: 0 4px 12px var(--ld-shadow-color-hover);
+  --ld-box-shadow-focus: 0 0 0 2px var(--ld-shadow-color-focus);
+  
+  // ==================== 动画变量 ====================
+  
+  // 持续时间
+  --ld-duration-fast: 0.1s;
+  --ld-duration-normal: 0.3s;
+  --ld-duration-slow: 0.5s;
+  
+  // 缓动函数
+  --ld-ease-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  --ld-ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ld-ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+  --ld-ease-out-back: cubic-bezier(0.12, 0.4, 0.29, 1.46);
+  --ld-ease-in-back: cubic-bezier(0.71, -0.46, 0.88, 0.6);
+  --ld-ease-in-out-back: cubic-bezier(0.71, -0.46, 0.29, 1.46);
+  
+  // ==================== Z-Index变量 ====================
+  
+  --ld-z-index-dropdown: 1050;
+  --ld-z-index-sticky: 1020;
+  --ld-z-index-fixed: 1030;
+  --ld-z-index-modal-backdrop: 1040;
+  --ld-z-index-modal: 1050;
+  --ld-z-index-popover: 1060;
+  --ld-z-index-tooltip: 1070;
+  
+  // ==================== 组件特定变量 ====================
+  
+  // DatePicker 输入框
+  --ld-datepicker-input-height: 32px;
+  --ld-datepicker-input-padding: var(--ld-padding-sm) var(--ld-padding-md);
+  --ld-datepicker-input-font-size: var(--ld-font-size-sm);
+  --ld-datepicker-input-border-radius: var(--ld-border-radius-md);
+  --ld-datepicker-input-border-width: var(--ld-border-width-thin);
+  
+  // DatePicker 弹出层
+  --ld-datepicker-popup-width: 280px;
+  --ld-datepicker-popup-padding: var(--ld-padding-lg);
+  --ld-datepicker-popup-border-radius: var(--ld-border-radius-lg);
+  --ld-datepicker-popup-box-shadow: var(--ld-box-shadow-lg);
+  
+  // DatePicker 日历
+  --ld-datepicker-cell-size: 32px;
+  --ld-datepicker-cell-border-radius: var(--ld-border-radius-sm);
+  --ld-datepicker-cell-font-size: var(--ld-font-size-sm);
+  --ld-datepicker-cell-gap: 2px;
+  
+  // DatePicker 头部
+  --ld-datepicker-header-height: 40px;
+  --ld-datepicker-header-padding: var(--ld-padding-sm);
+  --ld-datepicker-header-font-size: var(--ld-font-size-md);
+  --ld-datepicker-header-font-weight: var(--ld-font-weight-medium);
+  
+  // DatePicker 底部
+  --ld-datepicker-footer-height: 40px;
+  --ld-datepicker-footer-padding: var(--ld-padding-sm);
+  --ld-datepicker-footer-border-top: var(--ld-border-width-thin) solid var(--ld-border-color);
+  
+  // DatePicker 按钮
+  --ld-datepicker-button-height: 28px;
+  --ld-datepicker-button-padding: var(--ld-padding-xs) var(--ld-padding-sm);
+  --ld-datepicker-button-font-size: var(--ld-font-size-sm);
+  --ld-datepicker-button-border-radius: var(--ld-border-radius-sm);
+  
+  // ==================== 响应式断点 ====================
+  
+  --ld-breakpoint-xs: 480px;
+  --ld-breakpoint-sm: 576px;
+  --ld-breakpoint-md: 768px;
+  --ld-breakpoint-lg: 992px;
+  --ld-breakpoint-xl: 1200px;
+  --ld-breakpoint-xxl: 1600px;
+  
+  // ==================== 移动端适配变量 ====================
+  
+  // 移动端输入框
+  --ld-datepicker-mobile-input-height: 44px;
+  --ld-datepicker-mobile-input-font-size: var(--ld-font-size-md);
+  --ld-datepicker-mobile-input-padding: var(--ld-padding-md) var(--ld-padding-lg);
+  
+  // 移动端弹出层
+  --ld-datepicker-mobile-popup-width: 100vw;
+  --ld-datepicker-mobile-popup-height: auto;
+  --ld-datepicker-mobile-popup-padding: var(--ld-padding-xl);
+  
+  // 移动端日历单元格
+  --ld-datepicker-mobile-cell-size: 44px;
+  --ld-datepicker-mobile-cell-font-size: var(--ld-font-size-md);
+  --ld-datepicker-mobile-cell-gap: 4px;
+  
+  // 移动端头部
+  --ld-datepicker-mobile-header-height: 56px;
+  --ld-datepicker-mobile-header-font-size: var(--ld-font-size-lg);
+  
+  // 移动端按钮
+  --ld-datepicker-mobile-button-height: 40px;
+  --ld-datepicker-mobile-button-font-size: var(--ld-font-size-md);
+  --ld-datepicker-mobile-button-padding: var(--ld-padding-sm) var(--ld-padding-lg);
+  
+  // ==================== 平板端适配变量 ====================
+  
+  // 平板端输入框
+  --ld-datepicker-tablet-input-height: 36px;
+  --ld-datepicker-tablet-input-font-size: var(--ld-font-size-sm);
+  
+  // 平板端弹出层
+  --ld-datepicker-tablet-popup-width: 320px;
+  --ld-datepicker-tablet-popup-padding: var(--ld-padding-lg);
+  
+  // 平板端日历单元格
+  --ld-datepicker-tablet-cell-size: 36px;
+  --ld-datepicker-tablet-cell-font-size: var(--ld-font-size-sm);
+  
+  // 平板端头部
+  --ld-datepicker-tablet-header-height: 44px;
+  --ld-datepicker-tablet-header-font-size: var(--ld-font-size-md);
+  
+  // 平板端按钮
+  --ld-datepicker-tablet-button-height: 32px;
+  --ld-datepicker-tablet-button-font-size: var(--ld-font-size-sm);
+}

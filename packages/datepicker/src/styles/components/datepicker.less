@@ -1,187 +1,346 @@
 /**
  * DatePicker 组件样式
+ * 实现日期选择器的所有组件样式
  */
 
-.ldesign-datepicker {
-  &__input {
+@import '../variables.less';
+
+// ==================== 基础样式 ====================
+
+.ld-datepicker {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--ld-datepicker-input-font-size);
+  line-height: var(--ld-line-height-md);
+  color: var(--ld-text-color);
+  
+  // 重置盒模型
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  
+  // ==================== 输入框样式 ====================
+  
+  &-input {
     position: relative;
     display: inline-block;
     width: 100%;
-    
-    input {
-      width: 100%;
-      height: var(--ls-input-height-medium);
-      padding: 0 var(--ls-spacing-sm);
-      border: 1px solid var(--ldesign-border-color);
-      border-radius: var(--ls-border-radius-base);
-      background: var(--ldesign-bg-color-component);
-      color: var(--ldesign-text-color-primary);
-      font-size: inherit;
-      line-height: 1.5;
-      transition: all 0.2s ease-in-out;
-      
-      &::placeholder {
-        color: var(--ldesign-text-color-placeholder);
-      }
-      
-      &:hover {
-        border-color: var(--ldesign-border-color-hover);
-      }
-      
-      &:focus {
-        outline: none;
-        border-color: var(--ldesign-border-color-focus);
-        box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
-      }
-      
-      &:disabled {
-        background: var(--ldesign-bg-color-component-disabled);
-        color: var(--ldesign-text-color-disabled);
-        cursor: not-allowed;
-      }
-      
-      &[readonly] {
-        background: var(--ldesign-bg-color-component-hover);
-        cursor: default;
-      }
-    }
-    
-    // 输入框图标
-    &-icon {
-      position: absolute;
-      right: var(--ls-spacing-sm);
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--ldesign-text-color-secondary);
-      pointer-events: none;
-      font-size: var(--ls-icon-size-medium);
-    }
-    
-    // 清除按钮
-    &-clear {
-      position: absolute;
-      right: var(--ls-spacing-sm);
-      top: 50%;
-      transform: translateY(-50%);
-      width: var(--ls-icon-size-medium);
-      height: var(--ls-icon-size-medium);
-      border: none;
-      background: none;
-      color: var(--ldesign-text-color-secondary);
-      cursor: pointer;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease-in-out;
-      
-      &:hover {
-        background: var(--ldesign-bg-color-component-hover);
-        color: var(--ldesign-text-color-primary);
-      }
-      
-      &:active {
-        background: var(--ldesign-bg-color-component-active);
-      }
-    }
-  }
-  
-  &__dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: var(--ldesign-z-index-dropdown, 1000);
-    min-width: 280px;
-    margin-top: var(--ls-spacing-xs);
-    background: var(--ldesign-bg-color-component);
-    border: 1px solid var(--ldesign-border-color);
-    border-radius: var(--ls-border-radius-base);
-    box-shadow: var(--ldesign-shadow-2);
-    animation: ldesign-fade-in 0.2s ease-out;
-    
-    &--hidden {
-      display: none;
-    }
-    
-    // 不同位置的样式
-    &--top {
-      top: auto;
-      bottom: 100%;
-      margin-top: 0;
-      margin-bottom: var(--ls-spacing-xs);
-    }
-    
-    &--left {
-      left: auto;
-      right: 0;
-    }
-    
-    &--right {
-      left: 0;
-      right: auto;
-    }
-  }
-  
-  &__footer {
-    padding: var(--ls-spacing-sm);
-    border-top: 1px solid var(--ldesign-border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--ls-spacing-sm);
-    
-    &-left {
-      display: flex;
-      align-items: center;
-      gap: var(--ls-spacing-sm);
-    }
-    
-    &-right {
-      display: flex;
-      align-items: center;
-      gap: var(--ls-spacing-sm);
-    }
-  }
-  
-  &__button {
-    height: var(--ls-button-height-small);
-    padding: 0 var(--ls-spacing-sm);
-    border: 1px solid var(--ldesign-border-color);
-    border-radius: var(--ls-border-radius-base);
-    background: var(--ldesign-bg-color-component);
-    color: var(--ldesign-text-color-primary);
-    font-size: var(--ls-font-size-sm);
+    height: var(--ld-datepicker-input-height);
+    padding: var(--ld-datepicker-input-padding);
+    font-size: var(--ld-datepicker-input-font-size);
+    line-height: var(--ld-line-height-md);
+    color: var(--ld-text-color);
+    background-color: var(--ld-background-color);
+    border: var(--ld-datepicker-input-border-width) solid var(--ld-border-color);
+    border-radius: var(--ld-datepicker-input-border-radius);
+    outline: none;
+    transition: all var(--ld-duration-normal) var(--ld-ease-in-out);
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
+    
+    &::placeholder {
+      color: var(--ld-text-color-disabled);
+    }
     
     &:hover {
-      border-color: var(--ldesign-border-color-hover);
-      background: var(--ldesign-bg-color-component-hover);
+      border-color: var(--ld-border-color-hover);
     }
     
-    &:active {
-      background: var(--ldesign-bg-color-component-active);
-    }
-    
-    &--primary {
-      background: var(--ldesign-brand-color);
-      border-color: var(--ldesign-brand-color);
-      color: var(--ldesign-font-white-1);
-      
-      &:hover {
-        background: var(--ldesign-brand-color-hover);
-        border-color: var(--ldesign-brand-color-hover);
-      }
-      
-      &:active {
-        background: var(--ldesign-brand-color-active);
-        border-color: var(--ldesign-brand-color-active);
-      }
+    &:focus {
+      border-color: var(--ld-border-color-focus);
+      box-shadow: var(--ld-box-shadow-focus);
     }
     
     &:disabled {
-      opacity: 0.6;
+      color: var(--ld-text-color-disabled);
+      background-color: var(--ld-background-color-disabled);
+      border-color: var(--ld-border-color-disabled);
       cursor: not-allowed;
+    }
+    
+    &[readonly] {
+      cursor: pointer;
+    }
+  }
+  
+  // ==================== 清除按钮样式 ====================
+  
+  &-clear {
+    position: absolute;
+    top: 50%;
+    right: var(--ld-padding-sm);
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    font-size: 12px;
+    line-height: 1;
+    color: var(--ld-text-color-secondary);
+    background: none;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all var(--ld-duration-fast) var(--ld-ease-in-out);
+    
+    &:hover {
+      color: var(--ld-text-color);
+      background-color: var(--ld-background-color-secondary);
+    }
+    
+    &:active {
+      background-color: var(--ld-background-color-tertiary);
+    }
+  }
+  
+  // ==================== 弹出层样式 ====================
+  
+  &-popup {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: var(--ld-z-index-dropdown);
+    width: var(--ld-datepicker-popup-width);
+    padding: var(--ld-datepicker-popup-padding);
+    background-color: var(--ld-background-color);
+    border: var(--ld-border-width-thin) solid var(--ld-border-color);
+    border-radius: var(--ld-datepicker-popup-border-radius);
+    box-shadow: var(--ld-datepicker-popup-box-shadow);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all var(--ld-duration-normal) var(--ld-ease-out);
+    
+    &--visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+  }
+  
+  // ==================== 日历头部样式 ====================
+  
+  &-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--ld-datepicker-header-height);
+    padding: var(--ld-datepicker-header-padding);
+    margin-bottom: var(--ld-margin-sm);
+    
+    button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      font-size: 14px;
+      color: var(--ld-text-color-secondary);
+      background: none;
+      border: none;
+      border-radius: var(--ld-border-radius-sm);
+      cursor: pointer;
+      transition: all var(--ld-duration-fast) var(--ld-ease-in-out);
+      
+      &:hover {
+        color: var(--ld-text-color);
+        background-color: var(--ld-background-color-secondary);
+      }
+      
+      &:active {
+        background-color: var(--ld-background-color-tertiary);
+      }
+    }
+  }
+  
+  &-title {
+    flex: 1;
+    font-size: var(--ld-datepicker-header-font-size);
+    font-weight: var(--ld-datepicker-header-font-weight);
+    text-align: center;
+    cursor: pointer;
+    transition: color var(--ld-duration-fast) var(--ld-ease-in-out);
+    
+    &:hover {
+      color: var(--ld-primary-color);
+    }
+  }
+  
+  // ==================== 星期标题样式 ====================
+  
+  &-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--ld-datepicker-cell-gap);
+    margin-bottom: var(--ld-margin-xs);
+  }
+  
+  &-weekday {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--ld-datepicker-cell-size);
+    font-size: var(--ld-font-size-xs);
+    font-weight: var(--ld-font-weight-medium);
+    color: var(--ld-text-color-secondary);
+    text-align: center;
+  }
+  
+  // ==================== 日历网格样式 ====================
+  
+  &-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--ld-datepicker-cell-gap);
+  }
+  
+  // ==================== 日历单元格样式 ====================
+  
+  &-cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--ld-datepicker-cell-size);
+    height: var(--ld-datepicker-cell-size);
+    font-size: var(--ld-datepicker-cell-font-size);
+    color: var(--ld-text-color);
+    background-color: transparent;
+    border: none;
+    border-radius: var(--ld-datepicker-cell-border-radius);
+    cursor: pointer;
+    transition: all var(--ld-duration-fast) var(--ld-ease-in-out);
+    user-select: none;
+    
+    &:hover {
+      background-color: var(--ld-background-color-secondary);
+    }
+    
+    // 今天
+    &--today {
+      color: var(--ld-primary-color);
+      font-weight: var(--ld-font-weight-medium);
+      
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 4px;
+        background-color: var(--ld-primary-color);
+        border-radius: 50%;
+      }
+    }
+    
+    // 选中状态
+    &--selected {
+      color: var(--ld-text-color-inverse);
+      background-color: var(--ld-primary-color);
+      
+      &:hover {
+        background-color: var(--ld-primary-color-hover);
+      }
+      
+      &::after {
+        display: none;
+      }
+    }
+    
+    // 范围内
+    &--in-range {
+      background-color: var(--ld-primary-color-disabled);
+      
+      &:hover {
+        background-color: var(--ld-primary-color-disabled);
+      }
+    }
+    
+    // 范围开始
+    &--range-start {
+      color: var(--ld-text-color-inverse);
+      background-color: var(--ld-primary-color);
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      
+      &:hover {
+        background-color: var(--ld-primary-color-hover);
+      }
+    }
+    
+    // 范围结束
+    &--range-end {
+      color: var(--ld-text-color-inverse);
+      background-color: var(--ld-primary-color);
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      
+      &:hover {
+        background-color: var(--ld-primary-color-hover);
+      }
+    }
+    
+    // 禁用状态
+    &--disabled {
+      color: var(--ld-text-color-disabled);
+      background-color: transparent;
+      cursor: not-allowed;
+      
+      &:hover {
+        background-color: transparent;
+      }
+    }
+    
+    // 周末
+    &--weekend {
+      color: var(--ld-error-color);
+    }
+    
+    // 其他月份
+    &--other-month {
+      color: var(--ld-text-color-disabled);
+    }
+  }
+  
+  // ==================== 日历底部样式 ====================
+  
+  &-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--ld-datepicker-footer-height);
+    padding: var(--ld-datepicker-footer-padding);
+    margin-top: var(--ld-margin-sm);
+    border-top: var(--ld-datepicker-footer-border-top);
+  }
+  
+  // ==================== 按钮样式 ====================
+  
+  &-today,
+  &-clear-btn {
+    height: var(--ld-datepicker-button-height);
+    padding: var(--ld-datepicker-button-padding);
+    font-size: var(--ld-datepicker-button-font-size);
+    color: var(--ld-primary-color);
+    background: none;
+    border: var(--ld-border-width-thin) solid transparent;
+    border-radius: var(--ld-datepicker-button-border-radius);
+    cursor: pointer;
+    transition: all var(--ld-duration-fast) var(--ld-ease-in-out);
+    
+    &:hover {
+      color: var(--ld-primary-color-hover);
+      background-color: var(--ld-background-color-secondary);
+      border-color: var(--ld-border-color);
+    }
+    
+    &:active {
+      color: var(--ld-primary-color-active);
+      background-color: var(--ld-background-color-tertiary);
     }
   }
 }
