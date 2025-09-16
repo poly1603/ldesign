@@ -233,14 +233,22 @@ export function createCryptoEnginePlugin(
         }
         else {
           engine.logger?.info(`[Crypto Plugin] Vue app not found, registering event listener`)
-          // 如果 Vue 应用还没有创建，监听 app:created 事件
-          engine.events?.once('app:created', async () => {
-            engine.logger?.info(`[Crypto Plugin] app:created event received, installing now`)
-            await performInstall()
+          // 如果 Vue 应用还没有创建，等待 app:created 事件
+          await new Promise<void>((resolve, reject) => {
+            engine.events?.once('app:created', async () => {
+              try {
+                engine.logger?.info(`[Crypto Plugin] app:created event received, installing now`)
+                await performInstall()
+                resolve()
+              } catch (error) {
+                engine.logger?.error(`[Crypto Plugin] Failed to install after app creation:`, error)
+                reject(error)
+              }
+            })
+
+            engine.logger?.info(`${name} plugin registered, waiting for Vue app creation...`)
           })
         }
-
-        engine.logger?.info(`${name} plugin registered, waiting for Vue app creation...`)
       }
       catch (error) {
         // 使用engine.logger记录错误，如果不可用则使用console.error
