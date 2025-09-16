@@ -39,8 +39,8 @@
     "dev": "vite",
     "build": "pnpm run build:lib",
     "build:lib": "vite build && tsc --project tsconfig.build.json",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:performance": "vitest run tests/performance-simple.test.ts",
@@ -54,7 +54,8 @@
     "prepublishOnly": "npm run build && npm run test",
     "release": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",
-    "release:major": "npm version major && npm publish"
+    "release:major": "npm version major && npm publish",
+    "test:run": "vitest run"
   },
   "keywords": [
     "map",
@@ -86,7 +87,8 @@
     "@turf/helpers": "^7.2.0",
     "@turf/length": "^7.2.0",
     "@turf/turf": "^7.2.0",
-    "ol": "^8.2.0"
+    "ol": "^8.2.0",
+    "@ldesign/shared": "workspace:*"
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
