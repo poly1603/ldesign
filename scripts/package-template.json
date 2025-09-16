@@ -1,0 +1,47 @@
+{
+  "scripts": {
+    "build": "ldesign-builder build",
+    "build:watch": "ldesign-builder build --watch",
+    "dev": "ldesign-builder dev",
+    "clean": "rimraf dist lib es esm cjs types coverage .turbo",
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
+    "lint:check": "eslint src --ext .ts,.tsx,.js,.jsx",
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui",
+    "size-check": "size-limit",
+    "prepublishOnly": "pnpm clean && pnpm build && pnpm test:run"
+  },
+  "standardScripts": {
+    "description": "这些是标准化的脚本命令，所有包都应该包含这些脚本以确保与 Turborepo 的兼容性",
+    "required": [
+      "build",
+      "dev",
+      "clean",
+      "test",
+      "lint",
+      "type-check"
+    ],
+    "optional": [
+      "build:watch",
+      "test:coverage",
+      "test:watch",
+      "test:ui",
+      "size-check",
+      "prepublishOnly",
+      "docs:dev",
+      "docs:build"
+    ],
+    "notes": {
+      "build": "必须输出到 dist/, lib/, es/ 等标准目录",
+      "dev": "开发模式应该支持热重载",
+      "clean": "清理所有生成的文件和缓存",
+      "test": "运行测试套件",
+      "lint": "代码检查和格式化",
+      "type-check": "TypeScript 类型检查"
+    }
+  }
+}

@@ -54,6 +54,12 @@ coverage
 .parcel-cache
 .eslintcache
 
+# Turborepo
+.turbo
+node_modules/.cache/turbo
+.turbo/*.log
+.turbo/cookies
+
 # Temporary files
 tmp
 temp

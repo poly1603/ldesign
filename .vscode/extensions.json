@@ -1,0 +1,32 @@
+{
+  "recommendations": [
+    // Turborepo
+    "turborepo.turbo-vsc",
+    
+    // 基础开发工具
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "Vue.volar",
+    "ms-vscode.vscode-typescript-next",
+    
+    // Monorepo 工具
+    "folke.vscode-monorepo-workspace",
+    "orta.vscode-jest",
+    
+    // 调试和测试
+    "vitest.explorer",
+    "ms-playwright.playwright",
+    
+    // Git
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+    
+    // 其他有用的扩展
+    "streetsidesoftware.code-spell-checker",
+    "usernamehw.errorlens",
+    "wayou.vscode-todo-highlight",
+    "gruntfuggly.todo-tree",
+    "yzhang.markdown-all-in-one",
+    "hediet.vscode-drawio"
+  ]
+}

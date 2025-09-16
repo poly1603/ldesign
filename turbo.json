@@ -1,0 +1,230 @@
+{
+  "$schema": "https://turbo.build/schema.v2.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "package.json",
+        "tsconfig.json",
+        "tsconfig.*.json",
+        "ldesign.config.ts",
+        "rollup.config.js",
+        "vite.config.ts"
+      ],
+      "outputs": [
+        "dist/**",
+        "lib/**",
+        "es/**",
+        "esm/**",
+        "cjs/**",
+        "types/**",
+        ".next/**",
+        "build/**"
+      ],
+      "cache": true,
+      "env": [
+        "NODE_ENV",
+        "BUILD_ENV"
+      ]
+    },
+    "build:watch": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "build:prod": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "package.json",
+        "tsconfig.json",
+        "tsconfig.*.json",
+        "ldesign.config.ts"
+      ],
+      "outputs": [
+        "dist/**",
+        "lib/**",
+        "es/**",
+        "esm/**",
+        "cjs/**",
+        "types/**"
+      ],
+      "cache": true,
+      "env": [
+        "NODE_ENV=production",
+        "BUILD_ENV=production"
+      ]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "__tests__/**",
+        "test/**",
+        "*.test.*",
+        "*.spec.*",
+        "vitest.config.*",
+        "jest.config.*",
+        "playwright.config.*"
+      ],
+      "outputs": [
+        "coverage/**",
+        "test-results/**",
+        "playwright-report/**"
+      ],
+      "cache": true,
+      "env": [
+        "NODE_ENV"
+      ]
+    },
+    "test:run": {
+      "dependsOn": ["build"],
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "__tests__/**",
+        "test/**",
+        "*.test.*",
+        "*.spec.*",
+        "vitest.config.*"
+      ],
+      "outputs": ["coverage/**"],
+      "cache": true
+    },
+    "test:coverage": {
+      "dependsOn": ["build"],
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "__tests__/**",
+        "test/**",
+        "*.test.*",
+        "*.spec.*",
+        "vitest.config.*"
+      ],
+      "outputs": ["coverage/**", ".nyc_output/**"],
+      "cache": true
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "inputs": [
+        "src/**",
+        "e2e/**",
+        "tests/**",
+        "playwright.config.*"
+      ],
+      "outputs": [
+        "test-results/**",
+        "playwright-report/**"
+      ],
+      "cache": true
+    },
+    "lint": {
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "__tests__/**",
+        "*.ts",
+        "*.js",
+        "*.vue",
+        "eslint.config.*",
+        ".eslintrc.*"
+      ],
+      "outputs": [],
+      "cache": true
+    },
+    "lint:fix": {
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "__tests__/**",
+        "*.ts",
+        "*.js",
+        "*.vue",
+        "eslint.config.*",
+        ".eslintrc.*"
+      ],
+      "outputs": [],
+      "cache": false
+    },
+    "type-check": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "__tests__/**",
+        "*.ts",
+        "*.vue",
+        "tsconfig.json",
+        "tsconfig.*.json"
+      ],
+      "outputs": [],
+      "cache": true
+    },
+    "clean": {
+      "cache": false
+    },
+    "docs:dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"]
+    },
+    "docs:build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "docs/**",
+        "src/**",
+        "README.md",
+        "CHANGELOG.md"
+      ],
+      "outputs": [
+        "docs/.vitepress/dist/**",
+        ".vitepress/dist/**"
+      ],
+      "cache": true
+    },
+    "docs:preview": {
+      "cache": false,
+      "persistent": true
+    },
+    "size-check": {
+      "dependsOn": ["build"],
+      "inputs": [
+        "dist/**",
+        "lib/**",
+        "es/**",
+        "package.json"
+      ],
+      "cache": true
+    },
+    "deploy": {
+      "dependsOn": ["build", "test:run", "lint"],
+      "cache": false
+    },
+    "deploy:dry-run": {
+      "dependsOn": ["build", "lint"],
+      "cache": false
+    }
+  },
+  "globalEnv": [
+    "CI",
+    "NODE_ENV",
+    "BUILD_ENV",
+    "TURBO_TOKEN",
+    "TURBO_TEAM"
+  ],
+  "globalDependencies": [
+    "pnpm-lock.yaml",
+    "tsconfig.json",
+    "pnpm-workspace.yaml",
+    "turbo.json"
+  ]
+}

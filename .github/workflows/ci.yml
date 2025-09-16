@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main, develop]
 
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  TURBO_REMOTE_ONLY: true
+
 jobs:
   # 代码质量检查
   quality:
@@ -19,7 +24,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 10.15.0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -45,7 +50,7 @@ jobs:
         run: pnpm lint
 
       - name: Type check
-        run: pnpm type-check:packages
+        run: pnpm type-check
 
       - name: Security audit
         run: pnpm audit --audit-level=high
@@ -66,7 +71,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 10.15.0
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -74,16 +79,14 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
 
-      - name: Cache build
+      - name: Turbo Cache
         uses: actions/cache@v3
         with:
-          path: |
-            packages/*/dist
-            packages/*/es
-            packages/*/lib
-          key: ${{ runner.os }}-build-${{ matrix.node-version }}-${{ github.sha }}
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ matrix.node-version }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ matrix.node-version }}-
+            turbo-${{ runner.os }}-${{ matrix.node-version }}-
+            turbo-${{ runner.os }}-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -146,7 +149,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 10.15.0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

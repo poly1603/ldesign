@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设备切换测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .device-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .device-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .device-btn.mobile {
+            background: #4CAF50;
+            color: white;
+        }
+        .device-btn.tablet {
+            background: #2196F3;
+            color: white;
+        }
+        .device-btn.desktop {
+            background: #FF9800;
+            color: white;
+        }
+        .device-btn:hover {
+            opacity: 0.8;
+        }
+        .iframe-container {
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .iframe-container.mobile {
+            width: 375px;
+            height: 667px;
+        }
+        .iframe-container.tablet {
+            width: 768px;
+            height: 1024px;
+        }
+        .iframe-container.desktop {
+            width: 100%;
+            height: 800px;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .instructions h4 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .instructions ol {
+            margin-bottom: 0;
+        }
+        .status {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔄 设备切换测试 - Login.vue 模板渲染</h1>
+        
+        <div class="instructions">
+            <h4>测试步骤：</h4>
+            <ol>
+                <li>点击下方的设备按钮来模拟不同设备尺寸</li>
+                <li>观察登录页面是否正确渲染对应设备的模板</li>
+                <li>在模板选择器中选择不同的模板</li>
+                <li>切换设备后检查是否保持了上次选择的模板</li>
+                <li>打开浏览器开发者工具查看控制台日志</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h3>设备模拟器</h3>
+            <div class="device-buttons">
+                <button class="device-btn mobile" onclick="switchDevice('mobile')">
+                    📱 手机 (375x667)
+                </button>
+                <button class="device-btn tablet" onclick="switchDevice('tablet')">
+                    📱 平板 (768x1024)
+                </button>
+                <button class="device-btn desktop" onclick="switchDevice('desktop')">
+                    💻 桌面 (100%x800)
+                </button>
+            </div>
+            
+            <div class="iframe-container desktop" id="iframeContainer">
+                <iframe src="https://localhost:3012/login" id="loginFrame"></iframe>
+            </div>
+            
+            <div class="status" id="status">
+                当前设备: 桌面 (100%x800) | 时间: <span id="timestamp"></span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>预期行为</h3>
+            <ul>
+                <li>✅ 设备切换时应该自动加载对应设备的默认模板或上次选择的模板</li>
+                <li>✅ 模板选择应该被正确保存到 localStorage</li>
+                <li>✅ 控制台应该显示设备切换和模板加载的日志</li>
+                <li>✅ 页面布局应该适应不同的设备尺寸</li>
+                <li>✅ 模板选择器应该正常工作</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>调试信息</h3>
+            <p>打开浏览器开发者工具，查看控制台中的以下日志：</p>
+            <ul>
+                <li><code>🔄 设备切换: [device] (断点: [breakpoint], 宽度: [width]px)</code></li>
+                <li><code>🎨 模板切换: [templateName] (设备: [device])</code></li>
+                <li><code>✅ 模板加载成功 - 设备: [device], 模板: [templateName]</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function switchDevice(deviceType) {
+            const container = document.getElementById('iframeContainer');
+            const status = document.getElementById('status');
+            const timestamp = document.getElementById('timestamp');
+            
+            // 移除所有设备类
+            container.className = 'iframe-container';
+            
+            // 添加新的设备类
+            container.classList.add(deviceType);
+            
+            // 更新状态
+            const deviceInfo = {
+                mobile: '手机 (375x667)',
+                tablet: '平板 (768x1024)',
+                desktop: '桌面 (100%x800)'
+            };
+            
+            status.innerHTML = `当前设备: ${deviceInfo[deviceType]} | 时间: <span id="timestamp">${new Date().toLocaleTimeString()}</span>`;
+            
+            // 刷新iframe以触发设备检测
+            const iframe = document.getElementById('loginFrame');
+            iframe.src = iframe.src;
+            
+            console.log(`🔄 测试页面设备切换: ${deviceType}`);
+        }
+        
+        // 初始化时间戳
+        document.getElementById('timestamp').textContent = new Date().toLocaleTimeString();
+        
+        // 每秒更新时间戳
+        setInterval(() => {
+            const timestampEl = document.getElementById('timestamp');
+            if (timestampEl) {
+                timestampEl.textContent = new Date().toLocaleTimeString();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
