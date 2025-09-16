@@ -9,6 +9,8 @@ import { logger } from '../../utils/logger'
 import { formatFileSize, formatDuration } from '../../utils/format-utils'
 import { ConfigLoader } from '../../utils/config/config-loader'
 import type { BuilderConfig } from '../../types/config'
+import path from 'path'
+import { writeFile } from '../../utils/file-system'
 
 /**
  * 构建命令选项
@@ -25,6 +27,8 @@ interface BuildOptions {
   clean?: boolean
   analyze?: boolean
   watch?: boolean
+  report?: string | boolean
+  sizeLimit?: string
 }
 
 /**
@@ -42,6 +46,8 @@ export const buildCommand = new Command('build')
   .option('--clean', '构建前清理输出目录')
   .option('--no-clean', '构建前不清理输出目录')
   .option('--analyze', '分析打包结果')
+  .option('--report [file]', '输出构建报告 JSON 文件（默认 dist/build-report.json）')
+  .option('--size-limit <limit>', '设置总包体或单产物大小上限，如 200k、1mb、或字节数')
   .option('-w, --watch', '监听文件变化')
   .action(async (options: BuildOptions, command: Command) => {
     try {
@@ -112,6 +118,20 @@ async function executeBuild(options: BuildOptions, globalOptions: any = {}): Pro
     // 分析打包结果
     if (options.analyze) {
       await analyzeBuildResult(result)
+    }
+
+    // 输出构建报告（JSON）
+    if (options.report) {
+      const reportPath = typeof options.report === 'string' && options.report.trim()
+        ? options.report
+        : path.join((config.output?.dir || 'dist'), 'build-report.json')
+      await writeBuildReport(result, reportPath)
+      logger.info(`报告已输出: ${chalk.cyan(reportPath)}`)
+    }
+
+    // 体积阈值检查（使用 gzip 优先，回退原始大小）
+    if (options.sizeLimit) {
+      enforceSizeLimit(result, options.sizeLimit)
     }
 
     // 清理资源
@@ -249,6 +269,23 @@ function showBuildResult(result: any, startTime: number): void {
       logger.info(`  ${chalk.cyan(output.fileName)} ${chalk.gray(size)}${chalk.gray(gzipSize)}`)
     }
   }
+  // 缓存摘要
+  if (result.cache) {
+    const parts: string[] = []
+    const enabledStr = result.cache.enabled ? '启用' : '禁用'
+    parts.push(`状态 ${enabledStr}`)
+    if (result.cache.enabled && typeof result.cache.hit === 'boolean') {
+      parts.push(result.cache.hit ? '命中' : '未命中')
+    }
+    if (typeof result.cache.lookupMs === 'number') {
+      parts.push(`查询 ${formatDuration(result.cache.lookupMs)}`)
+    }
+    if (result.cache.hit && typeof result.cache.savedMs === 'number' && result.cache.savedMs > 0) {
+      parts.push(`节省 ${formatDuration(result.cache.savedMs)}`)
+    }
+    logger.info(`缓存: ${parts.join('， ')}`)
+  }
+
 
   if (result.warnings && result.warnings.length > 0) {
     logger.newLine()
@@ -262,8 +299,86 @@ function showBuildResult(result: any, startTime: number): void {
 }
 
 /**
- * 分析构建结果
+ * 写出构建报告 JSON
  */
+async function writeBuildReport(result: any, reportPath: string): Promise<void> {
+  const files = (result.outputs || []).map((o: any) => ({
+    fileName: o.fileName,
+    type: o.type,
+    format: o.format,
+    size: o.size,
+    gzipSize: o.gzipSize ?? null
+  }))
+
+  const totalRaw = files.reduce((s: number, f: any) => s + (f.size || 0), 0)
+  const totalGzip = files.reduce((s: number, f: any) => s + (f.gzipSize || 0), 0)
+
+  const report = {
+    meta: {
+      bundler: result.bundler,
+      mode: result.mode,
+      libraryType: result.libraryType || null,
+      buildId: result.buildId,
+      timestamp: result.timestamp,
+      duration: result.duration,
+      cache: result.cache || undefined
+    },
+    totals: {
+      raw: totalRaw,
+      gzip: totalGzip,
+      fileCount: files.length
+    },
+    files
+  }
+
+  const abs = path.isAbsolute(reportPath) ? reportPath : path.resolve(process.cwd(), reportPath)
+  await writeFile(abs, JSON.stringify(report, null, 2), 'utf8')
+}
+
+/**
+ * 体积阈值检查（优先使用 gzip）
+ * 超限则抛出错误
+ */
+function enforceSizeLimit(result: any, limitStr: string): void {
+  const limit = parseSizeLimit(limitStr)
+  if (!isFinite(limit) || limit <= 0) return
+
+  const outputs = result.outputs || []
+  const totalGzip = outputs.reduce((s: number, o: any) => s + (o.gzipSize || 0), 0)
+  const totalRaw = outputs.reduce((s: number, o: any) => s + (o.size || 0), 0)
+  const metric = totalGzip > 0 ? totalGzip : totalRaw
+  const using = totalGzip > 0 ? 'gzip' : 'raw'
+
+  if (metric > limit) {
+    // 显示前若干个最大文件帮助定位
+    const top = [...outputs]
+      .sort((a: any, b: any) => (b.gzipSize || b.size || 0) - (a.gzipSize || a.size || 0))
+      .slice(0, 5)
+      .map((o: any) => `- ${o.fileName} ${formatFileSize(o.gzipSize || o.size)}${o.format ? ` (${o.format})` : ''}`)
+      .join('\n')
+
+    throw new Error(
+      `构建包体超出限制: ${formatFileSize(metric)} > ${formatFileSize(limit)} （度量: ${using}）\nTop 较大文件:\n${top}`
+    )
+  }
+}
+
+/**
+ * 解析尺寸字符串：支持 200k / 1mb / 12345（字节）
+ */
+function parseSizeLimit(input: string): number {
+  const s = String(input || '').trim().toLowerCase()
+  const m = s.match(/^(\d+(?:\.\d+)?)(b|kb|k|mb|m|gb|g)?$/i)
+  if (!m) return Number(s) || 0
+  const n = parseFloat(m[1])
+  const unit = (m[2] || 'b').toLowerCase()
+  const factor = unit === 'gb' || unit === 'g' ? 1024 ** 3
+    : unit === 'mb' || unit === 'm' ? 1024 ** 2
+    : unit === 'kb' || unit === 'k' ? 1024
+    : 1
+  return Math.round(n * factor)
+}
+
 async function analyzeBuildResult(result: any): Promise<void> {
   void result
   logger.info('正在分析打包结果...')

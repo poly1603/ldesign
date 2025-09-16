@@ -85,7 +85,10 @@ describe('TypeScriptStrategy', () => {
     it('should validate TypeScript configuration', () => {
       const config = {
         input: 'src/index.ts',
-        libraryType: LibraryType.TYPESCRIPT
+        libraryType: LibraryType.TYPESCRIPT,
+        output: {
+          format: ['esm', 'cjs']
+        }
       }
 
       const result = strategy.validateConfig(config)

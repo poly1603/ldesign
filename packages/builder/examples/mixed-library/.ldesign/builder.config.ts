@@ -1,8 +1,8 @@
 import { defineConfig, LibraryType } from '@ldesign/builder'
 
 export default defineConfig({
-  // 多入口配�?- 自动扫描 src 目录下的所�?TypeScript 文件
-  input: ['src/**/*.ts'],
+  // 单入口配置 - 使用主入口文件
+  input: 'src/index.ts',
 
   // 输出配置
   output: {

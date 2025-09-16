@@ -247,6 +247,17 @@ export interface BuildResult {
   /** 库类型 */
   libraryType?: string
 
+  /** 缓存信息（若启用缓存） */
+  cache?: {
+    enabled: boolean
+    hit: boolean
+    lookupMs?: number
+    savedMs?: number
+    dir?: string
+    ttl?: number
+    maxSize?: number
+  }
+
   /** 打包后验证结果 */
   validation?: PostBuildValidationResult
 }

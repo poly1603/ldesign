@@ -30,6 +30,9 @@ export interface PerformanceConfig {
   /** 构建超时时间 */
   timeout?: number
 
+  /** 最大文件大小限制（字节） */
+  maxFileSize?: number
+
   /** 是否启用性能监控 */
   monitoring?: boolean | MonitoringConfig
 }
@@ -231,6 +234,9 @@ export interface PerformanceMetrics {
 
   /** 系统资源使用 */
   systemResources: SystemResourceUsage
+
+  /** 打包大小（字节） */
+  bundleSize?: number
 }
 
 /**

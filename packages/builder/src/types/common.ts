@@ -159,29 +159,29 @@ export type DeepRequired<T> = {
 }
 
 /**
- * 函数类型
+ * 函数类型 - 使用更具体的类型参数
  */
-export type AnyFunction = (...args: any[]) => any
+export type AnyFunction<TArgs extends readonly unknown[] = readonly unknown[], TReturn = unknown> = (...args: TArgs) => TReturn
 
 /**
  * 异步函数类型
  */
-export type AsyncFunction<T = any> = (...args: any[]) => Promise<T>
+export type AsyncFunction<T = unknown, TArgs extends readonly unknown[] = readonly unknown[]> = (...args: TArgs) => Promise<T>
 
 /**
  * 构造函数类型
  */
-export type Constructor<T = {}> = new (...args: any[]) => T
+export type Constructor<T = {}, TArgs extends readonly unknown[] = readonly unknown[]> = new (...args: TArgs) => T
 
 /**
  * 抽象构造函数类型
  */
-export type AbstractConstructor<T = {}> = abstract new (...args: any[]) => T
+export type AbstractConstructor<T = {}, TArgs extends readonly unknown[] = readonly unknown[]> = abstract new (...args: TArgs) => T
 
 /**
  * 类型守卫函数
  */
-export type TypeGuard<T> = (value: any) => value is T
+export type TypeGuard<T> = (value: unknown) => value is T
 
 /**
  * 谓词函数

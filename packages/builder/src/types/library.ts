@@ -49,7 +49,7 @@ export interface LibraryDetectionResult {
  */
 export interface DetectionEvidence {
   /** 依据类型 */
-  type: 'file' | 'dependency' | 'config' | 'content'
+  type: 'file' | 'dependency' | 'config' | 'content' | 'error'
   /** 依据描述 */
   description: string
   /** 权重 */

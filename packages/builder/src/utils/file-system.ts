@@ -30,7 +30,9 @@ export class FileSystem {
    */
   static existsSync(filePath: string): boolean {
     try {
-      require('fs').accessSync(filePath)
+      // 使用显式导入而不是 require
+      const { accessSync } = require('fs')
+      accessSync(filePath)
       return true
     } catch {
       return false

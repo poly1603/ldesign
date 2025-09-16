@@ -108,31 +108,76 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
       let results: any[] = []
       const outputMetadata: Map<string, any> = new Map()
 
-      // 处理多配置构建
+      // 处理多配置构建 - 添加并行构建支持
       if (this.multiConfigs && this.multiConfigs.length > 0) {
-        for (const [index, singleConfig] of this.multiConfigs.entries()) {
-          this.logger.debug(`构建配置 ${index + 1}/${this.multiConfigs.length}`)
-          
-          // 验证单个配置
-          await this.validateSingleConfig(singleConfig)
-          
-          // 创建 bundle
-          const bundle = await rollup.rollup(singleConfig)
-          
-          // 生成和写入输出
-          const outputs = await this.generateAndWriteOutputs(bundle, singleConfig)
-          results.push(...outputs)
-          
-          // 收集输出元数据
-          outputs.forEach(output => {
-            outputMetadata.set(output.fileName, {
-              format: singleConfig.output.format,
-              preserveModules: singleConfig.output.preserveModules,
-              sourcemap: singleConfig.output.sourcemap
+        // 对于小量配置，使用并行构建提高性能
+        if (this.multiConfigs.length <= 3) {
+          const buildPromises = this.multiConfigs.map(async (singleConfig, index) => {
+            this.logger.debug(`并行构建配置 ${index + 1}/${this.multiConfigs?.length || 0}`)
+
+            // 验证单个配置
+            await this.validateSingleConfig(singleConfig)
+
+            // 创建 bundle
+            const bundle = await rollup.rollup(singleConfig)
+
+            try {
+              // 生成和写入输出
+              const outputs = await this.generateAndWriteOutputs(bundle, singleConfig)
+
+              // 收集输出元数据
+              const metadata = outputs.map(output => ({
+                fileName: output.fileName,
+                format: singleConfig.output.format,
+                preserveModules: singleConfig.output.preserveModules,
+                sourcemap: singleConfig.output.sourcemap
+              }))
+
+              return { outputs, metadata }
+            } finally {
+              await bundle.close()
+            }
+          })
+
+          const buildResults = await Promise.all(buildPromises)
+          buildResults.forEach(({ outputs, metadata }) => {
+            results.push(...outputs)
+            metadata.forEach(meta => {
+              outputMetadata.set(meta.fileName, {
+                format: meta.format,
+                preserveModules: meta.preserveModules,
+                sourcemap: meta.sourcemap
+              })
             })
           })
-          
-          await bundle.close()
+        } else {
+          // 对于大量配置，使用串行构建避免内存压力
+          for (const [index, singleConfig] of this.multiConfigs.entries()) {
+            this.logger.debug(`串行构建配置 ${index + 1}/${this.multiConfigs.length}`)
+
+            // 验证单个配置
+            await this.validateSingleConfig(singleConfig)
+
+            // 创建 bundle
+            const bundle = await rollup.rollup(singleConfig)
+
+            try {
+              // 生成和写入输出
+              const outputs = await this.generateAndWriteOutputs(bundle, singleConfig)
+              results.push(...outputs)
+
+              // 收集输出元数据
+              outputs.forEach(output => {
+                outputMetadata.set(output.fileName, {
+                  format: singleConfig.output.format,
+                  preserveModules: singleConfig.output.preserveModules,
+                  sourcemap: singleConfig.output.sourcemap
+                })
+              })
+            } finally {
+              await bundle.close()
+            }
+          }
         }
       } else {
         // 单配置构建

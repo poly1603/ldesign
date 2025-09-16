@@ -19,7 +19,9 @@ describe('RollupAdapter.transformConfig', () => {
 
     const byDir: Record<string, any> = {}
     for (const o of rollupCfg.output) {
-      byDir[o.dir] = o
+      // UMD格式使用file而不是dir
+      const key = o.dir || (o.file ? 'dist' : 'unknown')
+      byDir[key] = o
     }
 
     expect(byDir['es']).toBeTruthy()
@@ -32,7 +34,8 @@ describe('RollupAdapter.transformConfig', () => {
 
     expect(byDir['es'].entryFileNames).toBe('[name].js')
     expect(byDir['lib'].entryFileNames).toBe('[name].cjs')
-    expect(byDir['dist'].entryFileNames).toBe('[name].umd.js')
+    // UMD格式使用file而不是entryFileNames
+    expect(byDir['dist'].file).toBe('dist/index.js')
 
     expect(byDir['es'].preserveModules).toBe(true)
     expect(byDir['lib'].preserveModules).toBe(true)

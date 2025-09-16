@@ -21,6 +21,7 @@ import { DEFAULT_BUILDER_CONFIG } from '../constants/defaults'
 import { Logger } from '../utils/logger'
 import { ErrorHandler, BuilderError } from '../utils/error-handler'
 import { ErrorCode } from '../constants/errors'
+import { LibraryType } from '../types/library'
 
 /**
  * 配置管理器类
@@ -50,13 +51,19 @@ export class ConfigManager extends EventEmitter {
   /**
    * 加载配置文件
    */
-  async loadConfig(options: ConfigLoadOptions = {}): Promise<BuilderConfig> {
+  async loadConfig(options?: ConfigLoadOptions, userConfig?: Partial<BuilderConfig>): Promise<BuilderConfig> {
+    // 支持两种调用方式：loadConfig(options) 或 loadConfig(options, userConfig)
+    const loadOptions = options || {}
+    const providedConfig = userConfig || {}
     try {
-      const configPath = options.configFile || await this.findConfigFile()
+      const configPath = loadOptions.configFile || await this.findConfigFile()
 
       let config: Partial<BuilderConfig> = {}
 
-      if (configPath) {
+      // 如果提供了用户配置，直接使用
+      if (Object.keys(providedConfig).length > 0) {
+        config = providedConfig
+      } else if (configPath) {
         this.logger.info(`加载配置文件: ${configPath}`)
         config = await configLoader.loadConfigFile(configPath)
       } else {
@@ -65,10 +72,13 @@ export class ConfigManager extends EventEmitter {
       }
 
       // 合并默认配置
-      const mergedConfig = this.mergeConfigs(DEFAULT_BUILDER_CONFIG, config as BuilderConfig)
+      let mergedConfig = this.mergeConfigs(DEFAULT_BUILDER_CONFIG, config as BuilderConfig)
+
+      // 处理环境变量替换
+      mergedConfig = this.resolveEnvironmentVariables(mergedConfig)
 
       // 应用环境特定配置
-      if (options.applyEnvConfig && mergedConfig.env) {
+      if (loadOptions.applyEnvConfig && mergedConfig.env) {
         const envConfig = this.getEnvConfig(mergedConfig)
         if (envConfig) {
           Object.assign(mergedConfig, envConfig)
@@ -76,7 +86,7 @@ export class ConfigManager extends EventEmitter {
       }
 
       // 验证配置
-      if (options.validate !== false && this.options.validateOnLoad) {
+      if (loadOptions.validate !== false && this.options.validateOnLoad) {
         const validation = this.validateConfig(mergedConfig)
         if (!validation.valid) {
           throw new BuilderError(
@@ -133,9 +143,22 @@ export class ConfigManager extends EventEmitter {
         const hasEnabledFormat = (config.output?.esm === true || (config.output?.esm && typeof config.output.esm === 'object')) ||
                                  (config.output?.cjs === true || (config.output?.cjs && typeof config.output.cjs === 'object')) ||
                                  (config.output?.umd === true || (config.output?.umd && typeof config.output.umd === 'object'))
-        
+
         if (!hasEnabledFormat) {
           result.errors.push('缺少入口文件配置（需要在顶层或 output 中指定 input）')
+        }
+      }
+
+      // 检查空的input
+      if (config.input === '') {
+        result.errors.push('input 不能为空字符串')
+      }
+
+      // 验证 libraryType
+      if (config.libraryType) {
+        const validLibraryTypes = Object.values(LibraryType)
+        if (!validLibraryTypes.includes(config.libraryType as LibraryType)) {
+          result.errors.push(`无效的 libraryType: ${config.libraryType}`)
         }
       }
 
@@ -240,6 +263,69 @@ export class ConfigManager extends EventEmitter {
    */
   private async findConfigFile(): Promise<string | null> {
     return configLoader.findConfigFile()
+  }
+
+  /**
+   * 标准化配置
+   */
+  normalizeConfig(config: Partial<BuilderConfig>): BuilderConfig {
+    let normalized = { ...config } as BuilderConfig
+
+    // 标准化输出配置
+    if (normalized.output) {
+      // 如果output是字符串，转换为对象
+      if (typeof normalized.output === 'string') {
+        normalized.output = {
+          file: normalized.output
+        } as any
+      }
+
+      // 确保输出配置有 file 属性
+      if (typeof normalized.output === 'object' && !normalized.output.file && normalized.output.dir) {
+        normalized.output.file = `${normalized.output.dir}/index.js`
+      }
+    }
+
+    // 标准化插件配置
+    if (normalized.plugins && !Array.isArray(normalized.plugins)) {
+      normalized.plugins = []
+    }
+
+    // 处理环境变量替换
+    normalized = this.resolveEnvironmentVariables(normalized)
+
+    return normalized
+  }
+
+  /**
+   * 解析环境变量
+   */
+  private resolveEnvironmentVariables(config: BuilderConfig): BuilderConfig {
+    const resolved = JSON.parse(JSON.stringify(config))
+
+    const replaceEnvVars = (obj: any): any => {
+      if (typeof obj === 'string') {
+        return obj.replace(/\$\{([^}]+)\}/g, (match, varName) => {
+          return process.env[varName] || match
+        })
+      }
+
+      if (Array.isArray(obj)) {
+        return obj.map(replaceEnvVars)
+      }
+
+      if (obj && typeof obj === 'object') {
+        const result: any = {}
+        for (const [key, value] of Object.entries(obj)) {
+          result[key] = replaceEnvVars(value)
+        }
+        return result
+      }
+
+      return obj
+    }
+
+    return replaceEnvVars(resolved)
   }
 
   /**

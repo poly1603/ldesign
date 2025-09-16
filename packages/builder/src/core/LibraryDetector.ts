@@ -159,13 +159,19 @@ export class LibraryDetector {
       return result
 
     } catch (error) {
-      this.errorHandler.handle(error as Error, 'detect')
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      this.logger.error(`项目类型检测失败: ${errorMessage}`)
+      this.errorHandler.handle(error instanceof Error ? error : new Error(errorMessage), 'detect')
 
-      // 返回默认结果
+      // 返回默认结果，但记录错误信息
       return {
         type: LibraryType.TYPESCRIPT,
-        confidence: 0.5,
-        evidence: []
+        confidence: 0.1, // 降低置信度以反映检测失败
+        evidence: [{
+          type: 'error',
+          description: `检测过程中发生错误: ${errorMessage}`,
+          weight: 0.1
+        }]
       }
     }
   }

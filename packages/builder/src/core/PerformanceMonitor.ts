@@ -82,6 +82,33 @@ export class PerformanceMonitor extends EventEmitter {
   }
 
   /**
+   * 开始会话监控（别名）
+   */
+  startSession(sessionId: string): string {
+    this.startBuild(sessionId)
+    return sessionId
+  }
+
+  /**
+   * 结束会话监控（别名）
+   */
+  endSession(sessionId: string): PerformanceMetrics & { duration: number, cpuUsage?: number } {
+    const metrics = this.endBuild(sessionId)
+    return {
+      ...metrics,
+      duration: metrics.buildTime,
+      cpuUsage: metrics.systemResources.cpuUsage
+    }
+  }
+
+  /**
+   * 获取全局统计信息
+   */
+  getGlobalStats() {
+    return this.globalStats
+  }
+
+  /**
    * 开始构建监控
    */
   startBuild(buildId: string): void {

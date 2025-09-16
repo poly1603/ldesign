@@ -149,9 +149,10 @@ export class TestRunner implements ITestRunner {
       return testResult
 
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
       const testError = this.errorHandler.createError(
         ErrorCode.BUILD_FAILED,
-        '测试运行失败',
+        errorMessage,
         { cause: error as Error }
       )
 
@@ -163,9 +164,9 @@ export class TestRunner implements ITestRunner {
         failedTests: 0,
         skippedTests: 0,
         duration: Date.now() - startTime,
-        output: error instanceof Error ? error.message : String(error),
+        output: errorMessage,
         errors: [{
-          message: testError.message,
+          message: errorMessage,
           stack: testError.stack,
           type: 'runtime'
         }],

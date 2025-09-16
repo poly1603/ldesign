@@ -91,8 +91,14 @@ describe('ConfigManager', () => {
 
       const result = configManager.validateConfig(config)
       expect(result.valid).toBe(false)
-      expect(result.errors).toContain(expect.stringContaining('input'))
-      expect(result.errors).toContain(expect.stringContaining('libraryType'))
+
+      // 检查是否有包含 input 的错误消息
+      const hasInputError = result.errors.some(error => error.includes('input'))
+      expect(hasInputError).toBe(true)
+
+      // 检查是否有包含 libraryType 的错误消息
+      const hasLibraryTypeError = result.errors.some(error => error.includes('libraryType'))
+      expect(hasLibraryTypeError).toBe(true)
     })
   })
 

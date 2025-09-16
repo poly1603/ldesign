@@ -34,14 +34,29 @@ export class TypeScriptStrategy implements ILibraryStrategy {
     // 计算入口：若用户未指定，则默认将 src 目录下的所有源码文件作为多入口
     const resolvedInput = await this.resolveInputEntries(config)
 
+    // 创建基础配置，保留重要的原始配置属性
     const unifiedConfig: UnifiedConfig = {
       input: resolvedInput,
       output: outputConfig,
       plugins: this.buildPlugins(config),
       external: config.external || [],
       treeshake: config.performance?.treeshaking !== false,
-      onwarn: this.createWarningHandler()
+      onwarn: this.createWarningHandler(),
+      // 保留重要的构建选项
+      clean: (config as any).clean,
+      minify: config.performance?.minify,
+      sourcemap: config.output?.sourcemap,
+      // 保留其他可能的配置属性
+      ...(config as any)
     }
+
+    // 覆盖特定的属性以确保正确性
+    unifiedConfig.input = resolvedInput
+    unifiedConfig.output = outputConfig
+    unifiedConfig.plugins = this.buildPlugins(config)
+    unifiedConfig.external = config.external || []
+    unifiedConfig.treeshake = config.performance?.treeshaking !== false
+    unifiedConfig.onwarn = this.createWarningHandler()
 
     return unifiedConfig
   }
@@ -253,13 +268,13 @@ export class TypeScriptStrategy implements ILibraryStrategy {
       }
     }
 
-    // 检查输出配置
-    if (!config.output?.format) {
+    // 检查输出配置 - 只在没有任何输出配置时才建议
+    if (!config.output?.format && !config.output?.esm && !config.output?.cjs && !config.output?.umd) {
       suggestions.push('建议指定输出格式，如 ["esm", "cjs"]')
     }
 
-    // 检查 TypeScript 配置
-    if (!config.typescript?.declaration) {
+    // 检查 TypeScript 配置 - 只在明确禁用时才建议
+    if (config.typescript?.declaration === false) {
       suggestions.push('建议启用类型声明文件生成 (declaration: true)')
     }
 

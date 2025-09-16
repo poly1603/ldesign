@@ -4,6 +4,8 @@
 
 ## 主要 API
 
+> 💡 **新功能**: @ldesign/builder 现在提供了强大的高级功能模块，包括智能依赖分析、构建性能监控、代码分割优化和构建缓存管理。详见 [高级功能 API](./api/advanced-features.md)。
+
 ### build(options)
 
 执行一次性构建任务。

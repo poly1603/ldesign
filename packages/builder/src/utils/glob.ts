@@ -61,19 +61,26 @@ export async function resolveInputPatterns(
       }
     }
 
-    // 应用排除模式
+    // 应用排除模式 - 优化性能
     if (excludePatterns.length > 0) {
       const excludedFiles = new Set<string>()
-      for (const pattern of excludePatterns) {
+
+      // 并行处理排除模式以提高性能
+      const excludePromises = excludePatterns.map(async (pattern) => {
         const files = await resolveSinglePattern(pattern, rootDir)
         const fileArray = Array.isArray(files) ? files : [files]
-        fileArray.forEach(f => excludedFiles.add(f))
-      }
+        return fileArray
+      })
+
+      const excludeResults = await Promise.all(excludePromises)
+      excludeResults.flat().forEach(f => excludedFiles.add(f))
+
       return allFiles.filter(f => !excludedFiles.has(f))
     }
 
-    // 去重并排序
-    return [...new Set(allFiles)].sort()
+    // 去重并排序 - 使用更高效的去重方式
+    const uniqueFiles = new Set(allFiles)
+    return Array.from(uniqueFiles).sort()
   }
 
   // 单个字符串模式

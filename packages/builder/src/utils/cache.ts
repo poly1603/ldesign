@@ -17,6 +17,7 @@ interface CacheOptions {
   cacheDir?: string
   ttl?: number // Time to live in milliseconds
   namespace?: string
+  maxSize?: number // 最大缓存体积（字节），超过后按时间淘汰
 }
 
 /**
@@ -26,6 +27,7 @@ export class BuildCache {
   private cacheDir: string
   private ttl: number
   private namespace: string
+  private maxSize?: number
   private memoryCache: Map<string, CacheEntry> = new Map()
   private initialized: boolean = false
 
@@ -34,6 +36,7 @@ export class BuildCache {
     this.cacheDir = options.cacheDir || defaultCacheDir
     this.ttl = options.ttl || 24 * 60 * 60 * 1000 // 默认24小时
     this.namespace = options.namespace || 'default'
+    this.maxSize = options.maxSize
   }
 
   /**
@@ -81,6 +84,10 @@ export class BuildCache {
     const cachePath = this.getCachePath(key)
     try {
       await fs.writeFile(cachePath, JSON.stringify(entry, null, 2))
+      // 写入后进行体积检查与清理
+      if (this.maxSize && this.maxSize > 0) {
+        await this.enforceMaxSize()
+      }
     } catch (error) {
       // 缓存写入失败不应该中断构建
       console.warn(`Cache write failed for key: ${key}`, error)
@@ -115,12 +122,58 @@ export class BuildCache {
     return null
   }
 
+  /** 获取缓存目录 */
+  public getDirectory(): string { return this.cacheDir }
+  /** 获取 TTL */
+  public getTTL(): number { return this.ttl }
+  /** 获取最大体积限制 */
+  public getMaxSize(): number | undefined { return this.maxSize }
+
   /**
    * 检查缓存是否有效
    */
   private isValid(entry: CacheEntry): boolean {
     const now = Date.now()
     return now - entry.timestamp < this.ttl
+  }
+
+  /**
+   * 若设置了 maxSize，则在超过阈值时按旧到新淘汰文件
+   */
+  private async enforceMaxSize(): Promise<void> {
+    if (!this.maxSize || this.maxSize <= 0) return
+    try {
+      const files = await fs.readdir(this.cacheDir)
+      // 收集 {file, size, timestamp}
+      const entries: Array<{ file: string; size: number; timestamp: number }> = []
+      let total = 0
+      for (const f of files) {
+        const full = path.join(this.cacheDir, f)
+        const stat = await fs.stat(full)
+        total += stat.size
+        try {
+          const content = await fs.readFile(full, 'utf-8')
+          const parsed = JSON.parse(content) as CacheEntry
+          entries.push({ file: full, size: stat.size, timestamp: parsed.timestamp || 0 })
+        } catch {
+          entries.push({ file: full, size: stat.size, timestamp: 0 })
+        }
+      }
+      if (total <= this.maxSize) return
+      // 按 timestamp 升序（旧的优先删除）
+      entries.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
+      for (const e of entries) {
+        if (total <= this.maxSize) break
+        try {
+          await fs.unlink(e.file)
+          total -= e.size
+        } catch {
+          // ignore
+        }
+      }
+    } catch {
+      // ignore
+    }
   }
 
   /**
@@ -234,22 +287,60 @@ export class TypeScriptCache extends BuildCache {
  * Rollup 插件缓存
  */
 export class RollupCache extends BuildCache {
-  constructor() {
+  constructor(options: CacheOptions = {}) {
     super({
       namespace: 'rollup',
-      ttl: 24 * 60 * 60 * 1000 // 24小时
+      ttl: options.ttl ?? 24 * 60 * 60 * 1000, // 24小时
+      cacheDir: options.cacheDir,
+      maxSize: options.maxSize,
     })
   }
 
   /**
-   * 缓存 Rollup 构建结果
+   * 缓存 Rollup 构建结果（包含文件内容）
    */
   async cacheBuildResult(
     config: any,
     result: any
   ): Promise<void> {
     const configHash = createHash('md5').update(JSON.stringify(config)).digest('hex')
-    await this.set(`build:${configHash}`, result)
+
+    // 增强缓存数据，包含文件内容
+    const enhancedResult = {
+      ...result,
+      _cacheMetadata: {
+        timestamp: Date.now(),
+        configHash,
+        hasFileContents: true
+      }
+    }
+
+    // 如果有输出文件，尝试读取文件内容并缓存
+    if (result.outputs && Array.isArray(result.outputs)) {
+      const fs = await import('fs-extra')
+      const path = await import('path')
+
+      for (const output of result.outputs) {
+        if (output.fileName && typeof output.fileName === 'string') {
+          try {
+            const fullPath = path.isAbsolute(output.fileName)
+              ? output.fileName
+              : path.resolve(process.cwd(), output.fileName)
+
+            if (await fs.pathExists(fullPath)) {
+              // 读取文件内容并添加到缓存
+              const content = await fs.readFile(fullPath)
+              output._cachedContent = content.toString('base64')
+              output._cachedPath = fullPath
+            }
+          } catch (error) {
+            // 忽略文件读取错误，继续处理其他文件
+          }
+        }
+      }
+    }
+
+    await this.set(`build:${configHash}`, enhancedResult)
   }
 
   /**
@@ -258,6 +349,38 @@ export class RollupCache extends BuildCache {
   async getBuildResult(config: any): Promise<any> {
     const configHash = createHash('md5').update(JSON.stringify(config)).digest('hex')
     return this.get(`build:${configHash}`)
+  }
+
+  /**
+   * 从缓存结果恢复文件
+   */
+  async restoreFilesFromCache(cachedResult: any): Promise<boolean> {
+    if (!cachedResult || !cachedResult.outputs || !Array.isArray(cachedResult.outputs)) {
+      return false
+    }
+
+    const fs = await import('fs-extra')
+    const path = await import('path')
+    let restoredCount = 0
+
+    for (const output of cachedResult.outputs) {
+      if (output._cachedContent && output._cachedPath) {
+        try {
+          // 确保目录存在
+          await fs.ensureDir(path.dirname(output._cachedPath))
+
+          // 恢复文件内容
+          const content = Buffer.from(output._cachedContent, 'base64')
+          await fs.writeFile(output._cachedPath, content)
+
+          restoredCount++
+        } catch (error) {
+          console.warn(`恢复文件失败: ${output._cachedPath}`, error)
+        }
+      }
+    }
+
+    return restoredCount > 0
   }
 }
 
@@ -282,7 +405,7 @@ export function cached<T extends (...args: any[]) => Promise<any>>(
 
   return (async (...args: Parameters<T>): Promise<ReturnType<T>> => {
     const cacheKey = options?.key ? options.key(...args) : JSON.stringify(args)
-    
+
     // 尝试从缓存获取
     const cached = await cache.get(cacheKey)
     if (cached !== null) {
@@ -291,10 +414,10 @@ export function cached<T extends (...args: any[]) => Promise<any>>(
 
     // 执行原函数
     const result = await fn(...args)
-    
+
     // 缓存结果
     await cache.set(cacheKey, result)
-    
+
     return result
   }) as T
 }

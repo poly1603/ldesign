@@ -16,11 +16,12 @@ export const DEFAULT_BUILDER_CONFIG: Omit<
 > & {
   env: Record<string, Partial<BuilderConfig>>
   library: Required<LibraryBuildOptions>
-  // 允许默认配置不显式提供 libraryType，以便触发自动检测
-  libraryType?: LibraryType
+  // 默认库类型，可以被自动检测覆盖
+  libraryType: LibraryType
 } = {
   // 基础配置
   input: 'src/index.ts', // 保留作为兼容，但优先使用 output 中的配置
+  libraryType: LibraryType.TYPESCRIPT, // 默认为 TypeScript 库
   // 顶层开关：dts 与 sourcemap（可被各格式覆盖）
   dts: true,
   sourcemap: true,

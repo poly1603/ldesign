@@ -11,6 +11,28 @@ import type { MinifyConfig } from './performance'
 export type { OutputFormat, ChunkInfo, OptimizationSuggestion, MinifyConfig }
 
 /**
+ * 构建输出文件信息 - 用于替代 any 类型
+ */
+export interface BuildOutput {
+  /** 文件名 */
+  fileName: string
+  /** 文件大小（字节） */
+  size: number
+  /** 文件源码内容 */
+  source?: string
+  /** 输出类型 */
+  type: 'chunk' | 'asset'
+  /** 模块格式 */
+  format?: OutputFormat
+  /** 是否为入口文件 */
+  isEntry?: boolean
+  /** 依赖的模块 */
+  imports?: string[]
+  /** 导出的内容 */
+  exports?: string[]
+}
+
+/**
  * Sourcemap 类型
  */
 export type SourcemapType = boolean | 'inline' | 'hidden'

@@ -153,51 +153,58 @@ export class ErrorHandler {
   }
 
   /**
-   * 处理异步错误
+   * 处理异步错误 - 优化性能，避免不必要的Promise包装
    */
   async handleAsync(error: Error, context?: string): Promise<void> {
-    return new Promise((resolve) => {
-      this.handle(error, context)
-      resolve()
-    })
+    // 直接调用同步处理方法，避免Promise包装开销
+    this.handle(error, context)
   }
 
   /**
    * 包装函数以处理错误
    */
-  wrap<T extends (...args: any[]) => any>(fn: T, context?: string): T {
-    return ((...args: any[]) => {
+  wrap<TArgs extends readonly unknown[], TReturn>(
+    fn: (...args: TArgs) => TReturn,
+    context?: string
+  ): (...args: TArgs) => TReturn {
+    return ((...args: TArgs) => {
       try {
         const result = fn(...args)
 
         // 处理 Promise
-        if (result && typeof result.catch === 'function') {
-          return result.catch((error: Error) => {
-            this.handle(error, context)
-            throw error
-          })
+        if (result && typeof result === 'object' && 'catch' in result && typeof result.catch === 'function') {
+          return (result as unknown as Promise<unknown>).catch((error: unknown) => {
+            const err = error instanceof Error ? error : new Error(String(error))
+            this.handle(err, context)
+            throw err
+          }) as TReturn
         }
 
         return result
       } catch (error) {
-        this.handle(error as Error, context)
-        throw error
+        const err = error instanceof Error ? error : new Error(String(error))
+        this.handle(err, context)
+        throw err
       }
-    }) as T
+    })
   }
 
   /**
    * 包装异步函数以处理错误
    */
-  wrapAsync<T extends (...args: any[]) => Promise<any>>(fn: T, context?: string): T {
-    return (async (...args: any[]) => {
+  wrapAsync<TArgs extends readonly unknown[], TReturn>(
+    fn: (...args: TArgs) => Promise<TReturn>,
+    context?: string
+  ): (...args: TArgs) => Promise<TReturn> {
+    return async (...args: TArgs) => {
       try {
         return await fn(...args)
       } catch (error) {
-        await this.handleAsync(error as Error, context)
-        throw error
+        const err = error instanceof Error ? error : new Error(String(error))
+        await this.handleAsync(err, context)
+        throw err
       }
-    }) as T
+    }
   }
 
   /**
@@ -232,6 +239,50 @@ export class ErrorHandler {
     }
   ): never {
     throw this.createError(code, message, options)
+  }
+
+  /**
+   * 格式化错误信息
+   */
+  formatError(error: Error, includeStack?: boolean): string {
+    const showStack = includeStack ?? this.showStack
+
+    if (isBuilderError(error)) {
+      return error.getFullMessage()
+    }
+
+    let message = error.message
+    if (showStack && error.stack) {
+      message += `\n${error.stack}`
+    }
+
+    return message
+  }
+
+  /**
+   * 获取错误建议
+   */
+  getSuggestions(error: Error): string[] {
+    if (isBuilderError(error) && error.suggestion) {
+      return [error.suggestion]
+    }
+
+    // 根据错误类型提供通用建议
+    const suggestions: string[] = []
+
+    if (error.message.includes('ENOENT')) {
+      suggestions.push('检查文件或目录是否存在')
+    }
+
+    if (error.message.includes('EACCES')) {
+      suggestions.push('检查文件权限')
+    }
+
+    if (error.message.includes('MODULE_NOT_FOUND')) {
+      suggestions.push('运行 npm install 安装依赖')
+    }
+
+    return suggestions
   }
 
   /**

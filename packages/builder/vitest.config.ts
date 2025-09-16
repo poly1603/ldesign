@@ -58,8 +58,21 @@ export default defineConfig({
 
     // 并发设置
     threads: true,
-    maxThreads: 4,
-    minThreads: 1
+    maxThreads: 2, // 减少线程数以降低内存使用
+    minThreads: 1,
+
+    // 内存管理
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        maxThreads: 2,
+        minThreads: 1,
+        useAtomics: true
+      }
+    },
+
+    // 隔离设置
+    isolate: true
   },
 
   resolve: {

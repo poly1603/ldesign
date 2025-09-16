@@ -180,9 +180,9 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
       const cachedResult = this.getCachedBuild(cacheKey)
 
       // 临时强制禁用缓存
-      if (false && cachedResult && (mergedConfig.cache?.enabled !== false)) {
+      if (false && cachedResult) {
         this.logger.info('使用缓存的构建结果')
-        return cachedResult
+        return cachedResult as BuildResult
       }
 
       // 根据配置切换打包核心
@@ -638,7 +638,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
    * 检查代码质量
    */
   private async checkCodeQuality(outputs: any[], config: BuilderConfig): Promise<CodeQualityResult> {
-    void config
+    // 移除 void config，改为明确的参数使用或忽略注释
     const issues: CodeQualityResult['issues'] = []
     const metrics: CodeQualityResult['metrics'] = {
       complexity: 0,
@@ -646,27 +646,86 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
       duplications: 0
     }
 
+    // 定义文件大小阈值（可以从配置中获取）
+    const maxFileSize = config.performance?.maxFileSize || 500000 // 500KB
+    const warnFileSize = maxFileSize * 0.8 // 80% 作为警告阈值
+
     for (const output of outputs) {
+      if (!output || typeof output !== 'object') {
+        continue
+      }
+
       // 检查文件大小
-      if (output.size > 500000) {
-        issues.push({
-          severity: 'warning',
-          file: output.fileName,
-          message: `文件大小超过 500KB (${(output.size / 1024).toFixed(2)}KB)`
-        })
+      if (typeof output.size === 'number') {
+        if (output.size > maxFileSize) {
+          issues.push({
+            severity: 'error',
+            file: output.fileName || 'unknown',
+            message: `文件大小超过限制 ${(maxFileSize / 1024).toFixed(0)}KB (当前: ${(output.size / 1024).toFixed(2)}KB)`
+          })
+        } else if (output.size > warnFileSize) {
+          issues.push({
+            severity: 'warning',
+            file: output.fileName || 'unknown',
+            message: `文件大小较大 (${(output.size / 1024).toFixed(2)}KB)，建议优化`
+          })
+        }
       }
 
-      // 检查是否包含调试代码
-      if (output.source.includes('console.log') || output.source.includes('debugger')) {
-        issues.push({
-          severity: 'warning',
-          file: output.fileName,
-          message: '包含调试代码'
-        })
-      }
+      // 检查是否包含调试代码 - 优化正则表达式性能
+      if (typeof output.source === 'string') {
+        const debugPatterns = [
+          { pattern: /console\.(?:log|debug|info|warn|error)/g, message: '包含 console 调试代码' },
+          { pattern: /debugger(?:\s*;)?/g, message: '包含 debugger 语句' },
+          { pattern: /(?:alert|confirm)\s*\(/g, message: '包含弹窗调用' }
+        ]
 
-      // 检查是否有未使用的导出
-      // 这里可以添加更复杂的检查逻辑
+        // 使用单次遍历检查所有模式，提高性能
+        const sourceLines = output.source.split('\n')
+        for (let lineIndex = 0; lineIndex < sourceLines.length; lineIndex++) {
+          const line = sourceLines[lineIndex]
+          for (const { pattern, message } of debugPatterns) {
+            if (pattern.test(line)) {
+              issues.push({
+                severity: 'warning',
+                file: output.fileName || 'unknown',
+                line: lineIndex + 1,
+                message
+              })
+              // 重置正则表达式状态
+              pattern.lastIndex = 0
+            }
+          }
+        }
+
+        // 检查代码复杂度指标 - 优化内存使用，避免重复分割
+        const lines = sourceLines.length
+        if (lines > 1000) {
+          metrics.complexity += 10
+          issues.push({
+            severity: 'info',
+            file: output.fileName || 'unknown',
+            message: `文件行数较多 (${lines} 行)，建议拆分`
+          })
+        }
+
+        // 检查文件大小
+        const sizeInKB = Math.round(output.source.length / 1024)
+        if (sizeInKB > 500) {
+          issues.push({
+            severity: 'warning',
+            file: output.fileName || 'unknown',
+            message: `文件大小较大 (${sizeInKB}KB)，可能影响加载性能`
+          })
+        }
+      }
+    }
+
+    // 计算整体可维护性分数
+    if (issues.length > 0) {
+      const errorCount = issues.filter(i => i.severity === 'error').length
+      const warningCount = issues.filter(i => i.severity === 'warning').length
+      metrics.maintainability = Math.max(0, 100 - (errorCount * 20) - (warningCount * 5))
     }
 
     return { issues, metrics }
@@ -928,26 +987,9 @@ describe('Library Validation', () => {
   /**
    * 获取缓存的构建结果
    */
-  private getCachedBuild(cacheKey: string): BuildResult | null {
+  private getCachedBuild(_cacheKey: string): BuildResult | null {
     // 临时强制返回 null 以禁用缓存
     return null
-
-    const cached = this.buildCache.get(cacheKey)
-
-    if (!cached) {
-      return null
-    }
-
-    // 检查缓存是否过期（24小时）
-    if (Date.now() - cached.timestamp > 24 * 60 * 60 * 1000) {
-      this.buildCache.delete(cacheKey)
-      return null
-    }
-
-    // 检查依赖是否有变化
-    // 这里可以添加更复杂的依赖检查逻辑
-
-    return cached.buildResult
   }
 
   /**
@@ -973,6 +1015,7 @@ describe('Library Validation', () => {
   /**
    * 加载构建缓存
    */
+  // @ts-ignore - 临时禁用未使用警告
   private async loadBuildCache(): Promise<void> {
     const cacheFile = path.join(process.cwd(), '.ldesign-builder-cache.json')
 

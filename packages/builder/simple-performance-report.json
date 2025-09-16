@@ -1,0 +1,39 @@
+{
+  "total": 5,
+  "success": 5,
+  "failed": 0,
+  "totalTime": 161.6882,
+  "avgTime": 32.33764,
+  "results": [
+    {
+      "name": "文件系统操作",
+      "duration": 33.199200000000005,
+      "memoryUsage": 295288,
+      "success": true
+    },
+    {
+      "name": "JSON 序列化性能",
+      "duration": 6.413199999999989,
+      "memoryUsage": 962408,
+      "success": true
+    },
+    {
+      "name": "异步操作性能",
+      "duration": 13.672299999999993,
+      "memoryUsage": 104872,
+      "success": true
+    },
+    {
+      "name": "内存密集型操作",
+      "duration": 25.304000000000016,
+      "memoryUsage": 12890512,
+      "success": true
+    },
+    {
+      "name": "模拟缓存操作",
+      "duration": 83.09949999999998,
+      "memoryUsage": -13029624,
+      "success": true
+    }
+  ]
+}

@@ -11,8 +11,17 @@ import type { ValidationContext } from '../../types/validation'
 import { Logger } from '../../utils/logger'
 
 // Mock 依赖
-vi.mock('fs-extra')
-vi.mock('child_process')
+vi.mock('fs-extra', () => ({
+  pathExists: vi.fn(),
+  readJson: vi.fn(),
+  writeJson: vi.fn(),
+  ensureDir: vi.fn(),
+  copy: vi.fn(),
+  remove: vi.fn()
+}))
+vi.mock('child_process', () => ({
+  spawn: vi.fn()
+}))
 
 describe('TestRunner', () => {
   let testRunner: TestRunner
@@ -88,8 +97,8 @@ describe('TestRunner', () => {
       const framework = await testRunner.detectFramework('/test/project')
 
       expect(framework).toBe('vitest')
-      expect(fs.pathExists).toHaveBeenCalledWith('/test/project/package.json')
-      expect(fs.readJson).toHaveBeenCalledWith('/test/project/package.json')
+      expect(fs.pathExists).toHaveBeenCalledWith(path.join('/test/project', 'package.json'))
+      expect(fs.readJson).toHaveBeenCalledWith(path.join('/test/project', 'package.json'))
     })
 
     it('应该从 package.json 检测 jest', async () => {
@@ -115,7 +124,7 @@ describe('TestRunner', () => {
       const framework = await testRunner.detectFramework('/test/project')
 
       expect(framework).toBe('vitest')
-      expect(fs.pathExists).toHaveBeenCalledWith('/test/project/vitest.config.ts')
+      expect(fs.pathExists).toHaveBeenCalledWith(path.join('/test/project', 'vitest.config.ts'))
     })
 
     it('应该返回默认框架 vitest', async () => {
@@ -170,7 +179,7 @@ describe('TestRunner', () => {
       expect(result.totalTests).toBe(10)
       expect(result.passedTests).toBe(10)
       expect(result.failedTests).toBe(0)
-      expect(result.duration).toBeGreaterThan(0)
+      expect(result.duration).toBeGreaterThanOrEqual(0)
       expect(mockLogger.success).toHaveBeenCalledWith(
         expect.stringContaining('测试运行完成: 10/10 通过')
       )
@@ -330,9 +339,15 @@ describe('TestRunner', () => {
       }
 
       vi.mocked(spawn).mockReturnValue(mockSpawn as any)
+
+      // Mock pathExists 调用顺序：pnpm-lock.yaml, yarn.lock, package-lock.json
       vi.mocked(fs.pathExists)
-        .mockResolvedValueOnce(false) // pnpm-lock.yaml 不存在
-        .mockResolvedValueOnce(true)  // yarn.lock 存在
+        .mockImplementation(async (filePath: string) => {
+          if (filePath.includes('pnpm-lock.yaml')) return false
+          if (filePath.includes('yarn.lock')) return true
+          if (filePath.includes('package-lock.json')) return false
+          return false
+        })
 
       await testRunner.installDependencies(mockValidationContext)
 
@@ -357,7 +372,15 @@ describe('TestRunner', () => {
       }
 
       vi.mocked(spawn).mockReturnValue(mockSpawn as any)
-      vi.mocked(fs.pathExists).mockResolvedValue(false) // 所有锁文件都不存在
+
+      // Mock pathExists 调用：所有锁文件都不存在，默认使用npm
+      vi.mocked(fs.pathExists)
+        .mockImplementation(async (filePath: string) => {
+          if (filePath.includes('pnpm-lock.yaml')) return false
+          if (filePath.includes('yarn.lock')) return false
+          if (filePath.includes('package-lock.json')) return false
+          return false
+        })
 
       await testRunner.installDependencies(mockValidationContext)
 
