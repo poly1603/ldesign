@@ -149,34 +149,72 @@ export function createI18nPlugin(options: CreateI18nOptions): Plugin {
  * @returns I18n 实例和相关方法
  */
 export function useI18n() {
-  const i18n = inject(I18nInjectionKey)
+  try {
+    const i18n = inject(I18nInjectionKey)
 
-  if (!i18n) {
-    throw new Error('useI18n() 必须在安装了 I18n 插件的 Vue 应用中使用')
+    if (!i18n) {
+      console.warn('i18n plugin not found. Make sure to install the i18n plugin. Using fallback values.')
+      return createFallbackI18n()
+    }
+
+    // 创建响应式的翻译函数
+    const t = (key: string, params?: Record<string, unknown>): string => {
+      // 通过访问 locale.value 来触发响应式更新
+      i18n.locale.value
+      return i18n.t(key, params)
+    }
+
+    // 创建响应式的键存在检查函数
+    const te = (key: string, locale?: string): boolean => {
+      // 通过访问 locale.value 来触发响应式更新
+      i18n.locale.value
+      return i18n.te(key, locale)
+    }
+
+    return {
+      locale: i18n.locale, // 直接返回 computed 属性
+      availableLocales: i18n.availableLocales, // 直接返回 computed 属性
+      t, // 使用响应式的 t 函数
+      te, // 使用响应式的 te 函数
+      setLocale: i18n.setLocale,
+      setLocaleMessage: i18n.setLocaleMessage,
+      getLocaleMessage: i18n.getLocaleMessage
+    }
+  } catch (error) {
+    console.warn('useI18n() called outside of setup context. Using fallback values.', error)
+    return createFallbackI18n()
   }
+}
 
-  // 创建响应式的翻译函数
-  const t = (key: string, params?: Record<string, unknown>): string => {
-    // 通过访问 locale.value 来触发响应式更新
-    i18n.locale.value
-    return i18n.t(key, params)
-  }
-
-  // 创建响应式的键存在检查函数
-  const te = (key: string, locale?: string): boolean => {
-    // 通过访问 locale.value 来触发响应式更新
-    i18n.locale.value
-    return i18n.te(key, locale)
-  }
-
+/**
+ * 创建回退的 i18n 对象
+ */
+function createFallbackI18n() {
   return {
-    locale: i18n.locale, // 直接返回 computed 属性
-    availableLocales: i18n.availableLocales, // 直接返回 computed 属性
-    t, // 使用响应式的 t 函数
-    te, // 使用响应式的 te 函数
-    setLocale: i18n.setLocale,
-    setLocaleMessage: i18n.setLocaleMessage,
-    getLocaleMessage: i18n.getLocaleMessage
+    locale: ref('en'),
+    availableLocales: computed(() => ['en']),
+    t: (key: string, params?: Record<string, unknown>) => {
+      // 简单的键名回退，显示键名本身
+      if (params) {
+        let result = key
+        Object.keys(params).forEach(paramKey => {
+          result = result.replace(`{${paramKey}}`, String(params[paramKey]))
+        })
+        return result
+      }
+      return key
+    },
+    te: (key: string, locale?: string) => false,
+    setLocale: async (newLocale: string) => {
+      console.warn('i18n plugin not available, cannot set locale:', newLocale)
+    },
+    setLocaleMessage: (locale: string, messages: Record<string, any>) => {
+      console.warn('i18n plugin not available, cannot set locale message:', locale, messages)
+    },
+    getLocaleMessage: (locale: string) => {
+      console.warn('i18n plugin not available, cannot get locale message:', locale)
+      return {}
+    }
   }
 }
 

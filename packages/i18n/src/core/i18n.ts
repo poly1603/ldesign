@@ -529,7 +529,123 @@ export class I18n implements I18nInstance {
   // ==================== 核心方法 ====================
 
   /**
-   * 初始化 I18n 实例
+   * 同步初始化国际化系统（基础功能）
+   *
+   * 这个方法提供基础的同步初始化，确保翻译功能立即可用
+   * 主要用于解决 Vue 组件渲染时 i18n 还未准备好的问题
+   *
+   * @example
+   * ```typescript
+   * const i18n = new I18n({ defaultLocale: 'zh-CN' })
+   * i18n.initSync() // 同步初始化基础功能
+   * console.log(i18n.t('key')) // 立即可用
+   * ```
+   */
+  initSync(): void {
+    // 防止重复初始化
+    if (this.isInitialized) {
+      return
+    }
+
+    try {
+      // 1. 同步初始化基础功能
+      // 确定初始语言
+      let initialLocale = this.options.defaultLocale
+
+      // 从存储中获取已保存的语言偏好（同步方式）
+      if (this.options.storage !== 'none' && this.options.storageKey) {
+        try {
+          // 使用 storage getter 获取实际的存储对象
+          const storageObj = this.storage
+          const stored = storageObj.getLanguage()
+          if (stored && typeof stored === 'string') {
+            initialLocale = stored
+          }
+        } catch (error) {
+          // 存储读取失败，使用默认语言（静默处理，避免测试中的噪音）
+          // console.warn('Failed to read stored locale, using default:', error)
+        }
+      }
+
+      // 自动检测语言（如果启用）
+      if (this.options.autoDetect && typeof navigator !== 'undefined') {
+        try {
+          const detected = navigator.language || navigator.languages?.[0]
+          if (detected) {
+            // 标准化语言代码
+            // 对于中文，保留完整的 'zh-CN' 格式
+            // 对于其他语言，如果有预设的消息，使用完整匹配；否则使用基础代码
+            if (this.options.messages) {
+              // 优先精确匹配
+              if (this.options.messages[detected]) {
+                initialLocale = detected
+              } else {
+                // 尝试基础语言代码
+                const baseCode = detected.split('-')[0]
+                if (this.options.messages[baseCode]) {
+                  initialLocale = baseCode
+                }
+                // 如果都没有，保持默认值
+              }
+            }
+          }
+        } catch (error) {
+          // 静默处理，使用默认语言
+        }
+      }
+
+      // 2. 设置当前语言
+      this.currentLocale = initialLocale
+
+      // 3. 如果有预设的 messages，立即加载到缓存中
+      if (this.options.messages && this.options.messages[initialLocale]) {
+        // 同步加载预设的翻译资源
+        // 创建完整的 LanguagePackage 对象，确保 getTranslationTextOptimized 能正确解析
+        const packageData: LanguagePackage = {
+          info: {
+            name: `Package for ${initialLocale}`,
+            nativeName: `Package for ${initialLocale}`,
+            code: initialLocale,
+            direction: 'ltr',
+            dateFormat: 'YYYY-MM-DD',
+          },
+          translations: this.options.messages[initialLocale]
+        }
+
+        // 将完整的包数据添加到缓存中
+        const loader = this.loader
+        let loaderCache = this.packageCache.get(loader)
+        if (!loaderCache) {
+          loaderCache = new Map()
+          this.packageCache.set(loader, loaderCache)
+        }
+        loaderCache.set(initialLocale, packageData)
+
+        // 调试信息
+        console.debug(`[I18n] initSync: Added package data for locale: ${initialLocale}`)
+        console.debug(`[I18n] initSync: Loader instance:`, loader)
+        console.debug(`[I18n] initSync: Package cache size:`, loaderCache.size)
+        console.debug(`[I18n] initSync: Translation keys:`, Object.keys(packageData.translations || {}))
+      }
+
+      // 4. 标记为基础初始化完成（但不是完全初始化）
+      // 这样 t() 方法就可以工作了
+      this.isInitialized = true
+
+      // 仅在开发环境输出调试信息
+      if (this.isDevelopmentEnvironment()) {
+        console.debug(`I18n sync initialized with locale: ${initialLocale}`)
+      }
+    } catch (error) {
+      console.error('I18n sync initialization failed:', error)
+      // 即使失败，也要确保基础功能可用
+      this.currentLocale = this.options.defaultLocale
+      this.isInitialized = true
+    }
+  }
+
+  /**
+   * 异步初始化 I18n 实例（完整功能）
    *
    * 执行以下初始化步骤：
    * 1. 初始化所有管理器组件
@@ -1282,10 +1398,19 @@ export class I18n implements I18nInstance {
     }
 
     if (!packageData) {
+      // 调试信息：记录未找到翻译数据的情况
+      console.debug(`[I18n] No package data found for locale: ${locale}, key: ${key}`)
+      console.debug(`[I18n] Loader cache size:`, loaderCache.size)
+      console.debug(`[I18n] Loader has getLoadedPackage:`, typeof (this.loader as any).getLoadedPackage)
       return undefined
     }
 
-    return getNestedValue(packageData.translations as NestedObject, key)
+    const result = getNestedValue(packageData.translations as NestedObject, key)
+    if (result === undefined) {
+      console.debug(`[I18n] Translation not found for key: ${key} in locale: ${locale}`)
+      console.debug(`[I18n] Available translations:`, Object.keys(packageData.translations || {}))
+    }
+    return result
   }
 
   /**

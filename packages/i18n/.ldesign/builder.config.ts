@@ -1,6 +1,7 @@
 import { defineConfig } from '@ldesign/builder'
 import fs from 'fs'
 import path from 'path'
+import vue from 'rollup-plugin-vue'
 
 function readPackage() {
   try {
@@ -30,6 +31,15 @@ export default defineConfig({
   clean: true,
   minify: false,
   external,
+  // 强制禁用所有缓存
+  cache: false,
+  plugins: [
+    vue({
+      target: 'browser',
+      css: false,
+      compileTemplate: true
+    })
+  ],
   output: {
     esm: true,
     cjs: true,

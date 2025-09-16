@@ -21,14 +21,19 @@
   ],
   "exports": {
     ".": {
-      "types": "./es/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.cjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./vue": {
+      "types": "./dist/vue/index.d.ts",
+      "import": "./dist/vue/index.js",
+      "require": "./dist/vue/index.cjs"
     }
   },
-  "main": "lib/index.cjs",
-  "module": "es/index.js",
-  "types": "es/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "README.md",
     "CHANGELOG.md",
@@ -69,6 +74,7 @@
     }
   },
   "dependencies": {
+    "@ldesign/shared": "workspace:*",
     "lucide-vue-next": "^0.542.0",
     "tslib": "^2.6.2"
   },
@@ -87,6 +93,7 @@
     "jsdom": "^24.0.0",
     "rollup": "^4.9.6",
     "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-vue": "^6.0.0",
     "size-limit": "^11.0.0",
     "typescript": "^5.9.2",
     "vite": "^5.0.12",

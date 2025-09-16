@@ -774,7 +774,15 @@ export interface OptimizationSuggestion {
  */
 export interface I18nInstance extends EventEmitter {
   /**
-   * 初始化国际化系统
+   * 同步初始化国际化系统（基础功能）
+   *
+   * 提供基础的同步初始化，确保翻译功能立即可用
+   * 主要用于解决组件渲染时 i18n 还未准备好的问题
+   */
+  initSync?(): void
+
+  /**
+   * 异步初始化国际化系统（完整功能）
    * @returns 初始化完成的 Promise
    */
   init(): Promise<void>

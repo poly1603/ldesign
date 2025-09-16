@@ -51,7 +51,7 @@ export interface CreateI18nOptions extends Omit<I18nOptions, 'defaultLocale'> {
   strict?: boolean
   /** 转义参数值 */
   escapeParameterHtml?: boolean
-  
+
   // 新增内置翻译相关选项
   /** 是否使用内置翻译 */
   useBuiltIn?: boolean
@@ -112,9 +112,9 @@ export interface CreateI18nOptions extends Omit<I18nOptions, 'defaultLocale'> {
 export function createI18n(options: CreateI18nOptions): I18nInstance {
   // 创建加载器
   let loader = options.customLoader
-  
-  // 如果没有自定义加载器，或者需要使用内置翻译，创建内置加载器
-  if (!loader || options.useBuiltIn !== false) {
+
+  // 只有在没有自定义加载器且需要使用内置翻译时，才创建内置加载器
+  if (!loader && options.useBuiltIn !== false) {
     const builtInLoaderOptions: BuiltInLoaderOptions = {
       userMessages: options.messages,
       customLoader: loader,
@@ -124,10 +124,10 @@ export function createI18n(options: CreateI18nOptions): I18nInstance {
       builtInNamespace: options.builtInNamespace,
       mergeOptions: options.mergeOptions
     }
-    
+
     loader = new BuiltInLoader(builtInLoaderOptions)
   }
-  
+
   // 转换配置格式
   const i18nOptions: I18nOptions = {
     defaultLocale: options.locale,
@@ -145,6 +145,8 @@ export function createI18n(options: CreateI18nOptions): I18nInstance {
       cleanupInterval: 5 * 60 * 1000,
       memoryPressureThreshold: 0.8,
     },
+    // 如果没有加载器但有消息，直接传递消息给 I18n 构造函数
+    messages: !loader && options.messages ? options.messages : undefined,
     customLoader: loader, // 使用加载器
     onLanguageChanged: options.onLanguageChanged,
     onLoadError: options.onLoadError,

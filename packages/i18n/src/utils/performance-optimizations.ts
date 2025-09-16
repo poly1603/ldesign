@@ -22,7 +22,7 @@ export function memoize<T extends (...args: any[]) => any>(
     keyGenerator?: (...args: Parameters<T>) => string
   } = {}
 ): T {
-  const { maxSize = 100, ttl = 0, keyGenerator = JSON.stringify } = options
+  const { maxSize = 100, ttl = 0, keyGenerator = (...args: any[]) => JSON.stringify(args) } = options
   const cache = new Map<string, { value: ReturnType<T>, timestamp: number }>()
 
   return ((...args: Parameters<T>): ReturnType<T> => {
@@ -43,7 +43,9 @@ export function memoize<T extends (...args: any[]) => any>(
     // Apply LRU eviction if cache is full
     if (cache.size >= maxSize) {
       const firstKey = cache.keys().next().value
-      cache.delete(firstKey)
+      if (firstKey !== undefined) {
+        cache.delete(firstKey)
+      }
     }
 
     cache.set(key, { value, timestamp: Date.now() })
@@ -202,7 +204,7 @@ export class OptimizedInterpolator {
     }
 
     let compiled = this.compiledTemplates.get(template)
-    
+
     if (!compiled) {
       compiled = this.compileTemplate(template)
       this.compiledTemplates.set(template, compiled)
@@ -330,7 +332,7 @@ export class ResourcePreloader {
 
   private async preloadNext(): Promise<void> {
     const loader = this.preloadQueue.shift()
-    
+
     if (loader) {
       try {
         await loader()
@@ -452,7 +454,7 @@ export function createOptimizedTranslator(
 
   return (key: string, params?: TranslationParams): string => {
     const template = memoized(key, undefined)
-    
+
     if (params && template.includes('{{')) {
       return interpolator.interpolate(template, params)
     }
