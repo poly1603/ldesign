@@ -1,0 +1,45 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#4ecdc4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#45b7d1;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 背景 -->
+  <rect width="400" height="300" fill="url(#grad1)"/>
+  
+  <!-- 装饰圆圈 -->
+  <circle cx="100" cy="80" r="30" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="320" cy="220" r="40" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="350" cy="60" r="20" fill="rgba(255,255,255,0.4)"/>
+  
+  <!-- 主要文字 -->
+  <text x="200" y="120" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="white">
+    测试图片
+  </text>
+  
+  <!-- 副标题 -->
+  <text x="200" y="150" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="rgba(255,255,255,0.9)">
+    @ldesign/cropper Demo
+  </text>
+  
+  <!-- 尺寸信息 -->
+  <text x="200" y="180" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="rgba(255,255,255,0.8)">
+    400 × 300 像素
+  </text>
+  
+  <!-- 装饰线条 -->
+  <line x1="50" y1="200" x2="350" y2="200" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+  <line x1="50" y1="210" x2="350" y2="210" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  
+  <!-- 小图标 -->
+  <rect x="80" y="230" width="20" height="20" rx="3" fill="rgba(255,255,255,0.4)"/>
+  <rect x="120" y="230" width="20" height="20" rx="3" fill="rgba(255,255,255,0.3)"/>
+  <rect x="160" y="230" width="20" height="20" rx="3" fill="rgba(255,255,255,0.5)"/>
+  
+  <rect x="220" y="230" width="20" height="20" rx="3" fill="rgba(255,255,255,0.3)"/>
+  <rect x="260" y="230" width="20" height="20" rx="3" fill="rgba(255,255,255,0.4)"/>
+  <rect x="300" y="230" width="20" height="20" rx="3" fill="rgba(255,255,255,0.2)"/>
+</svg>

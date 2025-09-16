@@ -1,382 +1,392 @@
-# Advanced Image Cropper
+# @ldesign/cropper
 
-A comprehensive, feature-rich image cropping and editing solution with modern UI, advanced export options, cloud integration, and beautiful animations.
+一个功能完整的图片裁剪插件，支持在任意前端框架中使用，默认提供 Vue 3 集成支持。
 
-## 🚀 Features
+## ✨ 特性
 
-### ✨ Core Features
-- **AI-Powered Smart Cropping** - Intelligent crop suggestions using machine learning
-- **Real-time Filters & Effects** - Instagram-style filter system with live preview
-- **Multi-layer Support** - Text overlays, stickers, borders, and decorative elements
-- **Complete Undo/Redo System** - Full history management with 20-step memory
-- **Batch Processing** - Process multiple images simultaneously
-- **Cloud Storage Integration** - Direct save to Google Drive, Dropbox, and social sharing
+### 🎯 核心功能
+- **多种裁剪形状**：矩形、圆形、椭圆、多边形、自定义路径
+- **灵活比例控制**：自由比例、预设比例（1:1、4:3、16:9等）、自定义比例
+- **丰富的变换操作**：旋转、缩放、翻转、平移
+- **实时预览**：所见即所得的裁剪体验
 
-### 🎨 Advanced Export Options
-- **Multiple Formats** - JPEG, PNG, WebP, AVIF, GIF, BMP, TIFF, PDF
-- **Smart Compression** - Intelligent optimization with quality presets
-- **Watermark Support** - Text and image watermarks with positioning options
-- **Social Media Presets** - One-click export for Instagram, Facebook, Twitter
-- **Print Optimization** - High-quality presets for 4x6, 8x10 prints
-- **Custom Dimensions** - Flexible sizing with aspect ratio preservation
+### 🎨 图像处理
+- **色彩调节**：亮度、对比度、饱和度、色相调整
+- **滤镜效果**：灰度、棕褐色、复古、暖色调、冷色调等
+- **几何变换**：透视变换、阴影效果、边框装饰
+- **特效装饰**：水印、背景、拼贴等
 
-### 🎬 Smooth Animations
-- **60fps Animations** - Hardware-accelerated transitions using Web Animations API
-- **Spring Physics** - Natural motion with tension and friction controls  
-- **Micro-interactions** - Hover effects, button feedback, loading states
-- **Page Transitions** - Smooth navigation between different views
-- **Staggered Animations** - Sequential element animations for polished feel
-- **Custom Easing** - Cubic bezier and spring-based timing functions
+### 🖱️ 交互体验
+- **多平台支持**：鼠标、触摸、键盘操作
+- **手势识别**：双指缩放、旋转手势
+- **键盘快捷键**：提高操作效率
+- **响应式设计**：适配各种屏幕尺寸
 
-### 🎨 Complete Theme System
-- **Dark/Light Mode** - Automatic system preference detection
-- **8 Color Schemes** - Blue, Green, Purple, Red, Orange, Teal, Pink, Indigo
-- **Custom Themes** - Full customization of colors, typography, spacing
-- **CSS Variables** - Dynamic theme switching without page reload
-- **Local Storage** - Theme preferences saved across sessions
-- **Theme API** - Programmatic theme control and event subscriptions
+### 🚀 性能优化
+- **内存管理**：智能缓存和自动清理
+- **性能监控**：实时监控帧率、内存使用
+- **硬件加速**：利用 GPU 加速渲染
+- **大图优化**：分块处理和渐进加载
 
-### ☁️ Cloud Integration
-- **Google Drive** - Direct upload and folder organization
-- **Dropbox** - Seamless file sync and sharing
-- **Social Media** - Facebook, Twitter, Instagram direct posting
-- **OAuth Authentication** - Secure login and permission handling
-- **Upload Progress** - Real-time progress tracking with cancel support
-- **Error Handling** - Graceful failure recovery and retry logic
+### 🔧 框架集成
+- **Vue 3 组件**：开箱即用的 Vue 组件
+- **Composition API**：Vue 3 Hook 支持
+- **Vue 指令**：简单的指令式使用
+- **框架无关**：核心逻辑与框架解耦
 
-## 📦 Installation
+## 📦 安装
 
 ```bash
-npm install @ldesign/advanced-cropper
+npm install @ldesign/cropper
+# 或
+yarn add @ldesign/cropper
+# 或
+pnpm add @ldesign/cropper
 ```
 
-## 🚀 Quick Start
+## 🔧 基础使用
 
-### Basic Usage
+### 原生 JavaScript
 
-```typescript
-import { createAdvancedImageCropper } from '@ldesign/advanced-cropper';
+```javascript
+import { Cropper } from '@ldesign/cropper';
 
-// Initialize the cropper
 const container = document.getElementById('cropper-container');
-const cropper = createAdvancedImageCropper(container);
-
-// Load an image
-const file = event.target.files[0];
-await cropper.loadImage(file);
-```
-
-### With Custom Theme
-
-```typescript
-import { 
-  createAdvancedImageCropper,
-  ThemeManager,
-  ThemeMode,
-  ColorScheme 
-} from '@ldesign/advanced-cropper';
-
-const cropper = createAdvancedImageCropper(container);
-
-// Apply custom theme
-const themeManager = new ThemeManager();
-themeManager.setTheme(ThemeMode.DARK, ColorScheme.PURPLE);
-```
-
-### Export with Advanced Options
-
-```typescript
-import { 
-  AdvancedExportManager,
-  ExportFormat,
-  CompressionLevel,
-  WatermarkPosition 
-} from '@ldesign/advanced-cropper/export';
-
-const exportManager = new AdvancedExportManager();
-
-const result = await exportManager.exportImage(imageElement, {
-  format: ExportFormat.WEBP,
-  dimensions: { maxWidth: 1920, maxHeight: 1080 },
-  compression: { level: CompressionLevel.MEDIUM, quality: 0.85 },
-  watermark: {
-    type: 'text',
-    content: 'My Watermark',
-    position: WatermarkPosition.BOTTOM_RIGHT,
-    opacity: 0.8,
-    scale: 0.1
-  }
+const cropper = new Cropper(container, {
+  theme: 'light',
+  aspectRatio: 16/9,
+  showGrid: true
 });
 
-// Download the result
-const url = URL.createObjectURL(result.blob);
-const link = document.createElement('a');
-link.href = url;
-link.download = result.filename;
-link.click();
+// 设置图片
+await cropper.setImageSource('/path/to/image.jpg');
+
+// 监听事件
+cropper.on('cropChange', (data) => {
+  console.log('裁剪区域变化:', data.cropData);
+});
+
+// 导出图片
+const result = await cropper.export({
+  format: 'png',
+  quality: 0.9
+});
 ```
 
-### Batch Processing
+### Vue 3 组件
 
-```typescript
-const files = Array.from(fileInput.files);
-const imageSources = await Promise.all(
-  files.map(file => loadImageFromFile(file))
-);
+```vue
+<template>
+  <ImageCropper
+    :src="imageSrc"
+    :aspect-ratio="16/9"
+    theme="light"
+    show-toolbar
+    @crop-change="handleCropChange"
+    @export="handleExport"
+  />
+</template>
 
-const results = await exportManager.exportBatch(
-  imageSources,
-  {
-    format: ExportFormat.JPEG,
-    dimensions: { maxWidth: 1200, maxHeight: 800 },
-    compression: { level: CompressionLevel.HIGH },
-    namePattern: 'processed_{index}_{timestamp}'
+<script setup>
+import { ImageCropper } from '@ldesign/cropper';
+
+const imageSrc = ref('/path/to/image.jpg');
+
+const handleCropChange = (data) => {
+  console.log('裁剪变化:', data);
+};
+
+const handleExport = (result) => {
+  console.log('导出结果:', result);
+};
+</script>
+```
+
+### Vue 3 Composition API
+
+```javascript
+import { useCropper } from '@ldesign/cropper';
+
+const {
+  containerRef,
+  cropData,
+  loading,
+  setImageSource,
+  exportImage,
+  rotate,
+  scale
+} = useCropper({
+  aspectRatio: 16/9,
+  onCropChange: (data) => {
+    console.log('裁剪变化:', data);
+  }
+});
+```
+
+### Vue 3 指令
+
+```vue
+<template>
+  <div v-cropper="cropperOptions"></div>
+</template>
+
+<script setup>
+const cropperOptions = {
+  src: '/path/to/image.jpg',
+  config: {
+    aspectRatio: 16/9,
+    theme: 'dark'
   },
-  (progress) => {
-    console.log(`${progress.current}/${progress.total} processed`);
+  onCropChange: (cropper, data) => {
+    console.log('裁剪变化:', data);
   }
-);
+};
+</script>
 ```
 
-### Cloud Upload
+## 🎛️ 配置选项
 
 ```typescript
-import { 
-  CloudManager,
-  CloudService,
-  SocialMediaService 
-} from '@ldesign/advanced-cropper/cloud';
+interface CropperConfig {
+  // 主题设置
+  theme: 'light' | 'dark' | 'auto';
 
-const cloudManager = new CloudManager();
+  // 响应式设计
+  responsive: boolean;
 
-// Register services
-cloudManager.registerCloudService(CloudService.GOOGLE_DRIVE, {
-  clientId: 'your-google-client-id'
-});
+  // 裁剪设置
+  aspectRatio: AspectRatio;
+  minCropSize: Size;
+  maxCropSize: Size;
+  cropShape: CropShape;
 
-cloudManager.registerSocialService(SocialMediaService.FACEBOOK, {
-  appId: 'your-facebook-app-id'
-});
+  // 显示设置
+  showGrid: boolean;
+  gridLines: number;
 
-// Upload to cloud
-await cloudManager.uploadToCloud(
-  CloudService.GOOGLE_DRIVE, 
-  imageBlob, 
-  'my-image.jpg',
-  { folder: 'My Photos' }
-);
+  // 工具栏配置
+  toolbar: {
+    show: boolean;
+    position: 'top' | 'bottom' | 'left' | 'right';
+    tools: string[];
+  };
 
-// Share on social media
-await cloudManager.shareOnSocial(
-  SocialMediaService.FACEBOOK,
-  imageBlob,
-  { caption: 'Check out my edited photo!' }
-);
-```
+  // 键盘快捷键
+  keyboard: {
+    enabled: boolean;
+    shortcuts: Record<string, string>;
+  };
 
-### Custom Animations
+  // 触摸支持
+  touch: {
+    enabled: boolean;
+    pinchToZoom: boolean;
+    doubleTapToFit: boolean;
+  };
 
-```typescript
-import { 
-  AnimationManager,
-  AnimationPresets,
-  AnimationUtilities 
-} from '@ldesign/advanced-cropper/animations';
-
-const animationManager = new AnimationManager();
-
-// Simple animation
-animationManager.animate(element, AnimationPresets.fadeIn);
-
-// Custom animation with callback
-animationManager.animate(element, {
-  type: AnimationType.SCALE,
-  duration: 500,
-  easing: EasingFunctions.spring,
-  fillMode: 'both'
-}, () => {
-  console.log('Animation complete!');
-});
-
-// Staggered animation
-AnimationUtilities.staggerAnimation(
-  elements,
-  AnimationPresets.slideInFromLeft,
-  100, // 100ms delay between each
-  animationManager
-);
-```
-
-## 🎨 Theming
-
-### Built-in Themes
-
-The cropper comes with several built-in themes:
-
-- **Light Mode** - Clean, bright interface
-- **Dark Mode** - Modern dark interface  
-- **System** - Follows OS preference
-- **Custom** - Fully customizable
-
-### Color Schemes
-
-Choose from 8 beautiful color schemes:
-- Blue (default)
-- Green
-- Purple  
-- Red
-- Orange
-- Teal
-- Pink
-- Indigo
-
-### CSS Variables
-
-All themes use CSS custom properties for easy customization:
-
-```css
-:root {
-  --color-background-primary: #ffffff;
-  --color-text-primary: #0f172a;
-  --color-brand-primary: #3b82f6;
-  --spacing-4: 1rem;
-  --border-radius-lg: 0.5rem;
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  // 动画效果
+  animation: {
+    enabled: boolean;
+    duration: number;
+    easing: string;
+  };
 }
 ```
 
-## 📱 Responsive Design
+## 🎨 主题定制
 
-The cropper is fully responsive and works on:
-- **Desktop** - Full-featured interface with all tools
-- **Tablet** - Optimized layout with touch controls
-- **Mobile** - Streamlined UI for small screens
+```css
+:root {
+  --cropper-primary-color: #1890ff;
+  --cropper-background-color: #ffffff;
+  --cropper-border-color: #d9d9d9;
+  --cropper-text-color: #333333;
+  --cropper-shadow-color: rgba(0, 0, 0, 0.15);
+}
 
-## ⌨️ Keyboard Shortcuts
+[data-theme="dark"] {
+  --cropper-primary-color: #177ddc;
+  --cropper-background-color: #1f1f1f;
+  --cropper-border-color: #434343;
+  --cropper-text-color: #ffffff;
+  --cropper-shadow-color: rgba(255, 255, 255, 0.15);
+}
+```
 
-- `Ctrl/Cmd + Z` - Undo
-- `Ctrl/Cmd + Shift + Z` - Redo  
-- `Ctrl/Cmd + S` - Quick save
-- `Ctrl/Cmd + E` - Export options
-- `Ctrl/Cmd + T` - Toggle theme
+## 📚 API 文档
 
-## 🎯 Export Presets
+### 核心方法
 
-### Social Media
-- Instagram Square (1080×1080)
-- Instagram Story (1080×1920)
-- Facebook Post (1200×630)
-- Twitter Post (1200×675)
+- `setImageSource(src)` - 设置图片源
+- `getCropData()` - 获取裁剪数据
+- `setCropArea(area)` - 设置裁剪区域
+- `setAspectRatio(ratio)` - 设置宽高比
+- `rotate(angle)` - 旋转图片
+- `scale(factor)` - 缩放图片
+- `flip(horizontal, vertical)` - 翻转图片
+- `export(options)` - 导出图片
+- `reset()` - 重置状态
+- `destroy()` - 销毁实例
 
-### Print
-- 4×6 Print (1800×1200)
-- 8×10 Print (3000×2400)
+### 事件系统
 
-### Web
-- Large (1920×1080 max)
-- Medium (1200×800 max)
-- Thumbnail (400×300 max)
+- `ready` - 裁剪器就绪
+- `imageLoad` - 图片加载完成
+- `imageError` - 图片加载失败
+- `cropStart` - 开始裁剪
+- `cropMove` - 裁剪中
+- `cropEnd` - 裁剪结束
+- `cropChange` - 裁剪区域变化
 
-## 📚 API Reference
+## 🔧 高级功能
 
-### Core Classes
+### 形状裁剪
 
-#### `AdvancedImageCropper`
-Main cropper class with all features integrated.
+```javascript
+// 圆形裁剪
+cropper.setShape('circle');
 
-**Methods:**
-- `loadImage(file: File): Promise<void>` - Load an image file
-- `exportImage(options: ExportOptions): Promise<ExportResult>` - Export current image
-- `undo(): void` - Undo last action
-- `redo(): void` - Redo last undone action
-- `dispose(): void` - Clean up resources
+// 多边形裁剪
+cropper.setShape('polygon', { sides: 6 });
 
-#### `AdvancedExportManager`
-Handles advanced export functionality.
+// 自定义路径
+cropper.setShape('custom', {
+  path: 'M10,10 L90,10 L90,90 L10,90 Z'
+});
+```
 
-**Methods:**
-- `exportImage(source, options): Promise<ExportResult>` - Export single image
-- `exportBatch(sources, options, onProgress?): Promise<ExportResult[]>` - Batch export
-- `getSupportedFormats(): ExportFormat[]` - Get supported formats
-- `dispose(): void` - Clean up resources
+### 图像特效
 
-#### `AnimationManager`
-Manages animations and transitions.
+```javascript
+import { EffectsProcessor } from '@ldesign/cropper';
 
-**Methods:**
-- `animate(element, config, onComplete?): string` - Create animation
-- `transition(element, config, styles): void` - Apply transition
-- `spring(element, from, to, config, property): string` - Spring animation
-- `cancelAnimation(id): void` - Cancel specific animation
-- `cancelAllAnimations(): void` - Cancel all animations
+const effects = new EffectsProcessor();
+effects.setSourceImage(image);
 
-#### `ThemeManager`
-Handles theme switching and customization.
+// 添加边框
+effects.addBorder({
+  width: 10,
+  color: '#ff0000',
+  style: 'solid'
+});
 
-**Methods:**
-- `setTheme(mode, colorScheme): void` - Set theme
-- `toggleTheme(): void` - Toggle dark/light mode
-- `setCustomTheme(config): void` - Apply custom theme
-- `subscribe(observer): () => void` - Subscribe to theme changes
-- `getCurrentTheme(): ThemeConfig` - Get current theme
+// 添加水印
+effects.addWatermark({
+  type: 'text',
+  content: '版权所有',
+  position: 'bottom-right',
+  opacity: 0.7
+});
+```
 
-#### `CloudManager`
-Manages cloud storage and social media integration.
+### 性能监控
 
-**Methods:**
-- `registerCloudService(service, config): void` - Register cloud service
-- `uploadToCloud(service, blob, filename, options?): Promise<string>` - Upload file
-- `shareOnSocial(service, blob, options?): Promise<void>` - Share on social media
-- `on(event, handler): void` - Listen to events
-- `dispose(): void` - Clean up resources
+```javascript
+import { PerformanceMonitor } from '@ldesign/cropper';
 
-## 🛠️ Development
+const monitor = new PerformanceMonitor();
+monitor.startMonitoring();
 
-### Building from Source
+// 获取性能报告
+const report = monitor.getPerformanceReport();
+console.log('性能指标:', report.metrics);
+console.log('优化建议:', report.recommendations);
+```
+
+## 🌐 浏览器支持
+
+- Chrome >= 60
+- Firefox >= 55
+- Safari >= 12
+- Edge >= 79
+
+## 📱 响应式设计
+
+裁剪器完全响应式，支持：
+- **桌面端** - 完整功能界面
+- **平板端** - 优化的触摸控制
+- **移动端** - 精简的小屏界面
+
+## ⌨️ 键盘快捷键
+
+- `Ctrl/Cmd + Z` - 撤销
+- `Ctrl/Cmd + Y` - 重做
+- `Ctrl/Cmd + S` - 快速保存
+- `Ctrl/Cmd + E` - 导出选项
+- `Delete` - 清除选区
+- `Escape` - 取消操作
+
+## 🎯 导出预设
+
+### 社交媒体
+- Instagram 方形 (1080×1080)
+- Instagram 故事 (1080×1920)
+- Facebook 帖子 (1200×630)
+- Twitter 帖子 (1200×675)
+
+### 打印
+- 4×6 照片 (1800×1200)
+- 8×10 照片 (3000×2400)
+
+### 网页
+- 大尺寸 (1920×1080 max)
+- 中等尺寸 (1200×800 max)
+- 缩略图 (400×300 max)
+
+## 🛠️ 开发
+
+### 从源码构建
 
 ```bash
-git clone https://github.com/ldesign/advanced-cropper.git
-cd advanced-cropper
+git clone https://github.com/ldesign/cropper.git
+cd cropper/packages/cropper
 npm install
 npm run build
 ```
 
-### Running Tests
+### 运行测试
 
 ```bash
 npm test
 npm run test:coverage
 ```
 
-### Development Server
+### 开发服务器
 
 ```bash
 npm run dev
 ```
 
-## 🤝 Contributing
+## 🤝 贡献
 
-We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) for details.
+欢迎贡献代码！请阅读我们的 [贡献指南](CONTRIBUTING.md) 了解详情。
 
-## 🗺️ Roadmap
+## 🗺️ 路线图
 
-### v2.0 (Coming Soon)
-- [ ] WebGL acceleration for filters
-- [ ] Advanced AI features (background removal, object detection)
-- [ ] Video cropping support
-- [ ] Mobile app integration
-- [ ] Plugin system for custom tools
+### v1.1 (即将发布)
+- [ ] React 集成支持
+- [ ] Angular 集成支持
+- [ ] WebGL 滤镜加速
+- [ ] 视频裁剪支持
 
-### v2.1
-- [ ] Collaborative editing
-- [ ] Real-time sync across devices  
-- [ ] Advanced shape tools
-- [ ] Vector graphics support
+### v1.2
+- [ ] AI 智能裁剪建议
+- [ ] 背景移除功能
+- [ ] 协作编辑
+- [ ] 插件系统
 
-## 📄 License
+## 📄 许可证
 
 MIT License © 2024 LDesign Team
 
+## 🤝 支持
+
+如有问题，请通过以下方式联系：
+
+- GitHub Issues: [提交问题](https://github.com/ldesign/cropper/issues)
+- 邮箱: support@ldesign.com
+- 文档: [在线文档](https://cropper.ldesign.com)
+
 ---
 
-Built with ❤️ by the LDesign team
+Made with ❤️ by LDesign Team

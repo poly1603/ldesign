@@ -1,186 +1,105 @@
 /**
- * @file 图片裁剪器主入口
- * @description 导出所有公共 API 和类型定义
+ * @ldesign/cropper - 主入口文件
+ * 
+ * 导出图片裁剪插件的所有公共 API
  */
 
-// 导入样式
-import './styles/index.less'
-
-// 核心类型
+// 导出类型定义
 export type {
   // 基础类型
   Point,
   Size,
-  Rectangle,
-  CropArea,
+  Rect,
   Transform,
-  ImageInfo,
-
-  // 配置类型
-  CropperConfig,
-  CropperOptions,
-  OutputConfig,
-  ThemeConfig,
-  I18nConfig,
-  ToolbarConfig,
-
-  // 事件类型
+  
+  // 裁剪相关类型
+  CropShape,
+  AspectRatio,
+  CropData,
+  CropOptions,
+  
+  // 图像相关类型
+  ImageSource,
+  ImageFormat,
+  ImageQuality,
+  ImageMetadata,
+  ImageProcessOptions,
+  
+  // 导出相关类型
+  ExportOptions,
+  ExportResult,
+  
+  // 事件相关类型
+  CropperEventType,
   CropperEventData,
   CropperEventListener,
+  CropperEventMap,
+  
+  // 配置相关类型
+  Theme,
+  Language,
+  ControlPointStyle,
+  GridConfig,
+  MaskConfig,
+  ToolbarConfig,
+  CropperConfig,
+  
+  // API 接口
+  CropperAPI
+} from './types';
 
-  // 实例接口
-  CropperInstance,
-} from './types'
+// 导出常量
+export * from './constants';
 
-// 枚举类型
+// 导出工具函数
+export * from './utils';
+
+// 导出核心类
+export { EventEmitter } from './core/EventEmitter';
+export { ImageLoader } from './core/ImageLoader';
+export { CanvasRenderer } from './core/CanvasRenderer';
+export { CropAreaManager } from './core/CropAreaManager';
+export { Cropper } from './core/Cropper';
+
+// 导出交互类
+export { EventHandler } from './interaction/EventHandler';
+export { InteractionController } from './interaction/InteractionController';
+
+// 导出图像处理类
+export { ImageProcessor } from './processing/ImageProcessor';
+export { TransformProcessor } from './processing/TransformProcessor';
+
+// 导出UI组件类
+export { Toolbar } from './ui/Toolbar';
+export { ControlPanel } from './ui/ControlPanel';
+
+// 导出Vue集成（可选依赖）
+export * from './vue';
+
+// 导出高级功能类
+export { EffectsProcessor } from './advanced/EffectsProcessor';
+export { ShapeProcessor } from './advanced/ShapeProcessor';
+
+// 导出性能优化类
+export { PerformanceMonitor } from './performance/PerformanceMonitor';
+export { MemoryManager } from './performance/MemoryManager';
+
+// 导出 Vue 3 集成
 export {
-  CropShape,
-  ImageFormat,
-  CropQuality,
-  CropperEventType,
-} from './types'
-
-// 核心功能
-export {
-  CropperCore,
-  EventEmitter,
-  ImageLoader,
-  CanvasRenderer,
-  CropAreaManager,
-} from './core'
-
+  ImageCropper,
+  useCropper,
+  vCropper,
+  getCropperInstance,
+  install as installVue
+} from './vue';
 export type {
-  ImageLoadOptions,
-  ImageLoadResult,
-  RenderConfig,
-  CropConstraints,
-} from './core'
-
-// 工具函数
-export {
-  MathUtils,
-  DOMUtils,
-  ImageUtils,
-  ColorUtils,
-  PerformanceUtils,
-} from './utils'
-
-// 适配器系统
-export {
-  BaseAdapter,
-  VueAdapter,
-  ReactAdapter,
-  AngularAdapter,
-  VanillaAdapter,
-  AdapterFactory,
-  AdapterRegistry,
-  AdapterState,
-  useVueCropper,
-  VueCropperPlugin,
-  createUseCropper,
-  createCropperComponent,
-  createWithCropper,
-  createCropperContext,
-  createCropperService,
-  createAngularCropperComponent,
-  createCropperDirective,
-  createCropperModule,
-} from './adapters'
-
-export type {
-  AdapterOptions,
-  VueAdapterOptions,
-  ReactAdapterOptions,
-  AngularAdapterOptions,
-  VanillaAdapterOptions,
   UseCropperOptions,
   UseCropperReturn,
-  CropperComponentProps,
-  WithCropperProps,
-  CropperContextValue,
-  CropperDirectiveConfig,
-  CropperService,
-  CropperComponentInterface,
-  CropperModuleConfig,
-} from './adapters'
+  CropperDirectiveValue
+} from './vue';
 
-// 配置和主题系统
-export {
-  ConfigManager,
-  ThemeManager,
-  I18nManager,
-  PresetManager,
-  ConfigSystem,
-} from './config'
+// 导出样式
+import './styles/index.less';
 
-export type {
-  ConfigChangeEvent,
-  ConfigValidationResult,
-  ThemeMode,
-  ThemeVariables,
-  BuiltinTheme,
-  MessageMap,
-  LanguagePack,
-  InterpolationParams,
-  PresetConfig,
-  PresetCategory,
-} from './config'
-
-// 性能优化系统
-export {
-  MemoryManager,
-  PerformanceMonitor,
-  LargeImageProcessor,
-  PerformanceSystem,
-} from './performance'
-
-export type {
-  MemoryStats,
-  Disposable,
-  MemoryWarningLevel,
-  PerformanceMetrics,
-  PerformanceStats,
-  PerformanceWarningLevel,
-  ImageTile,
-  LargeImageConfig,
-  ProcessingProgress,
-} from './performance'
-
-// Web Workers系统
-export {
-  ImageWorkerManager,
-  WorkerSystem,
-} from './workers'
-
-export type {
-  WorkerMessage,
-  WorkerMessageType,
-  ImageProcessParams,
-  CropParams,
-  ResizeParams,
-  FilterParams,
-  RotateParams,
-  FlipParams,
-} from './workers'
-
-// 高级功能系统
-export {
-  HistoryManager,
-  BatchProcessor,
-  AdvancedSystem,
-} from './advanced'
-
-export type {
-  HistoryItem,
-  HistoryState,
-  BatchTask,
-  BatchConfig,
-  BatchProgress,
-  BatchResult,
-} from './advanced'
-
-// 主要的裁剪器类
-export { Cropper } from './cropper'
-
-// 默认导出
-export { Cropper as default } from './cropper'
+// 版本信息
+export const version = VERSION;

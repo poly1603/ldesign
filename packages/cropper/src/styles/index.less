@@ -1,740 +1,463 @@
 /**
- * @file 图片裁剪器样式文件
- * @description 基于 LDESIGN 设计系统的图片裁剪器样式
+ * @ldesign/cropper - 样式文件
+ * 
+ * 图片裁剪插件的核心样式
  */
 
-// 导入 LDESIGN 设计系统变量
-@import url('https://unpkg.com/@ldesign/shared@latest/styles/variables.css');
+// ============================================================================
+// CSS 变量定义
+// ============================================================================
 
-// 导入工具栏样式
-@import '../ui/toolbar.less';
+:root {
+  // 颜色变量
+  --cropper-primary-color: #1890ff;
+  --cropper-success-color: #52c41a;
+  --cropper-warning-color: #faad14;
+  --cropper-error-color: #ff4d4f;
+  --cropper-text-color: #262626;
+  --cropper-text-color-secondary: #8c8c8c;
+  --cropper-border-color: #d9d9d9;
+  --cropper-background-color: #ffffff;
+  --cropper-background-color-light: #fafafa;
+  
+  // 尺寸变量
+  --cropper-border-radius: 6px;
+  --cropper-border-radius-small: 4px;
+  --cropper-control-point-size: 8px;
+  --cropper-control-point-touch-size: 20px;
+  --cropper-toolbar-height: 48px;
+  
+  // 阴影变量
+  --cropper-shadow-light: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --cropper-shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --cropper-shadow-heavy: 0 6px 16px rgba(0, 0, 0, 0.15);
+  
+  // 动画变量
+  --cropper-transition-fast: 0.15s;
+  --cropper-transition-normal: 0.3s;
+  --cropper-transition-slow: 0.5s;
+}
 
-// 裁剪器前缀
-@cropper-prefix: ldesign-cropper;
+// 暗色主题
+[data-theme="dark"] {
+  --cropper-text-color: #ffffff;
+  --cropper-text-color-secondary: #a6a6a6;
+  --cropper-border-color: #434343;
+  --cropper-background-color: #1f1f1f;
+  --cropper-background-color-light: #262626;
+}
 
-// 裁剪器主容器
-.@{cropper-prefix} {
+// ============================================================================
+// 基础样式
+// ============================================================================
+
+.ldesign-cropper {
   position: relative;
   width: 100%;
   height: 100%;
+  background-color: var(--cropper-background-color);
+  border: 1px solid var(--cropper-border-color);
+  border-radius: var(--cropper-border-radius);
   overflow: hidden;
-  background-color: var(--ldesign-bg-color-component);
-  border: 1px solid var(--ldesign-border-color);
-  border-radius: var(--ls-border-radius-base);
   user-select: none;
   touch-action: none;
-
-  // 响应式设计
-  @media (max-width: 768px) {
-    border-radius: var(--ls-border-radius-sm);
+  
+  * {
+    box-sizing: border-box;
   }
-
-  // 高对比度模式支持
-  @media (prefers-contrast: high) {
-    border-width: 2px;
-    border-color: var(--ldesign-text-color-primary);
-  }
-
-  // 减少动画模式支持
-  @media (prefers-reduced-motion: reduce) {
-    * {
-      animation-duration: 0.01ms !important;
-      transition-duration: 0.01ms !important;
+  
+  // 加载状态
+  &--loading {
+    .ldesign-cropper__canvas {
+      opacity: 0.5;
     }
   }
-
-  // Canvas 容器
-  &__canvas-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--ldesign-bg-color-page);
+  
+  // 错误状态
+  &--error {
+    border-color: var(--cropper-error-color);
+    background-color: #fff2f0;
   }
-
-  // 主画布
-  &__canvas {
-    display: block;
-    max-width: 100%;
-    max-height: 100%;
+  
+  // 拖拽状态
+  &--dragging {
+    cursor: move;
+  }
+  
+  // 调整大小状态
+  &--resizing {
+    cursor: nw-resize;
+  }
+  
+  // 旋转状态
+  &--rotating {
     cursor: grab;
-
+    
     &:active {
       cursor: grabbing;
     }
+  }
+}
 
-    &--dragging {
-      cursor: grabbing;
+// ============================================================================
+// Canvas 容器
+// ============================================================================
+
+.ldesign-cropper__canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: opacity var(--cropper-transition-normal);
+}
+
+// ============================================================================
+// 覆盖层
+// ============================================================================
+
+.ldesign-cropper__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+// ============================================================================
+// 裁剪区域
+// ============================================================================
+
+.ldesign-cropper__crop-area {
+  position: absolute;
+  border: 2px solid var(--cropper-primary-color);
+  cursor: move;
+  z-index: 2;
+  
+  // 裁剪区域内容
+  &::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    pointer-events: none;
+  }
+}
+
+// ============================================================================
+// 控制点
+// ============================================================================
+
+.ldesign-cropper__control-point {
+  position: absolute;
+  width: var(--cropper-control-point-size);
+  height: var(--cropper-control-point-size);
+  background-color: #ffffff;
+  border: 2px solid var(--cropper-primary-color);
+  border-radius: var(--cropper-border-radius-small);
+  z-index: 3;
+  transition: all var(--cropper-transition-fast);
+  
+  // 触摸设备上增大触摸区域
+  @media (pointer: coarse) {
+    width: var(--cropper-control-point-touch-size);
+    height: var(--cropper-control-point-touch-size);
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: var(--cropper-control-point-size);
+      height: var(--cropper-control-point-size);
+      background-color: #ffffff;
+      border: 2px solid var(--cropper-primary-color);
+      border-radius: var(--cropper-border-radius-small);
+      transform: translate(-50%, -50%);
     }
   }
-
-  // 裁剪区域
-  &__crop-area {
-    position: absolute;
-    border: 2px solid var(--ldesign-brand-color);
-    background-color: rgba(114, 46, 209, 0.05);
-    cursor: move;
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.8),
-      0 0 0 9999px rgba(0, 0, 0, 0.5);
-
-    // 裁剪区域动画
-    transition: all 0.2s ease-in-out;
-
-    &--active {
-      border-color: var(--ldesign-brand-color-hover);
-      background-color: rgba(114, 46, 209, 0.1);
-      box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.9),
-        0 0 0 9999px rgba(0, 0, 0, 0.6);
+  
+  // 悬停效果
+  &:hover {
+    transform: scale(1.2);
+    box-shadow: var(--cropper-shadow-light);
+  }
+  
+  // 各个方向的控制点
+  &--nw {
+    top: -4px;
+    left: -4px;
+    cursor: nw-resize;
+  }
+  
+  &--n {
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: n-resize;
+  }
+  
+  &--ne {
+    top: -4px;
+    right: -4px;
+    cursor: ne-resize;
+  }
+  
+  &--e {
+    top: 50%;
+    right: -4px;
+    transform: translateY(-50%);
+    cursor: e-resize;
+  }
+  
+  &--se {
+    bottom: -4px;
+    right: -4px;
+    cursor: se-resize;
+  }
+  
+  &--s {
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: s-resize;
+  }
+  
+  &--sw {
+    bottom: -4px;
+    left: -4px;
+    cursor: sw-resize;
+  }
+  
+  &--w {
+    top: 50%;
+    left: -4px;
+    transform: translateY(-50%);
+    cursor: w-resize;
+  }
+  
+  // 旋转控制点
+  &--rotate {
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: grab;
+    border-radius: 50%;
+    
+    &:active {
+      cursor: grabbing;
     }
-
-    &--circle {
-      border-radius: 50%;
-    }
-
-    &--ellipse {
-      border-radius: 50%;
-    }
-
-    // 裁剪区域内的网格线
-    &::before,
+    
     &::after {
       content: '';
       position: absolute;
-      background-color: rgba(114, 46, 209, 0.3);
-      pointer-events: none;
-    }
-
-    // 水平网格线
-    &::before {
-      top: 33.33%;
-      left: 0;
-      right: 0;
-      height: 1px;
-      box-shadow: 0 33.33% 0 rgba(114, 46, 209, 0.3);
-    }
-
-    // 垂直网格线
-    &::after {
-      top: 0;
-      bottom: 0;
-      left: 33.33%;
+      top: 100%;
+      left: 50%;
       width: 1px;
-      box-shadow: 33.33% 0 0 rgba(114, 46, 209, 0.3);
-    }
-  }
-
-  // 遮罩层
-  &__mask {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    pointer-events: none;
-
-    // 遮罩动画
-    transition: background-color 0.3s ease-in-out;
-  }
-
-  // 控制点
-  &__handle {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: var(--ldesign-brand-color);
-    border: 2px solid rgba(255, 255, 255, 0.9);
-    border-radius: 2px;
-    cursor: pointer;
-    transform: translate(-50%, -50%);
-    box-shadow:
-      0 2px 4px rgba(0, 0, 0, 0.2),
-      0 0 0 1px rgba(114, 46, 209, 0.3);
-
-    // 控制点动画
-    transition: all 0.2s ease-in-out;
-
-    &:hover {
-      background-color: var(--ldesign-brand-color-hover);
-      transform: translate(-50%, -50%) scale(1.3);
-      box-shadow:
-        0 4px 8px rgba(0, 0, 0, 0.3),
-        0 0 0 2px rgba(114, 46, 209, 0.5);
-    }
-
-    &:active {
-      background-color: var(--ldesign-brand-color-active);
-      transform: translate(-50%, -50%) scale(1.1);
-      box-shadow:
-        0 1px 2px rgba(0, 0, 0, 0.4),
-        0 0 0 2px rgba(114, 46, 209, 0.7);
-    }
-
-    // 不同位置的控制点光标
-    &--nw {
-      cursor: nw-resize;
-    }
-
-    &--n {
-      cursor: n-resize;
-    }
-
-    &--ne {
-      cursor: ne-resize;
-    }
-
-    &--e {
-      cursor: e-resize;
-    }
-
-    &--se {
-      cursor: se-resize;
-    }
-
-    &--s {
-      cursor: s-resize;
-    }
-
-    &--sw {
-      cursor: sw-resize;
-    }
-
-    &--w {
-      cursor: w-resize;
-    }
-
-    // 移动端适配
-    @media (max-width: 768px) {
-      width: 16px;
       height: 16px;
-    }
-
-    // 触摸设备适配
-    @media (pointer: coarse) {
-      width: 20px;
-      height: 20px;
+      background-color: var(--cropper-primary-color);
+      transform: translateX(-50%);
     }
   }
+}
 
-  // 网格线
-  &__grid {
-    position: absolute;
-    top: 0;
-    left: 0;
+// ============================================================================
+// 网格线
+// ============================================================================
+
+.ldesign-cropper__grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  
+  svg {
     width: 100%;
     height: 100%;
-    pointer-events: none;
-
-    &-line {
-      position: absolute;
-      background-color: var(--ldesign-border-color);
-      opacity: 0.6;
-
-      &--horizontal {
-        width: 100%;
-        height: 1px;
-      }
-
-      &--vertical {
-        width: 1px;
-        height: 100%;
-      }
-    }
   }
-
-  // 中心线
-  &__center-lines {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-
-    &-line {
-      position: absolute;
-      background-color: var(--ldesign-brand-color);
-      opacity: 0.8;
-
-      &--horizontal {
-        width: 100%;
-        height: 1px;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-
-      &--vertical {
-        width: 1px;
-        height: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-    }
+  
+  line {
+    stroke: rgba(255, 255, 255, 0.5);
+    stroke-width: 1;
   }
+}
 
-  // 工具栏
-  &__toolbar {
-    position: absolute;
+// ============================================================================
+// 遮罩
+// ============================================================================
+
+.ldesign-cropper__mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  z-index: 1;
+}
+
+// ============================================================================
+// 工具栏
+// ============================================================================
+
+.ldesign-cropper__toolbar {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: var(--cropper-background-color);
+  border: 1px solid var(--cropper-border-color);
+  border-radius: var(--cropper-border-radius);
+  box-shadow: var(--cropper-shadow-light);
+  z-index: 10;
+  
+  // 工具栏位置
+  &--top {
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  &--bottom {
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  &--left {
+    top: 50%;
+    left: 12px;
+    flex-direction: column;
+    transform: translateY(-50%);
+  }
+  
+  &--right {
+    top: 50%;
+    right: 12px;
+    flex-direction: column;
+    transform: translateY(-50%);
+  }
+  
+  // 工具按钮
+  .toolbar-button {
     display: flex;
     align-items: center;
-    gap: var(--ls-spacing-sm);
-    padding: var(--ls-padding-sm);
-    background-color: var(--ldesign-bg-color-container);
-    border: 1px solid var(--ldesign-border-color);
-    border-radius: var(--ls-border-radius-base);
-    box-shadow: var(--ldesign-shadow-2);
-    width: 100%;
-    z-index: 10;
-
-    // 工具栏位置
-    &--top {
-      top: var(--ls-spacing-sm);
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    &--bottom {
-      bottom: var(--ls-spacing-sm);
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--ldesign-border-color);
-      box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1);
-      z-index: 100;
-    }
-
-    &--left {
-      left: var(--ls-spacing-sm);
-      top: 50%;
-      transform: translateY(-50%);
-      flex-direction: column;
-    }
-
-    &--right {
-      right: var(--ls-spacing-sm);
-      top: 50%;
-      transform: translateY(-50%);
-      flex-direction: column;
-    }
-
-    // 移动端适配
-    @media (max-width: 768px) {
-
-      &--left,
-      &--right {
-        flex-direction: row;
-        left: 50%;
-        right: auto;
-        top: auto;
-        bottom: var(--ls-spacing-sm);
-        transform: translateX(-50%);
-      }
-    }
-  }
-
-  // 工具按钮
-  &__toolbar-button {
-    display: inline-flex;
-    align-items: center;
     justify-content: center;
-    width: var(--ls-button-height-small);
-    height: var(--ls-button-height-small);
-    padding: 0;
-    border: 1px solid var(--ldesign-border-color);
-    border-radius: var(--ls-border-radius-base);
-    background: var(--ldesign-bg-color-component);
-    color: var(--ldesign-text-color-primary);
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: var(--cropper-border-radius-small);
+    background-color: transparent;
+    color: var(--cropper-text-color);
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
-
+    transition: all var(--cropper-transition-fast);
+    
     &:hover {
-      background: var(--ldesign-bg-color-component-hover);
-      border-color: var(--ldesign-border-color-hover);
-      color: var(--ldesign-brand-color);
+      background-color: var(--cropper-background-color-light);
     }
-
+    
     &:active {
-      background: var(--ldesign-bg-color-component-active);
-      transform: translateY(1px);
+      transform: scale(0.95);
     }
-
-    &:focus {
-      outline: none;
-      border-color: var(--ldesign-border-color-focus);
-      box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
-    }
-
+    
     &:disabled {
-      background: var(--ldesign-bg-color-component-disabled);
-      border-color: var(--ldesign-border-color);
-      color: var(--ldesign-text-color-disabled);
+      opacity: 0.5;
       cursor: not-allowed;
-      transform: none;
     }
-
-    &--active {
-      background: var(--ldesign-brand-color);
-      border-color: var(--ldesign-brand-color);
-      color: var(--ldesign-font-white-1);
-
-      &:hover {
-        background: var(--ldesign-brand-color-hover);
-        border-color: var(--ldesign-brand-color-hover);
-        color: var(--ldesign-font-white-1);
-      }
-
-      &:active {
-        background: var(--ldesign-brand-color-active);
-        border-color: var(--ldesign-brand-color-active);
-      }
-    }
-
+    
     svg {
       width: 16px;
       height: 16px;
-      stroke-width: 1.5;
     }
   }
+}
 
-  // 工具栏选择器
-  &__toolbar-select {
-    min-width: 80px;
-    height: var(--ls-input-height-small);
-    padding: 0 var(--ls-padding-xs);
-    border: 1px solid var(--ldesign-border-color);
-    border-radius: var(--ls-border-radius-base);
-    background: var(--ldesign-bg-color-component);
-    color: var(--ldesign-text-color-primary);
-    font-size: var(--ls-font-size-xs);
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
+// ============================================================================
+// 响应式设计
+// ============================================================================
 
-    &:hover {
-      border-color: var(--ldesign-border-color-hover);
-    }
-
-    &:focus {
-      outline: none;
-      border-color: var(--ldesign-border-color-focus);
-      box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
-    }
-
-    &:disabled {
-      background: var(--ldesign-bg-color-component-disabled);
-      color: var(--ldesign-text-color-disabled);
-      cursor: not-allowed;
-    }
-  }
-
-  // 加载状态
-  &__loading {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--ldesign-bg-color-component);
-    z-index: 20;
-  }
-
-  // 加载遮罩层
-  &__loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(4px);
-    z-index: 1000;
-    animation: fadeIn 0.3s ease-out;
-  }
-
-  &__loading-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--ls-spacing-sm);
-    padding: var(--ls-padding-lg);
-    background: var(--ldesign-bg-color-container);
-    border-radius: var(--ls-border-radius-lg);
-    box-shadow: var(--ldesign-shadow-2);
-    border: 1px solid var(--ldesign-border-color);
-  }
-
-  &__loading-spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid var(--ldesign-border-color);
-    border-top: 3px solid var(--ldesign-brand-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  &__loading-text {
-    color: var(--ldesign-text-color-secondary);
-    font-size: var(--ls-font-size-sm);
-    font-weight: 500;
-
-    &-spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid var(--ldesign-border-color);
-      border-top: 4px solid var(--ldesign-brand-color);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    &-text {
-      margin-top: var(--ls-spacing-sm);
-      color: var(--ldesign-text-color-secondary);
-      font-size: var(--ls-font-size-sm);
-    }
-  }
-
-  // 错误状态
-  &__error {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--ldesign-bg-color-component);
-    z-index: 20;
-
-    &-icon {
-      width: 48px;
-      height: 48px;
-      color: var(--ldesign-error-color);
-      margin-bottom: var(--ls-spacing-sm);
-    }
-
-    &-message {
-      color: var(--ldesign-text-color-primary);
-      font-size: var(--ls-font-size-base);
-      text-align: center;
-      margin-bottom: var(--ls-spacing-base);
-    }
-
-    &-retry {
-      padding: var(--ls-padding-sm) var(--ls-padding-base);
-      background-color: var(--ldesign-brand-color);
-      color: var(--ldesign-font-white-1);
-      border: none;
-      border-radius: var(--ls-border-radius-base);
-      cursor: pointer;
-      transition: background-color 0.2s ease-in-out;
-
-      &:hover {
-        background-color: var(--ldesign-brand-color-hover);
+// 移动端适配
+@media (max-width: 768px) {
+  .ldesign-cropper {
+    border-radius: 0;
+    
+    .ldesign-cropper__toolbar {
+      &--top,
+      &--bottom {
+        left: 8px;
+        right: 8px;
+        transform: none;
+        justify-content: space-between;
       }
-
-      &:active {
-        background-color: var(--ldesign-brand-color-active);
+    }
+    
+    .ldesign-cropper__control-point {
+      width: var(--cropper-control-point-touch-size);
+      height: var(--cropper-control-point-touch-size);
+      
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: var(--cropper-control-point-size);
+        height: var(--cropper-control-point-size);
+        background-color: #ffffff;
+        border: 2px solid var(--cropper-primary-color);
+        border-radius: var(--cropper-border-radius-small);
+        transform: translate(-50%, -50%);
       }
     }
   }
 }
 
-// 动画定义
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
+// 高分辨率屏幕适配
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .ldesign-cropper__control-point {
+    border-width: 1px;
   }
 }
 
-// 暗色主题支持
-[data-theme="dark"] {
-  .@{cropper-prefix} {
-    &__mask {
-      background-color: rgba(255, 255, 255, 0.2);
-    }
+// ============================================================================
+// 动画效果
+// ============================================================================
 
-    &__grid-line {
-      background-color: var(--ldesign-border-color-hover);
-    }
-  }
-}
-
-// 高对比度主题支持
-[data-theme="high-contrast"] {
-  .@{cropper-prefix} {
-    &__crop-area {
-      border-width: 3px;
-    }
-
-    &__handle {
-      border-width: 3px;
-    }
-
-    &__mask {
-      background-color: rgba(0, 0, 0, 0.8);
-    }
-  }
-}
-
-// 动画关键帧
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.5;
-  }
-}
-
-// 图片滤镜效果
-.@{cropper-prefix} {
-  &__image {
-    &.filter-grayscale {
-      filter: grayscale(100%);
-    }
-
-    &.filter-sepia {
-      filter: sepia(100%);
-    }
-
-    &.filter-invert {
-      filter: invert(100%);
-    }
-
-    &.filter-blur {
-      filter: blur(2px);
-    }
-
-    &.filter-sharpen {
-      filter: contrast(150%) brightness(110%);
-    }
-
-    &.filter-contrast {
-      filter: contrast(150%);
-    }
-
-    &.filter-saturate {
-      filter: saturate(150%);
-    }
-  }
-
-  // 裁剪框样式
-  &.crop-style-minimal {
-    .@{cropper-prefix}__crop-area {
-      border: 1px dashed var(--ldesign-brand-color) !important;
-      box-shadow: none !important;
-    }
-  }
-
-  &.crop-style-classic {
-    .@{cropper-prefix}__crop-area {
-      border: 2px solid var(--ldesign-warning-color) !important;
-      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5) !important;
-    }
-  }
-
-  &.crop-style-modern {
-    .@{cropper-prefix}__crop-area {
-      border: 2px solid var(--ldesign-success-color) !important;
-      box-shadow: 0 0 10px rgba(66, 189, 66, 0.3) !important;
-      border-radius: 4px !important;
-    }
-  }
-
-  &.crop-style-neon {
-    .@{cropper-prefix}__crop-area {
-      border: 2px solid var(--ldesign-brand-color) !important;
-      box-shadow:
-        0 0 5px var(--ldesign-brand-color),
-        0 0 10px var(--ldesign-brand-color),
-        0 0 15px var(--ldesign-brand-color) !important;
-      animation: neon-glow 2s ease-in-out infinite alternate;
-    }
-  }
-
-  // 背景样式
-  &.bg-white {
-    background-color: white !important;
-  }
-
-  &.bg-black {
-    background-color: black !important;
-  }
-
-  &.bg-checkerboard {
-    background-image:
-      linear-gradient(45deg, #ccc 25%, transparent 25%),
-      linear-gradient(-45deg, #ccc 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #ccc 75%),
-      linear-gradient(-45deg, transparent 75%, #ccc 75%);
-    background-size: 20px 20px;
-    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-  }
-
-  &.bg-blur {
-    .@{cropper-prefix}__image {
-      filter: blur(1px);
-    }
-  }
-}
-
-// 霓虹发光动画
-@keyframes neon-glow {
+@keyframes cropperFadeIn {
   from {
-    box-shadow:
-      0 0 5px var(--ldesign-brand-color),
-      0 0 10px var(--ldesign-brand-color),
-      0 0 15px var(--ldesign-brand-color);
+    opacity: 0;
+    transform: scale(0.95);
   }
-
   to {
-    box-shadow:
-      0 0 10px var(--ldesign-brand-color),
-      0 0 20px var(--ldesign-brand-color),
-      0 0 30px var(--ldesign-brand-color);
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-// 导入工具栏样式
-@import '../ui/toolbar.less';
+@keyframes cropperSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ldesign-cropper {
+  animation: cropperFadeIn var(--cropper-transition-normal) ease-out;
+}
+
+.ldesign-cropper__toolbar {
+  animation: cropperSlideIn var(--cropper-transition-normal) ease-out;
+}
