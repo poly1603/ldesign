@@ -179,7 +179,7 @@ export class CrossPlatformAPI {
       // 浏览器环境 - 从window对象或import.meta.env获取
       try {
         // Vite/Modern bundlers
-        if (typeof import !== 'undefined' && import.meta && import.meta.env) {
+        if (typeof import.meta !== 'undefined' && import.meta && import.meta.env) {
           return (import.meta.env as any)[key] || defaultValue
         }
         // Webpack DefinePlugin注入的环境变量
@@ -229,7 +229,7 @@ export class CrossPlatformAPI {
    */
   static randomBytes(length: number): Uint8Array {
     const bytes = new Uint8Array(length)
-    
+
     if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
       crypto.getRandomValues(bytes)
     } else {
@@ -238,7 +238,7 @@ export class CrossPlatformAPI {
         bytes[i] = Math.floor(Math.random() * 256)
       }
     }
-    
+
     return bytes
   }
 

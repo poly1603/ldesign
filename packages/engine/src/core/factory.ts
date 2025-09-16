@@ -108,12 +108,9 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
     engine.middleware.use(m)
   })
 
-  // 6. 注册插件系统（异步处理）
-  // 使用 Promise.all 并行加载所有插件，提高初始化速度
-  const pluginPromise = Promise.all(plugins.map(plugin => engine.use(plugin))).catch(error => {
-    engine.logger.error('Failed to register plugins', error)
-    // 不中断初始化流程，即使插件加载失败
-  })
+  // 6. 注册插件系统
+  // 使用 Promise.all 并行加载所有插件
+  const pluginPromise = Promise.all(plugins.map(plugin => engine.use(plugin)))
 
   // 7. 自动创建和挂载 Vue 应用（可选）
   if (rootComponent) {
@@ -122,11 +119,15 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
 
     // 7.2 如果需要自动挂载并且指定了挂载元素
     if (autoMount && mountElement) {
-      // 等待所有插件加载完成后再挂载，防止插件初始化失败
-      pluginPromise.finally(() => {
-        engine.mount(mountElement).catch(error => {
-          engine.logger.error('Failed to auto-mount application', error)
-        })
+      // 等待插件加载完成后再挂载，确保所有功能都可用
+      pluginPromise.then(async () => {
+        try {
+          await engine.mount(mountElement)
+        } catch (error) {
+          engine.logger.error('Failed to mount application', error)
+        }
+      }).catch(error => {
+        engine.logger.error('Plugin installation failed, cannot mount application', error)
       })
     }
   }
