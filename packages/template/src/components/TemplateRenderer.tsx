@@ -17,6 +17,8 @@ import {
   Transition,
   watch,
   isRef,
+  markRaw,
+  shallowRef,
 } from 'vue'
 import { useDeviceDetection } from '../composables/useDeviceDetection'
 import { useTemplate } from '../composables/useTemplate'
@@ -139,8 +141,17 @@ export const TemplateRenderer = defineComponent({
     // 兼容性封装：同时支持 Ref 和 非 Ref 的返回值（用于测试环境的 mock）
     const toRefCompat = <T,>(val: any) => (isRef(val) ? val as any : ref(val as T))
 
+    // 对组件使用 shallowRef 和 markRaw，避免Vue响应式对象警告
+    const toComponentRefCompat = <T extends Component | null>(val: any) => {
+      if (isRef(val)) {
+        return val as any
+      }
+      // 对组件使用 markRaw 避免响应式包装，然后用 shallowRef 包装
+      return shallowRef(val && typeof val === 'object' && val.render ? markRaw(val as T) : val as T)
+    }
+
     const currentTemplate = toRefCompat<import('../types/template').TemplateMetadata | null>(templateApi.currentTemplate)
-    const currentComponent = toRefCompat<Component | null>(templateApi.currentComponent)
+    const currentComponent = toComponentRefCompat<Component | null>(templateApi.currentComponent)
     const availableTemplates = toRefCompat<import('../types/template').TemplateMetadata[]>(templateApi.availableTemplates)
     const loading = toRefCompat<boolean>(templateApi.loading)
     const error = toRefCompat<Error | string | null>(templateApi.error)

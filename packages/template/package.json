@@ -34,7 +34,9 @@
       "types": "./es/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
-    }
+    },
+    "./es/index.css": "./es/index.css",
+    "./cjs/index.css": "./cjs/index.css"
   },
   "main": "lib/index.cjs",
   "module": "es/index.js",
