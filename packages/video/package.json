@@ -70,8 +70,8 @@
     "build": "ldesign-builder build -f esm,cjs",
     "build:prod": "pnpm run clean && ldesign-builder build -f esm,cjs --minify",
     "dev": "ldesign-builder watch",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "lint": "eslint src --ext .ts,.tsx",
@@ -83,7 +83,8 @@
     "docs:preview": "vitepress preview docs",
     "example:dev": "cd examples/vanilla && launcher dev",
     "example:build": "cd examples/vanilla && launcher build",
-    "example:preview": "cd examples/vanilla && launcher preview"
+    "example:preview": "cd examples/vanilla && launcher preview",
+    "test:run": "vitest run"
   },
   "dependencies": {},
   "devDependencies": {
