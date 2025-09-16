@@ -31,8 +31,26 @@ export default defineConfig({
   minify: false,
   external,
   output: {
-    esm: true,
-    cjs: true,
-    umd: Object.keys(umdGlobals).length ? { globals: umdGlobals } : true,
+    esm: {
+      dir: 'es',
+      format: 'esm',
+      preserveStructure: true,
+      dts: true,
+      input: ['src/**/*.ts', '!src/index-lib.ts']
+    },
+    cjs: {
+      dir: 'lib',
+      format: 'cjs',
+      preserveStructure: true,
+      dts: true,
+      input: ['src/**/*.ts', '!src/index-lib.ts']
+    },
+    umd: {
+      dir: 'dist',
+      format: 'umd',
+      name: pascalCase(pkg.name || 'LDesignRouter'),
+      globals: umdGlobals,
+      input: 'src/index.ts'
+    },
   },
 })
