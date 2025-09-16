@@ -21,6 +21,7 @@ import { BuilderError } from '../../utils/error-handler'
 import { ErrorCode } from '../../constants/errors'
 import { normalizeInput } from '../../utils/glob'
 import { BannerGenerator } from '../../utils/banner-generator'
+import { rollupCache } from '../../utils/cache'
 
 /**
  * Rollup 适配器类
@@ -55,6 +56,15 @@ export class RollupAdapter implements IBundlerAdapter {
     }
 
     try {
+      // 尝试从缓存获取构建结果 - 临时禁用缓存
+      const cacheKey = JSON.stringify({ config, name: this.name })
+      const cachedResult = await rollupCache.getBuildResult(cacheKey)
+      // 临时强制禁用缓存
+      if (false && cachedResult && config.cache !== false) {
+        this.logger.info('使用缓存的构建结果')
+        return cachedResult
+      }
+
       const rollup = await this.loadRollup()
       const rollupConfig = await this.transformConfig(config)
 
@@ -181,6 +191,13 @@ export class RollupAdapter implements IBundlerAdapter {
       }
 
       this.logger.success(`Rollup 构建完成 (${duration}ms)`)
+
+      // 缓存构建结果
+      if (config.cache !== false) {
+        await rollupCache.cacheBuildResult(cacheKey, buildResult)
+        this.logger.debug('构建结果已缓存')
+      }
+
       return buildResult
 
     } catch (error) {
@@ -290,7 +307,7 @@ export class RollupAdapter implements IBundlerAdapter {
           const esmDir = esmConfig.dir || 'es'
           const esmPlugins = await this.transformPluginsForFormat(config.plugins || [], esmDir, { emitDts: true })
           // 使用 output 中的 input 配置，如果没有则使用默认或顶层 input
-          const esmInput = esmConfig.input 
+          const esmInput = esmConfig.input
             ? await normalizeInput(esmConfig.input, process.cwd())
             : config.input
           // 统一注入 Banner/Footer/Intro/Outro
@@ -331,7 +348,7 @@ export class RollupAdapter implements IBundlerAdapter {
           const cjsDir = cjsConfig.dir || 'lib'
           const cjsPlugins = await this.transformPluginsForFormat(config.plugins || [], cjsDir, { emitDts: true })
           // 使用 output 中的 input 配置，如果没有则使用默认或顶层 input
-          const cjsInput = cjsConfig.input 
+          const cjsInput = cjsConfig.input
             ? await normalizeInput(cjsConfig.input, process.cwd())
             : config.input
           // 统一注入 Banner/Footer/Intro/Outro
@@ -370,17 +387,8 @@ export class RollupAdapter implements IBundlerAdapter {
           configs.push(umdCfg)
         }
 
-        // 如果未声明 umd，但存在 src/index-lib.ts 也自动加上
-        if (!outputConfig.umd && !(config as any).umd) {
-          const fs = await import('fs')
-          const path = await import('path')
-          const projectRoot = (config as any).root || (config as any).cwd || process.cwd()
-          const hasIndexLib = fs.existsSync(path.resolve(projectRoot, 'src/index-lib.ts')) || fs.existsSync(path.resolve(projectRoot, 'src/index-lib.js'))
-          if (hasIndexLib) {
-            const umdCfg = await this.createUMDConfig(config)
-            configs.push(umdCfg)
-          }
-        }
+        // 如果未声明 umd，不自动添加
+        // UMD 应该通过配置显式启用，或者在 output.format 中包含 'umd'
 
         if (configs.length > 0) {
           this.multiConfigs = configs
@@ -427,11 +435,7 @@ export class RollupAdapter implements IBundlerAdapter {
           }
         } else {
           const hasUmdSection = Boolean((config as any).umd || (config as any).output?.umd)
-          const fs = await import('fs')
-          const path = await import('path')
-          const projectRoot = (config as any).root || (config as any).cwd || process.cwd()
-          const hasIndexLib = fs.existsSync(path.resolve(projectRoot, 'src/index-lib.ts')) || fs.existsSync(path.resolve(projectRoot, 'src/index-lib.js'))
-          if (formats.includes('umd') || (config as any).umd?.enabled || hasUmdSection || hasIndexLib) {
+          if (formats.includes('umd') || (config as any).umd?.enabled || hasUmdSection) {
             umdConfig = await this.createUMDConfig(config)
           }
           formats = formats.filter((f: any) => f !== 'umd' && f !== 'iife')
@@ -449,7 +453,7 @@ export class RollupAdapter implements IBundlerAdapter {
           try {
             const names = [...(formatPlugins || [])].map((p: any) => p?.name || '(anon)')
             this.logger.info(`[${format}] 有效插件: ${names.join(', ')}`)
-          } catch {}
+          } catch { }
           const bannerCfg = (config as any).banner
           const _banner = await this.resolveBanner(bannerCfg, config)
           const _footer = await this.resolveFooter(bannerCfg)
@@ -496,7 +500,7 @@ export class RollupAdapter implements IBundlerAdapter {
         try {
           const names = [...(userPlugins || [])].map((p: any) => p?.name || '(anon)')
           this.logger.info(`[${format}] 有效插件: ${names.join(', ')}`)
-        } catch {}
+        } catch { }
         const bannerCfg2 = (config as any).banner
         const _banner2 = await this.resolveBanner(bannerCfg2, config)
         const _footer2 = await this.resolveFooter(bannerCfg2)
@@ -604,7 +608,7 @@ export class RollupAdapter implements IBundlerAdapter {
                   delete (rest as any).tsconfig
                 }
               }
-            } catch {}
+            } catch { }
 
             const newPlugin = typescript.default({
               ...rest,
@@ -952,21 +956,21 @@ export class RollupAdapter implements IBundlerAdapter {
       const resolved = await normalizeInput(umdEntry, projectRoot)
       // UMD 必须是单入口
       if (Array.isArray(resolved)) {
-        throw new Error('UMD 格式不支持多入口，请指定单个入口文件')
+        throw new Error('UMD 格式不支持多入口，请在配置中指定单个入口文件。例如: umd: { entry: "src/index.ts" }')
       }
       if (typeof resolved === 'object' && !Array.isArray(resolved)) {
-        throw new Error('UMD 格式不支持多入口配置')
+        throw new Error('UMD 格式不支持多入口配置。请指定单个入口文件，例如: umd: { entry: "src/index.ts" }')
       }
       umdEntry = resolved as string
     }
 
-    // 如果未显式指定，优先使用 src/index-lib.ts，其次常见入口
+    // 如果未显式指定，优先使用 src/index.ts，其次常见入口
     if (!umdEntry) {
       const candidates = [
-        'src/index-lib.ts',
-        'src/index-lib.js',
         'src/index.ts',
         'src/index.js',
+        'src/index-lib.ts',
+        'src/index-lib.js',
         'src/main.ts',
         'src/main.js',
         'index.ts',
@@ -976,14 +980,21 @@ export class RollupAdapter implements IBundlerAdapter {
       for (const entry of candidates) {
         if (fs.existsSync(path.resolve(projectRoot, entry))) {
           umdEntry = entry
+          this.logger.info(`UMD 入口文件自动检测: ${entry}`)
           break
         }
       }
 
       if (!umdEntry) {
-        // 兜底：仍然使用 src/index-lib.ts
-        umdEntry = 'src/index-lib.ts'
+        // 兜底：使用 src/index.ts，但如果不存在会在后续报错
+        umdEntry = 'src/index.ts'
+        this.logger.warn(`未找到有效的 UMD 入口文件，使用默认值: ${umdEntry}`)
       }
+    }
+
+    // 验证入口文件是否存在
+    if (!fs.existsSync(path.resolve(projectRoot, umdEntry))) {
+      throw new Error(`UMD 入口文件不存在: ${umdEntry}\n\n请检查：\n1. 确保文件存在于指定路径\n2. 或在配置中指定正确的入口文件: umd: { entry: "your-entry.ts" }\n3. 或禁用 UMD 构建: umd: { enabled: false }`)
     }
 
     // 确定 UMD 全局变量名
@@ -1006,7 +1017,7 @@ export class RollupAdapter implements IBundlerAdapter {
     try {
       const names = [...(userPlugins || [])].map((p: any) => p?.name || '(anon)')
       this.logger.info(`[UMD] 有效插件: ${names.join(', ')}`)
-    } catch {}
+    } catch { }
 
     // 应用 Banner 和 Footer 配置
     const bannerConfig = (config as any).banner
@@ -1027,11 +1038,11 @@ export class RollupAdapter implements IBundlerAdapter {
       '@angular/core': 'ngCore',
       '@angular/common': 'ngCommon',
       preact: 'Preact',
-'preact/hooks': 'preactHooks',
+      'preact/hooks': 'preactHooks',
       'preact/jsx-runtime': 'jsxRuntime',
       'preact/jsx-dev-runtime': 'jsxDevRuntime',
       'solid-js': 'Solid',
-'solid-js/web': 'SolidWeb',
+      'solid-js/web': 'SolidWeb',
       'solid-js/jsx-runtime': 'jsxRuntime',
       svelte: 'Svelte',
       lit: 'Lit',
@@ -1151,7 +1162,7 @@ export class RollupAdapter implements IBundlerAdapter {
       if (info.projectName) {
         return `/*! End of ${info.projectName} | Powered by @ldesign/builder */`
       }
-    } catch {}
+    } catch { }
     return '/*! Powered by @ldesign/builder */'
   }
 

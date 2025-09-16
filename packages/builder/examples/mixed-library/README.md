@@ -13,7 +13,8 @@ mixed-library/
 │   │   ├── index.ts         # 组件模块
 │   │   └── styles.less      # 组件样式
 │   └── index.ts             # 主入口文件
-├── ldesign.config.ts        # 构建配置
+├── .ldesign/
+│   └── builder.config.ts    # 构建配置
 ├── package.json             # 项目配置
 ├── tsconfig.json            # TypeScript 配置
 └── README.md               # 项目说明
@@ -337,7 +338,7 @@ export default App
 
 ## ⚙️ 配置说明
 
-### ldesign.config.ts
+### .ldesign/builder.config.ts
 
 ```typescript
 import { defineConfig } from '@ldesign/builder'

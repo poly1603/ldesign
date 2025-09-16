@@ -1,6 +1,6 @@
 # 配置
 
-在项目根创建 `ldesign.config.ts` 或 `ldesign.config.js`：
+在项目根创建 `.ldesign/builder.config.ts` 或 `.ldesign/builder.config.js`：
 
 ```ts
 import { defineConfig } from '@ldesign/builder'

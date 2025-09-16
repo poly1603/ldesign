@@ -129,7 +129,7 @@ const isValid = validateEmail('test@example.com')
 
 ## ⚙️ 配置说明
 
-### ldesign.config.ts
+### .ldesign/builder.config.ts
 
 ```typescript
 import { defineConfig } from '@ldesign/builder'

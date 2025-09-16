@@ -70,7 +70,7 @@ console.log(formatted) // 输出: "张三 (25岁) - zhangsan@example.com"
 
 ## 构建配置
 
-本项目使用 `@ldesign/builder` 进行构建，配置文件 `ldesign.config.ts`：
+本项目使用 `@ldesign/builder` 进行构建，配置文件 `.ldesign/builder.config.ts`：
 
 ```typescript
 import { defineConfig, LibraryType } from '@ldesign/builder'

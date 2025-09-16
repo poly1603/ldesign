@@ -37,8 +37,8 @@ export const DEFAULT_BUILDER_CONFIG: Omit<
       format: 'esm',
       preserveStructure: true,
       dts: true,
-      // 默认入口：所有源文件，排除 index-lib
-      input: ['src/**/*.ts', 'src/**/*.js', 'src/**/*.vue', 'src/**/*.tsx', 'src/**/*.jsx', '!src/index-lib.ts']
+      // 默认入口：所有源文件
+      input: ['src/**/*.ts', 'src/**/*.js', 'src/**/*.vue', 'src/**/*.tsx', 'src/**/*.jsx']
     },
     // CommonJS 格式默认配置
     cjs: {
@@ -46,8 +46,8 @@ export const DEFAULT_BUILDER_CONFIG: Omit<
       format: 'cjs',
       preserveStructure: true,
       dts: true,
-      // 默认入口：所有源文件，排除 index-lib
-      input: ['src/**/*.ts', 'src/**/*.js', 'src/**/*.vue', 'src/**/*.tsx', 'src/**/*.jsx', '!src/index-lib.ts']
+      // 默认入口：所有源文件
+      input: ['src/**/*.ts', 'src/**/*.js', 'src/**/*.vue', 'src/**/*.tsx', 'src/**/*.jsx']
     },
     // UMD 格式默认配置
     umd: {
@@ -56,7 +56,7 @@ export const DEFAULT_BUILDER_CONFIG: Omit<
       minify: true,
       sourcemap: true,
       // UMD 默认单入口
-      input: 'src/index-lib.ts'
+      input: 'src/index.ts'
     }
   },
 
@@ -246,7 +246,7 @@ export const DEFAULT_BUILDER_CONFIG: Omit<
   cwd: process.cwd(),
 
   // 配置文件路径
-  configFile: 'ldesign.config.ts',
+  configFile: '.ldesign/builder.config.ts',
 
   // 日志级别
   logLevel: 'info',
@@ -354,6 +354,10 @@ export const PRESET_CONFIGS = {
  * 支持的配置文件名称
  */
 export const CONFIG_FILE_NAMES = [
+  '.ldesign/builder.config.ts',
+  '.ldesign/builder.config.js',
+  '.ldesign/builder.config.mjs',
+  '.ldesign/builder.config.json',
   'ldesign.config.ts',
   'ldesign.config.js',
   'ldesign.config.mjs',

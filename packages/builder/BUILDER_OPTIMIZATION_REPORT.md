@@ -137,7 +137,7 @@ export { default, SomeClass, someFunction } from './index'
 
 2. **配置 UMD 选项**（可选）：
 ```typescript
-// ldesign.config.ts
+// .ldesign/builder.config.ts
 export default defineConfig({
   output: {
     format: ['esm', 'cjs', 'umd']

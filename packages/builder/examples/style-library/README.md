@@ -14,7 +14,8 @@ style-library/
 │   │   ├── button.less     # 按钮组件样式
 │   │   └── input.less      # 输入框组件样式
 │   └── index.less          # 主入口文件
-├── ldesign.config.ts       # 构建配置
+├── .ldesign/
+│   └── builder.config.ts   # 构建配置
 ├── package.json            # 项目配置
 └── README.md              # 项目说明
 ```
@@ -204,7 +205,7 @@ export default App
 
 ## ⚙️ 配置说明
 
-### ldesign.config.ts
+### .ldesign/builder.config.ts
 
 ```typescript
 import { defineConfig } from '@ldesign/builder'

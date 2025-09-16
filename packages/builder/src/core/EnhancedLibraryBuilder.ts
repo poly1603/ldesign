@@ -150,8 +150,8 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
     // 初始化配置
     this.config = { ...DEFAULT_BUILDER_CONFIG, ...options.config }
 
-    // 加载构建缓存
-    this.loadBuildCache()
+    // 临时禁用缓存加载以解决缓存bug
+    // this.loadBuildCache()
   }
 
   /**
@@ -167,7 +167,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
       // 合并并验证配置
       const mergedConfig = config ? this.mergeConfig(this.config, config) : this.config
       const configValidation = await this.validateBuildConfig(mergedConfig)
-      
+
       if (!configValidation.valid) {
         throw this.errorHandler.createError(
           ErrorCode.CONFIG_VALIDATION_ERROR,
@@ -175,11 +175,12 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
         )
       }
 
-      // 检查构建缓存
+      // 检查构建缓存 - 临时禁用缓存以解决缓存bug
       const cacheKey = this.generateCacheKey(mergedConfig)
       const cachedResult = this.getCachedBuild(cacheKey)
-      
-      if (cachedResult && (mergedConfig.cache?.enabled !== false)) {
+
+      // 临时强制禁用缓存
+      if (false && cachedResult && (mergedConfig.cache?.enabled !== false)) {
         this.logger.info('使用缓存的构建结果')
         return cachedResult
       }
@@ -201,7 +202,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
 
       // 分析依赖
       const dependencies = await this.analyzeDependencies(mergedConfig)
-      
+
       // 检查循环依赖
       if (dependencies.circular.length > 0) {
         this.logger.warn(`发现 ${dependencies.circular.length} 个循环依赖`)
@@ -235,7 +236,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
 
       // 执行代码质量检查
       const qualityResult = await this.checkCodeQuality(result.outputs, mergedConfig)
-      
+
       if (qualityResult.issues.filter(i => i.severity === 'error').length > 0) {
         this.logger.warn('发现代码质量问题')
       }
@@ -248,13 +249,13 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
 
       // 对比打包前后的功能
       const functionalityCheck = await this.compareFunctionality(mergedConfig, result)
-      
+
       if (!functionalityCheck.identical) {
         this.logger.error('打包前后功能存在差异！')
         functionalityCheck.differences.forEach(diff => {
           this.logger.error(`  - ${diff}`)
         })
-        
+
         if (mergedConfig.postBuildValidation?.failOnError) {
           throw this.errorHandler.createError(
             ErrorCode.BUILD_FAILED,
@@ -405,7 +406,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
    */
   private async analyzeDependencies(config: BuilderConfig): Promise<DependencyAnalysis> {
     const cacheKey = `deps-${this.generateCacheKey(config)}`
-    
+
     // 检查缓存
     if (this.dependencyCache.has(cacheKey)) {
       return this.dependencyCache.get(cacheKey)!
@@ -439,7 +440,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
         }
 
         const packageName = this.extractPackageName(imp)
-        
+
         if (config.external && this.isExternal(packageName, config.external)) {
           analysis.external.push(packageName)
         } else {
@@ -477,10 +478,10 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
    */
   private async analyzeImports(filePath: string): Promise<string[]> {
     const imports: string[] = []
-    
+
     try {
       const content = await fs.readFile(filePath, 'utf-8')
-      
+
       // 匹配 import 语句
       const importRegex = /import\s+(?:[\w\s{},*]+\s+from\s+)?['"]([^'"]+)['"]/g
       let match
@@ -534,7 +535,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
       trace.push(filePath)
 
       const imports = await this.analyzeImports(filePath)
-      
+
       for (const imp of imports) {
         if (imp.startsWith('.')) {
           const resolvedPath = path.resolve(path.dirname(filePath), imp)
@@ -561,7 +562,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
    */
   private async resolveFilePath(filePath: string): Promise<string | null> {
     const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.json']
-    
+
     // 尝试直接路径
     if (await fs.pathExists(filePath)) {
       return filePath
@@ -742,7 +743,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
 
       // 合并所有测试结果
       const success = testResults.success && perfResults.success && compatResults.success && validationResult.success
-      
+
       const enhancedResult = {
         ...validationResult,
         success
@@ -928,8 +929,11 @@ describe('Library Validation', () => {
    * 获取缓存的构建结果
    */
   private getCachedBuild(cacheKey: string): BuildResult | null {
+    // 临时强制返回 null 以禁用缓存
+    return null
+
     const cached = this.buildCache.get(cacheKey)
-    
+
     if (!cached) {
       return null
     }
@@ -971,11 +975,11 @@ describe('Library Validation', () => {
    */
   private async loadBuildCache(): Promise<void> {
     const cacheFile = path.join(process.cwd(), '.ldesign-builder-cache.json')
-    
+
     try {
       if (await fs.pathExists(cacheFile)) {
         const cacheData = await fs.readJson(cacheFile)
-        
+
         for (const [key, value] of Object.entries(cacheData)) {
           this.buildCache.set(key, value as BuildCache)
         }
@@ -990,7 +994,7 @@ describe('Library Validation', () => {
    */
   private async saveBuildCache(): Promise<void> {
     const cacheFile = path.join(process.cwd(), '.ldesign-builder-cache.json')
-    
+
     try {
       const cacheData = Object.fromEntries(this.buildCache.entries())
       await fs.writeJson(cacheFile, cacheData, { spaces: 2 })
@@ -1004,7 +1008,7 @@ describe('Library Validation', () => {
    */
   private addToHistory(result: BuildResult): void {
     this.buildHistory.unshift(result)
-    
+
     if (this.buildHistory.length > this.maxHistorySize) {
       this.buildHistory.pop()
     }

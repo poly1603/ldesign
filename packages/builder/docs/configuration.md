@@ -434,7 +434,7 @@ const builder = new LibraryBuilder({
 
 你也可以创建配置文件来管理复杂的配置：
 
-### ldesign.config.ts
+### .ldesign/builder.config.ts
 
 ```typescript
 import { LibraryBuilder } from '@ldesign/builder'

@@ -1,10 +1,8 @@
 import { defineConfig, LibraryType } from '@ldesign/builder'
 
 export default defineConfig({
-  // 多入口配�?- 自动扫描 src 目录下的所�?TypeScript 文件
-  input: ['src/**/*.ts'],
-
-  // 库类�?- TypeScript �?  libraryType: LibraryType.TYPESCRIPT,
+  // 单入口配�?  input: 'src/index.ts',
+  // 库类�?- TypeScript �?  libraryType: LibraryType.TYPESCRIPT,
 
   // 打包器选择
   bundler: 'rollup',
@@ -13,20 +11,19 @@ export default defineConfig({
   output: {
     format: ['esm', 'cjs', 'umd'],
     sourcemap: true,
-    name: 'MultiModuleTypescriptExample'
+    name: 'ComplexLibraryExample'
   },
 
   // TypeScript 配置
   typescript: {
     declaration: true,
-    declarationDir: 'dist',
     target: 'ES2020',
     module: 'ESNext',
-    strict: true,
+    strict: false,
     skipLibCheck: true
   },
 
-  // 外部依赖（不打包到输出中�?  external: [],
+  // 外部依赖（不打包到输出中�?  external: ['reflect-metadata'],
 
   // 性能配置
   performance: {
