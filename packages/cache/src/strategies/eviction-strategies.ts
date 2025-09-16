@@ -5,17 +5,17 @@ export interface EvictionStrategy {
   /** 策略名称 */
   name: string
   /** 添加访问记录 */
-  recordAccess(key: string): void
-  /** 添加新项 */
-  recordAdd(key: string): void
+  recordAccess: (key: string) => void
+  /** 添加新项（某些策略可利用TTL信息） */
+  recordAdd: (key: string, ttl?: number) => void
   /** 获取应该淘汰的键 */
-  getEvictionKey(): string | null
+  getEvictionKey: () => string | null
   /** 移除键的记录 */
-  removeKey(key: string): void
+  removeKey: (key: string) => void
   /** 清空所有记录 */
-  clear(): void
+  clear: () => void
   /** 获取统计信息 */
-  getStats(): Record<string, any>
+  getStats: () => Record<string, any>
 }
 
 /**
@@ -38,7 +38,8 @@ export class LRUStrategy implements EvictionStrategy {
   }
 
   getEvictionKey(): string | null {
-    if (this.accessOrder.size === 0) return null
+    if (this.accessOrder.size === 0) 
+      return null
 
     let oldestKey: string | null = null
     let oldestTime = Infinity
@@ -92,7 +93,8 @@ export class LFUStrategy implements EvictionStrategy {
   }
 
   getEvictionKey(): string | null {
-    if (this.frequencyMap.size === 0) return null
+    if (this.frequencyMap.size === 0) 
+      return null
 
     let evictionKey: string | null = null
     let lowestFrequency = Infinity
@@ -102,8 +104,8 @@ export class LFUStrategy implements EvictionStrategy {
       const accessTime = this.lastAccessTime.get(key) || 0
       
       // 优先淘汰频率低的，频率相同则淘汰最旧的
-      if (frequency < lowestFrequency || 
-          (frequency === lowestFrequency && accessTime < oldestTime)) {
+      if (frequency < lowestFrequency 
+        || (frequency === lowestFrequency && accessTime < oldestTime)) {
         lowestFrequency = frequency
         oldestTime = accessTime
         evictionKey = key
@@ -203,7 +205,8 @@ export class MRUStrategy implements EvictionStrategy {
   }
 
   getEvictionKey(): string | null {
-    if (this.accessOrder.size === 0) return null
+    if (this.accessOrder.size === 0) 
+      return null
 
     let newestKey: string | null = null
     let newestTime = -1
@@ -253,7 +256,8 @@ export class RandomStrategy implements EvictionStrategy {
   }
 
   getEvictionKey(): string | null {
-    if (this.keys.size === 0) return null
+    if (this.keys.size === 0) 
+      return null
 
     const keysArray = Array.from(this.keys)
     const randomIndex = Math.floor(Math.random() * keysArray.length)
@@ -295,7 +299,8 @@ export class TTLStrategy implements EvictionStrategy {
   }
 
   getEvictionKey(): string | null {
-    if (this.ttlMap.size === 0) return null
+    if (this.ttlMap.size === 0) 
+      return null
 
     const now = Date.now()
     let soonestKey: string | null = null
@@ -375,7 +380,8 @@ export class ARCStrategy implements EvictionStrategy {
       // 命中率高时增加 LFU 权重，命中率低时增加 LRU 权重
       if (hitRate > 0.8) {
         this.adaptiveWeight = Math.max(0.2, this.adaptiveWeight - 0.1)
-      } else if (hitRate < 0.5) {
+      }
+      else if (hitRate < 0.5) {
         this.adaptiveWeight = Math.min(0.8, this.adaptiveWeight + 0.1)
       }
       
@@ -389,7 +395,8 @@ export class ARCStrategy implements EvictionStrategy {
     // 根据权重决定使用哪种策略
     if (Math.random() < this.adaptiveWeight) {
       return this.lru.getEvictionKey()
-    } else {
+    }
+    else {
       return this.lfu.getEvictionKey()
     }
   }
@@ -423,7 +430,7 @@ export class ARCStrategy implements EvictionStrategy {
  * 策略工厂
  */
 export class EvictionStrategyFactory {
-  private static strategies: Map<string, () => EvictionStrategy> = new Map([
+  private static strategies: Map<string, () => EvictionStrategy> = new Map<string, () => EvictionStrategy>([
     ['LRU', () => new LRUStrategy()],
     ['LFU', () => new LFUStrategy()],
     ['FIFO', () => new FIFOStrategy()],

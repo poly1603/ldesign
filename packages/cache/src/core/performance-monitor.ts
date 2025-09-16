@@ -1,4 +1,4 @@
-import type { CacheEvent, StorageEngine } from '../types'
+import type { StorageEngine } from '../types'
 import { EventEmitter } from '../utils'
 
 /**
@@ -123,7 +123,7 @@ export class PerformanceMonitor {
       key?: string
       engine?: StorageEngine
       dataSize?: number
-    }
+    },
   ): Promise<T> {
     if (!this.options.enabled || !this.shouldRecord()) {
       return fn()
@@ -144,7 +144,8 @@ export class PerformanceMonitor {
       })
 
       return result
-    } catch (error) {
+    }
+    catch (error) {
       const duration = performance.now() - startTime
 
       this.record({
@@ -164,7 +165,8 @@ export class PerformanceMonitor {
    * 记录性能指标
    */
   record(metrics: PerformanceMetrics): void {
-    if (!this.options.enabled) return
+    if (!this.options.enabled) 
+      return
 
     // 维护最大记录数
     if (this.metrics.length >= this.options.maxRecords) {
@@ -203,10 +205,13 @@ export class PerformanceMonitor {
     let filtered = this.metrics
 
     if (filter) {
-      filtered = this.metrics.filter(m => {
-        if (filter.operation && m.operation !== filter.operation) return false
-        if (filter.engine && m.engine !== filter.engine) return false
-        if (filter.since && m.timestamp < filter.since) return false
+      filtered = this.metrics.filter((m) => {
+        if (filter.operation && m.operation !== filter.operation) 
+          return false
+        if (filter.engine && m.engine !== filter.engine) 
+          return false
+        if (filter.since && m.timestamp < filter.since) 
+          return false
         return true
       })
     }
@@ -233,13 +238,13 @@ export class PerformanceMonitor {
 
     // 操作分布
     const operationDistribution: Record<string, number> = {}
-    filtered.forEach(m => {
+    filtered.forEach((m) => {
       operationDistribution[m.operation] = (operationDistribution[m.operation] || 0) + 1
     })
 
     // 引擎分布
     const engineDistribution: Record<StorageEngine, number> = {} as any
-    filtered.forEach(m => {
+    filtered.forEach((m) => {
       if (m.engine) {
         engineDistribution[m.engine] = (engineDistribution[m.engine] || 0) + 1
       }
@@ -274,7 +279,7 @@ export class PerformanceMonitor {
 
     const result: Record<string, number> = {}
     
-    percentiles.forEach(p => {
+    percentiles.forEach((p) => {
       const index = Math.ceil((p / 100) * durations.length) - 1
       result[`p${p}`] = durations[Math.max(0, index)]
     })
@@ -351,7 +356,7 @@ ${Object.entries(stats.engineDistribution).map(([k, v]) => `- ${k}: ${v}`).join(
 
 慢操作 (>${this.options.slowThreshold}ms): ${stats.slowOperations.length}
 ${stats.slowOperations.slice(0, 5).map(m => 
-  `  - ${m.operation} [${m.key}]: ${m.duration.toFixed(2)}ms`
+  `  - ${m.operation} [${m.key}]: ${m.duration.toFixed(2)}ms`,
 ).join('\n')}
     `.trim()
   }

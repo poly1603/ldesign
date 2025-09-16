@@ -23,35 +23,40 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
+      "types": "./es/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
+    },
+    "./vue": {
+      "types": "./es/vue/index.d.ts",
+      "import": "./es/vue/index.js",
+      "require": "./lib/vue/index.cjs"
     }
   },
   "main": "lib/index.cjs",
   "module": "es/index.js",
-  "types": "types/index.d.ts",
+  "types": "es/index.d.ts",
   "files": [
     "CHANGELOG.md",
     "README.md",
     "es",
     "lib",
-    "types",
     "dist"
   ],
   "scripts": {
     "build": "ldesign-builder build -f esm,cjs,umd",
+    "build:clean": "ldesign-builder build -f esm,cjs,umd --clean",
     "build:watch": "ldesign-builder build --watch",
     "dev": "rollup -c -w",
-    "type-check": "vue-tsc --noEmit",
+    "type-check": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "lint:ci": "eslint . --config .eslintrc.ci.json",
     "test": "vitest -c vitest.local.config.ts",
     "test:ui": "vitest -c vitest.local.config.ts --ui",
-    "test:run": "vitest run -c vitest.local.config.ts --reporter=basic --silent",
-    "test:coverage": "vitest run -c vitest.local.config.ts --coverage",
-    "test:ci": "vitest run --config vitest.config.ci.ts",
+    "test:run": "node scripts/run-vitest.mjs -c vitest.local.config.ts --reporter=basic --silent",
+    "test:coverage": "node scripts/run-vitest.mjs -c vitest.local.config.ts --coverage",
+    "test:ci": "node scripts/run-vitest.mjs --config vitest.config.ci.ts",
     "test:performance": "node scripts/performance-test.js",
     "test:benchmark": "node scripts/benchmark.js",
     "test:e2e": "playwright test",
@@ -63,7 +68,7 @@
     "size-check": "size-limit",
     "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\"",
-    "ci": "pnpm lint:ci && pnpm type-check && pnpm test:ci && pnpm build",
+    "ci": "pnpm lint:ci && pnpm type-check && pnpm test:ci && pnpm build && pnpm docs:build && pnpm docs:check-links",
     "prepare": "husky install",
     "precommit": "lint-staged",
     "release": "semantic-release",
@@ -72,7 +77,9 @@
     "deploy:beta": "tsx ../../tools/deploy/package-deployer.ts cache --tag beta",
     "deploy:alpha": "tsx ../../tools/deploy/package-deployer.ts cache --tag alpha",
     "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts cache --dry-run",
-    "build:dev": "node scripts/build.js --dev"
+    "build:dev": "node scripts/build.js --dev",
+    "docs:check-links": "node scripts/docs-check-links.js",
+    "test:fast": "node scripts/run-vitest.mjs --fast -c vitest.local.config.ts"
   },
   "peerDependencies": {
     "vue": "^3.3.0"
@@ -113,8 +120,9 @@
   },
   "size-limit": [
     {
-      "path": "dist/index.js",
-      "limit": "50 KB"
+      "path": "src/index.ts",
+      "limit": "50 KB",
+      "environment": "node"
     }
   ]
 }

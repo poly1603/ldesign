@@ -150,12 +150,14 @@ export class CacheManager implements ICacheManager {
 
     // 回退到默认/推荐引擎（提高 SSR/Node 环境健壮性）
     const defaultEngine = this.options.defaultEngine || StorageEngineFactory.getRecommendedEngine()
-    let engine = this.engines.get(defaultEngine)
-    if (engine) return engine
+    const engine = this.engines.get(defaultEngine)
+    if (engine) 
+      return engine
 
     // 兜底：选择第一个可用引擎
     const firstAvailable = Array.from(this.engines.values())[0]
-    if (firstAvailable) return firstAvailable
+    if (firstAvailable) 
+      return firstAvailable
 
     throw new Error(`No storage engine is available`)
   }
@@ -701,7 +703,8 @@ export class CacheManager implements ICacheManager {
     let itemsArray: Array<{ key: string, value: T, options?: SetOptions }>
     if (Array.isArray(items)) {
       itemsArray = items
-    } else {
+    }
+    else {
       itemsArray = Object.entries(items).map(([key, value]) => ({
         key,
         value,
@@ -725,7 +728,8 @@ export class CacheManager implements ICacheManager {
       const result = results[index]
       if (result.status === 'fulfilled') {
         success.push(item.key)
-      } else {
+      }
+      else {
         failed.push({
           key: item.key,
           error: result.reason instanceof Error ? result.reason : new Error(String(result.reason)),
@@ -796,7 +800,8 @@ export class CacheManager implements ICacheManager {
       const result = results[index]
       if (result.status === 'fulfilled') {
         success.push(key)
-      } else {
+      }
+      else {
         failed.push({
           key,
           error: result.reason instanceof Error ? result.reason : new Error(String(result.reason)),

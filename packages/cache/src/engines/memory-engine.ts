@@ -1,6 +1,6 @@
 import type { StorageEngineConfig } from '../types'
-import { BaseStorageEngine } from './base-engine'
 import { type EvictionStrategy, EvictionStrategyFactory } from '../strategies/eviction-strategies'
+import { BaseStorageEngine } from './base-engine'
 
 /**
  * 内存缓存项接口
@@ -150,7 +150,8 @@ export class MemoryEngine extends BaseStorageEngine {
     // 记录到淘汰策略
     if (isUpdate) {
       this.evictionStrategy.recordAccess(key)
-    } else {
+    }
+    else {
       this.evictionStrategy.recordAdd(key, ttl)
     }
     

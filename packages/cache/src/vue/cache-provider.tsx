@@ -3,9 +3,9 @@ import {
   defineComponent,
   inject,
   type InjectionKey,
+  onUnmounted,
   type PropType,
   provide,
-  onUnmounted,
 } from 'vue'
 import { CacheManager } from '../core/cache-manager'
 

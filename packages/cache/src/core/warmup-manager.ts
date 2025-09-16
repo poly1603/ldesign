@@ -1,5 +1,5 @@
-import type { CacheManager } from './cache-manager'
 import type { SetOptions } from '../types'
+import type { CacheManager } from './cache-manager'
 
 /**
  * 预热配置项
@@ -67,7 +67,7 @@ export class WarmupManager {
   
   constructor(
     private cache: CacheManager,
-    private config: WarmupConfig = {}
+    private config: WarmupConfig = {},
   ) {
     this.config = {
       concurrency: 5,
@@ -139,7 +139,8 @@ export class WarmupManager {
 
       result.duration = Date.now() - startTime
       return result
-    } finally {
+    }
+    finally {
       this.running = false
     }
   }
@@ -173,7 +174,8 @@ export class WarmupManager {
     const visiting = new Set<string>()
 
     const visit = (item: WarmupItem) => {
-      if (visited.has(item.key)) return
+      if (visited.has(item.key)) 
+        return
       if (visiting.has(item.key)) {
         throw new Error(`Circular dependency detected: ${item.key}`)
       }
@@ -206,7 +208,7 @@ export class WarmupManager {
    */
   private async processBatches(
     items: WarmupItem[],
-    result: WarmupResult
+    result: WarmupResult,
   ): Promise<void> {
     const concurrency = this.config.concurrency || 5
 
@@ -214,7 +216,7 @@ export class WarmupManager {
       const batch = items.slice(i, i + concurrency)
       
       await Promise.all(
-        batch.map(item => this.processItem(item, result))
+        batch.map(item => this.processItem(item, result)),
       )
     }
   }
@@ -224,7 +226,7 @@ export class WarmupManager {
    */
   private async processItem(
     item: WarmupItem,
-    result: WarmupResult
+    result: WarmupResult,
   ): Promise<void> {
     let retries = 0
     const maxRetries = this.config.retries || 3
@@ -247,7 +249,8 @@ export class WarmupManager {
         result.successful.push(item.key)
         result.stats.success++
         return
-      } catch (error) {
+      }
+      catch (error) {
         retries++
         
         if (retries > maxRetries) {
@@ -274,14 +277,14 @@ export class WarmupManager {
    * 带超时的数据获取
    */
   private async fetchWithTimeout<T>(
-    fetcher: () => Promise<T> | T
+    fetcher: () => Promise<T> | T,
   ): Promise<T> {
     const timeout = this.config.timeout || 30000
     
     return Promise.race([
       Promise.resolve(fetcher()),
       new Promise<T>((_, reject) =>
-        setTimeout(() => reject(new Error('Warmup timeout')), timeout)
+        setTimeout(() => reject(new Error('Warmup timeout')), timeout),
       ),
     ])
   }
@@ -324,7 +327,7 @@ export class WarmupManager {
  */
 export function createWarmupManager(
   cache: CacheManager,
-  config?: WarmupConfig
+  config?: WarmupConfig,
 ): WarmupManager {
   return new WarmupManager(cache, config)
 }

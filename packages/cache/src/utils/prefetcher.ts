@@ -111,7 +111,7 @@ export class Prefetcher {
 
   constructor(
     cache: Map<string, any>,
-    options: PrefetcherOptions = {}
+    options: PrefetcherOptions = {},
   ) {
     this.cache = cache
     this.options = {
@@ -191,7 +191,8 @@ export class Prefetcher {
     const window = this.options.predictionWindow
     const recent = this.accessHistory.slice(-window - 1, -1)
     
-    if (recent.length < window) return
+    if (recent.length < window) 
+      return
 
     const pattern = recent.join('->')
     const existing = this.patterns.get(pattern) || {
@@ -245,12 +246,13 @@ export class Prefetcher {
   /**
    * 预测下一个可能访问的键
    */
-  private predictNextKeys(currentKey: string): Array<{ key: string; confidence: number }> {
+  private predictNextKeys(_currentKey: string): Array<{ key: string, confidence: number }> {
     const predictions = new Map<string, number>()
     const window = this.options.predictionWindow
     const recent = this.accessHistory.slice(-window)
     
-    if (recent.length < window) return []
+    if (recent.length < window) 
+      return []
 
     const currentPattern = recent.join('->')
     let totalMatches = 0
@@ -265,7 +267,7 @@ export class Prefetcher {
     }
 
     // 计算置信度
-    const results: Array<{ key: string; confidence: number }> = []
+    const results: Array<{ key: string, confidence: number }> = []
     for (const [key, count] of predictions.entries()) {
       results.push({
         key,
@@ -307,7 +309,8 @@ export class Prefetcher {
       // 根据策略处理
       if (rule.strategy === 'eager') {
         await this.executeTasks()
-      } else if (rule.delay) {
+      }
+      else if (rule.delay) {
         setTimeout(() => this.executeTasks(), rule.delay)
       }
     }
@@ -377,9 +380,11 @@ export class Prefetcher {
 
           this.cache.set(key, value)
           task.results?.set(key, value)
-        } catch (error) {
+        }
+        catch (error) {
           task.errors?.set(key, error as Error)
-        } finally {
+        }
+        finally {
           completed++
           task.progress = completed / total
         }
@@ -387,9 +392,11 @@ export class Prefetcher {
 
       await Promise.all(promises)
       task.status = 'completed'
-    } catch (error) {
+    }
+    catch {
       task.status = 'failed'
-    } finally {
+    }
+    finally {
       this.runningTasks--
       
       // 清理完成的任务
@@ -460,7 +467,7 @@ export class Prefetcher {
   async prefetch(
     keys: string[],
     fetcher: (key: string) => Promise<any>,
-    options?: { priority?: number; strategy?: PrefetchStrategy }
+    options?: { priority?: number, strategy?: PrefetchStrategy },
   ): Promise<void> {
     const task: PrefetchTask = {
       id: `manual-${Date.now()}`,
@@ -478,7 +485,8 @@ export class Prefetcher {
     
     if (task.strategy === 'eager') {
       await this.runTask(task)
-    } else {
+    }
+    else {
       this.executeTasks()
     }
   }
@@ -493,7 +501,7 @@ export class Prefetcher {
     completedTasks: number
     failedTasks: number
     patterns: number
-    predictions: Array<{ key: string; confidence: number }>
+    predictions: Array<{ key: string, confidence: number }>
   } {
     const tasks = Array.from(this.tasks.values())
     const currentKey = this.accessHistory[this.accessHistory.length - 1]
@@ -527,7 +535,7 @@ export class Prefetcher {
  */
 export function withPrefetching<T extends { get: any, set: any, has: any }>(
   cache: T,
-  options?: PrefetcherOptions
+  options?: PrefetcherOptions,
 ): T & { prefetcher: Prefetcher } {
   const cacheMap = new Map<string, any>()
   const prefetcher = new Prefetcher(cacheMap, options)

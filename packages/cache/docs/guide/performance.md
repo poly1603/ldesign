@@ -1041,4 +1041,4 @@ class NetworkAwareCache {
 
 - [智能策略](./smart-strategy.md) - 自动性能优化
 - [存储引擎](./storage-engines.md) - 引擎性能特性
-- [监控指南](./monitoring.md) - 性能监控详解
+- [监控指南](../api/performance-monitor.md) - 性能监控详解

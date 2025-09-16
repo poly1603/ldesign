@@ -14,6 +14,7 @@ export default antfu({
     'summary/**/*.md',
     'docs/**/*.md',
     '__tests__/**/*',
+    'tests/**/*',
     'scripts/**/*',
     'examples/**/*',
     'benchmark.config.js',
@@ -22,6 +23,10 @@ export default antfu({
     '*.config.ts',
     'mindmap.md',
     'codecov.yml',
+    'README.md',
+    'package.json',
+    'tsconfig.json',
+    'test-results.json',
   ],
   markdown: {
     overrides: {

@@ -2,10 +2,11 @@
   "extends": "../../tools/configs/build/tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "rootDir": ".",
+    "lib": ["ES2021", "DOM", "DOM.Iterable"],
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "rootDir": "."
   },
   "include": ["src/**/*"]
 }

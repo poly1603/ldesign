@@ -105,7 +105,8 @@ export class Compressor {
           compressed = data
           algorithm = 'none'
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Compression failed, using original data:', error)
       compressed = data
       algorithm = 'none'
@@ -157,7 +158,8 @@ export class Compressor {
         default:
           return data
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Decompression failed:', error)
       throw new Error(`Failed to decompress data with ${algorithm}`)
     }
@@ -173,8 +175,7 @@ export class Compressor {
     }
 
     const encoder = new TextEncoder()
-    const decoder = new TextDecoder()
-    
+
     const input = encoder.encode(data)
     const compressionStream = new CompressionStream('gzip')
     
@@ -276,7 +277,8 @@ export class Compressor {
       
       if (dict[wc] !== undefined) {
         w = wc
-      } else {
+      }
+      else {
         result.push(dict[w] !== undefined ? String.fromCharCode(dict[w]) : w)
         dict[wc] = dictSize++
         w = c
@@ -314,7 +316,8 @@ export class Compressor {
       }
 
       return result
-    } catch {
+    }
+    catch {
       return data
     }
   }
@@ -348,8 +351,10 @@ export class Compressor {
    */
   isCompressed(data: string): boolean {
     // 检查常见的压缩格式魔术字节
-    if (data.startsWith('H4sI')) return true // GZIP base64
-    if (data.startsWith('eJ')) return true // Deflate base64
+    if (data.startsWith('H4sI')) 
+      return true // GZIP base64
+    if (data.startsWith('eJ')) 
+      return true // Deflate base64
     
     // 检查熵值（压缩数据通常有较高的熵）
     const entropy = this.calculateEntropy(data)
@@ -392,11 +397,14 @@ export class Compressor {
     
     if (originalSize < this.options.minSize) {
       recommendedAlgorithm = 'none'
-    } else if (this.isCompressed(data)) {
+    }
+    else if (this.isCompressed(data)) {
       recommendedAlgorithm = 'none'
-    } else if (originalSize < 10240) { // < 10KB
+    }
+    else if (originalSize < 10240) { // < 10KB
       recommendedAlgorithm = 'deflate'
-    } else {
+    }
+    else {
       recommendedAlgorithm = 'gzip'
     }
 
@@ -417,7 +425,7 @@ export class Compressor {
  */
 export function withCompression<T extends { set: any, get: any, has?: any, remove?: any }>(
   cache: T,
-  options?: CompressionOptions
+  options?: CompressionOptions,
 ): T {
   const compressor = new Compressor(options)
   const compressionMap = new Map<string, CompressionAlgorithm>()
@@ -429,13 +437,14 @@ export function withCompression<T extends { set: any, get: any, has?: any, remov
   for (const key in cache) {
     if (typeof cache[key] === 'function') {
       proxy[key] = cache[key].bind(cache)
-    } else {
+    }
+    else {
       proxy[key] = cache[key]
     }
   }
   
   // 重写 set 和 get 方法
-  proxy.set = async function(key: string, value: any, setOptions?: any) {
+  proxy.set = async function (key: string, value: any, setOptions?: any) {
     const serialized = JSON.stringify(value)
     const result = await compressor.compress(serialized)
     
@@ -452,10 +461,11 @@ export function withCompression<T extends { set: any, get: any, has?: any, remov
     }, setOptions)
   }
   
-  proxy.get = async function(key: string) {
+  proxy.get = async function (key: string) {
     const stored = await cache.get(key)
     
-    if (!stored) return null
+    if (!stored) 
+      return null
     
     // 检查是否是压缩数据
     if (stored && typeof stored === 'object' && stored.compressed && stored.algorithm) {
@@ -473,7 +483,7 @@ export function withCompression<T extends { set: any, get: any, has?: any, remov
   
   // 如果存在 remove 方法，保留它
   if ('remove' in cache && typeof cache.remove === 'function') {
-    proxy.remove = async function(key: string) {
+    proxy.remove = async function (key: string) {
       compressionMap.delete(key)
       return cache.remove(key)
     }

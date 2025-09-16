@@ -1,5 +1,5 @@
 import type { CacheEvent, StorageEngine } from '../types'
-import { CacheManager } from './cache-manager'
+import type { CacheManager } from './cache-manager'
 import { EventEmitter } from '../utils'
 
 /**
@@ -44,7 +44,7 @@ export class SyncManager {
 
   constructor(
     private manager: CacheManager,
-    private options: SyncOptions = {}
+    private options: SyncOptions = {},
   ) {
     this.sourceId = this.generateSourceId()
     
@@ -66,7 +66,8 @@ export class SyncManager {
   private initialize(): void {
     if (this.supportsBroadcastChannel()) {
       this.initBroadcastChannel()
-    } else if (this.supportsStorageEvent()) {
+    }
+    else if (this.supportsStorageEvent()) {
       this.initStorageEvent()
     }
 
@@ -104,15 +105,18 @@ export class SyncManager {
    * 初始化 storage 事件监听
    */
   private initStorageEvent(): void {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') 
+      return
 
     this.storageHandler = (e: StorageEvent) => {
-      if (!e.key?.startsWith('__sync__')) return
+      if (!e.key?.startsWith('__sync__')) 
+        return
       
       try {
         const message: SyncMessage = JSON.parse(e.newValue || '{}')
         this.handleSyncMessage(message)
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Failed to parse sync message:', error)
       }
     }
@@ -126,7 +130,7 @@ export class SyncManager {
   private setupLocalListeners(): void {
     const events = this.options.events || ['set', 'remove', 'clear']
 
-    events.forEach(event => {
+    events.forEach((event) => {
       this.manager.on(event, (e: CacheEvent) => {
         if (this.shouldSync(e.engine)) {
           this.broadcastMessage({
@@ -164,7 +168,8 @@ export class SyncManager {
       this.syncTimer = window.setTimeout(() => {
         this.sendMessage(message)
       }, this.options.debounce)
-    } else {
+    }
+    else {
       this.sendMessage(message)
     }
   }
@@ -175,14 +180,16 @@ export class SyncManager {
   private sendMessage(message: SyncMessage): void {
     if (this.channel) {
       this.channel.postMessage(message)
-    } else if (typeof window !== 'undefined' && window.localStorage) {
+    }
+    else if (typeof window !== 'undefined' && window.localStorage) {
       // 使用 localStorage 作为后备方案
       const key = `__sync__${Date.now()}`
       try {
         window.localStorage.setItem(key, JSON.stringify(message))
         // 立即删除，仅触发 storage 事件
         window.localStorage.removeItem(key)
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Failed to send sync message:', error)
       }
     }
@@ -196,7 +203,8 @@ export class SyncManager {
    */
   private async handleSyncMessage(message: SyncMessage): Promise<void> {
     // 忽略自己发送的消息
-    if (message.source === this.sourceId) return
+    if (message.source === this.sourceId) 
+      return
 
     try {
       switch (message.type) {
@@ -230,7 +238,8 @@ export class SyncManager {
           })
           break
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to handle sync message:', error)
     }
   }

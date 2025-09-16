@@ -128,7 +128,7 @@ export class CacheNamespace {
     // 递归清空子命名空间
     if (includeChildren) {
       await Promise.all(
-        Array.from(this.children.values()).map(child => child.clear(true))
+        Array.from(this.children.values()).map(child => child.clear(true)),
       )
     }
   }
@@ -147,7 +147,7 @@ export class CacheNamespace {
 
     // 递归获取子命名空间的键
     const childKeysArrays = await Promise.all(
-      Array.from(this.children.values()).map(child => child.keys(true))
+      Array.from(this.children.values()).map(child => child.keys(true)),
     )
     
     return currentKeys.concat(...childKeysArrays)
@@ -158,7 +158,7 @@ export class CacheNamespace {
    */
   async mset<T = any>(
     items: Array<{ key: string, value: T, options?: SetOptions }> | Record<string, T>,
-    options?: SetOptions
+    options?: SetOptions,
   ): Promise<{ success: string[], failed: Array<{ key: string, error: Error }> }> {
     return this.manager.mset(items, options)
   }
@@ -177,7 +177,7 @@ export class CacheNamespace {
   async remember<T = any>(
     key: string,
     fetcher: () => Promise<T> | T,
-    options?: SetOptions & { refresh?: boolean }
+    options?: SetOptions & { refresh?: boolean },
   ): Promise<T> {
     return this.manager.remember(key, fetcher, options)
   }
@@ -220,7 +220,7 @@ export class CacheNamespace {
   async destroy(includeChildren = true): Promise<void> {
     if (includeChildren) {
       await Promise.all(
-        Array.from(this.children.values()).map(child => child.destroy(true))
+        Array.from(this.children.values()).map(child => child.destroy(true)),
       )
       this.children.clear()
     }
@@ -302,13 +302,14 @@ export class CacheNamespace {
 
   /**
    * 导入命名空间数据
-   * 
+   *
    * @param data - 要导入的数据，支持数组或对象格式
-   * @param options - 导入选项，包括转换函数
+   * @param options - 导入选项
+   * @param options.transform - 导入前对条目进行转换（如键重命名/结构升级）
    */
   async import(
     data: Array<{ key: string, value: any }> | { data?: Record<string, any>, children?: Record<string, any> },
-    options?: { transform?: (item: { key: string, value: any }) => { key: string, value: any } }
+    options?: { transform?: (item: { key: string, value: any }) => { key: string, value: any } },
   ): Promise<void> {
     // 处理数组格式
     if (Array.isArray(data)) {

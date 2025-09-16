@@ -1,5 +1,5 @@
-import type { CacheManager } from './cache-manager'
 import type { CacheEvent, StorageEngine } from '../types'
+import type { CacheManager } from './cache-manager'
 
 /**
  * 缓存分析配置
@@ -149,7 +149,7 @@ export class CacheAnalyzer {
   
   constructor(
     private cache: CacheManager,
-    config: AnalyzerConfig = {}
+    config: AnalyzerConfig = {},
   ) {
     this.enabled = config.enabled ?? true
     this.sampleRate = config.sampleRate ?? 1
@@ -177,14 +177,16 @@ export class CacheAnalyzer {
    * 处理 get 事件
    */
   private handleGet<T>(event: CacheEvent<T>): void {
-    if (!this.shouldSample()) return
+    if (!this.shouldSample()) 
+      return
     
     const pattern = this.getOrCreatePattern(event.key)
     pattern.accessCount++
     
     if (event.value !== null && event.value !== undefined) {
       pattern.hitCount++
-    } else {
+    }
+    else {
       pattern.missCount++
     }
     
@@ -196,7 +198,8 @@ export class CacheAnalyzer {
    * 处理 set 事件
    */
   private handleSet<T>(event: CacheEvent<T>): void {
-    if (!this.shouldSample()) return
+    if (!this.shouldSample()) 
+      return
     
     const pattern = this.getOrCreatePattern(event.key)
     pattern.engine = event.engine
@@ -204,7 +207,8 @@ export class CacheAnalyzer {
     if (event.value && this.recordValues) {
       try {
         pattern.size = new Blob([JSON.stringify(event.value)]).size
-      } catch {}
+      }
+      catch {}
     }
     
     this.recordPerformance('set', event.timestamp)
@@ -214,7 +218,8 @@ export class CacheAnalyzer {
    * 处理 remove 事件
    */
   private handleRemove<T>(event: CacheEvent<T>): void {
-    if (!this.shouldSample()) return
+    if (!this.shouldSample()) 
+      return
     this.recordPerformance('remove', event.timestamp)
   }
 
@@ -352,7 +357,7 @@ export class CacheAnalyzer {
       patterns,
       performance,
       storage,
-      stats
+      stats,
     )
     
     // 计算总体统计
@@ -429,7 +434,8 @@ export class CacheAnalyzer {
     const metrics: PerformanceMetrics[] = []
     
     for (const [operation, durations] of this.performanceRecords) {
-      if (durations.length === 0) continue
+      if (durations.length === 0) 
+        continue
       
       const sorted = [...durations].sort((a, b) => a - b)
       const sum = sorted.reduce((a, b) => a + b, 0)
@@ -479,7 +485,7 @@ export class CacheAnalyzer {
     patterns: AccessPattern[],
     performance: PerformanceMetrics[],
     storage: StorageAnalysis[],
-    stats: any
+    stats: any,
   ): OptimizationSuggestion[] {
     const suggestions: OptimizationSuggestion[] = []
     
@@ -546,7 +552,8 @@ export class CacheAnalyzer {
       allDurations.push(...durations)
     }
     
-    if (allDurations.length === 0) return 0
+    if (allDurations.length === 0) 
+      return 0
     
     return allDurations.reduce((a, b) => a + b, 0) / allDurations.length
   }
@@ -558,7 +565,8 @@ export class CacheAnalyzer {
     const totalOps = Array.from(this.performanceRecords.values())
       .reduce((sum, records) => sum + records.length, 0)
     
-    if (totalOps === 0) return 0
+    if (totalOps === 0) 
+      return 0
     
     return this.errorRecords.length / (totalOps + this.errorRecords.length)
   }
@@ -595,7 +603,7 @@ export class CacheAnalyzer {
  */
 export function createCacheAnalyzer(
   cache: CacheManager,
-  config?: AnalyzerConfig
+  config?: AnalyzerConfig,
 ): CacheAnalyzer {
   return new CacheAnalyzer(cache, config)
 }

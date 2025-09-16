@@ -753,8 +753,8 @@ if (profile) {
 
 现在你已经掌握了基础用法，可以继续学习：
 
-- [存储引擎详解](./storage-engines.md) - 深入了解各种存储引擎
-- [智能策略](./smart-strategy.md) - 掌握智能选择策略
-- [安全特性](./security.md) - 学习数据保护功能
-- [Vue 集成](./vue-integration.md) - Vue 3 深度集成
-- [最佳实践](./best-practices.md) - 生产环境最佳实践
+- [存储引擎详解](/guide/storage-engines) - 深入了解各种存储引擎
+- [智能策略](/guide/smart-strategy) - 掌握智能选择策略
+- [安全特性](/guide/security) - 学习数据保护功能
+- [Vue 集成](/guide/vue-integration) - Vue 3 深度集成
+- [最佳实践](/guide/best-practices) - 生产环境最佳实践

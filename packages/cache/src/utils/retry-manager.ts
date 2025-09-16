@@ -87,7 +87,7 @@ export class RetryManager {
    */
   async retry<T>(
     fn: () => Promise<T>,
-    options?: RetryOptions
+    options?: RetryOptions,
   ): Promise<RetryResult<T>> {
     const opts = { ...this.defaultOptions, ...options }
     const startTime = Date.now()
@@ -104,7 +104,8 @@ export class RetryManager {
           attempts: attempt,
           totalDuration: Date.now() - startTime,
         }
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error))
 
         // 检查是否应该重试
@@ -138,22 +139,22 @@ export class RetryManager {
     switch (options.strategy) {
       case 'exponential':
         delay = Math.min(
-          options.initialDelay * Math.pow(options.factor, attempt - 1),
-          options.maxDelay
+          options.initialDelay * options.factor ** (attempt - 1),
+          options.maxDelay,
         )
         break
 
       case 'linear':
         delay = Math.min(
           options.initialDelay * attempt,
-          options.maxDelay
+          options.maxDelay,
         )
         break
 
       case 'fibonacci':
         delay = Math.min(
           this.fibonacci(attempt) * options.initialDelay,
-          options.maxDelay
+          options.maxDelay,
         )
         break
 
@@ -175,8 +176,10 @@ export class RetryManager {
    * 斐波那契数列
    */
   private fibonacci(n: number): number {
-    if (n <= 1) return n
-    let a = 0, b = 1
+    if (n <= 1) 
+      return n
+    let a = 0
+    let b = 1
     for (let i = 2; i <= n; i++) {
       [a, b] = [b, a + b]
     }
@@ -190,7 +193,7 @@ export class RetryManager {
     return Promise.race([
       promise,
       new Promise<T>((_, reject) =>
-        setTimeout(() => reject(new Error('Operation timeout')), timeout)
+        setTimeout(() => reject(new Error('Operation timeout')), timeout),
       ),
     ])
   }
@@ -237,7 +240,8 @@ export class CircuitBreaker {
       // 检查是否可以进入半开状态
       if (this.shouldAttemptReset()) {
         this.state = 'HALF_OPEN'
-      } else {
+      }
+      else {
         throw new Error('Circuit breaker is OPEN')
       }
     }
@@ -246,7 +250,8 @@ export class CircuitBreaker {
       const result = await this.withTimeout(fn())
       this.onSuccess()
       return result
-    } catch (error) {
+    }
+    catch (error) {
       this.onFailure()
       throw error
     }
@@ -275,7 +280,8 @@ export class CircuitBreaker {
 
     if (this.state === 'HALF_OPEN') {
       this.trip()
-    } else if (this.state === 'CLOSED') {
+    }
+    else if (this.state === 'CLOSED') {
       this.failureCount++
       if (this.getFailureRate() >= this.options.failureThreshold / this.options.windowSize) {
         this.trip()
@@ -297,7 +303,8 @@ export class CircuitBreaker {
    * 获取失败率
    */
   private getFailureRate(): number {
-    if (this.requests.length === 0) return 0
+    if (this.requests.length === 0) 
+      return 0
     const failures = this.requests.filter(r => !r).length
     return failures / this.requests.length
   }
@@ -307,8 +314,8 @@ export class CircuitBreaker {
    */
   private shouldAttemptReset(): boolean {
     return (
-      this.lastFailureTime !== undefined &&
-      Date.now() - this.lastFailureTime >= this.options.resetTimeout
+      this.lastFailureTime !== undefined
+      && Date.now() - this.lastFailureTime >= this.options.resetTimeout
     )
   }
 
@@ -337,7 +344,7 @@ export class CircuitBreaker {
     return Promise.race([
       promise,
       new Promise<T>((_, reject) =>
-        setTimeout(() => reject(new Error('Operation timeout')), this.options.timeout)
+        setTimeout(() => reject(new Error('Operation timeout')), this.options.timeout),
       ),
     ])
   }
@@ -390,14 +397,15 @@ export class FallbackHandler<T> {
     primary: () => Promise<T>,
     options?: {
       onFallback?: (level: number, error: Error) => void
-    }
+    },
   ): Promise<T> {
     const errors: Error[] = []
 
     // 尝试主操作
     try {
       return await primary()
-    } catch (error) {
+    }
+    catch (error) {
       errors.push(error instanceof Error ? error : new Error(String(error)))
     }
 
@@ -407,7 +415,8 @@ export class FallbackHandler<T> {
         const result = await this.fallbacks[i]()
         options?.onFallback?.(i + 1, errors[errors.length - 1])
         return result
-      } catch (error) {
+      }
+      catch (error) {
         errors.push(error instanceof Error ? error : new Error(String(error)))
       }
     }
@@ -422,7 +431,7 @@ export class FallbackHandler<T> {
  */
 export function withRetry<T extends (...args: any[]) => Promise<any>>(
   fn: T,
-  options?: RetryOptions
+  options?: RetryOptions,
 ): T {
   const retryManager = new RetryManager()
   
@@ -440,7 +449,7 @@ export function withRetry<T extends (...args: any[]) => Promise<any>>(
  */
 export function withCircuitBreaker<T extends (...args: any[]) => Promise<any>>(
   fn: T,
-  options?: CircuitBreakerOptions
+  options?: CircuitBreakerOptions,
 ): T {
   const circuitBreaker = new CircuitBreaker(options)
   

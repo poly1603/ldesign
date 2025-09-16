@@ -44,12 +44,12 @@ await warmup.importSnapshot?.(snapshot)
 
 ### importSnapshot(snapshot)
 - 说明：将本地快照批量导入缓存，支持大体量分块与并发控制。
-- 返回：Promise<void>
+- 返回：`Promise<void>`
 
 ### prewarmFromUrl(url, fetchOptions?)
 - 说明：从远程 URL 拉取快照并导入。
 - 参数：url 为快照 JSON 地址；fetchOptions 透传到 fetch（如 headers）。
-- 返回：Promise<void>
+- 返回：`Promise<void>`
 
 ## 与命名空间配合
 - 推荐使用命名空间导出的快照作为预热输入：await ns.export(true)

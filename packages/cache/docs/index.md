@@ -126,10 +126,10 @@ await cache.set('temp', data, { ttl: 1000 })
 
 ## 🔗 生态系统
 
-- 🎨 [@ldesign/ui](../ui) - Vue 3 组件库
-- 🎭 [@ldesign/icons](../icons) - 图标库
-- 🎪 [@ldesign/utils](../utils) - 工具函数库
-- 🎨 [@ldesign/theme](../theme) - 主题系统
+- 🎨 [@ldesign/ui](https://github.com/ldesign/ldesign/tree/main/packages/ui) - Vue 3 组件库
+- 🎭 [@ldesign/icons](https://github.com/ldesign/ldesign/tree/main/packages/icons) - 图标库
+- 🎪 [@ldesign/utils](https://github.com/ldesign/ldesign/tree/main/packages/utils) - 工具函数库
+- 🎨 [@ldesign/theme](https://github.com/ldesign/ldesign/tree/main/packages/theme) - 主题系统
 
 ## 🧭 功能导航
 

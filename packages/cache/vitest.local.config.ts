@@ -7,6 +7,19 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     reporter: 'basic',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      thresholds: {
+        global: { branches: 100, functions: 100, lines: 100, statements: 100 },
+        perFile: { branches: 100, functions: 100, lines: 100, statements: 100 }
+      },
+      all: true,
+      include: ['src/**/*.ts'],
+      exclude: [
+        'node_modules/', 'dist/', 'lib/', 'es/', 'cjs/', 'types/', '**/*.d.ts', '**/test-setup.ts', '**/__tests__/**', '**/coverage/**', '**/docs/**', '**/examples/**'
+      ]
+    },
     include: [
       '**/__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
       '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',

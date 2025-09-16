@@ -434,6 +434,6 @@ cache.emit('custom-event', { message: 'Hello' })
 
 ## 🔗 相关文档
 
-- [配置选项](../guide/configuration.md) - 详细配置说明
+- [配置选项](../guide/getting-started.md#%E9%85%8D%E7%BD%AE%E7%BC%93%E5%AD%98%E7%AE%A1%E7%90%86%E5%99%A8) - 详细配置说明
 - [存储引擎](../guide/storage-engines.md) - 引擎详细介绍
 - [Vue 集成](./vue-integration.md) - Vue 集成 API
