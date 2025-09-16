@@ -36,8 +36,8 @@
     "build:prod": "vite build --config vite.config.prod.ts",
     "build:lib": "vite build --mode production",
     "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
     "test:unit": "vitest run --reporter=verbose",
     "test:integration": "vitest run src/__tests__/integration.test.ts",
     "test:performance": "vitest run src/__tests__/performance.test.ts",
@@ -57,8 +57,8 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "clean": "rimraf es cjs dist coverage reports",
-    "prepare": "npm run clean && npm run build",
-    "prepublishOnly": "npm run clean && npm run build && npm run test && npm run bundle:analyze"
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui"
   },
   "keywords": [
     "flowchart",
