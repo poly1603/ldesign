@@ -59,8 +59,8 @@
     "dev": "pnpm run build:watch",
     "build": "ldesign-builder build",
     "build:watch": "ldesign-builder build --watch",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint src --ext .ts,.js --fix",
     "type-check": "tsc --noEmit",
@@ -70,7 +70,10 @@
     "example:dev": "cd examples/basic && pnpm dev",
     "example:build": "cd examples/basic && pnpm build",
     "clean": "rimraf lib es dist coverage",
-    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test"
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
+    "lint:fix": "eslint . --ext .ts,.tsx,.vue,.js,.jsx --fix"
   },
   "dependencies": {},
   "devDependencies": {
