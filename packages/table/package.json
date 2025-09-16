@@ -41,12 +41,15 @@
   "scripts": {
     "dev": "pnpm build --watch",
     "build": "ldesign-builder",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint src --ext .ts,.js --fix",
     "type-check": "tsc --noEmit",
-    "clean": "rimraf dist es coverage"
+    "clean": "rimraf dist es coverage",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
+    "lint:fix": "eslint . --ext .ts,.tsx,.vue,.js,.jsx --fix"
   },
   "keywords": [
     "table",
