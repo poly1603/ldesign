@@ -5,9 +5,12 @@ export default defineConfig({
   test: {
     // 测试环境
     environment: 'jsdom',
-    
+
     // 全局测试配置
     globals: true,
+
+    // 设置文件
+    setupFiles: ['./tests/setup.ts'],
     
     // 覆盖率配置
     coverage: {
@@ -78,7 +81,27 @@ export default defineConfig({
       '@/plugins': resolve(__dirname, 'src/plugins'),
       '@/themes': resolve(__dirname, 'src/themes'),
       '@/utils': resolve(__dirname, 'src/utils'),
-      '@/types': resolve(__dirname, 'src/types')
+      '@/types': resolve(__dirname, 'src/types'),
+      '@tests': resolve(__dirname, 'tests')
     }
+  },
+
+  // 定义全局变量
+  define: {
+    __TEST__: true,
+    __VERSION__: JSON.stringify(process.env.npm_package_version || '1.0.0')
+  },
+
+  // 优化配置
+  optimizeDeps: {
+    include: [
+      'dayjs',
+      'dayjs/plugin/utc',
+      'dayjs/plugin/timezone',
+      'dayjs/plugin/customParseFormat',
+      'dayjs/plugin/isoWeek',
+      'dayjs/plugin/weekOfYear',
+      'dayjs/plugin/advancedFormat'
+    ]
   }
 })

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDesign Calendar - 完整功能演示</title>
+    <link rel="stylesheet" href="./src/index.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .demo-header h1 {
+            color: #1890ff;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .demo-header p {
+            color: #666;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .features-guide {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .features-guide h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .features-list li {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #1890ff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .features-list strong {
+            color: #1890ff;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .control-group {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-group h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            margin: 0 5px 5px 0;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+
+        .btn.active {
+            background: #1890ff;
+            color: white;
+            border-color: #1890ff;
+        }
+
+        .btn.theme-blue { background: #1890ff; color: white; }
+        .btn.theme-dark { background: #2f3349; color: white; }
+        .btn.theme-green { background: #52c41a; color: white; }
+
+        .calendar-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            min-height: 600px;
+        }
+
+        .status-bar {
+            background: #f0f2f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .status-value {
+            color: #1890ff;
+            font-weight: 500;
+        }
+
+        .logs {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .logs h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+
+        .logs-container {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            background: #fafafa;
+            padding: 10px;
+        }
+
+        .log-item {
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #666;
+            font-family: monospace;
+        }
+
+        .highlight {
+            background: #fff2e8;
+            border: 1px solid #ffbb96;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .highlight strong {
+            color: #d4380d;
+        }
+
+        @media (max-width: 768px) {
+            .demo-container {
+                padding: 20px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>🚀 LDesign Calendar 完整功能演示</h1>
+            <p>体验所有新功能：右键菜单、弹窗、视图切换、农历信息、天干地支、宜忌等</p>
+        </div>
+
+        <div class="highlight">
+            <strong>🎯 使用提示：</strong>
+            右键点击日期可以新建日程、查看详情；右键点击事件可以编辑、删除、复制；双击日期查看详细信息；拖拽事件可以移动日期。
+        </div>
+
+        <div class="features-guide">
+            <h3>✨ 新功能特色</h3>
+            <ul class="features-list">
+                <li><strong>右键菜单：</strong>右键点击日期或事件，显示上下文菜单</li>
+                <li><strong>事件弹窗：</strong>完整的事件创建和编辑界面</li>
+                <li><strong>详情弹窗：</strong>查看日期的详细信息和农历数据</li>
+                <li><strong>台历视图：</strong>传统台历风格，显示农历、干支、宜忌</li>
+                <li><strong>多种视图：</strong>月视图、周视图、日视图、台历视图</li>
+                <li><strong>农历信息：</strong>显示农历日期、节气、传统节日</li>
+                <li><strong>天干地支：</strong>显示年月日的干支信息</li>
+                <li><strong>宜忌显示：</strong>基于传统黄历的每日宜忌</li>
+            </ul>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <h4>👁️ 视图切换</h4>
+                <button class="btn active" onclick="changeView('month')">月视图</button>
+                <button class="btn" onclick="changeView('week')">周视图</button>
+                <button class="btn" onclick="changeView('day')">日视图</button>
+                <button class="btn" onclick="changeView('desk')">台历视图</button>
+            </div>
+
+            <div class="control-group">
+                <h4>🎨 主题切换</h4>
+                <button class="btn" onclick="setTheme('default')">默认</button>
+                <button class="btn theme-blue" onclick="setTheme('blue')">蓝色</button>
+                <button class="btn theme-dark" onclick="setTheme('dark')">深色</button>
+                <button class="btn theme-green" onclick="setTheme('green')">绿色</button>
+            </div>
+
+            <div class="control-group">
+                <h4>⚙️ 功能开关</h4>
+                <button class="btn active" onclick="toggleLunar()">农历显示</button>
+                <button class="btn active" onclick="toggleHolidays()">节日显示</button>
+                <button class="btn" onclick="addSampleEvent()">添加示例事件</button>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="status-label">当前视图:</span>
+                <span class="status-value" id="currentView">月视图</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">当前日期:</span>
+                <span class="status-value" id="currentDate">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">事件数量:</span>
+                <span class="status-value" id="eventCount">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">农历显示:</span>
+                <span class="status-value" id="lunarStatus">开启</span>
+            </div>
+        </div>
+
+        <div id="calendar" class="calendar-container">
+            <!-- 日历将在这里渲染 -->
+        </div>
+
+        <div class="logs">
+            <h3>📝 操作日志</h3>
+            <div class="logs-container" id="logs">
+                <div class="log-item">日历初始化完成</div>
+                <div class="log-item">提示: 右键点击日期或事件试试看！</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Calendar } from './src/core/Calendar.js'
+        
+        let calendar
+        let showLunar = true
+        let showHolidays = true
+
+        // 添加日志
+        function addLog(message) {
+            const logs = document.getElementById('logs')
+            const logItem = document.createElement('div')
+            logItem.className = 'log-item'
+            logItem.textContent = `${new Date().toLocaleTimeString()} - ${message}`
+            logs.insertBefore(logItem, logs.firstChild)
+            
+            // 限制日志数量
+            while (logs.children.length > 20) {
+                logs.removeChild(logs.lastChild)
+            }
+        }
+
+        // 更新状态
+        function updateStatus() {
+            if (calendar) {
+                document.getElementById('currentDate').textContent = 
+                    calendar.getCurrentDate().format('YYYY年MM月DD日')
+                document.getElementById('eventCount').textContent = 
+                    calendar.getEvents().length
+                document.getElementById('currentView').textContent = 
+                    getViewName(calendar.getCurrentView())
+            }
+        }
+
+        // 获取视图名称
+        function getViewName(view) {
+            const viewMap = {
+                month: '月视图',
+                week: '周视图',
+                day: '日视图',
+                year: '年视图',
+                desk: '台历视图'
+            }
+            return viewMap[view] || view
+        }
+
+        // 切换视图
+        window.changeView = function(view) {
+            if (calendar) {
+                calendar.changeView(view)
+                addLog(`切换到${getViewName(view)}`)
+                updateStatus()
+                
+                // 更新按钮状态
+                document.querySelectorAll('.control-group:first-child .btn').forEach(btn => {
+                    btn.classList.remove('active')
+                })
+                event.target.classList.add('active')
+            }
+        }
+
+        // 设置主题
+        window.setTheme = function(theme) {
+            if (calendar) {
+                calendar.setTheme(theme)
+                addLog(`切换到${theme}主题`)
+            }
+        }
+
+        // 切换农历
+        window.toggleLunar = function() {
+            showLunar = !showLunar
+            if (calendar) {
+                calendar.updateConfig({ showLunar })
+                addLog(`${showLunar ? '显示' : '隐藏'}农历`)
+                document.getElementById('lunarStatus').textContent = showLunar ? '开启' : '关闭'
+                event.target.classList.toggle('active')
+            }
+        }
+
+        // 切换节日
+        window.toggleHolidays = function() {
+            showHolidays = !showHolidays
+            if (calendar) {
+                calendar.updateConfig({ showHolidays })
+                addLog(`${showHolidays ? '显示' : '隐藏'}节日`)
+                event.target.classList.toggle('active')
+            }
+        }
+
+        // 添加示例事件
+        window.addSampleEvent = function() {
+            if (calendar) {
+                const events = [
+                    {
+                        title: '团队会议',
+                        start: new Date(),
+                        end: new Date(Date.now() + 2 * 60 * 60 * 1000),
+                        color: '#1890ff',
+                        description: '讨论项目进展'
+                    },
+                    {
+                        title: '产品发布',
+                        start: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                        color: '#52c41a',
+                        description: '新版本发布'
+                    }
+                ]
+                
+                const event = events[Math.floor(Math.random() * events.length)]
+                calendar.addEvent(event)
+                addLog(`添加事件: ${event.title}`)
+                updateStatus()
+            }
+        }
+
+        // 初始化日历
+        function initCalendar() {
+            calendar = new Calendar('#calendar', {
+                locale: 'zh-CN',
+                theme: 'default',
+                showLunar: true,
+                showHolidays: true,
+                view: 'month',
+                enableDragDrop: true,
+                enableResize: true,
+                enableKeyboard: true,
+                enableTouch: true
+            })
+
+            // 监听事件
+            calendar.on('dateSelect', (date) => {
+                addLog(`选择日期: ${date.toLocaleDateString()}`)
+                updateStatus()
+            })
+
+            calendar.on('eventCreate', (event) => {
+                addLog(`创建事件: ${event.title}`)
+                updateStatus()
+            })
+
+            calendar.on('eventUpdate', (event) => {
+                addLog(`更新事件: ${event.title}`)
+                updateStatus()
+            })
+
+            calendar.on('eventDelete', (event) => {
+                addLog(`删除事件: ${event.title}`)
+                updateStatus()
+            })
+
+            calendar.on('viewChange', (view) => {
+                addLog(`视图切换: ${getViewName(view)}`)
+                updateStatus()
+            })
+
+            // 初始化状态
+            updateStatus()
+            addLog('所有功能已加载完成！')
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initCalendar)
+    </script>
+</body>
+</html>

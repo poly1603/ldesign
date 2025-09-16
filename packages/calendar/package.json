@@ -47,7 +47,9 @@
     "README.md",
     "dist",
     "es",
-    "cjs"
+    "cjs",
+    "src",
+    "examples"
   ],
   "scripts": {
     "build": "ldesign-builder build -f esm,cjs",
@@ -57,7 +59,7 @@
     "type-check:test": "tsc --noEmit --project tsconfig.test.json",
     "lint": "eslint . --fix --cache",
     "lint:check": "eslint . --cache",
-    "test": "vitest run",
+    "test": "vitest",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
@@ -71,7 +73,14 @@
     "docs:preview": "vitepress preview docs",
     "docs:serve": "vitepress serve docs --port 4175",
     "ci": "pnpm run lint:check && pnpm run type-check && pnpm run test",
-    "ci:coverage": "pnpm run lint:check && pnpm run type-check && pnpm run test:coverage"
+    "ci:coverage": "pnpm run lint:check && pnpm run type-check && pnpm run test:coverage",
+    "test:run": "vitest run",
+    "lint:fix": "eslint . --ext .ts,.tsx,.vue,.js,.jsx --fix",
+    "example:basic": "cd examples && python -m http.server 8080",
+    "release": "standard-version",
+    "release:major": "standard-version --release-as major",
+    "release:minor": "standard-version --release-as minor",
+    "release:patch": "standard-version --release-as patch"
   },
   "dependencies": {
     "dayjs": "^1.11.10",

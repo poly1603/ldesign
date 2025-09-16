@@ -25,6 +25,9 @@
 
     // 模块解析
     "baseUrl": ".",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "downlevelIteration": true,
     "paths": {
       "@/*": ["src/*"],
       "@/core/*": ["src/core/*"],
