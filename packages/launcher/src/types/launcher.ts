@@ -166,6 +166,9 @@ export interface LauncherOptions {
   /** 是否启用自动重启 */
   autoRestart?: boolean
 
+  /** 环境名称 */
+  environment?: string
+
   /** 事件监听器 */
   listeners?: Partial<{
     [K in LauncherEvent]: EventListener<LauncherEventData[K]>

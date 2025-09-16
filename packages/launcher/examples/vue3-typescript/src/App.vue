@@ -1,8 +1,8 @@
 <template>
   <div class="app">
     <header class="app-header">
-      <h1>LDesign Launcher</h1>
-      <p>Vue 3 + TypeScript 示例项目</p>
+      <h1>{{ appConfig.appName || 'LDesign Launcher' }}</h1>
+      <p>Vue 3 + TypeScript 示例项目 v{{ appConfig.version || '1.0.0' }}</p>
       
       <div class="card">
         <button @click="count++">
@@ -25,15 +25,35 @@
       </div>
       
       <Counter />
+      
+      <div class="app-config" :style="configStyle">
+        <h3>📄 应用配置 (import.meta.env.appConfig)</h3>
+        <pre>{{ JSON.stringify(appConfig, null, 2) }}</pre>
+        <p>修改 .ldesign/app.config.ts 后保存，配置会自动热更新</p>
+      </div>
     </header>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import Counter from './components/Counter.vue'
 
 const count = ref(0)
+
+// 获取应用配置
+const appConfig = (import.meta.env.appConfig as any) || {}
+
+// 动态样式
+const configStyle = computed(() => ({
+  marginTop: '2rem',
+  padding: '1rem',
+  backgroundColor: appConfig.theme?.primaryColor ? `${appConfig.theme.primaryColor}22` : '#42b88322',
+  borderRadius: '8px',
+  border: `1px solid ${appConfig.theme?.primaryColor || '#42b883'}`,
+  textAlign: 'left' as const,
+  fontSize: '0.9rem'
+}))
 </script>
 
 <style scoped>
@@ -132,5 +152,30 @@ code {
   padding: 0.2rem 0.4rem;
   border-radius: 0.25rem;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.app-config {
+  margin-top: 2rem;
+  color: white;
+}
+
+.app-config h3 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.app-config pre {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.app-config p {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  opacity: 0.8;
 }
 </style>

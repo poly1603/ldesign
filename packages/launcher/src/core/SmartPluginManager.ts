@@ -252,7 +252,10 @@ export class SmartPluginManager {
           break
       }
 
-      this.logger.success('智能插件加载完成', { count: plugins.length })
+      if (plugins.length > 0) {
+        const pluginNames = plugins.map(p => p.name || 'unknown').join(', ')
+        this.logger.success(`智能插件加载完成: ${pluginNames}`)
+      }
       return plugins
 
     } catch (error) {

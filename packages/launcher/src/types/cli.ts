@@ -39,6 +39,9 @@ export interface CliOptions {
   /** 运行模式 */
   mode?: Mode
 
+  /** 环境名称 */
+  environment?: string
+
   /** 端口号 */
   port?: Port
 

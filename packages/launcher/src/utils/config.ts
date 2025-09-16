@@ -145,7 +145,7 @@ export function mergeConfigs(base: ViteLauncherConfig, override: ViteLauncherCon
       if (moduleId && (require as any).cache?.[moduleId]) {
         delete (require as any).cache[moduleId]
       }
-    } catch {}
+    } catch { }
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const kitMod: any = require('@ldesign/kit')
@@ -332,12 +332,112 @@ export function getConfigWatchOptions(_configPath: string) {
 }
 
 /**
+ * 创建路径解析器
+ *
+ * 提供内置的路径解析功能，用户无需手动定义r函数
+ *
+ * @param cwd - 工作目录，默认为process.cwd()
+ * @returns 路径解析函数
+ */
+export function createPathResolver(cwd?: string) {
+  const workingDir = cwd || process.cwd()
+
+  return (relativePath: string): string => {
+    return PathUtils.resolve(workingDir, relativePath)
+  }
+}
+
+/**
+ * 自动处理alias配置
+ *
+ * 为常见的@ldesign包提供默认的alias配置
+ *
+ * @param config - 用户配置
+ * @param cwd - 工作目录
+ * @returns 处理后的配置
+ */
+function processAliasConfig(config: ViteLauncherConfig, cwd?: string): ViteLauncherConfig {
+  const workingDir = cwd || process.cwd()
+  const r = createPathResolver(workingDir)
+
+  // 如果用户没有提供resolve.alias，则创建默认配置
+  if (!config.resolve) {
+    config.resolve = {}
+  }
+
+  if (!config.resolve.alias) {
+    config.resolve.alias = {}
+  }
+
+  // 默认的@ldesign包alias配置
+  const defaultAliases = {
+    // Vue集成包
+    '@ldesign/api/vue': r('../packages/api/src/vue'),
+    '@ldesign/crypto/vue': r('../packages/crypto/src/vue'),
+    '@ldesign/http/vue': r('../packages/http/src/vue'),
+    '@ldesign/size/vue': r('../packages/size/src/vue'),
+    '@ldesign/i18n/vue': r('../packages/i18n/src/vue'),
+    '@ldesign/router/vue': r('../packages/router/src/vue'),
+    '@ldesign/device/vue': r('../packages/device/src/vue'),
+    '@ldesign/color/vue': r('../packages/color/src/vue'),
+    '@ldesign/cache/vue': r('../packages/cache/src/vue'),
+    '@ldesign/engine/vue': r('../packages/engine/src/vue'),
+    '@ldesign/chart/vue': r('../packages/chart/src/vue'),
+    '@ldesign/store/vue': r('../packages/store/src/vue'),
+
+    // 主包
+    '@ldesign/api': r('../packages/api/src'),
+    '@ldesign/crypto': r('../packages/crypto/src'),
+    '@ldesign/http': r('../packages/http/src'),
+    '@ldesign/size': r('../packages/size/src'),
+    '@ldesign/i18n': r('../packages/i18n/src'),
+    '@ldesign/router': r('../packages/router/src'),
+    '@ldesign/device': r('../packages/device/src'),
+    '@ldesign/color': r('../packages/color/src'),
+    '@ldesign/cache': r('../packages/cache/src'),
+    '@ldesign/engine': r('../packages/engine/src'),
+    '@ldesign/chart': r('../packages/chart/src'),
+    '@ldesign/store': r('../packages/store/src'),
+
+    // 项目内部别名
+    '@': r('./src')
+  }
+
+  // 合并默认alias和用户自定义alias，用户配置优先
+  const existingAlias = config.resolve.alias
+  const aliasArray = Array.isArray(existingAlias) ? existingAlias : []
+  const aliasObject = Array.isArray(existingAlias) ? {} : (existingAlias || {})
+
+  // 只添加用户没有配置的默认alias
+  for (const [key, value] of Object.entries(defaultAliases)) {
+    if (!(key in aliasObject) && !aliasArray.some(alias => (alias as any).find === key)) {
+      (aliasObject as any)[key] = value
+    }
+  }
+
+  // 如果原来是数组格式，保持数组格式
+  if (Array.isArray(existingAlias)) {
+    config.resolve.alias = [
+      ...aliasArray,
+      ...Object.entries(aliasObject).map(([find, replacement]) => ({ find, replacement }))
+    ]
+  } else {
+    config.resolve.alias = aliasObject
+  }
+
+  return config
+}
+
+/**
  * 定义配置的辅助函数
- * 提供类型安全和智能提示
+ * 提供类型安全和智能提示，自动处理alias路径解析
  *
  * @param config - 配置对象
  * @returns 配置对象
  */
 export function defineConfig(config: ViteLauncherConfig): ViteLauncherConfig {
-  return config
+  // 自动处理alias配置
+  const processedConfig = processAliasConfig(config)
+
+  return processedConfig
 }

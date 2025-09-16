@@ -23,6 +23,9 @@ import { FileSystem } from '../utils/file-system'
 import { PathUtils } from '../utils/path-utils'
 import { ConfigManager } from './ConfigManager'
 import { SmartPluginManager } from './SmartPluginManager'
+import { createConfigInjectionPlugin, getClientConfigUtils } from '../plugins/config-injection'
+import { environmentManager } from '../utils/env'
+import { createSSLManager, type SSLConfig } from '../utils/ssl'
 
 // 导入类型定义
 import type {
@@ -106,6 +109,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
   /** 工作目录 */
   private cwd: string
 
+  /** 环境名称 */
+  private environment?: string
+
   /** 智能插件管理器 */
   private smartPluginManager: SmartPluginManager
 
@@ -119,6 +125,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
 
     // 设置工作目录
     this.cwd = options.cwd || process.cwd()
+
+    // 设置环境名称
+    this.environment = options.environment
 
     // 初始化配置
     this.config = this.mergeConfig(DEFAULT_VITE_LAUNCHER_CONFIG, options.config || {})
@@ -148,11 +157,26 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       timestamp: isDebug,
       compact: !isDebug
     })
+    // 确定配置文件路径
+    const configFile = this.config.launcher?.configFile ||
+      PathUtils.resolve(this.cwd, '.ldesign', `launcher.${this.environment}.config.ts`)
+
     this.configManager = new ConfigManager({
-      configFile: this.config.launcher?.configFile,
+      configFile,
       watch: this.config.launcher?.autoRestart || false,
-      logger: configLogger
+      logger: configLogger,
+      onConfigChange: (newConfig) => {
+        // 延迟重启，确保配置文件写入完成
+        setTimeout(() => {
+          this.restartDevWithConfig(newConfig).catch(error => {
+            this.logger.error('自动重启失败', error)
+          })
+        }, 200)
+      }
     })
+
+    // 调试：确认配置监听器状态
+    this.logger.debug('🔧 ConfigManager 初始化完成')
 
     // 初始化智能插件管理器
     const smartLogger = new Logger('SmartPluginManager', {
@@ -181,7 +205,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
         // 其他未知来源错误：仅记录，避免递归
         const real = err instanceof Error ? err : new Error(String(err))
         this.logger.error('运行时错误', { error: real.message, stack: real.stack })
-      } catch {}
+      } catch { }
     })
 
     // 设置错误处理
@@ -235,22 +259,45 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       // 添加智能检测的插件
       mergedConfig = await this.enhanceConfigWithSmartPlugins(mergedConfig)
 
+      // 处理HTTPS配置
+      mergedConfig = await this.processHTTPSConfig(mergedConfig)
+
       // 执行启动前钩子
       await this.executeHook('beforeStart')
 
-      this.logger.info('正在启动开发服务器...', {
-        host: mergedConfig.server?.host || DEFAULT_HOST,
-        port: mergedConfig.server?.port || DEFAULT_PORT
+      this.logger.info('正在启动开发服务器...')
+
+      // 动态导入 Vite（优先从项目 cwd 解析）
+      const { importViteFromCwd } = await import('../utils/vite-resolver')
+      const viteMod = await importViteFromCwd(this.cwd)
+      const { createServer } = viteMod
+
+      // 注入 app.config 插件
+      const { createAppConfigPlugin } = await import('../plugins/app-config')
+      const appCfgPlugin = createAppConfigPlugin({ cwd: this.cwd })
+
+      // 注入配置信息插件
+      const currentEnvironment = process.env.NODE_ENV || 'development'
+
+      const configInjectionPlugin = createConfigInjectionPlugin({
+        config: mergedConfig,
+        environment: currentEnvironment,
+        verbose: mergedConfig.launcher?.debug || false
       })
 
-      // 动态导入 Vite
-      const { createServer } = await import('vite')
+      mergedConfig.plugins = [appCfgPlugin, configInjectionPlugin, ...(mergedConfig.plugins || [])]
 
       // 创建开发服务器
       this.devServer = await createServer(mergedConfig)
 
       // 启动服务器
-      await this.devServer.listen()
+      await this.devServer!.listen()
+
+      // 在服务端打印 appConfig 载入信息（调试）
+      try {
+        await import('../plugins/app-config')
+        this.logger.debug('app-config 插件已注入')
+      } catch { }
 
       // 更新统计信息
       this.updateStats('start')
@@ -264,16 +311,16 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       // 触发服务器就绪事件
       this.emit(LauncherEvent.SERVER_READY, {
         server: this.devServer,
-        url: this.getServerUrl(this.devServer),
+        url: this.devServer ? this.getServerUrl(this.devServer) : '',
         timestamp: Date.now()
       } as LauncherEventData[LauncherEvent.SERVER_READY])
 
-      this.logger.success('开发服务器启动成功', {
-        url: this.getServerUrl(this.devServer),
-        duration: Date.now() - this.startTime
-      })
+      // 简化启动成功日志，避免重复输出
+      if (!process.env.LAUNCHER_RESTART_MODE) {
+        this.logger.success('开发服务器启动成功')
+      }
 
-      return this.devServer
+      return this.devServer as ViteDevServer
 
     } catch (error) {
       this.handleError(error as Error, '开发服务器启动失败')
@@ -341,6 +388,39 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
   }
 
   /**
+   * 使用新配置重启开发服务器
+   */
+  async restartDevWithConfig(newConfig: ViteLauncherConfig): Promise<void> {
+    try {
+      // 完全使用新配置，而不是合并
+      this.config = newConfig
+
+      // 停止服务器
+      await this.stopDev()
+
+      // 设置重启模式标识，避免重复输出启动日志
+      process.env.LAUNCHER_RESTART_MODE = 'true'
+
+      try {
+        // 使用新配置重新启动
+        await this.startDev(newConfig)
+
+        // 输出简化的重启成功信息
+        this.printSimpleServerInfo()
+      } finally {
+        // 清除重启模式标识
+        delete process.env.LAUNCHER_RESTART_MODE
+      }
+
+    } catch (error) {
+      // 确保清除重启模式标识
+      delete process.env.LAUNCHER_RESTART_MODE
+      this.handleError(error as Error, '配置重启失败')
+      throw error
+    }
+  }
+
+  /**
    * 执行生产构建
    * 
    * @param config - 可选的配置覆盖
@@ -368,7 +448,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
         const names = (mergedConfig.plugins || [])
           .map((p: any) => (p && typeof p === 'object' && 'name' in p) ? (p as any).name : String(p))
         this.logger.info('已加载插件', { count: names.length, plugins: names })
-      } catch {}
+      } catch { }
 
       this.logger.info('正在执行生产构建...')
 
@@ -378,14 +458,30 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
         timestamp: Date.now()
       } as LauncherEventData[LauncherEvent.BUILD_START])
 
-      // 动态导入 Vite
-      const { build } = await import('vite')
+      // 动态导入 Vite（优先从项目 cwd 解析）
+      const { importViteFromCwd } = await import('../utils/vite-resolver')
+      const viteMod = await importViteFromCwd(this.cwd)
+      const { build } = viteMod
+
+      // 注入 app.config 插件
+      const { createAppConfigPlugin } = await import('../plugins/app-config')
+      const appCfgPlugin = createAppConfigPlugin({ cwd: this.cwd })
+      mergedConfig.plugins = [appCfgPlugin, ...(mergedConfig.plugins || [])]
 
       // 执行构建
       const result = await build(mergedConfig) as RollupOutput
 
       // 更新统计信息
       this.updateStats('build', Date.now() - buildStartTime)
+
+      // 输出 appConfig 大小（调试）
+      try {
+        const { DEFAULT_APP_CONFIG_FILES } = await import('../constants')
+        const possible = DEFAULT_APP_CONFIG_FILES.map(p => PathUtils.resolve(this.cwd, p))
+        const exist = await Promise.all(possible.map(p => FileSystem.exists(p)))
+        const found = possible.find((p, i) => exist[i])
+        if (found) this.logger.debug('使用的 app.config', { path: found })
+      } catch { }
 
       // 设置状态
       this.setStatus(LauncherStatus.IDLE)
@@ -400,10 +496,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
         timestamp: Date.now()
       } as LauncherEventData[LauncherEvent.BUILD_END])
 
-      this.logger.success('生产构建完成', {
-        duration: Date.now() - buildStartTime,
-        count: Array.isArray(result.output) ? result.output.length : 0
-      })
+      this.logger.success('生产构建完成')
 
       return result
 
@@ -459,18 +552,25 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       this.setStatus(LauncherStatus.PREVIEWING)
 
       // 合并配置
-      const mergedConfig = config ? this.mergeConfig(this.config, config) : this.config
+      let mergedConfig = config ? this.mergeConfig(this.config, config) : this.config
+
+      // 处理HTTPS配置
+      mergedConfig = await this.processHTTPSConfig(mergedConfig)
 
       // 执行预览前钩子
       await this.executeHook('beforePreview')
 
-      this.logger.info('正在启动预览服务器...', {
-        host: mergedConfig.preview?.host || DEFAULT_HOST,
-        port: mergedConfig.preview?.port || 4173
-      })
+      this.logger.info('正在启动预览服务器...')
 
-      // 动态导入 Vite
-      const { preview } = await import('vite')
+      // 动态导入 Vite（优先从项目 cwd 解析）
+      const { importViteFromCwd } = await import('../utils/vite-resolver')
+      const viteMod = await importViteFromCwd(this.cwd)
+      const { preview } = viteMod
+
+      // 注入 app.config 插件
+      const { createAppConfigPlugin } = await import('../plugins/app-config')
+      const appCfgPlugin = createAppConfigPlugin({ cwd: this.cwd })
+      mergedConfig.plugins = [appCfgPlugin, ...(mergedConfig.plugins || [])]
 
       // 创建预览服务器
       this.previewServer = await preview(mergedConfig)
@@ -478,11 +578,12 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       // 执行预览后钩子
       await this.executeHook('afterPreview')
 
-      this.logger.success('预览服务器启动成功', {
-        url: this.getPreviewServerUrl(this.previewServer)
-      })
+      // 调试输出 app-config 注入
+      this.logger.debug('app-config 插件在 preview 中已注入')
 
-      return this.previewServer
+      this.logger.success('预览服务器启动成功')
+
+      return this.previewServer as PreviewServer
 
     } catch (error) {
       this.handleError(error as Error, '预览服务器启动失败')
@@ -602,7 +703,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
           this.logger.warn('配置警告', { warnings: validation.warnings })
         }
 
-        this.logger.success('配置文件加载成功', { path: configPath })
+        this.logger.success('配置文件加载成功')
 
         return this.config
       } else {
@@ -778,18 +879,31 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       return null
     }
 
+    // 正确处理 host 配置
+    const getResolvedHost = (hostConfig: any): string => {
+      if (typeof hostConfig === 'string') {
+        return hostConfig
+      } else if (hostConfig === true) {
+        return '0.0.0.0'
+      } else {
+        return DEFAULT_HOST
+      }
+    }
+
+    const resolvedHost = getResolvedHost(this.config.server?.host)
+
     return {
       type: ServerType.DEV,
       status: this.status as any, // 临时类型转换
       instance: this.devServer,
       config: {
         type: ServerType.DEV,
-        host: typeof this.config.server?.host === 'string' ? this.config.server.host : DEFAULT_HOST,
+        host: resolvedHost,
         port: this.config.server?.port || DEFAULT_PORT,
         https: typeof this.config.server?.https === 'boolean' ? this.config.server.https : false
       },
       url: this.getServerUrl(this.devServer),
-      host: typeof this.config.server?.host === 'string' ? this.config.server.host : DEFAULT_HOST,
+      host: resolvedHost,
       port: this.config.server?.port || DEFAULT_PORT,
       https: typeof this.config.server?.https === 'boolean' ? this.config.server.https : false,
       startTime: this.startTime
@@ -853,10 +967,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     this.setStatus(LauncherStatus.ERROR)
 
     // 记录错误日志
-    this.logger.error(context, {
-      error: error.message,
-      stack: error.stack
-    })
+    this.logger.error(context + ': ' + error.message)
 
     // 使用错误处理器处理
     this.errorHandler.handle(error, { operation: context })
@@ -943,27 +1054,26 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
    * @returns 加载的配置
    */
   private async autoLoadConfig(): Promise<ViteLauncherConfig> {
-    const { DEFAULT_CONFIG_FILES } = await import('../constants')
+    try {
+      // 使用 ConfigManager 的多环境配置加载功能
+      const loadedConfig = await this.configManager.load({
+        cwd: this.cwd,
+        environment: this.environment
+      })
 
-    for (const configFile of DEFAULT_CONFIG_FILES) {
-      const configPath = PathUtils.resolve(this.cwd, configFile)
+      // 合并到当前配置
+      this.config = this.mergeConfig(this.config, loadedConfig)
 
-      if (await FileSystem.exists(configPath)) {
-        this.logger.info('找到配置文件', { path: configPath })
+      this.logger.success('配置文件加载成功')
 
-        // 直接加载配置文件，避免递归调用
-        const loadedConfig = await this.configManager.loadConfig(configPath)
-
-        // 合并到当前配置
-        this.config = this.mergeConfig(this.config, loadedConfig)
-
-        this.logger.success('配置文件加载成功', { path: configPath })
-        return this.config
-      }
+      return this.config
+    } catch (error) {
+      this.logger.warn('配置文件加载失败，使用默认配置', {
+        error: (error as Error).message,
+        environment: this.environment
+      })
+      return this.config
     }
-
-    this.logger.info('未找到配置文件，使用默认配置')
-    return this.config
   }
 
   /**
@@ -1106,6 +1216,240 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     } catch (error) {
       this.logger.warn('智能插件增强失败', { error: (error as Error).message })
       return config
+    }
+  }
+
+  /**
+   * 处理HTTPS配置
+   *
+   * @param config - 原始配置
+   * @returns 处理后的配置
+   */
+  private async processHTTPSConfig(config: ViteLauncherConfig): Promise<ViteLauncherConfig> {
+    try {
+      // 检查是否启用了HTTPS
+      if (!config.server?.https) {
+        return config
+      }
+
+      // 如果是boolean值true，则自动生成SSL证书
+      if (typeof config.server.https === 'boolean' && config.server.https === true) {
+        this.logger.debug('检测到HTTPS配置，正在检查SSL证书...')
+
+        // 获取证书存储目录
+        const { LDESIGN_DIR } = await import('../constants')
+        const certDir = PathUtils.resolve(this.cwd, LDESIGN_DIR, 'ssl')
+
+        // 创建SSL管理器
+        const sslManager = createSSLManager(certDir, this.logger)
+
+        try {
+          // 生成或获取SSL证书
+          const sslConfig = await sslManager.getOrCreateSSLConfig({
+            domains: ['localhost', '127.0.0.1', '::1'],
+            days: 365,
+            force: false
+          })
+
+          this.logger.debug('SSL证书准备完成')
+
+          // 更新配置
+          return {
+            ...config,
+            server: {
+              ...config.server,
+              https: {
+                key: await FileSystem.readFile(sslConfig.key),
+                cert: await FileSystem.readFile(sslConfig.cert)
+              }
+            }
+          }
+        } catch (sslError) {
+          this.logger.warn('SSL证书生成失败，回退到Vite内置HTTPS支持', {
+            error: (sslError as Error).message
+          })
+
+          // 回退到Vite内置的HTTPS支持
+          return {
+            ...config,
+            server: {
+              ...config.server,
+              https: true as any
+            }
+          }
+        }
+      }
+
+      // 如果是对象配置，直接使用
+      return config
+
+    } catch (error) {
+      this.logger.error('HTTPS配置处理失败', { error: (error as Error).message })
+      this.logger.warn('将回退到HTTP模式')
+
+      // 回退到HTTP
+      const { https, ...serverConfig } = config.server || {}
+      return {
+        ...config,
+        server: serverConfig
+      }
+    }
+  }
+
+  /**
+   * 输出简化的服务器信息（仅地址和二维码）
+   */
+  private printSimpleServerInfo(): void {
+    const serverInfo = this.getServerInfo()
+    if (!serverInfo) return
+
+    const localUrl = serverInfo.url || ''
+
+    // 获取本地IP地址
+    const localIP = this.getLocalIP()
+
+    // 构建网络 URL - 总是显示网络地址
+    let networkUrl: string | null = null
+    try {
+      const url = new URL(localUrl)
+      // 如果本地URL使用localhost，替换为实际IP
+      if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+        networkUrl = `${url.protocol}//${localIP}:${url.port}${url.pathname}`
+      } else if (url.hostname === '0.0.0.0') {
+        networkUrl = localUrl.replace('0.0.0.0', localIP)
+      } else {
+        // 如果已经是IP地址，直接使用
+        networkUrl = localUrl
+      }
+    } catch {
+      const protocol = serverInfo.https ? 'https' : 'http'
+      networkUrl = `${protocol}://${localIP}:${serverInfo.port}/`
+    }
+
+    // 输出简化的服务器信息
+    console.log('\n' + '🚀 服务器已重启')
+    console.log('📍 本地地址: ' + localUrl)
+    if (networkUrl) {
+      console.log('🌐 网络地址: ' + networkUrl)
+    }
+
+    // 生成二维码 - 优先使用网络地址
+    const qrTarget = networkUrl || localUrl
+    this.generateQRCode(qrTarget)
+  }
+
+  /**
+   * 生成二维码（带白色边框美化）
+   */
+  private async generateQRCode(url: string): Promise<void> {
+    if (!url) return
+
+    try {
+      // 优先使用 qrcode 库
+      try {
+        const qrlib: any = await import('qrcode')
+        const utf8 = await (qrlib?.default || qrlib).toString(url, {
+          type: 'utf8',
+          margin: 2,
+          width: 60
+        })
+        if (utf8 && typeof utf8 === 'string') {
+          this.printQRCodeWithBorder(utf8)
+          return
+        }
+      } catch (e1) {
+        // 静默处理，尝试下一个方法
+      }
+
+      // 回退到 qrcode-terminal
+      try {
+        const mod: any = await import('qrcode-terminal')
+        const qrt = mod?.default || mod
+        let qrOutput = ''
+        qrt.generate(url, { small: true }, (q: string) => {
+          qrOutput = q
+        })
+        if (qrOutput) {
+          this.printQRCodeWithBorder(qrOutput)
+        }
+      } catch (e2) {
+        // 静默处理
+      }
+    } catch (error) {
+      // 静默处理二维码生成失败
+    }
+  }
+
+  /**
+   * 打印带白色边框的二维码
+   */
+  private printQRCodeWithBorder(qrCode: string): void {
+    const lines = qrCode.split('\n').filter(line => line.trim())
+    if (lines.length === 0) return
+
+    const maxWidth = Math.max(...lines.map(line => line.length))
+    const borderWidth = maxWidth + 4
+
+    console.log('\n📱 扫码访问:')
+    console.log()
+
+    // 上边框
+    console.log('    ' + '█'.repeat(borderWidth))
+    console.log('    ' + '█' + ' '.repeat(borderWidth - 2) + '█')
+
+    // 二维码内容
+    lines.forEach(line => {
+      const padding = ' '.repeat(Math.max(0, maxWidth - line.length))
+      console.log('    ' + '█ ' + line + padding + ' █')
+    })
+
+    // 下边框
+    console.log('    ' + '█' + ' '.repeat(borderWidth - 2) + '█')
+    console.log('    ' + '█'.repeat(borderWidth))
+    console.log()
+  }
+
+  /**
+   * 获取本地 IP 地址
+   */
+  private getLocalIP(): string {
+    try {
+      const { networkInterfaces } = require('node:os')
+      const interfaces = networkInterfaces()
+      const candidates: string[] = []
+
+      // 收集所有可用的 IPv4 地址
+      for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name] || []) {
+          if ((iface as any).family === 'IPv4' && !(iface as any).internal) {
+            candidates.push((iface as any).address as string)
+          }
+        }
+      }
+
+      if (candidates.length === 0) {
+        return 'localhost'
+      }
+
+      // 优先选择常见的局域网地址段
+      const preferredRanges = [
+        /^192\.168\./,  // 192.168.x.x
+        /^10\./,        // 10.x.x.x
+        /^172\.(1[6-9]|2[0-9]|3[0-1])\./  // 172.16.x.x - 172.31.x.x
+      ]
+
+      // 按优先级查找
+      for (const range of preferredRanges) {
+        const preferred = candidates.find(ip => range.test(ip))
+        if (preferred) {
+          return preferred
+        }
+      }
+
+      // 如果没有找到常见局域网地址，返回第一个可用地址
+      return candidates[0]
+    } catch (error) {
+      return 'localhost'
     }
   }
 }

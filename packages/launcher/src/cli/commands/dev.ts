@@ -75,6 +75,12 @@ export class DevCommand implements CliCommandDefinition {
       description: '启动时清屏',
       type: 'boolean' as const,
       default: true
+    },
+    {
+      name: 'environment',
+      alias: 'e',
+      description: '指定环境名称（development, production, test, staging, preview）',
+      type: 'string' as const
     }
   ]
 
@@ -102,12 +108,20 @@ export class DevCommand implements CliCommandDefinition {
     {
       description: '强制重新构建依赖',
       command: 'launcher dev --force'
+    },
+    {
+      description: '使用开发环境配置',
+      command: 'launcher dev --environment development'
+    },
+    {
+      description: '使用生产环境配置',
+      command: 'launcher dev --environment production'
     }
   ]
 
   /**
    * 验证命令参数
-   * 
+   *
    * @param context - CLI 上下文
    * @returns 验证结果
    */
@@ -127,12 +141,20 @@ export class DevCommand implements CliCommandDefinition {
       return '主机地址必须是字符串'
     }
 
+    // 验证环境名称
+    if (options.environment) {
+      const validEnvironments = ['development', 'production', 'test', 'staging', 'preview']
+      if (!validEnvironments.includes(options.environment)) {
+        return `环境名称必须是以下之一: ${validEnvironments.join(', ')}`
+      }
+    }
+
     return true
   }
 
   /**
    * 执行命令
-   * 
+   *
    * @param context - CLI 上下文
    */
   async handler(context: CliContext): Promise<void> {
@@ -145,35 +167,62 @@ export class DevCommand implements CliCommandDefinition {
     try {
       logger.info('正在启动开发服务器...')
 
-      // 创建 ViteLauncher 实例
+      // 先创建基础的 ViteLauncher 实例，只传入必要的配置
       const launcher = new ViteLauncher({
         cwd: context.cwd,
         config: {
-          configFile: context.configFile,
-          mode: context.options.mode || 'development',
-          clearScreen: context.options.clearScreen,
-          server: {
-            host: context.options.host || DEFAULT_HOST,
-            port: context.options.port || DEFAULT_PORT,
-            open: context.options.open || false,
-            cors: context.options.cors !== false,
-            strictPort: context.options.strictPort || false,
-            ...(context.options.https && { https: true })
-          } as any,
-          optimizeDeps: {
-            force: context.options.force || false
-          },
           launcher: {
+            configFile: context.configFile,
             logLevel: context.options.debug ? 'debug' : 'info',
             mode: context.options.mode || 'development',
             debug: context.options.debug || false
           }
-        }
+        },
+        environment: context.options.mode || context.options.environment || 'development' // 使用 mode 作为环境参数
       })
+
+      // 构建命令行参数覆盖配置
+      const cliOverrides: any = {
+        mode: context.options.mode || 'development',
+        clearScreen: context.options.clearScreen
+      }
+
+      // 只有当命令行明确指定了参数时才覆盖配置文件中的值
+      if (context.options.host !== undefined) {
+        cliOverrides.server = cliOverrides.server || {}
+        cliOverrides.server.host = context.options.host
+      }
+      if (context.options.port !== undefined) {
+        cliOverrides.server = cliOverrides.server || {}
+        cliOverrides.server.port = context.options.port
+      }
+      if (context.options.open !== undefined) {
+        cliOverrides.server = cliOverrides.server || {}
+        cliOverrides.server.open = context.options.open
+      }
+      if (context.options.cors !== undefined) {
+        cliOverrides.server = cliOverrides.server || {}
+        cliOverrides.server.cors = context.options.cors
+      }
+      if (context.options.strictPort !== undefined) {
+        cliOverrides.server = cliOverrides.server || {}
+        cliOverrides.server.strictPort = context.options.strictPort
+      }
+      if (context.options.https !== undefined) {
+        cliOverrides.server = cliOverrides.server || {}
+        cliOverrides.server.https = context.options.https
+      }
+      if (context.options.force !== undefined) {
+        cliOverrides.optimizeDeps = cliOverrides.optimizeDeps || {}
+        cliOverrides.optimizeDeps.force = context.options.force
+      }
+
+      // 启动开发服务器，传入命令行覆盖配置
+      await launcher.startDev(cliOverrides)
 
       // 仅保留错误监听，避免递归日志
       launcher.onError((error) => {
-        logger.error('开发服务器错误', { error: error.message })
+        logger.error('开发服务器错误: ' + error.message)
       })
 
       function renderServerBanner(
@@ -214,7 +263,7 @@ export class DevCommand implements CliCommandDefinition {
       }
 
       launcher.onError((error) => {
-        logger.error('开发服务器错误', { error: error.message })
+        logger.error('开发服务器错误: ' + error.message)
       })
 
       // 处理进程退出
@@ -226,7 +275,7 @@ export class DevCommand implements CliCommandDefinition {
           logger.success('开发服务器已停止')
           process.exit(0)
         } catch (error) {
-          logger.error('停止开发服务器失败', { error: (error as Error).message })
+          logger.error('停止开发服务器失败: ' + (error as Error).message)
           process.exit(1)
         }
       })
@@ -238,20 +287,38 @@ export class DevCommand implements CliCommandDefinition {
           await launcher.destroy()
           process.exit(0)
         } catch (error) {
-          logger.error('停止开发服务器失败', { error: (error as Error).message })
+          logger.error('停止开发服务器失败: ' + (error as Error).message)
           process.exit(1)
         }
       })
 
-      // 启动开发服务器
-      await launcher.startDev()
+      // 开发服务器已在上面启动，这里不需要再次调用
 
       // 启动成功后，输出美化的地址信息与二维码
       const serverInfo = launcher.getServerInfo()
       if (serverInfo) {
         const localUrl = serverInfo.url || ''
-        const hasNetwork = serverInfo.host === '0.0.0.0' && !!serverInfo.url
-        const networkUrl = hasNetwork ? localUrl.replace('0.0.0.0', getLocalIP()) : null
+        const hasNetwork = serverInfo.host === '0.0.0.0'
+
+        // 构建网络 URL：如果 host 是 0.0.0.0，则替换为本地 IP
+        let networkUrl: string | null = null
+        if (hasNetwork) {
+          const localIP = getLocalIP()
+          // 如果 localUrl 包含 0.0.0.0，直接替换
+          if (localUrl.includes('0.0.0.0')) {
+            networkUrl = localUrl.replace('0.0.0.0', localIP)
+          } else {
+            // 否则，从 localUrl 中提取协议和端口，构建网络 URL
+            try {
+              const url = new URL(localUrl)
+              networkUrl = `${url.protocol}//${localIP}:${url.port}${url.pathname}`
+            } catch {
+              // 如果解析失败，手动构建
+              const protocol = serverInfo.https ? 'https' : 'http'
+              networkUrl = `${protocol}://${localIP}:${serverInfo.port}/`
+            }
+          }
+        }
 
         const title = '开发服务器已启动'
         const entries: Array<{ label: string; value: string }> = [
@@ -307,7 +374,7 @@ export class DevCommand implements CliCommandDefinition {
       await new Promise(() => { }) // 永远等待，直到收到退出信号
 
     } catch (error) {
-      logger.error('启动开发服务器失败', { error: (error as Error).message })
+      logger.error('启动开发服务器失败: ' + (error as Error).message)
 
       if (context.options.debug) {
         console.error((error as Error).stack)
@@ -337,19 +404,41 @@ export class DevCommand implements CliCommandDefinition {
 
 /**
  * 获取本地 IP 地址
- * 
+ *
  * @returns 本地 IP 地址
  */
 function getLocalIP(): string {
   const interfaces = networkInterfaces()
+  const candidates: string[] = []
 
+  // 收集所有可用的 IPv4 地址
   for (const name of Object.keys(interfaces)) {
     for (const iface of interfaces[name] || []) {
       if ((iface as any).family === 'IPv4' && !(iface as any).internal) {
-        return (iface as any).address as string
+        candidates.push((iface as any).address as string)
       }
     }
   }
 
-  return 'localhost'
+  if (candidates.length === 0) {
+    return 'localhost'
+  }
+
+  // 优先选择常见的局域网地址段
+  const preferredRanges = [
+    /^192\.168\./,  // 192.168.x.x
+    /^10\./,        // 10.x.x.x
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./  // 172.16.x.x - 172.31.x.x
+  ]
+
+  // 按优先级查找
+  for (const range of preferredRanges) {
+    const preferred = candidates.find(ip => range.test(ip))
+    if (preferred) {
+      return preferred
+    }
+  }
+
+  // 如果没有找到常见局域网地址，返回第一个可用地址
+  return candidates[0]
 }

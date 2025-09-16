@@ -77,7 +77,7 @@ export interface PluginInfo {
 /**
  * 插件类别
  */
-export type PluginCategory = 
+export type PluginCategory =
   | 'build'
   | 'dev'
   | 'framework'
@@ -91,7 +91,7 @@ export type PluginCategory =
 /**
  * 插件类型
  */
-export type PluginType = 
+export type PluginType =
   | 'vite-plugin'
   | 'launcher-plugin'
   | 'preset'
@@ -200,9 +200,9 @@ export class PluginMarketManager extends EventEmitter {
    * 判断是否为 Launcher 插件
    */
   private isLauncherPlugin(name: string): boolean {
-    return name.includes('launcher-plugin') || 
-           name.includes('vite-plugin') ||
-           name.startsWith('@ldesign/')
+    return name.includes('launcher-plugin') ||
+      name.includes('vite-plugin') ||
+      name.startsWith('@ldesign/')
   }
 
   /**
@@ -211,11 +211,11 @@ export class PluginMarketManager extends EventEmitter {
   async fetchPlugins(): Promise<void> {
     try {
       this.logger.info('正在获取插件列表...')
-      
+
       // 这里应该从实际的插件注册表获取数据
       // 为了演示，使用模拟数据
       const mockPlugins = this.getMockPlugins()
-      
+
       this.plugins.clear()
       mockPlugins.forEach(plugin => {
         this.plugins.set(plugin.name, plugin)
@@ -238,7 +238,7 @@ export class PluginMarketManager extends EventEmitter {
     // 关键词搜索
     if (options.query) {
       const query = options.query.toLowerCase()
-      results = results.filter(plugin => 
+      results = results.filter(plugin =>
         plugin.name.toLowerCase().includes(query) ||
         plugin.description.toLowerCase().includes(query) ||
         plugin.tags.some(tag => tag.toLowerCase().includes(query))
@@ -317,8 +317,8 @@ export class PluginMarketManager extends EventEmitter {
     try {
       // 从注册表获取
       // 这里应该实现实际的 API 调用
-      this.logger.info(`获取插件信息: ${name}`)
-      
+      this.logger.debug(`获取插件信息: ${name}`)
+
       // 模拟 API 调用
       const mockPlugin = this.getMockPlugins().find(p => p.name === name)
       if (mockPlugin) {
@@ -531,13 +531,13 @@ export class PluginMarketManager extends EventEmitter {
     const pm = options.packageManager || 'npm'
     const dev = options.dev ? (pm === 'npm' ? '--save-dev' : '-D') : ''
     const version = options.version ? `@${options.version}` : ''
-    
+
     const command = `${pm} install ${name}${version} ${dev}`.trim()
-    
+
     // 这里应该执行实际的安装命令
     // 为了演示，使用模拟延迟
     await new Promise(resolve => setTimeout(resolve, 2000))
-    
+
     this.logger.info(`执行安装命令: ${command}`)
   }
 
@@ -546,10 +546,10 @@ export class PluginMarketManager extends EventEmitter {
    */
   private async executeUninstall(name: string): Promise<void> {
     const command = `npm uninstall ${name}`
-    
+
     // 这里应该执行实际的卸载命令
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     this.logger.info(`执行卸载命令: ${command}`)
   }
 

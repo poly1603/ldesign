@@ -69,6 +69,12 @@ export class PreviewCommand implements CliCommandDefinition {
       description: '严格端口模式',
       type: 'boolean' as const,
       default: false
+    },
+    {
+      name: 'environment',
+      alias: 'e',
+      description: '指定环境名称（development, production, test, staging, preview）',
+      type: 'string' as const
     }
   ]
 

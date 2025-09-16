@@ -1,13 +1,15 @@
 export class CounterManager {
   private count: number = 0;
   private readonly storageKey = 'vanilla-counter';
+  private step: number;
 
-  constructor() {
+  constructor(step: number = 1) {
+    this.step = step;
     this.loadFromStorage();
   }
 
   public increment(): number {
-    this.count++;
+    this.count += this.step;
     this.saveToStorage();
     return this.count;
   }

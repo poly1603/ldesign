@@ -39,7 +39,7 @@ export { AIOptimizer, createAIOptimizer } from './ai/optimizer'
 export type { ProjectAnalysis, OptimizationSuggestion } from './ai/optimizer'
 
 // 导出插件市场模块
-export { 
+export {
   pluginRegistry,
   pluginManager,
   marketplace,
@@ -64,19 +64,20 @@ export { Logger } from './utils/logger'
 export { ErrorHandler, LauncherError } from './utils/error-handler'
 export { FileSystem } from './utils/file-system'
 export { PathUtils } from './utils/path-utils'
-export { 
-  EnvironmentManager, 
-  environmentManager, 
-  loadEnv, 
-  getClientEnv, 
-  generateDefines 
+export {
+  EnvironmentManager,
+  environmentManager,
+  loadEnv,
+  getClientEnv,
+  generateDefines
 } from './utils/env'
 
 // 配置和构建工具 - 避免重复导出
 export {
   loadConfigFile,
   validateConfig,
-  mergeConfigs
+  mergeConfigs,
+  createPathResolver
 } from './utils/config'
 
 export {
@@ -121,7 +122,7 @@ export function createLauncher() {
   return {
     version,
     ViteLauncher: () => import('./core/ViteLauncher').then(m => m.ViteLauncher),
-    ConfigManager: () => import('./core/ConfigManager').then(m => m.ConfigManager), 
+    ConfigManager: () => import('./core/ConfigManager').then(m => m.ConfigManager),
     PluginMarketManager: () => import('./core/PluginMarket').then(m => m.PluginMarketManager),
     CacheManager: () => import('./core/CacheManager').then(m => m.CacheManager),
     PluginManager: () => import('./core/PluginManager').then(m => m.PluginManager),

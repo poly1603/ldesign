@@ -17,9 +17,12 @@ import type { LogLevel, Mode, LifecycleHook, ValidationResult, FilePath, Host, P
 export interface ViteLauncherConfig extends UserConfig {
   /** Launcher 特有的配置选项 */
   launcher?: LauncherConfigOptions
-  
+
   /** 配置文件路径 */
   configFile?: FilePath
+
+  /** 代理配置增强 */
+  proxy?: ProxyOptions
 }
 
 /**
@@ -446,22 +449,121 @@ export interface MultiEntryOptions {
 }
 
 /**
+ * API 代理配置接口
+ */
+export interface ApiProxyConfig {
+  /** 目标服务器地址 */
+  target: string
+  /** 路径前缀，默认 '/api' */
+  pathPrefix?: string
+  /** 是否重写路径，移除前缀 */
+  rewrite?: boolean
+  /** 自定义请求头 */
+  headers?: Record<string, string>
+  /** 请求超时时间（毫秒） */
+  timeout?: number
+  /** 认证配置 */
+  auth?: {
+    username: string
+    password: string
+  }
+}
+
+/**
+ * 静态资源代理配置接口
+ */
+export interface AssetsProxyConfig {
+  /** 目标服务器地址 */
+  target: string
+  /** 路径前缀，默认 '/assets' */
+  pathPrefix?: string
+  /** 缓存配置 */
+  cache?: {
+    /** 缓存时间（秒） */
+    maxAge?: number
+    /** 是否启用 ETag */
+    etag?: boolean
+  }
+}
+
+/**
+ * WebSocket 代理配置接口
+ */
+export interface WebSocketProxyConfig {
+  /** 目标服务器地址 */
+  target: string
+  /** 路径前缀，默认 '/ws' */
+  pathPrefix?: string
+}
+
+/**
+ * 上传服务代理配置接口
+ */
+export interface UploadProxyConfig {
+  /** 目标服务器地址 */
+  target: string
+  /** 路径前缀，默认 '/upload' */
+  pathPrefix?: string
+  /** 请求超时时间（毫秒） */
+  timeout?: number
+  /** 最大文件大小 */
+  maxFileSize?: string
+}
+
+/**
+ * 自定义代理规则接口
+ */
+export interface CustomProxyRule {
+  /** 匹配路径 */
+  path: string | RegExp
+  /** 目标服务器地址 */
+  target: string
+  /** 额外选项 */
+  options?: Record<string, any>
+}
+
+/**
  * 代理配置增强接口
- * 扩展 Vite 原生代理配置
+ * 提供专业的服务类型代理配置和标准 Vite 代理配置支持
  */
 export interface ProxyOptions extends Record<string, any> {
-  /** 代理规则 */
+  /** API 服务代理配置 */
+  api?: ApiProxyConfig
+
+  /** 静态资源代理配置 */
+  assets?: AssetsProxyConfig
+
+  /** WebSocket 代理配置 */
+  websocket?: WebSocketProxyConfig
+
+  /** 上传服务代理配置 */
+  upload?: UploadProxyConfig
+
+  /** 自定义代理规则 */
+  custom?: CustomProxyRule[]
+
+  /** 代理规则（扩展） */
   rules?: ExtendedProxyRule[]
 
   /** 全局代理配置 */
   global?: {
+    /** 默认超时时间（毫秒） */
     timeout?: number
+    /** 重试次数 */
     retry?: number
+    /** 全局请求头 */
     headers?: Record<string, string>
+    /** 全局认证配置 */
     auth?: {
       username: string
       password: string
     }
+    /** 环境标识 */
+    environment?: string
+    /** 是否启用详细日志 */
+    verbose?: boolean
+    /** 是否启用 HTTPS */
+    secure?: boolean
   }
 
   /** 代理中间件 */

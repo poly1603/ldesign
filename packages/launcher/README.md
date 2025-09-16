@@ -12,6 +12,8 @@
 - 🚀 **基于 Vite** - 利用 Vite 5.0+ 的强大功能和生态系统
 - 🛠️ **统一 API** - 提供一致的开发、构建和预览体验
 - 🔧 **高度可配置** - 支持灵活的配置管理和扩展
+- 🌍 **多环境配置** - 支持环境特定配置文件和自动合并
+- 🔗 **智能代理** - 简化的代理配置语法和常见场景支持
 - 🔌 **插件系统** - 支持插件扩展和自定义功能
 - 📊 **性能监控** - 内置性能监控和优化建议
 - 🎯 **TypeScript** - 完整的 TypeScript 支持
@@ -65,6 +67,10 @@ await launcher.preview()
 # 启动开发服务器
 launcher dev
 
+# 使用环境特定配置
+launcher dev --environment development
+launcher build --environment production
+
 # 执行生产构建
 launcher build
 
@@ -115,8 +121,86 @@ export default defineConfig({
 })
 ```
 
+## 🌍 多环境配置
+
+支持为不同环境创建专门的配置文件：
+
+```typescript
+// .ldesign/launcher.development.config.ts
+export default defineConfig({
+  server: {
+    port: 3011,
+    open: true,
+    host: '0.0.0.0'
+  },
+  launcher: {
+    logLevel: 'debug'
+  }
+})
+
+// .ldesign/launcher.production.config.ts
+export default defineConfig({
+  build: {
+    minify: true,
+    sourcemap: false
+  },
+  launcher: {
+    logLevel: 'warn'
+  }
+})
+```
+
+使用环境配置：
+
+```bash
+# 使用开发环境配置
+launcher dev --environment development
+
+# 使用生产环境配置
+launcher build --environment production
+```
+
+## 🔗 智能代理配置
+
+提供简化的代理配置语法：
+
+```typescript
+export default defineConfig({
+  // 简化代理配置
+  simpleProxy: {
+    // API 代理
+    api: {
+      target: 'http://localhost:8080',
+      pathPrefix: '/api',
+      rewrite: true,
+      headers: {
+        'X-Forwarded-Host': 'localhost'
+      }
+    },
+
+    // 静态资源代理
+    assets: {
+      target: 'http://localhost:9000',
+      pathPrefix: '/assets',
+      cache: {
+        maxAge: 3600,
+        etag: true
+      }
+    },
+
+    // WebSocket 代理
+    websocket: {
+      target: 'ws://localhost:8080',
+      pathPrefix: '/ws'
+    }
+  }
+})
+```
+
 ## 📚 文档
 
+- [多环境配置指南](./docs/guide/environment-config.md)
+- [代理配置指南](./docs/guide/proxy-config.md)
 - [快速开始](./docs/guide/getting-started.md)
 - [配置参考](./docs/config/README.md)
 - [API 参考](./docs/api/README.md)

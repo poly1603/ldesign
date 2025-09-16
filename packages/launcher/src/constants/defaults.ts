@@ -42,17 +42,84 @@ export const DEFAULT_BUILD_TARGET = 'modules'
 /**
  * 默认配置文件名列表
  * 按优先级排序，优先级从高到低
+ * launcher.config.* 文件优先于 vite.config.* 文件
+ */
+/**
+ * LDesign 专用配置目录
+ */
+export const LDESIGN_DIR = '.ldesign'
+
+/**
+ * 默认配置文件名列表
+ * 优先支持 .ldesign 目录下的 launcher.config.*，再回退到项目根
  */
 export const DEFAULT_CONFIG_FILES = [
+  // .ldesign 专用
+  `${LDESIGN_DIR}/launcher.config.ts`,
+  `${LDESIGN_DIR}/launcher.config.mjs`,
+  `${LDESIGN_DIR}/launcher.config.js`,
+  `${LDESIGN_DIR}/launcher.config.cjs`,
+  // 项目根目录
+  'launcher.config.ts',
+  'launcher.config.mjs',
+  'launcher.config.js',
+  'launcher.config.cjs',
+  // 兼容 vite 配置文件
   'vite.config.ts',
   'vite.config.mjs',
   'vite.config.js',
-  'vite.config.cjs',
-  // 优先 ESM 格式（如同时存在 .mjs 与 .ts/.js，优先使用 .mjs）
-  'launcher.config.mjs',
-  'launcher.config.ts',
-  'launcher.config.js',
-  'launcher.config.cjs'
+  'vite.config.cjs'
+] as const
+
+/**
+ * 支持的环境名称
+ */
+export const SUPPORTED_ENVIRONMENTS = [
+  'development',
+  'production',
+  'test',
+  'staging',
+  'preview'
+] as const
+
+/**
+ * 生成环境特定配置文件名列表
+ *
+ * @param environment - 环境名称
+ * @returns 环境特定配置文件名列表
+ */
+export function getEnvironmentConfigFiles(environment?: string): readonly string[] {
+  if (!environment || !SUPPORTED_ENVIRONMENTS.includes(environment as any)) {
+    return DEFAULT_CONFIG_FILES
+  }
+
+  const envConfigFiles = [
+    // .ldesign 专用环境配置
+    `${LDESIGN_DIR}/launcher.${environment}.config.ts`,
+    `${LDESIGN_DIR}/launcher.${environment}.config.mjs`,
+    `${LDESIGN_DIR}/launcher.${environment}.config.js`,
+    `${LDESIGN_DIR}/launcher.${environment}.config.cjs`,
+    // 项目根目录环境配置
+    `launcher.${environment}.config.ts`,
+    `launcher.${environment}.config.mjs`,
+    `launcher.${environment}.config.js`,
+    `launcher.${environment}.config.cjs`,
+    // 基础配置文件作为回退
+    ...DEFAULT_CONFIG_FILES
+  ] as const
+
+  return envConfigFiles
+}
+
+/**
+ * 默认的应用配置文件名列表（用于注入 import.meta.env.appConfig）
+ */
+export const DEFAULT_APP_CONFIG_FILES = [
+  `${LDESIGN_DIR}/app.config.ts`,
+  `${LDESIGN_DIR}/app.config.mjs`,
+  `${LDESIGN_DIR}/app.config.js`,
+  `${LDESIGN_DIR}/app.config.cjs`,
+  `${LDESIGN_DIR}/app.config.json`
 ] as const
 
 /**
@@ -74,6 +141,7 @@ export const DEFAULT_LAUNCHER_OPTIONS: Required<LauncherOptions> = {
   cwd: process.cwd(),
   debug: false,
   autoRestart: true,
+  environment: 'development',
   listeners: {}
 }
 

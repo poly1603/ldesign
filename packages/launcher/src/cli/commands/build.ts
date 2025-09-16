@@ -53,6 +53,12 @@ export class BuildCommand implements CliCommandDefinition {
       default: false
     },
     {
+      name: 'environment',
+      alias: 'e',
+      description: '指定环境名称（development, production, test, staging, preview）',
+      type: 'string' as const
+    },
+    {
       name: 'target',
       alias: 't',
       description: '指定构建目标',
