@@ -1,0 +1,20 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/fingerprint-3',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="fingerprint-3">
+<path id="stroke1" d="M3 13V11C3 6.02944 7.02944 2 12 2C13.3369 2 14.6057 2.29148 15.7463 2.81436M19.4965 21.0001C20.4623 18.8654 21 16.4955 21 14.0001V11.0001C21 8.77009 20.1889 6.7295 18.8457 5.15723M8.42713 8.26367C7.84562 9.02187 7.5 9.9705 7.5 10.9999V11.9999M16.5 11C16.5 8.51472 14.4853 6.5 12 6.5M3 17.4999H4C5.27316 17.4999 6.38755 16.8201 7 15.8037M14.3579 21C15.5348 19.262 16.2857 17.212 16.4608 15M12 11V14C12 17.012 10.3354 19.6353 7.87598 21" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class Fingerprint3Component {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

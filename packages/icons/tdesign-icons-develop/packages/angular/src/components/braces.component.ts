@@ -1,0 +1,20 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/braces',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="braces">
+<path id="stroke1" d="M6.00039 20H5.90039C4.57491 20 3.50039 18.9255 3.50039 17.6V14C3.50039 12.8954 2.60496 12 1.50039 12M1.50039 12H1.40039M1.50039 12C2.60496 12 3.50039 11.1046 3.50039 10V6.4C3.50039 5.07452 4.57491 4 5.90039 4H6.00039M17.9995 20H18.0995C19.425 20 20.4995 18.9255 20.4995 17.6V14C20.4995 12.8954 21.3949 12 22.4995 12M22.4995 12H22.5995M22.4995 12C21.3949 12 20.4995 11.1046 20.4995 10V6.4C20.4995 5.07452 19.425 4 18.0995 4H17.9995" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class BracesComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

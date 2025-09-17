@@ -1,0 +1,19 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/user-filled',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M6.5 7.5C6.5 4.46243 8.96243 2 12 2C15.0376 2 17.5 4.46243 17.5 7.5C17.5 10.5376 15.0376 13 12 13C8.96243 13 6.5 10.5376 6.5 7.5ZM3 19C3 16.2386 5.23858 14 8 14H16C18.7614 14 21 16.2386 21 19V22H3V19Z"
+        [attr.fill]="color" />
+</svg>
+  `,
+  standalone: true
+})
+export class UserFilledComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

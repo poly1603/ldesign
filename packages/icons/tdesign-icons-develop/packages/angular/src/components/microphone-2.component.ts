@@ -1,0 +1,23 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/microphone-2',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="microphone-2">
+<path id="fill1" d="M22 8C22 11.3137 19.3137 14 16 14C12.6863 14 10 11.3137 10 8C10 4.68629 12.6863 2 16 2C19.3137 2 22 4.68629 22 8Z" [attr.fill]="color"/>
+<path id="fill2" d="M10 8C10 11.3137 12.6863 14 16 14L6.50007 21.5002C6.50007 21.5002 5.45836 22.457 3.50007 20.5002C1.54178 18.5433 2.50007 17.5002 2.50007 17.5002L10 8Z" [attr.fill]="color"/>
+<path id="stroke1" d="M16 14C12.6863 14 10 11.3137 10 8M16 14L6.50007 21.5002C6.50007 21.5002 5.45836 22.457 3.50007 20.5002C1.54178 18.5433 2.50007 17.5002 2.50007 17.5002L10 8M16 14C19.3137 14 22 11.3137 22 8C22 4.68629 19.3137 2 16 2C12.6863 2 10 4.68629 10 8" [attr.stroke]="color" stroke-[attr.width]="size"/>
+<path id="stroke2" d="M9 15L8 16" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class Microphone2Component {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

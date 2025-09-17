@@ -1,0 +1,19 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/component-grid-filled',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M7.25 2.04297H2V7.29297L7.25 7.29297V2.04297ZM9.25 2.04297V7.29297H14.75V2.04297H9.25ZM16.75 2.04297V7.29297L22 7.29297V2.04297H16.75ZM22 9.29297L16.75 9.29297V14.793H22V9.29297ZM22 16.793H16.75V22.043H22V16.793ZM14.75 22.043V16.793L9.25 16.793V22.043H14.75ZM7.25 22.043V16.793H2V22.043H7.25ZM2 14.793H7.25V9.29297L2 9.29297V14.793ZM9.25 14.793V9.29297L14.75 9.29297V14.793L9.25 14.793Z"
+        [attr.fill]="color" />
+</svg>
+  `,
+  standalone: true
+})
+export class ComponentGridFilledComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

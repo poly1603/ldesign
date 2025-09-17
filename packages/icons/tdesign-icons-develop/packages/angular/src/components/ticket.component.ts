@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/ticket',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="ticket">
+<path id="fill1" d="M22 5V8.83682C20.8175 9.39855 20 10.6038 20 12C20 13.3962 20.8175 14.6015 22 15.1632V19L2 19V15.1632C3.18247 14.6015 4 13.3962 4 12C4 10.6038 3.18247 9.39855 2 8.83682V5H22Z" [attr.fill]="color"/>
+<path id="stroke1" d="M22 5V8.83682C20.8175 9.39855 20 10.6038 20 12C20 13.3962 20.8175 14.6015 22 15.1632V19L2 19V15.1632C3.18247 14.6015 4 13.3962 4 12C4 10.6038 3.18247 9.39855 2 8.83682V5H22Z" [attr.stroke]="color" stroke-[attr.width]="size"/>
+<path id="stroke2" d="M9 10H15M9 14H15" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class TicketComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

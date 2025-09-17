@@ -1,0 +1,21 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/clear-formatting',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="clear-formatting">
+<path id="fill1" d="M22.2739 11.5454L14.0312 3.30273L5.78861 11.5454L14.0312 19.788L22.2739 11.5454Z" [attr.fill]="color"/>
+<path id="stroke1" d="M5.78831 11.5454L1.66699 15.6667L7.16209 21.1618L18.9997 21.1618M5.78831 11.5454L14.031 3.30273L22.2736 11.5454L14.031 19.788L5.78831 11.5454ZM14.3561 19.4648L12.6696 21.1635L13.2251 20.6039" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class ClearFormattingComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

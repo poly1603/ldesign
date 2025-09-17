@@ -1,0 +1,20 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/houses-filled',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M11.9968 1.6582L22.4127 10.9168L21.084 12.4116L20.0009 11.4489V21.9998H15.5V15H8.5V21.9998H4.00092V11.4536L2.90685 12.4109L1.58984 10.9058L6.00092 7.04607V2.99984H8.00092V5.25448L11.9968 1.6582Z"
+        [attr.fill]="color" />
+    <path d="M10.5 22V17H13.5V22H10.5Z" [attr.fill]="color" />
+</svg>
+  `,
+  standalone: true
+})
+export class HousesFilledComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

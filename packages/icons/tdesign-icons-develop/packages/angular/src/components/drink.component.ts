@@ -1,0 +1,23 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/drink',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="drink">
+<path id="fill1" d="M7.15156 21.9997H17.9229L18.5 13.5459L12.1594 12.4936L6.4375 11.5635L7.15156 21.9997Z" [attr.fill]="color"/>
+<path id="fill2" d="M3 6.22233C3 7.97123 4.5 9.38088 6.28912 9.38088L6.07443 6.22233H9.46279C9.46279 4.47343 8.01604 3.05566 6.23139 3.05566C4.44674 3.05566 3 4.47343 3 6.22233Z" [attr.fill]="color"/>
+<path id="stroke2" d="M3 6.22233C3 7.97123 4.5 9.38088 6.28912 9.38088L6.07443 6.22233H9.46279C9.46279 4.47343 8.01604 3.05566 6.23139 3.05566C4.44674 3.05566 3 4.47343 3 6.22233Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke1" d="M19.0001 2H15.2301L12.5 12M6.07422 6.22266H18.9998L17.9227 22.0004H7.15135L6.07422 6.22266ZM17.9229 21.9997H7.15156L6.4375 11.5635L12.1594 12.4936L18.5 13.5459L17.9229 21.9997Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class DrinkComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

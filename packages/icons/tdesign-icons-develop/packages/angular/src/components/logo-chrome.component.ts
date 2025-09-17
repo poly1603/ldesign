@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/logo-chrome',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="logo-chrome">
+<path id="fill1" d="M22.0034 12.002C22.0034 17.5248 17.5263 22.002 12.0034 22.002C6.48057 22.002 2.00342 17.5248 2.00342 12.002C2.00342 6.47911 6.48057 2.00195 12.0034 2.00195C17.5263 2.00195 22.0034 6.47911 22.0034 12.002Z" [attr.fill]="color"/>
+<ellipse id="fill2" cx="12.0013" cy="12.0007" rx="4.00125" ry="4.00075" [attr.fill]="color"/>
+<path id="stroke1" d="M13 7.99915L20.6673 7.99915M15.05 14.7133L11.1285 21.5055M4.20264 6.49633L8.125 13.2901M16.0025 12.0008C16.0025 14.2103 14.2111 16.0015 12.0013 16.0015C9.79142 16.0015 8 14.2103 8 12.0008C8 9.79122 9.79142 8.00002 12.0013 8.00002C14.2111 8.00002 16.0025 9.79122 16.0025 12.0008ZM22.0034 12.002C22.0034 17.5248 17.5263 22.002 12.0034 22.002C6.48057 22.002 2.00342 17.5248 2.00342 12.002C2.00342 6.4791 6.48057 2.00195 12.0034 2.00195C17.5263 2.00195 22.0034 6.4791 22.0034 12.002Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class LogoChromeComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

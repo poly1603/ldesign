@@ -10,3 +10,4 @@ output/
 *~
 .npm/
 .cache/
+packages/**/components/

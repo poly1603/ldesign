@@ -1,0 +1,23 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/doge',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="doge">
+<path id="fill1" d="M12 22C17.5228 22 22 17.7862 22 12.5882V2H18.1111L16.4444 4.15479C15.1056 3.52858 13.5965 3.17647 12 3.17647C10.4035 3.17647 8.8944 3.52858 7.55556 4.15479L5.33333 2H2V12.5882C2 17.7862 6.47715 22 12 22Z" [attr.fill]="color"/>
+<path id="fill2" d="M12.001 13.5C11.501 14.5 10.751 15 10.001 15.0625C10.3343 16.0417 11.201 18 12.001 18C12.801 18 13.6676 16.0417 14.001 15.0625C13.251 15 12.501 14.5 12.001 13.5Z" [attr.fill]="color"/>
+<path id="stroke1" d="M22 12V2H18.1111L16.6528 3.88544M2 12V2H5.33333L7.27778 3.88544M22 12.5882C22 17.7862 17.5228 22 12 22C6.47715 22 2 17.7862 2 12.5882C2 7.39026 6.47715 3.17647 12 3.17647C17.5228 3.17647 22 7.39026 22 12.5882Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M8 10V11M16 10V11M15.3143 14.7043C14.2568 15.4235 12.8053 15.1088 12.0009 13.5C11.1965 15.1088 9.74503 15.4235 8.6875 14.7043M13.9164 15.3C13.5369 16.3265 12.7404 18 12.0009 18C11.2613 18 10.4648 16.3265 10.0853 15.3" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class DogeComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

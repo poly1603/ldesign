@@ -1,0 +1,25 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/chart-line-data',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="chart-line-data">
+<g id="fill2">
+<path d="M21 7.5C21 8.32843 20.3284 9 19.5 9C18.6716 9 18 8.32843 18 7.5C18 6.67157 18.6716 6 19.5 6C20.3284 6 21 6.67157 21 7.5Z" [attr.fill]="color"/>
+<path d="M8.25025 15.7983C7.53281 16.2125 6.61543 15.9667 6.20121 15.2493C5.787 14.5318 6.03281 13.6144 6.75025 13.2002C7.46769 12.786 8.38508 13.0318 8.79929 13.7493C9.2135 14.4667 8.96769 15.3841 8.25025 15.7983Z" [attr.fill]="color"/>
+</g>
+<path id="stroke1" d="M21 21H3V3" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M8.79932 13.7499L18.1999 8.26074M21 7.5C21 8.32843 20.3284 9 19.5 9C18.6716 9 18 8.32843 18 7.5C18 6.67157 18.6716 6 19.5 6C20.3284 6 21 6.67157 21 7.5ZM8.25025 15.7983C7.53281 16.2125 6.61543 15.9667 6.20121 15.2493C5.787 14.5318 6.03281 13.6144 6.75025 13.2002C7.46769 12.786 8.38508 13.0318 8.79929 13.7493C9.2135 14.4667 8.96769 15.3841 8.25025 15.7983Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class ChartLineDataComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

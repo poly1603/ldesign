@@ -1,0 +1,27 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/hospital',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <g id="hospital">
+        <path id="fill1" d="M6 9V3H18V9H21V21H3V9H6Z" [attr.fill]="color" />
+        <g id="fill2">
+            <path d="M10 21V15H14V21H10Z" [attr.fill]="color" />
+        </g>
+        <path id="stroke2" d="M10 8H12M12 8H14M12 8V6M12 8V10M10 15V21H14V15H10Z" [attr.stroke]="color" stroke-[attr.width]="size"
+            stroke-linecap="square" />
+        <path id="stroke1"
+            d="M5 3C5.34388 3 5.67667 3 6 3M19 3C18.6561 3 18.3233 3 18 3M6 3V9C4.82099 9 4.52489 9 3 9V21H21V9C19.9327 9 18.9408 9 18 9V3M6 3C9.75964 3 14.2404 3 18 3"
+            [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+    </g>
+</svg>
+  `,
+  standalone: true
+})
+export class HospitalComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

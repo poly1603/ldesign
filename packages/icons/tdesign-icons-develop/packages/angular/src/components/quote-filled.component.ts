@@ -1,0 +1,19 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/quote-filled',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M2.5 5H11.0001V12.6507L6.51825 19H3.79467L6.46133 13H2.5V5ZM13 5H21.5V12.6507L17.0182 19H14.2946L16.9612 13H13V5Z"
+        [attr.fill]="color" />
+</svg>
+  `,
+  standalone: true
+})
+export class QuoteFilledComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

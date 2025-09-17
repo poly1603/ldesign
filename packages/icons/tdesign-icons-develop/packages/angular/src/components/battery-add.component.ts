@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/battery-add',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="battery-add">
+<path id="fill1" d="M4 4H9V1.5H15V4H20V22.5H4V4Z" [attr.fill]="color"/>
+<path id="stroke1" d="M4 4H9V1.5H15V4H20V22.5H4V4Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M12 10.5V13.5M12 13.5V16.5M12 13.5H9M12 13.5H15" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class BatteryAddComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

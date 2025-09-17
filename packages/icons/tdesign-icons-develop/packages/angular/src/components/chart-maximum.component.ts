@@ -1,0 +1,21 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/chart-maximum',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="chart-maximum">
+<path id="stroke1" d="M21 21H3V3" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M7 16.9981C7 13.0114 7.99609 7.00391 13 7C18.0039 6.9961 19 13.0154 19 17.0038M6.99805 3.99805H7.00195V4.00195H6.99805V3.99805ZM9.99805 3.99805H10.002V4.00195H9.99805V3.99805ZM12.998 3.99805H13.002V4.00195H12.998V3.99805ZM15.998 3.99805H16.002V4.00195H15.998V3.99805ZM18.998 3.99805H19.002V4.00195H18.998V3.99805Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class ChartMaximumComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

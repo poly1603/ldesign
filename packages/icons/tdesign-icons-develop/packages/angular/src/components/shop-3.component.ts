@@ -1,0 +1,32 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/shop-3',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <g id="shop-3">
+        <path id="fill1" d="M3 3H21C21 9 21 15 21 21H3V3Z" [attr.fill]="color" />
+        <g id="fill2">
+            <path d="M15 14H9V21H15V14Z" [attr.fill]="color" />
+            <path
+                d="M3 6C3 7.65685 4.34315 9 6 9C7.65685 9 9 7.65685 9 6C9 7.65685 10.3431 9 12 9C13.6569 9 15 7.65685 15 6C15 7.65685 16.3431 9 18 9C19.6569 9 21 7.65686 21 6V3H3V6Z"
+                [attr.fill]="color" />
+        </g>
+        <g id="stroke2">
+            <path d="M15 14H9V21H15V14Z" [attr.stroke]="color" stroke-[attr.width]="size" />
+            <path
+                d="M3 6C3 7.65685 4.34315 9 6 9C7.65685 9 9 7.65685 9 6C9 7.65685 10.3431 9 12 9C13.6569 9 15 7.65685 15 6C15 7.65685 16.3431 9 18 9C19.6569 9 21 7.65685 21 6V3H3V6Z"
+                [attr.stroke]="color" stroke-[attr.width]="size" />
+        </g>
+        <path id="stroke1" d="M3 3H21C21 9 21 15 21 21H3V3Z" [attr.stroke]="color" stroke-[attr.width]="size" />
+    </g>
+</svg>
+  `,
+  standalone: true
+})
+export class Shop3Component {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

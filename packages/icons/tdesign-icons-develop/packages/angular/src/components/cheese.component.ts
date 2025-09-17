@@ -1,0 +1,23 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/cheese',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="cheese">
+<path id="fill1" d="M2 9L11.0807 6.13242C11.3608 7.20692 12.3378 8 13.5 8C14.8807 8 16 6.88071 16 5.5C16 5.1934 15.9448 4.89969 15.8438 4.62827L21 3L17.8351 13.0223C17.7255 13.0076 17.6136 13 17.5 13C16.1193 13 15 14.1193 15 15.5C15 16.4666 15.5485 17.305 16.3513 17.721L15 22L14.243 21.8198C8.28984 20.4023 3.60612 15.7457 2.18869 9.7925L2 9Z" [attr.fill]="color"/>
+<path id="fill2" d="M12 12.5C12 13.8807 10.8807 15 9.5 15C8.11929 15 7 13.8807 7 12.5C7 11.1193 8.11929 10 9.5 10C10.8807 10 12 11.1193 12 12.5Z" [attr.fill]="color"/>
+<path id="stroke1" d="M2 9L11.0807 6.13242C11.3608 7.20692 12.3378 8 13.5 8C14.8807 8 16 6.88071 16 5.5C16 5.1934 15.9448 4.89969 15.8438 4.62827L21 3L17.8351 13.0223C17.7255 13.0076 17.6136 13 17.5 13C16.1193 13 15 14.1193 15 15.5C15 16.4666 15.5485 17.305 16.3513 17.721L15 22L14.243 21.8198C8.28984 20.4023 3.60612 15.7457 2.18869 9.7925L2 9Z" [attr.stroke]="color" stroke-[attr.width]="size"/>
+<path id="stroke2" d="M12 12.5C12 13.8807 10.8807 15 9.5 15C8.11929 15 7 13.8807 7 12.5C7 11.1193 8.11929 10 9.5 10C10.8807 10 12 11.1193 12 12.5Z" [attr.stroke]="color" stroke-[attr.width]="size"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class CheeseComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

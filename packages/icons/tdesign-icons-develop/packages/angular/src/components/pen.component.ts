@@ -1,0 +1,20 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/pen',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="pen">
+<path id="stroke1" d="M15.0001 3L13.9376 5.125C13.015 6.97006 11.4154 8.38744 9.47275 9.08121L5.49988 10.5L4 20.0001L13.5 18.5001L14.9189 14.5273C15.6127 12.5847 17.03 10.9851 18.8751 10.0626L21 9.00012M4.50012 19.5L11 13.0001" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class PenComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

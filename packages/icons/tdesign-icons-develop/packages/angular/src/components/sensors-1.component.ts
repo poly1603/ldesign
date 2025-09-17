@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/sensors-1',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="sensors-1">
+<path id="fill2" d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z" [attr.fill]="color"/>
+<path id="stroke1" d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15ZM12 15V19.779" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M4.22183 4.22266C2.23122 6.21326 1 8.96326 1 12.0008C1 15.0384 2.23122 17.7884 4.22183 19.779M7.05025 7.05078C5.7835 8.31753 5 10.0675 5 12.0005C5 13.9335 5.7835 15.6835 7.05025 16.9503M16.9492 7.05078C18.216 8.31753 18.9995 10.0675 18.9995 12.0005C18.9995 13.9335 18.216 15.6835 16.9492 16.9503M19.7773 4.22266C21.768 6.21326 22.9992 8.96326 22.9992 12.0008C22.9992 15.0384 21.768 17.7884 19.7773 19.779" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class Sensors1Component {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

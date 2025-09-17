@@ -1,0 +1,8 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="mosque">
+<path id="fill1" d="M12 4C14.7614 4 17 6.23858 17 9H20V21H4V9H7C7 6.23858 9.23858 4 12 4Z" fill="white"/>
+<path id="fill2" d="M9 21V15H15V21H9Z" fill="white"/>
+<path id="stroke2" d="M9 21V15H15V21H9Z" stroke="black" stroke-width="2" stroke-linecap="square"/>
+<path id="stroke1" d="M4 9V21H20V9M4 9H3M4 9H7M20 9H21M20 9H17M7 9H17M7 9C7 6.23858 9.23858 4 12 4M17 9C17 6.23858 14.7614 4 12 4M12 4L12.002 3" stroke="black" stroke-width="2" stroke-linecap="square"/>
+</g>
+</svg>

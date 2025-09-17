@@ -1,0 +1,23 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/tools-circle',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="tools-circle">
+<path id="fill1" d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12Z" [attr.fill]="color"/>
+<path id="fill2" d="M7.35963 13.0159C6.16579 11.8221 5.88434 10.0614 6.5153 8.60024L6.77999 8.65134L9.11344 10.9848L10.9863 9.11194L8.65284 6.77849L8.60161 6.51439C10.0626 5.8839 11.8229 6.16546 13.0165 7.35908C14.2035 8.54609 14.4885 10.2935 13.8715 11.7497L17.8115 15.6897L15.6902 17.811L11.7502 13.871C10.2941 14.488 8.54664 14.2029 7.35963 13.0159Z" [attr.fill]="color"/>
+<path id="stroke1" d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M7.35963 13.0159C6.16579 11.8221 5.88434 10.0614 6.5153 8.60024L6.77999 8.65134L9.11344 10.9848L10.9863 9.11194L8.65284 6.77849L8.60161 6.51439C10.0626 5.8839 11.8229 6.16546 13.0165 7.35908C14.2035 8.54609 14.4885 10.2935 13.8715 11.7497L17.8115 15.6897L15.6902 17.811L11.7502 13.871C10.2941 14.488 8.54664 14.2029 7.35963 13.0159Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class ToolsCircleComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

@@ -1,0 +1,20 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/system-2',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="system-2">
+<path id="stroke1" d="M12 15H4.19814C3.64087 14.8333 2 14 2 12C2 10 3.64087 9.16667 4.19814 9H5.43653M12 9L19.8019 9C20.3591 9.16667 22 10 22 12C22 14 20.3591 14.8333 19.8019 15H18.5635M9 12V4.19814C9.16667 3.64087 10 2 12 2C14 2 14.8333 3.64087 15 4.19814V5.43653M15 12V19.8019C14.8333 20.3591 14 22 12 22C10 22 9.16667 20.3591 9 19.8019V18.5635" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class System2Component {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/assignment-code',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="assignment-code">
+<path id="fill1" fill-rule="evenodd" clip-rule="evenodd" d="M9.70802 2.5C10.0938 1.61705 10.9748 1 12 1C13.0252 1 13.9062 1.61705 14.292 2.5H20.5V21.5H3.5V2.5H9.70802Z" [attr.fill]="color"/>
+<path id="stroke1" fill-rule="evenodd" clip-rule="evenodd" d="M9.70802 2.50001C10.0938 1.61706 10.9748 1.00001 12 1.00001C13.0252 1.00001 13.9062 1.61706 14.292 2.50001L20.5 2.50001L20.5 21.5L3.5 21.5L3.5 2.50001L9.70802 2.50001Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M9.5 9.50001L7 12L9.5 14.5M14.5 14.5L17 12L14.5 9.5" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class AssignmentCodeComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

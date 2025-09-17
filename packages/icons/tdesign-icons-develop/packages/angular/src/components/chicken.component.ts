@@ -1,0 +1,21 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/chicken',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="chicken">
+<path id="fill2" d="M17.4286 2.93599C18.9056 2.4991 19.3952 4.47962 19.3952 4.47962C19.3952 4.47962 21.3505 3.92107 21.7152 5.41087C22.08 6.90066 20.2599 7.35375 19.2057 7.63621L17.4644 10.6472C16.7372 10.2346 15.8964 9.99907 15.0006 9.99907C14.8625 9.99907 14.7066 10.0066 14.5645 10.0183L16.7562 6.222C16.4717 5.16016 15.9516 3.37289 17.4286 2.93599Z" [attr.fill]="color"/>
+<path id="stroke1" d="M3 19.999H21M12 5.99902H10.001C6.13498 5.99902 3 9.13303 3 12.999C3 16.865 6.13401 19.999 10 19.999H15C17.7614 19.999 20 17.7604 20 14.999C20 12.0824 17.4249 9.78308 14.5639 10.0183C14.5323 10.0209 14.5014 10.0237 14.4715 10.0266C11.9448 10.2775 10 12.4064 10 14.999M19.3947 4.47962C19.3947 4.47962 18.9051 2.4991 17.4281 2.93599C15.9512 3.37289 16.4712 5.16016 16.7557 6.222L14.564 10.0183C14.7062 10.0066 14.862 9.99907 15.0001 9.99907C15.8959 9.99907 16.7367 10.2346 17.4639 10.6472L19.2052 7.63621C20.2594 7.35375 22.0795 6.90066 21.7148 5.41087C21.35 3.92107 19.3947 4.47962 19.3947 4.47962Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class ChickenComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

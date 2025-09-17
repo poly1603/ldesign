@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/lighthouse-1',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="lighthouse-1">
+<path id="fill1" d="M8 10V3.6L12 2L16 3.6V10C16 15 18 22 18 22H14L13 18H11L10 22H6C6 22 8 15 8 10Z" [attr.fill]="color"/>
+<path id="stroke1" d="M8 4.1V10C8 15 6 22 6 22H10L11 18H13L14 22H18C18 22 16 15 16 10V4.1M6 11H18M7 4L12 2L17 4" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M12 6.99805H12.0039V7.00195H12V6.99805Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class Lighthouse1Component {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

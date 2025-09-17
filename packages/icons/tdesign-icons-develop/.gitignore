@@ -1,0 +1,37 @@
+.DS_Store
+
+# auto generated icons
+src/components/*.tsx
+src/manifest.ts
+src/icons.ts
+converted_svg
+
+# build
+dist/
+esm/
+
+# node_modules
+**/node_modules
+
+# legacy
+/gallery
+/src/icons
+
+# yarn
+yarn-error.log
+
+# eslint
+.eslintcache
+
+# lock
+packages/**/yarn.lock
+packages/**/package-lock.json
+packages/**/pnpm-lock.yaml
+resources/**/yarn.lock
+resources/**/package-lock.json
+resources/**/pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# webstorm
+.idea/

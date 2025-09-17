@@ -1,0 +1,23 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/cucumber',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="cucumber">
+<path id="fill1" d="M3.49979 19.3942C2.05116 17.2437 2.55422 13.4454 7.99979 7.99983C13.5357 2.46395 17.3691 2.03579 19.4998 3.57348C19.8918 3.85639 20.2288 4.20321 20.4998 4.60544C21.9486 6.7561 21.4454 10.5542 15.9998 15.9998C10.4639 21.5357 6.63045 21.9638 4.49979 20.4262C4.10776 20.1433 3.77074 19.7965 3.49979 19.3942Z" [attr.fill]="color"/>
+<path id="fill2" d="M3.5 19.394C6.6714 13.0143 13.2018 6.7013 19.5 3.57324C19.6786 3.70216 19.8453 3.8449 20 3.9996C20.1848 4.18439 20.3525 4.38626 20.5 4.6052C17.3354 10.2795 10.5022 17.3616 4.5 20.4259C4.32136 20.297 4.1547 20.1543 4 19.9996C3.81521 19.8148 3.64749 19.6129 3.5 19.394Z" [attr.fill]="color"/>
+<path id="stroke2" d="M3.5 19.394C6.6714 13.0143 13.2018 6.7013 19.5 3.57324C19.6786 3.70216 19.8453 3.8449 20 3.9996C20.1848 4.18439 20.3525 4.38626 20.5 4.6052C17.3354 10.2795 10.5022 17.3616 4.5 20.4259C4.32136 20.297 4.1547 20.1543 4 19.9996C3.81521 19.8148 3.64749 19.6129 3.5 19.394Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke1" d="M3.49979 19.3942C2.05116 17.2437 2.55422 13.4454 7.99979 7.99983C13.5357 2.46395 17.3691 2.03579 19.4998 3.57348C19.8918 3.85639 20.2288 4.20321 20.4998 4.60544C21.9486 6.7561 21.4454 10.5542 15.9998 15.9998C10.4639 21.5357 6.63045 21.9638 4.49979 20.4262C4.10776 20.1433 3.77074 19.7965 3.49979 19.3942Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class CucumberComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

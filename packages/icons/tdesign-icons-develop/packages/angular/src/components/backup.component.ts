@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/backup',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="backup">
+<path id="fill1" fill-rule="evenodd" clip-rule="evenodd" d="M1 14.5C1 17.5376 3.46243 20 6.5 20H17.5C20.5376 20 23 17.5376 23 14.5C23 11.7994 21.0536 9.55346 18.4872 9.08835C18.2748 5.69029 15.4516 3 12 3C8.54842 3 5.72518 5.69029 5.51282 9.08835C2.94636 9.55346 1 11.7994 1 14.5Z" [attr.fill]="color"/>
+<path id="stroke1" fill-rule="evenodd" clip-rule="evenodd" d="M1 14.5C1 17.5376 3.46243 20 6.5 20H17.5C20.5376 20 23 17.5376 23 14.5C23 11.7994 21.0536 9.55346 18.4872 9.08835C18.2748 5.69029 15.4516 3 12 3C8.54842 3 5.72518 5.69029 5.51282 9.08835C2.94636 9.55346 1 11.7994 1 14.5Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M15 11.5L12 8.5L9 11.5M12 16V13M12 13V9V12V13Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class BackupComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

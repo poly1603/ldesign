@@ -1,0 +1,7 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="measurement-2">
+<rect id="fill1" x="3" y="3" width="8" height="18" fill="white"/>
+<rect id="stroke1" x="3" y="3" width="8" height="18" stroke="black" stroke-width="2"/>
+<path id="stroke2" d="M15.5 18L18.5 21L21.5 18M21.5 6.00001L18.5 3L15.5 6M18.5 20.25V3.75" stroke="black" stroke-width="2" stroke-linecap="square"/>
+</g>
+</svg>

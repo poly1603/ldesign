@@ -1,0 +1,23 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/fries',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="fries">
+<path id="fill1" d="M5.50066 18.5004L9.00066 22.0004L19 16L8 5L2.00066 15.0004L5.50066 18.5004Z" [attr.fill]="color"/>
+<path id="fill2" d="M15.3437 4.52975L13.2224 2.40843L9.31544 6.31544L17.8007 14.8007L21.0006 11.6008L18.8793 9.4795L21.0006 7.35818L18.8793 5.23686L19.5864 4.52975L17.4651 2.40843L15.3437 4.52975Z" [attr.fill]="color"/>
+<path id="stroke2" d="M11.4368 8.43675L9.31544 6.31543L13.2224 2.40843L15.3437 4.52975L11.4368 8.43675ZM11.4368 8.43675L13.5581 10.5581M11.4368 8.43675L17.4651 2.40843L19.5864 4.52975L13.5581 10.5581M13.5581 10.5581L15.6794 12.6794M13.5581 10.5581L18.8793 5.23686L21.0006 7.35818L15.6794 12.6794M15.6794 12.6794L17.8007 14.8007L21.0006 11.6008L18.8793 9.4795L15.6794 12.6794Z" [attr.stroke]="color" stroke-[attr.width]="size"/>
+<path id="stroke1" d="M5.00032 10L14.0003 19M9.00098 22.0004L19.0003 16L8.00032 5L2.00098 15.0004L9.00098 22.0004Z" [attr.stroke]="color" stroke-[attr.width]="size"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class FriesComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

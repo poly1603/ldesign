@@ -1,0 +1,28 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/castle-1',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <g id="castle-1">
+        <g id="fill2">
+            <path d="M17 21H22V15H17V21Z" [attr.fill]="color" />
+            <path d="M2 21H7V15H2V21Z" [attr.fill]="color" />
+        </g>
+        <path id="fill1" d="M17 5H7V21H17V5Z" [attr.fill]="color" />
+        <path id="stroke2"
+            d="M22 15V21H17V15H22ZM22 15V14M2 15V21H7V15H2ZM2 15V14M12 14V21M10 8.99805H10.0039V9.00195H10V8.99805ZM14 8.99805H14.0039V9.00195H14V8.99805Z"
+            [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+        <path id="stroke1" d="M6 3V5H7M10 3V5M10 5H14M10 5H7M14 3V5M14 5H17M18 3V5H17M7 5V21H17V5" [attr.stroke]="color"
+            stroke-[attr.width]="size" stroke-linecap="square" />
+    </g>
+</svg>
+  `,
+  standalone: true
+})
+export class Castle1Component {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

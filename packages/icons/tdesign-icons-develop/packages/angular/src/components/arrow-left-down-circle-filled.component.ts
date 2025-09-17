@@ -1,0 +1,19 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/arrow-left-down-circle-filled',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M4.22183 4.22183C8.51759 -0.0739418 15.4824 -0.0739418 19.7782 4.22183C24.0739 8.51759 24.0739 15.4824 19.7782 19.7782C15.4824 24.0739 8.51759 24.0739 4.22183 19.7782C-0.0739418 15.4824 -0.0739418 8.51759 4.22183 4.22183ZM9.17157 9.17157L7.58058 16.4194L14.8284 14.8284L12.7071 12.7071L16.9498 8.46447L15.5355 7.05026L11.2929 11.2929L9.17157 9.17157Z"
+        [attr.fill]="color" />
+</svg>
+  `,
+  standalone: true
+})
+export class ArrowLeftDownCircleFilledComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

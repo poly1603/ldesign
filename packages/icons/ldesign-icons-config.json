@@ -1,0 +1,59 @@
+{
+  "name": "@ldesign/icons",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Modern icon library system with multi-framework support",
+  "author": "LDesign Team",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/build.js",
+    "build:react": "node scripts/build.js react",
+    "build:vue": "node scripts/build.js vue",
+    "build:web-components": "node scripts/build.js web-components",
+    "build:sprites": "node scripts/build.js sprites",
+    "generate": "node scripts/generate.js",
+    "optimize": "node scripts/optimize-svgs.js",
+    "preview": "vite preview",
+    "clean": "rimraf packages/*/dist packages/*/src/components",
+    "test": "vitest",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx,.vue --fix"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "@babel/preset-react": "^7.23.0",
+    "@babel/preset-typescript": "^7.23.0",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.10.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "camelcase": "^8.0.0",
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "fast-glob": "^3.3.2",
+    "fs-extra": "^11.2.0",
+    "prettier": "^3.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.6.0",
+    "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "svgo": "^3.0.5",
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0",
+    "vue": "^3.3.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

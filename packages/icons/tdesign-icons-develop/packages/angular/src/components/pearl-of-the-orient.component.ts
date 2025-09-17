@@ -1,0 +1,24 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/pearl-of-the-orient',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="pearl-of-the-orient">
+<g id="fill1">
+<path d="M14 6C14 7.10457 13.1046 8 12 8C10.8954 8 10 7.10457 10 6C10 4.89543 10.8954 4 12 4C13.1046 4 14 4.89543 14 6Z" [attr.fill]="color"/>
+<path d="M15 17C15 18.6569 13.6569 20 12 20C10.3754 20 9 18.6373 9 17C9 15.3431 10.3431 14 12 14C13.6569 14 15 15.3431 15 17Z" [attr.fill]="color"/>
+</g>
+<path id="stroke1" d="M12 8C13.1046 8 14 7.10457 14 6C14 4.89543 13.1046 4 12 4M12 8C10.8954 8 10 7.10457 10 6C10 4.89543 10.8954 4 12 4M12 8V14M12 4L11.9983 2M12 14C10.3431 14 9 15.3431 9 17C9 17.763 9.25516 18.426 9.75402 18.9889C9.95183 19.2121 10.1824 19.4056 10.4382 19.5619M12 14C13.6569 14 15 15.3431 15 17C15 17.7403 14.7319 18.4179 14.2874 18.9412C14.0801 19.1852 13.8345 19.3956 13.5598 19.5631M10.4382 19.5619L9.00142 22H9L10.4382 19.5619ZM10.4382 19.5619C10.8931 19.8398 11.4279 20 12 20C12.5713 20 13.1053 19.8403 13.5598 19.5631M13.5598 19.5631L14.9986 22H15L13.5598 19.5631Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class PearlOfTheOrientComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

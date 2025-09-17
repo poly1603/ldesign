@@ -1,0 +1,20 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/church-filled',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M11 1V3H9V5H11V5.97934L6 9.47934V12H2V22H8.5V17.5C8.5 15.567 10.067 14 12 14C13.933 14 15.5 15.567 15.5 17.5V22H22V12H18V9.47934L13 5.97934V5H15V3H13V1H11ZM6 20H4V14H6V20ZM18 20V14H20V20H18Z"
+        [attr.fill]="color" />
+    <path d="M12 16C11.1716 16 10.5 16.6716 10.5 17.5V22H13.5V17.5C13.5 16.6716 12.8284 16 12 16Z" [attr.fill]="color" />
+</svg>
+  `,
+  standalone: true
+})
+export class ChurchFilledComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

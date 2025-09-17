@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/task-setting',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="task-setting">
+<path id="fill2" d="M21.75 18.75C21.75 20.4069 20.4069 21.75 18.75 21.75C17.0931 21.75 15.75 20.4069 15.75 18.75C15.75 17.0931 17.0931 15.75 18.75 15.75C20.4069 15.75 21.75 17.0931 21.75 18.75Z" [attr.fill]="color"/>
+<path id="stroke1" d="M8 6V4H4V22H11M8 6H16M8 6V2H16V6M16 6V4H20V11" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M18.7509 15.75V14.5M18.7509 15.75C17.0941 15.75 15.7509 17.0931 15.7509 18.75C15.7509 20.4069 17.0941 21.75 18.7509 21.75M18.7509 15.75C20.4078 15.75 21.7509 17.0931 21.7509 18.75C21.7509 20.4069 20.4078 21.75 18.7509 21.75M18.7509 21.75V23M16.1528 17.25L15.0703 16.625M21.349 20.25L22.4315 20.875M21.349 17.25L22.4315 16.625M16.1528 20.25L15.0703 20.875" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class TaskSettingComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

@@ -1,0 +1,19 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/table-split-filled',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M22 2V22H2V2H22ZM4 6H11V4H4V6ZM13 6H20V4H13V6ZM13.002 10.75H10.998V12.7539H13.002V10.75ZM7.00195 13.75H4.99805V15.7539H7.00195V13.75ZM10.002 13.75H7.99805V15.7539H10.002V13.75ZM13.002 13.75H10.998V15.7539H13.002V13.75ZM16.002 13.75H13.998V15.7539H16.002V13.75ZM19.002 13.75H16.998V15.7539H19.002V13.75ZM13.002 16.75H10.998V18.7539H13.002V16.75Z"
+        [attr.fill]="color" />
+</svg>
+  `,
+  standalone: true
+})
+export class TableSplitFilledComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

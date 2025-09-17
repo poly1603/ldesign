@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/video-camera-off',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <g id="video-camera-off">
+        <path id="stroke1"
+            d="M16 10.2L16 11.001L16.001 11.002L16 10.2ZM16 10.2L16 5.001L11.001 5.00198M11.001 5.00198H10.001L10 5.00098L11.001 5.00198ZM23.0001 16V5.99998L16.5 9.89998M23.0001 16V17L23.0011 17.001L23.0001 16ZM16 16V19H1V5H5L16 16Z"
+            [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+        <path id="stroke2" d="M21 21L3 3" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+    </g>
+</svg>
+  `,
+  standalone: true
+})
+export class VideoCameraOffComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

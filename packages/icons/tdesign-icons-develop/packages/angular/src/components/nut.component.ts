@@ -1,0 +1,30 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/nut',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <g id="nut">
+        <path id="fill1"
+            d="M4.50047 19.4996C7.62466 22.6238 13.0449 20.8545 16.9502 16.9493L15.536 15.5351L15.536 12.7067L12.7075 12.7067L7.05069 7.0498C3.14545 10.955 1.37627 16.3754 4.50047 19.4996Z"
+            [attr.fill]="color" />
+        <path id="fill2"
+            d="M7.75748 4.92921C10.5627 2.12402 15.4914 3.99693 17.6094 6.29561C20.0051 8.51301 21.8959 13.4182 19.0712 16.2429L17.657 17.6571L15.5356 15.5358L15.5357 12.7074H12.7072L6.34326 6.34343L7.75748 4.92921Z"
+            [attr.fill]="color" />
+        <path id="stroke1"
+            d="M6.70955 7.3999C3.04464 11.2734 1.46814 16.4676 4.49998 19.4995C7.53393 22.5334 12.7332 20.9526 16.6076 17.2822"
+            [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+        <path id="stroke2"
+            d="M17.5996 6.28696C17.5562 6.24691 17.6287 6.31567 17.6146 6.30172M17.5996 6.28696C17.6027 6.28982 17.6058 6.2927 17.6089 6.29557M17.5996 6.28696C17.5646 6.25471 17.605 6.29285 17.6146 6.30172M17.6146 6.30172C17.6127 6.29967 17.6108 6.29762 17.6089 6.29557M17.6146 6.30172C17.6169 6.30386 17.6173 6.30444 17.6146 6.30172ZM17.6146 6.30172C18.2072 5.5781 19.0679 4.29516 19.4996 3M17.6146 6.30172C17.2366 6.76325 16.793 7.20664 16.2422 7.75736M17.6089 6.29557C15.4909 3.9969 10.5622 2.12399 7.75699 4.92918L6.34277 6.3434L12.7066 12.7068H15.5351V15.5352L17.6565 17.6571L19.0707 16.2429C21.8955 13.4181 20.0046 8.51297 17.6089 6.29557Z"
+            [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+    </g>
+</svg>
+  `,
+  standalone: true
+})
+export class NutComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

@@ -1,0 +1,30 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/chart-ring',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <g id="chart-ring">
+        <path id="fill1" fill-rule="evenodd" clip-rule="evenodd"
+            d="M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2ZM12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7Z"
+            [attr.fill]="color" />
+        <g id="fill2">
+            <path d="M17 12C17 9.23858 14.7614 7 12 7V2C17.5228 2 22 6.47715 22 12H17Z" [attr.fill]="color" />
+            <path
+                d="M22 12H17C17 13.3754 16.4447 14.621 15.546 15.525L19.0816 19.0605C20.8851 17.2517 22 14.7561 22 12Z"
+                [attr.fill]="color" />
+        </g>
+        <path id="stroke1"
+            d="M17 12C17 9.23858 14.7614 7 12 7M17 12H22M17 12C17 13.3754 16.4447 14.621 15.546 15.525M12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17C13.3861 17 14.6404 16.436 15.546 15.525M12 7V2M22 12C22 6.47715 17.5228 2 12 2M22 12C22 14.7561 20.885 17.2517 19.0816 19.0605M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C14.7668 22 17.2711 20.8764 19.0816 19.0605M15.546 15.525L19.0816 19.0605"
+            [attr.stroke]="color" stroke-[attr.width]="size" />
+    </g>
+</svg>
+  `,
+  standalone: true
+})
+export class ChartRingComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

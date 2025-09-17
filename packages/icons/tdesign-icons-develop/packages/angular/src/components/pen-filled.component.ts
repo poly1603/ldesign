@@ -1,0 +1,19 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/pen-filled',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M22.5745 9.14674L14.7691 1.34131L12.9374 4.68447C12.1248 6.16756 10.8028 7.30635 9.21568 7.89032L4.23994 9.72116L3.04688 19.5366L11.0021 11.5814L12.4163 12.9957L4.46171 20.9502L14.2774 19.7565L16.1154 14.7209C16.6865 13.156 17.7971 11.8461 19.2475 11.0266L22.5745 9.14674Z"
+        [attr.fill]="color" />
+</svg>
+  `,
+  standalone: true
+})
+export class PenFilledComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

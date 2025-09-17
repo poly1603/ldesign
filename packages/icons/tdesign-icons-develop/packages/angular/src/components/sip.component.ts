@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/sip',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="sip">
+<path id="fill1" d="M7.5 21H3L3.07202 16.5L13.7602 5.76025L18.25 10.25L7.5 21Z" [attr.fill]="color"/>
+<path id="fill2" d="M15.7523 3.75805C16.9925 2.51181 19.009 2.50938 20.2522 3.75264C21.4934 4.99378 21.4934 7.00608 20.2522 8.24722L18.2495 10.2499L13.7598 5.76016L15.7523 3.75805Z" [attr.fill]="color"/>
+<path id="stroke1" d="M13 4.99993L19 10.9999M3.07202 16.4999L15.7527 3.75805C16.993 2.51181 19.0094 2.50938 20.2527 3.75264C21.4939 4.99378 21.4939 7.00608 20.2527 8.24722L7.5 20.9999H3L3.07202 16.4999Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class SipComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

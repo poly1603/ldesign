@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/vehicle',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="vehicle">
+<path id="fill1" d="M10 19H23V14L22.6 13H16.5H10.4L10 14V19Z" [attr.fill]="color"/>
+<path id="stroke1" d="M23.0002 19H10.0002M23.0002 19V14L21.0002 9H12.0002L9.9502 13.975L10.0002 19M23.0002 19V20.5M10.0002 19V20.5M21.8502 13H11.1502M20.0002 16.0039H20.0041V16H20.0002V16.0039ZM13.0002 16.0039H13.0041V16H13.0002V16.0039Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M1 13V18C1 18.5523 1.44772 19 2 19H7M1 13V5C1 4.44772 1.44772 4 2 4H13C13.5523 4 14 4.44772 14 5V6M1 13H7M4.5 19.5L3.5 20.5M4 16.0039H4.00391V16H4V16.0039Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class VehicleComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

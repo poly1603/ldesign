@@ -1,0 +1,23 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/parabola',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <g id="parabola">
+        <path id="stroke1"
+            d="M3 12C3.9 12 4.8 10.9 6.6 8.5C7.35 7.5 8.85 3 12 3C15.15 3 16.65 7.5 17.4 8.5C19.2 10.9 20.1 12 21 12"
+            [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+        <path id="stroke2" d="M3 19H12M3 19V20M3 19V17M12 19H21M12 19V20M12 19V17M21 19V20M21 19V17" [attr.stroke]="color"
+            stroke-[attr.width]="size" stroke-linecap="square" />
+    </g>
+</svg>
+  `,
+  standalone: true
+})
+export class ParabolaComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

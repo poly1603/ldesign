@@ -1,0 +1,51 @@
+{
+  "name": "tdesign-icons-view",
+  "version": "0.4.0",
+  "description": "A web-component package for display all icons in any UI framework",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tencent/tdesign-icons.git",
+    "directory": "packages/view"
+  },
+  "homepage": "https://github.com/Tencent/tdesign-icons/blob/develop/README.md",
+  "bugs": {
+    "url": "https://github.com/Tencent/tdesign-icons/issues"
+  },
+  "main": "dist/td-icons-view.js",
+  "files": [
+    "dist/td-icons-view.js",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "vue-cli-service serve",
+    "build": "vue-cli-service build --target wc --inline-vue --name td-icons-view src/IconView.vue",
+    "build:watch": "vue-cli-service build --target wc --inline-vue --name td-icons-view src/IconView.vue --watch",
+    "lint": "vue-cli-service lint"
+  },
+  "keywords": [
+    "icons",
+    "web component"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "core-js": "catalog:",
+    "lodash": "catalog:",
+    "tdesign-icons-vue": "catalog:tdesign",
+    "tdesign-vue": "catalog:tdesign",
+    "vue": "catalog:vue27",
+    "@popperjs/core": "catalog:"
+  },
+  "devDependencies": {
+    "@babel/core": "catalog:",
+    "@babel/eslint-parser": "catalog:",
+    "@vue/cli-plugin-babel": "catalog:",
+    "@vue/cli-plugin-eslint": "catalog:",
+    "@vue/cli-service": "catalog:",
+    "eslint": "^7.32.0",
+    "eslint-plugin-vue": "catalog:",
+    "raw-loader": "catalog:",
+    "vue-loader": "catalog:",
+    "vue-template-compiler": "catalog:",
+    "@vue/babel-preset-jsx": "catalog:"
+  }
+}

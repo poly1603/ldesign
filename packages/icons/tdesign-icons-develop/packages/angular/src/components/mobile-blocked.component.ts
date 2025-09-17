@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/mobile-blocked',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="mobile-blocked">
+<path id="fill2" d="M14.818 15.182C16.5754 16.9393 19.4246 16.9393 21.182 15.182C22.9393 13.4246 22.9393 10.5754 21.182 8.81802C19.4246 7.06066 16.5754 7.06066 14.818 8.81802C13.0607 10.5754 13.0607 13.4246 14.818 15.182Z" [attr.fill]="color"/>
+<path id="stroke1" d="M19 20V22H5V2H19V4M12 18H12.0039V18.0039H12V18Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M20.4749 9.52514L15.5251 14.4749M21.182 15.182C19.4246 16.9393 16.5754 16.9393 14.818 15.182C13.0607 13.4246 13.0607 10.5754 14.818 8.81802C16.5754 7.06066 19.4246 7.06066 21.182 8.81802C22.9393 10.5754 22.9393 13.4246 21.182 15.182Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class MobileBlockedComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

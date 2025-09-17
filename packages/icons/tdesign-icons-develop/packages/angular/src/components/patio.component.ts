@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/patio',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="patio">
+<path id="fill1" d="M4 21V4C4 4 7 2 12 2C17 2 20 4 20 4V21H4Z" [attr.fill]="color"/>
+<path id="stroke2" d="M8 10.5H12M8 14H12M8 17.5H12M8 8.5V21M12 21V8.5" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke1" d="M4 21V4C4 4 7 2 12 2C17 2 20 4 20 4V21M4 21H3M4 21H20M20 21H21" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class PatioComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

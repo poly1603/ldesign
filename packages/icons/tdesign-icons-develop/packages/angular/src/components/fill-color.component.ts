@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/fill-color',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="fill-color">
+<path id="fill1" d="M11.9999 21.4853L20.4852 13H3.51465L11.9999 21.4853Z" [attr.fill]="color"/>
+<path id="stroke1" d="M11.9999 4.51491L20.4852 13.0002L11.9999 21.4855L3.51465 13.0002L11.9999 4.51491ZM11.9999 4.51491L9.52506 2.04004M19.9499 13H4.24991" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M20.2197 21.0095C20.5126 21.3795 20.9874 21.3795 21.2803 21.0095C21.5732 20.6396 21.5732 20.0398 21.2803 19.6698L20.75 19L20.2197 19.6698C19.9268 20.0398 19.9268 20.6396 20.2197 21.0095Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class FillColorComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

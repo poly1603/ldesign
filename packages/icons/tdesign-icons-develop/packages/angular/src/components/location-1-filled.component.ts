@@ -1,0 +1,19 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/location-1-filled',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M7.00008 6C7.00008 3.23858 9.23865 1 12.0001 1C14.7615 1 17.0001 3.23858 17.0001 6C17.0001 8.41896 15.2823 10.4367 13.0001 10.9V17H11.0001V10.9C8.71784 10.4367 7.00008 8.41896 7.00008 6ZM3.10503 11H8.00008V13H4.89512L4.11734 20H19.8828L19.105 13H16.0001V11H20.8951L22.1173 22H1.88281L3.10503 11Z"
+        [attr.fill]="color" />
+</svg>
+  `,
+  standalone: true
+})
+export class Location1FilledComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

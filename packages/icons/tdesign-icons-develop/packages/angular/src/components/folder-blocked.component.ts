@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/folder-blocked',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="folder-blocked">
+<path id="fill2" d="M18.5 21.5C20.9853 21.5 23 19.4853 23 17C23 14.5147 20.9853 12.5 18.5 12.5C16.0147 12.5 14 14.5147 14 17C14 19.4853 16.0147 21.5 18.5 21.5Z" [attr.fill]="color"/>
+<path id="stroke1" d="M10.5 20H2V3.5H9L11 6H22V9" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M20.9749 14.5251L16.0251 19.4749M21.682 20.182C19.9246 21.9393 17.0754 21.9393 15.318 20.182C13.5607 18.4246 13.5607 15.5754 15.318 13.818C17.0754 12.0607 19.9246 12.0607 21.682 13.818C23.4393 15.5754 23.4393 18.4246 21.682 20.182Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class FolderBlockedComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

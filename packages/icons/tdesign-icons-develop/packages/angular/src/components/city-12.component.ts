@@ -1,0 +1,26 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/city-12',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <g id="city-12">
+        <path id="fill1" d="M17 21V11H7V21H17Z" [attr.fill]="color" />
+        <g id="fill2">
+            <path d="M21 21V6H15V11H17V21H21Z" [attr.fill]="color" />
+            <path d="M3 21H7V11H9V3H3V21Z" [attr.fill]="color" />
+        </g>
+        <path id="stroke2" d="M12 21V16M21 6V21H17V11H15V6H21ZM7 21H3V3H9V11H7V21Z" [attr.stroke]="color" stroke-[attr.width]="size"
+            stroke-linecap="square" />
+        <path id="stroke1" d="M17 21V11H7V21H17Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+    </g>
+</svg>
+  `,
+  standalone: true
+})
+export class City12Component {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

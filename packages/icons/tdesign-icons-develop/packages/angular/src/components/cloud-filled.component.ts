@@ -1,0 +1,19 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/cloud-filled',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M4 10C4 6.13401 7.13401 3 11 3C14.1873 3 16.8756 5.12935 17.7225 8.04306C20.6955 8.39988 23 10.9308 23 14C23 17.3137 20.3137 20 17 20H6C3.23858 20 1 17.7614 1 15C1 12.9443 2.23985 11.18 4.01191 10.4112C4.004 10.275 4 10.1379 4 10Z"
+        [attr.fill]="color" />
+</svg>
+  `,
+  standalone: true
+})
+export class CloudFilledComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

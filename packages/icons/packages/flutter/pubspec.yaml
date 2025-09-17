@@ -1,0 +1,23 @@
+name: ldesign_icons_flutter
+description: LDesign Icons for Flutter - A comprehensive icon library
+version: 1.0.0
+homepage: https://github.com/ldesign/ldesign-icons
+
+environment:
+  sdk: ">=2.17.0 <4.0.0"
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  fonts:
+    - family: LDesignIcons
+      fonts:
+        - asset: fonts/ldesign-icons.ttf

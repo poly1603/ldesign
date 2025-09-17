@@ -1,0 +1,19 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/slice-filled',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M12 12.4141L4.91406 19.5H11C11.5523 19.5 12 19.0523 12 18.5V12.4141ZM14 18.5C14 20.1569 12.6569 21.5 11 21.5H0.0859375L18.293 3.29297L18.4092 3.18262C19.6344 2.07542 21.5261 2.11216 22.707 3.29297L22.8174 3.40918C23.8892 4.59499 23.889 6.40493 22.8174 7.59082L22.707 7.70703L14 16.4141V18.5Z"
+        [attr.fill]="color" />
+</svg>
+  `,
+  standalone: true
+})
+export class SliceFilledComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

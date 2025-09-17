@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/html5',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="html5">
+<path id="fill1" d="M3 2H21L20 19.5L12 22.5L4 19.5L3 2Z" [attr.fill]="color"/>
+<path id="stroke1" d="M3 2H21L20 19.5L12 22.5L4 19.5L3 2Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M16.5 6H17.2714L17.2709 6.00771L16.5 6ZM16.5 6H6.72852L7.03576 11.3768L11.2549 11.3768L16.9641 11.3768L16.6569 16.7537L12 18.5L7.34301 16.7536L7.2662 15.4094L7.2566 15.2414M7.2566 15.2414L7.24699 15.0734H7.25L7.2566 15.2414Z" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class Html5Component {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

@@ -1,0 +1,8 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="video">
+<path id="fill1" d="M3 3H21V21H3V3Z" fill="white"/>
+<path id="fill2" d="M15.75 11.9997L9 15.8968L9 8.10254L15.75 11.9997Z" fill="white"/>
+<path id="stroke1" d="M3 3H21V21H3V3Z" stroke="black" stroke-width="2"/>
+<path id="stroke2" d="M15.75 11.9997L9 15.8968L9 8.10254L15.75 11.9997Z" stroke="black" stroke-width="2"/>
+</g>
+</svg>

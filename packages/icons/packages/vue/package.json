@@ -1,0 +1,80 @@
+{
+  "name": "@ldesign/icons-vue",
+  "version": "0.4.1",
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/ldesign-icons.git",
+    "directory": "packages/vue"
+  },
+  "homepage": "https://github.com/ldesign/ldesign-icons/blob/develop/README.md",
+  "bugs": {
+    "url": "https://github.com/ldesign/ldesign-icons/issues"
+  },
+  "files": [
+    "dist",
+    "esm",
+    "lib",
+    "types",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "main": "lib/index.js",
+  "module": "esm/index.js",
+  "unpkg": "dist/index.min.js",
+  "sideEffects": [
+    "dist/**/*",
+    "esm/style/**/*",
+    "lib/style/**/*"
+  ],
+  "scripts": {
+    "prebuild": "rimraf esm/* lib/* dist/*",
+    "build": "cross-env NODE_ENV=production rollup -c rollup.config.js && npm run build:tsc",
+    "build:tsc": "concurrently \"npm:build:tsc-*\"",
+    "build:tsc-esm": "tsc --emitDeclarationOnly -d --outDir esm/",
+    "build:tsc-lib": " tsc --emitDeclarationOnly -d --outDir lib/"
+  },
+  "peerDependencies": {
+    "vue": "^2.6.12"
+  },
+  "devDependencies": {
+    "@babel/core": "catalog:",
+    "@babel/plugin-transform-runtime": "catalog:",
+    "@babel/preset-env": "catalog:",
+    "@rollup/plugin-babel": "catalog:",
+    "@rollup/plugin-commonjs": "catalog:",
+    "@rollup/plugin-node-resolve": "catalog:",
+    "@rollup/plugin-replace": "catalog:",
+    "@types/node": "catalog:types",
+    "@vue/babel-plugin-jsx": "catalog:",
+    "@vue/babel-preset-jsx": "catalog:",
+    "@vue/compiler-sfc": "catalog:",
+    "camelcase": "catalog:",
+    "concurrently": "catalog:",
+    "cross-env": "catalog:",
+    "esbuild": "catalog:",
+    "less": "catalog:",
+    "postcss": "catalog:",
+    "rollup": "catalog:",
+    "rollup-plugin-esbuild": "catalog:",
+    "rollup-plugin-ignore-import": "catalog:",
+    "rollup-plugin-less": "catalog:",
+    "rollup-plugin-multi-input": "catalog:",
+    "rollup-plugin-postcss": "catalog:",
+    "rollup-plugin-static-import": "catalog:",
+    "rollup-plugin-styles": "catalog:",
+    "rollup-plugin-terser": "catalog:",
+    "rollup-plugin-vue": "catalog:",
+    "tslib": "catalog:",
+    "typescript": "catalog:",
+    "vue": "catalog:vue26"
+  },
+  "dependencies": {
+    "@babel/runtime": "catalog:",
+    "classnames": "catalog:"
+  }
+}

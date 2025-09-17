@@ -1,0 +1,25 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/edit-off',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <g id="edit-off">
+        <path id="fill2" fill-rule="evenodd" clip-rule="evenodd"
+            d="M17.9936 9.89339L21.0506 6.83635L17.1615 2.94727L14.1045 6.0043L17.9936 9.89339Z" [attr.fill]="color" />
+        <path id="stroke1"
+            d="M10.0545 10.0544L4.78744 15.3215L3.99805 20L8.67652 19.2106L13.9436 13.9435M12.6094 7.5L17.1622 2.94727L21.0513 6.83635L16.4985 11.3891M17.9946 9.89348L14.1055 6.00439"
+            [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+        <path id="stroke2" d="M4 4L10.0545 10.0545L13.9436 13.9436L20 20" [attr.stroke]="color" stroke-[attr.width]="size"
+            stroke-linecap="square" />
+    </g>
+</svg>
+  `,
+  standalone: true
+})
+export class EditOffComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

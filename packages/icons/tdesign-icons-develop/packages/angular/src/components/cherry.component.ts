@@ -1,0 +1,29 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/cherry',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <g id="cherry" clip-path="url(#clip0_543_6572)">
+        <g id="fill1">
+            <path
+                d="M14.9997 21.0002C13.6329 22.3671 11.3666 22.3671 9.99974 21.0002C8.6329 19.6334 8.6329 17.3671 9.99974 16.0002C11.3666 14.6334 13.6329 14.6334 14.9997 16.0002C16.3666 17.3671 16.3666 19.6334 14.9997 21.0002Z"
+                [attr.fill]="color" />
+            <path
+                d="M7.99974 14.0002C6.6329 15.3671 4.36657 15.3671 2.99974 14.0002C1.6329 12.6334 1.6329 10.3671 2.99974 9.00022C4.36657 7.63339 6.6329 7.63339 7.99974 9.00022C9.36657 10.3671 9.36657 12.6334 7.99974 14.0002Z"
+                [attr.fill]="color" />
+        </g>
+        <path id="stroke1"
+            d="M7.99974 9.00003C6.6329 7.63319 4.36657 7.63319 2.99974 9.00003C1.6329 10.3669 1.6329 12.6332 2.99974 14C4.36657 15.3669 6.6329 15.3669 7.99974 14C9.36657 12.6332 9.36657 10.3669 7.99974 9.00003ZM7.99974 9.00003C11.1717 5.82806 17.1521 5.16938 19.2497 5.03432M16.9997 2L21.9997 7M19.2497 5.87694C17.7111 7.7916 15.1381 11.6366 14.9935 15.25M14.9997 16C13.6329 14.6332 11.3666 14.6332 9.99974 16C8.6329 17.3669 8.6329 19.6332 9.99974 21C11.3666 22.3669 13.6329 22.3669 14.9997 21C16.3666 19.6332 16.3666 17.3669 14.9997 16Z"
+            [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+    </g>
+</svg>
+  `,
+  standalone: true
+})
+export class CherryComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

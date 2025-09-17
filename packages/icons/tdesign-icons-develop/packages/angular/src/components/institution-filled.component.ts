@@ -1,0 +1,20 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/institution-filled',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 0.856079L22 6.41163V9.00004H2V6.41163L12 0.856079ZM2 21H22V23H2V21Z" [attr.fill]="color" />
+    <path d="M7 19H5V11H7V19Z" [attr.fill]="color" />
+    <path d="M13 19H11V11H13V19Z" [attr.fill]="color" />
+    <path d="M19 19H17V11H19V19Z" [attr.fill]="color" />
+</svg>
+  `,
+  standalone: true
+})
+export class InstitutionFilledComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

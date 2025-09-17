@@ -1,0 +1,19 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/map-navigation-filled',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M7.99992 2V5L17.9999 5V2H19.9999V5H21.9999V7H19.9999V15H21.9999V17H19.9999V21H17.9999V17H15.9999V15H17.9999V7H7.99992V11H5.99992V7H1.99992V5H5.99992V2H7.99992ZM14.5807 10.4185L10.2051 23.5453L7.19684 17.8023L1.45386 14.7941L14.5807 10.4185Z"
+        [attr.fill]="color" />
+</svg>
+  `,
+  standalone: true
+})
+export class MapNavigationFilledComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

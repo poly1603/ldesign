@@ -1,7 +1,0 @@
-.ld-icon-spin {
-  animation: ld-icon-spin 1s linear infinite;
-}
-@keyframes ld-icon-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}

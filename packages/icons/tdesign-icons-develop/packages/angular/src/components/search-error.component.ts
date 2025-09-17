@@ -1,0 +1,24 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/search-error',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <g id="search-error">
+        <path id="stroke1"
+            d="M15.8033 15.8033C18.7322 12.8744 18.7322 8.12563 15.8033 5.1967C12.8744 2.26777 8.12563 2.26777 5.1967 5.1967C3.73124 6.66216 2.99901 8.58319 3 10.5039M15.8033 15.8033L21.1066 21.1066M15.8033 15.8033C14.3388 17.2678 12.4194 18 10.5 18"
+            [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+        <path id="stroke2"
+            d="M1.67188 14.6716L4.5003 17.5001M4.5003 17.5001L7.32873 20.3285M4.5003 17.5001L1.67188 20.3285M4.5003 17.5001L7.32873 14.6716"
+            [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+    </g>
+</svg>
+  `,
+  standalone: true
+})
+export class SearchErrorComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

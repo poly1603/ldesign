@@ -1,0 +1,19 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/sim-card-2-filled',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M21 1H7.58579L3 5.58579V23H21V1ZM11 11V12H9V11C9 9.34315 10.3431 8 12 8C13.6569 8 15 9.34315 15 11C15 11.814 14.6745 12.5539 14.1488 13.0935L14.1211 13.1219L12.28 14.7333H15V16.7333H9V14.9463L12.739 11.6737C12.902 11.4952 13 11.26 13 11C13 10.4477 12.5523 10 12 10C11.4477 10 11 10.4477 11 11Z"
+        [attr.fill]="color" />
+</svg>
+  `,
+  standalone: true
+})
+export class SimCard2FilledComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

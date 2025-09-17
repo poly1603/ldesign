@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign Icons - Preview</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .header-content {
+      padding: 20px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    h1 {
+      font-size: 28px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    .search-container {
+      flex: 1;
+      max-width: 500px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 20px 12px 45px;
+      border: 2px solid #e5e7eb;
+      border-radius: 30px;
+      font-size: 16px;
+      transition: all 0.3s;
+      background: #f9fafb;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af;
+      pointer-events: none;
+    }
+
+    .stats {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #1f2937;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    .controls {
+      background: white;
+      padding: 20px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .controls-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .size-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .size-button {
+      padding: 8px 16px;
+      border: 2px solid #e5e7eb;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    .size-button:hover {
+      border-color: #667eea;
+      background: #f3f4f6;
+    }
+
+    .size-button.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border-color: transparent;
+    }
+
+    .view-controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .view-button {
+      padding: 8px 12px;
+      border: 1px solid #e5e7eb;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .view-button:hover {
+      background: #f3f4f6;
+    }
+
+    .view-button.active {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    .main-content {
+      padding: 40px 0;
+    }
+
+    .icons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .icons-grid.list-view {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 10px;
+    }
+
+    .icon-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .icon-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: -1;
+    }
+
+    .icon-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      border-color: #667eea;
+    }
+
+    .icon-card.copied {
+      animation: copied 0.5s ease;
+    }
+
+    @keyframes copied {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+
+    .list-view .icon-card {
+      flex-direction: row;
+      justify-content: flex-start;
+      padding: 12px 16px;
+    }
+
+    .icon-display {
+      color: #4b5563;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-card:hover .icon-display {
+      color: #667eea;
+      transform: scale(1.1);
+    }
+
+    .icon-name {
+      font-size: 12px;
+      color: #6b7280;
+      text-align: center;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+
+    .list-view .icon-name {
+      flex: 1;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .copy-toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 30px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      transition: all 0.3s;
+      pointer-events: none;
+      font-weight: 500;
+      z-index: 1000;
+    }
+
+    .copy-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-10px);
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 60px 20px;
+      color: white;
+    }
+
+    .no-results h3 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .no-results p {
+      font-size: 16px;
+      opacity: 0.8;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: white;
+      font-size: 18px;
+    }
+
+    .category-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .category-tab {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .category-tab:hover {
+      background: #e5e7eb;
+    }
+
+    .category-tab.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border-color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="header">
+      <div class="container">
+        <div class="header-content">
+          <h1>
+            <div class="logo">L</div>
+            LDesign Icons
+          </h1>
+          <div class="search-container">
+            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" class="search-input" placeholder="Search icons..." id="searchInput">
+          </div>
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-value" id="totalCount">0</div>
+              <div class="stat-label">Total Icons</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="filteredCount">0</div>
+              <div class="stat-label">Filtered</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="container">
+        <div class="controls-content">
+          <div class="size-controls">
+            <span style="margin-right: 10px; color: #6b7280; font-weight: 500;">Size:</span>
+            <button class="size-button" data-size="24">24px</button>
+            <button class="size-button active" data-size="32">32px</button>
+            <button class="size-button" data-size="48">48px</button>
+            <button class="size-button" data-size="64">64px</button>
+          </div>
+          <div class="view-controls">
+            <button class="view-button active" data-view="grid">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              Grid
+            </button>
+            <button class="view-button" data-view="list">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              List
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="container">
+        <div id="iconsContainer">
+          <div class="loading">Loading icons...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="copy-toast" id="copyToast">Icon copied to clipboard!</div>
+  </div>
+
+  <script type="module">
+    // 示例图标数据（实际使用时从服务器加载）
+    const sampleIcons = [
+      { name: 'home', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>' },
+      { name: 'user', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>' },
+      { name: 'settings', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M12 1v6m0 6v6m4.22-13.22 4.24 4.24M1.54 8.54l4.24 4.24M1.54 15.46l4.24-4.24m13.44 0 4.24 4.24"></path></svg>' },
+      { name: 'search', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>' },
+      { name: 'heart', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>' },
+      { name: 'star', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>' }
+    ];
+
+    let currentSize = 32;
+    let currentView = 'grid';
+    let allIcons = [];
+    let filteredIcons = [];
+
+    // 初始化
+    async function init() {
+      // 尝试从实际文件加载图标
+      try {
+        const response = await fetch('/packages/svg-sprites/icons.json');
+        if (response.ok) {
+          const data = await response.json();
+          // 加载实际图标数据
+          allIcons = data.icons.map(name => ({
+            name,
+            svg: `<svg><!-- ${name} --></svg>` // 实际应该从 sprite 或单独文件加载
+          }));
+        } else {
+          // 使用示例数据
+          allIcons = sampleIcons;
+        }
+      } catch (error) {
+        // 使用示例数据
+        allIcons = sampleIcons;
+      }
+
+      filteredIcons = [...allIcons];
+      updateStats();
+      renderIcons();
+      setupEventListeners();
+    }
+
+    // 设置事件监听器
+    function setupEventListeners() {
+      // 搜索
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        filteredIcons = allIcons.filter(icon => 
+          icon.name.toLowerCase().includes(query)
+        );
+        updateStats();
+        renderIcons();
+      });
+
+      // 尺寸切换
+      document.querySelectorAll('.size-button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelector('.size-button.active')?.classList.remove('active');
+          e.target.classList.add('active');
+          currentSize = parseInt(e.target.dataset.size);
+          renderIcons();
+        });
+      });
+
+      // 视图切换
+      document.querySelectorAll('.view-button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelector('.view-button.active')?.classList.remove('active');
+          e.currentTarget.classList.add('active');
+          currentView = e.currentTarget.dataset.view;
+          renderIcons();
+        });
+      });
+    }
+
+    // 更新统计
+    function updateStats() {
+      document.getElementById('totalCount').textContent = allIcons.length;
+      document.getElementById('filteredCount').textContent = filteredIcons.length;
+    }
+
+    // 渲染图标
+    function renderIcons() {
+      const container = document.getElementById('iconsContainer');
+      
+      if (filteredIcons.length === 0) {
+        container.innerHTML = `
+          <div class="no-results">
+            <h3>No icons found</h3>
+            <p>Try adjusting your search query</p>
+          </div>
+        `;
+        return;
+      }
+
+      const gridClass = currentView === 'list' ? 'icons-grid list-view' : 'icons-grid';
+      const iconsHTML = filteredIcons.map(icon => `
+        <div class="icon-card" data-icon="${icon.name}">
+          <div class="icon-display" style="width: ${currentSize}px; height: ${currentSize}px;">
+            ${icon.svg}
+          </div>
+          <div class="icon-name">${icon.name}</div>
+        </div>
+      `).join('');
+
+      container.innerHTML = `<div class="${gridClass}">${iconsHTML}</div>`;
+
+      // 添加点击复制功能
+      container.querySelectorAll('.icon-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const iconName = card.dataset.icon;
+          copyToClipboard(iconName);
+          showCopyToast(iconName);
+          
+          // 添加动画效果
+          card.classList.add('copied');
+          setTimeout(() => card.classList.remove('copied'), 500);
+        });
+      });
+    }
+
+    // 复制到剪贴板
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (err) {
+        // Fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+    }
+
+    // 显示复制提示
+    function showCopyToast(iconName) {
+      const toast = document.getElementById('copyToast');
+      toast.textContent = `"${iconName}" copied to clipboard!`;
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
+    // 启动应用
+    init();
+  </script>
+</body>
+</html>

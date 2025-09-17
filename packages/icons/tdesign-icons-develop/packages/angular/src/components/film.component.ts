@@ -1,0 +1,52 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/film',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+    <g id="film">
+        <path id="fill1"
+            d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5229 2 12Z"
+            [attr.fill]="color" />
+        <g id="fill2">
+            <path
+                d="M10 7C10 5.89543 10.8954 5 12 5C13.1046 5 14 5.89543 14 7C14 8.10457 13.1046 9 12 9C10.8954 9 10 8.10457 10 7Z"
+                [attr.fill]="color" />
+            <path
+                d="M15 12C15 10.8954 15.8954 10 17 10C18.1046 10 19 10.8954 19 12C19 13.1046 18.1046 14 17 14C15.8954 14 15 13.1046 15 12Z"
+                [attr.fill]="color" />
+            <path
+                d="M5 12C5 10.8954 5.89543 10 7 10C8.10457 10 9 10.8954 9 12C9 13.1046 8.10457 14 7 14C5.89543 14 5 13.1046 5 12Z"
+                [attr.fill]="color" />
+            <path
+                d="M10 17C10 15.8954 10.8954 15 12 15C13.1046 15 14 15.8954 14 17C14 18.1046 13.1046 19 12 19C10.8954 19 10 18.1046 10 17Z"
+                [attr.fill]="color" />
+        </g>
+        <path id="stroke1"
+            d="M12 22C6.47715 22 2 17.5229 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 14.7255 20.9097 17.1963 19.1414 19C18.2492 19.9101 17.1844 20.6504 16 21.1679C14.7751 21.7031 13.4222 22 12 22ZM12 22H23"
+            [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+        <g id="stroke2">
+            <path
+                d="M10 7C10 5.89543 10.8954 5 12 5C13.1046 5 14 5.89543 14 7C14 8.10457 13.1046 9 12 9C10.8954 9 10 8.10457 10 7Z"
+                [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+            <path
+                d="M15 12C15 10.8954 15.8954 10 17 10C18.1046 10 19 10.8954 19 12C19 13.1046 18.1046 14 17 14C15.8954 14 15 13.1046 15 12Z"
+                [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+            <path
+                d="M5 12C5 10.8954 5.89543 10 7 10C8.10457 10 9 10.8954 9 12C9 13.1046 8.10457 14 7 14C5.89543 14 5 13.1046 5 12Z"
+                [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+            <path
+                d="M10 17C10 15.8954 10.8954 15 12 15C13.1046 15 14 15.8954 14 17C14 18.1046 13.1046 19 12 19C10.8954 19 10 18.1046 10 17Z"
+                [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square" />
+        </g>
+    </g>
+</svg>
+  `,
+  standalone: true
+})
+export class FilmComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}

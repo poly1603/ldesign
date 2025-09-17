@@ -1,0 +1,6 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="flag">
+<path id="fill1" d="M4 3H11L13 5H20L18 10.5L20 16H13L11 14H4V8.5V3Z" fill="white"/>
+<path id="stroke1" d="M4 14H11L13 16H20L18 10.5L20 5H13L11 3H4V8.5V14ZM4 14V21.5" stroke="black" stroke-width="2" stroke-linecap="square"/>
+</g>
+</svg>

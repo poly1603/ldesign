@@ -1,0 +1,22 @@
+// This file is generated automatically. DO NOT EDIT IT.
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'tdesign-tdesign-icons-develop/svg/file-setting',
+  template: `
+    <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" [attr.fill]="color" xmlns="http://www.w3.org/2000/svg">
+<g id="file-setting">
+<path id="fill2" d="M21 18C21 19.6569 19.6569 21 18 21C16.3431 21 15 19.6569 15 18C15 16.3431 16.3431 15 18 15C19.6569 15 21 16.3431 21 18Z" [attr.fill]="color"/>
+<path id="stroke1" d="M20 10V7L15 2H4V22H10M14 2V8H20" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+<path id="stroke2" d="M17.9999 15V13.75M17.9999 15C16.3431 15 14.9999 16.3431 14.9999 18C14.9999 19.6569 16.3431 21 17.9999 21M17.9999 15C19.6568 15 20.9999 16.3431 20.9999 18C20.9999 19.6569 19.6568 21 17.9999 21M17.9999 21V22.25M15.4019 16.5L14.3193 15.875M20.598 19.5L21.6806 20.125M20.598 16.5L21.6806 15.875M15.4019 19.5L14.3193 20.125" [attr.stroke]="color" stroke-[attr.width]="size" stroke-linecap="square"/>
+</g>
+</svg>
+
+  `,
+  standalone: true
+})
+export class FileSettingComponent {
+  @Input() size: number | string = 24;
+  @Input() color: string = 'currentColor';
+  @Input() strokeWidth: number = 2;
+}
