@@ -112,11 +112,11 @@ function processThemeConfig(config: ColorPluginOptions): ThemeConfig[] {
         } as any,
         dark: customTheme.dark
           ? ({
-              primary: (customTheme.dark as any)?.primary
-                ?? customTheme.colors?.primary
-                ?? '#177ddc',
-              ...(customTheme.dark || {} as any),
-            } as any)
+            primary: (customTheme.dark as any)?.primary
+              ?? customTheme.colors?.primary
+              ?? '#177ddc',
+            ...(customTheme.dark || {} as any),
+          } as any)
           : undefined,
         colors: customTheme.colors,
       }
@@ -539,7 +539,7 @@ const ColorVuePlugin = {
 export default ColorVuePlugin
 
 // 类型声明扩展
-declare module '@vue/runtime-core' {
+declare module 'vue' {
   interface ComponentCustomProperties {
     $themeManager: ThemeManagerInstance
   }

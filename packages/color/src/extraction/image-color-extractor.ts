@@ -786,7 +786,7 @@ export class ImageColorExtractor {
 
 // Octree implementation for color quantization
 class OctreeNode {
-  private children: (OctreeNode | null)[] = Array.from({ length: 8 }).fill(null)
+  private children: (OctreeNode | null)[] = Array.from({ length: 8 }, () => null)
   private isLeaf = false
   private r = 0
   private g = 0

@@ -45,6 +45,10 @@ const DEFAULT_OPTIONS: Required<
   cache: true,
   cssPrefix: '--color',
   idleProcessing: true,
+  useConstructableCss: false,
+  autoAdjustContrast: false,
+  contrastLevel: 'AA',
+  textSize: 'normal',
   onThemeChanged: undefined,
   onError: undefined,
 }
@@ -552,11 +556,8 @@ export class ThemeManager implements ThemeManagerInstance {
     else {
       // 退回：仅注入当前模式的扁平变量
       const modeVars = targetMode === 'dark' ? dark : light
-      const cssText = Object.entries(modeVars).map(([k, v]) => `  ${k}: ${v};`).join('\n')
-      const base = `[data-theme-scope=\"${scopeId}\"]`
-      const text = `${base} {\n${cssText}\n}`
-      // 简易注入
-      ;(scopedInjector as any).updateVariables ? scopedInjector.updateVariables(modeVars) : this.cssInjector.injectVariables(modeVars)
+        // 简易注入
+        ; (scopedInjector as any).updateVariables ? scopedInjector.updateVariables(modeVars) : this.cssInjector.injectVariables(modeVars)
     }
   }
 
@@ -570,7 +571,7 @@ export class ThemeManager implements ThemeManagerInstance {
     const el = document.getElementById(`ldesign-theme-variables-${scopeId}`)
     if (el)
       el.remove()
-    ;(root as HTMLElement).removeAttribute('data-theme-scope')
+        ; (root as HTMLElement).removeAttribute('data-theme-scope')
   }
 
   /**
@@ -867,12 +868,12 @@ export class ThemeManager implements ThemeManagerInstance {
       : lightColors
     const darkColorConfig = config.dark
       ? {
-          primary: config.dark.primary,
-          success: darkColors.success || '#49aa19',
-          warning: darkColors.warning || '#d4b106',
-          danger: darkColors.danger || '#dc4446',
-          gray: darkColors.gray || '#8c8c8c',
-        }
+        primary: config.dark.primary,
+        success: darkColors.success || '#49aa19',
+        warning: darkColors.warning || '#d4b106',
+        danger: darkColors.danger || '#dc4446',
+        gray: darkColors.gray || '#8c8c8c',
+      }
       : lightColorConfig
 
     // 生成色阶
@@ -1017,10 +1018,11 @@ export class ThemeManager implements ThemeManagerInstance {
    * 应用高对比度覆盖样式
    * 简化策略：依据当前背景/文本变量，确保达到目标阈值
    */
-  private applyHighContrastOverrides(mode: ColorMode): void {
+  private applyHighContrastOverrides(_mode: ColorMode): void {
     // 构造一些关键变量的高对比度替换（示例策略）
     const styleId = 'ldesign-theme-variables-contrast'
-    const threshold = this.highContrastLevel === 'AAA'
+    // 计算对比度阈值（当前未使用，但保留用于未来扩展）
+    const _threshold = this.highContrastLevel === 'AAA'
       ? (this.highContrastTextSize === 'large' ? 4.5 : 7)
       : (this.highContrastTextSize === 'large' ? 3 : 4.5)
 
@@ -1055,7 +1057,7 @@ ${overridesDark.join('\n')}
     // 使用注入器注入覆盖层（单独 styleId）
     if ((this.cssInjector as any).updateStyleElement) {
       // 通过 injectVariables 注入固定文本不可行，这里直接走底层更新方法
-      ;(this.cssInjector as any).updateStyleElement(styleId, css)
+      ; (this.cssInjector as any).updateStyleElement(styleId, css)
     }
     else {
       // 回退：创建独立 <style>

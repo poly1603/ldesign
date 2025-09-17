@@ -28,6 +28,16 @@ export type ColorCategory =
   | 'gray'
 
 /**
+ * WCAG 对比度等级
+ */
+export type WCAGLevel = 'AA' | 'AAA'
+
+/**
+ * 文本大小类型
+ */
+export type TextSize = 'small' | 'normal' | 'large'
+
+/**
  * 中性色类别
  */
 export type NeutralColorCategory =

@@ -88,7 +88,7 @@ export class CSSInjectorImpl implements CSSInjector {
     const sheet = this.styleSheets.get(styleId)
     if (sheet) {
       const adopted = (document as any).adoptedStyleSheets || []
-      ;(document as any).adoptedStyleSheets = adopted.filter((s: any) => s !== sheet)
+        ; (document as any).adoptedStyleSheets = adopted.filter((s: any) => s !== sheet)
       this.styleSheets.delete(styleId)
     }
 
@@ -199,13 +199,15 @@ export class CSSInjectorImpl implements CSSInjector {
           (document as any).adoptedStyleSheets = [...adopted, sheet]
         }
       }
-      try {
-        // 同步替换内容（测试环境更稳定）
-        ;(sheet as any).replaceSync(cssText)
-      }
-      catch {
-        // 某些环境只能异步
-        ;(sheet as any).replace(cssText)
+      if (sheet) {
+        try {
+          // 同步替换内容（测试环境更稳定）
+          ; (sheet as any).replaceSync(cssText)
+        }
+        catch {
+          // 某些环境只能异步
+          ; (sheet as any).replace(cssText)
+        }
       }
       return
     }
