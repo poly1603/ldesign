@@ -607,7 +607,7 @@ export class ApiEngineImpl implements ApiEngine {
 
     // 优先调用管理器的销毁方法以清理定时器等资源
     if (typeof (this.cacheManager as unknown as { destroy?: () => void }).destroy === 'function') {
-      ;(this.cacheManager as unknown as { destroy: () => void }).destroy()
+      ; (this.cacheManager as unknown as { destroy: () => void }).destroy()
     }
     else {
       this.cacheManager.clear()
@@ -616,7 +616,7 @@ export class ApiEngineImpl implements ApiEngine {
     this.debounceManager.clear()
 
     if (typeof (this.deduplicationManager as unknown as { destroy?: () => void }).destroy === 'function') {
-      ;(this.deduplicationManager as unknown as { destroy: () => void }).destroy()
+      ; (this.deduplicationManager as unknown as { destroy: () => void }).destroy()
     }
     else {
       this.deduplicationManager.clear()
@@ -744,7 +744,7 @@ export class ApiEngineImpl implements ApiEngine {
         const val = (headers as Record<string, unknown>)[key]
         if (typeof val === 'function') {
           try {
-            ;(headers as Record<string, unknown>)[key] = (val as (...args: unknown[]) => unknown).length > 0
+            ; (headers as Record<string, unknown>)[key] = (val as (...args: unknown[]) => unknown).length > 0
               ? (val as (p?: unknown) => unknown)(params)
               : (val as () => unknown)()
           }
