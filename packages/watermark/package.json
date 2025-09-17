@@ -46,7 +46,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "node scripts/build.js",
+    "build": "ldesign-builder build",
     "build:main": "vite build",
     "build:modules": "vite build --config vite.config.modules.ts",
     "build:rollup": "rollup -c",

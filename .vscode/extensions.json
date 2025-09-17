@@ -1,8 +1,5 @@
 {
   "recommendations": [
-    // Turborepo
-    "turborepo.turbo-vsc",
-    
     // 基础开发工具
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",

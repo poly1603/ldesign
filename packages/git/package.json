@@ -37,7 +37,7 @@
     "lgit": "./bin/cli.js"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "ldesign-builder build",
     "postbuild": "pnpm run size-check",
     "build:watch": "tsup --watch",
     "dev": "tsup --watch",

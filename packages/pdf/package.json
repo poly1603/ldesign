@@ -47,7 +47,7 @@
     "types"
   ],
   "scripts": {
-    "build": "node scripts/build.js",
+    "build": "ldesign-builder build",
     "build:rollup": "rollup -c",
     "build:watch": "ldesign-builder build --watch",
     "dev": "rollup -c -w",

@@ -1,4 +1,4 @@
-import { defineConfig } from '@ldesign/builder'
+import { defineConfig, LibraryType } from '@ldesign/builder'
 import fs from 'fs'
 import path from 'path'
 
@@ -34,6 +34,7 @@ const umdGlobals = external.reduce((acc, dep) => {
 }, {} as Record<string, string>)
 
 export default defineConfig({
+  libraryType: LibraryType.VUE3,
   dts: true,
   sourcemap: true,
   clean: true,

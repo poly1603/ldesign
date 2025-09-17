@@ -1,234 +1,37 @@
 {
-  "name": "@ldesign/monorepo",
-  "type": "module",
-  "version": "1.0.0",
-  "private": true,
-  "packageManager": "pnpm@10.15.0",
-  "description": "基于Vue3的现代化前端开发引擎 - 提供完整的插件化架构和跨框架兼容性",
-  "workspaces": [
-    "packages/**",
-    "apps/**",
-    "examples/**",
-    "docs",
-    "app"
-  ],
-  "author": "LDesign Team",
-  "license": "MIT",
-  "homepage": "https://github.com/ldesign/ldesign#readme",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign/ldesign.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ldesign/ldesign/issues"
-  },
-  "keywords": [
-    "ldesign",
-    "vue3",
-    "engine",
-    "plugin",
-    "monorepo",
-    "typescript",
-    "vite",
-    "frontend",
-    "framework",
-    "color",
-    "crypto",
-    "device",
-    "http",
-    "i18n",
-    "router",
-    "store",
-    "template"
-  ],
-  "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
-  },
-  "scripts": {
-    "build": "turbo run build",
-    "build:packages": "turbo run build --filter='./packages/*'",
-    "build:apps": "turbo run build --filter='./app' --filter='./apps/*'",
-    "build:prod": "turbo run build:prod",
-    "build:watch": "turbo run build:watch",
-    "dev": "turbo run dev --parallel",
-    "dev:packages": "turbo run dev --filter='./packages/*' --parallel",
-    "dev:app": "turbo run dev --filter='./app'",
-    "dev:docs": "turbo run docs:dev --filter='./docs'",
-    "test": "turbo run test",
-    "test:run": "turbo run test:run",
-    "test:coverage": "turbo run test:coverage",
-    "test:e2e": "turbo run test:e2e",
-    "test:watch": "turbo run test:watch",
-    "test:ci": "turbo run test:ci",
-    "lint": "turbo run lint",
-    "lint:fix": "turbo run lint:fix",
-    "type-check": "turbo run type-check",
-    "clean": "turbo run clean && rimraf .turbo node_modules/.cache/turbo",
-    "clean:cache": "rimraf .turbo node_modules/.cache/turbo",
-    "clean:all": "pnpm clean && pnpm clean:cache && rimraf node_modules",
-    "size-check": "turbo run size-check",
-    "docs:build": "turbo run docs:build --filter='./docs'",
-    "docs:preview": "turbo run docs:preview --filter='./docs'",
-    "deploy": "turbo run deploy",
-    "deploy:dry-run": "turbo run deploy:dry-run",
-    "changeset": "changeset",
-    "version": "changeset version",
-    "release": "turbo run build && changeset publish",
-    "prepare": "husky install",
-    "turbo:info": "turbo daemon status",
-    "turbo:login": "turbo login",
-    "turbo:link": "turbo link",
-    "turbo:daemon:start": "turbo daemon start",
-    "turbo:daemon:stop": "turbo daemon stop",
-    "turbo:daemon:restart": "turbo daemon stop && turbo daemon start",
-    "build:dev": "turbo run build --env-mode=development",
-    "build:prod:env": "turbo run build --env-mode=production",
-    "build:analyze": "turbo run build:analyze",
-    "analyze:turbo": "node scripts/turbo-analyze.js",
-    "analyze:performance": "node scripts/performance-monitor.js",
-    "analyze:dependencies": "node scripts/dependency-analyzer.js",
-    "test:compatibility": "node scripts/package-compatibility-tester.js",
-    "fix:test-configs": "node scripts/fix-test-configs.js",
-    "fix:critical-issues": "node scripts/critical-issues-fixer.js",
-    "fix:kit-package": "node scripts/fix-kit-package.js",
-    "fix:circular-dependency": "node scripts/fix-circular-dependency.js",
-    "analyze": "pnpm build:analyze && pnpm analyze:turbo && pnpm analyze:dependencies && pnpm analyze:performance",
-    "health:check": "pnpm turbo run build --dry-run && pnpm turbo run test --dry-run",
-    "health:packages": "pnpm turbo run build --filter=\"@ldesign/builder\" --filter=\"@ldesign/color\" --filter=\"@ldesign/shared\"",
-    "debug:build": "pnpm turbo run build --verbose --no-cache",
-    "debug:graph": "pnpm turbo run build --graph",
-    "optimize:cache": "pnpm turbo prune && pnpm build",
-    "prune:scope": "turbo prune --scope",
-    "graph": "turbo run build --graph",
-    "graph:web": "turbo run build --graph=web",
-    "cache:clean": "turbo run clean --force",
-    "cache:status": "turbo run build --dry-run",
-    "parallel:dev": "turbo run dev --parallel --continue",
-    "parallel:test": "turbo run test --parallel --continue",
-    "ci": "turbo run lint type-check test:run build",
-    "ci:coverage": "turbo run lint type-check test:coverage build"
-  },
-  "devDependencies": {
-    "@antfu/eslint-config": "^3.0.0",
-    "@babel/core": "^7.28.0",
-    "@babel/preset-env": "^7.28.3",
-    "@babel/preset-react": "^7.27.1",
-    "@changesets/cli": "^2.27.0",
-    "@ldesign/builder": "workspace:^",
-    "@playwright/test": "^1.54.1",
-    "@rollup/plugin-alias": "^5.1.0",
-    "@rollup/plugin-babel": "^6.0.4",
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-replace": "^6.0.2",
-    "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "@size-limit/preset-small-lib": "^11.2.0",
-    "@types/crypto-js": "^4.2.2",
-    "@types/node": "^22.0.0",
-    "@types/node-forge": "^1.3.13",
-    "@typescript-eslint/eslint-plugin": "^8",
-    "@typescript-eslint/parser": "^8",
-    "@vitejs/plugin-vue": "^6.0.1",
-    "@vitejs/plugin-vue-jsx": "^4.2.0",
-    "@vitest/coverage-v8": "^3.2.4",
-    "@vitest/ui": "^3.2.4",
-    "@vue/babel-plugin-jsx": "^1.4.0",
-    "@vue/compiler-sfc": "^3.5.18",
-    "@vue/runtime-core": "^3.5.18",
-    "@vue/runtime-dom": "^3.5.18",
-    "@vue/shared": "^3.5.18",
-    "@vue/test-utils": "^2.4.4",
-    "autoprefixer": "^10.4.21",
-    "eslint": "^9.0.0",
-    "glob": "^10.4.5",
-    "happy-dom": "^18.0.1",
-    "husky": "^9.0.0",
-    "jsdom": "^24.0.0",
-    "less": "^4.4.0",
-    "lint-staged": "^15.0.0",
-    "postcss-less": "^6.0.0",
-    "rimraf": "^5.0.0",
-    "rolldown": "1.0.0-beta.35",
-    "rollup": "^4.9.6",
-    "rollup-plugin-delete": "^3.0.1",
-    "rollup-plugin-dts": "^6.1.0",
-    "rollup-plugin-postcss": "^4.0.2",
-    "rollup-plugin-vue": "^6.0.0",
-    "size-limit": "^11.2.0",
-    "tsx": "^4.20.3",
-    "turbo": "^2.5.6",
-    "typedoc": "^0.28.9",
-    "typedoc-plugin-markdown": "^4.8.0",
-    "typescript": "^5.6.0",
-    "unplugin-vue": "^5.0.0",
-    "unplugin-vue-jsx": "^0.6.1",
-    "vite": "^5.0.12",
-    "vitepress": "^1.6.4",
-    "vitest": "^3.2.4",
-    "vue": "^3.5.18",
-    "vue-tsc": "^3.0.5"
-  },
-  "pnpm": {
-    "overrides": {
-      "esbuild": ">=0.25.0",
-      "happy-dom": ">=15.10.2"
-    }
-  },
-  "lint-staged": {
-    "*.{js,ts,vue}": [
-      "eslint --fix"
-    ],
-    "*.{json,md,yml,yaml}": [
-      "prettier --write"
-    ]
-  },
-  "size-limit": [
-    {
-      "name": "@ldesign/color",
-      "path": "packages/color/dist/index.js",
-      "limit": "15 KB"
-    },
-    {
-      "name": "@ldesign/crypto",
-      "path": "packages/crypto/dist/index.js",
-      "limit": "100 KB"
-    },
-    {
-      "name": "@ldesign/device",
-      "path": "packages/device/dist/index.js",
-      "limit": "10 KB"
-    },
-    {
-      "name": "@ldesign/engine",
-      "path": "packages/engine/dist/index.js",
-      "limit": "85 KB"
-    },
-    {
-      "name": "@ldesign/http",
-      "path": "packages/http/dist/index.js",
-      "limit": "25 KB"
-    },
-    {
-      "name": "@ldesign/i18n",
-      "path": "packages/i18n/dist/index.js",
-      "limit": "20 KB"
-    },
-    {
-      "name": "@ldesign/router",
-      "path": "packages/router/dist/index.js",
-      "limit": "80 KB"
-    },
-    {
-      "name": "@ldesign/store",
-      "path": "packages/store/dist/index.js",
-      "limit": "85 KB"
-    }
-  ],
-  "dependencies": {
-    "babel-preset-solid": "^1.8.0",
-    "rollup-plugin-svelte": "^7.2.3",
-    "svelte": "^5.38.7"
-  }
+	"name": "@ldesign/monorepo",
+	"version": "1.0.0",
+	"description": "LDesign 设计系统 - 基于 pnpm 工作空间的 monorepo",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "node scripts/build.js",
+		"build:simple": "pnpm -r --filter='./packages/*' run build",
+		"build:prod": "pnpm -r --filter='./packages/*' run build",
+		"dev": "pnpm -r --parallel --filter='./packages/*' run dev",
+		"test": "pnpm -r --filter='./packages/*' run test",
+		"test:run": "pnpm -r --filter='./packages/*' run test:run",
+		"test:coverage": "pnpm -r --filter='./packages/*' run test:coverage",
+		"lint": "pnpm -r --filter='./packages/*' run lint",
+		"lint:fix": "pnpm -r --filter='./packages/*' run lint:fix",
+		"type-check": "pnpm -r --filter='./packages/*' run type-check",
+		"clean": "pnpm -r --filter='./packages/*' run clean",
+		"docs:dev": "pnpm --filter='./docs' run dev",
+		"docs:build": "pnpm --filter='./docs' run build",
+		"app:dev": "pnpm --filter='./app' run dev",
+		"app:build": "pnpm --filter='./app' run build"
+	},
+	"devDependencies": {
+		"@types/node": "^20.0.0",
+		"tsx": "^4.7.0",
+		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"process": "^0.11.10"
+	},
+	"engines": {
+		"node": ">=18.0.0",
+		"pnpm": ">=8.0.0"
+	},
+	"packageManager": "pnpm@8.15.0"
 }

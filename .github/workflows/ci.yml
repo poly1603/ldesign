@@ -79,14 +79,14 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
 
-      - name: Turbo Cache
+      - name: PNPM Store Cache
         uses: actions/cache@v3
         with:
-          path: .turbo
-          key: turbo-${{ runner.os }}-${{ matrix.node-version }}-${{ github.sha }}
+          path: ~/.pnpm-store
+          key: pnpm-store-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            turbo-${{ runner.os }}-${{ matrix.node-version }}-
-            turbo-${{ runner.os }}-
+            pnpm-store-${{ runner.os }}-${{ matrix.node-version }}-
+            pnpm-store-${{ runner.os }}-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

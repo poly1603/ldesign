@@ -37,7 +37,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "pnpm run build:lib",
+    "build": "ldesign-builder build",
     "build:lib": "vite build && tsc --project tsconfig.build.json",
     "test": "vitest",
     "test:watch": "vitest --watch",

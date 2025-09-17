@@ -37,7 +37,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "ldesign-builder",
+    "build": "ldesign-builder build",
     "dev": "ldesign-builder --watch",
     "test": "vitest",
     "test:watch": "vitest --watch",

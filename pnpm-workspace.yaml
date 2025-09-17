@@ -1,5 +1,4 @@
 packages:
   - packages/**
-  - template
-  - apps/**
-  - app
+  - "!packages/icons/tdesign-icons-develop"
+  - "!packages/icons/tdesign-icons-develop/**"

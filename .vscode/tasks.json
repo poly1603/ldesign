@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Turbo: Build All",
+      "label": "PNPM: Build All",
       "type": "shell",
       "command": "pnpm build",
       "group": {
@@ -16,9 +16,9 @@
       }
     },
     {
-      "label": "Turbo: Build Package",
+      "label": "PNPM: Build Package",
       "type": "shell",
-      "command": "pnpm turbo run build --filter=${input:packageName}",
+      "command": "pnpm --filter=${input:packageName} run build",
       "group": "build",
       "problemMatcher": ["$tsc"],
       "presentation": {
@@ -27,7 +27,7 @@
       }
     },
     {
-      "label": "Turbo: Dev All",
+      "label": "PNPM: Dev All",
       "type": "shell",
       "command": "pnpm dev",
       "group": "none",
@@ -39,7 +39,7 @@
       }
     },
     {
-      "label": "Turbo: Test",
+      "label": "PNPM: Test",
       "type": "shell",
       "command": "pnpm test",
       "group": "test",
@@ -50,7 +50,7 @@
       }
     },
     {
-      "label": "Turbo: Clean",
+      "label": "PNPM: Clean",
       "type": "shell",
       "command": "pnpm clean",
       "group": "none",
@@ -61,9 +61,9 @@
       }
     },
     {
-      "label": "Turbo: Graph",
+      "label": "PNPM: List Packages",
       "type": "shell",
-      "command": "pnpm turbo run build --graph",
+      "command": "pnpm list -r --depth=0",
       "group": "none",
       "problemMatcher": [],
       "presentation": {
@@ -72,9 +72,9 @@
       }
     },
     {
-      "label": "Turbo: Daemon Status",
+      "label": "PNPM: Install Dependencies",
       "type": "shell",
-      "command": "pnpm turbo:info",
+      "command": "pnpm install",
       "group": "none",
       "problemMatcher": [],
       "presentation": {
