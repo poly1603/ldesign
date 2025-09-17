@@ -88,6 +88,8 @@ export interface TypeScriptLibraryConfig {
   baseUrl?: string
   /** 路径映射 */
   paths?: Record<string, string[]>
+  /** 类型定义 */
+  types?: string[]
 }
 
 /**
@@ -134,6 +136,39 @@ export interface VueLibraryConfig {
     /** 其他脚本选项 */
     [key: string]: any
   }
+  /** 样式配置 */
+  style?: {
+    /** CSS 模块配置 */
+    modules?: boolean
+    /** 其他样式选项 */
+    [key: string]: any
+  }
+  /** 是否启用 CSS 模块 */
+  cssModules?: boolean
+}
+
+/**
+ * Vue JSX 配置
+ */
+export interface VueJsxConfig {
+  /** 包含的文件模式 */
+  include?: RegExp | string | (RegExp | string)[]
+  /** 排除的文件模式 */
+  exclude?: RegExp | string | (RegExp | string)[]
+  /** 是否启用 TypeScript 支持 */
+  typescript?: boolean
+  /** 是否启用优化 */
+  optimize?: boolean
+  /** JSX 工厂函数 */
+  factory?: string
+  /** JSX 片段 */
+  fragment?: string
+  /** JSX 导入源 */
+  jsxImportSource?: string
+  /** 是否启用开发模式 */
+  development?: boolean
+  /** 其他选项 */
+  [key: string]: any
   /** 样式配置 */
   style?: {
     /** 是否修剪样式 */

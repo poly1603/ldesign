@@ -130,15 +130,33 @@ await build(config)
 
 在开发时，可以使用监听模式自动重新构建：
 
+```bash
+npx ldesign-builder build -i src/index.ts -o dist -f esm,cjs -w
+```
+
+或编程式：
+
 ```typescript
-import { watch } from '@ldesign/builder'
+import { createBuilder } from '@ldesign/builder'
 
-const watchResult = await watch({
-  input: 'src/index.ts',
-  outDir: 'dist'
-})
-
+const watcher = await createBuilder({ input: 'src/index.ts', output: { dir: 'dist', format: ['esm','cjs'] } }).buildWatch()
 console.log('开始监听文件变化...')
+```
+
+## 报告与分析
+
+```bash
+# 生成构建报告（默认 dist/build-report.json）
+ldesign-builder build --report
+
+# 输出 Markdown 报告
+ldesign-builder analyze -r dist/build-report.json -f md
+
+# 输出 HTML 报告并自动打开
+ldesign-builder analyze -r dist/build-report.json -f html --open
+
+# 与基线报告比较
+ldesign-builder analyze -r dist/build-report.json --compare ./baseline/build-report.json
 ```
 
 ## 错误处理

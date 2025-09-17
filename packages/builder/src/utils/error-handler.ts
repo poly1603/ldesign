@@ -161,6 +161,46 @@ export class ErrorHandler {
   }
 
   /**
+   * 错误恢复机制
+   */
+  async recover<T>(
+    fn: () => T | Promise<T>,
+    fallback?: T | (() => T | Promise<T>),
+    maxRetries = 3
+  ): Promise<T> {
+    let lastError: Error | null = null
+    
+    for (let i = 0; i <= maxRetries; i++) {
+      try {
+        return await Promise.resolve(fn())
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error))
+        
+        this.logger?.warn(`Attempt ${i + 1} failed:`, lastError.message)
+        
+        if (i === maxRetries) {
+          break
+        }
+        
+        // 指数退避
+        const delay = Math.min(1000 * Math.pow(2, i), 10000)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
+    
+    // 尝试使用降级方案
+    if (fallback !== undefined) {
+      try {
+        return typeof fallback === 'function' ? await (fallback as () => T | Promise<T>)() : fallback
+      } catch (fallbackError) {
+        this.logger?.error('Fallback also failed:', fallbackError)
+      }
+    }
+    
+    throw lastError
+  }
+
+  /**
    * 包装函数以处理错误
    */
   wrap<TArgs extends readonly unknown[], TReturn>(

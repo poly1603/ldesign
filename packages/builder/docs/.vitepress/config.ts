@@ -34,7 +34,8 @@ export default defineConfig({
           items: [
             { text: '快速开始', link: '/guide/start' },
             { text: '配置文件', link: '/guide/config' },
-            { text: '构建项目', link: '/guide/build' }
+            { text: '构建项目', link: '/guide/build' },
+            { text: '迁移指南', link: '/guide/migration' }
           ]
         },
         {
@@ -55,7 +56,10 @@ export default defineConfig({
             { text: 'build', link: '/api/build' },
             { text: 'watch', link: '/api/watch' },
             { text: 'analyze', link: '/api/analyze' },
-            { text: 'defineConfig', link: '/api/define-config' }
+            { text: 'clean', link: '/api/clean' },
+            { text: 'examples', link: '/api/examples' },
+            { text: 'init', link: '/api/init' },
+            { text: 'define-config', link: '/api/define-config' }
           ]
         },
         {

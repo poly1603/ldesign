@@ -68,6 +68,18 @@ export interface FormatOutputConfig {
   /** 文件名模式 */
   fileName?: string | ((chunkInfo: ChunkInfo) => string)
 
+  /** 资源文件名模式 */
+  assetFileNames?: string | ((assetInfo: any) => string)
+
+  /** 代码块文件名模式 */
+  chunkFileNames?: string | ((chunkInfo: ChunkInfo) => string)
+
+  /** 入口文件名模式 */
+  entryFileNames?: string | ((chunkInfo: ChunkInfo) => string)
+
+  /** 全局变量映射 */
+  globals?: Record<string, string>
+
   /** 库名称（UMD/IIFE 格式需要） */
   name?: string
 }

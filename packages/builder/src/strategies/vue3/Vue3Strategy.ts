@@ -132,8 +132,13 @@ export class Vue3Strategy implements ILibraryStrategy {
       })
     }
 
+    // DTS 文件复制插件（如果存在 types 目录）
+    if (config.dts !== false) {
+      plugins.push(this.createDtsCopyPlugin())
+    }
+
     // 代码压缩插件（生产模式）
-if (shouldMinify(config)) {
+    if (shouldMinify(config)) {
       plugins.push({
         name: '@rollup/plugin-terser',
         options: {
@@ -187,6 +192,55 @@ if (shouldMinify(config)) {
    */
   private buildOutputConfig(config: BuilderConfig): any {
     const outputConfig = config.output || {}
+
+    // 如果使用格式特定配置（output.esm, output.cjs, output.umd），直接返回
+    if (outputConfig.esm || outputConfig.cjs || outputConfig.umd) {
+      const result = { ...outputConfig }
+
+      // 为每个输出格式添加 assetFileNames 配置
+      if (result.esm && typeof result.esm === 'object') {
+        result.esm = {
+          ...result.esm,
+          assetFileNames: '[name].[ext]',
+          globals: {
+            vue: 'Vue',
+            ...result.esm.globals
+          }
+        }
+      }
+
+      if (result.cjs && typeof result.cjs === 'object') {
+        result.cjs = {
+          ...result.cjs,
+          assetFileNames: '[name].[ext]',
+          globals: {
+            vue: 'Vue',
+            ...result.cjs.globals
+          }
+        }
+      }
+
+      if (result.umd && typeof result.umd === 'object') {
+        result.umd = {
+          ...result.umd,
+          assetFileNames: '[name].[ext]',
+          globals: {
+            vue: 'Vue',
+            ...result.umd.globals
+          }
+        }
+      }
+
+      // 确保全局变量包含 Vue
+      result.globals = {
+        vue: 'Vue',
+        ...result.globals
+      }
+
+      return result
+    }
+
+    // 否则使用传统的 format 数组配置
     const formats = Array.isArray(outputConfig.format)
       ? outputConfig.format
       : [outputConfig.format || 'esm']
@@ -210,7 +264,39 @@ if (shouldMinify(config)) {
     const plugins: any[] = []
 
     try {
-      // Node 解析插件（第一个）
+      // Vue TSX/JSX 支持（必须在 Vue SFC 插件之前）
+      try {
+        const { default: VueJsx } = await import('unplugin-vue-jsx/rollup')
+        plugins.push(VueJsx({
+          version: 3, // Vue 3
+          optimize: config.mode === 'production'
+        }))
+      } catch (e) {
+        // 如果未安装 JSX 插件，则跳过（仍然允许纯 Vue SFC 构建）
+        console.warn('unplugin-vue-jsx 未安装，跳过 JSX/TSX 支持')
+      }
+
+      // Vue SFC 插件（使用 rollup-plugin-vue，更稳定）
+      const VuePlugin = await import('rollup-plugin-vue')
+
+      // 注册 TypeScript 支持以解决 "No fs option provided to compileScript" 错误
+      try {
+        const { registerTS } = await import('@vue/compiler-sfc')
+        const typescript = await import('typescript')
+        registerTS(() => typescript.default)
+      } catch (error) {
+        // 如果无法导入 TypeScript 或 @vue/compiler-sfc，继续执行
+        console.warn('Failed to register TypeScript support for Vue SFC:', error)
+      }
+
+      plugins.push(VuePlugin.default({
+        preprocessStyles: true,
+        // 只处理 .vue 文件
+        include: /\.vue$/,
+        ...this.getVueOptions(config)
+      }))
+
+      // Node 解析插件
       const nodeResolve = await import('@rollup/plugin-node-resolve')
       plugins.push(nodeResolve.default({
         preferBuiltins: false,
@@ -218,103 +304,62 @@ if (shouldMinify(config)) {
         extensions: ['.mjs', '.js', '.json', '.ts', '.tsx', '.vue']
       }))
 
-      // Vue SFC 插件（使用 unplugin-vue，兼容 Rollup）
-      const { default: VuePlugin } = await import('unplugin-vue/rollup')
-      plugins.push(VuePlugin(this.getVueOptions(config)))
-
-      // Vue TSX/JSX 支持
-      try {
-        const { default: VueJsx } = await import('unplugin-vue-jsx/rollup')
-        plugins.push(VueJsx())
-      } catch (e) {
-        // 如果未安装 JSX 插件，则跳过（仍然允许纯 Vue SFC 构建）
-      }
-      // 再用 TypeScript 插件处理纯 .ts 入口与模块（排除 Vue 虚拟模块与测试文件）
-      const { default: tsPlugin } = await import('@rollup/plugin-typescript')
-      const tsOptions = {
-        // 作为 Rollup 过滤器，控制哪些文件交给 TS 插件处理
-        include: ['src/**/*.ts'],
-        exclude: [
-          '**/*.vue',
-          '**/*.vue?*',
-          '**/*.tsx',
-          '**/__tests__/**',
-          '**/*.test.ts',
-          '**/*.spec.ts',
-          'tests/**',
-          'e2e/**',
-          'node_modules/**'
-        ]
-      } as any
-      plugins.push({
-        name: 'typescript',
-        // 将原始选项附加到包装对象，便于适配器按格式重建插件时复用
-        options: tsOptions,
-        plugin: async () => tsPlugin(tsOptions)
-      })
-
-      // 先用 esbuild 去除 TS 语法并处理 TSX Loader（保留 JSX 交由 Vue JSX 插件处理）
-      const { default: esbuild } = await import('rollup-plugin-esbuild')
-      plugins.push(esbuild({
-        include: /\.(ts|tsx|js|jsx)(\?|$)/,
-        exclude: [/node_modules/],
-        target: 'es2020',
-        // 保留 JSX/TSX 以便后续由 Babel/vue-jsx 处理
-        jsx: 'preserve',
-        tsconfig: 'tsconfig.json',
-        loaders: {
-          '.ts': 'ts',
-          '.tsx': 'tsx'
-        },
-minify: shouldMinify(config),
-        sourceMap: config.output?.sourcemap !== false
-      }))
-
-      // 再用 Babel 去掉残余 TS 注解并转换 Vue JSX/TSX
-      const { default: babel } = await import('@rollup/plugin-babel')
-      // 引入 Vue JSX 的 Babel 插件，确保 TSX 语法被正确转换
-      let vueJsxBabel: any = null
-      try {
-        vueJsxBabel = (await import('@vue/babel-plugin-jsx')).default
-      } catch {}
-
-      plugins.push(babel({
-        babelrc: false,
-        configFile: false,
-        babelHelpers: 'bundled',
-        extensions: ['.ts', '.tsx', '.js', '.jsx'],
-        presets: [
-          ['@babel/preset-typescript', { allowDeclareFields: true }]
-        ],
-        plugins: vueJsxBabel ? [vueJsxBabel] : [],
-        // 仅处理脚本相关文件与 vue 的 script 虚拟模块
-        include: [
-          /\.(ts|tsx|js|jsx)$/,
-          /\?vue&type=script/,
-        ],
-        exclude: [
-          /\?vue&type=style/,
-          /\?vue&type=template/,
-          /\.(css|less|scss|sass)$/
-        ]
-      }))
-
       // CommonJS 插件
       const commonjs = await import('@rollup/plugin-commonjs')
       plugins.push(commonjs.default())
-
-      // 样式处理插件（接收 vue SFC 的 style 虚拟模块）
-      const postcss = await import('rollup-plugin-postcss')
-      plugins.push(postcss.default({
-        ...this.getPostCSSOptions(config),
-        include: [
-          /\.(css|less|scss|sass)$/,
-          /\?vue&type=style/
-        ]
+      // esbuild 插件处理 TypeScript 和 JSX（保留 JSX 语法）
+      const { default: esbuild } = await import('rollup-plugin-esbuild')
+      plugins.push(esbuild({
+        include: /\.(ts|tsx|js|jsx)$/,
+        exclude: [/node_modules/],
+        target: 'es2020',
+        // 保留 JSX/TSX 以便后续由 Vue JSX 插件处理
+        jsx: 'preserve',
+        tsconfig: 'tsconfig.json',
+        minify: shouldMinify(config),
+        sourceMap: config.output?.sourcemap !== false
       }))
+
+      // JSON 插件
+      const json = await import('@rollup/plugin-json')
+      plugins.push(json.default())
+
+      // 样式处理插件（使用 rollup-plugin-styles，更好的 Vue SFC 支持）
+      try {
+        const Styles = await import('rollup-plugin-styles')
+        plugins.push(Styles.default({
+          mode: 'extract',
+          modules: false,
+          minimize: shouldMinify(config),
+          namedExports: true,
+          include: [
+            '**/*.less',
+            '**/*.css',
+            '**/*.scss',
+            '**/*.sass'
+          ],
+          url: {
+            inline: false,
+          },
+          ...this.getStylesOptions(config)
+        }))
+      } catch (e) {
+        // 如果 rollup-plugin-styles 不可用，回退到 postcss
+        const postcss = await import('rollup-plugin-postcss')
+        plugins.push(postcss.default({
+          ...this.getPostCSSOptions(config),
+          include: [
+            /\.(css|less|scss|sass)$/,
+            /\?vue&type=style/
+          ]
+        }))
+      }
     } catch (error) {
       console.error('插件加载失败:', error)
     }
+
+    // 添加 DTS 复制插件
+    plugins.push(this.createDtsCopyPlugin())
 
     return plugins
   }
@@ -322,14 +367,14 @@ minify: shouldMinify(config),
   /**
    * 构建外部依赖配置
    */
-  private buildExternals(config: BuilderConfig): string[] {
+  private buildExternals(config: BuilderConfig): string[] | ((id: string) => boolean) {
     let externals: string[] = []
 
     if (Array.isArray(config.external)) {
       externals = [...config.external]
     } else if (typeof config.external === 'function') {
-      // 如果是函数，我们只能添加 Vue 作为默认外部依赖
-      externals = ['vue']
+      // 如果是函数，直接返回
+      return config.external
     } else {
       externals = []
     }
@@ -339,7 +384,18 @@ minify: shouldMinify(config),
       externals.push('vue')
     }
 
-    return externals
+    // 添加 node_modules 排除规则
+    return (id: string) => {
+      // 排除 node_modules 中的所有模块
+      if (id.includes('node_modules')) {
+        return true
+      }
+
+      // 检查是否在外部依赖列表中
+      return externals.some(ext => {
+        return id === ext || id.startsWith(ext + '/')
+      })
+    }
   }
 
   /**
@@ -350,12 +406,32 @@ minify: shouldMinify(config),
 
     return {
       include: /\.vue$/,
+      exclude: /node_modules/,
+      // 模板编译选项
       template: {
         compilerOptions: {
-          isCustomElement: (tag: string) => tag.startsWith('ld-')
+          isCustomElement: (tag: string) => tag.startsWith('ld-') || tag.startsWith('template-'),
+          // 启用生产优化
+          hoistStatic: config.mode === 'production',
+          cacheHandlers: config.mode === 'production',
         },
         ...vueConfig.template
       },
+      // 脚本处理选项
+      script: {
+        // 启用 defineModel 宏
+        defineModel: true,
+        // 启用 props 解构
+        propsDestructure: true,
+        ...vueConfig.script
+      },
+      // 样式处理选项
+      style: {
+        // 启用 CSS 模块
+        modules: vueConfig.cssModules !== false,
+        ...vueConfig.style
+      },
+      // 传递其他用户配置
       ...vueConfig
     }
   }
@@ -377,7 +453,16 @@ minify: shouldMinify(config),
       skipLibCheck: true,
       moduleResolution: 'node',
       resolveJsonModule: true,
+      // JSX 配置
       jsx: 'preserve',
+      jsxImportSource: 'vue',
+      // Vue 相关类型
+      types: ['vue', '@vue/runtime-core', ...(tsConfig.types || [])],
+      // 路径映射
+      paths: {
+        '@/*': ['src/*'],
+        ...tsConfig.paths
+      },
       ...tsConfig
     }
   }
@@ -394,6 +479,179 @@ minify: shouldMinify(config),
       // 支持 less/scss 等预处理器
       use: ['less'],
       extensions: ['.css', '.less', '.scss', '.sass']
+    }
+  }
+
+  /**
+   * 获取 rollup-plugin-styles 选项
+   */
+  private getStylesOptions(config: BuilderConfig): any {
+    return {
+      // 样式提取配置
+      extract: config.style?.extract !== false,
+      minimize: shouldMinify(config),
+      sourceMap: config.output?.sourcemap !== false,
+      modules: config.style?.modules || false,
+      // 支持的文件扩展名
+      extensions: ['.css', '.less', '.scss', '.sass'],
+      // 预处理器配置
+      less: {
+        javascriptEnabled: true
+      },
+      scss: {
+        includePaths: ['node_modules']
+      }
+    }
+  }
+
+  /**
+   * 创建 DTS 文件生成插件
+   */
+  private createDtsCopyPlugin(): any {
+    return {
+      name: 'generate-dts-files',
+      writeBundle: async (options: any) => {
+        console.log('🔍 DTS 插件被调用，options:', options)
+        try {
+          const outputDir = options.dir
+          if (!outputDir) {
+            console.log('⚠️ 输出目录为空')
+            return
+          }
+
+          console.log('🔧 开始生成 TypeScript 声明文件')
+          await this.generateDtsFiles(outputDir)
+
+        } catch (error) {
+          console.warn('⚠️ 处理 DTS 文件失败:', error instanceof Error ? error.message : String(error))
+        }
+      }
+    }
+  }
+
+  /**
+   * 使用 TypeScript 编译器生成 DTS 文件
+   */
+  private async generateDtsFiles(outputDir: string): Promise<void> {
+    try {
+      const fs = await import('fs')
+      const path = await import('path')
+
+      // 尝试导入 TypeScript
+      let ts: any
+      try {
+        ts = await import('typescript')
+      } catch (error) {
+        console.warn('⚠️ 无法导入 TypeScript，跳过 DTS 生成')
+        return
+      }
+
+      const rootDir = process.cwd()
+      const srcDir = path.join(rootDir, 'src')
+      const tsconfigPath = path.join(rootDir, 'tsconfig.json')
+
+      // 检查 src 目录和 tsconfig.json 是否存在
+      if (!fs.existsSync(srcDir)) {
+        console.log('⚠️ src 目录不存在，跳过 DTS 生成')
+        return
+      }
+
+      // 读取和解析 tsconfig.json
+      let parsedConfig: any
+      if (fs.existsSync(tsconfigPath)) {
+        const tsconfigContent = fs.readFileSync(tsconfigPath, 'utf-8')
+        const configFile = ts.parseConfigFileTextToJson(tsconfigPath, tsconfigContent)
+
+        if (configFile.error) {
+          console.warn('⚠️ 解析 tsconfig.json 失败:', configFile.error.messageText)
+          parsedConfig = { compilerOptions: {} }
+        } else {
+          parsedConfig = ts.parseJsonConfigFileContent(
+            configFile.config,
+            ts.sys,
+            path.dirname(tsconfigPath)
+          )
+        }
+      } else {
+        console.log('⚠️ tsconfig.json 不存在，使用默认配置')
+        parsedConfig = {
+          options: {},
+          fileNames: [],
+          errors: []
+        }
+      }
+
+      // 获取所有 TypeScript 文件
+      const glob = await import('glob')
+      const tsFiles = await glob.glob('**/*.{ts,tsx}', {
+        cwd: srcDir,
+        absolute: true,
+        ignore: ['**/*.test.ts', '**/*.spec.ts', '**/__tests__/**', '**/*.d.ts']
+      })
+
+      if (tsFiles.length === 0) {
+        console.log('⚠️ 没有找到 TypeScript 文件')
+        return
+      }
+
+      console.log(`🔧 开始生成 ${tsFiles.length} 个文件的 TypeScript 声明文件`)
+
+      // 创建编译选项
+      const compilerOptions: any = {
+        ...parsedConfig.options,
+        declaration: true,
+        emitDeclarationOnly: true,
+        outDir: outputDir,
+        rootDir: srcDir,
+        skipLibCheck: true,
+        moduleResolution: ts.ModuleResolutionKind.NodeJs,
+        target: ts.ScriptTarget.ES2020,
+        module: ts.ModuleKind.ESNext,
+        jsx: ts.JsxEmit.ReactJSX,
+        allowSyntheticDefaultImports: true,
+        esModuleInterop: true,
+        strict: false,
+        noEmitOnError: false
+      }
+
+      // 创建编译器主机
+      const host = ts.createCompilerHost(compilerOptions)
+
+      // 创建 TypeScript 程序
+      const program = ts.createProgram(tsFiles, compilerOptions, host)
+
+      // 生成声明文件
+      const emitResult = program.emit(undefined, undefined, undefined, true)
+
+      // 检查编译错误
+      const allDiagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics)
+
+      if (allDiagnostics.length > 0) {
+        console.warn('⚠️ TypeScript 编译警告:')
+        allDiagnostics.forEach((diagnostic: any) => {
+          if (diagnostic.file) {
+            const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!)
+            const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
+            console.warn(`  ${path.relative(rootDir, diagnostic.file.fileName)} (${line + 1},${character + 1}): ${message}`)
+          } else {
+            console.warn(`  ${ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')}`)
+          }
+        })
+      }
+
+      if (emitResult.emitSkipped) {
+        console.warn('⚠️ TypeScript 声明文件生成失败')
+      } else {
+        // 统计生成的 .d.ts 文件数量
+        const generatedDtsFiles = await glob.glob('**/*.d.ts', {
+          cwd: outputDir,
+          absolute: false
+        })
+        console.log(`✅ TypeScript 声明文件生成成功，共生成 ${generatedDtsFiles.length} 个 .d.ts 文件`)
+      }
+
+    } catch (error) {
+      console.warn('⚠️ 生成 TypeScript 声明文件失败:', error instanceof Error ? error.message : String(error))
     }
   }
 

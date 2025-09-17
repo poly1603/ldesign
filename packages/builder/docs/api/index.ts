@@ -10,7 +10,10 @@ export const apiDocs = {
   'analyze': 'analyze.md',
   'build-options': 'build-options.md',
   'build-result': 'build-result.md',
-  'build': 'build.md',
+'build': 'build.md',
+  'clean': 'clean.md',
+  'examples': 'examples.md',
+  'init': 'init.md',
   'define-config': 'define-config.md',
   'project-scan-result': 'project-scan-result.md',
   'watch': 'watch.md',
@@ -40,8 +43,23 @@ export const docsList = [
   },
   {
     id: 'build',
-    title: 'Build API',
-    description: '构建 API 文档'
+    title: 'Build CLI',
+    description: '构建命令文档'
+  },
+  {
+    id: 'clean',
+    title: 'Clean CLI',
+    description: '清理命令文档'
+  },
+  {
+    id: 'examples',
+    title: 'Examples CLI',
+    description: '批量示例构建命令文档'
+  },
+  {
+    id: 'init',
+    title: 'Init CLI',
+    description: '初始化命令文档'
   },
   {
     id: 'define-config',
@@ -55,8 +73,8 @@ export const docsList = [
   },
   {
     id: 'watch',
-    title: 'Watch API',
-    description: '监听 API 文档'
+    title: 'Watch CLI',
+    description: '监听命令文档'
   }
 ]
 

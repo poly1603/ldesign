@@ -5,20 +5,20 @@
 ## 语法
 
 ```typescript
-function defineConfig(config: BuildOptions): BuildOptions
+function defineConfig(config: BuilderConfig | ((ctx) => BuilderConfig | Promise<BuilderConfig>)): BuilderConfig
 ```
 
 ## 参数
 
 ### config
 
-类型：`BuildOptions`
+类型：`BuilderConfig | (ctx => BuilderConfig | Promise<BuilderConfig>)`
 
 构建配置对象。
 
 ## 返回值
 
-类型：`BuildOptions`
+类型：`BuilderConfig`
 
 返回传入的配置对象，但提供了完整的类型支持。
 
@@ -31,9 +31,10 @@ import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
   input: 'src/index.ts',
-  outDir: 'dist',
-  formats: ['esm', 'cjs', 'umd'],
-  dts: true
+  output: { dir: 'dist', format: ['esm', 'cjs', 'umd'], sourcemap: true },
+  dts: true,
+  bundler: 'rollup',
+  clean: true,
 })
 ```
 
@@ -44,14 +45,11 @@ import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
   input: 'src/index.ts',
-  outDir: 'dist',
-  formats: ['esm', 'cjs', 'umd'],
+  output: { dir: 'dist', format: ['esm', 'cjs', 'umd'] },
   dts: true,
   external: ['vue'],
-  globals: {
-    vue: 'Vue'
-  },
-  name: 'MyVueLib'
+  globals: { vue: 'Vue' },
+  output: { name: 'MyVueLib' }
 })
 ```
 
@@ -62,15 +60,10 @@ import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
   input: 'src/index.ts',
-  outDir: 'dist',
-  formats: ['esm', 'cjs', 'umd'],
+  output: { dir: 'dist', format: ['esm', 'cjs', 'umd'], name: 'MyReactLib' },
   dts: true,
   external: ['react', 'react-dom'],
-  globals: {
-    react: 'React',
-    'react-dom': 'ReactDOM'
-  },
-  name: 'MyReactLib'
+  globals: { react: 'React', 'react-dom': 'ReactDOM' }
 })
 ```
 
@@ -81,23 +74,10 @@ import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
   input: 'src/index.ts',
-  outDir: 'dist',
-  formats: ['esm', 'cjs'],
-  dts: {
-    bundled: true,
-    fileName: 'types.d.ts'
-  },
-  sourcemap: true,
+  output: { dir: 'dist', format: ['esm', 'cjs'], sourcemap: true },
+  dts: true,
   external: ['lodash', 'axios'],
-  rollupOptions: {
-    treeshake: {
-      moduleSideEffects: false
-    },
-    output: {
-      banner: '/* My Library v1.0.0 */',
-      footer: '/* Built with @ldesign/builder */'
-    }
-  }
+  banner: { banner: '/* My Library v1.0.0 */', footer: '/* Built with @ldesign/builder */' },
 })
 ```
 
@@ -111,9 +91,9 @@ const isDev = process.env.NODE_ENV === 'development'
 export default defineConfig({
   input: 'src/index.ts',
   outDir: 'dist',
-  formats: isDev ? ['esm'] : ['esm', 'cjs', 'umd'],
+output: { format: isDev ? ['esm'] : ['esm', 'cjs', 'umd'] },
   dts: !isDev,
-  sourcemap: isDev,
+output: { sourcemap: isDev },
   name: 'MyLib'
 })
 ```
@@ -129,7 +109,7 @@ export default defineConfig({
     utils: 'src/utils/index.ts',
     components: 'src/components/index.ts'
   },
-  outDir: 'dist',
+output: { dir: 'dist' },
   formats: ['esm', 'cjs'],
   dts: true
 })
@@ -145,7 +125,7 @@ export default defineConfig({
   outDir: 'dist',
   formats: ['esm', 'cjs'],
   dts: true,
-  rollupOptions: {
+output
     plugins: [
       // 自定义插件会与自动检测的插件合并
     ],
@@ -169,7 +149,7 @@ import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
   input: 'src/index.ts',
-  outDir: 'dist',
+output: { dir: 'dist' },
   formats: ['esm', 'cjs', 'umd'],
   dts: true,
   name: 'MyLibrary'
@@ -179,10 +159,10 @@ export default defineConfig({
 ### 使用配置文件
 
 ```typescript
-import { build } from '@ldesign/builder'
+import { createBuilder } from '@ldesign/builder'
 import config from './builder.config'
 
-await build(config)
+await createBuilder(config).build()
 ```
 
 ### 扩展配置
@@ -193,22 +173,21 @@ import { defineConfig } from '@ldesign/builder'
 
 const baseConfig = defineConfig({
   input: 'src/index.ts',
-  outDir: 'dist',
+output: { dir: 'dist' },
   dts: true
 })
 
 // 开发环境配置
 export const devConfig = defineConfig({
   ...baseConfig,
-  formats: ['esm'],
-  sourcemap: true
+output: { format: ['esm'] },
+output: { sourcemap: true }
 })
 
 // 生产环境配置
 export const prodConfig = defineConfig({
   ...baseConfig,
-  formats: ['esm', 'cjs', 'umd'],
-  name: 'MyLibrary'
+output: { format: ['esm', 'cjs', 'umd'], name: 'MyLibrary' }
 })
 
 export default process.env.NODE_ENV === 'development' ? devConfig : prodConfig
@@ -246,6 +225,6 @@ export default defineConfig({
 
 ## 相关
 
-- [BuildOptions](/api/build-options)
+- [BuilderConfig](/api/build-options)
 - [build](/api/build)
 - [watch](/api/watch)

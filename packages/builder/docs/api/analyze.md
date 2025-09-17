@@ -1,222 +1,65 @@
-# analyze
+# analyze（CLI 命令）
 
-分析项目结构和依赖关系的 API 函数。
+分析构建结果报告（build-report.json），并生成 Markdown 或 HTML 格式的分析文件；也支持与另一份报告进行差异对比输出。
+
+> 该命令不会触发构建，请先使用 `build --report` 生成报告文件。
 
 ## 语法
 
-```typescript
-function analyze(input?: string): Promise<AnalyzeResult>
+```bash
+ldesign-builder analyze [options]
 ```
 
-## 参数
+## 选项
 
-### input
+来自 src/cli/commands/analyze.ts：
 
-类型：`string`  
-默认值：`process.cwd()`
+- `-r, --report <file>` 指定输入的构建报告 JSON，默认 `dist/build-report.json`
+- `-o, --output <file>` 指定输出文件，默认与输入同目录下的 `build-report.md` 或 `.html`
+- `-f, --format <format>` 输出格式：`md|html`（默认 `md`）
+- `--compare <file>` 与另一份报告比较，输出差异分析（当前 - 基线）
+- `--open` 输出 HTML 后自动在系统默认浏览器中打开
 
-要分析的项目根目录路径。
+## 行为
 
-## 返回值
-
-类型：`Promise<AnalyzeResult>`
-
-返回项目分析结果的 Promise。
-
-```typescript
-interface AnalyzeResult {
-  /** 项目扫描结果 */
-  scanResult: ProjectScanResult
-  /** 依赖关系图 */
-  dependencyGraph: DependencyGraph
-  /** 推荐的插件配置 */
-  pluginConfig: PluginConfig
-  /** 分析统计 */
-  stats: AnalyzeStats
-}
-```
+- 未指定 `--report` 时，命令会回退查找 `dist/build-report.json`；若不存在则报错提示先执行 `build --report`
+- `--compare` 开启时，不生成常规报告，而生成差异报告（Markdown 或 HTML）
+- HTML 报告包含表格与 Top 文件可视化条形图，便于快速定位体积热点
 
 ## 示例
 
-### 基础用法
+- 生成 Markdown 报告：
 
-```typescript
-import { analyze } from '@ldesign/builder'
-
-const result = await analyze()
-
-console.log('项目类型:', result.scanResult.projectType)
-console.log('文件数量:', result.scanResult.files.length)
-console.log('入口点:', result.scanResult.entryPoints)
+```bash
+ldesign-builder analyze --report dist/build-report.json --format md
 ```
 
-### 分析指定目录
+- 生成 HTML 报告并自动打开：
 
-```typescript
-import { analyze } from '@ldesign/builder'
-
-const result = await analyze('./my-project')
-
-// 查看项目信息
-console.log('项目根目录:', result.scanResult.root)
-console.log('包信息:', result.scanResult.packageInfo)
+```bash
+ldesign-builder analyze -r dist/build-report.json -f html --open
 ```
 
-### 查看依赖关系
+- 与基线报告做差异分析（输出 Markdown 差异报告）：
 
-```typescript
-import { analyze } from '@ldesign/builder'
-
-const result = await analyze()
-
-// 查看依赖关系图
-console.log('依赖关系:')
-for (const [file, deps] of Object.entries(result.dependencyGraph.dependencies)) {
-  console.log(`${file}:`)
-  deps.forEach(dep => console.log(`  -> ${dep}`))
-}
-
-// 查看外部依赖
-console.log('外部依赖:', result.dependencyGraph.external)
+```bash
+ldesign-builder analyze -r dist/build-report.json --compare ./baseline/build-report.json
 ```
 
-### 查看推荐配置
+- 指定输出文件：
 
-```typescript
-import { analyze } from '@ldesign/builder'
-
-const result = await analyze()
-
-// 查看推荐的插件配置
-console.log('推荐插件:', result.pluginConfig.plugins.map(p => p.name))
-console.log('推荐的 Rollup 配置:', result.pluginConfig.rollupOptions)
+```bash
+ldesign-builder analyze -r dist/build-report.json -f html -o dist/analysis.html
 ```
 
-### 分析统计信息
+## 报告结构（概览）
 
-```typescript
-import { analyze } from '@ldesign/builder'
-
-const result = await analyze()
-
-console.log('分析统计:')
-console.log(`- 总文件数: ${result.stats.totalFiles}`)
-console.log(`- TypeScript 文件: ${result.stats.typeScriptFiles}`)
-console.log(`- JavaScript 文件: ${result.stats.javaScriptFiles}`)
-console.log(`- Vue 文件: ${result.stats.vueFiles}`)
-console.log(`- CSS 文件: ${result.stats.cssFiles}`)
-console.log(`- 分析时间: ${result.stats.analyzeTime}ms`)
-```
-
-## 类型定义
-
-### ProjectScanResult
-
-```typescript
-interface ProjectScanResult {
-  /** 项目根目录 */
-  root: string
-  /** 项目类型 */
-  projectType: ProjectType
-  /** 扫描到的文件列表 */
-  files: FileInfo[]
-  /** 入口点列表 */
-  entryPoints: string[]
-  /** 包信息 */
-  packageInfo?: PackageInfo
-  /** 依赖关系图 */
-  dependencyGraph: DependencyGraph
-  /** 扫描时间 */
-  scanTime: number
-}
-```
-
-### DependencyGraph
-
-```typescript
-interface DependencyGraph {
-  /** 文件依赖关系 */
-  dependencies: Record<string, string[]>
-  /** 外部依赖 */
-  external: string[]
-  /** 循环依赖 */
-  circular: string[][]
-}
-```
-
-### AnalyzeStats
-
-```typescript
-interface AnalyzeStats {
-  /** 总文件数 */
-  totalFiles: number
-  /** TypeScript 文件数 */
-  typeScriptFiles: number
-  /** JavaScript 文件数 */
-  javaScriptFiles: number
-  /** Vue 文件数 */
-  vueFiles: number
-  /** React 文件数 */
-  reactFiles: number
-  /** CSS 文件数 */
-  cssFiles: number
-  /** 分析时间（毫秒） */
-  analyzeTime: number
-}
-```
-
-## 使用场景
-
-### 项目诊断
-
-```typescript
-import { analyze } from '@ldesign/builder'
-
-async function diagnoseProject() {
-  const result = await analyze()
-  
-  // 检查是否有循环依赖
-  if (result.dependencyGraph.circular.length > 0) {
-    console.warn('发现循环依赖:')
-    result.dependencyGraph.circular.forEach(cycle => {
-      console.warn(`  ${cycle.join(' -> ')}`)
-    })
-  }
-  
-  // 检查项目类型
-  if (result.scanResult.projectType === 'unknown') {
-    console.warn('无法识别项目类型，可能需要手动配置')
-  }
-  
-  // 检查入口点
-  if (result.scanResult.entryPoints.length === 0) {
-    console.warn('未找到入口点，请检查项目结构')
-  }
-}
-```
-
-### 生成构建配置
-
-```typescript
-import { analyze, defineConfig } from '@ldesign/builder'
-
-async function generateConfig() {
-  const result = await analyze()
-  
-  const config = defineConfig({
-    input: result.scanResult.entryPoints[0],
-    outDir: 'dist',
-    formats: ['esm', 'cjs'],
-    external: result.dependencyGraph.external,
-    ...result.pluginConfig.rollupOptions
-  })
-  
-  return config
-}
-```
+- `meta`: { bundler, mode, libraryType, buildId, timestamp, duration, cache }
+- `totals`: { raw, gzip, fileCount }
+- `files`: [{ fileName, type, format, size, gzipSize }]
 
 ## 相关
 
 - [build](/api/build)
-- [ProjectScanResult](/api/project-scan-result)
+- [watch](/api/watch)
 - [defineConfig](/api/define-config)

@@ -37,6 +37,7 @@ import { DEFAULT_BUILDER_CONFIG } from '../constants/defaults'
 import { getOutputDirs } from '../utils/glob'
 import { promises as fs } from 'fs'
 import path from 'path'
+import { getGlobalMemoryManager } from '../utils/memory-manager'
 
 /**
  * 库构建器主控制器类
@@ -84,6 +85,15 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
   /** 当前性能指标 */
   private currentMetrics: any = null
 
+  /** 内存管理器 */
+  private memoryManager = getGlobalMemoryManager()
+
+  /** 文件监听器 */
+  private fileWatchers: Set<any> = new Set()
+
+  /** 清理函数列表 */
+  private cleanupFunctions: Array<() => void | Promise<void>> = []
+
   constructor(options: BuilderOptions = {}) {
     super()
 
@@ -98,6 +108,9 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
 
     // 初始化配置
     this.config = { ...DEFAULT_BUILDER_CONFIG, ...options.config }
+
+    // 注册清理函数
+    this.registerCleanup()
   }
 
   /**
@@ -293,10 +306,68 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
   }
 
   /**
+   * 注册清理函数
+   */
+  private registerCleanup(): void {
+    const resourceManager = this.memoryManager.getResourceManager()
+    
+    // 注册自身的清理函数
+    resourceManager.register('LibraryBuilder', {
+      cleanup: async () => await this.cleanup(),
+      isCleanedUp: false
+    })
+  }
+
+  /**
+   * 清理资源
+   */
+  async cleanup(): Promise<void> {
+    try {
+      // 清理文件监听器
+      for (const watcher of this.fileWatchers) {
+        if (watcher && typeof watcher.close === 'function') {
+          await watcher.close()
+        }
+      }
+      this.fileWatchers.clear()
+
+      // 执行所有清理函数
+      for (const cleanupFn of this.cleanupFunctions) {
+        try {
+          await cleanupFn()
+        } catch (error) {
+          this.logger.error('清理函数执行失败:', error)
+        }
+      }
+      this.cleanupFunctions = []
+
+      // 移除所有事件监听器
+      this.removeAllListeners()
+
+      // 清理适配器
+      if (this.bundlerAdapter && typeof (this.bundlerAdapter as any).cleanup === 'function') {
+        await (this.bundlerAdapter as any).cleanup()
+      }
+
+      // 重置状态
+      this.status = BuilderStatus.IDLE
+      this.currentStats = null
+      this.currentMetrics = null
+    } catch (error) {
+      this.logger.error('资源清理失败:', error)
+    }
+  }
+
+  /**
    * 切换打包核心
    */
   setBundler(bundler: 'rollup' | 'rolldown'): void {
     try {
+      // 清理旧的适配器
+      if (this.bundlerAdapter && typeof (this.bundlerAdapter as any).cleanup === 'function') {
+        (this.bundlerAdapter as any).cleanup()
+      }
+
       this.bundlerAdapter = BundlerAdapterFactory.create(bundler, {
         logger: this.logger,
         performanceMonitor: this.performanceMonitor

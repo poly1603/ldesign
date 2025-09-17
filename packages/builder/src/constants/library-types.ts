@@ -90,7 +90,10 @@ export const LIBRARY_TYPE_PATTERNS = {
     files: [
       'src/**/*.vue',
       'lib/**/*.vue',
-      'components/**/*.vue'
+      'components/**/*.vue',
+      'src/**/*.tsx',
+      'lib/**/*.tsx',
+      'components/**/*.tsx'
     ],
     dependencies: [
       'vue@^3',

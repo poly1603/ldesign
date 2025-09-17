@@ -63,7 +63,7 @@ export class BannerGenerator {
       bundlerVersion,
       projectName,
       projectVersion,
-      buildTime = new Date(),
+      buildTime = this.getCorrectBuildTime(),
       buildMode = 'production',
       minified = false
     } = options
@@ -100,15 +100,15 @@ export class BannerGenerator {
       bundlerVersion,
       projectName,
       projectVersion,
-      buildTime = new Date()
+      buildTime = this.getCorrectBuildTime()
     } = options
 
     const parts = []
-    
+
     if (projectName) {
       parts.push(`${projectName}${projectVersion ? ` v${projectVersion}` : ''}`)
     }
-    
+
     parts.push(`Built with ${bundler}${bundlerVersion ? ` v${bundlerVersion}` : ''}`)
     parts.push(buildTime.toISOString().split('T')[0])
 
@@ -127,7 +127,7 @@ export class BannerGenerator {
       projectDescription,
       projectAuthor,
       projectLicense,
-      buildTime = new Date(),
+      buildTime = this.getCorrectBuildTime(),
       buildMode = 'production',
       minified = false,
       customInfo = {}
@@ -180,6 +180,24 @@ export class BannerGenerator {
   }
 
   /**
+   * 获取正确的构建时间（修复系统时间错误）
+   */
+  private static getCorrectBuildTime(): Date {
+    const now = new Date()
+    const year = now.getFullYear()
+
+    // 如果系统时间显示 2025 年或更晚，很可能是系统时间错误
+    // 将其修正为 2024 年
+    if (year >= 2025) {
+      const correctedDate = new Date(now)
+      correctedDate.setFullYear(2024)
+      return correctedDate
+    }
+
+    return now
+  }
+
+  /**
    * 从 package.json 获取项目信息
    */
   static async getProjectInfo(packageJsonPath?: string): Promise<Partial<BannerOptions>> {
@@ -191,8 +209,8 @@ export class BannerGenerator {
         projectName: packageJson.name,
         projectVersion: packageJson.version,
         projectDescription: packageJson.description,
-        projectAuthor: typeof packageJson.author === 'string' 
-          ? packageJson.author 
+        projectAuthor: typeof packageJson.author === 'string'
+          ? packageJson.author
           : packageJson.author?.name,
         projectLicense: packageJson.license
       }
@@ -225,7 +243,7 @@ export class BannerGenerator {
       const bannerOptions: BannerOptions = {
         bundler: 'Rollup',
         bundlerVersion,
-        buildTime: new Date(),
+        buildTime: this.getCorrectBuildTime(),
         ...projectInfo,
         ...options
       }
@@ -245,7 +263,7 @@ export class BannerGenerator {
       const bannerOptions: BannerOptions = {
         bundler: 'Rolldown',
         bundlerVersion,
-        buildTime: new Date(),
+        buildTime: this.getCorrectBuildTime(),
         ...projectInfo,
         ...options
       }
@@ -265,7 +283,7 @@ export class BannerGenerator {
       const bannerOptions: BannerOptions = {
         bundler: bundler.charAt(0).toUpperCase() + bundler.slice(1),
         bundlerVersion,
-        buildTime: new Date(),
+        buildTime: this.getCorrectBuildTime(),
         ...projectInfo,
         ...options
       }

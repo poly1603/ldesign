@@ -146,6 +146,18 @@ export const DEFAULT_BUILDER_CONFIG: Omit<
     }
   },
 
+  // Vue JSX 配置
+  vueJsx: {
+    include: /\.[jt]sx$/,
+    exclude: /node_modules/,
+    typescript: true,
+    optimize: false,
+    factory: 'h',
+    fragment: 'Fragment',
+    jsxImportSource: 'vue',
+    development: false
+  },
+
   // 样式配置
   style: {
     preprocessor: 'auto', // 自动检测

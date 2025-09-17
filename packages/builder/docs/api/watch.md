@@ -1,113 +1,61 @@
-# watch
+# watch（CLI 命令）
 
-监听文件变化并自动重新构建的 API 函数。
+监听文件变化并自动构建。该命令会自动探测项目入口（基于内部策略），并在文件变更时触发增量构建，适合开发调试使用。
+
+> 提示：如果你需要更灵活的入口/输出/格式控制，建议使用 `build -w`（即在 build 命令中开启监听），它支持与 build 完全一致的参数集合。
+
+## 快速开始
+
+```bash
+# 基于自动探测入口，输出到 dist，格式 esm,cjs，默认开启 sourcemap
+ldesign-builder watch
+```
 
 ## 语法
 
-```typescript
-function watch(options: BuildOptions): Promise<WatchResult>
+```bash
+ldesign-builder watch [options]
 ```
 
-## 参数
+## 选项
 
-### options
+来自 src/cli/commands/watch.ts：
 
-类型：`BuildOptions`
+- `-f, --format <formats>` 指定输出格式（逗号分隔），默认 `esm,cjs`
+- `-o, --outDir <dir>` 指定输出目录，默认 `dist`
+- `--minify` 压缩输出
+- `--sourcemap` 生成 sourcemap（默认开启）
 
-与 `build` 函数相同的配置选项。
+> 该命令不提供 `--input`，入口通常由构建器自动探测或来自配置文件。若需显式指定入口，可改用：
+> `ldesign-builder build -i src/index.ts -w`
 
-## 返回值
+## 行为
 
-类型：`Promise<WatchResult>`
-
-返回监听器对象的 Promise。
-
-```typescript
-interface WatchResult {
-  /** 是否启动成功 */
-  success: boolean
-  /** 监听器实例 */
-  watcher?: RollupWatcher
-  /** 错误信息 */
-  errors: BuildError[]
-  /** 停止监听的方法 */
-  stop(): Promise<void>
-}
-```
+- 启动后进入监听模式，任何文件变更都会触发一次构建
+- 构建成功/失败会输出日志；成功时会打印“构建完成”提示
+- 按 `Ctrl + C` 退出（CLI 会捕获 SIGINT，自动关闭 watcher 并释放资源）
 
 ## 示例
 
-### 基础用法
+- 指定输出目录与格式：
 
-```typescript
-import { watch } from '@ldesign/builder'
-
-const watchResult = await watch({
-  input: 'src/index.ts',
-  outDir: 'dist'
-})
-
-if (watchResult.success) {
-  console.log('开始监听文件变化...')
-  
-  // 在需要时停止监听
-  // await watchResult.stop()
-} else {
-  console.error('启动监听失败:', watchResult.errors)
-}
+```bash
+ldesign-builder watch -o dist-dev -f esm
 ```
 
-### 监听事件
+- 压缩并生成 sourcemap：
 
-```typescript
-import { watch } from '@ldesign/builder'
-
-const watchResult = await watch({
-  input: 'src/index.ts',
-  outDir: 'dist'
-})
-
-if (watchResult.watcher) {
-  watchResult.watcher.on('event', (event) => {
-    switch (event.code) {
-      case 'START':
-        console.log('开始构建...')
-        break
-      case 'BUNDLE_START':
-        console.log('开始打包...')
-        break
-      case 'BUNDLE_END':
-        console.log('打包完成')
-        break
-      case 'END':
-        console.log('构建完成')
-        break
-      case 'ERROR':
-        console.error('构建错误:', event.error)
-        break
-    }
-  })
-}
+```bash
+ldesign-builder watch --minify --sourcemap
 ```
 
-### 自动停止
+- 使用 build 命令的监听模式（支持更全参数）：
 
-```typescript
-import { watch } from '@ldesign/builder'
-
-const watchResult = await watch({
-  input: 'src/index.ts',
-  outDir: 'dist'
-})
-
-// 10 秒后自动停止监听
-setTimeout(async () => {
-  await watchResult.stop()
-  console.log('监听已停止')
-}, 10000)
+```bash
+ldesign-builder build -i src/index.ts -o dist -f esm,cjs --sourcemap -w
 ```
 
 ## 相关
 
 - [build](/api/build)
-- [BuildOptions](/api/build-options)
+- [defineConfig](/api/define-config)

@@ -297,11 +297,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
-      - name: Run dependency analysis
-        run: npx ldesign-builder analyze --security --unused
+      - name: Analyze bundle (Markdown)
+        run: npx ldesign-builder build --report && npx ldesign-builder analyze -r dist/build-report.json -f md
         
-      - name: Build with performance monitoring
-        run: npx ldesign-builder build --performance-analysis
+      - name: Build
+        run: npx ldesign-builder build
         
       - name: Upload analysis reports
         uses: actions/upload-artifact@v3

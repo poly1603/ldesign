@@ -17,6 +17,7 @@ import type {
   LibraryType,
   TypeScriptLibraryConfig,
   VueLibraryConfig,
+  VueJsxConfig,
   StyleLibraryConfig,
   LibraryBuildOptions
 } from './library'
@@ -83,6 +84,9 @@ export interface BuilderConfig {
 
   /** Vue 配置 */
   vue?: VueLibraryConfig
+
+  /** Vue JSX 配置 */
+  vueJsx?: VueJsxConfig
 
   /** 样式配置 */
   style?: StyleLibraryConfig
