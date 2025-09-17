@@ -47,14 +47,14 @@ export default defineConfig({
       format: 'esm',
       preserveStructure: true,
       dts: true,
-      input: ['src/**/*.ts', '!src/index-lib.ts']
+      input: ['src/**/*.ts', '!src/index-lib.ts', '!src/**/*.test.ts', '!src/**/*.spec.ts']
     },
     cjs: {
       dir: 'lib',
       format: 'cjs',
       preserveStructure: true,
       dts: true,
-      input: ['src/**/*.ts', '!src/index-lib.ts']
+      input: ['src/**/*.ts', '!src/index-lib.ts', '!src/**/*.test.ts', '!src/**/*.spec.ts']
     },
     umd: {
       dir: 'dist',
