@@ -61,8 +61,7 @@ export class PerformanceMonitor {
    */
   monitorMemoryUsage(): void {
     if (typeof window !== 'undefined' && 'performance' in window && 'memory' in window.performance) {
-      // @ts-ignore
-      const memory = window.performance.memory
+      const memory = (window.performance as any).memory as { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit?: number } | undefined
       if (memory) {
         this.recordMetric('memory_used', memory.usedJSHeapSize)
         this.recordMetric('memory_total', memory.totalJSHeapSize)
@@ -97,7 +96,7 @@ export class PerformanceMonitor {
 /**
  * 预加载策略管理器
  */
-export class PreloadStrategy {
+export class PreloadController {
   private preloadQueue: TemplateMetadata[] = []
   private preloadedSet = new Set<string>()
   private isPreloading = false
@@ -353,7 +352,7 @@ export const performanceMonitor = new PerformanceMonitor()
 /**
  * 全局预加载策略实例
  */
-export const preloadStrategy = new PreloadStrategy({
+export const preloadStrategy = new PreloadController({
   maxConcurrent: 3,
   delayMs: 100,
 })

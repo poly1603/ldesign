@@ -76,7 +76,17 @@ export const DEFAULT_BUILDER_CONFIG: Omit<
   clean: true,
 
   // 排除文件配置
-  exclude: [],
+  exclude: [
+    '**/__tests__/**',
+    '**/*.test.*',
+    '**/*.spec.*',
+    '**/test/**',
+    '**/tests/**',
+    '**/*.stories.*',
+    '**/stories/**',
+    '**/docs/**',
+    '**/examples/**'
+  ],
 
   // UMD 构建配置
   umd: {

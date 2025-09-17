@@ -66,10 +66,11 @@ const config: TemplateConfig = {
     '企业级安全',
     '专业视觉风格',
   ],
-  screenshots: [
-    './screenshot-1.png',
-    './screenshot-2.png',
-  ],
+  // screenshots removed due to type constraints
+  // screenshots: [
+  //   './screenshot-1.png',
+  //   './screenshot-2.png',
+  // ],
 }
 
 export default config

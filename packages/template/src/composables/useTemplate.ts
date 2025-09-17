@@ -5,7 +5,7 @@
  * 支持简化模式，可以返回可直接渲染的组件
  */
 
-import { ref, computed, markRaw, onMounted, onUnmounted, unref, watch, defineComponent, nextTick, type Component, type Ref, h } from 'vue'
+import { ref, computed, markRaw, onMounted, onUnmounted, unref, watch, nextTick, type Component, type Ref, defineComponent, h } from 'vue'
 import type {
   DeviceType,
   TemplateMetadata,
@@ -14,7 +14,6 @@ import type {
 } from '../types/template'
 
 import { HookTemplateRenderer } from '../components/TemplateTransition'
-import { TemplateRenderer } from '../components/TemplateRenderer'
 import { TemplateScanner } from '../scanner'
 import { componentCache } from '../utils/cache'
 import { componentLoader } from '../utils/loader'
@@ -405,11 +404,11 @@ export function useTemplateList(category: string, device?: DeviceType | Ref<Devi
       device: dev,
       version: '2.0.0',
       author: 'ldesign',
-      tags: ['默认', '示例'],
+      tags: ['默认', '示例'] as string[],
       preview: './preview.png',
       lastModified: now,
       isBuiltIn: true,
-    } as const
+    }
     return [
       {
         id: `${cat}-${dev}-default`,
@@ -524,7 +523,7 @@ export function useSimpleTemplate(options: {
     TemplateTransition,
   } = useTemplate({
     category,
-    device,
+    ...(device ? { device } : {}),
     autoDetectDevice: !device,
     enableCache: true,
     showSelector,

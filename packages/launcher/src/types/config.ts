@@ -113,6 +113,9 @@ export interface LauncherConfigOptions {
 
   /** 部署配置 */
   deployment?: DeploymentOptions
+
+  /** 路径别名配置 */
+  alias?: AliasOptions
 }
 
 /**
@@ -381,6 +384,7 @@ export type ProjectPreset =
   | 'vue3-ts'
   | 'react'
   | 'react-ts'
+  | 'ldesign'
   | 'svelte'
   | 'svelte-ts'
   | 'vanilla'
@@ -1000,4 +1004,31 @@ export interface ToolsConfig {
     cacheStrategy?: 'cacheFirst' | 'networkFirst' | 'staleWhileRevalidate'
     offlinePage?: string
   }
+}
+
+/**
+ * 路径别名配置接口
+ * 支持启用/禁用别名和自定义别名配置
+ */
+export interface AliasOptions {
+  /** 是否启用别名 */
+  enabled?: boolean
+
+  /** 别名生效阶段配置 */
+  stages?: ('dev' | 'build' | 'preview')[] | 'all'
+
+  /** 是否启用 LDesign 包别名 */
+  ldesign?: boolean
+
+  /** 是否启用 Node.js polyfill 别名 */
+  polyfills?: boolean
+
+  /** 自定义别名配置 */
+  custom?: Array<{
+    find: string | RegExp
+    replacement: string
+  }>
+
+  /** 预设别名配置 */
+  presets?: ('ldesign' | 'polyfills' | 'common')[]
 }

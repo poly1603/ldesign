@@ -9,7 +9,7 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "types": ["vite/client", "node", "@vue/runtime-core"],
+    "types": ["vite/client", "node", "vue"],
     "declaration": true,
     "declarationMap": true,
     "noEmitOnError": false,

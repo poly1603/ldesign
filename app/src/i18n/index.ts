@@ -6,9 +6,10 @@
  */
 
 import { createI18nEnginePlugin } from '@ldesign/i18n/vue/index.ts'
-import zhCN from './locales/zh-CN.json'
-import en from './locales/en.json'
-import ja from './locales/ja.json'
+// 导入语言包 - 使用 TypeScript 文件
+import zhCN from './locales/zh-CN'
+import en from './locales/en'
+import ja from './locales/ja'
 
 // 基础语言设定
 export const defaultLocale = 'zh-CN'

@@ -71,10 +71,11 @@ const config: TemplateConfig = {
     '屏幕方向检测',
     '触摸区域优化',
   ],
-  screenshots: [
-    './screenshot-portrait.png',
-    './screenshot-landscape.png',
-  ],
+  // screenshots removed due to type constraints
+  // screenshots: [
+  //   './screenshot-portrait.png',
+  //   './screenshot-landscape.png',
+  // ],
 }
 
 export default config

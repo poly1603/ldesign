@@ -70,7 +70,7 @@ export class ReactStrategy implements ILibraryStrategy {
     // PostCSS (optional)
     if (config.style?.extract !== false) {
       const postcss = await import('rollup-plugin-postcss')
-plugins.push(postcss.default({ extract: true, minimize: config.style?.minimize !== false }))
+      plugins.push(postcss.default({ extract: true, minimize: config.style?.minimize !== false }))
     }
 
     // esbuild for TS/TSX/JSX
@@ -78,7 +78,7 @@ plugins.push(postcss.default({ extract: true, minimize: config.style?.minimize !
     plugins.push(esbuild.default({
       include: /\.(tsx?|jsx?)$/, exclude: [/node_modules/], target: 'es2020',
       jsx: 'automatic', jsxImportSource: 'react', tsconfig: 'tsconfig.json',
-sourceMap: config.output?.sourcemap !== false, minify: shouldMinify(config)
+      sourceMap: config.output?.sourcemap !== false, minify: shouldMinify(config)
     }))
 
     return plugins
@@ -123,7 +123,7 @@ sourceMap: config.output?.sourcemap !== false, minify: shouldMinify(config)
     const { relative, extname } = await import('path')
 
     const files = await findFiles([
-      'src/**/*.{ts,tsx,js,jsx}'
+      'src/**/*.{ts,tsx,js,jsx,json}'
     ], {
       cwd: process.cwd(),
       ignore: ['**/*.d.ts', '**/*.test.*', '**/*.spec.*', '**/__tests__/**']

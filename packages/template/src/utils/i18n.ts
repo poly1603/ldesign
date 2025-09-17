@@ -342,7 +342,7 @@ export function createI18n(options: I18nOptions = {}): I18nInstance {
         // 尝试精确匹配
         if (DEFAULT_MESSAGES[browserLang]) return browserLang
         // 尝试语言代码匹配
-        const langCode = browserLang.split('-')[0]
+        const langCode = browserLang.split('-')[0] as string
         const matched = Object.keys(DEFAULT_MESSAGES).find(key => 
           key.startsWith(langCode)
         )
@@ -517,10 +517,11 @@ export function createI18n(options: I18nOptions = {}): I18nInstance {
     if (loading) return loading
     
     // 开始加载
-    if (config.loader) {
+    const loader = config.loader
+    if (loader) {
       const loadPromise = (async () => {
         try {
-          const pack = await config.loader(targetLocale)
+          const pack = await loader(targetLocale)
           messages.value[targetLocale] = pack
           loadedLocales.add(targetLocale)
         } catch (error) {

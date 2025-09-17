@@ -81,6 +81,39 @@ export const VirtualScroll = defineComponent({
     const visibleRange = ref({ start: 0, end: 0 })
     const isScrolling = ref(false)
     let scrollTimeout: NodeJS.Timeout | null = null
+    let scrollRAF: number | null = null
+
+    // 使用偏移缓存，避免为每个可见项 O(n) 计算偏移
+    const offsets = ref<Map<string | number, number>>(new Map())
+
+    const recomputeOffsets = () => {
+      const map = new Map<string | number, number>()
+      let offset = 0
+      for (let i = 0; i < props.items.length; i++) {
+        const it = props.items[i]
+        if (!it) continue
+        map.set(it.id, offset)
+        const h = itemHeights.value.get(it.id) || props.itemHeight || 50
+        offset += h
+      }
+      offsets.value = map
+    }
+
+    const scheduleRecompute = (() => {
+      let raf: number | null = null
+      return () => {
+        if (typeof requestAnimationFrame === 'function') {
+          if (raf != null) return
+          raf = requestAnimationFrame(() => {
+            recomputeOffsets()
+            raf = null
+          })
+        } else {
+          // 非浏览器环境降级处理
+          recomputeOffsets()
+        }
+      }
+    })()
     
     // 计算总高度
     const totalHeight = computed(() => {
@@ -114,15 +147,9 @@ export const VirtualScroll = defineComponent({
       if (!props.dynamicHeight && props.itemHeight) {
         return index * props.itemHeight
       }
-      
-      let offset = 0
-      for (let i = 0; i < index; i++) {
-        const item = props.items[i]
-        if (item) {
-          offset += itemHeights.value.get(item.id) || props.itemHeight || 50
-        }
-      }
-      return offset
+      const item = props.items[index]
+      if (!item) return 0
+      return offsets.value.get(item.id) ?? 0
     }
     
     // 更新可见范围
@@ -145,7 +172,7 @@ export const VirtualScroll = defineComponent({
         
         for (let i = 0; i < props.items.length; i++) {
           const item = props.items[i]
-          const itemHeight = itemHeights.value.get(item.id) || props.itemHeight || 50
+          const itemHeight = item ? (itemHeights.value.get(item.id) || props.itemHeight || 50) : (props.itemHeight || 50)
           
           if (accumulatedHeight < scroll && !start) {
             start = i
@@ -181,13 +208,27 @@ export const VirtualScroll = defineComponent({
       scrollTimeout = setTimeout(() => {
         isScrolling.value = false
       }, 150)
+
+      const emitScroll = () => {
+        const el = containerRef.value
+        emit('scroll', {
+          scrollTop: scrollTop.value,
+          scrollHeight: el ? el.scrollHeight : 0,
+          clientHeight: el ? el.clientHeight : 0
+        })
+      }
       
-      updateVisibleRange()
-      emit('scroll', {
-        scrollTop: scrollTop.value,
-        scrollHeight: target.scrollHeight,
-        clientHeight: target.clientHeight
-      })
+      if (typeof requestAnimationFrame === 'function') {
+        if (scrollRAF != null) return
+        scrollRAF = requestAnimationFrame(() => {
+          updateVisibleRange()
+          emitScroll()
+          scrollRAF = null
+        })
+      } else {
+        updateVisibleRange()
+        emitScroll()
+      }
     }
     
     // 处理容器大小变化
@@ -225,14 +266,26 @@ export const VirtualScroll = defineComponent({
     const updateItemHeight = (id: string | number, height: number) => {
       if (itemHeights.value.get(id) !== height) {
         itemHeights.value.set(id, height)
-        updateVisibleRange()
+        // 调度重算偏移并更新可见范围
+        scheduleRecompute()
+        if (typeof requestAnimationFrame === 'function') {
+          requestAnimationFrame(() => updateVisibleRange())
+        } else {
+          updateVisibleRange()
+        }
       }
     }
     
     // 监听数据变化
-    watch(() => props.items, () => {
+    // 当列表长度或引用变化时重算偏移，避免深度监听带来的性能消耗
+    watch(() => props.items.length, () => {
+      recomputeOffsets()
       updateVisibleRange()
-    }, { deep: true })
+    })
+    watch(() => props.items, () => {
+      recomputeOffsets()
+      updateVisibleRange()
+    })
     
     // 监听容器高度变化
     watch(() => props.height, () => {
@@ -242,11 +295,16 @@ export const VirtualScroll = defineComponent({
     // 生命周期
     onMounted(() => {
       handleResize()
+      recomputeOffsets()
       window.addEventListener('resize', handleResize)
       
       // 使用 ResizeObserver 监听容器大小变化
       if (containerRef.value && 'ResizeObserver' in window) {
-        const resizeObserver = new ResizeObserver(handleResize)
+        const resizeObserver = new ResizeObserver(() => {
+          handleResize()
+          // 容器尺寸变化可能影响布局，调度重算
+          scheduleRecompute()
+        })
         resizeObserver.observe(containerRef.value)
         
         onUnmounted(() => {
@@ -259,6 +317,10 @@ export const VirtualScroll = defineComponent({
       window.removeEventListener('resize', handleResize)
       if (scrollTimeout) {
         clearTimeout(scrollTimeout)
+      }
+      if (typeof cancelAnimationFrame === 'function' && scrollRAF != null) {
+        cancelAnimationFrame(scrollRAF)
+        scrollRAF = null
       }
     })
     
@@ -321,9 +383,10 @@ export const VirtualScroll = defineComponent({
           style={itemStyle}
           class="virtual-scroll-item"
           onClick={() => this.$emit('itemClick', item)}
-          ref={(el: HTMLElement | null) => {
-            if (el && this.dynamicHeight) {
-              const height = el.offsetHeight
+          ref={(el: any) => {
+            const elem = el as HTMLElement | null
+            if (elem && this.dynamicHeight) {
+              const height = elem.offsetHeight
               this.updateItemHeight(item.id, height)
             }
           }}
@@ -335,7 +398,7 @@ export const VirtualScroll = defineComponent({
     
     return (
       <div
-        ref="containerRef"
+        ref={this.containerRef as any}
         class={['virtual-scroll-container', this.customClass].filter(Boolean).join(' ')}
         style={containerStyle}
         onScroll={this.handleScroll}

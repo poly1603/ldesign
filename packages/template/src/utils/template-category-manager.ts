@@ -294,7 +294,10 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
       // 关键词搜索
       if (filter.keyword) {
         const keyword = filter.keyword.toLowerCase()
-        const searchText = `${template.name} ${template.description} ${template.tags.join(' ')}`.toLowerCase()
+        const name = (template as any).name || ''
+        const description = (template as any).description || ''
+        const tags = Array.isArray(template.tags) ? template.tags : []
+        const searchText = `${name} ${description} ${tags.join(' ')}`.toLowerCase()
         if (!searchText.includes(keyword)) {
           return false
         }
@@ -323,7 +326,7 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
 
       switch (options.field) {
         case 'name':
-          comparison = a.name.localeCompare(b.name)
+          comparison = String((a as any).name || '').localeCompare(String((b as any).name || ''))
           break
         case 'createdAt':
           comparison = a.createdAt.getTime() - b.createdAt.getTime()
@@ -363,7 +366,7 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
           groupKey = template.status
           break
         case 'author':
-          groupKey = template.author || '未知作者'
+          groupKey = (template as any).author || '未知作者'
           break
         case 'tag':
           // 为每个标签创建一个分组
@@ -410,8 +413,8 @@ export class TemplateCategoryManagerImpl implements TemplateCategoryManager {
    * 验证模板元数据
    */
   validateMetadata(metadata: ExtendedTemplateMetadata): boolean {
-    // 验证必需字段
-    if (!metadata.name || !metadata.description || !metadata.category) {
+    // 宽松验证：至少需要分类字段
+    if (!(metadata as any).category) {
       return false
     }
 

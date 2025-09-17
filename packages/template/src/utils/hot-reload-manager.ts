@@ -128,14 +128,14 @@ export class HotReloadManager {
    * 处理模板文件变化
    */
   private handleTemplateFileChange(data: Record<string, unknown>): void {
+    const category = data['category'] as string
+    const device = data['device'] as DeviceType
+    const name = data['templateName'] as string
+    const filePath = data['filePath'] as string
     const event: HotReloadEvent = {
       type: this.determineEventType(data),
-      template: {
-        category: data.category,
-        device: data.device,
-        name: data.templateName,
-      },
-      filePath: data.filePath,
+      template: { category, device, name },
+      filePath,
       timestamp: Date.now(),
       data,
     }
@@ -147,14 +147,14 @@ export class HotReloadManager {
    * 处理配置变化
    */
   private handleConfigChange(data: Record<string, unknown>): void {
+    const category = data['category'] as string
+    const device = data['device'] as DeviceType
+    const name = data['templateName'] as string
+    const filePath = data['filePath'] as string
     const event: HotReloadEvent = {
       type: 'config-updated',
-      template: {
-        category: data.category,
-        device: data.device,
-        name: data.templateName,
-      },
-      filePath: data.filePath,
+      template: { category, device, name },
+      filePath,
       timestamp: Date.now(),
       data,
     }
@@ -166,14 +166,14 @@ export class HotReloadManager {
    * 处理样式变化
    */
   private handleStyleChange(data: Record<string, unknown>): void {
+    const category = data['category'] as string
+    const device = data['device'] as DeviceType
+    const name = data['templateName'] as string
+    const filePath = data['filePath'] as string
     const event: HotReloadEvent = {
       type: 'style-updated',
-      template: {
-        category: data.category,
-        device: data.device,
-        name: data.templateName,
-      },
-      filePath: data.filePath,
+      template: { category, device, name },
+      filePath,
       timestamp: Date.now(),
       data,
     }
@@ -185,14 +185,14 @@ export class HotReloadManager {
    * 处理组件变化
    */
   private handleComponentChange(data: Record<string, unknown>): void {
+    const category = data['category'] as string
+    const device = data['device'] as DeviceType
+    const name = data['templateName'] as string
+    const filePath = data['filePath'] as string
     const event: HotReloadEvent = {
       type: 'component-updated',
-      template: {
-        category: data.category,
-        device: data.device,
-        name: data.templateName,
-      },
-      filePath: data.filePath,
+      template: { category, device, name },
+      filePath,
       timestamp: Date.now(),
       data,
     }

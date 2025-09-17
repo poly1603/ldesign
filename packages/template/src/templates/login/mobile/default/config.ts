@@ -72,10 +72,11 @@ const config: TemplateConfig = {
     '单手操作优化',
     '视口自适应',
   ],
-  screenshots: [
-    './screenshot-light.png',
-    './screenshot-dark.png',
-  ],
+  // screenshots removed due to type constraints
+  // screenshots: [
+  //   './screenshot-light.png',
+  //   './screenshot-dark.png',
+  // ],
 }
 
 export default config

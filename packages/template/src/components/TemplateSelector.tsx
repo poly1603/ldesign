@@ -15,7 +15,6 @@ import {
   ref,
   watch,
   inject,
-  Transition,
   onMounted,
   nextTick,
 } from 'vue'
@@ -558,7 +557,6 @@ export const TemplateSelector = defineComponent({
             name="template-selector"
             appear
             duration={300}
-            onAfterEnter={() => { rootRef.value?.focus() }}
           >
             {isMounted.value
               ? (
@@ -581,17 +579,6 @@ export const TemplateSelector = defineComponent({
                   aria-labelledby="template-selector-title"
                   tabindex={0}
                   onKeydown={(e) => { if ((e as KeyboardEvent).key === 'Escape') handleClose() }}
-                  onVnodeMounted={(v) => {
-                    const el = (v.el as HTMLElement | null)
-                    if (el) {
-                      // 确保可聚焦
-                      try { (el as any).tabIndex = 0 } catch {}
-                      if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0')
-                      if (!el.hasAttribute('contenteditable')) el.setAttribute('contenteditable', 'true')
-                      // 延迟一次宏任务以确保挂载到文档后再聚焦
-                      setTimeout(() => { el.focus() }, 0)
-                    }
-                  }}
                 >
                   {/* 遮罩层 - 只处理背景点击 */}
                   <div

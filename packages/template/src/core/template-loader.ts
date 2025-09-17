@@ -45,7 +45,7 @@ export class TemplateLoader {
   /**
    * 加载模板组件
    */
-  async load(template: TemplateInfo, options: LoadOptions = {}): Promise<LoadResult> {
+  async load(template: TemplateInfo, options: LoadOptions = {}): Promise<LoadResult<Component>> {
     const startTime = Date.now()
     const cacheKey = this.getCacheKey(template)
 
@@ -55,9 +55,9 @@ export class TemplateLoader {
         const cached = this.getFromCache(cacheKey)
         if (cached) {
           return {
-            template,
-            component: cached,
-            loadTime: Date.now() - startTime,
+            success: true,
+            data: cached,
+            duration: Date.now() - startTime,
             fromCache: true,
           }
         }
@@ -68,9 +68,9 @@ export class TemplateLoader {
       if (existingPromise) {
         const component = await existingPromise
         return {
-          template,
-          component,
-          loadTime: Date.now() - startTime,
+          success: true,
+          data: component,
+          duration: Date.now() - startTime,
           fromCache: false,
         }
       }
@@ -87,15 +87,13 @@ export class TemplateLoader {
           this.setCache(cacheKey, component)
         }
 
-        // 更新模板状态
-        template.status = 'loaded'
+        // 更新模板信息
         template.component = component
-        template.updatedAt = new Date()
 
         return {
-          template,
-          component,
-          loadTime: Date.now() - startTime,
+          success: true,
+          data: component,
+          duration: Date.now() - startTime,
           fromCache: false,
         }
       }
@@ -104,11 +102,8 @@ export class TemplateLoader {
       }
     }
     catch (error) {
-      // 更新模板状态
-      template.status = 'error'
+      // 记录错误信息
       template.error = error as Error
-      template.updatedAt = new Date()
-
       throw new Error(`Failed to load template ${template.id}: ${(error as Error).message}`)
     }
   }
@@ -117,9 +112,9 @@ export class TemplateLoader {
    * 动态加载组件
    */
   private async loadComponent(template: TemplateInfo, options: LoadOptions): Promise<Component> {
-    const { componentPath, path } = template
+    const componentPath = template.componentPath
 
-    if (!componentPath && !path) {
+    if (!componentPath) {
       throw new Error(`No component path specified for template ${template.id}`)
     }
 
@@ -150,49 +145,33 @@ export class TemplateLoader {
    * 尝试加载组件的多种方式
    */
   private async tryLoadComponent(template: TemplateInfo): Promise<Component> {
-    // 优先使用 component 函数（用于手动注册的模板）
-    if (template.component && typeof template.component === 'function') {
+    // 优先使用 componentLoader 函数（用于手动注册或扫描提供的模板）
+    if (template.componentLoader) {
       try {
-        const module = await template.component()
-        const component = module.default || module[template.name] || module
+        const component = await template.componentLoader()
         if (component) {
           return component
         }
       }
       catch (error) {
-        console.error(`Failed to load component using component function for template ${template.id}:`, error)
+        console.error(`Failed to load component using componentLoader for template ${template.id}:`, error)
       }
     }
 
     // 回退到路径加载方式
-    const { componentPath, path } = template
-    const possiblePaths = [
-      componentPath,
-      path && `${path}/index.vue`,
-      path && `${path}/index.tsx`,
-      path && `${path}/component.vue`,
-      path && `${path}/component.tsx`,
-    ].filter(Boolean) as string[]
-
-    let lastError: Error | null = null
-
-    for (const filePath of possiblePaths) {
+    if (template.componentPath) {
       try {
-        // 动态导入组件
-        const module = await import(/* @vite-ignore */ filePath)
+        const module = await import(/* @vite-ignore */ template.componentPath)
         const component = module.default || module[template.name] || module
-
-        if (component) {
+        if (component)
           return component
-        }
       }
       catch (error) {
-        lastError = error as Error
-        continue
+        throw error
       }
     }
 
-    throw lastError || new Error(`No valid component found for template ${template.id}`)
+    throw new Error(`No valid component found for template ${template.id}`)
   }
 
   /**
@@ -309,7 +288,7 @@ export class TemplateLoader {
    * 生成缓存键
    */
   private getCacheKey(template: TemplateInfo): string {
-    return `${template.category}:${template.deviceType}:${template.name}`
+    return `${template.category}:${template.device}:${template.name}`
   }
 
   /**

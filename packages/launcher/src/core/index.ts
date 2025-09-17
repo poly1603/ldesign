@@ -15,6 +15,7 @@ export * from './SmartPluginManager'
 export * from './DevExperience'
 export * from './TestIntegration'
 export * from './ProjectTemplates'
+export * from './AliasManager'
 
 // 分别导出以避免命名冲突
 export {

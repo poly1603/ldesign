@@ -219,7 +219,10 @@ export function useAnimationQueue() {
     try {
       for (let i = 0; i < queue.value.length; i++) {
         currentIndex.value = i
-        await queue.value[i]()
+        const fn = queue.value[i]
+        if (typeof fn === 'function') {
+          await fn()
+        }
       }
     }
     finally {

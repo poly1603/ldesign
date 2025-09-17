@@ -702,7 +702,7 @@ export class Vue3Strategy implements ILibraryStrategy {
     const { relative, extname } = await import('path')
 
     const files = await findFiles([
-      'src/**/*.{ts,tsx,js,jsx,vue}'
+      'src/**/*.{ts,tsx,js,jsx,vue,json}'
     ], {
       cwd: process.cwd(),
       ignore: ['**/*.d.ts', '**/*.test.*', '**/*.spec.*', '**/__tests__/**']

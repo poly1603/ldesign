@@ -182,6 +182,50 @@ class MemoryMonitor {
   }
 }
 
+// FPS监控器
+class FPSMonitor {
+  private callback?: (fps: number) => void
+  private animationId?: number
+  private frameCount = 0
+  private lastTime = 0
+  private fps = 0
+
+  start(callback: (fps: number) => void): void {
+    this.callback = callback
+    this.frameCount = 0
+    this.lastTime = performance.now()
+    this.measureFPS()
+  }
+
+  stop(): void {
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId)
+      this.animationId = undefined
+    }
+    this.callback = undefined
+  }
+
+  private measureFPS(): void {
+    if (!this.callback) return
+
+    this.frameCount++
+    const currentTime = performance.now()
+
+    if (currentTime - this.lastTime >= 1000) {
+      this.fps = Math.round((this.frameCount * 1000) / (currentTime - this.lastTime))
+      this.frameCount = 0
+      this.lastTime = currentTime
+      this.callback(this.fps)
+    }
+
+    this.animationId = requestAnimationFrame(() => this.measureFPS())
+  }
+
+  getFPS(): number {
+    return this.fps
+  }
+}
+
 // 性能管理器实现
 export class PerformanceManagerImpl implements PerformanceManager {
   private events = new Map<string, PerformanceEvent>()

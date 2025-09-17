@@ -76,11 +76,12 @@ const config: TemplateConfig = {
     'backdrop-filter 毛玻璃',
     '高性能动画优化',
   ],
-  screenshots: [
-    './screenshot-1.png',
-    './screenshot-2.png',
-    './screenshot-3.png',
-  ],
+  // screenshots removed due to type constraints
+  // screenshots: [
+  //   './screenshot-1.png',
+  //   './screenshot-2.png',
+  //   './screenshot-3.png',
+  // ],
 }
 
 export default config

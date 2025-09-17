@@ -1,0 +1,15 @@
+site
+es
+lib
+dist
+types
+node_modules
+coverage
+*.log
+*.tgz
+*.gz
+*.zip
+*.tar
+*.min.js
+*.map
+.augment_cache

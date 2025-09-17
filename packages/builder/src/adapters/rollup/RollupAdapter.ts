@@ -1033,10 +1033,13 @@ export class RollupAdapter implements IBundlerAdapter {
       })
 
       const jsonPlugin = json({
-        // 添加更好的错误处理
-        compact: true,
-        namedExports: false,
-        preferConst: false
+        // 优化 JSON 插件配置
+        compact: false,  // 保持 JSON 格式化，便于调试
+        namedExports: true,  // 支持命名导出
+        preferConst: true,  // 使用 const 声明
+        // 包含所有 JSON 文件
+        include: ['**/*.json'],
+        exclude: ['node_modules/**']
       })
 
       const plugins = [

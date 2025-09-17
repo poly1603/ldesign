@@ -9,7 +9,7 @@ import { ref, shallowRef, type Ref } from 'vue'
 /**
  * 缓存策略类型
  */
-export type CacheStrategy = 'LRU' | 'LFU' | 'FIFO' | 'TTL' | 'HYBRID'
+export type AdvancedCacheStrategy = 'LRU' | 'LFU' | 'FIFO' | 'TTL' | 'HYBRID'
 
 /**
  * 缓存项元数据
@@ -47,7 +47,7 @@ export interface CacheItem<T = any> {
  */
 export interface AdvancedCacheConfig {
   /** 缓存策略 */
-  strategy?: CacheStrategy
+  strategy?: AdvancedCacheStrategy
   /** 最大缓存大小（字节） */
   maxSize?: number
   /** 最大缓存项数量 */
@@ -107,7 +107,7 @@ export class AdvancedCache<T = any> {
   private cache: Map<string, CacheItem<T>>
   private config: Required<AdvancedCacheConfig>
   private stats: CacheStats
-  private cleanupTimer?: NodeJS.Timer
+  private cleanupTimer?: NodeJS.Timeout
   private accessQueue: string[] = []
   private frequencyMap: Map<string, number> = new Map()
   
@@ -690,7 +690,7 @@ export class AdvancedCache<T = any> {
   private startCleanupTimer(): void {
     this.cleanupTimer = setInterval(() => {
       this.cleanup()
-    }, this.config.cleanupInterval)
+    }, this.config.cleanupInterval) as unknown as NodeJS.Timeout
   }
   
   /**
@@ -766,7 +766,7 @@ export class AdvancedCache<T = any> {
    */
   destroy(): void {
     if (this.cleanupTimer) {
-      clearInterval(this.cleanupTimer)
+      clearInterval(this.cleanupTimer as unknown as number)
     }
     this.clear()
   }

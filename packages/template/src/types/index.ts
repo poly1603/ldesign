@@ -13,7 +13,6 @@ export {
   type ScannerConfig,
   type TemplateSystemConfig,
   type ConfigValidationResult,
-  type TemplateConfig,
   type LoaderConfig,
   type FileNamingConfig,
   type PerformanceConfig,
@@ -24,9 +23,11 @@ export {
   type ConfigUpdateEvent,
   type LogLevel,
   type CacheStrategy,
-  type PreloadMode,
-  type ScanMode
+  type PreloadMode
 } from './config'
+
+// 从模板类型导出 TemplateConfig，避免错误地从 config 导出
+export { type TemplateConfig } from './template'
 
 export {
   type TemplatePluginOptions,

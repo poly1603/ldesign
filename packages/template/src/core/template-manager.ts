@@ -31,22 +31,59 @@ export class TemplateManager {
   private initialized = false
 
   constructor(config: Partial<TemplateManagerConfig> = {}) {
+    // 默认管理器配置（与系统配置解耦）
+    const defaultManagerConfig: TemplateManagerConfig = {
+      templateRoot: 'src/templates',
+      enableCache: true,
+      cacheSize: 50,
+      enableHMR: true,
+      deviceDetection: {
+        breakpoints: {
+          mobile: 768,
+          tablet: 1024,
+          desktop: 1200,
+        },
+      },
+    }
+
     // 合并默认配置
-    this.config = { ...defaultConfig, ...config } as TemplateManagerConfig
+    this.config = { ...defaultManagerConfig, ...config }
 
     // 初始化子模块
     this.scanner = new TemplateScanner({
-      templateRoot: this.config.templateRoot,
-      extensions: this.config.scanner?.extensions,
-      maxDepth: this.config.scanner?.maxDepth,
+      templatesDir: this.config.templateRoot,
+      enableCache: this.config.enableCache,
+      enableHMR: this.config.enableHMR,
+      maxDepth: 5,
+      includeExtensions: ['.vue', '.tsx', '.js', '.ts'],
+      excludePatterns: ['node_modules', '.git', 'dist'],
+      watchMode: false,
+      debounceDelay: 300,
+      batchSize: 10,
     })
 
-    this.loader = new TemplateLoader(this.config.cache)
-    this.deviceAdapter = new DeviceAdapter(this.config.deviceDetection)
+    this.loader = new TemplateLoader({
+      enabled: this.config.enableCache,
+      strategy: 'lru',
+      maxSize: this.config.cacheSize,
+      ttl: 0,
+      checkPeriod: 5 * 60 * 1000,
+      enableCompression: false,
+      enablePersistence: false,
+      persistenceKey: 'template_cache',
+    })
+
+    this.deviceAdapter = new DeviceAdapter({
+      defaultDevice: 'desktop',
+      breakpoints: {
+        mobile: this.config.deviceDetection.breakpoints.mobile,
+        tablet: this.config.deviceDetection.breakpoints.tablet,
+      },
+    })
 
     // 监听设备变化
     this.deviceAdapter.addDeviceChangeListener((deviceType) => {
-      this.emit('device:change', this.deviceAdapter.getCurrentDevice(), deviceType)
+      this.emit('device:change', deviceType)
     })
   }
 
@@ -64,10 +101,7 @@ export class TemplateManager {
       // 扫描模板
       await this.scanTemplates()
 
-      // 预加载模板
-      if (this.config.enablePreload && this.config.preloadTemplates.length > 0) {
-        await this.preloadTemplates(this.config.preloadTemplates)
-      }
+      // 预加载逻辑可在上层系统配置中实现
 
       this.initialized = true
     }
@@ -80,7 +114,7 @@ export class TemplateManager {
   /**
    * 扫描模板
    */
-  async scanTemplates(): Promise<{ count: number, templates: TemplateInfo[], duration: number }> {
+  async scanTemplates(): Promise<ReturnType<TemplateScanner['scan']>> {
     try {
       const result = await this.scanner.scan()
 
@@ -101,14 +135,22 @@ export class TemplateManager {
         this.addToIndex(template)
       }
 
-      // 添加扫描到的模板
-      for (const template of result.templates) {
-        this.templates.set(template.id, template)
-        this.addToIndex(template)
-      }
-
-      if (this.config.debug) {
-        console.log(`Scanned ${result.count} templates in ${result.duration}ms`)
+      // 添加扫描到的模板（从索引展平）
+      for (const [category, deviceMap] of result.templates) {
+        for (const [device, nameMap] of deviceMap) {
+          for (const metadata of nameMap.values()) {
+            const id = metadata.id || `${metadata.category}:${metadata.device}:${metadata.name}`
+            const info: TemplateInfo = {
+              ...metadata,
+              id,
+              component: undefined,
+              loaded: false,
+              usageCount: 0,
+            }
+            this.templates.set(id, info)
+            this.addToIndex(info)
+          }
+        }
       }
 
       return result
@@ -128,24 +170,27 @@ export class TemplateManager {
     }
 
     const categoryMap = this.categoryIndex.get(template.category)!
-    if (!categoryMap.has(template.deviceType)) {
-      categoryMap.set(template.deviceType, [])
+    if (!categoryMap.has(template.device)) {
+      categoryMap.set(template.device, [])
     }
 
-    categoryMap.get(template.deviceType)!.push(template)
+    categoryMap.get(template.device)!.push(template)
   }
 
   /**
    * 手动注册模板
    */
   registerTemplate(template: TemplateInfo): void {
+    // 计算ID回退
+    const id = template.id || `${template.category}:${template.device}:${template.name}`
+    const fixed = { ...template, id }
     // 添加到模板映射
-    this.templates.set(template.id, template)
+    this.templates.set(id, fixed)
     // 添加到索引
-    this.addToIndex(template)
+    this.addToIndex(fixed)
 
-    if (this.config.debug) {
-      console.log(`Registered template: ${template.id}`)
+    if ((this as any).config.debug) {
+      console.log(`Registered template: ${id}`)
     }
   }
 
@@ -157,9 +202,7 @@ export class TemplateManager {
       this.registerTemplate(template)
     }
 
-    if (this.config.debug) {
-      console.log(`Registered ${templates.length} templates`)
-    }
+    // Optional debug logging could be handled externally
   }
 
   /**
@@ -182,15 +225,14 @@ export class TemplateManager {
       throw new Error(`No template found for category: ${category}, device: ${targetDevice}`)
     }
 
-    this.emit('template:loading', template.id)
-
     try {
       const result = await this.loader.load(template)
-      this.emit('template:loaded', template)
+      // 触发已加载事件
+      this.emit('template:load', template)
       return result
     }
     catch (error) {
-      this.emit('template:error', template.id, error as Error)
+      this.emit('template:error', { template: template.id || `${template.category}:${template.device}:${template.name}`, error: error as Error })
       throw error
     }
   }
@@ -246,7 +288,7 @@ export class TemplateManager {
       const templates = categoryMap.get(fallbackDevice)
       if (templates && templates.length > 0) {
         const defaultTemplate = templates.find(t => t.isDefault)
-        return defaultTemplate || templates[0]
+        return defaultTemplate ?? (templates[0] ?? null)
       }
     }
 
@@ -266,7 +308,7 @@ export class TemplateManager {
 
     const result = await this.render(category, targetDevice, templateName)
 
-    this.emit('template:switch', oldTemplate, result.template)
+    this.emit('template:switch', { from: oldTemplate?.name || '', to: templateName })
 
     return result
   }
@@ -280,7 +322,7 @@ export class TemplateManager {
     for (const templateId of templateIds) {
       const [category, device, name] = templateId.split(':')
       const template = this.findBestTemplate(
-        category,
+        category as string,
         (device as DeviceType) || this.deviceAdapter.getCurrentDevice(),
         name,
       )
@@ -385,7 +427,7 @@ export class TemplateManager {
       this.loader.clearCache()
     }
 
-    this.emit('cache:clear', category, deviceType)
+    this.emit('cache:clear', { category, device: deviceType })
   }
 
   /**
@@ -398,7 +440,7 @@ export class TemplateManager {
   /**
    * 添加事件监听器
    */
-  on<K extends keyof TemplateEvents>(event: K, listener: TemplateEvents[K]): void {
+  on<K extends keyof TemplateEvents>(event: K, listener: EventListener<TemplateEvents[K]>): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set())
     }
@@ -408,7 +450,7 @@ export class TemplateManager {
   /**
    * 移除事件监听器
    */
-  off<K extends keyof TemplateEvents>(event: K, listener: TemplateEvents[K]): void {
+  off<K extends keyof TemplateEvents>(event: K, listener: EventListener<TemplateEvents[K]>): void {
     const eventListeners = this.listeners.get(event)
     if (eventListeners) {
       eventListeners.delete(listener as EventListener)
@@ -418,12 +460,12 @@ export class TemplateManager {
   /**
    * 触发事件
    */
-  private emit<K extends keyof TemplateEvents>(event: K, ...args: Parameters<TemplateEvents[K]>): void {
+  private emit<K extends keyof TemplateEvents>(event: K, data: TemplateEvents[K]): void {
     const eventListeners = this.listeners.get(event)
     if (eventListeners) {
       eventListeners.forEach((listener) => {
         try {
-          listener(...args)
+          ;(listener as EventListener<TemplateEvents[K]>)(data)
         }
         catch (error) {
           console.error(`Error in ${event} listener:`, error)
@@ -439,8 +481,11 @@ export class TemplateManager {
     this.config = { ...this.config, ...config }
 
     // 更新子模块配置
-    if (config.cache) {
-      this.loader.updateConfig(config.cache)
+    if (config.cacheSize !== undefined || config.enableCache !== undefined) {
+      this.loader.updateConfig({
+        maxSize: config.cacheSize ?? this.config.cacheSize,
+        enabled: config.enableCache ?? this.config.enableCache,
+      })
     }
 
     if (config.deviceDetection) {

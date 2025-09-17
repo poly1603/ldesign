@@ -241,7 +241,7 @@ export interface TemplateSystemConfig {
 /**
  * 插件配置选项（向后兼容）
  */
-export interface TemplatePluginOptions extends Partial<TemplateSystemConfig> {
+export interface TemplatePluginOptions extends Partial<Omit<TemplateSystemConfig, 'cache' | 'preloadStrategy'>> {
   /** @deprecated 使用 cache.enabled 替代 */
   cache?: boolean
   /** @deprecated 使用 preloadStrategy 替代 */

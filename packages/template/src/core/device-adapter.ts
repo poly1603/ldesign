@@ -108,6 +108,24 @@ export class DeviceAdapter {
   }
 
   /**
+   * 手动设置设备类型
+   */
+  setDeviceType(deviceType: DeviceType): void {
+    if (this.currentDevice !== deviceType) {
+      this.currentDevice = deviceType
+      this.notifyListeners()
+    }
+  }
+
+  /**
+   * 更新配置
+   */
+  updateConfig(newConfig: Partial<DeviceDetectionConfig>): void {
+    this.config = { ...this.config, ...newConfig }
+    this.detectDevice()
+  }
+
+  /**
    * 通知所有监听器
    */
   private notifyListeners(): void {

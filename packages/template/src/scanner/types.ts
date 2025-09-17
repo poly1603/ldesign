@@ -20,6 +20,12 @@ export interface ScannerOptions {
   includeExtensions?: string[]
   /** 排除的目录或文件模式 */
   excludePatterns?: string[]
+  /** 是否启用监听模式 */
+  watchMode?: boolean
+  /** 防抖延迟（毫秒） */
+  debounceDelay?: number
+  /** 批处理大小 */
+  batchSize?: number
 }
 
 /**
@@ -67,7 +73,7 @@ export interface ScanError {
 /**
  * 文件变更事件
  */
-export interface FileChangeEvent {
+export interface ScannerFileChangeEvent {
   /** 变更类型 */
   type: 'added' | 'changed' | 'removed'
   /** 文件路径 */
@@ -87,7 +93,7 @@ export interface ScannerEventCallbacks {
   /** 扫描错误回调 */
   onScanError?: (error: ScanError) => void
   /** 文件变更回调 */
-  onFileChange?: (event: FileChangeEvent) => void
+onFileChange?: (event: ScannerFileChangeEvent) => void
   /** 模板更新回调 */
   onTemplateUpdate?: (template: TemplateMetadata) => void
 }

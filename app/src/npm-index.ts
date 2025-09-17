@@ -1,18 +1,7 @@
 /**
- * 应用入口文件 - NPM 包版本
- * 导出应用的核心功能，不包含运行时启动代码
+ * NPM 包专用入口文件
+ * 导出应用的核心功能，用于 npm 包发布
  */
-
-// 不导入 bootstrap，避免 JSON 文件问题
-// import { bootstrap } from './bootstrap'
-
-// NPM 包不需要自动启动应用
-// bootstrap().then(engine => {
-//   console.log('🎉 应用启动成功！')
-//   console.log('Engine实例:', engine)
-// }).catch(error => {
-//   console.error('❌ 应用启动失败:', error)
-// })
 
 // 导出配置相关功能
 export {
@@ -37,7 +26,7 @@ export type {
   LogConfig
 } from './types/app-config'
 
-// 导出核心插件（不包含 i18n 和 bootstrap 以避免 JSON 文件问题）
+// 导出核心插件
 export { routerPlugin } from './router'
 export { templatePlugin } from './templates'
 export { colorPlugin } from './color'
@@ -51,10 +40,6 @@ export { devicePlugin } from './device'
 
 // 导出主应用组件
 export { default as App } from './App.vue'
-
-// 不导出 bootstrap 和 i18nPlugin，避免 JSON 文件依赖
-// export { bootstrap } from './bootstrap'
-// export { i18nPlugin } from './i18n'
 
 // 导出一个简化的创建应用函数
 export function createLDesignApp() {
@@ -73,5 +58,14 @@ export function createLDesignApp() {
       'apiPlugin',
       'devicePlugin'
     ]
+  }
+}
+
+// 导出工具函数
+export function createAppConfig(config: any) {
+  return {
+    ...config,
+    version: '4.0.0',
+    timestamp: new Date().toISOString()
   }
 }

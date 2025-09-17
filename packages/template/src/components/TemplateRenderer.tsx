@@ -19,6 +19,7 @@ import {
   isRef,
   markRaw,
   shallowRef,
+  h,
 } from 'vue'
 import { useDeviceDetection } from '../composables/useDeviceDetection'
 import { useTemplate } from '../composables/useTemplate'
@@ -145,7 +146,7 @@ export const TemplateRenderer = defineComponent({
         return val as any
       }
       // 对组件使用 markRaw 避免响应式包装，然后用 shallowRef 包装
-      return shallowRef(val && typeof val === 'object' && val.render ? markRaw(val as T) : val as T)
+      return shallowRef(val && typeof val === 'object' && (val as any).render ? markRaw(val as any) : (val as T))
     }
 
     const currentTemplate = toRefCompat<import('../types/template').TemplateMetadata | null>(templateApi.currentTemplate)

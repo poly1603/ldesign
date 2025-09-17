@@ -6,6 +6,8 @@
 // 导出配置管理器
 // 重新导出类型以便于使用
 import type { TemplateSystemConfig } from '../types/config'
+import { getConfigManager, resetConfigManager, TemplateConfigManager } from './config-manager'
+import { mergeConfig } from './default.config'
 
 // 导出配置类型
 export type {
@@ -203,7 +205,30 @@ export function mergePresetConfig(
   customConfig?: Partial<TemplateSystemConfig>,
 ): TemplateSystemConfig {
   const presetConfig = getPresetConfig(preset)
-  return mergeConfig({ ...presetConfig, ...customConfig })
+  // 确保可选段落的必填字段补齐（如 scanner, cache 等）
+  return mergeConfig({
+    ...presetConfig,
+    ...customConfig,
+    scanner: { ...(presetConfig as any).scanner, ...(customConfig as any)?.scanner },
+    cache: { ...(presetConfig as any).cache, ...(customConfig as any)?.cache },
+    deviceDetection: {
+      ...(presetConfig as any).deviceDetection,
+      ...(customConfig as any)?.deviceDetection,
+      breakpoints: {
+        ...(presetConfig as any).deviceDetection?.breakpoints,
+        ...(customConfig as any)?.deviceDetection?.breakpoints,
+      },
+    },
+    preloadStrategy: {
+      ...(presetConfig as any).preloadStrategy,
+      ...(customConfig as any)?.preloadStrategy,
+    },
+    performance: { ...(presetConfig as any).performance, ...(customConfig as any)?.performance },
+    devtools: { ...(presetConfig as any).devtools, ...(customConfig as any)?.devtools },
+    errorHandling: { ...(presetConfig as any).errorHandling, ...(customConfig as any)?.errorHandling },
+    fileNaming: { ...(presetConfig as any).fileNaming, ...(customConfig as any)?.fileNaming },
+    loader: { ...(presetConfig as any).loader, ...(customConfig as any)?.loader },
+  } as any)
 }
 
 /**

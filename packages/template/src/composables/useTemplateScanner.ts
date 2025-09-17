@@ -62,7 +62,16 @@ export function useTemplateScanner(options: UseTemplateScannerOptions = {}): Use
 
     try {
       const result = await scanner!.scan()
-      templates.value = Array.from(result.templates.values()).flat()
+      // 展平三级索引为模板元数据数组
+      const flat: TemplateMetadata[] = []
+      for (const categoryMap of result.templates.values()) {
+        for (const deviceMap of categoryMap.values()) {
+          for (const meta of deviceMap.values()) {
+            flat.push(meta)
+          }
+        }
+      }
+      templates.value = flat
     }
     catch (err) {
       error.value = err instanceof Error ? err.message : '扫描失败'

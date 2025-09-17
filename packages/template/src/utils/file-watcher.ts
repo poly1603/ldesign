@@ -13,7 +13,7 @@ export type FileChangeType = 'added' | 'changed' | 'removed'
 /**
  * 文件变化事件
  */
-export interface FileChangeEvent {
+export interface WatcherFileChangeEvent {
   /** 变化类型 */
   type: FileChangeType
   /** 文件路径 */
@@ -54,9 +54,9 @@ export interface FileWatcherOptions {
  */
 export interface FileWatcherCallbacks {
   /** 文件变化回调 */
-  onChange?: (event: FileChangeEvent) => void
+  onChange?: (event: WatcherFileChangeEvent) => void
   /** 模板文件变化回调 */
-  onTemplateChange?: (event: FileChangeEvent) => void
+  onTemplateChange?: (event: WatcherFileChangeEvent) => void
   /** 错误回调 */
   onError?: (error: Error) => void
   /** 监听开始回调 */
@@ -263,8 +263,8 @@ export class FileWatcher {
   /**
    * 处理文件变化事件
    */
-  private processFileChange(type: FileChangeType, filePath: string): void {
-    const event: FileChangeEvent = {
+private processFileChange(type: FileChangeType, filePath: string): void {
+    const event: WatcherFileChangeEvent = {
       type,
       path: filePath,
       filename: this.getFilename(filePath),
@@ -305,7 +305,7 @@ export class FileWatcher {
   /**
    * 提取模板信息
    */
-  private extractTemplateInfo(filePath: string): FileChangeEvent['templateInfo'] | undefined {
+private extractTemplateInfo(filePath: string): WatcherFileChangeEvent['templateInfo'] | undefined {
     // 解析路径以提取模板信息
     const pathParts = filePath.replace(/\\/g, '/').split('/')
     const templatesIndex = pathParts.findIndex(part => part === 'templates')
@@ -317,10 +317,12 @@ export class FileWatcher {
     const category = pathParts[templatesIndex + 1]
     const device = pathParts[templatesIndex + 2] as DeviceType
     const templateName = pathParts[templatesIndex + 3]
-    const filename = pathParts[pathParts.length - 1]
+    const filename: string = (pathParts[pathParts.length - 1] || '') as string
 
     // 确定文件类型
     let fileType: 'config' | 'component' | 'style' | 'preview'
+    if (!filename)
+      return undefined
     if (filename.startsWith('config.')) {
       fileType = 'config'
     }
@@ -338,9 +340,9 @@ export class FileWatcher {
     }
 
     return {
-      category,
+      category: category as string,
       device,
-      templateName,
+      templateName: templateName as string,
       fileType,
     }
   }

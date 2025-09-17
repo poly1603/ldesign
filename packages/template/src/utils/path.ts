@@ -62,9 +62,9 @@ export const pathUtils = {
       throw new Error('Invalid template path format')
     }
 
-    const fileName = relevantParts[relevantParts.length - 1]
-    const templateName = relevantParts[relevantParts.length - 2]
-    const device = relevantParts[relevantParts.length - 3]
+    const fileName = relevantParts[relevantParts.length - 1] as string
+    const templateName = relevantParts[relevantParts.length - 2] as string
+    const device = relevantParts[relevantParts.length - 3] as string
     const category = relevantParts.slice(0, -3).join('/')
 
     return {
@@ -150,19 +150,20 @@ export const pathUtils = {
 
     let result = filtered[0]
     for (let i = 1; i < filtered.length; i++) {
-      const segment = filtered[i]
-      if (segment.startsWith('/')) {
+      const segment = filtered[i] as string
+      if (segment && segment.startsWith('/')) {
         result = segment
       }
       else {
-        if (!result.endsWith('/')) {
+        if (result && !result.endsWith('/')) {
           result += '/'
         }
-        result += segment
+        if (segment)
+          result += segment
       }
     }
 
-    return this.normalize(result)
+    return this.normalize(result || '')
   },
 
   /**

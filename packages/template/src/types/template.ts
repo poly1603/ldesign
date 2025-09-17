@@ -40,6 +40,8 @@ export interface TemplateConfig {
   slots?: string[]
   /** 依赖的其他模板或组件（可选） */
   dependencies?: string[]
+  /** 模板特性（可选，便于文档和展示） */
+  features?: string[]
   /** 最低Vue版本要求（可选） */
   minVueVersion?: string
 }
@@ -391,6 +393,7 @@ export interface TemplateEvents {
   'device:change': DeviceType
   'cache:hit': string
   'cache:miss': string
+  'cache:clear': { category?: string; device?: DeviceType }
 }
 
 /**

@@ -94,7 +94,7 @@ export class MixedStrategy implements ILibraryStrategy {
     const { relative, extname } = await import('path')
 
     const files = await findFiles([
-      'src/**/*.{ts,tsx,js,jsx,vue,css,less,scss,sass}'
+      'src/**/*.{ts,tsx,js,jsx,vue,css,less,scss,sass,json}'
     ], {
       cwd: process.cwd(),
       ignore: ['**/*.d.ts', '**/*.test.*', '**/*.spec.*', '**/__tests__/**']
@@ -197,7 +197,7 @@ export class MixedStrategy implements ILibraryStrategy {
         const postcss = await import('rollup-plugin-postcss')
         plugins.push(postcss.default({
           extract: true,
-minimize: config.style?.minimize !== false,
+          minimize: config.style?.minimize !== false,
           sourceMap: config.output?.sourcemap !== false,
           modules: config.style?.modules || false
         }))

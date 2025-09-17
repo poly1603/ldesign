@@ -11,7 +11,7 @@ import type { TemplateSystemConfig, CacheConfig } from './config'
  * 这个接口保持向后兼容性，同时支持新的配置系统
  * 旧的配置选项会被自动转换为新的配置格式
  */
-export interface PluginOptions extends Partial<Omit<TemplateSystemConfig, 'cache'>> {
+export interface PluginOptions extends Partial<Omit<TemplateSystemConfig, 'cache' | 'preloadStrategy'>> {
   /** @deprecated 使用 cache.enabled 替代 */
   cache?: boolean | CacheConfig
   /** @deprecated 使用 preloadStrategy.priority 替代 */

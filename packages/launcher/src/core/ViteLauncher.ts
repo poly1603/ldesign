@@ -581,6 +581,13 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       // 调试输出 app-config 注入
       this.logger.debug('app-config 插件在 preview 中已注入')
 
+      // 触发服务器就绪事件
+      this.emit(LauncherEvent.SERVER_READY, {
+        server: this.previewServer,
+        url: this.previewServer ? this.getServerUrl(this.previewServer) : '',
+        timestamp: Date.now()
+      } as LauncherEventData[LauncherEvent.SERVER_READY])
+
       this.logger.success('预览服务器启动成功')
 
       return this.previewServer as PreviewServer
@@ -801,7 +808,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
    * @param callback - 回调函数
    */
   onReady(callback: () => void): void {
-    this.on('ready', callback)
+    this.on(LauncherEvent.SERVER_READY, callback)
   }
 
   /**
@@ -1082,7 +1089,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
    * @param server - 服务器实例
    * @returns 服务器 URL
    */
-  private getServerUrl(server: ViteDevServer): string {
+  private getServerUrl(server: ViteDevServer | PreviewServer): string {
     try {
       if (server.resolvedUrls?.local?.[0]) {
         return server.resolvedUrls.local[0]

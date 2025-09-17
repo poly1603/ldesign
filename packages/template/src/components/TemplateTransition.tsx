@@ -137,9 +137,11 @@ export const TemplateTransition = defineComponent({
       return style
     })
 
+    const AnyNamedTransition = NamedTransition as any
+
     return () => (
       <div class="template-content-wrapper" style={animationStyle.value}>
-        <NamedTransition
+        <AnyNamedTransition
           name={animationName.value}
           mode={props.mode}
           appear={props.appear}
@@ -161,7 +163,7 @@ export const TemplateTransition = defineComponent({
           onLeaveCancelled={(el: Element) => (emit('leave-cancelled', el))}
         >
           {slots.default?.()}
-        </NamedTransition>
+        </AnyNamedTransition>
       </div>
     )
   },

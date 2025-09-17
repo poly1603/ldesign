@@ -20,8 +20,9 @@ import type {
   ScanStats,
 } from './types'
 import { createFilePathBuilder, type FilePathBuilder } from '../utils/file-path-builder'
-import { createFileWatcher, type FileChangeEvent, type FileWatcher } from '../utils/file-watcher'
-import { getTemplateCategoryManager, type TemplateCategoryManager } from '../utils/template-category-manager'
+import { createFileWatcher, type WatcherFileChangeEvent, type FileWatcher } from '../utils/file-watcher'
+import { getTemplateCategoryManager } from '../utils/template-category-manager'
+import type { TemplateCategoryManager } from '../types/template-categories'
 
 /**
  * 模板扫描器类
@@ -383,17 +384,17 @@ export class TemplateScanner {
       const stylePath = `${basePath}/style.less`
 
       // 创建模板元数据
-      const metadata: TemplateMetadata = {
-        ...config,
-        category,
-        device,
-        componentPath,
-        componentLoader, // 添加组件加载器
-        stylePath,
-        configPath,
-        lastModified: Date.now(),
-        isBuiltIn,
-      }
+          const metadata: TemplateMetadata = {
+            ...config,
+            category: category as string,
+            device,
+            componentPath: componentPath,
+            componentLoader, // 添加组件加载器
+            stylePath: stylePath ?? undefined,
+            configPath: configPath,
+            lastModified: Date.now(),
+            isBuiltIn,
+          }
 
       // 添加到索引
       this.addToIndex(metadata)
@@ -453,10 +454,10 @@ export class TemplateScanner {
       // 创建模板元数据
       const metadata: TemplateMetadata = {
         ...config,
-        category,
+        category: category as string,
         device,
         componentPath: templatePaths.componentPath,
-        stylePath: templatePaths.stylePath,
+        stylePath: templatePaths.stylePath ?? undefined,
         configPath: templatePaths.configPath,
         lastModified: Date.now(),
         isBuiltIn,
@@ -594,7 +595,12 @@ export class TemplateScanner {
       onTemplateChange: event => this.handleTemplateFileChange(event),
       onError: (error) => {
         console.error('文件监听器错误:', error)
-        this.callbacks.onScanError?.(error)
+        this.callbacks.onScanError?.({
+          type: 'SCAN_ERROR',
+          message: error.message,
+          filePath: this.options.templatesDir,
+          details: error,
+        })
       },
       onWatchStart: () => {
         this.isWatchingEnabled = true
@@ -621,7 +627,12 @@ export class TemplateScanner {
       }
       catch (error) {
         console.error('启动文件监听失败:', error)
-        this.callbacks.onScanError?.(error as Error)
+      this.callbacks.onScanError?.({
+        type: 'SCAN_ERROR',
+        message: (error as Error).message,
+        filePath: this.options.templatesDir,
+        details: error,
+      })
       }
     }
   }
@@ -643,7 +654,7 @@ export class TemplateScanner {
   /**
    * 处理模板文件变化
    */
-  private async handleTemplateFileChange(event: FileChangeEvent): Promise<void> {
+  private async handleTemplateFileChange(event: WatcherFileChangeEvent): Promise<void> {
     if (!event.templateInfo) {
       return
     }
@@ -670,7 +681,12 @@ export class TemplateScanner {
     }
     catch (error) {
       console.error('处理模板文件变化失败:', error)
-      this.callbacks.onScanError?.(error as Error)
+      this.callbacks.onScanError?.({
+        type: 'SCAN_ERROR',
+        message: (error as Error).message,
+        filePath: this.options.templatesDir,
+        details: error,
+      })
     }
   }
 
@@ -722,7 +738,7 @@ export class TemplateScanner {
     templateName: string,
     configPath: string,
   ): Promise<void> {
-    const errors: any[] = []
+    const errors: ScanError[] = []
     await this.scanTemplateConfig(configPath, category, device, true, errors)
 
     if (errors.length > 0) {
@@ -760,7 +776,7 @@ export class TemplateScanner {
         }
         break
       case 'style':
-        template.stylePath = filePath
+        template.stylePath = filePath ?? undefined
         break
       case 'preview':
         // 可以添加预览图路径更新逻辑
@@ -826,6 +842,30 @@ export class TemplateScanner {
   }
 
   /**
+   * 重新扫描指定配置路径（简化实现）
+   */
+  private async scanTemplateConfig(
+    configPath: string,
+    category: string,
+    device: DeviceType,
+    isBuiltIn: boolean,
+    errors: ScanError[],
+  ): Promise<void> {
+    try {
+      const moduleLoader = async () => await import(/* @vite-ignore */ configPath)
+      await this.processConfigFile(configPath, moduleLoader, errors, isBuiltIn)
+    }
+    catch (error) {
+      errors.push({
+        type: 'CONFIG_PARSE_ERROR',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        filePath: configPath,
+        details: error,
+      })
+    }
+  }
+
+  /**
    * 获取监听状态
    */
   isWatching(): boolean {
@@ -861,7 +901,7 @@ export class TemplateScanner {
       accessibility: {},
     }))
 
-    return this.categoryManager.filterTemplates(extendedTemplates, filter) as TemplateMetadata[]
+    return this.categoryManager.filterTemplates(extendedTemplates, filter) as unknown as TemplateMetadata[]
   }
 
   /**
@@ -891,7 +931,7 @@ export class TemplateScanner {
       accessibility: {},
     }))
 
-    return this.categoryManager.sortTemplates(extendedTemplates, options) as TemplateMetadata[]
+    return this.categoryManager.sortTemplates(extendedTemplates, options) as unknown as TemplateMetadata[]
   }
 
   /**
