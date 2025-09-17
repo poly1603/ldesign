@@ -35,7 +35,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "ldesign-builder",
+    "build": "ldesign-builder build",
     "build:watch": "ldesign-builder --watch",
     "build:prod": "ldesign-builder --prod",
     "dev": "ldesign-launcher dev",
