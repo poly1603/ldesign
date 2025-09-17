@@ -8,7 +8,7 @@
  * - VirtualScroll: 虚拟滚动组件
  */
 
-export { default as TemplateRenderer } from './TemplateRenderer'
+export { default as TemplateRenderer } from './TemplateRenderer.tsx'
 export { default as TemplateSelector } from './TemplateSelector'
 export { TemplateTransition, TemplateContentWrapper } from './TemplateTransition'
 export { VirtualScroll, type VirtualScrollItem, type VirtualScrollInstance } from './VirtualScroll'

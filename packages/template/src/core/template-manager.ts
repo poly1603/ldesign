@@ -11,7 +11,7 @@ import type {
   TemplateInfo,
   TemplateManagerConfig,
 } from '../types'
-import { DEFAULT_CONFIG } from '../types'
+import { defaultConfig } from '../config/default.config'
 import { DeviceAdapter } from './device-adapter'
 import { TemplateScanner } from '../scanner'
 import { TemplateLoader } from './template-loader'
@@ -32,7 +32,7 @@ export class TemplateManager {
 
   constructor(config: Partial<TemplateManagerConfig> = {}) {
     // 合并默认配置
-    this.config = { ...DEFAULT_CONFIG, ...config } as TemplateManagerConfig
+    this.config = { ...defaultConfig, ...config } as TemplateManagerConfig
 
     // 初始化子模块
     this.scanner = new TemplateScanner({

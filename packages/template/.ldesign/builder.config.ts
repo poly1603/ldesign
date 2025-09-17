@@ -1,4 +1,4 @@
-import { defineConfig } from '@ldesign/builder'
+import { defineConfig, LibraryType } from '@ldesign/builder'
 import fs from 'fs'
 import path from 'path'
 
@@ -40,25 +40,36 @@ const umdGlobals = external.reduce((acc, dep) => {
 }, {} as Record<string, string>)
 
 export default defineConfig({
+  libraryType: LibraryType.VUE3, // 明确指定为 Vue3 项目
   dts: true,
   sourcemap: true,
   clean: true,
   minify: false,
   external,
+
+  // 禁用 tree-shaking 以确保模板文件被包含
+  performance: {
+    treeshaking: false
+  },
+
+  // Vue 和 JSX 支持由 Vue3Strategy 自动处理
+
+  // TypeScript 和 CSS 处理由 Vue3Strategy 自动处理
+
   output: {
     esm: {
       dir: 'es',
       format: 'esm',
       preserveStructure: true,
       dts: true,
-      input: ['src/**/*.ts', 'src/**/*.vue', '!src/index-lib.ts']
+      input: ['src/**/*.ts', 'src/**/*.tsx', 'src/**/*.vue', '!src/index-lib.ts', '!src/**/__tests__/**', '!src/**/*.test.*', '!src/**/*.spec.*']
     },
     cjs: {
       dir: 'lib',
       format: 'cjs',
       preserveStructure: true,
       dts: true,
-      input: ['src/**/*.ts', 'src/**/*.vue', '!src/index-lib.ts']
+      input: ['src/**/*.ts', 'src/**/*.tsx', 'src/**/*.vue', '!src/index-lib.ts', '!src/**/__tests__/**', '!src/**/*.test.*', '!src/**/*.spec.*']
     },
     umd: {
       dir: 'dist',

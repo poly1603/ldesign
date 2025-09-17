@@ -33,12 +33,10 @@ import './TemplateRenderer.less'
 const DefaultLoadingComponent = defineComponent({
   name: 'DefaultLoading',
   setup() {
-    return () => (
-      <div class="template-loading">
-        <div class="template-loading__spinner"></div>
-        <div class="template-loading__text">加载模板中...</div>
-      </div>
-    )
+    return () => h('div', { class: 'template-loading' }, [
+      h('div', { class: 'template-loading__spinner' }),
+      h('div', { class: 'template-loading__text' }, '加载模板中...')
+    ])
   },
 })
 

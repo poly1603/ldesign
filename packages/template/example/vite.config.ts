@@ -16,7 +16,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@ldesign/template': resolve(__dirname, '../src'),
+      // '@ldesign/template': resolve(__dirname, '../src'), // 注释掉，使用构建后的包
     },
   },
 
