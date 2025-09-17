@@ -118,7 +118,7 @@ export function createI18n(options: CreateI18nOptions): I18nInstance {
     const builtInLoaderOptions: BuiltInLoaderOptions = {
       userMessages: options.messages,
       customLoader: loader,
-      useBuiltIn: options.useBuiltIn !== false,
+      useBuiltIn: options.useBuiltIn ?? true,
       preferBuiltIn: options.preferBuiltIn,
       fallbackToBuiltIn: options.fallbackToBuiltIn !== false,
       builtInNamespace: options.builtInNamespace,

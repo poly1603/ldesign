@@ -309,7 +309,7 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions): Engine
 
         // 确保至少有当前语言和回退语言
         if (initialLanguages.length === 0) {
-          initialLanguages = [locale, fallbackLocale].filter(Boolean) as string[]
+          initialLanguages = [locale, fallbackLocale].filter((lang): lang is string => Boolean(lang))
         }
 
         reactiveState.availableLocales = initialLanguages

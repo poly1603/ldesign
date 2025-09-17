@@ -110,6 +110,16 @@ export interface I18nEnginePluginOptions extends I18nPluginOptions {
   enabledLanguages?: string[]
   /** 禁用的语言列表（黑名单） */
   disabledLanguages?: string[]
+  /** 是否使用内置翻译 */
+  useBuiltIn?: boolean
+  /** 是否优先使用内置翻译 */
+  preferBuiltIn?: boolean
+  /** 是否回退到内置翻译 */
+  fallbackToBuiltIn?: boolean
+  /** 内置翻译命名空间 */
+  builtInNamespace?: string
+  /** 合并选项 */
+  mergeOptions?: any
 }
 
 /**

@@ -292,22 +292,22 @@ export {
   I18nInjectionKey
 } from './vue/plugin'
 
-// Vue 组件暂时注释，等 Vue 插件配置正确后再启用
-// export {
-//   I18nT,
-//   I18nN,
-//   I18nD
-// } from './vue/components'
+// Vue 组件导出
+export {
+  I18nT,
+  I18nN,
+  I18nD
+} from './vue/components'
 
-// export {
-//   vT,
-//   vTHtml,
-//   vTTitle
-// } from './vue/directives'
+export {
+  vT,
+  vTHtml,
+  vTTitle
+} from './vue/directives'
 
-// export {
-//   installI18n
-// } from './vue'
+export {
+  installI18n
+} from './vue'
 
 // ==================== Engine 插件导出 ====================
 

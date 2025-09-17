@@ -1,4 +1,4 @@
-import { defineConfig } from '@ldesign/builder'
+import { defineConfig, LibraryType } from '@ldesign/builder'
 import fs from 'fs'
 import path from 'path'
 import vue from 'rollup-plugin-vue'
@@ -26,6 +26,8 @@ const umdGlobals = external.reduce((acc, dep) => {
 }, {} as Record<string, string>)
 
 export default defineConfig({
+  // Vue 3 库类型支持
+  libraryType: LibraryType.VUE3,
   dts: true,
   sourcemap: true,
   clean: true,
