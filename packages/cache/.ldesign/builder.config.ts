@@ -4,23 +4,14 @@ export default defineConfig({
   // 生成类型声明文件
   dts: true,
 
-  // 打包与调试
-  minify: true,
+  // 生成 source map
   sourcemap: true,
+
+  // 清理输出目录
   clean: true,
 
-  // 外部依赖（不打包进最终产物）
-  external: ['vue'],
+  // 不压缩代码（开发阶段）
+  minify: false
 
-  // 输出配置：使用布尔开关；true 使用默认配置，false/缺省跳过
-  output: {
-    esm: true,
-    cjs: true,
-    umd: {
-      name: 'LDesignCache',
-      globals: {
-        vue: 'Vue',
-      },
-    },
-  },
+  // external、globals、libraryType、formats、plugins 等配置将由 @ldesign/builder 自动检测和生成
 })

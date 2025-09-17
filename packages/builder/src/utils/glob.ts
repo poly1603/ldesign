@@ -138,23 +138,30 @@ function containsGlobPattern(pattern: string): boolean {
 
 /**
  * 规范化入口配置
- * 
+ *
  * 将各种输入格式标准化为 Rollup/Rolldown 可接受的格式
- * 
+ *
  * @param input - 原始输入配置
  * @param rootDir - 根目录
+ * @param exclude - 排除模式数组
  * @returns 规范化后的输入配置
  */
 export async function normalizeInput(
   input: string | string[] | Record<string, string> | undefined,
-  rootDir: string = process.cwd()
+  rootDir: string = process.cwd(),
+  exclude?: string[]
 ): Promise<string | string[] | Record<string, string>> {
   if (!input) {
     // 默认入口
     return path.resolve(rootDir, 'src/index.ts')
   }
 
-  const resolved = await resolveInputPatterns(input, rootDir)
+  let resolved = await resolveInputPatterns(input, rootDir)
+
+  // 应用 exclude 过滤
+  if (exclude && exclude.length > 0) {
+    resolved = await applyExcludeFilter(resolved, exclude, rootDir)
+  }
 
   // 对于数组输入，如果为空则抛出错误
   if (Array.isArray(resolved) && resolved.length === 0) {
@@ -162,6 +169,94 @@ export async function normalizeInput(
   }
 
   return resolved
+}
+
+/**
+ * 应用排除过滤器
+ *
+ * 从解析后的输入中排除匹配的文件
+ *
+ * @param resolved - 已解析的输入配置
+ * @param exclude - 排除模式数组
+ * @param rootDir - 根目录
+ * @returns 过滤后的输入配置
+ */
+async function applyExcludeFilter(
+  resolved: string | string[] | Record<string, string>,
+  exclude: string[],
+  rootDir: string
+): Promise<string | string[] | Record<string, string>> {
+  // 如果是字符串，检查是否匹配排除模式
+  if (typeof resolved === 'string') {
+    const isExcluded = await isFileExcluded(resolved, exclude, rootDir)
+    if (isExcluded) {
+      throw new Error(`入口文件被排除: ${resolved}`)
+    }
+    return resolved
+  }
+
+  // 如果是数组，过滤掉匹配的文件
+  if (Array.isArray(resolved)) {
+    const filtered: string[] = []
+    for (const file of resolved) {
+      const isExcluded = await isFileExcluded(file, exclude, rootDir)
+      if (!isExcluded) {
+        filtered.push(file)
+      }
+    }
+    return filtered
+  }
+
+  // 如果是对象，过滤每个值
+  if (typeof resolved === 'object' && resolved !== null) {
+    const filtered: Record<string, string> = {}
+    for (const [key, file] of Object.entries(resolved)) {
+      const isExcluded = await isFileExcluded(file, exclude, rootDir)
+      if (!isExcluded) {
+        filtered[key] = file
+      }
+    }
+    return filtered
+  }
+
+  return resolved
+}
+
+/**
+ * 检查文件是否被排除
+ *
+ * @param filePath - 文件路径
+ * @param exclude - 排除模式数组
+ * @param rootDir - 根目录
+ * @returns 是否被排除
+ */
+async function isFileExcluded(
+  filePath: string,
+  exclude: string[],
+  rootDir: string
+): Promise<boolean> {
+  // 将绝对路径转换为相对路径进行匹配
+  const relativePath = path.relative(rootDir, filePath)
+
+  for (const pattern of exclude) {
+    // 使用 glob 进行模式匹配
+    const matches = await glob(pattern, {
+      cwd: rootDir,
+      absolute: false,
+    })
+
+    // 检查文件是否在匹配列表中
+    if (matches.includes(relativePath) || matches.includes(filePath)) {
+      return true
+    }
+
+    // 也检查简单的字符串匹配
+    if (relativePath.includes(pattern) || filePath.includes(pattern)) {
+      return true
+    }
+  }
+
+  return false
 }
 
 /**
@@ -182,26 +277,26 @@ export function getOutputDirs(config: any): string[] {
 
   // 各格式的输出目录，支持 boolean 简化配置
   if (config.output?.esm) {
-    const esmDir = typeof config.output.esm === 'object' && config.output.esm.dir 
-      ? config.output.esm.dir 
+    const esmDir = typeof config.output.esm === 'object' && config.output.esm.dir
+      ? config.output.esm.dir
       : 'es'
     if (config.output.esm !== false) {
       dirs.push(esmDir)
     }
   }
-  
+
   if (config.output?.cjs) {
-    const cjsDir = typeof config.output.cjs === 'object' && config.output.cjs.dir 
-      ? config.output.cjs.dir 
+    const cjsDir = typeof config.output.cjs === 'object' && config.output.cjs.dir
+      ? config.output.cjs.dir
       : 'lib'
     if (config.output.cjs !== false) {
       dirs.push(cjsDir)
     }
   }
-  
+
   if (config.output?.umd) {
-    const umdDir = typeof config.output.umd === 'object' && config.output.umd.dir 
-      ? config.output.umd.dir 
+    const umdDir = typeof config.output.umd === 'object' && config.output.umd.dir
+      ? config.output.umd.dir
       : 'dist'
     if (config.output.umd !== false) {
       dirs.push(umdDir)

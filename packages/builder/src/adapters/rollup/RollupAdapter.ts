@@ -370,8 +370,11 @@ export class RollupAdapter implements IBundlerAdapter {
     // 转换为 Rollup 配置格式
     const basePlugins = await this.getBasePlugins(config)
 
+    // 应用 exclude 过滤到输入配置
+    const filteredInput = await normalizeInput(config.input, process.cwd(), config.exclude)
+
     const rollupConfig: any = {
-      input: config.input,
+      input: filteredInput,
       external: config.external,
       onwarn: this.getOnWarn(config)
     }
@@ -398,8 +401,8 @@ export class RollupAdapter implements IBundlerAdapter {
           const esmPlugins = await this.transformPluginsForFormat(config.plugins || [], esmDir, { emitDts: true })
           // 使用 output 中的 input 配置，如果没有则使用默认或顶层 input
           const esmInput = esmConfig.input
-            ? await normalizeInput(esmConfig.input, process.cwd())
-            : config.input
+            ? await normalizeInput(esmConfig.input, process.cwd(), config.exclude)
+            : filteredInput
           // 统一注入 Banner/Footer/Intro/Outro
           const bannerCfgEsm = (config as any).banner
           const _bannerEsm = await this.resolveBanner(bannerCfgEsm, config)
@@ -440,8 +443,8 @@ export class RollupAdapter implements IBundlerAdapter {
           const cjsPlugins = await this.transformPluginsForFormat(config.plugins || [], cjsDir, { emitDts: true })
           // 使用 output 中的 input 配置，如果没有则使用默认或顶层 input
           const cjsInput = cjsConfig.input
-            ? await normalizeInput(cjsConfig.input, process.cwd())
-            : config.input
+            ? await normalizeInput(cjsConfig.input, process.cwd(), config.exclude)
+            : filteredInput
           // 统一注入 Banner/Footer/Intro/Outro
           const bannerCfgCjs = (config as any).banner
           const _bannerCjs = await this.resolveBanner(bannerCfgCjs, config)
@@ -475,7 +478,7 @@ export class RollupAdapter implements IBundlerAdapter {
         }
 
         if (outputConfig.umd || (config as any).umd) {
-          const umdCfg = await this.createUMDConfig(config)
+          const umdCfg = await this.createUMDConfig(config, filteredInput)
           configs.push(umdCfg)
         }
 
@@ -501,7 +504,7 @@ export class RollupAdapter implements IBundlerAdapter {
       // 处理多格式输出
       if (Array.isArray(outputConfig.format)) {
         // 原有多格式逻辑（略微精简），同上
-        const isMultiEntry = this.isMultiEntryBuild(config.input)
+        const isMultiEntry = this.isMultiEntryBuild(filteredInput)
         let formats = outputConfig.format
         let umdConfig: any = null
 
@@ -513,17 +516,17 @@ export class RollupAdapter implements IBundlerAdapter {
           this.logger.info(`多入口项目UMD检查: hasUMD=${hasUMD}, forceUMD=${forceUMD}, umdEnabled=${umdEnabled}`)
 
           if (hasUMD && forceUMD) {
-            umdConfig = await this.createUMDConfig(config)
+            umdConfig = await this.createUMDConfig(config, filteredInput)
             this.logger.info('多入口项目强制启用 UMD 构建')
           } else if (hasUMD) {
             formats = formats.filter((format: any) => format !== 'umd' && format !== 'iife')
             if ((config as any).umd?.enabled !== false) {
-              umdConfig = await this.createUMDConfig(config)
+              umdConfig = await this.createUMDConfig(config, filteredInput)
               this.logger.info('为多入口项目创建独立的 UMD 构建')
             }
           } else {
             if ((config as any).umd?.enabled) {
-              umdConfig = await this.createUMDConfig(config)
+              umdConfig = await this.createUMDConfig(config, filteredInput)
               this.logger.info('根据UMD配置为多入口项目创建 UMD 构建')
             }
             formats = formats.filter((format: any) => format !== 'umd' && format !== 'iife')
@@ -536,7 +539,7 @@ export class RollupAdapter implements IBundlerAdapter {
         } else {
           const hasUmdSection = Boolean((config as any).umd || (config as any).output?.umd)
           if (formats.includes('umd') || (config as any).umd?.enabled || hasUmdSection) {
-            umdConfig = await this.createUMDConfig(config)
+            umdConfig = await this.createUMDConfig(config, filteredInput)
           }
           formats = formats.filter((f: any) => f !== 'umd' && f !== 'iife')
         }
@@ -560,7 +563,7 @@ export class RollupAdapter implements IBundlerAdapter {
           const _intro = await this.resolveIntro(bannerCfg)
           const _outro = await this.resolveOutro(bannerCfg)
           configs.push({
-            input: config.input,
+            input: filteredInput,
             external: config.external,
             plugins: [...basePlugins, ...formatPlugins],
             output: {
@@ -1158,7 +1161,7 @@ export class RollupAdapter implements IBundlerAdapter {
   /**
    * 创建 UMD 配置
    */
-  private async createUMDConfig(config: UnifiedConfig): Promise<any> {
+  private async createUMDConfig(config: UnifiedConfig, filteredInput?: string | string[] | Record<string, string>): Promise<any> {
     // 处理 boolean 配置
     let umdSection = (config as any).umd || (config as any).output?.umd || {}
     if (umdSection === true) {
@@ -1174,11 +1177,11 @@ export class RollupAdapter implements IBundlerAdapter {
     const projectRoot = (config as any).root || (config as any).cwd || process.cwd()
 
     // 优先使用 output.umd.input，然后是 umd.entry，最后是顶层 input
-    let umdEntry = umdSection.input || umdSection.entry || (typeof config.input === 'string' ? config.input : undefined)
+    let umdEntry = umdSection.input || umdSection.entry || (typeof filteredInput === 'string' ? filteredInput : undefined)
 
     // 如果有通配符，需要解析
     if (umdEntry && (umdEntry.includes('*') || Array.isArray(umdEntry))) {
-      const resolved = await normalizeInput(umdEntry, projectRoot)
+      const resolved = await normalizeInput(umdEntry, projectRoot, config.exclude)
       // UMD 必须是单入口
       if (Array.isArray(resolved)) {
         throw new Error('UMD 格式不支持多入口，请在配置中指定单个入口文件。例如: umd: { entry: "src/index.ts" }')

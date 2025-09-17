@@ -74,4 +74,10 @@ export * from './glob'
 export * from './factory'
 export * from './cache'
 
+// 自动配置增强器
+export {
+  AutoConfigEnhancer,
+  createAutoConfigEnhancer
+} from './auto-config-enhancer'
+
 // 注意：detection.ts, performance.ts, validation.ts 暂时为空，不导出

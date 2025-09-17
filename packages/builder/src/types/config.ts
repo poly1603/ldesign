@@ -61,6 +61,9 @@ export interface BuilderConfig {
   /** 全局变量映射 */
   globals?: Record<string, string>
 
+  /** 排除的文件模式 */
+  exclude?: string[]
+
   /** 插件配置 */
   plugins?: UnifiedPlugin[]
 
@@ -172,6 +175,9 @@ export interface ConfigLoadOptions {
 
   /** 是否使用缓存 */
   useCache?: boolean
+
+  /** 是否自动增强配置（自动检测 libraryType、external、globals 等） */
+  autoEnhance?: boolean
 }
 
 /**

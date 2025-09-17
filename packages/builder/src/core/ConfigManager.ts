@@ -22,6 +22,7 @@ import { Logger } from '../utils/logger'
 import { ErrorHandler, BuilderError } from '../utils/error-handler'
 import { ErrorCode } from '../constants/errors'
 import { LibraryType } from '../types/library'
+import { createAutoConfigEnhancer } from '../utils/auto-config-enhancer'
 
 /**
  * 配置管理器类
@@ -85,6 +86,12 @@ export class ConfigManager extends EventEmitter {
         }
       }
 
+      // 自动增强配置
+      if (loadOptions.autoEnhance !== false) {
+        const enhancer = createAutoConfigEnhancer(process.cwd(), this.logger)
+        mergedConfig = await enhancer.enhanceConfig(mergedConfig)
+      }
+
       // 验证配置
       if (loadOptions.validate !== false && this.options.validateOnLoad) {
         const validation = this.validateConfig(mergedConfig)
@@ -131,18 +138,18 @@ export class ConfigManager extends EventEmitter {
     try {
       // 基础验证 - 检查是否有入口配置（顶层或在 output 中）
       const hasTopLevelInput = !!config.input
-      
+
       // 检查各格式的 input 配置
       const esmHasInput = config.output?.esm && typeof config.output.esm === 'object' && 'input' in config.output.esm
       const cjsHasInput = config.output?.cjs && typeof config.output.cjs === 'object' && 'input' in config.output.cjs
       const umdHasInput = config.output?.umd && typeof config.output.umd === 'object' && 'input' in config.output.umd
       const hasOutputInput = esmHasInput || cjsHasInput || umdHasInput
-      
+
       if (!hasTopLevelInput && !hasOutputInput) {
         // 如果没有显式的 input 配置，但有启用的输出格式，也可以使用默认值
         const hasEnabledFormat = (config.output?.esm === true || (config.output?.esm && typeof config.output.esm === 'object')) ||
-                                 (config.output?.cjs === true || (config.output?.cjs && typeof config.output.cjs === 'object')) ||
-                                 (config.output?.umd === true || (config.output?.umd && typeof config.output.umd === 'object'))
+          (config.output?.cjs === true || (config.output?.cjs && typeof config.output.cjs === 'object')) ||
+          (config.output?.umd === true || (config.output?.umd && typeof config.output.umd === 'object'))
 
         if (!hasEnabledFormat) {
           result.errors.push('缺少入口文件配置（需要在顶层或 output 中指定 input）')

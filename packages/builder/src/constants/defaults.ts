@@ -75,6 +75,9 @@ export const DEFAULT_BUILDER_CONFIG: Omit<
   minify: false, // 默认不压缩
   clean: true,
 
+  // 排除文件配置
+  exclude: [],
+
   // UMD 构建配置
   umd: {
     enabled: true,

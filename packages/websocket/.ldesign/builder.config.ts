@@ -4,50 +4,14 @@ export default defineConfig({
   // 生成类型声明文件
   dts: true,
 
-  // 打包与调试
-  minify: true,
+  // 生成 source map
   sourcemap: true,
+
+  // 清理输出目录
   clean: true,
 
-  // 外部依赖（不打包进最终产物）
-  external: [
-    'vue',
-    'react',
-    '@angular/core',
-    '@ldesign/shared'
-  ],
+  // 不压缩代码（开发阶段）
+  minify: false
 
-  // 输出配置：使用布尔开关；true 使用默认配置，false/缺省跳过
-  output: {
-    esm: true,
-    cjs: true,
-    umd: {
-      name: 'LDesignWebSocket',
-      globals: {
-        'vue': 'Vue',
-        'react': 'React',
-        '@angular/core': 'ng.core',
-        '@ldesign/shared': 'LDesignShared'
-      }
-    }
-  },
-
-  // 入口文件
-  entry: 'src/index.ts',
-
-  // 性能优化
-  performance: {
-    treeshaking: true,
-    bundleAnalyzer: false
-  },
-
-  // 构建钩子
-  hooks: {
-    'build:before': async () => {
-      console.log('🚀 开始构建 WebSocket 插件库...')
-    },
-    'build:after': async () => {
-      console.log('✅ WebSocket 插件库构建完成！')
-    }
-  }
+  // external、globals、libraryType、formats、plugins 等配置将由 @ldesign/builder 自动检测和生成
 })
