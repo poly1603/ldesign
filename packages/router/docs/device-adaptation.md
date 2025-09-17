@@ -7,7 +7,7 @@ LDesign Router 提供了强大的设备适配功能，让您可以轻松地为�
 - 🎯 **设备检测集成** - 自动检测用户设备类型（mobile、tablet、desktop）
 - 🛡️ **设备访问控制** - 限制特定路由只能在指定设备上访问
 - 🧩 **设备特定组件** - 为不同设备配置不同的页面组件
-- 🎨 **模板路由支持** - 直接配置模板名称，自动渲染对应组件
+
 - 🔄 **智能回退机制** - 当目标设备没有组件时自动使用回退组件
 - 📱 **响应式监听** - 实时监听设备变化并自动适配
 
@@ -16,7 +16,7 @@ LDesign Router 提供了强大的设备适配功能，让您可以轻松地为�
 ### 1. 安装依赖
 
 ```bash
-pnpm add @ldesign/router @ldesign/device @ldesign/template
+pnpm add @ldesign/router @ldesign/device
 ```
 
 ### 2. 基础配置
@@ -55,7 +55,7 @@ const router = createRouter({
 const devicePlugin = createDeviceRouterPlugin({
   enableDeviceDetection: true,
   enableDeviceGuard: true,
-  enableTemplateRoutes: true,
+
 })
 
 devicePlugin.install(router)
@@ -157,41 +157,7 @@ const routes = [
 ]
 ```
 
-## 🎨 模板路由支持
 
-### 直接配置模板
-
-```typescript
-const routes = [
-  {
-    path: '/login',
-    // 直接使用模板名称
-    template: 'login',
-    templateCategory: 'auth',
-  },
-  {
-    path: '/dashboard',
-    meta: {
-      template: 'dashboard',
-      templateCategory: 'admin',
-    },
-  },
-]
-```
-
-### 模板配置选项
-
-```typescript
-const devicePlugin = createDeviceRouterPlugin({
-  enableTemplateRoutes: true,
-  templateConfig: {
-    defaultCategory: 'pages',
-    templateRoot: 'src/templates',
-    enableCache: true,
-    timeout: 10000,
-  },
-})
-```
 
 ## 🪝 Composition API
 
@@ -331,7 +297,7 @@ const devicePlugin = createDeviceRouterPlugin({
   // 功能开关
   enableDeviceDetection: true,
   enableDeviceGuard: true,
-  enableTemplateRoutes: true,
+
 
   // 守卫配置
   guardOptions: {
@@ -343,13 +309,7 @@ const devicePlugin = createDeviceRouterPlugin({
     },
   },
 
-  // 模板配置
-  templateConfig: {
-    defaultCategory: 'pages',
-    templateRoot: 'src/templates',
-    enableCache: true,
-    timeout: 10000,
-  },
+
 })
 ```
 

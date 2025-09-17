@@ -63,29 +63,7 @@ export function useDeviceComponent(
     return deviceComponents?.[device] || null
   }
 
-  // 创建模板组件
-  // 使用更新后的 TemplateRouteResolver API
-  const createTemplateComponent = (record: RouteRecordNormalized): RouteComponent => {
-    return async () => {
-      try {
-        const { TemplateRouteResolver } = await import('../device/template')
 
-        // 使用路由元信息中的模板配置
-        const templateConfig = record.meta.templateConfig || {}
-        const templateResolver = new TemplateRouteResolver(templateConfig)
-
-        return await templateResolver.resolveTemplate(
-          record.meta.templateCategory || (templateConfig as any).defaultCategory || 'pages',
-          record.meta.template!,
-          currentDevice.value,
-        )
-      }
-      catch (error) {
-        console.error('Failed to resolve template component:', error)
-        throw error
-      }
-    }
-  }
 
   // 组件解析结果
   const resolution = computed<DeviceComponentResolution | null>(() => {
@@ -136,15 +114,7 @@ export function useDeviceComponent(
         }
       }
 
-      // 检查模板配置
-      if (currentRecord.meta.template) {
-        return {
-          component: createTemplateComponent(currentRecord),
-          deviceType: currentDevice.value,
-          isFallback: false,
-          source: 'template',
-        }
-      }
+
 
       return null
     }

@@ -157,42 +157,7 @@ private resolveDeviceSpecificComponent(record, device) {
 }
 ```
 
-### 5. 模板路由解析器
 
-#### 集成方案
-
-```typescript
-class TemplateRouteResolver {
-  private templateManager: any = null
-
-  async resolveTemplate(category: string, templateName: string, deviceType: DeviceType) {
-    // 懒加载模板管理器
-    const manager = await this.initTemplateManager()
-
-    try {
-      // 使用模板管理器渲染组件
-      return await manager.render({
-        category,
-        template: templateName,
-        device: deviceType,
-        timeout: this.config.timeout,
-      })
-    } catch (error) {
-      // 尝试回退到默认设备
-      if (deviceType !== 'desktop') {
-        return await this.tryFallbackTemplate(category, templateName, 'desktop')
-      }
-      throw error
-    }
-  }
-}
-```
-
-#### 错误处理
-
-- **优雅降级**: 模板加载失败时自动回退到其他设备模板
-- **错误组件**: 提供友好的错误提示组件
-- **超时处理**: 设置合理的加载超时时间
 
 ### 6. 插件系统实现
 
@@ -385,11 +350,7 @@ deviceComponents: {
   desktop: () => import('@/views/desktop/Home.vue')
 }
 
-// 模板组件懒加载
-const templateComponent = async () => {
-  const { TemplateRouteResolver } = await import('./template')
-  return await templateResolver.resolveTemplate(category, name, device)
-}
+
 ```
 
 ### 2. 缓存策略

@@ -54,15 +54,7 @@ export class DeviceComponentResolver {
       }
     }
 
-    // 3. 检查是否有模板配置
-    if (record.meta.template || record.meta.templateCategory) {
-      return {
-        component: this.createTemplateComponent(record),
-        deviceType: currentDevice,
-        isFallback: false,
-        source: 'template',
-      }
-    }
+
 
     return null
   }
@@ -151,32 +143,7 @@ export class DeviceComponentResolver {
     return record.components[viewName] || null
   }
 
-  /**
-   * 创建模板组件
-   */
-  private createTemplateComponent(
-    record: RouteRecordNormalized,
-  ): RouteComponent {
-    // 返回一个异步组件，延迟加载模板
-    return async () => {
-      try {
-        // 动态导入模板解析器
-        const { TemplateRouteResolver } = await import('./template')
-        const templateResolver = new TemplateRouteResolver()
 
-        return await templateResolver.resolveTemplate(
-          record.meta.templateCategory || 'default',
-          record.meta.template!,
-          this.getCurrentDevice(),
-        )
-      }
-      catch (error) {
-        console.error('Failed to load template component:', error)
-        // 返回错误组件
-        return this.createErrorComponent(error as Error)
-      }
-    }
-  }
 
   /**
    * 创建错误组件
@@ -211,8 +178,8 @@ export class DeviceComponentResolver {
       )
     }
 
-    // 如果有常规组件或模板，认为支持所有设备
-    return !!(record.components || record.meta.template)
+    // 如果有常规组件，认为支持所有设备
+    return !!record.components
   }
 
   /**

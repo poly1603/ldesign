@@ -177,19 +177,7 @@ export class DeviceRouterPlugin {
       defaultUnsupportedRedirect: '/device-unsupported',
       enableDeviceDetection: true,
       enableDeviceGuard: true,
-      enableTemplateRoutes: false,
       guardOptions: {},
-      templateConfig: {
-        defaultCategory: 'pages',
-        templateRoot: 'src/templates',
-        enableCache: true,
-        timeout: 10000,
-        autoScan: true,
-        enableHMR: false,
-        defaultDevice: 'desktop',
-        enablePerformanceMonitor: false,
-        debug: false,
-      },
       ...options,
     }
   }

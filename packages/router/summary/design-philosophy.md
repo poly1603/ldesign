@@ -235,7 +235,7 @@ src/device/
 ├── index.ts      # 统一导出
 ├── guard.ts      # 访问控制
 ├── resolver.ts   # 组件解析
-├── template.ts   # 模板处理
+
 ├── plugin.ts     # 插件整合
 └── utils.ts      # 工具函数
 ```

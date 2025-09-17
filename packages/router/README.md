@@ -21,7 +21,7 @@
 - 🏗️ **嵌套路由** - 强大的嵌套路由支持，完美匹配复杂应用架构
 - 🎪 **一行集成** - 零配置快速启动，多种预设配置
 - 🧪 **测试覆盖** - 70%+ 测试覆盖率，213+ 测试用例保证代码质量
-- 🔗 **模板集成** - 与 @ldesign/template 包深度集成，支持设备特定模板
+
 
 ## 📦 安装
 
@@ -564,7 +564,7 @@ const routes = [
 const devicePlugin = createDeviceRouterPlugin({
   enableDeviceDetection: true,
   enableDeviceGuard: true,
-  enableTemplateRoutes: true,
+
 })
 
 devicePlugin.install(router)
@@ -606,42 +606,7 @@ const routes = [
 ]
 ```
 
-### 🎨 模板路由支持
 
-直接配置模板名称，自动渲染对应的模板组件：
-
-```typescript
-const routes = [
-  {
-    path: '/login',
-    template: 'login',
-    templateCategory: 'auth',
-  },
-  {
-    path: '/register',
-    template: 'register',
-    templateCategory: 'auth',
-  },
-  {
-    path: '/dashboard',
-    meta: {
-      template: 'dashboard',
-      templateCategory: 'admin',
-    },
-  },
-]
-
-// 配置模板系统
-const devicePlugin = createDeviceRouterPlugin({
-  enableTemplateRoutes: true,
-  templateConfig: {
-    defaultCategory: 'pages',
-    templateRoot: 'src/templates',
-    enableCache: true,
-    timeout: 10000,
-  },
-})
-```
 
 ### 🪝 设备适配 Composables
 
@@ -742,7 +707,7 @@ const devicePlugin = createDeviceRouterPlugin({
   // 基础配置
   enableDeviceDetection: true,
   enableDeviceGuard: true,
-  enableTemplateRoutes: true,
+
 
   // 默认设置
   defaultSupportedDevices: ['mobile', 'tablet', 'desktop'],
@@ -767,13 +732,7 @@ const devicePlugin = createDeviceRouterPlugin({
     },
   },
 
-  // 模板配置
-  templateConfig: {
-    defaultCategory: 'pages',
-    templateRoot: 'src/templates',
-    enableCache: true,
-    timeout: 10000,
-  },
+
 })
 ```
 
@@ -813,123 +772,7 @@ console.log(currentRoute.value.path)
 router.push('/about') // 自动记录导航日志
 ```
 
-## 🔗 模板集成
 
-LDesign Router 与 @ldesign/template 包深度集成，支持基于设备类型的模板路由功能。
-
-### 🎯 模板路由配置
-
-使用模板系统可以让您的路由直接配置模板而不是组件：
-
-```typescript
-import { createRouter } from '@ldesign/router'
-
-const routes = [
-  {
-    path: '/',
-    name: 'home',
-    // 使用模板而不是组件
-    meta: {
-      template: 'home-page',
-      templateCategory: 'pages',
-      templateConfig: {
-        templateRoot: 'src/templates',
-        enableCache: true,
-        autoScan: true,
-        defaultDevice: 'desktop',
-      },
-    },
-  },
-  {
-    path: '/product/:id',
-    name: 'product',
-    meta: {
-      template: 'product-detail',
-      templateCategory: 'products',
-      // 支持设备特定的模板配置
-      templateConfig: {
-        enableHMR: false,
-        debug: false,
-      },
-    },
-  },
-]
-```
-
-### 🛠️ 模板解析器
-
-模板解析器会自动根据当前设备类型加载对应的模板：
-
-```typescript
-import { TemplateRouteResolver } from '@ldesign/router'
-
-// 创建模板解析器
-const templateResolver = new TemplateRouteResolver({
-  defaultCategory: 'pages',
-  templateRoot: 'src/templates',
-  enableCache: true,
-  timeout: 10000,
-  autoScan: true,
-  enableHMR: false,
-  defaultDevice: 'desktop',
-  enablePerformanceMonitor: false,
-  debug: false,
-})
-
-// 解析模板
-const component = await templateResolver.resolveTemplate(
-  'pages',        // 模板分类
-  'home-page',    // 模板名称
-  'mobile'        // 设备类型
-)
-
-// 检查模板是否存在
-const hasTemplate = await templateResolver.hasTemplate('pages', 'home-page', 'mobile')
-
-// 获取可用模板列表
-const templates = await templateResolver.getAvailableTemplates('pages', 'mobile')
-
-// 清理资源
-templateResolver.destroy()
-```
-
-### 📁 模板目录结构
-
-推荐的模板目录结构：
-
-```
-src/templates/
-├── pages/
-│   ├── mobile/
-│   │   ├── home-page.vue
-│   │   └── about-page.vue
-│   ├── tablet/
-│   │   ├── home-page.vue
-│   │   └── about-page.vue
-│   └── desktop/
-│       ├── home-page.vue
-│       └── about-page.vue
-├── products/
-│   ├── mobile/
-│   │   └── product-detail.vue
-│   └── desktop/
-│       └── product-detail.vue
-└── layouts/
-    ├── mobile/
-    │   └── main-layout.vue
-    └── desktop/
-        └── main-layout.vue
-```
-
-### 🔄 自动回退机制
-
-当指定设备的模板不存在时，系统会自动回退到桌面版本：
-
-```typescript
-// 如果 mobile/home-page.vue 不存在
-// 会自动回退到 desktop/home-page.vue
-const component = await templateResolver.resolveTemplate('pages', 'home-page', 'mobile')
-```
 
 ## 📝 类型定义
 

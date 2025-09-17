@@ -92,10 +92,7 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
   unsupportedMessage?: string
   /** 不支持设备时的重定向路由 */
   unsupportedRedirect?: string
-  /** 模板名称，用于直接配置模板 */
-  template?: string
-  /** 模板分类，配合模板名称使用 */
-  templateCategory?: string
+
 }
 
 // ==================== 路由位置类型 ====================
@@ -232,10 +229,7 @@ export interface RouteRecordRaw {
     tablet?: RouteComponent
     desktop?: RouteComponent
   }
-  /** 模板名称，用于直接配置模板 */
-  template?: string
-  /** 模板分类，配合模板名称使用 */
-  templateCategory?: string
+
 }
 
 /**
@@ -521,8 +515,7 @@ export interface DeviceRouteConfig {
   enableDeviceDetection?: boolean
   /** 是否启用设备访问控制 */
   enableDeviceGuard?: boolean
-  /** 是否启用模板路由支持 */
-  enableTemplateRoutes?: boolean
+
 }
 
 /**
@@ -536,7 +529,7 @@ export interface DeviceComponentResolution {
   /** 是否为回退组件 */
   isFallback: boolean
   /** 解析来源 */
-  source: 'deviceComponents' | 'component' | 'template'
+  source: 'deviceComponents' | 'component'
 }
 
 /**
@@ -588,30 +581,7 @@ export interface DeviceGuardOptions {
   ) => RouteLocationRaw | void
 }
 
-/**
- * 模板路由配置
- * 兼容新版 @ldesign/template 包的配置结构
- */
-export interface TemplateRouteConfig {
-  /** 默认模板分类 */
-  defaultCategory?: string
-  /** 模板根目录 */
-  templateRoot?: string
-  /** 是否启用模板缓存 */
-  enableCache?: boolean
-  /** 模板加载超时时间 */
-  timeout?: number
-  /** 是否自动扫描模板 */
-  autoScan?: boolean
-  /** 是否启用热更新 */
-  enableHMR?: boolean
-  /** 默认设备类型 */
-  defaultDevice?: 'mobile' | 'tablet' | 'desktop'
-  /** 是否启用性能监控 */
-  enablePerformanceMonitor?: boolean
-  /** 是否启用调试模式 */
-  debug?: boolean
-}
+
 
 /**
  * 设备路由插件选项
@@ -619,6 +589,4 @@ export interface TemplateRouteConfig {
 export interface DeviceRouterPluginOptions extends DeviceRouteConfig {
   /** 设备路由守卫选项 */
   guardOptions?: DeviceGuardOptions
-  /** 模板路由配置 */
-  templateConfig?: TemplateRouteConfig
 }

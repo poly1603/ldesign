@@ -10,7 +10,7 @@
 - **设备检测**: 自动检测用户的设备类型
 - **设备组件**: 为不同设备提供专门的组件
 - **设备守卫**: 控制特定设备对路由的访问
-- **模板系统**: 使用预定义的模板快速适配设备
+
 
 ## 🚀 快速开始
 
@@ -35,8 +35,7 @@ const devicePlugin = createDeviceRouterPlugin({
   // 启用设备访问控制
   enableDeviceGuard: true,
 
-  // 启用模板路由
-  enableTemplateRoutes: true,
+
 
   // 设备守卫配置
   guardOptions: {
@@ -185,65 +184,7 @@ const devicePlugin = createDeviceRouterPlugin({
 })
 ```
 
-## 🎨 模板系统
 
-### 使用预定义模板
-
-```typescript
-const routes = [
-  {
-    path: '/login',
-    name: 'Login',
-    // 使用登录模板
-    template: 'login',
-    templateCategory: 'auth',
-
-    // 模板配置
-    meta: {
-      templateConfig: {
-        theme: 'dark',
-        layout: 'centered',
-        showLogo: true,
-      },
-    },
-  },
-  {
-    path: '/profile',
-    name: 'Profile',
-    // 使用用户资料模板
-    template: 'profile',
-    templateCategory: 'user',
-  },
-]
-```
-
-### 模板配置
-
-```typescript
-const devicePlugin = createDeviceRouterPlugin({
-  enableTemplateRoutes: true,
-  templateConfig: {
-    // 默认模板分类
-    defaultCategory: 'pages',
-
-    // 模板根目录
-    templateRoot: 'src/templates',
-
-    // 启用模板缓存
-    enableCache: true,
-
-    // 缓存超时时间
-    cacheTimeout: 5 * 60 * 1000, // 5分钟
-
-    // 模板加载超时
-    timeout: 10000,
-
-    // 自定义模板解析器
-    resolver: (templateName, category, device) => {
-      return `src/templates/${category}/${device}/${templateName}/index.vue`
-    },
-  },
-})
 ```
 
 ## 📊 设备信息获取

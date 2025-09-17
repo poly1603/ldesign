@@ -110,7 +110,6 @@ export {
   createDeviceRouterPlugin,
   DeviceComponentResolver,
   DeviceRouteGuard,
-  TemplateRouteResolver,
 } from './device'
 
 // 设备适配工具函数
@@ -244,7 +243,6 @@ export type {
   DeviceGuardOptions,
   DeviceRouteConfig,
   DeviceRouterPluginOptions,
-  TemplateRouteConfig,
 } from './types'
 
 export {

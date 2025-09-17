@@ -135,38 +135,7 @@ describe('deviceComponentResolver', () => {
     })
   })
 
-  describe('模板组件解析', () => {
-    it('应该为模板配置创建异步组件', () => {
-      const record = createMockRecord({
-        meta: {
-          template: 'login',
-          templateCategory: 'auth',
-        },
-      })
 
-      const result = resolver.resolveComponent(record)
-
-      expect(result).toEqual({
-        component: expect.any(Function),
-        deviceType: 'desktop',
-        isFallback: false,
-        source: 'template',
-      })
-    })
-
-    it('应该使用默认模板分类', () => {
-      const record = createMockRecord({
-        meta: {
-          template: 'dashboard',
-        },
-      })
-
-      const result = resolver.resolveComponent(record)
-
-      expect(result?.source).toBe('template')
-      expect(typeof result?.component).toBe('function')
-    })
-  })
 
   describe('优先级顺序', () => {
     it('设备特定组件应该优先于常规组件', () => {
@@ -185,21 +154,7 @@ describe('deviceComponentResolver', () => {
       expect(result?.source).toBe('deviceComponents')
     })
 
-    it('常规组件应该优先于模板', () => {
-      const record = createMockRecord({
-        components: {
-          default: mockDefaultComponent,
-        },
-        meta: {
-          template: 'login',
-        },
-      })
 
-      const result = resolver.resolveComponent(record)
-
-      expect(result?.component).toBe(mockDefaultComponent)
-      expect(result?.source).toBe('component')
-    })
   })
 
   describe('设备支持检查', () => {
@@ -240,19 +195,7 @@ describe('deviceComponentResolver', () => {
       expect(resolver.isComponentSupportedOnDevice(record, 'mobile')).toBe(true)
     })
 
-    it('有模板配置时应该支持所有设备', () => {
-      const record = createMockRecord({
-        meta: {
-          template: 'login',
-        },
-      })
 
-      expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(
-        true,
-      )
-      expect(resolver.isComponentSupportedOnDevice(record, 'tablet')).toBe(true)
-      expect(resolver.isComponentSupportedOnDevice(record, 'mobile')).toBe(true)
-    })
   })
 
   describe('错误处理', () => {

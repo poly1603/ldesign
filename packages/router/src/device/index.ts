@@ -10,14 +10,13 @@ export type {
   DeviceGuardOptions,
   DeviceRouteConfig,
   DeviceRouterPluginOptions,
-  TemplateRouteConfig,
 } from '../types'
 // 核心功能
 export { DeviceRouteGuard } from './guard'
 export { createDeviceRouterPlugin } from './plugin'
 export { DeviceComponentResolver } from './resolver'
 
-export { TemplateRouteResolver } from './template'
+
 
 // 工具函数
 export {

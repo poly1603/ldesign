@@ -241,9 +241,9 @@ export class RouterDebugger {
         events = events.filter(e => e.type === filter.type);
       }
       if (filter.route) {
-        events = events.filter(e => 
-          e.route?.path === filter.route || 
-          e.to === filter.route || 
+        events = events.filter(e =>
+          e.route?.path === filter.route ||
+          e.to === filter.route ||
           e.from === filter.route
         );
       }
@@ -378,8 +378,8 @@ export class RouterDebugger {
     errors: RouteEvent[];
     summary: Record<string, number>;
   } {
-    const errors = this.events.filter(e => 
-      e.type === 'error' || 
+    const errors = this.events.filter(e =>
+      e.type === 'error' ||
       e.type === 'route-load-error'
     );
 
@@ -539,13 +539,13 @@ export class RouterDebugger {
  */
 export class RouterVisualDebugger {
   private container?: HTMLElement;
-  private debugger: RouterDebugger;
+  private routerDebugger: RouterDebugger;
   private updateInterval?: number;
   private charts: Map<string, any> = new Map();
 
-  constructor(debugger: RouterDebugger, containerId?: string) {
-    this.debugger = debugger;
-    
+  constructor(routerDebugger: RouterDebugger, containerId?: string) {
+    this.routerDebugger = routerDebugger;
+
     if (typeof document !== 'undefined' && containerId) {
       this.container = document.getElementById(containerId) || undefined;
       this.init();
@@ -620,7 +620,7 @@ export class RouterVisualDebugger {
 
     const clearBtn = this.container.querySelector('#debug-clear');
     clearBtn?.addEventListener('click', () => {
-      this.debugger.clear();
+      this.routerDebugger.clear();
       this.update();
     });
 
@@ -677,7 +677,7 @@ export class RouterVisualDebugger {
     const container = this.container?.querySelector('#debug-events');
     if (!container) return;
 
-    const events = this.debugger.getHistory({ limit: 50 });
+    const events = this.routerDebugger.getHistory({ limit: 50 });
     const html = events.reverse().map(event => `
       <div class="event-item event-${event.type}">
         <span class="event-time">${new Date(event.timestamp).toLocaleTimeString()}</span>
@@ -698,7 +698,7 @@ export class RouterVisualDebugger {
     const container = this.container?.querySelector('#debug-performance');
     if (!container) return;
 
-    const stats = this.debugger.getPerformanceStats();
+    const stats = this.routerDebugger.getPerformanceStats();
     const html = Object.entries(stats).map(([route, data]) => `
       <div class="perf-item">
         <h4>${route}</h4>
@@ -729,8 +729,8 @@ export class RouterVisualDebugger {
     const container = this.container?.querySelector('#debug-errors');
     if (!container) return;
 
-    const { errors, summary } = this.debugger.getErrorReport();
-    
+    const { errors, summary } = this.routerDebugger.getErrorReport();
+
     let html = '<div class="error-summary">';
     html += '<h4>Error Summary</h4>';
     for (const [error, count] of Object.entries(summary)) {
@@ -762,9 +762,9 @@ export class RouterVisualDebugger {
     const container = this.container?.querySelector('#debug-metrics');
     if (!container) return;
 
-    const events = this.debugger.getHistory();
+    const events = this.routerDebugger.getHistory();
     const eventCounts: Record<string, number> = {};
-    
+
     events.forEach(event => {
       eventCounts[event.type] = (eventCounts[event.type] || 0) + 1;
     });
@@ -816,7 +816,7 @@ export class RouterVisualDebugger {
    * 导出数据
    */
   private exportData(): void {
-    const data = this.debugger.exportDebugData();
+    const data = this.routerDebugger.exportDebugData();
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

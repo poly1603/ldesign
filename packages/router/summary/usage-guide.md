@@ -6,9 +6,9 @@
 
 ```bash
 # 安装核心包
-pnpm add @ldesign/router @ldesign/device @ldesign/template
+pnpm add @ldesign/router @ldesign/device
 
-# 或者只安装路由包（设备和模板包为可选依赖）
+# 或者只安装路由包（设备包为可选依赖）
 pnpm add @ldesign/router
 ```
 
@@ -157,41 +157,7 @@ const routes = [
 }
 ```
 
-## 🎨 模板路由
 
-### 1. 基础模板配置
-
-```typescript
-// 直接使用模板名称
-{
-  path: '/login',
-  template: 'login',
-  templateCategory: 'auth'
-}
-
-// 或者在 meta 中配置
-{
-  path: '/register',
-  meta: {
-    template: 'register',
-    templateCategory: 'auth'
-  }
-}
-```
-
-### 2. 模板系统配置
-
-```typescript
-const devicePlugin = createDeviceRouterPlugin({
-  enableTemplateRoutes: true,
-  templateConfig: {
-    defaultCategory: 'pages',
-    templateRoot: 'src/templates',
-    enableCache: true,
-    timeout: 10000,
-  },
-})
-```
 
 ## 🪝 Composition API 使用
 

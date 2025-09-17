@@ -27,8 +27,7 @@
       "@/*": ["src/*"],
       "@ldesign/router": ["../src"],
       "@ldesign/device": ["../../device/src"],
-      "@ldesign/engine": ["../../engine/src"],
-      "@ldesign/template": ["../../template/src"]
+      "@ldesign/engine": ["../../engine/src"]
     },
 
     /* Vue specific */

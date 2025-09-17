@@ -25,13 +25,9 @@
 - 智能回退机制（desktop → tablet → mobile）
 - 支持命名视图的设备适配
 
-### 4. 模板路由支持
 
-- 集成 `@ldesign/template` 包
-- 支持直接配置模板名称
-- 自动根据设备类型渲染对应模板
 
-### 5. 插件化架构
+### 4. 插件化架构
 
 - 一键安装的设备路由插件
 - 灵活的配置选项
@@ -46,7 +42,7 @@ src/device/
 ├── index.ts          # 模块入口
 ├── guard.ts          # 设备访问控制守卫
 ├── resolver.ts       # 设备组件解析器
-├── template.ts       # 模板路由解析器
+
 ├── plugin.ts         # 设备路由插件
 └── utils.ts          # 工具函数
 ```
@@ -95,12 +91,7 @@ const resolution = resolver.resolveComponent(record)
 // 返回: { component, deviceType, isFallback, source }
 ```
 
-### 4. 模板集成
 
-```typescript
-// 模板路由支持
-const templateComponent = await templateResolver.resolveTemplate(category, templateName, deviceType)
-```
 
 ## 📱 使用示例
 
@@ -169,7 +160,7 @@ const { currentDevice, isCurrentRouteSupported, goToUnsupportedPage } = useDevic
 - 设备检测功能测试
 - 设备特定组件渲染测试
 - 设备访问控制测试
-- 模板路由测试
+
 
 ### 测试工具
 
@@ -196,14 +187,12 @@ const { currentDevice, isCurrentRouteSupported, goToUnsupportedPage } = useDevic
 ### 1. 懒加载
 
 - 设备特定组件按需加载
-- 模板组件异步加载
 - 避免不必要的资源加载
 
 ### 2. 缓存机制
 
 - 设备检测结果缓存
 - 组件解析结果缓存
-- 模板加载缓存
 
 ### 3. 防抖处理
 

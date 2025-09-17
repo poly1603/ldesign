@@ -88,7 +88,6 @@
   "peerDependencies": {
     "@ldesign/device": "^1.0.0",
     "@ldesign/engine": "^1.0.0",
-    "@ldesign/template": "^1.0.0",
     "vue": "^3.3.0"
   },
   "peerDependenciesMeta": {
@@ -96,9 +95,6 @@
       "optional": false
     },
     "@ldesign/engine": {
-      "optional": true
-    },
-    "@ldesign/template": {
       "optional": true
     },
     "vue": {
@@ -111,7 +107,6 @@
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
     "@ldesign/engine": "workspace:*",
-    "@ldesign/template": "workspace:*",
     "@playwright/test": "^1.54.2",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
