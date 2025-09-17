@@ -152,16 +152,13 @@ export function createAppConfigPlugin(options: AppConfigPluginOptions = {}): Plu
         logger.debug('未找到应用配置文件')
       }
 
-      // 在开发模式下定义环境变量
-      if (command === 'serve') {
-        config.define = config.define || {}
-        config.define['import.meta.env.appConfig'] = JSON.stringify(appConfig)
-      }
+      // 定义环境变量，避免重复定义
+      config.define = config.define || {}
 
-      // 在生产模式下也定义环境变量
-      if (command === 'build') {
-        config.define = config.define || {}
-        config.define['import.meta.env.appConfig'] = JSON.stringify(appConfig)
+      // 检查是否已经定义了 appConfig，避免重复定义
+      const appConfigKey = 'import.meta.env.appConfig'
+      if (!config.define[appConfigKey]) {
+        config.define[appConfigKey] = JSON.stringify(appConfig)
       }
     },
 
@@ -268,28 +265,8 @@ export function createAppConfigPlugin(options: AppConfigPluginOptions = {}): Plu
       }
     },
 
-    transform(code, id) {
-      // 注入 import.meta.env.appConfig
-      if (!id.includes('node_modules') && /\bimport\.meta\.env\.appConfig\b/.test(code)) {
-        const injection = `
-          // Injected by app-config plugin
-          import __appConfig from 'virtual:app-config';
-          if (!import.meta.env.appConfig) {
-            import.meta.env.appConfig = __appConfig;
-          }
-        `
-
-        // 在第一个 import 之前或文件开头注入
-        const importMatch = code.match(/^(import\s+.+from\s+['"].+['"];?\s*\n)/m)
-        if (importMatch) {
-          return code.replace(importMatch[0], injection + '\n' + importMatch[0])
-        } else {
-          return injection + '\n' + code
-        }
-      }
-
-      return code
-    },
+    // 移除 transform 方法，避免与 define 冲突
+    // 现在通过 define 配置直接注入 import.meta.env.appConfig
 
     buildEnd() {
       // 清理监听器

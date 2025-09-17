@@ -23,6 +23,9 @@ export interface ViteLauncherConfig extends UserConfig {
 
   /** 代理配置增强 */
   proxy?: ProxyOptions
+
+  /** 开发工具配置 */
+  tools?: ToolsConfig
 }
 
 /**
@@ -95,6 +98,21 @@ export interface LauncherConfigOptions {
 
   /** 配置继承 */
   extends?: string | string[]
+
+  /** 智能配置预设 */
+  smartPresets?: SmartPresetOptions
+
+  /** 自动配置检测 */
+  autoDetect?: AutoDetectOptions
+
+  /** 工作流集成 */
+  workflow?: WorkflowOptions
+
+  /** 团队协作配置 */
+  team?: TeamOptions
+
+  /** 部署配置 */
+  deployment?: DeploymentOptions
 }
 
 /**
@@ -237,14 +255,30 @@ export interface CacheOptions {
   /** 缓存目录 */
   dir?: FilePath
 
+  /** 缓存目录（别名） */
+  cacheDir?: FilePath
+
   /** 缓存策略 */
   strategy?: 'memory' | 'disk' | 'hybrid'
 
   /** 缓存过期时间（毫秒） */
   ttl?: number
 
-  /** 最大缓存大小（字节） */
+  /** 最大缓存大小（字节或MB） */
   maxSize?: number
+
+  /** 缓存类型 */
+  types?: ('build' | 'deps' | 'modules' | 'transform' | 'assets' | 'temp')[]
+
+  /** 是否启用压缩 */
+  compression?: boolean
+
+  /** 自动清理配置 */
+  autoClean?: {
+    enabled?: boolean
+    interval?: number
+    threshold?: number
+  }
 }
 
 /**
@@ -353,6 +387,28 @@ export type ProjectPreset =
   | 'vanilla-ts'
   | 'lit'
   | 'lit-ts'
+  | 'nuxt'
+  | 'next'
+  | 'sveltekit'
+  | 'astro'
+  | 'solid'
+  | 'qwik'
+  | 'angular'
+  | 'electron'
+  | 'tauri'
+  | 'mobile-vue'
+  | 'mobile-react'
+  | 'desktop-vue'
+  | 'desktop-react'
+  | 'micro-frontend'
+  | 'monorepo'
+  | 'library'
+  | 'component-library'
+  | 'chrome-extension'
+  | 'vscode-extension'
+  | 'node-cli'
+  | 'express-api'
+  | 'fastify-api'
   | 'custom'
 
 /**
@@ -767,4 +823,181 @@ export interface HMRHandler {
 
   /** 处理器名称 */
   name?: string
+}
+
+/**
+ * 智能配置预设选项接口
+ * 定义智能配置预设的选项
+ */
+export interface SmartPresetOptions {
+  /** 是否启用智能预设 */
+  enabled?: boolean
+  /** 预设类型 */
+  type?: 'auto' | 'minimal' | 'full' | 'enterprise'
+  /** 自定义预设配置 */
+  custom?: Record<string, any>
+  /** 预设优先级 */
+  priority?: number
+}
+
+/**
+ * 自动检测配置选项接口
+ * 定义自动检测的配置选项
+ */
+export interface AutoDetectOptions {
+  /** 是否启用框架自动检测 */
+  framework?: boolean
+  /** 是否启用依赖自动检测 */
+  dependencies?: boolean
+  /** 是否启用环境自动检测 */
+  environment?: boolean
+  /** 是否启用工具链自动检测 */
+  toolchain?: boolean
+  /** 检测置信度阈值 */
+  confidence?: number
+}
+
+/**
+ * 工作流集成选项接口
+ * 定义工作流集成的配置选项
+ */
+export interface WorkflowOptions {
+  /** Git 钩子集成 */
+  gitHooks?: {
+    preCommit?: string[]
+    prePush?: string[]
+    commitMsg?: string[]
+  }
+  /** CI/CD 集成 */
+  cicd?: {
+    provider?: 'github' | 'gitlab' | 'jenkins' | 'azure'
+    config?: Record<string, any>
+    autoGenerate?: boolean
+  }
+  /** 代码质量检查 */
+  quality?: {
+    eslint?: boolean
+    prettier?: boolean
+    stylelint?: boolean
+    commitlint?: boolean
+    husky?: boolean
+  }
+}
+
+/**
+ * 团队协作配置选项接口
+ * 定义团队协作的配置选项
+ */
+export interface TeamOptions {
+  /** 共享配置 */
+  sharedConfig?: {
+    enabled?: boolean
+    repository?: string
+    branch?: string
+    syncInterval?: number
+  }
+  /** 开发规范 */
+  standards?: {
+    codeStyle?: string
+    namingConvention?: string
+    commitConvention?: string
+    branchStrategy?: string
+  }
+  /** 协作工具 */
+  tools?: {
+    slack?: { webhook?: string }
+    discord?: { webhook?: string }
+    teams?: { webhook?: string }
+  }
+}
+
+/**
+ * 部署配置选项接口
+ * 定义部署的配置选项
+ */
+export interface DeploymentOptions {
+  /** 部署目标 */
+  targets?: Array<{
+    name: string
+    provider: 'vercel' | 'netlify' | 'aws' | 'azure' | 'gcp' | 'docker'
+    config: Record<string, any>
+    environment?: string
+  }>
+  /** 自动部署 */
+  autoDeploy?: {
+    enabled?: boolean
+    branches?: string[]
+    conditions?: string[]
+  }
+  /** 部署钩子 */
+  hooks?: {
+    beforeDeploy?: string[]
+    afterDeploy?: string[]
+    onSuccess?: string[]
+    onFailure?: string[]
+  }
+}
+
+/**
+ * 开发工具配置接口
+ * 简化的工具配置，支持一键启用/禁用
+ */
+export interface ToolsConfig {
+  /** 字体转换工具 */
+  font?: {
+    enabled?: boolean
+    sourceDir?: string
+    outputDir?: string
+    formats?: ('woff' | 'woff2' | 'ttf' | 'eot')[]
+    subset?: boolean
+    generateCSS?: boolean
+    fontDisplay?: 'auto' | 'block' | 'swap' | 'fallback' | 'optional'
+  }
+
+  /** SVG 组件生成工具 */
+  svg?: {
+    enabled?: boolean
+    sourceDir?: string
+    outputDir?: string
+    framework?: 'vue' | 'react' | 'svelte' | 'angular'
+    typescript?: boolean
+    optimize?: boolean
+    generateIndex?: boolean
+  }
+
+  /** 图片优化工具 */
+  image?: {
+    enabled?: boolean
+    sourceDir?: string
+    outputDir?: string
+    formats?: ('webp' | 'avif' | 'jpeg' | 'png')[]
+    quality?: Record<string, number>
+    responsive?: boolean
+    responsiveSizes?: number[]
+    generateManifest?: boolean
+  }
+
+  /** API 文档生成工具 */
+  apiDocs?: {
+    enabled?: boolean
+    sourceDir?: string
+    outputDir?: string
+    format?: 'markdown' | 'html' | 'json' | 'openapi'
+    interactive?: boolean
+    generateExamples?: boolean
+    includePrivate?: boolean
+  }
+
+  /** PWA 支持工具 */
+  pwa?: {
+    enabled?: boolean
+    appName?: string
+    shortName?: string
+    description?: string
+    themeColor?: string
+    backgroundColor?: string
+    generateSW?: boolean
+    cacheStrategy?: 'cacheFirst' | 'networkFirst' | 'staleWhileRevalidate'
+    offlinePage?: string
+  }
 }

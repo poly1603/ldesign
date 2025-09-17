@@ -13,6 +13,7 @@ export { ViteLauncher } from './core/ViteLauncher'
 export { ConfigManager } from './core/ConfigManager'
 export { PluginMarketManager, pluginMarket } from './core/PluginMarket'
 export { CacheManager, cacheManager } from './core/CacheManager'
+export { ToolsManager, createToolsManager, createToolsPlugins } from './core/ToolsManager'
 
 // 导出新增的优化和增强模块
 export { PerformanceOptimizer, createPerformanceOptimizer } from './core/PerformanceOptimizer'
@@ -33,6 +34,9 @@ export { BenchmarkReporter } from './benchmark/reporter'
 export { presetManager, definePreset } from './plugins/presets'
 export type { PresetType, PresetOptions } from './plugins/presets'
 export * from './plugins/presets'
+
+// 导出开发工具插件
+export * from './plugins'
 
 // 导出 AI 优化器
 export { AIOptimizer, createAIOptimizer } from './ai/optimizer'

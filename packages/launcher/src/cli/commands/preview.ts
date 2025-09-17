@@ -14,6 +14,7 @@ import { ViteLauncher } from '../../core/ViteLauncher'
 import { networkInterfaces } from 'node:os'
 import type { CliCommandDefinition, CliContext } from '../../types'
 import { DEFAULT_HOST, DEFAULT_OUT_DIR } from '../../constants'
+import pc from 'picocolors'
 
 /**
  * Preview 命令类
@@ -174,44 +175,152 @@ export class PreviewCommand implements CliCommandDefinition {
       const launcher = new ViteLauncher({
         cwd: context.cwd,
         config: {
-          configFile: context.configFile,
-          build: {
-            outDir
-          },
-          preview: {
-            host: context.options.host || DEFAULT_HOST,
-            port: context.options.port || 4173,
-            open: context.options.open || false,
-            cors: context.options.cors !== false,
-            strictPort: context.options.strictPort || false,
-            ...(context.options.https && { https: true })
-          } as any,
-          launcher: {
-            logLevel: context.options.debug ? 'debug' : 'info',
-            debug: context.options.debug || false
-          }
+          configFile: context.configFile
         }
       })
 
+      // 初始化以加载配置文件
+      await launcher.initialize()
+
+      // 获取配置文件中的preview配置
+      const config = launcher.getConfig()
+      const previewConfig = config.preview || {}
+
+      // 合并命令行参数和配置文件中的preview配置（命令行参数优先）
+      const finalPreviewConfig: any = {
+        host: context.options.host || previewConfig.host || DEFAULT_HOST,
+        port: context.options.port || previewConfig.port || 4173,
+        open: context.options.open ?? previewConfig.open ?? false,
+        cors: context.options.cors !== false && (previewConfig.cors !== false),
+        strictPort: context.options.strictPort || false
+      }
+
+      // 处理HTTPS配置
+      if (context.options.https) {
+        finalPreviewConfig.https = true
+      } else if (previewConfig.https) {
+        finalPreviewConfig.https = previewConfig.https
+      }
+
+      // 合并配置到launcher
+      const mergedConfig = launcher.mergeConfig(launcher.getConfig(), {
+        build: {
+          outDir
+        },
+        preview: finalPreviewConfig,
+        launcher: {
+          logLevel: context.options.debug ? 'debug' : 'info',
+          debug: context.options.debug || false
+        }
+      })
+
+      // 更新launcher的配置
+      launcher['config'] = mergedConfig
+
+      // 渲染服务器横幅的辅助函数
+      function renderServerBanner(
+        title: string,
+        items: Array<{ label: string; value: string }>
+      ): string[] {
+        const leftPad = '  '
+        const labelPad = 4
+        const rows = [
+          `${pc.green('✔')} ${pc.bold(title)}`,
+          ...items.map(({ label, value }) => {
+            const l = (label + ':').padEnd(labelPad, ' ')
+            return `${pc.dim('•')} ${pc.bold(l)} ${pc.cyan(value)}`
+          }),
+          `${pc.dim('•')} 提示: 按 ${pc.yellow('Ctrl+C')} 停止服务器`
+        ]
+
+        // 根据内容计算盒宽度
+        const contentWidth = rows.reduce((m, s) => Math.max(m, stripAnsi(s).length), 0)
+        const width = Math.min(Math.max(contentWidth + 4, 38), 80)
+        const top = pc.dim('┌' + '─'.repeat(width - 2) + '┐')
+        const bottom = pc.dim('└' + '─'.repeat(width - 2) + '┘')
+
+        const padded = rows.map(r => {
+          const visible = stripAnsi(r)
+          const space = width - 2 - visible.length
+          return pc.dim('│') + leftPad + r + ' '.repeat(Math.max(0, space - leftPad.length)) + pc.dim('│')
+        })
+
+        return [top, ...padded, bottom]
+      }
+
+      // 去除 ANSI 颜色后的长度计算辅助
+      function stripAnsi(str: string) {
+        // eslint-disable-next-line no-control-regex
+        const ansiRegex = /[\u001B\u009B][[\]()#;?]*(?:((?:[a-zA-Z\d]*(?:;[a-zA-Z\d]*)*)?\u0007)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-nq-uy=><~]))/g
+        return str.replace(ansiRegex, '')
+      }
+
       // 设置事件监听器
-      launcher.onReady(() => {
+      launcher.onReady(async () => {
         logger.success('预览服务器启动成功!')
 
-        const host = context.options.host || DEFAULT_HOST
-        const port = context.options.port || 4173
-        const protocol = context.options.https ? 'https' : 'http'
-        const url = `${protocol}://${host}:${port}`
+        const host = finalPreviewConfig.host
+        const port = finalPreviewConfig.port
+        const protocol = finalPreviewConfig.https ? 'https' : 'http'
+        const localUrl = `${protocol}://${host}:${port}`
 
-        logger.info(`本地访问: ${url}`)
-
+        // 构建网络 URL：如果 host 是 0.0.0.0，则替换为本地 IP
+        let networkUrl: string | null = null
         if (host === '0.0.0.0') {
-          // 显示网络访问地址
-          const networkUrl = url.replace('0.0.0.0', getLocalIP())
-          logger.info(`网络访问: ${networkUrl}`)
+          const localIP = getLocalIP()
+          networkUrl = localUrl.replace('0.0.0.0', localIP)
         }
 
-        logger.info(`预览目录: ${outDir}`)
-        logger.info('按 Ctrl+C 停止服务器')
+        const title = '预览服务器已启动'
+        const entries: Array<{ label: string; value: string }> = [
+          { label: '本地', value: localUrl }
+        ]
+        if (networkUrl) entries.push({ label: '网络', value: networkUrl })
+        entries.push({ label: '目录', value: outDir })
+
+        const boxLines = renderServerBanner(title, entries)
+        for (const line of boxLines) logger.info(line)
+
+        // 生成二维码
+        const qrTarget = (networkUrl || localUrl)
+        try {
+          if (!qrTarget) throw new Error('empty-url')
+
+          // 优先尝试使用 'qrcode' 的 UTF-8 终端输出
+          let printed = false
+          try {
+            const qrlib: any = await import('qrcode')
+            const utf8 = await (qrlib?.default || qrlib).toString(qrTarget, { type: 'utf8' })
+            if (utf8 && typeof utf8 === 'string') {
+              logger.info(pc.dim('二维码（扫码在手机上打开）：'))
+              console.log('\n' + utf8 + '\n')
+              printed = true
+            }
+          } catch (e1) {
+            logger.debug('尝试使用 qrcode 生成终端二维码失败', { error: (e1 as Error).message })
+          }
+
+          // 回退到 qrcode-terminal（如已安装）
+          if (!printed) {
+            try {
+              const mod: any = await import('qrcode-terminal')
+              const qrt = mod?.default || mod
+              let qrOutput = ''
+              qrt.generate(qrTarget, { small: true }, (q: string) => {
+                qrOutput = q
+              })
+              if (qrOutput) {
+                logger.info(pc.dim('二维码（扫码在手机上打开）：'))
+                console.log('\n' + qrOutput + '\n')
+                printed = true
+              }
+            } catch (e2) {
+              logger.debug('尝试使用 qrcode-terminal 生成终端二维码失败', { error: (e2 as Error).message })
+            }
+          }
+        } catch (e) {
+          logger.debug('二维码生成失败', { error: (e as Error).message })
+        }
       })
 
       launcher.onError((error) => {
@@ -301,13 +410,12 @@ function getLocalIP(): string {
 
 /**
  * 显示构建信息
- * 
+ *
  * @param outDir - 输出目录
  * @param logger - 日志记录器
  */
 async function showBuildInfo(outDir: string, logger: Logger): Promise<void> {
   try {
-    const files = await FileSystem.readDir(outDir)
     const stats = {
       totalFiles: 0,
       totalSize: 0,
@@ -317,8 +425,34 @@ async function showBuildInfo(outDir: string, logger: Logger): Promise<void> {
       assetFiles: 0
     }
 
+    // 递归统计所有文件
+    await collectFileStats(outDir, stats)
+
+    logger.info('构建产物统计:')
+    logger.info(`  总文件数: ${stats.totalFiles}`)
+    logger.info(`  总大小: ${formatFileSize(stats.totalSize)}`)
+    logger.info(`  HTML 文件: ${stats.htmlFiles}`)
+    logger.info(`  JavaScript 文件: ${stats.jsFiles}`)
+    logger.info(`  CSS 文件: ${stats.cssFiles}`)
+    logger.info(`  资源文件: ${stats.assetFiles}`)
+
+  } catch (error) {
+    logger.debug('获取构建信息失败', { error: (error as Error).message })
+  }
+}
+
+/**
+ * 递归收集文件统计信息
+ *
+ * @param dir - 目录路径
+ * @param stats - 统计信息对象
+ */
+async function collectFileStats(dir: string, stats: any): Promise<void> {
+  try {
+    const files = await FileSystem.readDir(dir)
+
     for (const file of files) {
-      const filePath = PathUtils.join(outDir, file)
+      const filePath = PathUtils.join(dir, file)
       const fileStat = await FileSystem.stat(filePath)
 
       if (fileStat.isFile()) {
@@ -335,19 +469,14 @@ async function showBuildInfo(outDir: string, logger: Logger): Promise<void> {
         } else {
           stats.assetFiles++
         }
+      } else if (fileStat.isDirectory()) {
+        // 递归处理子目录
+        await collectFileStats(filePath, stats)
       }
     }
-
-    logger.info('构建产物统计:')
-    logger.info(`  总文件数: ${stats.totalFiles}`)
-    logger.info(`  总大小: ${formatFileSize(stats.totalSize)}`)
-    logger.info(`  HTML 文件: ${stats.htmlFiles}`)
-    logger.info(`  JavaScript 文件: ${stats.jsFiles}`)
-    logger.info(`  CSS 文件: ${stats.cssFiles}`)
-    logger.info(`  资源文件: ${stats.assetFiles}`)
-
   } catch (error) {
-    logger.debug('获取构建信息失败', { error: (error as Error).message })
+    // 忽略无法访问的目录
+    console.debug(`无法访问目录 ${dir}:`, error)
   }
 }
 
