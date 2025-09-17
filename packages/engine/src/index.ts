@@ -202,13 +202,6 @@ export {
 
 // 类型安全工具导出
 export {
-  typedEmit,
-  typedOn,
-  typedOnce,
-  getTypedConfig,
-  setTypedConfig,
-  createTypedPluginContext,
-  registerTypedPlugin,
   isValidObject,
   isString,
   isNumber,
@@ -225,8 +218,6 @@ export {
   safeAsync,
   safeJsonParse,
   safeJsonStringify,
-  InputValidator,
-  ErrorUtil,
   TypedConfigWrapper,
   createTypedConfigManager,
   PromiseUtil

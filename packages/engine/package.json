@@ -18,6 +18,36 @@
       "types": "./lib/src/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
+    },
+    "./notifications": {
+      "types": "./lib/src/notifications/notification-manager.d.ts",
+      "import": "./es/notifications/notification-manager.js",
+      "require": "./lib/notifications/notification-manager.cjs"
+    },
+    "./dialog": {
+      "types": "./lib/src/dialog/index.d.ts",
+      "import": "./es/dialog/index.js",
+      "require": "./lib/dialog/index.cjs"
+    },
+    "./performance": {
+      "types": "./lib/src/performance/performance-manager.d.ts",
+      "import": "./es/performance/performance-manager.js",
+      "require": "./lib/performance/performance-manager.cjs"
+    },
+    "./logging": {
+      "types": "./lib/src/utils/logging-system.d.ts",
+      "import": "./es/utils/logging-system.js",
+      "require": "./lib/utils/logging-system.cjs"
+    },
+    "./config": {
+      "types": "./lib/src/utils/config-manager.d.ts",
+      "import": "./es/utils/config-manager.js",
+      "require": "./lib/utils/config-manager.cjs"
+    },
+    "./cache": {
+      "types": "./lib/src/cache/advanced-cache.d.ts",
+      "import": "./es/cache/advanced-cache.js",
+      "require": "./lib/cache/advanced-cache.cjs"
     }
   },
   "main": "lib/index.cjs",
@@ -30,6 +60,7 @@
     "es",
     "lib"
   ],
+  "sideEffects": false,
   "scripts": {
     "build": "ldesign-builder build -f esm,cjs,umd",
     "build:clean": "node scripts/build.js --clean",

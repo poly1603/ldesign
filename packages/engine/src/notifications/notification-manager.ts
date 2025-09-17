@@ -19,7 +19,6 @@ interface NotificationItem extends NotificationOptions {
   visible: boolean
   element?: HTMLElement
   timeoutId?: number
-  animating?: boolean
 }
 
 export class NotificationManagerImpl implements NotificationManager {
@@ -28,13 +27,10 @@ export class NotificationManagerImpl implements NotificationManager {
   private maxNotifications = 5
   private defaultDuration = 4000
   private defaultPosition: NotificationPosition = 'top-right'
-  private defaultAnimation: NotificationAnimation = 'slide'
   private defaultTheme: NotificationTheme = 'light'
   private idCounter = 0
   private styleManager: NotificationStyleManager
   private logger?: Logger
-  private defaultOptions: Partial<NotificationOptions> = {}
-  private cleanupInterval?: number
 
   constructor(logger?: Logger) {
     this.logger = logger
@@ -120,9 +116,7 @@ export class NotificationManagerImpl implements NotificationManager {
       duration: options.duration ?? this.defaultDuration,
       closable: options.closable ?? true,
       position: options.position || this.defaultPosition,
-      animation: options.animation || this.defaultAnimation,
       theme: options.theme || this.defaultTheme,
-      priority: options.priority || 0,
       ...options,
     }
 
@@ -161,11 +155,10 @@ export class NotificationManagerImpl implements NotificationManager {
 
   async hide(id: string): Promise<void> {
     const notification = this.notifications.get(id)
-    if (!notification || !notification.visible || notification.animating) {
+    if (!notification || !notification.visible) {
       return
     }
 
-    notification.animating = true
     notification.visible = false
 
     // 清除自动关闭定时器

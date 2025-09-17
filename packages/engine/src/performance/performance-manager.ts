@@ -13,20 +13,6 @@ export interface PerformanceMetrics {
     limit: number
   }
 
-  // 渲染指标
-  rendering?: {
-    fps: number
-    frameTime: number
-    droppedFrames: number
-  }
-
-  // 网络指标
-  network?: {
-    requests: number
-    totalSize: number
-    averageTime: number
-  }
-
   // 自定义指标
   custom?: Record<string, number>
 }
@@ -150,60 +136,6 @@ export interface PerformanceManager {
   clearData: (olderThan?: number) => void
   exportData: () => string
   importData: (data: string) => void
-}
-
-// FPS监控器 - 优化版本
-class FPSMonitor {
-  private frames: Float32Array = new Float32Array(60) // 使用 TypedArray 提高性能
-  private frameIndex = 0
-  private frameCount = 0
-  private lastTime = 0
-  private animationId?: number
-  private callback?: (fps: number) => void
-  private fpsSum = 0 // 缓存总和，避免重复计算
-
-  start(callback: (fps: number) => void): void {
-    this.callback = callback
-    this.lastTime = globalThis.performance.now()
-    this.frameIndex = 0
-    this.frameCount = 0
-    this.fpsSum = 0
-    this.tick()
-  }
-
-  stop(): void {
-    if (this.animationId) {
-      cancelAnimationFrame(this.animationId)
-      this.animationId = undefined
-    }
-    this.callback = undefined
-  }
-
-  private tick = (): void => {
-    const now = globalThis.performance.now()
-    const delta = now - this.lastTime
-    this.lastTime = now
-
-    // 使用循环缓冲区，避免数组 shift 操作
-    const oldValue = this.frames[this.frameIndex] || 0
-    this.frames[this.frameIndex] = delta
-    this.fpsSum = this.fpsSum - oldValue + delta
-
-    this.frameIndex = (this.frameIndex + 1) % 60
-    this.frameCount = Math.min(this.frameCount + 1, 60)
-
-    // 计算FPS - 使用缓存的总和
-    if (this.frameCount >= 10) {
-      const averageFrameTime = this.fpsSum / this.frameCount
-      const fps = 1000 / averageFrameTime
-
-      if (this.callback) {
-        this.callback(Math.round(fps))
-      }
-    }
-
-    this.animationId = requestAnimationFrame(this.tick)
-  }
 }
 
 // 内存监控器

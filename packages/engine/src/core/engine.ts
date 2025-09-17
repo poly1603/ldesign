@@ -309,23 +309,16 @@ export class EngineImpl implements Engine {
   /**
    * 设置配置变化监听器
    *
-   * 这个方法设置了响应式配置系统，当配置项发生变化时能够自动调整系统行为：
-   * 1. 调试模式开关自动调整日志级别
-   * 2. 日志级别变化时直接应用新设置
-   * 3. 功能开关变化时启用/禁用相应模块
-   * 4. 缓存配置变化时重新配置缓存系统
-   *
    * @private
    */
   private setupConfigWatchers(): void {
-    // 1. 监听调试模式变化 - 自动调整日志级别
+    // 监听调试模式变化
     this.config.watch('debug', (newValue: unknown) => {
-      // 调试模式开启时使用debug级别，关闭时使用info级别
       this.logger.setLevel(newValue ? 'debug' : 'info')
       this.logger.info('Debug mode changed', { debug: newValue })
     })
 
-    // 2. 监听日志级别变化 - 直接应用新级别
+    // 监听日志级别变化
     this.config.watch('logger.level', (newValue: unknown) => {
       const allowed: LogLevel[] = ['debug', 'info', 'warn', 'error']
       const level = typeof newValue === 'string' && (allowed as string[]).includes(newValue)
@@ -333,24 +326,6 @@ export class EngineImpl implements Engine {
         : this.logger.getLevel()
       this.logger.setLevel(level)
       this.logger.info('Log level changed', { level })
-    })
-
-    // 监听功能开关变化
-    this.config.watch('features', (newFeatures: unknown) => {
-      this.logger.info('Features configuration changed', newFeatures)
-      const f = newFeatures as Record<string, unknown>
-      if (f['enablePerformanceMonitoring'] !== undefined) {
-        // 可以在这里启用/禁用性能监控
-      }
-      if (f['enableSecurityProtection'] !== undefined) {
-        // 可以在这里启用/禁用安全防护
-      }
-    })
-
-    // 监听缓存配置变化
-    this.config.watch('cache', (newCacheConfig: unknown) => {
-      this.logger.info('Cache configuration changed', newCacheConfig)
-      // 这里可以重新配置缓存管理器
     })
   }
 

@@ -12,44 +12,6 @@ export class TimerManager {
   private intervals = new Set<NodeJS.Timeout>()
   
   /**
-   * 创建受管理的定时器
-   */
-  setTimeout(callback: () => void, delay: number): NodeJS.Timeout {
-    const timer = setTimeout(() => {
-      callback()
-      this.timers.delete(timer)
-    }, delay)
-    
-    this.timers.add(timer)
-    return timer
-  }
-  
-  /**
-   * 创建受管理的间隔器
-   */
-  setInterval(callback: () => void, interval: number): NodeJS.Timeout {
-    const timer = setInterval(callback, interval)
-    this.intervals.add(timer)
-    return timer
-  }
-  
-  /**
-   * 清除特定定时器
-   */
-  clearTimeout(timer: NodeJS.Timeout): void {
-    clearTimeout(timer)
-    this.timers.delete(timer)
-  }
-  
-  /**
-   * 清除特定间隔器
-   */
-  clearInterval(timer: NodeJS.Timeout): void {
-    clearInterval(timer)
-    this.intervals.delete(timer)
-  }
-  
-  /**
    * 清除所有定时器和间隔器
    */
   clearAll(): void {
@@ -63,16 +25,6 @@ export class TimerManager {
     this.timers.clear()
     this.intervals.clear()
   }
-  
-  /**
-   * 获取活跃定时器数量
-   */
-  getActiveTimers(): { timeouts: number; intervals: number } {
-    return {
-      timeouts: this.timers.size,
-      intervals: this.intervals.size,
-    }
-  }
 }
 
 /**
@@ -80,70 +32,6 @@ export class TimerManager {
  */
 export class ListenerManager {
   private listeners = new Map<EventTarget, Map<string, Set<EventListenerOrEventListenerObject>>>()
-  
-  /**
-   * 添加受管理的事件监听器
-   */
-  addEventListener(
-    target: EventTarget,
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: AddEventListenerOptions
-  ): void {
-    target.addEventListener(type, listener, options)
-    
-    // 记录监听器
-    if (!this.listeners.has(target)) {
-      this.listeners.set(target, new Map())
-    }
-    
-    const targetListeners = this.listeners.get(target)!
-    if (!targetListeners.has(type)) {
-      targetListeners.set(type, new Set())
-    }
-    
-    targetListeners.get(type)!.add(listener)
-  }
-  
-  /**
-   * 移除特定事件监听器
-   */
-  removeEventListener(
-    target: EventTarget,
-    type: string,
-    listener: EventListenerOrEventListenerObject
-  ): void {
-    target.removeEventListener(type, listener)
-    
-    const targetListeners = this.listeners.get(target)
-    if (targetListeners) {
-      const typeListeners = targetListeners.get(type)
-      if (typeListeners) {
-        typeListeners.delete(listener)
-        if (typeListeners.size === 0) {
-          targetListeners.delete(type)
-        }
-      }
-      if (targetListeners.size === 0) {
-        this.listeners.delete(target)
-      }
-    }
-  }
-  
-  /**
-   * 移除目标上的所有监听器
-   */
-  removeAllListeners(target: EventTarget): void {
-    const targetListeners = this.listeners.get(target)
-    if (targetListeners) {
-      for (const [type, listeners] of targetListeners) {
-        for (const listener of listeners) {
-          target.removeEventListener(type, listener)
-        }
-      }
-      this.listeners.delete(target)
-    }
-  }
   
   /**
    * 清除所有监听器
@@ -157,38 +45,6 @@ export class ListenerManager {
       }
     }
     this.listeners.clear()
-  }
-  
-  /**
-   * 获取监听器统计
-   */
-  getStats(): {
-    targets: number
-    totalListeners: number
-    byTarget: Array<{ target: string; types: number; listeners: number }>
-  } {
-    let totalListeners = 0
-    const byTarget: Array<{ target: string; types: number; listeners: number }> = []
-    
-    for (const [target, targetListeners] of this.listeners) {
-      let targetTotal = 0
-      for (const listeners of targetListeners.values()) {
-        targetTotal += listeners.size
-      }
-      totalListeners += targetTotal
-      
-      byTarget.push({
-        target: target.constructor.name,
-        types: targetListeners.size,
-        listeners: targetTotal,
-      })
-    }
-    
-    return {
-      targets: this.listeners.size,
-      totalListeners,
-      byTarget,
-    }
   }
 }
 

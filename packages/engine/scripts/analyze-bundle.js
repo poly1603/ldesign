@@ -117,9 +117,9 @@ function generateSizeReport(files) {
 // 比较大小限制
 function checkSizeLimits(report) {
   const limits = {
-    'ES Module': { path: 'dist/index.js', maxGzipped: 50 * 1024 }, // 50KB
-    'UMD (开发版)': { path: 'dist/ldesign-engine.js', maxGzipped: 80 * 1024 }, // 80KB
-    'UMD (生产版)': { path: 'dist/ldesign-engine.min.js', maxGzipped: 40 * 1024 }, // 40KB
+    'ES Module': { path: 'es/index.js', maxGzipped: 50 * 1024 }, // 50KB
+    'CommonJS': { path: 'lib/index.cjs', maxGzipped: 50 * 1024 }, // 50KB
+    'UMD Bundle': { path: 'dist/index.umd.js', maxGzipped: 85 * 1024 }, // 85KB
   }
 
   log('📊 大小限制检查:', 'bright')
@@ -177,13 +177,10 @@ function main() {
 
   // 定义要分析的文件
   const files = {
-    'ES Module': 'dist/index.js',
-    'CommonJS': 'lib/index.js',
-    'UMD (开发版)': 'dist/ldesign-engine.js',
-    'UMD (生产版)': 'dist/ldesign-engine.min.js',
-    'Vue 适配器 (ES)': 'dist/vue.js',
-    'Vue 适配器 (CJS)': 'lib/vue.js',
-    'TypeScript 定义': 'types/index.d.ts',
+    'ES Module': 'es/index.js',
+    'CommonJS': 'lib/index.cjs',
+    'UMD Bundle': 'dist/index.umd.js',
+    'TypeScript 定义': 'lib/src/index.d.ts',
   }
 
   // 分析每个文件

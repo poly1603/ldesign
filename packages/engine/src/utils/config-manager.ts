@@ -5,8 +5,7 @@ import {
   isBoolean, 
   isFunction,
   safeGet,
-  safeGetNested,
-  ErrorUtil 
+  safeGetNested
 } from './type-safety'
 
 // 配置项类型定义
@@ -505,11 +504,7 @@ export class EnhancedConfigManager {
         this.applyDefaults()
       }
     } catch (error) {
-      throw ErrorUtil.createTypedError(
-        'CONFIG_IMPORT_ERROR',
-        'Failed to import configuration',
-        { error: ErrorUtil.safeErrorMessage(error) }
-      )
+      throw new Error(`Failed to import configuration: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
