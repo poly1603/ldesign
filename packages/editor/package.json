@@ -61,8 +61,8 @@
   ],
   "scripts": {
     "dev": "node dev-server.js",
-    "build": "@ldesign/builder build",
-    "build:watch": "@ldesign/builder build --watch",
+    "build": "ldesign-builder build",
+    "build:watch": "ldesign-builder build --watch",
     "preview": "@ldesign/launcher preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
