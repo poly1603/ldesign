@@ -14,7 +14,7 @@ import { watch as chokidar, FSWatcher } from 'chokidar'
 import { existsSync, readFile } from 'fs'
 import { promisify } from 'util'
 import { Logger } from '../utils/logger'
-import { DEFAULT_APP_CONFIG_FILES } from '../constants'
+import { DEFAULT_APP_CONFIG_FILES, getEnvironmentAppConfigFiles } from '../constants'
 
 const readFileAsync = promisify(readFile)
 
@@ -27,20 +27,24 @@ const RESOLVED_VIRTUAL_MODULE_ID = '\0' + VIRTUAL_MODULE_ID
 interface AppConfigPluginOptions {
   cwd?: string
   configFile?: string
+  environment?: string
   logger?: Logger
 }
 
 /**
  * 查找应用配置文件
  */
-async function findAppConfigFile(cwd: string, customFile?: string): Promise<string | null> {
+async function findAppConfigFile(cwd: string, customFile?: string, environment?: string): Promise<string | null> {
   if (customFile) {
     const fullPath = resolve(cwd, customFile)
     if (existsSync(fullPath)) return fullPath
     return null
   }
 
-  for (const fileName of DEFAULT_APP_CONFIG_FILES) {
+  // 使用环境特定的配置文件列表
+  const configFiles = getEnvironmentAppConfigFiles(environment)
+
+  for (const fileName of configFiles) {
     const fullPath = resolve(cwd, fileName)
     if (existsSync(fullPath)) return fullPath
   }
@@ -129,6 +133,7 @@ export function createAppConfigPlugin(options: AppConfigPluginOptions = {}): Plu
   const {
     cwd = process.cwd(),
     configFile,
+    environment,
     logger = new Logger('AppConfigPlugin', { compact: true })
   } = options
 
@@ -142,14 +147,14 @@ export function createAppConfigPlugin(options: AppConfigPluginOptions = {}): Plu
     name: 'vite-plugin-app-config',
 
     async config(config, { command }) {
-      // 查找配置文件
-      configFilePath = await findAppConfigFile(cwd, configFile)
+      // 查找配置文件（支持环境特定配置）
+      configFilePath = await findAppConfigFile(cwd, configFile, environment)
 
       if (configFilePath) {
-        logger.info('找到应用配置文件', { path: configFilePath })
+        logger.info('找到应用配置文件', { path: configFilePath, environment })
         appConfig = await loadAppConfig(configFilePath, logger)
       } else {
-        logger.debug('未找到应用配置文件')
+        logger.debug('未找到应用配置文件', { environment })
       }
 
       // 定义环境变量，避免重复定义
@@ -221,7 +226,7 @@ export function createAppConfigPlugin(options: AppConfigPluginOptions = {}): Plu
 
       watcher.on('add', async () => {
         logger.info('检测到新的应用配置文件')
-        configFilePath = await findAppConfigFile(cwd, configFile)
+        configFilePath = await findAppConfigFile(cwd, configFile, environment)
         if (configFilePath) {
           appConfig = await loadAppConfig(configFilePath, logger)
           server!.ws.send({

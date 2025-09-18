@@ -190,6 +190,7 @@ export class PreviewCommand implements CliCommandDefinition {
       // 创建 ViteLauncher 实例
       const launcher = new ViteLauncher({
         cwd: context.cwd,
+        environment, // 传递环境参数
         config: {
           configFile: context.configFile
         }

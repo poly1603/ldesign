@@ -123,6 +123,26 @@ export const DEFAULT_APP_CONFIG_FILES = [
 ] as const
 
 /**
+ * 获取环境特定的应用配置文件列表
+ *
+ * @param environment - 环境名称
+ * @returns 应用配置文件列表
+ */
+export function getEnvironmentAppConfigFiles(environment?: string): string[] {
+  if (!environment) {
+    return [...DEFAULT_APP_CONFIG_FILES]
+  }
+
+  // 环境特定的配置文件（优先级更高）
+  const envAppConfigFiles = SUPPORTED_CONFIG_EXTENSIONS.map(ext =>
+    `${LDESIGN_DIR}/app.config.${environment}${ext}`
+  )
+
+  // 返回环境特定配置文件 + 默认配置文件（作为回退）
+  return [...envAppConfigFiles, ...DEFAULT_APP_CONFIG_FILES]
+}
+
+/**
  * 支持的配置文件扩展名
  */
 export const SUPPORTED_CONFIG_EXTENSIONS = [

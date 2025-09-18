@@ -283,12 +283,15 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       const viteMod = await importViteFromCwd(this.cwd)
       const { createServer } = viteMod
 
+      // 注入配置信息插件
+      const currentEnvironment = this.environment || process.env.NODE_ENV || 'development'
+
       // 注入 app.config 插件
       const { createAppConfigPlugin } = await import('../plugins/app-config')
-      const appCfgPlugin = createAppConfigPlugin({ cwd: this.cwd })
-
-      // 注入配置信息插件
-      const currentEnvironment = process.env.NODE_ENV || 'development'
+      const appCfgPlugin = createAppConfigPlugin({
+        cwd: this.cwd,
+        environment: currentEnvironment
+      })
 
       const configInjectionPlugin = createConfigInjectionPlugin({
         config: mergedConfig,
@@ -478,8 +481,12 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       const { build } = viteMod
 
       // 注入 app.config 插件
+      const currentEnvironment = this.environment || process.env.NODE_ENV || 'production'
       const { createAppConfigPlugin } = await import('../plugins/app-config')
-      const appCfgPlugin = createAppConfigPlugin({ cwd: this.cwd })
+      const appCfgPlugin = createAppConfigPlugin({
+        cwd: this.cwd,
+        environment: currentEnvironment
+      })
       mergedConfig.plugins = [appCfgPlugin, ...(mergedConfig.plugins || [])]
 
       // 执行构建
@@ -585,8 +592,12 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       const { preview } = viteMod
 
       // 注入 app.config 插件
+      const currentEnvironment = this.environment || process.env.NODE_ENV || 'production'
       const { createAppConfigPlugin } = await import('../plugins/app-config')
-      const appCfgPlugin = createAppConfigPlugin({ cwd: this.cwd })
+      const appCfgPlugin = createAppConfigPlugin({
+        cwd: this.cwd,
+        environment: currentEnvironment
+      })
       mergedConfig.plugins = [appCfgPlugin, ...(mergedConfig.plugins || [])]
 
       // 创建预览服务器

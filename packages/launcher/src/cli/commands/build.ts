@@ -185,6 +185,7 @@ export class BuildCommand implements CliCommandDefinition {
       // 创建 ViteLauncher 实例
       const launcher = new ViteLauncher({
         cwd: context.cwd,
+        environment, // 传递环境参数
         config: {
           // 顶层 mode 仍保留，以便 Vite 正确识别
           mode: context.options.mode || 'production',
