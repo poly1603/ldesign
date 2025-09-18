@@ -264,11 +264,19 @@ export class PreviewCommand implements CliCommandDefinition {
         const protocol = finalPreviewConfig.https ? 'https' : 'http'
         const localUrl = `${protocol}://${host}:${port}`
 
-        // 构建网络 URL：如果 host 是 0.0.0.0，则替换为本地 IP
+        // 构建网络 URL：总是尝试生成网络地址
         let networkUrl: string | null = null
+        const localIP = getLocalIP()
+
         if (host === '0.0.0.0') {
-          const localIP = getLocalIP()
+          // host 是 0.0.0.0，替换为本地 IP
           networkUrl = localUrl.replace('0.0.0.0', localIP)
+        } else if (host === 'localhost' || host === '127.0.0.1') {
+          // host 是 localhost 或 127.0.0.1，生成网络地址
+          networkUrl = `${protocol}://${localIP}:${port}`
+        } else {
+          // host 已经是 IP 地址，直接使用
+          networkUrl = localUrl
         }
 
         const title = '预览服务器已启动'

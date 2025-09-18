@@ -1,19 +1,7 @@
 {
   "name": "@ldesign/api",
-  "type": "module",
   "version": "0.1.0",
   "description": "一个功能强大的通用系统接口管理包，支持插件化架构、内置系统接口、性能优化，完美集成 Vue 3",
-  "author": "LDesign Team",
-  "license": "MIT",
-  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/api#readme",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign/ldesign.git",
-    "directory": "packages/api"
-  },
-  "bugs": {
-    "url": "https://github.com/ldesign/ldesign/issues"
-  },
   "keywords": [
     "ldesign",
     "vue3",
@@ -26,6 +14,18 @@
     "performance",
     "interceptor"
   ],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/api#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/ldesign.git",
+    "directory": "packages/api"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign/ldesign/issues"
+  },
+  "type": "module",
   "sideEffects": false,
   "exports": {
     ".": {
@@ -33,18 +33,61 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
+    "./core/*": {
+      "types": "./es/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.cjs"
+    },
+    "./plugins/*": {
+      "types": "./es/plugins/*.d.ts",
+      "import": "./es/plugins/*.js",
+      "require": "./lib/plugins/*.cjs"
+    },
     "./react": {
       "types": "./es/react/index.d.ts",
       "import": "./es/react/index.js",
       "require": "./lib/react/index.cjs"
+    },
+    "./react/*": {
+      "types": "./es/react/*.d.ts",
+      "import": "./es/react/*.js",
+      "require": "./lib/react/*.cjs"
+    },
+    "./types": {
+      "types": "./es/types/index.d.ts",
+      "import": "./es/types/index.js",
+      "require": "./lib/types/index.cjs"
+    },
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
+    },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
+    },
+    "./vue": {
+      "types": "./es/vue/index.d.ts",
+      "import": "./es/vue/index.js",
+      "require": "./lib/vue/index.cjs"
+    },
+    "./vue/*": {
+      "types": "./es/vue/*.d.ts",
+      "import": "./es/vue/*.js",
+      "require": "./lib/vue/*.cjs"
     }
   },
-  "main": "lib/index.cjs",
-  "module": "es/index.js",
-  "types": "es/index.d.ts",
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
   "files": [
     "README.md",
-    "CHANGELOG.md",
+    "LICENSE",
+    "package.json",
     "es",
     "lib",
     "dist"
@@ -75,20 +118,12 @@
     "build:dev": "node scripts/build.js --dev",
     "generate:registry": "tsx scripts/generate-typed-registry.ts typed-registry.config.json"
   },
+  "dependencies": {
+    "@ldesign/http": "workspace:*"
+  },
   "peerDependencies": {
     "vue": "^3.3.0",
     "react": "^18.0.0"
-  },
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    },
-    "react": {
-      "optional": true
-    }
-  },
-  "dependencies": {
-    "@ldesign/http": "workspace:*"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.0.0",
@@ -126,5 +161,13 @@
       "path": "dist/index.js",
       "limit": "50 KB"
     }
-  ]
+  ],
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  }
 }

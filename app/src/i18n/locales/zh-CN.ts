@@ -9,5 +9,9 @@ export default {
   },
   "app": {
     "welcome": "欢迎使用 LDesign"
+  },
+  nav: {
+    home: '首页',
+    login: '登录'
   }
 } as const

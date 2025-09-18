@@ -20,6 +20,7 @@ export * from './error-handler'
 export * from './format-utils'
 export * from './banner-generator'
 export * from './minify-processor'
+export * from './package-updater'
 
 // 高级功能模块 - 使用命名导出避免类型冲突
 export {

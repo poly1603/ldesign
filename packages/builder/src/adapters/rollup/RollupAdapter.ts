@@ -479,7 +479,12 @@ export class RollupAdapter implements IBundlerAdapter {
 
         if (outputConfig.umd || (config as any).umd) {
           const umdCfg = await this.createUMDConfig(config, filteredInput)
-          configs.push(umdCfg)
+          // umdCfg 现在可能是数组（包含常规版本和压缩版本）
+          if (Array.isArray(umdCfg)) {
+            configs.push(...umdCfg)
+          } else {
+            configs.push(umdCfg)
+          }
         }
 
         // 如果未声明 umd，不自动添加
@@ -550,7 +555,7 @@ export class RollupAdapter implements IBundlerAdapter {
           const isESM = format === 'esm'
           const isCJS = format === 'cjs'
           const dir = isESM ? 'es' : isCJS ? 'lib' : 'dist'
-          const entryFileNames = isESM ? '[name].js' : isCJS ? '[name].cjs' : '[name].umd.js'
+          const entryFileNames = isESM ? '[name].js' : isCJS ? '[name].cjs' : '[name].js'
           const chunkFileNames = entryFileNames
           const formatPlugins = await this.transformPluginsForFormat(config.plugins || [], dir, { emitDts: true })
           try {
@@ -587,7 +592,14 @@ export class RollupAdapter implements IBundlerAdapter {
             onwarn: this.getOnWarn(config)
           })
         }
-        if (umdConfig) configs.push(umdConfig)
+        if (umdConfig) {
+          // umdConfig 现在可能是数组（包含常规版本和压缩版本）
+          if (Array.isArray(umdConfig)) {
+            configs.push(...umdConfig)
+          } else {
+            configs.push(umdConfig)
+          }
+        }
         this.multiConfigs = configs
 
         // 为了兼容测试，返回包含output数组的配置
@@ -606,7 +618,7 @@ export class RollupAdapter implements IBundlerAdapter {
         // 使用配置中的输出目录，如果没有则使用默认值
         const defaultDir = isESM ? 'es' : isCJS ? 'lib' : 'dist'
         const dir = outputConfig.dir || defaultDir
-        const entryFileNames = isESM ? '[name].js' : isCJS ? '[name].cjs' : '[name].umd.js'
+        const entryFileNames = isESM ? '[name].js' : isCJS ? '[name].cjs' : '[name].js'
         const chunkFileNames = entryFileNames
         const userPlugins = await this.transformPluginsForFormat(config.plugins || [], dir, { emitDts: true })
         try {
@@ -915,7 +927,7 @@ export class RollupAdapter implements IBundlerAdapter {
           } else if (format === 'cjs' && !outputConfig.cjs) {
             mainOutputFiles.push(path.join(outputDir, 'index.cjs'))
           } else if (format === 'umd' && !outputConfig.umd) {
-            mainOutputFiles.push(path.join(outputDir, 'index.umd.js'))
+            mainOutputFiles.push(path.join(outputDir, 'index.js'))
           }
         }
       }
@@ -1162,15 +1174,15 @@ export class RollupAdapter implements IBundlerAdapter {
   }
 
   /**
-   * 创建 UMD 配置
+   * 创建 UMD 配置（返回常规版本和压缩版本的数组）
    */
-  private async createUMDConfig(config: UnifiedConfig, filteredInput?: string | string[] | Record<string, string>): Promise<any> {
+  private async createUMDConfig(config: UnifiedConfig, filteredInput?: string | string[] | Record<string, string>): Promise<any[]> {
     // 处理 boolean 配置
     let umdSection = (config as any).umd || (config as any).output?.umd || {}
     if (umdSection === true) {
       umdSection = {} // 使用默认配置
     } else if (umdSection === false) {
-      return null // 禁用 UMD
+      return [] // 禁用 UMD，返回空数组
     }
     const outputConfig = config.output || {}
 
@@ -1290,15 +1302,26 @@ export class RollupAdapter implements IBundlerAdapter {
     const defaultUmdFile = 'index.js'
 
 
-    return {
+    // 创建两个 UMD 配置：常规版本和压缩版本
+    const baseConfig = {
       input: umdEntry,
       external: config.external,
+      treeshake: config.treeshake,
+      onwarn: this.getOnWarn(config)
+    }
+
+    const outputDir = umdSection.dir || 'dist'
+    const fileName = umdSection.fileName || defaultUmdFile
+    const baseFileName = fileName.replace(/\.js$/, '')
+
+    // 常规版本配置
+    const regularConfig = {
+      ...baseConfig,
       plugins: [...basePlugins, ...userPlugins],
       output: {
         format: 'umd',
         name: umdName,
-        file: `${umdSection.dir || 'dist'}/${umdSection.fileName || defaultUmdFile}`,
-        // UMD 不支持代码分割，强制内联动态导入
+        file: `${outputDir}/${fileName}`,
         inlineDynamicImports: true,
         sourcemap: (umdSection.sourcemap ?? outputConfig.sourcemap),
         globals: mergedGlobals,
@@ -1308,9 +1331,58 @@ export class RollupAdapter implements IBundlerAdapter {
         footer,
         intro: await this.resolveIntro(bannerConfig),
         outro: await this.resolveOutro(bannerConfig)
-      },
-      treeshake: config.treeshake,
-      onwarn: this.getOnWarn(config)
+      }
+    }
+
+    // 压缩版本配置
+    const terserPlugin = await this.getTerserPlugin()
+    const minifiedPlugins = terserPlugin ? [...basePlugins, ...userPlugins, terserPlugin] : [...basePlugins, ...userPlugins]
+
+    const minifiedConfig = {
+      ...baseConfig,
+      plugins: minifiedPlugins,
+      output: {
+        format: 'umd',
+        name: umdName,
+        file: `${outputDir}/${baseFileName}.min.js`,
+        inlineDynamicImports: true,
+        sourcemap: (umdSection.sourcemap ?? outputConfig.sourcemap),
+        globals: mergedGlobals,
+        exports: 'named',
+        assetFileNames: '[name].[ext]',
+        banner,
+        footer,
+        intro: await this.resolveIntro(bannerConfig),
+        outro: await this.resolveOutro(bannerConfig)
+      }
+    }
+
+    // 返回数组配置，Rollup 会分别构建两个版本
+    return [regularConfig, minifiedConfig]
+  }
+
+  /**
+   * 获取 Terser 压缩插件
+   */
+  private async getTerserPlugin(): Promise<any> {
+    try {
+      const { default: terser } = await import('@rollup/plugin-terser')
+      return terser({
+        compress: {
+          drop_console: false,
+          drop_debugger: true,
+          pure_funcs: ['console.log']
+        },
+        mangle: {
+          reserved: ['exports', 'require', 'module', '__dirname', '__filename']
+        },
+        format: {
+          comments: /^!/
+        }
+      })
+    } catch (error) {
+      this.logger.warn('Terser 插件不可用，跳过压缩:', error)
+      return null
     }
   }
 

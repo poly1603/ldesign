@@ -1,7 +1,7 @@
 /**
  * 模板扫描器
  *
- * 使用 import.meta.glob 递归扫描模板目录，建立完整的模板索引
+ * 使用统一的模板注册器管理模板，避免重复调用 import.meta.glob
  */
 
 import type { FileNamingConfig } from '../types/config'
@@ -23,6 +23,7 @@ import { createFilePathBuilder, type FilePathBuilder } from '../utils/file-path-
 import { createFileWatcher, type WatcherFileChangeEvent, type FileWatcher } from '../utils/file-watcher'
 import { getTemplateCategoryManager } from '../utils/template-category-manager'
 import type { TemplateCategoryManager } from '../types/template-categories'
+// import { templateRegistry } from '../utils/template-registry' // 已移除
 
 /**
  * 模板扫描器类
@@ -134,77 +135,8 @@ export class TemplateScanner {
    * 扫描内置模板
    */
   private async scanBuiltInTemplates(errors: ScanError[]): Promise<void> {
-    try {
-      // 使用 import.meta.glob 扫描内置模板配置文件
-      // Vite 要求使用字面量字符串，所以我们尝试多个可能的路径
-      let configModules: Record<string, () => Promise<any>> = {}
-
-      // 尝试不同的 glob 模式（必须使用字面量）
-      try {
-        configModules = import.meta.glob('/src/templates/**/config.{js,ts}', { eager: false })
-        if (Object.keys(configModules).length > 0) {
-          console.log(`[TemplateScanner] Found ${Object.keys(configModules).length} config files with pattern: /src/templates/**/config.{js,ts}`)
-        }
-      }
-      catch (error) {
-        // 继续尝试其他模式
-      }
-
-      if (Object.keys(configModules).length === 0) {
-        try {
-          configModules = import.meta.glob('../src/templates/**/config.{js,ts}', { eager: false })
-          if (Object.keys(configModules).length > 0) {
-            console.log(`[TemplateScanner] Found ${Object.keys(configModules).length} config files with pattern: ../src/templates/**/config.{js,ts}`)
-          }
-        }
-        catch (error) {
-          // 继续尝试其他模式
-        }
-      }
-
-      if (Object.keys(configModules).length === 0) {
-        try {
-          configModules = import.meta.glob('../../src/templates/**/config.{js,ts}', { eager: false })
-          if (Object.keys(configModules).length > 0) {
-            console.log(`[TemplateScanner] Found ${Object.keys(configModules).length} config files with pattern: ../../src/templates/**/config.{js,ts}`)
-          }
-        }
-        catch (error) {
-          // 继续尝试其他模式
-        }
-      }
-
-      // 如果没有找到配置文件，使用直接扫描方式
-      if (Object.keys(configModules).length === 0) {
-        console.warn('[TemplateScanner] No config files found with glob patterns, using direct template scanning...')
-        await this.scanDirectTemplates(errors)
-        return
-      }
-
-      // 处理每个配置文件
-      for (const [configPath, moduleLoader] of Object.entries(configModules)) {
-        try {
-          await this.processConfigFile(configPath, moduleLoader, errors, true)
-        }
-        catch (error) {
-          errors.push({
-            type: 'CONFIG_PARSE_ERROR',
-            message: `Failed to process built-in config file: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            filePath: configPath,
-            details: error,
-          })
-        }
-      }
-    }
-    catch (error) {
-      // 如果无法扫描内置模板，记录错误但继续扫描
-      errors.push({
-        type: 'VALIDATION_ERROR',
-        message: `Failed to scan built-in templates: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        filePath: 'src/templates',
-        details: error,
-      })
-    }
+    // 直接使用备用方案扫描已知模板
+    await this.scanDirectTemplates(errors)
   }
 
   /**
@@ -314,33 +246,9 @@ export class TemplateScanner {
    * 扫描用户自定义模板
    */
   private async scanUserTemplates(errors: ScanError[]): Promise<void> {
-    try {
-      // 使用 import.meta.glob 扫描用户配置文件（Vite 要求字面量字符串）
-      const configModules = import.meta.glob('/src/templates/**/config.{js,ts}', { eager: false })
-
-      // 处理每个配置文件
-      for (const [configPath, moduleLoader] of Object.entries(configModules)) {
-        try {
-          await this.processConfigFile(configPath, moduleLoader, errors, false)
-        }
-        catch (error) {
-          errors.push({
-            type: 'CONFIG_PARSE_ERROR',
-            message: `Failed to process user config file: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            filePath: configPath,
-            details: error,
-          })
-        }
-      }
-    }
-    catch (error) {
-      errors.push({
-        type: 'VALIDATION_ERROR',
-        message: `Failed to scan user templates: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        filePath: this.options.templatesDir,
-        details: error,
-      })
-    }
+    // 用户模板通过 API 动态注册，不需要自动扫描
+    // 这避免了在打包后找不到用户模板的问题
+    console.log('[TemplateScanner] User templates should be registered via API')
   }
 
   /**
@@ -384,17 +292,17 @@ export class TemplateScanner {
       const stylePath = `${basePath}/style.less`
 
       // 创建模板元数据
-          const metadata: TemplateMetadata = {
-            ...config,
-            category: category as string,
-            device,
-            componentPath: componentPath,
-            componentLoader, // 添加组件加载器
-            stylePath: stylePath ?? undefined,
-            configPath: configPath,
-            lastModified: Date.now(),
-            isBuiltIn,
-          }
+      const metadata: TemplateMetadata = {
+        ...config,
+        category: category as string,
+        device,
+        componentPath: componentPath,
+        componentLoader, // 添加组件加载器
+        stylePath: stylePath ?? undefined,
+        configPath: configPath,
+        lastModified: Date.now(),
+        isBuiltIn,
+      }
 
       // 添加到索引
       this.addToIndex(metadata)
@@ -627,12 +535,12 @@ export class TemplateScanner {
       }
       catch (error) {
         console.error('启动文件监听失败:', error)
-      this.callbacks.onScanError?.({
-        type: 'SCAN_ERROR',
-        message: (error as Error).message,
-        filePath: this.options.templatesDir,
-        details: error,
-      })
+        this.callbacks.onScanError?.({
+          type: 'SCAN_ERROR',
+          message: (error as Error).message,
+          filePath: this.options.templatesDir,
+          details: error,
+        })
       }
     }
   }

@@ -38,6 +38,7 @@ import { getOutputDirs } from '../utils/glob'
 import { promises as fs } from 'fs'
 import path from 'path'
 import { getGlobalMemoryManager } from '../utils/memory-manager'
+import { PackageUpdater } from '../utils/package-updater'
 
 /**
  * 库构建器主控制器类
@@ -197,6 +198,9 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
       this.currentStats = buildResult.stats
       this.currentMetrics = buildResult.performance
 
+      // 自动更新 package.json（如果启用）
+      await this.updatePackageJsonIfEnabled(mergedConfig, projectRoot)
+
       // 发出构建结束事件
       this.emit('build:end', {
         result: buildResult,
@@ -310,7 +314,7 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
    */
   private registerCleanup(): void {
     const resourceManager = this.memoryManager.getResourceManager()
-    
+
     // 注册自身的清理函数
     resourceManager.register('LibraryBuilder', {
       cleanup: async () => await this.cleanup(),
@@ -640,11 +644,11 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
 
     for (const dir of dirs) {
       const fullPath = path.isAbsolute(dir) ? dir : path.resolve(rootDir, dir)
-      
+
       try {
         // 检查目录是否存在
         const exists = await fs.access(fullPath).then(() => true).catch(() => false)
-        
+
         if (exists) {
           this.logger.info(`清理输出目录: ${fullPath}`)
           await fs.rm(fullPath, { recursive: true, force: true })
@@ -747,6 +751,88 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
     } catch (error) {
       this.logger.error('打包后验证失败:', error)
       throw error
+    }
+  }
+
+  /**
+   * 自动更新 package.json（如果启用）
+   */
+  private async updatePackageJsonIfEnabled(config: BuilderConfig, projectRoot: string): Promise<void> {
+    try {
+      // 检查是否启用了 package.json 自动更新
+      const packageUpdateConfig = (config as any).packageUpdate
+      if (!packageUpdateConfig || packageUpdateConfig.enabled === false) {
+        return
+      }
+
+      this.logger.info('开始自动更新 package.json...')
+
+      // 获取输出目录配置
+      const outputDirs = this.getOutputDirsFromConfig(config)
+
+      // 创建 PackageUpdater 实例
+      const packageUpdater = new PackageUpdater({
+        projectRoot,
+        srcDir: packageUpdateConfig.srcDir || 'src',
+        outputDirs,
+        autoExports: packageUpdateConfig.autoExports !== false,
+        updateEntryPoints: packageUpdateConfig.updateEntryPoints !== false,
+        updateFiles: packageUpdateConfig.updateFiles !== false,
+        customExports: packageUpdateConfig.customExports || {},
+        logger: this.logger
+      })
+
+      // 执行更新
+      await packageUpdater.update()
+
+    } catch (error) {
+      this.logger.warn('package.json 自动更新失败:', error)
+      // 不抛出错误，避免影响构建流程
+    }
+  }
+
+  /**
+   * 从配置中获取输出目录配置
+   */
+  private getOutputDirsFromConfig(config: BuilderConfig): any {
+    const output = config.output || {}
+    const outputDirs: any = {}
+
+    // 处理不同的输出配置格式
+    if (Array.isArray(output)) {
+      // 数组格式：[{ format: 'esm', dir: 'es' }, { format: 'cjs', dir: 'lib' }]
+      for (const item of output) {
+        if (item.format === 'esm' || item.format === 'es') {
+          outputDirs.esm = item.dir || 'es'
+          outputDirs.types = item.dir || 'es' // 默认类型声明与 ESM 同目录
+        } else if (item.format === 'cjs' || item.format === 'commonjs') {
+          outputDirs.cjs = item.dir || 'lib'
+        } else if (item.format === 'umd' || item.format === 'iife') {
+          outputDirs.umd = item.dir || 'dist'
+        }
+      }
+    } else if (typeof output === 'object') {
+      // 对象格式：{ esm: { dir: 'es' }, cjs: { dir: 'lib' } }
+      if (output.esm && typeof output.esm === 'object') {
+        outputDirs.esm = output.esm.dir || 'es'
+        outputDirs.types = output.esm.dir || 'es'
+      }
+      if (output.cjs && typeof output.cjs === 'object') {
+        outputDirs.cjs = output.cjs.dir || 'lib'
+      }
+      if (output.umd && typeof output.umd === 'object') {
+        outputDirs.umd = output.umd.dir || 'dist'
+      }
+      // 注意：不再使用通用的 output.dir，因为它会覆盖格式特定的目录配置
+      // 多格式构建应该使用各自的专用目录，而不是单一目录
+    }
+
+    // 设置默认值 - 使用标准的多格式目录结构
+    return {
+      esm: outputDirs.esm || 'es',
+      cjs: outputDirs.cjs || 'lib',
+      umd: outputDirs.umd || 'dist',
+      types: outputDirs.types || outputDirs.esm || 'es'
     }
   }
 }

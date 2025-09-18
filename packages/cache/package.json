@@ -1,8 +1,13 @@
 {
   "name": "@ldesign/cache",
-  "type": "module",
   "version": "0.1.0",
   "description": "LDesign cache package",
+  "keywords": [
+    "ldesign",
+    "vue3",
+    "typescript",
+    "cache"
+  ],
   "author": "LDesign Team",
   "license": "MIT",
   "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/cache#readme",
@@ -14,12 +19,7 @@
   "bugs": {
     "url": "https://github.com/ldesign/ldesign/issues"
   },
-  "keywords": [
-    "ldesign",
-    "vue3",
-    "typescript",
-    "cache"
-  ],
+  "type": "module",
   "sideEffects": false,
   "exports": {
     ".": {
@@ -27,28 +27,71 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
-    "./index.ts": {
-      "types": "./es/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.cjs"
+    "./core/*": {
+      "types": "./es/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.cjs"
+    },
+    "./engine/*": {
+      "types": "./es/engine/*.d.ts",
+      "import": "./es/engine/*.js",
+      "require": "./lib/engine/*.cjs"
+    },
+    "./engines/*": {
+      "types": "./es/engines/*.d.ts",
+      "import": "./es/engines/*.js",
+      "require": "./lib/engines/*.cjs"
+    },
+    "./security/*": {
+      "types": "./es/security/*.d.ts",
+      "import": "./es/security/*.js",
+      "require": "./lib/security/*.cjs"
+    },
+    "./strategies/*": {
+      "types": "./es/strategies/*.d.ts",
+      "import": "./es/strategies/*.js",
+      "require": "./lib/strategies/*.cjs"
+    },
+    "./types": {
+      "types": "./es/types/index.d.ts",
+      "import": "./es/types/index.js",
+      "require": "./lib/types/index.cjs"
+    },
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
+    },
+    "./utils": {
+      "types": "./es/utils/index.d.ts",
+      "import": "./es/utils/index.js",
+      "require": "./lib/utils/index.cjs"
+    },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
     },
     "./vue": {
       "types": "./es/vue/index.d.ts",
       "import": "./es/vue/index.js",
       "require": "./lib/vue/index.cjs"
     },
-    "./vue/index.ts": {
-      "types": "./es/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./lib/vue/index.cjs"
+    "./vue/*": {
+      "types": "./es/vue/*.d.ts",
+      "import": "./es/vue/*.js",
+      "require": "./lib/vue/*.cjs"
     }
   },
-  "main": "lib/index.cjs",
-  "module": "es/index.js",
-  "types": "es/index.d.ts",
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
   "files": [
-    "CHANGELOG.md",
     "README.md",
+    "LICENSE",
+    "package.json",
     "es",
     "lib",
     "dist"
@@ -94,11 +137,6 @@
   "peerDependencies": {
     "vue": "^3.3.0"
   },
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    }
-  },
   "devDependencies": {
     "@antfu/eslint-config": "^3.0.0",
     "@ldesign/builder": "workspace:*",
@@ -134,5 +172,10 @@
       "limit": "50 KB",
       "environment": "node"
     }
-  ]
+  ],
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  }
 }

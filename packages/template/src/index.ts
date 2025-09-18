@@ -32,5 +32,9 @@ export * from './types'
 // 导出工具函数
 export * from './utils'
 
+
+// 导出简化版模板扫描器
+export { simpleTemplateScanner } from './utils/template-scanner-simple'
+
 // 版本信息
 export const version = '1.0.0'

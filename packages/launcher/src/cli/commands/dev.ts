@@ -298,25 +298,29 @@ export class DevCommand implements CliCommandDefinition {
       const serverInfo = launcher.getServerInfo()
       if (serverInfo) {
         const localUrl = serverInfo.url || ''
-        const hasNetwork = serverInfo.host === '0.0.0.0'
+        const localIP = getLocalIP()
 
-        // 构建网络 URL：如果 host 是 0.0.0.0，则替换为本地 IP
+        // 构建网络 URL：总是尝试生成网络地址
         let networkUrl: string | null = null
-        if (hasNetwork) {
-          const localIP = getLocalIP()
-          // 如果 localUrl 包含 0.0.0.0，直接替换
-          if (localUrl.includes('0.0.0.0')) {
-            networkUrl = localUrl.replace('0.0.0.0', localIP)
-          } else {
-            // 否则，从 localUrl 中提取协议和端口，构建网络 URL
-            try {
-              const url = new URL(localUrl)
+
+        // 如果 localUrl 包含 0.0.0.0，直接替换
+        if (localUrl.includes('0.0.0.0')) {
+          networkUrl = localUrl.replace('0.0.0.0', localIP)
+        } else {
+          // 否则，从 localUrl 中提取协议和端口，构建网络 URL
+          try {
+            const url = new URL(localUrl)
+            // 如果是 localhost 或 127.0.0.1，替换为实际 IP
+            if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
               networkUrl = `${url.protocol}//${localIP}:${url.port}${url.pathname}`
-            } catch {
-              // 如果解析失败，手动构建
-              const protocol = serverInfo.https ? 'https' : 'http'
-              networkUrl = `${protocol}://${localIP}:${serverInfo.port}/`
+            } else {
+              // 如果已经是 IP 地址，直接使用
+              networkUrl = localUrl
             }
+          } catch {
+            // 如果解析失败，手动构建
+            const protocol = serverInfo.https ? 'https' : 'http'
+            networkUrl = `${protocol}://${localIP}:${serverInfo.port}/`
           }
         }
 

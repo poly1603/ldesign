@@ -126,6 +126,9 @@ export interface BuilderConfig {
 
   /** 打包后验证配置 */
   postBuildValidation?: PostBuildValidationConfig
+
+  /** Package.json 自动更新配置 */
+  packageUpdate?: PackageUpdateConfig
 }
 
 /**
@@ -480,6 +483,41 @@ export interface BuildInfoConfig {
 
   /** 自定义构建信息模板 */
   template?: string
+}
+
+/**
+ * Package.json 自动更新配置
+ */
+export interface PackageUpdateConfig {
+  /** 是否启用 package.json 自动更新 */
+  enabled?: boolean
+
+  /** 源码目录，默认为 'src' */
+  srcDir?: string
+
+  /** 输出目录配置 */
+  outputDirs?: {
+    /** ESM 输出目录，默认为 'es' */
+    esm?: string
+    /** CJS 输出目录，默认为 'lib' */
+    cjs?: string
+    /** UMD 输出目录，默认为 'dist' */
+    umd?: string
+    /** 类型声明目录，默认为 'types' 或与 esm 相同 */
+    types?: string
+  }
+
+  /** 是否启用自动 exports 生成，默认为 true */
+  autoExports?: boolean
+
+  /** 是否更新 main/module/types 字段，默认为 true */
+  updateEntryPoints?: boolean
+
+  /** 是否更新 files 字段，默认为 true */
+  updateFiles?: boolean
+
+  /** 自定义 exports 配置 */
+  customExports?: Record<string, any>
 }
 
 /**

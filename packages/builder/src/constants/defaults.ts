@@ -288,6 +288,22 @@ export const DEFAULT_BUILDER_CONFIG: Omit<
     globals: {},
     formats: ['esm', 'cjs'],
     splitting: false
+  },
+
+  // Package.json 自动更新配置
+  packageUpdate: {
+    enabled: true,
+    srcDir: 'src',
+    outputDirs: {
+      esm: 'es',
+      cjs: 'lib',
+      umd: 'dist',
+      types: 'es'
+    },
+    autoExports: true,
+    updateEntryPoints: true,
+    updateFiles: true,
+    customExports: {}
   }
 }
 

@@ -3,16 +3,15 @@
  */
 
 import type { DeviceType, TemplateMetadata } from '../types/template'
-import { onMounted, onUnmounted, ref, type Ref } from 'vue'
-import { TemplateScanner } from '../scanner'
+import { onMounted, ref, type Ref } from 'vue'
+import { simpleTemplateScanner } from '../utils/template-scanner-simple'
 
 /**
  * 扫描器选项
  */
 interface UseTemplateScannerOptions {
-  templatesDir?: string
-  enableCache?: boolean
-  enableHMR?: boolean
+  category?: string
+  device?: DeviceType
 }
 
 /**
@@ -36,42 +35,26 @@ export function useTemplateScanner(options: UseTemplateScannerOptions = {}): Use
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  let scanner: TemplateScanner | null = null
-
-  /**
-   * 初始化扫描器
-   */
-  const initScanner = () => {
-    scanner = new TemplateScanner({
-      templatesDir: options.templatesDir || 'src/templates',
-      enableCache: options.enableCache ?? true,
-      enableHMR: options.enableHMR ?? import.meta.env.DEV,
-    })
-  }
-
   /**
    * 执行扫描
    */
   const scan = async () => {
-    if (!scanner) {
-      initScanner()
-    }
-
     loading.value = true
     error.value = null
 
     try {
-      const result = await scanner!.scan()
-      // 展平三级索引为模板元数据数组
-      const flat: TemplateMetadata[] = []
-      for (const categoryMap of result.templates.values()) {
-        for (const deviceMap of categoryMap.values()) {
-          for (const meta of deviceMap.values()) {
-            flat.push(meta)
-          }
-        }
+      // 使用简化版扫描器获取模板
+      let result: TemplateMetadata[]
+      
+      if (options.category && options.device) {
+        // 获取指定分类和设备的模板
+        result = await simpleTemplateScanner.getTemplates(options.category, options.device)
+      } else {
+        // 获取所有模板
+        result = await simpleTemplateScanner.getAllTemplates()
       }
-      templates.value = flat
+      
+      templates.value = result
     }
     catch (err) {
       error.value = err instanceof Error ? err.message : '扫描失败'
@@ -111,12 +94,6 @@ export function useTemplateScanner(options: UseTemplateScannerOptions = {}): Use
 
   onMounted(() => {
     scan()
-  })
-
-  onUnmounted(() => {
-    if (scanner) {
-      scanner.destroy()
-    }
   })
 
   return {

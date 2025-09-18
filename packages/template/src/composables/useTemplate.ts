@@ -14,29 +14,11 @@ import type {
 } from '../types/template'
 
 import { HookTemplateRenderer } from '../components/TemplateTransition'
-import { TemplateScanner } from '../scanner'
 import { componentCache } from '../utils/cache'
 import { componentLoader } from '../utils/loader'
 import { useDeviceDetection } from './useDeviceDetection'
+import { simpleTemplateScanner } from '../utils/template-scanner-simple'
 
-/**
- * 全局模板扫描器实例
- */
-let globalScanner: TemplateScanner | null = null
-
-/**
- * 获取或创建全局扫描器
- */
-function getGlobalScanner(): TemplateScanner {
-  if (!globalScanner) {
-    globalScanner = new TemplateScanner({
-      templatesDir: 'src/templates',
-      enableCache: true,
-      enableHMR: import.meta.env.DEV,
-    })
-  }
-  return globalScanner
-}
 
 /**
  * 简化版模板Hook - 返回可直接渲染的组件
@@ -81,9 +63,6 @@ export function useTemplate(options: UseTemplateOptions = {}) {
   // 当前设备类型
   const deviceType = computed(() => initialDevice || detectedDevice.value)
 
-  // 扫描器实例
-  const scanner = getGlobalScanner()
-
   // 选择持久化
   const SELECTION_STORAGE_KEY = 'ldesign:templateSelection'
   type SelectionMap = Record<string, Partial<Record<DeviceType, string>>>
@@ -119,15 +98,8 @@ export function useTemplate(options: UseTemplateOptions = {}) {
       loading.value = true
       error.value = null
 
-      // 扫描模板
-      const scanResult = await scanner.scan()
-
-      if (scanResult.errors.length > 0) {
-        console.warn('Template scan errors:', scanResult.errors)
-      }
-
       // 获取当前分类和设备的模板列表
-      const templates = scanner.getTemplates(category || 'default', deviceType.value)
+      const templates = await simpleTemplateScanner.getTemplates(category || 'default', deviceType.value)
       availableTemplates.value = templates
 
       // 如果没有当前模板或当前模板不在列表中，选择模板
@@ -180,28 +152,27 @@ export function useTemplate(options: UseTemplateOptions = {}) {
         throw new Error(`Template not found: ${templateName}`)
       }
 
-      // 检查缓存
-      if (enableCache) {
-        const cachedComponent = componentCache.getComponent(
-          template.category,
-          template.device,
-          template.name,
-        )
-        if (cachedComponent) {
-          currentTemplate.value = template
-          // 使用 markRaw 防止组件被包装成响应式对象
-          currentComponent.value = markRaw(cachedComponent)
-          loading.value = false
-          return
-        }
-      }
+      // 暂时禁用缓存，因为异步组件的缓存应该由 Vue 自己处理
+      // 我们这里缓存异步组件定义会导致问题
+      console.log(`[useTemplate] Skipping cache for ${template.name} - let Vue handle async component caching`)
 
-      // 加载组件
-      const loadResult = await componentLoader.loadComponent(template)
+      // 使用简化版扫描器获取异步组件
+      console.log(`[useTemplate] Loading component: category=${template.category}, device=${template.device}, name=${template.name}`)
+      const asyncComponent = simpleTemplateScanner.getAsyncComponent(
+        template.category,
+        template.device,
+        template.name
+      )
+      console.log(`[useTemplate] Got async component:`, asyncComponent)
+
+      if (!asyncComponent) {
+        console.error(`[useTemplate] Failed to create async component for: ${template.category}/${template.device}/${template.name}`)
+        throw new Error(`Failed to create async component for template: ${templateName}`)
+      }
 
       currentTemplate.value = template
       // 使用 markRaw 防止组件被包装成响应式对象
-      currentComponent.value = markRaw(loadResult.component)
+      currentComponent.value = markRaw(asyncComponent)
 
       // 保存选择到缓存
       saveSelection(category || 'default', deviceType.value, template.name)
@@ -452,11 +423,8 @@ export function useTemplateList(category: string, device?: DeviceType | Ref<Devi
       loading.value = true
       error.value = null
 
-      const scanner = getGlobalScanner()
-      await scanner.scan()
-
       const deviceVal = currentDevice.value as DeviceType
-      const list = scanner.getTemplates(category, deviceVal)
+      const list = await simpleTemplateScanner.getTemplates(category, deviceVal)
 
       // 若扫描结果为空，退回到占位模板，避免空白
       availableTemplates.value = list.length > 0

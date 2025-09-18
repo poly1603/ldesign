@@ -89,7 +89,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
 
     try {
       const rollup = await this.loadRollup()
-      
+
       // 验证配置
       const configValidation = await this.validateConfig(config)
       if (!configValidation.valid) {
@@ -182,19 +182,19 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
       } else {
         // 单配置构建
         const bundle = await rollup.rollup(rollupConfig)
-        
+
         const outputs = Array.isArray(rollupConfig.output)
           ? rollupConfig.output
           : [rollupConfig.output]
 
         for (const outputConfig of outputs) {
           const { output } = await bundle.generate(outputConfig)
-          
+
           // 验证输出
           await this.validateOutputs(output, outputConfig)
-          
+
           results.push(...output)
-          
+
           // 写入文件
           await bundle.write(outputConfig)
         }
@@ -283,7 +283,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
       const buildWatcher = {
         patterns: watchConfig.watch.include,
         watching: true,
-        
+
         async close() {
           await watcher.close()
         },
@@ -297,7 +297,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
               console.error('Watcher event listener error:', error)
             }
           }
-          
+
           watcher.on(event, wrappedListener)
           return this
         },
@@ -386,7 +386,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
     // 处理输出配置
     if (config.output) {
       const outputConfigs = await this.processOutputConfig(config)
-      
+
       if (outputConfigs.length > 1) {
         // 多格式输出
         this.multiConfigs = outputConfigs.map(outputConfig => ({
@@ -394,7 +394,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
           plugins: [...basePlugins, ...(outputConfig.plugins || [])],
           output: outputConfig
         }))
-        
+
         return this.multiConfigs[0]
       } else {
         // 单格式输出
@@ -424,8 +424,8 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
    */
   private async processOutputConfig(config: UnifiedConfig): Promise<FormatConfig[]> {
     const outputConfig = config.output!
-    const formats = Array.isArray(outputConfig.format) 
-      ? outputConfig.format 
+    const formats = Array.isArray(outputConfig.format)
+      ? outputConfig.format
       : [outputConfig.format || 'esm']
 
     const configs: FormatConfig[] = []
@@ -564,17 +564,17 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
       if (config.define || config.env) {
         const replace = await import('@rollup/plugin-replace')
         const replacements: Record<string, string> = {}
-        
+
         if (config.define) {
           Object.assign(replacements, config.define)
         }
-        
+
         if (config.env) {
           Object.keys(config.env).forEach(key => {
             replacements[`process.env.${key}`] = JSON.stringify(config.env![key])
           })
         }
-        
+
         plugins.push(replace.default({
           preventAssignment: true,
           values: replacements
@@ -649,11 +649,11 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
       if (!plugin.name) {
         warnings.push('插件缺少名称')
       }
-      
+
       // 检查必要的钩子
       const hasHooks = ['buildStart', 'buildEnd', 'renderChunk', 'generateBundle', 'transform', 'load', 'resolveId']
         .some(hook => typeof plugin[hook] === 'function')
-      
+
       if (!hasHooks && !plugin.plugin) {
         warnings.push('插件没有实现任何钩子')
       }
@@ -669,11 +669,11 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
     if (!config.input) {
       throw new Error('配置缺少入口文件')
     }
-    
+
     if (!config.output) {
       throw new Error('配置缺少输出设置')
     }
-    
+
     // 检查输出目录权限
     const outputDir = config.output.dir || path.dirname(config.output.file)
     try {
@@ -688,14 +688,14 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
    */
   private async generateAndWriteOutputs(bundle: any, config: any): Promise<any[]> {
     const outputs: any[] = []
-    
+
     try {
       // 生成输出
       const { output } = await bundle.generate(config.output)
-      
+
       // 验证输出
       await this.validateOutputs(output, config.output)
-      
+
       // 增强输出
       for (const chunk of output) {
         if (chunk.type === 'chunk') {
@@ -705,16 +705,16 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
           }
         }
       }
-      
+
       outputs.push(...output)
-      
+
       // 写入文件
       await bundle.write(config.output)
-      
+
     } catch (error) {
       throw new Error(`生成输出失败: ${(error as Error).message}`)
     }
-    
+
     return outputs
   }
 
@@ -728,7 +728,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
       if (size === 0) {
         this.logger.warn(`输出文件 ${output.fileName} 为空`)
       }
-      
+
       // 检查必要的导出
       if (output.type === 'chunk' && config.format === 'cjs') {
         if (!output.code.includes('exports.') && !output.code.includes('module.exports')) {
@@ -743,15 +743,15 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
    */
   private async enhanceOutputs(outputs: any[], metadata: Map<string, any>): Promise<any[]> {
     const enhanced = []
-    
+
     for (const output of outputs) {
       const meta = metadata.get(output.fileName) || {}
       const size = output.type === 'chunk' ? output.code.length : output.source.length
       const source = output.type === 'chunk' ? output.code : output.source
-      
+
       // 计算哈希
       const hash = createHash('md5').update(source).digest('hex')
-      
+
       // 计算 gzip 大小
       let gzipSize = 0
       try {
@@ -760,7 +760,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
       } catch (error) {
         this.logger.debug('无法计算 gzip 大小:', error)
       }
-      
+
       enhanced.push({
         fileName: output.fileName,
         size,
@@ -778,7 +778,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
         exports: output.exports || []
       })
     }
-    
+
     return enhanced
   }
 
@@ -788,14 +788,14 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
   private async generateBuildStats(outputs: any[], duration: number): Promise<any> {
     const totalSize = outputs.reduce((sum, o) => sum + o.size, 0)
     const totalGzipSize = outputs.reduce((sum, o) => sum + o.gzipSize, 0)
-    
+
     const byFormat: Record<string, any> = {}
     const formats = ['esm', 'cjs', 'umd', 'iife', 'css']
-    
+
     for (const format of formats) {
-      const formatOutputs = outputs.filter(o => o.format === format || 
+      const formatOutputs = outputs.filter(o => o.format === format ||
         (format === 'css' && o.fileName.endsWith('.css')))
-      
+
       byFormat[format] = {
         fileCount: formatOutputs.length,
         size: {
@@ -812,11 +812,11 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
         }
       }
     }
-    
+
     // 分析模块
     const modules = new Set<string>()
     const externalModules = new Set<string>()
-    
+
     for (const output of outputs) {
       if (output.modules) {
         Object.keys(output.modules).forEach(m => modules.add(m))
@@ -825,7 +825,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
         output.imports.forEach((i: string) => externalModules.add(i))
       }
     }
-    
+
     return {
       buildTime: duration,
       fileCount: outputs.length,
@@ -868,17 +868,17 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
     const errors: string[] = []
     const warnings: string[] = []
     let success = true
-    
+
     // 检查是否有输出
     if (outputs.length === 0) {
       errors.push('没有生成任何输出文件')
       success = false
     }
-    
+
     // 检查必要的文件
     if (config.output?.format) {
       const formats = Array.isArray(config.output.format) ? config.output.format : [config.output.format]
-      
+
       for (const format of formats) {
         const hasFormat = outputs.some(o => o.format === this.mapFormat(format))
         if (!hasFormat) {
@@ -886,13 +886,13 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
         }
       }
     }
-    
+
     // 检查文件完整性
     for (const output of outputs) {
       if (output.size === 0) {
         warnings.push(`文件 ${output.fileName} 为空`)
       }
-      
+
       // 检查源码映射
       if (config.output?.sourcemap && !output.fileName.endsWith('.map')) {
         const mapFile = `${output.fileName}.map`
@@ -902,7 +902,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
         }
       }
     }
-    
+
     return {
       success,
       errors,
@@ -917,7 +917,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
     // 添加更多上下文信息
     const enhancedError = new Error(error.message)
     enhancedError.stack = error.stack
-    
+
     // 添加建议
     if (error.message.includes('Could not resolve')) {
       (enhancedError as any).suggestion = '请检查模块路径或安装缺失的依赖'
@@ -926,7 +926,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
     } else if (error.message.includes('ENOENT')) {
       (enhancedError as any).suggestion = '文件或目录不存在，请检查路径'
     }
-    
+
     return enhancedError
   }
 
@@ -935,7 +935,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
    */
   private async getFormatSpecificPlugins(format: string, config: UnifiedConfig): Promise<any[]> {
     const plugins: any[] = []
-    
+
     // TypeScript 声明文件插件
     if (format === 'esm' && await this.hasTypeScriptFiles(config)) {
       try {
@@ -948,7 +948,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
         this.logger.debug('rollup-plugin-dts 不可用')
       }
     }
-    
+
     // CSS 处理插件
     if (await this.hasStyleFiles(config)) {
       try {
@@ -967,7 +967,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
         this.logger.debug('样式处理插件不可用')
       }
     }
-    
+
     return plugins
   }
 
@@ -976,27 +976,27 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
    */
   private processExternal(external: any): any {
     if (!external) return []
-    
+
     if (Array.isArray(external)) {
       return external
     }
-    
+
     if (typeof external === 'function') {
       return external
     }
-    
+
     if (external instanceof RegExp) {
       return (id: string) => external.test(id)
     }
-    
+
     if (typeof external === 'string') {
       return [external]
     }
-    
+
     if (typeof external === 'object') {
       return Object.keys(external)
     }
-    
+
     return []
   }
 
@@ -1011,14 +1011,14 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
     if (config.output?.fileName) {
       return config.output.fileName as string
     }
-    
+
     switch (format) {
       case 'esm':
         return '[name].js'
       case 'cjs':
         return '[name].cjs'
       case 'umd':
-        return '[name].umd.js'
+        return '[name].js'
       case 'iife':
         return '[name].iife.js'
       default:
@@ -1033,7 +1033,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
     if (config.output?.chunkFileNames) {
       return config.output.chunkFileNames
     }
-    
+
     switch (format) {
       case 'esm':
         return 'chunks/[name]-[hash].js'
@@ -1050,19 +1050,19 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
   private async createEnhancedUMDConfig(config: UnifiedConfig, format: string): Promise<FormatConfig> {
     const name = config.output?.name || 'Library'
     const globals = config.output?.globals || {}
-    
+
     // 创建单入口包装器
     const tempEntry = path.join(process.cwd(), '.temp', `umd-entry-${Date.now()}.js`)
     await fs.ensureDir(path.dirname(tempEntry))
-    
+
     // 生成包装器代码
     const entries = Array.isArray(config.input) ? config.input : [config.input]
-    const imports = entries.map((entry, index) => 
+    const imports = entries.map((entry, index) =>
       `export * as module${index} from '${entry}'`
     ).join('\n')
-    
+
     await fs.writeFile(tempEntry, imports)
-    
+
     return {
       format: format === 'umd' ? 'umd' : 'iife',
       dir: config.output?.dir || 'dist',
@@ -1105,14 +1105,14 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
       '../tsconfig.json',
       '../../tsconfig.json'
     ]
-    
+
     for (const candidate of candidates) {
       const fullPath = path.join(process.cwd(), candidate)
       if (await fs.pathExists(fullPath)) {
         return fullPath
       }
     }
-    
+
     return undefined
   }
 
@@ -1152,11 +1152,11 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
     if (Array.isArray(input)) {
       return input.length > 1
     }
-    
+
     if (typeof input === 'object' && input !== null) {
       return Object.keys(input).length > 1
     }
-    
+
     return false
   }
 
@@ -1174,7 +1174,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
       'amd': 'amd',
       'system': 'system'
     }
-    
+
     return formatMap[format] || format
   }
 
@@ -1192,9 +1192,9 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
           transformedPlugins.push(this.pluginCache.get(cacheKey))
           continue
         }
-        
+
         let actualPlugin
-        
+
         if (plugin.plugin && typeof plugin.plugin === 'function') {
           actualPlugin = await plugin.plugin()
         } else if (plugin.rollup) {
@@ -1202,10 +1202,10 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
         } else {
           actualPlugin = plugin
         }
-        
+
         this.pluginCache.set(cacheKey, actualPlugin)
         transformedPlugins.push(actualPlugin)
-        
+
       } catch (error) {
         this.logger.warn(`插件 ${plugin.name || 'unknown'} 加载失败:`, (error as Error).message)
       }
@@ -1219,7 +1219,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
    */
   private async getAcornPlugins(): Promise<any[]> {
     const plugins = []
-    
+
     try {
       // JSX 支持
       const jsx = await import('acorn-jsx')
@@ -1227,7 +1227,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
     } catch (error) {
       this.logger.debug('acorn-jsx 不可用')
     }
-    
+
     try {
       // TypeScript 支持
       const ts = await import('acorn-typescript')
@@ -1235,7 +1235,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
     } catch (error) {
       this.logger.debug('acorn-typescript 不可用')
     }
-    
+
     return plugins
   }
 
@@ -1246,16 +1246,16 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
     if (this.rollupInstance) {
       return this.rollupInstance
     }
-    
+
     try {
       const rollup = await import('rollup')
       this.rollupInstance = rollup
-      
+
       // 获取版本
       if (rollup.VERSION) {
         (this as any).version = rollup.VERSION
       }
-      
+
       return rollup
     } catch (error) {
       throw new BuilderError(
@@ -1292,7 +1292,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
     this.outputCache.clear()
     this.multiConfigs = undefined
     this.rollupInstance = null
-    
+
     this.logger.debug('增强版 Rollup 适配器已清理')
   }
 
