@@ -13,3 +13,5 @@ coverage
 *.min.js
 *.map
 .augment_cache
+dist-staging
+dist-test

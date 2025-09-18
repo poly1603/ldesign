@@ -33,7 +33,7 @@ const isProd = process.env.NODE_ENV === 'production'
 const config: AppConfig = {
   // 基础信息
   appName: 'LDesign App - ⚡ 实时配置更新! [测试热更新]',
-  version: '1.0.0',
+  version: '2.0.0',
   description: 'LDesign 设计系统演示应用 - 展示完整的组件库和工具集',
   author: 'LDesign Team',
   license: 'MIT',

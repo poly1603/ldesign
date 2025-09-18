@@ -9,9 +9,22 @@ export default defineConfig({
     alias: {
       enabled: true,
       stages: ['dev'], // 只在 dev 阶段启用别名，build 和 preview 时使用构建产物
-      ldesign: true,
-      polyfills: true,
-      presets: ['ldesign', 'polyfills', 'common']
+      ldesign: true, // 启用内置的 @ldesign 包别名
+      polyfills: true, // 启用 Node.js polyfill 别名
+      presets: ['ldesign', 'polyfills', 'common'], // 使用预设别名
+
+      // 自定义别名映射 - 用户可以根据需要添加或修改
+      custom: [
+        // 示例：项目根目录别名
+        { find: '@', replacement: './src' },
+
+        // 示例：自定义 @ldesign 包别名（如果需要覆盖内置的）
+        // { find: '@ldesign/http', replacement: '../packages/http/src' },
+        // { find: '@ldesign/api', replacement: '../packages/api/src' },
+        // { find: '@ldesign/ui', replacement: '../packages/ui/src' },
+
+        // 用户可以在这里添加更多自定义别名...
+      ]
     }
   },
 

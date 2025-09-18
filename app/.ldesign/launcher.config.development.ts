@@ -10,9 +10,14 @@
 import { defineConfig } from '@ldesign/launcher'
 
 export default defineConfig({
-  // 开发环境服务器配置
+  // 继承基础配置中的 launcher 预设和 alias 配置
+  launcher: {
+    preset: 'ldesign'
+  },
+
+  // 开发环境服务器配置 - 测试通知功能 v3
   server: {
-    port: 3355,
+    port: 3340, // 测试重启功能 - 终极测试！
     open: true, // 开发环境自动打开浏览器
     host: '0.0.0.0' // 允许外部访问
   },

@@ -9,10 +9,13 @@
       <div class="card">
         <div class="card-title">Summary</div>
         <ul class="kv">
-          <li><span>appName</span><code>{{ cfg.appName }}</code></li>
-          <li><span>version</span><code>{{ cfg.version }}</code></li>
+          <li><span>appName</span><code>{{ cfg.app.name }}</code></li>
+          <li><span>version</span><code>{{ cfg.app.version }}</code></li>
           <li><span>api.baseUrl</span><code>{{ cfg.api?.baseUrl }}</code></li>
-          <li><span>theme.primaryColor</span><code><span class="color" :style="{ background: cfg.theme?.primaryColor }"></span>{{ cfg.theme?.primaryColor }}</code></li>
+          <li>
+            <span>theme.primaryColor</span><code><span class="color" :style="{ background: cfg.theme?.primaryColor }"></span>{{ cfg.theme?.primaryColor }}</code>
+          </li>
+          <li><span>名称</span><code>{{ cfg.app.title }}</code></li>
         </ul>
       </div>
 
@@ -72,12 +75,14 @@ watchEffect(() => {
   padding: 12px;
   background: var(--ldesign-bg-color-container);
 }
+
 .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
 }
+
 .refresh {
   padding: 6px 10px;
   border: 1px solid var(--ldesign-brand-color);
@@ -85,26 +90,31 @@ watchEffect(() => {
   color: #fff;
   border-radius: 6px;
 }
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 12px;
 }
+
 .card {
   border: 1px solid var(--ldesign-border-color);
   border-radius: 8px;
   background: var(--ldesign-bg-color-component);
   padding: 10px;
 }
+
 .card-title {
   font-weight: 600;
   margin-bottom: 8px;
 }
+
 .kv {
   list-style: none;
   padding: 0;
   margin: 0;
 }
+
 .kv li {
   display: flex;
   align-items: center;
@@ -113,18 +123,22 @@ watchEffect(() => {
   padding: 6px 0;
   border-bottom: 1px dashed var(--ldesign-border-color);
 }
+
 .kv li:last-child {
   border-bottom: none;
 }
+
 .kv span {
   color: var(--ldesign-text-color-secondary);
 }
+
 .kv code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  background: rgba(0,0,0,.04);
+  background: rgba(0, 0, 0, .04);
   padding: 2px 6px;
   border-radius: 4px;
 }
+
 .color {
   display: inline-block;
   width: 12px;
@@ -133,10 +147,10 @@ watchEffect(() => {
   margin-right: 6px;
   vertical-align: -2px;
 }
+
 .json {
   margin: 0;
   max-height: 260px;
   overflow: auto;
 }
 </style>
-
