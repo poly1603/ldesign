@@ -15,20 +15,8 @@ export * from './dom'
 // 格式化工具
 export * from './format'
 
-// 验证工具
-export * from './validation'
-
-// 性能工具
-export * from './performance'
-
-// 存储工具
-export * from './storage'
-
-// 网络工具
-export * from './network'
-
-// 数学工具
-export * from './math'
+// 通用工具
+export * from './common'
 
 // 通用工具
 export * from './common'

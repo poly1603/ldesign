@@ -243,6 +243,24 @@ export interface GestureEventData {
 }
 
 /**
+ * 窗口大小变化事件数据
+ */
+export interface ResizeEventData {
+  /** 窗口宽度 */
+  width: number
+  /** 窗口高度 */
+  height: number
+}
+
+/**
+ * 屏幕方向变化事件数据
+ */
+export interface OrientationChangeEventData {
+  /** 屏幕方向角度 */
+  orientation: number
+}
+
+/**
  * 事件发射器接口
  */
 export interface IEventEmitter {

@@ -31,6 +31,8 @@ export class VideoPlayer extends EventEmitter implements IVideoPlayer {
   private _pluginManager: PluginManager
   private _initialized = false
   private _destroyed = false
+  private handleResize?: () => void
+  private handleOrientationChange?: () => void
 
   constructor(options: PlayerOptions) {
     super()
@@ -172,6 +174,18 @@ export class VideoPlayer extends EventEmitter implements IVideoPlayer {
     this.unbindVideoEvents()
     this.removeAllListeners()
 
+    // 移除响应式事件监听
+    if (this.handleResize) {
+      window.removeEventListener('resize', this.handleResize)
+    }
+    
+    if (this.handleOrientationChange && 'orientation' in screen) {
+      screen.orientation.removeEventListener('change', this.handleOrientationChange)
+    }
+
+    // 销毁插件
+    this._pluginManager.destroy()
+
     // 清理视频元素
     if (this._videoElement) {
       if (this._videoElement.parentNode) {
@@ -277,16 +291,66 @@ export class VideoPlayer extends EventEmitter implements IVideoPlayer {
     }
 
     try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen()
+      const isFullscreen = this.isFullscreen()
+      
+      if (isFullscreen) {
+        await this.exitFullscreen()
+        this._container.classList.remove('lv-player--fullscreen')
         this.emitSimple(PlayerEvent.FULLSCREEN_CHANGE, { fullscreen: false })
       } else {
-        await this._container.requestFullscreen()
+        await this.requestFullscreen()
+        this._container.classList.add('lv-player--fullscreen')
         this.emitSimple(PlayerEvent.FULLSCREEN_CHANGE, { fullscreen: true })
       }
     } catch (error) {
       this.emit(PlayerEvent.ERROR, { error })
       throw error
+    }
+  }
+
+  /**
+   * 检查是否处于全屏状态
+   */
+  private isFullscreen(): boolean {
+    return !!(
+      document.fullscreenElement ||
+      (document as any).webkitFullscreenElement ||
+      (document as any).mozFullScreenElement ||
+      (document as any).msFullscreenElement
+    )
+  }
+
+  /**
+   * 请求全屏（跨浏览器兼容）
+   */
+  private async requestFullscreen(): Promise<void> {
+    const element = this._container
+    
+    if (element.requestFullscreen) {
+      await element.requestFullscreen()
+    } else if ((element as any).webkitRequestFullscreen) {
+      await (element as any).webkitRequestFullscreen()
+    } else if ((element as any).mozRequestFullScreen) {
+      await (element as any).mozRequestFullScreen()
+    } else if ((element as any).msRequestFullscreen) {
+      await (element as any).msRequestFullscreen()
+    } else {
+      throw new Error('Fullscreen not supported')
+    }
+  }
+
+  /**
+   * 退出全屏（跨浏览器兼容）
+   */
+  private async exitFullscreen(): Promise<void> {
+    if (document.exitFullscreen) {
+      await document.exitFullscreen()
+    } else if ((document as any).webkitExitFullscreen) {
+      await (document as any).webkitExitFullscreen()
+    } else if ((document as any).mozCancelFullScreen) {
+      await (document as any).mozCancelFullScreen()
+    } else if ((document as any).msExitFullscreen) {
+      await (document as any).msExitFullscreen()
     }
   }
 
@@ -462,10 +526,41 @@ export class VideoPlayer extends EventEmitter implements IVideoPlayer {
   }
 
   /**
-   * 设置容器
+   * 设置播放器容器
    */
   private setupContainer(): void {
+    this._container.classList.add('lv-player')
+    
+    // 根据设备类型添加相应的类名
+    const deviceType = this._deviceInfo.device.type
+    this._container.classList.add(`lv-player--${deviceType}`)
+    
+    // 添加操作系统类名
+    const osType = this._deviceInfo.os.type
+    this._container.classList.add(`lv-player--${osType}`)
+    
+    // 添加浏览器类名
+    const browserType = this._deviceInfo.browser.type
+    this._container.classList.add(`lv-player--${browserType}`)
+    
+    // 设置宽高比模式
+    if (this._options.aspectRatio) {
+      this._container.classList.add('lv-player--aspect-ratio')
+      this._container.style.setProperty('--lv-player-aspect-ratio', this._options.aspectRatio)
+    }
+    
+    // 添加视频元素
     this._container.appendChild(this._videoElement)
+    
+    // 监听窗口大小变化
+    this.handleResize = this.handleResize.bind(this)
+    window.addEventListener('resize', this.handleResize)
+    
+    // 监听屏幕方向变化
+    if ('orientation' in screen) {
+      this.handleOrientationChange = this.handleOrientationChange.bind(this)
+      screen.orientation.addEventListener('change', this.handleOrientationChange)
+    }
 
     if (this._options.className) {
       this._container.classList.add(this._options.className)
@@ -477,34 +572,65 @@ export class VideoPlayer extends EventEmitter implements IVideoPlayer {
    */
   private bindVideoEvents(): void {
     const events = [
-      'loadstart', 'loadeddata', 'loadedmetadata', 'canplay', 'canplaythrough',
-      'play', 'pause', 'ended', 'timeupdate', 'progress', 'volumechange',
-      'ratechange', 'error', 'waiting', 'seeking', 'seeked'
+      'play', 'pause', 'ended', 'timeupdate', 'loadstart',
+      'loadeddata', 'loadedmetadata', 'canplay', 'canplaythrough',
+      'waiting', 'seeking', 'seeked', 'volumechange', 'ratechange',
+      'progress', 'error', 'stalled', 'suspend', 'abort',
+      'emptied', 'durationchange'
     ]
 
     events.forEach(event => {
       this._videoElement.addEventListener(event, this.handleVideoEvent.bind(this))
     })
 
-    // 全屏事件
-    document.addEventListener('fullscreenchange', this.handleFullscreenChange.bind(this))
+    // 全屏事件监听（跨浏览器兼容）
+    const fullscreenEvents = [
+      'fullscreenchange',
+      'webkitfullscreenchange',
+      'mozfullscreenchange',
+      'MSFullscreenChange'
+    ]
+    
+    fullscreenEvents.forEach(event => {
+      document.addEventListener(event, this.handleFullscreenChange.bind(this))
+    })
 
-    // 画中画事件
-    if ('pictureInPictureEnabled' in document) {
-      this._videoElement.addEventListener('enterpictureinpicture', this.handlePipChange.bind(this))
-      this._videoElement.addEventListener('leavepictureinpicture', this.handlePipChange.bind(this))
-    }
+    // 画中画事件监听
+    this._videoElement.addEventListener('enterpictureinpicture', this.handlePipChange.bind(this))
+    this._videoElement.addEventListener('leavepictureinpicture', this.handlePipChange.bind(this))
   }
 
   /**
    * 解绑视频事件
    */
   private unbindVideoEvents(): void {
-    // 移除所有事件监听器
-    const newVideo = this._videoElement.cloneNode(true) as HTMLVideoElement
-    this._videoElement.parentNode?.replaceChild(newVideo, this._videoElement)
+    const events = [
+      'play', 'pause', 'ended', 'timeupdate', 'loadstart',
+      'loadeddata', 'loadedmetadata', 'canplay', 'canplaythrough',
+      'waiting', 'seeking', 'seeked', 'volumechange', 'ratechange',
+      'progress', 'error', 'stalled', 'suspend', 'abort',
+      'emptied', 'durationchange'
+    ]
 
-    document.removeEventListener('fullscreenchange', this.handleFullscreenChange.bind(this))
+    events.forEach(event => {
+      this._videoElement.removeEventListener(event, this.handleVideoEvent.bind(this))
+    })
+
+    // 移除全屏事件监听（跨浏览器兼容）
+    const fullscreenEvents = [
+      'fullscreenchange',
+      'webkitfullscreenchange',
+      'mozfullscreenchange',
+      'MSFullscreenChange'
+    ]
+    
+    fullscreenEvents.forEach(event => {
+      document.removeEventListener(event, this.handleFullscreenChange.bind(this))
+    })
+
+    // 移除画中画事件监听
+    this._videoElement.removeEventListener('enterpictureinpicture', this.handlePipChange.bind(this))
+    this._videoElement.removeEventListener('leavepictureinpicture', this.handlePipChange.bind(this))
   }
 
   /**
@@ -562,9 +688,16 @@ export class VideoPlayer extends EventEmitter implements IVideoPlayer {
    * 处理全屏状态变化
    */
   private handleFullscreenChange(): void {
-    const fullscreen = !!document.fullscreenElement
-    this.updateStatus({ fullscreen })
-    this.emit(PlayerEvent.FULLSCREEN_CHANGE, { fullscreen })
+    const isFullscreen = this.isFullscreen()
+    
+    if (isFullscreen) {
+      this._container.classList.add('lv-player--fullscreen')
+    } else {
+      this._container.classList.remove('lv-player--fullscreen')
+    }
+    
+    this.updateStatus({ fullscreen: isFullscreen })
+    this.emit(PlayerEvent.FULLSCREEN_CHANGE, { fullscreen: isFullscreen })
   }
 
   /**
@@ -619,5 +752,42 @@ export class VideoPlayer extends EventEmitter implements IVideoPlayer {
   private updateStatus(updates: Partial<PlayerStatus>): void {
     Object.assign(this._status, updates)
     this.emitSimple(PlayerEvent.STATUS_CHANGE, this._status)
+  }
+
+  /**
+   * 处理窗口大小变化
+   */
+  private handleResize(): void {
+    if (this._destroyed) return
+    
+    // 更新视口信息
+    const viewport = {
+      width: window.innerWidth,
+      height: window.innerHeight
+    }
+    
+    this.emit(PlayerEvent.RESIZE, viewport)
+    
+    // 如果是全屏状态，确保样式正确
+    if (this.isFullscreen()) {
+      this._container.style.width = '100vw'
+      this._container.style.height = '100vh'
+    }
+  }
+
+  /**
+   * 处理屏幕方向变化
+   */
+  private handleOrientationChange(): void {
+    if (this._destroyed) return
+    
+    // 延迟处理，等待屏幕方向变化完成
+    setTimeout(() => {
+      const orientation = screen.orientation?.angle || 0
+      this.emit(PlayerEvent.ORIENTATION_CHANGE, { orientation })
+      
+      // 触发重新布局
+      this.handleResize()
+    }, 100)
   }
 }

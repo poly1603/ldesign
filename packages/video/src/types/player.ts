@@ -64,7 +64,11 @@ export enum PlayerEvent {
   /** 状态变化 */
   STATUS_CHANGE = 'statuschange',
   /** 销毁 */
-  DESTROY = 'destroy'
+  DESTROY = 'destroy',
+  /** 窗口大小变化 */
+  RESIZE = 'resize',
+  /** 屏幕方向变化 */
+  ORIENTATION_CHANGE = 'orientationchange'
 }
 
 /**
