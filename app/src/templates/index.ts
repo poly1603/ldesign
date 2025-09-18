@@ -1,6 +1,6 @@
 import { createTemplateEnginePlugin } from "@ldesign/template";
 // 导入template包的样式文件
-// import "@ldesign/template/es/index.css";
+import "@ldesign/template/es/index.css";
 
 
 export const templatePlugin = createTemplateEnginePlugin({
