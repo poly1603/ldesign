@@ -65,7 +65,9 @@ export {
   checkUrlAccessibility,
   parseUrl,
   buildUrl,
-  isLocalAddress
+  isLocalAddress,
+  getPreferredLocalIP,
+  getLocalIPs
 } from './network'
 
 // 解决冲突的函数导出（使用别名）

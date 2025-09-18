@@ -27,10 +27,11 @@ const __dirname = dirname(__filename)
     // 导入 CLI 模块
     const cliPath = resolve(__dirname, '../dist/cli/index.js')
     const cliUrl = `file://${cliPath.replace(/\\/g, '/')}`
-    const { runCli } = await import(cliUrl)
+    const { createCli } = await import(cliUrl)
 
-    // 运行 CLI
-    await runCli()
+    // 创建并运行 CLI
+    const cli = createCli()
+    await cli.run()
   }
   catch (error) {
     console.error('❌ Failed to start LDesign Launcher:')

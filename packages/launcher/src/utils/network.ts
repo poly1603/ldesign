@@ -1,11 +1,13 @@
 /**
  * 网络相关工具函数
- * 
+ *
  * 提供网络检测、请求处理等工具函数
- * 
+ *
  * @author LDesign Team
  * @since 1.0.0
  */
+
+import { networkInterfaces } from 'node:os'
 
 /**
  * 检查网络连接
@@ -17,13 +19,13 @@ export async function checkNetworkConnection(timeout: number = 5000): Promise<bo
   try {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), timeout)
-    
+
     const response = await fetch('https://www.google.com/favicon.ico', {
       method: 'HEAD',
       signal: controller.signal,
       cache: 'no-cache'
     })
-    
+
     clearTimeout(timeoutId)
     return response.ok
   } catch (error) {
@@ -42,13 +44,13 @@ export async function getPublicIP(): Promise<string | null> {
     'https://httpbin.org/ip',
     'https://api.ip.sb/ip'
   ]
-  
+
   for (const service of services) {
     try {
       const response = await fetch(service, {
         signal: AbortSignal.timeout(5000)
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         return data.ip || data.origin?.split(' ')[0] || null
@@ -57,7 +59,7 @@ export async function getPublicIP(): Promise<string | null> {
       continue
     }
   }
-  
+
   return null
 }
 
@@ -68,10 +70,9 @@ export async function getPublicIP(): Promise<string | null> {
  */
 export function getLocalIPs(): string[] {
   try {
-    const os = require('os')
-    const interfaces = os.networkInterfaces()
+    const interfaces = networkInterfaces()
     const ips: string[] = []
-    
+
     for (const name of Object.keys(interfaces)) {
       for (const iface of interfaces[name] || []) {
         // 跳过内部接口、非 IPv4 地址和回环地址
@@ -80,10 +81,56 @@ export function getLocalIPs(): string[] {
         }
       }
     }
-    
+
     return ips
   } catch (error) {
     return []
+  }
+}
+
+/**
+ * 获取首选的本地 IP 地址
+ * 在多网络接口的情况下，优先选择常见的局域网地址段
+ *
+ * @returns 首选的本地 IP 地址
+ */
+export function getPreferredLocalIP(): string {
+  try {
+    const interfaces = networkInterfaces()
+    const candidates: string[] = []
+
+    // 收集所有可用的 IPv4 地址
+    for (const name of Object.keys(interfaces)) {
+      for (const iface of interfaces[name] || []) {
+        if ((iface as any).family === 'IPv4' && !(iface as any).internal) {
+          candidates.push((iface as any).address as string)
+        }
+      }
+    }
+
+    if (candidates.length === 0) {
+      return 'localhost'
+    }
+
+    // 优先选择常见的局域网地址段
+    const preferredRanges = [
+      /^192\.168\./,  // 192.168.x.x
+      /^10\./,        // 10.x.x.x
+      /^172\.(1[6-9]|2[0-9]|3[0-1])\./  // 172.16.x.x - 172.31.x.x
+    ]
+
+    // 按优先级查找
+    for (const range of preferredRanges) {
+      const preferred = candidates.find(ip => range.test(ip))
+      if (preferred) {
+        return preferred
+      }
+    }
+
+    // 如果没有找到常见局域网地址，返回第一个可用地址
+    return candidates[0]
+  } catch (error) {
+    return 'localhost'
   }
 }
 
@@ -99,18 +146,18 @@ export async function isPortOpen(host: string, port: number, timeout: number = 3
   return new Promise((resolve) => {
     const net = require('net')
     const socket = new net.Socket()
-    
+
     const timer = setTimeout(() => {
       socket.destroy()
       resolve(false)
     }, timeout)
-    
+
     socket.connect(port, host, () => {
       clearTimeout(timer)
       socket.destroy()
       resolve(true)
     })
-    
+
     socket.on('error', () => {
       clearTimeout(timer)
       resolve(false)
@@ -135,17 +182,17 @@ export async function scanPorts(
 ): Promise<number[]> {
   const openPorts: number[] = []
   const promises: Promise<void>[] = []
-  
+
   for (let port = startPort; port <= endPort; port++) {
     const promise = isPortOpen(host, port, timeout).then(isOpen => {
       if (isOpen) {
         openPorts.push(port)
       }
     })
-    
+
     promises.push(promise)
   }
-  
+
   await Promise.all(promises)
   return openPorts.sort((a, b) => a - b)
 }
@@ -164,7 +211,7 @@ export async function measureLatency(url: string, count: number = 3): Promise<{
   results: number[]
 }> {
   const results: number[] = []
-  
+
   for (let i = 0; i < count; i++) {
     try {
       const start = Date.now()
@@ -172,7 +219,7 @@ export async function measureLatency(url: string, count: number = 3): Promise<{
         method: 'HEAD',
         signal: AbortSignal.timeout(10000)
       })
-      
+
       if (response.ok) {
         const latency = Date.now() - start
         results.push(latency)
@@ -180,21 +227,21 @@ export async function measureLatency(url: string, count: number = 3): Promise<{
     } catch (error) {
       // 忽略失败的请求
     }
-    
+
     // 请求间隔
     if (i < count - 1) {
       await new Promise(resolve => setTimeout(resolve, 100))
     }
   }
-  
+
   if (results.length === 0) {
     return { min: 0, max: 0, avg: 0, results: [] }
   }
-  
+
   const min = Math.min(...results)
   const max = Math.max(...results)
   const avg = Math.round(results.reduce((sum, val) => sum + val, 0) / results.length)
-  
+
   return { min, max, avg, results }
 }
 
@@ -215,43 +262,43 @@ export async function downloadFile(url: string, options: {
     maxSize = 100 * 1024 * 1024, // 100MB
     onProgress
   } = options
-  
+
   const response = await fetch(url, {
     signal: AbortSignal.timeout(timeout)
   })
-  
+
   if (!response.ok) {
     throw new Error(`下载失败: ${response.status} ${response.statusText}`)
   }
-  
+
   const contentLength = response.headers.get('content-length')
   const total = contentLength ? parseInt(contentLength, 10) : 0
-  
+
   if (total > maxSize) {
     throw new Error(`文件过大: ${total} 字节，最大允许 ${maxSize} 字节`)
   }
-  
+
   if (!response.body) {
     throw new Error('响应体为空')
   }
-  
+
   const reader = response.body.getReader()
   const chunks: Uint8Array[] = []
   let loaded = 0
-  
+
   try {
     while (true) {
       const { done, value } = await reader.read()
-      
+
       if (done) break
-      
+
       chunks.push(value)
       loaded += value.length
-      
+
       if (loaded > maxSize) {
         throw new Error(`文件过大: ${loaded} 字节，最大允许 ${maxSize} 字节`)
       }
-      
+
       if (onProgress) {
         onProgress(loaded, total)
       }
@@ -259,17 +306,17 @@ export async function downloadFile(url: string, options: {
   } finally {
     reader.releaseLock()
   }
-  
+
   // 合并所有块
   const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0)
   const result = new Uint8Array(totalLength)
   let offset = 0
-  
+
   for (const chunk of chunks) {
     result.set(chunk, offset)
     offset += chunk.length
   }
-  
+
   return result.buffer
 }
 
@@ -288,15 +335,15 @@ export async function checkUrlAccessibility(url: string, timeout: number = 5000)
   error?: string
 }> {
   const start = Date.now()
-  
+
   try {
     const response = await fetch(url, {
       method: 'HEAD',
       signal: AbortSignal.timeout(timeout)
     })
-    
+
     const responseTime = Date.now() - start
-    
+
     return {
       accessible: response.ok,
       status: response.status,
@@ -324,8 +371,7 @@ export function getNetworkInterfaces(): Array<{
   mac: string
 }> {
   try {
-    const os = require('os')
-    const interfaces = os.networkInterfaces()
+    const interfaces = networkInterfaces()
     const result: Array<{
       name: string
       address: string
@@ -333,7 +379,7 @@ export function getNetworkInterfaces(): Array<{
       internal: boolean
       mac: string
     }> = []
-    
+
     for (const [name, ifaces] of Object.entries(interfaces) as Array<[string, any[]]>) {
       for (const iface of ifaces || []) {
         result.push({
@@ -345,7 +391,7 @@ export function getNetworkInterfaces(): Array<{
         })
       }
     }
-    
+
     return result
   } catch (error) {
     return []
@@ -369,7 +415,7 @@ export function parseUrl(url: string): {
 } | null {
   try {
     const parsed = new URL(url)
-    
+
     return {
       protocol: parsed.protocol,
       hostname: parsed.hostname,
@@ -394,13 +440,13 @@ export function parseUrl(url: string): {
 export function buildUrl(base: string, params: Record<string, any> = {}): string {
   try {
     const url = new URL(base)
-    
+
     for (const [key, value] of Object.entries(params)) {
       if (value !== undefined && value !== null) {
         url.searchParams.set(key, String(value))
       }
     }
-    
+
     return url.toString()
   } catch (error) {
     return base
@@ -423,6 +469,6 @@ export function isLocalAddress(address: string): boolean {
     /^::1$/,
     /^fe80:/i
   ]
-  
+
   return localPatterns.some(pattern => pattern.test(address))
 }

@@ -12,6 +12,7 @@ import { FileSystem } from '../../utils/file-system'
 import { PathUtils } from '../../utils/path-utils'
 import { ViteLauncher } from '../../core/ViteLauncher'
 import { networkInterfaces } from 'node:os'
+import { getPreferredLocalIP } from '../../utils/network.js'
 import type { CliCommandDefinition, CliContext } from '../../types'
 import { DEFAULT_HOST, DEFAULT_OUT_DIR } from '../../constants'
 import pc from 'picocolors'
@@ -266,7 +267,7 @@ export class PreviewCommand implements CliCommandDefinition {
 
         // 构建网络 URL：总是尝试生成网络地址
         let networkUrl: string | null = null
-        const localIP = getLocalIP()
+        const localIP = getPreferredLocalIP()
 
         if (host === '0.0.0.0') {
           // host 是 0.0.0.0，替换为本地 IP
@@ -397,24 +398,7 @@ export class PreviewCommand implements CliCommandDefinition {
   }
 }
 
-/**
- * 获取本地 IP 地址
- * 
- * @returns 本地 IP 地址
- */
-function getLocalIP(): string {
-  const interfaces = networkInterfaces()
 
-  for (const name of Object.keys(interfaces)) {
-    for (const iface of interfaces[name] || []) {
-      if ((iface as any).family === 'IPv4' && !(iface as any).internal) {
-        return (iface as any).address as string
-      }
-    }
-  }
-
-  return 'localhost'
-}
 
 /**
  * 显示构建信息

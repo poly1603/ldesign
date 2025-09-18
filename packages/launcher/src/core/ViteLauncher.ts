@@ -27,6 +27,7 @@ import { createConfigInjectionPlugin, getClientConfigUtils } from '../plugins/co
 import { environmentManager } from '../utils/env'
 import { createSSLManager, type SSLConfig } from '../utils/ssl'
 import { createAliasManager } from './AliasManager'
+import { getPreferredLocalIP } from '../utils/network.js'
 
 // 导入类型定义
 import type {
@@ -1366,7 +1367,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     const localUrl = serverInfo.url || ''
 
     // 获取本地IP地址
-    const localIP = this.getLocalIP()
+    const localIP = getPreferredLocalIP()
 
     // 构建网络 URL - 总是显示网络地址
     let networkUrl: string | null = null
@@ -1469,47 +1470,5 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     console.log()
   }
 
-  /**
-   * 获取本地 IP 地址
-   */
-  private getLocalIP(): string {
-    try {
-      const { networkInterfaces } = require('node:os')
-      const interfaces = networkInterfaces()
-      const candidates: string[] = []
 
-      // 收集所有可用的 IPv4 地址
-      for (const name of Object.keys(interfaces)) {
-        for (const iface of interfaces[name] || []) {
-          if ((iface as any).family === 'IPv4' && !(iface as any).internal) {
-            candidates.push((iface as any).address as string)
-          }
-        }
-      }
-
-      if (candidates.length === 0) {
-        return 'localhost'
-      }
-
-      // 优先选择常见的局域网地址段
-      const preferredRanges = [
-        /^192\.168\./,  // 192.168.x.x
-        /^10\./,        // 10.x.x.x
-        /^172\.(1[6-9]|2[0-9]|3[0-1])\./  // 172.16.x.x - 172.31.x.x
-      ]
-
-      // 按优先级查找
-      for (const range of preferredRanges) {
-        const preferred = candidates.find(ip => range.test(ip))
-        if (preferred) {
-          return preferred
-        }
-      }
-
-      // 如果没有找到常见局域网地址，返回第一个可用地址
-      return candidates[0]
-    } catch (error) {
-      return 'localhost'
-    }
-  }
 }

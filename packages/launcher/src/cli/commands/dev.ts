@@ -13,6 +13,7 @@ import type { CliCommandDefinition, CliContext } from '../../types'
 import { DEFAULT_PORT, DEFAULT_HOST } from '../../constants'
 import pc from 'picocolors'
 import { networkInterfaces } from 'node:os'
+import { getPreferredLocalIP } from '../../utils/network.js'
 
 /**
  * Dev 命令类
@@ -298,7 +299,7 @@ export class DevCommand implements CliCommandDefinition {
       const serverInfo = launcher.getServerInfo()
       if (serverInfo) {
         const localUrl = serverInfo.url || ''
-        const localIP = getLocalIP()
+        const localIP = getPreferredLocalIP()
 
         // 构建网络 URL：总是尝试生成网络地址
         let networkUrl: string | null = null
@@ -406,43 +407,4 @@ export class DevCommand implements CliCommandDefinition {
   }
 }
 
-/**
- * 获取本地 IP 地址
- *
- * @returns 本地 IP 地址
- */
-function getLocalIP(): string {
-  const interfaces = networkInterfaces()
-  const candidates: string[] = []
 
-  // 收集所有可用的 IPv4 地址
-  for (const name of Object.keys(interfaces)) {
-    for (const iface of interfaces[name] || []) {
-      if ((iface as any).family === 'IPv4' && !(iface as any).internal) {
-        candidates.push((iface as any).address as string)
-      }
-    }
-  }
-
-  if (candidates.length === 0) {
-    return 'localhost'
-  }
-
-  // 优先选择常见的局域网地址段
-  const preferredRanges = [
-    /^192\.168\./,  // 192.168.x.x
-    /^10\./,        // 10.x.x.x
-    /^172\.(1[6-9]|2[0-9]|3[0-1])\./  // 172.16.x.x - 172.31.x.x
-  ]
-
-  // 按优先级查找
-  for (const range of preferredRanges) {
-    const preferred = candidates.find(ip => range.test(ip))
-    if (preferred) {
-      return preferred
-    }
-  }
-
-  // 如果没有找到常见局域网地址，返回第一个可用地址
-  return candidates[0]
-}
