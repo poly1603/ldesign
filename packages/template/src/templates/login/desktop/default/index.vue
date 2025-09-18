@@ -161,18 +161,12 @@ onMounted(() => {
             <div class="input-wrapper">
               <div class="input-icon">
                 <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  <path
+                    d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                 </svg>
               </div>
-              <input
-                v-model="formData.username"
-                type="text"
-                class="form-input"
-                placeholder="请输入用户名或邮箱"
-                autocomplete="username"
-                required
-                :disabled="loading"
-              >
+              <input v-model="formData.username" type="text" class="form-input" placeholder="请输入用户名或邮箱"
+                autocomplete="username" required :disabled="loading">
             </div>
           </div>
 
@@ -181,29 +175,20 @@ onMounted(() => {
             <div class="input-wrapper">
               <div class="input-icon">
                 <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18,8h-1V6c0-2.76-2.24-5-5-5S7,3.24,7,6v2H6c-1.1,0-2,0.9-2,2v10c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V10C20,8.9,19.1,8,18,8z M12,17c-1.1,0-2-0.9-2-2s0.9-2,2-2s2,0.9,2,2S13.1,17,12,17z M15.1,8H8.9V6c0-1.71,1.39-3.1,3.1-3.1s3.1,1.39,3.1,3.1V8z" />
+                  <path
+                    d="M18,8h-1V6c0-2.76-2.24-5-5-5S7,3.24,7,6v2H6c-1.1,0-2,0.9-2,2v10c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V10C20,8.9,19.1,8,18,8z M12,17c-1.1,0-2-0.9-2-2s0.9-2,2-2s2,0.9,2,2S13.1,17,12,17z M15.1,8H8.9V6c0-1.71,1.39-3.1,3.1-3.1s3.1,1.39,3.1,3.1V8z" />
                 </svg>
               </div>
-              <input
-                v-model="formData.password"
-                :type="showPassword ? 'text' : 'password'"
-                class="form-input"
-                placeholder="请输入密码"
-                autocomplete="current-password"
-                required
-                :disabled="loading"
-              >
-              <button
-                type="button"
-                class="password-toggle"
-                :disabled="loading"
-                @click="showPassword = !showPassword"
-              >
+              <input v-model="formData.password" :type="showPassword ? 'text' : 'password'" class="form-input"
+                placeholder="请输入密码" autocomplete="current-password" required :disabled="loading">
+              <button type="button" class="password-toggle" :disabled="loading" @click="showPassword = !showPassword">
                 <svg v-if="showPassword" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z" />
+                  <path
+                    d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z" />
                 </svg>
                 <svg v-else viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M11.83,9L15,12.16C15,12.11 15,12.05 15,12A3,3 0 0,0 12,9C11.94,9 11.89,9 11.83,9M7.53,9.8L9.08,11.35C9.03,11.56 9,11.77 9,12A3,3 0 0,0 12,15C12.22,15 12.44,14.97 12.65,14.92L14.2,16.47C13.53,16.8 12.79,17 12,17A5,5 0 0,1 7,12C7,11.21 7.2,10.47 7.53,9.8M2,4.27L4.28,6.55L4.73,7C3.08,8.3 1.78,10 1,12C2.73,16.39 7,19.5 12,19.5C13.55,19.5 15.03,19.2 16.38,18.66L16.81,19.09L19.73,22L21,20.73L3.27,3M12,7A5,5 0 0,1 17,12C17,12.64 16.87,13.26 16.64,13.82L19.57,16.75C21.07,15.5 22.27,13.86 23,12C21.27,7.61 17,4.5 12,4.5C10.6,4.5 9.26,4.75 8,5.2L10.17,7.35C10.76,7.13 11.37,7 12,7Z" />
+                  <path
+                    d="M11.83,9L15,12.16C15,12.11 15,12.05 15,12A3,3 0 0,0 12,9C11.94,9 11.89,9 11.83,9M7.53,9.8L9.08,11.35C9.03,11.56 9,11.77 9,12A3,3 0 0,0 12,15C12.22,15 12.44,14.97 12.65,14.92L14.2,16.47C13.53,16.8 12.79,17 12,17A5,5 0 0,1 7,12C7,11.21 7.2,10.47 7.53,9.8M2,4.27L4.28,6.55L4.73,7C3.08,8.3 1.78,10 1,12C2.73,16.39 7,19.5 12,19.5C13.55,19.5 15.03,19.2 16.38,18.66L16.81,19.09L19.73,22L21,20.73L3.27,3M12,7A5,5 0 0,1 17,12C17,12.64 16.87,13.26 16.64,13.82L19.57,16.75C21.07,15.5 22.27,13.86 23,12C21.27,7.61 17,4.5 12,4.5C10.6,4.5 9.26,4.75 8,5.2L10.17,7.35C10.76,7.13 11.37,7 12,7Z" />
                 </svg>
               </button>
             </div>
@@ -211,12 +196,7 @@ onMounted(() => {
 
           <div class="form-options">
             <label v-if="showRemember" class="checkbox-label">
-              <input
-                v-model="formData.remember"
-                type="checkbox"
-                class="checkbox-input"
-                :disabled="loading"
-              >
+              <input v-model="formData.remember" type="checkbox" class="checkbox-input" :disabled="loading">
               <span class="checkbox-custom" />
               <span class="checkbox-text">记住我</span>
             </label>
@@ -417,6 +397,7 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   margin-top: 12px;
+
   // 让触发器紧贴标题区，避免额外底部间距
   :deep(.template-selector-wrapper) {
     margin-bottom: 0;
@@ -548,7 +529,7 @@ onMounted(() => {
       }
     }
 
-    .checkbox-input:checked + .checkbox-custom {
+    .checkbox-input:checked+.checkbox-custom {
       background: var(--ldesign-brand-color, #667eea);
       border-color: var(--ldesign-brand-color, #667eea);
 
@@ -647,8 +628,13 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 // 模板标识横幅样式
@@ -693,7 +679,8 @@ onMounted(() => {
   color: rgba(255, 255, 255, 0.9);
 }
 
-.device-type, .template-version {
+.device-type,
+.template-version {
   display: flex;
   align-items: center;
   gap: 0.25rem;
