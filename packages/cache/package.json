@@ -122,7 +122,6 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\"",
     "ci": "pnpm lint:ci && pnpm type-check && pnpm test:ci && pnpm build && pnpm docs:build && pnpm docs:check-links",
-    "prepare": "husky install",
     "precommit": "lint-staged",
     "release": "semantic-release",
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",

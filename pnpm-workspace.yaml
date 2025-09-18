@@ -2,3 +2,96 @@ packages:
   - packages/**
   - "!packages/icons/tdesign-icons-develop"
   - "!packages/icons/tdesign-icons-develop/**"
+
+catalog:
+  # React 相关
+  react: ^18.2.0
+  react-dom: ^18.2.0
+  
+  # Babel 相关
+  "@babel/core": ^7.22.0
+  "@babel/eslint-parser": ^7.22.0
+  "@babel/plugin-transform-react-jsx": ^7.22.0
+  "@babel/plugin-transform-runtime": ^7.22.0
+  "@babel/preset-env": ^7.22.0
+  "@babel/preset-react": ^7.22.0
+  "@babel/runtime": ^7.22.0
+  
+  # Rollup 相关
+  "@rollup/plugin-babel": ^6.0.0
+  "@rollup/plugin-commonjs": ^25.0.0
+  "@rollup/plugin-node-resolve": ^15.0.0
+  "@rollup/plugin-replace": ^5.0.0
+  "@rollup/plugin-json": ^6.0.0
+  rollup: ^3.29.0
+  rollup-plugin-esbuild: ^5.0.0
+  rollup-plugin-ignore-import: ^1.3.0
+  rollup-plugin-less: ^1.1.3
+  rollup-plugin-multi-input: ^1.4.0
+  rollup-plugin-postcss: ^4.0.2
+  rollup-plugin-static-import: ^0.1.1
+  rollup-plugin-styles: ^4.0.0
+  rollup-plugin-terser: ^7.0.2
+  rollup-plugin-copy: ^3.4.0
+  rollup-plugin-vue: ^6.0.0
+  
+  # Vue 相关
+  "@vue/babel-plugin-jsx": ^1.1.5
+  "@vue/babel-preset-jsx": ^1.4.0
+  "@vue/compiler-sfc": ^3.3.0
+  "@vue/cli-plugin-babel": ^5.0.8
+  "@vue/cli-plugin-eslint": ^5.0.8
+  "@vue/cli-service": ^5.0.8
+  vue-loader: ^17.2.2
+  vue-template-compiler: ^2.7.14
+  
+  # 工具库
+  camelcase: ^7.0.1
+  concurrently: ^8.2.0
+  cross-env: ^7.0.3
+  esbuild: ^0.19.0
+  less: ^4.2.0
+  postcss: ^8.4.31
+  rimraf: ^5.0.1
+  typescript: ^5.2.2
+  classnames: ^2.3.2
+  clsx: ^2.0.0
+  tslib: ^2.6.2
+  fs-extra: ^11.1.1
+  path: ^0.12.7
+  uppercamelcase: ^3.0.0
+  lodash: ^4.17.21
+  core-js: ^3.32.2
+  raw-loader: ^4.0.2
+  eslint-plugin-vue: ^9.17.0
+  omi: ^6.25.0
+  tailwind-merge: ^1.14.0
+  "@popperjs/core": ^2.11.8
+  
+  # React Native 相关
+  react-native-svg: ^13.14.0
+  
+  # SVG 相关
+  "@svgr/core": ^8.1.0
+  "@svgr/plugin-prettier": ^8.1.0
+  "@svgr/plugin-svgo": ^8.1.0
+
+catalogs:
+  types:
+    "@types/node": ^20.5.9
+    "@types/react": ^18.2.21
+    "@types/react-dom": ^18.2.7
+    "@types/uppercamelcase": ^3.0.0
+
+  vue:
+    vue: ^3.3.4
+
+  vue26:
+    vue: ^2.6.14
+
+  vue27:
+    vue: ^2.7.14
+
+  tdesign:
+    tdesign-icons-vue: ^0.2.4
+    tdesign-vue: ^1.5.7
