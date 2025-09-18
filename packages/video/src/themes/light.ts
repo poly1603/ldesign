@@ -9,7 +9,15 @@ import type { ITheme, ThemeConfig } from '../src/types/theme'
  * 亮色主题配置
  */
 const lightThemeConfig: ThemeConfig = {
-  variables: {
+  metadata: {
+    name: 'light',
+    displayName: '亮色主题',
+    description: '播放器的亮色外观主题',
+    version: '1.0.0',
+    author: 'LDesign Team'
+  },
+  style: {
+    cssVariables: {
     // 主色调
     'primary-color': 'var(--ldesign-brand-color)',
     'primary-color-hover': 'var(--ldesign-brand-color-hover)',
@@ -292,17 +300,52 @@ const lightThemeConfig: ThemeConfig = {
       border-color: var(--lv-border-color);
       border-top-color: var(--lv-primary-color);
     }
-  `
+    `
+  }
 }
 
 /**
- * 亮色主题
+ * 亮色主题实现类
  */
-export const lightTheme: ITheme = {
-  name: 'light',
-  displayName: '亮色主题',
-  description: '适合亮色环境的播放器主题',
-  version: '1.0.0',
-  author: 'LDesign Team',
-  config: lightThemeConfig
+class LightTheme implements ITheme {
+  readonly metadata = lightThemeConfig.metadata
+  readonly style = lightThemeConfig.style
+
+  apply(container: HTMLElement): void {
+    // 应用CSS变量
+    const variables = this.getCSSVariables()
+    Object.entries(variables).forEach(([key, value]) => {
+      container.style.setProperty(`--lv-${key}`, value)
+    })
+  }
+
+  remove(container: HTMLElement): void {
+    // 移除CSS变量
+    const variables = this.getCSSVariables()
+    Object.keys(variables).forEach(key => {
+      container.style.removeProperty(`--lv-${key}`)
+    })
+  }
+
+  updateStyle(style: Partial<ThemeStyle>): void {
+    Object.assign(this.style, style)
+  }
+
+  getCSSVariables(): Record<string, string> {
+    return this.style.cssVariables || {}
+  }
+
+  generateCSS(): string {
+    const variables = this.getCSSVariables()
+    const cssVars = Object.entries(variables)
+      .map(([key, value]) => `  --lv-${key}: ${value};`)
+      .join('\n')
+    
+    return `:root {\n${cssVars}\n}`
+  }
 }
+
+/**
+ * 亮色主题实例
+ */
+export const lightTheme = new LightTheme()

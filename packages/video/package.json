@@ -1,10 +1,7 @@
 {
   "name": "@ldesign/video",
-  "type": "module",
   "version": "0.1.0",
   "description": "A universal video player component library with cross-device compatibility, plugin system, theme system, and danmaku support",
-  "author": "ldesign",
-  "license": "MIT",
   "keywords": [
     "video",
     "player",
@@ -20,51 +17,88 @@
     "mobile",
     "desktop"
   ],
+  "author": "ldesign",
+  "license": "MIT",
+  "type": "module",
   "exports": {
     ".": {
-      "types": "./es/packages/video/src/index.d.ts",
-      "import": "./es/packages/video/src/index.js",
-      "require": "./cjs/packages/video/src/index.cjs"
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
     },
-    "./vue": {
-      "types": "./es/packages/video/src/frameworks/vue.d.ts",
-      "import": "./es/packages/video/src/frameworks/vue.js",
-      "require": "./cjs/packages/video/src/frameworks/vue.cjs"
+    "./core": {
+      "types": "./es/core/index.d.ts",
+      "import": "./es/core/index.js",
+      "require": "./lib/core/index.cjs"
     },
-    "./react": {
-      "types": "./es/packages/video/src/frameworks/react.d.ts",
-      "import": "./es/packages/video/src/frameworks/react.js",
-      "require": "./cjs/packages/video/src/frameworks/react.cjs"
+    "./core/*": {
+      "types": "./es/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.cjs"
     },
-    "./angular": {
-      "types": "./es/packages/video/src/frameworks/angular.d.ts",
-      "import": "./es/packages/video/src/frameworks/angular.js",
-      "require": "./cjs/packages/video/src/frameworks/angular.cjs"
+    "./frameworks": {
+      "types": "./es/frameworks/index.d.ts",
+      "import": "./es/frameworks/index.js",
+      "require": "./lib/frameworks/index.cjs"
+    },
+    "./frameworks/*": {
+      "types": "./es/frameworks/*.d.ts",
+      "import": "./es/frameworks/*.js",
+      "require": "./lib/frameworks/*.cjs"
     },
     "./plugins": {
-      "types": "./es/packages/video/plugins/index.d.ts",
-      "import": "./es/packages/video/plugins/index.js",
-      "require": "./cjs/packages/video/plugins/index.cjs"
+      "types": "./es/plugins/index.d.ts",
+      "import": "./es/plugins/index.js",
+      "require": "./lib/plugins/index.cjs"
+    },
+    "./plugins/*": {
+      "types": "./es/plugins/*.d.ts",
+      "import": "./es/plugins/*.js",
+      "require": "./lib/plugins/*.cjs"
     },
     "./themes": {
-      "types": "./es/packages/video/themes/index.d.ts",
-      "import": "./es/packages/video/themes/index.js",
-      "require": "./cjs/packages/video/themes/index.cjs"
+      "types": "./es/themes/index.d.ts",
+      "import": "./es/themes/index.js",
+      "require": "./lib/themes/index.cjs"
     },
-    "./style.css": "./es/packages/video/src/index.css"
+    "./themes/*": {
+      "types": "./es/themes/*.d.ts",
+      "import": "./es/themes/*.js",
+      "require": "./lib/themes/*.cjs"
+    },
+    "./types": {
+      "types": "./es/types/index.d.ts",
+      "import": "./es/types/index.js",
+      "require": "./lib/types/index.cjs"
+    },
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
+    },
+    "./utils": {
+      "types": "./es/utils/index.d.ts",
+      "import": "./es/utils/index.js",
+      "require": "./lib/utils/index.cjs"
+    },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
+    },
+    "./style.css": "./src/index.css"
   },
-  "main": "dist/cjs/index.cjs",
-  "module": "dist/esm/index.js",
-  "types": "dist/index.d.ts",
-  "style": "dist/index.css",
-  "unpkg": "dist/index.umd.js",
-  "jsdelivr": "dist/index.umd.js",
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
   "files": [
-    "CHANGELOG.md",
     "README.md",
-    "dist",
+    "LICENSE",
+    "package.json",
     "es",
-    "cjs"
+    "lib"
   ],
   "scripts": {
     "build": "ldesign-builder build -f esm,cjs",
@@ -87,6 +121,11 @@
     "test:run": "vitest run"
   },
   "dependencies": {},
+  "peerDependencies": {
+    "vue": ">=3.0.0",
+    "react": ">=16.8.0",
+    "@angular/core": ">=12.0.0"
+  },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
     "@ldesign/launcher": "workspace:*",
@@ -101,11 +140,10 @@
     "vitepress": "^1.6.4",
     "vitest": "^1.0.0"
   },
-  "peerDependencies": {
-    "vue": ">=3.0.0",
-    "react": ">=16.8.0",
-    "@angular/core": ">=12.0.0"
+  "engines": {
+    "node": ">=16.0.0"
   },
+  "style": "dist/index.css",
   "peerDependenciesMeta": {
     "vue": {
       "optional": true
@@ -116,9 +154,6 @@
     "@angular/core": {
       "optional": true
     }
-  },
-  "engines": {
-    "node": ">=16.0.0"
   },
   "packageManager": "pnpm@8.0.0"
 }

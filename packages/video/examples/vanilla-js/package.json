@@ -9,6 +9,11 @@
     "preview": "vite preview"
   },
 
+  "dependencies": {
+    "@ldesign/video": "file:../../",
+    "vite": "^6.0.5"
+  },
+
   "devDependencies": {
     "vite": "^7.1.6"
   }

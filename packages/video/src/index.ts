@@ -19,6 +19,9 @@ export * from './plugins'
 // 默认导出播放器类
 export { VideoPlayer as default } from './core'
 
+// 为了兼容性，导出LVideoPlayer别名
+export { VideoPlayer as LVideoPlayer } from './core'
+
 /**
  * 创建视频播放器实例
  */

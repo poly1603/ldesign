@@ -19,6 +19,7 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "rootDir": ".",
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
@@ -27,14 +28,12 @@
       "@/utils/*": ["src/utils/*"],
       "@/types/*": ["src/types/*"],
       "@/plugins/*": ["plugins/*"],
-      "@/themes/*": ["themes/*"]
+      "@/themes/*": ["src/themes/*"]
     }
   },
   "include": [
     "src/**/*",
-    "plugins/**/*",
-    "themes/**/*",
-    "tests/**/*"
+    "plugins/**/*"
   ],
   "exclude": [
     "node_modules",

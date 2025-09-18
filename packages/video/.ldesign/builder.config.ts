@@ -2,7 +2,14 @@ import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
   // 生成类型声明文件
-  dts: true,
+  dts: {
+    // 指定 TypeScript 配置文件
+    tsconfig: './tsconfig.json',
+    // 只为入口文件生成声明文件
+    only: true,
+    // 设置输出目录
+    outDir: './dist'
+  },
 
   // 生成 source map
   sourcemap: true,

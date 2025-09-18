@@ -9,7 +9,15 @@ import type { ITheme, ThemeConfig } from '../src/types/theme'
  * 暗色主题配置
  */
 const darkThemeConfig: ThemeConfig = {
-  variables: {
+  metadata: {
+    name: 'dark',
+    displayName: '暗色主题',
+    description: '播放器的暗色外观主题',
+    version: '1.0.0',
+    author: 'LDesign Team'
+  },
+  style: {
+    cssVariables: {
     // 主色调
     'primary-color': 'var(--ldesign-brand-color)',
     'primary-color-hover': 'var(--ldesign-brand-color-hover)',
@@ -262,17 +270,52 @@ const darkThemeConfig: ThemeConfig = {
       outline: 2px solid var(--lv-primary-color);
       outline-offset: 2px;
     }
-  `
+    `
+  }
 }
 
 /**
- * 暗色主题
+ * 暗色主题实现类
  */
-export const darkTheme: ITheme = {
-  name: 'dark',
-  displayName: '暗色主题',
-  description: '适合暗色环境的播放器主题',
-  version: '1.0.0',
-  author: 'LDesign Team',
-  config: darkThemeConfig
+class DarkTheme implements ITheme {
+  readonly metadata = darkThemeConfig.metadata
+  readonly style = darkThemeConfig.style
+
+  apply(container: HTMLElement): void {
+    // 应用CSS变量
+    const variables = this.getCSSVariables()
+    Object.entries(variables).forEach(([key, value]) => {
+      container.style.setProperty(`--lv-${key}`, value)
+    })
+  }
+
+  remove(container: HTMLElement): void {
+    // 移除CSS变量
+    const variables = this.getCSSVariables()
+    Object.keys(variables).forEach(key => {
+      container.style.removeProperty(`--lv-${key}`)
+    })
+  }
+
+  updateStyle(style: Partial<ThemeStyle>): void {
+    Object.assign(this.style, style)
+  }
+
+  getCSSVariables(): Record<string, string> {
+    return this.style.cssVariables || {}
+  }
+
+  generateCSS(): string {
+    const variables = this.getCSSVariables()
+    const cssVars = Object.entries(variables)
+      .map(([key, value]) => `  --lv-${key}: ${value};`)
+      .join('\n')
+    
+    return `:root {\n${cssVars}\n}`
+  }
 }
+
+/**
+ * 暗色主题实例
+ */
+export const darkTheme = new DarkTheme()

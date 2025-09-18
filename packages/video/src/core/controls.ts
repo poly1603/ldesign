@@ -1,17 +1,14 @@
 /**
  * 播放器控制栏组件
- * 实现播放控制、进度条、音量调节等UI控件
+ * 提供播放控制、进度条、音量控制等UI控件
  */
 
 import { EventEmitter } from '../utils/events'
-import { createElement, addClass, removeClass, setStyle } from '../utils/dom'
+import { createElement, addClass, removeClass, hasClass } from '../utils/dom'
 import { formatTime } from '../utils/format'
 import { generateId } from '../utils/common'
-import type { IVideoPlayer, PlayerEvent } from '../types/player'
+import { VideoPlayer } from './player'
 
-/**
- * 控制栏配置选项
- */
 export interface ControlsOptions {
   /** 是否显示播放按钮 */
   showPlayButton?: boolean
@@ -23,42 +20,47 @@ export interface ControlsOptions {
   showVolumeControl?: boolean
   /** 是否显示全屏按钮 */
   showFullscreenButton?: boolean
-  /** 是否显示画中画按钮 */
-  showPipButton?: boolean
   /** 是否显示播放速度控制 */
   showPlaybackRateControl?: boolean
+  /** 是否显示画中画按钮 */
+  showPipButton?: boolean
   /** 自动隐藏延迟（毫秒） */
   autoHideDelay?: number
-  /** 是否在移动设备上隐藏 */
-  hideOnMobile?: boolean
+  /** 是否启用自动隐藏 */
+  autoHide?: boolean
+  /** 是否显示控制栏背景 */
+  showBackground?: boolean
 }
 
 /**
- * 播放器控制栏实现
+ * 播放器控制栏类
  */
 export class PlayerControls extends EventEmitter {
-  private player: IVideoPlayer
-  private options: ControlsOptions
+  private player: VideoPlayer
+  private options: Required<ControlsOptions>
   private container: HTMLElement
-  private controlsElement: HTMLElement
-  private playButton: HTMLElement
-  private progressBar: HTMLElement
-  private progressTrack: HTMLElement
-  private progressBuffer: HTMLElement
-  private progressThumb: HTMLElement
-  private timeDisplay: HTMLElement
-  private volumeControl: HTMLElement
-  private volumeButton: HTMLElement
-  private volumeSlider: HTMLElement
-  private fullscreenButton: HTMLElement
-  private pipButton: HTMLElement
-  private playbackRateButton: HTMLElement
-  
-  private isDragging = false
-  private autoHideTimer: NodeJS.Timeout | null = null
-  private visible = true
+  private controlsElement!: HTMLElement
+  private progressBar!: HTMLElement
+  private progressBarTrack!: HTMLElement
+  private progressBarFilled!: HTMLElement
+  private progressBarThumb!: HTMLElement
+  private playButton!: HTMLElement
+  private timeDisplay!: HTMLElement
+  private volumeControl!: HTMLElement
+  private volumeButton!: HTMLElement
+  private volumeSlider!: HTMLElement
+  private volumeSliderTrack!: HTMLElement
+  private volumeSliderFilled!: HTMLElement
+  private volumeSliderThumb!: HTMLElement
+  private fullscreenButton!: HTMLElement
+  private playbackRateControl!: HTMLElement
+  private pipButton!: HTMLElement
 
-  constructor(player: IVideoPlayer, options: ControlsOptions = {}) {
+  private visible = true
+  private isDragging = false
+  private autoHideTimer: number | null = null
+
+  constructor(player: VideoPlayer, options: ControlsOptions = {}) {
     super()
     
     this.player = player
@@ -68,17 +70,21 @@ export class PlayerControls extends EventEmitter {
       showTimeDisplay: true,
       showVolumeControl: true,
       showFullscreenButton: true,
-      showPipButton: true,
-      showPlaybackRateControl: true,
+      showPlaybackRateControl: false,
+      showPipButton: false,
       autoHideDelay: 3000,
-      hideOnMobile: false,
+      autoHide: true,
+      showBackground: true,
       ...options
     }
     
     this.container = player.container
     this.createControls()
     this.bindEvents()
-    this.updateControls()
+    this.updateDisplay()
+
+    // 添加到播放器容器
+    this.player.container.appendChild(this.controlsElement)
   }
 
   /**
@@ -90,7 +96,6 @@ export class PlayerControls extends EventEmitter {
       removeClass(this.controlsElement, 'lv-controls--hidden')
       this.emit('show')
     }
-    
     this.resetAutoHideTimer()
   }
 
@@ -198,7 +203,7 @@ export class PlayerControls extends EventEmitter {
     // 创建播放速度控制
     if (this.options.showPlaybackRateControl) {
       this.createPlaybackRateControl()
-      rightButtons.appendChild(this.playbackRateButton)
+      rightButtons.appendChild(this.playbackRateControl)
     }
 
     // 创建画中画按钮
@@ -255,26 +260,26 @@ export class PlayerControls extends EventEmitter {
       className: 'lv-controls__progress-bar'
     })
 
-    this.progressTrack = createElement('div', {
+    this.progressBarTrack = createElement('div', {
       className: 'lv-progress__track'
     })
 
-    this.progressBuffer = createElement('div', {
+    const progressBuffer = createElement('div', {
       className: 'lv-progress__buffer'
     })
 
-    const progressPlayed = createElement('div', {
-      className: 'lv-progress__played'
+    this.progressBarFilled = createElement('div', {
+      className: 'lv-progress__filled'
     })
 
-    this.progressThumb = createElement('div', {
+    this.progressBarThumb = createElement('div', {
       className: 'lv-progress__thumb'
     })
 
-    this.progressTrack.appendChild(this.progressBuffer)
-    this.progressTrack.appendChild(progressPlayed)
-    this.progressTrack.appendChild(this.progressThumb)
-    this.progressBar.appendChild(this.progressTrack)
+    this.progressBarTrack.appendChild(progressBuffer)
+    this.progressBarTrack.appendChild(this.progressBarFilled)
+    this.progressBarTrack.appendChild(this.progressBarThumb)
+    this.progressBar.appendChild(this.progressBarTrack)
   }
 
   /**
@@ -302,11 +307,11 @@ export class PlayerControls extends EventEmitter {
     this.volumeButton = createElement('button', {
       className: 'lv-controls__button lv-controls__volume-button',
       attributes: {
-        'aria-label': '音量',
+        'aria-label': '音量控制',
         'type': 'button'
       },
       innerHTML: `
-        <svg class="lv-icon lv-icon--volume" viewBox="0 0 24 24">
+        <svg class="lv-icon lv-icon--volume-high" viewBox="0 0 24 24">
           <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
         </svg>
         <svg class="lv-icon lv-icon--volume-muted" viewBox="0 0 24 24">
@@ -316,17 +321,88 @@ export class PlayerControls extends EventEmitter {
     })
 
     this.volumeSlider = createElement('div', {
-      className: 'lv-controls__volume-slider',
-      innerHTML: `
-        <div class="lv-volume__track">
-          <div class="lv-volume__fill"></div>
-          <div class="lv-volume__thumb"></div>
-        </div>
-      `
+      className: 'lv-controls__volume-slider'
     })
+
+    this.volumeSliderTrack = createElement('div', {
+      className: 'lv-volume-slider__track'
+    })
+
+    this.volumeSliderFilled = createElement('div', {
+      className: 'lv-volume-slider__filled'
+    })
+
+    this.volumeSliderThumb = createElement('div', {
+      className: 'lv-volume-slider__thumb'
+    })
+
+    this.volumeSliderTrack.appendChild(this.volumeSliderFilled)
+    this.volumeSliderTrack.appendChild(this.volumeSliderThumb)
+    this.volumeSlider.appendChild(this.volumeSliderTrack)
 
     this.volumeControl.appendChild(this.volumeButton)
     this.volumeControl.appendChild(this.volumeSlider)
+  }
+
+  /**
+   * 创建全屏按钮
+   */
+  private createFullscreenButton(): void {
+    this.fullscreenButton = createElement('button', {
+      className: 'lv-controls__button lv-controls__fullscreen-button',
+      attributes: {
+        'aria-label': '全屏',
+        'type': 'button'
+      },
+      innerHTML: `
+        <svg class="lv-icon lv-icon--fullscreen" viewBox="0 0 24 24">
+          <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+        </svg>
+        <svg class="lv-icon lv-icon--fullscreen-exit" viewBox="0 0 24 24">
+          <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+        </svg>
+      `
+    })
+  }
+
+  /**
+   * 创建播放速度控制
+   */
+  private createPlaybackRateControl(): void {
+    this.playbackRateControl = createElement('div', {
+      className: 'lv-controls__playback-rate',
+      innerHTML: `
+        <button class="lv-controls__button lv-controls__rate-button" type="button" aria-label="播放速度">
+          <span class="lv-rate__text">1x</span>
+        </button>
+        <div class="lv-rate__menu">
+          <div class="lv-rate__option" data-rate="0.5">0.5x</div>
+          <div class="lv-rate__option" data-rate="0.75">0.75x</div>
+          <div class="lv-rate__option lv-rate__option--active" data-rate="1">1x</div>
+          <div class="lv-rate__option" data-rate="1.25">1.25x</div>
+          <div class="lv-rate__option" data-rate="1.5">1.5x</div>
+          <div class="lv-rate__option" data-rate="2">2x</div>
+        </div>
+      `
+    })
+  }
+
+  /**
+   * 创建画中画按钮
+   */
+  private createPipButton(): void {
+    this.pipButton = createElement('button', {
+      className: 'lv-controls__button lv-controls__pip-button',
+      attributes: {
+        'aria-label': '画中画',
+        'type': 'button'
+      },
+      innerHTML: `
+        <svg class="lv-icon lv-icon--pip" viewBox="0 0 24 24">
+          <path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z"/>
+        </svg>
+      `
+    })
   }
 
   /**
@@ -386,35 +462,187 @@ export class PlayerControls extends EventEmitter {
    * 绑定事件
    */
   private bindEvents(): void {
-    // 播放器事件
-    this.player.on(PlayerEvent.PLAY, this.updatePlayButton.bind(this))
-    this.player.on(PlayerEvent.PAUSE, this.updatePlayButton.bind(this))
-    this.player.on(PlayerEvent.TIME_UPDATE, this.updateProgress.bind(this))
-    this.player.on(PlayerEvent.PROGRESS, this.updateBuffer.bind(this))
-    this.player.on(PlayerEvent.VOLUME_CHANGE, this.updateVolume.bind(this))
-    this.player.on(PlayerEvent.RATE_CHANGE, this.updatePlaybackRate.bind(this))
-    this.player.on(PlayerEvent.FULLSCREEN_CHANGE, this.updateFullscreenButton.bind(this))
-    this.player.on(PlayerEvent.PIP_CHANGE, this.updatePipButton.bind(this))
+    // 播放器事件监听
+    this.player.on('play', this.updatePlayButton.bind(this))
+    this.player.on('pause', this.updatePlayButton.bind(this))
+    this.player.on('timeupdate', this.updateProgress.bind(this))
+    this.player.on('progress', this.updateBuffer.bind(this))
+    this.player.on('volumechange', this.updateVolume.bind(this))
+    this.player.on('ratechange', this.updatePlaybackRate.bind(this))
+    this.player.on('fullscreenchange', this.updateFullscreenButton.bind(this))
+    this.player.on('enterpictureinpicture', this.updatePipButton.bind(this))
+    this.player.on('leavepictureinpicture', this.updatePipButton.bind(this))
 
-    // 控制栏事件
+    // 播放按钮事件
     if (this.playButton) {
-      this.playButton.addEventListener('click', () => this.player.toggle())
+      this.playButton.addEventListener('click', this.handlePlayClick.bind(this))
     }
 
+    // 进度条事件
+    if (this.progressBar) {
+      this.progressBarTrack.addEventListener('mousedown', this.handleProgressMouseDown.bind(this))
+      this.progressBarTrack.addEventListener('click', this.handleProgressClick.bind(this))
+    }
+
+    // 音量控制事件
+    if (this.volumeButton) {
+      this.volumeButton.addEventListener('click', this.handleVolumeClick.bind(this))
+    }
+    if (this.volumeSlider) {
+      this.volumeSliderTrack.addEventListener('mousedown', this.handleVolumeMouseDown.bind(this))
+      this.volumeSliderTrack.addEventListener('click', this.handleVolumeSliderClick.bind(this))
+    }
+
+    // 全屏按钮事件
     if (this.fullscreenButton) {
-      this.fullscreenButton.addEventListener('click', () => this.player.toggleFullscreen())
+      this.fullscreenButton.addEventListener('click', this.handleFullscreenClick.bind(this))
     }
 
+    // 画中画按钮事件
     if (this.pipButton) {
-      this.pipButton.addEventListener('click', () => this.player.togglePip())
+      this.pipButton.addEventListener('click', this.handlePipClick.bind(this))
     }
 
-    // 鼠标移动显示控制栏
-    this.container.addEventListener('mousemove', this.show.bind(this))
-    this.container.addEventListener('mouseleave', this.resetAutoHideTimer.bind(this))
+    // 播放速度控制事件
+    if (this.playbackRateControl) {
+      const rateButton = this.playbackRateControl.querySelector('.lv-controls__rate-button')
+      const rateMenu = this.playbackRateControl.querySelector('.lv-rate__menu')
+      const rateOptions = this.playbackRateControl.querySelectorAll('.lv-rate__option')
+
+      rateButton?.addEventListener('click', () => {
+        rateMenu?.classList.toggle('lv-rate__menu--visible')
+      })
+
+      rateOptions.forEach(option => {
+        option.addEventListener('click', (e) => {
+          const rate = parseFloat((e.target as HTMLElement).dataset.rate || '1')
+          this.handlePlaybackRateChange(rate)
+        })
+      })
+    }
+
+    // 控制栏自动隐藏
+    if (this.options.autoHide) {
+      this.controlsElement.addEventListener('mouseenter', this.show.bind(this))
+      this.controlsElement.addEventListener('mouseleave', this.resetAutoHideTimer.bind(this))
+      this.player.container.addEventListener('mousemove', this.show.bind(this))
+      this.player.container.addEventListener('mouseleave', this.resetAutoHideTimer.bind(this))
+    }
+  }
+
+  /**
+   * 解绑事件
+   */
+  private unbindEvents(): void {
+    // 移除播放器事件监听
+    this.player.off('play', this.updatePlayButton.bind(this))
+    this.player.off('pause', this.updatePlayButton.bind(this))
+    this.player.off('timeupdate', this.updateProgress.bind(this))
+    this.player.off('progress', this.updateBuffer.bind(this))
+    this.player.off('volumechange', this.updateVolume.bind(this))
+    this.player.off('ratechange', this.updatePlaybackRate.bind(this))
+    this.player.off('fullscreenchange', this.updateFullscreenButton.bind(this))
+    this.player.off('enterpictureinpicture', this.updatePipButton.bind(this))
+    this.player.off('leavepictureinpicture', this.updatePipButton.bind(this))
+  }
+
+  /**
+   * 事件处理方法
+   */
+  private handlePlayClick(): void {
+    this.player.toggle()
+  }
+
+  private handleProgressMouseDown(e: MouseEvent): void {
+    e.preventDefault()
+    this.isDraggingProgress = true
+    this.handleProgressMove(e)
     
-    // 触摸事件
-    this.container.addEventListener('touchstart', this.show.bind(this))
+    const handleMouseMove = (e: MouseEvent) => this.handleProgressMove(e)
+    const handleMouseUp = () => {
+      this.isDraggingProgress = false
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+    
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
+
+  private handleProgressClick(e: MouseEvent): void {
+    if (this.isDraggingProgress) return
+    this.handleProgressMove(e)
+  }
+
+  private handleProgressMove(e: MouseEvent): void {
+    if (!this.progressBarTrack) return
+    
+    const rect = this.progressBarTrack.getBoundingClientRect()
+    const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+    const time = percent * this.player.status.duration
+    
+    this.player.seek(time)
+  }
+
+  private handleVolumeClick(): void {
+    this.player.toggleMute()
+  }
+
+  private handleVolumeMouseDown(e: MouseEvent): void {
+    e.preventDefault()
+    this.isDraggingVolume = true
+    this.handleVolumeMove(e)
+    
+    const handleMouseMove = (e: MouseEvent) => this.handleVolumeMove(e)
+    const handleMouseUp = () => {
+      this.isDraggingVolume = false
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+    
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
+
+  private handleVolumeSliderClick(e: MouseEvent): void {
+    if (this.isDraggingVolume) return
+    this.handleVolumeMove(e)
+  }
+
+  private handleVolumeMove(e: MouseEvent): void {
+    if (!this.volumeSliderTrack) return
+    
+    const rect = this.volumeSliderTrack.getBoundingClientRect()
+    const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+    
+    this.player.setVolume(percent)
+  }
+
+  private handleFullscreenClick(): void {
+    this.player.toggleFullscreen()
+  }
+
+  private handlePipClick(): void {
+    this.player.togglePip()
+  }
+
+  private handlePlaybackRateChange(rate: number): void {
+    this.player.setPlaybackRate(rate)
+    
+    // 关闭菜单
+    const rateMenu = this.playbackRateControl?.querySelector('.lv-rate__menu')
+    rateMenu?.classList.remove('lv-rate__menu--visible')
+  }
+
+  private resetAutoHideTimer(): void {
+    if (!this.options.autoHide) return
+    
+    clearTimeout(this.autoHideTimer)
+    this.autoHideTimer = setTimeout(() => {
+      if (!this.player.status.paused) {
+        this.hide()
+      }
+    }, this.options.autoHideDelay || 3000)
   }
 
   /**
@@ -504,15 +732,29 @@ export class PlayerControls extends EventEmitter {
 
     const { volume, muted } = this.player.status
     
-    if (muted) {
-      addClass(this.volumeButton, 'lv-controls__button--muted')
-    } else {
-      removeClass(this.volumeButton, 'lv-controls__button--muted')
+    // 更新音量按钮状态
+    if (this.volumeButton) {
+      if (muted || volume === 0) {
+        addClass(this.volumeButton, 'lv-controls__button--muted')
+      } else {
+        removeClass(this.volumeButton, 'lv-controls__button--muted')
+      }
     }
 
-    const volumeFill = this.volumeSlider?.querySelector('.lv-volume__fill') as HTMLElement
-    if (volumeFill) {
-      setStyle(volumeFill, { width: `${volume * 100}%` })
+    // 更新音量滑块
+    if (this.volumeSlider) {
+      const volumeFilled = this.volumeSlider.querySelector('.lv-volume__filled') as HTMLElement
+      const volumeThumb = this.volumeSlider.querySelector('.lv-volume__thumb') as HTMLElement
+      
+      const volumePercent = muted ? 0 : volume * 100
+      
+      if (volumeFilled) {
+        setStyle(volumeFilled, { width: `${volumePercent}%` })
+      }
+      
+      if (volumeThumb) {
+        setStyle(volumeThumb, { left: `${volumePercent}%` })
+      }
     }
   }
 
@@ -520,10 +762,40 @@ export class PlayerControls extends EventEmitter {
    * 更新播放速度显示
    */
   private updatePlaybackRate(): void {
-    if (!this.playbackRateButton) return
+    if (!this.playbackRateControl) return
 
     const { playbackRate } = this.player.status
-    this.playbackRateButton.textContent = `${playbackRate}x`
+    const rateButton = this.playbackRateControl.querySelector('.lv-controls__rate-button')
+    
+    if (rateButton) {
+      rateButton.textContent = `${playbackRate}x`
+    }
+
+    // 更新选中状态
+    const rateOptions = this.playbackRateControl.querySelectorAll('.lv-rate__option')
+    rateOptions.forEach(option => {
+      const rate = parseFloat((option as HTMLElement).dataset.rate || '1')
+      if (rate === playbackRate) {
+        addClass(option as HTMLElement, 'lv-rate__option--active')
+      } else {
+        removeClass(option as HTMLElement, 'lv-rate__option--active')
+      }
+    })
+  }
+
+  /**
+   * 更新全屏按钮
+   */
+  private updateFullscreenButton(): void {
+    if (!this.fullscreenButton) return
+
+    const { fullscreen } = this.player.status
+    
+    if (fullscreen) {
+      addClass(this.fullscreenButton, 'lv-controls__button--fullscreen')
+    } else {
+      removeClass(this.fullscreenButton, 'lv-controls__button--fullscreen')
+    }
   }
 
   /**

@@ -28,10 +28,10 @@ export type { PipOptions, PipConfig } from './pip'
  * 内置插件注册表
  */
 export const BUILTIN_PLUGINS = {
-  danmaku: DanmakuPlugin,
-  subtitle: SubtitlePlugin,
-  screenshot: ScreenshotPlugin,
-  pip: PipPlugin
+  get danmaku() { return DanmakuPlugin },
+  get subtitle() { return SubtitlePlugin },
+  get screenshot() { return ScreenshotPlugin },
+  get pip() { return PipPlugin }
 } as const
 
 /**

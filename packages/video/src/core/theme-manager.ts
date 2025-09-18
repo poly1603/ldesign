@@ -17,9 +17,9 @@ import type {
 } from '../types/theme'
 import type { IVideoPlayer } from '../types/player'
 import type { DeviceInfo } from '../types/device'
-import { defaultTheme } from '../../themes/default'
-import { darkTheme } from '../../themes/dark'
-import { lightTheme } from '../../themes/light'
+import { defaultTheme } from '../themes/default'
+import { darkTheme } from '../themes/dark'
+import { lightTheme } from '../themes/light'
 
 /**
  * 主题管理器实现

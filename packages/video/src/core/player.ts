@@ -9,6 +9,7 @@ import { createElement, querySelector } from '../utils/dom'
 import { generateId } from '../utils/common'
 import { PlayerState, PlayerEvent } from '../types/player'
 import { PluginManager } from './plugin-manager'
+import { PlayerControls } from './controls'
 import type {
   IVideoPlayer,
   PlayerOptions,
@@ -25,6 +26,9 @@ import type { IPlugin } from '../types/plugin'
 export class VideoPlayer extends EventEmitter implements IVideoPlayer {
   private _container: HTMLElement
   private _videoElement: HTMLVideoElement
+  private _posterElement?: HTMLElement
+  private _loadingElement?: HTMLElement
+  private _controls?: PlayerControls
   private _options: PlayerOptions
   private _status: PlayerStatus
   private _deviceInfo: DeviceInfo
@@ -45,7 +49,11 @@ export class VideoPlayer extends EventEmitter implements IVideoPlayer {
     this._pluginManager = new PluginManager(this)
 
     this.setupContainer()
+    this.createPosterElement()
+    this.createLoadingElement()
+    this.createControls()
     this.bindVideoEvents()
+    this.bindControlEvents()
   }
 
   /**
@@ -642,6 +650,8 @@ export class VideoPlayer extends EventEmitter implements IVideoPlayer {
     switch (type) {
       case 'play':
         this.updateStatus({ state: PlayerState.PLAYING })
+        this.hidePoster()
+        this.hideLoading()
         this.emit(PlayerEvent.PLAY)
         break
 
@@ -652,7 +662,23 @@ export class VideoPlayer extends EventEmitter implements IVideoPlayer {
 
       case 'ended':
         this.updateStatus({ state: PlayerState.ENDED })
+        this.showPoster()
         this.emit(PlayerEvent.ENDED)
+        break
+
+      case 'loadstart':
+        this.showLoading()
+        this.emit(PlayerEvent.LOAD_START)
+        break
+
+      case 'canplay':
+        this.hideLoading()
+        this.emit(PlayerEvent.CAN_PLAY)
+        break
+
+      case 'waiting':
+        this.showLoading()
+        this.emit(PlayerEvent.WAITING)
         break
 
       case 'timeupdate':
@@ -679,6 +705,7 @@ export class VideoPlayer extends EventEmitter implements IVideoPlayer {
 
       case 'error':
         this.updateStatus({ state: PlayerState.ERROR })
+        this.hideLoading()
         this.emit(PlayerEvent.ERROR, { error: this._videoElement.error })
         break
     }
@@ -789,5 +816,104 @@ export class VideoPlayer extends EventEmitter implements IVideoPlayer {
       // 触发重新布局
       this.handleResize()
     }, 100)
+  }
+
+  /**
+   * 创建海报元素
+   */
+  private createPosterElement(): void {
+    if (!this._options.poster) return
+
+    this._posterElement = createElement('div', {
+      className: 'lv-player__poster',
+      innerHTML: `<img src="${this._options.poster}" alt="Video poster" />`
+    })
+
+    this._container.appendChild(this._posterElement)
+  }
+
+  /**
+   * 创建加载动画元素
+   */
+  private createLoadingElement(): void {
+    this._loadingElement = createElement('div', {
+      className: 'lv-player__loading',
+      innerHTML: `
+        <div class="lv-loading__spinner">
+          <div class="lv-loading__circle"></div>
+        </div>
+        <div class="lv-loading__text">加载中...</div>
+      `
+    })
+
+    this._container.appendChild(this._loadingElement)
+  }
+
+  /**
+   * 创建控制栏
+   */
+  private createControls(): void {
+    if (this._options.controls === false) return
+
+    this._controls = new PlayerControls(this, this._options.controlsOptions || {})
+  }
+
+  /**
+   * 绑定控制栏事件
+   */
+  private bindControlEvents(): void {
+    if (!this._controls) return
+
+    // 播放/暂停
+    this._controls.on('play', () => this.play())
+    this._controls.on('pause', () => this.pause())
+    
+    // 进度跳转
+    this._controls.on('seek', (time: number) => this.seek(time))
+    
+    // 音量控制
+    this._controls.on('volume', (volume: number) => this.setVolume(volume))
+    this._controls.on('mute', () => this.mute())
+    this._controls.on('unmute', () => this.unmute())
+    
+    // 全屏控制
+    this._controls.on('fullscreen', () => this.requestFullscreen())
+    this._controls.on('exitFullscreen', () => this.exitFullscreen())
+  }
+
+  /**
+   * 显示海报
+   */
+  private showPoster(): void {
+    if (this._posterElement) {
+      this._posterElement.style.display = 'block'
+    }
+  }
+
+  /**
+   * 隐藏海报
+   */
+  private hidePoster(): void {
+    if (this._posterElement) {
+      this._posterElement.style.display = 'none'
+    }
+  }
+
+  /**
+   * 显示加载动画
+   */
+  private showLoading(): void {
+    if (this._loadingElement) {
+      this._loadingElement.style.display = 'flex'
+    }
+  }
+
+  /**
+   * 隐藏加载动画
+   */
+  private hideLoading(): void {
+    if (this._loadingElement) {
+      this._loadingElement.style.display = 'none'
+    }
   }
 }
