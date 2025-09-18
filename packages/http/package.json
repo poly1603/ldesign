@@ -32,6 +32,16 @@
       "types": "./es/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
+    },
+    "./vue": {
+      "types": "./es/vue/index.d.ts",
+      "import": "./es/vue/index.js",
+      "require": "./lib/vue/index.cjs"
+    },
+    "./vue/index.ts": {
+      "types": "./es/vue/index.d.ts",
+      "import": "./es/vue/index.js",
+      "require": "./lib/vue/index.cjs"
     }
   },
   "main": "lib/index.cjs",
@@ -40,6 +50,8 @@
   "files": [
     "CHANGELOG.md",
     "README.md",
+    "es",
+    "lib",
     "dist"
   ],
   "engines": {

@@ -41,10 +41,37 @@ export class AliasManager {
   }
 
   /**
+   * 设置当前阶段
+   */
+  setStage(stage: 'dev' | 'build' | 'preview') {
+    this.currentStage = stage
+  }
+
+  /**
+   * 检查当前阶段是否启用别名
+   */
+  private isStageEnabled(): boolean {
+    if (!this.options.enabled) {
+      return false
+    }
+
+    const stages = this.options.stages
+    if (stages === 'all') {
+      return true
+    }
+
+    if (Array.isArray(stages)) {
+      return stages.includes(this.currentStage)
+    }
+
+    return true
+  }
+
+  /**
    * 生成别名配置
    */
   generateAliases(): AliasEntry[] {
-    if (!this.options.enabled) {
+    if (!this.isStageEnabled()) {
       return []
     }
 
@@ -260,7 +287,14 @@ export class AliasManager {
    * 检查别名是否启用
    */
   isEnabled(): boolean {
-    return this.options.enabled === true
+    return this.isStageEnabled()
+  }
+
+  /**
+   * 获取当前阶段
+   */
+  getCurrentStage(): 'dev' | 'build' | 'preview' {
+    return this.currentStage
   }
 
   /**

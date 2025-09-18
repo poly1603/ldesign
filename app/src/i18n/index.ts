@@ -5,7 +5,7 @@
  * 保持对外导出的 API 不变，避免影响现有调用。
  */
 
-import { createI18nEnginePlugin } from '@ldesign/i18n/vue/index.ts'
+import { createI18nEnginePlugin } from '@ldesign/i18n/vue'
 // 导入语言包 - 使用 TypeScript 文件
 import zhCN from './locales/zh-CN'
 import en from './locales/en'

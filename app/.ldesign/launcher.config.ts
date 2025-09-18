@@ -5,9 +5,10 @@ export default defineConfig({
   launcher: {
     preset: 'ldesign',
 
-    // 别名配置
+    // 别名配置 - 只在开发阶段生效，构建时使用包的产物
     alias: {
       enabled: true,
+      stages: ['dev'], // 只在 dev 阶段启用别名，build 和 preview 时使用构建产物
       ldesign: true,
       polyfills: true,
       presets: ['ldesign', 'polyfills', 'common']

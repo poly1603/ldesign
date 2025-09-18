@@ -26,8 +26,8 @@
 import { ref, reactive, computed, onMounted, markRaw, watch } from 'vue'
 import { useRouter } from '@ldesign/router'
 import { TemplateRenderer } from '@ldesign/template'
-import { useDevice } from '@ldesign/device/vue/index.ts'
-import { useBreakpoints } from '@ldesign/device/vue/composables/useBreakpoints.ts'
+import { useDevice } from '@ldesign/device/vue'
+import { useBreakpoints } from '@ldesign/device/vue/composables/useBreakpoints'
 
 /**
  * 登录页面组件

@@ -8,9 +8,9 @@
  * - CSS变量自动注入
  */
 
-import { createColorEnginePlugin } from '@ldesign/color/vue/index.ts'
-import { globalThemeApplier } from '@ldesign/color/index.ts'
-import type { ColorMode } from '@ldesign/color/index.ts'
+import { createColorEnginePlugin } from '@ldesign/color/vue'
+import { globalThemeApplier } from '@ldesign/color'
+import type { ColorMode } from '@ldesign/color'
 
 // 暴露全局主题应用器到window对象，供组件使用
 if (typeof window !== 'undefined') {

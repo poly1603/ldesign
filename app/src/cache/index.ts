@@ -10,8 +10,8 @@
  * - Vue 3 深度集成
  */
 
-import { createCacheEnginePlugin } from '@ldesign/cache/index.ts'
-import type { CacheEnginePluginOptions } from '@ldesign/cache/index.ts'
+import { createCacheEnginePlugin } from '@ldesign/cache'
+import type { CacheEnginePluginOptions } from '@ldesign/cache'
 
 /**
  * 缓存配置

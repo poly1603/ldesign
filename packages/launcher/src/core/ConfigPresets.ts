@@ -623,7 +623,7 @@ export class LDesignPreset extends BasePreset {
       // 基础 resolve 配置
       resolve: {
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.vue', '.json'],
-        alias: createAliasManager().generateAliases()
+        alias: [] // 将在运行时根据阶段动态生成
       },
 
       // 优化依赖配置

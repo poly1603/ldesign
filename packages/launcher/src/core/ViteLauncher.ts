@@ -26,6 +26,7 @@ import { SmartPluginManager } from './SmartPluginManager'
 import { createConfigInjectionPlugin, getClientConfigUtils } from '../plugins/config-injection'
 import { environmentManager } from '../utils/env'
 import { createSSLManager, type SSLConfig } from '../utils/ssl'
+import { createAliasManager } from './AliasManager'
 
 // 导入类型定义
 import type {
@@ -115,6 +116,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
   /** 智能插件管理器 */
   private smartPluginManager: SmartPluginManager
 
+  /** 别名管理器 */
+  private aliasManager: ReturnType<typeof createAliasManager>
+
   /**
    * 构造函数
    * 
@@ -187,6 +191,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     })
     this.smartPluginManager = new SmartPluginManager(this.cwd, smartLogger)
 
+    // 初始化别名管理器
+    this.aliasManager = createAliasManager(this.cwd, this.config.launcher?.alias)
+
     // 设置事件监听器
     this.setupEventListeners(options.listeners)
 
@@ -255,6 +262,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
 
       // 合并配置
       let mergedConfig = config ? this.mergeConfig(this.config, config) : this.config
+
+      // 应用别名配置（dev 阶段）
+      mergedConfig = this.applyAliasConfig(mergedConfig, 'dev')
 
       // 添加智能检测的插件
       mergedConfig = await this.enhanceConfigWithSmartPlugins(mergedConfig)
@@ -437,6 +447,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       // 合并配置
       let mergedConfig = config ? this.mergeConfig(this.config, config) : this.config
 
+      // 应用别名配置（build 阶段）
+      mergedConfig = this.applyAliasConfig(mergedConfig, 'build')
+
       // 添加智能检测的插件
       mergedConfig = await this.enhanceConfigWithSmartPlugins(mergedConfig)
 
@@ -553,6 +566,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
 
       // 合并配置
       let mergedConfig = config ? this.mergeConfig(this.config, config) : this.config
+
+      // 应用别名配置（preview 阶段）
+      mergedConfig = this.applyAliasConfig(mergedConfig, 'preview')
 
       // 处理HTTPS配置
       mergedConfig = await this.processHTTPSConfig(mergedConfig)
@@ -1170,6 +1186,43 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       this.handleError(error as Error, '销毁实例失败')
       throw error
     }
+  }
+
+  /**
+   * 应用别名配置
+   *
+   * @param config - 原始配置
+   * @param stage - 当前阶段
+   * @returns 应用别名后的配置
+   */
+  private applyAliasConfig(config: ViteLauncherConfig, stage: 'dev' | 'build' | 'preview'): ViteLauncherConfig {
+    // 设置当前阶段
+    this.aliasManager.setStage(stage)
+
+    // 生成别名配置
+    const aliases = this.aliasManager.generateAliases()
+
+    // 确保 resolve 配置存在
+    if (!config.resolve) {
+      config.resolve = {}
+    }
+
+    // 应用别名配置
+    if (aliases.length > 0) {
+      config.resolve.alias = aliases
+      this.logger.debug(`别名配置已应用 (${stage})`, {
+        count: aliases.length,
+        enabled: this.aliasManager.isEnabled()
+      })
+    } else {
+      config.resolve.alias = []
+      this.logger.debug(`别名配置已禁用 (${stage})`, {
+        stage,
+        enabled: this.aliasManager.isEnabled()
+      })
+    }
+
+    return config
   }
 
   /**

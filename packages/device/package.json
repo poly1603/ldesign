@@ -30,6 +30,21 @@
       "types": "./types/vue/index.d.ts",
       "import": "./es/vue/index.js",
       "require": "./cjs/vue/index.cjs"
+    },
+    "./vue/index.ts": {
+      "types": "./types/vue/index.d.ts",
+      "import": "./es/vue/index.js",
+      "require": "./cjs/vue/index.cjs"
+    },
+    "./vue/composables/useBreakpoints": {
+      "types": "./types/vue/composables/useBreakpoints.d.ts",
+      "import": "./es/vue/composables/useBreakpoints.js",
+      "require": "./cjs/vue/composables/useBreakpoints.cjs"
+    },
+    "./vue/composables/useBreakpoints.ts": {
+      "types": "./types/vue/composables/useBreakpoints.d.ts",
+      "import": "./es/vue/composables/useBreakpoints.js",
+      "require": "./cjs/vue/composables/useBreakpoints.cjs"
     }
   },
   "main": "cjs/index.cjs",

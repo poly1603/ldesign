@@ -16,26 +16,38 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
+    },
+    "./index.ts": {
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
     },
     "./vue": {
-      "types": "./dist/vue/index.d.ts",
-      "import": "./dist/vue/index.js",
-      "require": "./dist/vue/index.cjs"
+      "types": "./es/vue/index.d.ts",
+      "import": "./es/vue/index.js",
+      "require": "./lib/vue/index.cjs"
     },
-    "./style.css": "./dist/index.css"
+    "./vue/index.ts": {
+      "types": "./es/vue/index.d.ts",
+      "import": "./es/vue/index.js",
+      "require": "./lib/vue/index.cjs"
+    },
+    "./style.css": "./es/index-lib.css"
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
+  "main": "lib/index.cjs",
+  "module": "es/index.js",
   "unpkg": "dist/index.umd.js",
   "jsdelivr": "dist/index.umd.js",
-  "types": "dist/index.d.ts",
-  "style": "dist/index.css",
+  "types": "es/index.d.ts",
+  "style": "es/index-lib.css",
   "files": [
     "CHANGELOG.md",
     "README.md",
+    "es",
+    "lib",
     "dist"
   ],
   "scripts": {
