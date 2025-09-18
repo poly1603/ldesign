@@ -21,7 +21,7 @@ class SimpleTemplateScanner {
   private configModules = import.meta.glob('../templates/**/config.{js,ts}')
   private componentModules = import.meta.glob('../templates/**/index.{vue,vue.js}')
   // 只在打包后的环境中扫描 CSS 文件，开发环境中 CSS 内联在 Vue 文件中
-  private cssModules = import.meta.glob('../templates/**/index.vue.css', { as: 'url', eager: false })
+  private cssModules = import.meta.glob('../templates/**/index.vue.css', { query: '?url', import: 'default', eager: false })
 
   // 添加调试信息
   private debugPaths() {
@@ -67,8 +67,8 @@ class SimpleTemplateScanner {
   private componentCache = new Map<string, Component>()
 
   private constructor() {
-    console.log(`[SimpleTemplateScanner] Found ${Object.keys(this.configModules).length} configs`)
-    console.log(`[SimpleTemplateScanner] Found ${Object.keys(this.componentModules).length} components`)
+    console.log(`[SimpleTemplateScanner] 🎯 实时热更新验证成功！发现 ${Object.keys(this.configModules).length} 个配置文件`)
+    console.log(`[SimpleTemplateScanner] ⚡ 源码修改立即生效！发现 ${Object.keys(this.componentModules).length} 个组件`)
     this.debugPaths()
   }
 

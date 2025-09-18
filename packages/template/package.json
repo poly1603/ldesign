@@ -112,7 +112,7 @@
     },
     "./es/components/TemplateRenderer.css": "./es/components/TemplateRenderer.css",
     "./es/components/TemplateSelector.css": "./es/components/TemplateSelector.css",
-    "./es/composables/useTemplate.css": "./es/composables/useTemplate.css",
+    "./es/composables/index.css": "./es/composables/index.css",
     "./es/index.css": "./es/index.css",
     "./es/templates/login/desktop/creative/index.vue.css": "./es/templates/login/desktop/creative/index.vue.css",
     "./es/templates/login/desktop/default/index.vue.css": "./es/templates/login/desktop/default/index.vue.css",

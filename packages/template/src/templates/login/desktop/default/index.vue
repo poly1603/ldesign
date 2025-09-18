@@ -132,32 +132,15 @@ onMounted(() => {
       <div class="login-card">
         <div class="login-header">
           <slot name="header">
-            <div class="logo-section">
-              <slot name="logo">
-                <div v-if="logoUrl" class="logo-image">
-                  <img :src="logoUrl" :alt="title">
-                </div>
-                <div v-else class="logo-icon">
-                  🔐
-                </div>
-              </slot>
-              <h1 class="login-title">
-                {{ title }}
-              </h1>
-              <p class="login-subtitle">
-                {{ subtitle }}
-              </p>
-            </div>
             <div class="template-selector-slot">
               <slot name="selector" />
             </div>
-
           </slot>
         </div>
 
         <form class="login-form" @submit.prevent="handleSubmit">
           <div class="form-group">
-            <label for="username" class="form-label">用户名</label>
+            <label for="username" class="form-label">用户名1444</label>
             <div class="input-wrapper">
               <div class="input-icon">
                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -202,7 +185,7 @@ onMounted(() => {
             </label>
 
             <a v-if="showForgot" href="#" class="forgot-link" @click.prevent="handleForgot">
-              忘记密码？
+              忘记密码333？
             </a>
           </div>
 
