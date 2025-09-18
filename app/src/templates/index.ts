@@ -1,6 +1,8 @@
 import { createTemplateEnginePlugin } from "@ldesign/template";
-// 导入template包的样式文件
-import "@ldesign/template/es/index.css";
+// 导入template包的样式文件（开发时使用源码中的样式）
+import "@ldesign/template/styles/animations.css";
+import "@ldesign/template/styles/design-system.css";
+import "@ldesign/template/styles/z-index.css";
 
 
 export const templatePlugin = createTemplateEnginePlugin({

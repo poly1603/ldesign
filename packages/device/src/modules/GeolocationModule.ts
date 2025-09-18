@@ -36,11 +36,17 @@ export class GeolocationModule extends EventEmitter<{ positionChange: Geolocatio
     try {
       // 获取当前位置（不阻塞初始化，避免在测试环境未注入回调时挂起）
       this.getCurrentPosition().catch(error => {
-        console.warn('Failed to get initial position:', error)
+        // 静默处理权限被拒绝的情况，避免控制台警告
+        if (error.message !== 'Permission denied') {
+          console.warn('Failed to get initial position:', error)
+        }
       })
     }
     catch (error) {
-      console.warn('Failed to get initial position:', error)
+      // 静默处理权限被拒绝的情况，避免控制台警告
+      if ((error as Error).message !== 'Permission denied') {
+        console.warn('Failed to get initial position:', error)
+      }
     }
   }
 

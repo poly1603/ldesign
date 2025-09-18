@@ -16,17 +16,8 @@
             <p><strong>操作结果:</strong> {{ basicResult || '无' }}</p>
           </div>
           <div class="controls">
-            <input
-              v-model="basicKey"
-              placeholder="输入缓存键，例如：user:123"
-              class="input-field"
-            />
-            <textarea
-              v-model="basicValue"
-              placeholder="输入缓存值，支持JSON格式"
-              class="textarea"
-              rows="3"
-            ></textarea>
+            <input v-model="basicKey" placeholder="输入缓存键，例如：user:123" class="input-field" />
+            <textarea v-model="basicValue" placeholder="输入缓存值，支持JSON格式" class="textarea" rows="3"></textarea>
             <button @click="setCache" class="btn btn-primary">设置缓存</button>
             <button @click="getCache" class="btn btn-secondary">获取缓存</button>
             <button @click="deleteCache" class="btn btn-warning">删除缓存</button>
@@ -109,7 +100,7 @@ const setCache = async () => {
     basicResult.value = '缓存引擎未初始化'
     return
   }
-  
+
   try {
     await cache.set(basicKey.value, basicValue.value)
     basicResult.value = '设置成功'
@@ -124,7 +115,7 @@ const getCache = async () => {
     basicResult.value = '缓存引擎未初始化'
     return
   }
-  
+
   try {
     const value = await cache.get(basicKey.value)
     basicResult.value = value !== undefined ? JSON.stringify(value, null, 2) : '缓存不存在'
@@ -139,7 +130,7 @@ const deleteCache = async () => {
     basicResult.value = '缓存引擎未初始化'
     return
   }
-  
+
   try {
     await cache.delete(basicKey.value)
     basicResult.value = '删除成功'
@@ -154,7 +145,7 @@ const hasCache = async () => {
     basicResult.value = '缓存引擎未初始化'
     return
   }
-  
+
   try {
     const exists = await cache.has(basicKey.value)
     basicResult.value = exists ? '缓存存在' : '缓存不存在'
@@ -167,18 +158,18 @@ const hasCache = async () => {
 // 批量操作
 const performBatchSet = async () => {
   if (!cache) return
-  
+
   const startTime = performance.now()
-  
+
   try {
     for (let i = 0; i < 10; i++) {
       await cache.set(`batch-key-${i}`, `batch-value-${i}`)
     }
-    
+
     const endTime = performance.now()
     batchOperations.value += 10
     averageTime.value = Number(((endTime - startTime) / 10).toFixed(3))
-    
+
     updateStats()
   } catch (error) {
     console.error('批量设置失败:', error)
@@ -187,17 +178,17 @@ const performBatchSet = async () => {
 
 const performBatchGet = async () => {
   if (!cache) return
-  
+
   const startTime = performance.now()
-  
+
   try {
     for (let i = 0; i < 10; i++) {
       await cache.get(`batch-key-${i}`)
     }
-    
+
     const endTime = performance.now()
     averageTime.value = Number(((endTime - startTime) / 10).toFixed(3))
-    
+
     updateStats()
   } catch (error) {
     console.error('批量获取失败:', error)
@@ -206,7 +197,7 @@ const performBatchGet = async () => {
 
 const clearAll = async () => {
   if (!cache) return
-  
+
   try {
     await cache.clear()
     updateStats()
@@ -217,12 +208,12 @@ const clearAll = async () => {
 
 // 更新统计信息
 const updateStats = async () => {
-  if (!cache) return
-  
+  if (!cache || !cache.manager) return
+
   try {
-    const cacheStats = await cache.getStats()
-    stats.count = cacheStats.count || 0
-    stats.size = cacheStats.size || 0
+    const cacheStats = await cache.manager.getStats()
+    stats.count = cacheStats.totalItems || 0
+    stats.size = cacheStats.totalSize || 0
     stats.hitRate = Math.round((cacheStats.hitRate || 0) * 100)
   } catch (error) {
     console.error('获取统计信息失败:', error)
@@ -257,12 +248,12 @@ onMounted(async () => {
 .page-header {
   text-align: center;
   margin-bottom: 32px;
-  
+
   h1 {
     color: var(--ldesign-text-color-primary);
     margin-bottom: 8px;
   }
-  
+
   p {
     color: var(--ldesign-text-color-secondary);
     font-size: 16px;
@@ -279,7 +270,7 @@ onMounted(async () => {
   border: 1px solid var(--ldesign-border-color);
   border-radius: 8px;
   padding: 24px;
-  
+
   h2 {
     color: var(--ldesign-text-color-primary);
     margin-bottom: 16px;
@@ -297,11 +288,11 @@ onMounted(async () => {
   border: 1px solid var(--ldesign-border-color);
   border-radius: 6px;
   padding: 16px;
-  
+
   p {
     margin: 8px 0;
     color: var(--ldesign-text-color-primary);
-    
+
     strong {
       color: var(--ldesign-brand-color);
     }
@@ -314,14 +305,15 @@ onMounted(async () => {
   flex-wrap: wrap;
 }
 
-.input-field, .textarea {
+.input-field,
+.textarea {
   flex: 1;
   min-width: 200px;
   padding: 8px 12px;
   border: 1px solid var(--ldesign-border-color);
   border-radius: 6px;
   font-size: 14px;
-  
+
   &:focus {
     outline: none;
     border-color: var(--ldesign-brand-color);
@@ -340,38 +332,38 @@ onMounted(async () => {
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s ease;
-  
+
   &.btn-primary {
     background: var(--ldesign-brand-color);
     color: white;
-    
+
     &:hover {
       background: var(--ldesign-brand-color-hover);
     }
   }
-  
+
   &.btn-secondary {
     background: var(--ldesign-gray-color-6);
     color: white;
-    
+
     &:hover {
       background: var(--ldesign-gray-color-7);
     }
   }
-  
+
   &.btn-warning {
     background: var(--ldesign-warning-color);
     color: white;
-    
+
     &:hover {
       background: var(--ldesign-warning-color-hover);
     }
   }
-  
+
   &.btn-success {
     background: var(--ldesign-success-color);
     color: white;
-    
+
     &:hover {
       background: var(--ldesign-success-color-hover);
     }
@@ -392,7 +384,7 @@ onMounted(async () => {
   background: var(--ldesign-bg-color-component);
   border: 1px solid var(--ldesign-border-color);
   border-radius: 6px;
-  
+
   strong {
     color: var(--ldesign-text-color-primary);
   }

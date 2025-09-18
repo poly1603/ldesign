@@ -117,5 +117,9 @@
       "path": "dist/index.js",
       "limit": "60 KB"
     }
-  ]
+  ],
+  "dependencies": {
+    "alova": "^3.3.4",
+    "axios": "^1.12.2"
+  }
 }

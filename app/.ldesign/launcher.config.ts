@@ -1,36 +1,77 @@
 import { defineConfig } from '@ldesign/launcher'
+import { resolve } from 'path'
+import vue from '@vitejs/plugin-vue'
+import vueJsx from '@vitejs/plugin-vue-jsx'
 
 export default defineConfig({
-  // 使用 LDesign 预设，包含通用的构建优化和 polyfills
+  // 使用 LDesign 预设，包含通用的构建优化
   launcher: {
     preset: 'ldesign',
+  },
 
-    // 别名配置 - 只在开发阶段生效，构建时使用包的产物
-    alias: {
-      enabled: true,
-      stages: ['dev'], // 只在 dev 阶段启用别名，build 和 preview 时使用构建产物
-      ldesign: true, // 启用内置的 @ldesign 包别名
-      polyfills: true, // 启用 Node.js polyfill 别名
-      presets: ['ldesign', 'polyfills', 'common'], // 使用预设别名
+  // 显式添加插件
+  plugins: [
+    vue() as any,
+    vueJsx({
+      transformOn: true,
+      mergeProps: true,
+    }) as any
+  ],
 
-      // 自定义别名映射 - 用户可以根据需要添加或修改
-      custom: [
-        // 示例：项目根目录别名
-        { find: '@', replacement: './src' },
+  // Vite 标准的 resolve 配置
+  resolve: {
+    alias: [
+      // 用户自定义别名
+      { find: '@components', replacement: './src/components' },
+      { find: '@utils', replacement: './src/utils' },
+      { find: '@assets', replacement: './src/assets' },
+      { find: '@styles', replacement: './src/styles' },
 
-        // 示例：自定义 @ldesign 包别名（如果需要覆盖内置的）
-        // { find: '@ldesign/http', replacement: '../packages/http/src' },
-        // { find: '@ldesign/api', replacement: '../packages/api/src' },
-        // { find: '@ldesign/ui', replacement: '../packages/ui/src' },
-
-        // 用户可以在这里添加更多自定义别名...
-      ]
-    }
+      // @ldesign 包的开发时别名 - 指向源码目录（使用绝对路径）
+      { find: '@ldesign/api', replacement: resolve(__dirname, '../../packages/api/src') },
+      { find: '@ldesign/builder', replacement: resolve(__dirname, '../../packages/builder/src') },
+      { find: '@ldesign/cache', replacement: resolve(__dirname, '../../packages/cache/src') },
+      { find: '@ldesign/calendar', replacement: resolve(__dirname, '../../packages/calendar/src') },
+      { find: '@ldesign/captcha', replacement: resolve(__dirname, '../../packages/captcha/src') },
+      { find: '@ldesign/chart', replacement: resolve(__dirname, '../../packages/chart/src') },
+      { find: '@ldesign/color', replacement: resolve(__dirname, '../../packages/color/src') },
+      { find: '@ldesign/component', replacement: resolve(__dirname, '../../packages/component/src') },
+      { find: '@ldesign/cropper', replacement: resolve(__dirname, '../../packages/cropper/src') },
+      { find: '@ldesign/crypto', replacement: resolve(__dirname, '../../packages/crypto/src') },
+      { find: '@ldesign/datepicker', replacement: resolve(__dirname, '../../packages/datepicker/src') },
+      { find: '@ldesign/device', replacement: resolve(__dirname, '../../packages/device/src') },
+      { find: '@ldesign/editor', replacement: resolve(__dirname, '../../packages/editor/src') },
+      { find: '@ldesign/engine', replacement: resolve(__dirname, '../../packages/engine/src') },
+      { find: '@ldesign/flowchart', replacement: resolve(__dirname, '../../packages/flowchart/src') },
+      { find: '@ldesign/form', replacement: resolve(__dirname, '../../packages/form/src') },
+      { find: '@ldesign/git', replacement: resolve(__dirname, '../../packages/git/src') },
+      { find: '@ldesign/http', replacement: resolve(__dirname, '../../packages/http/src') },
+      { find: '@ldesign/i18n', replacement: resolve(__dirname, '../../packages/i18n/src') },
+      { find: '@ldesign/icons', replacement: resolve(__dirname, '../../packages/icons/packages') },
+      { find: '@ldesign/kit', replacement: resolve(__dirname, '../../packages/kit/src') },
+      { find: '@ldesign/launcher', replacement: resolve(__dirname, '../../packages/launcher/src') },
+      { find: '@ldesign/map', replacement: resolve(__dirname, '../../packages/map/src') },
+      { find: '@ldesign/pdf', replacement: resolve(__dirname, '../../packages/pdf/src') },
+      { find: '@ldesign/progress', replacement: resolve(__dirname, '../../packages/progress/src') },
+      { find: '@ldesign/qrcode', replacement: resolve(__dirname, '../../packages/qrcode/src') },
+      { find: '@ldesign/router', replacement: resolve(__dirname, '../../packages/router/src') },
+      { find: '@ldesign/shared', replacement: resolve(__dirname, '../../packages/shared/src') },
+      { find: '@ldesign/size', replacement: resolve(__dirname, '../../packages/size/src') },
+      { find: '@ldesign/store', replacement: resolve(__dirname, '../../packages/store/src') },
+      { find: '@ldesign/table', replacement: resolve(__dirname, '../../packages/table/src') },
+      { find: '@ldesign/template', replacement: resolve(__dirname, '../../packages/template/src') },
+      { find: '@ldesign/theme', replacement: resolve(__dirname, '../../packages/theme/src') },
+      { find: '@ldesign/tree', replacement: resolve(__dirname, '../../packages/tree/src') },
+      { find: '@ldesign/ui', replacement: resolve(__dirname, '../../packages/ui/src') },
+      { find: '@ldesign/video', replacement: resolve(__dirname, '../../packages/video/src') },
+      { find: '@ldesign/watermark', replacement: resolve(__dirname, '../../packages/watermark/src') },
+      { find: '@ldesign/websocket', replacement: resolve(__dirname, '../../packages/websocket/src') },
+    ]
   },
 
   // 基础服务器配置
   server: {
-    port: 3011,
+    port: 3340,
     open: false,
     host: '0.0.0.0',
 

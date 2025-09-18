@@ -632,6 +632,13 @@ export class EngineImpl implements Engine {
     try {
       const startTime = Date.now()
 
+      // 跳过已经初始化的核心管理器
+      if (['config', 'logger', 'environment'].includes(managerName)) {
+        this.managerRegistry.markInitialized(managerName)
+        this.logger.debug(`Manager "${managerName}" already initialized`)
+        return
+      }
+
       const factory = this.managerFactories[managerName]
       if (!factory) {
         this.logger.warn(`Unknown manager: ${managerName}`)
