@@ -101,7 +101,18 @@ const sharedOutExtension = ({ format }: { format: string }) => ({
 export default defineConfig([
   // 主库构建
   {
-    entry: ['src/**/*.ts', '!src/**/*.test.ts', '!src/**/*.spec.ts', '!src/__tests__/**/*', '!src/tests/**/*'],
+    entry: [
+      'src/**/*.ts',
+      '!src/**/*.test.ts',
+      '!src/**/*.spec.ts',
+      '!src/__tests__/**/*',
+      '!src/tests/**/*',
+      // 过滤掉专门的 UMD 入口文件（如果存在）
+      '!src/index-lib.ts',
+      '!src/index-umd.ts',
+      '!src/**/index-lib.ts',
+      '!src/**/index-umd.ts'
+    ],
     format: ['esm', 'cjs'],
     outDir: 'dist',
     dts: true,

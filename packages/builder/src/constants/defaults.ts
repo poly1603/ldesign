@@ -38,8 +38,8 @@ export const DEFAULT_BUILDER_CONFIG: Omit<
       format: 'esm',
       preserveStructure: true,
       dts: true,
-      // 默认入口：所有源文件
-      input: ['src/**/*.ts', 'src/**/*.js', 'src/**/*.vue', 'src/**/*.tsx', 'src/**/*.jsx']
+      // 默认入口：所有源文件，但排除 UMD 专用入口文件
+      input: ['src/**/*.ts', 'src/**/*.js', 'src/**/*.vue', 'src/**/*.tsx', 'src/**/*.jsx', '!src/index-lib.ts', '!src/index-lib.js', '!src/index-umd.ts', '!src/index-umd.js']
     },
     // CommonJS 格式默认配置
     cjs: {
@@ -47,8 +47,8 @@ export const DEFAULT_BUILDER_CONFIG: Omit<
       format: 'cjs',
       preserveStructure: true,
       dts: true,
-      // 默认入口：所有源文件
-      input: ['src/**/*.ts', 'src/**/*.js', 'src/**/*.vue', 'src/**/*.tsx', 'src/**/*.jsx']
+      // 默认入口：所有源文件，但排除 UMD 专用入口文件
+      input: ['src/**/*.ts', 'src/**/*.js', 'src/**/*.vue', 'src/**/*.tsx', 'src/**/*.jsx', '!src/index-lib.ts', '!src/index-lib.js', '!src/index-umd.ts', '!src/index-umd.js']
     },
     // UMD 格式默认配置
     umd: {
@@ -56,8 +56,8 @@ export const DEFAULT_BUILDER_CONFIG: Omit<
       format: 'umd',
       minify: true,
       sourcemap: true,
-      // UMD 默认单入口
-      input: 'src/index.ts'
+      // UMD 默认单入口：优先使用 index-lib.ts，回退到 index.ts
+      input: 'src/index-lib.ts'
     }
   },
 

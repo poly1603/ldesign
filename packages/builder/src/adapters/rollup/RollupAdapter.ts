@@ -1207,13 +1207,15 @@ export class RollupAdapter implements IBundlerAdapter {
       umdEntry = resolved as string
     }
 
-    // 如果未显式指定，优先使用 src/index.ts，其次常见入口
+    // 如果未显式指定，优先使用 UMD 专用入口，然后回退到通用入口
     if (!umdEntry) {
       const candidates = [
-        'src/index.ts',
-        'src/index.js',
         'src/index-lib.ts',
         'src/index-lib.js',
+        'src/index-umd.ts',
+        'src/index-umd.js',
+        'src/index.ts',
+        'src/index.js',
         'src/main.ts',
         'src/main.js',
         'index.ts',
