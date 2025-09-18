@@ -94,12 +94,21 @@ export function getEnvironmentConfigFiles(environment?: string): readonly string
   }
 
   const envConfigFiles = [
-    // .ldesign 专用环境配置
+    // .ldesign 专用环境配置 - 新命名规则：launcher.config.xx.ts
+    `${LDESIGN_DIR}/launcher.config.${environment}.ts`,
+    `${LDESIGN_DIR}/launcher.config.${environment}.mjs`,
+    `${LDESIGN_DIR}/launcher.config.${environment}.js`,
+    `${LDESIGN_DIR}/launcher.config.${environment}.cjs`,
+    // 项目根目录环境配置 - 新命名规则
+    `launcher.config.${environment}.ts`,
+    `launcher.config.${environment}.mjs`,
+    `launcher.config.${environment}.js`,
+    `launcher.config.${environment}.cjs`,
+    // 兼容旧命名规则 - 向后兼容
     `${LDESIGN_DIR}/launcher.${environment}.config.ts`,
     `${LDESIGN_DIR}/launcher.${environment}.config.mjs`,
     `${LDESIGN_DIR}/launcher.${environment}.config.js`,
     `${LDESIGN_DIR}/launcher.${environment}.config.cjs`,
-    // 项目根目录环境配置
     `launcher.${environment}.config.ts`,
     `launcher.${environment}.config.mjs`,
     `launcher.${environment}.config.js`,

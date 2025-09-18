@@ -111,6 +111,7 @@
     "inquirer": "^9.2.12",
     "jiti": "^1.21.7",
     "mkcert": "^3.2.0",
+    "node-notifier": "^10.0.1",
     "ora": "^7.0.1",
     "picocolors": "^1.0.0",
     "qrcode": "^1.5.4",
@@ -119,6 +120,7 @@
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.10.0",
+    "@types/node-notifier": "^8.0.5",
     "@types/qrcode": "^1.5.5",
     "@types/ws": "^8.5.10",
     "@typescript-eslint/eslint-plugin": "^6.14.0",

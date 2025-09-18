@@ -15,6 +15,7 @@ import type { ViteLauncherConfig, ProjectPreset, ProxyOptions } from '../types'
 import { DEFAULT_VITE_LAUNCHER_CONFIG } from '../constants'
 import { configPresets } from './ConfigPresets'
 import { pathToFileURL } from 'url'
+import { createNotificationManager, type NotificationManager } from '../utils/notification'
 
 export interface ConfigManagerOptions {
   configFile?: string
@@ -31,6 +32,7 @@ export class ConfigManager extends EventEmitter {
   private watcher?: any
   private watchEnabled: boolean = false
   private onConfigChange?: (config: ViteLauncherConfig) => void
+  private notificationManager: NotificationManager
 
   // 供单测 mock 的占位对象（与 @ldesign/kit 管理器对齐的最小接口）
   // 注意：仅用于测试场景；实际逻辑以本类实现为准
@@ -53,6 +55,7 @@ export class ConfigManager extends EventEmitter {
     this.logger = options.logger || new Logger('ConfigManager')
     this.watchEnabled = options.watch || false
     this.onConfigChange = options.onConfigChange
+    this.notificationManager = createNotificationManager(this.logger)
 
     // 如果启用监听，异步初始化文件监听器
     if (this.watchEnabled) {
@@ -324,6 +327,91 @@ export class ConfigManager extends EventEmitter {
    */
   getConfig(): ViteLauncherConfig {
     return { ...this.config }
+  }
+
+  /**
+   * 检测配置变更类型
+   */
+  private detectConfigChanges(oldConfig: ViteLauncherConfig, newConfig: ViteLauncherConfig) {
+    const changes = {
+      serverChanged: false,
+      aliasChanged: false,
+      otherChanged: false,
+      needsRestart: false
+    }
+
+    // 检测需要重启服务器的配置变更
+    const restartRequiredConfigs = [
+      'server.port',
+      'server.host',
+      'server.https',
+      'server.proxy',
+      'server.cors',
+      'server.open',
+      'launcher.preset', // 预设变更可能影响插件加载
+      'plugins', // 插件配置变更
+      'define', // 全局定义变更
+      'optimizeDeps' // 依赖优化配置变更
+    ]
+
+    // 检查是否有需要重启的配置变更
+    for (const configPath of restartRequiredConfigs) {
+      const oldValue = this.getNestedValue(oldConfig, configPath)
+      const newValue = this.getNestedValue(newConfig, configPath)
+
+      this.logger.debug(`🔍 检查配置路径: ${configPath}`)
+      this.logger.debug(`📋 旧值: ${JSON.stringify(oldValue)}`)
+      this.logger.debug(`📋 新值: ${JSON.stringify(newValue)}`)
+
+      if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+        changes.needsRestart = true
+        if (configPath.startsWith('server.')) {
+          changes.serverChanged = true
+        }
+        this.logger.info(`🔄 检测到需要重启的配置变更: ${configPath}`)
+        this.logger.info(`  旧值: ${JSON.stringify(oldValue)}`)
+        this.logger.info(`  新值: ${JSON.stringify(newValue)}`)
+        break
+      }
+    }
+
+    // 检测alias配置变更（可以热更新）
+    if (JSON.stringify(oldConfig.launcher?.alias) !== JSON.stringify(newConfig.launcher?.alias)) {
+      changes.aliasChanged = true
+      this.logger.info('🔗 检测到别名配置变更')
+    }
+
+    // 检测其他配置变更（可以热更新的配置）
+    const hotUpdateConfigs = [
+      'build.outDir',
+      'build.rollupOptions',
+      'preview.port',
+      'preview.host',
+      'launcher.alias'
+    ]
+
+    for (const configPath of hotUpdateConfigs) {
+      const oldValue = this.getNestedValue(oldConfig, configPath)
+      const newValue = this.getNestedValue(newConfig, configPath)
+
+      if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+        if (!configPath.includes('alias')) { // alias已经单独检测了
+          changes.otherChanged = true
+          this.logger.info(`⚙️ 检测到可热更新的配置变更: ${configPath}`)
+        }
+      }
+    }
+
+    return changes
+  }
+
+  /**
+   * 获取嵌套对象的值
+   */
+  private getNestedValue(obj: any, path: string): any {
+    return path.split('.').reduce((current, key) => {
+      return current && current[key] !== undefined ? current[key] : undefined
+    }, obj)
   }
 
   /**
@@ -838,11 +926,14 @@ ${presetInfo ? ` * 项目类型: ${presetInfo.description}\n` : ''}${presetInfo 
   private async findEnvironmentSpecificConfigFile(cwd: string, environment: string): Promise<string | null> {
     const { LDESIGN_DIR, SUPPORTED_CONFIG_EXTENSIONS } = await import('../constants')
 
-    // 环境特定配置文件的查找顺序
+    // 环境特定配置文件的查找顺序 - 新命名规则优先
     const envConfigPatterns = [
-      // .ldesign 目录下的环境配置
+      // .ldesign 目录下的环境配置 - 新命名规则：launcher.config.xx.ts
+      ...SUPPORTED_CONFIG_EXTENSIONS.map(ext => `${LDESIGN_DIR}/launcher.config.${environment}${ext}`),
+      // 项目根目录下的环境配置 - 新命名规则
+      ...SUPPORTED_CONFIG_EXTENSIONS.map(ext => `launcher.config.${environment}${ext}`),
+      // 兼容旧命名规则 - 向后兼容
       ...SUPPORTED_CONFIG_EXTENSIONS.map(ext => `${LDESIGN_DIR}/launcher.${environment}.config${ext}`),
-      // 项目根目录下的环境配置
       ...SUPPORTED_CONFIG_EXTENSIONS.map(ext => `launcher.${environment}.config${ext}`)
     ]
 
@@ -867,11 +958,9 @@ ${presetInfo ? ` * 项目类型: ${presetInfo.description}\n` : ''}${presetInfo 
 
       // 监听配置文件目录
       const configDir = PathUtils.resolve(process.cwd(), '.ldesign')
-      const watchPattern = PathUtils.join(configDir, 'launcher*.config.{ts,js}')
 
-      // 监听具体的配置文件而不是使用 glob 模式
-      const specificConfigFile = this.configFile
-      const filesToWatch = specificConfigFile ? [specificConfigFile] : [watchPattern]
+      // 始终监听整个 .ldesign 目录，在事件处理中过滤文件类型
+      const filesToWatch = [configDir]
 
       this.watcher = chokidar.watch(filesToWatch, {
         ignored: /node_modules/,
@@ -885,19 +974,74 @@ ${presetInfo ? ` * 项目类型: ${presetInfo.description}\n` : ''}${presetInfo 
 
       this.watcher.on('change', async (filePath: string) => {
         try {
+          // 判断是否为配置文件
+          const fileName = PathUtils.basename(filePath)
+          const isLauncherConfig = fileName.includes('launcher') && fileName.includes('config')
+          const isAppConfig = fileName.includes('app.config')
+
+          // 只处理配置文件变更
+          if (!isLauncherConfig && !isAppConfig) {
+            return
+          }
+
           this.logger.info('🔄 检测到配置文件变更: ' + filePath)
+
+          // 提取环境信息
+          let environment: string | undefined
+          const envMatch = fileName.match(/\.(development|production|staging|test)\./)
+          if (envMatch) {
+            environment = envMatch[1]
+          }
+
+          // 在重新加载配置之前保存旧配置 - 使用深拷贝
+          const oldConfig = JSON.parse(JSON.stringify(this.config))
 
           // 重新加载配置文件
           const newConfig = await this.loadConfig(filePath)
           this.logger.info('✅ 配置文件重新加载成功')
 
+          // 发送系统通知
+          if (isLauncherConfig) {
+            await this.notificationManager.notifyConfigChange('launcher', filePath, environment)
+          } else if (isAppConfig) {
+            await this.notificationManager.notifyConfigChange('app', filePath, environment)
+          }
+
           // 更新内部配置
           this.config = newConfig
 
-          // 触发配置变更回调，传递新配置
-          if (this.onConfigChange) {
-            this.logger.info('🚀 触发配置变更回调')
-            this.onConfigChange(newConfig)
+          // 检测配置变更类型
+          const configChanges = this.detectConfigChanges(oldConfig, newConfig)
+
+          // 根据配置变更类型决定处理方式
+          if (isLauncherConfig) {
+            if (configChanges.needsRestart) {
+              // 需要重启的配置变更 -> 重启服务器
+              this.logger.info('🔄 检测到需要重启的配置变更，重启服务器...')
+              if (this.onConfigChange) {
+                this.logger.info('🚀 触发配置变更回调')
+                this.onConfigChange(newConfig)
+              }
+            } else if (configChanges.aliasChanged) {
+              // alias配置变更 -> 尝试热更新，不重启服务器
+              this.logger.info('🔗 别名配置已更改，尝试热更新...')
+              this.logger.info('ℹ️ 别名配置已更新，通过 HMR 热更新...')
+              // TODO: 实现alias热更新逻辑
+              this.emit('aliasChanged', newConfig)
+            } else if (configChanges.otherChanged) {
+              // 其他launcher配置变更 -> 热更新
+              this.logger.info('⚙️ 其他配置已更改，应用热更新...')
+              this.logger.info('ℹ️ 配置已更新，通过 HMR 热更新...')
+              this.emit('configHotUpdate', newConfig)
+            } else {
+              // 没有检测到变更，可能是配置文件格式化等
+              this.logger.info('ℹ️ 配置文件已更新，但未检测到实质性变更')
+            }
+          } else if (isAppConfig) {
+            // app配置变更只做热更新，不重启服务器
+            this.logger.info('🔥 应用配置文件已更改，重新加载...')
+            this.logger.info('ℹ️ 配置已更新，通过 HMR 热更新...')
+            this.emit('appConfigChanged', newConfig)
           }
 
           // 发出配置变更事件
@@ -917,7 +1061,7 @@ ${presetInfo ? ` * 项目类型: ${presetInfo.description}\n` : ''}${presetInfo 
 
 
 
-      this.logger.debug('配置文件监听器已启动', { pattern: watchPattern })
+      this.logger.debug('配置文件监听器已启动', { watchPath: filesToWatch })
     } catch (error) {
       this.logger.error('初始化文件监听器失败: ' + (error as Error).message)
     }
