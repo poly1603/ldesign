@@ -71,6 +71,8 @@ export class ConfigManager extends EventEmitter {
   async loadConfig(configPath?: string): Promise<ViteLauncherConfig> {
     const filePath = configPath || this.configFile
 
+    this.logger.info(`🔧 ConfigManager.loadConfig 开始，文件路径: ${filePath}`)
+
     if (!filePath) {
       this.logger.warn('未指定配置文件路径，使用默认配置')
       return this.config
@@ -84,11 +86,13 @@ export class ConfigManager extends EventEmitter {
 
       // 动态导入配置文件
       const absolutePath = PathUtils.resolve(filePath)
+      this.logger.info(`📋 绝对路径: ${absolutePath}`)
 
       let loadedConfig: any = null
 
       // 对于 TypeScript 文件，先编译再导入
       if (filePath.endsWith('.ts')) {
+        this.logger.info(`📋 处理 TypeScript 配置文件`)
         try {
           // 使用 jiti 处理 TypeScript 文件（兼容 ESM）
           const jitiMod: any = await import('jiti')
@@ -100,8 +104,16 @@ export class ConfigManager extends EventEmitter {
             esmResolve: true
           })
 
+          this.logger.info(`📋 使用 jiti 加载配置文件`)
           const configModule = jitiLoader(absolutePath)
           loadedConfig = configModule?.default || configModule
+
+          this.logger.info(`📋 配置模块加载结果:`, {
+            hasDefault: !!configModule?.default,
+            hasModule: !!configModule,
+            loadedConfigType: typeof loadedConfig,
+            aliasCount: loadedConfig?.resolve?.alias?.length || 0
+          })
 
           // 验证加载的配置
           if (!loadedConfig || typeof loadedConfig !== 'object') {
@@ -167,6 +179,26 @@ export class ConfigManager extends EventEmitter {
 
       // 处理代理配置
       loadedConfig = this.processProxyConfig(loadedConfig)
+
+      // 详细调试配置内容
+      console.log(`🔧 [DEBUG] 配置加载完成，详细信息:`)
+      console.log(`🔧 [DEBUG] - 配置类型:`, typeof loadedConfig)
+      console.log(`🔧 [DEBUG] - 配置键:`, Object.keys(loadedConfig))
+      if (loadedConfig.resolve) {
+        console.log(`🔧 [DEBUG] - resolve 配置:`, Object.keys(loadedConfig.resolve))
+        if (loadedConfig.resolve.alias) {
+          console.log(`🔧 [DEBUG] - alias 配置类型:`, typeof loadedConfig.resolve.alias)
+          console.log(`🔧 [DEBUG] - alias 是否为数组:`, Array.isArray(loadedConfig.resolve.alias))
+          if (Array.isArray(loadedConfig.resolve.alias)) {
+            console.log(`🔧 [DEBUG] - alias 数组长度:`, loadedConfig.resolve.alias.length)
+            console.log(`🔧 [DEBUG] - 前3个别名:`, loadedConfig.resolve.alias.slice(0, 3))
+          }
+        } else {
+          console.log(`🔧 [DEBUG] - 没有 alias 配置`)
+        }
+      } else {
+        console.log(`🔧 [DEBUG] - 没有 resolve 配置`)
+      }
 
       this.config = loadedConfig
 
@@ -873,13 +905,19 @@ ${presetInfo ? ` * 项目类型: ${presetInfo.description}\n` : ''}${presetInfo 
     const { getEnvironmentConfigFiles } = await import('../constants')
     const configFiles = getEnvironmentConfigFiles(environment)
 
+    this.logger.info(`🔍 查找配置文件，工作目录: ${cwd}，环境: ${environment}`)
+    this.logger.info(`📋 配置文件查找列表: ${configFiles.join(', ')}`)
+
     for (const fileName of configFiles) {
       const filePath = PathUtils.resolve(cwd, fileName)
-      if (await FileSystem.exists(filePath)) {
-        this.logger.debug(`找到配置文件: ${fileName}`, { environment, filePath })
+      const exists = await FileSystem.exists(filePath)
+      this.logger.info(`📄 检查配置文件: ${fileName} -> ${filePath} (存在: ${exists})`)
+      if (exists) {
+        this.logger.info(`✅ 找到配置文件: ${fileName}`, { environment, filePath })
         return filePath
       }
     }
+    this.logger.warn(`❌ 未找到任何配置文件`)
     return null
   }
 
@@ -891,28 +929,35 @@ ${presetInfo ? ` * 项目类型: ${presetInfo.description}\n` : ''}${presetInfo 
    * @returns 合并后的配置
    */
   async loadEnvironmentConfig(cwd: string, environment?: string): Promise<ViteLauncherConfig> {
+    console.log(`🚀 [DEBUG] 开始加载环境配置，工作目录: ${cwd}，环境: ${environment}`)
     let mergedConfig: ViteLauncherConfig = {}
 
     // 1. 首先加载基础配置文件
+    console.log(`📋 [DEBUG] 步骤1: 查找基础配置文件`)
     const baseConfigFile = await this.findConfigFile(cwd)
     if (baseConfigFile) {
+      console.log(`✅ [DEBUG] 找到基础配置文件: ${baseConfigFile}`)
       const baseConfig = await this.loadConfig(baseConfigFile)
       mergedConfig = this.deepMerge(mergedConfig, baseConfig)
-      this.logger.debug('已加载基础配置文件', { file: baseConfigFile })
+      console.log(`✅ [DEBUG] 已加载基础配置文件，别名数量: ${baseConfig.resolve?.alias?.length || 0}`)
+    } else {
+      console.log(`❌ [DEBUG] 未找到基础配置文件`)
     }
 
     // 2. 如果指定了环境，加载环境特定配置
     if (environment) {
+      this.logger.info(`📋 步骤2: 查找环境特定配置文件 (${environment})`)
       const envConfigFile = await this.findEnvironmentSpecificConfigFile(cwd, environment)
       if (envConfigFile) {
         const envConfig = await this.loadConfig(envConfigFile)
         mergedConfig = this.deepMerge(mergedConfig, envConfig)
-        this.logger.info(`已加载环境配置文件: ${environment}`, { file: envConfigFile })
+        this.logger.info(`✅ 已加载环境配置文件: ${environment}`, { file: envConfigFile })
       } else {
-        this.logger.debug(`未找到环境配置文件: ${environment}`)
+        this.logger.info(`❌ 未找到环境配置文件: ${environment}`)
       }
     }
 
+    this.logger.info(`🎯 环境配置加载完成，最终别名数量: ${mergedConfig.resolve?.alias?.length || 0}`)
     return mergedConfig
   }
 

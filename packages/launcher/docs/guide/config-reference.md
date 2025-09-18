@@ -679,47 +679,73 @@ export default defineConfig({
 
 ## 📁 路径和别名
 
-### 基本路径配置
+### 基本别名配置
 
 ```typescript
+import { defineConfig, createBasicAliases } from '@ldesign/launcher'
+
 export default defineConfig({
-  root: './src',          // 项目根目录
-  base: '/',              // 公共基础路径
-  publicDir: 'public',    // 公共资源目录
-  
-  resolve: {
+  launcher: {
+    // 控制内置别名的启用/禁用
     alias: {
-      '@': path.resolve(__dirname, 'src'),
-      '@/components': path.resolve(__dirname, 'src/components'),
-      '@/utils': path.resolve(__dirname, 'src/utils'),
-      '~': path.resolve(__dirname, 'src')
+      enabled: true // 启用内置的 @ -> src 别名
     }
+  },
+
+  resolve: {
+    alias: [
+      // 使用工具函数创建基本别名
+      ...createBasicAliases('./src'),
+
+      // 添加自定义别名
+      { find: '@components', replacement: './src/components' },
+      { find: '@utils', replacement: './src/utils' },
+      { find: '@assets', replacement: './src/assets' },
+    ]
   }
 })
 ```
 
-### 高级别名配置
+### 手动别名配置
 
 ```typescript
 import { defineConfig } from '@ldesign/launcher'
-import { resolve } from 'path'
 
 export default defineConfig({
   resolve: {
     alias: [
-      // 数组格式，支持正则
-      { find: /^@\//, replacement: resolve(__dirname, 'src') + '/' },
-      { find: /^~\//, replacement: resolve(__dirname, 'src/components') + '/' },
-      
-      // 对象格式
-      {
-        find: '@assets',
-        replacement: resolve(__dirname, 'src/assets')
-      }
+      // 基本别名
+      { find: '@', replacement: './src' },
+
+      // 正则表达式别名
+      { find: /^@\//, replacement: './src/' },
+      { find: /^~\//, replacement: './src/components/' },
+
+      // 具体目录别名
+      { find: '@components', replacement: './src/components' },
+      { find: '@utils', replacement: './src/utils' },
+      { find: '@assets', replacement: './src/assets' },
     ],
-    
+
     // 文件扩展名
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
+  }
+})
+```
+
+### Node.js Polyfills
+
+```typescript
+import { defineConfig, createNodePolyfillAliases } from '@ldesign/launcher'
+
+export default defineConfig({
+  resolve: {
+    alias: [
+      { find: '@', replacement: './src' },
+
+      // 添加 Node.js polyfills
+      ...createNodePolyfillAliases(),
+    ]
   }
 })
 ```

@@ -8,6 +8,7 @@
  */
 
 import { EventEmitter } from 'events'
+import path from 'path'
 import type {
   ViteDevServer,
   PreviewServer,
@@ -26,7 +27,7 @@ import { SmartPluginManager } from './SmartPluginManager'
 import { createConfigInjectionPlugin, getClientConfigUtils } from '../plugins/config-injection'
 import { environmentManager } from '../utils/env'
 import { createSSLManager, type SSLConfig } from '../utils/ssl'
-import { createAliasManager } from './AliasManager'
+// 移除 AliasManager 依赖，使用新的别名系统
 import { getPreferredLocalIP } from '../utils/network.js'
 
 // 导入类型定义
@@ -117,8 +118,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
   /** 智能插件管理器 */
   private smartPluginManager: SmartPluginManager
 
-  /** 别名管理器 */
-  private aliasManager: ReturnType<typeof createAliasManager>
+
 
   /**
    * 构造函数
@@ -192,8 +192,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     })
     this.smartPluginManager = new SmartPluginManager(this.cwd, smartLogger)
 
-    // 初始化别名管理器
-    this.aliasManager = createAliasManager(this.cwd, this.config.launcher?.alias)
+
 
     // 设置事件监听器
     this.setupEventListeners(options.listeners)
@@ -227,23 +226,53 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
    * 加载配置文件并完成完整初始化
    */
   async initialize(): Promise<void> {
+    // 强制输出，确保能看到
+    console.log(`🔧 [FORCE DEBUG] ViteLauncher.initialize 开始`)
+    console.log(`🔧 [FORCE DEBUG] - 工作目录: ${this.cwd}`)
+    console.log(`🔧 [FORCE DEBUG] - 环境: ${this.environment}`)
+
     try {
       // 优先使用显式指定的配置文件，其次自动查找
       const specified = this.config.launcher?.configFile
+
+      // 使用 process.stdout.write 确保输出显示
+      process.stdout.write(`🔧 [DEBUG] ViteLauncher.initialize 开始\n`)
+      process.stdout.write(`🔧 [DEBUG] - 工作目录: ${this.cwd}\n`)
+      process.stdout.write(`🔧 [DEBUG] - 环境: ${this.environment}\n`)
+      process.stdout.write(`🔧 [DEBUG] - 指定配置文件: ${specified || '无'}\n`)
+      process.stdout.write(`🔧 [DEBUG] - launcher 配置: ${JSON.stringify(this.config.launcher)}\n`)
+
+      console.log(`🔧 [FORCE DEBUG] - 指定配置文件: ${specified || '无'}`)
+      console.log(`🔧 [FORCE DEBUG] - launcher 配置:`, this.config.launcher)
+
+      this.logger.info(`🔧 ViteLauncher.initialize 开始，指定配置文件: ${specified || '无'}`)
+
       if (specified) {
+        process.stdout.write(`🔧 [DEBUG] 走指定配置文件分支\n`)
+        this.logger.info(`📋 使用指定配置文件: ${specified}`)
         // 加载并合并用户配置到当前配置（修复：之前未合并导致用户 plugins 等失效）
         const loaded = await this.configManager.loadConfig(specified)
         if (loaded && typeof loaded === 'object') {
           this.config = this.mergeConfig(this.config, loaded)
         }
       } else {
-        // autoLoadConfig 内部已合并到 this.config
-        await this.autoLoadConfig()
+        process.stdout.write(`🔧 [DEBUG] 走自动配置加载分支\n`)
+        this.logger.info(`📋 使用自动配置加载`)
+        try {
+          // autoLoadConfig 内部已合并到 this.config
+          await this.autoLoadConfig()
+          process.stdout.write(`🔧 [DEBUG] autoLoadConfig 执行完成\n`)
+        } catch (autoLoadError) {
+          process.stdout.write(`🔧 [DEBUG] autoLoadConfig 执行失败: ${(autoLoadError as Error).message}\n`)
+          this.logger.error('自动配置加载失败', { error: (autoLoadError as Error).message })
+          throw autoLoadError
+        }
       }
 
       this.logger.info('ViteLauncher 初始化完成')
     } catch (error) {
-      this.logger.warn('配置文件加载失败，使用默认配置', { error: (error as Error).message })
+      this.logger.error('配置文件加载失败，使用默认配置', { error: (error as Error).message, stack: (error as Error).stack })
+      process.stdout.write(`🔧 [DEBUG] ViteLauncher 初始化异常: ${(error as Error).message}\n`)
     }
   }
 
@@ -275,6 +304,28 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
 
       // 执行启动前钩子
       await this.executeHook('beforeStart')
+
+      // 打印最终的Vite配置用于调试
+      this.logger.info('🔍 最终Vite配置调试信息:')
+      const aliasCount = Array.isArray(mergedConfig.resolve?.alias) ? mergedConfig.resolve.alias.length : 0
+      this.logger.info(`📁 resolve.alias配置: 共${aliasCount}个别名`)
+
+      if (Array.isArray(mergedConfig.resolve?.alias) && mergedConfig.resolve.alias.length > 0) {
+        const firstFewAliases = mergedConfig.resolve.alias.slice(0, 5)
+        firstFewAliases.forEach((alias, index) => {
+          if (typeof alias === 'object') {
+            this.logger.info(`  ${index + 1}. ${alias.find} -> ${alias.replacement}`)
+          }
+        })
+        if (mergedConfig.resolve.alias.length > 5) {
+          this.logger.info(`  ... 还有${mergedConfig.resolve.alias.length - 5}个别名`)
+        }
+      }
+
+      this.logger.info(`👀 server.watch配置:`)
+      this.logger.info(`  ignored类型: ${typeof mergedConfig.server?.watch?.ignored}`)
+      this.logger.info(`  usePolling: ${mergedConfig.server?.watch?.usePolling}`)
+      this.logger.info(`  interval: ${mergedConfig.server?.watch?.interval}`)
 
       this.logger.info('正在启动开发服务器...')
 
@@ -647,8 +698,19 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
 
       for (const key in source) {
         if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+          // 对象类型，递归合并
           result[key] = deepMerge(target[key] || {}, source[key])
+        } else if (Array.isArray(source[key])) {
+          // 数组类型，特殊处理
+          if (key === 'alias' && Array.isArray(target[key])) {
+            // 对于 resolve.alias，合并数组而不是覆盖
+            result[key] = [...(target[key] || []), ...source[key]]
+          } else {
+            // 其他数组直接覆盖
+            result[key] = source[key]
+          }
         } else {
+          // 基本类型，直接覆盖
           result[key] = source[key]
         }
       }
@@ -1090,15 +1152,22 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
    */
   private async autoLoadConfig(): Promise<ViteLauncherConfig> {
     try {
+      this.logger.info(`🔧 ViteLauncher.autoLoadConfig 开始，工作目录: ${this.cwd}，环境: ${this.environment}`)
+
       // 使用 ConfigManager 的多环境配置加载功能
       const loadedConfig = await this.configManager.load({
         cwd: this.cwd,
         environment: this.environment
       })
 
-      // 合并到当前配置
-      this.config = this.mergeConfig(this.config, loadedConfig)
+      this.logger.info(`📋 ConfigManager.load 返回的配置别名数量: ${loadedConfig.resolve?.alias?.length || 0}`)
 
+      // 合并到当前配置
+      const oldAliasCount = this.config.resolve?.alias?.length || 0
+      this.config = this.mergeConfig(this.config, loadedConfig)
+      const newAliasCount = this.config.resolve?.alias?.length || 0
+
+      this.logger.info(`🔄 配置合并完成，别名数量: ${oldAliasCount} -> ${newAliasCount}`)
       this.logger.success('配置文件加载成功')
 
       return this.config
@@ -1208,31 +1277,46 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
    * @returns 应用别名后的配置
    */
   private applyAliasConfig(config: ViteLauncherConfig, stage: 'dev' | 'build' | 'preview'): ViteLauncherConfig {
-    // 设置当前阶段
-    this.aliasManager.setStage(stage)
+    // 调试：输出当前配置中的别名信息
+    const existingAliases = config.resolve?.alias || []
+    console.log(`🔧 [DEBUG] applyAliasConfig调试:`)
+    console.log(`  当前阶段: ${stage}`)
+    console.log(`  输入配置中的别名数量: ${Array.isArray(existingAliases) ? existingAliases.length : 0}`)
+    console.log(`  输入配置的别名:`, existingAliases)
 
-    // 生成别名配置
-    const aliases = this.aliasManager.generateAliases()
-
+    // 默认启用内置别名
     // 确保 resolve 配置存在
     if (!config.resolve) {
       config.resolve = {}
     }
-
-    // 应用别名配置
-    if (aliases.length > 0) {
-      config.resolve.alias = aliases
-      this.logger.debug(`别名配置已应用 (${stage})`, {
-        count: aliases.length,
-        enabled: this.aliasManager.isEnabled()
-      })
-    } else {
+    // 确保 alias 是数组格式
+    if (!config.resolve.alias) {
       config.resolve.alias = []
-      this.logger.debug(`别名配置已禁用 (${stage})`, {
-        stage,
-        enabled: this.aliasManager.isEnabled()
-      })
+    } else if (!Array.isArray(config.resolve.alias)) {
+      // 如果 alias 不是数组，保持原有格式（Vite 支持对象格式）
+      // 但为了统一处理，我们不做转换
     }
+
+    // 添加基本的内置别名 @ -> src（如果还没有）
+    const hasAtAlias = Array.isArray(config.resolve.alias) &&
+      config.resolve.alias.some(alias =>
+        (typeof alias === 'object' && alias.find === '@') ||
+        (typeof alias === 'string' && alias === '@')
+      )
+
+    if (!hasAtAlias) {
+      const srcPath = path.resolve(this.cwd, 'src')
+      if (Array.isArray(config.resolve.alias)) {
+        config.resolve.alias.unshift({
+          find: '@',
+          replacement: srcPath
+        })
+      }
+    }
+
+    // 调试：输出最终的别名配置
+    const finalAliases = config.resolve?.alias || []
+    this.logger.info(`✅ 别名配置已处理 (${stage})，最终别名数量: ${Array.isArray(finalAliases) ? finalAliases.length : 0}`)
 
     return config
   }

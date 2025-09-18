@@ -38,6 +38,9 @@ export * from './plugins/presets'
 // 导出开发工具插件
 export * from './plugins'
 
+// 导出别名类型定义
+export type { AliasEntry } from './utils/aliases'
+
 // 导出 AI 优化器
 export { AIOptimizer, createAIOptimizer } from './ai/optimizer'
 export type { ProjectAnalysis, OptimizationSuggestion } from './ai/optimizer'

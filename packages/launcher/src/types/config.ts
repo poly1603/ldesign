@@ -75,6 +75,9 @@ export interface LauncherConfigOptions {
   /** 预设配置 */
   preset?: ProjectPreset
 
+  /** 别名启用阶段配置 - 控制在哪些阶段启用开发时别名 */
+  aliasStages?: ('dev' | 'build' | 'preview')[]
+
   /** SSR 配置 */
   ssr?: SSROptions
 
@@ -1008,27 +1011,9 @@ export interface ToolsConfig {
 
 /**
  * 路径别名配置接口
- * 支持启用/禁用别名和自定义别名配置
+ * 注意：基本别名（@ -> src）默认启用，无需配置
+ * 用户可以在 resolve.alias 中自由配置其他别名
  */
 export interface AliasOptions {
-  /** 是否启用别名 */
-  enabled?: boolean
-
-  /** 别名生效阶段配置 */
-  stages?: ('dev' | 'build' | 'preview')[] | 'all'
-
-  /** 是否启用 LDesign 包别名 */
-  ldesign?: boolean
-
-  /** 是否启用 Node.js polyfill 别名 */
-  polyfills?: boolean
-
-  /** 自定义别名配置 */
-  custom?: Array<{
-    find: string | RegExp
-    replacement: string
-  }>
-
-  /** 预设别名配置 */
-  presets?: ('ldesign' | 'polyfills' | 'common')[]
+  // 保留接口以便将来扩展，目前基本别名默认启用
 }

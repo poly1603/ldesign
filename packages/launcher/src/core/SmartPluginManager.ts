@@ -77,6 +77,22 @@ export class SmartPluginManager {
       options: {}
     })
 
+    // Vue 3 JSX 插件配置
+    this.availablePlugins.set('vue3-jsx', {
+      name: 'Vue 3 JSX',
+      packageName: '@vitejs/plugin-vue-jsx',
+      required: false,
+      detection: {
+        dependencies: ['vue'],
+        filePatterns: ['**/*.tsx', '**/*.jsx'],
+        configFiles: []
+      },
+      options: {
+        transformOn: true,
+        mergeProps: true
+      }
+    })
+
     // Vue 2 插件配置
     this.availablePlugins.set('vue2', {
       name: 'Vue 2',
@@ -202,21 +218,76 @@ export class SmartPluginManager {
    * 检查是否存在指定模式的文件
    */
   private async hasFiles(patterns: string[]): Promise<boolean> {
-    // 简单实现：检查 src 目录下是否有对应文件
-    const srcDir = PathUtils.resolve(this.cwd, 'src')
-    if (!await FileSystem.exists(srcDir)) {
-      return false
-    }
-
     try {
-      const files = await FileSystem.readDir(srcDir)
-      for (const pattern of patterns) {
-        const extension = pattern.replace('**/*.', '.')
-        if (files.some((file: string) => file.endsWith(extension))) {
-          return true
+      // 检查多个目录：src、packages 等
+      const dirsToCheck = [
+        PathUtils.resolve(this.cwd, 'src'),
+        PathUtils.resolve(this.cwd, 'packages'),
+        this.cwd // 也检查根目录
+      ]
+
+      for (const dir of dirsToCheck) {
+        if (await FileSystem.exists(dir)) {
+          const hasFilesInDir = await this.checkFilesInDirectory(dir, patterns)
+          if (hasFilesInDir) {
+            this.logger.debug(`在目录 ${dir} 中找到匹配文件`)
+            return true
+          }
         }
       }
       return false
+    } catch (error) {
+      this.logger.warn('文件检查失败', { error: (error as Error).message })
+      return false
+    }
+  }
+
+  /**
+   * 递归检查目录中是否有匹配的文件
+   */
+  private async checkFilesInDirectory(dir: string, patterns: string[]): Promise<boolean> {
+    try {
+      const files = await FileSystem.readDir(dir)
+
+      for (const file of files) {
+        const filePath = PathUtils.resolve(dir, file)
+        const stat = await FileSystem.stat(filePath)
+
+        if (stat.isDirectory()) {
+          // 递归检查子目录（限制深度避免性能问题）
+          const hasFilesInSubdir = await this.checkFilesInDirectory(filePath, patterns)
+          if (hasFilesInSubdir) return true
+        } else {
+          // 检查文件是否匹配模式
+          for (const pattern of patterns) {
+            const extension = pattern.replace('**/*.', '.')
+            if (file.endsWith(extension)) {
+              return true
+            }
+          }
+        }
+      }
+      return false
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * 检查是否安装了指定依赖
+   */
+  private async hasDependency(packageName: string): Promise<boolean> {
+    try {
+      const packageJsonPath = PathUtils.resolve(this.cwd, 'package.json')
+      if (!await FileSystem.exists(packageJsonPath)) {
+        return false
+      }
+
+      const packageJson = JSON.parse(await FileSystem.readFile(packageJsonPath, 'utf-8'))
+      const dependencies = packageJson.dependencies || {}
+      const devDependencies = packageJson.devDependencies || {}
+
+      return !!(dependencies[packageName] || devDependencies[packageName])
     } catch {
       return false
     }
@@ -237,6 +308,18 @@ export class SmartPluginManager {
         case ProjectType.VUE3:
           const vuePlugin = await this.loadPlugin('vue3')
           if (vuePlugin) plugins.push(vuePlugin)
+
+          // 尝试加载 Vue JSX 插件（如果有 JSX/TSX 文件或已安装依赖）
+          const hasJsxFiles = await this.hasFiles(['**/*.tsx', '**/*.jsx'])
+          const hasJsxDep = await this.hasDependency('@vitejs/plugin-vue-jsx')
+          this.logger.debug('Vue JSX 插件检测', { hasJsxFiles, hasJsxDep })
+          if (hasJsxFiles || hasJsxDep) {
+            const vueJsxPlugin = await this.loadPlugin('vue3-jsx')
+            if (vueJsxPlugin) {
+              plugins.push(vueJsxPlugin)
+              this.logger.info('Vue JSX 插件加载成功')
+            }
+          }
           break
         case ProjectType.VUE2:
           const vue2Plugin = await this.loadPlugin('vue2')

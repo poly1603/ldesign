@@ -187,18 +187,31 @@ export class DevCommand implements CliCommandDefinition {
       logger.info('正在启动开发服务器...')
 
       // 先创建基础的 ViteLauncher 实例，只传入必要的配置
+      const launcherConfig: any = {
+        launcher: {
+          logLevel: context.options.debug ? 'debug' : 'info',
+          mode: mode,
+          debug: context.options.debug || false
+        }
+      }
+
+      // 只有当明确指定了配置文件时才设置 configFile
+      if (context.configFile) {
+        launcherConfig.launcher.configFile = context.configFile
+      }
+
+      process.stdout.write(`🔧 [DEBUG] 创建 ViteLauncher 实例\n`)
+      process.stdout.write(`🔧 [DEBUG] - cwd: ${context.cwd}\n`)
+      process.stdout.write(`🔧 [DEBUG] - environment: ${environment}\n`)
+      process.stdout.write(`🔧 [DEBUG] - launcherConfig: ${JSON.stringify(launcherConfig)}\n`)
+
       const launcher = new ViteLauncher({
         cwd: context.cwd,
-        config: {
-          launcher: {
-            configFile: context.configFile,
-            logLevel: context.options.debug ? 'debug' : 'info',
-            mode: mode,
-            debug: context.options.debug || false
-          }
-        },
+        config: launcherConfig,
         environment: environment
       })
+
+      process.stdout.write(`🔧 [DEBUG] ViteLauncher 实例创建完成\n`)
 
       // 构建命令行参数覆盖配置
       const cliOverrides: any = {
