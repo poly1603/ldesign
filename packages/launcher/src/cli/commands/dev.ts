@@ -166,6 +166,24 @@ export class DevCommand implements CliCommandDefinition {
     })
 
     try {
+      // 确定环境和模式
+      const environment = context.options.environment || context.options.mode || 'development'
+      const mode = context.options.mode || (environment === 'production' ? 'production' : 'development')
+
+      // 显示环境标识 - 确保在最开始就显示
+      const envLabel = environment === 'production' ? '🔴 PRODUCTION' :
+        environment === 'staging' ? '🟡 STAGING' :
+          environment === 'test' ? '🔵 TEST' : '🟢 DEVELOPMENT'
+
+      // 立即输出环境标识，不依赖logger
+      console.log(`\n🚀 ${pc.cyan('LDesign Launcher')} - ${envLabel}`)
+      console.log(`📁 ${pc.gray('工作目录:')} ${context.cwd}`)
+      console.log(`⚙️  ${pc.gray('模式:')} ${mode}`)
+      console.log('')
+
+      // 添加短暂延迟确保输出显示
+      await new Promise(resolve => setTimeout(resolve, 100))
+
       logger.info('正在启动开发服务器...')
 
       // 先创建基础的 ViteLauncher 实例，只传入必要的配置
@@ -175,16 +193,16 @@ export class DevCommand implements CliCommandDefinition {
           launcher: {
             configFile: context.configFile,
             logLevel: context.options.debug ? 'debug' : 'info',
-            mode: context.options.mode || 'development',
+            mode: mode,
             debug: context.options.debug || false
           }
         },
-        environment: context.options.mode || context.options.environment || 'development' // 使用 mode 作为环境参数
+        environment: environment
       })
 
       // 构建命令行参数覆盖配置
       const cliOverrides: any = {
-        mode: context.options.mode || 'development',
+        mode: mode,
         clearScreen: context.options.clearScreen
       }
 
@@ -342,10 +360,28 @@ export class DevCommand implements CliCommandDefinition {
           let printed = false
           try {
             const qrlib: any = await import('qrcode')
-            const utf8 = await (qrlib?.default || qrlib).toString(qrTarget, { type: 'utf8' })
+            const utf8 = await (qrlib?.default || qrlib).toString(qrTarget, {
+              type: 'utf8',
+              margin: 2,
+              color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+              }
+            })
             if (utf8 && typeof utf8 === 'string') {
               logger.info(pc.dim('二维码（扫码在手机上打开）：'))
-              console.log('\n' + utf8 + '\n')
+              // 为二维码添加白色边框
+              const lines = utf8.split('\n')
+              const maxLength = Math.max(...lines.map(line => line.length))
+              const border = '█'.repeat(maxLength + 4)
+              const borderedQR = [
+                border,
+                border,
+                ...lines.map(line => '██' + line.padEnd(maxLength) + '██'),
+                border,
+                border
+              ].join('\n')
+              console.log('\n' + borderedQR + '\n')
               printed = true
             }
           } catch (e1) {
@@ -363,7 +399,18 @@ export class DevCommand implements CliCommandDefinition {
               })
               if (qrOutput) {
                 logger.info(pc.dim('二维码（扫码在手机上打开）：'))
-                console.log('\n' + qrOutput + '\n')
+                // 为qrcode-terminal生成的二维码也添加白色边框
+                const lines = qrOutput.split('\n')
+                const maxLength = Math.max(...lines.map(line => line.length))
+                const border = '█'.repeat(maxLength + 4)
+                const borderedQR = [
+                  border,
+                  border,
+                  ...lines.map(line => '██' + line.padEnd(maxLength) + '██'),
+                  border,
+                  border
+                ].join('\n')
+                console.log('\n' + borderedQR + '\n')
                 printed = true
               }
             } catch (e2) {

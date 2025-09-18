@@ -140,11 +140,26 @@ export class PreviewCommand implements CliCommandDefinition {
    */
   async handler(context: CliContext): Promise<void> {
     const logger = new Logger('preview', {
-      level: context.options.debug ? 'debug' : 'info',
-      colors: context.terminal.supportsColor
+      level: context.options.silent ? 'silent' : (context.options.debug ? 'debug' : 'info'),
+      colors: context.terminal.supportsColor,
+      compact: !context.options.debug // 非 debug 模式使用简洁输出
     })
 
     try {
+      // 确定环境
+      const environment = context.options.environment || 'production'
+
+      // 显示环境标识 - 确保在最开始就显示
+      const envLabel = environment === 'production' ? '🔴 PRODUCTION' :
+        environment === 'staging' ? '🟡 STAGING' :
+          environment === 'test' ? '🔵 TEST' : '🟢 DEVELOPMENT'
+
+      // 立即输出环境标识，不依赖logger
+      console.log(`\n👁️  ${pc.cyan('LDesign Launcher')} - ${envLabel}`)
+      console.log(`📁 ${pc.gray('工作目录:')} ${context.cwd}`)
+      console.log(`⚙️  ${pc.gray('模式:')} preview`)
+      console.log('')
+
       logger.info('正在启动预览服务器...')
 
       // 解析输出目录
@@ -152,7 +167,7 @@ export class PreviewCommand implements CliCommandDefinition {
 
       // 检查构建输出目录是否存在
       if (!(await FileSystem.exists(outDir))) {
-        logger.error('构建输出目录不存在', { outDir })
+        logger.error(`构建输出目录不存在: ${outDir}`)
         logger.info('请先执行构建命令: launcher build')
         process.exit(1)
       }
@@ -160,7 +175,7 @@ export class PreviewCommand implements CliCommandDefinition {
       // 检查是否有构建产物
       const files = await FileSystem.readDir(outDir)
       if (files.length === 0) {
-        logger.error('构建输出目录为空', { outDir })
+        logger.error(`构建输出目录为空: ${outDir}`)
         logger.info('请先执行构建命令: launcher build')
         process.exit(1)
       }
@@ -168,7 +183,7 @@ export class PreviewCommand implements CliCommandDefinition {
       // 检查是否有 index.html
       const indexPath = PathUtils.join(outDir, 'index.html')
       if (!(await FileSystem.exists(indexPath))) {
-        logger.warn('未找到 index.html 文件', { path: indexPath })
+        logger.warn(`未找到 index.html 文件: ${indexPath}`)
         logger.info('预览服务器将提供目录浏览功能')
       }
 
@@ -299,14 +314,32 @@ export class PreviewCommand implements CliCommandDefinition {
           let printed = false
           try {
             const qrlib: any = await import('qrcode')
-            const utf8 = await (qrlib?.default || qrlib).toString(qrTarget, { type: 'utf8' })
+            const utf8 = await (qrlib?.default || qrlib).toString(qrTarget, {
+              type: 'utf8',
+              margin: 2,
+              color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+              }
+            })
             if (utf8 && typeof utf8 === 'string') {
               logger.info(pc.dim('二维码（扫码在手机上打开）：'))
-              console.log('\n' + utf8 + '\n')
+              // 为二维码添加白色边框
+              const lines = utf8.split('\n')
+              const maxLength = Math.max(...lines.map(line => line.length))
+              const border = '█'.repeat(maxLength + 4)
+              const borderedQR = [
+                border,
+                border,
+                ...lines.map(line => '██' + line.padEnd(maxLength) + '██'),
+                border,
+                border
+              ].join('\n')
+              console.log('\n' + borderedQR + '\n')
               printed = true
             }
           } catch (e1) {
-            logger.debug('尝试使用 qrcode 生成终端二维码失败', { error: (e1 as Error).message })
+            logger.debug('尝试使用 qrcode 生成终端二维码失败: ' + (e1 as Error).message)
           }
 
           // 回退到 qrcode-terminal（如已安装）
@@ -320,20 +353,31 @@ export class PreviewCommand implements CliCommandDefinition {
               })
               if (qrOutput) {
                 logger.info(pc.dim('二维码（扫码在手机上打开）：'))
-                console.log('\n' + qrOutput + '\n')
+                // 为qrcode-terminal生成的二维码也添加白色边框
+                const lines = qrOutput.split('\n')
+                const maxLength = Math.max(...lines.map(line => line.length))
+                const border = '█'.repeat(maxLength + 4)
+                const borderedQR = [
+                  border,
+                  border,
+                  ...lines.map(line => '██' + line.padEnd(maxLength) + '██'),
+                  border,
+                  border
+                ].join('\n')
+                console.log('\n' + borderedQR + '\n')
                 printed = true
               }
             } catch (e2) {
-              logger.debug('尝试使用 qrcode-terminal 生成终端二维码失败', { error: (e2 as Error).message })
+              logger.debug('尝试使用 qrcode-terminal 生成终端二维码失败: ' + (e2 as Error).message)
             }
           }
         } catch (e) {
-          logger.debug('二维码生成失败', { error: (e as Error).message })
+          logger.debug('二维码生成失败: ' + (e as Error).message)
         }
       })
 
       launcher.onError((error) => {
-        logger.error('预览服务器错误', { error: error.message })
+        logger.error('预览服务器错误: ' + error.message)
       })
 
       // 处理进程退出
@@ -370,7 +414,7 @@ export class PreviewCommand implements CliCommandDefinition {
       await new Promise(() => { }) // 永远等待，直到收到退出信号
 
     } catch (error) {
-      logger.error('启动预览服务器失败', { error: (error as Error).message })
+      logger.error('启动预览服务器失败: ' + (error as Error).message)
 
       if (context.options.debug) {
         console.error((error as Error).stack)

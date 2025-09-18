@@ -13,6 +13,7 @@ import { PathUtils } from '../../utils/path-utils'
 import { ViteLauncher } from '../../core/ViteLauncher'
 import type { CliCommandDefinition, CliContext } from '../../types'
 import { DEFAULT_OUT_DIR, DEFAULT_BUILD_TARGET } from '../../constants'
+import pc from 'picocolors'
 
 /**
  * Build 命令类
@@ -148,12 +149,27 @@ export class BuildCommand implements CliCommandDefinition {
    */
   async handler(context: CliContext): Promise<void> {
     const logger = new Logger('build', {
-      level: context.options.debug ? 'debug' : 'info',
-      colors: context.terminal.supportsColor
+      level: context.options.silent ? 'silent' : (context.options.debug ? 'debug' : 'info'),
+      colors: context.terminal.supportsColor,
+      compact: !context.options.debug // 非 debug 模式使用简洁输出
     })
 
     try {
       const startTime = Date.now()
+
+      // 确定环境
+      const environment = context.options.environment || context.options.mode || 'production'
+
+      // 显示环境标识 - 确保在最开始就显示
+      const envLabel = environment === 'production' ? '🔴 PRODUCTION' :
+        environment === 'staging' ? '🟡 STAGING' :
+          environment === 'test' ? '🔵 TEST' : '🟢 DEVELOPMENT'
+
+      // 立即输出环境标识，不依赖logger
+      console.log(`\n🏗️  ${pc.cyan('LDesign Launcher')} - ${envLabel}`)
+      console.log(`📁 ${pc.gray('工作目录:')} ${context.cwd}`)
+      console.log(`⚙️  ${pc.gray('模式:')} ${context.options.mode || 'production'}`)
+      console.log('')
 
       logger.info('正在执行生产构建...')
 
@@ -194,30 +210,24 @@ export class BuildCommand implements CliCommandDefinition {
 
       // 设置事件监听器
       launcher.on('buildStart', (data) => {
-        logger.info('构建开始', { timestamp: new Date(data.timestamp).toLocaleTimeString() })
+        logger.info('构建开始')
       })
 
       launcher.on('buildEnd', (data) => {
         const duration = data.duration
-        logger.success('构建完成', {
-          duration: `${duration}ms`,
-          timestamp: new Date(data.timestamp).toLocaleTimeString()
-        })
+        logger.success(`构建完成 (${duration}ms)`)
 
         // 显示构建统计信息
         if (data.result && 'output' in data.result) {
           const output = data.result.output
           if (Array.isArray(output)) {
-            logger.info(`生成了 ${output.length} 个文件`)
-
-            // 显示主要文件信息
             const jsFiles = output.filter(file => file.fileName.endsWith('.js'))
             const cssFiles = output.filter(file => file.fileName.endsWith('.css'))
 
+            logger.info(`生成了 ${output.length} 个文件`)
             if (jsFiles.length > 0) {
               logger.info(`JavaScript 文件: ${jsFiles.length} 个`)
             }
-
             if (cssFiles.length > 0) {
               logger.info(`CSS 文件: ${cssFiles.length} 个`)
             }
@@ -226,7 +236,7 @@ export class BuildCommand implements CliCommandDefinition {
       })
 
       launcher.onError((error) => {
-        logger.error('构建错误', { error: error.message })
+        logger.error('构建错误: ' + error.message)
       })
 
       // 处理监听模式的退出
@@ -270,18 +280,13 @@ export class BuildCommand implements CliCommandDefinition {
         const duration = Date.now() - startTime
 
         // 显示构建结果
-        logger.success('构建成功完成!', {
-          duration: `${duration}ms`,
-          outDir
-        })
+        logger.success(`构建成功完成! (${duration}ms)`)
 
         // 显示输出目录信息
         if (await FileSystem.exists(outDir)) {
-          const stats = await FileSystem.stat(outDir)
-          logger.info('输出目录信息', {
-            path: outDir,
-            size: formatFileSize(await getDirectorySize(outDir))
-          })
+          const dirSize = await getDirectorySize(outDir)
+          logger.info(`输出目录: ${outDir}`)
+          logger.info(`总大小: ${formatFileSize(dirSize)}`)
         }
 
         // 生成分析报告

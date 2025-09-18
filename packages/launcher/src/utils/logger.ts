@@ -56,125 +56,73 @@ export class Logger {
   private formatMessage(level: LogLevel, message: string, data?: any): string {
     let formatted = ''
 
-    // 简洁模式下的格式化
-    if (this.compact) {
-      // 只显示级别和消息
-      if (this.colors) {
-        switch (level) {
-          case 'debug':
-            formatted += picocolors.magenta('🔍 ')
-            break
-          case 'info':
-            formatted += picocolors.blue('ℹ️  ')
-            break
-          case 'warn':
-            formatted += picocolors.yellow('⚠️  ')
-            break
-          case 'error':
-            formatted += picocolors.red('❌ ')
-            break
-        }
-      }
-
-      formatted += message
-
-      // 简洁模式下只显示关键数据
-      if (data !== undefined && this.shouldShowData(data)) {
-        formatted += ' ' + this.formatCompactData(data)
-      }
-
-      return formatted
-    }
-
-    // 标准模式的格式化
-    // 添加时间戳
+    // 添加时间戳（只显示时分秒）
     if (this.timestamp) {
-      const timestamp = new Date().toISOString()
-      formatted += this.colors ? picocolors.gray(`[${timestamp}]`) : `[${timestamp}]`
+      const now = new Date()
+      const timeStr = now.toTimeString().slice(0, 8) // HH:MM:SS
+      formatted += this.colors ? picocolors.gray(timeStr) : timeStr
       formatted += ' '
     }
 
-    // 添加前缀
-    if (this.prefix) {
-      formatted += this.colors ? picocolors.cyan(`[${this.prefix}]`) : `[${this.prefix}]`
-      formatted += ' '
-    }
-
-    // 添加级别
-    const levelStr = level.toUpperCase().padEnd(5)
+    // 添加级别对应的emoji
     if (this.colors) {
       switch (level) {
         case 'debug':
-          formatted += picocolors.magenta(`[${levelStr}]`)
+          formatted += '🔍 '
           break
         case 'info':
-          formatted += picocolors.blue(`[${levelStr}]`)
+          formatted += 'ℹ️  '
           break
         case 'warn':
-          formatted += picocolors.yellow(`[${levelStr}]`)
+          formatted += '⚠️  '
           break
         case 'error':
-          formatted += picocolors.red(`[${levelStr}]`)
+          formatted += '❌ '
           break
-        default:
-          formatted += `[${levelStr}]`
       }
     } else {
-      formatted += `[${levelStr}]`
+      // 无颜色模式下使用文字标识
+      switch (level) {
+        case 'debug':
+          formatted += '[DEBUG] '
+          break
+        case 'info':
+          formatted += '[INFO] '
+          break
+        case 'warn':
+          formatted += '[WARN] '
+          break
+        case 'error':
+          formatted += '[ERROR] '
+          break
+      }
     }
 
-    formatted += ' ' + message
+    formatted += message
 
-    // 添加数据
-    if (data !== undefined) {
-      formatted += ' ' + (typeof data === 'string' ? data : JSON.stringify(data, null, 2))
+    // 只显示简单的字符串或数字数据，禁止JSON输出
+    if (data !== undefined && this.shouldShowSimpleData(data)) {
+      formatted += ' ' + this.formatSimpleData(data)
     }
 
     return formatted
   }
 
   /**
-   * 判断是否应该显示数据（简洁模式下）
+   * 判断是否应该显示简单数据
    */
-  private shouldShowData(data: any): boolean {
-    if (typeof data === 'string') return true
-    if (typeof data === 'number') return true
-    if (typeof data === 'boolean') return true
-
-    // 对于对象，只显示包含关键信息的
-    if (typeof data === 'object' && data !== null) {
-      const keys = Object.keys(data)
-      const importantKeys = ['url', 'port', 'host', 'error', 'path', 'duration', 'count']
-      return keys.some(key => importantKeys.includes(key))
-    }
-
-    return false
+  private shouldShowSimpleData(data: any): boolean {
+    // 只显示字符串和数字
+    return typeof data === 'string' || typeof data === 'number'
   }
 
   /**
-   * 格式化简洁数据
+   * 格式化简单数据
    */
-  private formatCompactData(data: any): string {
-    if (typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean') {
+  private formatSimpleData(data: any): string {
+    if (typeof data === 'string' || typeof data === 'number') {
       return String(data)
     }
-
-    if (typeof data === 'object' && data !== null) {
-      const important: Record<string, any> = {}
-      const keys = Object.keys(data)
-      const importantKeys = ['url', 'port', 'host', 'error', 'path', 'duration', 'count']
-
-      keys.forEach(key => {
-        if (importantKeys.includes(key)) {
-          important[key] = data[key]
-        }
-      })
-
-      if (Object.keys(important).length > 0) {
-        return JSON.stringify(important)
-      }
-    }
-
     return ''
   }
 
