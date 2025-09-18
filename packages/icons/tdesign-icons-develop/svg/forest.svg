@@ -1,7 +1,0 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="forest">
-<path id="fill1" d="M12 15.9995L7 2.99951L2 15.9999L12 15.9995Z" fill="white"/>
-<path id="fill2" d="M12 15.9995L17 2.99951L22 15.9999L12 15.9995Z" fill="white"/>
-<path id="stroke1" d="M12 15.9995L17 2.99951L22 15.9999L12 15.9995ZM12 15.9995L7 2.99951L2 15.9999L12 15.9995ZM7 4L7 21M17 4V21" stroke="black" stroke-width="2" stroke-linecap="square"/>
-</g>
-</svg>
