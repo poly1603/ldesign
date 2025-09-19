@@ -2,11 +2,8 @@
  * 工具函数导出
  */
 
-// 导出缓存相关工具
+// 导出统一缓存系统
 export * from './cache'
-
-// 导出高级缓存系统
-export * from './advanced-cache'
 
 // 导出文件监听器
 export * from './file-watcher'

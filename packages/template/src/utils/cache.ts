@@ -1,198 +1,793 @@
 /**
- * 缓存管理工具
+ * 统一缓存系统
  *
- * 提供模板组件和配置的缓存功能
+ * 提供多种缓存策略、内存压缩、持久化等高级功能
+ * 包含组件缓存、元数据缓存等专用缓存管理器
  */
 
-import type { Component } from 'vue'
+import { ref, type Ref, type Component } from 'vue'
 import type { StrictCacheStats } from '../types/strict-types'
 import type { TemplateMetadata } from '../types/template'
 
 /**
- * 缓存项接口
+ * 缓存策略类型
  */
-interface CacheItem<T> {
-  /** 缓存的数据 */
-  data: T
+export type AdvancedCacheStrategy = 'LRU' | 'LFU' | 'FIFO' | 'TTL' | 'HYBRID'
+
+/**
+ * 缓存项元数据
+ */
+export interface CacheItemMeta {
   /** 创建时间 */
-  timestamp: number
-  /** 过期时间（毫秒） */
-  ttl?: number
+  createdAt: number
+  /** 最后访问时间 */
+  lastAccessedAt: number
   /** 访问次数 */
   accessCount: number
-  /** 最后访问时间 */
-  lastAccessed: number
+  /** 大小（字节） */
+  size: number
+  /** 过期时间 */
+  expiresAt?: number
+  /** 优先级 */
+  priority?: number
+  /** 是否压缩 */
+  compressed?: boolean
+  /** 标签 */
+  tags?: string[]
 }
 
 /**
- * 缓存配置选项
+ * 缓存项
  */
-interface CacheOptions {
-  /** 最大缓存数量 */
+export interface CacheItem<T = any> {
+  key: string
+  value: T
+  meta: CacheItemMeta
+}
+
+/**
+ * 缓存配置
+ */
+export interface AdvancedCacheConfig {
+  /** 缓存策略 */
+  strategy?: AdvancedCacheStrategy
+  /** 最大缓存大小（字节） */
   maxSize?: number
+  /** 最大缓存项数量 */
+  maxItems?: number
   /** 默认TTL（毫秒） */
   defaultTTL?: number
-  /** 是否启用LRU淘汰策略 */
-  enableLRU?: boolean
+  /** 是否启用压缩 */
+  enableCompression?: boolean
+  /** 压缩阈值（字节） */
+  compressionThreshold?: number
+  /** 是否启用持久化 */
+  enablePersistence?: boolean
+  /** 持久化键名 */
+  persistenceKey?: string
+  /** 是否启用统计 */
+  enableStats?: boolean
+  /** 清理间隔（毫秒） */
+  cleanupInterval?: number
+  /** 是否启用内存警告 */
+  enableMemoryWarning?: boolean
+  /** 内存警告阈值（百分比） */
+  memoryWarningThreshold?: number
 }
 
 /**
- * 通用缓存管理器
+ * 缓存统计信息
  */
-class CacheManager<T> {
-  private cache = new Map<string, CacheItem<T>>()
-  private options: Required<CacheOptions>
+export interface CacheStats {
+  /** 总请求数 */
+  requests: number
+  /** 命中数 */
+  hits: number
+  /** 未命中数 */
+  misses: number
+  /** 命中率 */
+  hitRate: number
+  /** 当前大小（字节） */
+  currentSize: number
+  /** 当前项数 */
+  currentItems: number
+  /** 最大大小 */
+  maxSize: number
+  /** 最大项数 */
+  maxItems: number
+  /** 平均访问时间（毫秒） */
+  avgAccessTime: number
+  /** 驱逐次数 */
+  evictions: number
+  /** 压缩节省的空间 */
+  compressionSavings: number
+}
 
-  constructor(options: CacheOptions = {}) {
-    this.options = {
-      maxSize: 100,
-      defaultTTL: 30 * 60 * 1000, // 30分钟
-      enableLRU: true,
-      ...options,
+/**
+ * 高级缓存类
+ */
+export class AdvancedCache<T = any> {
+  private cache: Map<string, CacheItem<T>>
+  private config: Required<AdvancedCacheConfig>
+  private stats: CacheStats
+  private cleanupTimer?: NodeJS.Timeout
+  private accessQueue: string[] = []
+  private frequencyMap: Map<string, number> = new Map()
+
+  constructor(config: AdvancedCacheConfig = {}) {
+    this.cache = new Map()
+    this.config = {
+      strategy: config.strategy || 'LRU',
+      maxSize: config.maxSize || 100 * 1024 * 1024, // 100MB
+      maxItems: config.maxItems || 1000,
+      defaultTTL: config.defaultTTL || 0,
+      enableCompression: config.enableCompression || true,
+      compressionThreshold: config.compressionThreshold || 1024, // 1KB
+      enablePersistence: config.enablePersistence || false,
+      persistenceKey: config.persistenceKey || 'advanced-cache',
+      enableStats: config.enableStats || true,
+      cleanupInterval: config.cleanupInterval || 60000, // 1 minute
+      enableMemoryWarning: config.enableMemoryWarning || true,
+      memoryWarningThreshold: config.memoryWarningThreshold || 0.9
+    }
+
+    this.stats = this.initStats()
+
+    // 启动清理定时器
+    if (this.config.cleanupInterval > 0) {
+      this.startCleanupTimer()
+    }
+
+    // 从持久化存储恢复
+    if (this.config.enablePersistence) {
+      this.restore()
     }
   }
 
   /**
-   * 设置缓存
+   * 初始化统计信息
    */
-  set(key: string, data: T, ttl?: number): void {
-    const now = Date.now()
-    const item: CacheItem<T> = {
-      data,
-      timestamp: now,
-      ttl: ttl || this.options.defaultTTL,
-      accessCount: 0,
-      lastAccessed: now,
+  private initStats(): CacheStats {
+    return {
+      requests: 0,
+      hits: 0,
+      misses: 0,
+      hitRate: 0,
+      currentSize: 0,
+      currentItems: 0,
+      maxSize: this.config.maxSize,
+      maxItems: this.config.maxItems,
+      avgAccessTime: 0,
+      evictions: 0,
+      compressionSavings: 0
     }
-
-    // 检查缓存大小限制
-    if (this.cache.size >= this.options.maxSize) {
-      this.evictLRU()
-    }
-
-    this.cache.set(key, item)
   }
 
   /**
-   * 获取缓存
+   * 获取缓存项
    */
-  get(key: string): T | null {
+  get(key: string): T | undefined {
+    const startTime = performance.now()
+
+    if (this.config.enableStats) {
+      this.stats.requests++
+    }
+
     const item = this.cache.get(key)
-    if (!item)
-      return null
 
-    const now = Date.now()
+    if (!item) {
+      if (this.config.enableStats) {
+        this.stats.misses++
+        this.updateHitRate()
+      }
+      return undefined
+    }
 
     // 检查是否过期
-    if (item.ttl && now - item.timestamp > item.ttl) {
-      this.cache.delete(key)
-      return null
+    if (item.meta.expiresAt && item.meta.expiresAt < Date.now()) {
+      this.delete(key)
+      if (this.config.enableStats) {
+        this.stats.misses++
+        this.updateHitRate()
+      }
+      return undefined
     }
 
     // 更新访问信息
-    item.accessCount++
-    item.lastAccessed = now
+    item.meta.lastAccessedAt = Date.now()
+    item.meta.accessCount++
 
-    return item.data
+    // 更新策略相关信息
+    this.updateStrategyInfo(key)
+
+    if (this.config.enableStats) {
+      this.stats.hits++
+      this.updateHitRate()
+      this.updateAvgAccessTime(performance.now() - startTime)
+    }
+
+    // 解压缩数据
+    let value = item.value
+    if (item.meta.compressed) {
+      value = this.decompress(value)
+    }
+
+    return value
   }
 
   /**
-   * 检查缓存是否存在
+   * 设置缓存项
    */
-  has(key: string): boolean {
-    return this.get(key) !== null
+  set(key: string, value: T, options: {
+    ttl?: number
+    priority?: number
+    tags?: string[]
+    compress?: boolean
+  } = {}): boolean {
+    const size = this.calculateSize(value)
+
+    // 检查单项大小限制
+    if (size > this.config.maxSize) {
+      console.warn(`Cache item ${key} exceeds max size limit`)
+      return false
+    }
+
+    // 驱逐策略
+    while (this.needsEviction(size)) {
+      this.evict()
+    }
+
+    // 压缩数据
+    let storedValue = value
+    let compressed = false
+    if (this.shouldCompress(size, options.compress)) {
+      storedValue = this.compress(value)
+      compressed = true
+      const compressedSize = this.calculateSize(storedValue)
+      if (this.config.enableStats) {
+        this.stats.compressionSavings += size - compressedSize
+      }
+    }
+
+    // 创建缓存项
+    const item: CacheItem<T> = {
+      key,
+      value: storedValue,
+      meta: {
+        createdAt: Date.now(),
+        lastAccessedAt: Date.now(),
+        accessCount: 0,
+        size: compressed ? this.calculateSize(storedValue) : size,
+        expiresAt: options.ttl ? Date.now() + options.ttl :
+          this.config.defaultTTL ? Date.now() + this.config.defaultTTL : undefined,
+        priority: options.priority,
+        compressed,
+        tags: options.tags
+      }
+    }
+
+    // 更新现有项或添加新项
+    const existingItem = this.cache.get(key)
+    if (existingItem) {
+      this.stats.currentSize -= existingItem.meta.size
+    }
+
+    this.cache.set(key, item)
+    this.stats.currentSize += item.meta.size
+    this.stats.currentItems = this.cache.size
+
+    // 更新策略信息
+    this.updateStrategyInfo(key)
+
+    // 持久化
+    if (this.config.enablePersistence) {
+      this.persist()
+    }
+
+    // 内存警告
+    if (this.config.enableMemoryWarning) {
+      this.checkMemoryUsage()
+    }
+
+    return true
   }
 
   /**
-   * 删除缓存
+   * 删除缓存项
    */
   delete(key: string): boolean {
-    return this.cache.delete(key)
+    const item = this.cache.get(key)
+    if (!item) return false
+
+    this.stats.currentSize -= item.meta.size
+    this.cache.delete(key)
+    this.stats.currentItems = this.cache.size
+
+    // 从策略相关数据结构中删除
+    this.removeFromStrategyInfo(key)
+
+    return true
   }
 
   /**
-   * 清空所有缓存
+   * 清空缓存
    */
   clear(): void {
     this.cache.clear()
-  }
+    this.accessQueue = []
+    this.frequencyMap.clear()
+    this.stats.currentSize = 0
+    this.stats.currentItems = 0
 
-  /**
-   * 获取缓存统计信息
-   */
-  getStats(): StrictCacheStats {
-    const now = Date.now()
-    let itemCount = 0
-    let totalAccess = 0
-
-    for (const [, item] of this.cache) {
-      itemCount++
-      totalAccess += item.accessCount
-    }
-
-    const hitRate = totalAccess > 0 ? Math.min(1, itemCount / totalAccess) : 0
-    const missRate = totalAccess > 0 ? 1 - hitRate : 0
-
-    return {
-      totalSize: itemCount,
-      itemCount,
-      hitRate,
-      missRate,
-      evictionCount: 0,
-      lastAccess: now,
-      memoryUsage: 0,
+    if (this.config.enablePersistence) {
+      localStorage.removeItem(this.config.persistenceKey)
     }
   }
 
   /**
-   * 清理过期缓存
+   * 检查是否有缓存项
    */
-  cleanup(): number {
-    const now = Date.now()
-    let cleanedCount = 0
+  has(key: string): boolean {
+    const item = this.cache.get(key)
+    if (!item) return false
 
-    for (const [key, item] of this.cache) {
-      if (item.ttl && now - item.timestamp > item.ttl) {
-        this.cache.delete(key)
-        cleanedCount++
+    // 检查是否过期
+    if (item.meta.expiresAt && item.meta.expiresAt < Date.now()) {
+      this.delete(key)
+      return false
+    }
+
+    return true
+  }
+
+  /**
+   * 获取所有键
+   */
+  keys(): string[] {
+    return Array.from(this.cache.keys())
+  }
+
+  /**
+   * 获取缓存大小
+   */
+  get size(): number {
+    return this.cache.size
+  }
+
+  /**
+   * 获取统计信息
+   */
+  getStats(): CacheStats {
+    return { ...this.stats }
+  }
+
+  /**
+   * 重置统计信息
+   */
+  resetStats(): void {
+    this.stats = this.initStats()
+  }
+
+  /**
+   * 根据标签获取缓存项
+   */
+  getByTags(tags: string[]): Array<{ key: string; value: T }> {
+    const results: Array<{ key: string; value: T }> = []
+
+    this.cache.forEach((item, key) => {
+      if (item.meta.tags?.some(tag => tags.includes(tag))) {
+        const value = this.get(key)
+        if (value !== undefined) {
+          results.push({ key, value })
+        }
+      }
+    })
+
+    return results
+  }
+
+  /**
+   * 根据标签删除缓存项
+   */
+  deleteByTags(tags: string[]): number {
+    const keysToDelete: string[] = []
+
+    this.cache.forEach((item, key) => {
+      if (item.meta.tags?.some(tag => tags.includes(tag))) {
+        keysToDelete.push(key)
+      }
+    })
+
+    keysToDelete.forEach(key => this.delete(key))
+    return keysToDelete.length
+  }
+
+  /**
+   * 预热缓存
+   */
+  async warmup(loader: (key: string) => Promise<T>, keys: string[]): Promise<void> {
+    const promises = keys.map(async key => {
+      try {
+        const value = await loader(key)
+        this.set(key, value)
+      } catch (error) {
+        console.error(`Failed to warmup cache for key ${key}:`, error)
+      }
+    })
+
+    await Promise.all(promises)
+  }
+
+  /**
+   * 批量获取
+   */
+  mget(keys: string[]): Map<string, T | undefined> {
+    const results = new Map<string, T | undefined>()
+
+    keys.forEach(key => {
+      results.set(key, this.get(key))
+    })
+
+    return results
+  }
+
+  /**
+   * 批量设置
+   */
+  mset(entries: Array<[string, T, any?]>): Map<string, boolean> {
+    const results = new Map<string, boolean>()
+
+    entries.forEach(([key, value, options]) => {
+      results.set(key, this.set(key, value, options))
+    })
+
+    return results
+  }
+
+  /**
+   * 计算对象大小（粗略估算）
+   */
+  private calculateSize(obj: any): number {
+    if (obj === null || obj === undefined) return 0
+
+    switch (typeof obj) {
+      case 'boolean': return 4
+      case 'number': return 8
+      case 'string': return obj.length * 2
+      case 'object':
+        if (obj instanceof ArrayBuffer) return obj.byteLength
+        if (obj instanceof Blob) return obj.size
+
+        // 粗略估算对象大小
+        let size = 0
+        try {
+          const json = JSON.stringify(obj)
+          size = json.length * 2
+        } catch {
+          size = 1024 // 默认1KB
+        }
+        return size
+      default:
+        return 0
+    }
+  }
+
+  /**
+   * 检查是否需要驱逐
+   */
+  private needsEviction(newItemSize: number): boolean {
+    return (
+      this.stats.currentSize + newItemSize > this.config.maxSize ||
+      this.cache.size >= this.config.maxItems
+    )
+  }
+
+  /**
+   * 驱逐缓存项
+   */
+  private evict(): void {
+    let keyToEvict: string | undefined
+
+    switch (this.config.strategy) {
+      case 'LRU':
+        keyToEvict = this.evictLRU()
+        break
+      case 'LFU':
+        keyToEvict = this.evictLFU()
+        break
+      case 'FIFO':
+        keyToEvict = this.evictFIFO()
+        break
+      case 'TTL':
+        keyToEvict = this.evictTTL()
+        break
+      case 'HYBRID':
+        keyToEvict = this.evictHybrid()
+        break
+      default:
+        keyToEvict = this.evictLRU()
+    }
+
+    if (keyToEvict) {
+      this.delete(keyToEvict)
+      if (this.config.enableStats) {
+        this.stats.evictions++
       }
     }
-
-    return cleanedCount
   }
 
   /**
-   * LRU淘汰策略
+   * LRU驱逐策略
    */
-  private evictLRU(): void {
-    if (!this.options.enableLRU || this.cache.size === 0)
-      return
+  private evictLRU(): string | undefined {
+    let oldestKey: string | undefined
+    let oldestTime = Infinity
 
-    let lruKey = ''
-    let lruTime = Date.now()
-
-    for (const [key, item] of this.cache) {
-      if (item.lastAccessed < lruTime) {
-        lruTime = item.lastAccessed
-        lruKey = key
+    this.cache.forEach((item, key) => {
+      if (item.meta.lastAccessedAt < oldestTime) {
+        oldestTime = item.meta.lastAccessedAt
+        oldestKey = key
       }
-    }
+    })
 
-    if (lruKey) {
-      this.cache.delete(lruKey)
+    return oldestKey
+  }
+
+  /**
+   * LFU驱逐策略
+   */
+  private evictLFU(): string | undefined {
+    let leastFreqKey: string | undefined
+    let leastFreq = Infinity
+
+    this.cache.forEach((item, key) => {
+      const freq = this.frequencyMap.get(key) || 0
+      if (freq < leastFreq) {
+        leastFreq = freq
+        leastFreqKey = key
+      }
+    })
+
+    return leastFreqKey
+  }
+
+  /**
+   * FIFO驱逐策略
+   */
+  private evictFIFO(): string | undefined {
+    let oldestKey: string | undefined
+    let oldestTime = Infinity
+
+    this.cache.forEach((item, key) => {
+      if (item.meta.createdAt < oldestTime) {
+        oldestTime = item.meta.createdAt
+        oldestKey = key
+      }
+    })
+
+    return oldestKey
+  }
+
+  /**
+   * TTL驱逐策略
+   */
+  private evictTTL(): string | undefined {
+    let nearestExpiryKey: string | undefined
+    let nearestExpiry = Infinity
+
+    this.cache.forEach((item, key) => {
+      if (item.meta.expiresAt && item.meta.expiresAt < nearestExpiry) {
+        nearestExpiry = item.meta.expiresAt
+        nearestExpiryKey = key
+      }
+    })
+
+    return nearestExpiryKey || this.evictLRU()
+  }
+
+  /**
+   * 混合驱逐策略
+   */
+  private evictHybrid(): string | undefined {
+    // 结合LRU和LFU，根据访问频率和最后访问时间综合评分
+    let lowestScoreKey: string | undefined
+    let lowestScore = Infinity
+
+    this.cache.forEach((item, key) => {
+      const freq = this.frequencyMap.get(key) || 0
+      const age = Date.now() - item.meta.lastAccessedAt
+      const priority = item.meta.priority || 0
+
+      // 评分公式：频率 * 优先级 / 年龄
+      const score = (freq + 1) * (priority + 1) / (age + 1)
+
+      if (score < lowestScore) {
+        lowestScore = score
+        lowestScoreKey = key
+      }
+    })
+
+    return lowestScoreKey
+  }
+
+  /**
+   * 更新策略信息
+   */
+  private updateStrategyInfo(key: string): void {
+    // 更新访问队列（LRU）
+    const index = this.accessQueue.indexOf(key)
+    if (index > -1) {
+      this.accessQueue.splice(index, 1)
     }
+    this.accessQueue.push(key)
+
+    // 更新频率映射（LFU）
+    this.frequencyMap.set(key, (this.frequencyMap.get(key) || 0) + 1)
+  }
+
+  /**
+   * 从策略信息中移除
+   */
+  private removeFromStrategyInfo(key: string): void {
+    const index = this.accessQueue.indexOf(key)
+    if (index > -1) {
+      this.accessQueue.splice(index, 1)
+    }
+    this.frequencyMap.delete(key)
+  }
+
+  /**
+   * 更新命中率
+   */
+  private updateHitRate(): void {
+    if (this.stats.requests > 0) {
+      this.stats.hitRate = this.stats.hits / this.stats.requests
+    }
+  }
+
+  /**
+   * 更新平均访问时间
+   */
+  private updateAvgAccessTime(time: number): void {
+    const alpha = 0.1 // 指数移动平均系数
+    this.stats.avgAccessTime = (1 - alpha) * this.stats.avgAccessTime + alpha * time
+  }
+
+  /**
+   * 检查是否应该压缩
+   */
+  private shouldCompress(size: number, forceCompress?: boolean): boolean {
+    if (!this.config.enableCompression) return false
+    if (forceCompress !== undefined) return forceCompress
+    return size >= this.config.compressionThreshold
+  }
+
+  /**
+   * 压缩数据（简单示例，实际应使用压缩库）
+   */
+  private compress(data: any): any {
+    // 这里使用简单的JSON字符串化作为示例
+    // 实际应用中应使用如lz-string等压缩库
+    try {
+      return JSON.stringify(data)
+    } catch {
+      return data
+    }
+  }
+
+  /**
+   * 解压缩数据
+   */
+  private decompress(data: any): any {
+    // 对应的解压缩逻辑
+    try {
+      return JSON.parse(data)
+    } catch {
+      return data
+    }
+  }
+
+  /**
+   * 启动清理定时器
+   */
+  private startCleanupTimer(): void {
+    this.cleanupTimer = setInterval(() => {
+      this.cleanup()
+    }, this.config.cleanupInterval) as unknown as NodeJS.Timeout
+  }
+
+  /**
+   * 清理过期项
+   */
+  private cleanup(): void {
+    const now = Date.now()
+    const keysToDelete: string[] = []
+
+    this.cache.forEach((item, key) => {
+      if (item.meta.expiresAt && item.meta.expiresAt < now) {
+        keysToDelete.push(key)
+      }
+    })
+
+    keysToDelete.forEach(key => this.delete(key))
+  }
+
+  /**
+   * 持久化到localStorage
+   */
+  private persist(): void {
+    if (!this.config.enablePersistence) return
+
+    try {
+      const data = {
+        cache: Array.from(this.cache.entries()),
+        stats: this.stats,
+        accessQueue: this.accessQueue,
+        frequencyMap: Array.from(this.frequencyMap.entries())
+      }
+      localStorage.setItem(this.config.persistenceKey, JSON.stringify(data))
+    } catch (error) {
+      console.error('Failed to persist cache:', error)
+    }
+  }
+
+  /**
+   * 从localStorage恢复
+   */
+  private restore(): void {
+    if (!this.config.enablePersistence) return
+
+    try {
+      const stored = localStorage.getItem(this.config.persistenceKey)
+      if (!stored) return
+
+      const data = JSON.parse(stored)
+      this.cache = new Map(data.cache)
+      this.stats = data.stats
+      this.accessQueue = data.accessQueue
+      this.frequencyMap = new Map(data.frequencyMap)
+
+      // 清理过期项
+      this.cleanup()
+    } catch (error) {
+      console.error('Failed to restore cache:', error)
+    }
+  }
+
+  /**
+   * 检查内存使用
+   */
+  private checkMemoryUsage(): void {
+    const usage = this.stats.currentSize / this.config.maxSize
+    if (usage > this.config.memoryWarningThreshold) {
+      console.warn(`Cache memory usage is high: ${(usage * 100).toFixed(2)}%`)
+    }
+  }
+
+  /**
+   * 销毁缓存
+   */
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer as unknown as number)
+    }
+    this.clear()
   }
 }
 
 /**
  * 组件缓存管理器
+ * 专门用于缓存Vue组件
  */
-export class ComponentCache extends CacheManager<Component> {
+export class ComponentCache extends AdvancedCache<Component> {
   constructor() {
     super({
-      maxSize: 50,
+      strategy: 'LRU',
+      maxSize: 50 * 1024 * 1024, // 50MB
+      maxItems: 50,
       defaultTTL: 60 * 60 * 1000, // 1小时
-      enableLRU: true,
+      enableCompression: true,
+      enableStats: true,
     })
   }
 
@@ -223,7 +818,7 @@ export class ComponentCache extends CacheManager<Component> {
     category: string,
     device: string,
     templateName: string,
-  ): Component | null {
+  ): Component | undefined {
     const key = this.generateKey(category, device, templateName)
     return this.get(key)
   }
@@ -247,13 +842,17 @@ export class ComponentCache extends CacheManager<Component> {
 
 /**
  * 模板元数据缓存管理器
+ * 专门用于缓存模板元数据
  */
-export class MetadataCache extends CacheManager<TemplateMetadata> {
+export class MetadataCache extends AdvancedCache<TemplateMetadata> {
   constructor() {
     super({
-      maxSize: 200,
+      strategy: 'LRU',
+      maxSize: 10 * 1024 * 1024, // 10MB
+      maxItems: 200,
       defaultTTL: 10 * 60 * 1000, // 10分钟
-      enableLRU: true,
+      enableCompression: false, // 元数据通常较小，不需要压缩
+      enableStats: true,
     })
   }
 }
@@ -270,8 +869,8 @@ export const metadataCache = new MetadataCache()
  * @param options 缓存配置选项
  * @returns 缓存管理器实例
  */
-export function createTemplateCache(options: CacheOptions = {}) {
-  return new CacheManager(options)
+export function createTemplateCache(options: AdvancedCacheConfig = {}) {
+  return new AdvancedCache(options)
 }
 
 /**
@@ -280,180 +879,6 @@ export function createTemplateCache(options: CacheOptions = {}) {
 export function clearTemplateCache(): void {
   componentCache.clear()
   metadataCache.clear()
-}
-
-/**
- * LRU缓存配置选项
- */
-interface LRUCacheOptions {
-  maxSize: number
-  ttl?: number
-}
-
-/**
- * LRU缓存统计信息
- */
-interface LRUCacheStats {
-  hits: number
-  misses: number
-  hitRate: number
-  size: number
-}
-
-/**
- * LRU缓存实现
- */
-export class LRUCache<T> {
-  private cache = new Map<string, CacheItem<T>>()
-  private options: LRUCacheOptions
-  private stats = { hits: 0, misses: 0 }
-  private listeners = new Map<string, Function[]>()
-
-  constructor(options: LRUCacheOptions) {
-    this.options = options
-  }
-
-  /**
-   * 设置缓存项
-   */
-  set(key: string, value: T): void {
-    const now = Date.now()
-
-    // 如果已存在，先删除旧的
-    if (this.cache.has(key)) {
-      this.cache.delete(key)
-    }
-
-    // 检查是否需要淘汰
-    if (this.cache.size >= this.options.maxSize) {
-      const firstKey = this.cache.keys().next().value
-      if (firstKey) {
-        const evicted = this.cache.get(firstKey)
-        this.cache.delete(firstKey)
-        this.emit('evict', firstKey, evicted?.data, 'size')
-      }
-    }
-
-    const item: CacheItem<T> = {
-      data: value,
-      timestamp: now,
-      ttl: this.options.ttl,
-      accessCount: 0,
-      lastAccessed: now,
-    }
-
-    this.cache.set(key, item)
-    this.emit('set', key, value)
-  }
-
-  /**
-   * 获取缓存项
-   */
-  get(key: string): T | undefined {
-    const item = this.cache.get(key)
-
-    if (!item) {
-      this.stats.misses++
-      return undefined
-    }
-
-    // 检查TTL
-    if (item.ttl && Date.now() - item.timestamp > item.ttl) {
-      this.cache.delete(key)
-      this.emit('expire', key, item.data)
-      this.stats.misses++
-      return undefined
-    }
-
-    // 更新访问信息
-    item.accessCount++
-    item.lastAccessed = Date.now()
-
-    // 重新插入到末尾（LRU）
-    this.cache.delete(key)
-    this.cache.set(key, item)
-
-    this.stats.hits++
-    this.emit('get', key, item.data)
-    return item.data
-  }
-
-  /**
-   * 检查键是否存在
-   */
-  has(key: string): boolean {
-    const item = this.cache.get(key)
-    if (!item)
-      return false
-
-    // 检查TTL
-    if (item.ttl && Date.now() - item.timestamp > item.ttl) {
-      this.cache.delete(key)
-      this.emit('expire', key, item.data)
-      return false
-    }
-
-    return true
-  }
-
-  /**
-   * 删除缓存项
-   */
-  delete(key: string): boolean {
-    const item = this.cache.get(key)
-    if (item) {
-      this.emit('delete', key, item.data)
-    }
-    return this.cache.delete(key)
-  }
-
-  /**
-   * 清空缓存
-   */
-  clear(): void {
-    this.cache.clear()
-    this.stats = { hits: 0, misses: 0 }
-  }
-
-  /**
-   * 获取缓存大小
-   */
-  get size(): number {
-    return this.cache.size
-  }
-
-  /**
-   * 获取统计信息
-   */
-  getStats(): LRUCacheStats {
-    const total = this.stats.hits + this.stats.misses
-    return {
-      hits: this.stats.hits,
-      misses: this.stats.misses,
-      hitRate: total > 0 ? this.stats.hits / total : 0,
-      size: this.cache.size,
-    }
-  }
-
-  /**
-   * 添加事件监听器
-   */
-  on(event: string, listener: Function): void {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, [])
-    }
-    this.listeners.get(event)!.push(listener)
-  }
-
-  /**
-   * 触发事件
-   */
-  private emit(event: string, ...args: any[]): void {
-    const listeners = this.listeners.get(event)
-    if (listeners) {
-      listeners.forEach(listener => listener(...args))
-    }
-  }
 }
 
 /**
@@ -471,7 +896,7 @@ export const cacheUtils = {
   /**
    * 获取所有缓存统计信息
    */
-  getAllStats(): { component: StrictCacheStats, metadata: StrictCacheStats } {
+  getAllStats(): { component: CacheStats, metadata: CacheStats } {
     return {
       component: componentCache.getStats(),
       metadata: metadataCache.getStats(),
@@ -482,9 +907,54 @@ export const cacheUtils = {
    * 清理所有过期缓存
    */
   cleanupAll(): { component: number, metadata: number } {
+    const componentKeys = componentCache.keys()
+    const metadataKeys = metadataCache.keys()
+
+    // 手动清理过期项（AdvancedCache会自动清理，这里只是统计）
+    let componentCleaned = 0
+    let metadataCleaned = 0
+
+    componentKeys.forEach(key => {
+      if (!componentCache.has(key)) componentCleaned++
+    })
+
+    metadataKeys.forEach(key => {
+      if (!metadataCache.has(key)) metadataCleaned++
+    })
+
     return {
-      component: componentCache.cleanup(),
-      metadata: metadataCache.cleanup(),
+      component: componentCleaned,
+      metadata: metadataCleaned,
     }
   },
 }
+
+/**
+ * 创建响应式缓存
+ */
+export function useAdvancedCache<T = any>(config?: AdvancedCacheConfig) {
+  const cache = new AdvancedCache<T>(config)
+  const stats = ref(cache.getStats())
+
+  // 定期更新统计信息
+  const statsUpdateInterval = setInterval(() => {
+    stats.value = cache.getStats()
+  }, 1000)
+
+  // 清理函数
+  const cleanup = () => {
+    clearInterval(statsUpdateInterval)
+    cache.destroy()
+  }
+
+  return {
+    cache,
+    stats,
+    cleanup
+  }
+}
+
+// 为了兼容性，导出一些别名
+export { AdvancedCache as CacheManager }
+export { AdvancedCache as LRUCache }
+export type { CacheStats as StrictCacheStats }

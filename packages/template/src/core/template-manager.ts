@@ -14,7 +14,7 @@ import type {
 import { defaultConfig } from '../config/default.config'
 import { DeviceAdapter } from './device-adapter'
 import { TemplateScanner } from '../scanner'
-import { TemplateLoader } from './template-loader'
+import { TemplateLoader } from './loader'
 
 /**
  * 模板管理器类
@@ -465,7 +465,7 @@ export class TemplateManager {
     if (eventListeners) {
       eventListeners.forEach((listener) => {
         try {
-          ;(listener as EventListener<TemplateEvents[K]>)(data)
+          ; (listener as EventListener<TemplateEvents[K]>)(data)
         }
         catch (error) {
           console.error(`Error in ${event} listener:`, error)

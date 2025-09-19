@@ -5,7 +5,7 @@
 import type { Component } from 'vue'
 import type { DeviceType } from '../src/types/template'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ComponentCache, componentCache, LRUCache } from '../src/utils/cache'
+import { AdvancedCache, ComponentCache, componentCache } from '../src/utils/cache'
 
 // 模拟Vue组件
 function createMockComponent(name: string): Component {
@@ -15,11 +15,16 @@ function createMockComponent(name: string): Component {
   }
 }
 
-describe('lRUCache', () => {
-  let cache: LRUCache<string>
+describe('AdvancedCache (LRU模式)', () => {
+  let cache: AdvancedCache<string>
 
   beforeEach(() => {
-    cache = new LRUCache<string>({ maxSize: 3 })
+    cache = new AdvancedCache<string>({
+      strategy: 'LRU',
+      maxItems: 3,
+      defaultTTL: 1000
+    })
+    vi.useFakeTimers()
   })
 
   describe('基础功能', () => {
@@ -49,10 +54,10 @@ describe('lRUCache', () => {
     it('应该能够清空缓存', () => {
       cache.set('key1', 'value1')
       cache.set('key2', 'value2')
-      expect(cache.size()).toBe(2)
+      expect(cache.size).toBe(2)
 
       cache.clear()
-      expect(cache.size()).toBe(0)
+      expect(cache.size).toBe(0)
     })
   })
 
@@ -61,11 +66,11 @@ describe('lRUCache', () => {
       cache.set('key1', 'value1')
       cache.set('key2', 'value2')
       cache.set('key3', 'value3')
-      expect(cache.size()).toBe(3)
+      expect(cache.size).toBe(3)
 
       // 添加第四个项，应该移除key1
       cache.set('key4', 'value4')
-      expect(cache.size()).toBe(3)
+      expect(cache.size).toBe(3)
       expect(cache.has('key1')).toBe(false)
       expect(cache.has('key4')).toBe(true)
     })
@@ -354,7 +359,10 @@ describe('缓存性能测试', () => {
   })
 
   it('应该高效处理LRU淘汰', () => {
-    const smallCache = new LRUCache<string>({ maxSize: 100 })
+    const smallCache = new AdvancedCache<string>({
+      strategy: 'LRU',
+      maxItems: 100
+    })
 
     const startTime = Date.now()
 
@@ -365,6 +373,6 @@ describe('缓存性能测试', () => {
 
     const endTime = Date.now()
     expect(endTime - startTime).toBeLessThan(50) // 50ms内完成
-    expect(smallCache.size()).toBe(100)
+    expect(smallCache.size).toBe(100)
   })
 })
