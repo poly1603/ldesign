@@ -52,8 +52,8 @@
   align-items: center;
   justify-content: center;
   border: 1px solid transparent;
-  border-radius: var(--ls-border-radius-base);
-  font-size: var(--ls-font-size-sm);
+  border-radius: var(--ldesign-border-radius-base);
+  font-size: var(--ldesign-font-size-sm);
   font-weight: 500;
   line-height: 1.5;
   text-align: center;
@@ -62,7 +62,7 @@
   transition: all 0.3s ease;
   user-select: none;
   outline: none;
-  
+
   &:disabled {
     cursor: not-allowed;
     opacity: 0.6;
@@ -81,17 +81,17 @@
   background-color: @bg-color;
   color: @text-color;
   border-color: @border-color;
-  
+
   &:hover:not(:disabled) {
     background-color: lighten(@bg-color, 5%);
     border-color: lighten(@border-color, 5%);
   }
-  
+
   &:active:not(:disabled) {
     background-color: darken(@bg-color, 5%);
     border-color: darken(@border-color, 5%);
   }
-  
+
   &:focus:not(:disabled) {
     box-shadow: 0 0 0 2px fade(@bg-color, 20%);
   }
@@ -100,34 +100,34 @@
 // 输入框基础样式
 .input-base() {
   width: 100%;
-  padding: var(--ls-padding-sm);
+  padding: var(--ldesign-padding-sm);
   border: 1px solid var(--ldesign-border-color);
-  border-radius: var(--ls-border-radius-base);
-  font-size: var(--ls-font-size-sm);
+  border-radius: var(--ldesign-border-radius-base);
+  font-size: var(--ldesign-font-size-sm);
   line-height: 1.5;
   color: var(--ldesign-text-color-primary);
   background-color: var(--ldesign-bg-color-component);
   transition: all 0.3s ease;
   outline: none;
-  
+
   &::placeholder {
     color: var(--ldesign-text-color-placeholder);
   }
-  
+
   &:hover {
     border-color: var(--ldesign-border-color-hover);
   }
-  
+
   &:focus {
     border-color: var(--ldesign-border-color-focus);
     box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
   }
-  
+
   &:disabled {
     background-color: var(--ldesign-bg-color-component-disabled);
     color: var(--ldesign-text-color-disabled);
     cursor: not-allowed;
-    
+
     &::placeholder {
       color: var(--ldesign-text-color-disabled);
     }
@@ -144,7 +144,7 @@
 // 输入框状态
 .input-state(@border-color, @focus-color) {
   border-color: @border-color;
-  
+
   &:focus {
     border-color: @border-color;
     box-shadow: 0 0 0 2px fade(@focus-color, 20%);
@@ -155,20 +155,20 @@
 .card() {
   background-color: var(--ldesign-bg-color-container);
   border: 1px solid var(--ldesign-border-level-1-color);
-  border-radius: var(--ls-border-radius-base);
+  border-radius: var(--ldesign-border-radius-base);
   box-shadow: var(--ldesign-shadow-1);
 }
 
 // 阴影层级
-.shadow(@level: 1) when (@level = 1) {
+.shadow(@level: 1) when (@level =1) {
   box-shadow: var(--ldesign-shadow-1);
 }
 
-.shadow(@level: 1) when (@level = 2) {
+.shadow(@level: 1) when (@level =2) {
   box-shadow: var(--ldesign-shadow-2);
 }
 
-.shadow(@level: 1) when (@level = 3) {
+.shadow(@level: 1) when (@level =3) {
   box-shadow: var(--ldesign-shadow-3);
 }
 
@@ -207,16 +207,16 @@
     width: @width;
     height: @width;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: @track-color;
     border-radius: @width / 2;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: @thumb-color;
     border-radius: @width / 2;
-    
+
     &:hover {
       background: darken(@thumb-color, 10%);
     }
@@ -261,7 +261,7 @@
     background-color: @bg-color;
     color: @text-color;
   }
-  
+
   &::-moz-selection {
     background-color: @bg-color;
     color: @text-color;
@@ -274,16 +274,16 @@
     color: @color;
     opacity: 1;
   }
-  
+
   &::-webkit-input-placeholder {
     color: @color;
   }
-  
+
   &::-moz-placeholder {
     color: @color;
     opacity: 1;
   }
-  
+
   &:-ms-input-placeholder {
     color: @color;
   }

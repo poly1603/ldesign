@@ -47,6 +47,7 @@
     "@ldesign/cache": "workspace:*",
     "@ldesign/color": "workspace:*",
     "@ldesign/component": "workspace:*",
+    "@ldesign/config-editor": "link:..\\packages\\config-editor",
     "@ldesign/crypto": "workspace:*",
     "@ldesign/device": "workspace:*",
     "@ldesign/engine": "workspace:*",
