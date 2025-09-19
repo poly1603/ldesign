@@ -366,7 +366,135 @@
   0% {
     transform: translate(-50%, -50%) rotate(0deg);
   }
+
   100% {
     transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* ===== 响应式和设备适配样式 ===== */
+
+// 触摸设备优化
+.@{button-prefix}--touch {
+  // 增大触摸目标
+  min-height: 44px;
+  min-width: 44px;
+
+  // 触摸反馈
+  &:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+
+  // 移除悬停效果（触摸设备不需要）
+  &:hover {
+    transform: none;
+  }
+}
+
+// 移动设备样式
+.@{button-prefix}--mobile {
+  // 增大间距以便触摸
+  padding: 0 var(--ls-spacing-lg);
+
+  // 调整字体大小
+  font-size: var(--ls-font-size-sm);
+
+  // 增大最小高度
+  min-height: 48px;
+
+  // 块级按钮在移动端更常见
+  &.@{button-prefix}--block {
+    margin: var(--ls-spacing-sm) 0;
+  }
+}
+
+// 平板设备样式
+.@{button-prefix}--tablet {
+  // 平衡的尺寸
+  min-height: 44px;
+  padding: 0 var(--ls-spacing-base);
+  font-size: var(--ls-font-size-base);
+}
+
+// 桌面设备样式
+.@{button-prefix}--desktop {
+  // 标准尺寸
+  min-height: 40px;
+
+  // 悬停效果增强
+  &:hover:not(.@{button-prefix}--disabled) {
+    transform: translateY(-1px);
+    box-shadow: var(--ls-shadow-lg);
+  }
+}
+
+// 断点特定样式
+.@{button-prefix}--xs {
+  font-size: var(--ls-font-size-xs);
+  padding: 0 var(--ls-spacing-sm);
+}
+
+.@{button-prefix}--sm {
+  font-size: var(--ls-font-size-sm);
+  padding: 0 var(--ls-spacing-base);
+}
+
+.@{button-prefix}--md {
+  font-size: var(--ls-font-size-base);
+  padding: 0 var(--ls-spacing-lg);
+}
+
+.@{button-prefix}--lg {
+  font-size: var(--ls-font-size-lg);
+  padding: 0 var(--ls-spacing-xl);
+}
+
+.@{button-prefix}--xl,
+.@{button-prefix}--xxl {
+  font-size: var(--ls-font-size-xl);
+  padding: 0 var(--ls-spacing-xxl);
+}
+
+// 键盘导航增强
+.@{button-prefix}:focus-visible {
+  outline: 2px solid var(--ldesign-brand-color);
+  outline-offset: 2px;
+  border-radius: var(--ls-border-radius-sm);
+}
+
+// 高对比度模式支持
+@media (prefers-contrast: high) {
+  .@{button-prefix} {
+    border-width: 2px;
+
+    &:focus-visible {
+      outline-width: 3px;
+    }
+  }
+}
+
+// 减少动画偏好支持
+@media (prefers-reduced-motion: reduce) {
+  .@{button-prefix} {
+    transition: none;
+
+    &:active {
+      transform: none;
+    }
+
+    &.@{button-prefix}--loading .@{button-prefix}__loading {
+      animation: none;
+    }
+  }
+}
+
+// 打印样式
+@media print {
+  .@{button-prefix} {
+    background: transparent !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
   }
 }

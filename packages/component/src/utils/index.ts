@@ -1,8 +1,11 @@
 /**
  * 组件库工具函数
- * 
+ *
  * 提供组件开发中常用的工具函数和辅助方法
  */
+
+// 导出主题相关工具函数
+export * from './theme'
 
 /**
  * 生成唯一ID
@@ -51,8 +54,8 @@ export function deepMerge<T extends Record<string, any>>(target: T, ...sources: 
  * @param item 待判断的值
  * @returns 是否为对象
  */
-export function isObject(item: any): item is Record<string, any> {
-  return item && typeof item === 'object' && !Array.isArray(item)
+export function isObject(item: unknown): item is Record<string, unknown> {
+  return item !== null && typeof item === 'object' && !Array.isArray(item)
 }
 
 /**
@@ -66,13 +69,13 @@ export function debounce<T extends (...args: any[]) => any>(
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
-  
+
   return function executedFunction(...args: Parameters<T>) {
     const later = () => {
       timeout = null
       func(...args)
     }
-    
+
     if (timeout) clearTimeout(timeout)
     timeout = setTimeout(later, wait)
   }
@@ -89,7 +92,7 @@ export function throttle<T extends (...args: any[]) => any>(
   limit: number
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean
-  
+
   return function executedFunction(...args: Parameters<T>) {
     if (!inThrottle) {
       func(...args)
@@ -211,3 +214,18 @@ export function escapeHtml(str: string): string {
   div.textContent = str
   return div.innerHTML
 }
+
+// 导出主题工具
+export * from './theme'
+
+// 导出响应式工具
+export * from './responsive'
+
+// 导出触摸设备支持工具
+export * from './touch'
+
+// 导出键盘导航工具
+export * from './keyboard'
+
+// 导出无障碍访问工具
+export * from './accessibility'

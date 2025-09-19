@@ -2,7 +2,7 @@
  * Switch 组件类型定义
  */
 
-import type { ExtractPropTypes, PropType } from 'vue'
+import type {  ExtractPropTypes, PropType , VNode } from 'vue'
 
 /**
  * Switch 组件大小
@@ -60,6 +60,22 @@ export const switchProps = {
     type: String,
     default: undefined
   }
+,
+  /**
+   * 自定义类名
+   */
+  class: {
+    type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>,
+    default: undefined
+  },
+
+  /**
+   * 自定义样式
+   */
+  style: {
+    type: [String, Object] as PropType<string | Record<string, any>>,
+    default: undefined
+  }
 } as const
 
 /**
@@ -68,21 +84,15 @@ export const switchProps = {
 export const switchEmits = {
   'update:modelValue': (value: boolean) => typeof value === 'boolean',
   change: (value: boolean) => typeof value === 'boolean'
-}
+} as const
 
 /**
  * Switch Props 类型
  */
-export type SwitchProps = ExtractPropTypes<typeof switchProps>
 
 /**
- * Switch 实例类型
+ * Switch Props 类型
  */
-export interface SwitchInstance {
-  $el: HTMLElement
-  focus: () => void
-  blur: () => void
-}
 
 /**
  * Switch Props 类型
@@ -95,10 +105,52 @@ export type SwitchProps = ExtractPropTypes<typeof switchProps>
 export type SwitchEmits = typeof switchEmits
 
 /**
+ * Switch 插槽定义
+ */
+export interface SwitchSlots {
+  /**
+   * 默认插槽
+   */
+  default?: () => VNode | VNode[]
+}
+
+/**
  * Switch 实例类型
  */
 export interface SwitchInstance {
-  /** 组件根元素 */
+  /**
+   * 组件根元素
+   */
   $el: HTMLElement
-  // TODO: 添加实例方法
 }
+
+/**
+ * 泛型 Switch 组件接口
+ * 支持不同类型的开关值
+ */
+export interface GenericSwitchProps<T = boolean> {
+  modelValue?: T
+  // 其他属性继承自基础 Props
+  // 可以根据需要扩展特定的泛型属性
+}
+
+/**
+ * 泛型 Switch 事件接口
+ */
+export interface GenericSwitchEmits<T = boolean> {
+  'update:modelValue': (value: T) => void
+  change: (value: T, oldValue: T) => void
+}
+
+/**
+ * 泛型 Switch 实例接口
+ */
+export interface GenericSwitchInstance<T = boolean> {
+  getValue(): T
+  setValue(value: T): void
+  focus(): void
+  blur(): void
+}
+
+// 类型工具函数
+export * from '../../types/utilities'

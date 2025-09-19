@@ -4,26 +4,16 @@
 -->
 
 <template>
-  <svg
-    ref="iconRef"
-    :class="iconClasses"
-    :style="iconStyles"
-    :width="iconSize"
-    :height="iconSize"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    @click="handleClick"
-  >
+  <svg ref="iconRef" :class="iconClasses" :style="iconStyles" :width="iconSize" :height="iconSize" viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+    @click="handleClick">
     <path :d="iconPath" />
   </svg>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { iconProps } from './types'
 import type { IconProps, IconEmits } from './types'
 
 /**
@@ -36,17 +26,12 @@ defineOptions({
 /**
  * 组件属性
  */
-const props = withDefaults(defineProps<IconProps>(), {
-  name: 'circle',
-  size: 'medium',
-  spin: false,
-  rotate: 0
-})
+const props = defineProps(iconProps)
 
 /**
  * 组件事件
  */
-const emit = defineEmits<IconEmits>()
+const emit = defineEmits(['click'])
 
 /**
  * 图标元素引用

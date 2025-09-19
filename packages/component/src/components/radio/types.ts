@@ -2,7 +2,7 @@
  * Radio 组件类型定义
  */
 
-import type { ExtractPropTypes, PropType } from 'vue'
+import type {  ExtractPropTypes, PropType , VNode } from 'vue'
 
 /**
  * Radio 组件大小
@@ -60,6 +60,22 @@ export const radioProps = {
     type: String,
     default: undefined
   }
+,
+  /**
+   * 自定义类名
+   */
+  class: {
+    type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>,
+    default: undefined
+  },
+
+  /**
+   * 自定义样式
+   */
+  style: {
+    type: [String, Object] as PropType<string | Record<string, any>>,
+    default: undefined
+  }
 } as const
 
 /**
@@ -68,21 +84,15 @@ export const radioProps = {
 export const radioEmits = {
   'update:modelValue': (value: string | number | boolean) => true,
   change: (value: string | number | boolean, event: Event) => event instanceof Event
-}
+} as const
 
 /**
  * Radio Props 类型
  */
-export type RadioProps = ExtractPropTypes<typeof radioProps>
 
 /**
- * Radio 实例类型
+ * Radio Props 类型
  */
-export interface RadioInstance {
-  $el: HTMLElement
-  focus: () => void
-  blur: () => void
-}
 
 /**
  * Radio Props 类型
@@ -95,10 +105,52 @@ export type RadioProps = ExtractPropTypes<typeof radioProps>
 export type RadioEmits = typeof radioEmits
 
 /**
+ * Radio 插槽定义
+ */
+export interface RadioSlots {
+  /**
+   * 默认插槽
+   */
+  default?: () => VNode | VNode[]
+}
+
+/**
  * Radio 实例类型
  */
 export interface RadioInstance {
-  /** 组件根元素 */
+  /**
+   * 组件根元素
+   */
   $el: HTMLElement
-  // TODO: 添加实例方法
 }
+
+/**
+ * 泛型 Radio 组件接口
+ * 支持不同类型的选中值
+ */
+export interface GenericRadioProps<T = string | number> {
+  modelValue?: T
+  // 其他属性继承自基础 Props
+  // 可以根据需要扩展特定的泛型属性
+}
+
+/**
+ * 泛型 Radio 事件接口
+ */
+export interface GenericRadioEmits<T = string | number> {
+  'update:modelValue': (value: T) => void
+  change: (value: T, oldValue: T) => void
+}
+
+/**
+ * 泛型 Radio 实例接口
+ */
+export interface GenericRadioInstance<T = string | number> {
+  getValue(): T
+  setValue(value: T): void
+  focus(): void
+  blur(): void
+}
+
+// 类型工具函数
+export * from '../../types/utilities'

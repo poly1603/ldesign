@@ -24,6 +24,7 @@ import Radio from './components/radio'
 import Switch from './components/switch'
 import Alert from './components/alert'
 import Progress from './components/progress'
+import ThemeToggle from './components/theme-toggle'
 
 // 导入样式
 import './styles/index.less'
@@ -48,6 +49,7 @@ export { default as LRadio } from './components/radio'
 export { default as LSwitch } from './components/switch'
 export { default as LAlert } from './components/alert'
 export { default as LProgress } from './components/progress'
+export { default as LThemeToggle } from './components/theme-toggle'
 
 // 导出组件类型
 export type * from './components/button/types'
@@ -63,6 +65,7 @@ export type * from './components/radio/types'
 export type * from './components/switch/types'
 export type * from './components/alert/types'
 export type * from './components/progress/types'
+export type * from './components/theme-toggle/types'
 
 // 所有组件列表
 const components = [
@@ -78,7 +81,8 @@ const components = [
   Radio,
   Switch,
   Alert,
-  Progress
+  Progress,
+  ThemeToggle
 ]
 
 // 安装函数

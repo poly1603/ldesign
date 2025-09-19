@@ -1,35 +1,17 @@
 <template>
-  <button
-    ref="buttonRef"
-    :class="buttonClasses"
-    :style="style"
-    :type="nativeType"
-    :disabled="isDisabled"
-    @click="handleClick"
-    @focus="handleFocus"
-    @blur="handleBlur"
-    @mouseenter="handleMouseenter"
-    @mouseleave="handleMouseleave"
-  >
+  <button ref="buttonRef" :class="buttonClasses" :style="style" :type="nativeType" :disabled="isDisabled"
+    @click="handleClick" @focus="handleFocus" @blur="handleBlur" @mouseenter="handleMouseenter"
+    @mouseleave="handleMouseleave">
     <!-- 加载图标 -->
-    <span
-      v-if="loading"
-      class="ld-button__loading"
-    >
+    <span v-if="loading" class="ld-button__loading">
       ⟳
     </span>
 
     <!-- 按钮内容 -->
     <span class="ld-button__content">
       <!-- 左侧图标 -->
-      <span
-        v-if="icon && iconPosition === 'left'"
-        class="ld-button__icon ld-button__icon--left"
-      >
-        <component
-          v-if="typeof icon === 'object'"
-          :is="icon"
-        />
+      <span v-if="icon && iconPosition === 'left'" class="ld-button__icon ld-button__icon--left">
+        <component v-if="typeof icon === 'object'" :is="icon" />
         <span v-else>{{ icon }}</span>
       </span>
 
@@ -37,14 +19,8 @@
       <slot />
 
       <!-- 右侧图标 -->
-      <span
-        v-if="icon && iconPosition === 'right'"
-        class="ld-button__icon ld-button__icon--right"
-      >
-        <component
-          v-if="typeof icon === 'object'"
-          :is="icon"
-        />
+      <span v-if="icon && iconPosition === 'right'" class="ld-button__icon ld-button__icon--right">
+        <component v-if="typeof icon === 'object'" :is="icon" />
         <span v-else>{{ icon }}</span>
       </span>
     </span>
@@ -52,9 +28,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { buttonProps, buttonEmits } from './types'
 import type { ButtonInstance } from './types'
+import {
+  useBreakpoints,
+  useTouch,
+  useKeyboardNavigation,
+  useAccessibility,
+  KEYBOARD_SHORTCUTS
+} from '../../utils'
 
 /**
  * Button 组件
@@ -85,6 +68,28 @@ const emit = defineEmits(buttonEmits)
 // 按钮元素引用
 const buttonRef = ref<HTMLElement>()
 
+// 响应式断点支持
+const { current: currentBreakpoint, isMobile, isTablet, isDesktop } = useBreakpoints()
+
+// 触摸设备支持
+const { on: onTouch, isTouchDevice } = useTouch(buttonRef, {
+  enabled: true,
+  preventDefault: false
+})
+
+// 键盘导航支持
+const { registerShortcut } = useKeyboardNavigation(buttonRef, {
+  autoFocus: false
+})
+
+// 无障碍访问支持
+const { setAria, announce } = useAccessibility(buttonRef, {
+  enabled: true,
+  aria: {
+    role: 'button'
+  }
+})
+
 
 
 // 计算是否禁用
@@ -104,7 +109,13 @@ const buttonClasses = computed(() => {
       'ld-button--disabled': isDisabled.value,
       'ld-button--loading': props.loading,
       'ld-button--block': props.block,
-      'ld-button--ghost': props.ghost
+      'ld-button--ghost': props.ghost,
+      // 设备相关类名
+      'ld-button--mobile': isMobile.value,
+      'ld-button--tablet': isTablet.value,
+      'ld-button--desktop': isDesktop.value,
+      'ld-button--touch': isTouchDevice.value,
+      [`ld-button--${currentBreakpoint.value}`]: true
     }
   ]
 
@@ -151,6 +162,47 @@ const handleMouseenter = (event: MouseEvent) => {
 const handleMouseleave = (event: MouseEvent) => {
   emit('mouseleave', event)
 }
+
+// 组件挂载时设置跨设备支持
+onMounted(() => {
+  // 设置 ARIA 属性
+  setAria('disabled', isDisabled.value)
+  setAria('pressed', false)
+
+  // 设置触摸事件
+  onTouch('tap', (event) => {
+    if (!isDisabled.value) {
+      handleClick(event.originalEvent as MouseEvent)
+    }
+  })
+
+  onTouch('longPress', () => {
+    if (!isDisabled.value) {
+      announce('长按按钮', 'polite')
+    }
+  })
+
+  // 设置键盘快捷键
+  registerShortcut({
+    key: KEYBOARD_SHORTCUTS.ENTER,
+    handler: (event) => {
+      if (!isDisabled.value) {
+        handleClick(event as unknown as MouseEvent)
+      }
+    },
+    description: '激活按钮'
+  })
+
+  registerShortcut({
+    key: KEYBOARD_SHORTCUTS.SPACE,
+    handler: (event) => {
+      if (!isDisabled.value) {
+        handleClick(event as unknown as MouseEvent)
+      }
+    },
+    description: '激活按钮'
+  })
+})
 
 // 暴露组件实例方法
 const focus = () => {

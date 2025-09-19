@@ -2,7 +2,7 @@
  * Input 组件类型定义
  */
 
-import type { Component } from 'vue'
+import type { ExtractPropTypes, PropType, VNode } from 'vue'
 
 /**
  * 输入框类型
@@ -20,173 +20,297 @@ export type InputSize = 'small' | 'medium' | 'large'
 export type InputStatus = 'default' | 'success' | 'warning' | 'error'
 
 /**
- * Input 组件属性接口
+ * Input Props 定义
  */
-export interface InputProps {
+export const inputProps = {
   /**
    * 输入框值
    */
-  modelValue?: string | number
+  modelValue: {
+    type: [String, Number] as PropType<string | number>,
+    default: undefined
+  },
 
   /**
    * 输入框类型
    * @default 'text'
    */
-  type?: InputType
+  type: {
+    type: String as PropType<InputType>,
+    default: 'text'
+  },
 
   /**
    * 输入框尺寸
    * @default 'medium'
    */
-  size?: InputSize
+  size: {
+    type: String as PropType<InputSize>,
+    default: 'medium'
+  },
 
   /**
    * 输入框状态
    * @default 'default'
    */
-  status?: InputStatus
+  status: {
+    type: String as PropType<InputStatus>,
+    default: 'default'
+  },
 
   /**
    * 占位符文本
    */
-  placeholder?: string
+  placeholder: {
+    type: String,
+    default: undefined
+  },
 
   /**
    * 是否禁用
    * @default false
    */
-  disabled?: boolean
+  disabled: {
+    type: Boolean,
+    default: false
+  },
 
   /**
    * 是否只读
    * @default false
    */
-  readonly?: boolean
+  readonly: {
+    type: Boolean,
+    default: false
+  },
 
   /**
    * 是否必填
    * @default false
    */
-  required?: boolean
+  required: {
+    type: Boolean,
+    default: false
+  },
 
   /**
    * 是否可清空
    * @default false
    */
-  clearable?: boolean
+  clearable: {
+    type: Boolean,
+    default: false
+  },
 
   /**
    * 是否显示密码切换按钮（仅 type="password" 时有效）
    * @default false
    */
-  showPassword?: boolean
+  showPassword: {
+    type: Boolean,
+    default: false
+  },
 
   /**
    * 最大长度
    */
-  maxlength?: number
+  maxlength: {
+    type: Number,
+    default: undefined
+  },
 
   /**
    * 是否显示字数统计
    * @default false
    */
-  showCount?: boolean
+  showCount: {
+    type: Boolean,
+    default: false
+  },
 
   /**
    * 前缀图标
    */
-  prefixIcon?: string | Component
+  prefixIcon: {
+    type: [String, Object] as PropType<string | any>,
+    default: undefined
+  },
 
   /**
    * 后缀图标
    */
-  suffixIcon?: string | Component
+  suffixIcon: {
+    type: [String, Object] as PropType<string | any>,
+    default: undefined
+  },
 
   /**
    * 输入框前置内容
    */
-  prepend?: string
+  prepend: {
+    type: String,
+    default: undefined
+  },
 
   /**
    * 输入框后置内容
    */
-  append?: string
-
-  /**
-   * 自动获取焦点
-   * @default false
-   */
-  autofocus?: boolean
-
-  /**
-   * 自动完成
-   */
-  autocomplete?: string
-
-  /**
-   * 表单名称
-   */
-  name?: string
-
-  /**
-   * 表单 ID
-   */
-  id?: string
+  append: {
+    type: String,
+    default: undefined
+  },
 
   /**
    * 自定义类名
    */
-  class?: string
+  class: {
+    type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>,
+    default: undefined
+  },
 
   /**
    * 自定义样式
    */
-  style?: string | Record<string, any>
-}
+  style: {
+    type: [String, Object] as PropType<string | Record<string, any>>,
+    default: undefined
+  }
+} as const
 
 /**
- * Input 组件事件接口
+ * Input Emits 定义
  */
-export interface InputEmits {
+export const inputEmits = {
   /**
    * 值更新事件
    */
-  'update:modelValue': [value: string | number]
+  'update:modelValue': (value: string | number) => typeof value === 'string' || typeof value === 'number',
 
   /**
    * 输入事件
    */
-  input: [value: string | number, event: Event]
+  input: (value: string | number, event: Event) => (typeof value === 'string' || typeof value === 'number') && event instanceof Event,
 
   /**
    * 变化事件
    */
-  change: [value: string | number, event: Event]
+  change: (value: string | number, event: Event) => (typeof value === 'string' || typeof value === 'number') && event instanceof Event,
 
   /**
    * 获得焦点事件
    */
-  focus: [event: FocusEvent]
+  focus: (event: FocusEvent) => event instanceof FocusEvent,
 
   /**
    * 失去焦点事件
    */
-  blur: [event: FocusEvent]
+  blur: (event: FocusEvent) => event instanceof FocusEvent,
 
   /**
    * 清空事件
    */
-  clear: []
+  clear: () => true,
 
   /**
    * 按键事件
    */
-  keydown: [event: KeyboardEvent]
+  keydown: (event: KeyboardEvent) => event instanceof KeyboardEvent,
 
   /**
    * 回车事件
    */
-  enter: [event: KeyboardEvent]
+  enter: (event: KeyboardEvent) => event instanceof KeyboardEvent
+} as const
+
+/**
+ * Input Props 类型
+ */
+export interface InputProps {
+  modelValue?: string | number
+  type?: InputType
+  size?: InputSize
+  placeholder?: string
+  disabled?: boolean
+  readonly?: boolean
+  clearable?: boolean
+  showPassword?: boolean
+  maxlength?: number
+  minlength?: number
+  max?: number | string
+  min?: number | string
+  step?: number | string
+  autocomplete?: string
+  autofocus?: boolean
+  form?: string
+  name?: string
+  required?: boolean
+  pattern?: string
+  multiple?: boolean
+  accept?: string
+  capture?: string
+  inputmode?: string
+  enterkeyhint?: string
+  spellcheck?: boolean
+  tabindex?: number
+  title?: string
+  class?: string | string[] | Record<string, boolean>
+  style?: string | Record<string, string>
+  id?: string
+  'data-testid'?: string
+}
+
+/**
+ * 泛型 Input Props 类型
+ */
+export interface GenericInputProps<T = string | number> {
+  modelValue?: T
+  type?: InputType
+  size?: InputSize
+  status?: InputStatus
+  placeholder?: string
+  disabled?: boolean
+  readonly?: boolean
+  required?: boolean
+  clearable?: boolean
+  showPassword?: boolean
+  maxlength?: number
+  showCount?: boolean
+  prefixIcon?: string | any
+  suffixIcon?: string | any
+  prepend?: string
+  append?: string
+  class?: string | string[] | Record<string, boolean>
+  style?: string | Record<string, any>
+}
+
+/**
+ * Input Emits 类型
+ */
+export type InputEmits = typeof inputEmits
+
+/**
+ * Input 插槽定义
+ */
+export interface InputSlots {
+  /**
+   * 前缀插槽
+   */
+  prefix?: () => VNode | VNode[]
+
+  /**
+   * 后缀插槽
+   */
+  suffix?: () => VNode | VNode[]
+
+  /**
+   * 前置内容插槽
+   */
+  prepend?: () => VNode | VNode[]
+
+  /**
+   * 后置内容插槽
+   */
+  append?: () => VNode | VNode[]
 }
 
 /**
@@ -218,3 +342,6 @@ export interface InputInstance {
    */
   clear: () => void
 }
+
+// 类型工具函数
+export * from '../../types/utilities'

@@ -2,7 +2,7 @@
  * Progress 组件类型定义
  */
 
-import type { ExtractPropTypes, PropType } from 'vue'
+import type {  ExtractPropTypes, PropType , VNode } from 'vue'
 
 /**
  * Progress 组件大小
@@ -52,7 +52,11 @@ export const progressProps = {
 export const progressEmits = {
   // TODO: 添加事件定义
   // click: (event: MouseEvent) => event instanceof MouseEvent
-}
+} as const
+
+/**
+ * Progress Props 类型
+ */
 
 /**
  * Progress Props 类型
@@ -65,10 +69,23 @@ export type ProgressProps = ExtractPropTypes<typeof progressProps>
 export type ProgressEmits = typeof progressEmits
 
 /**
+ * Progress 插槽定义
+ */
+export interface ProgressSlots {
+  /**
+   * 默认插槽
+   */
+  default?: () => VNode | VNode[]
+}
+
+/**
  * Progress 实例类型
  */
 export interface ProgressInstance {
-  /** 组件根元素 */
+  /**
+   * 组件根元素
+   */
   $el: HTMLElement
-  // TODO: 添加实例方法
 }
+// 类型工具函数
+export * from '../../types/utilities'

@@ -2,7 +2,7 @@
  * Badge 组件类型定义
  */
 
-import type { ExtractPropTypes, PropType } from 'vue'
+import type {  ExtractPropTypes, PropType , VNode } from 'vue'
 
 /**
  * Badge 组件大小
@@ -81,6 +81,22 @@ export const badgeProps = {
     type: Array as unknown as PropType<[number, number]>,
     default: undefined
   }
+,
+  /**
+   * 自定义类名
+   */
+  class: {
+    type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>,
+    default: undefined
+  },
+
+  /**
+   * 自定义样式
+   */
+  style: {
+    type: [String, Object] as PropType<string | Record<string, any>>,
+    default: undefined
+  }
 } as const
 
 /**
@@ -89,7 +105,11 @@ export const badgeProps = {
 export const badgeEmits = {
   // TODO: 添加事件定义
   // click: (event: MouseEvent) => event instanceof MouseEvent
-}
+} as const
+
+/**
+ * Badge Props 类型
+ */
 
 /**
  * Badge Props 类型
@@ -102,10 +122,23 @@ export type BadgeProps = ExtractPropTypes<typeof badgeProps>
 export type BadgeEmits = typeof badgeEmits
 
 /**
+ * Badge 插槽定义
+ */
+export interface BadgeSlots {
+  /**
+   * 默认插槽
+   */
+  default?: () => VNode | VNode[]
+}
+
+/**
  * Badge 实例类型
  */
 export interface BadgeInstance {
-  /** 组件根元素 */
+  /**
+   * 组件根元素
+   */
   $el: HTMLElement
-  // TODO: 添加实例方法
 }
+// 类型工具函数
+export * from '../../types/utilities'

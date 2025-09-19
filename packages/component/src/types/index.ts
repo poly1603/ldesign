@@ -4,7 +4,7 @@
  * 定义组件库中所有组件共用的基础类型和接口
  */
 
-import type { App, Component } from 'vue'
+import type { App, Component, VNode } from 'vue'
 
 /**
  * 组件大小枚举
@@ -70,8 +70,8 @@ export type AsyncEventHandler<T = Event> = (event: T) => Promise<void>
  * 组件插槽类型
  */
 export interface ComponentSlots {
-  default?: () => any
-  [key: string]: ((...args: any[]) => any) | undefined
+  default?: () => VNode | VNode[]
+  [key: string]: ((...args: unknown[]) => VNode | VNode[]) | undefined
 }
 
 /**
@@ -87,7 +87,7 @@ export interface ValidationRule {
   /** 正则表达式 */
   pattern?: RegExp
   /** 自定义验证函数 */
-  validator?: (value: any) => boolean | string
+  validator?: (value: unknown) => boolean | string
   /** 错误提示信息 */
   message?: string
 }
@@ -105,7 +105,7 @@ export interface ValidationResult {
 /**
  * 位置枚举
  */
-export type Placement = 
+export type Placement =
   | 'top' | 'top-start' | 'top-end'
   | 'bottom' | 'bottom-start' | 'bottom-end'
   | 'left' | 'left-start' | 'left-end'

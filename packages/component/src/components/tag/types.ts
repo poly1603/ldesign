@@ -2,7 +2,7 @@
  * Tag 组件类型定义
  */
 
-import type { ExtractPropTypes, PropType } from 'vue'
+import type {  ExtractPropTypes, PropType , VNode } from 'vue'
 
 /**
  * Tag 组件大小
@@ -94,6 +94,22 @@ export const tagProps = {
     type: String,
     default: undefined
   }
+,
+  /**
+   * 自定义类名
+   */
+  class: {
+    type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>,
+    default: undefined
+  },
+
+  /**
+   * 自定义样式
+   */
+  style: {
+    type: [String, Object] as PropType<string | Record<string, any>>,
+    default: undefined
+  }
 } as const
 
 /**
@@ -103,7 +119,11 @@ export const tagEmits = {
   click: (event: MouseEvent) => event instanceof MouseEvent,
   close: (event: MouseEvent) => event instanceof MouseEvent,
   'update:checked': (checked: boolean) => typeof checked === 'boolean'
-}
+} as const
+
+/**
+ * Tag Props 类型
+ */
 
 /**
  * Tag Props 类型
@@ -116,10 +136,23 @@ export type TagProps = ExtractPropTypes<typeof tagProps>
 export type TagEmits = typeof tagEmits
 
 /**
+ * Tag 插槽定义
+ */
+export interface TagSlots {
+  /**
+   * 默认插槽
+   */
+  default?: () => VNode | VNode[]
+}
+
+/**
  * Tag 实例类型
  */
 export interface TagInstance {
-  /** 组件根元素 */
+  /**
+   * 组件根元素
+   */
   $el: HTMLElement
-  // TODO: 添加实例方法
 }
+// 类型工具函数
+export * from '../../types/utilities'

@@ -2,7 +2,7 @@
  * Button 组件类型定义
  */
 
-import type { ExtractPropTypes, PropType } from 'vue'
+import type {  ExtractPropTypes, PropType , VNode } from 'vue'
 
 /**
  * 按钮类型
@@ -223,6 +223,31 @@ export const buttonEmits = {
 export type ButtonEmits = typeof buttonEmits
 
 /**
+ * Button 组件插槽定义
+ */
+export interface ButtonSlots {
+  /**
+   * 默认插槽
+   */
+  default?: () => VNode | VNode[]
+
+  /**
+   * 图标插槽
+   */
+  icon?: () => VNode | VNode[]
+
+  /**
+   * 前缀插槽
+   */
+  prefix?: () => VNode | VNode[]
+
+  /**
+   * 后缀插槽
+   */
+  suffix?: () => VNode | VNode[]
+}
+
+/**
  * Button 组件实例类型
  */
 export interface ButtonInstance {
@@ -230,14 +255,17 @@ export interface ButtonInstance {
    * 按钮元素引用
    */
   $el: HTMLElement
-  
+
   /**
    * 聚焦按钮
    */
   focus: () => void
-  
+
   /**
    * 失焦按钮
    */
   blur: () => void
 }
+
+// 类型工具函数
+export * from '../../types/utilities'

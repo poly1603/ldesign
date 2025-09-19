@@ -1,0 +1,848 @@
+{
+  "timestamp": "2025-09-19T01:57:01.109Z",
+  "summary": {
+    "total": 14,
+    "passed": 0,
+    "failed": 14,
+    "warnings": 61
+  },
+  "details": {
+    "passed": [],
+    "failed": [
+      {
+        "component": "alert",
+        "file": "src\\components\\alert\\types.ts",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少基础属性: size"
+          },
+          {
+            "level": "warning",
+            "message": "缺少基础属性: disabled"
+          },
+          {
+            "level": "warning",
+            "message": "事件 close 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 closable 建议使用描述性命名"
+          }
+        ]
+      },
+      {
+        "component": "badge",
+        "file": "src\\components\\badge\\types.ts",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少基础属性: disabled"
+          },
+          {
+            "level": "warning",
+            "message": "事件 click 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 dot 建议使用描述性命名"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 hidden 建议使用描述性命名"
+          }
+        ]
+      },
+      {
+        "component": "button",
+        "file": "src\\components\\button\\types.ts",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "事件 click 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 focus 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 blur 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 mouseenter 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 mouseleave 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 focus 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 blur 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 block 建议使用描述性命名"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 ghost 建议使用描述性命名"
+          }
+        ]
+      },
+      {
+        "component": "card",
+        "file": "src\\components\\card\\types.ts",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "事件 click 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 bordered 建议使用描述性命名"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 hoverable 建议使用描述性命名"
+          }
+        ]
+      },
+      {
+        "component": "checkbox",
+        "file": "src\\components\\checkbox\\types.ts",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "事件 change 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 modelValue 建议使用描述性命名"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 indeterminate 建议使用描述性命名"
+          }
+        ]
+      },
+      {
+        "component": "icon",
+        "file": "src\\components\\icon\\types.ts",
+        "issues": [
+          {
+            "level": "error",
+            "message": "Props 应该使用 const + PropType 方式定义"
+          },
+          {
+            "level": "warning",
+            "message": "缺少基础属性: size"
+          },
+          {
+            "level": "warning",
+            "message": "缺少基础属性: disabled"
+          },
+          {
+            "level": "warning",
+            "message": "缺少基础属性: class"
+          },
+          {
+            "level": "warning",
+            "message": "缺少基础属性: style"
+          },
+          {
+            "level": "error",
+            "message": "Events 应该使用 const + 函数验证方式定义"
+          }
+        ]
+      },
+      {
+        "component": "input",
+        "file": "src\\components\\input\\types.ts",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "事件 input 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 change 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 focus 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 blur 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 clear 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 keydown 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 enter 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 getInputElement 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 focus 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 blur 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 select 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 clear 缺少适当的验证逻辑"
+          }
+        ]
+      },
+      {
+        "component": "loading",
+        "file": "src\\components\\loading\\types.ts",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "事件 click 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 overlay 建议使用描述性命名"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 absolute 建议使用描述性命名"
+          }
+        ]
+      },
+      {
+        "component": "progress",
+        "file": "src\\components\\progress\\types.ts",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "事件 click 缺少适当的验证逻辑"
+          }
+        ]
+      },
+      {
+        "component": "radio",
+        "file": "src\\components\\radio\\types.ts",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "事件 change 缺少适当的验证逻辑"
+          }
+        ]
+      },
+      {
+        "component": "select",
+        "file": "src\\components\\select\\types.ts",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "事件 default 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 clear 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 blur 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 focus 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 filterable 建议使用描述性命名"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 teleported 建议使用描述性命名"
+          }
+        ]
+      },
+      {
+        "component": "switch",
+        "file": "src\\components\\switch\\types.ts",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "事件 change 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 modelValue 建议使用描述性命名"
+          }
+        ]
+      },
+      {
+        "component": "tag",
+        "file": "src\\components\\tag\\types.ts",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "事件 click 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "事件 close 缺少适当的验证逻辑"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 closable 建议使用描述性命名"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 clickable 建议使用描述性命名"
+          },
+          {
+            "level": "warning",
+            "message": "布尔属性 checked 建议使用描述性命名"
+          }
+        ]
+      },
+      {
+        "component": "theme-toggle",
+        "file": "src\\components\\theme-toggle\\types.ts",
+        "issues": [
+          {
+            "level": "error",
+            "message": "Props 应该使用 const + PropType 方式定义"
+          },
+          {
+            "level": "warning",
+            "message": "缺少基础属性: size"
+          },
+          {
+            "level": "warning",
+            "message": "缺少基础属性: disabled"
+          },
+          {
+            "level": "warning",
+            "message": "缺少基础属性: class"
+          },
+          {
+            "level": "warning",
+            "message": "缺少基础属性: style"
+          },
+          {
+            "level": "error",
+            "message": "Events 应该使用 const + 函数验证方式定义"
+          }
+        ]
+      }
+    ],
+    "warnings": [
+      {
+        "component": "alert",
+        "file": "src\\components\\alert\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "缺少基础属性: size"
+        }
+      },
+      {
+        "component": "alert",
+        "file": "src\\components\\alert\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "缺少基础属性: disabled"
+        }
+      },
+      {
+        "component": "alert",
+        "file": "src\\components\\alert\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 close 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "alert",
+        "file": "src\\components\\alert\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 closable 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "badge",
+        "file": "src\\components\\badge\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "缺少基础属性: disabled"
+        }
+      },
+      {
+        "component": "badge",
+        "file": "src\\components\\badge\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 click 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "badge",
+        "file": "src\\components\\badge\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 dot 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "badge",
+        "file": "src\\components\\badge\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 hidden 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "button",
+        "file": "src\\components\\button\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 click 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "button",
+        "file": "src\\components\\button\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 focus 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "button",
+        "file": "src\\components\\button\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 blur 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "button",
+        "file": "src\\components\\button\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 mouseenter 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "button",
+        "file": "src\\components\\button\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 mouseleave 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "button",
+        "file": "src\\components\\button\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 focus 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "button",
+        "file": "src\\components\\button\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 blur 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "button",
+        "file": "src\\components\\button\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 block 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "button",
+        "file": "src\\components\\button\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 ghost 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "card",
+        "file": "src\\components\\card\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 click 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "card",
+        "file": "src\\components\\card\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 bordered 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "card",
+        "file": "src\\components\\card\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 hoverable 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "checkbox",
+        "file": "src\\components\\checkbox\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 change 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "checkbox",
+        "file": "src\\components\\checkbox\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 modelValue 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "checkbox",
+        "file": "src\\components\\checkbox\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 indeterminate 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "icon",
+        "file": "src\\components\\icon\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "缺少基础属性: size"
+        }
+      },
+      {
+        "component": "icon",
+        "file": "src\\components\\icon\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "缺少基础属性: disabled"
+        }
+      },
+      {
+        "component": "icon",
+        "file": "src\\components\\icon\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "缺少基础属性: class"
+        }
+      },
+      {
+        "component": "icon",
+        "file": "src\\components\\icon\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "缺少基础属性: style"
+        }
+      },
+      {
+        "component": "input",
+        "file": "src\\components\\input\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 input 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "input",
+        "file": "src\\components\\input\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 change 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "input",
+        "file": "src\\components\\input\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 focus 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "input",
+        "file": "src\\components\\input\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 blur 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "input",
+        "file": "src\\components\\input\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 clear 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "input",
+        "file": "src\\components\\input\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 keydown 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "input",
+        "file": "src\\components\\input\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 enter 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "input",
+        "file": "src\\components\\input\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 getInputElement 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "input",
+        "file": "src\\components\\input\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 focus 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "input",
+        "file": "src\\components\\input\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 blur 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "input",
+        "file": "src\\components\\input\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 select 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "input",
+        "file": "src\\components\\input\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 clear 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "loading",
+        "file": "src\\components\\loading\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 click 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "loading",
+        "file": "src\\components\\loading\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 overlay 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "loading",
+        "file": "src\\components\\loading\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 absolute 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "progress",
+        "file": "src\\components\\progress\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 click 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "radio",
+        "file": "src\\components\\radio\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 change 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "select",
+        "file": "src\\components\\select\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 default 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "select",
+        "file": "src\\components\\select\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 clear 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "select",
+        "file": "src\\components\\select\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 blur 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "select",
+        "file": "src\\components\\select\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 focus 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "select",
+        "file": "src\\components\\select\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 filterable 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "select",
+        "file": "src\\components\\select\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 teleported 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "switch",
+        "file": "src\\components\\switch\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 change 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "switch",
+        "file": "src\\components\\switch\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 modelValue 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "tag",
+        "file": "src\\components\\tag\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 click 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "tag",
+        "file": "src\\components\\tag\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "事件 close 缺少适当的验证逻辑"
+        }
+      },
+      {
+        "component": "tag",
+        "file": "src\\components\\tag\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 closable 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "tag",
+        "file": "src\\components\\tag\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 clickable 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "tag",
+        "file": "src\\components\\tag\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "布尔属性 checked 建议使用描述性命名"
+        }
+      },
+      {
+        "component": "theme-toggle",
+        "file": "src\\components\\theme-toggle\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "缺少基础属性: size"
+        }
+      },
+      {
+        "component": "theme-toggle",
+        "file": "src\\components\\theme-toggle\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "缺少基础属性: disabled"
+        }
+      },
+      {
+        "component": "theme-toggle",
+        "file": "src\\components\\theme-toggle\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "缺少基础属性: class"
+        }
+      },
+      {
+        "component": "theme-toggle",
+        "file": "src\\components\\theme-toggle\\types.ts",
+        "issue": {
+          "level": "warning",
+          "message": "缺少基础属性: style"
+        }
+      }
+    ]
+  }
+}

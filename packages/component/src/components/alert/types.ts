@@ -2,7 +2,7 @@
  * Alert 组件类型定义
  */
 
-import type { ExtractPropTypes, PropType } from 'vue'
+import type {  ExtractPropTypes, PropType , VNode } from 'vue'
 
 /**
  * Alert 组件类型
@@ -60,6 +60,22 @@ export const alertProps = {
     type: String,
     default: undefined
   }
+,
+  /**
+   * 自定义类名
+   */
+  class: {
+    type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>,
+    default: undefined
+  },
+
+  /**
+   * 自定义样式
+   */
+  style: {
+    type: [String, Object] as PropType<string | Record<string, any>>,
+    default: undefined
+  }
 } as const
 
 /**
@@ -67,19 +83,15 @@ export const alertProps = {
  */
 export const alertEmits = {
   close: () => true
-}
+} as const
 
 /**
  * Alert Props 类型
  */
-export type AlertProps = ExtractPropTypes<typeof alertProps>
 
 /**
- * Alert 实例类型
+ * Alert Props 类型
  */
-export interface AlertInstance {
-  $el: HTMLElement
-}
 
 /**
  * Alert Props 类型
@@ -92,10 +104,23 @@ export type AlertProps = ExtractPropTypes<typeof alertProps>
 export type AlertEmits = typeof alertEmits
 
 /**
+ * Alert 插槽定义
+ */
+export interface AlertSlots {
+  /**
+   * 默认插槽
+   */
+  default?: () => VNode | VNode[]
+}
+
+/**
  * Alert 实例类型
  */
 export interface AlertInstance {
-  /** 组件根元素 */
+  /**
+   * 组件根元素
+   */
   $el: HTMLElement
-  // TODO: 添加实例方法
 }
+// 类型工具函数
+export * from '../../types/utilities'

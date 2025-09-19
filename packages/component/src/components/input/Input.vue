@@ -19,44 +19,20 @@
       </div>
 
       <!-- 输入框 -->
-      <input
-        ref="inputRef"
-        v-model="inputValue"
-        :type="currentType"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        :readonly="readonly"
-        :required="required"
-        :maxlength="maxlength"
-        :autocomplete="autocomplete"
-        :name="name"
-        :id="id"
-        :autofocus="autofocus"
-        class="l-input__inner"
-        @input="handleInput"
-        @change="handleChange"
-        @focus="handleFocus"
-        @blur="handleBlur"
-        @keydown="handleKeydown"
-      />
+      <input ref="inputRef" v-model="inputValue" :type="currentType" :placeholder="placeholder" :disabled="disabled"
+        :readonly="readonly" :required="required" :maxlength="maxlength" :autocomplete="autocomplete" :name="name"
+        :id="id" :autofocus="autofocus" class="l-input__inner" @input="handleInput" @change="handleChange"
+        @focus="handleFocus" @blur="handleBlur" @keydown="handleKeydown" />
 
       <!-- 后缀内容 -->
       <div v-if="showSuffix" class="l-input__suffix">
         <!-- 清空按钮 -->
-        <div
-          v-if="showClearButton"
-          class="l-input__clear"
-          @click="handleClear"
-        >
+        <div v-if="showClearButton" class="l-input__clear" @click="handleClear">
           <l-icon name="✕" />
         </div>
 
         <!-- 密码切换按钮 -->
-        <div
-          v-if="showPasswordButton"
-          class="l-input__password"
-          @click="togglePasswordVisibility"
-        >
+        <div v-if="showPasswordButton" class="l-input__password" @click="togglePasswordVisibility">
           <l-icon :name="passwordVisible ? '👁️' : '🙈'" />
         </div>
 
@@ -82,6 +58,7 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'
+import { inputProps, inputEmits } from './types'
 import type { InputProps, InputEmits } from './types'
 
 /**
@@ -94,24 +71,12 @@ defineOptions({
 /**
  * 组件属性
  */
-const props = withDefaults(defineProps<InputProps>(), {
-  type: 'text',
-  size: 'medium',
-  status: 'default',
-  disabled: false,
-  readonly: false,
-  required: false,
-  clearable: false,
-  showPassword: false,
-  showCount: false,
-  autofocus: false,
-  autocomplete: 'off'
-})
+const props = defineProps(inputProps)
 
 /**
  * 组件事件
  */
-const emit = defineEmits<InputEmits>()
+const emit = defineEmits(inputEmits)
 
 /**
  * 输入框元素引用
@@ -176,40 +141,40 @@ const showPasswordButton = computed(() => {
  */
 const inputClasses = computed(() => {
   const classes = ['l-input']
-  
+
   // 尺寸类名
   classes.push(`l-input--${props.size}`)
-  
+
   // 状态类名
   if (props.status !== 'default') {
     classes.push(`l-input--${props.status}`)
   }
-  
+
   // 禁用状态
   if (props.disabled) {
     classes.push('l-input--disabled')
   }
-  
+
   // 只读状态
   if (props.readonly) {
     classes.push('l-input--readonly')
   }
-  
+
   // 前置内容
   if (props.prepend) {
     classes.push('l-input--prepend')
   }
-  
+
   // 后置内容
   if (props.append) {
     classes.push('l-input--append')
   }
-  
+
   // 自定义类名
   if (props.class) {
     classes.push(props.class)
   }
-  
+
   return classes
 })
 
@@ -218,7 +183,7 @@ const inputClasses = computed(() => {
  */
 const inputStyles = computed(() => {
   const styles: Record<string, any> = {}
-  
+
   // 合并自定义样式
   if (props.style) {
     if (typeof props.style === 'string') {
@@ -234,7 +199,7 @@ const inputStyles = computed(() => {
       Object.assign(styles, props.style)
     }
   }
-  
+
   return styles
 })
 
@@ -275,7 +240,7 @@ const handleBlur = (event: FocusEvent) => {
  */
 const handleKeydown = (event: KeyboardEvent) => {
   emit('keydown', event)
-  
+
   if (event.key === 'Enter') {
     emit('enter', event)
   }

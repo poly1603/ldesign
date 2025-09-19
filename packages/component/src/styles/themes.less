@@ -1,111 +1,160 @@
 /**
- * 主题配置文件
- * 
- * 定义不同主题下的样式变量
- * 支持亮色主题和暗色主题
+ * LDESIGN 主题系统
+ *
+ * 提供亮色主题和暗色主题的支持
+ * 基于 CSS 变量的主题切换机制
+ * 基于 TDesign 设计规范
+ *
+ * 使用方式：
+ * - 默认亮色主题：无需额外设置
+ * - 暗色主题：在根元素添加 data-theme="dark" 属性
+ * - 自定义主题：覆盖对应的 CSS 变量
+ *
+ * 更新时间：2025-01-19
  */
 
-/* 亮色主题（默认） */
+/**
+ * ===== 亮色主题（默认） =====
+ * 语义化颜色映射已在 design-tokens.less 中定义
+ * 这里仅做主题特定的覆盖
+ */
 :root,
 [data-theme="light"] {
-  // 品牌色
-  --ldesign-brand-color: var(--ldesign-brand-color-7);
-  --ldesign-brand-color-hover: var(--ldesign-brand-color-6);
-  --ldesign-brand-color-active: var(--ldesign-brand-color-8);
-  --ldesign-brand-color-disabled: var(--ldesign-brand-color-3);
-  --ldesign-brand-color-focus: var(--ldesign-brand-color-2);
-  
-  // 功能色
-  --ldesign-success-color: var(--ldesign-success-color-5);
-  --ldesign-warning-color: var(--ldesign-warning-color-5);
-  --ldesign-error-color: var(--ldesign-error-color-5);
-  
-  // 文本色
-  --ldesign-text-color-primary: var(--ldesign-font-gray-1);
-  --ldesign-text-color-secondary: var(--ldesign-font-gray-2);
-  --ldesign-text-color-placeholder: var(--ldesign-font-gray-3);
-  --ldesign-text-color-disabled: var(--ldesign-font-gray-4);
-  
-  // 背景色
-  --ldesign-bg-color-page: #ffffff;
-  --ldesign-bg-color-container: #ffffff;
-  --ldesign-bg-color-component: #ffffff;
-  
-  // 边框色
-  --ldesign-border-color: var(--ldesign-border-level-1-color);
-  --ldesign-border-color-hover: var(--ldesign-border-level-2-color);
-  --ldesign-border-color-focus: var(--ldesign-brand-color);
+  /* 主题过渡动画 */
+  transition:
+    background-color var(--ldesign-transition-base),
+    border-color var(--ldesign-transition-base),
+    color var(--ldesign-transition-base);
 }
 
-/* 暗色主题 */
+/**
+ * ===== 暗色主题 =====
+ * 通过 data-theme="dark" 属性激活
+ */
 [data-theme="dark"] {
-  // 品牌色（暗色主题下稍微调亮）
-  --ldesign-brand-color: var(--ldesign-brand-color-5);
-  --ldesign-brand-color-hover: var(--ldesign-brand-color-4);
-  --ldesign-brand-color-active: var(--ldesign-brand-color-6);
-  --ldesign-brand-color-disabled: var(--ldesign-brand-color-8);
-  --ldesign-brand-color-focus: var(--ldesign-brand-color-9);
-  
-  // 功能色
-  --ldesign-success-color: var(--ldesign-success-color-4);
-  --ldesign-warning-color: var(--ldesign-warning-color-4);
-  --ldesign-error-color: var(--ldesign-error-color-4);
-  
-  // 文本色（暗色主题下使用白色文本）
-  --ldesign-text-color-primary: var(--ldesign-font-white-1);
-  --ldesign-text-color-secondary: var(--ldesign-font-white-2);
-  --ldesign-text-color-placeholder: var(--ldesign-font-white-3);
-  --ldesign-text-color-disabled: var(--ldesign-font-white-4);
-  
-  // 背景色（暗色主题）
-  --ldesign-bg-color-page: #1a1a1a;
-  --ldesign-bg-color-container: #2a2a2a;
-  --ldesign-bg-color-component: #333333;
-  
-  // 边框色（暗色主题）
-  --ldesign-border-color: #404040;
-  --ldesign-border-color-hover: #505050;
-  --ldesign-border-color-focus: var(--ldesign-brand-color);
+  /* 主题过渡动画 */
+  transition:
+    background-color var(--ldesign-transition-base),
+    border-color var(--ldesign-transition-base),
+    color var(--ldesign-transition-base);
+
+  /* 中性色色板 - 暗色主题调整 */
+  --ldesign-gray-color-1: #1a1a1a;
+  --ldesign-gray-color-2: #2a2a2a;
+  --ldesign-gray-color-3: #3a3a3a;
+  --ldesign-gray-color-4: #4a4a4a;
+  --ldesign-gray-color-5: #5a5a5a;
+  --ldesign-gray-color-6: #6a6a6a;
+  --ldesign-gray-color-7: #7a7a7a;
+  --ldesign-gray-color-8: #8a8a8a;
+  --ldesign-gray-color-9: #9a9a9a;
+  --ldesign-gray-color-10: #aaaaaa;
+
+  /* 文字颜色 - 暗色主题调整 */
+  --ldesign-font-gray-1: rgba(255, 255, 255, 90%);
+  --ldesign-font-gray-2: rgba(255, 255, 255, 70%);
+  --ldesign-font-gray-3: rgba(255, 255, 255, 50%);
+  --ldesign-font-gray-4: rgba(255, 255, 255, 30%);
+
+  /* 背景色 - 暗色主题调整 */
+  --ldesign-bg-color-page: #0f0f0f;
+  --ldesign-bg-color-container: #1a1a1a;
+  --ldesign-bg-color-container-hover: #2a2a2a;
+  --ldesign-bg-color-container-active: #3a3a3a;
+  --ldesign-bg-color-container-disabled: #1f1f1f;
+  --ldesign-bg-color-component: #1a1a1a;
+  --ldesign-bg-color-component-hover: #2a2a2a;
+  --ldesign-bg-color-component-active: #3a3a3a;
+  --ldesign-bg-color-component-disabled: #1f1f1f;
+
+  /* 边框颜色 - 暗色主题调整 */
+  --ldesign-border-level-1-color: #3a3a3a;
+  --ldesign-border-level-2-color: #4a4a4a;
+  --ldesign-border-level-3-color: #5a5a5a;
+
+  /* 阴影 - 暗色主题调整 */
+  --ldesign-shadow-1: 0 1px 10px rgba(0, 0, 0, 20%);
+  --ldesign-shadow-2: 0 4px 20px rgba(0, 0, 0, 30%);
+  --ldesign-shadow-3: 0 8px 30px rgba(0, 0, 0, 40%);
+  --ldesign-shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 30%);
+  --ldesign-shadow-table: 0 2px 8px rgba(0, 0, 0, 25%);
 }
 
-/* 高对比度主题 */
+/**
+ * ===== 高对比度主题 =====
+ * 通过 data-theme="high-contrast" 属性激活
+ * 用于提高可访问性
+ */
 [data-theme="high-contrast"] {
-  // 品牌色（高对比度）
+  /* 品牌色 - 高对比度调整 */
   --ldesign-brand-color: #0066cc;
   --ldesign-brand-color-hover: #0052a3;
-  --ldesign-brand-color-active: #004080;
+  --ldesign-brand-color-active: #003d7a;
   --ldesign-brand-color-disabled: #cccccc;
   --ldesign-brand-color-focus: #66b3ff;
-  
-  // 功能色（高对比度）
+
+  /* 功能色 - 高对比度调整 */
   --ldesign-success-color: #008000;
   --ldesign-warning-color: #ff8000;
   --ldesign-error-color: #cc0000;
-  
-  // 文本色（高对比度）
+
+  /* 文字颜色 - 高对比度调整 */
   --ldesign-text-color-primary: #000000;
   --ldesign-text-color-secondary: #333333;
   --ldesign-text-color-placeholder: #666666;
   --ldesign-text-color-disabled: #999999;
-  
-  // 背景色（高对比度）
+
+  /* 背景色 - 高对比度调整 */
   --ldesign-bg-color-page: #ffffff;
   --ldesign-bg-color-container: #ffffff;
   --ldesign-bg-color-component: #ffffff;
-  
-  // 边框色（高对比度）
+
+  /* 边框颜色 - 高对比度调整 */
   --ldesign-border-color: #000000;
   --ldesign-border-color-hover: #333333;
   --ldesign-border-color-focus: #0066cc;
+
+  /* 阴影 - 高对比度调整（减少阴影效果） */
+  --ldesign-shadow-1: 0 1px 3px rgba(0, 0, 0, 30%);
+  --ldesign-shadow-2: 0 2px 6px rgba(0, 0, 0, 40%);
+  --ldesign-shadow-3: 0 4px 12px rgba(0, 0, 0, 50%);
 }
 
-/* 主题切换动画 */
-* {
-  transition: 
-    background-color 0.3s ease,
-    border-color 0.3s ease,
-    color 0.3s ease,
-    box-shadow 0.3s ease;
+/**
+ * ===== 媒体查询主题 =====
+ * 基于系统偏好的主题切换
+ */
+
+/* 系统偏好暗色主题 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    /* 当没有明确设置主题时，跟随系统偏好 */
+    --ldesign-bg-color-page: #0f0f0f;
+    --ldesign-bg-color-container: #1a1a1a;
+    --ldesign-bg-color-component: #1a1a1a;
+    --ldesign-text-color-primary: var(--ldesign-font-gray-1);
+    --ldesign-border-color: #3a3a3a;
+  }
+}
+
+/* 系统偏好高对比度 */
+@media (prefers-contrast: high) {
+  :root:not([data-theme]) {
+    --ldesign-border-color: #000000;
+    --ldesign-text-color-primary: #000000;
+    --ldesign-shadow-1: 0 1px 3px rgba(0, 0, 0, 30%);
+    --ldesign-shadow-2: 0 2px 6px rgba(0, 0, 0, 40%);
+    --ldesign-shadow-3: 0 4px 12px rgba(0, 0, 0, 50%);
+  }
+}
+
+/* 系统偏好减少动画 */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ldesign-transition-fast: none;
+    --ldesign-transition-base: none;
+    --ldesign-transition-slow: none;
+  }
 }
 
 /* 媒体查询：系统主题偏好 */

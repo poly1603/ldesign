@@ -2,17 +2,22 @@
  * Select 组件类型定义
  */
 
-import type { ExtractPropTypes, PropType } from 'vue'
+import type {  ExtractPropTypes, PropType , VNode } from 'vue'
 
 /**
  * Select 选项类型
  */
-export interface SelectOption {
+export interface SelectOption<T = string | number> {
   label: string
-  value: string | number
+  value: T
   disabled?: boolean
-  children?: SelectOption[]
+  children?: SelectOption<T>[]
 }
+
+/**
+ * 基础选项类型（向后兼容）
+ */
+export type BaseSelectOption = SelectOption<string | number>
 
 /**
  * Select 组件大小
@@ -35,7 +40,7 @@ export const selectProps = {
    * 选项数据
    */
   options: {
-    type: Array as PropType<SelectOption[]>,
+    type: Array as PropType<BaseSelectOption[]>,
     default: () => []
   },
 
@@ -142,6 +147,22 @@ export const selectProps = {
     type: Boolean,
     default: true
   }
+  ,
+  /**
+   * 自定义类名
+   */
+  class: {
+    type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>,
+    default: undefined
+  },
+
+  /**
+   * 自定义样式
+   */
+  style: {
+    type: [String, Object] as PropType<string | Record<string, any>>,
+    default: undefined
+  }
 } as const
 
 /**
@@ -155,7 +176,11 @@ export const selectEmits = {
   'remove-tag': (_value: string | number) => true,
   blur: (event: FocusEvent) => event instanceof FocusEvent,
   focus: (event: FocusEvent) => event instanceof FocusEvent
-}
+} as const
+
+/**
+ * Select Props 类型
+ */
 
 /**
  * Select Props 类型
@@ -168,15 +193,23 @@ export type SelectProps = ExtractPropTypes<typeof selectProps>
 export type SelectEmits = typeof selectEmits
 
 /**
+ * Select 插槽定义
+ */
+export interface SelectSlots {
+  /**
+   * 默认插槽
+   */
+  default?: () => VNode | VNode[]
+}
+
+/**
  * Select 实例类型
  */
 export interface SelectInstance {
-  /** 组件根元素 */
+  /**
+   * 组件根元素
+   */
   $el: HTMLElement
-  /** 获取焦点 */
-  focus: () => void
-  /** 失去焦点 */
-  blur: () => void
-  /** 清空选择 */
-  clear: () => void
 }
+// 类型工具函数
+export * from '../../types/utilities'

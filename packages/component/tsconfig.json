@@ -32,7 +32,8 @@
     "src/**/*.ts",
     "src/**/*.vue",
     "tests/**/*.ts",
-    "*.config.ts"
+    "*.config.ts",
+    "vite-env.d.ts"
   ],
   "exclude": [
     "node_modules",

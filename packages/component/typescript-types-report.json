@@ -1,0 +1,1364 @@
+{
+  "timestamp": "2025-09-19T02:07:46.017Z",
+  "summary": {
+    "totalFiles": 62,
+    "totalTypes": 1181,
+    "genericTypes": 3,
+    "anyUsage": 6,
+    "missingExports": 196,
+    "passed": 9,
+    "failed": 53
+  },
+  "details": {
+    "passed": [
+      {
+        "file": "components\\alert\\types.ts",
+        "componentName": "alert"
+      },
+      {
+        "file": "components\\badge\\types.ts",
+        "componentName": "badge"
+      },
+      {
+        "file": "components\\button\\types.ts",
+        "componentName": "button"
+      },
+      {
+        "file": "components\\card\\types.ts",
+        "componentName": "card"
+      },
+      {
+        "file": "components\\icon\\types.ts",
+        "componentName": "icon"
+      },
+      {
+        "file": "components\\loading\\types.ts",
+        "componentName": "loading"
+      },
+      {
+        "file": "components\\progress\\types.ts",
+        "componentName": "progress"
+      },
+      {
+        "file": "components\\select\\types.ts",
+        "componentName": "select"
+      },
+      {
+        "file": "components\\tag\\types.ts",
+        "componentName": "tag"
+      }
+    ],
+    "failed": [
+      {
+        "file": "components\\alert\\Alert.test.ts",
+        "componentName": "alert",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: AlertProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: AlertEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: AlertSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: AlertInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (60%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\alert\\Alert.vue",
+        "componentName": "alert",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: AlertProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: AlertEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: AlertSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: AlertInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (42%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\alert\\index.ts",
+        "componentName": "alert",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: AlertProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: AlertEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: AlertSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: AlertInstance"
+          }
+        ]
+      },
+      {
+        "file": "components\\badge\\Badge.test.ts",
+        "componentName": "badge",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: BadgeProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: BadgeEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: BadgeSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: BadgeInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (60%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\badge\\Badge.vue",
+        "componentName": "badge",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: BadgeProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: BadgeEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: BadgeSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: BadgeInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (7%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\badge\\index.ts",
+        "componentName": "badge",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: BadgeProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: BadgeEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: BadgeSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: BadgeInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (0%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\button\\Button.simple.test.ts",
+        "componentName": "button",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (77%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\button\\Button.test.ts",
+        "componentName": "button",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "第 12 行使用了 any 类型: const createWrapper = (props: Partial<ButtonProps> = {}, slots: any = {}) => {"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (63%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\button\\Button.vue",
+        "componentName": "button",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (43%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\button\\index.ts",
+        "componentName": "button",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ButtonInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (0%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\card\\Card.test.ts",
+        "componentName": "card",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CardProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CardEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CardSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CardInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (60%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\card\\Card.vue",
+        "componentName": "card",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CardProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CardEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CardSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CardInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (17%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\card\\index.ts",
+        "componentName": "card",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CardProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CardEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CardSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CardInstance"
+          }
+        ]
+      },
+      {
+        "file": "components\\checkbox\\Checkbox.test.ts",
+        "componentName": "checkbox",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CheckboxProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CheckboxEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CheckboxSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CheckboxInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (60%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\checkbox\\Checkbox.vue",
+        "componentName": "checkbox",
+        "issues": [
+          {
+            "level": "suggestion",
+            "message": "建议添加泛型支持以提升类型安全性"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CheckboxProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CheckboxEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CheckboxSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CheckboxInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (21%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\checkbox\\index.ts",
+        "componentName": "checkbox",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CheckboxProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CheckboxEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CheckboxSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: CheckboxInstance"
+          }
+        ]
+      },
+      {
+        "file": "components\\checkbox\\types.ts",
+        "componentName": "checkbox",
+        "issues": [
+          {
+            "level": "suggestion",
+            "message": "建议添加泛型支持以提升类型安全性"
+          }
+        ]
+      },
+      {
+        "file": "components\\icon\\Icon.test.ts",
+        "componentName": "icon",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IconProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IconEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IconSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IconInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (73%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\icon\\Icon.vue",
+        "componentName": "icon",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IconProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IconEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IconSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IconInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (45%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\icon\\index.ts",
+        "componentName": "icon",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IconProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IconEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IconSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IconInstance"
+          }
+        ]
+      },
+      {
+        "file": "components\\input\\index.ts",
+        "componentName": "input",
+        "issues": [
+          {
+            "level": "suggestion",
+            "message": "建议添加泛型支持以提升类型安全性"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: InputProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: InputEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: InputSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: InputInstance"
+          }
+        ]
+      },
+      {
+        "file": "components\\input\\Input.test.ts",
+        "componentName": "input",
+        "issues": [
+          {
+            "level": "suggestion",
+            "message": "建议添加泛型支持以提升类型安全性"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: InputProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: InputEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: InputSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: InputInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (55%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\input\\Input.vue",
+        "componentName": "input",
+        "issues": [
+          {
+            "level": "suggestion",
+            "message": "建议添加泛型支持以提升类型安全性"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: InputProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: InputEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: InputSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: InputInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (43%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\input\\types.ts",
+        "componentName": "input",
+        "issues": [
+          {
+            "level": "suggestion",
+            "message": "建议添加泛型支持以提升类型安全性"
+          }
+        ]
+      },
+      {
+        "file": "components\\loading\\index.ts",
+        "componentName": "loading",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: LoadingProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: LoadingEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: LoadingSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: LoadingInstance"
+          }
+        ]
+      },
+      {
+        "file": "components\\loading\\Loading.test.ts",
+        "componentName": "loading",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: LoadingProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: LoadingEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: LoadingSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: LoadingInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (60%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\loading\\Loading.vue",
+        "componentName": "loading",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: LoadingProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: LoadingEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: LoadingSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: LoadingInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (17%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\progress\\index.ts",
+        "componentName": "progress",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ProgressProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ProgressEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ProgressSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ProgressInstance"
+          }
+        ]
+      },
+      {
+        "file": "components\\progress\\Progress.test.ts",
+        "componentName": "progress",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ProgressProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ProgressEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ProgressSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ProgressInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (60%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\progress\\Progress.vue",
+        "componentName": "progress",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ProgressProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ProgressEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ProgressSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ProgressInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (17%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\radio\\index.ts",
+        "componentName": "radio",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: RadioProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: RadioEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: RadioSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: RadioInstance"
+          }
+        ]
+      },
+      {
+        "file": "components\\radio\\Radio.test.ts",
+        "componentName": "radio",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: RadioProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: RadioEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: RadioSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: RadioInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (60%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\radio\\Radio.vue",
+        "componentName": "radio",
+        "issues": [
+          {
+            "level": "suggestion",
+            "message": "建议添加泛型支持以提升类型安全性"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: RadioProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: RadioEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: RadioSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: RadioInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (25%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\radio\\types.ts",
+        "componentName": "radio",
+        "issues": [
+          {
+            "level": "suggestion",
+            "message": "建议添加泛型支持以提升类型安全性"
+          }
+        ]
+      },
+      {
+        "file": "components\\select\\index.ts",
+        "componentName": "select",
+        "issues": [
+          {
+            "level": "suggestion",
+            "message": "建议添加泛型支持以提升类型安全性"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SelectProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SelectEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SelectSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SelectInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (0%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\select\\Select.test.ts",
+        "componentName": "select",
+        "issues": [
+          {
+            "level": "suggestion",
+            "message": "建议添加泛型支持以提升类型安全性"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SelectProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SelectEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SelectSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SelectInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (60%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\select\\Select.vue",
+        "componentName": "select",
+        "issues": [
+          {
+            "level": "suggestion",
+            "message": "建议添加泛型支持以提升类型安全性"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SelectProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SelectEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SelectSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SelectInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (33%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\switch\\index.ts",
+        "componentName": "switch",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SwitchProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SwitchEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SwitchSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SwitchInstance"
+          }
+        ]
+      },
+      {
+        "file": "components\\switch\\Switch.test.ts",
+        "componentName": "switch",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SwitchProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SwitchEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SwitchSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SwitchInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (60%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\switch\\Switch.vue",
+        "componentName": "switch",
+        "issues": [
+          {
+            "level": "suggestion",
+            "message": "建议添加泛型支持以提升类型安全性"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SwitchProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SwitchEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SwitchSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: SwitchInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (11%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\switch\\types.ts",
+        "componentName": "switch",
+        "issues": [
+          {
+            "level": "suggestion",
+            "message": "建议添加泛型支持以提升类型安全性"
+          }
+        ]
+      },
+      {
+        "file": "components\\tag\\index.ts",
+        "componentName": "tag",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: TagProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: TagEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: TagSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: TagInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (0%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\tag\\Tag.test.ts",
+        "componentName": "tag",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: TagProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: TagEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: TagSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: TagInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (60%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\tag\\Tag.vue",
+        "componentName": "tag",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: TagProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: TagEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: TagSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: TagInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (38%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "components\\theme-toggle\\index.ts",
+        "componentName": "theme-toggle",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Theme-toggleProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Theme-toggleEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Theme-toggleSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Theme-toggleInstance"
+          }
+        ]
+      },
+      {
+        "file": "components\\theme-toggle\\ThemeToggle.vue",
+        "componentName": "theme-toggle",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Theme-toggleProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Theme-toggleEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Theme-toggleSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Theme-toggleInstance"
+          }
+        ]
+      },
+      {
+        "file": "components\\theme-toggle\\types.ts",
+        "componentName": "theme-toggle",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Theme-toggleProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Theme-toggleEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Theme-toggleSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Theme-toggleInstance"
+          }
+        ]
+      },
+      {
+        "file": "index-lib.ts",
+        "componentName": "index-lib",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Index-libProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Index-libEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Index-libSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: Index-libInstance"
+          }
+        ]
+      },
+      {
+        "file": "index.ts",
+        "componentName": "index",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IndexProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IndexEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IndexSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IndexInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (25%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "types\\index.ts",
+        "componentName": "index",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IndexProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IndexEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IndexSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IndexInstance"
+          }
+        ]
+      },
+      {
+        "file": "types\\utilities.ts",
+        "componentName": "utilities",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "第 31 行使用了 any 类型: export type ComponentRef<T> = T extends abstract new (...args: any) => infer I ? I : never"
+          },
+          {
+            "level": "warning",
+            "message": "第 70 行使用了 any 类型: export type ReturnType<F extends Function> = F extends (...args: any[]) => infer R ? R : never"
+          },
+          {
+            "level": "warning",
+            "message": "第 80 行使用了 any 类型: export type AsyncFunction<T extends any[] = any[], R = any> = (...args: T) => Promise<R>"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: UtilitiesProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: UtilitiesEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: UtilitiesSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: UtilitiesInstance"
+          }
+        ]
+      },
+      {
+        "file": "utils\\index.ts",
+        "componentName": "index",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "第 67 行使用了 any 类型: export function debounce<T extends (...args: any[]) => any>("
+          },
+          {
+            "level": "warning",
+            "message": "第 90 行使用了 any 类型: export function throttle<T extends (...args: any[]) => any>("
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IndexProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IndexEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IndexSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: IndexInstance"
+          },
+          {
+            "level": "suggestion",
+            "message": "类型注释覆盖率较低 (70%)，建议添加更多类型注释"
+          }
+        ]
+      },
+      {
+        "file": "utils\\theme.ts",
+        "componentName": "theme",
+        "issues": [
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ThemeProps"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ThemeEmits"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ThemeSlots"
+          },
+          {
+            "level": "warning",
+            "message": "缺少类型导出: ThemeInstance"
+          }
+        ]
+      }
+    ]
+  }
+}

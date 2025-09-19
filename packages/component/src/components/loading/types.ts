@@ -2,7 +2,7 @@
  * Loading 组件类型定义
  */
 
-import type { ExtractPropTypes, PropType } from 'vue'
+import type {  ExtractPropTypes, PropType , VNode } from 'vue'
 
 /**
  * Loading 组件大小
@@ -68,6 +68,15 @@ export const loadingProps = {
     type: [String, Object] as PropType<string | Record<string, any>>,
     default: undefined
   }
+,
+  /**
+   * 是否禁用
+   * @default false
+   */
+  disabled: {
+    type: Boolean,
+    default: false
+  },
 } as const
 
 /**
@@ -76,7 +85,11 @@ export const loadingProps = {
 export const loadingEmits = {
   // TODO: 添加事件定义
   // click: (event: MouseEvent) => event instanceof MouseEvent
-}
+} as const
+
+/**
+ * Loading Props 类型
+ */
 
 /**
  * Loading Props 类型
@@ -89,10 +102,23 @@ export type LoadingProps = ExtractPropTypes<typeof loadingProps>
 export type LoadingEmits = typeof loadingEmits
 
 /**
+ * Loading 插槽定义
+ */
+export interface LoadingSlots {
+  /**
+   * 默认插槽
+   */
+  default?: () => VNode | VNode[]
+}
+
+/**
  * Loading 实例类型
  */
 export interface LoadingInstance {
-  /** 组件根元素 */
+  /**
+   * 组件根元素
+   */
   $el: HTMLElement
-  // TODO: 添加实例方法
 }
+// 类型工具函数
+export * from '../../types/utilities'

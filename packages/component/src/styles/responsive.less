@@ -1,0 +1,348 @@
+/**
+ * 响应式样式系统
+ * 
+ * 提供跨设备支持的响应式断点、媒体查询和设备适配样式
+ */
+
+/* ===== 响应式断点定义 ===== */
+@breakpoint-xs: 0px;      // 超小屏幕 (手机竖屏)
+@breakpoint-sm: 576px;    // 小屏幕 (手机横屏)
+@breakpoint-md: 768px;    // 中等屏幕 (平板竖屏)
+@breakpoint-lg: 992px;    // 大屏幕 (平板横屏/小桌面)
+@breakpoint-xl: 1200px;   // 超大屏幕 (桌面)
+@breakpoint-xxl: 1400px;  // 超超大屏幕 (大桌面)
+
+/* ===== 媒体查询 Mixins ===== */
+
+// 最小宽度媒体查询
+.media-min(@breakpoint) {
+  @media (min-width: @breakpoint) {
+    @content();
+  }
+}
+
+// 最大宽度媒体查询
+.media-max(@breakpoint) {
+  @media (max-width: (@breakpoint - 1px)) {
+    @content();
+  }
+}
+
+// 范围媒体查询
+.media-between(@min-breakpoint, @max-breakpoint) {
+  @media (min-width: @min-breakpoint) and (max-width: (@max-breakpoint - 1px)) {
+    @content();
+  }
+}
+
+// 仅在指定断点
+.media-only(@min-breakpoint, @max-breakpoint) {
+  @media (min-width: @min-breakpoint) and (max-width: @max-breakpoint) {
+    @content();
+  }
+}
+
+/* ===== 设备类型媒体查询 ===== */
+
+// 移动设备 (xs - sm)
+.mobile-only() {
+  @media (max-width: (@breakpoint-md - 1px)) {
+    @content();
+  }
+}
+
+// 平板设备 (md - lg)
+.tablet-only() {
+  @media (min-width: @breakpoint-md) and (max-width: (@breakpoint-xl - 1px)) {
+    @content();
+  }
+}
+
+// 桌面设备 (xl+)
+.desktop-only() {
+  @media (min-width: @breakpoint-xl) {
+    @content();
+  }
+}
+
+// 小屏设备 (xs - md)
+.small-screen() {
+  @media (max-width: (@breakpoint-lg - 1px)) {
+    @content();
+  }
+}
+
+// 大屏设备 (lg+)
+.large-screen() {
+  @media (min-width: @breakpoint-lg) {
+    @content();
+  }
+}
+
+/* ===== 方向媒体查询 ===== */
+
+// 竖屏
+.portrait() {
+  @media (orientation: portrait) {
+    @content();
+  }
+}
+
+// 横屏
+.landscape() {
+  @media (orientation: landscape) {
+    @content();
+  }
+}
+
+/* ===== 触摸设备媒体查询 ===== */
+
+// 触摸设备
+.touch-device() {
+  @media (hover: none) and (pointer: coarse) {
+    @content();
+  }
+}
+
+// 非触摸设备
+.no-touch() {
+  @media (hover: hover) and (pointer: fine) {
+    @content();
+  }
+}
+
+/* ===== 高分辨率媒体查询 ===== */
+
+// 高分辨率屏幕
+.retina() {
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    @content();
+  }
+}
+
+/* ===== 用户偏好媒体查询 ===== */
+
+// 减少动画
+.prefers-reduced-motion() {
+  @media (prefers-reduced-motion: reduce) {
+    @content();
+  }
+}
+
+// 高对比度
+.prefers-high-contrast() {
+  @media (prefers-contrast: high) {
+    @content();
+  }
+}
+
+// 暗色主题偏好
+.prefers-dark() {
+  @media (prefers-color-scheme: dark) {
+    @content();
+  }
+}
+
+// 亮色主题偏好
+.prefers-light() {
+  @media (prefers-color-scheme: light) {
+    @content();
+  }
+}
+
+/* ===== 响应式工具类 ===== */
+
+// 响应式显示/隐藏
+.hidden-xs { .media-max(@breakpoint-sm) { display: none !important; } }
+.hidden-sm { .media-between(@breakpoint-sm, @breakpoint-md) { display: none !important; } }
+.hidden-md { .media-between(@breakpoint-md, @breakpoint-lg) { display: none !important; } }
+.hidden-lg { .media-between(@breakpoint-lg, @breakpoint-xl) { display: none !important; } }
+.hidden-xl { .media-between(@breakpoint-xl, @breakpoint-xxl) { display: none !important; } }
+.hidden-xxl { .media-min(@breakpoint-xxl) { display: none !important; } }
+
+.visible-xs { .media-min(@breakpoint-sm) { display: none !important; } }
+.visible-sm { 
+  .media-max(@breakpoint-sm) { display: none !important; }
+  .media-min(@breakpoint-md) { display: none !important; }
+}
+.visible-md { 
+  .media-max(@breakpoint-md) { display: none !important; }
+  .media-min(@breakpoint-lg) { display: none !important; }
+}
+.visible-lg { 
+  .media-max(@breakpoint-lg) { display: none !important; }
+  .media-min(@breakpoint-xl) { display: none !important; }
+}
+.visible-xl { 
+  .media-max(@breakpoint-xl) { display: none !important; }
+  .media-min(@breakpoint-xxl) { display: none !important; }
+}
+.visible-xxl { .media-max(@breakpoint-xxl) { display: none !important; } }
+
+// 设备类型显示/隐藏
+.hidden-mobile { .mobile-only() { display: none !important; } }
+.hidden-tablet { .tablet-only() { display: none !important; } }
+.hidden-desktop { .desktop-only() { display: none !important; } }
+
+.visible-mobile { 
+  .tablet-only() { display: none !important; }
+  .desktop-only() { display: none !important; }
+}
+.visible-tablet { 
+  .mobile-only() { display: none !important; }
+  .desktop-only() { display: none !important; }
+}
+.visible-desktop { 
+  .mobile-only() { display: none !important; }
+  .tablet-only() { display: none !important; }
+}
+
+/* ===== 触摸设备优化 ===== */
+
+// 触摸目标最小尺寸
+.touch-target() {
+  min-height: 44px;
+  min-width: 44px;
+  
+  .touch-device() {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+// 触摸设备间距调整
+.touch-spacing() {
+  .touch-device() {
+    padding: 12px 16px;
+    margin: 8px 0;
+  }
+}
+
+// 悬停效果（仅非触摸设备）
+.hover-effect(@property, @value) {
+  .no-touch() {
+    &:hover {
+      @{property}: @value;
+    }
+  }
+}
+
+/* ===== 键盘导航样式 ===== */
+
+// 焦点样式
+.focus-visible() {
+  &:focus-visible {
+    outline: 2px solid var(--ldesign-brand-color);
+    outline-offset: 2px;
+    border-radius: var(--ls-border-radius-sm);
+  }
+  
+  // 高对比度模式下的焦点样式
+  .prefers-high-contrast() {
+    &:focus-visible {
+      outline: 3px solid;
+      outline-offset: 2px;
+    }
+  }
+}
+
+// 跳过链接样式
+.skip-link() {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--ldesign-bg-color-container);
+  color: var(--ldesign-text-color-primary);
+  padding: 8px;
+  text-decoration: none;
+  border-radius: var(--ls-border-radius-sm);
+  z-index: 1000;
+  
+  &:focus {
+    top: 6px;
+  }
+}
+
+/* ===== 动画偏好处理 ===== */
+
+// 基础动画
+.animation(@duration: 0.3s, @easing: ease) {
+  transition: all @duration @easing;
+  
+  .prefers-reduced-motion() {
+    transition: none;
+    animation: none;
+  }
+}
+
+// 变换动画
+.transform-animation(@duration: 0.3s, @easing: ease) {
+  transition: transform @duration @easing;
+  
+  .prefers-reduced-motion() {
+    transition: none;
+  }
+}
+
+/* ===== 容器查询支持 ===== */
+
+// 容器查询 Mixin（实验性）
+.container-query(@size) when (@size = small) {
+  @container (max-width: 400px) {
+    @content();
+  }
+}
+
+.container-query(@size) when (@size = medium) {
+  @container (min-width: 401px) and (max-width: 800px) {
+    @content();
+  }
+}
+
+.container-query(@size) when (@size = large) {
+  @container (min-width: 801px) {
+    @content();
+  }
+}
+
+/* ===== 打印样式 ===== */
+
+.print-only() {
+  @media print {
+    @content();
+  }
+}
+
+.screen-only() {
+  @media screen {
+    @content();
+  }
+}
+
+/* ===== 响应式字体大小 ===== */
+
+.responsive-font-size(@mobile-size, @desktop-size) {
+  font-size: @mobile-size;
+  
+  .media-min(@breakpoint-lg) {
+    font-size: @desktop-size;
+  }
+}
+
+/* ===== 响应式间距 ===== */
+
+.responsive-spacing(@mobile-spacing, @desktop-spacing) {
+  padding: @mobile-spacing;
+  
+  .media-min(@breakpoint-lg) {
+    padding: @desktop-spacing;
+  }
+}
+
+.responsive-margin(@mobile-margin, @desktop-margin) {
+  margin: @mobile-margin;
+  
+  .media-min(@breakpoint-lg) {
+    margin: @desktop-margin;
+  }
+}
