@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0" />
+  <title>LDesign WebComponent 组件库</title>
+
+  <script type="module" src="/build/ldesign-webcomponent.esm.js"></script>
+  <script nomodule src="/build/ldesign-webcomponent.js"></script>
+  
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section {
+      margin-bottom: 40px;
+    }
+    
+    .section h2 {
+      margin-bottom: 20px;
+      color: #333;
+      border-bottom: 2px solid #722ED1;
+      padding-bottom: 10px;
+    }
+    
+    .demo-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .demo-label {
+      min-width: 120px;
+      font-weight: 500;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>LDesign WebComponent 组件库</h1>
+    <p>基于 Stencil 构建的高质量 Web Components 组件库</p>
+
+    <!-- Button 组件演示 -->
+    <div class="section">
+      <h2>Button 按钮</h2>
+      
+      <div class="demo-row">
+        <div class="demo-label">基础按钮:</div>
+        <ldesign-button type="primary">主要按钮</ldesign-button>
+        <ldesign-button type="secondary">次要按钮</ldesign-button>
+        <ldesign-button type="outline">边框按钮</ldesign-button>
+        <ldesign-button type="text">文字按钮</ldesign-button>
+        <ldesign-button type="danger">危险按钮</ldesign-button>
+      </div>
+
+      <div class="demo-row">
+        <div class="demo-label">按钮尺寸:</div>
+        <ldesign-button type="primary" size="small">小按钮</ldesign-button>
+        <ldesign-button type="primary" size="medium">中按钮</ldesign-button>
+        <ldesign-button type="primary" size="large">大按钮</ldesign-button>
+      </div>
+
+      <div class="demo-row">
+        <div class="demo-label">按钮形状:</div>
+        <ldesign-button type="primary" shape="rectangle">矩形</ldesign-button>
+        <ldesign-button type="primary" shape="round">圆角</ldesign-button>
+        <ldesign-button type="primary" shape="circle" icon="heart">圆形</ldesign-button>
+      </div>
+
+      <div class="demo-row">
+        <div class="demo-label">带图标:</div>
+        <ldesign-button type="primary" icon="download">下载</ldesign-button>
+        <ldesign-button type="secondary" icon="search">搜索</ldesign-button>
+        <ldesign-button type="outline" icon="plus">添加</ldesign-button>
+      </div>
+
+      <div class="demo-row">
+        <div class="demo-label">按钮状态:</div>
+        <ldesign-button type="primary" disabled>禁用按钮</ldesign-button>
+        <ldesign-button type="primary" loading>加载中</ldesign-button>
+      </div>
+
+      <div class="demo-row">
+        <div class="demo-label">块级按钮:</div>
+        <ldesign-button type="primary" block>块级按钮</ldesign-button>
+      </div>
+    </div>
+
+    <!-- Icon 组件演示 -->
+    <div class="section">
+      <h2>Icon 图标</h2>
+      
+      <div class="demo-row">
+        <div class="demo-label">基础图标:</div>
+        <ldesign-icon name="heart"></ldesign-icon>
+        <ldesign-icon name="star"></ldesign-icon>
+        <ldesign-icon name="download"></ldesign-icon>
+        <ldesign-icon name="search"></ldesign-icon>
+        <ldesign-icon name="plus"></ldesign-icon>
+      </div>
+
+      <div class="demo-row">
+        <div class="demo-label">图标尺寸:</div>
+        <ldesign-icon name="heart" size="small"></ldesign-icon>
+        <ldesign-icon name="heart" size="medium"></ldesign-icon>
+        <ldesign-icon name="heart" size="large"></ldesign-icon>
+        <ldesign-icon name="heart" size="32"></ldesign-icon>
+      </div>
+
+      <div class="demo-row">
+        <div class="demo-label">图标颜色:</div>
+        <ldesign-icon name="heart" color="red"></ldesign-icon>
+        <ldesign-icon name="star" color="orange"></ldesign-icon>
+        <ldesign-icon name="download" color="blue"></ldesign-icon>
+        <ldesign-icon name="search" color="green"></ldesign-icon>
+      </div>
+
+      <div class="demo-row">
+        <div class="demo-label">旋转图标:</div>
+        <ldesign-icon name="loader-2" spin></ldesign-icon>
+        <ldesign-icon name="refresh-cw" spin></ldesign-icon>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 添加按钮点击事件监听
+    document.addEventListener('ldesignClick', (event) => {
+      console.log('Button clicked:', event.detail);
+      alert('按钮被点击了！');
+    });
+  </script>
+</body>
+</html>

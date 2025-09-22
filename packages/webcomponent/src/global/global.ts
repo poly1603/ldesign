@@ -1,0 +1,10 @@
+/**
+ * 全局脚本文件
+ * 在所有组件加载之前执行
+ */
+
+// 设置全局样式变量
+export default function() {
+  // 可以在这里添加全局初始化逻辑
+  console.log('LDesign WebComponent 组件库已加载');
+}

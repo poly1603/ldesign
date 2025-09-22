@@ -1,0 +1,246 @@
+/**
+ * Button 按钮组件样式
+ * 使用BEM命名规范和CSS变量
+ */
+
+.ldesign-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--ls-border-radius-base);
+  font-family: inherit;
+  font-weight: 400;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  background-image: none;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.38, 0, 0.24, 1);
+  outline: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--ldesign-brand-color-focus);
+    outline-offset: 2px;
+  }
+
+  // 尺寸变体
+  &--small {
+    height: var(--ls-button-height-small);
+    padding: 0 var(--ls-spacing-sm);
+    font-size: var(--ls-font-size-xs);
+    line-height: 1;
+
+    .ldesign-button__icon {
+      width: var(--ls-icon-size-small);
+      height: var(--ls-icon-size-small);
+    }
+  }
+
+  &--medium {
+    height: var(--ls-button-height-medium);
+    padding: 0 var(--ls-spacing-base);
+    font-size: var(--ls-font-size-sm);
+    line-height: 1;
+
+    .ldesign-button__icon {
+      width: var(--ls-icon-size-medium);
+      height: var(--ls-icon-size-medium);
+    }
+  }
+
+  &--large {
+    height: var(--ls-button-height-large);
+    padding: 0 var(--ls-spacing-lg);
+    font-size: var(--ls-font-size-base);
+    line-height: 1;
+
+    .ldesign-button__icon {
+      width: var(--ls-icon-size-large);
+      height: var(--ls-icon-size-large);
+    }
+  }
+
+  // 形状变体
+  &--rectangle {
+    border-radius: var(--ls-border-radius-base);
+  }
+
+  &--round {
+    border-radius: var(--ls-border-radius-xl);
+  }
+
+  &--circle {
+    border-radius: var(--ls-border-radius-full);
+    width: var(--ls-button-height-medium);
+    padding: 0;
+
+    &.ldesign-button--small {
+      width: var(--ls-button-height-small);
+    }
+
+    &.ldesign-button--large {
+      width: var(--ls-button-height-large);
+    }
+  }
+
+  // 类型变体
+  &--primary {
+    color: var(--ldesign-font-white-1);
+    background-color: var(--ldesign-brand-color);
+    border-color: var(--ldesign-brand-color);
+
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ldesign-brand-color-hover);
+      border-color: var(--ldesign-brand-color-hover);
+    }
+
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ldesign-brand-color-active);
+      border-color: var(--ldesign-brand-color-active);
+    }
+  }
+
+  &--secondary {
+    color: var(--ldesign-text-color-primary);
+    background-color: var(--ldesign-bg-color-component);
+    border-color: var(--ldesign-border-color);
+
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-brand-color-hover);
+      background-color: var(--ldesign-bg-color-component-hover);
+      border-color: var(--ldesign-brand-color-hover);
+    }
+
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-brand-color-active);
+      background-color: var(--ldesign-bg-color-component-active);
+      border-color: var(--ldesign-brand-color-active);
+    }
+  }
+
+  &--outline {
+    color: var(--ldesign-brand-color);
+    background-color: transparent;
+    border-color: var(--ldesign-brand-color);
+
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-font-white-1);
+      background-color: var(--ldesign-brand-color-hover);
+      border-color: var(--ldesign-brand-color-hover);
+    }
+
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-font-white-1);
+      background-color: var(--ldesign-brand-color-active);
+      border-color: var(--ldesign-brand-color-active);
+    }
+  }
+
+  &--text {
+    color: var(--ldesign-brand-color);
+    background-color: transparent;
+    border-color: transparent;
+
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-brand-color-hover);
+      background-color: var(--ldesign-brand-color-focus);
+    }
+
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-brand-color-active);
+      background-color: var(--ldesign-brand-color-2);
+    }
+  }
+
+  &--danger {
+    color: var(--ldesign-font-white-1);
+    background-color: var(--ldesign-error-color);
+    border-color: var(--ldesign-error-color);
+
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ldesign-error-color-hover);
+      border-color: var(--ldesign-error-color-hover);
+    }
+
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ldesign-error-color-active);
+      border-color: var(--ldesign-error-color-active);
+    }
+  }
+
+  // 状态变体
+  &--disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    pointer-events: none;
+
+    &.ldesign-button--primary {
+      background-color: var(--ldesign-brand-color-disabled);
+      border-color: var(--ldesign-brand-color-disabled);
+    }
+
+    &.ldesign-button--secondary {
+      background-color: var(--ldesign-bg-color-component-disabled);
+      border-color: var(--ldesign-border-color);
+      color: var(--ldesign-text-color-disabled);
+    }
+
+    &.ldesign-button--outline {
+      border-color: var(--ldesign-brand-color-disabled);
+      color: var(--ldesign-brand-color-disabled);
+    }
+
+    &.ldesign-button--text {
+      color: var(--ldesign-text-color-disabled);
+    }
+
+    &.ldesign-button--danger {
+      background-color: var(--ldesign-error-color-disabled);
+      border-color: var(--ldesign-error-color-disabled);
+    }
+  }
+
+  &--loading {
+    cursor: default;
+    pointer-events: none;
+  }
+
+  &--block {
+    display: flex;
+    width: 100%;
+  }
+
+  // 内容样式
+  &__content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ls-spacing-xs);
+  }
+
+  &__icon {
+    flex-shrink: 0;
+
+    &--loading {
+      animation: ldesign-button-loading 1s linear infinite;
+    }
+  }
+
+  &__text {
+    flex: 1;
+  }
+}
+
+// 加载动画
+@keyframes ldesign-button-loading {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
