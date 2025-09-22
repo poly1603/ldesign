@@ -521,10 +521,9 @@ export class BuildPerformanceAnalyzer {
     const totalCacheHits = phases.reduce((sum, phase) => sum + phase.metrics.cacheHits, 0)
     const cacheHitRate = totalCacheOps > 0 ? (totalCacheHits / totalCacheOps) * 100 : 0
 
-    // 计算内存效率（简化计算）
+    // 计算内存效率（优化计算逻辑）
     const memoryUsages = phases.map(phase => phase.metrics.memoryUsage?.peak || 0).filter(m => m > 0)
-    const memoryEfficiency = memoryUsages.length > 0 ?
-      Math.max(0, 100 - (Math.max(...memoryUsages) / (1024 * 1024 * 1024)) * 10) : 100
+    const memoryEfficiency = this.calculateMemoryEfficiency(memoryUsages)
 
     // 识别并行化机会
     const parallelizationOpportunities: string[] = []
@@ -589,5 +588,19 @@ export class BuildPerformanceAnalyzer {
    */
   clearHistory(): void {
     this.history = []
+  }
+
+  /**
+   * 计算内存效率
+   */
+  private calculateMemoryEfficiency(memoryUsages: number[]): number {
+    if (memoryUsages.length === 0) return 100
+
+    const maxMemoryUsage = Math.max(...memoryUsages)
+    const memoryUsageGB = maxMemoryUsage / (1024 * 1024 * 1024)
+
+    // 基于内存使用量计算效率分数
+    // 1GB以下为100分，每增加1GB减少10分
+    return Math.max(0, 100 - memoryUsageGB * 10)
   }
 }

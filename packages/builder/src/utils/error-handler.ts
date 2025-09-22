@@ -161,6 +161,24 @@ export class ErrorHandler {
   }
 
   /**
+   * 批量处理错误
+   */
+  handleBatch(errors: Array<{ error: Error; context?: string }>): void {
+    if (errors.length === 0) return
+
+    this.logger?.info(`批量处理 ${errors.length} 个错误`)
+
+    for (const { error, context } of errors) {
+      try {
+        this.handle(error, context)
+      } catch (handlerError) {
+        // 防止错误处理器本身出错导致的无限循环
+        console.error('错误处理器执行失败:', handlerError)
+      }
+    }
+  }
+
+  /**
    * 错误恢复机制
    */
   async recover<T>(

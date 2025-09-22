@@ -23,9 +23,25 @@ import { examplesCommand } from './commands/examples'
 import { logger, setLogLevel } from '../utils/logger'
 import { setupGlobalErrorHandling } from '../utils/error-handler'
 
-// ES 模块中获取 __dirname
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+// ES 模块中获取 __dirname，兼容 CJS
+const getFilename = (): string => {
+  if (typeof import.meta !== 'undefined' && import.meta.url) {
+    return fileURLToPath(import.meta.url)
+  }
+  // CJS 环境下的 fallback
+  return typeof __filename !== 'undefined' ? __filename : ''
+}
+
+const getDirname = (filename: string): string => {
+  if (typeof import.meta !== 'undefined' && import.meta.url) {
+    return dirname(filename)
+  }
+  // CJS 环境下的 fallback
+  return typeof __dirname !== 'undefined' ? __dirname : ''
+}
+
+const __filename = getFilename()
+const __dirname = getDirname(__filename)
 
 // 设置全局错误处理
 setupGlobalErrorHandling()
@@ -155,7 +171,7 @@ export class BuilderCLI {
 }
 
 // 运行 CLI (ES 模块中检查是否为主模块)
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (typeof import.meta !== 'undefined' && import.meta.url === `file://${process.argv[1]}`) {
   main().catch((error) => {
     logger.error('未处理的错误:', error)
     process.exit(1)

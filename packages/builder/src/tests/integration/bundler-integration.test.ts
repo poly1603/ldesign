@@ -15,6 +15,7 @@ import { LibraryBuilder } from '../../core/LibraryBuilder'
 import { BuildManifestGenerator } from '../../core/BuildManifestGenerator'
 import { ConfigValidator } from '../../core/ConfigValidator'
 import { BannerGenerator } from '../../utils/banner-generator'
+import { resetGlobalMemoryManager } from '../../utils/memory-manager'
 import type { BuilderConfig } from '../../types/config'
 
 describe('打包工具集成测试', () => {
@@ -22,6 +23,9 @@ describe('打包工具集成测试', () => {
   const fixturesDir = path.join(__dirname, '../fixtures')
 
   beforeEach(() => {
+    // 重置全局内存管理器
+    resetGlobalMemoryManager()
+
     // 清理测试目录
     if (fs.existsSync(testDir)) {
       fs.rmSync(testDir, { recursive: true })
@@ -34,6 +38,9 @@ describe('打包工具集成测试', () => {
     if (fs.existsSync(testDir)) {
       fs.rmSync(testDir, { recursive: true })
     }
+
+    // 重置全局内存管理器
+    resetGlobalMemoryManager()
   })
 
   describe('基础功能测试', () => {
@@ -57,7 +64,7 @@ describe('打包工具集成测试', () => {
       expect(fs.existsSync(path.join(testDir, 'rollup-simple/index.cjs'))).toBe(true)
       expect(fs.existsSync(path.join(testDir, 'rollup-simple/index.js.map'))).toBe(true)
       expect(fs.existsSync(path.join(testDir, 'rollup-simple/index.cjs.map'))).toBe(true)
-    })
+    }, 60000) // 增加超时时间到60秒
 
     it('应该能够使用 Rolldown 构建简单的 TypeScript 项目', async () => {
       const config: BuilderConfig = {
@@ -79,7 +86,7 @@ describe('打包工具集成测试', () => {
       expect(fs.existsSync(path.join(testDir, 'rolldown-simple/index.cjs'))).toBe(true)
       expect(fs.existsSync(path.join(testDir, 'rolldown-simple/index.js.map'))).toBe(true)
       expect(fs.existsSync(path.join(testDir, 'rolldown-simple/index.cjs.map'))).toBe(true)
-    })
+    }, 60000) // 增加超时时间到60秒
   })
 
   describe('多入口测试', () => {

@@ -122,7 +122,7 @@ export class TypeScriptStrategy implements ILibraryStrategy {
     const { relative, extname } = await import('path')
 
     const files = await findFiles([
-      'src/**/*.{ts,tsx,js,jsx,json}'
+      'src/**/*.{ts,tsx,js,jsx}'
     ], {
       cwd: process.cwd(),
       ignore: ['**/*.d.ts', '**/*.test.*', '**/*.spec.*', '**/__tests__/**']

@@ -8,6 +8,40 @@ import type { PostBuildValidationConfig } from '../types/validation'
 import { LibraryType } from '../types/library'
 
 /**
+ * 性能相关常量
+ */
+export const PERFORMANCE_CONSTANTS = {
+  /** 默认文件大小限制 (500KB) */
+  DEFAULT_FILE_SIZE_LIMIT: 500 * 1024,
+  /** 文件大小警告阈值比例 */
+  FILE_SIZE_WARNING_RATIO: 0.8,
+  /** 默认内存阈值 (MB) */
+  DEFAULT_MEMORY_THRESHOLD: 500,
+  /** 默认清理间隔 (ms) */
+  DEFAULT_CLEANUP_INTERVAL: 60000,
+  /** 默认监控间隔 (ms) */
+  DEFAULT_MONITORING_INTERVAL: 10000,
+  /** 最大并行任务数 */
+  MAX_PARALLEL_TASKS: 4,
+  /** 缓存大小 (MB) */
+  DEFAULT_CACHE_SIZE: 100
+} as const
+
+/**
+ * 构建相关常量
+ */
+export const BUILD_CONSTANTS = {
+  /** 默认构建超时时间 (ms) */
+  DEFAULT_BUILD_TIMEOUT: 300000, // 5分钟
+  /** 默认测试超时时间 (ms) */
+  DEFAULT_TEST_TIMEOUT: 60000, // 1分钟
+  /** 最大重试次数 */
+  MAX_RETRY_COUNT: 3,
+  /** 重试延迟基数 (ms) */
+  RETRY_DELAY_BASE: 1000
+} as const
+
+/**
  * 默认构建器配置
  */
 export const DEFAULT_BUILDER_CONFIG: Omit<
@@ -134,7 +168,7 @@ export const DEFAULT_BUILDER_CONFIG: Omit<
   typescript: {
     tsconfig: './tsconfig.json',
     declaration: true,
-    declarationDir: undefined, // 默认与 output.dir 相同
+    declarationDir: '', // 默认与 output.dir 相同
     isolatedDeclarations: false,
     skipLibCheck: true,
     allowSyntheticDefaultImports: true,
@@ -184,7 +218,7 @@ export const DEFAULT_BUILDER_CONFIG: Omit<
   // 性能配置
   performance: {
     bundleAnalyzer: false,
-    sizeLimit: undefined,
+    sizeLimit: '500kb',
     treeshaking: true,
     cache: true,
     parallel: true,

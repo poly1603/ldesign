@@ -90,6 +90,14 @@ const sharedBuildOptions = {
   keepNames: true,
   esbuildOptions(options: any) {
     options.packages = 'external'
+    // 减少警告
+    options.logLevel = 'warning'
+    options.logLimit = 0
+    // 处理 import.meta 兼容性
+    options.define = {
+      'import.meta.url': 'undefined',
+      'import.meta': 'undefined'
+    }
   }
 }
 

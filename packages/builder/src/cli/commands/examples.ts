@@ -9,9 +9,25 @@ import { promises as fs } from 'fs'
 import { spawn } from 'child_process'
 import chalk from 'chalk'
 
-// ES 模块下的 __dirname
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+// ES 模块下的 __dirname，兼容 CJS
+const getFilename = (): string => {
+  if (typeof import.meta !== 'undefined' && import.meta.url) {
+    return fileURLToPath(import.meta.url)
+  }
+  // CJS 环境下的 fallback
+  return typeof __filename !== 'undefined' ? __filename : ''
+}
+
+const getDirname = (filename: string): string => {
+  if (typeof import.meta !== 'undefined' && import.meta.url) {
+    return dirname(filename)
+  }
+  // CJS 环境下的 fallback
+  return typeof __dirname !== 'undefined' ? __dirname : ''
+}
+
+const __filename = getFilename()
+const __dirname = getDirname(__filename)
 
 interface ExamplesOptions {
   root?: string

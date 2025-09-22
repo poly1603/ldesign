@@ -54,27 +54,25 @@ export default defineConfig({
     },
 
     // 超时设置
-    testTimeout: 60000, // 增加到60秒
-    hookTimeout: 30000, // 钩子超时
+    testTimeout: 30000,
 
     // 并发设置
-    threads: false, // 禁用多线程以避免资源竞争
-    maxConcurrency: 1, // 限制并发数
+    threads: true,
+    maxThreads: 2, // 减少线程数以降低内存使用
+    minThreads: 1,
 
     // 内存管理
-    pool: 'forks',
+    pool: 'threads',
     poolOptions: {
-      forks: {
-        maxForks: 1,
-        minForks: 1
+      threads: {
+        maxThreads: 2,
+        minThreads: 1,
+        useAtomics: true
       }
     },
 
     // 隔离设置
-    isolate: true,
-
-    // 重试设置
-    retry: 1
+    isolate: true
   },
 
   resolve: {

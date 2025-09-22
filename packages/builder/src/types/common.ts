@@ -18,6 +18,11 @@ export type BuildMode = 'development' | 'production'
 export type FilePath = string
 
 /**
+ * 可选文件路径类型
+ */
+export type OptionalFilePath = string | undefined
+
+/**
  * 验证结果
  */
 export interface ValidationResult {
