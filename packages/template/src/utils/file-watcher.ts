@@ -157,7 +157,13 @@ export class FileWatcher {
 
     try {
       // 动态导入 chokidar（仅在 Node.js 环境中可用）
-      const chokidar = await import('chokidar')
+      // 使用条件导入避免在浏览器环境中触发模块解析
+      if (typeof process === 'undefined' || !process.versions || !process.versions.node) {
+        throw new Error('chokidar is only available in Node.js environment')
+      }
+      // 使用动态字符串拼接避免构建工具静态分析
+      const chokidarModule = 'chok' + 'idar'
+      const chokidar = await import(/* @vite-ignore */ chokidarModule)
 
       const watchPattern = this.buildWatchPattern()
       const watcher = chokidar.watch(watchPattern, {
@@ -197,8 +203,15 @@ export class FileWatcher {
     }
 
     try {
-      const fs = await import('node:fs')
-      const path = await import('node:path')
+      // 使用条件导入避免在浏览器环境中触发模块解析
+      if (typeof process === 'undefined' || !process.versions || !process.versions.node) {
+        throw new Error('Node.js fs and path modules are only available in Node.js environment')
+      }
+      // 使用动态字符串拼接避免构建工具静态分析
+      const fsModule = 'node:' + 'fs'
+      const pathModule = 'node:' + 'path'
+      const fs = await import(/* @vite-ignore */ fsModule)
+      const path = await import(/* @vite-ignore */ pathModule)
 
       const watchDir = async (dir: string, depth = 0) => {
         if (depth > this.options.maxDepth)

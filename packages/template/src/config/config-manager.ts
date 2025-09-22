@@ -27,7 +27,7 @@ export class TemplateConfigManager implements ConfigManager {
     try {
       // 合并初始配置
       this.config = reactive(mergeConfig(initialConfig || {}))
-      
+
       // 设置深度监听
       this.setupConfigWatcher()
     }
@@ -260,13 +260,13 @@ export class TemplateConfigManager implements ConfigManager {
     this.listeners.clear()
     this.simpleListeners.clear()
     this.watchersMap.forEach(stop => {
-      try { stop() } catch {}
+      try { stop() } catch { }
     })
     this.watchersMap.clear()
   }
 
   set(key: string, value: unknown): void {
-    ;(this.config as any)[key] = value
+    ; (this.config as any)[key] = value
   }
 
   getDefaultConfig(): TemplateSystemConfig {
@@ -286,7 +286,7 @@ export class TemplateConfigManager implements ConfigManager {
   unwatchConfig(callback: (config: TemplateSystemConfig) => void): void {
     const stop = this.watchersMap.get(callback)
     if (stop) {
-      try { stop() } catch {}
+      try { stop() } catch { }
       this.watchersMap.delete(callback)
     }
   }
@@ -338,8 +338,19 @@ export default ${JSON.stringify(this.config, null, 2)}
       }
       else {
         // Node.js 环境中的文件写入逻辑
-        const fs = await import(/* @vite-ignore */ 'node:fs/promises')
-        await fs.writeFile(filePath, configContent, 'utf-8')
+        // 使用条件导入避免在浏览器环境中触发模块解析
+        if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+          try {
+            // 使用动态字符串拼接避免构建工具静态分析
+            const moduleName = 'node:' + 'fs/promises'
+            const fs = await import(/* @vite-ignore */ moduleName)
+            await fs.writeFile(filePath, configContent, 'utf-8')
+          } catch (importError) {
+            throw new Error(`无法导入文件系统模块: ${importError}`)
+          }
+        } else {
+          throw new Error('文件保存功能仅在Node.js环境中可用')
+        }
       }
 
       if (this.config.debug) {
