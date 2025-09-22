@@ -6,41 +6,68 @@
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "allowImportingTsExtensions": false,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "preserve",
+    "noEmit": false,
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
     "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "bundler",
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "moduleResolution": "node",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "rootDir": ".",
+    "rootDir": "src",
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@/core/*": ["src/core/*"],
-      "@/utils/*": ["src/utils/*"],
-      "@/types/*": ["src/types/*"],
-      "@/plugins/*": ["plugins/*"],
-      "@/themes/*": ["src/themes/*"]
-    }
+      "@core/*": ["src/core/*"],
+      "@plugins/*": ["src/plugins/*"],
+      "@adapters/*": ["src/adapters/*"],
+      "@themes/*": ["src/themes/*"],
+      "@types/*": ["src/types/*"],
+      "@utils/*": ["src/utils/*"]
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo"
   },
   "include": [
     "src/**/*",
-    "plugins/**/*"
+    "types/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "es",
-    "cjs",
+    "lib",
     "coverage",
-    "examples"
-  ]
+    "tests",
+    "examples",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "references": [],
+  "ts-node": {
+    "esm": true,
+    "compilerOptions": {
+      "module": "ESNext",
+      "target": "ES2020"
+    }
+  }
 }

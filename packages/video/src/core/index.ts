@@ -1,19 +1,37 @@
 /**
- * 核心模块入口文件
- * 导出播放器核心功能
+ * 核心模块导出
  */
 
-export { VideoPlayer } from './player'
-export { PlayerControls } from './controls'
-export type { ControlsOptions } from './controls'
+export { Player, createPlayer } from './Player';
+export { EventManager } from './EventManager';
+export { StateManager } from './StateManager';
+export { BasePlugin } from './BasePlugin';
+export { UIPlugin } from './UIPlugin';
+export { Plugin } from './Plugin';
+export { PluginManager, createPluginManager } from './PluginManager';
+export { ThemeManager, createThemeManager } from './ThemeManager';
 
-export { PluginManager } from './plugin-manager'
-export { BasePlugin, UIPlugin, ControlPlugin, OverlayPlugin } from './base-plugin'
+// 重新导出类型
+export type {
+  IPlayer,
+  PlayerConfig,
+  PlayerState,
+  PlayerEvents,
+  Quality,
+  MediaError
+} from '../types';
 
-export { ThemeManager } from './theme-manager'
+export type {
+  IPlugin,
+  PluginConfig,
+  PluginLifecycle,
+  PluginType,
+  PluginDependency
+} from '../types/plugins';
 
-export { HotkeyManager } from './hotkey-manager'
-export type { HotkeyBinding, HotkeyConfig } from './hotkey-manager'
-
-export { GestureManager, GestureType } from './gesture-manager'
-export type { GestureEvent, GestureBinding, GestureConfig } from './gesture-manager'
+export type {
+  EventHandler,
+  EventMiddleware,
+  EventFilter,
+  EventTransformer
+} from '../types/events';

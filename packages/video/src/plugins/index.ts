@@ -1,95 +1,258 @@
 /**
- * 插件入口文件
- * 导出所有内置插件
+ * 插件导出文件
+ * 统一导出所有插件
  */
 
-// 基础插件类
-export { BasePlugin, UIPlugin, ControlPlugin, OverlayPlugin } from '../core/base-plugin'
+// 控制栏插件
+export { ControlBar, createControlBar, ControlPosition } from './ControlBar';
+export { SimpleProgressBar, createSimpleProgressBar } from './SimpleProgressBar';
+export { SimpleTimeDisplay, createSimpleTimeDisplay, TimeFormat } from './SimpleTimeDisplay';
+export { SimpleFullscreenButton, createSimpleFullscreenButton } from './SimpleFullscreenButton';
 
-// 弹幕插件
-export { DanmakuPlugin } from './danmaku'
-export type { DanmakuOptions } from './danmaku'
+// 基础插件
+export { PlayButton, createPlayButton } from './PlayButton';
+export { ProgressBar, createProgressBar } from './ProgressBar';
+export { VolumeControl, createVolumeControl } from './VolumeControl';
+export { FullscreenButton, createFullscreenButton } from './FullscreenButton';
+export { TimeDisplay, createTimeDisplay } from './TimeDisplay';
 
-// 字幕插件
-export { SubtitlePlugin } from './subtitle'
-export type { SubtitleOptions } from './subtitle'
+// 高级插件
+export { PictureInPicture, createPictureInPicture } from './PictureInPicture';
+export { Screenshot, createScreenshot } from './Screenshot';
+export { PlaybackRate, createPlaybackRate } from './PlaybackRate';
+export { Danmaku, DanmakuType } from './Danmaku';
+export { DanmakuControl } from './DanmakuControl';
+export { Subtitle, SubtitleFormat } from './Subtitle';
+export { SubtitleControl } from './SubtitleControl';
+export { QualitySwitch } from './QualitySwitch';
+export { QualitySwitchControl } from './QualitySwitchControl';
+export { Playlist, PlayMode } from './Playlist';
+export { PlaylistControl } from './PlaylistControl';
 
-// 截图插件
-export { ScreenshotPlugin } from './screenshot'
-export type { ScreenshotOptions, ScreenshotConfig } from './screenshot'
+// 增强功能插件
+export { ScreenshotPlugin } from './ScreenshotPlugin';
+export { VideoRecorder } from './VideoRecorder';
+export { VideoFilter } from './VideoFilter';
+export { MultiTrack } from './MultiTrack';
 
-// 画中画插件
-export { PipPlugin } from './pip'
-export type { PipOptions, PipConfig } from './pip'
+// 新增实用插件
+export { AdvancedPluginManager } from './AdvancedPluginManager';
+export { KeyboardShortcuts, createKeyboardShortcuts } from './KeyboardShortcuts';
+export { GestureControl, createGestureControl, GestureType } from './GestureControl';
+export { MiniPlayer, createMiniPlayer, MiniPlayerMode, MiniPlayerPosition } from './MiniPlayer';
 
+// 插件配置类型
+export type { PlayButtonConfig } from './PlayButton';
+export type { ProgressBarConfig } from './ProgressBar';
+export type { VolumeControlConfig } from './VolumeControl';
+export type { FullscreenButtonConfig } from './FullscreenButton';
+export type { TimeDisplayConfig } from './TimeDisplay';
+export type { PictureInPictureConfig } from './PictureInPicture';
+export type { ScreenshotConfig, ScreenshotData } from './Screenshot';
+export type { PlaybackRateConfig } from './PlaybackRate';
+export type { DanmakuConfig, DanmakuData } from './Danmaku';
+export type { DanmakuControlConfig } from './DanmakuControl';
+export type { SubtitleConfig, SubtitleItem, SubtitleStyle, SubtitlePosition, SubtitleTrack } from './Subtitle';
+export type { SubtitleControlConfig } from './SubtitleControl';
+export type { QualitySwitchConfig, VideoQuality, NetworkInfo } from './QualitySwitch';
+export type { QualitySwitchControlConfig } from './QualitySwitchControl';
+export type { PlaylistConfig, PlaylistItem } from './Playlist';
+export type { PlaylistControlConfig } from './PlaylistControl';
 
+// 增强功能插件类型
+export type { ScreenshotConfig } from './ScreenshotPlugin';
+export type { VideoRecorderConfig, RecordingSegment } from './VideoRecorder';
+export type { VideoFilterConfig, FilterConfig } from './VideoFilter';
+export type { MultiTrackConfig, AudioTrack, SubtitleTrack } from './MultiTrack';
+
+// 新增插件类型
+export type {
+  ExtendedPluginMetadata,
+  PluginDependency,
+  PluginLifecycleHooks,
+  PluginRegistration,
+  PluginLoadOptions
+} from './AdvancedPluginManager';
+export type {
+  KeyboardShortcutsConfig,
+  ShortcutConfig
+} from './KeyboardShortcuts';
+export type {
+  GestureControlConfig,
+  GestureConfig
+} from './GestureControl';
+export type {
+  MiniPlayerConfig
+} from './MiniPlayer';
+
+// 插件工厂函数
+import type { IPlayer } from '../types';
+import { PlayButton, PlayButtonConfig } from './PlayButton';
+import { ProgressBar, ProgressBarConfig } from './ProgressBar';
+import { VolumeControl, VolumeControlConfig } from './VolumeControl';
+import { FullscreenButton, FullscreenButtonConfig } from './FullscreenButton';
+import { TimeDisplay, TimeDisplayConfig } from './TimeDisplay';
+import { PictureInPicture, PictureInPictureConfig } from './PictureInPicture';
+import { Screenshot, ScreenshotConfig } from './Screenshot';
+import { PlaybackRate, PlaybackRateConfig } from './PlaybackRate';
 
 /**
- * 内置插件注册表
+ * 插件工厂配置
  */
-export const BUILTIN_PLUGINS = {
-  get danmaku() { return DanmakuPlugin },
-  get subtitle() { return SubtitlePlugin },
-  get screenshot() { return ScreenshotPlugin },
-  get pip() { return PipPlugin }
-} as const
+export interface PluginFactoryConfig {
+  playButton?: PlayButtonConfig;
+  progressBar?: ProgressBarConfig;
+  volumeControl?: VolumeControlConfig;
+  fullscreenButton?: FullscreenButtonConfig;
+  timeDisplay?: TimeDisplayConfig;
+  pictureInPicture?: PictureInPictureConfig;
+  screenshot?: ScreenshotConfig;
+  playbackRate?: PlaybackRateConfig;
+}
 
 /**
- * 插件类型定义
+ * 插件工厂类
+ * 提供便捷的插件创建方法
  */
-export type BuiltinPluginName = keyof typeof BUILTIN_PLUGINS
-export type BuiltinPluginConstructor = typeof BUILTIN_PLUGINS[BuiltinPluginName]
+export class PluginFactory {
+  private readonly player: IPlayer;
 
-/**
- * 创建插件实例的工厂函数
- */
-export function createPlugin<T extends BuiltinPluginName>(
-  name: T,
-  options?: any
-): InstanceType<typeof BUILTIN_PLUGINS[T]> {
-  const PluginConstructor = BUILTIN_PLUGINS[name]
-  if (!PluginConstructor) {
-    throw new Error(`Unknown plugin: ${name}`)
+  constructor(player: IPlayer) {
+    this.player = player;
   }
 
-  return new PluginConstructor(options) as InstanceType<typeof BUILTIN_PLUGINS[T]>
-}
-
-/**
- * 获取插件默认配置
- */
-export function getPluginDefaults(name: BuiltinPluginName): any {
-  const PluginConstructor = BUILTIN_PLUGINS[name]
-  if (!PluginConstructor) {
-    throw new Error(`Unknown plugin: ${name}`)
+  /**
+   * 创建播放按钮
+   */
+  createPlayButton(config?: PlayButtonConfig): PlayButton {
+    return new PlayButton(this.player, config);
   }
 
-  // 返回插件的默认配置
-  return (PluginConstructor as any).defaults || {}
-}
+  /**
+   * 创建进度条
+   */
+  createProgressBar(config?: ProgressBarConfig): ProgressBar {
+    return new ProgressBar(this.player, config);
+  }
 
-/**
- * 检查插件是否可用
- */
-export function isPluginAvailable(name: BuiltinPluginName): boolean {
-  try {
-    const PluginConstructor = BUILTIN_PLUGINS[name]
-    return !!PluginConstructor && typeof PluginConstructor === 'function'
-  } catch {
-    return false
+  /**
+   * 创建音量控制
+   */
+  createVolumeControl(config?: VolumeControlConfig): VolumeControl {
+    return new VolumeControl(this.player, config);
+  }
+
+  /**
+   * 创建全屏按钮
+   */
+  createFullscreenButton(config?: FullscreenButtonConfig): FullscreenButton {
+    return new FullscreenButton(this.player, config);
+  }
+
+  /**
+   * 创建时间显示
+   */
+  createTimeDisplay(config?: TimeDisplayConfig): TimeDisplay {
+    return new TimeDisplay(this.player, config);
+  }
+
+  /**
+   * 创建画中画按钮
+   */
+  createPictureInPicture(config?: PictureInPictureConfig): PictureInPicture {
+    return new PictureInPicture(this.player, config);
+  }
+
+  /**
+   * 创建截图按钮
+   */
+  createScreenshot(config?: ScreenshotConfig): Screenshot {
+    return new Screenshot(this.player, config);
+  }
+
+  /**
+   * 创建播放速度控制
+   */
+  createPlaybackRate(config?: PlaybackRateConfig): PlaybackRate {
+    return new PlaybackRate(this.player, config);
+  }
+
+  /**
+   * 创建基础控制栏插件集合
+   */
+  createBasicControls(config: PluginFactoryConfig = {}): {
+    playButton: PlayButton;
+    progressBar: ProgressBar;
+    volumeControl: VolumeControl;
+    fullscreenButton: FullscreenButton;
+    timeDisplay: TimeDisplay;
+  } {
+    return {
+      playButton: this.createPlayButton(config.playButton),
+      progressBar: this.createProgressBar(config.progressBar),
+      volumeControl: this.createVolumeControl(config.volumeControl),
+      fullscreenButton: this.createFullscreenButton(config.fullscreenButton),
+      timeDisplay: this.createTimeDisplay(config.timeDisplay)
+    };
+  }
+
+  /**
+   * 创建所有基础插件并自动注册到播放器
+   */
+  async setupBasicControls(config: PluginFactoryConfig = {}): Promise<void> {
+    const plugins = this.createBasicControls(config);
+
+    // 初始化所有插件
+    for (const [name, plugin] of Object.entries(plugins)) {
+      try {
+        await plugin.init();
+        await plugin.mount(this.player.container);
+        console.log(`Plugin ${name} initialized successfully`);
+      } catch (error) {
+        console.error(`Failed to initialize plugin ${name}:`, error);
+      }
+    }
   }
 }
 
 /**
- * 获取所有可用插件名称
+ * 创建插件工厂
  */
-export function getAvailablePlugins(): BuiltinPluginName[] {
-  return Object.keys(BUILTIN_PLUGINS) as BuiltinPluginName[]
+export function createPluginFactory(player: IPlayer): PluginFactory {
+  return new PluginFactory(player);
 }
 
 /**
- * 批量创建插件实例
+ * 默认插件配置
  */
-export function createPlugins(configs: Array<{ name: BuiltinPluginName; options?: any }>) {
-  return configs.map(({ name, options }) => createPlugin(name, options))
+export const defaultPluginConfig: PluginFactoryConfig = {
+  playButton: {
+    showLabel: false
+  },
+  progressBar: {
+    showBuffer: true,
+    showTooltip: true,
+    seekOnClick: true,
+    seekOnDrag: true
+  },
+  volumeControl: {
+    showSlider: true,
+    orientation: 'horizontal'
+  },
+  fullscreenButton: {
+    showLabel: false
+  },
+  timeDisplay: {
+    format: 'both',
+    clickToToggle: true
+  }
+};
+
+/**
+ * 快速设置基础控制栏
+ */
+export async function setupBasicPlayer(player: IPlayer, config?: PluginFactoryConfig): Promise<PluginFactory> {
+  const factory = createPluginFactory(player);
+  await factory.setupBasicControls({ ...defaultPluginConfig, ...config });
+  return factory;
 }

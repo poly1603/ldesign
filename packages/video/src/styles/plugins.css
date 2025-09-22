@@ -1,0 +1,2161 @@
+/**
+ * LDesign Video Player - 插件样式
+ * 定义各个插件的专用样式
+ */
+
+/* 播放按钮插件 */
+.lv-plugin-play-button {
+  position: relative;
+}
+
+.lv-plugin-play-button .play-icon,
+.lv-plugin-play-button .pause-icon {
+  transition: all var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-plugin-play-button.playing .play-icon {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.lv-plugin-play-button.playing .pause-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.lv-plugin-play-button:not(.playing) .play-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.lv-plugin-play-button:not(.playing) .pause-icon {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+/* 进度条插件 */
+.lv-plugin-progress-bar {
+  position: relative;
+  flex: 1;
+  margin: 0 var(--lv-spacing-small);
+}
+
+.lv-plugin-progress-bar .progress-container {
+  position: relative;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--lv-color-progress-background);
+  cursor: pointer;
+  transition: height var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-plugin-progress-bar:hover .progress-container {
+  height: 6px;
+}
+
+.lv-plugin-progress-bar .progress-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--lv-color-overlay);
+  color: var(--lv-color-text);
+  padding: var(--lv-spacing-small) var(--lv-spacing);
+  border-radius: var(--lv-border-radius-small);
+  font-size: var(--lv-font-size-small);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--lv-animation-duration) var(--lv-animation-easing);
+  margin-bottom: var(--lv-spacing-small);
+}
+
+.lv-plugin-progress-bar:hover .progress-tooltip {
+  opacity: 1;
+}
+
+/* 音量控制插件 */
+.lv-plugin-volume-control {
+  display: flex;
+  align-items: center;
+  gap: var(--lv-spacing-small);
+  position: relative;
+}
+
+.lv-plugin-volume-control .volume-popup {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--lv-color-control-background);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--lv-color-border);
+  border-radius: var(--lv-border-radius);
+  padding: var(--lv-spacing);
+  margin-bottom: var(--lv-spacing-small);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-plugin-volume-control:hover .volume-popup,
+.lv-plugin-volume-control.active .volume-popup {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lv-plugin-volume-control .volume-slider-vertical {
+  width: 4px;
+  height: 80px;
+  background: var(--lv-color-volume-background);
+  border-radius: 2px;
+  position: relative;
+  cursor: pointer;
+}
+
+.lv-plugin-volume-control .volume-filled-vertical {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--lv-color-volume-foreground);
+  border-radius: inherit;
+  transition: height var(--lv-animation-duration-fast) linear;
+}
+
+/* 全屏按钮插件 */
+.lv-plugin-fullscreen-button {
+  position: relative;
+}
+
+.lv-plugin-fullscreen-button .fullscreen-enter-icon,
+.lv-plugin-fullscreen-button .fullscreen-exit-icon {
+  transition: all var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-plugin-fullscreen-button.fullscreen .fullscreen-enter-icon {
+  opacity: 0;
+  transform: scale(0.8) rotate(180deg);
+}
+
+.lv-plugin-fullscreen-button.fullscreen .fullscreen-exit-icon {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.lv-plugin-fullscreen-button:not(.fullscreen) .fullscreen-enter-icon {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.lv-plugin-fullscreen-button:not(.fullscreen) .fullscreen-exit-icon {
+  opacity: 0;
+  transform: scale(0.8) rotate(-180deg);
+}
+
+/* 时间显示插件 */
+.lv-plugin-time-display {
+  display: flex;
+  align-items: center;
+  gap: var(--lv-spacing-small);
+  color: var(--lv-color-control-text-secondary);
+  font-size: var(--lv-font-size-small);
+  font-weight: var(--lv-font-weight);
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.lv-plugin-time-display .time-separator {
+  opacity: 0.7;
+}
+
+.lv-plugin-time-display .current-time {
+  font-weight: var(--lv-font-weight-bold);
+}
+
+/* 画中画按钮插件 */
+.lv-plugin-pip-button {
+  position: relative;
+}
+
+.lv-plugin-pip-button .pip-enter-icon,
+.lv-plugin-pip-button .pip-exit-icon {
+  transition: all var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-plugin-pip-button.pip-active .pip-enter-icon {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.lv-plugin-pip-button.pip-active .pip-exit-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.lv-plugin-pip-button:not(.pip-active) .pip-enter-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.lv-plugin-pip-button:not(.pip-active) .pip-exit-icon {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+/* 截图按钮插件 */
+.lv-plugin-screenshot-button {
+  position: relative;
+}
+
+.lv-plugin-screenshot-button.capturing {
+  animation: lv-flash 0.3s ease-in-out;
+}
+
+@keyframes lv-flash {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.lv-plugin-screenshot-button .screenshot-success {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--lv-color-success);
+  color: white;
+  padding: var(--lv-spacing-small) var(--lv-spacing);
+  border-radius: var(--lv-border-radius-small);
+  font-size: var(--lv-font-size-small);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-plugin-screenshot-button.success .screenshot-success {
+  opacity: 1;
+  animation: lv-fade-out 2s ease-in-out forwards;
+}
+
+@keyframes lv-fade-out {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+}
+
+/* 播放速度控制插件 */
+.lv-plugin-playback-rate {
+  position: relative;
+}
+
+.lv-plugin-playback-rate .rate-menu {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--lv-color-control-background);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--lv-color-border);
+  border-radius: var(--lv-border-radius);
+  padding: var(--lv-spacing-small);
+  margin-bottom: var(--lv-spacing-small);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--lv-animation-duration) var(--lv-animation-easing);
+  min-width: 80px;
+}
+
+.lv-plugin-playback-rate.active .rate-menu {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lv-plugin-playback-rate .rate-option {
+  display: block;
+  width: 100%;
+  padding: var(--lv-spacing-small) var(--lv-spacing);
+  border: none;
+  background: transparent;
+  color: var(--lv-color-control-text);
+  text-align: center;
+  cursor: pointer;
+  border-radius: var(--lv-border-radius-small);
+  transition: background var(--lv-animation-duration) var(--lv-animation-easing);
+  font-size: var(--lv-font-size-small);
+}
+
+.lv-plugin-playback-rate .rate-option:hover {
+  background: var(--lv-color-surface-hover);
+}
+
+.lv-plugin-playback-rate .rate-option.active {
+  background: var(--lv-color-primary);
+  color: white;
+}
+
+/* 插件容器通用样式 */
+.lv-plugin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.lv-plugin.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.lv-plugin.hidden {
+  display: none;
+}
+
+/* 插件工具提示 */
+.lv-plugin-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--lv-color-overlay);
+  color: var(--lv-color-text);
+  padding: var(--lv-spacing-small) var(--lv-spacing);
+  border-radius: var(--lv-border-radius-small);
+  font-size: var(--lv-font-size-small);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--lv-animation-duration) var(--lv-animation-easing);
+  margin-bottom: var(--lv-spacing-small);
+  z-index: 100;
+}
+
+.lv-plugin:hover .lv-plugin-tooltip {
+  opacity: 1;
+}
+
+/* 移动端插件优化 */
+@media (max-width: 768px) {
+  .lv-plugin-volume-control {
+    display: none;
+  }
+  
+  .lv-plugin-tooltip {
+    display: none;
+  }
+  
+  .lv-plugin-progress-bar .progress-tooltip {
+    display: none;
+  }
+  
+  .lv-plugin-volume-control .volume-popup {
+    display: none;
+  }
+  
+  .lv-plugin-playback-rate .rate-menu {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+  }
+}
+
+/* 弹幕插件样式 */
+.lv-danmaku-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 5;
+  font-family: var(--lv-font-family);
+}
+
+.lv-danmaku-item {
+  position: absolute;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  font-weight: bold;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8),
+               -1px -1px 0 rgba(0, 0, 0, 0.8),
+               1px -1px 0 rgba(0, 0, 0, 0.8),
+               -1px 1px 0 rgba(0, 0, 0, 0.8);
+  z-index: 10;
+  transition: opacity var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-danmaku-item.scroll {
+  animation: danmaku-scroll linear forwards;
+}
+
+.lv-danmaku-item.top {
+  left: 50%;
+  transform: translateX(-50%);
+  animation: danmaku-fade-in-out ease-in-out forwards;
+}
+
+.lv-danmaku-item.bottom {
+  left: 50%;
+  transform: translateX(-50%);
+  animation: danmaku-fade-in-out ease-in-out forwards;
+}
+
+@keyframes danmaku-scroll {
+  from {
+    transform: translateX(100vw);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes danmaku-fade-in-out {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.8);
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+  90% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.8);
+  }
+}
+
+/* 弹幕控制面板 */
+.lv-plugin-danmaku-control {
+  position: relative;
+}
+
+.lv-plugin-danmaku-control .danmaku-panel {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: var(--lv-color-control-background);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--lv-color-border);
+  border-radius: var(--lv-border-radius);
+  padding: var(--lv-spacing);
+  margin-bottom: var(--lv-spacing-small);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--lv-animation-duration) var(--lv-animation-easing);
+  min-width: 200px;
+  z-index: 100;
+}
+
+.lv-plugin-danmaku-control.active .danmaku-panel {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lv-plugin-danmaku-control .danmaku-input {
+  width: 100%;
+  padding: var(--lv-spacing-small);
+  border: 1px solid var(--lv-color-border);
+  border-radius: var(--lv-border-radius-small);
+  background: var(--lv-color-surface);
+  color: var(--lv-color-text);
+  font-size: var(--lv-font-size-small);
+  margin-bottom: var(--lv-spacing-small);
+  outline: none;
+}
+
+.lv-plugin-danmaku-control .danmaku-input:focus {
+  border-color: var(--lv-color-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.lv-plugin-danmaku-control .danmaku-options {
+  display: flex;
+  gap: var(--lv-spacing-small);
+  margin-bottom: var(--lv-spacing-small);
+}
+
+.lv-plugin-danmaku-control .color-picker {
+  display: flex;
+  gap: 2px;
+}
+
+.lv-plugin-danmaku-control .color-option {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-plugin-danmaku-control .color-option.active {
+  border-color: var(--lv-color-primary);
+}
+
+.lv-plugin-danmaku-control .danmaku-send {
+  width: 100%;
+  padding: var(--lv-spacing-small);
+  background: var(--lv-color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--lv-border-radius-small);
+  cursor: pointer;
+  font-size: var(--lv-font-size-small);
+  transition: background var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-plugin-danmaku-control .danmaku-send:hover {
+  background: var(--lv-color-primary-hover);
+}
+
+.lv-plugin-danmaku-control .danmaku-send:disabled {
+  background: var(--lv-color-text-disabled);
+  cursor: not-allowed;
+}
+
+/* 弹幕设置 */
+.lv-plugin-danmaku-settings {
+  position: relative;
+}
+
+.lv-plugin-danmaku-settings .settings-panel {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: var(--lv-color-control-background);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--lv-color-border);
+  border-radius: var(--lv-border-radius);
+  padding: var(--lv-spacing);
+  margin-bottom: var(--lv-spacing-small);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--lv-animation-duration) var(--lv-animation-easing);
+  min-width: 180px;
+  z-index: 100;
+}
+
+.lv-plugin-danmaku-settings.active .settings-panel {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lv-plugin-danmaku-settings .setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--lv-spacing-small);
+  font-size: var(--lv-font-size-small);
+  color: var(--lv-color-control-text);
+}
+
+.lv-plugin-danmaku-settings .setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.lv-plugin-danmaku-settings .setting-slider {
+  width: 60px;
+  height: 4px;
+  background: var(--lv-color-progress-background);
+  border-radius: 2px;
+  position: relative;
+  cursor: pointer;
+}
+
+.lv-plugin-danmaku-settings .setting-slider-fill {
+  height: 100%;
+  background: var(--lv-color-primary);
+  border-radius: inherit;
+  transition: width var(--lv-animation-duration-fast) linear;
+}
+
+.lv-plugin-danmaku-settings .setting-toggle {
+  width: 40px;
+  height: 20px;
+  background: var(--lv-color-text-disabled);
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: background var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-plugin-danmaku-settings .setting-toggle.active {
+  background: var(--lv-color-primary);
+}
+
+.lv-plugin-danmaku-settings .setting-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  transition: transform var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-plugin-danmaku-settings .setting-toggle.active::after {
+  transform: translateX(20px);
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+  .lv-plugin:hover .lv-plugin-tooltip {
+    opacity: 0;
+  }
+
+  .lv-plugin-progress-bar:hover .progress-tooltip {
+    opacity: 0;
+  }
+
+  .lv-plugin-volume-control:hover .volume-popup {
+    opacity: 0;
+  }
+
+  .lv-plugin-danmaku-control .danmaku-panel {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
+    z-index: 1000;
+  }
+
+  .lv-plugin-danmaku-settings .settings-panel {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
+    z-index: 1000;
+  }
+}
+
+/* 字幕插件样式 */
+.lv-subtitle-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  font-family: var(--lv-font-family);
+}
+
+.lv-subtitle-item {
+  position: relative;
+  display: inline-block;
+  max-width: 80%;
+  word-wrap: break-word;
+  text-align: center;
+  margin: 2px 0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-family: Arial, sans-serif;
+  color: #ffffff;
+  background-color: rgba(0, 0, 0, 0.8);
+  border: 1px solid #000000;
+  line-height: 1.2;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  transition: opacity var(--lv-animation-duration) var(--lv-animation-easing),
+              transform var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-subtitle-item strong {
+  font-weight: bold;
+}
+
+.lv-subtitle-item em {
+  font-style: italic;
+}
+
+.lv-subtitle-item u {
+  text-decoration: underline;
+}
+
+/* 字幕控制面板 */
+.lv-plugin-subtitle-control {
+  position: relative;
+}
+
+.lv-plugin-subtitle-control .subtitle-panel {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: var(--lv-color-control-background);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--lv-color-border);
+  border-radius: var(--lv-border-radius);
+  padding: var(--lv-spacing);
+  margin-bottom: var(--lv-spacing-small);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--lv-animation-duration) var(--lv-animation-easing);
+  min-width: 200px;
+  z-index: 100;
+}
+
+.lv-plugin-subtitle-control.active .subtitle-panel {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lv-plugin-subtitle-control .track-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: var(--lv-spacing-small);
+}
+
+.lv-plugin-subtitle-control .track-item {
+  display: flex;
+  align-items: center;
+  padding: var(--lv-spacing-small);
+  border-radius: var(--lv-border-radius-small);
+  cursor: pointer;
+  transition: background var(--lv-animation-duration) var(--lv-animation-easing);
+  font-size: var(--lv-font-size-small);
+  color: var(--lv-color-control-text);
+}
+
+.lv-plugin-subtitle-control .track-item:hover {
+  background: var(--lv-color-surface);
+}
+
+.lv-plugin-subtitle-control .track-item.active {
+  background: var(--lv-color-primary);
+  color: white;
+}
+
+.lv-plugin-subtitle-control .track-item .track-info {
+  flex: 1;
+}
+
+.lv-plugin-subtitle-control .track-item .track-label {
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.lv-plugin-subtitle-control .track-item .track-language {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.lv-plugin-subtitle-control .track-item .track-status {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--lv-color-text-disabled);
+  margin-left: var(--lv-spacing-small);
+}
+
+.lv-plugin-subtitle-control .track-item.active .track-status {
+  background: white;
+}
+
+.lv-plugin-subtitle-control .subtitle-controls {
+  border-top: 1px solid var(--lv-color-border);
+  padding-top: var(--lv-spacing-small);
+}
+
+.lv-plugin-subtitle-control .control-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--lv-spacing-small);
+  font-size: var(--lv-font-size-small);
+  color: var(--lv-color-control-text);
+}
+
+.lv-plugin-subtitle-control .control-row:last-child {
+  margin-bottom: 0;
+}
+
+.lv-plugin-subtitle-control .control-toggle {
+  width: 40px;
+  height: 20px;
+  background: var(--lv-color-text-disabled);
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: background var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-plugin-subtitle-control .control-toggle.active {
+  background: var(--lv-color-primary);
+}
+
+.lv-plugin-subtitle-control .control-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  transition: transform var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-plugin-subtitle-control .control-toggle.active::after {
+  transform: translateX(20px);
+}
+
+.lv-plugin-subtitle-control .control-slider {
+  width: 60px;
+  height: 4px;
+  background: var(--lv-color-progress-background);
+  border-radius: 2px;
+  position: relative;
+  cursor: pointer;
+}
+
+.lv-plugin-subtitle-control .control-slider-fill {
+  height: 100%;
+  background: var(--lv-color-primary);
+  border-radius: inherit;
+  transition: width var(--lv-animation-duration-fast) linear;
+}
+
+.lv-plugin-subtitle-control .control-slider-thumb {
+  position: absolute;
+  top: -6px;
+  width: 16px;
+  height: 16px;
+  background: var(--lv-color-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-plugin-subtitle-control .control-slider:hover .control-slider-thumb {
+  transform: scale(1.2);
+}
+
+/* 字幕样式编辑器 */
+.lv-plugin-subtitle-style {
+  position: relative;
+}
+
+.lv-plugin-subtitle-style .style-panel {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: var(--lv-color-control-background);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--lv-color-border);
+  border-radius: var(--lv-border-radius);
+  padding: var(--lv-spacing);
+  margin-bottom: var(--lv-spacing-small);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--lv-animation-duration) var(--lv-animation-easing);
+  min-width: 250px;
+  z-index: 100;
+}
+
+.lv-plugin-subtitle-style.active .style-panel {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lv-plugin-subtitle-style .style-group {
+  margin-bottom: var(--lv-spacing);
+}
+
+.lv-plugin-subtitle-style .style-group:last-child {
+  margin-bottom: 0;
+}
+
+.lv-plugin-subtitle-style .style-group-title {
+  font-size: var(--lv-font-size-small);
+  font-weight: 500;
+  color: var(--lv-color-control-text);
+  margin-bottom: var(--lv-spacing-small);
+}
+
+.lv-plugin-subtitle-style .style-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--lv-spacing-small);
+  font-size: var(--lv-font-size-small);
+  color: var(--lv-color-control-text);
+}
+
+.lv-plugin-subtitle-style .style-row:last-child {
+  margin-bottom: 0;
+}
+
+.lv-plugin-subtitle-style .style-input {
+  width: 60px;
+  padding: 2px 6px;
+  border: 1px solid var(--lv-color-border);
+  border-radius: var(--lv-border-radius-small);
+  background: var(--lv-color-surface);
+  color: var(--lv-color-text);
+  font-size: 11px;
+  outline: none;
+}
+
+.lv-plugin-subtitle-style .style-input:focus {
+  border-color: var(--lv-color-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.lv-plugin-subtitle-style .color-input {
+  width: 30px;
+  height: 20px;
+  border: 1px solid var(--lv-color-border);
+  border-radius: var(--lv-border-radius-small);
+  cursor: pointer;
+  outline: none;
+}
+
+.lv-plugin-subtitle-style .font-select {
+  width: 100px;
+  padding: 2px 6px;
+  border: 1px solid var(--lv-color-border);
+  border-radius: var(--lv-border-radius-small);
+  background: var(--lv-color-surface);
+  color: var(--lv-color-text);
+  font-size: 11px;
+  outline: none;
+}
+
+.lv-plugin-subtitle-style .font-select:focus {
+  border-color: var(--lv-color-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* 质量切换插件样式 */
+.lv-plugin-quality-switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lv-plugin-quality-switch .quality-label {
+  font-size: var(--lv-font-size-small);
+  font-weight: 500;
+}
+
+.lv-plugin-quality-switch .quality-panel {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: var(--lv-color-control-background);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--lv-color-border);
+  border-radius: var(--lv-border-radius);
+  padding: 0;
+  margin-bottom: var(--lv-spacing-small);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--lv-animation-duration) var(--lv-animation-easing);
+  min-width: 200px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.lv-plugin-quality-switch.active .quality-panel {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lv-plugin-quality-switch .quality-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--lv-spacing-small) var(--lv-spacing);
+  background: var(--lv-color-surface);
+  border-bottom: 1px solid var(--lv-color-border);
+}
+
+.lv-plugin-quality-switch .quality-title {
+  font-size: var(--lv-font-size-small);
+  font-weight: 500;
+  color: var(--lv-color-control-text);
+}
+
+.lv-plugin-quality-switch .quality-status {
+  display: flex;
+  gap: var(--lv-spacing-small);
+  font-size: 11px;
+  color: var(--lv-color-text-disabled);
+}
+
+.lv-plugin-quality-switch .quality-auto-switch {
+  padding: var(--lv-spacing-small) var(--lv-spacing);
+  border-bottom: 1px solid var(--lv-color-border);
+}
+
+.lv-plugin-quality-switch .quality-auto-switch label {
+  display: flex;
+  align-items: center;
+  gap: var(--lv-spacing-small);
+  font-size: var(--lv-font-size-small);
+  color: var(--lv-color-control-text);
+  cursor: pointer;
+}
+
+.lv-plugin-quality-switch .auto-switch-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--lv-color-primary);
+}
+
+.lv-plugin-quality-switch .quality-separator {
+  height: 1px;
+  background: var(--lv-color-border);
+}
+
+.lv-plugin-quality-switch .quality-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.lv-plugin-quality-switch .quality-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--lv-spacing-small) var(--lv-spacing);
+  cursor: pointer;
+  transition: background var(--lv-animation-duration) var(--lv-animation-easing);
+  border-bottom: 1px solid var(--lv-color-border);
+}
+
+.lv-plugin-quality-switch .quality-item:last-child {
+  border-bottom: none;
+}
+
+.lv-plugin-quality-switch .quality-item:hover {
+  background: var(--lv-color-surface);
+}
+
+.lv-plugin-quality-switch .quality-item.active {
+  background: var(--lv-color-primary);
+  color: white;
+}
+
+.lv-plugin-quality-switch .quality-info {
+  flex: 1;
+}
+
+.lv-plugin-quality-switch .quality-item .quality-label {
+  font-size: var(--lv-font-size-small);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.lv-plugin-quality-switch .quality-resolution {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.lv-plugin-quality-switch .quality-item .quality-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.lv-plugin-quality-switch .quality-bitrate {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.lv-plugin-quality-switch .quality-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--lv-color-text-disabled);
+}
+
+.lv-plugin-quality-switch .quality-item.active .quality-indicator {
+  background: white;
+}
+
+/* 网络指示器样式 */
+.lv-plugin-network-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: var(--lv-border-radius-small);
+  font-size: 11px;
+  font-weight: 500;
+  transition: all var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-plugin-network-indicator.network-4g {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.lv-plugin-network-indicator.network-3g {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.lv-plugin-network-indicator.network-2g,
+.lv-plugin-network-indicator.network-slow-2g {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.lv-plugin-network-indicator .network-type {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* 缓冲指示器样式 */
+.lv-plugin-buffer-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: var(--lv-border-radius-small);
+  transition: all var(--lv-animation-duration) var(--lv-animation-easing);
+}
+
+.lv-plugin-buffer-indicator.buffer-good {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.lv-plugin-buffer-indicator.buffer-warning {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.lv-plugin-buffer-indicator.buffer-poor {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.lv-plugin-buffer-indicator .buffer-bar {
+  width: 20px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.lv-plugin-buffer-indicator .buffer-fill {
+  height: 100%;
+  background: currentColor;
+  border-radius: inherit;
+  transition: width var(--lv-animation-duration-fast) linear;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .lv-subtitle-item {
+    max-width: 90%;
+    font-size: 14px;
+    padding: 3px 6px;
+  }
+
+  .lv-plugin-subtitle-control .subtitle-panel,
+  .lv-plugin-subtitle-style .style-panel {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
+    z-index: 1000;
+    min-width: 280px;
+  }
+
+  .lv-plugin-quality-switch .quality-panel {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
+    z-index: 1000;
+    min-width: 250px;
+  }
+
+  .lv-plugin-network-indicator,
+  .lv-plugin-buffer-indicator {
+    display: none; /* 在移动端隐藏指示器 */
+  }
+}
+
+/* ===== 播放列表插件样式 ===== */
+.ldesign-playlist-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ldesign-playlist-controls button {
+    background: none;
+    border: none;
+    color: var(--ldesign-color-text);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.ldesign-playlist-controls button:hover {
+    background: var(--ldesign-color-control-hover);
+}
+
+.ldesign-playlist-controls button.active {
+    background: var(--ldesign-color-primary);
+    color: white;
+}
+
+/* 播放列表面板 */
+.ldesign-playlist-panel {
+    position: absolute;
+    background: var(--ldesign-color-background);
+    border: 1px solid var(--ldesign-color-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.ldesign-playlist-panel-right {
+    top: 0;
+    right: -320px;
+    height: 100%;
+}
+
+.ldesign-playlist-panel-bottom {
+    bottom: -420px;
+    left: 0;
+    right: 0;
+}
+
+.ldesign-playlist-panel-overlay {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 播放列表头部 */
+.ldesign-playlist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--ldesign-color-control);
+    border-bottom: 1px solid var(--ldesign-color-border);
+}
+
+.ldesign-playlist-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ldesign-color-text);
+}
+
+.ldesign-playlist-close {
+    background: none;
+    border: none;
+    color: var(--ldesign-color-text);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.ldesign-playlist-close:hover {
+    background: var(--ldesign-color-control-hover);
+}
+
+/* 播放列表内容 */
+.ldesign-playlist-content {
+    padding: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.ldesign-playlist-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: var(--ldesign-color-control);
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--ldesign-color-text-secondary);
+}
+
+/* 播放列表项 */
+.ldesign-playlist-items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ldesign-playlist-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.ldesign-playlist-item:hover {
+    background: var(--ldesign-color-control-hover);
+}
+
+.ldesign-playlist-item.current {
+    background: var(--ldesign-color-primary-light);
+    border-color: var(--ldesign-color-primary);
+}
+
+.ldesign-playlist-item.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+.ldesign-playlist-item-index {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ldesign-color-control);
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ldesign-color-text-secondary);
+    margin-right: 12px;
+}
+
+.ldesign-playlist-item.current .ldesign-playlist-item-index {
+    background: var(--ldesign-color-primary);
+    color: white;
+}
+
+.ldesign-playlist-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.ldesign-playlist-item-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ldesign-color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+}
+
+.ldesign-playlist-item-duration {
+    font-size: 11px;
+    color: var(--ldesign-color-text-secondary);
+}
+
+.ldesign-playlist-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.ldesign-playlist-item:hover .ldesign-playlist-item-actions {
+    opacity: 1;
+}
+
+.ldesign-playlist-item-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.ldesign-playlist-item-actions button:hover {
+    background: var(--ldesign-color-control-hover);
+}
+
+/* 播放列表底部 */
+.ldesign-playlist-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--ldesign-color-control);
+    border-top: 1px solid var(--ldesign-color-border);
+}
+
+.ldesign-playlist-footer button {
+    background: none;
+    border: 1px solid var(--ldesign-color-border);
+    color: var(--ldesign-color-text);
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.ldesign-playlist-footer button:hover {
+    background: var(--ldesign-color-control-hover);
+    border-color: var(--ldesign-color-primary);
+}
+
+/* 播放历史面板 */
+.ldesign-playlist-history-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--ldesign-color-background);
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 1001;
+}
+
+.ldesign-playlist-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--ldesign-color-control);
+    border-bottom: 1px solid var(--ldesign-color-border);
+}
+
+.ldesign-playlist-history-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ldesign-color-text);
+}
+
+.ldesign-playlist-history-close {
+    background: none;
+    border: none;
+    color: var(--ldesign-color-text);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.ldesign-playlist-history-close:hover {
+    background: var(--ldesign-color-control-hover);
+}
+
+.ldesign-playlist-history-items {
+    padding: 12px;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.ldesign-playlist-history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    transition: all 0.2s ease;
+}
+
+.ldesign-playlist-history-item:hover {
+    background: var(--ldesign-color-control-hover);
+}
+
+.ldesign-playlist-history-title {
+    flex: 1;
+    font-size: 13px;
+    color: var(--ldesign-color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 12px;
+}
+
+.ldesign-playlist-history-play {
+    background: var(--ldesign-color-primary);
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    transition: all 0.2s ease;
+}
+
+.ldesign-playlist-history-play:hover {
+    background: var(--ldesign-color-primary-dark);
+}
+
+/* 播放列表响应式设计 */
+@media (max-width: 768px) {
+    .ldesign-playlist-panel-right {
+        right: -100%;
+        width: 100%;
+    }
+
+    .ldesign-playlist-panel-bottom {
+        bottom: -100%;
+        height: 100%;
+    }
+
+    .ldesign-playlist-controls {
+        gap: 4px;
+    }
+
+    .ldesign-playlist-controls button {
+        padding: 6px;
+        font-size: 12px;
+    }
+
+    .ldesign-playlist-item-title {
+        font-size: 12px;
+    }
+
+    .ldesign-playlist-item-duration {
+        font-size: 10px;
+    }
+}
+
+/* ===== 增强功能插件样式 ===== */
+
+/* 截图插件样式 */
+.ldesign-screenshot-plugin {
+  position: relative;
+}
+
+.ldesign-screenshot-btn {
+  background: none;
+  border: none;
+  color: var(--lv-color-text);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ldesign-screenshot-btn:hover {
+  background: var(--lv-color-surface);
+  color: var(--lv-color-primary);
+}
+
+.ldesign-screenshot-menu {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: var(--lv-color-background);
+  border: 1px solid var(--lv-color-border);
+  border-radius: 8px;
+  box-shadow: var(--lv-shadow);
+  min-width: 250px;
+  z-index: 1000;
+  margin-bottom: 8px;
+}
+
+.ldesign-screenshot-options {
+  padding: 16px;
+}
+
+.ldesign-screenshot-options label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--lv-color-text);
+}
+
+.ldesign-screenshot-options select,
+.ldesign-screenshot-options input[type="text"],
+.ldesign-screenshot-options input[type="range"] {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--lv-color-border);
+  border-radius: 4px;
+  background: var(--lv-color-background);
+  color: var(--lv-color-text);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.ldesign-screenshot-quality-value {
+  font-size: 11px;
+  color: var(--lv-color-text-secondary);
+  margin-left: 8px;
+}
+
+.ldesign-screenshot-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.ldesign-screenshot-capture,
+.ldesign-screenshot-cancel {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.ldesign-screenshot-capture {
+  background: var(--lv-color-primary);
+  color: white;
+}
+
+.ldesign-screenshot-capture:hover {
+  background: var(--lv-color-primary-hover);
+}
+
+.ldesign-screenshot-cancel {
+  background: var(--lv-color-surface);
+  color: var(--lv-color-text);
+}
+
+.ldesign-screenshot-cancel:hover {
+  background: var(--lv-color-surface-hover);
+}
+
+/* 录制插件样式 */
+.ldesign-recorder-plugin {
+  position: relative;
+}
+
+.ldesign-recorder-btn {
+  background: none;
+  border: none;
+  color: var(--lv-color-text);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ldesign-recorder-btn:hover {
+  background: var(--lv-color-surface);
+  color: var(--lv-color-primary);
+}
+
+.ldesign-recorder-panel {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: var(--lv-color-background);
+  border: 1px solid var(--lv-color-border);
+  border-radius: 8px;
+  box-shadow: var(--lv-shadow);
+  min-width: 280px;
+  z-index: 1000;
+  margin-bottom: 8px;
+}
+
+.ldesign-recorder-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--lv-color-border);
+}
+
+.ldesign-recorder-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--lv-color-text-disabled);
+  transition: all 0.3s ease;
+}
+
+.ldesign-recorder-indicator.recording {
+  background: #ef4444;
+  animation: pulse 1s infinite;
+}
+
+.ldesign-recorder-indicator.paused {
+  background: #f59e0b;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.ldesign-recorder-time {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--lv-color-text);
+}
+
+.ldesign-recorder-controls {
+  padding: 12px 16px;
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--lv-color-border);
+}
+
+.ldesign-recorder-start,
+.ldesign-recorder-pause,
+.ldesign-recorder-resume,
+.ldesign-recorder-stop {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.ldesign-recorder-start {
+  background: var(--lv-color-primary);
+  color: white;
+}
+
+.ldesign-recorder-start:hover {
+  background: var(--lv-color-primary-hover);
+}
+
+.ldesign-recorder-pause,
+.ldesign-recorder-resume {
+  background: #f59e0b;
+  color: white;
+}
+
+.ldesign-recorder-pause:hover,
+.ldesign-recorder-resume:hover {
+  background: #d97706;
+}
+
+.ldesign-recorder-stop {
+  background: #ef4444;
+  color: white;
+}
+
+.ldesign-recorder-stop:hover {
+  background: #dc2626;
+}
+
+.ldesign-recorder-settings {
+  padding: 12px 16px;
+}
+
+.ldesign-recorder-settings label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--lv-color-text);
+}
+
+.ldesign-recorder-settings select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--lv-color-border);
+  border-radius: 4px;
+  background: var(--lv-color-background);
+  color: var(--lv-color-text);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* 滤镜插件样式 */
+.ldesign-filter-plugin {
+  position: relative;
+}
+
+.ldesign-filter-btn {
+  background: none;
+  border: none;
+  color: var(--lv-color-text);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ldesign-filter-btn:hover {
+  background: var(--lv-color-surface);
+  color: var(--lv-color-primary);
+}
+
+.ldesign-filter-panel {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: var(--lv-color-background);
+  border: 1px solid var(--lv-color-border);
+  border-radius: 8px;
+  box-shadow: var(--lv-shadow);
+  min-width: 320px;
+  z-index: 1000;
+  margin-bottom: 8px;
+}
+
+.ldesign-filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--lv-color-border);
+}
+
+.ldesign-filter-header h4 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--lv-color-text);
+}
+
+.ldesign-filter-reset {
+  background: none;
+  border: 1px solid var(--lv-color-border);
+  color: var(--lv-color-text);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.ldesign-filter-reset:hover {
+  background: var(--lv-color-surface);
+  border-color: var(--lv-color-primary);
+}
+
+.ldesign-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 16px;
+}
+
+.ldesign-filter-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.ldesign-filter-item:hover {
+  background: var(--lv-color-surface);
+}
+
+.ldesign-filter-item.active {
+  border-color: var(--lv-color-primary);
+  background: var(--lv-color-primary-light);
+}
+
+.ldesign-filter-preview {
+  width: 40px;
+  height: 30px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+.ldesign-filter-sample {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+}
+
+.ldesign-filter-name {
+  font-size: 11px;
+  color: var(--lv-color-text);
+  text-align: center;
+}
+
+.ldesign-filter-controls {
+  padding: 16px;
+  border-top: 1px solid var(--lv-color-border);
+}
+
+.ldesign-filter-intensity-label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--lv-color-text);
+}
+
+.ldesign-filter-intensity {
+  width: 100%;
+  margin: 8px 0;
+}
+
+.ldesign-filter-intensity-value {
+  font-size: 11px;
+  color: var(--lv-color-text-secondary);
+  margin-left: 8px;
+}
+
+.ldesign-filter-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ldesign-filter-apply,
+.ldesign-filter-cancel {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.ldesign-filter-apply {
+  background: var(--lv-color-primary);
+  color: white;
+}
+
+.ldesign-filter-apply:hover {
+  background: var(--lv-color-primary-hover);
+}
+
+.ldesign-filter-cancel {
+  background: var(--lv-color-surface);
+  color: var(--lv-color-text);
+}
+
+.ldesign-filter-cancel:hover {
+  background: var(--lv-color-surface-hover);
+}
+
+/* 多轨道插件样式 */
+.ldesign-multitrack-plugin {
+  position: relative;
+}
+
+.ldesign-multitrack-btn {
+  background: none;
+  border: none;
+  color: var(--lv-color-text);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ldesign-multitrack-btn:hover {
+  background: var(--lv-color-surface);
+  color: var(--lv-color-primary);
+}
+
+.ldesign-multitrack-panel {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: var(--lv-color-background);
+  border: 1px solid var(--lv-color-border);
+  border-radius: 8px;
+  box-shadow: var(--lv-shadow);
+  min-width: 300px;
+  z-index: 1000;
+  margin-bottom: 8px;
+}
+
+.ldesign-multitrack-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--lv-color-border);
+}
+
+.ldesign-multitrack-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--lv-color-text);
+  cursor: pointer;
+  padding: 12px 16px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.ldesign-multitrack-tab:hover {
+  background: var(--lv-color-surface);
+}
+
+.ldesign-multitrack-tab.active {
+  color: var(--lv-color-primary);
+  border-bottom-color: var(--lv-color-primary);
+}
+
+.ldesign-multitrack-content {
+  padding: 16px;
+}
+
+.ldesign-multitrack-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: var(--lv-color-text);
+}
+
+.ldesign-track-empty {
+  text-align: center;
+  color: var(--lv-color-text-secondary);
+  font-size: 12px;
+  padding: 20px;
+}
+
+.ldesign-audio-track,
+.ldesign-subtitle-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+}
+
+.ldesign-audio-track:hover,
+.ldesign-subtitle-track:hover {
+  background: var(--lv-color-surface);
+}
+
+.ldesign-audio-track.active,
+.ldesign-subtitle-track.active {
+  background: var(--lv-color-primary-light);
+  border-color: var(--lv-color-primary);
+}
+
+.ldesign-track-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ldesign-track-label {
+  font-size: 13px;
+  color: var(--lv-color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.ldesign-track-language {
+  font-size: 11px;
+  color: var(--lv-color-text-secondary);
+  background: var(--lv-color-surface);
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-left: 8px;
+}
+
+.ldesign-track-status {
+  color: var(--lv-color-primary);
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+.ldesign-track-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ldesign-subtitle-delete {
+  background: #ef4444;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  transition: all 0.2s ease;
+}
+
+.ldesign-subtitle-delete:hover {
+  background: #dc2626;
+}
+
+.ldesign-subtitle-controls {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--lv-color-border);
+}
+
+.ldesign-subtitle-add {
+  background: var(--lv-color-primary);
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.ldesign-subtitle-add:hover {
+  background: var(--lv-color-primary-hover);
+}

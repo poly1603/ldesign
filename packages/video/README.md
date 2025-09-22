@@ -678,6 +678,65 @@ const player = new VideoPlayer({
 - [主题定制指南](./docs/theme-customization.md)
 - [示例代码](./examples/)
 
+## 🧪 开发和测试
+
+### 构建项目
+
+```bash
+# 安装依赖
+pnpm install
+
+# 构建项目
+pnpm build
+
+# 监听模式构建
+pnpm dev
+
+# 测试构建结果
+pnpm test:build
+```
+
+### 运行测试
+
+```bash
+# 运行所有测试
+pnpm test
+
+# 监听模式测试
+pnpm test:watch
+
+# 生成覆盖率报告
+pnpm test:coverage
+```
+
+### 开发服务器
+
+```bash
+# 启动开发服务器
+pnpm serve
+
+# 构建并启动服务器
+pnpm dev:test
+```
+
+访问 `http://localhost:3000/test-browser.html` 查看浏览器测试页面。
+
+### 示例项目
+
+```bash
+# 基础HTML示例
+pnpm example:basic
+
+# Vue示例
+pnpm example:vue
+
+# React示例
+pnpm example:react
+
+# Angular示例
+pnpm example:angular
+```
+
 ## 🤝 贡献
 
 欢迎贡献代码！请查看 [贡献指南](./CONTRIBUTING.md)。

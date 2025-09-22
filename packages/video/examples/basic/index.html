@@ -1,0 +1,573 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDesign Video Player</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 20px;
+            background: linear-gradient(135deg, #722ED1, #9254DE);
+            color: white;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .player-section {
+            padding: 30px;
+        }
+
+        #player {
+            width: 100%;
+            height: 500px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 控制栏样式 */
+        .ldesign-video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: auto;
+        }
+
+        .ldesign-video-controls.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .ldesign-video-controls.hidden {
+            opacity: 0;
+            transform: translateY(100%);
+            pointer-events: none;
+        }
+
+        .ldesign-controls-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+        }
+
+        .ldesign-controls-background.gradient {
+            background: linear-gradient(
+                to top,
+                rgba(0, 0, 0, 0.8) 0%,
+                rgba(0, 0, 0, 0.4) 50%,
+                transparent 100%
+            );
+        }
+
+        .ldesign-controls-inner {
+            position: relative;
+            display: flex;
+            align-items: center;
+            height: 100%;
+            padding: 0 16px;
+            gap: 12px;
+        }
+
+        .ldesign-controls-left,
+        .ldesign-controls-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .ldesign-controls-center {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ldesign-control-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .ldesign-control-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary-color);
+        }
+
+        .ldesign-control-button .icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .ldesign-time-display {
+            color: white;
+            font-size: 14px;
+            font-family: monospace;
+            white-space: nowrap;
+            user-select: none;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .ldesign-progress-container {
+            flex: 1;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 0;
+        }
+
+        .progress-bar {
+            position: relative;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .buffer-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .play-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 2px;
+            transition: width 0.1s ease;
+        }
+
+        .play-progress::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -6px;
+            width: 12px;
+            height: 12px;
+            background: var(--primary-color);
+            border: 2px solid white;
+            border-radius: 50%;
+            transform: translateY(-50%) scale(0);
+            transition: transform 0.2s ease;
+        }
+
+        .ldesign-progress-container:hover .play-progress::after {
+            transform: translateY(-50%) scale(1);
+        }
+
+        .progress-tooltip {
+            position: absolute;
+            top: -30px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        /* 音量控制样式 */
+        .ldesign-volume-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .volume-slider-container {
+            position: relative;
+            opacity: 0;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .ldesign-volume-control:hover .volume-slider-container,
+        .volume-slider-container.visible {
+            opacity: 1;
+            transform: scaleX(1);
+        }
+
+        .volume-slider {
+            width: 60px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--primary-color);
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            background: var(--primary-color);
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .volume-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .volume-value {
+            color: white;
+            font-size: 12px;
+            font-family: monospace;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        /* 播放速度控制样式 */
+        .ldesign-playback-rate {
+            position: relative;
+            display: inline-block;
+        }
+
+        .rate-text {
+            font-size: 12px;
+            color: white;
+            font-family: monospace;
+        }
+
+        .rate-menu {
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 6px;
+            padding: 4px 0;
+            margin-bottom: 8px;
+            min-width: 60px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .rate-menu.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .rate-option {
+            display: block;
+            width: 100%;
+            padding: 6px 12px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .rate-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .rate-option.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* 弹幕动画 */
+        @keyframes danmaku-right {
+            from {
+                right: -100%;
+            }
+            to {
+                right: 100%;
+            }
+        }
+
+        @keyframes danmaku-fade {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-10px);
+            }
+            20% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            80% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(10px);
+            }
+        }
+
+        /* 主题变量 */
+        :root {
+            --theme-primary: #722ED1;
+            --theme-background: rgba(0, 0, 0, 0.8);
+            --theme-text: #ffffff;
+            --theme-accent: #9254DE;
+        }
+
+        /* 弹幕测试模块样式 */
+        .danmaku-test-section {
+            background: var(--ldesign-bg-color-container);
+            border-radius: var(--ls-border-radius-lg);
+            padding: var(--ls-padding-lg);
+            margin-top: var(--ls-margin-lg);
+            border: 1px solid var(--ldesign-border-level-1-color);
+        }
+
+        .danmaku-test-section h3 {
+            margin: 0 0 var(--ls-margin-base) 0;
+            color: var(--ldesign-text-color-primary);
+            font-size: var(--ls-font-size-lg);
+            font-weight: 600;
+        }
+
+        .danmaku-controls {
+            display: flex;
+            gap: var(--ls-spacing-sm);
+            align-items: center;
+            margin-bottom: var(--ls-margin-base);
+            flex-wrap: wrap;
+        }
+
+        #danmaku-input {
+            flex: 1;
+            min-width: 200px;
+            height: var(--ls-input-height-medium);
+            padding: 0 var(--ls-padding-sm);
+            border: 1px solid var(--ldesign-border-color);
+            border-radius: var(--ls-border-radius-base);
+            font-size: var(--ls-font-size-sm);
+            background: var(--ldesign-bg-color-component);
+            color: var(--ldesign-text-color-primary);
+            transition: border-color 0.2s ease;
+        }
+
+        #danmaku-input:focus {
+            outline: none;
+            border-color: var(--ldesign-brand-color);
+            box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
+        }
+
+        #danmaku-type {
+            height: var(--ls-input-height-medium);
+            padding: 0 var(--ls-padding-sm);
+            border: 1px solid var(--ldesign-border-color);
+            border-radius: var(--ls-border-radius-base);
+            font-size: var(--ls-font-size-sm);
+            background: var(--ldesign-bg-color-component);
+            color: var(--ldesign-text-color-primary);
+            cursor: pointer;
+        }
+
+        .send-button, .toggle-button {
+            height: var(--ls-button-height-medium);
+            padding: 0 var(--ls-padding-base);
+            border: none;
+            border-radius: var(--ls-border-radius-base);
+            font-size: var(--ls-font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .send-button {
+            background: var(--ldesign-brand-color);
+            color: var(--ldesign-font-white-1);
+        }
+
+        .send-button:hover {
+            background: var(--ldesign-brand-color-hover);
+        }
+
+        .send-button:active {
+            background: var(--ldesign-brand-color-active);
+        }
+
+        .toggle-button {
+            background: var(--ldesign-gray-color-2);
+            color: var(--ldesign-text-color-primary);
+        }
+
+        .toggle-button:hover {
+            background: var(--ldesign-gray-color-3);
+        }
+
+        .toggle-button.active {
+            background: var(--ldesign-success-color);
+            color: var(--ldesign-font-white-1);
+        }
+
+        .danmaku-presets h4 {
+            margin: 0 0 var(--ls-margin-sm) 0;
+            color: var(--ldesign-text-color-secondary);
+            font-size: var(--ls-font-size-sm);
+            font-weight: 500;
+        }
+
+        .preset-danmaku {
+            height: var(--ls-button-height-small);
+            padding: 0 var(--ls-padding-sm);
+            margin: 0 var(--ls-margin-xs) var(--ls-margin-xs) 0;
+            border: 1px solid var(--ldesign-border-color);
+            border-radius: var(--ls-border-radius-base);
+            background: var(--ldesign-bg-color-component);
+            color: var(--ldesign-text-color-primary);
+            font-size: var(--ls-font-size-xs);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .preset-danmaku:hover {
+            border-color: var(--ldesign-brand-color);
+            background: var(--ldesign-brand-color-focus);
+            color: var(--ldesign-brand-color);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+
+            .header {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .player-section {
+                padding: 20px;
+            }
+
+            #player {
+                height: 300px;
+            }
+
+            .danmaku-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            #danmaku-input {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>LDesign Video Player</h1>
+        </div>
+
+        <div class="player-section">
+            <div id="player"></div>
+        </div>
+
+      <!-- 弹幕发送测试模块 -->
+      <div class="danmaku-test-section">
+        <h3>弹幕发送测试</h3>
+        <div class="danmaku-controls">
+          <input type="text" id="danmaku-input" placeholder="输入弹幕内容..." maxlength="50">
+          <select id="danmaku-type">
+            <option value="right">右飞弹幕</option>
+            <option value="top">顶部弹幕</option>
+          </select>
+          <button id="send-danmaku" class="send-button">发送弹幕</button>
+          <button id="toggle-danmaku" class="toggle-button">开关弹幕</button>
+        </div>
+        <div class="danmaku-presets">
+          <h4>快速发送：</h4>
+          <button class="preset-danmaku" data-text="666" data-type="right">666</button>
+          <button class="preset-danmaku" data-text="牛逼！" data-type="right">牛逼！</button>
+          <button class="preset-danmaku" data-text="好看！" data-type="top">好看！</button>
+          <button class="preset-danmaku" data-text="支持！" data-type="right">支持！</button>
+          <button class="preset-danmaku" data-text="前排围观" data-type="right">前排围观</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+</body>
+</html>

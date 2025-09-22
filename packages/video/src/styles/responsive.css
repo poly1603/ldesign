@@ -1,0 +1,418 @@
+/**
+ * LDesign Video Player - 响应式设计
+ * 针对不同设备和屏幕尺寸的优化
+ */
+
+/* 响应式断点定义 */
+:root {
+  --lv-breakpoint-xs: 480px;
+  --lv-breakpoint-sm: 768px;
+  --lv-breakpoint-md: 1024px;
+  --lv-breakpoint-lg: 1200px;
+  --lv-breakpoint-xl: 1440px;
+}
+
+/* 超小屏幕设备 (手机竖屏) */
+@media (max-width: 480px) {
+  .lv-video-player {
+    border-radius: 0;
+    min-height: 200px;
+  }
+  
+  .lv-controls {
+    height: 60px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+  
+  .lv-button {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+    border-radius: 8px;
+  }
+  
+  .lv-progress {
+    height: 6px;
+    margin: 0 8px;
+  }
+  
+  .lv-progress:hover {
+    height: 8px;
+  }
+  
+  .lv-time {
+    font-size: 11px;
+    display: none; /* 在超小屏幕上隐藏时间显示 */
+  }
+  
+  .lv-plugin-volume-control {
+    display: none; /* 在移动设备上隐藏音量控制 */
+  }
+  
+  .lv-plugin-playback-rate {
+    display: none; /* 在超小屏幕上隐藏播放速度控制 */
+  }
+  
+  /* 移动端工具提示优化 */
+  .lv-plugin-tooltip {
+    display: none;
+  }
+  
+  /* 移动端菜单优化 */
+  .lv-plugin-playback-rate .rate-menu {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    min-width: 120px;
+  }
+}
+
+/* 小屏幕设备 (手机横屏, 小平板) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .lv-video-player {
+    border-radius: 4px;
+    min-height: 240px;
+  }
+  
+  .lv-controls {
+    height: 56px;
+    padding: 0 16px;
+    gap: 10px;
+  }
+  
+  .lv-button {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    border-radius: 6px;
+  }
+  
+  .lv-progress {
+    height: 5px;
+    margin: 0 8px;
+  }
+  
+  .lv-progress:hover {
+    height: 7px;
+  }
+  
+  .lv-time {
+    font-size: 12px;
+  }
+  
+  .lv-plugin-volume-control {
+    display: none; /* 在移动设备上隐藏音量控制 */
+  }
+  
+  /* 平板端工具提示优化 */
+  .lv-plugin-tooltip {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+}
+
+/* 中等屏幕设备 (平板, 小笔记本) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .lv-video-player {
+    border-radius: 6px;
+    min-height: 300px;
+  }
+  
+  .lv-controls {
+    height: 52px;
+    padding: 0 20px;
+    gap: 12px;
+  }
+  
+  .lv-button {
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+    border-radius: 6px;
+  }
+  
+  .lv-progress {
+    height: 4px;
+    margin: 0 8px;
+  }
+  
+  .lv-progress:hover {
+    height: 6px;
+  }
+  
+  .lv-time {
+    font-size: 13px;
+  }
+  
+  .lv-plugin-volume-control {
+    display: flex;
+  }
+  
+  .lv-plugin-volume-control .volume-slider {
+    width: 50px;
+  }
+}
+
+/* 大屏幕设备 (桌面) */
+@media (min-width: 1025px) and (max-width: 1200px) {
+  .lv-video-player {
+    border-radius: 8px;
+    min-height: 360px;
+  }
+  
+  .lv-controls {
+    height: 48px;
+    padding: 0 24px;
+    gap: 12px;
+  }
+  
+  .lv-button {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    border-radius: 4px;
+  }
+  
+  .lv-progress {
+    height: 4px;
+    margin: 0 8px;
+  }
+  
+  .lv-progress:hover {
+    height: 6px;
+  }
+  
+  .lv-time {
+    font-size: 14px;
+  }
+  
+  .lv-plugin-volume-control .volume-slider {
+    width: 60px;
+  }
+}
+
+/* 超大屏幕设备 (大桌面) */
+@media (min-width: 1201px) {
+  .lv-video-player {
+    border-radius: 10px;
+    min-height: 400px;
+  }
+  
+  .lv-controls {
+    height: 48px;
+    padding: 0 28px;
+    gap: 16px;
+  }
+  
+  .lv-button {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    border-radius: 4px;
+  }
+  
+  .lv-progress {
+    height: 4px;
+    margin: 0 12px;
+  }
+  
+  .lv-progress:hover {
+    height: 6px;
+  }
+  
+  .lv-time {
+    font-size: 14px;
+  }
+  
+  .lv-plugin-volume-control .volume-slider {
+    width: 80px;
+  }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+  .lv-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  .lv-progress {
+    height: 8px !important;
+    cursor: pointer;
+  }
+  
+  .lv-progress:hover {
+    height: 8px !important;
+  }
+  
+  .lv-progress-thumb {
+    width: 16px !important;
+    height: 16px !important;
+    opacity: 1 !important;
+  }
+  
+  .lv-plugin-tooltip {
+    display: none !important;
+  }
+  
+  .lv-plugin-volume-control .volume-popup {
+    display: none !important;
+  }
+  
+  /* 触摸设备上的悬浮效果禁用 */
+  .lv-button:hover {
+    background: transparent !important;
+    transform: none !important;
+  }
+  
+  .lv-hover-lift:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* 高分辨率屏幕优化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .lv-video-player {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  .lv-button {
+    border: 0.5px solid transparent;
+  }
+  
+  .lv-progress {
+    border: 0.5px solid transparent;
+  }
+}
+
+/* 横屏模式优化 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .lv-controls {
+    height: 40px;
+    padding: 0 16px;
+  }
+  
+  .lv-button {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+  
+  .lv-time {
+    font-size: 12px;
+  }
+  
+  .lv-plugin-volume-control .volume-slider {
+    width: 40px;
+  }
+}
+
+/* 竖屏模式优化 */
+@media (orientation: portrait) {
+  .lv-video-player {
+    max-height: 60vh;
+  }
+}
+
+/* 暗色模式系统偏好 */
+@media (prefers-color-scheme: dark) {
+  .lv-video-player:not([data-theme]) {
+    --lv-color-background: #0f172a;
+    --lv-color-text: #f8fafc;
+    --lv-color-control-background: rgba(15, 23, 42, 0.9);
+    --lv-color-control-text: #f8fafc;
+    --lv-color-surface: #1e293b;
+    --lv-color-border: #334155;
+  }
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+  .lv-video-player {
+    --lv-color-border: #000000;
+    --lv-color-text: #000000;
+    --lv-color-background: #ffffff;
+    --lv-color-primary: #0000ff;
+  }
+  
+  .lv-button {
+    border: 2px solid currentColor;
+  }
+  
+  .lv-progress {
+    border: 1px solid currentColor;
+  }
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .lv-video-player *,
+  .lv-video-player *::before,
+  .lv-video-player *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .lv-video-player {
+    background: white !important;
+    color: black !important;
+    border: 2px solid black;
+  }
+  
+  .lv-controls {
+    display: none !important;
+  }
+  
+  .lv-video-player::after {
+    content: "视频播放器 - " attr(data-src);
+    display: block;
+    text-align: center;
+    padding: 20px;
+    font-size: 16px;
+    font-weight: bold;
+  }
+}
+
+/* 容器查询支持 (实验性) */
+@supports (container-type: inline-size) {
+  .lv-video-player {
+    container-type: inline-size;
+  }
+  
+  @container (max-width: 400px) {
+    .lv-controls {
+      height: 50px;
+      padding: 0 8px;
+    }
+    
+    .lv-button {
+      width: 40px;
+      height: 40px;
+    }
+    
+    .lv-time {
+      display: none;
+    }
+  }
+  
+  @container (min-width: 800px) {
+    .lv-controls {
+      height: 56px;
+      padding: 0 32px;
+    }
+    
+    .lv-button {
+      width: 48px;
+      height: 48px;
+    }
+  }
+}

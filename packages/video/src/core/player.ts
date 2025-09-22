@@ -1,919 +1,593 @@
 /**
- * 视频播放器核心类
- * 实现基础的视频播放功能和控制接口
+ * 核心播放器类实现
+ * 基于 xgplayer 的设计理念，提供现代化的视频播放器功能
  */
 
-import { EventEmitter } from '../utils/events'
-import { getDeviceInfo } from '../utils/device'
-import { createElement, querySelector } from '../utils/dom'
-import { generateId } from '../utils/common'
-import { PlayerState, PlayerEvent } from '../types/player'
-import { PluginManager } from './plugin-manager'
-import { PlayerControls } from './controls'
 import type {
-  IVideoPlayer,
-  PlayerOptions,
-  PlayerStatus,
+  IPlayer,
+  PlayerConfig,
+  PlayerState,
+  VideoQuality,
   VideoSource,
-  VideoQuality
-} from '../types/player'
-import type { DeviceInfo } from '../types/device'
-import type { IPlugin } from '../types/plugin'
+  PluginConfig,
+  IPlugin,
+  PlayerEvents,
+  EventListener
+} from '../types';
+
+import { EventManager } from './EventManager';
+import { StateManager } from './StateManager';
+import { PlayerState as State } from '../types';
+import { VideoLoader, VideoSource as LoaderVideoSource } from '../utils/videoLoader';
 
 /**
- * 视频播放器核心实现
+ * 默认播放器配置
  */
-export class VideoPlayer extends EventEmitter implements IVideoPlayer {
-  private _container: HTMLElement
-  private _videoElement: HTMLVideoElement
-  private _posterElement?: HTMLElement
-  private _loadingElement?: HTMLElement
-  private _controls?: PlayerControls
-  private _options: PlayerOptions
-  private _status: PlayerStatus
-  private _deviceInfo: DeviceInfo
-  private _pluginManager: PluginManager
-  private _initialized = false
-  private _destroyed = false
-  private handleResize?: () => void
-  private handleOrientationChange?: () => void
+const DEFAULT_CONFIG: Partial<PlayerConfig> = {
+  autoplay: false,
+  muted: false,
+  loop: false,
+  controls: true,
+  preload: 'metadata',
+  volume: 1,
+  playbackRate: 1,
+  responsive: true,
+  crossOrigin: 'anonymous',
+  playsinline: true,
+  disablePictureInPicture: false,
+  errorRetryCount: 3,
+  errorRetryDelay: 1000,
+  lazyLoad: false,
+  preloadPlugins: true,
+  language: 'en'
+};
 
-  constructor(options: PlayerOptions) {
-    super()
+/**
+ * 核心播放器类
+ * 提供完整的视频播放功能和插件系统支持
+ */
+export class Player implements IPlayer {
+  private readonly _config: PlayerConfig;
+  private readonly _eventManager: EventManager;
+  private readonly _stateManager: StateManager;
+  private readonly _plugins: Map<string, IPlugin>;
+  private readonly _container: HTMLElement;
+  private readonly _element: HTMLVideoElement;
+  private readonly _videoLoader: VideoLoader;
+  private _currentQuality: VideoQuality | null = null;
+  private _qualities: VideoQuality[] = [];
+  private _isFullscreen = false;
+  private _retryCount = 0;
+  private _destroyed = false;
 
-    this._deviceInfo = getDeviceInfo()
-    this._options = this.normalizeOptions(options)
-    this._container = this.resolveContainer(options.container)
-    this._videoElement = this.createVideoElement()
-    this._status = this.createInitialStatus()
-    this._pluginManager = new PluginManager(this)
+  constructor(config: PlayerConfig) {
+    // 合并配置
+    this._config = { ...DEFAULT_CONFIG, ...config } as PlayerConfig;
 
-    this.setupContainer()
-    this.createPosterElement()
-    this.createLoadingElement()
-    this.createControls()
-    this.bindVideoEvents()
-    this.bindControlEvents()
+    // 初始化核心组件
+    this._eventManager = new EventManager();
+    this._stateManager = new StateManager(this._eventManager);
+    this._plugins = new Map();
+
+    // 初始化视频加载器
+    this._videoLoader = new VideoLoader({
+      enableCache: true,
+      enablePreload: this._config.preload !== 'none',
+      enableProgressiveLoad: this._config.lazyLoad || false,
+      chunkSize: 1024 * 1024, // 1MB
+      preloadSize: 5 * 1024 * 1024 // 5MB
+    });
+
+    // 初始化 DOM 元素
+    this._container = this.resolveContainer(this._config.container);
+    this._element = this.createVideoElement();
+
+    // 初始化播放器
+    this.initialize();
   }
 
-  /**
-   * 播放器配置
-   */
-  get options(): PlayerOptions {
-    return { ...this._options }
+  // ==================== 基础属性 ====================
+
+  get state(): PlayerState {
+    return this._stateManager.state;
   }
 
-  /**
-   * 播放器状态
-   */
-  get status(): PlayerStatus {
-    return { ...this._status }
+  get config(): PlayerConfig {
+    return { ...this._config };
   }
 
-  /**
-   * 视频元素
-   */
-  get videoElement(): HTMLVideoElement {
-    return this._videoElement
+  get element(): HTMLVideoElement {
+    return this._element;
   }
 
-  /**
-   * 容器元素
-   */
   get container(): HTMLElement {
-    return this._container
+    return this._container;
   }
 
-  /**
-   * 设备信息
-   */
-  get deviceInfo(): DeviceInfo {
-    return this._deviceInfo
+  get plugins(): Map<string, IPlugin> {
+    return new Map(this._plugins);
   }
 
-  /**
-   * 是否已初始化
-   */
-  get initialized(): boolean {
-    return this._initialized
-  }
+  // ==================== 播放控制 ====================
 
-  /**
-   * 是否已销毁
-   */
-  get destroyed(): boolean {
-    return this._destroyed
-  }
-
-  /**
-   * 插件管理器
-   */
-  get pluginManager(): PluginManager {
-    return this._pluginManager
-  }
-
-  /**
-   * 获取插件实例
-   */
-  getPlugin<T extends IPlugin = IPlugin>(name: string): T | undefined {
-    return this._pluginManager.get(name) as T | undefined
-  }
-
-  /**
-   * 初始化播放器
-   */
-  async initialize(): Promise<void> {
-    if (this._initialized || this._destroyed) {
-      return
+  async play(): Promise<void> {
+    if (this._destroyed) {
+      throw new Error('Player has been destroyed');
     }
 
     try {
-      this.emit(PlayerEvent.LOAD_START)
+      this._stateManager.setState(State.PLAYING, 'user_action');
+      await this._element.play();
+      this._eventManager.emit('media:play', { currentTime: this.currentTime });
+    } catch (error) {
+      this._stateManager.setState(State.ERROR, 'play_failed');
+      this.handleError(error as Error);
+      throw error;
+    }
+  }
+
+  pause(): void {
+    if (this._destroyed) return;
+
+    this._stateManager.setState(State.PAUSED, 'user_action');
+    this._element.pause();
+    this._eventManager.emit('media:pause', { currentTime: this.currentTime });
+  }
+
+  seek(time: number): void {
+    if (this._destroyed) return;
+
+    const clampedTime = Math.max(0, Math.min(time, this.duration));
+    this._stateManager.setState(State.SEEKING, 'user_action');
+    this._element.currentTime = clampedTime;
+  }
+
+  stop(): void {
+    if (this._destroyed) return;
+
+    this.pause();
+    this.seek(0);
+  }
+
+  // ==================== 属性访问 ====================
+
+  get currentTime(): number {
+    return this._element.currentTime || 0;
+  }
+
+  get duration(): number {
+    return this._element.duration || 0;
+  }
+
+  get buffered(): TimeRanges {
+    return this._element.buffered;
+  }
+
+  get volume(): number {
+    return this._element.volume;
+  }
+
+  set volume(value: number) {
+    const clampedValue = Math.max(0, Math.min(1, value));
+    this._element.volume = clampedValue;
+    this._config.volume = clampedValue;
+  }
+
+  get muted(): boolean {
+    return this._element.muted;
+  }
+
+  set muted(value: boolean) {
+    this._element.muted = value;
+    this._config.muted = value;
+  }
+
+  get playbackRate(): number {
+    return this._element.playbackRate;
+  }
+
+  set playbackRate(value: number) {
+    const clampedValue = Math.max(0.25, Math.min(4, value));
+    this._element.playbackRate = clampedValue;
+    this._config.playbackRate = clampedValue;
+  }
+
+  get paused(): boolean {
+    return this._element.paused;
+  }
+
+  get ended(): boolean {
+    return this._element.ended;
+  }
+
+  // ==================== 质量控制 ====================
+
+  get qualities(): VideoQuality[] {
+    return [...this._qualities];
+  }
+
+  get currentQuality(): VideoQuality | null {
+    return this._currentQuality;
+  }
+
+  setQuality(qualityId: string): void {
+    const quality = this._qualities.find(q => q.id === qualityId);
+    if (!quality) {
+      throw new Error(`Quality ${qualityId} not found`);
+    }
+
+    const previousQuality = this._currentQuality;
+    this._currentQuality = quality;
+
+    // 切换视频源
+    this.setSrc(quality.url).catch(error => {
+      console.error('切换视频质量失败:', error);
+    });
+
+    this._eventManager.emit('quality:change', {
+      from: previousQuality?.id || null,
+      to: qualityId,
+      quality
+    });
+  }
+
+  // ==================== 全屏控制 ====================
+
+  get isFullscreen(): boolean {
+    return this._isFullscreen;
+  }
+
+  async enterFullscreen(): Promise<void> {
+    try {
+      if (this._container.requestFullscreen) {
+        await this._container.requestFullscreen();
+      } else if ((this._container as any).webkitRequestFullscreen) {
+        await (this._container as any).webkitRequestFullscreen();
+      } else if ((this._container as any).msRequestFullscreen) {
+        await (this._container as any).msRequestFullscreen();
+      }
+      this._isFullscreen = true;
+      this._eventManager.emit('fullscreen:enter', { element: this._container });
+    } catch (error) {
+      this._eventManager.emit('fullscreen:error', { error: error as Error });
+      throw error;
+    }
+  }
+
+  async exitFullscreen(): Promise<void> {
+    try {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) {
+        await (document as any).webkitExitFullscreen();
+      } else if ((document as any).msExitFullscreen) {
+        await (document as any).msExitFullscreen();
+      }
+      this._isFullscreen = false;
+      this._eventManager.emit('fullscreen:exit', { element: this._container });
+    } catch (error) {
+      this._eventManager.emit('fullscreen:error', { error: error as Error });
+      throw error;
+    }
+  }
+
+  // ==================== 插件管理 ====================
+
+  use(pluginConfig: PluginConfig): void {
+    // 插件系统将在后续实现
+    console.warn('Plugin system not yet implemented');
+  }
+
+  getPlugin<T extends IPlugin = IPlugin>(name: string): T | null {
+    return (this._plugins.get(name) as T) || null;
+  }
+
+  // ==================== 事件系统 ====================
+
+  on<K extends keyof PlayerEvents>(event: K, handler: PlayerEvents[K]): void {
+    this._eventManager.on(event as any, handler as any);
+  }
+
+  off<K extends keyof PlayerEvents>(event: K, handler: PlayerEvents[K]): void {
+    this._eventManager.off(event as any, handler as any);
+  }
+
+  emit<K extends keyof PlayerEvents>(event: K, ...args: Parameters<PlayerEvents[K]>): void {
+    this._eventManager.emit(event as any, args[0] as any);
+  }
+
+  // ==================== 生命周期 ====================
+
+  destroy(): void {
+    if (this._destroyed) return;
+
+    this._destroyed = true;
+    this._stateManager.setState(State.DESTROYED, 'user_action');
+
+    // 销毁所有插件
+    for (const plugin of this._plugins.values()) {
+      try {
+        plugin.destroy();
+      } catch (error) {
+        console.error('Error destroying plugin:', error);
+      }
+    }
+    this._plugins.clear();
+
+    // 清理视频加载器
+    this._videoLoader.cleanup();
+
+    // 清理事件监听器
+    this.unbindEvents();
+    this._eventManager.clear();
+
+    // 清理 DOM
+    if (this._element.parentNode) {
+      this._element.parentNode.removeChild(this._element);
+    }
+
+    this._eventManager.emit('player:destroy', { player: this });
+  }
+
+  // ==================== 私有方法 ====================
+
+  private initialize(): void {
+    this.setupContainer();
+    this.setupVideoElement();
+    this.bindEvents();
+    this.loadQualities();
+
+    this._stateManager.setState(State.READY, 'initialized');
+    this._eventManager.emit('player:ready', { player: this });
+  }
+
+  private resolveContainer(container: string | HTMLElement): HTMLElement {
+    if (typeof container === 'string') {
+      const element = document.querySelector(container);
+      if (!element) {
+        throw new Error(`Container element not found: ${container}`);
+      }
+      return element as HTMLElement;
+    }
+    return container;
+  }
+
+  private createVideoElement(): HTMLVideoElement {
+    const video = document.createElement('video');
+
+    // 设置基础属性
+    video.controls = this._config.controls || false;
+    video.autoplay = this._config.autoplay || false;
+    video.muted = this._config.muted || false;
+    video.loop = this._config.loop || false;
+    video.preload = this._config.preload || 'metadata';
+    video.crossOrigin = this._config.crossOrigin || null;
+    video.playsInline = this._config.playsinline || false;
+    video.disablePictureInPicture = this._config.disablePictureInPicture || false;
+
+    if (this._config.poster) {
+      video.poster = this._config.poster;
+    }
+
+    return video;
+  }
+
+  private setupContainer(): void {
+    this._container.classList.add('ldesign-video-player');
+
+    // 设置尺寸
+    if (this._config.width) {
+      this._container.style.width = typeof this._config.width === 'number'
+        ? `${this._config.width}px`
+        : this._config.width;
+    }
+
+    if (this._config.height) {
+      this._container.style.height = typeof this._config.height === 'number'
+        ? `${this._config.height}px`
+        : this._config.height;
+    }
+
+    // 响应式设置
+    if (this._config.responsive) {
+      this._container.style.position = 'relative';
+      this._container.style.width = '100%';
+      this._container.style.height = 'auto';
+    }
+  }
+
+  private setupVideoElement(): void {
+    this._element.style.width = '100%';
+    this._element.style.height = '100%';
+    this._element.style.display = 'block';
+
+    this._container.appendChild(this._element);
+
+    // 设置视频源
+    if (this._config.src) {
+      this.setSrc(this._config.src).catch(error => {
+        console.error('初始化视频源失败:', error);
+      });
+    }
+  }
+
+  private async setSrc(src: string | VideoSource[]): Promise<void> {
+    try {
+      // 重置错误重试计数
+      this._retryCount = 0;
+
+      // 转换为加载器格式
+      const source: LoaderVideoSource = typeof src === 'string'
+        ? { url: src, quality: 'auto' }
+        : { url: src[0].src, quality: src[0].quality || 'auto', type: src[0].type };
+
+      // 使用视频加载器加载
+      const blob = await this._videoLoader.loadVideo(source, (progress) => {
+        this._eventManager.emit('loading:progress', progress);
+      });
 
       // 设置视频源
-      if (this._options.src) {
-        await this.setSrc(this._options.src)
-      }
+      const blobUrl = URL.createObjectURL(blob);
+      this._element.src = blobUrl;
 
-      // 应用初始配置
-      this.applyInitialConfig()
-
-      // 注册插件
-      await this.registerPlugins()
-
-      this._initialized = true
-      this.updateStatus({ state: PlayerState.READY })
-      this.emit(PlayerEvent.READY)
+      this._eventManager.emit('media:sourcechange', { source });
 
     } catch (error) {
-      this.updateStatus({ state: PlayerState.ERROR })
-      this.emit(PlayerEvent.ERROR, { error })
-      throw error
+      this.handleLoadError(error as Error);
     }
   }
 
   /**
-   * 简单事件发射（直接传递数据，不包装在事件对象中）
+   * 处理加载错误
    */
-  private emitSimple<T = any>(event: string, data?: T): boolean {
-    const listeners = this.listeners.get(event)
-    if (listeners && listeners.size > 0) {
-      for (const listener of listeners) {
-        try {
-          listener(data)
-        } catch (error) {
-          console.error(`Error in event listener for "${event}":`, error)
+  private async handleLoadError(error: Error): Promise<void> {
+    this._retryCount++;
+
+    const maxRetries = this._config.errorRetryCount || 3;
+    const retryDelay = this._config.errorRetryDelay || 1000;
+
+    this._eventManager.emit('player:error', {
+      error: error.message,
+      retryCount: this._retryCount,
+      maxRetries
+    });
+
+    if (this._retryCount < maxRetries) {
+      // 延迟后重试
+      setTimeout(() => {
+        if (!this._destroyed) {
+          this._element.load();
         }
-      }
-      return true
-    }
-    return false
-  }
-
-  /**
-   * 销毁播放器
-   */
-  destroy(): void {
-    if (this._destroyed) {
-      return
-    }
-
-    this.pause()
-    this.unbindVideoEvents()
-    this.removeAllListeners()
-
-    // 移除响应式事件监听
-    if (this.handleResize) {
-      window.removeEventListener('resize', this.handleResize)
-    }
-    
-    if (this.handleOrientationChange && 'orientation' in screen) {
-      screen.orientation.removeEventListener('change', this.handleOrientationChange)
-    }
-
-    // 销毁插件
-    this._pluginManager.destroy()
-
-    // 清理视频元素
-    if (this._videoElement) {
-      if (this._videoElement.parentNode) {
-        this._videoElement.parentNode.removeChild(this._videoElement)
-      }
-      // 清理视频元素的引用
-      this._videoElement.src = ''
-      this._videoElement.load()
-    }
-
-    // 清理容器
-    if (this._container) {
-      this._container.innerHTML = ''
-    }
-
-    this._destroyed = true
-    this._initialized = false
-
-    // 清理引用
-    this._videoElement = null as any
-
-    this.emitSimple(PlayerEvent.DESTROY)
-  }
-
-  /**
-   * 播放视频
-   */
-  async play(): Promise<void> {
-    if (this._destroyed || !this._initialized) {
-      throw new Error('Player not initialized')
-    }
-
-    try {
-      await this._videoElement.play()
-      this.updateStatus({ state: PlayerState.PLAYING })
-      this.emitSimple(PlayerEvent.PLAY)
-    } catch (error) {
-      this.emitSimple(PlayerEvent.ERROR, { error })
-      throw error
-    }
-  }
-
-  /**
-   * 暂停视频
-   */
-  pause(): void {
-    if (this._destroyed || !this._initialized) {
-      return
-    }
-
-    this._videoElement.pause()
-    this.updateStatus({ state: PlayerState.PAUSED })
-    this.emitSimple(PlayerEvent.PAUSE)
-  }
-
-  /**
-   * 跳转到指定时间
-   */
-  seek(time: number): void {
-    if (this._destroyed || !this._initialized) {
-      return
-    }
-
-    const clampedTime = Math.max(0, Math.min(time, this._videoElement.duration || 0))
-    this._videoElement.currentTime = clampedTime
-    this.updateStatus({ currentTime: clampedTime })
-  }
-
-  /**
-   * 设置音量
-   */
-  setVolume(volume: number): void {
-    if (this._destroyed || !this._initialized) {
-      return
-    }
-
-    const clampedVolume = Math.max(0, Math.min(1, volume))
-    this._videoElement.volume = clampedVolume
-    this.updateStatus({ volume: clampedVolume })
-    this.emit(PlayerEvent.VOLUME_CHANGE, { volume: clampedVolume, muted: this._videoElement.muted })
-  }
-
-  /**
-   * 设置播放速度
-   */
-  setPlaybackRate(rate: number): void {
-    if (this._destroyed || !this._initialized) {
-      return
-    }
-
-    const clampedRate = Math.max(0.25, Math.min(4, rate))
-    this._videoElement.playbackRate = clampedRate
-    this.updateStatus({ playbackRate: clampedRate })
-    this.emit(PlayerEvent.RATE_CHANGE, { playbackRate: clampedRate })
-  }
-
-  /**
-   * 切换全屏
-   */
-  async toggleFullscreen(): Promise<void> {
-    if (this._destroyed || !this._initialized) {
-      return
-    }
-
-    try {
-      const isFullscreen = this.isFullscreen()
-      
-      if (isFullscreen) {
-        await this.exitFullscreen()
-        this._container.classList.remove('lv-player--fullscreen')
-        this.emitSimple(PlayerEvent.FULLSCREEN_CHANGE, { fullscreen: false })
-      } else {
-        await this.requestFullscreen()
-        this._container.classList.add('lv-player--fullscreen')
-        this.emitSimple(PlayerEvent.FULLSCREEN_CHANGE, { fullscreen: true })
-      }
-    } catch (error) {
-      this.emit(PlayerEvent.ERROR, { error })
-      throw error
-    }
-  }
-
-  /**
-   * 检查是否处于全屏状态
-   */
-  private isFullscreen(): boolean {
-    return !!(
-      document.fullscreenElement ||
-      (document as any).webkitFullscreenElement ||
-      (document as any).mozFullScreenElement ||
-      (document as any).msFullscreenElement
-    )
-  }
-
-  /**
-   * 请求全屏（跨浏览器兼容）
-   */
-  private async requestFullscreen(): Promise<void> {
-    const element = this._container
-    
-    if (element.requestFullscreen) {
-      await element.requestFullscreen()
-    } else if ((element as any).webkitRequestFullscreen) {
-      await (element as any).webkitRequestFullscreen()
-    } else if ((element as any).mozRequestFullScreen) {
-      await (element as any).mozRequestFullScreen()
-    } else if ((element as any).msRequestFullscreen) {
-      await (element as any).msRequestFullscreen()
+      }, retryDelay * this._retryCount);
     } else {
-      throw new Error('Fullscreen not supported')
+      // 达到最大重试次数，设置错误状态
+      this._stateManager.setState(State.ERROR, 'max_retries_exceeded');
     }
   }
 
-  /**
-   * 退出全屏（跨浏览器兼容）
-   */
-  private async exitFullscreen(): Promise<void> {
-    if (document.exitFullscreen) {
-      await document.exitFullscreen()
-    } else if ((document as any).webkitExitFullscreen) {
-      await (document as any).webkitExitFullscreen()
-    } else if ((document as any).mozCancelFullScreen) {
-      await (document as any).mozCancelFullScreen()
-    } else if ((document as any).msExitFullscreen) {
-      await (document as any).msExitFullscreen()
-    }
-  }
+  private loadQualities(): void {
+    if (this._config.qualities) {
+      this._qualities = [...this._config.qualities];
 
-  /**
-   * 切换画中画
-   */
-  async togglePip(): Promise<void> {
-    if (this._destroyed || !this._initialized) {
-      return
-    }
-
-    if (!('pictureInPictureEnabled' in document)) {
-      throw new Error('Picture-in-Picture not supported')
-    }
-
-    try {
-      if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture()
-        this.emitSimple(PlayerEvent.PIP_CHANGE, { pip: false })
-      } else {
-        await this._videoElement.requestPictureInPicture()
-        this.emitSimple(PlayerEvent.PIP_CHANGE, { pip: true })
+      // 设置默认质量
+      if (this._config.defaultQuality) {
+        const defaultQuality = this._qualities.find(q => q.id === this._config.defaultQuality);
+        if (defaultQuality) {
+          this._currentQuality = defaultQuality;
+        }
+      } else if (this._qualities.length > 0) {
+        this._currentQuality = this._qualities[0];
       }
-    } catch (error) {
-      this.emit(PlayerEvent.ERROR, { error })
-      throw error
+
+      this._eventManager.emit('quality:list', { qualities: this._qualities });
     }
   }
 
-  /**
-   * 切换播放/暂停
-   */
-  toggle(): void {
-    if (this._videoElement.paused) {
-      this.play()
+  private bindEvents(): void {
+    // 媒体事件
+    this._element.addEventListener('loadstart', () => {
+      this._stateManager.setState(State.LOADING, 'media_event');
+      this._eventManager.emit('media:loadstart', {});
+    });
+
+    this._element.addEventListener('loadedmetadata', () => {
+      this._eventManager.emit('media:loadedmetadata', {
+        duration: this.duration,
+        videoWidth: this._element.videoWidth,
+        videoHeight: this._element.videoHeight
+      });
+    });
+
+    this._element.addEventListener('canplay', () => {
+      this._stateManager.setState(State.READY, 'media_event');
+      this._eventManager.emit('media:canplay', { readyState: this._element.readyState });
+    });
+
+    this._element.addEventListener('play', () => {
+      this._stateManager.setState(State.PLAYING, 'media_event');
+      this._eventManager.emit('media:play', { currentTime: this.currentTime });
+    });
+
+    this._element.addEventListener('pause', () => {
+      this._stateManager.setState(State.PAUSED, 'media_event');
+      this._eventManager.emit('media:pause', { currentTime: this.currentTime });
+    });
+
+    this._element.addEventListener('ended', () => {
+      this._stateManager.setState(State.ENDED, 'media_event');
+      this._eventManager.emit('media:ended', { duration: this.duration });
+    });
+
+    this._element.addEventListener('timeupdate', () => {
+      this._eventManager.emit('media:timeupdate', {
+        currentTime: this.currentTime,
+        duration: this.duration
+      });
+    });
+
+    this._element.addEventListener('seeking', () => {
+      this._stateManager.setState(State.SEEKING, 'media_event');
+      this._eventManager.emit('media:seeking', {
+        currentTime: this.currentTime,
+        targetTime: this._element.currentTime
+      });
+    });
+
+    this._element.addEventListener('seeked', () => {
+      this._stateManager.setState(State.PLAYING, 'media_event');
+      this._eventManager.emit('media:seeked', { currentTime: this.currentTime });
+    });
+
+    this._element.addEventListener('waiting', () => {
+      this._stateManager.setState(State.BUFFERING, 'media_event');
+      this._eventManager.emit('media:waiting', { currentTime: this.currentTime });
+    });
+
+    this._element.addEventListener('error', () => {
+      this._stateManager.setState(State.ERROR, 'media_event');
+      const error = this._element.error;
+      const errorMessage = error ? `Media error: ${error.message} (code: ${error.code})` : 'Unknown media error';
+      this.handleLoadError(new Error(errorMessage));
+    });
+
+    // 全屏事件
+    document.addEventListener('fullscreenchange', () => {
+      this._isFullscreen = !!document.fullscreenElement;
+      this._eventManager.emit('fullscreen:change', {
+        isFullscreen: this._isFullscreen,
+        element: this._container
+      });
+    });
+  }
+
+  private unbindEvents(): void {
+    // 移除所有事件监听器
+    this._element.removeEventListener('loadstart', () => { });
+    // ... 其他事件监听器
+  }
+
+  private handleError(error: Error): void {
+    console.error('Player error:', error);
+
+    // 尝试重试
+    if (this._retryCount < (this._config.errorRetryCount || 0)) {
+      this._retryCount++;
+      setTimeout(() => {
+        this._element.load();
+      }, this._config.errorRetryDelay || 1000);
     } else {
-      this.pause()
+      this._eventManager.emit('error:media', {
+        error: error as any,
+        code: 0,
+        message: error.message
+      });
     }
   }
+}
 
-  /**
-   * 设置视频源
-   */
-  async setSrc(src: VideoSource | string): Promise<void> {
-    if (this._destroyed) {
-      return
-    }
-
-    const source = typeof src === 'string' ? { src } : src
-
-    this._videoElement.src = source.src
-
-    if (source.poster) {
-      this._videoElement.poster = source.poster
-    }
-
-    // 等待元数据加载
-    return new Promise((resolve, reject) => {
-      const onLoadedMetadata = () => {
-        this._videoElement.removeEventListener('loadedmetadata', onLoadedMetadata)
-        this._videoElement.removeEventListener('error', onError)
-        this.updateStatus({
-          duration: this._videoElement.duration,
-          currentTime: this._videoElement.currentTime
-        })
-        resolve()
-      }
-
-      const onError = () => {
-        this._videoElement.removeEventListener('loadedmetadata', onLoadedMetadata)
-        this._videoElement.removeEventListener('error', onError)
-        reject(new Error('Failed to load video'))
-      }
-
-      this._videoElement.addEventListener('loadedmetadata', onLoadedMetadata)
-      this._videoElement.addEventListener('error', onError)
-    })
-  }
-
-  /**
-   * 切换视频质量
-   */
-  setQuality(quality: VideoQuality): void {
-    if (this._destroyed || !this._initialized) {
-      return
-    }
-
-    const currentTime = this._videoElement.currentTime
-    const paused = this._videoElement.paused
-
-    this._videoElement.src = quality.src
-    this._videoElement.currentTime = currentTime
-
-    if (!paused) {
-      this._videoElement.play()
-    }
-
-    this.updateStatus({ quality })
-  }
-
-  /**
-   * 标准化配置选项
-   */
-  private normalizeOptions(options: PlayerOptions): PlayerOptions {
-    if (!options.src || (typeof options.src === 'string' && options.src.trim() === '')) {
-      throw new Error('Video source is required')
-    }
-
-    return {
-      autoplay: false,
-      muted: false,
-      loop: false,
-      controls: true,
-      volume: 1,
-      playbackRate: 1,
-      preload: 'metadata',
-      pip: true,
-      fullscreen: true,
-      hotkeys: true,
-      gestures: this._deviceInfo.isTouch,
-      responsive: true,
-      language: 'zh-CN',
-      ...options
-    }
-  }
-
-  /**
-   * 解析容器元素
-   */
-  private resolveContainer(container: HTMLElement | string): HTMLElement {
-    if (!container) {
-      throw new Error('Container element is required')
-    }
-
-    if (typeof container === 'string') {
-      const element = querySelector<HTMLElement>(container)
-      if (!element) {
-        throw new Error(`Container element not found: ${container}`)
-      }
-      return element
-    }
-    return container
-  }
-
-  /**
-   * 创建视频元素
-   */
-  private createVideoElement(): HTMLVideoElement {
-    const video = createElement('video', {
-      attributes: {
-        'data-player-id': generateId('video-player')
-      }
-    })
-
-    return video
-  }
-
-  /**
-   * 创建初始状态
-   */
-  private createInitialStatus(): PlayerStatus {
-    return {
-      state: PlayerState.UNINITIALIZED,
-      currentTime: 0,
-      duration: 0,
-      buffered: 0,
-      volume: this._options.volume || 1,
-      muted: this._options.muted || false,
-      playbackRate: this._options.playbackRate || 1,
-      fullscreen: false,
-      pip: false
-    }
-  }
-
-  /**
-   * 设置播放器容器
-   */
-  private setupContainer(): void {
-    this._container.classList.add('lv-player')
-    
-    // 根据设备类型添加相应的类名
-    const deviceType = this._deviceInfo.device.type
-    this._container.classList.add(`lv-player--${deviceType}`)
-    
-    // 添加操作系统类名
-    const osType = this._deviceInfo.os.type
-    this._container.classList.add(`lv-player--${osType}`)
-    
-    // 添加浏览器类名
-    const browserType = this._deviceInfo.browser.type
-    this._container.classList.add(`lv-player--${browserType}`)
-    
-    // 设置宽高比模式
-    if (this._options.aspectRatio) {
-      this._container.classList.add('lv-player--aspect-ratio')
-      this._container.style.setProperty('--lv-player-aspect-ratio', this._options.aspectRatio)
-    }
-    
-    // 添加视频元素
-    this._container.appendChild(this._videoElement)
-    
-    // 监听窗口大小变化
-    this.handleResize = this.handleResize.bind(this)
-    window.addEventListener('resize', this.handleResize)
-    
-    // 监听屏幕方向变化
-    if ('orientation' in screen) {
-      this.handleOrientationChange = this.handleOrientationChange.bind(this)
-      screen.orientation.addEventListener('change', this.handleOrientationChange)
-    }
-
-    if (this._options.className) {
-      this._container.classList.add(this._options.className)
-    }
-  }
-
-  /**
-   * 绑定视频事件
-   */
-  private bindVideoEvents(): void {
-    const events = [
-      'play', 'pause', 'ended', 'timeupdate', 'loadstart',
-      'loadeddata', 'loadedmetadata', 'canplay', 'canplaythrough',
-      'waiting', 'seeking', 'seeked', 'volumechange', 'ratechange',
-      'progress', 'error', 'stalled', 'suspend', 'abort',
-      'emptied', 'durationchange'
-    ]
-
-    events.forEach(event => {
-      this._videoElement.addEventListener(event, this.handleVideoEvent.bind(this))
-    })
-
-    // 全屏事件监听（跨浏览器兼容）
-    const fullscreenEvents = [
-      'fullscreenchange',
-      'webkitfullscreenchange',
-      'mozfullscreenchange',
-      'MSFullscreenChange'
-    ]
-    
-    fullscreenEvents.forEach(event => {
-      document.addEventListener(event, this.handleFullscreenChange.bind(this))
-    })
-
-    // 画中画事件监听
-    this._videoElement.addEventListener('enterpictureinpicture', this.handlePipChange.bind(this))
-    this._videoElement.addEventListener('leavepictureinpicture', this.handlePipChange.bind(this))
-  }
-
-  /**
-   * 解绑视频事件
-   */
-  private unbindVideoEvents(): void {
-    const events = [
-      'play', 'pause', 'ended', 'timeupdate', 'loadstart',
-      'loadeddata', 'loadedmetadata', 'canplay', 'canplaythrough',
-      'waiting', 'seeking', 'seeked', 'volumechange', 'ratechange',
-      'progress', 'error', 'stalled', 'suspend', 'abort',
-      'emptied', 'durationchange'
-    ]
-
-    events.forEach(event => {
-      this._videoElement.removeEventListener(event, this.handleVideoEvent.bind(this))
-    })
-
-    // 移除全屏事件监听（跨浏览器兼容）
-    const fullscreenEvents = [
-      'fullscreenchange',
-      'webkitfullscreenchange',
-      'mozfullscreenchange',
-      'MSFullscreenChange'
-    ]
-    
-    fullscreenEvents.forEach(event => {
-      document.removeEventListener(event, this.handleFullscreenChange.bind(this))
-    })
-
-    // 移除画中画事件监听
-    this._videoElement.removeEventListener('enterpictureinpicture', this.handlePipChange.bind(this))
-    this._videoElement.removeEventListener('leavepictureinpicture', this.handlePipChange.bind(this))
-  }
-
-  /**
-   * 处理视频事件
-   */
-  private handleVideoEvent(event: Event): void {
-    const type = event.type as PlayerEvent
-
-    switch (type) {
-      case 'play':
-        this.updateStatus({ state: PlayerState.PLAYING })
-        this.hidePoster()
-        this.hideLoading()
-        this.emit(PlayerEvent.PLAY)
-        break
-
-      case 'pause':
-        this.updateStatus({ state: PlayerState.PAUSED })
-        this.emit(PlayerEvent.PAUSE)
-        break
-
-      case 'ended':
-        this.updateStatus({ state: PlayerState.ENDED })
-        this.showPoster()
-        this.emit(PlayerEvent.ENDED)
-        break
-
-      case 'loadstart':
-        this.showLoading()
-        this.emit(PlayerEvent.LOAD_START)
-        break
-
-      case 'canplay':
-        this.hideLoading()
-        this.emit(PlayerEvent.CAN_PLAY)
-        break
-
-      case 'waiting':
-        this.showLoading()
-        this.emit(PlayerEvent.WAITING)
-        break
-
-      case 'timeupdate':
-        this.updateStatus({
-          currentTime: this._videoElement.currentTime,
-          duration: this._videoElement.duration
-        })
-        this.emit(PlayerEvent.TIME_UPDATE, {
-          currentTime: this._videoElement.currentTime,
-          duration: this._videoElement.duration
-        })
-        break
-
-      case 'volumechange':
-        this.updateStatus({
-          volume: this._videoElement.volume,
-          muted: this._videoElement.muted
-        })
-        this.emit(PlayerEvent.VOLUME_CHANGE, {
-          volume: this._videoElement.volume,
-          muted: this._videoElement.muted
-        })
-        break
-
-      case 'error':
-        this.updateStatus({ state: PlayerState.ERROR })
-        this.hideLoading()
-        this.emit(PlayerEvent.ERROR, { error: this._videoElement.error })
-        break
-    }
-  }
-
-  /**
-   * 处理全屏状态变化
-   */
-  private handleFullscreenChange(): void {
-    const isFullscreen = this.isFullscreen()
-    
-    if (isFullscreen) {
-      this._container.classList.add('lv-player--fullscreen')
-    } else {
-      this._container.classList.remove('lv-player--fullscreen')
-    }
-    
-    this.updateStatus({ fullscreen: isFullscreen })
-    this.emit(PlayerEvent.FULLSCREEN_CHANGE, { fullscreen: isFullscreen })
-  }
-
-  /**
-   * 处理画中画状态变化
-   */
-  private handlePipChange(): void {
-    const pip = !!document.pictureInPictureElement
-    this.updateStatus({ pip })
-    this.emit(PlayerEvent.PIP_CHANGE, { pip })
-  }
-
-  /**
-   * 应用初始配置
-   */
-  private applyInitialConfig(): void {
-    this._videoElement.autoplay = this._options.autoplay || false
-    this._videoElement.muted = this._options.muted || false
-    this._videoElement.loop = this._options.loop || false
-    this._videoElement.controls = false // 使用自定义控制栏
-    this._videoElement.volume = this._options.volume || 1
-    this._videoElement.playbackRate = this._options.playbackRate || 1
-    this._videoElement.preload = this._options.preload || 'metadata'
-
-    if (this._options.crossOrigin) {
-      this._videoElement.crossOrigin = this._options.crossOrigin
-    }
-  }
-
-  /**
-   * 注册插件
-   */
-  private async registerPlugins(): Promise<void> {
-    if (!this._options.plugins) {
-      return
-    }
-
-    for (const plugin of this._options.plugins) {
-      if ('metadata' in plugin) {
-        // 插件实例
-        await this._pluginManager.register(plugin as IPlugin)
-      } else {
-        // 插件配置
-        // TODO: 根据配置创建插件实例
-        console.warn('Plugin config not supported yet:', plugin)
-      }
-    }
-  }
-
-  /**
-   * 更新状态
-   */
-  private updateStatus(updates: Partial<PlayerStatus>): void {
-    Object.assign(this._status, updates)
-    this.emitSimple(PlayerEvent.STATUS_CHANGE, this._status)
-  }
-
-  /**
-   * 处理窗口大小变化
-   */
-  private handleResize(): void {
-    if (this._destroyed) return
-    
-    // 更新视口信息
-    const viewport = {
-      width: window.innerWidth,
-      height: window.innerHeight
-    }
-    
-    this.emit(PlayerEvent.RESIZE, viewport)
-    
-    // 如果是全屏状态，确保样式正确
-    if (this.isFullscreen()) {
-      this._container.style.width = '100vw'
-      this._container.style.height = '100vh'
-    }
-  }
-
-  /**
-   * 处理屏幕方向变化
-   */
-  private handleOrientationChange(): void {
-    if (this._destroyed) return
-    
-    // 延迟处理，等待屏幕方向变化完成
-    setTimeout(() => {
-      const orientation = screen.orientation?.angle || 0
-      this.emit(PlayerEvent.ORIENTATION_CHANGE, { orientation })
-      
-      // 触发重新布局
-      this.handleResize()
-    }, 100)
-  }
-
-  /**
-   * 创建海报元素
-   */
-  private createPosterElement(): void {
-    if (!this._options.poster) return
-
-    this._posterElement = createElement('div', {
-      className: 'lv-player__poster',
-      innerHTML: `<img src="${this._options.poster}" alt="Video poster" />`
-    })
-
-    this._container.appendChild(this._posterElement)
-  }
-
-  /**
-   * 创建加载动画元素
-   */
-  private createLoadingElement(): void {
-    this._loadingElement = createElement('div', {
-      className: 'lv-player__loading',
-      innerHTML: `
-        <div class="lv-loading__spinner">
-          <div class="lv-loading__circle"></div>
-        </div>
-        <div class="lv-loading__text">加载中...</div>
-      `
-    })
-
-    this._container.appendChild(this._loadingElement)
-  }
-
-  /**
-   * 创建控制栏
-   */
-  private createControls(): void {
-    if (this._options.controls === false) return
-
-    this._controls = new PlayerControls(this, this._options.controlsOptions || {})
-  }
-
-  /**
-   * 绑定控制栏事件
-   */
-  private bindControlEvents(): void {
-    if (!this._controls) return
-
-    // 播放/暂停
-    this._controls.on('play', () => this.play())
-    this._controls.on('pause', () => this.pause())
-    
-    // 进度跳转
-    this._controls.on('seek', (time: number) => this.seek(time))
-    
-    // 音量控制
-    this._controls.on('volume', (volume: number) => this.setVolume(volume))
-    this._controls.on('mute', () => this.mute())
-    this._controls.on('unmute', () => this.unmute())
-    
-    // 全屏控制
-    this._controls.on('fullscreen', () => this.requestFullscreen())
-    this._controls.on('exitFullscreen', () => this.exitFullscreen())
-  }
-
-  /**
-   * 显示海报
-   */
-  private showPoster(): void {
-    if (this._posterElement) {
-      this._posterElement.style.display = 'block'
-    }
-  }
-
-  /**
-   * 隐藏海报
-   */
-  private hidePoster(): void {
-    if (this._posterElement) {
-      this._posterElement.style.display = 'none'
-    }
-  }
-
-  /**
-   * 显示加载动画
-   */
-  private showLoading(): void {
-    if (this._loadingElement) {
-      this._loadingElement.style.display = 'flex'
-    }
-  }
-
-  /**
-   * 隐藏加载动画
-   */
-  private hideLoading(): void {
-    if (this._loadingElement) {
-      this._loadingElement.style.display = 'none'
-    }
-  }
+/**
+ * 创建播放器实例
+ */
+export function createPlayer(config: PlayerConfig): Player {
+  return new Player(config);
 }

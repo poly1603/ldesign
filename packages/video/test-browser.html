@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDesign Video Player - 浏览器测试</title>
+    <link rel="stylesheet" href="./src/styles/index.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .video-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .test-results {
+            background: #f8f9fa;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .success {
+            color: #28a745;
+        }
+        
+        .error {
+            color: #dc3545;
+        }
+        
+        .info {
+            color: #007bff;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 LDesign Video Player - 浏览器测试</h1>
+        <p>这个页面用于测试构建后的视频播放器在浏览器环境中的功能。</p>
+        
+        <div class="test-results" id="test-results">
+            <div class="info">正在加载测试...</div>
+        </div>
+        
+        <div class="video-container" id="video-container">
+            <!-- 视频播放器将在这里创建 -->
+        </div>
+        
+        <div>
+            <button onclick="testBasicFunctionality()">测试基础功能</button>
+            <button onclick="testPluginSystem()">测试插件系统</button>
+            <button onclick="testThemeSystem()">测试主题系统</button>
+            <button onclick="createVideoPlayer()">创建视频播放器</button>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <h3>主题切换</h3>
+            <button onclick="switchTheme('default')">默认主题</button>
+            <button onclick="switchTheme('dark')">暗色主题</button>
+            <button onclick="switchTheme('colorful')">彩色主题</button>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <h3>功能演示</h3>
+            <button onclick="window.open('examples/danmaku/index.html', '_blank')">🎯 弹幕演示</button>
+            <button onclick="window.open('examples/subtitle/index.html', '_blank')">🎬 字幕演示</button>
+            <button onclick="window.open('examples/quality/index.html', '_blank')">🎥 质量切换演示</button>
+            <button onclick="window.open('examples/playlist/index.html', '_blank')">📋 播放列表演示</button>
+            <button onclick="window.open('examples/performance/index.html', '_blank')">🚀 性能优化演示</button>
+            <button onclick="window.open('examples/enhanced-features/index.html', '_blank')">✨ 增强功能演示</button>
+            <button onclick="window.open('examples/basic/index.html', '_blank')">📺 基础演示</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // 导入构建后的模块
+        import { Player } from './es/core/Player.js';
+        import { EventManager } from './es/core/EventManager.js';
+        import { PlayButton } from './es/plugins/PlayButton.js';
+        import { defaultTheme } from './es/themes/default.js';
+
+        const results = document.getElementById('test-results');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        function clearResults() {
+            results.innerHTML = '';
+        }
+
+        // 测试基础功能
+        window.testBasicFunctionality = function() {
+            clearResults();
+            log('🧪 开始测试基础功能', 'info');
+            
+            try {
+                // 测试 EventManager
+                const eventManager = new EventManager();
+                log('✅ EventManager 创建成功', 'success');
+                
+                // 测试事件监听
+                eventManager.on('test', (data) => {
+                    log(`✅ 事件监听成功: ${data.message}`, 'success');
+                });
+                
+                eventManager.emit('test', { message: 'Hello World!' });
+                
+                log('✅ 基础功能测试完成', 'success');
+            } catch (error) {
+                log(`❌ 基础功能测试失败: ${error.message}`, 'error');
+            }
+        };
+
+        // 测试插件系统
+        window.testPluginSystem = function() {
+            clearResults();
+            log('🔌 开始测试插件系统', 'info');
+            
+            try {
+                log(`✅ PlayButton 插件导入成功: ${typeof PlayButton}`, 'success');
+                log('✅ 插件系统测试完成', 'success');
+            } catch (error) {
+                log(`❌ 插件系统测试失败: ${error.message}`, 'error');
+            }
+        };
+
+        // 测试主题系统
+        window.testThemeSystem = function() {
+            clearResults();
+            log('🎨 开始测试主题系统', 'info');
+
+            try {
+                log(`✅ 默认主题导入成功: ${typeof defaultTheme}`, 'success');
+                log(`✅ 主题名称: ${defaultTheme.name}`, 'success');
+                log(`✅ 主题类型: ${defaultTheme.type}`, 'success');
+
+                // 测试主题切换
+                log('🔄 测试主题切换功能', 'info');
+                const container = document.getElementById('video-container');
+                if (container) {
+                    // 应用默认主题
+                    container.setAttribute('data-theme', 'default');
+                    log('✅ 应用默认主题', 'success');
+
+                    setTimeout(() => {
+                        // 切换到暗色主题
+                        container.setAttribute('data-theme', 'dark');
+                        log('✅ 切换到暗色主题', 'success');
+
+                        setTimeout(() => {
+                            // 切换到彩色主题
+                            container.setAttribute('data-theme', 'colorful');
+                            log('✅ 切换到彩色主题', 'success');
+
+                            setTimeout(() => {
+                                // 切换回默认主题
+                                container.setAttribute('data-theme', 'default');
+                                log('✅ 切换回默认主题', 'success');
+                            }, 1000);
+                        }, 1000);
+                    }, 1000);
+                }
+
+                log('✅ 主题系统测试完成', 'success');
+            } catch (error) {
+                log(`❌ 主题系统测试失败: ${error.message}`, 'error');
+            }
+        };
+
+        // 创建视频播放器
+        window.createVideoPlayer = function() {
+            clearResults();
+            log('🎬 开始创建视频播放器', 'info');
+            
+            try {
+                const container = document.getElementById('video-container');
+                container.innerHTML = '<div id="player-instance"></div>';
+                
+                const playerContainer = document.getElementById('player-instance');
+                
+                const player = new Player({
+                    container: playerContainer,
+                    src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+                    poster: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
+                    width: '100%',
+                    height: '450px'
+                });
+                
+                log('✅ Player 实例创建成功', 'success');
+                log(`✅ Player 类型: ${player.constructor.name}`, 'success');
+                
+                // 监听播放器事件
+                player.on('ready', () => {
+                    log('✅ 播放器准备就绪', 'success');
+                });
+                
+                player.on('play', () => {
+                    log('✅ 开始播放', 'success');
+                });
+                
+                player.on('pause', () => {
+                    log('✅ 暂停播放', 'success');
+                });
+                
+                log('✅ 视频播放器创建完成', 'success');
+            } catch (error) {
+                log(`❌ 视频播放器创建失败: ${error.message}`, 'error');
+                console.error(error);
+            }
+        };
+
+        // 主题切换函数
+        window.switchTheme = function(themeName) {
+            clearResults();
+            log(`🎨 切换到${themeName}主题`, 'info');
+
+            const container = document.getElementById('video-container');
+            if (container) {
+                container.setAttribute('data-theme', themeName);
+                container.className = `lv-video-player lv-theme-transition`;
+                log(`✅ 主题已切换到: ${themeName}`, 'success');
+            } else {
+                log('❌ 找不到视频容器', 'error');
+            }
+        };
+
+        // 页面加载完成后自动运行基础测试
+        window.addEventListener('load', () => {
+            log('🎉 页面加载完成，模块导入成功！', 'success');
+            log('点击上方按钮开始测试各项功能', 'info');
+        });
+    </script>
+</body>
+</html>

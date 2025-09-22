@@ -1,337 +1,271 @@
 /**
  * 事件系统类型定义
- * 定义播放器和插件的事件处理机制
+ * 提供完整的事件类型支持和类型安全的事件处理
  */
 
-/**
- * 事件监听器函数类型
- */
-export type EventListener<T = any> = (event: T) => void | Promise<void>
-
-/**
- * 事件监听器选项
- */
-export interface EventListenerOptions {
-  /** 是否只执行一次 */
-  once?: boolean
-  /** 事件优先级 */
-  priority?: number
-  /** 是否在捕获阶段执行 */
-  capture?: boolean
-  /** 是否被动监听 */
-  passive?: boolean
-}
-
-/**
- * 事件对象基础接口
- */
+// 基础事件接口
 export interface BaseEvent {
-  /** 事件类型 */
-  type: string
-  /** 事件目标 */
-  target?: any
-  /** 事件时间戳 */
-  timestamp: number
-  /** 是否已阻止默认行为 */
-  defaultPrevented: boolean
-  /** 是否已停止传播 */
-  propagationStopped: boolean
-  /** 阻止默认行为 */
-  preventDefault(): void
-  /** 停止事件传播 */
-  stopPropagation(): void
+  type: string;
+  target: any;
+  timestamp: number;
+  preventDefault?: () => void;
+  stopPropagation?: () => void;
 }
 
-/**
- * 播放器事件对象
- */
-export interface PlayerEventObject extends BaseEvent {
-  /** 播放器实例 */
-  player: any
-  /** 事件数据 */
-  data?: any
+// 播放器事件详细定义
+export interface PlayerEventMap {
+  // 生命周期事件
+  'player:ready': { player: any };
+  'player:destroy': { player: any };
+  
+  // 播放状态事件
+  'media:play': { currentTime: number };
+  'media:pause': { currentTime: number };
+  'media:ended': { duration: number };
+  'media:timeupdate': { currentTime: number; duration: number };
+  'media:durationchange': { duration: number };
+  'media:progress': { buffered: TimeRanges; loaded: number };
+  'media:seeking': { currentTime: number; targetTime: number };
+  'media:seeked': { currentTime: number };
+  'media:waiting': { currentTime: number };
+  'media:canplay': { readyState: number };
+  'media:canplaythrough': { readyState: number };
+  'media:loadstart': {};
+  'media:loadeddata': {};
+  'media:loadedmetadata': { duration: number; videoWidth: number; videoHeight: number };
+  
+  // 音频事件
+  'audio:volumechange': { volume: number; muted: boolean };
+  'audio:ratechange': { playbackRate: number };
+  
+  // 视频质量事件
+  'quality:change': { from: string | null; to: string; quality: any };
+  'quality:list': { qualities: any[] };
+  
+  // 全屏事件
+  'fullscreen:enter': { element: HTMLElement };
+  'fullscreen:exit': { element: HTMLElement };
+  'fullscreen:change': { isFullscreen: boolean; element: HTMLElement };
+  'fullscreen:error': { error: Error };
+  
+  // 画中画事件
+  'pip:enter': { element: HTMLVideoElement };
+  'pip:exit': { element: HTMLVideoElement };
+  'pip:change': { isPictureInPicture: boolean };
+  'pip:error': { error: Error };
+  
+  // 错误事件
+  'error:media': { error: MediaError; code: number; message: string };
+  'error:network': { error: Error; url: string };
+  'error:plugin': { pluginName: string; error: Error };
+  'error:fatal': { error: Error; recoverable: boolean };
+  
+  // 插件事件
+  'plugin:register': { pluginName: string; plugin: any };
+  'plugin:unregister': { pluginName: string };
+  'plugin:ready': { pluginName: string; plugin: any };
+  'plugin:error': { pluginName: string; error: Error };
+  'plugin:enable': { pluginName: string };
+  'plugin:disable': { pluginName: string };
+  
+  // 主题事件
+  'theme:change': { from: string | null; to: string };
+  'theme:load': { themeName: string };
+  'theme:error': { themeName: string; error: Error };
+  
+  // 用户交互事件
+  'user:click': { target: HTMLElement; position: { x: number; y: number } };
+  'user:dblclick': { target: HTMLElement; position: { x: number; y: number } };
+  'user:keydown': { key: string; code: string; target: HTMLElement };
+  'user:keyup': { key: string; code: string; target: HTMLElement };
+  'user:mousemove': { position: { x: number; y: number }; target: HTMLElement };
+  'user:mouseenter': { target: HTMLElement };
+  'user:mouseleave': { target: HTMLElement };
+  'user:focus': { target: HTMLElement };
+  'user:blur': { target: HTMLElement };
+  'user:resize': { width: number; height: number };
+  
+  // 控制栏事件
+  'controls:show': {};
+  'controls:hide': {};
+  'controls:toggle': { visible: boolean };
+  'controls:lock': {};
+  'controls:unlock': {};
+  
+  // 弹幕事件
+  'danmaku:send': { text: string; time: number; style: any };
+  'danmaku:receive': { text: string; time: number; style: any };
+  'danmaku:clear': {};
+  'danmaku:toggle': { enabled: boolean };
+  
+  // 字幕事件
+  'subtitle:load': { url: string; language: string };
+  'subtitle:change': { from: string | null; to: string };
+  'subtitle:toggle': { enabled: boolean };
+  'subtitle:error': { error: Error; url: string };
+  
+  // 截图事件
+  'screenshot:capture': { dataUrl: string; blob: Blob };
+  'screenshot:error': { error: Error };
 }
 
-/**
- * 时间更新事件数据
- */
-export interface TimeUpdateEventData {
-  /** 当前时间 */
-  currentTime: number
-  /** 总时长 */
-  duration: number
-  /** 播放进度百分比 */
-  progress: number
+// 事件监听器类型
+export type EventListener<T = any> = (event: T) => void | Promise<void>;
+
+// 事件发射器接口
+export interface EventEmitter {
+  on<K extends keyof PlayerEventMap>(
+    event: K,
+    listener: EventListener<PlayerEventMap[K]>
+  ): void;
+  
+  off<K extends keyof PlayerEventMap>(
+    event: K,
+    listener: EventListener<PlayerEventMap[K]>
+  ): void;
+  
+  once<K extends keyof PlayerEventMap>(
+    event: K,
+    listener: EventListener<PlayerEventMap[K]>
+  ): void;
+  
+  emit<K extends keyof PlayerEventMap>(
+    event: K,
+    data: PlayerEventMap[K]
+  ): void;
+  
+  removeAllListeners(event?: keyof PlayerEventMap): void;
+  
+  listenerCount(event: keyof PlayerEventMap): number;
+  
+  listeners<K extends keyof PlayerEventMap>(
+    event: K
+  ): EventListener<PlayerEventMap[K]>[];
 }
 
-/**
- * 进度更新事件数据
- */
-export interface ProgressEventData {
-  /** 缓冲进度 */
-  buffered: number
-  /** 缓冲时间范围 */
-  bufferedRanges: Array<{ start: number; end: number }>
-  /** 可播放进度 */
-  playable: number
-}
-
-/**
- * 音量变化事件数据
- */
-export interface VolumeChangeEventData {
-  /** 音量值 */
-  volume: number
-  /** 是否静音 */
-  muted: boolean
-  /** 之前的音量值 */
-  previousVolume: number
-}
-
-/**
- * 播放速度变化事件数据
- */
-export interface RateChangeEventData {
-  /** 播放速度 */
-  playbackRate: number
-  /** 之前的播放速度 */
-  previousRate: number
-}
-
-/**
- * 全屏状态变化事件数据
- */
-export interface FullscreenChangeEventData {
-  /** 是否全屏 */
-  fullscreen: boolean
-  /** 全屏元素 */
-  fullscreenElement?: HTMLElement
-}
-
-/**
- * 画中画状态变化事件数据
- */
-export interface PipChangeEventData {
-  /** 是否画中画 */
-  pip: boolean
-  /** 画中画窗口 */
-  pipWindow?: any
-}
-
-/**
- * 错误事件数据
- */
-export interface ErrorEventData {
-  /** 错误代码 */
-  code: number
-  /** 错误消息 */
-  message: string
-  /** 错误详情 */
-  details?: any
-  /** 是否可恢复 */
-  recoverable: boolean
-}
-
-/**
- * 质量变化事件数据
- */
-export interface QualityChangeEventData {
-  /** 当前质量 */
-  quality: any
-  /** 之前的质量 */
-  previousQuality: any
-  /** 可用质量列表 */
-  availableQualities: any[]
-}
-
-/**
- * 插件事件数据
- */
-export interface PluginEventData {
-  /** 插件名称 */
-  pluginName: string
-  /** 插件实例 */
-  plugin: any
-  /** 事件数据 */
-  data?: any
-}
-
-/**
- * 主题事件数据
- */
-export interface ThemeEventData {
-  /** 主题名称 */
-  themeName: string
-  /** 主题实例 */
-  theme: any
-  /** 之前的主题名称 */
-  previousThemeName?: string
-}
-
-/**
- * 键盘事件数据
- */
-export interface KeyboardEventData {
-  /** 按键代码 */
-  key: string
-  /** 按键码 */
-  keyCode: number
-  /** 是否按下Ctrl */
-  ctrlKey: boolean
-  /** 是否按下Alt */
-  altKey: boolean
-  /** 是否按下Shift */
-  shiftKey: boolean
-  /** 是否按下Meta */
-  metaKey: boolean
-  /** 原始事件 */
-  originalEvent: KeyboardEvent
-}
-
-/**
- * 鼠标事件数据
- */
-export interface MouseEventData {
-  /** 鼠标X坐标 */
-  clientX: number
-  /** 鼠标Y坐标 */
-  clientY: number
-  /** 鼠标按键 */
-  button: number
-  /** 是否按下Ctrl */
-  ctrlKey: boolean
-  /** 是否按下Alt */
-  altKey: boolean
-  /** 是否按下Shift */
-  shiftKey: boolean
-  /** 是否按下Meta */
-  metaKey: boolean
-  /** 原始事件 */
-  originalEvent: MouseEvent
-}
-
-/**
- * 触摸事件数据
- */
-export interface TouchEventData {
-  /** 触摸点列表 */
-  touches: Array<{
-    clientX: number
-    clientY: number
-    identifier: number
-  }>
-  /** 变化的触摸点列表 */
-  changedTouches: Array<{
-    clientX: number
-    clientY: number
-    identifier: number
-  }>
-  /** 原始事件 */
-  originalEvent: TouchEvent
-}
-
-/**
- * 手势事件数据
- */
-export interface GestureEventData {
-  /** 手势类型 */
-  type: 'tap' | 'doubleTap' | 'swipe' | 'pinch' | 'pan'
-  /** 手势数据 */
-  data: any
-  /** 原始事件 */
-  originalEvent: Event
-}
-
-/**
- * 窗口大小变化事件数据
- */
-export interface ResizeEventData {
-  /** 窗口宽度 */
-  width: number
-  /** 窗口高度 */
-  height: number
-}
-
-/**
- * 屏幕方向变化事件数据
- */
-export interface OrientationChangeEventData {
-  /** 屏幕方向角度 */
-  orientation: number
-}
-
-/**
- * 事件发射器接口
- */
-export interface IEventEmitter {
-  /** 添加事件监听器 */
-  on<T = any>(event: string, listener: EventListener<T>, options?: EventListenerOptions): void
-  /** 添加一次性事件监听器 */
-  once<T = any>(event: string, listener: EventListener<T>, options?: EventListenerOptions): void
-  /** 移除事件监听器 */
-  off<T = any>(event: string, listener?: EventListener<T>): void
-  /** 移除所有事件监听器 */
-  removeAllListeners(event?: string): void
-  /** 触发事件 */
-  emit<T = any>(event: string, data?: T): boolean
-  /** 获取事件监听器数量 */
-  listenerCount(event: string): number
-  /** 获取事件监听器列表 */
-  listeners(event: string): EventListener[]
-  /** 获取所有事件名称 */
-  eventNames(): string[]
-}
-
-/**
- * 事件总线接口
- */
-export interface IEventBus extends IEventEmitter {
-  /** 创建命名空间 */
-  namespace(name: string): IEventBus
-  /** 销毁事件总线 */
-  destroy(): void
-  /** 暂停事件处理 */
-  pause(): void
-  /** 恢复事件处理 */
-  resume(): void
-  /** 是否已暂停 */
-  isPaused(): boolean
-}
-
-/**
- * 事件中间件函数
- */
-export type EventMiddleware = (
-  event: BaseEvent,
+// 事件中间件类型
+export type EventMiddleware<T = any> = (
+  event: string,
+  data: T,
   next: () => void
-) => void | Promise<void>
+) => void | Promise<void>;
 
-/**
- * 事件过滤器函数
- */
-export type EventFilter<T = any> = (event: T) => boolean
+// 事件过滤器类型
+export type EventFilter<T = any> = (event: string, data: T) => boolean;
 
-/**
- * 事件转换器函数
- */
-export type EventTransformer<T = any, R = any> = (event: T) => R
+// 事件转换器类型
+export type EventTransformer<T = any, R = any> = (event: string, data: T) => R;
 
-/**
- * 高级事件监听器选项
- */
-export interface AdvancedEventListenerOptions extends EventListenerOptions {
-  /** 事件过滤器 */
-  filter?: EventFilter
-  /** 事件转换器 */
-  transformer?: EventTransformer
-  /** 中间件 */
-  middleware?: EventMiddleware[]
-  /** 错误处理器 */
-  errorHandler?: (error: Error) => void
-  /** 最大执行次数 */
-  maxCount?: number
-  /** 防抖延迟 */
-  debounce?: number
-  /** 节流延迟 */
-  throttle?: number
+// 事件配置接口
+export interface EventConfig {
+  // 是否启用事件冒泡
+  bubbles?: boolean;
+  // 是否可以取消
+  cancelable?: boolean;
+  // 事件优先级
+  priority?: number;
+  // 是否只触发一次
+  once?: boolean;
+  // 事件中间件
+  middleware?: EventMiddleware[];
+  // 事件过滤器
+  filter?: EventFilter;
+  // 事件转换器
+  transformer?: EventTransformer;
+}
+
+// 事件管理器接口
+export interface EventManager extends EventEmitter {
+  // 添加事件中间件
+  use(middleware: EventMiddleware): void;
+  
+  // 设置事件过滤器
+  filter(filter: EventFilter): void;
+  
+  // 设置事件转换器
+  transform(transformer: EventTransformer): void;
+  
+  // 获取事件统计信息
+  getStats(): {
+    totalEvents: number;
+    eventCounts: Record<string, number>;
+    listenerCounts: Record<string, number>;
+  };
+  
+  // 清除所有事件和监听器
+  clear(): void;
+  
+  // 启用/禁用事件系统
+  enable(): void;
+  disable(): void;
+  
+  // 检查是否启用
+  isEnabled(): boolean;
+}
+
+// 自定义事件类
+export class CustomEvent<T = any> implements BaseEvent {
+  public readonly type: string;
+  public readonly target: any;
+  public readonly timestamp: number;
+  public readonly data: T;
+  
+  private _defaultPrevented = false;
+  private _propagationStopped = false;
+  
+  constructor(type: string, data: T, target?: any) {
+    this.type = type;
+    this.data = data;
+    this.target = target;
+    this.timestamp = Date.now();
+  }
+  
+  preventDefault(): void {
+    this._defaultPrevented = true;
+  }
+  
+  stopPropagation(): void {
+    this._propagationStopped = true;
+  }
+  
+  get defaultPrevented(): boolean {
+    return this._defaultPrevented;
+  }
+  
+  get propagationStopped(): boolean {
+    return this._propagationStopped;
+  }
+}
+
+// 事件工具函数类型
+export interface EventUtils {
+  // 创建自定义事件
+  createEvent<T>(type: string, data: T, target?: any): CustomEvent<T>;
+  
+  // 事件防抖
+  debounce<T extends (...args: any[]) => any>(
+    fn: T,
+    delay: number
+  ): (...args: Parameters<T>) => void;
+  
+  // 事件节流
+  throttle<T extends (...args: any[]) => any>(
+    fn: T,
+    delay: number
+  ): (...args: Parameters<T>) => void;
+  
+  // 事件委托
+  delegate(
+    container: HTMLElement,
+    selector: string,
+    event: string,
+    handler: EventListener
+  ): () => void;
+  
+  // 一次性事件监听
+  once(
+    target: EventTarget,
+    event: string,
+    handler: EventListener
+  ): () => void;
 }

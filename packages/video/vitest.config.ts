@@ -41,8 +41,8 @@ export default defineConfig({
       '@/core': resolve(__dirname, 'src/core'),
       '@/utils': resolve(__dirname, 'src/utils'),
       '@/types': resolve(__dirname, 'src/types'),
-      '@/plugins': resolve(__dirname, 'plugins'),
-      '@/themes': resolve(__dirname, 'themes')
+      '@/plugins': resolve(__dirname, 'src/plugins'),
+      '@/themes': resolve(__dirname, 'src/themes')
     }
   }
 })

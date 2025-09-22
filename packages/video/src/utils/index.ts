@@ -1,22 +1,46 @@
 /**
- * 工具函数入口文件
- * 统一导出所有工具函数
+ * 工具函数模块导出
  */
 
-// 设备检测工具
-export * from './device'
+export * from './eventUtils';
+export * from './performance';
+export * from './accessibility';
+export * from './benchmark';
+export * from './memoryMonitor';
+export * from './videoLoader';
+export * from './virtualScroll';
 
-// 事件处理工具
-export * from './events'
+// 重新导出常用工具函数
+export {
+  debounce,
+  throttle,
+  formatTime,
+  formatBytes,
+  isFullscreenSupported,
+  isPictureInPictureSupported,
+  isMobile,
+  isTouch,
+  getVideoMimeType,
+  loadScript,
+  loadCSS
+} from './eventUtils';
 
-// DOM操作工具
-export * from './dom'
+export {
+  PerformanceMonitor,
+  MemoryMonitor,
+  LazyLoader,
+  VirtualScroller,
+  ImageOptimizer
+} from './performance';
 
-// 格式化工具
-export * from './format'
-
-// 通用工具
-export * from './common'
-
-// 通用工具
-export * from './common'
+export {
+  KeyboardNavigationManager,
+  ScreenReaderSupport,
+  HighContrastDetector,
+  ReducedMotionDetector,
+  FocusManager,
+  screenReaderSupport,
+  highContrastDetector,
+  reducedMotionDetector,
+  focusManager
+} from './accessibility';
