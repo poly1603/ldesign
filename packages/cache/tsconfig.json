@@ -1,12 +1,15 @@
 {
-  "extends": "../../tools/configs/build/tsconfig.base.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
     "lib": ["ES2021", "DOM", "DOM.Iterable"],
     "paths": {
       "@/*": ["src/*"]
     },
-    "rootDir": "."
+    "rootDir": ".",
+    "noEmit": false,
+    "outDir": "dist"
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "es", "lib", "**/*.test.*", "**/*.spec.*"]
 }
