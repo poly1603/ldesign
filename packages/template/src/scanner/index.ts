@@ -2,6 +2,7 @@
  * 模板扫描器
  *
  * 使用统一的模板注册器管理模板，避免重复调用 import.meta.glob
+ * 自动检测环境并选择合适的实现（Node.js 或 Web）
  */
 
 import type { FileNamingConfig } from '../types/config'
@@ -23,10 +24,20 @@ import { createFilePathBuilder, type FilePathBuilder } from '../utils/file-path-
 import { createFileWatcher, type WatcherFileChangeEvent, type FileWatcher } from '../utils/file-watcher'
 import { getTemplateCategoryManager } from '../utils/template-category-manager'
 import type { TemplateCategoryManager } from '../types/template-categories'
+import { WebTemplateScanner, type WebTemplateScannerOptions } from '../utils/template-scanner-web'
 // import { templateRegistry } from '../utils/template-registry' // 已移除
 
 /**
+ * 检测当前运行环境
+ */
+function isWebEnvironment(): boolean {
+  return typeof window !== 'undefined' && typeof document !== 'undefined'
+}
+
+/**
  * 模板扫描器类
+ *
+ * 根据运行环境自动选择合适的实现
  */
 export class TemplateScanner {
   private options: Required<ScannerOptions>
@@ -38,8 +49,11 @@ export class TemplateScanner {
   private fileWatcher: FileWatcher | null = null
   private isWatchingEnabled = false
   private categoryManager: TemplateCategoryManager
+  private webScanner: WebTemplateScanner | null = null
+  private isWebEnv: boolean
 
   constructor(options: ScannerOptions, callbacks?: ScannerEventCallbacks, fileNamingConfig?: FileNamingConfig) {
+    this.isWebEnv = isWebEnvironment()
     // 不再使用硬编码的默认值，所有配置都应该从外部传入
     this.options = {
       templatesDir: options.templatesDir || 'src/templates',
@@ -67,8 +81,14 @@ export class TemplateScanner {
     // 初始化模板分类管理器
     this.categoryManager = getTemplateCategoryManager()
 
-    // 如果启用了监听模式，创建文件监听器
-    if (this.options.watchMode) {
+    // 在Web环境中，初始化Web扫描器
+    if (this.isWebEnv) {
+      this.webScanner = new WebTemplateScanner({
+        enableCache: this.options.enableCache,
+      })
+    }
+    // 在Node.js环境中，如果启用了监听模式，创建文件监听器
+    else if (this.options.watchMode) {
       this.initializeFileWatcher()
     }
   }
@@ -77,6 +97,16 @@ export class TemplateScanner {
    * 扫描模板目录
    */
   async scan(): Promise<ScanResult> {
+    // 在Web环境中，使用Web扫描器
+    if (this.isWebEnv && this.webScanner) {
+      const result = await this.webScanner.scan()
+      // 同步索引到主扫描器
+      this.templateIndex = result.templates
+      this.callbacks.onScanComplete?.(result)
+      return result
+    }
+
+    // Node.js环境的原有逻辑
     const startTime = Date.now()
     this.callbacks.onScanStart?.()
 
@@ -462,6 +492,11 @@ export class TemplateScanner {
    * 获取指定分类和设备的模板列表
    */
   getTemplates(category: string, device: DeviceType): TemplateMetadata[] {
+    // 在Web环境中，委托给Web扫描器
+    if (this.isWebEnv && this.webScanner) {
+      return this.webScanner.getTemplates(category, device)
+    }
+
     const categoryMap = this.templateIndex.get(category)
     if (!categoryMap)
       return []
@@ -477,6 +512,11 @@ export class TemplateScanner {
    * 获取指定模板
    */
   getTemplate(category: string, device: DeviceType, templateName: string): TemplateMetadata | null {
+    // 在Web环境中，委托给Web扫描器
+    if (this.isWebEnv && this.webScanner) {
+      return this.webScanner.getTemplate(category, device, templateName)
+    }
+
     const templates = this.getTemplates(category, device)
     return templates.find(t => t.name === templateName) || null
   }
@@ -492,6 +532,12 @@ export class TemplateScanner {
    * 初始化文件监听器
    */
   private initializeFileWatcher(): void {
+    // 在Web环境中，不初始化文件监听器
+    if (this.isWebEnv) {
+      console.warn('[TemplateScanner] 文件监听器在Web环境中不可用')
+      return
+    }
+
     this.fileWatcher = createFileWatcher({
       rootDir: this.options.templatesDir,
       includeExtensions: this.options.includeExtensions,
@@ -525,6 +571,12 @@ export class TemplateScanner {
    * 启动文件监听
    */
   async startWatching(): Promise<void> {
+    // 在Web环境中，文件监听不可用
+    if (this.isWebEnv) {
+      console.warn('[TemplateScanner] 文件监听在Web环境中不可用')
+      return
+    }
+
     if (!this.fileWatcher) {
       this.initializeFileWatcher()
     }
@@ -549,6 +601,11 @@ export class TemplateScanner {
    * 停止文件监听
    */
   async stopWatching(): Promise<void> {
+    // 在Web环境中，文件监听不可用
+    if (this.isWebEnv) {
+      return
+    }
+
     if (this.fileWatcher && this.isWatchingEnabled) {
       try {
         await this.fileWatcher.stopWatching()
@@ -846,6 +903,11 @@ export class TemplateScanner {
    * 获取所有模板
    */
   getAllTemplates(): TemplateMetadata[] {
+    // 在Web环境中，委托给Web扫描器
+    if (this.isWebEnv && this.webScanner) {
+      return this.webScanner.getAllTemplates()
+    }
+
     const templates: TemplateMetadata[] = []
 
     for (const categoryMap of this.templateIndex.values()) {
@@ -863,6 +925,11 @@ export class TemplateScanner {
    * 按分类获取模板
    */
   getTemplatesByCategory(category: string): TemplateMetadata[] {
+    // 在Web环境中，委托给Web扫描器
+    if (this.isWebEnv && this.webScanner) {
+      return this.webScanner.getTemplatesByCategory(category)
+    }
+
     const categoryMap = this.templateIndex.get(category)
     if (!categoryMap)
       return []
@@ -881,6 +948,11 @@ export class TemplateScanner {
    * 按设备类型获取模板
    */
   getTemplatesByDevice(device: DeviceType): TemplateMetadata[] {
+    // 在Web环境中，委托给Web扫描器
+    if (this.isWebEnv && this.webScanner) {
+      return this.webScanner.getTemplatesByDevice(device)
+    }
+
     const templates: TemplateMetadata[] = []
 
     for (const categoryMap of this.templateIndex.values()) {

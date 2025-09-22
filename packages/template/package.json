@@ -167,6 +167,7 @@
   "scripts": {
     "build": "ldesign-builder build",
     "build:watch": "ldesign-builder watch",
+
     "dev": "ldesign-builder watch",
     "type-check": "vue-tsc --noEmit",
     "type-check:src": "vue-tsc --noEmit -p tsconfig.typecheck.json",

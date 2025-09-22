@@ -1,12 +1,20 @@
 /**
  * 简化版模板扫描�?
- * 
+ *
  * 直接使用 import.meta.glob 扫描模板
  * 打包时会自动将匹配的文件打包进去
+ * 专门为Web环境设计，不依赖Node.js API
  */
 
 import { defineAsyncComponent, markRaw, type Component } from 'vue'
 import type { DeviceType, TemplateConfig, TemplateMetadata } from '../types/template'
+
+/**
+ * 检测当前运行环境
+ */
+function isWebEnvironment(): boolean {
+  return typeof window !== 'undefined' && typeof document !== 'undefined'
+}
 
 /**
  * 简化版模板扫描�?

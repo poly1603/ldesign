@@ -149,6 +149,12 @@ export class FileWatcher {
    * Node.js 环境下的文件监听
    */
   private async startNodeWatching(): Promise<void> {
+    // 在浏览器环境中，文件监听不可用
+    if (typeof window !== 'undefined') {
+      console.warn('[FileWatcher] 文件监听在浏览器环境中不可用，跳过监听功能')
+      return
+    }
+
     try {
       // 动态导入 chokidar（仅在 Node.js 环境中可用）
       const chokidar = await import('chokidar')
@@ -184,31 +190,42 @@ export class FileWatcher {
    * 原生 fs.watch 监听（Node.js 回退方案）
    */
   private async startNativeWatching(): Promise<void> {
-    const fs = await import('node:fs')
-    const path = await import('node:path')
-
-    const watchDir = async (dir: string, depth = 0) => {
-      if (depth > this.options.maxDepth)
-        return
-
-      try {
-        const watcher = fs.watch(dir, { recursive: this.options.recursive }, (eventType, filename) => {
-          if (!filename)
-            return
-
-          const fullPath = path.join(dir, filename)
-          const changeType: FileChangeType = eventType === 'rename' ? 'added' : 'changed'
-          this.handleFileChange(changeType, fullPath)
-        })
-
-        this.watchers.set(dir, watcher)
-      }
-      catch (error) {
-        console.warn(`无法监听目录: ${dir}`, error)
-      }
+    // 在浏览器环境中，文件监听不可用
+    if (typeof window !== 'undefined') {
+      console.warn('[FileWatcher] 原生文件监听在浏览器环境中不可用，跳过监听功能')
+      return
     }
 
-    await watchDir(this.options.rootDir)
+    try {
+      const fs = await import('node:fs')
+      const path = await import('node:path')
+
+      const watchDir = async (dir: string, depth = 0) => {
+        if (depth > this.options.maxDepth)
+          return
+
+        try {
+          const watcher = fs.watch(dir, { recursive: this.options.recursive }, (eventType, filename) => {
+            if (!filename)
+              return
+
+            const fullPath = path.join(dir, filename)
+            const changeType: FileChangeType = eventType === 'rename' ? 'added' : 'changed'
+            this.handleFileChange(changeType, fullPath)
+          })
+
+          this.watchers.set(dir, watcher)
+        }
+        catch (error) {
+          console.warn(`无法监听目录: ${dir}`, error)
+        }
+      }
+
+      await watchDir(this.options.rootDir)
+    }
+    catch (error) {
+      console.warn('[FileWatcher] 无法导入Node.js文件系统模块，文件监听功能不可用')
+    }
   }
 
   /**
@@ -263,7 +280,7 @@ export class FileWatcher {
   /**
    * 处理文件变化事件
    */
-private processFileChange(type: FileChangeType, filePath: string): void {
+  private processFileChange(type: FileChangeType, filePath: string): void {
     const event: WatcherFileChangeEvent = {
       type,
       path: filePath,
@@ -305,7 +322,7 @@ private processFileChange(type: FileChangeType, filePath: string): void {
   /**
    * 提取模板信息
    */
-private extractTemplateInfo(filePath: string): WatcherFileChangeEvent['templateInfo'] | undefined {
+  private extractTemplateInfo(filePath: string): WatcherFileChangeEvent['templateInfo'] | undefined {
     // 解析路径以提取模板信息
     const pathParts = filePath.replace(/\\/g, '/').split('/')
     const templatesIndex = pathParts.findIndex(part => part === 'templates')
