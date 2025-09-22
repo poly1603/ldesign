@@ -1,5 +1,5 @@
 {
-  "extends": "../../tools/build/tsconfig.base.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
     "rootDir": "src",
@@ -8,7 +8,9 @@
     },
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "noEmit": false,
+    "outDir": "dist"
   },
   "include": ["src/**/*"],
   "exclude": [

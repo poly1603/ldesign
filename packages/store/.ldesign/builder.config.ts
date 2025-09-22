@@ -10,8 +10,15 @@ export default defineConfig({
   // 清理输出目录
   clean: true,
 
-  // 压缩代码
-  minify: true,
+  // 不压缩代码（开发阶段）
+  minify: false,
+
+  // UMD 构建配置
+  umd: {
+    enabled: true,
+    minify: true, // UMD版本启用压缩
+    fileName: 'index.js' // 去掉 .umd 后缀
+  },
 
   // 外部依赖配置
   external: [
@@ -19,11 +26,20 @@ export default defineConfig({
     'pinia',
     'reflect-metadata',
     'ws',
-    'node:events',
-    'node:path',
     'node:fs',
-    'node:util'
-  ],
+    'node:path',
+    'node:os',
+    'node:util',
+    'node:events',
+    'node:stream',
+    'node:crypto',
+    'node:http',
+    'node:https',
+    'node:url',
+    'node:buffer',
+    'node:child_process',
+    'node:worker_threads'
+],
 
   // 全局变量配置
   globals: {
@@ -31,45 +47,18 @@ export default defineConfig({
     'pinia': 'Pinia',
     'reflect-metadata': 'Reflect',
     'ws': 'WebSocket'
-  },
+},
 
-  // 构建格式
-  formats: ['esm', 'cjs', 'umd'],
-
-  // 输出配置
-  output: {
-    // 禁用空chunk警告
-    chunkFileNames: '[name]-[hash].js',
-    // 禁用控制台警告
-    onwarn: (warning, warn) => {
-      // 忽略空chunk警告
-      if (warning.code === 'EMPTY_BUNDLE') return
-      // 忽略外部依赖警告
-      if (warning.code === 'UNRESOLVED_IMPORT') return
-      // 忽略globals警告
-      if (warning.code === 'MISSING_GLOBAL_NAME') return
-      warn(warning)
-    }
-  },
+  // 日志级别设置为 silent，只显示错误信息
+  logLevel: 'silent',
 
   // 构建选项
   build: {
     // 禁用构建警告
     rollupOptions: {
       onwarn: (warning, warn) => {
-        // 忽略node:events等Node.js内置模块的警告
-        if (warning.code === 'UNRESOLVED_IMPORT' && warning.source?.startsWith('node:')) {
-          return
-        }
-        // 忽略空chunk警告
-        if (warning.code === 'EMPTY_BUNDLE') {
-          return
-        }
-        // 忽略globals警告
-        if (warning.code === 'MISSING_GLOBAL_NAME') {
-          return
-        }
-        warn(warning)
+        // 完全静默，不输出任何警告
+        return
       }
     }
   }
