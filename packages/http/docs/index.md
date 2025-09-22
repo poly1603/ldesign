@@ -39,8 +39,8 @@ features:
     title: TypeScript 优先
     details: 完整的 TypeScript 支持，提供类型安全的 API 和智能提示
   - icon: 🌟
-    title: Vue 3 集成
-    details: 专为 Vue 3 设计的 Composition API hooks，响应式状态管理
+    title: Vue 3 深度集成
+    details: 提供 useGet、usePost、useResource、useForm 等组合式函数，让 Vue 开发更简单
   - icon: 🛠️
     title: 高度可配置
     details: 丰富的配置选项，支持全局配置和请求级别配置

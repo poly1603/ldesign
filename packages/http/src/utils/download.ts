@@ -37,6 +37,8 @@ export interface DownloadProgress {
   speed: number
   /** 预计剩余时间 (秒) */
   timeRemaining: number
+  /** 已耗时 (毫秒) */
+  elapsed: number
   /** 下载的文件名 */
   filename?: string
   /** 当前分片索引 */
@@ -92,7 +94,6 @@ export class DownloadProgressCalculator {
 
   calculate(loaded: number, total: number, filename?: string): DownloadProgress {
     const now = Date.now()
-    const _elapsed = now - this.startTime
     const deltaTime = now - this.lastTime
     const deltaLoaded = loaded - this.lastLoaded
 
@@ -121,6 +122,7 @@ export class DownloadProgressCalculator {
       percentage: total > 0 ? Math.round((loaded / total) * 100) : 0,
       speed: avgSpeed,
       timeRemaining,
+      elapsed: now - this.startTime,
       filename,
     }
   }

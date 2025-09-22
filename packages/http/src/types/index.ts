@@ -64,6 +64,8 @@ export interface ResponseData<T = any> {
 export interface HttpError extends Error {
   /** 错误代码 */
   code?: string
+  /** HTTP状态码 */
+  status?: number
   /** 请求配置 */
   config?: RequestConfig
   /** 响应数据 */
@@ -138,6 +140,8 @@ export interface CacheStorage {
   set: (key: string, value: any, ttl?: number) => Promise<void> | void
   delete: (key: string) => Promise<void> | void
   clear: () => Promise<void> | void
+  // 可选的批量删除方法，用于性能优化
+  deleteBatch?: (keys: string[]) => Promise<void> | void
 }
 
 /**
@@ -391,7 +395,7 @@ export enum RequestPriority {
 /**
  * 扩展的请求配置
  */
-export interface ExtendedRequestConfig extends RequestConfig {
+export interface ExtendedRequestConfig extends Omit<RequestConfig, 'priority'> {
   /** 请求优先级 */
   priority?: RequestPriority
   /** 请求标签（用于分组和统计） */

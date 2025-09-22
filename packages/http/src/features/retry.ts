@@ -219,3 +219,95 @@ export async function retryOperation<T>(
     throw result.error
   }
 }
+
+/**
+ * 重试中间件配置
+ */
+export interface RetryMiddlewareConfig {
+  enabled?: boolean
+  maxAttempts?: number
+  delay?: number
+  backoffMultiplier?: number
+  shouldRetry?: (error: any, attempt: number) => boolean
+  condition?: (error: any) => boolean // 兼容测试中的condition属性
+  delayFn?: (attempt: number) => number
+}
+
+/**
+ * 创建重试中间件
+ */
+export function withRetry(config: RetryMiddlewareConfig = {}) {
+  const retryConfig = {
+    enabled: config.enabled ?? true,
+    maxAttempts: config.maxAttempts ?? 3,
+    delay: config.delay ?? 1000,
+    backoffMultiplier: config.backoffMultiplier ?? 2,
+    delayFn: config.delayFn,
+    shouldRetry: config.shouldRetry ?? config.condition ?? ((error: any) => {
+      // 默认重试网络错误、超时错误和5xx服务器错误
+      if (error.code === 'NETWORK_ERROR' || error.code === 'TIMEOUT') {
+        return true
+      }
+      if (error.name === 'NetworkError' || error.isNetworkError) {
+        return true
+      }
+      if (error.response?.status >= 500 && error.response?.status < 600) {
+        return true
+      }
+      if (error.status >= 500 && error.status < 600) {
+        return true
+      }
+      // 不重试客户端错误（4xx）
+      return false
+    }),
+  }
+
+  return async function retryMiddleware(requestConfig: any, next: () => Promise<any>) {
+    // 合并请求级别的重试配置
+    const requestRetryConfig = requestConfig?.retry || {}
+    const finalConfig = {
+      enabled: requestRetryConfig.enabled ?? retryConfig.enabled,
+      maxAttempts: requestRetryConfig.maxAttempts ?? retryConfig.maxAttempts,
+      delay: requestRetryConfig.delay ?? retryConfig.delay,
+      backoffMultiplier: requestRetryConfig.backoffMultiplier ?? retryConfig.backoffMultiplier,
+      delayFn: requestRetryConfig.delayFn ?? retryConfig.delayFn,
+      shouldRetry: requestRetryConfig.shouldRetry ?? retryConfig.shouldRetry,
+    }
+
+    if (!finalConfig.enabled || finalConfig.maxAttempts <= 0) {
+      return next()
+    }
+
+    let lastError: any
+    let attempt = 0
+
+    while (attempt < finalConfig.maxAttempts) {
+      try {
+        attempt++
+        return await next()
+      } catch (error) {
+        lastError = error
+
+        // 如果已经达到最大尝试次数，或者不应该重试，则抛出错误
+        const shouldRetry = finalConfig.shouldRetry.length === 1
+          ? finalConfig.shouldRetry(error)
+          : finalConfig.shouldRetry(error, attempt)
+
+        if (attempt >= finalConfig.maxAttempts || !shouldRetry) {
+          throw error
+        }
+
+        // 计算延迟时间
+        let delayTime: number
+        if (finalConfig.delayFn) {
+          delayTime = finalConfig.delayFn(attempt)
+        } else {
+          delayTime = finalConfig.delay * Math.pow(finalConfig.backoffMultiplier, attempt - 1)
+        }
+        await delay(delayTime)
+      }
+    }
+
+    throw lastError
+  }
+}

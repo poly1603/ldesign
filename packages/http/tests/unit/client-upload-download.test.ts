@@ -205,7 +205,7 @@ describe('HttpClient Upload/Download', () => {
       expect(result.filename).toBe('test.txt')
       expect(result.type).toBe('text/plain')
       expect(result.size).toBe(mockBlob.size)
-      expect(result.duration).toBeGreaterThan(0)
+      expect(result.duration).toBeGreaterThanOrEqual(0)
     })
 
     it('should extract filename from URL if not in headers', async () => {

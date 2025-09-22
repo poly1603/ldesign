@@ -8,16 +8,21 @@ export class AxiosAdapter extends BaseAdapter {
   name = 'axios'
   private axios: any
 
-  constructor() {
+  constructor(axiosInstance?: any) {
     super()
-    try {
-      // 动态导入 axios
-      // eslint-disable-next-line ts/no-require-imports
-      this.axios = require('axios')
-    }
-    catch {
-      // axios 未安装
-      this.axios = null
+
+    if (axiosInstance) {
+      this.axios = axiosInstance
+    } else {
+      try {
+        // 动态导入 axios
+        // eslint-disable-next-line ts/no-require-imports
+        this.axios = require('axios')
+      }
+      catch {
+        // axios 未安装
+        this.axios = null
+      }
     }
   }
 
@@ -45,7 +50,7 @@ export class AxiosAdapter extends BaseAdapter {
       const axiosConfig = this.convertToAxiosConfig(processedConfig)
 
       // 发送请求
-      const response = await this.axios(axiosConfig)
+      const response = await this.axios.request(axiosConfig)
 
       // 转换响应为标准格式
       return this.convertFromAxiosResponse<T>(response, processedConfig)
@@ -59,20 +64,63 @@ export class AxiosAdapter extends BaseAdapter {
    * 转换配置为 axios 格式
    */
   private convertToAxiosConfig(config: RequestConfig): any {
+    // 分离URL和查询参数（因为BaseAdapter已经将params合并到URL中）
+    let cleanUrl = config.url || ''
+    let extractedParams = config.params || {}
+    let baseURL = config.baseURL
+
+    // 如果URL包含查询参数，提取它们
+    const urlParts = cleanUrl.split('?')
+    if (urlParts.length > 1) {
+      cleanUrl = urlParts[0]
+      const queryString = urlParts[1]
+      const urlParams = new URLSearchParams(queryString)
+
+      // 将URL中的参数合并到extractedParams中
+      urlParams.forEach((value, key) => {
+        // 尝试转换数字字符串回数字
+        const numValue = Number(value)
+        extractedParams[key] = !isNaN(numValue) && value !== '' ? numValue : value
+      })
+    }
+
+    // 如果URL已经包含了baseURL，需要分离它们
+    if (baseURL && cleanUrl.startsWith(baseURL)) {
+      cleanUrl = cleanUrl.substring(baseURL.length)
+      // 确保URL以/开头
+      if (!cleanUrl.startsWith('/')) {
+        cleanUrl = '/' + cleanUrl
+      }
+    }
+
     const axiosConfig: any = {
-      url: config.url,
+      url: cleanUrl,
       method: config.method,
-      headers: config.headers,
-      data: config.data,
-      timeout: config.timeout,
-      baseURL: config.baseURL,
-      withCredentials: config.withCredentials,
-      signal: config.signal,
+    }
+
+    // 只在有值时添加字段
+    if (config.headers && Object.keys(config.headers).length > 0) {
+      axiosConfig.headers = config.headers
+    }
+    if (config.data !== undefined) {
+      axiosConfig.data = config.data
+    }
+    if (config.timeout !== undefined) {
+      axiosConfig.timeout = config.timeout
+    }
+    if (baseURL) {
+      axiosConfig.baseURL = baseURL
+    }
+    if (config.withCredentials !== undefined) {
+      axiosConfig.withCredentials = config.withCredentials
+    }
+    if (config.signal) {
+      axiosConfig.signal = config.signal
     }
 
     // 处理查询参数
-    if (config.params) {
-      axiosConfig.params = config.params
+    if (extractedParams && Object.keys(extractedParams).length > 0) {
+      axiosConfig.params = extractedParams
     }
 
     // 处理响应类型
@@ -115,13 +163,17 @@ export class AxiosAdapter extends BaseAdapter {
     axiosResponse: any,
     config: RequestConfig,
   ): ResponseData<T> {
+    // 创建简化的config对象，只包含必要的字段
+    const simplifiedConfig = {
+      url: config.url,
+    }
+
     return this.processResponse<T>(
       axiosResponse.data,
       axiosResponse.status,
       axiosResponse.statusText,
       axiosResponse.headers || {},
-      config,
-      axiosResponse,
+      simplifiedConfig,
     )
   }
 
@@ -132,7 +184,12 @@ export class AxiosAdapter extends BaseAdapter {
     if (error.response) {
       // 服务器响应了错误状态码
       const response = this.convertFromAxiosResponse(error.response, config)
-      return this.processError(error, config, response)
+      const status = error.response.status
+      const message = `Request failed with status code ${status}`
+      const httpError = this.processError(new Error(message), config, response)
+      httpError.status = status
+      httpError.response = response
+      return httpError
     }
     else if (error.request) {
       // 请求已发送但没有收到响应

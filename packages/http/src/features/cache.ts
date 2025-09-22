@@ -376,6 +376,85 @@ export function createHttpCacheManager(
 }
 
 /**
+ * 缓存中间件配置
+ */
+export interface CacheMiddlewareConfig {
+  enabled?: boolean
+  ttl?: number
+  methods?: string[]
+  keyGenerator?: (config: any) => string
+  storage?: CacheStorage
+}
+
+/**
+ * 创建缓存中间件
+ */
+export function withCache(config: CacheMiddlewareConfig = {}) {
+  const cacheConfig = {
+    enabled: config.enabled ?? true,
+    ttl: config.ttl ?? 300000, // 5分钟
+    methods: config.methods ?? ['GET'],
+    keyGenerator: config.keyGenerator ?? ((cfg: any) => {
+      const method = cfg.method || 'GET'
+      const url = cfg.url || ''
+      const params = cfg.params ? JSON.stringify(cfg.params) : ''
+      return `${method}:${url}:${params}`
+    }),
+    storage: config.storage ?? new MemoryCacheStorage(),
+  }
+
+  return async function cacheMiddleware(requestConfig: any, next: () => Promise<any>) {
+    // 合并请求级别的缓存配置
+    const requestCacheConfig = requestConfig?.cache || {}
+    const finalConfig = {
+      enabled: requestCacheConfig.enabled ?? cacheConfig.enabled,
+      ttl: requestCacheConfig.ttl ?? cacheConfig.ttl,
+      methods: requestCacheConfig.methods ?? cacheConfig.methods,
+      keyGenerator: requestCacheConfig.keyGenerator ?? cacheConfig.keyGenerator,
+      storage: requestCacheConfig.storage ?? cacheConfig.storage,
+    }
+
+    if (!finalConfig.enabled || !finalConfig.methods.includes(requestConfig.method || 'GET')) {
+      return next()
+    }
+
+    // 生成缓存键
+    const key = finalConfig.keyGenerator(requestConfig)
+
+    try {
+      // 尝试从缓存获取
+      const cached = await finalConfig.storage.get(key)
+      if (cached && Date.now() - cached.timestamp < cached.ttl) {
+        return cached.data
+      }
+    } catch (error) {
+      // 缓存读取错误，继续执行请求
+      console.warn('Cache read error:', error)
+    }
+
+    // 执行请求
+    const response = await next()
+
+    // 缓存响应
+    if (response && response.status >= 200 && response.status < 300) {
+      try {
+        await finalConfig.storage.set(key, {
+          data: response,
+          timestamp: Date.now(),
+          ttl: finalConfig.ttl,
+          size: JSON.stringify(response).length,
+        })
+      } catch (error) {
+        // 缓存写入错误，不影响响应
+        console.warn('Cache write error:', error)
+      }
+    }
+
+    return response
+  }
+}
+
+/**
  * 全局HTTP缓存管理器实例
  */
 export const globalHttpCacheManager = createHttpCacheManager()

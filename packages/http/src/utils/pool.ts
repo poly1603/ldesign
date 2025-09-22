@@ -52,7 +52,6 @@ export interface PoolStats {
  */
 export class RequestPool {
   private connections = new Map<string, ConnectionInfo[]>()
-  private activeRequests = new Map<string, Set<string>>()
   private config: Required<PoolConfig>
   private stats = {
     totalRequests: 0,
@@ -170,7 +169,7 @@ export class RequestPool {
   /**
    * 等待可用连接
    */
-  private async waitForConnection(key: string, config: RequestConfig): Promise<ConnectionInfo> {
+  private async waitForConnection(key: string, _config: RequestConfig): Promise<ConnectionInfo> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error('Connection pool timeout'))
@@ -269,7 +268,7 @@ export class RequestPool {
   /**
    * 通知等待者
    */
-  private notifyWaiters(key: string): void {
+  private notifyWaiters(_key: string): void {
     // 这里可以实现等待队列的通知机制
     // 当前简化实现，依赖轮询
   }
@@ -287,8 +286,6 @@ export class RequestPool {
    */
   private startCleanup(): void {
     this.cleanupTimer = setInterval(() => {
-      const now = Date.now()
-
       for (const [key, connections] of this.connections.entries()) {
         // 清理无效连接
         const validConnections = connections.filter(conn => {

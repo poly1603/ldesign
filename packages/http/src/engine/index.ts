@@ -10,6 +10,7 @@
 // 导出插件相关
 export {
   createHttpEnginePlugin,
+  createHttpEnginePlugin as createHttpPlugin, // 别名导出
   defaultHttpEnginePlugin,
   httpPlugin,
 } from './plugin'

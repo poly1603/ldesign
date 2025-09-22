@@ -41,8 +41,8 @@ describe('AlovaAdapter', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    adapter = new AlovaAdapter()
-    
+    adapter = new AlovaAdapter(mockAlovaInstance)
+
     // 设置默认的 mock 返回值
     Object.values(mockAlova).forEach(method => {
       method.mockReturnValue(mockMethod)

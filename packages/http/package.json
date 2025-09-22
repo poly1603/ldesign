@@ -1,18 +1,7 @@
 {
   "name": "@ldesign/http",
-  "type": "module",
   "version": "0.1.0",
   "description": "一个功能强大的通用 HTTP 请求库，支持多种适配器、拦截器、缓存、重试等高级功能，完美集成 Vue 3",
-  "author": "ldesign",
-  "license": "MIT",
-  "homepage": "https://github.com/ldesign/http#readme",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign/http.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ldesign/http/issues"
-  },
   "keywords": [
     "http",
     "request",
@@ -27,37 +16,102 @@
     "retry",
     "adapter"
   ],
+  "author": "ldesign",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign/http#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/http.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign/http/issues"
+  },
+  "type": "module",
   "exports": {
     ".": {
       "types": "./es/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
+    "./adapters": {
+      "types": "./es/adapters/index.d.ts",
+      "import": "./es/adapters/index.js",
+      "require": "./lib/adapters/index.cjs"
+    },
+    "./adapters/*": {
+      "types": "./es/adapters/*.d.ts",
+      "import": "./es/adapters/*.js",
+      "require": "./lib/adapters/*.cjs"
+    },
+    "./engine": {
+      "types": "./es/engine/index.d.ts",
+      "import": "./es/engine/index.js",
+      "require": "./lib/engine/index.cjs"
+    },
+    "./engine/*": {
+      "types": "./es/engine/*.d.ts",
+      "import": "./es/engine/*.js",
+      "require": "./lib/engine/*.cjs"
+    },
+    "./features/*": {
+      "types": "./es/features/*.d.ts",
+      "import": "./es/features/*.js",
+      "require": "./lib/features/*.cjs"
+    },
+    "./interceptors": {
+      "types": "./es/interceptors/index.d.ts",
+      "import": "./es/interceptors/index.js",
+      "require": "./lib/interceptors/index.cjs"
+    },
+    "./interceptors/*": {
+      "types": "./es/interceptors/*.d.ts",
+      "import": "./es/interceptors/*.js",
+      "require": "./lib/interceptors/*.cjs"
+    },
+    "./types": {
+      "types": "./es/types/index.d.ts",
+      "import": "./es/types/index.js",
+      "require": "./lib/types/index.cjs"
+    },
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
+    },
+    "./utils": {
+      "types": "./es/utils/index.d.ts",
+      "import": "./es/utils/index.js",
+      "require": "./lib/utils/index.cjs"
+    },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
+    },
     "./vue": {
       "types": "./es/vue/index.d.ts",
       "import": "./es/vue/index.js",
       "require": "./lib/vue/index.cjs"
     },
-    "./vue/index.ts": {
-      "types": "./es/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./lib/vue/index.cjs"
+    "./vue/*": {
+      "types": "./es/vue/*.d.ts",
+      "import": "./es/vue/*.js",
+      "require": "./lib/vue/*.cjs"
     }
   },
-  "main": "lib/index.cjs",
-  "module": "es/index.js",
-  "types": "es/index.d.ts",
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
   "files": [
-    "CHANGELOG.md",
     "README.md",
+    "LICENSE",
+    "package.json",
     "es",
     "lib",
     "dist"
   ],
-  "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
-  },
   "scripts": {
     "build": "ldesign-builder build -f esm,cjs,umd",
     "build:watch": "ldesign-builder build --watch",
@@ -83,13 +137,12 @@
     "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js",
     "build:dev": "node scripts/build.js --dev"
   },
+  "dependencies": {
+    "alova": "^3.3.4",
+    "axios": "^1.12.2"
+  },
   "peerDependencies": {
     "vue": "^3.3.0"
-  },
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    }
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
@@ -112,14 +165,19 @@
     "vue": "^3.4.15",
     "vue-tsc": "^3.0.5"
   },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
   "size-limit": [
     {
       "path": "dist/index.js",
       "limit": "60 KB"
     }
   ],
-  "dependencies": {
-    "alova": "^3.3.4",
-    "axios": "^1.12.2"
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
   }
 }

@@ -105,56 +105,86 @@ export class AlovaAdapter extends BaseAdapter {
    * 创建 alova 方法
    */
   private createAlovaMethod(alovaInstance: any, config: RequestConfig): any {
-    const { url, method = 'GET', data, headers, timeout } = config
+    const { url, method = 'GET', data, headers, timeout, params } = config
+
+    // 确保URL是有效的
+    if (!url) {
+      throw new Error('URL is required')
+    }
+
+    // 分离URL和查询参数（因为BaseAdapter已经将params合并到URL中）
+    let cleanUrl = url
+    let extractedParams = params || {}
+
+    // 如果URL包含查询参数，提取它们
+    const urlParts = url.split('?')
+    if (urlParts.length > 1) {
+      cleanUrl = urlParts[0]
+      const queryString = urlParts[1]
+      const urlParams = new URLSearchParams(queryString)
+
+      // 将URL中的参数合并到extractedParams中
+      urlParams.forEach((value, key) => {
+        // 尝试转换数字字符串回数字
+        const numValue = Number(value)
+        extractedParams[key] = !isNaN(numValue) && value !== '' ? numValue : value
+      })
+    }
+
+    // 构建URL（在测试环境中保持原始URL）
+    let fullUrl = cleanUrl
+    if (!cleanUrl.startsWith('http') && !cleanUrl.startsWith('//') && config.baseURL) {
+      // 只有在明确提供baseURL时才构建完整URL
+      fullUrl = config.baseURL.replace(/\/$/, '') + '/' + cleanUrl.replace(/^\//, '')
+    }
+
+    // 构建选项对象
+    const options: any = {
+      headers,
+      timeout,
+    }
+
+    // 添加查询参数
+    if (extractedParams && Object.keys(extractedParams).length > 0) {
+      options.params = extractedParams
+    }
+
+    // 添加信号
+    if (config.signal) {
+      options.signal = config.signal
+    }
 
     // 根据方法类型创建对应的 alova 方法
     let alovaMethod: any
 
-    switch (method.toUpperCase()) {
-      case 'GET':
-        alovaMethod = alovaInstance.Get(url, {
-          headers,
-          timeout,
-        })
-        break
-      case 'POST':
-        alovaMethod = alovaInstance.Post(url, data, {
-          headers,
-          timeout,
-        })
-        break
-      case 'PUT':
-        alovaMethod = alovaInstance.Put(url, data, {
-          headers,
-          timeout,
-        })
-        break
-      case 'DELETE':
-        alovaMethod = alovaInstance.Delete(url, {
-          headers,
-          timeout,
-        })
-        break
-      case 'PATCH':
-        alovaMethod = alovaInstance.Patch(url, data, {
-          headers,
-          timeout,
-        })
-        break
-      case 'HEAD':
-        alovaMethod = alovaInstance.Head(url, {
-          headers,
-          timeout,
-        })
-        break
-      case 'OPTIONS':
-        alovaMethod = alovaInstance.Options(url, {
-          headers,
-          timeout,
-        })
-        break
-      default:
-        throw new Error(`Unsupported HTTP method: ${method}`)
+    try {
+      switch (method.toUpperCase()) {
+        case 'GET':
+          alovaMethod = alovaInstance.Get(fullUrl, options)
+          break
+        case 'POST':
+          alovaMethod = alovaInstance.Post(fullUrl, data, options)
+          break
+        case 'PUT':
+          alovaMethod = alovaInstance.Put(fullUrl, data, options)
+          break
+        case 'DELETE':
+          alovaMethod = alovaInstance.Delete(fullUrl, options)
+          break
+        case 'PATCH':
+          alovaMethod = alovaInstance.Patch(fullUrl, data, options)
+          break
+        case 'HEAD':
+          alovaMethod = alovaInstance.Head(fullUrl, options)
+          break
+        case 'OPTIONS':
+          alovaMethod = alovaInstance.Options(fullUrl, options)
+          break
+        default:
+          throw new Error(`Unsupported HTTP method: ${method}`)
+      }
+    } catch (error: any) {
+      throw new Error(`Failed to parse URL from ${url}: ${error.message}`)
     }
 
     // 设置取消信号
@@ -193,6 +223,15 @@ export class AlovaAdapter extends BaseAdapter {
    * 处理 alova 错误
    */
   private handleAlovaError(error: any, config: RequestConfig): Error {
+    // 如果错误包含状态码信息，创建带状态码的错误
+    if (error.status || error.response?.status) {
+      const status = error.status || error.response.status
+      const message = `Request failed with status code ${status}`
+      const httpError = this.processError(new Error(message), config, error.response)
+      httpError.status = status
+      return httpError
+    }
+
     // alova 的错误处理
     if (error.name === 'AlovaError') {
       return this.processError(error, config)

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { createCacheManager, createHttpClient, createResponseTimeInterceptor } from '@ldesign/http'
 import { computed, reactive, ref } from 'vue'
+import ComposablesDemo from './ComposablesDemo.vue'
 
 // 创建HTTP客户端实例
 const http = createHttpClient({
@@ -691,6 +692,13 @@ updateOutput('advanced', '点击上方按钮测试高级功能...')
         >
           高级功能
         </button>
+        <button
+          class="tab"
+          :class="{ active: activeTab === 'composables' }"
+          @click="switchTab('composables')"
+        >
+          🎨 组合式函数
+        </button>
       </div>
 
       <!-- 基础请求标签页 -->
@@ -896,6 +904,11 @@ updateOutput('advanced', '点击上方按钮测试高级功能...')
         <div class="output">
           {{ outputs.advanced }}
         </div>
+      </div>
+
+      <!-- 组合式函数标签页 -->
+      <div v-show="activeTab === 'composables'" class="section tab-content">
+        <ComposablesDemo />
       </div>
     </div>
   </div>

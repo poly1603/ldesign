@@ -231,3 +231,139 @@ export function createRetryInterceptor(
     return error
   }
 }
+
+// 简化的拦截器函数，用于测试
+export function authInterceptor(options: any = {}) {
+  const {
+    tokenKey = 'accessToken',
+    headerName = 'Authorization',
+    tokenPrefix = 'Bearer',
+  } = options
+
+  return {
+    request: (config: any) => {
+      const token = localStorage.getItem(tokenKey)
+      if (token) {
+        config.headers = config.headers || {}
+        config.headers[headerName] = `${tokenPrefix} ${token}`
+      }
+      return config
+    },
+    responseError: (error: any) => {
+      if (error.response?.status === 401) {
+        localStorage.removeItem(tokenKey)
+      }
+      return error
+    },
+  }
+}
+
+export function loggingInterceptor(options: any = {}) {
+  const { level = 'info', logger = console } = options
+
+  return {
+    request: (config: any) => {
+      if (level === 'info' || level === 'debug') {
+        logger.log('Request:', {
+          method: config.method,
+          url: config.url,
+          headers: config.headers,
+          data: config.data,
+        })
+      }
+      return config
+    },
+    response: (response: any) => {
+      if (level === 'info' || level === 'debug') {
+        logger.log('Response:', {
+          status: response.status,
+          data: response.data,
+          headers: response.headers,
+        })
+      }
+      return response
+    },
+    responseError: (error: any) => {
+      logger.error('Error:', {
+        message: error.message,
+        config: error.config,
+        response: error.response,
+      })
+      return error
+    },
+  }
+}
+
+export function errorHandlingInterceptor(options: any = {}) {
+  const { customHandler } = options
+
+  return {
+    responseError: (error: any) => {
+      if (customHandler) {
+        return customHandler(error)
+      }
+
+      // 默认错误处理
+      if (error.isNetworkError) {
+        error.userMessage = '网络连接失败，请检查网络设置'
+      } else if (error.isTimeoutError) {
+        error.userMessage = '请求超时，请重试'
+      } else if (error.response?.status >= 500) {
+        error.userMessage = '服务器内部错误'
+      } else if (error.response?.status >= 400) {
+        error.userMessage = `请求失败 (${error.response.status})`
+      }
+
+      return error
+    },
+  }
+}
+
+export function timeoutInterceptor(options: any = {}) {
+  const { timeout = 5000 } = options
+
+  return {
+    request: (config: any) => {
+      if (!config.timeout) {
+        config.timeout = timeout
+      }
+      return config
+    },
+    responseError: (error: any) => {
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        error.isTimeoutError = true
+        error.message = 'Request timeout'
+      }
+      return error
+    },
+  }
+}
+
+export function retryInterceptor(options: any = {}) {
+  const { maxAttempts = 3, delay = 1000 } = options
+
+  return {
+    request: (config: any) => {
+      if (!config.retry) {
+        config.retry = { maxAttempts, delay }
+      }
+      return config
+    },
+  }
+}
+
+export function cacheInterceptor(options: any = {}) {
+  const { enabled = true, ttl = 300000, methods = ['GET'] } = options
+
+  return {
+    request: (config: any) => {
+      // 不覆盖现有的缓存配置
+      if (!config.cache) {
+        const method = config.method?.toUpperCase() || 'GET'
+        const shouldCache = enabled && methods.includes(method)
+        config.cache = { enabled: shouldCache, ttl }
+      }
+      return config
+    },
+  }
+}

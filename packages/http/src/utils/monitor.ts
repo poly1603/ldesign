@@ -59,6 +59,7 @@ export interface PerformanceStats {
  */
 export class RequestMonitor {
   private metrics: PerformanceMetrics[] = []
+  private metricsIndex = 0 // 循环缓冲区索引
   private config: Required<MonitorConfig>
   private requestMap = new Map<string, { startTime: number; retries: number }>()
 
@@ -77,7 +78,7 @@ export class RequestMonitor {
   /**
    * 开始监控请求
    */
-  startRequest(requestId: string, config: RequestConfig): void {
+  startRequest(requestId: string, _config: RequestConfig): void {
     if (!this.config.enabled) return
 
     this.requestMap.set(requestId, {
@@ -153,14 +154,16 @@ export class RequestMonitor {
   }
 
   /**
-   * 添加指标
+   * 添加指标（使用循环缓冲区优化性能）
    */
   private addMetrics(metrics: PerformanceMetrics): void {
-    this.metrics.push(metrics)
-
-    // 限制保存的指标数量
-    if (this.metrics.length > this.config.maxMetrics) {
-      this.metrics.shift()
+    if (this.metrics.length < this.config.maxMetrics) {
+      // 缓冲区未满，直接添加
+      this.metrics.push(metrics)
+    } else {
+      // 缓冲区已满，使用循环覆盖（O(1)操作）
+      this.metrics[this.metricsIndex] = metrics
+      this.metricsIndex = (this.metricsIndex + 1) % this.config.maxMetrics
     }
   }
 

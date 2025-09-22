@@ -24,7 +24,7 @@ describe('AxiosAdapter', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    adapter = new AxiosAdapter()
+    adapter = new AxiosAdapter(mockAxios)
   })
 
   describe('Basic Properties', () => {

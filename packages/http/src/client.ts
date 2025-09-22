@@ -20,9 +20,7 @@ import type {
   UploadConfig,
   UploadResult,
 } from './utils/upload'
-import type { MonitorConfig } from './utils/monitor'
-import type { Priority, PriorityQueueConfig } from './utils/priority'
-import type { PoolConfig } from './utils/pool'
+import type { Priority } from './utils/priority'
 import { InterceptorManagerImpl } from './interceptors/manager'
 import { CacheManager } from './utils/cache'
 import { globalCancelManager } from './utils/cancel'
@@ -331,10 +329,58 @@ export class HttpClientImpl implements HttpClient {
   }
 
   /**
+   * 设置配置
+   */
+  setConfig(config: Partial<HttpClientConfig>): void {
+    this.config = {
+      ...this.config,
+      ...config,
+      headers: {
+        ...this.config.headers,
+        ...config.headers,
+      },
+    }
+  }
+
+  /**
    * 获取当前配置
    */
   getConfig(): HttpClientConfig {
     return { ...this.config }
+  }
+
+  /**
+   * 添加请求拦截器
+   */
+  addRequestInterceptor(
+    fulfilled: (config: RequestConfig) => RequestConfig | Promise<RequestConfig>,
+    rejected?: (error: HttpError) => HttpError | Promise<HttpError>
+  ): number {
+    return this.interceptors.request.use(fulfilled, rejected)
+  }
+
+  /**
+   * 添加响应拦截器
+   */
+  addResponseInterceptor<T = any>(
+    fulfilled: (response: ResponseData<T>) => ResponseData<T> | Promise<ResponseData<T>>,
+    rejected?: (error: HttpError) => HttpError | Promise<HttpError>
+  ): number {
+    return this.interceptors.response.use(fulfilled, rejected)
+  }
+
+  /**
+   * 移除请求拦截器
+   */
+  removeRequestInterceptor(id: number): void {
+    this.interceptors.request.eject(id)
+  }
+
+  /**
+   * 移除响应拦截器
+   */
+  removeResponseInterceptor(id: number): void {
+    this.interceptors.response.eject(id)
   }
 
   /**

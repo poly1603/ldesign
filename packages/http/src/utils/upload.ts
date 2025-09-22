@@ -41,6 +41,8 @@ export interface UploadProgress {
   speed: number
   /** 预计剩余时间 (秒) */
   timeRemaining: number
+  /** 已耗时 (毫秒) */
+  elapsed: number
   /** 当前上传的文件 */
   file?: File
   /** 当前分片索引 */
@@ -244,7 +246,6 @@ export class ProgressCalculator {
 
   calculate(loaded: number, total: number, file?: File): UploadProgress {
     const now = Date.now()
-    const _elapsed = now - this.startTime
     const deltaTime = now - this.lastTime
     const deltaLoaded = loaded - this.lastLoaded
 
@@ -273,6 +274,7 @@ export class ProgressCalculator {
       percentage: total > 0 ? Math.round((loaded / total) * 100) : 0,
       speed: avgSpeed,
       timeRemaining,
+      elapsed: now - this.startTime,
       file,
     }
   }

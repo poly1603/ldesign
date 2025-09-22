@@ -579,8 +579,20 @@ function generateId(): string
 function delay(ms: number): Promise<void>
 ```
 
+## Vue 集成 API
+
+### Vue 组合式函数
+
+@ldesign/http 提供了一系列 Vue 3 组合式函数，让在 Vue 应用中使用 HTTP 请求变得更加简单。
+
+- [Vue 组合式函数 API](./vue-composables) - 完整的 Vue 组合式函数文档
+- [useGet, usePost, usePut, useDelete, usePatch](./vue-composables#简化http请求函数) - 简化的 HTTP 请求函数
+- [useResource](./vue-composables#资源管理函数) - 资源管理函数，提供完整的 CRUD 操作
+- [useForm](./vue-composables#表单管理函数) - 表单管理函数，包含验证和提交功能
+
 ## 下一步
 
 - [HTTP 客户端详细文档](./http-client) - 深入了解 HTTP 客户端
-- [Vue Hooks 文档](./use-request) - 了解 Vue 集成 API
+- [Vue Hooks 文档](./use-request) - 了解传统 Vue 集成 API
+- [Vue 组合式函数文档](./vue-composables) - 了解新的组合式函数 API
 - [示例代码](../examples/) - 查看实际使用示例

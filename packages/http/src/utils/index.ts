@@ -202,3 +202,82 @@ export function isURLSearchParams(data: any): data is URLSearchParams {
     typeof URLSearchParams !== 'undefined' && data instanceof URLSearchParams
   )
 }
+
+/**
+ * HTTP状态码分类工具函数
+ */
+export const HttpStatus = {
+  isSuccess: (status: number): boolean => status >= 200 && status < 300,
+  isRedirect: (status: number): boolean => status >= 300 && status < 400,
+  isClientError: (status: number): boolean => status >= 400 && status < 500,
+  isServerError: (status: number): boolean => status >= 500,
+  isAuthError: (status: number): boolean => status === 401 || status === 403,
+  isNotFound: (status: number): boolean => status === 404,
+  isTimeout: (status: number): boolean => status === 408,
+} as const
+
+/**
+ * 错误分类工具函数
+ */
+export const ErrorClassifier = {
+  /**
+   * 判断是否为网络错误
+   */
+  isNetworkError: (error: any): boolean => {
+    return error?.isNetworkError ||
+           error?.name === 'NetworkError' ||
+           error?.code === 'NETWORK_ERROR' ||
+           (!error?.response && error?.message?.includes('network'))
+  },
+
+  /**
+   * 判断是否为超时错误
+   */
+  isTimeoutError: (error: any): boolean => {
+    return error?.isTimeoutError ||
+           error?.name === 'TimeoutError' ||
+           error?.code === 'TIMEOUT' ||
+           error?.message?.includes('timeout')
+  },
+
+  /**
+   * 判断是否为取消错误
+   */
+  isCancelError: (error: any): boolean => {
+    return error?.isCancelError ||
+           error?.name === 'AbortError' ||
+           error?.code === 'CANCELED' ||
+           error?.message?.includes('aborted')
+  },
+
+  /**
+   * 获取错误类型
+   */
+  getErrorType: (error: any): string => {
+    if (ErrorClassifier.isNetworkError(error)) return 'network'
+    if (ErrorClassifier.isTimeoutError(error)) return 'timeout'
+    if (ErrorClassifier.isCancelError(error)) return 'cancel'
+    if (error?.response?.status) {
+      const status = error.response.status
+      if (HttpStatus.isClientError(status)) return 'client'
+      if (HttpStatus.isServerError(status)) return 'server'
+    }
+    return 'unknown'
+  },
+
+  /**
+   * 获取用户友好的错误消息
+   */
+  getUserFriendlyMessage: (error: any): string => {
+    const type = ErrorClassifier.getErrorType(error)
+    const messages = {
+      network: '网络连接失败，请检查网络设置',
+      timeout: '请求超时，请重试',
+      cancel: '请求已取消',
+      client: `请求失败 (${error?.response?.status || '客户端错误'})`,
+      server: '服务器内部错误，请稍后重试',
+      unknown: '未知错误，请重试'
+    }
+    return messages[type as keyof typeof messages] || messages.unknown
+  }
+} as const

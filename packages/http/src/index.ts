@@ -1,8 +1,4 @@
 // 适配器导出
-import type { HttpClientConfig } from './types'
-import { createAdapter } from './adapters'
-// 便利函数
-import { HttpClientImpl } from './client'
 
 export {
   AdapterFactory,
@@ -20,6 +16,7 @@ export { HttpClientImpl as HttpClient } from './client'
 // Engine 插件导出
 export {
   createHttpEnginePlugin,
+  createHttpPlugin,
   defaultHttpEnginePlugin,
   httpPlugin,
 } from './engine'
@@ -29,18 +26,24 @@ export type { HttpEnginePluginOptions } from './engine'
 
 // 拦截器导出
 export {
+  authInterceptor,
+  cacheInterceptor,
   contentTypeInterceptor,
   createAuthInterceptor,
   createBaseURLInterceptor,
   createDataTransformInterceptor,
   createResponseTimeInterceptor,
   createRetryInterceptor,
+  errorHandlingInterceptor,
   errorLoggerInterceptor,
   InterceptorManagerImpl as InterceptorManager,
+  loggingInterceptor,
   requestIdInterceptor,
   requestLoggerInterceptor,
   responseLoggerInterceptor,
+  retryInterceptor,
   statusCodeInterceptor,
+  timeoutInterceptor,
   timestampInterceptor,
 } from './interceptors'
 
@@ -102,7 +105,9 @@ export {
   combineURLs,
   createHttpError,
   delay,
+  ErrorClassifier,
   generateId,
+  HttpStatus,
   isAbsoluteURL,
   isArrayBuffer,
   isBlob,
@@ -122,6 +127,15 @@ export {
   LocalStorageCacheStorage,
   MemoryCacheStorage,
 } from './utils/cache'
+
+// 功能中间件导出
+export {
+  withCache,
+} from './features/cache'
+
+export {
+  withRetry,
+} from './features/retry'
 
 // 导出缓存相关类型
 export type {
@@ -251,15 +265,11 @@ export {
 // Vue 相关导出
 export * from './vue'
 
-/**
- * 创建 HTTP 客户端实例
- */
-export function createHttpClient(
-  config: HttpClientConfig = {},
-): HttpClientImpl {
-  const adapter = createAdapter(config.adapter)
-  return new HttpClientImpl(config, adapter)
-}
+// 重新导出工厂函数
+export { createHttpClient } from './factory'
+
+// 导入用于创建默认实例
+import { createHttpClient } from './factory'
 
 /**
  * 创建默认的 HTTP 客户端实例

@@ -1,7 +1,16 @@
 import type { HttpClient } from '@/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createApp } from 'vue'
+import { createApp, getCurrentInstance } from 'vue'
 import { HttpPlugin, HttpProvider } from '@/vue/plugin'
+
+// Mock getCurrentInstance
+vi.mock('vue', async () => {
+  const actual = await vi.importActual('vue')
+  return {
+    ...actual,
+    getCurrentInstance: vi.fn(),
+  }
+})
 
 // 创建模拟 HTTP 客户端
 function createMockClient(): HttpClient {
@@ -112,6 +121,18 @@ describe('httpProvider', () => {
       default: vi.fn(() => 'test content'),
     }
 
+    // 模拟Vue组件上下文
+    const mockApp = {
+      provide: vi.fn(),
+    }
+
+    // 在模拟的Vue应用上下文中运行
+    vi.mocked(getCurrentInstance).mockReturnValue({
+      appContext: {
+        app: mockApp,
+      },
+    } as any)
+
     const setupResult = HttpProvider.setup(
       { client: createMockClient() },
       { slots: mockSlots },
@@ -122,5 +143,8 @@ describe('httpProvider', () => {
 
     expect(mockSlots.default).toHaveBeenCalled()
     expect(result).toBe('test content')
+
+    // 清理mock
+    vi.mocked(getCurrentInstance).mockReturnValue(null)
   })
 })

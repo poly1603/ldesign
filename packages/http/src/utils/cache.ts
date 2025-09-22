@@ -174,9 +174,18 @@ export class LocalStorageCacheStorage implements CacheStorage {
  * 缓存管理器
  */
 export class CacheManager {
-  private config: Required<CacheConfig>
+  protected config: Required<CacheConfig>
   protected storage: CacheStorage
   private keyCache = new Map<string, string>() // 缓存生成的键，避免重复计算
+  protected stats: CacheStats = {
+    hits: 0,
+    misses: 0,
+    hitRate: 0,
+    size: 0,
+    memoryUsage: 0,
+    recentKeys: [],
+    hotKeys: [],
+  }
 
   constructor(config: CacheConfig = {}) {
     this.config = {
@@ -198,7 +207,20 @@ export class CacheManager {
     }
 
     const key = this.getCachedKey(config)
-    return this.storage.get(key)
+    const result = await this.storage.get(key)
+
+    // 更新统计信息
+    if (result) {
+      this.stats.hits++
+    } else {
+      this.stats.misses++
+    }
+
+    // 更新命中率
+    const total = this.stats.hits + this.stats.misses
+    this.stats.hitRate = total > 0 ? this.stats.hits / total : 0
+
+    return result
   }
 
   /**
@@ -255,6 +277,13 @@ export class CacheManager {
    */
   getConfig(): Required<CacheConfig> {
     return { ...this.config }
+  }
+
+  /**
+   * 获取缓存统计
+   */
+  getStats(): CacheStats {
+    return { ...this.stats }
   }
 
   /**
@@ -388,16 +417,6 @@ export interface EnhancedCacheItem extends CacheItem {
  * 增强的缓存管理器
  */
 export class AdvancedCacheManager extends CacheManager {
-  private stats: CacheStats = {
-    hits: 0,
-    misses: 0,
-    hitRate: 0,
-    size: 0,
-    memoryUsage: 0,
-    recentKeys: [],
-    hotKeys: [],
-  }
-
   private advancedConfig: AdvancedCacheConfig
   private accessLog = new Map<string, number>() // 访问计数
   private tagIndex = new Map<string, Set<string>>() // 标签索引
@@ -418,21 +437,23 @@ export class AdvancedCacheManager extends CacheManager {
    * 增强的获取方法
    */
   async get<T = any>(config: RequestConfig): Promise<ResponseData<T> | null> {
+    if (!this.advancedConfig.stats) {
+      // 如果统计被禁用，直接从存储获取，不进行任何统计
+      if (!this.config.enabled) {
+        return null
+      }
+      const key = this.getCachedKey(config)
+      return await this.storage.get(key)
+    }
+
+    // 如果统计启用，调用父类方法（会进行基础统计）
     const result = await super.get<T>(config)
 
-    if (this.advancedConfig.stats) {
+    // 只做增强功能，不重复统计（父类已经统计了）
+    if (result) {
       const key = this.getCachedKey(config)
-
-      if (result) {
-        this.stats.hits++
-        this.updateAccessLog(key)
-        this.updateRecentKeys(key)
-      }
-      else {
-        this.stats.misses++
-      }
-
-      this.updateHitRate()
+      this.updateAccessLog(key)
+      this.updateRecentKeys(key)
     }
 
     return result
@@ -470,7 +491,7 @@ export class AdvancedCacheManager extends CacheManager {
   }
 
   /**
-   * 基于标签失效缓存
+   * 基于标签失效缓存（批量优化）
    */
   async invalidateByTag(tag: string): Promise<number> {
     const keys = this.tagIndex.get(tag)
@@ -478,10 +499,14 @@ export class AdvancedCacheManager extends CacheManager {
       return 0
     }
 
-    let invalidatedCount = 0
-    for (const key of keys) {
-      await this.storage.delete(key)
-      invalidatedCount++
+    const invalidatedCount = keys.size
+
+    // 批量删除优化：如果存储支持批量删除，使用批量操作
+    if (this.storage.deleteBatch) {
+      await this.storage.deleteBatch(Array.from(keys))
+    } else {
+      // 并行删除以提高性能
+      await Promise.all(Array.from(keys).map(key => this.storage.delete(key)))
     }
 
     this.tagIndex.delete(tag)
@@ -612,13 +637,7 @@ export class AdvancedCacheManager extends CacheManager {
     }
   }
 
-  /**
-   * 更新命中率
-   */
-  private updateHitRate(): void {
-    const total = this.stats.hits + this.stats.misses
-    this.stats.hitRate = total > 0 ? this.stats.hits / total : 0
-  }
+
 
   /**
    * 更新标签索引

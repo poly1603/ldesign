@@ -83,7 +83,7 @@ export class ErrorHandler {
     mostCommon: null,
   }
 
-  // 恢复策略
+  // 恢复策略（按优先级排序）
   private static recoveryStrategies: ErrorRecoveryStrategy[] = []
 
   // 错误历史（最近100个错误）
@@ -279,12 +279,8 @@ export class ErrorHandler {
    * 尝试错误恢复
    */
   static async tryRecover(error: HttpError): Promise<boolean> {
-    // 按优先级排序恢复策略
-    const sortedStrategies = [...this.recoveryStrategies].sort(
-      (a, b) => (b.priority || 0) - (a.priority || 0),
-    )
-
-    for (const strategy of sortedStrategies) {
+    // 策略已经按优先级排序，直接使用
+    for (const strategy of this.recoveryStrategies) {
       if (strategy.canHandle(error)) {
         try {
           const recovered = await strategy.recover(error)
@@ -309,10 +305,12 @@ export class ErrorHandler {
   }
 
   /**
-   * 添加恢复策略
+   * 添加恢复策略（保持优先级排序）
    */
   static addRecoveryStrategy(strategy: ErrorRecoveryStrategy): void {
     this.recoveryStrategies.push(strategy)
+    // 保持按优先级排序（高优先级在前）
+    this.recoveryStrategies.sort((a, b) => (b.priority || 0) - (a.priority || 0))
   }
 
   /**
