@@ -1,6 +1,4 @@
-<!doctype html><html dir="ltr" lang="zh-CN"><head> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0"> <title>LDesign WebComponent 组件库</title> <link rel="modulepreload" href="/build/p-CWb6WRVf.js"><script type="module" data-stencil data-resources-url="/build/" data-stencil-namespace="ldesign-webcomponent">import{p as e,b as n}from"/build/p-CWb6WRVf.js";export{s as setNonce}from"/build/p-CWb6WRVf.js";import{g as a}from"/build/p-CJOdwCt0.js";var t=()=>{const n=import.meta.url;const s={};if(n!==""){s.resourcesUrl=new URL(".",n).href}return e(s)};t().then((async e=>{await a();return n([["p-9740a7f1",[[0,"base-component",{class:[1],componentId:[1,"component-id"],disabled:[4],size:[1],theme:[1],initialized:[32],internalId:[32]},null,{disabled:["watchDisabled"]}]]],["p-d0370210",[[260,"ldesign-button",{type:[1],size:[1],shape:[1],disabled:[4],loading:[4],icon:[1],block:[4]}],[256,"ldesign-icon",{name:[1],size:[8],color:[1],spin:[4],svgContent:[32]},null,{name:["watchName"]}]]]],e)}));
-//# sourceMappingURL=ldesign-webcomponent.esm.js.map
-</script> <script nomodule="" src="/build/ldesign-webcomponent.js" data-stencil></script> <style>body {
+<!doctype html><html dir="ltr" lang="zh-CN"><head> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0"> <title>LDesign WebComponent 组件库</title> <script type="module" src="/build/ldesign-webcomponent.esm.js" data-stencil></script> <script nomodule="" src="/build/ldesign-webcomponent.js" data-stencil></script> <style>body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
       margin: 0;
       padding: 20px;
@@ -45,4 +43,13 @@
       console.log('Button clicked:', event.detail);
       alert('按钮被点击了！');
     });
-  </script> </body></html>
+  </script> <script>
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  // auto-unregister service worker during dev mode
+  navigator.serviceWorker.getRegistration().then(function(registration) {
+    if (registration) {
+      registration.unregister().then(function() { location.reload(true) });
+    }
+  });
+}
+</script></body></html>

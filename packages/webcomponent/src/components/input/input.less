@@ -1,0 +1,252 @@
+// Input 组件样式
+.ldesign-input-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  border: 1px solid var(--ldesign-border-color, #d9d9d9);
+  border-radius: var(--ls-border-radius-base, 6px);
+  background-color: var(--ldesign-bg-color, #ffffff);
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    border-color: var(--ldesign-brand-color-hover, #7334cb);
+  }
+
+  &--focused {
+    border-color: var(--ldesign-brand-color, #722ED1);
+    box-shadow: 0 0 0 2px rgba(114, 46, 209, 0.1);
+  }
+
+  &--disabled {
+    background-color: var(--ldesign-disabled-bg, #f5f5f5);
+    border-color: var(--ldesign-disabled-border, #d9d9d9);
+    cursor: not-allowed;
+
+    &:hover {
+      border-color: var(--ldesign-disabled-border, #d9d9d9);
+    }
+  }
+
+  // 尺寸变体
+  &--small {
+    height: var(--ls-input-height-small, 32px);
+    padding: 0 8px;
+    font-size: 12px;
+  }
+
+  &--medium {
+    height: var(--ls-input-height-medium, 40px);
+    padding: 0 12px;
+    font-size: 14px;
+  }
+
+  &--large {
+    height: var(--ls-input-height-large, 48px);
+    padding: 0 16px;
+    font-size: 16px;
+  }
+}
+
+.ldesign-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--ldesign-text-color, #333333);
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.5;
+
+  &::placeholder {
+    color: var(--ldesign-placeholder-color, #999999);
+  }
+
+  &:disabled {
+    color: var(--ldesign-disabled-text, #999999);
+    cursor: not-allowed;
+  }
+
+  // 尺寸变体
+  &--small {
+    height: var(--ls-input-height-small, 32px);
+    line-height: var(--ls-input-height-small, 32px);
+  }
+
+  &--medium {
+    height: var(--ls-input-height-medium, 40px);
+    line-height: var(--ls-input-height-medium, 40px);
+  }
+
+  &--large {
+    height: var(--ls-input-height-large, 48px);
+    line-height: var(--ls-input-height-large, 48px);
+  }
+
+  // Textarea 特殊样式
+  &[type="textarea"] {
+    resize: vertical;
+    min-height: 60px;
+    line-height: 1.5;
+    padding: 8px 0;
+  }
+}
+
+// 前缀图标
+.ldesign-input__prefix {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+  color: var(--ldesign-icon-color, #666666);
+}
+
+// 后缀图标容器
+.ldesign-input__suffix-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.ldesign-input__suffix {
+  display: flex;
+  align-items: center;
+  color: var(--ldesign-icon-color, #666666);
+}
+
+// 清空按钮
+.ldesign-input__clear {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--ldesign-icon-color, #666666);
+  transition: color 0.2s ease-in-out;
+
+  &:hover {
+    color: var(--ldesign-text-color, #333333);
+  }
+}
+
+// 密码切换按钮
+.ldesign-input__password {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--ldesign-icon-color, #666666);
+  transition: color 0.2s ease-in-out;
+
+  &:hover {
+    color: var(--ldesign-text-color, #333333);
+  }
+}
+
+// Textarea 自适应高度
+textarea.ldesign-input {
+  resize: none;
+  overflow: hidden;
+  
+  &.ldesign-input--autosize {
+    min-height: auto;
+  }
+}
+
+// 复合型输入框
+.ldesign-input-group {
+  display: flex;
+  width: 100%;
+
+  .ldesign-input-wrapper {
+    flex: 1;
+  }
+
+  &__prepend,
+  &__append {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    background-color: var(--ldesign-bg-secondary, #fafafa);
+    border: 1px solid var(--ldesign-border-color, #d9d9d9);
+    color: var(--ldesign-text-color-secondary, #666666);
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  &__prepend {
+    border-right: none;
+    border-radius: var(--ls-border-radius-base, 6px) 0 0 var(--ls-border-radius-base, 6px);
+  }
+
+  &__append {
+    border-left: none;
+    border-radius: 0 var(--ls-border-radius-base, 6px) var(--ls-border-radius-base, 6px) 0;
+  }
+
+  .ldesign-input-wrapper {
+    border-radius: 0;
+
+    &:first-child {
+      border-radius: var(--ls-border-radius-base, 6px) 0 0 var(--ls-border-radius-base, 6px);
+    }
+
+    &:last-child {
+      border-radius: 0 var(--ls-border-radius-base, 6px) var(--ls-border-radius-base, 6px) 0;
+    }
+
+    &:only-child {
+      border-radius: var(--ls-border-radius-base, 6px);
+    }
+  }
+}
+
+// 错误状态
+.ldesign-input-wrapper--error {
+  border-color: var(--ldesign-error-color, #ff4d4f);
+
+  &:hover,
+  &.ldesign-input-wrapper--focused {
+    border-color: var(--ldesign-error-color, #ff4d4f);
+    box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.1);
+  }
+}
+
+// 成功状态
+.ldesign-input-wrapper--success {
+  border-color: var(--ldesign-success-color, #52c41a);
+
+  &:hover,
+  &.ldesign-input-wrapper--focused {
+    border-color: var(--ldesign-success-color, #52c41a);
+    box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.1);
+  }
+}
+
+// 警告状态
+.ldesign-input-wrapper--warning {
+  border-color: var(--ldesign-warning-color, #faad14);
+
+  &:hover,
+  &.ldesign-input-wrapper--focused {
+    border-color: var(--ldesign-warning-color, #faad14);
+    box-shadow: 0 0 0 2px rgba(250, 173, 20, 0.1);
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .ldesign-input-wrapper {
+    &--small {
+      height: 36px;
+      font-size: 14px;
+    }
+
+    &--medium {
+      height: 44px;
+      font-size: 16px;
+    }
+
+    &--large {
+      height: 52px;
+      font-size: 18px;
+    }
+  }
+}

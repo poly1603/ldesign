@@ -1,0 +1,220 @@
+// Popup 组件样式
+.ldesign-popup {
+  position: relative;
+  display: inline-block;
+
+  &__trigger {
+    display: inline-block;
+    cursor: pointer;
+  }
+
+  &__content {
+    position: absolute;
+    z-index: 1000;
+    background: var(--ldesign-bg-color, #ffffff);
+    border: 1px solid var(--ldesign-border-color, #e5e7eb);
+    border-radius: 6px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    opacity: 0;
+    transform: scale(0.95);
+    transition: all 0.15s ease-out;
+    pointer-events: none;
+    min-width: 120px;
+    max-width: 320px;
+
+    // 显示状态
+    &.ldesign-popup--visible {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
+  }
+
+  &__arrow {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--ldesign-bg-color, #ffffff);
+    border: 1px solid var(--ldesign-border-color, #e5e7eb);
+    transform: rotate(45deg);
+    z-index: -1;
+
+    // 不同方向的箭头样式
+    &[data-placement^="top"] {
+      border-top: none;
+      border-left: none;
+    }
+
+    &[data-placement^="bottom"] {
+      border-bottom: none;
+      border-right: none;
+    }
+
+    &[data-placement^="left"] {
+      border-left: none;
+      border-bottom: none;
+    }
+
+    &[data-placement^="right"] {
+      border-right: none;
+      border-top: none;
+    }
+  }
+
+  &__inner {
+    padding: 12px 16px;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ldesign-text-color, #1f2937);
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+
+  &__body {
+    font-size: 14px;
+    color: var(--ldesign-text-color-secondary, #6b7280);
+    line-height: 1.5;
+  }
+
+  // 主题变体
+  &--dark {
+    .ldesign-popup__content {
+      background: var(--ldesign-bg-color-dark, #374151);
+      border-color: var(--ldesign-border-color-dark, #4b5563);
+      color: var(--ldesign-text-color-dark, #f9fafb);
+    }
+
+    .ldesign-popup__arrow {
+      background: var(--ldesign-bg-color-dark, #374151);
+      border-color: var(--ldesign-border-color-dark, #4b5563);
+    }
+
+    .ldesign-popup__title {
+      color: var(--ldesign-text-color-dark, #f9fafb);
+    }
+
+    .ldesign-popup__body {
+      color: var(--ldesign-text-color-secondary-dark, #d1d5db);
+    }
+  }
+
+  // 尺寸变体
+  &--small {
+    .ldesign-popup__inner {
+      padding: 8px 12px;
+    }
+
+    .ldesign-popup__title {
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .ldesign-popup__body {
+      font-size: 13px;
+    }
+  }
+
+  &--large {
+    .ldesign-popup__inner {
+      padding: 16px 20px;
+    }
+
+    .ldesign-popup__title {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .ldesign-popup__body {
+      font-size: 15px;
+    }
+  }
+
+  // 无边框样式
+  &--borderless {
+    .ldesign-popup__content {
+      border: none;
+    }
+
+    .ldesign-popup__arrow {
+      border: none;
+    }
+  }
+
+  // 无阴影样式
+  &--no-shadow {
+    .ldesign-popup__content {
+      box-shadow: none;
+    }
+  }
+
+  // 禁用状态
+  &--disabled {
+    .ldesign-popup__trigger {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+
+  // 动画效果
+  &--fade-in {
+    .ldesign-popup__content {
+      animation: ldesign-popup-fade-in 0.15s ease-out;
+    }
+  }
+
+  &--slide-up {
+    .ldesign-popup__content {
+      animation: ldesign-popup-slide-up 0.15s ease-out;
+    }
+  }
+
+  &--zoom-in {
+    .ldesign-popup__content {
+      animation: ldesign-popup-zoom-in 0.15s ease-out;
+    }
+  }
+}
+
+// 动画关键帧
+@keyframes ldesign-popup-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ldesign-popup-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ldesign-popup-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .ldesign-popup {
+    &__content {
+      max-width: calc(100vw - 32px);
+    }
+  }
+}

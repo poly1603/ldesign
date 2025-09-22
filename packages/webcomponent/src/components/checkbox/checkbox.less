@@ -1,0 +1,319 @@
+// Checkbox 组件样式
+.ldesign-checkbox {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ldesign-text-color, #333333);
+  transition: all 0.2s ease-in-out;
+  position: relative;
+  margin: 4px 0;
+
+  &:hover:not(.ldesign-checkbox--disabled) {
+    .ldesign-checkbox__inner {
+      border-color: var(--ldesign-brand-color, #722ED1);
+      box-shadow: 0 0 0 2px rgba(114, 46, 209, 0.1);
+    }
+  }
+
+  // 尺寸变体
+  &--small {
+    font-size: 12px;
+
+    .ldesign-checkbox__inner {
+      width: 14px;
+      height: 14px;
+    }
+
+    .ldesign-checkbox__label {
+      margin-left: 6px;
+    }
+  }
+
+  &--medium {
+    font-size: 14px;
+
+    .ldesign-checkbox__inner {
+      width: 16px;
+      height: 16px;
+    }
+
+    .ldesign-checkbox__label {
+      margin-left: 8px;
+    }
+  }
+
+  &--large {
+    font-size: 16px;
+
+    .ldesign-checkbox__inner {
+      width: 18px;
+      height: 18px;
+    }
+
+    .ldesign-checkbox__label {
+      margin-left: 10px;
+    }
+  }
+
+  // 选中状态
+  &--checked {
+    .ldesign-checkbox__inner {
+      background-color: var(--ldesign-brand-color, #722ED1);
+      border-color: var(--ldesign-brand-color, #722ED1);
+      color: #ffffff;
+    }
+
+    &:hover {
+      .ldesign-checkbox__inner {
+        background-color: var(--ldesign-brand-color-hover, #7334cb);
+        border-color: var(--ldesign-brand-color-hover, #7334cb);
+      }
+    }
+  }
+
+  // 半选状态
+  &--indeterminate {
+    .ldesign-checkbox__inner {
+      background-color: var(--ldesign-brand-color, #722ED1);
+      border-color: var(--ldesign-brand-color, #722ED1);
+      color: #ffffff;
+    }
+
+    &:hover {
+      .ldesign-checkbox__inner {
+        background-color: var(--ldesign-brand-color-hover, #7334cb);
+        border-color: var(--ldesign-brand-color-hover, #7334cb);
+      }
+    }
+  }
+
+  // 禁用状态
+  &--disabled {
+    cursor: not-allowed;
+    color: var(--ldesign-disabled-text, #999999);
+
+    .ldesign-checkbox__inner {
+      background-color: var(--ldesign-disabled-bg, #f5f5f5);
+      border-color: var(--ldesign-disabled-border, #d9d9d9);
+      color: var(--ldesign-disabled-text, #999999);
+    }
+
+    &:hover {
+      .ldesign-checkbox__inner {
+        border-color: var(--ldesign-disabled-border, #d9d9d9);
+      }
+    }
+
+    &.ldesign-checkbox--checked,
+    &.ldesign-checkbox--indeterminate {
+      .ldesign-checkbox__inner {
+        background-color: var(--ldesign-disabled-bg, #f5f5f5);
+        border-color: var(--ldesign-disabled-border, #d9d9d9);
+      }
+    }
+  }
+
+  // 聚焦状态
+  &--focused {
+    .ldesign-checkbox__inner {
+      box-shadow: 0 0 0 2px rgba(114, 46, 209, 0.1);
+    }
+  }
+
+  // 边框样式
+  &--border {
+    padding: 8px 12px;
+    border: 1px solid var(--ldesign-border-color, #d9d9d9);
+    border-radius: var(--ls-border-radius-base, 6px);
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      border-color: var(--ldesign-brand-color, #722ED1);
+    }
+
+    &.ldesign-checkbox--checked {
+      border-color: var(--ldesign-brand-color, #722ED1);
+      background-color: rgba(114, 46, 209, 0.05);
+    }
+
+    &.ldesign-checkbox--disabled {
+      background-color: var(--ldesign-disabled-bg, #f5f5f5);
+      border-color: var(--ldesign-disabled-border, #d9d9d9);
+
+      &:hover {
+        border-color: var(--ldesign-disabled-border, #d9d9d9);
+      }
+    }
+  }
+
+  // 按钮样式
+  &--button {
+    padding: 8px 16px;
+    border: 1px solid var(--ldesign-border-color, #d9d9d9);
+    border-radius: var(--ls-border-radius-base, 6px);
+    background-color: var(--ldesign-bg-color, #ffffff);
+    transition: all 0.2s ease-in-out;
+
+    .ldesign-checkbox__inner {
+      display: none;
+    }
+
+    .ldesign-checkbox__label {
+      margin-left: 0;
+    }
+
+    &:hover {
+      border-color: var(--ldesign-brand-color, #722ED1);
+      color: var(--ldesign-brand-color, #722ED1);
+    }
+
+    &.ldesign-checkbox--checked {
+      background-color: var(--ldesign-brand-color, #722ED1);
+      border-color: var(--ldesign-brand-color, #722ED1);
+      color: #ffffff;
+
+      &:hover {
+        background-color: var(--ldesign-brand-color-hover, #7334cb);
+        border-color: var(--ldesign-brand-color-hover, #7334cb);
+      }
+    }
+
+    &.ldesign-checkbox--disabled {
+      background-color: var(--ldesign-disabled-bg, #f5f5f5);
+      border-color: var(--ldesign-disabled-border, #d9d9d9);
+      color: var(--ldesign-disabled-text, #999999);
+
+      &:hover {
+        border-color: var(--ldesign-disabled-border, #d9d9d9);
+        color: var(--ldesign-disabled-text, #999999);
+      }
+    }
+  }
+}
+
+// 复选框输入框（隐藏）
+.ldesign-checkbox__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+}
+
+// 复选框内部样式
+.ldesign-checkbox__inner {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--ldesign-border-color, #d9d9d9);
+  border-radius: 3px;
+  background-color: var(--ldesign-bg-color, #ffffff);
+  transition: all 0.2s ease-in-out;
+  flex-shrink: 0;
+
+  ldesign-icon {
+    opacity: 0;
+    transform: scale(0.3);
+    transition: all 0.15s cubic-bezier(0.71, -0.46, 0.88, 0.6);
+    color: #ffffff;
+    font-size: 12px;
+  }
+
+  // 选中状态
+  .ldesign-checkbox--checked & {
+    background-color: var(--ldesign-brand-color, #722ED1);
+    border-color: var(--ldesign-brand-color, #722ED1);
+
+    ldesign-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  // 半选状态
+  .ldesign-checkbox--indeterminate & {
+    background-color: var(--ldesign-brand-color, #722ED1);
+    border-color: var(--ldesign-brand-color, #722ED1);
+
+    ldesign-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+// 复选框标签
+.ldesign-checkbox__label {
+  margin-left: 8px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+// 复选框组
+.ldesign-checkbox-group {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &--horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  &--disabled {
+    .ldesign-checkbox {
+      cursor: not-allowed;
+      color: var(--ldesign-disabled-text, #999999);
+
+      .ldesign-checkbox__inner {
+        background-color: var(--ldesign-disabled-bg, #f5f5f5);
+        border-color: var(--ldesign-disabled-border, #d9d9d9);
+      }
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .ldesign-checkbox {
+    &--small {
+      .ldesign-checkbox__inner {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    &--medium {
+      .ldesign-checkbox__inner {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    &--large {
+      .ldesign-checkbox__inner {
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    &--button {
+      padding: 10px 16px;
+      font-size: 16px;
+    }
+  }
+
+  .ldesign-checkbox-group--horizontal {
+    gap: 12px;
+  }
+}

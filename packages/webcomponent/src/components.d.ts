@@ -6,7 +6,13 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { ButtonShape, ButtonType, Size, Theme } from "./types";
+import { ModalSize } from "./components/modal/modal";
+import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
+import { TooltipPlacement } from "./components/tooltip/tooltip";
 export { ButtonShape, ButtonType, Size, Theme } from "./types";
+export { ModalSize } from "./components/modal/modal";
+export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
+export { TooltipPlacement } from "./components/tooltip/tooltip";
 export namespace Components {
     /**
      * 组件基类
@@ -78,6 +84,46 @@ export namespace Components {
         "type": ButtonType;
     }
     /**
+     * Checkbox 复选框组件
+     * 在一组备选项中进行多选
+     */
+    interface LdesignCheckbox {
+        /**
+          * 是否显示边框
+          * @default false
+         */
+        "border": boolean;
+        /**
+          * 是否为按钮样式
+          * @default false
+         */
+        "button": boolean;
+        /**
+          * 是否选中
+          * @default false
+         */
+        "checked": boolean;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 设置半选状态，只负责样式控制
+          * @default false
+         */
+        "indeterminate": boolean;
+        /**
+          * 多选框的尺寸
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 选中状态的值
+         */
+        "value"?: string | number;
+    }
+    /**
      * Icon 图标组件
      * 基于 Lucide 图标库
      */
@@ -100,11 +146,420 @@ export namespace Components {
           * @default false
          */
         "spin": boolean;
+        /**
+          * 描边宽度
+          * @default 2
+         */
+        "strokeWidth": number;
+    }
+    /**
+     * Input 输入框组件
+     * 通过鼠标或键盘输入内容，是最基础的表单域的包装
+     */
+    interface LdesignInput {
+        /**
+          * 自适应内容高度（仅对 textarea 有效）
+          * @default false
+         */
+        "autosize": boolean;
+        /**
+          * 是否可清空
+          * @default false
+         */
+        "clearable": boolean;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 最大输入长度
+         */
+        "maxlength"?: number;
+        /**
+          * 最小输入长度
+         */
+        "minlength"?: number;
+        /**
+          * 输入框占位文本
+         */
+        "placeholder"?: string;
+        /**
+          * 输入框头部图标
+         */
+        "prefixIcon"?: string;
+        /**
+          * 是否只读
+          * @default false
+         */
+        "readonly": boolean;
+        /**
+          * 输入框行数（仅对 textarea 有效）
+          * @default 2
+         */
+        "rows": number;
+        /**
+          * 是否显示切换密码图标
+          * @default false
+         */
+        "showPassword": boolean;
+        /**
+          * 输入框尺寸
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 输入框尾部图标
+         */
+        "suffixIcon"?: string;
+        /**
+          * 输入框类型
+          * @default 'text'
+         */
+        "type": 'text' | 'password' | 'textarea' | 'number' | 'email' | 'url' | 'tel';
+        /**
+          * 输入框的值
+          * @default ''
+         */
+        "value": string;
+    }
+    /**
+     * Modal 模态框组件
+     */
+    interface LdesignModal {
+        /**
+          * 是否居中显示
+          * @default false
+         */
+        "centered": boolean;
+        /**
+          * 是否显示关闭按钮
+          * @default true
+         */
+        "closable": boolean;
+        /**
+          * 是否销毁子元素
+          * @default false
+         */
+        "destroyOnClose": boolean;
+        /**
+          * 是否可拖拽
+          * @default false
+         */
+        "draggable": boolean;
+        /**
+          * 自定义高度
+         */
+        "height"?: number | string;
+        /**
+          * 按ESC键是否关闭
+          * @default true
+         */
+        "keyboard": boolean;
+        /**
+          * 是否显示遮罩层
+          * @default true
+         */
+        "mask": boolean;
+        /**
+          * 点击遮罩层是否关闭
+          * @default true
+         */
+        "maskClosable": boolean;
+        /**
+          * 是否可调整大小
+          * @default false
+         */
+        "resizable": boolean;
+        /**
+          * 模态框尺寸
+          * @default 'medium'
+         */
+        "size": ModalSize;
+        /**
+          * 模态框标题
+         */
+        "title"?: string;
+        /**
+          * 距离顶部的距离
+         */
+        "top"?: number | string;
+        /**
+          * 是否显示模态框
+          * @default false
+         */
+        "visible": boolean;
+        /**
+          * 自定义宽度
+         */
+        "width"?: number | string;
+        /**
+          * z-index
+          * @default 1000
+         */
+        "zIndex": number;
+    }
+    /**
+     * Popup 弹出层组件
+     * 基于
+     * @floating-ui /dom 实现
+     */
+    interface LdesignPopup {
+        /**
+          * 是否显示箭头
+          * @default true
+         */
+        "arrow": boolean;
+        /**
+          * 弹出层内容
+         */
+        "content"?: string;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 延迟隐藏时间（毫秒）
+          * @default 0
+         */
+        "hideDelay": number;
+        /**
+          * 最大宽度
+         */
+        "maxWidth"?: number | string;
+        /**
+          * 偏移量
+          * @default 8
+         */
+        "offsetDistance": number;
+        /**
+          * 弹出层位置
+          * @default 'bottom'
+         */
+        "placement": PopupPlacement;
+        /**
+          * 延迟显示时间（毫秒）
+          * @default 0
+         */
+        "showDelay": number;
+        /**
+          * 弹出层标题
+         */
+        "title"?: string;
+        /**
+          * 触发方式
+          * @default 'hover'
+         */
+        "trigger": PopupTrigger;
+        /**
+          * 是否显示弹出层
+          * @default false
+         */
+        "visible": boolean;
+        /**
+          * 弹出层宽度
+         */
+        "width"?: number | string;
+    }
+    /**
+     * Radio 单选框组件
+     * 在一组备选项中进行单选
+     */
+    interface LdesignRadio {
+        /**
+          * 是否显示边框
+          * @default false
+         */
+        "border": boolean;
+        /**
+          * 是否为按钮样式
+          * @default false
+         */
+        "button": boolean;
+        /**
+          * 是否选中
+          * @default false
+         */
+        "checked": boolean;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 单选框的名称，用于分组
+         */
+        "name"?: string;
+        /**
+          * 单选框的尺寸
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 选中状态的值
+         */
+        "value"?: string | number;
+    }
+    /**
+     * RadioGroup 单选框组组件
+     * 管理一组单选框的状态
+     */
+    interface LdesignRadioGroup {
+        /**
+          * 排列方向
+          * @default 'horizontal'
+         */
+        "direction": 'horizontal' | 'vertical';
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 组名称，用于原生表单
+         */
+        "name"?: string;
+        /**
+          * 单选框组尺寸
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 绑定值
+         */
+        "value"?: string | number;
+    }
+    /**
+     * Switch 开关组件
+     * 表示两种相互对立的状态间的切换，多用于触发「开/关」
+     */
+    interface LdesignSwitch {
+        /**
+          * 是否选中
+          * @default false
+         */
+        "checked": boolean;
+        /**
+          * 选中时的图标
+         */
+        "checkedIcon"?: string;
+        /**
+          * 选中时的文本
+         */
+        "checkedText"?: string;
+        /**
+          * 选中时的值
+          * @default true
+         */
+        "checkedValue"?: string | number | boolean;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 是否加载中
+          * @default false
+         */
+        "loading": boolean;
+        /**
+          * 开关尺寸
+          * @default 'medium'
+         */
+        "size": Size;
+        /**
+          * 未选中时的图标
+         */
+        "uncheckedIcon"?: string;
+        /**
+          * 未选中时的文本
+         */
+        "uncheckedText"?: string;
+        /**
+          * 未选中时的值
+          * @default false
+         */
+        "uncheckedValue"?: string | number | boolean;
+    }
+    /**
+     * Tooltip 工具提示组件
+     * 基于
+     * @floating-ui /dom 实现的简化版弹出层
+     */
+    interface LdesignTooltip {
+        /**
+          * 是否显示箭头
+          * @default true
+         */
+        "arrow": boolean;
+        /**
+          * 提示内容
+         */
+        "content": string;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled": boolean;
+        /**
+          * 延迟隐藏时间（毫秒）
+          * @default 100
+         */
+        "hideDelay": number;
+        /**
+          * 最大宽度
+          * @default 250
+         */
+        "maxWidth": number;
+        /**
+          * 提示位置
+          * @default 'top'
+         */
+        "placement": TooltipPlacement;
+        /**
+          * 延迟显示时间（毫秒）
+          * @default 100
+         */
+        "showDelay": number;
+        /**
+          * 主题
+          * @default 'dark'
+         */
+        "theme": 'dark' | 'light';
     }
 }
 export interface LdesignButtonCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignButtonElement;
+}
+export interface LdesignCheckboxCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignCheckboxElement;
+}
+export interface LdesignInputCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignInputElement;
+}
+export interface LdesignModalCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignModalElement;
+}
+export interface LdesignPopupCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignPopupElement;
+}
+export interface LdesignRadioCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignRadioElement;
+}
+export interface LdesignRadioGroupCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignRadioGroupElement;
+}
+export interface LdesignSwitchCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignSwitchElement;
 }
 declare global {
     /**
@@ -138,6 +593,27 @@ declare global {
         prototype: HTMLLdesignButtonElement;
         new (): HTMLLdesignButtonElement;
     };
+    interface HTMLLdesignCheckboxElementEventMap {
+        "ldesignChange": boolean;
+    }
+    /**
+     * Checkbox 复选框组件
+     * 在一组备选项中进行多选
+     */
+    interface HTMLLdesignCheckboxElement extends Components.LdesignCheckbox, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignCheckboxElementEventMap>(type: K, listener: (this: HTMLLdesignCheckboxElement, ev: LdesignCheckboxCustomEvent<HTMLLdesignCheckboxElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignCheckboxElementEventMap>(type: K, listener: (this: HTMLLdesignCheckboxElement, ev: LdesignCheckboxCustomEvent<HTMLLdesignCheckboxElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignCheckboxElement: {
+        prototype: HTMLLdesignCheckboxElement;
+        new (): HTMLLdesignCheckboxElement;
+    };
     /**
      * Icon 图标组件
      * 基于 Lucide 图标库
@@ -148,10 +624,161 @@ declare global {
         prototype: HTMLLdesignIconElement;
         new (): HTMLLdesignIconElement;
     };
+    interface HTMLLdesignInputElementEventMap {
+        "ldesignInput": string;
+        "ldesignChange": string;
+        "ldesignFocus": FocusEvent;
+        "ldesignBlur": FocusEvent;
+        "ldesignClear": void;
+    }
+    /**
+     * Input 输入框组件
+     * 通过鼠标或键盘输入内容，是最基础的表单域的包装
+     */
+    interface HTMLLdesignInputElement extends Components.LdesignInput, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignInputElementEventMap>(type: K, listener: (this: HTMLLdesignInputElement, ev: LdesignInputCustomEvent<HTMLLdesignInputElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignInputElementEventMap>(type: K, listener: (this: HTMLLdesignInputElement, ev: LdesignInputCustomEvent<HTMLLdesignInputElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignInputElement: {
+        prototype: HTMLLdesignInputElement;
+        new (): HTMLLdesignInputElement;
+    };
+    interface HTMLLdesignModalElementEventMap {
+        "ldesignVisibleChange": boolean;
+        "ldesignClose": void;
+        "ldesignOk": void;
+    }
+    /**
+     * Modal 模态框组件
+     */
+    interface HTMLLdesignModalElement extends Components.LdesignModal, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignModalElementEventMap>(type: K, listener: (this: HTMLLdesignModalElement, ev: LdesignModalCustomEvent<HTMLLdesignModalElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignModalElementEventMap>(type: K, listener: (this: HTMLLdesignModalElement, ev: LdesignModalCustomEvent<HTMLLdesignModalElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignModalElement: {
+        prototype: HTMLLdesignModalElement;
+        new (): HTMLLdesignModalElement;
+    };
+    interface HTMLLdesignPopupElementEventMap {
+        "ldesignVisibleChange": boolean;
+    }
+    /**
+     * Popup 弹出层组件
+     * 基于
+     * @floating-ui /dom 实现
+     */
+    interface HTMLLdesignPopupElement extends Components.LdesignPopup, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignPopupElementEventMap>(type: K, listener: (this: HTMLLdesignPopupElement, ev: LdesignPopupCustomEvent<HTMLLdesignPopupElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignPopupElementEventMap>(type: K, listener: (this: HTMLLdesignPopupElement, ev: LdesignPopupCustomEvent<HTMLLdesignPopupElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignPopupElement: {
+        prototype: HTMLLdesignPopupElement;
+        new (): HTMLLdesignPopupElement;
+    };
+    interface HTMLLdesignRadioElementEventMap {
+        "ldesignChange": string | number;
+    }
+    /**
+     * Radio 单选框组件
+     * 在一组备选项中进行单选
+     */
+    interface HTMLLdesignRadioElement extends Components.LdesignRadio, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignRadioElementEventMap>(type: K, listener: (this: HTMLLdesignRadioElement, ev: LdesignRadioCustomEvent<HTMLLdesignRadioElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignRadioElementEventMap>(type: K, listener: (this: HTMLLdesignRadioElement, ev: LdesignRadioCustomEvent<HTMLLdesignRadioElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignRadioElement: {
+        prototype: HTMLLdesignRadioElement;
+        new (): HTMLLdesignRadioElement;
+    };
+    interface HTMLLdesignRadioGroupElementEventMap {
+        "ldesignChange": string | number;
+    }
+    /**
+     * RadioGroup 单选框组组件
+     * 管理一组单选框的状态
+     */
+    interface HTMLLdesignRadioGroupElement extends Components.LdesignRadioGroup, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignRadioGroupElementEventMap>(type: K, listener: (this: HTMLLdesignRadioGroupElement, ev: LdesignRadioGroupCustomEvent<HTMLLdesignRadioGroupElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignRadioGroupElementEventMap>(type: K, listener: (this: HTMLLdesignRadioGroupElement, ev: LdesignRadioGroupCustomEvent<HTMLLdesignRadioGroupElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignRadioGroupElement: {
+        prototype: HTMLLdesignRadioGroupElement;
+        new (): HTMLLdesignRadioGroupElement;
+    };
+    interface HTMLLdesignSwitchElementEventMap {
+        "ldesignChange": string | number | boolean;
+    }
+    /**
+     * Switch 开关组件
+     * 表示两种相互对立的状态间的切换，多用于触发「开/关」
+     */
+    interface HTMLLdesignSwitchElement extends Components.LdesignSwitch, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignSwitchElementEventMap>(type: K, listener: (this: HTMLLdesignSwitchElement, ev: LdesignSwitchCustomEvent<HTMLLdesignSwitchElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignSwitchElementEventMap>(type: K, listener: (this: HTMLLdesignSwitchElement, ev: LdesignSwitchCustomEvent<HTMLLdesignSwitchElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignSwitchElement: {
+        prototype: HTMLLdesignSwitchElement;
+        new (): HTMLLdesignSwitchElement;
+    };
+    /**
+     * Tooltip 工具提示组件
+     * 基于
+     * @floating-ui /dom 实现的简化版弹出层
+     */
+    interface HTMLLdesignTooltipElement extends Components.LdesignTooltip, HTMLStencilElement {
+    }
+    var HTMLLdesignTooltipElement: {
+        prototype: HTMLLdesignTooltipElement;
+        new (): HTMLLdesignTooltipElement;
+    };
     interface HTMLElementTagNameMap {
         "base-component": HTMLBaseComponentElement;
         "ldesign-button": HTMLLdesignButtonElement;
+        "ldesign-checkbox": HTMLLdesignCheckboxElement;
         "ldesign-icon": HTMLLdesignIconElement;
+        "ldesign-input": HTMLLdesignInputElement;
+        "ldesign-modal": HTMLLdesignModalElement;
+        "ldesign-popup": HTMLLdesignPopupElement;
+        "ldesign-radio": HTMLLdesignRadioElement;
+        "ldesign-radio-group": HTMLLdesignRadioGroupElement;
+        "ldesign-switch": HTMLLdesignSwitchElement;
+        "ldesign-tooltip": HTMLLdesignTooltipElement;
     }
 }
 declare namespace LocalJSX {
@@ -229,6 +856,50 @@ declare namespace LocalJSX {
         "type"?: ButtonType;
     }
     /**
+     * Checkbox 复选框组件
+     * 在一组备选项中进行多选
+     */
+    interface LdesignCheckbox {
+        /**
+          * 是否显示边框
+          * @default false
+         */
+        "border"?: boolean;
+        /**
+          * 是否为按钮样式
+          * @default false
+         */
+        "button"?: boolean;
+        /**
+          * 是否选中
+          * @default false
+         */
+        "checked"?: boolean;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 设置半选状态，只负责样式控制
+          * @default false
+         */
+        "indeterminate"?: boolean;
+        /**
+          * 当绑定值变化时触发的事件
+         */
+        "onLdesignChange"?: (event: LdesignCheckboxCustomEvent<boolean>) => void;
+        /**
+          * 多选框的尺寸
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 选中状态的值
+         */
+        "value"?: string | number;
+    }
+    /**
      * Icon 图标组件
      * 基于 Lucide 图标库
      */
@@ -251,11 +922,448 @@ declare namespace LocalJSX {
           * @default false
          */
         "spin"?: boolean;
+        /**
+          * 描边宽度
+          * @default 2
+         */
+        "strokeWidth"?: number;
+    }
+    /**
+     * Input 输入框组件
+     * 通过鼠标或键盘输入内容，是最基础的表单域的包装
+     */
+    interface LdesignInput {
+        /**
+          * 自适应内容高度（仅对 textarea 有效）
+          * @default false
+         */
+        "autosize"?: boolean;
+        /**
+          * 是否可清空
+          * @default false
+         */
+        "clearable"?: boolean;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 最大输入长度
+         */
+        "maxlength"?: number;
+        /**
+          * 最小输入长度
+         */
+        "minlength"?: number;
+        /**
+          * 失去焦点时触发
+         */
+        "onLdesignBlur"?: (event: LdesignInputCustomEvent<FocusEvent>) => void;
+        /**
+          * 值改变时触发
+         */
+        "onLdesignChange"?: (event: LdesignInputCustomEvent<string>) => void;
+        /**
+          * 点击清空按钮时触发
+         */
+        "onLdesignClear"?: (event: LdesignInputCustomEvent<void>) => void;
+        /**
+          * 获得焦点时触发
+         */
+        "onLdesignFocus"?: (event: LdesignInputCustomEvent<FocusEvent>) => void;
+        /**
+          * 输入时触发
+         */
+        "onLdesignInput"?: (event: LdesignInputCustomEvent<string>) => void;
+        /**
+          * 输入框占位文本
+         */
+        "placeholder"?: string;
+        /**
+          * 输入框头部图标
+         */
+        "prefixIcon"?: string;
+        /**
+          * 是否只读
+          * @default false
+         */
+        "readonly"?: boolean;
+        /**
+          * 输入框行数（仅对 textarea 有效）
+          * @default 2
+         */
+        "rows"?: number;
+        /**
+          * 是否显示切换密码图标
+          * @default false
+         */
+        "showPassword"?: boolean;
+        /**
+          * 输入框尺寸
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 输入框尾部图标
+         */
+        "suffixIcon"?: string;
+        /**
+          * 输入框类型
+          * @default 'text'
+         */
+        "type"?: 'text' | 'password' | 'textarea' | 'number' | 'email' | 'url' | 'tel';
+        /**
+          * 输入框的值
+          * @default ''
+         */
+        "value"?: string;
+    }
+    /**
+     * Modal 模态框组件
+     */
+    interface LdesignModal {
+        /**
+          * 是否居中显示
+          * @default false
+         */
+        "centered"?: boolean;
+        /**
+          * 是否显示关闭按钮
+          * @default true
+         */
+        "closable"?: boolean;
+        /**
+          * 是否销毁子元素
+          * @default false
+         */
+        "destroyOnClose"?: boolean;
+        /**
+          * 是否可拖拽
+          * @default false
+         */
+        "draggable"?: boolean;
+        /**
+          * 自定义高度
+         */
+        "height"?: number | string;
+        /**
+          * 按ESC键是否关闭
+          * @default true
+         */
+        "keyboard"?: boolean;
+        /**
+          * 是否显示遮罩层
+          * @default true
+         */
+        "mask"?: boolean;
+        /**
+          * 点击遮罩层是否关闭
+          * @default true
+         */
+        "maskClosable"?: boolean;
+        /**
+          * 关闭事件
+         */
+        "onLdesignClose"?: (event: LdesignModalCustomEvent<void>) => void;
+        /**
+          * 确认事件
+         */
+        "onLdesignOk"?: (event: LdesignModalCustomEvent<void>) => void;
+        /**
+          * 显示状态变化事件
+         */
+        "onLdesignVisibleChange"?: (event: LdesignModalCustomEvent<boolean>) => void;
+        /**
+          * 是否可调整大小
+          * @default false
+         */
+        "resizable"?: boolean;
+        /**
+          * 模态框尺寸
+          * @default 'medium'
+         */
+        "size"?: ModalSize;
+        /**
+          * 模态框标题
+         */
+        "title"?: string;
+        /**
+          * 距离顶部的距离
+         */
+        "top"?: number | string;
+        /**
+          * 是否显示模态框
+          * @default false
+         */
+        "visible"?: boolean;
+        /**
+          * 自定义宽度
+         */
+        "width"?: number | string;
+        /**
+          * z-index
+          * @default 1000
+         */
+        "zIndex"?: number;
+    }
+    /**
+     * Popup 弹出层组件
+     * 基于
+     * @floating-ui /dom 实现
+     */
+    interface LdesignPopup {
+        /**
+          * 是否显示箭头
+          * @default true
+         */
+        "arrow"?: boolean;
+        /**
+          * 弹出层内容
+         */
+        "content"?: string;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 延迟隐藏时间（毫秒）
+          * @default 0
+         */
+        "hideDelay"?: number;
+        /**
+          * 最大宽度
+         */
+        "maxWidth"?: number | string;
+        /**
+          * 偏移量
+          * @default 8
+         */
+        "offsetDistance"?: number;
+        /**
+          * 显示状态变化事件
+         */
+        "onLdesignVisibleChange"?: (event: LdesignPopupCustomEvent<boolean>) => void;
+        /**
+          * 弹出层位置
+          * @default 'bottom'
+         */
+        "placement"?: PopupPlacement;
+        /**
+          * 延迟显示时间（毫秒）
+          * @default 0
+         */
+        "showDelay"?: number;
+        /**
+          * 弹出层标题
+         */
+        "title"?: string;
+        /**
+          * 触发方式
+          * @default 'hover'
+         */
+        "trigger"?: PopupTrigger;
+        /**
+          * 是否显示弹出层
+          * @default false
+         */
+        "visible"?: boolean;
+        /**
+          * 弹出层宽度
+         */
+        "width"?: number | string;
+    }
+    /**
+     * Radio 单选框组件
+     * 在一组备选项中进行单选
+     */
+    interface LdesignRadio {
+        /**
+          * 是否显示边框
+          * @default false
+         */
+        "border"?: boolean;
+        /**
+          * 是否为按钮样式
+          * @default false
+         */
+        "button"?: boolean;
+        /**
+          * 是否选中
+          * @default false
+         */
+        "checked"?: boolean;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 单选框的名称，用于分组
+         */
+        "name"?: string;
+        /**
+          * 当绑定值变化时触发的事件
+         */
+        "onLdesignChange"?: (event: LdesignRadioCustomEvent<string | number>) => void;
+        /**
+          * 单选框的尺寸
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 选中状态的值
+         */
+        "value"?: string | number;
+    }
+    /**
+     * RadioGroup 单选框组组件
+     * 管理一组单选框的状态
+     */
+    interface LdesignRadioGroup {
+        /**
+          * 排列方向
+          * @default 'horizontal'
+         */
+        "direction"?: 'horizontal' | 'vertical';
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 组名称，用于原生表单
+         */
+        "name"?: string;
+        /**
+          * 当绑定值变化时触发的事件
+         */
+        "onLdesignChange"?: (event: LdesignRadioGroupCustomEvent<string | number>) => void;
+        /**
+          * 单选框组尺寸
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 绑定值
+         */
+        "value"?: string | number;
+    }
+    /**
+     * Switch 开关组件
+     * 表示两种相互对立的状态间的切换，多用于触发「开/关」
+     */
+    interface LdesignSwitch {
+        /**
+          * 是否选中
+          * @default false
+         */
+        "checked"?: boolean;
+        /**
+          * 选中时的图标
+         */
+        "checkedIcon"?: string;
+        /**
+          * 选中时的文本
+         */
+        "checkedText"?: string;
+        /**
+          * 选中时的值
+          * @default true
+         */
+        "checkedValue"?: string | number | boolean;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 是否加载中
+          * @default false
+         */
+        "loading"?: boolean;
+        /**
+          * 当绑定值变化时触发的事件
+         */
+        "onLdesignChange"?: (event: LdesignSwitchCustomEvent<string | number | boolean>) => void;
+        /**
+          * 开关尺寸
+          * @default 'medium'
+         */
+        "size"?: Size;
+        /**
+          * 未选中时的图标
+         */
+        "uncheckedIcon"?: string;
+        /**
+          * 未选中时的文本
+         */
+        "uncheckedText"?: string;
+        /**
+          * 未选中时的值
+          * @default false
+         */
+        "uncheckedValue"?: string | number | boolean;
+    }
+    /**
+     * Tooltip 工具提示组件
+     * 基于
+     * @floating-ui /dom 实现的简化版弹出层
+     */
+    interface LdesignTooltip {
+        /**
+          * 是否显示箭头
+          * @default true
+         */
+        "arrow"?: boolean;
+        /**
+          * 提示内容
+         */
+        "content": string;
+        /**
+          * 是否禁用
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * 延迟隐藏时间（毫秒）
+          * @default 100
+         */
+        "hideDelay"?: number;
+        /**
+          * 最大宽度
+          * @default 250
+         */
+        "maxWidth"?: number;
+        /**
+          * 提示位置
+          * @default 'top'
+         */
+        "placement"?: TooltipPlacement;
+        /**
+          * 延迟显示时间（毫秒）
+          * @default 100
+         */
+        "showDelay"?: number;
+        /**
+          * 主题
+          * @default 'dark'
+         */
+        "theme"?: 'dark' | 'light';
     }
     interface IntrinsicElements {
         "base-component": BaseComponent;
         "ldesign-button": LdesignButton;
+        "ldesign-checkbox": LdesignCheckbox;
         "ldesign-icon": LdesignIcon;
+        "ldesign-input": LdesignInput;
+        "ldesign-modal": LdesignModal;
+        "ldesign-popup": LdesignPopup;
+        "ldesign-radio": LdesignRadio;
+        "ldesign-radio-group": LdesignRadioGroup;
+        "ldesign-switch": LdesignSwitch;
+        "ldesign-tooltip": LdesignTooltip;
     }
 }
 export { LocalJSX as JSX };
@@ -273,10 +1381,51 @@ declare module "@stencil/core" {
              */
             "ldesign-button": LocalJSX.LdesignButton & JSXBase.HTMLAttributes<HTMLLdesignButtonElement>;
             /**
+             * Checkbox 复选框组件
+             * 在一组备选项中进行多选
+             */
+            "ldesign-checkbox": LocalJSX.LdesignCheckbox & JSXBase.HTMLAttributes<HTMLLdesignCheckboxElement>;
+            /**
              * Icon 图标组件
              * 基于 Lucide 图标库
              */
             "ldesign-icon": LocalJSX.LdesignIcon & JSXBase.HTMLAttributes<HTMLLdesignIconElement>;
+            /**
+             * Input 输入框组件
+             * 通过鼠标或键盘输入内容，是最基础的表单域的包装
+             */
+            "ldesign-input": LocalJSX.LdesignInput & JSXBase.HTMLAttributes<HTMLLdesignInputElement>;
+            /**
+             * Modal 模态框组件
+             */
+            "ldesign-modal": LocalJSX.LdesignModal & JSXBase.HTMLAttributes<HTMLLdesignModalElement>;
+            /**
+             * Popup 弹出层组件
+             * 基于
+             * @floating-ui /dom 实现
+             */
+            "ldesign-popup": LocalJSX.LdesignPopup & JSXBase.HTMLAttributes<HTMLLdesignPopupElement>;
+            /**
+             * Radio 单选框组件
+             * 在一组备选项中进行单选
+             */
+            "ldesign-radio": LocalJSX.LdesignRadio & JSXBase.HTMLAttributes<HTMLLdesignRadioElement>;
+            /**
+             * RadioGroup 单选框组组件
+             * 管理一组单选框的状态
+             */
+            "ldesign-radio-group": LocalJSX.LdesignRadioGroup & JSXBase.HTMLAttributes<HTMLLdesignRadioGroupElement>;
+            /**
+             * Switch 开关组件
+             * 表示两种相互对立的状态间的切换，多用于触发「开/关」
+             */
+            "ldesign-switch": LocalJSX.LdesignSwitch & JSXBase.HTMLAttributes<HTMLLdesignSwitchElement>;
+            /**
+             * Tooltip 工具提示组件
+             * 基于
+             * @floating-ui /dom 实现的简化版弹出层
+             */
+            "ldesign-tooltip": LocalJSX.LdesignTooltip & JSXBase.HTMLAttributes<HTMLLdesignTooltipElement>;
         }
     }
 }

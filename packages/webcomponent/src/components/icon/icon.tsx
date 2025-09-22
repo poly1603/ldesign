@@ -32,6 +32,11 @@ export class LdesignIcon {
   @Prop() spin: boolean = false;
 
   /**
+   * 描边宽度
+   */
+  @Prop() strokeWidth: number = 2;
+
+  /**
    * 内部状态：SVG内容
    */
   @State() svgContent: string = '';
@@ -59,47 +64,81 @@ export class LdesignIcon {
    * 加载图标
    */
   private async loadIcon(iconName: string) {
-    // 使用预定义的图标集合，避免动态导入的复杂性
-    const iconSVG = this.getIconSVG(iconName);
-    this.svgContent = iconSVG;
+    try {
+      // 动态导入lucide图标
+      const lucideModule = await import('lucide');
+      const iconData = lucideModule.icons[iconName];
+
+      if (iconData) {
+        // 构建SVG字符串
+        const svgContent = this.buildSVGFromLucideData(iconData);
+        this.svgContent = svgContent;
+      } else {
+        // 如果图标不存在，使用默认图标
+        this.svgContent = this.getDefaultIcon();
+      }
+    } catch (error) {
+      console.warn(`Failed to load icon "${iconName}":`, error);
+      this.svgContent = this.getDefaultIcon();
+    }
   }
 
   /**
-   * 获取图标SVG
+   * 从Lucide图标数据构建SVG字符串
    */
-  private getIconSVG(iconName: string): string {
-    const icons: Record<string, string> = {
-      'heart': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="m19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>
-      </svg>`,
-      'star': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
-      </svg>`,
-      'download': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="7,10 12,15 17,10"/>
-        <line x1="12" x2="12" y1="15" y2="3"/>
-      </svg>`,
-      'search': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/>
-        <path d="m21 21-4.35-4.35"/>
-      </svg>`,
-      'plus': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M5 12h14"/>
-        <path d="M12 5v14"/>
-      </svg>`,
-      'loader-2': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-      </svg>`,
-      'refresh-cw': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-        <path d="M21 3v5h-5"/>
-        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-        <path d="M8 16H3v5"/>
-      </svg>`
+  private buildSVGFromLucideData(iconData: any): string {
+    const [tag, attrs, children] = iconData;
+
+    if (tag !== 'svg') {
+      return this.getDefaultIcon();
+    }
+
+    // 构建SVG属性
+    const svgAttrs = {
+      xmlns: 'http://www.w3.org/2000/svg',
+      width: '24',
+      height: '24',
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      stroke: 'currentColor',
+      'stroke-width': this.strokeWidth.toString(),
+      'stroke-linecap': 'round',
+      'stroke-linejoin': 'round',
+      ...attrs
     };
 
-    return icons[iconName] || this.getDefaultIcon();
+    // 构建属性字符串
+    const attrString = Object.entries(svgAttrs)
+      .map(([key, value]) => `${key}="${value}"`)
+      .join(' ');
+
+    // 递归构建子元素
+    const childrenString = this.buildChildrenString(children || []);
+
+    return `<svg ${attrString}>${childrenString}</svg>`;
+  }
+
+  /**
+   * 递归构建子元素字符串
+   */
+  private buildChildrenString(children: any[]): string {
+    return children.map(child => {
+      if (typeof child === 'string') {
+        return child;
+      }
+
+      if (Array.isArray(child)) {
+        const [tag, attrs = {}, childNodes = []] = child;
+        const attrString = Object.entries(attrs)
+          .map(([key, value]) => `${key}="${value}"`)
+          .join(' ');
+        const childrenString = this.buildChildrenString(childNodes);
+
+        return `<${tag}${attrString ? ' ' + attrString : ''}>${childrenString}</${tag}>`;
+      }
+
+      return '';
+    }).join('');
   }
 
   /**
@@ -151,7 +190,12 @@ export class LdesignIcon {
 
   render() {
     return (
-      <Host>
+      <Host style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        verticalAlign: 'middle'
+      }}>
         <span
           class={this.getIconClass()}
           style={this.getIconStyle()}

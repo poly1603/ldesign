@@ -20,7 +20,7 @@ export type ButtonShape = 'rectangle' | 'round' | 'circle';
 /**
  * 输入框类型
  */
-export type InputType = 'text' | 'password' | 'email' | 'number' | 'tel' | 'url';
+export type InputType = 'text' | 'password' | 'textarea' | 'email' | 'number' | 'tel' | 'url';
 
 /**
  * 主题类型
@@ -86,12 +86,18 @@ export interface InputProps extends BaseComponentProps {
   readonly?: boolean;
   size?: Size;
   clearable?: boolean;
+  showPassword?: boolean;
   prefixIcon?: string;
   suffixIcon?: string;
+  maxlength?: number;
+  minlength?: number;
+  autosize?: boolean;
+  rows?: number;
   onInput?: EventHandler<string>;
   onChange?: EventHandler<string>;
   onFocus?: EventHandler;
   onBlur?: EventHandler;
+  onClear?: EventHandler;
 }
 
 /**
@@ -100,8 +106,10 @@ export interface InputProps extends BaseComponentProps {
 export interface CheckboxProps extends BaseComponentProps {
   checked?: boolean;
   indeterminate?: boolean;
-  value?: string;
-  label?: string;
+  value?: string | number;
+  border?: boolean;
+  button?: boolean;
+  size?: Size;
   onChange?: EventHandler<boolean>;
 }
 
@@ -110,10 +118,28 @@ export interface CheckboxProps extends BaseComponentProps {
  */
 export interface RadioProps extends BaseComponentProps {
   checked?: boolean;
-  value?: string;
-  label?: string;
+  value?: string | number;
   name?: string;
-  onChange?: EventHandler<string>;
+  border?: boolean;
+  button?: boolean;
+  size?: Size;
+  onChange?: EventHandler<string | number>;
+}
+
+/**
+ * 开关组件属性
+ */
+export interface SwitchProps extends BaseComponentProps {
+  checked?: boolean;
+  checkedValue?: string | number | boolean;
+  uncheckedValue?: string | number | boolean;
+  loading?: boolean;
+  size?: Size;
+  checkedText?: string;
+  uncheckedText?: string;
+  checkedIcon?: string;
+  uncheckedIcon?: string;
+  onChange?: EventHandler<string | number | boolean>;
 }
 
 /**

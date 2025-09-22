@@ -1,0 +1,135 @@
+// Tooltip 组件样式
+.ldesign-tooltip {
+  position: relative;
+  display: inline-block;
+
+  &__trigger {
+    display: inline-block;
+  }
+
+  &__content {
+    position: absolute;
+    z-index: 1050;
+    padding: 6px 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    border-radius: 4px;
+    opacity: 0;
+    transform: scale(0.95);
+    transition: all 0.15s ease-out;
+    pointer-events: none;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+
+    // 显示状态
+    &--visible {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
+
+    // 深色主题（默认）
+    &--dark {
+      background: rgba(0, 0, 0, 0.85);
+      color: #ffffff;
+    }
+
+    // 浅色主题
+    &--light {
+      background: #ffffff;
+      color: var(--ldesign-text-color, #1f2937);
+      border: 1px solid var(--ldesign-border-color, #e5e7eb);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  &__arrow {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    transform: rotate(45deg);
+    z-index: -1;
+  }
+
+  // 深色主题箭头
+  &__content--dark &__arrow {
+    background: rgba(0, 0, 0, 0.85);
+  }
+
+  // 浅色主题箭头
+  &__content--light &__arrow {
+    background: #ffffff;
+    border: 1px solid var(--ldesign-border-color, #e5e7eb);
+
+    // 不同方向的箭头边框
+    &[data-placement^="top"] {
+      border-top: none;
+      border-left: none;
+    }
+
+    &[data-placement^="bottom"] {
+      border-bottom: none;
+      border-right: none;
+    }
+
+    &[data-placement^="left"] {
+      border-left: none;
+      border-bottom: none;
+    }
+
+    &[data-placement^="right"] {
+      border-right: none;
+      border-top: none;
+    }
+  }
+
+  &__inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  // 动画效果
+  &--fade-in {
+    .ldesign-tooltip__content {
+      animation: ldesign-tooltip-fade-in 0.15s ease-out;
+    }
+  }
+
+  &--zoom-in {
+    .ldesign-tooltip__content {
+      animation: ldesign-tooltip-zoom-in 0.15s ease-out;
+    }
+  }
+}
+
+// 动画关键帧
+@keyframes ldesign-tooltip-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ldesign-tooltip-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .ldesign-tooltip {
+    &__content {
+      max-width: calc(100vw - 32px) !important;
+      font-size: 13px;
+      padding: 8px 10px;
+    }
+  }
+}

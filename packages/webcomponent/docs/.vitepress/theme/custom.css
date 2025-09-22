@@ -1,10 +1,9 @@
 /**
  * VitePress 自定义样式
  * 集成 LDesign 设计系统
+ *
+ * 注意：组件库样式已在 index.ts 中直接导入
  */
-
-/* 导入组件库样式 */
-@import '../../../dist/ldesign-webcomponent/ldesign-webcomponent.css';
 
 /* 导入设计系统变量 */
 :root {

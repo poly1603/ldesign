@@ -1,0 +1,287 @@
+// Modal 组件样式
+.ldesign-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: none;
+
+  // 显示状态
+  &--visible {
+    display: block;
+  }
+
+  &__mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+
+    .ldesign-modal--visible & {
+      opacity: 1;
+    }
+  }
+
+  &__wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  &__dialog {
+    position: relative;
+    margin: 0 auto;
+    background: var(--ldesign-bg-color, #ffffff);
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    transform: scale(0.95);
+    opacity: 0;
+    transition: all 0.3s ease;
+
+    .ldesign-modal--visible & {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    // 尺寸变体
+    &--small {
+      width: 400px;
+      max-width: calc(100vw - 40px);
+    }
+
+    &--medium {
+      width: 600px;
+      max-width: calc(100vw - 40px);
+    }
+
+    &--large {
+      width: 800px;
+      max-width: calc(100vw - 40px);
+    }
+
+    &--full {
+      width: calc(100vw - 40px);
+      height: calc(100vh - 40px);
+    }
+  }
+
+  &__content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 40px);
+  }
+
+  &__header {
+    position: relative;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--ldesign-border-color, #e5e7eb);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+
+    .ldesign-modal--draggable & {
+      cursor: move;
+      user-select: none;
+    }
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ldesign-text-color, #1f2937);
+    line-height: 1.5;
+    margin: 0;
+    flex: 1;
+  }
+
+  &__close {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--ldesign-text-color-secondary, #6b7280);
+    transition: all 0.2s ease;
+    margin-left: 16px;
+    flex-shrink: 0;
+
+    &:hover {
+      background: var(--ldesign-bg-color-hover, #f3f4f6);
+      color: var(--ldesign-text-color, #1f2937);
+    }
+
+    &:active {
+      background: var(--ldesign-bg-color-active, #e5e7eb);
+    }
+  }
+
+  &__body {
+    padding: 20px 24px;
+    flex: 1;
+    overflow: auto;
+    color: var(--ldesign-text-color, #1f2937);
+    line-height: 1.6;
+  }
+
+  &__footer {
+    padding: 16px 24px 20px;
+    border-top: 1px solid var(--ldesign-border-color, #e5e7eb);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  // 居中显示
+  &--centered {
+    .ldesign-modal__wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100%;
+      padding: 20px;
+    }
+
+    .ldesign-modal__dialog {
+      margin: 0;
+    }
+  }
+
+  // 可拖拽样式
+  &--draggable {
+    .ldesign-modal__dialog {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
+
+      &.dragging {
+        user-select: none;
+      }
+    }
+  }
+
+  // 无标题栏时的样式
+  &__content:not(:has(.ldesign-modal__header)) {
+    .ldesign-modal__body {
+      padding-top: 24px;
+    }
+  }
+
+  // 无底部栏时的样式
+  &__content:not(:has(.ldesign-modal__footer)) {
+    .ldesign-modal__body {
+      padding-bottom: 24px;
+    }
+  }
+
+  // 动画效果
+  &--fade-in {
+    .ldesign-modal__dialog {
+      animation: ldesign-modal-fade-in 0.3s ease;
+    }
+  }
+
+  &--zoom-in {
+    .ldesign-modal__dialog {
+      animation: ldesign-modal-zoom-in 0.3s ease;
+    }
+  }
+
+  &--slide-down {
+    .ldesign-modal__dialog {
+      animation: ldesign-modal-slide-down 0.3s ease;
+    }
+  }
+}
+
+// 动画关键帧
+@keyframes ldesign-modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ldesign-modal-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ldesign-modal-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .ldesign-modal {
+    &__wrap {
+      padding: 10px;
+    }
+
+    &__dialog {
+      &--small,
+      &--medium,
+      &--large {
+        width: calc(100vw - 20px);
+        max-width: none;
+      }
+    }
+
+    &__header {
+      padding: 16px 20px 12px;
+    }
+
+    &__title {
+      font-size: 15px;
+    }
+
+    &__body {
+      padding: 16px 20px;
+    }
+
+    &__footer {
+      padding: 12px 20px 16px;
+      gap: 8px;
+    }
+
+    &--centered {
+      .ldesign-modal__wrap {
+        padding: 10px;
+      }
+    }
+  }
+}

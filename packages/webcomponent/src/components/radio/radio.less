@@ -1,0 +1,348 @@
+// Radio 组件样式
+.ldesign-radio {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ldesign-text-color, #333333);
+  transition: all 0.2s ease-in-out;
+  position: relative;
+  margin: 4px 0;
+
+  &:hover:not(.ldesign-radio--disabled) {
+    .ldesign-radio__inner {
+      border-color: var(--ldesign-brand-color, #722ED1);
+      box-shadow: 0 0 0 2px rgba(114, 46, 209, 0.1);
+    }
+  }
+
+  // 尺寸变体
+  &--small {
+    font-size: 12px;
+
+    .ldesign-radio__inner {
+      width: 14px;
+      height: 14px;
+
+      .ldesign-radio__dot {
+        width: 6px;
+        height: 6px;
+      }
+    }
+
+    .ldesign-radio__label {
+      margin-left: 6px;
+    }
+  }
+
+  &--medium {
+    font-size: 14px;
+
+    .ldesign-radio__inner {
+      width: 16px;
+      height: 16px;
+
+      .ldesign-radio__dot {
+        width: 8px;
+        height: 8px;
+      }
+    }
+
+    .ldesign-radio__label {
+      margin-left: 8px;
+    }
+  }
+
+  &--large {
+    font-size: 16px;
+
+    .ldesign-radio__inner {
+      width: 18px;
+      height: 18px;
+
+      .ldesign-radio__dot {
+        width: 10px;
+        height: 10px;
+      }
+    }
+
+    .ldesign-radio__label {
+      margin-left: 10px;
+    }
+  }
+
+  // 选中状态
+  &--checked {
+    .ldesign-radio__inner {
+      border-color: var(--ldesign-brand-color, #722ED1);
+      border-width: 2px;
+
+      .ldesign-radio__dot {
+        background-color: var(--ldesign-brand-color, #722ED1);
+        transform: scale(1);
+      }
+    }
+
+    &:hover {
+      .ldesign-radio__inner {
+        border-color: var(--ldesign-brand-color-hover, #7334cb);
+        box-shadow: 0 0 0 2px rgba(114, 46, 209, 0.1);
+
+        .ldesign-radio__dot {
+          background-color: var(--ldesign-brand-color-hover, #7334cb);
+        }
+      }
+    }
+  }
+
+  // 禁用状态
+  &--disabled {
+    cursor: not-allowed;
+    color: var(--ldesign-disabled-text, #999999);
+
+    .ldesign-radio__inner {
+      background-color: var(--ldesign-disabled-bg, #f5f5f5);
+      border-color: var(--ldesign-disabled-border, #d9d9d9);
+
+      .ldesign-radio__dot {
+        background-color: var(--ldesign-disabled-text, #999999);
+      }
+    }
+
+    &:hover {
+      .ldesign-radio__inner {
+        border-color: var(--ldesign-disabled-border, #d9d9d9);
+      }
+    }
+  }
+
+  // 聚焦状态
+  &--focused {
+    .ldesign-radio__inner {
+      box-shadow: 0 0 0 2px rgba(114, 46, 209, 0.1);
+    }
+  }
+
+  // 边框样式
+  &--border {
+    padding: 8px 12px;
+    border: 1px solid var(--ldesign-border-color, #d9d9d9);
+    border-radius: var(--ls-border-radius-base, 6px);
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      border-color: var(--ldesign-brand-color, #722ED1);
+    }
+
+    &.ldesign-radio--checked {
+      border-color: var(--ldesign-brand-color, #722ED1);
+      background-color: rgba(114, 46, 209, 0.05);
+    }
+
+    &.ldesign-radio--disabled {
+      background-color: var(--ldesign-disabled-bg, #f5f5f5);
+      border-color: var(--ldesign-disabled-border, #d9d9d9);
+
+      &:hover {
+        border-color: var(--ldesign-disabled-border, #d9d9d9);
+      }
+    }
+  }
+
+  // 按钮样式
+  &--button {
+    padding: 8px 16px;
+    border: 1px solid var(--ldesign-border-color, #d9d9d9);
+    border-radius: var(--ls-border-radius-base, 6px);
+    background-color: var(--ldesign-bg-color, #ffffff);
+    transition: all 0.2s ease-in-out;
+
+    .ldesign-radio__inner {
+      display: none;
+    }
+
+    .ldesign-radio__label {
+      margin-left: 0;
+    }
+
+    &:hover {
+      border-color: var(--ldesign-brand-color, #722ED1);
+      color: var(--ldesign-brand-color, #722ED1);
+    }
+
+    &.ldesign-radio--checked {
+      background-color: var(--ldesign-brand-color, #722ED1);
+      border-color: var(--ldesign-brand-color, #722ED1);
+      color: #ffffff;
+
+      &:hover {
+        background-color: var(--ldesign-brand-color-hover, #7334cb);
+        border-color: var(--ldesign-brand-color-hover, #7334cb);
+      }
+    }
+
+    &.ldesign-radio--disabled {
+      background-color: var(--ldesign-disabled-bg, #f5f5f5);
+      border-color: var(--ldesign-disabled-border, #d9d9d9);
+      color: var(--ldesign-disabled-text, #999999);
+
+      &:hover {
+        border-color: var(--ldesign-disabled-border, #d9d9d9);
+        color: var(--ldesign-disabled-text, #999999);
+      }
+    }
+  }
+}
+
+// 单选框输入框（隐藏）
+.ldesign-radio__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+}
+
+// 单选框内部样式
+.ldesign-radio__inner {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--ldesign-border-color, #d9d9d9);
+  border-radius: 50%;
+  background-color: var(--ldesign-bg-color, #ffffff);
+  transition: all 0.2s ease-in-out;
+  flex-shrink: 0;
+}
+
+// 单选框圆点
+.ldesign-radio__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--ldesign-brand-color, #722ED1);
+  transform: scale(0);
+  transition: all 0.2s ease-in-out;
+}
+
+// 单选框标签
+.ldesign-radio__label {
+  margin-left: 8px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+// 单选框组
+.ldesign-radio-group {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &--horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  &--disabled {
+    .ldesign-radio {
+      cursor: not-allowed;
+      color: var(--ldesign-disabled-text, #999999);
+
+      .ldesign-radio__inner {
+        background-color: var(--ldesign-disabled-bg, #f5f5f5);
+        border-color: var(--ldesign-disabled-border, #d9d9d9);
+
+        .ldesign-radio__dot {
+          background-color: var(--ldesign-disabled-text, #999999);
+        }
+      }
+    }
+  }
+
+  // 按钮组样式
+  &--button {
+    .ldesign-radio {
+      margin: 0;
+      border-radius: 0;
+
+      &:first-child {
+        border-radius: var(--ls-border-radius-base, 6px) 0 0 var(--ls-border-radius-base, 6px);
+      }
+
+      &:last-child {
+        border-radius: 0 var(--ls-border-radius-base, 6px) var(--ls-border-radius-base, 6px) 0;
+      }
+
+      &:only-child {
+        border-radius: var(--ls-border-radius-base, 6px);
+      }
+
+      &:not(:first-child) {
+        border-left: none;
+      }
+
+      &.ldesign-radio--checked + .ldesign-radio {
+        border-left: 1px solid var(--ldesign-brand-color, #722ED1);
+      }
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .ldesign-radio {
+    &--small {
+      .ldesign-radio__inner {
+        width: 16px;
+        height: 16px;
+
+        .ldesign-radio__dot {
+          width: 8px;
+          height: 8px;
+        }
+      }
+    }
+
+    &--medium {
+      .ldesign-radio__inner {
+        width: 18px;
+        height: 18px;
+
+        .ldesign-radio__dot {
+          width: 10px;
+          height: 10px;
+        }
+      }
+    }
+
+    &--large {
+      .ldesign-radio__inner {
+        width: 20px;
+        height: 20px;
+
+        .ldesign-radio__dot {
+          width: 12px;
+          height: 12px;
+        }
+      }
+    }
+
+    &--button {
+      padding: 10px 16px;
+      font-size: 16px;
+    }
+  }
+
+  .ldesign-radio-group--horizontal {
+    gap: 12px;
+  }
+}

@@ -1,0 +1,109 @@
+// RadioGroup 组件样式
+.ldesign-radio-group {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+
+  // 垂直排列
+  &--vertical {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  // 水平排列
+  &--horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  // 尺寸变体
+  &--small {
+    gap: 12px;
+
+    &.ldesign-radio-group--vertical {
+      gap: 8px;
+    }
+  }
+
+  &--medium {
+    gap: 16px;
+
+    &.ldesign-radio-group--vertical {
+      gap: 12px;
+    }
+  }
+
+  &--large {
+    gap: 20px;
+
+    &.ldesign-radio-group--vertical {
+      gap: 16px;
+    }
+  }
+
+  // 禁用状态
+  &--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+
+    ldesign-radio {
+      pointer-events: none;
+    }
+  }
+
+  // 响应式设计
+  @media (max-width: 768px) {
+    &--horizontal {
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+}
+
+// 单选框在组中的样式调整
+.ldesign-radio-group ldesign-radio {
+  margin: 0;
+  
+  // 确保单选框在组中的对齐
+  &:not(:last-child) {
+    margin-right: 0;
+    margin-bottom: 0;
+  }
+}
+
+// 按钮样式的单选框组
+.ldesign-radio-group--button {
+  ldesign-radio {
+    border-radius: 0;
+    
+    &:first-child {
+      border-top-left-radius: 6px;
+      border-bottom-left-radius: 6px;
+    }
+    
+    &:last-child {
+      border-top-right-radius: 6px;
+      border-bottom-right-radius: 6px;
+    }
+    
+    &:not(:first-child) {
+      border-left: none;
+    }
+  }
+}
+
+// 边框样式的单选框组
+.ldesign-radio-group--border {
+  padding: 12px;
+  border: 1px solid var(--ldesign-border-color, #d9d9d9);
+  border-radius: 6px;
+  background-color: var(--ldesign-bg-color, #ffffff);
+
+  &.ldesign-radio-group--disabled {
+    background-color: var(--ldesign-disabled-bg, #f5f5f5);
+    border-color: var(--ldesign-disabled-border, #d9d9d9);
+  }
+}

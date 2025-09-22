@@ -1,10 +1,14 @@
 import { Config } from '@stencil/core';
+import { less } from '@stencil-community/less';
 
 export const config: Config = {
   namespace: 'ldesign-webcomponent',
   globalScript: 'src/global/global.ts',
   globalStyle: 'src/global/global.less',
   taskQueue: 'async',
+  plugins: [
+    less()
+  ],
   outputTargets: [
     {
       type: 'dist',

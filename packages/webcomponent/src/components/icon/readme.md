@@ -25,11 +25,17 @@ Icon 图标组件
 ### Used by
 
  - [ldesign-button](../button)
+ - [ldesign-checkbox](../checkbox)
+ - [ldesign-input](../input)
+ - [ldesign-switch](../switch)
 
 ### Graph
 ```mermaid
 graph TD;
   ldesign-button --> ldesign-icon
+  ldesign-checkbox --> ldesign-icon
+  ldesign-input --> ldesign-icon
+  ldesign-switch --> ldesign-icon
   style ldesign-icon fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

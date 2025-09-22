@@ -70,6 +70,15 @@ export default defineConfig({
             { text: 'Input 输入框', link: '/components/input' },
             { text: 'Checkbox 复选框', link: '/components/checkbox' },
             { text: 'Radio 单选框', link: '/components/radio' },
+            { text: 'Switch 开关', link: '/components/switch' },
+          ]
+        },
+        {
+          text: '反馈组件',
+          items: [
+            { text: 'Popup 弹出层', link: '/components/popup' },
+            { text: 'Tooltip 工具提示', link: '/components/tooltip' },
+            { text: 'Modal 模态框', link: '/components/modal' },
           ]
         }
       ],
