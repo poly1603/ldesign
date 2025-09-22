@@ -1,6 +1,18 @@
 # Vue 组合式函数 API
 
-Vue 集成模块提供了组合式函数和组件，让你在 Vue 应用中轻松使用缓存功能。
+@ldesign/cache 提供了一套完整的 Vue 3 组合式函数，让你能够轻松地在 Vue 应用中使用缓存功能。
+
+## 目录
+
+- [useCache](#usecache) - 基础缓存管理
+- [useCacheValue](#usecachevalue) - 单值管理
+- [useCacheList](#usecachelist) - 列表管理
+- [useCacheObject](#usecacheobject) - 对象管理
+- [useCacheCounter](#usecachecounter) - 计数器管理
+- [useCacheBoolean](#usecacheboolean) - 布尔值管理
+- [useCacheAsync](#usecacheasync) - 异步数据管理
+- [useCacheStats](#usecachestats) - 缓存统计
+- [useCacheSync](#usecachesync) - 同步缓存值
 
 ## useCache
 
@@ -397,4 +409,188 @@ watch(stats, (newStats) => {
 onUnmounted(() => {
   cache.cleanup()
 })
+```
+
+## useCacheValue
+
+管理单个缓存值，支持响应式双向绑定。
+
+### 语法
+
+```typescript
+const value = useCacheValue<T>(
+  key: string,
+  defaultValue: T,
+  options?: CacheValueOptions
+)
+```
+
+### 参数
+
+- `key`: 缓存键名
+- `defaultValue`: 默认值
+- `options`: 配置选项
+
+### 返回值
+
+返回一个响应式的 `Ref<T>`，修改其值会自动保存到缓存。
+
+### 示例
+
+```vue
+<script setup>
+import { useCacheValue } from '@ldesign/cache/vue'
+
+// 自动保存的用户名
+const username = useCacheValue('username', '', {
+  autoSave: { debounce: 500 }
+})
+
+// 直接修改会自动保存
+username.value = 'John'
+</script>
+
+<template>
+  <input v-model="username" placeholder="用户名" />
+</template>
+```
+
+## useCacheList
+
+管理数组类型的缓存数据。
+
+### 语法
+
+```typescript
+const list = useCacheList<T>(
+  key: string,
+  defaultValue: T[],
+  options?: CacheListOptions
+)
+```
+
+### 返回值
+
+```typescript
+interface CacheList<T> {
+  items: Ref<T[]>
+  add: (item: T) => void
+  remove: (index: number) => void
+  update: (index: number, item: T) => void
+  clear: () => void
+  length: ComputedRef<number>
+  isEmpty: ComputedRef<boolean>
+}
+```
+
+### 示例
+
+```vue
+<script setup>
+import { useCacheList } from '@ldesign/cache/vue'
+
+const { items: todos, add, remove } = useCacheList<string>('todos', [])
+
+const addTodo = (text: string) => {
+  add(text)
+}
+</script>
+
+<template>
+  <div v-for="(todo, index) in todos" :key="index">
+    {{ todo }}
+    <button @click="remove(index)">删除</button>
+  </div>
+</template>
+```
+
+## useCacheObject
+
+管理对象类型的缓存数据，支持深度响应式。
+
+### 语法
+
+```typescript
+const obj = useCacheObject<T>(
+  key: string,
+  defaultValue: T,
+  options?: CacheObjectOptions
+)
+```
+
+### 返回值
+
+返回一个深度响应式的对象，修改任何属性都会自动保存。
+
+### 示例
+
+```vue
+<script setup>
+import { useCacheObject } from '@ldesign/cache/vue'
+
+const settings = useCacheObject('settings', {
+  theme: 'light',
+  notifications: true
+}, {
+  autoSave: { throttle: 1000 }
+})
+
+// 修改属性会自动保存
+settings.theme = 'dark'
+</script>
+
+<template>
+  <select v-model="settings.theme">
+    <option value="light">浅色</option>
+    <option value="dark">深色</option>
+  </select>
+</template>
+```
+
+## useCacheCounter
+
+管理数值计数器。
+
+### 语法
+
+```typescript
+const counter = useCacheCounter(
+  key: string,
+  defaultValue: number,
+  options?: CounterOptions
+)
+```
+
+### 返回值
+
+```typescript
+interface CacheCounter {
+  count: Ref<number>
+  increment: (step?: number) => void
+  decrement: (step?: number) => void
+  reset: () => void
+  canIncrement: ComputedRef<boolean>
+  canDecrement: ComputedRef<boolean>
+}
+```
+
+### 示例
+
+```vue
+<script setup>
+import { useCacheCounter } from '@ldesign/cache/vue'
+
+const { count, increment, decrement, reset } = useCacheCounter('counter', 0, {
+  min: 0,
+  max: 100,
+  step: 1
+})
+</script>
+
+<template>
+  <button @click="decrement">-</button>
+  <span>{{ count }}</span>
+  <button @click="increment">+</button>
+  <button @click="reset">重置</button>
+</template>
 ```

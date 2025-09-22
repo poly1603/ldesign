@@ -34,9 +34,11 @@
 
 ### 🎨 Vue 3 深度集成
 
-- 📦 **组合式函数** - `useCache()` 提供响应式缓存管理
-- 🔄 **响应式缓存** - 自动同步缓存与组件状态
+- 📦 **丰富的组合式函数** - 提供多种专用的缓存管理函数
+- 🔄 **响应式缓存** - 自动同步缓存与组件状态，支持双向绑定
 - 📊 **统计监控** - `useCacheStats()` 实时监控缓存性能
+- 🎯 **类型化支持** - 完整的 TypeScript 类型支持，提供最佳开发体验
+- ⚡ **性能优化** - 内置防抖、节流和自动保存机制
 
 ## 🚀 快速开始
 
@@ -84,6 +86,8 @@ await cache.set('temp-data', 'temporary', { ttl: 5000 }) // 5秒后过期
 ```
 
 ### Vue 3 集成
+
+#### 基础缓存管理
 
 ```vue
 <template>
@@ -142,11 +146,222 @@ const updateProfile = async () => {
 </script>
 ```
 
+#### 专用组合式函数
+
+```vue
+<template>
+  <div>
+    <!-- 简单值缓存 -->
+    <div>
+      <h3>用户名</h3>
+      <input v-model="username" placeholder="输入用户名" />
+      <p>当前值: {{ username }}</p>
+    </div>
+
+    <!-- 列表管理 -->
+    <div>
+      <h3>待办事项</h3>
+      <input v-model="newTodo" @keyup.enter="addTodo" placeholder="添加待办事项" />
+      <ul>
+        <li v-for="(todo, index) in todos" :key="index">
+          {{ todo }}
+          <button @click="removeTodo(index)">删除</button>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 计数器 -->
+    <div>
+      <h3>访问计数</h3>
+      <p>访问次数: {{ count }}</p>
+      <button @click="increment">增加</button>
+      <button @click="decrement">减少</button>
+      <button @click="reset">重置</button>
+    </div>
+
+    <!-- 对象管理 -->
+    <div>
+      <h3>用户设置</h3>
+      <label>
+        <input type="checkbox" v-model="settings.notifications" />
+        启用通知
+      </label>
+      <label>
+        主题:
+        <select v-model="settings.theme">
+          <option value="light">浅色</option>
+          <option value="dark">深色</option>
+        </select>
+      </label>
+    </div>
+
+    <!-- 异步数据 -->
+    <div>
+      <h3>用户信息</h3>
+      <div v-if="userLoading">加载中...</div>
+      <div v-else-if="userError">错误: {{ userError.message }}</div>
+      <div v-else>
+        <p>ID: {{ userData?.id }}</p>
+        <p>邮箱: {{ userData?.email }}</p>
+        <button @click="refreshUser">刷新</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import {
+  useCacheValue,
+  useCacheList,
+  useCacheCounter,
+  useCacheObject,
+  useCacheAsync
+} from '@ldesign/cache/vue'
+
+// 简单值缓存 - 自动保存用户名
+const username = useCacheValue('username', '', {
+  autoSave: { debounce: 500 } // 500ms 防抖保存
+})
+
+// 列表管理 - 待办事项
+const { items: todos, add: addTodo, remove: removeTodo } = useCacheList<string>('todos', [])
+const newTodo = ref('')
+
+const addTodo = () => {
+  if (newTodo.value.trim()) {
+    add(newTodo.value.trim())
+    newTodo.value = ''
+  }
+}
+
+// 计数器 - 访问次数
+const { count, increment, decrement, reset } = useCacheCounter('visit-count', 0, {
+  min: 0,
+  max: 999
+})
+
+// 对象管理 - 用户设置
+const settings = useCacheObject('user-settings', {
+  notifications: true,
+  theme: 'light'
+}, {
+  autoSave: { throttle: 1000 } // 1秒节流保存
+})
+
+// 异步数据 - 用户信息
+const {
+  data: userData,
+  loading: userLoading,
+  error: userError,
+  refresh: refreshUser
+} = useCacheAsync('user-info', async () => {
+  const response = await fetch('/api/user')
+  return response.json()
+}, {
+  ttl: 5 * 60 * 1000, // 5分钟缓存
+  staleWhileRevalidate: true // 后台更新
+})
+</script>
+```
+
 ## 📖 详细文档
 
 - 文档开发：`pnpm docs:dev`
 - 文档构建：`pnpm docs:build`
 - 文档预览：`pnpm docs:preview`
+
+### Vue 组合式函数 API
+
+#### `useCache(options?)`
+基础缓存管理函数，提供完整的缓存操作能力。
+
+```typescript
+const {
+  set, get, remove, clear, has,
+  loading, error,
+  cache, // 响应式缓存实例
+  enableAutoSave, disableAutoSave,
+  isEmpty, isValid, hasError, isReady
+} = useCache({
+  defaultEngine: 'localStorage',
+  keyPrefix: 'app_',
+  defaultTTL: 24 * 60 * 60 * 1000
+})
+```
+
+#### `useCacheValue<T>(key, defaultValue, options?)`
+管理单个缓存值，支持响应式双向绑定。
+
+```typescript
+const username = useCacheValue('username', '', {
+  autoSave: { debounce: 500, throttle: 1000 }
+})
+// 直接修改 username.value 会自动保存到缓存
+```
+
+#### `useCacheList<T>(key, defaultValue, options?)`
+管理数组类型的缓存数据。
+
+```typescript
+const {
+  items, add, remove, update, clear,
+  length, isEmpty
+} = useCacheList<string>('todos', [])
+```
+
+#### `useCacheObject<T>(key, defaultValue, options?)`
+管理对象类型的缓存数据。
+
+```typescript
+const settings = useCacheObject('settings', { theme: 'light' }, {
+  autoSave: { throttle: 1000 }
+})
+// 支持深度响应式，修改 settings.theme 会自动保存
+```
+
+#### `useCacheCounter(key, defaultValue, options?)`
+管理数值计数器。
+
+```typescript
+const {
+  count, increment, decrement, reset,
+  canIncrement, canDecrement
+} = useCacheCounter('counter', 0, {
+  min: 0, max: 100, step: 1
+})
+```
+
+#### `useCacheBoolean(key, defaultValue, options?)`
+管理布尔值。
+
+```typescript
+const { value, toggle, setTrue, setFalse } = useCacheBoolean('feature-enabled', false)
+```
+
+#### `useCacheAsync<T>(key, fetcher, options?)`
+管理异步数据，支持 SWR 模式。
+
+```typescript
+const {
+  data, loading, error,
+  refresh, mutate
+} = useCacheAsync('user-data', fetchUserData, {
+  ttl: 5 * 60 * 1000,
+  staleWhileRevalidate: true
+})
+```
+
+#### `useCacheStats(options?)`
+监控缓存性能统计。
+
+```typescript
+const {
+  stats, formattedStats,
+  refresh, startAutoRefresh, stopAutoRefresh
+} = useCacheStats({
+  refreshInterval: 5000
+})
+```
 
 ### 配置选项
 

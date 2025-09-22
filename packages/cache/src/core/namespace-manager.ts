@@ -1,4 +1,4 @@
-import type { CacheOptions, SetOptions } from '../types'
+import type { CacheOptions, SerializableValue, SetOptions } from '../types'
 import { CacheManager } from './cache-manager'
 
 /**
@@ -83,14 +83,14 @@ export class CacheNamespace {
   /**
    * 设置缓存
    */
-  async set<T = any>(key: string, value: T, options?: SetOptions): Promise<void> {
+  async set<T extends SerializableValue = SerializableValue>(key: string, value: T, options?: SetOptions): Promise<void> {
     return this.manager.set(key, value, options)
   }
 
   /**
    * 获取缓存
    */
-  async get<T = any>(key: string): Promise<T | null> {
+  async get<T extends SerializableValue = SerializableValue>(key: string): Promise<T | null> {
     return this.manager.get<T>(key)
   }
 
@@ -156,14 +156,14 @@ export class CacheNamespace {
   /**
    * 批量操作
    */
-  async mset<T = any>(
+  async mset<T extends SerializableValue = SerializableValue>(
     items: Array<{ key: string, value: T, options?: SetOptions }> | Record<string, T>,
     options?: SetOptions,
   ): Promise<{ success: string[], failed: Array<{ key: string, error: Error }> }> {
     return this.manager.mset(items, options)
   }
 
-  async mget<T = any>(keys: string[]): Promise<Record<string, T | null>> {
+  async mget<T extends SerializableValue = SerializableValue>(keys: string[]): Promise<Record<string, T | null>> {
     return this.manager.mget<T>(keys)
   }
 
@@ -174,7 +174,7 @@ export class CacheNamespace {
   /**
    * 获取或设置
    */
-  async remember<T = any>(
+  async remember<T extends SerializableValue = SerializableValue>(
     key: string,
     fetcher: () => Promise<T> | T,
     options?: SetOptions & { refresh?: boolean },

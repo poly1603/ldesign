@@ -1,5 +1,5 @@
 import type { ComputedRef } from 'vue'
-import type { CacheStats, SetOptions, UseCacheOptions } from '../types'
+import type { CacheStats, SerializableValue, SetOptions, UseCacheOptions } from '../types'
 import { computed, inject, onUnmounted, ref, watch } from 'vue'
 import { CacheManager } from '../core/cache-manager'
 import { CACHE_MANAGER_KEY } from './cache-provider'
@@ -7,23 +7,40 @@ import { CACHE_MANAGER_KEY } from './cache-provider'
 /**
  * 响应式缓存返回类型
  */
-export interface ReactiveCache<T> {
+export interface ReactiveCache<T extends SerializableValue = SerializableValue> {
   /** 缓存值 */
   value: ComputedRef<T | null>
   /** 是否正在加载 */
   loading: ComputedRef<boolean>
   /** 错误信息 */
   error: ComputedRef<Error | null>
-  /** 设置缓存值 */
-  set: (value: T, options?: SetOptions) => Promise<void>
-  /** 刷新缓存 */
-  refresh: () => Promise<void>
-  /** 移除缓存 */
-  remove: () => Promise<void>
   /** 是否存在 */
   exists: ComputedRef<boolean>
+  /** 是否为空 */
+  isEmpty: ComputedRef<boolean>
+  /** 是否有效（非null/undefined） */
+  isValid: ComputedRef<boolean>
+  /** 是否有错误 */
+  hasError: ComputedRef<boolean>
+  /** 是否就绪（非加载中且无错误） */
+  isReady: ComputedRef<boolean>
+  /** 设置缓存值 */
+  set: (value: T, options?: SetOptions) => Promise<void>
+  /** 设置缓存值（带回调） */
+  setWithCallback: (value: T, options?: SetOptions, onSuccess?: () => void, onError?: (error: Error) => void) => Promise<void>
+  /** 刷新缓存 */
+  refresh: () => Promise<void>
+  /** 刷新缓存（带回调） */
+  refreshWithCallback: (onSuccess?: () => void, onError?: (error: Error) => void) => Promise<void>
+  /** 移除缓存 */
+  remove: () => Promise<void>
   /** 启用自动保存，返回停止函数 */
-  enableAutoSave: (options?: { ttl?: number, throttle?: number }) => () => void
+  enableAutoSave: (options?: {
+    ttl?: number
+    throttle?: number
+    debounce?: number
+    immediate?: boolean
+  }) => () => void
 }
 
 /**
@@ -34,9 +51,9 @@ export interface ReactiveCache<T> {
 export interface UseCacheReturn {
   // 缓存操作方法
   /** 设置缓存项 */
-  set: <T = unknown>(key: string, value: T, options?: SetOptions) => Promise<void>
+  set: <T extends SerializableValue = SerializableValue>(key: string, value: T, options?: SetOptions) => Promise<void>
   /** 获取缓存项 */
-  get: <T = unknown>(key: string) => Promise<T | null>
+  get: <T extends SerializableValue = SerializableValue>(key: string) => Promise<T | null>
   /** 移除缓存项 */
   remove: (key: string) => Promise<void>
   /** 清空所有缓存 */
@@ -68,7 +85,39 @@ export interface UseCacheReturn {
 
   // 响应式缓存
   /** 创建响应式缓存 */
-  useReactiveCache: <T = unknown>(key: string, defaultValue?: T) => ReactiveCache<T>
+  useReactiveCache: <T extends SerializableValue = SerializableValue>(key: string, defaultValue?: T) => ReactiveCache<T>
+
+  // 便捷的组合式函数
+  /** 简单值缓存 */
+  useCacheValue: <T extends SerializableValue = SerializableValue>(
+    key: string,
+    defaultValue?: T,
+    options?: { ttl?: number, immediate?: boolean }
+  ) => {
+    value: ComputedRef<T | null>
+    loading: ComputedRef<boolean>
+    error: ComputedRef<Error | null>
+    exists: ComputedRef<boolean>
+    isEmpty: ComputedRef<boolean>
+    isValid: ComputedRef<boolean>
+    set: (value: T) => Promise<void>
+    refresh: () => Promise<void>
+    remove: () => Promise<void>
+  }
+
+  /** 双向绑定缓存 */
+  useCacheSync: <T extends SerializableValue = SerializableValue>(
+    key: string,
+    defaultValue?: T,
+    options?: { ttl?: number, throttle?: number }
+  ) => {
+    value: ComputedRef<T | null>
+    loading: ComputedRef<boolean>
+    error: ComputedRef<Error | null>
+    exists: ComputedRef<boolean>
+    refresh: () => Promise<void>
+    remove: () => Promise<void>
+  }
 
   // 缓存管理器实例
   /** 缓存管理器实例 */
@@ -91,7 +140,7 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
   /**
    * 设置缓存项
    */
-  const set = async <T = any>(
+  const set = async <T extends SerializableValue = SerializableValue>(
     key: string,
     value: T,
     setOptions?: SetOptions,
@@ -114,7 +163,7 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
   /**
    * 获取缓存项
    */
-  const get = async <T = any>(key: string): Promise<T | null> => {
+  const get = async <T extends SerializableValue = SerializableValue>(key: string): Promise<T | null> => {
     loading.value = true
     error.value = null
 
@@ -263,7 +312,7 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
    * await userCache.refresh()
    * ```
    */
-  const useReactiveCache = <T = unknown>(key: string, defaultValue?: T): ReactiveCache<T> => {
+  const useReactiveCache = <T extends SerializableValue = SerializableValue>(key: string, defaultValue?: T): ReactiveCache<T> => {
     const value = ref<T | null>(defaultValue ?? null)
     const isLoading = ref(false)
     const cacheError = ref<Error | null>(null)
@@ -309,41 +358,78 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
     }
 
     /**
-     * 启用自动保存（带节流）
+     * 启用自动保存（带节流和防抖）
      */
-    const enableAutoSave = (opts?: { ttl?: number, throttle?: number }): (() => void) => {
+    const enableAutoSave = (opts?: {
+      ttl?: number
+      throttle?: number
+      debounce?: number
+      immediate?: boolean
+    }): (() => void) => {
       const throttleMs = opts?.throttle ?? 500
+      const debounceMs = opts?.debounce ?? 100
       let pending = false
-      let timer: number | undefined
+      let throttleTimer: number | undefined
+      let debounceTimer: number | undefined
+      let lastSaveTime = 0
+
+      const performSave = async (val: T) => {
+        try {
+          await save(val, opts?.ttl ? { ttl: opts.ttl } : undefined)
+          lastSaveTime = Date.now()
+        } catch (error) {
+          console.error('Auto-save failed:', error)
+        } finally {
+          pending = false
+        }
+      }
 
       const stop = watch(
         () => value.value,
-        async (val) => {
-          // 节流，避免频繁写入
-          if (pending)
-            return
-          pending = true
-          timer = window.setTimeout(async () => {
-            try {
-              await save(val as T, opts?.ttl ? { ttl: opts.ttl } : undefined)
-            }
-            finally {
-              pending = false
-              if (timer !== undefined) {
-                clearTimeout(timer)
-                timer = undefined
+        (val) => {
+          if (val === null || pending) return
+
+          // 清除之前的防抖定时器
+          if (debounceTimer) {
+            clearTimeout(debounceTimer)
+          }
+
+          // 防抖：延迟执行
+          debounceTimer = window.setTimeout(() => {
+            const now = Date.now()
+            const timeSinceLastSave = now - lastSaveTime
+
+            // 节流：如果距离上次保存时间太短，延迟执行
+            if (timeSinceLastSave < throttleMs) {
+              if (throttleTimer) {
+                clearTimeout(throttleTimer)
               }
+              throttleTimer = window.setTimeout(() => {
+                pending = true
+                performSave(val as T)
+              }, throttleMs - timeSinceLastSave)
+            } else {
+              // 立即执行
+              pending = true
+              performSave(val as T)
             }
-          }, throttleMs)
+          }, debounceMs)
         },
-        { deep: true },
+        {
+          deep: true,
+          immediate: opts?.immediate ?? false
+        },
       )
 
       return () => {
         stop()
-        if (timer !== undefined) {
-          clearTimeout(timer)
-          timer = undefined
+        if (throttleTimer) {
+          clearTimeout(throttleTimer)
+          throttleTimer = undefined
+        }
+        if (debounceTimer) {
+          clearTimeout(debounceTimer)
+          debounceTimer = undefined
         }
       }
     }
@@ -379,14 +465,55 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
     const errorComputed = computed(() => cacheError.value)
     const existsComputed = computed(() => value.value !== null && value.value !== undefined)
 
+    // 扩展的计算属性
+    const isEmptyComputed = computed(() => {
+      const val = value.value
+      if (val === null || val === undefined) return true
+      if (typeof val === 'string') return val === ''
+      if (Array.isArray(val)) return val.length === 0
+      if (typeof val === 'object') return Object.keys(val).length === 0
+      return false
+    })
+
+    const isValidComputed = computed(() => value.value !== null && value.value !== undefined)
+    const hasErrorComputed = computed(() => cacheError.value !== null)
+    const isReadyComputed = computed(() => !isLoading.value && cacheError.value === null)
+
+    // 便捷方法
+    const setWithCallback = async (newValue: T, options?: SetOptions, onSuccess?: () => void, onError?: (error: Error) => void) => {
+      try {
+        await save(newValue, options)
+        onSuccess?.()
+      } catch (error) {
+        onError?.(error instanceof Error ? error : new Error(String(error)))
+        throw error
+      }
+    }
+
+    const refreshWithCallback = async (onSuccess?: () => void, onError?: (error: Error) => void) => {
+      try {
+        await load()
+        onSuccess?.()
+      } catch (error) {
+        onError?.(error instanceof Error ? error : new Error(String(error)))
+        throw error
+      }
+    }
+
     return {
       value: valueComputed,
       loading: loadingComputed,
       error: errorComputed,
-      set: save,
-      refresh: load,
-      remove: removeValue,
       exists: existsComputed,
+      isEmpty: isEmptyComputed,
+      isValid: isValidComputed,
+      hasError: hasErrorComputed,
+      isReady: isReadyComputed,
+      set: save,
+      setWithCallback,
+      refresh: load,
+      refreshWithCallback,
+      remove: removeValue,
       enableAutoSave,
     }
   }
@@ -402,6 +529,67 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
         console.error('Failed to cleanup cache manager:', err)
       }
     })
+  }
+
+  // 便捷的组合式函数
+  /**
+   * 简单值缓存 - 用于缓存单个值
+   */
+  const useCacheValue = <T extends SerializableValue = SerializableValue>(
+    key: string,
+    defaultValue?: T,
+    options?: { ttl?: number, immediate?: boolean }
+  ) => {
+    const cache = useReactiveCache<T>(key, defaultValue)
+
+    // 提供更简洁的API
+    return {
+      value: cache.value,
+      loading: cache.loading,
+      error: cache.error,
+      exists: cache.exists,
+      set: (value: T) => cache.set(value, options?.ttl ? { ttl: options.ttl } : undefined),
+      refresh: cache.refresh,
+      remove: cache.remove,
+      // 便捷的计算属性
+      isEmpty: computed(() => {
+        const val = cache.value.value
+        return val === null || val === undefined || val === '' || (Array.isArray(val) && val.length === 0)
+      }),
+      isValid: computed(() => cache.value.value !== null && cache.value.value !== undefined),
+    }
+  }
+
+  /**
+   * 双向绑定缓存 - 支持v-model
+   */
+  const useCacheSync = <T extends SerializableValue = SerializableValue>(
+    key: string,
+    defaultValue?: T,
+    options?: { ttl?: number, throttle?: number }
+  ) => {
+    const cache = useReactiveCache<T>(key, defaultValue)
+    const throttleMs = options?.throttle ?? 300
+
+    // 创建可写的计算属性用于双向绑定
+    const syncValue = computed({
+      get: () => cache.value.value,
+      set: (newValue: T | null) => {
+        if (newValue !== null) {
+          // 使用节流避免频繁写入
+          cache.set(newValue, options?.ttl ? { ttl: options.ttl } : undefined)
+        }
+      }
+    })
+
+    return {
+      value: syncValue,
+      loading: cache.loading,
+      error: cache.error,
+      exists: cache.exists,
+      refresh: cache.refresh,
+      remove: cache.remove,
+    }
   }
 
   // 计算属性
@@ -431,6 +619,10 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
 
     // 响应式缓存
     useReactiveCache,
+
+    // 便捷的组合式函数
+    useCacheValue,
+    useCacheSync,
 
     // 缓存管理器实例
     manager: cacheManager,

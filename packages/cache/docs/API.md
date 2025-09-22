@@ -208,6 +208,41 @@ interface CacheStats {
 }
 ```
 
+### 性能优化方法
+
+#### optimizeMemory()
+手动触发内存优化，清理序列化缓存和事件节流映射。
+
+```typescript
+await cache.optimizeMemory()
+```
+
+此方法会：
+- 清理序列化缓存中的过期条目
+- 清理事件节流映射中的过期记录
+- 触发内存引擎的清理操作
+
+#### cleanup()
+清理所有存储引擎中的过期项。
+
+```typescript
+await cache.cleanup()
+```
+
+#### destroy()
+销毁缓存管理器，清理所有资源。
+
+```typescript
+await cache.destroy()
+```
+
+此方法会：
+- 停止所有定时器
+- 清空所有引擎
+- 清空统计信息
+- 清空事件监听器
+- 清理性能优化相关的缓存
+
 ## 批量操作
 
 ### mset(items, options?)

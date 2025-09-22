@@ -1,7 +1,6 @@
 // 核心功能
 // 导入类型
-import type { CacheOptions } from './types'
-import nodeProcess from 'node:process'
+import type { CacheOptions, SerializableValue } from './types'
 import { CacheManager } from './core/cache-manager'
 import { StorageEngineFactory } from './engines/factory'
 import { getPresetOptions } from './presets'
@@ -63,7 +62,7 @@ function detectPreset(): DetectedPreset {
     return 'browser'
   }
   // 纯 Node 环境
-  if (typeof nodeProcess !== 'undefined' && (nodeProcess as any).versions?.node) {
+  if (typeof process !== 'undefined' && (process as any).versions?.node) {
     return 'node'
   }
   // 其它环境（如 SSR 渲染器）
@@ -99,11 +98,11 @@ export function getDefaultCache(options?: CacheOptions & { preset?: DetectedPres
  */
 export const cache = {
   /** 获取缓存值（泛型推断） */
-  get<T = any>(key: string) {
+  get<T extends SerializableValue = SerializableValue>(key: string) {
     return getDefaultCache().get<T>(key)
   },
   /** 设置缓存值 */
-  set<T = any>(key: string, value: T, options?: import('./types').SetOptions) {
+  set<T extends SerializableValue = SerializableValue>(key: string, value: T, options?: import('./types').SetOptions) {
     return getDefaultCache().set<T>(key, value, options)
   },
   /** 删除指定键 */
@@ -127,7 +126,7 @@ export const cache = {
     return getDefaultCache().getStats()
   },
   /** 记忆函数：不存在则计算并写入 */
-  remember<T = any>(
+  remember<T extends SerializableValue = SerializableValue>(
     key: string,
     fetcher: () => Promise<T> | T,
     options?: import('./types').SetOptions & { refresh?: boolean },

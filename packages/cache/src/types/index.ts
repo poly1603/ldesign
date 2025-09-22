@@ -20,6 +20,35 @@ export type DataType =
   | 'binary'
 
 /**
+ * 可序列化的值类型
+ */
+export type SerializableValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | SerializableObject
+  | SerializableArray
+
+/**
+ * 可序列化的对象类型
+ */
+export interface SerializableObject {
+  [key: string]: SerializableValue
+}
+
+/**
+ * 可序列化的数组类型
+ */
+export interface SerializableArray extends Array<SerializableValue> {}
+
+/**
+ * 缓存键类型
+ */
+export type CacheKey = string | number | symbol
+
+/**
  * 缓存项元数据
  */
 export interface CacheMetadata {
@@ -44,7 +73,7 @@ export interface CacheMetadata {
 /**
  * 缓存项
  */
-export interface CacheItem<T = any> {
+export interface CacheItem<T = SerializableValue> {
   /** 缓存键 */
   key: string
   /** 缓存值 */
@@ -261,12 +290,12 @@ export interface ICacheManager {
   /**
    * 设置缓存项
    */
-  set: <T = any>(key: string, value: T, options?: SetOptions) => Promise<void>
+  set: <T extends SerializableValue = SerializableValue>(key: string, value: T, options?: SetOptions) => Promise<void>
 
   /**
    * 获取缓存项
    */
-  get: <T = any>(key: string) => Promise<T | null>
+  get: <T extends SerializableValue = SerializableValue>(key: string) => Promise<T | null>
 
   /**
    * 删除缓存项
@@ -423,3 +452,94 @@ export interface UseCacheOptions extends Omit<CacheOptions, 'keyPrefix'> {
   /** 是否在组件卸载时清理 */
   cleanupOnUnmount?: boolean
 }
+
+// ============================================================================
+// 类型守卫函数
+// ============================================================================
+
+/**
+ * 检查值是否为可序列化的值
+ */
+export function isSerializableValue(value: unknown): value is SerializableValue {
+  if (value === null || value === undefined) {
+    return true
+  }
+
+  const type = typeof value
+  if (type === 'string' || type === 'number' || type === 'boolean') {
+    return true
+  }
+
+  if (Array.isArray(value)) {
+    return value.every(isSerializableValue)
+  }
+
+  if (type === 'object' && value.constructor === Object) {
+    return Object.values(value as Record<string, unknown>).every(isSerializableValue)
+  }
+
+  return false
+}
+
+/**
+ * 检查是否为有效的存储引擎
+ */
+export function isValidStorageEngine(engine: string): engine is StorageEngine {
+  return ['localStorage', 'sessionStorage', 'cookie', 'indexedDB', 'memory'].includes(engine)
+}
+
+/**
+ * 检查是否为有效的数据类型
+ */
+export function isValidDataType(type: string): type is DataType {
+  return ['string', 'number', 'boolean', 'object', 'array', 'binary'].includes(type)
+}
+
+/**
+ * 检查是否为有效的缓存事件类型
+ */
+export function isValidCacheEventType(type: string): type is CacheEventType {
+  return ['set', 'get', 'remove', 'clear', 'expired', 'error', 'strategy'].includes(type)
+}
+
+// ============================================================================
+// 工具类型
+// ============================================================================
+
+/**
+ * 提取对象中指定键的类型
+ */
+export type PickByType<T, U> = {
+  [K in keyof T as T[K] extends U ? K : never]: T[K]
+}
+
+/**
+ * 排除对象中指定键的类型
+ */
+export type OmitByType<T, U> = {
+  [K in keyof T as T[K] extends U ? never : K]: T[K]
+}
+
+/**
+ * 深度只读类型
+ */
+export type DeepReadonly<T> = {
+  readonly [P in keyof T]: T[P] extends object ? DeepReadonly<T[P]> : T[P]
+}
+
+/**
+ * 深度可选类型
+ */
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
+}
+
+/**
+ * 非空类型
+ */
+export type NonNullable<T> = T extends null | undefined ? never : T
+
+/**
+ * 严格的对象类型（不允许额外属性）
+ */
+export type Exact<T, U> = T extends U ? (U extends T ? T : never) : never
