@@ -1,7 +1,0 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="sound-mute">
-<path id="fill1" d="M18.0002 21L9.99902 16.5V7.5L18.0002 3V21Z" fill="white"/>
-<path id="fill2" d="M6 16.5L6 7.5H9.99882L9.99882 16.5L6 16.5Z" fill="white"/>
-<path id="stroke1" d="M9.99882 16.5L6 16.5L6 7.5H9.99882M9.99882 16.5L18 21V3L9.99882 7.5M9.99882 16.5L9.99882 7.5" stroke="black" stroke-width="2" stroke-linecap="square"/>
-</g>
-</svg>

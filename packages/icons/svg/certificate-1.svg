@@ -1,8 +1,0 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="certificate-1">
-<path id="fill1" d="M4 2L4 22L20 22L20 2L4 2Z" fill="white"/>
-<path id="fill2" d="M8 2L12 2V7.5L10 6L8 7.5V2Z" fill="white"/>
-<path id="stroke2" d="M8 13H16M8 17H14M12 2H8L8 7.5L10 6L12 7.5V2Z" stroke="black" stroke-width="2" stroke-linecap="square"/>
-<path id="stroke1" d="M4 2L4 22L20 22L20 2L4 2Z" stroke="black" stroke-width="2" stroke-linecap="square"/>
-</g>
-</svg>

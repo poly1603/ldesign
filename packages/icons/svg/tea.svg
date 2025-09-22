@@ -1,7 +1,0 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="tea">
-<path id="fill1" d="M4 9H16L15.5821 14.8759C15.3391 17.7105 12.8636 20 10 20C7.09127 20 4.66635 17.774 4.41794 14.8759L4 9Z" fill="white"/>
-<path id="stroke1" d="M4 21H19M15.9998 9H19.9998V13C19.9998 14.6569 18.6567 16 16.9998 16H15.3691C15.4798 15.6336 15.548 15.2713 15.5819 14.8759M16 9H4L4.41794 14.8759C4.66635 17.774 7.09127 20 10 20C12.8636 20 15.3391 17.7105 15.5821 14.8759L16 9Z" stroke="black" stroke-width="2" stroke-linecap="square"/>
-<path id="stroke2" d="M6 4V6M10 3V6M14 4V6" stroke="black" stroke-width="2" stroke-linecap="square"/>
-</g>
-</svg>

@@ -1,8 +1,0 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g id="widget">
-        <path id="fill1" d="M22 21V13H2V21H22Z" fill="white" />
-        <path id="stroke1"
-            d="M2.50002 13H21.5M6 4H18L22 13V21H2V13L6 4ZM10 17H10.0039V17.0039H10V17ZM6 17H6.00391V17.0039H6V17Z"
-            stroke="black" stroke-width="2" stroke-linecap="square" />
-    </g>
-</svg>
