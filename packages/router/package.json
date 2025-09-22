@@ -1,8 +1,17 @@
 {
   "name": "@ldesign/router",
-  "type": "module",
   "version": "1.0.0",
   "description": "A modern, high-performance Vue router library with TypeScript support, independent of vue-router",
+  "keywords": [
+    "vue",
+    "router",
+    "navigation",
+    "spa",
+    "typescript",
+    "performance",
+    "modern",
+    "independent"
+  ],
   "author": "ldesign",
   "license": "MIT",
   "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/router#readme",
@@ -14,38 +23,137 @@
   "bugs": {
     "url": "https://github.com/ldesign/ldesign/issues"
   },
-  "keywords": [
-    "vue",
-    "router",
-    "navigation",
-    "spa",
-    "typescript",
-    "performance",
-    "modern",
-    "independent"
-  ],
+  "type": "module",
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
+      "types": "./es/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
+    },
+    "./components": {
+      "types": "./es/components/index.d.ts",
+      "import": "./es/components/index.js",
+      "require": "./lib/components/index.cjs"
+    },
+    "./components/*": {
+      "types": "./es/components/*.d.ts",
+      "import": "./es/components/*.js",
+      "require": "./lib/components/*.cjs"
+    },
+    "./composables": {
+      "types": "./es/composables/index.d.ts",
+      "import": "./es/composables/index.js",
+      "require": "./lib/composables/index.cjs"
+    },
+    "./composables/*": {
+      "types": "./es/composables/*.d.ts",
+      "import": "./es/composables/*.js",
+      "require": "./lib/composables/*.cjs"
+    },
+    "./core": {
+      "types": "./es/core/index.d.ts",
+      "import": "./es/core/index.js",
+      "require": "./lib/core/index.cjs"
+    },
+    "./core/*": {
+      "types": "./es/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.cjs"
+    },
+    "./debug/*": {
+      "types": "./es/debug/*.d.ts",
+      "import": "./es/debug/*.js",
+      "require": "./lib/debug/*.cjs"
+    },
+    "./device": {
+      "types": "./es/device/index.d.ts",
+      "import": "./es/device/index.js",
+      "require": "./lib/device/index.cjs"
+    },
+    "./device/*": {
+      "types": "./es/device/*.d.ts",
+      "import": "./es/device/*.js",
+      "require": "./lib/device/*.cjs"
+    },
+    "./engine": {
+      "types": "./es/engine/index.d.ts",
+      "import": "./es/engine/index.js",
+      "require": "./lib/engine/index.cjs"
+    },
+    "./engine/*": {
+      "types": "./es/engine/*.d.ts",
+      "import": "./es/engine/*.js",
+      "require": "./lib/engine/*.cjs"
+    },
+    "./guards": {
+      "types": "./es/guards/index.d.ts",
+      "import": "./es/guards/index.js",
+      "require": "./lib/guards/index.cjs"
+    },
+    "./guards/*": {
+      "types": "./es/guards/*.d.ts",
+      "import": "./es/guards/*.js",
+      "require": "./lib/guards/*.cjs"
+    },
+    "./optimization/*": {
+      "types": "./es/optimization/*.d.ts",
+      "import": "./es/optimization/*.js",
+      "require": "./lib/optimization/*.cjs"
+    },
+    "./plugins": {
+      "types": "./es/plugins/index.d.ts",
+      "import": "./es/plugins/index.js",
+      "require": "./lib/plugins/index.cjs"
+    },
+    "./plugins/*": {
+      "types": "./es/plugins/*.d.ts",
+      "import": "./es/plugins/*.js",
+      "require": "./lib/plugins/*.cjs"
+    },
+    "./security/*": {
+      "types": "./es/security/*.d.ts",
+      "import": "./es/security/*.js",
+      "require": "./lib/security/*.cjs"
+    },
+    "./smart/*": {
+      "types": "./es/smart/*.d.ts",
+      "import": "./es/smart/*.js",
+      "require": "./lib/smart/*.cjs"
+    },
+    "./types": {
+      "types": "./es/types/index.d.ts",
+      "import": "./es/types/index.js",
+      "require": "./lib/types/index.cjs"
+    },
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
+    },
+    "./utils": {
+      "types": "./es/utils/index.d.ts",
+      "import": "./es/utils/index.js",
+      "require": "./lib/utils/index.cjs"
+    },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
     }
   },
-  "main": "lib/index.cjs",
-  "module": "es/index.js",
-  "types": "types/index.d.ts",
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
   "files": [
     "README.md",
-    "CHANGELOG.md",
+    "LICENSE",
+    "package.json",
     "es",
     "lib",
-    "types",
     "dist"
   ],
-  "engines": {
-    "node": ">=16.0.0",
-    "pnpm": ">=8.0.0"
-  },
   "scripts": {
     "build": "ldesign-builder build",
     "build:watch": "ldesign-builder build --watch",
@@ -84,24 +192,13 @@
     "validate:e2e": "node scripts/validate.js --e2e",
     "build:dev": "node scripts/build.js --dev"
   },
+  "dependencies": {
+    "@ldesign/device": "workspace:*"
+  },
   "peerDependencies": {
     "@ldesign/device": "^1.0.0",
     "@ldesign/engine": "^1.0.0",
     "vue": "^3.3.0"
-  },
-  "peerDependenciesMeta": {
-    "@ldesign/device": {
-      "optional": false
-    },
-    "@ldesign/engine": {
-      "optional": true
-    },
-    "vue": {
-      "optional": true
-    }
-  },
-  "dependencies": {
-    "@ldesign/device": "workspace:*"
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
@@ -126,6 +223,14 @@
     "vue": "^3.4.15",
     "vue-tsc": "^3.0.5"
   },
+  "engines": {
+    "node": ">=16.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "size-limit": [
     {
       "name": "UMD Bundle",
@@ -149,8 +254,15 @@
       "limit": "40 KB"
     }
   ],
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
+  "peerDependenciesMeta": {
+    "@ldesign/device": {
+      "optional": false
+    },
+    "@ldesign/engine": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
   }
 }

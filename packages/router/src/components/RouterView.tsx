@@ -163,8 +163,15 @@ export const RouterView = defineComponent({
         if (!component)
           return null
 
+        // 根据当前RouterView的深度生成稳定的key
+        // 对于父路由组件，使用路由名称而不是完整路径作为key
+        // 这样子路由切换时父组件不会重新挂载
+        const matchedIndex = currentDepth - 1
+        const matched = route.value.matched[matchedIndex]
+        const componentKey = matched?.name || route.value.path
+
         return h(component, {
-          key: route.value.path,
+          key: componentKey,
         })
       }
 
