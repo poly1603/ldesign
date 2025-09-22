@@ -193,7 +193,7 @@
 
 <script setup lang="ts">
 import { useRoute } from '@ldesign/router'
-import { useI18n } from '@ldesign/i18n/vue/index.ts'
+import { useI18n } from '@ldesign/i18n/vue'
 import AppConfigPanel from '../components/AppConfigPanel.vue'
 
 /**

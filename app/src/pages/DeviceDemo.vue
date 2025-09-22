@@ -278,7 +278,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
-import { useDevice, useNetwork, useBattery, useGeolocation } from '@ldesign/device/vue/index.ts'
+import { useDevice, useNetwork, useBattery, useGeolocation } from '@ldesign/device/vue'
 
 // 使用 Device Composition API
 const { deviceInfo: deviceInfoRef, isDesktop, isMobile, isTablet, isTouchDevice, refresh } = useDevice()
