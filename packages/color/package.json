@@ -1,10 +1,7 @@
 {
   "name": "@ldesign/color",
-  "type": "module",
   "version": "0.1.0",
   "description": "A framework-agnostic theme color management library with Vue 3 integration",
-  "author": "ldesign",
-  "license": "MIT",
   "keywords": [
     "color",
     "theme",
@@ -14,6 +11,9 @@
     "typescript",
     "framework-agnostic"
   ],
+  "author": "ldesign",
+  "license": "MIT",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./es/index.d.ts",
@@ -100,16 +100,16 @@
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
+  "types": "./es/index.d.ts",
   "unpkg": "./dist/index.min.js",
   "jsdelivr": "./dist/index.min.js",
-  "types": "./es/index.d.ts",
   "files": [
-    "LICENSE",
     "README.md",
-    "dist",
+    "LICENSE",
+    "package.json",
     "es",
     "lib",
-    "package.json"
+    "dist"
   ],
   "scripts": {
     "build": "ldesign-builder build -f esm,cjs,umd",
@@ -142,20 +142,15 @@
     "release": "pnpm run ci:coverage && pnpm run build:prod && changeset publish",
     "build:dev": "node scripts/build.js --dev"
   },
-  "peerDependencies": {
-    "vue": "^3.3.0"
-  },
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    }
-  },
   "dependencies": {
     "@arco-design/color": "^0.4.0",
     "@ldesign/shared": "workspace:*",
     "chroma-js": "^3.1.2",
     "lucide-vue-next": "^0.542.0",
     "tslib": "^2.6.2"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
@@ -187,5 +182,10 @@
       "limit": "30 KB"
     }
   ],
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  },
   "style": "es/index-lib.css"
 }
