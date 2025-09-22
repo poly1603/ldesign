@@ -70,6 +70,16 @@
       "import": "./es/core/*.js",
       "require": "./lib/core/*.cjs"
     },
+    "./locales": {
+      "types": "./es/locales/index.d.ts",
+      "import": "./es/locales/index.js",
+      "require": "./lib/locales/index.cjs"
+    },
+    "./locales/*": {
+      "types": "./es/locales/*.d.ts",
+      "import": "./es/locales/*.js",
+      "require": "./lib/locales/*.cjs"
+    },
     "./scanner": {
       "types": "./es/scanner/index.d.ts",
       "import": "./es/scanner/index.js",
@@ -79,16 +89,6 @@
       "types": "./es/scanner/*.d.ts",
       "import": "./es/scanner/*.js",
       "require": "./lib/scanner/*.cjs"
-    },
-    "./test-utils": {
-      "types": "./es/test-utils/index.d.ts",
-      "import": "./es/test-utils/index.js",
-      "require": "./lib/test-utils/index.cjs"
-    },
-    "./test-utils/*": {
-      "types": "./es/test-utils/*.d.ts",
-      "import": "./es/test-utils/*.js",
-      "require": "./lib/test-utils/*.cjs"
     },
     "./types": {
       "types": "./es/types/index.d.ts",
@@ -110,6 +110,7 @@
       "import": "./es/utils/*.js",
       "require": "./lib/utils/*.cjs"
     },
+    "./es/components/TemplateConfigPanel.vue.css": "./es/components/TemplateConfigPanel.vue.css",
     "./es/components/TemplateRenderer.css": "./es/components/TemplateRenderer.css",
     "./es/components/TemplateSelector.css": "./es/components/TemplateSelector.css",
     "./es/composables/index.css": "./es/composables/index.css",
@@ -127,8 +128,7 @@
     "./es/templates/login/desktop/modern/index.vue.css": "./es/templates/login/desktop/modern/index.vue.css",
     "./es/templates/login/mobile/default/index.vue.css": "./es/templates/login/mobile/default/index.vue.css",
     "./es/templates/login/tablet/default/index.vue.css": "./es/templates/login/tablet/default/index.vue.css",
-    "./es/__tests__/integration/hook-component-consistency.test.css": "./es/__tests__/integration/hook-component-consistency.test.css",
-    "./es/__tests__/integration/template-switching.test.css": "./es/__tests__/integration/template-switching.test.css",
+    "./lib/components/TemplateConfigPanel.vue.css": "./lib/components/TemplateConfigPanel.vue.css",
     "./lib/components/TemplateRenderer.css": "./lib/components/TemplateRenderer.css",
     "./lib/components/TemplateSelector.css": "./lib/components/TemplateSelector.css",
     "./lib/composables/index.css": "./lib/composables/index.css",
@@ -146,8 +146,6 @@
     "./lib/templates/login/desktop/modern/index.vue.css": "./lib/templates/login/desktop/modern/index.vue.css",
     "./lib/templates/login/mobile/default/index.vue.css": "./lib/templates/login/mobile/default/index.vue.css",
     "./lib/templates/login/tablet/default/index.vue.css": "./lib/templates/login/tablet/default/index.vue.css",
-    "./lib/__tests__/integration/hook-component-consistency.test.css": "./lib/__tests__/integration/hook-component-consistency.test.css",
-    "./lib/__tests__/integration/template-switching.test.css": "./lib/__tests__/integration/template-switching.test.css",
     "./dist/index.css": "./dist/index.css",
     "./dist/index.min.css": "./dist/index.min.css"
   },
@@ -167,7 +165,6 @@
   "scripts": {
     "build": "ldesign-builder build",
     "build:watch": "ldesign-builder watch",
-
     "dev": "ldesign-builder watch",
     "type-check": "vue-tsc --noEmit",
     "type-check:src": "vue-tsc --noEmit -p tsconfig.typecheck.json",
