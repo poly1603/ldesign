@@ -163,7 +163,7 @@ export class WasmLoader {
    * 从缓存加载
    */
   private async loadFromCache(): Promise<WebAssembly.Module | null> {
-    if (!('caches' in self))
+    if (!('caches' in globalThis))
       return null
 
     try {

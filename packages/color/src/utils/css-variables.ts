@@ -581,13 +581,15 @@ export class EnhancedThemeApplier {
   private cacheManager: ThemeCacheManager
   private currentTheme: string = 'blue'
   private currentMode: 'light' | 'dark' = 'light'
+  private debugMode: boolean = false
 
-  constructor() {
+  constructor(options?: { debug?: boolean }) {
     // 使用更具体的配置，确保不与其他包冲突
     this.cssInjector = new CSSVariableInjector({
       prefix: 'ldesign-color-theme', // 使用更具体的前缀，避免与size包冲突
     })
-    this.cacheManager = new ThemeCacheManager()
+    this.cacheManager = new ThemeCacheManager({ debug: this.debugMode })
+    this.debugMode = options?.debug ?? false
   }
 
   /**
@@ -625,8 +627,10 @@ export class EnhancedThemeApplier {
         this.cacheManager.saveThemeState(themeConfig.name, currentMode)
       }
 
-      console.log(`🎨 主题已应用: ${themeInfo.name} (${primaryColor}) - 当前模式: ${currentMode}${saveToCache ? ' [已缓存]' : ''}`)
-      console.log(`📊 已生成完整色彩系统 - 亮色变量: ${Object.keys(lightVariables).length}个, 暗色变量: ${Object.keys(darkVariables).length}个`)
+      if (this.debugMode) {
+        console.log(`🎨 主题已应用: ${themeInfo.name} (${primaryColor}) - 当前模式: ${currentMode}${saveToCache ? ' [已缓存]' : ''}`)
+        console.log(`📊 已生成完整色彩系统 - 亮色变量: ${Object.keys(lightVariables).length}个, 暗色变量: ${Object.keys(darkVariables).length}个`)
+      }
     }
     catch (error) {
       console.error('🚨 主题应用失败:', error)
@@ -1048,6 +1052,11 @@ export class EnhancedThemeApplier {
  */
 export class ThemeCacheManager {
   private readonly STORAGE_KEY = 'ldesign-color-theme'
+  private debugMode: boolean = false
+
+  constructor(options?: { debug?: boolean }) {
+    this.debugMode = options?.debug ?? false
+  }
 
   /**
    * 保存主题状态到缓存
@@ -1056,10 +1065,14 @@ export class ThemeCacheManager {
     try {
       const data = { theme, mode }
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data))
-      console.log(`💾 主题状态已缓存: ${theme} (${mode})`)
+      if (this.debugMode) {
+        console.log(`💾 主题状态已缓存: ${theme} (${mode})`)
+      }
     }
     catch (error) {
-      console.warn('⚠️ 主题状态缓存失败:', error)
+      if (this.debugMode) {
+        console.warn('⚠️ 主题状态缓存失败:', error)
+      }
     }
   }
 
@@ -1071,19 +1084,25 @@ export class ThemeCacheManager {
       const stored = localStorage.getItem(this.STORAGE_KEY)
       if (stored) {
         const { theme, mode } = JSON.parse(stored)
-        console.log(`📂 主题状态已恢复: ${theme} (${mode})`)
+        if (this.debugMode) {
+          console.log(`📂 主题状态已恢复: ${theme} (${mode})`)
+        }
         return { theme: theme || 'default', mode: mode || 'light' }
       }
     }
     catch (error) {
-      console.warn('⚠️ 主题状态恢复失败，使用默认值:', error)
+      if (this.debugMode) {
+        console.warn('⚠️ 主题状态恢复失败，使用默认值:', error)
+      }
       // 清理可能损坏的数据
       this.clearThemeState()
     }
 
     // 返回默认值
     const defaultState = { theme: 'default', mode: 'light' as const }
-    console.log(`📂 使用默认主题状态: ${defaultState.theme} (${defaultState.mode})`)
+    if (this.debugMode) {
+      console.log(`📂 使用默认主题状态: ${defaultState.theme} (${defaultState.mode})`)
+    }
     return defaultState
   }
 
@@ -1096,15 +1115,19 @@ export class ThemeCacheManager {
       // 同时清理旧的存储格式
       localStorage.removeItem('ldesign-theme')
       localStorage.removeItem('ldesign-mode')
-      console.log('🗑️ 主题状态缓存已清除')
+      if (this.debugMode) {
+        console.log('🗑️ 主题状态缓存已清除')
+      }
     }
     catch (error) {
-      console.warn('⚠️ 清除主题状态缓存失败:', error)
+      if (this.debugMode) {
+        console.warn('⚠️ 清除主题状态缓存失败:', error)
+      }
     }
   }
 }
 
-// 创建全局实例
+// 创建全局实例（默认不开启调试模式）
 export const globalThemeApplier = new EnhancedThemeApplier()
 export const globalThemeCacheManager = new ThemeCacheManager()
 

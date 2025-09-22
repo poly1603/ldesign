@@ -62,7 +62,7 @@ const themeManager = inject<any>('themeManager', null)
   || (typeof window !== 'undefined' && (window as any).themeManager)
 
 // 检查主题管理器是否可用
-if (!themeManager) {
+if (!themeManager && import.meta.env.DEV) {
   console.warn('[ThemeSelector] themeManager 未找到，某些功能可能无法正常工作')
   console.warn('[ThemeSelector] 请确保已正确安装 color 插件')
 }
@@ -225,7 +225,9 @@ function applyTheme(theme: string, mode?: 'light' | 'dark') {
       currentMode = isDark ? 'dark' : 'light'
     }
 
-    console.log(`🔍 [ThemeSelector] 检测到当前模式: ${currentMode}`)
+    if (import.meta.env.DEV) {
+      console.log(`🔍 [ThemeSelector] 检测到当前模式: ${currentMode}`)
+    }
   }
 
   // 获取主题颜色，优先使用 colors 对象，其次使用 light/dark 模式颜色
@@ -254,10 +256,14 @@ function applyTheme(theme: string, mode?: 'light' | 'dark') {
     }
     globalThemeApplier.applyTheme(primaryColor, currentMode, themeConfig)
 
-    console.log(`🎨 [ThemeSelector] 主题已切换: ${theme} (${currentMode} 模式，主色调: ${primaryColor})`)
+    if (import.meta.env.DEV) {
+      console.log(`🎨 [ThemeSelector] 主题已切换: ${theme} (${currentMode} 模式，主色调: ${primaryColor})`)
+    }
   }
   else {
-    console.warn(`[ThemeSelector] 主题 "${theme}" 没有定义主色调`)
+    if (import.meta.env.DEV) {
+      console.warn(`[ThemeSelector] 主题 "${theme}" 没有定义主色调`)
+    }
   }
 
   // 注意：不在这里调用 themeManager.setTheme，避免循环调用
@@ -280,7 +286,9 @@ function loadThemeFromStorage() {
     }
   }
   catch (error) {
-    console.warn('[ThemeSelector] 读取本地存储失败:', error)
+    if (import.meta.env.DEV) {
+      console.warn('[ThemeSelector] 读取本地存储失败:', error)
+    }
     return { theme: null, mode: 'light' as const }
   }
 }
@@ -292,7 +300,9 @@ function saveThemeToStorage(theme: string, mode: 'light' | 'dark') {
     localStorage.setItem(MODE_STORAGE_KEY, mode)
   }
   catch (error) {
-    console.warn('[ThemeSelector] 保存到本地存储失败:', error)
+    if (import.meta.env.DEV) {
+      console.warn('[ThemeSelector] 保存到本地存储失败:', error)
+    }
   }
 }
 
@@ -314,7 +324,9 @@ onMounted(() => {
       }
     }
     catch (error) {
-      console.warn('[ThemeSelector] 主题管理器初始化失败，使用本地存储:', error)
+      if (import.meta.env.DEV) {
+        console.warn('[ThemeSelector] 主题管理器初始化失败，使用本地存储:', error)
+      }
       // 回退到本地存储逻辑
       const { theme: savedTheme, mode: savedMode } = loadThemeFromStorage()
       selectedTheme.value = savedTheme || (mergedThemes.value[0]?.name || 'blue')

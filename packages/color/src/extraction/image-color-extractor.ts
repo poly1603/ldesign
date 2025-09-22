@@ -229,7 +229,7 @@ export class ImageColorExtractor {
 
     while (iterations < maxIterations) {
       // Assign pixels to clusters
-      clusters = new Array(k).fill(null).map(() => [])
+      clusters = Array.from({ length: k }, () => [])
 
       for (const pixel of pixels) {
         let minDist = Infinity

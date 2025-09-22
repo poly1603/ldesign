@@ -26,7 +26,7 @@ export interface WorkerResponse {
 const colorGenerator = new ColorGeneratorImpl()
 
 // 处理消息
-self.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
+globalThis.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
   const { id, type, payload } = event.data
 
   try {
@@ -73,7 +73,7 @@ self.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
       type,
       result,
     }
-    self.postMessage(response)
+    globalThis.postMessage(response)
   }
   catch (error) {
     // 发送错误响应
@@ -82,7 +82,7 @@ self.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
       type,
       error: error instanceof Error ? error.message : 'Unknown error',
     }
-    self.postMessage(response)
+    globalThis.postMessage(response)
   }
 })
 

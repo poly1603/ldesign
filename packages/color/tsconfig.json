@@ -13,6 +13,7 @@
       "@/*": ["src/*"]
     },
     "resolveJsonModule": true,
+    "types": ["vite/client", "node"],
     "allowJs": false,
     "strict": true,
     "noFallthroughCasesInSwitch": true,
@@ -29,7 +30,7 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/types/vue-shim.d.ts", "src/types/env.d.ts"],
   "exclude": [
     "node_modules",
     "dist",

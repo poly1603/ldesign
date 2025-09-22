@@ -115,6 +115,8 @@ export class CSSInjectorImpl implements CSSInjector {
    * @param lightVariables 亮色模式变量
    * @param darkVariables 暗色模式变量
    * @param themeInfo 主题信息（用于生成注释）
+   * @param themeInfo.name 主题名称
+   * @param themeInfo.primaryColor 主题主色调
    * @param id 样式标签ID
    */
   injectThemeVariables(
@@ -192,7 +194,7 @@ export class CSSInjectorImpl implements CSSInjector {
       let sheet = this.styleSheets.get(id)
       if (!sheet) {
         sheet = new (window as any).CSSStyleSheet()
-        this.styleSheets.set(id, sheet)
+        this.styleSheets.set(id, sheet!)
         // 采用样式表（避免重复）
         const adopted = (document as any).adoptedStyleSheets || []
         if (!adopted.includes(sheet)) {

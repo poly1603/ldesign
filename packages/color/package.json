@@ -20,35 +20,96 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
-    "./index.ts": {
-      "types": "./es/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.cjs"
+    "./accessibility/*": {
+      "types": "./es/accessibility/*.d.ts",
+      "import": "./es/accessibility/*.js",
+      "require": "./lib/accessibility/*.cjs"
+    },
+    "./collaboration/*": {
+      "types": "./es/collaboration/*.d.ts",
+      "import": "./es/collaboration/*.js",
+      "require": "./lib/collaboration/*.cjs"
+    },
+    "./core/*": {
+      "types": "./es/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.cjs"
+    },
+    "./extraction/*": {
+      "types": "./es/extraction/*.d.ts",
+      "import": "./es/extraction/*.js",
+      "require": "./lib/extraction/*.cjs"
+    },
+    "./harmony/*": {
+      "types": "./es/harmony/*.d.ts",
+      "import": "./es/harmony/*.js",
+      "require": "./lib/harmony/*.cjs"
+    },
+    "./themes/*": {
+      "types": "./es/themes/*.d.ts",
+      "import": "./es/themes/*.js",
+      "require": "./lib/themes/*.cjs"
+    },
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
+    },
+    "./ui/*": {
+      "types": "./es/ui/*.d.ts",
+      "import": "./es/ui/*.js",
+      "require": "./lib/ui/*.cjs"
+    },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
     },
     "./vue": {
       "types": "./es/vue/index.d.ts",
       "import": "./es/vue/index.js",
       "require": "./lib/vue/index.cjs"
     },
-    "./vue/index.ts": {
-      "types": "./es/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./lib/vue/index.cjs"
+    "./vue/*": {
+      "types": "./es/vue/*.d.ts",
+      "import": "./es/vue/*.js",
+      "require": "./lib/vue/*.cjs"
     },
-    "./style.css": "./es/index-lib.css"
+    "./wasm/*": {
+      "types": "./es/wasm/*.d.ts",
+      "import": "./es/wasm/*.js",
+      "require": "./lib/wasm/*.cjs"
+    },
+    "./workers/*": {
+      "types": "./es/workers/*.d.ts",
+      "import": "./es/workers/*.js",
+      "require": "./lib/workers/*.cjs"
+    },
+    "./es/index.css": "./es/index.css",
+    "./es/vue/components/ColorThemeProvider.vue.css": "./es/vue/components/ColorThemeProvider.vue.css",
+    "./es/vue/components/DarkModeToggle.vue.css": "./es/vue/components/DarkModeToggle.vue.css",
+    "./es/vue/components/SimpleThemeToggle.vue.css": "./es/vue/components/SimpleThemeToggle.vue.css",
+    "./es/vue/components/ThemeSelector.vue.css": "./es/vue/components/ThemeSelector.vue.css",
+    "./lib/index.css": "./lib/index.css",
+    "./lib/vue/components/ColorThemeProvider.vue.css": "./lib/vue/components/ColorThemeProvider.vue.css",
+    "./lib/vue/components/DarkModeToggle.vue.css": "./lib/vue/components/DarkModeToggle.vue.css",
+    "./lib/vue/components/SimpleThemeToggle.vue.css": "./lib/vue/components/SimpleThemeToggle.vue.css",
+    "./lib/vue/components/ThemeSelector.vue.css": "./lib/vue/components/ThemeSelector.vue.css",
+    "./dist/index.css": "./dist/index.css",
+    "./dist/index.min.css": "./dist/index.min.css"
   },
-  "main": "lib/index.cjs",
-  "module": "es/index.js",
-  "unpkg": "dist/index.umd.js",
-  "jsdelivr": "dist/index.umd.js",
-  "types": "es/index.d.ts",
-  "style": "es/index-lib.css",
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
+  "types": "./es/index.d.ts",
   "files": [
-    "CHANGELOG.md",
+    "LICENSE",
     "README.md",
+    "dist",
     "es",
     "lib",
-    "dist"
+    "package.json"
   ],
   "scripts": {
     "build": "ldesign-builder build -f esm,cjs,umd",
@@ -125,5 +186,6 @@
       "path": "dist/index.js",
       "limit": "30 KB"
     }
-  ]
+  ],
+  "style": "es/index-lib.css"
 }

@@ -117,7 +117,9 @@ export function useThemeSelector(options: UseThemeSelectorOptions = {}): UseThem
   // 方法
   const selectTheme = async (themeName: string): Promise<void> => {
     if (!availableThemes.value.find(t => t.name === themeName)) {
-      console.warn(`[useThemeSelector] 主题 "${themeName}" 不存在`)
+      if (import.meta.env.DEV) {
+        console.warn(`[useThemeSelector] 主题 "${themeName}" 不存在`)
+      }
       return
     }
 
@@ -129,7 +131,9 @@ export function useThemeSelector(options: UseThemeSelectorOptions = {}): UseThem
         await themeManager.setTheme(themeName, currentMode.value)
       }
       catch (error) {
-        console.warn('[useThemeSelector] 主题管理器设置失败:', error)
+        if (import.meta.env.DEV) {
+          console.warn('[useThemeSelector] 主题管理器设置失败:', error)
+        }
         // 回退到本地存储
         if (autoSave) {
           saveToStorage()
@@ -150,7 +154,9 @@ export function useThemeSelector(options: UseThemeSelectorOptions = {}): UseThem
         await themeManager.setTheme(currentTheme.value, mode)
       }
       catch (error) {
-        console.warn('[useThemeSelector] 主题管理器设置失败:', error)
+        if (import.meta.env.DEV) {
+          console.warn('[useThemeSelector] 主题管理器设置失败:', error)
+        }
         // 回退到本地存储
         if (autoSave) {
           saveToStorage()
@@ -195,7 +201,9 @@ export function useThemeSelector(options: UseThemeSelectorOptions = {}): UseThem
       localStorage.setItem(storageKey, JSON.stringify(data))
     }
     catch (error) {
-      console.warn('[useThemeSelector] 保存到存储失败:', error)
+      if (import.meta.env.DEV) {
+        console.warn('[useThemeSelector] 保存到存储失败:', error)
+      }
     }
   }
 
@@ -215,7 +223,9 @@ export function useThemeSelector(options: UseThemeSelectorOptions = {}): UseThem
       }
     }
     catch (error) {
-      console.warn('[useThemeSelector] 从存储加载失败:', error)
+      if (import.meta.env.DEV) {
+        console.warn('[useThemeSelector] 从存储加载失败:', error)
+      }
     }
 
     return { theme: defaultTheme, mode: defaultMode }
@@ -234,7 +244,9 @@ export function useThemeSelector(options: UseThemeSelectorOptions = {}): UseThem
         }
       }
       catch (error) {
-        console.warn('[useThemeSelector] 主题管理器初始化失败，使用存储:', error)
+        if (import.meta.env.DEV) {
+          console.warn('[useThemeSelector] 主题管理器初始化失败，使用存储:', error)
+        }
         // 回退到存储
         const { theme, mode } = loadFromStorage()
         currentTheme.value = theme

@@ -83,14 +83,10 @@ class NeuralLayer {
     activation: (x: number) => number = x => Math.max(0, x), // ReLU
   ) {
     // 初始化权重（Xavier 初始化）
-    this.weights = new Array(outputSize).fill(0).map(() =>
-      new Array(inputSize).fill(0).map(() =>
-        (Math.random() - 0.5) * Math.sqrt(2 / inputSize),
-      ),
-    )
+    this.weights = Array.from({ length: outputSize }, () => Array.from({ length: inputSize }, () => (Math.random() - 0.5) * Math.sqrt(2 / inputSize)))
 
     // 初始化偏置
-    this.biases = new Array(outputSize).fill(0)
+    this.biases = Array.from({ length: outputSize }, () => 0)
     this.activation = activation
   }
 
@@ -175,7 +171,7 @@ class KMeansClustering {
 
     for (let iter = 0; iter < maxIterations; iter++) {
       // 分配数据点到最近的质心
-      const newClusters: number[][] = new Array(this.k).fill(0).map(() => [])
+      const newClusters: number[][] = Array.from({ length: this.k }, () => [])
 
       for (const point of data) {
         const closestCentroid = this.findClosestCentroid(point)
@@ -188,7 +184,7 @@ class KMeansClustering {
           return this.centroids[0] // 防止空簇
 
         const dim = this.centroids[0].length
-        const mean = new Array(dim).fill(0)
+        const mean = Array.from({ length: dim }, () => 0)
         const clusterPoints = cluster.length / dim
 
         for (let i = 0; i < cluster.length; i += dim) {

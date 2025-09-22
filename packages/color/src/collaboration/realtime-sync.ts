@@ -167,16 +167,16 @@ class DataChannelManager {
  * 简单的事件发射器
  */
 class SimpleEventEmitter {
-  private events: Map<string, Set<Function>> = new Map()
+  private events: Map<string, Set<(...args: any[]) => void>> = new Map()
 
-  on(event: string, listener: Function): void {
+  on(event: string, listener: (...args: any[]) => void): void {
     if (!this.events.has(event)) {
       this.events.set(event, new Set())
     }
     this.events.get(event)!.add(listener)
   }
 
-  off(event: string, listener: Function): void {
+  off(event: string, listener: (...args: any[]) => void): void {
     this.events.get(event)?.delete(listener)
   }
 

@@ -13,11 +13,13 @@ import type {
   LRUCache,
   Storage,
   SystemThemeDetector,
+  TextSize,
   ThemeConfig,
   ThemeEventListener,
   ThemeEventType,
   ThemeManagerInstance,
   ThemeManagerOptions,
+  WCAGLevel,
 } from './types'
 import { ColorGeneratorImpl } from '../utils/color-generator'
 import { ColorScaleGenerator } from '../utils/color-scale'
@@ -571,7 +573,7 @@ export class ThemeManager implements ThemeManagerInstance {
     const el = document.getElementById(`ldesign-theme-variables-${scopeId}`)
     if (el)
       el.remove()
-        ; (root as HTMLElement).removeAttribute('data-theme-scope')
+    ; (root as HTMLElement).removeAttribute('data-theme-scope')
   }
 
   /**
@@ -868,12 +870,12 @@ export class ThemeManager implements ThemeManagerInstance {
       : lightColors
     const darkColorConfig = config.dark
       ? {
-        primary: config.dark.primary,
-        success: darkColors.success || '#49aa19',
-        warning: darkColors.warning || '#d4b106',
-        danger: darkColors.danger || '#dc4446',
-        gray: darkColors.gray || '#8c8c8c',
-      }
+          primary: config.dark.primary,
+          success: darkColors.success || '#49aa19',
+          warning: darkColors.warning || '#d4b106',
+          danger: darkColors.danger || '#dc4446',
+          gray: darkColors.gray || '#8c8c8c',
+        }
       : lightColorConfig
 
     // 生成色阶
@@ -989,11 +991,11 @@ export class ThemeManager implements ThemeManagerInstance {
   /**
    * 启用/禁用高对比度覆盖
    */
-  enableHighContrast(enable: boolean, options?: { level?: 'AA' | 'AAA', textSize?: 'normal' | 'large' }): void {
+  enableHighContrast(enable: boolean, options?: { level?: WCAGLevel, textSize?: TextSize }): void {
     this.highContrastEnabled = enable
     if (options?.level)
       this.highContrastLevel = options.level
-    if (options?.textSize)
+    if (options?.textSize && (options.textSize === 'normal' || options.textSize === 'large'))
       this.highContrastTextSize = options.textSize
 
     // 立即应用或移除覆盖
@@ -1021,10 +1023,10 @@ export class ThemeManager implements ThemeManagerInstance {
   private applyHighContrastOverrides(_mode: ColorMode): void {
     // 构造一些关键变量的高对比度替换（示例策略）
     const styleId = 'ldesign-theme-variables-contrast'
-    // 计算对比度阈值（当前未使用，但保留用于未来扩展）
-    const _threshold = this.highContrastLevel === 'AAA'
-      ? (this.highContrastTextSize === 'large' ? 4.5 : 7)
-      : (this.highContrastTextSize === 'large' ? 3 : 4.5)
+    // 计算对比度阈值（保留用于未来扩展）
+    // const threshold = this.highContrastLevel === 'AAA'
+    //   ? (this.highContrastTextSize === 'large' ? 4.5 : 7)
+    //   : (this.highContrastTextSize === 'large' ? 3 : 4.5)
 
     // 这里直接增强常见文本/背景变量的对比度：
     // 若背景为浅色，则文本强制为 #000；若背景为深色，则文本强制为 #fff

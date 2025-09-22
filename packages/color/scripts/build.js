@@ -4,6 +4,7 @@
  */
 
 import { sep } from 'node:path'
+import process from 'node:process'
 import { LibraryBuilder } from '@ldesign/builder'
 
 async function build() {

@@ -4,9 +4,9 @@
  * 提供主题管理和颜色处理功能的 Vue 插件
  */
 
-import type { App, Plugin } from 'vue'
+import type { App, ComputedRef, Plugin, Ref } from 'vue'
 // import ThemeSelector from './components/ThemeSelector.vue'
-import type { ThemeConfig, ThemeManagerInstance } from '../core/types'
+import type { ColorMode, ThemeConfig, ThemeManagerInstance } from '../core/types'
 import { computed, inject, ref } from 'vue'
 import { ThemeManager } from '../core/theme-manager'
 import { presetThemes } from '../themes/presets'
@@ -112,11 +112,11 @@ function processThemeConfig(config: ColorPluginOptions): ThemeConfig[] {
         } as any,
         dark: customTheme.dark
           ? ({
-            primary: (customTheme.dark as any)?.primary
-              ?? customTheme.colors?.primary
-              ?? '#177ddc',
-            ...(customTheme.dark || {} as any),
-          } as any)
+              primary: (customTheme.dark as any)?.primary
+                ?? customTheme.colors?.primary
+                ?? '#177ddc',
+              ...(customTheme.dark || {} as any),
+            } as any)
           : undefined,
         colors: customTheme.colors,
       }
@@ -429,24 +429,74 @@ export function createColorPlugin(options: ColorPluginOptions = {}): Plugin {
  * 组合式函数：使用主题
  */
 /**
+ * useTheme 返回类型
+ */
+export interface UseThemeReturn {
+  /** 当前主题名称 */
+  currentTheme: Ref<string>
+  /** 当前模式 */
+  currentMode: Ref<ColorMode>
+  /** 是否为暗色模式 */
+  isDark: ComputedRef<boolean>
+  /** 是否为亮色模式 */
+  isLight: ComputedRef<boolean>
+  /** 可用主题名称列表 */
+  availableThemes: ComputedRef<string[]>
+  /** 主题管理器实例 */
+  themeManager: any
+  /** 设置主题 */
+  setTheme: (theme: string, mode?: ColorMode) => Promise<void>
+  /** 设置模式 */
+  setMode: (mode: ColorMode) => Promise<void>
+  /** 切换模式 */
+  toggleMode: () => Promise<void>
+  /** 获取当前主题 */
+  getCurrentTheme: () => string
+  /** 获取当前模式 */
+  getCurrentMode: () => ColorMode
+}
+
+/**
  * 组合式函数：使用主题
  *
  * 提供以下响应式能力：
  * - currentTheme/currentMode 当前主题与模式
  * - availableThemes 可用主题名称列表
  * - setTheme/setMode/toggleMode 修改主题与模式
+ * - themeManager 主题管理器实例
+ *
+ * @returns 主题管理API
+ *
+ * @example
+ * ```vue
+ * <script setup>
+ * import { useTheme } from '@ldesign/color/vue'
+ *
+ * const {
+ *   currentTheme,
+ *   currentMode,
+ *   isDark,
+ *   availableThemes,
+ *   setTheme,
+ *   toggleMode
+ * } = useTheme()
+ * </script>
+ * ```
  */
-export function useTheme() {
+export function useTheme(): UseThemeReturn {
   const themeManager = inject('themeManager') as any
 
   if (!themeManager) {
-    console.warn('themeManager not found. Make sure to install the color plugin.')
+    if (import.meta.env.DEV) {
+      console.warn('[useTheme] themeManager not found. Make sure to install the color plugin.')
+    }
     return {
       currentTheme: ref('blue'),
       currentMode: ref('light' as const),
       isDark: computed(() => false),
       isLight: computed(() => true),
       availableThemes: computed(() => [] as string[]),
+      themeManager: null,
       setTheme: async () => { /* no-op */ },
       setMode: async () => { /* no-op */ },
       toggleMode: async () => { /* no-op */ },
@@ -496,7 +546,9 @@ export function useTheme() {
       }
     }
     catch (error) {
-      console.error('[useTheme] 设置主题失败:', error)
+      if (import.meta.env.DEV) {
+        console.error('[useTheme] 设置主题失败:', error)
+      }
     }
   }
 
@@ -506,7 +558,9 @@ export function useTheme() {
       currentMode.value = mode
     }
     catch (error) {
-      console.error('[useTheme] 设置模式失败:', error)
+      if (import.meta.env.DEV) {
+        console.error('[useTheme] 设置模式失败:', error)
+      }
     }
   }
 
@@ -521,6 +575,7 @@ export function useTheme() {
     isDark,
     isLight,
     availableThemes,
+    themeManager,
     setTheme,
     setMode,
     toggleMode,

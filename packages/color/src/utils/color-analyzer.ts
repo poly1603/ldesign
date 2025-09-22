@@ -234,7 +234,7 @@ function analyzeSeason(hsl: { h: number, s: number, l: number }): ColorSeason {
   }
 
   // 秋季：温暖、饱和的色彩
-  if ((h >= 0 && h < 60 || h >= 300) && s > 30 && l < 70) {
+  if (((h >= 0 && h < 60) || h >= 300) && s > 30 && l < 70) {
     return 'autumn'
   }
 
@@ -248,8 +248,8 @@ function analyzeSeason(hsl: { h: number, s: number, l: number }): ColorSeason {
 function analyzeTemperature(hsl: { h: number, s: number, l: number }): ColorTemperature {
   const { h } = hsl
 
-  if (h >= 0 && h < 60 || h >= 300) {
-    return h < 30 || h >= 330 ? 'hot' : 'warm'
+  if ((h >= 0 && h < 60) || h >= 300) {
+    return (h < 30 || h >= 330) ? 'hot' : 'warm'
   }
   else if (h >= 60 && h < 150) {
     return 'neutral'
