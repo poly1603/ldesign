@@ -51,7 +51,7 @@ export interface CacheConfig {
   /** 最大缓存条目数 */
   maxSize?: number
   /** 缓存存储类型 */
-  storage?: 'memory' | 'localStorage' | 'sessionStorage'
+  storage?: 'memory' | 'localStorage' | 'sessionStorage' | 'lru'
   /** 缓存键前缀（仅 local/sessionStorage 生效） */
   prefix?: string
   /** 缓存键生成函数 */
@@ -518,3 +518,7 @@ export interface CaptchaInfo {
   /** 过期时间 (秒) */
   expiresIn?: number
 }
+
+// 导出错误处理相关类型
+export * from '../utils/ApiError'
+export * from '../utils/ErrorReporter'

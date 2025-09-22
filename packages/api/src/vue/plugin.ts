@@ -7,6 +7,17 @@ import type { App, Plugin } from 'vue'
 import type { ApiEngine, ApiEngineConfig } from '../types'
 import { createApiEngine } from '../core/factory'
 
+// 扩展 Vue 应用类型
+declare module 'vue' {
+  interface App {
+    _apiEngine?: ApiEngine
+  }
+
+  interface ComponentCustomProperties {
+    $api: ApiEngine
+  }
+}
+
 /**
  * Vue 插件选项
  */
@@ -23,6 +34,10 @@ export interface ApiVuePluginOptions {
   provideDependencyInjection?: boolean
   /** 依赖注入键 */
   injectionKey?: string | symbol
+  /** 是否启用调试模式 */
+  debug?: boolean
+  /** 是否在开发模式下显示安装信息 */
+  showInstallInfo?: boolean
 }
 
 /**
@@ -43,27 +58,39 @@ export const ApiVuePlugin: Plugin = {
       registerComposables: _registerComposables = true,
       provideDependencyInjection = true,
       injectionKey = API_ENGINE_INJECTION_KEY,
+      debug = false,
+      showInstallInfo = true,
     } = options
 
-    // 创建或使用提供的 API 引擎
-    const engine = providedEngine || createApiEngine(config)
+    try {
+      // 创建或使用提供的 API 引擎
+      const engine = providedEngine || createApiEngine(config)
 
-    // 注册全局属性
-    if (globalPropertyName) {
-      app.config.globalProperties[globalPropertyName] = engine
-    }
+      // 注册全局属性
+      if (globalPropertyName) {
+        app.config.globalProperties[globalPropertyName] = engine
+      }
 
-    // 提供依赖注入
-    if (provideDependencyInjection) {
-      app.provide(injectionKey, engine)
-    }
+      // 提供依赖注入
+      if (provideDependencyInjection) {
+        app.provide(injectionKey, engine)
+      }
 
-    // 存储引擎实例到应用实例
-    app._apiEngine = engine
+      // 存储引擎实例到应用实例
+      app._apiEngine = engine
 
-    // 只在开发模式下输出日志
-    if (config.debug || (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development')) {
-      console.info('[API Vue Plugin] Vue 插件已安装')
+      // 开发模式下的调试信息
+      const isDev = typeof process !== 'undefined' && process.env?.NODE_ENV === 'development'
+      if ((debug || config.debug || isDev) && showInstallInfo) {
+        console.info('[API Vue Plugin] Vue 插件已安装', {
+          globalProperty: globalPropertyName,
+          dependencyInjection: provideDependencyInjection,
+          engineProvided: !!providedEngine,
+        })
+      }
+    } catch (error) {
+      console.error('[API Vue Plugin] 插件安装失败:', error)
+      throw error
     }
   },
 }
@@ -127,16 +154,5 @@ export function installApiVuePlugin(
  * @returns API 引擎实例
  */
 export function getApiEngineFromApp(app: App): ApiEngine | undefined {
-  return (app as unknown as { _apiEngine?: ApiEngine })._apiEngine
-}
-
-// 扩展 Vue 应用类型
-declare module '@vue/runtime-core' {
-  interface ComponentCustomProperties {
-    $api: ApiEngine
-  }
-
-  interface App {
-    _apiEngine?: ApiEngine
-  }
+  return app._apiEngine
 }

@@ -9,3 +9,12 @@ export * from './hooks/useApiCleanup'
 export * from './hooks/useIntersectionObserver'
 export * from './query'
 
+// 重新导出核心类型
+export type {
+  ApiCallOptions,
+  ApiEngine,
+  ApiEngineConfig,
+  ApiMethodConfig,
+  ApiPlugin,
+} from '../types'
+

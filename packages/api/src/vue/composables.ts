@@ -13,6 +13,7 @@ import type {
 } from '../types'
 import { computed, getCurrentInstance, inject, onUnmounted, ref, watch } from 'vue'
 import { SYSTEM_API_METHODS } from '../types'
+import { ApiError, ApiErrorFactory } from '../utils/ApiError'
 import { API_ENGINE_INJECTION_KEY } from './plugin'
 
 /**
@@ -24,11 +25,13 @@ export interface ApiCallState<T = unknown> {
   /** 加载状态 */
   loading: Ref<boolean>
   /** 错误信息 */
-  error: Ref<Error | null>
+  error: Ref<ApiError | null>
   /** 执行函数 */
   execute: (params?: unknown, options?: ApiCallOptions) => Promise<T>
   /** 重置状态 */
   reset: () => void
+  /** 取消请求 */
+  cancel: () => void
   /** 是否已完成 */
   isFinished: ComputedRef<boolean>
   /** 是否成功 */
@@ -42,29 +45,34 @@ export interface ApiCallState<T = unknown> {
  * - 封装创建/更新/删除等需要提交的操作
  * - 支持 onMutate（可返回回滚函数）、onSuccess/onError/onFinally
  */
+/**
+ * 变更操作选项
+ */
+export interface UseMutationOptions<TResult = unknown, TVars = unknown> extends Omit<UseApiCallOptions<TResult>, 'onSuccess' | 'onError'> {
+  onMutate?: (variables: TVars) => void | (() => void)
+  onSuccess?: (data: TResult, variables: TVars) => void
+  onError?: (error: ApiError, variables: TVars, rollback?: () => void) => void
+  optimistic?: {
+    /** 直接应用变更，返回回滚函数 */
+    apply?: (variables: TVars) => void | (() => void)
+    /** 生成快照 */
+    snapshot?: () => unknown
+    /** 从快照还原 */
+    restore?: (snapshot: unknown) => void
+    /** 出错时是否回滚（默认 true） */
+    rollbackOnError?: boolean
+    /** 内置快照策略：'shallow' | 'deep'（当未提供 snapshot/restore 且提供 target 时生效） */
+    snapshotStrategy?: 'shallow' | 'deep'
+    /** 目标读写器（与 snapshotStrategy 配合使用） */
+    target?: { get: () => unknown; set: (v: unknown) => void }
+  }
+  /** 是否在进行中时拒绝新的 mutate 调用（默认 false） */
+  lockWhilePending?: boolean
+}
+
 export function useMutation<TResult = unknown, TVars = unknown>(
   methodName: string,
-  options: UseApiCallOptions & {
-    onMutate?: (variables: TVars) => void | (() => void)
-    onSuccess?: (data: TResult, variables: TVars) => void
-    onError?: (error: Error, variables: TVars, rollback?: () => void) => void
-    optimistic?: {
-      /** 直接应用变更，返回回滚函数 */
-      apply?: (variables: TVars) => void | (() => void)
-      /** 生成快照 */
-      snapshot?: () => unknown
-      /** 从快照还原 */
-      restore?: (snapshot: unknown) => void
-      /** 出错时是否回滚（默认 true） */
-      rollbackOnError?: boolean
-      /** 内置快照策略：'shallow' | 'deep'（当未提供 snapshot/restore 且提供 target 时生效） */
-      snapshotStrategy?: 'shallow' | 'deep'
-      /** 目标读写器（与 snapshotStrategy 配合使用） */
-      target?: { get: () => unknown; set: (v: unknown) => void }
-    }
-    /** 是否在进行中时拒绝新的 mutate 调用（默认 false） */
-    lockWhilePending?: boolean
-  } = {},
+  options: UseMutationOptions<TResult, TVars> = {},
 ) {
   const api = useApi()
   const data = ref<TResult | null>(null)
@@ -137,8 +145,17 @@ export function useMutation<TResult = unknown, TVars = unknown>(
       }
 
       const result = await api.call<TResult>(methodName, variables as unknown as any, {
-        ...options,
         ...callOptions,
+        // 只传递API调用相关的选项，排除mutation特有的选项
+        skipCache: options.skipCache,
+        skipDebounce: options.skipDebounce,
+        skipDeduplication: options.skipDeduplication,
+        cache: options.cache,
+        debounce: options.debounce,
+        retry: options.retry,
+        middlewares: options.middlewares,
+        queue: options.queue,
+        priority: options.priority,
       })
       data.value = result
 
@@ -146,13 +163,18 @@ export function useMutation<TResult = unknown, TVars = unknown>(
       return result
     }
     catch (err) {
-      const e = err instanceof Error ? err : new Error(String(err))
-      error.value = e
-      options.onError?.(e, variables, rollbackFn)
+      const e = err instanceof ApiError ? err : (err instanceof Error ? err : new Error(String(err)))
+      const apiError = e instanceof ApiError ? e : ApiErrorFactory.fromUnknownError(e, {
+        methodName,
+        params: variables,
+        timestamp: Date.now()
+      })
+      error.value = apiError
+      options.onError?.(apiError, variables, rollbackFn)
       if (rollbackFn && (options.optimistic?.rollbackOnError ?? true)) {
         try { rollbackFn() } catch {}
       }
-      throw e
+      throw apiError
     }
     finally {
       loading.value = false
@@ -173,15 +195,19 @@ export function useMutation<TResult = unknown, TVars = unknown>(
 /**
  * API 调用选项
  */
-export interface UseApiCallOptions extends ApiCallOptions {
+export interface UseApiCallOptions<T = unknown> extends ApiCallOptions {
   /** 是否立即执行 */
   immediate?: boolean
   /** 成功回调 */
-  onSuccess?: (data: unknown) => void
+  onSuccess?: (data: T) => void
   /** 错误回调 */
-  onError?: (error: Error) => void
+  onError?: (error: ApiError) => void
   /** 完成回调 */
   onFinally?: () => void
+  /** 默认数据 */
+  defaultData?: T
+  /** 是否在组件卸载时自动取消请求 */
+  autoCancel?: boolean
 }
 
 /**
@@ -214,6 +240,52 @@ export function useApi(): ApiEngine {
 }
 
 /**
+ * 简化的API调用钩子，自动推断类型
+ *
+ * @param methodName API 方法名称
+ * @param params 请求参数
+ * @param options 调用选项
+ * @returns API 调用状态
+ *
+ * @example
+ * ```typescript
+ * import { useRequest } from '@ldesign/api/vue'
+ *
+ * // 自动执行
+ * const { data, loading, error } = useRequest<UserInfo>('getUserInfo')
+ *
+ * // 带参数
+ * const { data, loading, error, execute } = useRequest<User[]>('getUsers', { page: 1 })
+ *
+ * // 手动执行
+ * const { data, loading, error, execute } = useRequest<User>('createUser', null, { immediate: false })
+ * ```
+ */
+export function useRequest<T = unknown>(
+  methodName: string,
+  params?: unknown,
+  options: UseApiCallOptions<T> = {},
+): ApiCallState<T> {
+  const { immediate = params !== null, ...restOptions } = options
+
+  const state = useApiCall<T>(methodName, {
+    ...restOptions,
+    immediate: false,
+  })
+
+  // 如果需要立即执行且有参数
+  if (immediate) {
+    state.execute(params).catch(() => {})
+  }
+
+  return {
+    ...state,
+    execute: (newParams = params, executeOptions?: ApiCallOptions) =>
+      state.execute(newParams, executeOptions),
+  }
+}
+
+/**
  * API 调用钩子
  *
  * @param methodName API 方法名称
@@ -224,22 +296,33 @@ export function useApi(): ApiEngine {
  * ```typescript
  * import { useApiCall } from '@ldesign/api/vue'
  *
- * const { data, loading, error, execute } = useApiCall('getUserInfo', {
+ * // 基础用法
+ * const { data, loading, error, execute } = useApiCall<UserInfo>('getUserInfo', {
  *   immediate: true,
  *   onSuccess: (data) => console.log('Success:', data),
  *   onError: (error) => console.error('Error:', error),
+ * })
+ *
+ * // 带默认数据
+ * const { data } = useApiCall<User[]>('getUsers', {
+ *   defaultData: [],
+ *   immediate: true,
  * })
  * ```
  */
 export function useApiCall<T = unknown>(
   methodName: string,
-  options: UseApiCallOptions = {},
+  options: UseApiCallOptions<T> = {},
 ): ApiCallState<T> {
   const apiEngine = useApi()
 
-  const data = ref<T | null>(null)
+  // 初始化数据，支持默认值
+  const data = ref<T | null>(options.defaultData ?? null)
   const loading = ref(false)
-  const error = ref<Error | null>(null)
+  const error = ref<ApiError | null>(null)
+
+  // 用于取消请求的控制器
+  let abortController: AbortController | null = null
 
   const isFinished = computed(() => !loading.value)
   const isSuccess = computed(
@@ -251,6 +334,15 @@ export function useApiCall<T = unknown>(
     params?: unknown,
     executeOptions?: ApiCallOptions,
   ): Promise<T> => {
+    // 取消之前的请求
+    if (abortController) {
+      abortController.abort()
+    }
+
+    // 创建新的取消控制器
+    abortController = new AbortController()
+    const currentController = abortController
+
     loading.value = true
     error.value = null
 
@@ -259,6 +351,11 @@ export function useApiCall<T = unknown>(
         ...options,
         ...executeOptions,
       })
+
+      // 检查请求是否被取消
+      if (currentController.signal.aborted) {
+        return result
+      }
 
       data.value = result
 
@@ -269,7 +366,22 @@ export function useApiCall<T = unknown>(
       return result
     }
     catch (err) {
-      const apiError = err instanceof Error ? err : new Error(String(err))
+      // 检查是否是取消导致的错误
+      if (currentController.signal.aborted) {
+        const cancelError = ApiErrorFactory.fromNetworkError(new Error('Request cancelled'), {
+          methodName,
+          params,
+          timestamp: Date.now()
+        })
+        return Promise.reject(cancelError)
+      }
+
+      const e = err instanceof ApiError ? err : (err instanceof Error ? err : new Error(String(err)))
+      const apiError = e instanceof ApiError ? e : ApiErrorFactory.fromUnknownError(e, {
+        methodName,
+        params,
+        timestamp: Date.now()
+      })
       error.value = apiError
 
       if (options.onError) {
@@ -279,18 +391,42 @@ export function useApiCall<T = unknown>(
       throw apiError
     }
     finally {
-      loading.value = false
+      // 只有当前请求才更新loading状态
+      if (!currentController.signal.aborted) {
+        loading.value = false
 
-      if (options.onFinally) {
-        options.onFinally()
+        if (options.onFinally) {
+          options.onFinally()
+        }
       }
     }
   }
 
   const reset = () => {
-    data.value = null
+    // 取消当前请求
+    if (abortController) {
+      abortController.abort()
+      abortController = null
+    }
+
+    data.value = options.defaultData ?? null
     loading.value = false
     error.value = null
+  }
+
+  // 取消请求的函数
+  const cancel = () => {
+    if (abortController) {
+      abortController.abort()
+      abortController = null
+    }
+  }
+
+  // 自动取消功能
+  if (options.autoCancel !== false) {
+    onUnmounted(() => {
+      cancel()
+    })
   }
 
   // 立即执行
@@ -305,6 +441,7 @@ export function useApiCall<T = unknown>(
     error,
     execute,
     reset,
+    cancel,
     isFinished,
     isSuccess,
     isError,
@@ -317,7 +454,7 @@ export function useApiCall<T = unknown>(
  */
 export function useApiPolling<T = unknown>(
   methodName: string,
-  options: UseApiCallOptions & { interval: number; params?: unknown; autoStart?: boolean } = { interval: 30000 },
+  options: UseApiCallOptions<T> & { interval: number; params?: unknown; autoStart?: boolean } = { interval: 30000 },
 ) {
   const state = useApiCall<T>(methodName, { ...options, immediate: false })
   let timer: ReturnType<typeof setInterval> | null = null
@@ -374,7 +511,7 @@ export function useApiPolling<T = unknown>(
  */
 export function useInfiniteApi<T = unknown>(
   methodName: string,
-  options: UseApiCallOptions & {
+  options: UseApiCallOptions<{ items: T[]; total: number }> & {
     page?: number
     pageSize?: number
     extract?: (result: any) => { items: T[]; total: number }
@@ -595,64 +732,64 @@ export function useSystemApi() {
     /**
      * 获取验证码
      */
-    getCaptcha: (options: UseApiCallOptions = {}) =>
+    getCaptcha: (options: UseApiCallOptions<import('../types').CaptchaInfo> = {}) =>
       useApiCall<import('../types').CaptchaInfo>(
         SYSTEM_API_METHODS.GET_CAPTCHA,
-      options,
+        options,
       ),
 
     /**
      * 用户登录
      */
-    login: (options: UseApiCallOptions = {}) =>
+    login: (options: UseApiCallOptions<LoginResult> = {}) =>
       useApiCall<LoginResult>(SYSTEM_API_METHODS.LOGIN, options),
 
     /**
      * 用户登出
      */
-    logout: (options: UseApiCallOptions = {}) =>
+    logout: (options: UseApiCallOptions<void> = {}) =>
       useApiCall<void>(SYSTEM_API_METHODS.LOGOUT, options),
 
     /**
      * 获取用户信息
      */
-    getUserInfo: (options: UseApiCallOptions = {}) =>
+    getUserInfo: (options: UseApiCallOptions<UserInfo> = {}) =>
       useApiCall<UserInfo>(SYSTEM_API_METHODS.GET_USER_INFO, options),
 
     /**
      * 更新用户信息
      */
-    updateUserInfo: (options: UseApiCallOptions = {}) =>
+    updateUserInfo: (options: UseApiCallOptions<UserInfo> = {}) =>
       useApiCall<UserInfo>(SYSTEM_API_METHODS.UPDATE_USER_INFO, options),
 
     /**
      * 获取系统菜单
      */
-    getMenus: (options: UseApiCallOptions = {}) =>
+    getMenus: (options: UseApiCallOptions<MenuItem[]> = {}) =>
       useApiCall<MenuItem[]>(SYSTEM_API_METHODS.GET_MENUS, options),
 
     /**
      * 获取用户权限
      */
-    getPermissions: (options: UseApiCallOptions = {}) =>
+    getPermissions: (options: UseApiCallOptions<string[]> = {}) =>
       useApiCall<string[]>(SYSTEM_API_METHODS.GET_PERMISSIONS, options),
 
     /**
      * 刷新令牌
      */
-    refreshToken: (options: UseApiCallOptions = {}) =>
+    refreshToken: (options: UseApiCallOptions<LoginResult> = {}) =>
       useApiCall<LoginResult>(SYSTEM_API_METHODS.REFRESH_TOKEN, options),
 
     /**
      * 修改密码
      */
-    changePassword: (options: UseApiCallOptions = {}) =>
+    changePassword: (options: UseApiCallOptions<void> = {}) =>
       useApiCall<void>(SYSTEM_API_METHODS.CHANGE_PASSWORD, options),
 
     /**
      * 获取系统配置
      */
-    getSystemConfig: (options: UseApiCallOptions = {}) =>
+    getSystemConfig: (options: UseApiCallOptions<unknown> = {}) =>
       useApiCall<unknown>(SYSTEM_API_METHODS.GET_SYSTEM_CONFIG, options),
   }
 }
@@ -665,7 +802,7 @@ export function useSystemApi() {
  */
 export function usePaginatedApi<T = unknown>(
   methodName: string,
-  options: UseApiCallOptions & {
+  options: UseApiCallOptions<{ items: T[]; total: number }> & {
     /** 初始页码（从 1 开始） */
     page?: number
     /** 每页条数 */

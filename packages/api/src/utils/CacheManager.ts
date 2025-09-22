@@ -4,6 +4,7 @@
  */
 
 import type { CacheConfig, CacheItem, CacheStats } from '../types'
+import { LRUCache, type LRUCacheConfig } from './LRUCache'
 
 /**
  * 缓存存储接口
@@ -168,6 +169,7 @@ class SessionStorageCacheStorage implements CacheStorage {
  */
 export class CacheManager {
   private storage: CacheStorage
+  private lruCache?: LRUCache<unknown>
   private config: Required<CacheConfig>
   private stats = {
     hits: 0,
@@ -198,6 +200,15 @@ export class CacheManager {
       case 'sessionStorage':
         this.storage = new SessionStorageCacheStorage(prefix)
         break
+      case 'lru':
+        // 使用高性能LRU缓存
+        this.lruCache = new LRUCache({
+          maxSize: this.config.maxSize,
+          defaultTTL: this.config.ttl,
+          enabled: this.config.enabled,
+        })
+        this.storage = new MemoryCacheStorage() // 备用存储
+        break
       default:
         this.storage = new MemoryCacheStorage()
     }
@@ -214,6 +225,19 @@ export class CacheManager {
       return null
     }
 
+    // 优先使用LRU缓存
+    if (this.lruCache) {
+      const result = this.lruCache.get(key) as T | null
+      if (result !== null) {
+        this.stats.hits++
+        return result
+      } else {
+        this.stats.misses++
+        return null
+      }
+    }
+
+    // 回退到传统缓存
     try {
       const itemStr = this.storage.get(key)
       if (!itemStr) {
@@ -253,6 +277,13 @@ export class CacheManager {
       return
     }
 
+    // 优先使用LRU缓存
+    if (this.lruCache) {
+      this.lruCache.set(key, data, ttl)
+      return
+    }
+
+    // 回退到传统缓存
     try {
       const now = Date.now()
       const item: CacheItem = {
@@ -320,12 +351,7 @@ export class CacheManager {
     }
   }
 
-  /**
-   * 检查缓存是否存在
-   */
-  has(key: string): boolean {
-    return this.get(key) !== null
-  }
+
 
   /**
    * 获取所有缓存键
@@ -420,6 +446,91 @@ export class CacheManager {
     this.updateStats()
   }
   /**
+   * 批量设置缓存
+   */
+  setMany<T = unknown>(entries: Array<{ key: string; data: T; ttl?: number }>): void {
+    if (this.lruCache) {
+      this.lruCache.setMany(entries.map(e => ({ key: e.key, value: e.data, ttl: e.ttl })))
+      return
+    }
+
+    entries.forEach(({ key, data, ttl }) => {
+      this.set(key, data, ttl)
+    })
+  }
+
+  /**
+   * 批量获取缓存
+   */
+  getMany<T = unknown>(keys: string[]): Map<string, T> {
+    if (this.lruCache) {
+      return this.lruCache.getMany(keys) as Map<string, T>
+    }
+
+    const result = new Map<string, T>()
+    keys.forEach(key => {
+      const value = this.get<T>(key)
+      if (value !== null) {
+        result.set(key, value)
+      }
+    })
+    return result
+  }
+
+  /**
+   * 预热缓存
+   */
+  warmup<T = unknown>(entries: Array<{ key: string; data: T; ttl?: number }>): void {
+    if (this.lruCache) {
+      this.lruCache.warmup(entries.map(e => ({ key: e.key, value: e.data, ttl: e.ttl })))
+      return
+    }
+
+    entries.forEach(({ key, data, ttl }) => {
+      if (!this.has(key)) {
+        this.set(key, data, ttl)
+      }
+    })
+  }
+
+  /**
+   * 检查缓存是否存在
+   */
+  has(key: string): boolean {
+    if (this.lruCache) {
+      return this.lruCache.has(key)
+    }
+
+    try {
+      const itemStr = this.storage.get(key)
+      if (!itemStr) {
+        return false
+      }
+
+      const item: CacheItem = JSON.parse(itemStr)
+      return Date.now() <= item.expireTime
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * 获取增强的缓存统计信息
+   */
+  getEnhancedStats(): CacheStats & { lruStats?: any } {
+    const baseStats = this.getStats()
+
+    if (this.lruCache) {
+      return {
+        ...baseStats,
+        lruStats: this.lruCache.getStats(),
+      }
+    }
+
+    return baseStats
+  }
+
+  /**
    * 销毁缓存管理器，清理定时器
    */
   destroy(): void {
@@ -427,6 +538,11 @@ export class CacheManager {
       clearInterval(this.cleanupTimer)
       this.cleanupTimer = null
     }
+
+    if (this.lruCache) {
+      this.lruCache.destroy()
+    }
+
     this.clear()
   }
 }

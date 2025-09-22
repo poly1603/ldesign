@@ -49,6 +49,7 @@ export { SYSTEM_API_METHODS } from '../types'
 export {
   useApi,
   useApiCall,
+  useRequest,
   useApiCleanup,
   useBatchApiCall,
   useSystemApi,
@@ -57,7 +58,11 @@ export {
   useInfiniteApi,
   useMutation,
 } from './composables'
-export type { ApiCallState, UseApiCallOptions } from './composables'
+export type {
+  ApiCallState,
+  UseApiCallOptions,
+  UseMutationOptions,
+} from './composables'
 
 // Engine 插件集成
 export {
@@ -80,7 +85,18 @@ export {
 } from './plugin'
 
 export type { ApiVuePluginOptions } from './plugin'
-export { useIntersectionObserver } from './utils'
+
+// Vue 工具函数
+export {
+  useIntersectionObserver,
+  useDebouncedRef,
+  useApiMethod,
+  useApiAvailable,
+  useApiStatus,
+} from './utils'
+export type { UseIntersectionOptions } from './utils'
+
+// Vue 指令
 export { vIntersect } from './directives'
 
 // 版本信息

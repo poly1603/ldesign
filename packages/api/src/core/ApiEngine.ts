@@ -19,6 +19,9 @@ import { CacheManager } from '../utils/CacheManager'
 import { DebounceManagerImpl } from '../utils/DebounceManager'
 import { DeduplicationManagerImpl } from '../utils/DeduplicationManager'
 import { RequestQueueManager } from '../utils/RequestQueue'
+import { ApiError, ApiErrorFactory, ApiErrorType } from '../utils/ApiError'
+import { ErrorReporter, getGlobalErrorReporter } from '../utils/ErrorReporter'
+import { PerformanceMonitor, getGlobalPerformanceMonitor } from '../utils/PerformanceMonitor'
 import { version as libVersion } from '../version'
 
 /**
@@ -54,6 +57,12 @@ export class ApiEngineImpl implements ApiEngine {
 
   /** 断路器状态 */
   private readonly circuitStates = new Map<string, { state: 'closed' | 'open' | 'half-open'; failureCount: number; successCount: number; nextTryAt: number }>()
+
+  /** 错误报告器 */
+  private errorReporter: ErrorReporter | null = null
+
+  /** 性能监控器 */
+  private performanceMonitor: PerformanceMonitor | null = null
 
   constructor(config: ApiEngineConfig = {}) {
     this.config = {
@@ -100,6 +109,12 @@ export class ApiEngineImpl implements ApiEngine {
       }
       this.requestQueueManager = new RequestQueueManager(q)
     }
+
+    // 初始化错误报告器
+    this.errorReporter = getGlobalErrorReporter()
+
+    // 初始化性能监控器
+    this.performanceMonitor = getGlobalPerformanceMonitor()
 
     this.log('API Engine initialized', this.config)
   }
@@ -239,6 +254,9 @@ export class ApiEngineImpl implements ApiEngine {
       throw new Error(`Method "${methodName}" not found`)
     }
 
+    // 开始性能监控
+    const endMonitoring = this.performanceMonitor?.startCall(methodName, params) || (() => {})
+
     try {
       // 生成缓存键
       const cacheKey = this.generateCacheKey(methodName, params)
@@ -248,6 +266,7 @@ export class ApiEngineImpl implements ApiEngine {
         const cachedData = this.cacheManager.get<T>(cacheKey)
         if (cachedData !== null) {
           this.log(`Cache hit for method "${methodName}"`)
+          endMonitoring() // 成功结束监控
           return cachedData
         }
       }
@@ -411,6 +430,9 @@ export class ApiEngineImpl implements ApiEngine {
             methodConfig.onSuccess?.(data)
             options.onSuccess?.(data)
 
+            // 结束性能监控（成功）
+            endMonitoring()
+
             return data
           }
           catch (err) {
@@ -537,15 +559,30 @@ export class ApiEngineImpl implements ApiEngine {
     catch (error) {
       this.log(`Error calling method "${methodName}":`, error)
 
+      // 创建增强的错误对象
+      const apiError = this.createApiError(error, {
+        methodName,
+        params,
+        config: methodConfig,
+        timestamp: Date.now(),
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Node.js',
+      })
+
+      // 报告错误
+      this.reportError(apiError)
+
+      // 结束性能监控（错误）
+      endMonitoring(apiError)
+
       // 错误处理
       if (methodConfig.onError) {
-        methodConfig.onError(error)
+        methodConfig.onError(apiError)
       }
       if (options.onError) {
-        options.onError(error)
+        options.onError(apiError)
       }
 
-      throw error
+      throw apiError
     }
   }
 
@@ -757,6 +794,65 @@ export class ApiEngineImpl implements ApiEngine {
     }
 
     return normalized
+  }
+
+  /**
+   * 创建API错误对象
+   */
+  private createApiError(error: unknown, context: any): ApiError {
+    if (error instanceof ApiError) {
+      return error
+    }
+
+    // 检查是否是HTTP响应错误
+    if (error && typeof error === 'object' && 'response' in error) {
+      return ApiErrorFactory.fromHttpResponse(error, context)
+    }
+
+    // 检查是否是网络错误
+    if (error instanceof Error) {
+      return ApiErrorFactory.fromNetworkError(error, context)
+    }
+
+    // 其他未知错误
+    return ApiErrorFactory.fromUnknownError(error, context)
+  }
+
+  /**
+   * 报告错误
+   */
+  private reportError(error: ApiError): void {
+    if (this.errorReporter) {
+      this.errorReporter.report(error)
+    }
+  }
+
+  /**
+   * 设置错误报告器
+   */
+  setErrorReporter(reporter: ErrorReporter | null): void {
+    this.errorReporter = reporter
+  }
+
+  /**
+   * 获取错误报告器
+   */
+  getErrorReporter(): ErrorReporter | null {
+    return this.errorReporter
+  }
+
+  /**
+   * 设置性能监控器
+   */
+  setPerformanceMonitor(monitor: PerformanceMonitor | null): void {
+    this.performanceMonitor = monitor
+  }
+
+  /**
+   * 获取性能监控器
+   */
+  getPerformanceMonitor(): PerformanceMonitor | null {
+    return this.performanceMonitor
   }
 
   /**

@@ -31,6 +31,18 @@ export { createGraphqlApiPlugin, gql } from './plugins/graphql'
 export { createOfflineCachePlugin } from './plugins/offlineCache'
 export { createRateLimitPlugin } from './plugins/rateLimit'
 export { createLoggingPlugin } from './plugins/logging'
+export {
+  createErrorHandlingPlugin,
+  errorHandlingPlugin,
+  withErrorHandling,
+  ErrorHandlingUtils
+} from './plugins/errorHandling'
+export {
+  createPerformancePlugin,
+  performancePlugin,
+  withPerformance,
+  PerformanceUtils
+} from './plugins/performance'
 
 // 核心类型
 export type {
@@ -62,6 +74,8 @@ export { authMiddlewaresPlugin, createAuthMiddlewaresPlugin } from './plugins/au
 
 // 工具类
 export { CacheManager } from './utils/CacheManager'
+export { LRUCache } from './utils/LRUCache'
+export { PerformanceMonitor, createPerformanceMonitor, getGlobalPerformanceMonitor, setGlobalPerformanceMonitor } from './utils/PerformanceMonitor'
 export { renameKeysShallow, renameKeysDeep } from './utils/object'
 
 /**
