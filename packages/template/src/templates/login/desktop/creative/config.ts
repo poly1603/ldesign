@@ -6,81 +6,44 @@ import type { TemplateConfig } from '../../../../types/template'
 
 const config: TemplateConfig = {
   name: 'creative',
-  displayName: '创意设计登录模板',
-  description: '充满创意的登录界面设计，采用不对称布局、动态粒子系统、浮动几何形状和光效动画。包含30个动态粒子、6个几何装饰、20条网格线和3束光线扫描效果。适合设计公司、创意工作室和艺术类应用。',
-  version: '2.0.0',
+  displayName: '创意登录模板框架',
+  description: '简化的创意登录模板框架，采用不对称布局和基础几何装饰。保留创意视觉风格，所有内容通过插槽自定义。适合设计公司、创意工作室快速搭建个性化登录界面。',
+  version: '3.0.0',
   author: 'ldesign',
   isDefault: false,
-  tags: ['创意', '设计', '不对称', '艺术', '创新', '动画', '粒子', '光效'],
+  tags: ['创意', '框架', '不对称', '艺术', '插槽', '自定义'],
   preview: './preview.png',
   props: {
-    title: {
-      type: String,
-      default: '创意登录',
-    },
-    subtitle: {
-      type: String,
-      default: '释放你的创造力',
-    },
-    showRemember: {
-      type: Boolean,
-      default: true,
-    },
-    showRegister: {
-      type: Boolean,
-      default: true,
-    },
-    showCreativeElements: {
-      type: Boolean,
-      default: true,
-    },
-    logoUrl: {
-      type: String,
-      default: '',
-    },
-    accentColor: {
+    primaryColor: {
       type: String,
       default: '#ff6b6b',
     },
-    secondaryAccent: {
+    secondaryColor: {
       type: String,
       default: '#4ecdc4',
     },
-    tertiaryAccent: {
+    backgroundImage: {
       type: String,
-      default: '#45b7d1',
+      default: '',
     },
     enableAnimations: {
       type: Boolean,
       default: true,
     },
   },
-  slots: ['header', 'footer', 'creative-elements', 'artwork'],
+  slots: ['header', 'content', 'footer', 'artwork'],
   dependencies: [],
   minVueVersion: '3.0.0',
   features: [
-    '不对称布局',
-    '动态粒子系统（30个粒子）',
-    '浮动几何形状（6个装饰）',
-    '光效扫描动画（3束光线）',
-    '动态网格背景（20条网格线）',
-    '多层渐变背景',
-    '创意动画效果',
-    '多彩配色方案',
-    '艺术装饰元素',
-    '交互式背景',
-    '创新表单设计',
-    '视觉冲击力',
-    '个性化定制',
-    '高性能动画优化',
-    '响应式粒子适配',
+    '不对称布局框架',
+    '创意装饰区域',
+    '简化几何装饰',
+    '完全插槽化',
+    '响应式设计',
+    '自定义主题色',
+    '动画开关',
+    '轻量级实现',
   ],
-  // screenshots removed due to type constraints
-  // screenshots: [
-  //   './screenshot-1.png',
-  //   './screenshot-2.png',
-  //   './screenshot-3.png',
-  // ],
 }
 
 export default config

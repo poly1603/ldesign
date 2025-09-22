@@ -45,6 +45,7 @@ export function useTemplate(options: UseTemplateOptions = {}) {
   const availableTemplates = ref<TemplateMetadata[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const isInitializing = ref(true) // 新增：区分初始化状态
 
   // 选择器相关状态
   const showSelector = ref(showSelectorOption)
@@ -91,6 +92,24 @@ export function useTemplate(options: UseTemplateOptions = {}) {
   }
 
   /**
+   * 确保最小加载时间的辅助函数
+   */
+  async function ensureMinimumLoadingTime<T>(
+    promise: Promise<T>,
+    minTime: number = 800
+  ): Promise<T> {
+    const startTime = Date.now()
+    const result = await promise
+    const elapsed = Date.now() - startTime
+
+    if (elapsed < minTime) {
+      await new Promise(resolve => setTimeout(resolve, minTime - elapsed))
+    }
+
+    return result
+  }
+
+  /**
    * 加载模板列表
    */
   async function loadTemplates(): Promise<void> {
@@ -98,36 +117,44 @@ export function useTemplate(options: UseTemplateOptions = {}) {
       loading.value = true
       error.value = null
 
-      // 获取当前分类和设备的模板列表
-      const templates = await simpleTemplateScanner.getTemplates(category || 'default', deviceType.value)
-      availableTemplates.value = templates
+      // 使用最小加载时间确保用户能看到加载动画
+      await ensureMinimumLoadingTime((async () => {
+        // 获取当前分类和设备的模板列表
+        const templates = await simpleTemplateScanner.getTemplates(category || 'default', deviceType.value)
+        availableTemplates.value = templates
 
-      // 如果没有当前模板或当前模板不在列表中，选择模板
-      if (!currentTemplate.value || !templates.find(t => t.id === currentTemplate.value!.id || t.name === currentTemplate.value!.name)) {
-        // 优先尝试恢复上次选择的模板
-        const cachedSelection = loadSelection(category || 'default', deviceType.value)
-        let targetTemplate = null
+        // 如果没有当前模板或当前模板不在列表中，选择模板
+        if (!currentTemplate.value || !templates.find(t => t.id === currentTemplate.value!.id || t.name === currentTemplate.value!.name)) {
+          // 优先尝试恢复上次选择的模板
+          const cachedSelection = loadSelection(category || 'default', deviceType.value)
+          let targetTemplate = null
 
-        if (cachedSelection) {
-          targetTemplate = templates.find(t => t.name === cachedSelection || t.id === cachedSelection)
+          if (cachedSelection) {
+            targetTemplate = templates.find(t => t.name === cachedSelection || t.id === cachedSelection)
+          }
+
+          // 如果没有缓存或缓存的模板不存在，则使用默认模板
+          if (!targetTemplate) {
+            targetTemplate = templates.find(t => t.isDefault) || templates[0]
+          }
+
+          if (targetTemplate) {
+            await switchTemplate(targetTemplate.id || targetTemplate.name)
+          }
         }
-
-        // 如果没有缓存或缓存的模板不存在，则使用默认模板
-        if (!targetTemplate) {
-          targetTemplate = templates.find(t => t.isDefault) || templates[0]
-        }
-
-        if (targetTemplate) {
-          await switchTemplate(targetTemplate.id || targetTemplate.name)
-        }
-      }
+      })())
     }
     catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to load templates'
+      // 区分初始化错误和后续错误
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load templates'
+      error.value = isInitializing.value
+        ? `初始化失败: ${errorMessage}`
+        : errorMessage
       console.error('Failed to load templates:', err)
     }
     finally {
       loading.value = false
+      isInitializing.value = false
     }
   }
 
@@ -340,6 +367,7 @@ export function useTemplate(options: UseTemplateOptions = {}) {
     availableTemplates,
     loading,
     error,
+    isInitializing,
     deviceType,
     switchTemplate,
     refreshTemplates,

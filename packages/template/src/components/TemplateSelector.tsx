@@ -17,6 +17,7 @@ import {
   inject,
   onMounted,
   nextTick,
+  Teleport,
 } from 'vue'
 import { useTemplateList } from '../composables/useTemplate'
 import { TemplateTransition } from './TemplateTransition'
@@ -553,60 +554,62 @@ export const TemplateSelector = defineComponent({
     return () => (
       <div>
         {showContainer.value && (
-          <TemplateTransition
-            name="template-selector"
-            appear
-            duration={300}
-          >
-            {isMounted.value
-              ? (
-                <div
-                  ref={(el) => {
-                    rootRef.value = el as HTMLElement | null
-                    const elem = el as HTMLElement | null
-                    if (elem && props.visible) {
-                      try { (elem as any).tabIndex = 0 } catch {}
-                      if (!elem.hasAttribute('tabindex')) elem.setAttribute('tabindex', '0')
-                      // 提高在 jsdom 下的可聚焦性
-                      if (!elem.hasAttribute('contenteditable')) elem.setAttribute('contenteditable', 'true')
-                      elem.focus()
-                      setTimeout(() => { elem.focus() }, 0)
-                    }
-                  }}
-                  class={['template-selector', props.device]}
-                  role="dialog"
-                  aria-modal="true"
-                  aria-labelledby="template-selector-title"
-                  tabindex={0}
-                  onKeydown={(e) => { if ((e as KeyboardEvent).key === 'Escape') handleClose() }}
-                >
-                  {/* 遮罩层 - 只处理背景点击 */}
+          <Teleport to="body">
+            <TemplateTransition
+              name="template-selector"
+              appear
+              duration={300}
+            >
+              {isMounted.value
+                ? (
                   <div
-                    class="template-selector__backdrop"
-                    onClick={handleClose}
-                  />
-
-                  {/* 内容区域 - 阻止事件冒泡 */}
-                  <div
-                    class="template-selector__content"
-                    onClick={(e) => e.stopPropagation()}
+                    ref={(el) => {
+                      rootRef.value = el as HTMLElement | null
+                      const elem = el as HTMLElement | null
+                      if (elem && props.visible) {
+                        try { (elem as any).tabIndex = 0 } catch { }
+                        if (!elem.hasAttribute('tabindex')) elem.setAttribute('tabindex', '0')
+                        // 提高在 jsdom 下的可聚焦性
+                        if (!elem.hasAttribute('contenteditable')) elem.setAttribute('contenteditable', 'true')
+                        elem.focus()
+                        setTimeout(() => { elem.focus() }, 0)
+                      }
+                    }}
+                    class={['template-selector', props.device]}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="template-selector-title"
+                    tabindex={0}
+                    onKeydown={(e) => { if ((e as KeyboardEvent).key === 'Escape') handleClose() }}
                   >
-                    <div class="template-selector__header">
-                      <h2 id="template-selector-title" class="template-selector__title">选择模板</h2>
-                      <button
-                        class="template-selector__close"
-                        onClick={handleClose}
-                      >
-                        ✕
-                      </button>
-                    </div>
+                    {/* 遮罩层 - 只处理背景点击 */}
+                    <div
+                      class="template-selector__backdrop"
+                      onClick={handleClose}
+                    />
 
-                    {renderBody()}
+                    {/* 内容区域 - 阻止事件冒泡 */}
+                    <div
+                      class="template-selector__content"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div class="template-selector__header">
+                        <h2 id="template-selector-title" class="template-selector__title">选择模板</h2>
+                        <button
+                          class="template-selector__close"
+                          onClick={handleClose}
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      {renderBody()}
+                    </div>
                   </div>
-                </div>
-              )
-              : null}
-          </TemplateTransition>
+                )
+                : null}
+            </TemplateTransition>
+          </Teleport>
         )}
       </div>
     )

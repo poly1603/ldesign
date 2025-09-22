@@ -101,7 +101,6 @@ body {
   font-size: var(--font-size-base);
   line-height: var(--line-height-normal);
   color: var(--color-gray-700);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   background-attachment: fixed;
   margin: 0;
   padding: 0;

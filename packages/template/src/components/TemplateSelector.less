@@ -6,8 +6,16 @@
 
 // ===== 模板选择器主体样式 =====
 .template-selector {
-  position: relative;
-  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999999; // 提高z-index确保在所有内容之上
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ls-padding-lg);
 
   // 选择器包装器
   &-wrapper {
@@ -19,29 +27,50 @@
   &-trigger {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    background: #ffffff;
-    border: 1px solid #e1e5e9;
-    border-radius: 8px;
+    gap: var(--ls-spacing-xs);
+    padding: var(--ls-padding-sm) var(--ls-padding-base);
+    background: var(--ldesign-bg-color-container);
+    border: 1px solid var(--ldesign-border-level-1-color);
+    border-radius: var(--ls-border-radius-base);
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 14px;
-    color: #495057;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: var(--ls-font-size-sm);
+    color: var(--ldesign-text-color-primary);
+    box-shadow: var(--ldesign-shadow-1);
+    position: relative;
+    overflow: hidden;
+
+    // 悬浮效果
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
 
     &:hover {
-      border-color: #007bff;
-      box-shadow: 0 2px 6px rgba(0, 123, 255, 0.15);
+      border-color: var(--ldesign-brand-color);
+      box-shadow: var(--ldesign-shadow-2);
+      transform: translateY(-1px);
+
+      &::before {
+        left: 100%;
+      }
     }
 
     &--active {
-      border-color: #007bff;
-      background: #f8f9fa;
+      border-color: var(--ldesign-brand-color);
+      background: var(--ldesign-brand-color-1);
+      color: var(--ldesign-brand-color);
     }
 
     &__icon {
       font-size: 16px;
+      transition: transform 0.3s ease;
     }
 
     &__text {
@@ -52,7 +81,7 @@
 
     &__arrow {
       font-size: 12px;
-      transition: transform 0.2s ease;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
       &--up {
         transform: rotate(180deg);
@@ -62,37 +91,29 @@
 
   // 弹窗遮罩
   &__backdrop {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
   }
 
   // 弹窗内容
   &__content {
     position: relative;
     width: 100%;
-    max-width: 800px;
-    max-height: 80vh;
-    background: white;
-    border-radius: 16px;
-    box-shadow:
-      0 20px 60px rgba(0, 0, 0, 0.15),
-      0 8px 32px rgba(0, 0, 0, 0.1);
+    max-width: 900px;
+    max-height: 85vh;
+    background: var(--ldesign-bg-color-container);
+    border-radius: var(--ls-border-radius-xl);
+    box-shadow: var(--ldesign-shadow-3);
     overflow: hidden;
-    z-index: 10000;
-    /* 确保内容在遮罩层之上 */
-    pointer-events: auto;
-    /* 确保内容区域可以接收点击事件 */
     display: flex;
     flex-direction: column;
+    border: 1px solid var(--ldesign-border-level-1-color);
   }
 
   // 弹窗头部
@@ -100,15 +121,35 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.5rem 2rem;
-    border-bottom: 1px solid #e9ecef;
-    background: #f8f9fa;
+    padding: var(--ls-padding-lg) var(--ls-padding-xl);
+    border-bottom: 1px solid var(--ldesign-border-level-1-color);
+    background: var(--ldesign-bg-color-component);
+    position: relative;
+
+    // 装饰性渐变条
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--ldesign-brand-color), var(--ldesign-brand-color-5));
+    }
 
     h2 {
       margin: 0;
-      font-size: 1.25rem;
+      font-size: var(--ls-font-size-xl);
       font-weight: 600;
-      color: #212529;
+      color: var(--ldesign-text-color-primary);
+      display: flex;
+      align-items: center;
+      gap: var(--ls-spacing-sm);
+
+      &::before {
+        content: '🎨';
+        font-size: var(--ls-font-size-lg);
+      }
     }
   }
 
@@ -117,19 +158,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border: none;
-    background: none;
-    border-radius: 50%;
+    background: var(--ldesign-bg-color-container);
+    border-radius: var(--ls-border-radius-full);
     cursor: pointer;
-    font-size: 18px;
-    color: #6c757d;
-    transition: all 0.2s ease;
+    font-size: 16px;
+    color: var(--ldesign-text-color-secondary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--ldesign-border-level-1-color);
 
     &:hover {
-      background: #e9ecef;
-      color: #495057;
+      background: var(--ldesign-error-color);
+      color: white;
+      border-color: var(--ldesign-error-color);
+      transform: scale(1.1);
+    }
+
+    &:active {
+      transform: scale(0.95);
     }
   }
 
@@ -295,12 +343,13 @@
 // ===== 模板卡片样式 =====
 .template-card {
   position: relative;
-  background: white;
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
+  background: var(--ldesign-bg-color-container);
+  border: 1px solid var(--ldesign-border-level-1-color);
+  border-radius: var(--ls-border-radius-lg);
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--ldesign-shadow-1);
 
   // 渐变边框效果
   &::before {
@@ -310,28 +359,47 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    border-radius: 12px;
+    background: linear-gradient(135deg, var(--ldesign-brand-color), var(--ldesign-brand-color-5));
+    border-radius: var(--ls-border-radius-lg);
     padding: 2px;
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.4s ease;
+  }
+
+  // 悬浮光效
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
   }
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--ldesign-shadow-3);
 
     &::before {
+      opacity: 1;
+    }
+
+    &::after {
       opacity: 1;
     }
   }
 
   // 选中状态
   &--selected {
-    border-color: #007bff;
-    background: #f8f9ff;
+    border-color: var(--ldesign-brand-color);
+    background: var(--ldesign-brand-color-1);
+    transform: translateY(-2px);
 
     &::before {
       opacity: 1;
@@ -339,6 +407,7 @@
 
     .template-card__badge {
       opacity: 1;
+      transform: scale(1);
     }
   }
 
@@ -453,35 +522,39 @@
 
 // ===== 模板选择器动画样式 =====
 .template-selector-enter-active {
-  transition: all 250ms cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: all 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .template-selector-leave-active {
-  transition: all 200ms cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: all 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 // 为遮罩与内容添加明确的过渡，确保关闭时也有过渡效果
 .template-selector__backdrop {
-  transition: opacity 250ms cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: all 400ms cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .template-selector__content {
   transition:
-    opacity 250ms cubic-bezier(0.25, 0.8, 0.25, 1),
-    transform 250ms cubic-bezier(0.25, 0.8, 0.25, 1);
+    opacity 400ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 400ms ease;
 }
 
-// 进入动画：淡入淡出 + 缩放效果
+// 进入动画：淡入淡出 + 弹性缩放效果
 .template-selector-enter-from {
   opacity: 0;
 
   .template-selector__backdrop {
     opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
   }
 
   .template-selector__content {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.8) translateY(-20px);
+    filter: blur(4px);
   }
 }
 
@@ -491,11 +564,14 @@
 
   .template-selector__backdrop {
     opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
   }
 
   .template-selector__content {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.9) translateY(10px);
+    filter: blur(2px);
   }
 }
 
@@ -506,10 +582,76 @@
 
   .template-selector__backdrop {
     opacity: 1;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
   }
 
   .template-selector__content {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+  }
+}
+
+// 模板卡片进入动画
+.template-card {
+  animation: cardSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+  transform: translateY(20px);
+
+  // Less 语法的循环动画延迟
+  &:nth-child(1) {
+    animation-delay: 0.05s;
+  }
+
+  &:nth-child(2) {
+    animation-delay: 0.10s;
+  }
+
+  &:nth-child(3) {
+    animation-delay: 0.15s;
+  }
+
+  &:nth-child(4) {
+    animation-delay: 0.20s;
+  }
+
+  &:nth-child(5) {
+    animation-delay: 0.25s;
+  }
+
+  &:nth-child(6) {
+    animation-delay: 0.30s;
+  }
+
+  &:nth-child(7) {
+    animation-delay: 0.35s;
+  }
+
+  &:nth-child(8) {
+    animation-delay: 0.40s;
+  }
+
+  &:nth-child(9) {
+    animation-delay: 0.45s;
+  }
+
+  &:nth-child(10) {
+    animation-delay: 0.50s;
+  }
+
+  &:nth-child(11) {
+    animation-delay: 0.55s;
+  }
+
+  &:nth-child(12) {
+    animation-delay: 0.60s;
+  }
+}
+
+@keyframes cardSlideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

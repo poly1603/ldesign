@@ -6,71 +6,45 @@ import type { TemplateConfig } from '../../../../types/template'
 
 const config: TemplateConfig = {
   name: 'default',
-  displayName: '默认登录模板',
-  description: '简洁专业的默认登录界面，采用经典的对称布局和商务配色。包含专业几何装饰元素（圆形、方形、线条）和品牌水印设计。适合企业应用、管理系统和商务平台。',
-  version: '2.0.0',
+  displayName: '默认登录模板框架',
+  description: '简洁的登录模板框架，提供基础布局和空白登录面板。包含简化的几何装饰元素，所有内容通过插槽自定义。适合快速搭建各种登录界面。',
+  version: '3.0.0',
   author: 'ldesign',
   isDefault: true,
-  tags: ['简洁', '默认', '经典', '商务', '专业', '几何', '品牌'],
+  tags: ['框架', '简洁', '基础', '插槽', '自定义', '布局'],
   preview: './preview.png',
   props: {
-    title: {
+    primaryColor: {
       type: String,
-      default: '用户登录',
+      default: 'var(--ldesign-brand-color)',
     },
-    subtitle: {
+    secondaryColor: {
       type: String,
-      default: '欢迎回来，请登录您的账户',
-    },
-    showRemember: {
-      type: Boolean,
-      default: true,
-    },
-    showRegister: {
-      type: Boolean,
-      default: true,
-    },
-    showForgot: {
-      type: Boolean,
-      default: true,
-    },
-    logoUrl: {
-      type: String,
-      default: '',
+      default: 'var(--ldesign-brand-color-6)',
     },
     backgroundImage: {
       type: String,
       default: '',
     },
-    primaryColor: {
-      type: String,
-      default: '#667eea',
+    enableAnimations: {
+      type: Boolean,
+      default: true,
     },
   },
-  slots: ['header', 'footer', 'extra', 'logo'],
+  slots: ['header', 'content', 'footer'],
   dependencies: [],
   minVueVersion: '3.0.0',
   features: [
-    '对称经典布局',
-    '专业几何装饰',
-    '品牌水印设计',
-    '商务渐变背景',
+    '基础布局框架',
+    '空白登录面板',
+    '简化几何装饰',
+    '完全插槽化',
     '响应式设计',
-    '表单验证',
-    '记住密码',
-    '忘记密码',
-    '注册链接',
     '自定义主题色',
     '自定义背景',
-    '无障碍访问优化',
-    '企业级安全',
-    '专业视觉风格',
+    '动画开关',
+    '轻量级实现',
   ],
-  // screenshots removed due to type constraints
-  // screenshots: [
-  //   './screenshot-1.png',
-  //   './screenshot-2.png',
-  // ],
 }
 
 export default config

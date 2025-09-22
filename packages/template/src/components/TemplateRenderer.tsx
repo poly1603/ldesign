@@ -14,12 +14,12 @@ import {
   onMounted,
   type PropType,
   ref,
-  Transition,
   watch,
   isRef,
   markRaw,
   shallowRef,
   h,
+  provide,
 } from 'vue'
 import { useDeviceDetection } from '../composables/useDeviceDetection'
 import { useTemplate } from '../composables/useTemplate'
@@ -27,6 +27,7 @@ import { useTemplateSelectorAnimation } from '../composables/useTemplateAnimatio
 import { TemplateSelector } from './TemplateSelector'
 import { TemplateTransition } from './TemplateTransition'
 import './TemplateRenderer.less'
+import { ChevronDown, PanelsTopLeft } from 'lucide-vue-next'
 
 /**
  * 默认加载组件
@@ -36,7 +37,16 @@ const DefaultLoadingComponent = defineComponent({
   setup() {
     return () => h('div', { class: 'template-loading' }, [
       h('div', { class: 'template-loading__spinner' }),
-      h('div', { class: 'template-loading__text' }, '加载模板中...')
+      h('div', { class: 'template-loading__text' }, '正在加载模板...'),
+      h('div', { class: 'template-loading__subtitle' }, '请稍候，正在为您准备最佳体验'),
+      h('div', { class: 'template-loading__progress' }, [
+        h('div', { class: 'template-loading__progress-bar' })
+      ]),
+      h('div', { class: 'template-loading__dots' }, [
+        h('div', { class: 'dot' }),
+        h('div', { class: 'dot' }),
+        h('div', { class: 'dot' })
+      ])
     ])
   },
 })
@@ -103,6 +113,10 @@ export const TemplateRenderer = defineComponent({
       type: Boolean,
       default: true,
     },
+    showSelectorLabel: {
+      type: Boolean,
+      default: false
+    },
 
     /** 模板切换回调（可选） */
     onTemplateChange: {
@@ -154,6 +168,7 @@ export const TemplateRenderer = defineComponent({
     const availableTemplates = toRefCompat<import('../types/template').TemplateMetadata[]>(templateApi.availableTemplates)
     const loading = toRefCompat<boolean>(templateApi.loading)
     const error = toRefCompat<Error | string | null>(templateApi.error)
+    const isInitializing = toRefCompat<boolean>(templateApi.isInitializing || false)
 
     const switchTemplate = templateApi.switchTemplate as (name: string) => Promise<void>
     const refreshTemplates = templateApi.refreshTemplates as () => Promise<void>
@@ -228,6 +243,11 @@ export const TemplateRenderer = defineComponent({
         handleLoadError(error)
       }
     }
+
+    // 向子组件提供模板切换函数和状态
+    provide('templateSwitch', handleTemplateSwitch)
+    provide('currentTemplate', currentTemplate)
+    provide('availableTemplates', availableTemplates)
 
     /**
      * 处理加载错误
@@ -367,11 +387,7 @@ export const TemplateRenderer = defineComponent({
         `template-selector-trigger--${config.theme}`,
       ].filter(Boolean).join(' ')
 
-      const modalClass = [
-        'template-selector-modal',
-        `template-selector-modal--${config.modalStyle}`,
-        `template-selector-modal--${config.theme}`,
-      ].filter(Boolean).join(' ')
+
 
       return (
         <div class={wrapperClass} style={config.customStyle}>
@@ -380,56 +396,43 @@ export const TemplateRenderer = defineComponent({
             onClick={handleSelectorOpen}
             style={transitionStyles}
           >
-            <span class="template-selector-trigger__icon">🎨</span>
-            <span class="template-selector-trigger__text">
-              {currentTemplate.value?.displayName || '选择模板'}
+            <span class="template-selector-trigger__icon">
+              <PanelsTopLeft />
             </span>
-            <span
-              class={[
-                'template-selector-trigger__arrow',
-                { 'template-selector-trigger__arrow--open': showSelectorModal.value },
-              ]}
-            >
-              ▼
-            </span>
+            {
+              props.showSelectorLabel
+              && (
+                <>
+                  <span class="template-selector-trigger__text">
+                    {currentTemplate.value?.displayName || '选择模板'}
+                  </span>
+                  <span
+                    class={[
+                      'template-selector-trigger__arrow',
+                      { 'template-selector-trigger__arrow--open': showSelectorModal.value },
+                    ]}
+                  >
+                    <ChevronDown />
+                  </span>
+                </>
+              )
+            }
           </button>
 
-          <Transition
-            name={`template-selector-modal-${config.animation}`}
-            appear
-          >
-            {showSelectorModal.value && (
-              <div
-                class={modalClass}
-                style={{
-                  ...transitionStyles,
-                  maxHeight: config.maxHeight,
-                  maxWidth: config.maxWidth,
-                }}
-              >
-                <div
-                  class="template-selector-modal__backdrop"
-                  onClick={handleSelectorClose}
-                />
-                <div class="template-selector-modal__content">
-                  <TemplateSelector
-                    category={props.category}
-                    device={currentDevice.value}
-                    currentTemplate={currentTemplate.value?.name}
-                    visible={true}
-                    showPreview={false}
-                    showSearch={!!config.showSearch}
-                    showTags={!!config.showTags}
-                    showSort={!!config.showSort}
-                    itemsPerRow={config.itemsPerRow ?? 3}
-                    searchable={true}
-                    onSelect={handleTemplateSelect}
-                    onClose={handleSelectorClose}
-                  />
-                </div>
-              </div>
-            )}
-          </Transition>
+          <TemplateSelector
+            category={props.category}
+            device={currentDevice.value}
+            currentTemplate={currentTemplate.value?.name}
+            visible={showSelectorModal.value}
+            showPreview={false}
+            showSearch={!!config.showSearch}
+            showTags={!!config.showTags}
+            showSort={!!config.showSort}
+            itemsPerRow={config.itemsPerRow ?? 3}
+            searchable={true}
+            onSelect={handleTemplateSelect}
+            onClose={handleSelectorClose}
+          />
         </div>
       )
     }
@@ -439,8 +442,8 @@ export const TemplateRenderer = defineComponent({
      */
     const renderTemplate = () => {
 
-      // 加载状态
-      if (loading.value) {
+      // 初始化加载状态 - 优先显示加载动画
+      if (loading.value || isInitializing.value) {
         const LoadingComp = LoadingComponent.value as any
         const loadingContent = slots.loading ? slots.loading() : <LoadingComp />
         return (
@@ -453,16 +456,14 @@ export const TemplateRenderer = defineComponent({
               key="loading"
               class="template-loading"
             >
-              {/* 兼容测试文案 */}
-              <div class="template-loading__text">加载中</div>
               {loadingContent}
             </div>
           </TemplateTransition>
         )
       }
 
-      // 错误状态
-      if (error.value) {
+      // 错误状态 - 只在非初始化状态下显示
+      if (error.value && !isInitializing.value) {
         const errorContent = slots.error
           ? slots.error({ error: error.value, retry: retryLoad })
           : (
