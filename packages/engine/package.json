@@ -190,8 +190,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "node scripts/build-clean.js",
-    "build:original": "ldesign-builder build -f esm,cjs,umd --silent",
+    "build": "ldesign-builder build -f esm,cjs,umd",
     "build:clean": "node scripts/build.js --clean",
     "build:types": "node scripts/build.js --types",
     "build:analyze": "node scripts/analyze-bundle.js",

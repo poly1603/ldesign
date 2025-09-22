@@ -13,39 +13,47 @@ export default defineConfig({
   // 不压缩代码（开发阶段）
   minify: false,
 
-  // 减少构建日志输出
-  logLevel: 'error',
+  // UMD 构建配置
+  umd: {
+    enabled: true,
+    minify: true, // UMD版本启用压缩
+    fileName: 'index.js' // 去掉 .umd 后缀
+  },
 
-  // 优化构建配置
-  rollupOptions: {
-    // 抑制特定警告
-    onwarn(warning, warn) {
-      // 忽略空 chunk 警告
-      if (warning.code === 'EMPTY_BUNDLE') return
-      // 忽略循环依赖警告（如果不是关键的）
-      if (warning.code === 'CIRCULAR_DEPENDENCY') return
-      // 其他警告正常显示
-      warn(warning)
-    },
-    output: {
-      // 减少空 chunk 警告
-      manualChunks: (id) => {
-        // 将所有类型文件合并到一个 chunk 中，避免生成空 chunk
-        if (id.includes('/types/') || id.endsWith('/types.ts')) {
-          return undefined // 不生成单独的 chunk
-        }
-        return undefined
+  // 外部依赖配置
+  external: [
+    'vue',
+    'node:fs',
+    'node:path',
+    'node:os',
+    'node:util',
+    'node:events',
+    'node:stream',
+    'node:crypto',
+    'node:http',
+    'node:https',
+    'node:url',
+    'node:buffer',
+    'node:child_process',
+    'node:worker_threads'
+],
+
+  // 全局变量配置
+  globals: {
+    'vue': 'Vue'
+},
+
+  // 日志级别设置为 silent，只显示错误信息
+  logLevel: 'silent',
+
+  // 构建选项
+  build: {
+    // 禁用构建警告
+    rollupOptions: {
+      onwarn: (warning, warn) => {
+        // 完全静默，不输出任何警告
+        return
       }
-    },
-    // 忽略仅包含类型定义的模块
-    treeshake: {
-      moduleSideEffects: false,
-      propertyReadSideEffects: false,
-      tryCatchDeoptimization: false
-    },
-    // 外部化 Vue 相关依赖
-    external: ['vue', '@vue/shared', '@vue/runtime-core', '@vue/reactivity']
+    }
   }
-
-  // external、globals、libraryType、formats、plugins 等配置将由 @ldesign/builder 自动检测和生成
 })
