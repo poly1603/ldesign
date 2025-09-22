@@ -8,7 +8,7 @@
  */
 
 import type { Loader, LanguagePackage, NestedObject, LanguageInfo } from './types'
-import { getBuiltInTranslation, hasBuiltInTranslation } from '../locales'
+import { getBuiltInTranslation, hasBuiltInTranslation, getBuiltInLocales } from '../locales'
 import { mergeLanguagePackages, MergeStrategy, type MergeOptions } from './merger'
 import { I18nError, LanguageLoadError } from './errors'
 import { LanguageRegistry, type LanguageConfig, type LanguageFilter } from './language-config'
@@ -316,7 +316,8 @@ export class BuiltInLoader implements Loader {
     // 添加内置语言
     if (this.useBuiltIn) {
       try {
-        const builtInLocales = await import('../locales').then(m => m.getBuiltInLocales())
+        // 使用静态导入避免动态导入冲突
+        const builtInLocales = getBuiltInLocales()
         builtInLocales.forEach(locale => locales.add(locale))
       } catch (error) {
         console.warn('[BuiltInLoader] Failed to load built-in locales:', error)
