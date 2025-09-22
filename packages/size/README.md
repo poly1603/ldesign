@@ -317,6 +317,45 @@ pnpm test:e2e
 pnpm docs:dev
 ```
 
+## 🚀 简化使用方式
+
+### 一键安装插件
+
+```javascript
+import { createApp } from 'vue'
+import { installSizePlugin, installWithPreset } from '@ldesign/size/vue'
+
+const app = createApp(App)
+
+// 使用默认配置
+installSizePlugin(app)
+
+// 使用预设配置
+installWithPreset(app, 'responsive') // 响应式
+installWithPreset(app, 'mobile')     // 移动端优先
+installWithPreset(app, 'desktop')    // 桌面端优先
+```
+
+### 高级组合式API
+
+```javascript
+// 智能尺寸管理
+import { useSmartSize } from '@ldesign/size/vue'
+const { currentMode, recommendedMode, resetToRecommended } = useSmartSize({
+  autoDetect: true,
+  responsive: true,
+  remember: true
+})
+
+// 带动画的切换
+import { useSizeAnimation } from '@ldesign/size/vue'
+const { setMode, isAnimating } = useSizeAnimation()
+
+// 状态管理和历史记录
+import { useSizeState } from '@ldesign/size/vue'
+const { canUndo, canRedo, undo, redo } = useSizeState()
+```
+
 ## 许可证
 
 MIT © LDesign Team

@@ -6,7 +6,26 @@ import type { SizeMode } from '../../types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp } from 'vue'
 
-// 导入composables
+// Mock size manager 模块
+vi.mock('../../core/size-manager', () => {
+  const mockSizeManager = {
+    getCurrentMode: vi.fn(() => 'medium' as SizeMode),
+    getConfig: vi.fn(() => ({ fontSize: '14px' })),
+    setMode: vi.fn(),
+    onSizeChange: vi.fn(() => vi.fn()),
+    generateCSSVariables: vi.fn(() => ({ '--size': '14px' })),
+    injectCSS: vi.fn(),
+    removeCSS: vi.fn(),
+    destroy: vi.fn(),
+  }
+
+  return {
+    globalSizeManager: mockSizeManager,
+    createSizeManager: vi.fn(() => mockSizeManager),
+  }
+})
+
+// 导入composables（在mock之后）
 import {
   useGlobalSize,
   useSize,
@@ -14,24 +33,6 @@ import {
   useSizeSwitcher,
   useSizeWatcher,
 } from '../../vue/composables'
-
-// 创建全局的 mock 对象
-const mockSizeManager = {
-  getCurrentMode: vi.fn(() => 'medium' as SizeMode),
-  getConfig: vi.fn(() => ({ fontSize: '14px' })),
-  setMode: vi.fn(),
-  onSizeChange: vi.fn(() => vi.fn()),
-  generateCSSVariables: vi.fn(() => ({ '--size': '14px' })),
-  injectCSS: vi.fn(),
-  removeCSS: vi.fn(),
-  destroy: vi.fn(),
-}
-
-// Mock size manager
-vi.mock('../../core/size-manager', () => ({
-  globalSizeManager: mockSizeManager,
-  createSizeManager: vi.fn(() => mockSizeManager),
-}))
 
 // Mock utils
 vi.mock('../../utils', () => ({
@@ -81,7 +82,12 @@ function withVueContext<T>(fn: () => T): T {
 }
 
 describe('vue Composables', () => {
-  beforeEach(() => {
+  let mockSizeManager: any
+
+  beforeEach(async () => {
+    // 获取mock对象的引用
+    const sizeManagerModule = vi.mocked(await import('../../core/size-manager'))
+    mockSizeManager = sizeManagerModule.globalSizeManager
     vi.clearAllMocks()
   })
 

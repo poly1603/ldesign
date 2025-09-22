@@ -51,6 +51,11 @@ describe('cSSInjector', () => {
       id: '',
       textContent: '',
       remove: vi.fn(),
+      setAttribute: vi.fn(),
+      getAttribute: vi.fn(),
+      parentNode: {
+        removeChild: vi.fn(),
+      },
     }
 
     mockDocument.createElement.mockReturnValue(mockStyleElement)

@@ -83,11 +83,16 @@ export class CSSInjector {
     this.styleElement.id = this.options.styleId
     this.styleElement.textContent = cssString
 
-    // 添加保护属性，防止被其他包误删
-    if (this.isProtected) {
-      this.styleElement.setAttribute('data-package', 'ldesign-size')
-      this.styleElement.setAttribute('data-protected', 'true')
-      this.styleElement.setAttribute('data-injector', 'size-css-injector')
+    // 添加保护属性，防止被其他包误删（安全检查）
+    if (this.isProtected && this.styleElement.setAttribute) {
+      try {
+        this.styleElement.setAttribute('data-package', 'ldesign-size')
+        this.styleElement.setAttribute('data-protected', 'true')
+        this.styleElement.setAttribute('data-injector', 'size-css-injector')
+      } catch (error) {
+        // 在某些环境中 setAttribute 可能不可用，忽略错误
+        console.warn('[CSS Injector] Failed to set protection attributes:', error)
+      }
     }
 
     // 插入到head中
@@ -109,8 +114,19 @@ export class CSSInjector {
 
     // 作为备用，也检查DOM中是否有同ID的元素
     const existingStyle = document.getElementById(this.options.styleId)
-    if (existingStyle && existingStyle.getAttribute('data-package') === 'ldesign-size') {
-      existingStyle.remove()
+    if (existingStyle) {
+      // 安全检查 getAttribute 方法是否存在
+      try {
+        const packageAttr = existingStyle.getAttribute ? existingStyle.getAttribute('data-package') : null
+        if (!packageAttr || packageAttr === 'ldesign-size') {
+          existingStyle.remove()
+        }
+      } catch (error) {
+        // 如果 getAttribute 失败，直接移除（可能是我们创建的元素）
+        if (existingStyle.id === this.options.styleId) {
+          existingStyle.remove()
+        }
+      }
     }
 
     this.styleElement = null

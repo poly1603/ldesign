@@ -136,8 +136,13 @@ export const SizeSwitcher = defineComponent({
     const computedModes = computed(() => props.modes || availableModes)
     const computedTheme = computed(() => {
       if (props.theme === 'auto') {
-        if (typeof window !== 'undefined') {
-          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        if (typeof window !== 'undefined' && window.matchMedia) {
+          try {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+          } catch (error) {
+            console.warn('[SizeSwitcher] Failed to detect system theme:', error)
+            return 'light'
+          }
         }
         return 'light'
       }
@@ -262,6 +267,9 @@ export const SizeSwitcher = defineComponent({
         )
       )
 
+    // 生成唯一的radio group name
+    const radioGroupName = `size-mode-${Math.random().toString(36).substr(2, 9)}`
+
     const renderRadioSwitcher = () =>
       h(
         'div',
@@ -272,7 +280,7 @@ export const SizeSwitcher = defineComponent({
             h('input', {
               type: 'radio',
               class: 'size-switcher__radio',
-              name: `size-mode-${Math.random().toString(36).substr(2, 9)}`,
+              name: radioGroupName,
               value: mode as any,
               checked: currentMode.value === mode,
               disabled: props.disabled,

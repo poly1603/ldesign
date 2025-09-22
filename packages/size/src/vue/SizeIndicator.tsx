@@ -69,8 +69,13 @@ export const SizeIndicator = defineComponent({
 
     const computedTheme = computed(() => {
       if (props.theme === 'auto') {
-        if (typeof window !== 'undefined') {
-          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        if (typeof window !== 'undefined' && window.matchMedia) {
+          try {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+          } catch (error) {
+            console.warn('[SizeIndicator] Failed to detect system theme:', error)
+            return 'light'
+          }
         }
         return 'light'
       }
