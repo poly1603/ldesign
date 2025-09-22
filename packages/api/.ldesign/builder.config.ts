@@ -13,18 +13,47 @@ export default defineConfig({
   // 不压缩代码（开发阶段）
   minify: false,
 
-  // 输出配置
-  output: {
-    format: ['esm', 'cjs', 'umd']
-  },
-
   // UMD 构建配置
   umd: {
     enabled: true,
     minify: true, // UMD版本启用压缩
-    entry: 'src/index-lib.ts', // 明确指定UMD入口文件
     fileName: 'index.js' // 去掉 .umd 后缀
-  }
+  },
 
-  // external、globals、libraryType、formats、plugins 等配置将由 @ldesign/builder 自动检测和生成
+  // 外部依赖配置
+  external: [
+    'vue',
+    'node:fs',
+    'node:path',
+    'node:os',
+    'node:util',
+    'node:events',
+    'node:stream',
+    'node:crypto',
+    'node:http',
+    'node:https',
+    'node:url',
+    'node:buffer',
+    'node:child_process',
+    'node:worker_threads'
+],
+
+  // 全局变量配置
+  globals: {
+    'vue': 'Vue'
+},
+
+  // 日志级别设置为 silent，只显示错误信息
+  logLevel: 'silent',
+
+  // 构建选项
+  build: {
+    // 禁用构建警告
+    rollupOptions: {
+      onwarn: (warning, warn) => {
+        // 完全静默，不输出任何警告
+        return
+      }
+    }
+  }
 })
