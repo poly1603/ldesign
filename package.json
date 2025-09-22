@@ -5,21 +5,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "node scripts/build.js",
-		"build:simple": "pnpm -r --filter='./packages/*' run build",
-		"build:prod": "pnpm -r --filter='./packages/*' run build",
-		"dev": "pnpm -r --parallel --filter='./packages/*' run dev",
-		"test": "pnpm -r --filter='./packages/*' run test",
-		"test:run": "pnpm -r --filter='./packages/*' run test:run",
-		"test:coverage": "pnpm -r --filter='./packages/*' run test:coverage",
-		"lint": "pnpm -r --filter='./packages/*' run lint",
-		"lint:fix": "pnpm -r --filter='./packages/*' run lint:fix",
-		"type-check": "pnpm -r --filter='./packages/*' run type-check",
-		"clean": "pnpm -r --filter='./packages/*' run clean",
-		"docs:dev": "pnpm --filter='./docs' run dev",
-		"docs:build": "pnpm --filter='./docs' run build",
-		"app:dev": "pnpm --filter='./app' run dev",
-		"app:build": "pnpm --filter='./app' run build"
+		"build": "tsx scripts/build-packages.ts"
 	},
 	"devDependencies": {
 		"@types/node": "^20.0.0",
