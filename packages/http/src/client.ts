@@ -28,6 +28,15 @@ import { ConcurrencyManager } from './utils/concurrency'
 import { RetryManager } from './utils/error'
 import { RequestMonitor } from './utils/monitor'
 import { PriorityQueue, determinePriority } from './utils/priority'
+// 静态导入工具函数，避免动态导入冲突
+import { validateFile, createUploadFormData, ProgressCalculator } from './utils/upload'
+import {
+  getFilenameFromResponse,
+  getFilenameFromURL,
+  getMimeTypeFromFilename,
+  saveFileToLocal,
+  DownloadProgressCalculator
+} from './utils/download'
 import { RequestPool } from './utils/pool'
 import { generateId } from './utils'
 
@@ -94,16 +103,16 @@ export class HttpClientImpl implements HttpClient {
 
     // 合并配置（只在需要时进行深度合并）
     const mergedConfig = this.optimizedMergeConfig(config)
-    
+
     // 生成请求ID
     const requestId = generateId()
-    
+
     // 开始监控
     this.monitor.startRequest(requestId, mergedConfig)
-    
+
     // 判断优先级
     const priority = determinePriority(mergedConfig)
-    
+
     // 使用优先级队列执行请求
     if (priority !== undefined && this.priorityQueue) {
       return this.priorityQueue.enqueue(
@@ -132,7 +141,7 @@ export class HttpClientImpl implements HttpClient {
       throw error
     }
   }
-  
+
   /**
    * 执行带重试的请求
    */
@@ -542,7 +551,7 @@ export class HttpClientImpl implements HttpClient {
     file: File,
     config: UploadConfig,
   ): Promise<UploadResult<T>> {
-    const { validateFile, createUploadFormData, ProgressCalculator } = await import('./utils/upload')
+    // 使用静态导入的工具函数
 
     // 验证文件
     validateFile(file, config)
@@ -565,13 +574,13 @@ export class HttpClientImpl implements HttpClient {
       },
       onUploadProgress: config.onProgress
         ? (progressEvent: any) => {
-            const progress = progressCalculator.calculate(
-              progressEvent.loaded,
-              progressEvent.total,
-              file,
-            )
-            config.onProgress!(progress)
-          }
+          const progress = progressCalculator.calculate(
+            progressEvent.loaded,
+            progressEvent.total,
+            file,
+          )
+          config.onProgress!(progress)
+        }
         : undefined,
     }
 
@@ -592,7 +601,7 @@ export class HttpClientImpl implements HttpClient {
     files: File[],
     config: UploadConfig,
   ): Promise<UploadResult<T>> {
-    const { validateFile, ProgressCalculator } = await import('./utils/upload')
+    // 使用静态导入的工具函数
 
     // 验证所有文件
     files.forEach(file => validateFile(file, config))
@@ -627,12 +636,12 @@ export class HttpClientImpl implements HttpClient {
       },
       onUploadProgress: config.onProgress
         ? (progressEvent: any) => {
-            const progress = progressCalculator.calculate(
-              progressEvent.loaded,
-              progressEvent.total,
-            )
-            config.onProgress!(progress)
-          }
+          const progress = progressCalculator.calculate(
+            progressEvent.loaded,
+            progressEvent.total,
+          )
+          config.onProgress!(progress)
+        }
         : undefined,
     }
 
@@ -654,13 +663,7 @@ export class HttpClientImpl implements HttpClient {
   ): Promise<DownloadResult> {
     this.checkDestroyed()
 
-    const {
-      getFilenameFromResponse,
-      getFilenameFromURL,
-      getMimeTypeFromFilename,
-      saveFileToLocal,
-      DownloadProgressCalculator,
-    } = await import('./utils/download')
+    // 使用静态导入的工具函数
 
     const startTime = Date.now()
     const progressCalculator = new DownloadProgressCalculator()
@@ -673,13 +676,13 @@ export class HttpClientImpl implements HttpClient {
       responseType: 'blob',
       onDownloadProgress: config.onProgress
         ? (progressEvent: any) => {
-            const progress = progressCalculator.calculate(
-              progressEvent.loaded,
-              progressEvent.total,
-              config.filename,
-            )
-            config.onProgress!(progress)
-          }
+          const progress = progressCalculator.calculate(
+            progressEvent.loaded,
+            progressEvent.total,
+            config.filename,
+          )
+          config.onProgress!(progress)
+        }
         : undefined,
     }
 
@@ -817,13 +820,13 @@ export class HttpClientImpl implements HttpClient {
 
     // 清理并发队列
     this.concurrencyManager.cancelQueue('Client destroyed')
-    
+
     // 清理优先级队列
     this.priorityQueue.destroy()
-    
+
     // 清理连接池
     this.requestPool.destroy()
-    
+
     // 清理监控器
     this.monitor.clear()
 
