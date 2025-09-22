@@ -94,8 +94,8 @@
     },
     "./es/index.css": "./es/index.css",
     "./lib/index.css": "./lib/index.css",
-    "./dist/index.umd.css": "./dist/index.umd.css",
-    "./dist/index.umd.min.css": "./dist/index.umd.min.css"
+    "./dist/index.css": "./dist/index.css",
+    "./dist/index.min.css": "./dist/index.min.css"
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
