@@ -112,6 +112,8 @@ export interface NetworkInfo {
   online?: boolean
   /** 有效连接类型（兼容性属性） */
   effectiveType?: string
+  /** 是否支持网络连接API */
+  supported?: boolean
 }
 
 /**
@@ -223,7 +225,7 @@ export interface BatteryModule extends DeviceModule {
 export interface GeolocationModule extends DeviceModule {
   getData: () => GeolocationInfo | null
   isSupported: () => boolean
-  getCurrentPosition: () => Promise<GeolocationInfo>
+  getCurrentPosition: (options?: PositionOptions) => Promise<GeolocationInfo>
   startWatching: (callback?: (position: GeolocationInfo) => void) => void
   stopWatching: () => void
 }

@@ -35,11 +35,11 @@ function getGlobalDetector(): DeviceDetector {
     })
 
     // 全局方向变化处理器
-    globalDetector.on('deviceChange', (deviceInfo: DeviceInfo) => {
+    globalDetector.on('deviceChange', () => {
       scheduleUpdate()
     })
 
-    globalDetector.on('orientationChange', (orientation: Orientation) => {
+    globalDetector.on('orientationChange', () => {
       scheduleUpdate()
     })
   }

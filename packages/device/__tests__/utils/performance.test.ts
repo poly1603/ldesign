@@ -312,19 +312,17 @@ describe('Performance Utils', () => {
 
     it('应该处理并发加载', async () => {
       const loader = new LazyLoader<string>()
-      const mockLoader = vi.fn().mockImplementation(
-        () => new Promise(resolve => setTimeout(() => resolve('loaded'), 100))
-      )
-      
+      const mockLoader = vi.fn().mockResolvedValue('loaded')
+
       loader.register('resource1', mockLoader)
-      
+
       const promise1 = loader.load('resource1')
       const promise2 = loader.load('resource1')
-      
+
       expect(loader.isLoading('resource1')).toBe(true)
-      
+
       const [result1, result2] = await Promise.all([promise1, promise2])
-      
+
       expect(result1).toBe('loaded')
       expect(result2).toBe('loaded')
       expect(mockLoader).toHaveBeenCalledTimes(1)

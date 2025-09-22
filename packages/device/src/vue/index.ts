@@ -1,12 +1,10 @@
 // 重新导出核心功能
-export {
-  BatteryModule,
-  DeviceDetector,
-  EventEmitter,
-  GeolocationModule,
-  ModuleLoader,
-  NetworkModule,
-} from '../index'
+export { DeviceDetector } from '../core/DeviceDetector'
+export { EventEmitter } from '../core/EventEmitter'
+export { ModuleLoader } from '../core/ModuleLoader'
+export { BatteryModule } from '../modules/BatteryModule'
+export { GeolocationModule } from '../modules/GeolocationModule'
+export { NetworkModule } from '../modules/NetworkModule'
 
 // 重新导出类型
 export type {
@@ -14,7 +12,7 @@ export type {
   DeviceDetectorEvents,
   DeviceDetectorOptions,
   DeviceDirectiveValue,
-  DeviceInfo,
+  DeviceInfo as DeviceInfoType,
   DeviceModule,
   DevicePluginOptions,
   DeviceType,
@@ -22,21 +20,23 @@ export type {
   GeolocationInfo,
   ModuleLoader as IModuleLoader,
   NetworkInfo,
-  NetworkStatus,
+  NetworkStatus as NetworkStatusType,
   NetworkType,
   Orientation,
   UseDeviceReturn,
 } from '../types'
 
-// Composition API
+// Composition API - 主要的Vue集成API
 export {
   useBattery,
   useDevice,
   useGeolocation,
   useNetwork,
+  useOrientation,
+  useBreakpoints,
 } from './composables'
 
-// 指令
+// 指令 - Vue指令集成
 export {
   cleanupGlobalDetector,
   vDevice,
@@ -45,8 +45,11 @@ export {
   vDeviceTablet,
 } from './directives'
 
-// 插件
+// 插件 - Vue插件系统
 export { createDevicePlugin, DevicePlugin, useDeviceDetector } from './plugin'
 
-// 默认导出插件
+// 组件 - Vue组件
+export { DeviceInfo, NetworkStatus } from './components'
+
+// 默认导出插件 - 便于快速使用
 export { DevicePlugin as default } from './plugin'

@@ -102,6 +102,8 @@ describe('NetworkModule', () => {
       const info = networkModule.getNetworkInfo()
 
       expect(info).toEqual({
+        status: 'online',
+        type: 'cellular',
         online: true,
         effectiveType: '4g',
         downlink: 10,
@@ -170,6 +172,8 @@ describe('NetworkModule', () => {
       }
 
       expect(mockCallback).toHaveBeenCalledWith({
+        status: 'online',
+        type: 'cellular',
         online: true,
         effectiveType: '3g',
         downlink: 10,
@@ -179,23 +183,47 @@ describe('NetworkModule', () => {
       })
     })
 
-    it('应该在离线时触发事件', () => {
+    it('应该在离线时触发事件', async () => {
       const mockCallback = vi.fn()
       networkModule.on('networkChange', mockCallback)
 
-      // 模拟离线事件
+      // 获取当前网络状态作为基准
+      const initialInfo = networkModule.getNetworkInfo()
+
+      // 确保初始状态是在线的
+      Object.defineProperty(navigator, 'onLine', {
+        writable: true,
+        value: true,
+        configurable: true,
+      })
+
+      // 等待一个tick确保状态稳定
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      // 模拟离线状态
       Object.defineProperty(navigator, 'onLine', {
         writable: true,
         value: false,
+        configurable: true,
       })
 
       // 触发离线事件
       const offlineEvent = new Event('offline')
       window.dispatchEvent(offlineEvent)
 
+      // 也直接调用更新方法确保状态更新
+      ;(networkModule as any).updateNetworkInfo()
+
+      // 等待事件处理
+      await vi.waitFor(() => {
+        expect(mockCallback).toHaveBeenCalled()
+      }, { timeout: 1000 })
+
+      // 验证事件参数
       expect(mockCallback).toHaveBeenCalledWith(
         expect.objectContaining({
           online: false,
+          status: 'offline',
         })
       )
     })

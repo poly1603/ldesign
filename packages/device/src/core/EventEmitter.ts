@@ -36,9 +36,9 @@ export class EventEmitter<
 
     const listeners = this.events.get(event)!
 
-    // 检查监听器数量限制
-    if (listeners.size >= this.maxListeners) {
-      console.warn(`Max listeners (${this.maxListeners}) exceeded for event: ${String(event)}`)
+    // 检查监听器数量限制，但只在超过限制时警告一次
+    if (listeners.size >= this.maxListeners && listeners.size === this.maxListeners) {
+      console.warn(`Max listeners (${this.maxListeners}) exceeded for event: ${String(event)}. Consider using removeAllListeners() or increasing maxListeners.`)
     }
 
     listeners.add(listener as EventListener<unknown>)

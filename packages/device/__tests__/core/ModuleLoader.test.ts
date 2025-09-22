@@ -30,6 +30,10 @@ describe('ModuleLoader', () => {
   beforeEach(() => {
     moduleLoader = new ModuleLoader()
     vi.clearAllMocks()
+    // 重置mock的默认行为
+    mockModule.init.mockResolvedValue(undefined)
+    mockModule.destroy.mockResolvedValue(undefined)
+    mockModule.getData.mockReturnValue({})
   })
 
   afterEach(() => {
@@ -160,8 +164,8 @@ describe('ModuleLoader', () => {
 
   describe('错误处理', () => {
     it('应该处理模块初始化失败', async () => {
-      // 模拟初始化失败
-      mockModule.init.mockRejectedValueOnce(new Error('Init failed'))
+      // 模拟所有重试都失败
+      mockModule.init.mockRejectedValue(new Error('Init failed'))
 
       await expect(
         moduleLoader.loadModuleInstance('network')

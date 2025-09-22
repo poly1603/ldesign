@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
-import { vDevice, vDeviceMobile, vDeviceTablet, vDeviceDesktop } from '../../../src/vue/directives/vDevice'
+import { vDevice, vDeviceMobile, vDeviceTablet, vDeviceDesktop, __resetGlobalState, __setGlobalDetector } from '../../../src/vue/directives/vDevice'
 
 // Mock DeviceDetector
 const mockDeviceInfo = {
@@ -32,13 +32,17 @@ const mockDeviceInfo = {
 const mockDetector = {
   getDeviceInfo: vi.fn(() => mockDeviceInfo),
   getDeviceType: vi.fn(() => mockDeviceInfo.type),
-  on: vi.fn(),
-  off: vi.fn(),
-  destroy: vi.fn(),
+  on: vi.fn().mockReturnThis(),
+  off: vi.fn().mockReturnThis(),
+  destroy: vi.fn().mockReturnThis(),
+  init: vi.fn().mockResolvedValue(undefined),
+  emit: vi.fn(),
+  once: vi.fn().mockReturnThis(),
+  removeAllListeners: vi.fn().mockReturnThis(),
 }
 
 vi.mock('../../../src/core/DeviceDetector', () => ({
-  DeviceDetector: vi.fn(() => mockDetector),
+  DeviceDetector: vi.fn().mockImplementation(() => mockDetector),
 }))
 
 describe('vDevice 指令', () => {
@@ -46,9 +50,14 @@ describe('vDevice 指令', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    // 重置全局状态
+    __resetGlobalState()
+    // 设置mock检测器
+    __setGlobalDetector(mockDetector as any)
     // 重置 mock 数据
     mockDeviceInfo.type = 'desktop'
     mockDetector.getDeviceType.mockReturnValue('desktop')
+    mockDetector.getDeviceInfo.mockReturnValue(mockDeviceInfo)
   })
 
   afterEach(() => {
@@ -146,15 +155,16 @@ describe('vDevice 指令', () => {
       mockDeviceInfo.type = 'mobile'
       mockDetector.getDeviceType.mockReturnValue('mobile')
 
-      // 触发设备变化事件
-      const deviceChangeCallback = mockDetector.on.mock.calls.find(
-        call => call[0] === 'deviceChange'
-      )?.[1]
-
+      // 触发全局设备变化事件
+      const deviceChangeCallback = mockDetector.on.mock.calls.find(call => call[0] === 'deviceChange')?.[1]
       if (deviceChangeCallback) {
-        deviceChangeCallback(mockDeviceInfo)
-        await nextTick()
+        deviceChangeCallback()
       }
+
+      // 等待批量更新完成
+      await nextTick()
+      await new Promise(resolve => setTimeout(resolve, 50))
+      await nextTick()
 
       // 现在应该显示
       element = wrapper.find('div')
@@ -371,15 +381,16 @@ describe('vDevice 指令', () => {
       mockDeviceInfo.type = 'mobile'
       mockDetector.getDeviceType.mockReturnValue('mobile')
 
-      // 触发设备变化事件
-      const deviceChangeCallback = mockDetector.on.mock.calls.find(
-        call => call[0] === 'deviceChange'
-      )?.[1]
-
+      // 触发全局设备变化事件
+      const deviceChangeCallback = mockDetector.on.mock.calls.find(call => call[0] === 'deviceChange')?.[1]
       if (deviceChangeCallback) {
-        deviceChangeCallback(mockDeviceInfo)
-        await nextTick()
+        deviceChangeCallback()
       }
+
+      // 等待批量更新完成
+      await nextTick()
+      await new Promise(resolve => setTimeout(resolve, 50))
+      await nextTick()
 
       // 验证批量更新后的状态
       expect(wrapper.find('.desktop-1').element.style.display).toBe('none')

@@ -1,8 +1,14 @@
 {
   "name": "@ldesign/device",
-  "type": "module",
   "version": "0.1.0",
   "description": "Modern device information detection library with Vue3 integration",
+  "keywords": [
+    "device",
+    "detection",
+    "responsive",
+    "vue3",
+    "typescript"
+  ],
   "author": "ldesign",
   "license": "MIT",
   "homepage": "https://github.com/ldesign/device#readme",
@@ -13,54 +19,85 @@
   "bugs": {
     "url": "https://github.com/ldesign/device/issues"
   },
-  "keywords": [
-    "device",
-    "detection",
-    "responsive",
-    "vue3",
-    "typescript"
-  ],
+  "type": "module",
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
+      "types": "./es/index.d.ts",
       "import": "./es/index.js",
-      "require": "./cjs/index.cjs"
+      "require": "./lib/index.cjs"
+    },
+    "./core/*": {
+      "types": "./es/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.cjs"
+    },
+    "./engine": {
+      "types": "./es/engine/index.d.ts",
+      "import": "./es/engine/index.js",
+      "require": "./lib/engine/index.cjs"
+    },
+    "./engine/*": {
+      "types": "./es/engine/*.d.ts",
+      "import": "./es/engine/*.js",
+      "require": "./lib/engine/*.cjs"
+    },
+    "./modules/*": {
+      "types": "./es/modules/*.d.ts",
+      "import": "./es/modules/*.js",
+      "require": "./lib/modules/*.cjs"
+    },
+    "./types": {
+      "types": "./es/types/index.d.ts",
+      "import": "./es/types/index.js",
+      "require": "./lib/types/index.cjs"
+    },
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
+    },
+    "./utils": {
+      "types": "./es/utils/index.d.ts",
+      "import": "./es/utils/index.js",
+      "require": "./lib/utils/index.cjs"
+    },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
     },
     "./vue": {
-      "types": "./types/vue/index.d.ts",
+      "types": "./es/vue/index.d.ts",
       "import": "./es/vue/index.js",
-      "require": "./cjs/vue/index.cjs"
+      "require": "./lib/vue/index.cjs"
     },
-    "./vue/index.ts": {
-      "types": "./types/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./cjs/vue/index.cjs"
+    "./vue/*": {
+      "types": "./es/vue/*.d.ts",
+      "import": "./es/vue/*.js",
+      "require": "./lib/vue/*.cjs"
     },
-    "./vue/composables/useBreakpoints": {
-      "types": "./types/vue/composables/useBreakpoints.d.ts",
-      "import": "./es/vue/composables/useBreakpoints.js",
-      "require": "./cjs/vue/composables/useBreakpoints.cjs"
-    },
-    "./vue/composables/useBreakpoints.ts": {
-      "types": "./types/vue/composables/useBreakpoints.d.ts",
-      "import": "./es/vue/composables/useBreakpoints.js",
-      "require": "./cjs/vue/composables/useBreakpoints.cjs"
-    }
+    "./es/index.css": "./es/index.css",
+    "./es/vue/components/DeviceInfo.vue.css": "./es/vue/components/DeviceInfo.vue.css",
+    "./es/vue/components/NetworkStatus.vue.css": "./es/vue/components/NetworkStatus.vue.css",
+    "./lib/index.css": "./lib/index.css",
+    "./lib/vue/components/DeviceInfo.vue.css": "./lib/vue/components/DeviceInfo.vue.css",
+    "./lib/vue/components/NetworkStatus.vue.css": "./lib/vue/components/NetworkStatus.vue.css",
+    "./dist/index.css": "./dist/index.css",
+    "./dist/index.min.css": "./dist/index.min.css"
   },
-  "main": "cjs/index.cjs",
-  "module": "es/index.js",
-  "types": "types/index.d.ts",
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
   "files": [
     "README.md",
-    "CHANGELOG.md",
-    "dist",
+    "LICENSE",
+    "package.json",
     "es",
-    "cjs",
-    "types"
+    "lib",
+    "dist"
   ],
-  "engines": {
-    "node": ">=16"
-  },
   "scripts": {
     "build": "ldesign-builder build -f esm,cjs,umd",
     "build:watch": "ldesign-builder build --watch",
@@ -89,11 +126,6 @@
   "peerDependencies": {
     "vue": "^3.3.0"
   },
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    }
-  },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
     "@playwright/test": "^1.40.1",
@@ -116,10 +148,18 @@
     "vue": "^3.4.15",
     "vue-tsc": "^3.0.5"
   },
+  "engines": {
+    "node": ">=16"
+  },
   "size-limit": [
     {
       "path": "dist/index.js",
       "limit": "40 KB"
     }
-  ]
+  ],
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  }
 }

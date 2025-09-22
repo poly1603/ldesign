@@ -1,5 +1,5 @@
 import type { Directive, DirectiveBinding } from 'vue'
-import type { DeviceInfo, NetworkInfo, NetworkStatus } from '../../types'
+import type { NetworkInfo, NetworkStatus } from '../../types'
 import { DeviceDetector } from '../../core/DeviceDetector'
 
 interface ElementWithNetworkData extends HTMLElement {
@@ -230,7 +230,7 @@ export const vNetwork: Directive<HTMLElement, NetworkStatus | NetworkStatus[] | 
         updateElementVisibility(elementWithData, binding, networkInfo)
 
         // 监听网络变化
-        const handleNetworkChange = (newNetworkInfo: NetworkInfo) => {
+        const handleNetworkChange = () => {
           updateQueue.add(elementWithData)
           scheduleUpdate()
         }

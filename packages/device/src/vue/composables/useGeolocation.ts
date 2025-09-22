@@ -189,7 +189,7 @@ export function useGeolocation() {
   /**
    * 开始监听位置变化
    */
-  const startWatching = async (options?: PositionOptions) => {
+  const startWatching = async () => {
     if (!geolocationModule || isWatching.value) {
       if (!geolocationModule) {
         await loadModule()

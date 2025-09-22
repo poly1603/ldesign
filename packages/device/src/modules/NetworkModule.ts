@@ -83,8 +83,11 @@ export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> 
 
     const online = typeof navigator !== 'undefined' ? !!navigator.onLine : true
     const effectiveType = connection?.effectiveType || (connection as any)?.type || 'unknown'
+    const status: NetworkStatus = online ? 'online' : 'offline'
 
     const info: NetworkInfo = {
+      status,
+      type: this.parseConnectionType(effectiveType),
       online,
       effectiveType,
       supported: !!connection,
@@ -152,6 +155,8 @@ export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> 
   private detectNetworkInfo(): NetworkInfo {
     if (typeof window === 'undefined') {
       return {
+        status: 'online',
+        type: 'unknown',
         online: true,
         effectiveType: 'unknown',
         supported: false,
@@ -230,6 +235,8 @@ export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> 
     // 检查是否有变化
     const hasChanged =
       oldInfo.online !== newInfo.online ||
+      oldInfo.status !== newInfo.status ||
+      oldInfo.type !== newInfo.type ||
       oldInfo.effectiveType !== newInfo.effectiveType ||
       oldInfo.downlink !== newInfo.downlink ||
       oldInfo.rtt !== newInfo.rtt ||
@@ -254,12 +261,10 @@ export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> 
     this.onlineHandler = () => {
       // 更新状态并发出事件
       this.updateNetworkInfo()
-      this.emit('networkChange', this.getNetworkInfo())
     }
     this.offlineHandler = () => {
       // 更新状态并发出事件
       this.updateNetworkInfo()
-      this.emit('networkChange', this.getNetworkInfo())
     }
 
     window.addEventListener('online', this.onlineHandler)

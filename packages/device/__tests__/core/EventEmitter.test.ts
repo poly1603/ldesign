@@ -242,6 +242,9 @@ describe('EventEmitter', () => {
 
   describe('性能优化', () => {
     it('应该高效处理大量监听器', () => {
+      // 为性能测试临时增加最大监听器数量
+      emitter.setMaxListeners(2000)
+
       const listeners = Array.from({ length: 1000 }, () => vi.fn())
 
       // 添加大量监听器
