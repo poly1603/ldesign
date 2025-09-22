@@ -158,15 +158,12 @@ export class ConfigManager extends EventEmitter {
 
             this.logger.debug('配置模块经临时重编码后加载成功')
           } catch (fallbackErr) {
-            this.logger.warn('动态 import 失败，降级使用 require', {
-              error: (importErr as Error).message
+            this.logger.warn('动态 import 失败，无法加载配置文件', {
+              importError: (importErr as Error).message,
+              fallbackError: (fallbackErr as Error).message
             })
-            // 最后回退到 require（主要用于 .cjs 或老环境）
-            // 注意：在 ESM-only 的项目中，这一步仍可能失败
-            // 因此外层会兜底使用默认配置
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const required = require(absolutePath)
-            loadedConfig = (required && required.default) || required
+            // 在 ESM 环境中无法使用 require，直接抛出错误
+            throw new Error(`无法加载配置文件 ${absolutePath}: ${(importErr as Error).message}`)
           }
         }
       }
@@ -180,24 +177,17 @@ export class ConfigManager extends EventEmitter {
       // 处理代理配置
       loadedConfig = this.processProxyConfig(loadedConfig)
 
-      // 详细调试配置内容
-      console.log(`🔧 [DEBUG] 配置加载完成，详细信息:`)
-      console.log(`🔧 [DEBUG] - 配置类型:`, typeof loadedConfig)
-      console.log(`🔧 [DEBUG] - 配置键:`, Object.keys(loadedConfig))
-      if (loadedConfig.resolve) {
-        console.log(`🔧 [DEBUG] - resolve 配置:`, Object.keys(loadedConfig.resolve))
-        if (loadedConfig.resolve.alias) {
-          console.log(`🔧 [DEBUG] - alias 配置类型:`, typeof loadedConfig.resolve.alias)
-          console.log(`🔧 [DEBUG] - alias 是否为数组:`, Array.isArray(loadedConfig.resolve.alias))
-          if (Array.isArray(loadedConfig.resolve.alias)) {
-            console.log(`🔧 [DEBUG] - alias 数组长度:`, loadedConfig.resolve.alias.length)
-            console.log(`🔧 [DEBUG] - 前3个别名:`, loadedConfig.resolve.alias.slice(0, 3))
-          }
-        } else {
-          console.log(`🔧 [DEBUG] - 没有 alias 配置`)
-        }
-      } else {
-        console.log(`🔧 [DEBUG] - 没有 resolve 配置`)
+      // 只在debug模式下输出详细调试信息
+      if (this.logger.getLevel() === 'debug') {
+        this.logger.debug('配置加载完成，详细信息', {
+          configType: typeof loadedConfig,
+          configKeys: Object.keys(loadedConfig),
+          hasResolve: !!loadedConfig.resolve,
+          hasAlias: !!(loadedConfig.resolve?.alias),
+          aliasType: loadedConfig.resolve?.alias ? typeof loadedConfig.resolve.alias : 'undefined',
+          aliasIsArray: Array.isArray(loadedConfig.resolve?.alias),
+          aliasLength: Array.isArray(loadedConfig.resolve?.alias) ? loadedConfig.resolve.alias.length : 0
+        })
       }
 
       this.config = loadedConfig
@@ -929,19 +919,36 @@ ${presetInfo ? ` * 项目类型: ${presetInfo.description}\n` : ''}${presetInfo 
    * @returns 合并后的配置
    */
   async loadEnvironmentConfig(cwd: string, environment?: string): Promise<ViteLauncherConfig> {
-    console.log(`🚀 [DEBUG] 开始加载环境配置，工作目录: ${cwd}，环境: ${environment}`)
+    // 只在debug模式下输出详细信息
+    if (this.logger.getLevel() === 'debug') {
+      this.logger.debug('开始加载环境配置', { cwd, environment })
+    }
+
     let mergedConfig: ViteLauncherConfig = {}
 
     // 1. 首先加载基础配置文件
-    console.log(`📋 [DEBUG] 步骤1: 查找基础配置文件`)
+    if (this.logger.getLevel() === 'debug') {
+      this.logger.debug('步骤1: 查找基础配置文件')
+    }
+
     const baseConfigFile = await this.findConfigFile(cwd)
     if (baseConfigFile) {
-      console.log(`✅ [DEBUG] 找到基础配置文件: ${baseConfigFile}`)
+      if (this.logger.getLevel() === 'debug') {
+        this.logger.debug('找到基础配置文件', { file: baseConfigFile })
+      }
+
       const baseConfig = await this.loadConfig(baseConfigFile)
       mergedConfig = this.deepMerge(mergedConfig, baseConfig)
-      console.log(`✅ [DEBUG] 已加载基础配置文件，别名数量: ${baseConfig.resolve?.alias?.length || 0}`)
+
+      if (this.logger.getLevel() === 'debug') {
+        this.logger.debug('已加载基础配置文件', {
+          aliasCount: baseConfig.resolve?.alias?.length || 0
+        })
+      }
     } else {
-      console.log(`❌ [DEBUG] 未找到基础配置文件`)
+      if (this.logger.getLevel() === 'debug') {
+        this.logger.debug('未找到基础配置文件')
+      }
     }
 
     // 2. 如果指定了环境，加载环境特定配置

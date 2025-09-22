@@ -9,7 +9,6 @@
 
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import { resolve, join } from 'path'
-import { existsSync } from 'fs'
 import { watch as chokidar, FSWatcher } from 'chokidar'
 import { existsSync, readFile } from 'fs'
 import { promisify } from 'util'
@@ -193,8 +192,9 @@ export function createAppConfigPlugin(options: AppConfigPluginOptions = {}): Plu
 
           // 更新环境变量定义
           if (config.command === 'serve') {
-            config.define = config.define || {}
-            config.define['import.meta.env.appConfig'] = JSON.stringify(appConfig)
+            // 注意：config.define 是只读的，我们不能直接修改它
+            // 这里只是记录新的配置，实际的环境变量更新通过 HMR 实现
+            logger.debug('配置已更新，将通过 HMR 传递给客户端')
           }
 
           // 发送自定义 HMR 事件通知客户端配置已更新

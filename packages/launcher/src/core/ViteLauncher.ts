@@ -118,6 +118,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
   /** 智能插件管理器 */
   private smartPluginManager: SmartPluginManager
 
+  /** 初始化状态 */
+  private initialized: boolean = false
+
 
 
   /**
@@ -142,8 +145,11 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       process.argv.includes('--debug') ||
       process.argv.includes('-d')
 
+    const isSilent = process.argv.includes('--silent') ||
+      process.argv.includes('-s')
+
     this.logger = new Logger('ViteLauncher', {
-      level: this.config.launcher?.logLevel || DEFAULT_LOG_LEVEL,
+      level: isSilent ? 'silent' : (this.config.launcher?.logLevel || DEFAULT_LOG_LEVEL),
       colors: true,
       timestamp: isDebug, // 只在 debug 模式显示时间戳
       compact: !isDebug   // 非 debug 模式使用简洁输出
@@ -157,7 +163,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
 
     // 初始化配置管理器
     const configLogger = new Logger('ConfigManager', {
-      level: this.logger.getLevel(),
+      level: isSilent ? 'silent' : this.logger.getLevel(),
       colors: true,
       timestamp: isDebug,
       compact: !isDebug
@@ -166,9 +172,14 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     const configFile = this.config.launcher?.configFile ||
       PathUtils.resolve(this.cwd, '.ldesign', `launcher.${this.environment}.config.ts`)
 
+    // 只在dev模式下启用文件监听，build和preview模式不需要监听
+    const shouldWatch = (this.config.launcher?.autoRestart || false) &&
+                       (this.environment === 'development' ||
+                        (process.env.NODE_ENV === 'development' && this.environment !== 'production'))
+
     this.configManager = new ConfigManager({
       configFile,
-      watch: this.config.launcher?.autoRestart || false,
+      watch: shouldWatch,
       logger: configLogger,
       onConfigChange: (newConfig) => {
         // 延迟重启，确保配置文件写入完成
@@ -180,12 +191,14 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       }
     })
 
-    // 调试：确认配置监听器状态
-    this.logger.debug('🔧 ConfigManager 初始化完成')
+    // 只在debug模式下输出调试信息
+    if (isDebug) {
+      this.logger.debug('ConfigManager 初始化完成')
+    }
 
     // 初始化智能插件管理器
     const smartLogger = new Logger('SmartPluginManager', {
-      level: this.logger.getLevel(),
+      level: isSilent ? 'silent' : this.logger.getLevel(),
       colors: true,
       timestamp: isDebug,
       compact: !isDebug
@@ -226,29 +239,25 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
    * 加载配置文件并完成完整初始化
    */
   async initialize(): Promise<void> {
-    // 强制输出，确保能看到
-    console.log(`🔧 [FORCE DEBUG] ViteLauncher.initialize 开始`)
-    console.log(`🔧 [FORCE DEBUG] - 工作目录: ${this.cwd}`)
-    console.log(`🔧 [FORCE DEBUG] - 环境: ${this.environment}`)
+    // 避免重复初始化
+    if (this.initialized) {
+      return
+    }
 
     try {
       // 优先使用显式指定的配置文件，其次自动查找
       const specified = this.config.launcher?.configFile
 
-      // 使用 process.stdout.write 确保输出显示
-      process.stdout.write(`🔧 [DEBUG] ViteLauncher.initialize 开始\n`)
-      process.stdout.write(`🔧 [DEBUG] - 工作目录: ${this.cwd}\n`)
-      process.stdout.write(`🔧 [DEBUG] - 环境: ${this.environment}\n`)
-      process.stdout.write(`🔧 [DEBUG] - 指定配置文件: ${specified || '无'}\n`)
-      process.stdout.write(`🔧 [DEBUG] - launcher 配置: ${JSON.stringify(this.config.launcher)}\n`)
-
-      console.log(`🔧 [FORCE DEBUG] - 指定配置文件: ${specified || '无'}`)
-      console.log(`🔧 [FORCE DEBUG] - launcher 配置:`, this.config.launcher)
-
-      this.logger.info(`🔧 ViteLauncher.initialize 开始，指定配置文件: ${specified || '无'}`)
+      // 只在debug模式下输出详细信息
+      if (this.logger.getLevel() === 'debug') {
+        this.logger.debug('ViteLauncher.initialize 开始', {
+          cwd: this.cwd,
+          environment: this.environment,
+          configFile: specified || '无'
+        })
+      }
 
       if (specified) {
-        process.stdout.write(`🔧 [DEBUG] 走指定配置文件分支\n`)
         this.logger.info(`📋 使用指定配置文件: ${specified}`)
         // 加载并合并用户配置到当前配置（修复：之前未合并导致用户 plugins 等失效）
         const loaded = await this.configManager.loadConfig(specified)
@@ -256,23 +265,20 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
           this.config = this.mergeConfig(this.config, loaded)
         }
       } else {
-        process.stdout.write(`🔧 [DEBUG] 走自动配置加载分支\n`)
         this.logger.info(`📋 使用自动配置加载`)
         try {
           // autoLoadConfig 内部已合并到 this.config
           await this.autoLoadConfig()
-          process.stdout.write(`🔧 [DEBUG] autoLoadConfig 执行完成\n`)
         } catch (autoLoadError) {
-          process.stdout.write(`🔧 [DEBUG] autoLoadConfig 执行失败: ${(autoLoadError as Error).message}\n`)
           this.logger.error('自动配置加载失败', { error: (autoLoadError as Error).message })
           throw autoLoadError
         }
       }
 
+      this.initialized = true
       this.logger.info('ViteLauncher 初始化完成')
     } catch (error) {
-      this.logger.error('配置文件加载失败，使用默认配置', { error: (error as Error).message, stack: (error as Error).stack })
-      process.stdout.write(`🔧 [DEBUG] ViteLauncher 初始化异常: ${(error as Error).message}\n`)
+      this.logger.error('配置文件加载失败，使用默认配置', { error: (error as Error).message })
     }
   }
 
@@ -322,10 +328,14 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
         }
       }
 
-      this.logger.info(`👀 server.watch配置:`)
-      this.logger.info(`  ignored类型: ${typeof mergedConfig.server?.watch?.ignored}`)
-      this.logger.info(`  usePolling: ${mergedConfig.server?.watch?.usePolling}`)
-      this.logger.info(`  interval: ${mergedConfig.server?.watch?.interval}`)
+      // 只在debug模式下输出详细的watch配置信息
+      if (this.logger.getLevel() === 'debug') {
+        this.logger.debug(`server.watch配置:`, {
+          ignoredType: typeof mergedConfig.server?.watch?.ignored,
+          usePolling: mergedConfig.server?.watch?.usePolling,
+          interval: mergedConfig.server?.watch?.interval
+        })
+      }
 
       this.logger.info('正在启动开发服务器...')
 
@@ -1152,7 +1162,13 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
    */
   private async autoLoadConfig(): Promise<ViteLauncherConfig> {
     try {
-      this.logger.info(`🔧 ViteLauncher.autoLoadConfig 开始，工作目录: ${this.cwd}，环境: ${this.environment}`)
+      // 只在debug模式下输出详细信息
+      if (this.logger.getLevel() === 'debug') {
+        this.logger.debug('ViteLauncher.autoLoadConfig 开始', {
+          cwd: this.cwd,
+          environment: this.environment
+        })
+      }
 
       // 使用 ConfigManager 的多环境配置加载功能
       const loadedConfig = await this.configManager.load({
@@ -1160,14 +1176,20 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
         environment: this.environment
       })
 
-      this.logger.info(`📋 ConfigManager.load 返回的配置别名数量: ${loadedConfig.resolve?.alias?.length || 0}`)
-
       // 合并到当前配置
       const oldAliasCount = this.config.resolve?.alias?.length || 0
       this.config = this.mergeConfig(this.config, loadedConfig)
       const newAliasCount = this.config.resolve?.alias?.length || 0
 
-      this.logger.info(`🔄 配置合并完成，别名数量: ${oldAliasCount} -> ${newAliasCount}`)
+      // 只在debug模式下输出详细信息
+      if (this.logger.getLevel() === 'debug') {
+        this.logger.debug('配置合并完成', {
+          oldAliasCount,
+          newAliasCount,
+          loadedAliasCount: loadedConfig.resolve?.alias?.length || 0
+        })
+      }
+
       this.logger.success('配置文件加载成功')
 
       return this.config
@@ -1277,12 +1299,15 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
    * @returns 应用别名后的配置
    */
   private applyAliasConfig(config: ViteLauncherConfig, stage: 'dev' | 'build' | 'preview'): ViteLauncherConfig {
-    // 调试：输出当前配置中的别名信息
-    const existingAliases = config.resolve?.alias || []
-    console.log(`🔧 [DEBUG] applyAliasConfig调试:`)
-    console.log(`  当前阶段: ${stage}`)
-    console.log(`  输入配置中的别名数量: ${Array.isArray(existingAliases) ? existingAliases.length : 0}`)
-    console.log(`  输入配置的别名:`, existingAliases)
+    // 只在debug模式下输出调试信息
+    if (this.logger.getLevel() === 'debug') {
+      const existingAliases = config.resolve?.alias || []
+      this.logger.debug('applyAliasConfig调试', {
+        stage,
+        aliasCount: Array.isArray(existingAliases) ? existingAliases.length : 0,
+        aliases: existingAliases
+      })
+    }
 
     // 默认启用内置别名
     // 确保 resolve 配置存在

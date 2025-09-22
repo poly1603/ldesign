@@ -56,19 +56,21 @@ export class Logger {
   private formatMessage(level: LogLevel, message: string, data?: any): string {
     let formatted = ''
 
-    // 添加时间戳（只显示时分秒）
-    if (this.timestamp) {
+    // 添加时间戳（总是显示，用于性能分析）
+    if (this.timestamp || true) { // 强制显示时间戳
       const now = new Date()
       const timeStr = now.toTimeString().slice(0, 8) // HH:MM:SS
-      formatted += this.colors ? picocolors.gray(timeStr) : timeStr
+      const msStr = String(now.getMilliseconds()).padStart(3, '0')
+      const fullTimeStr = `${timeStr}.${msStr}`
+      formatted += this.colors ? picocolors.gray(`[${fullTimeStr}]`) : `[${fullTimeStr}]`
       formatted += ' '
     }
 
-    // 添加级别对应的emoji
-    if (this.colors) {
+    // 添加级别对应的emoji（简化输出）
+    if (this.colors && !this.compact) {
       switch (level) {
         case 'debug':
-          formatted += '🔍 '
+          formatted += '🔧 '
           break
         case 'info':
           formatted += 'ℹ️  '
@@ -80,7 +82,7 @@ export class Logger {
           formatted += '❌ '
           break
       }
-    } else {
+    } else if (!this.colors) {
       // 无颜色模式下使用文字标识
       switch (level) {
         case 'debug':
@@ -100,8 +102,8 @@ export class Logger {
 
     formatted += message
 
-    // 只显示简单的字符串或数字数据，禁止JSON输出
-    if (data !== undefined && this.shouldShowSimpleData(data)) {
+    // 在compact模式下不显示额外数据，除非是错误
+    if (data !== undefined && (!this.compact || level === 'error') && this.shouldShowSimpleData(data)) {
       formatted += ' ' + this.formatSimpleData(data)
     }
 

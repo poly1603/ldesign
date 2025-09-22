@@ -7,7 +7,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { ViteLauncher } from '../../src/core/ViteLauncher'
-import { LauncherStatus } from '../../src/types'
+import { LauncherStatus, LauncherEvent } from '../../src/types'
 
 // Mock Vite 模块
 vi.mock('vite', () => ({
@@ -217,10 +217,14 @@ describe('ViteLauncher', () => {
     it('应该正确注册 onReady 回调', () => {
       const callback = vi.fn()
       launcher.onReady(callback)
-      
-      // 触发 ready 事件
-      launcher.emit('ready')
-      
+
+      // 触发 SERVER_READY 事件
+      launcher.emit(LauncherEvent.SERVER_READY, {
+        server: {} as any,
+        url: 'http://localhost:3000',
+        timestamp: Date.now()
+      })
+
       expect(callback).toHaveBeenCalled()
     })
     
@@ -249,12 +253,14 @@ describe('ViteLauncher', () => {
   describe('错误处理', () => {
     it('应该正确处理和记录错误', () => {
       const testError = new Error('Test error')
-      
-      // 触发错误
-      launcher.emit('error', testError)
-      
+
+      // 直接调用 handleError 方法来更新统计
+      ;(launcher as any).handleError(testError, '测试错误')
+
       // 检查状态是否变为错误状态
-      // 注意：这里可能需要根据实际实现调整
+      expect(launcher.getStatus()).toBe(LauncherStatus.ERROR)
+
+      // 检查错误统计
       const stats = launcher.getStats()
       expect(stats.errorCount).toBeGreaterThan(0)
     })

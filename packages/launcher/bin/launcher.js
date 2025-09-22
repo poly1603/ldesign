@@ -40,13 +40,20 @@ async function main() {
     let createCli
 
     try {
-      // 优先尝试 ESM 构建
+      // 直接使用 ESM 构建，因为这是一个 ESM 包
       mod = await import('../dist/cli/index.js')
       createCli = mod.createCli || (typeof mod.default === 'function' ? mod.default : mod.default?.createCli)
-    } catch (_) {
-      // 回退到 CJS 构建
-      const { createCli: cjsCreateCli } = require('../dist/cli/index.cjs')
-      createCli = cjsCreateCli
+
+      if (!createCli) {
+        console.log('ESM模块导出:', Object.keys(mod))
+        throw new Error('无法找到 createCli 函数')
+      }
+    } catch (esmError) {
+      // 只在非静默模式下输出错误信息
+      if (!process.argv.includes('--silent') && !process.argv.includes('-s')) {
+        console.error('ESM加载失败:', esmError.message)
+      }
+      throw new Error(`无法加载 CLI 模块: ${esmError.message}`)
     }
 
     if (typeof createCli !== 'function') {
@@ -58,17 +65,22 @@ async function main() {
     await cli.run()
 
   } catch (error) {
-    // 如果导入失败，可能是开发环境，提示构建
-    if (error.code === 'ERR_MODULE_NOT_FOUND') {
-      console.error('❌ 找不到构建文件，请先运行构建命令:')
-      console.error('  pnpm run build')
-      console.error('')
-      console.error('或者在开发环境中运行:')
-      console.error('  pnpm run dev')
-    } else {
-      console.error('❌ CLI 启动失败:', error.message)
-      if (process.env.DEBUG) {
-        console.error(error.stack)
+    // 只在非静默模式下输出错误信息
+    const isSilent = process.argv.includes('--silent') || process.argv.includes('-s')
+
+    if (!isSilent) {
+      // 如果导入失败，可能是开发环境，提示构建
+      if (error.code === 'ERR_MODULE_NOT_FOUND') {
+        console.error('❌ 找不到构建文件，请先运行构建命令:')
+        console.error('  pnpm run build')
+        console.error('')
+        console.error('或者在开发环境中运行:')
+        console.error('  pnpm run dev')
+      } else {
+        console.error('❌ CLI 启动失败:', error.message)
+        if (process.env.DEBUG) {
+          console.error(error.stack)
+        }
       }
     }
 
@@ -78,6 +90,9 @@ async function main() {
 
 // 运行主函数
 main().catch((error) => {
-  console.error('❌ 启动失败:', error.message)
+  // 只在非静默模式下输出错误信息
+  if (!process.argv.includes('--silent') && !process.argv.includes('-s')) {
+    console.error('❌ 启动失败:', error.message)
+  }
   process.exit(1)
 })

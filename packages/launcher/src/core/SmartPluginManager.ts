@@ -219,23 +219,14 @@ export class SmartPluginManager {
    */
   private async hasFiles(patterns: string[]): Promise<boolean> {
     try {
-      // 检查多个目录：src、packages 等
-      const dirsToCheck = [
-        PathUtils.resolve(this.cwd, 'src'),
-        PathUtils.resolve(this.cwd, 'packages'),
-        this.cwd // 也检查根目录
-      ]
+      // 添加超时机制，避免长时间卡顿
+      const timeoutPromise = new Promise<boolean>((_, reject) => {
+        setTimeout(() => reject(new Error('文件检查超时')), 5000) // 5秒超时
+      })
 
-      for (const dir of dirsToCheck) {
-        if (await FileSystem.exists(dir)) {
-          const hasFilesInDir = await this.checkFilesInDirectory(dir, patterns)
-          if (hasFilesInDir) {
-            this.logger.debug(`在目录 ${dir} 中找到匹配文件`)
-            return true
-          }
-        }
-      }
-      return false
+      const checkPromise = this.doFileCheck(patterns)
+
+      return await Promise.race([checkPromise, timeoutPromise])
     } catch (error) {
       this.logger.warn('文件检查失败', { error: (error as Error).message })
       return false
@@ -243,10 +234,44 @@ export class SmartPluginManager {
   }
 
   /**
+   * 执行实际的文件检查
+   */
+  private async doFileCheck(patterns: string[]): Promise<boolean> {
+    // 检查多个目录：src、packages 等
+    const dirsToCheck = [
+      PathUtils.resolve(this.cwd, 'src'),
+      PathUtils.resolve(this.cwd, 'packages'),
+      this.cwd // 也检查根目录
+    ]
+
+    for (const dir of dirsToCheck) {
+      if (await FileSystem.exists(dir)) {
+        const hasFilesInDir = await this.checkFilesInDirectory(dir, patterns)
+        if (hasFilesInDir) {
+          this.logger.debug(`在目录 ${dir} 中找到匹配文件`)
+          return true
+        }
+      }
+    }
+    return false
+  }
+
+  /**
    * 递归检查目录中是否有匹配的文件
    */
-  private async checkFilesInDirectory(dir: string, patterns: string[]): Promise<boolean> {
+  private async checkFilesInDirectory(dir: string, patterns: string[], depth: number = 0): Promise<boolean> {
     try {
+      // 限制递归深度，避免性能问题
+      if (depth > 3) {
+        return false
+      }
+
+      // 跳过常见的大型目录
+      const dirName = PathUtils.basename(dir)
+      if (['node_modules', '.git', 'dist', 'build', '.next', '.nuxt', 'coverage'].includes(dirName)) {
+        return false
+      }
+
       const files = await FileSystem.readDir(dir)
 
       for (const file of files) {
@@ -255,7 +280,7 @@ export class SmartPluginManager {
 
         if (stat.isDirectory()) {
           // 递归检查子目录（限制深度避免性能问题）
-          const hasFilesInSubdir = await this.checkFilesInDirectory(filePath, patterns)
+          const hasFilesInSubdir = await this.checkFilesInDirectory(filePath, patterns, depth + 1)
           if (hasFilesInSubdir) return true
         } else {
           // 检查文件是否匹配模式
@@ -283,7 +308,7 @@ export class SmartPluginManager {
         return false
       }
 
-      const packageJson = JSON.parse(await FileSystem.readFile(packageJsonPath, 'utf-8'))
+      const packageJson = JSON.parse(await FileSystem.readFile(packageJsonPath, { encoding: 'utf-8' }))
       const dependencies = packageJson.dependencies || {}
       const devDependencies = packageJson.devDependencies || {}
 

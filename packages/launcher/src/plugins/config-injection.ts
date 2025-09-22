@@ -10,6 +10,8 @@
 import type { Plugin } from 'vite'
 import type { ViteLauncherConfig } from '../types'
 import { Logger } from '../utils/logger'
+import { readFileSync, existsSync } from 'fs'
+import { resolve } from 'path'
 
 /**
  * 配置注入插件选项
@@ -34,10 +36,10 @@ export function createConfigInjectionPlugin(options: ConfigInjectionOptions): Pl
   const logger = new Logger('ConfigInjection')
 
   // 创建安全的配置对象，避免循环引用
-  const createSafeConfig = (cfg: ViteLauncherConfig) => {
+  const createSafeConfig = (cfg: ViteLauncherConfig, packageInfo?: { name?: string; version?: string }) => {
     return {
-      name: cfg.name || 'LDesign App',
-      version: cfg.version || '1.0.0',
+      name: packageInfo?.name || 'LDesign App',
+      version: packageInfo?.version || '1.0.0',
       environment: environment,
       server: {
         host: cfg.server?.host || 'localhost',
@@ -84,7 +86,22 @@ export function createConfigInjectionPlugin(options: ConfigInjectionOptions): Pl
     }
   }
 
-  const safeConfig = createSafeConfig(config)
+  // 读取 package.json 信息
+  let packageInfo: { name?: string; version?: string } = {}
+  try {
+    const packageJsonPath = resolve(process.cwd(), 'package.json')
+    if (existsSync(packageJsonPath)) {
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+      packageInfo = {
+        name: packageJson.name,
+        version: packageJson.version
+      }
+    }
+  } catch (error) {
+    logger.warn('读取 package.json 失败', { error: (error as Error).message })
+  }
+
+  const safeConfig = createSafeConfig(config, packageInfo)
 
   return {
     name: 'ldesign:config-injection',

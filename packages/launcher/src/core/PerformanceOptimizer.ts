@@ -195,7 +195,7 @@ export class PerformanceOptimizer extends EventEmitter {
           if (id.includes('moment')) return 'moment'
           if (id.includes('antd')) return 'antd'
           if (id.includes('element-plus')) return 'element-plus'
-          if (id.includes('@vue')) return 'vue-vendor'
+          if (id.includes('@vue') || id.includes('/vue/')) return 'vue-vendor'
           if (id.includes('react')) return 'react-vendor'
           
           return 'vendor'

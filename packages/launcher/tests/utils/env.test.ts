@@ -8,8 +8,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { 
-  EnvironmentManager, 
+import {
+  EnvironmentManager,
   EnvFileFinder,
   EnvValidator,
   environmentManager,
@@ -18,16 +18,13 @@ import {
   generateDefines
 } from '../../src/utils/env'
 import type { EnvironmentConfig, EnvValidationRule } from '../../src/utils/env'
+import { readFile, writeFile, access } from 'fs/promises'
 
 // Mock fs/promises
-const mockReadFile = vi.fn()
-const mockWriteFile = vi.fn()
-const mockAccess = vi.fn()
-
 vi.mock('fs/promises', () => ({
-  readFile: mockReadFile,
-  writeFile: mockWriteFile,
-  access: mockAccess
+  readFile: vi.fn(),
+  writeFile: vi.fn(),
+  access: vi.fn()
 }))
 
 describe('EnvironmentManager', () => {
@@ -107,7 +104,7 @@ BACKSLASH_VAR="Value with \\\\ backslash"
   describe('loadEnvFile', () => {
     it('应该成功加载环境变量文件', async () => {
       const envContent = 'TEST_VAR=test_value\nANOTHER_VAR=another_value'
-      mockReadFile.mockResolvedValue(envContent)
+      vi.mocked(readFile).mockResolvedValue(envContent)
 
       await envManager.loadEnvFile('.env', '/project')
 
@@ -116,9 +113,9 @@ BACKSLASH_VAR="Value with \\\\ backslash"
     })
 
     it('应该处理文件不存在的情况', async () => {
-      const error = new Error('File not found')
+      const error = new Error('File not found') as any
       error.code = 'ENOENT'
-      mockReadFile.mockRejectedValue(error)
+      vi.mocked(readFile).mockRejectedValue(error)
 
       // 不应该抛出错误
       await expect(envManager.loadEnvFile('.env', '/project')).resolves.toBeUndefined()
@@ -126,7 +123,7 @@ BACKSLASH_VAR="Value with \\\\ backslash"
 
     it('应该处理其他读取错误', async () => {
       const error = new Error('Permission denied')
-      mockReadFile.mockRejectedValue(error)
+      vi.mocked(readFile).mockRejectedValue(error)
 
       // 应该静默处理错误
       await expect(envManager.loadEnvFile('.env', '/project')).resolves.toBeUndefined()
@@ -179,7 +176,7 @@ BACKSLASH_VAR="Value with \\\\ backslash"
       }
 
       // Mock 环境变量文件
-      mockReadFile.mockResolvedValue('API_KEY=secret-key\nLOADED_VAR=loaded_value')
+      vi.mocked(readFile).mockResolvedValue('API_KEY=secret-key\nLOADED_VAR=loaded_value')
       process.env.API_KEY = 'secret-key'
 
       await envManager.loadConfig(config)
@@ -252,13 +249,13 @@ BACKSLASH_VAR="Value with \\\\ backslash"
         comment: 'Generated environment variables'
       })
 
-      expect(mockWriteFile).toHaveBeenCalledWith(
+      expect(vi.mocked(writeFile)).toHaveBeenCalledWith(
         '/path/to/.env',
         expect.stringContaining('# Generated environment variables'),
         'utf-8'
       )
 
-      const [[, content]] = mockWriteFile.mock.calls
+      const [[, content]] = vi.mocked(writeFile).mock.calls
       expect(content).toContain('API_URL="http://localhost:8080"')
       expect(content).toContain('API_KEY="secret-key"')
       expect(content).toContain('DEBUG="true"')
@@ -273,7 +270,7 @@ BACKSLASH_VAR="Value with \\\\ backslash"
 
       await envManager.generateEnvFile('/path/to/.env', variables)
 
-      const [[, content]] = mockWriteFile.mock.calls
+      const [[, content]] = vi.mocked(writeFile).mock.calls
       expect(content).toContain('MULTILINE="Line 1\\nLine 2"')
       expect(content).toContain('QUOTED="Value with \\"quotes\\""')
       expect(content).toContain('BACKSLASH="Value\\\\with\\\\backslash"')
@@ -295,7 +292,7 @@ describe('EnvFileFinder', () => {
   describe('findEnvFiles', () => {
     it('应该找到存在的环境变量文件', async () => {
       // Mock 文件存在
-      mockAccess.mockImplementation((filePath: string) => {
+      vi.mocked(access).mockImplementation((filePath: string) => {
         const fileName = filePath.split('/').pop()
         if (['/.env', '/.env.development'].some(f => filePath.endsWith(f))) {
           return Promise.resolve()
@@ -311,7 +308,7 @@ describe('EnvFileFinder', () => {
     })
 
     it('应该包含自定义文件', async () => {
-      mockAccess.mockImplementation((filePath: string) => {
+      vi.mocked(access).mockImplementation((filePath: string) => {
         if (filePath.endsWith('/custom.env')) {
           return Promise.resolve()
         }
@@ -464,7 +461,7 @@ describe('全局函数', () => {
       variables: { TEST_VAR: 'test_value' }
     }
 
-    mockReadFile.mockResolvedValue('')
+    vi.mocked(readFile).mockResolvedValue('')
 
     await loadEnv(config)
     expect(process.env.TEST_VAR).toBe('test_value')

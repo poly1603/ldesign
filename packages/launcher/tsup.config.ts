@@ -55,6 +55,8 @@ export default defineConfig({
     'picocolors',
     'ws',
     'inquirer',
+    'archiver',
+    'open',
     // 测试相关依赖
     'vitest',
     '@vitest/ui',
@@ -119,13 +121,20 @@ export default defineConfig({
   esbuildOptions(options) {
     options.conditions = ['node']
     options.chunkNames = 'chunks/[name]-[hash]'
-    options.logLevel = 'warning'
+    options.logLevel = 'error' // 只显示错误，减少警告输出
     // 优化打包策略
     options.treeShaking = true
     // 避免过大的bundle，设置分割阈值
     options.mangleProps = undefined // 不混淆属性名以保证兼容性
     options.keepNames = true // 保持函数名以便调试
+    // 减少不必要的警告
+    options.ignoreAnnotations = false
+    options.legalComments = 'none' // 不包含法律注释以减少输出
   },
   // 使用 tsup 的 noDefaultExport 选项来避免混合导出警告
-  noDefaultExport: true
+  noDefaultExport: true,
+  // 减少控制台输出
+  silent: false,
+  // 优化构建性能
+  skipNodeModulesBundle: true
 })

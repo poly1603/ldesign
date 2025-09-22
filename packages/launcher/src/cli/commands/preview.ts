@@ -155,15 +155,48 @@ export class PreviewCommand implements CliCommandDefinition {
           environment === 'test' ? '🔵 TEST' : '🟢 DEVELOPMENT'
 
       // 立即输出环境标识，不依赖logger
-      console.log(`\n👁️  ${pc.cyan('LDesign Launcher')} - ${envLabel}`)
-      console.log(`📁 ${pc.gray('工作目录:')} ${context.cwd}`)
-      console.log(`⚙️  ${pc.gray('模式:')} preview`)
-      console.log('')
+      if (!context.options.silent) {
+        console.log(`\n👁️  ${pc.cyan('LDesign Launcher')} - ${envLabel}`)
+        console.log(`📁 ${pc.gray('工作目录:')} ${context.cwd}`)
+        console.log(`⚙️  ${pc.gray('模式:')} preview`)
+        console.log('')
+      }
 
       logger.info('正在启动预览服务器...')
 
-      // 解析输出目录
-      const outDir = PathUtils.resolve(context.cwd, context.options.outDir || DEFAULT_OUT_DIR)
+      // 创建 ViteLauncher 实例
+      const launcher = new ViteLauncher({
+        cwd: context.cwd,
+        environment, // 传递环境参数
+        config: {
+          launcher: {
+            configFile: context.configFile,
+            logLevel: context.options.debug ? 'debug' : 'info',
+            debug: context.options.debug || false
+          }
+        }
+      })
+
+      // 初始化以加载配置文件
+      await launcher.initialize()
+
+      // 获取配置文件中的preview配置
+      const config = launcher.getConfig()
+      const previewConfig = config.preview || {}
+
+      // 解析输出目录 - 优先使用配置文件中的设置
+      const configOutDir = config.build?.outDir || DEFAULT_OUT_DIR
+      const outDir = PathUtils.resolve(context.cwd, context.options.outDir || configOutDir)
+
+      // 调试信息
+      if (context.options.debug) {
+        logger.debug('配置信息', {
+          configOutDir,
+          commandLineOutDir: context.options.outDir,
+          finalOutDir: outDir,
+          configBuild: config.build
+        })
+      }
 
       // 检查构建输出目录是否存在
       if (!(await FileSystem.exists(outDir))) {
@@ -186,22 +219,6 @@ export class PreviewCommand implements CliCommandDefinition {
         logger.warn(`未找到 index.html 文件: ${indexPath}`)
         logger.info('预览服务器将提供目录浏览功能')
       }
-
-      // 创建 ViteLauncher 实例
-      const launcher = new ViteLauncher({
-        cwd: context.cwd,
-        environment, // 传递环境参数
-        config: {
-          configFile: context.configFile
-        }
-      })
-
-      // 初始化以加载配置文件
-      await launcher.initialize()
-
-      // 获取配置文件中的preview配置
-      const config = launcher.getConfig()
-      const previewConfig = config.preview || {}
 
       // 合并命令行参数和配置文件中的preview配置（命令行参数优先）
       const finalPreviewConfig: any = {

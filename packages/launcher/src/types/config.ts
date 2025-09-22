@@ -240,8 +240,8 @@ export interface PreviewOptions {
  * 定义插件系统的配置选项
  */
 export interface PluginOptions {
-  /** 插件列表 */
-  plugins?: Plugin[]
+  /** 插件列表 - 支持插件实例或插件名称字符串 */
+  plugins?: (Plugin | string)[]
 
   /** 插件配置 */
   config?: Record<string, any>

@@ -61,21 +61,28 @@ export class PluginManager {
     this.cacheDir = path.join(base, 'node_modules', '.ldesign', 'cache')
     this.configFile = path.join(base, '.ldesign', 'plugins.json')
     this.installedPlugins = new Map()
-    
-    this.initialize()
+
+    // 异步初始化，不阻塞构造函数
+    this.initialize().catch(error => {
+      this.logger.error('插件管理器初始化失败', error)
+    })
   }
 
   /**
    * 初始化插件管理器
    */
   private async initialize(): Promise<void> {
-    // 创建必要的目录
-    await fs.ensureDir(this.pluginsDir)
-    await fs.ensureDir(this.cacheDir)
-    await fs.ensureDir(path.dirname(this.configFile))
+    try {
+      // 创建必要的目录
+      await fs.ensureDir(this.pluginsDir)
+      await fs.ensureDir(this.cacheDir)
+      await fs.ensureDir(path.dirname(this.configFile))
 
-    // 加载已安装插件配置
-    await this.loadInstalledPlugins()
+      // 加载已安装插件配置
+      await this.loadInstalledPlugins()
+    } catch (error) {
+      this.logger.error('插件管理器初始化失败', error)
+    }
   }
 
   /**

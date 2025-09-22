@@ -139,7 +139,10 @@ export class CacheManager {
         this.startAutoCleanup()
       }
 
-      this.logger.info(`缓存系统初始化完成，缓存目录: ${this.config.cacheDir}`)
+      // 只在debug模式下输出详细信息
+      if (this.logger.getLevel() === 'debug') {
+        this.logger.debug(`缓存系统初始化完成，缓存目录: ${this.config.cacheDir}`)
+      }
     } catch (error) {
       this.logger.error('缓存系统初始化失败', error)
     }
@@ -500,8 +503,8 @@ export class CacheManager {
         }
       }
 
-      if (loaded > 0) {
-        this.logger.info(`加载了 ${loaded} 项缓存`)
+      if (loaded > 0 && this.logger.getLevel() === 'debug') {
+        this.logger.debug(`加载了 ${loaded} 项缓存`)
       }
     } catch (error) {
       this.logger.warn('加载现有缓存失败', error)

@@ -67,7 +67,12 @@ export class SmartPresetManager {
         }
       },
       config: {
-        plugins: ['@vitejs/plugin-vue'],
+        // 注意：这里存储的是插件名称，实际使用时需要动态导入
+        launcher: {
+          plugins: {
+            plugins: ['@vitejs/plugin-vue']
+          }
+        },
         resolve: {
           alias: {
             '@': './src'
@@ -98,7 +103,12 @@ export class SmartPresetManager {
         }
       },
       config: {
-        plugins: ['@vitejs/plugin-vue'],
+        // 注意：这里存储的是插件名称，实际使用时需要动态导入
+        launcher: {
+          plugins: {
+            plugins: ['@vitejs/plugin-vue']
+          }
+        },
         resolve: {
           alias: {
             '@': './src'
@@ -129,7 +139,12 @@ export class SmartPresetManager {
         }
       },
       config: {
-        plugins: ['@vitejs/plugin-react'],
+        // 注意：这里存储的是插件名称，实际使用时需要动态导入
+        launcher: {
+          plugins: {
+            plugins: ['@vitejs/plugin-react']
+          }
+        },
         server: {
           port: 3000,
           open: true
@@ -243,7 +258,12 @@ export class SmartPresetManager {
         }
       },
       config: {
-        plugins: ['@module-federation/vite'],
+        // 注意：这里存储的是插件名称，实际使用时需要动态导入
+        launcher: {
+          plugins: {
+            plugins: ['@module-federation/vite']
+          }
+        },
         build: {
           target: 'esnext',
           minify: false,

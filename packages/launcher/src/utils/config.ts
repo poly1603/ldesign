@@ -114,7 +114,7 @@ export async function saveConfigFile(configPath: string, config: ViteLauncherCon
 
 /**
  * 深度合并配置对象
- * 
+ *
  * @param base - 基础配置
  * @param override - 覆盖配置
  * @returns 合并后的配置
@@ -137,28 +137,8 @@ export function mergeConfigs(base: ViteLauncherConfig, override: ViteLauncherCon
     return result
   }
 
-  try {
-    // 优先尝试使用 @ldesign/kit 的深度合并（允许测试通过 doMock 注入失败场景）
-    try {
-      // 尝试清理缓存以便 doMock 生效
-      const moduleId = (require as any).resolve?.('@ldesign/kit')
-      if (moduleId && (require as any).cache?.[moduleId]) {
-        delete (require as any).cache[moduleId]
-      }
-    } catch { }
-
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const kitMod: any = require('@ldesign/kit')
-    if (kitMod?.ObjectUtils?.deepMerge) {
-      return kitMod.ObjectUtils.deepMerge(base, override)
-    }
-
-    // 回退到本地深度合并
-    return localDeepMerge(base, override)
-  } catch (error) {
-    // 回退到简单合并
-    return { ...base, ...override }
-  }
+  // 直接使用本地深度合并实现，避免动态导入导致的类型问题
+  return localDeepMerge(base, override)
 }
 
 /**

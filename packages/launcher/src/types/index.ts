@@ -15,3 +15,6 @@ export * from './plugin'
 export * from './server'
 export * from './build'
 export * from './cli'
+
+// 导出工具类型
+export type { Logger } from '../utils/logger'

@@ -237,43 +237,45 @@ export async function getServerStatus(url: string): Promise<{
  */
 export async function openBrowser(url: string, browser?: string): Promise<boolean> {
   try {
-    // 尝试使用 open 包
-    const open = require('open')
+    // 尝试使用 open 包 - 使用类型断言避免类型检查问题
+    const openModule = await import('open' as any).catch(() => null)
+    if (openModule) {
+      const open = openModule.default || openModule
+      const options: any = {}
+      if (browser) {
+        options.app = { name: browser }
+      }
+      await open(url, options)
+      return true
+    }
+  } catch (error) {
+    // 忽略错误，继续到系统命令
+  }
 
-    const options: any = {}
-    if (browser) {
-      options.app = { name: browser }
+  // 回退到系统命令
+  try {
+    const { exec } = await import('child_process')
+    const platform = process.platform
+
+    let command: string
+
+    switch (platform) {
+      case 'darwin':
+        command = `open "${url}"`
+        break
+      case 'win32':
+        command = `start "" "${url}"`
+        break
+      default:
+        command = `xdg-open "${url}"`
+        break
     }
 
-    await open(url, options)
+    exec(command)
     return true
 
-  } catch (error) {
-    // 回退到系统命令
-    try {
-      const { exec } = require('child_process')
-      const platform = process.platform
-
-      let command: string
-
-      switch (platform) {
-        case 'darwin':
-          command = `open "${url}"`
-          break
-        case 'win32':
-          command = `start "" "${url}"`
-          break
-        default:
-          command = `xdg-open "${url}"`
-          break
-      }
-
-      exec(command)
-      return true
-
-    } catch (fallbackError) {
-      return false
-    }
+  } catch (fallbackError) {
+    return false
   }
 }
 

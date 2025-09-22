@@ -92,45 +92,14 @@ export function reactPreset(options: PresetOptions = {}): Plugin[] {
  */
 export function vuePreset(options: PresetOptions = {}): Plugin[] {
   const plugins: Plugin[] = []
+
+  // 注意：Vue相关插件需要手动安装
+  // npm install @vitejs/plugin-vue @vitejs/plugin-vue-jsx
+  console.warn('Vue预设需要手动安装依赖: npm install @vitejs/plugin-vue @vitejs/plugin-vue-jsx')
   
-  // Vue 插件
-  try {
-    // @ts-ignore
-    const vue = require('@vitejs/plugin-vue')
-    // @ts-ignore
-    const vueJsx = require('@vitejs/plugin-vue-jsx')
-    
-    plugins.push(vue({
-      template: {
-        transformAssetUrls: {
-          base: null,
-          includeAbsolute: false
-        }
-      }
-    }))
-    plugins.push(vueJsx())
-  } catch {
-    console.warn('请安装 @vitejs/plugin-vue 和 @vitejs/plugin-vue-jsx')
-  }
-  
-  // 自动导入
-  try {
-    // @ts-ignore
-    const AutoImport = require('unplugin-auto-import/vite')
-    // @ts-ignore
-    const Components = require('unplugin-vue-components/vite')
-    
-    plugins.push(AutoImport({
-      imports: ['vue', 'vue-router', 'pinia'],
-      dts: 'src/auto-imports.d.ts'
-    }))
-    
-    plugins.push(Components({
-      dts: 'src/components.d.ts'
-    }))
-  } catch {
-    // 可选依赖
-  }
+  // 自动导入 - 可选依赖
+  // 需要手动安装: npm install unplugin-auto-import unplugin-vue-components
+  console.warn('自动导入功能需要手动安装依赖: npm install unplugin-auto-import unplugin-vue-components')
   
   // 性能优化
   if (options.enableOptimization !== false) {
@@ -188,18 +157,9 @@ export function vue2Preset(options: PresetOptions = {}): Plugin[] {
  */
 export function sveltePreset(options: PresetOptions = {}): Plugin[] {
   const plugins: Plugin[] = []
-  
-  try {
-    // @ts-ignore
-    const { svelte } = require('@sveltejs/vite-plugin-svelte')
-    plugins.push(svelte({
-      compilerOptions: {
-        dev: process.env.NODE_ENV !== 'production'
-      }
-    }))
-  } catch {
-    console.warn('请安装 @sveltejs/vite-plugin-svelte')
-  }
+
+  // Svelte插件需要手动安装
+  console.warn('Svelte预设需要手动安装依赖: npm install @sveltejs/vite-plugin-svelte')
   
   // 优化
   if (options.enableOptimization !== false) {
@@ -255,21 +215,9 @@ export function libraryPreset(options: PresetOptions = {}): Plugin[] {
  */
 export function electronPreset(options: PresetOptions = {}): Plugin[] {
   const plugins: Plugin[] = []
-  
-  try {
-    // @ts-ignore
-    const electron = require('vite-plugin-electron')
-    plugins.push(electron({
-      main: {
-        entry: 'electron/main.ts'
-      },
-      preload: {
-        input: 'electron/preload.ts'
-      }
-    }))
-  } catch {
-    console.warn('请安装 vite-plugin-electron')
-  }
+
+  // Electron插件需要手动安装
+  console.warn('Electron预设需要手动安装依赖: npm install vite-plugin-electron')
   
   return plugins
 }
@@ -332,21 +280,9 @@ export function pwaPreset(options: PresetOptions = {}): Plugin[] {
  */
 export function microFrontendPreset(options: PresetOptions = {}): Plugin[] {
   const plugins: Plugin[] = []
-  
-  try {
-    // @ts-ignore
-    const federation = require('@originjs/vite-plugin-federation')
-    plugins.push(federation({
-      name: 'remote-app',
-      filename: 'remoteEntry.js',
-      exposes: {
-        './App': './src/App'
-      },
-      shared: ['vue', 'react']
-    }))
-  } catch {
-    console.warn('请安装 @originjs/vite-plugin-federation')
-  }
+
+  // 微前端插件需要手动安装
+  console.warn('微前端预设需要手动安装依赖: npm install @originjs/vite-plugin-federation')
   
   return plugins
 }

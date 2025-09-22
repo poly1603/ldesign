@@ -10,6 +10,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { ViteLauncher } from '../../src/core/ViteLauncher'
 import { PerformanceMonitor } from '../../src/utils/performance'
+import { checkPerformanceWarnings } from '../../src/utils/performance'
 
 // Mock Vite 模块
 vi.mock('vite', () => ({
@@ -123,8 +124,8 @@ describe('ViteLauncher 性能测试', () => {
     it('应该快速响应配置变更', async () => {
       const startTime = Date.now()
       
-      // 模拟配置变更
-      launcher.updateConfig({
+      // 模拟配置变更 - 使用现有的配置合并方法
+      const newConfig = launcher.mergeConfig(launcher.getConfig(), {
         server: {
           port: 8080
         }
@@ -367,7 +368,6 @@ describe('ViteLauncher 性能测试', () => {
         gc: { averageTime: 60 }
       }
       
-      const { checkPerformanceWarnings } = require('../../src/utils/performance')
       const warnings = checkPerformanceWarnings(mockMetrics as any)
       
       expect(warnings.length).toBeGreaterThan(0)

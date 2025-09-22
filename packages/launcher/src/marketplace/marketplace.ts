@@ -34,18 +34,28 @@ export class PluginMarketplace {
       ...config
     }
 
-    this.initialize()
+    // 异步初始化，不阻塞构造函数
+    this.initialize().catch(error => {
+      this.logger.error('插件市场初始化失败', error)
+    })
   }
 
   /**
    * 初始化市场
    */
   private async initialize(): Promise<void> {
-    this.logger.info('Initializing plugin marketplace...')
+    try {
+      // 只在debug模式下输出详细信息
+      if (this.logger.getLevel() === 'debug') {
+        this.logger.debug('Initializing plugin marketplace...')
+      }
 
-    // 启动自动更新
-    if (this.config.autoUpdate) {
-      this.startAutoUpdate()
+      // 启动自动更新
+      if (this.config.autoUpdate) {
+        this.startAutoUpdate()
+      }
+    } catch (error) {
+      this.logger.error('插件市场初始化失败', error)
     }
   }
 

@@ -176,20 +176,19 @@ export class DevCommand implements CliCommandDefinition {
           environment === 'test' ? '🔵 TEST' : '🟢 DEVELOPMENT'
 
       // 立即输出环境标识，不依赖logger
-      console.log(`\n🚀 ${pc.cyan('LDesign Launcher')} - ${envLabel}`)
-      console.log(`📁 ${pc.gray('工作目录:')} ${context.cwd}`)
-      console.log(`⚙️  ${pc.gray('模式:')} ${mode}`)
-      console.log('')
-
-      // 添加短暂延迟确保输出显示
-      await new Promise(resolve => setTimeout(resolve, 100))
+      if (!context.options.silent) {
+        console.log(`\n🚀 ${pc.cyan('LDesign Launcher')} - ${envLabel}`)
+        console.log(`📁 ${pc.gray('工作目录:')} ${context.cwd}`)
+        console.log(`⚙️  ${pc.gray('模式:')} ${mode}`)
+        console.log('')
+      }
 
       logger.info('正在启动开发服务器...')
 
       // 先创建基础的 ViteLauncher 实例，只传入必要的配置
       const launcherConfig: any = {
         launcher: {
-          logLevel: context.options.debug ? 'debug' : 'info',
+          logLevel: context.options.silent ? 'silent' : (context.options.debug ? 'debug' : 'info'),
           mode: mode,
           debug: context.options.debug || false
         }
@@ -200,18 +199,20 @@ export class DevCommand implements CliCommandDefinition {
         launcherConfig.launcher.configFile = context.configFile
       }
 
-      process.stdout.write(`🔧 [DEBUG] 创建 ViteLauncher 实例\n`)
-      process.stdout.write(`🔧 [DEBUG] - cwd: ${context.cwd}\n`)
-      process.stdout.write(`🔧 [DEBUG] - environment: ${environment}\n`)
-      process.stdout.write(`🔧 [DEBUG] - launcherConfig: ${JSON.stringify(launcherConfig)}\n`)
+      // 只在debug模式下输出详细信息
+      if (context.options.debug) {
+        logger.debug('创建 ViteLauncher 实例', {
+          cwd: context.cwd,
+          environment: environment,
+          config: launcherConfig
+        })
+      }
 
       const launcher = new ViteLauncher({
         cwd: context.cwd,
         config: launcherConfig,
         environment: environment
       })
-
-      process.stdout.write(`🔧 [DEBUG] ViteLauncher 实例创建完成\n`)
 
       // 构建命令行参数覆盖配置
       const cliOverrides: any = {

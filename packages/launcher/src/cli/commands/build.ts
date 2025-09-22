@@ -166,10 +166,12 @@ export class BuildCommand implements CliCommandDefinition {
           environment === 'test' ? '🔵 TEST' : '🟢 DEVELOPMENT'
 
       // 立即输出环境标识，不依赖logger
-      console.log(`\n🏗️  ${pc.cyan('LDesign Launcher')} - ${envLabel}`)
-      console.log(`📁 ${pc.gray('工作目录:')} ${context.cwd}`)
-      console.log(`⚙️  ${pc.gray('模式:')} ${context.options.mode || 'production'}`)
-      console.log('')
+      if (!context.options.silent) {
+        console.log(`\n🏗️  ${pc.cyan('LDesign Launcher')} - ${envLabel}`)
+        console.log(`📁 ${pc.gray('工作目录:')} ${context.cwd}`)
+        console.log(`⚙️  ${pc.gray('模式:')} ${context.options.mode || 'production'}`)
+        console.log('')
+      }
 
       logger.info('正在执行生产构建...')
 
@@ -301,7 +303,10 @@ export class BuildCommand implements CliCommandDefinition {
 
         // 构建完成后确保退出进程，避免悬挂
         if (!context.options.watch) {
-          process.exit(0)
+          // 使用setTimeout确保所有异步操作完成后再退出
+          setTimeout(() => {
+            process.exit(0)
+          }, 100)
         }
       }
 
@@ -336,7 +341,10 @@ export class BuildCommand implements CliCommandDefinition {
         logger.info('3. 配置文件中的别名设置')
       }
 
-      process.exit(1)
+      // 确保错误时也能正常退出
+      setTimeout(() => {
+        process.exit(1)
+      }, 100)
     }
   }
 }

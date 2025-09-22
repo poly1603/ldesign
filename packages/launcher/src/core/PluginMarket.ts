@@ -162,7 +162,11 @@ export class PluginMarketManager extends EventEmitter {
     super()
     this.logger = logger || new Logger('PluginMarket')
     // _registryUrl 目前未使用，预留用于未来的远程注册表接入
-    this.loadInstalledPlugins()
+
+    // 异步加载已安装插件，不阻塞构造函数
+    this.loadInstalledPlugins().catch(error => {
+      this.logger.error('加载已安装插件失败', error)
+    })
   }
 
   /**
