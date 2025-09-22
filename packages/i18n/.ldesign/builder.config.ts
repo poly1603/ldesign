@@ -13,16 +13,47 @@ export default defineConfig({
   // 不压缩代码（开发阶段）
   minify: false,
 
-  // 外部化Node.js特定模块，确保在浏览器环境中不会被打包
+  // UMD 构建配置
+  umd: {
+    enabled: true,
+    minify: true, // UMD版本启用压缩
+    fileName: 'index.js' // 去掉 .umd 后缀
+  },
+
+  // 外部依赖配置
   external: [
-    // Node.js 内置模块
-    'fs', 'path', 'os', 'util', 'events', 'stream', 'crypto', 'http', 'https', 'url', 'buffer',
-    'child_process', 'worker_threads', 'cluster', 'net', 'tls', 'dns', 'dgram', 'readline',
-    'perf_hooks', 'timers', 'assert', 'zlib',
-    // Node.js 现代导入方式
-    'node:fs', 'node:path', 'node:os', 'node:util', 'node:events', 'node:stream', 'node:crypto',
-    'node:http', 'node:https', 'node:url', 'node:buffer', 'node:child_process', 'node:worker_threads',
-    'node:cluster', 'node:net', 'node:tls', 'node:dns', 'node:dgram', 'node:readline',
-    'node:perf_hooks', 'node:timers', 'node:assert', 'node:zlib', 'node:fs/promises'
-  ]
+    'vue',
+    'node:fs',
+    'node:path',
+    'node:os',
+    'node:util',
+    'node:events',
+    'node:stream',
+    'node:crypto',
+    'node:http',
+    'node:https',
+    'node:url',
+    'node:buffer',
+    'node:child_process',
+    'node:worker_threads'
+],
+
+  // 全局变量配置
+  globals: {
+    'vue': 'Vue'
+},
+
+  // 日志级别设置为 silent，只显示错误信息
+  logLevel: 'silent',
+
+  // 构建选项
+  build: {
+    // 禁用构建警告
+    rollupOptions: {
+      onwarn: (warning, warn) => {
+        // 完全静默，不输出任何警告
+        return
+      }
+    }
+  }
 })

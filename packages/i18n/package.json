@@ -1,10 +1,7 @@
 {
   "name": "@ldesign/i18n",
-  "type": "module",
   "version": "2.0.0",
   "description": "现代化的国际化解决方案，支持任意前端框架，内置 Vue 3 集成",
-  "author": "ldesign",
-  "license": "MIT",
   "keywords": [
     "i18n",
     "internationalization",
@@ -19,36 +16,90 @@
     "reactive",
     "composition-api"
   ],
+  "author": "ldesign",
+  "license": "MIT",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./es/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
-    "./index.ts": {
-      "types": "./es/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.cjs"
+    "./core/*": {
+      "types": "./es/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.cjs"
+    },
+    "./locales": {
+      "types": "./es/locales/index.d.ts",
+      "import": "./es/locales/index.js",
+      "require": "./lib/locales/index.cjs"
+    },
+    "./locales/*": {
+      "types": "./es/locales/*.d.ts",
+      "import": "./es/locales/*.js",
+      "require": "./lib/locales/*.cjs"
+    },
+    "./types": {
+      "types": "./es/types/index.d.ts",
+      "import": "./es/types/index.js",
+      "require": "./lib/types/index.cjs"
+    },
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
+    },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
     },
     "./vue": {
       "types": "./es/vue/index.d.ts",
       "import": "./es/vue/index.js",
       "require": "./lib/vue/index.cjs"
     },
-    "./vue/index.ts": {
-      "types": "./es/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./lib/vue/index.cjs"
-    }
+    "./vue/*": {
+      "types": "./es/vue/*.d.ts",
+      "import": "./es/vue/*.js",
+      "require": "./lib/vue/*.cjs"
+    },
+    "./es/index.css": "./es/index.css",
+    "./es/vue/components/I18nC.vue.css": "./es/vue/components/I18nC.vue.css",
+    "./es/vue/components/I18nChain.vue.css": "./es/vue/components/I18nChain.vue.css",
+    "./es/vue/components/I18nDT.vue.css": "./es/vue/components/I18nDT.vue.css",
+    "./es/vue/components/I18nIf.vue.css": "./es/vue/components/I18nIf.vue.css",
+    "./es/vue/components/I18nL.vue.css": "./es/vue/components/I18nL.vue.css",
+    "./es/vue/components/I18nP.vue.css": "./es/vue/components/I18nP.vue.css",
+    "./es/vue/components/I18nR.vue.css": "./es/vue/components/I18nR.vue.css",
+    "./es/vue/components/LanguageSwitcher.vue.css": "./es/vue/components/LanguageSwitcher.vue.css",
+    "./es/vue/components/TranslationMissing.vue.css": "./es/vue/components/TranslationMissing.vue.css",
+    "./lib/index.css": "./lib/index.css",
+    "./lib/vue/components/I18nC.vue.css": "./lib/vue/components/I18nC.vue.css",
+    "./lib/vue/components/I18nChain.vue.css": "./lib/vue/components/I18nChain.vue.css",
+    "./lib/vue/components/I18nDT.vue.css": "./lib/vue/components/I18nDT.vue.css",
+    "./lib/vue/components/I18nIf.vue.css": "./lib/vue/components/I18nIf.vue.css",
+    "./lib/vue/components/I18nL.vue.css": "./lib/vue/components/I18nL.vue.css",
+    "./lib/vue/components/I18nP.vue.css": "./lib/vue/components/I18nP.vue.css",
+    "./lib/vue/components/I18nR.vue.css": "./lib/vue/components/I18nR.vue.css",
+    "./lib/vue/components/LanguageSwitcher.vue.css": "./lib/vue/components/LanguageSwitcher.vue.css",
+    "./lib/vue/components/TranslationMissing.vue.css": "./lib/vue/components/TranslationMissing.vue.css",
+    "./dist/index.css": "./dist/index.css",
+    "./dist/index.min.css": "./dist/index.min.css"
   },
-  "main": "lib/index.cjs",
-  "module": "es/index.js",
-  "types": "es/index.d.ts",
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
   "files": [
     "README.md",
-    "CHANGELOG.md",
+    "LICENSE",
+    "package.json",
     "es",
-    "lib"
+    "lib",
+    "dist"
   ],
   "scripts": {
     "build": "ldesign-builder build -f esm,cjs,umd",
@@ -76,18 +127,13 @@
     "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js",
     "build:dev": "node scripts/build.js --dev"
   },
-  "peerDependencies": {
-    "vue": "^3.3.0"
-  },
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    }
-  },
   "dependencies": {
     "@ldesign/shared": "workspace:*",
     "lucide-vue-next": "^0.542.0",
     "tslib": "^2.6.2"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
@@ -121,5 +167,10 @@
       "path": "dist/index.min.js",
       "limit": "40 KB"
     }
-  ]
+  ],
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  }
 }
