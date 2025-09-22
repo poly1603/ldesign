@@ -2,5 +2,5 @@
 export * from './common'
 export * from './hooks'
 
-// 导入全局类型声明
-import './global'
+// 引用全局类型声明
+/// <reference path="./global.d.ts" />

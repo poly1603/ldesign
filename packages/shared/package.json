@@ -1,8 +1,13 @@
 {
   "name": "@ldesign/shared",
-  "type": "module",
   "version": "0.1.0",
   "description": "LDesign shared package",
+  "keywords": [
+    "ldesign",
+    "vue3",
+    "typescript",
+    "shared"
+  ],
   "author": "LDesign Team",
   "license": "MIT",
   "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/{{PACKAGE_NAME}}#readme",
@@ -14,12 +19,7 @@
   "bugs": {
     "url": "https://github.com/ldesign/ldesign/issues"
   },
-  "keywords": [
-    "ldesign",
-    "vue3",
-    "typescript",
-    "shared"
-  ],
+  "type": "module",
   "sideEffects": false,
   "exports": {
     ".": {
@@ -27,38 +27,71 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
+    "./components": {
+      "types": "./es/components/index.d.ts",
+      "import": "./es/components/index.js",
+      "require": "./lib/components/index.cjs"
+    },
+    "./components/*": {
+      "types": "./es/components/*.d.ts",
+      "import": "./es/components/*.js",
+      "require": "./lib/components/*.cjs"
+    },
     "./hooks": {
       "types": "./es/hooks/index.d.ts",
       "import": "./es/hooks/index.js",
       "require": "./lib/hooks/index.cjs"
     },
-    "./utils": {
-      "types": "./es/utils/index.d.ts",
-      "import": "./es/utils/index.js",
-      "require": "./lib/utils/index.cjs"
+    "./hooks/*": {
+      "types": "./es/hooks/*.d.ts",
+      "import": "./es/hooks/*.js",
+      "require": "./lib/hooks/*.cjs"
     },
     "./types": {
       "types": "./es/types/index.d.ts",
       "import": "./es/types/index.js",
       "require": "./lib/types/index.cjs"
     },
-    "./components": {
-      "types": "./es/components/index.d.ts",
-      "import": "./es/components/index.js",
-      "require": "./lib/components/index.cjs"
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
     },
-    "./package.json": "./package.json"
+    "./utils": {
+      "types": "./es/utils/index.d.ts",
+      "import": "./es/utils/index.js",
+      "require": "./lib/utils/index.cjs"
+    },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
+    },
+    "./es/components/button/LButton.css": "./es/components/button/LButton.css",
+    "./es/components/dialog/LDialog.vue.css": "./es/components/dialog/LDialog.vue.css",
+    "./es/components/popup/LPopup.vue.css": "./es/components/popup/LPopup.vue.css",
+    "./es/components/select/LSelect.vue.css": "./es/components/select/LSelect.vue.css",
+    "./es/index.css": "./es/index.css",
+    "./lib/components/button/LButton.css": "./lib/components/button/LButton.css",
+    "./lib/components/dialog/LDialog.vue.css": "./lib/components/dialog/LDialog.vue.css",
+    "./lib/components/popup/LPopup.vue.css": "./lib/components/popup/LPopup.vue.css",
+    "./lib/components/select/LSelect.vue.css": "./lib/components/select/LSelect.vue.css",
+    "./lib/index.css": "./lib/index.css",
+    "./dist/index.css": "./dist/index.css",
+    "./dist/index.min.css": "./dist/index.min.css"
   },
-  "main": "lib/index.cjs",
-  "module": "es/index.js",
-  "types": "es/index.d.ts",
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
   "files": [
-    "dist",
-    "es",
-    "lib",
     "README.md",
     "LICENSE",
-    "package.json"
+    "package.json",
+    "es",
+    "lib",
+    "dist"
   ],
   "scripts": {
     "build": "ldesign-builder build",
@@ -95,17 +128,12 @@
     "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts shared --dry-run",
     "build:dev": "node scripts/build.js --dev"
   },
-  "peerDependencies": {
-    "vue": "^3.3.0"
-  },
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    }
-  },
   "dependencies": {
     "lodash-es": "^4.17.21",
     "raf": "^3.4.1"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.0.0",
@@ -153,6 +181,11 @@
       "limit": "50 KB"
     }
   ],
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  },
   "directories": {
     "doc": "docs"
   }
