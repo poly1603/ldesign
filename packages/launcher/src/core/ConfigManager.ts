@@ -884,6 +884,30 @@ ${presetInfo ? ` * 项目类型: ${presetInfo.description}\n` : ''}${presetInfo 
   }
 
   /**
+   * 美化显示配置文件查找列表
+   */
+  private displayConfigFilesList(configFiles: readonly string[]): void {
+    if (this.logger.getLevel() === 'debug') {
+      // debug模式下显示详细列表
+      this.logger.debug('📋 配置文件查找列表:')
+      configFiles.forEach((file, index) => {
+        const isLast = index === configFiles.length - 1
+        const prefix = isLast ? '└─' : '├─'
+        this.logger.debug(`   ${prefix} ${file}`)
+      })
+    } else {
+      // 普通模式下显示简洁的标签列表
+      const tags = configFiles.map(file => {
+        const ext = file.split('.').pop()
+        const isLDesignDir = file.startsWith('.ldesign/')
+        const priority = isLDesignDir ? '🔸' : '🔹'
+        return `${priority}${ext}`
+      })
+      this.logger.info(`📋 查找优先级: ${tags.join(' → ')}`)
+    }
+  }
+
+  /**
    * 查找配置文件（供单测 spy）
    *
    * @param cwd - 工作目录
@@ -896,14 +920,20 @@ ${presetInfo ? ` * 项目类型: ${presetInfo.description}\n` : ''}${presetInfo 
     const configFiles = getEnvironmentConfigFiles(environment)
 
     this.logger.info(`🔍 查找配置文件，工作目录: ${cwd}，环境: ${environment}`)
-    this.logger.info(`📋 配置文件查找列表: ${configFiles.join(', ')}`)
+
+    // 美化配置文件查找列表显示
+    this.displayConfigFilesList(configFiles)
 
     for (const fileName of configFiles) {
       const filePath = PathUtils.resolve(cwd, fileName)
       const exists = await FileSystem.exists(filePath)
-      this.logger.info(`📄 检查配置文件: ${fileName} -> ${filePath} (存在: ${exists})`)
+
+      if (this.logger.getLevel() === 'debug') {
+        this.logger.debug(`📄 检查: ${fileName} -> ${exists ? '✅' : '❌'}`)
+      }
+
       if (exists) {
-        this.logger.info(`✅ 找到配置文件: ${fileName}`, { environment, filePath })
+        this.logger.info(`✅ 找到配置文件: ${fileName}`)
         return filePath
       }
     }

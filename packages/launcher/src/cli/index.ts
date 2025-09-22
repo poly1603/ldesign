@@ -278,10 +278,23 @@ export function createCli(config?: Partial<CliConfig>) {
 
   /**
    * 运行 CLI
-   * 
+   *
    * @param argv - 命令行参数
    */
   async function run(argv: string[] = process.argv.slice(2)) {
+    // 全局抑制 Node.js CJS API deprecated 警告
+    const originalEmitWarning = process.emitWarning
+    process.emitWarning = (warning: any, ...args: any[]) => {
+      // 过滤掉 CJS API deprecated 警告
+      if (typeof warning === 'string' && (warning.includes('deprecated') || warning.includes('vite-cjs-node-api-deprecated'))) {
+        return
+      }
+      if (typeof warning === 'object' && warning.message && (warning.message.includes('deprecated') || warning.message.includes('vite-cjs-node-api-deprecated'))) {
+        return
+      }
+      return originalEmitWarning.call(process, warning, ...args)
+    }
+
     try {
       // 解析参数（基础）
       const parsed = parseArgs(argv)

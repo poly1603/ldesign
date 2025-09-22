@@ -169,7 +169,7 @@ export const DEFAULT_LAUNCHER_OPTIONS: Required<LauncherOptions> = {
   config: {} as ViteLauncherConfig, // 避免循环依赖
   cwd: process.cwd(),
   debug: false,
-  autoRestart: true,
+  autoRestart: false, // 默认关闭自动重启，避免不必要的文件监听
   environment: 'development',
   listeners: {}
 }
@@ -179,7 +179,7 @@ export const DEFAULT_LAUNCHER_OPTIONS: Required<LauncherOptions> = {
  */
 export const DEFAULT_VITE_LAUNCHER_CONFIG: ViteLauncherConfig = {
   launcher: {
-    autoRestart: true,
+    autoRestart: false, // 默认关闭自动重启，避免不必要的文件监听
     hooks: {}
   },
   root: process.cwd(),

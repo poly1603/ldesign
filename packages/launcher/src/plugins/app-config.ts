@@ -150,7 +150,9 @@ export function createAppConfigPlugin(options: AppConfigPluginOptions = {}): Plu
       configFilePath = await findAppConfigFile(cwd, configFile, environment)
 
       if (configFilePath) {
-        logger.info('找到应用配置文件', { path: configFilePath, environment })
+        const fileName = configFilePath.split(/[/\\]/).pop() || ''
+        const relativePath = configFilePath.replace(cwd, '').replace(/^[/\\]/, '')
+        logger.info(`📄 找到应用配置文件: ${fileName} (${relativePath})`)
         appConfig = await loadAppConfig(configFilePath, logger)
       } else {
         logger.debug('未找到应用配置文件', { environment })

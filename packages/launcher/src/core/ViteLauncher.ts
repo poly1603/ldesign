@@ -312,19 +312,13 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       await this.executeHook('beforeStart')
 
       // 打印最终的Vite配置用于调试
-      this.logger.info('🔍 最终Vite配置调试信息:')
-      const aliasCount = Array.isArray(mergedConfig.resolve?.alias) ? mergedConfig.resolve.alias.length : 0
-      this.logger.info(`📁 resolve.alias配置: 共${aliasCount}个别名`)
-
-      if (Array.isArray(mergedConfig.resolve?.alias) && mergedConfig.resolve.alias.length > 0) {
-        const firstFewAliases = mergedConfig.resolve.alias.slice(0, 5)
-        firstFewAliases.forEach((alias, index) => {
-          if (typeof alias === 'object') {
-            this.logger.info(`  ${index + 1}. ${alias.find} -> ${alias.replacement}`)
-          }
-        })
-        if (mergedConfig.resolve.alias.length > 5) {
-          this.logger.info(`  ... 还有${mergedConfig.resolve.alias.length - 5}个别名`)
+      if (this.logger.getLevel() === 'debug') {
+        this.displayFinalConfig(mergedConfig)
+      } else {
+        // 简洁模式只显示关键信息
+        const aliasCount = Array.isArray(mergedConfig.resolve?.alias) ? mergedConfig.resolve.alias.length : 0
+        if (aliasCount > 0) {
+          this.logger.info(`🔗 路径别名: ${aliasCount}个`)
         }
       }
 
@@ -1292,6 +1286,46 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
   }
 
   /**
+   * 美化显示最终配置信息
+   */
+  private displayFinalConfig(config: ViteLauncherConfig): void {
+    this.logger.debug('🔍 最终Vite配置调试信息:')
+
+    // 显示别名配置
+    const aliasCount = Array.isArray(config.resolve?.alias) ? config.resolve.alias.length : 0
+    this.logger.debug(`📁 resolve.alias配置: 共${aliasCount}个别名`)
+
+    if (Array.isArray(config.resolve?.alias) && config.resolve.alias.length > 0) {
+      const firstFewAliases = config.resolve.alias.slice(0, 5)
+      firstFewAliases.forEach((alias, index) => {
+        if (typeof alias === 'object') {
+          this.logger.debug(`  ${index + 1}. ${alias.find} -> ${alias.replacement}`)
+        }
+      })
+      if (config.resolve.alias.length > 5) {
+        this.logger.debug(`  ... 还有${config.resolve.alias.length - 5}个别名`)
+      }
+    }
+
+    // 显示服务器配置
+    if (config.server) {
+      this.logger.debug(`🌐 server配置:`, {
+        port: config.server.port,
+        host: config.server.host,
+        https: !!config.server.https,
+        open: config.server.open
+      })
+    }
+
+    // 显示watch配置
+    this.logger.debug(`👀 watch配置:`, {
+      ignoredType: typeof config.server?.watch?.ignored,
+      usePolling: config.server?.watch?.usePolling,
+      interval: config.server?.watch?.interval
+    })
+  }
+
+  /**
    * 应用别名配置
    *
    * @param config - 原始配置
@@ -1568,25 +1602,34 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     const lines = qrCode.split('\n').filter(line => line.trim())
     if (lines.length === 0) return
 
+    // 确保所有行长度一致
     const maxWidth = Math.max(...lines.map(line => line.length))
+    const normalizedLines = lines.map(line => {
+      const padding = ' '.repeat(Math.max(0, maxWidth - line.length))
+      return line + padding
+    })
+
     const borderWidth = maxWidth + 4
 
-    console.log('\n📱 扫码访问:')
+    this.logger.info('二维码（扫码在手机上打开）：')
     console.log()
 
     // 上边框
-    console.log('    ' + '█'.repeat(borderWidth))
-    console.log('    ' + '█' + ' '.repeat(borderWidth - 2) + '█')
+    console.log('█'.repeat(borderWidth))
+
+    // 上内边框
+    console.log('█' + ' '.repeat(borderWidth - 2) + '█')
 
     // 二维码内容
-    lines.forEach(line => {
-      const padding = ' '.repeat(Math.max(0, maxWidth - line.length))
-      console.log('    ' + '█ ' + line + padding + ' █')
+    normalizedLines.forEach(line => {
+      console.log('█ ' + line + ' █')
     })
 
+    // 下内边框
+    console.log('█' + ' '.repeat(borderWidth - 2) + '█')
+
     // 下边框
-    console.log('    ' + '█' + ' '.repeat(borderWidth - 2) + '█')
-    console.log('    ' + '█'.repeat(borderWidth))
+    console.log('█'.repeat(borderWidth))
     console.log()
   }
 
