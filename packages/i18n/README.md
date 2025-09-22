@@ -22,6 +22,15 @@
 - 🔄 **内容扩展** - 动态扩展和修改翻译内容，支持多种扩展策略
 - 📋 **动态管理** - 运行时语言管理和配置，支持优先级和推荐机制
 
+### 🆕 增强功能 (参考 vue-i18n)
+
+- 🔍 **智能键名提示** - 键名不存在时自动显示建议和错误信息，开发模式下提供详细调试信息
+- 🏷️ **作用域翻译** - 支持命名空间前缀，简化键名管理，支持嵌套作用域和全局降级
+- 🔢 **复数化支持** - 完整的复数形式处理，支持多种语言规则和管道分隔语法
+- ⏰ **格式化组件** - 相对时间、列表格式化等实用组件，支持自定义格式和本地化
+- 🛠️ **开发工具** - Vue DevTools 集成，翻译追踪和性能监控，缺失翻译自动收集
+- ⚡ **性能优化** - 缓存、批量翻译、预加载等性能优化功能，响应式优化
+
 ## 📦 安装
 
 ```bash
@@ -116,6 +125,68 @@ app.mount('#app')
 import { useI18n } from '@ldesign/i18n/vue'
 
 const { t, locale, setLocale } = useI18n()
+</script>
+```
+
+#### 🔍 增强功能示例
+
+```vue
+<template>
+  <div>
+    <!-- 智能键名提示 - 开发模式下显示详细错误信息 -->
+    <TranslationMissing
+      keypath="missing.key"
+      :suggestions="['correct.key']"
+      show-similar-keys
+    />
+
+    <!-- 作用域翻译 -->
+    <h1>{{ userScope.t('profile.title') }}</h1>
+    <p>{{ profileScope.t('settings.description') }}</p>
+
+    <!-- 复数化支持 -->
+    <I18nP keypath="item" :count="itemCount" />
+    <p v-t-plural="{ key: 'message', count: 5 }"></p>
+
+    <!-- 格式化组件 -->
+    <I18nR :value="pastDate" format="short" />
+    <I18nL :items="['Apple', 'Banana', 'Orange']" type="conjunction" />
+
+    <!-- 增强的翻译组件 -->
+    <I18nT keypath="rich.content" html />
+    <I18nT
+      keypath="message.with.component"
+      :components="{ Button }"
+      enable-component-interpolation
+    />
+  </div>
+</template>
+
+<script setup>
+import {
+  useI18n,
+  useI18nEnhanced,
+  useI18nScope,
+  TranslationMissing,
+  I18nP, I18nR, I18nL, I18nT
+} from '@ldesign/i18n/vue'
+import { ref } from 'vue'
+
+const { t, locale, setLocale } = useI18n()
+const { tSafe, tBatch } = useI18nEnhanced()
+
+// 作用域翻译
+const userScope = useI18nScope({ namespace: 'user' })
+const profileScope = userScope.createSubScope('profile')
+
+const itemCount = ref(5)
+const pastDate = ref(new Date(Date.now() - 60000))
+
+// 安全翻译
+const safeTranslation = tSafe('maybe.missing.key', {
+  fallback: '默认文本',
+  showMissingWarning: true
+})
 </script>
 ```
 

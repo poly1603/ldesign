@@ -216,6 +216,159 @@ function updateElementTitle(el: HTMLElement, binding: DirectiveBinding<string | 
 }
 
 /**
+ * v-t-plural 指令的绑定值类型
+ */
+interface VTPluralBinding {
+  /** 翻译键 */
+  key: string
+  /** 数量值 */
+  count: number
+  /** 翻译参数 */
+  params?: Record<string, unknown>
+  /** 指定语言 */
+  locale?: string
+}
+
+/**
+ * v-t-plural 指令 - 用于复数化翻译
+ *
+ * @example
+ * ```vue
+ * <template>
+ *   <!-- 基础用法 -->
+ *   <p v-t-plural="{ key: 'item', count: 5 }"></p>
+ *
+ *   <!-- 带参数 -->
+ *   <p v-t-plural="{ key: 'user.message', count: 3, params: { name: 'John' } }"></p>
+ *
+ *   <!-- 指定语言 -->
+ *   <p v-t-plural="{ key: 'item', count: 1, locale: 'en' }"></p>
+ * </template>
+ * ```
+ */
+export const vTPlural: Directive<HTMLElement, VTPluralBinding> = {
+  mounted(el, binding, vnode) {
+    updateElementPlural(el, binding, vnode)
+  },
+
+  updated(el, binding, vnode) {
+    updateElementPlural(el, binding, vnode)
+  }
+}
+
+/**
+ * 更新元素复数化内容
+ */
+function updateElementPlural(el: HTMLElement, binding: DirectiveBinding<VTPluralBinding>, vnode: any) {
+  // 获取 I18n 实例
+  const i18n = vnode.appContext?.provides?.[I18nInjectionKey as any]
+
+  if (!i18n) {
+    console.warn('v-t-plural 指令需要在安装了 I18n 插件的 Vue 应用中使用')
+    return
+  }
+
+  // 解析绑定值
+  const { key, count, params, locale } = binding.value
+
+  if (!key || typeof count !== 'number') {
+    console.warn('v-t-plural 指令需要提供 key 和 count 属性')
+    return
+  }
+
+  // 执行复数化翻译
+  try {
+    const translatedText = translatePlural(i18n, key, count, params, locale)
+    el.textContent = translatedText
+  } catch (error) {
+    console.warn('复数化翻译失败:', error)
+  }
+}
+
+/**
+ * 复数化翻译函数
+ */
+function translatePlural(
+  i18n: any,
+  key: string,
+  count: number,
+  params?: Record<string, unknown>,
+  locale?: string
+): string {
+  const currentLocale = locale || i18n.getCurrentLanguage()
+
+  // 获取复数规则
+  const getPluralRule = (count: number, locale: string): string => {
+    try {
+      const pluralRules = new Intl.PluralRules(locale)
+      return pluralRules.select(count)
+    } catch (error) {
+      // 默认英语规则
+      if (count === 0) return 'zero'
+      if (count === 1) return 'one'
+      if (count === 2) return 'two'
+      return 'other'
+    }
+  }
+
+  const rule = getPluralRule(count, currentLocale)
+
+  // 构建参数对象
+  const translationParams = {
+    ...params,
+    count
+  }
+
+  // 尝试复数化键名
+  const pluralKeys = [
+    `${key}.${rule}`,
+    `${key}.other`,
+    key
+  ]
+
+  for (const pluralKey of pluralKeys) {
+    if (i18n.te(pluralKey)) {
+      const text = i18n.t(pluralKey, translationParams)
+
+      // 如果是基础键名，可能包含管道分隔的复数形式
+      if (pluralKey === key && text.includes('|')) {
+        return processPipeDelimitedPlural(text, count)
+      }
+
+      return text
+    }
+  }
+
+  // 降级处理
+  return `${key} (${count})`
+}
+
+/**
+ * 处理管道分隔的复数形式
+ */
+function processPipeDelimitedPlural(text: string, count: number): string {
+  const parts = text.split('|').map(part => part.trim())
+
+  if (parts.length === 1) {
+    return text
+  }
+
+  // 简单的二元复数形式 "item | items"
+  if (parts.length === 2) {
+    return count === 1 ? parts[0] : parts[1]
+  }
+
+  // 复杂的多元复数形式 "no items | one item | {count} items"
+  if (parts.length >= 3) {
+    if (count === 0 && parts[0]) return parts[0]
+    if (count === 1 && parts[1]) return parts[1]
+    return parts[2] || parts[parts.length - 1]
+  }
+
+  return text
+}
+
+/**
  * 安装所有指令到 Vue 应用
  *
  * @param app Vue 应用实例
@@ -224,6 +377,7 @@ export function installDirectives(app: any) {
   app.directive('t', vT)
   app.directive('t-html', vTHtml)
   app.directive('t-title', vTTitle)
+  app.directive('t-plural', vTPlural)
 }
 
 /**
@@ -232,7 +386,8 @@ export function installDirectives(app: any) {
 export const directives = {
   vT,
   vTHtml,
-  vTTitle
+  vTTitle,
+  vTPlural
 } as const
 
 /**
@@ -242,6 +397,7 @@ export default {
   vT,
   vTHtml,
   vTTitle,
+  vTPlural,
   installDirectives,
   directives
 }

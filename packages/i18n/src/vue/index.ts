@@ -78,6 +78,13 @@ export {
   I18nT,
   I18nN,
   I18nD,
+  I18nP,
+  I18nR,
+  I18nL,
+  I18nC,
+  I18nDT,
+  I18nIf,
+  I18nChain,
   LanguageSwitcher,
   TranslationProvider,
   TranslationMissing,
@@ -90,6 +97,7 @@ export {
   vT,
   vTHtml,
   vTTitle,
+  vTPlural,
   installDirectives,
   directives
 } from './directives'
@@ -110,6 +118,48 @@ export {
   getI18nInstance,
   getI18nPluginOptions
 } from './engine-plugin'
+
+// 导出增强的组合式 API
+export {
+  useI18nEnhanced,
+  type TranslationOptions,
+  type TranslationResult
+} from './composables/useI18nEnhanced'
+
+export {
+  useI18nScope,
+  createCommonScopes,
+  type ScopeOptions,
+  type UseI18nScopeReturn
+} from './composables/useI18nScope'
+
+export {
+  useI18nPerformance,
+  type PerformanceOptions,
+  type PerformanceMetrics
+} from './composables/useI18nPerformance'
+
+export {
+  useI18nValidation,
+  type ValidationRule,
+  type ValidationError,
+  type FieldConfig,
+  type ValidationOptions
+} from './composables/useI18nValidation'
+
+export {
+  useI18nRouter,
+  type RouteConfig,
+  type BreadcrumbItem,
+  type RouterI18nOptions
+} from './composables/useI18nRouter'
+
+// 导出开发工具
+export {
+  installI18nDevTools,
+  getI18nDevTools,
+  type DevToolsOptions
+} from './devtools'
 
 // 导出核心类型
 export type {

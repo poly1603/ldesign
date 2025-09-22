@@ -8,6 +8,7 @@ import { inject, reactive, computed, ref, watch } from 'vue'
 import type { CreateI18nOptions } from '../core/createI18n'
 import { createI18n } from '../core/createI18n'
 import type { VueI18n } from './types'
+import { installComponents } from './components/index.js'
 
 /**
  * Vue I18n 实例的注入键
@@ -140,6 +141,13 @@ export function createI18nPlugin(options: CreateI18nOptions): Plugin {
       app.config.globalProperties.$i18n = i18n
       app.config.globalProperties.$t = i18n.t
       app.config.globalProperties.$te = i18n.te
+
+      // 安装组件
+      try {
+        installComponents(app)
+      } catch (error) {
+        console.warn('Failed to install i18n components:', error)
+      }
     }
   }
 }
