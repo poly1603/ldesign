@@ -79,12 +79,12 @@ class LRUCache<T = unknown> {
   private readonly CLEANUP_BATCH_SIZE = 20
   private readonly CLEANUP_INTERVAL = 5000 // 5秒
   private readonly MAX_CLEANUP_QUEUE_SIZE = 1000 // 限制清理队列大小
-  
+
   // 自适应清理策略
   private adaptiveCleanupInterval = 5000 // 初始5秒
-  private lastCleanupPerformance = 0      // 上次清理耗时
-  private lastCleanupTime = 0             // 上次清理时间
-  private maxItemSize = 1024 * 1024       // 默认1MB
+  private lastCleanupPerformance = 0 // 上次清理耗时
+  private lastCleanupTime = 0 // 上次清理时间
+  private maxItemSize = 1024 * 1024 // 默认1MB
 
   constructor(maxSize = 100, onEvict?: (key: string, value: T) => void) {
     this.maxSize = maxSize
@@ -253,10 +253,6 @@ class LRUCache<T = unknown> {
 
   // 新增：批量清理过期项的方法
 
-
-
-
-
   resetStats(): void {
     this.stats = {
       hits: 0,
@@ -304,23 +300,21 @@ class LRUCache<T = unknown> {
     this.stats.size = this.cache.size
   }
 
-
-
   /**
    * 估算缓存项目大小
    */
   private estimateItemSize(key: string, value: T): number {
     const keySize = key.length * 2 // 字符串大小估算
     let valueSize = 0
-    
+
     try {
       const serialized = JSON.stringify(value)
       valueSize = serialized.length * 2
-    } catch (e) {
+    } catch {
       // 无法序列化的对象，使用保守估计
       valueSize = 1024 // 默认1KB
     }
-    
+
     return keySize + valueSize
   }
 
@@ -338,10 +332,10 @@ class LRUCache<T = unknown> {
    */
   private intelligentCleanup(): void {
     const startTime = performance.now()
-    
+
     // 检查缓存使用率来决定是否需要主动清理
     const usage = this.cache.size / this.maxSize
-    
+
     if (usage > 0.8) {
       // 缓存接近满时，主动清理
       this.cleanup()
@@ -349,12 +343,12 @@ class LRUCache<T = unknown> {
       // 只处理队列中的项
       this.processCleanupQueue()
     }
-    
+
     // 计算清理耗时并自适应调整间隔
     const endTime = performance.now()
     this.lastCleanupPerformance = endTime - startTime
     this.lastCleanupTime = endTime
-    
+
     // 根据性能动态调整清理间隔
     this.adjustCleanupInterval()
   }
@@ -370,7 +364,7 @@ class LRUCache<T = unknown> {
       // 清理很快且缓存使用率高，可以更频繁清理
       this.adaptiveCleanupInterval = Math.max(this.adaptiveCleanupInterval * 0.8, 1000)
     }
-    
+
     // 重新设置定时器
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer)
@@ -389,7 +383,7 @@ class LRUCache<T = unknown> {
       // 队列太大，直接处理一部分
       this.processCleanupQueue()
     }
-    
+
     if (!this.cleanupQueue.includes(key)) {
       this.cleanupQueue.push(key)
     }
@@ -434,7 +428,7 @@ class LRUCache<T = unknown> {
     this.cache.clear()
     this.cleanupQueue.length = 0
     this.stats.size = 0
-    
+
     // 确保没有引用残留
     this.onEvict = undefined
   }
@@ -450,7 +444,7 @@ class LRUCache<T = unknown> {
     memoryUsageEstimate: number
   } {
     let memoryUsage = 0
-    for (const [key, item] of this.cache.entries()) {
+    for (const [_key, item] of this.cache.entries()) {
       // 检查是否过期
       if (!item.ttl || Date.now() - item.timestamp <= item.ttl) {
         memoryUsage += (item.size || 0)

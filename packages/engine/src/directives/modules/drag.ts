@@ -465,7 +465,7 @@ declare global {
 }
 
 // 导出指令实例
-type DragState = {
+interface DragState {
   isDragging: boolean
   startX: number
   startY: number

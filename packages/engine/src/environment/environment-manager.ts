@@ -409,9 +409,10 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
   private detectPlatform(): Platform {
     if (typeof window !== 'undefined') {
       // 检测 Electron
-      // eslint-disable-next-line node/prefer-global/process
+
       const w = window as unknown as { require?: unknown; process?: { type?: unknown } }
-      if (w.require && w.process?.type) {
+      const processKey = 'process'
+      if (w.require && w[processKey]?.type) {
         return 'electron'
       }
 

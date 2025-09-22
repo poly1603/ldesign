@@ -1,4 +1,4 @@
-import type { DirectiveManager, EngineDirective, Logger, DirectiveValidationResult, VueDirectiveBinding } from '../types'
+import type { DirectiveManager, DirectiveValidationResult, EngineDirective, Logger, VueDirectiveBinding } from '../types'
 import { createHybridDirectiveAdapter } from './utils/directive-compatibility'
 
 export class DirectiveManagerImpl implements DirectiveManager {

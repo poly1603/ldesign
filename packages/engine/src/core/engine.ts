@@ -1,3 +1,8 @@
+// 与 Engine 接口保持一致：从实现处引入这些管理器的类型
+import type { EnvironmentManager } from '../environment/environment-manager'
+import type { LifecycleManager } from '../lifecycle/lifecycle-manager'
+import type { PerformanceManager } from '../performance/performance-manager'
+import type { SecurityManager } from '../security/security-manager'
 import type {
   ConfigManager,
   DirectiveManager,
@@ -6,30 +11,25 @@ import type {
   EventManager,
   I18nAdapter,
   Logger,
+  LogLevel,
   MiddlewareManager,
   NotificationManager,
   Plugin,
   PluginManager,
   RouterAdapter,
   StateAdapter,
-  StateManager,
-  ThemeAdapter,
+  StateManager, ThemeAdapter
 } from '../types'
-// 与 Engine 接口保持一致：从实现处引入这些管理器的类型
-import type { CacheManager } from '../cache/cache-manager'
-import type { EnvironmentManager } from '../environment/environment-manager'
-import type { LifecycleManager } from '../lifecycle/lifecycle-manager'
-import type { PerformanceManager } from '../performance/performance-manager'
-import type { SecurityManager } from '../security/security-manager'
+
 import type { Engine } from '../types/engine'
-import type { LogLevel } from '../types'
 import { type App, type Component, createApp, type Directive } from 'vue'
-import { createCacheManager, type CacheConfig } from '../cache/cache-manager'
+import { type CacheConfig, type CacheManager, createCacheManager } from '../cache/cache-manager'
 import {
   createConfigManager,
   defaultConfigSchema,
 } from '../config/config-manager'
 import { createDirectiveManager } from '../directives/directive-manager'
+import { convertEngineToVueDirective } from '../directives/utils/directive-compatibility'
 import { createEnvironmentManager } from '../environment/environment-manager'
 import { createErrorManager } from '../errors/error-manager'
 import { createEventManager } from '../events/event-manager'
@@ -42,7 +42,6 @@ import { createPluginManager } from '../plugins/plugin-manager'
 import { createSecurityManager } from '../security/security-manager'
 import { createStateManager } from '../state/state-manager'
 import { ManagerRegistry } from './manager-registry'
-import { convertEngineToVueDirective } from '../directives/utils/directive-compatibility'
 
 /**
  * 引擎核心实现类

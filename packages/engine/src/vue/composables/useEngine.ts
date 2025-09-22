@@ -1,8 +1,21 @@
 import type { Engine } from '../../types'
-import { getCurrentInstance, inject } from 'vue'
+import { computed, type ComputedRef, getCurrentInstance, inject } from 'vue'
 
 /**
  * 获取引擎实例的组合式函数
+ *
+ * @returns 引擎实例
+ * @throws 如果引擎未找到则抛出错误
+ *
+ * @example
+ * ```vue
+ * <script setup>
+ * import { useEngine } from '@ldesign/engine'
+ *
+ * const engine = useEngine()
+ * console.log('App name:', engine.config.get('app.name'))
+ * </script>
+ * ```
  */
 export function useEngine(): Engine {
   // 尝试从注入中获取
@@ -23,8 +36,39 @@ export function useEngine(): Engine {
   }
 
   throw new Error(
-    'Engine instance not found. Make sure the engine is properly initialized.'
+    'Engine instance not found. Make sure the engine is properly initialized and the Vue app is using the engine plugin.'
   )
+}
+
+/**
+ * 检查引擎是否可用的组合式函数
+ *
+ * @returns 引擎是否可用的响应式引用
+ *
+ * @example
+ * ```vue
+ * <script setup>
+ * import { useEngineAvailable } from '@ldesign/engine'
+ *
+ * const isEngineAvailable = useEngineAvailable()
+ * </script>
+ *
+ * <template>
+ *   <div v-if="isEngineAvailable">
+ *     Engine is ready!
+ *   </div>
+ * </template>
+ * ```
+ */
+export function useEngineAvailable(): ComputedRef<boolean> {
+  return computed(() => {
+    try {
+      useEngine()
+      return true
+    } catch {
+      return false
+    }
+  })
 }
 
 /**

@@ -8,7 +8,7 @@
  */
 export type DeepReadonly<T> = T extends (infer R)[]
   ? DeepReadonlyArray<R>
-  : T extends Function
+  : T extends (...args: unknown[]) => unknown
   ? T
   : T extends object
   ? DeepReadonlyObject<T>
@@ -25,7 +25,7 @@ type DeepReadonlyObject<T> = {
  */
 export type DeepPartial<T> = T extends (infer R)[]
   ? DeepPartialArray<R>
-  : T extends Function
+  : T extends (...args: unknown[]) => unknown
   ? T
   : T extends object
   ? DeepPartialObject<T>
@@ -42,7 +42,7 @@ type DeepPartialObject<T> = {
  */
 export type DeepRequired<T> = T extends (infer R)[]
   ? DeepRequiredArray<R>
-  : T extends Function
+  : T extends (...args: unknown[]) => unknown
   ? T
   : T extends object
   ? DeepRequiredObject<T>
@@ -123,17 +123,17 @@ export type AnyFunction<T = any, R = any> = (...args: T[]) => R | Promise<R>
 /**
  * 构造函数类型
  */
-export type Constructor<T = {}> = new (...args: any[]) => T
+export type Constructor<T = object> = new (...args: unknown[]) => T
 
 /**
  * 抽象构造函数类型
  */
-export type AbstractConstructor<T = {}> = abstract new (...args: any[]) => T
+export type AbstractConstructor<T = object> = abstract new (...args: unknown[]) => T
 
 /**
  * 键值对类型
  */
-export type KeyValuePair<K = string, V = any> = {
+export interface KeyValuePair<K = string, V = unknown> {
   key: K
   value: V
 }
@@ -176,14 +176,14 @@ export type ArrayElement<T extends readonly any[]> = T extends readonly (infer U
 /**
  * 获取函数参数类型
  */
-export type FunctionArgs<T extends Function> = T extends (...args: infer P) => any
+export type FunctionArgs<T extends (...args: unknown[]) => unknown> = T extends (...args: infer P) => unknown
   ? P
   : never
 
 /**
  * 获取函数返回类型
  */
-export type FunctionReturn<T extends Function> = T extends (...args: any[]) => infer R
+export type FunctionReturn<T extends (...args: unknown[]) => unknown> = T extends (...args: unknown[]) => infer R
   ? R
   : never
 
@@ -276,15 +276,15 @@ export type CompleteCallback = () => void | Promise<void>
  */
 export interface CancelToken {
   readonly cancelled: boolean
-  cancel(): void
-  throwIfCancelled(): void
+  cancel: () => void
+  throwIfCancelled: () => void
 }
 
 /**
  * 可取消的Promise
  */
 export interface CancellablePromise<T> extends Promise<T> {
-  cancel(): void
+  cancel: () => void
 }
 
 /**

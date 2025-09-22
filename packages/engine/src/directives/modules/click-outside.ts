@@ -69,7 +69,7 @@ export class ClickOutsideDirective extends DirectiveBase {
       }
 
       // 触发回调
-      config.handler(event)
+      config.handler?.(event)
     }
 
     // 存储处理器

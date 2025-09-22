@@ -43,7 +43,7 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
   private eventStats: Map<string, { count: number; lastEmit: number }> =
     new Map()
   private eventPool = new EventObjectPool() // 事件对象池
-  
+
   // 性能优化：使用WeakMap减少内存占用
   private weakSortedCache = new WeakMap<EventListener[], EventListener[]>()
   private maxEventStats = 1000 // 限制统计数据数量
@@ -140,7 +140,7 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
     // 单次循环处理事件触发和标记移除
     for (let i = 0; i < listenersToExecute.length; i++) {
       const listener = listenersToExecute[i]
-      
+
       try {
         listener.handler(args[0] as unknown)
       } catch (error) {
@@ -345,7 +345,7 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
       const sortedEvents = Array.from(this.eventStats.entries())
         .sort((a, b) => b[1].lastEmit - a[1].lastEmit)
         .slice(0, this.maxEventStats - 100) // 留出一些缓冲空间
-      
+
       this.eventStats.clear()
       for (const [event, stats] of sortedEvents) {
         this.eventStats.set(event, stats)
@@ -492,8 +492,6 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
     }
   }
 }
-
-
 
 export const ENGINE_EVENTS = {
   CREATED: 'engine:created',

@@ -4,7 +4,7 @@
  */
 
 import type { Component } from 'vue'
-import type { CreateEngineOptions, Engine, ConfigSchema } from '../types'
+import type { ConfigSchema, CreateEngineOptions, Engine } from '../types'
 import { commonDirectives } from '../directives/directive-manager'
 import { EngineImpl } from './engine'
 

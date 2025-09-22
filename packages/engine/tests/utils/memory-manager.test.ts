@@ -576,17 +576,25 @@ describe('托管Promise', () => {
       await expect(managedPromise.promise).rejects.toThrow('test error')
     })
 
-    it('应该在取消后清理资源', () => {
+    it('应该在取消后清理资源', async () => {
       const cleanupFn = vi.fn()
-      
+
       const managedPromise = createManagedPromise<string>((resolve) => {
-        const timer = setTimeout(() => resolve('success'), 1000)
+        const timer = setTimeout(() => resolve('success'), 100) // 减少延迟
         return () => clearTimeout(timer)
       })
-      
+
       managedPromise.onCancel(cleanupFn)
       managedPromise.cancel()
-      
+
+      // 捕获Promise取消错误
+      try {
+        await managedPromise.promise
+      } catch (error) {
+        // 期望的取消错误
+        expect((error as Error).message).toContain('cancelled')
+      }
+
       expect(cleanupFn).toHaveBeenCalled()
     })
   })

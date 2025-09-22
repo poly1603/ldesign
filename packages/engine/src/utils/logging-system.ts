@@ -1,4 +1,3 @@
-import { ErrorUtil, safeJsonStringify } from './type-safety'
 import { memoryManager } from './memory-manager'
 
 // 日志级别枚举
@@ -46,10 +45,10 @@ export interface LogContext {
 
 // 日志处理器接口
 export interface LogHandler {
-  handle(entry: LogEntry): void | Promise<void>
-  shouldHandle(level: LogLevel): boolean
-  getName(): string
-  destroy?(): void
+  handle: (entry: LogEntry) => void | Promise<void>
+  shouldHandle: (level: LogLevel) => boolean
+  getName: () => string
+  destroy?: () => void
 }
 
 // 错误报告接口
@@ -71,15 +70,15 @@ export interface ErrorReport {
 // 控制台日志处理器
 export class ConsoleLogHandler implements LogHandler {
   private colors: Record<LogLevel, string> = {
-    [LogLevel.TRACE]: '\x1b[90m', // 灰色
-    [LogLevel.DEBUG]: '\x1b[36m', // 青色
-    [LogLevel.INFO]: '\x1b[32m',  // 绿色
-    [LogLevel.WARN]: '\x1b[33m',  // 黄色
-    [LogLevel.ERROR]: '\x1b[31m', // 红色
-    [LogLevel.FATAL]: '\x1b[35m'  // 紫色
+    [LogLevel.TRACE]: '\x1B[90m', // 灰色
+    [LogLevel.DEBUG]: '\x1B[36m', // 青色
+    [LogLevel.INFO]: '\x1B[32m', // 绿色
+    [LogLevel.WARN]: '\x1B[33m', // 黄色
+    [LogLevel.ERROR]: '\x1B[31m', // 红色
+    [LogLevel.FATAL]: '\x1B[35m' // 紫色
   }
-  
-  private resetColor = '\x1b[0m'
+
+  private resetColor = '\x1B[0m'
 
   constructor(private minLevel: LogLevel = LogLevel.INFO) {}
 
@@ -97,12 +96,12 @@ export class ConsoleLogHandler implements LogHandler {
     const color = this.colors[entry.level]
     const levelName = LogLevelNames[entry.level]
     const timestamp = new Date(entry.timestamp).toISOString()
-    
+
     const prefix = `${color}[${timestamp}] ${levelName}${this.resetColor}`
     const context = entry.context ? ` [${this.formatContext(entry.context)}]` : ''
-    
-    let message = `${prefix}${context} ${entry.message}`
-    
+
+    const message = `${prefix}${context} ${entry.message}`
+
     const consoleMethods: Record<LogLevel, keyof Console> = {
       [LogLevel.TRACE]: 'trace',
       [LogLevel.DEBUG]: 'debug',
@@ -113,7 +112,7 @@ export class ConsoleLogHandler implements LogHandler {
     }
 
     const consoleMethod = consoleMethods[entry.level] as keyof Console
-    const consoleFunction = console[consoleMethod] as Function
+    const consoleFunction = console[consoleMethod] as (...args: unknown[]) => void
 
     if (entry.data !== undefined) {
       consoleFunction(message, entry.data)
@@ -129,12 +128,12 @@ export class ConsoleLogHandler implements LogHandler {
 
   private formatContext(context: LogContext): string {
     const parts: string[] = []
-    
+
     if (context.module) parts.push(`${context.module}`)
     if (context.function) parts.push(`${context.function}()`)
     if (context.userId) parts.push(`user:${context.userId}`)
     if (context.requestId) parts.push(`req:${context.requestId.substring(0, 8)}`)
-    
+
     return parts.join('|')
   }
 }
@@ -160,7 +159,7 @@ export class MemoryLogHandler implements LogHandler {
     if (!this.shouldHandle(entry.level)) return
 
     this.logs.push(entry)
-    
+
     // 保持日志数量在限制内
     if (this.logs.length > this.maxSize) {
       this.logs.splice(0, this.logs.length - this.maxSize)
@@ -179,17 +178,17 @@ export class MemoryLogHandler implements LogHandler {
       if (filter.level !== undefined) {
         filteredLogs = filteredLogs.filter(log => log.level >= filter.level!)
       }
-      
+
       if (filter.module) {
-        filteredLogs = filteredLogs.filter(log => 
+        filteredLogs = filteredLogs.filter(log =>
           log.context?.module === filter.module
         )
       }
-      
+
       if (filter.since) {
         filteredLogs = filteredLogs.filter(log => log.timestamp >= filter.since!)
       }
-      
+
       if (filter.limit) {
         filteredLogs = filteredLogs.slice(-filter.limit)
       }
@@ -211,7 +210,7 @@ export class MemoryLogHandler implements LogHandler {
 export class RemoteLogHandler implements LogHandler {
   private buffer: LogEntry[] = []
   private batchSize: number
-  private flushInterval: string
+  private flushInterval: NodeJS.Timeout
 
   constructor(
     private endpoint: string,
@@ -221,7 +220,7 @@ export class RemoteLogHandler implements LogHandler {
     private minLevel: LogLevel = LogLevel.WARN
   ) {
     this.batchSize = batchSize
-    
+
     // 定期刷新缓冲区
     this.flushInterval = memoryManager.setInterval(() => {
       this.flush()
@@ -247,7 +246,7 @@ export class RemoteLogHandler implements LogHandler {
     if (!this.shouldHandle(entry.level)) return
 
     this.buffer.push(entry)
-    
+
     // 如果缓冲区满了，立即刷新
     if (this.buffer.length >= this.batchSize) {
       this.flush()
@@ -266,7 +265,7 @@ export class RemoteLogHandler implements LogHandler {
       }
 
       if (this.apiKey) {
-        headers['Authorization'] = `Bearer ${this.apiKey}`
+        headers.Authorization = `Bearer ${this.apiKey}`
       }
 
       await fetch(this.endpoint, {
@@ -326,7 +325,7 @@ export class ErrorTracker {
   captureError(error: any, context?: LogContext): ErrorReport {
     const errorInfo = this.extractErrorInfo(error)
     const fingerprint = this.generateFingerprint(errorInfo, context)
-    
+
     let report = this.errorReports.get(fingerprint)
     const now = Date.now()
 
@@ -353,24 +352,26 @@ export class ErrorTracker {
       }
 
       this.errorReports.set(fingerprint, report)
-      
+
       // 保持报告数量在限制内
       if (this.errorReports.size > this.maxReports) {
         const oldestKey = this.errorReports.keys().next().value
-        this.errorReports.delete(oldestKey)
+        if (oldestKey) {
+          this.errorReports.delete(oldestKey)
+        }
       }
     }
 
     // 通知监听器
     this.notifyListeners(report)
-    
+
     return report
   }
 
-  private extractErrorInfo(error: any): { 
+  private extractErrorInfo(error: any): {
     message: string
     stack?: string
-    additionalData?: any 
+    additionalData?: any
   } {
     if (error instanceof Error) {
       return {
@@ -406,7 +407,7 @@ export class ErrorTracker {
       context?.module,
       context?.function
     ].filter(Boolean)
-    
+
     // 使用简单的哈希算法
     return this.simpleHash(parts.join('|'))
   }
@@ -437,7 +438,7 @@ export class ErrorTracker {
 
   onError(listener: (report: ErrorReport) => void): () => void {
     this.listeners.push(listener)
-    
+
     return () => {
       const index = this.listeners.indexOf(listener)
       if (index > -1) {
@@ -452,22 +453,22 @@ export class ErrorTracker {
     minCount?: number
   }): ErrorReport[] {
     let reports = Array.from(this.errorReports.values())
-    
+
     if (options?.since) {
       reports = reports.filter(r => r.lastOccurrence >= options.since!)
     }
-    
+
     if (options?.minCount) {
       reports = reports.filter(r => r.count >= options.minCount!)
     }
-    
+
     // 按最后发生时间排序
     reports.sort((a, b) => b.lastOccurrence - a.lastOccurrence)
-    
+
     if (options?.limit) {
       reports = reports.slice(0, options.limit)
     }
-    
+
     return reports
   }
 
@@ -514,7 +515,7 @@ export class EnhancedLogger {
     return child
   }
 
-  private log(level: LogLevel, message: string, data?: any, additionalContext?: LogContext): void {
+  public log(level: LogLevel, message: string, data?: any, additionalContext?: LogContext): void {
     const entry: LogEntry = {
       id: this.generateLogId(),
       timestamp: Date.now(),
@@ -566,7 +567,7 @@ export class EnhancedLogger {
 
   error(message: string, error?: Error | any, context?: LogContext): void {
     let errorData = error
-    let stackTrace = this.captureStackTrace()
+    let stackTrace: string | undefined = this.captureStackTrace()
 
     if (error instanceof Error) {
       errorData = {
@@ -574,7 +575,7 @@ export class EnhancedLogger {
         message: error.message,
         stack: error.stack
       }
-      stackTrace = error.stack
+      stackTrace = error.stack || this.captureStackTrace()
     }
 
     const entry: LogEntry = {
@@ -602,7 +603,7 @@ export class EnhancedLogger {
 
   fatal(message: string, error?: Error | any, context?: LogContext): void {
     this.log(LogLevel.FATAL, message, error, context)
-    
+
     // 对于致命错误，发送给错误追踪器
     this.errorTracker.captureError(error || new Error(message), { ...this.context, ...context })
   }
@@ -611,7 +612,7 @@ export class EnhancedLogger {
   time(label: string, context?: LogContext): () => void {
     const startTime = Date.now()
     this.debug(`Timer started: ${label}`, undefined, context)
-    
+
     return () => {
       const duration = Date.now() - startTime
       this.info(`Timer ended: ${label}`, { duration }, context)
@@ -625,7 +626,7 @@ export class EnhancedLogger {
     context?: LogContext
   ): Promise<T> {
     const timer = this.time(`async:${operation}`, context)
-    
+
     try {
       this.debug(`Starting async operation: ${operation}`, undefined, context)
       const result = await fn()
@@ -655,9 +656,9 @@ export class EnhancedLogger {
   }
 
   private captureStackTrace(): string {
-    const stack = new Error().stack
+    const stack = new Error('Stack trace').stack
     if (!stack) return ''
-    
+
     // 移除与日志系统相关的栈帧
     const lines = stack.split('\n')
     const relevantLines = lines.slice(3) // 跳过 Error、captureStackTrace、log 方法
@@ -670,7 +671,7 @@ export class EnhancedLogger {
       context?.module,
       context?.function
     ].filter(Boolean)
-    
+
     return this.simpleHash(parts.join('|'))
   }
 
@@ -707,19 +708,19 @@ export function logMethod(level: LogLevel = LogLevel.DEBUG, includeArgs = false)
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value
     const className = target.constructor.name
-    
+
     descriptor.value = function (...args: any[]) {
       const methodLogger = logger.createChild({
         module: className,
         function: propertyKey
       })
-      
+
       const logData = includeArgs ? { arguments: args } : undefined
       methodLogger.log(level, `Method ${propertyKey} called`, logData)
-      
+
       try {
         const result = originalMethod.apply(this, args)
-        
+
         if (result && typeof result.then === 'function') {
           // 异步方法
           return result.then(
@@ -742,7 +743,7 @@ export function logMethod(level: LogLevel = LogLevel.DEBUG, includeArgs = false)
         throw error
       }
     }
-    
+
     return descriptor
   }
 }
@@ -752,18 +753,18 @@ export function logPerformance(threshold = 1000) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value
     const className = target.constructor.name
-    
+
     descriptor.value = function (...args: any[]) {
       const methodLogger = logger.createChild({
         module: className,
         function: propertyKey
       })
-      
+
       const startTime = Date.now()
-      
+
       try {
         const result = originalMethod.apply(this, args)
-        
+
         if (result && typeof result.then === 'function') {
           // 异步方法
           return result.finally(() => {
@@ -790,7 +791,7 @@ export function logPerformance(threshold = 1000) {
         throw error
       }
     }
-    
+
     return descriptor
   }
 }

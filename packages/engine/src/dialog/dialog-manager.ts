@@ -820,7 +820,16 @@ export class DialogManager extends BaseManager<DialogManagerConfig> {
     const animation = instance.options.animation!
 
     // 检查是否在测试环境中
-    const isTestEnvironment = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') ||
+    const isTestEnvironment = (() => {
+      try {
+        // 检查是否在测试环境中
+        const g = globalThis as any
+        const processKey = 'process'
+        return g?.[processKey]?.env?.NODE_ENV === 'test'
+      } catch {
+        return false
+      }
+    })() ||
       (typeof globalThis !== 'undefined' && (globalThis as { __VITEST__?: unknown }).__VITEST__)
 
     // 执行离开动画

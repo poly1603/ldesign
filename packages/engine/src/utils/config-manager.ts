@@ -1,10 +1,8 @@
-import { 
-  isValidObject, 
-  isString, 
-  isNumber, 
-  isBoolean, 
-  isFunction,
-  safeGet,
+import {
+  isBoolean,
+  isNumber,
+  isString,
+  isValidObject,
   safeGetNested
 } from './type-safety'
 
@@ -45,7 +43,7 @@ export interface ConfigChangeEvent {
 
 // 配置加载器接口
 export interface ConfigLoader {
-  load(): Promise<ConfigObject> | ConfigObject
+  load: () => Promise<ConfigObject> | ConfigObject
   watch?: (callback: (config: ConfigObject) => void) => (() => void) | void
 }
 
@@ -55,34 +53,41 @@ export class EnvironmentConfigLoader implements ConfigLoader {
 
   load(): ConfigObject {
     const config: ConfigObject = {}
-    
+
     // 在浏览器环境中，只能访问通过 Vite 或 webpack 注入的环境变量
-    if (typeof process !== 'undefined' && process.env) {
-      Object.keys(process.env).forEach(key => {
-        if (key.startsWith(this.prefix)) {
-          const configKey = key.substring(this.prefix.length).toLowerCase()
-          const value = process.env[key]
-          
-          // 尝试解析为合适的类型
-          config[configKey] = this.parseValue(value)
-        }
-      })
+    try {
+      // 检查是否在Node.js环境中
+      const processKey = 'process'
+      const processEnv = (globalThis as any)?.[processKey]?.env
+      if (processEnv) {
+        Object.keys(processEnv).forEach(key => {
+          if (key.startsWith(this.prefix)) {
+            const configKey = key.substring(this.prefix.length).toLowerCase()
+            const value = processEnv[key]
+
+            // 尝试解析为合适的类型
+            config[configKey] = this.parseValue(value)
+          }
+        })
+      }
+    } catch {
+      // 在浏览器环境中，process 可能不可用
     }
-    
+
     return config
   }
 
   private parseValue(value: string | undefined): ConfigValue {
     if (value === undefined) return undefined
-    
+
     // 尝试解析为布尔值
     if (value.toLowerCase() === 'true') return true
     if (value.toLowerCase() === 'false') return false
-    
+
     // 尝试解析为数字
     const numValue = Number(value)
-    if (!isNaN(numValue) && isFinite(numValue)) return numValue
-    
+    if (!Number.isNaN(numValue) && Number.isFinite(numValue)) return numValue
+
     // 尝试解析为 JSON
     try {
       return JSON.parse(value)
@@ -170,7 +175,7 @@ export class EnhancedConfigManager {
       try {
         const loadedConfig = await loader.load()
         this.mergeConfig(loadedConfig)
-        
+
         // 如果加载器支持监听，启用热重载
         if (loader.watch) {
           const unwatcher = loader.watch((newConfig) => {
@@ -187,7 +192,7 @@ export class EnhancedConfigManager {
 
     // 验证配置
     this.validateConfig()
-    
+
     // 应用默认值和转换
     this.applyDefaults()
   }
@@ -215,7 +220,7 @@ export class EnhancedConfigManager {
   private validateConfig(): void {
     this.validationErrors = []
     this.validateObject(this.config, this.schema, '')
-    
+
     if (this.validationErrors.length > 0) {
       console.warn('配置验证警告:', this.validationErrors)
     }
@@ -285,7 +290,7 @@ export class EnhancedConfigManager {
     Object.keys(schema).forEach(key => {
       const fullPath = path ? `${path}.${key}` : key
       const schemaItem = schema[key]
-      
+
       if (obj[key] === undefined && schemaItem.default !== undefined) {
         obj[key] = schemaItem.default
       }
@@ -320,7 +325,7 @@ export class EnhancedConfigManager {
   // 检测配置变更
   private detectChanges(oldConfig: ConfigObject, newConfig: ConfigObject, path: string): void {
     const allKeys = new Set([...Object.keys(oldConfig), ...Object.keys(newConfig)])
-    
+
     allKeys.forEach(key => {
       const fullPath = path ? `${path}.${key}` : key
       const oldValue = oldConfig[key]
@@ -360,18 +365,18 @@ export class EnhancedConfigManager {
   }
 
   // 设置配置值
-  set<T = any>(key: string, value: T): void {
+  set<T extends ConfigValue = ConfigValue>(key: string, value: T): void {
     const oldValue = this.get(key)
     this.setNestedValue(this.config, key, value)
-    
+
     // 验证新值
     this.validateSingleKey(key, value)
-    
+
     // 触发变更事件
     this.emitChangeEvent({
       key,
       oldValue,
-      newValue: value,
+      newValue: value as ConfigValue,
       timestamp: Date.now()
     })
   }
@@ -432,7 +437,7 @@ export class EnhancedConfigManager {
   // 监听配置变更
   onChange(listener: (event: ConfigChangeEvent) => void): () => void {
     this.listeners.push(listener)
-    
+
     return () => {
       const index = this.listeners.indexOf(listener)
       if (index > -1) {
@@ -463,7 +468,7 @@ export class EnhancedConfigManager {
     Object.keys(schema).forEach(key => {
       const fullPath = path ? `${path}.${key}` : key
       const item = schema[key]
-      
+
       docs[fullPath] = {
         type: item.type || 'any',
         required: item.required || false,
@@ -499,7 +504,7 @@ export class EnhancedConfigManager {
     try {
       const importedConfig = JSON.parse(jsonString)
       if (isValidObject(importedConfig)) {
-        this.config = importedConfig
+        this.config = importedConfig as ConfigObject
         this.validateConfig()
         this.applyDefaults()
       }
@@ -523,8 +528,8 @@ export const ConfigValidators = {
     validate: (value: any): value is string => {
       if (!isString(value)) return false
       try {
-        new URL(value)
-        return true
+        const url = new URL(value)
+        return Boolean(url)
       } catch {
         return false
       }
@@ -542,7 +547,7 @@ export const ConfigValidators = {
   email: {
     validate: (value: any): value is string => {
       if (!isString(value)) return false
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      const emailRegex = /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/
       return emailRegex.test(value)
     },
     message: 'Must be a valid email address'
@@ -585,14 +590,14 @@ export function createEnhancedConfigManager(options: {
   loaders?: ConfigLoader[]
 } = {}): EnhancedConfigManager {
   const manager = new EnhancedConfigManager(options.initialConfig)
-  
+
   if (options.schema) {
     manager.setSchema(options.schema)
   }
-  
+
   if (options.loaders) {
     options.loaders.forEach(loader => manager.addLoader(loader))
   }
-  
+
   return manager
 }

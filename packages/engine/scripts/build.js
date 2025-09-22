@@ -94,7 +94,21 @@ async function main() {
           globals,
         }
 
+    // 抑制控制台输出中的特定警告
+    const originalConsoleWarn = console.warn
+    console.warn = (...args) => {
+      const message = args.join(' ')
+      // 过滤掉空 chunk 警告
+      if (message.includes('Generated an empty chunk')) {
+        return
+      }
+      originalConsoleWarn.apply(console, args)
+    }
+
     const result = await build(options)
+
+    // 恢复原始的 console.warn
+    console.warn = originalConsoleWarn
 
     if (!result.success) {
       console.error(`❌ 构建失败: ${result.errors?.map(e => e.message).join(', ')}`)

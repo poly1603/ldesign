@@ -1,10 +1,7 @@
 {
   "name": "@ldesign/engine",
-  "type": "module",
   "version": "0.1.0",
   "description": "A powerful Vue3 application engine with plugin system, middleware support, and global management",
-  "author": "ldesign",
-  "license": "MIT",
   "keywords": [
     "vue3",
     "engine",
@@ -13,56 +10,188 @@
     "framework",
     "typescript"
   ],
+  "author": "ldesign",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./lib/src/index.d.ts",
+      "types": "./es/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
-    "./notifications": {
-      "types": "./lib/src/notifications/notification-manager.d.ts",
-      "import": "./es/notifications/notification-manager.js",
-      "require": "./lib/notifications/notification-manager.cjs"
+    "./cache/*": {
+      "types": "./es/cache/*.d.ts",
+      "import": "./es/cache/*.js",
+      "require": "./lib/cache/*.cjs"
+    },
+    "./config/*": {
+      "types": "./es/config/*.d.ts",
+      "import": "./es/config/*.js",
+      "require": "./lib/config/*.cjs"
+    },
+    "./constants": {
+      "types": "./es/constants/index.d.ts",
+      "import": "./es/constants/index.js",
+      "require": "./lib/constants/index.cjs"
+    },
+    "./constants/*": {
+      "types": "./es/constants/*.d.ts",
+      "import": "./es/constants/*.js",
+      "require": "./lib/constants/*.cjs"
+    },
+    "./core/*": {
+      "types": "./es/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.cjs"
     },
     "./dialog": {
-      "types": "./lib/src/dialog/index.d.ts",
+      "types": "./es/dialog/index.d.ts",
       "import": "./es/dialog/index.js",
       "require": "./lib/dialog/index.cjs"
     },
-    "./performance": {
-      "types": "./lib/src/performance/performance-manager.d.ts",
-      "import": "./es/performance/performance-manager.js",
-      "require": "./lib/performance/performance-manager.cjs"
+    "./dialog/*": {
+      "types": "./es/dialog/*.d.ts",
+      "import": "./es/dialog/*.js",
+      "require": "./lib/dialog/*.cjs"
     },
-    "./logging": {
-      "types": "./lib/src/utils/logging-system.d.ts",
-      "import": "./es/utils/logging-system.js",
-      "require": "./lib/utils/logging-system.cjs"
+    "./directives": {
+      "types": "./es/directives/index.d.ts",
+      "import": "./es/directives/index.js",
+      "require": "./lib/directives/index.cjs"
     },
-    "./config": {
-      "types": "./lib/src/utils/config-manager.d.ts",
-      "import": "./es/utils/config-manager.js",
-      "require": "./lib/utils/config-manager.cjs"
+    "./directives/*": {
+      "types": "./es/directives/*.d.ts",
+      "import": "./es/directives/*.js",
+      "require": "./lib/directives/*.cjs"
     },
-    "./cache": {
-      "types": "./lib/src/cache/advanced-cache.d.ts",
-      "import": "./es/cache/advanced-cache.js",
-      "require": "./lib/cache/advanced-cache.cjs"
+    "./environment/*": {
+      "types": "./es/environment/*.d.ts",
+      "import": "./es/environment/*.js",
+      "require": "./lib/environment/*.cjs"
+    },
+    "./errors/*": {
+      "types": "./es/errors/*.d.ts",
+      "import": "./es/errors/*.js",
+      "require": "./lib/errors/*.cjs"
+    },
+    "./events/*": {
+      "types": "./es/events/*.d.ts",
+      "import": "./es/events/*.js",
+      "require": "./lib/events/*.cjs"
+    },
+    "./interceptors/*": {
+      "types": "./es/interceptors/*.d.ts",
+      "import": "./es/interceptors/*.js",
+      "require": "./lib/interceptors/*.cjs"
+    },
+    "./lifecycle/*": {
+      "types": "./es/lifecycle/*.d.ts",
+      "import": "./es/lifecycle/*.js",
+      "require": "./lib/lifecycle/*.cjs"
+    },
+    "./logger/*": {
+      "types": "./es/logger/*.d.ts",
+      "import": "./es/logger/*.js",
+      "require": "./lib/logger/*.cjs"
+    },
+    "./message": {
+      "types": "./es/message/index.d.ts",
+      "import": "./es/message/index.js",
+      "require": "./lib/message/index.cjs"
+    },
+    "./message/*": {
+      "types": "./es/message/*.d.ts",
+      "import": "./es/message/*.js",
+      "require": "./lib/message/*.cjs"
+    },
+    "./middleware/*": {
+      "types": "./es/middleware/*.d.ts",
+      "import": "./es/middleware/*.js",
+      "require": "./lib/middleware/*.cjs"
+    },
+    "./notifications/*": {
+      "types": "./es/notifications/*.d.ts",
+      "import": "./es/notifications/*.js",
+      "require": "./lib/notifications/*.cjs"
+    },
+    "./performance/*": {
+      "types": "./es/performance/*.d.ts",
+      "import": "./es/performance/*.js",
+      "require": "./lib/performance/*.cjs"
+    },
+    "./plugins/*": {
+      "types": "./es/plugins/*.d.ts",
+      "import": "./es/plugins/*.js",
+      "require": "./lib/plugins/*.cjs"
+    },
+    "./presets": {
+      "types": "./es/presets/index.d.ts",
+      "import": "./es/presets/index.js",
+      "require": "./lib/presets/index.cjs"
+    },
+    "./presets/*": {
+      "types": "./es/presets/*.d.ts",
+      "import": "./es/presets/*.js",
+      "require": "./lib/presets/*.cjs"
+    },
+    "./security/*": {
+      "types": "./es/security/*.d.ts",
+      "import": "./es/security/*.js",
+      "require": "./lib/security/*.cjs"
+    },
+    "./state/*": {
+      "types": "./es/state/*.d.ts",
+      "import": "./es/state/*.js",
+      "require": "./lib/state/*.cjs"
+    },
+    "./types": {
+      "types": "./es/types/index.d.ts",
+      "import": "./es/types/index.js",
+      "require": "./lib/types/index.cjs"
+    },
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
+    },
+    "./utils": {
+      "types": "./es/utils/index.d.ts",
+      "import": "./es/utils/index.js",
+      "require": "./lib/utils/index.cjs"
+    },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
+    },
+    "./vue": {
+      "types": "./es/vue/index.d.ts",
+      "import": "./es/vue/index.js",
+      "require": "./lib/vue/index.cjs"
+    },
+    "./vue/*": {
+      "types": "./es/vue/*.d.ts",
+      "import": "./es/vue/*.js",
+      "require": "./lib/vue/*.cjs"
     }
   },
-  "main": "lib/index.cjs",
-  "module": "es/index.js",
-  "types": "lib/src/index.d.ts",
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
   "files": [
-    "CHANGELOG.md",
     "README.md",
-    "dist",
+    "LICENSE",
+    "package.json",
     "es",
-    "lib"
+    "lib",
+    "dist"
   ],
-  "sideEffects": false,
   "scripts": {
-    "build": "ldesign-builder build -f esm,cjs,umd",
+    "build": "node scripts/build-clean.js",
+    "build:original": "ldesign-builder build -f esm,cjs,umd --silent",
     "build:clean": "node scripts/build.js --clean",
     "build:types": "node scripts/build.js --types",
     "build:analyze": "node scripts/analyze-bundle.js",
@@ -110,11 +239,6 @@
   "peerDependencies": {
     "vue": "^3.5.18"
   },
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    }
-  },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
     "@rollup/plugin-commonjs": "^25.0.7",
@@ -148,5 +272,10 @@
       "path": "dist/index.js",
       "limit": "50 KB"
     }
-  ]
+  ],
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  }
 }

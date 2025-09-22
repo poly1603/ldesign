@@ -13,6 +13,24 @@ export interface PerformanceMetrics {
     limit: number
   }
 
+  // 网络指标
+  network?: {
+    latency: number
+    bandwidth: number
+    connectionType?: string
+    requests?: number
+    totalSize?: number
+    averageTime?: number
+  }
+
+  // 渲染指标
+  rendering?: {
+    fps: number
+    droppedFrames: number
+    renderTime: number
+    frameTime?: number
+  }
+
   // 自定义指标
   custom?: Record<string, number>
 }
@@ -193,7 +211,7 @@ class FPSMonitor {
   start(callback: (fps: number) => void): void {
     this.callback = callback
     this.frameCount = 0
-    this.lastTime = performance.now()
+    this.lastTime = globalThis.performance?.now() || Date.now()
     this.measureFPS()
   }
 
@@ -209,7 +227,7 @@ class FPSMonitor {
     if (!this.callback) return
 
     this.frameCount++
-    const currentTime = performance.now()
+    const currentTime = globalThis.performance?.now() || Date.now()
 
     if (currentTime - this.lastTime >= 1000) {
       this.fps = Math.round((this.frameCount * 1000) / (currentTime - this.lastTime))
@@ -340,6 +358,8 @@ export class PerformanceManagerImpl implements PerformanceManager {
       if (networkEntries.length > 0) {
         const entry = networkEntries[0] as PerformanceNavigationTiming
         metrics.network = {
+          latency: entry.responseStart - entry.requestStart,
+          bandwidth: entry.transferSize ? (entry.transferSize / (entry.responseEnd - entry.responseStart)) * 1000 : 0,
           requests: 1,
           totalSize: entry.transferSize || 0,
           averageTime: entry.loadEventEnd - entry.loadEventStart,
@@ -392,6 +412,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
             fps,
             frameTime: 1000 / fps,
             droppedFrames: fps < 30 ? 1 : 0,
+            renderTime: 1000 / fps,
           },
         })
       })

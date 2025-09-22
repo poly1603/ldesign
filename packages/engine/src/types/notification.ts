@@ -96,7 +96,6 @@ export interface EngineNotification {
   visible?: boolean
   element?: HTMLElement
   timeoutId?: number
-  animating?: boolean
 }
 
 // 通知操作

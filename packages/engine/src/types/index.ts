@@ -1,3 +1,7 @@
+// 性能监控类型 - 使用实现接口以匹配实现
+export type { PerformanceManager } from '../performance/performance-manager'
+// 安全管理类型 - 使用实现接口以匹配实现
+export type { SecurityManager } from '../security/security-manager'
 // 重新组织类型定义，按模块拆分
 // 基础类型
 export * from './base'
@@ -39,12 +43,8 @@ export type {
   NotificationProgress,
   NotificationStats,
 } from './notification'
-// 性能监控类型 - 使用实现接口以匹配实现
-export type { PerformanceManager } from '../performance/performance-manager'
 // 插件系统类型
 export * from './plugin'
-// 安全管理类型 - 使用实现接口以匹配实现
-export type { SecurityManager } from '../security/security-manager'
 // 状态管理类型
 export * from './state'
 // 样式管理类型

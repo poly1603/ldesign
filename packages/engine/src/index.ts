@@ -19,11 +19,24 @@
  */
 
 // 管理器导出
+// Vue插件安装函数
+import type { App } from 'vue'
+import type { CreateEngineOptions, Engine } from './types'
+
+// 高级缓存管理器导出
+export {
+  AdvancedCacheManager,
+  type AutoUpdateConfig,
+  type CacheStatistics,
+  type LayeredCacheConfig,
+  type PreloadConfig
+} from './cache/advanced-cache'
 export {
   CacheManagerImpl,
   CacheStrategy,
   createCacheManager,
 } from './cache/cache-manager'
+
 export {
   ConfigManagerImpl,
   createConfigManager,
@@ -51,17 +64,29 @@ export { createErrorManager, errorHandlers } from './errors/error-manager'
 
 // 错误恢复系统导出
 export {
-  ErrorRecoveryManager,
-  createErrorRecoveryManager,
   commonRecoveryStrategies,
-  type RecoveryStrategy,
-  type RetryStrategy,
-  type FallbackStrategy,
+  createErrorRecoveryManager,
   type ErrorContext,
-  type ErrorReport
+  ErrorRecoveryManager,
+  type ErrorReport as ErrorRecoveryReport,
+  type FallbackStrategy,
+  type RecoveryStrategy,
+  type RetryStrategy
 } from './errors/error-recovery'
 
 export { createEventManager, ENGINE_EVENTS } from './events/event-manager'
+
+// 请求拦截器导出
+export {
+  createRequestInterceptor,
+  type ErrorInterceptorFn,
+  type InterceptorFn,
+  type ProgressEvent,
+  type RequestConfig,
+  requestInterceptor,
+  RequestInterceptorManager,
+  type ResponseData
+} from './interceptors/request-interceptor'
 
 export { createLogger, logFormatters, logTransports } from './logger/logger'
 
@@ -163,120 +188,104 @@ export type {
 // 工具函数导出
 export * from './utils'
 
-// Vue集成导出
-export * from './vue'
-
-// 高级缓存管理器导出
-export {
-  AdvancedCacheManager,
-  type LayeredCacheConfig,
-  type PreloadConfig,
-  type AutoUpdateConfig,
-  type CacheStatistics
-} from './cache/advanced-cache'
-
-// 请求拦截器导出
-export {
-  RequestInterceptorManager,
-  createRequestInterceptor,
-  requestInterceptor,
-  type RequestConfig,
-  type ResponseData,
-  type InterceptorFn,
-  type ErrorInterceptorFn,
-  type ProgressEvent
-} from './interceptors/request-interceptor'
-
-// 性能分析工具导出
-export {
-  PerformanceAnalyzer,
-  globalPerformanceAnalyzer,
-  measurePerformance,
-  debounce,
-  throttle,
-  ObjectPool,
-  BatchProcessor,
-  type PerformanceMeasure,
-  type PerformanceReport
-} from './utils/performance-analyzer'
-
-// 类型安全工具导出
-export {
-  isValidObject,
-  isString,
-  isNumber,
-  isBoolean,
-  isFunction,
-  isArray,
-  isPromise,
-  safeDeepClone,
-  safeMerge,
-  safeGet,
-  safeGetNested,
-  safeFilter,
-  safeMap,
-  safeAsync,
-  safeJsonParse,
-  safeJsonStringify,
-  TypedConfigWrapper,
-  createTypedConfigManager,
-  PromiseUtil
-} from './utils/type-safety'
-
-// 内存管理工具导出
-export {
-  TimerManager,
-  ListenerManager,
-  ResourceManager,
-  MemoryLeakDetector,
-  ReferenceTracker,
-  GlobalMemoryManager,
-  memoryManager,
-  managedLifecycle,
-  createManagedPromise
-} from './utils/memory-manager'
-
 // 增强配置管理系统导出
 export {
+  type ConfigChangeEvent,
+  type ConfigLoader,
+  type ConfigObject,
+  type ConfigSchema,
+  type ConfigValidator,
+  ConfigValidators,
+  type ConfigValue,
+  createEnhancedConfigManager,
   EnhancedConfigManager,
   EnvironmentConfigLoader,
   JsonConfigLoader,
-  MemoryConfigLoader,
-  ConfigValidators,
-  createEnhancedConfigManager,
-  type ConfigValue,
-  type ConfigObject,
-  type ConfigValidator,
-  type ConfigSchema,
-  type ConfigChangeEvent,
-  type ConfigLoader
+  MemoryConfigLoader
 } from './utils/config-manager'
 
 // 日志系统导出
 export {
-  EnhancedLogger,
   ConsoleLogHandler,
-  MemoryLogHandler,
-  RemoteLogHandler,
-  ErrorTracker,
-  logger,
   createModuleLogger,
-  logMethod,
-  logPerformance,
+  EnhancedLogger,
+  ErrorTracker,
+  type LogContext,
+  type LogEntry,
+  logger,
+  type ErrorReport as LoggingErrorReport,
+  type LogHandler,
   LogLevel,
   LogLevelNames,
-  type LogEntry,
-  type LogContext,
-  type LogHandler,
-  type ErrorReport
+  logMethod,
+  logPerformance,
+  MemoryLogHandler,
+  RemoteLogHandler
 } from './utils/logging-system'
+
+// 内存管理工具导出
+export {
+  createManagedPromise,
+  GlobalMemoryManager,
+  ListenerManager,
+  managedLifecycle,
+  MemoryLeakDetector,
+  memoryManager,
+  ReferenceTracker,
+  ResourceManager,
+  TimerManager
+} from './utils/memory-manager'
+
+// 性能分析工具导出
+export {
+  BatchProcessor,
+  debounce,
+  globalPerformanceAnalyzer,
+  measurePerformance,
+  ObjectPool,
+  PerformanceAnalyzer,
+  type PerformanceMeasure,
+  type PerformanceReport,
+  throttle
+} from './utils/performance-analyzer'
+
+// 类型安全工具导出
+export {
+  createTypedConfigManager,
+  isArray,
+  isBoolean,
+  isFunction,
+  isNumber,
+  isPromise,
+  isString,
+  isValidObject,
+  PromiseUtil,
+  safeAsync,
+  safeDeepClone,
+  safeFilter,
+  safeGet,
+  safeGetNested,
+  safeJsonParse,
+  safeJsonStringify,
+  safeMap,
+  safeMerge,
+  TypedConfigWrapper
+} from './utils/type-safety'
+
+// 打包优化工具导出
+export {
+  BundleOptimizer,
+  globalBundleOptimizer,
+  LazyLoad,
+  dynamicImport,
+  preloadCriticalModules
+} from './utils/bundle-optimizer'
+
+// Vue集成导出
+export * from './vue'
 
 // 版本信息
 export const version = '0.1.0'
-
-// Vue插件安装函数
-import type { App } from 'vue'
-import type { CreateEngineOptions, Engine } from './types'
 
 export async function install(app: App, options: CreateEngineOptions = {}): Promise<Engine> {
   // 动态导入避免循环依赖

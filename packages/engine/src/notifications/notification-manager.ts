@@ -2,7 +2,6 @@ import type {
   EngineNotification,
   Logger,
   NotificationAction,
-  NotificationAnimation,
   NotificationManager,
   NotificationOptions,
   NotificationPosition,
@@ -19,6 +18,7 @@ interface NotificationItem extends NotificationOptions {
   visible: boolean
   element?: HTMLElement
   timeoutId?: number
+  isAnimating?: boolean
 }
 
 export class NotificationManagerImpl implements NotificationManager {
@@ -31,6 +31,15 @@ export class NotificationManagerImpl implements NotificationManager {
   private idCounter = 0
   private styleManager: NotificationStyleManager
   private logger?: Logger
+  private cleanupInterval?: number
+  private defaultOptions: Partial<NotificationOptions> = {
+    position: 'top-right',
+    duration: 4000,
+    theme: 'light',
+    type: 'info',
+    closable: true,
+    persistent: false
+  }
 
   constructor(logger?: Logger) {
     this.logger = logger
@@ -214,14 +223,13 @@ export class NotificationManagerImpl implements NotificationManager {
         metadata: notification.metadata,
         timestamp: notification.createdAt || Date.now(),
         isVisible: notification.visible !== false,
-        isAnimating: notification.animating || false,
+        isAnimating: notification.isAnimating || false,
         showProgress: !!notification.progress,
         progress: notification.progress,
         createdAt: notification.createdAt,
         visible: notification.visible,
         element: notification.element,
         timeoutId: notification.timeoutId,
-        animating: notification.animating,
       })) as EngineNotification[]
   }
 
@@ -1043,7 +1051,7 @@ export class NotificationManagerImpl implements NotificationManager {
         metadata: notification.metadata || {},
         timestamp: notification.createdAt,
         isVisible: notification.visible,
-        isAnimating: notification.animating || false,
+        isAnimating: notification.isAnimating || false,
       }
     }
     return undefined

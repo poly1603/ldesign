@@ -4,6 +4,12 @@
  */
 
 import type { App, Component } from '@vue/runtime-dom'
+// 使用实现定义以保证与实际工厂函数一致
+import type { CacheManager } from '../cache/cache-manager'
+import type { EnvironmentManager } from '../environment/environment-manager'
+import type { LifecycleManager } from '../lifecycle/lifecycle-manager'
+import type { PerformanceManager } from '../performance/performance-manager'
+import type { SecurityManager } from '../security/security-manager'
 import type {
   I18nAdapter,
   RouterAdapter,
@@ -19,12 +25,6 @@ import type { Middleware, MiddlewareManager } from './middleware'
 import type { NotificationManager } from './notification'
 import type { Plugin, PluginManager } from './plugin'
 import type { StateManager } from './state'
-// 使用实现定义以保证与实际工厂函数一致
-import type { CacheManager } from '../cache/cache-manager'
-import type { EnvironmentManager } from '../environment/environment-manager'
-import type { LifecycleManager } from '../lifecycle/lifecycle-manager'
-import type { PerformanceManager } from '../performance/performance-manager'
-import type { SecurityManager } from '../security/security-manager'
 
 // 引擎主接口
 export interface Engine {

@@ -21,11 +21,11 @@ export function checkDirectiveType(directive: unknown): DirectiveType {
   // 检查是否是 Vue 指令
   const obj = (typeof directive === 'object' && directive !== null) ? (directive as Record<string, unknown>) : undefined
   const hasVueHooks = ['created', 'beforeMount', 'mounted', 'beforeUpdate', 'updated', 'beforeUnmount', 'unmounted']
-    .some(hook => !!obj && typeof obj[hook] === 'function' && (obj[hook] as Function).length >= 2)
+    .some(hook => !!obj && typeof obj[hook] === 'function' && (obj[hook] as (...args: unknown[]) => void).length >= 2)
 
   // 检查是否是引擎指令
   const hasEngineHooks = ['beforeCreate', 'created', 'beforeMount', 'mounted', 'beforeUpdate', 'updated', 'beforeUnmount', 'unmounted']
-    .some(hook => !!obj && typeof obj[hook] === 'function' && (obj[hook] as Function).length === 0)
+    .some(hook => !!obj && typeof obj[hook] === 'function' && (obj[hook] as (...args: unknown[]) => void).length === 0)
 
   if (hasVueHooks && hasEngineHooks) return 'hybrid'
   if (hasVueHooks) return 'vue'
@@ -89,9 +89,9 @@ export function convertVueToEngineDirective(vueDirective: unknown): EngineDirect
     }
   } else if (typeof vueDirective === 'function') {
     // 如果是函数指令，转换为 mounted 钩子（保持 Vue 风格签名）
-    engineDirective.mounted = ((el: HTMLElement, binding: VueDirectiveBinding) => {
+    engineDirective.mounted = (el: HTMLElement, binding: VueDirectiveBinding) => {
       ; (vueDirective as (el: HTMLElement, binding: VueDirectiveBinding) => void)(el, binding)
-    })
+    }
   }
 
   return engineDirective

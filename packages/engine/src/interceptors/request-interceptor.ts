@@ -96,7 +96,6 @@ export class RequestInterceptorManager {
   private cache = new Map<string, { data: any; expiry: number }>()
   private pendingRequests = new Map<string, Promise<ResponseData>>()
 
-
   /**
    * 添加请求拦截器
    */
@@ -151,7 +150,7 @@ export class RequestInterceptorManager {
 
     try {
       // 执行请求拦截器
-      let finalConfig = await this.runRequestInterceptors(config)
+      const finalConfig = await this.runRequestInterceptors(config)
 
       // 生成缓存键
       const cacheKey = this.generateCacheKey(finalConfig)
@@ -288,7 +287,7 @@ export class RequestInterceptorManager {
 
       // 如果还有重试次数，等待后重试
       if (attempt < retries) {
-        await this.delay(retryDelay * Math.pow(2, attempt)) // 指数退避
+        await this.delay(retryDelay * 2 ** attempt) // 指数退避
       }
     }
 

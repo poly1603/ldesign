@@ -18,13 +18,12 @@ export interface CacheItem<T = unknown> {
 }
 
 export interface CacheStorage {
-  get<T>(key: string): Promise<T | null>
-  set<T>(key: string, value: T, options?: CacheOptions): Promise<void>
-  remove(key: string): Promise<void>
-  clear(): Promise<void>
-  getSize(): Promise<number>
+  get: <T>(key: string) => Promise<T | null>
+  set: <T>(key: string, value: T, options?: CacheOptions) => Promise<void>
+  remove: (key: string) => Promise<void>
+  clear: () => Promise<void>
+  getSize: () => Promise<number>
 }
-
 
 // 缓存条目接口
 export interface CacheEntry<T = unknown> {

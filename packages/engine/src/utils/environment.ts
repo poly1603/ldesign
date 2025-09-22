@@ -96,12 +96,22 @@ export class Environment {
       info.supportsServiceWorkers = 'serviceWorker' in navigator
     }
     // 检测Web Worker环境
-    else if (typeof importScripts === 'function' && typeof postMessage === 'function') {
+    else if (typeof (globalThis as any).importScripts === 'function' && typeof postMessage === 'function') {
       info.type = EnvironmentType.WEBWORKER
       info.isClient = true
     }
     // 检测Node.js环境
-    else if (typeof global !== 'undefined' && typeof process !== 'undefined' && process.versions?.node) {
+    else if ((() => {
+      try {
+        const g = globalThis as any
+        const processKey = 'process'
+        return typeof g.global !== 'undefined' &&
+               typeof g[processKey] !== 'undefined' &&
+               g[processKey].versions?.node
+      } catch {
+        return false
+      }
+    })()) {
       info.type = EnvironmentType.NODE
       info.isServer = true
     }
@@ -171,7 +181,9 @@ export class CrossPlatformAPI {
     if (env.type === EnvironmentType.NODE) {
       // Node.js 环境
       try {
-        return process.env[key] || defaultValue
+        const processKey = 'process'
+        const processEnv = (globalThis as any)?.[processKey]?.env
+        return processEnv?.[key] || defaultValue
       } catch {
         return defaultValue
       }
@@ -179,12 +191,18 @@ export class CrossPlatformAPI {
       // 浏览器环境 - 从window对象或import.meta.env获取
       try {
         // Vite/Modern bundlers
-        if (typeof import.meta !== 'undefined' && import.meta && import.meta.env) {
-          return (import.meta.env as any)[key] || defaultValue
+        if (typeof import.meta !== 'undefined' && import.meta && (import.meta as any).env) {
+          return ((import.meta as any).env as any)[key] || defaultValue
         }
         // Webpack DefinePlugin注入的环境变量
-        if (typeof process !== 'undefined' && process.env) {
-          return process.env[key] || defaultValue
+        try {
+          const processKey = 'process'
+          const processEnv = (globalThis as any)?.[processKey]?.env
+          if (processEnv) {
+            return processEnv[key] || defaultValue
+          }
+        } catch {
+          // process 不可用
         }
         // 从window全局对象获取
         if (typeof window !== 'undefined' && (window as any).__ENV__) {
@@ -291,11 +309,15 @@ export class CrossPlatformAPI {
     } else if (env.type === EnvironmentType.NODE) {
       // Node.js环境
       try {
-        const usage = process.memoryUsage()
-        return {
-          used: usage.heapUsed,
-          total: usage.heapTotal,
-          limit: usage.external + usage.heapTotal
+        const processKey = 'process'
+        const memoryUsage = (globalThis as any)?.[processKey]?.memoryUsage
+        const usage = typeof memoryUsage === 'function' ? memoryUsage() : null
+        if (usage) {
+          return {
+            used: usage.heapUsed,
+            total: usage.heapTotal,
+            limit: usage.external + usage.heapTotal
+          }
         }
       } catch {
         // 忽略错误

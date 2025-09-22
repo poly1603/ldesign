@@ -1,4 +1,4 @@
-import type { Engine, Plugin, PluginManager } from '../types'
+import type { Engine, Plugin, PluginContext, PluginInfo, PluginManager, PluginStatus } from '../types'
 
 /**
  * 插件管理器实现
@@ -8,7 +8,6 @@ import type { Engine, Plugin, PluginManager } from '../types'
  * - 为每个插件提供上下文（engine/logger/config/events）
  * - 提供依赖图与依赖校验缓存，避免重复计算
  */
-import type { PluginInfo, PluginStatus, PluginContext } from '../types'
 
 export class PluginManagerImpl implements PluginManager {
   readonly name = 'PluginManager'
@@ -36,9 +35,11 @@ export class PluginManagerImpl implements PluginManager {
     // 检查依赖 - 提前验证所有依赖，一次性处理
     const { satisfied, missing } = this.checkDependencies(plugin)
     if (!satisfied) {
-      throw new Error(
-        `Plugin "${plugin.name}" depends on missing plugins: ${missing.join(', ')}`
-      )
+      if (missing.length === 1) {
+        throw new Error(`Plugin "${plugin.name}" depends on "${missing[0]}" which is not registered`)
+      } else {
+        throw new Error(`Plugin "${plugin.name}" depends on missing plugins: ${missing.join(', ')}`)
+      }
     }
 
     try {
@@ -76,7 +77,7 @@ export class PluginManagerImpl implements PluginManager {
       if (index > -1) {
         this.loadOrder.splice(index, 1)
       }
-      
+
       this.logPluginError(plugin.name, error)
       throw error
     }
@@ -257,7 +258,6 @@ export class PluginManagerImpl implements PluginManager {
     }
   }
 
-
   // 获取插件信息
   /**
    * 获取单个插件的元信息摘要。
@@ -356,8 +356,14 @@ export class PluginManagerImpl implements PluginManager {
     this.clearCaches()
   }
 
+  // 清理缓存
+  private clearCaches(): void {
+    // 清理插件相关的缓存
+    // 这里可以添加具体的缓存清理逻辑
+  }
+
   // 新增的辅助方法
-  
+
   /**
    * 抽取创建上下文的逻辑
    */
@@ -369,7 +375,7 @@ export class PluginManagerImpl implements PluginManager {
       events: this.engine!.events,
     }
   }
-  
+
   /**
    * 记录插件错误
    */

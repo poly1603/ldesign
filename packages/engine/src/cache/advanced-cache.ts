@@ -3,7 +3,7 @@
  * 🚀 提供分层缓存、智能预加载、自动更新等高级特性
  */
 
-import type { CacheStorage, CacheItem, CacheOptions } from '../types/cache'
+import type { CacheItem, CacheOptions, CacheStorage } from '../types/cache'
 
 /**
  * 分层缓存配置
