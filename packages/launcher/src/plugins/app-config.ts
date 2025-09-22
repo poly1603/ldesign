@@ -90,7 +90,25 @@ async function loadAppConfig(filePath: string, logger: Logger): Promise<any> {
       try {
         logger.debug('尝试使用 jiti 加载配置')
 
-        const module = jitiLoader(filePath)
+        // 临时抑制 CJS API deprecated 警告
+        const originalEmitWarning = process.emitWarning
+        process.emitWarning = (warning: any, ...args: any[]) => {
+          if (typeof warning === 'string' && (warning.includes('deprecated') || warning.includes('vite-cjs-node-api-deprecated'))) {
+            return
+          }
+          if (typeof warning === 'object' && warning.message && (warning.message.includes('deprecated') || warning.message.includes('vite-cjs-node-api-deprecated'))) {
+            return
+          }
+          return originalEmitWarning.call(process, warning, ...args)
+        }
+
+        let module
+        try {
+          module = jitiLoader(filePath)
+        } finally {
+          // 恢复原始的 emitWarning
+          process.emitWarning = originalEmitWarning
+        }
 
         // 处理不同的导出格式
         if (typeof module === 'function') {

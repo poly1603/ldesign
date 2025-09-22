@@ -94,19 +94,58 @@ export class ConfigManager extends EventEmitter {
       if (filePath.endsWith('.ts')) {
         this.logger.info(`📋 处理 TypeScript 配置文件`)
         try {
-          // 使用 jiti 处理 TypeScript 文件（兼容 ESM）
-          const jitiMod: any = await import('jiti')
-          const jiti = (jitiMod && jitiMod.default) ? jitiMod.default : jitiMod
-          const jitiLoader = jiti(process.cwd(), {
-            cache: false,
-            requireCache: false,
-            interopDefault: true,
-            esmResolve: true
-          })
+          // 临时抑制 CJS API deprecated 警告和相关警告
+          const originalEmitWarning = process.emitWarning
+          const originalConsoleWarn = console.warn
 
-          this.logger.info(`📋 使用 jiti 加载配置文件`)
-          const configModule = jitiLoader(absolutePath)
-          loadedConfig = configModule?.default || configModule
+          process.emitWarning = (warning: any, ...args: any[]) => {
+            const warningStr = typeof warning === 'string' ? warning : warning?.message || ''
+            if (warningStr.includes('deprecated') ||
+                warningStr.includes('vite-cjs-node-api-deprecated') ||
+                warningStr.includes('CJS build of Vite') ||
+                warningStr.includes('Node API is deprecated')) {
+              return
+            }
+            return originalEmitWarning.call(process, warning, ...args)
+          }
+
+          console.warn = (...args: any[]) => {
+            const message = args.join(' ')
+            if (message.includes('deprecated') ||
+                message.includes('vite-cjs-node-api-deprecated') ||
+                message.includes('CJS build of Vite') ||
+                message.includes('Node API is deprecated')) {
+              return
+            }
+            return originalConsoleWarn.apply(console, args)
+          }
+
+          let configModule: any
+          try {
+            // 使用 jiti 处理 TypeScript 文件（兼容 ESM）
+            const jitiMod: any = await import('jiti')
+            const jiti = (jitiMod && jitiMod.default) ? jitiMod.default : jitiMod
+
+            // 优化jiti配置，启用缓存以提升性能
+            const jitiLoader = jiti(process.cwd(), {
+              cache: true,           // ✅ 启用缓存，避免重复编译
+              requireCache: true,    // ✅ 启用require缓存
+              interopDefault: true,
+              esmResolve: true,
+              debug: false           // 禁用debug输出
+            })
+
+            this.logger.info(`📋 使用 jiti 加载配置文件`)
+            const startTime = Date.now()
+            configModule = jitiLoader(absolutePath)
+            const loadTime = Date.now() - startTime
+            this.logger.debug(`📋 jiti 加载耗时: ${loadTime}ms`)
+            loadedConfig = configModule?.default || configModule
+          } finally {
+            // 恢复原始的 emitWarning 和 console.warn
+            process.emitWarning = originalEmitWarning
+            console.warn = originalConsoleWarn
+          }
 
           this.logger.info(`📋 配置模块加载结果:`, {
             hasDefault: !!configModule?.default,

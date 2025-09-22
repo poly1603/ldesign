@@ -328,32 +328,23 @@ export class PreviewCommand implements CliCommandDefinition {
         try {
           if (!qrTarget) throw new Error('empty-url')
 
-          // 优先尝试使用 'qrcode' 的 UTF-8 终端输出
+          // 优先尝试使用 'qrcode' 的终端输出
           let printed = false
           try {
             const qrlib: any = await import('qrcode')
-            const utf8 = await (qrlib?.default || qrlib).toString(qrTarget, {
-              type: 'utf8',
-              margin: 2,
-              color: {
-                dark: '#000000',
-                light: '#FFFFFF'
-              }
+            const qrcode = qrlib?.default || qrlib
+
+            // 使用toString方法生成终端二维码
+            const terminalQR = await qrcode.toString(qrTarget, {
+              type: 'terminal',
+              small: true
             })
-            if (utf8 && typeof utf8 === 'string') {
+
+            if (terminalQR && typeof terminalQR === 'string') {
               logger.info(pc.dim('二维码（扫码在手机上打开）：'))
-              // 为二维码添加白色边框
-              const lines = utf8.split('\n')
-              const maxLength = Math.max(...lines.map(line => line.length))
-              const border = '█'.repeat(maxLength + 4)
-              const borderedQR = [
-                border,
-                border,
-                ...lines.map(line => '██' + line.padEnd(maxLength) + '██'),
-                border,
-                border
-              ].join('\n')
-              console.log('\n' + borderedQR + '\n')
+              console.log()
+              console.log(terminalQR)
+              console.log()
               printed = true
             }
           } catch (e1) {
@@ -371,19 +362,36 @@ export class PreviewCommand implements CliCommandDefinition {
               })
               if (qrOutput) {
                 logger.info(pc.dim('二维码（扫码在手机上打开）：'))
-                // 为qrcode-terminal生成的二维码也添加白色边框
-                const lines = qrOutput.split('\n')
-                const maxLength = Math.max(...lines.map(line => line.length))
-                const border = '█'.repeat(maxLength + 4)
-                const borderedQR = [
-                  border,
-                  border,
-                  ...lines.map(line => '██' + line.padEnd(maxLength) + '██'),
-                  border,
-                  border
-                ].join('\n')
-                console.log('\n' + borderedQR + '\n')
-                printed = true
+
+                // 简化处理qrcode-terminal的输出
+                const lines = qrOutput.split('\n').filter(line => line.trim())
+                if (lines.length > 0) {
+                  // 确保所有行长度一致
+                  const maxWidth = Math.max(...lines.map(line => line.length))
+                  const normalizedLines = lines.map(line => {
+                    const padding = ' '.repeat(Math.max(0, maxWidth - line.length))
+                    return line + padding
+                  })
+
+                  // 创建简洁的边框效果
+                  const borderWidth = maxWidth + 4
+                  const topBorder = '┌' + '─'.repeat(borderWidth - 2) + '┐'
+                  const bottomBorder = '└' + '─'.repeat(borderWidth - 2) + '┘'
+                  const emptyLine = '│' + ' '.repeat(borderWidth - 2) + '│'
+
+                  const borderedQR = [
+                    '',
+                    topBorder,
+                    emptyLine,
+                    ...normalizedLines.map(line => '│ ' + line + ' │'),
+                    emptyLine,
+                    bottomBorder,
+                    ''
+                  ].join('\n')
+
+                  console.log(borderedQR)
+                  printed = true
+                }
               }
             } catch (e2) {
               logger.debug('尝试使用 qrcode-terminal 生成终端二维码失败: ' + (e2 as Error).message)

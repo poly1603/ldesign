@@ -1563,13 +1563,19 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       // 优先使用 qrcode 库
       try {
         const qrlib: any = await import('qrcode')
-        const utf8 = await (qrlib?.default || qrlib).toString(url, {
-          type: 'utf8',
-          margin: 2,
-          width: 60
+        const qrcode = qrlib?.default || qrlib
+
+        // 使用toString方法生成终端二维码
+        const terminalQR = await qrcode.toString(url, {
+          type: 'terminal',
+          small: true
         })
-        if (utf8 && typeof utf8 === 'string') {
-          this.printQRCodeWithBorder(utf8)
+
+        if (terminalQR && typeof terminalQR === 'string') {
+          this.logger.info('二维码（扫码在手机上打开）：')
+          console.log()
+          console.log(terminalQR)
+          console.log()
           return
         }
       } catch (e1) {
@@ -1609,27 +1615,27 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       return line + padding
     })
 
-    const borderWidth = maxWidth + 4
-
     this.logger.info('二维码（扫码在手机上打开）：')
     console.log()
 
-    // 上边框
-    console.log('█'.repeat(borderWidth))
+    // 创建简洁的边框效果
+    const borderWidth = maxWidth + 4
+    const topBorder = '┌' + '─'.repeat(borderWidth - 2) + '┐'
+    const bottomBorder = '└' + '─'.repeat(borderWidth - 2) + '┘'
+    const emptyLine = '│' + ' '.repeat(borderWidth - 2) + '│'
 
-    // 上内边框
-    console.log('█' + ' '.repeat(borderWidth - 2) + '█')
+    // 上边框
+    console.log(topBorder)
+    console.log(emptyLine)
 
     // 二维码内容
     normalizedLines.forEach(line => {
-      console.log('█ ' + line + ' █')
+      console.log('│ ' + line + ' │')
     })
 
-    // 下内边框
-    console.log('█' + ' '.repeat(borderWidth - 2) + '█')
-
     // 下边框
-    console.log('█'.repeat(borderWidth))
+    console.log(emptyLine)
+    console.log(bottomBorder)
     console.log()
   }
 
