@@ -138,7 +138,25 @@ export default defineConfig({
     sourcemap: true,
     minify: true
   },
-  
+
+  // 路径别名配置（支持阶段配置）
+  resolve: {
+    alias: [
+      // 基本别名（@ -> src, ~ -> 项目根目录）
+      { find: '@', replacement: './src' },
+      { find: '~', replacement: './' },
+
+      // 只在开发时生效的别名
+      { find: '@mock', replacement: './src/mock', stages: ['dev'] },
+
+      // 只在构建时生效的别名
+      { find: '@prod', replacement: './src/production', stages: ['build'] },
+
+      // 在所有阶段生效的别名
+      { find: '@shared', replacement: './src/shared', stages: ['dev', 'build', 'preview'] }
+    ]
+  },
+
   launcher: {
     autoRestart: true,
     hooks: {

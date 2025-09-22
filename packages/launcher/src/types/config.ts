@@ -9,12 +9,13 @@
 
 import type { UserConfig, Plugin } from 'vite'
 import type { LogLevel, Mode, LifecycleHook, ValidationResult, FilePath, Host, Port } from './common'
+import type { AliasEntry } from '../utils/aliases'
 
 /**
  * ViteLauncher 扩展配置接口
  * 扩展 Vite 原生配置，添加 launcher 特有的配置选项
  */
-export interface ViteLauncherConfig extends UserConfig {
+export interface ViteLauncherConfig extends Omit<UserConfig, 'resolve'> {
   /** Launcher 特有的配置选项 */
   launcher?: LauncherConfigOptions
 
@@ -26,6 +27,11 @@ export interface ViteLauncherConfig extends UserConfig {
 
   /** 开发工具配置 */
   tools?: ToolsConfig
+
+  /** 扩展的 resolve 配置，支持阶段化别名 */
+  resolve?: UserConfig['resolve'] & {
+    alias?: AliasEntry[]
+  }
 }
 
 /**
@@ -1011,9 +1017,12 @@ export interface ToolsConfig {
 
 /**
  * 路径别名配置接口
- * 注意：基本别名（@ -> src）默认启用，无需配置
- * 用户可以在 resolve.alias 中自由配置其他别名
+ * 注意：基本别名（@ -> src, ~ -> 项目根目录）默认启用，无需配置
+ * 用户可以在 resolve.alias 中自由配置其他别名，支持按阶段配置
  */
 export interface AliasOptions {
-  // 保留接口以便将来扩展，目前基本别名默认启用
+  /** 是否启用内置别名，默认启用 */
+  enabled?: boolean
+  /** 内置别名的生效阶段，默认在所有阶段生效 */
+  stages?: ('dev' | 'build' | 'preview')[]
 }

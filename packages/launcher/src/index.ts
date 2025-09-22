@@ -38,8 +38,19 @@ export * from './plugins/presets'
 // 导出开发工具插件
 export * from './plugins'
 
-// 导出别名类型定义
-export type { AliasEntry } from './utils/aliases'
+// 导出别名相关类型定义和工具函数
+export type { AliasEntry, BuildStage } from './utils/aliases'
+export {
+  createAlias,
+  createBasicAliases,
+  createDevAlias,
+  createBuildAlias,
+  createUniversalAlias
+} from './utils/aliases'
+
+// 导出别名管理器
+export { AliasManager, createAliasManager } from './core/AliasManager'
+export type { BuildStage as AliasStage } from './core/AliasManager'
 
 // 导出 AI 优化器
 export { AIOptimizer, createAIOptimizer } from './ai/optimizer'

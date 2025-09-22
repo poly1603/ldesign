@@ -27,7 +27,7 @@ import { SmartPluginManager } from './SmartPluginManager'
 import { createConfigInjectionPlugin, getClientConfigUtils } from '../plugins/config-injection'
 import { environmentManager } from '../utils/env'
 import { createSSLManager, type SSLConfig } from '../utils/ssl'
-// 移除 AliasManager 依赖，使用新的别名系统
+import { AliasManager } from './AliasManager'
 import { getPreferredLocalIP } from '../utils/network.js'
 
 // 导入类型定义
@@ -174,8 +174,8 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
 
     // 只在dev模式下启用文件监听，build和preview模式不需要监听
     const shouldWatch = (this.config.launcher?.autoRestart || false) &&
-                       (this.environment === 'development' ||
-                        (process.env.NODE_ENV === 'development' && this.environment !== 'production'))
+      (this.environment === 'development' ||
+        (process.env.NODE_ENV === 'development' && this.environment !== 'production'))
 
     this.configManager = new ConfigManager({
       configFile,
@@ -1343,39 +1343,50 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       })
     }
 
-    // 默认启用内置别名
     // 确保 resolve 配置存在
     if (!config.resolve) {
       config.resolve = {}
     }
-    // 确保 alias 是数组格式
-    if (!config.resolve.alias) {
-      config.resolve.alias = []
-    } else if (!Array.isArray(config.resolve.alias)) {
-      // 如果 alias 不是数组，保持原有格式（Vite 支持对象格式）
-      // 但为了统一处理，我们不做转换
-    }
 
-    // 添加基本的内置别名 @ -> src（如果还没有）
-    const hasAtAlias = Array.isArray(config.resolve.alias) &&
-      config.resolve.alias.some(alias =>
-        (typeof alias === 'object' && alias.find === '@') ||
-        (typeof alias === 'string' && alias === '@')
-      )
-
-    if (!hasAtAlias) {
-      const srcPath = path.resolve(this.cwd, 'src')
+    // 处理用户配置的别名
+    let userAliases: any[] = []
+    if (config.resolve.alias) {
       if (Array.isArray(config.resolve.alias)) {
-        config.resolve.alias.unshift({
-          find: '@',
-          replacement: srcPath
-        })
+        userAliases = [...config.resolve.alias]
+      } else {
+        // 如果是对象格式，转换为数组格式以便统一处理
+        userAliases = Object.entries(config.resolve.alias).map(([find, replacement]) => ({
+          find,
+          replacement
+        }))
       }
     }
+
+    // 创建 AliasManager 实例
+    const aliasManager = new AliasManager(this.cwd)
+
+    // 生成内置别名（@ -> src, ~ -> 项目根目录）
+    const builtinAliases = aliasManager.generateBuiltinAliases(['dev', 'build', 'preview'])
+
+    // 合并内置别名和用户别名
+    const allAliases = [...builtinAliases, ...userAliases]
+
+    // 根据当前阶段过滤别名
+    const filteredAliases = aliasManager.filterAliasesByStage(allAliases, stage)
+
+    // 应用过滤后的别名配置
+    config.resolve.alias = filteredAliases
 
     // 调试：输出最终的别名配置
     const finalAliases = config.resolve?.alias || []
     this.logger.info(`✅ 别名配置已处理 (${stage})，最终别名数量: ${Array.isArray(finalAliases) ? finalAliases.length : 0}`)
+
+    if (this.logger.getLevel() === 'debug') {
+      this.logger.debug('最终别名配置', {
+        stage,
+        aliases: finalAliases
+      })
+    }
 
     return config
   }
