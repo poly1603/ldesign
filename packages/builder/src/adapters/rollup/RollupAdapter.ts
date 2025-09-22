@@ -1503,14 +1503,46 @@ export class RollupAdapter implements IBundlerAdapter {
   /**
    * 统一的 onwarn 处理：过滤不必要的告警
    */
-  private getOnWarn(_config?: any) {
+  private getOnWarn(config?: any) {
+    // 如果配置了 logLevel 为 silent，完全抑制所有警告
+    if (config?.logLevel === 'silent') {
+      return () => {
+        // 完全静默，不输出任何警告
+      }
+    }
+
+    // 如果用户配置了自定义的 onwarn 处理器，优先使用用户的配置
+    if (config?.build?.rollupOptions?.onwarn) {
+      return config.build.rollupOptions.onwarn
+    }
+
     const ignoredCodes = new Set([
       'NAMESPACE_CONFLICT',
       'MIXED_EXPORTS',
+      'EMPTY_BUNDLE',           // 忽略空chunk警告
+      'FILE_NAME_CONFLICT',     // 忽略文件名冲突警告
+      'MISSING_GLOBAL_NAME',    // 忽略外部模块globals警告
+      'UNRESOLVED_IMPORT',      // 忽略未解析的导入警告
     ])
+
     return (warning: any, defaultHandler: (w: any) => void) => {
       // 过滤常见非致命告警
       if (ignoredCodes.has(warning.code)) return
+
+      // 过滤 CSS 文件覆盖警告
+      if (warning.code === 'FILE_NAME_CONFLICT' && warning.message?.includes('.css.map')) {
+        return
+      }
+
+      // 过滤 Vue 组件文件的类型声明警告
+      if (warning.code === 'UNRESOLVED_IMPORT' && warning.source?.endsWith('.vue')) {
+        return
+      }
+
+      // 过滤 Node.js 内置模块警告
+      if (warning.code === 'UNRESOLVED_IMPORT' && warning.source?.startsWith('node:')) {
+        return
+      }
 
       // 过滤 typescript 插件的 TS5096 等诊断噪音
       if (warning.code === 'PLUGIN_WARNING' && warning.plugin === 'typescript') {

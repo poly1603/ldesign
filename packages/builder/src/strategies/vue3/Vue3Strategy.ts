@@ -134,7 +134,7 @@ export class Vue3Strategy implements ILibraryStrategy {
 
     // DTS 文件复制插件（如果存在 types 目录）
     if (config.dts !== false) {
-      plugins.push(this.createDtsCopyPlugin())
+      plugins.push(this.createDtsCopyPlugin(config))
     }
 
     // 代码压缩插件（生产模式）
@@ -359,7 +359,7 @@ export class Vue3Strategy implements ILibraryStrategy {
     }
 
     // 添加 DTS 复制插件
-    plugins.push(this.createDtsCopyPlugin())
+    plugins.push(this.createDtsCopyPlugin(config))
 
     return plugins
   }
@@ -507,23 +507,35 @@ export class Vue3Strategy implements ILibraryStrategy {
   /**
    * 创建 DTS 文件生成插件
    */
-  private createDtsCopyPlugin(): any {
+  private createDtsCopyPlugin(config?: BuilderConfig): any {
     return {
       name: 'generate-dts-files',
       writeBundle: async (options: any) => {
-        console.log('🔍 DTS 插件被调用，options:', options)
+        // 检查是否为 silent 模式，如果是则不输出调试信息
+        const isSilent = config?.logLevel === 'silent'
+
+        if (!isSilent) {
+          console.log('🔍 DTS 插件被调用，options:', options)
+        }
+
         try {
           const outputDir = options.dir
           if (!outputDir) {
-            console.log('⚠️ 输出目录为空')
+            if (!isSilent) {
+              console.log('⚠️ 输出目录为空')
+            }
             return
           }
 
-          console.log('🔧 开始生成 TypeScript 声明文件')
-          await this.generateDtsFiles(outputDir)
+          if (!isSilent) {
+            console.log('🔧 开始生成 TypeScript 声明文件')
+          }
+          await this.generateDtsFiles(outputDir, config)
 
         } catch (error) {
-          console.warn('⚠️ 处理 DTS 文件失败:', error instanceof Error ? error.message : String(error))
+          if (!isSilent) {
+            console.warn('⚠️ 处理 DTS 文件失败:', error instanceof Error ? error.message : String(error))
+          }
         }
       }
     }
@@ -532,7 +544,9 @@ export class Vue3Strategy implements ILibraryStrategy {
   /**
    * 使用 TypeScript 编译器生成 DTS 文件
    */
-  private async generateDtsFiles(outputDir: string): Promise<void> {
+  private async generateDtsFiles(outputDir: string, config?: BuilderConfig): Promise<void> {
+    const isSilent = config?.logLevel === 'silent'
+
     try {
       const fs = await import('fs')
       const path = await import('path')
@@ -542,7 +556,9 @@ export class Vue3Strategy implements ILibraryStrategy {
       try {
         ts = await import('typescript')
       } catch (error) {
-        console.warn('⚠️ 无法导入 TypeScript，跳过 DTS 生成')
+        if (!isSilent) {
+          console.warn('⚠️ 无法导入 TypeScript，跳过 DTS 生成')
+        }
         return
       }
 
@@ -552,7 +568,9 @@ export class Vue3Strategy implements ILibraryStrategy {
 
       // 检查 src 目录和 tsconfig.json 是否存在
       if (!fs.existsSync(srcDir)) {
-        console.log('⚠️ src 目录不存在，跳过 DTS 生成')
+        if (!isSilent) {
+          console.log('⚠️ src 目录不存在，跳过 DTS 生成')
+        }
         return
       }
 
@@ -563,7 +581,9 @@ export class Vue3Strategy implements ILibraryStrategy {
         const configFile = ts.parseConfigFileTextToJson(tsconfigPath, tsconfigContent)
 
         if (configFile.error) {
-          console.warn('⚠️ 解析 tsconfig.json 失败:', configFile.error.messageText)
+          if (!isSilent) {
+            console.warn('⚠️ 解析 tsconfig.json 失败:', configFile.error.messageText)
+          }
           parsedConfig = { compilerOptions: {} }
         } else {
           parsedConfig = ts.parseJsonConfigFileContent(
@@ -573,7 +593,9 @@ export class Vue3Strategy implements ILibraryStrategy {
           )
         }
       } else {
-        console.log('⚠️ tsconfig.json 不存在，使用默认配置')
+        if (!isSilent) {
+          console.log('⚠️ tsconfig.json 不存在，使用默认配置')
+        }
         parsedConfig = {
           options: {},
           fileNames: [],
@@ -590,11 +612,15 @@ export class Vue3Strategy implements ILibraryStrategy {
       })
 
       if (tsFiles.length === 0) {
-        console.log('⚠️ 没有找到 TypeScript 文件')
+        if (!isSilent) {
+          console.log('⚠️ 没有找到 TypeScript 文件')
+        }
         return
       }
 
-      console.log(`🔧 开始生成 ${tsFiles.length} 个文件的 TypeScript 声明文件`)
+      if (!isSilent) {
+        console.log(`🔧 开始生成 ${tsFiles.length} 个文件的 TypeScript 声明文件`)
+      }
 
       // 创建编译选项
       const compilerOptions: any = {
@@ -626,7 +652,7 @@ export class Vue3Strategy implements ILibraryStrategy {
       // 检查编译错误
       const allDiagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics)
 
-      if (allDiagnostics.length > 0) {
+      if (allDiagnostics.length > 0 && !isSilent) {
         console.warn('⚠️ TypeScript 编译警告:')
         allDiagnostics.forEach((diagnostic: any) => {
           if (diagnostic.file) {
@@ -640,18 +666,24 @@ export class Vue3Strategy implements ILibraryStrategy {
       }
 
       if (emitResult.emitSkipped) {
-        console.warn('⚠️ TypeScript 声明文件生成失败')
+        if (!isSilent) {
+          console.warn('⚠️ TypeScript 声明文件生成失败')
+        }
       } else {
         // 统计生成的 .d.ts 文件数量
         const generatedDtsFiles = await glob.glob('**/*.d.ts', {
           cwd: outputDir,
           absolute: false
         })
-        console.log(`✅ TypeScript 声明文件生成成功，共生成 ${generatedDtsFiles.length} 个 .d.ts 文件`)
+        if (!isSilent) {
+          console.log(`✅ TypeScript 声明文件生成成功，共生成 ${generatedDtsFiles.length} 个 .d.ts 文件`)
+        }
       }
 
     } catch (error) {
-      console.warn('⚠️ 生成 TypeScript 声明文件失败:', error instanceof Error ? error.message : String(error))
+      if (!isSilent) {
+        console.warn('⚠️ 生成 TypeScript 声明文件失败:', error instanceof Error ? error.message : String(error))
+      }
     }
   }
 
