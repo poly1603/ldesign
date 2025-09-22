@@ -61,27 +61,69 @@ export interface PasswordAnalysis {
 export class PasswordStrengthChecker {
   // 常见密码列表（简化版）
   private readonly commonPasswords = new Set([
-    'password', '123456', '123456789', 'qwerty', 'abc123',
-    'password123', 'admin', 'letmein', 'welcome', 'monkey',
-    '1234567890', 'qwertyuiop', 'abc123', 'Password1',
-    'password1', '123123', 'welcome123', 'admin123',
-    'root', 'toor', 'pass', 'pass123', 'pass1234',
-    'password1234', 'qwerty123', 'qwerty1234', 'qazwsx',
-    'password!', 'p@ssword', 'p@ssw0rd', 'Password123',
-    'admin@123', 'Admin@123', 'administrator', 'Administrator',
+    'password',
+    '123456',
+    '123456789',
+    'qwerty',
+    'abc123',
+    'password123',
+    'admin',
+    'letmein',
+    'welcome',
+    'monkey',
+    '1234567890',
+    'qwertyuiop',
+    'abc123',
+    'Password1',
+    'password1',
+    '123123',
+    'welcome123',
+    'admin123',
+    'root',
+    'toor',
+    'pass',
+    'pass123',
+    'pass1234',
+    'password1234',
+    'qwerty123',
+    'qwerty1234',
+    'qazwsx',
+    'password!',
+    'p@ssword',
+    'p@ssw0rd',
+    'Password123',
+    'admin@123',
+    'Admin@123',
+    'administrator',
+    'Administrator',
   ])
 
   // 键盘模式
   private readonly keyboardPatterns = [
-    'qwerty', 'asdfgh', 'zxcvbn', 'qwertyuiop',
-    'asdfghjkl', 'zxcvbnm', '123456', '987654',
-    'qazwsx', 'qweasd', '!@#$%^', '1qaz2wsx',
+    'qwerty',
+    'asdfgh',
+    'zxcvbn',
+    'qwertyuiop',
+    'asdfghjkl',
+    'zxcvbnm',
+    '123456',
+    '987654',
+    'qazwsx',
+    'qweasd',
+    '!@#$%^',
+    '1qaz2wsx',
   ]
 
   // 常见序列
   private readonly sequences = [
-    'abcdef', 'fedcba', '123456', '654321',
-    'zyxwvu', 'uvwxyz', '012345', '543210',
+    'abcdef',
+    'fedcba',
+    '123456',
+    '654321',
+    'zyxwvu',
+    'uvwxyz',
+    '012345',
+    '543210',
   ]
 
   /**
@@ -120,9 +162,9 @@ export class PasswordStrengthChecker {
     return {
       lowercase: /[a-z]/.test(password),
       uppercase: /[A-Z]/.test(password),
-      numbers: /[0-9]/.test(password),
-      symbols: /[^a-zA-Z0-9]/.test(password),
-      unicode: /[^\x00-\x7F]/.test(password),
+      numbers: /\d/.test(password),
+      symbols: /[^a-z0-9]/i.test(password),
+      unicode: /[^\u0020-\u007E]/.test(password),
     }
   }
 
@@ -139,11 +181,16 @@ export class PasswordStrengthChecker {
    */
   private getCharsetSize(password: string): number {
     let size = 0
-    if (/[a-z]/.test(password)) size += 26
-    if (/[A-Z]/.test(password)) size += 26
-    if (/[0-9]/.test(password)) size += 10
-    if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) size += 32
-    if (/[^\x00-\x7F]/.test(password)) size += 128 // Unicode
+    if (/[a-z]/.test(password))
+      size += 26
+    if (/[A-Z]/.test(password))
+      size += 26
+    if (/\d/.test(password))
+      size += 10
+    if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password))
+      size += 32
+    if (/[^\u0020-\u007E]/.test(password))
+      size += 128 // Unicode
     return size || 1
   }
 
@@ -161,25 +208,36 @@ export class PasswordStrengthChecker {
     score = Math.min(entropy * 1.5, 50)
 
     // 长度奖励
-    if (password.length >= 8) score += 10
-    if (password.length >= 12) score += 10
-    if (password.length >= 16) score += 10
-    if (password.length >= 20) score += 10
+    if (password.length >= 8)
+      score += 10
+    if (password.length >= 12)
+      score += 10
+    if (password.length >= 16)
+      score += 10
+    if (password.length >= 20)
+      score += 10
 
     // 字符类型奖励
     const typeCount = Object.values(characterTypes).filter(Boolean).length
     score += typeCount * 5
 
     // 惩罚
-    if (this.isCommonPassword(password)) score -= 50
-    if (this.hasRepeatingCharacters(password)) score -= 10
-    if (this.hasSequence(password)) score -= 15
-    if (this.hasKeyboardPattern(password)) score -= 15
-    if (password.length < 8) score -= 20
+    if (this.isCommonPassword(password))
+      score -= 50
+    if (this.hasRepeatingCharacters(password))
+      score -= 10
+    if (this.hasSequence(password))
+      score -= 15
+    if (this.hasKeyboardPattern(password))
+      score -= 15
+    if (password.length < 8)
+      score -= 20
 
     // 特殊字符奖励
-    if (characterTypes.symbols) score += 10
-    if (characterTypes.unicode) score += 5
+    if (characterTypes.symbols)
+      score += 10
+    if (characterTypes.unicode)
+      score += 5
 
     return Math.max(0, Math.min(100, score))
   }
@@ -188,11 +246,16 @@ export class PasswordStrengthChecker {
    * 获取强度级别
    */
   private getStrengthLevel(score: number): PasswordStrength {
-    if (score < 20) return PasswordStrength.VeryWeak
-    if (score < 40) return PasswordStrength.Weak
-    if (score < 60) return PasswordStrength.Fair
-    if (score < 75) return PasswordStrength.Good
-    if (score < 90) return PasswordStrength.Strong
+    if (score < 20)
+      return PasswordStrength.VeryWeak
+    if (score < 40)
+      return PasswordStrength.Weak
+    if (score < 60)
+      return PasswordStrength.Fair
+    if (score < 75)
+      return PasswordStrength.Good
+    if (score < 90)
+      return PasswordStrength.Strong
     return PasswordStrength.VeryStrong
   }
 
@@ -290,7 +353,7 @@ export class PasswordStrengthChecker {
     const offlineAttacksPerSecond = 1e9 // 离线攻击（10亿次/秒）
     const offlineSlowHashAttacksPerSecond = 1e4 // 使用慢哈希的离线攻击
 
-    const possibleCombinations = Math.pow(2, entropy)
+    const possibleCombinations = 2 ** entropy
     const averageAttempts = possibleCombinations / 2
 
     const onlineSeconds = averageAttempts / onlineAttacksPerSecond
@@ -308,18 +371,28 @@ export class PasswordStrengthChecker {
    * 格式化时间
    */
   private formatTime(seconds: number): string {
-    if (seconds < 1) return '立即'
-    if (seconds < 60) return `${Math.round(seconds)}秒`
-    if (seconds < 3600) return `${Math.round(seconds / 60)}分钟`
-    if (seconds < 86400) return `${Math.round(seconds / 3600)}小时`
-    if (seconds < 2592000) return `${Math.round(seconds / 86400)}天`
-    if (seconds < 31536000) return `${Math.round(seconds / 2592000)}个月`
-    if (seconds < 3153600000) return `${Math.round(seconds / 31536000)}年`
-    
+    if (seconds < 1)
+      return '立即'
+    if (seconds < 60)
+      return `${Math.round(seconds)}秒`
+    if (seconds < 3600)
+      return `${Math.round(seconds / 60)}分钟`
+    if (seconds < 86400)
+      return `${Math.round(seconds / 3600)}小时`
+    if (seconds < 2592000)
+      return `${Math.round(seconds / 86400)}天`
+    if (seconds < 31536000)
+      return `${Math.round(seconds / 2592000)}个月`
+    if (seconds < 3153600000)
+      return `${Math.round(seconds / 31536000)}年`
+
     const years = seconds / 31536000
-    if (years < 1000) return `${Math.round(years)}年`
-    if (years < 1000000) return `${Math.round(years / 1000)}千年`
-    if (years < 1000000000) return `${Math.round(years / 1000000)}百万年`
+    if (years < 1000)
+      return `${Math.round(years)}年`
+    if (years < 1000000)
+      return `${Math.round(years / 1000)}千年`
+    if (years < 1000000000)
+      return `${Math.round(years / 1000000)}百万年`
     return '数十亿年以上'
   }
 
@@ -359,7 +432,7 @@ export class PasswordStrengthChecker {
   private containsPersonalInfo(password: string): boolean {
     const commonPersonalInfo = [
       /\d{4}/, // 年份
-      /\d{2}[\/-]\d{2}/, // 日期
+      /\d{2}[/-]\d{2}/, // 日期
       /[a-z]+\d{2,4}/, // 名字+数字
     ]
     return commonPersonalInfo.some(pattern => pattern.test(password.toLowerCase()))
@@ -407,10 +480,14 @@ export class PasswordStrengthChecker {
 
     // 确保至少包含每种类型的字符
     const requiredChars: string[] = []
-    if (opts.includeLowercase) requiredChars.push(this.getRandomChar('abcdefghijklmnopqrstuvwxyz'))
-    if (opts.includeUppercase) requiredChars.push(this.getRandomChar('ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
-    if (opts.includeNumbers) requiredChars.push(this.getRandomChar('0123456789'))
-    if (opts.includeSymbols) requiredChars.push(this.getRandomChar('!@#$%^&*()_+-='))
+    if (opts.includeLowercase)
+      requiredChars.push(this.getRandomChar('abcdefghijklmnopqrstuvwxyz'))
+    if (opts.includeUppercase)
+      requiredChars.push(this.getRandomChar('ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
+    if (opts.includeNumbers)
+      requiredChars.push(this.getRandomChar('0123456789'))
+    if (opts.includeSymbols)
+      requiredChars.push(this.getRandomChar('!@#$%^&*()_+-='))
 
     // 生成剩余字符
     for (let i = requiredChars.length; i < opts.length; i++) {
@@ -453,13 +530,62 @@ export class PasswordStrengthChecker {
 
     // 简化的单词列表
     const words = [
-      'time', 'person', 'year', 'way', 'day', 'thing', 'man', 'world',
-      'life', 'hand', 'part', 'child', 'eye', 'woman', 'place', 'work',
-      'week', 'case', 'point', 'company', 'number', 'group', 'problem', 'fact',
-      'blue', 'green', 'red', 'yellow', 'orange', 'purple', 'black', 'white',
-      'happy', 'sad', 'angry', 'calm', 'brave', 'clever', 'kind', 'strong',
-      'run', 'jump', 'walk', 'talk', 'think', 'know', 'want', 'see',
-      'ocean', 'mountain', 'river', 'forest', 'desert', 'island', 'valley', 'lake',
+      'time',
+      'person',
+      'year',
+      'way',
+      'day',
+      'thing',
+      'man',
+      'world',
+      'life',
+      'hand',
+      'part',
+      'child',
+      'eye',
+      'woman',
+      'place',
+      'work',
+      'week',
+      'case',
+      'point',
+      'company',
+      'number',
+      'group',
+      'problem',
+      'fact',
+      'blue',
+      'green',
+      'red',
+      'yellow',
+      'orange',
+      'purple',
+      'black',
+      'white',
+      'happy',
+      'sad',
+      'angry',
+      'calm',
+      'brave',
+      'clever',
+      'kind',
+      'strong',
+      'run',
+      'jump',
+      'walk',
+      'talk',
+      'think',
+      'know',
+      'want',
+      'see',
+      'ocean',
+      'mountain',
+      'river',
+      'forest',
+      'desert',
+      'island',
+      'valley',
+      'lake',
     ]
 
     const selectedWords: string[] = []
@@ -472,7 +598,7 @@ export class PasswordStrengthChecker {
     }
 
     let passphrase = selectedWords.join(opts.separator)
-    
+
     if (opts.includeNumbers) {
       passphrase += opts.separator + Math.floor(Math.random() * 10000)
     }

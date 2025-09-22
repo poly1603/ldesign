@@ -1,6 +1,6 @@
 import type { HashAlgorithm, HashOptions } from '../../../types'
 import { computed, type Ref, ref } from 'vue'
-import { hash, hmac } from '../../../core'
+import { hash, hmacInstance as hmac } from '../../../core'
 
 /**
  * 哈希状态接口

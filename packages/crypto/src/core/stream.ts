@@ -3,10 +3,9 @@
  * 支持大文件和流数据的加密处理，减少内存占用
  */
 
-import type { EncryptResult, DecryptResult, AESOptions } from '../types'
+import type { AESOptions } from '../types'
 import { aes } from '../algorithms'
-import { RandomUtils, ErrorUtils } from '../utils'
-import CryptoJS from 'crypto-js'
+import { RandomUtils } from '../utils'
 
 /**
  * 流式加密选项
@@ -63,24 +62,24 @@ export class StreamCipher {
     key: string,
     options: StreamOptions = {},
   ): Promise<{
-    stream: ReadableStream<Uint8Array>
-    metadata: {
-      iv: string
-      algorithm: string
-      chunkSize: number
-    }
-  }> {
+      stream: ReadableStream<Uint8Array>
+      metadata: {
+        iv: string
+        algorithm: string
+        chunkSize: number
+      }
+    }> {
     const opts = { ...this.defaultOptions, ...options }
     const iv = RandomUtils.generateIV(16)
-    
+
     // 如果输入是字符串，转换为流
-    const inputStream = typeof input === 'string' 
+    const inputStream = typeof input === 'string'
       ? new ReadableStream({
-          start(controller) {
-            controller.enqueue(new TextEncoder().encode(input))
-            controller.close()
-          }
-        })
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(input))
+          controller.close()
+        },
+      })
       : input
 
     // 创建转换流
@@ -89,10 +88,11 @@ export class StreamCipher {
         try {
           const encrypted = await encryptChunk(chunk, key, iv, opts.algorithm)
           controller.enqueue(encrypted)
-        } catch (error) {
+        }
+        catch (error) {
           controller.error(error)
         }
-      }
+      },
     })
 
     // 连接流
@@ -104,7 +104,7 @@ export class StreamCipher {
         iv,
         algorithm: opts.algorithm,
         chunkSize: opts.chunkSize,
-      }
+      },
     }
   }
 
@@ -125,10 +125,11 @@ export class StreamCipher {
         try {
           const decrypted = await decryptChunk(chunk, key, iv, opts.algorithm)
           controller.enqueue(decrypted)
-        } catch (error) {
+        }
+        catch (error) {
           controller.error(error)
         }
-      }
+      },
     })
 
     return input.pipeThrough(transformStream)
@@ -142,70 +143,63 @@ export class StreamCipher {
     key: string,
     options: StreamOptions = {},
   ): Promise<{
-    data: ArrayBuffer
-    metadata: {
-      iv: string
-      algorithm: string
-      originalSize: number
-    }
-  }> {
+      data: ArrayBuffer
+      metadata: {
+        iv: string
+        algorithm: string
+        originalSize: number
+      }
+    }> {
     const opts = { ...this.defaultOptions, ...options }
-    const startTime = performance.now()
-    
+    const _startTime = performance.now()
+
     // 准备数据
     const uint8Data = data instanceof ArrayBuffer ? new Uint8Array(data) : data
     const totalSize = uint8Data.length
-    const chunks: Uint8Array[] = []
+    const encryptedChunks: string[] = []
     const iv = RandomUtils.generateIV(16)
-    
+
     // 分块处理
     let offset = 0
     let processedBytes = 0
-    
+
     while (offset < totalSize) {
       const chunkSize = Math.min(opts.chunkSize, totalSize - offset)
       const chunk = uint8Data.slice(offset, offset + chunkSize)
-      
+
       // 加密块
-      const encryptedChunk = await this.processChunk(
+      const encryptedChunk = await this.processChunkEncrypt(
         chunk,
         key,
         iv,
         opts.algorithm,
-        'encrypt'
       )
-      
-      chunks.push(encryptedChunk)
-      
+
+      encryptedChunks.push(encryptedChunk)
+
       // 更新进度
       processedBytes += chunkSize
       offset += chunkSize
-      
+
       if (opts.onProgress) {
         opts.onProgress(processedBytes / totalSize)
       }
     }
-    
-    // 合并结果
-    const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0)
-    const result = new Uint8Array(totalLength)
-    let resultOffset = 0
-    
-    for (const chunk of chunks) {
-      result.set(chunk, resultOffset)
-      resultOffset += chunk.length
-    }
-    
-    const endTime = performance.now()
-    console.log(`Encrypted ${totalSize} bytes in ${endTime - startTime}ms`)
-    
+
+    // 合并结果 - 将所有加密块连接成一个字符串，用分隔符分隔
+    const combinedEncrypted = encryptedChunks.join('|')
+    const result = new TextEncoder().encode(combinedEncrypted)
+
+    const _endTime = performance.now()
+    // console.log(`Encrypted ${totalSize} bytes in ${endTime - startTime}ms`)
+
     return {
       data: result.buffer,
       metadata: {
         iv,
         algorithm: opts.algorithm,
         originalSize: totalSize,
-      }
+      },
     }
   }
 
@@ -219,85 +213,90 @@ export class StreamCipher {
     options: StreamOptions = {},
   ): Promise<ArrayBuffer> {
     const opts = { ...this.defaultOptions, ...options }
-    const startTime = performance.now()
-    
-    // 准备数据
-    const uint8Data = encryptedData instanceof ArrayBuffer 
-      ? new Uint8Array(encryptedData) 
+    const _startTime = performance.now()
+
+    // 准备数据 - 将加密数据转换为字符串并分割
+    const uint8Data = encryptedData instanceof ArrayBuffer
+      ? new Uint8Array(encryptedData)
       : encryptedData
-    const totalSize = uint8Data.length
-    const chunks: Uint8Array[] = []
-    
+    const combinedEncrypted = new TextDecoder().decode(uint8Data)
+    const encryptedChunks = combinedEncrypted.split('|')
+    const decryptedChunks: Uint8Array[] = []
+
     // 分块处理
-    let offset = 0
-    let processedBytes = 0
-    
-    while (offset < totalSize) {
-      const chunkSize = Math.min(opts.chunkSize, totalSize - offset)
-      const chunk = uint8Data.slice(offset, offset + chunkSize)
-      
+    let processedChunks = 0
+
+    for (const encryptedChunk of encryptedChunks) {
+      if (encryptedChunk.trim() === '') continue
+
       // 解密块
-      const decryptedChunk = await this.processChunk(
-        chunk,
+      const decryptedChunk = await this.processChunkDecrypt(
+        encryptedChunk,
         key,
         iv,
         opts.algorithm,
-        'decrypt'
       )
-      
-      chunks.push(decryptedChunk)
-      
+
+      decryptedChunks.push(decryptedChunk)
+
       // 更新进度
-      processedBytes += chunkSize
-      offset += chunkSize
-      
+      processedChunks++
       if (opts.onProgress) {
-        opts.onProgress(processedBytes / totalSize)
+        opts.onProgress(processedChunks / encryptedChunks.length)
       }
     }
-    
+
     // 合并结果
-    const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0)
+    const totalLength = decryptedChunks.reduce((sum, chunk) => sum + chunk.length, 0)
     const result = new Uint8Array(totalLength)
     let resultOffset = 0
-    
-    for (const chunk of chunks) {
+
+    for (const chunk of decryptedChunks) {
       result.set(chunk, resultOffset)
       resultOffset += chunk.length
     }
-    
-    const endTime = performance.now()
-    console.log(`Decrypted ${totalSize} bytes in ${endTime - startTime}ms`)
-    
+
+    const _endTime = performance.now()
+    // console.log(`Decrypted ${totalSize} bytes in ${endTime - startTime}ms`)
+
     return result.buffer
   }
 
   /**
    * 处理单个块
    */
-  private async processChunk(
+  private async processChunkEncrypt(
     chunk: Uint8Array,
     key: string,
     iv: string,
     algorithm: string,
-    operation: 'encrypt' | 'decrypt',
-  ): Promise<Uint8Array> {
-    // 转换为字符串进行处理
-    const chunkStr = new TextDecoder().decode(chunk)
-    
-    if (operation === 'encrypt') {
-      const result = aes.encrypt(chunkStr, key, { iv })
-      if (result.success && result.data) {
-        return new TextEncoder().encode(result.data)
-      }
-      throw new Error(result.error || 'Encryption failed')
-    } else {
-      const result = aes.decrypt(chunkStr, key, { iv })
-      if (result.success && result.data) {
-        return new TextEncoder().encode(result.data)
-      }
-      throw new Error(result.error || 'Decryption failed')
+  ): Promise<string> {
+    // 将二进制数据转换为Base64字符串进行加密
+    const chunkStr = btoa(String.fromCharCode(...chunk))
+    const result = aes.encrypt(chunkStr, key, { iv })
+    if (result.success && result.data) {
+      return result.data
     }
+    throw new Error(result.error || 'Encryption failed')
+  }
+
+  private async processChunkDecrypt(
+    encryptedChunk: string,
+    key: string,
+    iv: string,
+    algorithm: string,
+  ): Promise<Uint8Array> {
+    const result = aes.decrypt(encryptedChunk, key, { iv })
+    if (result.success && result.data) {
+      // 将Base64字符串转换回二进制数据
+      try {
+        const binaryString = atob(result.data)
+        return new Uint8Array(binaryString.split('').map(char => char.charCodeAt(0)))
+      } catch (error) {
+        throw new Error('Failed to decode decrypted data')
+      }
+    }
+    throw new Error(result.error || 'Decryption failed')
   }
 
   /**
@@ -309,16 +308,17 @@ export class StreamCipher {
   ): TransformStream<Uint8Array, Uint8Array> {
     const opts = { ...this.defaultOptions, ...options }
     const iv = RandomUtils.generateIV(16)
-    
+
     return new TransformStream<Uint8Array, Uint8Array>({
       async transform(chunk, controller) {
         try {
           const encrypted = await encryptChunk(chunk, key, iv, opts.algorithm)
           controller.enqueue(encrypted)
-        } catch (error) {
+        }
+        catch (error) {
           controller.error(error)
         }
-      }
+      },
     })
   }
 
@@ -331,16 +331,17 @@ export class StreamCipher {
     options: StreamOptions = {},
   ): TransformStream<Uint8Array, Uint8Array> {
     const opts = { ...this.defaultOptions, ...options }
-    
+
     return new TransformStream<Uint8Array, Uint8Array>({
       async transform(chunk, controller) {
         try {
           const decrypted = await decryptChunk(chunk, key, iv, opts.algorithm)
           controller.enqueue(decrypted)
-        } catch (error) {
+        }
+        catch (error) {
           controller.error(error)
         }
-      }
+      },
     })
   }
 }
@@ -352,15 +353,15 @@ async function encryptChunk(
   chunk: Uint8Array,
   key: string,
   iv: string,
-  algorithm: string,
+  _algorithm: string,
 ): Promise<Uint8Array> {
   const chunkStr = new TextDecoder().decode(chunk)
   const result = aes.encrypt(chunkStr, key, { iv })
-  
+
   if (result.success && result.data) {
     return new TextEncoder().encode(result.data)
   }
-  
+
   throw new Error(result.error || 'Encryption failed')
 }
 
@@ -371,15 +372,15 @@ async function decryptChunk(
   chunk: Uint8Array,
   key: string,
   iv: string,
-  algorithm: string,
+  _algorithm: string,
 ): Promise<Uint8Array> {
   const chunkStr = new TextDecoder().decode(chunk)
   const result = aes.decrypt(chunkStr, key, { iv })
-  
+
   if (result.success && result.data) {
     return new TextEncoder().encode(result.data)
   }
-  
+
   throw new Error(result.error || 'Decryption failed')
 }
 
@@ -398,28 +399,28 @@ export class FileEncryptor {
     key: string,
     options: StreamOptions = {},
   ): Promise<{
-    blob: Blob
-    metadata: {
-      originalName: string
-      originalSize: number
-      mimeType: string
-      iv: string
-      algorithm: string
-      encryptedAt: number
-    }
-  }> {
-    const startTime = performance.now()
-    
+      blob: Blob
+      metadata: {
+        originalName: string
+        originalSize: number
+        mimeType: string
+        iv: string
+        algorithm: string
+        encryptedAt: number
+      }
+    }> {
+    const _startTime = performance.now()
+
     // 读取文件为 ArrayBuffer
     const arrayBuffer = await file.arrayBuffer()
-    
+
     // 加密数据
     const { data, metadata } = await this.streamCipher.encryptLargeData(
       arrayBuffer,
       key,
-      options
+      options,
     )
-    
+
     // 创建元数据
     const fullMetadata = {
       originalName: file.name,
@@ -429,23 +430,23 @@ export class FileEncryptor {
       algorithm: metadata.algorithm,
       encryptedAt: Date.now(),
     }
-    
+
     // 将元数据添加到加密数据前面
     const metadataStr = JSON.stringify(fullMetadata)
     const metadataBytes = new TextEncoder().encode(metadataStr)
     const metadataLength = new Uint32Array([metadataBytes.length])
-    
+
     // 合并数据
     const totalLength = 4 + metadataBytes.length + data.byteLength
     const result = new Uint8Array(totalLength)
-    
+
     result.set(new Uint8Array(metadataLength.buffer), 0)
     result.set(metadataBytes, 4)
     result.set(new Uint8Array(data), 4 + metadataBytes.length)
-    
-    const endTime = performance.now()
-    console.log(`File encrypted in ${endTime - startTime}ms`)
-    
+
+    const _endTime = performance.now()
+    // console.log(`File encrypted in ${endTime - startTime}ms`)
+
     return {
       blob: new Blob([result], { type: 'application/octet-stream' }),
       metadata: fullMetadata,
@@ -460,44 +461,44 @@ export class FileEncryptor {
     key: string,
     options: StreamOptions = {},
   ): Promise<{
-    blob: Blob
-    metadata: {
-      originalName: string
-      originalSize: number
-      mimeType: string
-      iv: string
-      algorithm: string
-      encryptedAt: number
-    }
-  }> {
-    const startTime = performance.now()
-    
+      blob: Blob
+      metadata: {
+        originalName: string
+        originalSize: number
+        mimeType: string
+        iv: string
+        algorithm: string
+        encryptedAt: number
+      }
+    }> {
+    const _startTime = performance.now()
+
     // 读取加密数据
     const arrayBuffer = await encryptedBlob.arrayBuffer()
     const uint8Array = new Uint8Array(arrayBuffer)
-    
+
     // 读取元数据长度
     const metadataLength = new Uint32Array(uint8Array.slice(0, 4).buffer)[0]
-    
+
     // 读取元数据
     const metadataBytes = uint8Array.slice(4, 4 + metadataLength)
     const metadataStr = new TextDecoder().decode(metadataBytes)
     const metadata = JSON.parse(metadataStr)
-    
+
     // 获取加密数据
     const encryptedData = uint8Array.slice(4 + metadataLength)
-    
+
     // 解密数据
     const decryptedData = await this.streamCipher.decryptLargeData(
       encryptedData,
       key,
       metadata.iv,
-      options
+      options,
     )
-    
-    const endTime = performance.now()
-    console.log(`File decrypted in ${endTime - startTime}ms`)
-    
+
+    const _endTime = performance.now()
+    // console.log(`File decrypted in ${endTime - startTime}ms`)
+
     return {
       blob: new Blob([decryptedData], { type: metadata.mimeType }),
       metadata,
@@ -512,26 +513,26 @@ export class FileEncryptor {
     key: string,
     chunkSize: number = 1024 * 1024, // 1MB chunks
   ): AsyncGenerator<{
-    chunk: Uint8Array
-    index: number
-    total: number
-    progress: number
-  }> {
+      chunk: Uint8Array
+      index: number
+      total: number
+      progress: number
+    }> {
     const iv = RandomUtils.generateIV(16)
     const totalChunks = Math.ceil(file.size / chunkSize)
-    
+
     for (let i = 0; i < totalChunks; i++) {
       const start = i * chunkSize
       const end = Math.min((i + 1) * chunkSize, file.size)
       const chunk = file.slice(start, end)
-      
+
       // 读取块
       const arrayBuffer = await chunk.arrayBuffer()
       const uint8Array = new Uint8Array(arrayBuffer)
-      
+
       // 加密块
       const encryptedChunk = await encryptChunk(uint8Array, key, iv, 'AES')
-      
+
       yield {
         chunk: encryptedChunk,
         index: i,

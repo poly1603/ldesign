@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { KeyManager, KeyMetadata, KeyPermission } from '../src/core/key-manager'
+import type { KeyPermission } from '../src/core/key-manager'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { KeyManager } from '../src/core/key-manager'
 
 describe('密钥管理系统', () => {
   let keyManager: KeyManager
@@ -47,7 +48,7 @@ describe('密钥管理系统', () => {
       })
 
       expect(keyId).toBeTruthy()
-      
+
       const keys = keyManager.listKeys()
       expect(keys).toHaveLength(1)
       expect(keys[0].name).toBe('aes-test')
@@ -63,14 +64,14 @@ describe('密钥管理系统', () => {
       })
 
       expect(keyId).toBeTruthy()
-      
+
       const key = await keyManager.getKey(keyId)
       expect(key).toBeTruthy()
     })
 
     it('应该生成带过期时间的密钥', async () => {
       const expires = new Date(Date.now() + 3600000) // 1小时后
-      const keyId = await keyManager.generateKey({
+      const _keyId = await keyManager.generateKey({
         name: 'expiring-key',
         algorithm: 'AES',
         purpose: 'encryption',
@@ -100,7 +101,7 @@ describe('密钥管理系统', () => {
 
       // 应该拒绝解密
       await expect(
-        keyManager.getKey(keyId, 'decrypt')
+        keyManager.getKey(keyId, 'decrypt'),
       ).rejects.toThrow(/not allowed/)
     })
   })
@@ -138,7 +139,7 @@ describe('密钥管理系统', () => {
       })
 
       await expect(
-        keyManager.getKey(expiredKeyId)
+        keyManager.getKey(expiredKeyId),
       ).rejects.toThrow(/expired/)
     })
   })
@@ -156,10 +157,10 @@ describe('密钥管理系统', () => {
       })
 
       const newKeyId = await keyManager.rotateKey(oldKeyId)
-      
+
       expect(newKeyId).toBeTruthy()
       expect(newKeyId).not.toBe(oldKeyId)
-      
+
       const keys = keyManager.listKeys()
       const newKey = keys.find(k => k.id === newKeyId)
       expect(newKey?.version).toBe(2)
@@ -175,7 +176,7 @@ describe('密钥管理系统', () => {
       })
 
       const newKeyId = await keyManager.rotateKey(oldKeyId)
-      
+
       const keys = keyManager.listKeys()
       const newKey = keys.find(k => k.id === newKeyId)
       expect(newKey?.name).toBe('rotate-metadata')
@@ -197,7 +198,7 @@ describe('密钥管理系统', () => {
 
       const deleted = await keyManager.deleteKey(keyId)
       expect(deleted).toBe(true)
-      
+
       const key = await keyManager.getKey(keyId)
       expect(key).toBeNull()
     })
@@ -211,7 +212,7 @@ describe('密钥管理系统', () => {
   describe('密钥列表和过滤', () => {
     beforeEach(async () => {
       await keyManager.initializeMasterKey(testPassword)
-      
+
       // 创建多个测试密钥
       await keyManager.generateKey({
         name: 'aes-encrypt',
@@ -219,14 +220,14 @@ describe('密钥管理系统', () => {
         purpose: 'encryption',
         tags: ['production'],
       })
-      
+
       await keyManager.generateKey({
         name: 'rsa-sign',
         algorithm: 'RSA',
         purpose: 'signing',
         tags: ['test'],
       })
-      
+
       await keyManager.generateKey({
         name: 'aes-auth',
         algorithm: 'AES',
@@ -254,7 +255,7 @@ describe('密钥管理系统', () => {
     it('应该按标签过滤', () => {
       const productionKeys = keyManager.listKeys({ tags: ['production'] })
       expect(productionKeys).toHaveLength(2)
-      
+
       const criticalKeys = keyManager.listKeys({ tags: ['production', 'critical'] })
       expect(criticalKeys).toHaveLength(1)
       expect(criticalKeys[0].name).toBe('aes-auth')
@@ -271,7 +272,7 @@ describe('密钥管理系统', () => {
 
       const activeKeys = keyManager.listKeys()
       expect(activeKeys).toHaveLength(3) // 不包括过期的
-      
+
       const allKeys = keyManager.listKeys({ includeExpired: true })
       expect(allKeys).toHaveLength(4) // 包括过期的
     })
@@ -348,7 +349,7 @@ describe('密钥管理系统', () => {
         algorithm: 'AES',
         purpose: 'encryption',
       })
-      
+
       await keyManager.generateKey({
         name: 'key2',
         algorithm: 'RSA',
@@ -357,14 +358,14 @@ describe('密钥管理系统', () => {
 
       const backup = await keyManager.backup()
       const parsed = JSON.parse(backup)
-      
+
       expect(parsed.version).toBe('1.0')
       expect(parsed.keys).toHaveLength(2)
     })
 
     it('应该备份和恢复密钥', async () => {
       // 创建密钥
-      const keyId = await keyManager.generateKey({
+      const _keyId = await keyManager.generateKey({
         name: 'backup-test',
         algorithm: 'AES',
         purpose: 'encryption',
@@ -373,21 +374,21 @@ describe('密钥管理系统', () => {
 
       // 备份
       const backup = await keyManager.backup()
-      
+
       // 创建新的管理器
       const newManager = new KeyManager({ type: 'memory' })
       await newManager.initializeMasterKey(testPassword)
-      
+
       // 恢复
       const restored = await newManager.restore(backup)
       expect(restored).toBe(1)
-      
+
       // 验证密钥
       const keys = newManager.listKeys()
       expect(keys).toHaveLength(1)
       expect(keys[0].name).toBe('backup-test')
       expect(keys[0].tags).toContain('important')
-      
+
       newManager.destroy()
     })
 
@@ -400,18 +401,24 @@ describe('密钥管理系统', () => {
 
       const backupPassword = 'BackupPassword123!'
       const encrypted = await keyManager.backup(backupPassword)
-      
+
       // 不应该是明文 JSON
       expect(() => JSON.parse(encrypted)).toThrow()
-      
-      // 应该能够用密码恢复
-      const newManager = new KeyManager({ type: 'memory' })
-      await newManager.initializeMasterKey(testPassword)
-      
-      const restored = await newManager.restore(encrypted, backupPassword)
+
+      // 应该能够用密码恢复 - 使用同一个manager实例
+      // 先清空当前密钥
+      const keyIds = keyManager.listKeys().map(k => k.id)
+      for (const keyId of keyIds) {
+        await keyManager.deleteKey(keyId)
+      }
+
+      const restored = await keyManager.restore(encrypted, backupPassword)
       expect(restored).toBe(1)
-      
-      newManager.destroy()
+
+      // 验证密钥已恢复
+      const restoredKeys = keyManager.listKeys()
+      expect(restoredKeys).toHaveLength(1)
+      expect(restoredKeys[0].name).toBe('encrypted-backup')
     })
   })
 
@@ -428,14 +435,14 @@ describe('密钥管理系统', () => {
         purpose: 'encryption',
         expires: new Date(Date.now() - 1000),
       })
-      
+
       await keyManager.generateKey({
         name: 'expired2',
         algorithm: 'AES',
         purpose: 'encryption',
         expires: new Date(Date.now() - 2000),
       })
-      
+
       // 创建有效密钥
       await keyManager.generateKey({
         name: 'valid',
@@ -446,7 +453,7 @@ describe('密钥管理系统', () => {
 
       const cleaned = keyManager.cleanupExpiredKeys()
       expect(cleaned).toBe(2)
-      
+
       const remaining = keyManager.listKeys({ includeExpired: true })
       expect(remaining).toHaveLength(1)
       expect(remaining[0].name).toBe('valid')
@@ -508,7 +515,7 @@ describe('密钥管理系统', () => {
 
       // 时间窗口外应该拒绝
       await expect(
-        keyManager.getKey(keyId, 'encrypt')
+        keyManager.getKey(keyId, 'encrypt'),
       ).rejects.toThrow(/not allowed/)
     })
   })

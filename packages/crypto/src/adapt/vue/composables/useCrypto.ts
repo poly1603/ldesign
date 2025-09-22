@@ -5,7 +5,7 @@ import type {
   RSAKeyPair,
   RSAOptions,
 } from '../../../types'
-import { type Ref, ref } from 'vue'
+import { type Ref, ref, computed } from 'vue'
 import { decrypt, encrypt, keyGenerator } from '../../../core'
 
 /**

@@ -273,6 +273,18 @@ export const hash = {
   },
 
   /**
+   * 通用哈希函数
+   */
+  hash: (
+    data: string,
+    algorithm: HashAlgorithm = 'SHA256',
+    options?: HashOptions,
+  ): string => {
+    const hasher = new Hasher()
+    return hasher.hash(data, algorithm, options).hash
+  },
+
+  /**
    * 验证哈希
    */
   verify: (

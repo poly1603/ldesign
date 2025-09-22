@@ -71,18 +71,7 @@ export interface GlobalCrypto {
   useSignature: typeof useSignature
 }
 
-/**
- * Vue 3 模块声明扩展
- */
-declare module '@vue/runtime-core' {
-  interface ComponentCustomProperties {
-    $crypto?: GlobalCrypto
-  }
-
-  interface GlobalProperties {
-    $crypto?: GlobalCrypto
-  }
-}
+// Vue 类型扩展在 types.d.ts 文件中定义
 
 /**
  * 创建全局 Crypto 实例

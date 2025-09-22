@@ -29,7 +29,9 @@ export {
   des,
   des3,
   encoding,
+  hash,
   hex,
+  hmac,
   rsa,
   tripledes,
 } from '../algorithms'
@@ -66,8 +68,8 @@ export { type CryptoConfig, CryptoManager } from './manager'
 
 export const encrypt = new Encrypt()
 export const decrypt = new Decrypt()
-export const hash = new Hash()
-export const hmac = new HMAC()
+export const hashInstance = new Hash()
+export const hmacInstance = new HMAC()
 export const keyGenerator = new KeyGenerator()
 export const digitalSignature = new DigitalSignature()
 

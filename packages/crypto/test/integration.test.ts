@@ -34,7 +34,10 @@ describe('集成测试', () => {
       expect(decoded).toBe(encrypted.data)
 
       // 4. AES 解密
-      const decrypted = aes.decrypt(decoded, testKey, { keySize: 256 })
+      const decrypted = aes.decrypt(decoded, testKey, {
+        keySize: 256,
+        iv: encrypted.iv
+      })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
     })
@@ -56,12 +59,14 @@ describe('集成测试', () => {
       // 第二层解密
       const firstDecryption = aes.decrypt(secondEncryption.data!, key2, {
         keySize: 256,
+        iv: secondEncryption.iv,
       })
       expect(firstDecryption.success).toBe(true)
 
       // 第一层解密
       const finalDecryption = aes.decrypt(firstDecryption.data!, key1, {
         keySize: 256,
+        iv: firstEncryption.iv,
       })
       expect(finalDecryption.success).toBe(true)
       expect(finalDecryption.data).toBe(testData)
@@ -78,7 +83,10 @@ describe('集成测试', () => {
       expect(encrypted.success).toBe(true)
 
       // 3. 解密数据
-      const decrypted = aes.decrypt(encrypted.data!, testKey, { keySize: 256 })
+      const decrypted = aes.decrypt(encrypted.data!, testKey, {
+        keySize: 256,
+        iv: encrypted.iv
+      })
       expect(decrypted.success).toBe(true)
 
       // 4. 验证数据完整性
@@ -107,7 +115,10 @@ describe('集成测试', () => {
       expect(isValid).toBe(true)
 
       // 4. 解密数据
-      const decrypted = aes.decrypt(encrypted.data!, testKey, { keySize: 256 })
+      const decrypted = aes.decrypt(encrypted.data!, testKey, {
+        keySize: 256,
+        iv: encrypted.iv
+      })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
     })
@@ -118,7 +129,7 @@ describe('集成测试', () => {
       // 1. 生成随机密钥
       const generatedKey = keyGenerator.generateKey(32)
       expect(generatedKey).toBeTruthy()
-      expect(generatedKey.length).toBe(32)
+      expect(generatedKey.length).toBe(64) // 32 bytes = 64 hex chars
 
       // 2. 使用生成的密钥加密
       const encrypted = aes.encrypt(testData, generatedKey, { keySize: 256 })
@@ -127,6 +138,7 @@ describe('集成测试', () => {
       // 3. 使用相同密钥解密
       const decrypted = aes.decrypt(encrypted.data!, generatedKey, {
         keySize: 256,
+        iv: encrypted.iv,
       })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
@@ -157,6 +169,7 @@ describe('集成测试', () => {
 
       const decrypted = aes.decrypt(encrypted.data!, encryptionKey, {
         keySize: 256,
+        iv: encrypted.iv,
       })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
@@ -185,7 +198,10 @@ describe('集成测试', () => {
       expect(computedHash).toBe(decodedHash)
 
       // 6. AES 解密
-      const decrypted = aes.decrypt(decodedData, testKey, { keySize: 256 })
+      const decrypted = aes.decrypt(decodedData, testKey, {
+        keySize: 256,
+        iv: encrypted.iv
+      })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
     })
@@ -213,7 +229,10 @@ describe('集成测试', () => {
       expect(isValid).toBe(true)
 
       // 6. AES 解密
-      const decrypted = aes.decrypt(decodedData, testKey, { keySize: 256 })
+      const decrypted = aes.decrypt(decodedData, testKey, {
+        keySize: 256,
+        iv: encrypted.iv
+      })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
     })
@@ -232,7 +251,10 @@ describe('集成测试', () => {
       )}XXXXX`
 
       // 3. 尝试解密损坏的数据
-      const decrypted = aes.decrypt(corruptedData, testKey, { keySize: 256 })
+      const decrypted = aes.decrypt(corruptedData, testKey, {
+        keySize: 256,
+        iv: encrypted.iv
+      })
       expect(decrypted.success).toBe(false)
       expect(decrypted.error).toBeTruthy()
     })
@@ -297,7 +319,10 @@ describe('集成测试', () => {
         expect(isValid).toBe(true)
 
         // 7. 解密
-        const decrypted = aes.decrypt(decoded, testKey, { keySize: 256 })
+        const decrypted = aes.decrypt(decoded, testKey, {
+          keySize: 256,
+          iv: encrypted.iv
+        })
         expect(decrypted.success).toBe(true)
         expect(decrypted.data).toBe(largeData)
       }
@@ -330,7 +355,10 @@ describe('集成测试', () => {
         const encoded = base64.encode(encrypted.data!)
         const decoded = base64.decode(encoded)
 
-        const decrypted = aes.decrypt(decoded, key, { keySize: 256 })
+        const decrypted = aes.decrypt(decoded, key, {
+          keySize: 256,
+          iv: encrypted.iv
+        })
         expect(decrypted.success).toBe(true)
         expect(decrypted.data).toBe(data)
 

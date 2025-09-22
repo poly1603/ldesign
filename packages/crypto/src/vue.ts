@@ -6,7 +6,7 @@
  */
 
 // 重新导出 Vue 适配器的所有功能
-export * from './src/adapt/vue'
+export * from './adapt/vue'
 
 // 默认导出 Vue 插件
-export { default } from './src/adapt/vue/plugin'
+export { default } from './adapt/vue/plugin'

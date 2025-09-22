@@ -15,7 +15,7 @@ describe('aES 加密算法测试', () => {
       expect(encrypted.data).toBeTruthy()
       expect(encrypted.algorithm).toBe('AES')
 
-      const decrypted = aes.decrypt(encrypted.data!, testKey)
+      const decrypted = aes.decrypt(encrypted.data!, testKey, { iv: encrypted.iv })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
     })
@@ -34,7 +34,7 @@ describe('aES 加密算法测试', () => {
       const encrypted = aes.encrypt('', testKey)
       expect(encrypted.success).toBe(true)
 
-      const decrypted = aes.decrypt(encrypted.data!, testKey)
+      const decrypted = aes.decrypt(encrypted.data!, testKey, { iv: encrypted.iv })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe('')
     })
@@ -44,7 +44,7 @@ describe('aES 加密算法测试', () => {
       const encrypted = aes.encrypt(specialData, testKey)
       expect(encrypted.success).toBe(true)
 
-      const decrypted = aes.decrypt(encrypted.data!, testKey)
+      const decrypted = aes.decrypt(encrypted.data!, testKey, { iv: encrypted.iv })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(specialData)
     })
@@ -56,7 +56,7 @@ describe('aES 加密算法测试', () => {
       expect(encrypted.success).toBe(true)
       expect(encrypted.keySize).toBe(128)
 
-      const decrypted = aes.decrypt(encrypted.data!, testKey, { keySize: 128 })
+      const decrypted = aes.decrypt(encrypted.data!, testKey, { keySize: 128, iv: encrypted.iv })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
     })
@@ -66,7 +66,7 @@ describe('aES 加密算法测试', () => {
       expect(encrypted.success).toBe(true)
       expect(encrypted.keySize).toBe(192)
 
-      const decrypted = aes.decrypt(encrypted.data!, testKey, { keySize: 192 })
+      const decrypted = aes.decrypt(encrypted.data!, testKey, { keySize: 192, iv: encrypted.iv })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
     })
@@ -76,7 +76,7 @@ describe('aES 加密算法测试', () => {
       expect(encrypted.success).toBe(true)
       expect(encrypted.keySize).toBe(256)
 
-      const decrypted = aes.decrypt(encrypted.data!, testKey, { keySize: 256 })
+      const decrypted = aes.decrypt(encrypted.data!, testKey, { keySize: 256, iv: encrypted.iv })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
     })
@@ -94,6 +94,7 @@ describe('aES 加密算法测试', () => {
         const decrypted = aes.decrypt(encrypted.data!, testKey, {
           mode,
           keySize: 256,
+          iv: encrypted.iv,
         })
         expect(decrypted.success).toBe(true)
         expect(decrypted.data).toBe(testData)
@@ -116,7 +117,7 @@ describe('aES 加密算法测试', () => {
 
   describe('自定义 IV 测试', () => {
     it('应该支持自定义 IV', () => {
-      const customIV = '1234567890123456' // 16字节
+      const customIV = '1234567890abcdef1234567890abcdef' // 32个十六进制字符 = 16字节
       const encrypted = aes.encrypt(testData, testKey, {
         mode: 'CBC',
         iv: customIV,
@@ -133,7 +134,7 @@ describe('aES 加密算法测试', () => {
     })
 
     it('使用相同 IV 和密钥应该产生相同结果', () => {
-      const customIV = '1234567890123456'
+      const customIV = '1234567890abcdef1234567890abcdef'
       const options = { mode: 'CBC' as const, iv: customIV }
 
       const encrypted1 = aes.encrypt(testData, testKey, options)
@@ -163,7 +164,7 @@ describe('aES 加密算法测试', () => {
       expect(encrypted.success).toBe(true)
 
       const wrongKey = 'wrong-key'
-      const decrypted = aes.decrypt(encrypted.data!, wrongKey)
+      const decrypted = aes.decrypt(encrypted.data!, wrongKey, { iv: encrypted.iv })
       expect(decrypted.success).toBe(false)
       expect(decrypted.error).toBeTruthy()
     })
@@ -196,7 +197,7 @@ describe('aES 加密算法测试', () => {
       const encrypted = aes.encrypt(largeData, testKey)
       expect(encrypted.success).toBe(true)
 
-      const decrypted = aes.decrypt(encrypted.data!, testKey)
+      const decrypted = aes.decrypt(encrypted.data!, testKey, { iv: encrypted.iv })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(largeData)
     })
@@ -211,7 +212,7 @@ And unicode: 🔐 🌟 ✨`
       const encrypted = aes.encrypt(multilineData, testKey)
       expect(encrypted.success).toBe(true)
 
-      const decrypted = aes.decrypt(encrypted.data!, testKey)
+      const decrypted = aes.decrypt(encrypted.data!, testKey, { iv: encrypted.iv })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(multilineData)
     })
@@ -238,21 +239,21 @@ And unicode: 🔐 🌟 ✨`
 
     it('decrypt128 应该正确解密 AES-128', () => {
       const encrypted = aes.encrypt128(testData, testKey)
-      const decrypted = aes.decrypt128(encrypted.data!, testKey)
+      const decrypted = aes.decrypt128(encrypted.data!, testKey, { iv: encrypted.iv })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
     })
 
     it('decrypt192 应该正确解密 AES-192', () => {
       const encrypted = aes.encrypt192(testData, testKey)
-      const decrypted = aes.decrypt192(encrypted.data!, testKey)
+      const decrypted = aes.decrypt192(encrypted.data!, testKey, { iv: encrypted.iv })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
     })
 
     it('decrypt256 应该正确解密 AES-256', () => {
       const encrypted = aes.encrypt256(testData, testKey)
-      const decrypted = aes.decrypt256(encrypted.data!, testKey)
+      const decrypted = aes.decrypt256(encrypted.data!, testKey, { iv: encrypted.iv })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
     })

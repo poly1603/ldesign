@@ -47,27 +47,27 @@ describe('Crypto Library Tests', () => {
     it('should generate MD5 hash', () => {
       const data = 'Hello, World!'
       const result = hash.md5(data)
-      
-      expect(result.success).toBe(true)
-      expect(result.hash).toBeTruthy()
-      expect(result.algorithm).toBe('MD5')
+
+      expect(result).toBeTruthy()
+      expect(typeof result).toBe('string')
+      expect(result.length).toBe(32) // MD5 hash length
     })
 
     it('should generate SHA256 hash', () => {
       const data = 'Hello, World!'
       const result = hash.sha256(data)
-      
-      expect(result.success).toBe(true)
-      expect(result.hash).toBeTruthy()
-      expect(result.algorithm).toBe('SHA256')
+
+      expect(result).toBeTruthy()
+      expect(typeof result).toBe('string')
+      expect(result.length).toBe(64) // SHA256 hash length
     })
 
     it('should generate consistent hashes', () => {
       const data = 'Hello, World!'
       const hash1 = hash.sha256(data)
       const hash2 = hash.sha256(data)
-      
-      expect(hash1.hash).toBe(hash2.hash)
+
+      expect(hash1).toBe(hash2)
     })
   })
 

@@ -240,7 +240,8 @@ export function createCryptoEnginePlugin(
                 engine.logger?.info(`[Crypto Plugin] app:created event received, installing now`)
                 await performInstall()
                 resolve()
-              } catch (error) {
+              }
+              catch (error) {
                 engine.logger?.error(`[Crypto Plugin] Failed to install after app creation:`, error)
                 reject(error)
               }

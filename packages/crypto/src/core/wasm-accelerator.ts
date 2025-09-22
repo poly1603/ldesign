@@ -57,26 +57,27 @@ export class WasmAccelerator {
   private detectCapabilities(): void {
     // 检测基础 WebAssembly 支持
     this.supportsWasm = typeof WebAssembly !== 'undefined'
-    
+
     // 检测 SIMD 支持
     if (this.supportsWasm && typeof WebAssembly.validate === 'function') {
       try {
         // SIMD 测试字节码
         const simdTest = new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11])
         this.supportsSimd = WebAssembly.validate(simdTest)
-      } catch {
+      }
+      catch {
         this.supportsSimd = false
       }
     }
 
     // 检测线程支持
     this.supportsThreads = typeof SharedArrayBuffer !== 'undefined'
-    
-    console.log('WASM Capabilities:', {
-      wasm: this.supportsWasm,
-      simd: this.supportsSimd,
-      threads: this.supportsThreads,
-    })
+
+    // console.log('WASM Capabilities:', {
+    //   wasm: this.supportsWasm,
+    //   simd: this.supportsSimd,
+    //   threads: this.supportsThreads,
+    // })
   }
 
   /**
@@ -105,17 +106,25 @@ export class WasmAccelerator {
             console.error(`WASM abort at ${file}:${line}:${col} - ${msg}`)
           },
         },
-        math: Math,
+        Math: {
+          random: Math.random,
+          floor: Math.floor,
+          ceil: Math.ceil,
+          round: Math.round,
+          abs: Math.abs,
+          sqrt: Math.sqrt,
+          pow: Math.pow,
+        },
         console: {
           log: (ptr: number, len: number) => {
             const view = new Uint8Array(memory.buffer, ptr, len)
-            const text = new TextDecoder().decode(view)
-            console.log(`[WASM ${name}]`, text)
+            const _text = new TextDecoder().decode(view)
+            // console.log(`[WASM ${name}]`, text)
           },
         },
       }
 
-      const module = await WebAssembly.compile(wasmBytes)
+      const module = await WebAssembly.compile(wasmBytes.buffer.slice(wasmBytes.byteOffset, wasmBytes.byteOffset + wasmBytes.byteLength))
       const instance = await WebAssembly.instantiate(module, imports)
 
       this.modules.set(name, {
@@ -124,8 +133,9 @@ export class WasmAccelerator {
         initialized: true,
       })
 
-      console.log(`WASM module ${name} loaded successfully`)
-    } catch (error) {
+      // console.log(`WASM module ${name} loaded successfully`)
+    }
+    catch (error) {
       console.error(`Failed to load WASM module ${name}:`, error)
       if (!this.config.fallbackToJS) {
         throw error
@@ -150,26 +160,26 @@ export class WasmAccelerator {
     }
 
     const { memory, exports } = module
-    
+
     // 分配内存
     const inputPtr = exports.allocate(data.length)
     const outputPtr = exports.allocate(32) // SHA256 produces 32 bytes
-    
+
     // 复制数据到 WASM 内存
     const memView = new Uint8Array(memory.buffer)
     memView.set(data, inputPtr)
-    
+
     // 调用 WASM 函数
     exports.sha256(inputPtr, data.length, outputPtr)
-    
+
     // 读取结果
     const result = new Uint8Array(32)
     result.set(memView.slice(outputPtr, outputPtr + 32))
-    
+
     // 释放内存
     exports.free(inputPtr)
     exports.free(outputPtr)
-    
+
     return result
   }
 
@@ -183,37 +193,40 @@ export class WasmAccelerator {
     }
 
     const { memory, exports } = module
-    
+
     // 分配内存
     const dataPtr = exports.allocate(data.length)
     const keyPtr = exports.allocate(key.length)
     const ivPtr = exports.allocate(iv.length)
     const outputPtr = exports.allocate(data.length + 16) // AES block padding
-    
+
     // 复制数据到 WASM 内存
     const memView = new Uint8Array(memory.buffer)
     memView.set(data, dataPtr)
     memView.set(key, keyPtr)
     memView.set(iv, ivPtr)
-    
+
     // 调用 WASM 函数
     const resultLength = exports.aes_encrypt(
-      dataPtr, data.length,
-      keyPtr, key.length,
-      ivPtr, iv.length,
-      outputPtr
+      dataPtr,
+      data.length,
+      keyPtr,
+      key.length,
+      ivPtr,
+      iv.length,
+      outputPtr,
     )
-    
+
     // 读取结果
     const result = new Uint8Array(resultLength)
     result.set(memView.slice(outputPtr, outputPtr + resultLength))
-    
+
     // 释放内存
     exports.free(dataPtr)
     exports.free(keyPtr)
     exports.free(ivPtr)
     exports.free(outputPtr)
-    
+
     return result
   }
 
@@ -244,7 +257,8 @@ export class WasmAccelerator {
     const wasmStart = performance.now()
     if (algorithm === 'sha256') {
       await this.sha256Wasm(data)
-    } else if (algorithm === 'aes') {
+    }
+    else if (algorithm === 'aes') {
       const key = new Uint8Array(32)
       const iv = new Uint8Array(16)
       await this.aesEncryptWasm(data, key, iv)
@@ -289,7 +303,7 @@ export class WasmUtils {
   static hexToWasmBytes(hex: string): Uint8Array {
     const bytes = new Uint8Array(hex.length / 2)
     for (let i = 0; i < hex.length; i += 2) {
-      bytes[i / 2] = parseInt(hex.substr(i, 2), 16)
+      bytes[i / 2] = Number.parseInt(hex.substr(i, 2), 16)
     }
     return bytes
   }
@@ -304,16 +318,51 @@ export class WasmUtils {
     //   local.get $b
     //   i32.add)
     return new Uint8Array([
-      0x00, 0x61, 0x73, 0x6d, // 魔数 "\0asm"
-      0x01, 0x00, 0x00, 0x00, // 版本 1
+      0x00,
+      0x61,
+      0x73,
+      0x6D, // 魔数 "\0asm"
+      0x01,
+      0x00,
+      0x00,
+      0x00, // 版本 1
       // Type section
-      0x01, 0x07, 0x01, 0x60, 0x02, 0x7f, 0x7f, 0x01, 0x7f,
+      0x01,
+      0x07,
+      0x01,
+      0x60,
+      0x02,
+      0x7F,
+      0x7F,
+      0x01,
+      0x7F,
       // Function section
-      0x03, 0x02, 0x01, 0x00,
+      0x03,
+      0x02,
+      0x01,
+      0x00,
       // Export section
-      0x07, 0x07, 0x01, 0x03, 0x61, 0x64, 0x64, 0x00, 0x00,
+      0x07,
+      0x07,
+      0x01,
+      0x03,
+      0x61,
+      0x64,
+      0x64,
+      0x00,
+      0x00,
       // Code section
-      0x0a, 0x09, 0x01, 0x07, 0x00, 0x20, 0x00, 0x20, 0x01, 0x6a, 0x0b,
+      0x0A,
+      0x09,
+      0x01,
+      0x07,
+      0x00,
+      0x20,
+      0x00,
+      0x20,
+      0x01,
+      0x6A,
+      0x0B,
     ])
   }
 
@@ -323,7 +372,8 @@ export class WasmUtils {
   static async validateModule(wasmBytes: Uint8Array): Promise<boolean> {
     try {
       return WebAssembly.validate(wasmBytes)
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -332,14 +382,14 @@ export class WasmUtils {
    * 编译 WASM 模块
    */
   static async compileModule(wasmBytes: Uint8Array): Promise<WebAssembly.Module> {
-    return WebAssembly.compile(wasmBytes)
+    return WebAssembly.compile(wasmBytes.buffer.slice(wasmBytes.byteOffset, wasmBytes.byteOffset + wasmBytes.byteLength))
   }
 
   /**
    * 流式编译 WASM 模块
    */
   static async streamCompileModule(
-    response: Response
+    response: Response,
   ): Promise<WebAssembly.Module> {
     return WebAssembly.compileStreaming(response)
   }
@@ -359,14 +409,15 @@ export class WasmCrypto {
    * 使用 WASM 加速的 SHA256
    */
   async sha256(data: string | Uint8Array): Promise<string> {
-    const bytes = typeof data === 'string' 
+    const bytes = typeof data === 'string'
       ? new TextEncoder().encode(data)
       : data
 
     try {
       const result = await this.accelerator.sha256Wasm(bytes)
       return this.bytesToHex(result)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('WASM SHA256 failed, falling back to JS:', error)
       // 这里应该回退到 JS 实现
       throw error
@@ -379,9 +430,9 @@ export class WasmCrypto {
   async aesEncrypt(
     data: string | Uint8Array,
     key: string | Uint8Array,
-    iv: string | Uint8Array
+    iv: string | Uint8Array,
   ): Promise<string> {
-    const dataBytes = typeof data === 'string' 
+    const dataBytes = typeof data === 'string'
       ? new TextEncoder().encode(data)
       : data
     const keyBytes = typeof key === 'string'
@@ -394,7 +445,8 @@ export class WasmCrypto {
     try {
       const result = await this.accelerator.aesEncryptWasm(dataBytes, keyBytes, ivBytes)
       return this.bytesToHex(result)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('WASM AES encrypt failed, falling back to JS:', error)
       // 这里应该回退到 JS 实现
       throw error
@@ -416,7 +468,7 @@ export class WasmCrypto {
   private hexToBytes(hex: string): Uint8Array {
     const bytes = new Uint8Array(hex.length / 2)
     for (let i = 0; i < hex.length; i += 2) {
-      bytes[i / 2] = parseInt(hex.substr(i, 2), 16)
+      bytes[i / 2] = Number.parseInt(hex.substr(i, 2), 16)
     }
     return bytes
   }

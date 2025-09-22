@@ -3,9 +3,10 @@
  * 提供安全的密钥生成、存储、轮换和访问控制
  */
 
+import { Buffer } from 'node:buffer'
 import CryptoJS from 'crypto-js'
+import { aes } from '../algorithms/aes'
 import { KDFManager } from '../algorithms/kdf'
-import { AESEncryptor } from '../algorithms/aes'
 
 /**
  * 密钥元数据
@@ -30,7 +31,7 @@ export interface KeyPermission {
   operation: 'encrypt' | 'decrypt' | 'sign' | 'verify' | 'derive'
   allowed: boolean
   conditions?: {
-    timeWindow?: { start: Date; end: Date }
+    timeWindow?: { start: Date, end: Date }
     ipWhitelist?: string[]
     maxUses?: number
     requireMFA?: boolean
@@ -74,7 +75,7 @@ export class KeyManager {
   private masterKey: string | null = null
   private options: KeyStorageOptions
   private kdfManager: KDFManager
-  private aes: AESEncryptor
+
   private rotationTimers: Map<string, NodeJS.Timeout> = new Map()
 
   constructor(options: Partial<KeyStorageOptions> = {}) {
@@ -88,8 +89,7 @@ export class KeyManager {
     }
 
     this.kdfManager = new KDFManager()
-    this.aes = new AESEncryptor()
-    
+
     if (this.options.type !== 'memory') {
       this.loadKeysFromStorage()
     }
@@ -113,7 +113,7 @@ export class KeyManager {
    */
   async initializeMasterKey(password: string): Promise<void> {
     const salt = this.generateSalt()
-    
+
     // 使用 KDF 派生主密钥
     const derivedKey = await this.kdfManager.deriveKey(
       password,
@@ -122,11 +122,11 @@ export class KeyManager {
       {
         keyLength: 32,
         ...this.options.kdfParams,
-      }
+      },
     )
 
     this.masterKey = derivedKey.key
-    
+
     // 存储主密钥的 salt
     if (this.options.type !== 'memory') {
       this.saveToStorage('master_salt', salt)
@@ -146,7 +146,7 @@ export class KeyManager {
     permissions?: KeyPermission[]
   }): Promise<string> {
     const keyId = this.generateKeyId()
-    
+
     // 生成密钥材料
     let keyMaterial: string
     switch (options.algorithm) {
@@ -192,7 +192,8 @@ export class KeyManager {
         salt: encrypted.salt,
         iv: encrypted.iv,
       })
-    } else {
+    }
+    else {
       this.keys.set(keyId, {
         key: keyMaterial,
         metadata,
@@ -272,7 +273,8 @@ export class KeyManager {
         salt: encrypted.salt,
         iv: encrypted.iv,
       })
-    } else {
+    }
+    else {
       this.keys.set(newKeyId, {
         key: newKeyMaterial,
         metadata: newMetadata,
@@ -282,7 +284,7 @@ export class KeyManager {
 
     // 标记旧密钥为已轮换
     oldKeyMaterial.metadata.rotated = new Date()
-    
+
     // 重新调度轮换
     if (this.options.autoRotation) {
       this.scheduleKeyRotation(newKeyId)
@@ -396,10 +398,10 @@ export class KeyManager {
   async importKey(
     keyData: string,
     format: 'raw' | 'jwk' | 'pem',
-    metadata: Omit<KeyMetadata, 'id' | 'created' | 'version'>
+    metadata: Omit<KeyMetadata, 'id' | 'created' | 'version'>,
   ): Promise<string> {
     const keyId = this.generateKeyId()
-    
+
     // 解析密钥数据
     let keyMaterial: string
     switch (format) {
@@ -434,7 +436,8 @@ export class KeyManager {
         salt: encrypted.salt,
         iv: encrypted.iv,
       })
-    } else {
+    }
+    else {
       this.keys.set(keyId, {
         key: keyMaterial,
         metadata: fullMetadata,
@@ -465,18 +468,22 @@ export class KeyManager {
       if (key) {
         backup.keys.push({
           id: keyId,
-          key: key,
+          key,
           metadata: keyMaterial.metadata,
         })
       }
     }
 
     const json = JSON.stringify(backup)
-    
+
     // 如果提供了密码，加密备份
     if (password) {
-      const encrypted = this.aes.encrypt(json, password)
-      return encrypted.data!
+      const encrypted = aes.encrypt(json, password)
+      if (!encrypted.success) {
+        throw new Error('Failed to encrypt backup')
+      }
+      // 将IV和加密数据组合成一个字符串：IV:EncryptedData
+      return `${encrypted.iv}:${encrypted.data}`
     }
 
     return json
@@ -487,15 +494,28 @@ export class KeyManager {
    */
   async restore(backupData: string, password?: string): Promise<number> {
     let json: string
-    
+
     // 如果提供了密码，解密备份
     if (password) {
-      const decrypted = this.aes.decrypt(backupData, password)
-      if (!decrypted.success) {
-        throw new Error('Failed to decrypt backup')
+      // 分离IV和加密数据
+      const parts = backupData.split(':')
+      if (parts.length === 2) {
+        const [iv, encryptedData] = parts
+        const decrypted = aes.decrypt(encryptedData, password, { iv })
+        if (!decrypted.success) {
+          throw new Error('Failed to decrypt backup')
+        }
+        json = decrypted.data!
+      } else {
+        // 兼容旧格式，直接尝试解密
+        const decrypted = aes.decrypt(backupData, password)
+        if (!decrypted.success) {
+          throw new Error('Failed to decrypt backup')
+        }
+        json = decrypted.data!
       }
-      json = decrypted.data!
-    } else {
+    }
+    else {
       json = backupData
     }
 
@@ -513,7 +533,8 @@ export class KeyManager {
           salt: encrypted.salt,
           iv: encrypted.iv,
         })
-      } else {
+      }
+      else {
         this.keys.set(item.id, {
           key: item.key,
           metadata: item.metadata,
@@ -569,7 +590,7 @@ export class KeyManager {
     return this.generateRandomKey(keySize / 8)
   }
 
-  private async generateECDSAKey(curve: string): Promise<string> {
+  private async generateECDSAKey(_curve: string): Promise<string> {
     // 简化实现
     return this.generateRandomKey(256)
   }
@@ -590,10 +611,10 @@ export class KeyManager {
 
     const iv = CryptoJS.lib.WordArray.random(128 / 8).toString()
     const salt = this.generateSalt()
-    
-    const encrypted = this.aes.encrypt(key, this.masterKey, {
+
+    const encrypted = aes.encrypt(key, this.masterKey, {
       keySize: 256,
-      iv: iv,
+      iv,
     })
 
     return {
@@ -608,13 +629,13 @@ export class KeyManager {
       throw new Error('Master key not initialized')
     }
 
-    const decrypted = this.aes.decrypt(
+    const decrypted = aes.decrypt(
       keyMaterial.key as string,
       this.masterKey,
       {
         keySize: 256,
         iv: keyMaterial.iv,
-      }
+      },
     )
 
     if (!decrypted.success) {
@@ -659,11 +680,11 @@ export class KeyManager {
     // 检查条件
     if (permission.conditions) {
       const now = new Date()
-      
+
       // 时间窗口
       if (permission.conditions.timeWindow) {
-        if (now < permission.conditions.timeWindow.start || 
-            now > permission.conditions.timeWindow.end) {
+        if (now < permission.conditions.timeWindow.start
+          || now > permission.conditions.timeWindow.end) {
           return false
         }
       }
@@ -728,17 +749,17 @@ export class KeyManager {
     // 这里简化实现
   }
 
-  private async saveKeyToStorage(keyId: string): Promise<void> {
+  private async saveKeyToStorage(_keyId: string): Promise<void> {
     // 根据存储类型保存密钥
     // 这里简化实现
   }
 
-  private async saveToStorage(key: string, value: string): Promise<void> {
+  private async saveToStorage(_key: string, _value: string): Promise<void> {
     // 保存到存储
     // 这里简化实现
   }
 
-  private async removeFromStorage(keyId: string): Promise<void> {
+  private async removeFromStorage(_keyId: string): Promise<void> {
     // 从存储中删除
     // 这里简化实现
   }
@@ -752,7 +773,7 @@ export class KeyManager {
       clearTimeout(timer)
     }
     this.rotationTimers.clear()
-    
+
     // 清除密钥
     this.keys.clear()
     this.masterKey = null

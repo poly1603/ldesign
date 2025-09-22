@@ -128,6 +128,8 @@ console.log(isValid) // true
 
 ### Vue 3 集成
 
+#### 基础 Composition API
+
 ```typescript
 // 使用 Composition API
 import { useCrypto, useHash } from '@ldesign/crypto/vue'
@@ -148,6 +150,52 @@ export default {
   },
 }
 ```
+
+#### 便捷的组合式函数
+
+```vue
+<script setup>
+import { useEncryption, useKeyManager, useHash } from '@ldesign/crypto/vue'
+
+// 简单的加密解密
+const encryption = useEncryption()
+
+const handleEncrypt = async () => {
+  const encrypted = await encryption.encryptText('Hello World', 'myPassword')
+  console.log('加密结果:', encrypted)
+
+  const decrypted = await encryption.decryptText(encrypted, 'myPassword')
+  console.log('解密结果:', decrypted)
+}
+
+// 密钥管理
+const keyManager = useKeyManager()
+
+const generateKeys = async () => {
+  // 生成 AES 密钥
+  const aesKey = await keyManager.generateAESKey(256)
+  if (aesKey) {
+    keyManager.storeKey('myAESKey', aesKey)
+  }
+
+  // 生成 RSA 密钥对
+  const rsaKeyPair = await keyManager.generateRSAKeyPair(2048)
+  if (rsaKeyPair) {
+    keyManager.storeKey('myRSAKey', rsaKeyPair)
+  }
+}
+
+// 哈希计算
+const hash = useHash()
+
+const calculateHash = async () => {
+  const sha256Hash = await hash.sha256('Hello World')
+  console.log('SHA256:', sha256Hash)
+}
+</script>
+```
+
+#### 插件方式
 
 ```typescript
 import { CryptoPlugin } from '@ldesign/crypto/vue'

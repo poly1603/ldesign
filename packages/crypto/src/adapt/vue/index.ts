@@ -81,6 +81,16 @@ export {
   // 数字签名相关 Hook
   useSignature,
   type UseSignatureReturn,
+
+  // 便捷的组合式函数
+  type EncryptionActions,
+  type EncryptionState,
+  useEncryption,
+  type UseEncryptionReturn,
+  type KeyManagerActions,
+  type KeyManagerState,
+  useKeyManager,
+  type UseKeyManagerReturn,
 } from './composables'
 
 // === Vue 插件 ===

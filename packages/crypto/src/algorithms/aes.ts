@@ -37,13 +37,29 @@ export class AESEncryptor implements IEncryptor {
    * ```
    */
   encrypt(data: string, key: string, options: AESOptions = {}): EncryptResult {
+    const opts = { ...this.defaultOptions, ...options }
+
     try {
       // 允许空字符串数据，但不允许空密钥
       if (ValidationUtils.isEmpty(key)) {
         throw ErrorUtils.createEncryptionError('Key cannot be empty', 'AES')
       }
 
-      const opts = { ...this.defaultOptions, ...options }
+      // 验证密钥长度
+      if (opts.keySize && ![128, 192, 256].includes(opts.keySize)) {
+        throw ErrorUtils.createEncryptionError('Invalid key size. Must be 128, 192, or 256', 'AES')
+      }
+
+      // 验证加密模式
+      const validModes = ['CBC', 'ECB', 'CFB', 'OFB', 'CTR']
+      if (opts.mode && !validModes.includes(opts.mode)) {
+        throw ErrorUtils.createEncryptionError(`Invalid mode. Must be one of: ${validModes.join(', ')}`, 'AES')
+      }
+
+      // 验证IV长度（如果提供）- IV是十六进制字符串，所以长度应该是字节数的2倍
+      if (opts.iv && opts.iv.length !== CONSTANTS.AES.IV_LENGTH * 2) {
+        throw ErrorUtils.createEncryptionError(`Invalid IV length. Must be ${CONSTANTS.AES.IV_LENGTH * 2} characters (hex)`, 'AES')
+      }
 
       // 生成或使用提供的 IV
       const iv = opts.iv || RandomUtils.generateIV(CONSTANTS.AES.IV_LENGTH)
@@ -117,19 +133,10 @@ export class AESEncryptor implements IEncryptor {
         ciphertext = encryptedData
         iv = opts.iv
 
-        // 如果没有提供IV，尝试使用CryptoJS的默认解密方式
-        // CryptoJS的encrypt返回的字符串包含了所有必要信息
+        // 对于字符串输入，如果没有提供IV，尝试使用CryptoJS的默认解密方式
         if (!iv) {
-          // 使用CryptoJS的默认解密，它会自动处理IV
           try {
-            const keyWordArray = this.prepareKey(key, opts.keySize)
-            const mode = this.getMode(opts.mode)
-
-            const decrypted = CryptoJS.AES.decrypt(encryptedData, keyWordArray, {
-              mode,
-              padding: CryptoJS.pad.Pkcs7,
-            })
-
+            const decrypted = CryptoJS.AES.decrypt(encryptedData, key)
             const decryptedString = decrypted.toString(CryptoJS.enc.Utf8)
 
             if (decrypted.sigBytes < 0) {
@@ -199,7 +206,7 @@ export class AESEncryptor implements IEncryptor {
       const decryptedString = decrypted.toString(CryptoJS.enc.Utf8)
 
       // 检查解密是否成功
-      // 如果解密失败，decrypted.sigBytes 会是负数或者为0（但密文不为空）
+      // 如果解密失败，decrypted.sigBytes 会是负数
       if (decrypted.sigBytes < 0) {
         throw ErrorUtils.createDecryptionError(
           'Failed to decrypt data - invalid key or corrupted data',
@@ -322,8 +329,33 @@ export const aes = {
    * AES 加密
    */
   encrypt: (data: string, key: string, options?: AESOptions): EncryptResult => {
-    const encryptor = new AESEncryptor()
-    return encryptor.encrypt(data, key, options)
+    try {
+      const encryptor = new AESEncryptor()
+      return encryptor.encrypt(data, key, options)
+    }
+    catch (error) {
+      const opts = { ...new AESEncryptor()['defaultOptions'], ...options }
+      if (error instanceof Error) {
+        return {
+          success: false,
+          data: '',
+          algorithm: 'AES',
+          mode: opts.mode,
+          keySize: opts.keySize,
+          iv: '',
+          error: error.message,
+        }
+      }
+      return {
+        success: false,
+        data: '',
+        algorithm: 'AES',
+        mode: opts.mode,
+        keySize: opts.keySize,
+        iv: '',
+        error: 'Unknown encryption error',
+      }
+    }
   },
 
   /**
@@ -334,8 +366,29 @@ export const aes = {
     key: string,
     options?: AESOptions,
   ): DecryptResult => {
-    const encryptor = new AESEncryptor()
-    return encryptor.decrypt(encryptedData, key, options)
+    try {
+      const encryptor = new AESEncryptor()
+      return encryptor.decrypt(encryptedData, key, options)
+    }
+    catch (error) {
+      const opts = { ...new AESEncryptor()['defaultOptions'], ...options }
+      if (error instanceof Error) {
+        return {
+          success: false,
+          data: '',
+          algorithm: 'AES',
+          mode: opts.mode,
+          error: error.message,
+        }
+      }
+      return {
+        success: false,
+        data: '',
+        algorithm: 'AES',
+        mode: opts.mode,
+        error: 'Unknown decryption error',
+      }
+    }
   },
 
   /**

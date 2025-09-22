@@ -17,3 +17,17 @@ export {
   useSignature,
   type UseSignatureReturn,
 } from './useSignature'
+
+// 便捷的组合式函数
+export {
+  type EncryptionState,
+  type EncryptionActions,
+  useEncryption,
+  type UseEncryptionReturn,
+} from './useEncryption'
+export {
+  type KeyManagerState,
+  type KeyManagerActions,
+  useKeyManager,
+  type UseKeyManagerReturn,
+} from './useKeyManager'

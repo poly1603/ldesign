@@ -3,6 +3,7 @@
  * Cryptographically Secure Pseudorandom Number Generator
  */
 
+import { Buffer } from 'node:buffer'
 import CryptoJS from 'crypto-js'
 
 /**
@@ -35,7 +36,8 @@ export class EntropyCollector {
    * 开始收集熵
    */
   startCollecting(): void {
-    if (this.collecting) return
+    if (this.collecting)
+      return
     this.collecting = true
 
     // 收集鼠标移动熵
@@ -66,7 +68,7 @@ export class EntropyCollector {
   private collectMouseEntropy = (event: MouseEvent): void => {
     const entropy = (event.clientX ^ event.clientY) * Date.now()
     this.mouseEntropy.push(entropy)
-    
+
     // 限制数组大小
     if (this.mouseEntropy.length > 256) {
       this.mouseEntropy.shift()
@@ -79,7 +81,7 @@ export class EntropyCollector {
   private collectKeyboardEntropy = (event: KeyboardEvent): void => {
     const entropy = event.keyCode * Date.now()
     this.keyboardEntropy.push(entropy)
-    
+
     // 限制数组大小
     if (this.keyboardEntropy.length > 256) {
       this.keyboardEntropy.shift()
@@ -92,7 +94,7 @@ export class EntropyCollector {
   private collectTimeEntropy(): void {
     const entropy = performance.now() * Date.now()
     this.timeEntropy.push(entropy)
-    
+
     // 限制数组大小
     if (this.timeEntropy.length > 256) {
       this.timeEntropy.shift()
@@ -125,7 +127,7 @@ export class EntropyCollector {
     // 转换为字节数组
     const bytes = new Uint8Array(32)
     for (let i = 0; i < bytes.length; i++) {
-      bytes[i] = (mixed >> (i * 8)) & 0xff
+      bytes[i] = (mixed >> (i * 8)) & 0xFF
       mixed = (mixed << 3) | (mixed >>> 29)
     }
 
@@ -137,14 +139,15 @@ export class EntropyCollector {
    */
   addEntropy(data: string | Uint8Array): void {
     let entropy: number
-    
+
     if (typeof data === 'string') {
       entropy = 0
       for (let i = 0; i < data.length; i++) {
         entropy = (entropy << 5) - entropy + data.charCodeAt(i)
         entropy = entropy & entropy
       }
-    } else {
+    }
+    else {
       entropy = 0
       for (let i = 0; i < data.length; i++) {
         entropy = (entropy << 5) - entropy + data[i]
@@ -153,7 +156,7 @@ export class EntropyCollector {
     }
 
     this.entropy.push(entropy)
-    
+
     // 限制数组大小
     if (this.entropy.length > 256) {
       this.entropy.shift()
@@ -164,11 +167,11 @@ export class EntropyCollector {
    * 获取熵池质量
    */
   getEntropyQuality(): number {
-    const totalEntropy = 
-      this.entropy.length +
-      this.mouseEntropy.length +
-      this.keyboardEntropy.length +
-      this.timeEntropy.length
+    const totalEntropy
+      = this.entropy.length
+        + this.mouseEntropy.length
+        + this.keyboardEntropy.length
+        + this.timeEntropy.length
 
     // 简单的质量评估（0-100）
     return Math.min(100, (totalEntropy / 1024) * 100)
@@ -197,10 +200,10 @@ export class CSPRNG {
 
     this.seed = new Uint8Array(this.config.seedLength)
     this.entropyCollector = new EntropyCollector()
-    
+
     // 初始化种子
     this.initializeSeed()
-    
+
     // 开始收集熵
     if (this.config.collectEntropy) {
       this.entropyCollector.startCollecting()
@@ -212,20 +215,20 @@ export class CSPRNG {
    */
   private detectBestEntropySource(): CSPRNGConfig['entropySource'] {
     // Node.js 环境
-    if (typeof global !== 'undefined' && global.crypto) {
+    if (typeof globalThis !== 'undefined' && globalThis.crypto) {
       return 'node'
     }
-    
+
     // 浏览器 WebCrypto API
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    if (typeof window !== 'undefined' && window.crypto && typeof window.crypto.getRandomValues === 'function') {
       return 'webcrypto'
     }
-    
+
     // crypto-js 库
     if (CryptoJS && CryptoJS.lib && CryptoJS.lib.WordArray) {
       return 'crypto'
     }
-    
+
     // 回退方案
     return 'fallback'
   }
@@ -239,38 +242,43 @@ export class CSPRNG {
         // Node.js crypto
         if (typeof require !== 'undefined') {
           try {
-            const crypto = require('crypto')
+            // eslint-disable-next-line ts/no-require-imports
+            const crypto = require('node:crypto')
             crypto.randomFillSync(this.seed)
-          } catch {
+          }
+          catch {
             this.fallbackSeed()
           }
-        } else {
+        }
+        else {
           this.fallbackSeed()
         }
         break
-        
+
       case 'webcrypto':
         // Web Crypto API
         if (typeof window !== 'undefined' && window.crypto) {
           window.crypto.getRandomValues(this.seed)
-        } else {
+        }
+        else {
           this.fallbackSeed()
         }
         break
-        
-      case 'crypto':
+
+      case 'crypto': {
         // crypto-js
         const wordArray = CryptoJS.lib.WordArray.random(this.config.seedLength)
         const words = wordArray.words
         for (let i = 0; i < this.seed.length; i++) {
-          this.seed[i] = (words[Math.floor(i / 4)] >> ((3 - (i % 4)) * 8)) & 0xff
+          this.seed[i] = (words[Math.floor(i / 4)] >> ((3 - (i % 4)) * 8)) & 0xFF
         }
         break
-        
+      }
+
       default:
         this.fallbackSeed()
     }
-    
+
     // 混入收集的熵
     if (this.config.collectEntropy) {
       const entropy = this.entropyCollector.getEntropy()
@@ -287,11 +295,16 @@ export class CSPRNG {
     // 使用多个源组合生成种子
     const now = Date.now()
     const perf = typeof performance !== 'undefined' ? performance.now() : 0
-    const random = Math.random()
-    
+
     for (let i = 0; i < this.seed.length; i++) {
-      const value = (now + i) * (perf + i) * (random + i)
-      this.seed[i] = (value * 0x100000000) & 0xff
+      // 使用多个随机源确保每次都不同
+      const random1 = Math.random()
+      const random2 = Math.random()
+      const random3 = Math.random()
+
+      const value = (now + i * 1000) * (perf + i * 100) * (random1 + i) +
+                   (random2 * 0x100000000) + (random3 * 0x10000) + i
+      this.seed[i] = Math.floor(value) & 0xFF
     }
   }
 
@@ -300,55 +313,60 @@ export class CSPRNG {
    */
   randomBytes(length: number): Uint8Array {
     const bytes = new Uint8Array(length)
-    
+
     // 检查是否需要重新播种
     if (this.counter - this.lastReseed > this.config.reseedInterval) {
       this.reseed()
     }
-    
+
     switch (this.config.entropySource) {
       case 'node':
         // Node.js crypto
         if (typeof require !== 'undefined') {
           try {
-            const crypto = require('crypto')
+            // eslint-disable-next-line ts/no-require-imports
+            const crypto = require('node:crypto')
             crypto.randomFillSync(bytes)
-          } catch {
+          }
+          catch {
             this.fallbackRandomBytes(bytes)
           }
-        } else {
+        }
+        else {
           this.fallbackRandomBytes(bytes)
         }
         break
-        
+
       case 'webcrypto':
         // Web Crypto API
         if (typeof window !== 'undefined' && window.crypto) {
           window.crypto.getRandomValues(bytes)
-        } else {
+        }
+        else {
           this.fallbackRandomBytes(bytes)
         }
         break
-        
-      case 'crypto':
+
+      case 'crypto': {
         // crypto-js
         const wordArray = CryptoJS.lib.WordArray.random(length)
         const words = wordArray.words
         for (let i = 0; i < length; i++) {
-          bytes[i] = (words[Math.floor(i / 4)] >> ((3 - (i % 4)) * 8)) & 0xff
+          bytes[i] = (words[Math.floor(i / 4)] >> ((3 - (i % 4)) * 8)) & 0xFF
         }
         break
-        
+      }
+
       default:
         this.fallbackRandomBytes(bytes)
     }
-    
+
     // 混入种子和计数器
     for (let i = 0; i < bytes.length; i++) {
       bytes[i] ^= this.seed[i % this.seed.length]
-      bytes[i] ^= (this.counter >> (i % 4) * 8) & 0xff
+      bytes[i] ^= (this.counter >> (i % 4) * 8) & 0xFF
     }
-    
+
     this.counter++
     return bytes
   }
@@ -360,7 +378,13 @@ export class CSPRNG {
     // 使用 Xorshift128+ 算法
     let s0 = this.seed[0] | (this.seed[1] << 8) | (this.seed[2] << 16) | (this.seed[3] << 24)
     let s1 = this.seed[4] | (this.seed[5] << 8) | (this.seed[6] << 16) | (this.seed[7] << 24)
-    
+
+    // 确保状态不为零（Xorshift算法要求非零状态）
+    if (s0 === 0 && s1 === 0) {
+      s0 = 0x12345678
+      s1 = 0x9ABCDEF0
+    }
+
     for (let i = 0; i < bytes.length; i++) {
       let x = s0
       const y = s1
@@ -370,18 +394,18 @@ export class CSPRNG {
       x ^= y
       x ^= y >>> 26
       s1 = x
-      bytes[i] = (s0 + s1) & 0xff
+      bytes[i] = (s0 + s1) & 0xFF
     }
-    
+
     // 更新种子
-    this.seed[0] = s0 & 0xff
-    this.seed[1] = (s0 >> 8) & 0xff
-    this.seed[2] = (s0 >> 16) & 0xff
-    this.seed[3] = (s0 >> 24) & 0xff
-    this.seed[4] = s1 & 0xff
-    this.seed[5] = (s1 >> 8) & 0xff
-    this.seed[6] = (s1 >> 16) & 0xff
-    this.seed[7] = (s1 >> 24) & 0xff
+    this.seed[0] = s0 & 0xFF
+    this.seed[1] = (s0 >> 8) & 0xFF
+    this.seed[2] = (s0 >> 16) & 0xFF
+    this.seed[3] = (s0 >> 24) & 0xFF
+    this.seed[4] = s1 & 0xFF
+    this.seed[5] = (s1 >> 8) & 0xFF
+    this.seed[6] = (s1 >> 16) & 0xFF
+    this.seed[7] = (s1 >> 24) & 0xFF
   }
 
   /**
@@ -391,21 +415,37 @@ export class CSPRNG {
     if (min >= max) {
       throw new Error('min must be less than max')
     }
-    
+
     const range = max - min
-    const bytesNeeded = Math.ceil(Math.log2(range) / 8)
-    const maxValue = Math.pow(256, bytesNeeded)
+
+    // Handle edge cases
+    if (range === 1) {
+      return min
+    }
+
+    const bytesNeeded = Math.max(1, Math.ceil(Math.log2(range) / 8))
+    const maxValue = 256 ** bytesNeeded
     const threshold = maxValue - (maxValue % range)
-    
+
     let value: number
+    let attempts = 0
+    const maxAttempts = 1000 // Prevent infinite loops
+
     do {
+      if (attempts++ > maxAttempts) {
+        // Fallback to simple modulo if we can't get unbiased result
+        const bytes = this.randomBytes(4)
+        const fallbackValue = (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3]
+        return min + (Math.abs(fallbackValue) % range)
+      }
+
       const bytes = this.randomBytes(bytesNeeded)
       value = 0
       for (let i = 0; i < bytesNeeded; i++) {
         value = (value << 8) | bytes[i]
       }
     } while (value >= threshold)
-    
+
     return min + (value % range)
   }
 
@@ -424,7 +464,7 @@ export class CSPRNG {
    */
   randomString(
     length: number,
-    charset: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    charset: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
   ): string {
     let result = ''
     for (let i = 0; i < length; i++) {
@@ -452,7 +492,8 @@ export class CSPRNG {
     const bytes = this.randomBytes(Math.ceil(length * 3 / 4))
     if (typeof Buffer !== 'undefined') {
       return Buffer.from(bytes).toString('base64').substring(0, length)
-    } else {
+    }
+    else {
       // 浏览器环境
       return btoa(String.fromCharCode.apply(null, Array.from(bytes)))
         .substring(0, length)
@@ -464,13 +505,13 @@ export class CSPRNG {
    */
   randomUUID(): string {
     const bytes = this.randomBytes(16)
-    
+
     // 设置版本位 (4)
-    bytes[6] = (bytes[6] & 0x0f) | 0x40
-    
+    bytes[6] = (bytes[6] & 0x0F) | 0x40
+
     // 设置变体位
-    bytes[8] = (bytes[8] & 0x3f) | 0x80
-    
+    bytes[8] = (bytes[8] & 0x3F) | 0x80
+
     // 格式化为 UUID 字符串
     const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')
     return [
@@ -521,12 +562,12 @@ export class CSPRNG {
     if (count > array.length) {
       throw new Error('Sample size cannot be larger than array length')
     }
-    
+
     const indices = new Set<number>()
     while (indices.size < count) {
       indices.add(this.randomInt(0, array.length))
     }
-    
+
     return Array.from(indices).map(i => array[i])
   }
 
@@ -536,14 +577,14 @@ export class CSPRNG {
   reseed(additionalEntropy?: Uint8Array): void {
     // 生成新种子
     this.initializeSeed()
-    
+
     // 混入额外熵
     if (additionalEntropy) {
       for (let i = 0; i < Math.min(additionalEntropy.length, this.seed.length); i++) {
         this.seed[i] ^= additionalEntropy[i]
       }
     }
-    
+
     // 混入收集的熵
     if (this.config.collectEntropy) {
       const entropy = this.entropyCollector.getEntropy()
@@ -551,7 +592,7 @@ export class CSPRNG {
         this.seed[i] ^= entropy[i]
       }
     }
-    
+
     this.lastReseed = this.counter
   }
 
@@ -577,7 +618,7 @@ export class CSPRNG {
     if (this.config.collectEntropy) {
       this.entropyCollector.stopCollecting()
     }
-    
+
     // 清除种子
     this.seed.fill(0)
     this.counter = 0

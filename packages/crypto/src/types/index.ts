@@ -168,12 +168,12 @@ export interface KeyGenerationOptions {
  * 加密器接口
  */
 export interface IEncryptor {
-  encrypt: (data: string, key: string, options?: any) => EncryptResult
+  encrypt: (data: string, key: string, options?: any) => EncryptResult | Promise<EncryptResult>
   decrypt: (
     encryptedData: string | EncryptResult,
     key: string,
     options?: any
-  ) => DecryptResult
+  ) => DecryptResult | Promise<DecryptResult>
 }
 
 /**

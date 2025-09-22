@@ -20,8 +20,8 @@ export default defineConfig({
     '**/test/**',
     '**/tests/**',
     '**/examples/**',
-    '**/demo/**'
-  ]
+    '**/demo/**',
+  ],
 
   // external、globals、libraryType、formats、plugins 等配置将由 @ldesign/builder 自动检测和生成
 })

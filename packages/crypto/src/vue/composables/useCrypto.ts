@@ -69,11 +69,11 @@ export function useCrypto() {
   }
 
   // SHA256哈希
-  const sha256 = async (data: string): Promise<HashResult | null> => {
+  const sha256 = async (data: string): Promise<string | null> => {
     try {
       isHashing.value = true
       lastError.value = null
-      const result = await hash.sha256(data)
+      const result = hash.sha256(data)
       lastResult.value = result
       return result
     }
@@ -87,11 +87,11 @@ export function useCrypto() {
   }
 
   // MD5哈希
-  const md5 = async (data: string): Promise<HashResult | null> => {
+  const md5 = async (data: string): Promise<string | null> => {
     try {
       isHashing.value = true
       lastError.value = null
-      const result = await hash.md5(data)
+      const result = hash.md5(data)
       lastResult.value = result
       return result
     }

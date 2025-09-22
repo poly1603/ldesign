@@ -14,17 +14,17 @@ enum WasmOpcode {
   LOOP = 0x03,
   IF = 0x04,
   ELSE = 0x05,
-  END = 0x0b,
-  BR = 0x0c,
-  BR_IF = 0x0d,
-  BR_TABLE = 0x0e,
-  RETURN = 0x0f,
+  END = 0x0B,
+  BR = 0x0C,
+  BR_IF = 0x0D,
+  BR_TABLE = 0x0E,
+  RETURN = 0x0F,
   CALL = 0x10,
   CALL_INDIRECT = 0x11,
 
   // 参数指令
-  DROP = 0x1a,
-  SELECT = 0x1b,
+  DROP = 0x1A,
+  SELECT = 0x1B,
 
   // 变量指令
   LOCAL_GET = 0x20,
@@ -36,12 +36,12 @@ enum WasmOpcode {
   // 内存指令
   I32_LOAD = 0x28,
   I64_LOAD = 0x29,
-  F32_LOAD = 0x2a,
-  F64_LOAD = 0x2b,
-  I32_LOAD8_S = 0x2c,
-  I32_LOAD8_U = 0x2d,
-  I32_LOAD16_S = 0x2e,
-  I32_LOAD16_U = 0x2f,
+  F32_LOAD = 0x2A,
+  F64_LOAD = 0x2B,
+  I32_LOAD8_S = 0x2C,
+  I32_LOAD8_U = 0x2D,
+  I32_LOAD16_S = 0x2E,
+  I32_LOAD16_U = 0x2F,
   I64_LOAD8_S = 0x30,
   I64_LOAD8_U = 0x31,
   I64_LOAD16_S = 0x32,
@@ -52,12 +52,12 @@ enum WasmOpcode {
   I64_STORE = 0x37,
   F32_STORE = 0x38,
   F64_STORE = 0x39,
-  I32_STORE8 = 0x3a,
-  I32_STORE16 = 0x3b,
-  I64_STORE8 = 0x3c,
-  I64_STORE16 = 0x3d,
-  I64_STORE32 = 0x3e,
-  MEMORY_SIZE = 0x3f,
+  I32_STORE8 = 0x3A,
+  I32_STORE16 = 0x3B,
+  I64_STORE8 = 0x3C,
+  I64_STORE16 = 0x3D,
+  I64_STORE32 = 0x3E,
+  MEMORY_SIZE = 0x3F,
   MEMORY_GROW = 0x40,
 
   // 常量
@@ -72,21 +72,21 @@ enum WasmOpcode {
   I32_NE = 0x47,
   I32_LT_S = 0x48,
   I32_LT_U = 0x49,
-  I32_GT_S = 0x4a,
-  I32_GT_U = 0x4b,
-  I32_LE_S = 0x4c,
-  I32_LE_U = 0x4d,
-  I32_GE_S = 0x4e,
-  I32_GE_U = 0x4f,
+  I32_GT_S = 0x4A,
+  I32_GT_U = 0x4B,
+  I32_LE_S = 0x4C,
+  I32_LE_U = 0x4D,
+  I32_GE_S = 0x4E,
+  I32_GE_U = 0x4F,
   I32_CLZ = 0x67,
   I32_CTZ = 0x68,
   I32_POPCNT = 0x69,
-  I32_ADD = 0x6a,
-  I32_SUB = 0x6b,
-  I32_MUL = 0x6c,
-  I32_DIV_S = 0x6d,
-  I32_DIV_U = 0x6e,
-  I32_REM_S = 0x6f,
+  I32_ADD = 0x6A,
+  I32_SUB = 0x6B,
+  I32_MUL = 0x6C,
+  I32_DIV_S = 0x6D,
+  I32_DIV_U = 0x6E,
+  I32_REM_S = 0x6F,
   I32_REM_U = 0x70,
   I32_AND = 0x71,
   I32_OR = 0x72,
@@ -102,10 +102,10 @@ enum WasmOpcode {
  * WASM 类型
  */
 enum WasmType {
-  I32 = 0x7f,
-  I64 = 0x7e,
-  F32 = 0x7d,
-  F64 = 0x7c,
+  I32 = 0x7F,
+  I64 = 0x7E,
+  F32 = 0x7D,
+  F64 = 0x7C,
   FUNC = 0x60,
   VOID = 0x40,
 }
@@ -136,12 +136,12 @@ export class WasmModuleBuilder {
   private types: any[] = []
   private functions: any[] = []
   private exports: any[] = []
-  private memory: { initial: number; maximum?: number } | null = null
+  private memory: { initial: number, maximum?: number } | null = null
   private data: any[] = []
 
   constructor() {
     // 添加 WASM 魔数和版本
-    this.bytes.push(...[0x00, 0x61, 0x73, 0x6d]) // \0asm
+    this.bytes.push(...[0x00, 0x61, 0x73, 0x6D]) // \0asm
     this.bytes.push(...[0x01, 0x00, 0x00, 0x00]) // version 1
   }
 
@@ -161,19 +161,19 @@ export class WasmModuleBuilder {
     name: string,
     typeIndex: number,
     locals: WasmType[],
-    body: number[]
+    body: number[],
   ): number {
     const func = { name, typeIndex, locals, body }
     this.functions.push(func)
     const funcIndex = this.functions.length - 1
-    
+
     // 添加导出
     this.exports.push({
       name,
       kind: 0x00, // function export
       index: funcIndex,
     })
-    
+
     return funcIndex
   }
 
@@ -261,20 +261,21 @@ export class WasmModuleBuilder {
         this.writeVarUint(section, this.functions.length)
         for (const func of this.functions) {
           const funcBody: number[] = []
-          
+
           // Locals
           if (func.locals.length > 0) {
             this.writeVarUint(funcBody, 1) // 1 local group
             this.writeVarUint(funcBody, func.locals.length)
             funcBody.push(func.locals[0]) // assuming all same type
-          } else {
+          }
+          else {
             this.writeVarUint(funcBody, 0) // no locals
           }
-          
+
           // Body
           funcBody.push(...func.body)
           funcBody.push(WasmOpcode.END)
-          
+
           this.writeVarUint(section, funcBody.length)
           section.push(...funcBody)
         }
@@ -295,7 +296,7 @@ export class WasmModuleBuilder {
           section.push(WasmOpcode.END)
           // Data
           this.writeVarUint(section, segment.data.length)
-          section.push(...Array.from(segment.data))
+          section.push(...Array.from(segment.data as Uint8Array))
         }
         return section
       })
@@ -310,7 +311,7 @@ export class WasmModuleBuilder {
   private writeSection(
     module: number[],
     type: WasmSection,
-    contentBuilder: () => number[]
+    contentBuilder: () => number[],
   ): void {
     const content = contentBuilder()
     module.push(type)
@@ -323,7 +324,7 @@ export class WasmModuleBuilder {
    */
   private writeVarUint(bytes: number[], value: number): void {
     while (value >= 0x80) {
-      bytes.push((value & 0x7f) | 0x80)
+      bytes.push((value & 0x7F) | 0x80)
       value >>>= 7
     }
     bytes.push(value)
@@ -335,13 +336,13 @@ export class WasmModuleBuilder {
   private writeVarInt(bytes: number[], value: number): void {
     const negative = value < 0
     while (true) {
-      const byte = value & 0x7f
+      const byte = value & 0x7F
       value >>= 7
       if (negative) {
         value |= -(1 << 25)
       }
-      if ((value === 0 && (byte & 0x40) === 0) ||
-          (value === -1 && (byte & 0x40) !== 0)) {
+      if ((value === 0 && (byte & 0x40) === 0)
+        || (value === -1 && (byte & 0x40) !== 0)) {
         bytes.push(byte)
         break
       }
@@ -364,79 +365,101 @@ export class WasmModuleBuilder {
  */
 export function createSHA256WasmModule(): Uint8Array {
   const builder = new WasmModuleBuilder()
-  
+
   // 设置内存 (1 页 = 64KB)
   builder.setMemory(1, 2)
-  
+
   // 添加类型：allocate(size: i32) -> i32
   const allocateType = builder.addType([WasmType.I32], [WasmType.I32])
-  
+
   // 添加类型：free(ptr: i32) -> void
   const freeType = builder.addType([WasmType.I32], [])
-  
+
   // 添加类型：sha256(input: i32, len: i32, output: i32) -> void
   const sha256Type = builder.addType(
     [WasmType.I32, WasmType.I32, WasmType.I32],
-    []
+    [],
   )
-  
+
   // 简单的内存分配器（示例）
-  let memoryOffset = 0
-  
+  const memoryOffset = 0
+
   // allocate 函数
   builder.addFunction('allocate', allocateType, [], [
-    WasmOpcode.I32_CONST, ...encodeI32(memoryOffset),
-    WasmOpcode.LOCAL_GET, 0, // size
+    WasmOpcode.I32_CONST,
+    ...encodeI32(memoryOffset),
+    WasmOpcode.LOCAL_GET,
+    0, // size
     WasmOpcode.I32_ADD,
-    WasmOpcode.I32_CONST, ...encodeI32(memoryOffset),
+    WasmOpcode.I32_CONST,
+    ...encodeI32(memoryOffset),
     WasmOpcode.RETURN,
   ])
-  
+
   // free 函数（空实现）
   builder.addFunction('free', freeType, [], [
     WasmOpcode.RETURN,
   ])
-  
+
   // sha256 函数（简化实现）
   builder.addFunction('sha256', sha256Type, [WasmType.I32], [
     // 这里应该是完整的 SHA256 实现
     // 为了示例，只是简单复制输入到输出
-    
+
     // 循环 32 次（SHA256 输出 32 字节）
-    WasmOpcode.I32_CONST, 0,
-    WasmOpcode.LOCAL_SET, 3, // i = 0
-    
-    WasmOpcode.BLOCK, WasmType.VOID,
-      WasmOpcode.LOOP, WasmType.VOID,
-        // 检查 i < 32
-        WasmOpcode.LOCAL_GET, 3,
-        WasmOpcode.I32_CONST, 32,
-        WasmOpcode.I32_GE_U,
-        WasmOpcode.BR_IF, 1,
-        
-        // 从输入读取字节
-        WasmOpcode.LOCAL_GET, 0, // input ptr
-        WasmOpcode.LOCAL_GET, 3, // i
-        WasmOpcode.I32_ADD,
-        WasmOpcode.I32_LOAD8_U, 0, 0,
-        
-        // 写入到输出
-        WasmOpcode.LOCAL_GET, 2, // output ptr
-        WasmOpcode.LOCAL_GET, 3, // i
-        WasmOpcode.I32_ADD,
-        WasmOpcode.I32_STORE8, 0, 0,
-        
-        // i++
-        WasmOpcode.LOCAL_GET, 3,
-        WasmOpcode.I32_CONST, 1,
-        WasmOpcode.I32_ADD,
-        WasmOpcode.LOCAL_SET, 3,
-        
-        WasmOpcode.BR, 0,
-      WasmOpcode.END,
+    WasmOpcode.I32_CONST,
+    0,
+    WasmOpcode.LOCAL_SET,
+    3, // i = 0
+
+    WasmOpcode.BLOCK,
+    WasmType.VOID,
+    WasmOpcode.LOOP,
+    WasmType.VOID,
+    // 检查 i < 32
+    WasmOpcode.LOCAL_GET,
+    3,
+    WasmOpcode.I32_CONST,
+    32,
+    WasmOpcode.I32_GE_U,
+    WasmOpcode.BR_IF,
+    1,
+
+    // 从输入读取字节
+    WasmOpcode.LOCAL_GET,
+    0, // input ptr
+    WasmOpcode.LOCAL_GET,
+    3, // i
+    WasmOpcode.I32_ADD,
+    WasmOpcode.I32_LOAD8_U,
+    0,
+    0,
+
+    // 写入到输出
+    WasmOpcode.LOCAL_GET,
+    2, // output ptr
+    WasmOpcode.LOCAL_GET,
+    3, // i
+    WasmOpcode.I32_ADD,
+    WasmOpcode.I32_STORE8,
+    0,
+    0,
+
+    // i++
+    WasmOpcode.LOCAL_GET,
+    3,
+    WasmOpcode.I32_CONST,
+    1,
+    WasmOpcode.I32_ADD,
+    WasmOpcode.LOCAL_SET,
+    3,
+
+    WasmOpcode.BR,
+    0,
+    WasmOpcode.END,
     WasmOpcode.END,
   ])
-  
+
   return builder.build()
 }
 
@@ -445,47 +468,55 @@ export function createSHA256WasmModule(): Uint8Array {
  */
 export function createAESWasmModule(): Uint8Array {
   const builder = new WasmModuleBuilder()
-  
+
   // 设置内存
   builder.setMemory(2, 4)
-  
+
   // 添加类型
   const allocateType = builder.addType([WasmType.I32], [WasmType.I32])
   const freeType = builder.addType([WasmType.I32], [])
   const aesEncryptType = builder.addType(
     [
-      WasmType.I32, WasmType.I32, // data, data_len
-      WasmType.I32, WasmType.I32, // key, key_len
-      WasmType.I32, WasmType.I32, // iv, iv_len
+      WasmType.I32,
+      WasmType.I32, // data, data_len
+      WasmType.I32,
+      WasmType.I32, // key, key_len
+      WasmType.I32,
+      WasmType.I32, // iv, iv_len
       WasmType.I32, // output
     ],
-    [WasmType.I32] // return length
+    [WasmType.I32], // return length
   )
-  
+
   // allocate 函数
-  let memoryOffset = 0
+  const memoryOffset = 0
   builder.addFunction('allocate', allocateType, [], [
-    WasmOpcode.I32_CONST, ...encodeI32(memoryOffset),
-    WasmOpcode.LOCAL_GET, 0,
+    WasmOpcode.I32_CONST,
+    ...encodeI32(memoryOffset),
+    WasmOpcode.LOCAL_GET,
+    0,
     WasmOpcode.I32_ADD,
-    WasmOpcode.I32_CONST, ...encodeI32(memoryOffset),
+    WasmOpcode.I32_CONST,
+    ...encodeI32(memoryOffset),
     WasmOpcode.RETURN,
   ])
-  
+
   // free 函数
   builder.addFunction('free', freeType, [], [
     WasmOpcode.RETURN,
   ])
-  
+
   // aes_encrypt 函数（简化实现）
   builder.addFunction('aes_encrypt', aesEncryptType, [], [
     // 返回输入长度 + 16（假设一个块的填充）
-    WasmOpcode.LOCAL_GET, 1, // data_len
-    WasmOpcode.I32_CONST, 16,
+    WasmOpcode.LOCAL_GET,
+    1, // data_len
+    WasmOpcode.I32_CONST,
+    16,
     WasmOpcode.I32_ADD,
     WasmOpcode.RETURN,
   ])
-  
+
   return builder.build()
 }
 
@@ -496,13 +527,13 @@ function encodeI32(value: number): number[] {
   const bytes: number[] = []
   const negative = value < 0
   while (true) {
-    const byte = value & 0x7f
+    const byte = value & 0x7F
     value >>= 7
     if (negative) {
       value |= -(1 << 25)
     }
-    if ((value === 0 && (byte & 0x40) === 0) ||
-        (value === -1 && (byte & 0x40) !== 0)) {
+    if ((value === 0 && (byte & 0x40) === 0)
+      || (value === -1 && (byte & 0x40) !== 0)) {
       bytes.push(byte)
       break
     }
@@ -527,10 +558,10 @@ export class WasmModuleCollection {
   private initializeModules(): void {
     // SHA256 模块
     this.modules.set('sha256', createSHA256WasmModule())
-    
+
     // AES 模块
     this.modules.set('aes', createAESWasmModule())
-    
+
     // 可以添加更多模块...
   }
 

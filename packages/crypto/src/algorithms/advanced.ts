@@ -64,7 +64,8 @@ export class ChaCha20Encryptor implements IEncryptor {
         nonce,
         aad: options.aad,
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         return {
           success: false,
@@ -99,7 +100,8 @@ export class ChaCha20Encryptor implements IEncryptor {
         ciphertext = encryptedData
         nonce = options.nonce || ''
         aad = options.aad
-      } else {
+      }
+      else {
         ciphertext = encryptedData.data || ''
         nonce = (encryptedData as any).nonce || options.nonce || ''
         aad = (encryptedData as any).aad || options.aad
@@ -128,7 +130,8 @@ export class ChaCha20Encryptor implements IEncryptor {
         data: decrypted,
         algorithm: 'ChaCha20-Poly1305',
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         return {
           success: false,
@@ -153,28 +156,30 @@ export class ChaCha20Encryptor implements IEncryptor {
     // 这是一个简化的实现，实际应使用专门的 ChaCha20 算法
     const keyBytes = this.hexToBytes(key)
     const nonceBytes = this.hexToBytes(nonce)
-    
+
     // 判断输入是否为十六进制字符串（解密时）
     let dataBytes: Uint8Array
-    if (/^[0-9a-fA-F]+$/.test(data) && data.length % 2 === 0) {
+    if (/^[0-9a-f]+$/i.test(data) && data.length % 2 === 0) {
       // 输入是hex字符串，需要解码
       dataBytes = this.hexToBytes(data)
-    } else {
+    }
+    else {
       // 输入是普通字符串，需要编码
       dataBytes = new TextEncoder().encode(data)
     }
-    
+
     const result = new Uint8Array(dataBytes.length)
     for (let i = 0; i < dataBytes.length; i++) {
       // 简化的流密码生成
       result[i] = dataBytes[i] ^ keyBytes[i % keyBytes.length] ^ nonceBytes[i % nonceBytes.length]
     }
-    
+
     // 加密时返回 hex，解密时返回字符串
-    if (/^[0-9a-fA-F]+$/.test(data) && data.length % 2 === 0) {
+    if (/^[0-9a-f]+$/i.test(data) && data.length % 2 === 0) {
       // 输入是hex（解密），返回字符串
       return new TextDecoder().decode(result)
-    } else {
+    }
+    else {
       // 输入是字符串（加密），返回hex
       return this.bytesToHex(result)
     }
@@ -187,18 +192,18 @@ export class ChaCha20Encryptor implements IEncryptor {
     // 简化的 Poly1305 实现
     const input = data + nonce + (aad || '')
     const keyBytes = this.hexToBytes(key)
-    
+
     let hash = 0
     for (let i = 0; i < input.length; i++) {
       hash = ((hash << 5) - hash) + input.charCodeAt(i)
       hash = hash & hash
     }
-    
+
     // 使用密钥混合
     for (const byte of keyBytes) {
       hash ^= byte
     }
-    
+
     // 生成固定长度的标签
     const tag = Math.abs(hash).toString(16).padStart(this.TAG_LENGTH * 2, '0')
     return tag.substring(0, this.TAG_LENGTH * 2)
@@ -207,7 +212,7 @@ export class ChaCha20Encryptor implements IEncryptor {
   private hexToBytes(hex: string): Uint8Array {
     const bytes = new Uint8Array(hex.length / 2)
     for (let i = 0; i < hex.length; i += 2) {
-      bytes[i / 2] = parseInt(hex.substr(i, 2), 16)
+      bytes[i / 2] = Number.parseInt(hex.substr(i, 2), 16)
     }
     return bytes
   }
@@ -237,10 +242,11 @@ export class AESGCMEncryptor implements IEncryptor {
       if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
         return await this.encryptBrowser(data, key, options)
       }
-      
+
       // Node.js 环境的实现
       return this.encryptNode(data, key, options)
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         return {
           success: false,
@@ -268,10 +274,11 @@ export class AESGCMEncryptor implements IEncryptor {
       if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
         return await this.decryptBrowser(encryptedData, key, options)
       }
-      
+
       // Node.js 环境的实现
       return this.decryptNode(encryptedData, key, options)
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         return {
           success: false,
@@ -300,15 +307,15 @@ export class AESGCMEncryptor implements IEncryptor {
     const iv = options.nonce || RandomUtils.generateRandomString(this.IV_LENGTH, 'hex')
     const keyBuffer = this.hexToArrayBuffer(key)
     const dataBuffer = new TextEncoder().encode(data)
-    
+
     const cryptoKey = await crypto.subtle.importKey(
       'raw',
       keyBuffer,
       { name: 'AES-GCM' },
       false,
-      ['encrypt']
+      ['encrypt'],
     )
-    
+
     const encrypted = await crypto.subtle.encrypt(
       {
         name: 'AES-GCM',
@@ -317,9 +324,9 @@ export class AESGCMEncryptor implements IEncryptor {
         tagLength: (options.tagLength || this.TAG_LENGTH) * 8,
       },
       cryptoKey,
-      dataBuffer
+      dataBuffer,
     )
-    
+
     return {
       success: true,
       data: this.arrayBufferToHex(encrypted),
@@ -345,7 +352,8 @@ export class AESGCMEncryptor implements IEncryptor {
       ciphertext = encryptedData
       iv = options.nonce || ''
       aad = options.aad
-    } else {
+    }
+    else {
       ciphertext = encryptedData.data || ''
       iv = encryptedData.iv || options.nonce || ''
       aad = (encryptedData as any).aad || options.aad
@@ -353,15 +361,15 @@ export class AESGCMEncryptor implements IEncryptor {
 
     const keyBuffer = this.hexToArrayBuffer(key)
     const encryptedBuffer = this.hexToArrayBuffer(ciphertext)
-    
+
     const cryptoKey = await crypto.subtle.importKey(
       'raw',
       keyBuffer,
       { name: 'AES-GCM' },
       false,
-      ['decrypt']
+      ['decrypt'],
     )
-    
+
     const decrypted = await crypto.subtle.decrypt(
       {
         name: 'AES-GCM',
@@ -370,9 +378,9 @@ export class AESGCMEncryptor implements IEncryptor {
         tagLength: (options.tagLength || this.TAG_LENGTH) * 8,
       },
       cryptoKey,
-      encryptedBuffer
+      encryptedBuffer,
     )
-    
+
     return {
       success: true,
       data: new TextDecoder().decode(decrypted),
@@ -391,11 +399,11 @@ export class AESGCMEncryptor implements IEncryptor {
     // 这里应该使用 Node.js 的 crypto 模块
     // 为了兼容性，使用简化实现
     const iv = options.nonce || RandomUtils.generateRandomString(this.IV_LENGTH, 'hex')
-    
+
     // 简化的加密实现
     const encrypted = this.simpleXor(data, key, iv)
     const tag = this.generateTag(encrypted, key, iv, options.aad)
-    
+
     return {
       success: true,
       data: encrypted + tag,
@@ -421,7 +429,8 @@ export class AESGCMEncryptor implements IEncryptor {
       ciphertext = encryptedData
       iv = options.nonce || ''
       aad = options.aad
-    } else {
+    }
+    else {
       ciphertext = encryptedData.data || ''
       iv = encryptedData.iv || options.nonce || ''
       aad = (encryptedData as any).aad || options.aad
@@ -464,19 +473,19 @@ export class AESGCMEncryptor implements IEncryptor {
     // 简化的标签生成
     const input = data + iv + (aad || '')
     let hash = 0
-    
+
     for (let i = 0; i < input.length; i++) {
       hash = ((hash << 5) - hash) + input.charCodeAt(i)
       hash = hash & hash
     }
-    
+
     return Math.abs(hash).toString(16).padStart(this.TAG_LENGTH * 2, '0').substring(0, this.TAG_LENGTH * 2)
   }
 
   private hexToArrayBuffer(hex: string): ArrayBuffer {
     const bytes = new Uint8Array(hex.length / 2)
     for (let i = 0; i < hex.length; i += 2) {
-      bytes[i / 2] = parseInt(hex.substr(i, 2), 16)
+      bytes[i / 2] = Number.parseInt(hex.substr(i, 2), 16)
     }
     return bytes.buffer
   }

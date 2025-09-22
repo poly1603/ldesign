@@ -4,6 +4,8 @@
 
 import type { EncryptionAlgorithm } from '../types'
 
+import process from 'node:process'
+
 /**
  * 性能指标接口
  */
@@ -139,7 +141,7 @@ export class PerformanceMonitor {
   /**
    * 开始监控操作
    */
-  startOperation(operationId: string, algorithm?: EncryptionAlgorithm): void {
+  startOperation(operationId: string, _algorithm?: EncryptionAlgorithm): void {
     if (!this.config.enabled || Math.random() > this.config.samplingRate) {
       return
     }
@@ -206,7 +208,8 @@ export class PerformanceMonitor {
   private getMemoryUsage(): number | undefined {
     if (typeof process !== 'undefined' && process.memoryUsage) {
       return process.memoryUsage().heapUsed
-    } else if (typeof performance !== 'undefined' && (performance as any).memory) {
+    }
+    else if (typeof performance !== 'undefined' && (performance as any).memory) {
       return (performance as any).memory.usedJSHeapSize
     }
     return undefined
@@ -231,7 +234,7 @@ export class PerformanceMonitor {
 
     // 按算法分组统计
     const byAlgorithm = this.groupByAlgorithm(filteredMetrics)
-    
+
     // 按操作分组统计
     const byOperation = this.groupByOperation(filteredMetrics)
 
@@ -261,7 +264,7 @@ export class PerformanceMonitor {
 
     for (const metric of metrics) {
       const algorithm = metric.algorithm || 'unknown'
-      
+
       if (!grouped.has(algorithm)) {
         grouped.set(algorithm, {
           algorithm,
@@ -275,14 +278,15 @@ export class PerformanceMonitor {
       const stats = grouped.get(algorithm)!
       stats.count++
       stats.totalDataProcessed += metric.dataSize || 0
-      
+
       // 更新平均时长（累积平均）
-      stats.averageDuration = 
-        (stats.averageDuration * (stats.count - 1) + metric.duration) / stats.count
-      
+      stats.averageDuration
+        = (stats.averageDuration * (stats.count - 1) + metric.duration) / stats.count
+
       // 更新成功率
       const successCount = metrics
-        .filter(m => m.algorithm === algorithm && m.success).length
+        .filter(m => m.algorithm === algorithm && m.success)
+        .length
       stats.successRate = successCount / stats.count
     }
 
@@ -297,7 +301,7 @@ export class PerformanceMonitor {
 
     for (const metric of metrics) {
       const operation = metric.operation
-      
+
       if (!grouped.has(operation)) {
         grouped.set(operation, {
           operation,
@@ -309,14 +313,15 @@ export class PerformanceMonitor {
 
       const stats = grouped.get(operation)!
       stats.count++
-      
+
       // 更新平均时长
-      stats.averageDuration = 
-        (stats.averageDuration * (stats.count - 1) + metric.duration) / stats.count
-      
+      stats.averageDuration
+        = (stats.averageDuration * (stats.count - 1) + metric.duration) / stats.count
+
       // 更新成功率
       const successCount = metrics
-        .filter(m => m.operation === operation && m.success).length
+        .filter(m => m.operation === operation && m.success)
+        .length
       stats.successRate = successCount / stats.count
     }
 
@@ -327,7 +332,8 @@ export class PerformanceMonitor {
    * 生成时间序列数据
    */
   private generateTimeSeriesData(metrics: PerformanceMetric[]): TimeSeriesData[] {
-    if (metrics.length === 0) return []
+    if (metrics.length === 0)
+      return []
 
     const timeSeriesData: TimeSeriesData[] = []
     const interval = 60000 // 1 minute intervals
@@ -361,7 +367,8 @@ export class PerformanceMonitor {
    * 计算平均值
    */
   private average(values: number[]): number {
-    if (values.length === 0) return 0
+    if (values.length === 0)
+      return 0
     return values.reduce((sum, val) => sum + val, 0) / values.length
   }
 
@@ -370,8 +377,9 @@ export class PerformanceMonitor {
    */
   private calculateAverageThroughput(metrics: PerformanceMetric[]): number {
     const validMetrics = metrics.filter(m => m.throughput !== undefined)
-    if (validMetrics.length === 0) return 0
-    
+    if (validMetrics.length === 0)
+      return 0
+
     const throughputs = validMetrics.map(m => m.throughput!)
     return this.average(throughputs)
   }
@@ -417,10 +425,11 @@ export class PerformanceMonitor {
    * 通知实时监控监听器
    */
   private notifyRealTimeListeners(metric: PerformanceMetric): void {
-    this.realTimeCallbacks.forEach(callback => {
+    this.realTimeCallbacks.forEach((callback) => {
       try {
         callback(metric)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Error in real-time metric callback:', error)
       }
     })
@@ -455,7 +464,8 @@ export class PerformanceMonitor {
     try {
       const imported = JSON.parse(data) as PerformanceMetric[]
       this.metrics = [...this.metrics, ...imported]
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to import metrics:', error)
     }
   }
@@ -496,7 +506,8 @@ export function measurePerformance(
         JSON.stringify(args[0]).length,
       )
       return result
-    } catch (error) {
+    }
+    catch (error) {
       performanceMonitor.endOperation(
         operationId,
         propertyName,
