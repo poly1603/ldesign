@@ -89,7 +89,7 @@ export type UnifiedStoreOptions<
 export class StoreFactory {
   private static instances = new Map<string, any>()
   private static definitions = new Map<string, any>()
-  
+
   /**
    * 创建 Store 实例（用于兼容）
    */

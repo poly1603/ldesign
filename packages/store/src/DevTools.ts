@@ -3,8 +3,37 @@
  * 提供可视化调试、状态检查和开发工具集成
  */
 
-import { EventEmitter } from 'events';
-import { createStore } from './SimpleAPI';
+// Web端EventEmitter实现
+class EventEmitter {
+  private events: Record<string, Function[]> = {};
+
+  on(event: string, listener: Function) {
+    if (!this.events[event]) {
+      this.events[event] = [];
+    }
+    this.events[event].push(listener);
+  }
+
+  emit(event: string, ...args: any[]) {
+    if (this.events[event]) {
+      this.events[event].forEach(listener => listener(...args));
+    }
+  }
+
+  off(event: string, listener: Function) {
+    if (this.events[event]) {
+      this.events[event] = this.events[event].filter(l => l !== listener);
+    }
+  }
+
+  removeAllListeners(event?: string) {
+    if (event) {
+      delete this.events[event];
+    } else {
+      this.events = {};
+    }
+  }
+}
 
 // ============= DevTools Types =============
 interface StoreSnapshot {
@@ -41,7 +70,7 @@ interface StoreInspection {
 
 // ============= DevTools Connection =============
 export class DevToolsConnection extends EventEmitter {
-  private ws?: WebSocket;
+  private ws?: WebSocket | any;
   private reconnectTimer?: NodeJS.Timeout;
   private isConnected = false;
   private messageQueue: any[] = [];
@@ -51,11 +80,11 @@ export class DevToolsConnection extends EventEmitter {
     this.connect();
   }
 
-  private connect(): void {
+  private async connect(): Promise<void> {
     if (typeof WebSocket === 'undefined') {
       // Node.js environment - try to import ws
       try {
-        const WS = require('ws');
+        const { default: WS } = await import('ws');
         this.ws = new WS(`ws://localhost:${this.port}/devtools`);
       } catch (e) {
         console.warn('WebSocket not available, DevTools connection disabled');
@@ -66,32 +95,34 @@ export class DevToolsConnection extends EventEmitter {
       this.ws = new WebSocket(`ws://localhost:${this.port}/devtools`);
     }
 
-    this.ws.onopen = () => {
-      this.isConnected = true;
-      this.emit('connected');
-      this.flushMessageQueue();
-    };
+    if (this.ws) {
+      this.ws.onopen = () => {
+        this.isConnected = true;
+        this.emit('connected');
+        this.flushMessageQueue();
+      };
 
-    this.ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      this.emit('message', message);
-    };
+      this.ws.onmessage = (event: any) => {
+        const message = JSON.parse(event.data);
+        this.emit('message', message);
+      };
 
-    this.ws.onclose = () => {
-      this.isConnected = false;
-      this.emit('disconnected');
-      this.scheduleReconnect();
-    };
+      this.ws.onclose = () => {
+        this.isConnected = false;
+        this.emit('disconnected');
+        this.scheduleReconnect();
+      };
 
-    this.ws.onerror = (error) => {
-      console.error('DevTools connection error:', error);
-      this.emit('error', error);
-    };
+      this.ws.onerror = (error: any) => {
+        console.error('DevTools connection error:', error);
+        this.emit('error', error);
+      };
+    }
   }
 
   private scheduleReconnect(): void {
     if (this.reconnectTimer) return;
-    
+
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = undefined;
       this.connect();
@@ -118,7 +149,7 @@ export class DevToolsConnection extends EventEmitter {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = undefined;
     }
-    
+
     if (this.ws) {
       this.ws.close();
       this.ws = undefined;
@@ -136,7 +167,7 @@ export class StoreDevTools extends EventEmitter {
 
   constructor(config: DevToolsConfig = {}) {
     super();
-    
+
     this.config = {
       name: config.name || 'LDesign Store',
       maxHistory: config.maxHistory || 50,
@@ -157,8 +188,8 @@ export class StoreDevTools extends EventEmitter {
   // 设置连接
   private setupConnection(): void {
     this.connection = new DevToolsConnection(this.config.port);
-    
-    this.connection.on('message', (message) => {
+
+    this.connection.on('message', (message: any) => {
       this.handleDevToolsMessage(message);
     });
 
@@ -173,9 +204,9 @@ export class StoreDevTools extends EventEmitter {
     if (typeof window !== 'undefined') {
       (window as any).__LDESIGN_DEVTOOLS__ = this;
     }
-    
-    if (typeof global !== 'undefined') {
-      (global as any).__LDESIGN_DEVTOOLS__ = this;
+
+    if (typeof globalThis !== 'undefined') {
+      (globalThis as any).__LDESIGN_DEVTOOLS__ = this;
     }
   }
 
@@ -184,65 +215,65 @@ export class StoreDevTools extends EventEmitter {
     this.stores.set(name, store);
     this.history.set(name, []);
     this.timeTravelIndex.set(name, -1);
-    
+
     // 拦截 actions
     this.interceptActions(name, store);
-    
+
     // 监听状态变化
     this.watchStateChanges(name, store);
-    
+
     // 发送初始状态
     this.sendStoreUpdate(name, store);
-    
+
     this.emit('store:registered', { name, store });
   }
 
   // 拦截 actions
   private interceptActions(storeName: string, store: any): void {
     const actions = store.actions || {};
-    
+
     Object.keys(actions).forEach(actionName => {
       const originalAction = actions[actionName];
-      
+
       actions[actionName] = (...args: any[]) => {
         const startTime = performance.now();
-        
+
         if (this.config.logActions) {
           console.group(`🎯 [${storeName}] ${actionName}`);
           console.log('Arguments:', args);
         }
-        
+
         try {
           const result = originalAction.apply(store, args);
-          
+
           const duration = performance.now() - startTime;
-          
+
           if (this.config.logActions) {
             console.log('Duration:', `${duration.toFixed(2)}ms`);
             console.groupEnd();
           }
-          
+
           // 记录快照
           this.recordSnapshot(storeName, store, {
             actionName,
             actionArgs: args,
             duration
           });
-          
+
           return result;
         } catch (error) {
           if (this.config.logActions) {
             console.error('Error:', error);
             console.groupEnd();
           }
-          
+
           // 记录错误快照
           this.recordSnapshot(storeName, store, {
             actionName,
             actionArgs: args,
             error: error as Error
           });
-          
+
           throw error;
         }
       };
@@ -259,7 +290,7 @@ export class StoreDevTools extends EventEmitter {
             new: newValue
           });
         }
-        
+
         this.sendStoreUpdate(storeName, store);
       });
     }
@@ -272,7 +303,7 @@ export class StoreDevTools extends EventEmitter {
     metadata: StoreSnapshot['metadata']
   ): void {
     if (!this.config.enableTimeTravel) return;
-    
+
     const snapshot: StoreSnapshot = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
@@ -280,18 +311,18 @@ export class StoreDevTools extends EventEmitter {
       computed: this.getComputedValues(store),
       metadata
     };
-    
+
     const storeHistory = this.history.get(storeName) || [];
     storeHistory.push(snapshot);
-    
+
     // 限制历史记录数量
     if (storeHistory.length > this.config.maxHistory) {
       storeHistory.shift();
     }
-    
+
     this.history.set(storeName, storeHistory);
     this.timeTravelIndex.set(storeName, storeHistory.length - 1);
-    
+
     this.emit('snapshot:recorded', { storeName, snapshot });
     this.sendSnapshot(storeName, snapshot);
   }
@@ -318,17 +349,17 @@ export class StoreDevTools extends EventEmitter {
   // 获取计算属性值
   private getComputedValues(store: any): Record<string, any> {
     const computed: Record<string, any> = {};
-    
+
     if (store.computed) {
       Object.keys(store.computed).forEach(key => {
         try {
           computed[key] = store[key];
-        } catch (e) {
-          computed[key] = `[Error: ${e.message}]`;
+        } catch (e: any) {
+          computed[key] = `[Error: ${e?.message || 'Unknown error'}]`;
         }
       });
     }
-    
+
     return computed;
   }
 
@@ -338,17 +369,17 @@ export class StoreDevTools extends EventEmitter {
       console.warn('Time travel is disabled');
       return;
     }
-    
+
     const store = this.stores.get(storeName);
     const storeHistory = this.history.get(storeName);
-    
+
     if (!store || !storeHistory || storeHistory.length === 0) {
       console.warn(`No history for store: ${storeName}`);
       return;
     }
-    
+
     let currentIndex = this.timeTravelIndex.get(storeName) || 0;
-    
+
     if (typeof direction === 'number') {
       currentIndex = Math.max(0, Math.min(direction, storeHistory.length - 1));
     } else if (direction === 'forward') {
@@ -356,13 +387,13 @@ export class StoreDevTools extends EventEmitter {
     } else {
       currentIndex = Math.max(currentIndex - 1, 0);
     }
-    
+
     this.timeTravelIndex.set(storeName, currentIndex);
-    
+
     const snapshot = storeHistory[currentIndex];
     if (snapshot && store.setState) {
       store.setState(snapshot.state);
-      
+
       console.log(`⏱️ Time travel to snapshot #${currentIndex}:`, {
         timestamp: new Date(snapshot.timestamp).toLocaleTimeString(),
         action: snapshot.metadata.actionName,
@@ -375,9 +406,9 @@ export class StoreDevTools extends EventEmitter {
   inspect(storeName: string): StoreInspection | null {
     const store = this.stores.get(storeName);
     if (!store) return null;
-    
+
     const storeHistory = this.history.get(storeName) || [];
-    
+
     return {
       state: this.cloneState(store.state),
       computed: this.getComputedValues(store),
@@ -394,32 +425,32 @@ export class StoreDevTools extends EventEmitter {
       console.warn('Hot reload is disabled');
       return;
     }
-    
+
     const store = this.stores.get(storeName);
     if (!store) {
       console.warn(`Store not found: ${storeName}`);
       return;
     }
-    
+
     // 保存当前状态
     const currentState = this.cloneState(store.state);
-    
+
     // 更新 actions
     if (newModule.actions) {
       Object.assign(store.actions, newModule.actions);
       this.interceptActions(storeName, store);
     }
-    
+
     // 更新 computed
     if (newModule.computed) {
       Object.assign(store.computed, newModule.computed);
     }
-    
+
     // 恢复状态
     if (store.setState) {
       store.setState(currentState);
     }
-    
+
     console.log(`🔥 Hot reload completed for store: ${storeName}`);
     this.emit('store:reloaded', { storeName, store });
   }
@@ -430,8 +461,8 @@ export class StoreDevTools extends EventEmitter {
       case 'TIME_TRAVEL':
         this.timeTravel(message.storeName, message.index);
         break;
-        
-      case 'INSPECT':
+
+      case 'INSPECT': {
         const inspection = this.inspect(message.storeName);
         this.connection?.send({
           type: 'INSPECTION_RESULT',
@@ -439,11 +470,12 @@ export class StoreDevTools extends EventEmitter {
           data: inspection
         });
         break;
-        
+      }
+
       case 'EXPORT_STATE':
         this.exportState(message.storeName);
         break;
-        
+
       case 'IMPORT_STATE':
         this.importState(message.storeName, message.state);
         break;
@@ -453,7 +485,7 @@ export class StoreDevTools extends EventEmitter {
   // 发送 Store 更新
   private sendStoreUpdate(storeName: string, store: any): void {
     if (!this.connection) return;
-    
+
     this.connection.send({
       type: 'STORE_UPDATE',
       storeName,
@@ -467,7 +499,7 @@ export class StoreDevTools extends EventEmitter {
   // 发送快照
   private sendSnapshot(storeName: string, snapshot: StoreSnapshot): void {
     if (!this.connection) return;
-    
+
     this.connection.send({
       type: 'SNAPSHOT',
       storeName,
@@ -479,7 +511,7 @@ export class StoreDevTools extends EventEmitter {
   private syncAllStores(): void {
     this.stores.forEach((store, name) => {
       this.sendStoreUpdate(name, store);
-      
+
       const storeHistory = this.history.get(name);
       if (storeHistory) {
         storeHistory.forEach(snapshot => {
@@ -495,12 +527,12 @@ export class StoreDevTools extends EventEmitter {
       const store = this.stores.get(storeName);
       return store ? this.cloneState(store.state) : null;
     }
-    
+
     const allStates: Record<string, any> = {};
     this.stores.forEach((store, name) => {
       allStates[name] = this.cloneState(store.state);
     });
-    
+
     return allStates;
   }
 
@@ -511,7 +543,7 @@ export class StoreDevTools extends EventEmitter {
       console.warn(`Cannot import state for store: ${storeName}`);
       return;
     }
-    
+
     store.setState(state);
     console.log(`📥 State imported for store: ${storeName}`);
   }
@@ -530,7 +562,7 @@ export class StoreDevTools extends EventEmitter {
 export class ConsoleFormatter {
   static setup(): void {
     if (typeof window === 'undefined') return;
-    
+
     // 自定义 console 样式
     const styles = {
       store: 'color: #4CAF50; font-weight: bold',
@@ -539,63 +571,51 @@ export class ConsoleFormatter {
       computed: 'color: #9C27B0',
       error: 'color: #F44336; font-weight: bold'
     };
-    
+
     // Store 格式化
     (window as any).devtoolsFormatters = (window as any).devtoolsFormatters || [];
     (window as any).devtoolsFormatters.push({
       header(obj: any) {
         if (!obj || !obj.__isStore) return null;
-        
-        return ['div', { style: styles.store },
-          ['span', {}, '📦 '],
-          ['span', { style: 'font-weight: normal' }, obj.name || 'Store']
-        ];
+
+        return ['div', { style: styles.store }, ['span', {}, '📦 '], ['span', { style: 'font-weight: normal' }, obj.name || 'Store']];
       },
-      
+
       hasBody(obj: any) {
         return obj && obj.__isStore;
       },
-      
+
       body(obj: any) {
         const elements = ['div', {}];
-        
+
         // State
         elements.push(
-          ['div', { style: styles.state },
-            ['span', {}, '🔸 State: '],
-            ['object', { object: obj.state }]
-          ]
+          ['div', { style: styles.state }, ['span', {}, '🔸 State: '], ['object', { object: obj.state }]]
         );
-        
+
         // Computed
         if (obj.computed) {
           const computedValues = Object.keys(obj.computed).reduce((acc, key) => {
             try {
               acc[key] = obj[key];
-            } catch (e) {
-              acc[key] = `[Error: ${e.message}]`;
+            } catch (e: any) {
+              acc[key] = `[Error: ${e?.message || 'Unknown error'}]`;
             }
             return acc;
           }, {} as any);
-          
+
           elements.push(
-            ['div', { style: styles.computed },
-              ['span', {}, '🔹 Computed: '],
-              ['object', { object: computedValues }]
-            ]
+            ['div', { style: styles.computed }, ['span', {}, '🔹 Computed: '], ['object', { object: computedValues }]]
           );
         }
-        
+
         // Actions
         if (obj.actions) {
           elements.push(
-            ['div', { style: styles.action },
-              ['span', {}, '⚡ Actions: '],
-              ['object', { object: Object.keys(obj.actions) }]
-            ]
+            ['div', { style: styles.action }, ['span', {}, '⚡ Actions: '], ['object', { object: Object.keys(obj.actions) }]]
           );
         }
-        
+
         return elements;
       }
     });
@@ -609,7 +629,7 @@ export class VisualInspector {
 
   activate(): void {
     if (typeof document === 'undefined' || this.isActive) return;
-    
+
     this.isActive = true;
     this.createOverlay();
     this.setupEventListeners();
@@ -634,7 +654,7 @@ export class VisualInspector {
       overflow: auto;
       display: none;
     `;
-    
+
     document.body.appendChild(this.overlay);
   }
 
@@ -649,7 +669,7 @@ export class VisualInspector {
 
   toggle(): void {
     if (!this.overlay) return;
-    
+
     if (this.overlay.style.display === 'none') {
       this.overlay.style.display = 'block';
       this.updateContent();
@@ -660,19 +680,19 @@ export class VisualInspector {
 
   updateContent(): void {
     if (!this.overlay) return;
-    
+
     const devtools = (window as any).__LDESIGN_DEVTOOLS__;
     if (!devtools) {
       this.overlay.innerHTML = '<div>DevTools not initialized</div>';
       return;
     }
-    
+
     let html = '<h3 style="margin: 0 0 10px 0;">🔍 Store Inspector</h3>';
-    
+
     devtools.stores.forEach((store: any, name: string) => {
       const inspection = devtools.inspect(name);
       if (!inspection) return;
-      
+
       html += `
         <div style="margin-bottom: 15px; border-bottom: 1px solid #444; padding-bottom: 10px;">
           <h4 style="color: #4CAF50; margin: 5px 0;">${name}</h4>
@@ -683,7 +703,7 @@ export class VisualInspector {
         </div>
       `;
     });
-    
+
     this.overlay.innerHTML = html;
   }
 
@@ -703,14 +723,14 @@ export function initDevTools(config?: DevToolsConfig): StoreDevTools {
   if (!devToolsInstance) {
     devToolsInstance = new StoreDevTools(config);
     ConsoleFormatter.setup();
-    
+
     // 开发环境自动激活可视检查器
-    if (process.env.NODE_ENV === 'development') {
+    if (typeof window !== 'undefined' && window.location?.hostname === 'localhost') {
       const inspector = new VisualInspector();
       inspector.activate();
     }
   }
-  
+
   return devToolsInstance;
 }
 

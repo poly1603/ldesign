@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
 
 export interface User {
-  id: number
+  id: string | number
   username: string
   email: string
-  role: 'admin' | 'manager' | 'user' | 'guest'
+  role: 'admin' | 'manager' | 'user' | 'guest' | 'editor' | 'viewer'
   permissions: string[]
   department: string
   status: 'active' | 'inactive' | 'suspended'
@@ -31,6 +31,7 @@ export interface ErrorLog {
   stack?: string
   user?: string
   module?: string
+  component?: string
   context: Record<string, any>
 }
 
@@ -38,6 +39,8 @@ export interface AuditLog {
   id: string
   timestamp: number
   user: string
+  userId?: string
+  username?: string
   action: string
   resource: string
   details: Record<string, any>
@@ -58,18 +61,18 @@ export const useEnterpriseStore = defineStore('enterprise', {
     // 用户列表
     users: [
       {
-        id: 1,
+        id: '1',
         username: 'admin',
         email: 'admin@example.com',
         role: 'admin',
-        permissions: ['*'],
+        permissions: ['user.read', 'user.create', 'user.update', 'user.delete', 'role.manage', 'system.admin'],
         department: 'IT',
         status: 'active',
         lastLogin: Date.now() - 3600000,
         createdAt: Date.now() - 86400000 * 30
       },
       {
-        id: 2,
+        id: '2',
         username: 'manager',
         email: 'manager@example.com',
         role: 'manager',
@@ -80,17 +83,47 @@ export const useEnterpriseStore = defineStore('enterprise', {
         createdAt: Date.now() - 86400000 * 15
       },
       {
-        id: 3,
-        username: 'user',
-        email: 'user@example.com',
-        role: 'user',
-        permissions: ['profile.read', 'profile.update'],
-        department: 'Marketing',
+        id: '3',
+        username: 'editor',
+        email: 'editor@example.com',
+        role: 'editor',
+        permissions: ['read', 'write', 'user.read', 'user.create', 'user.update'],
+        department: 'Content',
         status: 'active',
         lastLogin: Date.now() - 1800000,
         createdAt: Date.now() - 86400000 * 7
+      },
+      {
+        id: '4',
+        username: 'viewer',
+        email: 'viewer@example.com',
+        role: 'viewer',
+        permissions: ['read'],
+        department: 'Support',
+        status: 'active',
+        lastLogin: Date.now() - 3600000,
+        createdAt: Date.now() - 86400000 * 3
       }
     ] as User[],
+
+    // 角色定义
+    roles: [
+      {
+        id: 'admin',
+        name: '管理员',
+        permissions: ['user.read', 'user.create', 'user.update', 'user.delete', 'role.manage', 'system.admin']
+      },
+      {
+        id: 'editor',
+        name: '编辑者',
+        permissions: ['read', 'write', 'user.read', 'user.create', 'user.update']
+      },
+      {
+        id: 'viewer',
+        name: '查看者',
+        permissions: ['read']
+      }
+    ],
 
     // 模块系统
     modules: [
@@ -133,6 +166,16 @@ export const useEnterpriseStore = defineStore('enterprise', {
         config: { realTime: true, batchSize: 100 },
         loadTime: 100,
         status: 'loaded'
+      },
+      {
+        id: 'analytics',
+        name: '数据分析',
+        version: '1.3.0',
+        enabled: false,
+        dependencies: ['auth', 'user-management'],
+        config: { dataRetention: 365, enableRealTime: false },
+        loadTime: 0,
+        status: 'disabled'
       }
     ] as Module[],
 
@@ -179,17 +222,19 @@ export const useEnterpriseStore = defineStore('enterprise', {
 
         const user = this.users.find(u => u.username === username)
         if (!user) {
-          throw new Error('用户不存在')
+          this.logError('登录失败', 'AuthComponent', { username, detail: `用户 ${username} 不存在` })
+          return false
         }
 
         if (user.status !== 'active') {
-          throw new Error('用户账户已被禁用')
+          this.logError('登录失败', 'AuthComponent', { username, detail: `用户 ${username} 账户已被禁用` })
+          return false
         }
 
         // 模拟密码验证（实际应用中应该使用安全的密码验证）
         if (password !== 'password') {
-          this.logError('登录失败', `用户 ${username} 密码错误`, { username })
-          throw new Error('密码错误')
+          this.logError('登录失败', 'AuthComponent', { username, detail: `用户 ${username} 密码错误` })
+          return false
         }
 
         // 更新用户最后登录时间
@@ -199,10 +244,10 @@ export const useEnterpriseStore = defineStore('enterprise', {
         // 记录审计日志
         this.logAudit('user.login', 'auth', { userId: user.id, username })
 
-        return user
+        return true
       } catch (error) {
-        this.logError('登录异常', (error as Error).message, { username })
-        throw error
+        this.logError('登录异常', 'AuthComponent', { username, detail: (error as Error).message })
+        return false
       }
     },
 
@@ -219,6 +264,7 @@ export const useEnterpriseStore = defineStore('enterprise', {
       if (!this.currentUser) return false
 
       // 管理员拥有所有权限
+      if (this.currentUser.role === 'admin') return true
       if (this.currentUser.permissions.includes('*')) return true
 
       return this.currentUser.permissions.includes(permission)
@@ -273,7 +319,7 @@ export const useEnterpriseStore = defineStore('enterprise', {
         }
       } catch (error) {
         module.status = 'error'
-        this.logError('模块操作失败', (error as Error).message, { moduleId })
+        this.logError('模块操作失败', 'ModuleManager', { moduleId, detail: (error as Error).message })
         throw error
       }
     },
@@ -294,15 +340,17 @@ export const useEnterpriseStore = defineStore('enterprise', {
     },
 
     // 记录错误日志
-    logError(message: string, details: string, context: Record<string, any> = {}) {
+    logError(message: string, component?: string, details?: Record<string, any>) {
       const errorLog: ErrorLog = {
         id: Date.now().toString(),
         timestamp: Date.now(),
         level: 'error',
         message,
-        stack: details,
+        stack: component,
         user: this.currentUser?.username,
-        context
+        module: component,
+        component,
+        context: details || {}
       }
 
       this.errorLogs.unshift(errorLog)
@@ -319,11 +367,13 @@ export const useEnterpriseStore = defineStore('enterprise', {
         id: Date.now().toString(),
         timestamp: Date.now(),
         user: this.currentUser?.username || 'anonymous',
+        userId: this.currentUser?.id,
+        username: this.currentUser?.username,
         action,
         resource,
         details,
         ip: '127.0.0.1', // 实际应用中应该获取真实IP
-        userAgent: navigator.userAgent
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'test-agent'
       }
 
       this.auditLogs.unshift(auditLog)
@@ -335,15 +385,19 @@ export const useEnterpriseStore = defineStore('enterprise', {
     },
 
     // 更新系统状态
-    updateSystemStatus() {
-      this.systemStatus = {
-        uptime: Date.now() - 86400000,
-        memoryUsage: Math.random() * 80 + 10,
-        cpuUsage: Math.random() * 60 + 5,
-        activeUsers: Math.floor(Math.random() * 100) + 10,
-        totalRequests: Math.floor(Math.random() * 10000) + 1000,
-        errorRate: Math.random() * 5,
-        lastHealthCheck: Date.now()
+    updateSystemStatus(status?: Partial<typeof this.systemStatus>) {
+      if (status) {
+        Object.assign(this.systemStatus, status, { lastHealthCheck: Date.now() })
+      } else {
+        this.systemStatus = {
+          uptime: Date.now() - 86400000,
+          memoryUsage: Math.random() * 80 + 10,
+          cpuUsage: Math.random() * 60 + 5,
+          activeUsers: Math.floor(Math.random() * 100) + 10,
+          totalRequests: Math.floor(Math.random() * 10000) + 1000,
+          errorRate: Math.random() * 5,
+          lastHealthCheck: Date.now()
+        }
       }
     },
 
@@ -353,9 +407,10 @@ export const useEnterpriseStore = defineStore('enterprise', {
         throw new Error('没有创建用户的权限')
       }
 
+      const maxId = Math.max(...this.users.map(u => typeof u.id === 'string' ? Number.parseInt(u.id) : u.id))
       const newUser: User = {
         ...userData,
-        id: Math.max(...this.users.map(u => u.id)) + 1,
+        id: String(maxId + 1),
         createdAt: Date.now(),
         lastLogin: 0
       }
@@ -367,14 +422,14 @@ export const useEnterpriseStore = defineStore('enterprise', {
     },
 
     // 更新用户
-    updateUser(userId: number, updates: Partial<User>) {
+    updateUser(userId: string | number, updates: Partial<User>) {
       if (!this.hasPermission('user.update')) {
         throw new Error('没有更新用户的权限')
       }
 
       const user = this.users.find(u => u.id === userId)
       if (!user) {
-        throw new Error('用户不存在')
+        return // 静默处理不存在的用户
       }
 
       const oldData = { ...user }
@@ -388,14 +443,14 @@ export const useEnterpriseStore = defineStore('enterprise', {
     },
 
     // 删除用户
-    deleteUser(userId: number) {
+    deleteUser(userId: string | number) {
       if (!this.hasPermission('user.delete')) {
         throw new Error('没有删除用户的权限')
       }
 
       const index = this.users.findIndex(u => u.id === userId)
       if (index === -1) {
-        throw new Error('用户不存在')
+        return // 静默处理不存在的用户
       }
 
       const user = this.users[index]
@@ -405,13 +460,48 @@ export const useEnterpriseStore = defineStore('enterprise', {
         userId,
         username: user.username
       })
+    },
+
+    // 添加用户（别名）
+    addUser(userData: Omit<User, 'id' | 'createdAt' | 'lastLogin'>) {
+      return this.createUser(userData)
+    },
+
+    // 清空错误日志
+    clearErrorLogs() {
+      this.errorLogs = []
+    },
+
+    // 清空审计日志
+    clearAuditLogs() {
+      this.auditLogs = []
     }
   },
 
   getters: {
+    // 当前用户是否已认证
+    isAuthenticated: (state) => {
+      return state.currentUser !== null
+    },
+
     // 当前用户是否为管理员
     isAdmin: (state) => {
       return state.currentUser?.role === 'admin'
+    },
+
+    // 当前用户角色
+    currentUserRole: (state) => {
+      return state.currentUser?.role || null
+    },
+
+    // 当前用户权限
+    currentUserPermissions: (state) => {
+      return state.currentUser?.permissions || []
+    },
+
+    // 活跃用户
+    activeUsers: (state) => {
+      return state.users.filter(u => u.status === 'active')
     },
 
     // 已启用的模块
@@ -429,11 +519,21 @@ export const useEnterpriseStore = defineStore('enterprise', {
     },
 
     // 最近的错误日志
-    recentErrors: (state) => {
+    recentErrorLogs: (state) => {
       return state.errorLogs.slice(0, 10)
     },
 
     // 最近的审计日志
+    recentAuditLogs: (state) => {
+      return state.auditLogs.slice(0, 10)
+    },
+
+    // 最近的错误日志（别名）
+    recentErrors: (state) => {
+      return state.errorLogs.slice(0, 10)
+    },
+
+    // 最近的审计日志（别名）
     recentAudits: (state) => {
       return state.auditLogs.slice(0, 10)
     },

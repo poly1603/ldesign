@@ -222,7 +222,8 @@ describe('realtimeStore', () => {
 
       store.addMessage(message)
 
-      expect(store.messages).toContain(message)
+      expect(store.messages).toHaveLength(1)
+      expect(store.messages[0]).toEqual(message)
     })
 
     it('addMessage 应该限制消息数量', () => {
@@ -266,7 +267,8 @@ describe('realtimeStore', () => {
 
       store.addNotification(notification)
 
-      expect(store.notifications).toContain(notification)
+      expect(store.notifications).toHaveLength(1)
+      expect(store.notifications[0]).toEqual(notification)
     })
 
     it('addNotification 应该限制通知数量', () => {

@@ -201,8 +201,11 @@ describe('compositionStore', () => {
 
       const store = useStore()
 
+      // 确保状态有值
+      store.$state.count = 1
+
       store.$persist()
-      expect(mockStorage.setItem).toHaveBeenCalled()
+      expect(mockStorage.setItem).toHaveBeenCalledWith('persist-store', expect.any(String))
 
       store.$clearPersisted()
       expect(mockStorage.removeItem).toHaveBeenCalledWith('persist-store')
@@ -286,6 +289,9 @@ describe('compositionStore', () => {
 
   describe('defineCompositionStoreWithOptions', () => {
     it('should create a composition store with full options', () => {
+      // 清理可能存在的持久化数据
+      localStorage.removeItem('options-store')
+
       const useStore = defineCompositionStoreWithOptions(
         {
           id: 'options-store',

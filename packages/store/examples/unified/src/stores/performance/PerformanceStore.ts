@@ -21,9 +21,54 @@ export interface CacheStats {
  * 展示缓存、防抖、节流等性能优化功能
  */
 export const usePerformanceStore = defineStore('performance', {
-  state: () => ({
-    // 数据列表
-    dataItems: [] as DataItem[],
+  state: () => {
+    // 生成初始数据
+    const categories = ['A', 'B', 'C']
+
+    const largeDataset = Array.from({ length: 1000 }, (_, index) => ({
+      id: index + 1,
+      name: `Item ${index + 1}`,
+      value: Math.floor(Math.random() * 1000) + 1,
+      category: categories[index % categories.length],
+      timestamp: Date.now() - Math.random() * 86400000 * 30 // 最近30天
+    }))
+
+    return {
+      // 搜索查询
+      searchQuery: '',
+
+      // 防抖查询
+      debouncedQuery: '',
+
+      // 节流值
+      throttledValue: 0,
+
+      // 更新计数
+      updateCount: 0,
+
+      // 缓存
+      cache: {} as Record<string, any>,
+
+      // 缓存统计
+      cacheStats: {
+        hits: 0,
+        misses: 0,
+        size: 0,
+        hitRate: 0
+      } as CacheStats,
+
+      // 大数据集
+      largeDataset,
+
+      // 处理状态
+      isProcessing: false,
+
+      // 私有变量
+      _debounceTimer: null as any,
+      _throttleInProgress: false,
+
+      // 数据列表
+      dataItems: [...largeDataset],
 
     // 搜索关键词
     searchKeyword: '',
@@ -39,14 +84,6 @@ export const usePerformanceStore = defineStore('performance', {
 
     // 错误信息
     error: null as string | null,
-
-    // 缓存统计
-    cacheStats: {
-      hits: 0,
-      misses: 0,
-      size: 0,
-      hitRate: 0
-    } as CacheStats,
 
     // 防抖计数器
     debounceCount: 0,
@@ -70,14 +107,15 @@ export const usePerformanceStore = defineStore('performance', {
       timestamp: Date.now()
     },
 
-    // 历史数据（用于图表）
-    historyData: [] as Array<{
-      timestamp: number
-      cpu: number
-      memory: number
-      network: number
-    }>
-  }),
+      // 历史数据（用于图表）
+      historyData: [] as Array<{
+        timestamp: number
+        cpu: number
+        memory: number
+        network: number
+      }>
+    }
+  },
 
   actions: {
     // 初始化数据
@@ -85,58 +123,131 @@ export const usePerformanceStore = defineStore('performance', {
       const categories = ['frontend', 'backend', 'database', 'cache', 'network']
       const names = [
         'React Component',
-'Vue Component',
-'API Endpoint',
-'Database Query',
+        'Vue Component',
+        'API Endpoint',
+        'Database Query',
         'Redis Cache',
-'CDN Request',
-'WebSocket Connection',
-'File Upload',
+        'CDN Request',
+        'WebSocket Connection',
+        'File Upload',
         'Image Processing',
-'Data Validation'
+        'Data Validation'
       ]
 
-      this.dataItems = Array.from({ length: 1000 }, (_, index) => ({
+      this.largeDataset = Array.from({ length: 1000 }, (_, index) => ({
         id: index + 1,
         name: `${names[index % names.length]} ${Math.floor(index / names.length) + 1}`,
         value: Math.floor(Math.random() * 1000) + 1,
         category: categories[index % categories.length],
         timestamp: Date.now() - Math.random() * 86400000 * 30 // 最近30天
       }))
+
+      this.dataItems = [...this.largeDataset]
     },
 
-    // 模拟防抖搜索
-    debouncedSearch(keyword: string) {
-      this.debounceCount++
-      this.searchKeyword = keyword
-
-      // 模拟搜索性能统计
-      const startTime = performance.now()
-      // 这里会触发 filteredItems 的重新计算
-      const filtered = this.filteredItems
-      this.performanceStats.searchTime = performance.now() - startTime
+    // 设置搜索查询
+    setSearchQuery(query: string) {
+      this.searchQuery = query
     },
 
-    // 模拟节流更新
+    // 防抖搜索
+    debouncedSearch(query: string) {
+      this.searchQuery = query
+
+      // 清除之前的定时器
+      if (this._debounceTimer) {
+        clearTimeout(this._debounceTimer)
+      }
+
+      // 设置新的定时器
+      this._debounceTimer = setTimeout(() => {
+        this.debouncedQuery = query
+      }, 300)
+    },
+
+    // 节流更新
     throttledUpdate() {
-      this.throttleCount++
+      if (!this._throttleInProgress) {
+        this.throttledValue++
+        this._throttleInProgress = true
 
-      // 更新实时数据
-      this.realTimeData = {
-        cpu: Math.random() * 100,
-        memory: Math.random() * 100,
-        network: Math.random() * 100,
-        timestamp: Date.now()
-      }
-
-      // 添加到历史数据
-      this.historyData.push({ ...this.realTimeData })
-
-      // 保持历史数据在合理范围内
-      if (this.historyData.length > 100) {
-        this.historyData.shift()
+        setTimeout(() => {
+          this._throttleInProgress = false
+        }, 100)
       }
     },
+
+    // 获取缓存数据
+    getCachedData(key: string, factory: () => any) {
+      if (this.cache[key]) {
+        this.cacheStats.hits++
+        return this.cache[key]
+      }
+
+      this.cacheStats.misses++
+      const data = factory()
+      this.cache[key] = data
+      this.cacheStats.size = Object.keys(this.cache).length
+      this.cacheStats.hitRate = this.cacheStats.hits / (this.cacheStats.hits + this.cacheStats.misses)
+
+      return data
+    },
+
+    // 清空缓存
+    clearCache() {
+      this.cache = {}
+      this.cacheStats = {
+        hits: 0,
+        misses: 0,
+        size: 0,
+        hitRate: 0
+      }
+    },
+
+    // 处理大数据集
+    async processLargeDataset() {
+      this.isProcessing = true
+
+      // 模拟异步处理
+      await new Promise(resolve => setTimeout(resolve, 2000))
+
+      this.updateCount++
+      this.isProcessing = false
+    },
+
+    // 生成大数据集
+    generateLargeDataset() {
+      this.initializeData()
+    },
+
+    // 批量更新
+    batchUpdate(updates: Array<{ id: number; value: number }>) {
+      updates.forEach(update => {
+        const item = this.largeDataset.find(item => item.id === update.id)
+        if (item) {
+          item.value = update.value
+        }
+      })
+    },
+
+    // 优化过滤
+    optimizedFilter(query: string) {
+      return this.getCachedData(`filter_${query}`, () => {
+        return this.largeDataset.filter(item =>
+          item.name.toLowerCase().includes(query.toLowerCase())
+        )
+      })
+    },
+
+    // 记忆化计算
+    memoizedCalculation(input: number) {
+      return this.getCachedData(`calc_${input}`, () => {
+        // 模拟复杂计算
+        return input * input + Math.random()
+      })
+    },
+
+
 
     // 设置过滤条件
     setFilter(category: string) {
@@ -217,6 +328,52 @@ export const usePerformanceStore = defineStore('performance', {
   },
 
   getters: {
+    // 根据防抖查询过滤数据
+    filteredData: (state) => {
+      if (!state.debouncedQuery) {
+        return state.largeDataset
+      }
+
+      return state.largeDataset.filter(item =>
+        item.name.toLowerCase().includes(state.debouncedQuery.toLowerCase())
+      )
+    },
+
+    // 按值降序排序的数据
+    sortedData: (state) => {
+      return [...state.largeDataset].sort((a, b) => b.value - a.value)
+    },
+
+    // 缓存命中率
+    cacheHitRate: (state) => {
+      const total = state.cacheStats.hits + state.cacheStats.misses
+      return total === 0 ? 0 : Math.round((state.cacheStats.hits / total) * 100)
+    },
+
+    // 性能指标
+    performanceMetrics: (state) => ({
+      totalItems: state.largeDataset.length,
+      filteredItems: state.debouncedQuery
+        ? state.largeDataset.filter(item =>
+            item.name.toLowerCase().includes(state.debouncedQuery.toLowerCase())
+          ).length
+        : state.largeDataset.length,
+      cacheSize: state.cacheStats.size,
+      hitRate: state.cacheStats.hitRate,
+      updateCount: state.updateCount
+    }),
+
+    // 分类统计
+    categoryStats: (state) => {
+      const stats: Record<string, number> = { A: 0, B: 0, C: 0 }
+      state.largeDataset.forEach(item => {
+        if (stats[item.category] !== undefined) {
+          stats[item.category]++
+        }
+      })
+      return stats
+    },
+
     // 过滤后的数据项（模拟缓存计算属性）
     filteredItems: (state) => {
       let filtered = state.dataItems
@@ -251,20 +408,7 @@ export const usePerformanceStore = defineStore('performance', {
       return filtered
     },
 
-    // 分类统计
-    categoryStats: (state) => {
-      const stats = new Map<string, number>()
 
-      state.dataItems.forEach(item => {
-        stats.set(item.category, (stats.get(item.category) || 0) + 1)
-      })
-
-      return Array.from(stats.entries()).map(([category, count]) => ({
-        category,
-        count,
-        percentage: (count / state.dataItems.length) * 100
-      }))
-    },
 
     // 数据统计
     dataStats: (state) => {
@@ -290,18 +434,7 @@ export const usePerformanceStore = defineStore('performance', {
       }
     },
 
-    // 性能指标
-    performanceMetrics: (state) => {
-      const totalTime = Object.values(state.performanceStats).reduce((a, b) => a + b, 0)
 
-      return {
-        totalTime,
-        searchPercentage: totalTime > 0 ? (state.performanceStats.searchTime / totalTime) * 100 : 0,
-        filterPercentage: totalTime > 0 ? (state.performanceStats.filterTime / totalTime) * 100 : 0,
-        sortPercentage: totalTime > 0 ? (state.performanceStats.sortTime / totalTime) * 100 : 0,
-        renderPercentage: totalTime > 0 ? (state.performanceStats.renderTime / totalTime) * 100 : 0
-      }
-    },
 
     // 实时数据趋势
     realtimeTrend: (state) => {

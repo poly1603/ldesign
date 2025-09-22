@@ -3,23 +3,23 @@
  * 展示所有新功能的实际使用方法
  */
 
-import { 
+import {
   // 简化API
-  store, 
+  store,
   $,
   createAsyncStore,
   combineStores,
-  
+
   // 响应式系统
   batchUpdate,
   reactiveOptimizer,
-  
+
   // Bug修复
   CircularDependencyDetector,
   MemoryLeakGuard,
   AsyncRaceConditionHandler,
   EnhancedErrorHandler,
-  
+
   // 高级功能
   createTimeTravelDebugger,
   createSnapshotManager,
@@ -46,10 +46,10 @@ const userStore = store('user')
   })
   .useComputed('displayName', (state) => `${state.name} (${state.age})`)
   .useComputed('isAdmin', (state) => state.permissions.includes('admin'))
-  .useAction('updateName', function(name: string) {
+  .useAction('updateName', function (name: string) {
     this.name = name
   })
-  .useAction('birthday', function() {
+  .useAction('birthday', function () {
     this.age++
   })
   .useActions({
@@ -60,12 +60,12 @@ const userStore = store('user')
         body: JSON.stringify({ email, password })
       })
       const data = await response.json()
-      
+
       this.name = data.name
       this.email = data.email
       this.permissions = data.permissions
     },
-    
+
     logout() {
       this.$reset()
     }
@@ -80,9 +80,8 @@ const userStore = store('user')
 const todoStore = $('todos')
   .useState('items', [] as Array<{ id: string; text: string; done: boolean }>)
   .useState('filter', 'all' as 'all' | 'active' | 'completed')
-  .useComputed('activeCount', (state) => 
-    state.items.filter(item => !item.done).length
-  )
+  .useComputed('activeCount', (state) =>
+    state.items.filter(item => !item.done).length)
   .useComputed('filteredItems', (state) => {
     switch (state.filter) {
       case 'active':
@@ -93,14 +92,14 @@ const todoStore = $('todos')
         return state.items
     }
   })
-  .useAction('addTodo', function(text: string) {
+  .useAction('addTodo', function (text: string) {
     this.items.push({
       id: Date.now().toString(),
       text,
       done: false
     })
   })
-  .useAction('toggleTodo', function(id: string) {
+  .useAction('toggleTodo', function (id: string) {
     const todo = this.items.find(item => item.id === id)
     if (todo) {
       todo.done = !todo.done
@@ -170,7 +169,7 @@ MemoryLeakGuard.runInScope(userStore, () => {
     () => userStore.state.name,
     (name) => console.log('Name changed:', name)
   )
-  
+
   MemoryLeakGuard.addWatcher(userStore, watcher)
 })
 
@@ -178,9 +177,9 @@ MemoryLeakGuard.runInScope(userStore, () => {
 const searchStore = store('search')
   .useState('query', '')
   .useState('results', [])
-  .useAction('search', async function(query: string) {
+  .useAction('search', async function (query: string) {
     this.query = query
-    
+
     // 自动取消之前的请求
     const results = await AsyncRaceConditionHandler.execute(
       this,
@@ -190,7 +189,7 @@ const searchStore = store('search')
         return response.json()
       }
     )
-    
+
     this.results = results
   })
   .build()
@@ -198,7 +197,7 @@ const searchStore = store('search')
 // 错误处理增强
 EnhancedErrorHandler.setGlobalHandler((error, context) => {
   console.error('Global error:', error)
-  
+
   // 发送到错误监控服务
   if (process.env.NODE_ENV === 'production') {
     // sendToSentry(error, context)
@@ -244,7 +243,7 @@ function debugTimeTravel() {
       userStore.$patch(previousState)
     }
   }
-  
+
   // 前进
   if (timeTravel.canRedo()) {
     const nextState = timeTravel.redo()
@@ -252,7 +251,7 @@ function debugTimeTravel() {
       userStore.$patch(nextState)
     }
   }
-  
+
   // 查看历史
   const history = timeTravel.getHistory()
   console.log('State history:', history)
@@ -307,11 +306,11 @@ middleware.use(
 // 添加自定义中间件
 middleware.use(async (context, next) => {
   console.log('Before action:', context.action)
-  
+
   await next()
-  
+
   console.log('After action, new state:', context.state)
-  
+
   // 可以在这里添加副作用
   if (context.action?.type === 'login') {
     // 触发分析事件
@@ -323,7 +322,7 @@ middleware.use(async (context, next) => {
 const synchronizer = createStateSynchronizer('app-state', async (remote, local) => {
   // 自定义冲突解决
   console.log('Conflict detected, merging states...')
-  
+
   // 合并策略示例
   return {
     ...local,
@@ -356,25 +355,25 @@ class TodoApp {
   private timeTravel = timeTravel
   private snapshots = snapshots
   private middleware = middleware
-  
+
   constructor() {
     this.initialize()
   }
-  
+
   private initialize() {
     // 设置中间件
     this.setupMiddleware()
-    
+
     // 设置错误处理
     this.setupErrorHandling()
-    
+
     // 设置状态同步
     this.setupSync()
-    
+
     // 加载初始数据
     this.loadData()
   }
-  
+
   private setupMiddleware() {
     // 为每个action添加中间件
     this.stores.stores.todos.$onAction(async (action) => {
@@ -388,7 +387,7 @@ class TodoApp {
       })
     })
   }
-  
+
   private setupErrorHandling() {
     EnhancedErrorHandler.register('NetworkError', (error) => {
       console.error('Network error:', error)
@@ -396,7 +395,7 @@ class TodoApp {
       this.showError('网络连接失败，请稍后重试')
     })
   }
-  
+
   private setupSync() {
     // 监听状态变化并同步
     this.stores.stores.todos.$subscribe(async (mutation, state) => {
@@ -406,11 +405,11 @@ class TodoApp {
       })
     })
   }
-  
+
   private async loadData() {
     // 使用批量更新加载数据
     await dataStore.load()
-    
+
     batchUpdate(() => {
       if (dataStore.data.value) {
         this.stores.stores.todos.state.items = dataStore.data.value.todos
@@ -418,37 +417,37 @@ class TodoApp {
       }
     })
   }
-  
+
   private showError(message: string) {
     console.error(message)
     // 实际应用中会显示UI提示
   }
-  
+
   // 公共API
   public addTodo(text: string) {
     this.stores.stores.todos.actions.addTodo(text)
-    
+
     // 记录到时间旅行
     this.timeTravel.record(this.stores.state, {
       type: 'ADD_TODO',
       payload: { text }
     })
   }
-  
+
   public undo() {
     const state = this.timeTravel.undo()
     if (state) {
       this.stores.restore(state)
     }
   }
-  
+
   public redo() {
     const state = this.timeTravel.redo()
     if (state) {
       this.stores.restore(state)
     }
   }
-  
+
   public createBackup() {
     return this.snapshots.create(
       this.stores.state,
@@ -456,7 +455,7 @@ class TodoApp {
       ['auto-backup']
     )
   }
-  
+
   public restoreBackup(id: string) {
     const state = this.snapshots.restore(id)
     if (state) {
@@ -476,7 +475,7 @@ export {
   appStore,
   dataStore,
   app,
-  
+
   // 工具函数
   updateMultipleStores,
   debugTimeTravel,
@@ -495,14 +494,14 @@ export {
   <div>
     <h1>{{ user.displayName }}</h1>
     <div v-for="todo in todos.filteredItems" :key="todo.id">
-      <input 
-        type="checkbox" 
+      <input
+        type="checkbox"
         :checked="todo.done"
         @change="todos.toggleTodo(todo.id)"
       />
       {{ todo.text }}
     </div>
-    
+
     <button @click="undo" :disabled="!canUndo">撤销</button>
     <button @click="redo" :disabled="!canRedo">重做</button>
     <button @click="backup">备份</button>

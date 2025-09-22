@@ -3,8 +3,8 @@
  * 提供批量更新、智能缓存、虚拟代理等优化功能
  */
 
-import { reactive, readonly, shallowRef, triggerRef, customRef, effect, stop, ReactiveEffect } from 'vue'
-import type { UnwrapRef } from 'vue'
+import { reactive, readonly, shallowRef, triggerRef, customRef } from 'vue'
+import type { UnwrapRef, ReactiveEffect } from 'vue'
 
 /**
  * 批量更新管理器
@@ -15,14 +15,14 @@ export class BatchUpdateManager {
   private updateQueue: Set<() => void> = new Set()
   private isFlushPending = false
   private flushPromise: Promise<void> | null = null
-  
+
   static getInstance(): BatchUpdateManager {
     if (!this.instance) {
       this.instance = new BatchUpdateManager()
     }
     return this.instance
   }
-  
+
   /**
    * 添加更新到队列
    */
@@ -30,7 +30,7 @@ export class BatchUpdateManager {
     this.updateQueue.add(updater)
     this.scheduleFlush()
   }
-  
+
   /**
    * 调度刷新
    */
@@ -40,7 +40,7 @@ export class BatchUpdateManager {
       this.flushPromise = Promise.resolve().then(() => this.flush())
     }
   }
-  
+
   /**
    * 执行所有更新
    */
@@ -49,7 +49,7 @@ export class BatchUpdateManager {
     this.updateQueue.clear()
     this.isFlushPending = false
     this.flushPromise = null
-    
+
     // 批量执行更新
     updates.forEach(update => {
       try {
@@ -59,7 +59,7 @@ export class BatchUpdateManager {
       }
     })
   }
-  
+
   /**
    * 等待所有更新完成
    */
@@ -68,7 +68,7 @@ export class BatchUpdateManager {
       await this.flushPromise
     }
   }
-  
+
   /**
    * 立即执行所有更新
    */
@@ -88,35 +88,35 @@ export class SmartCacheManager<K extends object = object, V = any> {
   private ttl: number
   private maxSize?: number
   private accessCount = new WeakMap<K, number>()
-  
+
   constructor(ttl = 5000, maxSize?: number) {
     this.ttl = ttl
     this.maxSize = maxSize
   }
-  
+
   /**
    * 获取缓存值
    */
   get(key: K): V | undefined {
     const entry = this.cache.get(key)
-    
+
     if (!entry) {
       return undefined
     }
-    
+
     // 检查是否过期
     if (Date.now() - entry.timestamp > this.ttl) {
       this.cache.delete(key)
       return undefined
     }
-    
+
     // 更新访问计数
     const count = this.accessCount.get(key) || 0
     this.accessCount.set(key, count + 1)
-    
+
     return entry.value
   }
-  
+
   /**
    * 设置缓存值
    */
@@ -125,13 +125,13 @@ export class SmartCacheManager<K extends object = object, V = any> {
       value,
       timestamp: Date.now()
     })
-    
+
     // 初始化访问计数
     if (!this.accessCount.has(key)) {
       this.accessCount.set(key, 0)
     }
   }
-  
+
   /**
    * 删除缓存
    */
@@ -139,7 +139,7 @@ export class SmartCacheManager<K extends object = object, V = any> {
     this.accessCount.delete(key)
     return this.cache.delete(key)
   }
-  
+
   /**
    * 清空缓存
    */
@@ -149,18 +149,18 @@ export class SmartCacheManager<K extends object = object, V = any> {
     this.cache = new WeakMap()
     this.accessCount = new WeakMap()
   }
-  
+
   /**
    * 获取或设置缓存
    */
   getOrSet(key: K, factory: () => V): V {
     let value = this.get(key)
-    
+
     if (value === undefined) {
       value = factory()
       this.set(key, value)
     }
-    
+
     return value
   }
 }
@@ -171,17 +171,17 @@ export class SmartCacheManager<K extends object = object, V = any> {
  */
 export class VirtualProxy<T extends object> {
   private target: T | null = null
-  private factory: () => T
+  private factory: () => Promise<T>
   private isInitialized = false
   private initPromise: Promise<T> | null = null
-  
+
   constructor(factory: () => T | Promise<T>) {
     this.factory = async () => {
       const result = factory()
       return result instanceof Promise ? await result : result
     }
   }
-  
+
   /**
    * 获取代理对象
    */
@@ -191,41 +191,41 @@ export class VirtualProxy<T extends object> {
         if (!this.isInitialized) {
           this.initialize()
         }
-        
+
         if (this.target) {
           return Reflect.get(this.target, prop)
         }
-        
+
         // 返回 Promise 以支持异步初始化
         return this.initPromise?.then(target => Reflect.get(target, prop))
       },
-      
+
       set: (_, prop: string | symbol, value: any) => {
         if (!this.isInitialized) {
           this.initialize()
         }
-        
+
         if (this.target) {
           return Reflect.set(this.target, prop, value)
         }
-        
+
         return false
       },
-      
+
       has: (_, prop: string | symbol) => {
         if (!this.isInitialized) {
           this.initialize()
         }
-        
+
         if (this.target) {
           return Reflect.has(this.target, prop)
         }
-        
+
         return false
       }
     })
   }
-  
+
   /**
    * 初始化目标对象
    */
@@ -233,12 +233,12 @@ export class VirtualProxy<T extends object> {
     if (this.isInitialized || this.initPromise) {
       return
     }
-    
+
     this.initPromise = this.factory()
     this.target = await this.initPromise
     this.isInitialized = true
   }
-  
+
   /**
    * 强制初始化
    */
@@ -246,7 +246,7 @@ export class VirtualProxy<T extends object> {
     await this.initialize()
     return this.target!
   }
-  
+
   /**
    * 是否已初始化
    */
@@ -265,12 +265,12 @@ export class ComputedOptimizer<T = any> {
   private deps = new Set<ReactiveEffect>()
   private getter: () => T
   private setter?: (value: T) => void
-  
+
   constructor(getter: () => T, setter?: (value: T) => void) {
     this.getter = getter
     this.setter = setter
   }
-  
+
   /**
    * 获取计算值
    */
@@ -279,10 +279,10 @@ export class ComputedOptimizer<T = any> {
       this.cache = this.getter()
       this.isDirty = false
     }
-    
+
     return this.cache!
   }
-  
+
   /**
    * 设置计算值
    */
@@ -293,14 +293,14 @@ export class ComputedOptimizer<T = any> {
       console.warn('Computed value is readonly')
     }
   }
-  
+
   /**
    * 标记为脏数据
    */
   invalidate(): void {
     this.isDirty = true
   }
-  
+
   /**
    * 创建响应式计算属性
    */
@@ -327,7 +327,7 @@ export class ReactiveOptimizer {
   private batchManager = BatchUpdateManager.getInstance()
   private computedCache = new SmartCacheManager<object, any>()
   private proxyCache = new WeakMap<object, any>()
-  
+
   /**
    * 创建优化的响应式状态
    */
@@ -337,50 +337,50 @@ export class ReactiveOptimizer {
     if (cached) {
       return cached
     }
-    
+
     // 创建响应式代理
     const proxy = reactive(target) as UnwrapRef<T>
-    
+
     // 缓存代理
     this.proxyCache.set(target, proxy)
-    
+
     return proxy
   }
-  
+
   /**
    * 创建浅响应式状态
    */
   createShallowReactive<T>(value: T) {
     const ref = shallowRef(value)
-    
+
     return {
       value: ref.value,
-      
+
       setValue(newValue: T) {
         ref.value = newValue
         triggerRef(ref)
       },
-      
+
       trigger() {
         triggerRef(ref)
       }
     }
   }
-  
+
   /**
    * 创建只读状态
    */
   createReadonly<T extends object>(target: T): Readonly<T> {
     return readonly(target) as Readonly<T>
   }
-  
+
   /**
    * 批量更新状态
    */
   batchUpdate(updater: () => void): void {
     this.batchManager.queueUpdate(updater)
   }
-  
+
   /**
    * 同步批量更新
    */
@@ -388,14 +388,14 @@ export class ReactiveOptimizer {
     updater()
     this.batchManager.flushSync()
   }
-  
+
   /**
    * 创建优化的计算属性
    */
   createComputed<T>(getter: () => T, setter?: (value: T) => void): ComputedOptimizer<T> {
     return new ComputedOptimizer(getter, setter)
   }
-  
+
   /**
    * 创建虚拟代理
    */
@@ -410,37 +410,45 @@ export class ReactiveOptimizer {
  * 自动清理未使用的响应式对象
  */
 export class MemoryManager {
-  private registry = new FinalizationRegistry((heldValue: any) => {
-    // 清理回调
-    console.debug('Cleaning up reactive object:', heldValue)
-  })
-  
-  private weakRefs = new WeakMap<object, WeakRef<object>>()
+  private registry = typeof (globalThis as any).FinalizationRegistry !== 'undefined'
+    ? new (globalThis as any).FinalizationRegistry((heldValue: any) => {
+        // 清理回调
+        console.debug('Cleaning up reactive object:', heldValue)
+      })
+    : null
+
+  private weakRefs = new WeakMap<object, any>()
   private cleanupTimers = new Map<string, NodeJS.Timeout>()
-  
+
   /**
    * 注册对象进行自动清理
    */
   register(obj: object, id: string): void {
     // 创建弱引用
-    const weakRef = new WeakRef(obj)
-    this.weakRefs.set(obj, weakRef)
-    
+    if (typeof (globalThis as any).WeakRef !== 'undefined') {
+      const weakRef = new (globalThis as any).WeakRef(obj)
+      this.weakRefs.set(obj, weakRef)
+    }
+
     // 注册清理回调
-    this.registry.register(obj, id)
-    
+    if (this.registry) {
+      this.registry.register(obj, id)
+    }
+
     // 设置定时检查
     this.scheduleCleanup(id)
   }
-  
+
   /**
    * 手动清理对象
    */
   unregister(obj: object): void {
     this.weakRefs.delete(obj)
-    this.registry.unregister(obj)
+    if (this.registry) {
+      this.registry.unregister(obj)
+    }
   }
-  
+
   /**
    * 调度清理检查
    */
@@ -450,16 +458,16 @@ export class MemoryManager {
     if (existingTimer) {
       clearTimeout(existingTimer)
     }
-    
+
     // 设置新的定时器
     const timer = setTimeout(() => {
       this.performCleanup(id)
       this.cleanupTimers.delete(id)
     }, 60000) // 60秒后检查
-    
+
     this.cleanupTimers.set(id, timer)
   }
-  
+
   /**
    * 执行清理
    */
@@ -467,7 +475,7 @@ export class MemoryManager {
     // 检查并清理未使用的对象
     console.debug(`Performing cleanup for: ${id}`)
   }
-  
+
   /**
    * 清理所有定时器
    */
@@ -484,34 +492,34 @@ export class MemoryManager {
 export class DependencyTracker {
   private dependencies = new Map<string, Set<ReactiveEffect>>()
   private effectScopes = new WeakMap<object, Set<string>>()
-  
+
   /**
    * 收集依赖
    */
   track(target: object, key: string, effect: ReactiveEffect): void {
     const id = this.getTargetKey(target, key)
-    
+
     if (!this.dependencies.has(id)) {
       this.dependencies.set(id, new Set())
     }
-    
+
     this.dependencies.get(id)!.add(effect)
-    
+
     // 记录作用域
     if (!this.effectScopes.has(target)) {
       this.effectScopes.set(target, new Set())
     }
-    
+
     this.effectScopes.get(target)!.add(key)
   }
-  
+
   /**
    * 触发更新
    */
   trigger(target: object, key: string): void {
     const id = this.getTargetKey(target, key)
     const effects = this.dependencies.get(id)
-    
+
     if (effects) {
       // 复制一份避免循环依赖
       const effectsToRun = new Set(effects)
@@ -524,7 +532,7 @@ export class DependencyTracker {
       })
     }
   }
-  
+
   /**
    * 清理依赖
    */
@@ -544,7 +552,7 @@ export class DependencyTracker {
       }
     }
   }
-  
+
   /**
    * 生成唯一标识
    */

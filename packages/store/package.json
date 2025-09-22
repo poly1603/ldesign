@@ -1,10 +1,7 @@
 {
   "name": "@ldesign/store",
-  "type": "module",
   "version": "0.1.0",
   "description": "一个基于Pinia的Vue3状态管理库，支持类、Hook、Provider、装饰器等多种使用方式，性能优越，功能丰富",
-  "author": "ldesign",
-  "license": "MIT",
   "keywords": [
     "pinia",
     "vue3",
@@ -17,23 +14,93 @@
     "reactive",
     "composition-api"
   ],
+  "author": "ldesign",
+  "license": "MIT",
+  "type": "module",
   "exports": {
     ".": {
-      "types": "./lib/index.d.ts",
+      "types": "./es/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
+    },
+    "./core": {
+      "types": "./es/core/index.d.ts",
+      "import": "./es/core/index.js",
+      "require": "./lib/core/index.cjs"
+    },
+    "./core/*": {
+      "types": "./es/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.cjs"
+    },
+    "./decorators": {
+      "types": "./es/decorators/index.d.ts",
+      "import": "./es/decorators/index.js",
+      "require": "./lib/decorators/index.cjs"
+    },
+    "./decorators/*": {
+      "types": "./es/decorators/*.d.ts",
+      "import": "./es/decorators/*.js",
+      "require": "./lib/decorators/*.cjs"
+    },
+    "./engine": {
+      "types": "./es/engine/index.d.ts",
+      "import": "./es/engine/index.js",
+      "require": "./lib/engine/index.cjs"
+    },
+    "./engine/*": {
+      "types": "./es/engine/*.d.ts",
+      "import": "./es/engine/*.js",
+      "require": "./lib/engine/*.cjs"
+    },
+    "./hooks": {
+      "types": "./es/hooks/index.d.ts",
+      "import": "./es/hooks/index.js",
+      "require": "./lib/hooks/index.cjs"
+    },
+    "./hooks/*": {
+      "types": "./es/hooks/*.d.ts",
+      "import": "./es/hooks/*.js",
+      "require": "./lib/hooks/*.cjs"
+    },
+    "./types": {
+      "types": "./es/types/index.d.ts",
+      "import": "./es/types/index.js",
+      "require": "./lib/types/index.cjs"
+    },
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
+    },
+    "./vue": {
+      "types": "./es/vue/index.d.ts",
+      "import": "./es/vue/index.js",
+      "require": "./lib/vue/index.cjs"
+    },
+    "./vue/*": {
+      "types": "./es/vue/*.d.ts",
+      "import": "./es/vue/*.js",
+      "require": "./lib/vue/*.cjs"
+    },
+    "./__tests__/*": {
+      "types": "./es/__tests__/*.d.ts",
+      "import": "./es/__tests__/*.js",
+      "require": "./lib/__tests__/*.cjs"
     }
   },
-  "main": "lib/index.cjs",
-  "module": "es/index.js",
-  "types": "lib/index.d.ts",
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
   "files": [
+    "LICENSE",
     "README.md",
-    "CHANGELOG.md",
+    "dist",
     "es",
     "lib",
-    "types",
-    "dist"
+    "package.json"
   ],
   "scripts": {
     "build": "ldesign-builder build -f esm,cjs,umd",
@@ -60,21 +127,15 @@
     "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js",
     "build:dev": "node scripts/build.js --dev"
   },
+  "dependencies": {
+    "@types/ws": "^8.5.10",
+    "reflect-metadata": "^0.2.1",
+    "tslib": "^2.6.2",
+    "ws": "^8.18.3"
+  },
   "peerDependencies": {
     "pinia": "^2.1.0",
     "vue": "^3.3.0"
-  },
-  "peerDependenciesMeta": {
-    "pinia": {
-      "optional": false
-    },
-    "vue": {
-      "optional": true
-    }
-  },
-  "dependencies": {
-    "reflect-metadata": "^0.2.1",
-    "tslib": "^2.6.2"
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
@@ -93,15 +154,23 @@
     "size-limit": "^11.0.0",
     "typescript": "^5.6.0",
     "vite": "^5.0.12",
+    "vitepress": "^1.6.4",
     "vitest": "^3.2.4",
     "vue": "^3.4.15",
-    "vue-tsc": "^3.0.5",
-    "vitepress": "^1.6.4"
+    "vue-tsc": "^3.0.5"
   },
   "size-limit": [
     {
       "path": "dist/index.js",
       "limit": "40 KB"
     }
-  ]
+  ],
+  "peerDependenciesMeta": {
+    "pinia": {
+      "optional": false
+    },
+    "vue": {
+      "optional": true
+    }
+  }
 }

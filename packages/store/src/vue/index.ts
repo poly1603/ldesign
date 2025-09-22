@@ -19,9 +19,13 @@ export { STORE_PROVIDER_KEY } from '../types/provider'
 // 组合式 API
 export {
   useAction,
+  useAsyncAction,
   useBatch,
+  useComputed,
   useGetter,
   usePersist,
+  useReactiveState,
+  useSimpleStore,
   useState,
   useStore,
 } from './composables'
@@ -33,6 +37,26 @@ export {
   useStoreProvider,
   useStoreRegistration,
 } from './StoreProvider'
+
+// 辅助工具
+export {
+  createAutoStorePlugin,
+  createReactiveStore,
+  createSimpleStore,
+  createStores,
+  globalStoreManager,
+  StoreManager,
+} from './helpers'
+export type { SimpleStoreOptions } from './helpers'
+
+// 指令
+export {
+  createStoreDirectivesPlugin,
+  storeDirectives,
+  vAction,
+  vLoading,
+  vStore,
+} from './directives'
 
 export type {
   ActionHookReturn,

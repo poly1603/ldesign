@@ -1,5 +1,14 @@
 import { defineStore } from 'pinia'
 
+// 预定义的分类常量，确保对象引用一致
+const CATEGORIES = [
+  { value: 'laptop', label: '笔记本电脑' },
+  { value: 'phone', label: '智能手机' },
+  { value: 'tablet', label: '平板电脑' },
+  { value: 'headphones', label: '耳机' },
+  { value: 'watch', label: '智能手表' }
+]
+
 export interface Product {
   id: number
   name: string
@@ -53,7 +62,7 @@ export const useProductStore = defineStore('product-decorator', {
         name: 'iPad Air',
         price: 4399,
         category: 'tablet',
-        inStock: false,
+        inStock: true,
         description: '轻薄的平板电脑',
         rating: 4.7,
         reviews: 890
@@ -62,7 +71,7 @@ export const useProductStore = defineStore('product-decorator', {
         id: 4,
         name: 'AirPods Pro',
         price: 1899,
-        category: 'audio',
+        category: 'headphones',
         inStock: true,
         description: '主动降噪耳机',
         rating: 4.6,
@@ -203,6 +212,33 @@ export const useProductStore = defineStore('product-decorator', {
           Object.assign(product, updates)
         }
       })
+    },
+
+    // 添加产品 (用于性能测试)
+    addProduct(product: Product) {
+      this.products.push(product)
+    },
+
+    // 更新产品 (用于性能测试)
+    updateProduct(productId: number, updates: Partial<Product>) {
+      const product = this.products.find(p => p.id === productId)
+      if (product) {
+        Object.assign(product, updates)
+      }
+    },
+
+    // 删除产品 (用于性能测试)
+    removeProduct(productId: number) {
+      const index = this.products.findIndex(p => p.id === productId)
+      if (index > -1) {
+        this.products.splice(index, 1)
+      }
+    },
+
+    // 过滤产品 (用于性能测试)
+    filterProducts(filters: Partial<ProductFilters>) {
+      this.setFilters(filters)
+      return this.filteredProducts
     }
   },
 
@@ -261,12 +297,8 @@ export const useProductStore = defineStore('product-decorator', {
 
     // 产品分类列表
     categories: (state) => {
-      const categories = [...new Set(state.products.map(p => p.category))]
-      return categories.map(category => ({
-        value: category,
-        label: category.charAt(0).toUpperCase() + category.slice(1),
-        count: state.products.filter(p => p.category === category).length
-      }))
+      const existingCategories = [...new Set(state.products.map(p => p.category))]
+      return CATEGORIES.filter(cat => existingCategories.includes(cat.value))
     },
 
     // 购物车总价
@@ -278,8 +310,40 @@ export const useProductStore = defineStore('product-decorator', {
     },
 
     // 购物车商品数量
+    cartItemsCount: (state) => {
+      return state.cart.reduce((count, item) => count + item.quantity, 0)
+    },
+
+    // 购物车商品数量（别名）
     cartItemCount: (state) => {
       return state.cart.reduce((count, item) => count + item.quantity, 0)
+    },
+
+    // 选中产品数量
+    selectedProductsCount: (state) => {
+      return state.selectedProducts.length
+    },
+
+    // 是否有选中产品
+    hasSelectedProducts: (state) => {
+      return state.selectedProducts.length > 0
+    },
+
+    // 有库存的产品
+    inStockProducts: (state) => {
+      return state.products.filter(product => product.inStock)
+    },
+
+    // 无库存的产品
+    outOfStockProducts: (state) => {
+      return state.products.filter(product => !product.inStock)
+    },
+
+    // 平均评分
+    averageRating: (state) => {
+      if (state.products.length === 0) return 0
+      const total = state.products.reduce((sum, product) => sum + product.rating, 0)
+      return total / state.products.length
     },
 
     // 选中产品的统计信息

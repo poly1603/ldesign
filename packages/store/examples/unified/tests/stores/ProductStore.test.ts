@@ -86,11 +86,11 @@ describe('productStore', () => {
       const store = useProductStore()
 
       const categories = store.categories
-      expect(categories).toContain({ value: 'laptop', label: '笔记本电脑' })
-      expect(categories).toContain({ value: 'phone', label: '智能手机' })
-      expect(categories).toContain({ value: 'tablet', label: '平板电脑' })
-      expect(categories).toContain({ value: 'watch', label: '智能手表' })
-      expect(categories).toContain({ value: 'headphones', label: '耳机' })
+      expect(categories).toContainEqual({ value: 'laptop', label: '笔记本电脑' })
+      expect(categories).toContainEqual({ value: 'phone', label: '智能手机' })
+      expect(categories).toContainEqual({ value: 'tablet', label: '平板电脑' })
+      expect(categories).toContainEqual({ value: 'watch', label: '智能手表' })
+      expect(categories).toContainEqual({ value: 'headphones', label: '耳机' })
     })
 
     it('selectedProductsCount 应该返回选中产品数量', () => {

@@ -3,10 +3,11 @@
  * 提供更直观的使用方式、自动类型推导、链式调用等功能
  */
 
-import { defineStore as piniaDefineStore, StoreDefinition } from 'pinia'
-import { computed, ref, reactive, toRefs, watch, watchEffect } from 'vue'
-import type { ComputedRef, Ref, UnwrapRef } from 'vue'
-import { batchUpdate, reactiveOptimizer } from './ReactiveSystem'
+import type { StoreDefinition } from 'pinia';
+import { defineStore as piniaDefineStore } from 'pinia'
+import { computed, ref, reactive, watch, watchEffect } from 'vue'
+import type { Ref, UnwrapRef } from 'vue'
+import { batchUpdate } from './ReactiveSystem'
 
 /**
  * Store 构建器
@@ -25,11 +26,11 @@ export class StoreBuilder<
   private persist: boolean | PersistOptions = false
   private devtools: boolean | DevToolsOptions = true
   private plugins: StorePlugin[] = []
-  
+
   constructor(id: Id) {
     this.id = id
   }
-  
+
   /**
    * 添加状态
    */
@@ -37,15 +38,15 @@ export class StoreBuilder<
     key: K,
     initialValue: V | (() => V)
   ): StoreBuilder<Id, S & Record<K, V>, G, A> {
-    const value = typeof initialValue === 'function' 
-      ? (initialValue as () => V)() 
+    const value = typeof initialValue === 'function'
+      ? (initialValue as () => V)()
       : initialValue
-      
+
     ;(this.state as any)[key] = value
-    
+
     return this as any
   }
-  
+
   /**
    * 批量添加状态
    */
@@ -54,10 +55,10 @@ export class StoreBuilder<
   ): StoreBuilder<Id, S & T, G, A> {
     const stateObj = typeof states === 'function' ? states() : states
     Object.assign(this.state, stateObj)
-    
+
     return this as any
   }
-  
+
   /**
    * 添加计算属性
    */
@@ -66,10 +67,10 @@ export class StoreBuilder<
     getter: (state: S & G) => V
   ): StoreBuilder<Id, S, G & Record<K, V>, A> {
     ;(this.getters as any)[key] = getter
-    
+
     return this as any
   }
-  
+
   /**
    * 批量添加计算属性
    */
@@ -77,10 +78,10 @@ export class StoreBuilder<
     getters: T
   ): StoreBuilder<Id, S, G & { [K in keyof T]: ReturnType<T[K]> }, A> {
     Object.assign(this.getters, getters)
-    
+
     return this as any
   }
-  
+
   /**
    * 添加方法
    */
@@ -89,10 +90,10 @@ export class StoreBuilder<
     action: (this: S & G & A, ...args: Parameters<F>) => ReturnType<F>
   ): StoreBuilder<Id, S, G, A & Record<K, F>> {
     ;(this.actions as any)[key] = action
-    
+
     return this as any
   }
-  
+
   /**
    * 批量添加方法
    */
@@ -100,10 +101,10 @@ export class StoreBuilder<
     actions: T
   ): StoreBuilder<Id, S, G, A & T> {
     Object.assign(this.actions, actions)
-    
+
     return this as any
   }
-  
+
   /**
    * 启用持久化
    */
@@ -111,7 +112,7 @@ export class StoreBuilder<
     this.persist = options ?? true
     return this
   }
-  
+
   /**
    * 配置开发工具
    */
@@ -119,7 +120,7 @@ export class StoreBuilder<
     this.devtools = options ?? true
     return this
   }
-  
+
   /**
    * 添加插件
    */
@@ -127,7 +128,7 @@ export class StoreBuilder<
     this.plugins.push(plugin)
     return this
   }
-  
+
   /**
    * 构建Store
    */
@@ -140,7 +141,7 @@ export class StoreBuilder<
       devtools: this.devtools,
       plugins: this.plugins
     })
-    
+
     return store
   }
 }
@@ -185,35 +186,35 @@ export interface SimpleStore<
 > {
   // 状态
   state: UnwrapRef<S>
-  
+
   // 计算属性
   getters: Readonly<G>
-  
+
   // 方法
   actions: A
-  
+
   // 工具方法
   $reset(): void
   $patch(patch: Partial<S> | ((state: S) => void)): void
   $subscribe(callback: (mutation: any, state: S) => void): () => void
   $onAction(callback: (action: any) => void): () => void
   $dispose(): void
-  
+
   // 快捷方法
   get<K extends keyof S>(key: K): S[K]
   set<K extends keyof S>(key: K, value: S[K]): void
   update<K extends keyof S>(key: K, updater: (value: S[K]) => S[K]): void
   watch<T>(source: () => T, callback: (value: T) => void): () => void
   watchAll(callback: (state: S) => void): () => void
-  
+
   // 批量操作
   batch(updater: () => void): void
   transaction(updater: () => void | Promise<void>): Promise<void>
-  
+
   // 状态快照
   snapshot(): S
   restore(snapshot: S): void
-  
+
   // 导出/导入
   export(): string
   import(data: string): void
@@ -241,10 +242,10 @@ export function createSimpleStore<
   const state = reactive(
     typeof options.state === 'function' ? options.state() : options.state
   ) as UnwrapRef<S>
-  
+
   // 初始状态快照（用于重置）
   const initialState = JSON.parse(JSON.stringify(state))
-  
+
   // 创建计算属性
   const getters: any = {}
   if (options.getters) {
@@ -252,106 +253,110 @@ export function createSimpleStore<
       getters[key] = computed(() => (getter as any)(state))
     }
   }
-  
+
   // 创建方法
   const actions: any = {}
   if (options.actions) {
     for (const [key, action] of Object.entries(options.actions)) {
-      actions[key] = action.bind({ ...state, ...getters, ...actions })
+      actions[key] = action.bind({
+        ...Object.fromEntries(Object.entries(state as any)),
+        ...getters,
+        ...actions
+      })
     }
   }
-  
+
   // 订阅管理
   const subscriptions = new Set<Function>()
   const actionSubscriptions = new Set<Function>()
-  
+
   // Store 实例
   const store: SimpleStore<S, G, A> = {
     state,
     getters: getters as G,
     actions: actions as A,
-    
+
     // 重置状态
     $reset() {
       batchUpdate(() => {
-        Object.assign(state, initialState)
+        Object.assign(state as any, initialState)
       })
     },
-    
+
     // 修改状态
     $patch(patch) {
       batchUpdate(() => {
         if (typeof patch === 'function') {
           patch(state as S)
         } else {
-          Object.assign(state, patch)
+          Object.assign(state as any, patch)
         }
       })
     },
-    
+
     // 订阅状态变化
     $subscribe(callback) {
       subscriptions.add(callback)
-      
+
       const unwatch = watchEffect(() => {
         callback({ type: 'direct' }, state as S)
       })
-      
+
       return () => {
         subscriptions.delete(callback)
         unwatch()
       }
     },
-    
+
     // 订阅动作
     $onAction(callback) {
       actionSubscriptions.add(callback)
-      
+
       return () => {
         actionSubscriptions.delete(callback)
       }
     },
-    
+
     // 销毁Store
     $dispose() {
       subscriptions.clear()
       actionSubscriptions.clear()
     },
-    
+
     // 获取状态值
     get(key) {
-      return state[key as string]
+      return (state as any)[key as string]
     },
-    
+
     // 设置状态值
     set(key, value) {
-      state[key as string] = value
+      (state as any)[key as string] = value
     },
-    
+
     // 更新状态值
     update(key, updater) {
-      state[key as string] = updater(state[key as string])
+      (state as any)[key as string] = updater((state as any)[key as string])
     },
-    
+
     // 监听特定值
     watch(source, callback) {
       return watch(source, callback)
     },
-    
+
     // 监听所有状态
     watchAll(callback) {
-      return watch(() => state, callback, { deep: true })
+      return watch(() => state as any, callback, { deep: true })
     },
-    
+
     // 批量更新
     batch(updater) {
       batchUpdate(updater)
     },
-    
+
     // 事务操作
     async transaction(updater) {
       const snapshot = this.snapshot()
-      
+
       try {
         await updater()
       } catch (error) {
@@ -360,48 +365,48 @@ export function createSimpleStore<
         throw error
       }
     },
-    
+
     // 创建快照
     snapshot() {
       return JSON.parse(JSON.stringify(state)) as S
     },
-    
+
     // 恢复快照
     restore(snapshot) {
       batchUpdate(() => {
-        Object.assign(state, snapshot)
+        Object.assign(state as any, snapshot)
       })
     },
-    
+
     // 导出状态
     export() {
       return JSON.stringify(state)
     },
-    
+
     // 导入状态
     import(data) {
       const imported = JSON.parse(data)
       batchUpdate(() => {
-        Object.assign(state, imported)
+        Object.assign(state as any, imported)
       })
     }
   }
-  
+
   // 应用持久化
   if (options.persist) {
     applyPersistence(store, options.persist === true ? {} : options.persist)
   }
-  
+
   // 应用开发工具
   if (options.devtools) {
     applyDevtools(store, options.devtools === true ? {} : options.devtools)
   }
-  
+
   // 应用插件
   if (options.plugins) {
     options.plugins.forEach(plugin => plugin.install(store))
   }
-  
+
   return store
 }
 
@@ -416,25 +421,25 @@ function applyPersistence(store: any, options: PersistOptions): void {
     serialize: JSON.stringify,
     deserialize: JSON.parse
   }
-  
+
   // 从存储恢复
   try {
     const saved = storage.getItem(key)
     if (saved) {
       const data = serializer.deserialize(saved)
-      
+
       if (paths) {
         // 只恢复指定路径
         paths.forEach(path => {
           const keys = path.split('.')
           let target = store.state
           let source = data
-          
+
           for (let i = 0; i < keys.length - 1; i++) {
             target = target[keys[i]]
             source = source?.[keys[i]]
           }
-          
+
           if (source && keys.length > 0) {
             target[keys[keys.length - 1]] = source[keys[keys.length - 1]]
           }
@@ -447,12 +452,12 @@ function applyPersistence(store: any, options: PersistOptions): void {
   } catch (error) {
     console.error('Failed to restore state:', error)
   }
-  
+
   // 监听变化并保存
   store.$subscribe(() => {
     try {
       let dataToSave = store.state
-      
+
       if (paths) {
         // 只保存指定路径
         dataToSave = {}
@@ -460,7 +465,7 @@ function applyPersistence(store: any, options: PersistOptions): void {
           const keys = path.split('.')
           let source = store.state
           let target: any = dataToSave
-          
+
           for (let i = 0; i < keys.length - 1; i++) {
             source = source[keys[i]]
             if (!target[keys[i]]) {
@@ -468,13 +473,13 @@ function applyPersistence(store: any, options: PersistOptions): void {
             }
             target = target[keys[i]]
           }
-          
+
           if (keys.length > 0) {
             target[keys[keys.length - 1]] = source[keys[keys.length - 1]]
           }
         })
       }
-      
+
       storage.setItem(key, serializer.serialize(dataToSave))
     } catch (error) {
       console.error('Failed to persist state:', error)
@@ -502,7 +507,7 @@ export function store<Id extends string>(id: Id): StoreBuilder<Id> {
 /**
  * 定义Store（Pinia兼容）
  */
-export function defineSimpleStore<Id extends string, S, G, A>(
+export function defineSimpleStore<Id extends string, S extends Record<string, any>, G, A>(
   id: Id,
   setup: () => { state: S; getters?: G; actions?: A }
 ): StoreDefinition<Id, S, G, A> {
@@ -524,7 +529,7 @@ export function combineStores<T extends Record<string, SimpleStore<any, any, any
 ): CombinedStore<T> {
   const combined = {
     stores,
-    
+
     // 获取所有状态
     get state() {
       const result: any = {}
@@ -533,17 +538,17 @@ export function combineStores<T extends Record<string, SimpleStore<any, any, any
       }
       return result
     },
-    
+
     // 重置所有Store
     resetAll() {
       Object.values(stores).forEach(store => store.$reset())
     },
-    
+
     // 批量操作
     batch(updater: () => void) {
       batchUpdate(updater)
     },
-    
+
     // 创建快照
     snapshot() {
       const result: any = {}
@@ -552,7 +557,7 @@ export function combineStores<T extends Record<string, SimpleStore<any, any, any
       }
       return result
     },
-    
+
     // 恢复快照
     restore(snapshot: any) {
       batchUpdate(() => {
@@ -564,7 +569,7 @@ export function combineStores<T extends Record<string, SimpleStore<any, any, any
       })
     }
   }
-  
+
   return combined as CombinedStore<T>
 }
 
@@ -592,11 +597,11 @@ export function createAsyncStore<T>(
   const loading = ref(false)
   const error = ref<Error | null>(null)
   const data = ref<T | null>(null)
-  
+
   const load = async () => {
     loading.value = true
     error.value = null
-    
+
     try {
       data.value = await loader()
     } catch (err) {
@@ -605,15 +610,15 @@ export function createAsyncStore<T>(
       loading.value = false
     }
   }
-  
+
   const reload = () => load()
-  
+
   const reset = () => {
     loading.value = false
     error.value = null
     data.value = null
   }
-  
+
   return {
     loading: loading as Ref<boolean>,
     error: error as Ref<Error | null>,
@@ -641,34 +646,34 @@ export interface AsyncStore<T> {
  */
 export class StoreFactory {
   private stores = new Map<string, any>()
-  
+
   /**
    * 注册Store
    */
   register<T>(id: string, factory: () => T): void {
     this.stores.set(id, factory)
   }
-  
+
   /**
    * 获取Store
    */
   get<T>(id: string): T {
     const factory = this.stores.get(id)
-    
+
     if (!factory) {
       throw new Error(`Store "${id}" not found`)
     }
-    
+
     return factory()
   }
-  
+
   /**
    * 检查是否存在
    */
   has(id: string): boolean {
     return this.stores.has(id)
   }
-  
+
   /**
    * 清空所有Store
    */

@@ -110,16 +110,28 @@ export class PersistenceManager {
    */
   save(key: string, state: any, paths?: string[]): void {
     try {
+      // 检查状态是否有效
+      if (state === undefined || state === null) {
+        this.storage.removeItem(key)
+        return
+      }
+
       let dataToSave = state
 
       // 如果指定了路径，只保存指定的字段
       if (paths && paths.length > 0) {
         dataToSave = {}
         for (const path of paths) {
-          if (path in state) {
+          if (path in state && state[path] !== undefined) {
             dataToSave[path] = state[path]
           }
         }
+      }
+
+      // 确保有数据要保存
+      if (dataToSave === undefined || (typeof dataToSave === 'object' && Object.keys(dataToSave).length === 0)) {
+        this.storage.removeItem(key)
+        return
       }
 
       const serialized = this.serializer.serialize(dataToSave)
@@ -135,11 +147,19 @@ export class PersistenceManager {
   load(key: string): any {
     try {
       const serialized = this.storage.getItem(key)
-      if (serialized === null) return null
+      if (serialized === null || serialized === 'undefined' || serialized === 'null') {
+        return null
+      }
 
       return this.serializer.deserialize(serialized)
     } catch (error) {
       console.warn(`Failed to load persisted state for key "${key}":`, error)
+      // 清理无效的存储数据
+      try {
+        this.storage.removeItem(key)
+      } catch (cleanupError) {
+        // 忽略清理错误
+      }
       return null
     }
   }

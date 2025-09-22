@@ -5,7 +5,6 @@
 
 import type { StateDefinition, ActionDefinition, GetterDefinition } from '@/types'
 import type { Store } from 'pinia'
-import { reactive, ref, computed } from 'vue'
 
 /**
  * 批量操作管理器
@@ -203,7 +202,7 @@ export class SnapshotManager<TState extends StateDefinition = StateDefinition> {
       timestamp: Date.now()
     }
     this.snapshots.set(name, snapshot)
-    
+
     // 限制快照数量
     if (this.snapshots.size > this.maxSnapshots) {
       const oldestKey = Array.from(this.snapshots.keys())[0]
@@ -516,9 +515,9 @@ export class StateDiffer<TState extends StateDefinition = StateDefinition> {
             newValue: undefined,
             type: 'deleted'
           })
-        } else if (typeof value1 === 'object' && typeof value2 === 'object' && 
-                   value1 !== null && value2 !== null &&
-                   !Array.isArray(value1) && !Array.isArray(value2)) {
+        } else if (typeof value1 === 'object' && typeof value2 === 'object' &&
+          value1 !== null && value2 !== null &&
+          !Array.isArray(value1) && !Array.isArray(value2)) {
           // 递归比较对象
           compare(value1, value2, currentPath)
         } else if (JSON.stringify(value1) !== JSON.stringify(value2)) {

@@ -4,7 +4,7 @@
 
 ### 1. TypeScript 装饰器兼容性问题
 - **问题**: TypeScript 5.x 中装饰器签名不兼容
-- **解决方案**: 
+- **解决方案**:
   - 添加 `experimentalDecorators: true` 配置
   - 添加 `emitDecoratorMetadata: true` 配置
   - 设置 `useDefineForClassFields: false`
@@ -15,7 +15,7 @@
 
 ### 3. 测试配置错误
 - **问题**: vitest 配置文件路径错误，缺少 afterEach 导入
-- **解决方案**: 
+- **解决方案**:
   - 修复 vitest.config.ts 配置
   - 添加缺失的测试函数导入
 

@@ -16,9 +16,9 @@ import {
   createLargeDataset,
   performanceMonitor
 } from './setup'
-import { useProductStore } from '@/stores/decorators/ProductStore'
-import { usePersistenceStore } from '@/stores/persistence/PersistenceStore'
-import { useRealtimeStore } from '@/stores/realtime/RealtimeStore'
+import { useProductStore } from '../../src/stores/decorators/ProductStore'
+import { usePersistenceStore } from '../../src/stores/persistence/PersistenceStore'
+import { useRealtimeStore } from '../../src/stores/realtime/RealtimeStore'
 
 describe('store 状态更新性能测试', () => {
   beforeEach(() => {

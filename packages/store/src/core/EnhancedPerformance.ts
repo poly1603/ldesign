@@ -3,8 +3,6 @@
  * 提供懒加载、预加载、内存管理、并发控制等高级性能优化功能
  */
 
-import type { StateDefinition, ActionDefinition, GetterDefinition } from '@/types'
-import type { Store } from 'pinia'
 
 /**
  * 懒加载管理器
@@ -254,7 +252,7 @@ export class MemoryManager {
     if (typeof obj === 'object') {
       let size = 0
       for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
           size += key.length * 2
           size += this.estimateSize(obj[key])
         }
@@ -627,9 +625,9 @@ export class EnhancedPerformanceOptimizer {
   }) {
     this.lazyLoad = new LazyLoadManager()
     this.preload = new PreloadManager({ maxConcurrent: options?.maxConcurrent })
-    this.memory = new MemoryManager({ 
+    this.memory = new MemoryManager({
       memoryLimit: options?.memoryLimit,
-      autoCleanup: true 
+      autoCleanup: true
     })
     this.concurrency = new ConcurrencyController(options?.maxConcurrent)
     this.virtualization = new VirtualizationManager({ pageSize: options?.pageSize })

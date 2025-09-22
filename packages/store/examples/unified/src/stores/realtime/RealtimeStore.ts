@@ -166,9 +166,16 @@ export const useRealtimeStore = defineStore('realtime', {
       })
     },
 
+    // 重新连接 (用于性能测试)
+    async reconnect() {
+      this.disconnect()
+      await new Promise(resolve => setTimeout(resolve, 100)) // 短暂延迟
+      await this.connect()
+    },
+
     // 发送消息
     sendMessage(content: string) {
-      if (!this.connectionStatus.connected) {
+      if (!this.connectionStatus.connected || !content.trim()) {
         throw new Error('未连接到服务器')
       }
 
@@ -268,6 +275,11 @@ export const useRealtimeStore = defineStore('realtime', {
 
     // 开始模拟数据流
     startMockDataStream() {
+      // 首先清理多余的数据点
+      if (this.realtimeData.length > 50) {
+        this.realtimeData = this.realtimeData.slice(-50)
+      }
+
       this.dataInterval = setInterval(() => {
         if (this.connectionStatus.connected) {
           const data: RealtimeData = {

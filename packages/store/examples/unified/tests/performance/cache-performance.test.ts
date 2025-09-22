@@ -85,11 +85,13 @@ class CacheStats {
 
   hit(): void {
     this.hits++
-    this.totalRequests++
   }
 
   miss(): void {
     this.misses++
+  }
+
+  request(): void {
     this.totalRequests++
   }
 
@@ -232,27 +234,27 @@ describe('缓存机制性能测试', () => {
 
     it('应该正确处理缓存命中和未命中', async () => {
       const stats = new CacheStats()
-      const memoizedFn = memoize((n: number) => {
-        stats.miss()
-        return expensiveCalculation(n)
-      })
+      const cache = new Map()
 
-      // 包装函数以统计命中
-      const wrappedFn = (n: number) => {
-        const result = memoizedFn(n)
-        if (!stats.getTotalRequests() || stats.getTotalRequests() === stats.hits + stats.misses) {
-          // 这是新的调用，已经在 memoizedFn 中统计了 miss
-        } else {
+      const memoizedFn = (n: number) => {
+        stats.request() // 统计总请求数
+
+        if (cache.has(n)) {
           stats.hit()
+          return cache.get(n)
+        } else {
+          stats.miss()
+          const result = expensiveCalculation(n)
+          cache.set(n, result)
+          return result
         }
-        return result
       }
 
       const testSequence = [1, 2, 3, 1, 2, 3, 4, 1, 2, 5]
 
       performanceMonitor.mark('cache-test-start')
 
-      testSequence.forEach(input => wrappedFn(input))
+      testSequence.forEach(input => memoizedFn(input))
 
       performanceMonitor.mark('cache-test-end')
       const totalTime = performanceMonitor.measure('cache-test-total', 'cache-test-start', 'cache-test-end')

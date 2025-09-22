@@ -4,22 +4,22 @@
  */
 
 import { SimpleBuilder } from '@ldesign/builder'
-import { sep } from 'path'
+import { sep } from 'node:path'
 
 async function build() {
   const isDev = process.argv.includes('--dev')
-  
+
   const builder = new SimpleBuilder({
     root: process.cwd(),
     src: 'src',
     outDir: 'dist',
-    formats: ["esm","cjs"],
+    formats: ['esm', 'cjs'],
     sourcemap: true,
     minify: !isDev,
     clean: true,
     external: [
       'vue',
-      'react', 
+      'react',
       'react-dom',
       '@ldesign/shared',
       '@ldesign/utils'

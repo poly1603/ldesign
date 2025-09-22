@@ -1,29 +1,3 @@
-<template>
-  <div class="counter-demo">
-    <div class="demo-container">
-      <h3>计数器示例</h3>
-      <div class="counter-display">
-        <span class="count">{{ count }}</span>
-      </div>
-      <div class="counter-controls">
-        <button @click="decrement" :disabled="count <= 0" class="btn btn-secondary">
-          -
-        </button>
-        <button @click="reset" class="btn btn-outline">
-          重置
-        </button>
-        <button @click="increment" class="btn btn-primary">
-          +
-        </button>
-      </div>
-      <div class="counter-info">
-        <p>当前状态: {{ status }}</p>
-        <p>操作历史: {{ history.length }} 次</p>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
@@ -39,23 +13,49 @@ const status = computed(() => {
 })
 
 // 方法
-const increment = () => {
+function increment() {
   count.value++
   history.value.push(`增加到 ${count.value}`)
 }
 
-const decrement = () => {
+function decrement() {
   if (count.value > 0) {
     count.value--
     history.value.push(`减少到 ${count.value}`)
   }
 }
 
-const reset = () => {
+function reset() {
   count.value = 0
   history.value.push('重置为 0')
 }
 </script>
+
+<template>
+  <div class="counter-demo">
+    <div class="demo-container">
+      <h3>计数器示例</h3>
+      <div class="counter-display">
+        <span class="count">{{ count }}</span>
+      </div>
+      <div class="counter-controls">
+        <button :disabled="count <= 0" class="btn btn-secondary" @click="decrement">
+          -
+        </button>
+        <button class="btn btn-outline" @click="reset">
+          重置
+        </button>
+        <button class="btn btn-primary" @click="increment">
+          +
+        </button>
+      </div>
+      <div class="counter-info">
+        <p>当前状态: {{ status }}</p>
+        <p>操作历史: {{ history.length }} 次</p>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .counter-demo {
@@ -158,7 +158,7 @@ const reset = () => {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .btn {
     width: 120px;
   }

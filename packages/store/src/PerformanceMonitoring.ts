@@ -3,7 +3,37 @@
  * 提供高级性能监控、分析和优化建议
  */
 
-import { EventEmitter } from 'events';
+// Web端EventEmitter实现
+class EventEmitter {
+  private events: Record<string, Function[]> = {};
+
+  on(event: string, listener: Function) {
+    if (!this.events[event]) {
+      this.events[event] = [];
+    }
+    this.events[event].push(listener);
+  }
+
+  emit(event: string, ...args: any[]) {
+    if (this.events[event]) {
+      this.events[event].forEach(listener => listener(...args));
+    }
+  }
+
+  off(event: string, listener: Function) {
+    if (this.events[event]) {
+      this.events[event] = this.events[event].filter(l => l !== listener);
+    }
+  }
+
+  removeAllListeners(event?: string) {
+    if (event) {
+      delete this.events[event];
+    } else {
+      this.events = {};
+    }
+  }
+}
 
 // ============= Performance Metrics Types =============
 interface PerformanceMetric {
@@ -52,7 +82,7 @@ export class PerformanceMonitor extends EventEmitter {
     super();
     this.slowThreshold = options.slowThreshold ?? this.slowThreshold;
     this.maxMetricsPerKey = options.maxMetricsPerKey ?? this.maxMetricsPerKey;
-    
+
     if (options.autoStart) {
       this.startRecording();
     }
@@ -87,7 +117,7 @@ export class PerformanceMonitor extends EventEmitter {
   // 结束计时
   endTimer(name: string, tags?: Record<string, string>): number {
     if (!this.isRecording) return 0;
-    
+
     const startTime = this.timers.get(name);
     if (!startTime) {
       console.warn(`Timer '${name}' was not started`);
@@ -96,7 +126,7 @@ export class PerformanceMonitor extends EventEmitter {
 
     const duration = performance.now() - startTime;
     this.timers.delete(name);
-    
+
     this.recordMetric({
       name: `timer.${name}`,
       value: duration,
@@ -116,11 +146,11 @@ export class PerformanceMonitor extends EventEmitter {
   // 记录计数器
   increment(name: string, value = 1): void {
     if (!this.isRecording) return;
-    
+
     const current = this.counters.get(name) || 0;
     const newValue = current + value;
     this.counters.set(name, newValue);
-    
+
     this.recordMetric({
       name: `counter.${name}`,
       value: newValue,
@@ -132,27 +162,35 @@ export class PerformanceMonitor extends EventEmitter {
   // 记录度量
   recordMetric(metric: PerformanceMetric): void {
     if (!this.isRecording) return;
-    
+
     const metrics = this.metrics.get(metric.name) || [];
     metrics.push(metric);
-    
+
     // 限制存储的指标数量
     if (metrics.length > this.maxMetricsPerKey) {
       metrics.shift();
     }
-    
+
     this.metrics.set(metric.name, metrics);
     this.emit('metric:recorded', metric);
   }
 
   // 记录内存快照
   takeMemorySnapshot(): MemorySnapshot {
-    const memUsage = process.memoryUsage ? process.memoryUsage() : {
-      heapUsed: 0,
-      heapTotal: 0,
-      external: 0,
-      arrayBuffers: 0
-    };
+    // Web环境中使用performance.memory API（如果可用）
+    const memUsage = (performance as any).memory
+      ? {
+          heapUsed: (performance as any).memory.usedJSHeapSize || 0,
+          heapTotal: (performance as any).memory.totalJSHeapSize || 0,
+          external: 0,
+          arrayBuffers: 0
+        }
+      : {
+          heapUsed: 0,
+          heapTotal: 0,
+          external: 0,
+          arrayBuffers: 0
+        };
 
     const snapshot: MemorySnapshot = {
       timestamp: Date.now(),
@@ -163,7 +201,7 @@ export class PerformanceMonitor extends EventEmitter {
     };
 
     this.memorySnapshots.push(snapshot);
-    
+
     // 限制快照数量
     if (this.memorySnapshots.length > 100) {
       this.memorySnapshots.shift();
@@ -176,16 +214,16 @@ export class PerformanceMonitor extends EventEmitter {
   private memoryMonitorTimer?: NodeJS.Timeout;
   startMemoryMonitoring(interval = 1000): void {
     if (this.memoryMonitorTimer) return;
-    
+
     this.memoryMonitorTimer = setInterval(() => {
       const snapshot = this.takeMemorySnapshot();
       this.emit('memory:snapshot', snapshot);
-      
+
       // 检测内存泄漏
       if (this.memorySnapshots.length > 10) {
         const recentSnapshots = this.memorySnapshots.slice(-10);
         const avgGrowth = this.calculateMemoryGrowth(recentSnapshots);
-        
+
         if (avgGrowth > 1024 * 1024) { // 1MB/s growth
           this.emit('memory:leak:suspected', {
             growth: avgGrowth,
@@ -207,12 +245,12 @@ export class PerformanceMonitor extends EventEmitter {
   // 计算内存增长率
   private calculateMemoryGrowth(snapshots: MemorySnapshot[]): number {
     if (snapshots.length < 2) return 0;
-    
+
     const first = snapshots[0];
     const last = snapshots[snapshots.length - 1];
     const timeDiff = (last.timestamp - first.timestamp) / 1000; // seconds
     const memDiff = last.heapUsed - first.heapUsed;
-    
+
     return memDiff / timeDiff; // bytes per second
   }
 
@@ -250,7 +288,7 @@ export class PerformanceMonitor extends EventEmitter {
     // 分析计时器
     const timerMetrics = metrics.filter(m => m.name.startsWith('timer.'));
     const slowOperations = timerMetrics.filter(m => m.value > this.slowThreshold);
-    
+
     if (slowOperations.length > 0) {
       warnings.push(`Found ${slowOperations.length} slow operations (>${this.slowThreshold}ms)`);
       slowOperations.forEach(op => {
@@ -288,7 +326,7 @@ export class PerformanceMonitor extends EventEmitter {
     if (name) {
       return this.metrics.get(name) || [];
     }
-    
+
     const allMetrics: PerformanceMetric[] = [];
     this.metrics.forEach(metrics => allMetrics.push(...metrics));
     return allMetrics;
@@ -344,7 +382,7 @@ export function measurePerformance(monitor: PerformanceMonitor) {
     descriptor.value = async function (...args: any[]) {
       const timerName = `${target.constructor.name}.${propertyKey}`;
       monitor.startTimer(timerName);
-      
+
       try {
         const result = await originalMethod.apply(this, args);
         return result;
@@ -382,7 +420,7 @@ export class AutoPerformanceAnalyzer {
     }
 
     this.setupListeners();
-    
+
     if (options.analysisInterval) {
       this.startAutoAnalysis(options.analysisInterval);
     }
@@ -390,19 +428,19 @@ export class AutoPerformanceAnalyzer {
 
   private setupListeners(): void {
     // 监听慢操作
-    this.monitor.on('slow:operation', ({ name, duration }) => {
+    this.monitor.on('slow:operation', ({ name, duration }: { name: string; duration: number }) => {
       console.warn(`⚠️ Slow operation detected: ${name} took ${duration.toFixed(2)}ms`);
-      
+
       if (this.options.autoFix) {
         this.suggestOptimization(name, duration);
       }
     });
 
     // 监听内存泄漏
-    this.monitor.on('memory:leak:suspected', ({ growth }) => {
+    this.monitor.on('memory:leak:suspected', ({ growth }: { growth: number }) => {
       const growthMB = (growth / 1024 / 1024).toFixed(2);
       console.error(`🚨 Memory leak suspected: ${growthMB}MB/s growth rate`);
-      
+
       if (this.options.autoFix) {
         this.attemptMemoryCleanup();
       }
@@ -419,17 +457,17 @@ export class AutoPerformanceAnalyzer {
   // 执行分析
   analyze(): void {
     const report = this.monitor.stopRecording();
-    
+
     // 输出分析结果
     console.log('📊 Performance Analysis Report:');
     console.log(`  Duration: ${report.duration.toFixed(2)}ms`);
     console.log(`  Metrics collected: ${report.metrics.length}`);
-    
+
     if (report.warnings.length > 0) {
       console.log('  ⚠️ Warnings:');
       report.warnings.forEach(w => console.log(`    - ${w}`));
     }
-    
+
     if (report.suggestions.length > 0) {
       console.log('  💡 Suggestions:');
       report.suggestions.forEach(s => console.log(`    - ${s}`));
@@ -455,9 +493,9 @@ export class AutoPerformanceAnalyzer {
 
   // 尝试内存清理
   private attemptMemoryCleanup(): void {
-    if (global.gc) {
+    if ((globalThis as any).gc) {
       console.log('🧹 Running garbage collection...');
-      global.gc();
+      (globalThis as any).gc();
     } else {
       console.log('ℹ️ Garbage collection not available. Run Node with --expose-gc flag');
     }

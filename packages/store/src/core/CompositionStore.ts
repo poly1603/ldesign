@@ -250,7 +250,7 @@ export function createCompositionStore<T = any>(
 
       $persist() {
         if (options.persist) {
-          optimizer.persistence.save(options.id, store.$state)
+          optimizer.persistence.save(options.id, instance.$state)
         }
       },
 

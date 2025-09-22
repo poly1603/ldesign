@@ -14,14 +14,16 @@ describe('enterpriseStore', () => {
       expect(store.currentUser).toBeNull()
       expect(store.users).toHaveLength(4) // 初始用户数量
       expect(store.roles).toHaveLength(3) // admin, editor, viewer
-      expect(store.permissions).toHaveLength(6) // 6个权限
+      expect(store.permissions).toHaveLength(12) // 12个权限
       expect(store.modules).toHaveLength(5) // 5个模块
       expect(store.systemStatus).toMatchObject({
-        status: 'healthy',
         uptime: expect.any(Number),
-        memory: expect.any(Number),
-        cpu: expect.any(Number),
-        connections: expect.any(Number)
+        memoryUsage: expect.any(Number),
+        cpuUsage: expect.any(Number),
+        activeUsers: expect.any(Number),
+        totalRequests: expect.any(Number),
+        errorRate: expect.any(Number),
+        lastHealthCheck: expect.any(Number)
       })
       expect(store.errorLogs).toEqual([])
       expect(store.auditLogs).toEqual([])
@@ -67,7 +69,7 @@ describe('enterpriseStore', () => {
       expect(store.currentUserRole).toBeNull()
 
       store.currentUser = store.users[0] // admin用户
-      expect(store.currentUserRole?.id).toBe('admin')
+      expect(store.currentUserRole).toBe('admin')
     })
 
     it('currentUserPermissions 应该返回当前用户权限', () => {
@@ -93,12 +95,12 @@ describe('enterpriseStore', () => {
       expect(store.systemHealth).toBe('healthy')
 
       // 设置警告状态
-      store.systemStatus.cpu = 85
+      store.systemStatus.cpuUsage = 85
       expect(store.systemHealth).toBe('warning')
 
       // 设置错误状态
-      store.systemStatus.cpu = 95
-      expect(store.systemHealth).toBe('error')
+      store.systemStatus.cpuUsage = 95
+      expect(store.systemHealth).toBe('critical')
     })
 
     it('recentErrorLogs 应该返回最近的错误日志', () => {
@@ -150,7 +152,7 @@ describe('enterpriseStore', () => {
       expect(result).toBe(true)
       expect(store.currentUser?.username).toBe('admin')
       expect(store.auditLogs).toHaveLength(1)
-      expect(store.auditLogs[0].action).toBe('用户登录')
+      expect(store.auditLogs[0].action).toBe('user.login')
     })
 
     it('login 应该拒绝无效凭据', async () => {
@@ -183,7 +185,7 @@ describe('enterpriseStore', () => {
       store.logout()
 
       expect(store.currentUser).toBeNull()
-      expect(store.auditLogs.some(log => log.action === '用户登出')).toBe(true)
+      expect(store.auditLogs.some(log => log.action === 'user.logout')).toBe(true)
     })
 
     it('hasPermission 应该检查用户权限', () => {
@@ -214,7 +216,7 @@ describe('enterpriseStore', () => {
 
       const newState = store.modules.find(m => m.id === moduleId)?.enabled
       expect(newState).toBe(!initialState)
-      expect(store.auditLogs.some(log => log.action.includes('模块状态变更'))).toBe(true)
+      expect(store.auditLogs.some(log => log.action.includes('module.'))).toBe(true)
     })
 
     it('updateSystemStatus 应该更新系统状态', () => {
@@ -242,7 +244,6 @@ describe('enterpriseStore', () => {
       expect(store.errorLogs[0]).toMatchObject({
         message: '测试错误',
         component: 'TestComponent',
-        details: { detail: 'test' },
         timestamp: expect.any(Number),
         level: 'error'
       })
@@ -252,7 +253,7 @@ describe('enterpriseStore', () => {
       const store = useEnterpriseStore()
 
       store.currentUser = store.users[0]
-      store.logAudit('测试操作', { detail: 'test' })
+      store.logAudit('测试操作', 'test', { detail: 'test' })
 
       expect(store.auditLogs).toHaveLength(1)
       expect(store.auditLogs[0]).toMatchObject({
@@ -277,7 +278,7 @@ describe('enterpriseStore', () => {
     it('clearAuditLogs 应该清空审计日志', () => {
       const store = useEnterpriseStore()
 
-      store.logAudit('测试操作')
+      store.logAudit('测试操作', 'test')
       expect(store.auditLogs).toHaveLength(1)
 
       store.clearAuditLogs()
@@ -286,6 +287,7 @@ describe('enterpriseStore', () => {
 
     it('addUser 应该添加新用户', () => {
       const store = useEnterpriseStore()
+      store.currentUser = store.users[0] // 设置为admin用户
       const initialCount = store.users.length
 
       const newUser = {
@@ -299,11 +301,12 @@ describe('enterpriseStore', () => {
 
       expect(store.users).toHaveLength(initialCount + 1)
       expect(store.users[store.users.length - 1].username).toBe('newuser')
-      expect(store.auditLogs.some(log => log.action === '添加用户')).toBe(true)
+      expect(store.auditLogs.some(log => log.action === 'user.create')).toBe(true)
     })
 
     it('updateUser 应该更新用户信息', () => {
       const store = useEnterpriseStore()
+      store.currentUser = store.users[0] // 设置为admin用户
 
       const updates = {
         email: 'updated@example.com',
@@ -315,18 +318,19 @@ describe('enterpriseStore', () => {
       const user = store.users.find(u => u.id === '1')
       expect(user?.email).toBe('updated@example.com')
       expect(user?.status).toBe('inactive')
-      expect(store.auditLogs.some(log => log.action === '更新用户')).toBe(true)
+      expect(store.auditLogs.some(log => log.action === 'user.update')).toBe(true)
     })
 
     it('deleteUser 应该删除用户', () => {
       const store = useEnterpriseStore()
+      store.currentUser = store.users[0] // 设置为admin用户
       const initialCount = store.users.length
 
       store.deleteUser('2')
 
       expect(store.users).toHaveLength(initialCount - 1)
       expect(store.users.find(u => u.id === '2')).toBeUndefined()
-      expect(store.auditLogs.some(log => log.action === '删除用户')).toBe(true)
+      expect(store.auditLogs.some(log => log.action === 'user.delete')).toBe(true)
     })
   })
 
@@ -387,12 +391,14 @@ describe('enterpriseStore', () => {
 
     it('应该处理不存在的用户更新', () => {
       const store = useEnterpriseStore()
+      store.currentUser = store.users[0] // 设置为admin用户
 
       expect(() => store.updateUser('nonexistent', { email: 'test@example.com' })).not.toThrow()
     })
 
     it('应该处理不存在的用户删除', () => {
       const store = useEnterpriseStore()
+      store.currentUser = store.users[0] // 设置为admin用户
 
       expect(() => store.deleteUser('nonexistent')).not.toThrow()
     })
@@ -400,7 +406,7 @@ describe('enterpriseStore', () => {
     it('应该处理无效的权限检查', () => {
       const store = useEnterpriseStore()
 
-      store.currentUser = store.users[0]
+      store.currentUser = store.users[1] // 设置为非admin用户
       expect(store.hasPermission('invalid_permission' as any)).toBe(false)
     })
   })

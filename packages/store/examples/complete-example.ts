@@ -3,12 +3,12 @@
  * 展示所有高级功能的完整示例
  */
 
-import { createStore, storeFactory } from '../src/SimpleAPI';
-import { ReactiveOptimizer, batchUpdate } from '../src/ReactiveSystem';
-import { ErrorBoundary, CircularDependencyDetector, MemoryLeakGuard } from '../src/BugFixes';
+import { createStore } from '../src/SimpleAPI';
+import { batchUpdate } from '../src/ReactiveSystem';
+import { ErrorBoundary } from '../src/BugFixes';
 import { TimeTravelDebugger, MiddlewareSystem, StateSynchronizer } from '../src/AdvancedFeatures2';
-import { PerformanceMonitor, AutoPerformanceAnalyzer, measurePerformance } from '../src/PerformanceMonitoring';
-import { initDevTools, StoreDevTools } from '../src/DevTools';
+import { PerformanceMonitor, AutoPerformanceAnalyzer } from '../src/PerformanceMonitoring';
+import { initDevTools } from '../src/DevTools';
 
 // ============= 初始化系统 =============
 console.log('🚀 Initializing Advanced Store System...\n');
@@ -96,30 +96,30 @@ const userStore = createStore<UserState>({
     // 过滤后的用户列表
     filteredUsers() {
       performanceMonitor.startTimer('filterUsers');
-      
+
       const result = this.users.filter(user => {
         // 搜索词过滤
         if (this.filter.searchTerm) {
           const searchLower = this.filter.searchTerm.toLowerCase();
           if (!user.name.toLowerCase().includes(searchLower) &&
-              !user.email.toLowerCase().includes(searchLower)) {
+            !user.email.toLowerCase().includes(searchLower)) {
             return false;
           }
         }
-        
+
         // 年龄过滤
         if (user.age < this.filter.minAge || user.age > this.filter.maxAge) {
           return false;
         }
-        
+
         // 活跃状态过滤
         if (this.filter.activeOnly && !user.active) {
           return false;
         }
-        
+
         return true;
       });
-      
+
       performanceMonitor.endTimer('filterUsers');
       return result;
     },
@@ -138,9 +138,9 @@ const userStore = createStore<UserState>({
     // 过滤器是否激活
     isFilterActive() {
       return this.filter.searchTerm !== '' ||
-             this.filter.minAge > 0 ||
-             this.filter.maxAge < 100 ||
-             this.filter.activeOnly;
+        this.filter.minAge > 0 ||
+        this.filter.maxAge < 100 ||
+        this.filter.activeOnly;
     }
   },
 
@@ -149,14 +149,14 @@ const userStore = createStore<UserState>({
     // 加载用户数据
     async loadUsers() {
       performanceMonitor.startTimer('loadUsers');
-      
+
       this.loading = true;
       this.error = null;
-      
+
       try {
         // 模拟 API 调用
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         // 生成测试数据
         const users = Array.from({ length: 100 }, (_, i) => ({
           id: `user-${i + 1}`,
@@ -165,15 +165,14 @@ const userStore = createStore<UserState>({
           age: Math.floor(Math.random() * 60) + 18,
           active: Math.random() > 0.3
         }));
-        
+
         // 批量更新状态
         batchUpdate(() => {
           this.users = users;
           this.updateStatistics();
         });
-        
+
         performanceMonitor.increment('usersLoaded', users.length);
-        
       } catch (error) {
         this.error = error.message;
         performanceMonitor.increment('loadErrors');
@@ -190,7 +189,7 @@ const userStore = createStore<UserState>({
       const averageAge = totalUsers > 0
         ? this.users.reduce((sum, u) => sum + u.age, 0) / totalUsers
         : 0;
-      
+
       this.statistics = {
         totalUsers,
         activeUsers,
@@ -204,12 +203,12 @@ const userStore = createStore<UserState>({
         ...user,
         id: `user-${Date.now()}`
       };
-      
+
       batchUpdate(() => {
         this.users.push(newUser);
         this.updateStatistics();
       });
-      
+
       performanceMonitor.increment('usersAdded');
       return newUser;
     },
@@ -220,12 +219,12 @@ const userStore = createStore<UserState>({
       if (index === -1) {
         throw new Error(`User ${id} not found`);
       }
-      
+
       batchUpdate(() => {
         this.users[index] = { ...this.users[index], ...updates };
         this.updateStatistics();
       });
-      
+
       performanceMonitor.increment('usersUpdated');
     },
 
@@ -235,7 +234,7 @@ const userStore = createStore<UserState>({
       if (index === -1) {
         throw new Error(`User ${id} not found`);
       }
-      
+
       batchUpdate(() => {
         this.users.splice(index, 1);
         if (this.selectedUserId === id) {
@@ -243,7 +242,7 @@ const userStore = createStore<UserState>({
         }
         this.updateStatistics();
       });
-      
+
       performanceMonitor.increment('usersDeleted');
     },
 
@@ -270,7 +269,7 @@ const userStore = createStore<UserState>({
     // 批量操作
     batchToggleActive(userIds: string[]) {
       performanceMonitor.startTimer('batchToggle');
-      
+
       batchUpdate(() => {
         userIds.forEach(id => {
           const user = this.users.find(u => u.id === id);
@@ -280,7 +279,7 @@ const userStore = createStore<UserState>({
         });
         this.updateStatistics();
       });
-      
+
       performanceMonitor.endTimer('batchToggle');
       performanceMonitor.increment('batchOperations');
     }
@@ -297,9 +296,9 @@ const middleware = new MiddlewareSystem();
 middleware.use('action', async (context, next) => {
   const startTime = Date.now();
   console.log(`📝 [Action] ${context.action} started`);
-  
+
   await next();
-  
+
   const duration = Date.now() - startTime;
   console.log(`✅ [Action] ${context.action} completed in ${duration}ms`);
 });
@@ -336,9 +335,9 @@ async function demonstrateFeatures() {
 
   // 2. 测试过滤功能
   console.log('\n2️⃣ Testing filters...');
-  userStore.actions.updateFilter({ 
+  userStore.actions.updateFilter({
     searchTerm: 'User 1',
-    activeOnly: true 
+    activeOnly: true
   });
   console.log(`   Filtered users: ${userStore.computed.filteredUsers.length}`);
 
@@ -361,11 +360,11 @@ async function demonstrateFeatures() {
   // 5. 时间旅行
   console.log('\n5️⃣ Time travel demo...');
   const snapshot1 = timeTravelDebugger.createSnapshot('Before changes');
-  
+
   // 做一些改变
   userStore.actions.deleteUser(userStore.state.users[0].id);
   console.log(`   Deleted first user`);
-  
+
   // 恢复到之前的状态
   timeTravelDebugger.restoreSnapshot(snapshot1.id);
   console.log(`   Restored to previous state`);
@@ -395,7 +394,7 @@ async function demonstrateFeatures() {
   console.log('\n9️⃣ State export/import...');
   const exportedState = devTools.exportState('userStore');
   console.log(`   Exported state with ${exportedState.users.length} users`);
-  
+
   // 清空然后导入
   userStore.state.users = [];
   devTools.importState('userStore', exportedState);
@@ -417,12 +416,12 @@ async function demonstrateFeatures() {
   const report = performanceMonitor.stopRecording();
   console.log(`   Total duration: ${report.duration.toFixed(2)}ms`);
   console.log(`   Metrics collected: ${report.metrics.length}`);
-  
+
   if (report.warnings.length > 0) {
     console.log('   ⚠️ Warnings:');
     report.warnings.forEach(w => console.log(`      - ${w}`));
   }
-  
+
   if (report.suggestions.length > 0) {
     console.log('   💡 Suggestions:');
     report.suggestions.forEach(s => console.log(`      - ${s}`));
@@ -523,7 +522,7 @@ demonstrateFeatures().then(() => {
   console.log('\n✨ Demo completed successfully!');
   console.log('\n📚 Vue Integration Example:');
   console.log(VueIntegrationExample);
-  
+
   // 清理
   setTimeout(() => {
     console.log('\n🧹 Cleaning up...');

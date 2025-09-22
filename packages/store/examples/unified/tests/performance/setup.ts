@@ -4,7 +4,8 @@
  * 提供性能测试的基础工具和配置
  */
 
-import Benchmark from 'benchmark'
+// 不再使用 Benchmark 库，改用自定义实现避免 DOM 依赖
+// import Benchmark from 'benchmark'
 
 // 性能测试结果接口
 export interface PerformanceResult {
@@ -25,20 +26,21 @@ export interface MemoryUsage {
   percentage: number
 }
 
-// 性能基准测试类
+// 性能基准测试类 - 自定义实现，避免 DOM 依赖
 export class PerformanceBenchmark {
-  private suite: Benchmark.Suite
+  private tests: Array<{ name: string; fn: () => void; options?: any }> = []
   private results: PerformanceResult[] = []
+  private name: string
 
   constructor(name: string) {
-    this.suite = new Benchmark.Suite(name)
+    this.name = name
   }
 
   /**
    * 添加测试用例
    */
-  add(name: string, fn: () => void, options?: Benchmark.Options): this {
-    this.suite.add(name, fn, options)
+  add(name: string, fn: () => void, options?: any): this {
+    this.tests.push({ name, fn, options })
     return this
   }
 
@@ -46,31 +48,59 @@ export class PerformanceBenchmark {
    * 运行基准测试
    */
   async run(): Promise<PerformanceResult[]> {
-    return new Promise((resolve, reject) => {
-      this.suite
-        .on('cycle', (event: Benchmark.Event) => {
-          const benchmark = event.target as Benchmark
-          const result: PerformanceResult = {
-            name: benchmark.name || 'Unknown',
-            opsPerSecond: benchmark.hz || 0,
-            meanTime: benchmark.stats?.mean || 0,
-            samples: benchmark.stats?.sample?.length || 0,
-            variance: benchmark.stats?.variance || 0,
-            standardDeviation: benchmark.stats?.deviation || 0,
-            marginOfError: benchmark.stats?.moe || 0,
-            relativeMarginOfError: benchmark.stats?.rme || 0
-          }
-          this.results.push(result)
-          console.log(`${benchmark.name}: ${benchmark.hz?.toFixed(2)} ops/sec ±${benchmark.stats?.rme?.toFixed(2)}%`)
-        })
-        .on('complete', () => {
-          resolve(this.results)
-        })
-        .on('error', (error: Error) => {
-          reject(error)
-        })
-        .run({ async: true })
-    })
+    this.results = []
+
+    for (const test of this.tests) {
+      try {
+        const result = await this.runSingleTest(test.name, test.fn)
+        this.results.push(result)
+        console.log(`${test.name}: ${result.opsPerSecond.toFixed(2)} ops/sec ±${result.relativeMarginOfError.toFixed(2)}%`)
+      } catch (error) {
+        console.error(`Error running test ${test.name}:`, error)
+      }
+    }
+
+    return this.results
+  }
+
+  /**
+   * 运行单个测试
+   */
+  private async runSingleTest(name: string, fn: () => void): Promise<PerformanceResult> {
+    const samples: number[] = []
+    const sampleCount = 100 // 减少样本数量以避免超时
+    const warmupCount = 10
+
+    // 预热
+    for (let i = 0; i < warmupCount; i++) {
+      fn()
+    }
+
+    // 收集样本
+    for (let i = 0; i < sampleCount; i++) {
+      const start = performance.now()
+      fn()
+      const end = performance.now()
+      samples.push(end - start)
+    }
+
+    // 计算统计数据
+    const mean = samples.reduce((sum, time) => sum + time, 0) / samples.length
+    const variance = samples.reduce((sum, time) => sum + (time - mean) ** 2, 0) / samples.length
+    const standardDeviation = Math.sqrt(variance)
+    const marginOfError = 1.96 * standardDeviation / Math.sqrt(samples.length)
+    const relativeMarginOfError = (marginOfError / mean) * 100
+
+    return {
+      name,
+      opsPerSecond: 1000 / mean, // 转换为每秒操作数
+      meanTime: mean,
+      samples: samples.length,
+      variance,
+      standardDeviation,
+      marginOfError,
+      relativeMarginOfError
+    }
   }
 
   /**
@@ -210,6 +240,14 @@ export class PerformanceMonitor {
    */
   mark(name: string): void {
     this.marks.set(name, performance.now())
+  }
+
+  /**
+   * 清除所有标记
+   */
+  clearMarks(): void {
+    this.marks.clear()
+    this.measures.clear()
   }
 
   /**

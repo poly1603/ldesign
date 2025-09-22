@@ -1,6 +1,6 @@
 /**
  * Store Engine 插件
- * 
+ *
  * 将 Store 功能集成到 LDesign Engine 中，提供统一的状态管理体验
  */
 
@@ -106,16 +106,16 @@ const defaultConfig: StoreEnginePluginOptions = {
 
 /**
  * 创建 Store Engine 插件
- * 
+ *
  * 将 Store 功能集成到 LDesign Engine 中，提供统一的状态管理体验
- * 
+ *
  * @param options 插件配置选项
  * @returns Engine 插件实例
- * 
+ *
  * @example
  * ```typescript
  * import { createStoreEnginePlugin } from '@ldesign/store'
- * 
+ *
  * const storePlugin = createStoreEnginePlugin({
  *   storeConfig: {
  *     enablePerformanceOptimization: true,
@@ -125,7 +125,7 @@ const defaultConfig: StoreEnginePluginOptions = {
  *   globalPropertyName: '$store',
  *   enablePerformanceMonitoring: true
  * })
- * 
+ *
  * await engine.use(storePlugin)
  * ```
  */
@@ -267,7 +267,6 @@ export function createStoreEnginePlugin(
         if (debug) {
           console.log('[Store Plugin] Store plugin installed successfully')
         }
-
       } catch (error) {
         console.error('[Store Plugin] Failed to install store plugin:', error)
         throw error
@@ -298,7 +297,6 @@ export function createStoreEnginePlugin(
         if (debug) {
           console.log('[Store Plugin] Store plugin uninstalled successfully')
         }
-
       } catch (error) {
         console.error('[Store Plugin] Failed to uninstall store plugin:', error)
         throw error
