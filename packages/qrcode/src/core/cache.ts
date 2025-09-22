@@ -80,7 +80,7 @@ export class AdvancedCache<T> {
   /**
    * 设置缓存项
    */
-  set(key: string, value: T, customTTL?: number): void {
+  set(key: string, value: T, _customTTL?: number): void {
     const now = Date.now()
     const entry: CacheEntry<T> = {
       data: value,
@@ -149,7 +149,6 @@ export class AdvancedCache<T> {
    */
   cleanup(): number {
     let removedCount = 0
-    const now = Date.now()
     
     for (const [key, entry] of this.cache.entries()) {
       if (this.isExpired(entry)) {

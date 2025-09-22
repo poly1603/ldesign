@@ -191,7 +191,7 @@ describe('utils', () => {
       const result = monitor.end(id)
       expect(result.operation).toBe('test-operation')
       expect(result.duration).toBeGreaterThanOrEqual(0)
-      expect(result.timestamp).toBeInstanceOf(Date)
+      expect(typeof result.timestamp).toBe('number')
     })
 
     it('should get all metrics', () => {

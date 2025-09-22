@@ -67,14 +67,14 @@ describe('QRDataValidator', () => {
       const result = validator.validate(longData)
       console.log('Long data errors:', result.errors)
       expect(result.isValid).toBe(false)
-      expect(result.errors).toContain(expect.stringContaining('exceeds maximum limit'))
+      expect(result.errors[0]).toContain('exceeds maximum limit')
     })
 
     it('should warn about large data', () => {
       const largeData = 'a'.repeat(1500)
       const result = validator.validate(largeData)
       console.log('Large data warnings:', result.warnings)
-      expect(result.warnings).toContain(expect.stringContaining('hard to scan'))
+      expect(result.warnings.some(w => w.includes('hard to scan'))).toBe(true)
     })
 
     it('should detect high complexity', () => {
@@ -82,7 +82,7 @@ describe('QRDataValidator', () => {
       const result = validator.validate(complexData)
       console.log('Complex data warnings:', result.warnings)
       expect(result.metadata?.complexity).toBe('high')
-      expect(result.warnings).toContain(expect.stringContaining('difficult to scan on some devices'))
+      expect(result.warnings.some(w => w.includes('difficult to scan'))).toBe(true)
     })
 
     it('should validate invalid URL protocol', () => {
@@ -126,7 +126,7 @@ describe('QRDataValidator', () => {
       const longData = 'a'.repeat(1000)
       const suggestions = validator.getOptimizationSuggestions(longData)
       console.log('Long text suggestions:', suggestions)
-      expect(suggestions).toContain(expect.stringContaining('Consider shortening the text'))
+      expect(suggestions[0]).toContain('Consider shortening the text')
     })
 
     it('should suggest simplifying complex data', () => {
@@ -139,7 +139,7 @@ describe('QRDataValidator', () => {
       const spacyData = 'test   with   many   spaces'
       const suggestions = validator.getOptimizationSuggestions(spacyData)
       console.log('Space suggestions:', suggestions)
-      expect(suggestions).toContain(expect.stringContaining('Multiple consecutive spaces'))
+      expect(suggestions[0]).toContain('Multiple consecutive spaces')
     })
   })
 

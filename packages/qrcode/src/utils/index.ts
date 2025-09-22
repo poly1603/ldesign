@@ -15,6 +15,7 @@ export const DEFAULT_OPTIONS: Required<Omit<QRCodeOptions, 'logo' | 'style'>> = 
   data: '',
   size: 200,
   format: 'canvas',
+  outputFormat: 'canvas',
   errorCorrectionLevel: 'M',
   mode: 'byte',
   version: 0,
@@ -24,6 +25,8 @@ export const DEFAULT_OPTIONS: Required<Omit<QRCodeOptions, 'logo' | 'style'>> = 
   quality: 0.92,
   enableCache: true,
   cacheKey: '',
+  performance: { enableCache: true },
+  color: { foreground: '#000000', background: '#ffffff' },
 }
 
 // 颜色验证
@@ -332,7 +335,7 @@ export class PerformanceMonitor {
     const metric: PerformanceMetric = {
       operation: activeOp.operation,
       duration,
-      timestamp: new Date(),
+      timestamp: Date.now(),
       cacheHit,
       size,
     }
@@ -394,5 +397,25 @@ export class QRCodeError extends Error {
     this.name = 'QRCodeError'
     this.code = code
     this.details = details
+  }
+}
+
+/**
+ * 验证QR码选项
+ */
+export function validateOptions(options: QRCodeOptions): { isValid: boolean; errors: string[] } {
+  const errors: string[] = []
+
+  if (!options.data) {
+    errors.push('Data is required')
+  }
+
+  if (options.size && options.size <= 0) {
+    errors.push('Size must be positive')
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
   }
 }

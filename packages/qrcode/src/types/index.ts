@@ -28,6 +28,14 @@ export interface GradientOptions {
 
 export type ColorValue = string | GradientOptions
 
+// 兼容性类型别名
+export type ColorOptions = {
+  foreground?: string
+  background?: string
+}
+
+export type GradientColor = GradientOptions
+
 // Logo配置接口
 export interface LogoOptions {
   src: string
@@ -94,6 +102,7 @@ export interface QRCodeResult {
   svg?: string
   dataURL?: string
   blob?: Blob
+  data?: any // 通用数据字段
   size: number
   format: QRCodeFormat
   timestamp: number
@@ -104,13 +113,14 @@ export interface QRCodeResult {
   options?: QRCodeOptions
   fromCache?: boolean
   generatedAt?: number
+  success?: boolean
+  error?: Error
 }
 
-// 生成结果接口（新版本）
-export interface QRCodeGenerationResult {
+// 生成结果接口（新版本）- 继承自QRCodeResult以保持兼容性
+export interface QRCodeGenerationResult extends QRCodeResult {
   success: boolean
   data: any
-  format: QRCodeFormat
   metrics?: {
     operation?: string
     duration: number
@@ -118,8 +128,6 @@ export interface QRCodeGenerationResult {
     cacheHit?: boolean
     size?: number
   }
-  error?: Error
-  fromCache?: boolean
 }
 
 // 性能指标接口

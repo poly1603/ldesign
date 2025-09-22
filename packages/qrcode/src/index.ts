@@ -10,14 +10,13 @@ export { StyleProcessor } from './core/styles'
 export { createQRCodeInstance } from './core/instance'
 export type { QRCodeInstance } from './core/instance'
 
-// 渚挎嵎鍑芥暟
+// 便捷函数
 export { downloadQRCode } from './helpers'
 
 // 原生JavaScript API
 export {
   generateQRCode,
   SimpleQRCodeGenerator,
-  downloadQRCode,
   generateQRCodeBatch,
 } from './vanilla'
 export type { SimpleQRCodeOptions } from './vanilla'
@@ -49,7 +48,6 @@ export type {
 // 工具函数
 export {
   isValidColor,
-  validateOptions,
   getDefaultOptions,
   generateCacheKey,
   createError,
@@ -119,13 +117,4 @@ export const version = '1.0.1'
 // 默认导出
 export default {
   version,
-  generateQRCode,
-  QRCodeGenerator,
-  detectFramework,
-  // 新功能
-  QRDataValidator,
-  BatchDownloader,
-  ThemeManager,
-  themeManager,
-  presetThemes,
 }

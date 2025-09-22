@@ -3,7 +3,10 @@ import type {
   QRCodeError,
   QRCodeOptions,
   QRCodeResult,
+  CacheStats,
+  QRCodeFormat,
 } from '../types'
+import type { UseQRCodeReturn, UseQRCodeOptions } from './types'
 import { computed, getCurrentInstance, isRef, onUnmounted, ref, watchEffect, type Ref } from 'vue'
 import { QRCodeGenerator } from '../core/generator'
 import { createError, downloadFile } from '../utils'
@@ -11,36 +14,11 @@ import { createError, downloadFile } from '../utils'
 /**
  * Vue Hook for QRCode generation
  */
-export interface UseQRCodeReturn {
-  // 状态
-  result: Ref<QRCodeResult | null>
-  loading: Ref<boolean>
-  error: Ref<QRCodeError | null>
-  options: Ref<QRCodeOptions>
-
-  // 计算属性
-  isReady: Ref<boolean>
-  dataURL: Ref<string | null>
-  format: Ref<string | null>
-  element: Ref<HTMLCanvasElement | SVGElement | HTMLImageElement | null>
-
-  // 方法
-  generate: (text: string, newOptions?: QRCodeOptions) => Promise<QRCodeResult>
-  updateOptions: (newOptions: Partial<QRCodeOptions>) => void
-  regenerate: () => Promise<QRCodeResult | null>
-  download: (result?: QRCodeResult, filename?: string) => Promise<void>
-  clearCache: () => void
-  getMetrics: () => PerformanceMetric[]
-  clearMetrics: () => void
-  getCacheStats: () => { size: number, maxSize: number }
-  reset: () => void
-  destroy: () => void
-}
 
 /**
  * 主要的二维码Hook
  */
-export function useQRCode(initialOptions?: QRCodeOptions | Ref<QRCodeOptions>): UseQRCodeReturn {
+export function useQRCode(initialOptions?: UseQRCodeOptions | Ref<UseQRCodeOptions>): UseQRCodeReturn {
   // 状态
   const initial = (isRef(initialOptions) ? initialOptions.value : initialOptions) as QRCodeOptions | undefined
   const result = ref<QRCodeResult | null>(null)
@@ -257,8 +235,8 @@ export function useQRCode(initialOptions?: QRCodeOptions | Ref<QRCodeOptions>): 
     reset,
     destroy,
 
-    // 鐢熸垚鍣ㄥ疄渚?
-    generator,
+    // 生成器实例（内部使用）
+    // generator,
 
     // Alias for tests and DX
     isLoading: loading as Ref<boolean>,

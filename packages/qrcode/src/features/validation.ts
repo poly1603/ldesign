@@ -5,7 +5,7 @@
 
 import type { ValidationOptions } from '../types/advanced'
 import { RuntimeTypeChecker } from '../types/advanced'
-import { createError } from '../utils'
+// import { createError } from '../utils'
 
 export interface ValidationResult {
   isValid: boolean

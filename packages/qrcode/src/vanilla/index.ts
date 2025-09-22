@@ -10,7 +10,7 @@ import type {
   PerformanceMetric,
 } from '../types'
 import { QRCodeGenerator } from '../core/generator'
-import { createQRCodeInstance } from '../core/instance'
+// import { createQRCodeInstance } from '../core/instance'
 import { getDefaultOptions, createError } from '../utils'
 import { download } from '../helpers'
 
@@ -121,8 +121,8 @@ export async function generateQRCode(
         container.innerHTML = ''
         
         // 添加类名
-        if (options.className) {
-          result.element.className = options.className
+        if (options.className && result.element) {
+          result.element.setAttribute('class', options.className)
         }
         
         // 添加到容器

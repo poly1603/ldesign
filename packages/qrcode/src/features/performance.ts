@@ -3,7 +3,7 @@
  * 包括DOM元素复用、懒加载、Web Workers支持等
  */
 
-import type { QRCodeOptions, QRCodeResult } from '../types'
+// import type { QRCodeOptions, QRCodeResult } from '../types'
 import type { WorkerMessage, WorkerResponse } from '../types/advanced'
 
 // DOM元素池管理

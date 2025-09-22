@@ -307,7 +307,7 @@ export class BatchDownloader {
       }
 
       // 尝试动态导入
-      const JSZip = await import('jszip')
+      const JSZip = await import('jszip').then(m => m.default || m)
       return JSZip.default || JSZip
     } catch (error) {
       throw new Error('JSZip is required for zip download. Please install it: npm install jszip')
@@ -329,8 +329,8 @@ export class BatchDownloader {
    */
   private canImportJSZip(): boolean {
     try {
-      // 这只是一个检查，实际导入在使用时进行
-      return typeof import !== 'undefined'
+      // 检查是否在支持动态导入的环境中
+      return typeof window !== 'undefined' && 'import' in window
     } catch {
       return false
     }

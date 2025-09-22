@@ -7,7 +7,6 @@ import type {
   GeneratorConfig,
   PerformanceMetric,
   QRCodeOptions,
-  QRCodeResult,
   QRCodeGenerationResult,
 } from '../types'
 import QRCode from 'qrcode'
@@ -65,6 +64,8 @@ export class QRCodeGenerator {
         success: false,
         data: '',
         format: (overrideOptions?.format || this.options.format || 'canvas') as any,
+        size: 0,
+        timestamp: metric.timestamp,
         metrics: {
           duration: metric.duration,
           timestamp: new Date(metric.timestamp),
@@ -90,6 +91,8 @@ export class QRCodeGenerator {
         success: true,
         data: cached.data,
         format: cached.format,
+        size: cached.size,
+        timestamp: cached.timestamp,
         fromCache: true,
         metrics: {
           duration: metric.duration,
@@ -104,7 +107,12 @@ export class QRCodeGenerator {
 
       // Add to cache
       if (enableCache) {
-        this.cache.set(cacheKey, { data: generated.data, format })
+        this.cache.set(cacheKey, {
+          data: generated.data,
+          format,
+          size: mergedOptions.size || 200,
+          timestamp: Date.now()
+        })
       }
 
       const metric = this.performanceMonitor.end(perfId, false)
@@ -112,6 +120,8 @@ export class QRCodeGenerator {
         success: true,
         data: generated.data,
         format,
+        size: mergedOptions.size || 200,
+        timestamp: Date.now(),
         fromCache: false,
         metrics: {
           duration: metric.duration,
@@ -127,6 +137,8 @@ export class QRCodeGenerator {
         success: false,
         data: '',
         format,
+        size: 0,
+        timestamp: Date.now(),
         metrics: {
           duration: metric.duration,
           timestamp: new Date(metric.timestamp),
@@ -292,20 +304,7 @@ export class QRCodeGenerator {
     return Math.abs(hash).toString(36)
   }
 
-  /**
-   * 添加到缓存
-   */
-  private addToCache(key: string, result: QRCodeResult): void {
-    if (this.cache.size >= (this.config.maxCacheSize || 100)) {
-      // 删除最旧的条目
-      const it = this.cache.keys().next()
-      if (!it.done) {
-        this.cache.delete(it.value as string)
-      }
-    }
 
-    this.cache.set(key, result)
-  }
 
   /**
    * 清除缓存

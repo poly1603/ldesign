@@ -120,7 +120,7 @@ export async function generateQRCodeAuto(
   // 自动检测框架
   if (autoDetect && !targetFramework) {
     const detection = detectFramework()
-    targetFramework = detection.framework
+    targetFramework = detection.framework === 'unknown' ? undefined : detection.framework
   }
 
   // 根据框架选择实现

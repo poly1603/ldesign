@@ -3,7 +3,7 @@
  * 提供预设主题和自定义主题功能
  */
 
-import type { QRCodeOptions, StyleOptions, LogoOptions } from '../types'
+import type { QRCodeOptions, StyleOptions } from '../types'
 import type { ThemeConfig, PresetThemes } from '../types/advanced'
 
 // 预设主题定义
@@ -248,8 +248,8 @@ export class ThemeManager {
         ...theme.logo,
         ...baseOptions.logo
       }
-    } else if (theme.logo) {
-      options.logo = { ...theme.logo }
+    } else if (theme.logo && theme.logo.src) {
+      options.logo = { src: theme.logo.src, ...theme.logo }
     }
 
     this.currentTheme = name

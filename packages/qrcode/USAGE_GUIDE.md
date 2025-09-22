@@ -36,23 +36,98 @@ const result = await generateQRCode('https://example.com', {
 
 ### Vue 3 集成
 
+#### 方式一：使用组件（推荐）
+
 ```vue
 <template>
   <div>
-    <canvas v-if="qrResult" :ref="(el) => el?.appendChild(qrResult.element!)"></canvas>
+    <!-- 最简单的使用 -->
+    <QRCode data="Hello World" />
+
+    <!-- 带样式的使用 -->
+    <QRCode
+      data="https://example.com"
+      :size="300"
+      format="svg"
+      :style-options="{
+        color: { foreground: '#1890ff', background: '#f0f0f0' }
+      }"
+      @generated="onGenerated"
+      @error="onError"
+    />
+  </div>
+</template>
+
+<script setup>
+import { QRCode } from '@ldesign/qrcode/vue'
+
+const onGenerated = (result) => {
+  console.log('二维码生成成功:', result)
+}
+
+const onError = (error) => {
+  console.error('生成失败:', error)
+}
+</script>
+```
+
+#### 方式二：使用 Hook
+
+```vue
+<template>
+  <div>
+    <div v-if="loading">生成中...</div>
+    <div v-else-if="error">{{ error.message }}</div>
+    <div v-else-if="result" ref="containerRef"></div>
     <button @click="generate">生成二维码</button>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useQRCode } from '@ldesign/qrcode'
+import { ref, onMounted } from 'vue'
+import { useQRCode } from '@ldesign/qrcode/vue'
 
-const { result: qrResult, generate } = useQRCode({
-  data: 'Hello Vue!',
-  size: 200
-})
+const containerRef = ref()
+const { result, loading, error, generate } = useQRCode()
+
+const handleGenerate = async () => {
+  const qrResult = await generate('Hello Vue!', {
+    size: 200,
+    format: 'canvas'
+  })
+
+  if (qrResult && containerRef.value) {
+    containerRef.value.innerHTML = ''
+    containerRef.value.appendChild(qrResult.element)
+  }
+}
 </script>
+```
+
+#### 方式三：全局插件
+
+```typescript
+// main.ts
+import { createApp } from 'vue'
+import { QRCodePlugin } from '@ldesign/qrcode/vue'
+import App from './App.vue'
+
+const app = createApp(App)
+app.use(QRCodePlugin, {
+  // 全局默认配置
+  size: 200,
+  errorCorrectionLevel: 'M'
+})
+app.mount('#app')
+```
+
+```vue
+<!-- 使用全局组件 -->
+<template>
+  <div>
+    <qr-code data="Hello World" />
+  </div>
+</template>
 ```
 
 ## 🎨 主题系统

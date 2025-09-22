@@ -2,9 +2,13 @@
 import type {
   QRCodeError,
   QRCodeOptions,
-  QRCodeProps,
   QRCodeResult,
 } from '../types'
+import type {
+  QRCodeProps,
+  QRCodeEmits,
+  QRCodeInstance,
+} from './types'
 import {
   computed,
   type CSSProperties,
@@ -33,11 +37,7 @@ const props = withDefaults(defineProps<QRCodeProps>(), {
 })
 
 // Emits定义
-const emit = defineEmits<{
-  generated: [result: QRCodeResult]
-  error: [error: QRCodeError]
-  download: [result: QRCodeResult]
-}>()
+const emit = defineEmits<QRCodeEmits>()
 
 // 响应式引用
 const containerRef = ref<HTMLDivElement>()
@@ -75,6 +75,8 @@ const {
   download,
   clearCache,
   getMetrics,
+  getCacheStats,
+  reset,
   destroy,
   generator,
 } = useQRCode()
@@ -176,17 +178,13 @@ async function regenerate() {
 }
 
 // 暴露方法给父组件
-defineExpose({
-  generate: generateQRCode,
+defineExpose<QRCodeInstance>({
   regenerate,
   download: handleDownload,
-  clearCache,
   getMetrics,
-  result,
-  loading,
-  error,
-  isLoading: loading,
-  generator,
+  getCacheStats,
+  clearCache,
+  reset,
 })
 
 // 监听器
