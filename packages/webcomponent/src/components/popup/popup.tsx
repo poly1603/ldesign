@@ -118,7 +118,7 @@ export class LdesignPopup {
   @Watch('visible')
   watchVisible(newValue: boolean) {
     if (newValue !== this.isVisible) {
-      this.setVisible(newValue);
+      this.setVisibleInternal(newValue);
     }
   }
 
@@ -245,7 +245,24 @@ export class LdesignPopup {
   }
 
   /**
-   * 设置显示状态
+   * 设置显示状态（内部使用，不触发Watch）
+   */
+  private async setVisibleInternal(visible: boolean) {
+    if (this.isVisible === visible) return;
+
+    this.isVisible = visible;
+
+    if (visible) {
+      await this.updatePosition();
+    } else {
+      this.cleanup?.();
+    }
+
+    this.ldesignVisibleChange.emit(visible);
+  }
+
+  /**
+   * 设置显示状态（外部调用，同步visible属性）
    */
   private async setVisible(visible: boolean) {
     if (this.isVisible === visible) return;

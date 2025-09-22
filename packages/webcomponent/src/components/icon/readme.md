@@ -12,12 +12,13 @@ Icon 图标组件
 
 ## Properties
 
-| Property            | Attribute | Description | Type                                       | Default     |
-| ------------------- | --------- | ----------- | ------------------------------------------ | ----------- |
-| `color`             | `color`   | 图标颜色        | `string`                                   | `undefined` |
-| `name` _(required)_ | `name`    | 图标名称        | `string`                                   | `undefined` |
-| `size`              | `size`    | 图标尺寸        | `"large" \| "medium" \| "small" \| number` | `'medium'`  |
-| `spin`              | `spin`    | 是否旋转        | `boolean`                                  | `false`     |
+| Property            | Attribute      | Description | Type                                       | Default     |
+| ------------------- | -------------- | ----------- | ------------------------------------------ | ----------- |
+| `color`             | `color`        | 图标颜色        | `string`                                   | `undefined` |
+| `name` _(required)_ | `name`         | 图标名称        | `string`                                   | `undefined` |
+| `size`              | `size`         | 图标尺寸        | `"large" \| "medium" \| "small" \| number` | `'medium'`  |
+| `spin`              | `spin`         | 是否旋转        | `boolean`                                  | `false`     |
+| `strokeWidth`       | `stroke-width` | 描边宽度        | `number`                                   | `2`         |
 
 
 ## Dependencies
@@ -27,6 +28,7 @@ Icon 图标组件
  - [ldesign-button](../button)
  - [ldesign-checkbox](../checkbox)
  - [ldesign-input](../input)
+ - [ldesign-modal](../modal)
  - [ldesign-switch](../switch)
 
 ### Graph
@@ -35,6 +37,7 @@ graph TD;
   ldesign-button --> ldesign-icon
   ldesign-checkbox --> ldesign-icon
   ldesign-input --> ldesign-icon
+  ldesign-modal --> ldesign-icon
   ldesign-switch --> ldesign-icon
   style ldesign-icon fill:#f9f,stroke:#333,stroke-width:4px
 ```

@@ -32,6 +32,10 @@ Button 按钮组件
 
 ## Dependencies
 
+### Used by
+
+ - [ldesign-modal](../modal)
+
 ### Depends on
 
 - [ldesign-icon](../icon)
@@ -40,6 +44,7 @@ Button 按钮组件
 ```mermaid
 graph TD;
   ldesign-button --> ldesign-icon
+  ldesign-modal --> ldesign-button
   style ldesign-button fill:#f9f,stroke:#333,stroke-width:4px
 ```
 

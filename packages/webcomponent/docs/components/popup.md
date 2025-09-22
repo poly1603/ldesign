@@ -106,16 +106,16 @@
 
 ## 带标题的弹出层
 
-通过 `title` 属性设置弹出层标题。
+通过 `popup-title` 属性设置弹出层标题。
 
 <div class="demo-container">
-  <ldesign-popup title="提示标题" content="这里是弹出层的详细内容，可以包含更多信息。">
+  <ldesign-popup popup-title="提示标题" content="这里是弹出层的详细内容，可以包含更多信息。">
     <ldesign-button slot="trigger">带标题</ldesign-button>
   </ldesign-popup>
 </div>
 
 ```html
-<ldesign-popup title="提示标题" content="这里是弹出层的详细内容，可以包含更多信息。">
+<ldesign-popup popup-title="提示标题" content="这里是弹出层的详细内容，可以包含更多信息。">
   <ldesign-button slot="trigger">带标题</ldesign-button>
 </ldesign-popup>
 ```
@@ -204,7 +204,7 @@
 | `placement` | `PopupPlacement` | `'bottom'` | 弹出位置 |
 | `trigger` | `'hover' \| 'click' \| 'focus' \| 'manual'` | `'hover'` | 触发方式 |
 | `content` | `string` | - | 弹出层内容 |
-| `title` | `string` | - | 弹出层标题 |
+| `popup-title` | `string` | - | 弹出层标题 |
 | `offset-distance` | `number` | `8` | 偏移距离 |
 | `disabled` | `boolean` | `false` | 是否禁用 |
 | `arrow` | `boolean` | `true` | 是否显示箭头 |

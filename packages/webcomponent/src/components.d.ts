@@ -243,14 +243,14 @@ export namespace Components {
          */
         "destroyOnClose": boolean;
         /**
-          * 是否可拖拽
-          * @default false
-         */
-        "draggable": boolean;
-        /**
           * 自定义高度
          */
         "height"?: number | string;
+        /**
+          * 是否可拖拽
+          * @default false
+         */
+        "isDraggable": boolean;
         /**
           * 按ESC键是否关闭
           * @default true
@@ -267,6 +267,10 @@ export namespace Components {
          */
         "maskClosable": boolean;
         /**
+          * 模态框标题
+         */
+        "modalTitle"?: string;
+        /**
           * 是否可调整大小
           * @default false
          */
@@ -276,10 +280,6 @@ export namespace Components {
           * @default 'medium'
          */
         "size": ModalSize;
-        /**
-          * 模态框标题
-         */
-        "title"?: string;
         /**
           * 距离顶部的距离
          */
@@ -339,14 +339,14 @@ export namespace Components {
          */
         "placement": PopupPlacement;
         /**
+          * 弹出层标题
+         */
+        "popupTitle"?: string;
+        /**
           * 延迟显示时间（毫秒）
           * @default 0
          */
         "showDelay": number;
-        /**
-          * 弹出层标题
-         */
-        "title"?: string;
         /**
           * 触发方式
           * @default 'hover'
@@ -1039,14 +1039,14 @@ declare namespace LocalJSX {
          */
         "destroyOnClose"?: boolean;
         /**
-          * 是否可拖拽
-          * @default false
-         */
-        "draggable"?: boolean;
-        /**
           * 自定义高度
          */
         "height"?: number | string;
+        /**
+          * 是否可拖拽
+          * @default false
+         */
+        "isDraggable"?: boolean;
         /**
           * 按ESC键是否关闭
           * @default true
@@ -1062,6 +1062,10 @@ declare namespace LocalJSX {
           * @default true
          */
         "maskClosable"?: boolean;
+        /**
+          * 模态框标题
+         */
+        "modalTitle"?: string;
         /**
           * 关闭事件
          */
@@ -1084,10 +1088,6 @@ declare namespace LocalJSX {
           * @default 'medium'
          */
         "size"?: ModalSize;
-        /**
-          * 模态框标题
-         */
-        "title"?: string;
         /**
           * 距离顶部的距离
          */
@@ -1151,14 +1151,14 @@ declare namespace LocalJSX {
          */
         "placement"?: PopupPlacement;
         /**
+          * 弹出层标题
+         */
+        "popupTitle"?: string;
+        /**
           * 延迟显示时间（毫秒）
           * @default 0
          */
         "showDelay"?: number;
-        /**
-          * 弹出层标题
-         */
-        "title"?: string;
         /**
           * 触发方式
           * @default 'hover'

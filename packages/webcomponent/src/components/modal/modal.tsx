@@ -56,7 +56,7 @@ export class LdesignModal {
   /**
    * 是否可拖拽
    */
-  @Prop() draggable: boolean = false;
+  @Prop() isDraggable: boolean = false;
 
   /**
    * 是否可调整大小
@@ -138,7 +138,7 @@ export class LdesignModal {
   @Watch('visible')
   watchVisible(newValue: boolean) {
     if (newValue !== this.isVisible) {
-      this.setVisible(newValue);
+      this.setVisibleInternal(newValue);
     }
   }
 
@@ -203,7 +203,7 @@ export class LdesignModal {
    * 拖拽开始
    */
   private handleDragStart = (event: MouseEvent) => {
-    if (!this.draggable || !this.modalElement) return;
+    if (!this.isDraggable || !this.modalElement) return;
 
     this.isDragging = true;
     this.dragStartX = event.clientX;
@@ -281,7 +281,32 @@ export class LdesignModal {
   }
 
   /**
-   * 设置显示状态
+   * 设置显示状态（内部使用，不触发Watch）
+   */
+  private setVisibleInternal(visible: boolean) {
+    if (this.isVisible === visible) return;
+
+    this.isAnimating = true;
+    this.isVisible = visible;
+
+    if (visible) {
+      // 显示时添加body样式，防止滚动
+      document.body.style.overflow = 'hidden';
+    } else {
+      // 隐藏时恢复body样式
+      document.body.style.overflow = '';
+    }
+
+    // 动画结束后重置状态
+    setTimeout(() => {
+      this.isAnimating = false;
+    }, 300);
+
+    this.ldesignVisibleChange.emit(visible);
+  }
+
+  /**
+   * 设置显示状态（外部调用，同步visible属性）
    */
   private setVisible(visible: boolean) {
     if (this.isVisible === visible) return;
@@ -320,7 +345,7 @@ export class LdesignModal {
       classes.push('ldesign-modal--centered');
     }
 
-    if (this.draggable) {
+    if (this.isDraggable) {
       classes.push('ldesign-modal--draggable');
     }
 
@@ -379,13 +404,13 @@ export class LdesignModal {
             style={this.getDialogStyle()}
           >
             <div class="ldesign-modal__content">
-              {(this.title || this.closable) && (
-                <div 
+              {(this.modalTitle || this.closable) && (
+                <div
                   class="ldesign-modal__header"
-                  onMouseDown={this.draggable ? this.handleDragStart : undefined}
+                  onMouseDown={this.isDraggable ? this.handleDragStart : undefined}
                 >
-                  {this.title && (
-                    <div class="ldesign-modal__title">{this.title}</div>
+                  {this.modalTitle && (
+                    <div class="ldesign-modal__title">{this.modalTitle}</div>
                   )}
                   
                   {this.closable && (

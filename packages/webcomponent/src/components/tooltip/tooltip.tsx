@@ -258,12 +258,68 @@ export class LdesignTooltip {
       });
     }
 
-    // 设置自动更新
+    // 设置自动更新 - 修复无限递归问题
     this.cleanup = autoUpdate(
       this.triggerElement,
       this.tooltipElement,
-      () => this.updatePosition()
+      () => {
+        // 只在可见状态下更新位置，避免无限递归
+        if (this.isVisible) {
+          this.updatePositionOnly();
+        }
+      }
     );
+  }
+
+  /**
+   * 仅更新位置，不设置autoUpdate（避免无限递归）
+   */
+  private async updatePositionOnly() {
+    if (!this.triggerElement || !this.tooltipElement) return;
+
+    const middleware = [
+      offset(8),
+      flip(),
+      shift({ padding: 8 }),
+    ];
+
+    if (this.arrow && this.arrowElement) {
+      middleware.push(arrow({ element: this.arrowElement }));
+    }
+
+    const { x, y, placement, middlewareData } = await computePosition(
+      this.triggerElement,
+      this.tooltipElement,
+      {
+        placement: this.placement,
+        middleware,
+      }
+    );
+
+    // 设置提示层位置
+    Object.assign(this.tooltipElement.style, {
+      left: `${x}px`,
+      top: `${y}px`,
+    });
+
+    // 设置箭头位置
+    if (this.arrow && this.arrowElement && middlewareData.arrow) {
+      const { x: arrowX, y: arrowY } = middlewareData.arrow;
+      const staticSide = {
+        top: 'bottom',
+        right: 'left',
+        bottom: 'top',
+        left: 'right',
+      }[placement.split('-')[0]];
+
+      Object.assign(this.arrowElement.style, {
+        left: arrowX != null ? `${arrowX}px` : '',
+        top: arrowY != null ? `${arrowY}px` : '',
+        right: '',
+        bottom: '',
+        [staticSide]: '-4px',
+      });
+    }
   }
 
   /**
