@@ -326,3 +326,203 @@ export interface ScrollToElementParams {
 export interface ComponentScrollToElementParams extends ScrollToElementParams {
   key?: string | number
 }
+
+// ==================== Web 开发常用类型 ====================
+
+/**
+ * HTTP 方法类型
+ */
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS'
+
+/**
+ * HTTP 状态码类型
+ */
+export type HttpStatusCode =
+  | 200 | 201 | 202 | 204 // 成功
+  | 400 | 401 | 403 | 404 | 422 | 429 // 客户端错误
+  | 500 | 502 | 503 | 504 // 服务器错误
+
+/**
+ * 响应数据类型
+ */
+export interface ApiResponse<T = any> {
+  code: number
+  message: string
+  data: T
+  success: boolean
+}
+
+/**
+ * 分页参数类型
+ */
+export interface PaginationParams {
+  page: number
+  pageSize: number
+  total?: number
+}
+
+/**
+ * 分页响应类型
+ */
+export interface PaginationResponse<T = any> extends PaginationParams {
+  list: T[]
+  hasMore?: boolean
+}
+
+/**
+ * 排序参数类型
+ */
+export interface SortParams {
+  field: string
+  order: 'asc' | 'desc'
+}
+
+/**
+ * 搜索参数类型
+ */
+export interface SearchParams {
+  keyword?: string
+  filters?: Record<string, any>
+  sort?: SortParams
+}
+
+/**
+ * 文件上传类型
+ */
+export interface UploadFile {
+  uid: string
+  name: string
+  size: number
+  type: string
+  url?: string
+  status: 'uploading' | 'done' | 'error' | 'removed'
+  percent?: number
+  response?: any
+  error?: any
+  originFileObj?: File
+}
+
+/**
+ * 表单字段类型
+ */
+export interface FormField<T = any> {
+  name: string
+  value: T
+  label?: string
+  required?: boolean
+  disabled?: boolean
+  readonly?: boolean
+  placeholder?: string
+  rules?: FormRule[]
+  error?: string
+}
+
+/**
+ * 表单验证规则类型
+ */
+export interface FormRule {
+  required?: boolean
+  message?: string
+  pattern?: RegExp
+  min?: number
+  max?: number
+  validator?: (value: any) => boolean | string | Promise<boolean | string>
+}
+
+/**
+ * 菜单项类型
+ */
+export interface MenuItem {
+  key: string
+  label: string
+  icon?: string
+  path?: string
+  children?: MenuItem[]
+  disabled?: boolean
+  hidden?: boolean
+  meta?: Record<string, any>
+}
+
+/**
+ * 路由元信息类型
+ */
+export interface RouteMeta {
+  title?: string
+  icon?: string
+  hidden?: boolean
+  keepAlive?: boolean
+  requiresAuth?: boolean
+  roles?: string[]
+  permissions?: string[]
+}
+
+/**
+ * 用户信息类型
+ */
+export interface UserInfo {
+  id: string | number
+  username: string
+  nickname?: string
+  email?: string
+  phone?: string
+  avatar?: string
+  roles?: string[]
+  permissions?: string[]
+  status?: 'active' | 'inactive' | 'banned'
+  createdAt?: string
+  updatedAt?: string
+}
+
+/**
+ * 主题配置类型
+ */
+export interface ThemeConfig {
+  mode: 'light' | 'dark' | 'auto'
+  primaryColor?: string
+  borderRadius?: number
+  fontSize?: number
+  fontFamily?: string
+}
+
+/**
+ * 设备信息类型
+ */
+export interface DeviceInfo {
+  type: 'mobile' | 'tablet' | 'desktop'
+  os: string
+  browser: string
+  version: string
+  userAgent: string
+  screen: {
+    width: number
+    height: number
+  }
+}
+
+/**
+ * 地理位置类型
+ */
+export interface GeolocationPosition {
+  latitude: number
+  longitude: number
+  accuracy?: number
+  altitude?: number
+  altitudeAccuracy?: number
+  heading?: number
+  speed?: number
+  timestamp?: number
+}
+
+/**
+ * 通知类型
+ */
+export interface NotificationConfig {
+  title: string
+  message?: string
+  type?: 'info' | 'success' | 'warning' | 'error'
+  duration?: number
+  closable?: boolean
+  icon?: string
+  onClick?: () => void
+  onClose?: () => void
+}

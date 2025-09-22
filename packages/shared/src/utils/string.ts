@@ -201,69 +201,8 @@ export function randomString(
   return result
 }
 
-/**
- * 检查字符串是否为有效的邮箱地址
- * 
- * @param email - 要验证的邮箱地址
- * @returns 如果是有效邮箱则返回 true，否则返回 false
- * 
- * @example
- * ```typescript
- * isValidEmail('user@example.com') // true
- * isValidEmail('invalid-email') // false
- * ```
- */
-export function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
-}
-
-/**
- * 检查字符串是否为有效的 URL
- * 
- * @param url - 要验证的 URL
- * @returns 如果是有效 URL 则返回 true，否则返回 false
- * 
- * @example
- * ```typescript
- * isValidUrl('https://example.com') // true
- * isValidUrl('invalid-url') // false
- * ```
- */
-export function isValidUrl(url: string): boolean {
-  try {
-    new URL(url)
-    return true
-  } catch {
-    return false
-  }
-}
-
-/**
- * 格式化文件大小
- * 
- * @param bytes - 字节数
- * @param decimals - 小数位数（默认为 2）
- * @returns 格式化后的文件大小字符串
- * 
- * @example
- * ```typescript
- * formatFileSize(1024) // '1.00 KB'
- * formatFileSize(1048576) // '1.00 MB'
- * formatFileSize(1073741824, 1) // '1.0 GB'
- * ```
- */
-export function formatFileSize(bytes: number, decimals = 2): string {
-  if (bytes === 0) return '0 Bytes'
-
-  const k = 1024
-  const dm = decimals < 0 ? 0 : decimals
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-  return `${(bytes / Math.pow(k, i)).toFixed(dm)} ${sizes[i]}`
-}
+// 注意：isValidEmail, isValidUrl, formatFileSize 函数已移至 validate.ts 和 format.ts
+// 为了避免重复导出，这里不再定义这些函数
 
 /**
  * 字符串模板替换

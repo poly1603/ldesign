@@ -6,7 +6,7 @@
  * 加载状态管理等功能。
  */
 
-import { ref, computed, watch, onMounted, onUnmounted, nextTick, type Ref } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick, unref, type Ref } from 'vue'
 import { useAsyncData } from './useAsyncData'
 
 /**
@@ -195,12 +195,12 @@ export function useInfiniteScroll<T>(
       // 合并数据
       const newData = result.data
       if (transform) {
-        const transformedData = newData.map((item, index) => 
-          transform(item, data.value.length + index, [...data.value, ...newData])
+        const transformedData = newData.map((item, index) =>
+          transform(item, data.value.length + index, [...data.value, ...newData] as T[])
         )
-        data.value = [...data.value, ...transformedData] as T[]
+        data.value = [...data.value, ...transformedData] as any
       } else {
-        data.value = [...data.value, ...newData] as T[]
+        data.value = [...data.value, ...newData] as any
       }
       
       // 更新状态
@@ -402,7 +402,7 @@ export function useInfiniteScroll<T>(
 
   // 计算状态
   const state = computed<InfiniteScrollState<T>>(() => ({
-    data: data.value,
+    data: data.value as T[],
     page: page.value,
     loading: asyncState.value.loading,
     hasMore: hasMore.value,

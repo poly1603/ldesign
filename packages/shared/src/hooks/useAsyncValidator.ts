@@ -6,7 +6,7 @@
  * 适用于用户名唯一性检查、邮箱验证等需要服务器验证的场景。
  */
 
-import { ref, computed, watch, onUnmounted, type Ref, type ComputedRef } from 'vue'
+import { ref, computed, watch, onUnmounted, getCurrentInstance, type Ref, type ComputedRef } from 'vue'
 
 /**
  * 异步验证函数类型
@@ -259,10 +259,12 @@ export function useAsyncValidator<T>(
     { immediate: config.immediate }
   )
 
-  // 组件卸载时清理
-  onUnmounted(() => {
-    clear()
-  })
+  // 组件卸载时清理（仅在组件实例存在时）
+  if (getCurrentInstance()) {
+    onUnmounted(() => {
+      clear()
+    })
+  }
 
   // 计算验证状态
   const state = computed<AsyncValidationState>(() => ({

@@ -26,7 +26,28 @@
       "types": "./es/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
-    }
+    },
+    "./hooks": {
+      "types": "./es/hooks/index.d.ts",
+      "import": "./es/hooks/index.js",
+      "require": "./lib/hooks/index.cjs"
+    },
+    "./utils": {
+      "types": "./es/utils/index.d.ts",
+      "import": "./es/utils/index.js",
+      "require": "./lib/utils/index.cjs"
+    },
+    "./types": {
+      "types": "./es/types/index.d.ts",
+      "import": "./es/types/index.js",
+      "require": "./lib/types/index.cjs"
+    },
+    "./components": {
+      "types": "./es/components/index.d.ts",
+      "import": "./es/components/index.js",
+      "require": "./lib/components/index.cjs"
+    },
+    "./package.json": "./package.json"
   },
   "main": "lib/index.cjs",
   "module": "es/index.js",
@@ -53,7 +74,7 @@
     "build:test": "node scripts/test-build.js",
     "build:watch": "ldesign-builder build --watch",
     "dev": "ldesign-builder watch",
-    "type-check": "vue-tsc --noEmit",
+    "type-check": "tsc --noEmit",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "test": "vitest",

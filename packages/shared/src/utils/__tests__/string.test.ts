@@ -14,11 +14,10 @@ import {
   escapeHtml,
   unescapeHtml,
   randomString,
-  isValidEmail,
-  isValidUrl,
-  formatFileSize,
   interpolate,
 } from '../string'
+import { isValidEmail, isValidUrl } from '../validate'
+import { formatFileSize } from '../format'
 
 describe('字符串工具函数', () => {
   describe('toCamelCase', () => {
@@ -228,8 +227,8 @@ describe('字符串工具函数', () => {
     })
 
     it('应该支持自定义小数位数', () => {
-      expect(formatFileSize(1073741824, 1)).toBe('1.0 GB')
-      expect(formatFileSize(1536, 0)).toBe('2 KB')
+      expect(formatFileSize(1073741824, { decimals: 1 })).toBe('1.0 GB')
+      expect(formatFileSize(1536, { decimals: 0 })).toBe('2 KB')
     })
   })
 

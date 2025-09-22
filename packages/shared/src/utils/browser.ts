@@ -478,17 +478,17 @@ export function getBrowserSupport() {
 }
 
 /**
- * 复制文本到剪贴板（降级版本）
- * 
+ * 复制文本到剪贴板（基础版本）
+ *
  * @param text - 要复制的文本
  * @returns 是否复制成功
- * 
+ *
  * @example
  * ```typescript
- * const success = await copyToClipboard('Hello World')
+ * const success = await copyTextToClipboard('Hello World')
  * ```
  */
-export async function copyToClipboard(text: string): Promise<boolean> {
+export async function copyTextToClipboard(text: string): Promise<boolean> {
   try {
     // 优先使用现代 Clipboard API
     if (navigator.clipboard && window.isSecureContext) {

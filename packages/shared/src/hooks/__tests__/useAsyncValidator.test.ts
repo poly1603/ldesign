@@ -2,7 +2,7 @@
  * useAsyncValidator Hook 测试
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { ref, nextTick } from 'vue'
 import { useAsyncValidator } from '../useAsyncValidator'
 

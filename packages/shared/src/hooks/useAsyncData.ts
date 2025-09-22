@@ -287,7 +287,7 @@ export function useAsyncData<T, P extends any[] = any[]>(
 
         // 数据转换
         if (transform) {
-          result = transform(result) as T
+          result = transform(result) as Awaited<T>
         }
 
         // 更新状态

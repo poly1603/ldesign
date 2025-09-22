@@ -71,7 +71,7 @@ describe('tree utils', () => {
       expect(result).toHaveLength(2)
       expect(result[0].id).toBe(1)
       expect(result[0].children).toHaveLength(2)
-      expect(result[0].children[0].children).toHaveLength(2)
+      expect(result[0].children?.[0].children).toHaveLength(2)
     })
 
     it('应该支持自定义字段名', () => {
@@ -106,7 +106,7 @@ describe('tree utils', () => {
     it('应该正确将树形结构转换为扁平数组', () => {
       const result = treeToArray(treeData)
       expect(result).toHaveLength(7)
-      expect(result.map(item => item.id)).toEqual([1, 2, 4, 5, 3, 6, 7])
+      expect(result.map((item: any) => item.id)).toEqual([1, 2, 4, 5, 3, 6, 7])
     })
 
     it('应该支持自定义字段名', () => {
@@ -120,10 +120,10 @@ describe('tree utils', () => {
         },
       ]
 
-      const result = treeToArray(customTree, { childrenField: 'items' })
+      const result = treeToArray(customTree as any, { childrenField: 'items' })
       expect(result).toHaveLength(2)
-      expect(result[0].key).toBe(1)
-      expect(result[1].key).toBe(2)
+      expect((result[0] as any).key).toBe(1)
+      expect((result[1] as any).key).toBe(2)
     })
   })
 
@@ -132,7 +132,7 @@ describe('tree utils', () => {
       const visited: number[] = []
 
       traverseTree(treeData, (node) => {
-        visited.push(node.id)
+        visited.push(node.id as number)
       })
 
       expect(visited).toEqual([1, 2, 4, 5, 3, 6, 7])
@@ -142,7 +142,7 @@ describe('tree utils', () => {
       const visited: number[] = []
 
       traverseTree(treeData, (node) => {
-        visited.push(node.id)
+        visited.push(node.id as number)
         if (node.id === 2) {
           return false // 停止遍历
         }
@@ -156,9 +156,9 @@ describe('tree utils', () => {
 
       traverseTree(treeData, (node, index, level, parent) => {
         nodeInfo.push({
-          id: node.id,
+          id: node.id as number,
           level,
-          parentId: parent?.id,
+          parentId: parent?.id as number | undefined,
         })
       })
 
@@ -224,7 +224,7 @@ describe('tree utils', () => {
       const result = filterTree(treeData, node => node.id !== 3)
       expect(result).toHaveLength(2)
       expect(result[0].children).toHaveLength(1) // 子节点2被过滤掉
-      expect(result[0].children[0].id).toBe(2)
+      expect(result[0].children?.[0].id).toBe(2)
     })
 
     it('应该保留有匹配子节点的父节点', () => {
@@ -232,9 +232,9 @@ describe('tree utils', () => {
       expect(result).toHaveLength(1)
       expect(result[0].id).toBe(1) // 根节点被保留
       expect(result[0].children).toHaveLength(1)
-      expect(result[0].children[0].id).toBe(2) // 父节点被保留
-      expect(result[0].children[0].children).toHaveLength(1)
-      expect(result[0].children[0].children[0].id).toBe(4) // 目标节点
+      expect(result[0].children?.[0].id).toBe(2) // 父节点被保留
+      expect(result[0].children?.[0].children).toHaveLength(1)
+      expect(result[0].children?.[0].children?.[0].id).toBe(4) // 目标节点
     })
   })
 
@@ -248,15 +248,15 @@ describe('tree utils', () => {
 
       expect(result[0].label).toBe('根节点1')
       expect(result[0].value).toBe(1)
-      expect(result[0].children[0].label).toBe('子节点1')
-      expect(result[0].children[0].value).toBe(2)
+      expect(result[0].children?.[0].label).toBe('子节点1')
+      expect(result[0].children?.[0].value).toBe(2)
     })
 
     it('应该保持树形结构', () => {
       const result = mapTree(treeData, node => ({ id: node.id, name: node.name.toUpperCase() }))
       expect(result).toHaveLength(2)
-      expect(result[0].children).toHaveLength(2)
-      expect(result[0].children[0].children).toHaveLength(2)
+      expect((result[0] as any).children).toHaveLength(2)
+      expect((result[0] as any).children[0].children).toHaveLength(2)
     })
   })
 

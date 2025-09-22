@@ -16,7 +16,7 @@ describe('LDialog', () => {
     document.body.appendChild(teleportTarget)
   })
 
-  it('应该正确渲染对话框', () => {
+  it('应该正确渲染对话框', async () => {
     const wrapper = mount(LDialog, {
       props: {
         visible: true,
@@ -24,22 +24,28 @@ describe('LDialog', () => {
       },
       slots: {
         default: '<p>对话框内容</p>'
-      }
+      },
+      attachTo: document.body
     })
 
-    expect(wrapper.find('.l-dialog').exists()).toBe(true)
-    expect(wrapper.find('.l-dialog__title').text()).toBe('测试对话框')
+    await wrapper.vm.$nextTick()
+
+    // 由于使用了 Teleport，需要在 document.body 中查找元素
+    expect(document.querySelector('.l-dialog')).toBeTruthy()
+    expect(document.querySelector('.l-dialog__title')?.textContent).toBe('测试对话框')
   })
 
-  it('应该正确显示遮罩层', () => {
+  it('应该正确显示遮罩层', async () => {
     const wrapper = mount(LDialog, {
       props: {
         visible: true,
         showMask: true
-      }
+      },
+      attachTo: document.body
     })
 
-    expect(wrapper.find('.l-dialog-mask').exists()).toBe(true)
+    await wrapper.vm.$nextTick()
+    expect(document.querySelector('.l-dialog-mask')).toBeTruthy()
   })
 
   it('应该正确处理关闭按钮', async () => {
@@ -47,13 +53,17 @@ describe('LDialog', () => {
       props: {
         visible: true,
         showClose: true
-      }
+      },
+      attachTo: document.body
     })
 
-    const closeButton = wrapper.find('.l-dialog__close')
-    expect(closeButton.exists()).toBe(true)
-    
-    await closeButton.trigger('click')
+    await wrapper.vm.$nextTick()
+
+    const closeButton = document.querySelector('.l-dialog__close') as HTMLElement
+    expect(closeButton).toBeTruthy()
+
+    closeButton.click()
+    await wrapper.vm.$nextTick()
     expect(wrapper.emitted('close')).toBeTruthy()
   })
 

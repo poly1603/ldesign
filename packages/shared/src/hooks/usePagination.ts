@@ -6,7 +6,7 @@
  * 数据加载、搜索过滤等功能。
  */
 
-import { ref, computed, watch, type Ref, type ComputedRef } from 'vue'
+import { ref, computed, watch, unref, type Ref, type ComputedRef } from 'vue'
 import { useAsyncData } from './useAsyncData'
 
 /**
@@ -113,7 +113,7 @@ export interface PaginationState<T> {
 /**
  * 分页操作方法
  */
-export interface PaginationActions {
+export interface PaginationActions<T = any> {
   /** 跳转到指定页 */
   goToPage: (page: number) => Promise<void>
   /** 下一页 */
@@ -133,7 +133,7 @@ export interface PaginationActions {
   /** 设置过滤器 */
   setFilters: (filters: Record<string, any>) => Promise<void>
   /** 刷新当前页 */
-  refresh: () => Promise<void>
+  refresh: () => Promise<PaginationResponse<T> | null>
   /** 重置到第一页 */
   reset: () => Promise<void>
 }
@@ -444,7 +444,7 @@ export function usePagination<T>(
 
   // 计算状态
   const state = computed<PaginationState<T>>(() => ({
-    data: data.value,
+    data: data.value as T[],
     page: page.value,
     pageSize: pageSize.value,
     total: total.value,
@@ -469,7 +469,7 @@ export function usePagination<T>(
     setSearch,
     setSort,
     setFilters,
-    refresh: refresh as () => Promise<void>,
+    refresh,
     reset,
   }
 
