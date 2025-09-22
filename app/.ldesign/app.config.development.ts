@@ -5,7 +5,7 @@
 export default {
   // 应用基础信息
   app: {
-    name: 'LDesign App - 配置变更检测成功1！',
+    name: 'LDesign App - 配置变更检测成功1333！',
     version: '2.0.0',
     environment: 'development',
     debug: true, // 开发环境启用调试

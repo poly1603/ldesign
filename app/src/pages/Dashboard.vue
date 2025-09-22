@@ -1,330 +1,324 @@
 <template>
-  <div id="app">
-    <!-- 应用头部导航 -->
-    <nav class="app-nav">
-      <div class="nav-container">
-        <div class="nav-brand">
-          <h1>{{ t('app.welcome') }}</h1>
-        </div>
-        <div class="nav-links">
-          <router-link to="/" class="nav-link" active-class="active" exact-active-class="active">
-            {{ t('nav.home') }}
-          </router-link>
-          <router-link to="/config" class="nav-link" active-class="active">
-            ⚙️ 配置中心
-          </router-link>
-          <router-link to="/login" class="nav-link" active-class="active">
-            {{ t('nav.login') }}
-          </router-link>
-        </div>
-        <div class="app-controls">
-          <LanguageSwitcher type="buttons" :show-flag="true" />
-          <ThemeSelector mode="select" :show-preview="true"
-            :disabled-builtin-themes="disabledBuiltinThemes" :placeholder="t('app.theme')" />
-          <SizeSwitcher
-            switcher-style="segmented"
-            :show-icons="true"
-            :animated="true"
-            :modes="['small', 'medium', 'large', 'extra-large']" />
-          <DarkModeToggle />
-        </div>
-      </div>
-    </nav>
+  <TemplateRenderer key="dashboard-template-renderer" category="dashboard" :show-selector="true" :responsive="true"
+    :cache-selection="true" :props="templateProps" @template-change="onTemplateChange" @load-error="onLoadError"
+    @load-success="onLoadSuccess">
 
-    <!-- 路由视图 -->
-    <main class="app-main">
-      <router-view />
-    </main>
+    <!-- 主要内容插槽 - 这里显示路由内容 -->
+    <template #content>
+      <RouterView />
+    </template>
 
-    <!-- 应用底部 -->
-    <footer class="app-footer">
-      <div class="footer-container">
-        <p>&copy; 2024 {{ t('app.title') }} - {{ t('app.description') }}</p>
-        <div class="footer-info">
-          <span>{{ t('app.language') }}: {{ currentLocaleInfo?.nativeName }}</span>
-          <span class="separator">|</span>
-          <span>{{ t('app.version') }}: 1.0.0</span>
-        </div>
-      </div>
-    </footer>
-  </div>
+    <!-- 分别传递各个选择器组件 -->
+    <!-- 语言选择器插槽 -->
+    <template #language-selector="{ onLanguageChange }">
+      <LanguageSwitcher type="buttons" :show-flag="true" @change="onLanguageChange" />
+    </template>
+
+    <!-- 主题色选择器插槽 -->
+    <template #color-selector="{ onThemeChange }">
+      <ThemeSelector mode="popup" :show-preview="true" @themeChange="onThemeChange" />
+    </template>
+
+    <!-- 暗黑模式切换器插槽 -->
+    <template #dark-mode-toggle="{ onDarkModeChange }">
+      <DarkModeToggle :auto-detect="true" animation-type="circle" @change="onDarkModeChange" />
+    </template>
+
+    <!-- 尺寸选择器插槽 -->
+    <template #size-selector="{ onSizeChange }">
+      <SizeSwitcher switcher-style="segmented" :show-labels="true" @change="onSizeChange" />
+    </template>
+  </TemplateRenderer>
 </template>
 
 <script setup lang="ts">
 /**
- * 应用根组件
- * 提供应用的基本布局和导航结构
- * 使用 @ldesign/router 的路由系统和 @ldesign/i18n 的国际化功能
+ * Dashboard 页面组件
+ *
+ * 使用 @ldesign/template 的 TemplateRenderer 组件来渲染 dashboard 模板
+ * 支持模板选择器、响应式布局和模板缓存
+ *
+ * 功能特性：
+ * - 模板系统集成
+ * - 模板选择器
+ * - 响应式布局
+ * - 模板缓存
+ * - 热更新支持
  */
 
-import { ref, computed } from 'vue'
-import { ThemeSelector, DarkModeToggle } from '@ldesign/color/index.ts'
-import { useI18n, LanguageSwitcher } from '@ldesign/i18n/vue/index.ts'
-import { SizeSwitcher } from '@ldesign/size/vue/index.ts'
+import { computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { TemplateRenderer } from '@ldesign/template'
+import { useI18n } from '@ldesign/i18n/vue'
+import { useDevice } from '@ldesign/device/vue'
+import { useBreakpoints } from '@ldesign/device/vue/composables/useBreakpoints'
+import { RouterView } from '@ldesign/router'
 import { getAvailableLocales } from '../i18n'
 
-// 使用国际化功能
+// 导入配置面板需要的真实组件
+import { LanguageSwitcher } from '@ldesign/i18n/vue'
+import { ThemeSelector, DarkModeToggle } from '@ldesign/color/vue'
+import { SizeSwitcher } from '@ldesign/size/vue'
+
+// 国际化
 const { t, locale } = useI18n()
 
 // 当前语言信息
 const availableLocales = getAvailableLocales()
 const currentLocaleInfo = computed(() => {
-  const currentLocale = typeof locale.value === 'object' ? locale.value.value : locale.value
+  const currentLocale = locale.value as string
   return availableLocales.find((item: any) => item.code === currentLocale)
 })
 
-// 禁用的内置主题列表（示例：禁用红色和粉色主题）
-const disabledBuiltinThemes = ref<string[]>(['red', 'pink'])
+// 设备检测和断点管理
+const { deviceType } = useDevice({
+  enableResize: true,
+  enableOrientation: true
+})
 
-// 注意：自定义主题配置已移除，避免配置错误
-// 如需自定义主题，请参考 @ldesign/color 包的文档
+const { current: currentBreakpoint, width } = useBreakpoints({
+  mobile: 768,
+  tablet: 1024,
+  desktop: 1200
+})
 
-// 应用组件已加载，减少控制台输出
+// 计算当前设备类型，用于模板选择
+const currentDevice = computed(() => {
+  // 优先使用设备检测结果，如果不可用则使用断点判断
+  if (deviceType.value) {
+    return deviceType.value
+  }
+
+  // 基于断点的设备判断
+  if (width.value < 768) return 'mobile'
+  if (width.value < 1024) return 'tablet'
+  return 'desktop'
+})
+
+// 监听设备变化，输出调试信息
+watch([currentDevice, currentBreakpoint], ([device, breakpoint]) => {
+  console.log(`🔄 Dashboard设备切换: ${device} (断点: ${breakpoint}, 宽度: ${width.value}px)`)
+}, { immediate: true })
+
+// 模板属性
+const templateProps = computed(() => ({
+  // 路由组件
+  RouterView,
+
+  // 国际化函数
+  t,
+
+  // 设备信息
+  device: currentDevice.value,
+  breakpoint: currentBreakpoint.value,
+
+  // 用户信息（示例）
+  userInfo: {
+    name: '用户',
+    avatar: '👤'
+  },
+
+  // 应用信息
+  appInfo: {
+    name: 'LDesign Demo',
+    version: '1.0.0'
+  }
+}))
+
+// 模板事件处理
+const onTemplateChange = (templateInfo: any) => {
+  console.log('📋 模板已切换:', templateInfo)
+}
+
+const onLoadError = (error: any) => {
+  console.error('❌ 模板加载失败:', error)
+}
+
+const onLoadSuccess = (templateInfo: any) => {
+  console.log('✅ 模板加载成功:', templateInfo)
+}
+
+const onTemplateSelected = (template: any) => {
+  console.log('🎯 模板已选择:', template)
+}
+
+const onSelectorClose = () => {
+  console.log('� 模板选择器已关闭')
+}
+
+// 配置面板组件事件处理函数
+const handleLanguageChange = (language: string) => {
+  console.log('🌍 语言切换:', language)
+  // 这里可以添加语言切换的逻辑
+}
+
+const handleThemeChange = (theme: any) => {
+  console.log('🎨 主题切换:', theme)
+  // 这里可以添加主题切换的逻辑
+}
+
+const handleDarkModeChange = (isDark: boolean) => {
+  console.log('🌙 暗黑模式切换:', isDark)
+  // 这里可以添加暗黑模式切换的逻辑
+}
+
+const handleSizeChange = (size: string) => {
+  console.log('📏 尺寸切换:', size)
+  // 这里可以添加尺寸切换的逻辑
+}
+
+// 组件生命周期
+onMounted(() => {
+  console.log(`� Dashboard页面已挂载 - 当前设备: ${currentDevice.value}`)
+})
+
+onBeforeUnmount(() => {
+  console.log('💀 Dashboard页面即将卸载')
+})
 </script>
 
-<style>
-/* 全局样式重置 */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/*
- * 直接使用 @ldesign/color 生成的CSS变量
- * 这些变量由主题管理器动态注入，无需重复定义
- *
- * 可用的变量包括：
- * - 文本颜色：--ldesign-text-color-primary, --ldesign-text-color-secondary, --ldesign-text-color-placeholder, --ldesign-text-color-disabled
- * - 背景颜色：--ldesign-bg-color-page, --ldesign-bg-color-container, --ldesign-bg-color-component
- * - 边框颜色：--ldesign-border-color, --ldesign-border-color-hover, --ldesign-border-color-focus
- * - 主题色：--ldesign-brand-color, --ldesign-brand-color-hover, --ldesign-brand-color-active
- * - 功能色：--ldesign-success-color, --ldesign-warning-color, --ldesign-error-color
- * - 色阶：--ldesign-brand-color-1 到 --ldesign-brand-color-10
- * - 阴影：--ldesign-shadow-1, --ldesign-shadow-2, --ldesign-shadow-3
- */
-
-/* 确保主题切换有平滑过渡效果 */
-html, body {
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  line-height: 1.6;
-  color: var(--ldesign-text-color-primary);
-  background-color: var(--ldesign-bg-color-page);
-  transition: all 0.3s ease;
-}
-
-#app {
-  min-height: 100vh;
+<style lang="less" scoped>
+.dashboard-layout {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+  background: var(--ldesign-bg-color-page);
 }
 
-/* 导航栏样式 - 使用 @ldesign/color 和 @ldesign/size 变量 */
-.app-nav {
-  background: linear-gradient(135deg, var(--ldesign-brand-color) 0%, var(--ldesign-brand-color-8) 100%);
-  color: var(--ldesign-font-white-1);
-  padding: var(--ls-spacing-lg) 0;
-  box-shadow: var(--ldesign-shadow-2);
-  transition: all 0.3s ease;
-  border-bottom: var(--ls-border-width) solid var(--ldesign-border-color);
-  backdrop-filter: blur(10px);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.nav-container {
-  max-width: var(--ls-container-max-width);
-  margin: 0 auto;
-  padding: 0 var(--ls-spacing-xl);
+.dashboard-header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  gap: var(--ls-spacing-lg);
-}
-
-.nav-brand h1 {
-  font-size: var(--ls-font-size-xl);
-  font-weight: var(--ls-font-weight-semibold);
-}
-
-.nav-links {
-  display: flex;
-  gap: var(--ls-spacing-xl);
-}
-
-.nav-link {
-  color: var(--ldesign-font-white-1);
-  text-decoration: none;
-  padding: var(--ls-spacing-sm) var(--ls-spacing-lg);
-  border-radius: var(--ls-border-radius);
-  transition: all 0.3s ease;
-  display: inline-block;
-  font-weight: var(--ls-font-weight-medium);
-}
-
-.nav-link:hover {
-  background: var(--ldesign-brand-color-2);
-  color: var(--ldesign-brand-color-9);
-  transform: translateY(var(--ls-transform-hover-y));
-}
-
-.nav-link.active {
-  background: var(--ldesign-font-white-1);
-  color: var(--ldesign-brand-color);
+  padding: 0 var(--ls-padding-base);
+  height: 64px;
+  background: var(--ldesign-bg-color-container);
+  border-bottom: 1px solid var(--ldesign-border-color);
   box-shadow: var(--ldesign-shadow-1);
-}
 
-/* 主内容区域 */
-.app-main {
-  flex: 1;
-  background-color: var(--ldesign-bg-color-page);
-  transition: all 0.3s ease;
-  min-height: calc(100vh - var(--ls-header-footer-height));
-}
-
-/* 底部样式 */
-.app-footer {
-  background: linear-gradient(135deg, var(--ldesign-bg-color-container) 0%, var(--ldesign-bg-color-component) 100%);
-  color: var(--ldesign-text-color-secondary);
-  padding: var(--ls-spacing-xl) 0;
-  text-align: center;
-  border-top: var(--ls-border-width) solid var(--ldesign-border-color);
-  transition: all 0.3s ease;
-  backdrop-filter: blur(var(--ls-blur-sm));
-}
-
-.footer-container {
-  max-width: var(--ls-container-max-width);
-  margin: 0 auto;
-  padding: 0 var(--ls-spacing-xl);
-}
-
-/* 控制组件样式 */
-.app-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--ls-spacing-lg);
-}
-
-.app-controls>* {
-  flex-shrink: 0;
-}
-
-/* 主题选择器样式 */
-.app-controls :deep(.theme-selector) {
-  min-width: 120px;
-}
-
-.app-controls :deep(.theme-selector .theme-dropdown) {
-  background: var(--ldesign-bg-color-container);
-  border: 1px solid var(--ldesign-border-color);
-  border-radius: var(--ls-border-radius-base);
-  color: var(--ldesign-text-color-primary);
-  padding: 8px 12px;
-  font-size: var(--ls-font-size-sm);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.app-controls :deep(.theme-selector .theme-dropdown:hover) {
-  border-color: var(--ldesign-brand-color);
-  box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
-}
-
-.app-controls :deep(.theme-selector .theme-dropdown:focus) {
-  outline: none;
-  border-color: var(--ldesign-brand-color);
-  box-shadow: 0 0 0 2px var(--ldesign-brand-color-focus);
-}
-
-/* 暗色模式切换器样式 */
-.app-controls :deep(.dark-mode-toggle) {
-  background: var(--ldesign-bg-color-container);
-  border: 1px solid var(--ldesign-border-color);
-  border-radius: var(--ls-border-radius-base);
-  color: var(--ldesign-text-color-primary);
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.app-controls :deep(.dark-mode-toggle:hover) {
-  background: var(--ldesign-bg-color-container-hover);
-  border-color: var(--ldesign-brand-color);
-}
-
-/* 语言切换器样式 */
-.app-controls :deep(.language-switcher) {
-  background: var(--ldesign-bg-color-container);
-  border-radius: var(--ls-border-radius-base);
-  overflow: hidden;
-}
-
-.app-controls :deep(.language-switcher .lang-button) {
-  background: transparent;
-  border: none;
-  color: var(--ldesign-text-color-primary);
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.app-controls :deep(.language-switcher .lang-button:hover) {
-  background: var(--ldesign-bg-color-container-hover);
-}
-
-.app-controls :deep(.language-switcher .lang-button.active) {
-  background: var(--ldesign-brand-color);
-  color: white;
-}
-
-/* 尺寸切换器样式 */
-.app-controls :deep(.size-switcher) {
-  background: var(--ldesign-bg-color-container);
-  border: 1px solid var(--ldesign-border-color);
-  border-radius: var(--ls-border-radius-base);
-  overflow: hidden;
-}
-
-.app-controls :deep(.size-switcher .size-option) {
-  background: transparent;
-  border: none;
-  color: var(--ldesign-text-color-primary);
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.app-controls :deep(.size-switcher .size-option:hover) {
-  background: var(--ldesign-bg-color-container-hover);
-}
-
-.app-controls :deep(.size-switcher .size-option.active) {
-  background: var(--ldesign-brand-color);
-  color: white;
-}
-
-
-
-/* 响应式设计 */
-@media (max-width: var(--ls-breakpoint-md)) {
-  .nav-container {
-    flex-direction: column;
-    gap: var(--ls-spacing-lg);
+  .nav-brand h1 {
+    margin: 0;
+    font-size: var(--ls-font-size-lg);
+    color: var(--ldesign-text-color-primary);
   }
 
   .nav-links {
-    gap: var(--ls-spacing-lg);
+    display: flex;
+    gap: var(--ls-spacing-base);
+
+    .nav-link {
+      padding: var(--ls-padding-xs) var(--ls-padding-sm);
+      color: var(--ldesign-text-color-secondary);
+      text-decoration: none;
+      border-radius: var(--ls-border-radius-base);
+      transition: all 0.2s ease;
+
+      &:hover {
+        color: var(--ldesign-brand-color);
+        background: var(--ldesign-brand-color-focus);
+      }
+
+      &.active {
+        color: var(--ldesign-brand-color);
+        background: var(--ldesign-brand-color-focus);
+      }
+    }
   }
 
-  .nav-container,
+  .app-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--ls-spacing-sm);
+  }
+}
+
+.dashboard-body {
+  display: flex;
+  flex: 1;
+}
+
+.dashboard-sidebar {
+  width: 240px;
+  background: var(--ldesign-bg-color-container);
+  border-right: 1px solid var(--ldesign-border-color);
+  overflow-y: auto;
+
+  .sidebar-nav {
+    padding: var(--ls-padding-base);
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: var(--ls-spacing-sm);
+      padding: var(--ls-padding-sm);
+      margin-bottom: var(--ls-margin-xs);
+      color: var(--ldesign-text-color-secondary);
+      text-decoration: none;
+      border-radius: var(--ls-border-radius-base);
+      transition: all 0.2s ease;
+
+      &:hover {
+        color: var(--ldesign-brand-color);
+        background: var(--ldesign-brand-color-focus);
+      }
+
+      &.active {
+        color: var(--ldesign-brand-color);
+        background: var(--ldesign-brand-color-focus);
+      }
+
+      .nav-icon {
+        font-size: var(--ls-font-size-base);
+      }
+
+      .nav-text {
+        font-size: var(--ls-font-size-sm);
+      }
+    }
+  }
+}
+
+.dashboard-content {
+  flex: 1;
+  padding: var(--ls-padding-base);
+  background: var(--ldesign-bg-color-page);
+  overflow-y: auto;
+}
+
+.dashboard-footer {
+  background: var(--ldesign-bg-color-container);
+  border-top: 1px solid var(--ldesign-border-color);
+  padding: var(--ls-padding-base);
+
   .footer-container {
-    padding: 0 var(--ls-spacing-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    p {
+      margin: 0;
+      color: var(--ldesign-text-color-secondary);
+      font-size: var(--ls-font-size-xs);
+    }
+
+    .footer-info {
+      display: flex;
+      gap: var(--ls-spacing-sm);
+      color: var(--ldesign-text-color-placeholder);
+      font-size: var(--ls-font-size-xs);
+    }
+  }
+}
+
+// 配置面板组件样式
+.config-panel-components {
+  .config-section {
+    margin-bottom: var(--ls-margin-lg);
+
+    h4 {
+      margin: 0 0 var(--ls-margin-sm) 0;
+      font-size: var(--ls-font-size-sm);
+      font-weight: 600;
+      color: var(--ldesign-text-color-primary);
+    }
   }
 }
 </style>

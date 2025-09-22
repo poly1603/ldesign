@@ -4,7 +4,6 @@
  */
 
 import type { RouteRecordRaw } from '@ldesign/router'
-import Dashboard from '../pages/Dashboard.vue'
 import CacheDemo from '../pages/CacheDemo.vue'
 import CryptoDemo from '../pages/CryptoDemo.vue'
 import Login from '../pages/Login.vue'
@@ -17,7 +16,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Dashboard',
-    component: Dashboard,
+    component: () => import('../pages/Dashboard.vue'),
     children: [
       {
         path: '',
@@ -37,6 +36,18 @@ export const routes: RouteRecordRaw[] = [
         meta: {
           title: '色阶展示',
           description: '@ldesign/color 10级色阶展示页面',
+          cache: true,
+          preload: true,
+          animation: 'fade',
+        },
+      },
+      {
+        path: 'template-test',
+        name: 'template-test',
+        component: () => import('../pages/TemplateTest.vue'),
+        meta: {
+          title: '模板测试',
+          description: '测试所有模板的模板选择器功能',
           cache: true,
           preload: true,
           animation: 'fade',

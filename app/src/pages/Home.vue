@@ -51,7 +51,9 @@
             </div>
             <p class="feature-description">{{ t('demo.templateEngine') }}</p>
             <div class="feature-footer">
-              <span class="feature-link">{{ t('home.buttons.templateEngine') }}</span>
+              <router-link to="/template-test" class="feature-link">
+                {{ t('home.buttons.templateEngine') }}
+              </router-link>
             </div>
           </div>
           <div class="feature-card" data-feature="color">

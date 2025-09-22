@@ -12,6 +12,9 @@ import { cachePlugin } from './cache' // 添加Cache插件
 import { apiPlugin, systemPlugin, customApiPlugin } from './api' // 添加API插件
 import { devicePlugin } from './device' // 添加Device插件
 
+// 导入模态框修复样式
+import './styles/modal-fix.css'
+
 /**
  * 应用启动配置
  * 使用优化后的 LDesign Engine API，集成 Router、Template、Color、I18n、Store、Crypto、Cache、API 和 Device 系统
