@@ -16,7 +16,7 @@ Modal 模态框组件
 | `animation`      | `animation`        | 动画效果类型      | `"fade" \| "slide-down" \| "slide-left" \| "slide-right" \| "slide-up" \| "zoom"` | `'zoom'`       |
 | `centered`       | `centered`         | 是否居中显示      | `boolean`                                                                         | `false`        |
 | `closable`       | `closable`         | 是否显示关闭按钮    | `boolean`                                                                         | `true`         |
-| `closeIcon`      | `close-icon`       | 图标可配置       | `string`                                                                          | `'x'`          |
+| `closeIcon`      | `close-icon`       | 图标可配置       | `string`                                                                          | `'plus'`       |
 | `destroyOnClose` | `destroy-on-close` | 是否销毁子元素     | `boolean`                                                                         | `false`        |
 | `height`         | `height`           | 自定义高度       | `number \| string`                                                                | `undefined`    |
 | `isDraggable`    | `is-draggable`     | 是否可拖拽       | `boolean`                                                                         | `false`        |
@@ -24,10 +24,10 @@ Modal 模态框组件
 | `mask`           | `mask`             | 是否显示遮罩层     | `boolean`                                                                         | `true`         |
 | `maskClosable`   | `mask-closable`    | 点击遮罩层是否关闭   | `boolean`                                                                         | `true`         |
 | `maximizable`    | `maximizable`      | 是否可最大化      | `boolean`                                                                         | `false`        |
-| `maximizeIcon`   | `maximize-icon`    |             | `string`                                                                          | `'maximize-2'` |
+| `maximizeIcon`   | `maximize-icon`    |             | `string`                                                                          | `'plus'`       |
 | `modalTitle`     | `modal-title`      | 模态框标题       | `string`                                                                          | `undefined`    |
 | `resizable`      | `resizable`        | 是否可调整大小     | `boolean`                                                                         | `false`        |
-| `restoreIcon`    | `restore-icon`     |             | `string`                                                                          | `'minimize-2'` |
+| `restoreIcon`    | `restore-icon`     |             | `string`                                                                          | `'refresh-cw'` |
 | `size`           | `size`             | 模态框尺寸       | `"full" \| "large" \| "medium" \| "small"`                                        | `'medium'`     |
 | `top`            | `top`              | 距离顶部的距离     | `number \| string`                                                                | `undefined`    |
 | `visible`        | `visible`          | 是否显示模态框     | `boolean`                                                                         | `false`        |

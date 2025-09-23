@@ -26,9 +26,9 @@ export class LdesignModal {
   @Prop() modalTitle?: string;
 
   /** 图标可配置 */
-  @Prop() closeIcon: string = 'x';
-  @Prop() maximizeIcon: string = 'maximize-2';
-  @Prop() restoreIcon: string = 'minimize-2';
+  @Prop() closeIcon: string = 'plus';
+  @Prop() maximizeIcon: string = 'plus';
+  @Prop() restoreIcon: string = 'refresh-cw';
 
   /**
    * 模态框尺寸
@@ -832,6 +832,10 @@ export class LdesignModal {
       }
     }
 
+    if (this.isClosing) {
+      classes.push('ldesign-modal--closing');
+    }
+
     return classes.join(' ');
   }
 
@@ -1066,7 +1070,9 @@ export class LdesignModal {
                         size="small"
                         title={this.isMaximized ? '恢复' : '最大化'}
                       >
-                        <ldesign-icon name={this.isMaximized ? this.restoreIcon : this.maximizeIcon} size="small" />
+                        <slot name="maximize-icon">
+                          <ldesign-icon name={this.isMaximized ? this.restoreIcon : this.maximizeIcon} size="small" />
+                        </slot>
                       </ldesign-button>
                     )}
 
@@ -1078,7 +1084,9 @@ export class LdesignModal {
                         size="small"
                         title="关闭"
                       >
-                        <ldesign-icon name={this.closeIcon} size="small" />
+                        <slot name="close-icon">
+                          <ldesign-icon name={this.closeIcon} size="small" style={{ transform: this.closeIcon === 'plus' ? 'rotate(45deg)' : '' }} />
+                        </slot>
                       </ldesign-button>
                     )}
                   </div>
