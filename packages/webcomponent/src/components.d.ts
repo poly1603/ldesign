@@ -248,7 +248,7 @@ export namespace Components {
         "close": () => Promise<void>;
         /**
           * 图标可配置
-          * @default 'plus'
+          * @default 'x'
          */
         "closeIcon": string;
         /**
@@ -294,7 +294,7 @@ export namespace Components {
          */
         "maximize": () => Promise<void>;
         /**
-          * @default 'plus'
+          * @default 'maximize-2'
          */
         "maximizeIcon": string;
         /**
@@ -311,7 +311,7 @@ export namespace Components {
          */
         "restore": () => Promise<void>;
         /**
-          * @default 'refresh-cw'
+          * @default 'minimize-2'
          */
         "restoreIcon": string;
         /**
@@ -1087,7 +1087,7 @@ declare namespace LocalJSX {
         "closable"?: boolean;
         /**
           * 图标可配置
-          * @default 'plus'
+          * @default 'x'
          */
         "closeIcon"?: string;
         /**
@@ -1125,7 +1125,7 @@ declare namespace LocalJSX {
          */
         "maximizable"?: boolean;
         /**
-          * @default 'plus'
+          * @default 'maximize-2'
          */
         "maximizeIcon"?: string;
         /**
@@ -1150,7 +1150,7 @@ declare namespace LocalJSX {
          */
         "resizable"?: boolean;
         /**
-          * @default 'refresh-cw'
+          * @default 'minimize-2'
          */
         "restoreIcon"?: string;
         /**

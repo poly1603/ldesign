@@ -26,9 +26,9 @@ export class LdesignModal {
   @Prop() modalTitle?: string;
 
   /** 图标可配置 */
-  @Prop() closeIcon: string = 'plus';
-  @Prop() maximizeIcon: string = 'plus';
-  @Prop() restoreIcon: string = 'refresh-cw';
+  @Prop() closeIcon: string = 'x';
+  @Prop() maximizeIcon: string = 'maximize-2';
+  @Prop() restoreIcon: string = 'minimize-2';
 
   /**
    * 模态框尺寸
@@ -140,6 +140,50 @@ export class LdesignModal {
    * 可滚动主体区域引用
    */
   private bodyElement?: HTMLElement;
+
+  /** 背景滚动锁处理器 */
+  private scrollLockHandler = (e: Event) => {
+    if (!this.isVisible) return;
+    const body = this.el.querySelector('.ldesign-modal__body') as HTMLElement | null;
+    if (!body) {
+      e.preventDefault();
+      return;
+    }
+    const target = e.target as Node | null;
+    // 允许在内容区滚动；其余位置（遮罩/页面）阻止默认滚动，避免页面抖动
+    if (!target || !body.contains(target)) {
+      e.preventDefault();
+    }
+  };
+
+  private keyScrollLockHandler = (e: KeyboardEvent) => {
+    if (!this.isVisible) return;
+    const keys = ['PageUp','PageDown','Home','End','ArrowUp','ArrowDown',' '];
+    if (keys.includes(e.key)) {
+      // 若焦点不在内容区，阻止页面滚动
+      const body = this.el.querySelector('.ldesign-modal__body') as HTMLElement | null;
+      if (!body) {
+        e.preventDefault();
+        return;
+      }
+      const active = (document.activeElement as HTMLElement) || null;
+      if (!active || !body.contains(active)) {
+        e.preventDefault();
+      }
+    }
+  };
+
+  private bindScrollLock() {
+    document.addEventListener('wheel', this.scrollLockHandler, { passive: false });
+    document.addEventListener('touchmove', this.scrollLockHandler, { passive: false });
+    document.addEventListener('keydown', this.keyScrollLockHandler, { passive: false } as any);
+  }
+
+  private unbindScrollLock() {
+    document.removeEventListener('wheel', this.scrollLockHandler as any, false);
+    document.removeEventListener('touchmove', this.scrollLockHandler as any, false);
+    document.removeEventListener('keydown', this.keyScrollLockHandler as any, false);
+  }
 
   /**
    * 遮罩层元素引用
@@ -258,6 +302,9 @@ export class LdesignModal {
 
     // 取消滚动监听
     this.unbindBodyScroll();
+
+    // 解除滚动锁
+    this.unbindScrollLock();
     
     // 恢复 body 滚动状态
     if (this.isVisible) {
@@ -701,8 +748,8 @@ export class LdesignModal {
       this.isClosing = false;
       this.isVisible = true;
 
-      // 显示时添加body样式，防止滚动
-      document.body.style.overflow = 'hidden';
+      // 锁定背景滚动，但不修改 body 样式，避免页面抖动
+      this.bindScrollLock();
 
       // 定位逻辑：优先恢复上次位置，否则按需居中
       if ((this.isDraggable || this.resizable || this.centered || this.maximizable) && this.modalElement) {
@@ -734,8 +781,8 @@ export class LdesignModal {
           this.isAnimating = false;
           this.isClosing = false;
 
-          // 隐藏时恢复body样式
-          document.body.style.overflow = '';
+          // 解除背景滚动锁
+          this.unbindScrollLock();
         }
       }, 300);
     }
@@ -756,8 +803,8 @@ export class LdesignModal {
       this.isVisible = true;
       this.visible = true;
 
-      // 显示时添加body样式，防止滚动
-      document.body.style.overflow = 'hidden';
+      // 锁定背景滚动，但不修改 body 样式
+      this.bindScrollLock();
 
       // 如果是拖拽模态框，尽早将居中定位转换为绝对定位，避免动画期间位置跳动
       if (this.isDraggable && this.modalElement) {
@@ -788,8 +835,8 @@ export class LdesignModal {
           this.isAnimating = false;
           this.isClosing = false;
 
-          // 隐藏时恢复body样式
-          document.body.style.overflow = '';
+          // 解除背景滚动锁
+          this.unbindScrollLock();
         }
       }, 300);
     }
@@ -821,6 +868,11 @@ export class LdesignModal {
 
     if (this.resizable) {
       classes.push('ldesign-modal--resizable');
+    }
+
+    // size=full 时为容器也打上标识，用于去掉 wrap padding
+    if (this.size === 'full') {
+      classes.push('ldesign-modal--fullsize');
     }
 
     // 添加动画类
@@ -1085,7 +1137,7 @@ export class LdesignModal {
                         title="关闭"
                       >
                         <slot name="close-icon">
-                          <ldesign-icon name={this.closeIcon} size="small" style={{ transform: this.closeIcon === 'plus' ? 'rotate(45deg)' : '' }} />
+                          <ldesign-icon name={this.closeIcon} size="small" />
                         </slot>
                       </ldesign-button>
                     )}
