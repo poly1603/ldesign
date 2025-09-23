@@ -8,11 +8,13 @@ import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { ButtonShape, ButtonType, Size, Theme } from "./types";
 import { MessageType } from "./components/message/message";
 import { ModalAnimation, ModalSize } from "./components/modal/modal";
+import { NotificationPlacement, NotificationType } from "./components/notification/notification";
 import { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 import { TooltipPlacement } from "./components/tooltip/tooltip";
 export { ButtonShape, ButtonType, Size, Theme } from "./types";
 export { MessageType } from "./components/message/message";
 export { ModalAnimation, ModalSize } from "./components/modal/modal";
+export { NotificationPlacement, NotificationType } from "./components/notification/notification";
 export { PopupPlacement, PopupTrigger } from "./components/popup/popup";
 export { TooltipPlacement } from "./components/tooltip/tooltip";
 export namespace Components {
@@ -489,6 +491,54 @@ export namespace Components {
         "zIndex": number;
     }
     /**
+     * Notification 通知提醒
+     * 位于页面角落的全局通知，支持标题、描述、操作区与自动关闭。
+     */
+    interface LdesignNotification {
+        /**
+          * 是否显示关闭按钮
+          * @default true
+         */
+        "closable": boolean;
+        /**
+          * 手动关闭（带高度收起动画，带动后续通知平滑归位）
+         */
+        "close": () => Promise<void>;
+        /**
+          * 描述文案（也可使用默认 slot 自定义内容）
+         */
+        "description"?: string;
+        /**
+          * 自动关闭的时长（毫秒）；设为 0 则不自动关闭
+          * @default 4500
+         */
+        "duration": number;
+        /**
+          * 标题
+         */
+        "notificationTitle"?: string;
+        /**
+          * 悬浮时是否暂停计时
+          * @default true
+         */
+        "pauseOnHover": boolean;
+        /**
+          * 出现位置
+          * @default 'top-right'
+         */
+        "placement": NotificationPlacement;
+        /**
+          * 是否显示图标
+          * @default true
+         */
+        "showIcon": boolean;
+        /**
+          * 通知类型
+          * @default 'info'
+         */
+        "type": NotificationType;
+    }
+    /**
      * Popup 弹出层组件
      * 基于
      * @floating-ui /dom 实现
@@ -781,6 +831,10 @@ export interface LdesignModalCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignModalElement;
 }
+export interface LdesignNotificationCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLLdesignNotificationElement;
+}
 export interface LdesignPopupCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLLdesignPopupElement;
@@ -949,6 +1003,27 @@ declare global {
         prototype: HTMLLdesignModalElement;
         new (): HTMLLdesignModalElement;
     };
+    interface HTMLLdesignNotificationElementEventMap {
+        "ldesignClose": void;
+    }
+    /**
+     * Notification 通知提醒
+     * 位于页面角落的全局通知，支持标题、描述、操作区与自动关闭。
+     */
+    interface HTMLLdesignNotificationElement extends Components.LdesignNotification, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLLdesignNotificationElementEventMap>(type: K, listener: (this: HTMLLdesignNotificationElement, ev: LdesignNotificationCustomEvent<HTMLLdesignNotificationElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLLdesignNotificationElementEventMap>(type: K, listener: (this: HTMLLdesignNotificationElement, ev: LdesignNotificationCustomEvent<HTMLLdesignNotificationElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLLdesignNotificationElement: {
+        prototype: HTMLLdesignNotificationElement;
+        new (): HTMLLdesignNotificationElement;
+    };
     interface HTMLLdesignPopupElementEventMap {
         "ldesignVisibleChange": boolean;
     }
@@ -1053,6 +1128,7 @@ declare global {
         "ldesign-input": HTMLLdesignInputElement;
         "ldesign-message": HTMLLdesignMessageElement;
         "ldesign-modal": HTMLLdesignModalElement;
+        "ldesign-notification": HTMLLdesignNotificationElement;
         "ldesign-popup": HTMLLdesignPopupElement;
         "ldesign-radio": HTMLLdesignRadioElement;
         "ldesign-radio-group": HTMLLdesignRadioGroupElement;
@@ -1554,6 +1630,54 @@ declare namespace LocalJSX {
         "zIndex"?: number;
     }
     /**
+     * Notification 通知提醒
+     * 位于页面角落的全局通知，支持标题、描述、操作区与自动关闭。
+     */
+    interface LdesignNotification {
+        /**
+          * 是否显示关闭按钮
+          * @default true
+         */
+        "closable"?: boolean;
+        /**
+          * 描述文案（也可使用默认 slot 自定义内容）
+         */
+        "description"?: string;
+        /**
+          * 自动关闭的时长（毫秒）；设为 0 则不自动关闭
+          * @default 4500
+         */
+        "duration"?: number;
+        /**
+          * 标题
+         */
+        "notificationTitle"?: string;
+        /**
+          * 关闭事件
+         */
+        "onLdesignClose"?: (event: LdesignNotificationCustomEvent<void>) => void;
+        /**
+          * 悬浮时是否暂停计时
+          * @default true
+         */
+        "pauseOnHover"?: boolean;
+        /**
+          * 出现位置
+          * @default 'top-right'
+         */
+        "placement"?: NotificationPlacement;
+        /**
+          * 是否显示图标
+          * @default true
+         */
+        "showIcon"?: boolean;
+        /**
+          * 通知类型
+          * @default 'info'
+         */
+        "type"?: NotificationType;
+    }
+    /**
      * Popup 弹出层组件
      * 基于
      * @floating-ui /dom 实现
@@ -1846,6 +1970,7 @@ declare namespace LocalJSX {
         "ldesign-input": LdesignInput;
         "ldesign-message": LdesignMessage;
         "ldesign-modal": LdesignModal;
+        "ldesign-notification": LdesignNotification;
         "ldesign-popup": LdesignPopup;
         "ldesign-radio": LdesignRadio;
         "ldesign-radio-group": LdesignRadioGroup;
@@ -1896,6 +2021,11 @@ declare module "@stencil/core" {
              * Modal 模态框组件
              */
             "ldesign-modal": LocalJSX.LdesignModal & JSXBase.HTMLAttributes<HTMLLdesignModalElement>;
+            /**
+             * Notification 通知提醒
+             * 位于页面角落的全局通知，支持标题、描述、操作区与自动关闭。
+             */
+            "ldesign-notification": LocalJSX.LdesignNotification & JSXBase.HTMLAttributes<HTMLLdesignNotificationElement>;
             /**
              * Popup 弹出层组件
              * 基于

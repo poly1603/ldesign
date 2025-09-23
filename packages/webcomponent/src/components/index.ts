@@ -17,3 +17,4 @@ export { LdesignPopup } from './popup/popup';
 export { LdesignTooltip } from './tooltip/tooltip';
 export { LdesignModal } from './modal/modal';
 export { LdesignMessage } from './message/message';
+export { LdesignNotification } from './notification/notification';

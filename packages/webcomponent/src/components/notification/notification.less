@@ -1,0 +1,167 @@
+/* Notification 通知提醒样式 */
+
+/* 容器：挂载在 body 下，分四个角定位 */
+.ldesign-notification__container {
+  position: fixed;
+  z-index: 1010;
+  display: flex;
+  width: 360px;
+  max-width: calc(100vw - 48px);
+  pointer-events: none; /* 让空白区域可穿透点击 */
+}
+
+.ldesign-notification__container--top-right {
+  top: 24px;
+  right: 24px;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.ldesign-notification__container--top-left {
+  top: 24px;
+  left: 24px;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.ldesign-notification__container--bottom-right {
+  bottom: 24px;
+  right: 24px;
+  flex-direction: column-reverse;
+  align-items: stretch;
+}
+
+.ldesign-notification__container--bottom-left {
+  bottom: 24px;
+  left: 24px;
+  flex-direction: column-reverse;
+  align-items: stretch;
+}
+
+/* 单条通知 */
+.ldesign-notification {
+  display: block;
+  pointer-events: auto; /* 自身能响应点击 */
+  background: var(--ldesign-bg-color-component, #fff);
+  color: var(--ldesign-text-color-primary, #1f2f3d);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: var(--ldesign-shadow-2, 0 6px 16px rgba(0,0,0,0.12));
+  border-radius: var(--ls-border-radius-lg, 12px);
+  padding: 14px 16px;
+  line-height: 1.6;
+  background-clip: padding-box;
+  overflow: hidden; /* 为高度折叠动画做准备 */
+
+  /* 用 margin 代替容器 gap，这样可以在离场时平滑收起间距 */
+  margin-top: 12px;
+
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease, height 0.2s ease, margin 0.2s ease, padding 0.2s ease, border-width 0.2s ease;
+}
+
+/* 顶部容器内第一个元素不需要上边距 */
+.ldesign-notification__container--top-right > .ldesign-notification:first-child,
+.ldesign-notification__container--top-left > .ldesign-notification:first-child {
+  margin-top: 0;
+}
+
+/* 底部容器使用 column-reverse，因此需要处理最后一个元素的上边距 */
+.ldesign-notification__container--bottom-right > .ldesign-notification:last-child,
+.ldesign-notification__container--bottom-left > .ldesign-notification:last-child {
+  margin-top: 0;
+}
+
+/* 入场方向与可见态 */
+.ldesign-notification--from-right { transform: translateX(12px); }
+.ldesign-notification--from-left { transform: translateX(-12px); }
+.ldesign-notification--visible { opacity: 1; transform: translateX(0); }
+
+/* 离场：透明、侧向位移 + 高度、内边距与外边距收起 */
+.ldesign-notification--leaving.ldesign-notification--from-right {
+  opacity: 0;
+  transform: translateX(12px);
+  height: 0 !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-top-width: 0 !important;
+  border-bottom-width: 0 !important;
+}
+
+.ldesign-notification--leaving.ldesign-notification--from-left {
+  opacity: 0;
+  transform: translateX(-12px);
+  height: 0 !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-top-width: 0 !important;
+  border-bottom-width: 0 !important;
+}
+
+/* 内部结构 */
+.ldesign-notification__inner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 12px;
+}
+
+.ldesign-notification__icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ldesign-gray-color-2);
+}
+
+.ldesign-notification__icon { flex: 0 0 auto; }
+
+.ldesign-notification__content { word-break: break-word; }
+
+.ldesign-notification__title {
+  font-weight: 600;
+  color: var(--ldesign-text-color-primary, #1f2f3d);
+  margin-bottom: 4px;
+}
+
+.ldesign-notification__desc {
+  color: var(--ldesign-text-color-secondary, #596780);
+}
+
+.ldesign-notification__actions {
+  margin-top: 10px;
+  display: inline-flex;
+  gap: 8px;
+}
+
+.ldesign-notification__close {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--ldesign-text-color-secondary);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: var(--ls-border-radius-sm);
+}
+
+.ldesign-notification__close:hover { background: var(--ldesign-bg-color-component-hover); }
+
+/* 类型样式：白色卡片 + 彩色圆形图标背景 */
+.ldesign-notification--info { border-color: rgba(21, 101, 192, 0.15); }
+.ldesign-notification--info .ldesign-notification__icon { color: var(--ldesign-brand-color); }
+.ldesign-notification--info .ldesign-notification__icon-wrap { background: var(--ldesign-brand-color-2); }
+
+.ldesign-notification--success { border-color: rgba(16, 185, 129, 0.15); }
+.ldesign-notification--success .ldesign-notification__icon { color: var(--ldesign-success-color); }
+.ldesign-notification--success .ldesign-notification__icon-wrap { background: var(--ldesign-success-color-2); }
+
+.ldesign-notification--warning { border-color: rgba(245, 158, 11, 0.15); }
+.ldesign-notification--warning .ldesign-notification__icon { color: var(--ldesign-warning-color); }
+.ldesign-notification--warning .ldesign-notification__icon-wrap { background: var(--ldesign-warning-color-2); }
+
+.ldesign-notification--error { border-color: rgba(239, 68, 68, 0.15); }
+.ldesign-notification--error .ldesign-notification__icon { color: var(--ldesign-error-color); }
+.ldesign-notification--error .ldesign-notification__icon-wrap { background: var(--ldesign-error-color-2); }

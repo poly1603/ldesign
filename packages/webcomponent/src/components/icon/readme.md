@@ -30,6 +30,7 @@ Icon 图标组件
  - [ldesign-input](../input)
  - [ldesign-message](../message)
  - [ldesign-modal](../modal)
+ - [ldesign-notification](../notification)
  - [ldesign-switch](../switch)
 
 ### Graph
@@ -40,6 +41,7 @@ graph TD;
   ldesign-input --> ldesign-icon
   ldesign-message --> ldesign-icon
   ldesign-modal --> ldesign-icon
+  ldesign-notification --> ldesign-icon
   ldesign-switch --> ldesign-icon
   style ldesign-icon fill:#f9f,stroke:#333,stroke-width:4px
 ```

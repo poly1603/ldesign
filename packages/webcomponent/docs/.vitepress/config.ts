@@ -80,6 +80,7 @@ export default defineConfig({
             { text: 'Tooltip 工具提示', link: '/components/tooltip' },
             { text: 'Modal 模态框', link: '/components/modal' },
             { text: 'Message 全局提示', link: '/components/message' },
+            { text: 'Notification 通知提醒', link: '/components/notification' },
           ]
         }
       ],
